@@ -24,7 +24,6 @@
 SUBDIRS=fontconfig fc-lang src fc-cache fc-list doc test
 
 EXTRA_DIST = \
-	ltmain.sh \
         fontconfig.pc.in \
         fonts.conf.in \
 	fonts.dtd \

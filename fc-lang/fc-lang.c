@@ -47,6 +47,12 @@ FcMemFree (int kind, int size)
 {
 }
 
+FcChar8 *
+FcConfigHome (void)
+{
+    return getenv ("HOME");
+}
+
 static void 
 fatal (char *file, int lineno, char *msg)
 {

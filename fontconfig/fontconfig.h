@@ -33,12 +33,14 @@ typedef unsigned int	FcChar32;
 typedef int		FcBool;
 
 /*
- * Current Fontconfig version number
+ * Current Fontconfig version number.  This same number
+ * must appear in the fontconfig configure.in file. Yes,
+ * it'a a pain to synchronize version numbers like this.
  */
 
-#define FC_MAJOR	1
-#define FC_MINOR	0
-#define FC_REVISION	3
+#define FC_MAJOR	2
+#define FC_MINOR	1
+#define FC_REVISION	90
 
 #define FC_VERSION	((FC_MAJOR * 10000) + (FC_MINOR * 100) + (FC_REVISION))
 
@@ -242,6 +244,12 @@ FcBool
 FcBlanksIsMember (FcBlanks *b, FcChar32 ucs4);
 
 /* fccfg.c */
+FcChar8 *
+FcConfigHome (void);
+
+FcBool
+FcConfigEnableHome (FcBool enable);
+
 FcChar8 *
 FcConfigFilename (const FcChar8 *url);
     

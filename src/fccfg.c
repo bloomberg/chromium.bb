@@ -50,8 +50,9 @@ FcConfigCreate (void)
 	goto bail3;
     
     config->cache = 0;
-    if (!FcConfigSetCache (config, (FcChar8 *) ("~/" FC_USER_CACHE_FILE)))
-	goto bail4;
+    if (FcConfigHome())
+	if (!FcConfigSetCache (config, (FcChar8 *) ("~/" FC_USER_CACHE_FILE)))
+	    goto bail4;
 
     config->blanks = 0;
 
@@ -1367,6 +1368,24 @@ FcConfigFreePath (FcChar8 **path)
     free (path);
 }
 
+static FcBool	_FcConfigHomeEnabled = FcTrue;
+
+FcChar8 *
+FcConfigHome (void)
+{
+    if (_FcConfigHomeEnabled)
+	return getenv ("HOME");
+    return 0;
+}
+
+FcBool
+FcConfigEnableHome (FcBool enable)
+{
+    FcBool  prev = _FcConfigHomeEnabled;
+    _FcConfigHomeEnabled = enable;
+    return prev;
+}
+
 FcChar8 *
 FcConfigFilename (const FcChar8 *url)
 {
@@ -1381,7 +1400,7 @@ FcConfigFilename (const FcChar8 *url)
     file = 0;
     switch (*url) {
     case '~':
-	dir = (FcChar8 *) getenv ("HOME");
+	dir = FcConfigHome ();
 	if (dir)
 	    file = FcConfigFileExists (dir, url + 1);
 	else

@@ -30,7 +30,7 @@ libfontconfig_la_SOURCES = \
 lib_LTLIBRARIES = libfontconfig.la
 
 libfontconfig_la_LDFLAGS =			\
-	-version-number @LT_VERSION_NUMBER@
+	-version-info @LT_VERSION_INFO@
 
 libfontconfig_la_LIBADD = $(FREETYPE_LIBS) $(EXPAT_LIBS)
 

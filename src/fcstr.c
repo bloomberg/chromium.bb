@@ -423,6 +423,12 @@ FcStrBufData (FcStrBuf *buf, const FcChar8 *s, int len)
     return FcTrue;
 }
 
+FcBool
+FcStrUsesHome (const FcChar8 *s)
+{
+    return *s == '~';
+}
+
 FcChar8 *
 FcStrCopyFilename (const FcChar8 *s)
 {
@@ -430,7 +436,7 @@ FcStrCopyFilename (const FcChar8 *s)
     
     if (*s == '~')
     {
-	FcChar8	*home = (FcChar8 *) getenv ("HOME");
+	FcChar8	*home = FcConfigHome ();
 	int	size;
 	if (!home)
 	    return 0;

@@ -1600,8 +1600,11 @@ FcEndElement(void *userData, const XML_Char *name)
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	    break;
 	}
-	if (!FcConfigAddDir (parse->config, data))
-	    FcConfigMessage (parse, FcSevereError, "out of memory");
+	if (!FcStrUsesHome (data) || FcConfigHome ())
+	{
+	    if (!FcConfigAddDir (parse->config, data))
+		FcConfigMessage (parse, FcSevereError, "out of memory");
+	}
 	FcStrFree (data);
 	break;
     case FcElementCache:
@@ -1611,8 +1614,11 @@ FcEndElement(void *userData, const XML_Char *name)
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	    break;
 	}
-	if (!FcConfigSetCache (parse->config, data))
-	    FcConfigMessage (parse, FcSevereError, "out of memory");
+	if (!FcStrUsesHome (data) || FcConfigHome ())
+	{
+	    if (!FcConfigSetCache (parse->config, data))
+		FcConfigMessage (parse, FcSevereError, "out of memory");
+	}
 	FcStrFree (data);
 	break;
     case FcElementInclude:

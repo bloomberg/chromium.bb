@@ -643,4 +643,7 @@ FcStrBufData (FcStrBuf *buf, const FcChar8 *s, int len);
 int
 FcStrCmpIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2);
 
+FcBool
+FcStrUsesHome (const FcChar8 *s);
+
 #endif /* _FC_INT_H_ */
