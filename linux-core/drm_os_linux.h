@@ -25,11 +25,11 @@
 /** Write a dword into a MMIO region */
 #define DRM_WRITE32(map, offset, val)	writel(val, ((unsigned long)(map)->handle) + (offset))
 /** Read memory barrier */
-#define DRM_READMEMORYBARRIER(map)	rmb()
+#define DRM_READMEMORYBARRIER()		rmb()
 /** Write memory barrier */
-#define DRM_WRITEMEMORYBARRIER(map)	wmb()
+#define DRM_WRITEMEMORYBARRIER()	wmb()
 /** Read/write memory barrier */
-#define DRM_MEMORYBARRIER(map)	mb()
+#define DRM_MEMORYBARRIER()		mb()
 /** DRM device local declaration */
 #define DRM_DEVICE	drm_file_t	*priv	= filp->private_data; \
 			drm_device_t	*dev	= priv->dev
