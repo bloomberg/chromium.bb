@@ -2,7 +2,7 @@
 
 #define __NO_VERSION__
 #include "drmP.h"
-#include "sis_drm_public.h"
+#include "sis_drm.h"
 #include "sis_ds.h"
 #include "sis_drv.h"
 #include <linux/fb.h>

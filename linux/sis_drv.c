@@ -1,5 +1,4 @@
 /* sis.c -- sis driver -*- linux-c -*-
- * Created: Thu Oct  7 10:38:32 1999 by faith@precisioninsight.com
  *
  * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -23,15 +22,11 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Authors:
- *    Rickard E. (Rik) Faith <faith@precisioninsight.com>
- *    Daryll Strauss <daryll@precisioninsight.com>
- *
  */
 
 #include <linux/config.h>
 #include "drmP.h"
-#include "sis_drm_public.h"
+#include "sis_drm.h"
 #include "sis_drv.h"
 
 #define SIS_NAME	 "sis"
