@@ -30,11 +30,11 @@
 
 #define DRIVER_NAME	"savage"
 #define DRIVER_DESC	"Savage3D/MX/IX, Savage4, SuperSavage, Twister, ProSavage[DDR]"
-#define DRIVER_DATE	"20050305"
+#define DRIVER_DATE	"20050307"
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		4
-#define DRIVER_PATCHLEVEL	0
+#define DRIVER_PATCHLEVEL	1
 /* Interface history:
  *
  * 1.x   The DRM driver from the VIA/S3 code drop, basically a dummy
@@ -171,6 +171,7 @@ typedef struct drm_savage_private {
 	/* Savage4 command DMA */
 	drm_savage_dma_page_t *dma_pages;
 	unsigned int nr_dma_pages, first_dma_page, current_dma_page;
+	drm_savage_age_t last_dma_age;
 
 	/* saved hw state for global/local check on S3D */
 	uint32_t hw_draw_ctrl, hw_zbuf_ctrl;
@@ -576,6 +577,6 @@ extern void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
 } while(0)
 
 #define TEST_AGE( age, e, w )				\
-	( (age)->wrap < (w) || (age)->event <= (e) )
+	( (age)->wrap < (w) || ( (age)->wrap == (w) && (age)->event <= (e) ) )
 
 #endif /* __SAVAGE_DRV_H__ */

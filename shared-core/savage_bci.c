@@ -303,10 +303,10 @@ static int savage_dma_init(drm_savage_private_t *dev_priv)
 		return DRM_ERR(ENOMEM);
 
 	for (i = 0; i < dev_priv->nr_dma_pages; ++i) {
-		dev_priv->dma_pages[i].age.event = 0;
-		dev_priv->dma_pages[i].age.wrap = 0;
+		SET_AGE(&dev_priv->dma_pages[i].age, 0, 0);
 		dev_priv->dma_pages[i].used = 0;
 	}
+	SET_AGE(&dev_priv->last_dma_age, 0, 0);
 
 	dev_priv->first_dma_page = 0;
 	dev_priv->current_dma_page = 0;
@@ -324,6 +324,7 @@ void savage_dma_reset(drm_savage_private_t *dev_priv)
 		SET_AGE(&dev_priv->dma_pages[i].age, event, wrap);
 		dev_priv->dma_pages[i].used = 0;
 	}
+	SET_AGE(&dev_priv->last_dma_age, event, wrap);
 	dev_priv->first_dma_page = dev_priv->current_dma_page = 0;
 }
 
@@ -345,8 +346,9 @@ void savage_dma_wait(drm_savage_private_t *dev_priv, unsigned int page)
 	if (event > dev_priv->event_counter)
 		wrap--; /* hardware hasn't passed the last wrap yet */
 
-	if (dev_priv->dma_pages[page].age.wrap >= wrap &&
-	    dev_priv->dma_pages[page].age.event > event) {
+	if (dev_priv->dma_pages[page].age.wrap > wrap ||
+	    (dev_priv->dma_pages[page].age.wrap == wrap &&
+	     dev_priv->dma_pages[page].age.event > event)) {
 		if (dev_priv->wait_evnt(dev_priv,
 					dev_priv->dma_pages[page].age.event)
 		    < 0)
@@ -379,9 +381,8 @@ uint32_t *savage_dma_alloc(drm_savage_private_t *dev_priv, unsigned int n)
 	} else {
 		dev_priv->dma_flush(dev_priv);
 		nr_pages = (n + SAVAGE_DMA_PAGE_SIZE-1) / SAVAGE_DMA_PAGE_SIZE;
-		for (i = cur+1; i < dev_priv->nr_dma_pages; ++i) {
-			dev_priv->dma_pages[i].age =
-				dev_priv->dma_pages[cur].age;
+		for (i = cur; i < dev_priv->nr_dma_pages; ++i) {
+			dev_priv->dma_pages[i].age = dev_priv->last_dma_age;
 			dev_priv->dma_pages[i].used = 0;
 		}
 		dma_ptr = (uint32_t *)dev_priv->cmd_dma->handle;
@@ -424,7 +425,9 @@ static void savage_dma_flush(drm_savage_private_t *dev_priv)
 
 	/* pad to multiples of 8 entries (really needed? 2 should do it) */
 	pad = -dev_priv->dma_pages[cur].used & 7;
-	DRM_DEBUG("used=%d, pad=%u\n", dev_priv->dma_pages[cur].used, pad);
+	DRM_DEBUG("first=%u, cur=%u, cur->used=%u, pad=%u\n",
+		  dev_priv->first_dma_page, cur, dev_priv->dma_pages[cur].used,
+		  pad);
 
 	if (pad) {
 		uint32_t *dma_ptr = (uint32_t *)dev_priv->cmd_dma->handle +
@@ -461,11 +464,15 @@ static void savage_dma_flush(drm_savage_private_t *dev_priv)
 		SET_AGE(&dev_priv->dma_pages[i].age, event, wrap);
 		dev_priv->dma_pages[i].used = 0;
 	}
+	SET_AGE(&dev_priv->last_dma_age, event, wrap);
 
 	/* advance to next page */
 	if (i == dev_priv->nr_dma_pages)
 		i = 0;
 	dev_priv->first_dma_page = dev_priv->current_dma_page = i;
+
+	DRM_DEBUG("first=cur=%u, cur->used=%u\n", i,
+		  dev_priv->dma_pages[i].used);
 }
 
 static void savage_fake_dma_flush(drm_savage_private_t *dev_priv)
@@ -953,7 +960,7 @@ int savage_bci_event_wait(DRM_IOCTL_ARGS)
 	 * - event counter wrapped since the event was emitted or
 	 * - the hardware has advanced up to or over the event to wait for.
 	 */
-	if (event_w < hw_w || event_e <= hw_e )
+	if (event_w < hw_w || (event_w == hw_w && event_e <= hw_e) )
 		return 0;
 	else
 		return dev_priv->wait_evnt(dev_priv, event_e);
