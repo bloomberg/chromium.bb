@@ -47,6 +47,8 @@ SharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGSRC),SOXLIBREV,SharedFontc
 ProjectUnsharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGSRC),BuildLibDir)
 #endif
 
+FCCACHE=$(TOP)/fc-cache/fc-cache
+
 #undef LinkBuildLibrary
 #define LinkBuildLibrary(lib) MakeDir($(BUILDLIBDIR))			@@\
 	RemoveFile($(BUILDLIBDIR)/lib)					@@\
