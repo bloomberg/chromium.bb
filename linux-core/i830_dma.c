@@ -120,7 +120,7 @@ int i830_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
 	drm_i830_buf_priv_t *buf_priv;
 
 	lock_kernel();
-	dev = priv->dev;
+	dev = priv->head->dev;
 	dev_priv = dev->dev_private;
 	buf = dev_priv->mmap_buffer;
 	buf_priv = buf->dev_private;
@@ -141,7 +141,7 @@ int i830_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
 static int i830_map_buffer(drm_buf_t * buf, struct file *filp)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_i830_buf_priv_t *buf_priv = buf->dev_private;
 	drm_i830_private_t *dev_priv = dev->dev_private;
 	unsigned long virtual;
@@ -458,7 +458,7 @@ int i830_dma_init(struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_i830_private_t *dev_priv;
 	drm_i830_init_t init;
 	int retcode = 0;
@@ -1254,7 +1254,7 @@ static int i830_flush_queue(drm_device_t * dev)
 void i830_reclaim_buffers(struct file *filp)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_device_dma_t *dma = dev->dma;
 	int i;
 
@@ -1287,7 +1287,7 @@ int i830_flush_ioctl(struct inode *inode, struct file *filp,
 		     unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 
 	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
 		DRM_ERROR("i830_flush_ioctl called without lock held\n");
@@ -1302,7 +1302,7 @@ int i830_dma_vertex(struct inode *inode, struct file *filp,
 		    unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_device_dma_t *dma = dev->dma;
 	drm_i830_private_t *dev_priv = (drm_i830_private_t *) dev->dev_private;
 	u32 *hw_status = dev_priv->hw_status_page;
@@ -1339,7 +1339,7 @@ int i830_clear_bufs(struct inode *inode, struct file *filp,
 		    unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_i830_clear_t clear;
 
 	if (copy_from_user
@@ -1366,7 +1366,7 @@ int i830_swap_bufs(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 
 	DRM_DEBUG("i830_swap_bufs\n");
 
@@ -1407,7 +1407,7 @@ int i830_flip_bufs(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_i830_private_t *dev_priv = dev->dev_private;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
@@ -1428,7 +1428,7 @@ int i830_getage(struct inode *inode, struct file *filp, unsigned int cmd,
 		unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_i830_private_t *dev_priv = (drm_i830_private_t *) dev->dev_private;
 	u32 *hw_status = dev_priv->hw_status_page;
 	drm_i830_sarea_t *sarea_priv = (drm_i830_sarea_t *)
@@ -1442,7 +1442,7 @@ int i830_getbuf(struct inode *inode, struct file *filp, unsigned int cmd,
 		unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	int retcode = 0;
 	drm_i830_dma_t d;
 	drm_i830_private_t *dev_priv = (drm_i830_private_t *) dev->dev_private;
@@ -1490,7 +1490,7 @@ int i830_getparam(struct inode *inode, struct file *filp, unsigned int cmd,
 		  unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_i830_private_t *dev_priv = dev->dev_private;
 	drm_i830_getparam_t param;
 	int value;
@@ -1524,7 +1524,7 @@ int i830_setparam(struct inode *inode, struct file *filp, unsigned int cmd,
 		  unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_i830_private_t *dev_priv = dev->dev_private;
 	drm_i830_setparam_t param;
 

@@ -53,7 +53,7 @@ int drm_getunique(struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_unique_t __user *argp = (void __user *)arg;
 	drm_unique_t u;
 
@@ -87,7 +87,7 @@ int drm_setunique(struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_unique_t u;
 	int domain, bus, slot, func, ret;
 
@@ -173,7 +173,7 @@ int drm_getmap(struct inode *inode, struct file *filp,
 	       unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_map_t __user *argp = (void __user *)arg;
 	drm_map_t map;
 	drm_map_list_t *r_list = NULL;
@@ -234,7 +234,7 @@ int drm_getclient(struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_client_t __user *argp = (void __user *)arg;
 	drm_client_t client;
 	drm_file_t *pt;
@@ -277,7 +277,7 @@ int drm_getstats(struct inode *inode, struct file *filp,
 		 unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_stats_t stats;
 	int i;
 

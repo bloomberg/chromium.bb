@@ -172,17 +172,6 @@ int drm_takedown(drm_device_t * dev)
 	down(&dev->struct_sem);
 	del_timer(&dev->timer);
 
-	if (dev->devname) {
-		drm_free(dev->devname, strlen(dev->devname) + 1,
-			 DRM_MEM_DRIVER);
-		dev->devname = NULL;
-	}
-
-	if (dev->unique) {
-		drm_free(dev->unique, strlen(dev->unique) + 1, DRM_MEM_DRIVER);
-		dev->unique = NULL;
-		dev->unique_len = 0;
-	}
 	/* Clear pid list */
 	for (i = 0; i < DRM_HASH_SIZE; i++) {
 		for (pt = dev->magiclist[i].head; pt; pt = next) {
@@ -318,9 +307,8 @@ MODULE_PARM(drm_opts, "s");
  * Expands the \c DRIVER_PREINIT and \c DRIVER_POST_INIT macros before and
  * after the initialization for driver customization.
  */
-int drm_init(struct pci_driver *pci_driver,
-		       struct pci_device_id *pciidlist,
-		       struct drm_driver *driver)
+int drm_init(struct drm_driver *driver,
+		       struct pci_device_id *pciidlist)
 {
 	struct pci_dev *pdev;
 	struct pci_device_id *pid;
@@ -357,7 +345,7 @@ int drm_init(struct pci_driver *pci_driver,
 	}
 
 	if (drm_fb_loaded == 0)
-		pci_register_driver(pci_driver);
+		pci_register_driver(&driver->pci_driver);
 	else {
 		for (i = 0; pciidlist[i].vendor != 0; i++) {
 			pid = &pciidlist[i];
@@ -370,7 +358,7 @@ int drm_init(struct pci_driver *pci_driver,
 					       pdev))) {
 				/* stealth mode requires a manual probe */
 				pci_dev_get(pdev);
-				drm_probe(pdev, &pciidlist[i], driver);
+				drm_get_dev(pdev, &pciidlist[i], driver);
 			}
 		}
 		DRM_INFO("Used old pci detect: framebuffer loaded\n");
@@ -462,31 +450,33 @@ static void __exit drm_cleanup(drm_device_t * dev)
 	if (dev->driver->postcleanup)
 		dev->driver->postcleanup(dev);
 
-	if (drm_put_minor(dev))
+	drm_put_head(&dev->primary);
+	if (drm_put_dev(dev))
 		DRM_ERROR("Cannot unload module\n");
 }
 
-void __exit drm_exit(struct pci_driver *pci_driver)
+void __exit drm_exit(struct drm_driver *driver)
 {
 	int i;
-	drm_device_t *dev;
-	drm_minor_t *minor;
+	drm_device_t *dev = NULL;
+	drm_head_t *head;
 
 	DRM_DEBUG("\n");
 	if (drm_fb_loaded) {
 		for (i = 0; i < cards_limit; i++) {
-			minor = &drm_minors[i];
-			dev = minor->dev;
-			DRM_DEBUG("fb loaded release minor %d\n", dev->minor);
-			if (minor->class == DRM_MINOR_PRIMARY) {
-				/* release the pci driver */
-				if (dev->pdev)
-					pci_dev_put(dev->pdev);
-				drm_cleanup(dev);
-			}
+			head = drm_heads[i];
+			if (head->dev->driver != driver)
+				continue;
+			dev = head->dev;
+		}
+		if (dev) {
+			/* release the pci driver */
+			if (dev->pdev)
+				pci_dev_put(dev->pdev);
+			drm_cleanup(dev);
 		}
 	} else
-		pci_unregister_driver(pci_driver);
+		pci_unregister_driver(&driver->pci_driver);
 	DRM_INFO("Module unloaded\n");
 }
 EXPORT_SYMBOL(drm_exit);
@@ -503,8 +493,8 @@ static int __init drm_core_init(void)
 
 	cards_limit =
 	    (cards_limit < DRM_MAX_MINOR + 1 ? cards_limit : DRM_MAX_MINOR + 1);
-	drm_minors = drm_calloc(cards_limit, sizeof(*drm_minors), DRM_MEM_STUB);
-	if (!drm_minors)
+	drm_heads = drm_calloc(cards_limit, sizeof(*drm_heads), DRM_MEM_STUB);
+	if (!drm_heads)
 		goto err_p1;
 
 	if (register_chrdev(DRM_MAJOR, "drm", &drm_stub_fops))
@@ -533,7 +523,7 @@ static int __init drm_core_init(void)
 	drm_sysfs_destroy(drm_class);
       err_p2:
 	unregister_chrdev(DRM_MAJOR, "drm");
-	drm_free(drm_minors, sizeof(*drm_minors) * cards_limit, DRM_MEM_STUB);
+	drm_free(drm_heads, sizeof(*drm_heads) * cards_limit, DRM_MEM_STUB);
       err_p1:
 	return ret;
 }
@@ -548,7 +538,7 @@ static void __exit drm_core_exit(void)
 
 	unregister_chrdev(DRM_MAJOR, "drm");
 
-	drm_free(drm_minors, sizeof(*drm_minors) * cards_limit, DRM_MEM_STUB);
+	drm_free(drm_heads, sizeof(*drm_heads) * cards_limit, DRM_MEM_STUB);
 }
 
 module_init(drm_core_init);
@@ -569,7 +559,7 @@ int drm_version(struct inode *inode, struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_version_t __user *argp = (void __user *)arg;
 	drm_version_t version;
 	int ret;
@@ -602,7 +592,7 @@ int drm_ioctl(struct inode *inode, struct file *filp,
 	      unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_ioctl_desc_t *ioctl;
 	drm_ioctl_t *func;
 	unsigned int nr = DRM_IOCTL_NR(cmd);
@@ -613,7 +603,7 @@ int drm_ioctl(struct inode *inode, struct file *filp,
 	++priv->ioctl_count;
 
 	DRM_DEBUG("pid=%d, cmd=0x%02x, nr=0x%02x, dev 0x%lx, auth=%d\n",
-		  current->pid, cmd, nr, (long)old_encode_dev(dev->device),
+		  current->pid, cmd, nr, (long)old_encode_dev(priv->head->device),
 		  priv->authenticated);
 
 	if (nr < DRIVER_IOCTL_COUNT)

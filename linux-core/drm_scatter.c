@@ -62,7 +62,7 @@ int drm_sg_alloc(struct inode *inode, struct file *filp,
 		 unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_scatter_gather_t __user *argp = (void __user *)arg;
 	drm_scatter_gather_t request;
 	drm_sg_mem_t *entry;
@@ -197,7 +197,7 @@ int drm_sg_free(struct inode *inode, struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_scatter_gather_t request;
 	drm_sg_mem_t *entry;
 

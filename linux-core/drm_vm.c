@@ -50,7 +50,7 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 						unsigned long address)
 {
 	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_map_t *map = NULL;
 	drm_map_list_t *r_list;
 	struct list_head *list;
@@ -171,7 +171,7 @@ static __inline__ struct page *drm_do_vm_shm_nopage(struct vm_area_struct *vma,
 void drm_vm_shm_close(struct vm_area_struct *vma)
 {
 	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_vma_entry_t *pt, *prev, *next;
 	drm_map_t *map;
 	drm_map_list_t *r_list;
@@ -252,7 +252,7 @@ static __inline__ struct page *drm_do_vm_dma_nopage(struct vm_area_struct *vma,
 						    unsigned long address)
 {
 	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_device_dma_t *dma = dev->dma;
 	unsigned long offset;
 	unsigned long page_nr;
@@ -289,7 +289,7 @@ static __inline__ struct page *drm_do_vm_sg_nopage(struct vm_area_struct *vma,
 {
 	drm_map_t *map = (drm_map_t *) vma->vm_private_data;
 	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_sg_mem_t *entry = dev->sg;
 	unsigned long offset;
 	unsigned long map_offset;
@@ -413,7 +413,7 @@ static struct vm_operations_struct drm_vm_sg_ops = {
 void drm_vm_open(struct vm_area_struct *vma)
 {
 	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_vma_entry_t *vma_entry;
 
 	DRM_DEBUG("0x%08lx,0x%08lx\n",
@@ -442,7 +442,7 @@ void drm_vm_open(struct vm_area_struct *vma)
 void drm_vm_close(struct vm_area_struct *vma)
 {
 	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_vma_entry_t *pt, *prev;
 
 	DRM_DEBUG("0x%08lx,0x%08lx\n",
@@ -482,7 +482,7 @@ int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 	unsigned long length = vma->vm_end - vma->vm_start;
 
 	lock_kernel();
-	dev = priv->dev;
+	dev = priv->head->dev;
 	dma = dev->dma;
 	DRM_DEBUG("start = 0x%lx, end = 0x%lx, offset = 0x%lx\n",
 		  vma->vm_start, vma->vm_end, VM_OFFSET(vma));
@@ -539,7 +539,7 @@ EXPORT_SYMBOL(drm_core_get_reg_ofs);
 int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_map_t *map = NULL;
 	drm_map_list_t *r_list;
 	unsigned long offset = 0;

@@ -157,7 +157,7 @@ void drm_free_buffer(drm_device_t * dev, drm_buf_t * buf)
 void drm_core_reclaim_buffers(struct file *filp)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_device_dma_t *dma = dev->dma;
 	int i;
 

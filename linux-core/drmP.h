@@ -378,7 +378,7 @@ typedef struct drm_file {
 	unsigned long ioctl_count;
 	struct drm_file *next;
 	struct drm_file *prev;
-	struct drm_device *dev;
+	struct drm_head *head;
 	int remove_auth_on_close;
 	unsigned long lock_count;
 	void *driver_priv;
@@ -504,10 +504,11 @@ typedef struct drm_vbl_sig {
 } drm_vbl_sig_t;
 
 /**
- * DRM device functions structure
+ * DRM driver structure. This structure represent the common code for
+ * a family of cards. There will one drm_device for each card present
+ * in this family
  */
 struct drm_device;
-
 struct drm_driver {
 	int (*preinit) (struct drm_device *, unsigned long flags);
 	void (*prerelease) (struct drm_device *, struct file * filp);
@@ -547,17 +548,30 @@ struct drm_driver {
 	drm_ioctl_desc_t *ioctls;
 	int num_ioctls;
 	struct file_operations fops;
+	struct pci_driver pci_driver;
 };
 
 /**
- * DRM device structure.
+ * DRM head structure. This structure represent a video head on a card
+ * that may contain multiple heads. Embed one per head of these in the
+ * private drm_device structure.
+ */
+typedef struct drm_head {
+	int minor;			/**< Minor device number */
+	struct drm_device *dev;
+	struct proc_dir_entry *dev_root;  /**< proc directory entry */
+	dev_t device;			/**< Device number for mknod */
+	struct class_device *dev_class;
+} drm_head_t;
+
+/**
+ * DRM device structure. This structure represent a complete card that
+ * may contain multiple heads.
  */
 typedef struct drm_device {
 	char *unique;			/**< Unique identifier: e.g., busid */
 	int unique_len;			/**< Length of unique field */
-	dev_t device;			/**< Device number for mknod */
 	char *devname;			/**< For /proc/interrupts */
-	int minor;			/**< Minor device number */
 	int if_version;			/**< Highest interface version set */
 
 	int blocked;			/**< Blocked due to VC switch? */
@@ -680,17 +694,8 @@ typedef struct drm_device {
 
 	struct drm_driver *driver;
 	drm_local_map_t *agp_buffer_map;
+	drm_head_t primary;		/**< primary screen head */
 } drm_device_t;
-
-typedef struct drm_minor {
-	enum {
-		DRM_MINOR_FREE = 0,
-		DRM_MINOR_PRIMARY,
-		DRM_MINOR_SECONDARY,
-	} class;
-	drm_device_t *dev;
-	struct proc_dir_entry *dev_root;  /**< proc directory entry */
-} drm_minor_t;
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,
 					     int feature)
@@ -727,10 +732,9 @@ extern int drm_cpu_valid(void);
 
 				/* Driver support (drm_drv.h) */
 extern int drm_fb_loaded;
-extern int __devinit drm_init(struct pci_driver *pci_driver,
-			      struct pci_device_id *pciidlist,
-			      struct drm_driver *driver);
-extern void __exit drm_exit(struct pci_driver *pci_driver);
+extern int __devinit drm_init(struct drm_driver *driver,
+			      struct pci_device_id *pciidlist);
+extern void __exit drm_exit(struct drm_driver *driver);
 extern void __exit drm_cleanup_pci(struct pci_dev *pdev);
 extern int drm_version(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
@@ -909,14 +913,13 @@ extern int drm_agp_bind_memory(DRM_AGP_MEM * handle, off_t start);
 extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
 
 				/* Stub support (drm_stub.h) */
-extern int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent,
+extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);
-extern int drm_put_minor(drm_device_t * dev);
-extern int drm_get_secondary_minor(drm_device_t * dev,
-				   drm_minor_t ** sec_minor);
-extern int drm_put_secondary_minor(drm_minor_t * sec_minor);
+extern int drm_put_dev(drm_device_t * dev);
+extern int drm_get_head(drm_device_t * dev, drm_head_t *head);
+extern int drm_put_head(drm_head_t * head);
 extern unsigned int cards_limit;
-extern drm_minor_t *drm_minors;
+extern drm_head_t **drm_heads;
 extern struct drm_sysfs_class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
 

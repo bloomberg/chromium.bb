@@ -57,7 +57,7 @@ int drm_agp_info(struct inode *inode, struct file *filp,
 		 unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	DRM_AGP_KERN *kern;
 	drm_agp_info_t info;
 
@@ -96,7 +96,7 @@ int drm_agp_acquire(struct inode *inode, struct file *filp,
 		    unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	int retcode;
 
 	if (!dev->agp)
@@ -130,7 +130,7 @@ int drm_agp_release(struct inode *inode, struct file *filp,
 		    unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 
 	if (!dev->agp || !dev->agp->acquired || !drm_agp->release)
 		return -EINVAL;
@@ -167,7 +167,7 @@ int drm_agp_enable(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_agp_mode_t mode;
 
 	if (!dev->agp || !dev->agp->acquired || !drm_agp->enable)
@@ -199,7 +199,7 @@ int drm_agp_alloc(struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_agp_buffer_t request;
 	drm_agp_mem_t *entry;
 	DRM_AGP_MEM *memory;
@@ -284,7 +284,7 @@ int drm_agp_unbind(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_agp_binding_t request;
 	drm_agp_mem_t *entry;
 	int ret;
@@ -321,7 +321,7 @@ int drm_agp_bind(struct inode *inode, struct file *filp,
 		 unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_agp_binding_t request;
 	drm_agp_mem_t *entry;
 	int retcode;
@@ -363,7 +363,7 @@ int drm_agp_free(struct inode *inode, struct file *filp,
 		 unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	drm_device_t *dev = priv->head->dev;
 	drm_agp_buffer_t request;
 	drm_agp_mem_t *entry;
 

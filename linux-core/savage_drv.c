@@ -251,7 +251,7 @@ static int postinit( struct drm_device *dev, unsigned long flags )
 		DRIVER_MINOR,
 		DRIVER_PATCHLEVEL,
 		DRIVER_DATE,
-		dev->minor,
+		dev->primary.minor,
 		pci_pretty_name(dev->pdev)
 		);
 	return 0;
@@ -282,6 +282,7 @@ static drm_ioctl_desc_t ioctls[] = {
 #endif
 };
 
+static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features = DRIVER_USE_AGP | DRIVER_USE_MTRR,
 	.reclaim_buffers = drm_core_reclaim_buffers,
@@ -300,28 +301,27 @@ static struct drm_driver driver = {
 		.mmap	 = drm_mmap,
 		.fasync  = drm_fasync,
 	},
+	.pci_driver = {
+		.name          = DRIVER_NAME,
+		.id_table      = pciidlist,
+		.probe         = probe,
+		.remove        = __devexit_p(drm_cleanup_pci),
+	}
 };
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 {
-	return drm_probe(pdev, ent, &driver);
+	return drm_get_dev(pdev, ent, &driver);
 }
-
-static struct pci_driver pci_driver = {
-	.name          = DRIVER_NAME,
-	.id_table      = pciidlist,
-	.probe         = probe,
-	.remove        = __devexit_p(drm_cleanup_pci),
-};
 
 static int __init savage_init(void)
 {
-	return drm_init(&pci_driver, pciidlist, &driver);
+	return drm_init(&driver, pciidlist);
 }
 
 static void __exit savage_exit(void)
 {
-	drm_exit(&pci_driver);
+	drm_exit(&driver);
 }
 
 module_init(savage_init);

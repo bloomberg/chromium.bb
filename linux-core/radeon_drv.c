@@ -45,7 +45,7 @@ static int postinit(struct drm_device *dev, unsigned long flags)
 		 DRIVER_MAJOR,
 		 DRIVER_MINOR,
 		 DRIVER_PATCHLEVEL,
-		 DRIVER_DATE, dev->minor, pci_pretty_name(dev->pdev)
+		 DRIVER_DATE, dev->primary.minor, pci_pretty_name(dev->pdev)
 	    );
 	return 0;
 }
@@ -128,6 +128,7 @@ static drm_ioctl_desc_t ioctls[] = {
 	[DRM_IOCTL_NR(DRM_RADEON_SETPARAM)] = {radeon_cp_setparam, 1, 0},
 };
 
+static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_SG |
@@ -155,36 +156,34 @@ static struct drm_driver driver = {
 	.num_ioctls = DRM_ARRAY_SIZE(ioctls),
 	.dma_ioctl = radeon_cp_buffers,
 	.fops = {
-		 .owner = THIS_MODULE,
-		 .open = drm_open,
-		 .release = drm_release,
-		 .ioctl = drm_ioctl,
-		 .mmap = drm_mmap,
-		 .fasync = drm_fasync,
-		 }
-	,
+		.owner = THIS_MODULE,
+		.open = drm_open,
+		.release = drm_release,
+		.ioctl = drm_ioctl,
+		.mmap = drm_mmap,
+		.fasync = drm_fasync,
+		},
+	.pci_driver = {
+		.name = DRIVER_NAME,
+		.id_table = pciidlist,
+		.probe = probe,
+		.remove = __devexit_p(drm_cleanup_pci),
+	}
 };
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 {
-	return drm_probe(pdev, ent, &driver);
+	return drm_get_dev(pdev, ent, &driver);
 }
-
-static struct pci_driver pci_driver = {
-	.name = DRIVER_NAME,
-	.id_table = pciidlist,
-	.probe = probe,
-	.remove = __devexit_p(drm_cleanup_pci),
-};
 
 static int __init radeon_init(void)
 {
-	return drm_init(&pci_driver, pciidlist, &driver);
+	return drm_init(&driver, pciidlist);
 }
 
 static void __exit radeon_exit(void)
 {
-	drm_exit(&pci_driver);
+	drm_exit(&driver);
 }
 
 module_init(radeon_init);
