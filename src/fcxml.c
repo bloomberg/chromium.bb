@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.12 2002/06/19 20:08:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.13 2002/06/21 06:14:45 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1655,6 +1655,10 @@ FcConfigParseAndLoad (FcConfig	    *config,
     filename = FcConfigFilename (name);
     if (!filename)
 	goto bail0;
+    
+    if (!FcStrSetAdd (config->configFiles, filename))
+	goto bail0;
+
     f = fopen ((char *) filename, "r");
     free (filename);
     if (!f)
@@ -1666,9 +1670,6 @@ FcConfigParseAndLoad (FcConfig	    *config,
 
     if (!FcConfigInit (&parse, name, config, p))
 	goto bail2;
-
-    if (!FcConfigAddConfigFile (config, filename))
-	goto bail3;
 
     XML_SetUserData (p, &parse);
     
