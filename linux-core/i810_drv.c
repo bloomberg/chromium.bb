@@ -30,7 +30,9 @@
  */
 
 #include <linux/config.h>
+#ifndef EXPORT_SYMTAB
 #define EXPORT_SYMTAB
+#endif
 #include "drmP.h"
 #include "i810_drv.h"
 
@@ -420,6 +422,7 @@ void i810_cleanup(void)
 	drm_ctxbitmap_cleanup(dev);
 	i810_takedown(dev);
 	if (dev->agp) {
+		drm_agp_uninit();
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
 		dev->agp = NULL;
 	}

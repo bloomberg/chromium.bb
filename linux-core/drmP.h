@@ -728,6 +728,7 @@ extern void	     drm_ctxbitmap_free(drm_device_t *dev, int ctx_handle);
 #ifdef DRM_AGP
 				/* AGP/GART support (agpsupport.c) */
 extern drm_agp_head_t *drm_agp_init(void);
+extern void           drm_agp_uninit(void);
 extern int            drm_agp_acquire(struct inode *inode, struct file *filp,
 				      unsigned int cmd, unsigned long arg);
 extern int            drm_agp_release(struct inode *inode, struct file *filp,

@@ -30,7 +30,9 @@
  */
 
 #include <linux/config.h>
+#ifndef EXPORT_SYMTAB
 #define EXPORT_SYMTAB
+#endif
 #include "drmP.h"
 #include "r128_drv.h"
 EXPORT_SYMBOL(r128_init);
@@ -409,7 +411,7 @@ void r128_cleanup(void)
 	r128_takedown(dev);
 #ifdef DRM_AGP
 	if (dev->agp) {
-				/* FIXME -- free other information, too */
+		drm_agp_uninit();
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
 		dev->agp = NULL;
 	}

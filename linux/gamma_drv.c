@@ -30,7 +30,9 @@
  */
 
 #include <linux/config.h>
+#ifndef EXPORT_SYMTAB
 #define EXPORT_SYMTAB
+#endif
 #include "drmP.h"
 #include "gamma_drv.h"
 #include <linux/pci.h>

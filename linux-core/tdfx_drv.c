@@ -31,7 +31,9 @@
  */
 
 #include <linux/config.h>
+#ifndef EXPORT_SYMTAB
 #define EXPORT_SYMTAB
+#endif
 #include "drmP.h"
 #include "tdfx_drv.h"
 EXPORT_SYMBOL(tdfx_init);
@@ -241,9 +243,7 @@ static int tdfx_takedown(drm_device_t *dev)
 			drm_free(temp, sizeof(*temp), DRM_MEM_AGPLISTS);
 			temp = temp_next;
 		}
-		if(dev->agp->acquired) (*drm_agp.release)();
-		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
-		dev->agp = NULL;
+		if (dev->agp->acquired) (*drm_agp.release)();
 	}
 #endif
 				/* Clear vma list (only built for debugging) */
@@ -368,6 +368,13 @@ void tdfx_cleanup(void)
 	}
 	drm_ctxbitmap_cleanup(dev);
 	tdfx_takedown(dev);
+#ifdef DRM_AGP
+	if (dev->agp) {
+		drm_agp_uninit();
+		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
+		dev->agp = NULL;
+	}
+#endif
 }
 
 int tdfx_version(struct inode *inode, struct file *filp, unsigned int cmd,

@@ -31,7 +31,9 @@
  */
 
 #include <linux/config.h>
+#ifndef EXPORT_SYMTAB
 #define EXPORT_SYMTAB
+#endif
 #include "drmP.h"
 #include "mga_drv.h"
 EXPORT_SYMBOL(mga_init);
@@ -434,6 +436,7 @@ void mga_cleanup(void)
 
 	mga_takedown(dev);
 	if (dev->agp) {
+		drm_agp_uninit();
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
 		dev->agp = NULL;
 	}

@@ -313,3 +313,15 @@ drm_agp_head_t *drm_agp_init(void)
 	}
 	return head;
 }
+
+void drm_agp_uninit(void)
+{
+	drm_agp_fill_t *fill;
+	
+	for (fill = &drm_agp_fill[0]; fill->name; fill++) {
+#if LINUX_VERSION_CODE >= 0x020400
+		if ((*fill->f).address) put_module_symbol((*fill->f).address);
+#endif
+		(*fill->f).address = 0;
+	}
+}

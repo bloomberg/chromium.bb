@@ -66,7 +66,7 @@ ifeq ($(CONFIG_DRM_R128),y)
  OX_OBJS += r128_drv.o
  O_OBJS += r128_context.o r128_bufs.o r128_dma.o
 else
-  ifeq ($(CONFIG_DRM_I810),m)
+  ifeq ($(CONFIG_DRM_R128),m)
     MIX_OBJS += r128_drv.o
     MI_OBJS += r128_context.o r128_bufs.o r128_dma.o
     M_OBJS += r128.o
@@ -102,7 +102,7 @@ i810.o: i810_drv.o i810_context.o i810_bufs.o i810_dma.o $(L_OBJS)
 	$(LD) $(LD_RFLAG) -r -o $@ i810_drv.o i810_bufs.o i810_dma.o \
 		i810_context.o $(L_OBJS)
 
-r128.o: r128_drv.o r128_context.o r128_bufs.o $(L_OBJS)
+r128.o: r128_drv.o r128_context.o r128_bufs.o r128_dma.o $(L_OBJS)
 	$(LD) $(LD_RFLAG) -r -o $@ r128_drv.o r128_bufs.o r128_dma.o \
 		r128_context.o $(L_OBJS)
 
