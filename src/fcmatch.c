@@ -250,7 +250,8 @@ FcCompareValueList (const char  *object,
 	FcValueListPrint (v2orig);
 	printf ("\n");
     }
-    value[i] += best;
+    if (value)
+	value[i] += best;
     return FcTrue;
 }
 
@@ -317,7 +318,6 @@ FcFontRenderPrepare (FcConfig	    *config,
     int		    i;
     FcPatternElt    *fe, *pe;
     FcValue	    v;
-    double	    score[NUM_MATCHER];
     FcResult	    result;
     
     new = FcPatternCreate ();
@@ -330,7 +330,7 @@ FcFontRenderPrepare (FcConfig	    *config,
 	if (pe)
 	{
 	    if (!FcCompareValueList (pe->object, pe->values, 
-				     fe->values, &v, score, &result))
+				     fe->values, &v, 0, &result))
 	    {
 		FcPatternDestroy (new);
 		return 0;
@@ -598,7 +598,10 @@ FcFontSetSort (FcConfig	    *config,
     if (!FcSortWalk (nodeps, nnodes, ret, &cs, trim))
 	goto bail2;
 
-    *csp = cs;
+    if (csp)
+	*csp = cs;
+    else
+	FcCharSetDestroy (cs);
 
     free (nodes);
 

@@ -603,6 +603,9 @@ FcPatternEqual (const FcPattern *pa, const FcPattern *pb);
 FcBool
 FcPatternEqualSubset (const FcPattern *pa, const FcPattern *pb, const FcObjectSet *os);
 
+FcChar32
+FcPatternHash (const FcPattern *p);
+
 FcBool
 FcPatternAdd (FcPattern *p, const char *object, FcValue value, FcBool append);
     

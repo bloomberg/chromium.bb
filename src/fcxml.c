@@ -25,7 +25,18 @@
 #include <stdarg.h>
 #include "fcint.h"
 
+#ifndef HAVE_EXPAT
+#define HAVE_EXPAT 1
+#endif
+
+#ifndef HAVE_XML2
+#define HAVE_XML2 0
+#endif
+
 #if HAVE_EXPAT
+#ifndef HAVE_XMLPARSE_H
+#define HAVE_XMLPARSE_H 0
+#endif
 #if HAVE_XMLPARSE_H
 #include <xmlparse.h>
 #else
@@ -1135,7 +1146,7 @@ FcParseAlias (FcConfigParse *parse)
     if (edit)
     {
 	test = FcTestCreate (FcQualAny,
-			     FcStrCopy ((FcChar8 *) "family"),
+			     FC_FAMILY,
 			     FcOpEqual,
 			     family);
 	if (test)

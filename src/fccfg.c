@@ -901,8 +901,8 @@ FcConfigMatchValueList (FcPattern	*p,
 		}
 	    }
 	}
+	FcValueDestroy (value);
     }
-    FcValueDestroy (value);
     return ret;
 }
 

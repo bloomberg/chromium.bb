@@ -148,6 +148,56 @@ FcValueEqual (FcValue va, FcValue vb)
     return FcFalse;
 }
 
+static FcChar32
+FcDoubleHash (double d)
+{
+    if (d < 0)
+	d = -d;
+    if (d > 0xffffffff)
+	d = 0xffffffff;
+    return (FcChar32) d;
+}
+
+static FcChar32
+FcStringHash (const FcChar8 *s)
+{
+    FcChar8	c;
+    FcChar32	h = 0;
+    
+    if (s)
+	while ((c = *s++))
+	    h = ((h << 1) | (h >> 31)) ^ c;
+    return h;
+}
+
+static FcChar32
+FcValueHash (FcValue v)
+{
+    switch (v.type) {
+    case FcTypeVoid:
+	return 0;
+    case FcTypeInteger:
+	return (FcChar32) v.u.i;
+    case FcTypeDouble:
+	return FcDoubleHash (v.u.d);
+    case FcTypeString:
+	return FcStringHash (v.u.s);
+    case FcTypeBool:
+	return (FcChar32) v.u.b;
+    case FcTypeMatrix:
+	return (FcDoubleHash (v.u.m->xx) ^ 
+		FcDoubleHash (v.u.m->xy) ^ 
+		FcDoubleHash (v.u.m->yx) ^ 
+		FcDoubleHash (v.u.m->yy));
+    case FcTypeCharSet:
+	return (FcChar32) v.u.c->num;
+    case FcTypeFTFace:
+	return FcStringHash ((const FcChar8 *) ((FT_Face) v.u.f)->family_name) ^
+	       FcStringHash ((const FcChar8 *) ((FT_Face) v.u.f)->style_name);
+    }
+    return FcFalse;
+}
+
 static FcBool
 FcValueListEqual (FcValueList *la, FcValueList *lb)
 {
@@ -161,6 +211,19 @@ FcValueListEqual (FcValueList *la, FcValueList *lb)
     if (la || lb)
 	return FcFalse;
     return FcTrue;
+}
+
+static FcChar32
+FcValueListHash (FcValueList *l)
+{
+    FcChar32	hash = 0;
+    
+    while (l)
+    {
+	hash = ((hash << 1) | (hash >> 31)) ^ FcValueHash (l->value);
+	l = l->next;
+    }
+    return hash;
 }
 
 void
@@ -281,6 +344,21 @@ FcPatternEqual (const FcPattern *pa, const FcPattern *pb)
 	    return FcFalse;
     }
     return FcTrue;
+}
+
+FcChar32
+FcPatternHash (const FcPattern *p)
+{
+    int		i;
+    FcChar32	h = 0;
+
+    for (i = 0; i < p->num; i++)
+    {
+	h = (((h << 1) | (h >> 31)) ^ 
+	     FcStringHash ((const FcChar8 *) p->elts[i].object) ^
+	     FcValueListHash (p->elts[i].values));
+    }
+    return h;
 }
 
 FcBool
