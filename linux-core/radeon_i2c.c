@@ -116,27 +116,25 @@ static int setup_i2c_bus(struct radeon_i2c_chan *chan, const char *name)
 int radeon_create_i2c_busses(drm_device_t * dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
-	int ret;
 
 	dev_priv->i2c[0].dev = dev;
 	dev_priv->i2c[0].ddc_reg = GPIO_MONID;
-	if ((ret = setup_i2c_bus(&dev_priv->i2c[0], "monid")))
-		return ret;
+	/* Don't return the error from setup. It is not fatal */
+	/* if the bus can not be initialized */
+	setup_i2c_bus(&dev_priv->i2c[0], "monid");
 
 	dev_priv->i2c[1].dev = dev;
 	dev_priv->i2c[1].ddc_reg = GPIO_DVI_DDC;
-	if ((ret = setup_i2c_bus(&dev_priv->i2c[1], "dvi")))
-		return ret;
+	setup_i2c_bus(&dev_priv->i2c[1], "dvi");
 
 	dev_priv->i2c[2].dev = dev;
 	dev_priv->i2c[2].ddc_reg = GPIO_VGA_DDC;
-	if ((ret = setup_i2c_bus(&dev_priv->i2c[2], "vga")))
-		return ret;
+	setup_i2c_bus(&dev_priv->i2c[2], "vga");
 
 	dev_priv->i2c[3].dev = dev;
 	dev_priv->i2c[3].ddc_reg = GPIO_CRT2_DDC;
-	if ((ret = setup_i2c_bus(&dev_priv->i2c[3], "crt2")))
-		return ret;
+	setup_i2c_bus(&dev_priv->i2c[3], "crt2");
+
 	return 0;
 }
 
