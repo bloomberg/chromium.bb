@@ -21,12 +21,34 @@
 #  TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 #  PERFORMANCE OF THIS SOFTWARE.
 
+DOC2MAN = docbook2man
+
+SGML = fc-list.sgml
+
 bin_PROGRAMS=fc-list
 
 man_MANS=fc-list.1
 
 INCLUDES=$(FREETYPE_CFLAGS)
 
-EXTRA_DIST=$(man_MANS)
+EXTRA_DIST=$(SGML)
 
 fc_list_LDADD = ../src/libfontconfig.la
+
+
+if USEDOCBOOK
+
+.sgml.1:
+	$(RM) $@
+	$(DOC2MAN) $*.sgml
+	$(RM) manpage.refs manpage.links
+
+all-local: $(man_MANS)
+
+clean-local:
+	$(RM) $(man_MANS)
+
+else
+all-local:
+clean-local:
+endif

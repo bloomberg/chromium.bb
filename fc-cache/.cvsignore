@@ -3,3 +3,4 @@
 Makefile
 Makefile.in
 fc-cache
+fc-cache.1

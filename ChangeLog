@@ -1,3 +1,10 @@
+2003-10-09  Josselin Mouette  <joss@debian.org>
+
+        * fc-cache/fc-cache.sgml fc-cache/Makefile.am:
+        * fc-list/fc-list.sgml fc-list/Makefile.am:
+          Replace fc-cache and fc-list manpages with more detailed, SGML
+          versions.
+
 2003-09-23  Owen Taylor <otaylor@redhat.com>
 
 	* fontconfig/fontconfig.h  src/fcdefault.c (FcDefaultSubstitute)
