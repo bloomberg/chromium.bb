@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/gl.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -24,10 +24,10 @@
 # Galician (GL)
 0041-005a
 0061-007a
-00a1
-00ab
-00bb
-00bf
+#00a1
+#00ab
+#00bb
+#00bf
 00c1
 00c9
 00cd

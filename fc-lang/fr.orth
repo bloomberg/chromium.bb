@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/fr.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -24,8 +24,8 @@
 # French (FR)
 0041-005a
 0061-007a
-00ab
-00bb
+#00ab
+#00bb
 00c0
 00c2
 00c6
@@ -45,7 +45,7 @@
 00f9
 00fb
 00ff
-#0152-0153 	# Oe and oe
-#0178		# Y with diaresis
+0152-0153 	# Oe and oe
+0178		# Y with diaresis
 #2019-201a	# single quotes
 #2039-203a	# angle quotes

@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/de.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,8 +22,8 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # German (DE)
-00ab
-00bb
+#00ab
+#00bb
 0041-005a
 0061-007a
 00c4

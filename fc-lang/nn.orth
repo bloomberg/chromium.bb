@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/fc-lang/ab.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
+# $XFree86$
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -21,20 +21,23 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Abkhazia (AB)
+# Norwegian Nynorsk (NN)
+0041-005a
+0061-007a
 #00ab		# double angle quotes
 #00bb		# double angle quotes
-0401
-040f
-0410-044f
-0451
-045f
-049e-049f
-04a6-04a9
-04ac-04ad
-04b2-04b7
-04bc-04bf
-04d8
-04d9
-04e0-0re1
-#2039-203a	# angle quotes
+00c0
+00c4-00c6
+00c9-00ca
+00d2-00d4
+00d6
+00d8
+00dc
+00e0
+00e4-00e6
+00e9-00ea
+00f2-00f4
+00f6
+00f8
+00fc
+#2039-203a	# single quotes

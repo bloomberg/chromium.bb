@@ -306,8 +306,8 @@ built.
 *   dut/nld*	nl	Dutch						néerlandais
     non			Norse, Old					norrois, vieux
 *   nor		no	Norwegian					norvégien
-    nno		nn	Norwegian Nynorsk; Nynorsk, Norwegian		norvégien nynorsk; nynorsk, norvégien
-    nob		nb	Norwegian Bokmål; Bokmål, Norwegian		norvégien bokmål; bokmål, norvégien
+*   nno		nn	Norwegian Nynorsk; Nynorsk, Norwegian		norvégien nynorsk; nynorsk, norvégien
+*   nob		nb	Norwegian Bokmål; Bokmål, Norwegian		norvégien bokmål; bokmål, norvégien
     nso			Sotho, Northern					sotho du Nord
     nub			Nubian languages				nubiennes, langues
     nya		ny	Chichewa; Chewa; Nyanja				chichewa; chewa; nyanja

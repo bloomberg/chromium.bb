@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/kl.orth,v 1.2 2002/07/06 23:59:16 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -24,8 +24,8 @@
 # Greenlandic (KL)
 0041-005a
 0061-007a
-00ab
-00bb
+#00ab
+#00bb
 00c1-00c3
 00c5-00c6
 00ca
