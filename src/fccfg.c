@@ -483,11 +483,13 @@ FcConfigPromote (FcValue v, FcValue u)
 }
 
 FcBool
-FcConfigCompareValue (FcValue	m,
-		      FcOp	op,
-		      FcValue	v)
+FcConfigCompareValue (const FcValue	m_o,
+		      FcOp		op,
+		      const FcValue	v_o)
 {
-    FcBool    ret = FcFalse;
+    FcValue	m = m_o;
+    FcValue	v = v_o;
+    FcBool	ret = FcFalse;
     
     m = FcConfigPromote (m, v);
     v = FcConfigPromote (v, m);
