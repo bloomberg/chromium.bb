@@ -913,8 +913,9 @@ int DRM(release)( struct inode *inode, struct file *filp )
 #ifdef DRIVER_CTX_DTOR
 				DRIVER_CTX_DTOR(pos->handle);
 #endif
+#if __HAVE_CTX_BITMAP
 				DRM(ctxbitmap_free)( dev, pos->handle );
-
+#endif
 				list_del( &pos->head );
 				DRM(free)( pos, sizeof(*pos), DRM_MEM_CTXLIST );
 			}
