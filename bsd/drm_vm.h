@@ -1,5 +1,11 @@
+/*
+ * $FreeBSD: src/sys/dev/drm/drm_vm.h,v 1.3 2003/02/25 03:21:19 mux Exp $
+ */
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) && __FreeBSD_version >= 500102
+static int DRM(dma_mmap)(dev_t kdev, vm_offset_t offset, vm_offset_t *paddr, 
+    int prot)
+#elif defined(__FreeBSD__)
 static int DRM(dma_mmap)(dev_t kdev, vm_offset_t offset, int prot)
 #elif defined(__NetBSD__)
 static paddr_t DRM(dma_mmap)(dev_t kdev, vm_offset_t offset, int prot)
@@ -17,10 +23,18 @@ static paddr_t DRM(dma_mmap)(dev_t kdev, vm_offset_t offset, int prot)
 	physical = dma->pagelist[page];
 
 	DRM_DEBUG("0x%08lx (page %lu) => 0x%08lx\n", (long)offset, page, physical);
+#if defined(__FreeBSD__) && __FreeBSD_version >= 500102
+	*paddr = physical;
+	return 0;
+#else
 	return atop(physical);
+#endif
 }
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) && __FreeBSD_version >= 500102
+int DRM(mmap)(dev_t kdev, vm_offset_t offset, vm_offset_t *paddr, 
+    int prot)
+#elif defined(__FreeBSD__)
 int DRM(mmap)(dev_t kdev, vm_offset_t offset, int prot)
 #elif defined(__NetBSD__)
 paddr_t DRM(mmap)(dev_t kdev, off_t offset, int prot)
@@ -44,7 +58,11 @@ paddr_t DRM(mmap)(dev_t kdev, off_t offset, int prot)
 	if (dev->dma
 	    && offset >= 0
 	    && offset < ptoa(dev->dma->page_count))
+#if defined(__FreeBSD__) && __FreeBSD_version >= 500102
+		return DRM(dma_mmap)(kdev, offset, paddr, prot);
+#else
 		return DRM(dma_mmap)(kdev, offset, prot);
+#endif
 
 				/* A sequential search of a linked list is
 				   fine here because: 1) there will only be
@@ -73,10 +91,20 @@ paddr_t DRM(mmap)(dev_t kdev, off_t offset, int prot)
 	case _DRM_FRAME_BUFFER:
 	case _DRM_REGISTERS:
 	case _DRM_AGP:
+#if defined(__FreeBSD__) && __FreeBSD_version >= 500102
+		*paddr = offset;
+		return 0;
+#else
 		return atop(offset);
+#endif
 	case _DRM_SCATTER_GATHER:
 	case _DRM_SHM:
+#if defined(__FreeBSD__) && __FreeBSD_version >= 500102
+		*paddr = vtophys(offset);
+		return 0;
+#else
 		return atop(vtophys(offset));
+#endif
 	default:
 		return -1;	/* This should never happen. */
 	}
