@@ -53,6 +53,12 @@ typedef struct _FcSymbolic {
 #define FC_FONT_FILE_INVALID	((FcChar8 *) ".")
 #define FC_FONT_FILE_DIR	((FcChar8 *) ".dir")
 
+#ifdef _WIN32
+#define FC_SEARCH_PATH_SEPARATOR ';'
+#else
+#define FC_SEARCH_PATH_SEPARATOR ':'
+#endif
+
 #define FC_DBG_MATCH	1
 #define FC_DBG_MATCHV	2
 #define FC_DBG_EDIT	4
@@ -648,5 +654,8 @@ FcStrCmpIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2);
 
 FcBool
 FcStrUsesHome (const FcChar8 *s);
+
+FcChar8 *
+FcStrLastSlash (const FcChar8  *path);
 
 #endif /* _FC_INT_H_ */

@@ -24,6 +24,12 @@
 
 #include "fcint.h"
 
+#if defined (_WIN32) && defined (PIC)
+#define STRICT
+#include <windows.h>
+#undef STRICT
+#endif
+
 FcConfig    *_fcConfig;
 
 FcConfig *
@@ -1267,9 +1273,57 @@ FcConfigSubstitute (FcConfig	*config,
     return FcConfigSubstituteWithPat (config, p, 0, kind);
 }
 
+#if defined (_WIN32) && defined (PIC)
+
+static FcChar8 fontconfig_path[1000] = "";
+
+BOOL WINAPI
+DllMain (HINSTANCE hinstDLL,
+	 DWORD     fdwReason,
+	 LPVOID    lpvReserved)
+{
+  FcChar8 *p;
+
+  switch (fdwReason) {
+  case DLL_PROCESS_ATTACH:
+      if (!GetModuleFileName ((HMODULE) hinstDLL, fontconfig_path,
+			      sizeof (fontconfig_path)))
+	  break;
+
+      /* If the fontconfig DLL is in a "bin" or "lib" subfolder,
+       * assume it's a Unix-style installation tree, and use
+       * "etc/fonts" in there as FONTCONFIG_PATH. Otherwise use the
+       * folder where the DLL is as FONTCONFIG_PATH.
+       */
+      p = strrchr (fontconfig_path, '\\');
+      if (p)
+      {
+	  *p = '\0';
+	  p = strrchr (fontconfig_path, '\\');
+	  if (p && (FcStrCmpIgnoreCase (p + 1, "bin") == 0 ||
+		    FcStrCmpIgnoreCase (p + 1, "lib") == 0))
+	      *p = '\0';
+	  strcat (fontconfig_path, "\\etc\\fonts");
+      }
+      else
+          fontconfig_path[0] = '\0';
+      
+      break;
+  }
+
+  return TRUE;
+}
+
+#undef FONTCONFIG_PATH
+#define FONTCONFIG_PATH fontconfig_path
+
+#else /* !(_WIN32 && PIC) */
+
 #ifndef FONTCONFIG_PATH
 #define FONTCONFIG_PATH	"/etc/fonts"
 #endif
+
+#endif /* !(_WIN32 && PIC) */
 
 #ifndef FONTCONFIG_FILE
 #define FONTCONFIG_FILE	"fonts.conf"
@@ -1287,9 +1341,16 @@ FcConfigFileExists (const FcChar8 *dir, const FcChar8 *file)
 	return 0;
 
     strcpy ((char *) path, (const char *) dir);
-    /* make sure there's a single separating / */
+    /* make sure there's a single separator */
+#ifdef _WIN32
+    if ((!path[0] || (path[strlen((char *) path)-1] != '/' &&
+		      path[strlen((char *) path)-1] != '\\')) &&
+	 (file[0] != '/' && file[0] != '\\'))
+	strcat ((char *) path, "\\");
+#else
     if ((!path[0] || path[strlen((char *) path)-1] != '/') && file[0] != '/')
 	strcat ((char *) path, "/");
+#endif
     strcat ((char *) path, (char *) file);
 
     FcMemAlloc (FC_MEM_STRING, strlen ((char *) path) + 1);
@@ -1316,7 +1377,7 @@ FcConfigGetPath (void)
 	e = env;
 	npath++;
 	while (*e)
-	    if (*e++ == ':')
+	    if (*e++ == FC_SEARCH_PATH_SEPARATOR)
 		npath++;
     }
     path = calloc (npath, sizeof (FcChar8 *));
@@ -1329,7 +1390,7 @@ FcConfigGetPath (void)
 	e = env;
 	while (*e) 
 	{
-	    colon = (FcChar8 *) strchr ((char *) e, ':');
+	    colon = (FcChar8 *) strchr ((char *) e, FC_SEARCH_PATH_SEPARATOR);
 	    if (!colon)
 		colon = e + strlen ((char *) e);
 	    path[i] = malloc (colon - e + 1);
@@ -1376,7 +1437,16 @@ FcChar8 *
 FcConfigHome (void)
 {
     if (_FcConfigHomeEnabled)
-	return getenv ("HOME");
+    {
+        char *home = getenv ("HOME");
+
+#ifdef _WIN32
+	if (home == NULL)
+	    home = getenv ("USERPROFILE");
+#endif
+
+	return home;
+    }
     return 0;
 }
 
@@ -1400,6 +1470,14 @@ FcConfigFilename (const FcChar8 *url)
 	    url = (FcChar8 *) FONTCONFIG_FILE;
     }
     file = 0;
+
+#ifdef _WIN32
+    if (isalpha (*url) &&
+	url[1] == ':' &&
+	(url[2] == '/' || url[2] == '\\'))
+	goto absolute_path;
+#endif
+
     switch (*url) {
     case '~':
 	dir = FcConfigHome ();
@@ -1408,6 +1486,10 @@ FcConfigFilename (const FcChar8 *url)
 	else
 	    file = 0;
 	break;
+#ifdef _WIN32
+    case '\\':
+    absolute_path:
+#endif
     case '/':
 	file = FcConfigFileExists (0, url);
 	break;

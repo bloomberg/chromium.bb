@@ -39,10 +39,15 @@ dnl libtool versioning
 
 LT_CURRENT=1
 LT_REVISION=4
+AC_SUBST(LT_CURRENT)
+AC_SUBST(LT_REVISION)
 LT_AGE=0
 
 LT_VERSION_INFO="$LT_CURRENT:$LT_REVISION:$LT_AGE"
 AC_SUBST(LT_VERSION_INFO)
+
+LT_CURRENT_MINUS_AGE=`expr $LT_CURRENT - $LT_AGE`
+AC_SUBST(LT_CURRENT_MINUS_AGE)
 
 dnl ==========================================================================
 
@@ -51,8 +56,27 @@ AM_CONFIG_HEADER(config.h)
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
+AC_LIBTOOL_WIN32_DLL
 AM_PROG_LIBTOOL
 AC_PROG_MAKE_SET
+
+dnl ==========================================================================
+
+case "$host" in
+  *-*-mingw*)
+    os_win32=yes
+    ;;
+  *)
+    os_win32=no
+esac
+AM_CONDITIONAL(OS_WIN32, test "$os_win32" = "yes")
+
+if test "$os_win32" = "yes"; then
+  AC_CHECK_PROG(ms_librarian, lib.exe, yes, no)
+fi
+AM_CONDITIONAL(MS_LIB_AVAILABLE, test x$ms_librarian = xyes)
+
+dnl ==========================================================================
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -65,7 +89,7 @@ AC_TYPE_PID_T
 
 # Checks for library functions.
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([memmove memset strchr strrchr strtol getopt getopt_long])
+AC_CHECK_FUNCS([geteuid getuid link memmove memset mkstemp strchr strrchr strtol getopt getopt_long])
 
 #
 # Checks for FreeType
@@ -334,6 +358,7 @@ Makefile
 fontconfig/Makefile
 fc-lang/Makefile
 src/Makefile
+src/fontconfig.def
 fc-cache/Makefile
 fc-list/Makefile
 doc/Makefile
@@ -342,4 +367,5 @@ test/Makefile
 fontconfig.spec
 fontconfig.pc
 fonts.conf
+fontconfig-zip
 ])

@@ -29,7 +29,8 @@ EXTRA_DIST = \
 	fonts.dtd \
 	local.conf \
         fontconfig.spec.in \
-        fontconfig.spec
+        fontconfig.spec \
+	fontconfig-zip.in
 
 pkgconfigdir=$(libdir)/pkgconfig
 pkgconfig_DATA = fontconfig.pc

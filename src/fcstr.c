@@ -448,12 +448,31 @@ FcStrCopyFilename (const FcChar8 *s)
 }
 
 FcChar8 *
+FcStrLastSlash (const FcChar8  *path)
+{
+    FcChar8	    *slash;
+
+    slash = (FcChar8 *) strrchr ((const char *) path, '/');
+#ifdef _WIN32
+    {
+        FcChar8     *backslash;
+
+	backslash = (FcChar8 *) strrchr ((const char *) path, '\\');
+	if (!slash || (backslash && backslash > slash))
+	    slash = backslash;
+    }
+#endif
+
+    return slash;
+}
+  
+FcChar8 *
 FcStrDirname (const FcChar8 *file)
 {
     FcChar8 *slash;
     FcChar8 *dir;
 
-    slash = (FcChar8 *) strrchr ((char *) file, '/');
+    slash = FcStrLastSlash (file);
     if (!slash)
 	return FcStrCopy ((FcChar8 *) ".");
     dir = malloc ((slash - file) + 1);
@@ -470,7 +489,7 @@ FcStrBasename (const FcChar8 *file)
 {
     FcChar8 *slash;
 
-    slash = (FcChar8 *) strrchr ((char *) file, '/');
+    slash = FcStrLastSlash (file);
     if (!slash)
 	return FcStrCopy (file);
     return FcStrCopy (slash + 1);

@@ -1,3 +1,35 @@
+2003-03-22  Tor Lillqvist  <tml@iki.fi>
+
+	Changes for Windows:
+	  
+	+ On Windows with gcc (a.k.a. mingw) build as a DLL.
+	  
+	+ We don't want to hardcode the fonts.conf file location in the
+	  DLL, so we look up the DLL location at run-time in a DllMain()
+	  function. The fonts.conf location is deduced from that.
+
+	+ The colon can't be used as path separator on Windows,
+	  semicolon is used instead. File path components can be separated
+	  with either slash or backslash. Absolute paths can also begin
+	  with a drive letter.
+
+	+ Add internal function FcStrLastSlash that strrchr's the last
+	  slash, or backslash on Windows.
+	
+	+ There is no link() on Windows. For atomicity checks, mkdir a
+	  lock directory instead.
+	  
+	+ In addition to HOME, also look for USERPROFILE.
+
+	+ Recognize the special font directory token WINDOWSFONTDIR, to
+	  use the system's font directory.
+	  
+	+ Remove the fontconfig-def.cpp that was obsolete. Add
+	  fontconfig.def(.in), without internal functions.
+	  
+	+ Add a fontconfig-zip(.in) script, used to build a binary
+	  distribution.
+
 Fri Mar  7 07:55:00 EST 2003    Mike A. Harris <mharris@redhat.com>
 	+ RPM specfile cleanups for 2.1.92: Removed man1/* and added man5/*
 	  to main package and man3/* to devel package

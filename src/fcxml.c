@@ -35,6 +35,12 @@
 #include <expat.h>
 #endif
 
+#ifdef _WIN32
+#define STRICT
+#include <windows.h>
+#undef STRICT
+#endif
+
 FcTest *
 FcTestCreate (FcMatchKind   kind, 
 	      FcQual	    qual,
@@ -1600,6 +1606,30 @@ FcEndElement(void *userData, const XML_Char *name)
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	    break;
 	}
+#ifdef _WIN32
+	if (strcmp (data, "WINDOWSFONTDIR") == 0)
+	{
+	    int rc;
+	    FcStrFree (data);
+	    data = malloc (1000);
+	    if (!data)
+	    {
+		FcConfigMessage (parse, FcSevereError, "out of memory");
+		break;
+	    }
+	    FcMemAlloc (FC_MEM_STRING, 1000);
+	    rc = GetWindowsDirectory (data, 800);
+	    if (rc == 0 || rc > 800)
+	    {
+		FcConfigMessage (parse, FcSevereError, "GetWindowsDirectory failed");
+		FcStrFree (data);
+		break;
+	    }
+	    if (data [strlen (data) - 1] != '\\')
+		strcat (data, "\\");
+	    strcat (data, "fonts");
+	}
+#endif
 	if (!FcStrUsesHome (data) || FcConfigHome ())
 	{
 	    if (!FcConfigAddDir (parse->config, data))

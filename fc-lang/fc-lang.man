@@ -24,18 +24,18 @@
 .\"
 .TH FC-LANG 1 __vendorversion__
 .SH NAME
-fc-lang, fclang.c \- create an database of language orthographies
+fc-lang, fclang.h \- create an database of language orthographies
 .SH SYNOPSIS
 .B "fc-lang"
 .RI [ language-coverage
 \|.\|.\|. ]
 .SH DESCRIPTION
 .I Fc-lang
-builds the fclang.c file used in the fontconfig library to automatically
+builds the fclang.h file used in the fontconfig library to automatically
 determine language coverage for fonts which don't contain this information.
 .SH FILES
 .TP 15
-.B fclang.tmpl.c
+.B fclang.tmpl.h
 The template file in which the tables are inserted
 .SH "SEE ALSO"
 fontconfig(3)

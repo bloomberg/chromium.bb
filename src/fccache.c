@@ -188,9 +188,19 @@ FcCacheWritePath (FILE *f, const FcChar8 *dir, const FcChar8 *file)
     if (dir)
 	if (!FcCacheWriteChars (f, dir))
 	    return FcFalse;
+#ifdef _WIN32
+    if (dir &&
+	dir[strlen((const char *) dir) - 1] != '/' &&
+	dir[strlen((const char *) dir) - 1] != '\\')
+    {
+	if (!FcCacheWriteChars (f, "\\"))
+	    return FcFalse;
+    }
+#else
     if (dir && dir[strlen((const char *) dir) - 1] != '/')
 	if (PUTC ('/', f) == EOF)
 	    return FcFalse;
+#endif
     if (!FcCacheWriteChars (f, file))
 	return FcFalse;
     if (PUTC ('"', f) == EOF)
@@ -258,8 +268,13 @@ FcCacheFontSetAdd (FcFontSet	    *set,
 	    return FcFalse;
     }
     strncpy ((char *) path, (const char *) dir, dir_len);
+#ifdef _WIN32
+    if (dir[dir_len - 1] != '/' && dir[dir_len - 1] != '\\' )
+	path[dir_len++] = '\\';
+#else
     if (dir[dir_len - 1] != '/')
 	path[dir_len++] = '/';
+#endif
     strcpy ((char *) path + dir_len, (const char *) file);
     if (!FcStrCmp (name, FC_FONT_FILE_DIR))
     {
@@ -361,7 +376,7 @@ FcFilePathInfoGet (const FcChar8    *path)
     FcFilePathInfo  i;
     FcChar8	    *slash;
 
-    slash = (FcChar8 *) strrchr ((const char *) path, '/');
+    slash = FcStrLastSlash (path);
     if (slash)
     {
         i.dir = path;
@@ -840,9 +855,11 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     if (cache->broken)
 	return FcFalse;
 
+#if defined (HAVE_GETUID) && defined (HAVE_GETEUID)
     /* Set-UID programs can't safely update the cache */
     if (getuid () != geteuid ())
 	return FcFalse;
+#endif
     
     atomic = FcAtomicCreate (cache_file);
     if (!atomic)
@@ -1033,7 +1050,7 @@ FcFileBaseName (const FcChar8 *cache, const FcChar8 *file)
 {
     const FcChar8   *cache_slash;
 
-    cache_slash = (const FcChar8 *) strrchr ((const char *) cache, '/');
+    cache_slash = FcStrLastSlash (cache);
     if (cache_slash && !strncmp ((const char *) cache, (const char *) file,
 				 (cache_slash + 1) - cache))
 	return file + ((cache_slash + 1) - cache);
