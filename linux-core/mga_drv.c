@@ -122,47 +122,29 @@ static drm_ioctl_desc_t	      mga_ioctls[] = {
 #define MGA_IOCTL_COUNT DRM_ARRAY_SIZE(mga_ioctls)
 
 #ifdef MODULE
-int			      init_module(void);
-void			      cleanup_module(void);
 static char		      *mga = NULL;
+#endif
 
-MODULE_AUTHOR("Precision Insight, Inc., Cedar Park, Texas.");
+MODULE_AUTHOR("VA Linux Systems, Inc.");
 MODULE_DESCRIPTION("Matrox g200/g400");
 MODULE_PARM(mga, "s");
 
-/* init_module is called when insmod is used to load the module */
-
-int init_module(void)
-{
-	DRM_DEBUG("doing mga_init()\n");
-	return mga_init();
-}
-
-/* cleanup_module is called when rmmod is used to unload the module */
-
-void cleanup_module(void)
-{
-	mga_cleanup();
-}
-#endif
+module_init(mga_init);
+module_exit(mga_cleanup);
 
 #ifndef MODULE
-/* mga_setup is called by the kernel to parse command-line options passed
+/* mga_options is called by the kernel to parse command-line options passed
  * via the boot-loader (e.g., LILO).  It calls the insmod option routine,
  * drm_parse_drm.
- *
- * This is not currently supported, since it requires changes to
- * linux/init/main.c. */
- 
+ */
 
-void __init mga_setup(char *str, int *ints)
+static int __init mga_options(char *str, int *ints)
 {
-	if (ints[0] != 0) {
-		DRM_ERROR("Illegal command line format, ignored\n");
-		return;
-	}
 	drm_parse_options(str);
+	return 1;
 }
+
+__setup("mga=", mga_options);
 #endif
 
 static int mga_setup(drm_device_t *dev)

@@ -123,47 +123,29 @@ static drm_ioctl_desc_t	      i810_ioctls[] = {
 #define I810_IOCTL_COUNT DRM_ARRAY_SIZE(i810_ioctls)
 
 #ifdef MODULE
-int			      init_module(void);
-void			      cleanup_module(void);
 static char		      *i810 = NULL;
+#endif
 
-MODULE_AUTHOR("Precision Insight, Inc., Cedar Park, Texas.");
+MODULE_AUTHOR("VA Linux Systems, Inc.");
 MODULE_DESCRIPTION("Intel I810");
 MODULE_PARM(i810, "s");
 
-/* init_module is called when insmod is used to load the module */
-
-int init_module(void)
-{
-	DRM_DEBUG("doing i810_init()\n");
-	return i810_init();
-}
-
-/* cleanup_module is called when rmmod is used to unload the module */
-
-void cleanup_module(void)
-{
-	i810_cleanup();
-}
-#endif
+module_init(i810_init);
+module_exit(i810_cleanup);
 
 #ifndef MODULE
-/* i810_setup is called by the kernel to parse command-line options passed
- * via the boot-loader (e.g., LILO).  It calls the insmod option routine,
- * drm_parse_drm.
- *
- * This is not currently supported, since it requires changes to
- * linux/init/main.c. */
- 
+/* i810_options is called by the kernel to parse command-line options
+ * passed via the boot-loader (e.g., LILO).  It calls the insmod option
+ * routine, drm_parse_drm.
+ */
 
-void __init i810_setup(char *str, int *ints)
+static int __init i810_options(char *str, int *ints)
 {
-	if (ints[0] != 0) {
-		DRM_ERROR("Illegal command line format, ignored\n");
-		return;
-	}
 	drm_parse_options(str);
+	return 1;
 }
+
+__setup("i810=", i810_options);
 #endif
 
 static int i810_setup(drm_device_t *dev)

@@ -118,46 +118,29 @@ static drm_ioctl_desc_t	      r128_ioctls[] = {
 #define R128_IOCTL_COUNT DRM_ARRAY_SIZE(r128_ioctls)
 
 #ifdef MODULE
-int			      init_module(void);
-void			      cleanup_module(void);
 static char		      *r128 = NULL;
+#endif
 
-MODULE_AUTHOR("Precision Insight, Inc., Cedar Park, Texas.");
+MODULE_AUTHOR("VA Linux Systems, Inc.");
 MODULE_DESCRIPTION("r128");
 MODULE_PARM(r128, "s");
 
-/* init_module is called when insmod is used to load the module */
-
-int init_module(void)
-{
-	return r128_init();
-}
-
-/* cleanup_module is called when rmmod is used to unload the module */
-
-void cleanup_module(void)
-{
-	r128_cleanup();
-}
-#endif
+module_init(r128_init);
+module_exit(r128_cleanup);
 
 #ifndef MODULE
-/* r128_setup is called by the kernel to parse command-line options passed
- * via the boot-loader (e.g., LILO).  It calls the insmod option routine,
- * drm_parse_drm.
- *
- * This is not currently supported, since it requires changes to
- * linux/init/main.c. */
+/* r128_options is called by the kernel to parse command-line options
+ * passed via the boot-loader (e.g., LILO).  It calls the insmod option
+ * routine, drm_parse_drm.
+ */
 
-
-void __init r128_setup(char *str, int *ints)
+static int __init r128_options(char *str, int *ints)
 {
-	if (ints[0] != 0) {
-		DRM_ERROR("Illegal command line format, ignored\n");
-		return;
-	}
 	drm_parse_options(str);
+	return 1;
 }
+
+__setup("r128=", r128_options);
 #endif
 
 static int r128_setup(drm_device_t *dev)

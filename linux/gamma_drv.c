@@ -110,49 +110,34 @@ static drm_ioctl_desc_t	      gamma_ioctls[] = {
 #define GAMMA_IOCTL_COUNT DRM_ARRAY_SIZE(gamma_ioctls)
 
 #ifdef MODULE
-int			      init_module(void);
-void			      cleanup_module(void);
 static char		      *gamma = NULL;
 static int 		      devices = 0;
+#endif
 
-MODULE_AUTHOR("Precision Insight, Inc., Cedar Park, Texas.");
+MODULE_AUTHOR("VA Linux Systems, Inc.");
 MODULE_DESCRIPTION("3dlabs GMX 2000");
 MODULE_PARM(gamma, "s");
 MODULE_PARM(devices, "i");
-MODULE_PARM_DESC(devices, "devices=x, where x is the number of MX chips on your card\n");
+MODULE_PARM_DESC(devices,
+		 "devices=x, where x is the number of MX chips on card\n");
 
-/* init_module is called when insmod is used to load the module */
-
-int init_module(void)
-{
-	return gamma_init();
-}
-
-/* cleanup_module is called when rmmod is used to unload the module */
-
-void cleanup_module(void)
-{
-	gamma_cleanup();
-}
-#endif
+module_init(gamma_init);
+module_exit(gamma_cleanup);
 
 #ifndef MODULE
-/* gamma_setup is called by the kernel to parse command-line options passed
- * via the boot-loader (e.g., LILO).  It calls the insmod option routine,
- * drm_parse_options.
- *
- * This is not currently supported, since it requires changes to
- * linux/init/main.c. */
+/* gamma_options is called by the kernel to parse command-line options
+ * passed via the boot-loader (e.g., LILO).  It calls the insmod option
+ * routine, drm_parse_options.
+ */
  
 
-void __init gamma_setup(char *str, int *ints)
+static int __init gamma_options(char *str, int *ints)
 {
-	if (ints[0] != 0) {
-		DRM_ERROR("Illegal command line format, ignored\n");
-		return;
-	}
 	drm_parse_options(str);
+	return 1;
 }
+
+__setup("gamma=", gamma_options);
 #endif
 
 static int gamma_setup(drm_device_t *dev)

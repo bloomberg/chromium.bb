@@ -129,6 +129,14 @@ typedef struct wait_queue *wait_queue_head_t;
 #define NOPAGE_OOM 0
 #endif
 
+				/* module_init/module_exit added in 2.3.13 */
+#ifndef module_init
+#define module_init(x)  int init_module(void) { return x(); }
+#endif
+#ifndef module_exit
+#define module_exit(x)  void cleanup_module(void) { x(); }
+#endif
+
 				/* Generic cmpxchg added in 2.3.x */
 #ifndef __HAVE_ARCH_CMPXCHG
 				/* Include this here so that driver can be
