@@ -47,7 +47,8 @@ extern int optind, opterr, optopt;
 #endif
 #endif
 
-void usage (char *program)
+static void
+usage (char *program)
 {
     fprintf (stderr, "usage: %s [-vV?] [--verbose] [--version] [--help] [dirs]\n",
 	     program);
@@ -65,7 +66,7 @@ main (int argc, char **argv)
 {
     int		ret = 0;
     FcFontSet	*set;
-    char	**dirs;
+    FcChar8	**dirs;
     int		verbose = 0;
     int		i;
 #if HAVE_GETOPT_LONG || HAVE_GETOPT
@@ -100,7 +101,7 @@ main (int argc, char **argv)
 	return 1;
     }
     if (argv[i])
-	dirs = argv+i;
+	dirs = (FcChar8 **) (argv+i);
     else
 	dirs = FcConfigGetDirs (0);
     /*
