@@ -90,7 +90,7 @@
 	i830_reclaim_buffers( filp );					\
 } while (0)
 
-#define DRIVER_PRETAKEDOWN() do {					\
+#define DRIVER_PRETAKEDOWN( dev ) do {					\
 	i830_dma_cleanup( dev );					\
 } while (0)
 

@@ -146,7 +146,7 @@ do {									\
 /* When the last client dies, shut down the CP and free dev->dev_priv.
  */
 /* #define __HAVE_RELEASE 1 */
-#define DRIVER_PRETAKEDOWN()			\
+#define DRIVER_PRETAKEDOWN( dev )		\
 do {						\
     radeon_do_release( dev );			\
 } while (0)

@@ -78,16 +78,16 @@
 #endif
 
 #ifndef DRIVER_PREINIT
-#define DRIVER_PREINIT()
+#define DRIVER_PREINIT(dev) 0
 #endif
 #ifndef DRIVER_POSTINIT
-#define DRIVER_POSTINIT()
+#define DRIVER_POSTINIT(dev) 0
 #endif
 #ifndef DRIVER_PRERELEASE
 #define DRIVER_PRERELEASE()
 #endif
 #ifndef DRIVER_PRETAKEDOWN
-#define DRIVER_PRETAKEDOWN()
+#define DRIVER_PRETAKEDOWN(dev)
 #endif
 #ifndef DRIVER_POSTCLEANUP
 #define DRIVER_POSTCLEANUP()
@@ -512,7 +512,7 @@ static int DRM(takedown)( drm_device_t *dev )
 
 	DRM_DEBUG( "\n" );
 
-	DRIVER_PRETAKEDOWN();
+	DRIVER_PRETAKEDOWN(dev);
 #if __HAVE_IRQ
 	if (dev->irq_enabled)
 		DRM(irq_uninstall)( dev );
@@ -627,7 +627,7 @@ static int DRM(init)( device_t nbdev )
 	int retcode;
 #endif
 	DRM_DEBUG( "\n" );
-	DRIVER_PREINIT();
+	DRIVER_PREINIT(dev);
 
 #ifdef __FreeBSD__
 	unit = device_get_unit(nbdev);
@@ -705,7 +705,7 @@ static int DRM(init)( device_t nbdev )
 	  	DRIVER_DATE,
 	  	unit );
 
-	DRIVER_POSTINIT();
+	DRIVER_POSTINIT(dev);
 
 	return 0;
 

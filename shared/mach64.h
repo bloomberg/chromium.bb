@@ -73,7 +73,7 @@
 
 /* Driver customization:
  */
-#define DRIVER_PRETAKEDOWN() do {					\
+#define DRIVER_PRETAKEDOWN(dev) do {					\
 	mach64_do_cleanup_dma( dev );					\
 } while (0)
 

@@ -90,7 +90,7 @@
 	}								\
 } while (0)
 
-#define DRIVER_PRETAKEDOWN() do {					\
+#define DRIVER_PRETAKEDOWN(dev) do {					\
 	r128_do_cleanup_cce( dev );					\
 } while (0)
 
