@@ -71,7 +71,7 @@ AC_CHECK_FUNCS([memmove memset strchr strrchr strtol getopt getopt_long])
 # Checks for FreeType
 #
 
-AC_ARG_WITH(freetype_config, [ --with-freetype-config=PROG Use FreeType configuration program PROG], freetype_config=$withval, freetype_config=yes)
+AC_ARG_WITH(freetype_config, [  --with-freetype-config=PROG   Use FreeType configuration program PROG], freetype_config=$withval, freetype_config=yes)
 
 if test "$freetype_config" = "yes"; then 
 	AC_PATH_PROG(ft_config,freetype-config,no)
@@ -215,44 +215,60 @@ esac
 AC_SUBST(FC_DEFAULT_FONTS)
 
 #
-# Add X fonts if available
+# Add more fonts if available.  By default, add only the directories
+# with outline fonts; those with bitmaps can be added as desired in
+# local.conf or ~/.fonts.conf
 #
-AC_ARG_WITH(x_fonts,           [  --with-x-fonts=DIR            Find X fonts in DIR ], x_fonts="$withval", x_fonts=yes)
+AC_ARG_WITH(add_fonts,        [  --with-add-fonts=DIR1,DIR2,...Find additional fonts in DIR1,DIR2,... ], add_fonts="$withval", add_fonts=yes)
 
-case "$x_fonts" in
+case "$add_fonts" in
 yes)
-	FC_X_FONTS=""
+	FC_ADD_FONTS=""
 	for dir in /usr/X11R6/lib/X11 /usr/X11/lib/X11 /usr/lib/X11; do
-		case x"$FC_X_FONTS" in
+		case x"$FC_ADD_FONTS" in
 		x)
 			if test -d "$dir/fonts"; then
-				FC_X_FONTS="$dir/fonts"
+				for sub in "$dir"/fonts/*; do
+					if ls "$sub" | grep -q -i '\.pf\|\.tt\|.ot'; then
+						case x$FC_ADD_FONTS in
+						x)
+							FC_ADD_FONTS="$sub"
+							;;
+						*)
+							FC_ADD_FONTS="$FC_ADD_FONTS,$sub"
+							;;
+						esac
+					fi
+				done
 			fi
 			;;
 		esac
 	done
-	AC_DEFINE_UNQUOTED(FC_X_FONTS,"$x_fonts",[X font directory])
+	AC_DEFINE_UNQUOTED(FC_ADD_FONTS,"$add_fonts",[Additional font directories])
 	;;
 no)
-	FC_X_FONTS=""
+	FC_ADD_FONTS=""
 	;;
 *)
-	FC_X_FONTS="$x_fonts"
-	AC_DEFINE_UNQUOTED(FC_X_FONTS,"$x_fonts",[X font directory])
+	FC_ADD_FONTS="$add_fonts"
+	AC_DEFINE_UNQUOTED(FC_ADD_FONTS,"$add_fonts",[Additional font directories])
 	;;
 esac
 
-AC_SUBST(FC_X_FONTS)
+AC_SUBST(FC_ADD_FONTS)
 
 FC_FONTPATH=""
 
-case "$FC_X_FONTS" in
+case "$FC_ADD_FONTS" in
 "")
 	;;
 *)
-	FC_FONTPATH="<dir>$FC_X_FONTS</dir>"
+	FC_FONTPATH=`echo $FC_ADD_FONTS | 
+			sed -e 's/^/<dir>/' -e 's/$/<\/dir>/' -e 's/,/<\/dir> <dir>/g'`
 	;;
 esac
+
+echo FC_FONTPATH is "$FC_FONTPATH"
 
 AC_SUBST(FC_FONTPATH)
 
@@ -291,7 +307,7 @@ AC_SUBST(ORTH_FILES)
 
 AC_CHECK_PROG(HASDOCBOOK, docbook2html, yes, no)
 
-AC_ARG_ENABLE(docs,           [  --disable-docs               Don't build and install documentation],,enable_docs=yes)
+AC_ARG_ENABLE(docs,           [  --disable-docs                Don't build and install documentation],,enable_docs=yes)
 
 if test "x$enable_docs" = xyes; then
   if test "x$HASDOCBOOK" != xyes; then
@@ -305,7 +321,7 @@ AM_CONDITIONAL(ENABLE_DOCS, test "x$enable_docs" = xyes)
 # Figure out where to install documentation
 #
 
-AC_ARG_WITH(docdir,           [  --with-docdir=DIR            Use DIR to store documentation files (default ${datadir}/doc/fontconfig)], confdir="$withval")
+AC_ARG_WITH(docdir,           [  --with-docdir=DIR             Use DIR to store documentation files (default ${datadir}/doc/fontconfig)], confdir="$withval")
 
 if test "x$with_docdir" = "x" ; then
   DOCDIR='${datadir}/doc/fontconfig'
