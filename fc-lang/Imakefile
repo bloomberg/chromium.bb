@@ -1,0 +1,44 @@
+#ifdef UseInstalled
+/* building outside the tree, use private defines */
+#include "../local.def"
+#endif
+
+INCLUDES=$(FREETYPE2INCLUDES) $(LIBXML2INCLUDES) -I.. -I../src
+
+LOCAL_LIBRARIES=FontconfigClientLibs
+        DEPLIBS=FontconfigClientDepLibs
+
+SRCS=fc-lang.c
+OBJS=fc-lang.o
+
+TARG=fclang.c
+TMPL=fclang.tmpl.c
+
+#
+# Basic ISO 639-1 two letter language names
+ORTH1=ab.orth ar.orth az.orth ba.orth be.orth bg.orth br.orth ca.orth co.orth\
+      cs.orth da.orth de.orth el.orth en.orth eo.orth es.orth et.orth eu.orth\
+      fi.orth fo.orth fr.orth fy.orth ga.orth gd.orth gl.orth he.orth hr.orth\
+      hu.orth hy.orth is.orth it.orth ja.orth ka.orth kk.orth kl.orth ko.orth\
+      la.orth lt.orth lv.orth mk.orth mo.orth mt.orth nl.orth no.orth oc.orth\
+      pl.orth pt.orth rm.orth ro.orth ru.orth sh.orth sk.orth sl.orth sq.orth\
+      sr.orth sv.orth th.orth tr.orth uk.orth vo.orth yi.orth zh_cn.orth\
+      zh_tw.orth
+
+#
+# ISO 639-2 adds many more three letter language names
+#
+ORTH2=chr.orth
+
+ORTH=$(ORTH1) $(ORTH2)
+
+all:: $(TARG)
+
+clean::
+	$(RM) $(TARG)
+	
+$(TARG): fc-lang $(ORTH) $(TMPL)
+	./fc-lang $(ORTH) < $(TMPL) > $(TARG)
+
+ComplexProgramTarget(fc-lang)
+LinkBuildBinary(ProgramTargetName(fc-lang))
