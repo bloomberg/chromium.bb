@@ -143,6 +143,12 @@ int drm_takedown(drm_device_t * dev)
 	if (dev->driver->pretakedown)
 		dev->driver->pretakedown(dev);
 
+	if (dev->unique) {
+		drm_free(dev->unique, strlen(dev->unique) + 1, DRM_MEM_DRIVER);
+		dev->unique=NULL;
+		dev->unique_len=0;
+	}
+
 	if (dev->irq_enabled)
 		drm_irq_uninstall(dev);
 
