@@ -1,3 +1,10 @@
+2005-03-08  Keith Packard  <keithp@keithp.com>
+
+	* README:
+	* configure.in:
+	* fontconfig/fontconfig.h:
+	Update for 2.3.1
+
 2005-03-05  Keith Packard  <keithp@keithp.com>
 
 	* src/fcfreetype.c: (addtag), (FcFontCapabilities):

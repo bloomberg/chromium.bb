@@ -1,10 +1,18 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.3.0
-		         2005-3-1
+		      Version 2.3.1
+		         2005-3-8
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.3.1
+
+Be more careful about broken GSUB/GPOS tables (Manish Singh)
+Include debian packaging stuff in CVS (Josselin Mouette)
+Add more conf.d examples (Keith Packard)
+Make manuals build again (Keith Packard)
+Johap -> Johab (Funda Wang)
 
 2.3.0
 
