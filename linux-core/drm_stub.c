@@ -129,7 +129,7 @@ static int drm_hotplug (struct class_device *dev, char **envp, int num_envp,
 		return -ENOMEM;
 	++length;
 	scratch += length;
-	
+#if 0	
 	ddev = pci_get_drvdata(pdev);
 	if (ddev) {
 		envp[i++] = scratch;
@@ -138,6 +138,7 @@ static int drm_hotplug (struct class_device *dev, char **envp, int num_envp,
 		if ((buffer_size - length <= 0) || (i >= num_envp))
 			return -ENOMEM;
 	}
+#endif	
 	envp[i] = 0;
 	
 	return 0;

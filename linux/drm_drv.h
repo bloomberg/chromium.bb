@@ -976,7 +976,7 @@ int DRM(release)( struct inode *inode, struct file *filp )
 			if ( pos->tag == priv &&
 			     pos->handle != DRM_KERNEL_CONTEXT ) {
 #ifdef DRIVER_CTX_DTOR
-				DRIVER_CTX_DTOR(pos->handle);
+				DRIVER_CTX_DTOR( dev, pos->handle);
 #endif
 #if __HAVE_CTX_BITMAP
 				DRM(ctxbitmap_free)( dev, pos->handle );
