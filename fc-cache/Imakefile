@@ -1,3 +1,5 @@
+XCOMM $XFree86$
+
 #ifdef UseInstalled
 /* building outside the tree, use private defines */
 #include "../local.def"
