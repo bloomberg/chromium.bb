@@ -235,6 +235,16 @@ static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 }
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+static inline unsigned iminor(struct inode *inode)
+{
+        return MINOR(inode->i_rdev);
+}
+
+#define old_encode_dev(x) (x)
+
+#endif
+
 #ifndef REMAP_PAGE_RANGE_5_ARGS
 #define DRM_RPR_ARG(vma)
 #else
