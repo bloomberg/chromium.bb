@@ -167,6 +167,9 @@ all::;@echo === KERNEL HEADERS IN $(TREE)
 all::;@echo === SMP=${SMP} MODULES=${MODULES} MODVERSIONS=${MODVERSIONS} AGP=${AGP}
 all::;@echo === kill_fasync has $(PARAMS) parameters
 all::;@echo === Compiling for machine $(MACHINE)
+all::;@echo === WARNING
+all::;@echo === WARNING 2.4.0 kernels before test11 DONT WORK
+all::;@echo === WARNING
 
 ifeq ($(MODULES),0)
 all::;@echo
