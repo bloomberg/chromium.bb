@@ -767,12 +767,23 @@ FcFreeTypeQuery (const FcChar8	*file,
 		    weight = ps_weights[w].value;
 		    break;
 		}
+	    if (FcDebug () & FC_DBG_SCANV)
+	    {
+		if (w == NUM_PS_WEIGHTS)
+		    printf ("\tunknown PS weight name %s\n", psfontinfo.weight);
+	    }
 	}
      
-        if (psfontinfo.italic_angle < 0) 
+#if 0
+	/* 
+	 * Don't bother with italic_angle; FreeType already extracts that
+	 * information for us and sticks it into style_flags
+	 */
+        if (psfontinfo.italic_angle)
             slant = FC_SLANT_ITALIC; 
-        else if (psfontinfo.italic_angle >= 0) 
+        else
             slant = FC_SLANT_ROMAN; 
+#endif
 
         if(!foundry)
             foundry = FcNoticeFoundry(psfontinfo.notice);
