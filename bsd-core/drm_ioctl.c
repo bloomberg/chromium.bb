@@ -64,40 +64,53 @@ int drm_setunique(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	drm_unique_t u;
 	int domain, bus, slot, func, ret;
-
-	if (dev->unique_len || dev->unique)
-		return DRM_ERR(EBUSY);
+	char *busid;
 
 	DRM_COPY_FROM_USER_IOCTL( u, (drm_unique_t *)data, sizeof(u) );
 
+	/* Check and copy in the submitted Bus ID */
 	if (!u.unique_len || u.unique_len > 1024)
 		return DRM_ERR(EINVAL);
 
-	dev->unique_len = u.unique_len;
-	dev->unique = malloc(u.unique_len + 1, M_DRM, M_NOWAIT);
-
-	if (dev->unique == NULL)
+	busid = malloc(u.unique_len + 1, M_DRM, M_WAITOK);
+	if (busid == NULL)
 		return DRM_ERR(ENOMEM);
 
-	if (DRM_COPY_FROM_USER(dev->unique, u.unique, dev->unique_len))
+	if (DRM_COPY_FROM_USER(busid, u.unique, u.unique_len)) {
+		free(busid, M_DRM);
 		return DRM_ERR(EFAULT);
-
-	dev->unique[dev->unique_len] = '\0';
+	}
+	busid[u.unique_len] = '\0';
 
 	/* Return error if the busid submitted doesn't match the device's actual
 	 * busid.
 	 */
-	ret = sscanf(dev->unique, "PCI:%d:%d:%d", &bus, &slot, &func);
-	if (ret != 3)
+	ret = sscanf(busid, "PCI:%d:%d:%d", &bus, &slot, &func);
+	if (ret != 3) {
+		free(busid, M_DRM);
 		return DRM_ERR(EINVAL);
+	}
 	domain = bus >> 8;
 	bus &= 0xff;
 	
 	if ((domain != dev->pci_domain) ||
 	    (bus != dev->pci_bus) ||
 	    (slot != dev->pci_slot) ||
-	    (func != dev->pci_func))
+	    (func != dev->pci_func)) {
+		free(busid, M_DRM);
 		return DRM_ERR(EINVAL);
+	}
+
+	/* Actually set the device's busid now. */
+	DRM_LOCK();
+	if (dev->unique_len || dev->unique) {
+		DRM_UNLOCK();
+		return DRM_ERR(EBUSY);
+	}
+
+	dev->unique_len = u.unique_len;
+	dev->unique = busid;
+	DRM_UNLOCK();
 
 	return 0;
 }
@@ -107,16 +120,24 @@ static int
 drm_set_busid(drm_device_t *dev)
 {
 
-	if (dev->unique != NULL)
+	DRM_LOCK();
+
+	if (dev->unique != NULL) {
+		DRM_UNLOCK();
 		return EBUSY;
+	}
 
 	dev->unique_len = 20;
 	dev->unique = malloc(dev->unique_len + 1, M_DRM, M_NOWAIT);
-	if (dev->unique == NULL)
+	if (dev->unique == NULL) {
+		DRM_UNLOCK();
 		return ENOMEM;
+	}
 
 	snprintf(dev->unique, dev->unique_len, "pci:%04x:%02x:%02x.%1x",
 	    dev->pci_domain, dev->pci_bus, dev->pci_slot, dev->pci_func);
+
+	DRM_UNLOCK();
 
 	return 0;
 }
@@ -264,9 +285,6 @@ int drm_setversion(DRM_IOCTL_ARGS)
 		if (sv.drm_dd_major != dev->driver_major ||
 		    sv.drm_dd_minor < 0 || sv.drm_dd_minor > dev->driver_minor)
 			return EINVAL;
-#ifdef DRIVER_SETVERSION
-		DRIVER_SETVERSION(dev, &sv);
-#endif
 	}
 	return 0;
 }

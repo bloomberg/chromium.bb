@@ -197,6 +197,7 @@ MALLOC_DECLARE(M_DRM);
 #define DRM_SPINUNINIT(l)
 #define DRM_SPINLOCK(l)	
 #define DRM_SPINUNLOCK(u)
+#define DRM_SPINLOCK_ASSERT(l)
 #define DRM_CURRENTPID		curproc->p_pid
 #define DRM_LOCK()
 #define DRM_UNLOCK()
@@ -353,9 +354,7 @@ do {								\
 		DRM_ERROR("filp doesn't match curproc\n");	\
 		return EINVAL;					\
 	}							\
-	DRM_LOCK();						\
 	_priv = drm_find_file_by_proc(dev, DRM_CURPROC);	\
-	DRM_UNLOCK();						\
 	if (_priv == NULL) {					\
 		DRM_ERROR("can't find authenticator\n");	\
 		return EINVAL;					\
@@ -375,6 +374,7 @@ do {									\
 #define DRM_GETSAREA()					\
 do {								\
 	drm_map_list_entry_t *listentry;			\
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);			\
 	TAILQ_FOREACH(listentry, dev->maplist, link) {		\
 		drm_local_map_t *map = listentry->map;		\
 		if (map->type == _DRM_SHM &&			\
@@ -388,11 +388,13 @@ do {								\
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
 #define DRM_WAIT_ON( ret, queue, timeout, condition )		\
 for ( ret = 0 ; !ret && !(condition) ; ) {			\
+	DRM_UNLOCK();						\
 	mtx_lock(&dev->irq_lock);				\
 	if (!(condition))					\
-	   ret = msleep(&(queue), &dev->irq_lock, 	\
+	   ret = msleep(&(queue), &dev->irq_lock, 		\
 			 PZERO | PCATCH, "drmwtq", (timeout));	\
-	mtx_unlock(&dev->irq_lock);			\
+	mtx_unlock(&dev->irq_lock);				\
+	DRM_LOCK();						\
 }
 #else
 #define DRM_WAIT_ON( ret, queue, timeout, condition )	\
@@ -527,10 +529,6 @@ typedef struct drm_device_dma {
 		_DRM_DMA_USE_AGP = 0x01,
 		_DRM_DMA_USE_SG  = 0x02
 	} flags;
-
-				/* DMA support */
-	drm_buf_t	  *this_buffer;	/* Buffer being sent		   */
-	drm_buf_t	  *next_buffer; /* Selected buffer to send	   */
 } drm_device_dma_t;
 
 typedef struct drm_agp_mem {

@@ -73,25 +73,22 @@ int drm_irq_install(drm_device_t *dev)
 	if (dev->irq == 0 || dev->dev_private == NULL)
 		return DRM_ERR(EINVAL);
 
+	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
+
 	DRM_LOCK();
 	if (dev->irq_enabled) {
 		DRM_UNLOCK();
 		return DRM_ERR(EBUSY);
 	}
 	dev->irq_enabled = 1;
-	DRM_UNLOCK();
-
-	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 
 	dev->context_flag = 0;
-
-	dev->dma->next_buffer = NULL;
-	dev->dma->this_buffer = NULL;
 
 	DRM_SPININIT(dev->irq_lock, "DRM IRQ lock");
 
 				/* Before installing handler */
 	dev->irq_preinstall(dev);
+	DRM_UNLOCK();
 
 				/* Install handler */
 #ifdef __FreeBSD__
@@ -125,7 +122,9 @@ int drm_irq_install(drm_device_t *dev)
 #endif
 
 				/* After installing handler */
+	DRM_LOCK();
 	dev->irq_postinstall(dev);
+	DRM_UNLOCK();
 
 	return 0;
 err:
@@ -143,9 +142,6 @@ err:
 	return retcode;
 }
 
-/* XXX: This function needs to be called with the device lock held.  In some
- * cases it isn't, so far.
- */
 int drm_irq_uninstall(drm_device_t *dev)
 {
 	int irqrid;
@@ -162,8 +158,10 @@ int drm_irq_uninstall(drm_device_t *dev)
 	dev->irq_uninstall(dev);
 
 #ifdef __FreeBSD__
+	DRM_UNLOCK();
 	bus_teardown_intr(dev->device, dev->irqr, dev->irqh);
 	bus_release_resource(dev->device, SYS_RES_IRQ, irqrid, dev->irqr);
+	DRM_LOCK();
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
 	pci_intr_disestablish(&dev->pa.pa_pc, dev->irqh);
 #endif
@@ -242,7 +240,9 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 #endif
 		ret = EINVAL;
 	} else {
+		DRM_LOCK();
 		ret = dev->vblank_wait(dev, &vblwait.request.sequence);
+		DRM_UNLOCK();
 
 		microtime(&now);
 		vblwait.reply.tval_sec = now.tv_sec;

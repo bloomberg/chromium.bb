@@ -809,9 +809,17 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 	drm_ioctl_desc_t *ioctl;
 	int (*func)(DRM_IOCTL_ARGS);
 	int nr = DRM_IOCTL_NR(cmd);
+	int is_driver_ioctl = 0;
 	drm_file_t *priv;
+	DRMFILE filp = (DRMFILE)(uintptr_t)DRM_CURRENTPID;
 
-	DRM_GET_PRIV_WITH_RETURN(priv, (DRMFILE)(uintptr_t)DRM_CURRENTPID);
+	DRM_LOCK();
+	priv = drm_find_file_by_proc(dev, p);
+	DRM_UNLOCK();
+	if (priv == NULL) {
+		DRM_ERROR("can't find authenticator\n");
+		return EINVAL;
+	}
 
 	atomic_inc( &dev->counts[_DRM_STAT_IOCTLS] );
 	++priv->ioctl_count;
@@ -868,6 +876,7 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 			return EINVAL;
 		}
 		ioctl = &dev->driver_ioctls[nr];
+		is_driver_ioctl = 1;
 	}
 	func = ioctl->func;
 
@@ -879,7 +888,11 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 	    !priv->authenticated))
 		return EACCES;
 
-	retcode = func(kdev, cmd, data, flags, p, (void *)(uintptr_t)DRM_CURRENTPID);
+	if (is_driver_ioctl)
+		DRM_LOCK();
+	retcode = func(kdev, cmd, data, flags, p, filp);
+	if (is_driver_ioctl)
+		DRM_UNLOCK();
 
 	if (retcode != 0)
 		DRM_DEBUG("    returning %d\n", retcode);

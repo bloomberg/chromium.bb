@@ -116,12 +116,18 @@ static int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
 
 int drm_getmagic(DRM_IOCTL_ARGS)
 {
+	DRM_DEVICE;
 	static drm_magic_t sequence = 0;
 	drm_auth_t auth;
 	drm_file_t *priv;
-	DRM_DEVICE;
 
-	DRM_GET_PRIV_WITH_RETURN(priv, filp);
+	DRM_LOCK();
+	priv = drm_find_file_by_proc(dev, p);
+	DRM_UNLOCK();
+	if (priv == NULL) {
+		DRM_ERROR("can't find authenticator\n");
+		return EINVAL;
+	}
 
 				/* Find unique magic */
 	if (priv->magic) {
