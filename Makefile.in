@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/Makefile.in,v 1.4 2002/05/24 05:19:30 keithp Exp $
+# $XFree86: xc/lib/fontconfig/Makefile.in,v 1.5 2002/05/24 06:25:51 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -29,7 +29,7 @@ include $(TOPDIR)/config/Makedefs
 DIRS          = src fc-cache fc-list fontconfig
 
 all install clean::
-	for d in $(DIRS); do $(MAKE) -C $$d $@; done
+	for d in $(DIRS); do (cd $$d && $(MAKE) $@); done
 
 #
 # create fonts.conf file
