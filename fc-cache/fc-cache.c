@@ -129,19 +129,31 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    continue;
 	}
 	
-	if (stat ((char *) dir, &statb) == -1)
+	if (access ((char *) dir, W_OK) < 0)
 	{
-	    if (errno == ENOENT || errno == ENOTDIR)
-	    {
+	    switch (errno) {
+	    case ENOENT:
+	    case ENOTDIR:
 		if (verbose)
-		    printf ("no such directory, skipping\n");
-	    }
-	    else
-	    {
+		    printf ("skipping, no such directory\n");
+		break;
+	    case EACCES:
+	    case EROFS:
+		if (verbose)
+		    printf ("skipping, no write access\n");
+		break;
+	    default:
 		fprintf (stderr, "\"%s\": ", dir);
 		perror ("");
 		ret++;
 	    }
+	    continue;
+	}
+	if (stat ((char *) dir, &statb) == -1)
+	{
+	    fprintf (stderr, "\"%s\": ", dir);
+	    perror ("");
+	    ret++;
 	    continue;
 	}
 	if (!S_ISDIR (statb.st_mode))
