@@ -59,6 +59,16 @@ extern int  gamma_dma(struct inode *inode, struct file *filp,
 extern int  gamma_find_devices(void);
 extern int  gamma_found(void);
 
+/* Gamma-specific code pulled from drm_dma.h:
+ */
+extern void	     DRM(clear_next_buffer)(drm_device_t *dev);
+extern int	     DRM(select_queue)(drm_device_t *dev,
+				       void (*wrapper)(unsigned long));
+extern int	     DRM(dma_enqueue)(struct file *filp, drm_dma_t *dma);
+extern int	     DRM(dma_get_buffers)(struct file *filp, drm_dma_t *dma);
+
+
+
 #define GLINT_DRI_BUF_COUNT 256
 
 #define GAMMA_OFF(reg)						   \

@@ -127,7 +127,6 @@
 #define DRM_LOCK_SLICE	      1	/* Time slice for lock, in jiffies	  */
 
 #define DRM_FLAG_DEBUG	  0x01
-#define DRM_FLAG_NOCTX	  0x02
 
 #define DRM_MEM_DMA	   0
 #define DRM_MEM_SAREA	   1
@@ -814,15 +813,6 @@ extern int	     DRM(dma_setup)(drm_device_t *dev);
 extern void	     DRM(dma_takedown)(drm_device_t *dev);
 extern void	     DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf);
 extern void	     DRM(reclaim_buffers)( struct file *filp );
-#if __HAVE_OLD_DMA
-/* GH: This is a dirty hack for now...
- */
-extern void	     DRM(clear_next_buffer)(drm_device_t *dev);
-extern int	     DRM(select_queue)(drm_device_t *dev,
-				       void (*wrapper)(unsigned long));
-extern int	     DRM(dma_enqueue)(struct file *filp, drm_dma_t *dma);
-extern int	     DRM(dma_get_buffers)(struct file *filp, drm_dma_t *dma);
-#endif
 #if __HAVE_DMA_IRQ
 extern int           DRM(control)( struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg );

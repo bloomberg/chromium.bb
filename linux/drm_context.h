@@ -36,6 +36,11 @@
 #define __NO_VERSION__
 #include "drmP.h"
 
+#if !__HAVE_CTX_BITMAP
+#error "__HAVE_CTX_BITMAP must be defined"
+#endif
+
+
 /* ================================================================
  * Context bitmap support
  */
@@ -233,10 +238,6 @@ int DRM(context_switch)( drm_device_t *dev, int old, int new )
         if ( new == dev->last_context ) {
                 clear_bit( 0, &dev->context_flag );
                 return 0;
-        }
-
-        if ( DRM(flags) & DRM_FLAG_NOCTX ) {
-                DRM(context_switch_complete)( dev, new );
         }
 
         return 0;

@@ -173,12 +173,11 @@ int DRM(context_switch)(drm_device_t *dev, int old, int new)
 		return -EINVAL;
 	}
 
-	if (DRM(flags) & DRM_FLAG_NOCTX) {
-		DRM(context_switch_complete)(dev, new);
-	} else {
-		sprintf(buf, "C %d %d\n", old, new);
-		DRM(write_string)(dev, buf);
-	}
+	/* This causes the X server to wake up & do a bunch of hardware
+	 * interaction to actually effect the context switch.
+	 */
+	sprintf(buf, "C %d %d\n", old, new);
+	DRM(write_string)(dev, buf);
 
 	atomic_dec(&q->use_count);
 

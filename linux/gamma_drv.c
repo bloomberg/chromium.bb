@@ -41,6 +41,7 @@
 #include "drm_bufs.h"
 #include "gamma_context.h"	/* NOTE! */
 #include "drm_dma.h"
+#include "gamma_old_dma.h"
 #include "drm_drawable.h"
 #include "drm_drv.h"
 
