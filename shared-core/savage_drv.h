@@ -140,6 +140,11 @@ typedef struct drm_savage_private {
 	drm_local_map_t *agp_textures;
 	drm_local_map_t *cmd_dma;
 
+	struct {
+		int handle;
+		unsigned long base, size;
+	} mtrr[3];
+
 	/* BCI and status-related stuff */
 	volatile uint32_t *status_ptr, *bci_ptr;
 	uint32_t status_used_mask;
@@ -177,6 +182,7 @@ extern uint16_t savage_bci_emit_event(drm_savage_private_t *dev_priv,
 				      unsigned int flags);
 extern void savage_freelist_put(drm_device_t *dev, drm_buf_t *buf);
 extern int savage_preinit(drm_device_t *dev, unsigned long chipset);
+extern int savage_postcleanup(drm_device_t *dev);
 extern int savage_do_cleanup_bci(drm_device_t *dev);
 extern void savage_reclaim_buffers(drm_device_t *dev, DRMFILE filp);
 

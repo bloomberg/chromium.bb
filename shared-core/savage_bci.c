@@ -283,10 +283,19 @@ void savage_freelist_put(drm_device_t *dev, drm_buf_t *buf)
 	entry->next = next;
 }
 
+/*
+ * Initalize permanent mappings. On Savage4 and SavageIX the alignment
+ * and size of the aperture is not suitable for automatic MTRR setup
+ * in drm_initmap. Therefore we do it manually before the maps are
+ * initialized. We also need to take care of deleting the MTRRs in
+ * postcleanup.
+ *
+ * FIXME: this is linux-specific
+ */
 int savage_preinit(drm_device_t *dev, unsigned long chipset)
 {
 	drm_savage_private_t *dev_priv;
-	unsigned int mmio_base, fb_base, fb_size, aperture_base;
+	unsigned long mmio_base, fb_base, fb_size, aperture_base;
 	int ret = 0;
 
 	dev_priv = drm_alloc(sizeof(drm_savage_private_t), DRM_MEM_DRIVER);
@@ -297,21 +306,61 @@ int savage_preinit(drm_device_t *dev, unsigned long chipset)
 	dev->dev_private = (void *)dev_priv;
 	dev_priv->chipset = (enum savage_family)chipset;
 
+	dev_priv->mtrr[0].handle = -1;
+	dev_priv->mtrr[1].handle = -1;
+	dev_priv->mtrr[2].handle = -1;
 	if (S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
 		fb_base = pci_resource_start(dev->pdev, 0);
 		fb_size = SAVAGE_FB_SIZE_S3;
 		mmio_base = fb_base + SAVAGE_FB_SIZE_S3;
 		aperture_base = fb_base + SAVAGE_APERTURE_OFFSET;
+		/* this should always be true */
+		if (pci_resource_len(dev->pdev, 0) == 0x08000000) {
+			/* Don't make MMIO write-cobining! We need 3
+			 * MTRRs. */
+			dev_priv->mtrr[0].base = fb_base;
+			dev_priv->mtrr[0].size = 0x01000000;
+			dev_priv->mtrr[0].handle = mtrr_add(
+				dev_priv->mtrr[0].base, dev_priv->mtrr[0].size,
+				MTRR_TYPE_WRCOMB, 1);
+			dev_priv->mtrr[1].base = fb_base+0x02000000;
+			dev_priv->mtrr[1].size = 0x02000000;
+			dev_priv->mtrr[1].handle = mtrr_add(
+				dev_priv->mtrr[1].base, dev_priv->mtrr[1].size,
+				MTRR_TYPE_WRCOMB, 1);
+			dev_priv->mtrr[2].base = fb_base+0x04000000;
+			dev_priv->mtrr[2].size = 0x04000000;
+			dev_priv->mtrr[2].handle = mtrr_add(
+				dev_priv->mtrr[2].base, dev_priv->mtrr[2].size,
+				MTRR_TYPE_WRCOMB, 1);
+		} else {
+			DRM_ERROR("strange pci_resource_len %08lx\n",
+				  pci_resource_len(dev->pdev, 0));
+		}
 	} else if (chipset != S3_SUPERSAVAGE && chipset != S3_SAVAGE2000) {
 		mmio_base = pci_resource_start(dev->pdev, 0);
 		fb_base = pci_resource_start(dev->pdev, 1);
 		fb_size = SAVAGE_FB_SIZE_S4;
 		aperture_base = fb_base + SAVAGE_APERTURE_OFFSET;
+		/* this should always be true */
+		if (pci_resource_len(dev->pdev, 1) == 0x08000000) {
+			/* Can use one MTRR to cover both fb and
+			 * aperture. */
+			dev_priv->mtrr[0].base = fb_base;
+			dev_priv->mtrr[0].size = 0x08000000;
+			dev_priv->mtrr[0].handle = mtrr_add(
+				dev_priv->mtrr[0].base, dev_priv->mtrr[0].size,
+				MTRR_TYPE_WRCOMB, 1);
+		} else {
+			DRM_ERROR("strange pci_resource_len %08lx\n",
+				  pci_resource_len(dev->pdev, 1));
+		}
 	} else {
 		mmio_base = pci_resource_start(dev->pdev, 0);
 		fb_base = pci_resource_start(dev->pdev, 1);
 		fb_size = pci_resource_len(dev->pdev, 1);
 		aperture_base = pci_resource_start(dev->pdev, 2);
+		/* Automatic MTRR setup will do the right thing. */
 	}
 
 	if ((ret = drm_initmap(dev, mmio_base, SAVAGE_MMIO_SIZE,
@@ -333,6 +382,25 @@ int savage_preinit(drm_device_t *dev, unsigned long chipset)
 		return DRM_ERR(ENOMEM);
 
 	return ret;
+}
+
+/*
+ * Delete MTRRs and free device-private data.
+ */
+int savage_postcleanup(drm_device_t *dev)
+{
+	drm_savage_private_t *dev_priv = dev->dev_private;
+	int i;
+
+	for (i = 0; i < 3; ++i)
+		if (dev_priv->mtrr[i].handle >= 0)
+			mtrr_del(dev_priv->mtrr[i].handle,
+				 dev_priv->mtrr[i].base,
+				 dev_priv->mtrr[i].size);
+
+	drm_free(dev_priv, sizeof(drm_savage_private_t), DRM_MEM_DRIVER);
+
+	return 0;
 }
 
 static int savage_do_init_bci(drm_device_t *dev, drm_savage_init_t *init)

@@ -76,6 +76,7 @@ static struct drm_driver driver = {
 	.dev_priv_size = sizeof(drm_savage_buf_priv_t),
 	.preinit = savage_preinit,
 	.postinit = postinit,
+	.postcleanup = savage_postcleanup,
 	.reclaim_buffers = savage_reclaim_buffers,
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
