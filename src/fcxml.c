@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.18 2002/08/11 18:10:42 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.19 2002/08/19 19:32:05 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -996,6 +996,7 @@ FcParseMatrix (FcConfigParse *parse)
 	case m_yy: m.yy = v; break;
 	default: break;
 	}
+	FcVStackDestroy (vstack);
 	matrix_state--;
     }
     if (matrix_state != m_done)
