@@ -345,8 +345,8 @@ background_create(struct wlsc_output *output, const char *filename)
 	glBindTexture(GL_TEXTURE_2D, background->texture);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         if (gdk_pixbuf_get_has_alpha(pixbuf))
 		format = GL_RGBA;
@@ -417,6 +417,7 @@ repaint_output(struct wlsc_output *output)
 	struct wlsc_compositor *ec = output->ec;
 	struct wlsc_surface *es;
 	struct wlsc_input_device *eid;
+	double s = 3000;
 
 	if (!eglMakeCurrent(ec->display, output->surface, output->surface, ec->context)) {
 		fprintf(stderr, "failed to make context current\n");
@@ -426,9 +427,12 @@ repaint_output(struct wlsc_output *output)
 	glViewport(0, 0, output->width, output->height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, output->width, output->height, 0, 0, 1000.0);
+	glFrustum(-output->width / s, output->width / s, output->height / s, -output->height / s, 1, s);
 	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 	glClearColor(0, 0, 0.2, 1);
+
+	glTranslatef(-output->width / 2, -output->height/ 2, -s / 2);
 
 	if (output->background)
 		draw_surface(output->background);
