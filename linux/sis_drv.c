@@ -1,6 +1,7 @@
 /* sis.c -- sis driver -*- linux-c -*-
  *
- * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,6 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  *
  */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_drv.c,v 1.5 2000/09/22 11:35:47 alanh Exp $ */
 
 #include <linux/config.h>
 #include "drmP.h"
@@ -30,16 +32,20 @@
 #include "sis_drv.h"
 
 #define SIS_NAME	 "sis"
-#define SIS_DESC	 "sis"
-#define SIS_DATE	 "19991009"
-#define SIS_MAJOR	 0
+#define SIS_DESC	 "SIS 300/630/540"
+#define SIS_DATE	 "20000831"
+#define SIS_MAJOR	 1
 #define SIS_MINOR	 0
-#define SIS_PATCHLEVEL  1
+#define SIS_PATCHLEVEL  0
 
 static drm_device_t	      sis_device;
 drm_ctx_t	              sis_res_ctx;
 
 static struct file_operations sis_fops = {
+#if LINUX_VERSION_CODE >= 0x020400
+				/* This started being used during 2.4.0-test */
+	owner:   THIS_MODULE,
+#endif
 	open:	 sis_open,
 	flush:	 drm_flush,
 	release: sis_release,
@@ -65,14 +71,14 @@ static drm_ioctl_desc_t	      sis_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_SET_UNIQUE)] = { drm_setunique,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]	     = { drm_block,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]    = { drm_unblock,	  1, 1 },
-
 	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)] = { drm_authmagic,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]    = { drm_addmap,	  1, 1 },
+	
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]    = { sis_addctx,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]     = { sis_rmctx,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]    = { sis_modctx,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_GET_CTX)]    = { sis_getctx,	  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)] = { sis_switchctx,   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)] = { sis_switchctx,  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_NEW_CTX)]    = { sis_newctx,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]    = { sis_resctx,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]   = { drm_adddraw,	  1, 1 },
@@ -80,18 +86,16 @@ static drm_ioctl_desc_t	      sis_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	     = { sis_lock,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]     = { sis_unlock,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]     = { drm_finish,	  1, 0 },
-
-#ifdef DRM_AGP
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)] = { drm_agp_acquire, 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)] = { drm_agp_release, 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]  = { drm_agp_enable,  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]    = { drm_agp_info,    1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]   = { drm_agp_alloc,   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]    = { drm_agp_free,    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]    = { drm_agp_bind,    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]  = { drm_agp_unbind,  1, 1 },
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)]   = {drm_agp_acquire, 1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)]   = {drm_agp_release, 1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]    = {drm_agp_enable,  1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]      = {drm_agp_info,    1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]     = {drm_agp_alloc,   1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]      = {drm_agp_free,    1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]      = {drm_agp_bind,    1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]    = {drm_agp_unbind,  1, 1},
 #endif
-
         /* FB Memory Management */
         [DRM_IOCTL_NR(SIS_IOCTL_FB_ALLOC)]   = { sis_fb_alloc,	  1, 1 },
         [DRM_IOCTL_NR(SIS_IOCTL_FB_FREE)]    = { sis_fb_free,	  1, 1 },
@@ -114,9 +118,24 @@ static drm_ioctl_desc_t	      sis_ioctls[] = {
 static char		      *sis = NULL;
 #endif
 
-MODULE_AUTHOR("Precision Insight, Inc., Cedar Park, Texas.");
+MODULE_AUTHOR("VA Linux Systems, Inc.");
 MODULE_DESCRIPTION("sis");
 MODULE_PARM(sis, "s");
+
+#ifndef MODULE
+/* sis_options is called by the kernel to parse command-line options
+ * passed via the boot-loader (e.g., LILO).  It calls the insmod option
+ * routine, drm_parse_drm.
+ */
+
+static int __init sis_options(char *str)
+{
+	drm_parse_options(str);
+	return 1;
+}
+
+__setup("sis=", sis_options);
+#endif
 
 static int sis_setup(drm_device_t *dev)
 {
@@ -219,30 +238,22 @@ static int sis_takedown(drm_device_t *dev)
 		}
 		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
 	}
-#ifdef DRM_AGP
-   				/* Clear AGP information */
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
+				/* Clear AGP information */
 	if (dev->agp) {
-		drm_agp_mem_t *entry;
-		drm_agp_mem_t *nexte;
-		
-				/* Remove AGP resources, but leave dev->agp
-                                   intact until cleanup is called. */
-		for (entry = dev->agp->memory; entry; entry = nexte) {
-			nexte = entry->next;
-			if (entry->bound) drm_unbind_agp(entry->memory);
-			drm_free_agp(entry->memory, entry->pages);
-			drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
+		drm_agp_mem_t *temp;
+		drm_agp_mem_t *temp_next;
+	   
+		temp = dev->agp->memory;
+		while(temp != NULL) {
+			temp_next = temp->next;
+			drm_free_agp(temp->memory, temp->pages);
+			drm_free(temp, sizeof(*temp), DRM_MEM_AGPLISTS);
+			temp = temp_next;
 		}
-		dev->agp->memory = NULL;
-		
-		if (dev->agp->acquired && drm_agp.release)
-			(*drm_agp.release)();
-		
-		dev->agp->acquired = 0;
-		dev->agp->enabled  = 0;
-	}	
+		if (dev->agp->acquired) (*drm_agp.release)();
+	}
 #endif
-
 				/* Clear vma list (only built for debugging) */
 	if (dev->vmalist) {
 		for (vma = dev->vmalist; vma; vma = vma_next) {
@@ -303,7 +314,7 @@ static int sis_takedown(drm_device_t *dev)
 /* sis_init is called via init_module at module load time, or via
  * linux/init/main.c (this is not currently supported). */
 
-int sis_init(void)
+static int sis_init(void)
 {
 	int		      retcode;
 	drm_device_t	      *dev = &sis_device;
@@ -327,27 +338,16 @@ int sis_init(void)
 
 	drm_mem_init();
 	drm_proc_init(dev);
-
-#ifdef DRM_AGP
-	DRM_DEBUG("doing agp init\n");
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 	dev->agp    = drm_agp_init();
-      	if(dev->agp == NULL) {
-	   	/* TODO, if no agp, run MMIO mode */
-	   	DRM_INFO("The sis drm module requires the agpgart module"
-		         " to function correctly\nPlease load the agpgart"
-		         " module before you load the mga module\n");
-	   	drm_proc_cleanup();
-	   	misc_deregister(&sis_misc);
-	   	sis_takedown(dev);
-	   	return -ENOMEM;
+#endif
+	if((retcode = drm_ctxbitmap_init(dev))) {
+		DRM_ERROR("Cannot allocate memory for context bitmap.\n");
+		drm_proc_cleanup();
+		misc_deregister(&sis_misc);
+		sis_takedown(dev);
+		return retcode;
 	}
-#ifdef CONFIG_MTRR
-   	dev->agp->agp_mtrr = mtrr_add(dev->agp->agp_info.aper_base,
-				      dev->agp->agp_info.aper_size * 1024 * 1024,
-				      MTRR_TYPE_WRCOMB,
-				      1);
-#endif
-#endif
 
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 SIS_NAME,
@@ -362,7 +362,7 @@ int sis_init(void)
 
 /* sis_cleanup is called via cleanup_module at module unload time. */
 
-void sis_cleanup(void)
+static void sis_cleanup(void)
 {
 	drm_device_t	      *dev = &sis_device;
 
@@ -374,26 +374,20 @@ void sis_cleanup(void)
 	} else {
 		DRM_INFO("Module unloaded\n");
 	}
-#ifdef DRM_AGP
-#ifdef CONFIG_MTRR
-   	if(dev->agp && dev->agp->agp_mtrr) {
-	   	int retval;
-	   	retval = mtrr_del(dev->agp->agp_mtrr, 
-				  dev->agp->agp_info.aper_base,
-				  dev->agp->agp_info.aper_size * 1024*1024);
-	   	DRM_DEBUG("mtrr_del = %d\n", retval);
-	}
-#endif
-#endif
-
+	drm_ctxbitmap_cleanup(dev);
 	sis_takedown(dev);
-#ifdef DRM_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 	if (dev->agp) {
+		drm_agp_uninit();
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
 		dev->agp = NULL;
 	}
 #endif
 }
+
+module_init(sis_init);
+module_exit(sis_cleanup);
+
 
 int sis_version(struct inode *inode, struct file *filp, unsigned int cmd,
 		  unsigned long arg)
@@ -433,11 +427,12 @@ int sis_open(struct inode *inode, struct file *filp)
 {
 	drm_device_t  *dev    = &sis_device;
 	int	      retcode = 0;
-	       
+	
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
-
 	if (!(retcode = drm_open_helper(inode, filp, dev))) {
-		MOD_INC_USE_COUNT;
+#if LINUX_VERSION_CODE < 0x020333
+		MOD_INC_USE_COUNT; /* Needed before Linux 2.3.51 */
+#endif
 		atomic_inc(&dev->total_open);
 		spin_lock(&dev->count_lock);
 		if (!dev->open_count++) {
@@ -452,13 +447,17 @@ int sis_open(struct inode *inode, struct file *filp)
 int sis_release(struct inode *inode, struct file *filp)
 {
 	drm_file_t    *priv   = filp->private_data;
-	drm_device_t  *dev    = priv->dev;
+	drm_device_t  *dev;
 	int	      retcode = 0;
 
-	DRM_DEBUG("open_count = %d\n", dev->open_count);
+	lock_kernel();
+	dev = priv->dev;
 
+	DRM_DEBUG("open_count = %d\n", dev->open_count);
 	if (!(retcode = drm_release(inode, filp))) {
-		MOD_DEC_USE_COUNT;
+#if LINUX_VERSION_CODE < 0x020333
+		MOD_DEC_USE_COUNT; /* Needed before Linux 2.3.51 */
+#endif
 		atomic_inc(&dev->total_close);
 		spin_lock(&dev->count_lock);
 		if (!--dev->open_count) {
@@ -467,13 +466,17 @@ int sis_release(struct inode *inode, struct file *filp)
 					  atomic_read(&dev->ioctl_count),
 					  dev->blocked);
 				spin_unlock(&dev->count_lock);
+				unlock_kernel();
 				return -EBUSY;
 			}
 			spin_unlock(&dev->count_lock);
+			unlock_kernel();
 			return sis_takedown(dev);
 		}
 		spin_unlock(&dev->count_lock);
 	}
+
+	unlock_kernel();
 	return retcode;
 }
 
@@ -588,7 +591,9 @@ int sis_lock(struct inode *inode, struct file *filp, unsigned int cmd,
                                 /* Contention */
                         atomic_inc(&dev->total_sleeps);
                         current->state = TASK_INTERRUPTIBLE;
+#if 1
 			current->policy |= SCHED_YIELD;
+#endif
                         schedule();
                         if (signal_pending(current)) {
                                 ret = -ERESTARTSYS;
@@ -689,21 +694,3 @@ int sis_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 	unblock_all_signals();
 	return 0;
 }
-
-module_init(sis_init);
-module_exit(sis_cleanup);
-
-#ifndef MODULE
-/*
- * sis_setup is called by the kernel to parse command-line options passed
- * via the boot-loader (e.g., LILO).  It calls the insmod option routine,
- * drm_parse_options.
- */
-static int __init sis_options(char *str)
-{
-	drm_parse_options(str);
-	return 1;
-}
-
-__setup("sis=", sis_options);
-#endif

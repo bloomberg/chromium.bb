@@ -29,6 +29,7 @@
  *
  *
  */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/mga_drv.c,v 1.4 2000/08/28 02:43:15 tsi Exp $ */
 
 #include <linux/config.h>
 #include "drmP.h"

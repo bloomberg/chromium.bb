@@ -28,6 +28,7 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  * 
  */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.9 2000/08/28 02:43:14 tsi Exp $ */
 
 #ifndef _DRM_P_H_
 #define _DRM_P_H_
@@ -150,6 +151,11 @@ typedef struct wait_queue *wait_queue_head_t;
 #endif
 #ifndef module_exit
 #define module_exit(x)  void cleanup_module(void) { x(); }
+#endif
+
+				/* virt_to_page added in 2.4.0-test6 */
+#if LINUX_VERSION_CODE < 0x020400
+#define virt_to_page(kaddr) (mem_map + MAP_NR(kaddr))
 #endif
 
 				/* Generic cmpxchg added in 2.3.x */

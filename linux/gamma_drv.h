@@ -28,6 +28,7 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  * 
  */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/gamma_drv.h,v 1.6 2000/08/28 02:43:15 tsi Exp $ */
 
 #ifndef _GAMMA_DRV_H_
 #define _GAMMA_DRV_H_

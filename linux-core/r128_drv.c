@@ -28,6 +28,7 @@
  *          Kevin E. Martin <martin@valinux.com>
  *
  */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/r128_drv.c,v 1.3 2000/08/28 02:43:16 tsi Exp $ */
 
 #include <linux/config.h>
 #include "drmP.h"

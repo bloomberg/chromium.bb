@@ -1,8 +1,14 @@
-#include <linux/config.h>
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/picker.c,v 1.3 2000/09/01 02:31:40 tsi Exp $ */
+
+#include <linux/autoconf.h>
 #include <linux/version.h>
 
 #ifndef CONFIG_SMP
 #define CONFIG_SMP 0
+#endif
+
+#ifndef CONFIG_MODULES
+#define CONFIG_MODULES 0
 #endif
 
 #ifndef CONFIG_MODVERSIONS
@@ -22,6 +28,7 @@
 #endif
 
 SMP = CONFIG_SMP
+MODULES = CONFIG_MODULES
 MODVERSIONS = CONFIG_MODVERSIONS
 AGP = CONFIG_AGP
 AGP_MODULE = CONFIG_AGP_MODULE
