@@ -75,6 +75,7 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #include "drm.h"
 #include "mga_drm.h"
 #include "r128_drm.h"
+#include <inttypes.h>		/* for int64_t & friends */
 #include "radeon_drm.h"
 #ifndef __FreeBSD__
 #include "sis_drm.h"
