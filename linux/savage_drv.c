@@ -42,7 +42,7 @@
 /* mark off by Jiayo Hsu, Oct. 23, 2001*/
 
 
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,5,0)
+#if SAVAGE_CMD_DMA /* Check the 3D driver, and we need to fix this anyway */
 
 #define DRIVER_IOCTLS \
 	[DRM_IOCTL_NR(DRM_IOCTL_SAVAGE_ALLOC_CONTINUOUS_MEM)] \
@@ -167,7 +167,7 @@ int savage_get_physics_address(struct inode *inode, struct file *filp,
   
   pgd=pgd_offset(mm,buf);
   pmd=pmd_offset(pgd,buf);
-  pte=pte_offset(pmd,buf);
+  pte=pte_offset_map(pmd,buf);
   
   if (!pte_present(*pte))
     return -EFAULT;
@@ -229,9 +229,9 @@ int savage_free_cont_mem(struct inode *inode, struct file *filp,
 
   return 1;
 }
-#else /* LINUX_VERSION_CODE <= KERNEL_VERSION(2,5,0) */
+#else /* SAVAGE_CMD_DMA */
 #define DRIVER_IOCTLS
-#endif /* LINUX_VERSION_CODE <= KERNEL_VERSION(2,5,0) */
+#endif /* SAVAGE_CMD_DMA */
 
 #if 0
 
