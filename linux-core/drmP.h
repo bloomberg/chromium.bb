@@ -768,12 +768,11 @@ extern int	     DRM(getmagic)(struct inode *inode, struct file *filp,
 extern int	     DRM(authmagic)(struct inode *inode, struct file *filp,
 				    unsigned int cmd, unsigned long arg);
 
+                                /* Placeholder for ioctls past */
+extern int	     DRM(noop)(struct inode *inode, struct file *filp,
+				  unsigned int cmd, unsigned long arg);
 
 				/* Locking IOCTL support (drm_lock.h) */
-extern int	     DRM(block)(struct inode *inode, struct file *filp,
-				unsigned int cmd, unsigned long arg);
-extern int	     DRM(unblock)(struct inode *inode, struct file *filp,
-				  unsigned int cmd, unsigned long arg);
 extern int	     DRM(lock_take)(__volatile__ unsigned int *lock,
 				    unsigned int context);
 extern int	     DRM(lock_transfer)(drm_device_t *dev,

@@ -41,7 +41,7 @@
 #include "drm_bufs.h"
 #include "gamma_context.h"	/* NOTE! */
 #include "drm_dma.h"
-#include "gamma_old_dma.h"
+#include "gamma_old_dma.h"	/* NOTE */
 #include "drm_drawable.h"
 #include "drm_drv.h"
 
@@ -50,6 +50,7 @@
 #include "drm_ioctl.h"
 #include "drm_lists.h"
 #include "drm_lock.h"
+#include "gamma_lock.h"		/* NOTE */
 #include "drm_memory.h"
 #include "drm_proc.h"
 #include "drm_vm.h"
