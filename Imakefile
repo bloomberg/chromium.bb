@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.8 2002/11/15 09:29:35 alanh Exp $
+XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.9 2002/11/21 16:53:00 keithp Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -19,10 +19,15 @@ FONTCONFIG_REVISION=1
 
 FONTCONFIGFONTSCONFDIR=FontconfigFontsConfDir
 
+#ifdef DarwinArchitecture
+MACFONTDIRS = ~/Library/Fonts /Library/Fonts /Network/Library/Fonts \
+              /System/Library/Fonts
+#endif
+
 #if NothingOutsideProjectRoot
 FONTDIRS=$(FONTDIR)
 #else
-FONTDIRS=/usr/share/fonts $(FONTDIR)
+FONTDIRS=/usr/share/fonts $(FONTDIR) $(MACFONTDIRS)
 #endif
 
 SUBSTVARS=prefix=$(PROJECTROOT) \
