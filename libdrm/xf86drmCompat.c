@@ -73,19 +73,21 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #include "xf86drm.h"
 #include "xf86drmCompat.h"
 #include "drm.h"
-#include "i810_drm.h"
 #include "mga_drm.h"
 #include "r128_drm.h"
 #include "radeon_drm.h"
+#ifndef __FreeBSD__
 #include "sis_drm.h"
+#include "i810_drm.h"
 #include "i830_drm.h"
-
+#endif
 
 /* WARNING: Do not change, or add, anything to this file.  It is only provided
  * for binary backwards compatability with the old driver specific DRM
  * extensions used before XFree86 4.3.
  */
 
+#ifndef __FreeBSD__
 /* I810 */
 
 Bool drmI810CleanupDma(int driSubFD)
@@ -130,6 +132,7 @@ Bool drmI810InitDma(int driSubFD, drmCompatI810Init *info)
    }
    return 1; /* TRUE */
 }
+#endif /* __FreeBSD__ */
 
 /* Mga */
 
@@ -1008,6 +1011,7 @@ int drmRadeonFlushIndirectBuffer( int fd, int index,
    }
 }
 
+#ifndef __FreeBSD__
 /* SiS */
 
 Bool drmSiSAgpInit(int driSubFD, int offset, int size)
@@ -1066,6 +1070,7 @@ Bool drmI830InitDma(int driSubFD, drmCompatI830Init *info)
    }
    return 1; /* TRUE */
 }
+#endif /* __FreeBSD__ */
 
 /* WARNING: Do not change, or add, anything to this file.  It is only provided
  * for binary backwards compatability with the old driver specific DRM
