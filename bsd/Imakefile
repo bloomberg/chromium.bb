@@ -19,6 +19,7 @@ all::
 clean::
 	$(MAKE) -f Makefile.bsd clean
 
+LinkSourceFile(drm_sarea.h,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(mga.h,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(mga_dma.c,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(mga_drm.h,$(XF86OSSRC)/shared/drm/kernel)

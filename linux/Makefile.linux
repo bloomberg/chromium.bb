@@ -44,7 +44,7 @@ LIBS =
 DRMTEMPLATES =	drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
 		drm_drv.h drm_fops.h drm_init.h drm_ioctl.h drm_lists.h \
 		drm_lock.h drm_memory.h drm_proc.h drm_stub.h drm_vm.h
-DRMHEADERS =	drm.h drmP.h
+DRMHEADERS =	drm.h drmP.h drm_sarea.h
 
 GAMMAOBJS =	gamma_drv.o gamma_dma.o
 GAMMAHEADERS =	gamma_drv.h $(DRMHEADERS) $(DRMTEMPLATES)

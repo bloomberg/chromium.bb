@@ -109,8 +109,6 @@ typedef struct drm_radeon_private {
 	int do_boxes;
 	int page_flipping;
 	int current_page;
-	u32 crtc_offset;
-	u32 crtc_offset_cntl;
 
 	u32 color_fmt;
 	unsigned int front_offset;
@@ -230,6 +228,8 @@ extern int radeon_emit_irq(drm_device_t *dev);
 #define RADEON_CRTC_OFFSET_CNTL		0x0228
 #	define RADEON_CRTC_TILE_EN		(1 << 15)
 #	define RADEON_CRTC_OFFSET_FLIP_CNTL	(1 << 16)
+#define RADEON_CRTC2_OFFSET		0x0324
+#define RADEON_CRTC2_OFFSET_CNTL	0x0328
 
 #define RADEON_RB3D_COLORPITCH		0x1c48
 

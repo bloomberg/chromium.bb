@@ -30,6 +30,7 @@
 #include "radeon.h"
 #include "drmP.h"
 #include "drm.h"
+#include "drm_sarea.h"
 #include "radeon_drm.h"
 #include "radeon_drv.h"
 
@@ -803,6 +804,9 @@ static void radeon_cp_dispatch_swap( drm_device_t *dev )
 static void radeon_cp_dispatch_flip( drm_device_t *dev )
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
+	drm_sarea_t *sarea = (drm_sarea_t *)dev_priv->sarea->handle;
+	int offset = (dev_priv->current_page == 1)
+		   ? dev_priv->front_offset : dev_priv->back_offset;
 	RING_LOCALS;
 	DRM_DEBUG( "%s: page=%d pfCurrentPage=%d\n", 
 		__FUNCTION__, 
@@ -816,18 +820,17 @@ static void radeon_cp_dispatch_flip( drm_device_t *dev )
 		radeon_cp_performance_boxes( dev_priv );
 	}
 
-	BEGIN_RING( 4 );
+	/* Update the frame offsets for both CRTCs
+	 */
+	BEGIN_RING( 6 );
 
 	RADEON_WAIT_UNTIL_3D_IDLE();
-	OUT_RING( CP_PACKET0( RADEON_CRTC_OFFSET, 0 ) );
-
-	if ( dev_priv->current_page == 0 ) {
-		OUT_RING( dev_priv->back_offset );
-		dev_priv->current_page = 1;
-	} else {
-		OUT_RING( dev_priv->front_offset );
-		dev_priv->current_page = 0;
-	}
+	OUT_RING_REG( RADEON_CRTC_OFFSET, ( ( sarea->frame.y * dev_priv->front_pitch
+					      + sarea->frame.x 
+					      * ( dev_priv->color_fmt - 2 ) ) & ~7 )
+					  + offset );
+	OUT_RING_REG( RADEON_CRTC2_OFFSET, dev_priv->sarea_priv->crtc2_base
+					   + offset );
 
 	ADVANCE_RING();
 
@@ -836,7 +839,8 @@ static void radeon_cp_dispatch_flip( drm_device_t *dev )
 	 * performing the swapbuffer ioctl.
 	 */
 	dev_priv->sarea_priv->last_frame++;
-	dev_priv->sarea_priv->pfCurrentPage = dev_priv->current_page;
+	dev_priv->sarea_priv->pfCurrentPage = dev_priv->current_page =
+					      1 - dev_priv->current_page;
 
 	BEGIN_RING( 2 );
 
@@ -1304,12 +1308,12 @@ static int radeon_do_init_pageflip( drm_device_t *dev )
 
 	DRM_DEBUG( "\n" );
 
-	dev_priv->crtc_offset_cntl = RADEON_READ( RADEON_CRTC_OFFSET_CNTL );
-
-	BEGIN_RING( 4 );
+	BEGIN_RING( 6 );
 	RADEON_WAIT_UNTIL_3D_IDLE();
 	OUT_RING( CP_PACKET0( RADEON_CRTC_OFFSET_CNTL, 0 ) );
-	OUT_RING( dev_priv->crtc_offset_cntl | RADEON_CRTC_OFFSET_FLIP_CNTL );
+	OUT_RING( RADEON_READ( RADEON_CRTC_OFFSET_CNTL ) | RADEON_CRTC_OFFSET_FLIP_CNTL );
+	OUT_RING( CP_PACKET0( RADEON_CRTC2_OFFSET_CNTL, 0 ) );
+	OUT_RING( RADEON_READ( RADEON_CRTC2_OFFSET_CNTL ) | RADEON_CRTC_OFFSET_FLIP_CNTL );
 	ADVANCE_RING();
 
 	dev_priv->page_flipping = 1;
@@ -1330,10 +1334,6 @@ int radeon_do_cleanup_pageflip( drm_device_t *dev )
 	if (dev_priv->current_page != 0)
 		radeon_cp_dispatch_flip( dev );
 
-	/* FIXME: If the X server changes screen resolution, it
-	 * clobbers the value of RADEON_CRTC_OFFSET_CNTL, above,
-	 * leading to a flashing efect.
-	 */
 	dev_priv->page_flipping = 0;
 	return 0;
 }
