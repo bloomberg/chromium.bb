@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-cache/fc-cache.c,v 1.2 2002/02/15 07:36:14 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fc-cache/fc-cache.c,v 1.4 2002/05/21 17:06:21 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -25,6 +25,9 @@
 #include <fontconfig/fontconfig.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #else
@@ -97,6 +100,7 @@ scanDirs (FcStrList *list, char *program, FcBool force, FcBool verbose)
     FcFontSet	*set;
     FcStrSet	*subdirs;
     FcStrList	*sublist;
+    struct stat	statb;
     
     /*
      * Now scan all of the directories into separate databases
@@ -123,9 +127,29 @@ scanDirs (FcStrList *list, char *program, FcBool force, FcBool verbose)
 	    ret++;
 	    continue;
 	}
+	
+	if (stat ((char *) dir, &statb) == -1)
+	{
+	    if (errno == ENOENT || errno == ENOTDIR)
+	    {
+		fprintf (stderr, "\"%s\": no such directory, skipping\n", dir);
+	    }
+	    else
+	    {
+		fprintf (stderr, "\"%s\": ", dir);
+		perror ("");
+		ret++;
+	    }
+	    continue;
+	}
+	if (!S_ISDIR (statb.st_mode))
+	{
+	    fprintf (stderr, "\"%s\": not a directory, skipping\n", dir);
+	    continue;
+	}
 	if (!FcDirScan (set, subdirs, 0, FcConfigGetBlanks (0), dir, force))
 	{
-	    fprintf (stderr, "Can't scan \"%s\"\n", dir);
+	    fprintf (stderr, "\"%s\": error scanning\n", dir);
 	    ret++;
 	    continue;
 	}
