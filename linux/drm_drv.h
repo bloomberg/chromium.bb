@@ -565,6 +565,7 @@ static int __init drm_init( void )
 			/* pass back in pdev to account for multiple identical cards */
 			while ((pdev = pci_get_subsys(pid->vendor, pid->device, pid->subvendor, pid->subdevice, pdev))) {
 				/* stealth mode requires a manual probe */
+				pci_dev_get(pdev);
 				DRM(probe)(pdev, &DRM(pciidlist[i]));
 			}
 		}

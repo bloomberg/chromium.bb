@@ -369,6 +369,7 @@ int drm_init(struct pci_driver *driver,
 					       pid->subvendor, pid->subdevice,
 					       pdev))) {
 				/* stealth mode requires a manual probe */
+				pci_dev_get(pdev);
 				drm_probe(pdev, &pciidlist[i], driver_fn);
 			}
 		}
