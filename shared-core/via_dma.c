@@ -28,7 +28,10 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * Authors: Various
+ * Authors: 
+ *    Tungsten Graphics, 
+ *    Erdi Chen, 
+ *    Thomas Hellstrom.
  */
 
 #include "drmP.h"
@@ -58,7 +61,7 @@
 	dev_priv->dma_low +=8;					\
 }
 
-#define via_flush_write_combine() DRM_MEMORYBARRIER()
+#define via_flush_write_combine() DRM_MEMORYBARRIER() 
 
 #define VIA_OUT_RING_QW(w1,w2)			\
 	*vb++ = (w1);				\
@@ -275,7 +278,7 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 	 * copy it to AGP memory when ready.
 	 */
 
-	
+		
 	if ((ret = via_verify_command_stream((uint32_t *)dev_priv->pci_buf, cmd->size, dev, 1))) {
 		return ret;
 	}
@@ -333,58 +336,8 @@ int via_cmdbuffer(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-static int via_parse_pci_cmdbuffer(drm_device_t * dev, const char *buf,
-				   unsigned int size)
-{
-	drm_via_private_t *dev_priv = dev->dev_private;
-	const uint32_t *regbuf = (const uint32_t *) buf;
-	const uint32_t *regend = regbuf + (size >> 2);
-	const uint32_t *next_fire; 
-	int fire_count = 0;
-	int ret;
-	int check_2d_cmd = 1;
-
-
-
-	if ((ret = via_verify_command_stream(regbuf, size, dev, 0)))
-		return ret;
-
-	next_fire = dev_priv->fire_offsets[fire_count];
-	while (regbuf != regend) {	
-		if ( *regbuf == HALCYON_HEADER2 ) {
-		  
-			regbuf++;
-			check_2d_cmd = ( *regbuf != HALCYON_SUB_ADDR0 );
-			VIA_WRITE(HC_REG_TRANS_SET + HC_REG_BASE, *regbuf++);
-			
-		} else if ( check_2d_cmd && ((*regbuf & HALCYON_HEADER1MASK) == HALCYON_HEADER1 )) {
-
-			register uint32_t addr = ( (*regbuf++ ) & ~HALCYON_HEADER1MASK) << 2;
-			VIA_WRITE( addr, *regbuf++ );
-
-		} else if ( (fire_count < dev_priv->num_fire_offsets) && 
-			    (regbuf == next_fire) &&
-			    (( *regbuf & HALCYON_FIREMASK ) == HALCYON_FIRECMD) ) {
-
-			next_fire = dev_priv->fire_offsets[++fire_count];
-
-			VIA_WRITE(HC_REG_TRANS_SPACE + HC_REG_BASE, *regbuf++);
-
-			if ( ( regbuf != regend ) && 
-			     ((*regbuf & HALCYON_FIREMASK) == HALCYON_FIRECMD))
-				regbuf++;
-			if (( *regbuf & HALCYON_CMDBMASK ) != HC_ACMD_HCmdB )
-				check_2d_cmd = 1;
-		} else {
-
-			VIA_WRITE(HC_REG_TRANS_SPACE + HC_REG_BASE , *regbuf++);
-
-		}
-	} 
-	return 0;
-
-}
-
+extern int 
+via_parse_command_stream(drm_device_t *dev, const uint32_t * buf, unsigned int size);
 static int via_dispatch_pci_cmdbuffer(drm_device_t * dev,
 				      drm_via_cmdbuffer_t * cmd)
 {
@@ -396,7 +349,12 @@ static int via_dispatch_pci_cmdbuffer(drm_device_t * dev,
 	} 
 	if (DRM_COPY_FROM_USER(dev_priv->pci_buf, cmd->buf, cmd->size))
 		return DRM_ERR(EFAULT);
-	ret = via_parse_pci_cmdbuffer(dev, dev_priv->pci_buf, cmd->size);
+	
+	if ((ret = via_verify_command_stream((uint32_t *)dev_priv->pci_buf, cmd->size, dev, 0))) {
+		return ret;
+	}
+	
+	ret = via_parse_command_stream(dev, (const uint32_t *)dev_priv->pci_buf, cmd->size);
 	return ret;
 }
 

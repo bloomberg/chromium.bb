@@ -93,7 +93,7 @@ VIAHEADERS =	via_drm.h via_drv.h via_mm.h via_ds.h \
 		via_3d_reg.h via_verifier.h $(DRMHEADERS)
 VIASHARED	= via_drm.h via_drv.h via_mm.h via_ds.h \
 		via_3d_reg.h via_drv.c via_ds.c via_irq.c via_map.c \
-		via_mm.c via_dma.c via_verifier.c via_verifier.h
+		via_mm.c via_dma.c via_verifier.c via_verifier.h via_video.c
 MACH64HEADERS = mach64_drv.h mach64_drm.h $(DRMHEADERS)
 MACH64SHARED = 	mach64_drv.h mach64_drm.h mach64_dma.c \
 		mach64_irq.c mach64_state.c

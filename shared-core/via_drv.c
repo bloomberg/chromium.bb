@@ -69,7 +69,8 @@ static drm_ioctl_desc_t ioctls[] = {
 	[DRM_IOCTL_NR(DRM_VIA_CMDBUFFER)] = {via_cmdbuffer, 1, 0},
 	[DRM_IOCTL_NR(DRM_VIA_FLUSH)] = {via_flush_ioctl, 1, 0},
 	[DRM_IOCTL_NR(DRM_VIA_PCICMD)] = {via_pci_cmdbuffer, 1, 0},
-	[DRM_IOCTL_NR(DRM_VIA_CMDBUF_SIZE)] = {via_cmdbuf_size, 1, 0}
+	[DRM_IOCTL_NR(DRM_VIA_CMDBUF_SIZE)] = {via_cmdbuf_size, 1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_WAIT_IRQ)] = {via_wait_irq, 1, 0}
 };
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);

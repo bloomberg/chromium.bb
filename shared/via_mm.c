@@ -133,9 +133,7 @@ int via_init_context(struct drm_device *dev, int context)
 int via_final_context(struct drm_device *dev, int context)
 {	
         int i;
-	volatile int *lock;
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
-	drm_via_sarea_t *sAPriv = dev_priv->sarea_priv;
 
 	for (i = 0; i < MAX_CONTEXT; i++)
 		if (global_ppriv[i].used &&
@@ -172,20 +170,6 @@ int via_final_context(struct drm_device *dev, int context)
 		global_ppriv[i].used = 0;
 	}
 	
-	/*
-	 * Release futex locks.
-	 */ 
-
-	for (i=0; i < VIA_NR_XVMC_LOCKS; ++i) {
-	        lock = (int *) XVMCLOCKPTR(sAPriv, i);
-		if ( (_DRM_LOCKING_CONTEXT( *lock ) == context)) {
-			if (_DRM_LOCK_IS_HELD( *lock ) && (*lock & _DRM_LOCK_CONT)) {
-				DRM_WAKEUP( &(dev_priv->decoder_queue[i]));
-			}
-			*lock = 0;
-		}
-	}
-			
 #if defined(__linux__)
 	/* Linux specific until context tracking code gets ported to BSD */
 	/* Last context, perform cleanup */
@@ -193,6 +177,7 @@ int via_final_context(struct drm_device *dev, int context)
 		if (dev->irq)
 			DRM(irq_uninstall) (dev);
 
+		via_cleanup_futex(dev_priv);
 		via_do_cleanup_map(dev);
 	}
 #endif

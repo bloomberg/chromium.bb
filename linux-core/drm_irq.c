@@ -222,12 +222,12 @@ int drm_control(struct inode *inode, struct file *filp,
  * Wait for VBLANK.
  *
  * \param inode device inode.
- * \param filp file pointer.
+ * \param filp file pointer.rm.
  * \param cmd command.
  * \param data user argument, pointing to a drm_wait_vblank structure.
  * \return zero on success or a negative number on failure.
  *
- * Verifies the IRQ is installed.
+ * Verifies the IRQ is installed
  *
  * If a signal is requested checks if this task has already scheduled the same signal
  * for the same vblank sequence number - nothing to be done in

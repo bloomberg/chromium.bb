@@ -17,7 +17,8 @@ radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o
 sis-objs    := sis_drv.o sis_ds.o sis_mm.o
 ffb-objs    := ffb_drv.o ffb_context.o
 savage-objs := savage_drv.o savage_dma.o
-via-objs    := via_irq.o via_drv.o via_ds.o via_map.o via_mm.o via_dma.o via_verifier.o
+via-objs    := via_irq.o via_drv.o via_ds.o via_map.o via_mm.o via_dma.o via_verifier.o \
+		via_video.o
 mach64-objs := mach64_drv.o mach64_dma.o mach64_irq.o mach64_state.o
 
 # Kernel version checks
