@@ -294,10 +294,18 @@ FcCacheFontSetAdd (FcFontSet	    *set,
 	font = FcNameParse (name);
 	if (font)
 	{
+	    FcChar8 *family;
+	    
 	    if (FcDebug () & FC_DBG_CACHEV)
 		printf (" dir cache file \"%s\"\n", file);
 	    ret = FcPatternAddString (font, FC_FILE, path);
-	    if (ret && (!config || FcConfigAcceptFont (config, font)))
+	    /*
+	     * Make sure the pattern has the file name as well as
+	     * already containing at least one family name.
+	     */
+	    if (ret && 
+		FcPatternGetString (font, FC_FAMILY, 0, &family) == FcResultMatch &&
+		(!config || FcConfigAcceptFont (config, font)))
 	    {
 		frozen = FcPatternFreeze (font);
 		ret = (frozen != 0);

@@ -1,3 +1,10 @@
+2005-01-04  Keith Packard  <keithp@keithp.com>
+
+	* src/fccache.c: (FcCacheFontSetAdd):
+	Verify that every font pattern loaded from cache has
+	both FC_FILE and FC_FAMILY entries.
+	Attempt to fix bug #2219.
+
 2004-12-29  Keith Packard  <keithp@keithp.com>
 
 	* README:
