@@ -125,9 +125,12 @@ drm_ioctl_desc_t		  DRM(ioctls)[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]         = { DRM(noop),        1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]       = { DRM(noop),        1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)]    = { DRM(authmagic),   1, 1 },
-
+	
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]       = { DRM(addmap),      1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_RM_MAP)]        = { DRM(rmmap),       1, 0 },
+
+	[DRM_IOCTL_NR(DRM_IOCTL_SET_SAREA_CTX)] = { DRM(setsareactx), 1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_SAREA_CTX)] = { DRM(getsareactx), 1, 0 },
 
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]       = { DRM(addctx),      1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]        = { DRM(rmctx),       1, 1 },
@@ -501,9 +504,6 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  	DRM(init_fn_table)(dev);
 
 	DRM(driver_register_fns)(dev);
-	
-	/* if we have CTX_BITMAP add the ioctls */
-	DRM(context_add_ioctls)();
 	
 	if (dev->fn_tbl.preinit)
 		if ((retcode = dev->fn_tbl.preinit(dev, ent->driver_data)))

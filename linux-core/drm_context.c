@@ -42,7 +42,6 @@
 
 #include "drmP.h"
 
-#ifndef DRIVER_ALTERNATE_CONTEXT
 /******************************************************************/
 /** \name Context bitmap support */
 /*@{*/
@@ -573,19 +572,6 @@ int DRM(rmctx)( struct inode *inode, struct file *filp,
 	up( &dev->ctxlist_sem );
 
 	return 0;
-}
-#endif
-
-extern drm_ioctl_desc_t DRM(ioctls)[];
-void DRM(context_add_ioctls)(void)
-{
-  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_SET_SAREA_CTX)].func = DRM(setsareactx);
-  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_SET_SAREA_CTX)].auth_needed = 1;
-  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_SET_SAREA_CTX)].root_only = 1;
-
-  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_GET_SAREA_CTX)].func = DRM(getsareactx);
-  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_GET_SAREA_CTX)].auth_needed = 1;
-  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_GET_SAREA_CTX)].root_only = 0;
 }
 /*@}*/
 
