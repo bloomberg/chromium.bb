@@ -728,6 +728,7 @@ extern int           DRM(lock)(struct inode *inode, struct file *filp,
 extern int           DRM(unlock)(struct inode *inode, struct file *filp,
 				 unsigned int cmd, unsigned long arg);
 extern int           DRM(fb_loaded);
+extern struct file_operations DRM(fops);
 
 				/* Device support (drm_fops.h) */
 extern int	     DRM(open_helper)(struct inode *inode, struct file *filp,

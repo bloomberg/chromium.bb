@@ -139,7 +139,6 @@ static int drm_hotplug (struct class_device *dev, char **envp, int num_envp,
 			return -ENOMEM;
 	}
 	envp[i] = 0;
-	DRM_DEBUG(" - ok\n");
 	
 	return 0;
 }

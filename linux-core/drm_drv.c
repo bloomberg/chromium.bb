@@ -103,10 +103,10 @@
 #endif
 
 #ifndef DRIVER_PREINIT
-#define DRIVER_PREINIT(dev) 0
+#define DRIVER_PREINIT(dev, flags) 0
 #endif
 #ifndef DRIVER_POSTINIT
-#define DRIVER_POSTINIT(dev) 0
+#define DRIVER_POSTINIT(dev, flags) 0
 #endif
 #ifndef DRIVER_PRERELEASE
 #define DRIVER_PRERELEASE()
@@ -115,7 +115,7 @@
 #define DRIVER_PRETAKEDOWN(dev)
 #endif
 #ifndef DRIVER_POSTCLEANUP
-#define DRIVER_POSTCLEANUP()
+#define DRIVER_POSTCLEANUP(dev)
 #endif
 #ifndef DRIVER_PRESETUP
 #define DRIVER_PRESETUP()
@@ -131,7 +131,7 @@
 #endif
 #ifndef DRIVER_FOPS
 #define DRIVER_FOPS				\
-static struct file_operations	DRM(fops) = {	\
+struct file_operations	DRM(fops) = {	\
 	.owner   = THIS_MODULE,			\
 	.open	 = DRM(open),			\
 	.flush	 = DRM(flush),			\
@@ -596,7 +596,7 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	dev->pci_func = PCI_FUNC(pdev->devfn);
 	dev->irq = pdev->irq;
 
-	if ((retcode = DRIVER_PREINIT(dev)))
+	if ((retcode = DRIVER_PREINIT(dev, ent->driver_data)))
 	  goto error_out_unreg;
 
 #if __REALLY_HAVE_AGP
@@ -643,8 +643,8 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 		dev->minor,
 		pci_pretty_name(pdev)
 		);
-
-	if ((retcode = DRIVER_POSTINIT(dev)))
+	/* drivers add secondary heads here if needed */
+	if ((retcode = DRIVER_POSTINIT(dev, ent->driver_data)))
 		goto error_out_unreg;
 
 	return 0;
@@ -765,6 +765,7 @@ static void __exit drm_cleanup( drm_device_t *dev )
 		dev->agp = NULL;
 	}
 #endif
+	DRIVER_POSTCLEANUP(dev);
 }
 
 static void __exit drm_exit (void)
