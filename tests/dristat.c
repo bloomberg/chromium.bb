@@ -75,11 +75,11 @@ static void getvm(int fd)
     int             i;
     const char      *typename;
     char            flagname[33];
-    drmHandle       offset;
+    drm_handle_t    offset;
     drmSize         size;
     drmMapType      type;
     drmMapFlags     flags;
-    drmHandle       handle;
+    drm_handle_t    handle;
     int             mtrr;
 
     printf("  VM map information:\n");
@@ -248,7 +248,16 @@ int main(int argc, char **argv)
 	case 'i': interval = strtol(optarg, NULL, 0); break;
 	case 'M': minor = strtol(optarg, NULL, 0);    break;
 	default:
-	    fprintf( stderr, "Usage: dristat [options]\n" );
+	    fprintf( stderr, "Usage: dristat [options]\n\n" );
+	    fprintf( stderr, "Displays DRM information. Use with no arguments to display available cards.\n\n" );
+	    fprintf( stderr, "  -a            Show all available information\n" );
+	    fprintf( stderr, "  -b            Show DRM bus ID's\n" );
+	    fprintf( stderr, "  -c            Display information about DRM clients\n" );
+	    fprintf( stderr, "  -i [interval] Continuously display statistics every [interval] seconds\n" );
+	    fprintf( stderr, "  -v            Display DRM module and card version information\n" );
+	    fprintf( stderr, "  -m            Display memory use information\n" );
+	    fprintf( stderr, "  -s            Display DRM statistics\n" );
+	    fprintf( stderr, "  -M [minor]    Select card by minor number\n" );
 	    return 1;
 	}
 
