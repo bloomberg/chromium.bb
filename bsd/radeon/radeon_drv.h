@@ -163,6 +163,7 @@ extern int radeon_cp_indices( DRM_OS_IOCTL );
 extern int radeon_cp_texture( DRM_OS_IOCTL );
 extern int radeon_cp_stipple( DRM_OS_IOCTL );
 extern int radeon_cp_indirect( DRM_OS_IOCTL );
+extern int radeon_cp_vertex2( DRM_OS_IOCTL );
 
 /* Register definitions, register access macros and drmAddMap constants
  * for Radeon kernel driver.

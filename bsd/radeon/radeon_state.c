@@ -1462,11 +1462,9 @@ int radeon_cp_indirect( DRM_OS_IOCTL )
 	return 0;
 }
 
-int radeon_cp_vertex2( struct inode *inode, struct file *filp,
-		      unsigned int cmd, unsigned long arg )
+int radeon_cp_vertex2( DRM_OS_IOCTL )
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	DRM_OS_DEVICE;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	drm_device_dma_t *dma = dev->dma;
 	drm_buf_t *buf;
@@ -1479,12 +1477,10 @@ int radeon_cp_vertex2( struct inode *inode, struct file *filp,
 
 	if ( !dev_priv ) {
 		DRM_ERROR( "%s called with no initialization\n", __FUNCTION__ );
-		return -EINVAL;
+		DRM_OS_RETURN(EINVAL);
 	}
 
-	if ( copy_from_user( &vertex, (drm_radeon_vertex_t *)arg,
-			     sizeof(vertex) ) )
-		return -EFAULT;
+	DRM_OS_KRNFROMUSR(vertex, (drm_radeon_vertex2_t *)data, sizeof(vertex));
 
 	DRM_DEBUG( __FUNCTION__": pid=%d index=%d discard=%d\n",
 		   current->pid, vertex.idx, vertex.discard );
@@ -1492,7 +1488,7 @@ int radeon_cp_vertex2( struct inode *inode, struct file *filp,
 	if ( vertex.idx < 0 || vertex.idx >= dma->buf_count ) {
 		DRM_ERROR( "buffer index %d (of %d max)\n",
 			   vertex.idx, dma->buf_count - 1 );
-		return -EINVAL;
+		DRM_OS_RETURN(EINVAL);
 	}
 
 	RING_SPACE_TEST_WITH_RETURN( dev_priv );
@@ -1501,22 +1497,22 @@ int radeon_cp_vertex2( struct inode *inode, struct file *filp,
 	buf = dma->buflist[vertex.idx];
 	buf_priv = buf->dev_private;
 
-	if ( buf->pid != current->pid ) {
+	if ( buf->pid != DRM_OS_CURRENTPID ) {
 		DRM_ERROR( "process %d using buffer owned by %d\n",
-			   current->pid, buf->pid );
-		return -EINVAL;
+			   DRM_OS_CURRENTPID, buf->pid );
+		DRM_OS_RETURN(EINVAL);
 	}
 
 	if ( buf->pending ) {
 		DRM_ERROR( "sending pending buffer %d\n", vertex.idx );
-		return -EINVAL;
+		DRM_OS_RETURN(EINVAL);
 	}
 
 	for (laststate = 0xff, i = 0 ; i < vertex.nr_prims ; i++) {
 		drm_radeon_prim_t prim;
 		
-		if ( copy_from_user( &prim, &vertex.prim[i], sizeof(prim) ) )
-			return -EFAULT;
+		if ( DRM_OS_COPYFROMUSR( &prim, &vertex.prim[i], sizeof(prim)))
+			DRM_OS_RETURN(EINVAL);
 		
 /*    		printk( "prim %d vfmt %x hwprim %x start %d finish %d\n", */
 /*  			   i, prim.vc_format, prim.prim, */
@@ -1525,16 +1521,16 @@ int radeon_cp_vertex2( struct inode *inode, struct file *filp,
 		if (  (prim.prim & RADEON_PRIM_TYPE_MASK) > 
 		      RADEON_PRIM_TYPE_3VRT_LINE_LIST ) {
 			DRM_ERROR( "buffer prim %d\n", prim.prim );
-			return -EINVAL;
+			DRM_OS_RETURN(EINVAL);
 		}
 
 		if ( prim.stateidx != laststate ) {
 			drm_radeon_state_t state;			       
 				
-			if ( copy_from_user( &state, 
-					     &vertex.state[prim.stateidx], 
-					     sizeof(state) ) )
-				return -EFAULT;
+			if ( DRM_OS_COPYFROMUSR( &state,
+						 &vertex.state[prim.stateidx],
+						 sizeof(state) ) )
+				DRM_OS_RETURN(EINVAL);
 
 /*  			printk("emit state %d (%p) dirty %x\n", */
 /*  			       prim.stateidx, */
@@ -1551,7 +1547,7 @@ int radeon_cp_vertex2( struct inode *inode, struct file *filp,
 
 		if ( prim.start & 0x7 ) {
 			DRM_ERROR( "misaligned buffer 0x%x\n", prim.start );
-			return -EINVAL;
+			DRM_OS_RETURN(EINVAL);
 		}
 
 		if ( prim.prim & RADEON_PRIM_WALK_IND ) {

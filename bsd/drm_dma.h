@@ -602,20 +602,19 @@ int DRM(control)( DRM_OS_IOCTL )
 
 #else
 
-int DRM(control)( struct inode *inode, struct file *filp,
-		  unsigned int cmd, unsigned long arg )
+int DRM(control)( DRM_OS_IOCTL )
 {
+	DRM_OS_DEVICE;
 	drm_control_t ctl;
 
-	if ( copy_from_user( &ctl, (drm_control_t *)arg, sizeof(ctl) ) )
-		return -EFAULT;
+	DRM_OS_KRNFROMUSR( ctl, (drm_control_t *) data, sizeof(ctl) );
 
 	switch ( ctl.func ) {
 	case DRM_INST_HANDLER:
 	case DRM_UNINST_HANDLER:
 		return 0;
 	default:
-		return -EINVAL;
+		DRM_OS_RETURN(EINVAL);
 	}
 }
 
