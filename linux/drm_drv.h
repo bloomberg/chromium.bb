@@ -480,12 +480,12 @@ static int __init drm_init( void )
 		DRM(takedown)( dev );
 		return -ENOMEM;
 	}
-#endif
 #if __REALLY_HAVE_MTRR
 	dev->agp->agp_mtrr = mtrr_add( dev->agp->agp_info.aper_base,
 				       dev->agp->agp_info.aper_size*1024*1024,
 				       MTRR_TYPE_WRCOMB,
 				       1 );
+#endif
 #endif
 #endif
 

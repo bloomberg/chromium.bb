@@ -77,7 +77,7 @@ int DRM(agp_acquire)(struct inode *inode, struct file *filp,
 	drm_device_t	 *dev	 = priv->dev;
 	int              retcode;
 
-	if (dev->agp->acquired || !drm_agp->acquire) return -EINVAL;
+	if (!dev->agp|| dev->agp->acquired || !drm_agp->acquire) return -EINVAL;
 	if ((retcode = drm_agp->acquire())) return retcode;
 	dev->agp->acquired = 1;
 	return 0;
