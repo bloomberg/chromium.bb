@@ -9,14 +9,20 @@ cd $srcdir
 PROJECT=Fontconfig
 TEST_TYPE=-f
 FILE=fontconfig/fontconfig.h
+ACLOCAL=${ACLOCAL-aclocal}
+LIBTOOLIZE=${LIBTOOLIZE-libtoolize}
+AUTOMAKE=${AUTOMAKE-automake}
+AUTOHEADER=${AUTOHEADER-autoheader}
+AUTOCONF=${AUTOCONF-autoconf}
+LIBTOOLIZE_FLAGS="--copy --force"
 
 DIE=0
 
 have_libtool=false
-if libtool --version < /dev/null > /dev/null 2>&1 ; then
-	libtool_version=`libtoolize --version | sed 's/^[^0-9]*\([0-9].[0-9.]*\).*/\1/'`
+if $LIBTOOLIZE --version < /dev/null > /dev/null 2>&1 ; then
+	libtool_version=`$LIBTOOLIZE --version | sed 's/^[^0-9]*\([0-9].[0-9.]*\).*/\1/'`
 	case $libtool_version in
-	    1.4*|1.5*)
+	    1.4*|1.5*|1.6*|1.7*|2*)
 		have_libtool=true
 		;;
 	esac
@@ -29,7 +35,7 @@ if $have_libtool ; then : ; else
 	DIE=1
 fi
 
-(autoconf --version) < /dev/null > /dev/null 2>&1 || {
+($AUTOCONF --version) < /dev/null > /dev/null 2>&1 || {
 	echo
 	echo "You must have autoconf installed to compile $PROJECT."
 	echo "libtool the appropriate package for your distribution,"
@@ -38,10 +44,15 @@ fi
 }
 
 have_automake=false
-if automake --version < /dev/null > /dev/null 2>&1 ; then
-	automake_version=`automake --version | grep 'automake (GNU automake)' | sed 's/^[^0-9]*\(.*\)/\1/'`
+need_libtoolize=true
+if $AUTOMAKE --version < /dev/null > /dev/null 2>&1 ; then
+	automake_version=`$AUTOMAKE --version | grep 'automake (GNU automake)' | sed 's/^[^0-9]*\(.*\)/\1/'`
 	case $automake_version in
 	   1.2*|1.3*|1.4) 
+		;;
+	   1.4*)
+	   	have_automake=true
+	        need_libtoolize=false
 		;;
 	   *)
 		have_automake=true
@@ -72,16 +83,30 @@ if test -z "$AUTOGEN_SUBDIR_MODE"; then
         fi
 fi
 
-aclocal $ACLOCAL_FLAGS
+echo Running $ACLOCAL $ACLOCAL_FLAGS
+$ACLOCAL $ACLOCAL_FLAGS
 
 # optionally run autoheader
-(autoheader --version)  < /dev/null > /dev/null 2>&1 && autoheader
+if $AUTOHEADER --version  < /dev/null > /dev/null 2>&1; then
+	echo Running $AUTOHEADER
+	$AUTOHEADER
+fi
 
-automake -a $am_opt
-autoconf
+case $need_libtoolize in
+   true)
+   	echo Running $LIBTOOLIZE $LIBTOOLIZE_FLAGS
+   	$LIBTOOLIZE $LIBTOOLIZE_FLAGS
+	;;
+esac
+
+echo Running $AUTOMAKE -a $am_opt
+$AUTOMAKE -a $am_opt
+echo Running $AUTOCONF
+$AUTOCONF
 cd $ORIGDIR
 
 if test -z "$AUTOGEN_SUBDIR_MODE"; then
+	echo Running $srcdir/configure
         $srcdir/configure --enable-maintainer-mode "$@"
 
         echo 
