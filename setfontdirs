@@ -1,4 +1,9 @@
 #!/bin/sh
+#
+# $XFree86$
+#
+LANG=C
+export LANG
 FONTDIRS=fontdirs$$
 trap "rm $FONTDIRS" 0
 sh ./findfonts ${1+"$@"} > $FONTDIRS
