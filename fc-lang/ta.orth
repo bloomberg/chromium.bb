@@ -25,7 +25,10 @@
 #
 # Taken from the Unicode coverage of this language
 #
-0b82-0b83
+# updates from Jungshik Shin <jshin@mailaps.org>
+#
+#0b82		# not present in many Tamil fonts
+0b83
 0b85-0b8a
 0b8e-0b90
 0b92-0b95
@@ -40,4 +43,4 @@
 0bc6-0bc8
 0bca-0bcd
 0bd7
-0be7-0bf2
+#0be7-0bf2	# Tamil digits and numbers
