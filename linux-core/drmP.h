@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.58 1999/08/30 13:05:00 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.2 1999/12/14 01:33:56 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.1 1999/09/25 14:37:59 dawes Exp $
  * 
  */
 
@@ -48,6 +48,10 @@
 #include <asm/uaccess.h>
 #ifdef CONFIG_MTRR
 #include <asm/mtrr.h>
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,1,0)
+#include <asm/spinlock.h>
+#include <linux/poll.h>
 #endif
 #include "drm.h"
 
@@ -478,6 +482,7 @@ extern int	     drm_fasync(int fd, struct file *filp, int on);
 extern ssize_t	     drm_read(struct file *filp, char *buf, size_t count,
 			      loff_t *off);
 extern int	     drm_write_string(drm_device_t *dev, const char *s);
+extern unsigned int  drm_poll(struct file *filp, struct poll_table_struct *wait);
 
 				/* Mapping support (vm.c) */
 #if LINUX_VERSION_CODE < 0x020317

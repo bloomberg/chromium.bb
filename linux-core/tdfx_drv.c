@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI$
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/tdfx_drv.c,v 1.1 1999/12/14 01:49:22 robin Exp $
+ * $XFree86$
  *
  */
 
@@ -53,6 +53,7 @@ static struct file_operations tdfx_fops = {
 	mmap:	 drm_mmap,
 	read:	 drm_read,
 	fasync:	 drm_fasync,
+	poll: drm_poll
 };
 
 static struct miscdevice      tdfx_misc = {
