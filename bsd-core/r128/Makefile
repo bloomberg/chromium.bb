@@ -7,12 +7,6 @@ SRCS    = r128_cce.c r128_drv.c r128_state.c
 SRCS   += device_if.h bus_if.h pci_if.h opt_drm.h
 CFLAGS += ${DEBUG_FLAGS} -I. -I..
 
-@:
-	ln -sf /sys @
-
-machine:
-	ln -sf /sys/i386/include machine
-
 .if defined(DRM_DEBUG)
 DRM_DEBUG_OPT= "\#define DRM_DEBUG 1"
 .endif
