@@ -1,5 +1,9 @@
 2003-10-26  Keith Packard  <keithp@keithp.com>
 
+	Tag version 2.2.91
+
+2003-10-26  Keith Packard  <keithp@keithp.com>
+
 	* doc/Makefile.am:
 	Include confdir.sgml.in in EXTRA_DIST
 
