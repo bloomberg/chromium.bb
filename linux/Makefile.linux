@@ -209,7 +209,7 @@ endif
 # Make sure that the shared source files are linked into this directory.
 
 
-SHAREDDIR := ../../../shared/drm/kernel
+SHAREDDIR := ../shared
 
 HASSHARED := $(shell if [ -d $(SHAREDDIR) ]; then echo y; fi)
 
