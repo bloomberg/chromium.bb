@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.15 2002/06/02 20:52:06 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.16 2002/06/03 08:31:15 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -584,6 +584,9 @@ FcPatternCreate (void);
 
 FcPattern *
 FcPatternDuplicate (FcPattern *p);
+
+void
+FcPatternReference (FcPattern *p);
 
 void
 FcValueDestroy (FcValue v);

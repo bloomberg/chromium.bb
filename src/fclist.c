@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fclist.c,v 1.4 2002/06/02 21:07:56 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fclist.c,v 1.5 2002/06/03 08:31:15 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *

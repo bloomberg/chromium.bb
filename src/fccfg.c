@@ -1129,6 +1129,10 @@ FcConfigSubstitute (FcConfig	*config,
 	    st[i].value = FcConfigMatchValueList (p, t, st[i].elt->values);
 	    if (!st[i].value)
 		break;
+	    if (t->qual == FcQualFirst && st[i].value != st[i].elt->values)
+		break;
+	    if (t->qual == FcQualNotFirst && st[i].value == st[i].elt->values)
+		break;
 	}
 	if (t)
 	{

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.12 2002/05/31 23:21:25 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.13 2002/06/03 08:31:15 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -94,13 +94,14 @@ typedef struct _FcValueList {
 
 typedef struct _FcPatternElt {
     const char	    *object;
-    FcValueList    *values;
+    FcValueList	    *values;
 } FcPatternElt;
 
 struct _FcPattern {
     int		    num;
     int		    size;
-    FcPatternElt   *elts;
+    int		    ref;
+    FcPatternElt    *elts;
 };
 
 typedef enum _FcOp {
@@ -134,7 +135,7 @@ typedef struct _FcExpr {
 } FcExpr;
 
 typedef enum _FcQual {
-    FcQualAny, FcQualAll
+    FcQualAny, FcQualAll, FcQualFirst, FcQualNotFirst
 } FcQual;
 
 typedef struct _FcTest {

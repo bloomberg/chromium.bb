@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcdbg.c,v 1.2 2002/02/18 22:29:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcdbg.c,v 1.3 2002/06/02 21:07:56 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -214,6 +214,12 @@ FcTestPrint (FcTest *test)
 	break;
     case FcQualAll:
 	printf ("all ");
+	break;
+    case FcQualFirst:
+	printf ("first ");
+	break;
+    case FcQualNotFirst:
+	printf ("not_first ");
 	break;
     }
     printf ("%s ", test->field);

@@ -1316,6 +1316,10 @@ FcParseTest (FcConfigParse *parse)
 	    qual = FcQualAny;
 	else if (!strcmp ((char *) qual_string, "all"))
 	    qual = FcQualAll;
+	else if (!strcmp ((char *) qual_string, "first"))
+	    qual = FcQualFirst;
+	else if (!strcmp ((char *) qual_string, "not_first"))
+	    qual = FcQualNotFirst;
 	else
 	{
 	    FcConfigMessage (parse, FcSevereWarning, "invalid test qual \"%s\"", qual_string);

@@ -109,10 +109,13 @@
 
     if 'qual' is 'any', then the match succeeds if any value in the field matches.
     if 'qual' is 'all', then the match succeeds only if all values match.
+    if 'qual' is 'first', then the match succeeds only if the first value matches.
+    if 'qual' is 'not_first', then the match succeeds only if any value other than
+    	the first matches.
 -->
 <!ELEMENT test (%expr;)*>
 <!ATTLIST test 
-	  qual (any|all)    "any"
+	  qual (any|all|first|not_first)    "any"
 	  name CDATA	    #REQUIRED
 	  compare (eq|not_eq|less|less_eq|more|more_eq)	"eq">
 

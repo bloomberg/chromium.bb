@@ -329,16 +329,30 @@ FcFontRenderPrepare (FcConfig	    *config,
 	pe = FcPatternFindElt (pat, fe->object);
 	if (pe)
 	{
+	    int	    j;
+	    double  score[NUM_MATCHER];
+
+	    for (j = 0; j < NUM_MATCHER; j++)
+		score[j] = 0;
 	    if (!FcCompareValueList (pe->object, pe->values, 
 				     fe->values, &v, 0, &result))
 	    {
 		FcPatternDestroy (new);
 		return 0;
 	    }
+	    for (j = 0; j < NUM_MATCHER; j++)
+		if (score[j] >= 100.0)
+		{
+		    FcValueList	*pv;
+
+		    for (pv = pe->values; pv; pv = pv->next)
+			FcPatternAdd (new, fe->object, pv->value, FcTrue);
+		    break;
+		}
 	}
 	else
 	    v = fe->values->value;
-	FcPatternAdd (new, fe->object, v, FcTrue);
+	FcPatternAdd (new, fe->object, v, FcFalse);
     }
     for (i = 0; i < pat->num; i++)
     {
@@ -502,8 +516,12 @@ FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool tri
 		else
 		    ncs = FcCharSetCopy (ncs);
 		*cs = ncs;
+		FcPatternReference (node->pattern);
 		if (!FcFontSetAdd (fs, node->pattern))
+		{
+		    FcPatternDestroy (node->pattern);
 		    return FcFalse;
+		}
 	    }
 	}
     }
@@ -513,7 +531,6 @@ FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool tri
 void
 FcFontSetSortDestroy (FcFontSet *fs)
 {
-    fs->nfont = 0;
     FcFontSetDestroy (fs);
 }
 

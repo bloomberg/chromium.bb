@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.6 2002/05/31 23:21:25 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.7 2002/06/03 08:31:15 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -38,6 +38,7 @@ FcPatternCreate (void)
     p->num = 0;
     p->size = 0;
     p->elts = 0;
+    p->ref = 1;
     return p;
 }
 
@@ -231,6 +232,9 @@ FcPatternDestroy (FcPattern *p)
 {
     int		    i;
     
+    if (--p->ref > 0)
+	return;
+
     for (i = 0; i < p->num; i++)
 	FcValueListDestroy (p->elts[i].values);
 
@@ -704,6 +708,12 @@ bail1:
     FcPatternDestroy (new);
 bail0:
     return 0;
+}
+
+void
+FcPatternReference (FcPattern *p)
+{
+    p->ref++;
 }
 
 FcPattern *

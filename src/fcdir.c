@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcdir.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcdir.c,v 1.5 2002/05/21 17:06:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -71,7 +71,8 @@ FcFileScan (FcFontSet	    *set,
 	    {
 		font = FcNameParse (name);
 		if (font)
-		    FcPatternAddString (font, FC_FILE, file);
+		    if (!FcPatternAddString (font, FC_FILE, file))
+			ret = FcFalse;
 	    }
 	}
 	else

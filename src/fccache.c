@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.4 2002/03/01 01:00:54 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.7 2002/05/21 17:06:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -594,9 +594,16 @@ FcFileCacheReadDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *cache_file)
 		{
 		    printf (" dir cache file \"%s\"\n", file);
 		}
-		FcPatternAddString (font, FC_FILE, path);
-		if (!FcFontSetAdd (set, font))
+		if (!FcPatternAddString (font, FC_FILE, path))
+		{
+		    FcPatternDestroy (font);
 		    goto bail2;
+		}
+		if (!FcFontSetAdd (set, font))
+		{
+		    FcPatternDestroy (font);
+		    goto bail2;
+		}
 	    }
 	}
 	if (path != path_buf)
