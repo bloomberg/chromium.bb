@@ -597,7 +597,6 @@ int DRM(control)( DRM_IOCTL_ARGS )
 }
 
 #if __HAVE_VBL_IRQ
-
 int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 {
 	DRM_DEVICE;

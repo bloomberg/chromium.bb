@@ -100,6 +100,13 @@
  [DRM_IOCTL_NR(DRM_IOCTL_RADEON_IRQ_EMIT)]   = { radeon_irq_emit, 1, 0 }, \
  [DRM_IOCTL_NR(DRM_IOCTL_RADEON_IRQ_WAIT)]   = { radeon_irq_wait, 1, 0 },
 
+
+#define USE_IRQS 1
+#if USE_IRQS
+#define __HAVE_DMA_IRQ		1
+#define __HAVE_VBL_IRQ		1
+#define __HAVE_SHARED_IRQ       1
+
 /* When a client dies:
  *    - Check for and clean up flipped page state
  *    - Free any alloced agp memory.
@@ -128,13 +135,14 @@
 	}								\
 } while (0)
 
+#else
+#define __HAVE_DMA_IRQ 0
+#endif
+
 /* DMA customization:
  */
 #define __HAVE_DMA		1
 
-#define __HAVE_DMA_IRQ		1
-#define __HAVE_VBL_IRQ		1
-#define __HAVE_SHARED_IRQ       1
 
 /* Buffer customization:
  */

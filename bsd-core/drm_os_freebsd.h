@@ -139,6 +139,21 @@ do {								\
 	}							\
 } while (0)
 
+#define DRM_HZ hz
+
+#define DRM_WAIT_ON( ret, queue, timeout, condition )			\
+do {									\
+	if (condition)							\
+		break;							\
+	ret = tsleep( &(queue), PZERO | PCATCH, "rdnirq", (timeout) );	\
+	if ( (ret == EWOULDBLOCK) || (ret == EINTR) )			\
+		return DRM_ERR(EBUSY);					\
+} while (1)
+
+#define DRM_WAKEUP( queue ) wakeup( queue )
+#define DRM_WAKEUP_INT( queue ) wakeup( queue )
+#define DRM_INIT_WAITQUEUE( queue )  do {} while (0)
+
 #define DRM_COPY_TO_USER_IOCTL(user, kern, size)	\
 	if ( IOCPARM_LEN(cmd) != size)			\
 		return EINVAL;				\
@@ -173,8 +188,6 @@ do {									\
    	__asm __volatile("" : : : "memory");				\
 } while (0)
 
-#define DRM_WAKEUP(w) wakeup(w)
-#define DRM_WAKEUP_INT(w) wakeup(w)
 
 #define PAGE_ALIGN(addr) round_page(addr)
 

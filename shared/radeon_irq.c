@@ -59,42 +59,36 @@ void DRM(dma_service)( DRM_IRQ_ARGS )
 	drm_device_t *dev = (drm_device_t *) arg;
 	drm_radeon_private_t *dev_priv = 
 	   (drm_radeon_private_t *)dev->dev_private;
-   	u32 stat, ack = 0;
+   	u32 stat;
 
-	/* Need to wait for fifo to drain?
-	 */
 	stat = RADEON_READ(RADEON_GEN_INT_STATUS);
+	if (!stat)
+		return;
 
 	/* SW interrupt */
 	if (stat & RADEON_SW_INT_TEST) {
-		ack |= RADEON_SW_INT_TEST_ACK;
-#ifdef __linux__
-		wake_up_interruptible(&dev_priv->swi_queue);
-#endif
-#ifdef __FreeBSD__
-		wakeup(&dev->vbl_queue);
-#endif
+		DRM_WAKEUP( &dev_priv->swi_queue );
 	}
 
+#if __HAVE_VBL_IRQ
 	/* VBLANK interrupt */
 	if (stat & RADEON_CRTC_VBLANK_STAT) {
-		ack |= RADEON_CRTC_VBLANK_STAT_ACK;
 		atomic_inc(&dev->vbl_received);
-#ifdef __linux__
-		wake_up_interruptible(&dev->vbl_queue);
-#endif
-#ifdef __FreeBSD__
-		wakeup(&dev->vbl_queue);
-#endif
+		DRM_WAKEUP(&dev->vbl_queue);
 	}
+#endif
 
-	if (ack)
-		RADEON_WRITE(RADEON_GEN_INT_STATUS, ack);
+	/* Acknowledge all the bits in GEN_INT_STATUS -- seem to get
+	 * more than we asked for...
+	 */
+	RADEON_WRITE(RADEON_GEN_INT_STATUS, stat);
 }
 
 static __inline__ void radeon_acknowledge_irqs(drm_radeon_private_t *dev_priv)
 {
-   	RADEON_WRITE( RADEON_GEN_INT_STATUS, RADEON_READ( RADEON_GEN_INT_STATUS ) );
+	u32 tmp = RADEON_READ( RADEON_GEN_INT_STATUS );
+	if (tmp)
+		RADEON_WRITE( RADEON_GEN_INT_STATUS, tmp );
 }
 
 int radeon_emit_irq(drm_device_t *dev)
@@ -120,52 +114,22 @@ int radeon_wait_irq(drm_device_t *dev, int swi_nr)
 {
   	drm_radeon_private_t *dev_priv = 
 	   (drm_radeon_private_t *)dev->dev_private;
-#ifdef __linux__
-	DECLARE_WAITQUEUE(entry, current);
-	unsigned long end = jiffies + HZ*3;
-#endif /* __linux__ */
 	int ret = 0;
 
  	if (RADEON_READ( RADEON_LAST_SWI_REG ) >= swi_nr)  
  		return 0; 
+
 	dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
 
+	/* This is a hack to work around mysterious freezes on certain
+	 * systems:
+	 */ 
 	radeon_acknowledge_irqs( dev_priv );
 
-#ifdef __linux__
-	add_wait_queue(&dev_priv->swi_queue, &entry);
+	DRM_WAIT_ON( ret, dev_priv->swi_queue, 3 * DRM_HZ, 
+		     RADEON_READ( RADEON_LAST_SWI_REG ) >= swi_nr );
 
-	for (;;) {
-		current->state = TASK_INTERRUPTIBLE;
-	   	if (RADEON_READ( RADEON_LAST_SWI_REG ) >= swi_nr) 
-		   break;
-		if((signed)(end - jiffies) <= 0) {
-		   	ret = -EBUSY;	/* Lockup?  Missed irq? */
-			break;
-		}
-	      	schedule_timeout(max(HZ/100,1));
-	      	if (signal_pending(current)) {
-		   	ret = -EINTR;
-			break;
-		}
-	}
-
-	current->state = TASK_RUNNING;
-	remove_wait_queue(&dev_priv->swi_queue, &entry);
 	return ret;
-#endif /* __linux__ */
-	
-#ifdef __FreeBSD__
-	for (;;) {
-	   	if (RADEON_READ( RADEON_LAST_SWI_REG ) >= swi_nr) 
-			break;
-		ret = tsleep( &dev_priv->swi_queue, PZERO | PCATCH, \
-			"rdnirq", 3*hz );
-		if (ret)
-			break;
-	}
-	return ret;
-#endif /* __FreeBSD__ */
 }
 
 int radeon_emit_and_wait_irq(drm_device_t *dev)
@@ -174,7 +138,8 @@ int radeon_emit_and_wait_irq(drm_device_t *dev)
 }
 
 
-int radeon_vblank_wait(drm_device_t *dev, unsigned int *sequence)
+#if __HAVE_VBL_IRQ
+int DRM(vblank_wait)(drm_device_t *dev, unsigned int *sequence)
 {
   	drm_radeon_private_t *dev_priv = 
 	   (drm_radeon_private_t *)dev->dev_private;
@@ -186,34 +151,23 @@ int radeon_vblank_wait(drm_device_t *dev, unsigned int *sequence)
 		return DRM_ERR(EINVAL);
 	}
 
-	/* Assume that the user has missed the current sequence number by about
-	 * a day rather than she wants to wait for years using vertical blanks :)
+	radeon_acknowledge_irqs( dev_priv );
+
+	dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
+
+	/* Assume that the user has missed the current sequence number
+	 * by about a day rather than she wants to wait for years
+	 * using vertical blanks... 
 	 */
-	while ( ( ( cur_vblank = atomic_read(&dev->vbl_received ) )
-		+ ~*sequence + 1 ) > (1<<23) ) {
-		dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
-
-		radeon_acknowledge_irqs( dev_priv );
-
-#ifdef __linux__
-		interruptible_sleep_on( &dev->vbl_queue );
-
-		if (signal_pending(current)) {
-			ret = -EINTR;
-			break;
-		}
-#endif /* __linux__ */
-#ifdef __FreeBSD__
-		ret = tsleep( &dev->vbl_queue, 3*hz, "rdnvbl", PZERO | PCATCH);
-		if (ret)
-			break;
-#endif /* __FreeBSD__ */
-	}
+	DRM_WAIT_ON( ret, dev->vbl_queue, 3*DRM_HZ, 
+		     ( ( ( cur_vblank = atomic_read(&dev->vbl_received ) )
+			 + ~*sequence + 1 ) > (1<<23) ) );
 
 	*sequence = cur_vblank;
 
 	return ret;
 }
+#endif
 
 
 /* Needs the lock as it touches the ring.
@@ -284,9 +238,7 @@ void DRM(driver_irq_postinstall)( drm_device_t *dev ) {
 		(drm_radeon_private_t *)dev->dev_private;
 
    	atomic_set(&dev_priv->swi_emitted, 0);
-#ifdef __linux__
-	init_waitqueue_head(&dev_priv->swi_queue);
-#endif
+	DRM_INIT_WAITQUEUE( &dev_priv->swi_queue );
 
 	/* Turn on SW and VBL ints */
    	RADEON_WRITE( RADEON_GEN_INT_CNTL,
