@@ -1016,6 +1016,7 @@ void mga_reclaim_buffers(drm_device_t *dev, pid_t pid)
 
 	if (!dma) return;
       	if(dev->dev_private == NULL) return;
+	if(dma->buflist == NULL) return;
 
         mga_flush_queue(dev);
 
@@ -1023,10 +1024,10 @@ void mga_reclaim_buffers(drm_device_t *dev, pid_t pid)
 	   	drm_buf_t *buf = dma->buflist[ i ];
 	   	drm_mga_buf_priv_t *buf_priv = buf->dev_private;
 
-		if (buf->pid == pid) {
-		   	if(buf_priv == NULL) return;
-		   	/* Only buffers that need to get reclaimed ever 
-			 * get set to free */
+		/* Only buffers that need to get reclaimed ever 
+		 * get set to free 
+		 */
+		if (buf->pid == pid  && buf_priv) {
 			if(buf_priv->my_freelist->age == MGA_BUF_USED) 
 		     		buf_priv->my_freelist->age = MGA_BUF_FREE;
 		}

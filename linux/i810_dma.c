@@ -714,17 +714,17 @@ void i810_reclaim_buffers(drm_device_t *dev, pid_t pid)
 
 	if (!dma) return;
       	if(dev->dev_private == NULL) return;
-
+	if(dma->buflist == NULL) return;
         i810_flush_queue(dev);
 
 	for (i = 0; i < dma->buf_count; i++) {
 	   	drm_buf_t *buf = dma->buflist[ i ];
 	   	drm_i810_buf_priv_t *buf_priv = buf->dev_private;
-
-		if (buf->pid == pid) {
-		   	/* Only buffers that need to get reclaimed ever 
-			 * get set to free */
-		   	if(buf_priv == NULL) return;
+	   
+		/* Only buffers that need to get reclaimed ever 
+		 * get set to free 
+		 */
+		if (buf->pid == pid && buf_priv) {
 		   	cmpxchg(buf_priv->in_use, 
 				I810_BUF_USED, I810_BUF_FREE);
 		}

@@ -499,7 +499,7 @@ int i810_release(struct inode *inode, struct file *filp)
 	DRM_DEBUG("pid = %d, device = 0x%x, open_count = %d\n",
 		  current->pid, dev->device, dev->open_count);
 
-	if (_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)
+	if (dev->lock.hw_lock && _DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)
 	    && dev->lock.pid == current->pid) {
 	      	i810_reclaim_buffers(dev, priv->pid);
 		DRM_ERROR("Process %d dead, freeing lock for context %d\n",
@@ -513,7 +513,7 @@ int i810_release(struct inode *inode, struct file *filp)
                                    hardware at this point, possibly
                                    processed via a callback to the X
                                    server. */
-	} else {
+	} else if (dev->lock.hw_lock) {
 	   	/* The lock is required to reclaim buffers */
 	   	DECLARE_WAITQUEUE(entry, current);
 	   	add_wait_queue(&dev->lock.lock_queue, &entry);

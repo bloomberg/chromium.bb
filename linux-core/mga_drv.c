@@ -510,26 +510,85 @@ int mga_release(struct inode *inode, struct file *filp)
 	drm_device_t  *dev    = priv->dev;
 	int	      retcode = 0;
 
-	DRM_DEBUG("open_count = %d\n", dev->open_count);
-	if (!(retcode = drm_release(inode, filp))) {
-		MOD_DEC_USE_COUNT;
-		atomic_inc(&dev->total_close);
-		spin_lock(&dev->count_lock);
-		if (!--dev->open_count) {
-			if (atomic_read(&dev->ioctl_count) || dev->blocked) {
-				DRM_ERROR("Device busy: %d %d\n",
-					  atomic_read(&dev->ioctl_count),
-					  dev->blocked);
-				spin_unlock(&dev->count_lock);
-				return -EBUSY;
+	DRM_DEBUG("pid = %d, device = 0x%x, open_count = %d\n",
+		  current->pid, dev->device, dev->open_count);
+
+	if (dev->lock.hw_lock && _DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)
+	    && dev->lock.pid == current->pid) {
+	      	mga_reclaim_buffers(dev, priv->pid);
+		DRM_ERROR("Process %d dead, freeing lock for context %d\n",
+			  current->pid,
+			  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
+		drm_lock_free(dev,
+			      &dev->lock.hw_lock->lock,
+			      _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
+		
+				/* FIXME: may require heavy-handed reset of
+                                   hardware at this point, possibly
+                                   processed via a callback to the X
+                                   server. */
+	} else if (dev->lock.hw_lock) {
+	   	/* The lock is required to reclaim buffers */
+	   	DECLARE_WAITQUEUE(entry, current);
+	   	add_wait_queue(&dev->lock.lock_queue, &entry);
+		for (;;) {
+			if (!dev->lock.hw_lock) {
+				/* Device has been unregistered */
+				retcode = -EINTR;
+				break;
 			}
-			spin_unlock(&dev->count_lock);
-			return mga_takedown(dev);
+			if (drm_lock_take(&dev->lock.hw_lock->lock,
+					  DRM_KERNEL_CONTEXT)) {
+				dev->lock.pid	    = priv->pid;
+				dev->lock.lock_time = jiffies;
+				atomic_inc(&dev->total_locks);
+				break;	/* Got lock */
+			}			
+				/* Contention */
+			atomic_inc(&dev->total_sleeps);
+			current->state = TASK_INTERRUPTIBLE;
+			schedule();
+			if (signal_pending(current)) {
+				retcode = -ERESTARTSYS;
+				break;
+			}
 		}
-		spin_unlock(&dev->count_lock);
+		current->state = TASK_RUNNING;
+		remove_wait_queue(&dev->lock.lock_queue, &entry);
+	   	if(!retcode) {
+		   	mga_reclaim_buffers(dev, priv->pid);
+		   	drm_lock_free(dev, &dev->lock.hw_lock->lock,
+				      DRM_KERNEL_CONTEXT);
+		}
 	}
+	drm_fasync(-1, filp, 0);
+
+	down(&dev->struct_sem);
+	if (priv->prev) priv->prev->next = priv->next;
+	else		dev->file_first	 = priv->next;
+	if (priv->next) priv->next->prev = priv->prev;
+	else		dev->file_last	 = priv->prev;
+	up(&dev->struct_sem);
+	
+	drm_free(priv, sizeof(*priv), DRM_MEM_FILES);
+   	MOD_DEC_USE_COUNT;
+   	atomic_inc(&dev->total_close);
+   	spin_lock(&dev->count_lock);
+   	if (!--dev->open_count) {
+	   	if (atomic_read(&dev->ioctl_count) || dev->blocked) {
+		   	DRM_ERROR("Device busy: %d %d\n",
+				  atomic_read(&dev->ioctl_count),
+				  dev->blocked);
+		   	spin_unlock(&dev->count_lock);
+		   	return -EBUSY;
+		}
+	   	spin_unlock(&dev->count_lock);
+	   	return mga_takedown(dev);
+	}
+   	spin_unlock(&dev->count_lock);
 	return retcode;
 }
+
 
 /* drm_ioctl is called whenever a process performs an ioctl on /dev/drm. */
 

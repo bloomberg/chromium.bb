@@ -131,6 +131,7 @@ extern unsigned int mga_create_sync_tag(drm_device_t *dev);
 extern drm_buf_t *mga_freelist_get(drm_device_t *dev);
 extern int mga_freelist_put(drm_device_t *dev, drm_buf_t *buf);
 extern int mga_advance_primary(drm_device_t *dev);
+extern void mga_reclaim_buffers(drm_device_t *dev, pid_t pid);
 
 
 				/* mga_bufs.c */
