@@ -26,7 +26,7 @@ TOPDIR         = .
 
 include $(TOPDIR)/config/Makedefs
 
-DIRS          = src fc-cache fc-list fontconfig
+DIRS          = fc-lang src fc-cache fc-list fontconfig
 
 all install clean::
 	for d in $(DIRS); do (cd $$d && $(MAKE) $@) || exit 1; done
@@ -65,17 +65,22 @@ $(DESTDIR)$(LIBDIR)/pkgconfig:
 #
 # install config files
 #
-install:: $(DESTDIR)$(CONFDIR)/fonts.conf $(DESTDIR)$(CONFDIR)/fonts.dtd
+install:: $(DESTDIR)$(CONFDIR)/fonts.conf \
+          $(DESTDIR)$(CONFDIR)/fonts.dtd \
+          $(DESTDIR)$(CONFDIR)/local.conf
 
 $(DESTDIR)$(CONFDIR)/fonts.conf:: fonts.conf
-	if [ -f $@ ]; then \
-		echo "Not overwriting existing $@"; \
-	else \
-		$(INSTALL_DATA) fonts.conf $(DESTDIR)$(CONFDIR)/fonts.conf; \
-	fi
+	$(INSTALL_DATA) fonts.conf $(DESTDIR)$(CONFDIR)/fonts.conf
 
 $(DESTDIR)$(CONFDIR)/fonts.dtd:: fonts.dtd
 	$(INSTALL_DATA) fonts.dtd $(DESTDIR)$(CONFDIR)/fonts.dtd
+
+$(DESTDIR)$(CONFDIR)/local.conf:: local.conf
+	if [ -f $@ ]; then \
+		echo "Not overwriting existing $@"; \
+	else \
+		$(INSTALL_DATA) local.conf $(DESTDIR)$(CONFDIR)/local.conf; \
+	fi
 
 #
 # install fontconfig-config script
