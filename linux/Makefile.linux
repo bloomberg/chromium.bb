@@ -44,7 +44,7 @@ endif
 MACHINE := $(shell uname -m)
 
 # Modules for all architectures
-MODULE_LIST := gamma.o tdfx.o r128.o radeon.o mga.o sis.o
+MODULE_LIST := gamma.o tdfx.o r128.o radeon.o mga.o sis.o savage.o
 
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))
@@ -83,6 +83,8 @@ I810HEADERS =   i810.h i810_drv.h i810_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 I830HEADERS =   i830.h i830_drv.h i830_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 SISHEADERS=     sis.h sis_drv.h sis_drm.h $(DRMHEADERS)
 SISSHARED=      sis.h sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
+SAVAGEHEADERS=  savage.h savage_drv.h savage_drm.h $(DRMHEADERS) \
+                $(DRMTEMPLATES)
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
 	$(SISSHARED) $(TDFXSHARED)
@@ -314,6 +316,7 @@ CONFIG_DRM_RADEON := n
 CONFIG_DRM_I830 := n
 CONFIG_DRM_SIS := n
 CONFIG_DRM_FFB := n
+CONFIG_DRM_SAVAGE := n
 
 # Enable module builds for the modules requested/supported.
 
@@ -345,6 +348,9 @@ endif
 ifneq (,$(findstring i830,$(DRM_MODULES)))
 CONFIG_DRM_I830 := m
 endif
+ifneq (,$(findstring savage,$(DRM_MODULES)))
+CONFIG_DRM_SAVAGE := m
+endif
 endif
 
 include $(DRMSRCDIR)/Makefile.kernel
@@ -359,6 +365,7 @@ $(i830-objs):	$(I830HEADERS)
 $(radeon-objs):	$(RADEONHEADERS)
 $(sis-objs):	$(SISHEADERS)
 $(ffb-objs):	$(FFBHEADERS)
+$(savage-objs): $(SAVAGEHEADERS)
 
 endif
 
