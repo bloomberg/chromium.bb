@@ -603,8 +603,10 @@ int r128_do_cleanup_cce( drm_device_t *dev )
 				drm_core_ioremapfree( dev_priv->cce_ring, dev );
 			if ( dev_priv->ring_rptr != NULL )
 				drm_core_ioremapfree( dev_priv->ring_rptr, dev );
-			if ( dev->agp_buffer_map != NULL )
+			if ( dev->agp_buffer_map != NULL ) {
 				drm_core_ioremapfree( dev->agp_buffer_map, dev );
+				dev->agp_buffer_map = NULL;
+			}
 		} else
 #endif
 		{

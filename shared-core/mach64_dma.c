@@ -993,8 +993,10 @@ int mach64_do_cleanup_dma( drm_device_t *dev )
 				drm_core_ioremapfree( dev_priv->ring_map, dev );
 		}
 
-		if ( dev->agp_buffer_map )
+		if ( dev->agp_buffer_map ) {
 			drm_core_ioremapfree( dev->agp_buffer_map, dev );
+			dev->agp_buffer_map = NULL;
+		}
 
 		mach64_destroy_freelist( dev );
 
