@@ -142,12 +142,6 @@ typedef struct {
 } drm_r128_texture_regs_t;
 
 
-typedef struct drm_tex_region {
-	unsigned char next, prev;
-	unsigned char in_use;
-	int age;
-} drm_tex_region_t;
-
 typedef struct drm_r128_sarea {
 	/* The channel for communication of state information to the kernel
 	 * on firing a vertex buffer.

@@ -30,6 +30,7 @@
  */
 
 #define __NO_VERSION__
+#include "radeon.h"
 #include "drmP.h"
 #include "radeon_drv.h"
 
@@ -603,7 +604,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	drm_radeon_private_t *dev_priv;
         int i;
 
-	dev_priv = drm_alloc( sizeof(drm_radeon_private_t), DRM_MEM_DRIVER );
+	dev_priv = DRM(alloc)( sizeof(drm_radeon_private_t), DRM_MEM_DRIVER );
 	if ( dev_priv == NULL )
 		return -ENOMEM;
 	dev->dev_private = (void *)dev_priv;
@@ -617,7 +618,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	 * the CP ring code.
 	 */
 	if ( dev_priv->is_pci ) {
-		drm_free( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
+		DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 		return -EINVAL;
 	}
@@ -625,7 +626,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	dev_priv->usec_timeout = init->usec_timeout;
 	if ( dev_priv->usec_timeout < 1 ||
 	     dev_priv->usec_timeout > RADEON_MAX_USEC_TIMEOUT ) {
-		drm_free( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
+		DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 		return -EINVAL;
 	}
@@ -642,7 +643,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	 */
 	if ( ( init->cp_mode != RADEON_CSQ_PRIBM_INDDIS ) &&
 	     ( init->cp_mode != RADEON_CSQ_PRIBM_INDBM ) ) {
-		drm_free( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
+		DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 		return -EINVAL;
 	}
@@ -752,7 +753,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	dev_priv->ring.end = ((u32 *)dev_priv->cp_ring->handle
 			      + init->ring_size / sizeof(u32));
 	dev_priv->ring.size = init->ring_size;
-	dev_priv->ring.size_l2qw = drm_order( init->ring_size / 8 );
+	dev_priv->ring.size_l2qw = DRM(order)( init->ring_size / 8 );
 
 	dev_priv->ring.tail_mask =
 		(dev_priv->ring.size / sizeof(u32)) - 1;
@@ -798,7 +799,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	return 0;
 }
 
-static int radeon_do_cleanup_cp( drm_device_t *dev )
+int radeon_do_cleanup_cp( drm_device_t *dev )
 {
 	if ( dev->dev_private ) {
 		drm_radeon_private_t *dev_priv = dev->dev_private;
@@ -807,8 +808,8 @@ static int radeon_do_cleanup_cp( drm_device_t *dev )
 		DRM_IOREMAPFREE( dev_priv->ring_rptr );
 		DRM_IOREMAPFREE( dev_priv->buffers );
 
-		drm_free( dev->dev_private, sizeof(drm_radeon_private_t),
-			  DRM_MEM_DRIVER );
+		DRM(free)( dev->dev_private, sizeof(drm_radeon_private_t),
+			   DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 	}
 
@@ -1055,8 +1056,8 @@ static int radeon_freelist_init( drm_device_t *dev )
 	drm_radeon_freelist_t *entry;
 	int i;
 
-	dev_priv->head = drm_alloc( sizeof(drm_radeon_freelist_t),
-				    DRM_MEM_DRIVER );
+	dev_priv->head = DRM(alloc)( sizeof(drm_radeon_freelist_t),
+				     DRM_MEM_DRIVER );
 	if ( dev_priv->head == NULL )
 		return -ENOMEM;
 
@@ -1067,8 +1068,8 @@ static int radeon_freelist_init( drm_device_t *dev )
 		buf = dma->buflist[i];
 		buf_priv = buf->dev_private;
 
-		entry = drm_alloc( sizeof(drm_radeon_freelist_t),
-				   DRM_MEM_DRIVER );
+		entry = DRM(alloc)( sizeof(drm_radeon_freelist_t),
+				    DRM_MEM_DRIVER );
 		if ( !entry ) return -ENOMEM;
 
 		entry->age = RADEON_BUFFER_FREE;

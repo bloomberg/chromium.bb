@@ -23,7 +23,7 @@
 # OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
-# 
+#
 #
 # ***** NOTE NOTE NOTE NOTE NOTE *****
 # To override the automatic Linux source tree determination, pass the
@@ -48,17 +48,21 @@
 # **** End of SMP/MODVERSIONS detection
 
 MODS=           gamma.o tdfx.o
-LIBS=           libdrm.a
+LIBS=
 
-DRMOBJS=	init.o memory.o proc.o auth.o context.o drawable.o bufs.o \
-		lists.o lock.o ioctl.o fops.o vm.o dma.o ctxbitmap.o
+#DRMOBJS=	init.o memory.o proc.o auth.o context.o drawable.o bufs.o \
+#		lists.o lock.o ioctl.o fops.o vm.o dma.o ctxbitmap.o
+DRMOBS=
+DRMTEMPLATES=	drm_init.h drm_memory.h drm_proc.h drm_auth.h drm_context.h \
+		drm_drawable.h drm_bufs.h drm_lists.h drm_lock.h drm_ioctl.h \
+		drm_fops.h drm_vm.h drm_dma.h drm_stub.h
 DRMHEADERS=	drm.h drmP.h compat-pre24.h
 
-GAMMAOBJS=      gamma_drv.o gamma_dma.o
-GAMMAHEADERS=   gamma_drv.h $(DRMHEADERS)
+GAMMAOBJS=      gamma_drv.o gamma_drm.o gamma_dma.o gamma_context.o
+GAMMAHEADERS=   gamma_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-TDFXOBJS=       tdfx_drv.o tdfx_context.o
-TDFXHEADERS=    tdfx_drv.h $(DRMHEADERS)
+TDFXOBJS=       tdfx_drv.o
+TDFXHEADERS=    tdfx.h $(DRMHEADERS)
 
 INC=		/usr/include
 
@@ -71,7 +75,8 @@ MODCFLAGS=      $(CFLAGS) -D__KERNEL__ -DMODULE -fomit-frame-pointer
 PRGCFLAGS=      $(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
 		-D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE \
 		-I../../../../../../include -I../../../../../../../../include \
-		-I../../../../../../../../programs/Xserver/hw/xfree86/common
+		-I../../../../../../../../programs/Xserver/hw/xfree86/common \
+		-I. -I../../.. -I../../../../../../../../lib/X11
 PRGLIBS=
 
 # **** Start of SMP/MODVERSIONS detection
@@ -128,7 +133,7 @@ endif
 
 ifeq ($(AGP),1)
 MODCFLAGS += -DCONFIG_AGP -DCONFIG_AGP_MODULE
-DRMOBJS += agpsupport.o
+#DRMOBJS += agpsupport.o
 MODS += mga.o r128.o radeon.o
 ifeq ($(MACHINE),i386)
 MODS += i810.o
@@ -138,18 +143,18 @@ MODS += i810.o
 endif
 
 
-MGAOBJS=	mga_drv.o mga_dma.o mga_bufs.o mga_context.o mga_state.o
-MGAHEADERS=	mga_drv.h $(DRMHEADERS)
+MGAOBJS=	mga_drv.o mga_dma.o mga_state.o mga_warp.o
+MGAHEADERS=	mga.h mga_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-I810OBJS=	i810_drv.o i810_dma.o i810_bufs.o i810_context.o
-I810HEADERS=	i810_drv.h $(DRMHEADERS)
+I810OBJS=	i810_drv.o i810_dma.o
+I810HEADERS=	i810.h i810_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-R128OBJS=	r128_drv.o r128_cce.o r128_bufs.o r128_context.o r128_state.o
-R128HEADERS=	r128_drv.h r128_drm.h $(DRMHEADERS)
+R128OBJS=	r128_drv.o r128_cce.o r128_state.o
+R128HEADERS=	r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-RADEONOBJS=	radeon_drv.o radeon_cp.o radeon_bufs.o radeon_context.o \
-		radeon_state.o
-RADEONHEADERS=	radeon_drv.h radeon_drm.h $(DRMHEADERS)
+RADEONOBJS=	radeon_drv.o radeon_cp.o radeon_state.o
+RADEONHEADERS=	radeon.h radeon_drv.h radeon_drm.h $(DRMHEADERS) \
+		$(DRMTEMPLATES)
 endif
 
 ifeq ($(SIS),1)
@@ -203,9 +208,12 @@ libdrm.a: $(DRMOBJS)
 	-$(RM) -f $@
 	$(AR) rcs $@ $(DRMOBJS)
 
+dristat: dristat.c
+	$(CC) $(PRGCFLAGS) $< -o $@
+
 gamma_drv.o: gamma_drv.c
 	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
-gamma.o: $(GAMMAOBJS) $(LIBS)
+gamma.o: $(GAMMAOBJS)
 	$(LD) -r $^ -o $@
 
 tdfx_drv.o: tdfx_drv.c
@@ -219,7 +227,7 @@ sis.o: $(SISOBJS) $(LIBS)
 ifeq ($(AGP),1)
 mga_drv.o: mga_drv.c
 	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
-mga.o: $(MGAOBJS) $(LIBS)
+mga.o: $(MGAOBJS)
 	$(LD) -r $^ -o $@
 
 i810_drv.o: i810_drv.c

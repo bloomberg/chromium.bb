@@ -29,6 +29,7 @@
  */
 
 #define __NO_VERSION__
+#include "r128.h"
 #include "drmP.h"
 #include "r128_drv.h"
 #include "drm.h"

@@ -30,11 +30,36 @@
  */
 
 #define __NO_VERSION__
+#include "gamma.h"
 #include "drmP.h"
 #include "gamma_drv.h"
 
 #include <linux/interrupt.h>	/* For task queue support */
+#include <linux/delay.h>
 
+#if 0
+#define DO_IOREMAP( _map )						\
+do {									\
+	(_map)->handle = DRM(ioremap)( (_map)->offset, (_map)->size );	\
+} while (0)
+
+#define DO_IOREMAPFREE( _map )						\
+do {									\
+	if ( (_map)->handle && (_map)->size )				\
+		DRM(ioremapfree)( (_map)->handle, (_map)->size );	\
+} while (0)
+
+#define DO_FIND_MAP( _map, _offset )					\
+do {									\
+	int _i;								\
+	for ( _i = 0 ; _i < dev->map_count ; _i++ ) {			\
+		if ( dev->maplist[_i]->offset == _offset ) {		\
+			_map = dev->maplist[_i];			\
+			break;						\
+		}							\
+	}								\
+} while (0)
+#endif
 
 /* WARNING!!! MAGIC NUMBER!!!  The number of regions already added to the
    kernel must be specified here.  Currently, the number is 2.	This must
@@ -88,7 +113,7 @@ static inline void gamma_dma_dispatch(drm_device_t *dev, unsigned long address,
 	GAMMA_WRITE(GAMMA_DMACOUNT, length / 4);
 }
 
-static inline void gamma_dma_quiescent_single(drm_device_t *dev)
+void gamma_dma_quiescent_single(drm_device_t *dev)
 {
 	while (GAMMA_READ(GAMMA_DMACOUNT))
 		;
@@ -104,7 +129,7 @@ static inline void gamma_dma_quiescent_single(drm_device_t *dev)
 	} while (GAMMA_READ(GAMMA_OUTPUTFIFO) != GAMMA_SYNC_TAG);
 }
 
-static inline void gamma_dma_quiescent_dual(drm_device_t *dev)
+void gamma_dma_quiescent_dual(drm_device_t *dev)
 {
 	while (GAMMA_READ(GAMMA_DMACOUNT))
 		;
@@ -129,7 +154,7 @@ static inline void gamma_dma_quiescent_dual(drm_device_t *dev)
 	} while (GAMMA_READ(GAMMA_OUTPUTFIFO + 0x10000) != GAMMA_SYNC_TAG);
 }
 
-static inline void gamma_dma_ready(drm_device_t *dev)
+void gamma_dma_ready(drm_device_t *dev)
 {
 	while (GAMMA_READ(GAMMA_DMACOUNT))
 		;
@@ -145,18 +170,15 @@ static void gamma_dma_service(int irq, void *device, struct pt_regs *regs)
 	drm_device_t	 *dev = (drm_device_t *)device;
 	drm_device_dma_t *dma = dev->dma;
 	
-	atomic_inc(&dev->total_irq);
+	atomic_inc(&dev->counts[6]); /* _DRM_STAT_IRQ */
 	GAMMA_WRITE(GAMMA_GDELAYTIMER, 0xc350/2); /* 0x05S */
 	GAMMA_WRITE(GAMMA_GCOMMANDINTFLAGS, 8);
 	GAMMA_WRITE(GAMMA_GINTFLAGS, 0x2001);
 	if (gamma_dma_is_ready(dev)) {
 				/* Free previous buffer */
-		if (test_and_set_bit(0, &dev->dma_flag)) {
-			atomic_inc(&dma->total_missed_free);
-			return;
-		}
+		if (test_and_set_bit(0, &dev->dma_flag)) return;
 		if (dma->this_buffer) {
-			drm_free_buffer(dev, dma->this_buffer);
+			gamma_free_buffer(dev, dma->this_buffer);
 			dma->this_buffer = NULL;
 		}
 		clear_bit(0, &dev->dma_flag);
@@ -179,10 +201,7 @@ static int gamma_do_dma(drm_device_t *dev, int locked)
 	cycles_t	 dma_start, dma_stop;
 #endif
 
-	if (test_and_set_bit(0, &dev->dma_flag)) {
-		atomic_inc(&dma->total_missed_dma);
-		return -EBUSY;
-	}
+	if (test_and_set_bit(0, &dev->dma_flag)) return -EBUSY;
 	
 #if DRM_DMA_HISTOGRAM
 	dma_start = get_cycles();
@@ -202,16 +221,16 @@ static int gamma_do_dma(drm_device_t *dev, int locked)
 		  buf->context, buf->idx, length);
 
 	if (buf->list == DRM_LIST_RECLAIM) {
-		drm_clear_next_buffer(dev);
-		drm_free_buffer(dev, buf);
+		gamma_clear_next_buffer(dev);
+		gamma_free_buffer(dev, buf);
 		clear_bit(0, &dev->dma_flag);
 		return -EINVAL;
 	}
 
 	if (!length) {
 		DRM_ERROR("0 length buffer\n");
-		drm_clear_next_buffer(dev);
-		drm_free_buffer(dev, buf);
+		gamma_clear_next_buffer(dev);
+		gamma_free_buffer(dev, buf);
 		clear_bit(0, &dev->dma_flag);
 		return 0;
 	}
@@ -228,9 +247,8 @@ static int gamma_do_dma(drm_device_t *dev, int locked)
 				  buf->idx, buf->pid);
 		}
 	} else {
-		if (!locked && !drm_lock_take(&dev->lock.hw_lock->lock,
+		if (!locked && !gamma_lock_take(&dev->lock.hw_lock->lock,
 					      DRM_KERNEL_CONTEXT)) {
-			atomic_inc(&dma->total_missed_lock);
 			clear_bit(0, &dev->dma_flag);
 			return -EBUSY;
 		}
@@ -241,8 +259,8 @@ static int gamma_do_dma(drm_device_t *dev, int locked)
 		 & _DRM_CONTEXT_PRESERVED)) {
 				/* PRE: dev->last_context != buf->context */
 		if (drm_context_switch(dev, dev->last_context, buf->context)) {
-			drm_clear_next_buffer(dev);
-			drm_free_buffer(dev, buf);
+			gamma_clear_next_buffer(dev);
+			gamma_free_buffer(dev, buf);
 		}
 		retcode = -EBUSY;
 		goto cleanup;
@@ -254,7 +272,7 @@ static int gamma_do_dma(drm_device_t *dev, int locked)
 				   TIME! */
 	}
 
-	drm_clear_next_buffer(dev);
+	gamma_clear_next_buffer(dev);
 	buf->pending	 = 1;
 	buf->waiting	 = 0;
 	buf->list	 = DRM_LIST_PEND;
@@ -263,14 +281,14 @@ static int gamma_do_dma(drm_device_t *dev, int locked)
 #endif
 
 	gamma_dma_dispatch(dev, address, length);
-	drm_free_buffer(dev, dma->this_buffer);
+	gamma_free_buffer(dev, dma->this_buffer);
 	dma->this_buffer = buf;
 
-	atomic_add(length, &dma->total_bytes);
-	atomic_inc(&dma->total_dmas);
+	atomic_inc(&dev->counts[7]); /* _DRM_STAT_DMA */
+	atomic_add(length, &dev->counts[8]); /* _DRM_STAT_PRIMARY */
 
 	if (!buf->while_locked && !dev->context_flag && !locked) {
-		if (drm_lock_free(dev, &dev->lock.hw_lock->lock,
+		if (gamma_lock_free(dev, &dev->lock.hw_lock->lock,
 				  DRM_KERNEL_CONTEXT)) {
 			DRM_ERROR("\n");
 		}
@@ -281,7 +299,7 @@ cleanup:
 
 #if DRM_DMA_HISTOGRAM
 	dma_stop = get_cycles();
-	atomic_inc(&dev->histo.dma[drm_histogram_slot(dma_stop - dma_start)]);
+	atomic_inc(&dev->histo.dma[gamma_histogram_slot(dma_stop - dma_start)]);
 #endif
 
 	return retcode;
@@ -313,10 +331,10 @@ int gamma_dma_schedule(drm_device_t *dev, int locked)
 
 	if (test_and_set_bit(0, &dev->interrupt_flag)) {
 				/* Not reentrant */
-		atomic_inc(&dma->total_missed_sched);
+		atomic_inc(&dev->counts[10]); /* _DRM_STAT_MISSED */
 		return -EBUSY;
 	}
-	missed = atomic_read(&dma->total_missed_sched);
+	missed = atomic_read(&dev->counts[10]);
 
 #if DRM_DMA_HISTOGRAM
 	schedule_start = get_cycles();
@@ -333,23 +351,19 @@ again:
 				   because the lock could not be obtained
 				   or the DMA engine wasn't ready.  Try
 				   again. */
-		atomic_inc(&dma->total_tried);
-		if (!(retcode = gamma_do_dma(dev, locked))) {
-			atomic_inc(&dma->total_hit);
-			++processed;
-		}
+		if (!(retcode = gamma_do_dma(dev, locked))) ++processed;
 	} else {
 		do {
-			next = drm_select_queue(dev,
+			next = gamma_select_queue(dev,
 					     gamma_dma_schedule_timer_wrapper);
 			if (next >= 0) {
 				q   = dev->queuelist[next];
-				buf = drm_waitlist_get(&q->waitlist);
+				buf = gamma_waitlist_get(&q->waitlist);
 				dma->next_buffer = buf;
 				dma->next_queue	 = q;
 				if (buf && buf->list == DRM_LIST_RECLAIM) {
-					drm_clear_next_buffer(dev);
-					drm_free_buffer(dev, buf);
+					gamma_clear_next_buffer(dev);
+					gamma_free_buffer(dev, buf);
 				}
 			}
 		} while (next >= 0 && !dma->next_buffer);
@@ -361,12 +375,10 @@ again:
 	}
 
 	if (--expire) {
-		if (missed != atomic_read(&dma->total_missed_sched)) {
-			atomic_inc(&dma->total_lost);
+		if (missed != atomic_read(&dev->counts[10])) {
 			if (gamma_dma_is_ready(dev)) goto again;
 		}
 		if (processed && gamma_dma_is_ready(dev)) {
-			atomic_inc(&dma->total_lost);
 			processed = 0;
 			goto again;
 		}
@@ -375,7 +387,7 @@ again:
 	clear_bit(0, &dev->interrupt_flag);
 	
 #if DRM_DMA_HISTOGRAM
-	atomic_inc(&dev->histo.schedule[drm_histogram_slot(get_cycles()
+	atomic_inc(&dev->histo.schedule[gamma_histogram_slot(get_cycles()
 							   - schedule_start)]);
 #endif
 	return retcode;
@@ -400,7 +412,7 @@ static int gamma_dma_priority(drm_device_t *dev, drm_dma_t *d)
 		if (signal_pending(current)) return -EINTR;
 	}
 	if (!(d->flags & _DRM_DMA_WHILE_LOCKED)) {
-		while (!drm_lock_take(&dev->lock.hw_lock->lock,
+		while (!gamma_lock_take(&dev->lock.hw_lock->lock,
 				      DRM_KERNEL_CONTEXT)) {
 			schedule();
 			if (signal_pending(current)) {
@@ -410,7 +422,6 @@ static int gamma_dma_priority(drm_device_t *dev, drm_dma_t *d)
 		}
 		++must_free;
 	}
-	atomic_inc(&dma->total_prio);
 
 	for (i = 0; i < d->send_count; i++) {
 		idx = d->send_indices[i];
@@ -494,11 +505,11 @@ static int gamma_dma_priority(drm_device_t *dev, drm_dma_t *d)
 		buf->time_dispatched = buf->time_queued;
 #endif
 		gamma_dma_dispatch(dev, address, length);
-		atomic_add(length, &dma->total_bytes);
-		atomic_inc(&dma->total_dmas);
+		atomic_inc(&dev->counts[9]); /* _DRM_STAT_SPECIAL */
+		atomic_add(length, &dev->counts[8]); /* _DRM_STAT_PRIMARY */
 		
 		if (last_buf) {
-			drm_free_buffer(dev, last_buf);
+			gamma_free_buffer(dev, last_buf);
 		}
 		last_buf = buf;
 	}
@@ -507,11 +518,11 @@ static int gamma_dma_priority(drm_device_t *dev, drm_dma_t *d)
 cleanup:
 	if (last_buf) {
 		gamma_dma_ready(dev);
-		drm_free_buffer(dev, last_buf);
+		gamma_free_buffer(dev, last_buf);
 	}
 	
 	if (must_free && !dev->context_flag) {
-		if (drm_lock_free(dev, &dev->lock.hw_lock->lock,
+		if (gamma_lock_free(dev, &dev->lock.hw_lock->lock,
 				  DRM_KERNEL_CONTEXT)) {
 			DRM_ERROR("\n");
 		}
@@ -532,7 +543,7 @@ static int gamma_dma_send_buffers(drm_device_t *dev, drm_dma_t *d)
 		add_wait_queue(&last_buf->dma_wait, &entry);
 	}
 	
-	if ((retcode = drm_dma_enqueue(dev, d))) {
+	if ((retcode = gamma_dma_enqueue(dev, d))) {
 		if (d->flags & _DRM_DMA_BLOCK)
 			remove_wait_queue(&last_buf->dma_wait, &entry);
 		return retcode;
@@ -558,7 +569,7 @@ static int gamma_dma_send_buffers(drm_device_t *dev, drm_dma_t *d)
 		if (!retcode
 		    || (last_buf->list==DRM_LIST_PEND && !last_buf->pending)) {
 			if (!waitqueue_active(&last_buf->dma_wait)) {
-				drm_free_buffer(dev, last_buf);
+				gamma_free_buffer(dev, last_buf);
 			}
 		}
 		if (retcode) {
@@ -585,21 +596,19 @@ int gamma_dma(struct inode *inode, struct file *filp, unsigned int cmd,
 	int		  retcode   = 0;
 	drm_dma_t	  d;
 
+#if 0
+	LOCK_TEST_WITH_RETURN( dev );
+#endif
+
 	if (copy_from_user(&d, (drm_dma_t *)arg, sizeof(d)))
 		return -EFAULT;
-	DRM_DEBUG("%d %d: %d send, %d req\n",
-		  current->pid, d.context, d.send_count, d.request_count);
 
-	if (d.context == DRM_KERNEL_CONTEXT || d.context >= dev->queue_slots) {
-		DRM_ERROR("Process %d using context %d\n",
-			  current->pid, d.context);
-		return -EINVAL;
-	}
 	if (d.send_count < 0 || d.send_count > dma->buf_count) {
 		DRM_ERROR("Process %d trying to send %d buffers (of %d max)\n",
 			  current->pid, d.send_count, dma->buf_count);
 		return -EINVAL;
 	}
+
 	if (d.request_count < 0 || d.request_count > dma->buf_count) {
 		DRM_ERROR("Process %d trying to get %d buffers (of %d max)\n",
 			  current->pid, d.request_count, dma->buf_count);
@@ -616,7 +625,7 @@ int gamma_dma(struct inode *inode, struct file *filp, unsigned int cmd,
 	d.granted_count = 0;
 
 	if (!retcode && d.request_count) {
-		retcode = drm_dma_get_buffers(dev, &d);
+		retcode = gamma_dma_get_buffers(dev, &d);
 	}
 
 	DRM_DEBUG("%d returning, granted = %d\n",
@@ -727,110 +736,4 @@ int gamma_control(struct inode *inode, struct file *filp, unsigned int cmd,
 		return -EINVAL;
 	}
 	return 0;
-}
-
-int gamma_lock(struct inode *inode, struct file *filp, unsigned int cmd,
-	       unsigned long arg)
-{
-	drm_file_t	  *priv	  = filp->private_data;
-	drm_device_t	  *dev	  = priv->dev;
-	DECLARE_WAITQUEUE(entry, current);
-	int		  ret	= 0;
-	drm_lock_t	  lock;
-	drm_queue_t	  *q;
-#if DRM_DMA_HISTOGRAM
-	cycles_t	  start;
-
-	dev->lck_start = start = get_cycles();
-#endif
-
-	if (copy_from_user(&lock, (drm_lock_t *)arg, sizeof(lock)))
-		return -EFAULT;
-
-	if (lock.context == DRM_KERNEL_CONTEXT) {
-		DRM_ERROR("Process %d using kernel context %d\n",
-			  current->pid, lock.context);
-		return -EINVAL;
-	}
-
-	DRM_DEBUG("%d (pid %d) requests lock (0x%08x), flags = 0x%08x\n",
-		  lock.context, current->pid, dev->lock.hw_lock->lock,
-		  lock.flags);
-
-	if (lock.context < 0 || lock.context >= dev->queue_count)
-		return -EINVAL;
-	q = dev->queuelist[lock.context];
-	
-	ret = drm_flush_block_and_flush(dev, lock.context, lock.flags);
-
-	if (!ret) {
-		if (_DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock)
-		    != lock.context) {
-			long j = jiffies - dev->lock.lock_time;
-
-			if (j > 0 && j <= DRM_LOCK_SLICE) {
-				/* Can't take lock if we just had it and
-				   there is contention. */
-				current->state = TASK_INTERRUPTIBLE;
-				schedule_timeout(j);
-			}
-		}
-		add_wait_queue(&dev->lock.lock_queue, &entry);
-		for (;;) {
-			current->state = TASK_INTERRUPTIBLE;
-			if (!dev->lock.hw_lock) {
-				/* Device has been unregistered */
-				ret = -EINTR;
-				break;
-			}
-			if (drm_lock_take(&dev->lock.hw_lock->lock,
-					  lock.context)) {
-				dev->lock.pid	    = current->pid;
-				dev->lock.lock_time = jiffies;
-				atomic_inc(&dev->total_locks);
-				atomic_inc(&q->total_locks);
-				break;	/* Got lock */
-			}
-			
-				/* Contention */
-			atomic_inc(&dev->total_sleeps);
-			schedule();
-			if (signal_pending(current)) {
-				ret = -ERESTARTSYS;
-				break;
-			}
-		}
-		current->state = TASK_RUNNING;
-		remove_wait_queue(&dev->lock.lock_queue, &entry);
-	}
-
-	drm_flush_unblock(dev, lock.context, lock.flags); /* cleanup phase */
-	
-	if (!ret) {
-		sigemptyset(&dev->sigmask);
-		sigaddset(&dev->sigmask, SIGSTOP);
-		sigaddset(&dev->sigmask, SIGTSTP);
-		sigaddset(&dev->sigmask, SIGTTIN);
-		sigaddset(&dev->sigmask, SIGTTOU);
-		dev->sigdata.context = lock.context;
-		dev->sigdata.lock    = dev->lock.hw_lock;
-		block_all_signals(drm_notifier, &dev->sigdata, &dev->sigmask);
-
-		if (lock.flags & _DRM_LOCK_READY)
-			gamma_dma_ready(dev);
-		if (lock.flags & _DRM_LOCK_QUIESCENT) {
-			if (gamma_found() == 1) {
-				gamma_dma_quiescent_single(dev);
-			} else {
-				gamma_dma_quiescent_dual(dev);
-			}
-		}
-	}
-	DRM_DEBUG("%d %s\n", lock.context, ret ? "interrupted" : "has lock");
-
-#if DRM_DMA_HISTOGRAM
-	atomic_inc(&dev->histo.lacq[drm_histogram_slot(get_cycles() - start)]);
-#endif
-	
-	return ret;
 }

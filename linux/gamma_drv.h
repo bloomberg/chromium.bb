@@ -32,6 +32,24 @@
 #ifndef _GAMMA_DRV_H_
 #define _GAMMA_DRV_H_
 
+
+typedef struct drm_gamma_private {
+	drm_map_t *buffers;
+} drm_gamma_private_t;
+
+#define LOCK_TEST_WITH_RETURN( dev )					\
+do {									\
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||		\
+	     dev->lock.pid != current->pid ) {				\
+		DRM_ERROR( "%s called without lock held\n",		\
+			   __FUNCTION__ );				\
+		return -EINVAL;						\
+	}								\
+} while (0)
+
+extern void gamma_dma_ready(drm_device_t *dev);
+extern void gamma_dma_quiescent_single(drm_device_t *dev);
+extern void gamma_dma_quiescent_dual(drm_device_t *dev);
 				/* gamma_drv.c */
 extern int  gamma_version(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg);

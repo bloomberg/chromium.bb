@@ -62,7 +62,7 @@ obj-$(CONFIG_DRM_MGA)    += mga.o
 obj-$(CONFIG_DRM_I810)   += i810.o
 
 
-# When linking into the kernel, link the library just once. 
+# When linking into the kernel, link the library just once.
 # If making modules, we include the library into each module
 
 lib-objs-mod := $(patsubst %.o,%-mod.o,$(lib-objs))
@@ -75,7 +75,7 @@ endif
 
 include $(TOPDIR)/Rules.make
 
-$(patsubst %.o,%.c,$(lib-objs-mod)): 
+$(patsubst %.o,%.c,$(lib-objs-mod)):
 	@ln -sf $(subst -mod,,$@) $@
 
 drmlib-mod.a: $(lib-objs-mod)

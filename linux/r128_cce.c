@@ -26,10 +26,10 @@
  *
  * Authors:
  *   Gareth Hughes <gareth@valinux.com>
- *
  */
 
 #define __NO_VERSION__
+#include "r128.h"
 #include "drmP.h"
 #include "r128_drv.h"
 
@@ -149,7 +149,7 @@ static int r128_do_wait_for_fifo( drm_r128_private_t *dev_priv, int entries )
 	return -EBUSY;
 }
 
-static int r128_do_wait_for_idle( drm_r128_private_t *dev_priv )
+int r128_do_wait_for_idle( drm_r128_private_t *dev_priv )
 {
 	int i, ret;
 
@@ -346,7 +346,7 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 	drm_r128_private_t *dev_priv;
         int i;
 
-	dev_priv = drm_alloc( sizeof(drm_r128_private_t), DRM_MEM_DRIVER );
+	dev_priv = DRM(alloc)( sizeof(drm_r128_private_t), DRM_MEM_DRIVER );
 	if ( dev_priv == NULL )
 		return -ENOMEM;
 	dev->dev_private = (void *)dev_priv;
@@ -360,7 +360,7 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 	 * the CCE ring code.
 	 */
 	if ( dev_priv->is_pci ) {
-		drm_free( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
+		DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 		return -EINVAL;
 	}
@@ -368,7 +368,7 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 	dev_priv->usec_timeout = init->usec_timeout;
 	if ( dev_priv->usec_timeout < 1 ||
 	     dev_priv->usec_timeout > R128_MAX_USEC_TIMEOUT ) {
-		drm_free( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
+		DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 		return -EINVAL;
 	}
@@ -387,7 +387,7 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 	     ( init->cce_mode != R128_PM4_128BM_64INDBM ) &&
 	     ( init->cce_mode != R128_PM4_64BM_128INDBM ) &&
 	     ( init->cce_mode != R128_PM4_64BM_64VCBM_64INDBM ) ) {
-		drm_free( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
+		DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 		return -EINVAL;
 	}
@@ -487,7 +487,7 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 	dev_priv->ring.end = ((u32 *)dev_priv->cce_ring->handle
 			      + init->ring_size / sizeof(u32));
 	dev_priv->ring.size = init->ring_size;
-	dev_priv->ring.size_l2qw = drm_order( init->ring_size / 8 );
+	dev_priv->ring.size_l2qw = DRM(order)( init->ring_size / 8 );
 
 	dev_priv->ring.tail_mask =
 		(dev_priv->ring.size / sizeof(u32)) - 1;
@@ -508,7 +508,7 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 	return 0;
 }
 
-static int r128_do_cleanup_cce( drm_device_t *dev )
+int r128_do_cleanup_cce( drm_device_t *dev )
 {
 	if ( dev->dev_private ) {
 		drm_r128_private_t *dev_priv = dev->dev_private;
@@ -517,8 +517,8 @@ static int r128_do_cleanup_cce( drm_device_t *dev )
 		DRM_IOREMAPFREE( dev_priv->ring_rptr );
 		DRM_IOREMAPFREE( dev_priv->buffers );
 
-		drm_free( dev->dev_private, sizeof(drm_r128_private_t),
-			  DRM_MEM_DRIVER );
+		DRM(free)( dev->dev_private, sizeof(drm_r128_private_t),
+			   DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 	}
 
@@ -740,8 +740,8 @@ static int r128_freelist_init( drm_device_t *dev )
 	drm_r128_freelist_t *entry;
 	int i;
 
-	dev_priv->head = drm_alloc( sizeof(drm_r128_freelist_t),
-				    DRM_MEM_DRIVER );
+	dev_priv->head = DRM(alloc)( sizeof(drm_r128_freelist_t),
+				     DRM_MEM_DRIVER );
 	if ( dev_priv->head == NULL )
 		return -ENOMEM;
 
@@ -752,8 +752,8 @@ static int r128_freelist_init( drm_device_t *dev )
 		buf = dma->buflist[i];
 		buf_priv = buf->dev_private;
 
-		entry = drm_alloc( sizeof(drm_r128_freelist_t),
-				   DRM_MEM_DRIVER );
+		entry = DRM(alloc)( sizeof(drm_r128_freelist_t),
+				    DRM_MEM_DRIVER );
 		if ( !entry ) return -ENOMEM;
 
 		entry->age = R128_BUFFER_FREE;

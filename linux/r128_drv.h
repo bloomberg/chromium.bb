@@ -109,18 +109,6 @@ typedef struct drm_r128_buf_priv {
    	drm_r128_freelist_t *list_entry;
 } drm_r128_buf_priv_t;
 
-				/* r128_drv.c */
-extern int  r128_version( struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg );
-extern int  r128_open( struct inode *inode, struct file *filp );
-extern int  r128_release( struct inode *inode, struct file *filp );
-extern int  r128_ioctl( struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg );
-extern int  r128_lock( struct inode *inode, struct file *filp,
-		       unsigned int cmd, unsigned long arg );
-extern int  r128_unlock( struct inode *inode, struct file *filp,
-			 unsigned int cmd, unsigned long arg );
-
 				/* r128_cce.c */
 extern int r128_cce_init( struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg );
@@ -146,6 +134,7 @@ extern int r128_wait_ring( drm_r128_private_t *dev_priv, int n );
 extern void r128_update_ring_snapshot( drm_r128_private_t *dev_priv );
 
 extern int r128_do_cce_idle( drm_r128_private_t *dev_priv );
+extern int r128_do_cleanup_cce( drm_device_t *dev );
 extern int r128_do_cleanup_pageflip( drm_device_t *dev );
 
 				/* r128_state.c */
@@ -165,31 +154,6 @@ extern int r128_cce_stipple( struct inode *inode, struct file *filp,
 			     unsigned int cmd, unsigned long arg );
 extern int r128_cce_indirect( struct inode *inode, struct file *filp,
 			      unsigned int cmd, unsigned long arg );
-
-				/* r128_bufs.c */
-extern int r128_addbufs(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg);
-extern int r128_mapbufs(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg);
-
-				/* r128_context.c */
-extern int  r128_resctx(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg);
-extern int  r128_addctx(struct inode *inode, struct file *filp,
-		        unsigned int cmd, unsigned long arg);
-extern int  r128_modctx(struct inode *inode, struct file *filp,
-		        unsigned int cmd, unsigned long arg);
-extern int  r128_getctx(struct inode *inode, struct file *filp,
-		        unsigned int cmd, unsigned long arg);
-extern int  r128_switchctx(struct inode *inode, struct file *filp,
-			   unsigned int cmd, unsigned long arg);
-extern int  r128_newctx(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg);
-extern int  r128_rmctx(struct inode *inode, struct file *filp,
-		       unsigned int cmd, unsigned long arg);
-
-extern int  r128_context_switch(drm_device_t *dev, int old, int new);
-extern int  r128_context_switch_complete(drm_device_t *dev, int new);
 
 
 /* Register definitions, register access macros and drmAddMap constants
@@ -404,15 +368,15 @@ extern int  r128_context_switch_complete(drm_device_t *dev, int new);
 
 
 #define R128_BASE(reg)		((u32)(dev_priv->mmio->handle))
-#define R128_ADDR(reg)		(R128_BASE(reg) + reg)
+#define R128_ADDR(reg)		(R128_BASE( reg ) + reg)
 
-#define R128_DEREF(reg)		*(volatile u32 *)R128_ADDR(reg)
-#define R128_READ(reg)		R128_DEREF(reg)
-#define R128_WRITE(reg,val)	do { R128_DEREF(reg) = val; } while (0)
+#define R128_DEREF(reg)		*(volatile u32 *)R128_ADDR( reg )
+#define R128_READ(reg)		R128_DEREF( reg )
+#define R128_WRITE(reg,val)	do { R128_DEREF( reg ) = val; } while (0)
 
-#define R128_DEREF8(reg)	*(volatile u8 *)R128_ADDR(reg)
-#define R128_READ8(reg)		R128_DEREF8(reg)
-#define R128_WRITE8(reg,val)	do { R128_DEREF8(reg) = val; } while (0)
+#define R128_DEREF8(reg)	*(volatile u8 *)R128_ADDR( reg )
+#define R128_READ8(reg)		R128_DEREF8( reg )
+#define R128_WRITE8(reg,val)	do { R128_DEREF8( reg ) = val; } while (0)
 
 
 #define R128_WRITE_PLL(addr,val)                                              \

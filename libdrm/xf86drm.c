@@ -11,11 +11,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -23,12 +23,12 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
  * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.17 2000/09/24 13:51:32 alanh Exp $
- * 
+ *
  */
 
 #ifdef XFree86Server
@@ -119,7 +119,7 @@ void drmFree(void *pt)
 static char *drmStrdup(const char *s)
 {
     char *retval = NULL;
-    
+
     if (s) {
 	retval = _DRM_MALLOC(strlen(s)+1);
 	strcpy(retval, s);
@@ -213,7 +213,7 @@ int drmAvailable(void)
     drmVersionPtr version;
     int           retval = 0;
     int           fd;
-    
+
     if (!access("/proc/dri/0", R_OK)) return 1;
 
     sprintf(dev_name, "/dev/dri-temp-%d", getpid());
@@ -408,7 +408,7 @@ drmVersionPtr drmGetVersion(int fd)
     version->date        = NULL;
     version->desc_len    = 0;
     version->desc        = NULL;
-    
+
     if (ioctl(fd, DRM_IOCTL_VERSION, version)) {
 	drmFreeKernelVersion(version);
 	return NULL;
@@ -421,7 +421,7 @@ drmVersionPtr drmGetVersion(int fd)
 	version->date    = drmMalloc(version->date_len + 1);
     if (version->desc_len)
 	version->desc    = drmMalloc(version->desc_len + 1);
-    
+
     if (ioctl(fd, DRM_IOCTL_VERSION, version)) {
 	drmFreeKernelVersion(version);
 	return NULL;
@@ -503,7 +503,7 @@ int drmAddMap(int fd,
     map.offset  = offset;
 #ifdef __alpha__
     /* Make sure we add the bus_base to all but shm */
-    if (type != DRM_SHM) 
+    if (type != DRM_SHM)
 	map.offset += BUS_BASE;
 #endif
     map.size    = size;
@@ -519,14 +519,14 @@ int drmAddBufs(int fd, int count, int size, drmBufDescFlags flags,
 	       int agp_offset)
 {
     drm_buf_desc_t request;
-    
+
     request.count     = count;
     request.size      = size;
     request.low_mark  = 0;
     request.high_mark = 0;
     request.flags     = flags;
     request.agp_start = agp_offset;
-   
+
     if (ioctl(fd, DRM_IOCTL_ADD_BUFS, &request)) return -errno;
     return request.count;
 }
@@ -542,16 +542,16 @@ int drmMarkBufs(int fd, double low, double high)
     if (ioctl(fd, DRM_IOCTL_INFO_BUFS, &info)) return -EINVAL;
 
     if (!info.count) return -EINVAL;
-    
+
     if (!(info.list = drmMalloc(info.count * sizeof(*info.list))))
 	return -ENOMEM;
-	
+
     if (ioctl(fd, DRM_IOCTL_INFO_BUFS, &info)) {
 	int retval = -errno;
 	drmFree(info.list);
 	return retval;
     }
-    
+
     for (i = 0; i < info.count; i++) {
 	info.list[i].low_mark  = low  * info.list[i].count;
 	info.list[i].high_mark = high * info.list[i].count;
@@ -562,7 +562,7 @@ int drmMarkBufs(int fd, double low, double high)
 	}
     }
     drmFree(info.list);
-    
+
     return 0;
 }
 
@@ -630,7 +630,7 @@ drmBufInfoPtr drmGetBufInfo(int fd)
     if (info.count) {
 	if (!(info.list = drmMalloc(info.count * sizeof(*info.list))))
 	    return NULL;
-	
+
 	if (ioctl(fd, DRM_IOCTL_INFO_BUFS, &info)) {
 	    drmFree(info.list);
 	    return NULL;
@@ -657,7 +657,7 @@ drmBufMapPtr drmMapBufs(int fd)
     drm_buf_map_t bufs;
     drmBufMapPtr  retval;
     int           i;
-    
+
     bufs.count = 0;
     bufs.list  = NULL;
     if (ioctl(fd, DRM_IOCTL_MAP_BUFS, &bufs)) return NULL;
@@ -689,16 +689,19 @@ drmBufMapPtr drmMapBufs(int fd)
 int drmUnmapBufs(drmBufMapPtr bufs)
 {
     int i;
-    
+
     for (i = 0; i < bufs->count; i++) {
 	munmap(bufs->list[i].address, bufs->list[i].total);
     }
     return 0;
 }
 
+#define DRM_DMA_RETRY		16
+
 int drmDMA(int fd, drmDMAReqPtr request)
 {
     drm_dma_t dma;
+    int ret, i = 0;
 
 				/* Copy to hidden structure */
     dma.context         = request->context;
@@ -710,10 +713,17 @@ int drmDMA(int fd, drmDMAReqPtr request)
     dma.request_size    = request->request_size;
     dma.request_indices = request->request_list;
     dma.request_sizes   = request->request_sizes;
-    if (ioctl(fd, DRM_IOCTL_DMA, &dma)) return -errno;
-    request->granted_count = dma.granted_count;
-    
-    return 0;
+
+    do {
+	ret = ioctl( fd, DRM_IOCTL_DMA, &dma );
+    } while ( ret && errno == EAGAIN && i++ < DRM_DMA_RETRY );
+
+    if ( ret == 0 ) {
+	request->granted_count = dma.granted_count;
+	return 0;
+    } else {
+	return -errno;
+    }
 }
 
 int drmGetLock(int fd, drmContext context, drmLockFlags flags)
@@ -728,7 +738,7 @@ int drmGetLock(int fd, drmContext context, drmLockFlags flags)
     if (flags & DRM_LOCK_FLUSH_ALL)  lock.flags |= _DRM_LOCK_FLUSH_ALL;
     if (flags & DRM_HALT_ALL_QUEUES) lock.flags |= _DRM_HALT_ALL_QUEUES;
     if (flags & DRM_HALT_CUR_QUEUES) lock.flags |= _DRM_HALT_CUR_QUEUES;
-    
+
     while (ioctl(fd, DRM_IOCTL_LOCK, &lock))
 	;
     return 0;
@@ -827,7 +837,7 @@ int drmGetContextFlags(int fd, drmContext context, drmContextFlagsPtr flags)
     if (ctx.flags & _DRM_CONTEXT_2DONLY)    *flags |= DRM_CONTEXT_2DONLY;
     return 0;
 }
-    
+
 int drmDestroyContext(int fd, drmContext handle)
 {
     drm_ctx_t ctx;
@@ -1074,7 +1084,7 @@ void *drmGetContextTag(int fd, drmContext context)
 {
     drmHashEntry  *entry = drmGetEntry(fd);
     void          *value;
-    
+
     if (drmHashLookup(entry->tagTable, context, &value)) return NULL;
 
     return value;
@@ -1108,7 +1118,7 @@ static void drmSIGIOHandler(int interrupt, void *closure)
 #if 0
 		fprintf(stderr, "Got %s\n", buf);
 #endif
-		
+
 		for (pt = buf; *pt != ' '; ++pt); /* Find first space */
 		++pt;
 		old    = strtol(pt, &pt, 0);
@@ -1141,7 +1151,7 @@ int drmRemoveSIGIOHandler(int fd)
     drmHashEntry     *entry = drmGetEntry(fd);
 
     entry->f = NULL;
-    
+
     return xf86RemoveSIGIOHandler(fd);
 }
 #endif

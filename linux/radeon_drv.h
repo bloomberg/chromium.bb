@@ -126,18 +126,6 @@ typedef struct drm_radeon_buf_priv {
    	drm_radeon_freelist_t *list_entry;
 } drm_radeon_buf_priv_t;
 
-				/* radeon_drv.c */
-extern int  radeon_version( struct inode *inode, struct file *filp,
-			    unsigned int cmd, unsigned long arg );
-extern int  radeon_open( struct inode *inode, struct file *filp );
-extern int  radeon_release( struct inode *inode, struct file *filp );
-extern int  radeon_ioctl( struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg );
-extern int  radeon_lock( struct inode *inode, struct file *filp,
-			 unsigned int cmd, unsigned long arg );
-extern int  radeon_unlock( struct inode *inode, struct file *filp,
-			   unsigned int cmd, unsigned long arg );
-
 				/* radeon_cp.c */
 extern int radeon_cp_init( struct inode *inode, struct file *filp,
 			   unsigned int cmd, unsigned long arg );
@@ -163,6 +151,7 @@ extern int radeon_wait_ring( drm_radeon_private_t *dev_priv, int n );
 extern void radeon_update_ring_snapshot( drm_radeon_private_t *dev_priv );
 
 extern int radeon_do_cp_idle( drm_radeon_private_t *dev_priv );
+extern int radeon_do_cleanup_cp( drm_device_t *dev );
 extern int radeon_do_cleanup_pageflip( drm_device_t *dev );
 
 				/* radeon_state.c */
@@ -180,31 +169,6 @@ extern int radeon_cp_stipple( struct inode *inode, struct file *filp,
 			      unsigned int cmd, unsigned long arg );
 extern int radeon_cp_indirect( struct inode *inode, struct file *filp,
 			       unsigned int cmd, unsigned long arg );
-
-				/* radeon_bufs.c */
-extern int radeon_addbufs(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int radeon_mapbufs(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-
-				/* radeon_context.c */
-extern int  radeon_resctx(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int  radeon_addctx(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int  radeon_modctx(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int  radeon_getctx(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int  radeon_switchctx(struct inode *inode, struct file *filp,
-			     unsigned int cmd, unsigned long arg);
-extern int  radeon_newctx(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int  radeon_rmctx(struct inode *inode, struct file *filp,
-			 unsigned int cmd, unsigned long arg);
-
-extern int  radeon_context_switch(drm_device_t *dev, int old, int new);
-extern int  radeon_context_switch_complete(drm_device_t *dev, int new);
 
 
 /* Register definitions, register access macros and drmAddMap constants
