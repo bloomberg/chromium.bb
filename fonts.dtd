@@ -39,7 +39,7 @@
 <!--
     Global library configuration data
  -->
-<!ELEMENT config (blanks|rescan)*>
+<!ELEMENT config (blank|rescan)*>
 
 <!--
     Specify the set of Unicode encoding values which
@@ -49,7 +49,7 @@
     the set of valid Unicode chars.  This idea
     was borrowed from Mozilla
  -->
-<!ELEMENT blanks (int)*>
+<!ELEMENT blank (int)*>
 
 <!--
     Aliases are just a special case for multiple match elements
