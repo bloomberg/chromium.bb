@@ -70,9 +70,9 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #ifdef __linux__
 #include <sys/sysmacros.h>	/* for makedev() */
 #endif
+#include "drm.h"
 #include "xf86drm.h"
 #include "xf86drmCompat.h"
-#include "drm.h"
 #include "mga_drm.h"
 #include "r128_drm.h"
 #include <inttypes.h>		/* for int64_t & friends */
