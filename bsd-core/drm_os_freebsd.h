@@ -76,6 +76,8 @@
 #include <sys/mutex.h>
 #endif
 
+#include "drm_linux_list.h"
+
 #if __FreeBSD_version >= 400006
 #define __REALLY_HAVE_AGP	__HAVE_AGP
 #endif

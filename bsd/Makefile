@@ -46,12 +46,13 @@ SHAREDFILES=	drm.h \
 		via_mm.c \
 		via_mm.h
 
-SUBDIR = mga r128 radeon tdfx sis
+SUBDIR = mach64 mga r128 radeon sis tdfx
 
 CLEANFILES+= ${SHAREDFILES}
 
 .include <bsd.obj.mk>
 
+depend: drm_pciids.h ${SHAREDFILES}
 all: drm_pciids.h ${SHAREDFILES}
 
 drm_pciids.h: ${SHARED}/drm_pciids.txt
