@@ -192,13 +192,20 @@ int via_dma_init(DRM_IOCTL_ARGS)
 
 	switch (init.func) {
 	case VIA_INIT_DMA:
-		retcode = via_initialize(dev, dev_priv, &init);
+		if (!capable(CAP_SYS_ADMIN))
+			retcode = DRM_ERR(EPERM);
+		else
+			retcode = via_initialize(dev, dev_priv, &init);
 		break;
 	case VIA_CLEANUP_DMA:
-		retcode = via_dma_cleanup(dev);
+		if (!capable(CAP_SYS_ADMIN))
+			retcode = DRM_ERR(EPERM);
+		else
+			retcode = via_dma_cleanup(dev);
 		break;
         case VIA_DMA_INITIALIZED:
-		retcode = (dev_priv->ring.virtual_start != NULL) ? 0: DRM_ERR( EFAULT );
+		retcode = (dev_priv->ring.virtual_start != NULL) ? 
+			0: DRM_ERR( EFAULT );
 	        break;
 	default:
 		retcode = DRM_ERR(EINVAL);
