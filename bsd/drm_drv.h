@@ -1221,10 +1221,17 @@ int DRM(unlock)( DRM_IOCTL_ARGS )
 }
 
 #if DRM_LINUX
+#define LINUX_IOCTL_DRM_MIN		0x6400
+#define LINUX_IOCTL_DRM_MAX		0x64ff
+
 static linux_ioctl_function_t DRM( linux_ioctl);
 static struct linux_ioctl_handler DRM( handler) = {DRM( linux_ioctl), LINUX_IOCTL_DRM_MIN, LINUX_IOCTL_DRM_MAX};
 SYSINIT  (DRM( register),   SI_SUB_KLD, SI_ORDER_MIDDLE, linux_ioctl_register_handler, &DRM( handler));
 SYSUNINIT(DRM( unregister), SI_SUB_KLD, SI_ORDER_MIDDLE, linux_ioctl_unregister_handler, &DRM( handler));
+
+#define LINUX_IOC_VOID	IOC_VOID
+#define LINUX_IOC_IN	IOC_OUT		/* Linux has the values the other way around */
+#define LINUX_IOC_OUT	IOC_IN
 
 /*
  * Linux emulation IOCTL
@@ -1232,16 +1239,65 @@ SYSUNINIT(DRM( unregister), SI_SUB_KLD, SI_ORDER_MIDDLE, linux_ioctl_unregister_
 static int
 DRM(linux_ioctl)(DRM_STRUCTPROC *p, struct linux_ioctl_args* args)
 {
+	u_long		cmd = args->cmd;
+#define STK_PARAMS	128
+	union {
+	    char stkbuf[STK_PARAMS];
+	    long align;
+	} ubuf;
+	caddr_t		data=NULL, memp=NULL;
+	u_int		size = IOCPARM_LEN(cmd);
+	int		error;
 #if (__FreeBSD_version >= 500000)
-    struct file		*fp = p->td_proc->p_fd->fd_ofiles[args->fd];
+	struct file	*fp;
 #else
-    struct file		*fp = p->p_fd->fd_ofiles[args->fd];
+	struct file	*fp = p->p_fd->fd_ofiles[args->fd];
 #endif
-    u_long		cmd = args->cmd;
-    caddr_t             data = (caddr_t) args->arg;
-    /*
-     * Pass the ioctl off to our standard handler.
-     */
-    return(fo_ioctl(fp, cmd, data, p));
+	if ( size > STK_PARAMS ) {
+		if ( size > IOCPARM_MAX )
+			return EINVAL;
+		memp = malloc( (u_long)size, DRM(M_DRM), M_WAITOK );
+		data = memp;
+	} else {
+		data = ubuf.stkbuf;
+	}
+
+	if ( cmd & LINUX_IOC_IN ) {
+		if ( size ) {
+			error = copyin( (caddr_t)args->arg, data, (u_int)size );
+			if (error) {
+				if ( memp )
+					free( data, DRM(M_DRM) );
+				return error;
+			}
+		} else {
+			data = (caddr_t)args->arg;
+		}
+	} else if ( (cmd & LINUX_IOC_OUT) && size ) {
+		/*
+		 * Zero the buffer so the user always
+		 * gets back something deterministic.
+		 */
+		bzero( data, size );
+	} else if ( cmd & LINUX_IOC_VOID ) {
+		*(caddr_t *)data = (caddr_t)args->arg;
+	}
+
+#if (__FreeBSD_version >= 500000)
+	if ( (error = fget( p, args->fd, &fp )) != 0 ) {
+		if ( memp )
+			free( memp, DRM(M_DRM) );
+		return (error);
+	}
+	error = fo_ioctl( fp, cmd, data, p->td_ucred, p );
+	fdrop( fp, p );
+#else
+	error = fo_ioctl( fp, cmd, data, p );
+#endif
+	if ( error == 0 && (cmd & LINUX_IOC_OUT) && size )
+		error = copyout( data, (caddr_t)args->arg, (u_int)size );
+	if ( memp )
+		free( memp, DRM(M_DRM) );
+	return error;
 }
 #endif /* DRM_LINUX */

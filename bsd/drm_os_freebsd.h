@@ -65,7 +65,6 @@
 #include <sys/proc.h>
 #include <machine/../linux/linux.h>
 #include <machine/../linux/linux_proto.h>
-#include "drm_linux.h"
 #endif
 
 #define DRM_TIME_SLICE	      (hz/20)  /* Time slice for GLXContexts	  */
@@ -140,14 +139,18 @@ do {								\
 	}							\
 } while (0)
 
-#define DRM_COPY_TO_USER_IOCTL(arg1, arg2, arg3) \
-	*arg1 = arg2
-#define DRM_COPY_FROM_USER_IOCTL(arg1, arg2, arg3) \
-	arg1 = *arg2
-#define DRM_COPY_TO_USER(arg1, arg2, arg3) \
-	copyout(arg2, arg1, arg3)
-#define DRM_COPY_FROM_USER(arg1, arg2, arg3) \
-	copyin(arg2, arg1, arg3)
+#define DRM_COPY_TO_USER_IOCTL(user, kern, size)	\
+	if ( IOCPARM_LEN(cmd) != size)			\
+		return EINVAL;				\
+	*user = kern;
+#define DRM_COPY_FROM_USER_IOCTL(kern, user, size) \
+	if ( IOCPARM_LEN(cmd) != size)			\
+		return EINVAL;				\
+	kern = *user;
+#define DRM_COPY_TO_USER(user, kern, size) \
+	copyout(kern, user, size)
+#define DRM_COPY_FROM_USER(kern, user, size) \
+	copyin(user, kern, size)
 /* Macros for userspace access with checking readability once */
 /* FIXME: can't find equivalent functionality for nocheck yet.
  * It's be slower than linux, but should be correct.
