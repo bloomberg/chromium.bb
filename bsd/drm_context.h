@@ -211,10 +211,6 @@ int DRM(context_switch)( drm_device_t *dev, int old, int new )
                 return DRM_ERR(EBUSY);
         }
 
-#if __HAVE_DMA_HISTOGRAM
-        dev->ctx_start = get_cycles();
-#endif
-
         DRM_DEBUG( "Context switch from %d to %d\n", old, new );
 
         if ( new == dev->last_context ) {
@@ -241,11 +237,6 @@ int DRM(context_switch_complete)( drm_device_t *dev, int new )
 				/* If a context switch is ever initiated
                                    when the kernel holds the lock, release
                                    that lock here. */
-#if __HAVE_DMA_HISTOGRAM
-        atomic_inc( &dev->histo.ctx[DRM(histogram_slot)(get_cycles()
-							- dev->ctx_start)] );
-
-#endif
         clear_bit( 0, &dev->context_flag );
         DRM_WAKEUP( (void *)&dev->context_wait );
 
@@ -380,10 +371,6 @@ int DRM(context_switch)(drm_device_t *dev, int old, int new)
 		return DRM_ERR(EBUSY);
 	}
 
-#if __HAVE_DMA_HISTOGRAM
-	dev->ctx_start = get_cycles();
-#endif
-
 	DRM_DEBUG("Context switch from %d to %d\n", old, new);
 
 	if (new >= dev->queue_count) {
@@ -431,11 +418,6 @@ int DRM(context_switch_complete)(drm_device_t *dev, int new)
 		}
 	}
 
-#if __HAVE_DMA_HISTOGRAM
-	atomic_inc(&dev->histo.ctx[DRM(histogram_slot)(get_cycles()
-						      - dev->ctx_start)]);
-
-#endif
 	clear_bit(0, &dev->context_flag);
 	DRM_WAKEUP_INT(&dev->context_wait);
 

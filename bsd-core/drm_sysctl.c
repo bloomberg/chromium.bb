@@ -11,9 +11,6 @@ static int	   DRM(vm_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(clients_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(queues_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(bufs_info)DRM_SYSCTL_HANDLER_ARGS;
-#if DRM_DMA_HISTOGRAM
-static int	   DRM(histo_info)DRM_SYSCTL_HANDLER_ARGS;
-#endif
 
 struct DRM(sysctl_list) {
 	const char *name;
@@ -25,9 +22,6 @@ struct DRM(sysctl_list) {
 	{ "clients", DRM(clients_info) },
 	{ "queues",  DRM(queues_info)  },
 	{ "bufs",    DRM(bufs_info)    },
-#if DRM_DMA_HISTOGRAM
-	{ "histo",   drm_histo_info)   },
-#endif
 };
 #define DRM_SYSCTL_ENTRIES (sizeof(DRM(sysctl_list))/sizeof(DRM(sysctl_list)[0]))
 
@@ -303,134 +297,6 @@ static int DRM(clients_info)DRM_SYSCTL_HANDLER_ARGS
 	return ret;
 }
 
-
-#if DRM_DMA_HISTOGRAM
-static int DRM(_histo_info)DRM_SYSCTL_HANDLER_ARGS
-{
-	drm_device_t	 *dev = arg1;
-	drm_device_dma_t *dma = dev->dma;
-	int		 i;
-	unsigned long	 slot_value = DRM_DMA_HISTOGRAM_INITIAL;
-	unsigned long	 prev_value = 0;
-	drm_buf_t	 *buffer;
-	char		 buf[128];
-	int              error;
-
-	DRM_SYSCTL_PRINT("general statistics:\n");
-	DRM_SYSCTL_PRINT("total	 %10u\n", atomic_read(&dev->histo.total));
-	DRM_SYSCTL_PRINT("open	 %10u\n", atomic_read(&dev->total_open));
-	DRM_SYSCTL_PRINT("close	 %10u\n", atomic_read(&dev->total_close));
-	DRM_SYSCTL_PRINT("ioctl	 %10u\n", atomic_read(&dev->total_ioctl));
-	DRM_SYSCTL_PRINT("irq	 %10u\n", atomic_read(&dev->total_irq));
-	DRM_SYSCTL_PRINT("ctx	 %10u\n", atomic_read(&dev->total_ctx));
-	
-	DRM_SYSCTL_PRINT("\nlock statistics:\n");
-	DRM_SYSCTL_PRINT("locks	 %10u\n", atomic_read(&dev->total_locks));
-	DRM_SYSCTL_PRINT("unlocks	 %10u\n", atomic_read(&dev->total_unlocks));
-	DRM_SYSCTL_PRINT("contends %10u\n", atomic_read(&dev->total_contends));
-	DRM_SYSCTL_PRINT("sleeps	 %10u\n", atomic_read(&dev->total_sleeps));
-
-
-	if (dma) {
-		DRM_SYSCTL_PRINT("\ndma statistics:\n");
-		DRM_SYSCTL_PRINT("prio	 %10u\n",
-			       atomic_read(&dma->total_prio));
-		DRM_SYSCTL_PRINT("bytes	 %10u\n",
-			       atomic_read(&dma->total_bytes));
-		DRM_SYSCTL_PRINT("dmas	 %10u\n",
-			       atomic_read(&dma->total_dmas));
-		DRM_SYSCTL_PRINT("missed:\n");
-		DRM_SYSCTL_PRINT("  dma	 %10u\n",
-			       atomic_read(&dma->total_missed_dma));
-		DRM_SYSCTL_PRINT("  lock	 %10u\n",
-			       atomic_read(&dma->total_missed_lock));
-		DRM_SYSCTL_PRINT("  free	 %10u\n",
-			       atomic_read(&dma->total_missed_free));
-		DRM_SYSCTL_PRINT("  sched	 %10u\n",
-			       atomic_read(&dma->total_missed_sched));
-		DRM_SYSCTL_PRINT("tried	 %10u\n",
-			       atomic_read(&dma->total_tried));
-		DRM_SYSCTL_PRINT("hit	 %10u\n",
-			       atomic_read(&dma->total_hit));
-		DRM_SYSCTL_PRINT("lost	 %10u\n",
-			       atomic_read(&dma->total_lost));
-		
-		buffer = dma->next_buffer;
-		if (buffer) {
-			DRM_SYSCTL_PRINT("next_buffer %7d\n", buffer->idx);
-		} else {
-			DRM_SYSCTL_PRINT("next_buffer    none\n");
-		}
-		buffer = dma->this_buffer;
-		if (buffer) {
-			DRM_SYSCTL_PRINT("this_buffer %7d\n", buffer->idx);
-		} else {
-			DRM_SYSCTL_PRINT("this_buffer    none\n");
-		}
-	}
-	
-
-	DRM_SYSCTL_PRINT("\nvalues:\n");
-	if (dev->lock.hw_lock) {
-		DRM_SYSCTL_PRINT("lock	       0x%08x\n",
-			       dev->lock.hw_lock->lock);
-	} else {
-		DRM_SYSCTL_PRINT("lock		     none\n");
-	}
-	DRM_SYSCTL_PRINT("context_flag   0x%08x\n", dev->context_flag);
-	DRM_SYSCTL_PRINT("interrupt_flag 0x%08x\n", dev->interrupt_flag);
-	DRM_SYSCTL_PRINT("dma_flag       0x%08x\n", dev->dma_flag);
-
-	DRM_SYSCTL_PRINT("queue_count    %10d\n",	 dev->queue_count);
-	DRM_SYSCTL_PRINT("last_context   %10d\n",	 dev->last_context);
-	DRM_SYSCTL_PRINT("last_switch    %10u\n",	 dev->last_switch);
-	DRM_SYSCTL_PRINT("last_checked   %10d\n",	 dev->last_checked);
-		
-	
-	DRM_SYSCTL_PRINT("\n		       q2d	  d2c	     c2f"
-		       "	q2c	   q2f	      dma	 sch"
-		       "	ctx	  lacq	     lhld\n\n");
-	for (i = 0; i < DRM_DMA_HISTOGRAM_SLOTS; i++) {
-		DRM_SYSCTL_PRINT("%s %10lu %10u %10u %10u %10u %10u"
-			       " %10u %10u %10u %10u %10u\n",
-			       i == DRM_DMA_HISTOGRAM_SLOTS - 1 ? ">=" : "< ",
-			       i == DRM_DMA_HISTOGRAM_SLOTS - 1
-			       ? prev_value : slot_value ,
-			       
-			       atomic_read(&dev->histo
-					   .queued_to_dispatched[i]),
-			       atomic_read(&dev->histo
-					   .dispatched_to_completed[i]),
-			       atomic_read(&dev->histo
-					   .completed_to_freed[i]),
-			       
-			       atomic_read(&dev->histo
-					   .queued_to_completed[i]),
-			       atomic_read(&dev->histo
-					   .queued_to_freed[i]),
-			       atomic_read(&dev->histo.dma[i]),
-			       atomic_read(&dev->histo.schedule[i]),
-			       atomic_read(&dev->histo.ctx[i]),
-			       atomic_read(&dev->histo.lacq[i]),
-			       atomic_read(&dev->histo.lhld[i]));
-		prev_value = slot_value;
-		slot_value = DRM_DMA_HISTOGRAM_NEXT(slot_value);
-	}
-	SYSCTL_OUT(req, "", 1);
-	return 0;
-}
-
-static int DRM(histo_info)DRM_SYSCTL_HANDLER_ARGS
-{
-	drm_device_t *dev = arg1;
-	int	     ret;
-
-	DRM_LOCK;
-	ret = _drm_histo_info(oidp, arg1, arg2, req);
-	DRM_UNLOCK;
-	return ret;
-}
-#endif
 
 #elif defined(__NetBSD__)
 /* stub it out for now, sysctl is only for debugging */

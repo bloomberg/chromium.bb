@@ -429,13 +429,6 @@ int DRM(addbufs_agp)( DRM_IOCTL_ARGS )
 		}
 		memset( buf->dev_private, 0, buf->dev_priv_size );
 
-#if __HAVE_DMA_HISTOGRAM
-		buf->time_queued = 0;
-		buf->time_dispatched = 0;
-		buf->time_completed = 0;
-		buf->time_freed = 0;
-#endif
-
 		offset += alignment;
 		entry->buf_count++;
 		byte_count += PAGE_SIZE << page_order;
@@ -626,12 +619,6 @@ int DRM(addbufs_pci)( DRM_IOCTL_ARGS )
 			buf->pending = 0;
 			buf->dma_wait = 0;
 			buf->filp    = NULL;
-#if __HAVE_DMA_HISTOGRAM
-			buf->time_queued     = 0;
-			buf->time_dispatched = 0;
-			buf->time_completed  = 0;
-			buf->time_freed      = 0;
-#endif
 			DRM_DEBUG( "buffer %d @ %p\n",
 				   entry->buf_count, buf->address );
 		}
@@ -794,12 +781,6 @@ int DRM(addbufs_sg)( DRM_IOCTL_ARGS )
 
 		memset( buf->dev_private, 0, buf->dev_priv_size );
 
-# if __HAVE_DMA_HISTOGRAM
-		buf->time_queued = 0;
-		buf->time_dispatched = 0;
-		buf->time_completed = 0;
-		buf->time_freed = 0;
-# endif
 		DRM_DEBUG( "buffer %d @ %p\n",
 			   entry->buf_count, buf->address );
 

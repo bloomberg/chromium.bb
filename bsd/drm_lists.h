@@ -83,9 +83,6 @@ int DRM(waitlist_put)(drm_waitlist_t *bl, drm_buf_t *buf)
 			  buf->idx, buf->pid);
 		return DRM_ERR( EINVAL );
 	}
-#if __HAVE_DMA_HISTOGRAM
-	getnanotime(&buf->time_queued);
-#endif
 	buf->list	 = DRM_LIST_WAIT;
 
 	DRM_SPINLOCK(&bl->write_lock);
@@ -159,10 +156,6 @@ int DRM(freelist_put)(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 			  buf->idx, buf->waiting, buf->pending, buf->list);
 	}
 	if (!bl) return 1;
-#if __HAVE_DMA_HISTOGRAM
-	getnanotime(&buf->time_queued);
-	DRM(histogram_compute)(dev, buf);
-#endif
 	buf->list	= DRM_LIST_FREE;
 
 	DRM_SPINLOCK( &bl->lock );
