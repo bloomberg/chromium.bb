@@ -78,10 +78,10 @@
 #endif
 
 #ifndef DRIVER_PREINIT
-#define DRIVER_PREINIT(dev) 0
+#define DRIVER_PREINIT(dev) do {} while (0)
 #endif
 #ifndef DRIVER_POSTINIT
-#define DRIVER_POSTINIT(dev) 0
+#define DRIVER_POSTINIT(dev) do {} while (0)
 #endif
 #ifndef DRIVER_PRERELEASE
 #define DRIVER_PRERELEASE()

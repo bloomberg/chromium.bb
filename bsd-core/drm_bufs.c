@@ -257,7 +257,7 @@ static void DRM(cleanup_buf_error)(drm_device_t *dev, drm_buf_entry_t *entry)
 #if __HAVE_PCI_DMA
 	if (entry->seg_count) {
 		for (i = 0; i < entry->seg_count; i++) {
-			if (entry->seglist[i] != NULL)
+			if (entry->seglist[i] != 0)
 				DRM(pci_free)(dev, entry->buf_size,
 				    (void *)entry->seglist[i],
 				    entry->seglist_bus[i]);
