@@ -502,7 +502,8 @@ int drmAddMap(int fd,
 
     map.offset  = offset;
 #ifdef __alpha__
-    if (type != DRM_SHM)
+    /* Make sure we add the bus_base to all but shm */
+    if (type != DRM_SHM) 
 	map.offset += BUS_BASE;
 #endif
     map.size    = size;

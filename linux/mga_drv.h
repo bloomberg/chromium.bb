@@ -295,7 +295,7 @@ drm_mga_prim_buf_t *tmp_buf = 					\
 		       num_dwords + 1 + outcount, ADRINDEX(reg), val);	\
 	if( ++outcount == 4) {						\
 		outcount = 0;						\
-		dma_ptr[0] = *(u32 *)tempIndex;				\
+		dma_ptr[0] = *(unsigned long *)tempIndex;		\
 		dma_ptr+=5;						\
 		num_dwords += 5;					\
 	}								\

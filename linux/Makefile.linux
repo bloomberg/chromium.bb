@@ -126,6 +126,7 @@ SIS := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'SIS = ' | cut -d' ' -f3)
 PARAMS := $(shell if fgrep kill_fasync $(TREE)/linux/fs.h \
 	| egrep -q '(band|int, int)'; then echo 3; else echo 2; fi)
+MACHINE := $(shell echo `uname -m`)
 ifeq ($(AGP),0)
 AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'AGP_MODULE = ' | cut -d' ' -f3)
@@ -134,7 +135,11 @@ endif
 ifeq ($(AGP),1)
 MODCFLAGS += -DCONFIG_AGP -DCONFIG_AGP_MODULE
 DRMOBJS += agpsupport.o
-MODS += mga.o i810.o
+MODS += mga.o
+ifeq ($(MACHINE),i386)
+MODS += i810.o
+endif
+
 
 MGAOBJS=	mga_drv.o mga_dma.o mga_bufs.o mga_state.o mga_context.o
 MGAHEADERS=	mga_drv.h $(DRMHEADERS)
@@ -159,6 +164,7 @@ endif
 all::;@echo === KERNEL HEADERS IN $(TREE)
 all::;@echo === SMP=${SMP} MODVERSIONS=${MODVERSIONS} AGP=${AGP} SIS=${SIS}
 all::;@echo === kill_fasync has $(PARAMS) parameters
+all::;@echo === Compiling for machine $(MACHINE)
 all:: $(LIBS) $(MODS) $(PROGS)
 endif
 
