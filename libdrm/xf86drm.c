@@ -27,13 +27,14 @@
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.25 2001/08/27 17:40:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.28 2002/10/16 01:26:49 dawes Exp $
  *
  */
 
 #ifdef XFree86Server
 # include "xf86.h"
 # include "xf86_OSproc.h"
+# include "drm.h"
 # include "xf86_ansic.h"
 # define _DRM_MALLOC xalloc
 # define _DRM_FREE   xfree
@@ -66,6 +67,7 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif
+# include "drm.h"
 #endif
 
 /* No longer needed with CVS kernel modules on alpha 
@@ -81,7 +83,6 @@ extern unsigned long _bus_base(void);
 #endif
 
 #include "xf86drm.h"
-#include "drm.h"
 
 #ifndef DRM_MAJOR
 #define DRM_MAJOR 226		/* Linux */
@@ -197,7 +198,6 @@ static int drmOpenDevice(long dev, int minor)
     stat_t          st;
     char            buf[64];
     int             fd;
-    mode_t          dirmode = DRM_DEV_DIRMODE;
     mode_t          devmode = DRM_DEV_MODE;
     int             isroot  = !geteuid();
 #if defined(XFree86Server)
@@ -209,23 +209,16 @@ static int drmOpenDevice(long dev, int minor)
 
 #if defined(XFree86Server)
     devmode  = xf86ConfigDRI.mode ? xf86ConfigDRI.mode : DRM_DEV_MODE;
-    dirmode  = (devmode & S_IRUSR) ? S_IXUSR : 0;
-    dirmode |= (devmode & S_IRGRP) ? S_IXGRP : 0;
-    dirmode |= (devmode & S_IROTH) ? S_IXOTH : 0;
-    dirmode |= devmode;
     devmode &= ~(S_IXUSR|S_IXGRP|S_IXOTH);
     group = (xf86ConfigDRI.group >= 0) ? xf86ConfigDRI.group : DRM_DEV_GID;
 #endif
 
     if (stat(DRM_DIR_NAME, &st)) {
 	if (!isroot) return DRM_ERR_NOT_ROOT;
-	remove(DRM_DIR_NAME);
-	mkdir(DRM_DIR_NAME, dirmode);
+	mkdir(DRM_DIR_NAME, DRM_DEV_DIRMODE);
+	chown(DRM_DIR_NAME, 0, 0); /* root:root */
+	chmod(DRM_DIR_NAME, DRM_DEV_DIRMODE);
     }
-#if defined(XFree86Server)
-    chown(DRM_DIR_NAME, user, group);
-    chmod(DRM_DIR_NAME, dirmode);
-#endif
 
     sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);
     drmMsg("drmOpenDevice: node name is %s\n", buf);

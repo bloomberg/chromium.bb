@@ -1,5 +1,4 @@
-
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/Imakefile,v 1.8 2001/12/13 00:24:45 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/Imakefile,v 1.9 2002/02/27 22:18:10 tsi Exp $
 
 XCOMM This is a kludge until we determine how best to build the
 XCOMM kernel-specific device driver.  This allows us to continue
