@@ -247,14 +247,11 @@ static int i830_unmap_buffer(drm_buf_t *buf)
 #else
 		down_write( &current->mm->mmap_sem );
 #endif
-#if LINUX_VERSION_CODE < 0x020399
-        	retcode = do_munmap((unsigned long)buf_priv->virtual, 
-				    (size_t) buf->total);
-#else
+
         	retcode = do_munmap(current->mm, 
 				    (unsigned long)buf_priv->virtual, 
 				    (size_t) buf->total);
-#endif
+
 #if LINUX_VERSION_CODE <= 0x020402
 		up( &current->mm->mmap_sem );
 #else
