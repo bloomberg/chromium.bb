@@ -81,7 +81,18 @@ extern unsigned long _bus_base(void);
 #include "xf86drm.h"
 #include "drm.h"
 
-#define DRM_FIXED_DEVICE_MAJOR 145
+#ifndef DRM_MAJOR
+#define DRM_MAJOR 226		/* Linux */
+#endif
+
+#ifndef __linux__
+#undef  DRM_MAJOR
+#define DRM_MAJOR 145		/* Should set in drm.h for *BSD */
+#endif
+
+#ifndef DRM_MAX_MINOR
+#define DRM_MAX_MINOR 16
+#endif
 
 #ifdef __linux__
 #include <sys/sysmacros.h>	/* for makedev() */
@@ -161,93 +172,108 @@ static drmHashEntry *drmGetEntry(int fd)
     return entry;
 }
 
-/* drm_open is used to open the /dev/dri device */
-
-static int drm_open(const char *file)
-{
-    int fd = open(file, O_RDWR, 0);
-
-    if (fd >= 0) return fd;
-    return -errno;
-}
-
-static int drmOpenDevice(const char *path, long dev,
-			 mode_t mode, uid_t user, gid_t group)
+static int drmOpenDevice(long dev, int minor)
 {
 #ifdef XFree86LOADER
     struct xf86stat st;
 #else
     struct stat     st;
 #endif
+    char            buf[64];
+    int             fd;
+    mode_t          dirmode = DRM_DEV_DIRMODE;
+    mode_t          devmode = DRM_DEV_MODE;
+    int             isroot  = !geteuid();
+#if defined(XFree86Server)
+    uid_t           user    = DRM_DEV_UID;
+    gid_t           group   = DRM_DEV_GID;
+#endif
 
-				/* Fiddle mode to remove execute bits */
-    mode &= ~(S_IXUSR|S_IXGRP|S_IXOTH);
+#if defined(XFree86Server)
+    devmode  = xf86ConfigDRI.mode ? xf86ConfigDRI.mode : DRM_DEV_MODE;
+    dirmode  = (devmode & S_IRUSR) ? S_IXUSR : 0;
+    dirmode |= (devmode & S_IRGRP) ? S_IXGRP : 0;
+    dirmode |= (devmode & S_IROTH) ? S_IXOTH : 0;
+    dirmode |= devmode;
+    devmode &= ~(S_IXUSR|S_IXGRP|S_IXOTH);
+    group = (xf86ConfigDRI.group >= 0) ? xf86ConfigDRI.group : DRM_DEV_GID;
+#endif
 
-    if (!stat(path, &st) && st.st_rdev == dev) {
-	if (!geteuid()) {
-	    chown(path, user, group);
-	    chmod(path, mode);
-	}
-	return drm_open(path);
+    if (stat(DRM_DIR_NAME, &st)) {
+	if (!isroot) return DRM_ERR_NOT_ROOT;
+	remove(DRM_DIR_NAME);
+	mkdir(DRM_DIR_NAME, dirmode);
     }
+#if defined(XFree86Server)
+    chown(DRM_DIR_NAME, user, group);
+    chmod(DRM_DIR_NAME, dirmode);
+#endif
 
-    if (geteuid()) return DRM_ERR_NOT_ROOT;
-    remove(path);
-    if (mknod(path, S_IFCHR, dev)) {
-	remove(path);
-	return DRM_ERR_NOT_ROOT;
+    sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);
+    if (stat(buf, &st) || st.st_rdev != dev) {
+	if (!isroot) return DRM_ERR_NOT_ROOT;
+	remove(buf);
+	mknod(buf, S_IFCHR | devmode, dev);
     }
-    chown(path, user, group);
-    chmod(path, mode);
-    return drm_open(path);
+#if defined(XFree86Server)
+    chown(buf, user, group);
+    chmod(buf, devmode);
+#endif
+
+    if ((fd = open(buf, O_RDWR, 0)) >= 0) return fd;
+    remove(buf);
+    return -errno;
 }
 
-/* drmAvailable looks for /proc/dri, and returns 1 if it is present.  On
-   OSs that do not have a Linux-like /proc, this information will not be
-   available, and we'll have to create a device and check if the driver is
-   loaded that way. */
+int drmOpenMinor(int minor, int create)
+{
+    int  fd;
+    char buf[64];
+    
+    if (create) return drmOpenDevice(makedev(DRM_MAJOR, minor), minor);
+    
+    sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);
+    if ((fd = open(buf, O_RDWR, 0)) >= 0) return fd;
+    return -errno;
+}
+
+/* drmAvailable looks for (DRM_MAJOR, 0) and returns 1 if it returns
+   information for DRM_IOCTL_VERSION.  For backward compatibility with
+   older Linux implementations, /proc/dri is also checked. */
 
 int drmAvailable(void)
 {
-    char          dev_name[64];
     drmVersionPtr version;
     int           retval = 0;
     int           fd;
 
-    if (!access("/proc/dri/0", R_OK)) return 1;
-
-    sprintf(dev_name, "/dev/dri-temp-%d", getpid());
-
-    remove(dev_name);
-    if ((fd = drmOpenDevice(dev_name, makedev(DRM_FIXED_DEVICE_MAJOR, 0),
-			    S_IRUSR, geteuid(), getegid())) >= 0) {
-				/* Read version to make sure this is
-                                   actually a DRI device. */
-	if ((version = drmGetVersion(fd))) {
-	    retval = 1;
-	    drmFreeVersion(version);
-	}
-	close(fd);
+    if ((fd = drmOpenMinor(0, 1)) < 0) {
+				/* Try proc for backward Linux compatibility */
+	if (!access("/proc/dri/0", R_OK)) return 1;
+	return 0;
     }
-    remove(dev_name);
+    
+    if ((version = drmGetVersion(fd))) {
+	retval = 1;
+	drmFreeVersion(version);
+    }
+    close(fd);
 
     return retval;
 }
 
 static int drmOpenByBusid(const char *busid)
 {
-    int    i;
-    char   dev_name[64];
-    char   *buf;
-    int    fd;
-
-    for (i = 0; i < 8; i++) {
-	sprintf(dev_name, "/dev/dri/card%d", i);
-	if ((fd = drm_open(dev_name)) >= 0) {
+    int        i;
+    int        fd;
+    const char *buf;
+    
+    for (i = 0; i < DRM_MAX_MINOR; i++) {
+	if ((fd = drmOpenMinor(i, 0)) >= 0) {
 	    buf = drmGetBusid(fd);
 	    if (buf && !strcmp(buf, busid)) {
-	      drmFreeBusid(buf);
-	      return fd;
+		drmFreeBusid(buf);
+		return fd;
 	    }
 	    if (buf) drmFreeBusid(buf);
 	    close(fd);
@@ -258,54 +284,43 @@ static int drmOpenByBusid(const char *busid)
 
 static int drmOpenByName(const char *name)
 {
-    int    i;
-    char   proc_name[64];
-    char   dev_name[64];
-    char   buf[512];
-    mode_t mode   = DRM_DEV_MODE;
-    mode_t dirmode;
-    gid_t  group  = DRM_DEV_GID;
-    uid_t  user   = DRM_DEV_UID;
-    int    fd;
-    char   *pt;
-    char   *driver = NULL;
-    char   *devstring;
-    long   dev     = 0;
-    int    retcode;
-
-#if defined(XFree86Server)
-    mode  = xf86ConfigDRI.mode ? xf86ConfigDRI.mode : DRM_DEV_MODE;
-    group = (xf86ConfigDRI.group >= 0) ? xf86ConfigDRI.group : DRM_DEV_GID;
-#endif
-
-#if defined(XFree86Server)
+    int           i;
+    int           fd;
+    drmVersionPtr version;
+    
     if (!drmAvailable()) {
+#if !defined(XFree86Server)
+	return -1;
+#else
         /* try to load the kernel module now */
         if (!xf86LoadKernelModule(name)) {
             ErrorF("[drm] failed to load kernel module \"%s\"\n",
 		   name);
             return -1;
         }
-    }
-#else
-    if (!drmAvailable())
-       return -1;
 #endif
-
-    if (!geteuid()) {
-	dirmode = mode;
-	if (dirmode & S_IRUSR) dirmode |= S_IXUSR;
-	if (dirmode & S_IRGRP) dirmode |= S_IXGRP;
-	if (dirmode & S_IROTH) dirmode |= S_IXOTH;
-	dirmode &= ~(S_IWGRP | S_IWOTH);
-	mkdir("/dev/dri", 0);
-	chown("/dev/dri", user, group);
-	chmod("/dev/dri", dirmode);
     }
 
+    for (i = 0; i < DRM_MAX_MINOR; i++) {
+	if ((fd = drmOpenMinor(i, 1)) >= 0) {
+	    if ((version = drmGetVersion(fd))) {
+		if (!strcmp(version->name, name)) {
+		    drmFreeVersion(version);
+		    return fd;
+		}
+		drmFreeVersion(version);
+	    }
+	}
+    }
+
+#ifdef __linux__
+				/* Backward-compatibility /proc support */
     for (i = 0; i < 8; i++) {
+	char proc_name[64], buf[512];
+	char *driver, *pt, *devstring;
+	int  retcode;
+	
 	sprintf(proc_name, "/proc/dri/%d/name", i);
-	sprintf(dev_name, "/dev/dri/card%d", i);
 	if ((fd = open(proc_name, 0, 0)) >= 0) {
 	    retcode = read(fd, buf, sizeof(buf)-1);
 	    close(fd);
@@ -319,34 +334,17 @@ static int drmOpenByName(const char *name)
 			for (devstring = ++pt; *pt && *pt != ' '; ++pt)
 			    ;
 			if (*pt) { /* Found busid */
-			  return drmOpenByBusid(++pt);
+			    return drmOpenByBusid(++pt);
 			} else {	/* No busid */
-			  dev = strtol(devstring, NULL, 0);
-			  return drmOpenDevice(dev_name, dev,
-					       mode, user, group);
+			    return drmOpenDevice(strtol(devstring, NULL, 0),i);
 			}
 		    }
 		}
 	    }
-	} else {
-	    drmVersionPtr version;
-				/* /proc/dri not available, possibly
-                                   because we aren't on a Linux system.
-                                   So, try to create the next device and
-                                   see if it's active. */
-	    dev = makedev(DRM_FIXED_DEVICE_MAJOR, i);
-	    if ((fd = drmOpenDevice(dev_name, dev, mode, user, group))) {
-		if ((version = drmGetVersion(fd))) {
-		    if (!strcmp(version->name, name)) {
-			drmFreeVersion(version);
-			return fd;
-		    }
-		    drmFreeVersion(version);
-		}
-	    }
-	    remove(dev_name);
 	}
     }
+#endif
+
     return -1;
 }
 
@@ -1088,6 +1086,160 @@ void *drmGetContextTag(int fd, drmContext context)
     if (drmHashLookup(entry->tagTable, context, &value)) return NULL;
 
     return value;
+}
+
+int drmGetMap(int fd, int idx, drmHandle *offset, drmSize *size,
+	      drmMapType *type, drmMapFlags *flags, drmHandle *handle,
+	      int *mtrr)
+{
+    drm_map_t map;
+
+    map.offset = idx;
+    if (ioctl(fd, DRM_IOCTL_GET_MAP, &map)) return -errno;
+    *offset = map.offset;
+    *size   = map.size;
+    *type   = map.type;
+    *flags  = map.flags;
+    *handle = (unsigned long)map.handle;
+    *mtrr   = map.mtrr;
+    return 0;
+}
+
+int drmGetClient(int fd, int idx, int *auth, int *pid, int *uid,
+		 unsigned long *magic, unsigned long *iocs)
+{
+    drm_client_t client;
+
+    client.idx = idx;
+    if (ioctl(fd, DRM_IOCTL_GET_CLIENT, &client)) return -errno;
+    *auth      = client.auth;
+    *pid       = client.pid;
+    *uid       = client.uid;
+    *magic     = client.magic;
+    *iocs      = client.iocs;
+    return 0;
+}
+
+int drmGetStats(int fd, drmStatsT *stats)
+{
+    drm_stats_t s;
+    int         i;
+
+    if (ioctl(fd, DRM_IOCTL_GET_STATS, &s)) return -errno;
+
+    stats->count = 0;
+    memset(stats, 0, sizeof(*stats));
+    if (s.count > sizeof(stats->data)/sizeof(stats->data[0]))
+	return -1;
+
+#define SET_VALUE                              \
+    stats->data[i].long_format = "%-20.20s";   \
+    stats->data[i].rate_format = "%8.8s";      \
+    stats->data[i].isvalue     = 1;            \
+    stats->data[i].verbose     = 0
+
+#define SET_COUNT                              \
+    stats->data[i].long_format = "%-20.20s";   \
+    stats->data[i].rate_format = "%5.5s";      \
+    stats->data[i].isvalue     = 0;            \
+    stats->data[i].mult_names  = "kgm";        \
+    stats->data[i].mult        = 1000;         \
+    stats->data[i].verbose     = 0
+
+#define SET_BYTE                               \
+    stats->data[i].long_format = "%-20.20s";   \
+    stats->data[i].rate_format = "%5.5s";      \
+    stats->data[i].isvalue     = 0;            \
+    stats->data[i].mult_names  = "KGM";        \
+    stats->data[i].mult        = 1024;         \
+    stats->data[i].verbose     = 0
+
+
+    stats->count = s.count;
+    for (i = 0; i < s.count; i++) {
+	stats->data[i].value = s.data[i].value;
+	switch (s.data[i].type) {
+	case _DRM_STAT_LOCK:
+	    stats->data[i].long_name = "Lock";
+	    stats->data[i].rate_name = "Lock";
+	    SET_VALUE;
+	    break;
+	case _DRM_STAT_OPENS:
+	    stats->data[i].long_name = "Opens";
+	    stats->data[i].rate_name = "O";
+	    SET_COUNT;
+	    stats->data[i].verbose   = 1;
+	    break;
+	case _DRM_STAT_CLOSES:
+	    stats->data[i].long_name = "Closes";
+	    stats->data[i].rate_name = "Lock";
+	    SET_COUNT;
+	    stats->data[i].verbose   = 1;
+	    break;
+	case _DRM_STAT_IOCTLS:
+	    stats->data[i].long_name = "Ioctls";
+	    stats->data[i].rate_name = "Ioc/s";
+	    SET_COUNT;
+	    break;
+	case _DRM_STAT_LOCKS:
+	    stats->data[i].long_name = "Locks";
+	    stats->data[i].rate_name = "Lck/s";
+	    SET_COUNT;
+	    break;
+	case _DRM_STAT_UNLOCKS:
+	    stats->data[i].long_name = "Unlocks";
+	    stats->data[i].rate_name = "Unl/s";
+	    SET_COUNT;
+	    break;
+	case _DRM_STAT_IRQ:
+	    stats->data[i].long_name = "IRQs";
+	    stats->data[i].rate_name = "IRQ/s";
+	    SET_COUNT;
+	    break;
+	case _DRM_STAT_PRIMARY:
+	    stats->data[i].long_name = "Primary Bytes";
+	    stats->data[i].rate_name = "PB/s";
+	    SET_BYTE;
+	    break;
+	case _DRM_STAT_SECONDARY:
+	    stats->data[i].long_name = "Secondary Bytes";
+	    stats->data[i].rate_name = "SB/s";
+	    SET_BYTE;
+	    break;
+	case _DRM_STAT_DMA:
+	    stats->data[i].long_name = "DMA";
+	    stats->data[i].rate_name = "DMA/s";
+	    SET_COUNT;
+	    break;
+	case _DRM_STAT_SPECIAL:
+	    stats->data[i].long_name = "Special DMA";
+	    stats->data[i].rate_name = "dma/s";
+	    SET_COUNT;
+	    break;
+	case _DRM_STAT_MISSED:
+	    stats->data[i].long_name = "Miss";
+	    stats->data[i].rate_name = "Ms/s";
+	    SET_COUNT;
+	    break;
+	case _DRM_STAT_VALUE:
+	    stats->data[i].long_name = "Value";
+	    stats->data[i].rate_name = "Value";
+	    SET_VALUE;
+	    break;
+	case _DRM_STAT_BYTE:
+	    stats->data[i].long_name = "Bytes";
+	    stats->data[i].rate_name = "B/s";
+	    SET_BYTE;
+	    break;
+	case _DRM_STAT_COUNT:
+	default:
+	    stats->data[i].long_name = "Count";
+	    stats->data[i].rate_name = "Cnt/s";
+	    SET_COUNT;
+	    break;
+	}
+    }
+    return 0;
 }
 
 #if defined(XFree86Server) || defined(DRM_USE_MALLOC)

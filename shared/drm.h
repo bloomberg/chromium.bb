@@ -44,11 +44,8 @@
 #define DRM_IOCTL_NR(n)	     ((n) & 0xff)
 #endif
 
-#define DRM_DEV_MODE	 (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP)
-#define DRM_DEV_UID	 0
-#define DRM_DEV_GID	 0
-
 #define DRM_MAJOR       226
+#define DRM_MAX_MINOR   15
 #define DRM_NAME	"drm"	  /* Name in kernel, /dev, and /proc	    */
 #define DRM_MIN_ORDER	5	  /* At least 2^5 bytes = 32 bytes	    */
 #define DRM_MAX_ORDER	22	  /* Up to 2^22 bytes = 4MB		    */

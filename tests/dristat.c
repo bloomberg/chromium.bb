@@ -35,28 +35,11 @@
 #include "../xf86drmHash.c"
 #include "../xf86drm.c"
 
-#define DRM_DIR_NAME "/dev/dri"
-#define DRM_DEV_NAME "%s/card%d"
-
 #define DRM_VERSION 0x00000001
 #define DRM_MEMORY  0x00000002
 #define DRM_CLIENTS 0x00000004
 #define DRM_STATS   0x00000008
-
-typedef struct drmStatsS {
-    unsigned long count;
-    struct {
-	unsigned long value;
-	const char    *long_format;
-	const char    *long_name;
-	const char    *rate_format;
-	const char    *rate_name;
-	int           isvalue;
-	const char    *mult_names;
-	int           mult;
-	int           verbose;
-    } data[15];
-} drmStatsT;
+#define DRM_BUSID   0x00000010
 
 static void getversion(int fd)
 {
@@ -78,6 +61,15 @@ static void getversion(int fd)
     }
 }
 
+static void getbusid(int fd)
+{
+    const char *busid = drmGetBusid(fd);
+    
+    printf("  Busid: %s\n", *busid ? busid : "(not set)");
+    drmFreeBusid(busid);
+}
+
+#if 0
 typedef struct {
     unsigned long	offset;	 /* Requested physical address (0 for SAREA)*/
     unsigned long	size;	 /* Requested physical size (bytes)	    */
@@ -88,160 +80,7 @@ typedef struct {
     int		mtrr;	 /* MTRR slot used			    */
 				 /* Private data			    */
 } drmVmRec, *drmVmPtr;
-
-int drmGetMap(int fd, int idx, drmHandle *offset, drmSize *size,
-	      drmMapType *type, drmMapFlags *flags, drmHandle *handle,
-	      int *mtrr)
-{
-    drm_map_t map;
-
-    map.offset = idx;
-    if (ioctl(fd, DRM_IOCTL_GET_MAP, &map)) return -errno;
-    *offset = map.offset;
-    *size   = map.size;
-    *type   = map.type;
-    *flags  = map.flags;
-    *handle = (unsigned long)map.handle;
-    *mtrr   = map.mtrr;
-    return 0;
-}
-
-int drmGetClient(int fd, int idx, int *auth, int *pid, int *uid,
-		 unsigned long *magic, unsigned long *iocs)
-{
-    drm_client_t client;
-
-    client.idx = idx;
-    if (ioctl(fd, DRM_IOCTL_GET_CLIENT, &client)) return -errno;
-    *auth      = client.auth;
-    *pid       = client.pid;
-    *uid       = client.uid;
-    *magic     = client.magic;
-    *iocs      = client.iocs;
-    return 0;
-}
-
-int drmGetStats(int fd, drmStatsT *stats)
-{
-    drm_stats_t s;
-    int         i;
-
-    if (ioctl(fd, DRM_IOCTL_GET_STATS, &s)) return -errno;
-
-    stats->count = 0;
-    memset(stats, 0, sizeof(*stats));
-    if (s.count > sizeof(stats->data)/sizeof(stats->data[0]))
-	return -1;
-
-#define SET_VALUE                              \
-    stats->data[i].long_format = "%-20.20s";   \
-    stats->data[i].rate_format = "%8.8s";      \
-    stats->data[i].isvalue     = 1;            \
-    stats->data[i].verbose     = 0
-
-#define SET_COUNT                              \
-    stats->data[i].long_format = "%-20.20s";     \
-    stats->data[i].rate_format = "%5.5s";      \
-    stats->data[i].isvalue     = 0;            \
-    stats->data[i].mult_names  = "kgm";        \
-    stats->data[i].mult        = 1000;         \
-    stats->data[i].verbose     = 0
-
-#define SET_BYTE                             \
-    stats->data[i].long_format = "%-9.9s";   \
-    stats->data[i].rate_format = "%5.5s";    \
-    stats->data[i].isvalue     = 0;          \
-    stats->data[i].mult_names  = "KGM";      \
-    stats->data[i].mult        = 1024;       \
-    stats->data[i].verbose     = 0
-
-
-    stats->count = s.count;
-    for (i = 0; i < s.count; i++) {
-	stats->data[i].value = s.data[i].value;
-	switch (s.data[i].type) {
-	case _DRM_STAT_LOCK:
-	    stats->data[i].long_name = "Lock";
-	    stats->data[i].rate_name = "Lock";
-	    SET_VALUE;
-	    break;
-	case _DRM_STAT_OPENS:
-	    stats->data[i].long_name = "Opens";
-	    stats->data[i].rate_name = "O";
-	    SET_COUNT;
-	    stats->data[i].verbose   = 1;
-	    break;
-	case _DRM_STAT_CLOSES:
-	    stats->data[i].long_name = "Closes";
-	    stats->data[i].rate_name = "Lock";
-	    SET_COUNT;
-	    stats->data[i].verbose   = 1;
-	    break;
-	case _DRM_STAT_IOCTLS:
-	    stats->data[i].long_name = "Ioctls";
-	    stats->data[i].rate_name = "Ioc/s";
-	    SET_COUNT;
-	    break;
-	case _DRM_STAT_LOCKS:
-	    stats->data[i].long_name = "Locks";
-	    stats->data[i].rate_name = "Lck/s";
-	    SET_COUNT;
-	    break;
-	case _DRM_STAT_UNLOCKS:
-	    stats->data[i].long_name = "Unlocks";
-	    stats->data[i].rate_name = "Unl/s";
-	    SET_COUNT;
-	    break;
-	case _DRM_STAT_IRQ:
-	    stats->data[i].long_name = "IRQs";
-	    stats->data[i].rate_name = "IRQ/s";
-	    SET_COUNT;
-	    break;
-	case _DRM_STAT_PRIMARY:
-	    stats->data[i].long_name = "Primary Bytes";
-	    stats->data[i].rate_name = "PB/s";
-	    SET_BYTE;
-	    break;
-	case _DRM_STAT_SECONDARY:
-	    stats->data[i].long_name = "Secondary Bytes";
-	    stats->data[i].rate_name = "SB/s";
-	    SET_BYTE;
-	    break;
-	case _DRM_STAT_DMA:
-	    stats->data[i].long_name = "DMA";
-	    stats->data[i].rate_name = "DMA/s";
-	    SET_COUNT;
-	    break;
-	case _DRM_STAT_SPECIAL:
-	    stats->data[i].long_name = "Special DMA";
-	    stats->data[i].rate_name = "dma/s";
-	    SET_COUNT;
-	    break;
-	case _DRM_STAT_MISSED:
-	    stats->data[i].long_name = "Miss";
-	    stats->data[i].rate_name = "Ms/s";
-	    SET_COUNT;
-	    break;
-	case _DRM_STAT_VALUE:
-	    stats->data[i].long_name = "Value";
-	    stats->data[i].rate_name = "Value";
-	    SET_VALUE;
-	    break;
-	case _DRM_STAT_BYTE:
-	    stats->data[i].long_name = "Bytes";
-	    stats->data[i].rate_name = "B/s";
-	    SET_BYTE;
-	    break;
-	case _DRM_STAT_COUNT:
-	default:
-	    stats->data[i].long_name = "Count";
-	    stats->data[i].rate_name = "Cnt/s";
-	    SET_COUNT;
-	    break;
-	}
-    }
-    return 0;
-}
+#endif
 
 static void getvm(int fd)
 {
@@ -255,7 +94,7 @@ static void getvm(int fd)
     drmHandle       handle;
     int             mtrr;
 
-    printf("  VM map information:\n");
+    printf("  VM map information (Restricted locked kernel WC Lock):\n");
     printf("    slot     offset       size type flags    address mtrr\n");
 
     for (i = 0;
@@ -298,7 +137,7 @@ static void getclients(int fd)
     int           procfd;
     
     printf("  DRI client information:\n");
-    printf("    a   pid    uid      magic     ioctls  prog\n");
+    printf("    a   pid   uid      magic     ioctls   prog\n");
 
     for (i = 0; !drmGetClient(fd, i, &auth, &pid, &uid, &magic, &iocs); i++) {
 	sprintf(buf, "/proc/%d/cmdline", pid);
@@ -307,12 +146,16 @@ static void getclients(int fd)
 	    read(procfd, cmd, sizeof(cmd)-1);
 	    close(procfd);
 	}
-	if (*cmd)
+	if (*cmd) {
+	    char *pt;
+
+	    for (pt = cmd; *pt; pt++) if (!isprint(*pt)) *pt = ' ';
 	    printf("    %c %5d %5d %10lu %10lu   %s\n",
 		   auth ? 'y' : 'n', pid, uid, magic, iocs, cmd);
-	else
+	} else {
 	    printf("    %c %5d %5d %10lu %10lu\n",
 		   auth ? 'y' : 'n', pid, uid, magic, iocs);
+	}
     }
 }
 
@@ -394,44 +237,6 @@ static void getstats(int fd, int i)
     
 }
 
-static int drmOpenMinor(int minor, uid_t user, gid_t group,
-			mode_t dirmode, mode_t devmode, int force)
-{
-    struct stat st;
-    char        buf[64];
-    long        dev    = makedev(DRM_MAJOR, minor);
-    int         setdir = 0;
-    int         setdev = 0;
-    int         fd;
-
-    if (stat(DRM_DIR_NAME, &st) || !S_ISDIR(st.st_mode)) {
-	remove(DRM_DIR_NAME);
-	mkdir(DRM_DIR_NAME, dirmode);
-	++setdir;
-    }
-
-    if (force || setdir) {
-	chown(DRM_DIR_NAME, user, group);
-	chmod(DRM_DIR_NAME, dirmode);
-    }
-
-    sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);
-    if (stat(buf, &st) || st.st_rdev != dev) {
-	remove(buf);
-	mknod(buf, S_IFCHR, dev);
-	++setdev;
-    }
-
-    if (force || setdev) {
-	chown(buf, user, group);
-	chmod(buf, devmode);
-    }
-
-    if ((fd = open(buf, O_RDWR, 0)) >= 0) return fd;
-    if (setdev) remove(buf);
-    return -errno;
-}
-	
 int main(int argc, char **argv)
 {
     int  c;
@@ -442,13 +247,14 @@ int main(int argc, char **argv)
     char buf[64];
     int  i;
 
-    while ((c = getopt(argc, argv, "avmcsM:i:")) != EOF)
+    while ((c = getopt(argc, argv, "avmcsbM:i:")) != EOF)
 	switch (c) {
 	case 'a': mask = ~0;                          break;
 	case 'v': mask |= DRM_VERSION;                break;
 	case 'm': mask |= DRM_MEMORY;                 break;
 	case 'c': mask |= DRM_CLIENTS;                break;
 	case 's': mask |= DRM_STATS;                  break;
+	case 'b': mask |= DRM_BUSID;                  break;
 	case 'i': interval = strtol(optarg, NULL, 0); break;
 	case 'M': minor = strtol(optarg, NULL, 0);    break;
 	default:
@@ -458,9 +264,10 @@ int main(int argc, char **argv)
 
     for (i = 0; i < 16; i++) if (!minor || i == minor) {
 	sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, i);
-	fd = drmOpenMinor(i, 0, 0, 0700, 0600, 0);
+	fd = drmOpenMinor(i, 1);
 	if (fd >= 0) {
 	    printf("%s\n", buf);
+	    if (mask & DRM_BUSID)   getbusid(fd);
 	    if (mask & DRM_VERSION) getversion(fd);
 	    if (mask & DRM_MEMORY)  getvm(fd);
 	    if (mask & DRM_CLIENTS) getclients(fd);
