@@ -29,8 +29,6 @@
  *
  */
 
-#include <linux/sched.h>
-
 #define __NO_VERSION__
 #include "drmP.h"
 #include "mga_drv.h"

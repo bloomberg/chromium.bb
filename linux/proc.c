@@ -521,9 +521,9 @@ static int _drm_histo_info(char *buf, char **start, off_t offset, int len,
 	} else {
 		DRM_PROC_PRINT("lock		     none\n");
 	}
-	DRM_PROC_PRINT("context_flag   0x%08x\n", dev->context_flag);
-	DRM_PROC_PRINT("interrupt_flag 0x%08x\n", dev->interrupt_flag);
-	DRM_PROC_PRINT("dma_flag       0x%08x\n", dev->dma_flag);
+	DRM_PROC_PRINT("context_flag   0x%08lx\n", dev->context_flag);
+	DRM_PROC_PRINT("interrupt_flag 0x%08lx\n", dev->interrupt_flag);
+	DRM_PROC_PRINT("dma_flag       0x%08lx\n", dev->dma_flag);
 
 	DRM_PROC_PRINT("queue_count    %10d\n",	 dev->queue_count);
 	DRM_PROC_PRINT("last_context   %10d\n",	 dev->last_context);

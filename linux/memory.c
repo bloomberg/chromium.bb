@@ -30,6 +30,7 @@
  */
 
 #define __NO_VERSION__
+#include <linux/config.h>
 #include "drmP.h"
 
 typedef struct drm_mem_stats {
@@ -330,7 +331,7 @@ void drm_ioremapfree(void *pt, unsigned long size)
 	}
 }
 
-#ifdef DRM_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 agp_memory *drm_alloc_agp(int pages, u32 type)
 {
 	agp_memory *handle;

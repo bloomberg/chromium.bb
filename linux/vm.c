@@ -145,7 +145,11 @@ void drm_vm_open(struct vm_area_struct *vma)
 	DRM_DEBUG("0x%08lx,0x%08lx\n",
 		  vma->vm_start, vma->vm_end - vma->vm_start);
 	atomic_inc(&dev->vma_count);
-	MOD_INC_USE_COUNT;
+#if LINUX_VERSION_CODE < 0x020333
+				/* The map can exist after the fd is closed. */
+	MOD_INC_USE_COUNT; /* Needed before Linux 2.3.51 */
+#endif
+
 
 #if DRM_DEBUG_CODE
 	vma_entry = drm_alloc(sizeof(*vma_entry), DRM_MEM_VMAS);
@@ -170,7 +174,9 @@ void drm_vm_close(struct vm_area_struct *vma)
 
 	DRM_DEBUG("0x%08lx,0x%08lx\n",
 		  vma->vm_start, vma->vm_end - vma->vm_start);
-	MOD_DEC_USE_COUNT;
+#if LINUX_VERSION_CODE < 0x020333
+	MOD_DEC_USE_COUNT; /* Needed before Linux 2.3.51 */
+#endif
 	atomic_dec(&dev->vma_count);
 
 #if DRM_DEBUG_CODE
@@ -193,15 +199,22 @@ void drm_vm_close(struct vm_area_struct *vma)
 int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 {
 	drm_file_t	 *priv	 = filp->private_data;
-	drm_device_t	 *dev	 = priv->dev;
-	drm_device_dma_t *dma	 = dev->dma;
+	drm_device_t	 *dev;
+	drm_device_dma_t *dma;
 	unsigned long	 length	 = vma->vm_end - vma->vm_start;
 	
+	lock_kernel();
+	dev	 = priv->dev;
+	dma	 = dev->dma;
 	DRM_DEBUG("start = 0x%lx, end = 0x%lx, offset = 0x%lx\n",
 		  vma->vm_start, vma->vm_end, VM_OFFSET(vma));
 
 				/* Length must match exact page count */
-	if ((length >> PAGE_SHIFT) != dma->page_count) return -EINVAL;
+	if ((length >> PAGE_SHIFT) != dma->page_count) {
+		unlock_kernel();
+		return -EINVAL;
+	}
+	unlock_kernel();
 
 	vma->vm_ops   = &drm_vm_dma_ops;
 	vma->vm_flags |= VM_LOCKED | VM_SHM; /* Don't swap */

@@ -106,7 +106,7 @@ int drm_addmap(struct inode *inode, struct file *filp, unsigned int cmd,
 			dev->lock.hw_lock = map->handle; /* Pointer to lock */
 		}
 		break;
-#ifdef DRM_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 	case _DRM_AGP:
 		map->offset = map->offset + dev->agp->base;
 		break;

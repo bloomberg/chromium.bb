@@ -102,8 +102,6 @@ typedef struct _drm_mga_private {
 } drm_mga_private_t;
 
 				/* mga_drv.c */
-extern int  mga_init(void);
-extern void mga_cleanup(void);
 extern int  mga_version(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg);
 extern int  mga_open(struct inode *inode, struct file *filp);

@@ -30,13 +30,8 @@
  */
 
 #include <linux/config.h>
-#ifndef EXPORT_SYMTAB
-#define EXPORT_SYMTAB
-#endif
 #include "drmP.h"
 #include "r128_drv.h"
-EXPORT_SYMBOL(r128_init);
-EXPORT_SYMBOL(r128_cleanup);
 
 #define R128_NAME	 "r128"
 #define R128_DESC	 "ATI Rage 128"
@@ -99,7 +94,7 @@ static drm_ioctl_desc_t	      r128_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]      = { r128_unlock,	   1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]      = { drm_finish,	   1, 0 },
 
-#ifdef DRM_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)] = { drm_agp_acquire, 1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)] = { drm_agp_release, 1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]  = { drm_agp_enable,  1, 1 },
@@ -126,9 +121,6 @@ static char		      *r128 = NULL;
 MODULE_AUTHOR("VA Linux Systems, Inc.");
 MODULE_DESCRIPTION("r128");
 MODULE_PARM(r128, "s");
-
-module_init(r128_init);
-module_exit(r128_cleanup);
 
 #ifndef MODULE
 /* r128_options is called by the kernel to parse command-line options
@@ -244,7 +236,7 @@ static int r128_takedown(drm_device_t *dev)
 		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
 	}
 
-#ifdef DRM_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 				/* Clear AGP information */
 	if (dev->agp) {
 		drm_agp_mem_t *entry;
@@ -331,7 +323,7 @@ static int r128_takedown(drm_device_t *dev)
 /* r128_init is called via init_module at module load time, or via
  * linux/init/main.c (this is not currently supported). */
 
-int r128_init(void)
+static int r128_init(void)
 {
 	int		      retcode;
 	drm_device_t	      *dev = &r128_device;
@@ -356,7 +348,7 @@ int r128_init(void)
 	drm_mem_init();
 	drm_proc_init(dev);
 
-#ifdef DRM_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 	dev->agp    = drm_agp_init();
       	if (dev->agp == NULL) {
 	   	DRM_ERROR("Cannot initialize agpgart module.\n");
@@ -395,7 +387,7 @@ int r128_init(void)
 
 /* r128_cleanup is called via cleanup_module at module unload time. */
 
-void r128_cleanup(void)
+static void r128_cleanup(void)
 {
 	drm_device_t	      *dev = &r128_device;
 
@@ -409,7 +401,7 @@ void r128_cleanup(void)
 	}
 	drm_ctxbitmap_cleanup(dev);
 	r128_takedown(dev);
-#ifdef DRM_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 	if (dev->agp) {
 		drm_agp_uninit();
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
@@ -417,6 +409,10 @@ void r128_cleanup(void)
 	}
 #endif
 }
+
+module_init(r128_init);
+module_exit(r128_cleanup);
+
 
 int r128_version(struct inode *inode, struct file *filp, unsigned int cmd,
 		  unsigned long arg)
@@ -459,7 +455,9 @@ int r128_open(struct inode *inode, struct file *filp)
 
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
 	if (!(retcode = drm_open_helper(inode, filp, dev))) {
-		MOD_INC_USE_COUNT;
+#if LINUX_VERSION_CODE < 0x020333
+		MOD_INC_USE_COUNT; /* Needed before Linux 2.3.51 */
+#endif
 		atomic_inc(&dev->total_open);
 		spin_lock(&dev->count_lock);
 		if (!dev->open_count++) {
@@ -468,18 +466,23 @@ int r128_open(struct inode *inode, struct file *filp)
 		}
 		spin_unlock(&dev->count_lock);
 	}
+	
 	return retcode;
 }
 
 int r128_release(struct inode *inode, struct file *filp)
 {
 	drm_file_t    *priv   = filp->private_data;
-	drm_device_t  *dev    = priv->dev;
+	drm_device_t  *dev;
 	int	      retcode = 0;
 
+	lock_kernel();
+	dev = priv->dev;
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
 	if (!(retcode = drm_release(inode, filp))) {
-		MOD_DEC_USE_COUNT;
+#if LINUX_VERSION_CODE < 0x020333
+		MOD_DEC_USE_COUNT; /* Needed before Linux 2.3.51 */
+#endif
 		atomic_inc(&dev->total_close);
 		spin_lock(&dev->count_lock);
 		if (!--dev->open_count) {
@@ -488,13 +491,17 @@ int r128_release(struct inode *inode, struct file *filp)
 					  atomic_read(&dev->ioctl_count),
 					  dev->blocked);
 				spin_unlock(&dev->count_lock);
+				unlock_kernel();
 				return -EBUSY;
 			}
 			spin_unlock(&dev->count_lock);
+			unlock_kernel();
 			return r128_takedown(dev);
 		}
 		spin_unlock(&dev->count_lock);
 	}
+	
+	unlock_kernel();
 	return retcode;
 }
 

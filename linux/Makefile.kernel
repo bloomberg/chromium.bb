@@ -2,39 +2,38 @@
 # Makefile for the drm device driver.  This driver provides support for
 # the Direct Rendering Infrastructure (DRI) in XFree86 4.x.
 #
-# Note! Dependencies are done automagically by 'make dep', which also
-# removes any old dependencies. DON'T put your own dependencies here
-# unless it's something special (ie not a .c file).
-#
-# Note 2! The CFLAGS definitions are now inherited from the
-# parent makes..
-#
 
-O_OBJS		:=
-OX_OBJS		:=
-M_OBJS		:=
-MX_OBJS		:=
-
-# Object file lists.
-
-obj-y		:=
-obj-m		:=
-obj-n		:=
-obj-		:=
-
-SUB_DIRS     := 
-MOD_SUB_DIRS := $(SUB_DIRS)
-ALL_SUB_DIRS := $(SUB_DIRS)
-
+# drm.o is a fake target -- it is never built
+# The real targets are in the module-list
 O_TARGET	:= drm.o
 module-list     := gamma.o tdfx.o r128.o ffb.o mga.o i810.o
 export-objs     := $(patsubst %.o,%_drv.o,$(module-list))
 
+# libs-objs are included in every module so that radical changes to the
+# architecture of the DRM support library can be made at a later time.
+#
+# The downside is that each module is larger, and a system that uses
+# more than one module (i.e., a dual-head system) will use more memory
+# (but a system that uses exactly one module will use the same amount of
+# memory).
+#
+# The upside is that if the DRM support library ever becomes insufficient
+# for new families of cards, a new library can be implemented for those new
+# cards without impacting the drivers for the old cards.  This is significant,
+# because testing architectural changes to old cards may be impossible, and
+# may delay the implementation of a better architecture.  We've traded slight
+# memory waste (in the dual-head case) for greatly improved long-term
+# maintainability.
+#
 lib-objs   := init.o memory.o proc.o auth.o context.o drawable.o bufs.o
 lib-objs   += lists.o lock.o ioctl.o fops.o vm.o dma.o ctxbitmap.o
 
-ifneq ($(CONFIG_AGP),)
+ifeq ($(CONFIG_AGP),y)
  lib-objs  += agpsupport.o
+else
+ ifeq ($(CONFIG_AGP),m)
+  lib-objs  += agpsupport.o
+ endif
 endif
 
 gamma-objs := $(lib-objs) gamma_drv.o gamma_dma.o
@@ -71,19 +70,19 @@ MIX_OBJS        := $(sort $(filter     $(export-objs), $(int-m)))
 include $(TOPDIR)/Rules.make
 
 gamma.o: $(gamma-objs)
-	$(LD) $(LD_RFLAG) -r -o $@ $(gamma-objs)
+	$(LD) -r -o $@ $(gamma-objs)
 
 tdfx.o: $(tdfx-objs)
-	$(LD) $(LD_RFLAG) -r -o $@ $(tdfx-objs)
+	$(LD) -r -o $@ $(tdfx-objs)
 
 mga.o: $(mga-objs)
-	$(LD) $(LD_RFLAG) -r -o $@ $(mga-objs)
+	$(LD) -r -o $@ $(mga-objs)
 
 i810.o: $(i810-objs)
-	$(LD) $(LD_RFLAG) -r -o $@ $(i810-objs)
+	$(LD) -r -o $@ $(i810-objs)
 
 r128.o: $(r128-objs)
-	$(LD) $(LD_RFLAG) -r -o $@ $(r128-objs)
+	$(LD) -r -o $@ $(r128-objs)
 
 ffb.o: $(ffb-objs)
-	$(LD) $(LD_RFLAG) -r -o $@ $(ffb-objs)
+	$(LD) -r -o $@ $(ffb-objs)

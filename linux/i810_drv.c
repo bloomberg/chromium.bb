@@ -30,15 +30,8 @@
  */
 
 #include <linux/config.h>
-#ifndef EXPORT_SYMTAB
-#define EXPORT_SYMTAB
-#endif
 #include "drmP.h"
 #include "i810_drv.h"
-
-
-EXPORT_SYMBOL(i810_init);
-EXPORT_SYMBOL(i810_cleanup);
 
 #define I810_NAME	 "i810"
 #define I810_DESC	 "Intel I810"
@@ -131,9 +124,6 @@ static char		      *i810 = NULL;
 MODULE_AUTHOR("VA Linux Systems, Inc.");
 MODULE_DESCRIPTION("Intel I810");
 MODULE_PARM(i810, "s");
-
-module_init(i810_init);
-module_exit(i810_cleanup);
 
 #ifndef MODULE
 /* i810_options is called by the kernel to parse command-line options
@@ -348,7 +338,7 @@ static int i810_takedown(drm_device_t *dev)
 /* i810_init is called via init_module at module load time, or via
  * linux/init/main.c (this is not currently supported). */
 
-int i810_init(void)
+static int i810_init(void)
 {
 	int		      retcode;
 	drm_device_t	      *dev = &i810_device;
@@ -407,7 +397,7 @@ int i810_init(void)
 
 /* i810_cleanup is called via cleanup_module at module unload time. */
 
-void i810_cleanup(void)
+static void i810_cleanup(void)
 {
 	drm_device_t	      *dev = &i810_device;
 
@@ -427,6 +417,10 @@ void i810_cleanup(void)
 		dev->agp = NULL;
 	}
 }
+
+module_init(i810_init);
+module_exit(i810_cleanup);
+
 
 int i810_version(struct inode *inode, struct file *filp, unsigned int cmd,
 		  unsigned long arg)
@@ -469,7 +463,9 @@ int i810_open(struct inode *inode, struct file *filp)
 	
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
 	if (!(retcode = drm_open_helper(inode, filp, dev))) {
-		MOD_INC_USE_COUNT;
+#if LINUX_VERSION_CODE < 0x020333
+		MOD_INC_USE_COUNT; /* Needed before Linux 2.3.51 */
+#endif
 		atomic_inc(&dev->total_open);
 		spin_lock(&dev->count_lock);
 		if (!dev->open_count++) {
@@ -484,9 +480,11 @@ int i810_open(struct inode *inode, struct file *filp)
 int i810_release(struct inode *inode, struct file *filp)
 {
 	drm_file_t    *priv   = filp->private_data;
-	drm_device_t  *dev    = priv->dev;
+	drm_device_t  *dev;
 	int	      retcode = 0;
 
+	lock_kernel();
+	dev    = priv->dev;
 	DRM_DEBUG("pid = %d, device = 0x%x, open_count = %d\n",
 		  current->pid, dev->device, dev->open_count);
 
@@ -548,7 +546,9 @@ int i810_release(struct inode *inode, struct file *filp)
 	up(&dev->struct_sem);
 	
 	drm_free(priv, sizeof(*priv), DRM_MEM_FILES);
-   	MOD_DEC_USE_COUNT;
+#if LINUX_VERSION_CODE < 0x020333
+	MOD_DEC_USE_COUNT; /* Needed before Linux 2.3.51 */
+#endif
    	atomic_inc(&dev->total_close);
    	spin_lock(&dev->count_lock);
    	if (!--dev->open_count) {
@@ -557,12 +557,15 @@ int i810_release(struct inode *inode, struct file *filp)
 				  atomic_read(&dev->ioctl_count),
 				  dev->blocked);
 		   	spin_unlock(&dev->count_lock);
+			unlock_kernel();
 		   	return -EBUSY;
 		}
 	   	spin_unlock(&dev->count_lock);
-	   	return i810_takedown(dev);
+		unlock_kernel();
+		return i810_takedown(dev);
 	}
-   	spin_unlock(&dev->count_lock);
+	spin_unlock(&dev->count_lock);
+	unlock_kernel();
 	return retcode;
 }
 

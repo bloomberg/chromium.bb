@@ -34,8 +34,6 @@
 #define _TDFX_DRV_H_
 
 				/* tdfx_drv.c */
-extern int  tdfx_init(void);
-extern void tdfx_cleanup(void);
 extern int  tdfx_version(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg);
 extern int  tdfx_open(struct inode *inode, struct file *filp);

@@ -44,6 +44,8 @@
 #include <linux/pci.h>
 #include <linux/wrapper.h>
 #include <linux/version.h>
+#include <linux/sched.h>
+#include <linux/smp_lock.h>	/* For (un)lock_kernel */
 #include <asm/io.h>
 #include <asm/mman.h>
 #include <asm/uaccess.h>
@@ -51,9 +53,6 @@
 #include <asm/mtrr.h>
 #endif
 #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
-#define DRM_AGP
-#endif
-#ifdef DRM_AGP
 #include <linux/types.h>
 #include <linux/agp_backend.h>
 #endif
@@ -410,7 +409,7 @@ typedef struct drm_device_dma {
 	wait_queue_head_t waiting;	/* Processes waiting on free bufs  */
 } drm_device_dma_t;
 
-#ifdef DRM_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 typedef struct drm_agp_mem {
 	unsigned long      handle;
 	agp_memory         *memory;
@@ -499,9 +498,9 @@ typedef struct drm_device {
 
 				/* Context support */
 	int		  irq;		/* Interrupt used by board	   */
-	__volatile__ int  context_flag;	 /* Context swapping flag	   */
-	__volatile__ int  interrupt_flag;/* Interruption handler flag	   */
-	__volatile__ int  dma_flag;	 /* DMA dispatch flag		   */
+	__volatile__ long context_flag;	/* Context swapping flag	   */
+	__volatile__ long interrupt_flag; /* Interruption handler flag	   */
+	__volatile__ long dma_flag;	/* DMA dispatch flag		   */
 	struct timer_list timer;	/* Timer for delaying ctx switch   */
 	wait_queue_head_t context_wait; /* Processes waiting on ctx switch */
 	int		  last_checked;	/* Last context checked for DMA	   */
@@ -524,7 +523,7 @@ typedef struct drm_device {
 	wait_queue_head_t buf_readers;	/* Processes waiting to read	   */
 	wait_queue_head_t buf_writers;	/* Processes waiting to ctx switch */
 	
-#ifdef DRM_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 	drm_agp_head_t    *agp;
 #endif
 	unsigned long     *ctx_bitmap;
@@ -601,7 +600,7 @@ extern void	     drm_free_pages(unsigned long address, int order,
 extern void	     *drm_ioremap(unsigned long offset, unsigned long size);
 extern void	     drm_ioremapfree(void *pt, unsigned long size);
 
-#ifdef DRM_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 extern agp_memory    *drm_alloc_agp(int pages, u32 type);
 extern int           drm_free_agp(agp_memory *handle, int pages);
 extern int           drm_bind_agp(agp_memory *handle, unsigned int start);
@@ -644,7 +643,6 @@ extern void	     drm_free_buffer(drm_device_t *dev, drm_buf_t *buf);
 extern void	     drm_reclaim_buffers(drm_device_t *dev, pid_t pid);
 extern int	     drm_context_switch(drm_device_t *dev, int old, int new);
 extern int	     drm_context_switch_complete(drm_device_t *dev, int new);
-extern void	     drm_wakeup(drm_device_t *dev, drm_buf_t *buf);
 extern void	     drm_clear_next_buffer(drm_device_t *dev);
 extern int	     drm_select_queue(drm_device_t *dev,
 				      void (*wrapper)(unsigned long));
@@ -725,7 +723,7 @@ extern void	     drm_ctxbitmap_cleanup(drm_device_t *dev);
 extern int	     drm_ctxbitmap_next(drm_device_t *dev);
 extern void	     drm_ctxbitmap_free(drm_device_t *dev, int ctx_handle);
 
-#ifdef DRM_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 				/* AGP/GART support (agpsupport.c) */
 extern drm_agp_head_t *drm_agp_init(void);
 extern void           drm_agp_uninit(void);

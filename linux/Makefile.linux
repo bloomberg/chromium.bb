@@ -71,8 +71,9 @@ INC=		/usr/include
 
 CFLAGS=		-O2 $(WARNINGS)
 WARNINGS=	-Wall -Wwrite-strings -Wpointer-arith -Wcast-align \
-		-Wstrict-prototypes -Wshadow -Wnested-externs \
-		-Winline -Wpointer-arith
+		-Wstrict-prototypes -Wnested-externs \
+		-Wpointer-arith
+# -Wshadow -Winline -- make output too noisy
 MODCFLAGS=      $(CFLAGS) -D__KERNEL__ -DMODULE -fomit-frame-pointer
 PRGCFLAGS=      $(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
 		-D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE \
@@ -128,7 +129,7 @@ AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 endif
 
 ifeq ($(AGP),1)
-MODCFLAGS += -DDRM_AGP
+MODCFLAGS += -DCONFIG_AGP -DCONFIG_AGP_MODULE
 DRMOBJS += agpsupport.o
 MODS += mga.o i810.o
 
@@ -164,19 +165,29 @@ libdrm.a: $(DRMOBJS)
 	-$(RM) -f $@
 	$(AR) rcs $@ $(DRMOBJS)
 
+gamma_drv.o: gamma_drv.c
+	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
 gamma.o: $(GAMMAOBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
+tdfx_drv.o: tdfx_drv.c
+	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
 tdfx.o: $(TDFXOBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
+r128_drv.o: r128_drv.c
+	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
 r128.o: $(R128OBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
 ifeq ($(AGP),1)
+mga_drv.o: mga_drv.c
+	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
 mga.o: $(MGAOBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
+i810_drv.o: i810_drv.c
+	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
 i810.o: $(I810OBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 endif
@@ -199,7 +210,6 @@ ChangeLog:
 
 %.po: %.c
 	$(CC) $(PRGCFLAGS) -DDRM_USE_MALLOC -c $< -o $@
-
 
 $(DRMOBJS): $(DRMHEADERS)
 $(GAMMAOBJS): $(GAMMAHEADERS)

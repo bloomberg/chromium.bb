@@ -30,6 +30,7 @@
 
 #define __NO_VERSION__
 #include "drmP.h"
+#include <linux/module.h>
 
 drm_agp_func_t drm_agp = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
