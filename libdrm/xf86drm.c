@@ -27,7 +27,7 @@
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.10 2000/02/23 04:47:23 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.14 2000/06/27 16:42:07 alanh Exp $
  * 
  */
 
@@ -66,6 +66,13 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif
+#endif
+
+#ifdef __alpha__
+extern unsigned long _bus_base(void);
+#define BUS_BASE _bus_base()
+#else
+#define BUS_BASE (0)
 #endif
 
 /* Not all systems have MAP_FAILED defined */
@@ -270,7 +277,7 @@ static int drmOpenByName(const char *name)
 
 #if defined(XFree86Server)
     mode  = xf86ConfigDRI.mode ? xf86ConfigDRI.mode : DRM_DEV_MODE;
-    group = xf86ConfigDRI.group ? xf86ConfigDRI.group : DRM_DEV_GID;
+    group = (xf86ConfigDRI.group >= 0) ? xf86ConfigDRI.group : DRM_DEV_GID;
 #endif
 
 #if defined(XFree86Server)
@@ -496,6 +503,10 @@ int drmAddMap(int fd,
     drm_map_t map;
 
     map.offset  = offset;
+#ifdef __alpha__
+    if (!(type & DRM_SHM))
+	map.offset += BUS_BASE;
+#endif
     map.size    = size;
     map.handle  = 0;
     map.type    = type;

@@ -546,7 +546,6 @@ static void mga_dma_dispatch_vertex(drm_device_t * dev, drm_buf_t * buf)
 				  10 + 15 * MGA_NR_SAREA_CLIPRECTS);
 		PRIM_OVERFLOW(dev, dev_priv, primary_needed);
 		mgaEmitState(dev_priv);
-
 		do {
 			if (i < sarea_priv->nbox) {
 				DRM_DEBUG("idx %d Emit box %d/%d:"
@@ -572,7 +571,6 @@ static void mga_dma_dispatch_vertex(drm_device_t * dev, drm_buf_t * buf)
 			PRIMADVANCE(dev_priv);
 		} while (++i < sarea_priv->nbox);
 	}
-
 	if (buf_priv->discard) {
 		if (buf_priv->dispatched == 1)
 			AGEBUF(dev_priv, buf_priv);
@@ -748,9 +746,14 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	primary_needed = nbox * 5;
-	primary_needed += 60;
+	primary_needed += 65;
 	PRIM_OVERFLOW(dev, dev_priv, primary_needed);
 	PRIMGETPTR(dev_priv);
+
+	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_DWGSYNC, 0x7100);
+	PRIMOUTREG(MGAREG_DWGSYNC, 0x7000);
 
 	PRIMOUTREG(MGAREG_DSTORG, dev_priv->frontOffset);
 	PRIMOUTREG(MGAREG_MACCESS, dev_priv->mAccess);

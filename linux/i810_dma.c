@@ -211,7 +211,7 @@ static int i810_unmap_buffer(drm_buf_t *buf)
 
 	if(buf_priv->currently_mapped != I810_BUF_MAPPED) return -EINVAL;
 	down(&current->mm->mmap_sem);
-        retcode = do_munmap((unsigned long)buf_priv->virtual, 
+        retcode = do_munmap(current->mm, (unsigned long)buf_priv->virtual, 
 			    (size_t) buf->total);
    	buf_priv->currently_mapped = I810_BUF_UNMAPPED;
    	buf_priv->virtual = 0;

@@ -572,10 +572,12 @@ int mga_dma_schedule(drm_device_t *dev, int locked)
 {
       	drm_mga_private_t *dev_priv = (drm_mga_private_t *)dev->dev_private;
       	drm_device_dma_t  *dma	    = dev->dma;
+	int retval = 0;
 
    	if (test_and_set_bit(0, &dev->dma_flag)) {
 		atomic_inc(&dma->total_missed_dma);
-		return -EBUSY;
+		retval = -EBUSY;
+		goto sch_out_wakeup;
 	}
    
 	DRM_DEBUG("%s\n", __FUNCTION__);
@@ -591,7 +593,8 @@ int mga_dma_schedule(drm_device_t *dev, int locked)
 	   	atomic_inc(&dma->total_missed_lock);
 	   	clear_bit(0, &dev->dma_flag);
 		DRM_DEBUG("Not locked\n");
-	   	return -EBUSY;
+		retval = -EBUSY;
+		goto sch_out_wakeup;
 	}
    	DRM_DEBUG("I'm locked\n");
 
@@ -621,12 +624,12 @@ int mga_dma_schedule(drm_device_t *dev, int locked)
 		}
 	}
 
+sch_out_wakeup:
       	if(test_bit(MGA_IN_FLUSH, &dev_priv->dispatch_status) &&
-	   dev_priv->next_prim->num_dwords == 0 &&
 	   atomic_read(&dev_priv->pending_bufs) == 0) {
-	   	/* Everything has been processed by the hardware */
+		/* Everything has been processed by the hardware */
 		clear_bit(MGA_IN_FLUSH, &dev_priv->dispatch_status);
-	   	wake_up_interruptible(&dev_priv->flush_queue);
+		wake_up_interruptible(&dev_priv->flush_queue);
 	}
 
 	if(test_bit(MGA_IN_GETBUF, &dev_priv->dispatch_status) &&
@@ -641,7 +644,7 @@ int mga_dma_schedule(drm_device_t *dev, int locked)
 	}
 
    	clear_bit(0, &dev->dma_flag);
-	return 0;
+	return retval;
 }
 
 static void mga_dma_service(int irq, void *device, struct pt_regs *regs)
@@ -956,11 +959,11 @@ static int mga_flush_queue(drm_device_t *dev)
 	}
    
    	if(dev_priv->next_prim->num_dwords != 0) {
-		set_bit(MGA_IN_FLUSH, &dev_priv->dispatch_status);
    		current->state = TASK_INTERRUPTIBLE;
    		add_wait_queue(&dev_priv->flush_queue, &entry);
+		set_bit(MGA_IN_FLUSH, &dev_priv->dispatch_status);
+		mga_dma_schedule(dev, 0);
    		for (;;) {
-		   	mga_dma_schedule(dev, 0);
 	   		if (!test_bit(MGA_IN_FLUSH, 
 				      &dev_priv->dispatch_status)) 
 				break;
@@ -1093,14 +1096,15 @@ int mga_flush_ioctl(struct inode *inode, struct file *filp,
 	}
 
    	if(lock.flags & _DRM_LOCK_FLUSH || lock.flags & _DRM_LOCK_FLUSH_ALL) {
-		drm_mga_prim_buf_t *temp_buf =
-			dev_priv->prim_bufs[dev_priv->current_prim_idx];
+		drm_mga_prim_buf_t *temp_buf;
+
+		temp_buf = dev_priv->current_prim;
 
 		if(temp_buf && temp_buf->num_dwords) {
 			set_bit(MGA_BUF_FORCE_FIRE, &temp_buf->buffer_status);
 			mga_advance_primary(dev);
-			mga_dma_schedule(dev, 1);
  		}
+		mga_dma_schedule(dev, 1);
 	}
    	if(lock.flags & _DRM_LOCK_QUIESCENT) {
 		mga_flush_queue(dev);
