@@ -27,7 +27,7 @@
  * Authors:
  *    Kevin E. Martin <martin@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
- *    Keith Whitwell <keith_whitwell@yahoo.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
 
 #ifndef __RADEON_DRM_H__

@@ -26,7 +26,7 @@
  *
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Jeff Hartmann <jhartmann@valinux.com>
- *          Keith Whitwell <keith_whitwell@yahoo.com>
+ *          Keith Whitwell <keith@tungstengraphics.com>
  *
  */
 

@@ -26,7 +26,7 @@
  *
  * Authors:
  *    Jeff Hartmann <jhartmann@valinux.com>
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  *
  * Rewritten by:
  *    Gareth Hughes <gareth@valinux.com>
