@@ -1,4 +1,10 @@
-2003-10-27  Keith Packard  <set EMAIL_ADDRESS environment variable>
+2003-11-10  Roozbeh Pournader  <roozbeh@sharif.edu>
+
+	* src/fcxml.c:
+	Fixed a bug "FcStrtod" in handling some cases with two-byte decimal
+	separators.
+
+2003-10-27  Keith Packard  <keith@keithp.com>
 
 	* configure.in:
 	* fontconfig/fontconfig.h:
