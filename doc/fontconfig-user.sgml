@@ -1,5 +1,6 @@
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V3.1//EN" [
 <!ENTITY version SYSTEM "version.sgml">
+<!ENTITY confdir SYSTEM "confdir.sgml">
 ]>
 <!--
     $Id$
@@ -35,8 +36,8 @@
 </refnamediv>
 <refsynopsisdiv>
 <synopsis>
-   /etc/fonts/fonts.conf
-   /etc/fonts/fonts.dtd
+   &confdir;/fonts.conf
+   &confdir;/fonts.dtd
    ~/.fonts.conf
 </synopsis>
 </refsynopsisdiv>
@@ -231,7 +232,7 @@ a text editor.
   </para><para>
 The fontconfig document type definition resides in the external entity
 "fonts.dtd"; this is normally stored in the default font configuration
-directory (/etc/fonts).  Each configuration file should contain the
+directory (&confdir;).  Each configuration file should contain the
 following structure:
     <programlisting>
 	&lt;?xml version="1.0"?&gt;
@@ -404,7 +405,7 @@ This is an example of a system-wide configuration file
     <programlisting>
 &lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE fontconfig SYSTEM "fonts.dtd"&gt;
-&lt;!-- /etc/fonts/fonts.conf file to configure system font access --&gt;
+&lt;!-- &confdir;/fonts.conf file to configure system font access --&gt;
 &lt;fontconfig&gt;
 &lt;!-- 
 	Find fonts in these directories

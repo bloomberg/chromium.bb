@@ -105,7 +105,7 @@ if ENABLE_DOCS
 
 $(man_MANS): func.refs
 
-func.refs: fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml
+func.refs: fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) func.refs
 	$(DOC2MAN) fontconfig-devel.sgml
 	mv manpage.refs func.refs
@@ -113,7 +113,7 @@ func.refs: fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml
 
 $(DOC_FUNCS_SGML): edit-sgml $(FNCS_TMPL)
 
-fonts-conf.5: fontconfig-user.sgml version.sgml
+fonts-conf.5: fontconfig-user.sgml version.sgml confdir.sgml
 	$(RM) file.refs
 	$(DOC2MAN) fontconfig-user.sgml
 	$(RM) manpage.refs manpage.links
@@ -124,16 +124,16 @@ clean-local:
 	$(RM) $(man_MANS) $(DOC_FILES) $(DOC_FUNCS_SGML) func.refs
 	$(RM) -r $(DOC_DIRS)
 
-fontconfig-devel: fontconfig-devel.sgml $(DOCS_FUNCS_SGML) version.sgml
+fontconfig-devel: fontconfig-devel.sgml $(DOCS_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) -r fontconfig-devel
 	$(DOC2HTML) -o fontconfig-devel fontconfig-devel.sgml
 
-fontconfig-devel.txt: fontconfig-devel.sgml version.sgml
+fontconfig-devel.txt: fontconfig-devel.sgml version.sgml confdir.sgml
 
-fontconfig-user.html: fontconfig-user.sgml version.sgml
+fontconfig-user.html: fontconfig-user.sgml version.sgml confdir.sgml
 	$(DOC2HTML) -u fontconfig-user.sgml
 
-fontconfig-user.txt:  fontconfig-user.sgml version.sgml
+fontconfig-user.txt:  fontconfig-user.sgml version.sgml confdir.sgml
 else
 all-local:
 clean-local:
