@@ -61,10 +61,9 @@ extern int optind, opterr, optopt;
 
 static void usage (char *program)
 {
-    fprintf (stderr, "usage: %s [-vV?] [--verbose] [--version] [--help] [dirs]\n",
+    fprintf (stderr, "usage: %s [-vV?] [--verbose] [--version] [--help] [pattern] {element ...} \n",
 	     program);
-    fprintf (stderr, "Build font information caches in [dirs]\n"
-	     "(all directories in font configuration by default).\n");
+    fprintf (stderr, "List fonts matching [pattern]\n");
     fprintf (stderr, "\n");
     fprintf (stderr, "  -v, --verbose        display status information while busy\n");
     fprintf (stderr, "  -V, --version        display font config version and exit\n");
@@ -77,7 +76,7 @@ main (int argc, char **argv)
 {
     int		verbose = 0;
     int		i;
-    FcObjectSet *os = FcObjectSetBuild (FC_FAMILY, FC_LANG, 0);
+    FcObjectSet *os = 0;
     FcFontSet	*fs;
     FcPattern   *pat;
 #if HAVE_GETOPT_LONG || HAVE_GETOPT
@@ -112,10 +111,20 @@ main (int argc, char **argv)
 	return 1;
     }
     if (argv[i])
+    {
 	pat = FcNameParse ((FcChar8 *) argv[i]);
+	while (argv[++i])
+	{
+	    if (!os)
+		os = FcObjectSetCreate ();
+	    FcObjectSetAdd (os, argv[i]);
+	}
+    }
     else
 	pat = FcPatternCreate ();
     
+    if (!os)
+	os = FcObjectSetBuild (FC_FAMILY, FC_STYLE);
     fs = FcFontList (0, pat, os);
     if (pat)
 	FcPatternDestroy (pat);
@@ -127,8 +136,11 @@ main (int argc, char **argv)
 	for (j = 0; j < fs->nfont; j++)
 	{
 	    FcChar8 *font;
+	    FcChar8 *file;
 
 	    font = FcNameUnparse (fs->fonts[j]);
+	    if (FcPatternGetString (fs->fonts[j], FC_FILE, 0, &file) == FcResultMatch)
+		printf ("%s: ", file);
 	    printf ("%s\n", font);
 	    free (font);
 	}
