@@ -38,7 +38,9 @@ SHELL=/bin/sh
 ifndef LINUXDIR
 RUNNING_REL := $(shell uname -r)
 
-LINUXDIR := /lib/modules/$(RUNNING_REL)/build
+LINUXDIR := $(shell if [ -e /lib/modules/$(RUNNING_REL)/source ]; then \
+		 echo /lib/modules/$(RUNNING_REL)/source; \
+		 else echo /lib/modules/$(RUNNING_REL)/build; fi)
 endif
 
 ifndef O
