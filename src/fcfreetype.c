@@ -22,6 +22,28 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+/*
+  Copyright © 2002-2003 by Juliusz Chroboczek
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -32,8 +54,6 @@
 #include <freetype/ftsnames.h>
 #include <freetype/ttnameid.h>
 #include <freetype/t1tables.h>
-
-#include "data.h"
 
 /*
  * Keep Han languages separated by eliminating languages
@@ -114,38 +134,112 @@ FcUtf8IsLatin (FcChar8 *str, int len)
     return FcTrue;
 }
 
-static char*
-notice_foundry(char *notice)
+/* Order is significant.  For example, some B&H fonts are hinted by
+   URW++, and both strings appear in the notice. */
+
+static const struct {
+    const FcChar8   *notice;
+    const FcChar8   *foundry;
+} FcNoticeFoundries[] = {
+    { (const FcChar8*) "Bigelow",	(const FcChar8 *) "b&h" },
+    { (const FcChar8*) "Adobe",		(const FcChar8 *) "adobe" },
+    { (const FcChar8*) "Bitstream",	(const FcChar8 *) "bitsteam" },
+    { (const FcChar8*) "Monotype",	(const FcChar8 *) "monotype" },
+    { (const FcChar8*) "Linotype",	(const FcChar8 *) "linotype" },
+    { (const FcChar8*) "LINOTYPE-HELL", (const FcChar8 *) "linotype" },
+    { (const FcChar8*) "IBM",		(const FcChar8 *) "ibm" },
+    { (const FcChar8*) "URW",		(const FcChar8 *) "urw" },
+    { (const FcChar8*) "International Typeface Corporation", 
+					(const FcChar8 *) "itc" },
+    { (const FcChar8*) "Tiro Typeworks",(const FcChar8 *) "tiro" },
+    { (const FcChar8*) "XFree86",	(const FcChar8 *) "xfree86" },
+    { (const FcChar8*) "Microsoft",	(const FcChar8 *) "microsoft" },
+    { (const FcChar8*) "Omega",		(const FcChar8 *) "omega" },
+    { (const FcChar8*) "Font21",	(const FcChar8 *) "hwan" },
+    { (const FcChar8*) "HanYang System",(const FcChar8 *) "hanyang" }
+};
+
+#define NUM_NOTICE_FOUNDRIES	(sizeof (FcNoticeFoundries) / sizeof (FcNoticeFoundries[0]))
+
+static const FcChar8 *
+FcNoticeFoundry(const char *notice)
 {
     int i;
-    for(i = 0; i < sizeof(notice_foundries) / sizeof(notice_foundries[0]); i++)
-        if(notice && strstr(notice, notice_foundries[i][0]))
-            return notice_foundries[i][1];
-    return NULL;
+
+    if (notice)
+	for(i = 0; i < NUM_NOTICE_FOUNDRIES; i++)
+	    if (strstr ((const char *) notice, (const char *) FcNoticeFoundries[i].notice))
+		return FcNoticeFoundries[i].foundry;
+    return 0;
 }
 
-static int
-vendor_match(signed char *vendor, char *vendor_string)
+static FcBool
+FcVendorMatch(const char *vendor, const char *vendor_string)
 {
     /* vendor is not necessarily NUL-terminated. */
     int i, len;
+    
     len = strlen(vendor_string);
-    if(memcmp(vendor, vendor_string, len) != 0)
-        return 0;
-    for(i = len; i < 4; i++)
-        if(vendor[i] != ' ' && vendor[i] != '\0')
-            return 0;
-    return 1;
+    if (memcmp(vendor, vendor_string, len) != 0)
+        return FcFalse;
+    for (i = len; i < 4; i++)
+        if (vendor[i] != ' ' && vendor[i] != '\0')
+            return FcFalse;
+    return FcTrue;
 }
 
-static char*
-vendor_foundry(signed char *vendor)
+/* This table is partly taken from ttmkfdir by Joerg Pommnitz. */
+
+/* It should not contain useless entries (such as UNKN) nor duplicate
+   entries for padding both with spaces and NULs. */
+
+static const struct {
+    const FcChar8   *vendor;
+    const FcChar8   *foundry;
+} FcVendorFoundries[] = {
+    { (const FcChar8*) "ADBE", (const FcChar8 *) "adobe"},
+    { (const FcChar8*) "AGFA", (const FcChar8 *) "agfa"},
+    { (const FcChar8*) "ALTS", (const FcChar8 *) "altsys"},
+    { (const FcChar8*) "APPL", (const FcChar8 *) "apple"},
+    { (const FcChar8*) "ARPH", (const FcChar8 *) "arphic"},
+    { (const FcChar8*) "ATEC", (const FcChar8 *) "alltype"},
+    { (const FcChar8*) "B&H",  (const FcChar8 *) "b&h"},
+    { (const FcChar8*) "BITS", (const FcChar8 *) "bitstream"},
+    { (const FcChar8*) "CANO", (const FcChar8 *) "cannon"},
+    { (const FcChar8*) "DYNA", (const FcChar8 *) "dynalab"},
+    { (const FcChar8*) "EPSN", (const FcChar8 *) "epson"},
+    { (const FcChar8*) "FJ",   (const FcChar8 *) "fujitsu"},
+    { (const FcChar8*) "IBM",  (const FcChar8 *) "ibm"},
+    { (const FcChar8*) "ITC",  (const FcChar8 *) "itc"},
+    { (const FcChar8*) "IMPR", (const FcChar8 *) "impress"},
+    { (const FcChar8*) "LARA", (const FcChar8 *) "larabiefonts"},
+    { (const FcChar8*) "LEAF", (const FcChar8 *) "interleaf"},
+    { (const FcChar8*) "LETR", (const FcChar8 *) "letraset"},
+    { (const FcChar8*) "LINO", (const FcChar8 *) "linotype"},
+    { (const FcChar8*) "MACR", (const FcChar8 *) "macromedia"},
+    { (const FcChar8*) "MONO", (const FcChar8 *) "monotype"},
+    { (const FcChar8*) "MS",   (const FcChar8 *) "microsoft"},
+    { (const FcChar8*) "MT",   (const FcChar8 *) "monotype"},
+    { (const FcChar8*) "NEC",  (const FcChar8 *) "nec"},
+    { (const FcChar8*) "PARA", (const FcChar8 *) "paratype"},
+    { (const FcChar8*) "QMSI", (const FcChar8 *) "qms"},
+    { (const FcChar8*) "RICO", (const FcChar8 *) "ricoh"},
+    { (const FcChar8*) "URW",  (const FcChar8 *) "urw"},
+    { (const FcChar8*) "Y&Y",  (const FcChar8 *) "y&y"}
+};
+
+#define NUM_VENDOR_FOUNDRIES	(sizeof (FcVendorFoundries) / sizeof (FcVendorFoundries[0]))
+
+static const FcChar8 *
+FcVendorFoundry(const char *vendor)
 {
     int i;
-    for(i = 0; i < sizeof(vendor_foundries) / sizeof(vendor_foundries[0]); i++)
-        if(vendor_match(vendor, vendor_foundries[i][0]))
-            return vendor_foundries[i][1];
-    return NULL;
+    
+    if (vendor)
+	for(i = 0; i < NUM_VENDOR_FOUNDRIES; i++)
+	    if (FcVendorMatch (vendor, FcVendorFoundries[i].vendor))
+		return FcVendorFoundries[i].foundry;
+    return 0;
 }
 
 
@@ -164,9 +258,9 @@ FcFreeTypeQuery (const FcChar8	*file,
     FcCharSet	    *cs;
     FcLangSet	    *ls;
     FT_Library	    ftLibrary;
-    FcChar8	    *family;
-    FcChar8	    *style;
-    FcChar8         *foundry;
+    FcChar8	    *family = 0;
+    FcChar8	    *style = 0;
+    const FcChar8   *foundry = 0;
     int		    spacing;
     TT_OS2	    *os2;
     PS_FontInfoRec  psfontinfo;
@@ -214,19 +308,21 @@ FcFreeTypeQuery (const FcChar8	*file,
      */
     os2 = (TT_OS2 *) FT_Get_Sfnt_Table (face, ft_sfnt_os2);
 
+    /*
+     * Look first in the OS/2 table for the foundry, if
+     * not found here, the various notices will be searched for
+     * that information, either from the sfnt name tables or
+     * the Postscript FontInfo dictionary
+     */
+    
     if (os2 && os2->version >= 0x0001 && os2->version != 0xffff)
-        foundry = vendor_foundry(os2->achVendID);
-    else
-        foundry = NULL;
+        foundry = FcVendorFoundry(os2->achVendID);
 
     /*
      * Grub through the name table looking for family
      * and style names.  FreeType makes quite a hash
      * of them
      */
-    family = 0;
-    style = 0;
-    foundry = 0;
     snamec = FT_Get_Sfnt_Name_Count (face);
     for (snamei = 0; snamei < snamec; snamei++)
     {
@@ -453,8 +549,9 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    break;
         case TT_NAME_ID_TRADEMARK:
         case TT_NAME_ID_MANUFACTURER:
+	    /* If the foundry wasn't found in the OS/2 table, look here */
             if(!foundry)
-                foundry = notice_foundry(utf8);
+                foundry = FcNoticeFoundry(utf8);
             break;
 	}
 	if (utf8)
@@ -511,11 +608,6 @@ FcFreeTypeQuery (const FcChar8	*file,
 	}
 	if (style_allocated)
 	    free (style);
-    }
-
-    if(foundry) {
-        if(!FcPatternAddString (pat, FC_FOUNDRY, foundry))
-            goto bail;
     }
 
     if (!FcPatternAddString (pat, FC_FILE, file))
@@ -584,9 +676,6 @@ FcFreeTypeQuery (const FcChar8	*file,
 		exclusiveLang = FcCodePageRange[i].lang;
 	    }
 	}
-
-        foundry = vendor_foundry(os2->achVendID);
-
     }
 
     if (os2 && os2->version != 0xffff)
@@ -672,7 +761,7 @@ FcFreeTypeQuery (const FcChar8	*file,
             slant = FC_SLANT_ROMAN; 
 
         if(!foundry)
-            foundry = notice_foundry(psfontinfo.notice);
+            foundry = FcNoticeFoundry(psfontinfo.notice);
     }
     
     if (!FcPatternAddInteger (pat, FC_SLANT, slant))
@@ -684,6 +773,12 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (width != -1)
 	if (!FcPatternAddInteger (pat, FC_WIDTH, width))
 	    goto bail1;
+
+    if(foundry) 
+    {
+        if(!FcPatternAddString (pat, FC_FOUNDRY, foundry))
+            goto bail1;
+    }
 
     /*
      * Compute the unicode coverage for the font
