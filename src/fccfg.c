@@ -166,9 +166,9 @@ FcConfigUptoDate (FcConfig *config)
 	    return FcFalse;
     }
     config_time = FcConfigNewestFile (config->configFiles);
-    font_time = FcConfigNewestFile (config->configDirs);
+    font_time = FcConfigNewestFile (config->fontDirs);
     if ((config_time.set && config_time.time - config->rescanTime > 0) ||
-	(font_time.set && font_time.time - config->rescanTime) > 0)
+	(font_time.set && (font_time.time - config->rescanTime) > 0))
     {
 	return FcFalse;
     }

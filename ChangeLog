@@ -1,3 +1,17 @@
+2004-06-30  Keith Packard  <keithp@keithp.com>
+
+	Provided by: Lubos Lunak <l.lunak@suse.cz>
+
+	* src/fccfg.c: (FcConfigUptoDate):
+	However FcConfigUptoDate() doesn't seem to work. See the attached
+	patch.  First there's an obvious misplaced parenthesis making it
+	return always false, and second, even this call fails to detect font
+	changes (e.g.  adding a new font to 
+	/usr/X11R6/lib/X11/fonts/truetype). The patch should fix that as
+	well. The problem seems to be triggered by my fonts.conf specifying
+	only /usr/X11R6/lib/X11/fonts , and therefore config->configDirs
+	doesn't include subdirs, unlike config->fontDirs.
+
 2004-06-03  Keith Packard  <keithp@keithp.com>
 
 	* fontconfig/fontconfig.h:
