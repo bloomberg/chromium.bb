@@ -267,6 +267,10 @@ static inline struct class_simple *class_simple_create(struct module *owner, cha
 #define __user
 #endif
 
+#ifndef __put_page
+#define __put_page(p)           atomic_dec(&(p)->count)
+#endif
+
 #ifndef REMAP_PAGE_RANGE_5_ARGS
 #define DRM_RPR_ARG(vma)
 #else
