@@ -812,7 +812,7 @@ FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c)
 #   define HAS_NEXT_CHAR
 #  else
 #   if FREETYPE_MINOR == 0
-#    if FREETYPE_PATCH >= 8
+#    if FREETYPE_PATCH >= 9
 #     define HAS_NEXT_CHAR
 #    endif
 #   endif
@@ -824,7 +824,10 @@ FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c)
  * For our purposes, this approximation is sufficient
  */
 #ifndef HAS_NEXT_CHAR
-#define FT_Get_Next_Char(face, ucs4) ((ucs4) >= 0xffffff ? 0 : (ucs4) + 1)
+#define FT_Get_First_Char(face, gi) ((*(gi) = 1), 1)
+#define FT_Get_Next_Char(face, ucs4, gi) ((ucs4) >= 0xffffff ? \
+					  (*(gi) = 0), 0 : \
+					  (*(gi) = 1), (ucs4) + 1)
 #warning "No FT_Get_Next_Char"
 #endif
 
@@ -1464,18 +1467,25 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 	}
 	else
 	{
-	    max = fcFontDecoders[o].max;
+	    FT_UInt gindex;
 	  
+	    max = fcFontDecoders[o].max;
 	    /*
 	     * Find the first encoded character in the font
 	     */
-	    ucs4 = 0;
 	    if (FT_Get_Char_Index (face, 0))
+	    {
 		ucs4 = 0;
+		gindex = 1;
+	    }
 	    else
-		ucs4 = FT_Get_Next_Char (face, 0);
+	    {
+		ucs4 = FT_Get_Next_Char (face, 0, &gindex);
+		if (!ucs4)
+		    gindex = 0;
+	    }
 
-	    for (;;)
+	    while (gindex)
 	    {
 		page = ucs4 >> 8;
 		leaf = 0;
@@ -1500,9 +1510,9 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 		    }
 		    ucs4++;
 		}
-		ucs4 = FT_Get_Next_Char (face, ucs4 - 1);
+		ucs4 = FT_Get_Next_Char (face, ucs4 - 1, &gindex);
 		if (!ucs4)
-		    break;
+		    gindex = 0;
 	    }
 #ifdef CHECK
 	    for (ucs4 = 0; ucs4 < 0x10000; ucs4++)
