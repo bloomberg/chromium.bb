@@ -225,7 +225,7 @@ AC_ARG_WITH(x_fonts,           [  --with-x-fonts=DIR            Find X fonts in 
 case "$x_fonts" in
 yes)
 	FC_X_FONTS=""
-	for dir in /usr/X11R6/lib /usr/X11/lib /usr/lib/X11; do
+	for dir in /usr/X11R6/lib/X11 /usr/X11/lib/X11 /usr/lib/X11; do
 		case x"$FC_X_FONTS" in
 		x)
 			if test -d "$dir/fonts"; then
