@@ -51,7 +51,6 @@
 #include <linux/init.h>
 #include <linux/file.h>
 #include <linux/pci.h>
-#include <linux/wrapper.h>
 #include <linux/version.h>
 #include <linux/sched.h>
 #include <linux/smp_lock.h>	/* For (un)lock_kernel */
