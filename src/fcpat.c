@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.3 2002/02/19 07:50:44 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.4 2002/05/22 04:12:35 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -197,10 +197,10 @@ FcPatternFind (FcPattern *p, const char *object, FcBool insert)
     while (low + 1 < high)
     {
 	i = (low + high) >> 1;
-	s = FcStrCmpIgnoreCase ((FcChar8 *) object, (FcChar8 *) p->elts[i].object);
+	s = strcmp (object, p->elts[i].object);
 	if (s == 0)
 	    return &p->elts[i];
-	if (s < 0)
+	if (s > 0)
 	    low = i;
 	else
 	    high = i;
@@ -209,10 +209,10 @@ FcPatternFind (FcPattern *p, const char *object, FcBool insert)
     i = low;
     while (i < high)
     {
-	s = FcStrCmpIgnoreCase ((FcChar8 *) object, (FcChar8 *) p->elts[i].object);
+	s = strcmp (object, p->elts[i].object);
 	if (s == 0)
 	    return &p->elts[i];
-	if (s > 0)
+	if (s < 0)
 	    break;
 	i++;
     }
@@ -266,8 +266,7 @@ FcPatternEqual (FcPattern *pa, FcPattern *pb)
 	return FcFalse;
     for (i = 0; i < pa->num; i++)
     {
-	if (FcStrCmpIgnoreCase ((FcChar8 *) pa->elts[i].object,
-				(FcChar8 *) pb->elts[i].object) != 0)
+	if (strcmp (pa->elts[i].object, pb->elts[i].object) != 0)
 	    return FcFalse;
 	if (!FcValueListEqual (pa->elts[i].values, pb->elts[i].values))
 	    return FcFalse;

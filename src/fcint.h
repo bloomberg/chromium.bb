@@ -43,6 +43,7 @@
 typedef struct _FcMatcher {
     char    *object;
     double  (*compare) (char *object, FcValue value1, FcValue value2);
+    int	    priority;
 } FcMatcher;
 
 typedef struct _FcSymbolic {

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.7 2002/05/24 05:20:02 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.8 2002/05/29 08:21:33 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -697,39 +697,94 @@ FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b)
     return count;
 }
 
+typedef struct {
+    FcCharBranch    *ab, *bb;
+    FcChar32	    byte;
+} FcCharSetPairStack;
+
 /*
  * return FcTrue iff a is a subset of b
  */
 FcBool
 FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
 {
-    FcCharSetIter   ai, bi;
-    
-    FcCharSetIterStart (a, &ai);
-    while (ai.leaf)
+    FcCharSetPairStack	stack[5], *stackp;
+    FcChar32		byte;
+    FcCharBranch	*ab, *bb;
+    int			level;
+    FcCharNode		an, bn;
+
+    if (a->levels > b->levels)
+	return FcFalse;
+
+    level = b->levels;
+    an = a->node;
+    bn = b->node;
+    while (level != a->levels)
     {
-	bi.ucs4 = ai.ucs4;
-	FcCharSetIterSet (b, &bi);
-	/*
-	 * Check if a has a page that b does not
-	 */
-	if (ai.ucs4 < bi.ucs4)
-	    return FcFalse;
-	/*
-	 * Check if they have a page in common, if so,
-	 * look to see if there any bits in a not in b
-	 */
-	if (ai.ucs4 == bi.ucs4)
+	bn = bn.branch->nodes[0];
+	level--;
+    }
+
+    if (level == 0)
+	;
+    if (level == 1)
+    {
+	FcChar32	*am = an.leaf->map;
+	FcChar32	*bm = bn.leaf->map;
+	int		i = 256/32;
+
+	while (i--)
+	    if (*am++ & ~*bm++)
+		return FcFalse;
+    }
+    else
+    {
+	byte = 0;
+	stackp = stack;
+	ab = an.branch;
+	bb = bn.branch;
+	for (;;)
 	{
-	    FcChar32	*am = ai.leaf->map;
-	    FcChar32	*bm = bi.leaf->map;
-	    int		i = 256/32;
-	    
-	    while (i--)
-		if (*am++ & ~*bm++)
+	    an = ab->nodes[byte];
+	    if (an.branch)
+	    {
+		bn = bb->nodes[byte];
+		if (!bn.branch)
 		    return FcFalse;
+		if (level == 2)
+		{
+		    FcChar32	*am = an.leaf->map;
+		    FcChar32	*bm = bn.leaf->map;
+		    int		i = 256/32;
+
+		    while (i--)
+			if (*am++ & ~*bm++)
+			    return FcFalse;
+		}
+		else
+		{
+		    level--;
+		    stackp->ab = ab;
+		    stackp->bb = bb;
+		    stackp->byte = byte;
+		    stackp++;
+		    byte = 0;
+		    continue;
+		}
+	    }
+	    byte = ab->next[byte];
+	    if (!byte)
+	    {
+		if (stackp == stack)
+		    break;
+		level++;
+		--stackp;
+		ab = stackp->ab;
+		bb = stackp->bb;
+		byte = stackp->byte;
+	    }
 	}
-	FcCharSetIterNext (a, &ai);
     }
     return FcTrue;
 }

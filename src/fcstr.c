@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.3 2002/02/18 22:29:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.4 2002/05/21 17:06:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -79,7 +79,7 @@ FcStrCmpIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
 	if (c1 != c2)
 	    break;
     }
-    return (int) c2 - (int) c1;
+    return (int) c1 - (int) c2;
 }
 
 int
@@ -98,7 +98,7 @@ FcStrCmp (const FcChar8 *s1, const FcChar8 *s2)
 	if (c1 != c2)
 	    break;
     }
-    return (int) c2 - (int) c1;
+    return (int) c1 - (int) c2;
 }
 
 int

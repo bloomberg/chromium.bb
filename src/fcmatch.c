@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.6 2002/05/29 08:21:33 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -104,17 +104,40 @@ FcCompareSize (char *object, FcValue value1, FcValue value2)
  */
 static FcMatcher _FcMatchers [] = {
     { FC_FOUNDRY,	FcCompareString, },
+#define MATCH_FOUNDRY	0
+    
     { FC_CHARSET,	FcCompareCharSet },
+#define MATCH_CHARSET	1
+    
     { FC_ANTIALIAS,	FcCompareBool, },
+#define MATCH_ANTIALIAS	2
+    
     { FC_LANG,		FcCompareString },
+#define MATCH_LANG	3
+    
     { FC_FAMILY,	FcCompareString, },
+#define MATCH_FAMILY	4
+    
     { FC_SPACING,	FcCompareInteger, },
+#define MATCH_SPACING	5
+    
     { FC_PIXEL_SIZE,	FcCompareSize, },
+#define MATCH_PIXEL_SIZE	6
+    
     { FC_STYLE,		FcCompareString, },
+#define MATCH_STYLE	7
+    
     { FC_SLANT,		FcCompareInteger, },
+#define MATCH_SLANT	8
+    
     { FC_WEIGHT,	FcCompareInteger, },
+#define MATCH_WEIGHT	9
+    
     { FC_RASTERIZER,	FcCompareString, },
+#define MATCH_RASTERIZER	10
+    
     { FC_OUTLINE,	FcCompareBool, },
+#define MATCH_OUTLINE	11
 };
 
 #define NUM_MATCHER (sizeof _FcMatchers / sizeof _FcMatchers[0])
@@ -132,6 +155,54 @@ FcCompareValueList (const char  *object,
     int		    j;
     int		    i;
     
+    /*
+     * Locate the possible matching entry by examining the
+     * first few characters in object
+     */
+    i = -1;
+    switch (FcToLower (object[0])) {
+    case 'f':
+	switch (FcToLower (object[1])) {
+	case 'o':
+	    i = MATCH_FOUNDRY; break;
+	case 'a':
+	    i = MATCH_FAMILY; break;
+	}
+	break;
+    case 'c':
+	i = MATCH_CHARSET; break;
+    case 'a':
+	i = MATCH_ANTIALIAS; break;
+    case 'l':
+	i = MATCH_LANG; break;
+    case 's':
+	switch (FcToLower (object[1])) {
+	case 'p':
+	    i = MATCH_SPACING; break;
+	case 't':
+	    i = MATCH_STYLE; break;
+	case 'l':
+	    i = MATCH_SLANT; break;
+	}
+	break;
+    case 'p':
+	i = MATCH_PIXEL_SIZE; break;
+    case 'w':
+	i = MATCH_WEIGHT; break;
+    case 'r':
+	i = MATCH_RASTERIZER; break;
+    case 'o':
+	i = MATCH_OUTLINE; break;
+    }
+    if (i == -1 || 
+	FcStrCmpIgnoreCase ((FcChar8 *) _FcMatchers[i].object,
+			    (FcChar8 *) object) != 0)
+    {
+	if (bestValue)
+	    *bestValue = v2orig->value;
+	return FcTrue;
+    }
+#if 0
     for (i = 0; i < NUM_MATCHER; i++)
     {
 	if (!FcStrCmpIgnoreCase ((FcChar8 *) _FcMatchers[i].object,
@@ -144,7 +215,7 @@ FcCompareValueList (const char  *object,
 	    *bestValue = v2orig->value;
 	return FcTrue;
     }
-    
+#endif
     best = 1e99;
     j = 0;
     for (v1 = v1orig; v1; v1 = v1->next)
@@ -199,43 +270,42 @@ FcCompare (FcPattern	*pat,
     for (i = 0; i < NUM_MATCHER; i++)
 	value[i] = 0.0;
     
+    i1 = 0;
+    i2 = 0;
+    while (i1 < pat->num && i2 < fnt->num)
+    {
+	i = strcmp (pat->elts[i1].object, fnt->elts[i2].object);
+	if (i > 0)
+	    i2++;
+	else if (i < 0)
+	    i1++;
+	else
+	{
+	    if (!FcCompareValueList (pat->elts[i1].object,
+				     pat->elts[i1].values,
+				     fnt->elts[i2].values,
+				     0,
+				     value,
+				     result))
+		return FcFalse;
+	    i1++;
+	    i2++;
+	}
+    }
+    return FcTrue;
+#if 0
     for (i1 = 0; i1 < pat->num; i1++)
     {
 	for (i2 = 0; i2 < fnt->num; i2++)
 	{
-	    if (!FcStrCmpIgnoreCase ((FcChar8 *) pat->elts[i1].object,
-				     (FcChar8 *) fnt->elts[i2].object))
+	    if (!strcmp (pat->elts[i1].object, fnt->elts[i2].object))
 	    {
-		if (!FcCompareValueList (pat->elts[i1].object,
-					 pat->elts[i1].values,
-					 fnt->elts[i2].values,
-					 0,
-					 value,
-					 result))
-		    return FcFalse;
 		break;
 	    }
 	}
-#if 0
-	/*
-	 * Overspecified patterns are slightly penalized in
-	 * case some other font includes the requested field
-	 */
-	if (i2 == fnt->num)
-	{
-	    for (i2 = 0; i2 < NUM_MATCHER; i2++)
-	    {
-		if (!FcStrCmpIgnoreCase (_FcMatchers[i2].object,
-					 pat->elts[i1].object))
-		{
-		    value[i2] = 1.0;
-		    break;
-		}
-	    }
-	}
-#endif
     }
     return FcTrue;
+#endif
 }
 
 FcPattern *
@@ -393,16 +463,15 @@ FcSortCompare (const void *aa, const void *ab)
 {
     FcSortNode  *a = *(FcSortNode **) aa;
     FcSortNode  *b = *(FcSortNode **) ab;
+    double	*as = &a->score[0];
+    double	*bs = &b->score[0];
+    double	ad, bd;
     int         i;
 
-    for (i = 0; i < NUM_MATCHER; i++)
-    {
-	if (a->score[i] > b->score[i])
-	    return 1;
-	if (a->score[i] < b->score[i])
-	    return -1;
-    }
-    return 0;
+    i = NUM_MATCHER;
+    while (i-- && (ad = *as++) == (bd = *bs++))
+	;
+    return ad < bd ? -1 : ad > bd ? 1 : 0;
 }
 
 static FcBool

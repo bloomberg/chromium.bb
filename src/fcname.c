@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.3 2002/02/18 22:29:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -120,7 +120,7 @@ FcNameGetObjectType (const char *object)
 	for (i = 0; i < l->ntypes; i++)
 	{
 	    t = &l->types[i];
-	    if (!FcStrCmpIgnoreCase ((FcChar8 *) object, (FcChar8 *) t->object))
+	    if (!strcmp (object, t->object))
 		return t;
 	}
     }
