@@ -592,6 +592,7 @@ typedef struct drm_device {
    	atomic_t          vbl_received;
 	spinlock_t        vbl_lock;
 	drm_vbl_sig_t     vbl_sigs;
+	unsigned int      vbl_pending;
 #endif
 	cycles_t	  ctx_start;
 	cycles_t	  lck_start;
