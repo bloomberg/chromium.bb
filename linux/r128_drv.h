@@ -289,6 +289,8 @@ extern int  r128_context_switch_complete(drm_device_t *dev, int new);
 #define R128_TEX_CNTL_C			0x1c9c
 #	define R128_TEX_CACHE_FLUSH		(1 << 23)
 
+#define R128_WAIT_UNTIL			0x1720
+#	define R128_EVENT_CRTC_OFFSET		(1 << 0)
 #define R128_WINDOW_XY_OFFSET		0x1bcc
 
 
@@ -398,6 +400,8 @@ extern int  r128_context_switch_complete(drm_device_t *dev, int new);
 
 #define R128_RING_HIGH_MARK		128
 
+#define R128_PERFORMANCE_BOXES		0
+
 
 #define R128_BASE(reg)		((u32)(dev_priv->mmio->handle))
 #define R128_ADDR(reg)		(R128_BASE(reg) + reg)
@@ -409,6 +413,7 @@ extern int  r128_context_switch_complete(drm_device_t *dev, int new);
 #define R128_DEREF8(reg)	*(volatile u8 *)R128_ADDR(reg)
 #define R128_READ8(reg)		R128_DEREF8(reg)
 #define R128_WRITE8(reg,val)	do { R128_DEREF8(reg) = val; } while (0)
+
 
 #define R128_WRITE_PLL(addr,val)                                              \
 do {                                                                          \
@@ -426,8 +431,6 @@ extern int R128_READ_PLL(drm_device_t *dev, int addr);
 #define CCE_PACKET2()			(R128_CCE_PACKET2)
 #define CCE_PACKET3( pkt, n )		(R128_CCE_PACKET3 |		\
 					 (pkt) | ((n) << 16))
-
-
 
 
 /* ================================================================
@@ -471,6 +474,12 @@ do {									\
 		sarea_priv->last_dispatch = 0;				\
 		r128_freelist_reset( dev );				\
 	}								\
+} while (0)
+
+#define R128_WAIT_UNTIL_PAGE_FLIPPED()					\
+do {									\
+	OUT_RING( CCE_PACKET0( R128_WAIT_UNTIL, 0 ) );			\
+	OUT_RING( R128_EVENT_CRTC_OFFSET );				\
 } while (0)
 
 
@@ -517,7 +526,5 @@ do {									\
 	ring[write++] = (x);						\
 	write &= tail_mask;						\
 } while (0)
-
-#define R128_PERFORMANCE_BOXES	0
 
 #endif /* __R128_DRV_H__ */

@@ -37,7 +37,7 @@
 
 #define R128_NAME		"r128"
 #define R128_DESC		"ATI Rage 128"
-#define R128_DATE		"20010125"
+#define R128_DATE		"20010130"
 #define R128_MAJOR		2
 #define R128_MINOR		1
 #define R128_PATCHLEVEL		4
@@ -562,12 +562,6 @@ int r128_ioctl(struct inode *inode, struct file *filp,
 			retcode = (func)(inode, filp, cmd, arg);
 		}
 	}
-
-#if 0
-	if ( retcode ) {
-		DRM_INFO( "%s 0x%x ret = %d\n", __FUNCTION__, nr, retcode );
-	}
-#endif
 
 	atomic_dec(&dev->ioctl_count);
 	return retcode;

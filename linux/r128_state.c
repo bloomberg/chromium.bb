@@ -543,8 +543,9 @@ static void r128_cce_dispatch_flip( drm_device_t *dev )
 	r128_cce_performance_boxes( dev_priv );
 #endif
 
-	BEGIN_RING( 2 );
+	BEGIN_RING( 4 );
 
+	R128_WAIT_UNTIL_PAGE_FLIPPED();
 	OUT_RING( CCE_PACKET0( R128_CRTC_OFFSET, 0 ) );
 
 	if ( dev_priv->current_page == 0 ) {
@@ -578,7 +579,7 @@ static void r128_cce_dispatch_vertex( drm_device_t *dev,
 	drm_r128_buf_priv_t *buf_priv = buf->dev_private;
 	drm_r128_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	int format = sarea_priv->vc_format;
-	int offset = dev_priv->buffers->offset + buf->offset - dev->agp->base;
+	int offset = buf->bus_address;
 	int size = buf->used;
 	int prim = buf_priv->prim;
 	int i = 0;
@@ -645,9 +646,6 @@ static void r128_cce_dispatch_vertex( drm_device_t *dev,
 	sarea_priv->nbox = 0;
 }
 
-
-
-
 static void r128_cce_dispatch_indirect( drm_device_t *dev,
 					drm_buf_t *buf,
 					int start, int end )
@@ -661,8 +659,7 @@ static void r128_cce_dispatch_indirect( drm_device_t *dev,
 	r128_update_ring_snapshot( dev_priv );
 
 	if ( start != end ) {
-		int offset = (dev_priv->buffers->offset - dev->agp->base
-			      + buf->offset + start);
+		int offset = buf->bus_address + start;
 		int dwords = (end - start + 3) / sizeof(u32);
 
 		/* Indirect buffer data must be an even number of

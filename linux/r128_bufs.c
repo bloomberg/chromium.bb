@@ -74,7 +74,7 @@ int r128_addbufs_agp(struct inode *inode, struct file *filp, unsigned int cmd,
 	total      = PAGE_SIZE << page_order;
 
 	byte_count = 0;
-	agp_offset = dev->agp->base + request.agp_start;
+	agp_offset = request.agp_start;
 
 	DRM_DEBUG("count:      %d\n",  count);
 	DRM_DEBUG("order:      %d\n",  order);
@@ -125,7 +125,8 @@ int r128_addbufs_agp(struct inode *inode, struct file *filp, unsigned int cmd,
 		buf->order   = order;
 		buf->used    = 0;
 		buf->offset  = (dma->byte_count + offset);
-		buf->address = (void *)(agp_offset + offset);
+		buf->bus_address = agp_offset + offset;
+		buf->address = (void *)(agp_offset + offset + dev->agp->base);
 		buf->next    = NULL;
 		buf->waiting = 0;
 		buf->pending = 0;
