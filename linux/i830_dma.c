@@ -1285,10 +1285,8 @@ static int i830_flush_queue(drm_device_t *dev)
 }
 
 /* Must be called with the lock held */
-void i830_reclaim_buffers( struct file *filp )
+void i830_reclaim_buffers( drm_device_t *dev, struct file *filp )
 {
-	drm_file_t    *priv   = filp->private_data;
-	drm_device_t  *dev    = priv->dev;
 	drm_device_dma_t *dma = dev->dma;
 	int		 i;
 
@@ -1590,7 +1588,7 @@ static void i830_driver_pretakedown(drm_device_t *dev)
 
 static void i830_driver_release(drm_device_t *dev, struct file *filp)
 {
-	i830_reclaim_buffers(filp);
+	i830_reclaim_buffers(dev, filp);
 }
 
 static int i830_driver_dma_quiescent(drm_device_t *dev)

@@ -857,7 +857,7 @@ int DRM(release)( struct inode *inode, struct file *filp )
 	
 	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 	{
-		dev->fn_tbl.reclaim_buffers(filp);
+		dev->fn_tbl.reclaim_buffers(dev, filp);
 	}
 
 	DRM(fasync)( -1, filp, 0 );

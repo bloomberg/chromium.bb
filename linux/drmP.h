@@ -528,7 +528,7 @@ struct drm_driver_fn {
 	void (*irq_preinstall)(struct drm_device *dev);
 	void (*irq_postinstall)(struct drm_device *dev);
 	void (*irq_uninstall)(struct drm_device *dev);
-	void (*reclaim_buffers)(struct file *filp);
+	void (*reclaim_buffers)(struct drm_device *dev, struct file *filp);
 	unsigned long (*get_map_ofs)(drm_map_t *map);
 	unsigned long (*get_reg_ofs)(struct drm_device *dev);
 	void (*set_version)(struct drm_device *dev, drm_set_version_t *sv);
@@ -870,7 +870,7 @@ extern int	     DRM(mapbufs)( struct inode *inode, struct file *filp,
 extern int	     DRM(dma_setup)(drm_device_t *dev);
 extern void	     DRM(dma_takedown)(drm_device_t *dev);
 extern void	     DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf);
-extern void	     DRM(reclaim_buffers)( struct file *filp );
+extern void	     DRM(core_reclaim_buffers)(drm_device_t *dev, struct file *filp);
 
 				/* IRQ support (drm_irq.h) */
 extern int           DRM(control)( struct inode *inode, struct file *filp,

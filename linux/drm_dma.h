@@ -154,10 +154,8 @@ void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
  *
  * Frees each buffer associated with \p filp not already on the hardware.
  */
-void DRM(core_reclaim_buffers)( struct file *filp )
+void DRM(core_reclaim_buffers)( drm_device_t *dev, struct file *filp )
 {
-	drm_file_t    *priv   = filp->private_data;
-	drm_device_t  *dev    = priv->dev;
 	drm_device_dma_t *dma = dev->dma;
 	int		 i;
 
