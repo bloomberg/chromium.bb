@@ -37,6 +37,11 @@
 
 #include <linux/interrupt.h>	/* For task queue support */
 
+/* in case we don't have a 2.3.99-pre6 kernel or later: */
+#ifndef VM_DONTCOPY
+#define VM_DONTCOPY 0
+#endif
+
 #define I810_BUF_FREE		2
 #define I810_BUF_CLIENT		1
 #define I810_BUF_HARDWARE      	0
