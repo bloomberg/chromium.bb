@@ -1,6 +1,15 @@
-/* mach64_dma.c -- DMA support for mach64 (Rage Pro) driver -*- linux-c -*-
- * Created: Sun Dec 03 19:20:26 2000 by gareth@valinux.com
+/* mach64_dma.c -- DMA support for mach64 (Rage Pro) driver -*- linux-c -*- */
+/**
+ * \file mach64_dma.c
+ * DMA support for mach64 (Rage Pro) driver
  *
+ * \author Gareth Hughes <gareth@valinux.com>
+ * \author Frank C. Earl <fearl@airmail.net>
+ * \author Leif Delgass <ldelgass@retinalburn.net>
+ * \author Jose Fonseca <j_r_fonseca@yahoo.co.uk>
+ */
+
+/*
  * Copyright 2000 Gareth Hughes
  * Copyright 2002 Frank C. Earl
  * Copyright 2002-2003 Leif Delgass
@@ -23,12 +32,6 @@
  * THE COPYRIGHT OWNER(S) BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Authors:
- *   Gareth Hughes <gareth@valinux.com>
- *   Frank C. Earl <fearl@airmail.net>
- *   Leif Delgass <ldelgass@retinalburn.net>
- *   Jos�Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
 #include "drmP.h"
@@ -36,10 +39,24 @@
 #include "mach64_drm.h"
 #include "mach64_drv.h"
 
-/* ================================================================
- * Engine, FIFO control
- */
+/*******************************************************************/
+/** \name Engine, FIFO control */
+/*@{*/
 
+/**
+ * Waits for free entries in the FIFO.
+ *
+ * \note Most writes to Mach64 registers are automatically routed through
+ * command FIFO which is 16 entry deep. Prior to writing to any draw engine
+ * register one has to ensure that enough FIFO entries are available by calling
+ * this function.  Failure to do so may cause the engine to lock.
+ *
+ * \param dev_priv pointer to device private data structure.
+ * \param entries number of free entries in the FIFO to wait for.
+ * 
+ * \returns zero on success, or -EBUSY if the timeout (specificed by
+ * drm_mach64_private::usec_timeout) occurs.
+ */
 int mach64_do_wait_for_fifo(drm_mach64_private_t * dev_priv, int entries)
 {
 	int slots = 0, i;
@@ -56,6 +73,9 @@ int mach64_do_wait_for_fifo(drm_mach64_private_t * dev_priv, int entries)
 	return DRM_ERR(EBUSY);
 }
 
+/**
+ * Wait for the draw engine to be idle.
+ */
 int mach64_do_wait_for_idle(drm_mach64_private_t * dev_priv)
 {
 	int i, ret;
@@ -77,6 +97,25 @@ int mach64_do_wait_for_idle(drm_mach64_private_t * dev_priv)
 	return DRM_ERR(EBUSY);
 }
 
+/**
+ * Wait for free entries in the ring buffer.
+ *
+ * The Mach64 bus master can be configured to act as a virtual FIFO, using a
+ * circular buffer (commonly referred as "ring buffer" in other drivers) with
+ * pointers to engine commands. This allows the CPU to do other things while
+ * the graphics engine is busy, i.e., DMA mode.
+ *
+ * This function should be called before writing new entries to the ring
+ * buffer.
+ * 
+ * \param dev_priv pointer to device private data structure.
+ * \param n number of free entries in the ring buffer to wait for.
+ * 
+ * \returns zero on success, or -EBUSY if the timeout (specificed by
+ * drm_mach64_private_t::usec_timeout) occurs.
+ *
+ * \sa mach64_dump_ring_info()
+ */
 int mach64_wait_ring(drm_mach64_private_t * dev_priv, int n)
 {
 	drm_mach64_descriptor_ring_t *ring = &dev_priv->ring;
@@ -99,7 +138,11 @@ int mach64_wait_ring(drm_mach64_private_t * dev_priv, int n)
 	return DRM_ERR(EBUSY);
 }
 
-/* Wait until all DMA requests have been processed... */
+/**
+ * Wait until all DMA requests have been processed... 
+ *
+ * \sa mach64_wait_ring()
+ */
 static int mach64_ring_idle(drm_mach64_private_t * dev_priv)
 {
 	drm_mach64_descriptor_ring_t *ring = &dev_priv->ring;
@@ -132,6 +175,11 @@ static int mach64_ring_idle(drm_mach64_private_t * dev_priv)
 	return DRM_ERR(EBUSY);
 }
 
+/**
+ * Reset the the ring buffer descriptors.
+ *
+ * \sa mach64_do_engine_reset()
+ */
 static void mach64_ring_reset(drm_mach64_private_t * dev_priv)
 {
 	drm_mach64_descriptor_ring_t *ring = &dev_priv->ring;
@@ -147,6 +195,9 @@ static void mach64_ring_reset(drm_mach64_private_t * dev_priv)
 	dev_priv->ring_running = 0;
 }
 
+/**
+ * Ensure the all the queued commands will be processed.
+ */
 int mach64_do_dma_flush(drm_mach64_private_t * dev_priv)
 {
 	/* FIXME: It's not necessary to wait for idle when flushing
@@ -156,6 +207,9 @@ int mach64_do_dma_flush(drm_mach64_private_t * dev_priv)
 	return mach64_ring_idle(dev_priv);
 }
 
+/**
+ * Stop all DMA activity.
+ */
 int mach64_do_dma_idle(drm_mach64_private_t * dev_priv)
 {
 	int ret;
@@ -175,7 +229,8 @@ int mach64_do_dma_idle(drm_mach64_private_t * dev_priv)
 	return 0;
 }
 
-/* Reset the engine.  This will stop the DMA if it is running.
+/**
+ * Reset the engine.  This will stop the DMA if it is running.
  */
 int mach64_do_engine_reset(drm_mach64_private_t * dev_priv)
 {
@@ -211,10 +266,16 @@ int mach64_do_engine_reset(drm_mach64_private_t * dev_priv)
 	return 0;
 }
 
-/* ================================================================
- * Debugging output
- */
+/*@}*/
 
+
+/*******************************************************************/
+/** \name Debugging output */
+/*@{*/
+
+/**
+ * Dump engine registers values.
+ */
 void mach64_dump_engine_info(drm_mach64_private_t * dev_priv)
 {
 	DRM_INFO("\n");
@@ -352,6 +413,10 @@ void mach64_dump_engine_info(drm_mach64_private_t * dev_priv)
 
 #define MACH64_DUMP_CONTEXT	3
 
+/**
+ * Used by mach64_dump_ring_info() to dump the contents of the current buffer
+ * pointed by the ring head.
+ */
 static void mach64_dump_buf_info(drm_mach64_private_t * dev_priv,
 				 drm_buf_t * buf)
 {
@@ -408,6 +473,10 @@ static void mach64_dump_buf_info(drm_mach64_private_t * dev_priv,
 	DRM_INFO("\n");
 }
 
+/**
+ * Dump the ring state and contents, including the contents of the buffer being
+ * processed by the graphics engine.
+ */
 void mach64_dump_ring_info(drm_mach64_private_t * dev_priv)
 {
 	drm_mach64_descriptor_ring_t *ring = &dev_priv->ring;
@@ -486,10 +555,23 @@ void mach64_dump_ring_info(drm_mach64_private_t * dev_priv)
 		 MACH64_READ(MACH64_SRC_CNTL));
 }
 
-/* ================================================================
- * DMA test and initialization
- */
+/*@}*/
 
+
+/*******************************************************************/
+/** \name DMA test and initialization */
+/*@{*/
+
+/**
+ * Perform a simple DMA operation using the pattern registers to test whether
+ * DMA works.
+ *
+ * \return zero if successful.
+ *
+ * \note This function was the testbed for many experiences regarding Mach64
+ * DMA operation. It is left here since it so tricky to get DMA operating
+ * properly in some architectures and hardware.
+ */
 static int mach64_bm_dma_test(drm_device_t * dev)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
@@ -667,6 +749,10 @@ static int mach64_bm_dma_test(drm_device_t * dev)
 	return failed;
 }
 
+/**
+ * Called during the DMA initialization ioctl to initialize all the necessary
+ * software and hardware state for DMA operation.
+ */
 static int mach64_do_dma_init(drm_device_t * dev, drm_mach64_init_t * init)
 {
 	drm_mach64_private_t *dev_priv;
@@ -895,8 +981,8 @@ static int mach64_do_dma_init(drm_device_t * dev, drm_mach64_init_t * init)
 	return 0;
 }
 
-/* ===================================================================
- * MMIO Pseudo-DMA (intended primarily for debugging, not performance)
+/*******************************************************************/
+/** MMIO Pseudo-DMA (intended primarily for debugging, not performance)
  */
 
 int mach64_do_dispatch_pseudo_dma(drm_mach64_private_t * dev_priv)
@@ -1041,9 +1127,12 @@ int mach64_do_dispatch_pseudo_dma(drm_mach64_private_t * dev_priv)
 	return 0;
 }
 
-/* ================================================================
- * DMA cleanup
- */
+/*@}*/
+
+
+/*******************************************************************/
+/** \name DMA cleanup */
+/*@{*/
 
 int mach64_do_cleanup_dma(drm_device_t * dev)
 {
@@ -1086,9 +1175,12 @@ int mach64_do_cleanup_dma(drm_device_t * dev)
 	return 0;
 }
 
-/* ================================================================
- * IOCTL handlers
- */
+/*@}*/
+
+
+/*******************************************************************/
+/** \name IOCTL handlers */
+/*@{*/
 
 int mach64_dma_init(DRM_IOCTL_ARGS)
 {
@@ -1148,9 +1240,12 @@ int mach64_engine_reset(DRM_IOCTL_ARGS)
 	return mach64_do_engine_reset(dev_priv);
 }
 
-/* ================================================================
- * Freelist management
- */
+/*@}*/
+
+
+/*******************************************************************/
+/** \name Freelist management */
+/*@{*/
 
 int mach64_init_freelist(drm_device_t * dev)
 {
@@ -1351,9 +1446,12 @@ drm_buf_t *mach64_freelist_get(drm_mach64_private_t * dev_priv)
 	return entry->buf;
 }
 
-/* ================================================================
- * DMA buffer request and submission IOCTL handler
- */
+/*@}*/
+
+
+/*******************************************************************/
+/** \name DMA buffer request and submission IOCTL handler */
+/*@{*/
 
 static int mach64_dma_get_buffers(DRMFILE filp, drm_device_t * dev,
 				  drm_dma_t * d)
@@ -1428,3 +1526,5 @@ void mach64_driver_pretakedown(drm_device_t * dev)
 {
 	mach64_do_cleanup_dma(dev);
 }
+
+/*@}*/
