@@ -1,5 +1,15 @@
 2004-12-04  Keith Packard  <keithp@keithp.com>
 
+	* fonts.conf.in:
+	Just remove the FC_FONTDATE -- it has locale issues and
+	annoys redhat multi-arch installs.  Now that all X fonts are
+	included without prejudice, the chances of the date being at
+	all interesting are rather limited.  Bug #415.
+	* src/Makefile.am:
+	Add copyright and license
+
+2004-12-04  Keith Packard  <keithp@keithp.com>
+
 	* configure.in:
 	Change default set of fonts to include all of
 	/usr/X11R6/lib/X11/fonts (or wherever the X fonts are located).

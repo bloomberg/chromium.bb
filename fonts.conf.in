@@ -21,7 +21,7 @@
 	Keith Packard
 -->
 
-<!-- Font directory list configured on @FC_FONTDATE@ -->
+<!-- Font directory list -->
 
 	<dir>@FC_DEFAULT_FONTS@</dir>
 	@FC_FONTPATH@
