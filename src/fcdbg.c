@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcdbg.c,v 1.3 2002/06/02 21:07:56 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcdbg.c,v 1.4 2002/06/19 20:08:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -136,10 +136,10 @@ FcExprPrint (FcExpr *expr)
 			      expr->u.mval->xx,
 			      expr->u.mval->xy,
 			      expr->u.mval->yx,
-			      expr->u.mval->yy);
+			      expr->u.mval->yy); break;
     case FcOpBool: printf ("%s", expr->u.bval ? "true" : "false"); break;
     case FcOpCharSet: printf ("charset\n"); break;
-    case FcOpNil: printf ("nil\n");
+    case FcOpNil: printf ("nil\n"); break;
     case FcOpField: printf ("%s", expr->u.field); break;
     case FcOpConst: printf ("%s", expr->u.constant); break;
     case FcOpQuest:
