@@ -173,7 +173,7 @@ static int DRM(_vm_info)DRM_SYSCTL_HANDLER_ARGS
 
 static int DRM(vm_info)DRM_SYSCTL_HANDLER_ARGS
 {
-	drm_device_t *dev = arg1;
+	drm_device_t __unused *dev = arg1;
 	int	     ret;
 
 	DRM_LOCK();
@@ -225,7 +225,7 @@ static int DRM(_bufs_info) DRM_SYSCTL_HANDLER_ARGS
 
 static int DRM(bufs_info) DRM_SYSCTL_HANDLER_ARGS
 {
-	drm_device_t *dev = arg1;
+	drm_device_t __unused *dev = arg1;
 	int	     ret;
 
 	DRM_LOCK();
@@ -259,7 +259,7 @@ static int DRM(_clients_info) DRM_SYSCTL_HANDLER_ARGS
 
 static int DRM(clients_info)DRM_SYSCTL_HANDLER_ARGS
 {
-	drm_device_t *dev = arg1;
+	drm_device_t __unused *dev = arg1;
 	int	     ret;
 
 	DRM_LOCK();

@@ -51,6 +51,8 @@ int DRM(dma_setup)( drm_device_t *dev )
 	if (dev->dma == NULL)
 		return DRM_ERR(ENOMEM);
 
+	DRM_SPININIT(dev->dma_lock, "drmdma");
+
 	return 0;
 }
 
@@ -59,7 +61,8 @@ void DRM(dma_takedown)(drm_device_t *dev)
 	drm_device_dma_t  *dma = dev->dma;
 	int		  i, j;
 
-	if (!dma) return;
+	if (dma == NULL)
+		return;
 
 				/* Clear dma buffers */
 	for (i = 0; i <= DRM_MAX_ORDER; i++) {
@@ -106,6 +109,7 @@ void DRM(dma_takedown)(drm_device_t *dev)
 	    DRM_MEM_PAGES);
 	DRM(free)(dev->dma, sizeof(*dev->dma), DRM_MEM_DRIVER);
 	dev->dma = NULL;
+	DRM_SPINUNINIT(dev->dma_lock);
 }
 
 

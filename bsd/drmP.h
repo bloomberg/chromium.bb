@@ -180,7 +180,6 @@ typedef struct drm_freelist {
 
 	int		  low_mark;    /* Low water mark		   */
 	int		  high_mark;   /* High water mark		   */
-	DRM_SPINTYPE   lock;
 } drm_freelist_t;
 
 typedef struct drm_buf_entry {
@@ -216,10 +215,17 @@ struct drm_file {
 typedef struct drm_lock_data {
 	drm_hw_lock_t	  *hw_lock;	/* Hardware lock		   */
 	DRMFILE		  filp;	        /* Unique identifier of holding process (NULL is kernel)*/
-	wait_queue_head_t lock_queue;	/* Queue of blocked processes	   */
+	int		  lock_queue;	/* Queue of blocked processes	   */
 	unsigned long	  lock_time;	/* Time of last lock in jiffies	   */
 } drm_lock_data_t;
 
+/* This structure, in the drm_device_t, is always initialized while the device
+ * is open.  dev->dma_lock protects the incrementing of dev->buf_use, which
+ * when set marks that no further bufs may be allocated until device teardown
+ * occurs (when the last open of the device has closed).  The high/low
+ * watermarks of bufs are only touched by the X Server, and thus not
+ * concurrently accessed, so no locking is needed.
+ */
 typedef struct drm_device_dma {
 	drm_buf_entry_t	  bufs[DRM_MAX_ORDER+1];
 	int		  buf_count;
@@ -311,8 +317,15 @@ struct drm_device {
 	int		  flags;	/* Flags to open(2)		   */
 
 				/* Locks */
-	DRM_SPINTYPE	  count_lock;	/* For open_count, buf_use, buf_alloc */
-	struct lock       dev_lock;	/* For others			   */
+#if defined(__FreeBSD__) && __FreeBSD_version > 500000
+#if __HAVE_DMA
+	struct mtx	  dma_lock;	/* protects dev->dma */
+#endif
+#if __HAVE_IRQ
+	struct mtx	  irq_lock; /* protects irq condition checks */
+#endif
+	struct mtx	  dev_lock;	/* protects everything else */
+#endif
 				/* Usage Counters */
 	int		  open_count;	/* Outstanding files open	   */
 	int		  buf_use;	/* Buffers in use -- cannot alloc  */
@@ -327,8 +340,8 @@ struct drm_device {
 	drm_file_list_t   files;
 	drm_magic_head_t  magiclist[DRM_HASH_SIZE];
 
-				/* Memory management */
-	drm_map_list_t	  *maplist;	/* Linked list of regions	   */
+	/* Linked list of mappable regions. Protected by dev_lock */
+	drm_map_list_t	  *maplist;
 
 	drm_local_map_t	  **context_sareas;
 	int		  max_context;
@@ -349,18 +362,13 @@ struct drm_device {
 #endif
 	void		  *irqh;	/* Handle from bus_setup_intr      */
 	atomic_t	  context_flag;	/* Context swapping flag	   */
-	struct callout    timer;	/* Timer for delaying ctx switch   */
 	int		  last_context;	/* Last current context		   */
 #if __FreeBSD_version >= 400005
 	struct task       task;
 #endif
 #if __HAVE_VBL_IRQ
-   	wait_queue_head_t vbl_queue;	/* vbl wait channel */
+   	int		  vbl_queue;	/* vbl wait channel */
    	atomic_t          vbl_received;
-#if 0 /* vbl signals are untested */
-	struct drm_vbl_sig_list vbl_sig_list;
-	DRM_SPINTYPE      vbl_lock;
-#endif
 #endif
 
 #ifdef __FreeBSD__
@@ -381,11 +389,6 @@ struct drm_device {
 };
 
 extern int	     DRM(flags);
-
-				/* Authentication (drm_auth.h) */
-extern int           DRM(add_magic)(drm_device_t *dev, drm_file_t *priv, 
-				    drm_magic_t magic);
-extern int           DRM(remove_magic)(drm_device_t *dev, drm_magic_t magic);
 
 				/* Driver support (drm_drv.h) */
 extern int           DRM(version)( DRM_IOCTL_ARGS );

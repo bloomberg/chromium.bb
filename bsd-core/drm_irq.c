@@ -27,7 +27,19 @@
  *    Eric Anholt <anholt@FreeBSD.org>
  *
  */
- 
+
+#if defined(__FreeBSD__) && __FreeBSD_version >= 500000
+static irqreturn_t
+DRM(irq_handler_wrap)(DRM_IRQ_ARGS)
+{
+	drm_device_t *dev = (drm_device_t *)arg;
+
+	DRM_SPINLOCK(&dev->irq_lock);
+	DRM(irq_handler)(arg);
+	DRM_SPINUNLOCK(&dev->irq_lock);
+}
+#endif
+
 int DRM(irq_install)( drm_device_t *dev, int irq )
 {
 	int retcode;
@@ -54,8 +66,9 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	TASK_INIT(&dev->task, 0, DRM(dma_immediate_bh), dev);
 #endif
 
+	DRM_SPININIT(dev->irq_lock, "DRM IRQ lock");
+
 #if __HAVE_VBL_IRQ && 0 /* disabled */
-	DRM_SPININIT( dev->vbl_lock, "vblsig" );
 	TAILQ_INIT( &dev->vbl_sig_list );
 #endif
 
@@ -72,6 +85,7 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	if (pci_intr_map(&dev->pa, &dev->ih) != 0) {
 #endif
 		DRM_LOCK();
+		DRM_SPINUNINIT(dev->irq_lock);
 		dev->irq = 0;
 		dev->irqrid = 0;
 		DRM_UNLOCK();
@@ -84,7 +98,7 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 				 DRM(irq_handler), dev, &dev->irqh);
 #else
 	retcode = bus_setup_intr(dev->device, dev->irqr, INTR_TYPE_TTY | INTR_MPSAFE,
-				 DRM(irq_handler), dev, &dev->irqh);
+				 DRM(irq_handler_wrap), dev, &dev->irqh);
 #endif
 	if ( retcode ) {
 #elif defined(__NetBSD__)
@@ -96,6 +110,7 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 #ifdef __FreeBSD__
 		bus_release_resource(dev->device, SYS_RES_IRQ, dev->irqrid, dev->irqr);
 #endif
+		DRM_SPINUNINIT(dev->irq_lock);
 		dev->irq = 0;
 		dev->irqrid = 0;
 		DRM_UNLOCK();
@@ -133,6 +148,7 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 #elif defined(__NetBSD__)
 	pci_intr_disestablish(&dev->pa.pa_pc, dev->irqh);
 #endif
+	DRM_SPINUNINIT(dev->irq_lock);
 
 	return 0;
 }
@@ -187,9 +203,9 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 
 		vblwait.reply.sequence = atomic_read(&dev->vbl_received);
 		
-		DRM_SPINLOCK(&dev->vbl_lock);
+		DRM_SPINLOCK(&dev->irq_lock);
 		TAILQ_INSERT_HEAD(&dev->vbl_sig_list, vbl_sig, link);
-		DRM_SPINUNLOCK(&dev->vbl_lock);
+		DRM_SPINUNLOCK(&dev->irq_lock);
 		ret = 0;
 #endif
 		ret = EINVAL;
@@ -218,8 +234,6 @@ void DRM(vbl_send_signals)( drm_device_t *dev )
 	unsigned int vbl_seq = atomic_read( &dev->vbl_received );
 	struct proc *p;
 
-	DRM_SPINLOCK(&dev->vbl_lock);
-
 	vbl_sig = TAILQ_FIRST(&dev->vbl_sig_list);
 	while (vbl_sig != NULL) {
 		drm_vbl_sig_t *next = TAILQ_NEXT(vbl_sig, link);
@@ -234,8 +248,6 @@ void DRM(vbl_send_signals)( drm_device_t *dev )
 		}
 		vbl_sig = next;
 	}
-
-	DRM_SPINUNLOCK(&dev->vbl_lock);
 }
 #endif
 

@@ -101,10 +101,10 @@ extern struct cfdriver DRM(cd);
 #define DRM_CURPROC		curproc
 #define DRM_STRUCTPROC		struct proc
 #define DRM_SPINTYPE		struct simplelock
-#define DRM_SPININIT(l,name)	simple_lock_init(&l)
+#define DRM_SPININIT(l,name)
 #define DRM_SPINUNINIT(l)
-#define DRM_SPINLOCK(l)		simple_lock(l)
-#define DRM_SPINUNLOCK(u)	simple_unlock(u);
+#define DRM_SPINLOCK(l)	
+#define DRM_SPINUNLOCK(u)
 #define DRM_CURRENTPID		curproc->p_pid
 
 /* Currently our DRMFILE (filp) is a void * which is actually the pid
@@ -112,8 +112,8 @@ extern struct cfdriver DRM(cd);
  * code for that is not yet written */
 #define DRMFILE			void *
 #define DRM_IOCTL_ARGS		dev_t kdev, u_long cmd, caddr_t data, int flags, DRM_STRUCTPROC *p, DRMFILE filp
-#define DRM_LOCK()		lockmgr(&dev->dev_lock, LK_EXCLUSIVE, NULL)
-#define DRM_UNLOCK()		lockmgr(&dev->dev_lock, LK_RELEASE, NULL)
+#define DRM_LOCK()
+#define DRM_UNLOCK()
 #define DRM_SUSER(p)		suser(p->p_ucred, &p->p_acflag)
 #define DRM_TASKQUEUE_ARGS	void *dev, int pending
 #define DRM_IRQ_ARGS		void *arg
@@ -137,13 +137,6 @@ extern const int DRM(M_DRM) = M_DEVBUF;
 #define DRM_WRITE32(map, offset, val)	bus_space_write_4( (map)->iot, (map)->ioh, (offset), (val) )
 
 #define DRM_AGP_FIND_DEVICE()	agp_find_device(0)
-
-#define DRM_PRIV					\
-	drm_file_t	*priv	= (drm_file_t *) DRM(find_file_by_proc)(dev, p); \
-	if (!priv) {						\
-		DRM_DEBUG("can't find authenticator\n");	\
-		return EINVAL;					\
-	}
 
 #define LOCK_TEST_WITH_RETURN(dev, filp)				\
 do {									\
@@ -182,9 +175,11 @@ do {								\
 
 #define DRM_WAIT_ON( ret, queue, timeout, condition )		\
 while (!condition) {						\
+	int s = spldrm();					\
 	ret = tsleep( (void *)&(queue), PZERO | PCATCH, "drmwtq", (timeout) ); \
 	if ( ret )						\
 		return ret;					\
+	splx(s);					\
 }
 
 #define DRM_ERR(v)		v
@@ -320,7 +315,7 @@ find_first_zero_bit(atomic_t *p, int max)
 #define jiffies			hardclock_ticks
 
 /* Redefinitions to make templating easy */
-#define wait_queue_head_t	atomic_t
+#define wait_queue_head_t	int
 #define agp_memory		void
 
 				/* Macros to make printf easier */
