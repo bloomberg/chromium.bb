@@ -190,7 +190,7 @@ no)
 		expat=no
 		;;
 	yes)
-		AC_CHECK_FUNCS(XML_ParserCreate)
+		AC_CHECK_FUNCS(XML_SetDoctypeDeclHandler)
 		case "$ac_cv_func_XML_ParserCreate" in
 		no)
 			expat=no
@@ -213,7 +213,7 @@ AC_SUBST(EXPAT_CFLAGS)
 	
 case "$expat" in
 no)
-	AC_MSG_ERROR([cannot find expat library])
+	AC_MSG_ERROR([Cannot find usable expat library. This could mean that your version is too old.])
 	;;
 esac
 
