@@ -111,7 +111,8 @@ static int DRM(stub_getminor)(const char *name, struct file_operations *fops,
 			DRM(stub_root) = DRM(proc_init)(dev, i, DRM(stub_root),
 							&DRM(stub_list)[i]
 							.dev_root);
-			*DRM(stub_info).info_count++;
+			(*DRM(stub_info).info_count)++;
+			DRM_DEBUG("info count increased %d\n", *DRM(stub_info).info_count);
 			return i;
 		}
 	}
@@ -136,11 +137,13 @@ static int DRM(stub_putminor)(int minor)
 	DRM(proc_cleanup)(minor, DRM(stub_root),
 			  DRM(stub_list)[minor].dev_root);
 
-	*DRM(stub_info).info_count--;
+	(*DRM(stub_info).info_count)--;
 
 	if ((*DRM(stub_info).info_count)!=0) {
+       	        DRM_DEBUG("inter_module_put called %d\n", *DRM(stub_info).info_count);
 		inter_module_put("drm");
 	} else {
+	        DRM_DEBUG("unregistering inter_module \n");
 		inter_module_unregister("drm");
 		DRM(free)(DRM(stub_list),
 			  sizeof(*DRM(stub_list)) * DRM_STUB_MAXCARDS,
@@ -182,12 +185,12 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 		DRM(stub_info).info_unregister = i->info_unregister;
 		DRM(stub_info).drm_class = i->drm_class;
 		DRM(stub_info).info_count = i->info_count;
-		DRM_DEBUG("already registered\n");
+		DRM_DEBUG("already registered %d\n", *i->info_count);
 	} else if (*DRM(stub_info).info_count == 0) {
 
 	        ret1 = register_chrdev(DRM_MAJOR, "drm", &DRM(stub_fops));
                 if (ret1 < 0) {
-		  printk (KERN_ERR, "Error registering drm major number.\n");
+		  printk (KERN_ERR "Error registering drm major number.\n");
 		  return ret1;
 		}
 		
@@ -208,7 +211,9 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 				inter_module_unregister("drm");
 				unregister_chrdev(DRM_MAJOR, "drm");
 				class_simple_destroy(DRM(stub_info).drm_class);
+				DRM_DEBUG("info_register failed deregistered everything\n");
 			}
+			DRM_DEBUG("info_register failed\n");
 		}
 		return ret2;
 	}
