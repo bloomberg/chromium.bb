@@ -2,10 +2,12 @@ aclocal.m4
 Makefile
 Makefile.in
 config.cache
+config.guess
 config.h
 config.h.in
 config.log
 config.status
+config.sub
 configure
 fontconfig.pc
 fontconfig.spec
@@ -13,4 +15,7 @@ fonts.conf
 libtool
 stamp-h
 stamp-h.in
+stamp-h1
 fontconfig-*.tar.gz
+ltmain.sh
+autom4te.cache
