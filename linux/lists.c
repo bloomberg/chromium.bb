@@ -116,6 +116,7 @@ int drm_freelist_create(drm_freelist_t *bl, int count)
 	bl->low_mark  = 0;
 	bl->high_mark = 0;
 	atomic_set(&bl->wfh,   0);
+	bl->lock      = SPIN_LOCK_UNLOCKED;
 	++bl->initialized;
 	return 0;
 }
@@ -130,8 +131,6 @@ int drm_freelist_destroy(drm_freelist_t *bl)
 
 int drm_freelist_put(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 {
-	drm_buf_t        *old, *prev;
-	int		 count = 0;
 	drm_device_dma_t *dma  = dev->dma;
 
 	if (!dma) {
@@ -152,15 +151,12 @@ int drm_freelist_put(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 	drm_histogram_compute(dev, buf);
 #endif
 	buf->list	= DRM_LIST_FREE;
-	do {
-		old       = bl->next;
-		buf->next = old;
-		prev      = cmpxchg(&bl->next, old, buf);
-		if (++count > DRM_LOOPING_LIMIT) {
-			DRM_ERROR("Looping\n");
-			return 1;
-		}
-	} while (prev != old);
+	
+	spin_lock(&bl->lock);
+	buf->next	= bl->next;
+	bl->next	= buf;
+	spin_unlock(&bl->lock);
+	
 	atomic_inc(&bl->count);
 	if (atomic_read(&bl->count) > dma->buf_count) {
 		DRM_ERROR("%d of %d buffers free after addition of %d\n",
@@ -177,26 +173,21 @@ int drm_freelist_put(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 
 static drm_buf_t *drm_freelist_try(drm_freelist_t *bl)
 {
-	drm_buf_t         *old, *new, *prev;
 	drm_buf_t	  *buf;
-	int		  count = 0;
 
 	if (!bl) return NULL;
 	
 				/* Get buffer */
-	do {
-		old = bl->next;
-		if (!old) return NULL;
-		new  = bl->next->next;
-		prev = cmpxchg(&bl->next, old, new);
-		if (++count > DRM_LOOPING_LIMIT) {
-			DRM_ERROR("Looping\n");
-			return NULL;
-		}
-	} while (prev != old);
-	atomic_dec(&bl->count);
+	spin_lock(&bl->lock);
+	if (!bl->next) {
+		spin_unlock(&bl->lock);
+		return NULL;
+	}
+	buf	  = bl->next;
+	bl->next  = bl->next->next;
+	spin_unlock(&bl->lock);
 	
-	buf	  = old;
+	atomic_dec(&bl->count);
 	buf->next = NULL;
 	buf->list = DRM_LIST_NONE;
 	DRM_DEBUG("%d, count = %d, wfh = %d, w%d, p%d\n",

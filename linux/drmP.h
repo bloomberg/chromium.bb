@@ -328,6 +328,7 @@ typedef struct drm_freelist {
 	int		  low_mark;    /* Low water mark		   */
 	int		  high_mark;   /* High water mark		   */
 	atomic_t	  wfh;	       /* If waiting for high mark	   */
+	spinlock_t        lock;
 } drm_freelist_t;
 
 typedef struct drm_buf_entry {
