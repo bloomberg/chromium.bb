@@ -253,7 +253,7 @@ yes)
 		x)
 			if test -d "$dir/fonts"; then
 				for sub in "$dir"/fonts/*; do
-					if ls "$sub" | grep -q -i '\.pf\|\.tt\|.ot'; then
+					if ls "$sub" | grep -q -i '\.pf\|\.tt\|\.ot'; then
 						case x$FC_ADD_FONTS in
 						x)
 							FC_ADD_FONTS="$sub"
