@@ -15,7 +15,7 @@
 #include "i915_drv.h"
 
 
-static void i915_print_status_page(drm_device_t *dev)
+static inline void i915_print_status_page(drm_device_t *dev)
 {
       	drm_i915_private_t *dev_priv = dev->dev_private;
 	u32 *temp = dev_priv->hw_status_page;
@@ -246,7 +246,7 @@ int i915_dma_init( DRM_IOCTL_ARGS )
    	drm_i915_init_t init;
    	int retcode = 0;
 	
-  	DRM_COPY_FROM_USER_IOCTL( init, (drm_i915_init_t *)data, sizeof(init));
+  	DRM_COPY_FROM_USER_IOCTL( init, (drm_i915_init_t __user *)data, sizeof(init));
 	
    	switch(init.func) {
 	 	case I915_INIT_DMA:
@@ -351,7 +351,7 @@ static int validate_cmd( int cmd )
 	
 
 static int i915_emit_cmds( drm_device_t *dev,
-			   int *buffer,
+			   int __user *buffer,
 			   int dwords )
 {
    	drm_i915_private_t *dev_priv = dev->dev_private;
@@ -386,7 +386,7 @@ static int i915_emit_cmds( drm_device_t *dev,
 }
 
 static int i915_emit_box( drm_device_t *dev,
-			  drm_clip_rect_t *boxes,
+			  drm_clip_rect_t __user *boxes,
 			  int i,
 			  int DR1,
 			  int DR4)
@@ -425,10 +425,8 @@ static int i915_emit_box( drm_device_t *dev,
 static int i915_dispatch_cmdbuffer(drm_device_t *dev, 
 				   drm_i915_cmdbuffer_t *cmd )
 {
-   	drm_i915_private_t *dev_priv = dev->dev_private;
    	int nbox = cmd->num_cliprects;
 	int i = 0, count, ret;
-   	RING_LOCALS;
 
 	if (cmd->sz & 0x3) {
 		DRM_ERROR("alignment");
@@ -447,7 +445,7 @@ static int i915_dispatch_cmdbuffer(drm_device_t *dev,
 				return ret;
 		}
 
-		ret = i915_emit_cmds( dev, (int *)cmd->buf, cmd->sz / 4 );
+		ret = i915_emit_cmds( dev, (int __user *)cmd->buf, cmd->sz / 4 );
 		if (ret) 
 			return ret;
 	}
@@ -462,7 +460,7 @@ static int i915_dispatch_batchbuffer(drm_device_t *dev,
 				    drm_i915_batchbuffer_t *batch )
 {
    	drm_i915_private_t *dev_priv = dev->dev_private;
-   	drm_clip_rect_t box, *boxes = batch->cliprects;
+   	drm_clip_rect_t *boxes = batch->cliprects;
    	int nbox = batch->num_cliprects;
 	int i = 0, count;
    	RING_LOCALS;
@@ -602,7 +600,7 @@ int i915_batchbuffer( DRM_IOCTL_ARGS )
 		return DRM_ERR(EINVAL);
 	}
 
-	DRM_COPY_FROM_USER_IOCTL( batch, (drm_i915_batchbuffer_t *)data, 
+	DRM_COPY_FROM_USER_IOCTL( batch, (drm_i915_batchbuffer_t __user *)data, 
 				  sizeof(batch) );
 
 	DRM_DEBUG("i915 batchbuffer, start %x used %d cliprects %d\n",
@@ -635,7 +633,7 @@ int i915_cmdbuffer( DRM_IOCTL_ARGS )
 	drm_i915_cmdbuffer_t cmdbuf;
 	int ret;
 
-	DRM_COPY_FROM_USER_IOCTL( cmdbuf, (drm_i915_cmdbuffer_t *)data, 
+	DRM_COPY_FROM_USER_IOCTL( cmdbuf, (drm_i915_cmdbuffer_t __user *)data, 
 				  sizeof(cmdbuf) );
 
 	DRM_DEBUG("i915 cmdbuffer, buf %p sz %d cliprects %d\n",
@@ -705,7 +703,7 @@ int i915_getparam( DRM_IOCTL_ARGS )
 		return DRM_ERR(EINVAL);
 	}
 
-	DRM_COPY_FROM_USER_IOCTL(param, (drm_i915_getparam_t *)data, 
+	DRM_COPY_FROM_USER_IOCTL(param, (drm_i915_getparam_t __user *)data, 
 				 sizeof(param));
 
 	switch( param.param ) {
@@ -740,7 +738,7 @@ int i915_setparam( DRM_IOCTL_ARGS )
 		return DRM_ERR(EINVAL);
 	}
 
-	DRM_COPY_FROM_USER_IOCTL( param, (drm_i915_setparam_t *)data, 
+	DRM_COPY_FROM_USER_IOCTL( param, (drm_i915_setparam_t __user *)data, 
 				  sizeof(param) );
 
 	switch( param.param ) {

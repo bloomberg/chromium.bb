@@ -325,7 +325,7 @@ int DRM(addctx)(struct inode *inode, struct file *filp,
 	drm_file_t	*priv	= filp->private_data;
 	drm_device_t	*dev	= priv->dev;
 	drm_ctx_t	ctx;
-	drm_ctx_t       __user *argp = (void __user *)arg;
+	drm_ctx_t	__user *argp = (void __user *)arg;
 
 	if (copy_from_user(&ctx, argp, sizeof(ctx)))
 		return -EFAULT;
@@ -380,7 +380,7 @@ int DRM(getctx)(struct inode *inode, struct file *filp,
 {
 	drm_file_t	*priv	= filp->private_data;
 	drm_device_t	*dev	= priv->dev;
-	drm_ctx_t       __user *argp = (void __user *)arg;
+	drm_ctx_t	__user *argp = (void __user *)arg;
 	drm_ctx_t	ctx;
 	drm_queue_t	*q;
 

@@ -179,7 +179,7 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 
 	DRM_DEBUG("\n");
 
-	/* if we are registering a second device we don't need to worry 
+	/* if we are registering a second device we don't need to worry
 	   about inter module get/put and other things as they've been
 	   done already */
 	if (DRM(numdevs) == 0) {
@@ -211,7 +211,7 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 			inter_module_register("drm", THIS_MODULE, &DRM(stub_info));
 		}
 	}
-	else 
+	else
 		DRM_DEBUG("already retrieved inter_module information\n");
 
 	if (DRM(stub_info).info_register) {
@@ -229,7 +229,7 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 	}
 	return -1;
 }
-	
+
 /**
  * Unregister.
  *

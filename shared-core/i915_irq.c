@@ -108,7 +108,7 @@ int i915_irq_emit( DRM_IOCTL_ARGS )
 		return DRM_ERR(EINVAL);
 	}
 
-	DRM_COPY_FROM_USER_IOCTL( emit, (drm_i915_irq_emit_t *)data,
+	DRM_COPY_FROM_USER_IOCTL( emit, (drm_i915_irq_emit_t __user *)data,
 				  sizeof(emit) );
 
 	result = i915_emit_irq( dev );
@@ -135,7 +135,7 @@ int i915_irq_wait( DRM_IOCTL_ARGS )
 		return DRM_ERR(EINVAL);
 	}
 
-	DRM_COPY_FROM_USER_IOCTL( irqwait, (drm_i915_irq_wait_t *)data, 
+	DRM_COPY_FROM_USER_IOCTL( irqwait, (drm_i915_irq_wait_t __user *)data, 
 				  sizeof(irqwait) );
 
 	return i915_wait_irq( dev, irqwait.irq_seq );

@@ -129,7 +129,7 @@ int DRM(irq_install)( drm_device_t *dev )
 	dev->dma->this_buffer = NULL;
 #endif
 
-#if __HAVE_IRQ_BH
+#ifdef __HAVE_IRQ_BH
 #if !HAS_WORKQUEUE
 	INIT_LIST_HEAD( &dev->tq.list );
 	dev->tq.sync = 0;
@@ -140,7 +140,7 @@ int DRM(irq_install)( drm_device_t *dev )
 #endif
 #endif
 
-#if __HAVE_VBL_IRQ
+#ifdef __HAVE_VBL_IRQ
 	init_waitqueue_head(&dev->vbl_queue);
 
 	spin_lock_init( &dev->vbl_lock );
@@ -231,7 +231,7 @@ int DRM(control)( struct inode *inode, struct file *filp,
 	}
 }
 
-#if __HAVE_VBL_IRQ
+#ifdef __HAVE_VBL_IRQ
 
 /**
  * Wait for VBLANK.

@@ -572,7 +572,7 @@ int gamma_dma(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_t	  *dev	    = priv->dev;
 	drm_device_dma_t  *dma	    = dev->dma;
 	int		  retcode   = 0;
-	drm_dma_t         __user *argp = (void __user *)arg;
+	drm_dma_t	  __user *argp = (void __user *)arg;
 	drm_dma_t	  d;
 
 	if (copy_from_user(&d, argp, sizeof(d)))

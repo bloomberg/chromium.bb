@@ -87,26 +87,26 @@ typedef struct _drm_i915_batchbuffer {
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
         int DR4;		/* window origin for GFX_OP_DRAWRECT_INFO*/
 	int num_cliprects;	/* mulitpass with multiple cliprects? */
-        drm_clip_rect_t *cliprects; /* pointer to userspace cliprects */
+        drm_clip_rect_t __user *cliprects; /* pointer to userspace cliprects */
 } drm_i915_batchbuffer_t;
 
 /* As above, but pass a pointer to userspace buffer which can be
  * validated by the kernel prior to sending to hardware.
  */
 typedef struct _drm_i915_cmdbuffer {
-   	char *buf;	        /* pointer to userspace command buffer */
+   	char __user *buf;	/* pointer to userspace command buffer */
 	int sz;		        /* nr bytes in buf */
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
         int DR4;		/* window origin for GFX_OP_DRAWRECT_INFO*/
 	int num_cliprects;	/* mulitpass with multiple cliprects? */
-        drm_clip_rect_t *cliprects; /* pointer to userspace cliprects */
+        drm_clip_rect_t __user *cliprects; /* pointer to userspace cliprects */
 } drm_i915_cmdbuffer_t;
 
 
 /* Userspace can request & wait on irq's:
  */
 typedef struct drm_i915_irq_emit {
-	int *irq_seq;
+	int __user *irq_seq;
 } drm_i915_irq_emit_t;
 
 typedef struct drm_i915_irq_wait {
@@ -121,7 +121,7 @@ typedef struct drm_i915_irq_wait {
 
 typedef struct drm_i915_getparam {
 	int param;
-	int *value;
+	int __user *value;
 } drm_i915_getparam_t;
 
 
@@ -144,7 +144,7 @@ typedef struct drm_i915_mem_alloc {
 	int region;
 	int alignment;
 	int size;
-	int *region_offset;	/* offset from start of fb or agp */
+	int __user *region_offset;	/* offset from start of fb or agp */
 } drm_i915_mem_alloc_t;
 
 typedef struct drm_i915_mem_free {

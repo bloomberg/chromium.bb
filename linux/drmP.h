@@ -558,7 +558,7 @@ typedef struct drm_ctx_list {
 	drm_file_t		*tag;   /**< associated fd private data */
 } drm_ctx_list_t;
 
-#if __HAVE_VBL_IRQ
+#ifdef __HAVE_VBL_IRQ
 
 typedef struct drm_vbl_sig {
 	struct list_head	head;
@@ -661,7 +661,7 @@ typedef struct drm_device {
 #endif
 	/** \name VBLANK IRQ support */
 	/*@{*/
-#if __HAVE_VBL_IRQ
+#ifdef __HAVE_VBL_IRQ
    	wait_queue_head_t vbl_queue;	/**< VBLANK wait queue */
    	atomic_t          vbl_received;
 	spinlock_t        vbl_lock;
@@ -879,13 +879,13 @@ extern irqreturn_t   DRM(irq_handler)( DRM_IRQ_ARGS );
 extern void          DRM(driver_irq_preinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_postinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_uninstall)( drm_device_t *dev );
-#if __HAVE_VBL_IRQ
+#ifdef __HAVE_VBL_IRQ
 extern int           DRM(wait_vblank)(struct inode *inode, struct file *filp,
 				      unsigned int cmd, unsigned long arg);
 extern int           DRM(vblank_wait)(drm_device_t *dev, unsigned int *vbl_seq);
 extern void          DRM(vbl_send_signals)( drm_device_t *dev );
 #endif
-#if __HAVE_IRQ_BH
+#ifdef __HAVE_IRQ_BH
 extern void          DRM(irq_immediate_bh)( void *dev );
 #endif
 #endif
@@ -933,7 +933,7 @@ extern int            DRM(proc_cleanup)(int minor,
 					struct proc_dir_entry *root,
 					struct proc_dir_entry *dev_root);
 
-#if __HAVE_SG
+#ifdef __HAVE_SG
 				/* Scatter Gather Support (drm_scatter.h) */
 extern void           DRM(sg_cleanup)(drm_sg_mem_t *entry);
 extern int            DRM(sg_alloc)(struct inode *inode, struct file *filp,

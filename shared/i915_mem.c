@@ -268,7 +268,7 @@ int i915_mem_alloc( DRM_IOCTL_ARGS )
 		return DRM_ERR(EINVAL);
 	}
 
-	DRM_COPY_FROM_USER_IOCTL( alloc, (drm_i915_mem_alloc_t *)data,
+	DRM_COPY_FROM_USER_IOCTL( alloc, (drm_i915_mem_alloc_t __user *)data,
 				  sizeof(alloc) );
 
 	heap = get_heap( dev_priv, alloc.region );
@@ -312,7 +312,7 @@ int i915_mem_free( DRM_IOCTL_ARGS )
 		return DRM_ERR(EINVAL);
 	}
 
-	DRM_COPY_FROM_USER_IOCTL( memfree, (drm_i915_mem_free_t *)data,
+	DRM_COPY_FROM_USER_IOCTL( memfree, (drm_i915_mem_free_t __user *)data,
 				  sizeof(memfree) );
 
 	heap = get_heap( dev_priv, memfree.region );
@@ -343,7 +343,7 @@ int i915_mem_init_heap( DRM_IOCTL_ARGS )
 		return DRM_ERR(EINVAL);
 	}
 
-	DRM_COPY_FROM_USER_IOCTL( initheap, (drm_i915_mem_init_heap_t *)data,
+	DRM_COPY_FROM_USER_IOCTL( initheap, (drm_i915_mem_init_heap_t __user *)data,
 				  sizeof(initheap) );
 
 	heap = get_heap( dev_priv, initheap.region );
