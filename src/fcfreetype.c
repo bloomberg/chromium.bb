@@ -2643,17 +2643,38 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 #define TTO_Err_Empty_Script              0x1005
 #define TTO_Err_Invalid_SubTable          0x1001
 
+#define OTLAYOUT_HEAD	    "otlayout:"
+#define OTLAYOUT_HEAD_LEN   9
+#define OTLAYOUT_ID_LEN	    4
+/* space + head + id */
+#define OTLAYOUT_LEN	    (1 + OTLAYOUT_HEAD_LEN + OTLAYOUT_ID_LEN)
 
+#define FcIsNumber(x)	    (060 <= (x) && (x) <= 071)
+#define FcIsAlNum(x)	    (FcIsLower(x) || FcIsUpper (x) || FcIsNumber (x))
 static void
 addtag(FcChar8 *complex, FT_ULong tag)
 {
-    FcChar8 tagstring[15];
-    sprintf (tagstring, "otlayout:%c%c%c%c ",
-       (unsigned char)(tag >> 24),
-       (unsigned char)((tag & 0xff0000) >> 16),
-       (unsigned char)((tag & 0xff00) >> 8),
-       (unsigned char)(tag & 0xff));
-    strncat(complex, tagstring, 14);
+    FcChar8 tagstring[OTLAYOUT_ID_LEN + 1];
+
+    tagstring[0] = (FcChar8)(tag >> 24),
+    tagstring[1] = (FcChar8)(tag >> 16),
+    tagstring[2] = (FcChar8)(tag >> 8),
+    tagstring[3] = (FcChar8)(tag);
+    tagstring[4] = '\0';
+    
+    /* skip tags which aren't alphanumeric, under the assumption that
+     * they're probably broken
+     */
+    if (!FcIsAlNum(tagstring[0]) ||
+	!FcIsAlNum(tagstring[1]) ||
+	!FcIsAlNum(tagstring[2]) ||
+	!FcIsAlNum(tagstring[3]))
+	return;
+
+    if (*complex != '\0')
+	strcat (complex, " ");
+    strcat (complex, "otlayout:");
+    strcat (complex, tagstring);
 }
 
 static int
@@ -2745,6 +2766,7 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
     return TT_Err_Ok;
 
 Fail:
+    *script_count = 0;
     FT_FREE( *stags );
     return error;
 }
@@ -2756,7 +2778,8 @@ FcFontCapabilities(FT_Face face)
     FT_Error err;
     FT_ULong len = 0;
     FT_ULong *gsubtags=NULL, *gpostags=NULL;
-    FT_UShort gsub_count=0, gpos_count=0, maxsize;
+    FT_UShort gsub_count=0, gpos_count=0;
+    FT_ULong maxsize;
     FT_Memory  memory = face->stream->memory;
     FcChar8 *complex = NULL;
     int indx1 = 0, indx2 = 0;
@@ -2764,25 +2787,26 @@ FcFontCapabilities(FT_Face face)
     err = FT_Load_Sfnt_Table(face, TTAG_SILF, 0, 0, &len);
     issilgraphitefont = ( err == FT_Err_Ok);
 
-    err = GetScriptTags(face, TTAG_GPOS, &gpostags, &gpos_count);
-    err = GetScriptTags(face, TTAG_GSUB, &gsubtags, &gsub_count);
+    if (GetScriptTags(face, TTAG_GPOS, &gpostags, &gpos_count) != FT_Err_Ok)
+	gpos_count = 0;
+    if (GetScriptTags(face, TTAG_GSUB, &gsubtags, &gsub_count) != FT_Err_Ok)
+	gsub_count = 0;
+    
     if (!issilgraphitefont && !gsub_count && !gpos_count)
-    {
     	goto bail;
-    }
 
-    maxsize = ((gpos_count + gsub_count) * 15) + (issilgraphitefont ? 13 : 0);
+    maxsize = (((FT_ULong) gpos_count + (FT_ULong) gsub_count) * OTLAYOUT_LEN + 
+	       (issilgraphitefont ? 13 : 0));
     complex = malloc (sizeof (FcChar8) * maxsize);
+    if (!complex)
+	goto bail;
+
+    complex[0] = '\0';
     if (issilgraphitefont)
-    {
         strcpy(complex, "ttable:Silf ");
-    }
-    else
-    {
-        strcpy(complex, "");
-    }
 
     while ((indx1 < gsub_count) || (indx2 < gpos_count)) {
+	int len = strlen (complex);
 	if (indx1 == gsub_count) {
 	    addtag(complex, gpostags[indx2]);
 	    indx2++;

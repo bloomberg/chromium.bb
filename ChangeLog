@@ -1,5 +1,12 @@
 2005-03-05  Keith Packard  <keithp@keithp.com>
 
+	* src/fcfreetype.c: (addtag), (GetScriptTags),
+	(FcFontCapabilities):
+	Rework GSUB/GPOS script parsing to survive broken fonts.
+	Thanks for the broken font go to Manish Singh
+
+2005-03-05  Keith Packard  <keithp@keithp.com>
+
 	Josselin Mouette:
 	* debian/changelog:
 	* debian/control:
