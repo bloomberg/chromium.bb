@@ -1,8 +1,8 @@
 /* drmstat.c -- DRM device status and testing program
  * Created: Tue Jan  5 08:19:24 1999 by faith@precisioninsight.com
- * Revised: Sun Feb 13 23:35:00 2000 by kevin@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmstat.c,v 1.6 2000/02/23 04:47:27 martin Exp $
+ * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  * 
  */
 

@@ -1,8 +1,8 @@
 /* tdfx_context.c -- IOCTLs for tdfx contexts -*- linux-c -*-
  * Created: Thu Oct  7 10:50:22 1999 by faith@precisioninsight.com
- * Revised: Sat Oct  9 23:39:56 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,8 +24,10 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/tdfx_context.c,v 1.2 2000/02/23 04:47:30 martin Exp $
- *
+ * Authors:
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
+ *    Daryll Strauss <daryll@valinux.com>
+ * 
  */
 
 #include <linux/sched.h>

@@ -1,8 +1,8 @@
 /* init.c -- Setup/Cleanup for DRM -*- linux-c -*-
  * Created: Mon Jan  4 08:58:31 1999 by faith@precisioninsight.com
- * Revised: Fri Aug 20 09:27:02 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,7 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/init.c,v 1.2 2000/02/23 04:47:29 martin Exp $
+ * Authors:
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 
@@ -34,7 +35,7 @@
 int			      drm_flags		= 0;
 
 /* drm_parse_option parses a single option.  See description for
-   drm_parse_drm for details. */
+   drm_parse_options for details. */
 
 static void drm_parse_option(char *s)
 {
@@ -96,3 +97,10 @@ void drm_parse_options(char *s)
 	}
 }
 
+int drm_cpu_valid(void)
+{
+#if defined(__i386__)
+	if (boot_cpu_data.x86 == 3) return 0; /* No cmpxchg on a 386 */
+#endif
+	return 1;
+}

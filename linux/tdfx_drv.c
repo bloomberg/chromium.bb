@@ -1,8 +1,8 @@
 /* tdfx.c -- tdfx driver -*- linux-c -*-
  * Created: Thu Oct  7 10:38:32 1999 by faith@precisioninsight.com
- * Revised: Tue Oct 12 08:51:35 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,7 +24,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/tdfx_drv.c,v 1.3 2000/02/23 04:47:31 martin Exp $
+ * Authors:
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
+ *    Daryll Strauss <daryll@valinux.com>
  *
  */
 
@@ -37,9 +39,9 @@ EXPORT_SYMBOL(tdfx_cleanup);
 #define TDFX_NAME	 "tdfx"
 #define TDFX_DESC	 "tdfx"
 #define TDFX_DATE	 "19991009"
-#define TDFX_MAJOR	 0
+#define TDFX_MAJOR	 1
 #define TDFX_MINOR	 0
-#define TDFX_PATCHLEVEL  1
+#define TDFX_PATCHLEVEL  0
 
 static drm_device_t	      tdfx_device;
 drm_ctx_t	              tdfx_res_ctx;

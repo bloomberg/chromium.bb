@@ -2,6 +2,7 @@
  * Created: Mon Dec 13 01:56:22 1999 by jhartmann@precisioninsight.com
  * 
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,10 +24,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Authors: Rickard E. (Rik) Faith <faith@precisioninsight.com>
- *	    Jeff Hartmann <jhartmann@precisioninsight.com>
+ * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
+ *	    Jeff Hartmann <jhartmann@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/mga_drv.c,v 1.1 2000/02/11 17:26:07 dawes Exp $
  *
  */
 
@@ -39,9 +39,9 @@ EXPORT_SYMBOL(mga_cleanup);
 #define MGA_NAME	 "mga"
 #define MGA_DESC	 "Matrox g200/g400"
 #define MGA_DATE	 "19991213"
-#define MGA_MAJOR	 0
+#define MGA_MAJOR	 1
 #define MGA_MINOR	 0
-#define MGA_PATCHLEVEL	 1
+#define MGA_PATCHLEVEL	 0
 
 static drm_device_t	      mga_device;
 drm_ctx_t		      mga_res_ctx;
@@ -385,9 +385,9 @@ int mga_init(void)
 	DRM_DEBUG("doing agp init\n");
 	dev->agp    = drm_agp_init();
       	if(dev->agp == NULL) {
-	   	DRM_DEBUG("The mga drm module requires the agpgart module"
-		          " to function correctly\nPlease load the agpgart"
-		          " module before you load the mga module\n");
+	   	DRM_INFO("The mga drm module requires the agpgart module"
+		         " to function correctly\nPlease load the agpgart"
+		         " module before you load the mga module\n");
 	   	drm_proc_cleanup();
 	   	misc_deregister(&mga_misc);
 	   	mga_takedown(dev);

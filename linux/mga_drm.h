@@ -2,6 +2,7 @@
  * Created: Tue Jan 25 01:50:01 1999 by jhartmann@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,10 +24,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Authors: Jeff Hartmann <jhartmann@precisioninsight.com>
- *          Keith Whitwell <keithw@precisioninsight.com>
+ * Authors: Jeff Hartmann <jhartmann@valinux.com>
+ *          Keith Whitwell <keithw@valinux.com>
  *
- * $XFree86$
  */
 
 #ifndef _MGA_DRM_H_

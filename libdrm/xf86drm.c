@@ -1,7 +1,8 @@
 /* xf86drm.c -- User-level interface to DRM device
  * Created: Tue Jan  5 08:16:21 1999 by faith@precisioninsight.com
  *
- * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,8 +24,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * Author: Rickard E. (Rik) Faith <faith@precisioninsight.com>
- * 
+ * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
+ *	    Kevin E. Martin <martin@valinux.com>
+ *
  * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.10 2000/02/23 04:47:23 martin Exp $
  * 
  */
@@ -71,9 +73,22 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #define MAP_FAILED ((void *)-1)
 #endif
 
-#include <sys/sysmacros.h>	/* for makedev() */
 #include "xf86drm.h"
 #include "drm.h"
+
+#define DRM_FIXED_DEVICE_MAJOR 145
+
+#ifdef __linux__
+#include <sys/sysmacros.h>	/* for makedev() */
+#endif
+
+#ifndef makedev
+				/* This definition needs to be changed on
+                                   some systems if dev_t is a structure.
+                                   If there is a header file we can get it
+                                   from, there would be best. */
+#define makedev(x,y)    ((dev_t)(((x) << 8) | (y)))
+#endif
 
 static void *drmHashTable = NULL; /* Context switch callbacks */
 
@@ -95,9 +110,16 @@ void drmFree(void *pt)
     if (pt) _DRM_FREE(pt);
 }
 
+/* drmStrdup can't use strdup(3), since it doesn't call _DRM_MALLOC... */
 static char *drmStrdup(const char *s)
 {
-    return s ? strdup(s) : NULL;
+    char *retval = NULL;
+    
+    if (s) {
+	retval = _DRM_MALLOC(strlen(s)+1);
+	strcpy(retval, s);
+    }
+    return retval;
 }
 
 
@@ -134,7 +156,7 @@ static drmHashEntry *drmGetEntry(int fd)
     return entry;
 }
 
-/* drm_open is used to open the /dev/drm device */
+/* drm_open is used to open the /dev/dri device */
 
 static int drm_open(const char *file)
 {
@@ -142,14 +164,6 @@ static int drm_open(const char *file)
 
     if (fd >= 0) return fd;
     return -errno;
-}
-
-/* drmAvailable looks for /proc/dri, and returns 1 if it is present. */
-
-int drmAvailable(void)
-{
-    if (!access("/proc/dri/0", R_OK)) return 1;
-    return 0;
 }
 
 static int drmOpenDevice(const char *path, long dev,
@@ -161,7 +175,16 @@ static int drmOpenDevice(const char *path, long dev,
     struct stat     st;
 #endif
 
-    if (!stat(path, &st) && st.st_rdev == dev) return drm_open(path);
+				/* Fiddle mode to remove execute bits */
+    mode &= ~(S_IXUSR|S_IXGRP|S_IXOTH);
+
+    if (!stat(path, &st) && st.st_rdev == dev) {
+	if (!geteuid()) {
+	    chown(path, user, group);
+	    chmod(path, mode);
+	}
+	return drm_open(path);
+    }
 
     if (geteuid()) return DRM_ERR_NOT_ROOT;
     remove(path);
@@ -172,6 +195,38 @@ static int drmOpenDevice(const char *path, long dev,
     chown(path, user, group);
     chmod(path, mode);
     return drm_open(path);
+}
+
+/* drmAvailable looks for /proc/dri, and returns 1 if it is present.  On
+   OSs that do not have a Linux-like /proc, this information will not be
+   available, and we'll have to create a device and check if the driver is
+   loaded that way. */
+
+int drmAvailable(void)
+{
+    char          dev_name[64];
+    drmVersionPtr version;
+    int           retval = 0;
+    int           fd;
+    
+    if (!access("/proc/dri/0", R_OK)) return 1;
+
+    sprintf(dev_name, "/dev/dri-temp-%d", getpid());
+
+    remove(dev_name);
+    if ((fd = drmOpenDevice(dev_name, makedev(DRM_FIXED_DEVICE_MAJOR, 0),
+			    S_IRUSR, geteuid(), getegid())) >= 0) {
+				/* Read version to make sure this is
+                                   actually a DRI device. */
+	if ((version = drmGetVersion(fd))) {
+	    retval = 1;
+	    drmFreeVersion(version);
+	}
+	close(fd);
+    }
+    remove(dev_name);
+
+    return retval;
 }
 
 static int drmOpenByBusid(const char *busid)
@@ -268,7 +323,24 @@ static int drmOpenByName(const char *name)
 		    }
 		}
 	    }
-	} else remove(dev_name);
+	} else {
+	    drmVersionPtr version;
+				/* /proc/dri not available, possibly
+                                   because we aren't on a Linux system.
+                                   So, try to create the next device and
+                                   see if it's active. */
+	    dev = makedev(DRM_FIXED_DEVICE_MAJOR, i);
+	    if ((fd = drmOpenDevice(dev_name, dev, mode, user, group))) {
+		if ((version = drmGetVersion(fd))) {
+		    if (!strcmp(version->name, name)) {
+			drmFreeVersion(version);
+			return fd;
+		    }
+		    drmFreeVersion(version);
+		}
+	    }
+	    remove(dev_name);
+	}
     }
     return -1;
 }
@@ -303,7 +375,7 @@ static void drmFreeKernelVersion(drm_version_t *v)
     drmFree(v);
 }
 
-static void drmCopyVersion(drmVersionPtr d, drm_version_t *s)
+static void drmCopyVersion(drmVersionPtr d, const drm_version_t *s)
 {
     d->version_major      = s->version_major;
     d->version_minor      = s->version_minor;
@@ -317,7 +389,7 @@ static void drmCopyVersion(drmVersionPtr d, drm_version_t *s)
 }
 
 /* drmVersion obtains the version information via an ioctl.  Similar
- * information is available via /proc/drm. */
+ * information is available via /proc/dri. */
 
 drmVersionPtr drmGetVersion(int fd)
 {

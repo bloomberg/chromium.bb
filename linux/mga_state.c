@@ -2,6 +2,7 @@
  * Created: Thu Jan 27 02:53:43 2000 by jhartmann@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,10 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Authors: Jeff Hartmann <jhartmann@precisioninsight.com>
- * 	    Keith Whitwell <keithw@precisioninsight.com>
- *
- * $XFree86$
+ * Authors: Jeff Hartmann <jhartmann@valinux.com>
+ * 	    Keith Whitwell <keithw@valinux.com>
  *
  */
  

@@ -1,8 +1,8 @@
 /* lists.c -- Buffer list handling routines -*- linux-c -*-
  * Created: Mon Apr 19 20:54:22 1999 by faith@precisioninsight.com
- * Revised: Sun Feb 13 23:37:52 2000 by kevin@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,7 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/lists.c,v 1.6 2000/02/23 04:56:42 martin Exp $
+ * Authors:
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 

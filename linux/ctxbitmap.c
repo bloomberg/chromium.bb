@@ -1,7 +1,8 @@
 /* ctxbitmap.c -- Context bitmap management -*- linux-c -*-
  * Created: Thu Jan 6 03:56:42 2000 by jhartmann@precisioninsight.com
  * 
- * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,9 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Author: Jeff Hartmann <jhartmann@precisioninsight.com>
- *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/ctxbitmap.c,v 1.1 2000/02/11 17:26:02 dawes Exp $
+ * Author: Jeff Hartmann <jhartmann@valinux.com>
  *
  */
 

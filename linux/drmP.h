@@ -1,7 +1,8 @@
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
  *
- * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,7 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.6 2000/02/23 04:47:27 martin Exp $
+ * Authors:
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
  * 
  */
 
@@ -528,6 +530,7 @@ typedef struct drm_device {
 				/* Misc. support (init.c) */
 extern int	     drm_flags;
 extern void	     drm_parse_options(char *s);
+extern int           drm_cpu_valid(void);
 
 
 				/* Device support (fops.c) */

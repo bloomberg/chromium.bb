@@ -38,10 +38,10 @@ EXPORT_SYMBOL(r128_cleanup);
 
 #define R128_NAME	 "r128"
 #define R128_DESC	 "r128"
-#define R128_DATE	 "20000422"
-#define R128_MAJOR	 0
+#define R128_DATE	 "20000607"
+#define R128_MAJOR	 1
 #define R128_MINOR	 0
-#define R128_PATCHLEVEL  5
+#define R128_PATCHLEVEL  0
 
 static drm_device_t	      r128_device;
 drm_ctx_t	              r128_res_ctx;

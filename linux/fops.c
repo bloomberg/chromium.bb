@@ -1,8 +1,8 @@
 /* fops.c -- File operations for DRM -*- linux-c -*-
  * Created: Mon Jan  4 08:58:31 1999 by faith@precisioninsight.com
- * Revised: Fri Dec  3 10:26:26 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,8 +23,10 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/fops.c,v 1.6 2000/02/23 04:47:27 martin Exp $
+ *
+ * Authors:
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
+ *    Daryll Strauss <daryll@valinux.com>
  *
  */
 
@@ -40,6 +42,7 @@ int drm_open_helper(struct inode *inode, struct file *filp, drm_device_t *dev)
 	drm_file_t   *priv;
 
 	if (filp->f_flags & O_EXCL)   return -EBUSY; /* No exclusive opens */
+	if (!drm_cpu_valid())         return -EINVAL;
 
 	DRM_DEBUG("pid = %d, minor = %d\n", current->pid, minor);
 
@@ -211,11 +214,15 @@ int drm_write_string(drm_device_t *dev, const char *s)
 		send -= count;
 	}
 
-#if LINUX_VERSION_CODE < 0x02020e || \
-	( LINUX_VERSION_CODE > 0x020300 && LINUX_VERSION_CODE < 0x020315 )
+#if LINUX_VERSION_CODE < 0x020315 && !defined(KILLFASYNCHASTHREEPARAMETERS)
+	/* The extra parameter to kill_fasync was added in 2.3.21, and is
+           _not_ present in _stock_ 2.2.14 and 2.2.15.  However, some
+           distributions patch 2.2.x kernels to add this parameter.  The
+           Makefile.linux attempts to detect this addition and defines
+           KILLFASYNCHASTHREEPARAMETERS if three parameters are found. */
 	if (dev->buf_async) kill_fasync(dev->buf_async, SIGIO);
 #else
-	/* Parameter added in 2.2.14 and 2.3.21 */
+	/* Parameter added in 2.3.21 */
 	if (dev->buf_async) kill_fasync(dev->buf_async, SIGIO, POLL_IN);
 #endif
 	DRM_DEBUG("waking\n");
