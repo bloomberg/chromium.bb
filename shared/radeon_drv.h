@@ -411,6 +411,7 @@ extern void radeon_driver_irq_uninstall( drm_device_t *dev );
 #	define RADEON_ROP_ENABLE		(1 << 6)
 #	define RADEON_STENCIL_ENABLE		(1 << 7)
 #	define RADEON_Z_ENABLE			(1 << 8)
+#	define RADEON_ZBLOCK16			(1 << 15)
 #define RADEON_RB3D_DEPTHOFFSET		0x1c24
 #define RADEON_RB3D_DEPTHCLEARVALUE	0x3230
 #define RADEON_RB3D_DEPTHPITCH		0x1c28

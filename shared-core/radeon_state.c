@@ -999,7 +999,6 @@ static void radeon_cp_dispatch_clear(drm_device_t * dev,
 		tempRE_CNTL = 0;
 
 		tempRB3D_CNTL = depth_clear->rb3d_cntl;
-		tempRB3D_CNTL &= ~(1 << 15);	/* unset radeon magic flag */
 
 		tempRB3D_ZSTENCILCNTL = depth_clear->rb3d_zstencilcntl;
 		tempRB3D_STENCILREFMASK = 0x0;
