@@ -552,8 +552,8 @@ int DRM(rmctx)( struct inode *inode, struct file *filp,
 		priv->remove_auth_on_close = 1;
 	}
 	if ( ctx.handle != DRM_KERNEL_CONTEXT ) {
-		if (dev->fn_tbl.context_ctor)
-			dev->fn_tbl.context_ctor(dev, ctx.handle);
+		if (dev->fn_tbl.context_dtor)
+			dev->fn_tbl.context_dtor(dev, ctx.handle);
 		DRM(ctxbitmap_free)( dev, ctx.handle );
 	}
 
