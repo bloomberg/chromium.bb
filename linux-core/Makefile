@@ -6,7 +6,7 @@
 # platforms in a flexible way by David Dawes.  It's not clear, however,
 # that this approach is simpler than the old one.
 #
-# The purpose of this Makefile.linux file is to handle setting up everything
+# The purpose of this Makefile is to handle setting up everything
 # needed for an out-of-kernel source build.  Makefile.kernel contains
 # everything required for in-kernel source builds.  It is included into
 # this file, so none of that should be duplicated here.
@@ -18,17 +18,17 @@
 # By default, the build is done against the running linux kernel source.
 # To build against a different kernel source tree, set LINUXDIR:
 #
-#    make -f Makefile.linux LINUXDIR=/path/to/kernel/source
+#    make LINUXDIR=/path/to/kernel/source
 
 #
 # To build only some modules, either set DRM_MODULES to the list of modules,
 # or specify the modules as targets:
 #
-#    make -f Makefile.linux r128.o radeon.o
+#    make r128.o radeon.o
 #
 # or:
 #
-#    make -f Makefile.linux DRM_MODULES="r128 radeon"
+#    make DRM_MODULES="r128 radeon"
 #
 
 SHELL=/bin/sh
@@ -157,24 +157,10 @@ ifeq ($(CLEANCONFIG),y)
 CLEANFILES += $(LINUXDIR)/.config .config $(LINUXDIR)/tmp_include_depends
 endif
 
-# The Makefile renaming hack is required because the standard kernel build,
-# especially 2.5.52 and later, explicitly references the Makefile by the
-# name "Makefile".  For builds prior to 2.5.52, the name GNUmakefile could
-# have been used.
-
 all: modules
 
 modules: includes
-	@if test -f Makefile && cmp -s Makefile Makefile.linux; then : ; \
-	  else \
-		if [ -e Makefile ]; then \
-			(set -x; mv -f Makefile Makefile._xx_); fi; \
-		(set -x; ln -s Makefile.linux Makefile); fi
 	make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`pwd` DRMSRCDIR=`pwd` modules
-	@if cmp -s Makefile Makefile.linux; then \
-		(set -x; rm -f Makefile); \
-		if [ -e Makefile._xx_ ]; then \
-			(set -x; mv -f Makefile._xx_ Makefile); fi; fi
 
 ifeq ($(HEADERFROMBOOT),1)
 
@@ -241,7 +227,7 @@ clean cleandir:
 	rm -f $(CLEANFILES)
 
 $(MODULE_LIST)::
-	make -f Makefile.linux DRM_MODULES=$@ modules
+	make DRM_MODULES=$@ modules
 
 # Build test utilities
 
