@@ -1829,7 +1829,10 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
     return FcFalse;
 }
 
-#define APPROXIMATELY_EQUAL(x,y) (ABS ((x) - (y)) <= MAX (ABS (x), ABS (y)) / 33)
+#define FC_MIN(a,b) ((a) < (b) ? (a) : (b))
+#define FC_MAX(a,b) ((a) > (b) ? (a) : (b))
+#define FC_ABS(a)   ((a) < 0 ? -(a) : (a))
+#define APPROXIMATELY_EQUAL(x,y) (FC_ABS ((x) - (y)) <= FC_MAX (FC_ABS (x), FC_ABS (y)) / 33)
 
 FcCharSet *
 FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
@@ -2046,7 +2049,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 #endif
     if (fixed_advance)
 	*spacing = FC_MONO;
-    else if (dual_advance && APPROXIMATELY_EQUAL (2 * MIN (advance_one, advance_two), MAX (advance_one, advance_two)))
+    else if (dual_advance && APPROXIMATELY_EQUAL (2 * FC_MIN (advance_one, advance_two), FC_MAX (advance_one, advance_two)))
         *spacing = FC_DUAL;
     else
 	*spacing = FC_PROPORTIONAL;
