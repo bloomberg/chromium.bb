@@ -259,8 +259,8 @@ bail0:
 static int
 FcLangSetIndex (const FcChar8 *lang)
 {
-    int	    low, high, mid;
-    int	    cmp;
+    int	    low, high, mid = 0;
+    int	    cmp = 0;
     FcChar8 firstChar = FcToLower(lang[0]); 
     
     if (firstChar < 'a')
@@ -582,7 +582,6 @@ static FcBool
 FcLangSetContainsLang (const FcLangSet *ls, const FcChar8 *lang)
 {
     int		    id;
-    FcLangResult    r;
     int		    i;
 
     id = FcLangSetIndex (lang);
@@ -613,7 +612,6 @@ FcLangSetContainsLang (const FcLangSet *ls, const FcChar8 *lang)
     {
 	FcStrList	*list = FcStrListCreate (ls->extra);
 	FcChar8		*extra;
-	FcLangResult	r;
 	
 	if (list)
 	{
