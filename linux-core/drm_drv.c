@@ -220,7 +220,9 @@ static char *drm_opts = NULL;
 MODULE_AUTHOR( DRIVER_AUTHOR );
 MODULE_DESCRIPTION( DRIVER_DESC );
 MODULE_PARM( drm_opts, "s" );
+#ifdef MODULE_LICENSE
 MODULE_LICENSE("GPL and additional rights");
+#endif
 
 static int DRM(setup)( drm_device_t *dev )
 {
