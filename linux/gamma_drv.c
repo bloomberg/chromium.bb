@@ -39,7 +39,7 @@
 #include "drm_auth.h"
 #include "drm_agpsupport.h"
 #include "drm_bufs.h"
-#include "drm_context.h"
+#include "gamma_context.h"	/* NOTE! */
 #include "drm_dma.h"
 #include "drm_drawable.h"
 #include "drm_drv.h"

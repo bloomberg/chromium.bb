@@ -145,4 +145,22 @@
 #define DRIVER_AGP_BUFFERS_MAP( dev )					\
 	((drm_gamma_private_t *)((dev)->dev_private))->buffers
 
+/* Gamma makes use of a wierd mechanism to get the DDX driver to do
+ * context switches on behalf of the 3d clients via a trip to the
+ * kernel module.  This requires read/poll functionality on the drm
+ * file descriptor not normally present:
+ */
+#define DRIVER_FOPS				\
+static struct file_operations	DRM(fops) = {	\
+	.owner   = THIS_MODULE,			\
+	.open	 = DRM(open),			\
+	.flush	 = DRM(flush),			\
+	.release = DRM(release),		\
+	.ioctl	 = DRM(ioctl),			\
+	.mmap	 = DRM(mmap),			\
+	.read	 = DRM(read),			\
+	.fasync  = DRM(fasync),			\
+	.poll	 = DRM(poll),			\
+}
+
 #endif /* __GAMMA_H__ */
