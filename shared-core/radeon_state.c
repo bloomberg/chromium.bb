@@ -50,8 +50,7 @@ static __inline__ void radeon_emit_clip_rect( drm_radeon_private_t *dev_priv,
 	OUT_RING( CP_PACKET0( RADEON_RE_TOP_LEFT, 0 ) );
 	OUT_RING( (box->y1 << 16) | box->x1 );
 	OUT_RING( CP_PACKET0( RADEON_RE_WIDTH_HEIGHT, 0 ) );
-/*     OUT_RING( ((box->y2 - 1) << 16) | (box->x2 - 1) );*/
-	OUT_RING( (box->y2 << 16) | box->x2 );
+	OUT_RING( ((box->y2 - 1) << 16) | (box->x2 - 1) );
 	ADVANCE_RING();
 }
 
