@@ -176,6 +176,34 @@
 	</alias>
 
 <!--
+ Check user preference to avoid bitmap fonts and replace
+ bitmap face names with equivalent scalable fonts
+ -->
+
+	<match target="pattern">
+	        <test name="prefer_outline">
+	                <bool>true</bool>
+	        </test>
+	        <test name="family">
+	                <string>Helvetica</string>
+	        </test>
+	        <edit name="family" mode="prepend" binding="same">
+	                <string>Arial</string>
+	        </edit>
+	</match>
+
+	<match target="pattern">
+	        <test name="prefer_outline">
+	                <bool>true</bool>
+	        </test>
+	        <test name="family">
+	                <string>Times</string>
+	        </test>
+	        <edit name="family" mode="prepend" binding="same">
+	                <string>Times New Roman</string>
+	        </edit>
+	</match>
+<!--
   Provide required aliases for standard names
 -->
 	<alias>
