@@ -44,6 +44,12 @@ struct vm_operations_struct   drm_vm_shm_ops = {
 	close:	 drm_vm_close,
 };
 
+struct vm_operations_struct   drm_vm_shm_lock_ops = {
+	nopage:	 drm_vm_shm_nopage_lock,
+	open:	 drm_vm_open,
+	close:	 drm_vm_close,
+};
+
 struct vm_operations_struct   drm_vm_dma_ops = {
 	nopage:	 drm_vm_dma_nopage,
 	open:	 drm_vm_open,
@@ -75,6 +81,40 @@ unsigned long drm_vm_shm_nopage(struct vm_area_struct *vma,
 struct page *drm_vm_shm_nopage(struct vm_area_struct *vma,
 			       unsigned long address,
 			       int write_access)
+#endif
+{
+#if LINUX_VERSION_CODE >= 0x020300
+	drm_map_t	 *map	 = (drm_map_t *)vma->vm_private_data;
+#else
+	drm_map_t	 *map	 = (drm_map_t *)vma->vm_pte;
+#endif
+	unsigned long	 physical;
+	unsigned long	 offset;
+
+	if (address > vma->vm_end) return NOPAGE_SIGBUS; /* Disallow mremap */
+	if (!map)    		   return NOPAGE_OOM;  /* Nothing allocated */
+
+	offset	 = address - vma->vm_start;
+	physical = (unsigned long)map->handle + offset;
+	atomic_inc(&mem_map[MAP_NR(physical)].count); /* Dec. by kernel */
+
+	DRM_DEBUG("0x%08lx => 0x%08lx\n", address, physical);
+#if LINUX_VERSION_CODE < 0x020317
+	return physical;
+#else
+	return mem_map + MAP_NR(physical);
+#endif
+}
+
+#if LINUX_VERSION_CODE < 0x020317
+unsigned long drm_vm_shm_nopage_lock(struct vm_area_struct *vma,
+				     unsigned long address,
+				     int write_access)
+#else
+				/* Return type changed in 2.3.23 */
+struct page *drm_vm_shm_nopage_lock(struct vm_area_struct *vma,
+				    unsigned long address,
+				    int write_access)
 #endif
 {
 	drm_file_t	 *priv	 = vma->vm_file->private_data;
@@ -298,7 +338,17 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 		vma->vm_ops = &drm_vm_ops;
 		break;
 	case _DRM_SHM:
-		vma->vm_ops = &drm_vm_shm_ops;
+		if (map->flags & _DRM_CONTAINS_LOCK)
+			vma->vm_ops = &drm_vm_shm_lock_ops;
+		else {
+			vma->vm_ops = &drm_vm_shm_ops;
+#if LINUX_VERSION_CODE >= 0x020300
+			vma->vm_private_data = (void *)map;
+#else
+			vma->vm_pte = (unsigned long)map;
+#endif
+		}
+
 				/* Don't let this area swap.  Change when
 				   DRM_KERNEL advisory is supported. */
 		vma->vm_flags |= VM_LOCKED;

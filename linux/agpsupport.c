@@ -287,23 +287,40 @@ drm_agp_head_t *drm_agp_init(void)
 			return NULL;
 		memset((void *)head, 0, sizeof(*head));
 		(*drm_agp.copy_info)(&head->agp_info);
+		if (head->agp_info.chipset == NOT_SUPPORTED) {
+			drm_free(head, sizeof(*head), DRM_MEM_AGPLISTS);
+			return NULL;
+		}
 		head->memory = NULL;
 		switch (head->agp_info.chipset) {
-		case INTEL_GENERIC:  head->chipset = "Intel";          break;
-		case INTEL_LX:       head->chipset = "Intel 440LX";    break;
-		case INTEL_BX:       head->chipset = "Intel 440BX";    break;
-		case INTEL_GX:       head->chipset = "Intel 440GX";    break;
-		case INTEL_I810:     head->chipset = "Intel i810";     break;
-		case VIA_GENERIC:    head->chipset = "VIA";            break;
-		case VIA_VP3:        head->chipset = "VIA VP3";        break;
-		case VIA_MVP3:       head->chipset = "VIA MVP3";       break;
-		case VIA_APOLLO_PRO: head->chipset = "VIA Apollo Pro"; break;
-		case SIS_GENERIC:    head->chipset = "SiS";            break;
-		case AMD_GENERIC:    head->chipset = "AMD";            break;
-		case AMD_IRONGATE:   head->chipset = "AMD Irongate";   break;
-		case ALI_GENERIC:    head->chipset = "ALi";            break;
-		case ALI_M1541:      head->chipset = "ALi M1541";      break;
-		default:
+		case INTEL_GENERIC:	head->chipset = "Intel";         break;
+		case INTEL_LX:		head->chipset = "Intel 440LX";   break;
+		case INTEL_BX:		head->chipset = "Intel 440BX";   break;
+		case INTEL_GX:		head->chipset = "Intel 440GX";   break;
+		case INTEL_I810:	head->chipset = "Intel i810";    break;
+
+#if LINUX_VERSION_CODE >= 0x020400
+		case INTEL_I840:	head->chipset = "Intel i840";    break;
+#endif
+
+		case VIA_GENERIC:	head->chipset = "VIA";           break;
+		case VIA_VP3:		head->chipset = "VIA VP3";       break;
+		case VIA_MVP3:		head->chipset = "VIA MVP3";      break;
+
+#if LINUX_VERSION_CODE >= 0x020400
+		case VIA_MVP4:		head->chipset = "VIA MVP4";      break;
+		case VIA_APOLLO_SUPER:	head->chipset = "VIA Apollo Super"; 
+			break;
+#endif
+
+		case VIA_APOLLO_PRO: 	head->chipset = "VIA Apollo Pro";
+			break;
+		case SIS_GENERIC:	head->chipset = "SiS";           break;
+		case AMD_GENERIC:	head->chipset = "AMD";           break;
+		case AMD_IRONGATE:	head->chipset = "AMD Irongate";  break;
+		case ALI_GENERIC:	head->chipset = "ALi";           break;
+		case ALI_M1541: 	head->chipset = "ALi M1541";     break;
+		default:		head->chipset = "Unknown";       break;
 		}
 		DRM_INFO("AGP %d.%d on %s @ 0x%08lx %dMB\n",
 			 head->agp_info.version.major,
