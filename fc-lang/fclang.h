@@ -34,8 +34,8 @@ static const FcCharLeaf	leaves[520] = {
     0xc0000000, 0xf0fc33c0, 0x03000000, 0x00000000,
     } },
     { { /* 2 */
-    0x88001000, 0x07fffffe, 0x0007ffff, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0xffffffff, 0xffffffff, 0xffffffff, 0x1fffffff,
     } },
     { { /* 3 */
     0x00000000, 0x00000000, 0x07fffffe, 0x07fffffe,
@@ -2122,7 +2122,7 @@ static const FcCharLeaf *leaves_ar[1] = {
 };
 
 static const FcChar16 numbers_ar[1] = {
-    0x0006,
+    0x00fe,
 };
 
 static const FcCharLeaf *leaves_az[4] = {
