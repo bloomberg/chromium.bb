@@ -347,7 +347,7 @@ static const FcStringConst  slantConsts[] = {
 static double
 FcGetPixelSize (FT_Face face, int i)
 {
-#ifdef HAVE_FT_GET_BDF_PROPERTY
+#if HAVE_FT_GET_BDF_PROPERTY
     if (face->num_fixed_sizes == 1)
     {
 	BDF_PropertyRec	prop;
@@ -358,7 +358,7 @@ FcGetPixelSize (FT_Face face, int i)
 	    return (double) prop.u.integer;
     }
 #endif
-#ifdef HAVE_FT_BITMAP_SIZE_Y_PPEM
+#if HAVE_FT_BITMAP_SIZE_Y_PPEM
     return (double) face->available_sizes[i].y_ppem / 64.0;
 #else
     return (double) face->available_sizes[i].height / 64.0;

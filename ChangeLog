@@ -1,3 +1,10 @@
+2004-02-11  Keith Packard  <keithp@keithp.com>
+
+	* configure.in:
+	* src/fcfreetype.c: (FcGetPixelSize):
+	Ok, so I messed up the test for y_ppem.  Let's see if I
+	got it right this time.
+
 2004-02-10  Keith Packard  <keithp@keithp.com>
 
 	* configure.in:
