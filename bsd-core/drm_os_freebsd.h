@@ -49,7 +49,7 @@
 #endif
 
 #ifdef __i386__
-#define __REALLY_HAVE_MTRR	(__HAVE_MTRR)
+#define __REALLY_HAVE_MTRR	(__HAVE_MTRR) && (__FreeBSD_version >= 500000)
 #else
 #define __REALLY_HAVE_MTRR	0
 #endif
