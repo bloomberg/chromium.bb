@@ -204,8 +204,8 @@ no)
 		esac
 		;;
 	esac
-	CPPFLAGS="$saved_CPPFLAGS"
-	LIBS="$saved_LIBS"
+	CPPFLAGS="$expatsaved_CPPFLAGS"
+	LIBS="$expatsaved_LIBS"
 	;;
 esac
 AC_SUBST(EXPAT_LIBS)
