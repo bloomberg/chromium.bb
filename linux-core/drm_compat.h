@@ -181,7 +181,7 @@ static inline void radeon_delete_i2c_busses(struct drm_device *dev)
 
 #define VM_OFFSET(vma) ((vma)->vm_pgoff << PAGE_SHIFT)
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,9)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,10)
 static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from, unsigned long pfn, unsigned long size, pgprot_t pgprot)
 {
   return remap_page_range(DRM_RPR_ARG(vma) from, 
