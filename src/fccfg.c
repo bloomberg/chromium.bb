@@ -171,20 +171,20 @@ FcConfigDestroy (FcConfig *config)
 FcBool
 FcConfigBuildFonts (FcConfig *config)
 {
-    FcFontSet   *fonts;
-    FcFileCache *cache;
-    FcStrList	*list;
-    FcChar8	*dir;
+    FcFontSet	    *fonts;
+    FcGlobalCache   *cache;
+    FcStrList	    *list;
+    FcChar8	    *dir;
 
     fonts = FcFontSetCreate ();
     if (!fonts)
 	goto bail0;
     
-    cache = FcFileCacheCreate ();
+    cache = FcGlobalCacheCreate ();
     if (!cache)
 	goto bail1;
 
-    FcFileCacheLoad (cache, config->cache);
+    FcGlobalCacheLoad (cache, config->cache);
 
     list = FcConfigGetFontDirs (config);
     if (!list)
@@ -202,8 +202,8 @@ FcConfigBuildFonts (FcConfig *config)
     if (FcDebug () & FC_DBG_FONTSET)
 	FcFontSetPrint (fonts);
 
-    FcFileCacheSave (cache, config->cache);
-    FcFileCacheDestroy (cache);
+    FcGlobalCacheSave (cache, config->cache);
+    FcGlobalCacheDestroy (cache);
 
     FcConfigSetFonts (config, fonts, FcSetSystem);
     
@@ -456,8 +456,6 @@ typedef struct _FcSubState {
     FcValueList    *value;
 } FcSubState;
 
-static const FcMatrix    FcIdentityMatrix = { 1, 0, 0, 1 };
-
 static FcValue
 FcConfigPromote (FcValue v, FcValue u)
 {
@@ -468,9 +466,8 @@ FcConfigPromote (FcValue v, FcValue u)
     }
     else if (v.type == FcTypeVoid && u.type == FcTypeMatrix)
     {
-	v.u.m = FcMatrixCopy (&FcIdentityMatrix);
-	if (v.u.m)
-	    v.type = FcTypeMatrix;
+	v.u.m = &FcIdentityMatrix;
+	v.type = FcTypeMatrix;
     }
     return v;
 }

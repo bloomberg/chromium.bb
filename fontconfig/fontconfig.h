@@ -191,7 +191,7 @@ typedef enum { FcEndianBig, FcEndianLittle } FcEndian;
 
 typedef struct _FcConfig    FcConfig;
 
-typedef struct _FcFileCache FcFileCache;
+typedef struct _FcGlobalCache	FcFileCache;
 
 typedef struct _FcBlanks    FcBlanks;
 
@@ -364,9 +364,6 @@ FcDirScan (FcFontSet	    *set,
 
 FcBool
 FcDirSave (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir);
-
-FcBool
-FcDirCacheValid (const FcChar8 *dir);
 
 /* fcfreetype.c */
 FcPattern *

@@ -24,78 +24,10 @@
 
 #include "fcint.h"
 
-static unsigned int
-FcFileCacheHash (const FcChar8	*string)
-{
-    unsigned int    h = 0;
-    FcChar8	    c;
+#define FC_DBG_CACHE_REF    1024
 
-    while ((c = *string++))
-	h = (h << 1) ^ c;
-    return h;
-}
-
-FcChar8 *
-FcFileCacheFind (FcFileCache	*cache,
-		 const FcChar8	*file,
-		 int		id,
-		 int		*count)
-{
-    unsigned int    hash;
-    const FcChar8   *match;
-    FcFileCacheEnt  *c, *name;
-    int		    maxid;
-    struct stat	    statb;
-    
-    match = file;
-    
-    hash = FcFileCacheHash (match);
-    name = 0;
-    maxid = -1;
-    for (c = cache->ents[hash % FC_FILE_CACHE_HASH_SIZE]; c; c = c->next)
-    {
-	if (c->hash == hash && !strcmp ((const char *) match, (const char *) c->file))
-	{
-	    if (c->id > maxid)
-		maxid = c->id;
-	    if (c->id == id)
-	    {
-		if (stat ((char *) file, &statb) < 0)
-		{
-		    if (FcDebug () & FC_DBG_CACHE)
-			printf (" file missing\n");
-		    return 0;
-		}
-		if (statb.st_mtime != c->time)
-		{
-		    if (FcDebug () & FC_DBG_CACHE)
-			printf (" timestamp mismatch (was %d is %d)\n",
-				(int) c->time, (int) statb.st_mtime);
-		    return 0;
-		}
-		if (!c->referenced)
-		{
-		    cache->referenced++;
-		    c->referenced = FcTrue;
-		}
-		name = c;
-	    }
-	}
-    }
-    if (!name)
-	return 0;
-    *count = maxid + 1;
-    return name->name;
-}
-
-/*
- * Cache file syntax is quite simple:
- *
- * "file_name" id time "font_name" \n
- */
- 
 static FcChar8 *
-FcFileCacheReadString (FILE *f, FcChar8 *dest, int len)
+FcCacheReadString (FILE *f, FcChar8 *dest, int len)
 {
     int		c;
     FcBool	escape;
@@ -150,7 +82,7 @@ FcFileCacheReadString (FILE *f, FcChar8 *dest, int len)
 }
 
 static FcBool
-FcFileCacheReadUlong (FILE *f, unsigned long *dest)
+FcCacheReadUlong (FILE *f, unsigned long *dest)
 {
     unsigned long   t;
     int		    c;
@@ -177,187 +109,34 @@ FcFileCacheReadUlong (FILE *f, unsigned long *dest)
 }
 
 static FcBool
-FcFileCacheReadInt (FILE *f, int *dest)
+FcCacheReadInt (FILE *f, int *dest)
 {
     unsigned long   t;
     FcBool	    ret;
 
-    ret = FcFileCacheReadUlong (f, &t);
+    ret = FcCacheReadUlong (f, &t);
     if (ret)
 	*dest = (int) t;
     return ret;
 }
 
 static FcBool
-FcFileCacheReadTime (FILE *f, time_t *dest)
+FcCacheReadTime (FILE *f, time_t *dest)
 {
     unsigned long   t;
     FcBool	    ret;
 
-    ret = FcFileCacheReadUlong (f, &t);
+    ret = FcCacheReadUlong (f, &t);
     if (ret)
 	*dest = (time_t) t;
     return ret;
 }
 
 static FcBool
-FcFileCacheAdd (FcFileCache	*cache,
-		 const FcChar8	*file,
-		 int		id,
-		 time_t		time,
-		 const FcChar8	*name,
-		 FcBool		replace)
+FcCacheWriteChars (FILE *f, const FcChar8 *chars)
 {
-    FcFileCacheEnt    *c;
-    FcFileCacheEnt    **prev, *old;
-    unsigned int    hash;
-
-    if (FcDebug () & FC_DBG_CACHE)
-    {
-	printf ("%s face %s/%d as %s\n", replace ? "Replace" : "Add",
-		file, id, name);
-    }
-    hash = FcFileCacheHash (file);
-    for (prev = &cache->ents[hash % FC_FILE_CACHE_HASH_SIZE]; 
-	 (old = *prev);
-	 prev = &(*prev)->next)
-    {
-	if (old->hash == hash && old->id == id && !strcmp ((const char *) old->file,
-							   (const char *) file))
-	    break;
-    }
-    if (*prev)
-    {
-	if (!replace)
-	    return FcFalse;
-
-	old = *prev;
-	if (old->referenced)
-	    cache->referenced--;
-	*prev = old->next;
-	free (old);
-	cache->entries--;
-    }
-	
-    c = malloc (sizeof (FcFileCacheEnt) +
-		strlen ((char *) file) + 1 +
-		strlen ((char *) name) + 1);
-    if (!c)
-	return FcFalse;
-    c->next = *prev;
-    *prev = c;
-    c->hash = hash;
-    c->file = (FcChar8 *) (c + 1);
-    c->id = id;
-    c->name = c->file + strlen ((char *) file) + 1;
-    strcpy ((char *) c->file, (const char *) file);
-    c->time = time;
-    c->referenced = replace;
-    strcpy ((char *) c->name, (const char *) name);
-    cache->entries++;
-    return FcTrue;
-}
-
-FcFileCache *
-FcFileCacheCreate (void)
-{
-    FcFileCache	*cache;
-    int		h;
-
-    cache = malloc (sizeof (FcFileCache));
-    if (!cache)
-	return 0;
-    for (h = 0; h < FC_FILE_CACHE_HASH_SIZE; h++)
-	cache->ents[h] = 0;
-    cache->entries = 0;
-    cache->referenced = 0;
-    cache->updated = FcFalse;
-    return cache;
-}
-
-void
-FcFileCacheDestroy (FcFileCache *cache)
-{
-    FcFileCacheEnt *c, *next;
-    int		    h;
-
-    for (h = 0; h < FC_FILE_CACHE_HASH_SIZE; h++)
-    {
-	for (c = cache->ents[h]; c; c = next)
-	{
-	    next = c->next;
-	    free (c);
-	}
-    }
-    free (cache);
-}
-
-void
-FcFileCacheLoad (FcFileCache	*cache,
-		 const FcChar8	*cache_file)
-{
-    FILE	    *f;
-    FcChar8	    file_buf[8192], *file;
-    int		    id;
-    time_t	    time;
-    FcChar8	    name_buf[8192], *name;
-
-    f = fopen ((char *) cache_file, "r");
-    if (!f)
-	return;
-
-    cache->updated = FcFalse;
-    file = 0;
-    name = 0;
-    while ((file = FcFileCacheReadString (f, file_buf, sizeof (file_buf))) &&
-	   FcFileCacheReadInt (f, &id) &&
-	   FcFileCacheReadTime (f, &time) &&
-	   (name = FcFileCacheReadString (f, name_buf, sizeof (name_buf))))
-    {
-	(void) FcFileCacheAdd (cache, file, id, time, name, FcFalse);
-	if (file != file_buf)
-	    free (file);
-	if (name != name_buf)
-	    free (name);
-	file = 0;
-	name = 0;
-    }
-    if (file && file != file_buf)
-	free (file);
-    if (name && name != name_buf)
-	free (name);
-    fclose (f);
-}
-
-FcBool
-FcFileCacheUpdate (FcFileCache	    *cache,
-		   const FcChar8    *file,
-		   int		    id,
-		   const FcChar8    *name)
-{
-    const FcChar8   *match;
-    struct stat	    statb;
-    FcBool	    ret;
-
-    match = file;
-
-    if (stat ((char *) file, &statb) < 0)
-	return FcFalse;
-    ret = FcFileCacheAdd (cache, match, id, 
-			    statb.st_mtime, name, FcTrue);
-    if (ret)
-	cache->updated = FcTrue;
-    return ret;
-}
-
-static FcBool
-FcFileCacheWriteString (FILE *f, const FcChar8 *string)
-{
-    char    c;
-
-    if (putc ('"', f) == EOF)
-	return FcFalse;
-    while ((c = *string++))
+    FcChar8    c;
+    while ((c = *chars++))
     {
 	switch (c) {
 	case '"':
@@ -370,13 +149,42 @@ FcFileCacheWriteString (FILE *f, const FcChar8 *string)
 		return FcFalse;
 	}
     }
+    return FcTrue;
+}
+
+static FcBool
+FcCacheWriteString (FILE *f, const FcChar8 *string)
+{
+
+    if (putc ('"', f) == EOF)
+	return FcFalse;
+    if (!FcCacheWriteChars (f, string))
+	return FcFalse;
     if (putc ('"', f) == EOF)
 	return FcFalse;
     return FcTrue;
 }
 
 static FcBool
-FcFileCacheWriteUlong (FILE *f, unsigned long t)
+FcCacheWritePath (FILE *f, const FcChar8 *dir, const FcChar8 *file)
+{
+    if (putc ('"', f) == EOF)
+	return FcFalse;
+    if (dir)
+	if (!FcCacheWriteChars (f, dir))
+	    return FcFalse;
+    if (dir && dir[strlen((const char *) dir) - 1] != '/')
+	if (putc ('/', f) == EOF)
+	    return FcFalse;
+    if (!FcCacheWriteChars (f, file))
+	return FcFalse;
+    if (putc ('"', f) == EOF)
+	return FcFalse;
+    return FcTrue;
+}
+
+static FcBool
+FcCacheWriteUlong (FILE *f, unsigned long t)
 {
     int	    pow;
     unsigned long   temp, digit;
@@ -401,29 +209,542 @@ FcFileCacheWriteUlong (FILE *f, unsigned long t)
 }
 
 static FcBool
-FcFileCacheWriteInt (FILE *f, int i)
+FcCacheWriteInt (FILE *f, int i)
 {
-    return FcFileCacheWriteUlong (f, (unsigned long) i);
+    return FcCacheWriteUlong (f, (unsigned long) i);
 }
 
 static FcBool
-FcFileCacheWriteTime (FILE *f, time_t t)
+FcCacheWriteTime (FILE *f, time_t t)
 {
-    return FcFileCacheWriteUlong (f, (unsigned long) t);
+    return FcCacheWriteUlong (f, (unsigned long) t);
+}
+
+static FcBool
+FcCacheFontSetAdd (FcFontSet	    *set,
+		   FcStrSet	    *dirs,
+		   const FcChar8    *dir,
+		   int		    dir_len,
+		   const FcChar8    *file,
+		   const FcChar8    *name)
+{
+    FcChar8	path_buf[8192], *path;
+    int		len;
+    FcBool	ret = FcFalse;
+    FcPattern	*font;
+
+    path = path_buf;
+    len = (dir_len + 1 + strlen ((const char *) file) + 1);
+    if (len > sizeof (path_buf))
+    {
+	path = malloc (len);
+	if (!path)
+	    return FcFalse;
+    }
+    strncpy ((char *) path, (const char *) dir, dir_len);
+    if (dir[dir_len - 1] != '/')
+	path[dir_len++] = '/';
+    strcpy ((char *) path + dir_len, (const char *) file);
+    if (!FcStrCmp (name, FC_FONT_FILE_DIR))
+    {
+	if (FcDebug () & FC_DBG_CACHEV)
+	    printf (" dir cache dir \"%s\"\n", path);
+	ret = FcStrSetAdd (dirs, path);
+    }
+    else if (!FcStrCmp (name, FC_FONT_FILE_INVALID))
+    {
+	ret = FcTrue;
+    }
+    else
+    {
+	font = FcNameParse (name);
+	if (font)
+	{
+	    if (FcDebug () & FC_DBG_CACHEV)
+		printf (" dir cache file \"%s\"\n", file);
+	    ret = (FcPatternAddString (font, FC_FILE, path) &&
+		   FcFontSetAdd (set, font));
+	    if (!ret)
+		FcPatternDestroy (font);
+	}
+    }
+    if (path != path_buf) free (path);
+    return ret;
+    
+}
+
+static unsigned int
+FcCacheHash (const FcChar8 *string)
+{
+    unsigned int    h = 0;
+    FcChar8	    c;
+
+    while ((c = *string++))
+	h = (h << 1) ^ c;
+    return 0;
+}
+
+/*
+ * Verify the saved timestamp for a file
+ */
+FcBool
+FcGlobalCacheCheckTime (FcGlobalCacheInfo *info)
+{
+    struct stat	    statb;
+
+    if (stat ((char *) info->file, &statb) < 0)
+    {
+	if (FcDebug () & FC_DBG_CACHE)
+	    printf (" file missing\n");
+	return FcFalse;
+    }
+    if (statb.st_mtime != info->time)
+    {
+	if (FcDebug () & FC_DBG_CACHE)
+	    printf (" timestamp mismatch (was %d is %d)\n",
+		    (int) info->time, (int) statb.st_mtime);
+	return FcFalse;
+    }
+    return FcTrue;
+}
+
+void
+FcGlobalCacheReferenced (FcGlobalCache	    *cache,
+			 FcGlobalCacheInfo  *info)
+{
+    if (!info->referenced)
+    {
+	info->referenced = FcTrue;
+	cache->referenced++;
+	if (FcDebug () & FC_DBG_CACHE_REF)
+	    printf ("Reference %d %s\n", cache->referenced, info->file);
+    }
+}
+
+/*
+ * Break a path into dir/base elements and compute the base hash
+ * and the dir length.  This is shared between the functions
+ * which walk the file caches
+ */
+
+typedef struct _FcFilePathInfo {
+    const FcChar8   *dir;
+    int		    dir_len;
+    const FcChar8   *base;
+    unsigned int    base_hash;
+} FcFilePathInfo;
+
+static FcFilePathInfo
+FcFilePathInfoGet (const FcChar8    *path)
+{
+    FcFilePathInfo  i;
+    FcChar8	    *slash;
+
+    slash = (FcChar8 *) strrchr ((const char *) path, '/');
+    if (slash)
+    {
+        i.dir = path;
+        i.dir_len = slash - path;
+	if (!i.dir_len)
+	    i.dir_len = 1;
+	i.base = slash + 1;
+    }
+    else
+    {
+	i.dir = (const FcChar8 *) ".";
+	i.dir_len = 1;
+	i.base = path;
+    }
+    i.base_hash = FcCacheHash (i.base);
+    return i;
+}
+
+FcGlobalCacheDir *
+FcGlobalCacheDirGet (FcGlobalCache  *cache,
+		     const FcChar8  *dir,
+		     int	    len,
+		     FcBool	    create_missing)
+{
+    unsigned int	hash = FcCacheHash (dir);
+    FcGlobalCacheDir	*d, **prev;
+
+    for (prev = &cache->ents[hash % FC_GLOBAL_CACHE_DIR_HASH_SIZE];
+	 (d = *prev);
+	 prev = &(*prev)->next)
+    {
+	if (d->info.hash == hash && d->len == len &&
+	    !strncmp ((const char *) d->info.file,
+		      (const char *) dir, len))
+	    break;
+    }
+    if (!(d = *prev))
+    {
+	int	i;
+	if (!create_missing)
+	    return 0;
+	d = malloc (sizeof (FcGlobalCacheDir) + len + 1);
+	if (!d)
+	    return 0;
+	d->next = *prev;
+	*prev = d;
+	d->info.hash = hash;
+	d->info.file = (FcChar8 *) (d + 1);
+	strncpy ((char *) d->info.file, (const char *) dir, len);
+	d->info.file[len] = '\0';
+	d->info.time = 0;
+	d->info.referenced = FcFalse;
+	d->len = len;
+	for (i = 0; i < FC_GLOBAL_CACHE_FILE_HASH_SIZE; i++)
+	    d->ents[i] = 0;
+	d->subdirs = 0;
+    }
+    return d;
+}
+
+static FcGlobalCacheInfo *
+FcGlobalCacheDirAdd (FcGlobalCache  *cache,
+		     const FcChar8  *dir,
+		     time_t	    time,
+		     FcBool	    replace)
+{
+    FcGlobalCacheDir	*d;
+    FcFilePathInfo	i;
+    FcGlobalCacheSubdir	*subdir;
+    FcGlobalCacheDir	*parent;
+
+    /*
+     * Add this directory to the cache
+     */
+    d = FcGlobalCacheDirGet (cache, dir, strlen ((const char *) dir), FcTrue);
+    if (!d)
+	return 0;
+    d->info.time = time;
+    i = FcFilePathInfoGet (dir);
+    /*
+     * Add this directory to the subdirectory list of the parent
+     */
+    parent = FcGlobalCacheDirGet (cache, i.dir, i.dir_len, FcTrue);
+    if (!parent)
+	return 0;
+    subdir = malloc (sizeof (FcGlobalCacheSubdir) + 
+		     strlen ((const char *) i.base) + 1);
+    if (!subdir)
+	return 0;
+    subdir->file = (FcChar8 *) (subdir + 1);
+    strcpy ((char *) subdir->file, (const char *) i.base);
+    subdir->next = parent->subdirs;
+    parent->subdirs = subdir;
+    return &d->info;
+}
+
+static void
+FcGlobalCacheDirDestroy (FcGlobalCacheDir *d)
+{
+    FcGlobalCacheFile	*f, *next;
+    int			h;
+    FcGlobalCacheSubdir	*s, *nexts;
+
+    for (h = 0; h < FC_GLOBAL_CACHE_FILE_HASH_SIZE; h++)
+	for (f = d->ents[h]; f; f = next)
+	{
+	    next = f->next;
+	    free (f);
+	}
+    for (s = d->subdirs; s; s = nexts)
+    {
+	nexts = s->next;
+	free (s);
+    }
+    free (d);
 }
 
 FcBool
-FcFileCacheSave (FcFileCache	*cache,
-		 const FcChar8	*cache_file)
+FcGlobalCacheScanDir (FcFontSet		*set,
+		      FcStrSet		*dirs,
+		      FcGlobalCache	*cache,
+		      const FcChar8	*dir)
 {
-    FILE	    *f;
+    FcGlobalCacheDir	*d = FcGlobalCacheDirGet (cache, dir,
+						  strlen ((const char *) dir),
+						  FcFalse);
+    FcGlobalCacheFile	*f;
+    int			h;
+    int			dir_len;
+    FcGlobalCacheSubdir	*subdir;
+
+    if (FcDebug() & FC_DBG_CACHE)
+	printf ("FcGlobalCacheScanDir %s\n", dir);
+    
+    if (!d)
+    {
+	if (FcDebug () & FC_DBG_CACHE)
+	    printf ("\tNo dir cache entry\n");
+	return FcFalse;
+    }
+
+    if (!FcGlobalCacheCheckTime (&d->info))
+    {
+	if (FcDebug () & FC_DBG_CACHE)
+	    printf ("\tdir cache entry time mismatch\n");
+	return FcFalse;
+    }
+
+    dir_len = strlen ((const char *) dir);
+    for (h = 0; h < FC_GLOBAL_CACHE_FILE_HASH_SIZE; h++)
+	for (f = d->ents[h]; f; f = f->next)
+	{
+	    if (FcDebug() & FC_DBG_CACHEV)
+		printf ("FcGlobalCacheScanDir add file %s\n", f->info.file);
+	    if (!FcCacheFontSetAdd (set, dirs, dir, dir_len,
+				    f->info.file, f->name))
+	    {
+		cache->broken = FcTrue;
+		return FcFalse;
+	    }
+	    FcGlobalCacheReferenced (cache, &f->info);
+	}
+    for (subdir = d->subdirs; subdir; subdir = subdir->next)
+    {
+	if (!FcCacheFontSetAdd (set, dirs, dir, dir_len,
+				subdir->file, FC_FONT_FILE_DIR))
+	{
+	    cache->broken = FcTrue;
+	    return FcFalse;
+	}
+    }
+    
+    FcGlobalCacheReferenced (cache, &d->info);
+
+    return FcTrue;
+}
+
+/*
+ * Locate the cache entry for a particular file
+ */
+FcGlobalCacheFile *
+FcGlobalCacheFileGet (FcGlobalCache *cache,
+		      const FcChar8 *file,
+		      int	    id,
+		      int	    *count)
+{
+    FcFilePathInfo	i = FcFilePathInfoGet (file);
+    FcGlobalCacheDir	*d = FcGlobalCacheDirGet (cache, i.dir, 
+						  i.dir_len, FcFalse);
+    FcGlobalCacheFile	*f, *match = 0;
+    int			max = -1;
+
+    if (!d)
+	return 0;
+    for (f = d->ents[i.base_hash % FC_GLOBAL_CACHE_FILE_HASH_SIZE]; f; f = f->next)
+    {
+	if (f->info.hash == i.base_hash &&
+	    !strcmp ((const char *) f->info.file, (const char *) i.base))
+	{
+	    if (f->id == id)
+		match = f;
+	    if (f->id > max)
+		max = f->id;
+	}
+    }
+    if (count)
+	*count = max;
+    return match;
+}
+    
+/*
+ * Add a file entry to the cache
+ */
+static FcGlobalCacheInfo *
+FcGlobalCacheFileAdd (FcGlobalCache *cache,
+		      const FcChar8 *path,
+		      int	    id,
+		      time_t	    time,
+		      const FcChar8 *name,
+		      FcBool	    replace)
+{
+    FcFilePathInfo	i = FcFilePathInfoGet (path);
+    FcGlobalCacheDir	*d = FcGlobalCacheDirGet (cache, i.dir, 
+						  i.dir_len, FcTrue);
+    FcGlobalCacheFile	*f, **prev;
+
+    if (!d)
+	return 0;
+    for (prev = &d->ents[i.base_hash % FC_GLOBAL_CACHE_FILE_HASH_SIZE];
+	 (f = *prev);
+	 prev = &(*prev)->next)
+    {
+	if (f->info.hash == i.base_hash && 
+	    f->id == id &&
+	    !strcmp ((const char *) f->info.file, (const char *) i.base))
+	{
+	    break;
+	}
+    }
+    if (*prev)
+    {
+	if (!replace)
+	    return 0;
+
+	f = *prev;
+	if (f->info.referenced)
+	    cache->referenced--;
+	*prev = f->next;
+	free (f);
+    }
+    f = malloc (sizeof (FcGlobalCacheFile) +
+		strlen ((char *) i.base) + 1 +
+		strlen ((char *) name) + 1);
+    if (!f)
+	return 0;
+    f->next = *prev;
+    *prev = f;
+    f->info.hash = i.base_hash;
+    f->info.file = (FcChar8 *) (f + 1);
+    f->info.time = time;
+    f->info.referenced = FcFalse;
+    f->id = id;
+    f->name = f->info.file + strlen ((char *) i.base) + 1;
+    strcpy ((char *) f->info.file, (const char *) i.base);
+    strcpy ((char *) f->name, (const char *) name);
+    return &f->info;
+}
+
+FcGlobalCache *
+FcGlobalCacheCreate (void)
+{
+    FcGlobalCache   *cache;
     int		    h;
-    FcFileCacheEnt  *c;
-    FcAtomic	    *atomic;
+
+    cache = malloc (sizeof (FcGlobalCache));
+    if (!cache)
+	return 0;
+    for (h = 0; h < FC_GLOBAL_CACHE_DIR_HASH_SIZE; h++)
+	cache->ents[h] = 0;
+    cache->entries = 0;
+    cache->referenced = 0;
+    cache->updated = FcFalse;
+    return cache;
+}
+
+void
+FcGlobalCacheDestroy (FcGlobalCache *cache)
+{
+    FcGlobalCacheDir	*d, *next;
+    int			h;
+
+    for (h = 0; h < FC_GLOBAL_CACHE_DIR_HASH_SIZE; h++)
+    {
+	for (d = cache->ents[h]; d; d = next)
+	{
+	    next = d->next;
+	    FcGlobalCacheDirDestroy (d);
+	}
+    }
+    free (cache);
+}
+
+/*
+ * Cache file syntax is quite simple:
+ *
+ * "file_name" id time "font_name" \n
+ */
+ 
+void
+FcGlobalCacheLoad (FcGlobalCache    *cache,
+		   const FcChar8    *cache_file)
+{
+    FILE		*f;
+    FcChar8		file_buf[8192], *file;
+    int			id;
+    time_t		time;
+    FcChar8		name_buf[8192], *name;
+    FcGlobalCacheInfo	*info;
+
+    f = fopen ((char *) cache_file, "r");
+    if (!f)
+	return;
+
+    cache->updated = FcFalse;
+    file = 0;
+    name = 0;
+    while ((file = FcCacheReadString (f, file_buf, sizeof (file_buf))) &&
+	   FcCacheReadInt (f, &id) &&
+	   FcCacheReadTime (f, &time) &&
+	   (name = FcCacheReadString (f, name_buf, sizeof (name_buf))))
+    {
+	if (FcDebug () & FC_DBG_CACHEV)
+	    printf ("FcGlobalCacheLoad \"%s\" \"%20.20s\"\n", file, name);
+	if (!FcStrCmp (name, FC_FONT_FILE_DIR))
+	    info = FcGlobalCacheDirAdd (cache, file, time, FcFalse);
+	else
+	    info = FcGlobalCacheFileAdd (cache, file, id, time, name, FcFalse);
+	if (!info)
+	    cache->broken = FcTrue;
+	else
+	    cache->entries++;
+	if (FcDebug () & FC_DBG_CACHE_REF)
+	    printf ("FcGlobalCacheLoad entry %d %s\n",
+		    cache->entries, file);
+	if (file != file_buf)
+	    free (file);
+	if (name != name_buf)
+	    free (name);
+	file = 0;
+	name = 0;
+    }
+    if (file && file != file_buf)
+	free (file);
+    if (name && name != name_buf)
+	free (name);
+    fclose (f);
+}
+
+FcBool
+FcGlobalCacheUpdate (FcGlobalCache  *cache,
+		     const FcChar8  *file,
+		     int	    id,
+		     const FcChar8  *name)
+{
+    const FcChar8	*match;
+    struct stat		statb;
+    FcGlobalCacheInfo	*info;
+
+    match = file;
+
+    if (stat ((char *) file, &statb) < 0)
+	return FcFalse;
+    if (S_ISDIR (statb.st_mode))
+	info = FcGlobalCacheDirAdd (cache, file, statb.st_mtime, 
+				   FcTrue);
+    else
+	info = FcGlobalCacheFileAdd (cache, file, id, statb.st_mtime, 
+				    name, FcTrue);
+    if (info)
+    {
+	FcGlobalCacheReferenced (cache, info);
+	cache->updated = FcTrue;
+    }
+    else
+	cache->broken = FcTrue;
+    return info != 0;
+}
+
+FcBool
+FcGlobalCacheSave (FcGlobalCache    *cache,
+		   const FcChar8    *cache_file)
+{
+    FILE		*f;
+    int			dir_hash, file_hash;
+    FcGlobalCacheDir	*dir;
+    FcGlobalCacheFile	*file;
+    FcAtomic		*atomic;
 
     if (!cache->updated && cache->referenced == cache->entries)
 	return FcTrue;
     
+    if (cache->broken)
+	return FcFalse;
+
     /* Set-UID programs can't safely update the cache */
     if (getuid () != geteuid ())
 	return FcFalse;
@@ -437,28 +758,53 @@ FcFileCacheSave (FcFileCache	*cache,
     if (!f)
 	goto bail2;
 
-    for (h = 0; h < FC_FILE_CACHE_HASH_SIZE; h++)
+    for (dir_hash = 0; dir_hash < FC_GLOBAL_CACHE_DIR_HASH_SIZE; dir_hash++)
     {
-	for (c = cache->ents[h]; c; c = c->next)
+	for (dir = cache->ents[dir_hash]; dir; dir = dir->next)
 	{
-	    if (!c->referenced)
+	    if (!dir->info.referenced)
 		continue;
-	    if (!FcFileCacheWriteString (f, c->file))
+	    if (!FcCacheWriteString (f, dir->info.file))
 		goto bail4;
 	    if (putc (' ', f) == EOF)
 		goto bail4;
-	    if (!FcFileCacheWriteInt (f, c->id))
+	    if (!FcCacheWriteInt (f, 0))
 		goto bail4;
 	    if (putc (' ', f) == EOF)
 		goto bail4;
-	    if (!FcFileCacheWriteTime (f, c->time))
+	    if (!FcCacheWriteTime (f, dir->info.time))
 		goto bail4;
 	    if (putc (' ', f) == EOF)
 		goto bail4;
-	    if (!FcFileCacheWriteString (f, c->name))
+	    if (!FcCacheWriteString (f, (FcChar8 *) FC_FONT_FILE_DIR))
 		goto bail4;
 	    if (putc ('\n', f) == EOF)
 		goto bail4;
+	    
+	    for (file_hash = 0; file_hash < FC_GLOBAL_CACHE_FILE_HASH_SIZE; file_hash++)
+	    {
+		for (file = dir->ents[file_hash]; file; file = file->next)
+		{
+		    if (!file->info.referenced)
+			continue;
+		    if (!FcCacheWritePath (f, dir->info.file, file->info.file))
+			goto bail4;
+		    if (putc (' ', f) == EOF)
+			goto bail4;
+		    if (!FcCacheWriteInt (f, file->id < 0 ? 0 : file->id))
+			goto bail4;
+		    if (putc (' ', f) == EOF)
+			goto bail4;
+		    if (!FcCacheWriteTime (f, file->info.time))
+			goto bail4;
+		    if (putc (' ', f) == EOF)
+			goto bail4;
+		    if (!FcCacheWriteString (f, file->name))
+			goto bail4;
+		    if (putc ('\n', f) == EOF)
+			goto bail4;
+		}
+	    }
 	}
     }
 
@@ -487,21 +833,22 @@ bail0:
 }
 
 FcBool
-FcFileCacheValid (const FcChar8 *cache_file)
+FcDirCacheValid (const FcChar8 *dir)
 {
-    FcChar8	*dir = FcStrDirname (cache_file);
+    FcChar8	*cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
     struct stat	file_stat, dir_stat;
 
-    if (!dir)
-	return FcFalse;
     if (stat ((char *) dir, &dir_stat) < 0)
     {
-	FcStrFree (dir);
+	FcStrFree (cache_file);
 	return FcFalse;
     }
-    FcStrFree (dir);
     if (stat ((char *) cache_file, &file_stat) < 0)
+    {
+	FcStrFree (cache_file);
 	return FcFalse;
+    }
+    FcStrFree (cache_file);
     /*
      * If the directory has been modified more recently than
      * the cache file, the cache is not valid
@@ -512,123 +859,72 @@ FcFileCacheValid (const FcChar8 *cache_file)
 }
 
 FcBool
-FcFileCacheReadDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *cache_file)
+FcDirCacheReadDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 {
-    FcPattern	    *font;
+    FcChar8	    *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
     FILE	    *f;
     FcChar8	    *base;
     int		    id;
     int		    dir_len;
-    int		    file_len;
     FcChar8	    file_buf[8192], *file;
     FcChar8	    name_buf[8192], *name;
-    FcChar8	    path_buf[8192], *path;
     FcBool	    ret = FcFalse;
 
+    if (!cache_file)
+	goto bail0;
+    
     if (FcDebug () & FC_DBG_CACHE)
-    {
-	printf ("FcFileCacheReadDir cache_file \"%s\"\n", cache_file);
-    }
+	printf ("FcDirCacheReadDir cache_file \"%s\"\n", cache_file);
     
     f = fopen ((char *) cache_file, "r");
     if (!f)
     {
 	if (FcDebug () & FC_DBG_CACHE)
-	{
 	    printf (" no cache file\n");
-	}
-	goto bail0;
+	goto bail1;
     }
 
-    if (!FcFileCacheValid (cache_file))
+    if (!FcDirCacheValid (dir))
     {
 	if (FcDebug () & FC_DBG_CACHE)
-	{
 	    printf (" cache file older than directory\n");
-	}
-	goto bail1;
+	goto bail2;
     }
     
     base = (FcChar8 *) strrchr ((char *) cache_file, '/');
     if (!base)
-	goto bail1;
+	goto bail2;
     base++;
     dir_len = base - cache_file;
-    if (dir_len < sizeof (path_buf))
-	strncpy ((char *) path_buf, (const char *) cache_file, dir_len);
     
     file = 0;
     name = 0;
-    path = 0;
-    while ((file = FcFileCacheReadString (f, file_buf, sizeof (file_buf))) &&
-	   FcFileCacheReadInt (f, &id) &&
-	   (name = FcFileCacheReadString (f, name_buf, sizeof (name_buf))))
+    while ((file = FcCacheReadString (f, file_buf, sizeof (file_buf))) &&
+	   FcCacheReadInt (f, &id) &&
+	   (name = FcCacheReadString (f, name_buf, sizeof (name_buf))))
     {
-	file_len = strlen ((const char *) file);
-	if (dir_len + file_len + 1 > sizeof (path_buf))
-	{
-	    path = malloc (dir_len + file_len + 1);
-	    if (!path)
-		goto bail2;
-	    strncpy ((char *) path, (const char *) cache_file, dir_len);
-	}
-	else
-	    path = path_buf;
-	
-    	strcpy ((char *) path + dir_len, (const char *) file);
-	if (!FcStrCmp (name, FC_FONT_FILE_DIR))
-	{
-	    if (FcDebug () & FC_DBG_CACHEV)
-	    {
-		printf (" dir cache dir \"%s\"\n", path);
-	    }
-	    if (!FcStrSetAdd (dirs, path))
-		goto bail2;
-	}
-	else
-	{
-	    font = FcNameParse (name);
-	    if (font)
-	    {
-		if (FcDebug () & FC_DBG_CACHEV)
-		{
-		    printf (" dir cache file \"%s\"\n", file);
-		}
-		if (!FcPatternAddString (font, FC_FILE, path))
-		{
-		    FcPatternDestroy (font);
-		    goto bail2;
-		}
-		if (!FcFontSetAdd (set, font))
-		{
-		    FcPatternDestroy (font);
-		    goto bail2;
-		}
-	    }
-	}
-	if (path != path_buf)
-	    free (path);
+	if (!FcCacheFontSetAdd (set, dirs, cache_file, dir_len,
+				file, name))
+	    goto bail3;
 	if (file != file_buf)
 	    free (file);
 	if (name != name_buf)
 	    free (name);
-	path = file = name = 0;
+	file = name = 0;
     }
     if (FcDebug () & FC_DBG_CACHE)
-    {
 	printf (" cache loaded\n");
-    }
     
     ret = FcTrue;
-bail2:
-    if (path && path != path_buf)
-	free (path);
+bail3:
     if (file && file != file_buf)
 	free (file);
     if (name && name != name_buf)
 	free (name);
-bail1:
+bail2:
     fclose (f);
+bail1:
+    free (cache_file);
 bail0:
     return ret;
 }
@@ -650,8 +946,9 @@ FcFileBaseName (const FcChar8 *cache, const FcChar8 *file)
 }
 
 FcBool
-FcFileCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *cache_file)
+FcDirCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 {
+    FcChar8	    *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
     FcPattern	    *font;
     FILE	    *f;
     FcChar8	    *name;
@@ -660,83 +957,88 @@ FcFileCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *cache_file)
     int		    id;
     FcBool	    ret;
     FcStrList	    *list;
-    FcChar8	    *dir;
 
+    if (!cache_file)
+	goto bail0;
     if (FcDebug () & FC_DBG_CACHE)
-	printf ("FcFileCacheWriteDir cache_file \"%s\"\n", cache_file);
+	printf ("FcDirCacheWriteDir cache_file \"%s\"\n", cache_file);
     
     f = fopen ((char *) cache_file, "w");
     if (!f)
     {
 	if (FcDebug () & FC_DBG_CACHE)
 	    printf (" can't create \"%s\"\n", cache_file);
-	goto bail0;
+	goto bail1;
     }
     
     list = FcStrListCreate (dirs);
     if (!list)
-	goto bail1;
+	goto bail2;
     
     while ((dir = FcStrListNext (list)))
     {
 	base = FcFileBaseName (cache_file, dir);
-	if (!FcFileCacheWriteString (f, base))
-	    goto bail2;
+	if (!FcCacheWriteString (f, base))
+	    goto bail3;
 	if (putc (' ', f) == EOF)
-	    goto bail2;
-	if (!FcFileCacheWriteInt (f, 0))
-	    goto bail2;
+	    goto bail3;
+	if (!FcCacheWriteInt (f, 0))
+	    goto bail3;
         if (putc (' ', f) == EOF)
-	    goto bail2;
-	if (!FcFileCacheWriteString (f, FC_FONT_FILE_DIR))
-	    goto bail2;
+	    goto bail3;
+	if (!FcCacheWriteString (f, FC_FONT_FILE_DIR))
+	    goto bail3;
 	if (putc ('\n', f) == EOF)
-	    goto bail2;
+	    goto bail3;
     }
     
     for (n = 0; n < set->nfont; n++)
     {
 	font = set->fonts[n];
 	if (FcPatternGetString (font, FC_FILE, 0, (FcChar8 **) &file) != FcResultMatch)
-	    goto bail2;
+	    goto bail3;
 	base = FcFileBaseName (cache_file, file);
 	if (FcPatternGetInteger (font, FC_INDEX, 0, &id) != FcResultMatch)
-	    goto bail2;
+	    goto bail3;
 	if (FcDebug () & FC_DBG_CACHEV)
 	    printf (" write file \"%s\"\n", base);
-	if (!FcFileCacheWriteString (f, base))
-	    goto bail2;
+	if (!FcCacheWriteString (f, base))
+	    goto bail3;
 	if (putc (' ', f) == EOF)
-	    goto bail2;
-	if (!FcFileCacheWriteInt (f, id))
-	    goto bail2;
+	    goto bail3;
+	if (!FcCacheWriteInt (f, id))
+	    goto bail3;
         if (putc (' ', f) == EOF)
-	    goto bail2;
+	    goto bail3;
 	name = FcNameUnparse (font);
 	if (!name)
-	    goto bail2;
-	ret = FcFileCacheWriteString (f, name);
+	    goto bail3;
+	ret = FcCacheWriteString (f, name);
 	free (name);
 	if (!ret)
-	    goto bail2;
+	    goto bail3;
 	if (putc ('\n', f) == EOF)
-	    goto bail2;
+	    goto bail3;
     }
     
     FcStrListDone (list);
 
     if (fclose (f) == EOF)
-	goto bail0;
+	goto bail1;
     
+    free (cache_file);
+
     if (FcDebug () & FC_DBG_CACHE)
 	printf (" cache written\n");
     return FcTrue;
     
-bail2:
+bail3:
     FcStrListDone (list);
-bail1:
+bail2:
     fclose (f);
-bail0:
+bail1:
     unlink ((char *) cache_file);
+    free (cache_file);
+bail0:
     return FcFalse;
 }

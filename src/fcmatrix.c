@@ -27,6 +27,8 @@
 #include <ctype.h>
 #include "fcint.h"
 
+const FcMatrix    FcIdentityMatrix = { 1, 0, 0, 1 };
+
 FcMatrix *
 FcMatrixCopy (const FcMatrix *mat) 
 {
@@ -44,8 +46,11 @@ FcMatrixCopy (const FcMatrix *mat)
 void
 FcMatrixFree (FcMatrix *mat)
 {
-    FcMemFree (FC_MEM_MATRIX, sizeof (FcMatrix));
-    free (mat);
+    if (mat != &FcIdentityMatrix)
+    {
+	FcMemFree (FC_MEM_MATRIX, sizeof (FcMatrix));
+	free (mat);
+    }
 }
 
 FcBool

@@ -195,24 +195,53 @@ typedef struct _FcStrBuf {
     int	    size;
 } FcStrBuf;
 
-typedef struct _FcFileCacheEnt {
-    struct _FcFileCacheEnt *next;
-    unsigned int	    hash;
-    FcChar8		    *file;
-    int			    id;
-    time_t		    time;
-    FcChar8		    *name;
-    FcBool		    referenced;
-} FcFileCacheEnt;
+/*
+ * The per-user ~/.fonts.cache file is loaded into
+ * this data structure.  Each directory gets a substructure
+ * which is validated by comparing the directory timestamp with
+ * that saved in the cache.  When valid, the entire directory cache
+ * can be immediately loaded without reading the directory.  Otherwise,
+ * the files are checked individually; updated files are loaded into the
+ * cache which is then rewritten to the users home directory
+ */
 
-#define FC_FILE_CACHE_HASH_SIZE   509
+#define FC_GLOBAL_CACHE_DIR_HASH_SIZE	    37
+#define FC_GLOBAL_CACHE_FILE_HASH_SIZE	    67
 
-struct _FcFileCache {
-    FcFileCacheEnt	*ents[FC_FILE_CACHE_HASH_SIZE];
-    FcBool		updated;
-    int			entries;
-    int			referenced;
-};
+typedef struct _FcGlobalCacheInfo {
+    unsigned int		hash;
+    FcChar8			*file;
+    time_t			time;
+    FcBool			referenced;
+} FcGlobalCacheInfo;
+
+typedef struct _FcGlobalCacheFile {
+    struct _FcGlobalCacheFile	*next;
+    FcGlobalCacheInfo		info;
+    int				id;
+    FcChar8			*name;
+} FcGlobalCacheFile;
+
+typedef struct _FcGlobalCacheSubdir {
+    struct _FcGlobalCacheSubdir	*next;
+    FcChar8			*file;
+} FcGlobalCacheSubdir;
+
+typedef struct _FcGlobalCacheDir {
+    struct _FcGlobalCacheDir	*next;
+    FcGlobalCacheInfo    	info;
+    int				len;
+    FcGlobalCacheFile		*ents[FC_GLOBAL_CACHE_FILE_HASH_SIZE];
+    FcGlobalCacheSubdir		*subdirs;
+} FcGlobalCacheDir;
+
+typedef struct _FcGlobalCache {
+    FcGlobalCacheDir		*ents[FC_GLOBAL_CACHE_DIR_HASH_SIZE];
+    FcBool			updated;
+    FcBool			broken;
+    int				entries;
+    int				referenced;
+} FcGlobalCache;
 
 struct _FcAtomic {
     FcChar8	*file;		/* original file name */
@@ -284,40 +313,60 @@ typedef struct _FcCharMap FcCharMap;
 
 /* fccache.c */
 
-FcFileCache *
-FcFileCacheCreate (void);
-
-FcChar8 *
-FcFileCacheFind (FcFileCache	*cache,
-		 const FcChar8	*file,
-		 int		id,
-		 int		*count);
+FcGlobalCache *
+FcGlobalCacheCreate (void);
 
 void
-FcFileCacheDestroy (FcFileCache	*cache);
+FcGlobalCacheDestroy (FcGlobalCache *cache);
 
 FcBool
-FcFileCacheValid (const FcChar8 *cache_file);
+FcGlobalCacheCheckTime (FcGlobalCacheInfo *info);
 
 void
-FcFileCacheLoad (FcFileCache	*cache,
-		 const FcChar8	*cache_file);
+FcGlobalCacheReferenced (FcGlobalCache	    *cache,
+			 FcGlobalCacheInfo  *info);
+
+FcGlobalCacheDir *
+FcGlobalCacheDirGet (FcGlobalCache  *cache,
+		     const FcChar8  *dir,
+		     int	    len,
+		     FcBool	    create_missing);
 
 FcBool
-FcFileCacheUpdate (FcFileCache	    *cache,
-		   const FcChar8    *file,
-		   int		    id,
-		   const FcChar8    *name);
+FcGlobalCacheScanDir (FcFontSet		*set,
+		      FcStrSet		*dirs,
+		      FcGlobalCache	*cache,
+		      const FcChar8	*dir);
+
+FcGlobalCacheFile *
+FcGlobalCacheFileGet (FcGlobalCache *cache,
+		      const FcChar8 *file,
+		      int	    id,
+		      int	    *count);
+
+
+void
+FcGlobalCacheLoad (FcGlobalCache    *cache,
+		   const FcChar8    *cache_file);
 
 FcBool
-FcFileCacheSave (FcFileCache	*cache,
-		 const FcChar8	*cache_file);
+FcGlobalCacheUpdate (FcGlobalCache  *cache,
+		     const FcChar8  *file,
+		     int	    id,
+		     const FcChar8  *name);
 
 FcBool
-FcFileCacheReadDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *cache_file);
+FcGlobalCacheSave (FcGlobalCache    *cache,
+		   const FcChar8    *cache_file);
 
 FcBool
-FcFileCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *cache_file);
+FcDirCacheValid (const FcChar8 *cache_file);
+
+FcBool
+FcDirCacheReadDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir);
+
+FcBool
+FcDirCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir);
     
 /* fccfg.c */
 
@@ -523,6 +572,9 @@ FcPatternAddWithBinding  (FcPattern	    *p,
 /* fcrender.c */
 
 /* fcmatrix.c */
+
+extern const FcMatrix    FcIdentityMatrix;
+
 void
 FcMatrixFree (FcMatrix *mat);
 
