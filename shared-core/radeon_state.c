@@ -1666,7 +1666,8 @@ static int radeon_emit_packet3( drm_device_t *dev,
 
 
 static int radeon_emit_packet3_cliprect( drm_device_t *dev,
-					 drm_radeon_cmd_buffer_t *cmdbuf )
+					 drm_radeon_cmd_buffer_t *cmdbuf,
+					 int orig_nbox )
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	drm_clip_rect_t box;
@@ -1686,6 +1687,9 @@ static int radeon_emit_packet3_cliprect( drm_device_t *dev,
 	if ((tmp & 0xc0000000) != RADEON_CP_PACKET3 ||
 	    cmdsz * 4 > cmdbuf->bufsz)
 		return DRM_ERR(EINVAL);
+
+	if (!orig_nbox)
+		goto out;
 
 	do {
 		if ( i < cmdbuf->nbox ) {
@@ -1715,6 +1719,7 @@ static int radeon_emit_packet3_cliprect( drm_device_t *dev,
  	if (cmdbuf->nbox == 1)
 		cmdbuf->nbox = 0;
 
+ out:
 	cmdbuf->buf += cmdsz * 4;
 	cmdbuf->bufsz -= cmdsz * 4;
 	return 0;
@@ -1731,6 +1736,7 @@ int radeon_cp_cmdbuf( DRM_IOCTL_ARGS )
 	int idx;
 	drm_radeon_cmd_buffer_t cmdbuf;
 	drm_radeon_cmd_header_t header;
+	int orig_nbox;
 
 	LOCK_TEST_WITH_RETURN( dev );
 
@@ -1754,6 +1760,8 @@ int radeon_cp_cmdbuf( DRM_IOCTL_ARGS )
 	    DRM_VERIFYAREA_READ(cmdbuf.boxes, 
 			 cmdbuf.nbox * sizeof(drm_clip_rect_t)))
 		return DRM_ERR(EFAULT);
+
+	orig_nbox = cmdbuf.nbox;
 
 	while ( cmdbuf.bufsz >= sizeof(header) ) {
 		
@@ -1812,7 +1820,7 @@ int radeon_cp_cmdbuf( DRM_IOCTL_ARGS )
 			break;
 
 		case RADEON_CMD_PACKET3_CLIP:
-			if (radeon_emit_packet3_cliprect( dev, &cmdbuf )) {
+			if (radeon_emit_packet3_cliprect( dev, &cmdbuf, orig_nbox )) {
 				DRM_ERROR("radeon_emit_packet3_clip failed\n");
 				return DRM_ERR(EINVAL);
 			}
