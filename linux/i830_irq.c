@@ -186,6 +186,9 @@ void DRM(driver_irq_preinstall)( drm_device_t *dev ) {
 	I830_WRITE16( I830REG_HWSTAM, 0xffff );
 	I830_WRITE16( I830REG_INT_MASK_R, 0x0 );
 	I830_WRITE16( I830REG_INT_ENABLE_R, 0x0 );
+	atomic_set(&dev_priv->irq_received, 0);
+	atomic_set(&dev_priv->irq_emitted, 0);
+	init_waitqueue_head(&dev_priv->irq_queue);
 }
 
 void DRM(driver_irq_postinstall)( drm_device_t *dev ) {
@@ -193,9 +196,6 @@ void DRM(driver_irq_postinstall)( drm_device_t *dev ) {
 		(drm_i830_private_t *)dev->dev_private;
 
 	I830_WRITE16( I830REG_INT_ENABLE_R, 0x2 );
-	atomic_set(&dev_priv->irq_received, 0);
-	atomic_set(&dev_priv->irq_emitted, 0);
-	init_waitqueue_head(&dev_priv->irq_queue);
 }
 
 void DRM(driver_irq_uninstall)( drm_device_t *dev ) {
