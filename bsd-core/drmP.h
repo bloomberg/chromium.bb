@@ -118,10 +118,6 @@ typedef struct drm_file drm_file_t;
 #define DRM_MIN(a,b) ((a)<(b)?(a):(b))
 #define DRM_MAX(a,b) ((a)>(b)?(a):(b))
 
-#define DRM_LEFTCOUNT(x) (((x)->rp + (x)->count - (x)->wp) % ((x)->count + 1))
-#define DRM_BUFCOUNT(x) ((x)->count - DRM_LEFTCOUNT(x))
-#define DRM_WAITCOUNT(dev,idx) DRM_BUFCOUNT(&dev->queuelist[idx]->waitlist)
-
 #define DRM_GET_PRIV_SAREA(_dev, _ctx, _map) do {	\
 	(_map) = (_dev)->context_sareas[_ctx];		\
 } while(0)
@@ -168,17 +164,6 @@ typedef struct drm_buf {
 	int		  dev_priv_size; /* Size of buffer private stoarge   */
 	void		  *dev_private;  /* Per-buffer private storage       */
 } drm_buf_t;
-
-				/* bufs is one longer than it has to be */
-typedef struct drm_waitlist {
-	int		  count;	/* Number of possible buffers	   */
-	drm_buf_t	  **bufs;	/* List of pointers to buffers	   */
-	drm_buf_t	  **rp;		/* Read pointer			   */
-	drm_buf_t	  **wp;		/* Write pointer		   */
-	drm_buf_t	  **end;	/* End pointer			   */
-	DRM_SPINTYPE	  read_lock;
-	DRM_SPINTYPE	  write_lock;
-} drm_waitlist_t;
 
 typedef struct drm_freelist {
 	int		  initialized; /* Freelist in use		   */
@@ -456,13 +441,6 @@ extern void          DRM(dma_immediate_bh)( DRM_TASKQUEUE_ARGS );
 #endif
 #endif
 
-				/* Buffer list support (drm_lists.h) */
-#if __HAVE_DMA_WAITLIST
-extern int	     DRM(waitlist_create)(drm_waitlist_t *bl, int count);
-extern int	     DRM(waitlist_destroy)(drm_waitlist_t *bl);
-extern int	     DRM(waitlist_put)(drm_waitlist_t *bl, drm_buf_t *buf);
-extern drm_buf_t     *DRM(waitlist_get)(drm_waitlist_t *bl);
-#endif
 #endif /* __HAVE_DMA */
 #if __HAVE_VBL_IRQ
 extern int           DRM(vblank_wait)(drm_device_t *dev, unsigned int *vbl_seq);
