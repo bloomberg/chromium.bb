@@ -37,6 +37,10 @@
 #ifndef _DRM_H_
 #define _DRM_H_
 
+#ifndef __user
+#define __user
+#endif
+
 #if defined(__linux__)
 #include <linux/config.h>
 #include <asm/ioctl.h>		/* For _IO* macros */
