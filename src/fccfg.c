@@ -178,7 +178,8 @@ FcConfigDestroy (FcConfig *config)
     FcStrSetDestroy (config->acceptGlobs);
     FcStrSetDestroy (config->rejectGlobs);
 
-    FcStrFree (config->cache);
+    if (config->cache)
+	FcStrFree (config->cache);
 
     FcSubstDestroy (config->substPattern);
     FcSubstDestroy (config->substFont);
@@ -211,7 +212,8 @@ FcConfigBuildFonts (FcConfig *config)
     if (!cache)
 	goto bail1;
 
-    FcGlobalCacheLoad (cache, config->cache);
+    if (config->cache)
+	FcGlobalCacheLoad (cache, config->cache);
 
     list = FcConfigGetFontDirs (config);
     if (!list)
@@ -230,7 +232,8 @@ FcConfigBuildFonts (FcConfig *config)
     if (FcDebug () & FC_DBG_FONTSET)
 	FcFontSetPrint (fonts);
 
-    FcGlobalCacheSave (cache, config->cache);
+    if (config->cache)
+	FcGlobalCacheSave (cache, config->cache);
     FcGlobalCacheDestroy (cache);
 
     FcConfigSetFonts (config, fonts, FcSetSystem);
