@@ -52,6 +52,7 @@ drm_chipinfo_t DRM(devicelist)[] = {
 	{0x1002, 0x5157, 1, "ATI Radeon QW 7500 (AGP)"},
 	{0x1002, 0x5159, 1, "ATI Radeon QY VE (AGP)"},
 	{0x1002, 0x515A, 1, "ATI Radeon QZ VE (AGP)"},
+	{0x1002, 0x514C, 1, "ATI Radeon QL 8500 (AGP)"},
 	{0, 0, 0, NULL}
 };
 

@@ -1207,7 +1207,7 @@ int DRM(unlock)( DRM_IOCTL_ARGS )
 	DRM(dma_schedule)( dev, 1 );
 #endif
 
-	/* FIXME: Do we ever really need to check this???
+	/* FIXME: Do we ever really need to check this?
 	 */
 	if ( 1 /* !dev->context_flag */ ) {
 		if ( DRM(lock_free)( dev, &dev->lock.hw_lock->lock,

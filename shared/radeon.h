@@ -25,6 +25,7 @@
  *
  * Authors:
  *    Gareth Hughes <gareth@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
 
 #ifndef __RADEON_H__
@@ -43,14 +44,14 @@
 #define __HAVE_SG		1
 #define __HAVE_PCI_DMA		1
 
-#define DRIVER_AUTHOR		"Gareth Hughes, VA Linux Systems Inc."
+#define DRIVER_AUTHOR		"Gareth Hughes, Keith Whitwell, others."
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20020714"
+#define DRIVER_DATE		"20020611"
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		4
+#define DRIVER_MINOR		5
 #define DRIVER_PATCHLEVEL	0
 
 /* Interface history:
@@ -63,6 +64,10 @@
  *     - Add support for new radeon packets (keith)
  *     - Add getparam ioctl (keith)
  *     - Add flip-buffers ioctl, deprecate fullscreen foo (keith).
+ * 1.4 - Add scratch registers to get_param ioctl.
+ * 1.5 - Add r200 packets to cmdbuf ioctl
+ *     - Add r200 function to init ioctl
+ *     - Add 'scalar2' instruction to cmdbuf
  */
 #define DRIVER_IOCTLS							     \
  [DRM_IOCTL_NR(DRM_IOCTL_DMA)]               = { radeon_cp_buffers,  1, 0 }, \
@@ -103,15 +108,6 @@
 /* DMA customization:
  */
 #define __HAVE_DMA		1
-
-#if 0
-/* GH: Remove this for now... */
-#define __HAVE_DMA_QUIESCENT	1
-#define DRIVER_DMA_QUIESCENT() do {					\
-	drm_radeon_private_t *dev_priv = dev->dev_private;		\
-	return radeon_do_cp_idle( dev_priv );				\
-} while (0)
-#endif
 
 /* Buffer customization:
  */

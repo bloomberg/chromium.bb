@@ -239,18 +239,50 @@ static struct {
 	{ RADEON_SE_ZBIAS_FACTOR,2,"RADEON_SE_ZBIAS_FACTOR" },
 	{ RADEON_SE_TCL_OUTPUT_VTX_FMT,11,"RADEON_SE_TCL_OUTPUT_VTX_FMT" },
 	{ RADEON_SE_TCL_MATERIAL_EMMISSIVE_RED,17,"RADEON_SE_TCL_MATERIAL_EMMISSIVE_RED" },
+	{ R200_PP_TXCBLEND_0, 4, "R200_PP_TXCBLEND_0" },
+	{ R200_PP_TXCBLEND_1, 4, "R200_PP_TXCBLEND_1" },
+	{ R200_PP_TXCBLEND_2, 4, "R200_PP_TXCBLEND_2" },
+	{ R200_PP_TXCBLEND_3, 4, "R200_PP_TXCBLEND_3" },
+	{ R200_PP_TXCBLEND_4, 4, "R200_PP_TXCBLEND_4" },
+	{ R200_PP_TXCBLEND_5, 4, "R200_PP_TXCBLEND_5" },
+	{ R200_PP_TXCBLEND_6, 4, "R200_PP_TXCBLEND_6" },
+	{ R200_PP_TXCBLEND_7, 4, "R200_PP_TXCBLEND_7" },
+	{ R200_SE_TCL_LIGHT_MODEL_CTL_0, 6, "R200_SE_TCL_LIGHT_MODEL_CTL_0" },
+	{ R200_PP_TFACTOR_0, 6, "R200_PP_TFACTOR_0" },
+	{ R200_SE_VTX_FMT_0, 4, "R200_SE_VTX_FMT_0" },
+	{ R200_SE_VAP_CNTL, 1, "R200_SE_VAP_CNTL" },
+	{ R200_SE_TCL_MATRIX_SEL_0, 5, "R200_SE_TCL_MATRIX_SEL_0" },
+	{ R200_SE_TCL_TEX_PROC_CTL_2, 5, "R200_SE_TCL_TEX_PROC_CTL_2" },
+	{ R200_SE_TCL_UCP_VERT_BLEND_CTL, 1, "R200_SE_TCL_UCP_VERT_BLEND_CTL" },
+	{ R200_PP_TXFILTER_0, 6, "R200_PP_TXFILTER_0" },
+	{ R200_PP_TXFILTER_1, 6, "R200_PP_TXFILTER_1" },
+	{ R200_PP_TXFILTER_2, 6, "R200_PP_TXFILTER_2" },
+	{ R200_PP_TXFILTER_3, 6, "R200_PP_TXFILTER_3" },
+	{ R200_PP_TXFILTER_4, 6, "R200_PP_TXFILTER_4" },
+	{ R200_PP_TXFILTER_5, 6, "R200_PP_TXFILTER_5" },
+	{ R200_PP_TXOFFSET_0, 1, "R200_PP_TXOFFSET_0" },
+	{ R200_PP_TXOFFSET_1, 1, "R200_PP_TXOFFSET_1" },
+	{ R200_PP_TXOFFSET_2, 1, "R200_PP_TXOFFSET_2" },
+	{ R200_PP_TXOFFSET_3, 1, "R200_PP_TXOFFSET_3" },
+	{ R200_PP_TXOFFSET_4, 1, "R200_PP_TXOFFSET_4" },
+	{ R200_PP_TXOFFSET_5, 1, "R200_PP_TXOFFSET_5" },
+	{ R200_SE_VTE_CNTL, 1, "R200_SE_VTE_CNTL" },
+	{ R200_SE_TCL_OUTPUT_VTX_COMP_SEL, 1, "R200_SE_TCL_OUTPUT_VTX_COMP_SEL" },
+	{ R200_PP_TAM_DEBUG3, 1, "R200_PP_TAM_DEBUG3" },
+	{ R200_PP_CNTL_X, 1, "R200_PP_CNTL_X" }, 
+	{ R200_RB3D_DEPTHXY_OFFSET, 1, "R200_RB3D_DEPTHXY_OFFSET" }, 
+	{ R200_RE_AUX_SCISSOR_CNTL, 1, "R200_RE_AUX_SCISSOR_CNTL" }, 
+	{ R200_RE_SCISSOR_TL_0, 2, "R200_RE_SCISSOR_TL_0" }, 
+	{ R200_RE_SCISSOR_TL_1, 2, "R200_RE_SCISSOR_TL_1" }, 
+	{ R200_RE_SCISSOR_TL_2, 2, "R200_RE_SCISSOR_TL_2" }, 
+	{ R200_SE_VAP_CNTL_STATUS, 1, "R200_SE_VAP_CNTL_STATUS" }, 
+	{ R200_SE_VTX_STATE_CNTL, 1, "R200_SE_VTX_STATE_CNTL" }, 
+	{ R200_RE_POINTSIZE, 1, "R200_RE_POINTSIZE" }, 
+	{ R200_SE_TCL_INPUT_VTX_VECTOR_ADDR_0, 4, "R200_SE_TCL_INPUT_VTX_VECTOR_ADDR_0" },
 };
 
 
 
-
-
-
-
-
-
-
-#if RADEON_PERFORMANCE_BOXES
 /* ================================================================
  * Performance monitoring functions
  */
@@ -259,9 +291,11 @@ static void radeon_clear_box( drm_radeon_private_t *dev_priv,
 			      int x, int y, int w, int h,
 			      int r, int g, int b )
 {
-	u32 pitch, offset;
 	u32 color;
 	RING_LOCALS;
+
+	x += dev_priv->sarea_priv->boxes[0].x1;
+	y += dev_priv->sarea_priv->boxes[0].y1;
 
 	switch ( dev_priv->color_fmt ) {
 	case RADEON_COLOR_FORMAT_RGB565:
@@ -275,8 +309,11 @@ static void radeon_clear_box( drm_radeon_private_t *dev_priv,
 		break;
 	}
 
-	offset = dev_priv->back_offset;
-	pitch = dev_priv->back_pitch >> 3;
+	BEGIN_RING( 4 );
+	RADEON_WAIT_UNTIL_3D_IDLE();		
+	OUT_RING( CP_PACKET0( RADEON_DP_WRITE_MASK, 0 ) );
+	OUT_RING( 0xffffffff );
+	ADVANCE_RING();
 
 	BEGIN_RING( 6 );
 
@@ -288,7 +325,12 @@ static void radeon_clear_box( drm_radeon_private_t *dev_priv,
 		  RADEON_ROP3_P |
 		  RADEON_GMC_CLR_CMP_CNTL_DIS );
 
-	OUT_RING( (pitch << 22) | (offset >> 5) );
+ 	if ( dev_priv->page_flipping && dev_priv->current_page == 1 ) { 
+		OUT_RING( dev_priv->front_pitch_offset );
+ 	} else {	 
+		OUT_RING( dev_priv->back_pitch_offset );
+ 	} 
+
 	OUT_RING( color );
 
 	OUT_RING( (x << 16) | y );
@@ -299,16 +341,57 @@ static void radeon_clear_box( drm_radeon_private_t *dev_priv,
 
 static void radeon_cp_performance_boxes( drm_radeon_private_t *dev_priv )
 {
-	if ( atomic_read( &dev_priv->idle_count ) == 0 ) {
-		radeon_clear_box( dev_priv, 64, 4, 8, 8, 0, 255, 0 );
-	} else {
-		atomic_set( &dev_priv->idle_count, 0 );
+	/* Collapse various things into a wait flag -- trying to
+	 * guess if userspase slept -- better just to have them tell us.
+	 */
+	if (dev_priv->stats.last_frame_reads > 1 ||
+	    dev_priv->stats.last_clear_reads > dev_priv->stats.clears) {
+		dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
 	}
+
+	if (dev_priv->stats.freelist_loops) {
+		dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
+	}
+
+	/* Purple box for page flipping
+	 */
+	if ( dev_priv->stats.boxes & RADEON_BOX_FLIP ) 
+		radeon_clear_box( dev_priv, 4, 4, 8, 8, 255, 0, 255 );
+
+	/* Red box if we have to wait for idle at any point
+	 */
+	if ( dev_priv->stats.boxes & RADEON_BOX_WAIT_IDLE ) 
+		radeon_clear_box( dev_priv, 16, 4, 8, 8, 255, 0, 0 );
+
+	/* Blue box: lost context?
+	 */
+
+	/* Yellow box for texture swaps
+	 */
+	if ( dev_priv->stats.boxes & RADEON_BOX_TEXTURE_LOAD ) 
+		radeon_clear_box( dev_priv, 40, 4, 8, 8, 255, 255, 0 );
+
+	/* Green box if hardware never idles (as far as we can tell)
+	 */
+	if ( !(dev_priv->stats.boxes & RADEON_BOX_DMA_IDLE) ) 
+		radeon_clear_box( dev_priv, 64, 4, 8, 8, 0, 255, 0 );
+
+
+	/* Draw bars indicating number of buffers allocated 
+	 * (not a great measure, easily confused)
+	 */
+	if (dev_priv->stats.requested_bufs) {
+		if (dev_priv->stats.requested_bufs > 100)
+			dev_priv->stats.requested_bufs = 100;
+
+		radeon_clear_box( dev_priv, 4, 16,  
+				  dev_priv->stats.requested_bufs, 4,
+				  196, 128, 128 );
+	}
+
+	memset( &dev_priv->stats, 0, sizeof(dev_priv->stats) );
+
 }
-
-#endif
-
-
 /* ================================================================
  * CP command dispatch functions
  */
@@ -328,6 +411,8 @@ static void radeon_cp_dispatch_clear( drm_device_t *dev,
 	RING_LOCALS;
 	DRM_DEBUG( "flags = 0x%x\n", flags );
 
+	dev_priv->stats.clears++;
+
 	if ( dev_priv->page_flipping && dev_priv->current_page == 1 ) {
 		unsigned int tmp = flags;
 
@@ -336,11 +421,204 @@ static void radeon_cp_dispatch_clear( drm_device_t *dev,
 		if ( tmp & RADEON_BACK )  flags |= RADEON_FRONT;
 	}
 
+	if ( flags & (RADEON_FRONT | RADEON_BACK) ) {
+
+		BEGIN_RING( 4 );
+
+		/* Ensure the 3D stream is idle before doing a
+		 * 2D fill to clear the front or back buffer.
+		 */
+		RADEON_WAIT_UNTIL_3D_IDLE();
+		
+		OUT_RING( CP_PACKET0( RADEON_DP_WRITE_MASK, 0 ) );
+		OUT_RING( clear->color_mask );
+
+		ADVANCE_RING();
+
+		/* Make sure we restore the 3D state next time.
+		 */
+		dev_priv->sarea_priv->ctx_owner = 0;
+
+		for ( i = 0 ; i < nbox ; i++ ) {
+			int x = pbox[i].x1;
+			int y = pbox[i].y1;
+			int w = pbox[i].x2 - x;
+			int h = pbox[i].y2 - y;
+
+			DRM_DEBUG( "dispatch clear %d,%d-%d,%d flags 0x%x\n",
+				   x, y, w, h, flags );
+
+			if ( flags & RADEON_FRONT ) {
+				BEGIN_RING( 6 );
+				
+				OUT_RING( CP_PACKET3( RADEON_CNTL_PAINT_MULTI, 4 ) );
+				OUT_RING( RADEON_GMC_DST_PITCH_OFFSET_CNTL |
+					  RADEON_GMC_BRUSH_SOLID_COLOR |
+					  (dev_priv->color_fmt << 8) |
+					  RADEON_GMC_SRC_DATATYPE_COLOR |
+					  RADEON_ROP3_P |
+					  RADEON_GMC_CLR_CMP_CNTL_DIS );
+
+				OUT_RING( dev_priv->front_pitch_offset );
+				OUT_RING( clear->clear_color );
+				
+				OUT_RING( (x << 16) | y );
+				OUT_RING( (w << 16) | h );
+				
+				ADVANCE_RING();
+			}
+			
+			if ( flags & RADEON_BACK ) {
+				BEGIN_RING( 6 );
+				
+				OUT_RING( CP_PACKET3( RADEON_CNTL_PAINT_MULTI, 4 ) );
+				OUT_RING( RADEON_GMC_DST_PITCH_OFFSET_CNTL |
+					  RADEON_GMC_BRUSH_SOLID_COLOR |
+					  (dev_priv->color_fmt << 8) |
+					  RADEON_GMC_SRC_DATATYPE_COLOR |
+					  RADEON_ROP3_P |
+					  RADEON_GMC_CLR_CMP_CNTL_DIS );
+				
+				OUT_RING( dev_priv->back_pitch_offset );
+				OUT_RING( clear->clear_color );
+
+				OUT_RING( (x << 16) | y );
+				OUT_RING( (w << 16) | h );
+
+				ADVANCE_RING();
+			}
+		}
+	}
+
 	/* We have to clear the depth and/or stencil buffers by
 	 * rendering a quad into just those buffers.  Thus, we have to
 	 * make sure the 3D engine is configured correctly.
 	 */
-	if ( flags & (RADEON_DEPTH | RADEON_STENCIL) ) {
+	if ( dev_priv->is_r200 &&
+	     (flags & (RADEON_DEPTH | RADEON_STENCIL)) ) {
+
+		int tempPP_CNTL;
+		int tempRE_CNTL;
+		int tempRB3D_CNTL;
+		int tempRB3D_ZSTENCILCNTL;
+		int tempRB3D_STENCILREFMASK;
+		int tempRB3D_PLANEMASK;
+		int tempSE_CNTL;
+		int tempSE_VTE_CNTL;
+		int tempSE_VTX_FMT_0;
+		int tempSE_VTX_FMT_1;
+		int tempSE_VAP_CNTL;
+		int tempRE_AUX_SCISSOR_CNTL;
+
+		tempPP_CNTL = 0;
+		tempRE_CNTL = 0;
+
+		tempRB3D_CNTL = depth_clear->rb3d_cntl;
+		tempRB3D_CNTL &= ~(1<<15); /* unset radeon magic flag */
+
+		tempRB3D_ZSTENCILCNTL = depth_clear->rb3d_zstencilcntl;
+		tempRB3D_STENCILREFMASK = 0x0;
+
+		tempSE_CNTL = depth_clear->se_cntl;
+
+
+
+		/* Disable TCL */
+
+		tempSE_VAP_CNTL = (/* SE_VAP_CNTL__FORCE_W_TO_ONE_MASK |  */
+				   (0x9 << SE_VAP_CNTL__VF_MAX_VTX_NUM__SHIFT));
+
+		tempRB3D_PLANEMASK = 0x0;
+
+		tempRE_AUX_SCISSOR_CNTL = 0x0;
+
+		tempSE_VTE_CNTL =
+			SE_VTE_CNTL__VTX_XY_FMT_MASK |
+			SE_VTE_CNTL__VTX_Z_FMT_MASK;
+
+		/* Vertex format (X, Y, Z, W)*/
+		tempSE_VTX_FMT_0 =
+			SE_VTX_FMT_0__VTX_Z0_PRESENT_MASK |
+			SE_VTX_FMT_0__VTX_W0_PRESENT_MASK;
+		tempSE_VTX_FMT_1 = 0x0;
+
+
+		/* 
+		 * Depth buffer specific enables 
+		 */
+		if (flags & RADEON_DEPTH) {
+			/* Enable depth buffer */
+			tempRB3D_CNTL |= RADEON_Z_ENABLE;
+		} else {
+			/* Disable depth buffer */
+			tempRB3D_CNTL &= ~RADEON_Z_ENABLE;
+		}
+
+		/* 
+		 * Stencil buffer specific enables
+		 */
+		if ( flags & RADEON_STENCIL ) {
+			tempRB3D_CNTL |=  RADEON_STENCIL_ENABLE;
+			tempRB3D_STENCILREFMASK = clear->depth_mask; 
+		} else {
+			tempRB3D_CNTL &= ~RADEON_STENCIL_ENABLE;
+			tempRB3D_STENCILREFMASK = 0x00000000;
+		}
+
+		BEGIN_RING( 26 );
+		RADEON_WAIT_UNTIL_2D_IDLE();
+
+		OUT_RING_REG( RADEON_PP_CNTL, tempPP_CNTL );
+		OUT_RING_REG( R200_RE_CNTL, tempRE_CNTL );
+		OUT_RING_REG( RADEON_RB3D_CNTL, tempRB3D_CNTL );
+		OUT_RING_REG( RADEON_RB3D_ZSTENCILCNTL,
+			      tempRB3D_ZSTENCILCNTL );
+		OUT_RING_REG( RADEON_RB3D_STENCILREFMASK, 
+			      tempRB3D_STENCILREFMASK );
+		OUT_RING_REG( RADEON_RB3D_PLANEMASK, tempRB3D_PLANEMASK );
+		OUT_RING_REG( RADEON_SE_CNTL, tempSE_CNTL );
+		OUT_RING_REG( R200_SE_VTE_CNTL, tempSE_VTE_CNTL );
+		OUT_RING_REG( R200_SE_VTX_FMT_0, tempSE_VTX_FMT_0 );
+		OUT_RING_REG( R200_SE_VTX_FMT_1, tempSE_VTX_FMT_1 );
+		OUT_RING_REG( R200_SE_VAP_CNTL, tempSE_VAP_CNTL );
+		OUT_RING_REG( R200_RE_AUX_SCISSOR_CNTL, 
+			      tempRE_AUX_SCISSOR_CNTL );
+		ADVANCE_RING();
+
+		/* Make sure we restore the 3D state next time.
+		 */
+		dev_priv->sarea_priv->ctx_owner = 0;
+
+		for ( i = 0 ; i < nbox ; i++ ) {
+			
+			/* Funny that this should be required -- 
+			 *  sets top-left?
+			 */
+			radeon_emit_clip_rect( dev_priv,
+					       &sarea_priv->boxes[i] );
+
+			BEGIN_RING( 14 );
+			OUT_RING( CP_PACKET3( R200_3D_DRAW_IMMD_2, 12 ) );
+			OUT_RING( (RADEON_PRIM_TYPE_RECT_LIST |
+				   RADEON_PRIM_WALK_RING |
+				   (3 << RADEON_NUM_VERTICES_SHIFT)) );
+			OUT_RING( depth_boxes[i].ui[CLEAR_X1] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_Y1] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_DEPTH] );
+			OUT_RING( 0x3f800000 );
+			OUT_RING( depth_boxes[i].ui[CLEAR_X1] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_Y2] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_DEPTH] );
+			OUT_RING( 0x3f800000 );
+			OUT_RING( depth_boxes[i].ui[CLEAR_X2] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_Y2] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_DEPTH] );
+			OUT_RING( 0x3f800000 );
+			ADVANCE_RING();
+		}
+	} 
+	else if ( (flags & (RADEON_DEPTH | RADEON_STENCIL)) ) {
+
 		rb3d_cntl = depth_clear->rb3d_cntl;
 
 		if ( flags & RADEON_DEPTH ) {
@@ -356,100 +634,38 @@ static void radeon_cp_dispatch_clear( drm_device_t *dev,
 			rb3d_cntl &= ~RADEON_STENCIL_ENABLE;
 			rb3d_stencilrefmask = 0x00000000;
 		}
-	}
 
-	for ( i = 0 ; i < nbox ; i++ ) {
-		int x = pbox[i].x1;
-		int y = pbox[i].y1;
-		int w = pbox[i].x2 - x;
-		int h = pbox[i].y2 - y;
+		BEGIN_RING( 13 );
+		RADEON_WAIT_UNTIL_2D_IDLE();
 
-		DRM_DEBUG( "dispatch clear %d,%d-%d,%d flags 0x%x\n",
-			   x, y, w, h, flags );
+		OUT_RING( CP_PACKET0( RADEON_PP_CNTL, 1 ) );
+		OUT_RING( 0x00000000 );
+		OUT_RING( rb3d_cntl );
+		
+		OUT_RING_REG( RADEON_RB3D_ZSTENCILCNTL,
+			      depth_clear->rb3d_zstencilcntl );
+		OUT_RING_REG( RADEON_RB3D_STENCILREFMASK,
+			      rb3d_stencilrefmask );
+		OUT_RING_REG( RADEON_RB3D_PLANEMASK,
+			      0x00000000 );
+		OUT_RING_REG( RADEON_SE_CNTL,
+			      depth_clear->se_cntl );
+		ADVANCE_RING();
 
-		if ( flags & (RADEON_FRONT | RADEON_BACK) ) {
-			BEGIN_RING( 4 );
+		/* Make sure we restore the 3D state next time.
+		 */
+		dev_priv->sarea_priv->ctx_owner = 0;
 
-			/* Ensure the 3D stream is idle before doing a
-			 * 2D fill to clear the front or back buffer.
+		for ( i = 0 ; i < nbox ; i++ ) {
+			
+			/* Funny that this should be required -- 
+			 *  sets top-left?
 			 */
-			RADEON_WAIT_UNTIL_3D_IDLE();
-
-			OUT_RING( CP_PACKET0( RADEON_DP_WRITE_MASK, 0 ) );
-			OUT_RING( clear->color_mask );
-
-			ADVANCE_RING();
-
-			/* Make sure we restore the 3D state next time.
-			 */
-			dev_priv->sarea_priv->ctx_owner = 0;
-		}
-
-		if ( flags & RADEON_FRONT ) {
-			BEGIN_RING( 6 );
-
-			OUT_RING( CP_PACKET3( RADEON_CNTL_PAINT_MULTI, 4 ) );
-			OUT_RING( RADEON_GMC_DST_PITCH_OFFSET_CNTL |
-				  RADEON_GMC_BRUSH_SOLID_COLOR |
-				  (dev_priv->color_fmt << 8) |
-				  RADEON_GMC_SRC_DATATYPE_COLOR |
-				  RADEON_ROP3_P |
-				  RADEON_GMC_CLR_CMP_CNTL_DIS );
-
-			OUT_RING( dev_priv->front_pitch_offset );
-			OUT_RING( clear->clear_color );
-
-			OUT_RING( (x << 16) | y );
-			OUT_RING( (w << 16) | h );
-
-			ADVANCE_RING();
-		}
-
-		if ( flags & RADEON_BACK ) {
-			BEGIN_RING( 6 );
-
-			OUT_RING( CP_PACKET3( RADEON_CNTL_PAINT_MULTI, 4 ) );
-			OUT_RING( RADEON_GMC_DST_PITCH_OFFSET_CNTL |
-				  RADEON_GMC_BRUSH_SOLID_COLOR |
-				  (dev_priv->color_fmt << 8) |
-				  RADEON_GMC_SRC_DATATYPE_COLOR |
-				  RADEON_ROP3_P |
-				  RADEON_GMC_CLR_CMP_CNTL_DIS );
-
-			OUT_RING( dev_priv->back_pitch_offset );
-			OUT_RING( clear->clear_color );
-
-			OUT_RING( (x << 16) | y );
-			OUT_RING( (w << 16) | h );
-
-			ADVANCE_RING();
-		}
-
-		if ( flags & (RADEON_DEPTH | RADEON_STENCIL) ) {
-
 			radeon_emit_clip_rect( dev_priv,
 					       &sarea_priv->boxes[i] );
 
-			BEGIN_RING( 28 );
+			BEGIN_RING( 15 );
 
-			RADEON_WAIT_UNTIL_2D_IDLE();
-
-			OUT_RING( CP_PACKET0( RADEON_PP_CNTL, 1 ) );
-			OUT_RING( 0x00000000 );
-			OUT_RING( rb3d_cntl );
-
-			OUT_RING_REG( RADEON_RB3D_ZSTENCILCNTL,
-				      depth_clear->rb3d_zstencilcntl );
-			OUT_RING_REG( RADEON_RB3D_STENCILREFMASK,
-				      rb3d_stencilrefmask );
-			OUT_RING_REG( RADEON_RB3D_PLANEMASK,
-				      0x00000000 );
-			OUT_RING_REG( RADEON_SE_CNTL,
-				      depth_clear->se_cntl );
-
-			/* Radeon 7500 doesn't like vertices without
-			 * color.
-			 */
 			OUT_RING( CP_PACKET3( RADEON_3D_DRAW_IMMD, 13 ) );
 			OUT_RING( RADEON_VTX_Z_PRESENT |
 				  RADEON_VTX_PKCOLOR_PRESENT);
@@ -458,6 +674,7 @@ static void radeon_cp_dispatch_clear( drm_device_t *dev,
 				   RADEON_MAOS_ENABLE |
 				   RADEON_VTX_FMT_RADEON_MODE |
 				   (3 << RADEON_NUM_VERTICES_SHIFT)) );
+
 
 			OUT_RING( depth_boxes[i].ui[CLEAR_X1] );
 			OUT_RING( depth_boxes[i].ui[CLEAR_Y1] );
@@ -475,10 +692,6 @@ static void radeon_cp_dispatch_clear( drm_device_t *dev,
 			OUT_RING( 0x0 );
 
 			ADVANCE_RING();
-
-			/* Make sure we restore the 3D state next time.
-			 */
-			dev_priv->sarea_priv->ctx_owner = 0;
 		}
 	}
 
@@ -506,11 +719,12 @@ static void radeon_cp_dispatch_swap( drm_device_t *dev )
 	RING_LOCALS;
 	DRM_DEBUG( "\n" );
 
-#if RADEON_PERFORMANCE_BOXES
+
 	/* Do some trivial performance monitoring...
 	 */
-	radeon_cp_performance_boxes( dev_priv );
-#endif
+	if (dev_priv->do_boxes)
+		radeon_cp_performance_boxes( dev_priv );
+
 
 	/* Wait for the 3D stream to idle before dispatching the bitblt.
 	 * This will prevent data corruption between the two streams.
@@ -579,20 +793,21 @@ static void radeon_cp_dispatch_flip( drm_device_t *dev )
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
-	DRM_DEBUG( "page=%d\n", dev_priv->current_page );
+	DRM_DEBUG( "%s: page=%d pfCurrentPage=%d\n", 
+		__FUNCTION__, 
+		dev_priv->current_page,
+		dev_priv->sarea_priv->pfCurrentPage);
 
-#if RADEON_PERFORMANCE_BOXES
 	/* Do some trivial performance monitoring...
 	 */
-	radeon_cp_performance_boxes( dev_priv );
-#endif
+	if (dev_priv->do_boxes) {
+		dev_priv->stats.boxes |= RADEON_BOX_FLIP;
+		radeon_cp_performance_boxes( dev_priv );
+	}
 
 	BEGIN_RING( 4 );
 
 	RADEON_WAIT_UNTIL_3D_IDLE();
-/*
-	RADEON_WAIT_UNTIL_PAGE_FLIPPED();
-*/
 	OUT_RING( CP_PACKET0( RADEON_CRTC_OFFSET, 0 ) );
 
 	if ( dev_priv->current_page == 0 ) {
@@ -846,6 +1061,8 @@ static int radeon_cp_dispatch_texture( drm_device_t *dev,
 	u32 y, height;
 	int ret = 0, i;
 	RING_LOCALS;
+
+	dev_priv->stats.boxes |= RADEON_BOX_TEXTURE_LOAD;
 
 	/* FIXME: Be smarter about this...
 	 */
@@ -1611,6 +1828,30 @@ static __inline__ int radeon_emit_scalars(
 	return 0;
 }
 
+/* God this is ugly
+ */
+static __inline__ int radeon_emit_scalars2( 
+	drm_radeon_private_t *dev_priv,
+	drm_radeon_cmd_header_t header,
+	drm_radeon_cmd_buffer_t *cmdbuf )
+{
+	int sz = header.scalars.count;
+	int *data = (int *)cmdbuf->buf;
+	int start = ((unsigned int)header.scalars.offset) + 0x100;
+	int stride = header.scalars.stride;
+	RING_LOCALS;
+
+	BEGIN_RING( 3+sz );
+	OUT_RING( CP_PACKET0( RADEON_SE_TCL_SCALAR_INDX_REG, 0 ) );
+	OUT_RING( start | (stride << RADEON_SCAL_INDX_DWORD_STRIDE_SHIFT));
+	OUT_RING( CP_PACKET0_TABLE( RADEON_SE_TCL_SCALAR_DATA_REG, sz-1 ) );
+	OUT_RING_USER_TABLE( data, sz );
+	ADVANCE_RING();
+	cmdbuf->buf += sz * sizeof(int);
+	cmdbuf->bufsz -= sz * sizeof(int);
+	return 0;
+}
+
 static __inline__ int radeon_emit_vectors( 
 	drm_radeon_private_t *dev_priv,
 	drm_radeon_cmd_header_t header,
@@ -1775,6 +2016,7 @@ int radeon_cp_cmdbuf( DRM_IOCTL_ARGS )
 
 		switch (header.header.cmd_type) {
 		case RADEON_CMD_PACKET: 
+			DRM_DEBUG("RADEON_CMD_PACKET\n");
 			if (radeon_emit_packets( dev_priv, header, &cmdbuf )) {
 				DRM_ERROR("radeon_emit_packets failed\n");
 				return DRM_ERR(EINVAL);
@@ -1782,6 +2024,7 @@ int radeon_cp_cmdbuf( DRM_IOCTL_ARGS )
 			break;
 
 		case RADEON_CMD_SCALARS:
+			DRM_DEBUG("RADEON_CMD_SCALARS\n");
 			if (radeon_emit_scalars( dev_priv, header, &cmdbuf )) {
 				DRM_ERROR("radeon_emit_scalars failed\n");
 				return DRM_ERR(EINVAL);
@@ -1789,6 +2032,7 @@ int radeon_cp_cmdbuf( DRM_IOCTL_ARGS )
 			break;
 
 		case RADEON_CMD_VECTORS:
+			DRM_DEBUG("RADEON_CMD_VECTORS\n");
 			if (radeon_emit_vectors( dev_priv, header, &cmdbuf )) {
 				DRM_ERROR("radeon_emit_vectors failed\n");
 				return DRM_ERR(EINVAL);
@@ -1796,6 +2040,7 @@ int radeon_cp_cmdbuf( DRM_IOCTL_ARGS )
 			break;
 
 		case RADEON_CMD_DMA_DISCARD:
+			DRM_DEBUG("RADEON_CMD_DMA_DISCARD\n");
 			idx = header.dma.buf_idx;
 			if ( idx < 0 || idx >= dma->buf_count ) {
 				DRM_ERROR( "buffer index %d (of %d max)\n",
@@ -1813,6 +2058,7 @@ int radeon_cp_cmdbuf( DRM_IOCTL_ARGS )
 			break;
 
 		case RADEON_CMD_PACKET3:
+			DRM_DEBUG("RADEON_CMD_PACKET3\n");
 			if (radeon_emit_packet3( dev, &cmdbuf )) {
 				DRM_ERROR("radeon_emit_packet3 failed\n");
 				return DRM_ERR(EINVAL);
@@ -1820,12 +2066,20 @@ int radeon_cp_cmdbuf( DRM_IOCTL_ARGS )
 			break;
 
 		case RADEON_CMD_PACKET3_CLIP:
+			DRM_DEBUG("RADEON_CMD_PACKET3_CLIP\n");
 			if (radeon_emit_packet3_cliprect( dev, &cmdbuf, orig_nbox )) {
 				DRM_ERROR("radeon_emit_packet3_clip failed\n");
 				return DRM_ERR(EINVAL);
 			}
 			break;
 
+		case RADEON_CMD_SCALARS2:
+			DRM_DEBUG("RADEON_CMD_SCALARS2\n");
+			if (radeon_emit_scalars2( dev_priv, header, &cmdbuf )) {
+				DRM_ERROR("radeon_emit_scalars2 failed\n");
+				return DRM_ERR(EINVAL);
+			}
+			break;
 		default:
 			DRM_ERROR("bad cmd_type %d at %p\n", 
 				  header.header.cmd_type,
@@ -1835,6 +2089,7 @@ int radeon_cp_cmdbuf( DRM_IOCTL_ARGS )
 	}
 
 
+	DRM_DEBUG("DONE\n");
 	COMMIT_RING();
 	return 0;
 }
@@ -1863,12 +2118,14 @@ int radeon_cp_getparam( DRM_IOCTL_ARGS )
 		value = dev_priv->agp_buffers_offset;
 		break;
 	case RADEON_PARAM_LAST_FRAME:
+		dev_priv->stats.last_frame_reads++;
 		value = GET_SCRATCH( 0 );
 		break;
 	case RADEON_PARAM_LAST_DISPATCH:
 		value = GET_SCRATCH( 1 );
 		break;
 	case RADEON_PARAM_LAST_CLEAR:
+		dev_priv->stats.last_clear_reads++;
 		value = GET_SCRATCH( 2 );
 		break;
 	default:
