@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/ja.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -586,7 +586,7 @@
 0x51CD	# <CJK>
 0x51D6	# <CJK>
 0x51DB	# <CJK>
-0x51DC	# <CJK>
+#0x51DC	# <CJK>	# not in kochi fonts
 0x51DD	# <CJK>
 0x51E0	# <CJK>
 0x51E1	# <CJK>
@@ -3278,7 +3278,7 @@
 0x718F	# <CJK>
 0x7194	# <CJK>
 0x7195	# <CJK>
-0x7199	# <CJK>
+#0x7199	# <CJK>	# not in kochi fonts
 0x719F	# <CJK>
 0x71A8	# <CJK>
 0x71AC	# <CJK>
