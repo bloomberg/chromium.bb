@@ -226,6 +226,7 @@ in preference to FcPatternGet to provide compile-time typechecking.
 @DESC@
 Builds a pattern using a list of objects, types and values.  Each
 value to be entered in the pattern is specified with three arguments:
+</para>
 <orderedlist>
 <listitem><para>
 Object name, a string describing the property to be added.

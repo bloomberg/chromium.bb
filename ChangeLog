@@ -1,3 +1,11 @@
+2003-04-23  James Henstridge  <james@daa.com.au>
+
+	* doc/fontconfig-devel.sgml: close the <para> element.
+
+	* doc/fcpattern.fncs: close the <para> element.
+
+	* doc/func.sgml: close the <refsynopsisdiv> element.
+
 2003-04-17  Colin Walters <walters@debian.org>
 
 	+ Remove some unused variables, and initialize some other ones so

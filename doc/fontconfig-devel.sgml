@@ -476,6 +476,7 @@ consistent and complete version of the config file is always available.
     <para>
 These routines work with font files and directories, including font
 directory cache files.
+    </para>
     &fcfile;
   </sect2>
   <sect2><title>FcStrSet and FcStrList</title>
