@@ -82,7 +82,8 @@ static void getvm(int fd)
     drmHandle       handle;
     int             mtrr;
 
-    printf("  VM map information (Restricted locked kernel WC Lock):\n");
+    printf("  VM map information:\n");
+    printf("  flags: (R)estricted (r)ead/(w)rite (l)ocked (k)ernel (W)rite-combine (L)ock:\n");
     printf("    slot     offset       size type flags    address mtrr\n");
 
     for (i = 0;
@@ -90,11 +91,12 @@ static void getvm(int fd)
 	 i++) {
 	
 	switch (type) {
-	case DRM_FRAME_BUFFER: typename = "FB";  break;
-	case DRM_REGISTERS:    typename = "REG"; break;
-	case DRM_SHM:          typename = "SHM"; break;
-	case DRM_AGP:          typename = "AGP"; break;
-	default:               typename = "???"; break;
+	case DRM_FRAME_BUFFER:   typename = "FB";  break;
+	case DRM_REGISTERS:      typename = "REG"; break;
+	case DRM_SHM:            typename = "SHM"; break;
+	case DRM_AGP:            typename = "AGP"; break;
+	case DRM_SCATTER_GATHER: typename = "SG";  break;
+	default:                 typename = "???"; break;
 	}
 
 	flagname[0] = (flags & DRM_RESTRICTED)      ? 'R' : ' ';

@@ -314,7 +314,7 @@ int main(int argc, char **argv)
 	    printf("===== /proc/%d/maps =====\n", getpid());
 	    sprintf(buf, "cat /proc/%d/maps", getpid());
 	    system(buf);
-	    printf("===== /proc/grphics/0/mem =====\n");
+	    printf("===== /proc/dri/0/mem =====\n");
 	    sprintf(buf, "cat /proc/dri/0/mem");
 	    system(buf);
 	    printf("===== /proc/dri/0/vma =====\n");
