@@ -275,8 +275,8 @@ static int savage_dispatch_dma_prim(drm_savage_private_t *dev_priv,
 {
 	BCI_LOCALS;
 	unsigned char reorder = 0;
-	unsigned char prim = cmd_header->prim.prim;
-	unsigned short skip = cmd_header->prim.skip;
+	unsigned int prim = cmd_header->prim.prim;
+	unsigned int skip = cmd_header->prim.skip;
 	unsigned int n = cmd_header->prim.count;
 	unsigned int start = cmd_header->prim.start;
 	unsigned int i;
@@ -407,8 +407,8 @@ static int savage_dispatch_vb_prim(drm_savage_private_t *dev_priv,
 {
 	BCI_LOCALS;
 	unsigned char reorder = 0;
-	unsigned char prim = cmd_header->prim.prim;
-	unsigned short skip = cmd_header->prim.skip;
+	unsigned int prim = cmd_header->prim.prim;
+	unsigned int skip = cmd_header->prim.skip;
 	unsigned int n = cmd_header->prim.count;
 	unsigned int start = cmd_header->prim.start;
 	unsigned int vtx_size;
