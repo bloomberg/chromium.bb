@@ -30,6 +30,7 @@
  * Acknowledgements:
  * Dec 1999, Richard Henderson <rth@twiddle.net>, move to generic cmpxchg.
  *
+ * $FreeBSD: src/sys/dev/drm/drm.h,v 1.3 2003/03/09 02:08:28 anholt Exp $
  */
 
 #ifndef _DRM_H_
@@ -45,7 +46,7 @@
 #define DRM_IOC_READWRITE	_IOC_READ|_IOC_WRITE
 #define DRM_IOC(dir, group, nr, size) _IOC(dir, group, nr, size)
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-#if defined(__FreeBSD__) && defined(XFree86Server)
+#if defined(__FreeBSD__) && defined(IN_MODULE)
 /* Prevent name collision when including sys/ioccom.h */
 #undef ioctl
 #include <sys/ioccom.h>
@@ -78,10 +79,6 @@
 #define DRM_DEV_GID	 0
 #endif
 
-#if CONFIG_XFREE86_VERSION >= XFREE86_VERSION(4,1,0,0)
-#define DRM_MAJOR       226
-#define DRM_MAX_MINOR   15
-#endif
 #define DRM_NAME	"drm"	  /* Name in kernel, /dev, and /proc	    */
 #define DRM_MIN_ORDER	5	  /* At least 2^5 bytes = 32 bytes	    */
 #define DRM_MAX_ORDER	22	  /* Up to 2^22 bytes = 4MB		    */
