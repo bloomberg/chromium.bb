@@ -29,7 +29,6 @@
  *    Daryll Strauss <daryll@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
- * $FreeBSD: src/sys/dev/drm/tdfx_drv.c,v 1.4 2003/04/25 01:18:46 anholt Exp $
  */
 
 #include "tdfx.h"

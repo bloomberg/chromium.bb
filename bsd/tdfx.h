@@ -26,7 +26,6 @@
  * Authors:
  *    Gareth Hughes <gareth@valinux.com>
  *
- * $FreeBSD: src/sys/dev/drm/tdfx.h,v 1.1 2002/04/27 20:47:57 anholt Exp $
  */
 
 #ifndef __TDFX_H__
