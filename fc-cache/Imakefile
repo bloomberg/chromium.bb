@@ -10,4 +10,6 @@ ComplexProgramTarget(fc-cache)
 LinkBuildBinary(ProgramTargetName(fc-cache))
 
 install::
-	FC_DEBUG=128 $(FCCACHE) -v
+	if [ x$${DESTDIR} = x ]; then \
+		FC_DEBUG=128 $(FCCACHE) -v ;\
+	fi
