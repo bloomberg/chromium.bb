@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/lib/fontconfig/configure.in,v 1.2 2002/05/21 17:08:42 keithp Exp $
+dnl $XFree86: xc/lib/fontconfig/configure.in,v 1.3 2002/05/21 17:48:15 keithp Exp $
 dnl
 dnl Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 dnl
@@ -50,6 +50,7 @@ PACKAGE_VERSION=1.0.1
 PACKAGE_MAJOR=`echo $PACKAGE_VERSION | awk -F . '{ print $1 }'`
 PACKAGE_MINOR=`echo $PACKAGE_VERSION | awk -F . '{ print $2 }'`
 PACKAGE_REVISION=`echo $PACKAGE_VERSION | awk -F . '{ print $3 }'`
+AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(PACKAGE_MAJOR)
 AC_SUBST(PACKAGE_MINOR)
 AC_SUBST(PACKAGE_REVISION)
@@ -119,20 +120,20 @@ esac
 
 case "$freetype_includes" in
 no)
-	freetype_includes=""
+	FREETYPE_CFLAGS=""
 	;;
 yes)
 	case "$ft_config" in
 	no)
-		freetype_includes=""
+		FREETYPE_CFLAGS=""
 		;;
 	*)
-		freetype_includes="`$ft_config --cflags`"
+		FREETYPE_CFLAGS="`$ft_config --cflags`"
 		;;
 	esac
 	;;
 *)
-	freetype_includes="-I$freetype_includes"
+	FREETYPE_CFLAGS="-I$freetype_includes"
 	;;
 esac
 
@@ -158,7 +159,7 @@ esac
 saved_LIBS="$LIBS"
 LIBS="$LIBS $freetype_lib"
 saved_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $freetype_includes"
+CPPFLAGS="$CPPFLAGS $FREETYPE_CFLAGS"
 AC_CHECK_HEADERS(freetype/freetype.h)
 
 case "$ac_cv_header_freetype_freetype_h" in
@@ -175,6 +176,7 @@ yes)
 		;;
 	yes)
 		AC_DEFINE(HAVE_FREETYPE)
+		AC_SUBST(FREETYPE_CFLAGS)
 		;;
 	esac
 	;;
@@ -373,5 +375,7 @@ AC_OUTPUT([Makefile
 	  src/Makefile
 	  fc-cache/Makefile
 	  fc-list/Makefile
-	  fontconfig/Makefile])
+	  fontconfig/Makefile
+	  fontconfig.pc
+	  fontconfig-config])
 

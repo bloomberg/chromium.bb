@@ -1,3 +1,14 @@
-The configuration files (fonts.conf, fonts.dtd) go in a new directory
-/etc/fonts, the install step doesn't current create this directory or copy
-the config files.
+You can build fontconfig with either autoconf or imake.
+
+For autoconf:
+
+	$ sh cvscompile.sh --sysconfdir=/etc --prefix=/usr
+
+For imake:
+	$ xmkmf -a
+
+These should both generate valid Makefiles, in either case:
+
+	$ make
+	$ make install
+

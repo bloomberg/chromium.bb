@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/Makefile.in,v 1.2 2002/05/21 17:48:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,7 +22,9 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-DEPTH         = .
+TOPDIR         = .
+
+include $(TOPDIR)/config/Makedefs
 
 DIRS          = src fc-cache fc-list fontconfig
 
@@ -50,3 +52,15 @@ $(CONFDIR)/fonts.dtd:: fonts.dtd
 clean::
 	rm -f fonts.conf
 
+install:: $(BINDIR)/fontconfig-config
+
+$(BINDIR)/fontconfig-config: fontconfig-config
+	$(INSTALL_SCRIPT) $< $(BINDIR)
+
+install:: $(LIBDIR)/pkgconfig $(LIBDIR)/pkgconfig/fontconfig.pc
+
+$(LIBDIR)/pkgconfig:
+	mkdir -p $@
+
+$(LIBDIR)/pkgconfig/fontconfig.pc: fontconfig.pc
+	$(INSTALL_DATA) $< $(LIBDIR)/pkgconfig

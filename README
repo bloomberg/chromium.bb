@@ -1,2 +1,15 @@
 			Fontconfig
 	Font configuration and customization library
+		      Version 1.0.1
+		        2002-5-23
+
+This is the first public release of fontconfig, a font configuration and
+customization library.  Fontconfig is designed to locate fonts within the
+system and select them according to requirements specified by applications.
+
+Fontconfig is not a rasterization library, nor does it impose a particular
+rasterization library on the application.  The X-specific library
+'Xft' uses fontconfig along with freetype to specify and rasterize fonts.
+
+Keith Packard
+keithp@keithp.com

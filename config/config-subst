@@ -1,0 +1,8 @@
+#!/bin/sh
+exprs=""
+for i in ${1+"$@"}; do
+	var="`echo $i | sed 's/=.*$//'`"
+	val="`echo $i | sed 's/^[^=]*=//'`"
+	exprs="$exprs -e s;@$var@;$val;"
+done
+sed $exprs
