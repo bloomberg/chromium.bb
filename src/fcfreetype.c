@@ -934,6 +934,20 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!cs)
 	goto bail1;
 
+#ifdef USE_FTBDF
+    /* For PCF fonts, override the computed spacing with the one from
+       the property */
+    if(MY_Get_BDF_Property(face, "SPACING", &prop) == 0 &&
+       prop.type == BDF_PROPERTY_TYPE_ATOM) {
+        if(strcmp(prop.u.atom, "c") || strcmp(prop.u.atom, "C"))
+            spacing = FC_CHARCELL;
+        else if(strcmp(prop.u.atom, "m") || strcmp(prop.u.atom, "M"))
+            spacing = FC_MONO;
+        else if(strcmp(prop.u.atom, "p") || strcmp(prop.u.atom, "P"))
+            spacing = FC_PROPORTIONAL;
+    }
+#endif
+
     /*
      * Skip over PCF fonts that have no encoded characters; they're
      * usually just Unicode fonts transcoded to some legacy encoding
