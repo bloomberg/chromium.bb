@@ -1037,7 +1037,11 @@ int DRM(ioctl)( DRM_IOCTL_ARGS )
 
 	case FIOGETOWN:
 		atomic_dec(&dev->ioctl_count);
+#if (__FreeBSD_version >= 500000)
+		*(int *) data = fgetown(&dev->buf_sigio);
+#else
 		*(int *) data = fgetown(dev->buf_sigio);
+#endif
 		return 0;
 	}
 #endif /* __FreeBSD__ */
