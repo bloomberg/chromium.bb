@@ -77,7 +77,7 @@ void DRM(agp_release)(void)
 /**
  * Enable the AGP bus.
  */
-void DRM(agp_enable)(unsigned mode)
+void DRM(agp_enable)(unsigned long mode)
 {
 	if (drm_agp->enable)
 		drm_agp->enable(mode);
@@ -494,6 +494,9 @@ void DRM(agp_init_dev)(drm_device_t *dev)
 {
 	drm_agp_head_t *head         = NULL;
 
+	if (!drm_agp)
+		return;
+
 	if (!(head = DRM(alloc)(sizeof(*head), DRM_MEM_AGPLISTS)))
 		return;
 
@@ -501,6 +504,7 @@ void DRM(agp_init_dev)(drm_device_t *dev)
 	drm_agp->copy_info(&head->agp_info);
 	if (head->agp_info.chipset == NOT_SUPPORTED) {
 		DRM(free)(head, sizeof(*head), DRM_MEM_AGPLISTS);
+		return;
 	}
 	head->memory = NULL;
 #if LINUX_VERSION_CODE <= 0x020408

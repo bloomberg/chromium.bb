@@ -70,7 +70,7 @@ typedef struct drm_agp_head {
 
 extern int DRM(agp_acquire)(void);
 extern void DRM(agp_release)(void);
-extern void DRM(agp_enable)(unsigned mode);
+extern void DRM(agp_enable)(unsigned long mode);
 extern agp_memory *DRM(agp_allocate_memory)(size_t pages, u32 type);
 extern int DRM(agp_free_memory)(agp_memory *handle);
 extern int DRM(agp_bind_memory)(agp_memory *handle, off_t start);
