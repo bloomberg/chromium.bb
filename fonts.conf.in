@@ -72,6 +72,7 @@
   Serif faces
  -->
 	<alias>
+		<family>Bitstream Vera Serif</family>
 		<family>Times</family>
 		<family>Times New Roman</family>
 		<family>Nimbus Roman No9 L</family>
@@ -86,6 +87,7 @@
   Sans-serif faces
  -->
 	<alias>
+		<family>Bitstream Vera Sans</family>
 		<family>Helvetica</family>
 		<family>Arial</family>
 		<family>Verdana</family>
@@ -102,6 +104,7 @@
   Monospace faces
  -->
  	<alias>
+		<family>Bitstream Vera Sans Mono</family>
 		<family>Courier</family>
 		<family>Courier New</family>
 		<family>Andale Mono</family>
@@ -153,6 +156,50 @@
 		<edit name="globaladvance"><bool>false</bool></edit>
 	</match>
 
+<!-- 
+	The Bitstream Vera fonts have GASP entries suggesting that hinting be
+	disabled below 8 ppem, but FreeType ignores those, preferring to use
+	the data found in the instructed hints.  The initial Vera release
+	didn't include the right instructions in the 'prep' table. Fix this
+	by disabling hinting manually at smaller sizes (< 8ppem)
+ -->
+	
+	<match target="font">
+		<test name="family">
+			<string>Bitstream Vera Sans</string>
+		</test>
+		<test name="pixelsize" compare="less">
+			<double>7.5</double>
+		</test>
+		<edit name="hinting">
+			<bool>false</bool>
+		</edit>
+	</match>
+	
+	<match target="font">
+		<test name="family">
+			<string>Bitstream Vera Serif</string>
+		</test>
+		<test name="pixelsize" compare="less">
+			<double>7.5</double>
+		</test>
+		<edit name="hinting">
+			<bool>false</bool>
+		</edit>
+	</match>
+	
+	<match target="font">
+		<test name="family">
+			<string>Bitstream Vera Sans Mono</string>
+		</test>
+		<test name="pixelsize" compare="less">
+			<double>7.5</double>
+		</test>
+		<edit name="hinting">
+			<bool>false</bool>
+		</edit>
+	</match>
+	
 <!--
   Load per-user customization file
 -->
@@ -217,6 +264,7 @@
 	<alias>
 		<family>serif</family>
 		<prefer>
+			<family>Bitstream Vera Serif</family>
 			<family>Times New Roman</family>
 			<family>Nimbus Roman No9 L</family>
 			<family>Luxi Serif</family>
@@ -230,6 +278,7 @@
 	<alias>
 		<family>sans-serif</family>
 		<prefer>
+			<family>Bitstream Vera Sans</family>
 			<family>Verdana</family>
 			<family>Nimbus Sans L</family>
 			<family>Luxi Sans</family>
@@ -245,6 +294,7 @@
 	<alias>
 		<family>monospace</family>
 		<prefer>
+			<family>Bitstream Vera Sans Mono</family>
 			<family>Andale Mono</family>
 			<family>Courier New</family>
 			<family>Luxi Mono</family>
