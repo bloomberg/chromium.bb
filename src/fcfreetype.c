@@ -1163,19 +1163,21 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    free (utf8);
     }
     
-    if (!nfamily && face->family_name)
+    if (!nfamily && face->family_name && 
+	FcStrCmpIgnoreBlanksAndCase (face->family_name, "") != 0)
     {
 	if (FcDebug () & FC_DBG_SCANV)
-	    printf ("using FreeType family %s", face->family_name);
+	    printf ("using FreeType family \"%s\"\n", face->family_name);
 	if (!FcPatternAddString (pat, FC_FAMILY, face->family_name))
 	    goto bail1;
 	++nfamily;
     }
     
-    if (!nstyle && face->style_name)
+    if (!nstyle && face->style_name &&
+	FcStrCmpIgnoreBlanksAndCase (face->style_name, "") != 0)
     {
 	if (FcDebug () & FC_DBG_SCANV)
-	    printf ("using FreeType style %s", face->family_name);
+	    printf ("using FreeType style \"%s\"\n", face->style_name);
 	if (!FcPatternAddString (pat, FC_STYLE, face->style_name))
 	    goto bail1;
 	++nstyle;
@@ -1199,7 +1201,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 	strncpy ((char *) family, (char *) start, end - start);
 	family[end - start] = '\0';
 	if (FcDebug () & FC_DBG_SCANV)
-	    printf ("using filename for family %s", family);
+	    printf ("using filename for family %s\n", family);
 	if (!FcPatternAddString (pat, FC_FAMILY, family))
 	{
 	    free (family);
