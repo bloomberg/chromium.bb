@@ -153,7 +153,8 @@ FcOpPrint (FcOp op)
 void
 FcExprPrint (const FcExpr *expr)
 {
-    switch (expr->op) {
+    if (!expr) printf ("none");
+    else switch (expr->op) {
     case FcOpInteger: printf ("%d", expr->u.ival); break;
     case FcOpDouble: printf ("%g", expr->u.dval); break;
     case FcOpString: printf ("\"%s\"", expr->u.sval); break;
