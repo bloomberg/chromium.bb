@@ -5,7 +5,7 @@ XCOMM $XFree86$
 #include "../local.def"
 #endif
 
-INCLUDES=$(FREETYPE2INCLUDES) $(LIBXML2INCLUDES) -I..
+INCLUDES=$(FREETYPE2INCLUDES) -I..
 
 LOCAL_LIBRARIES=FontconfigClientLibs
         DEPLIBS=FontconfigClientDepLibs

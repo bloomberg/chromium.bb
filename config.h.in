@@ -97,12 +97,6 @@
 /* Define to 1 if you have the `vprintf' function. */
 #undef HAVE_VPRINTF
 
-/* Use libxml2 library for xml parsing */
-#undef HAVE_XML2
-
-/* Define to 1 if you have the `xmlInitParser' function. */
-#undef HAVE_XMLINITPARSER
-
 /* Define to 1 if you have the `XML_ParserCreate' function. */
 #undef HAVE_XML_PARSERCREATE
 
@@ -142,6 +136,3 @@
 
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
-
-/* Define to the directory containing font configuration files */
-#undef FONTCONFIG_PATH

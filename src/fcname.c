@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.10 2002/06/29 20:31:02 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.11 2002/08/11 18:10:42 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -471,8 +471,6 @@ FcNameUnparseValue (FcStrBuf	*buf,
     case FcTypeCharSet:
 	return FcNameUnparseCharSet (buf, v.u.c);
     case FcTypeFTFace:
-	return FcTrue;
-    case FcTypePattern:
 	return FcTrue;
     }
     return FcFalse;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.7 2002/05/21 17:06:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.10 2002/08/06 19:00:43 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,6 +24,21 @@
 
 #include "fcint.h"
 
+/*
+ * POSIX has broken stdio so that getc must do thread-safe locking,
+ * this is a serious performance problem for applications doing large
+ * amounts of IO with getc (as is done here).  If available, use
+ * the getc_unlocked varient instead.
+ */
+ 
+#if defined(getc_unlocked) || defined(_IO_getc_unlocked)
+#define GETC(f) getc_unlocked(f)
+#define PUTC(c,f) putc_unlocked(c,f)
+#else
+#define GETC(f) getc(f)
+#define PUTC(c,f) putc(c,f)
+#endif
+
 #define FC_DBG_CACHE_REF    1024
 
 static FcChar8 *
@@ -35,7 +50,7 @@ FcCacheReadString (FILE *f, FcChar8 *dest, int len)
     int		size;
     int		i;
 
-    while ((c = getc (f)) != EOF)
+    while ((c = GETC (f)) != EOF)
 	if (c == '"')
 	    break;
     if (c == EOF)
@@ -47,7 +62,7 @@ FcCacheReadString (FILE *f, FcChar8 *dest, int len)
     i = 0;
     d = dest;
     escape = FcFalse;
-    while ((c = getc (f)) != EOF)
+    while ((c = GETC (f)) != EOF)
     {
 	if (!escape)
 	{
@@ -87,7 +102,7 @@ FcCacheReadUlong (FILE *f, unsigned long *dest)
     unsigned long   t;
     int		    c;
 
-    while ((c = getc (f)) != EOF)
+    while ((c = GETC (f)) != EOF)
     {
 	if (!isspace (c))
 	    break;
@@ -102,7 +117,7 @@ FcCacheReadUlong (FILE *f, unsigned long *dest)
 	if (!isdigit (c))
 	    return FcFalse;
 	t = t * 10 + (c - '0');
-	c = getc (f);
+	c = GETC (f);
     }
     *dest = t;
     return FcTrue;
@@ -141,11 +156,11 @@ FcCacheWriteChars (FILE *f, const FcChar8 *chars)
 	switch (c) {
 	case '"':
 	case '\\':
-	    if (putc ('\\', f) == EOF)
+	    if (PUTC ('\\', f) == EOF)
 		return FcFalse;
 	    /* fall through */
 	default:
-	    if (putc (c, f) == EOF)
+	    if (PUTC (c, f) == EOF)
 		return FcFalse;
 	}
     }
@@ -156,11 +171,11 @@ static FcBool
 FcCacheWriteString (FILE *f, const FcChar8 *string)
 {
 
-    if (putc ('"', f) == EOF)
+    if (PUTC ('"', f) == EOF)
 	return FcFalse;
     if (!FcCacheWriteChars (f, string))
 	return FcFalse;
-    if (putc ('"', f) == EOF)
+    if (PUTC ('"', f) == EOF)
 	return FcFalse;
     return FcTrue;
 }
@@ -168,17 +183,17 @@ FcCacheWriteString (FILE *f, const FcChar8 *string)
 static FcBool
 FcCacheWritePath (FILE *f, const FcChar8 *dir, const FcChar8 *file)
 {
-    if (putc ('"', f) == EOF)
+    if (PUTC ('"', f) == EOF)
 	return FcFalse;
     if (dir)
 	if (!FcCacheWriteChars (f, dir))
 	    return FcFalse;
     if (dir && dir[strlen((const char *) dir) - 1] != '/')
-	if (putc ('/', f) == EOF)
+	if (PUTC ('/', f) == EOF)
 	    return FcFalse;
     if (!FcCacheWriteChars (f, file))
 	return FcFalse;
-    if (putc ('"', f) == EOF)
+    if (PUTC ('"', f) == EOF)
 	return FcFalse;
     return FcTrue;
 }
@@ -200,7 +215,7 @@ FcCacheWriteUlong (FILE *f, unsigned long t)
     while (pow)
     {
 	digit = temp / pow;
-	if (putc ((char) digit + '0', f) == EOF)
+	if (PUTC ((char) digit + '0', f) == EOF)
 	    return FcFalse;
 	temp = temp - pow * digit;
 	pow = pow / 10;
@@ -767,19 +782,19 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 		continue;
 	    if (!FcCacheWriteString (f, dir->info.file))
 		goto bail4;
-	    if (putc (' ', f) == EOF)
+	    if (PUTC (' ', f) == EOF)
 		goto bail4;
 	    if (!FcCacheWriteInt (f, 0))
 		goto bail4;
-	    if (putc (' ', f) == EOF)
+	    if (PUTC (' ', f) == EOF)
 		goto bail4;
 	    if (!FcCacheWriteTime (f, dir->info.time))
 		goto bail4;
-	    if (putc (' ', f) == EOF)
+	    if (PUTC (' ', f) == EOF)
 		goto bail4;
 	    if (!FcCacheWriteString (f, (FcChar8 *) FC_FONT_FILE_DIR))
 		goto bail4;
-	    if (putc ('\n', f) == EOF)
+	    if (PUTC ('\n', f) == EOF)
 		goto bail4;
 	    
 	    for (file_hash = 0; file_hash < FC_GLOBAL_CACHE_FILE_HASH_SIZE; file_hash++)
@@ -790,19 +805,19 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 			continue;
 		    if (!FcCacheWritePath (f, dir->info.file, file->info.file))
 			goto bail4;
-		    if (putc (' ', f) == EOF)
+		    if (PUTC (' ', f) == EOF)
 			goto bail4;
 		    if (!FcCacheWriteInt (f, file->id < 0 ? 0 : file->id))
 			goto bail4;
-		    if (putc (' ', f) == EOF)
+		    if (PUTC (' ', f) == EOF)
 			goto bail4;
 		    if (!FcCacheWriteTime (f, file->info.time))
 			goto bail4;
-		    if (putc (' ', f) == EOF)
+		    if (PUTC (' ', f) == EOF)
 			goto bail4;
 		    if (!FcCacheWriteString (f, file->name))
 			goto bail4;
-		    if (putc ('\n', f) == EOF)
+		    if (PUTC ('\n', f) == EOF)
 			goto bail4;
 		}
 	    }
@@ -981,15 +996,15 @@ FcDirCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	base = FcFileBaseName (cache_file, dir);
 	if (!FcCacheWriteString (f, base))
 	    goto bail3;
-	if (putc (' ', f) == EOF)
+	if (PUTC (' ', f) == EOF)
 	    goto bail3;
 	if (!FcCacheWriteInt (f, 0))
 	    goto bail3;
-        if (putc (' ', f) == EOF)
+        if (PUTC (' ', f) == EOF)
 	    goto bail3;
 	if (!FcCacheWriteString (f, FC_FONT_FILE_DIR))
 	    goto bail3;
-	if (putc ('\n', f) == EOF)
+	if (PUTC ('\n', f) == EOF)
 	    goto bail3;
     }
     
@@ -1005,11 +1020,11 @@ FcDirCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	    printf (" write file \"%s\"\n", base);
 	if (!FcCacheWriteString (f, base))
 	    goto bail3;
-	if (putc (' ', f) == EOF)
+	if (PUTC (' ', f) == EOF)
 	    goto bail3;
 	if (!FcCacheWriteInt (f, id))
 	    goto bail3;
-        if (putc (' ', f) == EOF)
+        if (PUTC (' ', f) == EOF)
 	    goto bail3;
 	name = FcNameUnparse (font);
 	if (!name)
@@ -1018,7 +1033,7 @@ FcDirCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	free (name);
 	if (!ret)
 	    goto bail3;
-	if (putc ('\n', f) == EOF)
+	if (PUTC ('\n', f) == EOF)
 	    goto bail3;
     }
     

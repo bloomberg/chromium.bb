@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.16 2002/07/06 23:47:44 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.17 2002/08/11 18:10:42 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -402,8 +402,7 @@ FcFontRenderPrepare (FcConfig	    *config,
 	if (!fe)
 	    FcPatternAdd (new, pe->object, pe->values->value, FcTrue);
     }
-    FcPatternAddPattern (new, FC_PATTERN, pat);
-    FcConfigSubstitute (config, new, FcMatchFont);
+    FcConfigSubstituteWithPat (config, new, pat, FcMatchFont);
     return new;
 }
 

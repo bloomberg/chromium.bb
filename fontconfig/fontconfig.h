@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.23 2002/07/28 10:50:58 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.25 2002/08/11 18:10:41 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -71,7 +71,6 @@ typedef int		FcBool;
 #define FC_SOURCE	    "source"		/* String (X11, freetype) */
 #define FC_CHARSET	    "charset"		/* CharSet */
 #define FC_LANG		    "lang"		/* String OS/2 CodePageRange */
-#define FC_PATTERN	    "pattern"		/* FcPattern */
 
 #define FC_DIR_CACHE_FILE	    "fonts.cache"
 #define FC_USER_CACHE_FILE	    ".fonts.cache"
@@ -110,8 +109,7 @@ typedef enum _FcType {
     FcTypeBool,
     FcTypeMatrix,
     FcTypeCharSet,
-    FcTypeFTFace,
-    FcTypePattern
+    FcTypeFTFace
 } FcType;
 
 typedef struct _FcMatrix {
@@ -277,6 +275,12 @@ FcConfigAppFontAddDir (FcConfig	    *config,
 
 void
 FcConfigAppFontClear (FcConfig	    *config);
+
+FcBool
+FcConfigSubstituteWithPat (FcConfig	*config,
+			   FcPattern	*p,
+			   FcPattern	*p_pat,
+			   FcMatchKind	kind);
 
 FcBool
 FcConfigSubstitute (FcConfig	*config,
@@ -605,9 +609,6 @@ FcPatternAddCharSet (FcPattern *p, const char *object, const FcCharSet *c);
 FcBool
 FcPatternAddBool (FcPattern *p, const char *object, FcBool b);
 
-FcBool
-FcPatternAddPattern (FcPattern *p, const char *object, const FcPattern *pp);
-
 FcResult
 FcPatternGetInteger (FcPattern *p, const char *object, int n, int *i);
 
@@ -625,9 +626,6 @@ FcPatternGetCharSet (FcPattern *p, const char *object, int n, FcCharSet **c);
 
 FcResult
 FcPatternGetBool (FcPattern *p, const char *object, int n, FcBool *b);
-
-FcResult
-FcPatternGetPattern (FcPattern *p, const char *object, int n, FcPattern **pp);
 
 FcPattern *
 FcPatternVaBuild (FcPattern *orig, va_list va);

@@ -1,11 +1,11 @@
-XCOMM $XFree86: xc/lib/fontconfig/fc-lang/Imakefile,v 1.12 2002/08/06 18:59:59 keithp Exp $
+XCOMM $XFree86: xc/lib/fontconfig/fc-lang/Imakefile,v 1.14 2002/08/08 00:10:49 keithp Exp $
 
 #ifdef UseInstalled
 /* building outside the tree, use private defines */
 #include "../local.def"
 #endif
 
-INCLUDES=$(FREETYPE2INCLUDES) $(LIBXML2INCLUDES) -I.. -I../src
+INCLUDES=$(FREETYPE2INCLUDES) -I.. -I../src
 
 LOCAL_LIBRARIES=FontconfigClientLibs
         DEPLIBS=FontconfigClientDepLibs

@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/zh_cn.orth,v 1.2 2002/07/06 23:59:19 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,6 +22,9 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Chinese (simplified) (ZH-CN)
+#
+# Coverage computed from GB2312
+#
 0x02C7	# CARON (Mandarin Chinese third tone)
 0x02C9	# MODIFIER LETTER MACRON (Mandarin Chinese first tone)
 0x4E00	# <CJK>

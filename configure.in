@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/lib/fontconfig/configure.in,v 1.6 2002/06/07 17:55:41 keithp Exp $
+dnl $XFree86: xc/lib/fontconfig/configure.in,v 1.7 2002/08/01 15:57:25 keithp Exp $
 dnl
 dnl Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 dnl
@@ -23,6 +23,7 @@ dnl PERFORMANCE OF THIS SOFTWARE.
 dnl
 
 # Process this file with autoconf to produce a configure script.
+
 AC_INIT(fontconfig, 1.0.1, fonts@xfree86.org)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_HEADER(config.h)
@@ -30,13 +31,11 @@ AC_CONFIG_HEADER(config.h)
 AC_ARG_WITH(freetype_includes, [  --with-freetype-includes=DIR  Use FreeType includes in DIR], freetype_includes=$withval, freetype_includes=yes)
 AC_ARG_WITH(freetype_lib,      [  --with-freetype-lib=DIR       Use FreeType library in DIR], freetype_lib=$withval, freetype_lib=yes)
 AC_ARG_WITH(freetype_config,   [  --with-freetype-config=PROG   Use FreeType configuration program PROG], freetype_config=$withval, freetype_config=yes)
-AC_ARG_WITH(expat,             [  --with-expat=DIR              Use Expat in DIR instead of xml2], expat=$withval, expat=maybe)
+AC_ARG_WITH(expat,             [  --with-expat=DIR              Use Expat in DIR], expat=$withval, expat=yes)
 AC_ARG_WITH(expat_includes,    [  --with-expat-includes=DIR     Use Expat includes in DIR], expat_includes=$withval, expat_includes=yes)
 AC_ARG_WITH(expat_lib,         [  --with-expat-lib=DIR          Use Expat library in DIR], expat_lib=$withval, expat_lib=yes)
-AC_ARG_WITH(xml2,              [  --with-xml2=DIR               Use Libxml2 in DIR instead of expat], xml2=$withval, xml2=maybe)
-AC_ARG_WITH(xml2_includes,     [  --with-xml2-includes=DIR      Use Libxml2 includes in DIR], xml2_includes=$withval, xml2_includes=yes)
-AC_ARG_WITH(xml2_lib,          [  --with-xml2-lib=DIR           Use Libxml2 library in DIR], xml2_lib=$withval, xml2_lib=yes)
 AC_ARG_WITH(default_fonts,     [  --with-default-fonts=DIR      Use fonts from DIR when config is busted], defaultfonts="$withval", default_fonts=yes)
+AC_ARG_WITH(confdir,           [  --with-confdir=DIR            Use DIR to store configuration files (default /etc/fonts)], confdir="$withval", confdir=yes)
 
 # Checks for programs.
 AC_PROG_CC
@@ -210,39 +209,21 @@ AC_SUBST(FC_DEFAULT_FONTS)
 # Set CONFDIR and FONTCONFIG_PATH
 #
 
-CONFDIR="$sysconfdir/fonts"
+case "$confdir" in
+no|yes)
+	confdir=/etc/fonts
+	;;
+*)
+	;;
+esac
+AC_SUBST(confdir)
+CONFDIR='${confdir}'
 AC_DEFINE_UNQUOTED(CONFDIR, "$CONFDIR")
 AC_SUBST(CONFDIR)
 
-FONTCONFIG_PATH="$CONFDIR"
-AC_DEFINE_UNQUOTED(FONTCONFIG_PATH, "$CONFDIR")
-AC_SUBST(FONTCONFIG_PATH)
-
 #
-# Check expat/libxml2 configuration
+# Check expat configuration
 #
-
-case "$expat" in
-maybe)
-	;;
-no)
-	xml2=yes
-	;;
-*)
-	xml2=no
-	;;
-esac
-
-case "$xml2" in
-maybe)
-	;;
-no)
-	expat=yes
-	;;
-*)
-	expat=no
-	;;
-esac
 
 case "$expat" in
 no)
@@ -259,7 +240,7 @@ no)
 	case "$expat_lib" in
 	yes)
 		case "$expat" in
-		yes|maybe)
+		yes)
 			expat_library="-lexpat"
 			;;
 		*)
@@ -317,7 +298,6 @@ no)
 			HAVE_EXPAT=1
 			AC_SUBST(HAVE_EXPAT)
 			AC_DEFINE_UNQUOTED(HAVE_EXPAT,$HAVE_EXPAT)
-			xml2=no
 			;;
 		esac
 		;;
@@ -325,71 +305,10 @@ no)
 	;;
 esac
 	
-case "$xml2" in
+	
+case "$expat" in
 no)
-	;;
-*)
-	case "$xml2_includes" in
-	yes|no)
-		xml2_include_path=""
-		;;
-	*)
-		xml2_include_path="-I$xml2_includes"
-		;;
-	esac
-	case "$xml2_lib" in
-	yes)
-		case "$xml2" in
-		yes|maybe)
-			xml2_library="-lxml2"
-			;;
-		*)
-			xml2_library="-L$xml2/lib -lxml2"
-			;;
-		esac
-		;;
-	no)
-		;;
-	*)
-		xml2_library="-L$xml2_lib -lxml2"
-		;;
-	esac
-
-	saved_CPPFLAGS="$CPPFLAGS"
-	CPPFLAGS="$CPPFLAGS $xml2_include_path"
-	saved_LIBS="$LIBS"
-	LIBS="$LIBS $xml2_library"
-
-	AC_CHECK_HEADER(libxml/parser.h)
-	case "$ac_cv_header_libxml_parser_h" in
-	no)
-		CPPFLAGS="$saved_CPPFLAGS"
-		LIBS="$saved_LIBS"
-		xml2=no
-		;;
-	yes)
-		AC_CHECK_FUNCS(xmlInitParser)
-		case "$ac_cv_func_xmlInitParser" in
-		no)
-			CPPFLAGS="$saved_CPPFLAGS"
-			LIBS="$saved_LIBS"
-			xml2=no
-			;;
-		yes)
-			HAVE_XML2=1
-			AC_SUBST(HAVE_XML2)
-			AC_DEFINE_UNQUOTED(HAVE_XML2,$HAVE_XML2)
-			expat=no
-			;;
-		esac
-		;;
-	esac
-	;;
-esac
-	
-case "$expat""$xml2" in
-nono)
-	AC_MSG_ERROR([cannot find either libxml2 or expat])
+	AC_MSG_ERROR([cannot find expat library])
 	;;
 esac
 

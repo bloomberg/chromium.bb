@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/config/Makedefs.in,v 1.2 2002/05/21 17:48:15 keithp Exp $
+# $XFree86: xc/lib/fontconfig/config/Makedefs.in,v 1.3 2002/08/01 15:57:26 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -32,18 +32,11 @@ bindir=@bindir@
 datadir=@datadir@
 includedir=@includedir@
 sysconfdir=@sysconfdir@
-
-CDEBUGFLAGS=@CFLAGS@
-CPPFLAGS=@CPPFLAGS@
-DEFS=@DEFS@
+confdir=@confdir@
 
 DSO_LDOPTS=@DSO_LDOPTS@
 DSO_CFLAGS=@DSO_CFLAGS@
 DSO_PIC_CFLAGS=@DSO_PIC_CFLAGS@
-
-INCLUDES=-I$(TOPDIR) -I$(srcdir)
-
-CFLAGS=$(CDEBUGFLAGS) $(INCLUDES) $(DEFS) $(CPPFLAGS)
 
 INSTALL=@INSTALL@
 INSTALL_PROGRAM=@INSTALL_PROGRAM@
@@ -51,10 +44,6 @@ INSTALL_SCRIPT=@INSTALL_SCRIPT@
 INSTALL_DATA=@INSTALL_DATA@
 MKSHLIB=@MKSHLIB@
 LN_S=@LN_S@
-
-X_FONT_DIR=@X_FONT_DIR@
-FC_DEFAULT_FONTS=@FC_DEFAULT_FONTS@
-FONTCONFIG_PATH=@FONTCONFIG_PATH@
 
 # shared libraries
 LIBDIR=$(libdir)
@@ -64,6 +53,16 @@ BINDIR=$(bindir)
 CONFDIR=@CONFDIR@
 # include files
 INCLUDEDIR=$(includedir)/fontconfig
+
+X_FONT_DIR=@X_FONT_DIR@
+FC_DEFAULT_FONTS=@FC_DEFAULT_FONTS@
+FCPATH_DEF=-DFONTCONFIG_PATH=\"$(CONFDIR)\"
+
+CDEBUGFLAGS=@CFLAGS@
+
+INCLUDES=-I$(TOPDIR) -I$(srcdir) @CPPFLAGS@
+
+CFLAGS=$(CDEBUGFLAGS) @DEFS@ $(FCPATH_DEF) $(INCLUDES)
 
 LIBBASE=libfontconfig.so
 LIBFILE=$(LIBBASE).@PACKAGE_MAJOR@.@PACKAGE_MINOR@

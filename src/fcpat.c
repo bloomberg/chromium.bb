@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.12 2002/08/07 01:45:59 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.13 2002/08/11 18:10:42 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -55,9 +55,6 @@ FcValueDestroy (FcValue v)
     case FcTypeCharSet:
 	FcCharSetDestroy ((FcCharSet *) v.u.c);
 	break;
-    case FcTypePattern:
-	FcPatternDestroy ((FcPattern *) v.u.p);
-	break;
     default:
 	break;
     }
@@ -82,9 +79,6 @@ FcValueSave (FcValue v)
 	if (!v.u.c)
 	    v.type = FcTypeVoid;
 	break;
-    case FcTypePattern:
-	FcPatternReference ((FcPattern *) v.u.p);
-	break;
     default:
 	break;
     }
@@ -106,9 +100,6 @@ FcValueListDestroy (FcValueList *l)
 	    break;
 	case FcTypeCharSet:
 	    FcCharSetDestroy ((FcCharSet *) l->value.u.c);
-	    break;
-	case FcTypePattern:
-	    FcPatternDestroy ((FcPattern *) l->value.u.p);
 	    break;
 	default:
 	    break;
@@ -154,8 +145,6 @@ FcValueEqual (FcValue va, FcValue vb)
 	return FcCharSetEqual (va.u.c, vb.u.c);
     case FcTypeFTFace:
 	return va.u.f == vb.u.f;
-    case FcTypePattern:
-	return FcPatternEqual (va.u.p, vb.u.p);
     }
     return FcFalse;
 }
@@ -206,8 +195,6 @@ FcValueHash (FcValue v)
     case FcTypeFTFace:
 	return FcStringHash ((const FcChar8 *) ((FT_Face) v.u.f)->family_name) ^
 	       FcStringHash ((const FcChar8 *) ((FT_Face) v.u.f)->style_name);
-    case FcTypePattern:
-	return (FcChar32) v.u.p->num;
     }
     return FcFalse;
 }
@@ -459,9 +446,6 @@ bail2:
     case FcTypeCharSet:
 	FcCharSetDestroy ((FcCharSet *) value.u.c);
 	break;
-    case FcTypePattern:
-	FcPatternDestroy ((FcPattern *) value.u.p);
-	break;
     default:
 	break;
     }
@@ -576,16 +560,6 @@ FcPatternAddFTFace (FcPattern *p, const char *object, const FT_Face f)
 
     v.type = FcTypeFTFace;
     v.u.f = (void *) f;
-    return FcPatternAdd (p, object, v, FcTrue);
-}
-
-FcBool
-FcPatternAddPattern (FcPattern *p, const char *object, const FcPattern *pp)
-{
-    FcValue	v;
-
-    v.type = FcTypePattern;
-    v.u.p = pp;
     return FcPatternAdd (p, object, v, FcTrue);
 }
 
@@ -727,21 +701,6 @@ FcPatternGetFTFace (FcPattern *p, const char *object, int id, FT_Face *f)
     if (v.type != FcTypeFTFace)
 	return FcResultTypeMismatch;
     *f = (FT_Face) v.u.f;
-    return FcResultMatch;
-}
-
-FcResult
-FcPatternGetPattern (FcPattern *p, const char *object, int id, FcPattern **pp)
-{
-    FcValue	v;
-    FcResult	r;
-
-    r = FcPatternGet (p, object, id, &v);
-    if (r != FcResultMatch)
-	return r;
-    if (v.type != FcTypePattern)
-        return FcResultTypeMismatch;
-    *pp = (FcPattern *) v.u.p;
     return FcResultMatch;
 }
 

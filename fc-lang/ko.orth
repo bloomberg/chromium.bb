@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/fc-lang/ko.orth,v 1.2 2002/07/06 23:59:16 keithp Exp $
+# $XFree86: xc/lib/fontconfig/fc-lang/ko.orth,v 1.3 2002/07/12 21:05:59 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,6 +22,9 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Korean (KO)
+#
+# Coverage from KSC 5601-1992
+#
 #0x3000	# IDEOGRAPHIC SPACE
 #0x3001	# IDEOGRAPHIC COMMA
 #0x3002	# IDEOGRAPHIC FULL STOP

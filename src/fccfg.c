@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.18 2002/07/31 01:36:37 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.19 2002/08/11 18:10:42 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -592,18 +592,6 @@ FcConfigCompareValue (FcValue	m,
 		break;
 	    }
 	    break;
-	case FcTypePattern:
-	    switch (op) {
-	    case FcOpEqual:
-		ret = FcPatternEqual (m.u.p, v.u.p);
-		break;
-	    case FcOpNotEqual:
-		ret = !FcPatternEqual (m.u.p, v.u.p);
-		break;
-	    default:
-		break;
-	    }
-	    break;
 	}
     }
     else
@@ -1009,9 +997,10 @@ FcConfigPatternCanon (FcPattern	    *p,
 }
 
 FcBool
-FcConfigSubstitute (FcConfig	*config,
-		    FcPattern	*p,
-		    FcMatchKind	kind)
+FcConfigSubstituteWithPat (FcConfig    *config,
+			   FcPattern   *p,
+			   FcPattern   *p_pat,
+			   FcMatchKind kind)
 {
     FcSubst	    *s;
     FcSubState	    *st;
@@ -1019,7 +1008,6 @@ FcConfigSubstitute (FcConfig	*config,
     FcTest	    *t;
     FcEdit	    *e;
     FcValueList	    *l;
-    FcPattern	    *p_pat = 0;
     FcPattern	    *m;
 
     if (!config)
@@ -1042,10 +1030,7 @@ FcConfigSubstitute (FcConfig	*config,
     if (kind == FcMatchPattern)
 	s = config->substPattern;
     else
-    {
 	s = config->substFont;
-	(void) FcPatternGetPattern (p, FC_PATTERN, 0, &p_pat);
-    }
     for (; s; s = s->next)
     {
 	/*
@@ -1220,6 +1205,14 @@ FcConfigSubstitute (FcConfig	*config,
 	FcPatternPrint (p);
     }
     return FcTrue;
+}
+
+FcBool
+FcConfigSubstitute (FcConfig	*config,
+		    FcPattern	*p,
+		    FcMatchKind	kind)
+{
+    return FcConfigSubstituteWithPat (config, p, 0, kind);
 }
 
 #ifndef FONTCONFIG_PATH

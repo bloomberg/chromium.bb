@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86: xc/lib/fontconfig/src/fontconfig.man,v 1.2 2002/08/06 19:54:10 keithp Exp $
+.\" $XFree86: xc/lib/fontconfig/src/fontconfig.man,v 1.3 2002/08/11 18:10:43 keithp Exp $
 .\"
 .\" Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 .\"
@@ -865,10 +865,15 @@ void FcConfigAppFontClear (FcConfig *config)
 Clears the set of application-specific fonts.
 
 .TP
-FcBool FcConfigSubstitute (FcConfig *config, FcPattern *p, FcMatchKind kind)
+FcBool FcConfigSubstituteWithPat (FcConfig *config, FcPattern *p, FcPattern *p_pat FcMatchKind kind)
 Performs the sequence of pattern modification operations, if 'kind' is
 FcMatchPattern, then those tagged as pattern operations are applied, else 
-if 'kind' is FcMatchFont, those tagged as font operations are applied.
+if 'kind' is FcMatchFont, those tagged as font operations are applied and
+p_pat is used for <test> elements with target=pattern.
+
+.TP
+FcBool FcConfigSubstitute (FcConfig *config, FcPattern *p, FcMatchKind kind)
+Calls FcConfigSubstituteWithPat setting p_pat to NULL.
 
 .TP
 FcPattern *FcFontMatch (FcConfig *config, FcPattern *p, FcResult *result)
@@ -1025,17 +1030,6 @@ Constructs a pattern representing the 'id'th font in 'file'.  The number
 of fonts in 'file' is returned in 'count'.
 
 .SS XML specific functions
-.nf
-.B #include <fontconfig/fcxml.h>
-.fi
-These functions expose the libxml2 datatypes used for font configuration.
-
-.TP
-xmlDocPtr FcConfigLoad (const char *file)
-Loads a configuration file mapping 'file' into a filename with
-FcConfigFilename.  This doesn't load a complete configuration as any
-include files referenced from 'file' will not be loaded.
-
 .TP
 FcBool FcConfigParseAndLoad (FcConfig *config, const FcChar8 *file, FcBool complain)
 Walks the configuration in 'file' and constructs the internal representation in

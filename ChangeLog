@@ -1,3 +1,22 @@
+Mon Aug 19 11:57:27 PDT 2002
+	+ Fix autoconf files to pass FONTCONFIG_PATH on
+	  compile line so that ${prefix} gets substituted
+	  correctly.
+
+	+ Use getc_unlocked/putc_unlocked on systems that
+	  provide them to avoid damage done to stdio by posix
+
+	+ Eliminate FC_PATTERN and FcTypePattern in favor of
+	  an extended api for FcConfigSubstitute which takes
+	  both the font and the pattern.
+
+	+ Add 'sans serif' alias for 'sans-serif' as some apps
+	  can't handle hyphens in family names
+
+	+ Eliminate pretense of support for libxml2
+
+	+ Comment origins of Han orthographies
+
 Tue Jul 30 18:37:09 PDT 2002	keithp
 
 	+ Add binding property to edit element so that strong
