@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-cache/fc-cache.c,v 1.6 2002/07/01 05:11:20 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fc-cache/fc-cache.c,v 1.7 2002/08/11 15:09:33 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -132,7 +132,8 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	{
 	    if (errno == ENOENT || errno == ENOTDIR)
 	    {
-		fprintf (stderr, "\"%s\": no such directory, skipping\n", dir);
+		if (verbose)
+		    printf ("no such directory, skipping\n");
 	    }
 	    else
 	    {
