@@ -12,41 +12,6 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-drm_ioctl_desc_t i915_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_I915_INIT)] = {i915_dma_init, 1, 1},
-	[DRM_IOCTL_NR(DRM_I915_FLUSH)] = {i915_flush_ioctl, 1, 0},
-	[DRM_IOCTL_NR(DRM_I915_FLIP)] = {i915_flip_bufs, 1, 0},
-	[DRM_IOCTL_NR(DRM_I915_BATCHBUFFER)] = {i915_batchbuffer, 1, 0},
-	[DRM_IOCTL_NR(DRM_I915_IRQ_EMIT)] = {i915_irq_emit, 1, 0},
-	[DRM_IOCTL_NR(DRM_I915_IRQ_WAIT)] = {i915_irq_wait, 1, 0},
-	[DRM_IOCTL_NR(DRM_I915_GETPARAM)] = {i915_getparam, 1, 0},
-	[DRM_IOCTL_NR(DRM_I915_SETPARAM)] = {i915_setparam, 1, 1},
-	[DRM_IOCTL_NR(DRM_I915_ALLOC)] = {i915_mem_alloc, 1, 0},
-	[DRM_IOCTL_NR(DRM_I915_FREE)] = {i915_mem_free, 1, 0},
-	[DRM_IOCTL_NR(DRM_I915_INIT_HEAP)] = {i915_mem_init_heap, 1, 1},
-	[DRM_IOCTL_NR(DRM_I915_CMDBUFFER)] = {i915_cmdbuffer, 1, 0}
-};
-
-int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);
-
-static inline void i915_print_status_page(drm_device_t * dev)
-{
-	drm_i915_private_t *dev_priv = dev->dev_private;
-	u32 *temp = dev_priv->hw_status_page;
-
-	if (!temp) {
-		DRM_DEBUG("no status page\n");
-		return;
-	}
-
-	DRM_DEBUG("hw_status: Interrupt Status : %x\n", temp[0]);
-	DRM_DEBUG("hw_status: LpRing Head ptr : %x\n", temp[1]);
-	DRM_DEBUG("hw_status: IRing Head ptr : %x\n", temp[2]);
-	DRM_DEBUG("hw_status: Reserved : %x\n", temp[3]);
-	DRM_DEBUG("hw_status: Driver Counter : %d\n", temp[5]);
-
-}
-
 /* Really want an OS-independent resettable timer.  Would like to have
  * this loop run for (eg) 3 sec, but have the timer reset every time
  * the head pointer changes, so that EBUSY only happens if the ring
@@ -93,7 +58,7 @@ void i915_kernel_lost_context(drm_device_t * dev)
 		dev_priv->sarea_priv->perf_boxes |= I915_BOX_RING_EMPTY;
 }
 
-int i915_dma_cleanup(drm_device_t * dev)
+static int i915_dma_cleanup(drm_device_t * dev)
 {
 	/* Make sure interrupts are disabled here because the uninstall ioctl
 	 * may not have been called from userspace and after dev_private
@@ -244,7 +209,7 @@ static int i915_dma_resume(drm_device_t * dev)
 	return 0;
 }
 
-int i915_dma_init(DRM_IOCTL_ARGS)
+static int i915_dma_init(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_i915_private_t *dev_priv;
@@ -555,7 +520,7 @@ static int i915_quiescent(drm_device_t * dev)
 	return i915_wait_ring(dev, dev_priv->ring.Size - 8, __FUNCTION__);
 }
 
-int i915_flush_ioctl(DRM_IOCTL_ARGS)
+static int i915_flush_ioctl(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 
@@ -564,7 +529,7 @@ int i915_flush_ioctl(DRM_IOCTL_ARGS)
 	return i915_quiescent(dev);
 }
 
-int i915_batchbuffer(DRM_IOCTL_ARGS)
+static int i915_batchbuffer(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
@@ -598,7 +563,7 @@ int i915_batchbuffer(DRM_IOCTL_ARGS)
 	return ret;
 }
 
-int i915_cmdbuffer(DRM_IOCTL_ARGS)
+static int i915_cmdbuffer(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
@@ -634,7 +599,7 @@ int i915_cmdbuffer(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-int i915_do_cleanup_pageflip(drm_device_t * dev)
+static int i915_do_cleanup_pageflip(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 
@@ -645,7 +610,7 @@ int i915_do_cleanup_pageflip(drm_device_t * dev)
 	return 0;
 }
 
-int i915_flip_bufs(DRM_IOCTL_ARGS)
+static int i915_flip_bufs(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 
@@ -656,7 +621,7 @@ int i915_flip_bufs(DRM_IOCTL_ARGS)
 	return i915_dispatch_flip(dev);
 }
 
-int i915_getparam(DRM_IOCTL_ARGS)
+static int i915_getparam(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_i915_private_t *dev_priv = dev->dev_private;
@@ -691,7 +656,7 @@ int i915_getparam(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-int i915_setparam(DRM_IOCTL_ARGS)
+static int i915_setparam(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_i915_private_t *dev_priv = dev->dev_private;
@@ -736,6 +701,26 @@ void i915_driver_prerelease(drm_device_t * dev, DRMFILE filp)
 {
 	if (dev->dev_private) {
 		drm_i915_private_t *dev_priv = dev->dev_private;
+		if (dev_priv->page_flipping) {
+			i915_do_cleanup_pageflip(dev);
+		}
 		i915_mem_release(dev, filp, dev_priv->agp_heap);
 	}
 }
+
+drm_ioctl_desc_t i915_ioctls[] = {
+	[DRM_IOCTL_NR(DRM_I915_INIT)] = {i915_dma_init, 1, 1},
+	[DRM_IOCTL_NR(DRM_I915_FLUSH)] = {i915_flush_ioctl, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_FLIP)] = {i915_flip_bufs, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_BATCHBUFFER)] = {i915_batchbuffer, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_IRQ_EMIT)] = {i915_irq_emit, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_IRQ_WAIT)] = {i915_irq_wait, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_GETPARAM)] = {i915_getparam, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_SETPARAM)] = {i915_setparam, 1, 1},
+	[DRM_IOCTL_NR(DRM_I915_ALLOC)] = {i915_mem_alloc, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_FREE)] = {i915_mem_free, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_INIT_HEAP)] = {i915_mem_init_heap, 1, 1},
+	[DRM_IOCTL_NR(DRM_I915_CMDBUFFER)] = {i915_cmdbuffer, 1, 0}
+};
+
+int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);
