@@ -10,11 +10,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -22,9 +22,9 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Authors: Kevin E. Martin <kevin@precisioninsight.com>
- * 
+ *
  * $XFree86$
  *
  */
@@ -86,6 +86,20 @@ static void r128_flush_write_combine(void)
 			 "pop %%ecx ;"
 			 "pop %%ebx ;"
 			 "pop %%eax" : /* no outputs */ :  /* no inputs */ );
+}
+
+static void r128_status(drm_device_t *dev)
+{
+	drm_r128_private_t *dev_priv = dev->dev_private;
+
+	printk("GUI_STAT           = 0x%08x\n",
+	       (unsigned int)R128_READ(R128_GUI_STAT));
+	printk("PM4_STAT           = 0x%08x\n",
+	       (unsigned int)R128_READ(R128_PM4_STAT));
+	printk("PM4_BUFFER_DL_WPTR = 0x%08x\n",
+	       (unsigned int)R128_READ(R128_PM4_BUFFER_DL_WPTR));
+	printk("PM4_BUFFER_DL_RPTR = 0x%08x\n",
+	       (unsigned int)R128_READ(R128_PM4_BUFFER_DL_RPTR));
 }
 
 static int r128_do_cleanup_cce(drm_device_t *dev)
@@ -828,6 +842,7 @@ static drm_buf_t *r128_freelist_get(drm_device_t *dev)
 		udelay(1);
 	}
 
+	r128_status(dev);
 	return NULL;
 }
 

@@ -11,11 +11,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -62,7 +62,7 @@ typedef unsigned int  drm_context_t;
 typedef unsigned int  drm_drawable_t;
 typedef unsigned int  drm_magic_t;
 
-/* Warning: If you change this structure, make sure you change 
+/* Warning: If you change this structure, make sure you change
  * XF86DRIClipRectRec in the server as well */
 
 typedef struct drm_clip_rect {
@@ -358,7 +358,7 @@ typedef struct drm_agp_info {
 #define DRM_IOCTL_R128_INIT	DRM_IOW( 0x40, drm_r128_init_t)
 #define DRM_IOCTL_R128_RESET	DRM_IO(  0x41)
 #define DRM_IOCTL_R128_FLUSH	DRM_IO(  0x42)
-#define DRM_IOCTL_R128_CCEIDL	DRM_IO(  0x43)
+#define DRM_IOCTL_R128_IDLE	DRM_IO(  0x43)
 #define DRM_IOCTL_R128_PACKET	DRM_IOW( 0x44, drm_r128_packet_t)
 #define DRM_IOCTL_R128_VERTEX	DRM_IOW( 0x45, drm_r128_vertex_t)
 

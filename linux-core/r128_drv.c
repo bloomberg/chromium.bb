@@ -10,11 +10,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -22,10 +22,10 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Authors: Rickard E. (Rik) Faith <faith@precisioninsight.com>
  *          Kevin E. Martin <kevin@precisioninsight.com>
- * 
+ *
  * $XFree86$
  *
  */
@@ -108,7 +108,7 @@ static drm_ioctl_desc_t	      r128_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_R128_RESET)]  = { r128_eng_reset,  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_R128_FLUSH)]  = { r128_eng_flush,  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_R128_PACKET)] = { r128_submit_pkt, 1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_CCEIDL)] = { r128_cce_idle,   1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_IDLE)]   = { r128_cce_idle,   1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_R128_VERTEX)] = { r128_vertex_buf, 1, 0 },
 };
 #define R128_IOCTL_COUNT DRM_ARRAY_SIZE(r128_ioctls)
@@ -144,7 +144,7 @@ void cleanup_module(void)
  *
  * This is not currently supported, since it requires changes to
  * linux/init/main.c. */
- 
+
 
 void __init r128_setup(char *str, int *ints)
 {
@@ -159,7 +159,7 @@ void __init r128_setup(char *str, int *ints)
 static int r128_setup(drm_device_t *dev)
 {
 	int i;
-	
+
 	atomic_set(&dev->ioctl_count, 0);
 	atomic_set(&dev->vma_count, 0);
 	dev->buf_use	  = 0;
@@ -202,7 +202,7 @@ static int r128_setup(drm_device_t *dev)
 
 	dev->ctx_start	    = 0;
 	dev->lck_start	    = 0;
-	
+
 	dev->buf_rp	  = dev->buf;
 	dev->buf_wp	  = dev->buf;
 	dev->buf_end	  = dev->buf + DRM_BSZ;
@@ -211,15 +211,15 @@ static int r128_setup(drm_device_t *dev)
 	init_waitqueue_head(&dev->buf_writers);
 
 	r128_res_ctx.handle=-1;
-			
+
 	DRM_DEBUG("\n");
-			
+
 	/* The kernel's context could be created here, but is now created
 	   in drm_dma_enqueue.	This is more resource-efficient for
 	   hardware that does not do DMA, but may mean that
 	   drm_select_queue fails between the time the interrupt is
 	   initialized and the time the queues are initialized. */
-			
+
 	return 0;
 }
 
@@ -235,12 +235,12 @@ static int r128_takedown(drm_device_t *dev)
 
 	down(&dev->struct_sem);
 	del_timer(&dev->timer);
-	
+
 	if (dev->devname) {
 		drm_free(dev->devname, strlen(dev->devname)+1, DRM_MEM_DRIVER);
 		dev->devname = NULL;
 	}
-	
+
 	if (dev->unique) {
 		drm_free(dev->unique, strlen(dev->unique)+1, DRM_MEM_DRIVER);
 		dev->unique = NULL;
@@ -260,7 +260,7 @@ static int r128_takedown(drm_device_t *dev)
 	if (dev->agp) {
 		drm_agp_mem_t *entry;
 		drm_agp_mem_t *nexte;
-		
+
 				/* Remove AGP resources, but leave dev->agp
                                    intact until r128_cleanup is called. */
 		for (entry = dev->agp->memory; entry; entry = nexte) {
@@ -270,15 +270,15 @@ static int r128_takedown(drm_device_t *dev)
 			drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
 		}
 		dev->agp->memory = NULL;
-		
+
 		if (dev->agp->acquired && drm_agp.release)
 			(*drm_agp.release)();
-		
+
 		dev->agp->acquired = 0;
 		dev->agp->enabled  = 0;
 	}
 #endif
-	
+
 				/* Clear vma list (only built for debugging) */
 	if (dev->vmalist) {
 		for (vma = dev->vmalist; vma; vma = vma_next) {
@@ -287,7 +287,7 @@ static int r128_takedown(drm_device_t *dev)
 		}
 		dev->vmalist = NULL;
 	}
-	
+
 				/* Clear map area and mtrr information */
 	if (dev->maplist) {
 		for (i = 0; i < dev->map_count; i++) {
@@ -325,7 +325,7 @@ static int r128_takedown(drm_device_t *dev)
 		dev->maplist   = NULL;
 		dev->map_count = 0;
 	}
-	
+
 	drm_dma_takedown(dev);
 
 	dev->queue_count     = 0;
@@ -335,7 +335,7 @@ static int r128_takedown(drm_device_t *dev)
 		wake_up_interruptible(&dev->lock.lock_queue);
 	}
 	up(&dev->struct_sem);
-	
+
 	return 0;
 }
 
@@ -352,7 +352,7 @@ int r128_init(void)
 	memset((void *)dev, 0, sizeof(*dev));
 	dev->count_lock	  = SPIN_LOCK_UNLOCKED;
 	sema_init(&dev->struct_sem, 1);
-	
+
 #ifdef MODULE
 	drm_parse_options(r128);
 #endif
@@ -404,7 +404,7 @@ void r128_cleanup(void)
 	drm_device_t	      *dev = &r128_device;
 
 	DRM_DEBUG("\n");
-	
+
 	drm_proc_cleanup();
 	if (misc_deregister(&r128_misc)) {
 		DRM_ERROR("Cannot unload module\n");
@@ -460,7 +460,7 @@ int r128_open(struct inode *inode, struct file *filp)
 {
 	drm_device_t  *dev    = &r128_device;
 	int	      retcode = 0;
-	
+
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
 	if (!(retcode = drm_open_helper(inode, filp, dev))) {
 		MOD_INC_USE_COUNT;
@@ -517,7 +517,7 @@ int r128_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 	atomic_inc(&dev->ioctl_count);
 	atomic_inc(&dev->total_ioctl);
 	++priv->ioctl_count;
-	
+
 	DRM_DEBUG("pid = %d, cmd = 0x%02x, nr = 0x%02x, dev 0x%x, auth = %d\n",
 		  current->pid, cmd, nr, dev->device, priv->authenticated);
 
@@ -537,7 +537,7 @@ int r128_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 			retcode = (func)(inode, filp, cmd, arg);
 		}
 	}
-	
+
 	atomic_dec(&dev->ioctl_count);
 	return retcode;
 }
@@ -574,7 +574,7 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
         if (lock.context < 0 || lock.context >= dev->queue_count)
                 return -EINVAL;
 #endif
-        
+
         if (!ret) {
 #if 0
                 if (_DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock)
@@ -586,7 +586,7 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
                                 /* Can't take lock if we just had it and
                                    there is contention. */
                                 DRM_DEBUG("%d (pid %d) delayed j=%d dev=%d jiffies=%d\n",
-					lock.context, current->pid, j, 
+					lock.context, current->pid, j,
 					dev->lock.lock_time, jiffies);
                                 current->state = TASK_INTERRUPTIBLE;
 				current->policy |= SCHED_YIELD;
@@ -609,7 +609,7 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
                                 atomic_inc(&dev->total_locks);
                                 break;  /* Got lock */
                         }
-                        
+
                                 /* Contention */
                         atomic_inc(&dev->total_sleeps);
                         current->state = TASK_INTERRUPTIBLE;
@@ -665,7 +665,7 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
         }
 
 #if 0
-	DRM_ERROR("pid = %5d, old counter = %5ld\n", 
+	DRM_ERROR("pid = %5d, old counter = %5ld\n",
 		current->pid, current->counter);
 #endif
 	if (lock.context != r128_res_ctx.handle) {
@@ -683,7 +683,7 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 #if DRM_DMA_HISTOGRAM
         atomic_inc(&dev->histo.lacq[drm_histogram_slot(get_cycles() - start)]);
 #endif
-        
+
         return ret;
 }
 
@@ -696,7 +696,7 @@ int r128_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_lock_t	  lock;
 
 	copy_from_user_ret(&lock, (drm_lock_t *)arg, sizeof(lock), -EFAULT);
-	
+
 	if (lock.context == DRM_KERNEL_CONTEXT) {
 		DRM_ERROR("Process %d using kernel context %d\n",
 			  current->pid, lock.context);
@@ -732,6 +732,6 @@ int r128_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 	current->state = TASK_INTERRUPTIBLE;
 	schedule_timeout(10);
 #endif
-	
+
 	return 0;
 }
