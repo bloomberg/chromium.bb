@@ -4,7 +4,7 @@ built.
 
     639-2 	639-1	Language Name (English)				Language Name (French)
     
-    aar		aa	Afar 						afar
+*   aar		aa	Afar 						afar
 *   abk		ab	Abkhazian 					abkhaze
     ace			Achinese 					aceh
     ach			Acoli 						acoli
@@ -17,7 +17,7 @@ built.
 *   alb/sqi*	sq	Albanian 					albanais
     ale			Aleut 						aléoute
     alg			Algonquian languages				algonquines, langues
-    amh		am	Amharic 					amharique
+*   amh		am	Amharic 					amharique
     ang			English, Old (ca.450-1100)			anglo-saxon (ca.450-1100)
     apa			Apache languages				apache
 *   ara		ar	Arabic 						arabe
@@ -34,7 +34,7 @@ built.
 *   ava			Avaric						avar
     ave		ae	Avestan						avestique
     awa			Awadhi						awadhi
-    aym		ay	Aymara						aymara
+*   aym		ay	Aymara						aymara
 *   aze		az	Azerbaijani					azéri
     bad			Banda						banda
     bai			Bamileke languages				bamilékés, langues
@@ -53,7 +53,7 @@ built.
     bho			Bhojpuri					bhojpuri
 *   bih		bh	Bihari						bihari
     bik			Bikol						bikol
-    bin			Bini						bini
+*   bin			Bini						bini
 *   bis		bi	Bislama						bichlamar
     bla			Siksika						blackfoot
     bnt			Bantu (Other)					bantoues, autres langues
@@ -65,7 +65,7 @@ built.
 *   bua			Buriat						bouriate
     bug			Buginese					bugi
 *   bul		bg	Bulgarian					bulgare
-    bur/mya*	my	Burmese						birman
+*   bur/mya*	my	Burmese						birman
     cad			Caddo						caddo
     cai			Central American Indian (Other)			indiennes d'Amérique centrale, autres langues
     car			Carib						caribe
@@ -115,7 +115,7 @@ built.
     dum			Dutch, Middle (ca.1050-1350)			néerlandais moyen (ca. 1050-1350)
 *   dut/nld*	nl	Dutch						néerlandais
     dyu			Dyula						dioula
-    dzo		dz	Dzongkha					dzongkha
+*   dzo		dz	Dzongkha					dzongkha
     efi			Efik						efik
     egy			Egyptian (Ancient)				égyptien
     eka			Ekajuk						ekajuk
@@ -132,7 +132,7 @@ built.
 *   fao		fo	Faroese						féroïen
 *   per/fas*	fa	Persian						persan
     fat			Fanti						fanti
-    fij		fj	Fijian						fidjien
+*   fij		fj	Fijian						fidjien
 *   fin		fi	Finnish						finnois
     fiu			Finno-Ugrian (Other)				finno-ougriennes, autres langues
     fon			Fon						fon
@@ -175,7 +175,7 @@ built.
 *   hin		hi	Hindi						hindi
     hit			Hittite						hittite
     hmn			Hmong						hmong
-    hmo		ho	Hiri Motu					hiri motu
+*   hmo		ho	Hiri Motu					hiri motu
 *   scr/hrv*	hr	Croatian					croate
 *   hun		hu	Hungarian					hongrois
     hup			Hupa						hupa
@@ -183,12 +183,12 @@ built.
     iba			Iban						iban
 *   ibo			Igbo						igbo
 *   ice/isl*	is	Icelandic					islandais
-    ido		io	Ido						ido
+*   ido		io	Ido						ido
     ijo			Ijo						ijo
 *   iku		iu	Inuktitut					inuktitut
-    ile		ie	Interlingue					interlingue
+*   ile		ie	Interlingue					interlingue
     ilo			Iloko						ilocano
-    ina		ia	Interlingua (International Auxiliary Language Association)	interlingua (langue auxiliaire internationale)
+*   ina		ia	Interlingua (International Auxiliary Language Association)	interlingua (langue auxiliaire internationale)
     inc			Indic (Other)					indo-aryennes, autres langues
 *   ind		id	Indonesian					indonésien
     ine			Indo-European (Other)				indo-européennes, autres langues
@@ -217,7 +217,7 @@ built.
     khi			Khoisan (Other)					khoisan, autres langues
 *   khm		km	Khmer						khmer
     kho			Khotanese					khotanais
-    kik		ki	Kikuyu; Gikuyu					kikuyu
+*   kik		ki	Kikuyu; Gikuyu					kikuyu
     kin		rw	Kinyarwanda					rwanda
 *   kir		ky	Kirghiz						kirghize
     kmb			Kimbundu					kimbundu
@@ -282,13 +282,13 @@ built.
 *   mol		mo	Moldavian					moldave
 *   mon		mn	Mongolian					mongol
     mos			Mossi						moré
-    mao/mri*	mi	Maori						maori
+*   mao/mri*	mi	Maori						maori
     may/msa*	ms	Malay						malais
     mul			Multiple languages				multilingue
     mun			Munda languages					mounda, langues
     mus			Creek						muskogee
     mwr			Marwari						marvari
-    bur/mya*	my	Burmese						birman
+*   bur/mya*	my	Burmese						birman
     myn			Mayan languages					maya, langues
     nah			Nahuatl						nahuatl
     nai			North American Indian				indiennes d'Amérique du Nord, autres langues
@@ -318,7 +318,7 @@ built.
 *   oci		oc	Occitan (post 1500); Provençal			occitan (après 1500); provençal
     oji			Ojibwa						ojibwa
 *   ori		or	Oriya						oriya
-    orm		om	Oromo						galla
+*   orm		om	Oromo						galla
     osa			Osage						osage
 *   oss		os	Ossetian; Ossetic				ossète
     ota			Turkish, Ottoman (1500-1928)			turc ottoman (1500-1928)
@@ -387,7 +387,7 @@ built.
     snd		sd	Sindhi						sindhi
     snk			Soninke						soninké
     sog			Sogdian						sogdien
-    som		so	Somali						somali
+*   som		so	Somali						somali
     son			Songhai						songhai
     sot		st	Sotho, Southern					sotho du Sud
 *   spa		es	Spanish; Castilian				espagnol; castillan
@@ -402,7 +402,7 @@ built.
     sun		su	Sundanese					soundanais
     sus			Susu						soussou
     sux			Sumerian					sumérien
-    swa		sw	Swahili						swahili
+*   swa		sw	Swahili						swahili
 *   swe		sv	Swedish						suédois
 *   syr			Syriac						syriaque
     tah		ty	Tahitian					tahitien
@@ -418,7 +418,7 @@ built.
 *   tha		th	Thai						thaï
 *   tib/bod*	bo	Tibetan						tibétain
     tig			Tigre						tigré
-    tir		ti	Tigrinya					tigrigna
+*   tir		ti	Tigrinya					tigrigna
     tiv			Tiv						tiv
     tkl			Tokelau						tokelau
     tli			Tlingit						tlingit
@@ -428,21 +428,21 @@ built.
     tpi			Tok Pisin					tok pisin
     tsi			Tsimshian					tsimshian
 *   tsn		tn	Tswana						tswana
-    tso		ts	Tsonga						tsonga
+*   tso		ts	Tsonga						tsonga
 *   tuk		tk	Turkmen						turkmène
     tum			Tumbuka						tumbuka
     tup			Tupi languages					tupi, langues
 *   tur		tr	Turkish						turc
     tut			Altaic (Other)					altaïques, autres langues
     tvl			Tuvalu						tuvalu
-    twi		tw	Twi						twi
+*   twi		tw	Twi						twi
 *   tyv			Tuvinian					touva
     uga			Ugaritic					ougaritique
-    uig		ug	Uighur						ouïgour
+*   uig		ug	Uighur						ouïgour
 *   ukr		uk	Ukrainian					ukrainien
     umb			Umbundu						umbundu
     und			Undetermined					indéterminée
-    urd		ur	Urdu						ourdou
+*   urd		ur	Urdu						ourdou
 *   uzb		uz	Uzbek						ouszbek
     vai			Vai						vaï
 *   ven			Venda						venda
@@ -457,7 +457,7 @@ built.
 *   wen			Sorbian languages				sorabes, langues
 *   wln		wa	Walloon						wallon
 *   wol		wo	Wolof						wolof
-    xho		xh	Xhosa						xhosa
+*   xho		xh	Xhosa						xhosa
     yao			Yao						yao
 *   yap			Yapese						yapois
 *   yid		yi	Yiddish						yiddish
@@ -468,6 +468,6 @@ built.
     zha		za	Zhuang; Chuang					zhuang; chuang
 *   chi/zho*	zh	Chinese						chinois
     znd			Zande						zandé
-    zul		zu	Zulu						zoulou
+*   zul		zu	Zulu						zoulou
     zun			Zuni						zuni
     

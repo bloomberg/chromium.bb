@@ -21,26 +21,28 @@ TMPL=fclang.tmpl.h
 # language codes
 #
 
-ORTH=ab.orth af.orth ar.orth ast.orth ava.orth az.orth bam.orth ba.orth\
-     be.orth bg.orth bho.orth bh.orth bi.orth bn.orth bo.orth br.orth bs.orth\
-     bua.orth ca.orth ce.orth chm.orth ch.orth chr.orth co.orth cs.orth\
-     cu.orth cv.orth cy.orth da.orth de.orth el.orth en.orth eo.orth es.orth\
-     et.orth eu.orth fa.orth fi.orth fo.orth fr.orth ful.orth fur.orth\
-     fy.orth ga.orth gd.orth gez.orth gl.orth gn.orth gu.orth gv.orth ha.orth\
-     haw.orth he.orth hi.orth hr.orth hu.orth hy.orth ibo.orth id.orth\
-     ik.orth is.orth it.orth iu.orth ja.orth kaa.orth ka.orth kk.orth kl.orth\
-     km.orth kn.orth kok.orth ko.orth ks.orth kum.orth ku.orth kv.orth\
-     kw.orth ky.orth la.orth lb.orth lez.orth lo.orth lt.orth lv.orth mg.orth\
-     mh.orth mi.orth mk.orth ml.orth mn.orth mo.orth mr.orth mt.orth nb.orth\
-     ne.orth nl.orth nn.orth no.orth ny.orth oc.orth or.orth os.orth pl.orth\
-     pt.orth rm.orth ro.orth ru.orth sah.orth sa.orth sco.orth sel.orth\
-     se.orth sh.orth si.orth sk.orth sl.orth sma.orth smj.orth smn.orth\
-     sm.orth sms.orth sq.orth sr.orth sv.orth syr.orth ta.orth te.orth\
-     tg.orth th.orth tk.orth tl.orth tn.orth to.orth tr.orth tt.orth tyv.orth\
-     uk.orth uz.orth ven.orth vi.orth vo.orth vot.orth wa.orth wen.orth\
-     wo.orth yap.orth yi.orth yo.orth zh_cn.orth zh_hk.orth zh_mo.orth\
-     zh_sg.orth zh_tw.orth
-
+ORTH=aa.orth ab.orth af.orth am.orth ar.orth ast.orth ava.orth ay.orth\
+     az.orth bam.orth ba.orth be.orth bg.orth bho.orth bh.orth bin.orth\
+     bi.orth bn.orth bo.orth br.orth bs.orth bua.orth ca.orth ce.orth\
+     chm.orth ch.orth chr.orth co.orth cs.orth cu.orth cv.orth cy.orth\
+     da.orth de.orth dz.orth el.orth en.orth eo.orth es.orth et.orth eu.orth\
+     fa.orth fi.orth fj.orth fo.orth fr.orth ful.orth fur.orth fy.orth\
+     ga.orth gd.orth gez.orth gl.orth gn.orth gu.orth gv.orth ha.orth\
+     haw.orth he.orth hi.orth ho.orth hr.orth hu.orth hy.orth ia.orth\
+     ibo.orth id.orth ie.orth ik.orth io.orth is.orth it.orth iu.orth ja.orth\
+     kaa.orth ka.orth ki.orth kk.orth kl.orth km.orth kn.orth kok.orth\
+     ko.orth ks.orth kum.orth ku.orth kv.orth kw.orth ky.orth la.orth lb.orth\
+     lez.orth lo.orth lt.orth lv.orth mg.orth mh.orth mi.orth mk.orth ml.orth\
+     mn.orth mo.orth mr.orth mt.orth my.orth nb.orth ne.orth nl.orth nn.orth\
+     no.orth ny.orth oc.orth om.orth or.orth os.orth pl.orth pt.orth rm.orth\
+     ro.orth ru.orth sah.orth sa.orth sco.orth sel.orth se.orth sh.orth\
+     si.orth sk.orth sl.orth sma.orth smj.orth smn.orth sm.orth sms.orth\
+     so.orth sq.orth sr.orth sv.orth sw.orth syr.orth ta.orth te.orth tg.orth\
+     th.orth ti.orth tk.orth tl.orth tn.orth to.orth tr.orth ts.orth tt.orth\
+     tw.orth tyv.orth ug.orth uk.orth ur.orth uz.orth ven.orth vi.orth\
+     vo.orth vot.orth wa.orth wen.orth wo.orth xh.orth yap.orth yi.orth\
+     yo.orth zh_cn.orth zh_hk.orth zh_mo.orth zh_sg.orth zh_tw.orth zu.orth
+     
 all:: $(TARG)
      
 clean::
