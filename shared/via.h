@@ -53,12 +53,9 @@ extern int via_final_context(int context);
 #define DRIVER_CTX_DTOR via_final_context
 
 #define DRIVER_PCI_IDS				\
-    {0x1106, 0x3122, 0, "Via CLE3122"},		\
-    {0x1106, 0x3022, 0, "Via CLE3022"},		\
-    {0x1106, 0x3205, 0, "Via VT3205"},		\
-    {0x1106, 0x7205, 0, "Via VT7205"},		\
-    {0x1106, 0x3204, 0, "Via VT3204"},		\
-    {0x1106, 0x7204, 0, "Via VT7204"},		\
+    {0x1106, 0x3122, 0, "VIA CLE266"},		\
+    {0x1106, 0x7205, 0, "VIA KM400"},		\
+    {0x1106, 0x7204, 0, "VIA K8M800"},		\
 	    {0, 0, 0, NULL}
 
 #endif

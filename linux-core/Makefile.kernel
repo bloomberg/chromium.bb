@@ -19,8 +19,6 @@ ffb-objs    := ffb_drv.o ffb_context.o
 savage-objs := savage_drv.o savage_dma.o
 via-objs    := via_irq.o via_drv.o via_ds.o via_map.o via_mm.o 
 
-export-objs := via_mm.o
-
 # Kernel version checks
 
 BELOW25 := $(shell if [ $(PATCHLEVEL) -lt 5 ]; then echo y; fi)
@@ -39,6 +37,7 @@ list-multi	:= gamma.o tdfx.o r128.o mga.o i810.o i830.o ffb.o radeon.o \
 obj-m		:=
 obj-n		:=
 obj-		:=
+export-objs     := via_mm.o
 endif
 
 obj-$(CONFIG_DRM_GAMMA) += gamma.o
