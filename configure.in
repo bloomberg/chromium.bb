@@ -268,8 +268,6 @@ case "$FC_ADD_FONTS" in
 	;;
 esac
 
-echo FC_FONTPATH is "$FC_FONTPATH"
-
 AC_SUBST(FC_FONTPATH)
 
 FC_FONTDATE=`date`
