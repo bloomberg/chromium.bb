@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/fc-lang/Imakefile,v 1.6 2002/07/09 02:28:26 keithp Exp $
+XCOMM $XFree86: xc/lib/fontconfig/fc-lang/Imakefile,v 1.7 2002/07/12 07:52:15 keithp Exp $
 
 #ifdef UseInstalled
 /* building outside the tree, use private defines */
@@ -27,14 +27,15 @@ ORTH=ab.orth ar.orth ava.orth az.orth ba.orth be.orth bg.orth bh.orth\
      es.orth et.orth eu.orth fa.orth fi.orth fo.orth fr.orth fy.orth ga.orth\
      gd.orth gez.orth gl.orth gu.orth he.orth hi.orth hr.orth hu.orth hy.orth\
      ik.orth is.orth it.orth iu.orth ja.orth ka.orth kaa.orth kk.orth kl.orth\
-     km.orth kn.orth ko.orth kok.orth ks.orth ku.orth kv.orth ky.orth la.orth\
-     lez.orth lo.orth lt.orth lv.orth mk.orth ml.orth mn.orth mo.orth mr.orth\
-     mt.orth ne.orth nl.orth no.orth oc.orth or.orth os.orth pl.orth pt.orth\
-     rm.orth ro.orth ru.orth sa.orth sah.orth sel.orth sh.orth si.orth\
-     sk.orth sl.orth sq.orth sr.orth sv.orth ta.orth te.orth tg.orth th.orth\
-     tk.orth tl.orth tr.orth tt.orth tyv.orth uk.orth uz.orth vo.orth wa.orth\
-     yi.orth zh_cn.orth zh_hk.orth zh_mo.orth zh_sg.orth zh_tw.orth
-     
+     km.orth kn.orth ko.orth kok.orth ks.orth ku.orth kum.orth kv.orth\
+     ky.orth la.orth lez.orth lo.orth lt.orth lv.orth mk.orth ml.orth mn.orth\
+     mo.orth mr.orth mt.orth ne.orth nl.orth no.orth oc.orth or.orth os.orth\
+     pl.orth pt.orth rm.orth ro.orth ru.orth sa.orth sah.orth sel.orth\
+     sh.orth si.orth sk.orth sl.orth sq.orth sr.orth sv.orth ta.orth te.orth\
+     tg.orth th.orth tk.orth tl.orth tr.orth tt.orth tyv.orth uk.orth uz.orth\
+     vo.orth wa.orth yi.orth zh_cn.orth zh_hk.orth zh_mo.orth zh_sg.orth\
+     zh_tw.orth
+
 all:: $(TARG)
      
 clean::

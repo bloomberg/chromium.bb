@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* total size: 779 unique leaves: 541 */
+/* total size: 780 unique leaves: 541 */
 
 static const FcCharLeaf	leaves[541] = {
     { { /* 0 */
@@ -1014,51 +1014,51 @@ static const FcCharLeaf	leaves[541] = {
     0x00000000, 0x0c000000, 0x03000000, 0x000000c0,
     } },
     { { /* 247 */
+    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    } },
+    { { /* 248 */
     0xffff0042, 0xffffffff, 0x0042ffff, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x000000c0,
     } },
-    { { /* 248 */
+    { { /* 249 */
     0xffff0002, 0xffffffff, 0x0002ffff, 0x000c0000,
     0x00000000, 0x0000c00c, 0x00000000, 0x00000000,
     } },
-    { { /* 249 */
+    { { /* 250 */
     0x000c0003, 0x00003c00, 0x0000f000, 0x00003c00,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
-    { { /* 250 */
+    { { /* 251 */
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0xfef02596, 0x3bffecae, 0x33ff3f5f, 0x00000000,
     } },
-    { { /* 251 */
+    { { /* 252 */
     0x000033f0, 0x0000c000, 0x00000000, 0x600c0c03,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
-    { { /* 252 */
+    { { /* 253 */
     0x000c3003, 0x18c00c0c, 0x00c03060, 0x60000c03,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
-    { { /* 253 */
+    { { /* 254 */
     0xfdffb729, 0x000001ff, 0xb7290000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
-    { { /* 254 */
+    { { /* 255 */
     0xfffddfec, 0xc3fffdff, 0x00803dcf, 0x0000ffc3,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
-    { { /* 255 */
+    { { /* 256 */
     0x03ff07ff, 0xffffffff, 0xffffffff, 0x00ffffff,
     0xffffffff, 0x000003ff, 0x00000000, 0x00000000,
     } },
-    { { /* 256 */
+    { { /* 257 */
     0x00000000, 0x00000000, 0x07fffffe, 0x07fffffe,
     0x00000000, 0x00000000, 0x00004004, 0x00004004,
     } },
-    { { /* 257 */
-    0x0f000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    } },
     { { /* 258 */
-    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
+    0x0f000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
     { { /* 259 */
@@ -2653,8 +2653,16 @@ static const FcChar16 numbers_ku[2] = {
     0x0000, 0x0004,
 };
 
-static const FcCharLeaf *leaves_kv[1] = {
+static const FcCharLeaf *leaves_kum[1] = {
     L(247),
+};
+
+static const FcChar16 numbers_kum[1] = {
+    0x0004,
+};
+
+static const FcCharLeaf *leaves_kv[1] = {
+    L(248),
 };
 
 static const FcChar16 numbers_kv[1] = {
@@ -2662,7 +2670,7 @@ static const FcChar16 numbers_kv[1] = {
 };
 
 static const FcCharLeaf *leaves_ky[1] = {
-    L(248),
+    L(249),
 };
 
 static const FcChar16 numbers_ky[1] = {
@@ -2670,7 +2678,7 @@ static const FcChar16 numbers_ky[1] = {
 };
 
 static const FcCharLeaf *leaves_la[2] = {
-    L( 30), L(249),
+    L( 30), L(250),
 };
 
 static const FcChar16 numbers_la[2] = {
@@ -2678,7 +2686,7 @@ static const FcChar16 numbers_la[2] = {
 };
 
 static const FcCharLeaf *leaves_lo[1] = {
-    L(250),
+    L(251),
 };
 
 static const FcChar16 numbers_lo[1] = {
@@ -2686,7 +2694,7 @@ static const FcChar16 numbers_lo[1] = {
 };
 
 static const FcCharLeaf *leaves_lt[2] = {
-    L( 30), L(251),
+    L( 30), L(252),
 };
 
 static const FcChar16 numbers_lt[2] = {
@@ -2694,7 +2702,7 @@ static const FcChar16 numbers_lt[2] = {
 };
 
 static const FcCharLeaf *leaves_lv[2] = {
-    L( 30), L(252),
+    L( 30), L(253),
 };
 
 static const FcChar16 numbers_lv[2] = {
@@ -2702,7 +2710,7 @@ static const FcChar16 numbers_lv[2] = {
 };
 
 static const FcCharLeaf *leaves_mk[1] = {
-    L(253),
+    L(254),
 };
 
 static const FcChar16 numbers_mk[1] = {
@@ -2710,7 +2718,7 @@ static const FcChar16 numbers_mk[1] = {
 };
 
 static const FcCharLeaf *leaves_ml[1] = {
-    L(254),
+    L(255),
 };
 
 static const FcChar16 numbers_ml[1] = {
@@ -2718,7 +2726,7 @@ static const FcChar16 numbers_ml[1] = {
 };
 
 static const FcCharLeaf *leaves_mn[1] = {
-    L(255),
+    L(256),
 };
 
 static const FcChar16 numbers_mn[1] = {
@@ -2726,7 +2734,7 @@ static const FcChar16 numbers_mn[1] = {
 };
 
 static const FcCharLeaf *leaves_mo[4] = {
-    L(256), L( 23), L(257), L(258),
+    L(257), L( 23), L(258), L(247),
 };
 
 static const FcChar16 numbers_mo[4] = {
@@ -2773,14 +2781,6 @@ static const FcChar16 numbers_or[1] = {
     0x000b,
 };
 
-static const FcCharLeaf *leaves_os[1] = {
-    L(258),
-};
-
-static const FcChar16 numbers_os[1] = {
-    0x0004,
-};
-
 static const FcCharLeaf *leaves_pl[2] = {
     L(266), L(267),
 };
@@ -2806,7 +2806,7 @@ static const FcChar16 numbers_rm[1] = {
 };
 
 static const FcCharLeaf *leaves_ro[3] = {
-    L(256), L( 23), L(257),
+    L(257), L( 23), L(258),
 };
 
 static const FcChar16 numbers_ro[3] = {
@@ -3176,6 +3176,8 @@ static const FcLangCharSet  fcLangCharSets[] = {
       { 1, FcTrue, 1, (FcCharLeaf **) leaves_bh, (FcChar16 *) numbers_bh } },
     { (FcChar8 *) "ku",
       { 1, FcTrue, 2, (FcCharLeaf **) leaves_ku, (FcChar16 *) numbers_ku } },
+    { (FcChar8 *) "kum",
+      { 1, FcTrue, 1, (FcCharLeaf **) leaves_kum, (FcChar16 *) numbers_kum } },
     { (FcChar8 *) "kv",
       { 1, FcTrue, 1, (FcCharLeaf **) leaves_kv, (FcChar16 *) numbers_kv } },
     { (FcChar8 *) "ky",
@@ -3213,7 +3215,7 @@ static const FcLangCharSet  fcLangCharSets[] = {
     { (FcChar8 *) "or",
       { 1, FcTrue, 1, (FcCharLeaf **) leaves_or, (FcChar16 *) numbers_or } },
     { (FcChar8 *) "os",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_os, (FcChar16 *) numbers_os } },
+      { 1, FcTrue, 1, (FcCharLeaf **) leaves_kum, (FcChar16 *) numbers_kum } },
     { (FcChar8 *) "pl",
       { 1, FcTrue, 2, (FcCharLeaf **) leaves_pl, (FcChar16 *) numbers_pl } },
     { (FcChar8 *) "pt",
@@ -3229,7 +3231,7 @@ static const FcLangCharSet  fcLangCharSets[] = {
     { (FcChar8 *) "sah",
       { 1, FcTrue, 1, (FcCharLeaf **) leaves_sah, (FcChar16 *) numbers_sah } },
     { (FcChar8 *) "sel",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_os, (FcChar16 *) numbers_os } },
+      { 1, FcTrue, 1, (FcCharLeaf **) leaves_kum, (FcChar16 *) numbers_kum } },
     { (FcChar8 *) "sh",
       { 1, FcTrue, 1, (FcCharLeaf **) leaves_sh, (FcChar16 *) numbers_sh } },
     { (FcChar8 *) "si",
