@@ -138,7 +138,7 @@ DRM(mtrr_add)(unsigned long offset, size_t size, int flags)
 	mrdesc.mr_len = size;
 	mrdesc.mr_flags = flags;
 	act = MEMRANGE_SET_UPDATE;
-	bcopy(DRIVER_NAME, &mrdesc.mr_owner, strlen(DRIVER_NAME));
+	strlcpy(mrdesc.mr_owner, DRIVER_NAME, sizeof(mrdesc.mr_owner));
 	return mem_range_attr_set(&mrdesc, &act);
 }
 
@@ -152,7 +152,7 @@ DRM(mtrr_del)(unsigned long offset, size_t size, int flags)
 	mrdesc.mr_len = size;
 	mrdesc.mr_flags = flags;
 	act = MEMRANGE_SET_REMOVE;
-	bcopy(DRIVER_NAME, &mrdesc.mr_owner, strlen(DRIVER_NAME));
+	strlcpy(mrdesc.mr_owner, DRIVER_NAME, sizeof(mrdesc.mr_owner));
 	return mem_range_attr_set(&mrdesc, &act);
 }
 #elif defined(__NetBSD__)
