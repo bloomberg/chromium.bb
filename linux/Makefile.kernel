@@ -3,15 +3,15 @@
 # Direct Rendering Infrastructure (DRI) in XFree86 4.1.0 and higher.
 
 O_TARGET	:= drm.o
-list-multi	:= gamma.o tdfx.o r128.o mga.o i810.o i830.o ffb.o radeon.o
+list-multi	:= gamma.o tdfx.o r128.o mga.o i810.o i830.o radeon.o ffb.o
 
 gamma-objs  := gamma_drv.o gamma_dma.o
 tdfx-objs   := tdfx_drv.o
-r128-objs   := r128_drv.o r128_cce.o r128_state.o
-mga-objs    := mga_drv.o mga_dma.o mga_state.o mga_warp.o
+r128-objs   := r128_drv.o r128_cce.o r128_irq.o r128_state.o
+mga-objs    := mga_drv.o mga_dma.o mga_irq.o mga_state.o mga_warp.o
 i810-objs   := i810_drv.o i810_dma.o
 i830-objs   := i830_drv.o i830_dma.o
-radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o
+radeon-objs := radeon_drv.o radeon_cp.o radeon_irq.o radeon_mem.o radeon_state.o
 ffb-objs    := ffb_drv.o ffb_context.o
 
 obj-$(CONFIG_DRM_GAMMA) += gamma.o
