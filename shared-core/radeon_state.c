@@ -2952,6 +2952,7 @@ int radeon_driver_open_helper(drm_device_t * dev, drm_file_t * filp_priv)
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	struct drm_radeon_driver_file_fields *radeon_priv;
 
+	DRM_DEBUG("\n");
 	radeon_priv =
 	    (struct drm_radeon_driver_file_fields *)
 	    drm_alloc(sizeof(*radeon_priv), DRM_MEM_FILES);

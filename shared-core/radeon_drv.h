@@ -866,7 +866,6 @@ do {									\
 
 extern int RADEON_READ_PLL(drm_device_t * dev, int addr);
 extern int radeon_preinit(struct drm_device *dev, unsigned long flags);
-extern int radeon_postinit(struct drm_device *dev, unsigned long flags);
 extern int radeon_postcleanup(struct drm_device *dev);
 
 #define CP_PACKET0( reg, n )						\
