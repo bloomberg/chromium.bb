@@ -145,7 +145,7 @@
 <!ATTLIST edit
 	  name CDATA	    #REQUIRED
 	  mode (assign|assign_replace|prepend|append|prepend_first|append_last) "assign"
-	  binding (weak|strong) "weak">
+	  binding (weak|strong|same) "weak">
 
 <!--
     Elements of expressions follow

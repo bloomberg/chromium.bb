@@ -97,7 +97,7 @@ typedef struct _FcSymbolic {
 #define FC_MEM_NUM	    29
 
 typedef enum _FcValueBinding {
-    FcValueBindingWeak, FcValueBindingStrong
+    FcValueBindingWeak, FcValueBindingStrong, FcValueBindingSame
 } FcValueBinding;
 
 typedef struct _FcValueList {

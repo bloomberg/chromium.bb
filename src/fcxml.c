@@ -1513,6 +1513,8 @@ FcParseEdit (FcConfigParse *parse)
 	    binding = FcValueBindingWeak;
 	else if (!strcmp ((char *) binding_string, "strong"))
 	    binding = FcValueBindingStrong;
+	else if (!strcmp ((char *) binding_string, "same"))
+	    binding = FcValueBindingSame;
 	else
 	{
 	    FcConfigMessage (parse, FcSevereWarning, "invalid edit binding \"%s\"", binding_string);

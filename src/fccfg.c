@@ -917,8 +917,16 @@ FcConfigAdd (FcValueList    **head,
 	     FcBool	    append,
 	     FcValueList    *new)
 {
-    FcValueList    **prev, *last;
+    FcValueList	    **prev, *last, *v;
+    FcValueBinding  sameBinding;
     
+    if (position)
+	sameBinding = position->binding;
+    else
+	sameBinding = FcValueBindingWeak;
+    for (v = new; v; v = v->next)
+	if (v->binding == FcValueBindingSame)
+	    v->binding = sameBinding;
     if (append)
     {
 	if (position)
