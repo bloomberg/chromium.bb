@@ -2,6 +2,7 @@
  * Created: Wed Apr  5 19:24:19 2000 by kevin@precisioninsight.com
  *
  * Copyright 2000 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,9 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Authors: Kevin E. Martin <kevin@precisioninsight.com>
+ * Authors: Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86$
  */
 
 #ifndef _R128_DRM_H_

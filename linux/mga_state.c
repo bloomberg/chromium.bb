@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Authors: Jeff Hartmann <jhartmann@precisioninsight.com>
- * 	    Keith Whitwell <keithw@precisioninsight.com>
+ * Authors: Jeff Hartmann <jhartmann@valinux.com>
+ * 	    Keith Whitwell <keithw@valinux.com>
  *
  */
 

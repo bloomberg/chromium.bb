@@ -1,6 +1,5 @@
 /* xf86drmRandom.c -- "Minimal Standard" PRNG Implementation
  * Created: Mon Apr 19 08:28:13 1999 by faith@precisioninsight.com
- * Revised: Thu Jun 24 14:53:45 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,6 +23,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
+ * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
+ *
  * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRandom.c,v 1.3 2000/02/23 04:47:23 martin Exp $
  *
  * DESCRIPTION

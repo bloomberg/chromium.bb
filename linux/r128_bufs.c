@@ -2,6 +2,7 @@
  * Created: Wed Apr 12 16:19:08 2000 by kevin@precisioninsight.com
  *
  * Copyright 2000 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,12 +24,10 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * Authors: Kevin E. Martin <kevin@precisioninsight.com>
- *          Rickard E. (Rik) Faith <faith@precisioninsight.com>
- *	    Jeff Hartmann <jhartmann@precisioninsight.com>
+ * Authors: Kevin E. Martin <martin@valinux.com>
+ *          Rickard E. (Rik) Faith <faith@valinux.com>
+ *	    Jeff Hartmann <jhartmann@valinux.com>
  * 
- * $XFree86$
- *
  */
 
 #define __NO_VERSION__
