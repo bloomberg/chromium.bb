@@ -254,7 +254,7 @@ static const FcCharLeaf	leaves[585] = {
     0x00000000, 0x00000000, 0x020c1381, 0x020c1381,
     } },
     { { /* 57 */
-    0xffffff7f, 0xffffffff, 0x3d7f3f7f, 0xffffffff,
+    0xffffff7f, 0xffffffff, 0x3d7f3d7f, 0xffffffff,
     0xffff3d7f, 0x7f3d7fff, 0xff7f7f3d, 0xffff7fff,
     } },
     { { /* 58 */
