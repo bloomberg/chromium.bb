@@ -141,7 +141,6 @@ typedef struct drm_radeon_private {
 
 	/* SW interrupt */
    	wait_queue_head_t swi_queue;
-   	atomic_t swi_received;
    	atomic_t swi_emitted;
 
 } drm_radeon_private_t;
@@ -638,6 +637,7 @@ extern int radeon_emit_irq(drm_device_t *dev);
 #define RADEON_LAST_FRAME_REG		RADEON_SCRATCH_REG0
 #define RADEON_LAST_DISPATCH_REG	RADEON_SCRATCH_REG1
 #define RADEON_LAST_CLEAR_REG		RADEON_SCRATCH_REG2
+#define RADEON_LAST_SWI_REG		RADEON_SCRATCH_REG3
 #define RADEON_LAST_DISPATCH		1
 
 #define RADEON_MAX_VB_AGE		0x7fffffff

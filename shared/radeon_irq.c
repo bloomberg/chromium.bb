@@ -27,6 +27,7 @@
  *
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
+ *    Michel Dänzer <michel@daenzer.net>
  */
 
 #include "radeon.h"
@@ -67,7 +68,6 @@ void DRM(dma_service)( DRM_IRQ_ARGS )
 	/* SW interrupt */
 	if (stat & RADEON_SW_INT_TEST) {
 		ack |= RADEON_SW_INT_TEST_ACK;
-		atomic_inc(&dev_priv->swi_received);
 #ifdef __linux__
 		wake_up_interruptible(&dev_priv->swi_queue);
 #endif
@@ -91,22 +91,28 @@ void DRM(dma_service)( DRM_IRQ_ARGS )
 	if (ack)
 		RADEON_WRITE(RADEON_GEN_INT_STATUS, ack);
 }
- 
+
+static inline void radeon_acknowledge_irqs(drm_radeon_private_t *dev_priv)
+{
+   	RADEON_WRITE( RADEON_GEN_INT_STATUS, RADEON_READ( RADEON_GEN_INT_STATUS ) );
+}
 
 int radeon_emit_irq(drm_device_t *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
+	unsigned int ret;
 	RING_LOCALS;
 
 	atomic_inc(&dev_priv->swi_emitted);
+	ret = atomic_read(&dev_priv->swi_emitted);
 
-	BEGIN_RING(2); 
-	OUT_RING( CP_PACKET0( RADEON_GEN_INT_STATUS, 0 ) );
-	OUT_RING( RADEON_SW_INT_FIRE );
+	BEGIN_RING( 4 );
+	OUT_RING_REG( RADEON_LAST_SWI_REG, ret );
+	OUT_RING_REG( RADEON_GEN_INT_STATUS, RADEON_SW_INT_FIRE );
 	ADVANCE_RING(); 
  	COMMIT_RING();
 
-	return atomic_read(&dev_priv->swi_emitted);
+	return ret;
 }
 
 
@@ -120,23 +126,24 @@ int radeon_wait_irq(drm_device_t *dev, int swi_nr)
 #endif /* __linux__ */
 	int ret = 0;
 
- 	if (atomic_read(&dev_priv->swi_received) >= swi_nr)  
+ 	if (RADEON_READ( RADEON_LAST_SWI_REG ) >= swi_nr)  
  		return 0; 
-
 	dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
+
+	radeon_acknowledge_irqs( dev_priv );
 
 #ifdef __linux__
 	add_wait_queue(&dev_priv->swi_queue, &entry);
 
 	for (;;) {
 		current->state = TASK_INTERRUPTIBLE;
-	   	if (atomic_read(&dev_priv->swi_received) >= swi_nr) 
+	   	if (RADEON_READ( RADEON_LAST_SWI_REG ) >= swi_nr) 
 		   break;
 		if((signed)(end - jiffies) <= 0) {
 		   	ret = -EBUSY;	/* Lockup?  Missed irq? */
 			break;
 		}
-	      	schedule_timeout(HZ*3);
+	      	schedule_timeout(max(HZ/100,1));
 	      	if (signal_pending(current)) {
 		   	ret = -EINTR;
 			break;
@@ -171,7 +178,7 @@ int radeon_vblank_wait(drm_device_t *dev, unsigned int *sequence)
 	int ret = 0;
 
 	if ( !dev_priv ) {
-		DRM_ERROR( "%s called with no initialization\n", __func__ );
+		DRM_ERROR( "%s called with no initialization\n", __FUNCTION__ );
 		return DRM_ERR(EINVAL);
 	}
 
@@ -181,6 +188,9 @@ int radeon_vblank_wait(drm_device_t *dev, unsigned int *sequence)
 	while ( ( ( cur_vblank = atomic_read(&dev->vbl_received ) )
 		+ ~*sequence + 1 ) > (1<<23) ) {
 		dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
+
+		radeon_acknowledge_irqs( dev_priv );
+
 #ifdef __linux__
 		interruptible_sleep_on( &dev->vbl_queue );
 
@@ -251,25 +261,24 @@ int radeon_irq_wait( DRM_IOCTL_ARGS )
 	return radeon_wait_irq( dev, irqwait.irq_seq );
 }
 
- 
+
+/* drm_dma.h hooks
+*/
 void DRM(driver_irq_preinstall)( drm_device_t *dev ) {
 	drm_radeon_private_t *dev_priv =
 		(drm_radeon_private_t *)dev->dev_private;
-	u32 tmp;
 
  	/* Disable *all* interrupts */
       	RADEON_WRITE( RADEON_GEN_INT_CNTL, 0 );
 
 	/* Clear bits if they're already high */
-   	tmp = RADEON_READ( RADEON_GEN_INT_STATUS );
-   	RADEON_WRITE( RADEON_GEN_INT_STATUS, tmp );
+	radeon_acknowledge_irqs( dev_priv );
 }
 
 void DRM(driver_irq_postinstall)( drm_device_t *dev ) {
 	drm_radeon_private_t *dev_priv =
 		(drm_radeon_private_t *)dev->dev_private;
 
-   	atomic_set(&dev_priv->swi_received, 0);
    	atomic_set(&dev_priv->swi_emitted, 0);
 #ifdef __linux__
 	init_waitqueue_head(&dev_priv->swi_queue);
