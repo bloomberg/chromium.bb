@@ -1,7 +1,7 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-lang/fc-lang.c,v 1.3 2002/08/22 07:36:43 keithp Exp $
+ * $RCSId: xc/lib/fontconfig/fc-lang/fc-lang.c,v 1.3 2002/08/22 07:36:43 keithp Exp $
  *
- * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
+ * Copyright © 2002 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -207,6 +207,9 @@ main (int argc, char **argv)
     char	line[1024];
     FcChar32	map[MAX_LANG_SET_MAP];
     int		num_lang_set_map;
+    int		setRangeStart[26];
+    int		setRangeEnd[26];
+    FcChar8	setRangeChar;
     
     while (*++argv)
     {
@@ -300,6 +303,21 @@ main (int argc, char **argv)
     }
 
     /*
+     * Find ranges for each letter for faster searching
+     */
+    setRangeChar = 'a';
+    for (i = 0; sets[i]; i++)
+    {
+	char	c = names[i][0];
+	
+	while (setRangeChar <= c && c <= 'z')
+	    setRangeStart[setRangeChar++ - 'a'] = i;
+    }
+    for (setRangeChar = 'a'; setRangeChar < 'z'; setRangeChar++)
+	setRangeEnd[setRangeChar - 'a'] = setRangeStart[setRangeChar+1-'a'] - 1;
+    setRangeEnd[setRangeChar - 'a'] = i - 1;
+    
+    /*
      * Dump arrays
      */
     for (i = 0; sets[i]; i++)
@@ -343,13 +361,16 @@ main (int argc, char **argv)
 	printf ("};\n\n");
     }
     printf ("#undef L\n\n");
+    
     /*
      * Dump sets
      */
+
     printf ("static const FcLangCharSet  fcLangCharSets[] = {\n");
     for (i = 0; sets[i]; i++)
     {
 	int	j = duplicate[i];
+
 	if (j < 0)
 	    j = i;
 	printf ("    { (FcChar8 *) \"%s\",\n"
@@ -404,6 +425,19 @@ main (int argc, char **argv)
 	printf ("#define NUM_COUNTRY_SET %d\n", ncountry_ent);
     }
     
+
+    /*
+     * Dump sets start/finish for the fastpath
+     */
+    printf ("static const FcLangCharSetRange  fcLangCharSetRanges[] = {\n");
+    for (setRangeChar = 'a'; setRangeChar <= 'z' ; setRangeChar++)
+    {
+	printf ("    { %d, %d }, /* %c */\n",
+		setRangeStart[setRangeChar - 'a'],
+		setRangeEnd[setRangeChar - 'a'], setRangeChar);
+    }
+    printf ("};\n\n");
+ 
     while (fgets (line, sizeof (line), stdin))
 	fputs (line, stdout);
     
