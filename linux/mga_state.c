@@ -514,6 +514,9 @@ static void mga_dma_dispatch_clear( drm_device_t *dev,
 		drm_clip_rect_t *box = &pbox[i];
 		u32 height = box->y2 - box->y1;
 
+		DRM_DEBUG( "   from=%d,%d to=%d,%d\n",
+			   box->x1, box->y1, box->x2, box->y2 );
+
 		if ( clear->flags & MGA_FRONT ) {
 			BEGIN_DMA( 2 );
 
@@ -591,9 +594,16 @@ static void mga_dma_dispatch_swap( drm_device_t *dev )
 	int i;
 	DMA_LOCALS;
 	DRM_DEBUG( __FUNCTION__ ":\n" );
-	DRM_DEBUG( "   head = 0x%06x\n", MGA_READ( MGA_PRIMADDRESS ) );
 
-	BEGIN_DMA( 3 + nbox );
+	sarea_priv->last_frame.head = dev_priv->prim.tail;
+	sarea_priv->last_frame.wrap = dev_priv->prim.last_wrap;
+
+	BEGIN_DMA( 4 + nbox );
+
+	DMA_BLOCK( MGA_DMAPAD,	0x00000000,
+		   MGA_DMAPAD,	0x00000000,
+		   MGA_DWGSYNC,	0x00007100,
+		   MGA_DWGSYNC,	0x00007000 );
 
 	DMA_BLOCK( MGA_DSTORG,	dev_priv->front_offset,
 		   MGA_MACCESS,	dev_priv->maccess,
@@ -610,6 +620,9 @@ static void mga_dma_dispatch_swap( drm_device_t *dev )
 		u32 height = box->y2 - box->y1;
 		u32 start = box->y1 * dev_priv->front_pitch;
 
+		DRM_DEBUG( "   from=%d,%d to=%d,%d\n",
+			   box->x1, box->y1, box->x2, box->y2 );
+
 		DMA_BLOCK( MGA_AR0,	start + box->x2 - 1,
 			   MGA_AR3,	start + box->x1,
 			   MGA_FXBNDRY,	((box->x2 - 1) << 16) | box->x1,
@@ -623,12 +636,6 @@ static void mga_dma_dispatch_swap( drm_device_t *dev )
 		   MGA_DWGCTL,	ctx->dwgctl );
 
 	ADVANCE_DMA();
-
-	DRM_DEBUG( "   tail = 0x%06x\n", dev_priv->prim.tail );
-	DRM_DEBUG( "   wrap = 0x%06x\n", dev_priv->prim.last_wrap );
-
-	sarea_priv->last_frame.head = dev_priv->prim.tail;
-	sarea_priv->last_frame.wrap = dev_priv->prim.last_wrap;
 
 	FLUSH_DMA();
 
