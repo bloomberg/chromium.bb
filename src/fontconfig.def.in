@@ -159,5 +159,5 @@ EXPORTS
 	FcValueEqual
 	FcValuePrint
 	FcValueSave
-LIBRARY libfontconfig-@LT_CURRENT_MINUS_AGE@
+LIBRARY libfontconfig-@LT_CURRENT_MINUS_AGE@.dll
 VERSION @LT_CURRENT@.@LT_REVISION@

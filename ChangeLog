@@ -1,3 +1,7 @@
+2005-03-17  Tor Lillqvist  <tml@novell.com>
+
+	* src/fontconfig.def.in: Add the .dll to the dll name.
+
 2005-03-10  Keith Packard  <keithp@keithp.com>
 
 	* debian/README.Debian:
