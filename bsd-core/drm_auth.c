@@ -43,14 +43,14 @@ static drm_file_t *DRM(find_file)(drm_device_t *dev, drm_magic_t magic)
 	drm_magic_entry_t *pt;
 	int		  hash	  = DRM(hash_magic)(magic);
 
-	DRM_LOCK;
+	DRM_LOCK();
 	for (pt = dev->magiclist[hash].head; pt; pt = pt->next) {
 		if (pt->magic == magic) {
 			retval = pt->priv;
 			break;
 		}
 	}
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 	return retval;
 }
 
@@ -69,7 +69,7 @@ int DRM(add_magic)(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 	entry->priv  = priv;
 	entry->next  = NULL;
 
-	DRM_LOCK;
+	DRM_LOCK();
 	if (dev->magiclist[hash].tail) {
 		dev->magiclist[hash].tail->next = entry;
 		dev->magiclist[hash].tail	= entry;
@@ -77,7 +77,7 @@ int DRM(add_magic)(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 		dev->magiclist[hash].head	= entry;
 		dev->magiclist[hash].tail	= entry;
 	}
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	return 0;
 }
@@ -91,7 +91,7 @@ int DRM(remove_magic)(drm_device_t *dev, drm_magic_t magic)
 	DRM_DEBUG("%d\n", magic);
 	hash = DRM(hash_magic)(magic);
 
-	DRM_LOCK;
+	DRM_LOCK();
 	for (pt = dev->magiclist[hash].head; pt; prev = pt, pt = pt->next) {
 		if (pt->magic == magic) {
 			if (dev->magiclist[hash].head == pt) {
@@ -103,11 +103,11 @@ int DRM(remove_magic)(drm_device_t *dev, drm_magic_t magic)
 			if (prev) {
 				prev->next = pt->next;
 			}
-			DRM_UNLOCK;
+			DRM_UNLOCK();
 			return 0;
 		}
 	}
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	DRM(free)(pt, sizeof(*pt), DRM_MEM_MAGIC);
 	return DRM_ERR(EINVAL);

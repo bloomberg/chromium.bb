@@ -178,9 +178,9 @@ int DRM(addmap)( DRM_IOCTL_ARGS )
 	}
 	list->map = map;
 
-	DRM_LOCK;
+	DRM_LOCK();
 	TAILQ_INSERT_TAIL(dev->maplist, list, link);
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	request.offset = map->offset;
 	request.size = map->size;
@@ -212,7 +212,7 @@ int DRM(rmmap)( DRM_IOCTL_ARGS )
 
 	DRM_COPY_FROM_USER_IOCTL( request, (drm_map_t *)data, sizeof(request) );
 
-	DRM_LOCK;
+	DRM_LOCK();
 	TAILQ_FOREACH(list, dev->maplist, link) {
 		map = list->map;
 		if (map->handle == request.handle &&
@@ -222,7 +222,7 @@ int DRM(rmmap)( DRM_IOCTL_ARGS )
 
 	/* No match found. */
 	if (list == NULL) {
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(EINVAL);
 	}
 	TAILQ_REMOVE(dev->maplist, list, link);
@@ -268,7 +268,7 @@ int DRM(rmmap)( DRM_IOCTL_ARGS )
 		break;
 	}
 	DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 	return 0;
 }
 
@@ -353,17 +353,17 @@ static int DRM(addbufs_agp)(drm_device_t *dev, drm_buf_desc_t *request)
 	if ( order < DRM_MIN_ORDER || order > DRM_MAX_ORDER ) 
 		return DRM_ERR(EINVAL);
 
-	DRM_LOCK;
+	DRM_LOCK();
 	entry = &dma->bufs[order];
 	if ( entry->buf_count ) {
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(ENOMEM); /* May only call once for each order */
 	}
 
 	entry->buflist = DRM(alloc)( count * sizeof(*entry->buflist),
 				    DRM_MEM_BUFS );
 	if ( !entry->buflist ) {
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(ENOMEM);
 	}
 	memset( entry->buflist, 0, count * sizeof(*entry->buflist) );
@@ -394,7 +394,7 @@ static int DRM(addbufs_agp)(drm_device_t *dev, drm_buf_desc_t *request)
 			/* Set count correctly so we free the proper amount. */
 			entry->buf_count = count;
 			DRM(cleanup_buf_error)(dev, entry);
-			DRM_UNLOCK;
+			DRM_UNLOCK();
 			return DRM_ERR(ENOMEM);
 		}
 
@@ -413,7 +413,7 @@ static int DRM(addbufs_agp)(drm_device_t *dev, drm_buf_desc_t *request)
 	if (temp_buflist == NULL) {
 		/* Free the entry because it isn't valid */
 		DRM(cleanup_buf_error)(dev, entry);
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(ENOMEM);
 	}
 	dma->buflist = temp_buflist;
@@ -428,7 +428,7 @@ static int DRM(addbufs_agp)(drm_device_t *dev, drm_buf_desc_t *request)
 	DRM_DEBUG( "dma->buf_count : %d\n", dma->buf_count );
 	DRM_DEBUG( "entry->buf_count : %d\n", entry->buf_count );
 
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	request->count = entry->buf_count;
 	request->size = size;
@@ -475,10 +475,10 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
 	total = PAGE_SIZE << page_order;
 
-	DRM_LOCK;
+	DRM_LOCK();
 	entry = &dma->bufs[order];
 	if ( entry->buf_count ) {
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(ENOMEM);	/* May only call once for each order */
 	}
 
@@ -503,7 +503,7 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 		    DRM_MEM_SEGS);
 		DRM(free)(entry->seglist_bus, count *
 		    sizeof(*entry->seglist_bus), DRM_MEM_SEGS);
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(ENOMEM);
 	}
 
@@ -532,7 +532,7 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 			DRM(free)(temp_pagelist, (dma->page_count +
 			    (count << page_order)) * sizeof(*dma->pagelist),
 			    DRM_MEM_PAGES);
-			DRM_UNLOCK;
+			DRM_UNLOCK();
 			return DRM_ERR(ENOMEM);
 		}
 	
@@ -571,7 +571,7 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 				DRM(free)(temp_pagelist, (dma->page_count + 
 				    (count << page_order)) *
 				    sizeof(*dma->pagelist), DRM_MEM_PAGES );
-				DRM_UNLOCK;
+				DRM_UNLOCK();
 				return DRM_ERR(ENOMEM);
 			}
 			bzero(buf->dev_private, buf->dev_priv_size);
@@ -593,7 +593,7 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 		DRM(free)(temp_pagelist, (dma->page_count + 
 		    (count << page_order)) * sizeof(*dma->pagelist),
 		    DRM_MEM_PAGES);
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(ENOMEM);
 	}
 	dma->buflist = temp_buflist;
@@ -614,7 +614,7 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 	dma->page_count += entry->seg_count << page_order;
 	dma->byte_count += PAGE_SIZE * (entry->seg_count << page_order);
 
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	request->count = entry->buf_count;
 	request->size = size;
@@ -665,17 +665,17 @@ static int DRM(addbufs_sg)(drm_device_t *dev, drm_buf_desc_t *request)
 	if ( order < DRM_MIN_ORDER || order > DRM_MAX_ORDER ) 
 		return DRM_ERR(EINVAL);
 
-	DRM_LOCK;
+	DRM_LOCK();
 	entry = &dma->bufs[order];
 	if ( entry->buf_count ) {
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(ENOMEM); /* May only call once for each order */
 	}
 
 	entry->buflist = DRM(alloc)( count * sizeof(*entry->buflist),
 				     DRM_MEM_BUFS );
 	if ( !entry->buflist ) {
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(ENOMEM);
 	}
 	memset( entry->buflist, 0, count * sizeof(*entry->buflist) );
@@ -706,7 +706,7 @@ static int DRM(addbufs_sg)(drm_device_t *dev, drm_buf_desc_t *request)
 			/* Set count correctly so we free the proper amount. */
 			entry->buf_count = count;
 			DRM(cleanup_buf_error)(dev, entry);
-			DRM_UNLOCK;
+			DRM_UNLOCK();
 			return DRM_ERR(ENOMEM);
 		}
 
@@ -728,7 +728,7 @@ static int DRM(addbufs_sg)(drm_device_t *dev, drm_buf_desc_t *request)
 	if (temp_buflist == NULL) {
 		/* Free the entry because it isn't valid */
 		DRM(cleanup_buf_error)(dev, entry);
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(ENOMEM);
 	}
 	dma->buflist = temp_buflist;
@@ -743,7 +743,7 @@ static int DRM(addbufs_sg)(drm_device_t *dev, drm_buf_desc_t *request)
 	DRM_DEBUG( "dma->buf_count : %d\n", dma->buf_count );
 	DRM_DEBUG( "entry->buf_count : %d\n", entry->buf_count );
 
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	request->count = entry->buf_count;
 	request->size = size;

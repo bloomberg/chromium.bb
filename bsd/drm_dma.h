@@ -159,13 +159,13 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	if ( irq == 0 || dev->dev_private == NULL)
 		return DRM_ERR(EINVAL);
 
-	DRM_LOCK;
+	DRM_LOCK();
 	if ( dev->irq ) {
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(EBUSY);
 	}
 	dev->irq = irq;
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, irq );
 
@@ -195,10 +195,10 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 #elif defined(__NetBSD__)
 	if (pci_intr_map(&dev->pa, &dev->ih) != 0) {
 #endif
-		DRM_LOCK;
+		DRM_LOCK();
 		dev->irq = 0;
 		dev->irqrid = 0;
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return ENOENT;
 	}
 	
@@ -216,13 +216,13 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 				      (irqreturn_t (*)(DRM_IRQ_ARGS))DRM(dma_service), dev);
 	if ( !dev->irqh ) {
 #endif
-		DRM_LOCK;
+		DRM_LOCK();
 #ifdef __FreeBSD__
 		bus_release_resource(dev->device, SYS_RES_IRQ, dev->irqrid, dev->irqr);
 #endif
 		dev->irq = 0;
 		dev->irqrid = 0;
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return retcode;
 	}
 
@@ -237,12 +237,12 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 	int irq;
 	int irqrid;
 	
-	DRM_LOCK;
+	DRM_LOCK();
 	irq = dev->irq;
 	irqrid = dev->irqrid;
 	dev->irq = 0;
 	dev->irqrid = 0;
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	if ( !irq )
 		return DRM_ERR(EINVAL);

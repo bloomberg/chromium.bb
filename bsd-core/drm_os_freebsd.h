@@ -139,8 +139,8 @@
  * code for that is not yet written */
 #define DRMFILE			void *
 #define DRM_IOCTL_ARGS		dev_t kdev, u_long cmd, caddr_t data, int flags, DRM_STRUCTPROC *p, DRMFILE filp
-#define DRM_LOCK		lockmgr(&dev->dev_lock, LK_EXCLUSIVE, 0, DRM_CURPROC)
-#define DRM_UNLOCK 		lockmgr(&dev->dev_lock, LK_RELEASE, 0, DRM_CURPROC)
+#define DRM_LOCK()		lockmgr(&dev->dev_lock, LK_EXCLUSIVE, 0, DRM_CURPROC)
+#define DRM_UNLOCK()		lockmgr(&dev->dev_lock, LK_RELEASE, 0, DRM_CURPROC)
 #define DRM_SUSER(p)		suser(p)
 #define DRM_TASKQUEUE_ARGS	void *arg, int pending
 #define DRM_IRQ_ARGS		void *arg

@@ -176,9 +176,9 @@ static int DRM(vm_info)DRM_SYSCTL_HANDLER_ARGS
 	drm_device_t *dev = arg1;
 	int	     ret;
 
-	DRM_LOCK;
+	DRM_LOCK();
 	ret = DRM(_vm_info)(oidp, arg1, arg2, req);
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	return ret;
 }
@@ -228,9 +228,9 @@ static int DRM(bufs_info) DRM_SYSCTL_HANDLER_ARGS
 	drm_device_t *dev = arg1;
 	int	     ret;
 
-	DRM_LOCK;
+	DRM_LOCK();
 	ret = DRM(_bufs_info)(oidp, arg1, arg2, req);
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 	return ret;
 }
 
@@ -262,9 +262,9 @@ static int DRM(clients_info)DRM_SYSCTL_HANDLER_ARGS
 	drm_device_t *dev = arg1;
 	int	     ret;
 
-	DRM_LOCK;
+	DRM_LOCK();
 	ret = DRM(_clients_info)(oidp, arg1, arg2, req);
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 	return ret;
 }
 

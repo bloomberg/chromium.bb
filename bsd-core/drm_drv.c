@@ -517,7 +517,7 @@ static int DRM(takedown)( drm_device_t *dev )
 		DRM(irq_uninstall)( dev );
 #endif
 
-	DRM_LOCK;
+	DRM_LOCK();
 	callout_stop( &dev->timer );
 
 	if ( dev->unique ) {
@@ -627,7 +627,7 @@ static int DRM(takedown)( drm_device_t *dev )
 		dev->lock.filp = NULL;
 		DRM_WAKEUP_INT((void *)&dev->lock.lock_queue);
 	}
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	return 0;
 }
@@ -935,7 +935,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	dev->buf_pgid = 0;
 #endif /* __NetBSD__ */
 
-	DRM_LOCK;
+	DRM_LOCK();
 	priv = DRM(find_file_by_proc)(dev, p);
 	if (priv) {
 		priv->refs--;
@@ -944,7 +944,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 			DRM(free)( priv, sizeof(*priv), DRM_MEM_FILES );
 		}
 	}
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 
 	/* ========================================================

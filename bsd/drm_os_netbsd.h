@@ -112,8 +112,8 @@ extern struct cfdriver DRM(cd);
  * code for that is not yet written */
 #define DRMFILE			void *
 #define DRM_IOCTL_ARGS		dev_t kdev, u_long cmd, caddr_t data, int flags, DRM_STRUCTPROC *p, DRMFILE filp
-#define DRM_LOCK		lockmgr(&dev->dev_lock, LK_EXCLUSIVE, NULL)
-#define DRM_UNLOCK 		lockmgr(&dev->dev_lock, LK_RELEASE, NULL)
+#define DRM_LOCK()		lockmgr(&dev->dev_lock, LK_EXCLUSIVE, NULL)
+#define DRM_UNLOCK()		lockmgr(&dev->dev_lock, LK_RELEASE, NULL)
 #define DRM_SUSER(p)		suser(p->p_ucred, &p->p_acflag)
 #define DRM_TASKQUEUE_ARGS	void *dev, int pending
 #define DRM_IRQ_ARGS		void *arg

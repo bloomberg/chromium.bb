@@ -84,9 +84,9 @@ int DRM(open_helper)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		priv->devXX		= dev;
 		priv->ioctl_count 	= 0;
 		priv->authenticated	= !DRM_SUSER(p);
-		DRM_LOCK;
+		DRM_LOCK();
 		TAILQ_INSERT_TAIL(&dev->files, priv, link);
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 	}
 #ifdef __FreeBSD__
 	kdev->si_drv1 = dev;

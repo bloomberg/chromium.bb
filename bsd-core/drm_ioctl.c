@@ -138,9 +138,9 @@ int DRM(getmap)( DRM_IOCTL_ARGS )
 
 	idx = map.offset;
 
-	DRM_LOCK;
+	DRM_LOCK();
 	if (idx < 0) {
-		DRM_UNLOCK;
+		DRM_UNLOCK();
 		return DRM_ERR(EINVAL);
 	}
 
@@ -158,7 +158,7 @@ int DRM(getmap)( DRM_IOCTL_ARGS )
 		i++;
 	}
 
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
  	if (!list)
 		return EINVAL;
@@ -179,7 +179,7 @@ int DRM(getclient)( DRM_IOCTL_ARGS )
 	DRM_COPY_FROM_USER_IOCTL( client, (drm_client_t *)data, sizeof(client) );
 
 	idx = client.idx;
-	DRM_LOCK;
+	DRM_LOCK();
 	TAILQ_FOREACH(pt, &dev->files, link) {
 		if (i==idx)
 		{
@@ -188,14 +188,14 @@ int DRM(getclient)( DRM_IOCTL_ARGS )
 			client.uid   = pt->uid;
 			client.magic = pt->magic;
 			client.iocs  = pt->ioctl_count;
-			DRM_UNLOCK;
+			DRM_UNLOCK();
 
 			*(drm_client_t *)data = client;
 			return 0;
 		}
 		i++;
 	}
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	DRM_COPY_TO_USER_IOCTL( (drm_client_t *)data, client, sizeof(client) );
 
@@ -210,7 +210,7 @@ int DRM(getstats)( DRM_IOCTL_ARGS )
 
 	memset(&stats, 0, sizeof(stats));
 	
-	DRM_LOCK;
+	DRM_LOCK();
 
 	for (i = 0; i < dev->counters; i++) {
 		if (dev->types[i] == _DRM_STAT_LOCK)
@@ -224,7 +224,7 @@ int DRM(getstats)( DRM_IOCTL_ARGS )
 	
 	stats.count = dev->counters;
 
-	DRM_UNLOCK;
+	DRM_UNLOCK();
 
 	DRM_COPY_TO_USER_IOCTL( (drm_stats_t *)data, stats, sizeof(stats) );
 
