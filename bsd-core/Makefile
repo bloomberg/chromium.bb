@@ -1,4 +1,4 @@
-SHARED=		../shared
+SHARED=		../shared-core
 SHAREDFILES=	drm.h \
 		drm_sarea.h \
 		i915.h \
@@ -54,7 +54,7 @@ SHAREDFILES=	drm.h \
 		via_3d_reg.h \
 		via_dma.c
 
-SUBDIR = i915 mach64 mga r128 radeon sis tdfx
+SUBDIR = drm i915 mach64 mga r128 radeon sis tdfx
 
 CLEANFILES+= ${SHAREDFILES}
 

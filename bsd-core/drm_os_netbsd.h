@@ -65,15 +65,8 @@
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
  
-#define __REALLY_HAVE_AGP	__HAVE_AGP
-
-#define __REALLY_HAVE_MTRR	1
-#define __REALLY_HAVE_SG	0
-
-#if __REALLY_HAVE_AGP
 #include <dev/pci/agpvar.h>
 #include <sys/agpio.h>
-#endif
 
 #include <opt_drm.h>
 
@@ -89,7 +82,7 @@
 
 typedef drm_device_t *device_t;
 
-extern struct cfdriver DRM(cd);
+extern struct cfdriver drm_cd;
 
 #define DRM_TIME_SLICE	      (hz/20)  /* Time slice for GLXContexts	  */
 
@@ -97,6 +90,8 @@ extern struct cfdriver DRM(cd);
 #define DRM_DEV_UID	0
 #define DRM_DEV_GID	0
 #define CDEV_MAJOR	34
+
+#define __OS_HAS_AGP	1
 
 #define DRM_CURPROC		curproc
 #define DRM_STRUCTPROC		struct proc
@@ -120,16 +115,16 @@ extern struct cfdriver DRM(cd);
 typedef int			irqreturn_t;
 #define IRQ_NONE		/* FIXME */
 #define IRQ_HANDLED		/* FIXME */
-#define DRM_DEVICE		drm_device_t *dev = device_lookup(&DRM(cd), minor(kdev))
+#define DRM_DEVICE		drm_device_t *dev = device_lookup(&drm_cd, minor(kdev))
 /* XXX Not sure if this is the 'right' version.. */
 #if __NetBSD_Version__ >= 106140000
-MALLOC_DECLARE(DRM(M_DRM));
+MALLOC_DECLARE(M_DRM);
 #else
 /* XXX Make sure this works */
-extern const int DRM(M_DRM) = M_DEVBUF;
+extern const int M_DRM = M_DEVBUF;
 #endif /* __NetBSD_Version__ */
-#define DRM_MALLOC(size)	malloc( size, DRM(M_DRM), M_NOWAIT )
-#define DRM_FREE(pt,size)		free( pt, DRM(M_DRM) )
+#define DRM_MALLOC(size)	malloc(size, M_DRM, M_NOWAIT)
+#define DRM_FREE(pt,size)	free(pt, M_DRM))
 
 #define DRM_READ8(map, offset)		bus_space_read_1(  (map)->iot, (map)->ioh, (offset) )
 #define DRM_READ32(map, offset)		bus_space_read_4(  (map)->iot, (map)->ioh, (offset) )
@@ -146,7 +141,7 @@ do {								\
 		DRM_ERROR("filp doesn't match curproc\n");	\
 		return EINVAL;					\
 	}							\
-	_priv = DRM(find_file_by_proc)(dev, DRM_CURPROC);	\
+	_priv = drm_find_file_by_proc(dev, DRM_CURPROC);	\
 	if (_priv == NULL) {					\
 		DRM_ERROR("can't find authenticator\n");	\
 		return EINVAL;					\
@@ -344,13 +339,13 @@ do { \
 
 #define DRM_MEM_ERROR(area, fmt, arg...) \
 	printf("error: [" DRM_NAME ":%s:%s] *ERROR* " fmt , \
-		__func__, DRM(mem_stats)[area].name ,## arg)
+		__func__, drm_mem_stats[area].name ,## arg)
 #define DRM_INFO(fmt, arg...)  printf("info: " "[" DRM_NAME "] " fmt ,## arg)
 
 #if DRM_DEBUG_CODE
 #define DRM_DEBUG(fmt, arg...)						  \
 	do {								  \
-		if (DRM(flags) & DRM_FLAG_DEBUG)			  \
+		if (drm_flags & DRM_FLAG_DEBUG)				  \
 			printf("[" DRM_NAME ":%s] " fmt , __FUNCTION__ ,## arg); \
 	} while (0)
 #else
@@ -360,16 +355,16 @@ do { \
 /* Internal functions */
 
 /* drm_drv.h */
-extern dev_type_ioctl(DRM(ioctl));
-extern dev_type_open(DRM(open));
-extern dev_type_close(DRM(close));
-extern dev_type_read(DRM(read));
-extern dev_type_poll(DRM(poll));
-extern dev_type_mmap(DRM(mmap));
-extern int		DRM(open_helper)(dev_t kdev, int flags, int fmt, 
+extern dev_type_ioctl(drm_ioctl);
+extern dev_type_open(drm_open);
+extern dev_type_close(drm_close);
+extern dev_type_read(drm_read);
+extern dev_type_poll(drm_poll);
+extern dev_type_mmap(drm_mmap);
+extern int		drm_open_helper(dev_t kdev, int flags, int fmt, 
 					 DRM_STRUCTPROC *p, drm_device_t *dev);
-extern drm_file_t	*DRM(find_file_by_proc)(drm_device_t *dev, 
+extern drm_file_t	*drm_find_file_by_proc(drm_device_t *dev, 
 					 DRM_STRUCTPROC *p);
 
-extern int		DRM(sysctl_init)(drm_device_t *dev);
-extern int		DRM(sysctl_cleanup)(drm_device_t *dev);
+extern int		drm_sysctl_init(drm_device_t *dev);
+extern int		drm_sysctl_cleanup(drm_device_t *dev);

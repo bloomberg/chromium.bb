@@ -33,21 +33,17 @@
 
 #define DEBUG_SCATTER 0
 
-#if __REALLY_HAVE_SG
-
-void DRM(sg_cleanup)( drm_sg_mem_t *entry )
+void drm_sg_cleanup(drm_sg_mem_t *entry)
 {
-	free( entry->virtual, DRM(M_DRM) );
+	free(entry->virtual, M_DRM);
 
-	DRM(free)( entry->busaddr,
+	drm_free(entry->busaddr,
 		   entry->pages * sizeof(*entry->busaddr),
 		   DRM_MEM_PAGES );
-	DRM(free)( entry,
-		   sizeof(*entry),
-		   DRM_MEM_SGLISTS );
+	drm_free(entry, sizeof(*entry), DRM_MEM_SGLISTS);
 }
 
-int DRM(sg_alloc)( DRM_IOCTL_ARGS )
+int drm_sg_alloc(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_scatter_gather_t request;
@@ -62,7 +58,7 @@ int DRM(sg_alloc)( DRM_IOCTL_ARGS )
 	DRM_COPY_FROM_USER_IOCTL(request, (drm_scatter_gather_t *)data,
 			     sizeof(request) );
 
-	entry = DRM(alloc)( sizeof(*entry), DRM_MEM_SGLISTS );
+	entry = drm_alloc(sizeof(*entry), DRM_MEM_SGLISTS);
 	if ( !entry )
 		return ENOMEM;
 
@@ -73,24 +69,20 @@ int DRM(sg_alloc)( DRM_IOCTL_ARGS )
 
 	entry->pages = pages;
 
-	entry->busaddr = DRM(alloc)( pages * sizeof(*entry->busaddr),
-				     DRM_MEM_PAGES );
+	entry->busaddr = drm_alloc(pages * sizeof(*entry->busaddr),
+				     DRM_MEM_PAGES);
 	if ( !entry->busaddr ) {
-		DRM(free)( entry,
-			   sizeof(*entry),
-			   DRM_MEM_SGLISTS );
+		drm_free(entry, sizeof(*entry), DRM_MEM_SGLISTS);
 		return ENOMEM;
 	}
 	bzero( (void *)entry->busaddr, pages * sizeof(*entry->busaddr) );
 
-	entry->virtual = malloc( pages << PAGE_SHIFT, DRM(M_DRM), M_WAITOK );
+	entry->virtual = malloc(pages << PAGE_SHIFT, M_DRM, M_WAITOK);
 	if ( !entry->virtual ) {
-		DRM(free)( entry->busaddr,
+		drm_free(entry->busaddr,
 			   entry->pages * sizeof(*entry->busaddr),
-			   DRM_MEM_PAGES );
-		DRM(free)( entry,
-			   sizeof(*entry),
-			   DRM_MEM_SGLISTS );
+			   DRM_MEM_PAGES);
+		drm_free(entry, sizeof(*entry), DRM_MEM_SGLISTS);
 		return ENOMEM;
 	}
 
@@ -111,11 +103,11 @@ int DRM(sg_alloc)( DRM_IOCTL_ARGS )
 
 	return 0;
 
-	DRM(sg_cleanup)( entry );
+	drm_sg_cleanup(entry);
 	return ENOMEM;
 }
 
-int DRM(sg_free)( DRM_IOCTL_ARGS )
+int drm_sg_free(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_scatter_gather_t request;
@@ -132,20 +124,7 @@ int DRM(sg_free)( DRM_IOCTL_ARGS )
 
 	DRM_DEBUG( "sg free virtual  = %p\n", entry->virtual );
 
-	DRM(sg_cleanup)( entry );
+	drm_sg_cleanup(entry);
 
 	return 0;
 }
-
-#else /* __REALLY_HAVE_SG */
-
-int DRM(sg_alloc)( DRM_IOCTL_ARGS )
-{
-	return DRM_ERR(EINVAL);
-}
-int DRM(sg_free)( DRM_IOCTL_ARGS )
-{
-	return DRM_ERR(EINVAL);
-}
-
-#endif

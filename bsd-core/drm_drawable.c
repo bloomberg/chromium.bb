@@ -32,7 +32,7 @@
 
 #include "drmP.h"
 
-int DRM(adddraw)( DRM_IOCTL_ARGS )
+int drm_adddraw(DRM_IOCTL_ARGS)
 {
 	drm_draw_t draw;
 
@@ -44,7 +44,7 @@ int DRM(adddraw)( DRM_IOCTL_ARGS )
 	return 0;
 }
 
-int DRM(rmdraw)( DRM_IOCTL_ARGS )
+int drm_rmdraw(DRM_IOCTL_ARGS)
 {
 	return 0;		/* NOOP */
 }

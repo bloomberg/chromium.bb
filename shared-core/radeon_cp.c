@@ -2007,6 +2007,7 @@ int radeon_preinit(struct drm_device *dev, unsigned long flags)
 	dev->dev_private = (void *)dev_priv;
 	dev_priv->flags = flags;
 
+#ifdef __linux__
 	/* registers */
 	if ((ret = drm_initmap(dev, pci_resource_start(dev->pdev, 2),
 			       pci_resource_len(dev->pdev, 2), _DRM_REGISTERS,
@@ -2029,19 +2030,23 @@ int radeon_preinit(struct drm_device *dev, unsigned long flags)
 	pci_write_config_dword(dev->pdev, RADEON_AGP_COMMAND_PCI_CONFIG,
 			       save | RADEON_AGP_ENABLE);
 	pci_read_config_dword(dev->pdev, RADEON_AGP_COMMAND_PCI_CONFIG, &temp);
+	pci_write_config_dword(dev->pdev, RADEON_AGP_COMMAND_PCI_CONFIG, save);
 	if (temp & RADEON_AGP_ENABLE)
 		dev_priv->flags |= CHIP_IS_AGP;
+#else
+	if (drm_device_is_agp(dev))
+		dev_priv->flags & CHIP_IS_AGP;
+#endif
 	DRM_DEBUG("%s card detected\n",
 		  ((dev_priv->flags & CHIP_IS_AGP) ? "AGP" : "PCI"));
-	pci_write_config_dword(dev->pdev, RADEON_AGP_COMMAND_PCI_CONFIG, save);
 
+#if defined(__linux__)
 	/* Check if we need a reset */
 	if (!
 	    (dev_priv->mmio =
 	     drm_core_findmap(dev, pci_resource_start(dev->pdev, 2))))
 		return DRM_ERR(ENOMEM);
 
-#if defined(__linux__)
 	ret = radeon_create_i2c_busses(dev);
 #endif
 	return ret;

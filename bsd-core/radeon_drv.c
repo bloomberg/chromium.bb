@@ -28,34 +28,91 @@
  *
  */
 
-#include "radeon.h"
 #include "drmP.h"
 #include "drm.h"
 #include "radeon_drm.h"
 #include "radeon_drv.h"
-#if __REALLY_HAVE_SG
-#include "ati_pcigart.h"
-#endif
+#include "drm_pciids.h"
 
-#include "drm_agpsupport.h"
-#include "drm_auth.h"
-#include "drm_bufs.h"
-#include "drm_context.h"
-#include "drm_dma.h"
-#include "drm_drawable.h"
-#include "drm_drv.h"
-#include "drm_fops.h"
-#include "drm_ioctl.h"
-#include "drm_irq.h"
-#include "drm_lock.h"
-#include "drm_memory.h"
-#include "drm_pci.h"
-#include "drm_vm.h"
-#include "drm_sysctl.h"
-#include "drm_scatter.h"
+/* drv_PCI_IDs comes from drm_pciids.h, generated from drm_pciids.txt. */
+static drm_pci_id_list_t radeon_pciidlist[] = {
+	radeon_PCI_IDS
+};
+
+extern drm_ioctl_desc_t radeon_ioctls[];
+extern int radeon_max_ioctl;
+
+static void radeon_configure(drm_device_t *dev)
+{
+	dev->dev_priv_size = sizeof(drm_radeon_buf_priv_t);
+	dev->prerelease = radeon_driver_prerelease;
+	dev->pretakedown = radeon_driver_pretakedown;
+	dev->vblank_wait = radeon_driver_vblank_wait;
+	dev->irq_preinstall = radeon_driver_irq_preinstall;
+	dev->irq_postinstall = radeon_driver_irq_postinstall;
+	dev->irq_uninstall = radeon_driver_irq_uninstall;
+	dev->irq_handler = radeon_driver_irq_handler;
+	/* XXX dev->reclaim_buffers = drm_core_reclaim_buffers;*/
+	/* XXX dev->get_map_ofs = drm_core_get_map_ofs;
+	dev->get_reg_ofs = drm_core_get_reg_ofs;*/
+	/* XXX: Postinit inlined into drm_drv
+	dev->postinit = postinit; */
+
+	dev->driver_ioctls = radeon_ioctls;
+	dev->max_driver_ioctl = radeon_max_ioctl;
+
+	dev->driver_name = DRIVER_NAME;
+	dev->driver_desc = DRIVER_DESC;
+	dev->driver_date = DRIVER_DATE;
+	dev->driver_major = DRIVER_MAJOR;
+	dev->driver_minor = DRIVER_MINOR;
+	dev->driver_patchlevel = DRIVER_PATCHLEVEL;
+
+	dev->use_agp = 1;
+	dev->use_mtrr = 1;
+	dev->use_pci_dma = 1;
+	dev->use_sg = 1;
+	dev->use_dma = 1;
+	dev->use_irq = 1;
+	dev->use_vbl_irq = 1;
+}
 
 #ifdef __FreeBSD__
-DRIVER_MODULE(DRIVER_NAME, pci, DRM(driver), DRM(devclass), 0, 0);
+static int
+radeon_probe(device_t dev)
+{
+	return drm_probe(dev, radeon_pciidlist);
+}
+
+static int
+radeon_attach(device_t nbdev)
+{
+	drm_device_t *dev = device_get_softc(nbdev);
+
+	bzero(dev, sizeof(drm_device_t));
+	radeon_configure(dev);
+	return drm_attach(nbdev, radeon_pciidlist);
+}
+
+static device_method_t radeon_methods[] = {
+	/* Device interface */
+	DEVMETHOD(device_probe,		radeon_probe),
+	DEVMETHOD(device_attach,	radeon_attach),
+	DEVMETHOD(device_detach,	drm_detach),
+
+	{ 0, 0 }
+};
+
+static driver_t radeon_driver = {
+	"drm",
+	radeon_methods,
+	sizeof(drm_device_t)
+};
+
+extern devclass_t drm_devclass;
+DRIVER_MODULE(radeon, pci, radeon_driver, drm_devclass, 0, 0);
+MODULE_DEPEND(radeon, drm, 1, 1, 1);
+
 #elif defined(__NetBSD__)
 CFDRIVER_DECL(radeon, DV_TTY, NULL);
 #endif /* __FreeBSD__ */

@@ -75,27 +75,10 @@
 #if __FreeBSD_version >= 500000
 #include <sys/mutex.h>
 #endif
-
-#include "drm_linux_list.h"
-
-#if __FreeBSD_version >= 400006
-#define __REALLY_HAVE_AGP	__HAVE_AGP
-#endif
-
-#ifdef __i386__
-#define __REALLY_HAVE_MTRR	(__HAVE_MTRR) && (__FreeBSD_version >= 460000)
-#elif defined(__amd64__)
-#define __REALLY_HAVE_MTRR	(__HAVE_MTRR)
-#else
-#define __REALLY_HAVE_MTRR	0
-#endif
-
-#define __REALLY_HAVE_SG	(__HAVE_SG)
-
-#if __REALLY_HAVE_AGP
 #include <pci/agpvar.h>
 #include <sys/agpio.h>
-#endif
+
+#include "drm_linux_list.h"
 
 #include <opt_drm.h>
 #if DRM_DEBUG
@@ -103,6 +86,11 @@
 #define DRM_DEBUG_CODE 2
 #endif
 #undef DRM_DEBUG
+
+#if defined(__amd64__)
+/* XXX: We don't have the necessary headers yet. At least. */
+#undef DRM_LINUX
+#endif
 
 #if DRM_LINUX
 #include <sys/file.h>
@@ -116,6 +104,8 @@
 #define DRM_DEV_MODE	(S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP)
 #define DRM_DEV_UID	0
 #define DRM_DEV_GID	0
+
+#define __OS_HAS_AGP	1
 
 #if __FreeBSD_version >= 500000
 #define DRM_CURPROC		curthread
@@ -160,8 +150,8 @@ typedef void			irqreturn_t;
 #define IRQ_HANDLED		/* nothing */
 #define IRQ_NONE		/* nothing */
 #define DRM_DEVICE		drm_device_t	*dev	= kdev->si_drv1
-#define DRM_MALLOC(size)	malloc( size, DRM(M_DRM), M_NOWAIT )
-#define DRM_FREE(pt,size)		free( pt, DRM(M_DRM) )
+#define DRM_MALLOC(size)	malloc(size, M_DRM, M_NOWAIT)
+#define DRM_FREE(pt,size)	free(pt, M_DRM)
 
 /* Read/write from bus space, with byteswapping to le if necessary */
 #define DRM_READ8(map, offset)		*(volatile u_int8_t *) (((unsigned long)(map)->handle) + (offset))
@@ -188,7 +178,7 @@ do {								\
 		return EINVAL;					\
 	}							\
 	DRM_LOCK();						\
-	_priv = DRM(find_file_by_proc)(dev, DRM_CURPROC);	\
+	_priv = drm_find_file_by_proc(dev, DRM_CURPROC);	\
 	DRM_UNLOCK();						\
 	if (_priv == NULL) {					\
 		DRM_ERROR("can't find authenticator\n");	\
@@ -302,10 +292,7 @@ for ( ret = 0 ; !ret && !(condition) ; ) {		\
 #define M_WAITOK 0
 #endif
 
-#define malloctype DRM(M_DRM)
-/* The macros conflicted in the MALLOC_DEFINE */
-MALLOC_DECLARE(malloctype);
-#undef malloctype
+MALLOC_DECLARE(M_DRM);
 
 #if __FreeBSD_version < 502109
 #define bus_alloc_resource_any(dev, type, rid, flags) \
@@ -426,14 +413,14 @@ find_first_zero_bit(volatile void *p, int max)
 
 #define DRM_MEM_ERROR(area, fmt, arg...) \
 	printf("error: [" DRM_NAME ":pid%d:%s:%s] *ERROR* " fmt,	\
-	    DRM_CURRENTPID , __func__, DRM(mem_stats)[area].name , ##arg)
+	    DRM_CURRENTPID , __func__, drm_mem_stats[area].name , ##arg)
 
 #define DRM_INFO(fmt, arg...)  printf("info: [" DRM_NAME "] " fmt , ## arg)
 
 #if DRM_DEBUG_CODE
 #define DRM_DEBUG(fmt, arg...)						\
 	do {								\
-		if (DRM(flags) & DRM_FLAG_DEBUG)			\
+		if (drm_flags & DRM_FLAG_DEBUG)				\
 			printf("[" DRM_NAME ":pid%d:%s] " fmt,		\
 			    DRM_CURRENTPID, __func__ , ## arg);		\
 	} while (0)
@@ -450,22 +437,22 @@ find_first_zero_bit(volatile void *p, int max)
 /* Internal functions */
 
 /* drm_drv.h */
-extern d_ioctl_t	DRM(ioctl);
-extern d_open_t		DRM(open);
-extern d_close_t	DRM(close);
-extern d_read_t		DRM(read);
-extern d_poll_t		DRM(poll);
-extern d_mmap_t		DRM(mmap);
-extern int		DRM(open_helper)(struct cdev *kdev, int flags, int fmt, 
+extern d_ioctl_t	drm_ioctl;
+extern d_open_t		drm_open;
+extern d_close_t	drm_close;
+extern d_read_t		drm_read;
+extern d_poll_t		drm_poll;
+extern d_mmap_t		drm_mmap;
+extern int		drm_open_helper(struct cdev *kdev, int flags, int fmt, 
 					 DRM_STRUCTPROC *p, drm_device_t *dev);
-extern drm_file_t	*DRM(find_file_by_proc)(drm_device_t *dev, 
+extern drm_file_t	*drm_find_file_by_proc(drm_device_t *dev, 
 					 DRM_STRUCTPROC *p);
 
 /* sysctl support (drm_sysctl.h) */
-extern int		DRM(sysctl_init)(drm_device_t *dev);
-extern int		DRM(sysctl_cleanup)(drm_device_t *dev);
+extern int		drm_sysctl_init(drm_device_t *dev);
+extern int		drm_sysctl_cleanup(drm_device_t *dev);
 
 /* Memory info sysctl (drm_memory_debug.h) */
 #ifdef DEBUG_MEMORY
-extern int		DRM(mem_info) DRM_SYSCTL_HANDLER_ARGS;
+extern int		drm_mem_info DRM_SYSCTL_HANDLER_ARGS;
 #endif

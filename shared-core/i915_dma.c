@@ -96,8 +96,7 @@ int i915_dma_cleanup(drm_device_t * dev)
 		if (dev_priv->hw_status_page) {
 #ifdef __FreeBSD__
 #if __FreeBSD_version > 500000
-			contigfree(dev_priv->hw_status_page, PAGE_SIZE,
-				   drm_M_DRM);
+			contigfree(dev_priv->hw_status_page, PAGE_SIZE, M_DRM);
 #endif
 #else
 			pci_free_consistent(dev->pdev, PAGE_SIZE,
@@ -182,7 +181,7 @@ static int i915_initialize(drm_device_t * dev,
 	/* Program Hardware Status Page */
 #ifdef __FreeBSD__
 	dev_priv->hw_status_page =
-	    contigmalloc(PAGE_SIZE, drm_M_DRM, M_NOWAIT, 0ul, 0, 0, 0);
+	    contigmalloc(PAGE_SIZE, M_DRM, M_NOWAIT, 0ul, 0, 0, 0);
 	dev_priv->dma_status_page = vtophys(dev_priv->hw_status_page);
 #else
 	dev_priv->hw_status_page =

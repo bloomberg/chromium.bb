@@ -32,7 +32,7 @@
 
 #include "drmP.h"
 
-int DRM(lock_take)(__volatile__ unsigned int *lock, unsigned int context)
+int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
 {
 	unsigned int old, new;
 
@@ -60,7 +60,7 @@ int DRM(lock_take)(__volatile__ unsigned int *lock, unsigned int context)
 
 /* This takes a lock forcibly and hands it to context.	Should ONLY be used
    inside *_unlock to give lock to kernel before calling *_dma_schedule. */
-int DRM(lock_transfer)(drm_device_t *dev,
+int drm_lock_transfer(drm_device_t *dev,
 		       __volatile__ unsigned int *lock, unsigned int context)
 {
 	unsigned int old, new;
@@ -74,7 +74,7 @@ int DRM(lock_transfer)(drm_device_t *dev,
 	return 1;
 }
 
-int DRM(lock_free)(drm_device_t *dev,
+int drm_lock_free(drm_device_t *dev,
 		   __volatile__ unsigned int *lock, unsigned int context)
 {
 	unsigned int old, new;

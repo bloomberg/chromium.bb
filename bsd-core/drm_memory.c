@@ -33,56 +33,55 @@
 #include "drmP.h"
 
 #if defined(__FreeBSD__) || defined(__NetBSD__)
-#define malloctype DRM(M_DRM)
 /* The macros conflicted in the MALLOC_DEFINE */
-MALLOC_DEFINE(malloctype, "drm", "DRM Data Structures");
+MALLOC_DEFINE(M_DRM, "drm", "DRM Data Structures");
 #undef malloctype
 #endif
 
 #ifdef DEBUG_MEMORY
 #include "drm_memory_debug.h"
 #else
-void DRM(mem_init)(void)
+void drm_mem_init(void)
 {
 #ifdef __NetBSD__
-	malloc_type_attach(DRM(M_DRM));
+	malloc_type_attach(M_DRM);
 #endif
 }
 
-void DRM(mem_uninit)(void)
+void drm_mem_uninit(void)
 {
 }
 
-void *DRM(alloc)(size_t size, int area)
+void *drm_alloc(size_t size, int area)
 {
-	return malloc(size, DRM(M_DRM), M_NOWAIT);
+	return malloc(size, M_DRM, M_NOWAIT);
 }
 
-void *DRM(calloc)(size_t nmemb, size_t size, int area)
+void *drm_calloc(size_t nmemb, size_t size, int area)
 {
-	return malloc(size * nmemb, DRM(M_DRM), M_NOWAIT | M_ZERO);
+	return malloc(size * nmemb, M_DRM, M_NOWAIT | M_ZERO);
 }
 
-void *DRM(realloc)(void *oldpt, size_t oldsize, size_t size, int area)
+void *drm_realloc(void *oldpt, size_t oldsize, size_t size, int area)
 {
 	void *pt;
 
-	pt = malloc(size, DRM(M_DRM), M_NOWAIT);
+	pt = malloc(size, M_DRM, M_NOWAIT);
 	if (pt == NULL)
 		return NULL;
 	if (oldpt && oldsize) {
 		memcpy(pt, oldpt, oldsize);
-		free(oldpt, DRM(M_DRM));
+		free(oldpt, M_DRM);
 	}
 	return pt;
 }
 
-void DRM(free)(void *pt, size_t size, int area)
+void drm_free(void *pt, size_t size, int area)
 {
-	free(pt, DRM(M_DRM));
+	free(pt, M_DRM);
 }
 
-void *DRM(ioremap)( drm_device_t *dev, drm_local_map_t *map )
+void *drm_ioremap(drm_device_t *dev, drm_local_map_t *map)
 {
 #ifdef __FreeBSD__
 	return pmap_mapdev(map->offset, map->size);
@@ -95,7 +94,7 @@ void *DRM(ioremap)( drm_device_t *dev, drm_local_map_t *map )
 #endif
 }
 
-void DRM(ioremapfree)(drm_local_map_t *map)
+void drm_ioremapfree(drm_local_map_t *map)
 {
 #ifdef __FreeBSD__
 	pmap_unmapdev((vm_offset_t) map->handle, map->size);
@@ -104,32 +103,29 @@ void DRM(ioremapfree)(drm_local_map_t *map)
 #endif
 }
 
-#if __REALLY_HAVE_AGP
-agp_memory *DRM(alloc_agp)(int pages, u32 type)
+agp_memory *drm_alloc_agp(int pages, u32 type)
 {
-	return DRM(agp_allocate_memory)(pages, type);
+	return drm_agp_allocate_memory(pages, type);
 }
 
-int DRM(free_agp)(agp_memory *handle, int pages)
+int drm_free_agp(agp_memory *handle, int pages)
 {
-	return DRM(agp_free_memory)(handle);
+	return drm_agp_free_memory(handle);
 }
 
-int DRM(bind_agp)(agp_memory *handle, unsigned int start)
+int drm_bind_agp(agp_memory *handle, unsigned int start)
 {
-	return DRM(agp_bind_memory)(handle, start);
+	return drm_agp_bind_memory(handle, start);
 }
 
-int DRM(unbind_agp)(agp_memory *handle)
+int drm_unbind_agp(agp_memory *handle)
 {
-	return DRM(agp_unbind_memory)(handle);
+	return drm_agp_unbind_memory(handle);
 }
-#endif /* __REALLY_HAVE_AGP */
 
-#if __REALLY_HAVE_MTRR
 #ifdef __FreeBSD__
 int
-DRM(mtrr_add)(unsigned long offset, size_t size, int flags)
+drm_mtrr_add(unsigned long offset, size_t size, int flags)
 {
 	int act;
 	struct mem_range_desc mrdesc;
@@ -138,12 +134,12 @@ DRM(mtrr_add)(unsigned long offset, size_t size, int flags)
 	mrdesc.mr_len = size;
 	mrdesc.mr_flags = flags;
 	act = MEMRANGE_SET_UPDATE;
-	strlcpy(mrdesc.mr_owner, DRIVER_NAME, sizeof(mrdesc.mr_owner));
+	strlcpy(mrdesc.mr_owner, "drm", sizeof(mrdesc.mr_owner));
 	return mem_range_attr_set(&mrdesc, &act);
 }
 
 int
-DRM(mtrr_del)(unsigned long offset, size_t size, int flags)
+drm_mtrr_del(unsigned long offset, size_t size, int flags)
 {
 	int act;
 	struct mem_range_desc mrdesc;
@@ -152,12 +148,12 @@ DRM(mtrr_del)(unsigned long offset, size_t size, int flags)
 	mrdesc.mr_len = size;
 	mrdesc.mr_flags = flags;
 	act = MEMRANGE_SET_REMOVE;
-	strlcpy(mrdesc.mr_owner, DRIVER_NAME, sizeof(mrdesc.mr_owner));
+	strlcpy(mrdesc.mr_owner, "drm", sizeof(mrdesc.mr_owner));
 	return mem_range_attr_set(&mrdesc, &act);
 }
 #elif defined(__NetBSD__)
 int
-DRM(mtrr_add)(unsigned long offset, size_t size, int flags)
+drm_mtrr_add(unsigned long offset, size_t size, int flags)
 {
 	struct mtrr mtrrmap;
 	int one = 1;
@@ -170,7 +166,7 @@ DRM(mtrr_add)(unsigned long offset, size_t size, int flags)
 }
 
 int
-DRM(mtrr_del)(unsigned long offset, size_t size, int flags)
+drm_mtrr_del(unsigned long offset, size_t size, int flags)
 {
 	struct mtrr mtrrmap;
 	int one = 1;
@@ -182,6 +178,5 @@ DRM(mtrr_del)(unsigned long offset, size_t size, int flags)
 	return mtrr_set(&mtrrmap, &one, NULL, MTRR_GETSET_KERNEL);
 }
 #endif
-#endif /* __REALLY_HAVE_MTRR */
 
 #endif /* DEBUG_MEMORY */

@@ -103,9 +103,11 @@ enum radeon_cp_microcode_version {
 	UCODE_R300,
 };
 
+#ifdef __linux__
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
 #include "radeon_i2c.h"
 #endif
+#endif /* __linux__ */
 
 /*
  * Chip flags
@@ -240,9 +242,11 @@ typedef struct drm_radeon_private {
 
 	/* starting from here on, data is preserved accross an open */
 	uint32_t flags;		/* see radeon_chip_flags */
+#ifdef __linux__
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
 	struct radeon_i2c_chan i2c[4];
 #endif
+#endif /* __linux__ */
 } drm_radeon_private_t;
 
 typedef struct drm_radeon_buf_priv {

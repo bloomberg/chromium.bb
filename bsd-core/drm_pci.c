@@ -39,12 +39,12 @@
  * memory block.
  */
 void *
-DRM(pci_alloc)(drm_device_t *dev, size_t size, size_t align, dma_addr_t maxaddr,
+drm_pci_alloc(drm_device_t *dev, size_t size, size_t align, dma_addr_t maxaddr,
     dma_addr_t *busaddr)
 {
 	void *vaddr;
 
-	vaddr = contigmalloc(size, DRM(M_DRM), M_NOWAIT, 0ul, maxaddr, align,
+	vaddr = contigmalloc(size, M_DRM, M_NOWAIT, 0ul, maxaddr, align,
 	    0);
 	*busaddr = vtophys(vaddr);
 	
@@ -55,10 +55,10 @@ DRM(pci_alloc)(drm_device_t *dev, size_t size, size_t align, dma_addr_t maxaddr,
  * \brief Free a DMA-accessible consistent memory block.
  */
 void
-DRM(pci_free)(drm_device_t *dev, size_t size, void *vaddr, dma_addr_t busaddr)
+drm_pci_free(drm_device_t *dev, size_t size, void *vaddr, dma_addr_t busaddr)
 {
 #if __FreeBSD_version > 500000
-	contigfree(vaddr, size, DRM(M_DRM));	/* Not available on 4.x */
+	contigfree(vaddr, size, M_DRM);	/* Not available on 4.x */
 #endif
 }
 

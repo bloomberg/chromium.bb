@@ -38,7 +38,7 @@
  * before setunique has been called.  The format for the bus-specific part of
  * the unique is not defined for any other bus.
  */
-int DRM(getunique)( DRM_IOCTL_ARGS )
+int drm_getunique(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_unique_t	 u;
@@ -59,7 +59,7 @@ int DRM(getunique)( DRM_IOCTL_ARGS )
 /* Deprecated in DRM version 1.1, and will return EBUSY when setversion has
  * requested version 1.1 or greater.
  */
-int DRM(setunique)( DRM_IOCTL_ARGS )
+int drm_setunique(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_unique_t u;
@@ -74,7 +74,7 @@ int DRM(setunique)( DRM_IOCTL_ARGS )
 		return DRM_ERR(EINVAL);
 
 	dev->unique_len = u.unique_len;
-	dev->unique	= DRM(alloc)(u.unique_len + 1, DRM_MEM_DRIVER);
+	dev->unique = drm_alloc(u.unique_len + 1, DRM_MEM_DRIVER);
 
 	if (dev->unique == NULL)
 		return DRM_ERR(ENOMEM);
@@ -104,14 +104,14 @@ int DRM(setunique)( DRM_IOCTL_ARGS )
 
 
 static int
-DRM(set_busid)(drm_device_t *dev)
+drm_set_busid(drm_device_t *dev)
 {
 
 	if (dev->unique != NULL)
 		return EBUSY;
 
 	dev->unique_len = 20;
-	dev->unique = DRM(alloc)(dev->unique_len + 1, DRM_MEM_DRIVER);
+	dev->unique = drm_alloc(dev->unique_len + 1, DRM_MEM_DRIVER);
 	if (dev->unique == NULL)
 		return ENOMEM;
 
@@ -121,7 +121,7 @@ DRM(set_busid)(drm_device_t *dev)
 	return 0;
 }
 
-int DRM(getmap)( DRM_IOCTL_ARGS )
+int drm_getmap(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_map_t    map;
@@ -164,7 +164,7 @@ int DRM(getmap)( DRM_IOCTL_ARGS )
 	return 0;
 }
 
-int DRM(getclient)( DRM_IOCTL_ARGS )
+int drm_getclient(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_client_t client;
@@ -198,7 +198,7 @@ int DRM(getclient)( DRM_IOCTL_ARGS )
 	return 0;
 }
 
-int DRM(getstats)( DRM_IOCTL_ARGS )
+int drm_getstats(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_stats_t  stats;
@@ -230,7 +230,7 @@ int DRM(getstats)( DRM_IOCTL_ARGS )
 #define DRM_IF_MAJOR	1
 #define DRM_IF_MINOR	2
 
-int DRM(setversion)(DRM_IOCTL_ARGS)
+int drm_setversion(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_set_version_t sv;
@@ -241,9 +241,9 @@ int DRM(setversion)(DRM_IOCTL_ARGS)
 
 	retv.drm_di_major = DRM_IF_MAJOR;
 	retv.drm_di_minor = DRM_IF_MINOR;
-	retv.drm_dd_major = DRIVER_MAJOR;
-	retv.drm_dd_minor = DRIVER_MINOR;
-	
+	retv.drm_dd_major = dev->driver_major;
+	retv.drm_dd_minor = dev->driver_minor;
+
 	DRM_COPY_TO_USER_IOCTL((drm_set_version_t *)data, retv, sizeof(sv));
 
 	if (sv.drm_di_major != -1) {
@@ -256,13 +256,13 @@ int DRM(setversion)(DRM_IOCTL_ARGS)
 			/*
 			 * Version 1.1 includes tying of DRM to specific device
 			 */
-			DRM(set_busid)(dev);
+			drm_set_busid(dev);
 		}
 	}
 
 	if (sv.drm_dd_major != -1) {
-		if (sv.drm_dd_major != DRIVER_MAJOR ||
-		    sv.drm_dd_minor < 0 || sv.drm_dd_minor > DRIVER_MINOR)
+		if (sv.drm_dd_major != dev->driver_major ||
+		    sv.drm_dd_minor < 0 || sv.drm_dd_minor > dev->driver_minor)
 			return EINVAL;
 #ifdef DRIVER_SETVERSION
 		DRIVER_SETVERSION(dev, &sv);
@@ -272,7 +272,7 @@ int DRM(setversion)(DRM_IOCTL_ARGS)
 }
 
 
-int DRM(noop)(DRM_IOCTL_ARGS)
+int drm_noop(DRM_IOCTL_ARGS)
 {
 	DRM_DEBUG("\n");
 	return 0;

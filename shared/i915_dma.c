@@ -97,8 +97,7 @@ int i915_dma_cleanup(drm_device_t * dev)
 		if (dev_priv->hw_status_page) {
 #ifdef __FreeBSD__
 #if __FreeBSD_version > 500000
-			contigfree(dev_priv->hw_status_page, PAGE_SIZE,
-				   DRM(M_DRM));
+			contigfree(dev_priv->hw_status_page, PAGE_SIZE, M_DRM);
 #endif
 #else
 			pci_free_consistent(dev->pdev, PAGE_SIZE,

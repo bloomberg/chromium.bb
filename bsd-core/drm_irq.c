@@ -28,7 +28,10 @@
  *
  */
 
-int DRM(irq_by_busid)( DRM_IOCTL_ARGS )
+#include "drmP.h"
+#include "drm.h"
+
+int drm_irq_by_busid(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_irq_busid_t irq;
@@ -53,17 +56,17 @@ int DRM(irq_by_busid)( DRM_IOCTL_ARGS )
 
 #if defined(__FreeBSD__) && __FreeBSD_version >= 500000
 static irqreturn_t
-DRM(irq_handler_wrap)(DRM_IRQ_ARGS)
+drm_irq_handler_wrap(DRM_IRQ_ARGS)
 {
 	drm_device_t *dev = (drm_device_t *)arg;
 
 	DRM_SPINLOCK(&dev->irq_lock);
-	DRM(irq_handler)(arg);
+	dev->irq_handler(arg);
 	DRM_SPINUNLOCK(&dev->irq_lock);
 }
 #endif
 
-int DRM(irq_install)(drm_device_t *dev)
+int drm_irq_install(drm_device_t *dev)
 {
 	int retcode;
 
@@ -85,14 +88,10 @@ int DRM(irq_install)(drm_device_t *dev)
 	dev->dma->next_buffer = NULL;
 	dev->dma->this_buffer = NULL;
 
-#if __HAVE_IRQ_BH
-	TASK_INIT(&dev->task, 0, DRM(dma_immediate_bh), dev);
-#endif
-
 	DRM_SPININIT(dev->irq_lock, "DRM IRQ lock");
 
 				/* Before installing handler */
-	DRM(driver_irq_preinstall)( dev );
+	dev->irq_preinstall(dev);
 
 				/* Install handler */
 #ifdef __FreeBSD__
@@ -105,10 +104,10 @@ int DRM(irq_install)(drm_device_t *dev)
 	}
 #if __FreeBSD_version < 500000
 	retcode = bus_setup_intr(dev->device, dev->irqr, INTR_TYPE_TTY,
-				 DRM(irq_handler), dev, &dev->irqh);
+				 dev->irq_handler, dev, &dev->irqh);
 #else
 	retcode = bus_setup_intr(dev->device, dev->irqr, INTR_TYPE_TTY | INTR_MPSAFE,
-				 DRM(irq_handler_wrap), dev, &dev->irqh);
+				 drm_irq_handler_wrap, dev, &dev->irqh);
 #endif
 	if (retcode != 0)
 		goto err;
@@ -118,7 +117,7 @@ int DRM(irq_install)(drm_device_t *dev)
 		goto err;
 	}
 	dev->irqh = pci_intr_establish(&dev->pa.pa_pc, dev->ih, IPL_TTY,
-	    (irqreturn_t (*)(DRM_IRQ_ARGS))DRM(irq_handler), dev);
+	    (irqreturn_t (*)(DRM_IRQ_ARGS))dev->irq_handler, dev);
 	if (!dev->irqh) {
 		retcode = ENOENT;
 		goto err;
@@ -126,7 +125,7 @@ int DRM(irq_install)(drm_device_t *dev)
 #endif
 
 				/* After installing handler */
-	DRM(driver_irq_postinstall)( dev );
+	dev->irq_postinstall(dev);
 
 	return 0;
 err:
@@ -147,7 +146,7 @@ err:
 /* XXX: This function needs to be called with the device lock held.  In some
  * cases it isn't, so far.
  */
-int DRM(irq_uninstall)( drm_device_t *dev )
+int drm_irq_uninstall(drm_device_t *dev)
 {
 	int irqrid;
 
@@ -160,7 +159,7 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 
-	DRM(driver_irq_uninstall)( dev );
+	dev->irq_uninstall(dev);
 
 #ifdef __FreeBSD__
 	bus_teardown_intr(dev->device, dev->irqr, dev->irqh);
@@ -173,7 +172,7 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 	return 0;
 }
 
-int DRM(control)( DRM_IOCTL_ARGS )
+int drm_control(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_control_t ctl;
@@ -183,13 +182,20 @@ int DRM(control)( DRM_IOCTL_ARGS )
 
 	switch ( ctl.func ) {
 	case DRM_INST_HANDLER:
+		/* Handle drivers whose DRM used to require IRQ setup but the
+		 * no longer does.
+		 */
+		if (!dev->use_irq)
+			return 0;
 		if (dev->if_version < DRM_IF_VERSION(1, 2) &&
 		    ctl.irq != dev->irq)
 			return DRM_ERR(EINVAL);
-		return DRM(irq_install)(dev);
+		return drm_irq_install(dev);
 	case DRM_UNINST_HANDLER:
+		if (!dev->use_irq)
+			return 0;
 		DRM_LOCK();
-		err = DRM(irq_uninstall)( dev );
+		err = drm_irq_uninstall(dev);
 		DRM_UNLOCK();
 		return err;
 	default:
@@ -197,8 +203,7 @@ int DRM(control)( DRM_IOCTL_ARGS )
 	}
 }
 
-#if __HAVE_VBL_IRQ
-int DRM(wait_vblank)( DRM_IOCTL_ARGS )
+int drm_wait_vblank(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_wait_vblank_t vblwait;
@@ -237,8 +242,8 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 #endif
 		ret = EINVAL;
 	} else {
-		ret = DRM(vblank_wait)(dev, &vblwait.request.sequence);
-		
+		ret = dev->vblank_wait(dev, &vblwait.request.sequence);
+
 		microtime(&now);
 		vblwait.reply.tval_sec = now.tv_sec;
 		vblwait.reply.tval_usec = now.tv_usec;
@@ -250,12 +255,12 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	return ret;
 }
 
-void DRM(vbl_send_signals)(drm_device_t *dev)
+void drm_vbl_send_signals(drm_device_t *dev)
 {
 }
 
 #if 0 /* disabled */
-void DRM(vbl_send_signals)( drm_device_t *dev )
+void drm_vbl_send_signals( drm_device_t *dev )
 {
 	drm_vbl_sig_t *vbl_sig;
 	unsigned int vbl_seq = atomic_read( &dev->vbl_received );
@@ -277,5 +282,3 @@ void DRM(vbl_send_signals)( drm_device_t *dev )
 	}
 }
 #endif
-
-#endif /*  __HAVE_VBL_IRQ */
