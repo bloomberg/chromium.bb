@@ -224,9 +224,9 @@ drm_buf_t *mga_freelist_get(drm_device_t *dev)
 		       dev_priv->last_prim_age);
 	   	set_bit(MGA_IN_GETBUF, &dev_priv->dispatch_status);
 	   	add_wait_queue(&dev_priv->buf_queue, &entry);
-		current->state = TASK_INTERRUPTIBLE;
 	   	for (;;) {
 		   	mga_dma_schedule(dev, 0);
+			current->state = TASK_INTERRUPTIBLE;
 		   	if(!test_bit(MGA_IN_GETBUF,
 				     &dev_priv->dispatch_status))
 				break;
