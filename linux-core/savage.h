@@ -36,28 +36,4 @@
 #define __HAVE_MTRR		1
 #define __HAVE_CTX_BITMAP	1
 
-#define DRIVER_PCI_IDS							\
-        {0x5333, 0x8a22, 0, "Savage4"},                                 \
-        {0x5333, 0x8a23, 0, "Savage4"},                                 \
-	{0x5333, 0x8c10, 0, "Savage/MX-MV"},				\
-	{0x5333, 0x8c11, 0, "Savage/MX"},				\
-	{0x5333, 0x8c12, 0, "Savage/IX-MV"},				\
-	{0x5333, 0x8c13, 0, "Savage/IX"},				\
-	{0x5333, 0x8c20, 0, "Savage 3D"},				\
-	{0x5333, 0x8c21, 0, "Savage 3D/MV"},				\
-	{0x5333, 0x8c22, 0, "SuperSavage MX/128"},			\
-	{0x5333, 0x8c24, 0, "SuperSavage MX/64"},			\
-	{0x5333, 0x8c26, 0, "SuperSavage MX/64C"},			\
-	{0x5333, 0x8c2a, 0, "SuperSavage IX/128 SDR"},			\
-	{0x5333, 0x8c2b, 0, "SuperSavage IX/128 DDR"},			\
-	{0x5333, 0x8c2c, 0, "SuperSavage IX/64 SDR"},			\
-	{0x5333, 0x8c2d, 0, "SuperSavage IX/64 DDR"},			\
-	{0x5333, 0x8c2e, 0, "SuperSavage IX/C SDR"},			\
-	{0x5333, 0x8c2f, 0, "SuperSavage IX/C DDR"},			\
-	{0x5333, 0x8a25, 0, "ProSavage PM133"},				\
-	{0x5333, 0x8a26, 0, "ProSavage KM133"},				\
-	{0x5333, 0x8d01, 0, "ProSavage PN133"},				\
-	{0x5333, 0x8d02, 0, "ProSavage KN133"},				\
-	{0x5333, 0x8d04, 0, "ProSavage DDR"}
-
 #endif

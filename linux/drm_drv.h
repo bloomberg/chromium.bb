@@ -540,8 +540,10 @@ static int DRM(takedown)( drm_device_t *dev )
 	return 0;
 }
 
-static drm_pci_id_list_t DRM(pciidlist)[] = {
-	DRIVER_PCI_IDS
+#include "drm_pciids.h"
+
+static struct pci_device_id DRM(pciidlist)[] = {
+	DRM(PCI_IDS)
 };
 
 static int DRM(probe)(struct pci_dev *pdev)
@@ -551,17 +553,17 @@ static int DRM(probe)(struct pci_dev *pdev)
 	int retcode;
 #endif
 	int i;
-	char *desc = NULL;
+	int is_compat = 0;
 
 	DRM_DEBUG( "\n" );
 
 	for (i = 0; DRM(pciidlist)[i].vendor != 0; i++) {
 		if ((DRM(pciidlist)[i].vendor == pdev->vendor) &&
 		    (DRM(pciidlist)[i].device == pdev->device)) {
-			desc = DRM(pciidlist)[i].name;
+			is_compat = 1;
 		}
 	}
-	if (desc == NULL)
+	if (is_compat == 0)
 		return -ENODEV;
 
 	if (DRM(numdevs) >= MAX_DEVICES)
@@ -623,7 +625,7 @@ static int DRM(probe)(struct pci_dev *pdev)
  	}
 #endif
 	DRM(numdevs)++; /* no errors, mark it reserved */
-	
+
 	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d: %s\n",
 		DRIVER_NAME,
 		DRIVER_MAJOR,
@@ -631,7 +633,8 @@ static int DRM(probe)(struct pci_dev *pdev)
 		DRIVER_PATCHLEVEL,
 		DRIVER_DATE,
 		dev->minor,
-		desc );
+		pci_pretty_name(pdev)
+		);
 
 	DRIVER_POSTINIT();
 

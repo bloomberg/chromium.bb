@@ -208,7 +208,10 @@ SHAREDDIR := ../shared
 HASSHARED := $(shell if [ -d $(SHAREDDIR) ]; then echo y; fi)
 
 ifeq ($(HASSHARED),y)
-includes:: $(SHAREDSRC)
+includes:: $(SHAREDSRC) drm_pciids.h
+
+drm_pciids.h: $(SHAREDDIR)/drm_pciids.txt
+	sh ../scripts/create_linux_pci_lists.sh < $(SHAREDDIR)/drm_pciids.txt
 
 $(SHAREDSRC):
 	@if [ -r $(SHAREDDIR)/$@ ]; then \

@@ -255,6 +255,10 @@ static inline void class_simple_destroy(struct class_simple *cs){};
 
 static inline struct class_simple *class_simple_create(struct module *owner, char *name) { return NULL; }
 
+#ifndef pci_pretty_name
+#define pci_pretty_name(x) x->name
+#endif
+
 #endif
 
 #ifndef REMAP_PAGE_RANGE_5_ARGS
@@ -422,14 +426,6 @@ do {									\
  */
 typedef int drm_ioctl_t( struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg );
-
-typedef struct drm_pci_id_list
-{
-	int vendor;
-	int device;
-	long driver_private;
-	char *name;
-} drm_pci_id_list_t;
 
 typedef struct drm_ioctl_desc {
 	drm_ioctl_t	     *func;

@@ -225,8 +225,10 @@ static struct cdevsw DRM(cdevsw) = {
 #endif
 };
 
+#include "drm_pciids.h"
+
 static drm_pci_id_list_t DRM(pciidlist)[] = {
-	DRIVER_PCI_IDS
+	DRM(PCI_IDS)
 };
 
 static int DRM(probe)(device_t dev)

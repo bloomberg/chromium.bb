@@ -71,29 +71,6 @@
    	[DRM_IOCTL_NR(DRM_IOCTL_MACH64_FLUSH)]    = { mach64_dma_flush,      1, 0 },    \
    	[DRM_IOCTL_NR(DRM_IOCTL_MACH64_GETPARAM)] = { mach64_get_param,      1, 0 }
 
-#define DRIVER_PCI_IDS                                                  \
-	{0x1002, 0x4749, 0, "3D Rage Pro"},                             \
-	{0x1002, 0x4750, 0, "3D Rage Pro 215GP"},                       \
-	{0x1002, 0x4751, 0, "3D Rage Pro 215GQ"},                       \
-	{0x1002, 0x4742, 0, "3D Rage Pro AGP 1X/2X"},                   \
-	{0x1002, 0x4744, 0, "3D Rage Pro AGP 1X"},                      \
-	{0x1002, 0x4c49, 0, "3D Rage LT Pro"},                          \
-	{0x1002, 0x4c50, 0, "3D Rage LT Pro"},                          \
-	{0x1002, 0x4c51, 0, "3D Rage LT Pro"},                          \
-	{0x1002, 0x4c42, 0, "3D Rage LT Pro AGP-133"},                  \
-	{0x1002, 0x4c44, 0, "3D Rage LT Pro AGP-66"},                   \
-	{0x1002, 0x474c, 0, "Rage XC"},                                 \
-	{0x1002, 0x474f, 0, "Rage XL"},                                 \
-	{0x1002, 0x4752, 0, "Rage XL"},                                 \
-	{0x1002, 0x4753, 0, "Rage XC"},                                 \
-	{0x1002, 0x474d, 0, "Rage XL AGP 2X"},                          \
-	{0x1002, 0x474e, 0, "Rage XC AGP"},                             \
-	{0x1002, 0x4c52, 0, "Rage Mobility P/M"},                       \
-	{0x1002, 0x4c53, 0, "Rage Mobility L"},                         \
-	{0x1002, 0x4c4d, 0, "Rage Mobility P/M AGP 2X"},                \
-	{0x1002, 0x4c4e, 0, "Rage Mobility L AGP 2X"},                  \
-	{0, 0, 0, NULL}
-
 /* Driver customization:
  */
 #define DRIVER_PRETAKEDOWN() do {					\
