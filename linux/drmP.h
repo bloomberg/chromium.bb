@@ -246,8 +246,7 @@ static inline unsigned iminor(struct inode *inode)
 struct class_simple;
 struct device;
 
-static inline void *class_simple_device_add(struct class_simple *cs, dev_t dev, struct device *device, const char *fmt, ...)
-{ return NULL;}
+#define class_simple_device_add(...) do {} while (0)
 
 static inline void class_simple_device_remove(dev_t dev){};
 
