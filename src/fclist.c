@@ -220,20 +220,6 @@ FcListPatternMatchAny (const FcPattern *p,
 }
 
 static FcChar32
-FcListStringHash (const FcChar8	*s)
-{
-    FcChar32	h = 0;
-    FcChar8	c;
-
-    while ((c = *s++))
-    {
-	c = FcToLower (c);
-	h = ((h << 3) ^ (h >> 3)) ^ c;
-    }
-    return h;
-}
-
-static FcChar32
 FcListMatrixHash (const FcMatrix *m)
 {
     int	    xx = (int) (m->xx * 100), 
@@ -255,7 +241,7 @@ FcListValueHash (FcValue    v)
     case FcTypeDouble:
 	return (FcChar32) (int) v.u.d;
     case FcTypeString:
-	return FcListStringHash (v.u.s);
+	return FcStrHashIgnoreCase (v.u.s);
     case FcTypeBool:
 	return (FcChar32) v.u.b;
     case FcTypeMatrix:

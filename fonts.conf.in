@@ -73,8 +73,9 @@
  -->
 	<alias>
 		<family>Bitstream Vera Serif</family>
-		<family>Times</family>
 		<family>Times New Roman</family>
+		<family>Thorndale AMT</family>
+		<family>Times</family>
 		<family>Nimbus Roman No9 L</family>
 		<family>Luxi Serif</family>
 		<family>Kochi Mincho</family>
@@ -92,6 +93,7 @@
 		<family>Helvetica</family>
 		<family>Arial</family>
 		<family>Verdana</family>
+		<family>Albany AMT</family>
 		<family>Nimbus Sans L</family>
 		<family>Luxi Sans</family>
 		<family>Kochi Gothic</family>
@@ -111,6 +113,7 @@
 		<family>Courier New</family>
 		<family>Andale Mono</family>
 		<family>Luxi Mono</family>
+		<family>Cumberland AMT</family>
 		<family>Nimbus Mono L</family>
 		<family>NSimSun</family>
 		<family>FreeMono</family>
@@ -134,6 +137,48 @@
 		</edit>
 	</match>
 
+<!--
+  URW provides metric and shape compatible fonts for these 3 Adobe families
+  Mark these as effective replacements by binding the replacement
+  family names strongly
+  -->
+        <match target="pattern">
+	  <test name="family"><string>Times</string></test>
+	  <edit name="family" mode="append" binding="same">
+	    <string>Nimbus Roman No9 L</string>
+	  </edit>
+	</match>
+        <match target="pattern">
+	  <test name="family"><string>Helvetica</string></test>
+	  <edit name="family" mode="append" binding="same">
+	    <string>Nimbus Sans L</string>
+	  </edit>
+	</match>
+        <match target="pattern">
+	  <test name="family"><string>Courier</string></test>
+	  <edit name="family" mode="append" binding="same">
+	    <string>Nimbus Mono L</string>
+	  </edit>
+	</match>
+
+<!--
+ AMT provides metric and shape compatible fonts for these three web font
+ families.  Bind them weakly as matching here is not as important as
+ with web fonts.
+ -->
+ 	<alias>
+		<family>Times New Roman</family>
+		<accept><family>Thorndale AMT</family></accept>
+	</alias
+ 	<alias>
+		<family>Arial</family>
+		<accept><family>Albany AMT</family></accept>
+	</alias
+ 	<alias>
+		<family>Courier New</family>
+		<accept><family>Cumberland AMT</family></accept>
+	</alias
+ 
 <!--
   Some Asian fonts misadvertise themselves as monospaced when
   in fact they are dual-spaced (half and full).  This makes
@@ -215,22 +260,6 @@
 	<include ignore_missing="yes">local.conf</include>
 
 <!--
-  Alias well known Type1 font names to metric equivalent TrueType fonts
--->
-	<alias>
-		<family>Times</family>
-		<accept><family>Times New Roman</family></accept>
-	</alias>
-	<alias>
-		<family>Helvetica</family>
-		<accept><family>Arial</family></accept>
-	</alias>
-	<alias>
-		<family>Courier</family>
-		<accept><family>Courier New</family></accept>
-	</alias>
-
-<!--
   Provide required aliases for standard names
 -->
 	<alias>
@@ -238,8 +267,9 @@
 		<prefer>
 			<family>Bitstream Vera Serif</family>
 			<family>Times New Roman</family>
-			<family>Nimbus Roman No9 L</family>
+			<family>Thorndale AMT</family>
 			<family>Luxi Serif</family>
+			<family>Nimbus Roman No9 L</family>
 			<family>Times</family>
 			<family>Frank Ruehl</family>
 			<family>Kochi Mincho</family>
@@ -254,9 +284,10 @@
 		<prefer>
 			<family>Bitstream Vera Sans</family>
 			<family>Verdana</family>
-			<family>Nimbus Sans L</family>
-			<family>Luxi Sans</family>
 			<family>Arial</family>
+			<family>Albany AMT</family>
+			<family>Luxi Sans</family>
+			<family>Nimbus Sans L</family>
 			<family>Helvetica</family>
 			<family>Nachlieli</family>
 			<family>Kochi Gothic</family>
@@ -273,8 +304,10 @@
 			<family>Bitstream Vera Sans Mono</family>
 			<family>Andale Mono</family>
 			<family>Courier New</family>
+			<family>Cumberland AMT</family>
 			<family>Luxi Mono</family>
 			<family>Nimbus Mono L</family>
+			<family>Courier</family>
 			<family>Miriam Mono</family>
 			<family>Kochi Gothic</family>
 			<family>AR PL KaitiM GB</family>

@@ -63,16 +63,147 @@ FcStrFree (FcChar8 *s)
     free (s);
 }
 
+
+#include "../fc-case/fccase.h"
+
+#define FcCaseFoldUpperCount(cf) \
+    ((cf)->method == FC_CASE_FOLD_FULL ? 1 : (cf)->count)
+
+#define FC_STR_CANON_BUF_LEN	1024
+
+typedef struct _FcCaseWalker {
+    const FcChar8   *read;
+    const FcChar8   *src;
+    int		    len;
+    FcChar8	    utf8[FC_MAX_CASE_FOLD_CHARS + 1];
+} FcCaseWalker;
+
+static void
+FcStrCaseWalkerInit (const FcChar8 *src, FcCaseWalker *w)
+{
+    w->src = src;
+    w->read = 0;
+    w->len = strlen (src);
+}
+
+static FcChar8
+FcStrCaseWalkerLong (FcCaseWalker *w, FcChar8 r)
+{
+    FcChar32	ucs4;
+    int		slen;
+
+    slen = FcUtf8ToUcs4 (w->src - 1, &ucs4, w->len);
+    if (slen <= 0)
+	return r;
+    if (FC_MIN_FOLD_CHAR <= ucs4 && ucs4 <= FC_MAX_FOLD_CHAR)
+    {
+	int min = 0;
+	int max = FC_NUM_CASE_FOLD;
+
+	while (min <= max)
+	{
+	    int		mid = (min + max) >> 1;
+	    FcChar32    low = fcCaseFold[mid].upper;
+	    FcChar32    high = low + FcCaseFoldUpperCount (&fcCaseFold[mid]);
+	    
+	    if (high <= ucs4)
+		min = mid + 1;
+	    else if (ucs4 < low)
+		max = mid - 1;
+	    else
+	    {
+		const FcCaseFold    *fold = &fcCaseFold[mid];
+		int		    dlen;
+		
+		switch (fold->method) {
+		case  FC_CASE_FOLD_EVEN_ODD:
+		    if ((ucs4 & 1) != (fold->upper & 1))
+			return r;
+		    /* fall through ... */
+		default:
+		    dlen = FcUcs4ToUtf8 (ucs4 + fold->offset, w->utf8);
+		    break;
+		case FC_CASE_FOLD_FULL:
+		    dlen = fold->count;
+		    memcpy (w->utf8, fcCaseFoldChars + fold->offset, dlen);
+		    break;
+		}
+		
+		/* consume rest of src utf-8 bytes */
+		w->src += slen - 1;
+		w->len -= slen - 1;
+		
+		/* read from temp buffer */
+		w->utf8[dlen] = '\0';
+		w->read = w->utf8;
+		return *w->read++;
+	    }
+	}
+    }
+    return r;
+}
+
+static FcChar8
+FcStrCaseWalkerNext (FcCaseWalker *w)
+{
+    FcChar8	r;
+
+    if (w->read)
+    {
+	if ((r = *w->read++))
+	    return r;
+	w->read = 0;
+    }
+    r = *w->src++;
+    --w->len;
+    
+    if ((r & 0xc0) == 0xc0)
+	return FcStrCaseWalkerLong (w, r);
+    if ('A' <= r && r <= 'Z')
+        r = r - 'A' + 'a';
+    return r;
+}
+
+static FcChar8
+FcStrCaseWalkerNextIgnoreBlanks (FcCaseWalker *w)
+{
+    FcChar8	r;
+
+    if (w->read)
+    {
+	if ((r = *w->read++))
+	    return r;
+	w->read = 0;
+    }
+    do
+    {
+	r = *w->src++;
+	--w->len;
+    } while (r == ' ');
+    
+    if ((r & 0xc0) == 0xc0)
+	return FcStrCaseWalkerLong (w, r);
+    if ('A' <= r && r <= 'Z')
+        r = r - 'A' + 'a';
+    return r;
+}
+
 int
 FcStrCmpIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
 {
-    FcChar8 c1, c2;
+    FcCaseWalker    w1, w2;
+    FcChar8	    c1, c2;
+
+    if (s1 == s2) return 0;
+    
+    FcStrCaseWalkerInit (s1, &w1);
+    FcStrCaseWalkerInit (s2, &w2);
     
     for (;;) 
     {
-	c1 = *s1++;
-	c2 = *s2++;
-	if (!c1 || (c1 != c2 && (c1 = FcToLower(c1)) != (c2 = FcToLower(c2))))
+	c1 = FcStrCaseWalkerNext (&w1);
+	c2 = FcStrCaseWalkerNext (&w2);
+	if (!c1 || (c1 != c2))
 	    break;
     }
     return (int) c1 - (int) c2;
@@ -81,17 +212,19 @@ FcStrCmpIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
 int
 FcStrCmpIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2)
 {
-    FcChar8 c1, c2;
+    FcCaseWalker    w1, w2;
+    FcChar8	    c1, c2;
+
+    if (s1 == s2) return 0;
+    
+    FcStrCaseWalkerInit (s1, &w1);
+    FcStrCaseWalkerInit (s2, &w2);
     
     for (;;) 
     {
-	do
-	    c1 = *s1++;
-	while (c1 == ' ');
-	do
-	    c2 = *s2++;
-	while (c2 == ' ');
-	if (!c1 || (c1 != c2 && (c1 = FcToLower(c1)) != (c2 = FcToLower(c2))))
+	c1 = FcStrCaseWalkerNextIgnoreBlanks (&w1);
+	c2 = FcStrCaseWalkerNextIgnoreBlanks (&w2);
+	if (!c1 || (c1 != c2))
 	    break;
     }
     return (int) c1 - (int) c2;
@@ -115,23 +248,40 @@ FcStrCmp (const FcChar8 *s1, const FcChar8 *s2)
 }
 
 /*
+ * Return a hash value for a string
+ */
+
+FcChar32
+FcStrHashIgnoreCase (const FcChar8 *s)
+{
+    FcChar32	    h = 0;
+    FcCaseWalker    w;
+    FcChar8	    c;
+
+    FcStrCaseWalkerInit (s, &w);
+    while ((c = FcStrCaseWalkerNext (&w)))
+	h = ((h << 3) ^ (h >> 3)) ^ c;
+    return h;
+}
+
+/*
  * Is the head of s1 equal to s2?
  */
 
 static FcBool
 FcStrIsAtIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2)
 {
-    FcChar8 c1, c2;
+    FcCaseWalker    w1, w2;
+    FcChar8	    c1, c2;
+
+    FcStrCaseWalkerInit (s1, &w1);
+    FcStrCaseWalkerInit (s2, &w2);
     
     for (;;) 
     {
-	do
-	    c1 = *s1++;
-	while (c1 == ' ');
-	do
-	    c2 = *s2++;
-	while (c2 == ' ');
-	if (!c1 || (c1 != c2 && (c1 = FcToLower(c1)) != (c2 = FcToLower(c2))))
+	c1 = FcStrCaseWalkerNextIgnoreBlanks (&w1);
+	c2 = FcStrCaseWalkerNextIgnoreBlanks (&w2);
+	if (!c1 || (c1 != c2))
 	    break;
     }
     return c1 == c2 || !c2;
@@ -160,13 +310,17 @@ FcStrContainsIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2)
 static FcBool
 FcStrIsAtIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
 {
-    FcChar8 c1, c2;
+    FcCaseWalker    w1, w2;
+    FcChar8	    c1, c2;
+
+    FcStrCaseWalkerInit (s1, &w1);
+    FcStrCaseWalkerInit (s2, &w2);
     
     for (;;) 
     {
-	c1 = *s1++;
-	c2 = *s2++;
-	if (!c1 || (c1 != c2 && (c1 = FcToLower(c1)) != (c2 = FcToLower(c2))))
+	c1 = FcStrCaseWalkerNext (&w1);
+	c2 = FcStrCaseWalkerNext (&w2);
+	if (!c1 || (c1 != c2))
 	    break;
     }
     return c1 == c2 || !c2;
@@ -191,52 +345,45 @@ FcStrContainsIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
 const FcChar8 *
 FcStrStrIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
 {
-    FcChar8 c1, c2;
-    const FcChar8 * p = s1;
-    const FcChar8 * b = s2;
+    FcCaseWalker    w1, w2;
+    FcChar8	    c1, c2;
+    const FcChar8   *cur;
 
     if (!s1 || !s2)
 	return 0;
 
     if (s1 == s2)
 	return s1;
-
-again:
-    c2 = *s2++;
-    c2 = FcToLower (c2);
-
-    if (!c2)
-	return 0;
-
-    for (;;) 
-    {
-	p = s1;
-	c1 = *s1++;
-	if (!c1 || (c1 = FcToLower (c1)) == c2)
-	    break;
-    }
-
-    if (c1 != c2)
-	return 0;
-
+    
+    FcStrCaseWalkerInit (s1, &w1);
+    FcStrCaseWalkerInit (s2, &w2);
+    
+    c2 = FcStrCaseWalkerNext (&w2);
+    
     for (;;)
     {
-	c1 = *s1;
-	c2 = *s2;
-	if (c1 && c2 && (c1 = FcToLower (c1)) != (c2 = FcToLower (c2)))
-	{
-	    s1 = p + 1;
-	    s2 = b;
-	    goto again;
-	}
-	if (!c2)
-	    return p;
+	cur = w1.src;
+	c1 = FcStrCaseWalkerNext (&w1);
 	if (!c1)
-	    return 0;
-	++ s1;
-	++ s2;
-    }
+	    break;
+	if (c1 == c2)
+	{
+	    FcCaseWalker    w1t = w1;
+	    FcCaseWalker    w2t = w2;
+	    FcChar8	    c1t, c2t;
 
+	    for (;;)
+	    {
+		c1t = FcStrCaseWalkerNext (&w1t);
+		c2t = FcStrCaseWalkerNext (&w2t);
+
+		if (!c2t)
+		    return cur;
+		if (c2t != c1t)
+		    break;
+	    }
+	}
+    }
     return 0;
 }
 

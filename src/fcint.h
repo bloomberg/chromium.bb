@@ -231,6 +231,37 @@ typedef struct _FcGlyphName {
     FcChar8	name[1];	/* name extends beyond struct */
 } FcGlyphName;
 
+/*
+ * To perform case-insensitive string comparisons, a table
+ * is used which holds three different kinds of folding data.
+ * 
+ * The first is a range of upper case values mapping to a range
+ * of their lower case equivalents.  Within each range, the offset
+ * between upper and lower case is constant.
+ *
+ * The second is a range of upper case values which are interleaved
+ * with their lower case equivalents.
+ * 
+ * The third is a set of raw unicode values mapping to a list
+ * of unicode values for comparison purposes.  This allows conversion
+ * of ß to "ss" so that SS, ss and ß all match.  A separate array
+ * holds the list of unicode values for each entry.
+ *
+ * These are packed into a single table.  Using a binary search,
+ * the appropriate entry can be located.
+ */
+
+#define FC_CASE_FOLD_RANGE	    0
+#define FC_CASE_FOLD_EVEN_ODD	    1
+#define FC_CASE_FOLD_FULL	    2
+
+typedef struct _FcCaseFold {
+    FcChar32	upper;
+    FcChar16	method : 2;
+    FcChar16	count : 14;
+    short    	offset;	    /* lower - upper for RANGE, table id for FULL */
+} FcCaseFold;
+
 #define FC_MAX_FILE_LEN	    4096
 
 /*
@@ -745,5 +776,8 @@ FcStrUsesHome (const FcChar8 *s);
 
 FcChar8 *
 FcStrLastSlash (const FcChar8  *path);
+
+FcChar32
+FcStrHashIgnoreCase (const FcChar8 *s);
 
 #endif /* _FC_INT_H_ */

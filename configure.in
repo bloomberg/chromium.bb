@@ -411,6 +411,7 @@ Makefile
 fontconfig/Makefile
 fc-lang/Makefile
 fc-glyphname/Makefile
+fc-case/Makefile
 src/Makefile
 src/fontconfig.def
 fc-cache/Makefile

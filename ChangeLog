@@ -1,3 +1,29 @@
+2004-12-29  Keith Packard  <keithp@keithp.com>
+
+	* fonts.conf.in:
+	Adopt some RedHat suggestions for standard font configuration.
+
+	* Makefile.am:
+	* configure.in:
+	* fc-case/CaseFolding.txt:
+	* fc-case/Makefile.am:
+	* fc-case/fc-case.c: (panic), (addFold), (ucs4_to_utf8),
+	(utf8_size), (addChar), (foldExtends), (case_fold_method_name),
+	(dump), (parseRaw), (caseFoldReadRaw), (main):
+	* fc-case/fccase.tmpl.h:
+	Add new helper program 'fc-case' to construct case folding
+	tables from standard Unicode CaseFolding.txt file
+	
+	* src/fcint.h:
+	* src/fclist.c: (FcListValueHash):
+	* src/fcstr.c: (FcStrCaseWalkerInit), (FcStrCaseWalkerLong),
+	(FcStrCaseWalkerNext), (FcStrCaseWalkerNextIgnoreBlanks),
+	(FcStrCmpIgnoreCase), (FcStrCmpIgnoreBlanksAndCase),
+	(FcStrHashIgnoreCase), (FcStrIsAtIgnoreBlanksAndCase),
+	(FcStrIsAtIgnoreCase), (FcStrStrIgnoreCase):
+	Re-implement case insensitive functions with Unicode
+	aware versions (including full case folding mappings)
+
 2004-12-13  Keith Packard  <keithp@keithp.com>
 
 	reviewed by: Owen Taylor <otaylor@redhat.com>

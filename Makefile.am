@@ -22,7 +22,7 @@
 #  PERFORMANCE OF THIS SOFTWARE.
 
 DOCSRC=@DOCSRC@
-SUBDIRS=fontconfig fc-lang fc-glyphname src fc-cache fc-list fc-match $(DOCSRC) test
+SUBDIRS=fontconfig fc-lang fc-glyphname fc-case src fc-cache fc-list fc-match $(DOCSRC) test
 
 EXTRA_DIST = \
         fontconfig.pc.in \
