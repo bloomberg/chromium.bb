@@ -165,7 +165,9 @@ static int via_dispatch_cmdbuffer(drm_device_t *dev,
 	if (vb == NULL) {
 		return DRM_ERR(EAGAIN);
 	}
-	DRM_COPY_FROM_USER(vb, cmd->buf, cmd->size);
+	if (DRM_COPY_FROM_USER(vb, cmd->buf, cmd->size)) {
+		return DRM_ERR(EFAULT);
+	}
 	dev_priv->dma_low += cmd->size;
 	via_cmdbuf_pause(dev_priv);
 
