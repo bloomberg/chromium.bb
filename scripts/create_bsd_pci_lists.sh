@@ -1,4 +1,4 @@
-#! /bin/bash 
+#!/bin/sh 
 #
 # Script to output BSD compatible pci ids file
 #  - Copyright Dave Airlie 2004 (airlied@linux.ie)
