@@ -1727,6 +1727,13 @@ FcConfigAppFontAddDir (FcConfig	    *config,
 void
 FcConfigAppFontClear (FcConfig	    *config)
 {
+    if (!config)
+    {
+	config = FcConfigGetCurrent ();
+	if (!config)
+	    return;
+    }
+
     FcConfigSetFonts (config, 0, FcSetApplication);
 }
 

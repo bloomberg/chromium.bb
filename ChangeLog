@@ -1,3 +1,8 @@
+2003-08-31  Manish Singh  <yosh@gimp.org>
+
+	* src/fccfg.c (FcConfigAppFontClear): Support passing NULL to
+	use default config.
+
 2003-08-15  Carl Worth  <cworth@isi.edu>
 
 	* src/fcxml.c (FcEditDestroy): Fix leak of FcEdit.
