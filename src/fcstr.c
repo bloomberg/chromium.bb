@@ -188,6 +188,109 @@ FcStrContainsIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
     return 0;
 }
 
+const FcChar8 *
+FcStrStrIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
+{
+    FcChar8 c1, c2;
+    const FcChar8 * p = s1;
+    const FcChar8 * b = s2;
+
+    if (!s1 || !s2)
+	return 0;
+
+    if (s1 == s2)
+	return s1;
+
+again:
+    c2 = *s2++;
+    c2 = FcToLower (c2);
+
+    if (!c2)
+	return 0;
+
+    for (;;) 
+    {
+	p = s1;
+	c1 = *s1++;
+	if (!c1 || (c1 = FcToLower (c1)) == c2)
+	    break;
+    }
+
+    if (c1 != c2)
+	return 0;
+
+    for (;;)
+    {
+	c1 = *s1;
+	c2 = *s2;
+	if (c1 && c2 && (c1 = FcToLower (c1)) != (c2 = FcToLower (c2)))
+	{
+	    s1 = p + 1;
+	    s2 = b;
+	    goto again;
+	}
+	if (!c2)
+	    return p;
+	if (!c1)
+	    return 0;
+	++ s1;
+	++ s2;
+    }
+
+    return 0;
+}
+
+const FcChar8 *
+FcStrStr (const FcChar8 *s1, const FcChar8 *s2)
+{
+    FcChar8 c1, c2;
+    const FcChar8 * p = s1;
+    const FcChar8 * b = s2;
+
+    if (!s1 || !s2)
+	return 0;
+
+    if (s1 == s2)
+	return s1;
+
+again:
+    c2 = *s2++;
+
+    if (!c2)
+	return 0;
+
+    for (;;) 
+    {
+	p = s1;
+	c1 = *s1++;
+	if (!c1 || c1 == c2)
+	    break;
+    }
+
+    if (c1 != c2)
+	return 0;
+
+    for (;;)
+    {
+	c1 = *s1;
+	c2 = *s2;
+	if (c1 && c2 && c1 != c2)
+	{
+	    s1 = p + 1;
+	    s2 = b;
+	    goto again;
+	}
+	if (!c2)
+	    return p;
+	if (!c1)
+	    return 0;
+	++ s1;
+	++ s2;
+    }
+
+    return 0;
+}
+
 int
 FcUtf8ToUcs4 (const FcChar8 *src_orig,
 	      FcChar32	    *dst,

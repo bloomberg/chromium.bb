@@ -565,12 +565,16 @@ FcConfigCompareValue (const FcValue	m_o,
 	case FcTypeString:
 	    switch (op) {
 	    case FcOpEqual:    
-	    case FcOpContains:
 		ret = FcStrCmpIgnoreCase (m.u.s, v.u.s) == 0;
 		break;
+	    case FcOpContains:
+		ret = FcStrStrIgnoreCase (m.u.s, v.u.s) != 0;
+		break;
 	    case FcOpNotEqual:
-	    case FcOpNotContains:
 		ret = FcStrCmpIgnoreCase (m.u.s, v.u.s) != 0;
+		break;
+	    case FcOpNotContains:
+		ret = FcStrStrIgnoreCase (m.u.s, v.u.s) == 0;
 		break;
 	    default:
 		break;
@@ -613,16 +617,16 @@ FcConfigCompareValue (const FcValue	m_o,
 	case FcTypeLangSet:
 	    switch (op) {
 	    case FcOpContains:
-		ret = FcLangSetContains (v.u.l, m.u.l);
+		ret = FcLangSetContains (m.u.l, v.u.l);
 		break;
 	    case FcOpNotContains:
-		ret = FcLangSetContains (v.u.l, m.u.l);
+		ret = FcLangSetContains (m.u.l, v.u.l);
 		break;
 	    case FcOpEqual:
-		ret = FcLangSetEqual (v.u.l, m.u.l);
+		ret = FcLangSetEqual (m.u.l, v.u.l);
 		break;
 	    case FcOpNotEqual:
-		ret = !FcLangSetEqual (v.u.l, m.u.l);
+		ret = !FcLangSetEqual (m.u.l, v.u.l);
 		break;
 	    default:
 		break;

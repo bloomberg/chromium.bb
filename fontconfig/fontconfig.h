@@ -737,6 +737,12 @@ FcStrCmpIgnoreCase (const FcChar8 *s1, const FcChar8 *s2);
 int
 FcStrCmp (const FcChar8 *s1, const FcChar8 *s2);
 
+const FcChar8 *
+FcStrStrIgnoreCase (const FcChar8 *s1, const FcChar8 *s2);
+
+const FcChar8 *
+FcStrStr (const FcChar8 *s1, const FcChar8 *s2);
+
 int
 FcUtf8ToUcs4 (const FcChar8 *src_orig,
 	      FcChar32	    *dst,
