@@ -1,4 +1,15 @@
-Sun Mar  2 14:16:17 2003  Owen Taylor  <otaylor@redhat.com>
+Wed Mar  5 04:26:20 EST 2003	Mike A. Harris <mharris@redhat.com>
+	+ Removed commented out rpm macro define at top of spec file,
+	  replacing it with a simple explanation, since rpm macros are
+	  expanded by rpm even in comments.
+
+	+ Changed /usr/bin to _bindir in BuildRequires lines
+
+	+ Cleaned up rpm postinstall script, and made fc-cache use _bindir
+
+	+ Reorganized file manifest lists
+
+Sun Mar  2 14:16:17 EST 2003	Owen Taylor <otaylor@redhat.com>
 
 	+ fontconfig.spec.in: Improvements from Red Hat spec file.
 
