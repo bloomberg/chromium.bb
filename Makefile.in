@@ -83,15 +83,6 @@ $(DESTDIR)$(CONFDIR)/local.conf:: local.conf
 	fi
 
 #
-# install fontconfig-config script
-#
-
-install:: $(DESTDIR)$(BINDIR)/fontconfig-config
-
-$(DESTDIR)$(BINDIR)/fontconfig-config: fontconfig-config
-	$(INSTALL_SCRIPT) $< $(DESTDIR)$(BINDIR)/$<
-
-#
 # install pkgconfig control file
 #
 install:: $(DESTDIR)$(LIBDIR)/pkgconfig/fontconfig.pc

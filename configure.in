@@ -335,6 +335,5 @@ AC_OUTPUT([Makefile
 	  fc-cache/Makefile
 	  fc-list/Makefile
 	  fontconfig/Makefile
-	  fontconfig.pc
-	  fontconfig-config])
+	  fontconfig.pc])
 
