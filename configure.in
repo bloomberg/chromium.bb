@@ -327,6 +327,7 @@ src/Makefile
 fc-cache/Makefile
 fc-list/Makefile
 doc/Makefile
+test/Makefile
 fontconfig.spec
 fontconfig.pc
 fonts.conf

@@ -21,7 +21,7 @@
 #  TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 #  PERFORMANCE OF THIS SOFTWARE.
 
-SUBDIRS=fontconfig fc-lang src fc-cache fc-list doc
+SUBDIRS=fontconfig fc-lang src fc-cache fc-list doc test
 
 EXTRA_DIST = \
         fontconfig.pc.in \
