@@ -1159,7 +1159,7 @@ static int radeon_cp_dispatch_texture( drm_device_t *dev,
 		/* Update the input parameters for next time */
 		image->y += height;
 		image->height -= height;
-		image->data += size;
+		image->data = (const u8 *)image->data + size;
 
 		buf = radeon_freelist_get( dev );
 		if ( 0 && !buf ) {
