@@ -1,0 +1,78 @@
+/*
+ * $Id$
+ *
+ * Copyright © 2003 Keith Packard
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Keith Packard not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Keith Packard makes no
+ * representations about the suitability of this software for any purpose.  It
+ * is provided "as is" without express or implied warranty.
+ *
+ * KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+
+@RET@		FcBool 	
+@FUNC@		FcFileScan 
+@TYPE1@		FcFontSet *			@ARG1@		set	
+@TYPE2@		FcStrSet *			@ARG2@		dirs	
+@TYPE3@		FcFileCache *			@ARG3@		cache	
+@TYPE4@		FcBlanks *			@ARG4@		blanks	
+@TYPE5@		const char *			@ARG5@		file	
+@TYPE6@		FcBool 				@ARG6@		force	
+@PURPOSE@	scan a font file
+@DESC@
+Scans a single file and adds all fonts found to <parameter>set</parameter>.
+If <parameter>force</parameter> is FcTrue, then the file is scanned even if
+associated information is found in <parameter>cache</parameter>.  If
+<parameter>file</parameter> is a directory, it is added to
+<parameter>dirs</parameter>.
+@@
+
+@RET@		FcBool 	
+@FUNC@		FcDirScan 
+@TYPE1@		FcFontSet *			@ARG1@		set	
+@TYPE2@		FcStrSet *			@ARG2@		dirs	
+@TYPE3@		FcFileCache *			@ARG3@		cache	
+@TYPE4@		FcBlanks *			@ARG4@		blanks	
+@TYPE5@		const char *			@ARG5@		dir	
+@TYPE6@		FcBool 				@ARG6@		force	
+@PURPOSE@	scan a font directory
+@DESC@
+Scans an entire directory and adds all fonts found to
+<parameter>set</parameter>.  If <parameter>force</parameter> is FcTrue, then
+the directory and all files within it are scanned even if information is
+present in the per-directory cache file or <parameter>cache</parameter>.  Any
+subdirectories found are added to <parameter>dirs</parameter>.
+@@
+
+@RET@		FcBool 	
+@FUNC@		FcDirSave 
+@TYPE1@		FcFontSet *			@ARG1@		set	
+@TYPE2@		FcStrSet *			@ARG2@		dirs	
+@TYPE3@		const char *			@ARG3@		dir	
+@PURPOSE@	save a directory cache
+@DESC@
+Creates the per-directory cache file for <parameter>dir</parameter> and
+populates it with the fonts in <parameter>set</parameter> and subdirectories
+in <parameter>dirs</parameter>.
+@@
+
+@RET@		FcBool 	
+@FUNC@		FcDirCacheValid 
+@TYPE1@		const FcChar8 *			@ARG1@		cache_file	
+@PURPOSE@	check directory cache timestamp
+@DESC@
+Returns FcTrue if <parameter>cache_file</parameter> is no older than the
+directory containing it, else FcFalse.
+@@

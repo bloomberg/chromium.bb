@@ -17,7 +17,13 @@ DOC_FUNCS_FNCS=\
 	fcobjecttype.fncs \
 	fcconstant.fncs \
 	fcblanks.fncs \
-	fcconfig.fncs
+	fcconfig.fncs \
+	fcinit.fncs \
+	fcatomic.fncs \
+	fcfreetype.fncs \
+	fcfile.fncs \
+	fcstrset.fncs \
+	fcstring.fncs
 	
 DOC_FUNCS_SGML=\
 	fcmatrix.sgml \
@@ -29,7 +35,13 @@ DOC_FUNCS_SGML=\
 	fcobjecttype.sgml \
 	fcconstant.sgml \
 	fcblanks.sgml \
-	fcconfig.sgml
+	fcconfig.sgml \
+	fcinit.sgml \
+	fcatomic.sgml \
+	fcfreetype.sgml \
+	fcfile.sgml \
+	fcstrset.sgml \
+	fcstring.sgml
 	
 man3_MANS= \
 	FcCharSetAddChar.3 \

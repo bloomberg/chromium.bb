@@ -145,6 +145,15 @@ ReplaceDispose (Replace *r)
     Dispose (r);
 }
 
+void
+Bail (char *format, char *arg)
+{
+    fprintf (stderr, "fatal: ");
+    fprintf (stderr, format, arg);
+    fprintf (stderr, "\n");
+    exit (1);
+}
+
 Replace *
 ReplaceRead (FILE *f)
 {
@@ -164,6 +173,8 @@ ReplaceRead (FILE *f)
 	    ReplaceDispose (r);
 	    return 0;
 	}
+	if (isspace (c))
+	    Bail ("invalid character after tag %s", r->tag->buf);
 	StringAdd (r->tag, c);
     }
     if (r->tag->buf[0] == '\0')
@@ -408,10 +419,12 @@ main (int argc, char **argv)
     FILE	*f;
     ReplaceSet	*s;
 
+    if (!argv[1])
+	Bail ("usage: %s <template.sgml>", argv[0]);
     f = fopen (argv[1], "r");
     if (!f)
     {
-	perror (argv[1]);
+	Bail ("can't open file %s", argv[1]);
 	exit (1);
     }
     while ((s = ReplaceSetRead (stdin)))
@@ -421,6 +434,6 @@ main (int argc, char **argv)
 	rewind (f);
     }
     if (ferror (stdout))
-	exit (1);
+	Bail ("%s", "error writing output");
     exit (0);
 }

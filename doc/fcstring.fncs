@@ -1,0 +1,150 @@
+/*
+ * $Id$
+ *
+ * Copyright © 2003 Keith Packard
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Keith Packard not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Keith Packard makes no
+ * representations about the suitability of this software for any purpose.  It
+ * is provided "as is" without express or implied warranty.
+ *
+ * KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+    <variablelist>
+
+@RET@		int
+@FUNC@		FcUtf8ToUcs4 
+@TYPE1@		FcChar8 *			@ARG1@		src
+@TYPE2@		FcChar32 *			@ARG2@		dst
+@TYPE3@		int 				@ARG3@		len
+@PURPOSE@	convert UTF-8 to UCS4
+@DESC@
+Converts the next Unicode char from <parameter>src</parameter> into
+<parameter>dst</parameter> and returns the number of bytes containing the
+char.  <parameter>src</parameter> nust be at least
+<parameter>len</parameter> bytes long.
+@@
+
+@RET@		int 
+@FUNC@		FcUcs4ToUtf8
+@TYPE1@		FcChar32 			@ARG1@		src	 
+@TYPE2@		FcChar8 			@ARG2@		dst[FC_UTF8_MAX_LEN]
+@PURPOSE@	convert UCS4 to UTF-8
+@DESC@
+Converts the Unicode char from <parameter>src</parameter> into
+<parameter>dst</parameter> and returns the number of bytes needed to encode
+the char.
+@@
+
+@RET@		FcBool 
+@FUNC@		FcUtf8Len
+@TYPE1@		FcChar8 *			@ARG1@		src
+@TYPE2@		int 				@ARG2@		len
+@TYPE3@		int *				@ARG3@		nchar
+@TYPE4@		int *				@ARG4@		wchar
+@PURPOSE@	count UTF-8 encoded chars
+@DESC@
+Counts the number of Unicode chars in <parameter>len</parameter> bytes of
+<parameter>src</parameter>.  Places that count in
+<parameter>nchar</parameter>.  <parameter>wchar</parameter> contains 1, 2 or
+4 depending on the number of bytes needed to hold the largest unicode char
+counted.  The return value indicates whether <parameter>src</parameter> is a
+well-formed UTF8 string.
+@@
+
+@RET@		int 
+@FUNC@		FcUtf16ToUcs4
+@TYPE1@		FcChar8 *			@ARG1@		src
+@TYPE2@		FcEndian 			@ARG2@		endian
+@TYPE3@		FcChar32 *			@ARG3@		dst
+@TYPE4@		int 				@ARG4@		len
+@PURPOSE@	convert UTF-16 to UCS4
+@DESC@
+Converts the next Unicode char from <parameter>src</parameter> into
+<parameter>dst</parameter> and returns the number of bytes containing the
+char. <parameter>src</parameter> must be at least <parameter>len</parameter>
+bytes long.  Bytes of <parameter>src</parameter> are combined into 16-bit
+units according to <parameter>endian</parameter>.
+@@
+
+@RET@		FcBool
+@FUNC@		FcUtf16Len
+@TYPE1@		FcChar8 *			@ARG1@		src
+@TYPE2@		FcEndian 			@ARG2@		endian
+@TYPE3@		int 				@ARG3@		len
+@TYPE4@		int *				@ARG4@		nchar
+@TYPE5@		int *				@ARG5@		wchar
+@PURPOSE@	count UTF-16 encoded chars
+@DESC@
+Counts the number of Unicode chars in <parameter>len</parameter> bytes of
+<parameter>src</parameter>.  Bytes of <parameter>src</parameter> are
+combined into 16-bit units according to <parameter>endian</parameter>.
+Places that count in <parameter>nchar</parameter>.
+<parameter>wchar</parameter> contains 1, 2 or 4 depending on the number of
+bytes needed to hold the largest unicode char counted.  The return value
+indicates whether <parameter>string</parameter> is a well-formed UTF16
+string.
+@@
+
+@RET@		FcChar8 *
+@FUNC@		FcStrCopy
+@TYPE1@		const FcChar8 *			@ARG1@		s
+@PURPOSE@	duplicate a string
+@DESC@
+Allocates memory, copies <parameter>s</parameter> and returns the resulting
+buffer.  Yes, this is <function>strdup</function>, but that function isn't
+available on every platform.
+@@
+
+@RET@		FcChar8 *
+@FUNC@		FcStrCopyFilename
+@TYPE1@		const FcChar8 *			@ARG1@		s
+@PURPOSE@	copy a string, expanding '~'
+@DESC@
+Just like FcStrCopy except that it converts any leading '~' characters in
+<parameter>s</parameter> to the value of the HOME environment variable.
+Returns NULL if '~' is present in <parameter>s</parameter> and HOME is unset.
+@@
+
+@RET@		int
+@FUNC@		FcStrCmpIgnoreCase
+@TYPE1@		const char *			@ARG1@		s1
+@TYPE2@		const char *			@ARG2@		s2
+@PURPOSE@	compare UTF-8 strings ignoring ASCII case
+@DESC@
+Returns the usual &lt;0, 0, &gt;0 result of comparing
+<parameter>s1</parameter> and <parameter>s2</parameter>.  This test is
+case-insensitive in the ASCII range and will operate properly with UTF8
+encoded strings, although it does not check for well formed strings.
+@@
+
+@RET@		FcChar8 *
+@FUNC@		FcStrDirname
+@TYPE1@		const FcChar8 *			@ARG1@		file
+@PURPOSE@	directory part of filename
+@DESC@
+Returns the directory containing <parameter>file</parameter>.  This
+is returned in newly allocated storage which should be freed when no longer
+needed.
+@@
+
+@RET@		FcChar8 *
+@FUNC@		FcStrBasename
+@TYPE1@		const FcChar8 *			@ARG1@		file
+@PURPOSE@	last component of filename
+@DESC@
+Returns the filename of <parameter>file</parameter> stripped of any leading
+directory names.  This is returned in newly allocated storage which should
+be freed when no longer needed.
+@@
