@@ -26,7 +26,7 @@
 #include "drm.h"
 
 #if defined(__FreeBSD__) && __FreeBSD_version >= 500102
-int drm_mmap(struct cdev *kdev, vm_offset_t offset, vm_paddr_t *paddr, 
+int drm_mmap(struct cdev *kdev, vm_offset_t offset, vm_paddr_t *paddr,
     int prot)
 #elif defined(__FreeBSD__)
 int drm_mmap(dev_t kdev, vm_offset_t offset, int prot)
@@ -64,7 +64,7 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 			return 0;
 #else
 			return atop(phys);
-#endif		
+#endif
 		} else {
 			DRM_SPINUNLOCK(&dev->dma_lock);
 			return -1;
@@ -84,7 +84,7 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 		if (offset >= map->offset && offset < map->offset + map->size)
 			break;
 	}
-	
+
 	if (map == NULL) {
 		DRM_UNLOCK();
 		DRM_DEBUG("can't find map\n");
@@ -120,7 +120,7 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 		return -1;	/* This should never happen. */
 	}
 	DRM_DEBUG("bailing out\n");
-	
+
 	return -1;
 }
 
