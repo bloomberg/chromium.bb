@@ -67,7 +67,16 @@
 #include <linux/types.h>
 #include <linux/agp_backend.h>
 #endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,41)
+#define HAS_WORKQUEUE 0
+#else
+#define HAS_WORKQUEUE 1
+#endif
+#if !HAS_WORKQUEUE
 #include <linux/tqueue.h>
+#else
+#include <linux/workqueue.h>
+#endif
 #include <linux/poll.h>
 #include <asm/pgalloc.h>
 #include "drm.h"
@@ -206,7 +215,7 @@ static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 }
 #endif
 
-#ifndef REMAP_PAGE_RANGE_5_ARGS /* #if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0) */
+#ifndef REMAP_PAGE_RANGE_5_ARGS
 #define DRM_RPR_ARG(vma)
 #else
 #define DRM_RPR_ARG(vma) vma,
@@ -615,7 +624,11 @@ typedef struct drm_device {
 	int		  last_checked;	/* Last context checked for DMA	   */
 	int		  last_context;	/* Last current context		   */
 	unsigned long	  last_switch;	/* jiffies at last context switch  */
+#if !HAS_WORKQUEUE
 	struct tq_struct  tq;
+#else
+	struct work_struct	work;
+#endif
 #if __HAVE_VBL_IRQ
    	wait_queue_head_t vbl_queue;
    	atomic_t          vbl_received;
