@@ -32,7 +32,7 @@
 #include "sis_drv.h"
 
 #define DRIVER_AUTHOR	 "SIS"
-#define DRIVER_NAME	 "sis"##CONFIG_XFREE86_VERSION_STR
+#define DRIVER_NAME	 "sis"
 #define DRIVER_DESC	 "SIS 300/630/540"
 #define DRIVER_DATE	 "20010503"
 #define DRIVER_MAJOR	 1

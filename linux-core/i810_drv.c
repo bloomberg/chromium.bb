@@ -37,7 +37,7 @@
 
 #define DRIVER_AUTHOR		"VA Linux Systems Inc."
 
-#define DRIVER_NAME		"i810"##CONFIG_XFREE86_VERSION_STR
+#define DRIVER_NAME		"i810"
 #define DRIVER_DESC		"Intel i810"
 #define DRIVER_DATE		"20010616"
 

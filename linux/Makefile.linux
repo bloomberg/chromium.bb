@@ -48,7 +48,7 @@
 # **** End of SMP/MODVERSIONS detection
 
 XFREE86VERSION =	4_1_0
-MODS =		gamma-$(XFREE86VERSION).o tdfx-$(XFREE86VERSION).o \
+MODS =		gamma-$(XFREE86VERSION).o tdfx.o \
 		r128-$(XFREE86VERSION).o radeon-$(XFREE86VERSION).o
 LIBS =
 
@@ -228,7 +228,7 @@ gamma-$(XFREE86VERSION).o: $(GAMMAOBJS)
 
 tdfx_drv.o: tdfx_drv.c
 	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
-tdfx-$(XFREE86VERSION).o: $(TDFXOBJS) $(LIBS)
+tdfx.o: $(TDFXOBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
 sis-$(XFREE86VERSION).o: $(SISOBJS) $(LIBS)

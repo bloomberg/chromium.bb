@@ -36,7 +36,7 @@
 
 #define DRIVER_AUTHOR		"Gareth Hughes, VA Linux Systems Inc."
 
-#define DRIVER_NAME		"mga"##CONFIG_XFREE86_VERSION_STR
+#define DRIVER_NAME		"mga"
 #define DRIVER_DESC		"Matrox G200/G400"
 #define DRIVER_DATE		"20010321"
 

@@ -285,10 +285,32 @@ static int drmOpenByName(const char *name)
 #if !defined(XFree86Server)
 	return -1;
 #else
+        char temp_name[256];
+        Bool kernel_loaded = FALSE;
+
+	sprintf(temp_name, "%s-%d_%d_%d", name,
+		XF86_VERSION_MAJOR,
+		XF86_VERSION_MINOR,
+		XF86_VERSION_PATCH);
+
+	/* first try and load the XF Version number of the module */
+	if (!xf86LoadKernelModule(temp_name)) {
+	    ErrorF("[drm] failed to load kernel module \"%s\"\n",
+		   temp_name);
+	    ErrorF("[drm] falling back to older kernel modules\n");
+	} else {
+	   kernel_loaded = TRUE;
+	}
+
+       /* When we have more releases, add logic here to attempt to load them
+	* here.
+	*/
+
         /* try to load the kernel module now */
-        if (!xf86LoadKernelModule(name)) {
+        if (kernel_loaded == FALSE && !xf86LoadKernelModule(name)) {
             ErrorF("[drm] failed to load kernel module \"%s\"\n",
 		   name);
+	    ErrorF("[drm] No suitable kernel module found.\n");
             return -1;
         }
 #endif

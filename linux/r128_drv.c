@@ -37,7 +37,7 @@
 
 #define DRIVER_AUTHOR		"Gareth Hughes, VA Linux Systems Inc."
 
-#define DRIVER_NAME		"r128"##CONFIG_XFREE86_VERSION_STR
+#define DRIVER_NAME		"r128"
 #define DRIVER_DESC		"ATI Rage 128"
 #define DRIVER_DATE		"20010405"
 
