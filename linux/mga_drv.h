@@ -38,6 +38,7 @@ typedef struct drm_mga_primary_buffer {
 
 	u32 tail;
 	int space;
+	volatile int wrapped;
 
 	volatile u32 *status;
 
@@ -123,7 +124,6 @@ extern void mga_do_dma_wrap_end( drm_mga_private_t *dev_priv );
 
 extern int mga_freelist_put( drm_device_t *dev, drm_buf_t *buf );
 
-
 				/* mga_state.c */
 extern int  mga_dma_clear( struct inode *inode, struct file *filp,
 			   unsigned int cmd, unsigned long arg );
@@ -193,10 +193,26 @@ do {									\
 
 #define WRAP_TEST_WITH_RETURN( dev_priv )				\
 do {									\
-	if ( dev_priv->sarea_priv->last_wrap <				\
-	     dev_priv->prim.last_wrap ) {				\
-		if ( mga_do_wait_for_idle( dev_priv ) < 0 )		\
+	if ( test_bit( 0, &dev_priv->prim.wrapped ) ) {			\
+		if ( mga_is_idle( dev_priv ) ) {			\
+			mga_do_dma_wrap_end( dev_priv );		\
+		} else if ( dev_priv->prim.space <			\
+			    dev_priv->prim.high_mark ) {		\
+			if ( MGA_DMA_DEBUG )				\
+				DRM_INFO( __FUNCTION__": wrap...\n" );	\
 			return -EBUSY;					\
+		}							\
+	}								\
+} while (0)
+
+#define WRAP_WAIT_WITH_RETURN( dev_priv )				\
+do {									\
+	if ( test_bit( 0, &dev_priv->prim.wrapped ) ) {			\
+		if ( mga_do_wait_for_idle( dev_priv ) < 0 ) {		\
+			if ( MGA_DMA_DEBUG )				\
+				DRM_INFO( __FUNCTION__": wrap...\n" );	\
+			return -EBUSY;					\
+		}							\
 		mga_do_dma_wrap_end( dev_priv );			\
 	}								\
 } while (0)
@@ -252,10 +268,13 @@ do {									\
 			  MGA_READ( MGA_PRIMADDRESS ) -			\
 			  dev_priv->primary->offset );			\
 	}								\
-	if ( dev_priv->prim.space < dev_priv->prim.high_mark ) {	\
-		mga_do_dma_wrap_start( dev_priv );			\
-	} else {							\
-		mga_do_dma_flush( dev_priv );				\
+	if ( !test_bit( 0, &dev_priv->prim.wrapped ) ) {		\
+		if ( dev_priv->prim.space <				\
+		     dev_priv->prim.high_mark ) {			\
+			mga_do_dma_wrap_start( dev_priv );		\
+		} else {						\
+			mga_do_dma_flush( dev_priv );			\
+		}							\
 	}								\
 } while (0)
 
@@ -317,7 +336,7 @@ do {									\
 #define MGA_DMA_IDLE_MASK		(MGA_SOFTRAPEN |		\
 					 MGA_ENDPRDMASTS)
 
-#define MGA_DMA_SOFTRAP_SIZE		32 * DMA_BLOCK_SIZE
+#define MGA_DMA_DEBUG			0
 
 
 
@@ -598,5 +617,13 @@ do {									\
 				 (0 << MGA_TRANS_SHIFT) |		\
 				 MGA_BLTMOD_BFCOL |			\
 				 MGA_CLIPDIS)
+
+/* Simple idle test.
+ */
+static inline int mga_is_idle( drm_mga_private_t *dev_priv )
+{
+	u32 status = MGA_READ( MGA_STATUS ) & MGA_ENGINE_IDLE_MASK;
+	return ( status == MGA_ENDPRDMASTS );
+}
 
 #endif

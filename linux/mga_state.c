@@ -515,6 +515,15 @@ static void mga_dma_dispatch_clear( drm_device_t *dev,
 	DMA_LOCALS;
 	DRM_DEBUG( __FUNCTION__ ":\n" );
 
+	BEGIN_DMA( 1 );
+
+	DMA_BLOCK( MGA_DMAPAD,	0x00000000,
+		   MGA_DMAPAD,	0x00000000,
+		   MGA_DWGSYNC,	0x00007100,
+		   MGA_DWGSYNC,	0x00007000 );
+
+	ADVANCE_DMA();
+
 	for ( i = 0 ; i < nbox ; i++ ) {
 		drm_clip_rect_t *box = &pbox[i];
 		u32 height = box->y2 - box->y1;
@@ -757,7 +766,12 @@ static void mga_dma_dispatch_iload( drm_device_t *dev, drm_buf_t *buf,
 
 	y2 = length / 64;
 
-	BEGIN_DMA( 4 );
+	BEGIN_DMA( 5 );
+
+	DMA_BLOCK( MGA_DMAPAD,	0x00000000,
+		   MGA_DMAPAD,	0x00000000,
+		   MGA_DWGSYNC,	0x00007100,
+		   MGA_DWGSYNC,	0x00007000 );
 
 	DMA_BLOCK( MGA_DSTORG,	dstorg,
 		   MGA_MACCESS,	0x00000000,
@@ -1009,8 +1023,13 @@ int mga_dma_iload( struct inode *inode, struct file *filp,
 	if ( copy_from_user( &iload, (drm_mga_iload_t *)arg, sizeof(iload) ) )
 		return -EFAULT;
 
-	if ( mga_do_wait_for_idle( dev_priv ) < 0 )
+#if 0
+	if ( mga_do_wait_for_idle( dev_priv ) < 0 ) {
+		if ( MGA_DMA_DEBUG )
+			DRM_INFO( __FUNCTION__": -EBUSY\n" );
 		return -EBUSY;
+	}
+#endif
 
 	buf = dma->buflist[iload.idx];
 	buf_priv = buf->dev_private;
