@@ -30,11 +30,11 @@
 
 #define DRIVER_NAME	"savage"
 #define DRIVER_DESC	"Savage3D/MX/IX, Savage4, SuperSavage, Twister, ProSavage[DDR]"
-#define DRIVER_DATE	"20050101"
+#define DRIVER_DATE	"20050105"
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	0
+#define DRIVER_PATCHLEVEL	1
 
 typedef struct drm_savage_age {
 	uint16_t event;
@@ -456,7 +456,7 @@ extern void savage_reclaim_buffers(drm_device_t *dev, DRMFILE filp);
 
 #define TEST_AGE( age, e, w )						\
 	( (age)->wrap+1 < (w) ||					\
-	  ( (age)->wrap+1 == (w) && (e) < 0x7fff ) ||			\
-	  (age)->event < (uint16_t)(e) )
+	  ( (age)->wrap+1 == (w) && (e) <= dev_priv->event_counter ) ||	\
+	  (age)->event <= (e) )
 
 #endif /* __SAVAGE_DRV_H__ */
