@@ -98,11 +98,11 @@ mga.o: mga_drv.o mga_context.o mga_dma.o mga_bufs.o mga_state.o $(L_OBJS)
 	$(LD) $(LD_RFLAG) -r -o $@ mga_drv.o mga_bufs.o mga_dma.o \
 		mga_context.o mga_state.o $(L_OBJS)
 
-i810.o: i810_drv.o i810_context.o i810_bufs.o i810_dma.o $(L_TARGET)
+i810.o: i810_drv.o i810_context.o i810_bufs.o i810_dma.o $(L_OBJS)
 	$(LD) $(LD_RFLAG) -r -o $@ i810_drv.o i810_bufs.o i810_dma.o \
 		i810_context.o $(L_OBJS)
 
-r128.o: r128_drv.o r128_context.o $(L_TARGET)
+r128.o: r128_drv.o r128_context.o $(L_OBJS)
 	$(LD) $(LD_RFLAG) -r -o $@ r128_drv.o r128_context.o $(L_OBJS)
 
 ffb.o: ffb_drv.o ffb_context.o $(L_OBJS)

@@ -50,6 +50,9 @@
 #ifdef CONFIG_MTRR
 #include <asm/mtrr.h>
 #endif
+#ifdef CONFIG_AGP
+#define DRM_AGP
+#endif
 #ifdef DRM_AGP
 #include <linux/types.h>
 #include <linux/agp_backend.h>
