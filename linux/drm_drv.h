@@ -979,6 +979,7 @@ int DRM(ioctl)( struct inode *inode, struct file *filp,
 	}
 
 	atomic_dec( &dev->ioctl_count );
+	if (retcode) DRM_DEBUG( "ret = %x\n", retcode);
 	return retcode;
 }
 

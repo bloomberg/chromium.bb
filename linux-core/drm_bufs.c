@@ -182,11 +182,14 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 
 		/* If permanent maps are implemented, maps must match */
 		if (permanent_maps) {
+			DRM_DEBUG( "Looking for: offset = 0x%08lx, size = 0x%08lx, type = %d\n",
+				map->offset, map->size, map->type );
 			list_for_each( _list, &dev->maplist->head ) {
 				drm_map_list_t *_entry = list_entry( _list, drm_map_list_t, head );
-				if ( _entry->map && _entry->map->type == map->type &&
-						_entry->map->offset == map->offset &&
-						_entry->map->size >= map->size ) {
+				DRM_DEBUG( "Checking: offset = 0x%08lx, size = 0x%08lx, type = %d\n",
+					_entry->map->offset, _entry->map->size, _entry->map->type );
+				if ( _entry->map && map->type == _entry->map->type  &&
+						map->offset == _entry->map->offset ) {
 					DRM(free)( map, sizeof(*map), DRM_MEM_MAPS );
 					map = _entry->map;
 					DRM_DEBUG( "Found existing: offset = 0x%08lx, size = 0x%08lx, type = %d\n",

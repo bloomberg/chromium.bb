@@ -1743,9 +1743,8 @@ int radeon_preinit( struct drm_device *dev, unsigned long flags )
 	dev_priv->flags = flags;
 
 	/* registers */
-	/* PCI space is twice the real size, so that you can have a RW and RO mapping */
 	if( (ret = DRM(initmap)( dev, pci_resource_start( dev->pdev, 2 ),
-			pci_resource_len( dev->pdev, 2 ) / 2, _DRM_REGISTERS, 0 )))
+			pci_resource_len( dev->pdev, 2 ), _DRM_REGISTERS, 0 )))
 		return ret;
 
 	/* framebuffer */
