@@ -1281,9 +1281,6 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!FcPatternAddInteger (pat, FC_INDEX, id))
 	goto bail1;
 
-    if (!FcPatternAddString (pat, FC_SOURCE, (FcChar8 *) "FreeType"))
-	goto bail1;
-
 #if 0
     /*
      * don't even try this -- CJK 'monospace' fonts are really

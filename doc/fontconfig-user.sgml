@@ -38,6 +38,7 @@
 <synopsis>
    &confdir;/fonts.conf
    &confdir;/fonts.dtd
+   &confdir;/conf.d
    ~/.fonts.conf
 </synopsis>
 </refsynopsisdiv>
@@ -100,12 +101,14 @@ convenience for the applications rendering mechanism.
   slant           Int     Italic, oblique or roman
   weight          Int     Light, medium, demibold, bold or black
   size            Double  Point size
+  width           Int     Condensed, normal or expanded
   aspect          Double  Stretches glyphs horizontally before hinting
   pixelsize       Double  Pixel size
   spacing         Int     Proportional, dual-width, monospace or charcell
   foundry         String  Font foundry name
   antialias       Bool    Whether glyphs can be antialiased
   hinting         Bool    Whether the rasterizer should use hinting
+  hintstyle       Int     Automatic hinting style
   verticallayout  Bool    Use vertical layout
   autohint        Bool    Use autohinter instead of normal hinter
   globaladvance   Bool    Use font global advance data
@@ -123,6 +126,9 @@ convenience for the applications rendering mechanism.
   charset         CharSet Unicode chars encoded by the font
   lang            String  List of RFC-3066-style languages this
                           font supports
+  fontversion     Int     Version number of the font
+  capability      String  List of layout capabilities in the font
+  embolden        Bool    Rasterizer should synthetically embolden the font
     </programlisting>
   </refsect2>
   <refsect2>
@@ -216,14 +222,19 @@ Here are some examples:
 Each font in the database contains a list of languages it supports.  This is
 computed by comparing the Unicode coverage of the font with the orthography
 of each language.  Languages are tagged using an RFC-3066 compatible naming
-and occur in two parts -- the ISO639 language tag followed a hyphen and then
+and occur in two parts -- the ISO 639 language tag followed a hyphen and then
 by the ISO 3166 country code.  The hyphen and country code may be elided.
   </para><para>
 Fontconfig has orthographies for several languages built into the library.
 No provision has been made for adding new ones aside from rebuilding the
 library.  It currently supports 122 of the 139 languages named in ISO 639-1,
 141 of the languages with two-letter codes from ISO 639-2 and another 30
-languages with only three-letter codes.
+languages with only three-letter codes.  Languages with both two and three
+letter codes are provided with only the two letter code.
+  </para><para>
+For languages used in multiple territories with radically different
+character sets, fontconfig includes per-territory orthographies.  This
+includes Azerbaijani, Kurdish, Pashto, Tigrinya and Chinese.
   </para>
 </refsect1>
 <refsect1><title>Configuration File Format</title>
@@ -336,14 +347,17 @@ tests are subjected to all the edits.  If 'target' is set to "font" instead
 of the default "pattern", then this element applies to the font name
 resulting from a match rather than a font pattern to be matched.
   </para></refsect2>
-  <refsect2><title><sgmltag>test qual="any" name="property" compare="eq"</></title><para>
-This element contains a single value which is compared with the pattern
-property "property" (substitute any of the property names seen 
+  <refsect2><title><sgmltag>test qual="any" name="property" target="default" compare="eq"</></title><para>
+This element contains a single value which is compared with the target
+('pattern', 'font' or 'default') property "property" (substitute any of the property names seen 
 above). 'compare' can be one of "eq", "not_eq", "less", "less_eq", "more", or
 "more_eq".  'qual' may either be the default, "any", in which case the match
 succeeds if any value associated with the property matches the test value, or
 "all", in which case all of the values associated with the property must
-match the test value.
+match the test value.  When used in a &lt;match target="font"&gt; element,
+the target= attribute in the &lt;test&gt; element selects between matching
+the original pattern or the font.  "default" selects whichever target the
+outer &lt;match&gt; element has selected.
   </para></refsect2>
   <refsect2><title><sgmltag>edit name="property" mode="assign" binding="weak"</></title><para>
 This element contains a list of expression elements (any of the value or
@@ -351,7 +365,9 @@ operator elements).  The expression elements are evaluated at run-time and
 modify the property "property".  The modification depends on whether
 "property" was matched by one of the associated <sgmltag>test</> elements, if so, the
 modification may affect the first matched value.  Any values inserted into
-the property are given the indicated binding. 'mode' is one of:
+the property are given the indicated binding ("strong", "weak" or "same")
+with "same" binding using the value from the matched pattern element.
+'mode' is one of:
     <programlisting>
   Mode                    With Match              Without Match
   ---------------------------------------------------------------------
@@ -385,14 +401,32 @@ symbolic names for common font values:
     <programlisting>
   Constant        Property        Value
   -------------------------------------
-  light           weight          0
+  thin            weight          0
+  extralight      weight          40
+  ultralight      weight          40
+  light           weight          50
+  book            weight          75
+  regular         weight          80
+  normal          weight          80
   medium          weight          100
   demibold        weight          180
+  semibold        weight          180
   bold            weight          200
+  extrabold       weight          205
   black           weight          210
+  heavy           weight          210
   roman           slant           0
   italic          slant           100
   oblique         slant           110
+  ultracondensed  width           50
+  extracondensed  width           63
+  condensed       width           75
+  semicondensed   width           87
+  normal          width           100
+  semiexpanded    width           113
+  expanded        width           125
+  extraexpanded   width           150
+  ultraexpanded   width           200
   proportional    spacing         0
   dual            spacing         90
   mono            spacing         100
@@ -403,6 +437,10 @@ symbolic names for common font values:
   vrgb            rgba            3
   vbgr            rgba            4
   none            rgba            5
+  hintnone        hintstyle       0
+  hintslight      hintstyle       1
+  hintmedium      hintstyle       2
+  hintfull        hintstyle       3
     </programlisting>
       </para>
     </refsect2>
@@ -484,6 +522,13 @@ This is an example of a system-wide configuration file
 &lt;include ignore_missing="yes"&gt;~/.fonts.conf&lt;/include&gt;
 
 &lt;!--
+	Load local customization files, but don't complain
+	if there aren't any
+--&gt;
+&lt;include ignore_missing="yes"&gt;conf.d&lt;/include&gt;
+&lt;include ignore_missing="yes"&gt;local.conf&lt;/include&gt;
+
+&lt;!--
 	Alias well known font names to available TrueType fonts.
 	These substitute TrueType faces for similar Type1
 	faces to improve screen appearance.
@@ -495,7 +540,7 @@ This is an example of a system-wide configuration file
 &lt;/alias&gt;
 &lt;alias&gt;
 	&lt;family&gt;Helvetica&lt;/family&gt;
-	&lt;prefer&gt;&lt;family&gt;Verdana&lt;/family&gt;&lt;/prefer&gt;
+	&lt;prefer&gt;&lt;family&gt;Arial&lt;/family&gt;&lt;/prefer&gt;
 	&lt;default&gt;&lt;family&gt;sans&lt;/family&gt;&lt;/default&gt;
 &lt;/alias&gt;
 &lt;alias&gt;
@@ -515,7 +560,7 @@ This is an example of a system-wide configuration file
 &lt;/alias&gt;
 &lt;alias&gt;
 	&lt;family&gt;sans&lt;/family&gt;
-	&lt;prefer&gt;&lt;family&gt;Verdana&lt;/family&gt;&lt;/prefer&gt;
+	&lt;prefer&gt;&lt;family&gt;Arial&lt;/family&gt;&lt;/prefer&gt;
 &lt;/alias&gt;
 &lt;alias&gt;
 	&lt;family&gt;monospace&lt;/family&gt;
@@ -559,6 +604,15 @@ contains configuration information for the fontconfig library
 consisting of directories to look at for font information as well as
 instructions on editing program specified font patterns before attempting to
 match the available fonts.  It is in xml format.
+  </para>
+  <para>
+<emphasis>conf.d</emphasis>
+is the conventional name for a directory of additional configuration files
+managed by external applications or the local administrator.  The
+filenames starting with decimal digits are sorted in lexicographic order
+and used as additional configuration files.  All of these files are in xml
+format.  The master fonts.conf file references this directory in an 
+&lt;include&gt; directive.
   </para>
   <para>
 <emphasis>fonts.dtd</emphasis>

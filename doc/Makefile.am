@@ -30,8 +30,10 @@ DOC_MODULE = fontconfig
 DOC2HTML = docbook2html
 DOC2TXT = docbook2txt
 DOC2MAN = docbook2man
+DOC2PDF = docbook2pdf
 
 TXT = fontconfig-user.txt fontconfig-devel.txt
+PDF = fontconfig-user.pdf fontconfig-devel.pdf
 HTML_FILES = fontconfig-user.html
 HTML_DIR = fontconfig-devel
 SGML = fontconfig-user.sgml fontconfig-devel.sgml
@@ -80,7 +82,7 @@ edit_sgml_SOURCES=edit-sgml.c
 
 docdir=@DOCDIR@
 
-DOC_FILES=$(TXT) $(HTML_FILES)
+DOC_FILES=$(TXT) $(PDF) $(HTML_FILES)
 LOCAL_DOCS=$(man_MANS) $(DOC_FILES) $(HTML_DIR)/*
 
 EXTRA_DIST=$(LOCAL_DOCS) $(SGML) $(DOC_FUNCS_FNCS) $(FNCS_TMPL) confdir.sgml.in
@@ -96,6 +98,10 @@ if USEDOCBOOK
 .sgml.txt:
 	$(RM) $@
 	$(DOC2TXT) $<
+
+.sgml.pdf:
+	$(RM) $@
+	$(DOC2PDF) $<
 
 $(man_MANS): func.refs
 
@@ -133,6 +139,11 @@ fontconfig-devel.txt: local-fontconfig-devel.sgml version.sgml confdir.sgml
 	$(DOC2TXT) local-fontconfig-devel.sgml
 	mv local-fontconfig-devel.txt $@
 
+fontconfig-devel.pdf: local-fontconfig-devel.sgml version.sgml confdir.sgml
+	$(RM) $@
+	$(DOC2PDF) local-fontconfig-devel.sgml
+	mv local-fontconfig-devel.pdf $@
+
 fontconfig-user.html: local-fontconfig-user.sgml version.sgml confdir.sgml
 	$(RM) $@ local-$@ $@.tmp
 	$(DOC2HTML) -u local-fontconfig-user.sgml > $@.tmp
@@ -144,6 +155,11 @@ fontconfig-user.txt: local-fontconfig-user.sgml version.sgml confdir.sgml
 	$(RM) $@
 	$(DOC2TXT) local-fontconfig-user.sgml
 	mv local-fontconfig-user.txt $@
+
+fontconfig-user.pdf: local-fontconfig-user.sgml version.sgml confdir.sgml
+	$(RM) $@
+	$(DOC2PDF) local-fontconfig-user.sgml
+	mv local-fontconfig-user.pdf $@
 
 STRIPNL=awk '{ if (NR > 1) printf ("\n"); printf ("%s", $$0); }'
 confdir.sgml: ${DOC_SRC}/confdir.sgml.in

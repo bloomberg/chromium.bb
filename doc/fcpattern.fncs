@@ -150,7 +150,8 @@ any existing list of values.
 @TYPE4@		FcValue *			@ARG4@		v 
 @PURPOSE@	Return a value from a pattern
 @DESC@
-Returns in `v<parameter> the `id</parameter>th value associated with the property `object'.
+Returns in <parameter>v</parameter> the <parameter>id</parameter>'th value
+associated with the property <parameter>object</parameter>.
 The value returned is not a copy, but rather refers to the data stored
 within the pattern directly.  Applications must not free this value.
 @@

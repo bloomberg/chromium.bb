@@ -108,6 +108,15 @@ available on every platform.
 @@
 
 @RET@		FcChar8 *
+@FUNC@		FcStrDowncase
+@TYPE1@		const FcChar8 *			@ARG1@		s
+@PURPOSE@	create a lower case translation of a string
+@DESC@
+Allocates memory, copies <parameter>s</parameter>, converting upper case
+letters to lower case and returns the allocated buffer.
+@@
+
+@RET@		FcChar8 *
 @FUNC@		FcStrCopyFilename
 @TYPE1@		const FcChar8 *			@ARG1@		s
 @PURPOSE@	copy a string, expanding '~'
@@ -119,14 +128,41 @@ Returns NULL if '~' is present in <parameter>s</parameter> and HOME is unset.
 
 @RET@		int
 @FUNC@		FcStrCmpIgnoreCase
-@TYPE1@		const char *			@ARG1@		s1
-@TYPE2@		const char *			@ARG2@		s2
+@TYPE1@		const FcChar8 *			@ARG1@		s1
+@TYPE2@		const FcChar8 *			@ARG2@		s2
 @PURPOSE@	compare UTF-8 strings ignoring ASCII case
 @DESC@
 Returns the usual &lt;0, 0, &gt;0 result of comparing
 <parameter>s1</parameter> and <parameter>s2</parameter>.  This test is
 case-insensitive in the ASCII range and will operate properly with UTF8
 encoded strings, although it does not check for well formed strings.
+@@
+
+@RET@		FcChar8 *
+@FUNC@		FcStrStr
+@TYPE1@		const char *			@ARG1@		s1
+@TYPE2@		const char *			@ARG2@		s2
+@PURPOSE@	locate UTF-8 substring
+@DESC@
+Returns the location of <parameter>s2</parameter> in
+<parameter>s1</parameter>.  Returns NULL if <parameter>s2</parameter>
+is not present in <parameter>s1</parameter>. This test will operate properly
+with UTF8 encoded strings, although it does not check for well formed
+strings.
+@@
+
+@RET@		FcChar8 *
+@FUNC@		FcStrStrIgnoreCase
+@TYPE1@		const char *			@ARG1@		s1
+@TYPE2@		const char *			@ARG2@		s2
+@PURPOSE@	locate UTF-8 substring ignoring ASCII case
+@DESC@
+Returns the location of <parameter>s2</parameter> in 
+<parameter>s1</parameter>, ignoring ASCII case.  Returns NULL if
+<parameter>s2</parameter> is not present in <parameter>s1</parameter>.
+This test is case-insensitive in the ASCII range and will operate properly
+with UTF8 encoded strings, although it does not check for well formed
+strings.
 @@
 
 @RET@		FcChar8 *
