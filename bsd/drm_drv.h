@@ -222,10 +222,17 @@ static struct cdevsw DRM(cdevsw) = {
 static int DRM(probe)(device_t dev)
 {
 	const char *s = NULL;
+	int pciid, vendor, device;
+   
 
-	int pciid=pci_get_devid(dev);
-	int vendor = (pciid & 0x0000ffff);
-	int device = (pciid & 0xffff0000) >> 16;
+	/* XXX: Cope with agp bridge device? */
+	if (!strcmp(device_get_name(dev), "drmsub"))
+		pciid = pci_get_devid(device_get_parent(dev));
+	else
+		pciid = pci_get_devid(dev);
+
+	vendor = (pciid & 0x0000ffff);
+	device = (pciid & 0xffff0000) >> 16;
 	
 	s = DRM(find_description)(vendor, device);
 	if (s) {
@@ -651,7 +658,12 @@ static int DRM(init)( device_t nbdev )
 	unit = device_get_unit(nbdev);
 	dev = device_get_softc(nbdev);
 	memset( (void *)dev, 0, sizeof(*dev) );
-	dev->device = nbdev;
+
+	if (!strcmp(device_get_name(nbdev), "drmsub"))
+		dev->device = device_get_parent(nbdev);
+	else
+		dev->device = nbdev;
+
 	dev->devnode = make_dev( &DRM(cdevsw),
 			unit,
 			DRM_DEV_UID,
