@@ -65,7 +65,11 @@ irqreturn_t DRM(irq_handler)( DRM_IRQ_ARGS )
     
         /* Acknowlege interrupts ?? */
         VIA_WRITE(VIA_REG_INTERRUPT, status);
-        return IRQ_RETVAL(handled);
+
+	if (handled)
+        	return IRQ_HANDLED;
+	else
+		return IRQ_NONE;
 }
 
 static __inline__ void viadrv_acknowledge_irqs(drm_via_private_t* dev_priv)
