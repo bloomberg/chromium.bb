@@ -120,10 +120,27 @@ AC_SUBST(FREETYPE_CFLAGS)
 #  FT_Has_PS_Glyph_Names
 #
 
-fontconfig_save_libs=$LIBS
+fontconfig_save_libs="$LIBS"
+fontconfig_save_cflags="$CFLAGS"
 LIBS="$LIBS $FREETYPE_LIBS"
+CFLAGS="$CFLAGS $FREETYPE_CFLAGS"
 AC_CHECK_FUNCS(FT_Get_Next_Char FT_Get_BDF_Property FT_Get_PS_Font_Info FT_Has_PS_Glyph_Names)
-LIBS=$fontconfig_save_libs
+AC_CHECK_MEMBER(FT_Bitmap_Size.y_ppem,,,
+[#include <ft2build.h>
+#include FT_FREETYPE_H])
+LIBS="$fontconfig_save_libs"
+CFLAGS="$fontconfig_save_cflags"
+
+case "$ac_cv_member_FT_Bitmap_Size_y_ppem" in
+yes)
+	HAVE_FT_BITMAP_SIZE_Y_PPEM=1
+	;;
+*)
+	HAVE_FT_BITMAP_SIZE_Y_PPEM=0
+	;;
+esac
+AC_DEFINE_UNQUOTED(HAVE_FT_BITMAP_SIZE_Y_PPEM,$HAVE_FT_BITMAP_SIZE_Y_PPEM,
+		   [FT_Bitmap_Size structure includes y_ppem field])
 
 #
 # Check expat configuration

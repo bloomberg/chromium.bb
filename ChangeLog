@@ -1,3 +1,11 @@
+2004-02-10  Keith Packard  <keithp@keithp.com>
+
+	* configure.in:
+	* src/fcfreetype.c: (FcGetPixelSize):
+	Pre-2.1.5 versions of FreeType didn't include y_ppem in the
+	FT_Bitmap_Size record.  Add a configure.in test for this
+	and change the code accordingly (using height instead).
+
 2004-02-06  Keith Packard  <keithp@keithp.com>
 
 	* fc-lang/nds.orth:
