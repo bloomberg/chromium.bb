@@ -169,9 +169,9 @@ static int DRM(_vm_info)(char *buf, char **start, off_t offset, int request,
 	struct list_head *list;
 
 				/* Hardcoded from _DRM_FRAME_BUFFER,
-                                   _DRM_REGISTERS, _DRM_SHM, and
-                                   _DRM_AGP. */
-	const char   *types[] = { "FB", "REG", "SHM", "AGP" };
+                                   _DRM_REGISTERS, _DRM_SHM, _DRM_AGP, and
+                                   _DRM_SCATTER_GATHER. */
+	const char   *types[] = { "FB", "REG", "SHM", "AGP", "SG" };
 	const char   *type;
 	int	     i;
 
@@ -190,7 +190,7 @@ static int DRM(_vm_info)(char *buf, char **start, off_t offset, int request,
 		r_list = (drm_map_list_t *)list;
 		map = r_list->map;
 		if(!map) continue;
-		if (map->type < 0 || map->type > 3) type = "??";
+		if (map->type < 0 || map->type > 4) type = "??";
 		else				    type = types[map->type];
 		DRM_PROC_PRINT("%4d 0x%08lx 0x%08lx %4.4s  0x%02x 0x%08lx ",
 			       i,
