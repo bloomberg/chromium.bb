@@ -45,7 +45,11 @@
 #define __REALLY_HAVE_AGP	__HAVE_AGP
 #endif
 
+#ifdef __i386__
 #define __REALLY_HAVE_MTRR	(__HAVE_MTRR)
+#else
+#define __REALLY_HAVE_MTRR	0
+#endif
 #define __REALLY_HAVE_SG	(__HAVE_SG)
 
 #if __REALLY_HAVE_AGP
@@ -211,10 +215,9 @@ typedef struct drm_chipinfo
 
 #define cpu_to_le32(x) (x)	/* FIXME */
 
-typedef u_int32_t dma_addr_t;
+typedef unsigned long dma_addr_t;
 typedef u_int32_t atomic_t;
 typedef u_int32_t cycles_t;
-typedef u_int32_t spinlock_t;
 typedef u_int32_t u32;
 typedef u_int16_t u16;
 typedef u_int8_t u8;
