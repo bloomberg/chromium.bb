@@ -1,3 +1,7 @@
+2003-06-15  Tor Lillqvist  <tml@iki.fi>
+
+	* src/Makefile.am (install-libtool-import-lib): Fix cut&paste error.
+
 2003-06-13  Tor Lillqvist  <tml@iki.fi>
 
 	* fontconfig-zip.in (DEVZIP): Add share/doc directory. Add Fc*.3

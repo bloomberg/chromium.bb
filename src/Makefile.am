@@ -7,7 +7,7 @@ export_symbols = -export-symbols fontconfig.def
 
 install-libtool-import-lib: 
 	$(INSTALL) .libs/libfontconfig.dll.a $(DESTDIR)$(libdir)
-	$(INSTALL) fontconfig.def $(DESTDIR)$(libdir)/glib-2.0.def
+	$(INSTALL) fontconfig.def $(DESTDIR)$(libdir)/fontconfig.def
 
 uninstall-libtool-import-lib:
 	-rm $(DESTDIR)$(libdir)/libfontconfig.dll.a $(DESTDIR)$(libdir)/fontconfig.def
