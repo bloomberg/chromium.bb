@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.2 2002/02/15 06:01:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -33,10 +33,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <libxml/parserInternals.h>
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcprivate.h>
-#include <fontconfig/fcxml.h>
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -175,13 +173,13 @@ struct _FcCharSet {
     FcCharNode	    node;
 };
 
-typedef struct _FcNameBuf {
+typedef struct _FcStrBuf {
     FcChar8 *buf;
     FcBool  allocated;
     FcBool  failed;
     int	    len;
     int	    size;
-} FcNameBuf;
+} FcStrBuf;
 
 typedef struct _FcFileCacheEnt {
     struct _FcFileCacheEnt *next;
@@ -315,7 +313,7 @@ FcConfigCompareValue (const FcValue m,
 
 /* fccharset.c */
 FcBool
-FcNameUnparseCharSet (FcNameBuf *buf, const FcCharSet *c);
+FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c);
 
 FcCharSet *
 FcNameParseCharSet (FcChar8 *string);
@@ -372,7 +370,7 @@ char *
 FcConfigSaveField (const char *field);
 
 FcTest *
-FcTestCreate (FcQual qual, const char *field, FcOp compare, FcExpr *expr);
+FcTestCreate (FcQual qual, const FcChar8 *field, FcOp compare, FcExpr *expr);
 
 void
 FcTestDestroy (FcTest *test);
@@ -434,10 +432,10 @@ FcBool
 FcNameBool (FcChar8 *v, FcBool *result);
 
 FcBool
-FcNameBufChar (FcNameBuf *buf, FcChar8 c);
+FcStrBufChar (FcStrBuf *buf, FcChar8 c);
 
 FcBool
-FcNameBufString (FcNameBuf *buf, const FcChar8 *s);
+FcStrBufString (FcStrBuf *buf, const FcChar8 *s);
 
 /* fcpat.c */
 void
@@ -458,5 +456,23 @@ FcStrPlus (const FcChar8 *s1, const FcChar8 *s2);
     
 void
 FcStrFree (FcChar8 *s);
+
+void
+FcStrBufInit (FcStrBuf *buf, FcChar8 *init, int size);
+
+void
+FcStrBufDestroy (FcStrBuf *buf);
+
+FcChar8 *
+FcStrBufDone (FcStrBuf *buf);
+
+FcBool
+FcStrBufChar (FcStrBuf *buf, FcChar8 c);
+
+FcBool
+FcStrBufString (FcStrBuf *buf, const FcChar8 *s);
+
+FcBool
+FcStrBufData (FcStrBuf *buf, const FcChar8 *s, int len);
 
 #endif /* _FC_INT_H_ */

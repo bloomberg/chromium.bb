@@ -25,7 +25,8 @@ INCLUDES=$(FREETYPE2INCLUDES) $(LIBXML2INCLUDES) -I..
 
 DEFINES=-DFC_FALLBACK_FONTS='"$(FALLBACK_FONTS)"'
 
-REQUIREDLIBS=$(LDPRELIBS) $(FREETYPE2LIB) $(LIBXML2LIB)
+EXPATLIB=-lexpat
+REQUIREDLIBS=$(LDPRELIBS) $(FREETYPE2LIB) $(EXPATLIB)
 
 SRCS=fcblanks.c fccache.c fccfg.c fccharset.c fcdbg.c fcdefault.c fcdir.c \
      fcfreetype.c fcfs.c fcinit.c fclist.c fcmatch.c fcmatrix.c fcname.c \

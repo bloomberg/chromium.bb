@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -646,12 +646,12 @@ FcCharSetParseValue (FcChar8 *string, FcChar32 *value)
 }
 
 static FcBool
-FcCharSetUnparseValue (FcNameBuf *buf, FcChar32 value)
+FcCharSetUnparseValue (FcStrBuf *buf, FcChar32 value)
 {
     int	    i;
     if (value == 0)
     {
-	return FcNameBufChar (buf, ' ');
+	return FcStrBufChar (buf, ' ');
     }
     else
     {
@@ -664,7 +664,7 @@ FcCharSetUnparseValue (FcNameBuf *buf, FcChar32 value)
 	    value /= 85;
 	}
 	for (i = 0; i < 5; i++)
-	    if (!FcNameBufChar (buf, *s++))
+	    if (!FcStrBufChar (buf, *s++))
 		return FcFalse;
     }
     return FcTrue;
@@ -704,7 +704,7 @@ bail0:
 }
 
 FcBool
-FcNameUnparseCharSet (FcNameBuf *buf, const FcCharSet *c)
+FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c)
 {
     FcCharSetIter   ci;
     int		    i;
@@ -729,7 +729,7 @@ FcNameUnparseCharSet (FcNameBuf *buf, const FcCharSet *c)
 	FcCharSetIter	ci, checki;
 	
 	/* null terminate for parser */
-	FcNameBufChar (buf, '\0');
+	FcStrBufChar (buf, '\0');
 	/* step back over null for life after test */
 	buf->len--;
 	check = FcNameParseCharSet (buf->buf + len);

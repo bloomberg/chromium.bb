@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -186,3 +186,93 @@ FcUtf8Len (FcChar8	*string,
 	*wchar = 1;
     return FcTrue;
 }
+
+void
+FcStrBufInit (FcStrBuf *buf, FcChar8 *init, int size)
+{
+    buf->buf = init;
+    buf->allocated = FcFalse;
+    buf->failed = FcFalse;
+    buf->len = 0;
+    buf->size = size;
+}
+
+void
+FcStrBufDestroy (FcStrBuf *buf)
+{
+    if (buf->allocated)
+    {
+	free (buf->buf);
+	FcStrBufInit (buf, 0, 0);
+    }
+}
+
+FcChar8 *
+FcStrBufDone (FcStrBuf *buf)
+{
+    FcChar8 *ret;
+
+    ret = malloc (buf->len + 1);
+    if (ret)
+    {
+	memcpy (ret, buf->buf, buf->len);
+	ret[buf->len] = '\0';
+    }
+    FcStrBufDestroy (buf);
+    return ret;
+}
+
+FcBool
+FcStrBufChar (FcStrBuf *buf, FcChar8 c)
+{
+    if (buf->len == buf->size)
+    {
+	FcChar8	    *new;
+	int	    size;
+
+	if (buf->allocated)
+	{
+	    size = buf->size * 2;
+	    new = realloc (buf->buf, size);
+	}
+	else
+	{
+	    size = buf->size + 1024;
+	    new = malloc (size);
+	    if (new)
+	    {
+		buf->allocated = FcTrue;
+		memcpy (new, buf->buf, buf->len);
+	    }
+	}
+	if (!new)
+	{
+	    buf->failed = FcTrue;
+	    return FcFalse;
+	}
+	buf->size = size;
+	buf->buf = new;
+    }
+    buf->buf[buf->len++] = c;
+    return FcTrue;
+}
+
+FcBool
+FcStrBufString (FcStrBuf *buf, const FcChar8 *s)
+{
+    FcChar8 c;
+    while ((c = *s++))
+	if (!FcStrBufChar (buf, c))
+	    return FcFalse;
+    return FcTrue;
+}
+
+FcBool
+FcStrBufData (FcStrBuf *buf, const FcChar8 *s, int len)
+{
+    while (len-- > 0)
+	if (!FcStrBufChar (buf, *s++))
+	    return FcFalse;
+    return FcTrue;
+}
+

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Fc/xftname.c,v 1.10 2001/03/30 18:50:18 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -418,86 +418,8 @@ bail1:
 bail0:
     return 0;
 }
-
-static void
-FcNameBufInit (FcNameBuf *buf, FcChar8 *init, int size)
-{
-    buf->buf = init;
-    buf->allocated = FcFalse;
-    buf->failed = FcFalse;
-    buf->len = 0;
-    buf->size = size;
-}
-
-static void
-FcNameBufDestroy (FcNameBuf *buf)
-{
-    if (buf->allocated)
-	free (buf->buf);
-}
-
-static FcChar8 *
-FcNameBufDone (FcNameBuf *buf)
-{
-    FcChar8 *ret;
-
-    ret = malloc (buf->len + 1);
-    if (ret)
-    {
-	memcpy (ret, buf->buf, buf->len);
-	ret[buf->len] = '\0';
-    }
-    FcNameBufDestroy (buf);
-    return ret;
-}
-
-FcBool
-FcNameBufChar (FcNameBuf *buf, FcChar8 c)
-{
-    if (buf->len == buf->size)
-    {
-	FcChar8	    *new;
-	int	    size;
-
-	if (buf->allocated)
-	{
-	    size = buf->size * 2;
-	    new = realloc (buf->buf, size);
-	}
-	else
-	{
-	    size = buf->size + 1024;
-	    new = malloc (size);
-	    if (new)
-	    {
-		buf->allocated = FcTrue;
-		memcpy (new, buf->buf, buf->len);
-	    }
-	}
-	if (!new)
-	{
-	    buf->failed = FcTrue;
-	    return FcFalse;
-	}
-	buf->size = size;
-	buf->buf = new;
-    }
-    buf->buf[buf->len++] = c;
-    return FcTrue;
-}
-
-FcBool
-FcNameBufString (FcNameBuf *buf, const FcChar8 *s)
-{
-    FcChar8 c;
-    while ((c = *s++))
-	if (!FcNameBufChar (buf, c))
-	    return FcFalse;
-    return FcTrue;
-}
-
 static FcBool
-FcNameUnparseString (FcNameBuf	    *buf, 
+FcNameUnparseString (FcStrBuf	    *buf, 
 		     const FcChar8  *string,
 		     const FcChar8  *escape)
 {
@@ -506,17 +428,17 @@ FcNameUnparseString (FcNameBuf	    *buf,
     {
 	if (escape && strchr ((char *) escape, (char) c))
 	{
-	    if (!FcNameBufChar (buf, escape[0]))
+	    if (!FcStrBufChar (buf, escape[0]))
 		return FcFalse;
 	}
-	if (!FcNameBufChar (buf, c))
+	if (!FcStrBufChar (buf, c))
 	    return FcFalse;
     }
     return FcTrue;
 }
 
 static FcBool
-FcNameUnparseValue (FcNameBuf	*buf,
+FcNameUnparseValue (FcStrBuf	*buf,
 		    FcValue	v,
 		    FcChar8	*escape)
 {
@@ -546,7 +468,7 @@ FcNameUnparseValue (FcNameBuf	*buf,
 }
 
 static FcBool
-FcNameUnparseValueList (FcNameBuf	*buf,
+FcNameUnparseValueList (FcStrBuf	*buf,
 			FcValueList	*v,
 			FcChar8		*escape)
 {
@@ -567,14 +489,14 @@ FcNameUnparseValueList (FcNameBuf	*buf,
 FcChar8 *
 FcNameUnparse (FcPattern *pat)
 {
-    FcNameBuf		    buf;
+    FcStrBuf		    buf;
     FcChar8		    buf_static[8192];
     int			    i;
     FcPatternElt	    *e;
     const FcObjectTypeList  *l;
     const FcObjectType	    *o;
 
-    FcNameBufInit (&buf, buf_static, sizeof (buf_static));
+    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
     e = FcPatternFind (pat, FC_FAMILY, FcFalse);
     if (e)
     {
@@ -614,8 +536,8 @@ FcNameUnparse (FcPattern *pat)
 	    }
 	}
     }
-    return FcNameBufDone (&buf);
+    return FcStrBufDone (&buf);
 bail0:
-    FcNameBufDestroy (&buf);
+    FcStrBufDestroy (&buf);
     return 0;
 }

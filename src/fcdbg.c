@@ -135,7 +135,10 @@ FcExprPrint (FcExpr *expr)
 			      expr->u.mval->yx,
 			      expr->u.mval->yy);
     case FcOpBool: printf ("%s", expr->u.bval ? "true" : "false"); break;
+    case FcOpCharSet: printf ("charset\n"); break;
+    case FcOpNil: printf ("nil\n");
     case FcOpField: printf ("%s", expr->u.field); break;
+    case FcOpConst: printf ("%s", expr->u.constant); break;
     case FcOpQuest:
 	FcExprPrint (expr->u.tree.left);
 	printf (" quest ");
@@ -143,6 +146,12 @@ FcExprPrint (FcExpr *expr)
 	printf (" colon ");
 	FcExprPrint (expr->u.tree.right->u.tree.right);
 	break;
+    case FcOpAssign:
+    case FcOpAssignReplace:
+    case FcOpPrependFirst:
+    case FcOpPrepend:
+    case FcOpAppend:
+    case FcOpAppendLast:
     case FcOpOr:
     case FcOpAnd:
     case FcOpEqual:
@@ -156,9 +165,16 @@ FcExprPrint (FcExpr *expr)
     case FcOpMinus:
     case FcOpTimes:
     case FcOpDivide:
+    case FcOpComma:
 	FcExprPrint (expr->u.tree.left);
 	printf (" ");
 	switch (expr->op) {
+	case FcOpAssign: printf ("Assign"); break;
+	case FcOpAssignReplace: printf ("AssignReplace"); break;
+	case FcOpPrependFirst: printf ("PrependFirst"); break;
+	case FcOpPrepend: printf ("Prepend"); break;
+	case FcOpAppend: printf ("Append"); break;
+	case FcOpAppendLast: printf ("AppendLast"); break;
 	case FcOpOr: printf ("Or"); break;
 	case FcOpAnd: printf ("And"); break;
 	case FcOpEqual: printf ("Equal"); break;
@@ -172,6 +188,7 @@ FcExprPrint (FcExpr *expr)
 	case FcOpMinus: printf ("Minus"); break;
 	case FcOpTimes: printf ("Times"); break;
 	case FcOpDivide: printf ("Divide"); break;
+	case FcOpComma: printf ("Comma"); break;
 	default: break;
 	}
 	printf (" ");
@@ -181,8 +198,7 @@ FcExprPrint (FcExpr *expr)
 	printf ("Not ");
 	FcExprPrint (expr->u.tree.left);
 	break;
-    default:
-	break;
+    case FcOpInvalid: printf ("Invalid"); break;
     }
 }
 
