@@ -15,7 +15,7 @@
 /** Current process ID */
 #define DRM_CURRENTPID			current->pid
 #define DRM_UDELAY(d)			udelay(d)
-#if LINUX_VERSION_CODE <= 0x020608 /* KERNEL_VERSION(2,4,14) */
+#if LINUX_VERSION_CODE <= 0x020608 /* KERNEL_VERSION(2,6,8) */
 /** Read a byte from a MMIO region */
 #define DRM_READ8(map, offset)		readb(((unsigned long)(map)->handle) + (offset))
 /** Read a word from a MMIO region */
