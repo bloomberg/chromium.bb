@@ -1,7 +1,33 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.2.96
-		        2004-6-30
+		      Version 2.2.97
+		        2004-12-04
+
+2.2.97
+
+Fc-cache sleeps before exiting to ensure filesystem timestamps are well
+ordered.
+
+Added Punjai orthography.
+
+The timestamp in fonts.conf is gone now.  Too many problems.
+
+The default font path includes all of the X fonts; use selectfont/rejectfont
+to eliminate bitmaps, as shown in the sample local.conf file.
+
+<include> configuration elements may now reference a directory.  Files
+in that directory matching [0-9]* are loaded in UTF-8 collating sequence order.
+
+<selectfont> configuration added to control which fonts are used.
+
+fontformat font pattern elements built from the FT_Get_X11_Font_Format
+function in newer versions of FreeType.
+
+'capability' list constructed from gsub/gpos and silf values in TrueType
+files.
+
+Multi-lingual names (style, family, fullname) extracted and stored with
+parallel <foo>lang properties marking language.
 
 2.2.96
 

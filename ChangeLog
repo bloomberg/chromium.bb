@@ -1,3 +1,10 @@
+2004-12-04  Keith Packard  <keithp@keithp.com>
+
+	* README:
+	* configure.in:
+	* fontconfig/fontconfig.h:
+	Updates for version 2.2.97
+
 2004-12-04  Owen Taylor  <otaylor@redhat.com>
 
 	reviewed by: Keith Packard  <keithp@keithp.com>
