@@ -84,6 +84,10 @@ typedef unsigned int  drm_magic_t;
 /* Warning: If you change this structure, make sure you change
  * XF86DRIClipRectRec in the server as well */
 
+/* KW: Actually it's illegal to change either for
+ * backwards-compatibility reasons.
+ */
+
 typedef struct drm_clip_rect {
 	unsigned short	x1;
 	unsigned short	y1;
