@@ -11,6 +11,10 @@
 	changes to fonts@xfree86.org so that future releases can include
 	such changes.
 
+	Note that the normal 'make install' procedure for XFree86 is to
+	replace any existing fonts.conf file with the new version.  Place
+	any local customizations in local.conf which this file references.
+
 	Keith Packard
 -->
 
@@ -29,6 +33,9 @@
 <!--
   Enable sub-pixel rendering
 	<match target="font">
+		<test qual="all" name="rgba">
+			<const>unknown</const>
+		</test>
 		<edit name="rgba" mode="assign"><const>rgb</const></edit>
 	</match>
 -->
