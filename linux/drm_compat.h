@@ -1,6 +1,6 @@
 /**
- * \file drmP.h 
- * Private header for Direct Rendering Manager
+ * \file drm_compat.h 
+ * Backward compatability definitions for Direct Rendering Manager
  * 
  * \author Rickard E. (Rik) Faith <faith@valinux.com>
  * \author Gareth Hughes <gareth@valinux.com>
@@ -33,10 +33,6 @@
 
 #ifndef _DRM_COMPAT_H_
 #define _DRM_COMPAT_H_
-
-/***********************************************************************/
-/** \name Backward compatibility section */
-/*@{*/
 
 #ifndef minor
 #define minor(x) MINOR((x))
@@ -156,7 +152,5 @@ static inline void class_simple_set_hotplug(struct class_simple *cs, void (*fn)(
 #ifdef __AMD64__
 #define __x86_64__
 #endif
-
-/*@}*/
 
 #endif

@@ -33,6 +33,27 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/**
+ * \mainpage
+ *
+ * The Direct Rendering Manager (DRM) is a device-independent kernel-level
+ * device driver that provides support for the XFree86 Direct Rendering
+ * Infrastructure (DRI).
+ * 
+ * The DRM supports the Direct Rendering Infrastructure (DRI) in four major
+ * ways:
+ *     -# The DRM provides synchronized access to the graphics hardware via
+ *        the use of an optimized two-tiered lock.
+ *     -# The DRM enforces the DRI security policy for access to the graphics
+ *        hardware by only allowing authenticated X11 clients access to
+ *        restricted regions of memory.
+ *     -# The DRM provides a generic DMA engine, complete with multiple
+ *        queues and the ability to detect the need for an OpenGL context
+ *        switch.
+ *     -# The DRM is extensible via the use of small device-specific modules
+ *        that rely extensively on the API exported by the DRM module.
+ * 
+ */ 
 
 #ifndef _DRM_H_
 #define _DRM_H_
@@ -114,7 +135,7 @@ typedef unsigned int  drm_magic_t;      /**< Magic for authentication */
 /**
  * Cliprect.
  * 
- * \warning: If you change this structure, make sure you change
+ * \warning If you change this structure, make sure you change
  * XF86DRIClipRectRec in the server as well
  *
  * \note KW: Actually it's illegal to change either for
@@ -599,14 +620,16 @@ typedef struct drm_agp_info {
 	int            agp_version_major;
 	int            agp_version_minor;
 	unsigned long  mode;
-	unsigned long  aperture_base;  /* physical address */
-	unsigned long  aperture_size;  /* bytes */
-	unsigned long  memory_allowed; /* bytes */
+	unsigned long  aperture_base;  /**< physical address */
+	unsigned long  aperture_size;  /**< bytes */
+	unsigned long  memory_allowed; /**< bytes */
 	unsigned long  memory_used;
 
-				/* PCI information */
+	/** \name PCI information */
+	/*@{*/
 	unsigned short id_vendor;
 	unsigned short id_device;
+	/*@}*/
 } drm_agp_info_t;
 
 
@@ -628,6 +651,11 @@ typedef struct drm_set_version {
 	int drm_dd_minor;
 } drm_set_version_t;
 
+
+/**
+ * \name Ioctls Definitions
+ */
+/*@{*/
 
 #define DRM_IOCTL_BASE			'd'
 #define DRM_IO(nr)			_IO(DRM_IOCTL_BASE,nr)
@@ -688,6 +716,9 @@ typedef struct drm_set_version {
 #define DRM_IOCTL_SG_FREE		DRM_IOW( 0x39, drm_scatter_gather_t)
 
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, drm_wait_vblank_t)
+
+/*@}*/
+
 
 /**
  * Device specific ioctls should only be in their respective headers

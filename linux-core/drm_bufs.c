@@ -370,6 +370,7 @@ int DRM(rmmap)(struct inode *inode, struct file *filp,
 /**
  * Cleanup after an error on one of the addbufs() functions.
  *
+ * \param dev DRM device.
  * \param entry buffer entry where the error occurred.
  *
  * Frees any pages and buffers associated with the given entry.

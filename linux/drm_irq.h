@@ -83,7 +83,6 @@ int DRM(irq_by_busid)(struct inode *inode, struct file *filp,
  * Install IRQ handler.
  *
  * \param dev DRM device.
- * \param irq IRQ number.
  *
  * Initializes the IRQ related data, and setups drm_device::vbl_queue. Installs the handler, calling the driver
  * \c DRM(driver_irq_preinstall)() and \c DRM(driver_irq_postinstall)() functions
