@@ -22,7 +22,7 @@ mkdir -p $OUTDIR
 
 cp shared/*.[ch] $OUTDIR
 cp linux/*.[ch] $OUTDIR
-cp linux/Makefile.linux $OUTDIR/Makefile
+cp linux/Makefile.kernel $OUTDIR/Makefile
 
 if [ $VERS = 2.4 ] ;then
 	echo "Copying 2.4 Kernel files"
