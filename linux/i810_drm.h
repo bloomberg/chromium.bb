@@ -112,6 +112,8 @@ typedef struct _drm_i810_init {
 	unsigned int front_offset;
 	unsigned int back_offset;
 	unsigned int depth_offset;
+	unsigned int overlay_offset;
+	unsigned int overlay_physical;
 	unsigned int w;
 	unsigned int h;
 	unsigned int pitch;
@@ -195,5 +197,19 @@ typedef struct drm_i810_dma {
 	int request_size;
 	int granted;
 } drm_i810_dma_t;
+
+typedef struct _drm_i810_overlay_t {
+	unsigned int offset;    /* Address of the Overlay Regs */
+	unsigned int physical;
+} drm_i810_overlay_t;
+
+typedef struct _drm_i810_mc {
+	int idx;                /* buffer index */
+	int used;               /* nr bytes in use */
+	int num_blocks;         /* number of GFXBlocks */
+	int *length;            /* List of lengths for GFXBlocks (FUTURE)*/
+	unsigned int last_render; /* Last Render Request */
+} drm_i810_mc_t;
+
 
 #endif /* _I810_DRM_H_ */

@@ -104,9 +104,8 @@ typedef struct drm_tex_region {
 #include "i810_drm.h"
 #include "r128_drm.h"
 #include "radeon_drm.h"
-#ifdef CONFIG_DRM_SIS
 #include "sis_drm.h"
-#endif
+#include "i830_drm.h"
 
 typedef struct drm_version {
 	int    version_major;	  /* Major version			    */
@@ -449,6 +448,12 @@ typedef struct drm_scatter_gather {
 #define DRM_IOCTL_I810_SWAP		DRM_IO(  0x46)
 #define DRM_IOCTL_I810_COPY		DRM_IOW( 0x47, drm_i810_copy_t)
 #define DRM_IOCTL_I810_DOCOPY		DRM_IO(  0x48)
+#define DRM_IOCTL_I810_OV0INFO		DRM_IOR( 0x49, drm_i810_overlay_t)
+#define DRM_IOCTL_I810_FSTATUS		DRM_IO ( 0x4a)
+#define DRM_IOCTL_I810_OV0FLIP		DRM_IO ( 0x4b)
+#define DRM_IOCTL_I810_MC		DRM_IOW( 0x4c, drm_i810_mc_t)
+#define DRM_IOCTL_I810_RSTATUS		DRM_IO ( 0x4d )
+
 
 /* Rage 128 specific ioctls */
 #define DRM_IOCTL_R128_INIT		DRM_IOW( 0x40, drm_r128_init_t)
@@ -483,7 +488,6 @@ typedef struct drm_scatter_gather {
 #define DRM_IOCTL_RADEON_INDIRECT	DRM_IOWR(0x4d, drm_radeon_indirect_t)
 #define DRM_IOCTL_RADEON_TEXTURE	DRM_IOWR(0x4e, drm_radeon_texture_t)
 
-#ifdef CONFIG_DRM_SIS
 /* SiS specific ioctls */
 #define SIS_IOCTL_FB_ALLOC		DRM_IOWR(0x44, drm_sis_mem_t)
 #define SIS_IOCTL_FB_FREE		DRM_IOW( 0x45, drm_sis_mem_t)
@@ -493,6 +497,16 @@ typedef struct drm_scatter_gather {
 #define SIS_IOCTL_FLIP			DRM_IOW( 0x48, drm_sis_flip_t)
 #define SIS_IOCTL_FLIP_INIT		DRM_IO(  0x49)
 #define SIS_IOCTL_FLIP_FINAL		DRM_IO(  0x50)
-#endif
+
+/* I830 specific ioctls */
+#define DRM_IOCTL_I830_INIT		DRM_IOW( 0x40, drm_i830_init_t)
+#define DRM_IOCTL_I830_VERTEX		DRM_IOW( 0x41, drm_i830_vertex_t)
+#define DRM_IOCTL_I830_CLEAR		DRM_IOW( 0x42, drm_i830_clear_t)
+#define DRM_IOCTL_I830_FLUSH		DRM_IO ( 0x43)
+#define DRM_IOCTL_I830_GETAGE		DRM_IO ( 0x44)
+#define DRM_IOCTL_I830_GETBUF		DRM_IOWR(0x45, drm_i830_dma_t)
+#define DRM_IOCTL_I830_SWAP		DRM_IO ( 0x46)
+#define DRM_IOCTL_I830_COPY		DRM_IOW( 0x47, drm_i830_copy_t)
+#define DRM_IOCTL_I830_DOCOPY		DRM_IO ( 0x48)
 
 #endif

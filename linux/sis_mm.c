@@ -72,7 +72,7 @@ static int del_alloc_set(int context, int type, unsigned int val)
 }
 
 /* fb management via fb device */ 
-#if 0
+#if 1
 int sis_fb_alloc(struct inode *inode, struct file *filp, unsigned int cmd,
 		  unsigned long arg)
 {
@@ -90,7 +90,7 @@ int sis_fb_alloc(struct inode *inode, struct file *filp, unsigned int cmd,
     fb.offset = req.offset;
     fb.free = req.offset;
     if(!add_alloc_set(fb.context, VIDEO_TYPE, fb.free)){
-      DRM_DEBUG("adding to allocation set fails");
+      DRM_DEBUG("adding to allocation set fails\n");
       sis_free(req.offset);
       retval = -1;
     }
@@ -185,7 +185,7 @@ int sisp_agp_alloc(struct inode *inode, struct file *filp, unsigned int cmd,
     agp.offset = block->ofs;
     agp.free = (unsigned int)block;
     if(!add_alloc_set(agp.context, AGP_TYPE, agp.free)){
-      DRM_DEBUG("adding to allocation set fails");
+      DRM_DEBUG("adding to allocation set fails\n");
       mmFreeMem((PMemBlock)agp.free);
       retval = -1;
     }
@@ -279,9 +279,7 @@ int sis_final_context(int context)
 	  retval = setFirst(set, &item);
 	  while(retval){
    	    DRM_DEBUG("free video memory 0x%x\n", item);
-#if 0
             sis_free(item);
-#endif
 	    retval = setNext(set, &item);
 	  }
 	  setDestroy(set);

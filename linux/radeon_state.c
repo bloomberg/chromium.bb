@@ -1058,7 +1058,7 @@ static int radeon_cp_dispatch_texture( drm_device_t *dev,
 			DRM_ERROR( "EFAULT on tex->image\n" );
 			return -EFAULT;
 		}
-	} else if ( size < 4 ) {
+	} else if ( size < 4 && size > 0 ) {
 		size = 4;
 	}
 

@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis.h,v 1.1 2001/05/19 18:29:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis.h,v 1.2 2001/12/19 21:25:59 dawes Exp $ */
 
 #ifndef __SIS_H__
 #define __SIS_H__
@@ -46,5 +46,11 @@
  */
 #define DRIVER_AGP_BUFFERS_MAP( dev )					\
 	((drm_sis_private_t *)((dev)->dev_private))->buffers
+
+extern int sis_init_context(int context);
+extern int sis_final_context(int context);
+
+#define DRIVER_CTX_CTOR sis_init_context
+#define DRIVER_CTX_DTOR sis_final_context
 
 #endif

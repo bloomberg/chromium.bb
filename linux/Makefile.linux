@@ -31,15 +31,6 @@
 # like this:
 # 	make TREE=/usr/my-kernel-tree/include
 #
-#
-# ***** NOTE NOTE NOTE NOTE NOTE *****
-# Because some distributions patch 2.2.x kernels to make kill_fasync have
-# three parameters, this script tries to determine, via the examination of
-# header files, if your kernel has been patched.  If this detection is
-# incorrect, you can override the value on the command line, like this:
-# 	make PARAMS=2
-# or
-# 	make PARAMS=3
 
 .SUFFIXES:
 
@@ -132,10 +123,6 @@ MODVERSIONS := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'MODVERSIONS = ' | cut -d' ' -f3)
 AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'AGP = ' | cut -d' ' -f3)
-SIS := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
-	| grep -s 'SIS = ' | cut -d' ' -f3)
-PARAMS := $(shell if fgrep kill_fasync $(TREE)/linux/fs.h 2>/dev/null \
-	| egrep -q '(band|int, int)'; then echo 3; else echo 2; fi)
 MACHINE := $(shell echo `uname -m`)
 ifeq ($(AGP),0)
 AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
@@ -148,9 +135,11 @@ DRMTEMPLATES += drm_agpsupport.h
 MODS += mga.o
 ifeq ($(MACHINE),i386)
 MODS += i810.o
+MODS += i830.o
 endif
 ifeq ($(MACHINE),i686)
 MODS += i810.o
+MODS += i830.o
 endif
 
 MGAOBJS =	mga_drv.o mga_dma.o mga_state.o mga_warp.o
@@ -159,29 +148,23 @@ MGAHEADERS =	mga.h mga_drv.h mga_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 I810OBJS =	i810_drv.o i810_dma.o
 I810HEADERS =	i810.h i810_drv.h i810_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
+I830OBJS =	i830_drv.o i830_dma.o
+I830HEADERS =	i830.h i830_drv.h i830_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
+
 endif
 
 ifeq ($(MACHINE),alpha)
 MODCFLAGS+=      -ffixed-8 -mno-fp-regs -mcpu=ev56 -Wa,-mev6 
 endif
 
-ifeq ($(SIS),1)
-# It appears that the SiS driver makes calls to sis_malloc and sis_free, and
-# that these calls are only defined if CONFIG_FB_SIS is selected.  So, key
-# off that to determine if we should attempt to build the SiS driver.
-#
-# A better way would be to detect the appropriate definitions in the header
-# file to see if we can, at least, compile the driver.
 MODS += sis.o
 
 SISOBJS=	sis_drv.o sis_mm.o sis_ds.o 
 SISHEADERS=	sis_drv.h sis_drm.h $(DRMHEADERS)
 MODCFLAGS += -DCONFIG_DRM_SIS
-endif
 
 all::;@echo === KERNEL HEADERS IN $(TREE)
 all::;@echo === SMP=${SMP} MODULES=${MODULES} MODVERSIONS=${MODVERSIONS} AGP=${AGP}
-all::;@echo === kill_fasync has $(PARAMS) parameters
 all::;@echo === Compiling for machine $(MACHINE)
 all::;@echo === WARNING
 all::;@echo === WARNING Use 2.4.x kernels ONLY !
@@ -205,9 +188,6 @@ MODCFLAGS += -D__SMP__
 endif
 ifeq ($(MODVERSIONS),1)
 MODCFLAGS += -DMODVERSIONS -include $(TREE)/linux/modversions.h
-endif
-ifeq ($(PARAMS),3)
-MODCFLAGS += -DKILLFASYNCHASTHREEPARAMETERS
 endif
 
 # **** End of configuration
@@ -252,6 +232,11 @@ i810_drv.o: i810_drv.c
 i810.o: $(I810OBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
+i830_drv.o: i830_drv.c
+	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
+i830.o: $(I830OBJS) $(LIBS)
+	$(LD) -r $^ -o $@
+
 endif
 
 .PHONY: ChangeLog
@@ -272,6 +257,7 @@ $(TDFXOBJS): $(TDFXHEADERS)
 ifeq ($(AGP),1)
 $(MGAOBJS): $(MGAHEADERS)
 $(I810OBJS): $(I810HEADERS)
+$(I830OBJS): $(I830HEADERS)
 $(R128OBJS): $(R128HEADERS)
 $(RADEONOBJS): $(RADEONHEADERS)
 endif

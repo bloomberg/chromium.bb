@@ -35,14 +35,8 @@
 #ifndef _DRM_H_
 #define _DRM_H_
 
-#if defined(__linux__)
-#include <linux/config.h>
-#include <asm/ioctl.h>		/* For _IO* macros */
-#define DRM_IOCTL_NR(n)	     _IOC_NR(n)
-#elif defined(__FreeBSD__)
 #include <sys/ioccom.h>
 #define DRM_IOCTL_NR(n)	     ((n) & 0xff)
-#endif
 
 #define XFREE86_VERSION(major,minor,patch,snap) \
 		((major << 16) | (minor << 8) | patch)
@@ -68,7 +62,7 @@
 #define DRM_NAME	"drm"	  /* Name in kernel, /dev, and /proc	    */
 #define DRM_MIN_ORDER	5	  /* At least 2^5 bytes = 32 bytes	    */
 #define DRM_MAX_ORDER	22	  /* Up to 2^22 bytes = 4MB		    */
-#define DRM_RAM_PERCENT 10	  /* How much system ram can we lock?	    */
+#define DRM_RAM_PERCENT 50	  /* How much system ram can we lock?	    */
 
 #define _DRM_LOCK_HELD	0x80000000 /* Hardware lock is held		    */
 #define _DRM_LOCK_CONT	0x40000000 /* Hardware lock is contended	    */
@@ -99,13 +93,13 @@ typedef struct drm_tex_region {
 	unsigned int	age;
 } drm_tex_region_t;
 
-/* Seperate include files for the i810/mga/r128 specific structures */
+/* Seperate include files for the driver specific structures */
 #include "mga_drm.h"
 #include "i810_drm.h"
+#include "i830_drm.h"
 #include "r128_drm.h"
 #include "radeon_drm.h"
 #include "sis_drm.h"
-#include "i830_drm.h"
 
 typedef struct drm_version {
 	int    version_major;	  /* Major version			    */
@@ -448,12 +442,6 @@ typedef struct drm_scatter_gather {
 #define DRM_IOCTL_I810_SWAP		DRM_IO(  0x46)
 #define DRM_IOCTL_I810_COPY		DRM_IOW( 0x47, drm_i810_copy_t)
 #define DRM_IOCTL_I810_DOCOPY		DRM_IO(  0x48)
-#define DRM_IOCTL_I810_OV0INFO		DRM_IOR( 0x49, drm_i810_overlay_t)
-#define DRM_IOCTL_I810_FSTATUS		DRM_IO ( 0x4a)
-#define DRM_IOCTL_I810_OV0FLIP		DRM_IO ( 0x4b)
-#define DRM_IOCTL_I810_MC		DRM_IOW( 0x4c, drm_i810_mc_t)
-#define DRM_IOCTL_I810_RSTATUS		DRM_IO ( 0x4d )
-
 
 /* Rage 128 specific ioctls */
 #define DRM_IOCTL_R128_INIT		DRM_IOW( 0x40, drm_r128_init_t)
@@ -489,6 +477,7 @@ typedef struct drm_scatter_gather {
 #define DRM_IOCTL_RADEON_TEXTURE	DRM_IOWR(0x4e, drm_radeon_texture_t)
 
 /* SiS specific ioctls */
+
 #define SIS_IOCTL_FB_ALLOC		DRM_IOWR(0x44, drm_sis_mem_t)
 #define SIS_IOCTL_FB_FREE		DRM_IOW( 0x45, drm_sis_mem_t)
 #define SIS_IOCTL_AGP_INIT		DRM_IOWR(0x53, drm_sis_agp_t)
