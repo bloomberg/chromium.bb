@@ -31,14 +31,14 @@
 #define FC_INVALID_FONT_FILE "."
 
 FcBool
-FcFileScan (FcFontSet	*set,
-	    FcFileCache	*cache,
-	    FcBlanks	*blanks,
-	    const char	*file,
-	    FcBool	force)
+FcFileScan (FcFontSet	    *set,
+	    FcFileCache	    *cache,
+	    FcBlanks	    *blanks,
+	    const FcChar8   *file,
+	    FcBool	    force)
 {
     int		    id;
-    char	    *name;
+    FcChar8	    *name;
     FcPattern	    *font;
     FcBool	    ret = FcTrue;
     int		    count;
@@ -88,7 +88,7 @@ FcFileScan (FcFontSet	*set,
 		else
 		{
 		    /* negative cache files not containing fonts */
-		    FcFileCacheUpdate (cache, file, id, FC_INVALID_FONT_FILE);
+		    FcFileCacheUpdate (cache, file, id, (FcChar8 *) FC_INVALID_FONT_FILE);
 		}
 	    }
 	}
@@ -107,28 +107,28 @@ FcFileScan (FcFontSet	*set,
 }
 
 FcBool
-FcDirScan (FcFontSet	*set,
-	   FcFileCache	*cache,
-	   FcBlanks	*blanks,
-	   const char	*dir,
-	   FcBool	force)
+FcDirScan (FcFontSet	    *set,
+	   FcFileCache	    *cache,
+	   FcBlanks	    *blanks,
+	   const FcChar8    *dir,
+	   FcBool	    force)
 {
     DIR		    *d;
     struct dirent   *e;
-    char	    *file;
-    char	    *base;
+    FcChar8	    *file;
+    FcChar8	    *base;
     FcBool	    ret = FcTrue;
 
-    file = (char *) malloc (strlen (dir) + 1 + 256 + 1);
+    file = (FcChar8 *) malloc (strlen ((char *) dir) + 1 + 256 + 1);
     if (!file)
 	return FcFalse;
 
-    strcpy (file, dir);
-    strcat (file, "/");
-    base = file + strlen (file);
+    strcpy ((char *) file, (char *) dir);
+    strcat ((char *) file, "/");
+    base = file + strlen ((char *) file);
     if (!force)
     {
-	strcpy (base, FC_DIR_CACHE_FILE);
+	strcpy ((char *) base, FC_DIR_CACHE_FILE);
 	
 	if (FcFileCacheReadDir (set, file))
 	{
@@ -137,7 +137,7 @@ FcDirScan (FcFontSet	*set,
 	}
     }
     
-    d = opendir (dir);
+    d = opendir ((char *) dir);
     if (!d)
     {
 	free (file);
@@ -147,7 +147,7 @@ FcDirScan (FcFontSet	*set,
     {
 	if (e->d_name[0] != '.')
 	{
-	    strcpy (base, e->d_name);
+	    strcpy ((char *) base, (char *) e->d_name);
 	    FcFileScan (set, cache, blanks, file, force);
 	}
     }
@@ -157,20 +157,20 @@ FcDirScan (FcFontSet	*set,
 }
 
 FcBool
-FcDirSave (FcFontSet *set, const char *dir)
+FcDirSave (FcFontSet *set, const FcChar8 *dir)
 {
-    char	    *file;
-    char	    *base;
+    FcChar8	    *file;
+    FcChar8	    *base;
     FcBool	    ret;
     
-    file = (char *) malloc (strlen (dir) + 1 + 256 + 1);
+    file = (FcChar8 *) malloc (strlen ((char *) dir) + 1 + 256 + 1);
     if (!file)
 	return FcFalse;
 
-    strcpy (file, dir);
-    strcat (file, "/");
-    base = file + strlen (file);
-    strcpy (base, FC_DIR_CACHE_FILE);
+    strcpy ((char *) file, (char *) dir);
+    strcat ((char *) file, "/");
+    base = file + strlen ((char *) file);
+    strcpy ((char *) base, FC_DIR_CACHE_FILE);
     ret = FcFileCacheWriteDir (set, file);
     free (file);
     return ret;

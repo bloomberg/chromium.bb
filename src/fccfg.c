@@ -50,7 +50,7 @@ FcConfigCreate (void)
     config->configFiles[0] = 0;
     
     config->cache = 0;
-    if (!FcConfigSetCache (config, "~/" FC_USER_CACHE_FILE))
+    if (!FcConfigSetCache (config, (FcChar8 *) ("~/" FC_USER_CACHE_FILE)))
 	goto bail3;
 
     config->blanks = 0;
@@ -88,9 +88,9 @@ FcSubstDestroy (FcSubst *s)
 }
 
 static void
-FcConfigDestroyStrings (char **strings)
+FcConfigDestroyStrings (FcChar8 **strings)
 {
-    char    **s;
+    FcChar8    **s;
 
     for (s = strings; s && *s; s++)
 	free (*s);
@@ -99,20 +99,20 @@ FcConfigDestroyStrings (char **strings)
 }
     
 static FcBool
-FcConfigAddString (char ***strings, char *string)
+FcConfigAddString (FcChar8 ***strings, FcChar8 *string)
 {
     int	    n;
-    char    **s;
+    FcChar8    **s;
     
     n = 0;
     for (s = *strings; s && *s; s++)
 	n++;
-    s = malloc ((n + 2) * sizeof (char *));
+    s = malloc ((n + 2) * sizeof (FcChar8 *));
     if (!s)
 	return FcFalse;
     s[n] = string;
     s[n+1] = 0;
-    memcpy (s, *strings, n * sizeof (char *));
+    memcpy (s, *strings, n * sizeof (FcChar8 *));
     free (*strings);
     *strings = s;
     return FcTrue;
@@ -145,7 +145,7 @@ FcConfigBuildFonts (FcConfig *config)
 {
     FcFontSet   *fonts;
     FcFileCache *cache;
-    char	**d;
+    FcChar8	**d;
 
     fonts = FcFontSetCreate ();
     if (!fonts)
@@ -200,25 +200,25 @@ FcConfigGetCurrent (void)
 
 FcBool
 FcConfigAddDir (FcConfig    *config,
-		const char  *d)
+		const FcChar8  *d)
 {
-    char    *dir;
-    char    *h;
+    FcChar8    *dir;
+    FcChar8    *h;
 
     if (*d == '~')
     {
-	h = getenv ("HOME");
+	h = (FcChar8 *) getenv ("HOME");
 	if (!h)
 	    return FcFalse;
-	dir = (char *) malloc (strlen (h) + strlen (d));
+	dir = (FcChar8 *) malloc (strlen ((char *) h) + strlen ((char *) d));
 	if (!dir)
 	    return FcFalse;
-	strcpy (dir, h);
-	strcat (dir, d+1);
+	strcpy ((char *) dir, (char *) h);
+	strcat ((char *) dir, (char *) d+1);
     }
     else
     {
-	dir = (char *) malloc (strlen (d) + 1);
+	dir = (FcChar8 *) malloc (strlen ((char *) d) + 1);
 	if (!dir)
 	    return FcFalse;
 	strcpy (dir, d);
@@ -231,7 +231,7 @@ FcConfigAddDir (FcConfig    *config,
     return FcTrue;
 }
 
-char **
+FcChar8 **
 FcConfigGetDirs (FcConfig   *config)
 {
     if (!config)
@@ -245,9 +245,9 @@ FcConfigGetDirs (FcConfig   *config)
 
 FcBool
 FcConfigAddConfigFile (FcConfig	    *config,
-		       const char   *f)
+		       const FcChar8   *f)
 {
-    char    *file;
+    FcChar8    *file;
     file = FcConfigFilename (f);
     if (!file)
 	return FcFalse;
@@ -259,7 +259,7 @@ FcConfigAddConfigFile (FcConfig	    *config,
     return FcTrue;
 }
 
-char **
+FcChar8 **
 FcConfigGetConfigFiles (FcConfig    *config)
 {
     if (!config)
@@ -273,21 +273,21 @@ FcConfigGetConfigFiles (FcConfig    *config)
 
 FcBool
 FcConfigSetCache (FcConfig	*config,
-		  const char	*c)
+		  const FcChar8	*c)
 {
-    char    *new;
-    char    *h;
+    FcChar8    *new;
+    FcChar8    *h;
 
     if (*c == '~')
     {
-	h = getenv ("HOME");
+	h = (FcChar8 *) getenv ("HOME");
 	if (!h)
 	    return FcFalse;
-	new = (char *) malloc (strlen (h) + strlen (c));
+	new = (FcChar8 *) malloc (strlen ((char *) h) + strlen ((char *) c));
 	if (!new)
 	    return FcFalse;
-	strcpy (new, h);
-	strcat (new, c+1);
+	strcpy ((char *) new, (char *) h);
+	strcat ((char *) new, (char *) c+1);
     }
     else
     {
@@ -299,7 +299,7 @@ FcConfigSetCache (FcConfig	*config,
     return FcTrue;
 }
 
-char *
+FcChar8 *
 FcConfigGetCache (FcConfig  *config)
 {
     if (!config)
@@ -545,7 +545,6 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
     FcValue	v, vl, vr;
     FcResult	r;
     FcMatrix	*m;
-    FcChar8	*s;
     
     switch (e->op) {
     case FcOpInteger:
@@ -1070,7 +1069,7 @@ FcConfigSubstitute (FcConfig	*config,
 	     * Locate any test associated with this field
 	     */
 	    for (t = s->test, i = 0; t; t = t->next, i++)
-		if (!FcStrCmpIgnoreCase (t->field, e->field))
+		if (!FcStrCmpIgnoreCase ((FcChar8 *) t->field, (FcChar8 *) e->field))
 		    break;
 	    switch (e->op) {
 	    case FcOpAssign:
@@ -1088,6 +1087,10 @@ FcConfigSubstitute (FcConfig	*config,
 		     */
 		    FcConfigAdd (&st[i].elt->values, thisValue, FcTrue, l);
 		    /*
+		     * Delete the marked value
+		     */
+		    FcConfigDel (&st[i].elt->values, thisValue);
+		    /*
 		     * Adjust any pointers into the value list to ensure
 		     * future edits occur at the same place
 		     */
@@ -1096,10 +1099,6 @@ FcConfigSubstitute (FcConfig	*config,
 			if (st[i].value == thisValue)
 			    st[i].value = nextValue;
 		    }
-		    /*
-		     * Delete the marked value
-		     */
-		    FcConfigDel (&st[i].elt->values, thisValue);
 		    break;
 		}
 		/* fall through ... */
@@ -1179,41 +1178,41 @@ FcConfigSubstitute (FcConfig	*config,
 #define FONTCONFIG_FILE	"fonts.conf"
 #endif
 
-static char *
-FcConfigFileExists (const char *dir, const char *file)
+static FcChar8 *
+FcConfigFileExists (const FcChar8 *dir, const FcChar8 *file)
 {
-    char    *path;
+    FcChar8    *path;
 
     if (!dir)
-	dir = "";
-    path = malloc (strlen (dir) + 1 + strlen (file) + 1);
+	dir = (FcChar8 *) "";
+    path = malloc (strlen ((char *) dir) + 1 + strlen ((char *) file) + 1);
     if (!path)
 	return 0;
 
     strcpy (path, dir);
     /* make sure there's a single separating / */
-    if ((!path[0] || path[strlen(path)-1] != '/') && file[0] != '/')
-	strcat (path, "/");
-    strcat (path, file);
+    if ((!path[0] || path[strlen((char *) path)-1] != '/') && file[0] != '/')
+	strcat ((char *) path, "/");
+    strcat ((char *) path, (char *) file);
 
-    if (access (path, R_OK) == 0)
+    if (access ((char *) path, R_OK) == 0)
 	return path;
     
     free (path);
     return 0;
 }
 
-static char **
+static FcChar8 **
 FcConfigGetPath (void)
 {
-    char    **path;
-    char    *env, *e, *colon;
-    char    *dir;
+    FcChar8    **path;
+    FcChar8    *env, *e, *colon;
+    FcChar8    *dir;
     int	    npath;
     int	    i;
 
     npath = 2;	/* default dir + null */
-    env = getenv ("FONTCONFIG_PATH");
+    env = (FcChar8 *) getenv ("FONTCONFIG_PATH");
     if (env)
     {
 	e = env;
@@ -1222,7 +1221,7 @@ FcConfigGetPath (void)
 	    if (*e++ == ':')
 		npath++;
     }
-    path = calloc (npath, sizeof (char *));
+    path = calloc (npath, sizeof (FcChar8 *));
     if (!path)
 	goto bail0;
     i = 0;
@@ -1232,9 +1231,9 @@ FcConfigGetPath (void)
 	e = env;
 	while (*e) 
 	{
-	    colon = strchr (e, ':');
+	    colon = (FcChar8 *) strchr ((char *) e, ':');
 	    if (!colon)
-		colon = e + strlen (e);
+		colon = e + strlen ((char *) e);
 	    path[i] = malloc (colon - e + 1);
 	    if (!path[i])
 		goto bail1;
@@ -1248,8 +1247,8 @@ FcConfigGetPath (void)
 	}
     }
     
-    dir = FONTCONFIG_PATH;
-    path[i] = malloc (strlen (dir) + 1);
+    dir = (FcChar8 *) FONTCONFIG_PATH;
+    path[i] = malloc (strlen ((char *) dir) + 1);
     if (!path[i])
 	goto bail1;
     strcpy (path[i], dir);
@@ -1264,29 +1263,30 @@ bail0:
 }
 
 static void
-FcConfigFreePath (char **path)
+FcConfigFreePath (FcChar8 **path)
 {
-    char    **p;
+    FcChar8    **p;
 
     for (p = path; *p; p++)
 	free (*p);
     free (path);
 }
 
-char *
-FcConfigFilename (const char *url)
+FcChar8 *
+FcConfigFilename (const FcChar8 *url)
 {
-    char    *file, *dir, **path, **p;
+    FcChar8    *file, *dir, **path, **p;
     
     if (!url || !*url)
     {
-	url = getenv ("FONTCONFIG_FILE");
+	url = (FcChar8 *) getenv ("FONTCONFIG_FILE");
 	if (!url)
-	    url = FONTCONFIG_FILE;
+	    url = (FcChar8 *) FONTCONFIG_FILE;
     }
+    file = 0;
     switch (*url) {
     case '~':
-	dir = getenv ("HOME");
+	dir = (FcChar8 *) getenv ("HOME");
 	if (dir)
 	    file = FcConfigFileExists (dir, url + 1);
 	else
@@ -1317,7 +1317,7 @@ FcConfigFilename (const char *url)
 
 FcBool
 FcConfigAppFontAddFile (FcConfig    *config,
-			const char  *file)
+			const FcChar8  *file)
 {
     FcFontSet	*set;
 
@@ -1341,7 +1341,7 @@ FcConfigAppFontAddFile (FcConfig    *config,
 
 FcBool
 FcConfigAppFontAddDir (FcConfig	    *config,
-		       const char   *dir)
+		       const FcChar8   *dir)
 {
     FcFontSet	*set;
     

@@ -25,6 +25,7 @@
 #include <fontconfig/fontconfig.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #else
@@ -47,7 +48,7 @@ extern int optind, opterr, optopt;
 #endif
 #endif
 
-void usage (char *program)
+static void usage (char *program)
 {
     fprintf (stderr, "usage: %s [-vV?] [--verbose] [--version] [--help] [dirs]\n",
 	     program);
@@ -63,8 +64,6 @@ void usage (char *program)
 int
 main (int argc, char **argv)
 {
-    int		ret = 0;
-    FcFontSet	*set;
     int		verbose = 0;
     int		i;
     FcObjectSet *os = FcObjectSetBuild (FC_FAMILY, FC_LANG, 0);

@@ -1,7 +1,7 @@
 INCLUDES=$(FREETYPE2INCLUDES) $(LIBXML2INCLUDES) -I..
 
 LOCAL_LIBRARIES=FontconfigClientLibs
-        DEPLIBS=FontconfigDepLibs
+        DEPLIBS=FontconfigClientDepLibs
 
 SRCS=fc-list.c
 OBJS=fc-list.o

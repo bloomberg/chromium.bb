@@ -33,69 +33,69 @@
 
 static const struct {
     int	    bit;
-    char    *name;
+    FcChar8 *name;
 } FcCodePageRange[] = {
-    { 0,	FC_LANG_LATIN_1 },
-    { 1,	FC_LANG_LATIN_2_EASTERN_EUROPE },
-    { 2,	FC_LANG_CYRILLIC },
-    { 3,	FC_LANG_GREEK },
-    { 4,	FC_LANG_TURKISH },
-    { 5,	FC_LANG_HEBREW },
-    { 6,	FC_LANG_ARABIC },
-    { 7,	FC_LANG_WINDOWS_BALTIC },
-    { 8,	FC_LANG_VIETNAMESE },
+    { 0,	(FcChar8 *) FC_LANG_LATIN_1 },
+    { 1,	(FcChar8 *) FC_LANG_LATIN_2_EASTERN_EUROPE },
+    { 2,	(FcChar8 *) FC_LANG_CYRILLIC },
+    { 3,	(FcChar8 *) FC_LANG_GREEK },
+    { 4,	(FcChar8 *) FC_LANG_TURKISH },
+    { 5,	(FcChar8 *) FC_LANG_HEBREW },
+    { 6,	(FcChar8 *) FC_LANG_ARABIC },
+    { 7,	(FcChar8 *) FC_LANG_WINDOWS_BALTIC },
+    { 8,	(FcChar8 *) FC_LANG_VIETNAMESE },
 /* 9-15 reserved for Alternate ANSI */
-    { 16,	FC_LANG_THAI },
-    { 17,	FC_LANG_JAPANESE },
-    { 18,	FC_LANG_SIMPLIFIED_CHINESE },
-    { 19,	FC_LANG_KOREAN_WANSUNG },
-    { 20,	FC_LANG_TRADITIONAL_CHINESE },
-    { 21,	FC_LANG_KOREAN_JOHAB },
+    { 16,	(FcChar8 *) FC_LANG_THAI },
+    { 17,	(FcChar8 *) FC_LANG_JAPANESE },
+    { 18,	(FcChar8 *) FC_LANG_SIMPLIFIED_CHINESE },
+    { 19,	(FcChar8 *) FC_LANG_KOREAN_WANSUNG },
+    { 20,	(FcChar8 *) FC_LANG_TRADITIONAL_CHINESE },
+    { 21,	(FcChar8 *) FC_LANG_KOREAN_JOHAB },
 /* 22-28 reserved for Alternate ANSI & OEM */
-    { 29,	FC_LANG_MACINTOSH },
-    { 30,	FC_LANG_OEM },
-    { 31,	FC_LANG_SYMBOL },
+    { 29,	(FcChar8 *) FC_LANG_MACINTOSH },
+    { 30,	(FcChar8 *) FC_LANG_OEM },
+    { 31,	(FcChar8 *) FC_LANG_SYMBOL },
 /* 32-47 reserved for OEM */
-    { 48,	FC_LANG_IBM_GREEK },
-    { 49,	FC_LANG_MSDOS_RUSSIAN },
-    { 50,	FC_LANG_MSDOS_NORDIC },
-    { 51,	FC_LANG_ARABIC_864 },
-    { 52,	FC_LANG_MSDOS_CANADIAN_FRENCH },
-    { 53,	FC_LANG_HEBREW_862 },
-    { 54,	FC_LANG_MSDOS_ICELANDIC },
-    { 55,	FC_LANG_MSDOS_PORTUGUESE },
-    { 56,	FC_LANG_IBM_TURKISH },
-    { 57,	FC_LANG_IBM_CYRILLIC },
-    { 58,	FC_LANG_LATIN_2 },
-    { 59,	FC_LANG_MSDOS_BALTIC },
-    { 60,	FC_LANG_GREEK_437_G },
-    { 61,	FC_LANG_ARABIC_ASMO_708 },
-    { 62,	FC_LANG_WE_LATIN_1 },
-    { 63,	FC_LANG_US },
+    { 48,	(FcChar8 *) FC_LANG_IBM_GREEK },
+    { 49,	(FcChar8 *) FC_LANG_MSDOS_RUSSIAN },
+    { 50,	(FcChar8 *) FC_LANG_MSDOS_NORDIC },
+    { 51,	(FcChar8 *) FC_LANG_ARABIC_864 },
+    { 52,	(FcChar8 *) FC_LANG_MSDOS_CANADIAN_FRENCH },
+    { 53,	(FcChar8 *) FC_LANG_HEBREW_862 },
+    { 54,	(FcChar8 *) FC_LANG_MSDOS_ICELANDIC },
+    { 55,	(FcChar8 *) FC_LANG_MSDOS_PORTUGUESE },
+    { 56,	(FcChar8 *) FC_LANG_IBM_TURKISH },
+    { 57,	(FcChar8 *) FC_LANG_IBM_CYRILLIC },
+    { 58,	(FcChar8 *) FC_LANG_LATIN_2 },
+    { 59,	(FcChar8 *) FC_LANG_MSDOS_BALTIC },
+    { 60,	(FcChar8 *) FC_LANG_GREEK_437_G },
+    { 61,	(FcChar8 *) FC_LANG_ARABIC_ASMO_708 },
+    { 62,	(FcChar8 *) FC_LANG_WE_LATIN_1 },
+    { 63,	(FcChar8 *) FC_LANG_US },
 };
 
 #define NUM_CODE_PAGE_RANGE (sizeof FcCodePageRange / sizeof FcCodePageRange[0])
 
 FcPattern *
-FcFreeTypeQuery (const char *file,
-		 int	    id,
-		 FcBlanks   *blanks,
-		 int	    *count)
+FcFreeTypeQuery (const FcChar8	*file,
+		 int		id,
+		 FcBlanks	*blanks,
+		 int		*count)
 {
-    FT_Face	face;
-    FcPattern	*pat;
-    int		slant;
-    int		weight;
-    int		i;
-    FcCharSet	*cs;
-    FT_Library	ftLibrary;
-    const char	*family;
-    TT_OS2	*os2;
+    FT_Face	    face;
+    FcPattern	    *pat;
+    int		    slant;
+    int		    weight;
+    int		    i;
+    FcCharSet	    *cs;
+    FT_Library	    ftLibrary;
+    const FcChar8   *family;
+    TT_OS2	    *os2;
 
     if (FT_Init_FreeType (&ftLibrary))
 	return 0;
     
-    if (FT_New_Face (ftLibrary, file, id, &face))
+    if (FT_New_Face (ftLibrary, (char *) file, id, &face))
 	goto bail;
 
     *count = face->num_faces;
@@ -127,10 +127,10 @@ FcFreeTypeQuery (const char *file,
     if (!FcPatternAddInteger (pat, FC_WEIGHT, weight))
 	goto bail1;
 
-    family = face->family_name;
+    family = (FcChar8 *) face->family_name;
     if (!family)
     {
-	family = strrchr (file, '/');
+	family = (FcChar8 *) strrchr ((char *) file, '/');
 	if (family)
 	    family++;
 	else
@@ -141,7 +141,7 @@ FcFreeTypeQuery (const char *file,
 
     if (face->style_name)
     {
-	if (!FcPatternAddString (pat, FC_STYLE, face->style_name))
+	if (!FcPatternAddString (pat, FC_STYLE, (FcChar8 *) face->style_name))
 	    goto bail1;
     }
 
@@ -151,7 +151,7 @@ FcFreeTypeQuery (const char *file,
     if (!FcPatternAddInteger (pat, FC_INDEX, id))
 	goto bail1;
 
-    if (!FcPatternAddString (pat, FC_SOURCE, "FreeType"))
+    if (!FcPatternAddString (pat, FC_SOURCE, (FcChar8 *) "FreeType"))
 	goto bail1;
 
 #if 0

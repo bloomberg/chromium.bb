@@ -134,7 +134,8 @@ FcCompareValueList (const char  *object,
     
     for (i = 0; i < NUM_MATCHER; i++)
     {
-	if (!FcStrCmpIgnoreCase (_FcMatchers[i].object, object))
+	if (!FcStrCmpIgnoreCase ((FcChar8 *) _FcMatchers[i].object,
+				 (FcChar8 *) object))
 	    break;
     }
     if (i == NUM_MATCHER)
@@ -202,8 +203,8 @@ FcCompare (FcPattern	*pat,
     {
 	for (i2 = 0; i2 < fnt->num; i2++)
 	{
-	    if (!FcStrCmpIgnoreCase (pat->elts[i1].object,
-				     fnt->elts[i2].object))
+	    if (!FcStrCmpIgnoreCase ((FcChar8 *) pat->elts[i1].object,
+				     (FcChar8 *) fnt->elts[i2].object))
 	    {
 		if (!FcCompareValueList (pat->elts[i1].object,
 					 pat->elts[i1].values,

@@ -28,7 +28,7 @@
 #include <libxml/parser.h>
 
 xmlDocPtr
-FcConfigLoad (const char *file);
+FcConfigLoad (const FcChar8 *file);
 
 FcBool
 FcConfigParse (FcConfig	    *config,

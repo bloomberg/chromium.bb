@@ -144,7 +144,7 @@ FcCharSetFindLeaf (const FcCharSet *fcs, FcChar32 ucs4)
     int			l;
     const FcCharNode	*prev;
     FcCharNode		node;
-    FcChar8		i;
+    FcChar32    	i;
 
     prev = &fcs->node;
     l = fcs->levels;
@@ -167,9 +167,9 @@ FcCharSetFindLeaf (const FcCharSet *fcs, FcChar32 ucs4)
 static FcCharLeaf *
 FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4)
 {
-    int		l;
-    FcCharNode  *prev, node;
-    FcChar8	i;
+    int		    l;
+    FcCharNode	    *prev, node;
+    FcChar32	    i;
 
     if (!FcCharSetCheckLevel (fcs, ucs4))
 	return FcFalse;
@@ -242,7 +242,7 @@ FcCharSetIterLeaf (FcCharNode node, int level, FcChar32 *ucs4)
 	int	    shift = ((level - 1) << 3);
 	FcChar32    inc = 1 << shift;
 	FcChar32    mask = ~(inc - 1);
-	FcChar8	    byte = (*ucs4 >> shift) & 0xff;
+	FcChar32    byte = (*ucs4 >> shift) & 0xff;
 	FcCharLeaf  *leaf;
 
 	for (;;)
@@ -254,7 +254,7 @@ FcCharSetIterLeaf (FcCharNode node, int level, FcChar32 *ucs4)
 		break;
 	    /* step to next branch, resetting lower indices */
 	    *ucs4 = (*ucs4 & mask) + inc;
-	    byte++;
+	    byte = (byte + 1) & 0xff;
 	    if (byte == 0)
 		break;
 	}
@@ -567,7 +567,7 @@ FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b)
  * it's not exactly human readable output.  As a special case, 0 is encoded as a space
  */
 
-static FcChar8	charToValue[256] = {
+static unsigned char	charToValue[256] = {
     /*     "" */ 0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff, 
     /*   "\b" */ 0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff, 
     /* "\020" */ 0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff, 
@@ -621,7 +621,7 @@ FcCharSetParseValue (FcChar8 *string, FcChar32 *value)
 {
     int		i;
     FcChar32	v;
-    FcChar8	c;
+    FcChar32	c;
     
     if (*string == ' ')
     {
@@ -633,7 +633,7 @@ FcCharSetParseValue (FcChar8 *string, FcChar32 *value)
 	v = 0;
 	for (i = 0; i < 5; i++)
 	{
-	    if (!(c = *string++))
+	    if (!(c = (FcChar32) (unsigned char) *string++))
 		return 0;
 	    c = charToValue[c];
 	    if (c == 0xff)
@@ -808,8 +808,8 @@ FcNameUnparseCharSet (FcNameBuf *buf, const FcCharSet *c)
 #endif
 
 typedef struct _FcCharEnt {
-    FcChar16	bmp;
-    FcChar8	encode;
+    FcChar16	    bmp;
+    unsigned char   encode;
 } FcCharEnt;
 
 typedef struct _FcCharMap {
@@ -960,6 +960,7 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
 	    return FcTrue;
 	/* fall through ... */
     default:
+	break;
     }
     return FcFalse;
 }

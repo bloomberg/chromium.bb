@@ -29,25 +29,25 @@ static xmlParserInputPtr
 FcEntityLoader (const char *url, const char *id, xmlParserCtxtPtr ctxt)
 {
     xmlParserInputPtr	ret;
-    char		*file;
+    FcChar8		*file;
 
-    file = FcConfigFilename (url);
+    file = FcConfigFilename ((FcChar8 *) url);
     if (!file)
 	return 0;
-    ret = xmlNewInputFromFile (ctxt, file);
+    ret = xmlNewInputFromFile (ctxt, (char *) file);
     free (file);
     return ret;
 }
 
 xmlDocPtr
-FcConfigLoad (const char *file)
+FcConfigLoad (const FcChar8 *file)
 {
     xmlDocPtr		    doc;
     xmlExternalEntityLoader previous;
 
     previous = xmlGetExternalEntityLoader ();
     xmlSetExternalEntityLoader (FcEntityLoader);
-    doc = xmlParseFile (file);
+    doc = xmlParseFile ((char *) file);
     xmlSetExternalEntityLoader (previous);
     return doc;
 }
@@ -68,7 +68,7 @@ FcTestCreate (FcQual qual, const char *field, FcOp compare, FcExpr *expr)
     {
 	test->next = 0;
 	test->qual = qual;
-	test->field = FcStrCopy (field);
+	test->field = (char *) FcStrCopy ((FcChar8 *) field);
 	test->op = compare;
 	test->expr = expr;
     }
@@ -112,7 +112,7 @@ FcExprCreateDouble (double d)
 }
 
 FcExpr *
-FcExprCreateString (const char *s)
+FcExprCreateString (const FcChar8 *s)
 {
     FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
 
@@ -170,13 +170,13 @@ FcExprCreateField (const char *field)
     if (e)
     {
 	e->op = FcOpField;
-	e->u.field = FcStrCopy (field);
+	e->u.field = (char *) FcStrCopy ((FcChar8 *) field);
     }
     return e;
 }
 
 FcExpr *
-FcExprCreateConst (const char *constant)
+FcExprCreateConst (const FcChar8 *constant)
 {
     FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
 
@@ -222,7 +222,7 @@ FcExprDestroy (FcExpr *e)
     case FcOpBool:
 	break;
     case FcOpField:
-	FcStrFree (e->u.field);
+	FcStrFree ((FcChar8 *) e->u.field);
 	break;
     case FcOpConst:
 	FcStrFree (e->u.constant);
@@ -289,7 +289,7 @@ FcEditDestroy (FcEdit *e)
 char *
 FcConfigSaveField (const char *field)
 {
-    return FcStrCopy (field);
+    return (char *) FcStrCopy ((FcChar8 *) field);
 }
 
 static void
@@ -304,11 +304,11 @@ FcConfigParseError (char *fmt, ...)
     va_end (args);
 }
 
-static char *
+static xmlChar *
 FcConfigContent (xmlDocPtr    doc,
 		 xmlNodePtr   node)
 {
-    char	    *content;
+    xmlChar	    *content;
     
     content = xmlNodeListGetString (doc, node->children, 1);
     if (!content)
@@ -320,11 +320,11 @@ FcConfigContent (xmlDocPtr    doc,
     return content;
 }
 
-static char *
+static xmlChar *
 FcConfigAttr (xmlDocPtr	    doc,
 	      xmlAttrPtr    attr)
 {
-    char	    *content;
+    xmlChar	    *content;
     
     content = xmlNodeListGetString (doc, attr->children, 1);
     if (!content)
@@ -374,7 +374,7 @@ static struct {
 #define NUM_OPS (sizeof fcOps / sizeof fcOps[0])
 
 static FcOp
-FcConfigLexOp (const char *op)
+FcConfigLexOp (const xmlChar *op)
 {
     int	i;
 
@@ -384,7 +384,7 @@ FcConfigLexOp (const char *op)
 }
 
 static FcBool
-FcConfigLexBool (const char *bool)
+FcConfigLexBool (const xmlChar *bool)
 {
     if (*bool == 't' || *bool == 'T')
 	return FcTrue;
@@ -400,11 +400,11 @@ FcConfigParseDir (FcConfig	*config,
 		  xmlDocPtr	doc,
 		  xmlNodePtr	dir)
 {
-    char    *content = FcConfigContent (doc, dir);
+    xmlChar *content = FcConfigContent (doc, dir);
 
     if (!content)
 	return FcFalse;
-    return FcConfigAddDir (config, content);
+    return FcConfigAddDir (config, (FcChar8 *) content);
 }
 
 static FcBool
@@ -412,11 +412,11 @@ FcConfigParseCache (FcConfig	*config,
 		    xmlDocPtr	doc,
 		    xmlNodePtr	dir)
 {
-    char    *content = FcConfigContent (doc, dir);
+    xmlChar *content = FcConfigContent (doc, dir);
 
     if (!content)
 	return FcFalse;
-    return FcConfigSetCache (config, content);
+    return FcConfigSetCache (config, (FcChar8 *) content);
 }
 
 static FcBool
@@ -424,7 +424,7 @@ FcConfigParseInclude (FcConfig	    *config,
 		      xmlDocPtr	    doc,
 		      xmlNodePtr    inc)
 {
-    char	*content = FcConfigContent (doc, inc);
+    xmlChar *content = FcConfigContent (doc, inc);
     xmlAttr	*attr;
     FcBool	complain = FcTrue;
 
@@ -438,7 +438,7 @@ FcConfigParseInclude (FcConfig	    *config,
 	if (!strcmp (attr->name, "ignore_missing"))
 	    complain = !FcConfigLexBool (FcConfigAttr (doc, attr));
     }
-    return FcConfigParseAndLoad (config, content, complain);
+    return FcConfigParseAndLoad (config, (FcChar8 *) content, complain);
 }
 
 static FcBool
@@ -455,7 +455,7 @@ FcConfigParseBlank (FcConfig	    *config,
 	    continue;
 	if (!strcmp (node->name, "int"))
 	{
-	    ucs4 = (FcChar32) strtol (FcConfigContent (doc, node), 0, 0);
+	    ucs4 = (FcChar32) strtol ((char *) FcConfigContent (doc, node), 0, 0);
 	    if (!config->blanks)
 	    {
 		config->blanks = FcBlanksCreate ();
@@ -500,7 +500,7 @@ FcConfigParseMatrix (xmlDocPtr	doc,
     static FcMatrix m;
     enum { m_xx, m_xy, m_yx, m_yy, m_done } matrix_state = m_xx;
     double  v;
-    char    *text;
+    xmlChar *text;
     
     FcMatrixInit (&m);
 
@@ -513,7 +513,7 @@ FcConfigParseMatrix (xmlDocPtr	doc,
 	text = FcConfigContent (doc, node);
 	if (!text)
 	    continue;
-	v = strtod (text, 0);
+	v = strtod ((char *) text, 0);
 	switch (matrix_state) {
 	case m_xx: m.xx = v; break;
 	case m_xy: m.xy = v; break;
@@ -537,13 +537,13 @@ FcConfigParseExpr (xmlDocPtr	doc,
 
     switch (op) {
     case FcOpInteger:
-	l = FcExprCreateInteger (strtol (FcConfigContent (doc, expr), 0, 0));
+	l = FcExprCreateInteger (strtol ((char *) FcConfigContent (doc, expr), 0, 0));
 	break;
     case FcOpDouble:
-	l = FcExprCreateDouble (strtod (FcConfigContent (doc, expr), 0));
+	l = FcExprCreateDouble (strtod ((char *) FcConfigContent (doc, expr), 0));
 	break;
     case FcOpString:
-	l = FcExprCreateString (FcConfigContent (doc, expr));
+	l = FcExprCreateString ((FcChar8 *) FcConfigContent (doc, expr));
 	break;
     case FcOpMatrix:
 	l = FcExprCreateMatrix (FcConfigParseMatrix (doc, expr));
@@ -555,10 +555,10 @@ FcConfigParseExpr (xmlDocPtr	doc,
 	/* not sure what to do here yet */
 	break;
     case FcOpField:
-	l = FcExprCreateField (FcConfigContent (doc, expr));
+	l = FcExprCreateField ((char *) FcConfigContent (doc, expr));
 	break;
     case FcOpConst:
-	l = FcExprCreateConst (FcConfigContent (doc, expr));
+	l = FcExprCreateConst ((FcChar8 *) FcConfigContent (doc, expr));
 	break;
     case FcOpQuest:
 	for (node = expr->children; node; node = node->next)
@@ -657,7 +657,7 @@ FcConfigParseTest (xmlDocPtr	doc,
     xmlAttrPtr	attr;
     FcQual	qual = FcQualAny;
     FcOp	op = FcOpEqual;
-    char	*field = 0;
+    xmlChar	*field = 0;
     FcExpr	*expr = 0;
 
     for (attr = test->properties; attr; attr = attr->next)
@@ -666,26 +666,26 @@ FcConfigParseTest (xmlDocPtr	doc,
 	    continue;
 	if (!strcmp (attr->name, "qual"))
 	{
-	    char    *qual_name = FcConfigAttr (doc, attr);
+	    xmlChar *qual_name = FcConfigAttr (doc, attr);
 	    if (!qual_name)
 		;
-	    else if (!strcmp (qual_name, "any"))
+	    else if (!FcStrCmpIgnoreCase ((FcChar8 *) qual_name, (FcChar8 *) "any"))
 		qual = FcQualAny;
-	    else if (!strcmp (qual_name, "all"))
+	    else if (!FcStrCmpIgnoreCase ((FcChar8 *) qual_name, (FcChar8 *) "all"))
 		qual = FcQualAll;
 	}
-	else if (!strcmp (attr->name, "name"))
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) attr->name, (FcChar8 *) "name"))
 	{
 	    field = FcConfigAttr (doc, attr);
 	}
-	else if (!strcmp (attr->name, "compare"))
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) attr->name, (FcChar8 *) "compare"))
 	{
-	    char    *compare = FcConfigAttr (doc, attr);
+	    xmlChar *compare = FcConfigAttr (doc, attr);
 	    
 	    if (!compare || (op = FcConfigLexOp (compare)) == FcOpInvalid)
 	    {
 		FcConfigParseError ("Invalid comparison %s", 
-				    compare ? compare : "<missing>");
+				    compare ? (char *) compare : "<missing>");
 		return 0;
 	    }
 	}
@@ -709,7 +709,7 @@ FcConfigParseTest (xmlDocPtr	doc,
 	return 0;
     }
     
-    return FcTestCreate (qual, field, op, expr);
+    return FcTestCreate (qual, (char *) field, op, expr);
 }
 
 static FcExpr *
@@ -753,7 +753,7 @@ FcConfigParseEdit (xmlDocPtr	doc,
 		   xmlNodePtr	edit)
 {
     xmlAttrPtr	attr;
-    char	*name = 0;
+    xmlChar	*name = 0;
     FcOp	mode = FcOpAssign;
     FcExpr	*e;
     FcEdit	*ed;
@@ -762,15 +762,15 @@ FcConfigParseEdit (xmlDocPtr	doc,
     {
 	if (attr->type != XML_ATTRIBUTE_NODE)
 	    continue;
-	if (!strcmp (attr->name, "name"))
+	if (!FcStrCmpIgnoreCase ((FcChar8 *) attr->name, (FcChar8 *) "name"))
 	    name = FcConfigAttr (doc, attr);
-	else if (!strcmp (attr->name, "mode"))
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) attr->name, (FcChar8 *) "mode"))
 	    mode = FcConfigLexOp (FcConfigAttr (doc, attr));
     }
 
     e = FcConfigParseExprList (doc, edit->children);
 
-    ed = FcEditCreate (name, mode, e);
+    ed = FcEditCreate ((char *) name, mode, e);
     if (!ed)
 	FcExprDestroy (e);
     return ed;
@@ -785,14 +785,14 @@ FcConfigParseMatch (FcConfig	*config,
     xmlAttrPtr	attr;
     FcTest	*tests = 0, **prevTest = &tests, *test;
     FcEdit	*edits = 0, **prevEdit = &edits, *edit;
-    FcMatchKind	kind;
+    FcMatchKind	kind = FcMatchPattern;
     FcBool	found_kind = FcFalse;
 
     for (node = match->children; node; node = node->next)
     {
 	if (node->type != XML_ELEMENT_NODE)
 	    continue;
-	if (!strcmp (node->name, "test"))
+	if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "test"))
 	{
 	    test = FcConfigParseTest (doc, node);
 	    if (!test)
@@ -800,7 +800,7 @@ FcConfigParseMatch (FcConfig	*config,
 	    *prevTest = test;
 	    prevTest = &test->next;
 	}
-	else if (!strcmp (node->name, "edit"))
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "edit"))
 	{
 	    edit = FcConfigParseEdit (doc, node);
 	    if (!edit)
@@ -814,20 +814,20 @@ FcConfigParseMatch (FcConfig	*config,
     {
 	if (attr->type != XML_ATTRIBUTE_NODE)
 	    continue;
-	if (!strcmp (attr->name, "target"))
+	if (!FcStrCmpIgnoreCase ((FcChar8 *) attr->name, (FcChar8 *) "target"))
 	{
-	    char    *target = FcConfigAttr (doc, attr);
+	    xmlChar *target = FcConfigAttr (doc, attr);
 	    if (!target)
 	    {
 		FcConfigParseError ("Missing match target");
 		break;
 	    }
-	    else if (!strcmp (target, "pattern"))
+	    else if (!FcStrCmpIgnoreCase ((FcChar8 *) target, (FcChar8 *) "pattern"))
 	    {
 		kind = FcMatchPattern;
 		found_kind = FcTrue;
 	    }
-	    else if (!strcmp (target, "font"))
+	    else if (!FcStrCmpIgnoreCase ((FcChar8 *) target, (FcChar8 *) "font"))
 	    {
 		kind = FcMatchFont;
 		found_kind = FcTrue;
@@ -858,9 +858,10 @@ FcConfigParseFamilies (xmlDocPtr    doc,
 	return 0;
     next = FcConfigParseFamilies (doc, family->next);
     
-    if (family->type == XML_ELEMENT_NODE && !strcmp (family->name, "family"))
+    if (family->type == XML_ELEMENT_NODE && 
+	!FcStrCmpIgnoreCase ((FcChar8 *) family->name, (FcChar8 *) "family"))
     {
-	this = FcExprCreateString (FcConfigContent (doc, family));
+	this = FcExprCreateString ((FcChar8 *) FcConfigContent (doc, family));
 	if (!this)
 	    goto bail;
 	if (next)
@@ -893,7 +894,7 @@ FcConfigParseAlias (FcConfig	*config,
 {
     xmlNodePtr	node;
     FcExpr	*prefer = 0, *accept = 0, *def = 0;
-    FcExpr	*family;
+    FcExpr	*family = 0;
     FcEdit	*edit = 0, *next;
     FcTest	*test;
 
@@ -901,15 +902,17 @@ FcConfigParseAlias (FcConfig	*config,
     {
 	if (node->type != XML_ELEMENT_NODE)
 	    continue;
-	if (!strcmp (node->name, "family"))
-	    family = FcExprCreateString (FcConfigContent (doc, node));
-	else if (!strcmp (node->name, "prefer"))
+	if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "family"))
+	    family = FcExprCreateString ((FcChar8 *) FcConfigContent (doc, node));
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "prefer"))
 	    prefer = FcConfigParseFamilies (doc, node->children);
-	else if (!strcmp (node->name, "accept"))
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "accept"))
 	    accept = FcConfigParseFamilies (doc, node->children);
-	else if (!strcmp (node->name, "default"))
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "default"))
 	    def = FcConfigParseFamilies (doc, node->children);
     }
+    if (!family)
+	return FcFalse;
     
     if (prefer)
     {
@@ -962,32 +965,32 @@ FcConfigParse (FcConfig	    *config,
     {
 	if (node->type != XML_ELEMENT_NODE)
 	    continue;
-	if (!strcmp (node->name, "dir"))
+	if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "dir"))
 	{
 	    if (!FcConfigParseDir (config, doc, node))
 		break;
 	}
-	else if (!strcmp (node->name, "cache"))
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "cache"))
 	{
 	    if (!FcConfigParseCache (config, doc, node))
 		break;
 	}
-	else if (!strcmp (node->name, "include"))
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "include"))
 	{
 	    if (!FcConfigParseInclude (config, doc, node))
 		break;
 	}
-	else if (!strcmp (node->name, "config"))
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "config"))
 	{
 	    if (!FcConfigParseConfig (config, doc, node))
 		break;
 	}
-	else if (!strcmp (node->name, "match"))
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "match"))
 	{
 	    if (!FcConfigParseMatch (config, doc, node))
 		break;
 	}
-	else if (!strcmp (node->name, "alias"))
+	else if (!FcStrCmpIgnoreCase ((FcChar8 *) node->name, (FcChar8 *) "alias"))
 	{
 	    if (!FcConfigParseAlias (config, doc, node))
 		break;
@@ -1005,7 +1008,7 @@ FcConfigParse (FcConfig	    *config,
 
 FcBool
 FcConfigParseAndLoad (FcConfig	    *config,
-		      const char    *file,
+		      const FcChar8 *file,
 		      FcBool	    complain)
 {
     xmlDocPtr	doc;

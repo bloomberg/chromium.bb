@@ -114,12 +114,12 @@ typedef struct _FcExpr {
     union {
 	int	    ival;
 	double	    dval;
-	char	    *sval;
+	FcChar8	    *sval;
 	FcMatrix    *mval;
 	FcBool	    bval;
 	FcCharSet   *cval;
 	char	    *field;
-	char	    *constant;
+	FcChar8	    *constant;
 	struct {
 	    struct _FcExpr *left, *right;
 	} tree;
@@ -186,10 +186,10 @@ typedef struct _FcNameBuf {
 typedef struct _FcFileCacheEnt {
     struct _FcFileCacheEnt *next;
     unsigned int	    hash;
-    char		    *file;
+    FcChar8		    *file;
     int			    id;
     time_t		    time;
-    char		    *name;
+    FcChar8		    *name;
     FcBool		    referenced;
 } FcFileCacheEnt;
 
@@ -214,8 +214,8 @@ struct _FcConfig {
      * cache file must be consulted before the directories are scanned,
      * and those directives may occur in any order
      */
-    char	**dirs;		    /* directories containing fonts */
-    char	*cache;		    /* name of per-user cache file */
+    FcChar8	**dirs;		    /* directories containing fonts */
+    FcChar8	*cache;		    /* name of per-user cache file */
     /*
      * Set of allowed blank chars -- used to
      * trim fonts of bogus glyphs
@@ -225,7 +225,7 @@ struct _FcConfig {
      * Names of all of the configuration files used
      * to create this configuration
      */
-    char	**configFiles;	    /* config files loaded */
+    FcChar8	**configFiles;	    /* config files loaded */
     /*
      * Substitution instructions for patterns and fonts;
      * maxObjects is used to allocate appropriate intermediate storage
@@ -250,9 +250,9 @@ struct _FcConfig {
 FcFileCache *
 FcFileCacheCreate (void);
 
-char *
+FcChar8 *
 FcFileCacheFind (FcFileCache	*cache,
-		 const char	*file,
+		 const FcChar8	*file,
 		 int		id,
 		 int		*count);
 
@@ -261,37 +261,37 @@ FcFileCacheDestroy (FcFileCache	*cache);
 
 void
 FcFileCacheLoad (FcFileCache	*cache,
-		 const char	*cache_file);
+		 const FcChar8	*cache_file);
 
 FcBool
-FcFileCacheUpdate (FcFileCache	*cache,
-		   const char	*file,
-		   int		id,
-		   const char	*name);
+FcFileCacheUpdate (FcFileCache	    *cache,
+		   const FcChar8    *file,
+		   int		    id,
+		   const FcChar8    *name);
 
 FcBool
 FcFileCacheSave (FcFileCache	*cache,
-		 const char	*cache_file);
+		 const FcChar8	*cache_file);
 
 FcBool
-FcFileCacheReadDir (FcFontSet *set, const char *cache_file);
+FcFileCacheReadDir (FcFontSet *set, const FcChar8 *cache_file);
 
 FcBool
-FcFileCacheWriteDir (FcFontSet *set, const char *cache_file);
+FcFileCacheWriteDir (FcFontSet *set, const FcChar8 *cache_file);
     
 /* fccfg.c */
 
 FcBool
-FcConfigAddDir (FcConfig    *config,
-		const char  *d);
+FcConfigAddDir (FcConfig	*config,
+		const FcChar8	*d);
 
 FcBool
-FcConfigAddConfigFile (FcConfig	    *config,
-		       const char   *f);
+FcConfigAddConfigFile (FcConfig		*config,
+		       const FcChar8	*f);
 
 FcBool
 FcConfigSetCache (FcConfig	*config,
-		  const char	*c);
+		  const FcChar8	*c);
 
 FcBool
 FcConfigAddBlank (FcConfig	*config,
@@ -352,22 +352,6 @@ int
 FcDebug (void);
 
 /* fcdir.c */
-FcBool
-FcFileScan (FcFontSet	*set,
-	    FcFileCache	*cache,
-	    FcBlanks	*blanks,
-	    const char	*file,
-	    FcBool	force);
-
-FcBool
-FcDirScan (FcFontSet	*set,
-	   FcFileCache	*cache,
-	   FcBlanks	*blanks,
-	   const char	*dir,
-	   FcBool	force);
-
-FcBool
-FcDirSave (FcFontSet *set, const char *dir);
 
 /* fcfont.c */
 int
@@ -400,7 +384,7 @@ FcExpr *
 FcExprCreateDouble (double d);
 
 FcExpr *
-FcExprCreateString (const char *s);
+FcExprCreateString (const FcChar8 *s);
 
 FcExpr *
 FcExprCreateMatrix (const FcMatrix *m);
@@ -415,7 +399,7 @@ FcExpr *
 FcExprCreateField (const char *field);
 
 FcExpr *
-FcExprCreateConst (const char *constant);
+FcExprCreateConst (const FcChar8 *constant);
 
 FcExpr *
 FcExprCreateOp (FcExpr *left, FcOp op, FcExpr *right);
@@ -445,11 +429,9 @@ FcMemFree (int kind, int size);
 /* fcmatch.c */
 
 /* fcname.c */
-FcBool
-FcNameConstant (char *string, int *result);
 
 FcBool
-FcNameBool (char *v, FcBool *result);
+FcNameBool (FcChar8 *v, FcBool *result);
 
 FcBool
 FcNameBufChar (FcNameBuf *buf, FcChar8 c);
@@ -471,10 +453,10 @@ void
 FcMatrixFree (FcMatrix *mat);
 
 /* fcstr.c */
-char *
-FcStrPlus (const char *s1, const char *s2);
+FcChar8 *
+FcStrPlus (const FcChar8 *s1, const FcChar8 *s2);
     
 void
-FcStrFree (char *s);
+FcStrFree (FcChar8 *s);
 
 #endif /* _FC_INT_H_ */

@@ -25,25 +25,25 @@
 #include "fcint.h"
 
 static unsigned int
-FcFileCacheHash (const char *string)
+FcFileCacheHash (const FcChar8	*string)
 {
     unsigned int    h = 0;
-    char	    c;
+    FcChar8	    c;
 
     while ((c = *string++))
 	h = (h << 1) ^ c;
     return h;
 }
 
-char *
+FcChar8 *
 FcFileCacheFind (FcFileCache	*cache,
-		 const char	*file,
+		 const FcChar8	*file,
 		 int		id,
 		 int		*count)
 {
     unsigned int    hash;
-    const char	    *match;
-    FcFileCacheEnt *c, *name;
+    const FcChar8   *match;
+    FcFileCacheEnt  *c, *name;
     int		    maxid;
     struct stat	    statb;
     
@@ -60,7 +60,7 @@ FcFileCacheFind (FcFileCache	*cache,
 		maxid = c->id;
 	    if (c->id == id)
 	    {
-		if (stat (file, &statb) < 0)
+		if (stat ((char *) file, &statb) < 0)
 		{
 		    if (FcDebug () & FC_DBG_CACHE)
 			printf (" file missing\n");
@@ -94,11 +94,14 @@ FcFileCacheFind (FcFileCache	*cache,
  * "file_name" id time "font_name" \n
  */
  
-static FcBool
-FcFileCacheReadString (FILE *f, char *dest, int len)
+static FcChar8 *
+FcFileCacheReadString (FILE *f, FcChar8 *dest, int len)
 {
-    int	    c;
-    FcBool    escape;
+    int		c;
+    FcBool	escape;
+    FcChar8	*d;
+    int		size;
+    int		i;
 
     while ((c = getc (f)) != EOF)
 	if (c == '"')
@@ -108,6 +111,9 @@ FcFileCacheReadString (FILE *f, char *dest, int len)
     if (len == 0)
 	return FcFalse;
     
+    size = len;
+    i = 0;
+    d = dest;
     escape = FcFalse;
     while ((c = getc (f)) != EOF)
     {
@@ -115,19 +121,32 @@ FcFileCacheReadString (FILE *f, char *dest, int len)
 	{
 	    switch (c) {
 	    case '"':
-		*dest++ = '\0';
-		return FcTrue;
+		c = '\0';
+		break;
 	    case '\\':
 		escape = FcTrue;
 		continue;
 	    }
 	}
-        if (--len <= 1)
-	    return FcFalse;
-	*dest++ = c;
+	if (i == size)
+	{
+	    FcChar8 *new = malloc (size * 2);
+	    if (!new)
+		break;
+	    memcpy (new, d, size);
+	    size *= 2;
+	    if (d != dest)
+		free (d);
+	    d = new;
+	}
+	d[i++] = c;
+	if (c == '\0')
+	    return d;
 	escape = FcFalse;
     }
-    return FcFalse;
+    if (d != dest)
+	free (d);
+    return 0;
 }
 
 static FcBool
@@ -183,10 +202,10 @@ FcFileCacheReadTime (FILE *f, time_t *dest)
 
 static FcBool
 FcFileCacheAdd (FcFileCache	*cache,
-		 const char	*file,
+		 const FcChar8	*file,
 		 int		id,
 		 time_t		time,
-		 const char	*name,
+		 const FcChar8	*name,
 		 FcBool		replace)
 {
     FcFileCacheEnt    *c;
@@ -220,16 +239,16 @@ FcFileCacheAdd (FcFileCache	*cache,
     }
 	
     c = malloc (sizeof (FcFileCacheEnt) +
-		strlen (file) + 1 +
-		strlen (name) + 1);
+		strlen ((char *) file) + 1 +
+		strlen ((char *) name) + 1);
     if (!c)
 	return FcFalse;
     c->next = *prev;
     *prev = c;
     c->hash = hash;
-    c->file = (char *) (c + 1);
+    c->file = (FcChar8 *) (c + 1);
     c->id = id;
-    c->name = c->file + strlen (file) + 1;
+    c->name = c->file + strlen ((char *) file) + 1;
     strcpy (c->file, file);
     c->time = time;
     c->referenced = replace;
@@ -274,42 +293,54 @@ FcFileCacheDestroy (FcFileCache *cache)
 
 void
 FcFileCacheLoad (FcFileCache	*cache,
-		 const char	*cache_file)
+		 const FcChar8	*cache_file)
 {
     FILE	    *f;
-    char	    file[8192];
+    FcChar8	    file_buf[8192], *file;
     int		    id;
     time_t	    time;
-    char	    name[8192];
+    FcChar8	    name_buf[8192], *name;
 
-    f = fopen (cache_file, "r");
+    f = fopen ((char *) cache_file, "r");
     if (!f)
 	return;
 
     cache->updated = FcFalse;
-    while (FcFileCacheReadString (f, file, sizeof (file)) &&
+    file = 0;
+    name = 0;
+    while ((file = FcFileCacheReadString (f, file_buf, sizeof (file_buf))) &&
 	   FcFileCacheReadInt (f, &id) &&
 	   FcFileCacheReadTime (f, &time) &&
-	   FcFileCacheReadString (f, name, sizeof (name)))
+	   (name = FcFileCacheReadString (f, name_buf, sizeof (name_buf))))
     {
 	(void) FcFileCacheAdd (cache, file, id, time, name, FcFalse);
+	if (file != file_buf)
+	    free (file);
+	if (name != name_buf)
+	    free (name);
+	file = 0;
+	name = 0;
     }
+    if (file && file != file_buf)
+	free (file);
+    if (name && name != name_buf)
+	free (name);
     fclose (f);
 }
 
 FcBool
-FcFileCacheUpdate (FcFileCache	*cache,
-		   const char	*file,
-		   int		id,
-		   const char	*name)
+FcFileCacheUpdate (FcFileCache	    *cache,
+		   const FcChar8    *file,
+		   int		    id,
+		   const FcChar8    *name)
 {
-    const char	    *match;
+    const FcChar8   *match;
     struct stat	    statb;
     FcBool	    ret;
 
     match = file;
 
-    if (stat (file, &statb) < 0)
+    if (stat ((char *) file, &statb) < 0)
 	return FcFalse;
     ret = FcFileCacheAdd (cache, match, id, 
 			    statb.st_mtime, name, FcTrue);
@@ -319,7 +350,7 @@ FcFileCacheUpdate (FcFileCache	*cache,
 }
 
 static FcBool
-FcFileCacheWriteString (FILE *f, char *string)
+FcFileCacheWriteString (FILE *f, const FcChar8 *string)
 {
     char    c;
 
@@ -382,10 +413,10 @@ FcFileCacheWriteTime (FILE *f, time_t t)
 
 FcBool
 FcFileCacheSave (FcFileCache	*cache,
-		 const char	*cache_file)
+		 const FcChar8	*cache_file)
 {
-    char	    *lck;
-    char	    *tmp;
+    FcChar8	    *lck;
+    FcChar8	    *tmp;
     FILE	    *f;
     int		    h;
     FcFileCacheEnt *c;
@@ -393,19 +424,19 @@ FcFileCacheSave (FcFileCache	*cache,
     if (!cache->updated && cache->referenced == cache->entries)
 	return FcTrue;
     
-    lck = malloc (strlen (cache_file)*2 + 4);
+    lck = malloc (strlen ((char *) cache_file)*2 + 4);
     if (!lck)
 	goto bail0;
-    tmp = lck + strlen (cache_file) + 2;
-    strcpy (lck, cache_file);
-    strcat (lck, "L");
-    strcpy (tmp, cache_file);
-    strcat (tmp, "T");
-    if (link (lck, cache_file) < 0 && errno != ENOENT)
+    tmp = lck + strlen ((char *) cache_file) + 2;
+    strcpy ((char *) lck, (char *) cache_file);
+    strcat ((char *) lck, "L");
+    strcpy ((char *) tmp, (char *) cache_file);
+    strcat ((char *) tmp, "T");
+    if (link ((char *) lck, (char *) cache_file) < 0 && errno != ENOENT)
 	goto bail1;
-    if (access (tmp, F_OK) == 0)
+    if (access ((char *) tmp, F_OK) == 0)
 	goto bail2;
-    f = fopen (tmp, "w");
+    f = fopen ((char *) tmp, "w");
     if (!f)
 	goto bail2;
 
@@ -437,19 +468,19 @@ FcFileCacheSave (FcFileCache	*cache,
     if (fclose (f) == EOF)
 	goto bail3;
     
-    if (rename (tmp, cache_file) < 0)
+    if (rename ((char *) tmp, (char *) cache_file) < 0)
 	goto bail3;
     
-    unlink (lck);
+    unlink ((char *) lck);
     cache->updated = FcFalse;
     return FcTrue;
 
 bail4:
     fclose (f);
 bail3:
-    unlink (tmp);
+    unlink ((char *) tmp);
 bail2:
-    unlink (lck);
+    unlink ((char *) lck);
 bail1:
     free (lck);
 bail0:
@@ -457,15 +488,15 @@ bail0:
 }
 
 FcBool
-FcFileCacheReadDir (FcFontSet *set, const char *cache_file)
+FcFileCacheReadDir (FcFontSet *set, const FcChar8 *cache_file)
 {
     FcPattern	    *font;
     FILE	    *f;
-    char	    *path;
-    char	    *base;
-    char	    file[8192];
+    FcChar8	    *path;
+    FcChar8	    *base;
+    FcChar8	    file_buf[8192], *file;
     int		    id;
-    char	    name[8192];
+    FcChar8	    name_buf[8192], *name;
     FcBool	    ret = FcFalse;
 
     if (FcDebug () & FC_DBG_CACHE)
@@ -473,7 +504,7 @@ FcFileCacheReadDir (FcFontSet *set, const char *cache_file)
 	printf ("FcFileCacheReadDir cache_file \"%s\"\n", cache_file);
     }
     
-    f = fopen (cache_file, "r");
+    f = fopen ((char *) cache_file, "r");
     if (!f)
     {
 	if (FcDebug () & FC_DBG_CACHE)
@@ -483,7 +514,7 @@ FcFileCacheReadDir (FcFontSet *set, const char *cache_file)
 	goto bail0;
     }
 
-    base = strrchr (cache_file, '/');
+    base = (FcChar8 *) strrchr ((char *) cache_file, '/');
     if (!base)
 	goto bail1;
     base++;
@@ -493,9 +524,11 @@ FcFileCacheReadDir (FcFontSet *set, const char *cache_file)
     memcpy (path, cache_file, base - cache_file);
     base = path + (base - cache_file);
     
-    while (FcFileCacheReadString (f, file, sizeof (file)) &&
+    file = 0;
+    name = 0;
+    while ((file = FcFileCacheReadString (f, file_buf, sizeof (file_buf))) &&
 	   FcFileCacheReadInt (f, &id) &&
-	   FcFileCacheReadString (f, name, sizeof (name)))
+	   (name = FcFileCacheReadString (f, name_buf, sizeof (name_buf))))
     {
 	font = FcNameParse (name);
 	if (font)
@@ -509,6 +542,11 @@ FcFileCacheReadDir (FcFontSet *set, const char *cache_file)
 	    if (!FcFontSetAdd (set, font))
 		goto bail2;
 	}
+	if (file != file_buf)
+	    free (file);
+	if (name != name_buf)
+	    free (name);
+	file = name = 0;
     }
     if (FcDebug () & FC_DBG_CACHE)
     {
@@ -518,6 +556,10 @@ FcFileCacheReadDir (FcFontSet *set, const char *cache_file)
     ret = FcTrue;
 bail2:
     free (path);
+    if (file && file != file_buf)
+	free (file);
+    if (name && name != name_buf)
+	free (name);
 bail1:
     fclose (f);
 bail0:
@@ -525,12 +567,12 @@ bail0:
 }
 
 FcBool
-FcFileCacheWriteDir (FcFontSet *set, const char *cache_file)
+FcFileCacheWriteDir (FcFontSet *set, const FcChar8 *cache_file)
 {
     FcPattern	    *font;
     FILE	    *f;
-    char	    *name;
-    char	    *file, *base;
+    FcChar8	    *name;
+    const FcChar8   *file, *base;
     int		    n;
     int		    id;
     FcBool	    ret;
@@ -538,7 +580,7 @@ FcFileCacheWriteDir (FcFontSet *set, const char *cache_file)
     if (FcDebug () & FC_DBG_CACHE)
 	printf ("FcFileCacheWriteDir cache_file \"%s\"\n", cache_file);
     
-    f = fopen (cache_file, "w");
+    f = fopen ((char *) cache_file, "w");
     if (!f)
     {
 	if (FcDebug () & FC_DBG_CACHE)
@@ -550,7 +592,7 @@ FcFileCacheWriteDir (FcFontSet *set, const char *cache_file)
 	font = set->fonts[n];
 	if (FcPatternGetString (font, FC_FILE, 0, &file) != FcResultMatch)
 	    goto bail1;
-	base = strrchr (file, '/');
+	base = (FcChar8 *) strrchr ((char *) file, '/');
 	if (base)
 	    base = base + 1;
 	else
@@ -587,6 +629,6 @@ FcFileCacheWriteDir (FcFontSet *set, const char *cache_file)
 bail1:
     fclose (f);
 bail0:
-    unlink (cache_file);
+    unlink ((char *) cache_file);
     return FcFalse;
 }

@@ -168,7 +168,7 @@ typedef struct _FcObjectType {
 } FcObjectType;
 
 typedef struct _FcConstant {
-    const char  *name;
+    const FcChar8  *name;
     const char	*object;
     int		value;
 } FcConstant;
@@ -242,8 +242,8 @@ FcBool
 FcBlanksIsMember (FcBlanks *b, FcChar32 ucs4);
 
 /* fccfg.c */
-char *
-FcConfigFilename (const char *url);
+FcChar8 *
+FcConfigFilename (const FcChar8 *url);
     
 FcConfig *
 FcConfigCreate (void);
@@ -260,13 +260,13 @@ FcConfigGetCurrent (void);
 FcBool
 FcConfigBuildFonts (FcConfig *config);
 
-char **
+FcChar8 **
 FcConfigGetDirs (FcConfig   *config);
 
-char **
+FcChar8 **
 FcConfigGetConfigFiles (FcConfig    *config);
 
-char *
+FcChar8 *
 FcConfigGetCache (FcConfig  *config);
 
 FcBlanks *
@@ -278,11 +278,11 @@ FcConfigGetFonts (FcConfig	*config,
 
 FcBool
 FcConfigAppFontAddFile (FcConfig    *config,
-			const char  *file);
+			const FcChar8  *file);
 
 FcBool
 FcConfigAppFontAddDir (FcConfig	    *config,
-		       const char   *dir);
+		       const FcChar8   *dir);
 
 void
 FcConfigAppFontClear (FcConfig	    *config);
@@ -329,12 +329,6 @@ FcCharSetIntersectCount (const FcCharSet *a, const FcCharSet *b);
 FcChar32
 FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b);
 
-#ifndef FONTCONFIG_NO_FREETYPE
-#include <freetype/freetype.h>
-FT_UInt
-FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4);
-#endif
-
 /* fcdbg.c */
 void
 FcPatternPrint (FcPattern *p);
@@ -345,18 +339,25 @@ FcDefaultSubstitute (FcPattern *pattern);
 
 /* fcdir.c */
 FcBool
-FcDirScan (FcFontSet	*set,
-	   FcFileCache	*cache,
-	   FcBlanks	*blanks,
-	   const char	*dir,
-	   FcBool	force);
+FcFileScan (FcFontSet	    *set,
+	    FcFileCache	    *cache,
+	    FcBlanks	    *blanks,
+	    const FcChar8   *file,
+	    FcBool	    force);
 
 FcBool
-FcDirSave (FcFontSet *set, const char *dir);
+FcDirScan (FcFontSet	    *set,
+	   FcFileCache	    *cache,
+	   FcBlanks	    *blanks,
+	   const FcChar8    *dir,
+	   FcBool	    force);
+
+FcBool
+FcDirSave (FcFontSet *set, const FcChar8 *dir);
 
 /* fcfreetype.c */
 FcPattern *
-FcFreeTypeQuery (const char *file, int id, FcBlanks *blanks, int *count);
+FcFreeTypeQuery (const FcChar8 *file, int id, FcBlanks *blanks, int *count);
 
 /* fcfs.c */
 
@@ -443,13 +444,13 @@ FcBool
 FcNameUnregisterConstants (const FcConstant *consts, int nconsts);
     
 const FcConstant *
-FcNameGetConstant (char *string);
+FcNameGetConstant (FcChar8 *string);
 
 FcBool
-FcNameConstant (char *string, int *result);
+FcNameConstant (FcChar8 *string, int *result);
 
 FcPattern *
-FcNameParse (const char *name);
+FcNameParse (const FcChar8 *name);
 
 FcChar8 *
 FcNameUnparse (FcPattern *pat);
@@ -486,7 +487,7 @@ FcBool
 FcPatternAddDouble (FcPattern *p, const char *object, double d);
 
 FcBool
-FcPatternAddString (FcPattern *p, const char *object, const char *s);
+FcPatternAddString (FcPattern *p, const char *object, const FcChar8 *s);
 
 FcBool
 FcPatternAddMatrix (FcPattern *p, const char *object, const FcMatrix *s);
@@ -504,7 +505,7 @@ FcResult
 FcPatternGetDouble (FcPattern *p, const char *object, int n, double *d);
 
 FcResult
-FcPatternGetString (FcPattern *p, const char *object, int n, char **const s);
+FcPatternGetString (FcPattern *p, const char *object, int n, FcChar8 const** s);
 
 FcResult
 FcPatternGetMatrix (FcPattern *p, const char *object, int n, FcMatrix **s);
@@ -523,13 +524,13 @@ FcPatternBuild (FcPattern *orig, ...);
 
 /* fcstr.c */
 
-char *
-FcStrCopy (const char *s);
+FcChar8 *
+FcStrCopy (const FcChar8 *s);
 
 #define FcToLower(c)	(('A' <= (c) && (c) <= 'Z') ? (c) - 'A' + 'a' : (c))
 
 int
-FcStrCmpIgnoreCase (const char *s1, const char *s2);
+FcStrCmpIgnoreCase (const FcChar8 *s1, const FcChar8 *s2);
 
 int
 FcUtf8ToUcs4 (FcChar8   *src_orig,
@@ -544,7 +545,7 @@ FcUtf8Len (FcChar8	*string,
 
 /* fcxml.c */
 FcBool
-FcConfigParseAndLoad (FcConfig *config, const char *file, FcBool complain);
+FcConfigParseAndLoad (FcConfig *config, const FcChar8 *file, FcBool complain);
 
 _FCFUNCPROTOEND
 

@@ -48,7 +48,7 @@ FcInitFallbackConfig (void)
     config = FcConfigCreate ();
     if (!config)
 	goto bail0;
-    if (!FcConfigAddDir (config, FC_FALLBACK_FONTS))
+    if (!FcConfigAddDir (config, (FcChar8 *) FC_FALLBACK_FONTS))
 	goto bail1;
     FcConfigSetCurrent (config);
     return FcTrue;

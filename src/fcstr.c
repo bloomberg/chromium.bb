@@ -27,46 +27,46 @@
 #include <string.h>
 #include "fcint.h"
 
-char *
-FcStrCopy (const char *s)
+FcChar8 *
+FcStrCopy (const FcChar8 *s)
 {
-    char	*r;
+    FcChar8	*r;
 
     if (!s)
 	return 0;
-    r = (char *) malloc (strlen (s) + 1);
+    r = (FcChar8 *) malloc (strlen ((char *) s) + 1);
     if (!r)
 	return 0;
-    FcMemAlloc (FC_MEM_STRING, strlen (s) + 1);
-    strcpy (r, s);
+    FcMemAlloc (FC_MEM_STRING, strlen ((char *) s) + 1);
+    strcpy ((char *) r, (char *) s);
     return r;
 }
 
-char *
-FcStrPlus (const char *s1, const char *s2)
+FcChar8 *
+FcStrPlus (const FcChar8 *s1, const FcChar8 *s2)
 {
-    int	    l = strlen (s1) + strlen (s2) + 1;
-    char    *s = malloc (l);
+    int	    l = strlen ((char *)s1) + strlen ((char *) s2) + 1;
+    FcChar8 *s = malloc (l);
 
     if (!s)
 	return 0;
     FcMemAlloc (FC_MEM_STRING, l);
-    strcpy (s, s1);
-    strcat (s, s2);
+    strcpy ((char *) s, (char *) s1);
+    strcat ((char *) s, (char *) s2);
     return s;
 }
 
 void
-FcStrFree (char *s)
+FcStrFree (FcChar8 *s)
 {
-    FcMemFree (FC_MEM_STRING, strlen (s) + 1);
+    FcMemFree (FC_MEM_STRING, strlen ((char *) s) + 1);
     free (s);
 }
 
 int
-FcStrCmpIgnoreCase (const char *s1, const char *s2)
+FcStrCmpIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
 {
-    char    c1, c2;
+    FcChar8 c1, c2;
     
     for (;;) 
     {

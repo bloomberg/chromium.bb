@@ -139,7 +139,7 @@ FcPatternFind (FcPattern *p, const char *object, FcBool insert)
     /* match existing */
     for (i = 0; i < p->num; i++)
     {
-	if (!FcStrCmpIgnoreCase (object, p->elts[i].object))
+	if (!FcStrCmpIgnoreCase ((FcChar8 *) object, (FcChar8 *) p->elts[i].object))
 	    return &p->elts[i];
     }
 
@@ -278,12 +278,12 @@ FcPatternAddDouble (FcPattern *p, const char *object, double d)
 
 
 FcBool
-FcPatternAddString (FcPattern *p, const char *object, const char *s)
+FcPatternAddString (FcPattern *p, const char *object, const FcChar8 *s)
 {
     FcValue	v;
 
     v.type = FcTypeString;
-    v.u.s = (char *) s;
+    v.u.s = s;
     return FcPatternAdd (p, object, v, FcTrue);
 }
 
@@ -384,7 +384,7 @@ FcPatternGetDouble (FcPattern *p, const char *object, int id, double *d)
 }
 
 FcResult
-FcPatternGetString (FcPattern *p, const char *object, int id, char ** s)
+FcPatternGetString (FcPattern *p, const char *object, int id, FcChar8 const ** s)
 {
     FcValue	v;
     FcResult	r;
@@ -394,7 +394,7 @@ FcPatternGetString (FcPattern *p, const char *object, int id, char ** s)
 	return r;
     if (v.type != FcTypeString)
         return FcResultTypeMismatch;
-    *s = (char *) v.u.s;
+    *s = v.u.s;
     return FcResultMatch;
 }
 
