@@ -29,7 +29,7 @@
  *    Daryll Strauss <daryll@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
- * $FreeBSD: src/sys/dev/drm/drm_fops.h,v 1.5 2003/03/09 02:08:28 anholt Exp $
+ * $FreeBSD: src/sys/dev/drm/drm_fops.h,v 1.7 2003/04/25 01:18:46 anholt Exp $
  */
 
 #include "drmP.h"
@@ -37,7 +37,7 @@
 drm_file_t *DRM(find_file_by_proc)(drm_device_t *dev, DRM_STRUCTPROC *p)
 {
 #if __FreeBSD_version >= 500021
-	uid_t uid = p->td_proc->p_ucred->cr_svuid;
+	uid_t uid = p->td_ucred->cr_svuid;
 	pid_t pid = p->td_proc->p_pid;
 #else
 	uid_t uid = p->p_cred->p_svuid;
@@ -73,7 +73,7 @@ int DRM(open_helper)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		priv = (drm_file_t *) DRM(alloc)(sizeof(*priv), DRM_MEM_FILES);
 		bzero(priv, sizeof(*priv));
 #if __FreeBSD_version >= 500000
-		priv->uid		= p->td_proc->p_ucred->cr_svuid;
+		priv->uid		= p->td_ucred->cr_svuid;
 		priv->pid		= p->td_proc->p_pid;
 #else
 		priv->uid		= p->p_cred->p_svuid;
