@@ -42,7 +42,7 @@ will use fontconfig.
 %setup -q
 
 %build
-%configure --with-x-fonts=/usr/X11R6/lib/X11/fonts
+%configure --with-x-fonts=/usr/X11R6/lib/X11/fonts --disable-gtk-doc --disable-docs
 make %{_smp_mflags}
 
 %install
@@ -81,6 +81,12 @@ make %{_smp_mflags}
 %{_libdir}/pkgconfig
 
 %changelog
+* Wed Mar  5 2003 Mike A. Harris <mharris@redhat.com>
+- Added back the configure macro options --disable-docs because otherwise
+  fontconfig installs docs into /usr/share/doc/fontconfig (with no version
+  number) unconditionally, causing RPM to fail the build due to unpackaged
+  files terminate build
+
 * Wed Mar  5 2003 Mike A. Harris <mharris@redhat.com>
 - Removed commented out rpm macro define at top of spec file, replacing it with
   a simple explanation, since rpm macros are expanded by rpm even in comments
