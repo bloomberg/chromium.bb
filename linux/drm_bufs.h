@@ -196,7 +196,7 @@ int DRM(rmmap)(struct inode *inode, struct file *filp,
 	drm_file_t	*priv	= filp->private_data;
 	drm_device_t	*dev	= priv->dev;
 	struct list_head *list;
-	drm_map_list_t *r_list;
+	drm_map_list_t *r_list = NULL;
 	drm_vma_entry_t *pt, *prev;
 	drm_map_t *map;
 	drm_map_t request;
