@@ -63,21 +63,22 @@ make %{_smp_mflags}
 
 %files
 %doc README AUTHORS COPYING ChangeLog doc/fontconfig-*.{html,txt}
-%{_libdir}/libfontconfig*.so.*
-%{_bindir}/fc-*
 %dir %{_sysconfdir}/fonts
 %{_sysconfdir}/fonts/fonts.conf
 %{_sysconfdir}/fonts/fonts.dtd
 %config %{_sysconfdir}/fonts/local.conf
+%{_bindir}/fc-*
+%{_libdir}/libfontconfig*.so.*
 %{_mandir}/man1/*
 
 %files devel
 %defattr(-, root, root)
-%{_libdir}/libfontconfig.so
+%dir %{_includedir}/fontconfig
+%{_includedir}/fontconfig
 %{_libdir}/*.a
 %{_libdir}/*.la
+%{_libdir}/libfontconfig.so
 %{_libdir}/pkgconfig
-%{_includedir}/fontconfig
 
 %changelog
 * Sun Mar  2 2003 Owen Taylor <otaylor@redhat.com>
