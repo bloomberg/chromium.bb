@@ -71,7 +71,7 @@ AC_CHECK_FUNCS([memmove memset strchr strrchr strtol getopt getopt_long])
 # Checks for FreeType
 #
 
-AC_ARG_WITH(freetype_config, [  --with-freetype-config=PROG   Use FreeType configuration program PROG], freetype_config=$withval, freetype_config=yes)
+AC_ARG_WITH(freetype-config, [  --with-freetype-config=PROG   Use FreeType configuration program PROG], freetype_config=$withval, freetype_config=yes)
 
 if test "$freetype_config" = "yes"; then 
 	AC_PATH_PROG(ft_config,freetype-config,no)
@@ -102,8 +102,8 @@ LIBS=$fontconfig_save_libs
 #
 
 AC_ARG_WITH(expat,             [  --with-expat=DIR              Use Expat in DIR], expat=$withval, expat=yes)
-AC_ARG_WITH(expat_includes,    [  --with-expat-includes=DIR     Use Expat includes in DIR], expat_includes=$withval, expat_includes=yes)
-AC_ARG_WITH(expat_lib,         [  --with-expat-lib=DIR          Use Expat library in DIR], expat_lib=$withval, expat_lib=yes)
+AC_ARG_WITH(expat-includes,    [  --with-expat-includes=DIR     Use Expat includes in DIR], expat_includes=$withval, expat_includes=yes)
+AC_ARG_WITH(expat-lib,         [  --with-expat-lib=DIR          Use Expat library in DIR], expat_lib=$withval, expat_lib=yes)
 
 case "$expat" in
 no)
@@ -197,7 +197,7 @@ esac
 # Set default font directory
 #
 
-AC_ARG_WITH(default_fonts,     [  --with-default-fonts=DIR      Use fonts from DIR when config is busted], defaultfonts="$withval", default_fonts=yes)
+AC_ARG_WITH(default-fonts,     [  --with-default-fonts=DIR      Use fonts from DIR when config is busted], default_fonts="$withval", default_fonts=yes)
 
 case "$default_fonts" in
 yes)
@@ -219,7 +219,7 @@ AC_SUBST(FC_DEFAULT_FONTS)
 # with outline fonts; those with bitmaps can be added as desired in
 # local.conf or ~/.fonts.conf
 #
-AC_ARG_WITH(add_fonts,        [  --with-add-fonts=DIR1,DIR2,...Find additional fonts in DIR1,DIR2,... ], add_fonts="$withval", add_fonts=yes)
+AC_ARG_WITH(add-fonts,        [  --with-add-fonts=DIR1,DIR2,...Find additional fonts in DIR1,DIR2,... ], add_fonts="$withval", add_fonts=yes)
 
 case "$add_fonts" in
 yes)
