@@ -1,7 +1,12 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.2.92
-		        2004-2-19
+		      Version 2.2.94
+		        2004-4-23
+
+2.2.94
+
+The 2.2.93 release was prepared with a broken libtool which created
+the shared library without the '.so' in the file names.
 
 2.2.93
 
