@@ -554,7 +554,6 @@ typedef struct drm_device {
 
 				/* Memory management */
 	drm_map_list_t	  *maplist;	/* Linked list of regions	   */
-	int		  map_count;	/* Number of mappable regions	   */
 
 	drm_map_t	  **context_sareas;
 	int		  max_context;
