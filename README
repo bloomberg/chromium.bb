@@ -1,7 +1,14 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.2.94
-		        2004-4-23
+		      Version 2.2.95
+		        2004-5-29
+
+2.2.95
+
+Add FcResultOutOfMemory so FcFontSetMatch can return accurate error.
+
+Replace MIN/MAX/ABS macros which happened to be in old FreeType releases
+with FC_MIN/FC_MAX/FC_ABS macros owned by fontconfig.
 
 2.2.94
 
