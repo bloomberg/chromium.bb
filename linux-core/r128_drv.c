@@ -88,8 +88,7 @@ static struct drm_driver driver = {
 	.get_reg_ofs = drm_core_get_reg_ofs,
 	.postinit = postinit,
 	.version = version,
-	.ioctls = ioctls,
-	.num_ioctls = DRM_ARRAY_SIZE(ioctls),
+	.ioctls = r128_ioctls,
 	.dma_ioctl = r128_cce_buffers,
 	.fops = {
 		.owner = THIS_MODULE,
@@ -116,6 +115,8 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 static int __init r128_init(void)
 {
+	driver.num_ioctls = r128_max_ioctl;
+
 	return drm_init(&driver, pciidlist);
 }
 

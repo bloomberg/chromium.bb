@@ -94,7 +94,6 @@ static struct drm_driver driver = {
 	.postinit = postinit,
 	.version = version,
 	.ioctls = radeon_ioctls,
-	.num_ioctls = DRM_ARRAY_SIZE(radeon_ioctls),
 	.dma_ioctl = radeon_cp_buffers,
 	.fops = {
 		.owner = THIS_MODULE,
@@ -120,6 +119,7 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 static int __init radeon_init(void)
 {
+	driver.num_ioctls = radeon_max_ioctl;
 	return drm_init(&driver, pciidlist);
 }
 
