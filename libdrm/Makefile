@@ -18,6 +18,7 @@ libdrm.so: $(OBJECTS)
 clean:
 	rm -f *.a *.o *.so
 
-install: libdrm.so xf86drm.h
+install: libdrm.so xf86drm.h ../shared-core/drm.h
 	install -m 755 libdrm.so /lib
 	install -m 644 xf86drm.h /usr/include
+	install -m 644 ../shared-core/drm.h /usr/include
