@@ -30,6 +30,7 @@
  */
 
 #define __NO_VERSION__
+#include <linux/vmalloc.h>
 #include "drmP.h"
 
 #ifndef __HAVE_PCI_DMA
@@ -109,7 +110,7 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 			return -EINVAL;
 		}
 #endif
-#ifdef __REALLY_HAVE_MTRR
+#if __REALLY_HAVE_MTRR
 		if ( map->type == _DRM_FRAME_BUFFER ||
 		     (map->flags & _DRM_WRITE_COMBINING) ) {
 			map->mtrr = mtrr_add( map->offset, map->size,
@@ -171,7 +172,7 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
  * isn't in use.
  */
 
-int DRM(rmmap)(struct inode *inode, struct file *filp, 
+int DRM(rmmap)(struct inode *inode, struct file *filp,
 	       unsigned int cmd, unsigned long arg)
 {
 	drm_file_t	*priv	= filp->private_data;
@@ -183,7 +184,7 @@ int DRM(rmmap)(struct inode *inode, struct file *filp,
 	drm_map_t request;
 	int found_maps = 0;
 
-	if (copy_from_user(&request, (drm_map_t *)arg, 
+	if (copy_from_user(&request, (drm_map_t *)arg,
 			   sizeof(request))) {
 		return -EFAULT;
 	}
@@ -221,7 +222,7 @@ int DRM(rmmap)(struct inode *inode, struct file *filp,
 		switch (map->type) {
 		case _DRM_REGISTERS:
 		case _DRM_FRAME_BUFFER:
-#ifdef __REALLY_HAVE_MTRR
+#if __REALLY_HAVE_MTRR
 			if (map->mtrr >= 0) {
 				int retcode;
 				retcode = mtrr_del(map->mtrr,

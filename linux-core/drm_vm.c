@@ -156,7 +156,7 @@ void DRM(vm_shm_close)(struct vm_area_struct *vma)
 		}
 	}
 	/* We were the only map that was found */
-	if(found_maps == 1 && 
+	if(found_maps == 1 &&
 	   map->flags & _DRM_REMOVABLE) {
 		/* Check to see if we are in the maplist, if we are not, then
 		 * we delete this mappings information.
@@ -172,7 +172,7 @@ void DRM(vm_shm_close)(struct vm_area_struct *vma)
 			switch (map->type) {
 			case _DRM_REGISTERS:
 			case _DRM_FRAME_BUFFER:
-#ifdef __REALLY_HAVE_MTRR
+#if __REALLY_HAVE_MTRR
 				if (map->mtrr >= 0) {
 					int retcode;
 					retcode = mtrr_del(map->mtrr,
