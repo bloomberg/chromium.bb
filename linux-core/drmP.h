@@ -696,11 +696,13 @@ typedef struct drm_device {
 	struct pci_controller *hose;
 #endif
 #endif
-	drm_sg_mem_t      *sg;  /**< Scatter gather memory */
+	drm_sg_mem_t      *sg;		/**< Scatter gather memory */
 	unsigned long     *ctx_bitmap;	/**< context bitmap */
-	void		  *dev_private; /**< device private data */
-	drm_sigdata_t     sigdata; /**< For block_all_signals */
+	void		  *dev_private;	/**< device private data */
+	drm_sigdata_t     sigdata;	/**< For block_all_signals */
 	sigset_t          sigmask;
+	
+	int               need_reset;	/**< secondary device needing reset */
 } drm_device_t;
 
 

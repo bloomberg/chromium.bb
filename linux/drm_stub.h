@@ -78,6 +78,73 @@ static struct file_operations DRM(stub_fops) = {
 	.open  = DRM(stub_open)
 };
 
+static int drm_hotplug (struct class_device *dev, char **envp, int num_envp,
+				char *buffer, int buffer_size)
+{
+	drm_device_t *ddev;
+	struct pci_dev *pdev;
+	char *scratch;
+	int i = 0;
+	int length = 0;
+	
+	DRM_DEBUG("\n");
+	if (!dev)
+		return -ENODEV;
+
+	pdev = to_pci_dev(dev->dev);
+	if (!pdev)
+		return -ENODEV;
+
+	scratch = buffer;
+
+	/* stuff we want to pass to /sbin/hotplug */
+	envp[i++] = scratch;
+	length += snprintf (scratch, buffer_size - length, "PCI_CLASS=%04X",
+							pdev->class);
+	if ((buffer_size - length <= 0) || (i >= num_envp))
+		return -ENOMEM;
+	++length;
+	scratch += length;
+
+	envp[i++] = scratch;
+	length += snprintf (scratch, buffer_size - length, "PCI_ID=%04X:%04X",
+							pdev->vendor, pdev->device);
+	if ((buffer_size - length <= 0) || (i >= num_envp))
+		return -ENOMEM;
+	++length;
+	scratch += length;
+	
+	envp[i++] = scratch;
+	length += snprintf (scratch, buffer_size - length,
+							"PCI_SUBSYS_ID=%04X:%04X", pdev->subsystem_vendor,
+							pdev->subsystem_device);
+	if ((buffer_size - length <= 0) || (i >= num_envp))
+		return -ENOMEM;
+	++length;
+	scratch += length;
+
+	envp[i++] = scratch;
+	length += snprintf (scratch, buffer_size - length, "PCI_SLOT_NAME=%s",
+							pci_name(pdev));
+	if ((buffer_size - length <= 0) || (i >= num_envp))
+		return -ENOMEM;
+	++length;
+	scratch += length;
+	
+	ddev = pci_get_drvdata(pdev);
+	if (ddev) {
+		envp[i++] = scratch;
+		length += snprintf (scratch, buffer_size - length, 
+							"RESET=%s", (ddev->need_reset ? "true" : "false"));
+		if ((buffer_size - length <= 0) || (i >= num_envp))
+			return -ENOMEM;
+	}
+	envp[i] = 0;
+	DRM_DEBUG(" - ok\n");
+	
+	return 0;
+}
+
 /**
  * Get a device minor number.
  *
@@ -202,6 +269,7 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 			}
 
 			DRM(stub_info).drm_class = class_simple_create(THIS_MODULE, "drm");
+			class_simple_set_hotplug(DRM(stub_info).drm_class, drm_hotplug);
 			if (IS_ERR(DRM(stub_info).drm_class)) {
 				printk (KERN_ERR "Error creating drm class.\n");
 				unregister_chrdev(DRM_MAJOR, "drm");
