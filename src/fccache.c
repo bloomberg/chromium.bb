@@ -295,14 +295,14 @@ FcCacheFontSetAdd (FcFontSet	    *set,
 }
 
 static unsigned int
-FcCacheHash (const FcChar8 *string)
+FcCacheHash (const FcChar8 *string, int len)
 {
     unsigned int    h = 0;
     FcChar8	    c;
 
-    while ((c = *string++))
+    while (len-- && (c = *string++))
 	h = (h << 1) ^ c;
-    return 0;
+    return h;
 }
 
 /*
@@ -376,7 +376,7 @@ FcFilePathInfoGet (const FcChar8    *path)
 	i.dir_len = 1;
 	i.base = path;
     }
-    i.base_hash = FcCacheHash (i.base);
+    i.base_hash = FcCacheHash (i.base, -1);
     return i;
 }
 
@@ -386,7 +386,7 @@ FcGlobalCacheDirGet (FcGlobalCache  *cache,
 		     int	    len,
 		     FcBool	    create_missing)
 {
-    unsigned int	hash = FcCacheHash (dir);
+    unsigned int	hash = FcCacheHash (dir, len);
     FcGlobalCacheDir	*d, **prev;
 
     for (prev = &cache->ents[hash % FC_GLOBAL_CACHE_DIR_HASH_SIZE];
@@ -484,6 +484,11 @@ FcGlobalCacheDirDestroy (FcGlobalCacheDir *d)
     free (d);
 }
 
+/*
+ * Check to see if the global cache contains valid data for 'dir'.
+ * If so, scan the global cache for files and directories in 'dir'.
+ * else, return False.
+ */
 FcBool
 FcGlobalCacheScanDir (FcFontSet		*set,
 		      FcStrSet		*dirs,
@@ -497,6 +502,7 @@ FcGlobalCacheScanDir (FcFontSet		*set,
     int			h;
     int			dir_len;
     FcGlobalCacheSubdir	*subdir;
+    FcBool		any_in_cache = FcFalse;
 
     if (FcDebug() & FC_DBG_CACHE)
 	printf ("FcGlobalCacheScanDir %s\n", dir);
@@ -508,6 +514,10 @@ FcGlobalCacheScanDir (FcFontSet		*set,
 	return FcFalse;
     }
 
+    /*
+     * See if the timestamp recorded in the global cache
+     * matches the directory time, if not, return False
+     */
     if (!FcGlobalCacheCheckTime (&d->info))
     {
 	if (FcDebug () & FC_DBG_CACHE)
@@ -515,12 +525,16 @@ FcGlobalCacheScanDir (FcFontSet		*set,
 	return FcFalse;
     }
 
+    /*
+     * Add files from 'dir' to the fontset
+     */
     dir_len = strlen ((const char *) dir);
     for (h = 0; h < FC_GLOBAL_CACHE_FILE_HASH_SIZE; h++)
 	for (f = d->ents[h]; f; f = f->next)
 	{
 	    if (FcDebug() & FC_DBG_CACHEV)
 		printf ("FcGlobalCacheScanDir add file %s\n", f->info.file);
+	    any_in_cache = FcTrue;
 	    if (!FcCacheFontSetAdd (set, dirs, dir, dir_len,
 				    f->info.file, f->name))
 	    {
@@ -529,10 +543,14 @@ FcGlobalCacheScanDir (FcFontSet		*set,
 	    }
 	    FcGlobalCacheReferenced (cache, &f->info);
 	}
+    /*
+     * Add directories in 'dir' to 'dirs'
+     */
     for (subdir = d->subdirs; subdir; subdir = subdir->next)
     {
 	FcFilePathInfo	info = FcFilePathInfoGet (subdir->ent->info.file);
 	
+        any_in_cache = FcTrue;
 	if (!FcCacheFontSetAdd (set, dirs, dir, dir_len,
 				info.base, FC_FONT_FILE_DIR))
 	{
@@ -544,7 +562,15 @@ FcGlobalCacheScanDir (FcFontSet		*set,
     
     FcGlobalCacheReferenced (cache, &d->info);
 
-    return FcTrue;
+    /*
+     * To recover from a bug in previous versions of fontconfig,
+     * return FcFalse if no entries in the cache were found
+     * for this directory.  This will cause any empty directories
+     * to get rescanned every time fontconfig is initialized.  This
+     * might get removed at some point when the older cache files are
+     * presumably fixed.
+     */
+    return any_in_cache;
 }
 
 /*

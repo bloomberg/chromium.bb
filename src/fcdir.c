@@ -117,8 +117,6 @@ FcFileScan (FcFontSet	    *set,
 	    {
 		isDir = FcTrue;
 		ret = FcStrSetAdd (dirs, file);
-		if (cache && ret)
-		    FcGlobalCacheUpdate (cache, file, 0, FC_FONT_FILE_DIR);
 	    }
 	    /*
 	     * Update the cache
@@ -153,6 +151,11 @@ FcFileScan (FcFontSet	    *set,
 }
 
 #define FC_MAX_FILE_LEN	    4096
+
+/*
+ * Scan 'dir', adding font files to 'set' and
+ * subdirectories to 'dirs'
+ */
 
 FcBool
 FcDirScan (FcFontSet	    *set,
@@ -212,6 +215,10 @@ FcDirScan (FcFontSet	    *set,
     }
     free (file);
     closedir (d);
+    /*
+     * Now that the directory has been scanned,
+     * add the cache entry 
+     */
     if (ret && cache)
 	FcGlobalCacheUpdate (cache, dir, 0, 0);
 	
