@@ -41,8 +41,8 @@ unsigned int cards_limit = 16;	/* Enough for one machine */
 unsigned int drm_debug = 0;		/* 1 to enable debug output */
 EXPORT_SYMBOL(drm_debug);
 
-MODULE_AUTHOR(DRIVER_AUTHOR);
-MODULE_DESCRIPTION(DRIVER_DESC);
+MODULE_AUTHOR(CORE_AUTHOR);
+MODULE_DESCRIPTION(CORE_DESC);
 MODULE_LICENSE("GPL and additional rights");
 MODULE_PARM_DESC(cards_limit, "Maximum number of graphics cards");
 MODULE_PARM_DESC(drm_debug, "Enable debug output");
@@ -154,7 +154,7 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 
 	if (!drm_fb_loaded) {
 		pci_set_drvdata(pdev, dev);
-		pci_request_regions(pdev, DRIVER_NAME);
+		pci_request_regions(pdev, driver->pci_driver.name);
 		pci_enable_device(pdev);
 	}
 	if ((ret = fill_in_dev(dev, pdev, ent, driver))) {
