@@ -288,8 +288,8 @@ static int mga_freelist_init( drm_device_t *dev )
 	drm_mga_buf_priv_t *buf_priv;
 	drm_mga_freelist_t *entry;
 	int i;
-	DRM_INFO( "%s: count=%d\n",
-		  __FUNCTION__, dma->buf_count );
+	DRM_DEBUG( "%s: count=%d\n",
+		   __FUNCTION__, dma->buf_count );
 
 	dev_priv->head = DRM(alloc)( sizeof(drm_mga_freelist_t),
 				     DRM_MEM_DRIVER );

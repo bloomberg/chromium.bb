@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"gamma"
 #define DRIVER_DESC		"3DLabs gamma"
-#define DRIVER_DATE		"20010208"
+#define DRIVER_DATE		"20010215"
 
 #define DRIVER_MAJOR		1
 #define DRIVER_MINOR		0
@@ -101,4 +101,3 @@ do {									\
 #endif
 
 #include "drm_drv.h"
-

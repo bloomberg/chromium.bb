@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"mga"
 #define DRIVER_DESC		"Matrox G200/G400"
-#define DRIVER_DATE		"20010212"
+#define DRIVER_DATE		"20010215"
 
 #define DRIVER_MAJOR		3
 #define DRIVER_MINOR		0

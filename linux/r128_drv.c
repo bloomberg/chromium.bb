@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"r128"
 #define DRIVER_DESC		"ATI Rage 128"
-#define DRIVER_DATE		"20010214"
+#define DRIVER_DATE		"20010215"
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		1

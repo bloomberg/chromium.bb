@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"tdfx"
 #define DRIVER_DESC		"3dfx Banshee/Voodoo3+"
-#define DRIVER_DATE		"20010214"
+#define DRIVER_DATE		"20010215"
 
 #define DRIVER_MAJOR		1
 #define DRIVER_MINOR		0
