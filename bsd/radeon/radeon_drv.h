@@ -292,9 +292,9 @@ extern int radeon_cp_indirect( DRM_OS_IOCTL );
 #	define RADEON_Z_TEST_MASK		(7 << 4)
 #	define RADEON_Z_TEST_ALWAYS		(7 << 4)
 #	define RADEON_STENCIL_TEST_ALWAYS	(7 << 12)
-#	define RADEON_STENCIL_S_FAIL_KEEP	(0 << 16)
-#	define RADEON_STENCIL_ZPASS_KEEP	(0 << 20)
-#	define RADEON_STENCIL_ZFAIL_KEEP	(0 << 20)
+#	define RADEON_STENCIL_S_FAIL_REPLACE	(2 << 16)
+#	define RADEON_STENCIL_ZPASS_REPLACE	(2 << 20)
+#	define RADEON_STENCIL_ZFAIL_REPLACE	(2 << 24)
 #	define RADEON_Z_WRITE_ENABLE		(1 << 30)
 #define RADEON_RBBM_SOFT_RESET		0x00f0
 #	define RADEON_SOFT_RESET_CP		(1 <<  0)
@@ -343,6 +343,7 @@ extern int radeon_cp_indirect( DRM_OS_IOCTL );
 #define RADEON_SE_CNTL_STATUS		0x2140
 #define RADEON_SE_LINE_WIDTH		0x1db8
 #define RADEON_SE_VPORT_XSCALE		0x1d98
+#define RADEON_SE_ZBIAS_FACTOR		0x1db0
 #define RADEON_SURFACE_ACCESS_FLAGS	0x0bf8
 #define RADEON_SURFACE_ACCESS_CLR	0x0bfc
 #define RADEON_SURFACE_CNTL		0x0b00
@@ -468,6 +469,7 @@ extern int radeon_cp_indirect( DRM_OS_IOCTL );
 #define RADEON_PRIM_TYPE_RECT_LIST		(8 << 0)
 #define RADEON_PRIM_TYPE_3VRT_POINT_LIST	(9 << 0)
 #define RADEON_PRIM_TYPE_3VRT_LINE_LIST		(10 << 0)
+#define RADEON_PRIM_TYPE_MASK                   0xf
 #define RADEON_PRIM_WALK_IND			(1 << 4)
 #define RADEON_PRIM_WALK_LIST			(2 << 4)
 #define RADEON_PRIM_WALK_RING			(3 << 4)
@@ -718,6 +720,11 @@ do {									\
 	}								\
 	ring[write++] = (x);						\
 	write &= mask;							\
+} while (0)
+
+#define OUT_RING_REG( reg, val ) do {					\
+	OUT_RING( CP_PACKET0( reg, 0 ) );				\
+	OUT_RING( val );						\
 } while (0)
 
 #define RADEON_PERFORMANCE_BOXES	0

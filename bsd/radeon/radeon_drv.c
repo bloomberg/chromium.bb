@@ -48,8 +48,16 @@
 #define DRIVER_DATE		"20010405"
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		1
-#define DRIVER_PATCHLEVEL	1
+#define DRIVER_MINOR		2
+#define DRIVER_PATCHLEVEL	0
+  
+/* Interface history:
+ *
+ * 1.1 - ??
+ * 1.2 - Add vertex2 ioctl (keith)
+ *     - Add stencil capability to clear ioctl (gareth, keith)
+ *     - Increase MAX_TEXTURE_LEVELS (brian)
+ */
 
 /* List acquired from http://www.yourvote.com/pci/pcihdr.h and xc/xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h
  * Please report to anholt@teleport.com inaccuracies or if a chip you have works that is marked unsupported here.
@@ -78,7 +86,8 @@ drm_chipinfo_t DRM(devicelist)[] = {
  [DRM_IOCTL_NR(DRM_IOCTL_RADEON_INDICES)]    = { radeon_cp_indices,  1, 0 }, \
  [DRM_IOCTL_NR(DRM_IOCTL_RADEON_TEXTURE)]    = { radeon_cp_texture,  1, 0 }, \
  [DRM_IOCTL_NR(DRM_IOCTL_RADEON_STIPPLE)]    = { radeon_cp_stipple,  1, 0 }, \
- [DRM_IOCTL_NR(DRM_IOCTL_RADEON_INDIRECT)]   = { radeon_cp_indirect, 1, 1 },
+ [DRM_IOCTL_NR(DRM_IOCTL_RADEON_INDIRECT)]   = { radeon_cp_indirect, 1, 1 }, \
+ [DRM_IOCTL_NR(DRM_IOCTL_RADEON_VERTEX2)]    = { radeon_cp_vertex2,  1, 0 },
 
 
 #if 0
