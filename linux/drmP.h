@@ -255,7 +255,7 @@ static inline void class_simple_device_remove(dev_t dev){};
 
 static inline void class_simple_destroy(struct class_simple *cs){};
 
-static inline struct class_simple *class_simple_create(struct module *owner, char *name) { return NULL; }
+static inline struct class_simple *class_simple_create(struct module *owner, char *name) { return (struct class_simple *)owner; }
 
 #ifndef pci_pretty_name
 #define pci_pretty_name(x) x->name
