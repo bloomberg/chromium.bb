@@ -36,8 +36,8 @@
 
 #define MGA_NAME	 "mga"
 #define MGA_DESC	 "Matrox g200/g400"
-#define MGA_DATE	 "20000719"
-#define MGA_MAJOR	 1
+#define MGA_DATE	 "20000831"
+#define MGA_MAJOR	 2
 #define MGA_MINOR	 0
 #define MGA_PATCHLEVEL	 0
 
