@@ -352,7 +352,6 @@ struct drm_device {
 	struct lock       dev_lock;	/* For others			   */
 				/* Usage Counters */
 	int		  open_count;	/* Outstanding files open	   */
-	atomic_t	  ioctl_count;	/* Outstanding IOCTLs pending	   */
 	int		  buf_use;	/* Buffers in use -- cannot alloc  */
 	atomic_t	  buf_alloc;	/* Buffer allocation in progress   */
 

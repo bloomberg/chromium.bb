@@ -424,7 +424,6 @@ static int DRM(setup)( drm_device_t *dev )
 	int i;
 
 	DRIVER_PRESETUP();
-	atomic_set( &dev->ioctl_count, 0 );
 	dev->buf_use = 0;
 	atomic_set( &dev->buf_alloc, 0 );
 
@@ -1001,12 +1000,6 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	device_unbusy(dev->device);
 #endif
 	if ( !--dev->open_count ) {
-		if (atomic_read(&dev->ioctl_count)) {
-			DRM_ERROR("Device busy: %ld\n",
-			    (unsigned long)atomic_read( &dev->ioctl_count ));
-			DRM_SPINUNLOCK( &dev->count_lock );
-			return DRM_ERR(EBUSY);
-		}
 		DRM_SPINUNLOCK( &dev->count_lock );
 		return DRM(takedown)( dev );
 	}
@@ -1027,7 +1020,6 @@ int DRM(ioctl)(dev_t kdev, u_long cmd, caddr_t data, int flags,
 	int nr = DRM_IOCTL_NR(cmd);
 	DRM_PRIV;
 
-	atomic_inc( &dev->ioctl_count );
 	atomic_inc( &dev->counts[_DRM_STAT_IOCTLS] );
 	++priv->ioctl_count;
 
@@ -1041,21 +1033,17 @@ int DRM(ioctl)(dev_t kdev, u_long cmd, caddr_t data, int flags,
 
 	switch (cmd) {
 	case FIONBIO:
-		atomic_dec(&dev->ioctl_count);
 		return 0;
 
 	case FIOASYNC:
-		atomic_dec(&dev->ioctl_count);
 		dev->flags |= FASYNC;
 		return 0;
 
 #ifdef __FreeBSD__
 	case FIOSETOWN:
-		atomic_dec(&dev->ioctl_count);
 		return fsetown(*(int *)data, &dev->buf_sigio);
 
 	case FIOGETOWN:
-		atomic_dec(&dev->ioctl_count);
 #if (__FreeBSD_version >= 500000)
 		*(int *) data = fgetown(&dev->buf_sigio);
 #else
@@ -1065,12 +1053,10 @@ int DRM(ioctl)(dev_t kdev, u_long cmd, caddr_t data, int flags,
 #endif /* __FreeBSD__ */
 #ifdef __NetBSD__
 	case TIOCSPGRP:
-		atomic_dec(&dev->ioctl_count);
 		dev->buf_pgid = *(int *)data;
 		return 0;
 
 	case TIOCGPGRP:
-		atomic_dec(&dev->ioctl_count);
 		*(int *)data = dev->buf_pgid;
 		return 0;
 #endif /* __NetBSD__ */
@@ -1093,7 +1079,6 @@ int DRM(ioctl)(dev_t kdev, u_long cmd, caddr_t data, int flags,
 		}
 	}
 
-	atomic_dec( &dev->ioctl_count );
 	return DRM_ERR(retcode);
 }
 
