@@ -35,6 +35,8 @@
 #include <opt_drm_linux.h>
 #include "gamma.h"
 #include "drmP.h"
+#include "drm.h"
+#include "gamma_drm.h"
 #include "gamma_drv.h"
 
 #define DRIVER_AUTHOR		"VA Linux Systems Inc."

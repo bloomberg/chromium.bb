@@ -36,6 +36,8 @@
 
 #include "radeon.h"
 #include "drmP.h"
+#include "drm.h"
+#include "radeon_drm.h"
 #include "radeon_drv.h"
 #if __REALLY_HAVE_SG
 #include "ati_pcigart.h"

@@ -34,6 +34,8 @@
 #define __NO_VERSION__
 #include "i830.h"
 #include "drmP.h"
+#include "drm.h"
+#include "i830_drm.h"
 #include "i830_drv.h"
 #include <linux/interrupt.h>	/* For task queue support */
 

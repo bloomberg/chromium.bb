@@ -37,6 +37,8 @@
 
 #include "r128.h"
 #include "drmP.h"
+#include "drm.h"
+#include "r128_drm.h"
 #include "r128_drv.h"
 #if __REALLY_HAVE_SG
 #include "ati_pcigart.h"

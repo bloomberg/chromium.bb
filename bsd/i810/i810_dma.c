@@ -33,6 +33,8 @@
 
 #include "i810.h"
 #include "drmP.h"
+#include "drm.h"
+#include "i810_drm.h"
 #include "i810_drv.h"
 
 #define I810_BUF_FREE		2
@@ -125,7 +127,7 @@ static int i810_freelist_put(drm_device_t *dev, drm_buf_t *buf)
    	return 0;
 }
 
-
+#if 0
 int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
 {
 	DRM_OS_DEVICE;
@@ -150,6 +152,7 @@ int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
 			     vma->vm_page_prot)) DRM_OS_RETURN(EAGAIN);
 	return 0;
 }
+#endif
 
 static int i810_map_buffer(drm_buf_t *buf, struct file *filp)
 {

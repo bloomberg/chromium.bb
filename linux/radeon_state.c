@@ -30,8 +30,9 @@
 #define __NO_VERSION__
 #include "radeon.h"
 #include "drmP.h"
-#include "radeon_drv.h"
 #include "drm.h"
+#include "radeon_drm.h"
+#include "radeon_drv.h"
 #include <linux/delay.h>
 
 

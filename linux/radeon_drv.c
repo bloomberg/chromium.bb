@@ -30,6 +30,8 @@
 #include <linux/config.h>
 #include "radeon.h"
 #include "drmP.h"
+#include "drm.h"
+#include "radeon_drm.h"
 #include "radeon_drv.h"
 #include "ati_pcigart.h"
 
