@@ -16,7 +16,11 @@ L_OBJS		:= init.o memory.o proc.o auth.o context.o drawable.o bufs.o \
 			lists.o lock.o ioctl.o fops.o vm.o dma.o ctxbitmap.o \
 			agpsupport.o
 
-M_OBJS		:= 
+M_OBJS		:=
+
+ifdef CONFIG_DRM_AGP
+ L_OBJS         += agpsupport.o
+endif
 
 ifeq ($(CONFIG_DRM_GAMMA),y)
  OX_OBJS += gamma_drv.o
