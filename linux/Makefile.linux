@@ -70,11 +70,19 @@ VERSION := $(shell uname -r)
 A := /usr/src/linux-$(VERSION)/include
 B := /usr/src/linux/include
 C := /usr/include
+# This detection seems to be broken.
+#TREE := $(shell                                                   \
+#	if grep -q $(VERSION) $A/linux/version.h; then echo $A;   \
+#	elif grep -q $(VERSION) $B/linux/version.h; then echo $B; \
+#	elif grep -q $(VERSION) $C/linux/version.h; then echo $C; \
+#	else echo 0; fi)
+# I'm simplifying it
 TREE := $(shell                                                   \
-	if grep -q $(VERSION) $A/linux/version.h; then echo $A;   \
-	elif grep -q $(VERSION) $B/linux/version.h; then echo $B; \
-	elif grep -q $(VERSION) $C/linux/version.h; then echo $C; \
+	if [ -d $A ] ; then echo $A;   \
+	elif [ -d $B ] ; then echo $B; \
+	elif [ -d $C ] ; then echo $C; \
 	else echo 0; fi)
+
 
 ifeq "$TREE" "0"
 all:; echo Error: Could not locate kernel tree
