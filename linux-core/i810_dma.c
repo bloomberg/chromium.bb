@@ -830,8 +830,8 @@ static void i810_dma_dispatch_vertex(drm_device_t *dev,
 static void i810_dma_dispatch_flip( drm_device_t *dev )
 {
         drm_i810_private_t *dev_priv = dev->dev_private;
-	RING_LOCALS;
 	int pitch = dev_priv->pitch;
+	RING_LOCALS;
 
 	DRM_DEBUG( "%s: page=%d pfCurrentPage=%d\n", 
 		__FUNCTION__, 
