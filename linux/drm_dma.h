@@ -509,9 +509,6 @@ int DRM(dma_get_buffers)(drm_device_t *dev, drm_dma_t *dma)
 int DRM(irq_install)( drm_device_t *dev, int irq )
 {
 	int ret;
-#if __HAVE_VBL_IRQ
-	unsigned long flags;
-#endif
 
 	if ( !irq )
 		return -EINVAL;
@@ -638,7 +635,7 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	flags = vblwait.request.type & _DRM_VBLANK_FLAGS_MASK;
 	
 	if ( flags & _DRM_VBLANK_SIGNAL ) {
-		unsigned long flags;
+		unsigned long irqflags;
 		drm_vbl_sig_t *vbl_sig = DRM_MALLOC( sizeof( drm_vbl_sig_t ) );
 
 		if ( !vbl_sig )
@@ -653,11 +650,11 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 		vblwait.reply.sequence = atomic_read( &dev->vbl_received );
 
 		/* Hook signal entry into list */
-		spin_lock_irqsave( &dev->vbl_lock, flags );
+		spin_lock_irqsave( &dev->vbl_lock, irqflags );
 
 		list_add_tail( (struct list_head *) vbl_sig, &dev->vbl_sigs.head );
 
-		spin_unlock_irqrestore( &dev->vbl_lock, flags );
+		spin_unlock_irqrestore( &dev->vbl_lock, irqflags );
 	} else {
 		ret = DRM(vblank_wait)( dev, &vblwait.request.sequence );
 
@@ -685,7 +682,7 @@ void DRM(vbl_send_signals)( drm_device_t *dev )
 
 		vbl_sig = (drm_vbl_sig_t *) entry;
 
-		if ( ( vbl_seq + ~vbl_sig->sequence + 1 ) <= (1<<23) ) {
+		if ( ( vbl_seq - vbl_sig->sequence ) <= (1<<23) ) {
 
 			vbl_sig->info.si_code = atomic_read( &dev->vbl_received );
 			send_sig_info( vbl_sig->info.si_signo, &vbl_sig->info, vbl_sig->task );

@@ -65,7 +65,7 @@ int mga_vblank_wait(drm_device_t *dev, unsigned int *sequence)
 	 */
 	DRM_WAIT_ON( ret, dev->vbl_queue, 3*DRM_HZ, 
 		     ( ( ( cur_vblank = atomic_read(&dev->vbl_received ) )
-			 + ~*sequence + 1 ) <= (1<<23) ) );
+			 - *sequence ) <= (1<<23) ) );
 
 	*sequence = cur_vblank;
 
