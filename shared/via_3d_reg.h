@@ -26,6 +26,8 @@
 #define VIA_3D_REG_H
 #define HC_REG_BASE             0x0400
 
+#define HC_REG_TRANS_SPACE      0x0040
+
 #define HC_ParaN_MASK           0xffffffff
 #define HC_Para_MASK            0x00ffffff
 #define HC_SubA_MASK            0xff000000
@@ -1621,7 +1623,7 @@
 #define HALCYON_CMDB        0XEC000000
 #define HALCYON_CMDBMASK    0XFFFE0000
 #define HALCYON_SUB_ADDR0   0X00000000
-#define HALCYON_HEADER1MASK 0XFFFFFF00
+#define HALCYON_HEADER1MASK 0XFFFFFC00
 #define HALCYON_HEADER1     0XF0000000
 #define HC_SubA_HAGPBstL        0x0060
 #define HC_SubA_HAGPBendL       0x0061

@@ -30,11 +30,11 @@
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome"
-#define DRIVER_DATE		"20041103"
+#define DRIVER_DATE		"20041127"
 
 #define DRIVER_MAJOR		2
-#define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	4
+#define DRIVER_MINOR		1
+#define DRIVER_PATCHLEVEL	0
 
 #define DRIVER_IOCTLS							\
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_ALLOCMEM)]  = { via_mem_alloc,  1, 0 }, \
@@ -46,6 +46,6 @@
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_DMA_INIT)] = { via_dma_init, 1, 0}, \
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_CMDBUFFER)] = { via_cmdbuffer, 1, 0}, \
 	[DRM_IOCTL_NR(DRM_IOCTL_VIA_FLUSH)] = { via_flush_ioctl, 1, 0}, \
-        [DRM_IOCTL_NR(DRM_IOCTL_VIA_PCICMD)] = { via_pci_cmdbuffer, 1, 0}
+	[DRM_IOCTL_NR(DRM_IOCTL_VIA_PCICMD)] = { via_pci_cmdbuffer, 1, 0}
 
 #endif

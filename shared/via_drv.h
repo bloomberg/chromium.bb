@@ -45,7 +45,9 @@ typedef struct drm_via_private {
 	volatile uint32_t *last_pause_ptr;
 	volatile uint32_t *hw_addr_ptr;
 	drm_via_ring_buffer_t ring;
-	char pci_buf[VIA_PREALLOCATED_PCI_SIZE];
+        struct timeval last_vblank;
+        int last_vblank_valid;
+        unsigned usec_per_vblank;
 } drm_via_private_t;
 
 /* VIA MMIO register access */
@@ -72,6 +74,6 @@ extern void via_driver_irq_uninstall(drm_device_t * dev);
 
 extern int via_dma_cleanup(drm_device_t * dev);
 
-extern int via_dma_cleanup(drm_device_t * dev);
+
 
 #endif

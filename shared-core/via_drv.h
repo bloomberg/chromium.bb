@@ -28,11 +28,11 @@
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome"
-#define DRIVER_DATE		"20041103"
+#define DRIVER_DATE		"20041127"
 
 #define DRIVER_MAJOR		2
-#define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	4
+#define DRIVER_MINOR		1
+#define DRIVER_PATCHLEVEL	0
 
 typedef struct drm_via_ring_buffer {
 	drm_map_t map;
@@ -53,7 +53,9 @@ typedef struct drm_via_private {
 	volatile uint32_t *last_pause_ptr;
 	volatile uint32_t *hw_addr_ptr;
 	drm_via_ring_buffer_t ring;
-	char pci_buf[VIA_PREALLOCATED_PCI_SIZE];
+        struct timeval last_vblank;
+        int last_vblank_valid;
+        unsigned usec_per_vblank;
 } drm_via_private_t;
 
 /* VIA MMIO register access */
@@ -80,6 +82,6 @@ extern void via_driver_irq_uninstall(drm_device_t * dev);
 
 extern int via_dma_cleanup(drm_device_t * dev);
 
-extern int via_dma_cleanup(drm_device_t * dev);
+
 
 #endif

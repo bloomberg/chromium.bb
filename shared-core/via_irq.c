@@ -45,16 +45,39 @@
 #define VIA_IRQ_VBI_ENABLE      (1 << 19)
 #define VIA_IRQ_VBI_PENDING     (1 << 3)
 
+
+
+static unsigned time_diff(struct timeval *now,struct timeval *then) 
+{
+    return (now->tv_usec >= then->tv_usec) ?
+        now->tv_usec - then->tv_usec :
+        1000000 - (then->tv_usec - now->tv_usec);
+}
+
 irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
 {
 	drm_device_t *dev = (drm_device_t *) arg;
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
 	u32 status;
 	int handled = 0;
+	struct timeval cur_vblank;
 
 	status = VIA_READ(VIA_REG_INTERRUPT);
 	if (status & VIA_IRQ_VBI_PENDING) {
 		atomic_inc(&dev->vbl_received);
+                if (!(atomic_read(&dev->vbl_received) & 0x0F)) {
+			do_gettimeofday(&cur_vblank);
+                        if (dev_priv->last_vblank_valid) {
+				dev_priv->usec_per_vblank = 
+					time_diff( &cur_vblank,&dev_priv->last_vblank) >> 4;
+			}
+			dev_priv->last_vblank = cur_vblank;
+			dev_priv->last_vblank_valid = 1;
+                }
+                if (!(atomic_read(&dev->vbl_received) & 0xFF)) {
+			DRM_DEBUG("US per vblank is: %u\n",
+				dev_priv->usec_per_vblank);
+		}
 		DRM_WAKEUP(&dev->vbl_queue);
 		drm_vbl_send_signals(dev);
 		handled = 1;
@@ -116,6 +139,7 @@ void via_driver_irq_preinstall(drm_device_t * dev)
 
 	DRM_DEBUG("driver_irq_preinstall: dev_priv: %p\n", dev_priv);
 	if (dev_priv) {
+	        dev_priv->last_vblank_valid = 0;
 		DRM_DEBUG("mmio: %p\n", dev_priv->mmio);
 		status = VIA_READ(VIA_REG_INTERRUPT);
 		DRM_DEBUG("intreg: %x\n", status & VIA_IRQ_VBI_ENABLE);
@@ -163,3 +187,4 @@ void via_driver_irq_uninstall(drm_device_t * dev)
 		VIA_WRITE(VIA_REG_INTERRUPT, status & ~VIA_IRQ_VBI_ENABLE);
 	}
 }
+

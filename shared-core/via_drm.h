@@ -38,8 +38,6 @@
 #define VIA_NR_XVMC_PORTS               10
 #define VIA_NR_XVMC_LOCKS               5
 #define VIA_MAX_CACHELINE_SIZE          64
-#define VIA_PREALLOCATED_PCI_SIZE       16384
-#define VIA_MAX_PCI_SIZE                65536
 #define XVMCLOCKPTR(saPriv,lockNo)					\
         ((volatile int *)(((((unsigned long) (saPriv)->XvMCLockArea) +	\
                             (VIA_MAX_CACHELINE_SIZE - 1)) &             \
@@ -143,7 +141,8 @@ typedef struct _drm_via_futex {
 typedef struct _drm_via_dma_init {
 	enum {
 		VIA_INIT_DMA = 0x01,
-		VIA_CLEANUP_DMA = 0x02
+		VIA_CLEANUP_DMA = 0x02,
+                VIA_DMA_INITIALIZED = 0x03
 	} func;
 
 	unsigned long offset;
@@ -201,6 +200,8 @@ typedef struct _drm_via_flush_sys {
 	unsigned long index;
 	int discard;		/* client is finished with the buffer? */
 } drm_via_flush_sys_t;
+
+
 
 #ifdef __KERNEL__
 
