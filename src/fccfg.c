@@ -134,8 +134,10 @@ FcSubstDestroy (FcSubst *s)
     while (s)
     {
 	n = s->next;
-	FcTestDestroy (s->test);
-	FcEditDestroy (s->edit);
+	if (s->test)
+	    FcTestDestroy (s->test);
+	if (s->edit)
+	    FcEditDestroy (s->edit);
 	s = n;
     }
 }
