@@ -382,7 +382,7 @@ typedef struct {
 #define DRM_IOCTL_RADEON_STIPPLE    DRM_IOW( 0x4c, drm_radeon_stipple_t)
 #define DRM_IOCTL_RADEON_INDIRECT   DRM_IOWR(0x4d, drm_radeon_indirect_t)
 #define DRM_IOCTL_RADEON_TEXTURE    DRM_IOWR(0x4e, drm_radeon_texture_t)
-#define DRM_IOCTL_RADEON_VERTEX2    DRM_IOW( 0x4f, drm_radeon_vertex_t)
+#define DRM_IOCTL_RADEON_VERTEX2    DRM_IOW( 0x4f, drm_radeon_vertex2_t)
 #define DRM_IOCTL_RADEON_CMDBUF     DRM_IOW( 0x50, drm_radeon_cmd_buffer_t)
 #define DRM_IOCTL_RADEON_GETPARAM   DRM_IOWR(0x51, drm_radeon_getparam_t)
 #define DRM_IOCTL_RADEON_FLIP	    DRM_IO(  0x52)
