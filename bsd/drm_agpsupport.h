@@ -262,7 +262,7 @@ drm_agp_head_t *DRM(agp_init)(void)
 		}
 #endif
 		DRM_INFO("AGP at 0x%08lx %dMB\n",
-			 head->info.ai_aperture_base,
+			 (long)head->info.ai_aperture_base,
 			 (int)(head->info.ai_aperture_size >> 20));
 	}
 	return head;
