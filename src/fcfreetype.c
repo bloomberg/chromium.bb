@@ -154,7 +154,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!FcPatternAddString (pat, FC_SOURCE, (FcChar8 *) "FreeType"))
 	goto bail1;
 
-#if 0
+#if 1
     if ((face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) != 0)
 	if (!FcPatternAddInteger (pat, FC_SPACING, FC_MONO))
 	    goto bail1;

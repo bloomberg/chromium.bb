@@ -328,9 +328,6 @@ void
 FcValueListPrint (FcValueList *l);
 
 void
-FcPatternPrint (FcPattern *p);
-
-void
 FcOpPrint (FcOp op);
 
 void
@@ -432,12 +429,6 @@ FcMemFree (int kind, int size);
 
 FcBool
 FcNameBool (FcChar8 *v, FcBool *result);
-
-FcBool
-FcStrBufChar (FcStrBuf *buf, FcChar8 c);
-
-FcBool
-FcStrBufString (FcStrBuf *buf, const FcChar8 *s);
 
 /* fcpat.c */
 void

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.3 2002/02/18 22:29:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.4 2002/02/20 00:32:30 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1097,9 +1097,13 @@ FcPopExpr (FcConfigParse *parse)
 	break;
     case FcVStackString:
     case FcVStackFamily:
-    case FcVStackField:
-    case FcVStackConstant:
 	expr = FcExprCreateString (vstack->u.string);
+	break;
+    case FcVStackField:
+	expr = FcExprCreateField ((char *) vstack->u.string);
+	break;
+    case FcVStackConstant:
+	expr = FcExprCreateConst (vstack->u.string);
 	break;
     case FcVStackPrefer:
     case FcVStackAccept:
