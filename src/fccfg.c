@@ -1390,10 +1390,6 @@ DllMain (HINSTANCE hinstDLL,
 
 #else /* !(_WIN32 && PIC) */
 
-#ifndef FONTCONFIG_PATH
-#define FONTCONFIG_PATH	"/etc/fonts"
-#endif
-
 #endif /* !(_WIN32 && PIC) */
 
 #ifndef FONTCONFIG_FILE
