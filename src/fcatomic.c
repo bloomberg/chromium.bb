@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fcatomic.c,v 1.1 2002/03/03 00:19:43 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -107,7 +107,7 @@ FcAtomicLock (FcAtomic *atomic)
 	unlink ((char *) atomic->tmp);
 	return FcFalse;
     }
-    ret = fprintf (f, "%d\n", getpid());
+    ret = fprintf (f, "%ld\n", (long)getpid());
     if (ret <= 0)
     {
 	fclose (f);
