@@ -26,6 +26,20 @@
 #define _Use    _FUse
 #define _UseCat _FUseCat
 
+#ifndef ExpatClientLibs
+#define ExpatClientLibs -lexpat
+#endif
+#ifndef ExpatClientDepLibs
+#define ExpatClientDepLibs
+#endif
+
+#ifndef FontconfigClientDepLibs
+#define FontconfigClientDepLibs $(DEPFONTCONFIGLIB) $(DEPFREETYPE2LIB) ExpatClientDepLibs
+#endif
+#ifndef FontconfigClientLibs
+#define FontconfigClientLibs $(FONTCONFIGLIB) $(FREETYPE2LIB) ExpatClientLibs
+#endif
+
 #if SharedLibFontconfig
 #define SharedFontconfigRev 1.0
 SharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGSRC),SOXLIBREV,SharedFontconfigRev)
