@@ -28,13 +28,31 @@
 #include <stdio.h>
 
 static double
-FcCompareInteger (char *object, FcValue value1, FcValue value2)
+FcCompareNumber (char *object, FcValue value1, FcValue value2)
 {
-    int	v;
+    double  v1, v2, v;
     
-    if (value2.type != FcTypeInteger || value1.type != FcTypeInteger)
+    switch (value1.type) {
+    case FcTypeInteger:
+	v1 = (double) value1.u.i;
+	break;
+    case FcTypeDouble:
+	v1 = value1.u.d;
+	break;
+    default:
 	return -1.0;
-    v = value2.u.i - value1.u.i;
+    }
+    switch (value2.type) {
+    case FcTypeInteger:
+	v2 = (double) value2.u.i;
+	break;
+    case FcTypeDouble:
+	v2 = value2.u.d;
+	break;
+    default:
+	return -1.0;
+    }
+    v = v2 - v1;
     if (v < 0)
 	v = -v;
     return (double) v;
@@ -173,7 +191,7 @@ static FcMatcher _FcMatchers [] = {
     { FC_LANG,		FcCompareLang,		3, 3 },
 #define MATCH_LANG	    3
     
-    { FC_SPACING,	FcCompareInteger,	5, 5 },
+    { FC_SPACING,	FcCompareNumber,	5, 5 },
 #define MATCH_SPACING	    4
     
     { FC_PIXEL_SIZE,	FcCompareSize,		6, 6 },
@@ -182,10 +200,10 @@ static FcMatcher _FcMatchers [] = {
     { FC_STYLE,		FcCompareString,	7, 7 },
 #define MATCH_STYLE	    6
     
-    { FC_SLANT,		FcCompareInteger,	8, 8 },
+    { FC_SLANT,		FcCompareNumber,	8, 8 },
 #define MATCH_SLANT	    7
     
-    { FC_WEIGHT,	FcCompareInteger,	9, 9 },
+    { FC_WEIGHT,	FcCompareNumber,	9, 9 },
 #define MATCH_WEIGHT	    8
     
     { FC_ANTIALIAS,	FcCompareBool,		10, 10 },
@@ -197,7 +215,7 @@ static FcMatcher _FcMatchers [] = {
     { FC_OUTLINE,	FcCompareBool,		12, 12 },
 #define MATCH_OUTLINE	    11
 
-    { FC_FONTVERSION,	FcCompareInteger,	13, 13 },
+    { FC_FONTVERSION,	FcCompareNumber,	13, 13 },
 #define MATCH_FONTVERSION   12
 };
 

@@ -37,10 +37,10 @@ FcValuePrint (const FcValue v)
 	printf (" <void>");
 	break;
     case FcTypeInteger:
-	printf (" %d", v.u.i);
+	printf (" %d(i)", v.u.i);
 	break;
     case FcTypeDouble:
-	printf (" %g", v.u.d);
+	printf (" %g(f)", v.u.d);
 	break;
     case FcTypeString:
 	printf (" \"%s\"", v.u.s);
