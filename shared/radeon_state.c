@@ -201,7 +201,7 @@ static __inline__ int radeon_check_and_fixup_packets( drm_radeon_private_t *dev_
 	case RADEON_EMIT_PP_TEX_SIZE_0:
 	case RADEON_EMIT_PP_TEX_SIZE_1:
 	case RADEON_EMIT_PP_TEX_SIZE_2:
-        case R200_EMIT_RB3D_BLENDCOLOR:
+	case R200_EMIT_RB3D_BLENDCOLOR:
 		/* These packets don't contain memory offsets */
 		break;
 
