@@ -51,7 +51,7 @@
 #define DRIVER_DATE		"20020828"
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		7
+#define DRIVER_MINOR		8
 #define DRIVER_PATCHLEVEL	0
 
 /* Interface history:
@@ -77,6 +77,7 @@
  *       and R200_PP_CUBIC_OFFSET_F1_[0..5].
  *       Added packets R200_EMIT_PP_CUBIC_FACES_[0..5] and
  *       R200_EMIT_PP_CUBIC_OFFSETS_[0..5].  (brian)
+ * 1.8 - Remove need to call cleanup ioctls on last client exit (keith)
  */
 #define DRIVER_IOCTLS							     \
  [DRM_IOCTL_NR(DRM_IOCTL_DMA)]               = { radeon_cp_buffers,  1, 0 }, \
