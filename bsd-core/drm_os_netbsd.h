@@ -321,11 +321,6 @@ do { \
   error = SYSCTL_OUT(req, buf, strlen(buf));	\
   if (error) return error;
 
-#define DRM_SYSCTL_PRINT_RET(ret, fmt, arg...)	\
-  snprintf(buf, sizeof(buf), fmt, ##arg);	\
-  error = SYSCTL_OUT(req, buf, strlen(buf));	\
-  if (error) { ret; return error; }
-
 
 #define DRM_FIND_MAP(dest, o)						\
 	do {								\

@@ -368,14 +368,11 @@ find_first_zero_bit(volatile void *p, int max)
 #endif
 
 #define DRM_SYSCTL_PRINT(fmt, arg...)		\
+do {						\
   snprintf(buf, sizeof(buf), fmt, ##arg);	\
   error = SYSCTL_OUT(req, buf, strlen(buf));	\
-  if (error) return error;
-
-#define DRM_SYSCTL_PRINT_RET(ret, fmt, arg...)	\
-  snprintf(buf, sizeof(buf), fmt, ##arg);	\
-  error = SYSCTL_OUT(req, buf, strlen(buf));	\
-  if (error) { ret; return error; }
+  if (error) return error;			\
+} while (0)
 
 
 #define DRM_FIND_MAP(dest, o)						\
