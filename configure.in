@@ -1,66 +1,63 @@
+dnl 
+dnl  $Id$
+dnl 
+dnl  Copyright © 2003 Keith Packard
+dnl 
+dnl  Permission to use, copy, modify, distribute, and sell this software and its
+dnl  documentation for any purpose is hereby granted without fee, provided that
+dnl  the above copyright notice appear in all copies and that both that
+dnl  copyright notice and this permission notice appear in supporting
+dnl  documentation, and that the name of Keith Packard not be used in
+dnl  advertising or publicity pertaining to distribution of the software without
+dnl  specific, written prior permission.  Keith Packard makes no
+dnl  representations about the suitability of this software for any purpose.  It
+dnl  is provided "as is" without express or implied warranty.
+dnl 
+dnl  KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+dnl  INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+dnl  EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+dnl  CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+dnl  DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+dnl  TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+dnl  PERFORMANCE OF THIS SOFTWARE.
 dnl
-dnl $XFree86: xc/lib/fontconfig/configure.in,v 1.7 2002/08/01 15:57:25 keithp Exp $
-dnl
-dnl Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
-dnl
-dnl Permission to use, copy, modify, distribute, and sell this software and its
-dnl documentation for any purpose is hereby granted without fee, provided that
-dnl the above copyright notice appear in all copies and that both that
-dnl copyright notice and this permission notice appear in supporting
-dnl documentation, and that the name of Keith Packard not be used in
-dnl advertising or publicity pertaining to distribution of the software without
-dnl specific, written prior permission.  Keith Packard makes no
-dnl representations about the suitability of this software for any purpose.  It
-dnl is provided "as is" without express or implied warranty.
-dnl
-dnl KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
-dnl INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
-dnl EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
-dnl CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
-dnl DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-dnl TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-dnl PERFORMANCE OF THIS SOFTWARE.
-dnl
+dnl Process this file with autoconf to create configure.
 
-# Process this file with autoconf to produce a configure script.
+dnl ==========================================================================
+dnl                               Versioning              
+dnl ==========================================================================
 
-AC_INIT(fontconfig, 1.0.1, fonts@xfree86.org)
-AC_CONFIG_AUX_DIR(config)
-AC_CONFIG_HEADER(config.h)
+dnl The version number is also in fontconfig/fontconfig.h
+AC_INIT(ChangeLog,1.0.3,fontconfig@fontconfig.org)
 
-AC_ARG_WITH(freetype_includes, [  --with-freetype-includes=DIR  Use FreeType includes in DIR], freetype_includes=$withval, freetype_includes=yes)
-AC_ARG_WITH(freetype_lib,      [  --with-freetype-lib=DIR       Use FreeType library in DIR], freetype_lib=$withval, freetype_lib=yes)
-AC_ARG_WITH(freetype_config,   [  --with-freetype-config=PROG   Use FreeType configuration program PROG], freetype_config=$withval, freetype_config=yes)
-AC_ARG_WITH(expat,             [  --with-expat=DIR              Use Expat in DIR], expat=$withval, expat=yes)
-AC_ARG_WITH(expat_includes,    [  --with-expat-includes=DIR     Use Expat includes in DIR], expat_includes=$withval, expat_includes=yes)
-AC_ARG_WITH(expat_lib,         [  --with-expat-lib=DIR          Use Expat library in DIR], expat_lib=$withval, expat_lib=yes)
-AC_ARG_WITH(default_fonts,     [  --with-default-fonts=DIR      Use fonts from DIR when config is busted], defaultfonts="$withval", default_fonts=yes)
-AC_ARG_WITH(confdir,           [  --with-confdir=DIR            Use DIR to store configuration files (default /etc/fonts)], confdir="$withval", confdir=yes)
+FONTCONFIG_HEADER=fontconfig/fontconfig.h
+FONTCONFIG_MAJOR=`awk '/^#define FC_MAJOR/ { print $3 }' $FONTCONFIG_HEADER`
+FONTCONFIG_MINOR=`awk '/^#define FC_MINOR/ { print $3 }' $FONTCONFIG_HEADER`
+FONTCONFIG_REVISION=`awk '/^#define FC_REVISION/ { print $3 }' $FONTCONFIG_HEADER`
+FONTCONFIG_VERSION="$FONTCONFIG_MAJOR.$FONTCONFIG_MINOR.$FONTCONFIG_REVISION"
 
-# Checks for programs.
+AC_SUBST(FONTCONFIG_MAJOR)
+AC_SUBST(FONTCONFIG_MINOR)
+AC_SUBST(FONTCONFIG_REVISION)
+AC_SUBST(FONTCONFIG_VERSION)
+
+dnl libtool versioning
+
+LT_VERSION_NUMBER="$FONTCONFIG_MAJOR:$FONTCONFIG_MINOR:$FONTCONFIG_REVISION"
+AC_SUBST(LT_VERSION_NUMBER)
+
+dnl ==========================================================================
+
+AM_INIT_AUTOMAKE(fontconfig, $FONTCONFIG_VERSION)
+
+AM_CONFIG_HEADER(config.h)
+
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
-AC_PATH_X
+AM_PROG_LIBTOOL
+AC_PROG_MAKE_SET
 
-PACKAGE_VERSION=1.0.1
-
-# Set major version
-PACKAGE_MAJOR=`echo $PACKAGE_VERSION | awk -F . '{ print $1 }'`
-PACKAGE_MINOR=`echo $PACKAGE_VERSION | awk -F . '{ print $2 }'`
-PACKAGE_REVISION=`echo $PACKAGE_VERSION | awk -F . '{ print $3 }'`
-AC_SUBST(PACKAGE_VERSION)
-AC_SUBST(PACKAGE_MAJOR)
-AC_SUBST(PACKAGE_MINOR)
-AC_SUBST(PACKAGE_REVISION)
-
-OBJEXT="o"
-AC_SUBST(OBJEXT)
-
-AC_DEFINE_UNQUOTED(PACKAGE_MAJOR,$PACKAGE_MAJOR)
-AC_DEFINE_UNQUOTED(PACKAGE_MINOR,$PACKAGE_MINOR)
-AC_DEFINE_UNQUOTED(PACKAGE_REVISION,$PACKAGE_REVISION)
-	 
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
@@ -74,152 +71,200 @@ AC_TYPE_PID_T
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([memmove memset strchr strrchr strtol getopt getopt_long])
 
-if test "$GCC" = "yes"; then
-    MKSHLIB='$(CC) $(CFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
-    DSO_LDOPTS='-shared -Wl,-h,`echo $@ | sed '"'s/\.so\.\([[0-9][0-9]]*\).*/.so.\1/'"'`'
-    DSO_CFLAGS=''
-    DSO_PIC_CFLAGS='-fPIC -DPIC'
+#
+# Checks for FreeType
+#
+
+AC_ARG_WITH(freetype_config, [ --with-freetype-config=PROG Use FreeType configuration program PROG], freetype_config=$withval, freetype_config=yes)
+
+if test "$freetype_config" = "yes"; then 
+	AC_PATH_PROG(ft_config,freetype-config,no)
+	if test "$ft_config" = "no"; then
+		AC_MSG_ERROR([You must have freetype installed; see http://www.freetype.org/])
+	fi
 else
-    AC_CANONICAL_HOST
-    
-    MKSHLIB='$(LD) $(DSO_LDOPTS) -o $@'
-    DSO_CFLAGS=''
-    DSO_PIC_CFLAGS='-KPIC -DPIC'
-    
-    case "$host" in
-    *solaris*)
-    	DSO_LDOPTS='-G -z text -z defs -h $@'
-	LIBS="$LIBS -lc"
-	;;
-   *irix6*)
-    	DSO_LDOPTS='-shared -rpath $(libdir) -set_version sgi1.0 -soname $@'
-	LIBS="$LIBS -lc"
-	;;
-    *osf[[123]]*)
-	# since the library is using soname-style versioning, don't use
-	# internal versioning, via -set_version.
-    	DSO_LDOPTS='-shared -rpath $(libdir) -soname $@'
-	LIBS="$LIBS -lc"
-	;;
-    *osf[[45]]*)
-	# since the library is using soname-style versioning, don't use
-	# internal versioning, via -set_version.
-    	DSO_LDOPTS='-shared -msym -rpath $(libdir) -soname $@'
-	LIBS="$LIBS -lc"
- 	;;
-    *)
-    	DSO_LDOPTS='-shared -h $@'
-    	;;
-    esac
+	ft_config="$freetype_config"
 fi
 
-AC_SUBST(MKSHLIB)
-AC_SUBST(DSO_LDOPTS)
-AC_SUBST(DSO_CFLAGS)
-AC_SUBST(DSO_PIC_CFLAGS)
+FREETYPE_CFLAGS="$($ft_config --cflags)"
+FREETYPE_LIBS="$($ft_config --libs)"
+
+AC_SUBST(FREETYPE_LIBS)
+AC_SUBST(FREETYPE_CFLAGS)
 
 #
-# Using x libraries, set X font directory
-case "$no_x" in
-yes)
-	;;
-*)
-	X_FONT_DIR="$x_libraries/X11/fonts"
-	AC_DEFINE_UNQUOTED(X_FONT_DIR,$X_FONT_DIR)
-	;;
-esac
-AC_SUBST(X_FONT_DIR)
+# Check to see whether we have FT_Get_First_Char(), new in 2.0.9
+#
+
+fontconfig_save_libs=$LIBS
+LIBS="$LIBS $FREETYPE_LIBS"
+AC_CHECK_FUNCS(FT_Get_First_Char)
+LIBS=$fontconfig_save_libs
 
 #
-# Check freetype configuration
+# Check expat configuration
 #
-case "$freetype_config" in
+
+AC_ARG_WITH(expat,             [  --with-expat=DIR              Use Expat in DIR], expat=$withval, expat=yes)
+AC_ARG_WITH(expat_includes,    [  --with-expat-includes=DIR     Use Expat includes in DIR], expat_includes=$withval, expat_includes=yes)
+AC_ARG_WITH(expat_lib,         [  --with-expat-lib=DIR          Use Expat library in DIR], expat_lib=$withval, expat_lib=yes)
+
+case "$expat" in
 no)
 	;;
-yes)
-	AC_CHECK_PROG(ft_config,freetype-config,freetype-config,no)
-	;;
 *)
-	ft_config="$freetype_config"
-	;;
-esac
-
-case "$freetype_includes" in
-no)
-	FREETYPE_CFLAGS=""
-	;;
-yes)
-	case "$ft_config" in
-	no)
-		FREETYPE_CFLAGS=""
+	case "$expat_includes" in
+	yes|no)
+		EXPAT_CFLAGS=""
 		;;
 	*)
-		FREETYPE_CFLAGS="`$ft_config --cflags`"
+		EXPAT_CFLAGS="-I$expat_includes"
 		;;
 	esac
-	;;
-*)
-	FREETYPE_CFLAGS="-I$freetype_includes"
-	;;
-esac
-
-case "$freetype_lib" in
-no)
-	freetype_lib=""
-	;;
-yes)
-	case "$ft_config" in
+	case "$expat_lib" in
+	yes)
+		case "$expat" in
+		yes)
+			EXPAT_LIBS="-lexpat"
+			;;
+		*)
+			EXPAT_LIBS="-L$expat/lib -lexpat"
+			;;
+		esac
+		;;
 	no)
-		freetype_lib=""
 		;;
 	*)
-		freetype_lib="`$ft_config --libs`"
+		EXPAT_LIBS="-L$expat_lib -lexpat"
 		;;
 	esac
-	;;
-*)
-	freetype_lib="-L$freetype_lib -lfreetype"
-	;;
-esac
 
-saved_LIBS="$LIBS"
-LIBS="$LIBS $freetype_lib"
-saved_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $FREETYPE_CFLAGS"
-AC_CHECK_HEADERS(freetype/freetype.h)
+	expatsaved_CPPFLAGS="$CPPFLAGS"
+	CPPFLAGS="$CPPFLAGS $EXPAT_CFLAGS"
+	expatsaved_LIBS="$LIBS"
+	LIBS="$LIBS $EXPAT_LIBS"
 
-case "$ac_cv_header_freetype_freetype_h" in
-no)
+	AC_CHECK_HEADER(expat.h)
+	case "$ac_cv_header_expat_h" in
+	no)
+		AC_CHECK_HEADER(xmlparse.h)
+		case "$ac_cv_header_xmlparse_h" in
+		no)
+			have_expat_header=no;
+			;;
+		yes)
+			HAVE_XMLPARSE_H=1
+			AC_SUBST(HAVE_XMLPARSE_H)
+			AC_DEFINE_UNQUOTED(HAVE_XMLPARSE_H,$HAVE_XMLPARSE_H,
+			[Use xmlparse.h instead of expat.h])
+			have_expat_header=yes
+			;;
+		esac
+		;;
+	yes)
+		have_expat_header=yes
+		;;
+	esac
+	case "$have_expat_header" in
+	no)
+		expat=no
+		;;
+	yes)
+		AC_CHECK_FUNCS(XML_ParserCreate)
+		case "$ac_cv_func_XML_ParserCreate" in
+		no)
+			expat=no
+			;;
+		yes)
+			HAVE_EXPAT=1
+			AC_SUBST(HAVE_EXPAT)
+			AC_DEFINE_UNQUOTED(HAVE_EXPAT,$HAVE_EXPAT,
+			[Found a useable expat library])
+			;;
+		esac
+		;;
+	esac
 	CPPFLAGS="$saved_CPPFLAGS"
 	LIBS="$saved_LIBS"
 	;;
-yes)
-	AC_CHECK_FUNCS(FT_Init_FreeType)
-	case "$ac_cv_func_FT_Init_FreeType" in
-	no)
-		CPPFLAGS="$saved_CPPFLAGS"
-		LIBS="$saved_LIBS"
-		;;
-	yes)
-		AC_DEFINE(HAVE_FREETYPE)
-		AC_SUBST(FREETYPE_CFLAGS)
-		;;
-	esac
+esac
+AC_SUBST(EXPAT_LIBS)
+AC_SUBST(EXPAT_CFLAGS)
+	
+case "$expat" in
+no)
+	AC_MSG_ERROR([cannot find expat library])
 	;;
 esac
+
+#
+# Set default font directory
+#
+
+AC_ARG_WITH(default_fonts,     [  --with-default-fonts=DIR      Use fonts from DIR when config is busted], defaultfonts="$withval", default_fonts=yes)
 
 case "$default_fonts" in
 yes)
 	FC_DEFAULT_FONTS="/usr/share/fonts"
-	AC_DEFINE_UNQUOTED(FC_DEFAULT_FONTS, "/usr/share/fonts")
+	AC_DEFINE_UNQUOTED(FC_DEFAULT_FONTS, "/usr/share/fonts", 
+			   [System font directory])
 	;;
 *)
 	FC_DEFAULT_FONTS="$default_fonts"
-	AC_DEFINE_UNQUOTED(FC_DEFAULT_FONTS, "$default_fonts")
+	AC_DEFINE_UNQUOTED(FC_DEFAULT_FONTS, "$default_fonts",
+			   [System font directory])
 	;;
 esac
 
 AC_SUBST(FC_DEFAULT_FONTS)
+
+#
+# Add X fonts if available
+#
+AC_ARG_WITH(x_fonts,           [  --with-x-fonts=DIR            Find X fonts in DIR ], x_fonts="$withval", x_fonts=yes)
+
+case "$x_fonts" in
+yes)
+	FC_X_FONTS=""
+	for dir in /usr/X11R6/lib /usr/X11/lib /usr/lib/X11; do
+		case x"$FC_X_FONTS" in
+		x)
+			if test -d "$dir/fonts"; then
+				FC_X_FONTS="$dir/fonts"
+			fi
+			;;
+		esac
+	done
+	AC_DEFINE_UNQUOTED(FC_X_FONTS,"$x_fonts",[X font directory])
+	;;
+no)
+	FC_X_FONTS=""
+	;;
+*)
+	FC_X_FONTS="$x_fonts"
+	AC_DEFINE_UNQUOTED(FC_X_FONTS,"$x_fonts",[X font directory])
+	;;
+esac
+
+AC_SUBST(FC_X_FONTS)
+
+FC_FONTPATH=""
+
+case "$FC_X_FONTS" in
+"")
+	;;
+*)
+	FC_FONTPATH="<dir>$FC_X_FONTS</dir>"
+	;;
+esac
+
+AC_SUBST(FC_FONTPATH)
+
+FC_FONTDATE=`date`
+
+AC_SUBST(FC_FONTDATE)
+
+AC_ARG_WITH(confdir,           [  --with-confdir=DIR            Use DIR to store configuration files (default /etc/fonts)], confdir="$withval", confdir=yes)
 
 #
 # Set CONFDIR and FONTCONFIG_PATH
@@ -234,106 +279,24 @@ no|yes)
 esac
 AC_SUBST(confdir)
 CONFDIR='${confdir}'
-AC_DEFINE_UNQUOTED(CONFDIR, "$CONFDIR")
+AC_DEFINE_UNQUOTED(CONFDIR, "$CONFDIR",[Font configuration directory])
 AC_SUBST(CONFDIR)
 
 #
-# Check expat configuration
+# Find out what language orthographies are included
 #
 
-case "$expat" in
-no)
-	;;
-*)
-	case "$expat_includes" in
-	yes|no)
-		expat_include_path=""
-		;;
-	*)
-		expat_include_path="-I$expat_includes"
-		;;
-	esac
-	case "$expat_lib" in
-	yes)
-		case "$expat" in
-		yes)
-			expat_library="-lexpat"
-			;;
-		*)
-			expat_library="-L$expat/lib -lexpat"
-			;;
-		esac
-		;;
-	no)
-		;;
-	*)
-		expat_library="-L$expat_lib -lexpat"
-		;;
-	esac
+ORTH_FILES=`cd fc-lang && echo *.orth`
+AC_SUBST(ORTH_FILES)
 
-	saved_CPPFLAGS="$CPPFLAGS"
-	CPPFLAGS="$CPPFLAGS $expat_include_path"
-	saved_LIBS="$LIBS"
-	LIBS="$LIBS $expat_library"
-
-	AC_CHECK_HEADER(expat.h)
-	case "$ac_cv_header_expat_h" in
-	no)
-		AC_CHECK_HEADER(xmlparse.h)
-		case "$ac_cv_header_xmlparse_h" in
-		no)
-			have_expat_header=no;
-			;;
-		yes)
-			HAVE_XMLPARSE_H=1
-			AC_SUBST(HAVE_XMLPARSE_H)
-			AC_DEFINE_UNQUOTED(HAVE_XMLPARSE_H,$HAVE_XMLPARSE_H)
-			have_expat_header=yes
-			;;
-		esac
-		;;
-	yes)
-		have_expat_header=yes
-		;;
-	esac
-	case "$have_expat_header" in
-	no)
-		CPPFLAGS="$saved_CPPFLAGS"
-		LIBS="$saved_LIBS"
-		expat=no
-		;;
-	yes)
-		AC_CHECK_FUNCS(XML_ParserCreate)
-		case "$ac_cv_func_XML_ParserCreate" in
-		no)
-			CPPFLAGS="$saved_CPPFLAGS"
-			LIBS="$saved_LIBS"
-			expat=no
-			;;
-		yes)
-			HAVE_EXPAT=1
-			AC_SUBST(HAVE_EXPAT)
-			AC_DEFINE_UNQUOTED(HAVE_EXPAT,$HAVE_EXPAT)
-			;;
-		esac
-		;;
-	esac
-	;;
-esac
-	
-	
-case "$expat" in
-no)
-	AC_MSG_ERROR([cannot find expat library])
-	;;
-esac
-
-AC_OUTPUT([Makefile
-	  config/Makedefs
-	  fc-lang/Makefile
-	  src/Makefile
-	  fc-cache/Makefile
-	  fc-list/Makefile
-	  fontconfig/Makefile
-	  fontconfig.pc])
-
+AC_OUTPUT([
+Makefile 
+fontconfig/Makefile
+fc-lang/Makefile
+src/Makefile
+fc-cache/Makefile
+fc-list/Makefile
+fontconfig.spec
+fontconfig.pc
+fonts.conf
+])

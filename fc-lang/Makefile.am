@@ -1,7 +1,7 @@
 #
-# $XFree86: xc/lib/fontconfig/fc-cache/Makefile.in,v 1.3 2002/05/24 06:25:51 keithp Exp $
+# $Id $
 #
-# Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
+# Copyright © 2003 Keith Packard
 #
 # Permission to use, copy, modify, distribute, and sell this software and its
 # documentation for any purpose is hereby granted without fee, provided that
@@ -22,32 +22,17 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-TOPDIR=..
+INCLUDES=-I../src $(FREETYPE_CFLAGS)
 
-include $(TOPDIR)/config/Makedefs
+TMPL=fclang.tmpl.h
+TARG=fclang.h
 
-SRCS=fc-cache.c
+noinst_PROGRAMS=fc-lang
 
-OBJS=fc-cache.o
+noinst_HEADERS=$(TARG)
 
-PROG=fc-cache
+ORTH=@ORTH_FILES@
 
-all:: $(PROG)
-
-$(PROG): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBFONTCONFIG)
-
-$(OBJS): $(HEADERS)
-
-install:: $(DESTDIR)$(BINDIR)
-
-$(DESTDIR)$(BINDIR):
-	mkdir -p $@
-
-install:: $(DESTDIR)$(BINDIR)/$(PROG)
-
-$(DESTDIR)$(BINDIR)/$(PROG): $(PROG)
-	$(INSTALL_PROGRAM) $(PROG) $(DESTDIR)$(BINDIR)/$<
-
-clean::
-	rm -f $(PROG) $(OBJS)
+$(TARG): $(TMPL) fc-lang $(ORTH)
+	rm -f $(TARG)
+	./fc-lang $(ORTH) < $(TMPL) > $(TARG)

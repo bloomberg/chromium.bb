@@ -1,4 +1,0 @@
-#!/bin/sh
-for d in ${1+"$@"}; do
-	echo "$d"
-done | sort -u | sed 's/^/	<dir>/' | sed 's;$;</dir>;'

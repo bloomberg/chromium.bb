@@ -1,0 +1,74 @@
+Summary:	System for configuring and customizing font access
+Name:		fontconfig
+Version:	@VERSION@
+Release:	1
+License:	MIT
+Group:		System Environment/Libraries
+Source:		http://fontconfig.org/fontconfig.tar.gz
+BuildRoot:	/var/tmp/%{name}-%{version}-root
+Requires:	freetype2
+BuildRequires:	freetype2-devel
+
+%description
+System for layout and rendering of internationalized text.
+
+%package devel
+Summary:	System for layout and rendering of internationalized text
+Group:		Development/Libraries
+Requires:	%{name} = %{version}
+Requires:	freetype2-devel
+
+%description devel
+The fontconfig-devel package includes the static libraries and header files
+for the fontconfig package.
+
+Install fontconfig-devel if you want to develop programs which will use
+fontconfig.
+
+%prep
+%setup
+
+%build
+CFLAGS="$RPM_OPT_FLAGS"
+./configure --prefix=%{_prefix} \
+    --bindir=%{_bindir} --mandir=%{_mandir} \
+    --localstatedir=%{_localstatedir} --libdir=%{_libdir} \
+    --datadir=%{_datadir} --includedir=%{_includedir} \
+    --sysconfdir=%{_sysconfdir} --disable-gtk-doc
+make
+
+%install
+rm -rf $RPM_BUILD_ROOT
+
+make prefix=$RPM_BUILD_ROOT%{_prefix} bindir=$RPM_BUILD_ROOT%{_bindir} \
+    mandir=$RPM_BUILD_ROOT%{_mandir} libdir=$RPM_BUILD_ROOT%{_libdir} \
+    localstatedir=$RPM_BUILD_ROOT%{_localstatedir} \
+    datadir=$RPM_BUILD_ROOT%{_datadir} \
+    includedir=$RPM_BUILD_ROOT%{_includedir} \
+    sysconfdir=$RPM_BUILD_ROOT%{_sysconfdir} install
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%post
+/sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
+%files
+%doc README AUTHORS COPYING ChangeLog TODO
+%{_libdir}/libfontconfig*.so
+%{_bindir}/fc-*
+%{_libdir}/pango
+%config %{_sysconfdir}/fonts/fonts.conf
+%config %{_sysconfdir}/fonts/fonts.dtd
+%config %{_sysconfdir}/fonts/local.conf
+
+%files devel
+%defattr(-, root, root)
+%{_libdir}/libfontconfig*.so
+%{_libdir}/*a
+%{_libdir}/pkgconfig/*.pc
+%{_includedir}/fontconfig
+
+%changelog

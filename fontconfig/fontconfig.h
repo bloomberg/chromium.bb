@@ -35,9 +35,10 @@ typedef int		FcBool;
 /*
  * Current Fontconfig version number
  */
+
 #define FC_MAJOR	1
 #define FC_MINOR	0
-#define FC_REVISION	2
+#define FC_REVISION	3
 
 #define FC_VERSION	((FC_MAJOR * 10000) + (FC_MINOR * 100) + (FC_REVISION))
 

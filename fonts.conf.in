@@ -22,17 +22,11 @@
 	Keith Packard
 -->
 
-<!-- FONTPATH_START -->
+<!-- Font directory list configured on @FC_FONTDATE@ -->
 
-<!-- 
-  Common X11R6 font directories
--->
-
-	<dir>/usr/X11R6/lib/X11/fonts</dir>
- 	<dir>/usr/share/fonts</dir>
+	<dir>@FC_DEFAULT_FONTS@</dir>
+	@FC_FONTPATH@
 	<dir>~/.fonts</dir>
-
-<!-- FONTPATH_END -->
 
 <!--
   Enable sub-pixel rendering
