@@ -1,5 +1,5 @@
 /**
- * \file drm_proc.h
+ * \file drm_proc.c
  * /proc support for DRM
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

@@ -418,7 +418,7 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = . \
-                         ../shared
+                         ../shared-core
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
@@ -440,8 +440,7 @@ RECURSIVE              = NO
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = dristat.c \
-                         drmstat.c
+EXCLUDE                = 
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or directories 
 # that are symbolic links (a Unix filesystem feature) are excluded from the input.
@@ -955,17 +954,8 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = __KERNEL__ \
                          DRM(x)=x \
-                         __HAVE_AGP=1 \
-                         __REALLY_HAVE_AGP=1 \
-                         __MUST_HAVE_AGP=0 \
-                         __HAVE_MTRR=1 \
-                         __HAVE_CTX_BITMAP=1 \
-                         __HAVE_SG=0 \
-                         __HAVE_PCI_DMA=0 \
-                         __HAVE_DMA=1 \
-                         __HAVE_IRQ=1 \
-                         __HAVE_VBL_IRQ=1 \
-                         __HAVE_SHARED_IRQ=1
+                         __OS_HAS_AGP=1 \
+                         __OS_HAS_MTRR=1
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 

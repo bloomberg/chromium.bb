@@ -1,5 +1,5 @@
 /**
- * \file drm_vm.h
+ * \file drm_vm.c
  * Memory mapping for DRM
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

@@ -1,5 +1,5 @@
 /**
- * \file drm_bufs.h
+ * \file drm_bufs.c
  * Generic buffer template
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

@@ -1,5 +1,5 @@
 /**
- * \file drm_agpsupport.h
+ * \file drm_agpsupport.c
  * DRM support for AGP/GART backend
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

@@ -1,5 +1,5 @@
 /**
- * \file drm_drawable.h
+ * \file drm_drawable.c
  * IOCTLs for drawables
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

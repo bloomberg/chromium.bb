@@ -1,5 +1,5 @@
 /**
- * \file drm_irq.h
+ * \file drm_irq.c
  * IRQ support
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

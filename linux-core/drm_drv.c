@@ -1,5 +1,5 @@
 /**
- * \file drm_drv.h
+ * \file drm_drv.c
  * Generic driver template
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

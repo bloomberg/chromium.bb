@@ -1,5 +1,5 @@
 /**
- * \file drm_auth.h
+ * \file drm_auth.c
  * IOCTLs for authentication
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

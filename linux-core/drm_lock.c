@@ -1,5 +1,5 @@
 /**
- * \file drm_lock.h
+ * \file drm_lock.c
  * IOCTLs for locking
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

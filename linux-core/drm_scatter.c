@@ -1,5 +1,5 @@
 /**
- * \file drm_scatter.h
+ * \file drm_scatter.c
  * IOCTLs to manage scatter/gather memory
  *
  * \author Gareth Hughes <gareth@valinux.com>

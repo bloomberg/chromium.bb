@@ -1,5 +1,5 @@
 /**
- * \file drm_stub.h
+ * \file drm_stub.c
  * Stub support
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

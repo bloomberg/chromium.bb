@@ -1,5 +1,5 @@
 /**
- * \file drm_dma.h
+ * \file drm_dma.c
  * DMA IOCTL and function support
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

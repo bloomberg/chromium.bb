@@ -1,5 +1,5 @@
 /**
- * \file drm_memory_debug.h
+ * \file drm_memory_debug.c
  * Memory management wrappers for DRM.
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

@@ -1,5 +1,5 @@
 /**
- * \file drm_fops.h
+ * \file drm_fops.c
  * File operations for DRM
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

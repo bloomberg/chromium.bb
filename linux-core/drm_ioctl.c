@@ -1,5 +1,5 @@
 /**
- * \file drm_ioctl.h
+ * \file drm_ioctl.c
  * IOCTL processing for DRM
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>

@@ -1,6 +1,6 @@
 /* drm_pci.h -- PCI DMA memory management wrappers for DRM -*- linux-c -*- */
 /**
- * \file drm_pci.h
+ * \file drm_pci.c
  * \brief Functions and ioctls to manage PCI memory
  *
  * \warning These interfaces aren't stable yet.
