@@ -1,13 +1,8 @@
-You can build fontconfig with either autoconf or imake.
+Fontconfig is built with the traditional configure script:
 
-For autoconf:
+	$ ./configure --sysconfdir=/etc --prefix=/usr
 
-	$ sh cvscompile.sh --sysconfdir=/etc --prefix=/usr
-
-For imake:
-	$ xmkmf -a
-
-These should both generate valid Makefiles, in either case:
+This should generate valid Makefiles, then:
 
 	$ make
 	$ make install

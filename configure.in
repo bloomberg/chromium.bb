@@ -23,23 +23,24 @@ dnl  PERFORMANCE OF THIS SOFTWARE.
 dnl
 dnl Process this file with autoconf to create configure.
 
+AC_INIT(fonts.dtd)
+
 dnl ==========================================================================
 dnl                               Versioning              
 dnl ==========================================================================
 
-dnl The version number is also in fontconfig/fontconfig.h
-AC_INIT(ChangeLog,1.0.3,fontconfig@fontconfig.org)
+dnl This is the package version number, not the shared library version number
+dnl The shared library version lives in fontconfig/fontconfig.h
+AM_INIT_AUTOMAKE(fontconfig, 2.1.90)
 
 FONTCONFIG_HEADER=fontconfig/fontconfig.h
 FONTCONFIG_MAJOR=`awk '/^#define FC_MAJOR/ { print $3 }' $FONTCONFIG_HEADER`
 FONTCONFIG_MINOR=`awk '/^#define FC_MINOR/ { print $3 }' $FONTCONFIG_HEADER`
 FONTCONFIG_REVISION=`awk '/^#define FC_REVISION/ { print $3 }' $FONTCONFIG_HEADER`
-FONTCONFIG_VERSION="$FONTCONFIG_MAJOR.$FONTCONFIG_MINOR.$FONTCONFIG_REVISION"
 
 AC_SUBST(FONTCONFIG_MAJOR)
 AC_SUBST(FONTCONFIG_MINOR)
 AC_SUBST(FONTCONFIG_REVISION)
-AC_SUBST(FONTCONFIG_VERSION)
 
 dnl libtool versioning
 
@@ -47,8 +48,6 @@ LT_VERSION_NUMBER="$FONTCONFIG_MAJOR:$FONTCONFIG_MINOR:$FONTCONFIG_REVISION"
 AC_SUBST(LT_VERSION_NUMBER)
 
 dnl ==========================================================================
-
-AM_INIT_AUTOMAKE(fontconfig, $FONTCONFIG_VERSION)
 
 AM_CONFIG_HEADER(config.h)
 

@@ -1,3 +1,23 @@
+Sat Mar  1 17:28:53 PST 2003	keithp
+	+ Ok, so the ChangeLog is a bit out of date
+
+	+ Lots of bugs fixed; most are in bugzilla, the
+	  biggest problems were in cache management where
+	  Owen discovered the library would lose badly when
+	  combining fonts-cache and ~/.fonts-cache data
+
+	+ Converted from autoconf to automake.  This after
+	  getting patches accepted into libtool to allow
+	  the '-version-number' argument which lets
+	  packages set version numbers explicitly rather
+	  than the roundabout libtool way
+
+	+ Converted documentation to SGML using the docbook
+	  DTD.  Now .txt and .html documents are installed
+	  in /usr/share/doc/fontconfig and there's no
+	  man page.  Perhaps a man version can be written
+	  at some point.
+
 Sat Aug 31 15:21:22 PDT 2002	keithp
 	+ Xrender and Xft had several bugs related to
 	  rendering manually placed or poly-face text

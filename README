@@ -1,9 +1,9 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 1.0.1
-		        2002-5-23
+		      Version 2.2
+		        2003-3-1
 
-This is the first public release of fontconfig, a font configuration and
+This is the third public release of fontconfig, a font configuration and
 customization library.  Fontconfig is designed to locate fonts within the
 system and select them according to requirements specified by applications.
 

@@ -4,6 +4,8 @@ INCLUDES = 						\
 	-I$(top_srcdir)					\
 	-I$(top_srcdir)/src
 	
+noinst_HEADERS=fcint.h
+
 libfontconfig_la_SOURCES = \
 	fcatomic.c \
 	fcblanks.c \

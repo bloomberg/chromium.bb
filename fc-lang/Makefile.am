@@ -33,6 +33,8 @@ noinst_HEADERS=$(TARG)
 
 ORTH=@ORTH_FILES@
 
+EXTRA_DIST=$(TMPL) $(ORTH)
+
 $(TARG): $(TMPL) fc-lang $(ORTH)
 	rm -f $(TARG)
 	./fc-lang $(ORTH) < $(TMPL) > $(TARG)

@@ -28,7 +28,8 @@ EXTRA_DIST = \
         fonts.conf.in \
 	fonts.dtd \
 	local.conf \
-        stamp-h.in
+        fontconfig.spec.in \
+        fontconfig.spec
 
 pkgconfigdir=$(libdir)/pkgconfig
 pkgconfig_DATA = fontconfig.pc
