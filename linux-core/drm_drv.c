@@ -437,6 +437,10 @@ void __exit drm_exit(struct drm_driver *driver)
 	if (drm_fb_loaded) {
 		for (i = 0; i < cards_limit; i++) {
 			head = drm_heads[i];
+			if (!head)
+				continue;
+			if (!head->dev)
+				continue;
 			if (head->dev->driver != driver)
 				continue;
 			dev = head->dev;
@@ -491,12 +495,12 @@ static int __init drm_core_init(void)
 		 DRIVER_NAME,
 		 DRIVER_MAJOR, DRIVER_MINOR, DRIVER_PATCHLEVEL, DRIVER_DATE);
 	return 0;
-      err_p3:
+err_p3:
 	drm_sysfs_destroy(drm_class);
-      err_p2:
+err_p2:
 	unregister_chrdev(DRM_MAJOR, "drm");
 	drm_free(drm_heads, sizeof(*drm_heads) * cards_limit, DRM_MEM_STUB);
-      err_p1:
+err_p1:
 	return ret;
 }
 
