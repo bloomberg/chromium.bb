@@ -172,6 +172,10 @@ endif
 
 endif
 
+ifeq ($(findstring 2.4,$(RUNNING_REL)),)
+$(error Building 2.4 version on $(RUNNING_REL))
+endif
+
 CLEANCONFIG := $(shell if cmp -s $(LINUXDIR)/.config .config; then echo y; fi)
 ifeq ($(CLEANCONFIG),y)
 CLEANFILES += $(LINUXDIR)/.config .config $(LINUXDIR)/tmp_include_depends
