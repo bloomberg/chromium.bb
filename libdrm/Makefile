@@ -6,7 +6,7 @@ libxf86drm.a:	$(OBJECTS)
 	ranlib $@
 
 $(OBJECTS):	$(SOURCES)
-	gcc -c -I../shared -I../linux $+
+	$(CC) $(CFLAGS) -c -I../shared -I../linux $+
 
 clean:
 	rm *.a *.o
