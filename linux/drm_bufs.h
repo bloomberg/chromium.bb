@@ -190,6 +190,7 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 					_entry->map->offset, _entry->map->size, _entry->map->type );
 				if ( _entry->map && map->type == _entry->map->type  &&
 						map->offset == _entry->map->offset ) {
+					_entry->map->size = map->size;
 					DRM(free)( map, sizeof(*map), DRM_MEM_MAPS );
 					map = _entry->map;
 					DRM_DEBUG( "Found existing: offset = 0x%08lx, size = 0x%08lx, type = %d\n",
