@@ -27,4 +27,6 @@ man1_MANS=fc-cache.man
 
 bin_PROGRAMS=fc-cache
 
+EXTRA_DIST=$(man1_MANS)
+
 fc_cache_LDADD = ../src/libfontconfig.la
