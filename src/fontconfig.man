@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86: xc/lib/fontconfig/src/fontconfig.man,v 1.3 2002/08/11 18:10:43 keithp Exp $
+.\" $XFree86: xc/lib/fontconfig/src/fontconfig.man,v 1.5 2002/08/26 19:57:40 keithp Exp $
 .\"
 .\" Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 .\"
@@ -24,7 +24,8 @@
 .de TQ
 .br
 .ns
-.TP \\$1
+.TP
+\\$1
 ..
 .TH FONTCONFIG 3 "Version 1.0" "XFree86"
 
@@ -430,8 +431,8 @@ Returns FcTrue if 'mat1' and 'mat2' are equal, else FcFalse.
 
 .TP
 void FcMatrixMultiply (FcMatrix *result, const FcMatrix *a, const FcMatrix *b)
-Multiplies 'a' and 'b' together, placing the result in
-'result'.  'result' may refer to the sam matrix as either 'a' or 'b'.
+Multiplies 'a' and 'b' together, placing the result in 'result'.  'result'
+may refer to the sam matrix as either 'a' or 'b'.
 
 .TP
 void FcMatrixRotate (FcMatrix *m, double c, double s)
@@ -485,7 +486,7 @@ Returns a set including only those chars found in both 'a' and 'b'.
 FcCharSet *FcCharSetUnion (const FcCharSet *a, const FcCharSet *b);
 Returns a set including only those chars found in either 'a' or 'b'.
 
-.TP 
+.TP
 FcCharSet *FcCharSetSubtract (const FcCharSet *a, const FcCharSet *b)
 Returns a set including only those chars found in 'a' but not 'b'.
 
@@ -509,11 +510,13 @@ Returns the number of chars that are in 'a' but not in 'b'.
 FcBool FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
 Returns whether 'a' is a subset of 'b'.
 
-.TP FcChar32 FcCharSetFirstPage (const FcCharSet *a, FcChar32 [FC_CHARSET_MAP_SIZE], FcChar32 *next)
+.TP
+FcChar32 FcCharSetFirstPage (const FcCharSet *a, FcChar32 [FC_CHARSET_MAP_SIZE], FcChar32 *next)
 Builds an array of bits marking the first page of Unicode coverage of 'a'.
 Returns the base of the array.  'next' contains the next page in the font.
 
-.TP FcChar32 FcCharSetNextPage (const FcCharSet *a, FcChar32 [FC_CHARSET_MAP_SIZE], FcChar32 *next)
+.TP
+FcChar32 FcCharSetNextPage (const FcCharSet *a, FcChar32 [FC_CHARSET_MAP_SIZE], FcChar32 *next)
 Builds an array of bits marking the Unicode coverage of 'a' for page '*next'.
 Returns the base of the array.  'next' contains the next page in the font.
 
@@ -687,7 +690,7 @@ void FcFontSetDestroy (FcFontSet *s);
 Destroys a font set.  Note that this destroys any referenced patterns as
 well.
 
-.TP 
+.TP
 FcBool FcFontSetAdd (FcFontSet *s, FcPattern *font)
 Adds a pattern to a font set.  Note that the pattern is not copied before
 being inserted into the set.
@@ -720,7 +723,8 @@ These build an object set from a null-terminated list of property names.
 Provides for applcation-specified font name object types so that new
 pattern elements can be generated from font names.
 
-.TP FcBool FcNameRegisterObjectTypes (const FcObjectType *types, int ntype)
+.TP
+FcBool FcNameRegisterObjectTypes (const FcObjectType *types, int ntype)
 Register 'ntype' new object types.
 
 .TP
@@ -785,7 +789,7 @@ any function using the data within an FcConfig.
 FcConfig *FcConfigCreate (void)
 Creates an empty configuration.
 
-.TP 
+.TP
 void FcConfigDestroy (FcConfig *config)
 Destroys a configuration and any data associated with it.  Note that calling
 this function with the return from FcConfigGetCurrent will place the library
@@ -822,7 +826,7 @@ Returns the list of font directories in 'config'. This includes the
 configured font directories along with any directories below those in the
 filesystem.
 
-.TP 
+.TP
 FcStrList *FcConfigGetConfigFiles (FcConfig *config)
 Returns the list of known configuration files used to generate 'config'.
 Note that this will not include any configuration done with FcConfigParse.
@@ -855,12 +859,12 @@ Sets the rescan interval; returns FcFalse if an error occurred.
 FcBool FcConfigAppFontAddFile (FcConfig *config, const char *file)
 Adds an application-specific font to the configuration.
 
-.TP 
+.TP
 FcBool FcConfigAppFontAddDir (FcConfig *config, const char *dir)
 Scans the specified directory for fonts, adding each one found to the
 application-specific set of fonts.
 
-.TP 
+.TP
 void FcConfigAppFontClear (FcConfig *config)
 Clears the set of application-specific fonts.
 
@@ -885,8 +889,8 @@ been called for 'p'; otherwise the results will not be correct.
 FcFontSet *FcFontSort (FcConfig *config, FcPattern *p, FcBool trim, FcCharSet **csp, FcResult *result) Returns the list of fonts sorted by
 closeness to 'p'.  If 'trim' is FcTrue, elements in the list which don't
 include Unicode coverage not provided by earlier elements in the list are
-elided.  The union of Unicode coverage of all of the fonts is returned in
-'csp', if 'csp' is not NULL.  This function should be called only after
+elided.  The union of Unicode coverage of all of the fonts is returned
+in 'csp', if 'csp' is not NULL.  This function should be called only after
 FcConfigSubstitute and FcDefaultSubstitute have been called for 'p';
 otherwise the results will not be correct.
 .P
@@ -899,9 +903,9 @@ The FcFontSet returned by FcFontSort is destroyed by caling FcFontSetDestroy.
 
 .TP
 FcPattern *FcFontRenderPrepare (FcConfig *config, FcPattern *pat, FcPattern *font)
-Creates a new pattern consisting of elements of 'font' not appearing in
-'pat', elements of 'pat' not appearing in 'font' and the best matching value
-from 'pat' for elements appearing in both.  The result is passed to
+Creates a new pattern consisting of elements of 'font' not appearing
+in 'pat', elements of 'pat' not appearing in 'font' and the best matching
+value from 'pat' for elements appearing in both.  The result is passed to
 FcConfigSubstitute with 'kind' FcMatchFont and then returned.
 
 .TP
@@ -978,8 +982,8 @@ locked.
 
 .TP
 FcChar8 *FcAtomicNewFile (FcAtomic *atomic)
-Returns the filename for writing a new version of the file refernced by
-'atomic'.
+Returns the filename for writing a new version of the file referenced
+by 'atomic'.
 
 .TP
 FcChar8 *FcAtomicOrigFile (FcAtomic *atomic)
@@ -1020,8 +1024,8 @@ higher level functions.
 .TP
 FcCharSet *FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks) Scans a
 FreeType face and returns the set of encoded Unicode chars.  This scans
-several encoding tables to build as complete a list as possible.  If
-'blanks' is not 0, the glyphs in the font are examined and any blank glyphs
+several encoding tables to build as complete a list as possible.  
+If 'blanks' is not 0, the glyphs in the font are examined and any blank glyphs
 not in 'blanks' are not placed in the returned FcCharSet.
 
 .TP
@@ -1032,8 +1036,8 @@ of fonts in 'file' is returned in 'count'.
 .SS XML specific functions
 .TP
 FcBool FcConfigParseAndLoad (FcConfig *config, const FcChar8 *file, FcBool complain)
-Walks the configuration in 'file' and constructs the internal representation in
-'config'.  Any include files referenced from within 'file' will be loaded
+Walks the configuration in 'file' and constructs the internal representation
+in 'config'.  Any include files referenced from within 'file' will be loaded
 with FcConfigLoad and also parsed.  If 'complain' is FcFalse, no warning
 will be displayed if 'file' does not exist.
 
@@ -1131,21 +1135,21 @@ long.  Bytes of 'src' are combined into 16-bit units according to 'endian'.
 
 .TP
 FcBool FcUtf16Len (FcChar8 *src, FcEndian endian, int len, int *nchar, int *wchar)
-Counts the number of Unicode chars in 'len' bytes of 'src'.  Bytes of
-'src' are combined into 16-bit units according to 'endian'.  Places that
+Counts the number of Unicode chars in 'len' bytes of 'src'.  Bytes of 'src'
+are combined into 16-bit units according to 'endian'.  Places that
 count in 'nchar'.  'wchar' contains 1, 2 or 4 depending on the number of
 bytes needed to hold the largest unicode char counted.  The return value
 indicates whether 'string' is a well-formed UTF16 string.
 
 .TP
 FcChar8 *FcStrCopy (const FcChar8 *s)
-Allocates memory, copies 's' and returns the resulting buffer.  Yes, this is
-'strdup', but that function isn't available on every platform.
+Allocates memory, copies 's' and returns the resulting buffer.  Yes, this
+is 'strdup', but that function isn't available on every platform.
 
 .TP
 FcChar8 *FcStrCopyFilename (const FcChar8 *s)
-Just like FcStrCopy except that it converts any leading '~' characters in
-'s' to the value of the HOME environment variable.
+Just like FcStrCopy except that it converts any leading '~' characters 
+in 's' to the value of the HOME environment variable.
     
 .TP
 int FcStrCmpIgnoreCase (const char *s1, const char *s2)
@@ -1232,8 +1236,8 @@ resulting from a match rather than a font pattern to be matched.
 
 .SS <test qual="any" name="property" compare="eq">
 This element contains a single value which is compared with the pattern
-property "property" (substitute any of the property names seen above).
-'compare' can be one of "eq", "not_eq", "less", "less_eq", "more", or
+property "property" (substitute any of the property names seen 
+above). 'compare' can be one of "eq", "not_eq", "less", "less_eq", "more", or
 "more_eq".  'qual' may either be the default, "any", in which case the match
 succeeds if any value associated with the property matches the test value, or
 "all", in which case all of the values associated with the property must
