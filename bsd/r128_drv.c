@@ -75,11 +75,10 @@ drm_chipinfo_t DRM(devicelist)[] = {
 #include "drm_ioctl.h"
 #include "drm_lock.h"
 #include "drm_memory.h"
+#include "drm_pci.h"
 #include "drm_sysctl.h"
 #include "drm_vm.h"
-#if __HAVE_SG
 #include "drm_scatter.h"
-#endif
 
 #ifdef __FreeBSD__
 DRIVER_MODULE(r128, pci, r128_driver, r128_devclass, 0, 0);

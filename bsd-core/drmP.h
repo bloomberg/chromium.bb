@@ -196,7 +196,8 @@ typedef struct drm_buf_entry {
 	drm_buf_t	  *buflist;
 	int		  seg_count;
 	int		  page_order;
-	unsigned long	  *seglist;
+	vm_offset_t	  *seglist;
+	dma_addr_t	  *seglist_bus;
 
 	drm_freelist_t	  freelist;
 } drm_buf_entry_t;
@@ -562,6 +563,12 @@ extern int		DRM(sg_alloc)(DRM_IOCTL_ARGS);
 extern int		DRM(sg_free)(DRM_IOCTL_ARGS);
 #endif
 
+/* consistent PCI memory functions (drm_pci.h) */
+extern void		*DRM(pci_alloc)(drm_device_t *dev, size_t size, 
+					size_t align, dma_addr_t maxaddr,
+					dma_addr_t *busaddr);
+extern void		DRM(pci_free)(drm_device_t *dev, size_t size, 
+				      void *vaddr, dma_addr_t busaddr);
 
 #endif /* __KERNEL__ */
 #endif /* _DRM_P_H_ */
