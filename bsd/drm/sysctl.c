@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI$
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drm/sysctl.c,v 1.1 2000/06/17 00:03:31 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drm/sysctl.c,v 1.2 2001/03/02 02:45:38 dawes Exp $
  *
  */
 
@@ -35,21 +35,21 @@
 
 SYSCTL_NODE(_hw, OID_AUTO, dri, CTLFLAG_RW, 0, "DRI Graphics");
 
-static int	   drm_name_info SYSCTL_HANDLER_ARGS;
-static int	   drm_vm_info SYSCTL_HANDLER_ARGS;
-static int	   drm_clients_info SYSCTL_HANDLER_ARGS;
-static int	   drm_queues_info SYSCTL_HANDLER_ARGS;
-static int	   drm_bufs_info SYSCTL_HANDLER_ARGS;
+static int	   drm_name_info DRM_SYSCTL_HANDLER_ARGS;
+static int	   drm_vm_info DRM_SYSCTL_HANDLER_ARGS;
+static int	   drm_clients_info DRM_SYSCTL_HANDLER_ARGS;
+static int	   drm_queues_info DRM_SYSCTL_HANDLER_ARGS;
+static int	   drm_bufs_info DRM_SYSCTL_HANDLER_ARGS;
 #if DRM_DEBUG_CODExx
-static int	   drm_vma_info SYSCTL_HANDLER_ARGS;
+static int	   drm_vma_info DRM_SYSCTL_HANDLER_ARGS;
 #endif
 #if DRM_DMA_HISTOGRAM
-static int	   drm_histo_info SYSCTL_HANDLER_ARGS;
+static int	   drm_histo_info DRM_SYSCTL_HANDLER_ARGS;
 #endif
 
 struct drm_sysctl_list {
 	const char *name;
-	int	   (*f) SYSCTL_HANDLER_ARGS;
+	int	   (*f) DRM_SYSCTL_HANDLER_ARGS;
 } drm_sysctl_list[] = {
 	{ "name",    drm_name_info    },
 	{ "mem",     drm_mem_info     },
@@ -137,7 +137,7 @@ int drm_sysctl_cleanup(drm_device_t *dev)
 	return 0;
 }
 
-static int drm_name_info SYSCTL_HANDLER_ARGS
+static int drm_name_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	char buf[128];
@@ -155,11 +155,11 @@ static int drm_name_info SYSCTL_HANDLER_ARGS
 	return 0;
 }
 
-static int _drm_vm_info SYSCTL_HANDLER_ARGS
+static int _drm_vm_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	drm_map_t    *map;
-	const char   *types[] = { "FB", "REG", "SHM" };
+	const char   *types[] = { "FB", "REG", "SHM", "AGP" };
 	const char   *type;
 	int	     i;
 	char         buf[128];
@@ -172,7 +172,7 @@ static int _drm_vm_info SYSCTL_HANDLER_ARGS
 
 	for (i = 0; i < dev->map_count; i++) {
 		map = dev->maplist[i];
-		if (map->type < 0 || map->type > 2) type = "??";
+		if (map->type < 0 || map->type > 3) type = "??";
 		else				    type = types[map->type];
 		DRM_SYSCTL_PRINT("%4d 0x%08lx 0x%08lx %4.4s  0x%02x 0x%08lx ",
 				 i,
@@ -192,7 +192,7 @@ static int _drm_vm_info SYSCTL_HANDLER_ARGS
 	return 0;
 }
 
-static int drm_vm_info SYSCTL_HANDLER_ARGS
+static int drm_vm_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	int	     ret;
@@ -205,7 +205,7 @@ static int drm_vm_info SYSCTL_HANDLER_ARGS
 }
 
 
-static int _drm_queues_info SYSCTL_HANDLER_ARGS
+static int _drm_queues_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	int	     i;
@@ -221,7 +221,7 @@ static int _drm_queues_info SYSCTL_HANDLER_ARGS
 		atomic_inc(&q->use_count);
 		DRM_SYSCTL_PRINT_RET(atomic_dec(&q->use_count),
 				     "%5d/0x%03x %5d %5d"
-				     " %5d/%c%c/%c%c%c %5d %10d %10d %10d\n",
+				     " %5d/%c%c/%c%c%c %5Zd %10d %10d %10d\n",
 				     i,
 				     q->flags,
 				     atomic_read(&q->use_count),
@@ -243,7 +243,7 @@ static int _drm_queues_info SYSCTL_HANDLER_ARGS
 	return 0;
 }
 
-static int drm_queues_info SYSCTL_HANDLER_ARGS
+static int drm_queues_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	int	     ret;
@@ -257,7 +257,7 @@ static int drm_queues_info SYSCTL_HANDLER_ARGS
 /* drm_bufs_info is called whenever a process reads
    hw.dri.0.bufs. */
 
-static int _drm_bufs_info SYSCTL_HANDLER_ARGS
+static int _drm_bufs_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t	 *dev = arg1;
 	drm_device_dma_t *dma = dev->dma;
@@ -293,7 +293,7 @@ static int _drm_bufs_info SYSCTL_HANDLER_ARGS
 	return 0;
 }
 
-static int drm_bufs_info SYSCTL_HANDLER_ARGS
+static int drm_bufs_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	int	     ret;
@@ -305,7 +305,7 @@ static int drm_bufs_info SYSCTL_HANDLER_ARGS
 }
 
 
-static int _drm_clients_info SYSCTL_HANDLER_ARGS
+static int _drm_clients_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	drm_file_t   *priv;
@@ -327,7 +327,7 @@ static int _drm_clients_info SYSCTL_HANDLER_ARGS
 	return 0;
 }
 
-static int drm_clients_info SYSCTL_HANDLER_ARGS
+static int drm_clients_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	int	     ret;
@@ -340,7 +340,7 @@ static int drm_clients_info SYSCTL_HANDLER_ARGS
 
 #if DRM_DEBUG_CODExx
 
-static int _drm_vma_info SYSCTL_HANDLER_ARGS
+static int _drm_vma_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t	      *dev = arg1;
 	drm_vma_entry_t	      *pt;
@@ -412,7 +412,7 @@ static int _drm_vma_info SYSCTL_HANDLER_ARGS
 	return 0;
 }
 
-static int drm_vma_info SYSCTL_HANDLER_ARGS
+static int drm_vma_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	int	     ret;
@@ -426,7 +426,7 @@ static int drm_vma_info SYSCTL_HANDLER_ARGS
 
 
 #if DRM_DMA_HISTOGRAM
-static int _drm_histo_info SYSCTL_HANDLER_ARGS
+static int _drm_histo_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t	 *dev = arg1;
 	drm_device_dma_t *dma = dev->dma;
@@ -498,9 +498,9 @@ static int _drm_histo_info SYSCTL_HANDLER_ARGS
 	} else {
 		DRM_SYSCTL_PRINT("lock		     none\n");
 	}
-	DRM_SYSCTL_PRINT("context_flag   0x%08x\n", dev->context_flag);
-	DRM_SYSCTL_PRINT("interrupt_flag 0x%08x\n", dev->interrupt_flag);
-	DRM_SYSCTL_PRINT("dma_flag       0x%08x\n", dev->dma_flag);
+	DRM_SYSCTL_PRINT("context_flag   0x%08lx\n", dev->context_flag);
+	DRM_SYSCTL_PRINT("interrupt_flag 0x%08lx\n", dev->interrupt_flag);
+	DRM_SYSCTL_PRINT("dma_flag       0x%08lx\n", dev->dma_flag);
 
 	DRM_SYSCTL_PRINT("queue_count    %10d\n",	 dev->queue_count);
 	DRM_SYSCTL_PRINT("last_context   %10d\n",	 dev->last_context);
@@ -541,7 +541,7 @@ static int _drm_histo_info SYSCTL_HANDLER_ARGS
 	return 0;
 }
 
-static int drm_histo_info SYSCTL_HANDLER_ARGS
+static int drm_histo_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	int	     ret;

@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/proc.c,v 1.4 1999/08/20 15:36:46 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drm/proc.c,v 1.1 2000/06/17 00:03:30 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drm/proc.c,v 1.2 2001/03/02 02:45:38 dawes Exp $
  *
  */
 
@@ -165,7 +165,7 @@ static int _drm_vm_info(char *buf, char **start, off_t offset, int len,
 {
 	drm_device_t *dev = (drm_device_t *)data;
 	drm_map_t    *map;
-	const char   *types[] = { "FB", "REG", "SHM" };
+	const char   *types[] = { "FB", "REG", "SHM", "AGP" };
 	const char   *type;
 	int	     i;
 
@@ -176,7 +176,7 @@ static int _drm_vm_info(char *buf, char **start, off_t offset, int len,
 		       "address mtrr\n\n");
 	for (i = 0; i < dev->map_count; i++) {
 		map = dev->maplist[i];
-		if (map->type < 0 || map->type > 2) type = "??";
+		if (map->type < 0 || map->type > 3) type = "??";
 		else				    type = types[map->type];
 		DRM_PROC_PRINT("%4d 0x%08lx 0x%08lx %4.4s  0x%02x 0x%08lx ",
 			       i,
@@ -226,7 +226,7 @@ static int _drm_queues_info(char *buf, char **start, off_t offset, int len,
 		atomic_inc(&q->use_count);
 		DRM_PROC_PRINT_RET(atomic_dec(&q->use_count),
 				   "%5d/0x%03x %5d %5d"
-				   " %5d/%c%c/%c%c%c %5d %10d %10d %10d\n",
+				   " %5d/%c%c/%c%c%c %5Zd %10d %10d %10d\n",
 				   i,
 				   q->flags,
 				   atomic_read(&q->use_count),

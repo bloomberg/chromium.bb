@@ -27,7 +27,7 @@
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.17 2000/09/24 13:51:32 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.18 2001/03/21 18:08:54 dawes Exp $
  *
  */
 
@@ -164,7 +164,11 @@ static drmHashEntry *drmGetEntry(int fd)
 
 static int drmOpenDevice(long dev, int minor)
 {
-    stat_t          st;
+#ifdef XFree86LOADER
+    struct xf86stat st;
+#else
+    struct stat     st;
+#endif
     char            buf[64];
     int             fd;
     mode_t          dirmode = DRM_DEV_DIRMODE;
@@ -485,6 +489,11 @@ int drmAddMap(int fd,
     drm_map_t map;
 
     map.offset  = offset;
+#ifdef __alpha__
+    /* Make sure we add the bus_base to all but shm */
+    if (type != DRM_SHM)
+	map.offset += BUS_BASE;
+#endif
     map.size    = size;
     map.handle  = 0;
     map.type    = type;
