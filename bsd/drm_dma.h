@@ -524,7 +524,7 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	TASK_INIT(&dev->task, 0, DRM(dma_immediate_bh), dev);
 #endif
 
-#if __HAVE_VBL_IRQ
+#if __HAVE_VBL_IRQ && 0 /* disabled */
 	DRM_SPININIT( dev->vbl_lock, "vblsig" );
 	TAILQ_INIT( &dev->vbl_sig_list );
 #endif
@@ -645,6 +645,7 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 
 	flags = vblwait.request.type & _DRM_VBLANK_FLAGS_MASK;
 	if (flags & _DRM_VBLANK_SIGNAL) {
+#if 0 /* disabled */
 		drm_vbl_sig_t *vbl_sig = DRM_MALLOC(sizeof(drm_vbl_sig_t));
 		if (vbl_sig == NULL)
 			return ENOMEM;
@@ -660,6 +661,8 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 		TAILQ_INSERT_HEAD(&dev->vbl_sig_list, vbl_sig, link);
 		DRM_SPINUNLOCK(&dev->vbl_lock);
 		ret = 0;
+#endif
+		ret = EINVAL;
 	} else {
 		ret = DRM(vblank_wait)(dev, &vblwait.request.sequence);
 		
@@ -674,6 +677,11 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	return ret;
 }
 
+void DRM(vbl_send_signals)(drm_device_t *dev)
+{
+}
+
+#if 0 /* disabled */
 void DRM(vbl_send_signals)( drm_device_t *dev )
 {
 	drm_vbl_sig_t *vbl_sig;
@@ -699,6 +707,7 @@ void DRM(vbl_send_signals)( drm_device_t *dev )
 
 	DRM_SPINUNLOCK(&dev->vbl_lock);
 }
+#endif
 
 #endif /*  __HAVE_VBL_IRQ */
 

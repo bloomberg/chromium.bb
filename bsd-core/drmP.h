@@ -27,6 +27,7 @@
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
+ * $FreeBSD: src/sys/dev/drm/drmP.h,v 1.2 2002/04/29 18:18:42 anholt Exp $
  */
 
 #ifndef _DRM_P_H_
@@ -489,8 +490,10 @@ struct drm_device {
 #if __HAVE_VBL_IRQ
    	wait_queue_head_t vbl_queue;	/* vbl wait channel */
    	atomic_t          vbl_received;
+#if 0 /* vbl signals are untested, ntested */
 	struct drm_vbl_sig_list vbl_sig_list;
 	DRM_SPINTYPE      vbl_lock;
+#endif
 #endif
 	cycles_t	  ctx_start;
 	cycles_t	  lck_start;
