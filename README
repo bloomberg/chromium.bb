@@ -1,10 +1,22 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.2.98
-		        2004-12-29
+		      Version 2.2.99
+		         2005-1-28
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.2.99
+
+Verify cache for FC_FILE and FC_FAMILY in every entry (#2219)
+
+Update blanks list from recent Unicode docs (#86)
+
+Various small build fixes (#280, #2278, 
+
+Documentation fixes (#2085, #2284, #2285)
+
+Add polite typechecking to config file loader (#229)
 
 2.2.98
 
