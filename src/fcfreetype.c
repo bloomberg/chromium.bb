@@ -467,7 +467,12 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!FcPatternAddString (pat, FC_SOURCE, (FcChar8 *) "FreeType"))
 	goto bail1;
 
-#if 1
+#if 0
+    /*
+     * don't even try this -- CJK 'monospace' fonts are really
+     * dual width, and most other fonts don't bother to set
+     * the attribute.  Sigh.
+     */
     if ((face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) != 0)
 	if (!FcPatternAddInteger (pat, FC_SPACING, FC_MONO))
 	    goto bail1;
