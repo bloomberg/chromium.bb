@@ -23,7 +23,7 @@ BELOW25 := $(shell if [ $(PATCHLEVEL) -lt 5 ]; then echo y; fi)
 
 # There were major build changes starting with 2.5.52
 ifneq ($(BELOW25),y)
-BELOW2552 := $(shell if [ $(SUBLEVEL) -lt 52 ]; then echo y; fi)
+BELOW2552 := $(shell if [ $(PATCHLEVEL) -eq 5 -a $(SUBLEVEL) -lt 52 ]; then echo y; fi)
 else
 BELOW2552 := y
 endif
