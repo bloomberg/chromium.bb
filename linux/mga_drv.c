@@ -54,6 +54,7 @@ static struct file_operations mga_fops = {
 	mmap:	 drm_mmap,
 	read:	 drm_read,
 	fasync:	 drm_fasync,
+   	poll:	 drm_poll,
 };
 
 static struct miscdevice      mga_misc = {
@@ -105,9 +106,11 @@ static drm_ioctl_desc_t	      mga_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]    = { drm_agp_bind,    1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]  = { drm_agp_unbind,  1, 1 },
    	[DRM_IOCTL_NR(DRM_IOCTL_MGA_INIT)]    = { mga_dma_init,    1, 1 },
-   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_SWAP)]    = { mga_clear_bufs,  1, 1 },
-   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_CLEAR)]   = { mga_swap_bufs,   1, 1 },
-   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_ILOAD)]   = { mga_iload,       1, 1 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_SWAP)]    = { mga_swap_bufs,   1, 0 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_CLEAR)]   = { mga_clear_bufs,  1, 0 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_ILOAD)]   = { mga_iload,       1, 0 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_VERTEX)]  = { mga_vertex,      1, 0 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_FLUSH)]   = { mga_flush_ioctl, 1, 0 },
 };
 
 #define MGA_IOCTL_COUNT DRM_ARRAY_SIZE(mga_ioctls)
@@ -380,6 +383,21 @@ int mga_init(void)
 	drm_proc_init(dev);
 	DRM_DEBUG("doing agp init\n");
 	dev->agp    = drm_agp_init();
+      	if(dev->agp == NULL) {
+	   	DRM_DEBUG("The mga drm module requires the agpgart module"
+		          " to function correctly\nPlease load the agpgart"
+		          " module before you load the mga module\n");
+	   	drm_proc_cleanup();
+	   	misc_deregister(&mga_misc);
+	   	mga_takedown(dev);
+	   	return -ENOMEM;
+	}
+#ifdef CONFIG_MTRR
+   	dev->agp->agp_mtrr = mtrr_add(dev->agp->agp_info.aper_base,
+				      dev->agp->agp_info.aper_size * 1024 * 1024,
+				      MTRR_TYPE_WRCOMB,
+				      1);
+#endif
 	DRM_DEBUG("doing ctxbitmap init\n");
 	if((retcode = drm_ctxbitmap_init(dev))) {
 		DRM_ERROR("Cannot allocate memory for context bitmap.\n");
@@ -416,6 +434,16 @@ void mga_cleanup(void)
 	}
 	drm_ctxbitmap_cleanup(dev);
 	mga_dma_cleanup(dev);
+#ifdef CONFIG_MTRR
+   	if(dev->agp && dev->agp->agp_mtrr) {
+	   	int retval;
+	   	retval = mtrr_del(dev->agp->agp_mtrr, 
+				  dev->agp->agp_info.aper_base,
+				  dev->agp->agp_info.aper_size * 1024*1024);
+	   	DRM_DEBUG("mtrr_del = %d\n", retval);
+	}
+#endif
+
 	mga_takedown(dev);
 	if (dev->agp) {
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);

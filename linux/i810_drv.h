@@ -32,6 +32,31 @@
 #ifndef _I810_DRV_H_
 #define _I810_DRV_H_
 
+typedef struct _drm_i810_ring_buffer{
+	int tail_mask;
+	unsigned long Start;
+	unsigned long End;
+	unsigned long Size;
+	u8 *virtual_start;
+	int head;
+	int tail;
+	int space;
+} drm_i810_ring_buffer_t;
+
+typedef struct drm_i810_private {
+   	int ring_map_idx;
+   	int buffer_map_idx;
+
+   	drm_i810_ring_buffer_t ring;
+	drm_i810_sarea_t *sarea_priv;
+
+      	unsigned long hw_status_page;
+   	unsigned long counter;
+
+   	atomic_t flush_done;
+   	wait_queue_head_t flush_queue;	/* Processes waiting until flush    */
+} drm_i810_private_t;
+
 				/* i810_drv.c */
 extern int  i810_init(void);
 extern void i810_cleanup(void);
@@ -54,8 +79,13 @@ extern int  i810_control(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg);
 extern int  i810_lock(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
-extern void i810_dma_init(drm_device_t *dev);
-extern void i810_dma_cleanup(drm_device_t *dev);
+extern int  i810_dma_init(struct inode *inode, struct file *filp,
+			  unsigned int cmd, unsigned long arg);
+extern int  i810_flush_ioctl(struct inode *inode, struct file *filp,
+			     unsigned int cmd, unsigned long arg);
+extern void i810_reclaim_buffers(drm_device_t *dev, pid_t pid);
+extern int  i810_getage(struct inode *inode, struct file *filp, unsigned int cmd,
+			unsigned long arg);
 
 
 				/* i810_bufs.c */
@@ -72,5 +102,103 @@ extern int  i810_mapbufs(struct inode *inode, struct file *filp,
 extern int  i810_addmap(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 
+				/* i810_context.c */
+extern int  i810_resctx(struct inode *inode, struct file *filp,
+		       unsigned int cmd, unsigned long arg);
+extern int  i810_addctx(struct inode *inode, struct file *filp,
+		       unsigned int cmd, unsigned long arg);
+extern int  i810_modctx(struct inode *inode, struct file *filp,
+		       unsigned int cmd, unsigned long arg);
+extern int  i810_getctx(struct inode *inode, struct file *filp,
+		       unsigned int cmd, unsigned long arg);
+extern int  i810_switchctx(struct inode *inode, struct file *filp,
+			  unsigned int cmd, unsigned long arg);
+extern int  i810_newctx(struct inode *inode, struct file *filp,
+		       unsigned int cmd, unsigned long arg);
+extern int  i810_rmctx(struct inode *inode, struct file *filp,
+		      unsigned int cmd, unsigned long arg);
+
+extern int  i810_context_switch(drm_device_t *dev, int old, int new);
+extern int  i810_context_switch_complete(drm_device_t *dev, int new);
+
+
+
+
+/* Copy the outstanding cliprects for every I810_DMA_VERTEX buffer.
+ * This can be fixed by emitting directly to the ringbuffer in the
+ * 'vertex_dma' ioctl.  
+*/
+typedef struct {
+   	u32 *in_use;
+   	int my_use_idx;
+} drm_i810_buf_priv_t;
+
+
+#define I810_DMA_GENERAL 0
+#define I810_DMA_VERTEX  1
+#define I810_DMA_DISCARD 2	/* not used */
+
+#define I810_VERBOSE 0
+
+
+int i810_dma_vertex(struct inode *inode, struct file *filp,
+		    unsigned int cmd, unsigned long arg);
+
+int i810_dma_general(struct inode *inode, struct file *filp,
+		     unsigned int cmd, unsigned long arg);
+
+
+#define GFX_OP_USER_INTERRUPT 		((0<<29)|(2<<23))
+#define GFX_OP_BREAKPOINT_INTERRUPT	((0<<29)|(1<<23))
+#define CMD_REPORT_HEAD			(7<<23)
+#define CMD_STORE_DWORD_IDX		((0x21<<23) | 0x1)
+#define CMD_OP_BATCH_BUFFER  ((0x0<<29)|(0x30<<23)|0x1)
+
+#define INST_PARSER_CLIENT   0x00000000
+#define INST_OP_FLUSH        0x02000000
+#define INST_FLUSH_MAP_CACHE 0x00000001
+
+
+#define BB1_START_ADDR_MASK   (~0x7)
+#define BB1_PROTECTED         (1<<0)
+#define BB1_UNPROTECTED       (0<<0)
+#define BB2_END_ADDR_MASK     (~0x7)
+
+#define I810REG_HWSTAM		0x02098
+#define I810REG_INT_IDENTITY_R	0x020a4
+#define I810REG_INT_MASK_R 	0x020a8
+#define I810REG_INT_ENABLE_R	0x020a0
+
+#define LP_RING     		0x2030
+#define HP_RING     		0x2040
+#define RING_TAIL      		0x00
+#define TAIL_ADDR		0x000FFFF8
+#define RING_HEAD      		0x04
+#define HEAD_WRAP_COUNT     	0xFFE00000
+#define HEAD_WRAP_ONE       	0x00200000
+#define HEAD_ADDR           	0x001FFFFC
+#define RING_START     		0x08
+#define START_ADDR          	0x00FFFFF8
+#define RING_LEN       		0x0C
+#define RING_NR_PAGES       	0x000FF000 
+#define RING_REPORT_MASK    	0x00000006
+#define RING_REPORT_64K     	0x00000002
+#define RING_REPORT_128K    	0x00000004
+#define RING_NO_REPORT      	0x00000000
+#define RING_VALID_MASK     	0x00000001
+#define RING_VALID          	0x00000001
+#define RING_INVALID        	0x00000000
+
+#define GFX_OP_SCISSOR         ((0x3<<29)|(0x1c<<24)|(0x10<<19))
+#define SC_UPDATE_SCISSOR       (0x1<<1)
+#define SC_ENABLE_MASK          (0x1<<0)
+#define SC_ENABLE               (0x1<<0)
+
+#define GFX_OP_SCISSOR_INFO    ((0x3<<29)|(0x1d<<24)|(0x81<<16)|(0x1))
+#define SCI_YMIN_MASK      (0xffff<<16)
+#define SCI_XMIN_MASK      (0xffff<<0)
+#define SCI_YMAX_MASK      (0xffff<<16)
+#define SCI_XMAX_MASK      (0xffff<<0)
 
 #endif
+

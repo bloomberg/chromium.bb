@@ -33,11 +33,13 @@
 #define EXPORT_SYMTAB
 #include "drmP.h"
 #include "i810_drv.h"
+
+
 EXPORT_SYMBOL(i810_init);
 EXPORT_SYMBOL(i810_cleanup);
 
 #define I810_NAME	 "i810"
-#define I810_DESC	 "Matrox g200/g400"
+#define I810_DESC	 "Intel I810"
 #define I810_DATE	 "19991213"
 #define I810_MAJOR	 0
 #define I810_MINOR	 0
@@ -54,6 +56,7 @@ static struct file_operations i810_fops = {
 	mmap:	 drm_mmap,
 	read:	 drm_read,
 	fasync:	 drm_fasync,
+      	poll:	 drm_poll,
 };
 
 static struct miscdevice      i810_misc = {
@@ -80,13 +83,13 @@ static drm_ioctl_desc_t	      i810_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]    = { i810_mapbufs,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]   = { i810_freebufs,  1, 0 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]     = { drm_addctx,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]      = { drm_rmctx,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]     = { drm_modctx,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_CTX)]     = { drm_getctx,	  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)]  = { drm_switchctx,  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_NEW_CTX)]     = { drm_newctx,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]     = { drm_resctx,	  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]     = { i810_addctx,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]      = { i810_rmctx,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]     = { i810_modctx,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_CTX)]     = { i810_getctx,	  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)]  = { i810_switchctx,  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_NEW_CTX)]     = { i810_newctx,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]     = { i810_resctx,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]    = { drm_adddraw,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_RM_DRAW)]     = { drm_rmdraw,	  1, 1 },
 
@@ -104,6 +107,11 @@ static drm_ioctl_desc_t	      i810_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]    = { drm_agp_free,    1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]    = { drm_agp_bind,    1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]  = { drm_agp_unbind,  1, 1 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_INIT)]   = { i810_dma_init,   1, 1 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_VERTEX)] = { i810_dma_vertex, 1, 0 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_DMA)]    = { i810_dma_general,1, 0 },
+      	[DRM_IOCTL_NR(DRM_IOCTL_I810_FLUSH)]  = { i810_flush_ioctl,1, 0 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_GETAGE)] = { i810_getage,     1, 0 },
 };
 
 #define I810_IOCTL_COUNT DRM_ARRAY_SIZE(i810_ioctls)
@@ -121,7 +129,7 @@ MODULE_PARM(i810, "s");
 
 int init_module(void)
 {
-	printk("doing i810_init()\n");
+	DRM_DEBUG("doing i810_init()\n");
 	return i810_init();
 }
 
@@ -364,7 +372,7 @@ int i810_init(void)
 #ifdef MODULE
 	drm_parse_options(i810);
 #endif
-	printk("doing misc_register\n");
+	DRM_DEBUG("doing misc_register\n");
 	if ((retcode = misc_register(&i810_misc))) {
 		DRM_ERROR("Cannot register \"%s\"\n", I810_NAME);
 		return retcode;
@@ -372,13 +380,22 @@ int i810_init(void)
 	dev->device = MKDEV(MISC_MAJOR, i810_misc.minor);
 	dev->name   = I810_NAME;
 
-   	printk("doing mem init\n");
+   	DRM_DEBUG("doing mem init\n");
 	drm_mem_init();
-	printk("doing proc init\n");
+	DRM_DEBUG("doing proc init\n");
 	drm_proc_init(dev);
-	printk("doing agp init\n");
+	DRM_DEBUG("doing agp init\n");
 	dev->agp    = drm_agp_init();
-	printk("doing ctxbitmap init\n");
+   	if(dev->agp == NULL) {
+	   	DRM_INFO("The i810 drm module requires the agpgart module"
+			 " to function correctly\nPlease load the agpgart"
+			 " module before you load the i810 module\n");
+	   	drm_proc_cleanup();
+	   	misc_deregister(&i810_misc);
+	   	i810_takedown(dev);
+	   	return -ENOMEM;
+	}
+	DRM_DEBUG("doing ctxbitmap init\n");
 	if((retcode = drm_ctxbitmap_init(dev))) {
 		DRM_ERROR("Cannot allocate memory for context bitmap.\n");
 		drm_proc_cleanup();
@@ -386,10 +403,6 @@ int i810_init(void)
 		i810_takedown(dev);
 		return retcode;
 	}
-#if 0
-	printk("doing i810_dma_init\n");
-	i810_dma_init(dev);
-#endif
 
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 I810_NAME,
@@ -417,7 +430,6 @@ void i810_cleanup(void)
 		DRM_INFO("Module unloaded\n");
 	}
 	drm_ctxbitmap_cleanup(dev);
-	i810_dma_cleanup(dev);
 	i810_takedown(dev);
 	if (dev->agp) {
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
@@ -484,24 +496,82 @@ int i810_release(struct inode *inode, struct file *filp)
 	drm_device_t  *dev    = priv->dev;
 	int	      retcode = 0;
 
-	DRM_DEBUG("open_count = %d\n", dev->open_count);
-	if (!(retcode = drm_release(inode, filp))) {
-		MOD_DEC_USE_COUNT;
-		atomic_inc(&dev->total_close);
-		spin_lock(&dev->count_lock);
-		if (!--dev->open_count) {
-			if (atomic_read(&dev->ioctl_count) || dev->blocked) {
-				DRM_ERROR("Device busy: %d %d\n",
-					  atomic_read(&dev->ioctl_count),
-					  dev->blocked);
-				spin_unlock(&dev->count_lock);
-				return -EBUSY;
+	DRM_DEBUG("pid = %d, device = 0x%x, open_count = %d\n",
+		  current->pid, dev->device, dev->open_count);
+
+	if (_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)
+	    && dev->lock.pid == current->pid) {
+	      	i810_reclaim_buffers(dev, priv->pid);
+		DRM_ERROR("Process %d dead, freeing lock for context %d\n",
+			  current->pid,
+			  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
+		drm_lock_free(dev,
+			      &dev->lock.hw_lock->lock,
+			      _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
+		
+				/* FIXME: may require heavy-handed reset of
+                                   hardware at this point, possibly
+                                   processed via a callback to the X
+                                   server. */
+	} else {
+	   	/* The lock is required to reclaim buffers */
+	   	DECLARE_WAITQUEUE(entry, current);
+	   	add_wait_queue(&dev->lock.lock_queue, &entry);
+		for (;;) {
+			if (!dev->lock.hw_lock) {
+				/* Device has been unregistered */
+				retcode = -EINTR;
+				break;
 			}
-			spin_unlock(&dev->count_lock);
-			return i810_takedown(dev);
+			if (drm_lock_take(&dev->lock.hw_lock->lock,
+					  DRM_KERNEL_CONTEXT)) {
+				dev->lock.pid	    = priv->pid;
+				dev->lock.lock_time = jiffies;
+				atomic_inc(&dev->total_locks);
+				break;	/* Got lock */
+			}			
+				/* Contention */
+			atomic_inc(&dev->total_sleeps);
+			current->state = TASK_INTERRUPTIBLE;
+			schedule();
+			if (signal_pending(current)) {
+				retcode = -ERESTARTSYS;
+				break;
+			}
 		}
-		spin_unlock(&dev->count_lock);
+		current->state = TASK_RUNNING;
+		remove_wait_queue(&dev->lock.lock_queue, &entry);
+	   	if(!retcode) {
+		   	i810_reclaim_buffers(dev, priv->pid);
+		   	drm_lock_free(dev, &dev->lock.hw_lock->lock,
+				      DRM_KERNEL_CONTEXT);
+		}
 	}
+	drm_fasync(-1, filp, 0);
+
+	down(&dev->struct_sem);
+	if (priv->prev) priv->prev->next = priv->next;
+	else		dev->file_first	 = priv->next;
+	if (priv->next) priv->next->prev = priv->prev;
+	else		dev->file_last	 = priv->prev;
+	up(&dev->struct_sem);
+	
+	drm_free(priv, sizeof(*priv), DRM_MEM_FILES);
+   	MOD_DEC_USE_COUNT;
+   	atomic_inc(&dev->total_close);
+   	spin_lock(&dev->count_lock);
+   	if (!--dev->open_count) {
+	   	if (atomic_read(&dev->ioctl_count) || dev->blocked) {
+		   	DRM_ERROR("Device busy: %d %d\n",
+				  atomic_read(&dev->ioctl_count),
+				  dev->blocked);
+		   	spin_unlock(&dev->count_lock);
+		   	return -EBUSY;
+		}
+	   	spin_unlock(&dev->count_lock);
+	   	return i810_takedown(dev);
+	}
+   	spin_unlock(&dev->count_lock);
 	return retcode;
 }
 
@@ -566,8 +636,7 @@ int i810_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 	atomic_inc(&dev->total_unlocks);
 	if (_DRM_LOCK_IS_CONT(dev->lock.hw_lock->lock))
 		atomic_inc(&dev->total_contends);
-	drm_lock_transfer(dev, &dev->lock.hw_lock->lock, DRM_KERNEL_CONTEXT);
-	i810_dma_schedule(dev, 1);
+   	drm_lock_transfer(dev, &dev->lock.hw_lock->lock, DRM_KERNEL_CONTEXT);
 	if (!dev->context_flag) {
 		if (drm_lock_free(dev, &dev->lock.hw_lock->lock,
 				  DRM_KERNEL_CONTEXT)) {

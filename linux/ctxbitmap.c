@@ -53,7 +53,7 @@ int drm_ctxbitmap_next(drm_device_t *dev)
 	bit = find_first_zero_bit(dev->ctx_bitmap, DRM_MAX_CTXBITMAP);
 	if (bit < DRM_MAX_CTXBITMAP) {
 		set_bit(bit, dev->ctx_bitmap);
-	   	printk("drm_ctxbitmap_next bit : %d\n", bit);
+	   	DRM_DEBUG("drm_ctxbitmap_next bit : %d\n", bit);
 		return bit;
 	}
 	return -1;
@@ -64,15 +64,15 @@ int drm_ctxbitmap_init(drm_device_t *dev)
 	int i;
    	int temp;
 
-	dev->ctx_bitmap = (unsigned long *) drm_alloc(PAGE_SIZE * 4, 
+	dev->ctx_bitmap = (unsigned long *) drm_alloc(PAGE_SIZE, 
 						      DRM_MEM_CTXBITMAP);
 	if(dev->ctx_bitmap == NULL) {
 		return -ENOMEM;
 	}
-	memset((void *) dev->ctx_bitmap, 0, PAGE_SIZE * 4);
+	memset((void *) dev->ctx_bitmap, 0, PAGE_SIZE);
 	for(i = 0; i < DRM_RESERVED_CONTEXTS; i++) {
 		temp = drm_ctxbitmap_next(dev);
-	   	printk("drm_ctxbitmap_init : %d\n", temp);
+	   	DRM_DEBUG("drm_ctxbitmap_init : %d\n", temp);
 	}
 
 	return 0;
@@ -80,7 +80,7 @@ int drm_ctxbitmap_init(drm_device_t *dev)
 
 void drm_ctxbitmap_cleanup(drm_device_t *dev)
 {
-	drm_free((void *)dev->ctx_bitmap, PAGE_SIZE * 4,
+	drm_free((void *)dev->ctx_bitmap, PAGE_SIZE,
 		 DRM_MEM_CTXBITMAP);
 }
 

@@ -1,4 +1,4 @@
-/* mga_context.c -- IOCTLs for mga contexts -*- linux-c -*-
+/* i810_context.c -- IOCTLs for i810 contexts -*- linux-c -*-
  * Created: Mon Dec 13 09:51:35 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -25,7 +25,7 @@
  * 
  * Author: Rickard E. (Rik) Faith <faith@precisioninsight.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/mga_context.c,v 1.1 2000/02/11 17:26:06 dawes Exp $
+ * $XFree86$
  *
  */
 
@@ -33,16 +33,16 @@
 
 #define __NO_VERSION__
 #include "drmP.h"
-#include "mga_drv.h"
+#include "i810_drv.h"
 
-static int mga_alloc_queue(drm_device_t *dev)
+static int i810_alloc_queue(drm_device_t *dev)
 {
    	int temp = drm_ctxbitmap_next(dev);
-   	DRM_DEBUG("mga_alloc_queue: %d\n", temp);
+   	DRM_DEBUG("i810_alloc_queue: %d\n", temp);
 	return temp;
 }
 
-int mga_context_switch(drm_device_t *dev, int old, int new)
+int i810_context_switch(drm_device_t *dev, int old, int new)
 {
         char        buf[64];
 
@@ -65,7 +65,7 @@ int mga_context_switch(drm_device_t *dev, int old, int new)
         }
         
         if (drm_flags & DRM_FLAG_NOCTX) {
-                mga_context_switch_complete(dev, new);
+                i810_context_switch_complete(dev, new);
         } else {
                 sprintf(buf, "C %d %d\n", old, new);
                 drm_write_string(dev, buf);
@@ -74,7 +74,7 @@ int mga_context_switch(drm_device_t *dev, int old, int new)
         return 0;
 }
 
-int mga_context_switch_complete(drm_device_t *dev, int new)
+int i810_context_switch_complete(drm_device_t *dev, int new)
 {
         dev->last_context = new;  /* PRE/POST: This is the _only_ writer. */
         dev->last_switch  = jiffies;
@@ -97,7 +97,7 @@ int mga_context_switch_complete(drm_device_t *dev, int new)
         return 0;
 }
 
-int mga_resctx(struct inode *inode, struct file *filp, unsigned int cmd,
+int i810_resctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	       unsigned long arg)
 {
 	drm_ctx_res_t	res;
@@ -121,7 +121,7 @@ int mga_resctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	return 0;
 }
 
-int mga_addctx(struct inode *inode, struct file *filp, unsigned int cmd,
+int i810_addctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	       unsigned long arg)
 {
 	drm_file_t	*priv	= filp->private_data;
@@ -129,9 +129,9 @@ int mga_addctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_ctx_t	ctx;
 
 	copy_from_user_ret(&ctx, (drm_ctx_t *)arg, sizeof(ctx), -EFAULT);
-	if ((ctx.handle = mga_alloc_queue(dev)) == DRM_KERNEL_CONTEXT) {
+	if ((ctx.handle = i810_alloc_queue(dev)) == DRM_KERNEL_CONTEXT) {
 				/* Skip kernel's context and get a new one. */
-		ctx.handle = mga_alloc_queue(dev);
+		ctx.handle = i810_alloc_queue(dev);
 	}
         if (ctx.handle == -1) {
 		DRM_DEBUG("Not enough free contexts.\n");
@@ -143,14 +143,14 @@ int mga_addctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	return 0;
 }
 
-int mga_modctx(struct inode *inode, struct file *filp, unsigned int cmd,
+int i810_modctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	unsigned long arg)
 {
-   	/* This does nothing for the mga */
+   	/* This does nothing for the i810 */
 	return 0;
 }
 
-int mga_getctx(struct inode *inode, struct file *filp, unsigned int cmd,
+int i810_getctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	unsigned long arg)
 {
 	drm_ctx_t ctx;
@@ -162,7 +162,7 @@ int mga_getctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	return 0;
 }
 
-int mga_switchctx(struct inode *inode, struct file *filp, unsigned int cmd,
+int i810_switchctx(struct inode *inode, struct file *filp, unsigned int cmd,
 		   unsigned long arg)
 {
 	drm_file_t	*priv	= filp->private_data;
@@ -171,10 +171,10 @@ int mga_switchctx(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	copy_from_user_ret(&ctx, (drm_ctx_t *)arg, sizeof(ctx), -EFAULT);
 	DRM_DEBUG("%d\n", ctx.handle);
-	return mga_context_switch(dev, dev->last_context, ctx.handle);
+	return i810_context_switch(dev, dev->last_context, ctx.handle);
 }
 
-int mga_newctx(struct inode *inode, struct file *filp, unsigned int cmd,
+int i810_newctx(struct inode *inode, struct file *filp, unsigned int cmd,
 		unsigned long arg)
 {
 	drm_file_t	*priv	= filp->private_data;
@@ -183,12 +183,12 @@ int mga_newctx(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	copy_from_user_ret(&ctx, (drm_ctx_t *)arg, sizeof(ctx), -EFAULT);
 	DRM_DEBUG("%d\n", ctx.handle);
-	mga_context_switch_complete(dev, ctx.handle);
+	i810_context_switch_complete(dev, ctx.handle);
 
 	return 0;
 }
 
-int mga_rmctx(struct inode *inode, struct file *filp, unsigned int cmd,
+int i810_rmctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	      unsigned long arg)
 {
 	drm_file_t	*priv	= filp->private_data;
@@ -197,7 +197,7 @@ int mga_rmctx(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	copy_from_user_ret(&ctx, (drm_ctx_t *)arg, sizeof(ctx), -EFAULT);
 	DRM_DEBUG("%d\n", ctx.handle);
-      	if(ctx.handle != DRM_KERNEL_CONTEXT) {
+   	if(ctx.handle != DRM_KERNEL_CONTEXT) {
 	   	drm_ctxbitmap_free(dev, ctx.handle);
 	}
 	

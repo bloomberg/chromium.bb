@@ -61,6 +61,19 @@ typedef unsigned int  drm_context_t;
 typedef unsigned int  drm_drawable_t;
 typedef unsigned int  drm_magic_t;
 
+/* Warning: If you change this structure, make sure you change 
+ * XF86DRIClipRectRec in the server as well */
+
+typedef struct drm_clip_rect {
+           unsigned short x1;
+           unsigned short y1;
+           unsigned short x2;
+           unsigned short y2;
+} drm_clip_rect_t;
+
+/* Seperate include files for the i810/mga specific structures */
+#include "mga_drm.h"
+#include "i810_drm.h"
 
 typedef struct drm_version {
 	int    version_major;	  /* Major version			    */
@@ -101,7 +114,8 @@ typedef struct drm_control {
 typedef enum drm_map_type {
 	_DRM_FRAME_BUFFER = 0,	  /* WC (no caching), no core dump	    */
 	_DRM_REGISTERS	  = 1,	  /* no caching, no core dump		    */
-	_DRM_SHM	  = 2	  /* shared, cached			    */
+	_DRM_SHM	  = 2,	  /* shared, cached			    */
+	_DRM_AGP          = 3	  /* AGP/GART                               */
 } drm_map_type_t;
 
 typedef enum drm_map_flags {
@@ -165,8 +179,11 @@ typedef struct drm_buf_desc {
 	int	      low_mark;	 /* Low water mark			     */
 	int	      high_mark; /* High water mark			     */
 	enum {
-		DRM_PAGE_ALIGN = 0x01  /* Align on page boundaries for DMA   */
+		_DRM_PAGE_ALIGN = 0x01, /* Align on page boundaries for DMA  */
+		_DRM_AGP_BUFFER = 0x02  /* Buffer is in agp space            */
 	}	      flags;
+	unsigned long agp_start; /* Start address of where the agp buffers
+				  * are in the agp aperture */
 } drm_buf_desc_t;
 
 typedef struct drm_buf_info {
@@ -237,6 +254,38 @@ typedef struct drm_irq_busid {
 	int funcnum;
 } drm_irq_busid_t;
 
+typedef struct drm_agp_mode {
+	unsigned long mode;
+} drm_agp_mode_t;
+
+				/* For drm_agp_alloc -- allocated a buffer */
+typedef struct drm_agp_buffer {
+	unsigned long size;	/* In bytes -- will round to page boundary */
+	unsigned long handle;	/* Used for BIND/UNBIND ioctls */
+	unsigned long type;     /* Type of memory to allocate  */
+        unsigned long physical; /* Physical used by i810       */
+} drm_agp_buffer_t;
+
+				/* For drm_agp_bind */
+typedef struct drm_agp_binding {
+	unsigned long handle;   /* From drm_agp_buffer */
+	unsigned long offset;	/* In bytes -- will round to page boundary */
+} drm_agp_binding_t;
+
+typedef struct drm_agp_info {
+	int            agp_version_major;
+	int            agp_version_minor;
+	unsigned long  mode;
+	unsigned long  aperture_base;  /* physical address */
+	unsigned long  aperture_size;  /* bytes */
+	unsigned long  memory_allowed; /* bytes */
+	unsigned long  memory_used;
+
+				/* PCI information */
+	unsigned short id_vendor;
+	unsigned short id_device;
+} drm_agp_info_t;
+
 #define DRM_IOCTL_BASE	     'd'
 #define DRM_IOCTL_NR(n)	     _IOC_NR(n)
 #define DRM_IO(nr)	     _IO(DRM_IOCTL_BASE,nr)
@@ -275,5 +324,29 @@ typedef struct drm_irq_busid {
 #define DRM_IOCTL_LOCK	     DRM_IOW( 0x2a, drm_lock_t)
 #define DRM_IOCTL_UNLOCK     DRM_IOW( 0x2b, drm_lock_t)
 #define DRM_IOCTL_FINISH     DRM_IOW( 0x2c, drm_lock_t)
+
+#define DRM_IOCTL_AGP_ACQUIRE DRM_IO(  0x30)
+#define DRM_IOCTL_AGP_RELEASE DRM_IO(  0x31)
+#define DRM_IOCTL_AGP_ENABLE  DRM_IOR( 0x32, drm_agp_mode_t)
+#define DRM_IOCTL_AGP_INFO    DRM_IOW( 0x33, drm_agp_info_t)
+#define DRM_IOCTL_AGP_ALLOC   DRM_IOWR(0x34, drm_agp_buffer_t)
+#define DRM_IOCTL_AGP_FREE    DRM_IOW( 0x35, drm_agp_buffer_t)
+#define DRM_IOCTL_AGP_BIND    DRM_IOWR(0x36, drm_agp_binding_t)
+#define DRM_IOCTL_AGP_UNBIND  DRM_IOW( 0x37, drm_agp_binding_t)
+
+/* Mga specific ioctls */
+#define DRM_IOCTL_MGA_INIT    DRM_IOW( 0x40, drm_mga_init_t)
+#define DRM_IOCTL_MGA_SWAP    DRM_IOW( 0x41, drm_mga_swap_t)
+#define DRM_IOCTL_MGA_CLEAR   DRM_IOW( 0x42, drm_mga_clear_t)
+#define DRM_IOCTL_MGA_ILOAD   DRM_IOW( 0x43, drm_mga_iload_t)
+#define DRM_IOCTL_MGA_VERTEX  DRM_IOW( 0x44, drm_mga_vertex_t)
+#define DRM_IOCTL_MGA_FLUSH   DRM_IOW( 0x45, drm_lock_t )
+
+/* I810 specific ioctls */
+#define DRM_IOCTL_I810_INIT    DRM_IOW( 0x40, drm_i810_init_t)
+#define DRM_IOCTL_I810_VERTEX  DRM_IOW( 0x41, drm_i810_vertex_t)
+#define DRM_IOCTL_I810_DMA     DRM_IOW( 0x42, drm_i810_general_t)
+#define DRM_IOCTL_I810_FLUSH   DRM_IO ( 0x43)
+#define DRM_IOCTL_I810_GETAGE  DRM_IO ( 0x44)
 
 #endif

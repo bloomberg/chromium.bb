@@ -159,6 +159,8 @@ int drm_agp_alloc(struct inode *inode, struct file *filp, unsigned int cmd,
 			   -EFAULT);
 	if (!(entry = drm_alloc(sizeof(*entry), DRM_MEM_AGPLISTS)))
 		return -ENOMEM;
+   
+   	memset(entry, 0, sizeof(*entry));
 
 	pages = (request.size + PAGE_SIZE - 1) / PAGE_SIZE;
 	type = (u32) request.type;
@@ -254,8 +256,10 @@ int drm_agp_free(struct inode *inode, struct file *filp, unsigned int cmd,
 	if (!(entry = drm_agp_lookup_entry(dev, request.handle)))
 		return -EINVAL;
 	if (entry->bound) drm_unbind_agp(entry->memory);
-	entry->prev->next = entry->next;
-	entry->next->prev = entry->prev;
+   
+	if (entry->prev) entry->prev->next = entry->next;
+	else             dev->agp->memory  = entry->next;
+	if (entry->next) entry->next->prev = entry->prev;
 	drm_free_agp(entry->memory, entry->pages);
 	drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
 	return 0;
@@ -269,15 +273,12 @@ drm_agp_head_t *drm_agp_init(void)
 
 	for (fill = &drm_agp_fill[0]; fill->name; fill++) {
 		char *n  = (char *)fill->name;
-#if 0
 		*fill->f = (drm_agp_func_u)get_module_symbol(NULL, n);
-#endif
-		*fill->f = (drm_agp_func_u)get_module_symbol(NULL, n);
-		printk("%s resolves to 0x%08lx\n", n, (*fill->f).address);
+		DRM_DEBUG("%s resolves to 0x%08lx\n", n, (*fill->f).address);
 		if (!(*fill->f).address) agp_available = 0;
 	}
    
-	printk("agp_available = %d\n", agp_available);
+	DRM_DEBUG("agp_available = %d\n", agp_available);
 
 	if (agp_available) {
 		if (!(head = drm_alloc(sizeof(*head), DRM_MEM_AGPLISTS)))

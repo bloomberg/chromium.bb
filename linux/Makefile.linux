@@ -31,12 +31,14 @@
 
 # *** Setup
 
+# **** End of SMP/MODVERSIONS detection
+
 MODS=           gamma.o tdfx.o
 LIBS=           libdrm.a
 PROGS=		drmstat
 
 DRMOBJS=	init.o memory.o proc.o auth.o context.o drawable.o bufs.o \
-		lists.o lock.o ioctl.o fops.o vm.o dma.o
+		lists.o lock.o ioctl.o fops.o vm.o dma.o ctxbitmap.o
 DRMHEADERS=	drm.h drmP.h
 
 GAMMAOBJS=      gamma_drv.o gamma_dma.o
@@ -47,6 +49,8 @@ TDFXHEADERS=    tdfx_drv.h $(DRMHEADERS)
 
 PROGOBJS=       drmstat.po xf86drm.po xf86drmHash.po xf86drmRandom.po sigio.po
 PROGHEADERS=    xf86drm.h $(DRMHEADERS)
+
+INC=		/usr/include
 
 CFLAGS=		-O2 $(WARNINGS)
 WARNINGS=	-Wall -Wwrite-strings -Wpointer-arith -Wcast-align \
@@ -102,7 +106,27 @@ SMP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'SMP = ' | cut -d' ' -f3)
 MODVERSIONS := $(shell gcc -E -I $(TREE) picker.c 2>/dev/null \
 	| grep -s 'MODVERSIONS = ' | cut -d' ' -f3)
-all::;@echo KERNEL HEADERS IN $(TREE): SMP=${SMP} MODVERSIONS=${MODVERSIONS}
+AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
+	| grep -s 'AGP = ' | cut -d' ' -f3)
+ifeq ($(AGP),0)
+AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
+	| grep -s 'AGP_MODULE = ' | cut -d' ' -f3)
+endif
+
+ifeq ($(AGP),1)
+MODCFLAGS += -DDRM_AGP
+DRMOBJS += agpsupport.o
+MODS += mga.o i810.o
+
+MGAOBJS=	mga_drv.o mga_dma.o mga_bufs.o mga_state.o mga_context.o
+MGAHEADERS=	mga_drv.h $(DRMHEADERS)
+
+I810OBJS=	i810_drv.o i810_dma.o i810_bufs.o i810_context.o
+I810HEADERS=	i810_drv.h $(DRMHEADERS)
+endif
+
+all::;@echo KERNEL HEADERS IN $(TREE): SMP=${SMP} MODVERSIONS=${MODVERSIONS} \
+	AGP=${AGP}
 all:: $(LIBS) $(MODS) $(PROGS)
 endif
 
@@ -116,6 +140,7 @@ ifeq ($(MODVERSIONS),1)
 MODCFLAGS += -DMODVERSIONS -include $(TREE)/linux/modversions.h
 endif
 
+
 # **** End of configuration
 
 libdrm.a: $(DRMOBJS)
@@ -127,6 +152,14 @@ gamma.o: $(GAMMAOBJS) $(LIBS)
 
 tdfx.o: $(TDFXOBJS) $(LIBS)
 	$(LD) -r $^ -o $@
+
+ifeq ($(AGP),1)
+mga.o: $(MGAOBJS) $(LIBS)
+	$(LD) -r $^ -o $@
+
+i810.o: $(I810OBJS) $(LIBS)
+	$(LD) -r $^ -o $@
+endif
 
 drmstat: $(PROGOBJS)
 	$(CC) $(PRGCFLAGS) $^ $(PRGLIBS) -o $@
@@ -149,8 +182,11 @@ ChangeLog:
 $(DRMOBJS): $(DRMHEADERS)
 $(GAMMAOBJS): $(GAMMAHEADERS)
 $(TDFXOBJS): $(TDFXHEADERS)
+ifeq ($(AGP),1)
+$(MGAOBJS): $(MGAHEADERS)
+$(I810OBJS): $(I810HEADERS)
+endif
 $(PROGOBJS): $(PROGHEADERS)
 
 clean:
-	rm -f *.o *.po *~ core $(PROGS)
-
+	rm -f *.o *.a *.po *~ core $(PROGS)

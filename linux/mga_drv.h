@@ -26,12 +26,32 @@
  * Authors: Rickard E. (Rik) Faith <faith@precisioninsight.com>
  * 	    Jeff Hartmann <jhartmann@precisioninsight.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/mga_drv.h,v 1.1 2000/02/11 17:26:08 dawes Exp $
+ * $XFree86$
  */
 
 #ifndef _MGA_DRV_H_
 #define _MGA_DRV_H_
-#include "mga_drm_public.h"
+
+typedef struct {
+   	unsigned int num_dwords;
+   	unsigned int max_dwords;
+   	u32 *current_dma_ptr;
+   	u32 *head;
+   	u32 phys_head;
+   	int sec_used;
+   	int idx;
+   	int swap_pending;
+   	u32 in_use;
+   	atomic_t force_fire;
+   	atomic_t needs_overflow;
+} drm_mga_prim_buf_t;
+
+typedef struct _drm_mga_freelist {
+   	unsigned int age;
+   	drm_buf_t *buf;
+   	struct _drm_mga_freelist *next;
+   	struct _drm_mga_freelist *prev;
+} drm_mga_freelist_t;
 
 typedef struct _drm_mga_private {
    	int reserved_map_idx;
@@ -40,7 +60,7 @@ typedef struct _drm_mga_private {
    	int primary_size;
    	int warp_ucode_size;
    	int chipset;
-   	int fbOffset;
+   	int frontOffset;
    	int backOffset;
    	int depthOffset;
    	int textureOffset;
@@ -49,25 +69,32 @@ typedef struct _drm_mga_private {
    	int stride;
    	int sgram;
 	int use_agp;
-   	mgaWarpIndex WarpIndex[MGA_MAX_G400_PIPES];
+   	drm_mga_warp_index_t WarpIndex[MGA_MAX_G400_PIPES];
+	unsigned int WarpPipe;
    	__volatile__ unsigned long softrap_age;
-   	atomic_t dispatch_lock;
+   	u32 dispatch_lock;
+   	atomic_t in_flush;
+   	atomic_t in_wait;
    	atomic_t pending_bufs;
-   	void *ioremap;
-   	u32 *prim_head;
-   	u32 *current_dma_ptr;
-   	u32 prim_phys_head;
-   	int prim_num_dwords;
-   	int prim_max_dwords;
-
+   	unsigned int last_sync_tag;
+   	unsigned int sync_tag;
+   	void *status_page;
+   	unsigned long real_status_page;
+   	u8 *ioremap;
+   	drm_mga_prim_buf_t **prim_bufs;
+   	drm_mga_prim_buf_t *next_prim;
+   	drm_mga_prim_buf_t *last_prim;
+   	drm_mga_prim_buf_t *current_prim;
+   	int current_prim_idx;
+   	struct pci_dev *device;
+   	drm_mga_freelist_t *head;
+   	drm_mga_freelist_t *tail;
+   	wait_queue_head_t flush_queue;	/* Processes waiting until flush    */
+      	wait_queue_head_t wait_queue;	/* Processes waiting until interrupt */
 
 	/* Some validated register values:
 	 */	
-	u32 frontOrg;
-	u32 backOrg;
-	u32 depthOrg;
 	u32 mAccess;
-
 } drm_mga_private_t;
 
 				/* mga_drv.c */
@@ -92,16 +119,18 @@ extern int  mga_control(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg);
 extern int  mga_lock(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
-#if 0
-extern void mga_dma_init(drm_device_t *dev);
-extern void mga_dma_cleanup(drm_device_t *dev);
 
-#endif
+/* mga_dma_init does init and release */
 extern int mga_dma_init(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
 extern int mga_dma_cleanup(drm_device_t *dev);
+extern int mga_flush_ioctl(struct inode *inode, struct file *filp,
+			   unsigned int cmd, unsigned long arg);
 
-/* mga_dma_init does init and release */
+extern unsigned int mga_create_sync_tag(drm_device_t *dev);
+extern drm_buf_t *mga_freelist_get(drm_device_t *dev);
+extern int mga_freelist_put(drm_device_t *dev, drm_buf_t *buf);
+extern int mga_advance_primary(drm_device_t *dev);
 
 
 				/* mga_bufs.c */
@@ -124,6 +153,8 @@ extern int  mga_swap_bufs(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg);
 extern int  mga_iload(struct inode *inode, struct file *filp,
 		      unsigned int cmd, unsigned long arg);
+extern int  mga_vertex(struct inode *inode, struct file *filp,
+		      unsigned int cmd, unsigned long arg);
 				/* mga_context.c */
 extern int  mga_resctx(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
@@ -144,13 +175,115 @@ extern int  mga_context_switch(drm_device_t *dev, int old, int new);
 extern int  mga_context_switch_complete(drm_device_t *dev, int new);
 
 
+typedef enum {
+	TT_GENERAL,
+	TT_BLIT,
+	TT_VECTOR,
+	TT_VERTEX
+} transferType_t;
+
+typedef struct {
+   	drm_mga_freelist_t *my_freelist;
+	int discard;
+} drm_mga_buf_priv_t;
+
+#define DWGREG0 	0x1c00
+#define DWGREG0_END 	0x1dff
+#define DWGREG1		0x2c00
+#define DWGREG1_END	0x2dff
+
+#define ISREG0(r)	(r >= DWGREG0 && r <= DWGREG0_END)
+#define ADRINDEX0(r)	(u8)((r - DWGREG0) >> 2)
+#define ADRINDEX1(r)	(u8)(((r - DWGREG1) >> 2) | 0x80)
+#define ADRINDEX(r)	(ISREG0(r) ? ADRINDEX0(r) : ADRINDEX1(r)) 
+
+#define MGA_VERBOSE 0
+#define MGA_NUM_PRIM_BUFS 	8
+
+#define PRIMLOCALS	u8 tempIndex[4]; u32 *dma_ptr; u32 phys_head; \
+			int outcount, num_dwords
+
+#define PRIM_OVERFLOW(dev, dev_priv, length) do {			\
+	drm_mga_prim_buf_t *tmp_buf =					\
+		dev_priv->prim_bufs[dev_priv->current_prim_idx];	\
+	if( tmp_buf->max_dwords - tmp_buf->num_dwords < length ||	\
+	    tmp_buf->sec_used > MGA_DMA_BUF_NR/2) {			\
+		atomic_set(&tmp_buf->force_fire, 1);			\
+		mga_advance_primary(dev);				\
+		mga_dma_schedule(dev, 1);				\
+	} else if( atomic_read(&tmp_buf->needs_overflow)) {		\
+		mga_advance_primary(dev);				\
+		mga_dma_schedule(dev, 1);				\
+	}								\
+} while(0)
+
+#define PRIMGETPTR(dev_priv) do {					\
+	drm_mga_prim_buf_t *tmp_buf =					\
+		dev_priv->prim_bufs[dev_priv->current_prim_idx];	\
+	if(MGA_VERBOSE)							\
+		DRM_DEBUG("PRIMGETPTR in %s\n", __FUNCTION__);		\
+	dma_ptr = tmp_buf->current_dma_ptr;				\
+	num_dwords = tmp_buf->num_dwords;				\
+	phys_head = tmp_buf->phys_head;					\
+	outcount = 0;							\
+} while(0)
+
+#define PRIMPTR(prim_buf) do {					\
+	if(MGA_VERBOSE)						\
+		DRM_DEBUG("PRIMPTR in %s\n", __FUNCTION__);	\
+	dma_ptr = prim_buf->current_dma_ptr;			\
+	num_dwords = prim_buf->num_dwords;			\
+	phys_head = prim_buf->phys_head;			\
+	outcount = 0;						\
+} while(0)
+
+#define PRIMFINISH(prim_buf) do {				\
+	if (MGA_VERBOSE) {					\
+		DRM_DEBUG( "PRIMFINISH in %s\n", __FUNCTION__);	\
+                if (outcount & 3)				\
+                      DRM_DEBUG(" --- truncation\n");	        \
+        }							\
+	prim_buf->num_dwords = num_dwords;			\
+	prim_buf->current_dma_ptr = dma_ptr;			\
+} while(0)
+
+#define PRIMADVANCE(dev_priv)	do {				\
+drm_mga_prim_buf_t *tmp_buf = 					\
+	dev_priv->prim_bufs[dev_priv->current_prim_idx];	\
+	if (MGA_VERBOSE) {					\
+		DRM_DEBUG("PRIMADVANCE in %s\n", __FUNCTION__);	\
+                if (outcount & 3)				\
+                      DRM_DEBUG(" --- truncation\n");	\
+        }							\
+	tmp_buf->num_dwords = num_dwords;      			\
+	tmp_buf->current_dma_ptr = dma_ptr;    			\
+} while (0)
+
+#define PRIMUPDATE(dev_priv)	do {					\
+	drm_mga_prim_buf_t *tmp_buf =					\
+		dev_priv->prim_bufs[dev_priv->current_prim_idx];	\
+	tmp_buf->sec_used++;						\
+} while (0)
+
+#define PRIMOUTREG(reg, val) do {					\
+	tempIndex[outcount]=ADRINDEX(reg);				\
+	dma_ptr[1+outcount] = val;					\
+	if (MGA_VERBOSE)						\
+		DRM_DEBUG("   PRIMOUT %d: 0x%x -- 0x%x\n",		\
+		       num_dwords + 1 + outcount, ADRINDEX(reg), val);	\
+	if( ++outcount == 4) {						\
+		outcount = 0;						\
+		dma_ptr[0] = *(u32 *)tempIndex;				\
+		dma_ptr+=5;						\
+		num_dwords += 5;					\
+	}								\
+}while (0)
+
+/* A reduced set of the mga registers.
+ */
 
 #define MGAREG_MGA_EXEC 			0x0100
-#define MGAREG_AGP_PLL				0x1e4c
 #define MGAREG_ALPHACTRL 			0x2c7c
-#define MGAREG_ALPHASTART 			0x2c70
-#define MGAREG_ALPHAXINC 			0x2c74
-#define MGAREG_ALPHAYINC 			0x2c78
 #define MGAREG_AR0 				0x1c60
 #define MGAREG_AR1 				0x1c64
 #define MGAREG_AR2 				0x1c68
@@ -158,39 +291,16 @@ extern int  mga_context_switch_complete(drm_device_t *dev, int new);
 #define MGAREG_AR4 				0x1c70
 #define MGAREG_AR5 				0x1c74
 #define MGAREG_AR6 				0x1c78
-#define MGAREG_BCOL 				0x1c20
 #define MGAREG_CXBNDRY				0x1c80
 #define MGAREG_CXLEFT 				0x1ca0
 #define MGAREG_CXRIGHT				0x1ca4
 #define MGAREG_DMAPAD 				0x1c54
-#define MGAREG_DR0_Z32LSB 			0x2c50
-#define MGAREG_DR0_Z32MSB 			0x2c54
-#define MGAREG_DR2_Z32LSB 			0x2c60
-#define MGAREG_DR2_Z32MSB 			0x2c64
-#define MGAREG_DR3_Z32LSB 			0x2c68
-#define MGAREG_DR3_Z32MSB 			0x2c6c
-#define MGAREG_DR0 				0x1cc0
-#define MGAREG_DR2 				0x1cc8
-#define MGAREG_DR3 				0x1ccc
-#define MGAREG_DR4 				0x1cd0
-#define MGAREG_DR6 				0x1cd8
-#define MGAREG_DR7 				0x1cdc
-#define MGAREG_DR8 				0x1ce0
-#define MGAREG_DR10 				0x1ce8
-#define MGAREG_DR11 				0x1cec
-#define MGAREG_DR12 				0x1cf0
-#define MGAREG_DR14 				0x1cf8
-#define MGAREG_DR15 				0x1cfc
 #define MGAREG_DSTORG 				0x2cb8
-#define MGAREG_DWG_INDIR_WT 			0x1e80
 #define MGAREG_DWGCTL 				0x1c00
 #define MGAREG_DWGSYNC				0x2c4c
 #define MGAREG_FCOL 				0x1c24
 #define MGAREG_FIFOSTATUS 			0x1e10
 #define MGAREG_FOGCOL 				0x1cf4
-#define MGAREG_FOGSTART 			0x1cc4
-#define MGAREG_FOGXINC				0x1cd4
-#define MGAREG_FOGYINC				0x1ce4
 #define MGAREG_FXBNDRY				0x1c84
 #define MGAREG_FXLEFT 				0x1ca8
 #define MGAREG_FXRIGHT				0x1cac
@@ -198,44 +308,22 @@ extern int  mga_context_switch_complete(drm_device_t *dev, int new);
 #define MGAREG_IEN 				0x1e1c
 #define MGAREG_LEN 				0x1c5c
 #define MGAREG_MACCESS				0x1c04
-#define MGAREG_MCTLWTST 			0x1c08
-#define MGAREG_MEMRDBK				0x1e44
-#define MGAREG_OPMODE 				0x1e54
-#define MGAREG_PAT0 				0x1c10
-#define MGAREG_PAT1 				0x1c14
 #define MGAREG_PITCH 				0x1c8c
 #define MGAREG_PLNWT 				0x1c1c
 #define MGAREG_PRIMADDRESS 			0x1e58
 #define MGAREG_PRIMEND				0x1e5c
 #define MGAREG_PRIMPTR				0x1e50
-#define MGAREG_RST 				0x1e40
 #define MGAREG_SECADDRESS 			0x2c40
 #define MGAREG_SECEND 				0x2c44
 #define MGAREG_SETUPADDRESS 			0x2cd0
 #define MGAREG_SETUPEND 			0x2cd4
-#define MGAREG_SGN 				0x1c58
-#define MGAREG_SHIFT 				0x1c50
 #define MGAREG_SOFTRAP				0x2c48
-#define MGAREG_SPECBSTART 			0x2c98
-#define MGAREG_SPECBXINC 			0x2c9c
-#define MGAREG_SPECBYINC 			0x2ca0
-#define MGAREG_SPECGSTART 			0x2c8c
-#define MGAREG_SPECGXINC 			0x2c90
-#define MGAREG_SPECGYINC 			0x2c94
-#define MGAREG_SPECRSTART 			0x2c80
-#define MGAREG_SPECRXINC 			0x2c84
-#define MGAREG_SPECRYINC 			0x2c88
-#define MGAREG_SRC0 				0x1c30
-#define MGAREG_SRC1 				0x1c34
-#define MGAREG_SRC2 				0x1c38
-#define MGAREG_SRC3 				0x1c3c
 #define MGAREG_SRCORG 				0x2cb4
 #define MGAREG_STATUS 				0x1e14
 #define MGAREG_STENCIL				0x2cc8
 #define MGAREG_STENCILCTL 			0x2ccc
 #define MGAREG_TDUALSTAGE0 			0x2cf8
 #define MGAREG_TDUALSTAGE1 			0x2cfc
-#define MGAREG_TEST0 				0x1e48
 #define MGAREG_TEXBORDERCOL 			0x2c5c
 #define MGAREG_TEXCTL 				0x2c30
 #define MGAREG_TEXCTL2				0x2c3c
@@ -249,18 +337,6 @@ extern int  mga_context_switch_complete(drm_device_t *dev, int new);
 #define MGAREG_TEXTRANS 			0x2c34
 #define MGAREG_TEXTRANSHIGH 			0x2c38
 #define MGAREG_TEXWIDTH 			0x2c28
-#define MGAREG_TMR0 				0x2c00
-#define MGAREG_TMR1 				0x2c04
-#define MGAREG_TMR2 				0x2c08
-#define MGAREG_TMR3 				0x2c0c
-#define MGAREG_TMR4 				0x2c10
-#define MGAREG_TMR5 				0x2c14
-#define MGAREG_TMR6 				0x2c18
-#define MGAREG_TMR7 				0x2c1c
-#define MGAREG_TMR8 				0x2c20
-#define MGAREG_VBIADDR0 			0x3e08
-#define MGAREG_VBIADDR1 			0x3e0c
-#define MGAREG_VCOUNT 				0x1e20
 #define MGAREG_WACCEPTSEQ 			0x1dd4
 #define MGAREG_WCODEADDR 			0x1e6c
 #define MGAREG_WFLAG 				0x1dc4
@@ -270,23 +346,49 @@ extern int  mga_context_switch_complete(drm_device_t *dev, int new);
 #define MGAREG_WGETMSB				0x1dc8
 #define MGAREG_WIADDR 				0x1dc0
 #define MGAREG_WIADDR2				0x1dd8
-#define MGAREG_WIADDRNB 			0x1e60
-#define MGAREG_WIADDRNB1 			0x1e04
-#define MGAREG_WIADDRNB2 			0x1e00
-#define MGAREG_WIMEMADDR 			0x1e68
-#define MGAREG_WIMEMDATA 			0x2000
-#define MGAREG_WIMEMDATA1 			0x2100
 #define MGAREG_WMISC 				0x1e70
-#define MGAREG_WR 				0x2d00
 #define MGAREG_WVRTXSZ				0x1dcc
-#define MGAREG_XDST 				0x1cb0
-#define MGAREG_XYEND 				0x1c44
-#define MGAREG_XYSTRT 				0x1c40
 #define MGAREG_YBOT 				0x1c9c
 #define MGAREG_YDST 				0x1c90
 #define MGAREG_YDSTLEN				0x1c88
 #define MGAREG_YDSTORG				0x1c94
 #define MGAREG_YTOP 				0x1c98
 #define MGAREG_ZORG 				0x1c0c
+
+#define DC_atype_rstr				0x10
+#define DC_atype_blk				0x40
+#define PDEA_pagpxfer_enable			0x2
+#define WIA_wmode_suspend			0x0
+#define WIA_wmode_start 			0x3
+#define WIA_wagp_agp				0x4
+#define DC_opcod_trap				0x4
+#define DC_arzero_enable			0x1000
+#define DC_sgnzero_enable			0x2000
+#define DC_shftzero_enable			0x4000
+#define DC_bop_SHIFT				16
+#define DC_clipdis_enable			0x80000000
+#define DC_solid_enable				0x800
+#define DC_transc_enable			0x40000000
+#define DC_opcod_bitblt 			0x8
+#define DC_atype_rpl				0x0
+#define DC_linear_xy				0x0
+#define DC_solid_disable			0x0
+#define DC_arzero_disable			0x0
+#define DC_bltmod_bfcol				0x4000000
+#define DC_pattern_disable			0x0
+#define DC_transc_disable			0x0
+
+#define MGA_CLEAR_CMD (DC_opcod_trap | DC_arzero_enable | 		\
+		       DC_sgnzero_enable | DC_shftzero_enable | 	\
+		       (0xC << DC_bop_SHIFT) | DC_clipdis_enable | 	\
+		       DC_solid_enable | DC_transc_enable)
+	  
+
+#define MGA_COPY_CMD (DC_opcod_bitblt | DC_atype_rpl | DC_linear_xy |	\
+		      DC_solid_disable | DC_arzero_disable | 		\
+		      DC_sgnzero_enable | DC_shftzero_enable | 		\
+		      (0xC << DC_bop_SHIFT) | DC_bltmod_bfcol | 	\
+		      DC_pattern_disable | DC_transc_disable | 		\
+		      DC_clipdis_enable)				\
 
 #endif

@@ -418,7 +418,8 @@ int drmAddMap(int fd,
     return 0;
 }
 
-int drmAddBufs(int fd, int count, int size, int flags)
+int drmAddBufs(int fd, int count, int size, drmBufDescFlags flags,
+	       int agp_offset)
 {
     drm_buf_desc_t request;
     
@@ -427,6 +428,8 @@ int drmAddBufs(int fd, int count, int size, int flags)
     request.low_mark  = 0;
     request.high_mark = 0;
     request.flags     = flags;
+    request.agp_start = agp_offset;
+   
     if (ioctl(fd, DRM_IOCTL_ADD_BUFS, &request)) return -errno;
     return request.count;
 }
@@ -742,6 +745,143 @@ int drmDestroyDrawable(int fd, drmDrawable handle)
     draw.handle = handle;
     if (ioctl(fd, DRM_IOCTL_RM_DRAW, &draw)) return -errno;
     return 0;
+}
+
+int drmAgpAcquire(int fd)
+{
+    if (ioctl(fd, DRM_IOCTL_AGP_ACQUIRE, NULL)) return -errno;
+    return 0;
+}
+
+int drmAgpRelease(int fd)
+{
+    if (ioctl(fd, DRM_IOCTL_AGP_RELEASE, NULL)) return -errno;
+    return 0;
+}
+
+int drmAgpEnable(int fd, unsigned long mode)
+{
+    drm_agp_mode_t m;
+
+    m.mode = mode;
+    if (ioctl(fd, DRM_IOCTL_AGP_ENABLE, &m)) return -errno;
+    return 0;
+}
+
+int drmAgpAlloc(int fd, unsigned long size, unsigned long type,
+		unsigned long *address, unsigned long *handle)
+{
+    drm_agp_buffer_t b;
+    *handle = 0;
+    b.size   = size;
+    b.handle = 0;
+    b.type   = type;
+    if (ioctl(fd, DRM_IOCTL_AGP_ALLOC, &b)) return -errno;
+    if (address != 0UL) *address = b.physical;
+    *handle = b.handle;
+    return 0;
+}
+
+int drmAgpFree(int fd, unsigned long handle)
+{
+    drm_agp_buffer_t b;
+
+    b.size   = 0;
+    b.handle = handle;
+    if (ioctl(fd, DRM_IOCTL_AGP_FREE, &b)) return -errno;
+    return 0;
+}
+
+int drmAgpBind(int fd, unsigned long handle, unsigned long offset)
+{
+    drm_agp_binding_t b;
+
+    b.handle = handle;
+    b.offset = offset;
+    if (ioctl(fd, DRM_IOCTL_AGP_BIND, &b)) return -errno;
+    return 0;
+}
+
+int drmAgpUnbind(int fd, unsigned long handle)
+{
+    drm_agp_binding_t b;
+
+    b.handle = handle;
+    b.offset = 0;
+    if (ioctl(fd, DRM_IOCTL_AGP_UNBIND, &b)) return -errno;
+    return 0;
+}
+
+int drmAgpVersionMajor(int fd)
+{
+    drm_agp_info_t i;
+
+    if (ioctl(fd, DRM_IOCTL_AGP_INFO, &i)) return -errno;
+    return i.agp_version_major;
+}
+
+int drmAgpVersionMinor(int fd)
+{
+    drm_agp_info_t i;
+
+    if (ioctl(fd, DRM_IOCTL_AGP_INFO, &i)) return -errno;
+    return i.agp_version_minor;
+}
+
+unsigned long drmAgpGetMode(int fd)
+{
+    drm_agp_info_t i;
+
+    if (ioctl(fd, DRM_IOCTL_AGP_INFO, &i)) return 0;
+    return i.mode;
+}
+
+unsigned long drmAgpBase(int fd)
+{
+    drm_agp_info_t i;
+
+    if (ioctl(fd, DRM_IOCTL_AGP_INFO, &i)) return 0;
+    return i.aperture_base;
+}
+
+unsigned long drmAgpSize(int fd)
+{
+    drm_agp_info_t i;
+
+    if (ioctl(fd, DRM_IOCTL_AGP_INFO, &i)) return 0;
+    return i.aperture_size;
+}
+
+unsigned long drmAgpMemoryUsed(int fd)
+{
+    drm_agp_info_t i;
+
+    if (ioctl(fd, DRM_IOCTL_AGP_INFO, &i)) return 0;
+    return i.memory_used;
+}
+
+unsigned long drmAgpMemoryAvail(int fd)
+{
+    drm_agp_info_t i;
+
+    if (ioctl(fd, DRM_IOCTL_AGP_INFO, &i)) return 0;
+    return i.memory_allowed;
+}
+
+unsigned int drmAgpVendorId(int fd)
+{
+    drm_agp_info_t i;
+
+    if (ioctl(fd, DRM_IOCTL_AGP_INFO, &i)) return 0;
+    return i.id_vendor;
+}
+
+unsigned int drmAgpDeviceId(int fd)
+{
+    drm_agp_info_t i;
+
+    if (ioctl(fd, DRM_IOCTL_AGP_INFO, &i)) return 0;
+    return i.id_device;
 }
 
 int drmError(int err, const char *label)

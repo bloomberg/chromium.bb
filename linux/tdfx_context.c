@@ -38,9 +38,7 @@ extern drm_ctx_t tdfx_res_ctx;
 
 static int tdfx_alloc_queue(drm_device_t *dev)
 {
-	static int context = 0;
-
-	return ++context;	/* Should this reuse contexts in the future? */
+	return drm_ctxbitmap_next(dev);
 }
 
 int tdfx_context_switch(drm_device_t *dev, int old, int new)
@@ -137,6 +135,12 @@ int tdfx_addctx(struct inode *inode, struct file *filp, unsigned int cmd,
 		ctx.handle = tdfx_alloc_queue(dev);
 	}
 	DRM_DEBUG("%d\n", ctx.handle);
+	if (ctx.handle == -1) {
+		DRM_DEBUG("Not enough free contexts.\n");
+				/* Should this return -EBUSY instead? */
+		return -ENOMEM;
+	}
+   
 	copy_to_user_ret((drm_ctx_t *)arg, &ctx, sizeof(ctx), -EFAULT);
 	return 0;
 }
@@ -193,13 +197,13 @@ int tdfx_newctx(struct inode *inode, struct file *filp, unsigned int cmd,
 int tdfx_rmctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	       unsigned long arg)
 {
+	drm_file_t      *priv   = filp->private_data;
+	drm_device_t    *dev    = priv->dev;
 	drm_ctx_t	ctx;
 
 	copy_from_user_ret(&ctx, (drm_ctx_t *)arg, sizeof(ctx), -EFAULT);
 	DRM_DEBUG("%d\n", ctx.handle);
-				/* This is currently a noop because we
-				   don't reuse context values.  Perhaps we
-				   should? */
-	
+	drm_ctxbitmap_free(dev, ctx.handle);
+
 	return 0;
 }

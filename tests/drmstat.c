@@ -187,7 +187,7 @@ int main(int argc, char **argv)
 	case 'b':
 	    count   = strtoul(optarg, &pt, 0);
 	    size    = strtoul(pt+1, NULL, 0);
-	    if ((r = drmAddBufs(fd, count, size, 0)) < 0) {
+	    if ((r = drmAddBufs(fd, count, size, 0, 65536)) < 0) {
 		drmError(r, argv[0]);
 		return 1;
 	    }
