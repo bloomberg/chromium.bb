@@ -532,7 +532,7 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 #endif
 
 				/* Before installing handler */
-	DRIVER_PREINSTALL();
+	DRM(driver_irq_preinstall)( dev );
 
 				/* Install handler */
 	rid = 0;
@@ -552,7 +552,7 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	}
 
 				/* After installing handler */
-	DRIVER_POSTINSTALL();
+	DRM(driver_irq_postinstall)( dev );
 
 	return 0;
 }
@@ -571,7 +571,7 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, irq );
 
-	DRIVER_UNINSTALL();
+	DRM(driver_irq_uninstall)( dev );
 
 	bus_teardown_intr(dev->device, dev->irqr, dev->irqh);
 	bus_release_resource(dev->device, SYS_RES_IRQ, 0, dev->irqr);
@@ -596,6 +596,58 @@ int DRM(control)( DRM_IOCTL_ARGS )
 	}
 }
 
+#if __HAVE_VBL_IRQ
+
+int DRM(vblank_wait)(drm_device_t *dev, unsigned int *sequence)
+{
+	unsigned int cur_vblank;
+	int ret = 0;
+
+	/* Assume that the user has missed the current sequence number by about
+	 * a day rather than she wants to wait for years using vertical blanks :)
+	 */
+	while ( ( ( cur_vblank = atomic_read(&dev->vbl_received ) )
+		+ ~*sequence + 1 ) > (1<<23) ) {
+		ret = tsleep( &dev->vbl_queue, 3*hz, "rdnvbl", PZERO | PCATCH);
+		if (ret)
+			break;
+	}
+
+	*sequence = cur_vblank;
+
+	return ret;
+}
+
+int DRM(wait_vblank)( DRM_IOCTL_ARGS )
+{
+	DRM_DEVICE;
+	drm_wait_vblank_t vblwait;
+	struct timeval now;
+	int ret;
+
+	if (!dev->irq)
+		return DRM_ERR(EINVAL);
+
+	DRM_COPY_FROM_USER_IOCTL( vblwait, (drm_wait_vblank_t *)data,
+				  sizeof(vblwait) );
+
+	if ( vblwait.type == _DRM_VBLANK_RELATIVE ) {
+		vblwait.sequence += atomic_read( &dev->vbl_received );
+	}
+
+	ret = DRM(vblank_wait)( dev, &vblwait.sequence );
+
+	microtime( &now );
+	vblwait.tval_sec = now.tv_sec;
+	vblwait.tval_usec = now.tv_usec;
+
+	DRM_COPY_TO_USER_IOCTL( (drm_wait_vblank_t *)data, vblwait,
+				sizeof(vblwait) );
+
+	return ret;
+}
+#endif /*  __HAVE_VBL_IRQ */
+
 #else
 
 int DRM(control)( DRM_IOCTL_ARGS )
@@ -616,3 +668,4 @@ int DRM(control)( DRM_IOCTL_ARGS )
 #endif /* __HAVE_DMA_IRQ */
 
 #endif /* __HAVE_DMA */
+

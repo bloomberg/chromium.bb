@@ -407,6 +407,9 @@ extern int		DRM(mem_info) DRM_SYSCTL_HANDLER_ARGS;
 #if __HAVE_DMA
 extern d_ioctl_t	DRM(control);
 #endif
+#if __HAVE_VBL_IRQ
+extern d_ioctl_t	DRM(wait_vblank);
+#endif
 
 /* AGP/GART support (drm_agpsupport.h) */
 #if __REALLY_HAVE_AGP

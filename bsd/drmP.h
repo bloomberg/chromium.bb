@@ -465,6 +465,10 @@ struct drm_device {
 #if __FreeBSD_version >= 400005
 	struct task       task;
 #endif
+#if __HAVE_VBL_IRQ
+   	wait_queue_head_t vbl_queue;	/* vbl wait channel */
+   	atomic_t          vbl_received;
+#endif
 	cycles_t	  ctx_start;
 	cycles_t	  lck_start;
 #if __HAVE_DMA_HISTOGRAM
@@ -579,6 +583,9 @@ extern int	     DRM(dma_get_buffers)(drm_device_t *dev, drm_dma_t *dma);
 extern int           DRM(irq_install)( drm_device_t *dev, int irq );
 extern int           DRM(irq_uninstall)( drm_device_t *dev );
 extern void          DRM(dma_service)( DRM_IRQ_ARGS );
+extern void          DRM(driver_irq_preinstall)( drm_device_t *dev );
+extern void          DRM(driver_irq_postinstall)( drm_device_t *dev );
+extern void          DRM(driver_irq_uninstall)( drm_device_t *dev );
 #if __HAVE_DMA_IRQ_BH
 extern void          DRM(dma_immediate_bh)( DRM_TASKQUEUE_ARGS );
 #endif
@@ -603,6 +610,9 @@ extern int	     DRM(freelist_put)(drm_device_t *dev, drm_freelist_t *bl,
 extern drm_buf_t     *DRM(freelist_get)(drm_freelist_t *bl, int block);
 #endif
 #endif /* __HAVE_DMA */
+#if __HAVE_VBL_IRQ
+extern int           DRM(vblank_wait)(drm_device_t *dev, unsigned int *vbl_seq);
+#endif
 
 #if __REALLY_HAVE_AGP
 				/* AGP/GART support (drm_agpsupport.h) */
