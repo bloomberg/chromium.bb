@@ -744,17 +744,17 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	 * and screwing with the clear operation.
 	 */
 	dev_priv->depth_clear.rb3d_cntl = (RADEON_PLANE_MASK_ENABLE |
-					   RADEON_Z_ENABLE |
 					   (dev_priv->color_fmt << 10) |
 					   RADEON_ZBLOCK16);
 
-	dev_priv->depth_clear.rb3d_zstencilcntl = (dev_priv->depth_fmt |
-						   RADEON_Z_TEST_ALWAYS |
-						   RADEON_STENCIL_TEST_ALWAYS |
-						   RADEON_STENCIL_S_FAIL_KEEP |
-						   RADEON_STENCIL_ZPASS_KEEP |
-						   RADEON_STENCIL_ZFAIL_KEEP |
-						   RADEON_Z_WRITE_ENABLE);
+	dev_priv->depth_clear.rb3d_zstencilcntl = 
+		(dev_priv->depth_fmt |
+		 RADEON_Z_TEST_ALWAYS |
+		 RADEON_STENCIL_TEST_ALWAYS |
+		 RADEON_STENCIL_S_FAIL_REPLACE |
+		 RADEON_STENCIL_ZPASS_REPLACE |
+		 RADEON_STENCIL_ZFAIL_REPLACE |
+		 RADEON_Z_WRITE_ENABLE);
 
 	dev_priv->depth_clear.se_cntl = (RADEON_FFACE_CULL_CW |
 					 RADEON_BFACE_SOLID |

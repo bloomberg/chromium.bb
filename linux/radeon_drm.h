@@ -26,6 +26,7 @@
  * Authors:
  *    Kevin E. Martin <martin@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
+ *    Keith Whitwell <keith_whitwell@yahoo.com>
  */
 
 #ifndef __RADEON_DRM_H__
@@ -56,11 +57,14 @@
 #define RADEON_UPLOAD_TEX2IMAGES	0x00004000
 #define RADEON_UPLOAD_CLIPRECTS		0x00008000 /* handled client-side */
 #define RADEON_REQUIRE_QUIESCENCE	0x00010000
-#define RADEON_UPLOAD_ALL		0x0001ffff
+#define RADEON_UPLOAD_ZBIAS		0x00020000 /* version 1.2 and newer */
+#define RADEON_UPLOAD_ALL		0x0002ffff
+#define RADEON_UPLOAD_CONTEXT_ALL       0x000201ff
 
 #define RADEON_FRONT			0x1
 #define RADEON_BACK			0x2
 #define RADEON_DEPTH			0x4
+#define RADEON_STENCIL                  0x8
 
 /* Primitive types
  */
@@ -82,8 +86,6 @@
 
 #define RADEON_SCRATCH_REG_OFFSET	32
 
-/* Keep these small for testing
- */
 #define RADEON_NR_SAREA_CLIPRECTS	12
 
 /* There are 2 heaps (local/AGP).  Each region within a heap is a
@@ -95,7 +97,7 @@
 #define RADEON_NR_TEX_REGIONS		64
 #define RADEON_LOG_TEX_GRANULARITY	16
 
-#define RADEON_MAX_TEXTURE_LEVELS	11
+#define RADEON_MAX_TEXTURE_LEVELS	12
 #define RADEON_MAX_TEXTURE_UNITS	3
 
 #endif /* __RADEON_SAREA_DEFINES__ */
@@ -155,27 +157,17 @@ typedef struct {
 	/* Setup state */
 	unsigned int se_cntl_status;			/* 0x2140 */
 
-#ifdef TCL_ENABLE
-	/* TCL state */
-	radeon_color_regs_t se_tcl_material_emmissive;	/* 0x2210 */
-	radeon_color_regs_t se_tcl_material_ambient;
-	radeon_color_regs_t se_tcl_material_diffuse;
-	radeon_color_regs_t se_tcl_material_specular;
-	unsigned int se_tcl_shininess;
-	unsigned int se_tcl_output_vtx_fmt;
-	unsigned int se_tcl_output_vtx_sel;
-	unsigned int se_tcl_matrix_select_0;
-	unsigned int se_tcl_matrix_select_1;
-	unsigned int se_tcl_ucp_vert_blend_ctl;
-	unsigned int se_tcl_texture_proc_ctl;
-	unsigned int se_tcl_light_model_ctl;
-	unsigned int se_tcl_per_light_ctl[4];
-#endif
-
 	/* Misc state */
 	unsigned int re_top_left;			/* 0x26c0 */
 	unsigned int re_misc;
 } drm_radeon_context_regs_t;
+
+typedef struct {
+	/* Zbias state */
+	unsigned int se_zbias_factor;			/* 0x1dac */
+	unsigned int se_zbias_constant;
+} drm_radeon_context2_regs_t;
+
 
 /* Setup registers for each texture unit
  */
@@ -186,14 +178,27 @@ typedef struct {
 	unsigned int pp_txcblend;
 	unsigned int pp_txablend;
 	unsigned int pp_tfactor;
-
 	unsigned int pp_border_color;
-
-#ifdef CUBIC_ENABLE
-	unsigned int pp_cubic_faces;
-	unsigned int pp_cubic_offset[5];
-#endif
 } drm_radeon_texture_regs_t;
+
+/* Space is crucial; there is some redunancy here:
+ */
+typedef struct {
+	unsigned int start;
+	unsigned int finish;
+	unsigned int prim:8;
+	unsigned int stateidx:8;
+	unsigned int numverts:16; /* overloaded as offset/64 for elt prims */
+        unsigned int vc_format;   /* vertex format */
+} drm_radeon_prim_t;
+
+typedef struct {
+	drm_radeon_context_regs_t context;
+	drm_radeon_texture_regs_t tex[RADEON_MAX_TEXTURE_UNITS];
+	drm_radeon_context2_regs_t context2;
+	unsigned int dirty;
+} drm_radeon_state_t;
+
 
 typedef struct {
 	unsigned char next, prev;
@@ -202,8 +207,9 @@ typedef struct {
 } drm_radeon_tex_region_t;
 
 typedef struct {
-	/* The channel for communication of state information to the kernel
-	 * on firing a vertex buffer.
+	/* The channel for communication of state information to the
+	 * kernel on firing a vertex buffer with either of the
+	 * obsoleted vertex/index ioctls.
 	 */
 	drm_radeon_context_regs_t context_state;
 	drm_radeon_texture_regs_t tex_state[RADEON_MAX_TEXTURE_UNITS];
@@ -285,7 +291,7 @@ typedef struct drm_radeon_clear {
 	unsigned int clear_color;
 	unsigned int clear_depth;
 	unsigned int color_mask;
-	unsigned int depth_mask;
+	unsigned int depth_mask;   /* misnamed field:  should be stencil */
 	drm_radeon_clear_rect_t *depth_boxes;
 } drm_radeon_clear_t;
 
@@ -295,6 +301,15 @@ typedef struct drm_radeon_vertex {
 	int count;			/* Number of vertices in buffer */
 	int discard;			/* Client finished with buffer? */
 } drm_radeon_vertex_t;
+
+typedef struct drm_radeon_vertex2 {
+	int idx;			/* Index of vertex buffer */
+	int discard;			/* Client finished with buffer? */
+	int nr_states;
+	drm_radeon_state_t *state;
+	int nr_prims;
+	drm_radeon_prim_t *prim;
+} drm_radeon_vertex2_t;
 
 typedef struct drm_radeon_indices {
 	int prim;

@@ -88,6 +88,8 @@
 #define I810_TEXREG_MCS  7	/* GFX_OP_MAP_COORD_SETS ??? */
 #define I810_TEX_SETUP_SIZE 8
 
+/* Flags for clear ioctl
+ */
 #define I810_FRONT   0x1
 #define I810_BACK    0x2
 #define I810_DEPTH   0x4
@@ -190,6 +192,17 @@ typedef struct _drm_i810_copy_t {
 	int used;		/* nr bytes in use */
 	void *address;		/* Address to copy from */
 } drm_i810_copy_t;
+
+#define PR_TRIANGLES         (0x0<<18)
+#define PR_TRISTRIP_0        (0x1<<18)
+#define PR_TRISTRIP_1        (0x2<<18)
+#define PR_TRIFAN            (0x3<<18)
+#define PR_POLYGON           (0x4<<18)
+#define PR_LINES             (0x5<<18)
+#define PR_LINESTRIP         (0x6<<18)
+#define PR_RECTS             (0x7<<18)
+#define PR_MASK              (0x7<<18)
+
 
 typedef struct drm_i810_dma {
 	void *virtual;

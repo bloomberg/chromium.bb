@@ -91,7 +91,7 @@ do {								\
 	*(volatile unsigned int *)(virt + outring) = n;			\
 	outring += 4;							\
 	outring &= ringmask;						\
-} while (0);
+} while (0)
 
 static inline void i830_print_status_page(drm_device_t *dev)
 {

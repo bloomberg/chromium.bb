@@ -187,9 +187,7 @@ static drm_ioctl_desc_t		  DRM(ioctls)[] = {
 
 	/* The DRM_IOCTL_DMA ioctl should be defined by the driver.
 	 */
-#if __HAVE_DMA_IRQ
 	[DRM_IOCTL_NR(DRM_IOCTL_CONTROL)]       = { DRM(control),     1, 1 },
-#endif
 #endif
 
 #if __REALLY_HAVE_AGP
