@@ -28,4 +28,7 @@ important steps:
  	freedesktop.org:~fontconfig/public_html/release
  9.	Update the Fontconfig Devel wiki page
  	http://freedesktop.org/Software/FontconfigDevel
-10.	Post a note to fontconfig@fontconfig.org
+10.	Compute md5sums for release files:
+		md5sum fontconfig-2.2.xx.tar.gz ChangeLog-2.2.xx
+11.	Post a note to fontconfig@fontconfig.org.  Include the md5sums.
+	gpg sign the message.
