@@ -128,6 +128,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     FT_Library	    ftLibrary;
     FcChar8	    *family;
     FcChar8	    *style;
+    int		    spacing;
     TT_OS2	    *os2;
     TT_Header	    *head;
     const FcChar8   *exclusiveLang = 0;
@@ -577,7 +578,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     /*
      * Compute the unicode coverage for the font
      */
-    cs = FcFreeTypeCharSet (face, blanks);
+    cs = FcFreeTypeCharSetAndSpacing (face, blanks, &spacing);
     if (!cs)
 	goto bail1;
 
@@ -600,6 +601,10 @@ FcFreeTypeQuery (const FcChar8	*file,
 
     if (!FcPatternAddLangSet (pat, FC_LANG, ls))
 	goto bail2;
+
+    if (spacing != FC_PROPORTIONAL)
+	if (!FcPatternAddInteger (pat, FC_SPACING, spacing))
+	    goto bail2;
 
     /*
      * Drop our reference to the charset
@@ -1217,7 +1222,8 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
 
 static FcBool
 FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4, 
-		      FT_UInt glyph, FcBlanks *blanks)
+		      FT_UInt glyph, FcBlanks *blanks,
+		      FT_Pos *advance)
 {
     FT_Int	    load_flags = FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
     FT_GlyphSlot    slot;
@@ -1239,6 +1245,8 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
     if (!glyph)
 	return FcFalse;
     
+    *advance = slot->metrics.horiAdvance;
+
     switch (slot->format) {
     case ft_glyph_format_bitmap:
 	/*
@@ -1269,7 +1277,7 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
 }
 
 FcCharSet *
-FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
+FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 {
     FcChar32	    page, off, max, ucs4;
 #ifdef CHECK
@@ -1281,6 +1289,8 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
     int		    o;
     int		    i;
     FT_UInt	    glyph;
+    FT_Pos	    advance, all_advance = 0;
+    FcBool	    has_advance = FcFalse, fixed_advance = FcTrue;
 
     fcs = FcCharSetCreate ();
     if (!fcs)
@@ -1301,8 +1311,16 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 	    {
 		ucs4 = map->ent[i].bmp;
 		glyph = FT_Get_Char_Index (face, map->ent[i].encode);
-		if (glyph && FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks))
+		if (glyph && 
+		    FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance))
 		{
+		    if (!has_advance)
+		    {
+			has_advance = FcTrue;
+			all_advance = advance;
+		    }
+		    else if (advance != all_advance)
+			fixed_advance = FcFalse;
 		    leaf = FcCharSetFindLeafCreate (fcs, ucs4);
 		    if (!leaf)
 			goto bail1;
@@ -1342,8 +1360,15 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 		{
 		    glyph = FT_Get_Char_Index (face, ucs4);
 		    if (glyph && FcFreeTypeCheckGlyph (face, ucs4, 
-						       glyph, blanks))
+						       glyph, blanks, &advance))
 		    {
+			if (!has_advance)
+			{
+			    has_advance = FcTrue;
+			    all_advance = advance;
+			}
+			else if (advance != all_advance)
+			    fixed_advance = FcFalse;
 			if (!leaf)
 			{
 			    leaf = FcCharSetFindLeafCreate (fcs, ucs4);
@@ -1391,6 +1416,10 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 	    printf ("Bitmap extra char 0x%x\n", ucs4);
     }
 #endif
+    if (fixed_advance)
+	*spacing = FC_MONO;
+    else
+	*spacing = FC_PROPORTIONAL;
     return fcs;
 bail1:
     FcCharSetDestroy (fcs);
@@ -1398,3 +1427,10 @@ bail0:
     return 0;
 }
 
+FcCharSet *
+FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
+{
+    int spacing;
+
+    return FcFreeTypeCharSetAndSpacing (face, blanks, &spacing);
+}

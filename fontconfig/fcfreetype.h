@@ -30,6 +30,9 @@ FT_UInt
 FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4);
 
 FcCharSet *
+FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing);
+    
+FcCharSet *
 FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks);
 
 FcResult
