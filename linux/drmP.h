@@ -66,10 +66,6 @@
 #ifdef CONFIG_MTRR
 #include <asm/mtrr.h>
 #endif
-#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
-#include <linux/types.h>
-#include <linux/agp_backend.h>
-#endif
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,41)
 #define HAS_WORKQUEUE 0
 #else
@@ -90,9 +86,6 @@
 /** \name DRM template customization defaults */
 /*@{*/
 
-#ifndef __HAVE_AGP
-#define __HAVE_AGP		0
-#endif
 #ifndef __HAVE_MTRR
 #define __HAVE_MTRR		0
 #endif
@@ -112,8 +105,6 @@
 #define __HAVE_DMA_FREELIST	0
 #endif
 
-#define __REALLY_HAVE_AGP	(__HAVE_AGP && (defined(CONFIG_AGP) || \
-						defined(CONFIG_AGP_MODULE)))
 #define __REALLY_HAVE_MTRR	(__HAVE_MTRR && defined(CONFIG_MTRR))
 #define __REALLY_HAVE_SG	(__HAVE_SG)
 

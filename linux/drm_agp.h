@@ -34,6 +34,19 @@
 #ifndef _DRM_AGP_H_
 #define _DRM_AGP_H_
 
+#ifndef __HAVE_AGP
+#define __HAVE_AGP 0
+#endif
+
+#define __REALLY_HAVE_AGP (__HAVE_AGP && \
+		(defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)))
+
+#if __REALLY_HAVE_AGP
+
+
+#include <linux/types.h>
+#include <linux/agp_backend.h>
+
 
 /** 
  * AGP memory entry.  Stored as a doubly linked list.
@@ -92,4 +105,7 @@ extern void DRM(agp_cleanup_dev)(drm_device_t *dev);
 
 /*@}*/
 
-#endif
+
+#endif /* __REALLY_HAVE_AGP */
+
+#endif /* !_DRM_AGP_H_ */
