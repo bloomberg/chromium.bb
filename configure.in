@@ -191,15 +191,15 @@ no)
 		;;
 	yes)
 		AC_CHECK_FUNCS(XML_SetDoctypeDeclHandler)
-		case "$ac_cv_func_XML_ParserCreate" in
-		no)
-			expat=no
-			;;
+		case "$ac_cv_func_XML_SetDoctypeDeclHandler" in
 		yes)
 			HAVE_EXPAT=1
 			AC_SUBST(HAVE_EXPAT)
 			AC_DEFINE_UNQUOTED(HAVE_EXPAT,$HAVE_EXPAT,
 			[Found a useable expat library])
+			;;
+		*)
+			expat=no
 			;;
 		esac
 		;;
