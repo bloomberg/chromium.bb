@@ -81,8 +81,8 @@ MGASHARED =     mga.h mga_dma.c mga_drm.h mga_drv.h mga_irq.c mga_state.c \
                 mga_ucode.h mga_warp.c
 I810HEADERS =   i810.h i810_drv.h i810_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 I830HEADERS =   i830.h i830_drv.h i830_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
-SISHEADERS=     sis_drv.h sis_drm.h $(DRMHEADERS)
-SISSHARED=      sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
+SISHEADERS=     sis.h sis_drv.h sis_drm.h $(DRMHEADERS)
+SISSHARED=      sis.h sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
 	$(SISSHARED) $(TDFXSHARED)
