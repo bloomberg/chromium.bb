@@ -187,7 +187,7 @@ static int DRM(_vm_info)(char *buf, char **start, off_t offset, int request,
 		       "address mtrr\n\n");
 	i = 0;
 	if (dev->maplist != NULL) list_for_each(list, &dev->maplist->head) {
-		r_list = (drm_map_list_t *)list;
+		r_list = list_entry(list, drm_map_list_t, head);
 		map = r_list->map;
 		if(!map) continue;
 		if (map->type < 0 || map->type > 4) type = "??";

@@ -144,6 +144,8 @@ AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 MACHINE := $(shell echo `uname -m`)
 # Red Hat's kernels have 4 args to do_munmap()
 DOMUNMAP := $(shell grep do_munmap $(TREE)/linux/mm.h | grep -c acct)
+# Red Hat 9 kernel has 5 args to remap_page_range()
+RPR := $(shell grep remap_page_range $(TREE)/linux/mm.h | grep -c vma)
 ifeq ($(AGP),0)
 AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'AGP_MODULE = ' | cut -d' ' -f3)
@@ -151,6 +153,9 @@ endif
 
 ifeq ($(DOMUNMAP),1)
 MODCFLAGS += -DDO_MUNMAP_4_ARGS
+endif
+ifeq ($(RPR),1)
+MODCFLAGS += -DREMAP_PAGE_RANGE_5_ARGS
 endif
 ifeq ($(AGP),1)
 MODCFLAGS += -DCONFIG_AGP -DCONFIG_AGP_MODULE

@@ -172,6 +172,15 @@
 		pos = n, n = pos->next)
 #endif
 
+#ifndef list_for_each_entry
+#define list_for_each_entry(pos, head, member)				\
+       for (pos = list_entry((head)->next, typeof(*pos), member),	\
+                    prefetch(pos->member.next);				\
+            &pos->member != (head);					\
+            pos = list_entry(pos->member.next, typeof(*pos), member),	\
+                    prefetch(pos->member.next))
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,19)
 static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 {
@@ -197,7 +206,7 @@ static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 }
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)
+#ifndef REMAP_PAGE_RANGE_5_ARGS /* #if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0) */
 #define DRM_RPR_ARG(vma)
 #else
 #define DRM_RPR_ARG(vma) vma,
@@ -249,17 +258,17 @@ static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 			DRM(ioremapfree)( (map)->handle, (map)->size );	\
 	} while (0)
 
-#define DRM_FIND_MAP(_map, _o)						\
-do {									\
-	struct list_head *_list;					\
-	list_for_each( _list, &dev->maplist->head ) {			\
-		drm_map_list_t *_entry = (drm_map_list_t *)_list;	\
-		if ( _entry->map &&					\
-		     _entry->map->offset == (_o) ) {			\
-			(_map) = _entry->map;				\
-			break;						\
- 		}							\
-	}								\
+#define DRM_FIND_MAP(_map, _o)								\
+do {											\
+	struct list_head *_list;							\
+	list_for_each( _list, &dev->maplist->head ) {					\
+		drm_map_list_t *_entry = list_entry( _list, drm_map_list_t, head );	\
+		if ( _entry->map &&							\
+		     _entry->map->offset == (_o) ) {					\
+			(_map) = _entry->map;						\
+			break;								\
+ 		}									\
+	}										\
 } while(0)
 #define DRM_DROP_MAP(_map)
 
