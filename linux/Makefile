@@ -52,7 +52,10 @@ ARCHX86 := 1
 MODULE_LIST += i830.o i810.o
 endif
 
-# Add ffb.o for sparc??
+ifneq (,$(findstring sparc64,$(MACHINE)))
+ARCHSPARC64 := 1
+MODULE_LIST += ffb.o
+endif
 
 DRM_MODULES ?= $(MODULE_LIST)
 
@@ -93,6 +96,7 @@ MACH64HEADERS	= mach64.h mach64_drv.h mach64_drm.h $(DRMHEADERS) \
 		$(DRMTEMPLATES)
 MACH64SHARED 	= mach64.h mach64_drv.h mach64_drm.h mach64_dma.c \
 		mach64_irq.c mach64_state.c
+FFBHEADERS	= ffb.h ffb_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
 	$(SISSHARED) $(TDFXSHARED) $(VIASHARED) $(MACH64SHARED)
@@ -340,8 +344,9 @@ endif
 ifneq (,$(findstring mach64,$(DRM_MODULES)))
 CONFIG_DRM_MACH64 := m
 endif
-
-
+ifneq (,$($findstring ffb,$(DRM_MODULES)))
+CONFIG_DRM_FFB := m
+endif
 
 # These require AGP support
 
