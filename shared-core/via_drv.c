@@ -52,8 +52,6 @@
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_PCICMD)] = { via_pci_cmdbuffer, 1, 0}
 
 
-#define __HAVE_COUNTERS		0
-
 #include "drm_auth.h"
 #include "drm_agpsupport.h"
 #include "drm_bufs.h"
