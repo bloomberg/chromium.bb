@@ -156,4 +156,4 @@
 
 /* card specific ioctls may increase the DRM_MAX */
 #define LINUX_IOCTL_DRM_MIN		LINUX_DRM_IOCTL_VERSION
-#define LINUX_IOCTL_DRM_MAX		LINUX_DRM_IOCTL_R128_FULLSCREEN
+#define LINUX_IOCTL_DRM_MAX		0x64ff
