@@ -163,8 +163,8 @@ int drm_takedown(drm_device_t * dev)
 
 	DRM_DEBUG("\n");
 
-	if (dev->fn_tbl->pretakedown)
-		dev->fn_tbl->pretakedown(dev);
+	if (dev->driver->pretakedown)
+		dev->driver->pretakedown(dev);
 
 	if (dev->irq_enabled)
 		drm_irq_uninstall(dev);
@@ -318,9 +318,9 @@ MODULE_PARM(drm_opts, "s");
  * Expands the \c DRIVER_PREINIT and \c DRIVER_POST_INIT macros before and
  * after the initialization for driver customization.
  */
-int drm_init(struct pci_driver *driver,
+int drm_init(struct pci_driver *pci_driver,
 		       struct pci_device_id *pciidlist,
-		       struct drm_driver_fn *driver_fn)
+		       struct drm_driver *driver)
 {
 	struct pci_dev *pdev;
 	struct pci_device_id *pid;
@@ -357,7 +357,7 @@ int drm_init(struct pci_driver *driver,
 	}
 
 	if (drm_fb_loaded == 0)
-		pci_register_driver(driver);
+		pci_register_driver(pci_driver);
 	else {
 		for (i = 0; pciidlist[i].vendor != 0; i++) {
 			pid = &pciidlist[i];
@@ -370,7 +370,7 @@ int drm_init(struct pci_driver *driver,
 					       pdev))) {
 				/* stealth mode requires a manual probe */
 				pci_dev_get(pdev);
-				drm_probe(pdev, &pciidlist[i], driver_fn);
+				drm_probe(pdev, &pciidlist[i], driver);
 			}
 		}
 		DRM_INFO("Used old pci detect: framebuffer loaded\n");
@@ -459,14 +459,14 @@ static void __exit drm_cleanup(drm_device_t * dev)
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
 		dev->agp = NULL;
 	}
-	if (dev->fn_tbl->postcleanup)
-		dev->fn_tbl->postcleanup(dev);
+	if (dev->driver->postcleanup)
+		dev->driver->postcleanup(dev);
 
 	if (drm_put_minor(dev))
 		DRM_ERROR("Cannot unload module\n");
 }
 
-void __exit drm_exit(struct pci_driver *driver)
+void __exit drm_exit(struct pci_driver *pci_driver)
 {
 	int i;
 	drm_device_t *dev;
@@ -486,7 +486,7 @@ void __exit drm_exit(struct pci_driver *driver)
 			}
 		}
 	} else
-		pci_unregister_driver(driver);
+		pci_unregister_driver(pci_driver);
 	DRM_INFO("Module unloaded\n");
 }
 EXPORT_SYMBOL(drm_exit);
@@ -578,7 +578,7 @@ int drm_version(struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 	/* version is a required function to return the personality module version */
-	if ((ret = dev->fn_tbl->version(&version)))
+	if ((ret = dev->driver->version(&version)))
 		return ret;
 
 	if (copy_to_user(argp, &version, sizeof(version)))
@@ -619,14 +619,14 @@ int drm_ioctl(struct inode *inode, struct file *filp,
 	if (nr < DRIVER_IOCTL_COUNT)
 		ioctl = &drm_ioctls[nr];
 	else if ((nr >= DRM_COMMAND_BASE)
-		 || (nr < DRM_COMMAND_BASE + dev->fn_tbl->num_ioctls))
-		ioctl = &dev->fn_tbl->ioctls[nr - DRM_COMMAND_BASE];
+		 || (nr < DRM_COMMAND_BASE + dev->driver->num_ioctls))
+		ioctl = &dev->driver->ioctls[nr - DRM_COMMAND_BASE];
 	else
 		goto err_i1;
 
 	func = ioctl->func;
-	if ((nr == DRM_IOCTL_NR(DRM_IOCTL_DMA)) && dev->fn_tbl->dma_ioctl)	/* Local override? */
-		func = dev->fn_tbl->dma_ioctl;
+	if ((nr == DRM_IOCTL_NR(DRM_IOCTL_DMA)) && dev->driver->dma_ioctl)	/* Local override? */
+		func = dev->driver->dma_ioctl;
 
 	if (!func) {
 		DRM_DEBUG("no function\n");

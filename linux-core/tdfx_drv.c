@@ -65,7 +65,7 @@ static struct pci_device_id pciidlist[] = {
 	tdfx_PCI_IDS
 };
 
-static struct drm_driver_fn driver_fn = {
+static struct drm_driver driver = {
 	.driver_features = DRIVER_USE_MTRR,
 	.reclaim_buffers = drm_core_reclaim_buffers,
 	.get_map_ofs = drm_core_get_map_ofs,
@@ -84,10 +84,10 @@ static struct drm_driver_fn driver_fn = {
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 {
-	return drm_probe(pdev, ent, &driver_fn);
+	return drm_probe(pdev, ent, &driver);
 }
 
-static struct pci_driver driver = {
+static struct pci_driver pci_driver = {
 	.name = DRIVER_NAME,
 	.id_table = pciidlist,
 	.probe = probe,
@@ -96,12 +96,12 @@ static struct pci_driver driver = {
 
 static int __init tdfx_init(void)
 {
-	return drm_init(&driver, pciidlist, &driver_fn);
+	return drm_init(&pci_driver, pciidlist, &driver);
 }
 
 static void __exit tdfx_exit(void)
 {
-	drm_exit(&driver);
+	drm_exit(&pci_driver);
 }
 
 module_init(tdfx_init);

@@ -90,7 +90,7 @@ int drm_initmap(drm_device_t * dev, unsigned int offset, unsigned int size,
 	list_add(&list->head, &dev->maplist->head);
 	up(&dev->struct_sem);
 
-	dev->fn_tbl->permanent_maps = 1;
+	dev->driver->permanent_maps = 1;
 	DRM_DEBUG("finished\n");
 
 	return 0;
@@ -155,7 +155,7 @@ int drm_addmap(struct inode *inode, struct file *filp,
 			struct list_head *_list;
 
 			/* If permanent maps are implemented, maps must match */
-			if (dev->fn_tbl->permanent_maps) {
+			if (dev->driver->permanent_maps) {
 				DRM_DEBUG
 				    ("Looking for: offset = 0x%08lx, size = 0x%08lx, type = %d\n",
 				     map->offset, map->size, map->type);
@@ -516,7 +516,7 @@ int drm_addbufs_agp(struct inode *inode, struct file *filp,
 		init_waitqueue_head(&buf->dma_wait);
 		buf->filp = NULL;
 
-		buf->dev_priv_size = dev->fn_tbl->dev_priv_size;
+		buf->dev_priv_size = dev->driver->dev_priv_size;
 		buf->dev_private = drm_alloc(buf->dev_priv_size, DRM_MEM_BUFS);
 		if (!buf->dev_private) {
 			/* Set count correctly so we free the proper amount. */
@@ -730,8 +730,8 @@ int drm_addbufs_pci(struct inode *inode, struct file *filp,
 			init_waitqueue_head(&buf->dma_wait);
 			buf->filp = NULL;
 
-			buf->dev_priv_size = dev->fn_tbl->dev_priv_size;
-			buf->dev_private = drm_alloc(dev->fn_tbl->dev_priv_size,
+			buf->dev_priv_size = dev->driver->dev_priv_size;
+			buf->dev_private = drm_alloc(dev->driver->dev_priv_size,
 						     DRM_MEM_BUFS);
 			if (!buf->dev_private) {
 				/* Set count correctly so we free the proper amount. */
@@ -911,8 +911,8 @@ int drm_addbufs_sg(struct inode *inode, struct file *filp,
 		init_waitqueue_head(&buf->dma_wait);
 		buf->filp = NULL;
 
-		buf->dev_priv_size = dev->fn_tbl->dev_priv_size;
-		buf->dev_private = drm_alloc(dev->fn_tbl->dev_priv_size,
+		buf->dev_priv_size = dev->driver->dev_priv_size;
+		buf->dev_private = drm_alloc(dev->driver->dev_priv_size,
 					     DRM_MEM_BUFS);
 		if (!buf->dev_private) {
 			/* Set count correctly so we free the proper amount. */

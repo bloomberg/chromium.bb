@@ -108,15 +108,15 @@ int drm_lock(struct inode *inode, struct file *filp,
 	dev->sigdata.lock = dev->lock.hw_lock;
 	block_all_signals(drm_notifier, &dev->sigdata, &dev->sigmask);
 
-	if (dev->fn_tbl->dma_ready && (lock.flags & _DRM_LOCK_READY))
-		dev->fn_tbl->dma_ready(dev);
+	if (dev->driver->dma_ready && (lock.flags & _DRM_LOCK_READY))
+		dev->driver->dma_ready(dev);
 
-	if (dev->fn_tbl->dma_quiescent && (lock.flags & _DRM_LOCK_QUIESCENT))
-		return dev->fn_tbl->dma_quiescent(dev);
+	if (dev->driver->dma_quiescent && (lock.flags & _DRM_LOCK_QUIESCENT))
+		return dev->driver->dma_quiescent(dev);
 
-	if (dev->fn_tbl->kernel_context_switch
+	if (dev->driver->kernel_context_switch
 	    && dev->last_context != lock.context) {
-		dev->fn_tbl->kernel_context_switch(dev, dev->last_context,
+		dev->driver->kernel_context_switch(dev, dev->last_context,
 						   lock.context);
 	}
 
@@ -154,8 +154,8 @@ int drm_unlock(struct inode *inode, struct file *filp,
 
 	atomic_inc(&dev->counts[_DRM_STAT_UNLOCKS]);
 
-	if (dev->fn_tbl->kernel_context_switch_unlock)
-		dev->fn_tbl->kernel_context_switch_unlock(dev);
+	if (dev->driver->kernel_context_switch_unlock)
+		dev->driver->kernel_context_switch_unlock(dev);
 	else {
 		drm_lock_transfer(dev, &dev->lock.hw_lock->lock,
 				  DRM_KERNEL_CONTEXT);

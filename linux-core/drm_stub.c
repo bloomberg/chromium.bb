@@ -54,7 +54,7 @@ struct proc_dir_entry *drm_proc_root;
 
 static int fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 		       const struct pci_device_id *ent,
-		       struct drm_driver_fn *driver_fn)
+		       struct drm_driver *driver)
 {
 	int retcode;
 
@@ -63,7 +63,6 @@ static int fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 	sema_init(&dev->struct_sem, 1);
 	sema_init(&dev->ctxlist_sem, 1);
 
-	dev->name = DRIVER_NAME;
 	dev->pdev = pdev;
 
 #ifdef __alpha__
@@ -91,10 +90,10 @@ static int fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 	dev->types[4] = _DRM_STAT_LOCKS;
 	dev->types[5] = _DRM_STAT_UNLOCKS;
 
-	dev->fn_tbl = driver_fn;
+	dev->driver = driver;
 
-	if (dev->fn_tbl->preinit)
-		if ((retcode = dev->fn_tbl->preinit(dev, ent->driver_data)))
+	if (dev->driver->preinit)
+		if ((retcode = dev->driver->preinit(dev, ent->driver_data)))
 			goto error_out_unreg;
 
 	if (drm_core_has_AGP(dev)) {
@@ -125,7 +124,7 @@ static int fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 
 	/* postinit is a required function to display the signon banner */
 	/* drivers add secondary heads here if needed */
-	if ((retcode = dev->fn_tbl->postinit(dev, ent->driver_data)))
+	if ((retcode = dev->driver->postinit(dev, ent->driver_data)))
 		goto error_out_unreg;
 
 	return 0;
@@ -147,7 +146,7 @@ static int fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
  * Try and register, if we fail to register, backout previous work.
  */
 int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent,
-	      struct drm_driver_fn *driver_fn)
+	      struct drm_driver *driver)
 {
 	struct class_device *dev_class;
 	drm_device_t *dev;
@@ -173,7 +172,7 @@ int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent,
 				pci_request_regions(pdev, DRIVER_NAME);
 				pci_enable_device(pdev);
 			}
-			if ((ret = fill_in_dev(dev, pdev, ent, driver_fn))) {
+			if ((ret = fill_in_dev(dev, pdev, ent, driver))) {
 				printk(KERN_ERR "DRM: Fill_in_dev failed.\n");
 				goto err_g1;
 			}

@@ -508,7 +508,7 @@ typedef struct drm_vbl_sig {
  */
 struct drm_device;
 
-struct drm_driver_fn {
+struct drm_driver {
 	int (*preinit) (struct drm_device *, unsigned long flags);
 	void (*prerelease) (struct drm_device *, struct file * filp);
 	void (*pretakedown) (struct drm_device *);
@@ -553,7 +553,6 @@ struct drm_driver_fn {
  * DRM device structure.
  */
 typedef struct drm_device {
-	const char *name;		/**< Simple driver name */
 	char *unique;			/**< Unique identifier: e.g., busid */
 	int unique_len;			/**< Length of unique field */
 	dev_t device;			/**< Device number for mknod */
@@ -679,7 +678,7 @@ typedef struct drm_device {
 	drm_sigdata_t sigdata;		/**< For block_all_signals */
 	sigset_t sigmask;
 
-	struct drm_driver_fn *fn_tbl;
+	struct drm_driver *driver;
 	drm_local_map_t *agp_buffer_map;
 } drm_device_t;
 
@@ -696,7 +695,7 @@ typedef struct drm_minor {
 static __inline__ int drm_core_check_feature(struct drm_device *dev,
 					     int feature)
 {
-	return ((dev->fn_tbl->driver_features & feature) ? 1 : 0);
+	return ((dev->driver->driver_features & feature) ? 1 : 0);
 }
 
 #if __OS_HAS_AGP
@@ -728,10 +727,10 @@ extern int drm_cpu_valid(void);
 
 				/* Driver support (drm_drv.h) */
 extern int drm_fb_loaded;
-extern int __devinit drm_init(struct pci_driver *driver,
+extern int __devinit drm_init(struct pci_driver *pci_driver,
 			      struct pci_device_id *pciidlist,
-			      struct drm_driver_fn *driver_fn);
-extern void __exit drm_exit(struct pci_driver *driver);
+			      struct drm_driver *driver);
+extern void __exit drm_exit(struct pci_driver *pci_driver);
 extern void __exit drm_cleanup_pci(struct pci_dev *pdev);
 extern int drm_version(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
@@ -911,7 +910,7 @@ extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
 
 				/* Stub support (drm_stub.h) */
 extern int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent,
-		     struct drm_driver_fn *driver_fn);
+		     struct drm_driver *driver);
 extern int drm_put_minor(drm_device_t * dev);
 extern int drm_get_secondary_minor(drm_device_t * dev,
 				   drm_minor_t ** sec_minor);

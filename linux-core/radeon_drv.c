@@ -128,7 +128,7 @@ static drm_ioctl_desc_t ioctls[] = {
 	[DRM_IOCTL_NR(DRM_RADEON_SETPARAM)] = {radeon_cp_setparam, 1, 0},
 };
 
-static struct drm_driver_fn driver_fn = {
+static struct drm_driver driver = {
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_SG |
 	    DRIVER_HAVE_IRQ | DRIVER_HAVE_DMA | DRIVER_IRQ_SHARED |
@@ -167,10 +167,10 @@ static struct drm_driver_fn driver_fn = {
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 {
-	return drm_probe(pdev, ent, &driver_fn);
+	return drm_probe(pdev, ent, &driver);
 }
 
-static struct pci_driver driver = {
+static struct pci_driver pci_driver = {
 	.name = DRIVER_NAME,
 	.id_table = pciidlist,
 	.probe = probe,
@@ -179,12 +179,12 @@ static struct pci_driver driver = {
 
 static int __init radeon_init(void)
 {
-	return drm_init(&driver, pciidlist, &driver_fn);
+	return drm_init(&pci_driver, pciidlist, &driver);
 }
 
 static void __exit radeon_exit(void)
 {
-	drm_exit(&driver);
+	drm_exit(&pci_driver);
 }
 
 module_init(radeon_init);

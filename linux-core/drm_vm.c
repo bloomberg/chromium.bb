@@ -577,7 +577,7 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 		map = r_list->map;
 		if (!map)
 			continue;
-		off = dev->fn_tbl->get_map_ofs(map);
+		off = dev->driver->get_map_ofs(map);
 		if (off == VM_OFFSET(vma))
 			break;
 	}
@@ -638,7 +638,7 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 			vma->vm_page_prot =
 			    pgprot_writecombine(vma->vm_page_prot);
 #endif
-		offset = dev->fn_tbl->get_reg_ofs(dev);
+		offset = dev->driver->get_reg_ofs(dev);
 #ifdef __sparc__
 		if (io_remap_page_range(DRM_RPR_ARG(vma) vma->vm_start,
 					VM_OFFSET(vma) + offset,
