@@ -35,6 +35,8 @@ typedef enum{
 	state_command,
 	state_header2,
 	state_header1,
+	state_vheader5,
+	state_vheader6,
 	state_error
 } verifier_state_t;
 
@@ -617,6 +619,41 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 }
 
 
+static __inline__ int
+verify_mmio_address( uint32_t address)
+{
+	if ((address > 0x3FF) && (address < 0xC00 )) {
+		DRM_ERROR("Invalid HALCYON_HEADER1 command. "
+			  "Attempt to access 3D- or command burst area.\n");
+		return 1;
+	} else if (address > 0xCFF ) {
+		DRM_ERROR("Invalid HALCYON_HEADER1 command. "
+			  "Attempt to access VGA registers.\n");
+		return 1;
+	}
+	return 0;
+}
+
+static __inline__ int
+verify_video_tail( uint32_t const **buffer, const uint32_t *buf_end, uint32_t dwords) 
+{
+	const uint32_t *buf = *buffer;
+
+	if (buf_end - buf < dwords) {
+		DRM_ERROR("Illegal termination of video command.\n");
+		return 1;
+	}
+	while (dwords--) {
+		if (*buf++) {
+			DRM_ERROR("Illegal video command tail.\n");
+			return 1;
+		}
+	}
+	*buffer = buf;
+	return 0;
+}
+		
+
 static __inline__ verifier_state_t
 via_check_header1( uint32_t const **buffer, const uint32_t *buf_end )
 {
@@ -649,6 +686,73 @@ via_check_header1( uint32_t const **buffer, const uint32_t *buf_end )
 	return ret;
 }
 
+static __inline__ verifier_state_t
+via_check_vheader5( uint32_t const **buffer, const uint32_t *buf_end )
+{
+	uint32_t data;
+	const uint32_t *buf = *buffer;
+
+	if (buf_end - buf < 4) {
+		DRM_ERROR("Illegal termination of video header5 command\n");
+		return state_error;
+	}
+
+	data = *buf++ & ~VIA_VIDEOMASK;
+	if (verify_mmio_address(data))
+		return state_error;
+
+	data = *buf++;
+	if (*buf++ != 0x00F50000) {
+		DRM_ERROR("Illegal header5 header data\n");
+		return state_error;
+	}
+	if (*buf++ != 0x00000000) {
+		DRM_ERROR("Illegal header5 header data\n");
+		return state_error;
+	}
+	if (eat_words(&buf, buf_end, data)) 
+		return state_error;
+	if (verify_video_tail(&buf, buf_end, 4 - (data & 3))) 
+		return state_error;
+	*buffer = buf;
+	return state_command;
+	       
+} 
+
+static __inline__ verifier_state_t
+via_check_vheader6( uint32_t const **buffer, const uint32_t *buf_end )
+{
+	uint32_t data;
+	const uint32_t *buf = *buffer;
+	uint32_t i;
+
+	if (buf_end - buf < 4) {
+		DRM_ERROR("Illegal termination of video header6 command\n");
+		return state_error;
+	}
+
+	data = *buf++;
+	if (*buf++ != 0x00F60000) {
+		DRM_ERROR("Illegal header6 header data\n");
+		return state_error;
+	}
+	if (*buf++ != 0x00000000) {
+		DRM_ERROR("Illegal header6 header data\n");
+		return state_error;
+	}
+	if ((buf_end - buf) < (data << 1)) {
+		DRM_ERROR("Illegal termination of video header6 command\n");
+	}
+	for (i=0; i<data; ++i) {
+		if (verify_mmio_address(*buf++))
+			return state_error;
+		buf++;
+	}
+	if (verify_video_tail(&buf, buf_end, 4 - ((data << 1) & 3)))
+		return state_error;
+	*buffer = buf;
+	return state_command;
+} 
 
 
 int 
@@ -671,11 +775,21 @@ via_verify_command_stream(const uint32_t * buf, unsigned int size, drm_device_t 
 		case state_header1:
 			state = via_check_header1( &buf, buf_end );
 			break;
+		case state_vheader5:
+			state = via_check_vheader5( &buf, buf_end );
+			break;
+		case state_vheader6:
+			state = via_check_vheader6( &buf, buf_end );
+			break;
 		case state_command:
 			if (HALCYON_HEADER2 == (cmd = *buf)) 
 				state = state_header2;
 			else if ((cmd & HALCYON_HEADER1MASK) == HALCYON_HEADER1) 
 				state = state_header1;
+			else if ((cmd & VIA_VIDEOMASK) == VIA_VIDEO_HEADER5)
+				state = state_vheader5;
+			else if ((cmd & VIA_VIDEOMASK) == VIA_VIDEO_HEADER6)
+				state = state_vheader6;
 			else {
 				DRM_ERROR("Invalid / Unimplemented DMA HEADER command. 0x%x\n",
 					  cmd);
