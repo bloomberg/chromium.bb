@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.2 2002/02/15 06:01:27 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.3 2002/02/19 08:33:23 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -849,7 +849,7 @@ FcConfigValues (FcPattern *p, FcExpr *e)
 	l->value = FcConfigEvaluate (p, e);
 	l->next  = 0;
     }
-    while (l->value.type == FcTypeVoid)
+    while (l && l->value.type == FcTypeVoid)
     {
 	FcValueList	*next = l->next;
 	
