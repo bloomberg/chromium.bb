@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.8 2002/05/22 04:12:35 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.10 2002/06/08 17:32:05 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1146,7 +1146,7 @@ FcParseAlias (FcConfigParse *parse)
     if (edit)
     {
 	test = FcTestCreate (FcQualAny,
-			     FC_FAMILY,
+			     (FcChar8 *) FC_FAMILY,
 			     FcOpEqual,
 			     family);
 	if (test)
