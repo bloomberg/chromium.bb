@@ -8,6 +8,9 @@
  * Copyright 2004 Digeo, Inc., Palo Alto, CA, U.S.A.
  * All Rights Reserved.
  * 
+ * Copyright 2004 The Unichrome project.
+ * All Rights Reserved.
+ *
  **************************************************************************/
 
 #include "via.h"
@@ -15,8 +18,8 @@
 #include "drm.h"
 #include "via_drm.h"
 #include "via_drv.h"
+#include "via_3d_reg.h"
 
-#define VIA_2D_CMD 0xF0000000
 #define via_flush_write_combine() DRM_MEMORYBARRIER()
 
 #define VIA_OUT_RING_QW(w1,w2)			\
@@ -62,12 +65,12 @@ static int via_check_command_stream(const uint32_t * buf, unsigned int size)
 	for (i = 0; i < size; ++i) {
 		offset = *buf;
 		buf += 2;
-		if ((offset > ((0x3FF >> 2) | VIA_2D_CMD)) &&
-		    (offset < ((0xC00 >> 2) | VIA_2D_CMD))) {
+		if ((offset > ((0x3FF >> 2) | HALCYON_HEADER1)) &&
+		    (offset < ((0xC00 >> 2) | HALCYON_HEADER1))) {
 			DRM_ERROR
 				("Attempt to access Burst Command / 3D Area.\n");
 			return DRM_ERR(EINVAL);
-		} else if (offset > ((0xDFF >> 2) | VIA_2D_CMD)) {
+		} else if (offset > ((0xDFF >> 2) | HALCYON_HEADER1)) {
 			DRM_ERROR("Attempt to access DMA or VGA registers.\n");
 			return DRM_ERR(EINVAL);
 		}
@@ -292,7 +295,7 @@ static int via_parse_pci_cmdbuffer(drm_device_t * dev, const char *buf,
 
 	size >>= 3;
 	for (i = 0; i < size; ++i) {
-		offset = (*regbuf++ & ~VIA_2D_CMD) << 2;
+		offset = (*regbuf++ & ~HALCYON_HEADER1) << 2;
 		value = *regbuf++;
 		VIA_WRITE(offset, value);
 	}
@@ -357,7 +360,6 @@ int via_pci_cmdbuffer(DRM_IOCTL_ARGS)
 }
 
 /************************************************************************/
-#include "via_3d_reg.h"
 
 #define CMDBUF_ALIGNMENT_SIZE   (0x100)
 #define CMDBUF_ALIGNMENT_MASK   (0xff)
@@ -374,7 +376,7 @@ int via_pci_cmdbuffer(DRM_IOCTL_ARGS)
 #define VIA_VR_QUEUE_BUSY       0x00020000	/* Virtual Queue is busy */
 
 #define SetReg2DAGP(nReg, nData) { \
-	*((uint32_t *)(vb)) = ((nReg) >> 2) | 0xF0000000; \
+	*((uint32_t *)(vb)) = ((nReg) >> 2) | HALCYON_HEADER1; \
 	*((uint32_t *)(vb) + 1) = (nData); \
 	vb = ((uint32_t *)vb) + 2; \
 	dev_priv->dma_low +=8; \
@@ -535,107 +537,48 @@ static void via_cmdbuf_start(drm_via_private_t * dev_priv)
 static inline void via_dummy_bitblt(drm_via_private_t * dev_priv)
 {
 	uint32_t *vb = via_get_dma(dev_priv);
-	/* GEDST */
 	SetReg2DAGP(0x0C, (0 | (0 << 16)));
-	/* GEWD */
 	SetReg2DAGP(0x10, 0 | (0 << 16));
-	/* BITBLT */
-	SetReg2DAGP(0x0, 0x1 | 0x2000 | 0xAA000000);
+	SetReg2DAGP(0x0, 0x1 | 0x2000 | 0xAA000000); 
 }
 
 
 static void via_cmdbuf_jump(drm_via_private_t * dev_priv)
 {
 	uint32_t agp_base;
-	uint32_t pause_addr, pause_addr_lo, pause_addr_hi;
-	uint32_t start_addr;
-	uint32_t end_addr, end_addr_lo;
-	uint32_t *vb;
-	uint32_t qw_pad_count;
-	uint32_t command;
-	uint32_t jump_addr, jump_addr_lo, jump_addr_hi;
-
-	/* Seems like Unichrome has bug that when the PAUSE register is
-	 * set in the AGP command stream immediately after a PCI write to
-	 * the same register, the command regulator goes into a looping
-	 * state. Prepending a BitBLT command to stall the command
-	 * regulator for a moment seems to solve the problem.
-	 */
-
-	via_cmdbuf_wait(dev_priv, 48);
-	via_dummy_bitblt(dev_priv); 
-
-	via_cmdbuf_wait(dev_priv, 2 * CMDBUF_ALIGNMENT_SIZE);
-
-	/* At end of buffer, rewind with a JUMP command. */
-	vb = via_get_dma(dev_priv);
-
-	*vb++ = HC_HEADER2 | ((VIA_REG_TRANSET >> 2) << 12) |
-	    (VIA_REG_TRANSPACE >> 2);
-	*vb++ = (HC_ParaType_PreCR << 16);
-	dev_priv->dma_low += 8;
-
-	qw_pad_count = (CMDBUF_ALIGNMENT_SIZE >> 3) -
-	    ((dev_priv->dma_low & CMDBUF_ALIGNMENT_MASK) >> 3);
+	uint32_t pause_addr_lo, pause_addr_hi;
+	uint32_t jump_addr_lo, jump_addr_hi;
+	volatile uint32_t *last_pause_ptr;
 
 	agp_base = dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr;
-	start_addr = agp_base;
-	end_addr = agp_base + dev_priv->dma_low - 8 + (qw_pad_count << 3);
-
-	jump_addr = end_addr;
-	jump_addr_lo = ((HC_SubA_HAGPBpL << 24) | HC_HAGPBpID_JUMP |
-			(jump_addr & 0xffffff));
-	jump_addr_hi = ((HC_SubA_HAGPBpH << 24) | (jump_addr >> 24));
-
-	end_addr_lo = ((HC_SubA_HAGPBendL << 24) | (end_addr & 0xFFFFFF));
-	command = ((HC_SubA_HAGPCMNT << 24) | (start_addr >> 24) |
-		   ((end_addr & 0xff000000) >> 16));
-
-	*vb++ = command;
-	*vb++ = end_addr_lo;
-	dev_priv->dma_low += 8;
-
-	vb = via_align_buffer(dev_priv, vb, qw_pad_count - 1);
-
-	/* Now at beginning of buffer, make sure engine will pause here. */
+	via_align_cmd(dev_priv,  HC_HAGPBpID_JUMP, 0, &jump_addr_hi, 
+		      &jump_addr_lo);
+	
 	dev_priv->dma_low = 0;
 	if (via_cmdbuf_wait(dev_priv, CMDBUF_ALIGNMENT_SIZE) != 0) {
 		DRM_ERROR("via_cmdbuf_jump failed\n");
 	}
-	vb = via_get_dma(dev_priv);
 
-	end_addr = agp_base + dev_priv->dma_high;
+	/*
+	 * The command regulator needs to stall for a while since it probably
+	 * had a concussion during the jump... It will stall at the second
+	 * bitblt since the 2D engine is busy with the first.
+	 */
 
-	end_addr_lo = ((HC_SubA_HAGPBendL << 24) | (end_addr & 0xFFFFFF));
-	command = ((HC_SubA_HAGPCMNT << 24) | (start_addr >> 24) |
-		   ((end_addr & 0xff000000) >> 16));
+	via_dummy_bitblt(dev_priv);
+	via_dummy_bitblt(dev_priv); 
+	last_pause_ptr = via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi, 
+				       &pause_addr_lo) -1;
 
-	qw_pad_count = (CMDBUF_ALIGNMENT_SIZE >> 3) -
-	    ((dev_priv->dma_low & CMDBUF_ALIGNMENT_MASK) >> 3);
+	/*
+	 * The regulator may still be suffering from the shock of the jump.
+	 * Add another pause command to make sure it really will get itself together
+	 * and pause.
+	 */
 
-	pause_addr = agp_base + dev_priv->dma_low - 8 + (qw_pad_count << 3);
-	pause_addr_lo = ((HC_SubA_HAGPBpL << 24) | HC_HAGPBpID_PAUSE |
-			 (pause_addr & 0xffffff));
-	pause_addr_hi = ((HC_SubA_HAGPBpH << 24) | (pause_addr >> 24));
-
-	*vb++ = HC_HEADER2 | ((VIA_REG_TRANSET >> 2) << 12) |
-	    (VIA_REG_TRANSPACE >> 2);
-	*vb++ = (HC_ParaType_PreCR << 16);
-	dev_priv->dma_low += 8;
-
-	*vb++ = pause_addr_hi;
-	*vb++ = pause_addr_lo;
-	dev_priv->dma_low += 8;
-
-	*vb++ = command;
-	*vb++ = end_addr_lo;
-	dev_priv->dma_low += 8;
-
-	vb = via_align_buffer(dev_priv, vb, qw_pad_count - 4);
-
-	*vb++ = pause_addr_hi;
-	*vb++ = pause_addr_lo;
-	dev_priv->dma_low += 8;
+	via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi, 
+		      &pause_addr_lo);
+	*last_pause_ptr = pause_addr_lo; 
 	via_hook_segment( dev_priv, jump_addr_hi, jump_addr_lo, 0);
 }
 
@@ -643,9 +586,7 @@ static void via_cmdbuf_jump(drm_via_private_t * dev_priv)
 
 static void via_cmdbuf_rewind(drm_via_private_t * dev_priv)
 {
-	/* via_cmdbuf_jump(dev_priv); */
-	via_cmdbuf_reset(dev_priv);
-	via_cmdbuf_start(dev_priv); 
+	via_cmdbuf_jump(dev_priv); 
 }
 
 static void via_cmdbuf_flush(drm_via_private_t * dev_priv, uint32_t cmd_type)

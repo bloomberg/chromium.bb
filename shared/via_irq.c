@@ -54,7 +54,6 @@ irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
 	int handled = 0;
 
 	status = VIA_READ(VIA_REG_INTERRUPT);
-	DRM_DEBUG("viadrv_irq_handler Status: %x\n", status);
 	if (status & VIA_IRQ_VBI_PENDING) {
 		atomic_inc(&dev->vbl_received);
 		DRM_WAKEUP(&dev->vbl_queue);
