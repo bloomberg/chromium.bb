@@ -46,6 +46,7 @@ clean::
 	$(RM) $(TARG)
 	
 $(TARG): fc-lang $(ORTH) $(TMPL)
+	chmod +w $TARG
 	./fc-lang $(ORTH) < $(TMPL) > $(TARG)
 
 ComplexProgramTarget(fc-lang)
