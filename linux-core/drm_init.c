@@ -35,19 +35,3 @@
 
 #include "drmP.h"
 
-/**
- * Check whether DRI will run on this CPU.
- *
- * \return non-zero if the DRI will run on this CPU, or zero otherwise.
- */
-int drm_cpu_valid(void)
-{
-#if defined(__i386__)
-	if (boot_cpu_data.x86 == 3)
-		return 0;	/* No cmpxchg on a 386 */
-#endif
-#if defined(__sparc__) && !defined(__sparc_v9__)
-	return 0;		/* No cmpxchg before v9 sparc. */
-#endif
-	return 1;
-}

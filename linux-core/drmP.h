@@ -725,9 +725,6 @@ static inline int drm_core_has_MTRR(struct drm_device *dev)
 /** \name Internal function definitions */
 /*@{*/
 
-				/* Misc. support (drm_init.h) */
-extern int drm_cpu_valid(void);
-
 				/* Driver support (drm_drv.h) */
 extern int drm_fb_loaded;
 extern int __devinit drm_init(struct drm_driver *driver,
