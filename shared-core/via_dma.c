@@ -1,6 +1,4 @@
 /* via_dma.c -- DMA support for the VIA Unichrome/Pro
- */
-/**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -11,13 +9,55 @@
  * Copyright 2004 The Unichrome project.
  * All Rights Reserved.
  *
- **************************************************************************/
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sub license,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, 
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Authors: Various
+ */
 
 #include "drmP.h"
 #include "drm.h"
 #include "via_drm.h"
 #include "via_drv.h"
 #include "via_3d_reg.h"
+
+#define PCI_BUF_SIZE 512000
+#define CMDBUF_ALIGNMENT_SIZE   (0x100)
+#define CMDBUF_ALIGNMENT_MASK   (0xff)
+
+/* defines for VIA 3D registers */
+#define VIA_REG_STATUS          0x400
+#define VIA_REG_TRANSET         0x43C
+#define VIA_REG_TRANSPACE       0x440
+
+/* VIA_REG_STATUS(0x400): Engine Status */
+#define VIA_CMD_RGTR_BUSY       0x00000080	/* Command Regulator is busy */
+#define VIA_2D_ENG_BUSY         0x00000001	/* 2D Engine is busy */
+#define VIA_3D_ENG_BUSY         0x00000002	/* 3D Engine is busy */
+#define VIA_VR_QUEUE_BUSY       0x00020000	/* Virtual Queue is busy */
+
+#define SetReg2DAGP(nReg, nData) {				\
+	*((uint32_t *)(vb)) = ((nReg) >> 2) | HALCYON_HEADER1;	\
+	*((uint32_t *)(vb) + 1) = (nData);			\
+	vb = ((uint32_t *)vb) + 2;				\
+	dev_priv->dma_low +=8;					\
+}
 
 #define via_flush_write_combine() DRM_MEMORYBARRIER()
 
@@ -26,11 +66,9 @@
 	*vb++ = (w2);				\
 	dev_priv->dma_low += 8; 
 
-#define PCI_BUF_SIZE 512000
 
 static char pci_buf[PCI_BUF_SIZE];
 static unsigned long pci_bufsiz = PCI_BUF_SIZE;  
-
 
 static void via_cmdbuf_start(drm_via_private_t * dev_priv);
 static void via_cmdbuf_pause(drm_via_private_t * dev_priv);
@@ -106,7 +144,7 @@ via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
 static inline uint32_t *via_check_dma(drm_via_private_t * dev_priv,
 				      unsigned int size)
 {
-	if ((dev_priv->dma_low + size + 0x400) > dev_priv->dma_high) {
+	if ((dev_priv->dma_low + size + 4*CMDBUF_ALIGNMENT_SIZE) > dev_priv->dma_high) {
 		via_cmdbuf_rewind(dev_priv);
 	}
 	if (via_cmdbuf_wait(dev_priv, size) != 0) {
@@ -378,28 +416,6 @@ int via_pci_cmdbuffer(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-/************************************************************************/
-
-#define CMDBUF_ALIGNMENT_SIZE   (0x100)
-#define CMDBUF_ALIGNMENT_MASK   (0xff)
-
-/* defines for VIA 3D registers */
-#define VIA_REG_STATUS          0x400
-#define VIA_REG_TRANSET         0x43C
-#define VIA_REG_TRANSPACE       0x440
-
-/* VIA_REG_STATUS(0x400): Engine Status */
-#define VIA_CMD_RGTR_BUSY       0x00000080	/* Command Regulator is busy */
-#define VIA_2D_ENG_BUSY         0x00000001	/* 2D Engine is busy */
-#define VIA_3D_ENG_BUSY         0x00000002	/* 3D Engine is busy */
-#define VIA_VR_QUEUE_BUSY       0x00020000	/* Virtual Queue is busy */
-
-#define SetReg2DAGP(nReg, nData) {				\
-	*((uint32_t *)(vb)) = ((nReg) >> 2) | HALCYON_HEADER1;	\
-	*((uint32_t *)(vb) + 1) = (nData);			\
-	vb = ((uint32_t *)vb) + 2;				\
-	dev_priv->dma_low +=8;					\
-}
 
 static inline uint32_t *via_align_buffer(drm_via_private_t * dev_priv,
 					 uint32_t * vb, int qw_count)
@@ -447,6 +463,7 @@ static int via_hook_segment(drm_via_private_t *dev_priv,
 	dev_priv->last_pause_ptr = via_get_dma(dev_priv) - 1;
 	while(! *dev_priv->last_pause_ptr);
 
+
 	paused = 0;
 	count = 20; 
 
@@ -455,7 +472,8 @@ static int via_hook_segment(drm_via_private_t *dev_priv,
 		uint32_t rgtr, ptr;
 		rgtr = *(dev_priv->hw_addr_ptr);
 		ptr = ((char *)dev_priv->last_pause_ptr - dev_priv->dma_ptr) + 
-			dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr + 4 - 0x100;
+			dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr + 4 - 
+			CMDBUF_ALIGNMENT_SIZE;
 		if (rgtr <= ptr) {
 			DRM_ERROR("Command regulator\npaused at count %d, address %x, "
 				  "while current pause address is %x.\n"
@@ -467,16 +485,23 @@ static int via_hook_segment(drm_via_private_t *dev_priv,
 		
 	if (paused && !no_pci_fire) {
 	        uint32_t rgtr,ptr;
+		uint32_t ptr_low;
 
+		count = 1000000;
+		while ((VIA_READ(VIA_REG_STATUS) & VIA_CMD_RGTR_BUSY) && count--);
+		
 		rgtr = *(dev_priv->hw_addr_ptr);
 		ptr = ((char *)paused_at - dev_priv->dma_ptr) + 
 			dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr + 4;
+		
 
-		if (rgtr <= ptr && rgtr >= ptr - 0x100) {
+		ptr_low = (ptr > 3*CMDBUF_ALIGNMENT_SIZE) ? 
+			ptr - 3*CMDBUF_ALIGNMENT_SIZE : 0;
+		if (rgtr <= ptr && rgtr >= ptr_low) {
 			VIA_WRITE(VIA_REG_TRANSET, (HC_ParaType_PreCR << 16));
 			VIA_WRITE(VIA_REG_TRANSPACE, pause_addr_hi);
 			VIA_WRITE(VIA_REG_TRANSPACE, pause_addr_lo);
-                }
+		} 
 	}
 	return paused;
 }
@@ -659,7 +684,7 @@ static void via_cmdbuf_reset(drm_via_private_t * dev_priv)
 }
 
 /*
- * User interface to the space and lag function.
+ * User interface to the space and lag functions.
  */
 
 int 
