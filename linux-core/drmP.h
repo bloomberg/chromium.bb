@@ -318,19 +318,6 @@ static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 			DRM(ioremapfree)( (map)->handle, (map)->size, (dev) );	\
 	} while (0)
 
-#ifndef VMAP_4_ARGS
-
-#define DRM_IOREMAPAGP(map, dev)						\
-	(map)->handle = DRM(ioremap_agp)( (map)->offset, (map)->size, (dev) )
-
-#define DRM_IOREMAPAGPFREE(map)						\
-	do {								\
-		if ( (map)->handle && (map)->size )			\
-			DRM(ioremap_agp_free)( (map)->handle, (map)->size );	\
-	} while (0)
-
-#endif
-
 /**
  * Find mapping.
  *
@@ -870,10 +857,6 @@ extern void	     *DRM(ioremap_nocache)(unsigned long offset, unsigned long size,
 extern void	     DRM(ioremapfree)(void *pt, unsigned long size, drm_device_t *dev);
 
 #if __REALLY_HAVE_AGP
-#ifndef VMAP_4_ARGS
-extern void	     *DRM(ioremap_agp)(unsigned long offset, unsigned long size, drm_device_t *dev);
-extern void	     DRM(ioremap_agp_free)(void *pt, unsigned long size);
-#endif
 extern DRM_AGP_MEM   *DRM(alloc_agp)(int pages, u32 type);
 extern int           DRM(free_agp)(DRM_AGP_MEM *handle, int pages);
 extern int           DRM(bind_agp)(DRM_AGP_MEM *handle, unsigned int start);
