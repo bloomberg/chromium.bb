@@ -1,0 +1,1257 @@
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V3.1//EN">
+<!--
+    $Id$
+   
+    Copyright © 2002 Keith Packard
+   
+    Permission to use, copy, modify, distribute, and sell this software and its
+    documentation for any purpose is hereby granted without fee, provided that
+    the above copyright notice appear in all copies and that both that
+    copyright notice and this permission notice appear in supporting
+    documentation, and that the name of Keith Packard not be used in
+    advertising or publicity pertaining to distribution of the software without
+    specific, written prior permission.  Keith Packard makes no
+    representations about the suitability of this software for any purpose.  It
+    is provided "as is" without express or implied warranty.
+   
+    KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+    INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+    EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+    CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+    DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+    TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+-->
+<article>
+<artheader>
+  <title>Fontconfig Developers Guide</title>
+  <titleabbrev>Fontconfig</titleabbrev>
+  <author><firstname>Keith</><surname>Packard</></author>
+  <authorinitials>krp</authorinitials>
+</artheader>
+<sect1><title>NAME</title>
+  <para>
+  fontconfig - Font configuration and customization library
+  </para>
+</sect1>
+<sect1><title>SYNOPSIS</title>
+  <programlisting>
+  #include &lt;fontconfig/fontconfig.h&gt;
+  #include &lt;fontconfig/fcfreetype.h&gt;
+  </programlisting>
+</sect1>
+<sect1><title>DESCRIPTION</title>
+  <para>
+Fontconfig is a library designed to provide system-wide font configuration,
+customization and application access.
+  </para>
+</sect1>
+<sect1><title>FUNCTIONAL OVERVIEW</title>
+  <para>
+Fontconfig contains two essential modules, the configuration module which
+builds an internal configuration from XML files and the matching module
+which accepts font patterns and returns the nearest matching font.
+  </para>
+  <sect2><title>FONT CONFIGURATION</title>
+    <para>
+The configuration module consists of the FcConfig datatype, libexpat and
+FcConfigParse which walks over an XML tree and ammends a configuration with
+data found within.  From an external perspective, configuration of the
+library consists of generating a valid XML tree and feeding that to
+FcConfigParse.  The only other mechanism provided to applications for
+changing the running configuration is to add fonts and directories to the
+list of application-provided font files.  
+    </para><para>
+The intent is to make font configurations relatively static, and shared by
+as many applications as possible.  It is hoped that this will lead to more
+stable font selection when passing names from one application to another.
+XML was chosen as a configuration file format because it provides a format
+which is easy for external agents to edit while retaining the correct
+structure and syntax.
+    </para><para>
+Font configuration is separate from font matching; applications needing to
+do their own matching can access the available fonts from the library and
+perform private matching.  The intent is to permit applications to pick and
+choose appropriate functionality from the library instead of forcing them to
+choose between this library and a private configuration mechanism.  The hope
+is that this will ensure that configuration of fonts for all applications
+can be centralized in one place.  Centralizing font configuration will
+simplify and regularize font installation and customization.
+    </para>
+  </sect2>
+  <sect2>
+    <title>FONT PROPERTIES</title>
+    <para>
+While font patterns may contain essentially any properties, there are some
+well known properties with associated types.  Fontconfig uses some of these
+properties for font matching and font completion.  Others are provided as a
+convenience for the applications rendering mechanism.
+    </para>
+    <table>
+      <title>Property Definitions</title>
+        <tgroup cols=4 align=left colsep=1 rowsep=1>
+	<colspec colname=Property>
+	<colspec colname=CPP>
+	<colspec colname=Type>
+	<colspec colname=Description>
+	<thead>
+	  <row>
+	    <entry>Property</entry>
+	    <entry>CPP Symbol</entry>
+	    <entry>Type</entry>
+	    <entry>Description</entry>
+	  </row>
+	</thead>
+	<tbody>
+<row><entry>family</entry><entry>FC_FAMILY</entry><entry>String</entry><entry>Font family name</entry></row>
+<row><entry>style</entry><entry>FC_STYLE</entry><entry>String</entry><entry>Font style. Overrides weight and slant</entry></row>
+<row><entry>slant</entry><entry>FC_SLANT</entry><entry>Int</entry><entry>Italic, oblique or roman</entry></row>
+<row><entry>weight</entry><entry>FC_WEIGHT</entry><entry>Int</entry><entry>Light, medium, demibold, bold or black</entry></row>
+<row><entry>size</entry><entry>FC_SIZE</entry><entry>Double</entry><entry>Point size</entry></row>
+<row><entry>aspect</entry><entry>FC_ASPECT</entry><entry>Double</entry><entry>Stretches glyphs horizontally before hinting</entry></row>
+<row><entry>pixelsize</entry><entry>FC_PIXEL_SIZE</entry><entry>Double</entry><entry>Pixel size</entry></row>
+<row><entry>spacing</entry><entry>FC_SPACING</entry><entry>Int</entry><entry>Proportional, monospace or charcell</entry></row>
+<row><entry>foundry</entry><entry>FC_FOUNDRY</entry><entry>String</entry><entry>Font foundry name</entry></row>
+<row><entry>antialias</entry><entry>FC_ANTIALIAS</entry><entry>Bool</entry><entry>Whether glyphs can be antialiased</entry></row>
+<row><entry>hinting</entry><entry>FC_HINTING</entry><entry>Bool</entry><entry>Whether the rasterizer should use hinting</entry></row>
+<row><entry>verticallayout</entry><entry>FC_VERTICAL_LAYOUT</entry><entry>Bool</entry><entry>Use vertical layout</entry></row>
+<row><entry>autohint</entry><entry>FC_AUTOHINT</entry><entry>Bool</entry><entry>Use autohinter instead of normal hinter</entry></row>
+<row><entry>globaladvance</entry><entry>FC_GLOBAL_ADVANCE</entry><entry>Bool</entry><entry>Use font global advance data</entry></row>
+<row><entry>file</entry><entry>FC_FILE</entry><entry>String</entry><entry>The filename holding the font</entry></row>
+<row><entry>index</entry><entry>FC_INDEX</entry><entry>Int</entry><entry>The index of the font within the file</entry></row>
+<row><entry>ftface</entry><entry>FC_FT_FACE</entry><entry>FT_Face</entry><entry>Use the specified FreeType face object</entry></row>
+<row><entry>rasterizer</entry><entry>FC_RASTERIZER</entry><entry>String</entry><entry>Which rasterizer is in use</entry></row>
+<row><entry>outline</entry><entry>FC_OUTLINE</entry><entry>Bool</entry><entry>Whether the glyphs are outlines</entry></row>
+<row><entry>scalable</entry><entry>FC_SCALABLE</entry><entry>Bool</entry><entry>Whether glyphs can be scaled</entry></row>
+<row><entry>scale</entry><entry>FC_SCALE</entry><entry>Double</entry><entry>Scale factor for point->pixel conversions</entry></row>
+<row><entry>dpi</entry><entry>FC_DPI</entry><entry>Double</entry><entry>Target dots per inch</entry></row>
+<row><entry>rgba</entry><entry>FC_RGBA</entry><entry>Int</entry><entry>unknown, rgb, bgr, vrgb, vbgr, none - subpixel geometry</entry></row>
+<row><entry>minspace</entry><entry>FC_MINSPACE</entry><entry>Bool</entry><entry>Eliminate leading from line spacing</entry></row>
+<row><entry>charset</entry><entry>FC_CHARSET</entry><entry>CharSet</entry><entry>Unicode chars encoded by the font</entry></row>
+<row><entry>lang</entry><entry>FC_LANG</entry><entry>String</entry><entry>List of RFC-3066-style languages this font supports</entry></row>
+      </tbody>
+      </tgroup>
+    </table>
+  </sect2>
+<sect1><title>DATATYPES</title>
+  <para>
+Fontconfig uses abstract datatypes to hide internal implementation details
+for most data structures.  A few structures are exposed where appropriate.
+  </para>
+  <sect2><title>FcChar8, FcChar16, FcChar32, FcBool</title>
+  <para>
+These are primitive datatypes; the FcChar* types hold precisely the number
+of bits stated (if supported by the C implementation).  FcBool holds
+one of two CPP symbols: FcFalse or FcTrue.
+  </para>
+  </sect2>
+  <sect2><title>FcMatrix</title>
+    <para>
+An FcMatrix holds an affine transformation, usually used to reshape glyphs.
+A small set of matrix operations are provided to manipulate these.
+    <programlisting>
+	typedef struct _FcMatrix {
+		double xx, xy, yx, yy;
+	} FcMatrix;
+    </programlisting>
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcCharSet</title>
+    <para>
+An FcCharSet is an abstract type that holds the set of encoded unicode chars
+in a font.  Operations to build and compare these sets are provided.
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcType</title>
+    <para>
+Tags the kind of data stored in an FcValue.
+  </sect2>
+  <sect2>
+    <title>FcValue</title>
+    <para>
+An FcValue object holds a single value with one of a number of different
+types.  The 'type' tag indicates which member is valid.
+    <programlisting>
+	typedef struct _FcValue {
+		FcType type;
+		union {
+			const FcChar8 *s;
+			int i;
+			FcBool b;
+			double d;
+			const FcMatrix *m;
+			const FcCharSet *c;
+		} u;
+	} FcValue;
+    </programlisting>
+    <table colsep=0 rowsep=0>
+      <title>FcValue Members</title>
+      <tgroup cols=3 align=left colsep=0 rowsep=0>
+	<thead><row>
+	  <entry>Type</entry>
+	  <entry>Union member</entry>
+	  <entry>Datatype</entry>
+	</row></thead>
+	<tbody>
+<row><entry>FcTypeVoid</entry><entry>(none)</entry><entry>(none)</entry></row>
+<row><entry>FcTypeInteger</entry><entry>i</entry><entry>int</entry></row>
+<row><entry>FcTypeDouble</entry><entry>d</entry><entry>double</entry></row>
+<row><entry>FcTypeString</entry><entry>s</entry><entry>char *</entry></row>
+<row><entry>FcTypeBool</entry><entry>b</entry><entry>b</entry></row>
+<row><entry>FcTypeMatrix</entry><entry>m</entry><entry>FcMatrix *</entry></row>
+<row><entry>FcTypeCharSet</entry><entry>c</entry><entry>FcCharSet *</entry></row>
+        </tbody>
+      </tgroup>
+    </table>
+  <sect2>
+    <title>FcPattern</title>
+    <para>
+holds a set of names with associated value lists; each name refers to a
+property of a font.  FcPatterns are used as inputs to the matching code as
+well as holding information about specific fonts.  Each property can hold
+one or more values; conventionally all of the same type, although the
+interface doesn't demand that.
+  </sect2>
+  <sect2>
+    <title>FcFontSet</title>
+    <para>
+    <programlisting>
+	typedef struct _FcFontSet {
+		int nfont;
+		int sfont;
+		FcPattern **fonts;
+	} FcFontSet;
+    </programlisting>
+An FcFontSet contains a list of FcPatterns.  Internally fontconfig uses this
+data structure to hold sets of fonts.  Externally, fontconfig returns the
+results of listing fonts in this format.  'nfont' holds the number of
+patterns in the 'fonts' array; 'sfont' is used to indicate the size of that
+array.
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcStrSet, FcStrList</title>
+    <para>
+FcStrSet holds a list of strings that can be appended to and enumerated.
+Its unique characteristic is that the enumeration works even while strings
+are appended during enumeration.  FcStrList is used during enumeration to
+safely and correctly walk the list of strings even while that list is edited
+in the middle of enumeration.
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcObjectSet</title>
+    <para>
+      <programlisting>
+	typedef struct _FcObjectSet {
+		int nobject;
+		int sobject;
+		const char **objects;
+	} FcObjectSet;
+      </programlisting>
+holds a set of names and is used to specify which fields from fonts are
+placed in the the list of returned patterns when listing fonts.
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcObjectType</title>
+    <para>
+      <programlisting>
+	typedef struct _FcObjectType {
+		const char *object;
+		FcType type;
+	} FcObjectType;
+      </programlisting>
+marks the type of a pattern element generated when parsing font names.
+Applications can add new object types so that font names may contain the new
+elements.
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcConstant</title>
+    <para>
+      <programlisting>
+	typedef struct _FcConstant {
+	    const FcChar8 *name;
+	    const char *object;
+	    int value;
+	} FcConstant;
+      </programlisting>
+Provides for symbolic constants for new pattern elements.  When 'name' is
+seen in a font name, an 'object' element is created with value 'value'.
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcBlanks</title>
+    <para>
+holds a list of Unicode chars which are expected to be blank; unexpectedly
+blank chars are assumed to be invalid and are elided from the charset
+associated with the font.
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcFileCache</title>
+    <para>
+holds the per-user cache information for use while loading the font
+database. This is built automatically for the current configuration when
+that is loaded.  Applications must always pass '0' when one is requested.
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcConfig</title>
+    <para>
+holds a complete configuration of the library; there is one default
+configuration, other can be constructed from XML data structures.  All
+public entry points that need global data can take an optional FcConfig*
+argument; passing 0 uses the default configuration.  FcConfig objects hold two
+sets of fonts, the first contains those specified by the configuration, the
+second set holds those added by the application at run-time.  Interfaces
+that need to reference a particulat set use one of the FcSetName enumerated
+values.
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcSetName</title>
+    <para>
+Specifies one of the two sets of fonts available in a configuration;
+FcSetSystem for those fonts specified in the configuration and
+FcSetApplication which holds fonts provided by the application.
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcResult</title>
+    <para>
+Used as a return type for functions manipulating FcPattern objects.
+    <table colsep=0 rowsep=0>
+      <title>FcResult Values</title>
+      <tgroup cols=2 align=left colsep=0 rowsep=0>
+	<thead><row>
+	  <entry>Result Code</entry>
+	  <entry>Meaning</entry>
+	</row></thead>
+	<tbody>
+<row><entry>FcResultMatch</entry><entry>Object exists with the specified ID</entry></row>
+<row><entry>FcResultNoMatch</entry><entry>Object doesn't exist at all</entry></row>
+<row><entry>FcResultTypeMismatch</entry><entry>Object exists, but the type doesn't match</entry></row>
+<row><entry>FcResultNoId</entry><entry>Object exists, but has fewer values than specified</entry></row>
+        </tbody>
+      </tgroup>
+    </table>
+    </para>
+  </sect2>
+  <sect2>
+    <title>FcAtomic</title>
+    <para>
+Used for locking access to config files.  Provides a safe way to update
+configuration files.
+    </para>
+  </sect2>
+</sect1>
+<sect1><title>FUNCTIONS</title>
+  <para>
+Functions are grouped by the main datatype involved
+  </para>
+  <sect2><title>FcMatrix</title>
+    <para>
+FcMatrix structures hold an affine transformation in matrix form.
+    </para>
+    <sect3><title>FcMatrixInit</title><programlisting>
+#define FcMatrixInit(m)	((m)-&gt;xx = (m)-&gt;yy = 1, (m)-&gt;xy = (m)-&gt;yx = 0)
+    </programlisting><para>
+Initializes a matrix to the identify transformation.
+    </para>
+    <sect3><title>FcMatrixCopy</title><programlisting>
+FcMatrix *FcMatrixCopy (const FcMatrix *mat)
+    </programlisting><para>
+Allocates a new FcMatrix and copies 'mat' into it.
+    </para>
+    <sect3><title>FcMatrixEqual</title><programlisting>
+FcBool FcMatrixEqual (const FcMatrix *mat1, const FcMatrix *mat2)
+    </programlisting><para>
+Returns FcTrue if 'mat1' and 'mat2' are equal, else FcFalse.
+    </para>
+    <sect3><title>FcMatrixMultiply</title><programlisting>
+void FcMatrixMultiply (FcMatrix *result, const FcMatrix *a, const FcMatrix *b)
+    </programlisting><para>
+Multiplies 'a' and 'b' together, placing the result in 'result'.  'result'
+may refer to the sam matrix as either 'a' or 'b'.
+    </para>
+    <sect3><title>FcMatrixRotate</title><programlisting>
+void FcMatrixRotate (FcMatrix *m, double c, double s)
+    </programlisting><para>
+If 'c' is cos(angle) and 's' is sin(angle), FcMatrixRotate rotates the
+matrix by 'angle'.
+    </para>
+    <sect3><title>FcMatrixScale</title><programlisting>
+void FcMatrixScale (FcMatrix *m, double sx, double sy)
+    </programlisting><para>
+Scales 'm' by 'sx' in the horizontal dimension and 'sy' in the
+vertical dimension.
+    </para>
+    <sect3><title>FcMatrixShear</title><programlisting>
+void FcMatrixShear (FcMatrix *m, double sh, double sv)
+    </programlisting><para>
+Shears 'm' by 'sh' in the horizontal direction and 'sv' in the
+vertical direction.
+    </para>
+  </sect2>
+  <sect2><title>FcCharSet</title>
+    <para>
+An FcCharSet is a boolean array indicating a set of unicode chars.  Those
+associated with a font are marked constant and cannot be edited.
+FcCharSets may be reference counted internally to reduce memory consumption;
+this may be visible to applications as the result of FcCharSetCopy may
+return it's argument, and that CharSet may remain unmodifiable.
+    </para>
+    <sect3><title>FcCharSetCreate</title><programlisting>
+FcCharSet *FcCharSetCreate (void)
+    </programlisting><para>
+Creates an empty FcCharSet object.
+    </para>
+    <sect3><title>FcCharSetDestroy</title><programlisting>
+void FcCharSetDestroy (FcCharSet *fcs)
+    </programlisting><para>
+Frees an FcCharSet object.
+    </para>
+    <sect3><title>FcCharSetAddChar</title><programlisting>
+FcBool FcCharSetAddChar (FcCharSet *fcs, FcChar32 ucs4)
+    </programlisting><para>
+Adds a single unicode char to the set, returning FcFalse on
+failure, either as a result of a constant set or from running out of memory.
+    </para>
+    <sect3><title>FcCharSetCopy</title><programlisting>
+FcCharSet *FcCharSetCopy (FcCharSet *src)
+    </programlisting><para>
+Makes a copy of 'src'; note that this may not actually do anything more than
+increment the reference count on 'src'.
+    </para>
+    <sect3><title>FcCharSetEqual</title><programlisting>
+FcBool FcCharSetEqual (const FcCharSet *a, const FcCharSet *b)
+    </programlisting><para>
+Returns whether 'a' and 'b' contain the same set of unicode chars.
+    </para>
+    <sect3><title>FcCharSetIntersect</title><programlisting>
+FcCharSet *FcCharSetIntersect (const FcCharSet *a, const FcCharSet *b)
+    </programlisting><para>
+Returns a set including only those chars found in both 'a' and 'b'.
+    </para>
+    <sect3><title>FcCharSetUnion</title><programlisting>
+FcCharSet *FcCharSetUnion (const FcCharSet *a, const FcCharSet *b);
+    </programlisting><para>
+Returns a set including only those chars found in either 'a' or 'b'.
+    </para>
+    <sect3><title>FcCharSetSubtract</title><programlisting>
+FcCharSet *FcCharSetSubtract (const FcCharSet *a, const FcCharSet *b)
+    </programlisting><para>
+Returns a set including only those chars found in 'a' but not 'b'.
+    </para>
+    <sect3><title>FcCharSetHasChar</title><programlisting>
+FcBool FcCharSetHasChar (const FcCharSet *fcs, FcChar32 ucs4)
+    </programlisting><para>
+Returns whether 'fcs' contains the char 'ucs4'.
+    </para>
+    <sect3><title>FcCharSetCount</title><programlisting>
+FcChar32 FcCharSetCount (const FcCharSet *a)
+    </programlisting><para>
+Returns the total number of unicode chars in 'a'.
+    </para>
+    <sect3><title>FcCharSetIntersectCount</title><programlisting>
+FcChar32 FcCharSetIntersectCount (const FcCharSet *a, const FcCharSet *b)
+    </programlisting><para>
+Returns the number of chars that are in both 'a' and 'b'.
+    </para>
+    <sect3><title>FcCharSetSubtractCount</title><programlisting>
+FcChar32 FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b)
+    </programlisting><para>
+Returns the number of chars that are in 'a' but not in 'b'.
+    </para>
+    <sect3><title>FcCharSetIsSubset</title><programlisting>
+FcBool FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
+    </programlisting><para>
+Returns whether 'a' is a subset of 'b'.
+    </para>
+    <sect3><title>FcCharSetFirstPage</title><programlisting>
+FcChar32 FcCharSetFirstPage (const FcCharSet *a, FcChar32 [FC_CHARSET_MAP_SIZE], FcChar32 *next)
+    </programlisting><para>
+Builds an array of bits marking the first page of Unicode coverage of 'a'.
+Returns the base of the array.  'next' contains the next page in the font.
+    </para>
+    <sect3><title>FcCharSetNextPage</title><programlisting>
+FcChar32 FcCharSetNextPage (const FcCharSet *a, FcChar32 [FC_CHARSET_MAP_SIZE], FcChar32 *next)
+    </programlisting><para>
+Builds an array of bits marking the Unicode coverage of 'a' for page '*next'.
+Returns the base of the array.  'next' contains the next page in the font.
+    </para>
+  </sect2>
+  <sect2><title>FcValue</title>
+    <para>
+FcValue is a structure containing a type tag and a union of all possible
+datatypes.  The tag is an enum of type 
+<emphasis>FcType</emphasis>
+and is intended to provide a measure of run-time
+typechecking, although that depends on careful programming.
+    </para>
+    <sect3><title>FcValueDestroy</title><programlisting>
+void FcValueDestroy (FcValue v)
+    </programlisting><para>
+Frees any memory referenced by `v'.  Values of type FcTypeString,
+FcTypeMatrix and FcTypeCharSet reference memory, the other types do not.
+    </para>
+    <sect3><title>FcValueSave</title><programlisting>
+FcValue FcValueSave (FcValue v)
+    </programlisting><para>
+Returns a copy of `v' duplicating any object referenced by it so that `v'
+may be safely destroyed without harming the new value.
+    </para>
+  </sect2>
+  <sect2><title>FcPattern</title>
+    <para>
+An FcPattern is an opaque type that holds both patterns to match against the
+available fonts, as well as the information about each font.
+    </para>
+    <sect3><title>FcPatternCreate</title><programlisting>
+FcPattern *FcPatternCreate (void)
+    </programlisting><para>
+Creates a pattern with no properties; used to build patterns from scratch.
+    </para>
+    <sect3><title>FcPatternDestroy</title><programlisting>
+void FcPatternDestroy (FcPattern *p)
+    </programlisting><para>
+Destroys a pattern, in the process destroying all related values.
+    </para>
+    <sect3><title>FcPatternEqual</title><programlisting>
+FcBool FcPatternEqual (const FcPattern *pa, const FcPattern *pb);
+    </programlisting><para>
+Returns whether 'pa' and 'pb' are exactly alike.
+    </para>
+    <sect3><title>FcPatternEqualSubset</title><programlisting>
+FcBool FcPatternEqualSubset (const FcPattern *pa, const FcPattern *pb, const FcObjectSet *os)
+    </programlisting><para>
+Returns whether 'pa' and 'pb' have exactly the same values for all of the
+objects in 'os'.
+    </para>
+    <sect3><title>FcPatternHash</title><programlisting>
+FcChar32 FcPatternHash (const FcPattern *p)
+    </programlisting><para>
+Returns a 32-bit number which is the same for any two patterns which are
+exactly alike.
+    </para>
+    <sect3><title>FcPatternAdd</title><programlisting>
+FcBool FcPatternAdd (FcPattern *p, const char *object, FcValue value, FcBool append)
+    </programlisting><para>
+Adds a single value to the list of values associated with the property named
+`object'.  If `append' is FcTrue, the value is added at the end of any
+existing list, otherwise it is inserted at the begining.  `value' is saved
+(with FcValueSave) when inserted into the pattern so that the library
+retains no reference to any application-supplied data structure.
+    </para>
+    <sect3><title>FcPatternAddWeak</title><programlisting>
+FcBool FcPatternAddWeak (FcPattern *p, const char *object, FcValue value, FcBool append)
+    </programlisting><para>
+FcPatternAddWeak is essentially the same as FcPatternAdd except that any
+values added to the list have binding 'weak' instead of 'strong'.
+    </para>
+    <sect3><title>FcPatternAdd <emphasis>Type</emphasis></title><programlisting>
+FcBool FcPatternAddInteger (FcPattern *p, const char *object, int i)
+FcBool FcPatternAddDouble (FcPattern *p, const char *object, double d)
+FcBool FcPatternAddString (FcPattern *p, const char *object, const char *s)
+FcBool FcPatternAddMatrix (FcPattern *p, const char *object, const FcMatrix *s)
+FcBool FcPatternAddCharSet (FcPattern *p, const char *object, const FcCharSet *c)
+FcBool FcPatternAddBool (FcPattern *p, const char *object, FcBool b)
+    </programlisting><para>
+These are all convenience functions that insert objects of the specified
+type into the pattern.  Use these in preference to FcPatternAdd as they
+will provide compile-time typechecking.  These all append values to
+any existing list of values.
+    </para>
+    <sect3><title>FcPatternGet</title><programlisting>
+FcResult FcPatternGet (FcPattern *p, const char *object, int id, FcValue *v)
+    </programlisting><para>
+Returns in `v' the `id'th value associated with the property `object'.
+The value returned is not a copy, but rather refers to the data stored
+within the pattern directly.  Applications must not free this value.
+    </para>
+    <sect3><title>FcPatternGet <emphasis>Type</emphasis></title><programlisting>
+FcResult FcPatternGetInteger (FcPattern *p, const char *object, int n, int *i);
+FcResult FcPatternGetDouble (FcPattern *p, const char *object, int n, double *d);
+FcResult FcPatternGetString (FcPattern *p, const char *object, int n, char **const s);
+FcResult FcPatternGetMatrix (FcPattern *p, const char *object, int n, FcMatrix **s);
+FcResult FcPatternGetCharSet (FcPattern *p, const char *object, int n, FcCharSet **c);
+FcResult FcPatternGetBool (FcPattern *p, const char *object, int n, FcBool *b);
+    </programlisting><para>
+These are convenience functions that call FcPatternGet and verify that the
+returned data is of the expected type. They return FcResultTypeMismatch if
+this is not the case.  Note that these (like FcPatternGet) do not make a
+copy of any data structure referenced by the return value.  Use these
+in preference to FcPatternGet to provide compile-time typechecking.
+    </para>
+    <sect3><title>FcPatternBuild, FcPatternVaBuild</title><programlisting>
+FcPattern *FcPatternBuild (FcPattern *orig, ...);
+FcPattern *FcPatternVaBuild (FcPattern *orig, va_list va)
+    </programlisting><para>
+Builds a pattern using a list of objects, types and values.  Each
+value to be entered in the pattern is specified with three arguments:
+    </para>
+    <orderedlist>
+      <listitem><para>
+Object name, a string describing the property to be added.
+      </para></listitem><listitem><para>
+Object type, one of the FcType enumerated values
+      </para></listitem><listitem><para>
+Value, not an FcValue, but the raw type as passed to any of the
+FcPatternAdd&lt;type&gt; functions.  Must match the type of the second
+argument.
+    </orderedlist>
+    <para>
+The argument list is terminated by a null object name, no object type nor
+value need be passed for this.  The values are added to `pattern', if
+`pattern' is null, a new pattern is created.  In either case, the pattern is
+returned. Example
+    </para>
+    <programlisting>
+pattern = FcPatternBuild (0, FC_FAMILY, FtTypeString, "Times", (char *) 0);
+    </programlisting>
+    <para>
+FcPatternVaBuild is used when the arguments are already in the form of a
+varargs value.
+    </para>
+    <sect3><title>FcPatternDel</title><programlisting>
+FcBool FcPatternDel (FcPattern *p, const char *object)
+    </programlisting><para>
+Deletes all values associated with the property `object', returning 
+whether the property existed or not.
+    </para>
+    <sect3><title>FcPatternPrint</title><programlisting>
+void FcPatternPrint (const FcPattern *p)
+    </programlisting><para>
+Prints an easily readable version of the pattern to stdout.  There is
+no provision for reparsing data in this format, it's just for diagnostics
+and debugging.
+    </para>
+    <sect3><title>FcDefaultSubstitute</title><programlisting>
+void FcDefaultSubstitute (FcPattern *pattern)
+    </programlisting><para>
+Supplies default values for underspecified font patterns:
+    <itemizedlist>
+      <listitem><para>
+Patterns without a specified style or weight are set to Medium
+      </para></listitem>
+      <listitem><para>
+Patterns without a specified style or slant are set to Roman
+      </para></listitem>
+      <listitem><para>
+Patterns without a specified pixel size are given one computed from any
+specified point size (default 12), dpi (default 75) and scale (default 1).
+      </para></listitem>
+    </itemizedlist>
+    </para>
+    <sect3><title>FcNameParse</title><programlisting>
+FcPattern *FcNameParse (const char *name)
+    </programlisting><para>
+Converts 'name' from the standard text format described above into a pattern.
+    </para>
+    <sect3><title>FcNameUnparse</title><programlisting>
+FcChar8 *FcNameUnparse (FcPattern *pat)
+    </programlisting><para>
+Converts the given pattern into the standard text format described above.
+The return value is not static, but instead refers to newly allocated memory
+which should be freed by the caller.
+    </para>
+  </sect2>
+  <sect2><title>FcFontSet</title>
+    <para>
+An FcFontSet simply holds a list of patterns; these are used to return the
+results of listing available fonts.
+    </para>
+    <sect3><title>FcFontSetCreate</title><programlisting>
+FcFontSet *FcFontSetCreate (void)
+    </programlisting><para>
+Creates an empty font set.
+    </para>
+    <sect3><title>FcFontSetDestroy</title><programlisting>
+void FcFontSetDestroy (FcFontSet *s);
+    </programlisting><para>
+Destroys a font set.  Note that this destroys any referenced patterns as
+well.
+    </para>
+    <sect3><title>FcFontSetAdd</title><programlisting>
+FcBool FcFontSetAdd (FcFontSet *s, FcPattern *font)
+    </programlisting><para>
+Adds a pattern to a font set.  Note that the pattern is not copied before
+being inserted into the set.
+    </para>
+  </sect2>
+  <sect2><title>FcObjectSet</title>
+    <para>
+An FcObjectSet holds a list of pattern property names; it is used to
+indiciate which properties are to be returned in the patterns from
+FcFontList.
+    </para>
+    <sect3><title>FcObjectSetCreate</title><programlisting>
+FcObjectSet *FcObjectSetCreate (void)
+    </programlisting><para>
+Creates an empty set.
+    </para>
+    <sect3><title>FcObjectSetAdd</title><programlisting>
+FcBool FcObjectSetAdd (FcObjectSet *os, const char *object)
+    </programlisting><para>
+Adds a proprety name to the set.
+    </para>
+    <sect3><title>FcObjectSetDestroy</title><programlisting>
+void FcObjectSetDestroy (FcObjectSet *os)
+    </programlisting><para>
+Destroys an object set.
+    </para>
+    <sect3><title>FcObjectSetBuild, FcObjectSetVaBuild</title><programlisting>
+FcObjectSet *FcObjectSetBuild (const char *first, ...)
+FcObjectSet *FcObjectSetVaBuild (const char *first, va_list va)
+    </programlisting><para>
+These build an object set from a null-terminated list of property names.
+    </para>
+  </sect2>
+  <sect2><title>FcObjectType</title>
+    <para>
+Provides for applcation-specified font name object types so that new
+pattern elements can be generated from font names.
+    </para>
+    <sect3><title>FcNameRegisterObjectTypes</title><programlisting>
+FcBool FcNameRegisterObjectTypes (const FcObjectType *types, int ntype)
+    </programlisting><para>
+Register 'ntype' new object types.
+    </para>
+    <sect3><title>FcNameUnregisterObjectTypes</title><programlisting>
+FcBool FcNameUnregisterObjectTypes (const FcObjectType *types, int ntype)
+    </programlisting><para>
+Unregister 'ntype' object types.
+    
+    <sect3><title>FcNameGetObjectType</title><programlisting>
+const FcObjectType *FcNameGetObjectType (const char *object)
+    </programlisting><para>
+Return the object type for the pattern element named 'object'.
+    </para>
+  </sect2>
+  <sect2><title>FcConstant</title>
+    <para>
+Provides for application-specified symbolic constants for font names.
+    </para>
+    <sect3><title>FcNameRegisterConstants</title><programlisting>
+FcBool FcNameRegisterConstants (const FcConstant *consts, int nconsts)
+    </programlisting><para>
+Register 'nconsts' new symbolic constants.
+    </para>
+    <sect3><title>FcNameUnregisterConstants</title><programlisting>
+FcBool FcNameUnregisterConstants (const FcConstant *consts, int nconsts)
+    </programlisting><para>
+Unregister 'nconsts' symbolic constants.
+    
+    <sect3><title>FcNameGetConstant</title><programlisting>
+const FcConstant *FcNameGetConstant (FcChar8 *string)
+    </programlisting><para>
+Return the FcConstant structure related to symbolic constant 'string'.
+    </para>
+    <sect3><title>FcNameConstant</title><programlisting>
+FcBool FcNameConstant (FcChar8 *string, int *result);
+    </programlisting><para>
+Returns whether a symbolic constant with name 'string' is registered,
+placing the value of the constant in 'result' if present.
+    </para>
+  </sect2>
+  <sect2><title>FcBlanks</title>
+    <para>
+An FcBlanks object holds a list of Unicode chars which are expected to
+be blank when drawn.  When scanning new fonts, any glyphs which are
+empty and not in this list will be assumed to be broken and not placed in
+the FcCharSet associated with the font.  This provides a significantly more
+accurate CharSet for applications.
+    </para>
+    <sect3><title>FcBlanksCreate</title><programlisting>
+FcBlanks *FcBlanksCreate (void)
+    </programlisting><para>
+Creates an empty FcBlanks object.
+    </para>
+    <sect3><title>FcBlanksDestroy</title><programlisting>
+void FcBlanksDestroy (FcBlanks *b)
+    </programlisting><para>
+Destroys an FcBlanks object, freeing any associated memory.
+    </para>
+    <sect3><title>FcBlanksAdd</title><programlisting>
+FcBool FcBlanksAdd (FcBlanks *b, FcChar32 ucs4)
+    </programlisting><para>
+Adds a single character to an FcBlanks object, returning FcFalse
+if this process ran out of memory.
+    </para>
+    <sect3><title>FcBlanksIsMember</title><programlisting>
+FcBool FcBlanksIsMember (FcBlanks *b, FcChar32 ucs4)
+    </programlisting><para>
+Returns whether the specified FcBlanks object contains the indicated Unicode
+value.
+    </para>
+  </sect2>
+  <sect2><title>FcConfig</title>
+    <para>
+An FcConfig object holds the internal representation of a configuration.
+There is a default configuration which applications may use by passing 0 to
+any function using the data within an FcConfig.
+    </para>
+    <sect3><title>FcConfigCreate</title><programlisting>
+FcConfig *FcConfigCreate (void)
+    </programlisting><para>
+Creates an empty configuration.
+    </para>
+    <sect3><title>FcConfigDestroy</title><programlisting>
+void FcConfigDestroy (FcConfig *config)
+    </programlisting><para>
+Destroys a configuration and any data associated with it.  Note that calling
+this function with the return from FcConfigGetCurrent will place the library
+in an indeterminate state.
+    </para>
+    <sect3><title>FcConfigSetCurrent</title><programlisting>
+FcBool FcConfigSetCurrent (FcConfig *config)
+    </programlisting><para>
+Sets the current default configuration to 'config'.  Implicitly calls
+FcConfigBuildFonts if necessary, returning FcFalse if that call fails.
+    </para>
+    <sect3><title>FcConfigGetCurrent</title><programlisting>
+FcConfig *FcConfigGetCurrent (void)
+    </programlisting><para>
+Returns the current default configuration.
+    </para>
+    <sect3><title>FcConfigUptoDate</title><programlisting>
+FcBool FcConfigUptoDate (FcConfig *config)
+    </programlisting><para>
+Checks all of the files related to 'config' and returns whether the
+in-memory version is in sync with the disk version.
+    </para>
+    <sect3><title>FcConfigBuildFonts</title><programlisting>
+FcBool FcConfigBuildFonts (FcConfig *config)
+    </programlisting><para>
+Builds the set of available fonts for the given configuration.  Note that
+any changes to the configuration after this call have indeterminate effects.
+Returns FcFalse if this operation runs out of memory.
+    </para>
+    <sect3><title>FcConfigGetConfigDirs</title><programlisting>
+FcStrList *FcConfigGetConfigDirs (FcConfig *config)
+    </programlisting><para>
+Returns the list of font directories specified in the configuration files
+for 'config'.  Does not include any subdirectories.
+    </para>
+    <sect3><title>FcConfigGetFontDirs</title><programlisting>
+FcStrList *FcConfigGetFontDirs (FcConfig *config)
+    </programlisting><para>
+Returns the list of font directories in 'config'. This includes the
+configured font directories along with any directories below those in the
+filesystem.
+    </para>
+    <sect3><title>FcConfigGetConfigFiles</title><programlisting>
+FcStrList *FcConfigGetConfigFiles (FcConfig *config)
+    </programlisting><para>
+Returns the list of known configuration files used to generate 'config'.
+Note that this will not include any configuration done with FcConfigParse.
+    </para>
+    <sect3><title>FcConfigGetCache</title><programlisting>
+char *FcConfigGetCache (FcConfig *config)
+    </programlisting><para>
+Returns the name of the file used to store per-user font information.
+    </para>
+    <sect3><title>FcConfigGetFonts</title><programlisting>
+FcFontSet *FcConfigGetFonts (FcConfig *config, FcSetName set)
+    </programlisting><para>
+Returns one of the two sets of fonts from the configuration as specified 
+by 'set'.
+    </para>
+    <sect3><title>FcConfigGetBlanks</title><programlisting>
+FcBlanks *FcConfigGetBlanks (FcConfig *config)
+    </programlisting><para>
+Returns the FcBlanks object associated with the given configuration, if no
+blanks were present in the configuration, this function will return 0.
+    </para>
+    <sect3><title>FcConfigGetRescanInverval</title><programlisting>
+int FcConfigGetRescanInverval (FcConfig *config)
+    </programlisting><para>
+Returns the interval between automatic checks of the configuration (in
+seconds) specified in 'config'.  The configuration is checked during
+a call to FcFontList when this interval has passed since the last check.
+    </para>
+    <sect3><title>FcConfigSetRescanInverval</title><programlisting>
+FcBool FcConfigSetRescanInverval (FcConfig *config, int rescanInterval)
+    </programlisting><para>
+Sets the rescan interval; returns FcFalse if an error occurred.
+    </para>
+    <sect3><title>FcConfigAppFontAddFile</title><programlisting>
+FcBool FcConfigAppFontAddFile (FcConfig *config, const char *file)
+    </programlisting><para>
+Adds an application-specific font to the configuration.
+    </para>
+    <sect3><title>FcConfigAppFontAddDir</title><programlisting>
+FcBool FcConfigAppFontAddDir (FcConfig *config, const char *dir)
+    </programlisting><para>
+Scans the specified directory for fonts, adding each one found to the
+application-specific set of fonts.
+    </para>
+    <sect3><title>FcConfigAppFontClear</title><programlisting>
+void FcConfigAppFontClear (FcConfig *config)
+    </programlisting><para>
+Clears the set of application-specific fonts.
+    </para>
+    <sect3><title>FcConfigSubstituteWithPat</title><programlisting>
+FcBool FcConfigSubstituteWithPat (FcConfig *config, FcPattern *p, FcPattern *p_pat FcMatchKind kind)
+    </programlisting><para>
+Performs the sequence of pattern modification operations, if 'kind' is
+FcMatchPattern, then those tagged as pattern operations are applied, else 
+if 'kind' is FcMatchFont, those tagged as font operations are applied and
+p_pat is used for &lt;test&gt; elements with target=pattern.
+    </para>
+    <sect3><title>FcConfigSubstitute</title><programlisting>
+FcBool FcConfigSubstitute (FcConfig *config, FcPattern *p, FcMatchKind kind)
+    </programlisting><para>
+Calls FcConfigSubstituteWithPat setting p_pat to NULL.
+    </para>
+    <sect3><title>FcFontMatch</title><programlisting>
+FcPattern *FcFontMatch (FcConfig *config, FcPattern *p, FcResult *result)
+    </programlisting><para>
+Returns the font in 'config' most close matching 'p'.  This function
+should be called only after FcConfigSubstitute and FcDefaultSubstitute have
+been called for 'p'; otherwise the results will not be correct.
+    </para>
+    <sect3><title>FcFontSort</title><programlisting>
+FcFontSet *FcFontSort (FcConfig *config, FcPattern *p, FcBool trim, FcCharSet **csp, FcResult *result)
+    </programlisting><para>
+Returns the list of fonts sorted by closeness to 'p'.  If 'trim' is FcTrue,
+elements in the list which don't include Unicode coverage not provided by
+earlier elements in the list are elided.  The union of Unicode coverage of
+all of the fonts is returned in 'csp', if 'csp' is not NULL.  This function
+should be called only after FcConfigSubstitute and FcDefaultSubstitute have
+been called for 'p'; otherwise the results will not be correct.
+    </para><para>
+The returned FcFontSet references FcPattern structures which may be shared
+by the return value from multiple FcFontSort calls, applications must not
+modify these patterns.  Instead, they should be passed, along with 'p' to
+FcFontRenderPrepare which combines them into a complete pattern.
+    </para><para>
+The FcFontSet returned by FcFontSort is destroyed by caling FcFontSetDestroy.
+    </para>
+    <sect3><title>FcFontRenderPrepare</title><programlisting>
+FcPattern *FcFontRenderPrepare (FcConfig *config, FcPattern *pat, FcPattern *font)
+    </programlisting><para>
+Creates a new pattern consisting of elements of 'font' not appearing
+in 'pat', elements of 'pat' not appearing in 'font' and the best matching
+value from 'pat' for elements appearing in both.  The result is passed to
+FcConfigSubstitute with 'kind' FcMatchFont and then returned.
+    </para>
+    <sect3><title>FcFontList</title><programlisting>
+FcFontSet *FcFontList (FcConfig *config, FcPattern *p, FcObjectSet *os)
+    </programlisting><para>
+Selects fonts matching 'p', creates patterns from those fonts containing
+only the objects in 'os' and returns the set of unique such patterns.
+    </para>
+    <sect3><title>FcConfigFilename</title><programlisting>
+char *FcConfigFilename (const char *name)
+    </programlisting><para>
+Given the specified external entity name, return the associated filename.
+This provides applications a way to convert various configuration file
+references into filename form. 
+    </para><para>
+A null or empty 'name' indicates that the default configuration file should
+be used; which file this references can be overridden with the
+FC_CONFIG_FILE environment variable.  Next, if the name starts with '~', it
+refers to a file in the current users home directory.  Otherwise if the name
+doesn't start with '/', it refers to a file in the default configuration
+directory; the built-in default directory can be overridden with the
+FC_CONFIG_DIR environment variable.
+    </para>
+  </sect2>
+  <sect2><title>Initialization</title>
+    <para>
+These functions provide some control over how the library is initialized.
+    </para>
+    <sect3><title>FcInitLoadConfig</title><programlisting>
+FcConfig *FcInitLoadConfig (void)
+    </programlisting><para>
+Loads the default configuration file and returns the resulting configuration.
+Does not load any font information.
+    </para>
+    <sect3><title>FcInitLoadConfigAndFonts</title><programlisting>
+FcConfig *FcInitLoadConfigAndFonts (void)
+    </programlisting><para>
+Loads the default configuration file and builds information about the
+available fonts.  Returns the resulting configuration.
+    </para>
+    <sect3><title>FcInit</title><programlisting>
+FcBool FcInit (void)
+    </programlisting><para>
+Loads the default configuration file and the fonts referenced therein and
+sets the default configuration to that result.  Returns whether this
+process succeeded or not.  If the default configuration has already
+been loaded, this routine does nothing and returns FcTrue.
+    </para>
+    <sect3><title>FcGetVersion</title><programlisting>
+int FcGetVersion (void)
+    </programlisting><para>
+Returns the version number of the library.
+    </para>
+    <sect3><title>FcInitReinitialize</title><programlisting>
+FcBool FcInitReinitialize (void)
+    </programlisting><para>
+Forces the default configuration file to be reloaded and resets the default
+configuration.
+    </para>
+    <sect3><title>FcInitBringUptoDate</title><programlisting>
+FcBool FcInitBringUptoDate (void)
+    </programlisting><para>
+Checks the rescan interval in the default configuration, checking the
+configuration if the interval has passed and reloading the configuration if
+when any changes are detected.
+    </para>
+  </sect2>
+  <sect2><title>FcAtomic</title>
+    <para>
+These functions provide a safe way to update config files, allowing ongoing
+reading of the old config file while locked for writing and ensuring that a
+consistent and complete version of the config file is always available.
+    </para>
+    <sect3><title>FcAtomicCreate</title><programlisting>
+FcAtomic * FcAtomicCreate (const FcChar8   *file)
+    </programlisting><para>
+Creates a data structure containing data needed to control access to 'file'.
+Writing is done to a separate file.  Once that file is complete, the original
+configuration file is atomically replaced so that reading process always see
+a consistent and complete file without the need to lock for reading.
+    </para>
+    <sect3><title>FcAtomicLock</title><programlisting>
+FcBool FcAtomicLock (FcAtomic *atomic)
+    </programlisting><para>
+Attempts to lock the file referenced by 'atomic'.  Returns FcFalse if the
+file is locked by another process, else returns FcTrue and leaves the file
+locked.
+    </para>
+    <sect3><title>FcAtomicNewFile</title><programlisting>
+FcChar8 *FcAtomicNewFile (FcAtomic *atomic)
+    </programlisting><para>
+Returns the filename for writing a new version of the file referenced
+by 'atomic'.
+    </para>
+    <sect3><title>FcAtomicOrigFile</title><programlisting>
+FcChar8 *FcAtomicOrigFile (FcAtomic *atomic)
+    </programlisting><para>
+Returns the file refernced by 'atomic'.
+    </para>
+    <sect3><title>FcAtomicReplaceOrig</title><programlisting>
+FcBool FcAtomicReplaceOrig (FcAtomic *atomic)
+    </programlisting><para>
+Replaces the original file referenced by 'atomic' with the new file.
+    </para>
+    <sect3><title>FcAtomicDeleteNew</title><programlisting>
+void FcAtomicDeleteNew (FcAtomic *atomic)
+    </programlisting><para>
+Deletes the new file.
+    </para>
+    <sect3><title>FcAtomicUnlock</title><programlisting>
+void FcAtomicUnlock (FcAtomic *atomic)
+    </programlisting><para>
+Unlocks the file.
+    </para>
+    <sect3><title>FcAtomicDestroy</title><programlisting>
+void FcAtomicDestroy (FcAtomic *atomic)
+    </programlisting><para>
+Destroys 'atomic'.
+    </para>
+  </sect2>
+  <sect2><title>FreeType specific functions</title>
+    <para>
+      <programlisting>
+#include &lt;fontconfig/fcfreetype.h&gt;
+      </programlisting>
+While the fontconfig library doesn't insist that FreeType be used as the
+rasterization mechanism for fonts, it does provide some convenience
+functions.
+    </para>
+    <sect3><title>FcFreeTypeCharIndex</title><programlisting>
+FT_UInt FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
+    </programlisting><para>
+Maps a Unicode char to a glyph index.  This function uses information from
+several possible underlying encoding tables to work around broken fonts.
+As a result, this function isn't designed to be used in performance
+sensitive areas; results from this function are intended to be cached by
+higher level functions.
+    </para>
+    <sect3><title>FcFreeTypeCharSet</title><programlisting>
+FcCharSet *FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks) Scans a
+    </programlisting><para>
+FreeType face and returns the set of encoded Unicode chars.  This scans
+several encoding tables to build as complete a list as possible.  
+If 'blanks' is not 0, the glyphs in the font are examined and any blank glyphs
+not in 'blanks' are not placed in the returned FcCharSet.
+    </para>
+    <sect3><title>FcFreeTypeQuery</title><programlisting>
+FcPattern *FcFreeTypeQuery (const char *file, int id, FcBlanks *blanks, int *count)
+    </programlisting><para>
+Constructs a pattern representing the 'id'th font in 'file'.  The number
+of fonts in 'file' is returned in 'count'.
+    </para>
+  </sect2>
+  <sect2><title>XML specific functions</title>
+    <sect3><title>FcConfigParseAndLoad</title><programlisting>
+FcBool FcConfigParseAndLoad (FcConfig *config, const FcChar8 *file, FcBool complain)
+    </programlisting><para>
+Walks the configuration in 'file' and constructs the internal representation
+in 'config'.  Any include files referenced from within 'file' will be loaded
+with FcConfigLoad and also parsed.  If 'complain' is FcFalse, no warning
+will be displayed if 'file' does not exist.
+    </para>
+  </sect2>
+  <sect2><title>File and Directory routines</title>
+    <sect3><title>FcFileScan</title><programlisting>
+FcBool FcFileScan (FcFontSet *set, FcStrSet *dirs, FcFileCache *cache, FcBlanks *blanks, const char *file, FcBool force)
+    </programlisting><para>
+Scans a single file and adds all fonts found to 'set'.  If 'force' is FcTrue,
+then the file is scanned even if associated information is found in 'cache'.
+If 'file' is a directory, it is added to 'dirs'.
+    </para>
+    <sect3><title>FcDirScan</title><programlisting>
+FcBool FcDirScan (FcFontSet *set, FcStrSet *dirs, FcFileCache *cache, FcBlanks *blanks, const char *dir, FcBool force)
+    </programlisting><para>
+Scans an entire directory and adds all fonts found to 'set'.  If 'force' is
+FcTrue, then the directory and all files within it are scanned even if
+information is present in the per-directory cache file or 'cache'.  Any
+subdirectories found are added to 'dirs'.
+    </para>
+    <sect3><title>FcDirSave</title><programlisting>
+FcBool FcDirSave (FcFontSet *set, FcStrSet *dirs, const char *dir)
+    </programlisting><para>
+Creates the per-directory cache file for 'dir' and populates it with the
+fonts in 'set' and subdirectories in 'dirs'.
+    </para>
+    <sect3><title>FcDirCacheValid</title><programlisting>
+FcBool FcDirCacheValid (const FcChar8 *cache_file)
+    </programlisting><para>
+Returns FcTrue if 'cache_file' is no older than the directory containing it,
+else FcFalse.
+    </para>
+  </sect2>
+  <sect2><title>FcStrSet and FcStrList</title>
+    <para>
+A data structure for enumerating strings, used to list directories while
+scanning the configuration as directories are added while scanning.
+    </para>
+    <sect3><title>FcStrSetCreate</title><programlisting>
+FcStrSet *FcStrSetCreate (void)
+    </programlisting><para>
+Create an empty set.
+    </para>
+    <sect3><title>FcStrSetMember</title><programlisting>
+FcBool FcStrSetMember (FcStrSet *set, const FcChar8 *s)
+    </programlisting><para>
+Returns whether 's' is a member of 'set'.
+    </para>
+    <sect3><title>FcStrSetAdd</title><programlisting>
+FcBool FcStrSetAdd (FcStrSet *set, const FcChar8 *s)
+    </programlisting><para>
+Adds a copy of 's' to 'set'.
+    </para>
+    <sect3><title>FcStrSetAddFilename</title><programlisting>
+FcBool FcStrSetAddFilename (FcStrSet *set, const FcChar8 *s)
+    </programlisting><para>
+Adds a copy 's' to 'set', The copy is created with FcStrCopyFilename
+so that leading '~' values are replaced with the value of the HOME
+environment variable.
+    </para>
+    <sect3><title>FcStrSetDel</title><programlisting>
+FcBool FcStrSetDel (FcStrSet *set, const FcChar8 *s)
+    </programlisting><para>
+Removes 's' from 'set', returning FcTrue if 's' was a member else FcFalse.
+    </para>
+    <sect3><title>FcStrSetDestroy</title><programlisting>
+void FcStrSetDestroy (FcStrSet *set)
+    </programlisting><para>
+Destroys 'set'.
+    </para>
+    <sect3><title>FcStrListCreate</title><programlisting>
+FcStrList *FcStrListCreate (FcStrSet *set)
+    </programlisting><para>
+Creates an enumerator to list the strings in 'set'.
+    </para>
+    <sect3><title>FcStrListNext</title><programlisting>
+FcChar8 *FcStrListNext (FcStrList *list)
+    </programlisting><para>
+Returns the next string in 'set'.
+    </para>
+    <sect3><title>FcStrListDone</title><programlisting>
+void FcStrListDone (FcStrList *list)
+    </programlisting><para>
+Destroys the enumerator 'list'.
+    </para>
+  </sect2>
+  <sect2><title>String utilities</title>
+    <sect3><title>FcUtf8ToUcs4</title>
+    <programlisting>
+int FcUtf8ToUcs4 (FcChar8 *src, FcChar32 *dst, int len)
+    </programlisting>
+    <para>
+Converts the next Unicode char from 'src' into 'dst' and returns the number
+of bytes containing the char.  'src' nust be at least 'len' bytes long.
+    </para>
+    </sect3>
+    <sect3><title>FcUcs4ToUtf8</title><programlisting>
+int FcUcs4ToUtf8 (FcChar32 src, FcChar8 dst[FC_UTF8_MAX_LEN])
+    </programlisting><para>
+Converts the Unicode char from 'src' into 'dst' and returns the
+number of bytes needed to encode the char.
+    </para></sect3>
+    <sect3><title>FcUtf8Len</title><programlisting>
+FcBool FcUtf8Len (FcChar8 *src, int len, int *nchar, int *wchar)
+    </programlisting><para>
+Counts the number of Unicode chars in 'len' bytes of 'src'.  Places that
+count in 'nchar'.  'wchar' contains 1, 2 or 4 depending on the number of
+bytes needed to hold the largest unicode char counted.  The return value
+indicates whether 'src' is a well-formed UTF8 string.
+    </para></sect3>
+    <sect3><title>FcUtf16ToUcs4</title><programlisting>
+int FcUtf16ToUcs4 (FcChar8 *src, FcEndian endian, FcChar32 *dst, int len)
+    </programlisting><para>
+Converts the next Unicode char from 'src' into 'dst' and returns the
+number of bytes containing the char. 'src' must be at least 'len' bytes
+long.  Bytes of 'src' are combined into 16-bit units according to 'endian'.
+    </para></sect3>
+    <sect3><title>FcUtf16Len</title><programlisting>
+FcBool FcUtf16Len (FcChar8 *src, FcEndian endian, int len, int *nchar, int *wchar)
+    </programlisting><para>
+Counts the number of Unicode chars in 'len' bytes of 'src'.  Bytes of 'src'
+are combined into 16-bit units according to 'endian'.  Places that
+count in 'nchar'.  'wchar' contains 1, 2 or 4 depending on the number of
+bytes needed to hold the largest unicode char counted.  The return value
+indicates whether 'string' is a well-formed UTF16 string.
+    </para></sect3>
+    <sect3><title>FcStrCopy</title><programlisting>
+FcChar8 *FcStrCopy (const FcChar8 *s)
+    </programlisting><para>
+Allocates memory, copies 's' and returns the resulting buffer.  Yes, this
+is 'strdup', but that function isn't available on every platform.
+    </para></sect3>
+    <sect3><title>FcStrCopyFilename</title><programlisting>
+FcChar8 *FcStrCopyFilename (const FcChar8 *s)
+    </programlisting><para>
+Just like FcStrCopy except that it converts any leading '~' characters 
+in 's' to the value of the HOME environment variable.
+    
+    <sect3><title>FcStrCmpIgnoreCase</title><programlisting>
+int FcStrCmpIgnoreCase (const char *s1, const char *s2)
+    </programlisting><para>
+Returns the usual &lt;0, 0, &gt;0 result of comparing 's1' and 's2'.  This test
+is case-insensitive in the ASCII range and will operate properly with UTF8
+encoded strings, although it does not check for well formed strings.
+    </para></sect3>
+    <sect3><title>FcStrDirname</title><programlisting>
+FcChar8 *FcStrDirname (const FcChar8 *file)
+    </programlisting><para>
+Returns the directory containing 'file'.
+    </para></sect3>
+    <sect3><title>FcStrBasename</title><programlisting>
+FcChar8 *FcStrBasename (const FcChar8 *file)
+    </programlisting><para>
+Returns the filename of 'file' stripped of any leading directory names.
+    </para></sect3>
+  </sect2>
+</sect1>
+</article>
