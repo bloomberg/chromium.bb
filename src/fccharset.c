@@ -637,7 +637,7 @@ FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
 		bi++;
 	}
     }
-    return FcTrue;
+    return ai >= a->num;
 }
 
 /*
