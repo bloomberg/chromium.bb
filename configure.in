@@ -91,6 +91,22 @@ else
     	DSO_LDOPTS='-G -z text -z defs -h $@'
 	LIBS="$LIBS -lc"
 	;;
+   *irix6*)
+    	DSO_LDOPTS='-shared -rpath $(libdir) -set_version sgi1.0 -soname $@'
+	LIBS="$LIBS -lc"
+	;;
+    *osf[[123]]*)
+	# since the library is using soname-style versioning, don't use
+	# internal versioning, via -set_version.
+    	DSO_LDOPTS='-shared -rpath $(libdir) -soname $@'
+	LIBS="$LIBS -lc"
+	;;
+    *osf[[45]]*)
+	# since the library is using soname-style versioning, don't use
+	# internal versioning, via -set_version.
+    	DSO_LDOPTS='-shared -msym -rpath $(libdir) -soname $@'
+	LIBS="$LIBS -lc"
+ 	;;
     *)
     	DSO_LDOPTS='-shared -h $@'
     	;;
@@ -314,6 +330,7 @@ esac
 
 AC_OUTPUT([Makefile
 	  config/Makedefs
+	  fc-lang/Makefile
 	  src/Makefile
 	  fc-cache/Makefile
 	  fc-list/Makefile
