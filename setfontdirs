@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/setfontdirs,v 1.4 2002/08/01 16:17:33 keithp Exp $
 #
 LANG=C
 export LANG
@@ -9,7 +9,17 @@ trap "rm $FONTDIRS" 0
 sh ./findfonts ${1+"$@"} > $FONTDIRS
 cp fonts.conf.in fonts.conf
 chmod +w fonts.conf
-ed fonts.conf << EOF
+EDITOR=ed
+(echo q | ed) > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+	EDITOR=ex
+	(echo q | ex) > /dev/null 2>&1
+	if [ $? -ne 0 ]; then
+		echo "$0: *** Error: Cannot find 'ed' or 'ex' editor"
+		exit 1
+	fi
+fi
+$EDITOR fonts.conf << EOF
 /FONTPATH_END/a
 <!-- Font directory list configured on `date` -->
 .
