@@ -329,9 +329,6 @@ FcNameParseCharSet (FcChar8 *string);
 
 /* fcdbg.c */
 void
-FcValuePrint (FcValue v);
-
-void
 FcValueListPrint (FcValueList *l);
 
 void
@@ -348,9 +345,6 @@ FcEditPrint (FcEdit *edit);
 
 void
 FcSubstPrint (FcSubst *subst);
-
-void
-FcFontSetPrint (FcFontSet *s);
 
 int
 FcDebug (void);
