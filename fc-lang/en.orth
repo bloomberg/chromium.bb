@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/en.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -30,9 +30,9 @@
 00d1
 00d4
 00d6
-00d0
-00d7-00db
-00df
+00e0
+00e7-00eb
+00ef
 00f1
 00f4
 00f6
