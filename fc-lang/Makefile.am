@@ -22,9 +22,10 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-INCLUDES=-I../src $(FREETYPE_CFLAGS)
+INCLUDES=-I${top_srcdir}/src $(FREETYPE_CFLAGS)
 
 TMPL=fclang.tmpl.h
+STMPL=${top_srcdir}/fc-lang/fclang.tmpl.h
 TARG=fclang.h
 
 noinst_PROGRAMS=fc-lang
@@ -37,6 +38,9 @@ ORTH=@ORTH_FILES@
 
 EXTRA_DIST=$(TMPL) $(ORTH)
 
-$(TARG): $(TMPL) fc-lang $(ORTH)
+$(TARG):$(ORTH) fc-lang $(STMPL)
 	rm -f $(TARG)
-	./fc-lang $(ORTH) < $(TMPL) > $(TARG)
+	./fc-lang -d ${srcdir} $(ORTH) < $(STMPL) > $(TARG)
+
+clean::
+	$(RM) $(TARG)

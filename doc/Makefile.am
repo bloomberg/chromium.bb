@@ -1,3 +1,28 @@
+#
+# $Id$
+#
+# Copyright © 2003 Keith Packard
+#
+# Permission to use, copy, modify, distribute, and sell this software and its
+# documentation for any purpose is hereby granted without fee, provided that
+# the above copyright notice appear in all copies and that both that
+# copyright notice and this permission notice appear in supporting
+# documentation, and that the name of Keith Packard not be used in
+# advertising or publicity pertaining to distribution of the software without
+# specific, written prior permission.  Keith Packard makes no
+# representations about the suitability of this software for any purpose.  It
+# is provided "as is" without express or implied warranty.
+#
+# KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+# EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+# CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+# DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+# TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+
+DOC_SRC = ${top_srcdir}/doc
+DOC_BLD = ${top_builddir}/doc
 DOC_MODULE = fontconfig
 DOC2HTML = docbook2html
 DOC2TXT = docbook2txt
@@ -6,8 +31,8 @@ DOC2MAN = docbook2man
 TXT = fontconfig-user.txt fontconfig-devel.txt
 HTML_FILES = fontconfig-user.html
 HTML_DIRS = fontconfig-devel
-SGML = fontconfig-user.sgml fontconfig-devel.sgml
-FNCS_TMPL = func.sgml
+SGML = ${DOC_SRC}/fontconfig-user.sgml ${DOC_SRC}/fontconfig-devel.sgml
+FNCS_TMPL = ${DOC_SRC}/func.sgml
 
 DOC_FUNCS_FNCS=\
 	fcatomic.fncs \
@@ -97,11 +122,12 @@ if USEDOCBOOK
 
 .fncs.sgml:
 	$(RM) $@
-	./edit-sgml $(FNCS_TMPL) < $*.fncs > $*.sgml
+	./edit-sgml $(FNCS_TMPL) < `test -f '$<' || echo '$(srcdir)/'`$< > $*.sgml
 
 .sgml.txt:
 	$(RM) $@
-	$(DOC2TXT) $*.sgml
+	test -f '$<' || ln -s '$(srcdir)/'$< $<
+	$(DOC2TXT) $<
 
 $(man_MANS): func.refs
 
@@ -124,20 +150,31 @@ clean-local:
 	$(RM) $(man_MANS) $(DOC_FILES) $(DOC_FUNCS_SGML) func.refs
 	$(RM) -r $(DOC_DIRS)
 
-fontconfig-devel: fontconfig-devel.sgml $(DOCS_FUNCS_SGML) version.sgml confdir.sgml
+fontconfig-devel: ./fontconfig-devel.sgml $(DOCS_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) -r fontconfig-devel
 	$(DOC2HTML) -o fontconfig-devel fontconfig-devel.sgml
 
-fontconfig-devel.txt: fontconfig-devel.sgml version.sgml confdir.sgml
+fontconfig-devel.txt: ./fontconfig-devel.sgml version.sgml confdir.sgml
 
-fontconfig-user.html: fontconfig-user.sgml version.sgml confdir.sgml
+fontconfig-user.html: ./fontconfig-user.sgml version.sgml confdir.sgml
 	$(DOC2HTML) -u fontconfig-user.sgml
 
-fontconfig-user.txt:  fontconfig-user.sgml version.sgml confdir.sgml
+fontconfig-user.txt:  ./fontconfig-user.sgml version.sgml confdir.sgml
+
+./fontconfig-user.sgml: ALWAYS
+	test -f fontconfig-user.sgml || $(LN_S) ${srcdir}/fontconfig-user.sgml fontconfig-user.sgml
+
+./fontconfig-devel.sgml: ALWAYS
+	test -f fontconfig-devel.sgml || $(LN_S) ${srcdir}/fontconfig-devel.sgml fontconfig-devel.sgml
+
+ALWAYS:
 
 STRIPNL=awk '{ if (NR > 1) printf ("\n"); printf ("%s", $$0); }'
-confdir.sgml: confdir.sgml.in
-	sed "s,@CONFDIR\@,${CONFDIR}," < confdir.sgml.in | $(STRIPNL) > confdir.sgml
+confdir.sgml: ${DOC_SRC}/confdir.sgml.in
+	sed "s,@CONFDIR\@,${CONFDIR}," < ${DOC_SRC}/confdir.sgml.in | $(STRIPNL) > confdir.sgml
+
+clean::
+	$(RM) confdir.sgml
 
 else
 all-local:
@@ -157,3 +194,14 @@ install-data-local:
 	    $(INSTALL_DATA) $$f $(DESTDIR)$(DOCDIR)/$$f; \
 	  done \
 	done
+
+uninstall-local:
+	for i in $(DOC_FILES); do \
+	  echo '-- Uninstalling '$$i ; \
+	  $(RM) $(DESTDIR)$(DOCDIR)/$$i ; \
+	done
+	for i in $(DOC_DIRS); do \
+	  echo '-- Uninstalling '$$i ; \
+	  rm -rf $(DESTDIR)$(DOCDIR)/$$i ; \
+	done
+	rmdir $(DESTDIR)$(DOCDIR)

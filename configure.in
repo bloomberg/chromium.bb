@@ -330,7 +330,7 @@ AC_SUBST(CONFDIR)
 # Find out what language orthographies are included
 #
 
-ORTH_FILES=`cd fc-lang && echo *.orth`
+ORTH_FILES=`cd ${srcdir}/fc-lang && echo *.orth`
 AC_SUBST(ORTH_FILES)
 
 #

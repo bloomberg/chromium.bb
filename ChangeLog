@@ -1,5 +1,32 @@
 2003-10-26  Keith Packard  <keithp@keithp.com>
 
+	* configure.in:
+	* doc/Makefile.am:
+	* fc-cache/Makefile.am:
+	* fc-glyphname/Makefile.am:
+	* fc-lang/Makefile.am:
+	* fc-lang/fc-lang.c: (scanopen), (scan), (main):
+	* fc-list/Makefile.am:
+	* fc-match/Makefile.am:
+	Attempts to fix 'make distcheck' work.  Things are
+	progressing pretty well, but there are still failures
+	long into the process dealing with docs (as always).
+	
+	The big changes here are mostly to make $(srcdir) != "."
+	work correctly, fixing the docbook related sections and
+	fc-lang were particularily tricky.  Docbook refuses to load
+	system entities from anywhere other than where the original .sgml
+	file was located, so no luck looking in "." for the
+	configure-generated version.sgml and confdir.sgml files.
+
+	fc-lang needed help finding .orth files; added a -d option
+	to set the directory as the least evil of many options.
+
+	Now to go use a faster machine and try and wring out the last
+	issues.
+
+2003-10-26  Keith Packard  <keithp@keithp.com>
+
 	Tag version 2.2.91
 
 2003-10-26  Keith Packard  <keithp@keithp.com>

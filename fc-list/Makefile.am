@@ -23,7 +23,9 @@
 
 DOC2MAN = docbook2man
 
-SGML = fc-list.sgml
+FC_LIST_SRC=${top_srcdir}/fc-list
+
+SGML = ${FC_LIST_SRC}/fc-list.sgml
 
 bin_PROGRAMS=fc-list
 
@@ -33,14 +35,14 @@ INCLUDES=$(FREETYPE_CFLAGS)
 
 EXTRA_DIST=$(SGML)
 
-fc_list_LDADD = ../src/libfontconfig.la
+fc_list_LDADD = ${top_builddir}/src/libfontconfig.la
 
 
 if USEDOCBOOK
 
-.sgml.1:
+${man_MANS}: ${SGML}
 	$(RM) $@
-	$(DOC2MAN) $*.sgml
+	$(DOC2MAN) ${SGML}
 	$(RM) manpage.refs manpage.links
 
 all-local: $(man_MANS)

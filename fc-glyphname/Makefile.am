@@ -22,9 +22,10 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-INCLUDES=-I../src $(FREETYPE_CFLAGS)
+INCLUDES=-I${top_srcdir}/src $(FREETYPE_CFLAGS)
 
 TMPL=fcglyphname.tmpl.h
+STMPL=${top_srcdir}/fc-glyphname/${TMPL}
 TARG=fcglyphname.h
 
 noinst_PROGRAMS=fc-glyphname
@@ -34,9 +35,13 @@ noinst_HEADERS=$(TARG)
 noinst_MANS=fc-glyphname.man
 
 GLYPHNAME=zapfdingbats.txt
+SGLYPHNAME=${top_srcdir}/fc-glyphname/zapfdingbats.txt
 
 EXTRA_DIST=$(TMPL) $(GLYPHNAME)
 
-$(TARG): $(TMPL) fc-glyphname $(GLYPHNAME)
+$(TARG): $(STMPL) fc-glyphname $(SGLYPHNAME)
 	rm -f $(TARG)
-	./fc-glyphname $(GLYPHNAME) < $(TMPL) > $(TARG)
+	./fc-glyphname $(SGLYPHNAME) < $(STMPL) > $(TARG)
+
+clean::
+	$(RM) $(TARG)

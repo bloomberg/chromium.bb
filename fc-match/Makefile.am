@@ -29,4 +29,4 @@ INCLUDES=$(FREETYPE_CFLAGS)
 
 EXTRA_DIST=$(man_MANS)
 
-fc_match_LDADD = ../src/libfontconfig.la
+fc_match_LDADD = ${top_builddir}/src/libfontconfig.la

@@ -22,8 +22,10 @@
 #  PERFORMANCE OF THIS SOFTWARE.
 
 DOC2MAN = docbook2man
- 
-SGML = fc-cache.sgml
+
+FC_CACHE_SRC=${top_srcdir}/fc-cache
+
+SGML = ${FC_CACHE_SRC}/fc-cache.sgml
 
 INCLUDES=$(FREETYPE_CFLAGS)
 
@@ -33,14 +35,13 @@ bin_PROGRAMS=fc-cache
 
 EXTRA_DIST=$(SGML)
 
-fc_cache_LDADD = ../src/libfontconfig.la
-
+fc_cache_LDADD = ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
                                                                                 
-.sgml.1:
+${man_MANS}: ${SGML}										
 	$(RM) $@
-	$(DOC2MAN) $*.sgml
+	$(DOC2MAN) ${SGML}
 	$(RM) manpage.refs manpage.links
                                                                                 
 all-local: $(man_MANS)
