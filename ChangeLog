@@ -1,3 +1,8 @@
+2005-01-13  Keith Packard  <keithp@keithp.com>
+
+	* fonts.conf.in:
+	Update blanks list (Closes bug 86)
+
 2005-01-04  Keith Packard  <keithp@keithp.com>
 
 	* src/fccache.c: (FcCacheFontSetAdd):
