@@ -59,13 +59,10 @@
 # endif
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
-# include <asm/tlbflush.h>
-#else
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)
 # define pte_offset_kernel(dir, address)	pte_offset(dir, address)
 # define pte_pfn(pte)				(pte_page(pte) - mem_map)
 # define pfn_to_page(pfn)			(mem_map + (pfn))
-# define flush_tlb_kernel_range(s,e)		flush_tlb_all()
 #endif
 
 /*
@@ -125,10 +122,7 @@ agp_remap (unsigned long offset, unsigned long size, drm_device_t *dev)
 		page_map[i] = pfn_to_page(phys_addr_map[i] >> PAGE_SHIFT);
 	addr = vmap(page_map, num_pages, VM_IOREMAP, PAGE_AGP);
 	vfree(page_map);
-	if (!addr)
-		return NULL;
 
-	flush_tlb_kernel_range((unsigned long) addr, (unsigned long) addr + size);
 	return addr;
 }
 
