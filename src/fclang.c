@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fclang.c,v 1.4 2002/07/12 21:06:03 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fclang.c,v 1.6 2002/08/22 18:53:22 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -275,9 +275,10 @@ FcLangSetHasLang (const FcLangSet *ls, const FcChar8 *lang)
     int		    i;
 
     id = FcLangSetIndex (lang);
-    if (id >= 0)
+    if (id < 0)
+	id = -id - 1;
+    else if (FcLangSetBitGet (ls, id))
 	return FcLangEqual;
-    id = -id - 1;
     best = FcLangDifferentLang;
     for (i = id - 1; i >= 0; i--)
     {
