@@ -35,7 +35,7 @@
 
 #define DRIVER_AUTHOR		"Gareth Hughes, VA Linux Systems Inc."
 
-#define DRIVER_NAME		"radeon"
+#define DRIVER_NAME		"radeon"##CONFIG_XFREE86_VERSION_STR
 #define DRIVER_DESC		"ATI Radeon"
 #define DRIVER_DATE		"20010405"
 

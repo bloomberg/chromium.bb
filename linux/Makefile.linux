@@ -47,7 +47,9 @@
 
 # **** End of SMP/MODVERSIONS detection
 
-MODS =		gamma.o tdfx.o r128.o radeon.o
+XFREE86VERSION =	4_1_0
+MODS =		gamma-$(XFREE86VERSION).o tdfx-$(XFREE86VERSION).o \
+		r128-$(XFREE86VERSION).o radeon-$(XFREE86VERSION).o
 LIBS =
 
 DRMTEMPLATES =	drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
@@ -146,12 +148,12 @@ ifeq ($(AGP),1)
 MODCFLAGS += -DCONFIG_AGP -DCONFIG_AGP_MODULE
 DRMTEMPLATES += drm_agpsupport.h
 DRMHEADERS += agpsupport-pre24.h
-MODS += mga.o
+MODS += mga-$(XFREE86VERSION).o
 ifeq ($(MACHINE),i386)
-MODS += i810.o
+MODS += i810-$(XFREE86VERSION).o
 endif
 ifeq ($(MACHINE),i686)
-MODS += i810.o
+MODS += i810-$(XFREE86VERSION).o
 endif
 
 MGAOBJS =	mga_drv.o mga_dma.o mga_state.o mga_warp.o
@@ -221,36 +223,36 @@ DRIsetup: DRIsetup.c
 
 gamma_drv.o: gamma_drv.c
 	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
-gamma.o: $(GAMMAOBJS)
+gamma-$(XFREE86VERSION).o: $(GAMMAOBJS)
 	$(LD) -r $^ -o $@
 
 tdfx_drv.o: tdfx_drv.c
 	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
-tdfx.o: $(TDFXOBJS) $(LIBS)
+tdfx-$(XFREE86VERSION).o: $(TDFXOBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
-sis.o: $(SISOBJS) $(LIBS)
+sis-$(XFREE86VERSION).o: $(SISOBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
 r128_drv.o: r128_drv.c
 	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
-r128.o: $(R128OBJS) $(LIBS)
+r128-$(XFREE86VERSION).o: $(R128OBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
 radeon_drv.o: radeon_drv.c
 	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
-radeon.o: $(RADEONOBJS) $(LIBS)
+radeon-$(XFREE86VERSION).o: $(RADEONOBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
 ifeq ($(AGP),1)
 mga_drv.o: mga_drv.c
 	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
-mga.o: $(MGAOBJS)
+mga-$(XFREE86VERSION).o: $(MGAOBJS)
 	$(LD) -r $^ -o $@
 
 i810_drv.o: i810_drv.c
 	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
-i810.o: $(I810OBJS) $(LIBS)
+i810-$(XFREE86VERSION).o: $(I810OBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
 endif

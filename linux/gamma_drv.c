@@ -36,7 +36,7 @@
 
 #define DRIVER_AUTHOR		"VA Linux Systems Inc."
 
-#define DRIVER_NAME		"gamma"
+#define DRIVER_NAME		"gamma"##CONFIG_XFREE86_VERSION_STR
 #define DRIVER_DESC		"3DLabs gamma"
 #define DRIVER_DATE		"20010216"
 
