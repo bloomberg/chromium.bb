@@ -1,5 +1,9 @@
 2003-06-09  Keith Packard <keithp@keithp.com>
 
+	* Tag version 2.2.90
+
+2003-06-09  Keith Packard <keithp@keithp.com>
+
 	* Optimization in FcLangSetIndex was broken, occasionally
 	  returning a pointer to the wrong location on miss
 
