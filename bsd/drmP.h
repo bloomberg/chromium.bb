@@ -223,7 +223,8 @@ typedef struct drm_device_dma {
 	unsigned long	  byte_count;
 	enum {
 		_DRM_DMA_USE_AGP = 0x01,
-		_DRM_DMA_USE_SG  = 0x02
+		_DRM_DMA_USE_SG  = 0x02,
+		_DRM_DMA_USE_FB  = 0x04
 	} flags;
 
 				/* DMA support */
