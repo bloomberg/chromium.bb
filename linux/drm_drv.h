@@ -627,7 +627,6 @@ static int __init drm_init( void )
 			}
 			/* no fbdev or vesadev, put things back and wait for normal probe */
 			pci_release_regions(pdev);
-			pci_dev_put(pdev);
 		}
 	}
 	
