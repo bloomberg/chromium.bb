@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.16 2002/06/03 08:31:15 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.18 2002/06/19 20:08:22 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -139,6 +139,7 @@ typedef int		FcBool;
 #define FC_LANG_ARABIC_ASMO_708		"arabicasmo708"		/* 61 */
 #define FC_LANG_WE_LATIN_1		"welatin1"		/* 62 */
 #define FC_LANG_US			"us"			/* 63 */
+#define FC_LANG_UNKNOWN			"unknown"		/* none of the above */
 
 typedef enum _FcType {
     FcTypeVoid, 
