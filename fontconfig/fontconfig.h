@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.3 2002/02/19 07:50:43 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.4 2002/02/28 16:51:48 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -334,7 +334,13 @@ FcCharSetCoverage (const FcCharSet *a, FcChar32 page, FcChar32 *result);
 
 /* fcdbg.c */
 void
+FcValuePrint (FcValue v);
+
+void
 FcPatternPrint (FcPattern *p);
+
+void
+FcFontSetPrint (FcFontSet *s);
 
 /* fcdefault.c */
 void

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.2 2002/02/15 06:01:27 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.3 2002/02/19 07:50:43 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -54,7 +54,7 @@ FcFileCacheFind (FcFileCache	*cache,
     maxid = -1;
     for (c = cache->ents[hash % FC_FILE_CACHE_HASH_SIZE]; c; c = c->next)
     {
-	if (c->hash == hash && !strcmp (match, c->file))
+	if (c->hash == hash && !strcmp ((const char *) match, (const char *) c->file))
 	{
 	    if (c->id > maxid)
 		maxid = c->id;
@@ -222,7 +222,8 @@ FcFileCacheAdd (FcFileCache	*cache,
 	 (old = *prev);
 	 prev = &(*prev)->next)
     {
-	if (old->hash == hash && old->id == id && !strcmp (old->file, file))
+	if (old->hash == hash && old->id == id && !strcmp ((const char *) old->file,
+							   (const char *) file))
 	    break;
     }
     if (*prev)
@@ -249,10 +250,10 @@ FcFileCacheAdd (FcFileCache	*cache,
     c->file = (FcChar8 *) (c + 1);
     c->id = id;
     c->name = c->file + strlen ((char *) file) + 1;
-    strcpy (c->file, file);
+    strcpy ((char *) c->file, (const char *) file);
     c->time = time;
     c->referenced = replace;
-    strcpy (c->name, name);
+    strcpy ((char *) c->name, (const char *) name);
     cache->entries++;
     return FcTrue;
 }
@@ -533,7 +534,7 @@ FcFileCacheReadDir (FcFontSet *set, const FcChar8 *cache_file)
 	font = FcNameParse (name);
 	if (font)
 	{
-	    strcpy (base, file);
+	    strcpy ((char *) base, (const char *) file);
 	    if (FcDebug () & FC_DBG_CACHEV)
 	    {
 		printf (" dir cache file \"%s\"\n", file);
