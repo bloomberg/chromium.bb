@@ -202,7 +202,16 @@ no)
 	;;
 *)
 	case "$expat_includes" in
-	yes|no)
+	yes)
+		case "$expat" in
+		yes)
+			;;
+		*)
+			EXPAT_CFLAGS="-I$expat/include"
+			;;
+		esac
+		;;
+	no)
 		EXPAT_CFLAGS=""
 		;;
 	*)

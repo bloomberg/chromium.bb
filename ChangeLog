@@ -1,3 +1,10 @@
+2005-01-15  Alan Coopersmith <alan.coopersmith@sun.com>
+
+	reviewed by: Keith Packard <keithp@keithp.com>
+
+	* configure.in:
+	Have --with-expat set EXPAT_CFLAGS (bug 2278)
+
 2005-01-13  Keith Packard  <keithp@keithp.com>
 
 	* doc/fontconfig-user.sgml:
