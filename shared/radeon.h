@@ -127,6 +127,10 @@ do {									\
 		filp_priv->radeon_fb_delta = 0;				\
 } while( 0 )
 
+#define DRIVER_POSTINIT(dev, flags) radeon_postinit(dev, flags)
+#define DRIVER_PREINIT(dev, flags) radeon_preinit(dev, flags)
+#define DRIVER_POSTCLEANUP(dev) radeon_postcleanup(dev)
+
 /* When a client dies:
  *    - Check for and clean up flipped page state
  *    - Free any alloced GART memory.

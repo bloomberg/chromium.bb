@@ -40,6 +40,7 @@ enum radeon_chip_flags {
 	CHIP_IS_MOBILITY	= 0x00010000UL,
 	CHIP_IS_IGP		= 0x00020000UL,
 	CHIP_SINGLE_CRTC	= 0x00040000UL,
+	CHIP_IS_AGP		= 0x00080000UL, 
 };
 
 #define GET_RING_HEAD(dev_priv)		DRM_READ32(  (dev_priv)->ring_rptr, 0 )
@@ -81,6 +82,9 @@ struct mem_block {
 };
 
 typedef struct drm_radeon_private {
+
+	u32 flags;		/* see radeon_chip_flags */
+
 	drm_radeon_ring_buffer_t ring;
 	drm_radeon_sarea_t *sarea_priv;
 
@@ -103,7 +107,6 @@ typedef struct drm_radeon_private {
 
 	int is_r200;
 
-	int is_pci;
 	unsigned long phys_pci_gart;
 	dma_addr_t bus_pci_gart;
 
@@ -223,13 +226,13 @@ extern void radeon_do_release(drm_device_t *dev);
 #define RADEON_BOX_WAIT_IDLE     0x8
 #define RADEON_BOX_TEXTURE_LOAD  0x10
 
-
-
 /* Register definitions, register access macros and drmAddMap constants
  * for Radeon kernel driver.
  */
-
 #define RADEON_AGP_COMMAND		0x0f60
+#define RADEON_AGP_COMMAND_PCI_CONFIG	0x0060		/* offset in PCI config*/
+#       define RADEON_AGP_ENABLE            (1<<8)
+
 #define RADEON_AUX_SCISSOR_CNTL		0x26f0
 #	define RADEON_EXCLUSIVE_SCISSOR_0	(1 << 24)
 #	define RADEON_EXCLUSIVE_SCISSOR_1	(1 << 25)
@@ -251,6 +254,11 @@ extern void radeon_do_release(drm_device_t *dev);
 #	define RADEON_CRTC_OFFSET_FLIP_CNTL	(1 << 16)
 #define RADEON_CRTC2_OFFSET		0x0324
 #define RADEON_CRTC2_OFFSET_CNTL	0x0328
+
+#define RADEON_MPP_TB_CONFIG		0x01c0
+#define RADEON_MEM_CNTL			0x0140
+#define RADEON_MEM_SDRAM_MODE_REG	0x0158
+#define RADEON_AGP_BASE			0x0170
 
 #define RADEON_RB3D_COLOROFFSET		0x1c40
 #define RADEON_RB3D_COLORPITCH		0x1c48
@@ -730,7 +738,9 @@ do {									\
 } while (0)
 
 extern int RADEON_READ_PLL( drm_device_t *dev, int addr );
-
+extern int radeon_preinit( drm_device_t *dev, unsigned long flags );
+extern int radeon_postinit( drm_device_t *dev, unsigned long flags );
+extern void radeon_postcleanup( drm_device_t *dev );
 
 #define CP_PACKET0( reg, n )						\
 	(RADEON_CP_PACKET0 | ((n) << 16) | ((reg) >> 2))

@@ -433,7 +433,7 @@ typedef struct drm_radeon_init {
 		RADEON_INIT_R200_CP = 0x03
 	} func;
 	unsigned long sarea_priv_offset;
-	int is_pci;
+	int is_pci;	/* not used, driver asks hardware */
 	int cp_mode;
 	int gart_size;
 	int ring_size;
