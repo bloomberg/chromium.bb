@@ -98,9 +98,6 @@ void DRM(dma_takedown)(drm_device_t *dev)
 				  dma->bufs[i].buf_count *
 				  sizeof(*dma->bufs[0].buflist),
 				  DRM_MEM_BUFS);
-#if __HAVE_DMA_FREELIST
-		   	DRM(freelist_destroy)(&dma->bufs[i].freelist);
-#endif
 		}
 	}
 
@@ -124,25 +121,9 @@ void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
 {
 	if (!buf) return;
 
-	buf->waiting  = 0;
 	buf->pending  = 0;
 	buf->filp     = NULL;
 	buf->used     = 0;
-
-	if ( buf->dma_wait ) {
-		wakeup( (void *)&buf->dma_wait );
-		buf->dma_wait = 0;
-	}
-#if __HAVE_DMA_FREELIST
-	else {
-		drm_device_dma_t *dma = dev->dma;
-				/* If processes are waiting, the last one
-				   to wake will put the buffer on the free
-				   list.  If no processes are waiting, we
-				   put the buffer on the freelist here. */
-		DRM(freelist_put)(dev, &dma->bufs[buf->order].freelist, buf);
-	}
-#endif
 }
 
 #if !__HAVE_DMA_RECLAIM
@@ -191,11 +172,8 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, irq );
 
 	dev->context_flag = 0;
-	dev->interrupt_flag = 0;
-	dev->dma_flag = 0;
 
 	dev->dma->next_buffer = NULL;
-	dev->dma->next_queue = NULL;
 	dev->dma->this_buffer = NULL;
 
 #if __HAVE_DMA_IRQ_BH

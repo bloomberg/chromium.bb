@@ -310,10 +310,6 @@ static void DRM(cleanup_buf_error)(drm_buf_entry_t *entry)
 			  sizeof(*entry->buflist),
 			  DRM_MEM_BUFS);
 
-#if __HAVE_DMA_FREELIST
-	   	DRM(freelist_destroy)(&entry->freelist);
-#endif
-
 		entry->buf_count = 0;
 	}
 }
@@ -390,9 +386,7 @@ static int DRM(addbufs_agp)(drm_device_t *dev, drm_buf_desc_t *request)
 		buf->bus_address = agp_offset + offset;
 		buf->address = (void *)(agp_offset + offset);
 		buf->next    = NULL;
-		buf->waiting = 0;
 		buf->pending = 0;
-		buf->dma_wait = 0;
 		buf->filp    = NULL;
 
 		buf->dev_priv_size = sizeof(DRIVER_BUF_PRIV_T);
@@ -435,12 +429,6 @@ static int DRM(addbufs_agp)(drm_device_t *dev, drm_buf_desc_t *request)
 	DRM_DEBUG( "dma->buf_count : %d\n", dma->buf_count );
 	DRM_DEBUG( "entry->buf_count : %d\n", entry->buf_count );
 
-#if __HAVE_DMA_FREELIST
-	DRM(freelist_create)( &entry->freelist, entry->buf_count );
-	for ( i = 0 ; i < entry->buf_count ; i++ ) {
-		DRM(freelist_put)( dev, &entry->freelist, &entry->buflist[i] );
-	}
-#endif
 	DRM_UNLOCK;
 
 	request->count = entry->buf_count;
@@ -476,9 +464,8 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 	order = DRM(order)(request->size);
 	size = 1 << order;
 
-	DRM_DEBUG( "count=%d, size=%d (%d), order=%d, queue_count=%d\n",
-		   request->count, request->size, size,
-		   order, dev->queue_count );
+	DRM_DEBUG( "count=%d, size=%d (%d), order=%d\n",
+		   request->count, request->size, size, order );
 
 	if ( order < DRM_MIN_ORDER || order > DRM_MAX_ORDER ) 
 		return DRM_ERR(EINVAL);
@@ -561,9 +548,7 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 			buf->offset  = (dma->byte_count + byte_count + offset);
 			buf->address = (void *)(page + offset);
 			buf->next    = NULL;
-			buf->waiting = 0;
 			buf->pending = 0;
-			buf->dma_wait = 0;
 			buf->filp    = NULL;
 			DRM_DEBUG( "buffer %d @ %p\n",
 				   entry->buf_count, buf->address );
@@ -593,12 +578,6 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 	dma->page_count += entry->seg_count << page_order;
 	dma->byte_count += PAGE_SIZE * (entry->seg_count << page_order);
 
-#if __HAVE_DMA_FREELIST
-	DRM(freelist_create)( &entry->freelist, entry->buf_count );
-	for ( i = 0 ; i < entry->buf_count ; i++ ) {
-		DRM(freelist_put)( dev, &entry->freelist, &entry->buflist[i] );
-	}
-#endif
 	DRM_UNLOCK;
 
 	request->count = entry->buf_count;
@@ -681,9 +660,7 @@ static int DRM(addbufs_sg)(drm_device_t *dev, drm_buf_desc_t *request)
 		buf->bus_address = agp_offset + offset;
 		buf->address = (void *)(agp_offset + offset + dev->sg->handle);
 		buf->next    = NULL;
-		buf->waiting = 0;
 		buf->pending = 0;
-		buf->dma_wait = 0;
 		buf->filp    = NULL;
 
 		buf->dev_priv_size = sizeof(DRIVER_BUF_PRIV_T);
@@ -732,12 +709,6 @@ static int DRM(addbufs_sg)(drm_device_t *dev, drm_buf_desc_t *request)
 	DRM_DEBUG( "dma->buf_count : %d\n", dma->buf_count );
 	DRM_DEBUG( "entry->buf_count : %d\n", entry->buf_count );
 
-#if __HAVE_DMA_FREELIST
-	DRM(freelist_create)( &entry->freelist, entry->buf_count );
-	for ( i = 0 ; i < entry->buf_count ; i++ ) {
-		DRM(freelist_put)( dev, &entry->freelist, &entry->buflist[i] );
-	}
-#endif
 	DRM_UNLOCK;
 
 	request->count = entry->buf_count;
@@ -762,9 +733,6 @@ int DRM(addbufs)( DRM_IOCTL_ARGS )
 
 	if (request.count < 0 || request.count > 4096)
 		return DRM_ERR(EINVAL);
-
-	if (dev->queue_count)
-		return DRM_ERR(EBUSY); /* Not while in use */
 
 	DRM_SPINLOCK(&dev->count_lock);
 	if (dev->buf_use) {

@@ -9,7 +9,6 @@
 static int	   DRM(name_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(vm_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(clients_info)DRM_SYSCTL_HANDLER_ARGS;
-static int	   DRM(queues_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(bufs_info)DRM_SYSCTL_HANDLER_ARGS;
 
 struct DRM(sysctl_list) {
@@ -20,7 +19,6 @@ struct DRM(sysctl_list) {
 	{ "mem",     DRM(mem_info)     },
 	{ "vm",	     DRM(vm_info)      },
 	{ "clients", DRM(clients_info) },
-	{ "queues",  DRM(queues_info)  },
 	{ "bufs",    DRM(bufs_info)    },
 };
 #define DRM_SYSCTL_ENTRIES (sizeof(DRM(sysctl_list))/sizeof(DRM(sysctl_list)[0]))
@@ -163,55 +161,6 @@ static int DRM(vm_info)DRM_SYSCTL_HANDLER_ARGS
 	return ret;
 }
 
-
-static int DRM(_queues_info)DRM_SYSCTL_HANDLER_ARGS
-{
-	drm_device_t *dev = arg1;
-	int	     i;
-	drm_queue_t  *q;
-	char         buf[128];
-	int          error;
-
-	DRM_SYSCTL_PRINT("  ctx/flags   use   fin"
-			 "   blk/rw/rwf  wait    flushed	   queued"
-			 "      locks\n\n");
-	for (i = 0; i < dev->queue_count; i++) {
-		q = dev->queuelist[i];
-		atomic_inc(&q->use_count);
-		DRM_SYSCTL_PRINT_RET(atomic_dec(&q->use_count),
-				     "%5d/0x%03x %5d %5d"
-				     " %5d/%c%c/%c%c%c %5d %10d %10d %10d\n",
-				     i,
-				     q->flags,
-				     atomic_read(&q->use_count),
-				     atomic_read(&q->finalization),
-				     atomic_read(&q->block_count),
-				     atomic_read(&q->block_read) ? 'r' : '-',
-				     atomic_read(&q->block_write) ? 'w' : '-',
-				     q->read_queue ? 'r':'-',
-				     q->write_queue ? 'w':'-',
-				     q->flush_queue ? 'f':'-',
-				     (int)DRM_BUFCOUNT(&q->waitlist),
-				     atomic_read(&q->total_flushed),
-				     atomic_read(&q->total_queued),
-				     atomic_read(&q->total_locks));
-		atomic_dec(&q->use_count);
-	}
-
-	SYSCTL_OUT(req, "", 1);
-	return 0;
-}
-
-static int DRM(queues_info) DRM_SYSCTL_HANDLER_ARGS
-{
-	drm_device_t *dev = arg1;
-	int	     ret;
-
-	DRM_LOCK;
-	ret = DRM(_queues_info)(oidp, arg1, arg2, req);
-	DRM_UNLOCK;
-	return ret;
-}
 
 /* drm_bufs_info is called whenever a process reads
    hw.dri.0.bufs. */

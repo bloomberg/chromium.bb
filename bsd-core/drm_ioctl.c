@@ -139,7 +139,7 @@ int DRM(getmap)( DRM_IOCTL_ARGS )
 	idx = map.offset;
 
 	DRM_LOCK;
-	if (idx < 0 || idx >= dev->map_count) {
+	if (idx < 0) {
 		DRM_UNLOCK;
 		return DRM_ERR(EINVAL);
 	}

@@ -62,9 +62,6 @@
 #ifndef __HAVE_DMA_QUEUE
 #define __HAVE_DMA_QUEUE		0
 #endif
-#ifndef __HAVE_MULTIPLE_DMA_QUEUES
-#define __HAVE_MULTIPLE_DMA_QUEUES	0
-#endif
 #ifndef __HAVE_DMA_SCHEDULE
 #define __HAVE_DMA_SCHEDULE		0
 #endif
@@ -478,27 +475,17 @@ static int DRM(setup)( drm_device_t *dev )
 	if(dev->maplist == NULL) return DRM_ERR(ENOMEM);
 	memset(dev->maplist, 0, sizeof(*dev->maplist));
 	TAILQ_INIT(dev->maplist);
-	dev->map_count = 0;
 
 	dev->lock.hw_lock = NULL;
 	dev->lock.lock_queue = 0;
-	dev->queue_count = 0;
-	dev->queue_reserved = 0;
-	dev->queue_slots = 0;
-	dev->queuelist = NULL;
 	dev->irq = 0;
 	dev->context_flag = 0;
-	dev->interrupt_flag = 0;
-	dev->dma_flag = 0;
 	dev->last_context = 0;
-	dev->last_switch = 0;
-	dev->last_checked = 0;
 #if __FreeBSD_version >= 500000
 	callout_init( &dev->timer, 1 );
 #else
 	callout_init( &dev->timer );
 #endif
-	dev->context_wait = 0;
 
 #ifdef __FreeBSD__
 	dev->buf_sigio = NULL;
@@ -632,25 +619,6 @@ static int DRM(takedown)( drm_device_t *dev )
 		DRM(free)(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		dev->maplist   = NULL;
  	}
-
-#if __HAVE_DMA_QUEUE || __HAVE_MULTIPLE_DMA_QUEUES
-	if ( dev->queuelist ) {
-		for ( i = 0 ; i < dev->queue_count ; i++ ) {
-			DRM(waitlist_destroy)( &dev->queuelist[i]->waitlist );
-			if ( dev->queuelist[i] ) {
-				DRM(free)( dev->queuelist[i],
-					  sizeof(*dev->queuelist[0]),
-					  DRM_MEM_QUEUES );
-				dev->queuelist[i] = NULL;
-			}
-		}
-		DRM(free)( dev->queuelist,
-			  dev->queue_slots * sizeof(*dev->queuelist),
-			  DRM_MEM_QUEUES );
-		dev->queuelist = NULL;
-	}
-	dev->queue_count = 0;
-#endif
 
 #if __HAVE_DMA
 	DRM(dma_takedown)( dev );
@@ -1075,9 +1043,6 @@ int DRM(lock)( DRM_IOCTL_ARGS )
 	DRM_DEVICE;
         drm_lock_t lock;
         int ret = 0;
-#if __HAVE_MULTIPLE_DMA_QUEUES
-	drm_queue_t *q;
-#endif
 
 	DRM_COPY_FROM_USER_IOCTL( lock, (drm_lock_t *)data, sizeof(lock) );
 
@@ -1094,10 +1059,6 @@ int DRM(lock)( DRM_IOCTL_ARGS )
 #if __HAVE_DMA_QUEUE
         if ( lock.context < 0 )
                 return DRM_ERR(EINVAL);
-#elif __HAVE_MULTIPLE_DMA_QUEUES
-        if ( lock.context < 0 || lock.context >= dev->queue_count )
-                return DRM_ERR(EINVAL);
-	q = dev->queuelist[lock.context];
 #endif
 
         if ( !ret ) {

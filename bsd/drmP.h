@@ -52,12 +52,6 @@
 #ifndef __HAVE_DMA_IRQ
 #define __HAVE_DMA_IRQ		0
 #endif
-#ifndef __HAVE_DMA_WAITLIST
-#define __HAVE_DMA_WAITLIST	0
-#endif
-#ifndef __HAVE_DMA_FREELIST
-#define __HAVE_DMA_FREELIST	0
-#endif
 
 #define DRM_DEBUG_CODE 0	  /* Include debugging code (if > 1, then
 				     also include looping detection. */
@@ -159,12 +153,9 @@ typedef struct drm_buf {
 	void		  *address;    /* Address of buffer		     */
 	unsigned long	  bus_address; /* Bus address of buffer		     */
 	struct drm_buf	  *next;       /* Kernel-only: used for free list    */
-	__volatile__ int  waiting;     /* On kernel DMA queue		     */
 	__volatile__ int  pending;     /* On hardware DMA queue		     */
-	wait_queue_head_t dma_wait;    /* Processes waiting		     */
 	DRMFILE		  filp;	       /* Unique identifier of holding process */
 	int		  context;     /* Kernel queue for this buffer	     */
-	int		  while_locked;/* Dispatch this buffer while locked  */
 	enum {
 		DRM_LIST_NONE	 = 0,
 		DRM_LIST_FREE	 = 1,
@@ -194,10 +185,8 @@ typedef struct drm_freelist {
 	atomic_t	  count;       /* Number of free buffers	   */
 	drm_buf_t	  *next;       /* End pointer			   */
 
-	wait_queue_head_t waiting;     /* Processes waiting on free bufs   */
 	int		  low_mark;    /* Low water mark		   */
 	int		  high_mark;   /* High water mark		   */
-	atomic_t	  wfh;	       /* If waiting for high mark	   */
 	DRM_SPINTYPE   lock;
 } drm_freelist_t;
 
@@ -230,24 +219,6 @@ struct drm_file {
 	struct drm_device *devXX;
 };
 
-typedef struct drm_queue {
-	atomic_t	  use_count;	/* Outstanding uses (+1)	    */
-	atomic_t	  finalization;	/* Finalization in progress	    */
-	atomic_t	  block_count;	/* Count of processes waiting	    */
-	atomic_t	  block_read;	/* Queue blocked for reads	    */
-	wait_queue_head_t read_queue;	/* Processes waiting on block_read  */
-	atomic_t	  block_write;	/* Queue blocked for writes	    */
-	wait_queue_head_t write_queue;	/* Processes waiting on block_write */
-#if 1
-	atomic_t	  total_queued;	/* Total queued statistic	    */
-	atomic_t	  total_flushed;/* Total flushes statistic	    */
-	atomic_t	  total_locks;	/* Total locks statistics	    */
-#endif
-	drm_ctx_flags_t	  flags;	/* Context preserving and 2D-only   */
-	drm_waitlist_t	  waitlist;	/* Pending buffers		    */
-	wait_queue_head_t flush_queue;	/* Processes waiting until flush    */
-} drm_queue_t;
-
 typedef struct drm_lock_data {
 	drm_hw_lock_t	  *hw_lock;	/* Hardware lock		   */
 	DRMFILE		  filp;	        /* Unique identifier of holding process (NULL is kernel)*/
@@ -271,8 +242,6 @@ typedef struct drm_device_dma {
 				/* DMA support */
 	drm_buf_t	  *this_buffer;	/* Buffer being sent		   */
 	drm_buf_t	  *next_buffer; /* Selected buffer to send	   */
-	drm_queue_t	  *next_queue;	/* Queue from which buffer selected*/
-	wait_queue_head_t waiting;	/* Processes waiting on free bufs  */
 } drm_device_dma_t;
 
 #if __REALLY_HAVE_AGP
@@ -366,7 +335,6 @@ struct drm_device {
 
 				/* Memory management */
 	drm_map_list_t	  *maplist;	/* Linked list of regions	   */
-	int		  map_count;	/* Number of mappable regions	   */
 
 	drm_local_map_t	  **context_sareas;
 	int		  max_context;
@@ -374,10 +342,6 @@ struct drm_device {
 	drm_lock_data_t	  lock;		/* Information on hardware lock	   */
 
 				/* DMA queues (contexts) */
-	int		  queue_count;	/* Number of active DMA queues	   */
-	int		  queue_reserved; /* Number of reserved DMA queues */
-	int		  queue_slots;	/* Actual length of queuelist	   */
-	drm_queue_t	  **queuelist;	/* Vector of pointers to DMA queues */
 	drm_device_dma_t  *dma;		/* Optional pointer for DMA support */
 
 				/* Context support */
@@ -391,13 +355,8 @@ struct drm_device {
 #endif
 	void		  *irqh;	/* Handle from bus_setup_intr      */
 	atomic_t	  context_flag;	/* Context swapping flag	   */
-	atomic_t	  interrupt_flag; /* Interruption handler flag	   */
-	atomic_t	  dma_flag;	/* DMA dispatch flag		   */
 	struct callout    timer;	/* Timer for delaying ctx switch   */
-	wait_queue_head_t context_wait; /* Processes waiting on ctx switch */
-	int		  last_checked;	/* Last context checked for DMA	   */
 	int		  last_context;	/* Last current context		   */
-	unsigned long	  last_switch;	/* jiffies at last context switch  */
 #if __FreeBSD_version >= 400005
 	struct task       task;
 #endif
@@ -504,13 +463,6 @@ extern int	     DRM(waitlist_create)(drm_waitlist_t *bl, int count);
 extern int	     DRM(waitlist_destroy)(drm_waitlist_t *bl);
 extern int	     DRM(waitlist_put)(drm_waitlist_t *bl, drm_buf_t *buf);
 extern drm_buf_t     *DRM(waitlist_get)(drm_waitlist_t *bl);
-#endif
-#if __HAVE_DMA_FREELIST
-extern int	     DRM(freelist_create)(drm_freelist_t *bl, int count);
-extern int	     DRM(freelist_destroy)(drm_freelist_t *bl);
-extern int	     DRM(freelist_put)(drm_device_t *dev, drm_freelist_t *bl,
-				       drm_buf_t *buf);
-extern drm_buf_t     *DRM(freelist_get)(drm_freelist_t *bl, int block);
 #endif
 #endif /* __HAVE_DMA */
 #if __HAVE_VBL_IRQ
