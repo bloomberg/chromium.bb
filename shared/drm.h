@@ -11,11 +11,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -23,7 +23,7 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
@@ -363,12 +363,20 @@ typedef struct drm_agp_info {
 #define DRM_IOCTL_I810_DOCOPY  DRM_IO ( 0x48)
 
 /* Rage 128 specific ioctls */
-#define DRM_IOCTL_R128_INIT	DRM_IOW( 0x40, drm_r128_init_t)
-#define DRM_IOCTL_R128_RESET	DRM_IO(  0x41)
-#define DRM_IOCTL_R128_FLUSH	DRM_IO(  0x42)
-#define DRM_IOCTL_R128_IDLE	DRM_IO(  0x43)
-#define DRM_IOCTL_R128_PACKET	DRM_IOW( 0x44, drm_r128_packet_t)
-#define DRM_IOCTL_R128_VERTEX	DRM_IOW( 0x45, drm_r128_vertex_t)
+#define DRM_IOCTL_R128_INIT	 DRM_IOW( 0x40, drm_r128_init_t)
+#define DRM_IOCTL_R128_CCE_START DRM_IO(  0x41)
+#define DRM_IOCTL_R128_CCE_STOP	 DRM_IOW( 0x42, drm_r128_cce_stop_t)
+#define DRM_IOCTL_R128_CCE_RESET DRM_IO(  0x43)
+#define DRM_IOCTL_R128_CCE_IDLE	 DRM_IO(  0x44)
+#define DRM_IOCTL_R128_RESET	 DRM_IO(  0x46)
+#define DRM_IOCTL_R128_SWAP	 DRM_IO(  0x47)
+#define DRM_IOCTL_R128_CLEAR	 DRM_IOW( 0x48, drm_r128_clear_t)
+#define DRM_IOCTL_R128_VERTEX	 DRM_IOW( 0x49, drm_r128_vertex_t)
+#define DRM_IOCTL_R128_INDICES	 DRM_IOW( 0x4a, drm_r128_indices_t)
+#define DRM_IOCTL_R128_BLIT	 DRM_IOW( 0x4b, drm_r128_blit_t)
+#define DRM_IOCTL_R128_DEPTH	 DRM_IOW( 0x4c, drm_r128_depth_t)
+#define DRM_IOCTL_R128_STIPPLE	 DRM_IOW( 0x4d, drm_r128_stipple_t)
+#define DRM_IOCTL_R128_PACKET	 DRM_IOWR(0x4e, drm_r128_packet_t)
 
 /* SiS specific ioctls */
 #define SIS_IOCTL_FB_ALLOC     DRM_IOWR( 0x44, drm_sis_mem_t)

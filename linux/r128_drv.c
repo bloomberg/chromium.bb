@@ -24,8 +24,10 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
- *          Kevin E. Martin <martin@valinux.com>
+ * Authors:
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
+ *    Kevin E. Martin <martin@valinux.com>
+ *    Gareth Hughes <gareth@valinux.com>
  *
  */
 
@@ -33,15 +35,15 @@
 #include "drmP.h"
 #include "r128_drv.h"
 
-#define R128_NAME	 "r128"
-#define R128_DESC	 "ATI Rage 128"
-#define R128_DATE	 "20000928"
-#define R128_MAJOR	 1
-#define R128_MINOR	 0
-#define R128_PATCHLEVEL  0
+#define R128_NAME		"r128"
+#define R128_DESC		"ATI Rage 128"
+#define R128_DATE		"20001201"
+#define R128_MAJOR		2
+#define R128_MINOR		1
+#define R128_PATCHLEVEL		0
 
-static drm_device_t	      r128_device;
-drm_ctx_t	              r128_res_ctx;
+static drm_device_t	r128_device;
+drm_ctx_t		r128_res_ctx;
 
 static struct file_operations r128_fops = {
 #if LINUX_VERSION_CODE >= 0x020400
@@ -65,52 +67,61 @@ static struct miscdevice      r128_misc = {
 };
 
 static drm_ioctl_desc_t	      r128_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)]     = { r128_version,	   0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_UNIQUE)]  = { drm_getunique,   0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAGIC)]   = { drm_getmagic,	   0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_IRQ_BUSID)]   = { drm_irq_busid,   0, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)]      = { r128_version,      0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_UNIQUE)]   = { drm_getunique,     0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAGIC)]    = { drm_getmagic,      0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_IRQ_BUSID)]    = { drm_irq_busid,     0, 1 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_SET_UNIQUE)]  = { drm_setunique,   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]	      = { drm_block,	   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]     = { drm_unblock,	   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)]  = { drm_authmagic,   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]     = { drm_addmap,	   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_BUFS)]    = { r128_addbufs,	   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MARK_BUFS)]   = { drm_markbufs,    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]   = { drm_infobufs,    1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]    = { r128_mapbufs,	   1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]   = { drm_freebufs,    1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SET_UNIQUE)]   = { drm_setunique,     1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]	       = { drm_block,         1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]      = { drm_unblock,       1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)]   = { drm_authmagic,     1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]      = { drm_addmap,        1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_BUFS)]     = { r128_addbufs,      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MARK_BUFS)]    = { drm_markbufs,      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]    = { drm_infobufs,      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]     = { r128_mapbufs,      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]    = { drm_freebufs,      1, 0 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]     = { r128_addctx,	   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]      = { r128_rmctx,	   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]     = { r128_modctx,	   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_CTX)]     = { r128_getctx,	   1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)]  = { r128_switchctx,  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_NEW_CTX)]     = { r128_newctx,	   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]     = { r128_resctx,	   1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]    = { drm_adddraw,	   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RM_DRAW)]     = { drm_rmdraw,	   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	      = { r128_lock,	   1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]      = { r128_unlock,	   1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]      = { drm_finish,	   1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]      = { r128_addctx,	      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]       = { r128_rmctx,	      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]      = { r128_modctx,	      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_CTX)]      = { r128_getctx,	      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)]   = { r128_switchctx,    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_NEW_CTX)]      = { r128_newctx,	      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]      = { r128_resctx,	      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]     = { drm_adddraw,	      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RM_DRAW)]      = { drm_rmdraw,	      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_DMA)]	       = { r128_cce_buffers,  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	       = { r128_lock,	      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]       = { r128_unlock,	      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]       = { drm_finish,	      1, 0 },
 
 #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)] = { drm_agp_acquire, 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)] = { drm_agp_release, 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]  = { drm_agp_enable,  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]    = { drm_agp_info,    1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]   = { drm_agp_alloc,   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]    = { drm_agp_free,    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]    = { drm_agp_bind,    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]  = { drm_agp_unbind,  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)]  = { drm_agp_acquire,   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)]  = { drm_agp_release,   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]   = { drm_agp_enable,    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]     = { drm_agp_info,      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]    = { drm_agp_alloc,     1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]     = { drm_agp_free,      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]     = { drm_agp_bind,      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]   = { drm_agp_unbind,    1, 1 },
 #endif
 
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_INIT)]   = { r128_init_cce,   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_RESET)]  = { r128_eng_reset,  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_FLUSH)]  = { r128_eng_flush,  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_PACKET)] = { r128_submit_pkt, 1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_IDLE)]   = { r128_cce_idle,   1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_VERTEX)] = { r128_vertex_buf, 1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_INIT)]    = { r128_cce_init,     1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_CCE_START)] = { r128_cce_start,  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_CCE_STOP)]  = { r128_cce_stop,   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_CCE_RESET)] = { r128_cce_reset,  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_CCE_IDLE)]  = { r128_cce_idle,   1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_RESET)]   = { r128_engine_reset, 1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_SWAP)]    = { r128_cce_swap,     1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_CLEAR)]   = { r128_cce_clear,    1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_VERTEX)]  = { r128_cce_vertex,   1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_INDICES)] = { r128_cce_indices,  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_BLIT)]    = { r128_cce_blit,     1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_DEPTH)]   = { r128_cce_depth,    1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_STIPPLE)] = { r128_cce_stipple,  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_R128_PACKET)]  = { r128_cce_packet,   1, 0 },
 };
 #define R128_IOCTL_COUNT DRM_ARRAY_SIZE(r128_ioctls)
 
@@ -349,12 +360,12 @@ static int __init r128_init(void)
 
 #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 	dev->agp    = drm_agp_init();
-      	if (dev->agp == NULL) {
-	   	DRM_ERROR("Cannot initialize agpgart module.\n");
-	   	drm_proc_cleanup();
-	   	misc_deregister(&r128_misc);
-	   	r128_takedown(dev);
-	   	return -ENOMEM;
+	if (dev->agp == NULL) {
+		DRM_ERROR("Cannot initialize agpgart module.\n");
+		drm_proc_cleanup();
+		misc_deregister(&r128_misc);
+		r128_takedown(dev);
+		return -ENOMEM;
 	}
 
 #ifdef CONFIG_MTRR
@@ -413,8 +424,8 @@ module_init(r128_init);
 module_exit(r128_cleanup);
 
 
-int r128_version(struct inode *inode, struct file *filp, unsigned int cmd,
-		  unsigned long arg)
+int r128_version(struct inode *inode, struct file *filp,
+		 unsigned int cmd, unsigned long arg)
 {
 	drm_version_t version;
 	int	      len;
@@ -424,13 +435,13 @@ int r128_version(struct inode *inode, struct file *filp, unsigned int cmd,
 			   sizeof(version)))
 		return -EFAULT;
 
-#define DRM_COPY(name,value)				     \
-	len = strlen(value);				     \
-	if (len > name##_len) len = name##_len;		     \
-	name##_len = strlen(value);			     \
-	if (len && name) {				     \
-		if (copy_to_user(name, value, len))	     \
-			return -EFAULT;			     \
+#define DRM_COPY(name,value)					\
+	len = strlen(value);					\
+	if (len > name##_len) len = name##_len;			\
+	name##_len = strlen(value);				\
+	if (len && name) {					\
+		if (copy_to_user(name, value, len))		\
+			return -EFAULT;				\
 	}
 
 	version.version_major	   = R128_MAJOR;
@@ -506,9 +517,8 @@ int r128_release(struct inode *inode, struct file *filp)
 }
 
 /* r128_ioctl is called whenever a process performs an ioctl on /dev/drm. */
-
-int r128_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
-		unsigned long arg)
+int r128_ioctl(struct inode *inode, struct file *filp,
+	       unsigned int cmd, unsigned long arg)
 {
 	int		 nr	 = DRM_IOCTL_NR(cmd);
 	drm_file_t	 *priv	 = filp->private_data;
@@ -534,19 +544,25 @@ int r128_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 			DRM_DEBUG("no function\n");
 			retcode = -EINVAL;
 		} else if ((ioctl->root_only && !capable(CAP_SYS_ADMIN))
-			    || (ioctl->auth_needed && !priv->authenticated)) {
+			   || (ioctl->auth_needed && !priv->authenticated)) {
 			retcode = -EACCES;
 		} else {
 			retcode = (func)(inode, filp, cmd, arg);
 		}
 	}
 
+#if 0
+	if ( retcode ) {
+		DRM_INFO( "%s 0x%x ret = %d\n", __FUNCTION__, nr, retcode );
+	}
+#endif
+
 	atomic_dec(&dev->ioctl_count);
 	return retcode;
 }
 
-int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
-	      unsigned long arg)
+int r128_lock(struct inode *inode, struct file *filp,
+	      unsigned int cmd, unsigned long arg)
 {
         drm_file_t        *priv   = filp->private_data;
         drm_device_t      *dev    = priv->dev;
@@ -572,33 +588,10 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
                   lock.context, current->pid, dev->lock.hw_lock->lock,
                   lock.flags);
 
-#if 0
-				/* dev->queue_count == 0 right now for
-                                   r128.  FIXME? */
-        if (lock.context < 0 || lock.context >= dev->queue_count)
+        if (lock.context < 0)
                 return -EINVAL;
-#endif
 
         if (!ret) {
-#if 0
-                if (_DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock)
-                    != lock.context) {
-                        long j = jiffies - dev->lock.lock_time;
-
-                        if (lock.context == r128_res_ctx.handle &&
-				j >= 0 && j < DRM_LOCK_SLICE) {
-                                /* Can't take lock if we just had it and
-                                   there is contention. */
-                                DRM_DEBUG("%d (pid %d) delayed j=%d dev=%d jiffies=%d\n",
-					lock.context, current->pid, j,
-					dev->lock.lock_time, jiffies);
-                                current->state = TASK_INTERRUPTIBLE;
-				current->policy |= SCHED_YIELD;
-                                schedule_timeout(DRM_LOCK_SLICE-j);
-				DRM_DEBUG("jiffies=%d\n", jiffies);
-                        }
-                }
-#endif
                 add_wait_queue(&dev->lock.lock_queue, &entry);
                 for (;;) {
                         current->state = TASK_INTERRUPTIBLE;
@@ -617,9 +610,6 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 
                                 /* Contention */
                         atomic_inc(&dev->total_sleeps);
-#if 1
-			current->policy |= SCHED_YIELD;
-#endif
                         schedule();
                         if (signal_pending(current)) {
                                 ret = -ERESTARTSYS;
@@ -629,32 +619,6 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
                 current->state = TASK_RUNNING;
                 remove_wait_queue(&dev->lock.lock_queue, &entry);
         }
-
-#if 0
-	if (!ret && dev->last_context != lock.context &&
-		lock.context != r128_res_ctx.handle &&
-		dev->last_context != r128_res_ctx.handle) {
-		add_wait_queue(&dev->context_wait, &entry);
-	        current->state = TASK_INTERRUPTIBLE;
-                /* PRE: dev->last_context != lock.context */
-	        r128_context_switch(dev, dev->last_context, lock.context);
-		/* POST: we will wait for the context
-                   switch and will dispatch on a later call
-                   when dev->last_context == lock.context
-                   NOTE WE HOLD THE LOCK THROUGHOUT THIS
-                   TIME! */
-		current->policy |= SCHED_YIELD;
-	        schedule();
-	        current->state = TASK_RUNNING;
-	        remove_wait_queue(&dev->context_wait, &entry);
-	        if (signal_pending(current)) {
-	                ret = -EINTR;
-	        } else if (dev->last_context != lock.context) {
-			DRM_ERROR("Context mismatch: %d %d\n",
-                        	dev->last_context, lock.context);
-	        }
-	}
-#endif
 
         if (!ret) {
 		sigemptyset(&dev->sigmask);
@@ -670,6 +634,7 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 		}
                 if (lock.flags & _DRM_LOCK_QUIESCENT) {
 				/* Make hardware quiescent */
+			DRM_DEBUG( "not quiescent!\n" );
 #if 0
                         r128_quiescent(dev);
 #endif
@@ -692,8 +657,8 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 }
 
 
-int r128_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
-		 unsigned long arg)
+int r128_unlock(struct inode *inode, struct file *filp,
+		unsigned int cmd, unsigned long arg)
 {
 	drm_file_t	  *priv	  = filp->private_data;
 	drm_device_t	  *dev	  = priv->dev;

@@ -11,11 +11,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -23,7 +23,7 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
@@ -53,21 +53,21 @@ int r128_context_switch(drm_device_t *dev, int old, int new)
 #if DRM_DMA_HISTOGRAM
         dev->ctx_start = get_cycles();
 #endif
-        
+
         DRM_DEBUG("Context switch from %d to %d\n", old, new);
 
         if (new == dev->last_context) {
                 clear_bit(0, &dev->context_flag);
                 return 0;
         }
-        
+
         if (drm_flags & DRM_FLAG_NOCTX) {
                 r128_context_switch_complete(dev, new);
         } else {
                 sprintf(buf, "C %d %d\n", old, new);
                 drm_write_string(dev, buf);
         }
-        
+
         return 0;
 }
 
@@ -75,7 +75,7 @@ int r128_context_switch_complete(drm_device_t *dev, int new)
 {
         dev->last_context = new;  /* PRE/POST: This is the _only_ writer. */
         dev->last_switch  = jiffies;
-        
+
         if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
                 DRM_ERROR("Lock isn't held after context switch\n");
         }
@@ -86,11 +86,11 @@ int r128_context_switch_complete(drm_device_t *dev, int new)
 #if DRM_DMA_HISTOGRAM
         atomic_inc(&dev->histo.ctx[drm_histogram_slot(get_cycles()
                                                       - dev->ctx_start)]);
-                   
+
 #endif
         clear_bit(0, &dev->context_flag);
         wake_up(&dev->context_wait);
-        
+
         return 0;
 }
 
