@@ -851,7 +851,8 @@ extern int drm_addmap(struct inode *inode, struct file *filp,
 extern int drm_rmmap(struct inode *inode, struct file *filp,
 		     unsigned int cmd, unsigned long arg);
 extern int drm_initmap(drm_device_t * dev, unsigned int offset,
-		       unsigned int size, int type, int flags);
+		       unsigned int size, unsigned int resource, int type,
+		       int flags);
 extern int drm_addbufs(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 extern int drm_infobufs(struct inode *inode, struct file *filp,
@@ -863,6 +864,10 @@ extern int drm_freebufs(struct inode *inode, struct file *filp,
 extern int drm_mapbufs(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 extern int drm_order(unsigned long size);
+extern unsigned long drm_get_resource_start(drm_device_t *dev,
+					    unsigned int resource);
+extern unsigned long drm_get_resource_len(drm_device_t *dev,
+					  unsigned int resource);
 
 				/* DMA support (drm_dma.h) */
 extern int drm_dma_setup(drm_device_t * dev);

@@ -296,6 +296,7 @@ int savage_preinit(drm_device_t *dev, unsigned long chipset)
 {
 	drm_savage_private_t *dev_priv;
 	unsigned long mmio_base, fb_base, fb_size, aperture_base;
+	unsigned int fb_rsrc, aper_rsrc;
 	int ret = 0;
 
 	dev_priv = drm_alloc(sizeof(drm_savage_private_t), DRM_MEM_DRIVER);
@@ -310,12 +311,14 @@ int savage_preinit(drm_device_t *dev, unsigned long chipset)
 	dev_priv->mtrr[1].handle = -1;
 	dev_priv->mtrr[2].handle = -1;
 	if (S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
-		fb_base = pci_resource_start(dev->pdev, 0);
+		fb_rsrc = 0;
+		fb_base = drm_get_resource_start(dev, 0);
 		fb_size = SAVAGE_FB_SIZE_S3;
 		mmio_base = fb_base + SAVAGE_FB_SIZE_S3;
+		aper_rsrc = 0;
 		aperture_base = fb_base + SAVAGE_APERTURE_OFFSET;
 		/* this should always be true */
-		if (pci_resource_len(dev->pdev, 0) == 0x08000000) {
+		if (drm_get_resource_len(dev, 0) == 0x08000000) {
 			/* Don't make MMIO write-cobining! We need 3
 			 * MTRRs. */
 			dev_priv->mtrr[0].base = fb_base;
@@ -335,15 +338,17 @@ int savage_preinit(drm_device_t *dev, unsigned long chipset)
 				MTRR_TYPE_WRCOMB, 1);
 		} else {
 			DRM_ERROR("strange pci_resource_len %08lx\n",
-				  pci_resource_len(dev->pdev, 0));
+				  drm_get_resource_len(dev, 0));
 		}
 	} else if (chipset != S3_SUPERSAVAGE && chipset != S3_SAVAGE2000) {
-		mmio_base = pci_resource_start(dev->pdev, 0);
-		fb_base = pci_resource_start(dev->pdev, 1);
+		mmio_base = drm_get_resource_start(dev, 0);
+		fb_rsrc = 1;
+		fb_base = drm_get_resource_start(dev, 1);
 		fb_size = SAVAGE_FB_SIZE_S4;
+		aper_rsrc = 1;
 		aperture_base = fb_base + SAVAGE_APERTURE_OFFSET;
 		/* this should always be true */
-		if (pci_resource_len(dev->pdev, 1) == 0x08000000) {
+		if (drm_get_resource_len(dev, 1) == 0x08000000) {
 			/* Can use one MTRR to cover both fb and
 			 * aperture. */
 			dev_priv->mtrr[0].base = fb_base;
@@ -353,29 +358,32 @@ int savage_preinit(drm_device_t *dev, unsigned long chipset)
 				MTRR_TYPE_WRCOMB, 1);
 		} else {
 			DRM_ERROR("strange pci_resource_len %08lx\n",
-				  pci_resource_len(dev->pdev, 1));
+				  drm_get_resource_len(dev, 1));
 		}
 	} else {
-		mmio_base = pci_resource_start(dev->pdev, 0);
-		fb_base = pci_resource_start(dev->pdev, 1);
-		fb_size = pci_resource_len(dev->pdev, 1);
-		aperture_base = pci_resource_start(dev->pdev, 2);
+		mmio_base = drm_get_resource_start(dev, 0);
+		fb_rsrc = 1;
+		fb_base = drm_get_resource_start(dev, 1);
+		fb_size = drm_get_resource_len(dev, 1);
+		aper_rsrc = 2;
+		aperture_base = drm_get_resource_start(dev, 2);
 		/* Automatic MTRR setup will do the right thing. */
 	}
 
-	if ((ret = drm_initmap(dev, mmio_base, SAVAGE_MMIO_SIZE,
+	if ((ret = drm_initmap(dev, mmio_base, SAVAGE_MMIO_SIZE, 0,
 			       _DRM_REGISTERS, 0)))
 		return ret;
 	if (!(dev_priv->mmio = drm_core_findmap (dev, mmio_base)))
 		return DRM_ERR(ENOMEM);
 
-	if ((ret = drm_initmap(dev, fb_base, fb_size,
+	if ((ret = drm_initmap(dev, fb_base, fb_size, fb_rsrc,
 			       _DRM_FRAME_BUFFER, _DRM_WRITE_COMBINING)))
 		return ret;
 	if (!(dev_priv->fb = drm_core_findmap (dev, fb_base)))
 		return DRM_ERR(ENOMEM);
 
 	if ((ret = drm_initmap(dev, aperture_base, SAVAGE_APERTURE_SIZE,
+			       aper_rsrc,
 			       _DRM_FRAME_BUFFER, _DRM_WRITE_COMBINING)))
 		return ret;
 	if (!(dev_priv->aperture = drm_core_findmap (dev, aperture_base)))

@@ -165,14 +165,12 @@ int drm_setsareactx( DRM_IOCTL_ARGS )
 	DRM_DEVICE;
 	drm_ctx_priv_map_t request;
 	drm_local_map_t *map = NULL;
-	drm_map_list_entry_t *list;
 
 	DRM_COPY_FROM_USER_IOCTL( request, (drm_ctx_priv_map_t *)data,
 			   sizeof(request) );
 
 	DRM_LOCK();
-	TAILQ_FOREACH(list, dev->maplist, link) {
-		map=list->map;
+	TAILQ_FOREACH(map, &dev->maplist, link) {
 		if (map->handle == request.handle) {
 			if (dev->max_context < 0)
 				goto bad;

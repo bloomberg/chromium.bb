@@ -292,24 +292,24 @@ typedef u_int8_t u8;
 	*(volatile u_int32_t *)(((unsigned long)(map)->handle) + (offset)) = val
 
 #define DRM_VERIFYAREA_READ( uaddr, size )		\
-	(!useracc((caddr_t)uaddr, size, VM_PROT_READ))
+	(!useracc(__DECONST(caddr_t, uaddr), size, VM_PROT_READ))
 
 #else /* __FreeBSD__ */
 
 typedef vaddr_t vm_offset_t;
 
 #define DRM_READ8(map, offset)		\
-	bus_space_read_1( (map)->iot, (map)->ioh, (offset))
+	bus_space_read_1( (map)->bst, (map)->bsh, (offset))
 #define DRM_READ16(map, offset)		\
-	bus_space_read_2( (map)->iot, (map)->ioh, (offset))
+	bus_space_read_2( (map)->bst, (map)->bsh, (offset))
 #define DRM_READ32(map, offset)		\
-	bus_space_read_4( (map)->iot, (map)->ioh, (offset))
+	bus_space_read_4( (map)->bst, (map)->bsh, (offset))
 #define DRM_WRITE8(map, offset, val)	\
-	bus_space_write_1((map)->iot, (map)->ioh, (offset), (val))
+	bus_space_write_1((map)->bst, (map)->bsh, (offset), (val))
 #define DRM_WRITE16(map, offset, val)	\
-	bus_space_write_2((map)->iot, (map)->ioh, (offset), (val))
+	bus_space_write_2((map)->bst, (map)->bsh, (offset), (val))
 #define DRM_WRITE32(map, offset, val)	\
-	bus_space_write_4((map)->iot, (map)->ioh, (offset), (val))
+	bus_space_write_4((map)->bst, (map)->bsh, (offset), (val))
 
 #define DRM_VERIFYAREA_READ( uaddr, size )		\
 	(!uvm_useracc((caddr_t)uaddr, size, VM_PROT_READ))
@@ -373,10 +373,9 @@ do {									\
 
 #define DRM_GETSAREA()					\
 do {								\
-	drm_map_list_entry_t *listentry;			\
+	drm_local_map_t *map;					\
 	DRM_SPINLOCK_ASSERT(&dev->dev_lock);			\
-	TAILQ_FOREACH(listentry, dev->maplist, link) {		\
-		drm_local_map_t *map = listentry->map;		\
+	TAILQ_FOREACH(map, &dev->maplist, link) {		\
 		if (map->type == _DRM_SHM &&			\
 			map->flags & _DRM_CONTAINS_LOCK) {	\
 			dev_priv->sarea = map;			\
@@ -560,6 +559,8 @@ typedef struct drm_sg_mem {
 	dma_addr_t	*busaddr;
 } drm_sg_mem_t;
 
+typedef TAILQ_HEAD(drm_map_list, drm_local_map) drm_map_list_t;
+
 typedef struct drm_local_map {
 	unsigned long	offset;	 /* Physical address (0 for SAREA)*/
 	unsigned long	size;	 /* Physical size (bytes)	    */
@@ -569,15 +570,13 @@ typedef struct drm_local_map {
 				 /* Kernel-space: kernel-virtual address    */
 	int		mtrr;	 /* Boolean: MTRR used */
 				 /* Private data			    */
-	bus_space_tag_t iot;
-	bus_space_handle_t ioh;
+	int		rid;	 /* PCI resource ID for bus_space */
+	int		kernel_owned; /* Boolean: 1 = initmapped, 0 = addmapped */
+	struct resource *bsr;
+	bus_space_tag_t bst;
+	bus_space_handle_t bsh;
+	TAILQ_ENTRY(drm_local_map) link;
 } drm_local_map_t;
-
-typedef TAILQ_HEAD(drm_map_list, drm_map_list_entry) drm_map_list_t;
-typedef struct drm_map_list_entry {
-	TAILQ_ENTRY(drm_map_list_entry) link;
-	drm_local_map_t	*map;
-} drm_map_list_entry_t;
 
 TAILQ_HEAD(drm_vbl_sig_list, drm_vbl_sig);
 typedef struct drm_vbl_sig {
@@ -603,7 +602,8 @@ struct drm_device {
 	int	(*postcleanup)(struct drm_device *);
 	int	(*presetup)(struct drm_device *);
 	int	(*postsetup)(struct drm_device *);
-	void	(*open_helper)(struct drm_device *, drm_file_t *);
+	int	(*open_helper)(struct drm_device *, drm_file_t *);
+	void	(*free_filp_priv)(struct drm_device *, drm_file_t *);
 	void	(*release)(struct drm_device *, void *filp);
 	int	(*dma_ioctl)(DRM_IOCTL_ARGS);
 	void	(*dma_ready)(struct drm_device *);
@@ -676,7 +676,7 @@ struct drm_device {
 	drm_magic_head_t  magiclist[DRM_HASH_SIZE];
 
 	/* Linked list of mappable regions. Protected by dev_lock */
-	drm_map_list_t	  *maplist;
+	drm_map_list_t	  maplist;
 
 	drm_local_map_t	  **context_sareas;
 	int		  max_context;
@@ -793,6 +793,11 @@ int	drm_lock_free(drm_device_t *dev,
 				    unsigned int context);
 
 /* Buffer management support (drm_bufs.c) */
+unsigned long drm_get_resource_start(drm_device_t *dev, unsigned int resource);
+unsigned long drm_get_resource_len(drm_device_t *dev, unsigned int resource);
+int	drm_initmap(drm_device_t *dev, unsigned long start, unsigned long len,
+		    unsigned int resource, int type, int flags);
+void	drm_remove_map(drm_device_t *dev, drm_local_map_t *map);
 int	drm_order(unsigned long size);
 
 /* DMA support (drm_dma.c) */
@@ -919,11 +924,12 @@ static __inline__ void drm_core_ioremapfree(struct drm_local_map *map, struct dr
 
 static __inline__ struct drm_local_map *drm_core_findmap(struct drm_device *dev, unsigned long offset)
 {
-	drm_map_list_entry_t *listentry;
-	TAILQ_FOREACH(listentry, dev->maplist, link) {
-		if ( listentry->map->offset == offset ) {
-			return listentry->map;
-		}
+	drm_local_map_t *map;
+
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
+	TAILQ_FOREACH(map, &dev->maplist, link) {
+		if (map->offset == offset)
+			return map;
 	}
 	return NULL;
 }

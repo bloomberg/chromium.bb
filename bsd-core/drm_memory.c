@@ -79,11 +79,11 @@ void *drm_ioremap(drm_device_t *dev, drm_local_map_t *map)
 #ifdef __FreeBSD__
 	return pmap_mapdev(map->offset, map->size);
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
-	map->iot = dev->pa.pa_memt;
-	if (bus_space_map(map->iot, map->offset, map->size, 
-	    BUS_SPACE_MAP_LINEAR, &map->ioh))
+	map->bst = dev->pa.pa_memt;
+	if (bus_space_map(map->bst, map->offset, map->size, 
+	    BUS_SPACE_MAP_LINEAR, &map->bsh))
 		return NULL;
-	return bus_space_vaddr(map->iot, map->ioh);
+	return bus_space_vaddr(map->bst, map->bsh);
 #endif
 }
 
@@ -92,7 +92,7 @@ void drm_ioremapfree(drm_local_map_t *map)
 #ifdef __FreeBSD__
 	pmap_unmapdev((vm_offset_t) map->handle, map->size);
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
-	bus_space_unmap(map->iot, map->ioh, map->size);
+	bus_space_unmap(map->bst, map->bsh, map->size);
 #endif
 }
 

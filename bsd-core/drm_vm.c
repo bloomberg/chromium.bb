@@ -35,8 +35,7 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 #endif
 {
 	DRM_DEVICE;
-	drm_local_map_t *map = NULL;
-	drm_map_list_entry_t *listentry = NULL;
+	drm_local_map_t *map;
 	drm_file_t *priv;
 	drm_map_type_t type;
 
@@ -81,13 +80,12 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 				   for performance, even if the list was a
 				   bit longer. */
 	DRM_LOCK();
-	TAILQ_FOREACH(listentry, dev->maplist, link) {
-		map = listentry->map;
+	TAILQ_FOREACH(map, &dev->maplist, link) {
 		if (offset >= map->offset && offset < map->offset + map->size)
 			break;
 	}
 	
-	if (!listentry) {
+	if (map == NULL) {
 		DRM_UNLOCK();
 		DRM_DEBUG("can't find map\n");
 		return -1;

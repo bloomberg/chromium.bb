@@ -58,6 +58,7 @@ int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 {
 	int	     m = minor(kdev);
 	drm_file_t   *priv;
+	int retcode;
 
 	if (flags & O_EXCL)
 		return EBUSY; /* No exclusive opens */
@@ -88,8 +89,14 @@ int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		priv->ioctl_count 	= 0;
 		priv->authenticated	= !DRM_SUSER(p);
 
-		if (dev->open_helper)
-			dev->open_helper(dev, priv);
+		if (dev->open_helper) {
+			retcode = dev->open_helper(dev, priv);
+			if (retcode != 0) {
+				free(priv, M_DRM);
+				DRM_UNLOCK();
+				return retcode;
+			}
+		}
 
 		TAILQ_INSERT_TAIL(&dev->files, priv, link);
 	}

@@ -147,7 +147,6 @@ int drm_getmap(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	drm_map_t    map;
 	drm_local_map_t    *mapinlist;
-	drm_map_list_entry_t *list;
 	int          idx;
 	int	     i = 0;
 
@@ -161,8 +160,7 @@ int drm_getmap(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 	}
 
-	TAILQ_FOREACH(list, dev->maplist, link) {
-		mapinlist = list->map;
+	TAILQ_FOREACH(mapinlist, &dev->maplist, link) {
 		if (i==idx) {
 			map.offset = mapinlist->offset;
 			map.size   = mapinlist->size;
@@ -177,7 +175,7 @@ int drm_getmap(DRM_IOCTL_ARGS)
 
 	DRM_UNLOCK();
 
- 	if (!list)
+ 	if (mapinlist == NULL)
 		return EINVAL;
 
 	DRM_COPY_TO_USER_IOCTL( (drm_map_t *)data, map, sizeof(map) );

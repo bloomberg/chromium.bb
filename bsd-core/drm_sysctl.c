@@ -150,7 +150,6 @@ static int drm_vm_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	drm_local_map_t *map, *tempmaps;
-	drm_map_list_entry_t    *listentry;
 	const char   *types[] = { "FB", "REG", "SHM", "AGP", "SG" };
 	const char *type, *yesno;
 	int i, mapcount;
@@ -163,7 +162,7 @@ static int drm_vm_info DRM_SYSCTL_HANDLER_ARGS
 	DRM_LOCK();
 
 	mapcount = 0;
-	TAILQ_FOREACH(listentry, dev->maplist, link)
+	TAILQ_FOREACH(map, &dev->maplist, link)
 		mapcount++;
 
 	tempmaps = malloc(sizeof(drm_local_map_t) * mapcount, M_DRM, M_NOWAIT);
@@ -173,8 +172,8 @@ static int drm_vm_info DRM_SYSCTL_HANDLER_ARGS
 	}
 
 	i = 0;
-	TAILQ_FOREACH(listentry, dev->maplist, link)
-		tempmaps[i++] = *listentry->map;
+	TAILQ_FOREACH(map, &dev->maplist, link)
+		tempmaps[i++] = *map;
 
 	DRM_UNLOCK();
 

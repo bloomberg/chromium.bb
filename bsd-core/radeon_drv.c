@@ -45,8 +45,12 @@ extern int radeon_max_ioctl;
 static void radeon_configure(drm_device_t *dev)
 {
 	dev->dev_priv_size = sizeof(drm_radeon_buf_priv_t);
+	dev->preinit = radeon_preinit;
+	dev->postcleanup = radeon_postcleanup;
 	dev->prerelease = radeon_driver_prerelease;
 	dev->pretakedown = radeon_driver_pretakedown;
+	dev->open_helper = radeon_driver_open_helper;
+	dev->free_filp_priv = radeon_driver_free_filp_priv;
 	dev->vblank_wait = radeon_driver_vblank_wait;
 	dev->irq_preinstall = radeon_driver_irq_preinstall;
 	dev->irq_postinstall = radeon_driver_irq_postinstall;

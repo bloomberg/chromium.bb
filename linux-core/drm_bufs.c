@@ -36,13 +36,25 @@
 #include <linux/vmalloc.h>
 #include "drmP.h"
 
+unsigned long drm_get_resource_start(drm_device_t *dev, unsigned int resource)
+{
+	return pci_resource_start(dev->pdev, resource);
+}
+EXPORT_SYMBOL(drm_get_resource_start);
+
+unsigned long drm_get_resource_len(drm_device_t *dev, unsigned int resource)
+{
+	return pci_resource_len(dev->pdev, resource);
+}
+EXPORT_SYMBOL(drm_get_resource_len);
+
  /**
  * Adjusts the memory offset to its absolute value according to the mapping
  * type.  Adds the map to the map list drm_device::maplist. Adds MTRR's where
  * applicable and if supported by the kernel.
  */
 int drm_initmap(drm_device_t * dev, unsigned int offset, unsigned int size,
-		int type, int flags)
+		unsigned int resource, int type, int flags)
 {
 	drm_map_t *map;
 	drm_map_list_t *list;

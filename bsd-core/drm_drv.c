@@ -377,8 +377,7 @@ static int drm_setup(drm_device_t *dev)
 static int drm_takedown(drm_device_t *dev)
 {
 	drm_magic_entry_t *pt, *next;
-	drm_local_map_t *map;
-	drm_map_list_entry_t *list;
+	drm_local_map_t *map, *mapsave;
 	int i;
 
 	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
@@ -432,38 +431,11 @@ static int drm_takedown(drm_device_t *dev)
 		dev->sg = NULL;
 	}
 
-	if (dev->maplist != NULL) {
-		while ((list=TAILQ_FIRST(dev->maplist))) {
-			map = list->map;
-			switch ( map->type ) {
-			case _DRM_REGISTERS:
-				drm_ioremapfree(map);
-				/* FALLTHROUGH */
-			case _DRM_FRAME_BUFFER:
-				if (map->mtrr) {
-					int __unused retcode;
-
-					retcode = drm_mtrr_del(map->offset,
-					    map->size, DRM_MTRR_WC);
-					DRM_DEBUG("mtrr_del = %d", retcode);
-				}
-				break;
-			case _DRM_SHM:
-				free(map->handle, M_DRM);
-				break;
-
-			case _DRM_AGP:
-			case _DRM_SCATTER_GATHER:
-				/* Do nothing here, because this is all
-				 * handled in the AGP/GART/SG functions.
-				 */
-				break;
-			}
-			TAILQ_REMOVE(dev->maplist, list, link);
-			free(list, M_DRM);
-			free(map, M_DRM);
-		}
- 	}
+	/* Clean up maps that weren't set up by the driver. */
+	TAILQ_FOREACH_SAFE(map, &dev->maplist, link, mapsave) {
+		if (!map->kernel_owned)
+			drm_remove_map(dev, map);
+	}
 
 	drm_dma_takedown(dev);
 	if ( dev->lock.hw_lock ) {
@@ -495,9 +467,6 @@ static int drm_init(device_t nbdev)
 	else
 		dev->device = nbdev;
 
-	if (dev->preinit != NULL)
-		dev->preinit(dev, 0);
-
 	dev->devnode = make_dev(&drm_cdevsw,
 			unit,
 			DRM_DEV_UID,
@@ -510,9 +479,6 @@ static int drm_init(device_t nbdev)
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
 	dev = nbdev;
 	unit = minor(dev->device.dv_unit);
-
-	if (dev->preinit != NULL)
-		dev->preinit(dev, 0);
 #endif
 
 	dev->irq = pci_get_irq(dev->device);
@@ -522,12 +488,7 @@ static int drm_init(device_t nbdev)
 	dev->pci_slot = pci_get_slot(dev->device);
 	dev->pci_func = pci_get_function(dev->device);
 
-	dev->maplist = malloc(sizeof(*dev->maplist), M_DRM, M_WAITOK);
-	if (dev->maplist == NULL) {
-		retcode = ENOMEM;
-		goto error;
-	}
-	TAILQ_INIT(dev->maplist);
+	TAILQ_INIT(&dev->maplist);
 
 	drm_mem_init();
 #ifdef __FreeBSD__
@@ -535,10 +496,18 @@ static int drm_init(device_t nbdev)
 #endif
 	TAILQ_INIT(&dev->files);
 
+	if (dev->preinit != NULL) {
+		retcode = dev->preinit(dev, 0);
+		if (retcode != 0)
+			goto error;
+	}
+
 	if (dev->use_agp) {
-		dev->agp = drm_agp_init();
+		if (drm_device_is_agp(dev))
+			dev->agp = drm_agp_init();
 		if (dev->require_agp && dev->agp == NULL) {
-			DRM_ERROR("Cannot initialize the agpgart module.\n");
+			DRM_ERROR("Card isn't AGP, or couldn't initialize "
+			    "AGP.\n");
 			retcode = DRM_ERR(ENOMEM);
 			goto error;
 		}
@@ -581,7 +550,6 @@ error:
 	mtx_destroy(&dev->dev_lock);
 #endif
 #endif
-	free(dev->maplist, M_DRM);
 	return retcode;
 }
 
@@ -591,6 +559,7 @@ error:
  */
 static void drm_cleanup(drm_device_t *dev)
 {
+	drm_local_map_t *map;
 
 	DRM_DEBUG( "\n" );
 
@@ -613,6 +582,11 @@ static void drm_cleanup(drm_device_t *dev)
 	drm_takedown(dev);
 	DRM_UNLOCK();
 
+	/* Clean up any maps left over that had been allocated by the driver. */
+	while ((map = TAILQ_FIRST(&dev->maplist)) != NULL) {
+		drm_remove_map(dev, map);
+	}
+
 	if ( dev->agp ) {
 		drm_agp_uninit();
 		free(dev->agp, M_DRM);
@@ -626,7 +600,6 @@ static void drm_cleanup(drm_device_t *dev)
 #if defined(__FreeBSD__) &&  __FreeBSD_version >= 500000
 	mtx_destroy(&dev->dev_lock);
 #endif
-	free(dev->maplist, M_DRM);
 }
 
 
@@ -778,6 +751,8 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 #endif /* __NetBSD__  || __OpenBSD__ */
 
 	if (--priv->refs == 0) {
+		if (dev->free_filp_priv != NULL)
+			dev->free_filp_priv(dev, priv);
 		TAILQ_REMOVE(&dev->files, priv, link);
 		free(priv, M_DRM);
 	}
