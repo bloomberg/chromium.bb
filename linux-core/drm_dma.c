@@ -540,6 +540,17 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 
 #if __HAVE_VBL_IRQ
 	init_waitqueue_head(&dev->vbl_queue);
+
+	sema_init( &dev->vbl_sem, 0 );
+
+	INIT_LIST_HEAD( &dev->vbl_sigs.head );
+
+	up( &dev->vbl_sem );
+
+	INIT_LIST_HEAD( &dev->vbl_tq.list );
+	dev->vbl_tq.sync = 0;
+	dev->vbl_tq.routine = DRM(vbl_immediate_bh);
+	dev->vbl_tq.data = dev;
 #endif
 
 				/* Before installing handler */
@@ -610,7 +621,8 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	drm_device_t *dev = priv->dev;
 	drm_wait_vblank_t vblwait;
 	struct timeval now;
-	int ret;
+	int ret = 0;
+	unsigned int flags;
 
 	if (!dev->irq)
 		return -EINVAL;
@@ -618,20 +630,76 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	DRM_COPY_FROM_USER_IOCTL( vblwait, (drm_wait_vblank_t *)data,
 				  sizeof(vblwait) );
 
-	if ( vblwait.type == _DRM_VBLANK_RELATIVE ) {
-		vblwait.sequence += atomic_read( &dev->vbl_received );
+	switch ( vblwait.request.type & ~_DRM_VBLANK_FLAGS_MASK ) {
+	case _DRM_VBLANK_RELATIVE:
+		vblwait.request.sequence += atomic_read( &dev->vbl_received );
+	case _DRM_VBLANK_ABSOLUTE:
+		break;
+	default:
+		return -EINVAL;
 	}
 
-	ret = DRM(vblank_wait)( dev, &vblwait.sequence );
+	flags = vblwait.request.type & _DRM_VBLANK_FLAGS_MASK;
+	
+	if ( flags & _DRM_VBLANK_SIGNAL ) {
+		drm_vbl_sig_t *vbl_sig = DRM_MALLOC( sizeof( drm_vbl_sig_t ) );
 
-	do_gettimeofday( &now );
-	vblwait.tval_sec = now.tv_sec;
-	vblwait.tval_usec = now.tv_usec;
+		if ( !vbl_sig )
+			return -ENOMEM;
+
+		memset( (void *)vbl_sig, 0, sizeof(*vbl_sig) );
+
+		vbl_sig->sequence = vblwait.request.sequence;
+		vbl_sig->info.si_signo = vblwait.request.signal;
+		vbl_sig->task = current;
+
+		vblwait.reply.sequence = atomic_read( &dev->vbl_received );
+
+		/* Hook signal entry into list */
+		down( &dev->vbl_sem );
+
+		list_add_tail( (struct list_head *) vbl_sig, &dev->vbl_sigs.head );
+
+		up( &dev->vbl_sem );
+	} else {
+		ret = DRM(vblank_wait)( dev, &vblwait.request.sequence );
+
+		do_gettimeofday( &now );
+		vblwait.reply.tval_sec = now.tv_sec;
+		vblwait.reply.tval_usec = now.tv_usec;
+	}
 
 	DRM_COPY_TO_USER_IOCTL( (drm_wait_vblank_t *)data, vblwait,
 				sizeof(vblwait) );
 
 	return ret;
+}
+
+void DRM(vbl_immediate_bh)( void *arg )
+{
+	drm_device_t *dev = (drm_device_t *) arg;
+	struct list_head *entry, *tmp;
+	drm_vbl_sig_t *vbl_sig;
+	unsigned int vbl_seq = atomic_read( &dev->vbl_received );
+
+	down( &dev->vbl_sem );
+
+	list_for_each_safe( entry, tmp, &dev->vbl_sigs.head ) {
+
+		vbl_sig = (drm_vbl_sig_t *) entry;
+
+		if ( ( vbl_seq + ~vbl_sig->sequence + 1 ) <= (1<<23) ) {
+
+			vbl_sig->info.si_code = atomic_read( &dev->vbl_received );
+			send_sig_info( vbl_sig->info.si_signo, &vbl_sig->info, vbl_sig->task );
+
+			list_del( entry );
+
+			DRM_FREE( entry );
+		}
+	}
+
+	up( &dev->vbl_sem );
 }
 
 #endif	/* __HAVE_VBL_IRQ */

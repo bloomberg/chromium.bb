@@ -50,6 +50,10 @@ void mga_dma_service( DRM_IRQ_ARGS )
 		MGA_WRITE( MGA_ICLEAR, MGA_VLINEICLR );
 		atomic_inc(&dev->vbl_received);
 		DRM_WAKEUP(&dev->vbl_queue);
+
+		/* kick off bottom half for signals */
+		queue_task(&dev->vbl_tq, &tq_immediate);
+		mark_bh(IMMEDIATE_BH);
 	}
 }
 
