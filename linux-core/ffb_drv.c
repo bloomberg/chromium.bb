@@ -276,8 +276,6 @@ int ffb_presetup(drm_device_t *dev)
 
 static int postinit( struct drm_device *dev, unsigned long flags )
 {
-	DRM(fops).get_unmapped_area = ffb_get_unmapped_area;
-
 	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d: %s\n",
 		DRIVER_NAME,
 		DRIVER_MAJOR,
@@ -326,6 +324,7 @@ static struct drm_driver_fn ffb_driver_fn = {
 		.ioctl	 = drm_ioctl,
 		.mmap	 = drm_mmap,
 		.fasync  = drm_fasync,
+		.get_unmapped_area = ffb_get_unmapped_area,
 	},
 };
 
