@@ -2725,7 +2725,7 @@ static int radeon_cp_cmdbuf(DRM_IOCTL_ARGS)
 	drm_radeon_cmd_buffer_t cmdbuf;
 	drm_radeon_cmd_header_t header;
 	int orig_nbox, orig_bufsz;
-	char *kbuf;
+	char *kbuf = NULL;
 
 	LOCK_TEST_WITH_RETURN(dev, filp);
 
@@ -2756,8 +2756,10 @@ static int radeon_cp_cmdbuf(DRM_IOCTL_ARGS)
 		kbuf = drm_alloc(cmdbuf.bufsz, DRM_MEM_DRIVER);
 		if (kbuf == NULL)
 			return DRM_ERR(ENOMEM);
-		if (DRM_COPY_FROM_USER(kbuf, cmdbuf.buf, cmdbuf.bufsz))
+		if (DRM_COPY_FROM_USER(kbuf, cmdbuf.buf, cmdbuf.bufsz)) {
+			drm_free(kbuf, orig_bufsz, DRM_MEM_DRIVER);
 			return DRM_ERR(EFAULT);
+		}
 		cmdbuf.buf = kbuf;
 	}
 
