@@ -36,9 +36,16 @@
 EXPORT_SYMBOL(gamma_init);
 EXPORT_SYMBOL(gamma_cleanup);
 
+#ifndef PCI_DEVICE_ID_3DLABS_GAMMA
+#define PCI_DEVICE_ID_3DLABS_GAMMA 0x0008
+#endif
+#ifndef PCI_DEVICE_ID_3DLABS_MX
+#define PCI_DEVICE_ID_3DLABS_MX 0x0006
+#endif
+
 #define GAMMA_NAME	 "gamma"
 #define GAMMA_DESC	 "3dlabs GMX 2000"
-#define GAMMA_DATE	 "19990830"
+#define GAMMA_DATE	 "20000606"
 #define GAMMA_MAJOR	 1
 #define GAMMA_MINOR	 0
 #define GAMMA_PATCHLEVEL 0
