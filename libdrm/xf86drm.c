@@ -148,7 +148,7 @@ static int drm_open(const char *file)
 
 int drmAvailable(void)
 {
-    if (!access("/proc/graphics/0", R_OK)) return 1;
+    if (!access("/proc/dri/0", R_OK)) return 1;
     return 0;
 }
 
@@ -182,7 +182,7 @@ static int drmOpenByBusid(const char *busid)
     int    fd;
 
     for (i = 0; i < 8; i++) {
-	sprintf(dev_name, "/dev/graphics/card%d", i);
+	sprintf(dev_name, "/dev/dri/card%d", i);
 	if ((fd = drm_open(dev_name)) >= 0) {
 	    buf = drmGetBusid(fd);
 	    if (buf && !strcmp(buf, busid)) {
@@ -224,14 +224,14 @@ static int drmOpenByName(const char *name)
 	if (dirmode & S_IRGRP) dirmode |= S_IXGRP;
 	if (dirmode & S_IROTH) dirmode |= S_IXOTH;
 	dirmode &= ~(S_IWGRP | S_IWOTH);
-	mkdir("/dev/graphics", 0);
-	chown("/dev/graphics", user, group);
-	chmod("/dev/graphics", dirmode);
+	mkdir("/dev/dri", 0);
+	chown("/dev/dri", user, group);
+	chmod("/dev/dri", dirmode);
     }
 
     for (i = 0; i < 8; i++) {
-	sprintf(proc_name, "/proc/graphics/%d/name", i);
-	sprintf(dev_name, "/dev/graphics/card%d", i);
+	sprintf(proc_name, "/proc/dri/%d/name", i);
+	sprintf(dev_name, "/dev/dri/card%d", i);
 	if ((fd = open(proc_name, 0, 0)) >= 0) {
 	    retcode = read(fd, buf, sizeof(buf)-1);
 	    close(fd);
@@ -260,7 +260,7 @@ static int drmOpenByName(const char *name)
 }
 
 /* drmOpen looks up the specified name and busid, and opens the device
-   found.  The entry in /dev/graphics is created if necessary (and if root).
+   found.  The entry in /dev/dri is created if necessary (and if root).
    A file descriptor is returned.  On error, the return value is
    negative. */
 
