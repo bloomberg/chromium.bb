@@ -135,16 +135,19 @@ int drm_setunique(struct inode *inode, struct file *filp,
 
 static int drm_set_busid(drm_device_t * dev)
 {
+	int len;
 	if (dev->unique != NULL)
 		return EBUSY;
 
-	dev->unique_len = 20;
+	dev->unique_len = 40;
 	dev->unique = drm_alloc(dev->unique_len + 1, DRM_MEM_DRIVER);
 	if (dev->unique == NULL)
 		return ENOMEM;
 
-	snprintf(dev->unique, dev->unique_len, "pci:%04x:%02x:%02x.%d",
+	len = snprintf(dev->unique, dev->unique_len, "pci:%04x:%02x:%02x.%d",
 		 dev->pci_domain, dev->pci_bus, dev->pci_slot, dev->pci_func);
+	if (len > dev->unique_len)
+		DRM_ERROR("buffer overflow");
 
 	dev->devname = drm_alloc(strlen(dev->pdev->driver->name) + dev->unique_len + 2,
 				 DRM_MEM_DRIVER);
