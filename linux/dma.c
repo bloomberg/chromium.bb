@@ -405,6 +405,7 @@ int drm_dma_enqueue(drm_device_t *dev, drm_dma_t *d)
 			schedule();
 			if (signal_pending(current)) {
 				atomic_dec(&q->use_count);
+				remove_wait_queue(&q->write_queue, &entry);
 				return -EINTR;
 			}
 		}
