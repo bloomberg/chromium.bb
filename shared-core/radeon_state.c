@@ -2596,7 +2596,7 @@ static int radeon_driver_open_helper(drm_device_t *dev, drm_file_t *filp_priv)
 	return 0;
 }
 
-static void radeon_driver_free_filp_private(drm_device_t *dev, drm_file_t *filp_priv)
+static void radeon_driver_free_filp_priv(drm_device_t *dev, drm_file_t *filp_priv)
 {
 	struct drm_radeon_driver_file_fields *radeon_priv = filp_priv->driver_priv;
 	
@@ -2618,5 +2618,5 @@ void radeon_driver_register_fns(struct drm_device *dev)
 	dev->fn_tbl.irq_postinstall = radeon_driver_irq_postinstall;
 	dev->fn_tbl.irq_uninstall = radeon_driver_irq_uninstall;
 	dev->fn_tbl.irq_handler = radeon_driver_irq_handler;
-	dev->fn_tbl.free_filp_private = radeon_driver_free_filp_private;
+	dev->fn_tbl.free_filp_priv = radeon_driver_free_filp_priv;
 }

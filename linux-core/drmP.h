@@ -98,14 +98,14 @@
 /* driver capabilities and requirements mask */
 #define DRIVER_USE_AGP     0x1
 #define DRIVER_REQUIRE_AGP 0x2
-#define DRIVER_USE_MTRR   0x4
-#define DRIVER_HAVE_DMA    0x10
-#define DRIVER_HAVE_IRQ    0x20
-#define DRIVER_SG          0x40
-#define DRIVER_PCI_DMA     0x80
-#define DRIVER_IRQ_SHARED  0x100
-#define DRIVER_IRQ_VBL     0x200
-#define DRIVER_DMA_QUEUE   0x800
+#define DRIVER_USE_MTRR    0x4
+#define DRIVER_PCI_DMA     0x8
+#define DRIVER_SG          0x10
+#define DRIVER_HAVE_DMA    0x20
+#define DRIVER_HAVE_IRQ    0x40
+#define DRIVER_IRQ_SHARED  0x80
+#define DRIVER_IRQ_VBL     0x100
+#define DRIVER_DMA_QUEUE   0x200
 
 /*@}*/
 
@@ -520,7 +520,7 @@ struct drm_driver_fn {
 
 	/* these are opposites at the moment */
 	int (*open_helper)(struct drm_device *, drm_file_t *);
-	void (*free_filp_private)(struct drm_device *, drm_file_t *);
+	void (*free_filp_priv)(struct drm_device *, drm_file_t *);
 
 	void (*release)(struct drm_device *, struct file *filp);
 	void (*dma_ready)(struct drm_device *);

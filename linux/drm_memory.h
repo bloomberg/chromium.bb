@@ -161,7 +161,7 @@ static inline unsigned long drm_follow_page (void *vaddr)
 static inline void *drm_ioremap(unsigned long offset, unsigned long size, drm_device_t *dev)
 {
 #if defined(VMAP_4_ARGS)
-  if ( drm_core_has_AGP(dev) && dev->agp && dev->agp->cant_use_aperture) {
+	if (drm_core_has_AGP(dev) && dev->agp && dev->agp->cant_use_aperture) {
 		drm_map_t *map = drm_lookup_map(offset, size, dev);
 
 		if (map && map->type == _DRM_AGP)
@@ -176,7 +176,7 @@ static inline void *drm_ioremap_nocache(unsigned long offset, unsigned long size
 					drm_device_t *dev)
 {
 #if defined(VMAP_4_ARGS)
-	if ( drm_core_has_AGP(dev) && dev->agp && dev->agp->cant_use_aperture) {
+	if (drm_core_has_AGP(dev) && dev->agp && dev->agp->cant_use_aperture) {
 		drm_map_t *map = drm_lookup_map(offset, size, dev);
 
 		if (map && map->type == _DRM_AGP)

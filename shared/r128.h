@@ -36,7 +36,6 @@
 
 /* General customization:
  */
-
 #define DRIVER_AUTHOR		"Gareth Hughes, VA Linux Systems Inc."
 
 #define DRIVER_NAME		"r128"
@@ -72,6 +71,5 @@
    [DRM_IOCTL_NR(DRM_IOCTL_R128_STIPPLE)]    = { r128_cce_stipple,  1, 0 }, \
    [DRM_IOCTL_NR(DRM_IOCTL_R128_INDIRECT)]   = { r128_cce_indirect, 1, 1 }, \
    [DRM_IOCTL_NR(DRM_IOCTL_R128_GETPARAM)]   = { r128_getparam, 1, 0 },
-
 
 #endif

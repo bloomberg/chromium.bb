@@ -498,15 +498,15 @@ int DRM(mmap_dma)(struct file *filp, struct vm_area_struct *vma)
 
 unsigned long DRM(core_get_map_ofs)(drm_map_t *map)
 {
-  return map->offset;
+	return map->offset;
 }
 
 unsigned long DRM(core_get_reg_ofs)(struct drm_device *dev)
 {
 #ifdef __alpha__
-  return dev->hose->dense_mem_base - dev->hose->mem_space->start;
+	return dev->hose->dense_mem_base - dev->hose->mem_space->start;
 #else
-  return 0;
+	return 0;
 #endif
 }
 

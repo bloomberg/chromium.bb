@@ -242,7 +242,7 @@ int i810_dma_cleanup(drm_device_t *dev)
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
-	if ( drm_core_check_feature(dev, DRIVER_HAVE_IRQ) && dev->irq_enabled )
+	if (drm_core_check_feature(dev, DRIVER_HAVE_IRQ) && dev->irq_enabled)
 		DRM(irq_uninstall)(dev);
 
 	if (dev->dev_private) {

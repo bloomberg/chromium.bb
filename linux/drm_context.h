@@ -1,5 +1,5 @@
 /**
-* \file drm_context.h 
+ * \file drm_context.h 
  * IOCTLs for generic contexts
  * 
  * \author Rickard E. (Rik) Faith <faith@valinux.com>
@@ -573,5 +573,6 @@ int DRM(rmctx)( struct inode *inode, struct file *filp,
 
 	return 0;
 }
+
 /*@}*/
 

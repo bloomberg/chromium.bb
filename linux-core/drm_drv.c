@@ -52,8 +52,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
-
 #ifndef __HAVE_COUNTERS
 #define __HAVE_COUNTERS			0
 #endif
@@ -348,7 +346,7 @@ static int DRM(takedown)( drm_device_t *dev )
 	}
 
 				/* Clear AGP information */
-	if ( drm_core_has_AGP(dev) && dev->agp ) {
+	if (drm_core_has_AGP(dev) && dev->agp) {
 		drm_agp_mem_t *entry;
 		drm_agp_mem_t *nexte;
 
@@ -412,7 +410,7 @@ static int DRM(takedown)( drm_device_t *dev )
  	}
 
 	
-	if ( drm_core_check_feature(dev, DRIVER_DMA_QUEUE) && dev->queuelist ) {
+	if (drm_core_check_feature(dev, DRIVER_DMA_QUEUE) && dev->queuelist) {
 		for ( i = 0 ; i < dev->queue_count ; i++ ) {
 
 			if ( dev->queuelist[i] ) {
@@ -437,7 +435,6 @@ static int DRM(takedown)( drm_device_t *dev )
 		dev->lock.filp = NULL;
 		wake_up_interruptible( &dev->lock.lock_queue );
 	}
-	
 	up( &dev->struct_sem );
 
 	return 0;
@@ -509,7 +506,7 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 	if (drm_core_has_AGP(dev)) {
 		dev->agp = DRM(agp_init)();
-		if ( drm_core_check_feature(dev, DRIVER_REQUIRE_AGP) && dev->agp == NULL ) {
+		if (drm_core_check_feature(dev, DRIVER_REQUIRE_AGP) && (dev->agp == NULL)) {
 			DRM_ERROR( "Cannot initialize the agpgart module.\n" );
 			retcode = -EINVAL;
 			goto error_out_unreg;

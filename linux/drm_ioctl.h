@@ -343,9 +343,7 @@ int DRM(setversion)(DRM_IOCTL_ARGS)
 			return EINVAL;
 
 		if (dev->fn_tbl.set_version)
-		  dev->fn_tbl.set_version(dev, &sv);
-
+			dev->fn_tbl.set_version(dev, &sv);
 	}
 	return 0;
 }
-

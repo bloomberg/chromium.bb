@@ -73,11 +73,10 @@ int DRM(open_helper)(struct inode *inode, struct file *filp, drm_device_t *dev)
 	priv->authenticated = capable(CAP_SYS_ADMIN);
 	priv->lock_count    = 0;
 
-	if (dev->fn_tbl.open_helper)
-	{
-	  ret=dev->fn_tbl.open_helper(dev, priv);
-	  if (ret < 0)
-	    goto out_free;
+	if (dev->fn_tbl.open_helper) {
+		ret=dev->fn_tbl.open_helper(dev, priv);
+		if (ret < 0)
+			goto out_free;
 	}
 
 	down(&dev->struct_sem);
@@ -110,8 +109,9 @@ int DRM(open_helper)(struct inode *inode, struct file *filp, drm_device_t *dev)
 #endif
 
 	return 0;
- out_free:
+out_free:
 	DRM(free)(priv, sizeof(*priv), DRM_MEM_FILES);
+	filp->private_data=NULL;
 	return ret;
 }
 

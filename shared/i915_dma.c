@@ -733,7 +733,7 @@ int i915_setparam(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-static void i915_driver_pretakedown(drm_device_t * dev)
+static void i915_driver_pretakedown(drm_device_t *dev)
 {
 	if (dev->dev_private) {
 		drm_i915_private_t *dev_priv = dev->dev_private;
@@ -742,7 +742,7 @@ static void i915_driver_pretakedown(drm_device_t * dev)
 	i915_dma_cleanup(dev);
 }
 
-static void i915_driver_prerelease(drm_device_t * dev, DRMFILE filp)
+static void i915_driver_prerelease(drm_device_t *dev, DRMFILE filp)
 {
 	if (dev->dev_private) {
 		drm_i915_private_t *dev_priv = dev->dev_private;
@@ -750,7 +750,7 @@ static void i915_driver_prerelease(drm_device_t * dev, DRMFILE filp)
 	}
 }
 
-void i915_driver_register_fns(drm_device_t * dev)
+void i915_driver_register_fns(drm_device_t *dev)
 {
 	dev->driver_features =
 	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | DRIVER_USE_MTRR |

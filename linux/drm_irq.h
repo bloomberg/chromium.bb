@@ -94,7 +94,7 @@ int DRM(irq_install)( drm_device_t *dev )
 	int ret;
 	unsigned long sh_flags=0;
 
-	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ ))
+	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 		return -EINVAL;
 
 	if ( dev->irq == 0 )
@@ -135,7 +135,7 @@ int DRM(irq_install)( drm_device_t *dev )
 	dev->fn_tbl.irq_preinstall(dev);
 
 				/* Install handler */
-	if (drm_core_check_feature(dev,  DRIVER_IRQ_SHARED))
+	if (drm_core_check_feature(dev, DRIVER_IRQ_SHARED))
 		sh_flags = SA_SHIRQ;
 	
 	ret = request_irq( dev->irq, dev->fn_tbl.irq_handler,
@@ -164,7 +164,7 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 {
 	int irq_enabled;
 
-	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ ))
+	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 		return -EINVAL;
 
 	down( &dev->struct_sem );
