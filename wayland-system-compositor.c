@@ -738,11 +738,16 @@ notify_button(struct wlsc_input_device *device,
 	}
 }
 
+static void on_term_signal(int signal_number, void *data);
+
 void
 notify_key(struct wlsc_input_device *device,
 	   uint32_t key, uint32_t state)
 {
 	struct wlsc_compositor *ec = device->ec;
+
+	if (key == KEY_EJECTCD)
+		on_term_signal(SIGTERM, ec);
 
 	if (!ec->vt_active)
 		return;
