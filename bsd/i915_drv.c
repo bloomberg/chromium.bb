@@ -28,6 +28,8 @@
  *
  */
 
+#define DRM_DEV_NAME "drmsub"
+
 #include "i915.h"
 #include "drmP.h"
 #include "drm.h"

@@ -280,8 +280,12 @@ static device_method_t DRM(methods)[] = {
 	{ 0, 0 }
 };
 
+#ifndef DRM_DEV_NAME
+#define DRM_DEV_NAME "drm"
+#endif
+
 static driver_t DRM(driver) = {
-	"drm",
+	DRM_DEV_NAME,
 	DRM(methods),
 	sizeof(drm_device_t),
 };
