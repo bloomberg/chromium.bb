@@ -831,22 +831,21 @@ int drm_mapbufs(DRM_IOCTL_ARGS)
 	vm_ooffset_t foff;
 	vm_size_t size;
 	vm_offset_t vaddr;
-#endif /* __FreeBSD__ */
-#ifdef __NetBSD__
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 	struct vnode *vn;
 	vm_size_t size;
 	vaddr_t vaddr;
-#endif /* __NetBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ */
 
 	drm_buf_map_t request;
 	int i;
 
 	DRM_COPY_FROM_USER_IOCTL( request, (drm_buf_map_t *)data, sizeof(request) );
 
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 	if (!vfinddev(kdev, VCHR, &vn))
 		return 0;	/* FIXME: Shouldn't this be EINVAL or something? */
-#endif /* __NetBSD__ */
+#endif /* __NetBSD__ || __OpenBSD */
 
 #if defined(__FreeBSD__) && __FreeBSD_version >= 500000
 	vms = p->td_proc->p_vmspace;
@@ -880,12 +879,12 @@ int drm_mapbufs(DRM_IOCTL_ARGS)
 	vaddr = round_page((vm_offset_t)vms->vm_daddr + MAXDSIZ);
 	retcode = vm_mmap(&vms->vm_map, &vaddr, size, PROT_READ | PROT_WRITE,
 	    VM_PROT_ALL, MAP_SHARED, SLIST_FIRST(&kdev->si_hlist), foff );
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 	vaddr = round_page((vaddr_t)vms->vm_daddr + MAXDSIZ);
 	retcode = uvm_mmap(&vms->vm_map, &vaddr, size,
 	    UVM_PROT_READ | UVM_PROT_WRITE, UVM_PROT_ALL, MAP_SHARED,
 	    &vn->v_uobj, foff, p->p_rlimit[RLIMIT_MEMLOCK].rlim_cur);
-#endif /* __NetBSD__ */
+#endif /* __NetBSD__ || __OpenBSD */
 	if (retcode)
 		goto done;
 

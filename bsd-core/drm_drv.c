@@ -33,7 +33,7 @@
 #include "drmP.h"
 #include "drm.h"
 
-#if 1 && DRM_DEBUG_CODE
+#ifdef DRM_DEBUG_DEFAULT_ON
 int drm_flags = DRM_FLAG_DEBUG;
 #else
 int drm_flags = 0;
@@ -51,10 +51,10 @@ MODULE_DEPEND(drm, agp, 1, 1, 1);
 MODULE_DEPEND(drm, pci, 1, 1, 1);
 #endif /* __FreeBSD__ */
 
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #define DRIVER_SOFTC(unit) \
 	((drm_device_t *)device_lookup(&drm_cd, unit))
-#endif /* __NetBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ */
 
 static drm_ioctl_desc_t		  drm_ioctls[256] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)]       = { drm_version,     0, 0 },
@@ -180,7 +180,7 @@ int drm_detach(device_t dev)
 
 devclass_t drm_devclass;
 
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 
 static struct cdevsw drm_cdevsw = {
 	drm_open,
@@ -197,7 +197,8 @@ static struct cdevsw drm_cdevsw = {
 };
 
 int drm_refcnt = 0;
-#if __NetBSD_Version__ >= 106080000
+
+#if defined(__NetBSD__) && __NetBSD_Version__ >= 106080000
 MOD_DEV("drm", DRIVER_NAME, NULL, -1, &drm_cdevsw, CDEV_MAJOR);
 #else
 MOD_DEV("drm", LM_DT_CHAR, CDEV_MAJOR, &drm_cdevsw);
@@ -307,7 +308,7 @@ int drm_activate(struct device *self, enum devact act)
 	}
 	return (0);
 }
-#endif /* __NetBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ */
 
 const char *drm_find_description(int vendor, int device, drm_pci_id_list_t *idlist) {
 	int i = 0;
@@ -364,7 +365,7 @@ static int drm_setup(drm_device_t *dev)
 
 #ifdef __FreeBSD__
 	dev->buf_sigio = NULL;
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 	dev->buf_pgid = 0;
 #endif
 
@@ -419,8 +420,8 @@ static int drm_takedown(drm_device_t *dev)
 		for ( entry = dev->agp->memory ; entry ; entry = nexte ) {
 			nexte = entry->next;
 			if ( entry->bound )
-				drm_unbind_agp(entry->handle);
-			drm_free_agp(entry->handle, entry->pages);
+				drm_agp_unbind_memory(entry->handle);
+			drm_agp_free_memory(entry->handle);
 			drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
 		}
 		dev->agp->memory = NULL;
@@ -513,9 +514,9 @@ static int drm_init(device_t nbdev)
 #if __FreeBSD_version >= 500000
 	mtx_init(&dev->dev_lock, "drm device", NULL, MTX_DEF);
 #endif
-#elif defined(__NetBSD__)
-	unit = minor(dev->device.dv_unit);
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 	dev = nbdev;
+	unit = minor(dev->device.dv_unit);
 
 	if (dev->preinit != NULL)
 		dev->preinit(dev, 0);
@@ -536,7 +537,9 @@ static int drm_init(device_t nbdev)
 	TAILQ_INIT(dev->maplist);
 
 	drm_mem_init();
+#ifdef __FreeBSD__
 	drm_sysctl_init(dev);
+#endif
 	TAILQ_INIT(&dev->files);
 
 	if (dev->use_agp) {
@@ -575,7 +578,9 @@ static int drm_init(device_t nbdev)
 	return 0;
 
 error:
+#ifdef __FreeBSD__
 	drm_sysctl_cleanup(dev);
+#endif
 	DRM_LOCK();
 	drm_takedown(dev);
 	DRM_UNLOCK();
@@ -598,8 +603,8 @@ static void drm_cleanup(drm_device_t *dev)
 
 	DRM_DEBUG( "\n" );
 
-	drm_sysctl_cleanup(dev);
 #ifdef __FreeBSD__
+	drm_sysctl_cleanup(dev);
 	destroy_dev(dev->devnode);
 #endif
 
@@ -718,7 +723,7 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 #ifdef __FreeBSD__
 	DRM_DEBUG( "pid = %d, device = 0x%lx, open_count = %d\n",
 		   DRM_CURRENTPID, (long)dev->device, dev->open_count );
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 	DRM_DEBUG( "pid = %d, device = 0x%lx, open_count = %d\n",
 		   DRM_CURRENTPID, (long)&dev->device, dev->open_count);
 #endif
@@ -778,9 +783,9 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	funsetown(&dev->buf_sigio);
 #elif defined(__FreeBSD__)
 	funsetown(dev->buf_sigio);
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 	dev->buf_pgid = 0;
-#endif /* __NetBSD__ */
+#endif /* __NetBSD__  || __OpenBSD__ */
 
 	if (--priv->refs == 0) {
 		TAILQ_REMOVE(&dev->files, priv, link);
@@ -824,7 +829,7 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 #ifdef __FreeBSD__
 	DRM_DEBUG( "pid=%d, cmd=0x%02lx, nr=0x%02x, dev 0x%lx, auth=%d\n",
 		 DRM_CURRENTPID, cmd, nr, (long)dev->device, priv->authenticated );
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 	DRM_DEBUG( "pid=%d, cmd=0x%02lx, nr=0x%02x, dev 0x%lx, auth=%d\n",
 		 DRM_CURRENTPID, cmd, nr, (long)&dev->device, priv->authenticated );
 #endif
@@ -846,7 +851,7 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 #endif
 		return 0;
 #endif /* __FreeBSD__ */
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 	case TIOCSPGRP:
 		dev->buf_pgid = *(int *)data;
 		return 0;

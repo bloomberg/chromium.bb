@@ -25,8 +25,6 @@
 #include "drmP.h"
 #include "drm.h"
 
-#ifdef __FreeBSD__
-
 #include <sys/sysctl.h>
 
 static int	   drm_name_info DRM_SYSCTL_HANDLER_ARGS;
@@ -303,16 +301,3 @@ done:
 	drm_free(tempprivs, sizeof(drm_file_t) * privcount, DRM_MEM_FILES);
 	return retcode;
 }
-
-#elif defined(__NetBSD__)
-/* stub it out for now, sysctl is only for debugging */
-int drm_sysctl_init(drm_device_t *dev)
-{
-	return 0;
-}
-
-int drm_sysctl_cleanup(drm_device_t *dev)
-{
-	return 0;
-}
-#endif

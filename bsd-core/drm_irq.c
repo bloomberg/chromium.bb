@@ -111,7 +111,7 @@ int drm_irq_install(drm_device_t *dev)
 #endif
 	if (retcode != 0)
 		goto err;
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 	if (pci_intr_map(&dev->pa, &dev->ih) != 0) {
 		retcode = ENOENT;
 		goto err;
@@ -164,7 +164,7 @@ int drm_irq_uninstall(drm_device_t *dev)
 #ifdef __FreeBSD__
 	bus_teardown_intr(dev->device, dev->irqr, dev->irqh);
 	bus_release_resource(dev->device, SYS_RES_IRQ, irqrid, dev->irqr);
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 	pci_intr_disestablish(&dev->pa.pa_pc, dev->irqh);
 #endif
 	DRM_SPINUNINIT(dev->irq_lock);

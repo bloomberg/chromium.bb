@@ -139,7 +139,7 @@ int drm_agp_alloc(DRM_IOCTL_ARGS)
 	pages = (request.size + PAGE_SIZE - 1) / PAGE_SIZE;
 	type = (u_int32_t) request.type;
 
-	if (!(handle = drm_alloc_agp(pages, type))) {
+	if (!(handle = drm_agp_allocate_memory(pages, type))) {
 		drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
 		return ENOMEM;
 	}
@@ -186,7 +186,7 @@ int drm_agp_unbind(DRM_IOCTL_ARGS)
 	if (!(entry = drm_agp_lookup_entry(dev, (void *)request.handle)))
 		return EINVAL;
 	if (!entry->bound) return EINVAL;
-	retcode = drm_unbind_agp(entry->handle);
+	retcode = drm_agp_unbind_memory(entry->handle);
 	if (!retcode)
 	{
 		entry->bound=0;
@@ -212,7 +212,7 @@ int drm_agp_bind(DRM_IOCTL_ARGS)
 		return EINVAL;
 	if (entry->bound) return EINVAL;
 	page = (request.offset + PAGE_SIZE - 1) / PAGE_SIZE;
-	if ((retcode = drm_bind_agp(entry->handle, page)))
+	if ((retcode = drm_agp_bind_memory(entry->handle, page)))
 		return retcode;
 	entry->bound = dev->agp->base + (page << PAGE_SHIFT);
 	return 0;
@@ -230,7 +230,7 @@ int drm_agp_free(DRM_IOCTL_ARGS)
 	if (!(entry = drm_agp_lookup_entry(dev, (void*)request.handle)))
 		return EINVAL;
 	if (entry->bound)
-		drm_unbind_agp(entry->handle);
+		drm_agp_unbind_memory(entry->handle);
    
 	if (entry->prev)
 		entry->prev->next = entry->next;
@@ -238,7 +238,7 @@ int drm_agp_free(DRM_IOCTL_ARGS)
 		dev->agp->memory  = entry->next;
 	if (entry->next)
 		entry->next->prev = entry->prev;
-	drm_free_agp(entry->handle, entry->pages);
+	drm_agp_free_memory(entry->handle);
 	drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
 	return 0;
 }
@@ -275,7 +275,7 @@ void drm_agp_uninit(void)
 }
 
 
-agp_memory *drm_agp_allocate_memory(size_t pages, u32 type)
+void *drm_agp_allocate_memory(size_t pages, u32 type)
 {
 	device_t agpdev;
 
@@ -286,7 +286,7 @@ agp_memory *drm_agp_allocate_memory(size_t pages, u32 type)
 	return agp_alloc_memory(agpdev, type, pages << AGP_PAGE_SHIFT);
 }
 
-int drm_agp_free_memory(agp_memory *handle)
+int drm_agp_free_memory(void *handle)
 {
 	device_t agpdev;
 
@@ -298,7 +298,7 @@ int drm_agp_free_memory(agp_memory *handle)
 	return 1;
 }
 
-int drm_agp_bind_memory(agp_memory *handle, off_t start)
+int drm_agp_bind_memory(void *handle, off_t start)
 {
 	device_t agpdev;
 
@@ -309,7 +309,7 @@ int drm_agp_bind_memory(agp_memory *handle, off_t start)
 	return agp_bind_memory(agpdev, handle, start * PAGE_SIZE);
 }
 
-int drm_agp_unbind_memory(agp_memory *handle)
+int drm_agp_unbind_memory(void *handle)
 {
 	device_t agpdev;
 

@@ -32,15 +32,11 @@
 
 #include "drmP.h"
 
-#if defined(__FreeBSD__) || defined(__NetBSD__)
-/* The macros conflicted in the MALLOC_DEFINE */
 MALLOC_DEFINE(M_DRM, "drm", "DRM Data Structures");
-#undef malloctype
-#endif
 
 void drm_mem_init(void)
 {
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 	malloc_type_attach(M_DRM);
 #endif
 }
@@ -82,7 +78,7 @@ void *drm_ioremap(drm_device_t *dev, drm_local_map_t *map)
 {
 #ifdef __FreeBSD__
 	return pmap_mapdev(map->offset, map->size);
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 	map->iot = dev->pa.pa_memt;
 	if (bus_space_map(map->iot, map->offset, map->size, 
 	    BUS_SPACE_MAP_LINEAR, &map->ioh))
@@ -95,29 +91,9 @@ void drm_ioremapfree(drm_local_map_t *map)
 {
 #ifdef __FreeBSD__
 	pmap_unmapdev((vm_offset_t) map->handle, map->size);
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 	bus_space_unmap(map->iot, map->ioh, map->size);
 #endif
-}
-
-agp_memory *drm_alloc_agp(int pages, u32 type)
-{
-	return drm_agp_allocate_memory(pages, type);
-}
-
-int drm_free_agp(agp_memory *handle, int pages)
-{
-	return drm_agp_free_memory(handle);
-}
-
-int drm_bind_agp(agp_memory *handle, unsigned int start)
-{
-	return drm_agp_bind_memory(handle, start);
-}
-
-int drm_unbind_agp(agp_memory *handle)
-{
-	return drm_agp_unbind_memory(handle);
 }
 
 #ifdef __FreeBSD__
@@ -148,7 +124,7 @@ drm_mtrr_del(unsigned long offset, size_t size, int flags)
 	strlcpy(mrdesc.mr_owner, "drm", sizeof(mrdesc.mr_owner));
 	return mem_range_attr_set(&mrdesc, &act);
 }
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 int
 drm_mtrr_add(unsigned long offset, size_t size, int flags)
 {

@@ -30,7 +30,7 @@ static int drm_dma_mmap(struct cdev *kdev, vm_offset_t offset,
     vm_paddr_t *paddr, int prot)
 #elif defined(__FreeBSD__)
 static int drm_dma_mmap(dev_t kdev, vm_offset_t offset, int prot)
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 static paddr_t drm_dma_mmap(dev_t kdev, vm_offset_t offset, int prot)
 #endif
 {
@@ -59,7 +59,7 @@ int drm_mmap(struct cdev *kdev, vm_offset_t offset, vm_paddr_t *paddr,
     int prot)
 #elif defined(__FreeBSD__)
 int drm_mmap(dev_t kdev, vm_offset_t offset, int prot)
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 #endif
 {
