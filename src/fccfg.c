@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.7 2002/05/29 08:21:33 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.8 2002/06/02 19:51:36 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1158,7 +1158,7 @@ FcConfigSubstitute (FcConfig	*config,
 		 * If there was a test, then replace the matched
 		 * value with the new list of values
 		 */
-		if (t)
+		if (t && st[i].elt)
 		{
 		    FcValueList	*thisValue = st[i].value;
 		    FcValueList	*nextValue = thisValue ? thisValue->next : 0;

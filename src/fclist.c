@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fclist.c,v 1.2 2002/02/28 16:51:48 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fclist.c,v 1.3 2002/05/21 17:06:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -224,6 +224,8 @@ FcListValueHash (FcValue    v)
 	return FcListMatrixHash (v.u.m);
     case FcTypeCharSet:
 	return FcCharSetCount (v.u.c);
+    case FcTypeFTFace:
+	return (FcChar32) v.u.f;
     }
     return 0;
 }

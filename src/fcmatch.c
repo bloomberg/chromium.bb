@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.7 2002/05/29 22:07:33 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.8 2002/05/31 04:42:42 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -465,7 +465,7 @@ FcSortCompare (const void *aa, const void *ab)
     FcSortNode  *b = *(FcSortNode **) ab;
     double	*as = &a->score[0];
     double	*bs = &b->score[0];
-    double	ad, bd;
+    double	ad = 0, bd = 0;
     int         i;
 
     i = NUM_MATCHER;
