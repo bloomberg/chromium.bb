@@ -41,8 +41,8 @@
 #define DRIVER_DESC		"ATI Rage 128"
 #define DRIVER_DATE		"20010917"
 
-#define DRIVER_MAJOR		3
-#define DRIVER_MINOR		0
+#define DRIVER_MAJOR		2
+#define DRIVER_MINOR		2
 #define DRIVER_PATCHLEVEL	0
 
 #define DRIVER_IOCTLS							    \
