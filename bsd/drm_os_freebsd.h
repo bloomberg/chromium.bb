@@ -269,6 +269,8 @@ for ( ret = 0 ; !ret && !(condition) ; ) {		\
 	copyin(arg2, arg1, arg3)
 #define DRM_GET_USER_UNCHECKED(val, uaddr)			\
 	((val) = fuword(uaddr), 0)
+#define DRM_PUT_USER_UNCHECKED(val, uaddr)			\
+	suword(uaddr, val)
 
 /* DRM_READMEMORYBARRIER() prevents reordering of reads.
  * DRM_WRITEMEMORYBARRIER() prevents reordering of writes.
