@@ -1378,14 +1378,14 @@ FcParseTest (FcConfigParse *parse)
 	else
 	{
 	    FcConfigMessage (parse, FcSevereWarning, "invalid test qual \"%s\"", qual_string);
-	    qual = FcQualAny;
+	    return;
 	}
     }
     name = FcConfigGetAttribute (parse, "name");
     if (!name)
     {
 	FcConfigMessage (parse, FcSevereWarning, "missing test name");
-	name = (FcChar8 *) FC_FAMILY;
+	return;
     }
     compare_string = FcConfigGetAttribute (parse, "compare");
     if (!compare_string)
@@ -1396,7 +1396,7 @@ FcParseTest (FcConfigParse *parse)
 	if (compare == FcOpInvalid)
 	{
 	    FcConfigMessage (parse, FcSevereWarning, "invalid test compare \"%s\"", compare_string);
-	    compare = FcOpEqual;
+	    return;
 	}
     }
     expr = FcPopExprs (parse, FcOpComma);
@@ -1444,7 +1444,7 @@ FcParseEdit (FcConfigParse *parse)
     if (!name)
     {
 	FcConfigMessage (parse, FcSevereWarning, "missing edit name");
-	name = (FcChar8 *) FC_FAMILY;
+	return;
     }
     mode_string = FcConfigGetAttribute (parse, "mode");
     if (!mode_string)
@@ -1455,7 +1455,7 @@ FcParseEdit (FcConfigParse *parse)
 	if (mode == FcOpInvalid)
 	{
 	    FcConfigMessage (parse, FcSevereWarning, "invalid edit mode \"%s\"", mode_string);
-	    mode = FcOpAssign;
+	    return;
 	}
     }
     expr = FcPopExprs (parse, FcOpComma);
@@ -1491,7 +1491,7 @@ FcParseMatch (FcConfigParse *parse)
 	else
 	{
 	    FcConfigMessage (parse, FcSevereWarning, "invalid match target \"%s\"", kind_name);
-	    kind = FcMatchPattern;
+	    return;
 	}
     }
     while ((vstack = FcVStackPop (parse)))

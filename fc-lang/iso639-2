@@ -11,7 +11,7 @@ built.
     ada			Adangme 					adangme
     afa			Afro-Asiatic (Other)				afro-asiatiques, autres langues
     afh			Afrihili 					afrihili
-    afr		af	Afrikaans 					afrikaans
+*   afr		af	Afrikaans 					afrikaans
     aka			Akan 						akan
     akk			Akkadian 					akkadien
 *   alb/sqi*	sq	Albanian 					albanais
@@ -40,7 +40,7 @@ built.
     bai			Bamileke languages				bamilékés, langues
 *   bak		ba	Bashkir						bachkir
     bal			Baluchi						baloutchi
-    bam			Bambara						bambara
+*   bam			Bambara						bambara
     ban			Balinese					balinais
 *   baq/eus*	eu	Basque						basque
     bas			Basa						basa
@@ -54,11 +54,11 @@ built.
 *   bih		bh	Bihari						bihari
     bik			Bikol						bikol
     bin			Bini						bini
-    bis		bi	Bislama						bichlamar
+*   bis		bi	Bislama						bichlamar
     bla			Siksika						blackfoot
     bnt			Bantu (Other)					bantoues, autres langues
 *   tib/bod*	bo	Tibetan						tibétain
-    bos		bs	Bosnian						bosniaque
+*   bos		bs	Bosnian						bosniaque
     bra			Braj						braj
 *   bre		br	Breton						breton
     btk			Batak (Indonesia)				batak (Indonésie)
@@ -74,7 +74,7 @@ built.
     ceb			Cebuano						cebuano
     cel			Celtic (Other)					celtiques, autres langues
 *   cze/ces*	cs	Czech						tchèque
-    cha		ch	Chamorro					chamorro
+*   cha		ch	Chamorro					chamorro
     chb			Chibcha						chibcha
     che		ce	Chechen						tchétchène
     chg			Chagatai					djaghataï
@@ -98,7 +98,7 @@ built.
     cre			Cree						cree
     crp			Creoles and pidgins (Other)			créoles et pidgins divers
     cus			Cushitic (Other)				couchitiques, autres langues
-    wel/cym*	cy	Welsh						gallois
+*   wel/cym*	cy	Welsh						gallois
 *   cze/ces*	cs	Czech						tchèque
     dak			Dakota						dakota
 *   dan		da	Danish						danois
@@ -140,7 +140,7 @@ built.
     frm			French, Middle (ca.1400-1800)			français moyen (1400-1800)
     fro			French, Old (842-ca.1400)			français ancien (842-ca.1400)
 *   fry		fy	Frisian						frison
-    ful			Fulah						peul
+*   ful			Fulah						peul
     fur			Friulian					frioulan
     gaa			Ga						ga
     gay			Gayo						gayo
@@ -162,12 +162,12 @@ built.
     grb			Grebo						grebo
     grc			Greek, Ancient (to 1453)			grec ancien (jusqu'à 1453)
 *   gre/ell*	el	Greek, Modern (1453-)				grec moderne (après 1453)
-    grn		gn	Guarani						guarani
+*   grn		gn	Guarani						guarani
 *   guj		gu	Gujarati					goudjrati
     gwi			Gwich´in					gwich´in
     hai			Haida						haida
-    hau		ha	Hausa						haoussa
-    haw			Hawaiian					hawaïen
+*   hau		ha	Hausa						haoussa
+*   haw			Hawaiian					hawaïen
 *   heb		he	Hebrew						hébreu
     her		hz	Herero						herero
     hil			Hiligaynon					hiligaynon
@@ -181,7 +181,7 @@ built.
     hup			Hupa						hupa
 *   arm/hye*	hy	Armenian					arménien
     iba			Iban						iban
-    ibo			Igbo						igbo
+*   ibo			Igbo						igbo
 *   ice/isl*	is	Icelandic					islandais
     ido		io	Ido						ido
     ijo			Ijo						ijo
@@ -190,7 +190,7 @@ built.
     ilo			Iloko						ilocano
     ina		ia	Interlingua (International Auxiliary Language Association)	interlingua (langue auxiliaire internationale)
     inc			Indic (Other)					indo-aryennes, autres langues
-    ind		id	Indonesian					indonésien
+*   ind		id	Indonesian					indonésien
     ine			Indo-European (Other)				indo-européennes, autres langues
 *   ipk		ik	Inupiaq						inupiaq
     ira			Iranian (Other)					iraniennes, autres langues
@@ -244,7 +244,7 @@ built.
 *   lit		lt	Lithuanian					lituanien
     lol			Mongo						mongo
     loz			Lozi						lozi
-    ltz		lb	Luxembourgish; Letzeburgesch			luxembourgeois
+*   ltz		lb	Luxembourgish; Letzeburgesch			luxembourgeois
     lua			Luba-Lulua					luba-lulua
     lub			Luba-Katanga					luba-katanga
     lug			Ganda						ganda
@@ -255,12 +255,12 @@ built.
 *   mac/mkd*	mk	Macedonian					macédonien
     mad			Madurese					madourais
     mag			Magahi						magahi
-    mah		mh	Marshallese					marshall
+*   mah		mh	Marshallese					marshall
     mai			Maithili					maithili
     mak			Makasar						makassar
 *   mal		ml	Malayalam					malayalam
     man			Mandingo					mandingue
-    mao/mri*	mi	Maori						maori
+*   mao/mri*	mi	Maori						maori
     map			Austronesian (Other)				malayo-polynésiennes, autres langues
 *   mar		mr	Marathi						marathe
     mas			Masai						massaï
@@ -273,7 +273,7 @@ built.
     mis			Miscellaneous languages				diverses, langues
 *   mac/mkd*	mk	Macedonian					macédonien
     mkh			Mon-Khmer (Other)				môn-khmer, autres langues
-    mlg		mg	Malagasy					malgache
+*   mlg		mg	Malagasy					malgache
 *   mlt		mt	Maltese						maltais
     mnc			Manchu						mandchou
     mni			Manipuri					manipuri
@@ -310,7 +310,7 @@ built.
 *   nob		nb	Norwegian Bokmål; Bokmål, Norwegian		norvégien bokmål; bokmål, norvégien
     nso			Sotho, Northern					sotho du Nord
     nub			Nubian languages				nubiennes, langues
-    nya		ny	Chichewa; Chewa; Nyanja				chichewa; chewa; nyanja
+*   nya		ny	Chichewa; Chewa; Nyanja				chichewa; chewa; nyanja
     nym			Nyamwezi					nyamwezi
     nyn			Nyankole					nyankolé
     nyo			Nyoro						nyoro
@@ -376,13 +376,13 @@ built.
     sla			Slavic (Other)					slaves, autres langues
 *   slo/slk*	sk	Slovak						slovaque
 *   slv		sl	Slovenian					slovène
-    sma			Southern Sami					sami du Sud
-    sme		se	Northern Sami					sami du Nord
+*   sma			Southern Sami					sami du Sud
+*   sme		se	Northern Sami					sami du Nord
     smi			Sami languages (Other)				sami, autres langues
-    smj			Lule Sami					sami de Lule
-    smn			Inari Sami					sami d'Inari
-    smo		sm	Samoan						samoan
-    sms			Skolt Sami					sami skolt
+*   smj			Lule Sami					sami de Lule
+*   smn			Inari Sami					sami d'Inari
+*   smo		sm	Samoan						samoan
+*   sms			Skolt Sami					sami skolt
     sna		sn	Shona						shona
     snd		sd	Sindhi						sindhi
     snk			Soninke						soninké
@@ -424,10 +424,10 @@ built.
     tli			Tlingit						tlingit
     tmh			Tamashek					tamacheq
     tog			Tonga (Nyasa)					tonga (Nyasa)
-    ton		to	Tonga (Tonga Islands)				tongan (Îles Tonga)
+#   ton		to	Tonga (Tonga Islands)				tongan (Îles Tonga)
     tpi			Tok Pisin					tok pisin
     tsi			Tsimshian					tsimshian
-    tsn		tn	Tswana						tswana
+*   tsn		tn	Tswana						tswana
     tso		ts	Tsonga						tsonga
 *   tuk		tk	Turkmen						turkmène
     tum			Tumbuka						tumbuka
@@ -445,23 +445,23 @@ built.
     urd		ur	Urdu						ourdou
 *   uzb		uz	Uzbek						ouszbek
     vai			Vai						vaï
-    ven			Venda						venda
-    vie		vi	Vietnamese					vietnamien
+*   ven			Venda						venda
+*   vie		vi	Vietnamese					vietnamien
 *   vol		vo	Volapük						volapük
     vot			Votic						vote
     wak			Wakashan languages				wakashennes, langues
     wal			Walamo						walamo
     war			Waray						waray
     was			Washo						washo
-    wel/cym*	cy	Welsh						gallois
-    wen			Sorbian languages				sorabes, langues
+*   wel/cym*	cy	Welsh						gallois
+*   wen			Sorbian languages				sorabes, langues
 *   wln		wa	Walloon						wallon
-    wol		wo	Wolof						wolof
+*   wol		wo	Wolof						wolof
     xho		xh	Xhosa						xhosa
     yao			Yao						yao
-    yap			Yapese						yapois
+*   yap			Yapese						yapois
 *   yid		yi	Yiddish						yiddish
-    yor		yo	Yoruba						yoruba
+*   yor		yo	Yoruba						yoruba
     ypk			Yupik languages					yupik, langues
     zap			Zapotec						zapotèque
     zen			Zenaga						zenaga

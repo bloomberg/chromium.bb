@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/fc-lang/Imakefile,v 1.8 2002/07/12 07:58:16 keithp Exp $
+XCOMM $XFree86: xc/lib/fontconfig/fc-lang/Imakefile,v 1.9 2002/07/12 09:12:36 keithp Exp $
 
 #ifdef UseInstalled
 /* building outside the tree, use private defines */
@@ -21,21 +21,24 @@ TMPL=fclang.tmpl.h
 # language codes
 #
 
-ORTH=ab.orth ar.orth ava.orth az.orth ba.orth be.orth bg.orth bh.orth \
-     bho.orth bn.orth bo.orth br.orth bua.orth ca.orth ce.orth chm.orth \
-     chr.orth co.orth cs.orth cv.orth da.orth de.orth el.orth en.orth eo.orth \
-     es.orth et.orth eu.orth fa.orth fi.orth fo.orth fr.orth fy.orth ga.orth \
-     gd.orth gez.orth gl.orth gu.orth he.orth hi.orth hr.orth hu.orth hy.orth \
-     ik.orth is.orth it.orth iu.orth ja.orth ka.orth kaa.orth kk.orth kl.orth \
-     km.orth kn.orth ko.orth kok.orth ks.orth ku.orth kum.orth kv.orth \
-     ky.orth la.orth lez.orth lo.orth lt.orth lv.orth mk.orth ml.orth mn.orth \
-     mo.orth mr.orth mt.orth nb.orth ne.orth nl.orth nn.orth no.orth oc.orth \
-     or.orth os.orth pl.orth pt.orth rm.orth ro.orth ru.orth sa.orth sah.orth \
-     sel.orth sh.orth si.orth sk.orth sl.orth sq.orth sr.orth sv.orth ta.orth \
-     te.orth tg.orth th.orth tk.orth tl.orth tr.orth tt.orth tyv.orth uk.orth \
-     uz.orth vo.orth wa.orth yi.orth zh_cn.orth zh_hk.orth zh_mo.orth \
-     zh_sg.orth zh_tw.orth
-     
+ORTH=ab.orth af.orth ar.orth ava.orth az.orth ba.orth bam.orth be.orth\
+     bg.orth bh.orth bho.orth bi.orth bn.orth bo.orth br.orth bs.orth\
+     bua.orth ca.orth ce.orth ch.orth chm.orth chr.orth co.orth cs.orth\
+     cv.orth cy.orth da.orth de.orth el.orth en.orth eo.orth es.orth et.orth\
+     eu.orth fa.orth fi.orth fo.orth fr.orth ful.orth fy.orth ga.orth gd.orth\
+     gez.orth gl.orth gn.orth gu.orth ha.orth haw.orth he.orth hi.orth\
+     hr.orth hu.orth hy.orth ibo.orth id.orth ik.orth is.orth it.orth iu.orth\
+     ja.orth ka.orth kaa.orth kk.orth kl.orth km.orth kn.orth ko.orth\
+     kok.orth ks.orth ku.orth kum.orth kv.orth ky.orth la.orth lb.orth\
+     lez.orth lo.orth lt.orth lv.orth mg.orth mh.orth mi.orth mk.orth ml.orth\
+     mn.orth mo.orth mr.orth mt.orth nb.orth ne.orth nl.orth nn.orth no.orth\
+     ny.orth oc.orth or.orth os.orth pl.orth pt.orth rm.orth ro.orth ru.orth\
+     sa.orth sah.orth se.orth sel.orth sh.orth si.orth sk.orth sl.orth\
+     sm.orth sma.orth smj.orth smn.orth sms.orth sq.orth sr.orth sv.orth\
+     ta.orth te.orth tg.orth th.orth tk.orth tl.orth tn.orth to.orth tr.orth\
+     tt.orth tyv.orth uk.orth uz.orth ven.orth vi.orth vo.orth wa.orth\
+     wen.orth wo.orth yap.orth yi.orth yo.orth zh_cn.orth zh_hk.orth\
+     zh_mo.orth zh_sg.orth zh_tw.orth
 
 all:: $(TARG)
      
