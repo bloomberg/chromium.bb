@@ -104,8 +104,6 @@ unsigned long DRM(alloc_pages)(int order, int area)
 void DRM(free_pages)(unsigned long address, int order, int area)
 {
 	unsigned long bytes = PAGE_SIZE << order;
-	int		  alloc_count;
-	int		  free_count;
 	unsigned long addr;
 	unsigned int  sz;
 
