@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.4 2002/02/28 16:51:48 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.5 2002/03/01 01:00:54 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -212,6 +212,8 @@ typedef enum _FcSetName {
     FcSetApplication = 1
 } FcSetName;
 
+typedef struct _FcAtomic FcAtomic;
+
 #if defined(__cplusplus) || defined(c_plusplus) /* for C++ V2.0 */
 #define _FCFUNCPROTOBEGIN extern "C" {	/* do not leave open across includes */
 #define _FCFUNCPROTOEND }
@@ -416,6 +418,32 @@ FcFontSet *
 FcFontList (FcConfig	*config,
 	    FcPattern	*p,
 	    FcObjectSet *os);
+
+/* fcatomic.c */
+
+FcAtomic *
+FcAtomicCreate (const FcChar8   *file);
+
+FcBool
+FcAtomicLock (FcAtomic *atomic);
+
+FcChar8 *
+FcAtomicNewFile (FcAtomic *atomic);
+
+FcChar8 *
+FcAtomicOrigFile (FcAtomic *atomic);
+
+FcBool
+FcAtomicReplaceOrig (FcAtomic *atomic);
+
+void
+FcAtomicDeleteNew (FcAtomic *atomic);
+
+void
+FcAtomicUnlock (FcAtomic *atomic);
+
+void
+FcAtomicDestroy (FcAtomic *atomic);
 
 /* fcmatch.c */
 FcPattern *

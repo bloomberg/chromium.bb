@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.3 2002/02/19 07:50:43 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.4 2002/03/01 01:00:54 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -416,28 +416,20 @@ FcBool
 FcFileCacheSave (FcFileCache	*cache,
 		 const FcChar8	*cache_file)
 {
-    FcChar8	    *lck;
-    FcChar8	    *tmp;
     FILE	    *f;
     int		    h;
-    FcFileCacheEnt *c;
+    FcFileCacheEnt  *c;
+    FcAtomic	    *atomic;
 
     if (!cache->updated && cache->referenced == cache->entries)
 	return FcTrue;
     
-    lck = malloc (strlen ((char *) cache_file)*2 + 4);
-    if (!lck)
+    atomic = FcAtomicCreate (cache_file);
+    if (!atomic)
 	goto bail0;
-    tmp = lck + strlen ((char *) cache_file) + 2;
-    strcpy ((char *) lck, (char *) cache_file);
-    strcat ((char *) lck, "L");
-    strcpy ((char *) tmp, (char *) cache_file);
-    strcat ((char *) tmp, "T");
-    if (link ((char *) lck, (char *) cache_file) < 0 && errno != ENOENT)
+    if (!FcAtomicLock (atomic))
 	goto bail1;
-    if (access ((char *) tmp, F_OK) == 0)
-	goto bail2;
-    f = fopen ((char *) tmp, "w");
+    f = fopen ((char *) FcAtomicNewFile(atomic), "w");
     if (!f)
 	goto bail2;
 
@@ -469,21 +461,23 @@ FcFileCacheSave (FcFileCache	*cache,
     if (fclose (f) == EOF)
 	goto bail3;
     
-    if (rename ((char *) tmp, (char *) cache_file) < 0)
+    if (!FcAtomicReplaceOrig (atomic))
 	goto bail3;
     
-    unlink ((char *) lck);
+    FcAtomicUnlock (atomic);
+    FcAtomicDestroy (atomic);
+
     cache->updated = FcFalse;
     return FcTrue;
 
 bail4:
     fclose (f);
 bail3:
-    unlink ((char *) tmp);
+    FcAtomicDeleteNew (atomic);
 bail2:
-    unlink ((char *) lck);
+    FcAtomicUnlock (atomic);
 bail1:
-    free (lck);
+    FcAtomicDestroy (atomic);
 bail0:
     return FcFalse;
 }

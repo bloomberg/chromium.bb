@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.3 2002/02/18 22:29:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.4 2002/02/19 08:33:23 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -198,6 +198,13 @@ struct _FcFileCache {
     FcBool		updated;
     int			entries;
     int			referenced;
+};
+
+struct _FcAtomic {
+    FcChar8	*file;		/* original file name */
+    FcChar8	*new;		/* temp file name -- write data here */
+    FcChar8	*lck;		/* lockfile name (used for locking) */
+    FcChar8	*tmp;		/* tmpfile name (used for locking) */
 };
 
 struct _FcBlanks {
