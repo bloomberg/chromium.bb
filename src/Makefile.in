@@ -39,6 +39,7 @@ SRCS=fcatomic.c \
      fcfreetype.c \
      fcfs.c \
      fcinit.c \
+     fclang.c \
      fclist.c \
      fcmatch.c \
      fcmatrix.c \
@@ -58,6 +59,7 @@ OBJS=fcatomic.@OBJEXT@ \
      fcfreetype.@OBJEXT@ \
      fcfs.@OBJEXT@ \
      fcinit.@OBJEXT@ \
+     fclang.@OBJEXT@ \
      fclist.@OBJEXT@ \
      fcmatch.@OBJEXT@ \
      fcmatrix.@OBJEXT@ \
