@@ -65,7 +65,7 @@ typedef struct _FcSymbolic {
 #define FC_DBG_MEMORY	512
 
 #define FC_MEM_CHARSET	    0
-#define FC_MEM_CHARNODE	    1
+#define FC_MEM_CHARLEAF	    1
 #define FC_MEM_FONTSET	    2
 #define FC_MEM_FONTPTR	    3
 #define FC_MEM_OBJECTSET    4
@@ -77,10 +77,12 @@ typedef struct _FcSymbolic {
 #define FC_MEM_SUBSTATE	    10
 #define FC_MEM_STRING	    11
 #define FC_MEM_LISTBUCK	    12
-#define FC_MEM_NUM	    13
-#define FC_MEM_STRSET	    14
-#define FC_MEM_STRLIST	    15
-#define FC_MEM_CONFIG	    16
+#define FC_MEM_STRSET	    13
+#define FC_MEM_STRLIST	    14
+#define FC_MEM_CONFIG	    15
+#define FC_MEM_LANGSET	    16
+
+#define FC_MEM_NUM	    17
 
 typedef enum _FcValueBinding {
     FcValueBindingWeak, FcValueBindingStrong
@@ -96,6 +98,7 @@ typedef struct _FcPatternElt {
     const char	    *object;
     FcValueList	    *values;
 } FcPatternElt;
+
 
 struct _FcPattern {
     int		    num;
@@ -167,13 +170,10 @@ typedef struct _FcCharLeaf {
     FcChar32	map[256/32];
 } FcCharLeaf;
 
-typedef enum _FcLangResult {
-    FcLangEqual, FcLangDifferentCountry, FcLangDifferentLang
-} FcLangResult;
+#define FC_REF_CONSTANT	    -1
 
 struct _FcCharSet {
     int		    ref;	/* reference count */
-    FcBool	    constant;	/* in hash table constant */
     int		    num;	/* size of leaves and numbers arrays */
     FcCharLeaf	    **leaves;
     FcChar16	    *numbers;
@@ -537,9 +537,8 @@ void
 FcMemFree (int kind, int size);
 
 /* fclang.c */
-FcBool
-FcFreeTypeSetLang (FcPattern	    *pattern, 
-		   FcCharSet	    *charset, 
+FcLangSet *
+FcFreeTypeLangSet (const FcCharSet  *charset, 
 		   const FcChar8    *exclusiveLang);
 
 FcLangResult
@@ -547,6 +546,15 @@ FcLangCompare (const FcChar8 *s1, const FcChar8 *s2);
     
 const FcCharSet *
 FcCharSetForLang (const FcChar8 *lang);
+
+FcLangSet *
+FcLangSetPromote (const FcChar8 *lang);
+
+FcLangSet *
+FcNameParseLangSet (const FcChar8 *string);
+
+FcBool
+FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls);
 
 /* fclist.c */
 
@@ -573,6 +581,9 @@ FcPatternAddWithBinding  (FcPattern	    *p,
 			  FcValue	    value,
 			  FcValueBinding    binding,
 			  FcBool	    append);
+
+FcPattern *
+FcPatternFreeze (FcPattern *p);
 
 /* fcrender.c */
 

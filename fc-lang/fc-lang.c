@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-lang/fc-lang.c,v 1.1 2002/07/06 23:21:36 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fc-lang/fc-lang.c,v 1.2 2002/07/07 19:18:51 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -159,9 +159,16 @@ get_lang (char *name)
     return lang;
 }
 
+static int compare (const void *a, const void *b)
+{
+    const FcChar8    *const *as = a, *const *bs = b;
+    return FcStrCmpIgnoreCase (*as, *bs);
+}
+
 int
 main (int argc, char **argv)
 {
+    char	*files[1024];
     FcCharSet	*sets[1024];
     int		duplicate[1024];
     char	*names[1024];
@@ -173,12 +180,17 @@ main (int argc, char **argv)
     char	line[1024];
     
     while (*++argv)
+	files[i++] = *argv;
+    files[i] = 0;
+    qsort (files, i, sizeof (char *), compare);
+    i = 0;
+    while (files[i])
     {
-	f = fopen (*argv, "r");
+	f = fopen (files[i], "r");
 	if (!f)
-	    fatal (*argv, 0, strerror (errno));
-	sets[i] = scan (f, *argv);
-	names[i] = get_name (*argv);
+	    fatal (files[i], 0, strerror (errno));
+	sets[i] = scan (f, files[i]);
+	names[i] = get_name (files[i]);
 	total_leaves += sets[i]->num;
 	i++;
 	fclose (f);
@@ -304,7 +316,7 @@ main (int argc, char **argv)
 	if (j < 0)
 	    j = i;
 	printf ("    { (FcChar8 *) \"%s\",\n"
-		"      { 1, FcTrue, %d, "
+		"      { FC_REF_CONSTANT, %d, "
 		"(FcCharLeaf **) leaves_%s, "
 		"(FcChar16 *) numbers_%s } },\n",
 		get_lang(names[i]),

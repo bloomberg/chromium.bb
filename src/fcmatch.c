@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.17 2002/08/11 18:10:42 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.18 2002/08/19 19:32:05 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -61,9 +61,34 @@ FcCompareLang (char *object, FcValue value1, FcValue value2)
 {
     FcLangResult    result;
     
-    if (value2.type != FcTypeString || value1.type != FcTypeString)
+    switch (value1.type) {
+    case FcTypeLangSet:
+	switch (value2.type) {
+	case FcTypeLangSet:
+	    result = FcLangSetCompare (value1.u.l, value2.u.l);
+	    break;
+	case FcTypeString:
+	    result = FcLangSetHasLang (value1.u.l, value2.u.s);
+	    break;
+	default:
+	    return -1.0;
+	}
+	break;
+    case FcTypeString:
+	switch (value2.type) {
+	case FcTypeLangSet:
+	    result = FcLangSetHasLang (value2.u.l, value1.u.s);
+	    break;
+	case FcTypeString:
+	    result = FcLangCompare (value1.u.s, value2.u.s);
+	    break;
+	default:
+	    return -1.0;
+	}
+	break;
+    default:
 	return -1.0;
-    result = FcLangCompare (value1.u.s, value2.u.s);
+    }
     switch (result) {
     case FcLangEqual:
 	return 0;

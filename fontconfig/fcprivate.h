@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fcprivate.h,v 1.4 2002/08/11 18:10:41 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fcprivate.h,v 1.5 2002/08/19 19:32:04 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -72,6 +72,9 @@
 	    break;						    \
 	case FcTypeFTFace:					    \
 	    __v__.u.f = va_arg (va, FT_Face);			    \
+	    break;						    \
+	case FcTypeLangSet:					    \
+	    __v__.u.l = va_arg (va, FcLangSet *);		    \
 	    break;						    \
 	}							    \
 	if (!FcPatternAdd (__p__, __o__, __v__, FcTrue))	    \

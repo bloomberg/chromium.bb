@@ -82,20 +82,20 @@ static const FcCharLeaf	leaves[609] = {
     0x300c0000, 0x0f00c000, 0x03000000, 0x00000300,
     } },
     { { /* 14 */
+    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
+    0x030c0000, 0x0000cc0f, 0x03000000, 0x00000300,
+    } },
+    { { /* 15 */
     0x00000000, 0x00000000, 0x07fffffe, 0x07fffffe,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
-    { { /* 15 */
+    { { /* 16 */
     0x00000000, 0x00000000, 0x00000c00, 0x00000000,
     0x20010040, 0x00000000, 0x00000000, 0x00000000,
     } },
-    { { /* 16 */
+    { { /* 17 */
     0x00000000, 0x00000000, 0x08100000, 0x00040000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    } },
-    { { /* 17 */
-    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
-    0x030c0000, 0x0000cc0f, 0x03000000, 0x00000300,
     } },
     { { /* 18 */
     0xffff4042, 0xffffffff, 0x4042ffff, 0x00000000,
@@ -111,19 +111,19 @@ static const FcCharLeaf	leaves[609] = {
     } },
     { { /* 21 */
     0x00000000, 0x00000000, 0x07fffffe, 0x07fffffe,
-    0x00000000, 0x00000000, 0x060c3303, 0x060c3303,
+    0x00000000, 0x00000000, 0x10008200, 0x10008200,
     } },
     { { /* 22 */
+    0x00000000, 0x00000000, 0x07fffffe, 0x07fffffe,
+    0x00000000, 0x00000000, 0x060c3303, 0x060c3303,
+    } },
+    { { /* 23 */
     0x00000003, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
-    { { /* 23 */
+    { { /* 24 */
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x03000000, 0x00003000, 0x00000000,
-    } },
-    { { /* 24 */
-    0x00000000, 0x00000000, 0x07fffffe, 0x07fffffe,
-    0x00000000, 0x00000000, 0x10008200, 0x10008200,
     } },
     { { /* 25 */
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -154,12 +154,12 @@ static const FcCharLeaf	leaves[609] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
     { { /* 32 */
-    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
-    0x00000000, 0x00000030, 0x000c0000, 0x030300c0,
-    } },
-    { { /* 33 */
     0x00000000, 0x00000000, 0x07fffffe, 0x07fffffe,
     0x00000000, 0x00000000, 0x10020004, 0x10020004,
+    } },
+    { { /* 33 */
+    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
+    0x00000000, 0x00000030, 0x000c0000, 0x030300c0,
     } },
     { { /* 34 */
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -738,16 +738,16 @@ static const FcCharLeaf	leaves[609] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000020,
     } },
     { { /* 178 */
-    0xffff0002, 0xffffffff, 0x0002ffff, 0x000c0000,
-    0x0c0c0000, 0x000cc00c, 0x03000000, 0x00000000,
-    } },
-    { { /* 179 */
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000200, 0x00000000, 0x00000000, 0x00000000,
     } },
-    { { /* 180 */
+    { { /* 179 */
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0xffffffff, 0xffff003f, 0x087fffff,
+    } },
+    { { /* 180 */
+    0xffff0002, 0xffffffff, 0x0002ffff, 0x000c0000,
+    0x0c0c0000, 0x000cc00c, 0x03000000, 0x00000000,
     } },
     { { /* 181 */
     0x00000000, 0x00000300, 0x00000000, 0x00000300,
@@ -1118,16 +1118,16 @@ static const FcCharLeaf	leaves[609] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
     { { /* 273 */
-    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    } },
-    { { /* 274 */
     0x00000000, 0x00000000, 0x00820000, 0x00820000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
-    { { /* 275 */
+    { { /* 274 */
     0xffff0000, 0xffff27bf, 0x000027bf, 0x00000000,
     0x00000000, 0x0c000000, 0x03000000, 0x000000c0,
+    } },
+    { { /* 275 */
+    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
     { { /* 276 */
     0xffff0042, 0xffffffff, 0x0042ffff, 0x00000000,
@@ -2537,20 +2537,20 @@ static const FcChar16 numbers_az[4] = {
     0x0000, 0x0001, 0x0002, 0x0004,
 };
 
-static const FcCharLeaf *leaves_bam[3] = {
-    L( 14), L( 15), L( 16),
-};
-
-static const FcChar16 numbers_bam[3] = {
-    0x0000, 0x0001, 0x0002,
-};
-
 static const FcCharLeaf *leaves_ba[1] = {
-    L( 17),
+    L( 14),
 };
 
 static const FcChar16 numbers_ba[1] = {
     0x0004,
+};
+
+static const FcCharLeaf *leaves_bam[3] = {
+    L( 15), L( 16), L( 17),
+};
+
+static const FcChar16 numbers_bam[3] = {
+    0x0000, 0x0001, 0x0002,
 };
 
 static const FcCharLeaf *leaves_be[1] = {
@@ -2569,28 +2569,28 @@ static const FcChar16 numbers_bg[1] = {
     0x0004,
 };
 
-static const FcCharLeaf *leaves_bho[1] = {
+static const FcCharLeaf *leaves_bh[1] = {
     L( 20),
 };
 
-static const FcChar16 numbers_bho[1] = {
+static const FcChar16 numbers_bh[1] = {
     0x0009,
 };
 
-static const FcCharLeaf *leaves_bin[3] = {
-    L( 21), L( 22), L( 23),
-};
-
-static const FcChar16 numbers_bin[3] = {
-    0x0000, 0x0003, 0x001e,
-};
-
 static const FcCharLeaf *leaves_bi[1] = {
-    L( 24),
+    L( 21),
 };
 
 static const FcChar16 numbers_bi[1] = {
     0x0000,
+};
+
+static const FcCharLeaf *leaves_bin[3] = {
+    L( 22), L( 23), L( 24),
+};
+
+static const FcChar16 numbers_bin[3] = {
+    0x0000, 0x0003, 0x001e,
 };
 
 static const FcCharLeaf *leaves_bn[1] = {
@@ -2618,7 +2618,7 @@ static const FcChar16 numbers_br[1] = {
 };
 
 static const FcCharLeaf *leaves_bs[2] = {
-    L( 14), L( 28),
+    L( 15), L( 28),
 };
 
 static const FcChar16 numbers_bs[2] = {
@@ -2641,20 +2641,20 @@ static const FcChar16 numbers_ca[2] = {
     0x0000, 0x0001,
 };
 
-static const FcCharLeaf *leaves_chm[1] = {
-    L( 32),
-};
-
-static const FcChar16 numbers_chm[1] = {
-    0x0004,
-};
-
 static const FcCharLeaf *leaves_ch[1] = {
-    L( 33),
+    L( 32),
 };
 
 static const FcChar16 numbers_ch[1] = {
     0x0000,
+};
+
+static const FcCharLeaf *leaves_chm[1] = {
+    L( 33),
+};
+
+static const FcChar16 numbers_chm[1] = {
+    0x0004,
 };
 
 static const FcCharLeaf *leaves_chr[1] = {
@@ -2738,7 +2738,7 @@ static const FcChar16 numbers_en[1] = {
 };
 
 static const FcCharLeaf *leaves_eo[2] = {
-    L( 14), L( 50),
+    L( 15), L( 50),
 };
 
 static const FcChar16 numbers_eo[2] = {
@@ -2786,7 +2786,7 @@ static const FcChar16 numbers_fi[2] = {
 };
 
 static const FcCharLeaf *leaves_fj[1] = {
-    L( 14),
+    L( 15),
 };
 
 static const FcChar16 numbers_fj[1] = {
@@ -2802,7 +2802,7 @@ static const FcChar16 numbers_fo[1] = {
 };
 
 static const FcCharLeaf *leaves_ful[3] = {
-    L( 14), L( 60), L( 61),
+    L( 15), L( 60), L( 61),
 };
 
 static const FcChar16 numbers_ful[3] = {
@@ -2874,7 +2874,7 @@ static const FcChar16 numbers_gv[1] = {
 };
 
 static const FcCharLeaf *leaves_ha[3] = {
-    L( 14), L( 75), L( 76),
+    L( 15), L( 75), L( 76),
 };
 
 static const FcChar16 numbers_ha[3] = {
@@ -2882,7 +2882,7 @@ static const FcChar16 numbers_ha[3] = {
 };
 
 static const FcCharLeaf *leaves_haw[3] = {
-    L( 14), L( 77), L( 78),
+    L( 15), L( 77), L( 78),
 };
 
 static const FcChar16 numbers_haw[3] = {
@@ -2922,7 +2922,7 @@ static const FcChar16 numbers_hy[1] = {
 };
 
 static const FcCharLeaf *leaves_ibo[2] = {
-    L( 14), L( 86),
+    L( 15), L( 86),
 };
 
 static const FcChar16 numbers_ibo[2] = {
@@ -2997,24 +2997,24 @@ static const FcChar16 numbers_ja[84] = {
     0x009d, 0x009e, 0x009f, 0x00ff,
 };
 
-static const FcCharLeaf *leaves_kaa[1] = {
-    L(178),
-};
-
-static const FcChar16 numbers_kaa[1] = {
-    0x0004,
-};
-
 static const FcCharLeaf *leaves_ka[2] = {
-    L(179), L(180),
+    L(178), L(179),
 };
 
 static const FcChar16 numbers_ka[2] = {
     0x0005, 0x0010,
 };
 
+static const FcCharLeaf *leaves_kaa[1] = {
+    L(180),
+};
+
+static const FcChar16 numbers_kaa[1] = {
+    0x0004,
+};
+
 static const FcCharLeaf *leaves_ki[2] = {
-    L( 14), L(181),
+    L( 15), L(181),
 };
 
 static const FcChar16 numbers_ki[2] = {
@@ -3093,20 +3093,20 @@ static const FcChar16 numbers_ko[129] = {
     0x00fa,
 };
 
-static const FcCharLeaf *leaves_kum[1] = {
-    L(273),
-};
-
-static const FcChar16 numbers_kum[1] = {
-    0x0004,
-};
-
 static const FcCharLeaf *leaves_ku[2] = {
-    L(274), L(275),
+    L(273), L(274),
 };
 
 static const FcChar16 numbers_ku[2] = {
     0x0000, 0x0004,
+};
+
+static const FcCharLeaf *leaves_kum[1] = {
+    L(275),
+};
+
+static const FcChar16 numbers_kum[1] = {
+    0x0004,
 };
 
 static const FcCharLeaf *leaves_kv[1] = {
@@ -3118,7 +3118,7 @@ static const FcChar16 numbers_kv[1] = {
 };
 
 static const FcCharLeaf *leaves_kw[3] = {
-    L( 14), L( 77), L(277),
+    L( 15), L( 77), L(277),
 };
 
 static const FcChar16 numbers_kw[3] = {
@@ -3134,7 +3134,7 @@ static const FcChar16 numbers_ky[1] = {
 };
 
 static const FcCharLeaf *leaves_la[2] = {
-    L( 14), L(279),
+    L( 15), L(279),
 };
 
 static const FcChar16 numbers_la[2] = {
@@ -3158,7 +3158,7 @@ static const FcChar16 numbers_lo[1] = {
 };
 
 static const FcCharLeaf *leaves_lt[2] = {
-    L( 14), L(282),
+    L( 15), L(282),
 };
 
 static const FcChar16 numbers_lt[2] = {
@@ -3166,7 +3166,7 @@ static const FcChar16 numbers_lt[2] = {
 };
 
 static const FcCharLeaf *leaves_lv[2] = {
-    L( 14), L(283),
+    L( 15), L(283),
 };
 
 static const FcChar16 numbers_lv[2] = {
@@ -3182,7 +3182,7 @@ static const FcChar16 numbers_mg[1] = {
 };
 
 static const FcCharLeaf *leaves_mh[2] = {
-    L( 14), L(285),
+    L( 15), L(285),
 };
 
 static const FcChar16 numbers_mh[2] = {
@@ -3190,7 +3190,7 @@ static const FcChar16 numbers_mh[2] = {
 };
 
 static const FcCharLeaf *leaves_mi[3] = {
-    L( 14), L( 77), L(286),
+    L( 15), L( 77), L(286),
 };
 
 static const FcChar16 numbers_mi[3] = {
@@ -3222,7 +3222,7 @@ static const FcChar16 numbers_mn[1] = {
 };
 
 static const FcCharLeaf *leaves_mo[4] = {
-    L(290), L( 40), L(291), L(273),
+    L(290), L( 40), L(291), L(275),
 };
 
 static const FcChar16 numbers_mo[4] = {
@@ -3270,7 +3270,7 @@ static const FcChar16 numbers_nn[1] = {
 };
 
 static const FcCharLeaf *leaves_ny[2] = {
-    L( 14), L(299),
+    L( 15), L(299),
 };
 
 static const FcChar16 numbers_ny[2] = {
@@ -3342,7 +3342,7 @@ static const FcChar16 numbers_sah[1] = {
 };
 
 static const FcCharLeaf *leaves_sco[3] = {
-    L( 14), L(308), L(309),
+    L( 15), L(308), L(309),
 };
 
 static const FcChar16 numbers_sco[3] = {
@@ -3382,11 +3382,19 @@ static const FcChar16 numbers_sk[2] = {
 };
 
 static const FcCharLeaf *leaves_sl[3] = {
-    L( 14), L(316), L(317),
+    L( 15), L(316), L(317),
 };
 
 static const FcChar16 numbers_sl[3] = {
     0x0000, 0x0001, 0x0004,
+};
+
+static const FcCharLeaf *leaves_sm[2] = {
+    L( 15), L( 78),
+};
+
+static const FcChar16 numbers_sm[2] = {
+    0x0000, 0x0002,
 };
 
 static const FcCharLeaf *leaves_sma[1] = {
@@ -3411,14 +3419,6 @@ static const FcCharLeaf *leaves_smn[2] = {
 
 static const FcChar16 numbers_smn[2] = {
     0x0000, 0x0001,
-};
-
-static const FcCharLeaf *leaves_sm[2] = {
-    L( 14), L( 78),
-};
-
-static const FcChar16 numbers_sm[2] = {
-    0x0000, 0x0002,
 };
 
 static const FcCharLeaf *leaves_sms[3] = {
@@ -3550,7 +3550,7 @@ static const FcChar16 numbers_uz[1] = {
 };
 
 static const FcCharLeaf *leaves_ven[2] = {
-    L( 14), L(345),
+    L( 15), L(345),
 };
 
 static const FcChar16 numbers_ven[2] = {
@@ -3709,354 +3709,354 @@ static const FcChar16 numbers_zh_mo[83] = {
 
 static const FcLangCharSet  fcLangCharSets[] = {
     { (FcChar8 *) "aa",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_aa, (FcChar16 *) numbers_aa } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_aa, (FcChar16 *) numbers_aa } },
     { (FcChar8 *) "ab",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ab, (FcChar16 *) numbers_ab } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ab, (FcChar16 *) numbers_ab } },
     { (FcChar8 *) "af",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_af, (FcChar16 *) numbers_af } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_af, (FcChar16 *) numbers_af } },
     { (FcChar8 *) "am",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_am, (FcChar16 *) numbers_am } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_am, (FcChar16 *) numbers_am } },
     { (FcChar8 *) "ar",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ar, (FcChar16 *) numbers_ar } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ar, (FcChar16 *) numbers_ar } },
     { (FcChar8 *) "ast",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ast, (FcChar16 *) numbers_ast } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ast, (FcChar16 *) numbers_ast } },
     { (FcChar8 *) "ava",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ava, (FcChar16 *) numbers_ava } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ava, (FcChar16 *) numbers_ava } },
     { (FcChar8 *) "ay",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ay, (FcChar16 *) numbers_ay } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ay, (FcChar16 *) numbers_ay } },
     { (FcChar8 *) "az",
-      { 1, FcTrue, 4, (FcCharLeaf **) leaves_az, (FcChar16 *) numbers_az } },
-    { (FcChar8 *) "bam",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_bam, (FcChar16 *) numbers_bam } },
+      { FC_REF_CONSTANT, 4, (FcCharLeaf **) leaves_az, (FcChar16 *) numbers_az } },
     { (FcChar8 *) "ba",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ba, (FcChar16 *) numbers_ba } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ba, (FcChar16 *) numbers_ba } },
+    { (FcChar8 *) "bam",
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_bam, (FcChar16 *) numbers_bam } },
     { (FcChar8 *) "be",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_be, (FcChar16 *) numbers_be } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_be, (FcChar16 *) numbers_be } },
     { (FcChar8 *) "bg",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bg, (FcChar16 *) numbers_bg } },
-    { (FcChar8 *) "bho",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bho, (FcChar16 *) numbers_bho } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bg, (FcChar16 *) numbers_bg } },
     { (FcChar8 *) "bh",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bho, (FcChar16 *) numbers_bho } },
-    { (FcChar8 *) "bin",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_bin, (FcChar16 *) numbers_bin } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bh, (FcChar16 *) numbers_bh } },
+    { (FcChar8 *) "bho",
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bh, (FcChar16 *) numbers_bh } },
     { (FcChar8 *) "bi",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bi, (FcChar16 *) numbers_bi } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bi, (FcChar16 *) numbers_bi } },
+    { (FcChar8 *) "bin",
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_bin, (FcChar16 *) numbers_bin } },
     { (FcChar8 *) "bn",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bn, (FcChar16 *) numbers_bn } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bn, (FcChar16 *) numbers_bn } },
     { (FcChar8 *) "bo",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bo, (FcChar16 *) numbers_bo } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bo, (FcChar16 *) numbers_bo } },
     { (FcChar8 *) "br",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_br, (FcChar16 *) numbers_br } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_br, (FcChar16 *) numbers_br } },
     { (FcChar8 *) "bs",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_bs, (FcChar16 *) numbers_bs } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_bs, (FcChar16 *) numbers_bs } },
     { (FcChar8 *) "bua",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bua, (FcChar16 *) numbers_bua } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bua, (FcChar16 *) numbers_bua } },
     { (FcChar8 *) "ca",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_ca, (FcChar16 *) numbers_ca } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_ca, (FcChar16 *) numbers_ca } },
     { (FcChar8 *) "ce",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ava, (FcChar16 *) numbers_ava } },
-    { (FcChar8 *) "chm",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_chm, (FcChar16 *) numbers_chm } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ava, (FcChar16 *) numbers_ava } },
     { (FcChar8 *) "ch",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ch, (FcChar16 *) numbers_ch } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ch, (FcChar16 *) numbers_ch } },
+    { (FcChar8 *) "chm",
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_chm, (FcChar16 *) numbers_chm } },
     { (FcChar8 *) "chr",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_chr, (FcChar16 *) numbers_chr } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_chr, (FcChar16 *) numbers_chr } },
     { (FcChar8 *) "co",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_co, (FcChar16 *) numbers_co } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_co, (FcChar16 *) numbers_co } },
     { (FcChar8 *) "cs",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_cs, (FcChar16 *) numbers_cs } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_cs, (FcChar16 *) numbers_cs } },
     { (FcChar8 *) "cu",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_cu, (FcChar16 *) numbers_cu } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_cu, (FcChar16 *) numbers_cu } },
     { (FcChar8 *) "cv",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_cv, (FcChar16 *) numbers_cv } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_cv, (FcChar16 *) numbers_cv } },
     { (FcChar8 *) "cy",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_cy, (FcChar16 *) numbers_cy } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_cy, (FcChar16 *) numbers_cy } },
     { (FcChar8 *) "da",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_da, (FcChar16 *) numbers_da } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_da, (FcChar16 *) numbers_da } },
     { (FcChar8 *) "de",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_de, (FcChar16 *) numbers_de } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_de, (FcChar16 *) numbers_de } },
     { (FcChar8 *) "dz",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bo, (FcChar16 *) numbers_bo } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bo, (FcChar16 *) numbers_bo } },
     { (FcChar8 *) "el",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_el, (FcChar16 *) numbers_el } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_el, (FcChar16 *) numbers_el } },
     { (FcChar8 *) "en",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_en, (FcChar16 *) numbers_en } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_en, (FcChar16 *) numbers_en } },
     { (FcChar8 *) "eo",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_eo, (FcChar16 *) numbers_eo } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_eo, (FcChar16 *) numbers_eo } },
     { (FcChar8 *) "es",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_es, (FcChar16 *) numbers_es } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_es, (FcChar16 *) numbers_es } },
     { (FcChar8 *) "et",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_et, (FcChar16 *) numbers_et } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_et, (FcChar16 *) numbers_et } },
     { (FcChar8 *) "eu",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_eu, (FcChar16 *) numbers_eu } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_eu, (FcChar16 *) numbers_eu } },
     { (FcChar8 *) "fa",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_fa, (FcChar16 *) numbers_fa } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_fa, (FcChar16 *) numbers_fa } },
     { (FcChar8 *) "fi",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_fi, (FcChar16 *) numbers_fi } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_fi, (FcChar16 *) numbers_fi } },
     { (FcChar8 *) "fj",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
     { (FcChar8 *) "fo",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fo, (FcChar16 *) numbers_fo } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fo, (FcChar16 *) numbers_fo } },
     { (FcChar8 *) "fr",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_co, (FcChar16 *) numbers_co } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_co, (FcChar16 *) numbers_co } },
     { (FcChar8 *) "ful",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_ful, (FcChar16 *) numbers_ful } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_ful, (FcChar16 *) numbers_ful } },
     { (FcChar8 *) "fur",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fur, (FcChar16 *) numbers_fur } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fur, (FcChar16 *) numbers_fur } },
     { (FcChar8 *) "fy",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fy, (FcChar16 *) numbers_fy } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fy, (FcChar16 *) numbers_fy } },
     { (FcChar8 *) "ga",
-      { 1, FcTrue, 4, (FcCharLeaf **) leaves_ga, (FcChar16 *) numbers_ga } },
+      { FC_REF_CONSTANT, 4, (FcCharLeaf **) leaves_ga, (FcChar16 *) numbers_ga } },
     { (FcChar8 *) "gd",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_gd, (FcChar16 *) numbers_gd } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_gd, (FcChar16 *) numbers_gd } },
     { (FcChar8 *) "gez",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_am, (FcChar16 *) numbers_am } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_am, (FcChar16 *) numbers_am } },
     { (FcChar8 *) "gl",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_gl, (FcChar16 *) numbers_gl } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_gl, (FcChar16 *) numbers_gl } },
     { (FcChar8 *) "gn",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_gn, (FcChar16 *) numbers_gn } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_gn, (FcChar16 *) numbers_gn } },
     { (FcChar8 *) "gu",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_gu, (FcChar16 *) numbers_gu } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_gu, (FcChar16 *) numbers_gu } },
     { (FcChar8 *) "gv",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_gv, (FcChar16 *) numbers_gv } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_gv, (FcChar16 *) numbers_gv } },
     { (FcChar8 *) "ha",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_ha, (FcChar16 *) numbers_ha } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_ha, (FcChar16 *) numbers_ha } },
     { (FcChar8 *) "haw",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_haw, (FcChar16 *) numbers_haw } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_haw, (FcChar16 *) numbers_haw } },
     { (FcChar8 *) "he",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_he, (FcChar16 *) numbers_he } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_he, (FcChar16 *) numbers_he } },
     { (FcChar8 *) "hi",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bho, (FcChar16 *) numbers_bho } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bh, (FcChar16 *) numbers_bh } },
     { (FcChar8 *) "ho",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
     { (FcChar8 *) "hr",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_hr, (FcChar16 *) numbers_hr } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_hr, (FcChar16 *) numbers_hr } },
     { (FcChar8 *) "hu",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_hu, (FcChar16 *) numbers_hu } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_hu, (FcChar16 *) numbers_hu } },
     { (FcChar8 *) "hy",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_hy, (FcChar16 *) numbers_hy } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_hy, (FcChar16 *) numbers_hy } },
     { (FcChar8 *) "ia",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
     { (FcChar8 *) "ibo",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_ibo, (FcChar16 *) numbers_ibo } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_ibo, (FcChar16 *) numbers_ibo } },
     { (FcChar8 *) "id",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_id, (FcChar16 *) numbers_id } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_id, (FcChar16 *) numbers_id } },
     { (FcChar8 *) "ie",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
     { (FcChar8 *) "ik",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ik, (FcChar16 *) numbers_ik } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ik, (FcChar16 *) numbers_ik } },
     { (FcChar8 *) "io",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
     { (FcChar8 *) "is",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_is, (FcChar16 *) numbers_is } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_is, (FcChar16 *) numbers_is } },
     { (FcChar8 *) "it",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_it, (FcChar16 *) numbers_it } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_it, (FcChar16 *) numbers_it } },
     { (FcChar8 *) "iu",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_iu, (FcChar16 *) numbers_iu } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_iu, (FcChar16 *) numbers_iu } },
     { (FcChar8 *) "ja",
-      { 1, FcTrue, 84, (FcCharLeaf **) leaves_ja, (FcChar16 *) numbers_ja } },
-    { (FcChar8 *) "kaa",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_kaa, (FcChar16 *) numbers_kaa } },
+      { FC_REF_CONSTANT, 84, (FcCharLeaf **) leaves_ja, (FcChar16 *) numbers_ja } },
     { (FcChar8 *) "ka",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_ka, (FcChar16 *) numbers_ka } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_ka, (FcChar16 *) numbers_ka } },
+    { (FcChar8 *) "kaa",
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_kaa, (FcChar16 *) numbers_kaa } },
     { (FcChar8 *) "ki",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_ki, (FcChar16 *) numbers_ki } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_ki, (FcChar16 *) numbers_ki } },
     { (FcChar8 *) "kk",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_kk, (FcChar16 *) numbers_kk } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_kk, (FcChar16 *) numbers_kk } },
     { (FcChar8 *) "kl",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_kl, (FcChar16 *) numbers_kl } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_kl, (FcChar16 *) numbers_kl } },
     { (FcChar8 *) "km",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_km, (FcChar16 *) numbers_km } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_km, (FcChar16 *) numbers_km } },
     { (FcChar8 *) "kn",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_kn, (FcChar16 *) numbers_kn } },
-    { (FcChar8 *) "kok",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bho, (FcChar16 *) numbers_bho } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_kn, (FcChar16 *) numbers_kn } },
     { (FcChar8 *) "ko",
-      { 1, FcTrue, 129, (FcCharLeaf **) leaves_ko, (FcChar16 *) numbers_ko } },
+      { FC_REF_CONSTANT, 129, (FcCharLeaf **) leaves_ko, (FcChar16 *) numbers_ko } },
+    { (FcChar8 *) "kok",
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bh, (FcChar16 *) numbers_bh } },
     { (FcChar8 *) "ks",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bho, (FcChar16 *) numbers_bho } },
-    { (FcChar8 *) "kum",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_kum, (FcChar16 *) numbers_kum } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bh, (FcChar16 *) numbers_bh } },
     { (FcChar8 *) "ku",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_ku, (FcChar16 *) numbers_ku } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_ku, (FcChar16 *) numbers_ku } },
+    { (FcChar8 *) "kum",
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_kum, (FcChar16 *) numbers_kum } },
     { (FcChar8 *) "kv",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_kv, (FcChar16 *) numbers_kv } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_kv, (FcChar16 *) numbers_kv } },
     { (FcChar8 *) "kw",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_kw, (FcChar16 *) numbers_kw } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_kw, (FcChar16 *) numbers_kw } },
     { (FcChar8 *) "ky",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ky, (FcChar16 *) numbers_ky } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ky, (FcChar16 *) numbers_ky } },
     { (FcChar8 *) "la",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_la, (FcChar16 *) numbers_la } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_la, (FcChar16 *) numbers_la } },
     { (FcChar8 *) "lb",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_lb, (FcChar16 *) numbers_lb } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_lb, (FcChar16 *) numbers_lb } },
     { (FcChar8 *) "lez",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ava, (FcChar16 *) numbers_ava } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ava, (FcChar16 *) numbers_ava } },
     { (FcChar8 *) "lo",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_lo, (FcChar16 *) numbers_lo } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_lo, (FcChar16 *) numbers_lo } },
     { (FcChar8 *) "lt",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_lt, (FcChar16 *) numbers_lt } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_lt, (FcChar16 *) numbers_lt } },
     { (FcChar8 *) "lv",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_lv, (FcChar16 *) numbers_lv } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_lv, (FcChar16 *) numbers_lv } },
     { (FcChar8 *) "mg",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_mg, (FcChar16 *) numbers_mg } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_mg, (FcChar16 *) numbers_mg } },
     { (FcChar8 *) "mh",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_mh, (FcChar16 *) numbers_mh } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_mh, (FcChar16 *) numbers_mh } },
     { (FcChar8 *) "mi",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_mi, (FcChar16 *) numbers_mi } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_mi, (FcChar16 *) numbers_mi } },
     { (FcChar8 *) "mk",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_mk, (FcChar16 *) numbers_mk } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_mk, (FcChar16 *) numbers_mk } },
     { (FcChar8 *) "ml",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ml, (FcChar16 *) numbers_ml } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ml, (FcChar16 *) numbers_ml } },
     { (FcChar8 *) "mn",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_mn, (FcChar16 *) numbers_mn } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_mn, (FcChar16 *) numbers_mn } },
     { (FcChar8 *) "mo",
-      { 1, FcTrue, 4, (FcCharLeaf **) leaves_mo, (FcChar16 *) numbers_mo } },
+      { FC_REF_CONSTANT, 4, (FcCharLeaf **) leaves_mo, (FcChar16 *) numbers_mo } },
     { (FcChar8 *) "mr",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bho, (FcChar16 *) numbers_bho } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bh, (FcChar16 *) numbers_bh } },
     { (FcChar8 *) "mt",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_mt, (FcChar16 *) numbers_mt } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_mt, (FcChar16 *) numbers_mt } },
     { (FcChar8 *) "my",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_my, (FcChar16 *) numbers_my } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_my, (FcChar16 *) numbers_my } },
     { (FcChar8 *) "nb",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_nb, (FcChar16 *) numbers_nb } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_nb, (FcChar16 *) numbers_nb } },
     { (FcChar8 *) "ne",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bho, (FcChar16 *) numbers_bho } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bh, (FcChar16 *) numbers_bh } },
     { (FcChar8 *) "nl",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_nl, (FcChar16 *) numbers_nl } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_nl, (FcChar16 *) numbers_nl } },
     { (FcChar8 *) "nn",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_nn, (FcChar16 *) numbers_nn } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_nn, (FcChar16 *) numbers_nn } },
     { (FcChar8 *) "no",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_nb, (FcChar16 *) numbers_nb } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_nb, (FcChar16 *) numbers_nb } },
     { (FcChar8 *) "ny",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_ny, (FcChar16 *) numbers_ny } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_ny, (FcChar16 *) numbers_ny } },
     { (FcChar8 *) "oc",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_oc, (FcChar16 *) numbers_oc } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_oc, (FcChar16 *) numbers_oc } },
     { (FcChar8 *) "om",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
     { (FcChar8 *) "or",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_or, (FcChar16 *) numbers_or } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_or, (FcChar16 *) numbers_or } },
     { (FcChar8 *) "os",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_kum, (FcChar16 *) numbers_kum } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_kum, (FcChar16 *) numbers_kum } },
     { (FcChar8 *) "pl",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_pl, (FcChar16 *) numbers_pl } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_pl, (FcChar16 *) numbers_pl } },
     { (FcChar8 *) "pt",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_pt, (FcChar16 *) numbers_pt } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_pt, (FcChar16 *) numbers_pt } },
     { (FcChar8 *) "rm",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_rm, (FcChar16 *) numbers_rm } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_rm, (FcChar16 *) numbers_rm } },
     { (FcChar8 *) "ro",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_ro, (FcChar16 *) numbers_ro } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_ro, (FcChar16 *) numbers_ro } },
     { (FcChar8 *) "ru",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ru, (FcChar16 *) numbers_ru } },
-    { (FcChar8 *) "sah",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_sah, (FcChar16 *) numbers_sah } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ru, (FcChar16 *) numbers_ru } },
     { (FcChar8 *) "sa",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_bho, (FcChar16 *) numbers_bho } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_bh, (FcChar16 *) numbers_bh } },
+    { (FcChar8 *) "sah",
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_sah, (FcChar16 *) numbers_sah } },
     { (FcChar8 *) "sco",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_sco, (FcChar16 *) numbers_sco } },
-    { (FcChar8 *) "sel",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_kum, (FcChar16 *) numbers_kum } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_sco, (FcChar16 *) numbers_sco } },
     { (FcChar8 *) "se",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_se, (FcChar16 *) numbers_se } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_se, (FcChar16 *) numbers_se } },
+    { (FcChar8 *) "sel",
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_kum, (FcChar16 *) numbers_kum } },
     { (FcChar8 *) "sh",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_sh, (FcChar16 *) numbers_sh } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_sh, (FcChar16 *) numbers_sh } },
     { (FcChar8 *) "si",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_si, (FcChar16 *) numbers_si } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_si, (FcChar16 *) numbers_si } },
     { (FcChar8 *) "sk",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_sk, (FcChar16 *) numbers_sk } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_sk, (FcChar16 *) numbers_sk } },
     { (FcChar8 *) "sl",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_sl, (FcChar16 *) numbers_sl } },
-    { (FcChar8 *) "sma",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_sma, (FcChar16 *) numbers_sma } },
-    { (FcChar8 *) "smj",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_smj, (FcChar16 *) numbers_smj } },
-    { (FcChar8 *) "smn",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_smn, (FcChar16 *) numbers_smn } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_sl, (FcChar16 *) numbers_sl } },
     { (FcChar8 *) "sm",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_sm, (FcChar16 *) numbers_sm } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_sm, (FcChar16 *) numbers_sm } },
+    { (FcChar8 *) "sma",
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_sma, (FcChar16 *) numbers_sma } },
+    { (FcChar8 *) "smj",
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_smj, (FcChar16 *) numbers_smj } },
+    { (FcChar8 *) "smn",
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_smn, (FcChar16 *) numbers_smn } },
     { (FcChar8 *) "sms",
-      { 1, FcTrue, 3, (FcCharLeaf **) leaves_sms, (FcChar16 *) numbers_sms } },
+      { FC_REF_CONSTANT, 3, (FcCharLeaf **) leaves_sms, (FcChar16 *) numbers_sms } },
     { (FcChar8 *) "so",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
     { (FcChar8 *) "sq",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_sq, (FcChar16 *) numbers_sq } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_sq, (FcChar16 *) numbers_sq } },
     { (FcChar8 *) "sr",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_sh, (FcChar16 *) numbers_sh } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_sh, (FcChar16 *) numbers_sh } },
     { (FcChar8 *) "sv",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_sv, (FcChar16 *) numbers_sv } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_sv, (FcChar16 *) numbers_sv } },
     { (FcChar8 *) "sw",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
     { (FcChar8 *) "syr",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_syr, (FcChar16 *) numbers_syr } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_syr, (FcChar16 *) numbers_syr } },
     { (FcChar8 *) "ta",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ta, (FcChar16 *) numbers_ta } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ta, (FcChar16 *) numbers_ta } },
     { (FcChar8 *) "te",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_te, (FcChar16 *) numbers_te } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_te, (FcChar16 *) numbers_te } },
     { (FcChar8 *) "tg",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_tg, (FcChar16 *) numbers_tg } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_tg, (FcChar16 *) numbers_tg } },
     { (FcChar8 *) "th",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_th, (FcChar16 *) numbers_th } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_th, (FcChar16 *) numbers_th } },
     { (FcChar8 *) "ti",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_am, (FcChar16 *) numbers_am } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_am, (FcChar16 *) numbers_am } },
     { (FcChar8 *) "tk",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_tk, (FcChar16 *) numbers_tk } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_tk, (FcChar16 *) numbers_tk } },
     { (FcChar8 *) "tl",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_tl, (FcChar16 *) numbers_tl } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_tl, (FcChar16 *) numbers_tl } },
     { (FcChar8 *) "tn",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_tn, (FcChar16 *) numbers_tn } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_tn, (FcChar16 *) numbers_tn } },
     { (FcChar8 *) "to",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_sm, (FcChar16 *) numbers_sm } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_sm, (FcChar16 *) numbers_sm } },
     { (FcChar8 *) "tr",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_tr, (FcChar16 *) numbers_tr } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_tr, (FcChar16 *) numbers_tr } },
     { (FcChar8 *) "ts",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
     { (FcChar8 *) "tt",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_tt, (FcChar16 *) numbers_tt } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_tt, (FcChar16 *) numbers_tt } },
     { (FcChar8 *) "tw",
-      { 1, FcTrue, 5, (FcCharLeaf **) leaves_tw, (FcChar16 *) numbers_tw } },
+      { FC_REF_CONSTANT, 5, (FcCharLeaf **) leaves_tw, (FcChar16 *) numbers_tw } },
     { (FcChar8 *) "tyv",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ky, (FcChar16 *) numbers_ky } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ky, (FcChar16 *) numbers_ky } },
     { (FcChar8 *) "ug",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ar, (FcChar16 *) numbers_ar } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ar, (FcChar16 *) numbers_ar } },
     { (FcChar8 *) "uk",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_uk, (FcChar16 *) numbers_uk } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_uk, (FcChar16 *) numbers_uk } },
     { (FcChar8 *) "ur",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_ar, (FcChar16 *) numbers_ar } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_ar, (FcChar16 *) numbers_ar } },
     { (FcChar8 *) "uz",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_uz, (FcChar16 *) numbers_uz } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_uz, (FcChar16 *) numbers_uz } },
     { (FcChar8 *) "ven",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_ven, (FcChar16 *) numbers_ven } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_ven, (FcChar16 *) numbers_ven } },
     { (FcChar8 *) "vi",
-      { 1, FcTrue, 4, (FcCharLeaf **) leaves_vi, (FcChar16 *) numbers_vi } },
+      { FC_REF_CONSTANT, 4, (FcCharLeaf **) leaves_vi, (FcChar16 *) numbers_vi } },
     { (FcChar8 *) "vo",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_vo, (FcChar16 *) numbers_vo } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_vo, (FcChar16 *) numbers_vo } },
     { (FcChar8 *) "vot",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_vot, (FcChar16 *) numbers_vot } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_vot, (FcChar16 *) numbers_vot } },
     { (FcChar8 *) "wa",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_wa, (FcChar16 *) numbers_wa } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_wa, (FcChar16 *) numbers_wa } },
     { (FcChar8 *) "wen",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_wen, (FcChar16 *) numbers_wen } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_wen, (FcChar16 *) numbers_wen } },
     { (FcChar8 *) "wo",
-      { 1, FcTrue, 2, (FcCharLeaf **) leaves_wo, (FcChar16 *) numbers_wo } },
+      { FC_REF_CONSTANT, 2, (FcCharLeaf **) leaves_wo, (FcChar16 *) numbers_wo } },
     { (FcChar8 *) "xh",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
     { (FcChar8 *) "yap",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_yap, (FcChar16 *) numbers_yap } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_yap, (FcChar16 *) numbers_yap } },
     { (FcChar8 *) "yi",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_he, (FcChar16 *) numbers_he } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_he, (FcChar16 *) numbers_he } },
     { (FcChar8 *) "yo",
-      { 1, FcTrue, 4, (FcCharLeaf **) leaves_yo, (FcChar16 *) numbers_yo } },
+      { FC_REF_CONSTANT, 4, (FcCharLeaf **) leaves_yo, (FcChar16 *) numbers_yo } },
     { (FcChar8 *) "zh-cn",
-      { 1, FcTrue, 82, (FcCharLeaf **) leaves_zh_cn, (FcChar16 *) numbers_zh_cn } },
+      { FC_REF_CONSTANT, 82, (FcCharLeaf **) leaves_zh_cn, (FcChar16 *) numbers_zh_cn } },
     { (FcChar8 *) "zh-hk",
-      { 1, FcTrue, 83, (FcCharLeaf **) leaves_zh_hk, (FcChar16 *) numbers_zh_hk } },
+      { FC_REF_CONSTANT, 83, (FcCharLeaf **) leaves_zh_hk, (FcChar16 *) numbers_zh_hk } },
     { (FcChar8 *) "zh-mo",
-      { 1, FcTrue, 83, (FcCharLeaf **) leaves_zh_mo, (FcChar16 *) numbers_zh_mo } },
+      { FC_REF_CONSTANT, 83, (FcCharLeaf **) leaves_zh_mo, (FcChar16 *) numbers_zh_mo } },
     { (FcChar8 *) "zh-sg",
-      { 1, FcTrue, 82, (FcCharLeaf **) leaves_zh_cn, (FcChar16 *) numbers_zh_cn } },
+      { FC_REF_CONSTANT, 82, (FcCharLeaf **) leaves_zh_cn, (FcChar16 *) numbers_zh_cn } },
     { (FcChar8 *) "zh-tw",
-      { 1, FcTrue, 83, (FcCharLeaf **) leaves_zh_mo, (FcChar16 *) numbers_zh_mo } },
+      { FC_REF_CONSTANT, 83, (FcCharLeaf **) leaves_zh_mo, (FcChar16 *) numbers_zh_mo } },
     { (FcChar8 *) "zu",
-      { 1, FcTrue, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
+      { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
 };
 

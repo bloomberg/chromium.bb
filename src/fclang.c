@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fclang.c,v 1.3 2002/07/08 07:31:53 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fclang.c,v 1.4 2002/07/12 21:06:03 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -31,20 +31,32 @@ typedef struct {
 
 #include "../fc-lang/fclang.h"
 
-#define NUM_LANG_CHAR_SET	(sizeof (fcLangCharSets) / sizeof (fcLangCharSets[0]))
-						 
-FcBool
-FcFreeTypeSetLang (FcPattern	    *pattern, 
-		   FcCharSet	    *charset, 
+#define NUM_LANG_CHAR_SET   (sizeof (fcLangCharSets) / sizeof (fcLangCharSets[0]))
+#define NUM_LANG_SET_MAP    ((NUM_LANG_CHAR_SET + 31) / 32)
+
+struct _FcLangSet {
+    FcChar32	map[NUM_LANG_SET_MAP];
+    FcStrSet	*extra;
+};
+
+#define FcLangSetBitSet(ls, id)	((ls)->map[(id)>>5] |= ((FcChar32) 1 << ((id) & 0x1f)))
+#define FcLangSetBitGet(ls, id) (((ls)->map[(id)>>5] >> ((id) & 0x1f)) & 1)
+
+FcLangSet *
+FcFreeTypeLangSet (const FcCharSet  *charset, 
 		   const FcChar8    *exclusiveLang)
 {
     int		    i;
     FcChar32	    missing;
-    FcBool	    hasLang = FcFalse;
     const FcCharSet *exclusiveCharset = 0;
+    FcLangSet	    *ls;
+    
 
     if (exclusiveLang)
 	exclusiveCharset = FcCharSetForLang (exclusiveLang);
+    ls = FcLangSetCreate ();
+    if (!ls)
+	return 0;
     for (i = 0; i < NUM_LANG_CHAR_SET; i++)
     {
 	/*
@@ -91,76 +103,42 @@ FcFreeTypeSetLang (FcPattern	    *pattern,
 		printf ("%s(%d) ", fcLangCharSets[i].lang, missing);
 	}
 	if (!missing)
-	{
-	    if (!FcPatternAddString (pattern, FC_LANG, fcLangCharSets[i].lang))
-		return FcFalse;
-	    hasLang = FcTrue;
-	}
+	    FcLangSetBitSet (ls, i);
     }
-    /*
-     * Make sure it has a lang entry
-     */
-    if (!hasLang)
-	if (!FcPatternAddString (pattern, FC_LANG, (FcChar8 *) "x-unknown"))
-	    return FcFalse;
 
     if (FcDebug() & FC_DBG_SCANV)
 	printf ("\n");
-    return FcTrue;
+    
+    
+    return ls;
 }
 
+#define FcLangEnd(c)	((c) == '-' || (c) == '\0')
 
 FcLangResult
 FcLangCompare (const FcChar8 *s1, const FcChar8 *s2)
 {
-    const FcChar8   *orig_s1 = s1;
     FcChar8	    c1, c2;
-    FcLangResult    result;
-    /*
-     * Compare ISO 639 language codes
-     */
+    FcLangResult    result = FcLangDifferentLang;
+
     for (;;)
     {
 	c1 = *s1++;
 	c2 = *s2++;
-	if (c1 == '\0' || c1 == '-')
-	    break;
-	if (c2 == '\0' || c2 == '-')
-	    break;
+	
 	c1 = FcToLower (c1);
 	c2 = FcToLower (c2);
 	if (c1 != c2)
-	    return FcLangDifferentLang;	    /* mismatching lang code */
+	{
+	    if (FcLangEnd (c1) && FcLangEnd (c2))
+		result = FcLangDifferentCountry;
+	    return result;
+	}
+	else if (!c1)
+	    return FcLangEqual;
+	else if (c1 == '-')
+	    result = FcLangDifferentCountry;
     }
-    if (!c1 && !c2)
-	return FcLangEqual;
-    /*
-     * Make x-* mismatch as if the lang part didn't match
-     */
-    result = FcLangDifferentCountry;
-    if (orig_s1[0] == 'x' && (orig_s1[1] == '\0' || orig_s1[1] == '-'))
-	result = FcLangDifferentLang;
-    
-    if (c1 == '\0' || c2 == '\0')
-	return result;
-    /*
-     * Compare ISO 3166 country codes
-     */
-    for (;;)
-    {
-	c1 = *s1++;
-	c2 = *s2++;
-	if (!c1 || !c2)
-	    break;
-	c1 = FcToLower (c1);
-	c2 = FcToLower (c2);
-	if (c1 != c2)
-	    break;
-    }
-    if (c1 == c2)
-	return FcLangEqual;
-    else
-	return result;
 }
 
 const FcCharSet *
@@ -183,4 +161,341 @@ FcCharSetForLang (const FcChar8 *lang)
     if (country == -1)
 	return 0;
     return &fcLangCharSets[i].charset;
+}
+
+FcLangSet *
+FcLangSetCreate (void)
+{
+    FcLangSet	*ls;
+
+    ls = malloc (sizeof (FcLangSet));
+    if (!ls)
+	return 0;
+    FcMemAlloc (FC_MEM_LANGSET, sizeof (FcLangSet));
+    memset (ls->map, '\0', sizeof (ls->map));
+    ls->extra = 0;
+    return ls;
+}
+
+void
+FcLangSetDestroy (FcLangSet *ls)
+{
+    if (ls->extra)
+	FcStrSetDestroy (ls->extra);
+    FcMemFree (FC_MEM_LANGSET, sizeof (FcLangSet));
+    free (ls);
+}
+
+FcLangSet *
+FcLangSetCopy (const FcLangSet *ls)
+{
+    FcLangSet	*new;
+
+    new = FcLangSetCreate ();
+    if (!new)
+	goto bail0;
+    memcpy (new->map, ls->map, sizeof (new->map));
+    if (ls->extra)
+    {
+	FcStrList	*list;
+	FcChar8		*extra;
+	
+	new->extra = FcStrSetCreate ();
+	if (!new->extra)
+	    goto bail1;
+
+	list = FcStrListCreate (ls->extra);	
+	if (!list)
+	    goto bail1;
+	
+	while ((extra = FcStrListNext (list)))
+	    if (!FcStrSetAdd (new->extra, extra))
+	    {
+		FcStrListDone (list);
+		goto bail1;
+	    }
+	FcStrListDone (list);
+    }
+    return new;
+bail1:
+    FcLangSetDestroy (new);
+bail0:
+    return 0;
+}
+
+static int
+FcLangSetIndex (const FcChar8 *lang)
+{
+    int	    low, high, mid;
+    int	    cmp;
+
+    low = 0;
+    high = NUM_LANG_CHAR_SET - 1;
+    while (low <= high)
+    {
+	mid = (high + low) >> 1;
+	cmp = FcStrCmpIgnoreCase (fcLangCharSets[mid].lang, lang);
+	if (cmp == 0) 
+	    return mid;
+	if (cmp < 0)
+	    low = mid + 1;
+	else
+	    high = mid - 1;
+    }
+    if (cmp < 0)
+	mid++;
+    return -(mid + 1);
+}
+
+FcBool
+FcLangSetAdd (FcLangSet *ls, const FcChar8 *lang)
+{
+    int	    id;
+
+    id = FcLangSetIndex (lang);
+    if (id >= 0)
+    {
+	FcLangSetBitSet (ls, id);
+	return FcTrue;
+    }
+    if (!ls->extra)
+    {
+	ls->extra = FcStrSetCreate ();
+	if (!ls->extra)
+	    return FcFalse;
+    }
+    return FcStrSetAdd (ls->extra, lang);
+}
+
+FcLangResult
+FcLangSetHasLang (const FcLangSet *ls, const FcChar8 *lang)
+{
+    int		    id;
+    FcLangResult    best, r;
+    int		    i;
+
+    id = FcLangSetIndex (lang);
+    if (id >= 0)
+	return FcLangEqual;
+    id = -id - 1;
+    best = FcLangDifferentLang;
+    for (i = id - 1; i >= 0; i--)
+    {
+	r = FcLangCompare (lang, fcLangCharSets[i].lang);
+	if (r == FcLangDifferentLang)
+	    break;
+	if (FcLangSetBitGet (ls, i) && r < best)
+	    best = r;
+    }
+    for (i = id; i < NUM_LANG_CHAR_SET; i++)
+    {
+	r = FcLangCompare (lang, fcLangCharSets[i].lang);
+	if (r == FcLangDifferentLang)
+	    break;
+	if (FcLangSetBitGet (ls, i) && r < best)
+	    best = r;
+    }
+    if (ls->extra)
+    {
+	FcStrList	*list = FcStrListCreate (ls->extra);
+	FcChar8		*extra;
+	FcLangResult	r;
+	
+	if (list)
+	{
+	    while (best > FcLangEqual && (extra = FcStrListNext (list)))
+	    {
+		r = FcLangCompare (lang, extra);
+		if (r < best)
+		    best = r;
+	    }
+	    FcStrListDone (list);
+	}
+    }
+    return best;
+}
+
+static FcLangResult
+FcLangSetCompareStrSet (const FcLangSet *ls, FcStrSet *set)
+{
+    FcStrList	    *list = FcStrListCreate (set);
+    FcLangResult    r, best = FcLangDifferentLang;
+    FcChar8	    *extra;
+
+    if (list)
+    {
+	while (best > FcLangEqual && (extra = FcStrListNext (list)))
+	{
+	    r = FcLangSetHasLang (ls, extra);
+	    if (r < best)
+		best = r;
+	}
+	FcStrListDone (list);
+    }
+    return best;
+}
+
+FcLangResult
+FcLangSetCompare (const FcLangSet *lsa, const FcLangSet *lsb)
+{
+    int		    i;
+    FcLangResult    best, r;
+
+    for (i = 0; i < NUM_LANG_SET_MAP; i++)
+	if (lsa->map[i] & lsb->map[i])
+	    return FcLangEqual;
+    best = FcLangDifferentLang;
+    if (lsa->extra)
+    {
+	r = FcLangSetCompareStrSet (lsb, lsa->extra);
+	if (r < best)
+	    best = r;
+    }
+    if (best > FcLangEqual && lsb->extra)
+    {
+	r = FcLangSetCompareStrSet (lsa, lsb->extra);
+	if (r < best)
+	    best = r;
+    }
+    return best;
+}
+
+/*
+ * Used in computing values -- mustn't allocate any storage
+ */
+FcLangSet *
+FcLangSetPromote (const FcChar8 *lang)
+{
+    static FcLangSet	ls;
+    static FcStrSet	strs;
+    static FcChar8	*str;
+    int			id;
+
+    memset (ls.map, '\0', sizeof (ls.map));
+    ls.extra = 0;
+    id = FcLangSetIndex (lang);
+    if (id > 0)
+    {
+	FcLangSetBitSet (&ls, id);
+    }
+    else
+    {
+	ls.extra = &strs;
+	strs.num = 1;
+	strs.size = 1;
+	strs.strs = &str;
+	str = (FcChar8 *) lang;
+    }
+    return &ls;
+}
+
+FcChar32
+FcLangSetHash (const FcLangSet *ls)
+{
+    FcChar32	h = 0;
+    int		i;
+
+    for (i = 0; i < NUM_LANG_SET_MAP; i++)
+	h ^= ls->map[i];
+    if (ls->extra)
+	h ^= ls->extra->num;
+    return h;
+}
+
+FcLangSet *
+FcNameParseLangSet (const FcChar8 *string)
+{
+    FcChar8	    lang[32];
+    const FcChar8   *end, *next;
+    FcLangSet	    *ls;
+
+    ls = FcLangSetCreate ();
+    if (!ls)
+	goto bail0;
+
+    while (string && *string) 
+    {
+	end = (FcChar8 *) strchr ((char *) string, '|');
+	if (!end)
+	{
+	    end = string + strlen ((char *) string);
+	    next = end;
+	}
+	else
+	    next = end + 1;
+	if (end - string < sizeof (lang) - 1)
+	{
+	    strncpy ((char *) lang, (char *) string, end - string);
+	    lang[end-string] = '\0';
+	    if (!FcLangSetAdd (ls, lang))
+		goto bail1;
+	}
+	string = next;
+    }
+    return ls;
+bail1:
+    FcLangSetDestroy (ls);
+bail0:
+    return 0;
+}
+
+FcBool
+FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls)
+{
+    int		i, bit;
+    FcChar32	bits;
+    FcBool	first = FcTrue;
+
+    for (i = 0; i < NUM_LANG_SET_MAP; i++)
+    {
+	if ((bits = ls->map[i]))
+	{
+	    for (bit = 0; bit <= 31; bit++)
+		if (bits & (1 << bit))
+		{
+		    int id = (i << 5) | bit;
+		    if (!first)
+			if (!FcStrBufChar (buf, '|'))
+			    return FcFalse;
+		    if (!FcStrBufString (buf, fcLangCharSets[id].lang))
+			return FcFalse;
+		    first = FcFalse;
+		}
+	}
+    }
+    if (ls->extra)
+    {
+	FcStrList   *list = FcStrListCreate (ls->extra);
+	FcChar8	    *extra;
+
+	if (!list)
+	    return FcFalse;
+	while ((extra = FcStrListNext (list)))
+	{
+	    if (!first)
+		if (!FcStrBufChar (buf, '|'))
+		    return FcFalse;
+	    if (!FcStrBufString (buf, extra));
+		return FcFalse;
+	    first = FcFalse;
+	}
+    }
+    return FcTrue;
+}
+
+FcBool
+FcLangSetEqual (const FcLangSet *lsa, const FcLangSet *lsb)
+{
+    int	    i;
+
+    for (i = 0; i < NUM_LANG_SET_MAP; i++)
+    {
+	if (lsa->map[i] != lsb->map[i])
+	    return FcFalse;
+    }
+    if (!lsa->extra && !lsb->extra)
+	return FcTrue;
+    if (lsa->extra && lsb->extra)
+	return FcStrSetEqual (lsa->extra, lsb->extra);
+    return FcFalse;
 }

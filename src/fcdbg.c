@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcdbg.c,v 1.7 2002/08/11 18:10:42 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcdbg.c,v 1.8 2002/08/19 19:32:05 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -50,6 +50,9 @@ FcValuePrint (const FcValue v)
 	break;
     case FcTypeCharSet:	/* XXX */
 	printf (" set");
+	break;
+    case FcTypeLangSet:
+	printf (" langset");
 	break;
     case FcTypeFTFace:
 	printf (" face");

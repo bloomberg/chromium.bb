@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.16 2002/07/09 02:28:29 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.17 2002/07/13 05:43:25 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -42,7 +42,6 @@ FcCharSetCreate (void)
     fcs->num = 0;
     fcs->leaves = 0;
     fcs->numbers = 0;
-    fcs->constant = FcFalse;
     return fcs;
 }
 
@@ -59,28 +58,28 @@ FcCharSetNew (void)
 void
 FcCharSetDestroy (FcCharSet *fcs)
 {
-    if (!fcs->constant && --fcs->ref <= 0)
+    int i;
+    if (fcs->ref == FC_REF_CONSTANT)
+	return;
+    if (--fcs->ref > 0)
+	return;
+    for (i = 0; i < fcs->num; i++)
     {
-	int i;
-
-	for (i = 0; i < fcs->num; i++)
-	{
-	    FcMemFree (FC_MEM_CHARNODE, sizeof (FcCharLeaf));
-	    free (fcs->leaves[i]);
-	}
-	if (fcs->leaves)
-	{
-	    FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcCharLeaf *));
-	    free (fcs->leaves);
-	}
-	if (fcs->numbers)
-	{
-	    FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcChar16));
-	    free (fcs->numbers);
-	}
-	FcMemFree (FC_MEM_CHARSET, sizeof (FcCharSet));
-	free (fcs);
+	FcMemFree (FC_MEM_CHARLEAF, sizeof (FcCharLeaf));
+	free (fcs->leaves[i]);
     }
+    if (fcs->leaves)
+    {
+	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcCharLeaf *));
+	free (fcs->leaves);
+    }
+    if (fcs->numbers)
+    {
+	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcChar16));
+	free (fcs->numbers);
+    }
+    FcMemFree (FC_MEM_CHARSET, sizeof (FcCharSet));
+    free (fcs);
 }
 
 /*
@@ -143,6 +142,7 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
 	leaves = realloc (fcs->leaves, (fcs->num + 1) * sizeof (FcCharLeaf *));
     if (!leaves)
 	return FcFalse;
+    FcMemAlloc (FC_MEM_CHARSET, sizeof (FcCharLeaf *));
     fcs->leaves = leaves;
     if (!fcs->numbers)
 	numbers = malloc (sizeof (FcChar16));
@@ -150,6 +150,7 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
 	numbers = realloc (fcs->numbers, (fcs->num + 1) * sizeof (FcChar16));
     if (!numbers)
 	return FcFalse;
+    FcMemAlloc (FC_MEM_CHARSET, sizeof (FcChar16));
     fcs->numbers = numbers;
     
     memmove (fcs->leaves + pos + 1, fcs->leaves + pos, 
@@ -187,6 +188,7 @@ FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4)
 	free (leaf);
 	return 0;
     }
+    FcMemAlloc (FC_MEM_CHARLEAF, sizeof (FcCharLeaf));
     return leaf;
 }
 
@@ -198,7 +200,7 @@ FcCharSetInsertLeaf (FcCharSet *fcs, FcChar32 ucs4, FcCharLeaf *leaf)
     pos = FcCharSetFindLeafPos (fcs, ucs4);
     if (pos >= 0)
     {
-	FcMemAlloc (FC_MEM_CHARNODE, sizeof (FcCharLeaf));
+	FcMemFree (FC_MEM_CHARLEAF, sizeof (FcCharLeaf));
 	free (fcs->leaves[pos]);
 	fcs->leaves[pos] = leaf;
 	return FcTrue;
@@ -213,7 +215,7 @@ FcCharSetAddChar (FcCharSet *fcs, FcChar32 ucs4)
     FcCharLeaf	*leaf;
     FcChar32	*b;
     
-    if (fcs->constant)
+    if (fcs->ref == FC_REF_CONSTANT)
 	return FcFalse;
     leaf = FcCharSetFindLeafCreate (fcs, ucs4);
     if (!leaf)
@@ -307,7 +309,8 @@ FcCharSetIterStart (const FcCharSet *fcs, FcCharSetIter *iter)
 FcCharSet *
 FcCharSetCopy (FcCharSet *src)
 {
-    src->ref++;
+    if (src->ref != FC_REF_CONSTANT)
+	src->ref++;
     return src;
 }
 
@@ -835,6 +838,7 @@ FcCharLeafEntCreate (void)
 	block = malloc (FC_CHAR_LEAF_BLOCK * sizeof (FcCharLeafEnt));
 	if (!block)
 	    return 0;
+	FcMemAlloc (FC_MEM_CHARLEAF, FC_CHAR_LEAF_BLOCK * sizeof (FcCharLeafEnt));
 	remain = FC_CHAR_LEAF_BLOCK;
     }
     remain--;
@@ -921,6 +925,7 @@ FcCharSetFreezeBase (FcCharSet *fcs)
     FcChar32		hash = FcCharSetHash (fcs);
     FcCharSetEnt	**bucket = &hashTable[hash % FC_CHAR_SET_HASH_SIZE];
     FcCharSetEnt	*ent;
+    int			size;
 
     FcCharSetTotal++;
     FcCharSetTotalEnts += fcs->num;
@@ -937,16 +942,17 @@ FcCharSetFreezeBase (FcCharSet *fcs)
 	}
     }
 
-    ent = malloc (sizeof (FcCharSetEnt) +
-		  fcs->num * sizeof (FcCharLeaf *) +
-		  fcs->num * sizeof (FcChar16));
+    size = (sizeof (FcCharSetEnt) +
+	    fcs->num * sizeof (FcCharLeaf *) +
+	    fcs->num * sizeof (FcChar16));
+    ent = malloc (size);
     if (!ent)
 	return 0;
+    FcMemAlloc (FC_MEM_CHARSET, size);
     FcCharSetUsed++;
     FcCharSetUsedEnts += fcs->num;
     
-    ent->set.ref = 0;
-    ent->set.constant = FcTrue;
+    ent->set.ref = FC_REF_CONSTANT;
     ent->set.num = fcs->num;
     if (fcs->num)
     {
@@ -989,9 +995,16 @@ FcCharSetFreeze (FcCharSet *fcs)
     n = FcCharSetFreezeBase (b);
 bail1:
     if (b->leaves)
+    {
+	FcMemFree (FC_MEM_CHARSET, b->num * sizeof (FcCharLeaf *));
 	free (b->leaves);
+    }
     if (b->numbers)
+    {
+	FcMemFree (FC_MEM_CHARSET, b->num * sizeof (FcChar16));
 	free (b->numbers);
+    }
+    FcMemFree (FC_MEM_CHARSET, sizeof (FcCharSet));
     free (b);
 bail0:
     return n;
@@ -1056,9 +1069,16 @@ FcNameParseCharSet (FcChar8 *string)
     n = FcCharSetFreezeBase (c);
 bail1:
     if (c->leaves)
+    {
+	FcMemFree (FC_MEM_CHARSET, c->num * sizeof (FcCharLeaf *));
 	free (c->leaves);
+    }
     if (c->numbers)
+    {
+	FcMemFree (FC_MEM_CHARSET, c->num * sizeof (FcChar16));
 	free (c->numbers);
+    }
+    FcMemFree (FC_MEM_CHARSET, sizeof (FcCharSet));
     free (c);
 bail0:
     return n;

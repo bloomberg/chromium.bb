@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.11 2002/08/11 18:10:42 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.12 2002/08/19 19:32:05 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -59,7 +59,7 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_CHAR_HEIGHT,	FcTypeInteger },
     { FC_MATRIX,	FcTypeMatrix },
     { FC_CHARSET,	FcTypeCharSet },
-    { FC_LANG,		FcTypeString },
+    { FC_LANG,		FcTypeLangSet },
 };
 
 #define NUM_OBJECT_TYPES    (sizeof _FcBaseObjectTypes / sizeof _FcBaseObjectTypes[0])
@@ -300,6 +300,9 @@ FcNameConvert (FcType type, FcChar8 *string, FcMatrix *m)
     case FcTypeCharSet:
 	v.u.c = FcNameParseCharSet (string);
 	break;
+    case FcTypeLangSet:
+	v.u.l = FcNameParseLangSet (string);
+	break;
     default:
 	break;
     }
@@ -393,12 +396,28 @@ FcNameParse (const FcChar8 *name)
 			v = FcNameConvert (t->type, save, &m);
 			if (!FcPatternAdd (pat, t->object, v, FcTrue))
 			{
-			    if (v.type == FcTypeCharSet)
+			    switch (v.type) {
+			    case FcTypeCharSet:
 				FcCharSetDestroy ((FcCharSet *) v.u.c);
+				break;
+			    case FcTypeLangSet:
+				FcLangSetDestroy ((FcLangSet *) v.u.l);
+				break;
+			    default:
+				break;
+			    }
 			    goto bail2;
 			}
-			if (v.type == FcTypeCharSet)
+			switch (v.type) {
+			case FcTypeCharSet:
 			    FcCharSetDestroy ((FcCharSet *) v.u.c);
+			    break;
+			case FcTypeLangSet:
+			    FcLangSetDestroy ((FcLangSet *) v.u.l);
+			    break;
+			default:
+			    break;
+			}
 		    }
 		    if (delim != ',')
 			break;
@@ -470,6 +489,8 @@ FcNameUnparseValue (FcStrBuf	*buf,
 	return FcNameUnparseString (buf, temp, 0);
     case FcTypeCharSet:
 	return FcNameUnparseCharSet (buf, v.u.c);
+    case FcTypeLangSet:
+	return FcNameUnparseLangSet (buf, v.u.l);
     case FcTypeFTFace:
 	return FcTrue;
     }

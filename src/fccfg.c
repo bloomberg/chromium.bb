@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.19 2002/08/11 18:10:42 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.20 2002/08/19 19:32:05 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -473,6 +473,11 @@ FcConfigPromote (FcValue v, FcValue u)
 	v.u.m = &FcIdentityMatrix;
 	v.type = FcTypeMatrix;
     }
+    else if (v.type == FcTypeString && u.type == FcTypeLangSet)
+    {
+	v.u.l = FcLangSetPromote (v.u.s);
+	v.type = FcTypeLangSet;
+    }
     return v;
 }
 
@@ -565,6 +570,21 @@ FcConfigCompareValue (FcValue	m,
 		break;
 	    case FcOpNotEqual:
 		ret = !FcCharSetEqual (m.u.c, v.u.c);
+		break;
+	    default:
+		break;
+	    }
+	    break;
+	case FcTypeLangSet:
+	    switch (op) {
+	    case FcOpContains:
+		ret = FcLangSetCompare (v.u.l, m.u.l) != FcLangDifferentLang;
+		break;
+	    case FcOpEqual:
+		ret = FcLangSetEqual (v.u.l, m.u.l);
+		break;
+	    case FcOpNotEqual:
+		ret = !FcLangSetEqual (v.u.l, m.u.l);
 		break;
 	    default:
 		break;

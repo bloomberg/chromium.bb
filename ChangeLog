@@ -1,4 +1,24 @@
-Mon Aug 19 11:57:27 PDT 2002
+Thu Aug 22 00:32:29 PDT 2002	keithp
+
+	+ Reimplement FC_LANG as new datatype.  Lists of strings
+	  was consuming over a megabyte of memory for 401 fonts.
+
+	+ Freeze patterns loaded from cache files.  This shares
+	  common value lists and common patterns which saves
+	  considerable memory.
+
+	+ Change the denotation of 'constant' charsets to use special
+	  ref value instead of separate boolean.
+
+	+ Clean up leak tracing stuff, found several unannoted alloc/free
+	  calls
+
+Tue Aug 20 16:17:37 PDT 2002	keithp
+
+	+ Fix memory leak when parsing matrices from XML
+
+Mon Aug 19 11:57:27 PDT 2002	keithp
+
 	+ Fix autoconf files to pass FONTCONFIG_PATH on
 	  compile line so that ${prefix} gets substituted
 	  correctly.

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcinit.c,v 1.5 2002/05/21 17:48:15 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcinit.c,v 1.6 2002/05/23 23:00:46 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -102,6 +102,8 @@ FcInit (void)
     if (!config)
 	return FcTrue;
     FcConfigSetCurrent (config);
+    if (FcDebug() & FC_DBG_MEMORY)
+	FcMemReport ();
     return FcTrue;
 }
 
@@ -153,7 +155,7 @@ static struct {
     int	    free_mem;
 } FcInUse[FC_MEM_NUM] = {
     { "charset", 0, 0 },
-    { "charnode", 0 ,0 },
+    { "charleaf", 0 ,0 },
     { "fontset", 0, 0 },
     { "fontptr", 0, 0 },
     { "objectset", 0, 0 },
@@ -165,6 +167,10 @@ static struct {
     { "substate", 0, 0 },
     { "string", 0, 0 },
     { "listbuck", 0, 0 },
+    { "strset", 0, 0 },
+    { "strlist", 0, 0 },
+    { "config", 0, 0 },
+    { "langset", 0, 0 },
 };
 
 static int  FcAllocCount, FcAllocMem;
@@ -173,6 +179,9 @@ static int  FcFreeCount, FcFreeMem;
 static int  FcMemNotice = 1*1024*1024;
 
 static int  FcAllocNotify, FcFreeNotify;
+
+void
+FcValueListReport (void);
 
 void
 FcMemReport (void)
@@ -196,6 +205,7 @@ FcMemReport (void)
 	    FcAllocMem - FcFreeMem);
     FcAllocNotify = 0;
     FcFreeNotify = 0;
+    FcValueListReport ();
 }
 
 void

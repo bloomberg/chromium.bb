@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.6 2002/07/06 23:47:44 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.7 2002/07/13 05:43:25 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -524,6 +524,18 @@ FcStrSetMember (FcStrSet *set, const FcChar8 *s)
 	if (!FcStrCmp (set->strs[i], s))
 	    return FcTrue;
     return FcFalse;
+}
+
+FcBool
+FcStrSetEqual (FcStrSet *sa, FcStrSet *sb)
+{
+    int	i;
+    if (sa->num != sb->num)
+	return FcFalse;
+    for (i = 0; i < sa->num; i++)
+	if (!FcStrSetMember (sb, sa->strs[i]))
+	    return FcFalse;
+    return FcTrue;
 }
 
 FcBool

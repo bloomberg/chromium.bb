@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.8 2002/07/09 02:28:29 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.9 2002/07/13 05:43:25 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -123,6 +123,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     int		    weight;
     int		    i;
     FcCharSet	    *cs;
+    FcLangSet	    *ls;
     FT_Library	    ftLibrary;
     FcChar8	    *family;
     FcChar8	    *style;
@@ -526,8 +527,12 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!FcPatternAddCharSet (pat, FC_CHARSET, cs))
 	goto bail2;
 
-    if (!FcFreeTypeSetLang (pat, cs, exclusiveLang))
-        goto bail2;
+    ls = FcFreeTypeLangSet (cs, exclusiveLang);
+    if (!ls)
+	goto bail2;
+
+    if (!FcPatternAddLangSet (pat, FC_LANG, ls))
+	goto bail2;
 
     /*
      * Drop our reference to the charset

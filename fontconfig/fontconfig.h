@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.25 2002/08/11 18:10:41 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.26 2002/08/19 19:32:04 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -109,7 +109,8 @@ typedef enum _FcType {
     FcTypeBool,
     FcTypeMatrix,
     FcTypeCharSet,
-    FcTypeFTFace
+    FcTypeFTFace,
+    FcTypeLangSet
 } FcType;
 
 typedef struct _FcMatrix {
@@ -143,6 +144,8 @@ typedef enum _FcResult {
 
 typedef struct _FcPattern   FcPattern;
 
+typedef struct _FcLangSet   FcLangSet;
+
 typedef struct _FcValue {
     FcType	type;
     union {
@@ -154,6 +157,7 @@ typedef struct _FcValue {
 	const FcCharSet	*c;
 	void		*f;
 	const FcPattern	*p;
+	const FcLangSet	*l;
     } u;
 } FcValue;
 
@@ -172,6 +176,10 @@ typedef struct _FcObjectSet {
 typedef enum _FcMatchKind {
     FcMatchPattern, FcMatchFont
 } FcMatchKind;
+
+typedef enum _FcLangResult {
+    FcLangEqual, FcLangDifferentCountry, FcLangDifferentLang
+} FcLangResult;
 
 typedef enum _FcSetName {
     FcSetSystem = 0,
@@ -409,6 +417,31 @@ FcInitReinitialize (void);
 FcBool
 FcInitBringUptoDate (void);
 
+/* fclang.c */
+FcLangSet *
+FcLangSetCreate (void);
+
+void
+FcLangSetDestroy (FcLangSet *ls);
+
+FcLangSet *
+FcLangSetCopy (const FcLangSet *ls);
+
+FcBool
+FcLangSetAdd (FcLangSet *ls, const FcChar8 *lang);
+
+FcLangResult
+FcLangSetHasLang (const FcLangSet *ls, const FcChar8 *lang);
+
+FcLangResult
+FcLangSetCompare (const FcLangSet *lsa, const FcLangSet *lsb);
+
+FcBool
+FcLangSetEqual (const FcLangSet *lsa, const FcLangSet *lsb);
+
+FcChar32
+FcLangSetHash (const FcLangSet *ls);
+
 /* fclist.c */
 FcObjectSet *
 FcObjectSetCreate (void);
@@ -609,6 +642,9 @@ FcPatternAddCharSet (FcPattern *p, const char *object, const FcCharSet *c);
 FcBool
 FcPatternAddBool (FcPattern *p, const char *object, FcBool b);
 
+FcBool
+FcPatternAddLangSet (FcPattern *p, const char *object, const FcLangSet *ls);
+
 FcResult
 FcPatternGetInteger (FcPattern *p, const char *object, int n, int *i);
 
@@ -626,6 +662,9 @@ FcPatternGetCharSet (FcPattern *p, const char *object, int n, FcCharSet **c);
 
 FcResult
 FcPatternGetBool (FcPattern *p, const char *object, int n, FcBool *b);
+
+FcResult
+FcPatternGetLangSet (FcPattern *p, const char *object, int n, FcLangSet **ls);
 
 FcPattern *
 FcPatternVaBuild (FcPattern *orig, va_list va);
@@ -690,6 +729,9 @@ FcStrSetCreate (void);
 
 FcBool
 FcStrSetMember (FcStrSet *set, const FcChar8 *s);
+
+FcBool
+FcStrSetEqual (FcStrSet *sa, FcStrSet *sb);
 
 FcBool
 FcStrSetAdd (FcStrSet *set, const FcChar8 *s);
