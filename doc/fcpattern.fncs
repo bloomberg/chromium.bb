@@ -43,7 +43,7 @@ Destroys a pattern, in the process destroying all related values.
 @TYPE2@		const FcPattern * 		@ARG2@		pb 
 @PURPOSE@	Compare patterns
 @DESC@
-Returns whether 'pa' and 'pb' are exactly alike.
+Returns whether <parameter>pa</parameter> and <parameter>pb</parameter> are exactly alike.
 @@
 
 @RET@		FcBool
@@ -53,8 +53,8 @@ Returns whether 'pa' and 'pb' are exactly alike.
 @TYPE3@ 	const FcObjectSet * 		@ARG3@ 		os 
 @PURPOSE@	Compare portions of patterns
 @DESC@
-Returns whether 'pa' and 'pb' have exactly the same values for all of the
-objects in 'os'.
+Returns whether <parameter>pa</parameter> and <parameter>pb</parameter> have exactly the same values for all of the
+objects in <parameter>os</parameter>.
 @@
 
 @RET@		FcChar32
@@ -75,7 +75,7 @@ equal.
 @PURPOSE@	Add a value to a pattern
 @DESC@
 Adds a single value to the list of values associated with the property named
-`object'.  If `append' is FcTrue, the value is added at the end of any
+`object<parameter>.  If `append</parameter> is FcTrue, the value is added at the end of any
 existing list, otherwise it is inserted at the begining.  `value' is saved
 (with FcValueSave) when inserted into the pattern so that the library
 retains no reference to any application-supplied data structure.
@@ -90,7 +90,7 @@ retains no reference to any application-supplied data structure.
 @PURPOSE@	Add a value to a pattern with weak binding
 @DESC@
 FcPatternAddWeak is essentially the same as FcPatternAdd except that any
-values added to the list have binding 'weak' instead of 'strong'.
+values added to the list have binding <parameter>weak</parameter> instead of <parameter>strong</parameter>.
 @@
 
 @TITLE@		FcPatternAdd-Type
@@ -150,7 +150,7 @@ any existing list of values.
 @TYPE4@		FcValue *			@ARG4@		v 
 @PURPOSE@	Return a value from a pattern
 @DESC@
-Returns in `v' the `id'th value associated with the property `object'.
+Returns in `v<parameter> the `id</parameter>th value associated with the property `object'.
 The value returned is not a copy, but rather refers to the data stored
 within the pattern directly.  Applications must not free this value.
 @@
@@ -296,7 +296,7 @@ specified point size (default 12), dpi (default 75) and scale (default 1).
 @TYPE1@		const char *			@ARG1@		name 
 @PURPOSE@	Parse a pattern string
 @DESC@
-Converts 'name' from the standard text format described above into a pattern.
+Converts <parameter>name</parameter> from the standard text format described above into a pattern.
 @@
 
 @RET@		FcChar8 *

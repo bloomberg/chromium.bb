@@ -27,7 +27,7 @@
 @TYPE2@		int				@ARG2@		ntype
 @PURPOSE@	Register object types
 @DESC@
-Register 'ntype' new object types.
+Register <parameter>ntype</parameter> new object types.
 @@
 
 @RET@		FcBool
@@ -36,7 +36,7 @@ Register 'ntype' new object types.
 @TYPE2@		int 				@ARG2@		ntype
 @PURPOSE@	Unregister object types
 @DESC@
-Unregister 'ntype' object types.
+Unregister <parameter>ntype</parameter> object types.
 @@
 
 @RET@		const FcObjectType *
@@ -44,5 +44,5 @@ Unregister 'ntype' object types.
 @TYPE1@		const char *			@ARG1@		object
 @PURPOSE@	Lookup an object type
 @DESC@
-Return the object type for the pattern element named 'object'.
+Return the object type for the pattern element named <parameter>object</parameter>.
 @@
