@@ -683,6 +683,11 @@ typedef struct drm_device {
 	u32               driver_features;
 } drm_device_t;
 
+static __inline__ int drm_core_check_feature(struct drm_device *dev, int feature)
+{
+	return ((dev->driver_features & feature) ? 1 : 0);
+}
+
 extern void DRM(driver_register_fns)(struct drm_device *dev);
 
 /******************************************************************/

@@ -199,7 +199,7 @@ static int DRM(setup)( drm_device_t *dev )
 	dev->buf_use = 0;
 	atomic_set( &dev->buf_alloc, 0 );
 
-	if (dev->driver_features & DRIVER_HAVE_DMA)
+	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 	{
 		i = DRM(dma_setup)( dev );
 		if ( i < 0 )
@@ -349,7 +349,7 @@ static int DRM(takedown)( drm_device_t *dev )
 
 #if __OS_HAS_AGP
 				/* Clear AGP information */
-	if ( (dev->driver_features & DRIVER_USE_AGP) && dev->agp ) {
+	if ( drm_core_check_feature(dev, DRIVER_USE_AGP) && dev->agp ) {
 		drm_agp_mem_t *entry;
 		drm_agp_mem_t *nexte;
 
@@ -400,7 +400,7 @@ static int DRM(takedown)( drm_device_t *dev )
 					break;
 				case _DRM_SCATTER_GATHER:
 					/* Handle it */
-					if (dev->driver_features & DRIVER_SG && dev->sg) {
+					if (drm_core_check_feature(dev, DRIVER_SG) && dev->sg) {
 						DRM(sg_cleanup)(dev->sg);
 						dev->sg = NULL;
 					}
@@ -414,7 +414,7 @@ static int DRM(takedown)( drm_device_t *dev )
  	}
 
 	
-	if ( (dev->driver_features & DRIVER_DMA_QUEUE) && dev->queuelist ) {
+	if ( drm_core_check_feature(dev, DRIVER_DMA_QUEUE) && dev->queuelist ) {
 		for ( i = 0 ; i < dev->queue_count ; i++ ) {
 
 			if ( dev->queuelist[i] ) {
@@ -431,7 +431,7 @@ static int DRM(takedown)( drm_device_t *dev )
 	}
 	dev->queue_count = 0;
 
-	if (dev->driver_features & DRIVER_HAVE_DMA)
+	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 		DRM(dma_takedown)( dev );
 
 	if ( dev->lock.hw_lock ) {
@@ -510,16 +510,16 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 			goto error_out_unreg;
 
 #if __OS_HAS_AGP
-	if (dev->driver_features & DRIVER_USE_AGP) {
+	if (drm_core_check_feature(dev, DRIVER_USE_AGP)) {
 		dev->agp = DRM(agp_init)();
-		if ( (dev->driver_features & DRIVER_REQUIRE_AGP) && dev->agp == NULL ) {
+		if ( drm_core_check_feature(dev, DRIVER_REQUIRE_AGP) && dev->agp == NULL ) {
 			DRM_ERROR( "Cannot initialize the agpgart module.\n" );
 			retcode = -EINVAL;
 			goto error_out_unreg;
 		}
 		
 #if __OS_HAS_MTRR
-		if (dev->driver_features & DRIVER_USE_MTRR) {
+		if (drm_core_check_feature(dev, DRIVER_USE_MTRR)) {
 			if (dev->agp)
 				dev->agp->agp_mtrr = mtrr_add( dev->agp->agp_info.aper_base,
 							       dev->agp->agp_info.aper_size*1024*1024,
@@ -682,7 +682,7 @@ static void __exit drm_cleanup( drm_device_t *dev )
 					
 				case _DRM_FRAME_BUFFER:
 #if __OS_HAS_MTRR
-					if ( dev->driver_features & DRIVER_USE_MTRR) {
+					if ( drm_core_check_feature(dev, DRIVER_USE_MTRR)) {
 						if ( map->mtrr >= 0 ) {
 							int retcode;
 							retcode = mtrr_del( map->mtrr,
@@ -722,7 +722,7 @@ static void __exit drm_cleanup( drm_device_t *dev )
 
 #if __OS_HAS_AGP
 #if __OS_HAS_MTRR
-	if ( (dev->driver_features & DRIVER_USE_MTRR) && dev->agp && dev->agp->agp_mtrr >= 0 ) {
+	if ( drm_core_check_feature(dev, DRIVER_USE_MTRR) && dev->agp && dev->agp->agp_mtrr >= 0 ) {
 		int retval;
 		retval = mtrr_del( dev->agp->agp_mtrr,
 				   dev->agp->agp_info.aper_base,
@@ -730,7 +730,7 @@ static void __exit drm_cleanup( drm_device_t *dev )
 		DRM_DEBUG( "mtrr_del=%d\n", retval );
 	}
 #endif
-	if ( (dev->driver_features & DRIVER_USE_AGP) && dev->agp ) {
+	if ( drm_core_check_feature(dev, DRIVER_USE_AGP) && dev->agp ) {
 		DRM(agp_uninit)();
 		DRM(free)( dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS );
 		dev->agp = NULL;
@@ -937,7 +937,7 @@ int DRM(release)( struct inode *inode, struct file *filp )
 		}
 	}
 	
-	if (dev->driver_features & DRIVER_HAVE_DMA)
+	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 	{
 		dev->fn_tbl.reclaim_buffers(filp);
 	}
@@ -1100,7 +1100,7 @@ int DRM(lock)( struct inode *inode, struct file *filp,
 		   lock.context, current->pid,
 		   dev->lock.hw_lock->lock, lock.flags );
 
-	if (dev->driver_features & DRIVER_DMA_QUEUE)
+	if (drm_core_check_feature(dev, DRIVER_DMA_QUEUE))
 		if ( lock.context < 0 )
 			return -EINVAL;
 

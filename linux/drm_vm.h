@@ -206,7 +206,7 @@ void DRM(vm_shm_close)(struct vm_area_struct *vma)
 			case _DRM_REGISTERS:
 			case _DRM_FRAME_BUFFER:
 #if __OS_HAS_MTRR
-			  if ((dev->driver_features & DRIVER_USE_MTRR) && map->mtrr >= 0) {
+			  if (drm_core_check_feature(dev, DRIVER_USE_MTRR) && map->mtrr >= 0) {
 					int retcode;
 					retcode = mtrr_del(map->mtrr,
 							   map->offset,
@@ -583,7 +583,7 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 	switch (map->type) {
         case _DRM_AGP:
 #if __OS_HAS_AGP
-	  if ((dev->driver_features & DRIVER_USE_AGP) && dev->agp->cant_use_aperture) {
+	  if (drm_core_check_feature(dev, DRIVER_USE_AGP) && dev->agp->cant_use_aperture) {
                 /*
                  * On some platforms we can't talk to bus dma address from the CPU, so for
                  * memory of type DRM_AGP, we'll deal with sorting out the real physical

@@ -144,7 +144,7 @@ void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
 	buf->filp     = NULL;
 	buf->used     = 0;
 
-	if ( (dev->driver_features & DRIVER_DMA_QUEUE) && waitqueue_active(&buf->dma_wait)) {
+	if ( drm_core_check_feature(dev, DRIVER_DMA_QUEUE) && waitqueue_active(&buf->dma_wait)) {
 		wake_up_interruptible(&buf->dma_wait);
 	}
 }

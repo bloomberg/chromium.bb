@@ -144,7 +144,7 @@ drm_follow_page (void *vaddr)
 static inline void *drm_ioremap(unsigned long offset, unsigned long size, drm_device_t *dev)
 {
 #if __OS_HAS_AGP && defined(VMAP_4_ARGS)
-  if ( (dev->driver_features & DRIVER_USE_AGP) && dev->agp && dev->agp->cant_use_aperture) {
+  if ( drm_core_check_feature(dev, DRIVER_USE_AGP) && dev->agp && dev->agp->cant_use_aperture) {
 		drm_map_t *map = drm_lookup_map(offset, size, dev);
 
 		if (map && map->type == _DRM_AGP)
@@ -159,7 +159,7 @@ static inline void *drm_ioremap_nocache(unsigned long offset, unsigned long size
 					drm_device_t *dev)
 {
 #if __OS_HAS_AGP&& defined(VMAP_4_ARGS)
-	if ( (dev->driver_features & DRIVER_USE_AGP) && dev->agp && dev->agp->cant_use_aperture) {
+	if ( drm_core_check_feature(dev, DRIVER_USE_AGP) && dev->agp && dev->agp->cant_use_aperture) {
 		drm_map_t *map = drm_lookup_map(offset, size, dev);
 
 		if (map && map->type == _DRM_AGP)
@@ -178,7 +178,7 @@ static inline void drm_ioremapfree(void *pt, unsigned long size, drm_device_t *d
 	 * routines for handling mappings in the AGP space.  Hopefully this can be done in
 	 * a future revision of the interface...
 	 */
-	if ((dev->driver_features & DRIVER_USE_AGP) && dev->agp && dev->agp->cant_use_aperture
+	if (drm_core_check_feature(dev, DRIVER_USE_AGP) && dev->agp && dev->agp->cant_use_aperture
 	    && ((unsigned long) pt >= VMALLOC_START && (unsigned long) pt < VMALLOC_END))
 	{
 		unsigned long offset;

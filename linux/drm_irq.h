@@ -58,7 +58,7 @@ int DRM(irq_by_busid)(struct inode *inode, struct file *filp,
 	drm_irq_busid_t __user *argp = (void __user *)arg;
 	drm_irq_busid_t p;
 
-	if (!(dev->driver_features & DRIVER_HAVE_IRQ))
+	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 		return -EINVAL;
 
 	if (copy_from_user(&p, argp, sizeof(p)))
@@ -94,7 +94,7 @@ int DRM(irq_install)( drm_device_t *dev )
 	int ret;
 	unsigned long sh_flags=0;
 
-	if (!(dev->driver_features & DRIVER_HAVE_IRQ ))
+	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ ))
 		return -EINVAL;
 
 	if ( dev->irq == 0 )
@@ -121,7 +121,7 @@ int DRM(irq_install)( drm_device_t *dev )
 	dev->dma->next_queue = NULL;
 	dev->dma->this_buffer = NULL;
 
-	if (dev->driver_features & DRIVER_IRQ_VBL) {
+	if (drm_core_check_feature(dev, DRIVER_IRQ_VBL)) {
 		init_waitqueue_head(&dev->vbl_queue);
 		
 		spin_lock_init( &dev->vbl_lock );
@@ -135,7 +135,7 @@ int DRM(irq_install)( drm_device_t *dev )
 	dev->fn_tbl.irq_preinstall(dev);
 
 				/* Install handler */
-	if (dev->driver_features & DRIVER_IRQ_SHARED)
+	if (drm_core_check_feature(dev,  DRIVER_IRQ_SHARED))
 		sh_flags = SA_SHIRQ;
 	
 	ret = request_irq( dev->irq, dev->fn_tbl.irq_handler,
@@ -164,7 +164,7 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 {
 	int irq_enabled;
 
-	if (!(dev->driver_features & DRIVER_HAVE_IRQ ))
+	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ ))
 		return -EINVAL;
 
 	down( &dev->struct_sem );
@@ -209,14 +209,14 @@ int DRM(control)( struct inode *inode, struct file *filp,
 
 	switch ( ctl.func ) {
 	case DRM_INST_HANDLER:
-		if (!(dev->driver_features & DRIVER_HAVE_IRQ))
+		if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 			return 0;
 		if (dev->if_version < DRM_IF_VERSION(1, 2) &&
 		    ctl.irq != dev->irq)
 			return -EINVAL;
 		return DRM(irq_install)( dev );
 	case DRM_UNINST_HANDLER:
-		if (!(dev->driver_features & DRIVER_HAVE_IRQ))
+		if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 			return 0;
 		return DRM(irq_uninstall)( dev );
 	default:
@@ -253,7 +253,7 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	int ret = 0;
 	unsigned int flags;
 
-	if (!(dev->driver_features & DRIVER_IRQ_VBL))
+	if (!drm_core_check_feature(dev, DRIVER_IRQ_VBL))
 		return -EINVAL;
 
 	if (!dev->irq)
