@@ -1,3 +1,8 @@
+2004-02-21  Manish Singh  <yosh@gimp.org>
+
+	* fc-glyphname/fc-glyphname.c: (main):
+	Cast strlen to int for printf, so we're 64-bit clean.
+
 2004-02-11  Keith Packard  <keithp@keithp.com>
 
 	* configure.in:
