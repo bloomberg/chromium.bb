@@ -1,8 +1,7 @@
 # Makefile -- For the Direct Rendering Manager module (drm)
 # Created: Mon Jan  4 09:26:53 1999 by faith@precisioninsight.com
-# Revised: Sun Feb 13 23:15:59 2000 by kevin@precisioninsight.com
 #
-# Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+# Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
 # All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -33,7 +32,7 @@
 
 # **** End of SMP/MODVERSIONS detection
 
-MODS=           gamma.o tdfx.o
+MODS=           gamma.o tdfx.o r128.o
 LIBS=           libdrm.a
 PROGS=		drmstat
 
@@ -46,6 +45,9 @@ GAMMAHEADERS=   gamma_drv.h $(DRMHEADERS)
 
 TDFXOBJS=       tdfx_drv.o tdfx_context.o
 TDFXHEADERS=    tdfx_drv.h $(DRMHEADERS)
+
+R128OBJS=	r128_drv.o r128_dma.o r128_bufs.o r128_context.o
+R128HEADERS=	r128_drv.h r128_drm.h $(DRMHEADERS)
 
 PROGOBJS=       drmstat.po xf86drm.po xf86drmHash.po xf86drmRandom.po sigio.po
 PROGHEADERS=    xf86drm.h $(DRMHEADERS)
@@ -153,6 +155,9 @@ gamma.o: $(GAMMAOBJS) $(LIBS)
 tdfx.o: $(TDFXOBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
+r128.o: $(R128OBJS) $(LIBS)
+	$(LD) -r $^ -o $@
+
 ifeq ($(AGP),1)
 mga.o: $(MGAOBJS) $(LIBS)
 	$(LD) -r $^ -o $@
@@ -182,6 +187,7 @@ ChangeLog:
 $(DRMOBJS): $(DRMHEADERS)
 $(GAMMAOBJS): $(GAMMAHEADERS)
 $(TDFXOBJS): $(TDFXHEADERS)
+$(R128OBJS): $(R128HEADERS)
 ifeq ($(AGP),1)
 $(MGAOBJS): $(MGAHEADERS)
 $(I810OBJS): $(I810HEADERS)

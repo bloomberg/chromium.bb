@@ -49,3 +49,5 @@ i810.o: i810_drv.o i810_context.o $(L_TARGET)
 mga.o: mga_drv.o mga_context.o mga_dma.o mga_bufs.o $(L_TARGET)
 	$(LD) $(LD_RFLAG) -r -o $@ mga_drv.o mga_bufs.o mga_dma.o mga_context.o mga_state.o -L. -ldrm
 
+r128.o: r128_drv.o r128_context.o $(L_TARGET)
+	$(LD) $(LD_RFLAG) -r -o $@ r128_drv.o r128_context.o -L. -ldrm

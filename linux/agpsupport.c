@@ -239,6 +239,8 @@ int drm_agp_bind(struct inode *inode, struct file *filp, unsigned int cmd,
 	page = (request.offset + PAGE_SIZE - 1) / PAGE_SIZE;
 	if ((retcode = drm_bind_agp(entry->memory, page))) return retcode;
 	entry->bound = dev->agp->base + (page << PAGE_SHIFT);
+	DRM_DEBUG("base = 0x%lx entry->bound = 0x%lx\n", 
+		  dev->agp->base, entry->bound);
 	return 0;
 }
 

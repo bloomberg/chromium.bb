@@ -1,8 +1,7 @@
 /* xf86drm.c -- User-level interface to DRM device
  * Created: Tue Jan  5 08:16:21 1999 by faith@precisioninsight.com
- * Revised: Sun Feb 13 23:43:32 2000 by kevin@precisioninsight.com
  *
- * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,6 +22,8 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
+ * 
+ * Author: Rickard E. (Rik) Faith <faith@precisioninsight.com>
  * 
  * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.10 2000/02/23 04:47:23 martin Exp $
  * 
@@ -143,7 +144,7 @@ static int drm_open(const char *file)
     return -errno;
 }
 
-/* drmAvailable looks for /proc/drm, and returns 1 if it is present. */
+/* drmAvailable looks for /proc/dri, and returns 1 if it is present. */
 
 int drmAvailable(void)
 {
