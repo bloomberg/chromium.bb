@@ -24,7 +24,7 @@
 
 #include "fcint.h"
 
-#if defined (_WIN32) && defined (PIC)
+#if defined (_WIN32) && (defined (PIC) || defined (DLL_EXPORT))
 #define STRICT
 #include <windows.h>
 #undef STRICT
