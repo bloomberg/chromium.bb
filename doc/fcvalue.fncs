@@ -1,0 +1,17 @@
+@RET@		void
+@FUNC@		FcValueDestroy
+@TYPE1@		FcValue			@ARG1@		v
+@PURPOSE@	Free a value
+@DESC@
+Frees any memory referenced by `v'.  Values of type FcTypeString,
+FcTypeMatrix and FcTypeCharSet reference memory, the other types do not.
+@@
+
+@RET@		FcValue 
+@FUNC@		FcValueSave
+@TYPE1@		FcValue 		@ARG1@		v
+@PURPOSE@	Copy a value
+@DESC@
+Returns a copy of `v' duplicating any object referenced by it so that `v'
+may be safely destroyed without harming the new value.
+@@
