@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.15 2002/08/22 07:36:45 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.16tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -276,8 +276,8 @@ typedef struct _FcValueListEnt FcValueListEnt;
 
 struct _FcValueListEnt {
     FcValueListEnt  *next;
-    FcChar32	    hash;
     FcValueList	    *list;
+    FcChar32	    hash, pad;
 };
 
 static int	    FcValueListFrozenCount[FcTypeLangSet + 1];
@@ -336,7 +336,7 @@ FcValueListEntCreate (FcValueList *h)
     e->list = (FcValueList *) (e + 1);
     strs = (FcChar8 *) (e->list + n);
     new = e->list;
-    for (l = h; l; l = l->next)
+    for (l = h; l; l = l->next, new++)
     {
 	if (l->value.type == FcTypeString)
 	{
@@ -346,7 +346,10 @@ FcValueListEntCreate (FcValueList *h)
 	    strs += strlen ((char *) strs) + 1;
 	}
 	else
-	    new->value = FcValueSave (l->value);
+	{
+	    new->value = l->value;
+	    new->value = FcValueSave (new->value);
+	}
 	new->binding = l->binding;
 	if (l->next)
 	    new->next = new + 1;
