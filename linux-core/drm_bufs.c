@@ -71,7 +71,7 @@ int DRM(order)( unsigned long size )
 	int order;
 	unsigned long tmp;
 
-	for (order = 0, tmp = size >> 1; tmp; tmp >>= 1,  order++)
+	for (order = 0, tmp = size >> 1; tmp; tmp >>= 1, order++)
 		;
 
 	if (size & (size - 1))
@@ -569,8 +569,7 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 
 	if ( !dma ) return -EINVAL;
 
-	if ( copy_from_user( &request, argp,
-			     sizeof(request) ) )
+	if ( copy_from_user( &request, argp, sizeof(request) ) )
 		return -EFAULT;
 
 	count = request.count;
@@ -806,8 +805,7 @@ int DRM(addbufs_sg)( struct inode *inode, struct file *filp,
 
 	if ( !dma ) return -EINVAL;
 
-	if ( copy_from_user( &request, argp,
-                             sizeof(request) ) )
+	if ( copy_from_user( &request, argp, sizeof(request) ) )
 		return -EFAULT;
 
 	count = request.count;
