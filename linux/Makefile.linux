@@ -1,6 +1,6 @@
 # Makefile -- For the Direct Rendering Manager module (drm)
 # Created: Mon Jan  4 09:26:53 1999 by faith@precisioninsight.com
-# Revised: Thu Oct  7 10:56:13 1999 by faith@precisioninsight.com
+# Revised: Thu Jan 13 09:53:33 2000 by faith@precisioninsight.com
 #
 # Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
 # All rights reserved.
@@ -25,36 +25,12 @@
 # DEALINGS IN THE SOFTWARE.
 # 
 # $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/Makefile.linux,v 1.23 1999/07/02 17:46:30 faith Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.2 1999/12/14 01:33:55 robin Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/Makefile.linux,v 1.3 1999/06/27 14:08:21 dawes Exp $
 # 
 
 .SUFFIXES:
 
-# **** Start of SMP/MODVERSIONS detection
-
 # *** Setup
-LINUX=/usr/src/linux
-AUTOCONF=$(LINUX)/include/linux/autoconf.h
-
-# ** SMP
-SMP := $(shell \
-         if grep -q '^\#define.*CONFIG_SMP.*1' $(AUTOCONF); \
-	 then echo 1; else echo 0; fi)
-# If that doesn't do automatic detection properly on your system,
-# uncomment one of these lines:
-#SMP := 0
-#SMP := 1
-
-# ** MODVERSIONS
-MODVERSIONS := $(shell \
-		 if grep -q '^\#define.*CONFIG_MODVERSIONS.*1' $(AUTOCONF); \
-		 then echo 1; else echo 0; fi)
-# If that doesn't do automatic detection properly on your system,
-# uncomment one of these lines:
-#MODVERSIONS := 0
-#MODVERSIONS := 1
-
-# **** End of SMP/MODVERSIONS detection
 
 MODS=           gamma.o tdfx.o
 LIBS=           libdrm.a
@@ -73,8 +49,6 @@ TDFXHEADERS=    tdfx_drv.h $(DRMHEADERS)
 PROGOBJS=       drmstat.po xf86drm.po xf86drmHash.po xf86drmRandom.po sigio.po
 PROGHEADERS=    xf86drm.h $(DRMHEADERS)
 
-INC=		/usr/include
-
 CFLAGS=		-O2 $(WARNINGS)
 WARNINGS=	-Wall -Wwrite-strings -Wpointer-arith -Wcast-align \
 		-Wstrict-prototypes -Wshadow -Wnested-externs \
@@ -86,17 +60,44 @@ PRGCFLAGS=      $(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
 		-I../../../../../../../../programs/Xserver/hw/xfree86/common
 PRGLIBS=
 
+# **** Start of SMP/MODVERSIONS detection
+
+# First, locate correct tree for this kernel version.  If we find a
+# matching tree, we assume that we can rely on that tree's autoconf.h.
+# This may not be correct, but it is the best assumption we can make.
+
+VERSION := $(shell uname -r)
+A := /usr/src/linux-$(VERSION)/include
+B := /usr/src/linux/include
+C := /usr/include
+TREE := $(shell                                                   \
+	if grep -q $(VERSION) $A/linux/version.h; then echo $A;   \
+	elif grep -q $(VERSION) $B/linux/version.h; then echo $B; \
+	elif grep -q $(VERSION) $C/linux/version.h; then echo $C; \
+	else echo 0; fi)
+
+ifeq "$TREE" "0"
+all:; echo Error: Could not locate kernel tree
+else
+SMP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
+	| grep 'SMP = ' | cut -d' ' -f3)
+MODVERSIONS := $(shell gcc -E -I $(TREE) picker.c 2>/dev/null \
+	| grep 'MODVERSIONS = ' | cut -d' ' -f3)
+all::;@echo KERNEL HEADERS IN $(TREE): SMP=${SMP} MODVERSIONS=${MODVERSIONS}
+all:: $(LIBS) $(MODS) $(PROGS)
+endif
+
+# **** End of SMP/MODVERSIONS detection
+
 # **** Handle SMP/MODVERSIONS
 ifeq ($(SMP),1)
 MODCFLAGS += -D__SMP__
 endif
 ifeq ($(MODVERSIONS),1)
-MODCFLAGS += -DMODVERSIONS -include /usr/include/linux/modversions.h
+MODCFLAGS += -DMODVERSIONS -include $(TREE)/linux/modversions.h
 endif
 
 # **** End of configuration
-
-all: $(LIBS) $(MODS) $(PROGS)
 
 libdrm.a: $(DRMOBJS)
 	-$(RM) -f $@
