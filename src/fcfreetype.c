@@ -67,11 +67,11 @@
 #endif
 
 #if !HAVE_FT_GET_BDF_PROPERTY
-#warning "No FT_Get_BDF_Property"
+#warning "No FT_Get_BDF_Property: Please install freetype 2.1.4 or later"
 #endif
 
 #if !HAVE_FT_GET_PS_FONT_INFO
-#warning "No FT_Get_Font_Info"
+#warning "No FT_Get_PS_Font_Info: Please install freetype 2.1.1 or later"
 #endif
 
 /*
@@ -1094,7 +1094,7 @@ bail:
 #define FT_Get_Next_Char(face, ucs4, gi) ((ucs4) >= 0xffffff ? \
 					  (*(gi) = 0), 0 : \
 					  (*(gi) = 1), (ucs4) + 1)
-#warning "No FT_Get_Next_Char"
+#warning "No FT_Get_Next_Char: Please install freetype version 2.1.0 or newer"
 #endif
 
 typedef struct _FcCharEnt {

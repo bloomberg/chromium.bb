@@ -185,7 +185,8 @@ typedef struct _FcConstant {
 } FcConstant;
 
 typedef enum _FcResult {
-    FcResultMatch, FcResultNoMatch, FcResultTypeMismatch, FcResultNoId
+    FcResultMatch, FcResultNoMatch, FcResultTypeMismatch, FcResultNoId,
+    FcResultOutOfMemory,
 } FcResult;
 
 typedef struct _FcPattern   FcPattern;

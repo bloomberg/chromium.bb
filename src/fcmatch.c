@@ -493,7 +493,10 @@ FcFontSetMatch (FcConfig    *config,
     {
 	config = FcConfigGetCurrent ();
 	if (!config)
+	{
+	    *result = FcResultOutOfMemory;
 	    return 0;
+	}
     }
     for (set = 0; set < nsets; set++)
     {

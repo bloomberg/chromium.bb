@@ -1,3 +1,15 @@
+2004-05-29  Keith Packard  <keithp@keithp.com>
+
+	* fontconfig/fontconfig.h:
+	* src/fcmatch.c: (FcFontSetMatch):
+	Add FcResultOutOfMemory to provide an accurate error when
+	FcFontSetMatch fails in this way
+	
+	* src/fcfreetype.c:
+	Make #warning about lacking various FreeType features indicate
+	which version those features appeared so users know how to
+	fix the problem (Thanks to Anton Tropashko)
+
 2004-05-05  Keith Packard  <keithp@keithp.com>
 
 	* src/fcfreetype.c: (FcFreeTypeCharSetAndSpacing):
