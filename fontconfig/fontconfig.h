@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.8 2002/05/21 17:06:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.9 2002/05/22 04:37:07 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -37,7 +37,7 @@ typedef int		FcBool;
  */
 #define FC_MAJOR	1
 #define FC_MINOR	0
-#define FC_REVISION	0
+#define FC_REVISION	1
 
 #define FC_VERSION	((FC_MAJOR * 10000) + (FC_MINOR * 100) + (FC_REVISION))
 
@@ -411,6 +411,9 @@ FcInitLoadConfigAndFonts (void);
 
 FcBool
 FcInit (void);
+
+int
+FcGetVersion (void);
 
 FcBool
 FcInitReinitialize (void);

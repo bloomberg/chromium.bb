@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcinit.c,v 1.4 2002/05/21 17:06:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcinit.c,v 1.5 2002/05/21 17:48:15 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -41,6 +41,12 @@ bail1:
     FcConfigDestroy (config);
 bail0:
     return 0;
+}
+
+int
+FcGetVersion (void)
+{
+    return FC_VERSION;
 }
 
 /*

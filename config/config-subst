@@ -1,8 +1,10 @@
 #!/bin/sh
-exprs=""
+script=config-subst.$$
+trap "rm $script" 0
+rm -f $script
 for i in ${1+"$@"}; do
-	var="`echo $i | sed 's/=.*$//'`"
-	val="`echo $i | sed 's/^[^=]*=//'`"
-	exprs="$exprs -e s;@$var@;$val;"
+	var="`echo "$i" | sed 's/=.*$//'`"
+	val="`echo "$i" | sed 's/^[^=]*=//'`"
+	echo "s;@$var@;$val;" >> $script
 done
-sed $exprs
+sed -f $script
