@@ -1,7 +1,25 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.2.97
-		        2004-12-04
+		      Version 2.2.98
+		        2004-12-29
+
+2.2.98
+
+Share object name strings (Michael Meeks)
+
+Eliminate a couple of codepoints from Russian orthography (John Thacker)
+
+Add synthetic emboldening configuration changes (Jakub Pavelek)
+
+Change FcFontSetSort to ignore language after fonts with the requested
+languages have been found. (Owen Taylor)
+
+Add some RedHat font configuration changes (Owen Tayler).
+
+Add full Unicode case folding support to case-ignoring string functions
+(Keith Packard)
+
+Remove Han characters from Korean orthography (Tor Andersson)
 
 2.2.97
 

@@ -1,5 +1,12 @@
 2004-12-29  Keith Packard  <keithp@keithp.com>
 
+	* README:
+	* configure.in:
+	* fontconfig/fontconfig.h:
+	Update for version 2.2.98
+
+2004-12-29  Keith Packard  <keithp@keithp.com>
+
 	* fontconfig/fontconfig.h:
 	Document ASCII limitations of Fc character conversion macros
 	* src/fcstr.c: (FcStrCaseWalkerLong), (FcStrDowncase):
