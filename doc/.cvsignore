@@ -2,3 +2,12 @@ Makefile
 Makefile.in
 *.txt
 *.html
+fontconfig-devel
+edit-sgml
+*.o
+*.3
+*.5
+fc*.sgml
+.deps
+.libs
+func.refs
