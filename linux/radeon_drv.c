@@ -78,6 +78,26 @@
 #include "drm_dma.h"
 #include "drm_drawable.h"
 #include "drm_drv.h"
+
+#ifndef MODULE
+/* DRM(options) is called by the kernel to parse command-line options
+ * passed via the boot-loader (e.g., LILO).  It calls the insmod option
+ * routine, drm_parse_drm.
+ */
+
+/* JH- We have to hand expand the string ourselves because of the cpp.  If
+ * anyone can think of a way that we can fit into the __setup macro without
+ * changing it, then please send the solution my way.
+ */
+static int __init radeon_options( char *str )
+{
+	DRM(parse_options)( str );
+	return 1;
+}
+
+__setup( DRIVER_NAME "=", radeon_options );
+#endif
+
 #include "drm_fops.h"
 #include "drm_init.h"
 #include "drm_ioctl.h"

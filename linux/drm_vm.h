@@ -32,25 +32,25 @@
 #define __NO_VERSION__
 #include "drmP.h"
 
-struct vm_operations_struct   drm_vm_ops = {
+struct vm_operations_struct   DRM(vm_ops) = {
 	nopage:	 DRM(vm_nopage),
 	open:	 DRM(vm_open),
 	close:	 DRM(vm_close),
 };
 
-struct vm_operations_struct   drm_vm_shm_ops = {
+struct vm_operations_struct   DRM(vm_shm_ops) = {
 	nopage:	 DRM(vm_shm_nopage),
 	open:	 DRM(vm_open),
 	close:	 DRM(vm_shm_close),
 };
 
-struct vm_operations_struct   drm_vm_dma_ops = {
+struct vm_operations_struct   DRM(vm_dma_ops) = {
 	nopage:	 DRM(vm_dma_nopage),
 	open:	 DRM(vm_open),
 	close:	 DRM(vm_close),
 };
 
-struct vm_operations_struct   drm_vm_sg_ops = {
+struct vm_operations_struct   DRM(vm_sg_ops) = {
 	nopage:  DRM(vm_sg_nopage),
 	open:    DRM(vm_open),
 	close:   DRM(vm_close),
@@ -352,7 +352,7 @@ int DRM(mmap_dma)(struct file *filp, struct vm_area_struct *vma)
 	}
 	unlock_kernel();
 
-	vma->vm_ops   = &drm_vm_dma_ops;
+	vma->vm_ops   = &DRM(vm_dma_ops);
 	vma->vm_flags |= VM_LOCKED | VM_SHM; /* Don't swap */
 
 #if LINUX_VERSION_CODE < 0x020203 /* KERNEL_VERSION(2,2,3) */
@@ -446,10 +446,10 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 			  " offset = 0x%lx\n",
 			  map->type,
 			  vma->vm_start, vma->vm_end, VM_OFFSET(vma) + offset);
-		vma->vm_ops = &drm_vm_ops;
+		vma->vm_ops = &DRM(vm_ops);
 		break;
 	case _DRM_SHM:
-		vma->vm_ops = &drm_vm_shm_ops;
+		vma->vm_ops = &DRM(vm_shm_ops);
 #if LINUX_VERSION_CODE >= 0x020300
 		vma->vm_private_data = (void *)map;
 #else
@@ -460,7 +460,7 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 		vma->vm_flags |= VM_LOCKED;
 		break;
 	case _DRM_SCATTER_GATHER:
-		vma->vm_ops = &drm_vm_sg_ops;
+		vma->vm_ops = &DRM(vm_sg_ops);
 #if LINUX_VERSION_CODE >= 0x020300
 		vma->vm_private_data = (void *)map;
 #else
