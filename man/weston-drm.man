@@ -64,8 +64,43 @@ can be one of the words
 .BR off " to turn the output off, "
 .BR preferred " to use the monitor's preferred video mode, or "
 .BR current " to use the current video mode and avoid a mode switch."
-It can also be a resolution as
-\fIwidth\fBx\fIheight\fR, or a detailed mode line as below.
+It can also be a resolution as:
+.TP
+\fBmode\fR=\fIwidth\fBx\fIheight\fR
+.TP
+\fBmode\fR=\fIwidth\fBx\fIheight\fB@\fIrefresh_rate\fR
+Specify a mode with a given refresh-rate measured in Hz.
+.TP
+\fBmode\fR=\fIwidth\fBx\fIheight\fB@\fIrefresh_rate ratio\fR
+Here \fIratio\fR is Picture Aspect-Ratio which can have values as 4:3, 16:9,
+64:27, and 256:135. This resolution-format helps to select a CEA mode, if such a
+video mode is present in the mode-list of the output.
+
+CEA defines the timing of a video mode, which is considered as a standard for
+HDMI spcification and compliance testing. It defines each and every parameter of
+a video mode, like hactive, vactive, vfront, vback etc., including aspect-ratio
+information. For CEA modes, the drm layer, stores this aspect-ratio information
+in user-mode (drmModeModeInfo) flag bits 19-22. For the non-CEA modes a value of
+0 is stored in the aspect-ratio flag bits.
+
+Each CEA-mode is identified by a unique, Video Identification Code (VIC).
+For example, VIC=4 is 1280x720@60 aspect-ratio 16:9. This mode will be
+different than a non-CEA mode 1280x720@60 0:0. When the video mode
+1280x720@60 0:0 is applied, since its timing doesnt exactly match with the CEA
+information for VIC=4, it would be treated as a non-CEA mode. Also, while setting
+the HDMI-AVI-Inforframe, VIC parameter will be given as '0'. If video mode
+1280x720@60 16:9 is applied, its CEA timimgs matches with that of video mode with
+VIC=4, so the VIC parameter in HDMI-AVI-Infoframe will be set to 4.
+
+Many a times, an output may have both CEA and non-CEA modes, which are similar
+in all resepct, differing only in the aspect-ratio. A user can select a CEA mode
+by giving the aspect-ratio, along with the other arguments for the mode.
+By omitting the aspect-ratio, user can specify the non-CEA modes.
+This helps when certification testing is done, in tests like 7-27, the
+HDMI-analyzer applies a particular CEA mode, and expects the applied mode to be
+with exactly same timings, including the aspect-ratio and VIC field.
+
+The resolution can also be a detailed mode line as below.
 .TP
 \fBmode\fR=\fIdotclock hdisp hsyncstart hsyncend htotal \
 vdisp vsyncstart vsyncend vtotal hflag vflag\fR
