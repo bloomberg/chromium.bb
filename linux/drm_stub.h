@@ -159,9 +159,9 @@ static int DRM(stub_putminor)(int minor)
  * \param dev DRM device.
  * \return zero on success or a negative number on failure.
  *
- * Attempt to register the char device and get the foreign "drm" data. If
- * successful then another module already registered so gets the stub info,
- * otherwise use this module stub info and make it available for other modules.
+ * Attempt to gets inter module "drm" information. If we are first
+ * then register the character device and inter module information.
+ * Try and register, if we fail to register, backout previous work.
  *
  * Finally calls stub_info::info_register.
  */
@@ -173,12 +173,9 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 	int ret2;
 
 	DRM_DEBUG("\n");
-	ret1 = register_chrdev(DRM_MAJOR, "drm", &DRM(stub_fops));
-	if (ret1 == -EBUSY) 
-		i = (struct drm_stub_info *)inter_module_get("drm");
-	if (ret1 < 0)
-		return -1;
-
+	/* use the inter_module_get to check - as if the same module
+	   registers chrdev twice it succeeds */
+	i = (struct drm_stub_info *)inter_module_get("drm");
 	if (i) {
 				/* Already registered */
 		DRM(stub_info).info_register   = i->info_register;
@@ -187,6 +184,13 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 		DRM(stub_info).info_count = i->info_count;
 		DRM_DEBUG("already registered\n");
 	} else if (*DRM(stub_info).info_count == 0) {
+
+	        ret1 = register_chrdev(DRM_MAJOR, "drm", &DRM(stub_fops));
+                if (ret1 < 0) {
+		  printk (KERN_ERR, "Error registering drm major number.\n");
+		  return ret1;
+		}
+		
 		DRM(stub_info).drm_class = class_simple_create(THIS_MODULE, "drm");
 		if (IS_ERR(DRM(stub_info).drm_class)) {
                         printk (KERN_ERR "Error creating drm class.\n");
@@ -196,15 +200,15 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 		DRM_DEBUG("calling inter_module_register\n");
 		inter_module_register("drm", THIS_MODULE, &DRM(stub_info));
 	}
+
 	if (DRM(stub_info).info_register) {
 		ret2 = DRM(stub_info).info_register(name, fops, dev);
 		if (ret2) {
-			if (!ret1) {
+			if (!i) {
+				inter_module_unregister("drm");
 				unregister_chrdev(DRM_MAJOR, "drm");
 				class_simple_destroy(DRM(stub_info).drm_class);
 			}
-			if (!i)
-				inter_module_unregister("drm");
 		}
 		return ret2;
 	}
