@@ -84,6 +84,8 @@
 
 #ifdef __i386__
 #define __REALLY_HAVE_MTRR	(__HAVE_MTRR) && (__FreeBSD_version >= 460000)
+#elif defined(__amd64__)
+#define __REALLY_HAVE_MTRR	(__HAVE_MTRR)
 #else
 #define __REALLY_HAVE_MTRR	0
 #endif
@@ -204,15 +206,7 @@ do {									\
 	}								\
 } while (0)
 
-#define DRM_UDELAY( udelay )					\
-do {								\
-	struct timeval tv1, tv2;				\
-	microtime(&tv1);					\
-	do {							\
-		microtime(&tv2);				\
-	}							\
-	while (((tv2.tv_sec-tv1.tv_sec)*1000000 + tv2.tv_usec - tv1.tv_usec) < udelay ); \
-} while (0)
+#define DRM_UDELAY(udelay) DELAY(udelay)
 
 #define DRM_GETSAREA()					\
 do {								\
