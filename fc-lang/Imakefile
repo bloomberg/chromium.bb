@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/fc-lang/Imakefile,v 1.2 2002/07/06 23:59:15 keithp Exp $
+XCOMM $XFree86: xc/lib/fontconfig/fc-lang/Imakefile,v 1.3 2002/07/07 19:18:51 keithp Exp $
 
 #ifdef UseInstalled
 /* building outside the tree, use private defines */
@@ -26,7 +26,7 @@ ORTH1=ab.orth ar.orth az.orth ba.orth be.orth bg.orth bn.orth bo.orth br.orth\
       mk.orth ml.orth mn.orth mo.orth mt.orth nl.orth no.orth oc.orth or.orth\
       pl.orth pt.orth rm.orth ro.orth ru.orth sh.orth si.orth sk.orth sl.orth\
       sq.orth sr.orth sv.orth ta.orth te.orth th.orth tl.orth tr.orth uk.orth\
-      vo.orth yi.orth zh_cn.orth zh_tw.orth
+      vo.orth wa.orth yi.orth zh_cn.orth zh_tw.orth
 
 #
 # ISO 639-2 adds many more three letter language names
