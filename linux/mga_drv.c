@@ -545,6 +545,7 @@ int mga_release(struct inode *inode, struct file *filp)
 				break;
 			}
 		}
+		current->state = TASK_RUNNING;
 		remove_wait_queue(&dev->lock.lock_queue, &entry);
 	   	if(!retcode) {
 		   	mga_reclaim_buffers(dev, priv->pid);
