@@ -148,7 +148,7 @@ FcDirScan (FcFontSet	    *set,
 	if (e->d_name[0] != '.')
 	{
 	    strcpy ((char *) base, (char *) e->d_name);
-	    FcFileScan (set, cache, blanks, file, force);
+	    ret = FcFileScan (set, cache, blanks, file, force);
 	}
     }
     free (file);
