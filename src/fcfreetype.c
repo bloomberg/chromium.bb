@@ -344,6 +344,23 @@ static const FcStringConst  slantConsts[] = {
 #define FcIsSlant(s)	    FcStringIsConst(s,slantConsts,NUM_SLANT_CONSTS)
 #define FcContainsSlant(s)  FcStringContainsConst (s,slantConsts,NUM_SLANT_CONSTS)
 
+static double
+FcGetPixelSize (FT_Face face, int i)
+{
+#ifdef HAVE_FT_GET_BDF_PROPERTY
+    if (face->num_fixed_sizes == 1)
+    {
+	BDF_PropertyRec	prop;
+	int		rc;
+
+	rc = MY_Get_BDF_Property (face, "PIXEL_SIZE", &prop);
+	if (rc == 0 && prop.type == BDF_PROPERTY_TYPE_INTEGER)
+	    return (double) prop.u.integer;
+    }
+#endif
+    return (double) face->available_sizes[i].y_ppem / 64.0;
+}
+
 FcPattern *
 FcFreeTypeQuery (const FcChar8	*file,
 		 int		id,
@@ -991,7 +1008,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     {
 	for (i = 0; i < face->num_fixed_sizes; i++)
 	    if (!FcPatternAddDouble (pat, FC_PIXEL_SIZE,
-				     (double) face->available_sizes[i].height))
+				     FcGetPixelSize (face, i)))
 		goto bail1;
 	if (!FcPatternAddBool (pat, FC_ANTIALIAS, FcFalse))
 	    goto bail1;
@@ -1000,17 +1017,6 @@ FcFreeTypeQuery (const FcChar8	*file,
             int rc;
             int value;
             BDF_PropertyRec prop;
-
-            rc = MY_Get_BDF_Property(face, "PIXEL_SIZE", &prop);
-            if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_INTEGER)
-                value = prop.u.integer;
-            else if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_CARDINAL)
-                value = prop.u.cardinal;
-            else
-                goto nevermind;
-            if(value != face->available_sizes[0].height)
-                /* ``impossible'' */
-                goto nevermind;
 
             rc = MY_Get_BDF_Property(face, "POINT_SIZE", &prop);
             if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_INTEGER)
@@ -1760,6 +1766,12 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
     FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
     FT_GlyphSlot    slot;
     
+    /*
+     * For bitmap-only fonts, assume that they're OK.
+     */
+    if ((face->face_flags & FT_FACE_FLAG_SCALABLE) == 0)
+	return FcTrue;
+
     /*
      * When using scalable fonts, only report those glyphs
      * which can be scaled; otherwise those fonts will

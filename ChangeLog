@@ -1,3 +1,21 @@
+2004-02-06  Keith Packard  <keithp@keithp.com>
+
+	* fc-lang/nds.orth:
+	Add Low Saxon orthography 
+		(Kenneth Rohde Christiansen <kenneth@gnu.org>)
+		
+	* src/fccfg.c: (FcConfigNewestFile):
+	Oops.  Left 'newest.set' unset, which would miscompute
+	the newest file
+	
+	* src/fcfreetype.c: (FcGetPixelSize), (FcFreeTypeQuery),
+	(FcFreeTypeCheckGlyph):
+	Add FcGetPixelSize to extract correct pixel size from bdf/pcf
+	font properties (which report the wrong value in current FreeType)
+
+	Don't attempt to check for empty glyphs in non-scalable fonts; they
+	have no outlines...
+
 2004-02-01  Tor Lillqvist  <tml@iki.fi>
 
 	* src/fccfg.c (FcConfigCreate): fontconfig, at least as used by
