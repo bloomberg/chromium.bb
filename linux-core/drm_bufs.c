@@ -71,9 +71,10 @@ int DRM(order)( unsigned long size )
 	int order;
 	unsigned long tmp;
 
-	for ( order = 0, tmp = size ; tmp >>= 1 ; ++order );
+	for (order = 0, tmp = size >> 1; tmp; tmp >>= 1,  order++)
+		;
 
-	if ( size & ~(1 << order) )
+	if (size & (size - 1))
 		++order;
 
 	return order;
@@ -98,6 +99,7 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->dev;
 	drm_map_t *map;
+	drm_map_t __user *argp = (void __user *)arg;
 	drm_map_list_t *list;
 
 	if ( !(filp->f_mode & 3) ) return -EACCES; /* Require read/write */
@@ -106,7 +108,7 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 	if ( !map )
 		return -ENOMEM;
 
-	if ( copy_from_user( map, (drm_map_t *)arg, sizeof(*map) ) ) {
+	if ( copy_from_user( map, argp, sizeof(*map) ) ) {
 		DRM(free)( map, sizeof(*map), DRM_MEM_MAPS );
 		return -EFAULT;
 	}
@@ -207,10 +209,10 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 	list_add(&list->head, &dev->maplist->head);
  	up(&dev->struct_sem);
 
-	if ( copy_to_user( (drm_map_t *)arg, map, sizeof(*map) ) )
+	if ( copy_to_user( argp, map, sizeof(*map) ) )
 		return -EFAULT;
 	if ( map->type != _DRM_SHM ) {
-		if ( copy_to_user( &((drm_map_t *)arg)->handle,
+		if ( copy_to_user( &argp->handle,
 				   &map->offset,
 				   sizeof(map->offset) ) )
 			return -EFAULT;
@@ -247,7 +249,7 @@ int DRM(rmmap)(struct inode *inode, struct file *filp,
 	drm_map_t request;
 	int found_maps = 0;
 
-	if (copy_from_user(&request, (drm_map_t *)arg,
+	if (copy_from_user(&request, (drm_map_t __user *)arg,
 			   sizeof(request))) {
 		return -EFAULT;
 	}
@@ -389,10 +391,11 @@ int DRM(addbufs_agp)( struct inode *inode, struct file *filp,
 	int byte_count;
 	int i;
 	drm_buf_t **temp_buflist;
+	drm_buf_desc_t __user *argp = (void __user *)arg;
 
 	if ( !dma ) return -EINVAL;
 
-	if ( copy_from_user( &request, (drm_buf_desc_t *)arg,
+	if ( copy_from_user( &request, argp,
 			     sizeof(request) ) )
 		return -EFAULT;
 
@@ -529,7 +532,7 @@ int DRM(addbufs_agp)( struct inode *inode, struct file *filp,
 	request.count = entry->buf_count;
 	request.size = size;
 
-	if ( copy_to_user( (drm_buf_desc_t *)arg, &request, sizeof(request) ) )
+	if ( copy_to_user( argp, &request, sizeof(request) ) )
 		return -EFAULT;
 
 	dma->flags = _DRM_DMA_USE_AGP;
@@ -562,10 +565,11 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 	int page_count;
 	unsigned long *temp_pagelist;
 	drm_buf_t **temp_buflist;
+	drm_buf_desc_t __user *argp = (void __user *)arg;
 
 	if ( !dma ) return -EINVAL;
 
-	if ( copy_from_user( &request, (drm_buf_desc_t *)arg,
+	if ( copy_from_user( &request, argp,
 			     sizeof(request) ) )
 		return -EFAULT;
 
@@ -767,7 +771,7 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 	request.count = entry->buf_count;
 	request.size = size;
 
-	if ( copy_to_user( (drm_buf_desc_t *)arg, &request, sizeof(request) ) )
+	if ( copy_to_user( argp, &request, sizeof(request) ) )
 		return -EFAULT;
 
 	atomic_dec( &dev->buf_alloc );
@@ -783,6 +787,7 @@ int DRM(addbufs_sg)( struct inode *inode, struct file *filp,
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->dev;
 	drm_device_dma_t *dma = dev->dma;
+	drm_buf_desc_t __user *argp = (void __user *)arg;
 	drm_buf_desc_t request;
 	drm_buf_entry_t *entry;
 	drm_buf_t *buf;
@@ -800,7 +805,7 @@ int DRM(addbufs_sg)( struct inode *inode, struct file *filp,
 
 	if ( !dma ) return -EINVAL;
 
-	if ( copy_from_user( &request, (drm_buf_desc_t *)arg,
+	if ( copy_from_user( &request, argp,
                              sizeof(request) ) )
 		return -EFAULT;
 
@@ -938,7 +943,7 @@ int DRM(addbufs_sg)( struct inode *inode, struct file *filp,
 	request.count = entry->buf_count;
 	request.size = size;
 
-	if ( copy_to_user( (drm_buf_desc_t *)arg, &request, sizeof(request) ) )
+	if ( copy_to_user( argp, &request, sizeof(request) ) )
 		return -EFAULT;
 
 	dma->flags = _DRM_DMA_USE_SG;
@@ -967,7 +972,7 @@ int DRM(addbufs)( struct inode *inode, struct file *filp,
 {
 	drm_buf_desc_t request;
 
-	if ( copy_from_user( &request, (drm_buf_desc_t *)arg,
+	if ( copy_from_user( &request, (drm_buf_desc_t __user *)arg,
 			     sizeof(request) ) )
 		return -EFAULT;
 
@@ -1013,6 +1018,7 @@ int DRM(infobufs)( struct inode *inode, struct file *filp,
 	drm_device_t *dev = priv->dev;
 	drm_device_dma_t *dma = dev->dma;
 	drm_buf_info_t request;
+	drm_buf_info_t __user *argp = (void __user *)arg;
 	int i;
 	int count;
 
@@ -1026,9 +1032,7 @@ int DRM(infobufs)( struct inode *inode, struct file *filp,
 	++dev->buf_use;		/* Can't allocate more after this call */
 	spin_unlock( &dev->count_lock );
 
-	if ( copy_from_user( &request,
-			     (drm_buf_info_t *)arg,
-			     sizeof(request) ) )
+	if ( copy_from_user( &request, argp, sizeof(request) ) )
 		return -EFAULT;
 
 	for ( i = 0, count = 0 ; i < DRM_MAX_ORDER + 1 ; i++ ) {
@@ -1040,7 +1044,7 @@ int DRM(infobufs)( struct inode *inode, struct file *filp,
 	if ( request.count >= count ) {
 		for ( i = 0, count = 0 ; i < DRM_MAX_ORDER + 1 ; i++ ) {
 			if ( dma->bufs[i].buf_count ) {
-				drm_buf_desc_t *to = &request.list[count];
+				drm_buf_desc_t __user *to = &request.list[count];
 				drm_buf_entry_t *from = &dma->bufs[i];
 				drm_freelist_t *list = &dma->bufs[i].freelist;
 				if ( copy_to_user( &to->count,
@@ -1069,9 +1073,7 @@ int DRM(infobufs)( struct inode *inode, struct file *filp,
 	}
 	request.count = count;
 
-	if ( copy_to_user( (drm_buf_info_t *)arg,
-			   &request,
-			   sizeof(request) ) )
+	if ( copy_to_user( argp, &request, sizeof(request) ) )
 		return -EFAULT;
 
 	return 0;
@@ -1104,7 +1106,7 @@ int DRM(markbufs)( struct inode *inode, struct file *filp,
 	if ( !dma ) return -EINVAL;
 
 	if ( copy_from_user( &request,
-			     (drm_buf_desc_t *)arg,
+			     (drm_buf_desc_t __user *)arg,
 			     sizeof(request) ) )
 		return -EFAULT;
 
@@ -1151,7 +1153,7 @@ int DRM(freebufs)( struct inode *inode, struct file *filp,
 	if ( !dma ) return -EINVAL;
 
 	if ( copy_from_user( &request,
-			     (drm_buf_free_t *)arg,
+			     (drm_buf_free_t __user *)arg,
 			     sizeof(request) ) )
 		return -EFAULT;
 
@@ -1197,6 +1199,7 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->dev;
 	drm_device_dma_t *dma = dev->dma;
+	drm_buf_map_t __user *argp = (void __user *)arg;
 	int retcode = 0;
 	const int zero = 0;
 	unsigned long virtual;
@@ -1214,8 +1217,7 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 	dev->buf_use++;		/* Can't allocate more after this call */
 	spin_unlock( &dev->count_lock );
 
-	if ( copy_from_user( &request, (drm_buf_map_t *)arg,
-			     sizeof(request) ) )
+	if ( copy_from_user( &request, argp, sizeof(request) ) )
 		return -EFAULT;
 
 	if ( request.count >= dma->buf_count ) {
@@ -1262,7 +1264,7 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 			retcode = (signed long)virtual;
 			goto done;
 		}
-		request.virtual = (void *)virtual;
+		request.virtual = (void __user *)virtual;
 
 		for ( i = 0 ; i < dma->buf_count ; i++ ) {
 			if ( copy_to_user( &request.list[i].idx,
@@ -1296,7 +1298,7 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 	request.count = dma->buf_count;
 	DRM_DEBUG( "%d buffers, retcode = %d\n", request.count, retcode );
 
-	if ( copy_to_user( (drm_buf_map_t *)arg, &request, sizeof(request) ) )
+	if ( copy_to_user( argp, &request, sizeof(request) ) )
 		return -EFAULT;
 
 	return retcode;

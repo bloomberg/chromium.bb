@@ -817,12 +817,11 @@ module_exit( drm_exit );
 int DRM(version)( struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg )
 {
+	drm_version_t __user *argp = (void __user *)arg;
 	drm_version_t version;
 	int len;
 
-	if ( copy_from_user( &version,
-			     (drm_version_t *)arg,
-			     sizeof(version) ) )
+	if ( copy_from_user( &version, argp, sizeof(version) ) )
 		return -EFAULT;
 
 #define DRM_COPY( name, value )						\
@@ -842,9 +841,7 @@ int DRM(version)( struct inode *inode, struct file *filp,
 	DRM_COPY( version.date, DRIVER_DATE );
 	DRM_COPY( version.desc, DRIVER_DESC );
 
-	if ( copy_to_user( (drm_version_t *)arg,
-			   &version,
-			   sizeof(version) ) )
+	if ( copy_to_user( argp, &version, sizeof(version) ) )
 		return -EFAULT;
 	return 0;
 }
@@ -1124,7 +1121,7 @@ int DRM(lock)( struct inode *inode, struct file *filp,
 
 	++priv->lock_count;
 
-        if ( copy_from_user( &lock, (drm_lock_t *)arg, sizeof(lock) ) )
+        if ( copy_from_user( &lock, (drm_lock_t __user *)arg, sizeof(lock) ) )
 		return -EFAULT;
 
         if ( lock.context == DRM_KERNEL_CONTEXT ) {
@@ -1237,7 +1234,7 @@ int DRM(unlock)( struct inode *inode, struct file *filp,
 	drm_device_t *dev = priv->dev;
 	drm_lock_t lock;
 
-	if ( copy_from_user( &lock, (drm_lock_t *)arg, sizeof(lock) ) )
+	if ( copy_from_user( &lock, (drm_lock_t __user *)arg, sizeof(lock) ) )
 		return -EFAULT;
 
 	if ( lock.context == DRM_KERNEL_CONTEXT ) {
