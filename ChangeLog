@@ -1,5 +1,10 @@
 2005-01-28  Keith Packard  <keithp@keithp.com>
 
+	* README:
+	Add a few pointers
+
+2005-01-28  Keith Packard  <keithp@keithp.com>
+
 	* src/fcint.h:
 	* src/fcname.c: (FcNameBool):
 	* src/fcxml.c: (FcTypeName), (FcTypecheckValue), (FcTypecheckExpr),

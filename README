@@ -3,6 +3,9 @@
 		      Version 2.2.98
 		        2004-12-29
 
+Check INSTALL for compilation and installation instructions.
+Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
 2.2.98
 
 Share object name strings (Michael Meeks)
