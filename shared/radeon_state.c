@@ -1073,7 +1073,7 @@ static int radeon_cp_dispatch_texture( drm_device_t *dev,
 	u32 *buffer;
 	const u8 *data;
 	int size, dwords, tex_width, blit_width;
-	u32 y, height;
+	u32 height;
 	int i;
 	RING_LOCALS;
 
@@ -1138,10 +1138,9 @@ static int radeon_cp_dispatch_texture( drm_device_t *dev,
 			   tex->offset >> 10, tex->pitch, tex->format,
 			   image->x, image->y, image->width, image->height );
 
-		/* Make a copy of the parameters in case we have to
+		/* Make a copy of some parameters in case we have to
 		 * update them for a multi-pass texture blit.
 		 */
-		y = image->y;
 		height = image->height;
 		data = (const u8 *)image->data;
 		
@@ -1155,11 +1154,6 @@ static int radeon_cp_dispatch_texture( drm_device_t *dev,
 		} else if ( size == 0 ) {
 			return 0;
 		}
-
-		/* Update the input parameters for next time */
-		image->y += height;
-		image->height -= height;
-		image->data = (const u8 *)image->data + size;
 
 		buf = radeon_freelist_get( dev );
 		if ( 0 && !buf ) {
@@ -1190,7 +1184,7 @@ static int radeon_cp_dispatch_texture( drm_device_t *dev,
 		buffer[2] = (tex->pitch << 22) | (tex->offset >> 10);
 		buffer[3] = 0xffffffff;
 		buffer[4] = 0xffffffff;
-		buffer[5] = (y << 16) | image->x;
+		buffer[5] = (image->y << 16) | image->x;
 		buffer[6] = (height << 16) | image->width;
 		buffer[7] = dwords;
 		buffer += 8;
@@ -1227,6 +1221,10 @@ static int radeon_cp_dispatch_texture( drm_device_t *dev,
 		radeon_cp_dispatch_indirect( dev, buf, 0, buf->used );
 		radeon_cp_discard_buffer( dev, buf );
 
+		/* Update the input parameters for next time */
+		image->y += height;
+		image->height -= height;
+		(const u8 *)image->data += size;
 	} while (image->height > 0);
 
 	/* Flush the pixel cache after the blit completes.  This ensures
