@@ -350,6 +350,7 @@ typedef struct drm_agp_info {
 #define DRM_IOCTL_MGA_VERTEX  DRM_IOW( 0x44, drm_mga_vertex_t)
 #define DRM_IOCTL_MGA_FLUSH   DRM_IOW( 0x45, drm_lock_t )
 #define DRM_IOCTL_MGA_INDICES DRM_IOW( 0x46, drm_mga_indices_t)
+#define DRM_IOCTL_MGA_BLIT    DRM_IOW( 0x47, drm_mga_blit_t)
 
 /* I810 specific ioctls */
 #define DRM_IOCTL_I810_INIT    DRM_IOW( 0x40, drm_i810_init_t)

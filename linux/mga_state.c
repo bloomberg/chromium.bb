@@ -491,6 +491,8 @@ static void mga_dma_dispatch_tex_blit(drm_device_t * dev,
 				      int length, unsigned int destOrg)
 {
 	drm_mga_private_t *dev_priv = dev->dev_private;
+	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
+	unsigned int *regs = sarea_priv->ContextState;
 	int use_agp = PDEA_pagpxfer_enable | 0x00000001;
 	u16 y2;
 	PRIMLOCALS;
@@ -505,7 +507,7 @@ static void mga_dma_dispatch_tex_blit(drm_device_t * dev,
 	PRIMOUTREG(MGAREG_AR5, 64);
 
 	PRIMOUTREG(MGAREG_PITCH, 64);
-	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_PLNWT, ~0);
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 	PRIMOUTREG(MGAREG_DWGCTL, MGA_COPY_CMD);
 
@@ -514,7 +516,7 @@ static void mga_dma_dispatch_tex_blit(drm_device_t * dev,
 	PRIMOUTREG(MGAREG_FXBNDRY, (63 << 16));
 	PRIMOUTREG(MGAREG_YDSTLEN + MGAREG_MGA_EXEC, y2);
 
-	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_PLNWT, regs[MGA_CTXREG_PLNWT]);
 	PRIMOUTREG(MGAREG_SRCORG, 0);
 	PRIMOUTREG(MGAREG_PITCH, dev_priv->stride / dev_priv->cpp);
 	PRIMOUTREG(MGAREG_DWGSYNC, 0x7000);
@@ -691,7 +693,7 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, int flags,
 	/* Force reset of DWGCTL */
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
-	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_PLNWT, regs[MGA_CTXREG_PLNWT]);
 	PRIMOUTREG(MGAREG_DWGCTL, regs[MGA_CTXREG_DWGCTL]);
 	PRIMADVANCE(dev_priv);
 }
@@ -722,7 +724,7 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
-	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_PLNWT, ~0);
 	PRIMOUTREG(MGAREG_DWGCTL, MGA_COPY_CMD);
 
 	for (i = 0; i < nbox; i++) {
@@ -739,12 +741,140 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 
 	/* Force reset of DWGCTL */
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
-	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_PLNWT, regs[MGA_CTXREG_PLNWT]);
 	PRIMOUTREG(MGAREG_SRCORG, 0);
 	PRIMOUTREG(MGAREG_DWGCTL, regs[MGA_CTXREG_DWGCTL]);
 
 	PRIMADVANCE(dev_priv);
 }
+
+/*  #define BLIT_LEFT	1 */
+/*  #define BLIT_UP		4 */
+
+static void mga_dma_dispatch_blit(drm_device_t * dev,
+				  unsigned int planemask,
+				  unsigned int source,
+				  unsigned int dest,
+				  int delta_sx, int delta_sy,
+				  int delta_dx, int delta_dy,
+				  int source_pitch,
+				  int dest_pitch,
+				  int height,
+				  int ydir)
+{
+	drm_mga_private_t *dev_priv = dev->dev_private;
+	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
+	unsigned int *regs = sarea_priv->ContextState;
+	int nbox = sarea_priv->nbox;
+	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	int pixel_stride = dev_priv->stride / dev_priv->cpp;
+	u32 scandir = 0, i;
+	
+	PRIMLOCALS;	   
+
+	PRIM_OVERFLOW(dev, dev_priv, (MGA_NR_SAREA_CLIPRECTS * 5) + 20);
+
+	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_DWGSYNC, 0x7100);
+	PRIMOUTREG(MGAREG_DWGSYNC, 0x7000);
+
+	PRIMOUTREG(MGAREG_DWGCTL, MGA_COPY_CMD);
+	PRIMOUTREG(MGAREG_PLNWT, planemask);
+	PRIMOUTREG(MGAREG_SRCORG, source);
+	PRIMOUTREG(MGAREG_DSTORG, dest);
+
+	PRIMOUTREG(MGAREG_SGN, scandir);
+	PRIMOUTREG(MGAREG_MACCESS, dev_priv->mAccess);
+	PRIMOUTREG(MGAREG_AR5, ydir * source_pitch);	    
+	PRIMOUTREG(MGAREG_PITCH, dest_pitch);
+
+	for (i = 0; i < nbox; i++) {
+		int srcx = pbox[i].x1 + delta_sx;
+		int srcy = pbox[i].y1 + delta_sy;
+		int dstx = pbox[i].x1 + delta_dx;
+		int dsty = pbox[i].y1 + delta_dy;
+		int h = pbox[i].y2 - pbox[i].y1;
+		int w = pbox[i].x2 - pbox[i].x1 - 1;
+		int start;
+
+		if (ydir == -1) {
+			srcy = height - srcy - 1;
+		}
+
+		start = srcy * source_pitch + srcx;
+
+		PRIMOUTREG(MGAREG_AR0, start + w);
+		PRIMOUTREG(MGAREG_AR3, start);
+		PRIMOUTREG(MGAREG_FXBNDRY, ((dstx+w) << 16) | (dstx & 0xffff));
+		PRIMOUTREG(MGAREG_YDSTLEN + MGAREG_MGA_EXEC, (dsty << 16) | h);
+	}
+
+	/* Do something to flush AGP?
+	 */
+
+	/* Force reset of DWGCTL */
+	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_PLNWT, regs[MGA_CTXREG_PLNWT]);
+	PRIMOUTREG(MGAREG_PITCH, pixel_stride);
+	PRIMOUTREG(MGAREG_DWGCTL, regs[MGA_CTXREG_DWGCTL]);
+
+	PRIMADVANCE(dev_priv);
+}
+
+
+int mga_blit(struct inode *inode, struct file *filp,
+	     unsigned int cmd, unsigned long arg)
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->dev;
+	drm_mga_private_t *dev_priv =
+	    (drm_mga_private_t *) dev->dev_private;
+	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
+	drm_mga_blit_t blit;
+
+	if (copy_from_user(&blit, (drm_mga_blit_t *) arg, sizeof(blit)))
+		return -EFAULT;
+		
+	DRM_DEBUG("%s\n", __FUNCTION__);
+
+	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
+		DRM_ERROR("mga_blit_bufs called without lock held\n");
+		return -EINVAL;
+	}
+
+	if (sarea_priv->nbox > MGA_NR_SAREA_CLIPRECTS)
+		sarea_priv->nbox = MGA_NR_SAREA_CLIPRECTS;
+
+	/* Make sure we restore the 3D state next time.
+	 */
+	dev_priv->sarea_priv->dirty |= MGA_UPLOAD_CTX;
+	
+  	if ((blit.source & 0x3) != (SO_srcmap_sys|SO_srcacc_pci) &&
+	    (blit.dest & 0x3) != (SO_srcmap_sys|SO_srcacc_pci))
+	{
+	   mga_dma_dispatch_blit(dev,
+				 blit.planemask, 
+				 blit.source,
+				 blit.dest,
+				 blit.delta_sx, blit.delta_sy,
+				 blit.delta_dx, blit.delta_dy,
+				 blit.source_pitch,
+				 blit.dest_pitch,
+				 blit.height,
+				 blit.ydir);
+	}
+
+
+	PRIMUPDATE(dev_priv);
+
+#ifdef __i386__
+	mga_flush_write_combine();
+#endif
+	mga_dma_schedule(dev, 1);
+	return 0;
+}
+
 
 int mga_clear_bufs(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
