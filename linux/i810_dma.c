@@ -271,7 +271,7 @@ static unsigned long i810_alloc_page(drm_device_t *dev)
 	if(address == 0UL)
 		return 0;
 
-#if LINUX_VERSION_CODE < 0x020500
+#if LINUX_VERSION_CODE < 0x020409
 	atomic_inc(&virt_to_page(address)->count);
 	set_bit(PG_locked, &virt_to_page(address)->flags);
 #else
@@ -284,7 +284,7 @@ static unsigned long i810_alloc_page(drm_device_t *dev)
 static void i810_free_page(drm_device_t *dev, unsigned long page)
 {
 	if (page) {
-#if LINUX_VERSION_CODE < 0x020500
+#if LINUX_VERSION_CODE < 0x020409
 		atomic_dec(&virt_to_page(page)->count);
 		clear_bit(PG_locked, &virt_to_page(page)->flags);
 		wake_up(&virt_to_page(page)->wait);
