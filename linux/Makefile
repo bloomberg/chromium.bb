@@ -49,7 +49,7 @@ MODULE_LIST := gamma.o tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o mach64.
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))
 ARCHX86 := 1
-MODULE_LIST += i830.o i810.o
+MODULE_LIST += i830.o i810.o i915.o
 endif
 
 ifneq (,$(findstring sparc64,$(MACHINE)))
@@ -84,6 +84,8 @@ MGASHARED =     mga.h mga_dma.c mga_drm.h mga_drv.h mga_irq.c mga_state.c \
                 mga_ucode.h mga_warp.c
 I810HEADERS =   i810.h i810_drv.h i810_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 I830HEADERS =   i830.h i830_drv.h i830_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
+I915HEADERS =   i915.h i915_drv.h i915_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
+I915SHARED  =   i915.h i915_drv.h i915_drm.h i915_irq.c i915_mem.c i915_dma.c
 SISHEADERS=     sis.h sis_drv.h sis_drm.h $(DRMHEADERS)
 SISSHARED=      sis.h sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
 SAVAGEHEADERS=  savage.h savage_drv.h savage_drm.h $(DRMHEADERS) \
@@ -99,7 +101,8 @@ MACH64SHARED 	= mach64.h mach64_drv.h mach64_drm.h mach64_dma.c \
 FFBHEADERS	= ffb.h ffb_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
-	$(SISSHARED) $(TDFXSHARED) $(VIASHARED) $(MACH64SHARED)
+	$(SISSHARED) $(TDFXSHARED) $(VIASHARED) $(MACH64SHARED) \
+	$(I915SHARED)
 
 PROGS = dristat drmstat
 
@@ -315,6 +318,7 @@ CONFIG_DRM_I810 := n
 CONFIG_DRM_R128 := n
 CONFIG_DRM_RADEON := n
 CONFIG_DRM_I830 := n
+CONFIG_DRM_I915 := n
 CONFIG_DRM_SIS := n
 CONFIG_DRM_FFB := n
 CONFIG_DRM_SAVAGE := n
@@ -360,6 +364,9 @@ endif
 ifneq (,$(findstring i830,$(DRM_MODULES)))
 CONFIG_DRM_I830 := m
 endif
+ifneq (,$(findstring i915,$(DRM_MODULES)))
+CONFIG_DRM_I915 := m
+endif
 ifneq (,$(findstring savage,$(DRM_MODULES)))
 CONFIG_DRM_SAVAGE := m
 endif
@@ -374,6 +381,7 @@ $(r128-objs):	$(R128HEADERS)
 $(mga-objs):	$(MGAHEADERS)
 $(i810-objs):	$(I810HEADERS)
 $(i830-objs):	$(I830HEADERS)
+$(i915-objs):	$(I830HEADERS)
 $(radeon-objs):	$(RADEONHEADERS)
 $(sis-objs):	$(SISHEADERS)
 $(ffb-objs):	$(FFBHEADERS)
