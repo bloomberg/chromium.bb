@@ -385,36 +385,48 @@ extern int r128_cce_indirect( struct inode *inode, struct file *filp,
 
 #define R128_DEREF(reg)		*(volatile u32 *)R128_ADDR( reg )
 #ifdef __alpha__
-#define R128_READ(reg)         (_R128_READ((u32 *)R128_ADDR(reg)))
-static inline u32 _R128_READ(u32 *addr) {
-       mb();
-       return *(volatile u32 *)addr;
+#define R128_READ(reg)		(_R128_READ((u32 *)R128_ADDR(reg)))
+static inline u32 _R128_READ(u32 *addr)
+{
+	mb();
+	return *(volatile u32 *)addr;
 }
-#define R128_WRITE(reg,val)	\
-	do { wmb(); R128_DEREF(reg) = val; } while (0)
+#define R128_WRITE(reg,val)						\
+do {									\
+	wmb();								\
+	R128_DEREF(reg) = val;						\
+} while (0)
 #else
 #define R128_READ(reg)		le32_to_cpu( R128_DEREF( reg ) )
-#define R128_WRITE(reg,val)	do { R128_DEREF( reg ) = cpu_to_le32( val ); } while (0)
+#define R128_WRITE(reg,val)						\
+do {									\
+	R128_DEREF( reg ) = cpu_to_le32( val );				\
+} while (0)
 #endif
 
 #define R128_DEREF8(reg)	*(volatile u8 *)R128_ADDR( reg )
 #ifdef __alpha__
 #define R128_READ8(reg)		_R128_READ8((u8 *)R128_ADDR(reg))
-static inline u8 _R128_READ8(u8 *addr) {
+static inline u8 _R128_READ8(u8 *addr)
+{
 	mb();
 	return *(volatile u8 *)addr;
 }
-#define R128_WRITE8(reg,val)   \
-       do { wmb(); R128_DEREF8(reg) = val; } while (0)
+#define R128_WRITE8(reg,val)						\
+do {									\
+	wmb();								\
+	R128_DEREF8(reg) = val;						\
+} while (0)
 #else
 #define R128_READ8(reg)		R128_DEREF8( reg )
 #define R128_WRITE8(reg,val)	do { R128_DEREF8( reg ) = val; } while (0)
 #endif
 
-#define R128_WRITE_PLL(addr,val)                                              \
-do {                                                                          \
-	R128_WRITE8(R128_CLOCK_CNTL_INDEX, ((addr) & 0x1f) | R128_PLL_WR_EN); \
-	R128_WRITE(R128_CLOCK_CNTL_DATA, (val));                              \
+#define R128_WRITE_PLL(addr,val)					\
+do {									\
+	R128_WRITE8(R128_CLOCK_CNTL_INDEX,				\
+		    ((addr) & 0x1f) | R128_PLL_WR_EN);			\
+	R128_WRITE(R128_CLOCK_CNTL_DATA, (val));			\
 } while (0)
 
 extern int R128_READ_PLL(drm_device_t *dev, int addr);
