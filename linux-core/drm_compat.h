@@ -191,8 +191,6 @@ static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from
 }
 #endif
 
-extern const drm_agp_t drm_agp_entry;
-
 /* old architectures */
 #ifdef __AMD64__
 #define __x86_64__

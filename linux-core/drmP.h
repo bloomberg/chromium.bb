@@ -884,7 +884,6 @@ extern int drm_vblank_wait(drm_device_t * dev, unsigned int *vbl_seq);
 extern void drm_vbl_send_signals(drm_device_t * dev);
 
 				/* AGP/GART support (drm_agpsupport.h) */
-extern const drm_agp_t *drm_agp;
 extern drm_agp_head_t *drm_agp_init(void);
 extern int drm_agp_acquire(struct inode *inode, struct file *filp,
 			   unsigned int cmd, unsigned long arg);

@@ -489,7 +489,6 @@ static int __init drm_core_init(void)
 		ret = -1;
 		goto err_p3;
 	}
-	drm_agp = (drm_agp_t *) inter_module_get("drm_agp");
 
 	DRM_INFO("Initialized %s %d.%d.%d %s\n",
 		 DRIVER_NAME,
@@ -506,9 +505,6 @@ err_p1:
 
 static void __exit drm_core_exit(void)
 {
-	if (drm_agp)
-		inter_module_put("drm_agp");
-
 	remove_proc_entry("dri", NULL);
 	drm_sysfs_destroy(drm_class);
 
