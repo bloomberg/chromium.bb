@@ -66,7 +66,7 @@ WARNINGS =	-Wall -Wwrite-strings -Wpointer-arith -Wcast-align \
 		-Wstrict-prototypes -Wnested-externs \
 		-Wpointer-arith
 # -Wshadow -Winline -- make output too noisy
-MODCFLAGS =	$(CFLAGS) -D__KERNEL__ -DMODULE -fomit-frame-pointer
+MODCFLAGS =	$(CFLAGS) -D__KERNEL__ -DMODULE -fomit-frame-pointer -fno-strict-aliasing
 PRGCFLAGS =	$(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
 		-D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE \
 		-I../../../../../../include -I../../../../../../../../include \
