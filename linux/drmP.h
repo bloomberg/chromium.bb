@@ -261,6 +261,10 @@ static inline struct class_simple *class_simple_create(struct module *owner, cha
 
 #endif
 
+#ifndef __user
+#define __user
+#endif
+
 #ifndef REMAP_PAGE_RANGE_5_ARGS
 #define DRM_RPR_ARG(vma)
 #else
