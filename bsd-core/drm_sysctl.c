@@ -16,7 +16,9 @@ struct DRM(sysctl_list) {
 	int	   (*f) DRM_SYSCTL_HANDLER_ARGS;
 } DRM(sysctl_list)[] = {
 	{ "name",    DRM(name_info)    },
+#ifdef DEBUG_MEMORY
 	{ "mem",     DRM(mem_info)     },
+#endif
 	{ "vm",	     DRM(vm_info)      },
 	{ "clients", DRM(clients_info) },
 	{ "bufs",    DRM(bufs_info)    },

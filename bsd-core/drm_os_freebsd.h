@@ -398,5 +398,7 @@ extern drm_file_t	*DRM(find_file_by_proc)(drm_device_t *dev,
 extern int		DRM(sysctl_init)(drm_device_t *dev);
 extern int		DRM(sysctl_cleanup)(drm_device_t *dev);
 
-/* Memory info sysctl (drm_memory.h) */
+/* Memory info sysctl (drm_memory_debug.h) */
+#ifdef DEBUG_MEMORY
 extern int		DRM(mem_info) DRM_SYSCTL_HANDLER_ARGS;
+#endif
