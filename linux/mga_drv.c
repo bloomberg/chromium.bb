@@ -138,7 +138,7 @@ module_exit(mga_cleanup);
  * drm_parse_drm.
  */
 
-static int __init mga_options(char *str, int *ints)
+static int __init mga_options(char *str)
 {
 	drm_parse_options(str);
 	return 1;

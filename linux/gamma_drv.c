@@ -111,8 +111,8 @@ static drm_ioctl_desc_t	      gamma_ioctls[] = {
 
 #ifdef MODULE
 static char		      *gamma = NULL;
-static int 		      devices = 0;
 #endif
+static int 		      devices = 0;
 
 MODULE_AUTHOR("VA Linux Systems, Inc.");
 MODULE_DESCRIPTION("3dlabs GMX 2000");
@@ -131,7 +131,7 @@ module_exit(gamma_cleanup);
  */
  
 
-static int __init gamma_options(char *str, int *ints)
+static int __init gamma_options(char *str)
 {
 	drm_parse_options(str);
 	return 1;

@@ -139,7 +139,7 @@ module_exit(i810_cleanup);
  * routine, drm_parse_drm.
  */
 
-static int __init i810_options(char *str, int *ints)
+static int __init i810_options(char *str)
 {
 	drm_parse_options(str);
 	return 1;

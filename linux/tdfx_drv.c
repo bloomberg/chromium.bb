@@ -122,7 +122,7 @@ module_exit(tdfx_cleanup);
  * routine, drm_parse_drm.
  */
 
-static int __init tdfx_options(char *str, int *ints)
+static int __init tdfx_options(char *str)
 {
 	drm_parse_options(str);
 	return 1;
