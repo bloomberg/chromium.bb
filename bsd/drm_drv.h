@@ -121,9 +121,6 @@ static void DRM(cleanup)(device_t nbdev);
 #if __REALLY_HAVE_AGP
 MODULE_DEPEND(DRIVER_NAME, agp, 1, 1, 1);
 #endif
-#if DRM_LINUX
-MODULE_DEPEND(DRIVER_NAME, linux, 1, 1, 1);
-#endif
 #endif /* __FreeBSD__ */
 
 #ifdef __NetBSD__
@@ -1136,83 +1133,41 @@ int DRM(unlock)( DRM_IOCTL_ARGS )
 }
 
 #if DRM_LINUX
+
+#include <sys/sysproto.h>
+
+MODULE_DEPEND(DRIVER_NAME, linux, 1, 1, 1);
+
 #define LINUX_IOCTL_DRM_MIN		0x6400
 #define LINUX_IOCTL_DRM_MAX		0x64ff
 
-static linux_ioctl_function_t DRM( linux_ioctl);
-static struct linux_ioctl_handler DRM( handler) = {DRM( linux_ioctl), LINUX_IOCTL_DRM_MIN, LINUX_IOCTL_DRM_MAX};
-SYSINIT  (DRM( register),   SI_SUB_KLD, SI_ORDER_MIDDLE, linux_ioctl_register_handler, &DRM( handler));
-SYSUNINIT(DRM( unregister), SI_SUB_KLD, SI_ORDER_MIDDLE, linux_ioctl_unregister_handler, &DRM( handler));
+static linux_ioctl_function_t DRM(linux_ioctl);
+static struct linux_ioctl_handler DRM(handler) = {DRM(linux_ioctl), 
+    LINUX_IOCTL_DRM_MIN, LINUX_IOCTL_DRM_MAX};
 
-#define LINUX_IOC_VOID	IOC_VOID
-#define LINUX_IOC_IN	IOC_OUT		/* Linux has the values the other way around */
+SYSINIT(DRM(register), SI_SUB_KLD, SI_ORDER_MIDDLE, 
+    linux_ioctl_register_handler, &DRM(handler));
+SYSUNINIT(DRM(unregister), SI_SUB_KLD, SI_ORDER_MIDDLE, 
+    linux_ioctl_unregister_handler, &DRM(handler));
+
+/* The bits for in/out are switched on Linux */
+#define LINUX_IOC_IN	IOC_OUT
 #define LINUX_IOC_OUT	IOC_IN
 
-/*
- * Linux emulation IOCTL
- */
 static int
 DRM(linux_ioctl)(DRM_STRUCTPROC *p, struct linux_ioctl_args* args)
 {
-	u_long		cmd = args->cmd;
-#define STK_PARAMS	128
-	union {
-	    char stkbuf[STK_PARAMS];
-	    long align;
-	} ubuf;
-	caddr_t		data=NULL, memp=NULL;
-	u_int		size = IOCPARM_LEN(cmd);
-	int		error;
-#if (__FreeBSD_version >= 500000)
-	struct file	*fp;
-#else
-	struct file	*fp = p->p_fd->fd_ofiles[args->fd];
-#endif
-	if ( size > STK_PARAMS ) {
-		if ( size > IOCPARM_MAX )
-			return EINVAL;
-		memp = malloc( (u_long)size, DRM(M_DRM), M_WAITOK );
-		data = memp;
-	} else {
-		data = ubuf.stkbuf;
-	}
+	int error;
+	int cmd = args->cmd;
 
-	if ( cmd & LINUX_IOC_IN ) {
-		if ( size ) {
-			error = copyin( (caddr_t)args->arg, data, (u_int)size );
-			if (error) {
-				if ( memp )
-					free( data, DRM(M_DRM) );
-				return error;
-			}
-		} else {
-			data = (caddr_t)args->arg;
-		}
-	} else if ( (cmd & LINUX_IOC_OUT) && size ) {
-		/*
-		 * Zero the buffer so the user always
-		 * gets back something deterministic.
-		 */
-		bzero( data, size );
-	} else if ( cmd & LINUX_IOC_VOID ) {
-		*(caddr_t *)data = (caddr_t)args->arg;
-	}
+	args->cmd &= ~(LINUX_IOC_IN | LINUX_IOC_OUT);
+	if (cmd & LINUX_IOC_IN)
+		args->cmd |= IOC_IN;
+	if (cmd & LINUX_IOC_OUT)
+		args->cmd |= IOC_OUT;
+	
+	error = ioctl(p, (struct ioctl_args *)args);
 
-#if (__FreeBSD_version >= 500000)
-	if ( (error = fget( p, args->fd, &fp )) != 0 ) {
-		if ( memp )
-			free( memp, DRM(M_DRM) );
-		return (error);
-	}
-	error = fo_ioctl( fp, cmd, data, p->td_ucred, p );
-	fdrop( fp, p );
-#else
-	error = fo_ioctl( fp, cmd, data, p );
-#endif
-	if ( error == 0 && (cmd & LINUX_IOC_OUT) && size )
-		error = copyout( data, (caddr_t)args->arg, (u_int)size );
-	if ( memp )
-		free( memp, DRM(M_DRM) );
 	return error;
 }
 #endif /* DRM_LINUX */
