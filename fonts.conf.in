@@ -278,6 +278,12 @@
 			<int>0x2061</int>	<!-- FUNCTION APPLICATION -->
 			<int>0x2062</int>	<!-- INVISIBLE TIMES -->
 			<int>0x2063</int>	<!-- INVISIBLE SEPARATOR -->
+			<int>0x206A</int>	<!-- INHIBIT SYMMETRIC SWAPPING -->
+			<int>0x206B</int>	<!-- ACTIVATE SYMMETRIC SWAPPING -->
+			<int>0x206C</int>	<!-- INHIBIT ARABIC FORM SHAPING -->
+			<int>0x206D</int>	<!-- ACTIVATE ARABIC FORM SHAPING -->
+			<int>0x206E</int>	<!-- NATIONAL DIGIT SHAPES -->
+			<int>0x206F</int>	<!-- NOMINAL DIGIT SHAPES -->
 			<int>0x3000</int>	<!-- IDEOGRAPHIC SPACE -->
 			<int>0x3164</int>	<!-- HANGUL FILLER -->
 			<int>0xfeff</int>	<!-- ZERO WIDTH NO-BREAK SPACE -->
