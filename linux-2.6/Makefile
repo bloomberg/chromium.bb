@@ -279,6 +279,10 @@ clean cleandir:
 $(MODULE_LIST)::
 	make DRM_MODULES=$@ modules
 
+install: 
+	cp -p $(MODULE_LIST:.o=.ko) /lib/modules/$(RUNNING_REL)/kernel/drivers/char/drm
+
+
 # Build test utilities
 
 PRGCFLAGS = $(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
