@@ -41,12 +41,6 @@
 #define __HAVE_SHARED_IRQ	0
 #endif
 
-#if __HAVE_SHARED_IRQ
-#define DRM_IRQ_TYPE		SA_SHIRQ
-#else
-#define DRM_IRQ_TYPE		0
-#endif
-
 #if __HAVE_DMA
 
 int DRM(dma_setup)( drm_device_t *dev )
@@ -503,7 +497,6 @@ int DRM(dma_get_buffers)(drm_device_t *dev, drm_dma_t *dma)
 
 int DRM(irq_install)( drm_device_t *dev, int irq )
 {
-	int rid;
 	int retcode;
 
 	if ( !irq )
@@ -535,18 +528,24 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	DRM(driver_irq_preinstall)( dev );
 
 				/* Install handler */
-	rid = 0;
-	dev->irqr = bus_alloc_resource(dev->device, SYS_RES_IRQ, &rid,
+	dev->irqrid = 0;
+	dev->irqr = bus_alloc_resource(dev->device, SYS_RES_IRQ, &dev->irqrid,
 				      0, ~0, 1, RF_SHAREABLE);
-	if (!dev->irqr)
+	if (!dev->irqr) {
+		DRM_LOCK;
+		dev->irq = 0;
+		dev->irqrid = 0;
+		DRM_UNLOCK;
 		return ENOENT;
+	}
 	
 	retcode = bus_setup_intr(dev->device, dev->irqr, INTR_TYPE_TTY,
 				 DRM(dma_service), dev, &dev->irqh);
 	if ( retcode ) {
 		DRM_LOCK;
-		bus_release_resource(dev->device, SYS_RES_IRQ, 0, dev->irqr);
+		bus_release_resource(dev->device, SYS_RES_IRQ, dev->irqrid, dev->irqr);
 		dev->irq = 0;
+		dev->irqrid = 0;
 		DRM_UNLOCK;
 		return retcode;
 	}
@@ -560,10 +559,13 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 int DRM(irq_uninstall)( drm_device_t *dev )
 {
 	int irq;
-
+	int irqrid;
+	
 	DRM_LOCK;
 	irq = dev->irq;
+	irqrid = dev->irqrid;
 	dev->irq = 0;
+	dev->irqrid = 0;
 	DRM_UNLOCK;
 
 	if ( !irq )
@@ -574,7 +576,7 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 	DRM(driver_irq_uninstall)( dev );
 
 	bus_teardown_intr(dev->device, dev->irqr, dev->irqh);
-	bus_release_resource(dev->device, SYS_RES_IRQ, 0, dev->irqr);
+	bus_release_resource(dev->device, SYS_RES_IRQ, irqrid, dev->irqr);
 	
 	return 0;
 }

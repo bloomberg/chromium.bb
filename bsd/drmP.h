@@ -448,6 +448,7 @@ struct drm_device {
 				/* Context support */
 #ifdef __FreeBSD__
 	int		  irq;		/* Interrupt used by board	   */
+	int		  irqrid;		/* Interrupt used by board	   */
 	struct resource   *irqr;	/* Resource for interrupt used by board	   */
 #elif defined(__NetBSD__)
 	struct pci_attach_args  pa;
