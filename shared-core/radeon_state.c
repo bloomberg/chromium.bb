@@ -292,6 +292,9 @@ static struct {
 	{ R200_PP_CUBIC_OFFSET_F1_4, 5, "R200_PP_CUBIC_OFFSET_F1_4" },
 	{ R200_PP_CUBIC_FACES_5, 1, "R200_PP_CUBIC_FACES_5" },
 	{ R200_PP_CUBIC_OFFSET_F1_5, 5, "R200_PP_CUBIC_OFFSET_F1_5" },
+	{ RADEON_PP_TEX_SIZE_0, 2, "RADEON_PP_TEX_SIZE_0" },
+	{ RADEON_PP_TEX_SIZE_1, 2, "RADEON_PP_TEX_SIZE_1" },
+	{ RADEON_PP_TEX_SIZE_2, 2, "RADEON_PP_TEX_SIZE_1" },
 };
 
 
@@ -1167,6 +1170,8 @@ static int radeon_cp_dispatch_texture( DRMFILE filp,
 			return DRM_ERR(EAGAIN);
 		}
 
+
+		printk("Upload to %x\n", tex->offset);
 
 		/* Dispatch the indirect buffer.
 		 */
