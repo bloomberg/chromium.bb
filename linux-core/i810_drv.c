@@ -41,9 +41,9 @@
 #define DRIVER_DESC		"Intel i810"
 #define DRIVER_DATE		"20010616"
 
-#define DRIVER_MAJOR		1
-#define DRIVER_MINOR		1
-#define DRIVER_PATCHLEVEL	1
+#define DRIVER_MAJOR		2
+#define DRIVER_MINOR		0
+#define DRIVER_PATCHLEVEL	0
 
 #define DRIVER_IOCTLS							    \
 	[DRM_IOCTL_NR(DRM_IOCTL_I810_INIT)]   = { i810_dma_init,    1, 1 }, \
