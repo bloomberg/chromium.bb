@@ -130,3 +130,16 @@ void drm_reclaim_buffers(drm_device_t *dev, DRMFILE filp)
 		}
 	}
 }
+
+/* Call into the driver-specific DMA handler */
+int drm_dma(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+
+	if (dev->dma_ioctl) {
+		return dev->dma_ioctl(kdev, cmd, data, flags, p, filp);
+	} else {
+		DRM_DEBUG("DMA ioctl on driver with no dma handler\n");
+		return EINVAL;
+	}
+}

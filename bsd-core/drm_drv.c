@@ -93,7 +93,8 @@ static drm_ioctl_desc_t		  drm_ioctls[256] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]     = { drm_infobufs,    1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]      = { drm_mapbufs,     1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]     = { drm_freebufs,    1, 0 },
-	/* The DRM_IOCTL_DMA ioctl should be defined by the driver. */
+	[DRM_IOCTL_NR(DRM_IOCTL_DMA)]           = { drm_dma,         1, 0 },
+
 	[DRM_IOCTL_NR(DRM_IOCTL_CONTROL)]       = { drm_control,     1, 1 },
 
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)]   = { drm_agp_acquire, 1, 1 },
@@ -552,12 +553,10 @@ static int drm_init(device_t nbdev)
 		}
 	}
 
-	if (dev->use_ctxbitmap) {
-		retcode = drm_ctxbitmap_init(dev);
-		if (retcode != 0) {
-			DRM_ERROR("Cannot allocate memory for context bitmap.\n");
-			goto error;
-		}
+	retcode = drm_ctxbitmap_init(dev);
+	if (retcode != 0) {
+		DRM_ERROR("Cannot allocate memory for context bitmap.\n");
+		goto error;
 	}
 	
 	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d\n",
@@ -604,8 +603,7 @@ static void drm_cleanup(drm_device_t *dev)
 	destroy_dev(dev->devnode);
 #endif
 
-	if (dev->use_ctxbitmap)
-		drm_ctxbitmap_cleanup(dev);
+	drm_ctxbitmap_cleanup(dev);
 
 	if (dev->agp && dev->agp->mtrr) {
 		int __unused retcode;
@@ -858,13 +856,23 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 #endif /* __NetBSD__ */
 	}
 
-	if (nr >= dev->max_driver_ioctl || IOCGROUP(cmd) != DRM_IOCTL_BASE)
+	if (IOCGROUP(cmd) != DRM_IOCTL_BASE) {
+		DRM_DEBUG("Bad ioctl group 0x%x\n", (int)IOCGROUP(cmd));
 		return EINVAL;
+	}
 
 	ioctl = &drm_ioctls[nr];
 	/* It's not a core DRM ioctl, try driver-specific. */
-	if (ioctl->func == NULL)
+	if (ioctl->func == NULL && nr >= DRM_COMMAND_BASE) {
+		/* The array entries begin at DRM_COMMAND_BASE ioctl nr */
+		nr -= DRM_COMMAND_BASE;
+		if (nr > dev->max_driver_ioctl) {
+			DRM_DEBUG("Bad driver ioctl number, 0x%x (of 0x%x)\n",
+			    nr, dev->max_driver_ioctl);
+			return EINVAL;
+		}
 		ioctl = &dev->driver_ioctls[nr];
+	}
 	func = ioctl->func;
 
 	if (func == NULL) {
@@ -876,6 +884,9 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 		return EACCES;
 
 	retcode = func(kdev, cmd, data, flags, p, (void *)(uintptr_t)DRM_CURRENTPID);
+
+	if (retcode != 0)
+		DRM_DEBUG("    returning %d\n", retcode);
 
 	return DRM_ERR(retcode);
 }

@@ -52,6 +52,7 @@ static void radeon_configure(drm_device_t *dev)
 	dev->irq_postinstall = radeon_driver_irq_postinstall;
 	dev->irq_uninstall = radeon_driver_irq_uninstall;
 	dev->irq_handler = radeon_driver_irq_handler;
+	dev->dma_ioctl = radeon_cp_buffers;
 	/* XXX dev->reclaim_buffers = drm_core_reclaim_buffers;*/
 	/* XXX dev->get_map_ofs = drm_core_get_map_ofs;
 	dev->get_reg_ofs = drm_core_get_reg_ofs;*/

@@ -607,6 +607,7 @@ struct drm_device {
 	int	(*postsetup)(struct drm_device *);
 	void	(*open_helper)(struct drm_device *, drm_file_t *);
 	void	(*release)(struct drm_device *, void *filp);
+	int	(*dma_ioctl)(DRM_IOCTL_ARGS);
 	void	(*dma_ready)(struct drm_device *);
 	int	(*dma_quiescent)(struct drm_device *);
 	int	(*dma_flush_block_and_flush)(struct drm_device *, int context,
@@ -646,7 +647,6 @@ struct drm_device {
 	unsigned use_irq :1;
 	unsigned use_vbl_irq :1;
 	unsigned use_mtrr :1;
-	unsigned use_ctxbitmap :1;
 	/* End of driver-config section */
 
 	char		  *unique;	/* Unique identifier: e.g., busid  */
@@ -881,6 +881,9 @@ int	drm_infobufs(DRM_IOCTL_ARGS);
 int	drm_markbufs(DRM_IOCTL_ARGS);
 int	drm_freebufs(DRM_IOCTL_ARGS);
 int	drm_mapbufs(DRM_IOCTL_ARGS);
+
+/* DMA support (drm_dma.c) */
+int	drm_dma(DRM_IOCTL_ARGS);
 
 /* IRQ support (drm_irq.c) */
 int	drm_control(DRM_IOCTL_ARGS);
