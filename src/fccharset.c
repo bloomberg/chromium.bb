@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.10 2002/05/31 04:42:42 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.12 2002/06/21 06:14:45 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -948,10 +948,18 @@ FcNameParseBuildSet (FcCharSet *fcs)
     ent->set.ref = 0;
     ent->set.constant = FcTrue;
     ent->set.num = fcs->num;
-    ent->set.leaves = (FcCharLeaf **) (ent + 1);
-    ent->set.numbers = (FcChar16 *) (ent->set.leaves + fcs->num);
-    memcpy (ent->set.leaves, fcs->leaves, fcs->num * sizeof (FcCharLeaf *));
-    memcpy (ent->set.numbers, fcs->numbers, fcs->num * sizeof (FcChar16));
+    if (fcs->num)
+    {
+	ent->set.leaves = (FcCharLeaf **) (ent + 1);
+	ent->set.numbers = (FcChar16 *) (ent->set.leaves + fcs->num);
+	memcpy (ent->set.leaves, fcs->leaves, fcs->num * sizeof (FcCharLeaf *));
+	memcpy (ent->set.numbers, fcs->numbers, fcs->num * sizeof (FcChar16));
+    }
+    else
+    {
+	ent->set.leaves = 0;
+	ent->set.numbers = 0;
+    }
 
     ent->hash = hash;
     ent->next = *bucket;
