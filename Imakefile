@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.3 2002/05/21 17:08:41 keithp Exp $
+XCOMM $XFree86: Imakefile,v 1.4 2002/05/23 17:06:46 keithp Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -42,18 +42,18 @@ all:: fontconfig-config.script
 
 fontconfig-config.script: fontconfig-config.in
 	RemoveFile($@)
-	sh config/config-subst $(SUBSTVARS) < $< > $@
+	sh config/config-subst $(SUBSTVARS) < fontconfig-config.in > $@
 
 InstallScript(fontconfig-config,$(BINDIR))
 
 clean::
 	RemoveFile(fontconfig-config.script)
-	
+
 all:: fontconfig.pc
 
 fontconfig.pc: fontconfig.pc.in
 	RemoveFile($@)
-	sh config/config-subst $(SUBSTVARS) < $< > $@
+	sh config/config-subst $(SUBSTVARS) < fontconfig-config.in > $@
 
 InstallNonExecFile(fontconfig.pc,$(USRLIBDIR)/pkgconfig)
 
