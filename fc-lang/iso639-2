@@ -28,7 +28,7 @@ built.
     art			Artificial (Other)				artificielles, autres langues
     arw			Arawak 						arawak
     asm		as	Assamese 					assamais
-    ast			Asturian; Bable					asturien; bable
+*   ast			Asturian; Bable					asturien; bable
     ath			Athapascan languages				athapascanes, langues
     aus			Australian languages				australiennes, langues
 *   ava			Avaric						avar
@@ -76,7 +76,7 @@ built.
 *   cze/ces*	cs	Czech						tchèque
 *   cha		ch	Chamorro					chamorro
     chb			Chibcha						chibcha
-    che		ce	Chechen						tchétchène
+*   che		ce	Chechen						tchétchène
     chg			Chagatai					djaghataï
 *   chi/zho*	zh	Chinese						chinois
     chk			Chuukese					chuuk
@@ -85,12 +85,12 @@ built.
     cho			Choctaw						choctaw
     chp			Chipewyan					chipewyan
 *   chr			Cherokee					cherokee
-    chu		cu	Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic	slavon d'église; vieux slave; slavon liturgique; vieux bulgare
+*   chu		cu	Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic	slavon d'église; vieux slave; slavon liturgique; vieux bulgare
 *   chv		cv	Chuvash						tchouvache
     chy			Cheyenne					cheyenne
     cmc			Chamic languages				chames, langues
     cop			Coptic						copte
-    cor		kw	Cornish						cornique
+*   cor		kw	Cornish						cornique
 *   cos		co	Corsican					corse
     cpe			Creoles and pidgins, English based (Other)	créoles et pidgins anglais, autres
     cpf			Creoles and pidgins, French-based (Other)	créoles et pidgins français, autres
@@ -141,7 +141,7 @@ built.
     fro			French, Old (842-ca.1400)			français ancien (842-ca.1400)
 *   fry		fy	Frisian						frison
 *   ful			Fulah						peul
-    fur			Friulian					frioulan
+*   fur			Friulian					frioulan
     gaa			Ga						ga
     gay			Gayo						gayo
     gba			Gbaya						gbaya
@@ -153,7 +153,7 @@ built.
 *   gla		gd	Gaelic; Scottish Gaelic				gaélique; gaélique écossais
 *   gle		ga	Irish						irlandais
 *   glg		gl	Gallegan					galicien
-    glv		gv	Manx manx;					mannois
+*   glv		gv	Manx manx;					mannois
     gmh			German, Middle High (ca.1050-1500)		allemand, moyen haut (ca. 1050-1500)
     goh			German, Old High (ca.750-1050)			allemand, vieux haut (ca. 750-1050)
     gon			Gondi						gond
@@ -362,7 +362,7 @@ built.
     sas			Sasak						sasak
     sat			Santali						santal
 *   scc/srp*	sr	Serbian						serbe
-    sco			Scots						écossais
+*   sco			Scots						écossais
 *   scr/hrv*	hr	Croatian					croate
 *   sel			Selkup						selkoupe
     sem			Semitic (Other)					sémitiques, autres langues
@@ -404,7 +404,7 @@ built.
     sux			Sumerian					sumérien
     swa		sw	Swahili						swahili
 *   swe		sv	Swedish						suédois
-    syr			Syriac						syriaque
+*   syr			Syriac						syriaque
     tah		ty	Tahitian					tahitien
     tai			Tai (Other)					thaïes, autres langues
 *   tam		ta	Tamil						tamoul
@@ -424,7 +424,7 @@ built.
     tli			Tlingit						tlingit
     tmh			Tamashek					tamacheq
     tog			Tonga (Nyasa)					tonga (Nyasa)
-#   ton		to	Tonga (Tonga Islands)				tongan (Îles Tonga)
+*   ton		to	Tonga (Tonga Islands)				tongan (Îles Tonga)
     tpi			Tok Pisin					tok pisin
     tsi			Tsimshian					tsimshian
 *   tsn		tn	Tswana						tswana
@@ -448,7 +448,7 @@ built.
 *   ven			Venda						venda
 *   vie		vi	Vietnamese					vietnamien
 *   vol		vo	Volapük						volapük
-    vot			Votic						vote
+*   vot			Votic						vote
     wak			Wakashan languages				wakashennes, langues
     wal			Walamo						walamo
     war			Waray						waray

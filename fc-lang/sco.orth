@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/fc-lang/fy.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
+# $XFree86: xc/lib/fontconfig/fc-lang/wen.orth,v 1.1 2002/07/12 19:19:16 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -21,27 +21,12 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Frisian (FY)
+# Scots (CU)
 #
-# West Frisian orthography from
-# http://www.evertype.com/alphabets/west-frisian.pdf
-#
-# Added in ß from German orthography
+# Orthography from http://www.evertype.com/alphabets/scots.pdf
 #
 0041-005a
 0061-007a
-00c2
-00c4
-00c9-00cb
-00cf
-00d4
-00d6
-00da-00dc
-00df
-00e2
-00e4
-00e9-00eb
-00ef
-00f4
-00f6
-00fa-00fc
+01b7
+021c-021d
+0292
