@@ -225,8 +225,6 @@ found:
 
 int DRM(context_switch)( drm_device_t *dev, int old, int new )
 {
-        char buf[64];
-
         if ( test_and_set_bit( 0, &dev->context_flag ) ) {
                 DRM_ERROR( "Reentering -- FIXME\n" );
                 return -EBUSY;
