@@ -84,22 +84,24 @@ void DRM(dma_takedown)(drm_device_t *dev)
 				  dma->bufs[i].buf_count,
 				  dma->bufs[i].seg_count);
 			for (j = 0; j < dma->bufs[i].seg_count; j++) {
-				DRM(free_pages)(dma->bufs[i].seglist[j],
-						dma->bufs[i].page_order,
-						DRM_MEM_DMA);
+				if (dma->bufs[i].seglist[j]) {
+					DRM(free_pages)(dma->bufs[i].seglist[j],
+							dma->bufs[i].page_order,
+							DRM_MEM_DMA);
+				}
 			}
 			DRM(free)(dma->bufs[i].seglist,
 				  dma->bufs[i].seg_count
 				  * sizeof(*dma->bufs[0].seglist),
 				  DRM_MEM_SEGS);
 		}
-	   	if(dma->bufs[i].buf_count) {
-		   	for(j = 0; j < dma->bufs[i].buf_count; j++) {
-			   if(dma->bufs[i].buflist[j].dev_private) {
-			      DRM(free)(dma->bufs[i].buflist[j].dev_private,
-					dma->bufs[i].buflist[j].dev_priv_size,
-					DRM_MEM_BUFS);
-			   }
+	   	if (dma->bufs[i].buf_count) {
+		   	for (j = 0; j < dma->bufs[i].buf_count; j++) {
+				if (dma->bufs[i].buflist[j].dev_private) {
+					DRM(free)(dma->bufs[i].buflist[j].dev_private,
+						  dma->bufs[i].buflist[j].dev_priv_size,
+						  DRM_MEM_BUFS);
+				}
 			}
 		   	DRM(free)(dma->bufs[i].buflist,
 				  dma->bufs[i].buf_count *
