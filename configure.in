@@ -106,8 +106,8 @@ else
 	ft_config="$freetype_config"
 fi
 
-FREETYPE_CFLAGS="$($ft_config --cflags)"
-FREETYPE_LIBS="$($ft_config --libs)"
+FREETYPE_CFLAGS="`$ft_config --cflags`"
+FREETYPE_LIBS="`$ft_config --libs`"
 
 AC_SUBST(FREETYPE_LIBS)
 AC_SUBST(FREETYPE_CFLAGS)

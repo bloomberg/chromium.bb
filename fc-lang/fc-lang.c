@@ -164,8 +164,8 @@ get_lang (char *name)
 
     while ((c = *name++))
     {
-	if (isupper (c))
-	    c = tolower (c);
+	if (isupper ((int) (unsigned char) c))
+	    c = tolower ((int) (unsigned char) c);
 	if (c == '_')
 	    c = '-';
 	if (c == ' ')
