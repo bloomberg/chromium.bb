@@ -31,6 +31,10 @@
 #define __NO_VERSION__
 #include "drmP.h"
 
+#if LINUX_VERSION_CODE < 0x020400
+#include "stubsupport-pre24.h"
+#endif
+
 #define DRM_STUB_MAXCARDS 16	/* Enough for one machine */
 
 static struct drm_stub_list {
@@ -120,10 +124,13 @@ static int DRM(stub_putminor)(int minor)
 int DRM(stub_register)(const char *name, struct file_operations *fops,
 		       drm_device_t *dev)
 {
-	if (register_chrdev(DRM_MAJOR, "drm", &DRM(stub_fops))) {
-				/* Already registered */
-		struct drm_stub_info *i;
+	struct drm_stub_info *i = NULL;
+	
+	if (register_chrdev(DRM_MAJOR, "drm", &DRM(stub_fops)))
 		i = (struct drm_stub_info *)inter_module_get("drm");
+
+	if (i) {
+				/* Already registered */
 		DRM(stub_info).info_register   = i->info_register;
 		DRM(stub_info).info_unregister = i->info_unregister;
 	} else {
