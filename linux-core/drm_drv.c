@@ -602,7 +602,7 @@ static struct pci_driver drm_driver = {
 static int __init drm_init( void )
 {
 	struct pci_dev *pdev = NULL;
-	struct pci_driver *pdriver = NULL;
+	struct pci_device_id *pid;
 	int i;
 	
 	DRM_DEBUG( "\n" );
@@ -613,25 +613,39 @@ static int __init drm_init( void )
 
 	DRM(mem_init)();
 	
-	for (i=0; DRM(pciidlist)[i].vendor != 0; i++) {
-		pdev = pci_get_subsys(DRM(pciidlist[i]).vendor, DRM(pciidlist[i]).device, DRM(pciidlist[i]).subvendor, DRM(pciidlist[i]).subdevice, NULL);
-		if (pdev)
-		{
-			pdriver = pci_dev_driver(pdev);
-			if (pdriver)
-			{
-				DRM(fb_loaded)=1;
-				drm_probe(pdev, &DRM(pciidlist[i]));
-			}
-			else
+	for (i=0; (DRM(pciidlist)[i].vendor != 0) && !DRM(fb_loaded); i++) {
+		pid = &DRM(pciidlist[i]);
+		
+		/* pass back in pdev to account for multiple identical cards */
+		while ((pdev = pci_get_subsys(pid->vendor, pid->device, pid->subvendor, pid->subdevice, pdev))) {
+			/* is there already a driver loaded, or (short circuit saves work) */
+			/* does something like VesaFB have control of the memory region? */
+			if (pci_dev_driver(pdev) || pci_request_regions(pdev, "DRM scan")) {
+				/* go into stealth mode */
+				DRM(fb_loaded) = 1;
 				pci_dev_put(pdev);
+				break;
+			}
+			/* no fbdev or vesadev, put things back and wait for normal probe */
+			pci_release_regions(pdev);
+			pci_dev_put(pdev);
 		}
 	}
 	
-	if (DRM(fb_loaded)==0)
+	if (DRM(fb_loaded) == 0)
 		pci_register_driver(&drm_driver);
-	else
+	else {
+		for (i=0; DRM(pciidlist)[i].vendor != 0; i++) {
+			pid = &DRM(pciidlist[i]);
+			
+			/* pass back in pdev to account for multiple identical cards */
+			while ((pdev = pci_get_subsys(pid->vendor, pid->device, pid->subvendor, pid->subdevice, pdev))) {
+				/* stealth mode requires a manual probe */
+				drm_probe(pdev, &DRM(pciidlist[i]));
+			}
+		}
 		DRM_INFO("Used old pci detect: framebuffer loaded\n");
+	}
 	return 0;
 }
 
