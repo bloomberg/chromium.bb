@@ -82,7 +82,7 @@ int DRM(setunique)(struct inode *inode, struct file *filp,
 	if (copy_from_user(&u, (drm_unique_t *)arg, sizeof(u)))
 		return -EFAULT;
 
-	if (!u.unique_len)
+	if (!u.unique_len || u.unique_len > 1024)
 		return -EINVAL;
 
 	dev->unique_len = u.unique_len;

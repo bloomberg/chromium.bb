@@ -332,6 +332,12 @@ int DRM(addbufs_agp)( struct inode *inode, struct file *filp,
 		return -ENOMEM; /* May only call once for each order */
 	}
 
+	if (count < 0 || count > 4096) {
+		up( &dev->struct_sem );
+		atomic_dec( &dev->buf_alloc );
+		return -EINVAL;
+	}
+
 	entry->buflist = DRM(alloc)( count * sizeof(*entry->buflist),
 				    DRM_MEM_BUFS );
 	if ( !entry->buflist ) {
@@ -479,6 +485,12 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 		return -ENOMEM;	/* May only call once for each order */
 	}
 
+	if (count < 0 || count > 4096) {
+		up( &dev->struct_sem );
+		atomic_dec( &dev->buf_alloc );
+		return -EINVAL;
+	}
+
 	entry->buflist = DRM(alloc)( count * sizeof(*entry->buflist),
 				    DRM_MEM_BUFS );
 	if ( !entry->buflist ) {
@@ -581,6 +593,7 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 
 	atomic_dec( &dev->buf_alloc );
 	return 0;
+
 }
 #endif /* __HAVE_PCI_DMA */
 
@@ -649,6 +662,12 @@ int DRM(addbufs_sg)( struct inode *inode, struct file *filp,
                atomic_dec( &dev->buf_alloc );
                return -ENOMEM; /* May only call once for each order */
        }
+
+	if (count < 0 || count > 4096) {
+		up( &dev->struct_sem );
+		atomic_dec( &dev->buf_alloc );
+		return -EINVAL;
+	}
 
        entry->buflist = DRM(alloc)( count * sizeof(*entry->buflist),
                                    DRM_MEM_BUFS );
