@@ -815,9 +815,6 @@ int DRM(release)( struct inode *inode, struct file *filp )
 				break;	/* Got lock */
 			}
 				/* Contention */
-#if 0
-			atomic_inc( &dev->total_sleeps );
-#endif
 			schedule();
 			if ( signal_pending( current ) ) {
 				retcode = -ERESTARTSYS;

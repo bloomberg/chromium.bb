@@ -178,26 +178,6 @@ void *DRM(realloc)(void *oldpt, size_t oldsize, size_t size, int area)
 	return pt;
 }
 
-char *DRM(strdup)(const char *s, int area)
-{
-	char *pt;
-	int	 length = s ? strlen(s) : 0;
-
-	if (!(pt = DRM(alloc)(length+1, area))) return NULL;
-	strcpy(pt, s);
-	return pt;
-}
-
-void DRM(strfree)(const char *s, int area)
-{
-	unsigned int size;
-
-	if (!s) return;
-
-	size = 1 + (s ? strlen(s) : 0);
-	DRM(free)((void *)s, size, area);
-}
-
 void DRM(free)(void *pt, size_t size, int area)
 {
 	int alloc_count;

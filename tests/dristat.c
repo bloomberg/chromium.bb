@@ -69,18 +69,6 @@ static void getbusid(int fd)
     drmFreeBusid(busid);
 }
 
-#if 0
-typedef struct {
-    unsigned long	offset;	 /* Requested physical address (0 for SAREA)*/
-    unsigned long	size;	 /* Requested physical size (bytes)	    */
-    drm_map_type_t	type;	 /* Type of memory to map		    */
-    drm_map_flags_t flags;	 /* Flags				    */
-    void		*handle; /* User-space: "Handle" to pass to mmap    */
-    /* Kernel-space: kernel-virtual address    */
-    int		mtrr;	 /* MTRR slot used			    */
-				 /* Private data			    */
-} drmVmRec, *drmVmPtr;
-#endif
 
 static void getvm(int fd)
 {

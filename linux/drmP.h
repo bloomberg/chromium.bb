@@ -447,21 +447,6 @@ typedef struct drm_lock_data {
 } drm_lock_data_t;
 
 typedef struct drm_device_dma {
-#if 0
-				/* Performance Counters */
-	atomic_t	  total_prio;	/* Total DRM_DMA_PRIORITY	   */
-	atomic_t	  total_bytes;	/* Total bytes DMA'd		   */
-	atomic_t	  total_dmas;	/* Total DMA buffers dispatched	   */
-
-	atomic_t	  total_missed_dma;  /* Missed drm_do_dma	    */
-	atomic_t	  total_missed_lock; /* Missed lock in drm_do_dma   */
-	atomic_t	  total_missed_free; /* Missed drm_free_this_buffer */
-	atomic_t	  total_missed_sched;/* Missed drm_dma_schedule	    */
-
-	atomic_t	  total_tried;	/* Tried next_buffer		    */
-	atomic_t	  total_hit;	/* Sent next_buffer		    */
-	atomic_t	  total_lost;	/* Lost interrupt		    */
-#endif
 
 	drm_buf_entry_t	  bufs[DRM_MAX_ORDER+1];
 	int		  buf_count;
@@ -694,8 +679,6 @@ extern int	     DRM(mem_info)(char *buf, char **start, off_t offset,
 extern void	     *DRM(alloc)(size_t size, int area);
 extern void	     *DRM(realloc)(void *oldpt, size_t oldsize, size_t size,
 				   int area);
-extern char	     *DRM(strdup)(const char *s, int area);
-extern void	     DRM(strfree)(const char *s, int area);
 extern void	     DRM(free)(void *pt, size_t size, int area);
 extern unsigned long DRM(alloc_pages)(int order, int area);
 extern void	     DRM(free_pages)(unsigned long address, int order,

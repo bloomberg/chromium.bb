@@ -143,15 +143,10 @@ int DRM(context_switch)(drm_device_t *dev, int old, int new)
 	char	    buf[64];
 	drm_queue_t *q;
 
-#if 0
-	atomic_inc(&dev->total_ctx);
-#endif
-
 	if (test_and_set_bit(0, &dev->context_flag)) {
 		DRM_ERROR("Reentering -- FIXME\n");
 		return -EBUSY;
 	}
-
 
 	DRM_DEBUG("Context switch from %d to %d\n", old, new);
 
