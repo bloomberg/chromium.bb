@@ -362,6 +362,7 @@ src/Makefile
 src/fontconfig.def
 fc-cache/Makefile
 fc-list/Makefile
+fc-match/Makefile
 doc/Makefile
 doc/version.sgml
 test/Makefile
