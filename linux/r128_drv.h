@@ -25,10 +25,9 @@
  * DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *   Rickard E. (Rik) Faith <faith@valinux.com>
- *   Kevin E. Martin <martin@valinux.com>
- *   Gareth Hughes <gareth@valinux.com>
- *
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
+ *    Kevin E. Martin <martin@valinux.com>
+ *    Gareth Hughes <gareth@valinux.com>
  */
 
 #ifndef __R128_DRV_H__
@@ -440,8 +439,7 @@ do {									\
 	}								\
 } while (0)
 
-#define R128_WAIT_UNTIL_PAGE_FLIPPED()					\
-do {									\
+#define R128_WAIT_UNTIL_PAGE_FLIPPED() do {				\
 	OUT_RING( CCE_PACKET0( R128_WAIT_UNTIL, 0 ) );			\
 	OUT_RING( R128_EVENT_CRTC_OFFSET );				\
 } while (0)

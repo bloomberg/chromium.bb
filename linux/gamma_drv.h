@@ -11,11 +11,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -23,10 +23,10 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
- * 
+ *
  */
 
 #ifndef _GAMMA_DRV_H_
@@ -47,30 +47,60 @@ do {									\
 	}								\
 } while (0)
 
+
 extern void gamma_dma_ready(drm_device_t *dev);
 extern void gamma_dma_quiescent_single(drm_device_t *dev);
 extern void gamma_dma_quiescent_dual(drm_device_t *dev);
-				/* gamma_drv.c */
-extern int  gamma_version(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int  gamma_open(struct inode *inode, struct file *filp);
-extern int  gamma_release(struct inode *inode, struct file *filp);
-extern int  gamma_ioctl(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg);
-extern int  gamma_lock(struct inode *inode, struct file *filp,
-		       unsigned int cmd, unsigned long arg);
-extern int  gamma_unlock(struct inode *inode, struct file *filp,
-			 unsigned int cmd, unsigned long arg);
 
 				/* gamma_dma.c */
 extern int  gamma_dma_schedule(drm_device_t *dev, int locked);
 extern int  gamma_dma(struct inode *inode, struct file *filp,
 		      unsigned int cmd, unsigned long arg);
-extern int  gamma_irq_install(drm_device_t *dev, int irq);
-extern int  gamma_irq_uninstall(drm_device_t *dev);
-extern int  gamma_control(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
 extern int  gamma_find_devices(void);
 extern int  gamma_found(void);
+
+
+/* WARNING!!! MAGIC NUMBER!!!  The number of regions already added to the
+   kernel must be specified here.  Currently, the number is 2.	This must
+   match the order the X server uses for instantiating register regions ,
+   or must be passed in a new ioctl. */
+#define GAMMA_REG(reg)						   \
+	(2							   \
+	 + ((reg < 0x1000)					   \
+	    ? 0							   \
+	    : ((reg < 0x10000) ? 1 : ((reg < 0x11000) ? 2 : 3))))
+
+#define GAMMA_OFF(reg)						   \
+	((reg < 0x1000)						   \
+	 ? reg							   \
+	 : ((reg < 0x10000)					   \
+	    ? (reg - 0x1000)					   \
+	    : ((reg < 0x11000)					   \
+	       ? (reg - 0x10000)				   \
+	       : (reg - 0x11000))))
+
+#define GAMMA_BASE(reg)	 ((unsigned long)dev->maplist[GAMMA_REG(reg)]->handle)
+#define GAMMA_ADDR(reg)	 (GAMMA_BASE(reg) + GAMMA_OFF(reg))
+#define GAMMA_DEREF(reg) *(__volatile__ int *)GAMMA_ADDR(reg)
+#define GAMMA_READ(reg)	 GAMMA_DEREF(reg)
+#define GAMMA_WRITE(reg,val) do { GAMMA_DEREF(reg) = val; } while (0)
+
+#define GAMMA_BROADCASTMASK    0x9378
+#define GAMMA_COMMANDINTENABLE 0x0c48
+#define GAMMA_DMAADDRESS       0x0028
+#define GAMMA_DMACOUNT	       0x0030
+#define GAMMA_FILTERMODE       0x8c00
+#define GAMMA_GCOMMANDINTFLAGS 0x0c50
+#define GAMMA_GCOMMANDMODE     0x0c40
+#define GAMMA_GCOMMANDSTATUS   0x0c60
+#define GAMMA_GDELAYTIMER      0x0c38
+#define GAMMA_GDMACONTROL      0x0060
+#define GAMMA_GINTENABLE       0x0808
+#define GAMMA_GINTFLAGS	       0x0810
+#define GAMMA_INFIFOSPACE      0x0018
+#define GAMMA_OUTFIFOWORDS     0x0020
+#define GAMMA_OUTPUTFIFO       0x2000
+#define GAMMA_SYNC	       0x8c40
+#define GAMMA_SYNC_TAG	       0x0188
 
 #endif

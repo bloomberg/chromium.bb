@@ -56,47 +56,26 @@
    	[DRM_IOCTL_NR(DRM_IOCTL_I810_COPY)]   = { i810_copybuf,     1, 0 }, \
    	[DRM_IOCTL_NR(DRM_IOCTL_I810_DOCOPY)] = { i810_docopy,      1, 0 },
 
+
 #define __HAVE_COUNTERS         4
 #define __HAVE_COUNTER6         _DRM_STAT_IRQ
 #define __HAVE_COUNTER7         _DRM_STAT_PRIMARY
 #define __HAVE_COUNTER8         _DRM_STAT_SECONDARY
 #define __HAVE_COUNTER9         _DRM_STAT_DMA
 
-#define __HAVE_DMA_QUIESCENT	1
-#define DRIVER_DMA_QUIESCENT() do {					\
-	i810_dma_quiescent( dev );					\
-} while (0)
-
-#define __HAVE_RELEASE		1
-#define DRIVER_RELEASE() do {						\
-	i810_reclaim_buffers( dev, priv->pid );				\
-} while (0)
-
-#include "drm_drv.h"
-
-
-#define DRIVER_BUF_PRIV_T	drm_i810_buf_priv_t
-
-#define DRIVER_AGP_BUFFERS_MAP( dev )					\
-({									\
-	drm_i810_private_t *dev_priv = (dev)->dev_private;		\
-	drm_map_t *map = (dev)->maplist[dev_priv->buffer_map_idx];	\
-	map;								\
-})
-
-#include "drm_bufs.h"
-
 
 #include "drm_agpsupport.h"
 #include "drm_auth.h"
+#include "drm_bufs.h"
 #include "drm_context.h"
 #include "drm_dma.h"
 #include "drm_drawable.h"
+#include "drm_drv.h"
 #include "drm_fops.h"
 #include "drm_init.h"
 #include "drm_ioctl.h"
 #include "drm_lock.h"
-#include "drm_lists.h"		/* kw: added for i810_waitlist_destroy */
+#include "drm_lists.h"
 #include "drm_memory.h"
 #include "drm_proc.h"
 #include "drm_vm.h"

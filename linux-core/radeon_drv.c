@@ -36,7 +36,7 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20010215"
+#define DRIVER_DATE		"20010216"
 
 #define DRIVER_MAJOR		1
 #define DRIVER_MINOR		0
@@ -59,6 +59,7 @@
  [DRM_IOCTL_NR(DRM_IOCTL_RADEON_STIPPLE)]    = { radeon_cp_stipple,  1, 0 }, \
  [DRM_IOCTL_NR(DRM_IOCTL_RADEON_INDIRECT)]   = { radeon_cp_indirect, 1, 1 },
 
+
 #if 0
 /* GH: Count data sent to card via ring or vertex/indirect buffers.
  */
@@ -68,41 +69,14 @@
 #define __HAVE_COUNTER8         _DRM_STAT_SECONDARY
 #endif
 
-#define __HAVE_DMA_QUIESCENT	1
-#define DRIVER_DMA_QUIESCENT() do {					\
-	drm_radeon_private_t *dev_priv = dev->dev_private;		\
-	return radeon_do_cp_idle( dev_priv );				\
-} while (0)
-
-#define DRIVER_PRERELEASE() do {					\
-	if ( dev->dev_private ) {					\
-		drm_radeon_private_t *dev_priv = dev->dev_private;	\
-		if ( dev_priv->page_flipping ) {			\
-			radeon_do_cleanup_pageflip( dev );		\
-		}							\
-	}								\
-} while (0)
-
-#define DRIVER_PRETAKEDOWN() do {					\
-	if ( dev->dev_private ) radeon_do_cleanup_cp( dev );		\
-} while (0)
-
-#include "drm_drv.h"
-
-
-#define DRIVER_BUF_PRIV_T	drm_radeon_buf_priv_t
-
-#define DRIVER_AGP_BUFFERS_MAP( dev )					\
-	((drm_radeon_private_t *)((dev)->dev_private))->buffers
-
-#include "drm_bufs.h"
-
 
 #include "drm_agpsupport.h"
 #include "drm_auth.h"
+#include "drm_bufs.h"
 #include "drm_context.h"
 #include "drm_dma.h"
 #include "drm_drawable.h"
+#include "drm_drv.h"
 #include "drm_fops.h"
 #include "drm_init.h"
 #include "drm_ioctl.h"

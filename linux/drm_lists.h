@@ -74,7 +74,7 @@ int DRM(waitlist_put)(drm_waitlist_t *bl, drm_buf_t *buf)
 			  buf->idx, buf->pid);
 		return -EINVAL;
 	}
-#if DRM_DMA_HISTOGRAM
+#if __HAVE_DMA_HISTOGRAM
 	buf->time_queued = get_cycles();
 #endif
 	buf->list	 = DRM_LIST_WAIT;
@@ -105,6 +105,7 @@ drm_buf_t *DRM(waitlist_get)(drm_waitlist_t *bl)
 }
 
 #endif /* __HAVE_DMA_WAITLIST */
+
 
 #if __HAVE_DMA_FREELIST
 
@@ -142,7 +143,7 @@ int DRM(freelist_put)(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 			  buf->idx, buf->waiting, buf->pending, buf->list);
 	}
 	if (!bl) return 1;
-#if DRM_DMA_HISTOGRAM
+#if __HAVE_DMA_HISTOGRAM
 	buf->time_freed = get_cycles();
 	DRM(histogram_compute)(dev, buf);
 #endif

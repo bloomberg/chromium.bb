@@ -102,18 +102,6 @@ typedef struct drm_mga_private {
 	drm_map_t *agp_textures;
 } drm_mga_private_t;
 
-				/* mga_drv.c */
-extern int mga_version( struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg );
-extern int mga_open( struct inode *inode, struct file *filp );
-extern int mga_release( struct inode *inode, struct file *filp );
-extern int mga_ioctl( struct inode *inode, struct file *filp,
-		      unsigned int cmd, unsigned long arg );
-extern int mga_lock( struct inode *inode, struct file *filp,
-		     unsigned int cmd, unsigned long arg );
-extern int mga_unlock( struct inode *inode, struct file *filp,
-		       unsigned int cmd, unsigned long arg );
-
 				/* mga_dma.c */
 extern int mga_dma_init( struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg );
@@ -121,8 +109,6 @@ extern int mga_dma_flush( struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg );
 extern int mga_dma_reset( struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg );
-extern int mga_control( struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg );
 extern int mga_dma_buffers( struct inode *inode, struct file *filp,
 			    unsigned int cmd, unsigned long arg );
 
@@ -136,7 +122,8 @@ extern void mga_do_dma_flush( drm_mga_private_t *dev_priv );
 extern void mga_do_dma_wrap_start( drm_mga_private_t *dev_priv );
 extern void mga_do_dma_wrap_end( drm_mga_private_t *dev_priv );
 
-extern int mga_irq_uninstall( drm_device_t *dev );
+extern int mga_freelist_put( drm_device_t *dev, drm_buf_t *buf );
+
 
 				/* mga_state.c */
 extern int  mga_dma_clear( struct inode *inode, struct file *filp,

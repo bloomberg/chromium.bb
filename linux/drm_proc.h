@@ -50,7 +50,7 @@ static int	   DRM(bufs_info)(char *buf, char **start, off_t offset,
 static int	   DRM(vma_info)(char *buf, char **start, off_t offset,
 				 int request, int *eof, void *data);
 #endif
-#if DRM_DMA_HISTOGRAM
+#if __HAVE_DMA_HISTOGRAM
 static int	   DRM(histo_info)(char *buf, char **start, off_t offset,
 				   int request, int *eof, void *data);
 #endif
@@ -68,7 +68,7 @@ struct drm_proc_list {
 #if DRM_DEBUG_CODE
 	{ "vma",     DRM(vma_info)     },
 #endif
-#if DRM_DMA_HISTOGRAM
+#if __HAVE_DMA_HISTOGRAM
 	{ "histo",   DRM(histo_info)   },
 #endif
 };
@@ -481,7 +481,7 @@ static int DRM(vma_info)(char *buf, char **start, off_t offset, int request,
 #endif
 
 
-#if DRM_DMA_HISTOGRAM
+#if __HAVE_DMA_HISTOGRAM
 static int DRM(_histo_info)(char *buf, char **start, off_t offset, int request,
 			    int *eof, void *data)
 {

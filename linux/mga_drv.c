@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"mga"
 #define DRIVER_DESC		"Matrox G200/G400"
-#define DRIVER_DATE		"20010215"
+#define DRIVER_DATE		"20010216"
 
 #define DRIVER_MAJOR		3
 #define DRIVER_MINOR		0
@@ -56,38 +56,20 @@
 	[DRM_IOCTL_NR(DRM_IOCTL_MGA_ILOAD)]   = { mga_dma_iload,   1, 0 }, \
 	[DRM_IOCTL_NR(DRM_IOCTL_MGA_BLIT)]    = { mga_dma_blit,    1, 0 },
 
+
 #define __HAVE_COUNTERS         3
 #define __HAVE_COUNTER6         _DRM_STAT_IRQ
 #define __HAVE_COUNTER7         _DRM_STAT_PRIMARY
 #define __HAVE_COUNTER8         _DRM_STAT_SECONDARY
 
-#define __HAVE_DMA_QUIESCENT	1
-#define DRIVER_DMA_QUIESCENT()						\
-do {									\
-	drm_mga_private_t *dev_priv = dev->dev_private;			\
-	return mga_do_wait_for_idle( dev_priv );			\
-} while (0)
-
-#define DRIVER_PRETAKEDOWN() do {					\
-	if ( dev->dev_private ) mga_do_cleanup_dma( dev );		\
-} while (0)
-
-#include "drm_drv.h"
-
-
-#define DRIVER_BUF_PRIV_T	drm_mga_buf_priv_t
-
-#define DRIVER_AGP_BUFFERS_MAP( dev )					\
-	((drm_mga_private_t *)((dev)->dev_private))->buffers
-
-#include "drm_bufs.h"
-
 
 #include "drm_agpsupport.h"
 #include "drm_auth.h"
+#include "drm_bufs.h"
 #include "drm_context.h"
 #include "drm_dma.h"
 #include "drm_drawable.h"
+#include "drm_drv.h"
 #include "drm_fops.h"
 #include "drm_init.h"
 #include "drm_ioctl.h"

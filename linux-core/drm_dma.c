@@ -118,7 +118,7 @@ void DRM(dma_takedown)(drm_device_t *dev)
 }
 
 
-#if DRM_DMA_HISTOGRAM
+#if __HAVE_DMA_HISTOGRAM
 /* This is slow, but is useful for debugging. */
 int DRM(histogram_slot)(unsigned long count)
 {
@@ -182,7 +182,7 @@ void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
 	buf->pending  = 0;
 	buf->pid      = 0;
 	buf->used     = 0;
-#if DRM_DMA_HISTOGRAM
+#if __HAVE_DMA_HISTOGRAM
 	buf->time_completed = get_cycles();
 #endif
 
@@ -230,85 +230,6 @@ void DRM(reclaim_buffers)(drm_device_t *dev, pid_t pid)
 /* GH: This is a big hack for now...
  */
 #if __HAVE_OLD_DMA
-
-int drm_context_switch(drm_device_t *dev, int old, int new)
-{
-	char	    buf[64];
-	drm_queue_t *q;
-
-#if 0
-	atomic_inc(&dev->total_ctx);
-#endif
-
-	if (test_and_set_bit(0, &dev->context_flag)) {
-		DRM_ERROR("Reentering -- FIXME\n");
-		return -EBUSY;
-	}
-
-#if DRM_DMA_HISTOGRAM
-	dev->ctx_start = get_cycles();
-#endif
-
-	DRM_DEBUG("Context switch from %d to %d\n", old, new);
-
-	if (new >= dev->queue_count) {
-		clear_bit(0, &dev->context_flag);
-		return -EINVAL;
-	}
-
-	if (new == dev->last_context) {
-		clear_bit(0, &dev->context_flag);
-		return 0;
-	}
-
-	q = dev->queuelist[new];
-	atomic_inc(&q->use_count);
-	if (atomic_read(&q->use_count) == 1) {
-		atomic_dec(&q->use_count);
-		clear_bit(0, &dev->context_flag);
-		return -EINVAL;
-	}
-
-	if (DRM(flags) & DRM_FLAG_NOCTX) {
-		drm_context_switch_complete(dev, new);
-	} else {
-		sprintf(buf, "C %d %d\n", old, new);
-		DRM(write_string)(dev, buf);
-	}
-
-	atomic_dec(&q->use_count);
-
-	return 0;
-}
-
-int drm_context_switch_complete(drm_device_t *dev, int new)
-{
-	drm_device_dma_t *dma = dev->dma;
-
-	dev->last_context = new;  /* PRE/POST: This is the _only_ writer. */
-	dev->last_switch  = jiffies;
-
-	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
-		DRM_ERROR("Lock isn't held after context switch\n");
-	}
-
-	if (!dma || !(dma->next_buffer && dma->next_buffer->while_locked)) {
-		if (DRM(lock_free)(dev, &dev->lock.hw_lock->lock,
-				  DRM_KERNEL_CONTEXT)) {
-			DRM_ERROR("Cannot free lock\n");
-		}
-	}
-
-#if DRM_DMA_HISTOGRAM
-	atomic_inc(&dev->histo.ctx[DRM(histogram_slot)(get_cycles()
-						      - dev->ctx_start)]);
-
-#endif
-	clear_bit(0, &dev->context_flag);
-	wake_up_interruptible(&dev->context_wait);
-
-	return 0;
-}
 
 void DRM(clear_next_buffer)(drm_device_t *dev)
 {
@@ -571,6 +492,103 @@ int DRM(dma_get_buffers)(drm_device_t *dev, drm_dma_t *dma)
 	return 0;
 }
 
+#endif /* __HAVE_OLD_DMA */
+
+
+#if __HAVE_DMA_IRQ
+
+int DRM(irq_install)( drm_device_t *dev, int irq )
+{
+	int ret;
+
+	if ( !irq )
+		return -EINVAL;
+
+	down( &dev->struct_sem );
+	if ( dev->irq ) {
+		up( &dev->struct_sem );
+		return -EBUSY;
+	}
+	dev->irq = irq;
+	up( &dev->struct_sem );
+
+	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, irq );
+
+	dev->context_flag = 0;
+	dev->interrupt_flag = 0;
+	dev->dma_flag = 0;
+
+	dev->dma->next_buffer = NULL;
+	dev->dma->next_queue = NULL;
+	dev->dma->this_buffer = NULL;
+
+#if __HAVE_DMA_IRQ_BH
+	INIT_LIST_HEAD( &dev->tq.list );
+	dev->tq.sync = 0;
+	dev->tq.routine = DRM(dma_immediate_bh);
+	dev->tq.data = dev;
 #endif
 
-#endif
+				/* Before installing handler */
+	DRIVER_PREINSTALL();
+
+				/* Install handler */
+	ret = request_irq( dev->irq, DRM(dma_service),
+			   0, dev->devname, dev );
+	if ( ret < 0 ) {
+		down( &dev->struct_sem );
+		dev->irq = 0;
+		up( &dev->struct_sem );
+		return ret;
+	}
+
+				/* After installing handler */
+	DRIVER_POSTINSTALL();
+
+	return 0;
+}
+
+int DRM(irq_uninstall)( drm_device_t *dev )
+{
+	int irq;
+
+	down( &dev->struct_sem );
+	irq = dev->irq;
+	dev->irq = 0;
+	up( &dev->struct_sem );
+
+	if ( !irq )
+		return -EINVAL;
+
+	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, irq );
+
+	DRIVER_UNINSTALL();
+
+	free_irq( irq, dev );
+
+	return 0;
+}
+
+int DRM(control)( struct inode *inode, struct file *filp,
+		  unsigned int cmd, unsigned long arg )
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->dev;
+	drm_control_t ctl;
+
+	if ( copy_from_user( &ctl, (drm_control_t *)arg, sizeof(ctl) ) )
+		return -EFAULT;
+
+	switch ( ctl.func ) {
+	case DRM_INST_HANDLER:
+		return DRM(irq_install)( dev, ctl.irq );
+	case DRM_UNINST_HANDLER:
+		return DRM(irq_uninstall)( dev );
+	default:
+		return -EINVAL;
+	}
+}
+
+#endif /* __HAVE_DMA_IRQ */
+
+#endif /* __HAVE_DMA */

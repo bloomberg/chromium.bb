@@ -34,13 +34,34 @@
  */
 #define DRM(x) mga_##x
 
+/* General customization:
+ */
 #define __HAVE_AGP		1
 #define __MUST_HAVE_AGP		1
-
 #define __HAVE_MTRR		1
-
 #define __HAVE_CTX_BITMAP	1
 
+/* Driver customization:
+ */
+#define DRIVER_PRETAKEDOWN() do {					\
+	if ( dev->dev_private ) mga_do_cleanup_dma( dev );		\
+} while (0)
+
+/* DMA customization:
+ */
 #define __HAVE_DMA		1
+
+#define __HAVE_DMA_QUIESCENT	1
+#define DRIVER_DMA_QUIESCENT() do {					\
+	drm_mga_private_t *dev_priv = dev->dev_private;			\
+	return mga_do_wait_for_idle( dev_priv );			\
+} while (0)
+
+/* Buffer customization:
+ */
+#define DRIVER_BUF_PRIV_T	drm_mga_buf_priv_t
+
+#define DRIVER_AGP_BUFFERS_MAP( dev )					\
+	((drm_mga_private_t *)((dev)->dev_private))->buffers
 
 #endif

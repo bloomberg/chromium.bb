@@ -26,7 +26,7 @@
  *
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
- *
+ *    Gareth Hughes <gareth@valinux.com>
  */
 
 #include <linux/config.h>
@@ -38,29 +38,15 @@
 
 #define DRIVER_NAME		"gamma"
 #define DRIVER_DESC		"3DLabs gamma"
-#define DRIVER_DATE		"20010215"
+#define DRIVER_DATE		"20010216"
 
 #define DRIVER_MAJOR		1
 #define DRIVER_MINOR		0
 #define DRIVER_PATCHLEVEL	0
 
-
 #define DRIVER_IOCTLS							  \
 	[DRM_IOCTL_NR(DRM_IOCTL_DMA)]	     = { gamma_dma,	  1, 0 }
 
-#define __HAVE_MTRR		1
-#define __HAVE_CTX_BITMAP	0
-#define __HAVE_PCI_DMA		1
-#define __HAVE_MULTIPLE_DMA_QUEUES	1
-#define __HAVE_DMA_FLUSH		1
-#define __HAVE_DMA_QUEUE		0
-#define __HAVE_DMA_SCHEDULE		1
-#define __HAVE_DMA_WAITQUEUE		1
-#define __HAVE_DMA_WAITLIST	1
-#define __HAVE_DMA_FREELIST	1
-#define __HAVE_DMA		1
-#define __HAVE_OLD_DMA		1
-#define __HAVE_DMA_IRQ		1
 
 #define __HAVE_COUNTERS		5
 #define __HAVE_COUNTER6		_DRM_STAT_IRQ
@@ -69,35 +55,19 @@
 #define __HAVE_COUNTER9		_DRM_STAT_SPECIAL
 #define __HAVE_COUNTER10	_DRM_STAT_MISSED
 
-#define __HAVE_DMA_READY	1
-#define DRIVER_DMA_READY()						\
-do {									\
-	gamma_dma_ready(dev);						\
-} while (0)
 
-#define __HAVE_DMA_QUIESCENT	1
-#define DRIVER_DMA_QUIESCENT()						\
-do {									\
-	/* FIXME ! */ 							\
-	gamma_dma_quiescent_dual(dev);					\
-	return 0;							\
-} while (0)
-
-#if 0
-#define __HAVE_DRIVER_RELEASE	1
-#define DRIVER_RELEASE() do {						\
-	gamma_reclaim_buffers( dev, priv->pid );			\
-	if ( dev->dev_private ) {					\
-		drm_gamma_private_t *dev_priv = dev->dev_private;	\
-		dev_priv->dispatch_status &= MGA_IN_DISPATCH;		\
-	}								\
-} while (0)
-#endif
-
-#if 0
-#define DRIVER_PRETAKEDOWN() do {					\
-	if ( dev->dev_private ) gamma_do_cleanup_dma( dev );		\
-} while (0)
-#endif
-
+#include "drm_auth.h"
+#include "drm_bufs.h"
+#include "drm_context.h"
+#include "drm_dma.h"
+#include "drm_drawable.h"
 #include "drm_drv.h"
+#include "drm_fops.h"
+#include "drm_init.h"
+#include "drm_ioctl.h"
+#include "drm_lists.h"
+#include "drm_lock.h"
+#include "drm_memory.h"
+#include "drm_proc.h"
+#include "drm_vm.h"
+#include "drm_stub.h"

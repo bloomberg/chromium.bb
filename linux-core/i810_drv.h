@@ -80,12 +80,6 @@ typedef struct drm_i810_private {
 extern int  i810_dma_schedule(drm_device_t *dev, int locked);
 extern int  i810_getbuf(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
-extern int  i810_irq_install(drm_device_t *dev, int irq);
-extern int  i810_irq_uninstall(drm_device_t *dev);
-extern int  i810_control(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int  i810_lock(struct inode *inode, struct file *filp,
-		       unsigned int cmd, unsigned long arg);
 extern int  i810_dma_init(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg);
 extern int  i810_flush_ioctl(struct inode *inode, struct file *filp,
@@ -112,6 +106,19 @@ int i810_swap_bufs(struct inode *inode, struct file *filp,
 
 int i810_clear_bufs(struct inode *inode, struct file *filp,
 		    unsigned int cmd, unsigned long arg);
+
+
+#define I810_REG(reg)		2
+#define I810_BASE(reg)		((unsigned long) \
+				dev->maplist[I810_REG(reg)]->handle)
+#define I810_ADDR(reg)		(I810_BASE(reg) + reg)
+#define I810_DEREF(reg)		*(__volatile__ int *)I810_ADDR(reg)
+#define I810_READ(reg)		I810_DEREF(reg)
+#define I810_WRITE(reg,val) 	do { I810_DEREF(reg) = val; } while (0)
+#define I810_DEREF16(reg)	*(__volatile__ u16 *)I810_ADDR(reg)
+#define I810_READ16(reg)	I810_DEREF16(reg)
+#define I810_WRITE16(reg,val)	do { I810_DEREF16(reg) = val; } while (0)
+
 
 #define GFX_OP_USER_INTERRUPT 		((0<<29)|(2<<23))
 #define GFX_OP_BREAKPOINT_INTERRUPT	((0<<29)|(1<<23))

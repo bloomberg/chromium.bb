@@ -252,7 +252,7 @@ int DRM(addbufs_agp)( struct inode *inode, struct file *filp,
 		buf->order   = order;
 		buf->used    = 0;
 
-		buf->offset  = (dma->byte_count + offset); /* ******** */
+		buf->offset  = (dma->byte_count + offset);
 		buf->bus_address = agp_offset + offset;
 		buf->address = (void *)(agp_offset + offset);
 		buf->next    = NULL;
@@ -266,7 +266,7 @@ int DRM(addbufs_agp)( struct inode *inode, struct file *filp,
 					       DRM_MEM_BUFS );
 		memset( buf->dev_private, 0, buf->dev_priv_size );
 
-#if DRM_DMA_HISTOGRAM
+#if __HAVE_DMA_HISTOGRAM
 		buf->time_queued = 0;
 		buf->time_dispatched = 0;
 		buf->time_completed = 0;
@@ -297,17 +297,12 @@ int DRM(addbufs_agp)( struct inode *inode, struct file *filp,
 	DRM_DEBUG( "dma->buf_count : %d\n", dma->buf_count );
 	DRM_DEBUG( "entry->buf_count : %d\n", entry->buf_count );
 
-/* GH: Please leave this disabled for now.  I need to fix this properly...
- */
-#if 0
-	/* FIXME: work this mess out...
-	 */
+#if __HAVE_DMA_FREELIST
 	DRM(freelist_create)( &entry->freelist, entry->buf_count );
 	for ( i = 0 ; i < entry->buf_count ; i++ ) {
 		DRM(freelist_put)( dev, &entry->freelist, &entry->buflist[i] );
 	}
 #endif
-
 	up( &dev->struct_sem );
 
 	request.count = entry->buf_count;
@@ -443,11 +438,11 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 			buf->pending = 0;
 			init_waitqueue_head( &buf->dma_wait );
 			buf->pid     = 0;
-#if DRM_DMA_HISTOGRAM
+#if __HAVE_DMA_HISTOGRAM
 			buf->time_queued     = 0;
 			buf->time_dispatched = 0;
 			buf->time_completed  = 0;
-			buf->time_freed	     = 0;
+			buf->time_freed      = 0;
 #endif
 			DRM_DEBUG( "buffer %d @ %p\n",
 				   entry->buf_count, buf->address );
@@ -469,17 +464,12 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 	dma->page_count += entry->seg_count << page_order;
 	dma->byte_count += PAGE_SIZE * (entry->seg_count << page_order);
 
-/* GH: Please leave this disabled for now.  I need to fix this properly...
- */
-#if 0
-	/* FIXME: work this mess out...
-	 */
+#if __HAVE_DMA_FREELIST
 	DRM(freelist_create)( &entry->freelist, entry->buf_count );
 	for ( i = 0 ; i < entry->buf_count ; i++ ) {
 		DRM(freelist_put)( dev, &entry->freelist, &entry->buflist[i] );
 	}
 #endif
-
 	up( &dev->struct_sem );
 
 	request.count = entry->buf_count;

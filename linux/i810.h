@@ -34,17 +34,77 @@
  */
 #define DRM(x) i810_##x
 
+/* General customization:
+ */
 #define __HAVE_AGP		1
 #define __MUST_HAVE_AGP		1
-
 #define __HAVE_MTRR		1
-
 #define __HAVE_CTX_BITMAP	1
 
+/* Driver customization:
+ */
+#define __HAVE_RELEASE		1
+#define DRIVER_RELEASE() do {						\
+	i810_reclaim_buffers( dev, priv->pid );				\
+} while (0)
+
+/* DMA customization:
+ */
 #define __HAVE_DMA		1
-#define __HAVE_DMA_IRQ		1
 #define __HAVE_DMA_QUEUE	1
 #define __HAVE_DMA_WAITLIST	1
 #define __HAVE_DMA_RECLAIM	1
+
+#define __HAVE_DMA_QUIESCENT	1
+#define DRIVER_DMA_QUIESCENT() do {					\
+	i810_dma_quiescent( dev );					\
+} while (0)
+
+#define __HAVE_DMA_IRQ		1
+#define __HAVE_DMA_IRQ_BH	1
+#define DRIVER_PREINSTALL() do {					\
+	u16 tmp;							\
+   	tmp = I810_READ16( I810REG_HWSTAM );				\
+   	tmp = tmp & 0x6000;						\
+   	I810_WRITE16( I810REG_HWSTAM, tmp );				\
+									\
+      	tmp = I810_READ16( I810REG_INT_MASK_R );			\
+   	tmp = tmp & 0x6000;		/* Unmask interrupts */		\
+   	I810_WRITE16( I810REG_INT_MASK_R, tmp );			\
+   	tmp = I810_READ16( I810REG_INT_ENABLE_R );			\
+   	tmp = tmp & 0x6000;		/* Disable all interrupts */	\
+      	I810_WRITE16( I810REG_INT_ENABLE_R, tmp );			\
+} while (0)
+
+#define DRIVER_POSTINSTALL() do {					\
+	u16 tmp;							\
+   	tmp = I810_READ16( I810REG_INT_ENABLE_R );			\
+   	tmp = tmp & 0x6000;						\
+   	tmp = tmp | 0x0003;	/* Enable bp & user interrupts */	\
+   	I810_WRITE16( I810REG_INT_ENABLE_R, tmp );			\
+} while (0)
+
+#define DRIVER_UNINSTALL() do {						\
+	u16 tmp;							\
+   	tmp = I810_READ16( I810REG_INT_IDENTITY_R );			\
+   	tmp = tmp & ~(0x6000);		/* Clear all interrupts */	\
+   	if ( tmp != 0 ) I810_WRITE16( I810REG_INT_IDENTITY_R, tmp );	\
+									\
+   	tmp = I810_READ16( I810REG_INT_ENABLE_R );			\
+   	tmp = tmp & 0x6000;		/* Disable all interrupts */	\
+   	I810_WRITE16( I810REG_INT_ENABLE_R, tmp );			\
+} while (0)
+
+/* Buffer customization:
+ */
+
+#define DRIVER_BUF_PRIV_T	drm_i810_buf_priv_t
+
+#define DRIVER_AGP_BUFFERS_MAP( dev )					\
+({									\
+	drm_i810_private_t *dev_priv = (dev)->dev_private;		\
+	drm_map_t *map = (dev)->maplist[dev_priv->buffer_map_idx];	\
+	map;								\
+})
 
 #endif

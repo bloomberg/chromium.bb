@@ -83,50 +83,6 @@ int DRM(flush)(struct file *filp)
 	return 0;
 }
 
-#if 0
-/* drm_release is called whenever a process closes /dev/drm*.  Linux calls
-   this only if any mappings have been closed. */
-
-int drm_release(struct inode *inode, struct file *filp)
-{
-	drm_file_t    *priv   = filp->private_data;
-	drm_device_t  *dev    = priv->dev;
-
-	DRM_DEBUG("pid = %d, device = 0x%x, open_count = %d\n",
-		  current->pid, dev->device, dev->open_count);
-
-	if (dev->lock.hw_lock
-	    && _DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)
-	    && dev->lock.pid == current->pid) {
-		DRM_ERROR("Process %d dead, freeing lock for context %d\n",
-			  current->pid,
-			  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
-		drm_lock_free(dev,
-			      &dev->lock.hw_lock->lock,
-			      _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
-
-				/* FIXME: may require heavy-handed reset of
-                                   hardware at this point, possibly
-                                   processed via a callback to the X
-                                   server. */
-	}
-	drm_reclaim_buffers(dev, priv->pid);
-
-	drm_fasync(-1, filp, 0);
-
-	down(&dev->struct_sem);
-	if (priv->prev) priv->prev->next = priv->next;
-	else		dev->file_first	 = priv->next;
-	if (priv->next) priv->next->prev = priv->prev;
-	else		dev->file_last	 = priv->prev;
-	up(&dev->struct_sem);
-
-	drm_free(priv, sizeof(*priv), DRM_MEM_FILES);
-
-	return 0;
-}
-#endif
-
 int DRM(fasync)(int fd, struct file *filp, int on)
 {
 	drm_file_t    *priv   = filp->private_data;

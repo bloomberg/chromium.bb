@@ -26,7 +26,6 @@
  * Authors:
  *    Kevin E. Martin <martin@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
- *
  */
 
 #ifndef __RADEON_DRM_H__

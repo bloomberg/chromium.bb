@@ -48,17 +48,6 @@
 #define I810_BUF_UNMAPPED 0
 #define I810_BUF_MAPPED   1
 
-#define I810_REG(reg)		2
-#define I810_BASE(reg)		((unsigned long) \
-				dev->maplist[I810_REG(reg)]->handle)
-#define I810_ADDR(reg)		(I810_BASE(reg) + reg)
-#define I810_DEREF(reg)		*(__volatile__ int *)I810_ADDR(reg)
-#define I810_READ(reg)		I810_DEREF(reg)
-#define I810_WRITE(reg,val) 	do { I810_DEREF(reg) = val; } while (0)
-#define I810_DEREF16(reg)	*(__volatile__ u16 *)I810_ADDR(reg)
-#define I810_READ16(reg)	I810_DEREF16(reg)
-#define I810_WRITE16(reg,val)	do { I810_DEREF16(reg) = val; } while (0)
-
 #define RING_LOCALS	unsigned int outring, ringmask; volatile char *virt;
 
 #define BEGIN_LP_RING(n) do {				\
@@ -873,7 +862,7 @@ static void i810_dma_dispatch_vertex(drm_device_t *dev,
 
 
 /* Interrupts are only for flushing */
-static void i810_dma_service(int irq, void *device, struct pt_regs *regs)
+void i810_dma_service(int irq, void *device, struct pt_regs *regs)
 {
 	drm_device_t	 *dev = (drm_device_t *)device;
    	u16 temp;
@@ -890,136 +879,13 @@ static void i810_dma_service(int irq, void *device, struct pt_regs *regs)
    	mark_bh(IMMEDIATE_BH);
 }
 
-static void i810_dma_task_queue(void *device)
+void i810_dma_immediate_bh(void *device)
 {
 	drm_device_t *dev = (drm_device_t *) device;
       	drm_i810_private_t *dev_priv = (drm_i810_private_t *)dev->dev_private;
 
    	atomic_set(&dev_priv->flush_done, 1);
    	wake_up_interruptible(&dev_priv->flush_queue);
-}
-
-int i810_irq_install(drm_device_t *dev, int irq)
-{
-	int retcode;
-	u16 temp;
-
-	if (!irq)     return -EINVAL;
-
-	down(&dev->struct_sem);
-	if (dev->irq) {
-		up(&dev->struct_sem);
-		return -EBUSY;
-	}
-	dev->irq = irq;
-	up(&dev->struct_sem);
-
-   	DRM_DEBUG(  "Interrupt Install : %d\n", irq);
-	DRM_DEBUG("%d\n", irq);
-
-	dev->context_flag     = 0;
-	dev->interrupt_flag   = 0;
-	dev->dma_flag	      = 0;
-
-	dev->dma->next_buffer = NULL;
-	dev->dma->next_queue  = NULL;
-	dev->dma->this_buffer = NULL;
-
-	INIT_LIST_HEAD(&dev->tq.list);
-	dev->tq.sync	      = 0;
-	dev->tq.routine	      = i810_dma_task_queue;
-	dev->tq.data	      = dev;
-
-				/* Before installing handler */
-   	temp = I810_READ16(I810REG_HWSTAM);
-   	temp = temp & 0x6000;
-   	I810_WRITE16(I810REG_HWSTAM, temp);
-
-      	temp = I810_READ16(I810REG_INT_MASK_R);
-   	temp = temp & 0x6000;
-   	I810_WRITE16(I810REG_INT_MASK_R, temp); /* Unmask interrupts */
-   	temp = I810_READ16(I810REG_INT_ENABLE_R);
-   	temp = temp & 0x6000;
-      	I810_WRITE16(I810REG_INT_ENABLE_R, temp); /* Disable all interrupts */
-
-				/* Install handler */
-	if ((retcode = request_irq(dev->irq,
-				   i810_dma_service,
-				   SA_SHIRQ,
-				   dev->devname,
-				   dev))) {
-		down(&dev->struct_sem);
-		dev->irq = 0;
-		up(&dev->struct_sem);
-		return retcode;
-	}
-   	temp = I810_READ16(I810REG_INT_ENABLE_R);
-   	temp = temp & 0x6000;
-   	temp = temp | 0x0003;
-   	I810_WRITE16(I810REG_INT_ENABLE_R,
-		     temp); /* Enable bp & user interrupts */
-	return 0;
-}
-
-int i810_irq_uninstall(drm_device_t *dev)
-{
-	int irq;
-   	u16 temp;
-
-
-/*  	return 0; */
-
-	down(&dev->struct_sem);
-	irq	 = dev->irq;
-	dev->irq = 0;
-	up(&dev->struct_sem);
-
-	if (!irq) return -EINVAL;
-
-   	DRM_DEBUG(  "Interrupt UnInstall: %d\n", irq);
-	DRM_DEBUG("%d\n", irq);
-
-   	temp = I810_READ16(I810REG_INT_IDENTITY_R);
-   	temp = temp & ~(0x6000);
-   	if(temp != 0) I810_WRITE16(I810REG_INT_IDENTITY_R,
-				   temp); /* Clear all interrupts */
-
-   	temp = I810_READ16(I810REG_INT_ENABLE_R);
-   	temp = temp & 0x6000;
-   	I810_WRITE16(I810REG_INT_ENABLE_R,
-		     temp);                     /* Disable all interrupts */
-
-   	free_irq(irq, dev);
-
-	return 0;
-}
-
-int i810_control(struct inode *inode, struct file *filp, unsigned int cmd,
-		  unsigned long arg)
-{
-	drm_file_t	*priv	= filp->private_data;
-	drm_device_t	*dev	= priv->dev;
-	drm_control_t	ctl;
-	int		retcode;
-
-   	DRM_DEBUG(  "i810_control\n");
-
-	if (copy_from_user(&ctl, (drm_control_t *)arg, sizeof(ctl)))
-		return -EFAULT;
-
-	switch (ctl.func) {
-	case DRM_INST_HANDLER:
-		if ((retcode = i810_irq_install(dev, ctl.irq)))
-			return retcode;
-		break;
-	case DRM_UNINST_HANDLER:
-		if ((retcode = i810_irq_uninstall(dev)))
-			return retcode;
-		break;
-	default:
-		return -EINVAL;
-	}
-	return 0;
 }
 
 static inline void i810_dma_emit_flush(drm_device_t *dev)

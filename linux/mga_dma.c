@@ -396,7 +396,7 @@ static drm_buf_t *mga_freelist_get( drm_device_t *dev )
 	return NULL;
 }
 
-static int mga_freelist_put( drm_device_t *dev, drm_buf_t *buf )
+int mga_freelist_put( drm_device_t *dev, drm_buf_t *buf )
 {
 	drm_mga_private_t *dev_priv = dev->dev_private;
 	drm_mga_buf_priv_t *buf_priv = buf->dev_private;

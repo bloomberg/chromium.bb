@@ -1,4 +1,4 @@
-/* drm_stub.c -- -*- linux-c -*-
+/* drm_stub.h -- -*- linux-c -*-
  * Created: Fri Jan 19 10:48:35 2001 by faith@acm.org
  *
  * Copyright 2001 VA Linux Systems, Inc., Sunnyvale, California.
@@ -27,6 +27,9 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
+
+#define __NO_VERSION__
+#include "drmP.h"
 
 #define DRM_STUB_MAXCARDS 16	/* Enough for one machine */
 
@@ -58,7 +61,7 @@ static int DRM(stub_open)(struct inode *inode, struct file *filp)
 		filp->f_op = fops_get(old_fops);
 	}
 	fops_put(old_fops);
-		
+
 	return err;
 }
 
@@ -73,7 +76,7 @@ static int DRM(stub_getminor)(const char *name, struct file_operations *fops,
 			      drm_device_t *dev)
 {
 	int i;
-	
+
 	if (!DRM(stub_list)) {
 		DRM(stub_list) = DRM(alloc)(sizeof(*DRM(stub_list))
 					    * DRM_STUB_MAXCARDS, DRM_MEM_STUB);

@@ -47,37 +47,34 @@
 
 # **** End of SMP/MODVERSIONS detection
 
-MODS=           gamma.o tdfx.o
-LIBS=
+MODS =		gamma.o tdfx.o
+LIBS =
 
-#DRMOBJS=	init.o memory.o proc.o auth.o context.o drawable.o bufs.o \
-#		lists.o lock.o ioctl.o fops.o vm.o dma.o ctxbitmap.o
-DRMOBS=
-DRMTEMPLATES=	drm_init.h drm_memory.h drm_proc.h drm_auth.h drm_context.h \
-		drm_drawable.h drm_bufs.h drm_lists.h drm_lock.h drm_ioctl.h \
-		drm_fops.h drm_vm.h drm_dma.h drm_stub.h
-DRMHEADERS=	drm.h drmP.h compat-pre24.h
+DRMTEMPLATES =	drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
+		drm_drv.h drm_fops.h drm_init.h drm_ioctl.h drm_lists.h \
+		drm_lock.h drm_memory.h drm_proc.h drm_stub.h drm_vm.h
+DRMHEADERS =	drm.h drmP.h compat-pre24.h
 
-GAMMAOBJS=      gamma_drv.o gamma_drm.o gamma_dma.o gamma_context.o
-GAMMAHEADERS=   gamma_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
+GAMMAOBJS =	gamma_drv.o gamma_dma.o
+GAMMAHEADERS =	gamma_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-TDFXOBJS=       tdfx_drv.o
-TDFXHEADERS=    tdfx.h $(DRMHEADERS)
+TDFXOBJS =	tdfx_drv.o
+TDFXHEADERS =	tdfx.h $(DRMHEADERS)
 
-INC=		/usr/include
+INC =		/usr/include
 
-CFLAGS=		-O2 $(WARNINGS)
-WARNINGS=	-Wall -Wwrite-strings -Wpointer-arith -Wcast-align \
+CFLAGS =	-O2 $(WARNINGS)
+WARNINGS =	-Wall -Wwrite-strings -Wpointer-arith -Wcast-align \
 		-Wstrict-prototypes -Wnested-externs \
 		-Wpointer-arith
 # -Wshadow -Winline -- make output too noisy
-MODCFLAGS=      $(CFLAGS) -D__KERNEL__ -DMODULE -fomit-frame-pointer
-PRGCFLAGS=      $(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
+MODCFLAGS =	$(CFLAGS) -D__KERNEL__ -DMODULE -fomit-frame-pointer
+PRGCFLAGS =	$(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
 		-D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE \
 		-I../../../../../../include -I../../../../../../../../include \
 		-I../../../../../../../../programs/Xserver/hw/xfree86/common \
 		-I. -I../../.. -I../../../../../../../../lib/X11
-PRGLIBS=
+PRGLIBS =
 
 # **** Start of SMP/MODVERSIONS detection
 
@@ -133,7 +130,8 @@ endif
 
 ifeq ($(AGP),1)
 MODCFLAGS += -DCONFIG_AGP -DCONFIG_AGP_MODULE
-#DRMOBJS += agpsupport.o
+DRMTEMPLATES += drm_agpsupport.h
+DRMHEADERS += agpsupport-pre24.h
 MODS += mga.o r128.o radeon.o
 ifeq ($(MACHINE),i386)
 MODS += i810.o
@@ -143,17 +141,17 @@ MODS += i810.o
 endif
 
 
-MGAOBJS=	mga_drv.o mga_dma.o mga_state.o mga_warp.o
-MGAHEADERS=	mga.h mga_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
+MGAOBJS =	mga_drv.o mga_dma.o mga_state.o mga_warp.o
+MGAHEADERS =	mga.h mga_drv.h mga_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-I810OBJS=	i810_drv.o i810_dma.o
-I810HEADERS=	i810.h i810_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
+I810OBJS =	i810_drv.o i810_dma.o
+I810HEADERS =	i810.h i810_drv.h i810_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-R128OBJS=	r128_drv.o r128_cce.o r128_state.o
-R128HEADERS=	r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
+R128OBJS =	r128_drv.o r128_cce.o r128_state.o
+R128HEADERS =	r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-RADEONOBJS=	radeon_drv.o radeon_cp.o radeon_state.o
-RADEONHEADERS=	radeon.h radeon_drv.h radeon_drm.h $(DRMHEADERS) \
+RADEONOBJS =	radeon_drv.o radeon_cp.o radeon_state.o
+RADEONHEADERS =	radeon.h radeon_drv.h radeon_drm.h $(DRMHEADERS) \
 		$(DRMTEMPLATES)
 endif
 
@@ -203,10 +201,6 @@ MODCFLAGS += -DKILLFASYNCHASTHREEPARAMETERS
 endif
 
 # **** End of configuration
-
-libdrm.a: $(DRMOBJS)
-	-$(RM) -f $@
-	$(AR) rcs $@ $(DRMOBJS)
 
 dristat: dristat.c
 	$(CC) $(PRGCFLAGS) $< -o $@
@@ -259,7 +253,6 @@ ChangeLog:
 %.o: %.c
 	$(CC) $(MODCFLAGS) -I$(TREE) -c $< -o $@
 
-$(DRMOBJS): $(DRMHEADERS)
 $(GAMMAOBJS): $(GAMMAHEADERS)
 $(TDFXOBJS): $(TDFXHEADERS)
 ifeq ($(AGP),1)
