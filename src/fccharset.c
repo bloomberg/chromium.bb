@@ -596,6 +596,9 @@ FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
     {
 	an = a->numbers[ai];
 	bn = b->numbers[bi];
+	/*
+	 * Check matching pages
+	 */
 	if (an == bn)
 	{
 	    FcChar32	*am = a->leaves[ai]->map;
@@ -604,6 +607,9 @@ FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
 	    if (am != bm)
 	    {
 		int	i = 256/32;
+		/*
+		 * Does am have any bits not in bm?
+		 */
 		while (i--)
 		    if (*am++ & ~*bm++)
 			return FcFalse;
@@ -611,6 +617,9 @@ FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
 	    ai++;
 	    bi++;
 	}
+	/*
+	 * Does a have any pages not in b?
+	 */
 	else if (an < bn)
 	    return FcFalse;
 	else
@@ -618,6 +627,9 @@ FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
 	    int	    low = bi + 1;
 	    int	    high = b->num - 1;
 
+	    /*
+	     * Search for page 'an' in 'b'
+	     */
 	    while (low <= high)
 	    {
 		int mid = (low + high) >> 1;
@@ -637,6 +649,9 @@ FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
 		bi++;
 	}
     }
+    /*
+     * did we look at every page?
+     */
     return ai >= a->num;
 }
 

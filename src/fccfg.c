@@ -578,12 +578,12 @@ FcConfigCompareValue (const FcValue	m_o,
 	case FcTypeCharSet:
 	    switch (op) {
 	    case FcOpContains:
-		/* m contains v if v is a subset of m */
-		ret = FcCharSetIsSubset (v.u.c, m.u.c);
+		/* v contains m if m is a subset of v */
+		ret = FcCharSetIsSubset (m.u.c, v.u.c);
 		break;
 	    case FcOpNotContains:
-		/* m contains v if v is a subset of m */
-		ret = !FcCharSetIsSubset (v.u.c, m.u.c);
+		/* v contains m if m is a subset of v */
+		ret = !FcCharSetIsSubset (m.u.c, v.u.c);
 		break;
 	    case FcOpEqual:
 		ret = FcCharSetEqual (m.u.c, v.u.c);
