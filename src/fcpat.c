@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.10 2002/06/29 20:31:02 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.11 2002/07/06 23:47:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -337,6 +337,9 @@ FcBool
 FcPatternEqual (const FcPattern *pa, const FcPattern *pb)
 {
     int	i;
+
+    if (pa == pb)
+	return FcTrue;
 
     if (pa->num != pb->num)
 	return FcFalse;
