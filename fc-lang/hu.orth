@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/hu.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,16 +22,23 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Hungarian (HU)
+#
+# Sources:
+#	www.evertype.com
+#	www.eki.ee/letter
+#
 0041-005a
 0061-007a
-00c0-00c1
+#00C0		# LATIN CAPITAL LETTER A WITH GRAVE	evertype.com
+00c1
 00c9
 00cd
 00d3
 00d6
 00da
 00dc
-00e0-00e1
+#00E0		# LATIN SMALL LETTER A WITH GRAVE	evertype.com
+00e1
 00e9
 00ed
 00f3

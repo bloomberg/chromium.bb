@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/fc-lang/be.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
+# $XFree86: xc/lib/fontconfig/fc-lang/be.orth,v 1.3 2002/07/12 09:12:36 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,13 +22,19 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Byelorussian (BE)
+# 
+# Sources:
+#	www.evertype.com
+#	www.eki.ee/letter
+#
 #00ab
 #00bb
-0401
-0406
-040e
+#02BC	# MODIFIER LETTER APOSTROPHE
+#0401	# CYRILLIC CAPITAL LETTER IO				evertype.com
+0406	# CYRILLIC CAPITAL LETTER BYELORUSSIAN-UKRAINIAN I
+040E	# CYRILLIC CAPITAL LETTER SHORT U (Byelorussian)
 0410-044f
-0451
-0456
-045e
+#0451	# CYRILLIC SMALL LETTER IO				evertype.com
+0456	# CYRILLIC SMALL LETTER BYELORUSSIAN-UKRAINIAN I
+045E	# CYRILLIC SMALL LETTER SHORT U (Byelorussian)
 #2039-203a	# angle quotes

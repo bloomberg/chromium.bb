@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/gd.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,17 +22,30 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Scots Gaelic (GD)
+#
+# Sources:
+#	www.evertype.com
+#	www.eki.ee/letter
+#
 0041-005a
 0061-007a
 00c0
-00c7-00c9
+00c1
+00c7
+00c8
+00c9
 00cc
-00d2-00d3
+00d2
+00d3
 00d9
 00e0
-00e7-00e9
+00e1
+00e7
+00e8
+00e9
 00ec
-00f2-00f3
+00f2
+00f3
 00f9
 #2018-2019	# single quotes
 #201c-201d	# double quotes

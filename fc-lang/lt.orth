@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/lt.orth,v 1.2 2002/07/06 23:59:16 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,11 +22,18 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Lithuanian (LT)
+#
+# Sources:
+#	www.evertype.com
+#	www.eki.ee/letter
+#
 0041-005a
 0061-007a
 0104-0105
 010c-010d
-0106-0109
+#0106-0109
+0116-0117
+0118-0119
 012e-012f
 0160-0161
 016a-016b

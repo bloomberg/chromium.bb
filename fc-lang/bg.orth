@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/fc-lang/bg.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
+# $XFree86: xc/lib/fontconfig/fc-lang/bg.orth,v 1.3 2002/07/12 21:05:58 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,15 +22,22 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Bulgarian (BG)
-0400		# CYRILLIC CAPITAL IE WITH GRAVE
-040d		# CYRILLIC CAPITAL I WITH GRAVE
+#
+# Sources:
+#	www.evertype.com
+#	www.eki.ee/letter
+#
+#0400		# CYRILLIC CAPITAL IE WITH GRAVE		evertype.com
+#040d		# CYRILLIC CAPITAL I WITH GRAVE			evertype.com
 0410-042a
 042c
 042e-042f
 0430-044a
 044c
 044e-044f
-0450		# CYRILLIC SMALL IE WITH GRAVE
-045d		# CYRILLIC SMALL I WITH GRAVE
-0462-0463
-046a-046b
+#0450		# CYRILLIC SMALL IE WITH GRAVE			evertype.com
+#045d		# CYRILLIC SMALL I WITH GRAVE			evertype.com
+#0462		# CYRILLIC CAPITAL LETTER YAT			evertype.com
+#0463		# CYRILLIC SMALL LETTER YAT			evertype.com
+#046A		# CYRILLIC CAPITAL LETTER BIG YUS		evertype.com
+#046B		# CYRILLIC SMALL LETTER BIG YUS			evertype.com

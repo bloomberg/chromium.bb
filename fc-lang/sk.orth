@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/sk.orth,v 1.2 2002/07/06 23:59:19 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,31 +22,42 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Slovak (SK)
+#
+# Sources:
+#	www.evertype.com
+#	www.eki.ee/letter
+#
 0041-005a
 0061-007a
 00c1
 00c4
 00c9
 00cd
-00d3-00d4
-00d6
+00d3
+00d4
+#00d6		# evertype.com
 00da
-00dc-00dd
+#00dc		# evertype.com
+00dd
 00e1
 00e4
 00e9
 00ed
-00f3-00f4
-00f6
+00f3
+00f4
+#00f6		# evertype.com
 00fa
-00fc-00fd
-010c-010f
+#00fc		# evertype.com
+00fd
+010c-010d
+010e-010f
 0139-013a
 013d-013e
 0147-0148
-0150-0151
+#0150-0151		# evertype.com
 0154-0155
 0160-0161
 0164-0165
-0170-0171
+#0170-0171		# evertype.com
 017d-017e
+#

@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/eu.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,10 +22,24 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Basque (EU)
+#
+# Sources:
+#	www.evertype.com
+#	www.eki.ee/letter
+#
+# The orthography from evertype.com comes from the Académie de la Langue
+# Basque prior to 1926.  eki.ee adds some additional letters, marked here
+# and commented out.  I've also commented out some older letters
+# from the evertype.com orthography which are (apparently) no longer
+# in use
+#
 0041-005a
 0061-007a
-00d1
-00dc
-00f1
-00fc
-0154-0155
+#00C7		# LATIN CAPITAL LETTER C WITH CEDILLA	eki.ee
+00D1	LATIN CAPITAL LETTER N WITH TILDE
+00DC	LATIN CAPITAL LETTER U WITH DIAERESIS
+#00E7		# LATIN SMALL LETTER C WITH CEDILLA	eki.ee
+00F1	LATIN SMALL LETTER N WITH TILDE
+00FC	LATIN SMALL LETTER U WITH DIAERESIS
+#0154	LATIN CAPITAL LETTER R WITH ACUTE		evertype.com
+#0155	LATIN SMALL LETTER R WITH ACUTE			evertype.com

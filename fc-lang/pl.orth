@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/pl.orth,v 1.2 2002/07/06 23:59:17 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,12 +22,20 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Polish (PL)
+#
+# Sources:
+#	www.evertype.com
+#	www.eki.ee/letter
+#
 0041-005a
 0061-007a
 00d3
 00f3
-0104-0107
+0104-0105
+0106-0107
 0118-0119
-0141-0144
+0141-0142
+0143-0144
 015a-015b
-0179-017c
+0179-017a
+017b-017c

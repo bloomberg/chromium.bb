@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/fc-lang/uk.orth,v 1.2 2002/07/06 23:59:19 keithp Exp $
+# $XFree86: xc/lib/fontconfig/fc-lang/uk.orth,v 1.3 2002/07/12 09:12:37 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,14 +22,22 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Ukrainian (UK)
+#
+# Sources:
+#	www.evertype.com
+#	www.eki.ee/letter
+#
 #00ab
 #00bb
-0401
+#0401		# evertype.com
 0404
-0406-0407
+0406
+0407
 0410-044f
-0451
+#0451		# evertype.com
 0454
-0456-0457
-0490-0491
+0456
+0457
+0490
+0491
 #2039-203a	# angle quotes
