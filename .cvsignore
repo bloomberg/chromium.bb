@@ -13,3 +13,4 @@ fonts.conf
 libtool
 stamp-h
 stamp-h.in
+fontconfig-*.tar.gz
