@@ -199,9 +199,7 @@ int mga_rmctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	if (copy_from_user(&ctx, (drm_ctx_t *)arg, sizeof(ctx)))
 		return -EFAULT;
 	DRM_DEBUG("%d\n", ctx.handle);
-	if(ctx.handle == DRM_KERNEL_CONTEXT+1) {
-		priv->remove_auth_on_close = 1;
-	}
+	if(ctx.handle == DRM_KERNEL_CONTEXT+1) priv->remove_auth_on_close = 1;
 
       	if(ctx.handle != DRM_KERNEL_CONTEXT) {
 	   	drm_ctxbitmap_free(dev, ctx.handle);

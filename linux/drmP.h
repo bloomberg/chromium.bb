@@ -152,11 +152,6 @@ typedef struct wait_queue *wait_queue_head_t;
 #define module_exit(x)  void cleanup_module(void) { x(); }
 #endif
 
-				/* virt_to_page added in 2.4.0-test6 */
-#if LINUX_VERSION_CODE < 0x020400
-#define virt_to_page(kaddr) (mem_map + MAP_NR(kaddr))
-#endif
-
 				/* Generic cmpxchg added in 2.3.x */
 #ifndef __HAVE_ARCH_CMPXCHG
 				/* Include this here so that driver can be

@@ -37,8 +37,10 @@
 
 #if defined(__linux__)
 #include <asm/ioctl.h>		/* For _IO* macros */
+#define DRM_IOCTL_NR(n)	     _IOC_NR(n)
 #elif defined(__FreeBSD__)
 #include <sys/ioccom.h>
+#define DRM_IOCTL_NR(n)	     ((n) & 0xff)
 #endif
 
 #define DRM_PROC_DEVICES "/proc/devices"
@@ -293,11 +295,6 @@ typedef struct drm_agp_info {
 } drm_agp_info_t;
 
 #define DRM_IOCTL_BASE	     'd'
-#if defined(__linux__)
-#define DRM_IOCTL_NR(n)	     _IOC_NR(n)
-#elif defined(__FreeBSD__)
-#define DRM_IOCTL_NR(n)	     ((n) & 0xff)
-#endif
 #define DRM_IO(nr)	     _IO(DRM_IOCTL_BASE,nr)
 #define DRM_IOR(nr,size)     _IOR(DRM_IOCTL_BASE,nr,size)
 #define DRM_IOW(nr,size)     _IOW(DRM_IOCTL_BASE,nr,size)
