@@ -569,7 +569,7 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 		return -EPERM;
 
 				/* Check for valid size. */
-	if (map->size != vma->vm_end - vma->vm_start) return -EINVAL;
+	if (map->size < vma->vm_end - vma->vm_start) return -EINVAL;
 
 	if (!capable(CAP_SYS_ADMIN) && (map->flags & _DRM_READ_ONLY)) {
 		vma->vm_flags &= ~(VM_WRITE | VM_MAYWRITE);
