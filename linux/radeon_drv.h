@@ -181,6 +181,7 @@ extern int radeon_cp_indirect( struct inode *inode, struct file *filp,
  * for Radeon kernel driver.
  */
 
+#define RADEON_AGP_COMMAND		0x0f60
 #define RADEON_AUX_SCISSOR_CNTL		0x26f0
 #	define RADEON_EXCLUSIVE_SCISSOR_0	(1 << 24)
 #	define RADEON_EXCLUSIVE_SCISSOR_1	(1 << 25)

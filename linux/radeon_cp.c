@@ -38,6 +38,12 @@
 
 #define RADEON_FIFO_DEBUG	0
 
+#if defined(__alpha__)
+# define PCIGART_ENABLED
+#else
+# undef PCIGART_ENABLED
+#endif
+
 
 /* CP microcode (from ATI) */
 static u32 radeon_cp_microcode[][2] = {
@@ -659,7 +665,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 
 	dev_priv->is_pci = init->is_pci;
 
-#if 1
+#if !defined(PCIGART_ENABLED)
 	/* PCI support is not 100% working, so we disable it here.
 	 */
 	if ( dev_priv->is_pci ) {
@@ -671,7 +677,6 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 #endif
 
 	if ( dev_priv->is_pci && !dev->sg ) {
-		DRM_DEBUG( "PCI GART memory not allocated!\n" );
 		DRM_ERROR( "PCI GART memory not allocated!\n" );
 		DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
@@ -878,7 +883,6 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	if ( dev_priv->is_pci ) {
 		dev_priv->phys_pci_gart = DRM(ati_pcigart_init)( dev );
 		if ( !dev_priv->phys_pci_gart ) {
-			DRM_DEBUG( "failed to init PCI GART!\n" );
 			DRM_ERROR( "failed to init PCI GART!\n" );
 			DRM(free)( dev_priv, sizeof(*dev_priv),
 				   DRM_MEM_DRIVER );
@@ -904,7 +908,14 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 
 		/* Turn off AGP aperture -- is this required for PCIGART?
 		 */
-		RADEON_WRITE( RADEON_MC_AGP_LOCATION, 0 );
+		RADEON_WRITE( RADEON_MC_AGP_LOCATION, 0xffffffc0 ); /* ?? */
+		RADEON_WRITE( RADEON_AGP_COMMAND, 0 ); /* clear AGP_COMMAND */
+#if defined(__alpha__)
+		/* HACK! something is clobbering MEM_CNTL on Alpha! */
+		DRM_ERROR( "MEM_CNTL 0x%x\n",
+			   RADEON_READ(0x0140) );
+		RADEON_WRITE(0x0140, 0x29002901);
+#endif
 	} else {
 		/* Turn off PCI GART
 		 */

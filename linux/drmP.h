@@ -710,7 +710,11 @@ typedef struct drm_device {
 	drm_agp_head_t    *agp;
 #endif
 #ifdef __alpha__
+#if LINUX_VERSION_CODE < 0x020403
 	struct pci_controler *hose;
+#else
+	struct pci_controller *hose;
+#endif
 #endif
 	drm_sg_mem_t      *sg;  /* Scatter gather memory */
 	unsigned long     *ctx_bitmap;
