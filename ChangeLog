@@ -1,3 +1,19 @@
+2003-10-27  Keith Packard  <keithp@keithp.com>
+
+	* Makefile.am:
+	* configure.in:
+	* doc/Makefile.am:
+	* fc-cache/Makefile.am:
+	* fc-glyphname/Makefile.am:
+	* fc-lang/Makefile.am:
+	* fc-list/Makefile.am:
+	* fc-match/Makefile.am:
+	* test/Makefile.am:
+	* test/run-test.sh:
+	Yet more cleanups to finish getting 'make distcheck' working
+	This has been tested to ensure that it even works from a _build
+	directory.
+
 2003-10-26  Keith Packard  <keithp@keithp.com>
 
 	* configure.in:

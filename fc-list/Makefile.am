@@ -31,7 +31,7 @@ bin_PROGRAMS=fc-list
 
 man_MANS=fc-list.1
 
-INCLUDES=$(FREETYPE_CFLAGS)
+INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
 
 EXTRA_DIST=$(SGML)
 

@@ -1,4 +1,6 @@
 #!/bin/sh
+TESTDIR=${srcdir-`pwd`}
+
 FONTDIR=`pwd`/fonts
 CACHEFILE=`pwd`/fonts.cache
 
@@ -7,6 +9,9 @@ ECHO=true
 FCLIST=../fc-list/fc-list
 FCCACHE=../fc-cache/fc-cache
 
+FONT1=$TESTDIR/4x6.pcf
+FONT2=$TESTDIR/8x16.pcf
+
 check () {
   $FCLIST - family pixelsize | sort > out
   echo "=" >> out
@@ -14,11 +19,12 @@ check () {
   echo "=" >> out
   $FCLIST - family pixelsize | sort >> out
   tr -d '\015' <out >out.tmp; mv out.tmp out
-  if cmp out out.expected > /dev/null ; then : ; else
+  if cmp out $TESTDIR/out.expected > /dev/null ; then : ; else
     echo "*** Test failed: $TEST"
     echo "*** output is in 'out', expected output in 'out.expected'"
-    exit
+    exit 1
   fi
+  rm out
 }
 
 prep() {
@@ -33,26 +39,26 @@ dotest () {
 }
 
 sed "s!@FONTDIR@!$FONTDIR!
-s!@CACHEFILE@!$CACHEFILE!" < fonts.conf.in > fonts.conf
+s!@CACHEFILE@!$CACHEFILE!" < $TESTDIR/fonts.conf.in > fonts.conf
 
 FONTCONFIG_FILE=`pwd`/fonts.conf
 export FONTCONFIG_FILE
 
 dotest "Basic check"
 prep
-cp 4x6.pcf 8x16.pcf $FONTDIR
+cp $FONT1 $FONT2 $FONTDIR
 check
 
 dotest "With a subdir"
 prep
-cp 4x6.pcf 8x16.pcf $FONTDIR
+cp $FONT1 $FONT2 $FONTDIR
 $FCCACHE $FONTDIR
 check
 
 dotest "Subdir with a cache file"
 prep
 mkdir $FONTDIR/a
-cp 4x6.pcf 8x16.pcf $FONTDIR/a
+cp $FONT1 $FONT2 $FONTDIR/a
 $FCCACHE $FONTDIR/a
 check
 
@@ -62,8 +68,8 @@ mkdir $FONTDIR/a
 mkdir $FONTDIR/a/a
 mkdir $FONTDIR/b
 mkdir $FONTDIR/b/a
-cp 4x6.pcf $FONTDIR/a
-cp 8x16.pcf $FONTDIR/b/a
+cp $FONT1 $FONTDIR/a
+cp $FONT2 $FONTDIR/b/a
 check
 
 dotest "Subdir with an out-of-date cache file"
@@ -71,16 +77,16 @@ prep
 mkdir $FONTDIR/a
 $FCCACHE $FONTDIR/a
 sleep 1
-cp 4x6.pcf 8x16.pcf $FONTDIR/a
+cp $FONT1 $FONT2 $FONTDIR/a
 check
 
 dotest "Dir with an out-of-date cache file"
 prep
-cp 4x6.pcf $FONTDIR
+cp $FONT1 $FONTDIR
 $FCCACHE $FONTDIR
 sleep 1
 mkdir $FONTDIR/a
-cp 8x16.pcf $FONTDIR/a
+cp $FONT2 $FONTDIR/a
 check
 
 rm -rf $FONTDIR $CACHEFILE $FONTCONFIG_FILE out

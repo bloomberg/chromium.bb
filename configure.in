@@ -359,11 +359,21 @@ AM_CONDITIONAL(ENABLE_DOCS, test "x$enable_docs" = xyes)
 
 if test "x$enable_docs" = xyes; then
 	DOCSRC="doc"
+	tmp=funcs.$$
+	cat $srcdir/doc/*.fncs | awk '
+	/^@TITLE@/	{ if (!done) { printf ("%s\n", $2); done = 1; } }
+	/^@FUNC@/	{ if (!done) { printf ("%s\n", $2); done = 1; } }
+	/^@@/		{ done = 0; }' > $tmp
+	DOCMAN3=`cat $tmp | awk '{ printf ("%s.3 ", $1); }'`
+	echo DOCMAN3 $DOCMAN3
+	rm -f $tmp
 else
 	DOCSRC=""
+	DOCMAN3=""
 fi
 
 AC_SUBST(DOCSRC)
+AC_SUBST(DOCMAN3)
 
 #
 # Figure out where to install documentation

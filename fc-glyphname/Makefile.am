@@ -22,7 +22,7 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-INCLUDES=-I${top_srcdir}/src $(FREETYPE_CFLAGS)
+INCLUDES=-I${top_srcdir}/src -I${top_srcdir} $(FREETYPE_CFLAGS)
 
 TMPL=fcglyphname.tmpl.h
 STMPL=${top_srcdir}/fc-glyphname/${TMPL}
@@ -43,5 +43,5 @@ $(TARG): $(STMPL) fc-glyphname $(SGLYPHNAME)
 	rm -f $(TARG)
 	./fc-glyphname $(SGLYPHNAME) < $(STMPL) > $(TARG)
 
-clean::
-	$(RM) $(TARG)
+CLEANFILES=$(TARG)
+

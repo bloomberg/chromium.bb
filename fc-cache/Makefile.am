@@ -27,7 +27,7 @@ FC_CACHE_SRC=${top_srcdir}/fc-cache
 
 SGML = ${FC_CACHE_SRC}/fc-cache.sgml
 
-INCLUDES=$(FREETYPE_CFLAGS)
+INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
 
 man_MANS=fc-cache.1
 

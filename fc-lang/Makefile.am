@@ -22,7 +22,7 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-INCLUDES=-I${top_srcdir}/src $(FREETYPE_CFLAGS)
+INCLUDES=-I${top_srcdir}/src -I${top_srcdir} $(FREETYPE_CFLAGS)
 
 TMPL=fclang.tmpl.h
 STMPL=${top_srcdir}/fc-lang/fclang.tmpl.h
@@ -42,5 +42,4 @@ $(TARG):$(ORTH) fc-lang $(STMPL)
 	rm -f $(TARG)
 	./fc-lang -d ${srcdir} $(ORTH) < $(STMPL) > $(TARG)
 
-clean::
-	$(RM) $(TARG)
+CLEANFILES=$(TARG)
