@@ -142,6 +142,7 @@ static const FcConstant _FcBaseConstants[] = {
     { (FcChar8 *) "extralight",	    "weight",   FC_WEIGHT_EXTRALIGHT, },
     { (FcChar8 *) "ultralight",	    "weight",   FC_WEIGHT_EXTRALIGHT, },
     { (FcChar8 *) "light",	    "weight",   FC_WEIGHT_LIGHT, },
+    { (FcChar8 *) "book",	    "weight",	FC_WEIGHT_BOOK, },
     { (FcChar8 *) "regular",	    "weight",   FC_WEIGHT_REGULAR, },
     { (FcChar8 *) "medium",	    "weight",   FC_WEIGHT_MEDIUM, },
     { (FcChar8 *) "demibold",	    "weight",   FC_WEIGHT_DEMIBOLD, },
