@@ -672,8 +672,6 @@ typedef struct drm_device {
 	drm_sigdata_t     sigdata;	/**< For block_all_signals */
 	sigset_t          sigmask;
 	
-	int               need_reset;	/**< secondary device needing reset */
-
 	struct file_operations *fops;	/**< file operations */
 
 	struct drm_driver_fn fn_tbl;

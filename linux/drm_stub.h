@@ -91,73 +91,6 @@ static struct file_operations DRM(stub_fops) = {
 	.open  = stub_open
 };
 
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,0)
-static int drm_hotplug (struct class_device *cdev, char **envp, int num_envp,
-				char *buffer, int buffer_size)
-{
-	drm_device_t *dev;
-	struct pci_dev *pdev;
-	char *scratch;
-	int i = 0;
-	int length = 0;
-
-	DRM_DEBUG("\n");
-	if (!cdev)
-		return -ENODEV;
-
-	pdev = to_pci_dev(cdev->dev);
-	if (!pdev)
-		return -ENODEV;
-
-	scratch = buffer;
-
-	/* stuff we want to pass to /sbin/hotplug */
-	envp[i++] = scratch;
-	length += snprintf (scratch, buffer_size - length, "PCI_CLASS=%04X",
-							pdev->class);
-	if ((buffer_size - length <= 0) || (i >= num_envp))
-		return -ENOMEM;
-	++length;
-	scratch += length;
-
-	envp[i++] = scratch;
-	length += snprintf (scratch, buffer_size - length, "PCI_ID=%04X:%04X",
-							pdev->vendor, pdev->device);
-	if ((buffer_size - length <= 0) || (i >= num_envp))
-		return -ENOMEM;
-	++length;
-	scratch += length;
-	
-	envp[i++] = scratch;
-	length += snprintf (scratch, buffer_size - length,
-							"PCI_SUBSYS_ID=%04X:%04X", pdev->subsystem_vendor,
-							pdev->subsystem_device);
-	if ((buffer_size - length <= 0) || (i >= num_envp))
-		return -ENOMEM;
-	++length;
-	scratch += length;
-
-	envp[i++] = scratch;
-	length += snprintf (scratch, buffer_size - length, "PCI_SLOT_NAME=%s",
-							pci_name(pdev));
-	if ((buffer_size - length <= 0) || (i >= num_envp))
-		return -ENOMEM;
-	++length;
-	scratch += length;
-
-	dev = pci_get_drvdata(pdev);
-	if (dev) {
-		envp[i++] = scratch;
-		length += snprintf (scratch, buffer_size - length, 
-							"RESET=%s", (dev->need_reset ? "true" : "false"));
-		if ((buffer_size - length <= 0) || (i >= num_envp))
-			return -ENOMEM;
-	}
-	envp[i] = 0;
-
-	return 0;
-}
-#endif
 
 /**
  * Get a device minor number.
@@ -197,7 +130,7 @@ static int get_minor(struct pci_dev *pdev, const struct pci_device_id *ent)
 				printk (KERN_ERR "DRM: Failed to initialize /proc/dri.\n");
 				goto err_g1;
 			}
-			if (!DRM(fb_loaded)) {	/* set this before device_add hotplug uses it */
+			if (!DRM(fb_loaded)) {
 				pci_set_drvdata(pdev, dev);
 				pci_request_regions(pdev, DRIVER_NAME);
 				pci_enable_device(pdev);
@@ -407,7 +340,6 @@ int DRM(probe)(struct pci_dev *pdev, const struct pci_device_id *ent)
 			ret = PTR_ERR(global->drm_class);
 			goto err_p3;
 		}
-		class_simple_set_hotplug(global->drm_class, drm_hotplug);
 
 		global->proc_root = create_proc_entry("dri", S_IFDIR, NULL);
 		if (!global->proc_root) {

@@ -1730,7 +1730,7 @@ int radeon_cp_buffers( DRM_IOCTL_ARGS )
 /* Always create a map record for MMIO and FB memory, done from DRIVER_POSTINIT */
 int radeon_preinit( struct drm_device *dev, unsigned long flags )
 {
-	u32 save, temp, memmode;
+	u32 save, temp;
 	drm_radeon_private_t *dev_priv;
 	int ret = 0;
 
@@ -1769,10 +1769,6 @@ int radeon_preinit( struct drm_device *dev, unsigned long flags )
 	/* Check if we need a reset */
 	if (!(dev_priv->mmio = drm_core_findmap(dev , pci_resource_start( dev->pdev, 2 ))))
 		return DRM_ERR(ENOMEM);
-
-	memmode = RADEON_READ(RADEON_MEM_SDRAM_MODE_REG);
-	DRM_DEBUG("Memmode is %x, if zero needs reset\n", memmode);
-	dev->need_reset = (memmode == 0);
 	
 #if defined(__linux__)
 	ret = radeon_create_i2c_busses(dev);
