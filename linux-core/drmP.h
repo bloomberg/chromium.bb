@@ -740,28 +740,24 @@ extern void	     drm_parse_options( char *s );
 extern int           drm_cpu_valid( void );
 
 				/* Driver support (drm_drv.h) */
+extern int           drm_fb_loaded;
 extern int __devinit drm_init(struct pci_driver *driver, struct pci_device_id* pciidlist,
 					struct drm_driver_fn *driver_fn);
 extern void __exit   drm_exit (struct pci_driver *driver);
 extern void __exit   drm_cleanup_pci(struct pci_dev *pdev);
 extern int           drm_version(struct inode *inode, struct file *filp,
 				  unsigned int cmd, unsigned long arg);
-extern int           drm_open(struct inode *inode, struct file *filp);
-extern int           drm_release(struct inode *inode, struct file *filp);
 extern int           drm_ioctl(struct inode *inode, struct file *filp,
 				unsigned int cmd, unsigned long arg);
-extern int           drm_lock(struct inode *inode, struct file *filp,
-			       unsigned int cmd, unsigned long arg);
-extern int           drm_unlock(struct inode *inode, struct file *filp,
-				 unsigned int cmd, unsigned long arg);
-extern int 	     drm_fill_in_dev(drm_device_t *dev, struct pci_dev *pdev,
-				 const struct pci_device_id *ent, struct drm_driver_fn *driver_fn);
-extern int           drm_fb_loaded;
+extern int	     drm_takedown( drm_device_t *dev );
 
 				/* Device support (drm_fops.h) */
+extern int           drm_open(struct inode *inode, struct file *filp);
+extern int 	     drm_stub_open(struct inode *inode, struct file *filp);
 extern int	     drm_open_helper(struct inode *inode, struct file *filp,
 				      drm_device_t *dev);
 extern int 	     drm_fasync(int fd, struct file *filp, int on);
+extern int           drm_release(struct inode *inode, struct file *filp);
 
 				/* Mapping support (drm_vm.h) */
 extern void	     drm_vm_open(struct vm_area_struct *vma);
@@ -802,6 +798,8 @@ extern int	     drm_getstats(struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg);
 extern int	     drm_setversion(struct inode *inode, struct file *filp,
 				     unsigned int cmd, unsigned long arg);
+extern int	     drm_noop(struct inode *inode, struct file *filp,
+				  unsigned int cmd, unsigned long arg);
 
 				/* Context IOCTL support (drm_context.h) */
 extern int	     drm_resctx( struct inode *inode, struct file *filp,
@@ -847,11 +845,11 @@ extern int	     drm_getmagic(struct inode *inode, struct file *filp,
 extern int	     drm_authmagic(struct inode *inode, struct file *filp,
 				    unsigned int cmd, unsigned long arg);
 
-                                /* Placeholder for ioctls past */
-extern int	     drm_noop(struct inode *inode, struct file *filp,
-				  unsigned int cmd, unsigned long arg);
-
 				/* Locking IOCTL support (drm_lock.h) */
+extern int           drm_lock(struct inode *inode, struct file *filp,
+			       unsigned int cmd, unsigned long arg);
+extern int           drm_unlock(struct inode *inode, struct file *filp,
+				 unsigned int cmd, unsigned long arg);
 extern int	     drm_lock_take(__volatile__ unsigned int *lock,
 				    unsigned int context);
 extern int	     drm_lock_transfer(drm_device_t *dev,
@@ -863,7 +861,6 @@ extern int	     drm_lock_free(drm_device_t *dev,
 extern int           drm_notifier(void *priv);
 
 				/* Buffer management support (drm_bufs.h) */
-extern int	     drm_order( unsigned long size );
 extern int	     drm_addmap( struct inode *inode, struct file *filp,
 				  unsigned int cmd, unsigned long arg );
 extern int	     drm_rmmap( struct inode *inode, struct file *filp,
@@ -938,7 +935,6 @@ extern unsigned int   cards_limit;
 extern drm_minor_t    *drm_minors;
 extern struct drm_sysfs_class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
-extern struct file_operations drm_stub_fops;
 
 				/* Proc support (drm_proc.h) */
 extern int 	      drm_proc_init(drm_device_t *dev,

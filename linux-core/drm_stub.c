@@ -51,48 +51,85 @@ drm_minor_t *drm_minors;
 struct drm_sysfs_class *drm_class;
 struct proc_dir_entry *drm_proc_root;
 
-/**
- * File \c open operation.
- *
- * \param inode device inode.
- * \param filp file pointer.
- *
- * Puts the dev->fops corresponding to the device minor number into
- * \p filp, call the \c open method, and restore the file operations.
- */
-static int stub_open(struct inode *inode, struct file *filp)
+static int fill_in_dev(drm_device_t *dev, struct pci_dev *pdev, const struct pci_device_id *ent, struct drm_driver_fn *driver_fn)
 {
-	drm_device_t *dev = NULL;
-	int minor = iminor(inode);
-	int err = -ENODEV;
-	struct file_operations *old_fops;
-	
-	DRM_DEBUG("\n");
+	int retcode;
 
-	if (!((minor >= 0) && (minor < cards_limit)))
-		return -ENODEV;
+	dev->count_lock = SPIN_LOCK_UNLOCKED;
+	init_timer( &dev->timer );
+	sema_init( &dev->struct_sem, 1 );
+	sema_init( &dev->ctxlist_sem, 1 );
 
-	dev = drm_minors[minor].dev;
-	if (!dev)
-		return -ENODEV;
+	dev->name   = DRIVER_NAME;
+	dev->pdev   = pdev;
 
-	old_fops = filp->f_op;
-	filp->f_op = fops_get(&dev->fn_tbl->fops);
-	if (filp->f_op->open && (err = filp->f_op->open(inode, filp))) {
-		fops_put(filp->f_op);
-		filp->f_op = fops_get(old_fops);
+#ifdef __alpha__
+	dev->hose   = pdev->sysdata;
+	dev->pci_domain = dev->hose->bus->number;
+#else
+	dev->pci_domain = 0;
+#endif
+	dev->pci_bus = pdev->bus->number;
+	dev->pci_slot = PCI_SLOT(pdev->devfn);
+	dev->pci_func = PCI_FUNC(pdev->devfn);
+	dev->irq = pdev->irq;
+
+	dev->maplist = drm_calloc(1, sizeof(*dev->maplist), DRM_MEM_MAPS);
+	if(dev->maplist == NULL) return -ENOMEM;
+	INIT_LIST_HEAD(&dev->maplist->head);
+
+	/* the DRM has 6 counters */
+	dev->counters = 6;
+	dev->types[0] = _DRM_STAT_LOCK;
+	dev->types[1] = _DRM_STAT_OPENS;
+	dev->types[2] = _DRM_STAT_CLOSES;
+	dev->types[3] = _DRM_STAT_IOCTLS;
+	dev->types[4] = _DRM_STAT_LOCKS;
+	dev->types[5] = _DRM_STAT_UNLOCKS;
+
+	dev->fn_tbl = driver_fn;
+
+	if (dev->fn_tbl->preinit)
+		if ((retcode = dev->fn_tbl->preinit(dev, ent->driver_data)))
+			goto error_out_unreg;
+
+	if (drm_core_has_AGP(dev)) {
+		dev->agp = drm_agp_init();
+		if (drm_core_check_feature(dev, DRIVER_REQUIRE_AGP) && (dev->agp == NULL)) {
+			DRM_ERROR( "Cannot initialize the agpgart module.\n" );
+			retcode = -EINVAL;
+			goto error_out_unreg;
+		}
+		
+
+		if (drm_core_has_MTRR(dev)) {
+			if (dev->agp)
+				dev->agp->agp_mtrr = mtrr_add( dev->agp->agp_info.aper_base,
+							       dev->agp->agp_info.aper_size*1024*1024,
+							       MTRR_TYPE_WRCOMB,
+							       1 );
+		}
 	}
-	fops_put(old_fops);
 
-	return err;
+	retcode = drm_ctxbitmap_init( dev );
+	if( retcode ) {
+		DRM_ERROR( "Cannot allocate memory for context bitmap.\n" );
+		goto error_out_unreg;
+	}
+
+	dev->device = MKDEV(DRM_MAJOR, dev->minor );
+
+	/* postinit is a required function to display the signon banner */
+	/* drivers add secondary heads here if needed */
+	if ((retcode = dev->fn_tbl->postinit(dev, ent->driver_data)))
+		goto error_out_unreg;
+
+	return 0;
+
+ error_out_unreg:
+	drm_takedown(dev);
+	return retcode;
 }
-
-/** File operations structure */
-struct file_operations drm_stub_fops = {
-	.owner = THIS_MODULE,
-	.open  = stub_open
-};
-
 
 /**
  * Register.
@@ -125,7 +162,7 @@ int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent, struct drm_
 
 			*minors = (drm_minor_t){.dev = dev, .class = DRM_MINOR_PRIMARY};
 			dev->minor = minor;
-			if ((ret = drm_fill_in_dev(dev, pdev, ent, driver_fn))) {
+			if ((ret = fill_in_dev(dev, pdev, ent, driver_fn))) {
 				printk (KERN_ERR "DRM: Fill_in_dev failed.\n");
 				goto err_g1;
 			}

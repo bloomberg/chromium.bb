@@ -304,6 +304,17 @@ int drm_getstats( struct inode *inode, struct file *filp,
 	return 0;
 }
 
+/** 
+ * Setversion ioctl.
+ *
+ * \param inode device inode.
+ * \param filp file pointer.
+ * \param cmd command.
+ * \param arg user argument, pointing to a drm_lock structure.
+ * \return zero on success or negative number on failure.
+ *
+ * Sets the requested interface version
+ */
 int drm_setversion(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
@@ -343,5 +354,13 @@ int drm_setversion(DRM_IOCTL_ARGS)
 		if (dev->fn_tbl->set_version)
 			dev->fn_tbl->set_version(dev, &sv);
 	}
+	return 0;
+}
+
+/** No-op ioctl. */
+int drm_noop(struct inode *inode, struct file *filp, unsigned int cmd,
+	       unsigned long arg)
+{
+	DRM_DEBUG("\n");
 	return 0;
 }
