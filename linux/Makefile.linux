@@ -59,7 +59,7 @@ DRM_MODULES ?= $(MODULE_LIST)
 # These definitions are for handling dependencies in the out of kernel build.
 
 DRMTEMPLATES =  drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
-                drm_drv.h drm_fops.h drm_init.h drm_ioctl.h \
+                drm_drv.h drm_fops.h drm_init.h drm_ioctl.h drm_irq.h \
                 drm_lock.h drm_memory.h drm_proc.h drm_stub.h drm_vm.h
 
 DRMSHARED =     drm_sarea.h

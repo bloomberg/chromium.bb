@@ -49,8 +49,8 @@
 #ifndef __HAVE_DMA
 #define __HAVE_DMA		0
 #endif
-#ifndef __HAVE_DMA_IRQ
-#define __HAVE_DMA_IRQ		0
+#ifndef __HAVE_IRQ
+#define __HAVE_IRQ		0
 #endif
 
 #define DRM_DEBUG_CODE 0	  /* Include debugging code (if > 1, then
@@ -437,19 +437,21 @@ extern int	     DRM(dma_setup)(drm_device_t *dev);
 extern void	     DRM(dma_takedown)(drm_device_t *dev);
 extern void	     DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf);
 extern void	     DRM(reclaim_buffers)(drm_device_t *dev, DRMFILE filp);
-#if __HAVE_DMA_IRQ
+#endif
+
+#if __HAVE_IRQ
+				/* IRQ support (drm_irq.h) */
 extern int           DRM(irq_install)( drm_device_t *dev, int irq );
 extern int           DRM(irq_uninstall)( drm_device_t *dev );
-extern irqreturn_t   DRM(dma_service)( DRM_IRQ_ARGS );
+extern irqreturn_t   DRM(irq_handler)( DRM_IRQ_ARGS );
 extern void          DRM(driver_irq_preinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_postinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_uninstall)( drm_device_t *dev );
-#if __HAVE_DMA_IRQ_BH
-extern void          DRM(dma_immediate_bh)( DRM_TASKQUEUE_ARGS );
+#if __HAVE_IRQ_BH
+extern void          DRM(irq_immediate_bh)( DRM_TASKQUEUE_ARGS );
 #endif
 #endif
 
-#endif /* __HAVE_DMA */
 #if __HAVE_VBL_IRQ
 extern int           DRM(vblank_wait)(drm_device_t *dev, unsigned int *vbl_seq);
 extern void          DRM(vbl_send_signals)( drm_device_t *dev );
@@ -524,8 +526,8 @@ extern int		DRM(freebufs)(DRM_IOCTL_ARGS);
 extern int		DRM(mapbufs)(DRM_IOCTL_ARGS);
 #endif
 
-/* DMA support (drm_dma.h) */
-#if __HAVE_DMA
+/* IRQ support (drm_irq.h) */
+#if __HAVE_IRQ || __HAVE_DMA
 extern int		DRM(control)(DRM_IOCTL_ARGS);
 #endif
 #if __HAVE_VBL_IRQ
