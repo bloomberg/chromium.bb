@@ -72,15 +72,8 @@ FcStrCmpIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
     {
 	c1 = *s1++;
 	c2 = *s2++;
-	if (!c1)
+	if (!c1 || (c1 != c2 && (c1 = FcToLower(c1)) != (c2 = FcToLower(c2))))
 	    break;
-	if (c1 != c2)
-	{
-	    c1 = FcToLower (c1);
-	    c2 = FcToLower (c2);
-	    if (c1 != c2)
-		break;
-	}
     }
     return (int) c1 - (int) c2;
 }
@@ -98,11 +91,7 @@ FcStrCmpIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2)
 	do
 	    c2 = *s2++;
 	while (c2 == ' ');
-	if (!c1 || !c2)
-	    break;
-	c1 = FcToLower (c1);
-	c2 = FcToLower (c2);
-	if (c1 != c2)
+	if (!c1 || (c1 != c2 && (c1 = FcToLower(c1)) != (c2 = FcToLower(c2))))
 	    break;
     }
     return (int) c1 - (int) c2;
@@ -119,9 +108,7 @@ FcStrCmp (const FcChar8 *s1, const FcChar8 *s2)
     {
 	c1 = *s1++;
 	c2 = *s2++;
-	if (!c1 || !c2)
-	    break;
-	if (c1 != c2)
+	if (!c1 || c1 != c2)
 	    break;
     }
     return (int) c1 - (int) c2;
