@@ -299,12 +299,12 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 	return 0;
 }
 
-static int via_quiescent(drm_device_t * dev)
+int via_driver_dma_quiescent(drm_device_t * dev)
 {
 	drm_via_private_t *dev_priv = dev->dev_private;
 
 	if (!via_wait_idle(dev_priv)) {
-		return DRM_ERR(EAGAIN);
+		return DRM_ERR(EBUSY);
 	}
 	return 0;
 }
@@ -315,7 +315,7 @@ int via_flush_ioctl(DRM_IOCTL_ARGS)
 
 	LOCK_TEST_WITH_RETURN( dev, filp );
 
-	return via_quiescent(dev);
+	return via_driver_dma_quiescent(dev);
 }
 
 int via_cmdbuffer(DRM_IOCTL_ARGS)

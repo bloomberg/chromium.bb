@@ -36,6 +36,8 @@ typedef enum{
 	state_command,
 	state_header2,
 	state_header1,
+	state_vheader5,
+	state_vheader6,
 	state_error
 } verifier_state_t;
 
@@ -72,6 +74,8 @@ typedef enum{
 	check_texture_addr7,
 	check_texture_addr8,
 	check_texture_addr_mode,
+	check_for_vertex_count,
+	check_number_texunits,
 	forbidden_command
 }hazard_t;
 
@@ -165,7 +169,7 @@ static hz_init_t init_table1[] = {
 	{0x7A, no_check},
 	{0x7B, no_check},
 	{0x7C, no_check},
-	{0x7D, no_check}
+	{0x7D, check_for_vertex_count}
 };
 
    
@@ -232,7 +236,7 @@ static hz_init_t init_table3[] = {
 	{0xf2, check_for_header2_err},
 	{0xf0, check_for_header1_err},
 	{0xcc, check_for_dummy},
-	{0x00, no_check}
+	{0x00, check_number_texunits}
 };
    
 		       
@@ -254,8 +258,10 @@ typedef struct{
 	uint32_t tex_palette_size[2];
 	sequence_t unfinished;
 	int agp_texture;
+	int multitex;
 	drm_device_t *dev;
 	drm_map_t *map_cache;
+	uint32_t vertex_count;
 } sequence_context_t;
 
 static sequence_context_t hc_sequence;
@@ -497,12 +503,96 @@ investigate_hazard( uint32_t cmd, hazard_t hz, sequence_context_t *cur_seq)
 		cur_seq->tex_palette_size[cur_seq->texture] = 
 			(cmd >> 16) & 0x000000007;
 		return 0;
+	case check_for_vertex_count:
+		cur_seq->vertex_count = cmd & 0x0000FFFF;
+		return 0;
+	case check_number_texunits:
+	        cur_seq->multitex = (cmd >> 3) & 1;
+		return 0;
 	default:
 		DRM_ERROR("Illegal DMA data: 0x%x\n", cmd);
 		return 2;
 	}
 	return 2;
 }
+
+
+static __inline__ int
+via_check_prim_list(uint32_t const **buffer, const uint32_t *buf_end,
+		    sequence_context_t *cur_seq)
+{
+	uint32_t a_fire, bcmd , dw_count;
+	int ret = 0;
+	int have_fire;
+	const uint32_t *buf = *buffer;
+
+	while(buf < buf_end) {
+	        have_fire = 0;
+		if ((buf_end - buf) < 2) {
+			DRM_ERROR("Unexpected termination of primitive list.\n");
+			ret = 1;
+			break;
+		}
+		if ((*buf & HC_ACMD_MASK) != HC_ACMD_HCmdB) break;
+		bcmd = *buf++;
+		if ((*buf & HC_ACMD_MASK) != HC_ACMD_HCmdA) {
+			DRM_ERROR("Expected Vertex List A command, got 0x%x\n",
+				  *buf);
+			ret = 1;
+			break;
+		}
+		a_fire = *buf++ | HC_HPLEND_MASK | HC_HPMValidN_MASK | HC_HE3Fire_MASK;	
+	
+		/*
+		 * How many dwords per vertex ?
+		 */ 
+		
+		if ((bcmd & (0xF << 11)) == 0) {
+			DRM_ERROR("Illegal B command vertex data for AGP.\n");
+			ret = 1;
+			break;
+		} 
+
+		dw_count = 0;
+		if (bcmd & (1 << 7)) dw_count += (cur_seq->multitex) ? 2:1;
+		if (bcmd & (1 << 8)) dw_count += (cur_seq->multitex) ? 2:1;
+		if (bcmd & (1 << 9)) dw_count++;
+		if (bcmd & (1 << 10)) dw_count++;
+		if (bcmd & (1 << 11)) dw_count++;
+		if (bcmd & (1 << 12)) dw_count++;
+		if (bcmd & (1 << 13)) dw_count++;
+		if (bcmd & (1 << 14)) dw_count++;
+
+		while(buf < buf_end) {
+			if (*buf == HALCYON_HEADER2) {
+				DRM_ERROR("Missing Vertex Fire command or verifier "
+					  "lost sync.\n");
+				ret = 1;
+				break;
+			}
+			if (*buf == a_fire) {
+			        have_fire = 1;
+				buf++;
+				if (buf < buf_end && *buf == a_fire) 
+					buf++;
+				break;
+			}
+			if ((ret = eat_words(&buf, buf_end, dw_count)))
+				break;
+		}
+		if (buf >= buf_end && !have_fire) {
+			DRM_ERROR("Missing Vertex Fire command or verifier "
+				  "lost sync.\n");
+			ret = 1;
+			break;
+		}
+	} 
+	*buffer = buf;
+	return ret;
+}
+
+
+		       
 
 
 static __inline__ verifier_state_t
@@ -514,6 +604,7 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 	const uint32_t *buf = *buffer;
 	const hazard_t *hz_table;
 
+
 	if ((buf_end - buf) < 2) {
 		DRM_ERROR("Illegal termination of DMA HALCYON_HEADER2 sequence.\n");
 		return state_error;
@@ -523,32 +614,10 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 
 	switch(cmd) {
 	case HC_ParaType_CmdVdata:
-
-		/* 
-		 * Command vertex data.
-		 * It is assumed that the command regulator remains in this state
-		 * until it encounters a possibly double fire command or a header2 data.
-		 * FIXME: Vertex data can accidently be header2 or fire.
-		 * CHECK: What does the regulator do if it encounters a header1 
-		 * cmd?
-		 */
-
-		while (buf < buf_end) {
-			if (*buf == HALCYON_HEADER2) break;
-			if ((*buf & HALCYON_FIREMASK) == HALCYON_FIRECMD) {
-				buf++;
-				if ((buf < buf_end) && 
-				    ((*buf & HALCYON_FIREMASK) == HALCYON_FIRECMD))
-					buf++;
-				if ((buf < buf_end) && 
-				    ((*buf & HALCYON_FIREMASK) == HALCYON_FIRECMD))
-					break;
-			}
-			buf++;
-		}
+		if (via_check_prim_list(&buf, buf_end, &hc_sequence )) 
+			return state_error;
 		*buffer = buf;
 		return state_command;
-
 	case HC_ParaType_NotTex:
 		hz_table = table1;
 		break;
@@ -590,7 +659,8 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 		 */
 
 		DRM_ERROR("Invalid or unimplemented HALCYON_HEADER2 "
-			  "DMA subcommand: 0x%x\n", cmd);
+			  "DMA subcommand: 0x%x. Previous dword: 0x%x\n", 
+			  cmd, *(buf -2));
 		*buffer = buf;
 		return state_error;
 	}
@@ -617,6 +687,41 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 	return state_command;
 }
 
+
+static __inline__ int
+verify_mmio_address( uint32_t address)
+{
+	if ((address > 0x3FF) && (address < 0xC00 )) {
+		DRM_ERROR("Invalid HALCYON_HEADER1 command. "
+			  "Attempt to access 3D- or command burst area.\n");
+		return 1;
+	} else if (address > 0xCFF ) {
+		DRM_ERROR("Invalid HALCYON_HEADER1 command. "
+			  "Attempt to access VGA registers.\n");
+		return 1;
+	}
+	return 0;
+}
+
+static __inline__ int
+verify_video_tail( uint32_t const **buffer, const uint32_t *buf_end, uint32_t dwords) 
+{
+	const uint32_t *buf = *buffer;
+
+	if (buf_end - buf < dwords) {
+		DRM_ERROR("Illegal termination of video command.\n");
+		return 1;
+	}
+	while (dwords--) {
+		if (*buf++) {
+			DRM_ERROR("Illegal video command tail.\n");
+			return 1;
+		}
+	}
+	*buffer = buf;
+	return 0;
+}
+		
 
 static __inline__ verifier_state_t
 via_check_header1( uint32_t const **buffer, const uint32_t *buf_end )
@@ -650,6 +755,75 @@ via_check_header1( uint32_t const **buffer, const uint32_t *buf_end )
 	return ret;
 }
 
+static __inline__ verifier_state_t
+via_check_vheader5( uint32_t const **buffer, const uint32_t *buf_end )
+{
+	uint32_t data;
+	const uint32_t *buf = *buffer;
+
+	if (buf_end - buf < 4) {
+		DRM_ERROR("Illegal termination of video header5 command\n");
+		return state_error;
+	}
+
+	data = *buf++ & ~VIA_VIDEOMASK;
+	if (verify_mmio_address(data))
+		return state_error;
+
+	data = *buf++;
+	if (*buf++ != 0x00F50000) {
+		DRM_ERROR("Illegal header5 header data\n");
+		return state_error;
+	}
+	if (*buf++ != 0x00000000) {
+		DRM_ERROR("Illegal header5 header data\n");
+		return state_error;
+	}
+	if (eat_words(&buf, buf_end, data)) 
+		return state_error;
+	if (verify_video_tail(&buf, buf_end, 4 - (data & 3))) 
+		return state_error;
+	*buffer = buf;
+	return state_command;
+	       
+} 
+
+static __inline__ verifier_state_t
+via_check_vheader6( uint32_t const **buffer, const uint32_t *buf_end )
+{
+	uint32_t data;
+	const uint32_t *buf = *buffer;
+	uint32_t i;
+
+	DRM_ERROR("H6\n");
+
+	if (buf_end - buf < 4) {
+		DRM_ERROR("Illegal termination of video header6 command\n");
+		return state_error;
+	}
+
+	data = *buf++;
+	if (*buf++ != 0x00F60000) {
+		DRM_ERROR("Illegal header6 header data\n");
+		return state_error;
+	}
+	if (*buf++ != 0x00000000) {
+		DRM_ERROR("Illegal header6 header data\n");
+		return state_error;
+	}
+	if ((buf_end - buf) < (data << 1)) {
+		DRM_ERROR("Illegal termination of video header6 command\n");
+	}
+	for (i=0; i<data; ++i) {
+		if (verify_mmio_address(*buf++))
+			return state_error;
+		buf++;
+	}
+	if (verify_video_tail(&buf, buf_end, 4 - ((data << 1) & 3)))
+		return state_error;
+	*buffer = buf;
+	return state_command;
+} 
 
 
 int 
@@ -665,6 +839,7 @@ via_verify_command_stream(const uint32_t * buf, unsigned int size, drm_device_t 
 	hc_sequence.map_cache = NULL;
 
 	while (buf < buf_end) {
+
 		switch (state) {
 		case state_header2:
 			state = via_check_header2( &buf, buf_end );
@@ -672,11 +847,21 @@ via_verify_command_stream(const uint32_t * buf, unsigned int size, drm_device_t 
 		case state_header1:
 			state = via_check_header1( &buf, buf_end );
 			break;
+		case state_vheader5:
+			state = via_check_vheader5( &buf, buf_end );
+			break;
+		case state_vheader6:
+			state = via_check_vheader6( &buf, buf_end );
+			break;
 		case state_command:
 			if (HALCYON_HEADER2 == (cmd = *buf)) 
 				state = state_header2;
 			else if ((cmd & HALCYON_HEADER1MASK) == HALCYON_HEADER1) 
 				state = state_header1;
+			else if ((cmd & VIA_VIDEOMASK) == VIA_VIDEO_HEADER5)
+				state = state_vheader5;
+			else if ((cmd & VIA_VIDEOMASK) == VIA_VIDEO_HEADER6)
+				state = state_vheader6;
 			else {
 				DRM_ERROR("Invalid / Unimplemented DMA HEADER command. 0x%x\n",
 					  cmd);

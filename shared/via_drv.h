@@ -75,6 +75,7 @@ extern void via_driver_irq_uninstall(drm_device_t * dev);
 
 extern int via_dma_cleanup(drm_device_t * dev);
 extern int via_wait_idle(drm_via_private_t * dev_priv);
+extern int via_driver_dma_quiescent(drm_device_t * dev);
 extern void via_init_command_verifier( void );
 extern int via_verify_command_stream(const uint32_t * buf, unsigned int size,
 				     drm_device_t *dev);

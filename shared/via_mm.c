@@ -131,8 +131,12 @@ int via_init_context(struct drm_device *dev, int context)
 }
 
 int via_final_context(struct drm_device *dev, int context)
-{
-	int i;
+{	
+        int i;
+	volatile int *lock;
+	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
+	drm_via_sarea_t *sAPriv = dev_priv->sarea_priv;
+
 	for (i = 0; i < MAX_CONTEXT; i++)
 		if (global_ppriv[i].used &&
 		    (global_ppriv[i].context == context))
@@ -167,6 +171,22 @@ int via_final_context(struct drm_device *dev, int context)
 
 		global_ppriv[i].used = 0;
 	}
+	
+	/*
+	 * Release futex locks.
+	 */ 
+
+	for (i=0; i < VIA_NR_XVMC_LOCKS; ++i) {
+		lock = XVMCLOCKPTR(sAPriv, i);
+		if ( (_DRM_LOCKING_CONTEXT( *lock ) == i) && 
+		     (_DRM_LOCK_IS_HELD( *lock ))) {
+			if ( *lock & _DRM_LOCK_CONT) {
+				DRM_WAKEUP( &(dev_priv->decoder_queue[i]));
+			}
+			*lock &= ~( _DRM_LOCK_HELD | _DRM_LOCK_CONT );
+		}
+	}
+			
 #if defined(__linux__)
 	/* Linux specific until context tracking code gets ported to BSD */
 	/* Last context, perform cleanup */
@@ -362,4 +382,5 @@ void DRM(driver_register_fns) (drm_device_t * dev) {
 	dev->fn_tbl.irq_postinstall = via_driver_irq_postinstall;
 	dev->fn_tbl.irq_uninstall = via_driver_irq_uninstall;
 	dev->fn_tbl.irq_handler = via_driver_irq_handler;
+	dev->fn_tbl.dma_quiescent = via_driver_dma_quiescent;
 }

@@ -44,53 +44,37 @@
 /* VIA_REG_INTERRUPT */
 #define VIA_IRQ_GLOBAL          (1 << 31)
 #define VIA_IRQ_VBI_ENABLE      (1 << 19)
+#define VIA_IRQ_SEC_VBI_ENABLE  (1 << 17)
+#define VIA_IRQ_SEC_VBI_PENDING (1 << 15)
 #define VIA_IRQ_VBI_PENDING     (1 << 3)
 
 
-
-static unsigned time_diff(struct timeval *now,struct timeval *then) 
-{
-    return (now->tv_usec >= then->tv_usec) ?
-        now->tv_usec - then->tv_usec :
-        1000000 - (then->tv_usec - now->tv_usec);
-}
 
 irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
 {
 	drm_device_t *dev = (drm_device_t *) arg;
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
-	u32 status;
-	int handled = 0;
-	struct timeval cur_vblank;
+	int handled = IRQ_NONE;
+	u32 status = VIA_READ(VIA_REG_INTERRUPT);
 
-	status = VIA_READ(VIA_REG_INTERRUPT);
 	if (status & VIA_IRQ_VBI_PENDING) {
 		atomic_inc(&dev->vbl_received);
-                if (!(atomic_read(&dev->vbl_received) & 0x0F)) {
-			do_gettimeofday(&cur_vblank);
-                        if (dev_priv->last_vblank_valid) {
-				dev_priv->usec_per_vblank = 
-					time_diff( &cur_vblank,&dev_priv->last_vblank) >> 4;
-			}
-			dev_priv->last_vblank = cur_vblank;
-			dev_priv->last_vblank_valid = 1;
-                }
-                if (!(atomic_read(&dev->vbl_received) & 0xFF)) {
-			DRM_DEBUG("US per vblank is: %u\n",
-				dev_priv->usec_per_vblank);
-		}
 		DRM_WAKEUP(&dev->vbl_queue);
 		DRM(vbl_send_signals) (dev);
-		handled = 1;
+		handled = IRQ_HANDLED;
 	}
 
-	/* Acknowlege interrupts ?? */
-	VIA_WRITE(VIA_REG_INTERRUPT, status);
+#if 0
+	if (status & VIA_IRQ_SEC_VBI_PENDING) {
+		atomic_inc(&dev->sec_vbl_received);
+		DRM_WAKEUP(&dev->sec_vbl_queue);
+		DRM(vbl_send_signals)(dev); /* KW: Need a parameter here? */
+		handled = IRQ_HANDLED;
+	}
+#endif
 
-	if (handled)
-		return IRQ_HANDLED;
-	else
-		return IRQ_NONE;
+	VIA_WRITE(VIA_REG_INTERRUPT, status);
+	return handled;
 }
 
 static __inline__ void viadrv_acknowledge_irqs(drm_via_private_t * dev_priv)
