@@ -188,7 +188,7 @@
 #if DRM_DEBUG_CODE
 #define DRM_DEBUG(fmt, arg...)						\
 	do {								\
-		if ( drm_flags & DRM_FLAG_DEBUG )			\
+		if ( drm_debug )						\
 			printk(KERN_DEBUG				\
 			       "[" DRM_NAME ":%s] " fmt ,		\
 			       __FUNCTION__ , ##arg);			\
@@ -726,8 +726,6 @@ static inline int drm_core_has_MTRR(struct drm_device *dev)
 /*@{*/
 
 				/* Misc. support (drm_init.h) */
-extern int drm_flags;
-extern void drm_parse_options(char *s);
 extern int drm_cpu_valid(void);
 
 				/* Driver support (drm_drv.h) */
@@ -919,6 +917,7 @@ extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 extern int drm_put_dev(drm_device_t * dev);
 extern int drm_get_head(drm_device_t * dev, drm_head_t *head);
 extern int drm_put_head(drm_head_t * head);
+extern unsigned int drm_debug; /* 1 to enable debug output */
 extern unsigned int cards_limit;
 extern drm_head_t **drm_heads;
 extern struct drm_sysfs_class *drm_class;

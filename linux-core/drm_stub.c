@@ -37,16 +37,17 @@
 #include "drm_core.h"
 
 unsigned int cards_limit = 16;	/* Enough for one machine */
-unsigned int debug = 0;		/* 1 to enable debug output */
+unsigned int drm_debug = 0;		/* 1 to enable debug output */
+EXPORT_SYMBOL(drm_debug);
 
 MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESC);
 MODULE_LICENSE("GPL and additional rights");
 MODULE_PARM_DESC(cards_limit, "Maximum number of graphics cards");
-MODULE_PARM_DESC(debug, "Enable debug output");
+MODULE_PARM_DESC(drm_debug, "Enable debug output");
 
-module_param(cards_limit, int, 0444);
-module_param(debug, int, 0666);
+module_param(cards_limit, int, S_IRUGO);
+module_param(drm_debug, int, S_IRUGO|S_IWUGO);
 
 drm_head_t **drm_heads;
 struct drm_sysfs_class *drm_class;

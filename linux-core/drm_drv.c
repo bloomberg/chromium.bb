@@ -55,25 +55,6 @@
 #include "drm_core.h"
 
 static void __exit drm_cleanup(drm_device_t * dev);
-
-#ifndef MODULE
-/** Use an additional macro to avoid preprocessor troubles */
-#define DRM_OPTIONS_FUNC drm_options
-/**
- * Called by the kernel to parse command-line options passed via the
- * boot-loader (e.g., LILO).  It calls the insmod option routine,
- * parse_options().
- */
-static int __init drm_options(char *str)
-{
-	drm_parse_options(str);
-	return 1;
-}
-
-__setup(DRIVER_NAME "=", DRM_OPTIONS_FUNC);
-#undef DRM_OPTIONS_FUNC
-#endif
-
 int drm_fb_loaded = 0;
 
 /** Ioctl table */
@@ -289,11 +270,6 @@ void __exit drm_cleanup_pci(struct pci_dev *pdev)
 }
 EXPORT_SYMBOL(drm_cleanup_pci);
 
-#ifdef MODULE
-static char *drm_opts = NULL;
-#endif
-MODULE_PARM(drm_opts, "s");
-
 /**
  * Module initialization. Called via init_module at module load time, or via
  * linux/init/main.c (this is not currently supported).
@@ -315,10 +291,6 @@ int drm_init(struct drm_driver *driver,
 	int i;
 
 	DRM_DEBUG("\n");
-
-#ifdef MODULE
-	drm_parse_options(drm_opts);
-#endif
 
 	drm_mem_init();
 
