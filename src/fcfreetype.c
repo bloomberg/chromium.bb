@@ -31,6 +31,7 @@
 #include <freetype/tttables.h>
 #include <freetype/ftsnames.h>
 #include <freetype/ttnameid.h>
+#include <freetype/t1tables.h>
 
 /*
  * Keep Han languages separated by eliminating languages
@@ -130,6 +131,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     FcChar8	    *style;
     int		    spacing;
     TT_OS2	    *os2;
+    PS_FontInfoRec  psfontinfo;
     TT_Header	    *head;
     const FcChar8   *exclusiveLang = 0;
     FT_SfntName	    sname;
@@ -563,6 +565,48 @@ FcFreeTypeQuery (const FcChar8	*file,
 	case 8:	width = FC_WIDTH_EXTRAEXPANDED; break;
 	case 9:	width = FC_WIDTH_ULTRAEXPANDED; break;
 	}
+    }
+
+    /*
+     * Type 1: Check for FontInfo dictionary information
+     * Code from g2@magestudios.net (Gerard Escalante)
+     */
+    
+    if (FT_Get_PS_Font_Info(face, &psfontinfo) == 0)
+    {
+        if (strcasecmp("thin", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_THIN; 
+        else if (strcasecmp("extralight", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_EXTRALIGHT; 
+        else if (strcasecmp("ultralight", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_ULTRALIGHT; 
+        else if (strcasecmp("light", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_LIGHT; 
+        else if (strcasecmp("regular", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_REGULAR; 
+        else if (strcasecmp("normal", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_NORMAL; 
+        else if (strcasecmp("medium", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_MEDIUM; 
+        else if (strcasecmp("demibold", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_DEMIBOLD; 
+        else if (strcasecmp("semibold", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_SEMIBOLD; 
+        else if (strcasecmp("extrabold", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_EXTRABOLD; 
+        else if (strcasecmp("ultrabold", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_EXTRABOLD; 
+        else if (strcasecmp("bold", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_BOLD; 
+        else if (strcasecmp("black", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_BLACK; 
+        else if (strcasecmp("heavy", psfontinfo.weight) == 0) 
+            weight = FC_WEIGHT_BLACK; 
+     
+        if (psfontinfo.italic_angle < 0) 
+            slant = FC_SLANT_ITALIC; 
+        else if (psfontinfo.italic_angle >= 0) 
+            slant = FC_SLANT_ROMAN; 
     }
     
     if (!FcPatternAddInteger (pat, FC_SLANT, slant))
