@@ -85,15 +85,15 @@ config DRM_SIS
 	depends on DRM && AGP
 	help
 	  Choose this option if you have a SiS 630 or compatible video 
-          chipset. If M is selected the module will be called sis. AGP
-          support is required for this driver to work.
+	  chipset. If M is selected the module will be called sis. AGP
+	  support is required for this driver to work.
 
 config DRM_VIA
 	tristate "Via unichrome video cards"
 	depends on DRM 
 	help
 	  Choose this option if you have a Via unichrome or compatible video 
-          chipset. If M is selected the module will be called via.
+	  chipset. If M is selected the module will be called via.
 
 config DRM_MACH64
 	tristate "ATI Rage Pro (Mach64)"
