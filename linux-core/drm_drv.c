@@ -619,9 +619,13 @@ static void __exit remove(struct pci_dev *dev)
 {
 }
 
+static struct pci_device_id device_id_table[] = {
+	{ PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+};
+
 static struct pci_driver driver = {
 	.name	  = DRIVER_NAME,
-	.id_table = NULL,
+	.id_table = device_id_table,
 	.probe	  = probe,
 	.remove	  = remove,
 };
