@@ -1,7 +1,7 @@
 .\"
-.\" $XFree86: xc/lib/fontconfig/src/fontconfig.man,v 1.5 2002/08/26 19:57:40 keithp Exp $
+.\" $RCSId: xc/lib/fontconfig/src/fontconfig.man,v 1.5 2002/08/26 19:57:40 keithp Exp $
 .\"
-.\" Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
+.\" Copyright © 2002 Keith Packard
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and its
 .\" documentation for any purpose is hereby granted without fee, provided that
@@ -27,7 +27,7 @@
 .TP
 \\$1
 ..
-.TH FONTCONFIG 3 "Version 1.0" "XFree86"
+.TH FONTCONFIG 3 "Version 1.0" "Fontconfig.org"
 
 .SH NAME
 fontconfig \- Font configuration and customization library
@@ -1463,4 +1463,4 @@ is the conventional repository of font information that isn't found in the
 per-directory caches.  This file is automatically maintained by fontconfig.
 
 .SH AUTHOR
-Keith Packard, member of the XFree86 Project, Inc.
+Keith Packard
