@@ -424,6 +424,10 @@ FcFileCacheSave (FcFileCache	*cache,
     if (!cache->updated && cache->referenced == cache->entries)
 	return FcTrue;
     
+    /* Set-UID programs can't safely update the cache */
+    if (getuid () != geteuid ())
+	return FcFalse;
+    
     atomic = FcAtomicCreate (cache_file);
     if (!atomic)
 	goto bail0;
