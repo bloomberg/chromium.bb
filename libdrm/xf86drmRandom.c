@@ -24,8 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRandom.c,v 1.4 1999/06/24 18:54:55 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRandom.c,v 1.2 1999/06/27 14:08:20 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRandom.c,v 1.3 2000/02/23 04:47:23 martin Exp $
  *
  * DESCRIPTION
  *
