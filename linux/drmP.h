@@ -831,6 +831,8 @@ extern int	     DRM(addmap)( struct inode *inode, struct file *filp,
 				  unsigned int cmd, unsigned long arg );
 extern int	     DRM(rmmap)( struct inode *inode, struct file *filp,
 				 unsigned int cmd, unsigned long arg );
+extern int 	     DRM(initmap)( drm_device_t *dev, unsigned int offset,
+				 unsigned int size, int type, int flags );
 #if __HAVE_DMA
 extern int	     DRM(addbufs)( struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg );

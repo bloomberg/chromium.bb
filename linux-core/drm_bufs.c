@@ -68,6 +68,69 @@ int DRM(order)( unsigned long size )
 	return order;
 }
 
+ /**
+ * Adjusts the memory offset to its absolute value according to the mapping
+ * type.  Adds the map to the map list drm_device::maplist. Adds MTRR's where
+ * applicable and if supported by the kernel.
+ */
+int DRM(initmap)( drm_device_t *dev, unsigned int offset, unsigned int size, int type, int flags )
+{
+	drm_map_t *map;
+	drm_map_list_t *list;
+
+	DRM_DEBUG("\n");
+
+	if ( (offset & (~PAGE_MASK)) || (size & (~PAGE_MASK)) )
+		return -EINVAL;
+#if !defined(__sparc__) && !defined(__alpha__)
+	if ( offset + size < offset || offset < virt_to_phys(high_memory) )
+		return -EINVAL;
+#endif
+	if ( !(list = DRM(alloc)( sizeof(*list), DRM_MEM_MAPS )))
+		return -ENOMEM;
+	memset(list, 0, sizeof(*list));
+		
+	if ( !(map = DRM(alloc)( sizeof(*map), DRM_MEM_MAPS ))) {
+		DRM(free)(list, sizeof(*list), DRM_MEM_MAPS);
+		return -ENOMEM;
+	}
+
+	*map = (drm_map_t){
+		.offset = offset,
+		.size = size,
+		.type = type,
+		.flags = flags,
+		.mtrr = -1,
+		.handle = 0,
+	};
+	list->map = map;
+
+	DRM_DEBUG( "initmap offset = 0x%08lx, size = 0x%08lx, type = %d\n",
+		   map->offset, map->size, map->type );
+        
+#ifdef __alpha__
+	map->offset += dev->hose->mem_space->start;
+#endif
+#if __REALLY_HAVE_MTRR
+	if ( map->type == _DRM_FRAME_BUFFER ||
+		(map->flags & _DRM_WRITE_COMBINING) ) {
+		map->mtrr = mtrr_add( map->offset, map->size,
+					MTRR_TYPE_WRCOMB, 1 );
+	}
+#endif
+	if (map->type == _DRM_REGISTERS)
+		map->handle = DRM(ioremap)( map->offset, map->size, dev );
+
+	down(&dev->struct_sem);
+	list_add(&list->head, &dev->maplist->head);
+	up(&dev->struct_sem);
+	
+	DRM_DEBUG("finished\n");
+
+	return 0;
+}
+
+
 /**
  * Ioctl to specify a range of memory that is available for mapping by a non-root process.
  *
@@ -120,7 +183,21 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 
 	switch ( map->type ) {
 	case _DRM_REGISTERS:
-	case _DRM_FRAME_BUFFER:
+	case _DRM_FRAME_BUFFER: {
+		/* after all the drivers switch to permanent mapping this should just return an error */
+        	struct list_head *_list;
+
+		/* if map already exists, return the existing one instead of creating a new one */
+		list_for_each( _list, &dev->maplist->head ) {
+			drm_map_list_t *_entry = list_entry( _list, drm_map_list_t, head );
+			if ( _entry->map && _entry->map->type == map->type ) {
+				DRM(free)( map, sizeof(*map), DRM_MEM_MAPS );
+				map = _entry->map;
+				DRM_DEBUG( "Found existing: offset = 0x%08lx, size = 0x%08lx, type = %d\n",
+					map->offset, map->size, map->type );
+				goto found_it;
+			}
+		}
 #if !defined(__sparc__) && !defined(__alpha__) && !defined(__ia64__)
 		if ( map->offset + map->size < map->offset ||
 		     map->offset < virt_to_phys(high_memory) ) {
@@ -142,7 +219,7 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 			map->handle = DRM(ioremap)( map->offset, map->size,
 						    dev );
 		break;
-
+	}
 	case _DRM_SHM:
 		map->handle = vmalloc_32(map->size);
 		DRM_DEBUG( "%lu %d %p\n",
@@ -196,7 +273,7 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 	down(&dev->struct_sem);
 	list_add(&list->head, &dev->maplist->head);
  	up(&dev->struct_sem);
-
+found_it:
 	if ( copy_to_user( argp, map, sizeof(*map) ) )
 		return -EFAULT;
 	if ( map->type != _DRM_SHM ) {
@@ -241,7 +318,7 @@ int DRM(rmmap)(struct inode *inode, struct file *filp,
 			   sizeof(request))) {
 		return -EFAULT;
 	}
-
+	
 	down(&dev->struct_sem);
 	list = &dev->maplist->head;
 	list_for_each(list, &dev->maplist->head) {
@@ -260,6 +337,12 @@ int DRM(rmmap)(struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 	map = r_list->map;
+	
+	/* Register and framebuffer maps are permanent */
+	if ((map->type == _DRM_REGISTERS) || (map->type == _DRM_FRAME_BUFFER)) {
+		up(&dev->struct_sem);
+		return 0;
+	}
 	list_del(list);
 	DRM(free)(list, sizeof(*list), DRM_MEM_MAPS);
 
@@ -271,17 +354,7 @@ int DRM(rmmap)(struct inode *inode, struct file *filp,
 		switch (map->type) {
 		case _DRM_REGISTERS:
 		case _DRM_FRAME_BUFFER:
-#if __REALLY_HAVE_MTRR
-			if (map->mtrr >= 0) {
-				int retcode;
-				retcode = mtrr_del(map->mtrr,
-						   map->offset,
-						   map->size);
-				DRM_DEBUG("mtrr_del = %d\n", retcode);
-			}
-#endif
-			DRM(ioremapfree)(map->handle, map->size, dev);
-			break;
+			break;  /* Can't get here, make compiler happy */
 		case _DRM_SHM:
 			vfree(map->handle);
 			break;
