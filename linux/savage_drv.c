@@ -80,7 +80,7 @@ int savage_alloc_continuous_mem(struct inode *inode, struct file *filp,
     return -EINVAL;
   
   size = cont_mem.type * cont_mem.size;
-  printk("[drm]JTLIsize = %d\n",size);
+  printk("[drm]JTLIsize = %lu\n",size);
   
   ret = (void *)__get_free_pages(GFP_KERNEL, get_order(size));
   if (ret == NULL)
@@ -218,7 +218,7 @@ int savage_free_cont_mem(struct inode *inode, struct file *filp,
   DRM(free)(list, sizeof(*list), DRM_MEM_MAPS);
 
   /*unmap the user space */
-#if 0 && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,18))
+#ifdef DO_MUNMAP_4_ARGS
   if ( do_munmap(current->mm,cont_mem.linear,size,1)!=0)
 #else
   if ( do_munmap(current->mm,cont_mem.linear,size)!=0)
