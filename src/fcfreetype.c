@@ -942,21 +942,23 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    weight = FC_WEIGHT_BOLD;
     }
 
+    if (width == -1)
+	width = FC_WIDTH_NORMAL;
+
+    if (foundry == 0)
+	foundry = "unknown";
+
     if (!FcPatternAddInteger (pat, FC_SLANT, slant))
 	goto bail1;
 
     if (!FcPatternAddInteger (pat, FC_WEIGHT, weight))
 	goto bail1;
 
-    if (width != -1)
-	if (!FcPatternAddInteger (pat, FC_WIDTH, width))
-	    goto bail1;
+    if (!FcPatternAddInteger (pat, FC_WIDTH, width))
+	goto bail1;
 
-    if(foundry) 
-    {
-        if(!FcPatternAddString (pat, FC_FOUNDRY, foundry))
-            goto bail1;
-    }
+    if (!FcPatternAddString (pat, FC_FOUNDRY, foundry))
+	goto bail1;
 
     /*
      * Compute the unicode coverage for the font
