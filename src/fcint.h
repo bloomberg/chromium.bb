@@ -81,8 +81,20 @@ typedef struct _FcSymbolic {
 #define FC_MEM_STRLIST	    14
 #define FC_MEM_CONFIG	    15
 #define FC_MEM_LANGSET	    16
+#define FC_MEM_ATOMIC	    17
+#define FC_MEM_BLANKS	    18
+#define FC_MEM_CACHE	    19
+#define FC_MEM_STRBUF	    20
+#define FC_MEM_SUBST	    21
+#define FC_MEM_OBJECTTYPE   22
+#define FC_MEM_CONSTANT	    23
+#define FC_MEM_TEST	    24
+#define FC_MEM_EXPR	    25
+#define FC_MEM_VSTACK	    26
+#define FC_MEM_ATTR	    27
+#define FC_MEM_PSTACK	    28
 
-#define FC_MEM_NUM	    17
+#define FC_MEM_NUM	    29
 
 typedef enum _FcValueBinding {
     FcValueBindingWeak, FcValueBindingStrong

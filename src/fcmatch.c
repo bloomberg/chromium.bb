@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.18 2002/08/19 19:32:05 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.19 2002/08/22 07:36:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -640,6 +640,7 @@ FcFontSetSort (FcConfig	    *config,
     }
     if (!nnodes)
 	goto bail0;
+    /* freed below */
     nodes = malloc (nnodes * sizeof (FcSortNode) + nnodes * sizeof (FcSortNode *));
     if (!nodes)
 	goto bail0;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcinit.c,v 1.6 2002/05/23 23:00:46 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcinit.c,v 1.7 2002/08/22 07:36:44 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -154,23 +154,35 @@ static struct {
     int	    free_count;
     int	    free_mem;
 } FcInUse[FC_MEM_NUM] = {
-    { "charset", 0, 0 },
-    { "charleaf", 0 ,0 },
-    { "fontset", 0, 0 },
-    { "fontptr", 0, 0 },
-    { "objectset", 0, 0 },
-    { "objectptr", 0, 0 },
-    { "matrix", 0, 0 },
-    { "pattern", 0, 0 },
-    { "patelt", 0, 0 },
-    { "vallist", 0, 0 },
-    { "substate", 0, 0 },
-    { "string", 0, 0 },
-    { "listbuck", 0, 0 },
-    { "strset", 0, 0 },
-    { "strlist", 0, 0 },
-    { "config", 0, 0 },
-    { "langset", 0, 0 },
+    { "charset" },
+    { "charleaf" },
+    { "fontset" },
+    { "fontptr" },
+    { "objectset" },
+    { "objectptr" },
+    { "matrix" },
+    { "pattern" },
+    { "patelt" },
+    { "vallist" },
+    { "substate" },
+    { "string" },
+    { "listbuck" },
+    { "strset" },
+    { "strlist" },
+    { "config" },
+    { "langset" },
+    { "atomic" },
+    { "blanks" },
+    { "cache" },
+    { "strbuf" },
+    { "subst" },
+    { "objecttype" },
+    { "constant" },
+    { "test" },
+    { "expr" },
+    { "vstack" },
+    { "attr" },
+    { "pstack" },
 };
 
 static int  FcAllocCount, FcAllocMem;

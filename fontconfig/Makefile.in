@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/fontconfig/Makefile.in,v 1.2 2002/05/24 06:25:52 keithp Exp $
+# $XFree86: xc/lib/fontconfig/fontconfig/Makefile.in,v 1.3 2002/08/01 15:57:26 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -29,20 +29,11 @@ include $(TOPDIR)/config/Makedefs
 all::
 
 install:: $(DESTDIR)$(INCLUDEDIR)
-install:: $(DESTDIR)$(INCLUDEDIR)/fcfreetype.h
-install:: $(DESTDIR)$(INCLUDEDIR)/fcprivate.h
-install:: $(DESTDIR)$(INCLUDEDIR)/fontconfig.h
+	$(INSTALL_DATA) fcfreetype.h $(DESTDIR)$(INCLUDEDIR)/fcfreetype.h
+	$(INSTALL_DATA) fcprivate.h $(DESTDIR)$(INCLUDEDIR)/fcprivate.h
+	$(INSTALL_DATA) fontconfig.h $(DESTDIR)$(INCLUDEDIR)/fontconfig.h
 
 $(DESTDIR)$(INCLUDEDIR):
 	mkdir -p $@
-
-$(DESTDIR)$(INCLUDEDIR)/fcfreetype.h: fcfreetype.h
-	$(INSTALL_DATA) $< $(DESTDIR)$(INCLUDEDIR)/$<
-	
-$(DESTDIR)$(INCLUDEDIR)/fcprivate.h: fcprivate.h
-	$(INSTALL_DATA) $< $(DESTDIR)$(INCLUDEDIR)/$<
-	
-$(DESTDIR)$(INCLUDEDIR)/fontconfig.h: fontconfig.h
-	$(INSTALL_DATA) $< $(DESTDIR)$(INCLUDEDIR)/$<
 
 clean::

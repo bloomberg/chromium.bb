@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.9 2002/07/13 05:43:25 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.10 2002/08/22 07:36:44 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -305,7 +305,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 		continue;
     
 	    /*
-	     * Allocate plenty of space
+	     * Allocate plenty of space.  Freed below
 	     */
 	    utf8 = malloc (len * FC_UTF8_MAX_LEN + 1);
 	    if (!utf8)
@@ -324,7 +324,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    break;
 	case FcNameEncodingLatin1:
 	    /*
-	     * Convert Latin1 to Utf8
+	     * Convert Latin1 to Utf8. Freed below
 	     */
 	    utf8 = malloc (src_len * 2 + 1);
 	    if (!utf8)
@@ -348,6 +348,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    if (!map)
 		continue;
 
+	    /* freed below */
 	    utf8 = malloc (src_len * 3 + 1);
 	    if (!utf8)
 		continue;
@@ -422,6 +423,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 	end = (FcChar8 *) strrchr ((char *) start, '.');
 	if (!end)
 	    end = start + strlen ((char *) start);
+	/* freed below */
 	family = malloc (end - start + 1);
 	strncpy ((char *) family, (char *) start, end - start);
 	family[end - start] = '\0';

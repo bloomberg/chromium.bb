@@ -129,7 +129,7 @@ FcFileScan (FcFontSet	    *set,
 		if (unparse)
 		{
 		    (void) FcGlobalCacheUpdate (cache, file, id, unparse);
-		    free (unparse);
+		    FcStrFree (unparse);
 		}
 	    }
 	}
@@ -181,6 +181,7 @@ FcDirScan (FcFontSet	    *set,
 	    return FcTrue;
     }
     
+    /* freed below */
     file = (FcChar8 *) malloc (strlen ((char *) dir) + 1 + FC_MAX_FILE_LEN + 1);
     if (!file)
 	return FcFalse;

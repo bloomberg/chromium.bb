@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.17 2002/07/13 05:43:25 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.18 2002/08/22 07:36:44 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -142,7 +142,9 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
 	leaves = realloc (fcs->leaves, (fcs->num + 1) * sizeof (FcCharLeaf *));
     if (!leaves)
 	return FcFalse;
-    FcMemAlloc (FC_MEM_CHARSET, sizeof (FcCharLeaf *));
+    if (fcs->num)
+	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcCharLeaf *));
+    FcMemAlloc (FC_MEM_CHARSET, (fcs->num + 1) * sizeof (FcCharLeaf *));
     fcs->leaves = leaves;
     if (!fcs->numbers)
 	numbers = malloc (sizeof (FcChar16));
@@ -150,7 +152,9 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
 	numbers = realloc (fcs->numbers, (fcs->num + 1) * sizeof (FcChar16));
     if (!numbers)
 	return FcFalse;
-    FcMemAlloc (FC_MEM_CHARSET, sizeof (FcChar16));
+    if (fcs->num)
+	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcChar16));
+    FcMemAlloc (FC_MEM_CHARSET, (fcs->num + 1) * sizeof (FcChar16));
     fcs->numbers = numbers;
     
     memmove (fcs->leaves + pos + 1, fcs->leaves + pos, 

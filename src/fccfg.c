@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.21 2002/08/22 07:36:44 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.22 2002/08/22 18:53:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -429,6 +429,7 @@ FcConfigAddEdit (FcConfig	*config,
     subst = (FcSubst *) malloc (sizeof (FcSubst));
     if (!subst)
 	return FcFalse;
+    FcMemAlloc (FC_MEM_SUBST, sizeof (FcSubst));
     if (kind == FcMatchPattern)
 	prev = &config->substPattern;
     else
@@ -1274,10 +1275,11 @@ FcConfigFileExists (const FcChar8 *dir, const FcChar8 *file)
 	strcat ((char *) path, "/");
     strcat ((char *) path, (char *) file);
 
+    FcMemAlloc (FC_MEM_STRING, strlen ((char *) path) + 1);
     if (access ((char *) path, R_OK) == 0)
 	return path;
     
-    free (path);
+    FcStrFree (path);
     return 0;
 }
 

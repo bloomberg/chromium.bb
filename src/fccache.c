@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.11 2002/08/19 19:32:05 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.12 2002/08/22 07:36:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -77,7 +77,7 @@ FcCacheReadString (FILE *f, FcChar8 *dest, int len)
 	}
 	if (i == size)
 	{
-	    FcChar8 *new = malloc (size * 2);
+	    FcChar8 *new = malloc (size * 2);	/* freed in caller */
 	    if (!new)
 		break;
 	    memcpy (new, d, size);
@@ -253,7 +253,7 @@ FcCacheFontSetAdd (FcFontSet	    *set,
     len = (dir_len + 1 + strlen ((const char *) file) + 1);
     if (len > sizeof (path_buf))
     {
-	path = malloc (len);
+	path = malloc (len);	/* freed down below */
 	if (!path)
 	    return FcFalse;
     }
@@ -406,6 +406,7 @@ FcGlobalCacheDirGet (FcGlobalCache  *cache,
 	d = malloc (sizeof (FcGlobalCacheDir) + len + 1);
 	if (!d)
 	    return 0;
+	FcMemAlloc (FC_MEM_CACHE, sizeof (FcGlobalCacheDir) + len + 1);
 	d->next = *prev;
 	*prev = d;
 	d->info.hash = hash;
@@ -451,6 +452,8 @@ FcGlobalCacheDirAdd (FcGlobalCache  *cache,
 		     strlen ((const char *) i.base) + 1);
     if (!subdir)
 	return 0;
+    FcMemAlloc (FC_MEM_CACHE, sizeof (FcGlobalCacheSubdir) +
+		strlen ((const char *) i.base) + 1);
     subdir->file = (FcChar8 *) (subdir + 1);
     strcpy ((char *) subdir->file, (const char *) i.base);
     subdir->next = parent->subdirs;
@@ -469,13 +472,19 @@ FcGlobalCacheDirDestroy (FcGlobalCacheDir *d)
 	for (f = d->ents[h]; f; f = next)
 	{
 	    next = f->next;
+	    FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheFile) +
+		       strlen ((char *) f->info.file) + 1 +
+		       strlen ((char *) f->name) + 1);
 	    free (f);
 	}
     for (s = d->subdirs; s; s = nexts)
     {
 	nexts = s->next;
+	FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheSubdir) +
+		   strlen ((char *) s->file) + 1);
 	free (s);
     }
+    FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheDir) + d->len + 1);
     free (d);
 }
 
@@ -587,6 +596,7 @@ FcGlobalCacheFileAdd (FcGlobalCache *cache,
     FcGlobalCacheDir	*d = FcGlobalCacheDirGet (cache, i.dir, 
 						  i.dir_len, FcTrue);
     FcGlobalCacheFile	*f, **prev;
+    int			size;
 
     if (!d)
 	return 0;
@@ -610,13 +620,18 @@ FcGlobalCacheFileAdd (FcGlobalCache *cache,
 	if (f->info.referenced)
 	    cache->referenced--;
 	*prev = f->next;
+	FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheFile) +
+		   strlen ((char *) f->info.file) + 1 +
+		   strlen ((char *) f->name) + 1);
 	free (f);
     }
-    f = malloc (sizeof (FcGlobalCacheFile) +
-		strlen ((char *) i.base) + 1 +
-		strlen ((char *) name) + 1);
+    size = (sizeof (FcGlobalCacheFile) +
+	    strlen ((char *) i.base) + 1 +
+	    strlen ((char *) name) + 1);
+    f = malloc (size);
     if (!f)
 	return 0;
+    FcMemAlloc (FC_MEM_CACHE, size);
     f->next = *prev;
     *prev = f;
     f->info.hash = i.base_hash;
@@ -639,6 +654,7 @@ FcGlobalCacheCreate (void)
     cache = malloc (sizeof (FcGlobalCache));
     if (!cache)
 	return 0;
+    FcMemAlloc (FC_MEM_CACHE, sizeof (FcGlobalCache));
     for (h = 0; h < FC_GLOBAL_CACHE_DIR_HASH_SIZE; h++)
 	cache->ents[h] = 0;
     cache->entries = 0;
@@ -662,6 +678,7 @@ FcGlobalCacheDestroy (FcGlobalCache *cache)
 	    FcGlobalCacheDirDestroy (d);
 	}
     }
+    FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCache));
     free (cache);
 }
 
@@ -946,7 +963,7 @@ bail3:
 bail2:
     fclose (f);
 bail1:
-    free (cache_file);
+    FcStrFree (cache_file);
 bail0:
     return ret;
 }
@@ -1036,7 +1053,7 @@ FcDirCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	if (!name)
 	    goto bail3;
 	ret = FcCacheWriteString (f, name);
-	free (name);
+	FcStrFree (name);
 	if (!ret)
 	    goto bail3;
 	if (PUTC ('\n', f) == EOF)
@@ -1048,7 +1065,7 @@ FcDirCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     if (fclose (f) == EOF)
 	goto bail1;
     
-    free (cache_file);
+    FcStrFree (cache_file);
 
     if (FcDebug () & FC_DBG_CACHE)
 	printf (" cache written\n");
@@ -1060,7 +1077,7 @@ bail2:
     fclose (f);
 bail1:
     unlink ((char *) cache_file);
-    free (cache_file);
+    FcStrFree (cache_file);
 bail0:
     return FcFalse;
 }

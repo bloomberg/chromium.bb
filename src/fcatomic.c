@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcatomic.c,v 1.1 2002/03/03 00:19:43 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcatomic.c,v 1.2 2002/03/04 21:15:28 tsi Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -70,6 +70,7 @@ FcAtomicCreate (const FcChar8   *file)
     FcAtomic	*atomic = malloc (total_len);
     if (!atomic)
 	return 0;
+    FcMemAlloc (FC_MEM_ATOMIC, total_len);
     
     atomic->file = (FcChar8 *) (atomic + 1);
     strcpy ((char *) atomic->file, (char *) file);
@@ -179,5 +180,10 @@ FcAtomicUnlock (FcAtomic *atomic)
 void
 FcAtomicDestroy (FcAtomic *atomic)
 {
+    FcMemFree (FC_MEM_ATOMIC, sizeof (FcAtomic) +
+	       strlen ((char *) atomic->file) * 4 + 1 +
+	       sizeof (NEW_NAME) + sizeof (LCK_NAME) + 
+	       sizeof (TMP_NAME));
+
     free (atomic);
 }

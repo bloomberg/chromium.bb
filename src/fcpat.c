@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.13 2002/08/11 18:10:42 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.15 2002/08/22 07:36:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -482,6 +482,7 @@ FcPatternFreeze (FcPattern *p)
     b = (FcPattern *) malloc (size);
     if (!b)
 	return 0;
+    FcMemAlloc (FC_MEM_PATTERN, size);
     b->num = p->num;
     b->size = b->num;
     b->ref = 1;

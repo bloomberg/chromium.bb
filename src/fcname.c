@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.12 2002/08/19 19:32:05 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.13 2002/08/22 07:36:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -88,6 +88,7 @@ FcNameRegisterObjectTypes (const FcObjectType *types, int ntypes)
     l = (FcObjectTypeList *) malloc (sizeof (FcObjectTypeList));
     if (!l)
 	return FcFalse;
+    FcMemAlloc (FC_MEM_OBJECTTYPE, sizeof (FcObjectTypeList));
     l->types = types;
     l->ntypes = ntypes;
     l->next = _FcObjectTypes;
@@ -107,6 +108,7 @@ FcNameUnregisterObjectTypes (const FcObjectType *types, int ntypes)
 	if (l->types == types && l->ntypes == ntypes)
 	{
 	    *prev = l->next;
+	    FcMemFree (FC_MEM_OBJECTTYPE, sizeof (FcObjectTypeList));
 	    free ((void *) l);
 	    return FcTrue;
 	}
@@ -181,6 +183,7 @@ FcNameRegisterConstants (const FcConstant *consts, int nconsts)
     l = (FcConstantList *) malloc (sizeof (FcConstantList));
     if (!l)
 	return FcFalse;
+    FcMemAlloc (FC_MEM_CONSTANT, sizeof (FcConstantList));
     l->consts = consts;
     l->nconsts = nconsts;
     l->next = _FcConstants;
@@ -200,6 +203,7 @@ FcNameUnregisterConstants (const FcConstant *consts, int nconsts)
 	if (l->consts == consts && l->nconsts == nconsts)
 	{
 	    *prev = l->next;
+	    FcMemFree (FC_MEM_CONSTANT, sizeof (FcConstantList));
 	    free ((void *) l);
 	    return FcTrue;
 	}
@@ -347,6 +351,7 @@ FcNameParse (const FcChar8 *name)
     const FcObjectType	*t;
     const FcConstant	*c;
 
+    /* freed below */
     save = malloc (strlen ((char *) name) + 1);
     if (!save)
 	goto bail0;

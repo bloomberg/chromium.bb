@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.20 2002/08/20 23:17:03 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.21 2002/08/22 18:53:22 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -46,6 +46,7 @@ FcTestCreate (FcMatchKind   kind,
 
     if (test)
     {
+	FcMemAlloc (FC_MEM_TEST, sizeof (FcTest));
 	test->next = 0;
 	test->kind = kind;
 	test->qual = qual;
@@ -63,6 +64,7 @@ FcTestDestroy (FcTest *test)
 	FcTestDestroy (test->next);
     FcExprDestroy (test->expr);
     FcStrFree ((FcChar8 *) test->field);
+    FcMemFree (FC_MEM_TEST, sizeof (FcTest));
     free (test);
 }
 
@@ -73,6 +75,7 @@ FcExprCreateInteger (int i)
 
     if (e)
     {
+	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpInteger;
 	e->u.ival = i;
     }
@@ -86,6 +89,7 @@ FcExprCreateDouble (double d)
 
     if (e)
     {
+	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpDouble;
 	e->u.dval = d;
     }
@@ -99,6 +103,7 @@ FcExprCreateString (const FcChar8 *s)
 
     if (e)
     {
+	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpString;
 	e->u.sval = FcStrCopy (s);
     }
@@ -112,6 +117,7 @@ FcExprCreateMatrix (const FcMatrix *m)
 
     if (e)
     {
+	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpMatrix;
 	e->u.mval = FcMatrixCopy (m);
     }
@@ -125,6 +131,7 @@ FcExprCreateBool (FcBool b)
 
     if (e)
     {
+	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpBool;
 	e->u.bval = b;
     }
@@ -138,6 +145,7 @@ FcExprCreateNil (void)
 
     if (e)
     {
+	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpNil;
     }
     return e;
@@ -150,6 +158,7 @@ FcExprCreateField (const char *field)
 
     if (e)
     {
+	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpField;
 	e->u.field = (char *) FcStrCopy ((FcChar8 *) field);
     }
@@ -163,6 +172,7 @@ FcExprCreateConst (const FcChar8 *constant)
 
     if (e)
     {
+	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpConst;
 	e->u.constant = FcStrCopy (constant);
     }
@@ -176,6 +186,7 @@ FcExprCreateOp (FcExpr *left, FcOp op, FcExpr *right)
 
     if (e)
     {
+	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = op;
 	e->u.tree.left = left;
 	e->u.tree.right = right;
@@ -240,6 +251,7 @@ FcExprDestroy (FcExpr *e)
     case FcOpInvalid:
 	break;
     }
+    FcMemFree (FC_MEM_EXPR, sizeof (FcExpr));
     free (e);
 }
 
@@ -491,6 +503,7 @@ FcVStackCreate (void)
     new = malloc (sizeof (FcVStack));
     if (!new)
 	return 0;
+    FcMemAlloc (FC_MEM_VSTACK, sizeof (FcVStack));
     new->tag = FcVStackNone;
     new->prev = 0;
     return new;
@@ -534,6 +547,7 @@ FcVStackDestroy (FcVStack *vstack)
 	    FcEditDestroy (vstack->u.edit);
 	    break;
 	}
+	FcMemFree (FC_MEM_VSTACK, sizeof (FcVStack));
 	free (vstack);
     }
 }
@@ -704,6 +718,7 @@ FcConfigSaveAttr (const XML_Char **attr)
     new = malloc ((i + 1) * sizeof (FcChar8 *) + slen);
     if (!new)
 	return 0;
+    FcMemAlloc (FC_MEM_ATTR, 1);    /* size is too expensive */
     s = (FcChar8 *) (new + (i + 1));
     for (i = 0; attr[i]; i++)
     {
@@ -722,6 +737,7 @@ FcPStackPush (FcConfigParse *parse, FcElement element, const XML_Char **attr)
 
     if (!new)
 	return FcFalse;
+    FcMemAlloc (FC_MEM_PSTACK, sizeof (FcPStack));
     new->prev = parse->pstack;
     new->element = element;
     if (attr)
@@ -752,7 +768,11 @@ FcPStackPop (FcConfigParse *parse)
     parse->pstack = old->prev;
     FcStrBufDestroy (&old->str);
     if (old->attr)
+    {
+	FcMemFree (FC_MEM_ATTR, 1); /* size is to expensive */
 	free (old->attr);
+    }
+    FcMemFree (FC_MEM_PSTACK, sizeof (FcPStack));
     free (old);
     return FcTrue;
 }
@@ -1317,7 +1337,7 @@ FcParseInclude (FcConfigParse *parse)
 	ignore_missing = FcTrue;
     if (!FcConfigParseAndLoad (parse->config, s, !ignore_missing))
 	parse->error = FcTrue;
-    free (s);
+    FcStrFree (s);
 }
 
 typedef struct _FcOpMap {
@@ -1580,7 +1600,7 @@ FcEndElement(void *userData, const XML_Char *name)
 	}
 	if (!FcConfigAddDir (parse->config, data))
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
-	free (data);
+	FcStrFree (data);
 	break;
     case FcElementCache:
 	data = FcStrBufDone (&parse->pstack->str);
@@ -1591,7 +1611,7 @@ FcEndElement(void *userData, const XML_Char *name)
 	}
 	if (!FcConfigSetCache (parse->config, data))
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
-	free (data);
+	FcStrFree (data);
 	break;
     case FcElementInclude:
 	FcParseInclude (parse);
@@ -1759,10 +1779,13 @@ FcConfigParseAndLoad (FcConfig	    *config,
 	goto bail0;
     
     if (!FcStrSetAdd (config->configFiles, filename))
+    {
+	FcStrFree (filename);
 	goto bail0;
+    }
 
     f = fopen ((char *) filename, "r");
-    free (filename);
+    FcStrFree (filename);
     if (!f)
 	goto bail0;
     

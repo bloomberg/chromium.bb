@@ -341,6 +341,7 @@ FcStrBufDestroy (FcStrBuf *buf)
 {
     if (buf->allocated)
     {
+	FcMemFree (FC_MEM_STRBUF, buf->size);
 	free (buf->buf);
 	FcStrBufInit (buf, 0, 0);
     }
@@ -354,6 +355,7 @@ FcStrBufDone (FcStrBuf *buf)
     ret = malloc (buf->len + 1);
     if (ret)
     {
+	FcMemAlloc (FC_MEM_STRING, buf->len + 1);
 	memcpy (ret, buf->buf, buf->len);
 	ret[buf->len] = '\0';
     }
@@ -389,6 +391,9 @@ FcStrBufChar (FcStrBuf *buf, FcChar8 c)
 	    buf->failed = FcTrue;
 	    return FcFalse;
 	}
+	if (buf->size)
+	    FcMemFree (FC_MEM_STRBUF, buf->size);
+	FcMemAlloc (FC_MEM_STRBUF, size);
 	buf->size = size;
 	buf->buf = new;
     }
