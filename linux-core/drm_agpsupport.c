@@ -52,7 +52,8 @@ int DRM(agp_info)(struct inode *inode, struct file *filp,
 	agp_kern_info    *kern;
 	drm_agp_info_t   info;
 
-	if (!dev->agp->acquired || !drm_agp->copy_info) return -EINVAL;
+	if (!dev->agp || !dev->agp->acquired || !drm_agp->copy_info)
+		return -EINVAL;
 
 	kern                   = &dev->agp->agp_info;
 	info.agp_version_major = kern->version.major;
@@ -77,7 +78,8 @@ int DRM(agp_acquire)(struct inode *inode, struct file *filp,
 	drm_device_t	 *dev	 = priv->dev;
 	int              retcode;
 
-	if (!dev->agp|| dev->agp->acquired || !drm_agp->acquire) return -EINVAL;
+	if (!dev->agp || dev->agp->acquired || !drm_agp->acquire)
+		return -EINVAL;
 	if ((retcode = drm_agp->acquire())) return retcode;
 	dev->agp->acquired = 1;
 	return 0;
@@ -89,7 +91,8 @@ int DRM(agp_release)(struct inode *inode, struct file *filp,
 	drm_file_t	 *priv	 = filp->private_data;
 	drm_device_t	 *dev	 = priv->dev;
 
-	if (!dev->agp->acquired || !drm_agp->release) return -EINVAL;
+	if (!dev->agp || !dev->agp->acquired || !drm_agp->release)
+		return -EINVAL;
 	drm_agp->release();
 	dev->agp->acquired = 0;
 	return 0;
@@ -108,7 +111,8 @@ int DRM(agp_enable)(struct inode *inode, struct file *filp,
 	drm_device_t	 *dev	 = priv->dev;
 	drm_agp_mode_t   mode;
 
-	if (!dev->agp->acquired || !drm_agp->enable) return -EINVAL;
+	if (!dev->agp || !dev->agp->acquired || !drm_agp->enable)
+		return -EINVAL;
 
 	if (copy_from_user(&mode, (drm_agp_mode_t *)arg, sizeof(mode)))
 		return -EFAULT;
@@ -131,7 +135,7 @@ int DRM(agp_alloc)(struct inode *inode, struct file *filp,
 	unsigned long    pages;
 	u32 		 type;
 
-	if (!dev->agp->acquired) return -EINVAL;
+	if (!dev->agp || !dev->agp->acquired) return -EINVAL;
 	if (copy_from_user(&request, (drm_agp_buffer_t *)arg, sizeof(request)))
 		return -EFAULT;
 	if (!(entry = DRM(alloc)(sizeof(*entry), DRM_MEM_AGPLISTS)))
@@ -188,7 +192,7 @@ int DRM(agp_unbind)(struct inode *inode, struct file *filp,
 	drm_agp_binding_t request;
 	drm_agp_mem_t     *entry;
 
-	if (!dev->agp->acquired) return -EINVAL;
+	if (!dev->agp || !dev->agp->acquired) return -EINVAL;
 	if (copy_from_user(&request, (drm_agp_binding_t *)arg, sizeof(request)))
 		return -EFAULT;
 	if (!(entry = DRM(agp_lookup_entry)(dev, request.handle)))
@@ -207,7 +211,8 @@ int DRM(agp_bind)(struct inode *inode, struct file *filp,
 	int               retcode;
 	int               page;
 
-	if (!dev->agp->acquired || !drm_agp->bind_memory) return -EINVAL;
+	if (!dev->agp || !dev->agp->acquired || !drm_agp->bind_memory)
+		return -EINVAL;
 	if (copy_from_user(&request, (drm_agp_binding_t *)arg, sizeof(request)))
 		return -EFAULT;
 	if (!(entry = DRM(agp_lookup_entry)(dev, request.handle)))
@@ -229,7 +234,7 @@ int DRM(agp_free)(struct inode *inode, struct file *filp,
 	drm_agp_buffer_t request;
 	drm_agp_mem_t    *entry;
 
-	if (!dev->agp->acquired) return -EINVAL;
+	if (!dev->agp || !dev->agp->acquired) return -EINVAL;
 	if (copy_from_user(&request, (drm_agp_buffer_t *)arg, sizeof(request)))
 		return -EFAULT;
 	if (!(entry = DRM(agp_lookup_entry)(dev, request.handle)))
