@@ -13,6 +13,7 @@ check () {
   $FCLIST - family pixelsize | sort >> out
   echo "=" >> out
   $FCLIST - family pixelsize | sort >> out
+  tr -d '\015' <out >out.tmp; mv out.tmp out
   if cmp out out.expected > /dev/null ; then : ; else
     echo "*** Test failed: $TEST"
     echo "*** output is in 'out', expected output in 'out.expected'"

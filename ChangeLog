@@ -1,5 +1,8 @@
 2003-06-15  Tor Lillqvist  <tml@iki.fi>
 
+	* test/run-test.sh (FONTCONFIG_FILE): Remove CRs from the out file
+	before comparing (needed on Windows).
+
 	* src/Makefile.am (install-libtool-import-lib): Fix cut&paste error.
 
 2003-06-13  Tor Lillqvist  <tml@iki.fi>
