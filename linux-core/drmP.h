@@ -246,6 +246,7 @@ static inline unsigned iminor(struct inode *inode)
 struct class_simple;
 struct device;
 
+#define pci_dev_put(x) do {} while (0)
 #define class_simple_device_add(...) do {} while (0)
 
 static inline void class_simple_device_remove(dev_t dev){};
