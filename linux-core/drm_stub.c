@@ -45,7 +45,7 @@ MODULE_AUTHOR(CORE_AUTHOR);
 MODULE_DESCRIPTION(CORE_DESC);
 MODULE_LICENSE("GPL and additional rights");
 MODULE_PARM_DESC(cards_limit, "Maximum number of graphics cards");
-MODULE_PARM_DESC(drm_debug, "Enable debug output");
+MODULE_PARM_DESC(debug, "Enable debug output");
 
 module_param(cards_limit, int, S_IRUGO);
 module_param_named(debug, drm_debug, int, S_IRUGO|S_IWUGO);
