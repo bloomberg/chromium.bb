@@ -48,7 +48,7 @@ int DRM(irq_busid)(struct inode *inode, struct file *filp,
 		p.irq = 0;
 		goto out;
 	}			
-	if (!pci_enable_device(dev)) {
+	if (pci_enable_device(dev) != 0) {
 		DRM_ERROR("pci_enable_device failed for %d:%d:%d\n",
 			  p.busnum, p.devnum, p.funcnum);
 		p.irq = 0;
