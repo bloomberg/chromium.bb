@@ -152,6 +152,11 @@ static inline void class_simple_set_hotplug(struct class_simple *cs, void (*fn)(
 
 #define VM_OFFSET(vma) ((vma)->vm_pgoff << PAGE_SHIFT)
 
+/* old architectures */
+#ifdef __AMD64__
+#define __x86_64__
+#endif
+
 /*@}*/
 
 #endif
