@@ -156,6 +156,7 @@ MODS += sis.o
 
 SISOBJS=	sis_drv.o sis_context.o sis_ds.o sis_mm.o
 SISHEADERS=	sis_drv.h sis_ds.h sis_drm.h $(DRMHEADERS)
+MODCFLAGS += -DCONFIG_DRM_SIS
 endif
 
 all::;@echo === KERNEL HEADERS IN $(TREE)

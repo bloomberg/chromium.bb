@@ -924,7 +924,7 @@ int i810_irq_install(drm_device_t *dev, int irq)
 	dev->dma->next_queue  = NULL;
 	dev->dma->this_buffer = NULL;
 
-	dev->tq.next	      = NULL;
+	INIT_LIST_HEAD(&dev->tq.list);
 	dev->tq.sync	      = 0;
 	dev->tq.routine	      = i810_dma_task_queue;
 	dev->tq.data	      = dev;

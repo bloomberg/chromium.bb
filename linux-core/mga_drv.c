@@ -503,7 +503,7 @@ int mga_release(struct inode *inode, struct file *filp)
 	if (dev->lock.hw_lock && _DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)
 	    && dev->lock.pid == current->pid) {
 	      	mga_reclaim_buffers(dev, priv->pid);
-		DRM_INFO("Process %d dead (ctx %d, d_s = 0x%02x)\n",
+		DRM_INFO("Process %d dead (ctx %d, d_s = 0x%02lx)\n",
 			 current->pid,
 			 _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock),
 			 dev->dev_private ?

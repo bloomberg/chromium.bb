@@ -6,6 +6,7 @@
 # drm.o is a fake target -- it is never built
 # The real targets are in the module-list
 O_TARGET	:= drm.o
+
 module-list     := gamma.o tdfx.o r128.o ffb.o mga.o i810.o
 export-objs     := $(patsubst %.o,%_drv.o,$(module-list))
 
@@ -25,6 +26,11 @@ export-objs     := $(patsubst %.o,%_drv.o,$(module-list))
 # memory waste (in the dual-head case) for greatly improved long-term
 # maintainability.
 #
+# NOTE: lib-objs will be eliminated in future versions, thereby
+# eliminating the need to compile the .o files into every module, but
+# for now we still need them.
+#
+
 lib-objs   := init.o memory.o proc.o auth.o context.o drawable.o bufs.o
 lib-objs   += lists.o lock.o ioctl.o fops.o vm.o dma.o ctxbitmap.o
 
@@ -36,54 +42,59 @@ else
  endif
 endif
 
-gamma-objs := $(lib-objs) gamma_drv.o gamma_dma.o
-tdfx-objs  := $(lib-objs) tdfx_drv.o                tdfx_context.o
-r128-objs  := $(lib-objs) r128_drv.o  r128_cce.o    r128_context.o r128_bufs.o\
-	      r128_state.o
-ffb-objs   := $(lib-objs) ffb_drv.o                 ffb_context.o
-mga-objs   := $(lib-objs) mga_drv.o   mga_dma.o     mga_context.o  mga_bufs.o \
-	      mga_state.o
-i810-objs  := $(lib-objs) i810_drv.o  i810_dma.o    i810_context.o i810_bufs.o
+gamma-objs := gamma_drv.o gamma_dma.o
+tdfx-objs  := tdfx_drv.o                tdfx_context.o
+r128-objs  := r128_drv.o  r128_cce.o    r128_context.o r128_bufs.o r128_state.o
+ffb-objs   := ffb_drv.o                 ffb_context.o
+mga-objs   := mga_drv.o   mga_dma.o     mga_context.o  mga_bufs.o  mga_state.o
+i810-objs  := i810_drv.o  i810_dma.o    i810_context.o i810_bufs.o
 
-obj-$(CONFIG_DRM_GAMMA) += gamma.o $(gamma-objs)
-obj-$(CONFIG_DRM_TDFX)  += tdfx.o  $(tdfx-objs)
-obj-$(CONFIG_DRM_R128)  += r128.o  $(r128-objs)
-obj-$(CONFIG_DRM_FFB)   += ffb.o   $(ffb-objs)
+obj-$(CONFIG_DRM_GAMMA) += gamma.o
+obj-$(CONFIG_DRM_TDFX)  += tdfx.o
+obj-$(CONFIG_DRM_R128)  += r128.o
+obj-$(CONFIG_DRM_FFB)   += ffb.o
+obj-$(CONFIG_DRM_MGA)   += mga.o
+obj-$(CONFIG_DRM_I810)  += i810.o
 
-ifneq ($CONFIG_AGP),)
-obj-$(CONFIG_DRM_MGA)   += mga.o   $(mga-objs)
-obj-$(CONFIG_DRM_I810)  += i810.o  $(i810-objs)
+
+# When linking into the kernel, link the library just once. 
+# If making modules, we include the library into each module
+
+lib-objs-mod := $(patsubst %.o,%-mod.o,$(lib-objs))
+
+ifdef MAKING_MODULES
+  lib = drmlib-mod.a
+else
+  obj-y += drmlib.a
 endif
-
-# Take module names out of obj-y and int-m
-
-obj-y           := $(filter-out $(module-list), $(obj-y))
-int-m           := $(filter-out $(module-list), $(obj-m))
-
-# Translate to Rules.make lists.
-
-O_OBJS          := $(filter-out $(export-objs), $(obj-y))
-OX_OBJS         := $(filter     $(export-objs), $(obj-y))
-M_OBJS          := $(sort $(filter     $(module-list), $(obj-m)))
-MI_OBJS         := $(sort $(filter-out $(export-objs), $(int-m)))
-MIX_OBJS        := $(sort $(filter     $(export-objs), $(int-m)))
 
 include $(TOPDIR)/Rules.make
 
-gamma.o: $(gamma-objs)
-	$(LD) -r -o $@ $(gamma-objs)
+$(patsubst %.o,%.c,$(lib-objs-mod)): 
+	@ln -sf $(subst -mod,,$@) $@
 
-tdfx.o: $(tdfx-objs)
-	$(LD) -r -o $@ $(tdfx-objs)
+drmlib-mod.a: $(lib-objs-mod)
+	rm -f $@
+	$(AR) $(EXTRA_ARFLAGS) rcs $@ $(lib-objs-mod)
 
-mga.o: $(mga-objs)
-	$(LD) -r -o $@ $(mga-objs)
+drmlib.a: $(lib-objs)
+	rm -f $@
+	$(AR) $(EXTRA_ARFLAGS) rcs $@ $(lib-objs)
 
-i810.o: $(i810-objs)
-	$(LD) -r -o $@ $(i810-objs)
+gamma.o: $(gamma-objs) $(lib)
+	$(LD) -r -o $@ $(gamma-objs) $(lib)
 
-r128.o: $(r128-objs)
-	$(LD) -r -o $@ $(r128-objs)
+tdfx.o: $(tdfx-objs) $(lib)
+	$(LD) -r -o $@ $(tdfx-objs) $(lib)
 
-ffb.o: $(ffb-objs)
-	$(LD) -r -o $@ $(ffb-objs)
+mga.o: $(mga-objs) $(lib)
+	$(LD) -r -o $@ $(mga-objs) $(lib)
+
+i810.o: $(i810-objs) $(lib)
+	$(LD) -r -o $@ $(i810-objs) $(lib)
+
+r128.o: $(r128-objs) $(lib)
+	$(LD) -r -o $@ $(r128-objs) $(lib)
+
+ffb.o: $(ffb-objs) $(lib)
+	$(LD) -r -o $@ $(ffb-objs) $(lib)

@@ -143,7 +143,7 @@ static inline void mga_dma_quiescent(drm_device_t *dev)
    	unsigned long end;
 	int i;
 
-	DRM_DEBUG("dispatch_status = 0x%02x\n", dev_priv->dispatch_status);
+	DRM_DEBUG("dispatch_status = 0x%02lx\n", dev_priv->dispatch_status);
 	end = jiffies + (HZ*3);
     	while(1) {
 		if(!test_and_set_bit(MGA_IN_DISPATCH,
@@ -154,7 +154,7 @@ static inline void mga_dma_quiescent(drm_device_t *dev)
 			DRM_ERROR("irqs: %d wanted %d\n",
 				  atomic_read(&dev->total_irq),
 				  atomic_read(&dma->total_lost));
-			DRM_ERROR("lockup: dispatch_status = 0x%02x,"
+			DRM_ERROR("lockup: dispatch_status = 0x%02lx,"
 				  " jiffies = %lu, end = %lu\n",
 				  dev_priv->dispatch_status, jiffies, end);
 			return;
@@ -177,7 +177,7 @@ static inline void mga_dma_quiescent(drm_device_t *dev)
     	sarea_priv->dirty |= MGA_DMA_FLUSH;
 
     	clear_bit(MGA_IN_DISPATCH, &dev_priv->dispatch_status);
-	DRM_DEBUG("exit, dispatch_status = 0x%02x\n",
+	DRM_DEBUG("exit, dispatch_status = 0x%02lx\n",
 		  dev_priv->dispatch_status);
 }
 
@@ -818,7 +818,7 @@ int mga_irq_install(drm_device_t *dev, int irq)
 	dev->dma->next_buffer = NULL;
 	dev->dma->next_queue  = NULL;
 	dev->dma->this_buffer = NULL;
-	dev->tq.next	      = NULL;
+	INIT_LIST_HEAD(&dev->tq.list);
 	dev->tq.sync	      = 0;
 	dev->tq.routine	      = mga_dma_task_queue;
 	dev->tq.data	      = dev;

@@ -38,7 +38,7 @@
 #define MGA_BUF_NEEDS_OVERFLOW 3
 
 typedef struct {
-	u32 buffer_status;
+	long buffer_status; /* long req'd for set_bit() --RR */
    	int num_dwords;
    	int max_dwords;
    	u32 *current_dma_ptr;
@@ -62,7 +62,7 @@ typedef struct _drm_mga_freelist {
 #define MGA_IN_GETBUF	  3
 
 typedef struct _drm_mga_private {
-   	u32 dispatch_status;
+   	long dispatch_status;  /* long req'd for set_bit() --RR */
 	unsigned int next_prim_age;
 	__volatile__ unsigned int last_prim_age;
    	int reserved_map_idx;

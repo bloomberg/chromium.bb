@@ -651,7 +651,7 @@ int gamma_irq_install(drm_device_t *dev, int irq)
 	dev->dma->next_queue  = NULL;
 	dev->dma->this_buffer = NULL;
 
-	dev->tq.next	      = NULL;
+	INIT_LIST_HEAD(&dev->tq.list);
 	dev->tq.sync	      = 0;
 	dev->tq.routine	      = gamma_dma_schedule_tq_wrapper;
 	dev->tq.data	      = dev;
