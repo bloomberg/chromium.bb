@@ -88,8 +88,8 @@ typedef enum _FcValueBinding {
 
 typedef struct _FcValueList {
     struct _FcValueList    *next;
-    FcValueBinding	    binding;
     FcValue		    value;
+    FcValueBinding	    binding;
 } FcValueList;
 
 typedef struct _FcPatternElt {
@@ -100,8 +100,8 @@ typedef struct _FcPatternElt {
 struct _FcPattern {
     int		    num;
     int		    size;
-    int		    ref;
     FcPatternElt    *elts;
+    int		    ref;
 };
 
 typedef enum _FcOp {
