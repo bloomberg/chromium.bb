@@ -1,3 +1,10 @@
+2004-09-09 "NAKAMURA Ken'ichi" <nakamura@sbp.fp.a.u-tokyo.ac.jp>
+
+	reviewed by: keithp
+
+	* Makefile.am:
+	Remove spurious / after $(DESTDIR)
+
 2004-06-30  Keith Packard  <keithp@keithp.com>
 
 	* README:

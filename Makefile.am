@@ -40,7 +40,7 @@ configdir=$(CONFDIR)
 config_DATA=fonts.conf fonts.dtd
 
 install-data-local:
-	$(mkinstalldirs) $(DESTDIR)/$(configdir)
+	$(mkinstalldirs) $(DESTDIR)$(configdir)
 	if [ -f $(DESTDIR)$(configdir)/local.conf ]; then \
 	  echo "not overwriting existing $(DESTDIR)$(configdir)/local.conf"; \
 	else if [ -f $(srcdir)/local.conf ]; then \
