@@ -68,64 +68,64 @@ struct page *DRM(vm_nopage)(struct vm_area_struct *vma,
 #endif
 {
 #if defined(__alpha__) && __REALLY_HAVE_AGP
-        drm_file_t *priv  = vma->vm_file->private_data;
-        drm_device_t *dev = priv->dev;
-        drm_map_t *map    = NULL;
-        drm_map_list_t  *r_list;
-        struct list_head *list;
+	drm_file_t *priv  = vma->vm_file->private_data;
+	drm_device_t *dev = priv->dev;
+	drm_map_t *map    = NULL;
+	drm_map_list_t  *r_list;
+	struct list_head *list;
 
-        /*
+	/*
          * Find the right map
          */
-        list_for_each(list, &dev->maplist->head) {
-                r_list = (drm_map_list_t *)list;
-                map = r_list->map;
-                if (!map) continue;
-                if (map->offset == VM_OFFSET(vma)) break;
-        }
+	list_for_each(list, &dev->maplist->head) {
+		r_list = (drm_map_list_t *)list;
+		map = r_list->map;
+		if (!map) continue;
+		if (map->offset == VM_OFFSET(vma)) break;
+	}
 
-        if (map && map->type == _DRM_AGP) {
-                unsigned long offset = address - vma->vm_start;
-                unsigned long baddr = VM_OFFSET(vma) + offset;
-                struct drm_agp_mem *agpmem;
-                struct page *page;
+	if (map && map->type == _DRM_AGP) {
+		unsigned long offset = address - vma->vm_start;
+		unsigned long baddr = VM_OFFSET(vma) + offset;
+		struct drm_agp_mem *agpmem;
+		struct page *page;
 
-                /*
+		/*
                  * Make it a bus-relative address
                  */
-                baddr -= dev->hose->mem_space->start;
+		baddr -= dev->hose->mem_space->start;
 
-                /*
+		/*
                  * It's AGP memory - find the real physical page to map
                  */
-                for(agpmem = dev->agp->memory; agpmem; agpmem = agpmem->next) {
-                        if (agpmem->bound <= baddr &&
-                            agpmem->bound + agpmem->pages * PAGE_SIZE > baddr) 
-                                break;
-                }
+		for(agpmem = dev->agp->memory; agpmem; agpmem = agpmem->next) {
+			if (agpmem->bound <= baddr &&
+			    agpmem->bound + agpmem->pages * PAGE_SIZE > baddr) 
+				break;
+		}
 
-                if (!agpmem) {
-                        /*
+		if (!agpmem) {
+			/*
                          * Oops - no memory found
                          */
-                        return NOPAGE_SIGBUS;   /* couldn't find it */
+			return NOPAGE_SIGBUS;   /* couldn't find it */
                 }
 
-                /*
+		/*
                  * Get the page, inc the use count, and return it
                  */
-                offset = (baddr - agpmem->bound) >> PAGE_SHIFT;
+		offset = (baddr - agpmem->bound) >> PAGE_SHIFT;
 		agpmem->memory->memory[offset] &= ~1UL; /* HACK */
-                page = virt_to_page(__va(agpmem->memory->memory[offset]));
+		page = virt_to_page(__va(agpmem->memory->memory[offset]));
 #if 0
-DRM_ERROR("baddr = 0x%lx page = 0x%lx, offset = 0x%lx\n",
-          baddr, __va(agpmem->memory->memory[offset]), offset);
+		DRM_ERROR("baddr = 0x%lx page = 0x%lx, offset = 0x%lx\n",
+			  baddr, __va(agpmem->memory->memory[offset]), offset);
 #endif
-                get_page(page);
+		get_page(page);
 #if LINUX_VERSION_CODE < 0x020317
-                return page_address(page);
+		return page_address(page);
 #else
-                return page;
+		return page;
 #endif
         }
 #endif
@@ -170,10 +170,10 @@ struct page *DRM(vm_shm_nopage)(struct vm_area_struct *vma,
 	pte = pte_offset( pmd, i );
 	if( !pte_present( *pte ) ) return NOPAGE_OOM;
 
-	page = pte_page( *pte );
+	page = pte_page(*pte);
 	get_page(page);
 
-	DRM_DEBUG("0x%08lx => 0x%08lx\n", address, page_to_bus(page));
+	DRM_DEBUG("0x%08lx => 0x%08x\n", address, page_to_bus(page));
 #if LINUX_VERSION_CODE < 0x020317
 	return page_address(page);
 #else
@@ -297,7 +297,7 @@ struct page *DRM(vm_dma_nopage)(struct vm_area_struct *vma,
 
 	get_page(page);
 
-	DRM_DEBUG("0x%08lx (page %lu) => 0x%08lx\n", address, page_nr, 
+	DRM_DEBUG("0x%08lx (page %lu) => 0x%08x\n", address, page_nr, 
 		  page_to_bus(page));
 #if LINUX_VERSION_CODE < 0x020317
 	return page_address(page);
