@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fclist.c,v 1.3 2002/05/21 17:06:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fclist.c,v 1.4 2002/06/02 21:07:56 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -45,6 +45,7 @@ FcObjectSetAdd (FcObjectSet *os, const char *object)
 {
     int		s;
     const char	**objects;
+    int		high, low, mid, c;
     
     if (os->nobject == os->sobject)
     {
@@ -62,7 +63,26 @@ FcObjectSetAdd (FcObjectSet *os, const char *object)
 	os->objects = objects;
 	os->sobject = s;
     }
-    os->objects[os->nobject++] = object;
+    high = os->nobject - 1;
+    low = 0;
+    mid = 0;
+    c = 1;
+    while (low <= high)
+    {
+	mid = (low + high) >> 1;
+	c = strcmp (os->objects[mid], object);
+	if (c == 0)
+	    return FcTrue;
+	if (c < 0)
+	    low = mid + 1;
+	else
+	    high = mid - 1;
+    }
+    if (c < 0)
+	mid++;
+    memmove (os->objects + mid + 1, os->objects + mid, os->nobject - mid);
+    os->objects[mid] = object;
+    os->nobject++;
     return FcTrue;
 }
 
@@ -137,6 +157,28 @@ FcListValueListEqual (FcValueList   *v1orig,
     return FcTrue;
 }
 
+static FcBool
+FcListPatternEqual (FcPattern	*p1,
+		    FcPattern	*p2,
+		    FcObjectSet	*os)
+{
+    int		    i;
+    FcPatternElt    *e1, *e2;
+
+    for (i = 0; i < os->nobject; i++)
+    {
+	e1 = FcPatternFindElt (p1, os->objects[i]);
+	e2 = FcPatternFindElt (p2, os->objects[i]);
+	if (!e1 && !e2)
+	    return FcTrue;
+	if (!e1 || !e2)
+	    return FcFalse;
+	if (!FcListValueListEqual (e1->values, e2->values))
+	    return FcFalse;
+    }
+    return FcTrue;
+}
+
 /*
  * FcTrue iff all objects in "p" match "font"
  */
@@ -150,32 +192,10 @@ FcListPatternMatchAny (FcPattern *p,
 
     for (i = 0; i < p->num; i++)
     {
-	e = FcPatternFind (font, p->elts[i].object, FcFalse);
+	e = FcPatternFindElt (font, p->elts[i].object);
 	if (!e)
 	    return FcFalse;
 	if (!FcListValueListMatchAny (p->elts[i].values, e->values))
-	    return FcFalse;
-    }
-    return FcTrue;
-}
-
-static FcBool
-FcListPatternEqual (FcPattern	*p1,
-		    FcPattern	*p2,
-		    FcObjectSet	*os)
-{
-    int		    i;
-    FcPatternElt    *e1, *e2;
-
-    for (i = 0; i < os->nobject; i++)
-    {
-	e1 = FcPatternFind (p1, os->objects[i], FcFalse);
-	e2 = FcPatternFind (p2, os->objects[i], FcFalse);
-	if (!e1 && !e2)
-	    return FcTrue;
-	if (!e1 || !e2)
-	    return FcFalse;
-	if (!FcListValueListEqual (e1->values, e2->values))
 	    return FcFalse;
     }
     return FcTrue;
@@ -253,7 +273,7 @@ FcListPatternHash (FcPattern	*font,
 
     for (n = 0; n < os->nobject; n++)
     {
-	e = FcPatternFind (font, os->objects[n], FcFalse);
+	e = FcPatternFindElt (font, os->objects[n]);
 	if (e)
 	    h = h ^ FcListValueListHash (e->values);
     }
@@ -331,7 +351,7 @@ FcListAppend (FcListHashTable	*table,
     
     for (o = 0; o < os->nobject; o++)
     {
-	e = FcPatternFind (font, os->objects[o], FcFalse);
+	e = FcPatternFindElt (font, os->objects[o]);
 	if (e)
 	{
 	    for (v = e->values; v; v = v->next)

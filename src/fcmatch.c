@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.8 2002/05/31 04:42:42 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.9 2002/06/02 21:07:56 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -326,7 +326,7 @@ FcFontRenderPrepare (FcConfig	    *config,
     for (i = 0; i < font->num; i++)
     {
 	fe = &font->elts[i];
-	pe = FcPatternFind (pat, fe->object, FcFalse);
+	pe = FcPatternFindElt (pat, fe->object);
 	if (pe)
 	{
 	    if (!FcCompareValueList (pe->object, pe->values, 
@@ -343,7 +343,7 @@ FcFontRenderPrepare (FcConfig	    *config,
     for (i = 0; i < pat->num; i++)
     {
 	pe = &pat->elts[i];
-	fe = FcPatternFind (font, pe->object, FcFalse);
+	fe = FcPatternFindElt (font, pe->object);
 	if (!fe)
 	    FcPatternAdd (new, pe->object, pe->values->value, FcTrue);
     }

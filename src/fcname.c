@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.5 2002/06/02 20:52:06 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.6 2002/06/02 21:07:57 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -500,13 +500,13 @@ FcNameUnparse (FcPattern *pat)
     const FcObjectType	    *o;
 
     FcStrBufInit (&buf, buf_static, sizeof (buf_static));
-    e = FcPatternFind (pat, FC_FAMILY, FcFalse);
+    e = FcPatternFindElt (pat, FC_FAMILY);
     if (e)
     {
 	if (!FcNameUnparseValueList (&buf, e->values, (FcChar8 *) FC_ESCAPE_FIXED))
 	    goto bail0;
     }
-    e = FcPatternFind (pat, FC_SIZE, FcFalse);
+    e = FcPatternFindElt (pat, FC_SIZE);
     if (e)
     {
 	if (!FcNameUnparseString (&buf, (FcChar8 *) "-", 0))
@@ -524,7 +524,7 @@ FcNameUnparse (FcPattern *pat)
 		!strcmp (o->object, FC_FILE))
 		continue;
 	    
-	    e = FcPatternFind (pat, o->object, FcFalse);
+	    e = FcPatternFindElt (pat, o->object);
 	    if (e)
 	    {
 		if (!FcNameUnparseString (&buf, (FcChar8 *) ":", 0))

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.8 2002/06/02 19:51:36 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.7 2002/05/29 08:21:33 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1027,7 +1027,7 @@ FcConfigPatternAdd (FcPattern	*p,
 {
     if (list)
     {
-	FcPatternElt    *e = FcPatternFind (p, object, FcTrue);
+	FcPatternElt    *e = FcPatternInsertElt (p, object);
     
 	if (!e)
 	    return;
@@ -1042,7 +1042,7 @@ static void
 FcConfigPatternDel (FcPattern	*p,
 		    const char	*object)
 {
-    FcPatternElt    *e = FcPatternFind (p, object, FcFalse);
+    FcPatternElt    *e = FcPatternFindElt (p, object);
     if (!e)
 	return;
     while (e->values)
@@ -1053,7 +1053,7 @@ static void
 FcConfigPatternCanon (FcPattern	    *p,
 		      const char    *object)
 {
-    FcPatternElt    *e = FcPatternFind (p, object, FcFalse);
+    FcPatternElt    *e = FcPatternFindElt (p, object);
     if (!e)
 	return;
     if (!e->values)
@@ -1106,7 +1106,7 @@ FcConfigSubstitute (FcConfig	*config,
 		printf ("FcConfigSubstitute test ");
 		FcTestPrint (t);
 	    }
-	    st[i].elt = FcPatternFind (p, t->field, FcFalse);
+	    st[i].elt = FcPatternFindElt (p, t->field);
 	    /*
 	     * If there's no such field in the font,
 	     * then FcQualAll matches while FcQualAny does not
@@ -1158,7 +1158,7 @@ FcConfigSubstitute (FcConfig	*config,
 		 * If there was a test, then replace the matched
 		 * value with the new list of values
 		 */
-		if (t && st[i].elt)
+		if (t)
 		{
 		    FcValueList	*thisValue = st[i].value;
 		    FcValueList	*nextValue = thisValue ? thisValue->next : 0;

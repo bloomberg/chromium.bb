@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.5 2002/05/29 22:07:33 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.6 2002/05/31 23:21:25 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -183,84 +183,91 @@ FcPatternDestroy (FcPattern *p)
     free (p);
 }
 
+static int
+FcPatternPosition (const FcPattern *p, const char *object)
+{
+    int	    low, high, mid, c;
+
+    low = 0;
+    high = p->num - 1;
+    c = 1;
+    mid = 0;
+    while (low <= high)
+    {
+	mid = (low + high) >> 1;
+	c = strcmp (p->elts[mid].object, object);
+	if (c == 0)
+	    return mid;
+	if (c < 0)
+	    low = mid + 1;
+	else
+	    high = mid - 1;
+    }
+    if (c < 0)
+	mid++;
+    return -(mid + 1);
+}
+
 FcPatternElt *
-FcPatternFind (FcPattern *p, const char *object, FcBool insert)
+FcPatternFindElt (const FcPattern *p, const char *object)
+{
+    int	    i = FcPatternPosition (p, object);
+    if (i < 0)
+	return 0;
+    return &p->elts[i];
+}
+
+FcPatternElt *
+FcPatternInsertElt (FcPattern *p, const char *object)
 {
     int		    i;
-    int		    s;
     FcPatternElt   *e;
     
-    int		    low, high;
-
-    /* match existing */
-    low = 0;
-    high = p->num;
-
-    while (low + 1 < high)
+    i = FcPatternPosition (p, object);
+    if (i < 0)
     {
-	i = (low + high) >> 1;
-	s = strcmp (object, p->elts[i].object);
-	if (s == 0)
-	    return &p->elts[i];
-	if (s > 0)
-	    low = i;
-	else
-	    high = i;
-    }
-
-    i = low;
-    while (i < high)
-    {
-	s = strcmp (object, p->elts[i].object);
-	if (s == 0)
-	    return &p->elts[i];
-	if (s < 0)
-	    break;
-	i++;
-    }
-
-    if (!insert)
-	return 0;
-
-    /* grow array */
-    if (p->num + 1 >= p->size)
-    {
-	s = p->size + 16;
-	if (p->elts)
-	    e = (FcPatternElt *) realloc (p->elts, s * sizeof (FcPatternElt));
-	else
-	    e = (FcPatternElt *) malloc (s * sizeof (FcPatternElt));
-	if (!e)
-	    return FcFalse;
-	p->elts = e;
-	if (p->size)
-	    FcMemFree (FC_MEM_PATELT, p->size * sizeof (FcPatternElt));
-	FcMemAlloc (FC_MEM_PATELT, s * sizeof (FcPatternElt));
-	while (p->size < s)
+	i = -i - 1;
+    
+	/* grow array */
+	if (p->num + 1 >= p->size)
 	{
-	    p->elts[p->size].object = 0;
-	    p->elts[p->size].values = 0;
-	    p->size++;
+	    int s = p->size + 16;
+	    if (p->elts)
+		e = (FcPatternElt *) realloc (p->elts, s * sizeof (FcPatternElt));
+	    else
+		e = (FcPatternElt *) malloc (s * sizeof (FcPatternElt));
+	    if (!e)
+		return FcFalse;
+	    p->elts = e;
+	    if (p->size)
+		FcMemFree (FC_MEM_PATELT, p->size * sizeof (FcPatternElt));
+	    FcMemAlloc (FC_MEM_PATELT, s * sizeof (FcPatternElt));
+	    while (p->size < s)
+	    {
+		p->elts[p->size].object = 0;
+		p->elts[p->size].values = 0;
+		p->size++;
+	    }
 	}
+	
+	/* move elts up */
+	memmove (p->elts + i + 1,
+		 p->elts + i,
+		 sizeof (FcPatternElt) *
+		 (p->num - i));
+		 
+	/* bump count */
+	p->num++;
+	
+	p->elts[i].object = object;
+	p->elts[i].values = 0;
     }
-    
-    /* move elts up */
-    memmove (p->elts + i + 1,
-	     p->elts + i,
-	     sizeof (FcPatternElt) *
-	     (p->num - i));
-	     
-    /* bump count */
-    p->num++;
-    
-    p->elts[i].object = object;
-    p->elts[i].values = 0;
     
     return &p->elts[i];
 }
 
 FcBool
-FcPatternEqual (FcPattern *pa, FcPattern *pb)
+FcPatternEqual (const FcPattern *pa, const FcPattern *pb)
 {
     int	i;
 
@@ -272,6 +279,32 @@ FcPatternEqual (FcPattern *pa, FcPattern *pb)
 	    return FcFalse;
 	if (!FcValueListEqual (pa->elts[i].values, pb->elts[i].values))
 	    return FcFalse;
+    }
+    return FcTrue;
+}
+
+FcBool
+FcPatternEqualSubset (const FcPattern *pa, const FcPattern *pb, const FcObjectSet *os)
+{
+    FcPatternElt    *ea, *eb;
+    int		    i;
+    
+    for (i = 0; i < os->nobject; i++)
+    {
+	ea = FcPatternFindElt (pa, os->objects[i]);
+	eb = FcPatternFindElt (pb, os->objects[i]);
+	if (ea)
+	{
+	    if (!eb)
+		return FcFalse;
+	    if (!FcValueListEqual (ea->values, eb->values))
+		return FcFalse;
+	}
+	else
+	{
+	    if (eb)
+		return FcFalse;
+	}
     }
     return FcTrue;
 }
@@ -295,7 +328,7 @@ FcPatternAdd (FcPattern *p, const char *object, FcValue value, FcBool append)
     new->value = value;
     new->next = 0;
     
-    e = FcPatternFind (p, object, FcTrue);
+    e = FcPatternInsertElt (p, object);
     if (!e)
 	goto bail2;
     
@@ -339,7 +372,7 @@ FcPatternDel (FcPattern *p, const char *object)
     FcPatternElt   *e;
     int		    i;
 
-    e = FcPatternFind (p, object, FcFalse);
+    e = FcPatternFindElt (p, object);
     if (!e)
 	return FcFalse;
 
@@ -434,7 +467,7 @@ FcPatternGet (FcPattern *p, const char *object, int id, FcValue *v)
     FcPatternElt   *e;
     FcValueList    *l;
 
-    e = FcPatternFind (p, object, FcFalse);
+    e = FcPatternFindElt (p, object);
     if (!e)
 	return FcResultNoMatch;
     for (l = e->values; l; l = l->next)

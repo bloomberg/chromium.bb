@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.11 2002/05/31 04:42:42 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.12 2002/05/31 23:21:25 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -470,7 +470,10 @@ void
 FcValueListDestroy (FcValueList *l);
     
 FcPatternElt *
-FcPatternFind (FcPattern *p, const char *object, FcBool insert);
+FcPatternFindElt (const FcPattern *p, const char *object);
+
+FcPatternElt *
+FcPatternInsertElt (FcPattern *p, const char *object);
 
 /* fcrender.c */
 
