@@ -52,6 +52,9 @@
 		<family>Times New Roman</family>
 		<family>Nimbus Roman No9 L</family>
 		<family>Luxi Serif</family>
+		<family>Kochi Mincho</family>
+		<family>AR PL SungtiL GB</family>
+		<family>Baekmuk Batang</family>			
 		<default><family>serif</family></default>
 	</alias>
 <!--
@@ -63,6 +66,9 @@
 		<family>Verdana</family>
 		<family>Nimbus Sans L</family>
 		<family>Luxi Sans</family>
+		<family>Kochi Gothic</family>
+		<family>AR PL KaitiM GB</family>
+		<family>Baekmuk Dotum</family>
 		<default><family>sans-serif</family></default>
 	</alias>
 <!--
@@ -72,8 +78,8 @@
 		<family>Courier</family>
 		<family>Courier New</family>
 		<family>Andale Mono</family>
-		<family>Nimbus Mono L</family>
 		<family>Luxi Mono</family>
+		<family>Nimbus Mono L</family>
 		<default><family>monospace</family></default>
 	</alias>
 <!--
@@ -129,6 +135,9 @@
 			<family>Nimbus Roman No9 L</family>
 			<family>Luxi Serif</family>
 			<family>Times</family>
+			<family>Kochi Mincho</family>
+			<family>AR PL SungtiL GB</family>
+			<family>Baekmuk Batang</family>			
 		</prefer>
 	</alias>
 	<alias>
@@ -139,6 +148,9 @@
 			<family>Luxi Sans</family>
 			<family>Arial</family>
 			<family>Helvetica</family>
+			<family>Kochi Gothic</family>
+			<family>AR PL KaitiM GB</family>
+			<family>Baekmuk Dotum</family>
 		</prefer>
 	</alias>
 	<alias>
@@ -146,8 +158,11 @@
 		<prefer>
 			<family>Andale Mono</family>
 			<family>Courier New</family>
-			<family>Nimbus Mono L</family>
 			<family>Luxi Mono</family>
+			<family>Nimbus Mono L</family>
+			<family>Kochi Gothic</family>
+			<family>AR PL KaitiM GB</family>
+			<family>Baekmuk Dotum</family>
 		</prefer>
 	</alias>
 
