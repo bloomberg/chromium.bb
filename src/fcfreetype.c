@@ -1599,6 +1599,7 @@ FcHashGlyphName (const FcChar8 *name)
     return h;
 }
 
+#if HAVE_FT_HAS_PS_GLYPH_NAMES
 /*
  * Use Type1 glyph names for fonts which have reliable names
  * and which export an Adobe Custom mapping
@@ -1684,6 +1685,7 @@ FcFreeTypeGlyphNameIndex (FT_Face face, FcChar8 *name)
     }
     return 0;
 }
+#endif
 
 /*
  * Map a UCS4 glyph to a glyph index.  Use all available encoding
@@ -1731,6 +1733,7 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
 	if (glyphindex)
 	    return glyphindex;
     }
+#if HAVE_FT_HAS_PS_GLYPH_NAMES
     /*
      * Check postscript name table if present
      */
@@ -1744,6 +1747,7 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
 		return glyphindex;
 	}
     }
+#endif
     return 0;
 }
 
@@ -1933,6 +1937,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 #endif
 	}
     }
+#if HAVE_FT_HAS_PS_GLYPH_NAMES
     /*
      * Add mapping from PS glyph names if available
      */
@@ -1967,6 +1972,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 	    }
 	}
     }
+#endif
 #ifdef CHECK
     printf ("%d glyphs %d encoded\n", (int) face->num_glyphs, FcCharSetCount (fcs));
     for (ucs4 = 0; ucs4 <= font_max; ucs4++)
