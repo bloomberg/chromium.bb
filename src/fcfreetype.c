@@ -124,7 +124,8 @@ FcUcs4IsLatin (FcChar32 ucs4)
 	return FcTrue;
     if (page == 0xfb)
 	return FcTrue;
-    if (page == 0xff)
+    /* halfwidth forms, don't include kana or white parens */
+    if (0xff01 <= ucs4 && ucs4 <= 0xff5e)
 	return FcTrue;
     return FcFalse;
 }
