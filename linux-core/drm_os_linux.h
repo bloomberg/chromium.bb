@@ -5,6 +5,7 @@
 
 #include <linux/interrupt.h>	/* For task queue support */
 #include <linux/delay.h>
+#include <linux/wait.h>
 
 /** File pointer type */
 #define DRMFILE                         struct file *
@@ -145,26 +146,12 @@ do { 									 \
 
 #define DRM_WAIT_ON( ret, queue, timeout, condition )		\
 do {								\
-	DECLARE_WAITQUEUE(entry, current);			\
-	unsigned long end = jiffies + (timeout);		\
-	add_wait_queue(&(queue), &entry);			\
-								\
-	for (;;) {						\
-		__set_current_state(TASK_INTERRUPTIBLE);	\
-		if (condition)					\
-			break;					\
-		if (time_after_eq(jiffies, end)) {		\
-			ret = -EBUSY;				\
-			break;					\
-		}						\
-		schedule_timeout((HZ/100 > 1) ? HZ/100 : 1);	\
-		if (signal_pending(current)) {			\
-			ret = -EINTR;				\
-			break;					\
-		}						\
-	}							\
-	__set_current_state(TASK_RUNNING);			\
-	remove_wait_queue(&(queue), &entry);			\
+	long __ret;     \
+	__ret = wait_event_interruptible_timeout(queue, condition, timeout); \
+	if (__ret == 0) \
+		ret = -EBUSY;   \
+	else if (__ret == -ERESTARTSYS) \
+		ret = -EINTR;   \
 } while (0)
 
 #define DRM_WAKEUP( queue ) wake_up_interruptible( queue )
