@@ -52,7 +52,7 @@ GAMMAHEADERS =	gamma_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
 TDFXOBJS =	tdfx_drv.o
 TDFXHEADERS =	tdfx.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-R128OBJS =	r128_drv.o r128_cce.o r128_state.o
+R128OBJS =	r128_drv.o r128_cce.o r128_state.o r128_irq.o
 R128HEADERS =	r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
 RADEONOBJS =	radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o
@@ -158,7 +158,7 @@ MODS += i810.o
 MODS += i830.o
 endif
 
-MGAOBJS =	mga_drv.o mga_dma.o mga_state.o mga_warp.o
+MGAOBJS =	mga_drv.o mga_dma.o mga_state.o mga_warp.o mga_irq.o
 MGAHEADERS =	mga.h mga_drv.h mga_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
 I810OBJS =	i810_drv.o i810_dma.o
