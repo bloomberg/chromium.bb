@@ -181,45 +181,60 @@ typedef struct _FcMatcher {
 static FcMatcher _FcMatchers [] = {
     { FC_FOUNDRY,	FcCompareString,	0, 0 },
 #define MATCH_FOUNDRY	    0
+#define MATCH_FOUNDRY_INDEX 0
     
     { FC_CHARSET,	FcCompareCharSet,	1, 1 },
 #define MATCH_CHARSET	    1
+#define MATCH_CHARSET_INDEX 1
     
     { FC_FAMILY,    	FcCompareFamily,	2, 4 },
 #define MATCH_FAMILY	    2
+#define MATCH_FAMILY_STRONG_INDEX   2
+#define MATCH_FAMILY_WEAK_INDEX	    4
     
     { FC_LANG,		FcCompareLang,		3, 3 },
 #define MATCH_LANG	    3
+#define MATCH_LANG_INDEX    3
     
     { FC_SPACING,	FcCompareNumber,	5, 5 },
 #define MATCH_SPACING	    4
+#define MATCH_SPACING_INDEX 5
     
     { FC_PIXEL_SIZE,	FcCompareSize,		6, 6 },
 #define MATCH_PIXEL_SIZE    5
+#define MATCH_PIXEL_SIZE_INDEX	6
     
     { FC_STYLE,		FcCompareString,	7, 7 },
 #define MATCH_STYLE	    6
+#define MATCH_STYLE_INDEX   7
     
     { FC_SLANT,		FcCompareNumber,	8, 8 },
 #define MATCH_SLANT	    7
+#define MATCH_SLANT_INDEX   8
     
     { FC_WEIGHT,	FcCompareNumber,	9, 9 },
 #define MATCH_WEIGHT	    8
+#define MATCH_WEIGHT_INDEX  9
     
     { FC_WIDTH,		FcCompareNumber,	10, 10 },
 #define MATCH_WIDTH	    9
+#define MATCH_WIDTH_INDEX   10
     
     { FC_ANTIALIAS,	FcCompareBool,		11, 11 },
 #define MATCH_ANTIALIAS	    10
+#define MATCH_ANTIALIAS_INDEX	    11
     
     { FC_RASTERIZER,	FcCompareString,	12, 12 },
 #define MATCH_RASTERIZER    11
-    
+#define MATCH_RASTERIZER_INDEX    12
+
     { FC_OUTLINE,	FcCompareBool,		13, 13 },
 #define MATCH_OUTLINE	    12
+#define MATCH_OUTLINE_INDEX	    13
 
     { FC_FONTVERSION,	FcCompareNumber,	14, 14 },
 #define MATCH_FONTVERSION   13
+#define MATCH_FONTVERSION_INDEX   14
 };
 
 #define NUM_MATCH_VALUES    15
@@ -663,6 +678,9 @@ FcFontSetSort (FcConfig	    *config,
     int		    set;
     int		    f;
     int		    i;
+    int		    nPatternLang;
+    FcBool    	    *patternLangSat;
+    FcValue	    patternLang;
 
     if (FcDebug () & FC_DBG_MATCH)
     {
@@ -679,11 +697,20 @@ FcFontSetSort (FcConfig	    *config,
     }
     if (!nnodes)
 	goto bail0;
+    
+    for (nPatternLang = 0;
+	 FcPatternGet (p, FC_LANG, nPatternLang, &patternLang) == FcResultMatch;
+	 nPatternLang++)
+	;
+	
     /* freed below */
-    nodes = malloc (nnodes * sizeof (FcSortNode) + nnodes * sizeof (FcSortNode *));
+    nodes = malloc (nnodes * sizeof (FcSortNode) + 
+		    nnodes * sizeof (FcSortNode *) +
+		    nPatternLang * sizeof (FcBool));
     if (!nodes)
 	goto bail0;
     nodeps = (FcSortNode **) (nodes + nnodes);
+    patternLangSat = (FcBool *) (nodeps + nnodes);
     
     new = nodes;
     nodep = nodeps;
@@ -719,6 +746,56 @@ FcFontSetSort (FcConfig	    *config,
 
     nnodes = new - nodes;
     
+    qsort (nodeps, nnodes, sizeof (FcSortNode *),
+	   FcSortCompare);
+    
+    for (i = 0; i < nPatternLang; i++)
+	patternLangSat[i] = FcFalse;
+    
+    for (f = 0; f < nnodes; f++)
+    {
+	FcBool	satisfies = FcFalse;
+	/*
+	 * If this node matches any language, go check
+	 * which ones and satisfy those entries
+	 */
+	if (nodeps[f]->score[MATCH_LANG_INDEX] < nPatternLang)
+	{
+	    for (i = 0; i < nPatternLang; i++)
+	    {
+		FcValue	    nodeLang;
+		
+		if (!patternLangSat[i] &&
+		    FcPatternGet (p, FC_LANG, i, &patternLang) == FcResultMatch &&
+		    FcPatternGet (nodeps[f]->pattern, FC_LANG, 0, &nodeLang) == FcResultMatch)
+		{
+		    double  compare = FcCompareLang (FC_LANG, patternLang, 
+						     nodeLang);
+		    if (compare >= 0 && compare < 2)
+		    {
+			if (FcDebug () & FC_DBG_MATCHV)
+			{
+			    FcChar8 *family;
+			    FcChar8 *style;
+
+			    if (FcPatternGetString (nodeps[f]->pattern, FC_FAMILY, 0, &family) == FcResultMatch &&
+				FcPatternGetString (nodeps[f]->pattern, FC_STYLE, 0, &style) == FcResultMatch)
+				printf ("Font %s:%s matches language %d\n", family, style, i);
+			}
+			patternLangSat[i] = FcTrue;
+			satisfies = FcTrue;
+			break;
+		    }
+		}
+	    }
+	}
+	if (!satisfies)
+	    nodeps[f]->score[MATCH_LANG_INDEX] = 1000.0;
+    }
+
+    /*
+     * Re-sort once the language issues have been settled
+     */
     qsort (nodeps, nnodes, sizeof (FcSortNode *),
 	   FcSortCompare);
 

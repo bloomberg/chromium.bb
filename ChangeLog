@@ -1,3 +1,20 @@
+2004-12-13  Keith Packard  <keithp@keithp.com>
+
+	reviewed by: Owen Taylor <otaylor@redhat.com>
+
+	* src/fcmatch.c: (FcFontSetSort):
+	I changed FcFontSetSort to respect the generic aliases better
+	in the face of language matching.
+	
+	What I did was to ammend the strict sort order used by FcFontSort so
+	that it 'satisfies' the language specified in the pattern by locating
+	the best matching font supporting each pattern language and then
+	ignores language in the remaining fonts for purposes of matching.
+
+	So, when asking for 'sans:lang=en', you'll get an English font first,
+	and then the remaining fonts sorted with respect to the 'sans' alias
+	alone -- pushing Kochi fonts ahead of other English-supporting Han fonts.
+
 2004-12-10  Jakub Pavelek <jakub.pavelek@nokia.com>
 
 	reviewed by: Keith Packard  <keithp@keithp.com>
