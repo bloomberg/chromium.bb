@@ -357,7 +357,7 @@ endif
 ifneq (,$(findstring mach64,$(DRM_MODULES)))
 CONFIG_DRM_MACH64 := m
 endif
-ifneq (,$($findstring ffb,$(DRM_MODULES)))
+ifneq (,$(findstring ffb,$(DRM_MODULES)))
 CONFIG_DRM_FFB := m
 endif
 
