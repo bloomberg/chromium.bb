@@ -34,6 +34,22 @@
 #include "mga_drv.h"
 #include "drm.h"
 
+/* If you change the functions to set state, PLEASE
+ * change these values
+ */
+
+#define MGAEMITCLIP_SIZE 10
+#define MGAEMITCTX_SIZE 15
+#define MGAG200EMITTEX_SIZE 20
+#define MGAG400EMITTEX0_SIZE 30
+#define MGAG400EMITTEX1_SIZE 25
+#define MGAG400EMITPIPE_SIZE 50
+#define MGAG200EMITPIPE_SIZE 15
+
+#define MAX_STATE_SIZE ((MGAEMITCLIP_SIZE * MGA_NR_SAREA_CLIPRECTS) + \
+			MGAEMITCTX_SIZE + MGAG400EMITTEX0_SIZE + \
+			MGAG400EMITTEX1_SIZE + MGAG400EMITPIPE_SIZE)
+
 static void mgaEmitClipRect(drm_mga_private_t * dev_priv,
 			    drm_clip_rect_t * box)
 {
@@ -224,7 +240,6 @@ static void mgaG400EmitTex1(drm_mga_private_t * dev_priv)
 	PRIMADVANCE(dev_priv);
 }
 
-#define EMIT_PIPE 50
 static void mgaG400EmitPipe(drm_mga_private_t * dev_priv)
 {
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
@@ -492,7 +507,6 @@ static void mga_dma_dispatch_tex_blit(drm_device_t * dev,
 	y2 = length / 64;
 
 	PRIM_OVERFLOW(dev, dev_priv, 30);
-	PRIMGETPTR(dev_priv);
 
 	PRIMOUTREG(MGAREG_DSTORG, destOrg);
 	PRIMOUTREG(MGAREG_MACCESS, 0x00000000);
@@ -526,7 +540,6 @@ static void mga_dma_dispatch_vertex(drm_device_t * dev, drm_buf_t * buf)
 	int length = buf->used;
 	int use_agp = PDEA_pagpxfer_enable;
 	int i = 0;
-	int primary_needed;
 	PRIMLOCALS;
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
@@ -542,9 +555,8 @@ static void mga_dma_dispatch_vertex(drm_device_t * dev, drm_buf_t * buf)
 		 * these numbers (Overestimating this doesn't hurt).  
 		 */
 		buf_priv->dispatched = 1;
-		primary_needed = (50 + 15 + 15 + 30 + 25 +
-				  10 + 15 * MGA_NR_SAREA_CLIPRECTS);
-		PRIM_OVERFLOW(dev, dev_priv, primary_needed);
+		PRIM_OVERFLOW(dev, dev_priv,
+			      (MAX_STATE_SIZE + (5 * MGA_NR_SAREA_CLIPRECTS)));
 		mgaEmitState(dev_priv);
 		do {
 			if (i < sarea_priv->nbox) {
@@ -592,7 +604,6 @@ static void mga_dma_dispatch_indices(drm_device_t * dev,
 	unsigned int address = (unsigned int) buf->bus_address;
 	int use_agp = PDEA_pagpxfer_enable;
 	int i = 0;
-	int primary_needed;
 	PRIMLOCALS;
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
@@ -606,9 +617,8 @@ static void mga_dma_dispatch_indices(drm_device_t * dev,
 		 * these numbers (Overestimating this doesn't hurt).  
 		 */
 		buf_priv->dispatched = 1;
-		primary_needed = (50 + 15 + 15 + 30 + 25 +
-				  10 + 15 * MGA_NR_SAREA_CLIPRECTS);
-		PRIM_OVERFLOW(dev, dev_priv, primary_needed);
+		PRIM_OVERFLOW(dev, dev_priv,
+			      (MAX_STATE_SIZE + (5 * MGA_NR_SAREA_CLIPRECTS)));
 		mgaEmitState(dev_priv);
 
 		do {
@@ -657,7 +667,6 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, int flags,
 	drm_clip_rect_t *pbox = sarea_priv->boxes;
 	unsigned int cmd;
 	int i;
-	int primary_needed;
 	PRIMLOCALS;
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
@@ -666,11 +675,7 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, int flags,
 	else
 		cmd = MGA_CLEAR_CMD | DC_atype_rstr;
 
-	primary_needed = nbox * 70;
-	if (primary_needed == 0)
-		primary_needed = 70;
-	PRIM_OVERFLOW(dev, dev_priv, primary_needed);
-	PRIMGETPTR(dev_priv);
+	PRIM_OVERFLOW(dev, dev_priv, 35 * MGA_NR_SAREA_CLIPRECTS);
 
 	for (i = 0; i < nbox; i++) {
 		unsigned int height = pbox[i].y2 - pbox[i].y1;
@@ -741,14 +746,10 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 	int nbox = sarea_priv->nbox;
 	drm_clip_rect_t *pbox = sarea_priv->boxes;
 	int i;
-	int primary_needed;
 	PRIMLOCALS;
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	primary_needed = nbox * 5;
-	primary_needed += 65;
-	PRIM_OVERFLOW(dev, dev_priv, primary_needed);
-	PRIMGETPTR(dev_priv);
+	PRIM_OVERFLOW(dev, dev_priv, (MGA_NR_SAREA_CLIPRECTS * 5) + 20);
 
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
