@@ -126,10 +126,11 @@ typedef struct drm_control {
 } drm_control_t;
 
 typedef enum drm_map_type {
-	_DRM_FRAME_BUFFER = 0,	  /* WC (no caching), no core dump	    */
-	_DRM_REGISTERS	  = 1,	  /* no caching, no core dump		    */
-	_DRM_SHM	  = 2,	  /* shared, cached			    */
-	_DRM_AGP          = 3	  /* AGP/GART                               */
+	_DRM_FRAME_BUFFER   = 0,  /* WC (no caching), no core dump	    */
+	_DRM_REGISTERS	    = 1,  /* no caching, no core dump		    */
+	_DRM_SHM	    = 2,  /* shared, cached			    */
+	_DRM_AGP            = 3,  /* AGP/GART                               */
+	_DRM_SCATTER_GATHER = 4	  /* Scatter/gather memory for PCI DMA      */
 } drm_map_type_t;
 
 typedef enum drm_map_flags {
@@ -238,7 +239,8 @@ typedef struct drm_buf_desc {
 	int	      high_mark; /* High water mark			     */
 	enum {
 		_DRM_PAGE_ALIGN = 0x01, /* Align on page boundaries for DMA  */
-		_DRM_AGP_BUFFER = 0x02  /* Buffer is in agp space            */
+		_DRM_AGP_BUFFER = 0x02, /* Buffer is in agp space            */
+		_DRM_SG_BUFFER  = 0x04  /* Scatter/gather memory buffer      */
 	}	      flags;
 	unsigned long agp_start; /* Start address of where the agp buffers
 				  * are in the agp aperture */
@@ -344,6 +346,11 @@ typedef struct drm_agp_info {
 	unsigned short id_device;
 } drm_agp_info_t;
 
+typedef struct drm_scatter_gather {
+	unsigned long size;	/* In bytes -- will round to page boundary */
+	unsigned long handle;	/* Used for mapping / unmapping */
+} drm_scatter_gather_t;
+
 #define DRM_IOCTL_BASE			'd'
 #define DRM_IO(nr)			_IO(DRM_IOCTL_BASE,nr)
 #define DRM_IOR(nr,size)		_IOR(DRM_IOCTL_BASE,nr,size)
@@ -398,6 +405,9 @@ typedef struct drm_agp_info {
 #define DRM_IOCTL_AGP_FREE		DRM_IOW( 0x35, drm_agp_buffer_t)
 #define DRM_IOCTL_AGP_BIND		DRM_IOW( 0x36, drm_agp_binding_t)
 #define DRM_IOCTL_AGP_UNBIND		DRM_IOW( 0x37, drm_agp_binding_t)
+
+#define DRM_IOCTL_SG_ALLOC		DRM_IOW( 0x38, drm_scatter_gather_t)
+#define DRM_IOCTL_SG_FREE		DRM_IOW( 0x39, drm_scatter_gather_t)
 
 /* MGA specific ioctls */
 #define DRM_IOCTL_MGA_INIT		DRM_IOW( 0x40, drm_mga_init_t)

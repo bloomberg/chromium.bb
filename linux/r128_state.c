@@ -660,7 +660,7 @@ static void r128_cce_dispatch_indirect( drm_device_t *dev,
 			u32 *data = (u32 *)
 				((char *)dev_priv->buffers->handle
 				 + buf->offset + start);
-			data[dwords++] = R128_CCE_PACKET2;
+			data[dwords++] = cpu_to_le32( R128_CCE_PACKET2 );
 		}
 
 		buf_priv->dispatched = 1;
@@ -704,7 +704,7 @@ static void r128_cce_dispatch_indices( drm_device_t *dev,
 	drm_r128_buf_priv_t *buf_priv = buf->dev_private;
 	drm_r128_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	int format = sarea_priv->vc_format;
-	int offset = dev_priv->buffers->offset - dev->agp->base;
+	int offset = dev_priv->buffers->offset - dev_priv->cce_buffers_offset;
 	int prim = buf_priv->prim;
 	u32 *data;
 	int dwords;
@@ -727,16 +727,21 @@ static void r128_cce_dispatch_indices( drm_device_t *dev,
 		data = (u32 *)((char *)dev_priv->buffers->handle
 			       + buf->offset + start);
 
-		data[0] = CCE_PACKET3( R128_3D_RNDR_GEN_INDX_PRIM, dwords-2 );
+		data[0] = cpu_to_le32( CCE_PACKET3( R128_3D_RNDR_GEN_INDX_PRIM,
+						    dwords-2 ) );
 
-		data[1] = offset;
-		data[2] = R128_MAX_VB_VERTS;
-		data[3] = format;
-		data[4] = (prim | R128_CCE_VC_CNTL_PRIM_WALK_IND |
-			   (count << 16));
+		data[1] = cpu_to_le32( offset );
+		data[2] = cpu_to_le32( R128_MAX_VB_VERTS );
+		data[3] = cpu_to_le32( format );
+		data[4] = cpu_to_le32( (prim | R128_CCE_VC_CNTL_PRIM_WALK_IND |
+					(count << 16)) );
 
 		if ( count & 0x1 ) {
+#ifdef __LITTLE_ENDIAN
 			data[dwords-1] &= 0x0000ffff;
+#else
+			data[dwords-1] &= 0xffff0000;
+#endif
 		}
 
 		do {
@@ -842,23 +847,23 @@ static int r128_cce_dispatch_blit( drm_device_t *dev,
 
 	data = (u32 *)((char *)dev_priv->buffers->handle + buf->offset);
 
-	data[0] = CCE_PACKET3( R128_CNTL_HOSTDATA_BLT, dwords + 6 );
-	data[1] = (R128_GMC_DST_PITCH_OFFSET_CNTL |
-		   R128_GMC_BRUSH_NONE |
-		   (blit->format << 8) |
-		   R128_GMC_SRC_DATATYPE_COLOR |
-		   R128_ROP3_S |
-		   R128_DP_SRC_SOURCE_HOST_DATA |
-		   R128_GMC_CLR_CMP_CNTL_DIS |
-		   R128_GMC_AUX_CLIP_DIS |
-		   R128_GMC_WR_MSK_DIS);
+	data[0] = cpu_to_le32( CCE_PACKET3( R128_CNTL_HOSTDATA_BLT, dwords + 6 ) );
+	data[1] = cpu_to_le32( (R128_GMC_DST_PITCH_OFFSET_CNTL |
+				R128_GMC_BRUSH_NONE |
+				(blit->format << 8) |
+				R128_GMC_SRC_DATATYPE_COLOR |
+				R128_ROP3_S |
+				R128_DP_SRC_SOURCE_HOST_DATA |
+				R128_GMC_CLR_CMP_CNTL_DIS |
+				R128_GMC_AUX_CLIP_DIS |
+				R128_GMC_WR_MSK_DIS) );
 
-	data[2] = (blit->pitch << 21) | (blit->offset >> 5);
-	data[3] = 0xffffffff;
-	data[4] = 0xffffffff;
-	data[5] = (blit->y << 16) | blit->x;
-	data[6] = (blit->height << 16) | blit->width;
-	data[7] = dwords;
+	data[2] = cpu_to_le32( (blit->pitch << 21) | (blit->offset >> 5) );
+	data[3] = cpu_to_le32( 0xffffffff );
+	data[4] = cpu_to_le32( 0xffffffff );
+	data[5] = cpu_to_le32( (blit->y << 16) | blit->x );
+	data[6] = cpu_to_le32( (blit->height << 16) | blit->width );
+	data[7] = cpu_to_le32( dwords );
 
 	buf->used = (dwords + 8) * sizeof(u32);
 
@@ -1299,8 +1304,8 @@ int r128_cce_vertex( struct inode *inode, struct file *filp,
 
 	LOCK_TEST_WITH_RETURN( dev );
 
-	if ( !dev_priv || dev_priv->is_pci ) {
-		DRM_ERROR( "%s called with a PCI card\n", __FUNCTION__ );
+	if ( !dev_priv ) {
+		DRM_ERROR( "%s called with no initialization\n", __FUNCTION__ );
 		return -EINVAL;
 	}
 
@@ -1362,8 +1367,8 @@ int r128_cce_indices( struct inode *inode, struct file *filp,
 
 	LOCK_TEST_WITH_RETURN( dev );
 
-	if ( !dev_priv || dev_priv->is_pci ) {
-		DRM_ERROR( "%s called with a PCI card\n", __FUNCTION__ );
+	if ( !dev_priv ) {
+		DRM_ERROR( "%s called with no initialization\n", __FUNCTION__ );
 		return -EINVAL;
 	}
 

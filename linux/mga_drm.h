@@ -237,7 +237,7 @@ typedef struct drm_mga_init {
 	       	MGA_CLEANUP_DMA = 0x02
 	} func;
 
-   	int sarea_priv_offset;
+   	unsigned long sarea_priv_offset;
 
 	int chipset;
    	int sgram;
@@ -254,12 +254,12 @@ typedef struct drm_mga_init {
    	unsigned int texture_offset[MGA_NR_TEX_HEAPS];
    	unsigned int texture_size[MGA_NR_TEX_HEAPS];
 
-	unsigned int fb_offset;
-	unsigned int mmio_offset;
-	unsigned int status_offset;
-	unsigned int warp_offset;
-	unsigned int primary_offset;
-	unsigned int buffers_offset;
+	unsigned long fb_offset;
+	unsigned long mmio_offset;
+	unsigned long status_offset;
+	unsigned long warp_offset;
+	unsigned long primary_offset;
+	unsigned long buffers_offset;
 } drm_mga_init_t;
 
 typedef struct drm_mga_fullscreen {

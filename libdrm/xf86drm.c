@@ -67,11 +67,6 @@ extern int xf86RemoveSIGIOHandler(int fd);
 # endif
 #endif
 
-#ifdef __alpha__
-extern unsigned long _bus_base(void);
-#define BUS_BASE _bus_base()
-#endif
-
 /* Not all systems have MAP_FAILED defined */
 #ifndef MAP_FAILED
 #define MAP_FAILED ((void *)-1)
@@ -490,11 +485,6 @@ int drmAddMap(int fd,
     drm_map_t map;
 
     map.offset  = offset;
-#ifdef __alpha__
-    /* Make sure we add the bus_base to all but shm */
-    if (type != DRM_SHM)
-	map.offset += BUS_BASE;
-#endif
     map.size    = size;
     map.handle  = 0;
     map.type    = type;
@@ -996,6 +986,28 @@ unsigned int drmAgpDeviceId(int fd)
 
     if (ioctl(fd, DRM_IOCTL_AGP_INFO, &i)) return 0;
     return i.id_device;
+}
+
+int drmScatterGatherAlloc(int fd, unsigned long size, unsigned long *handle)
+{
+    drm_scatter_gather_t sg;
+
+    *handle = 0;
+    sg.size   = size;
+    sg.handle = 0;
+    if (ioctl(fd, DRM_IOCTL_SG_ALLOC, &sg)) return -errno;
+    *handle = sg.handle;
+    return 0;
+}
+
+int drmScatterGatherFree(int fd, unsigned long handle)
+{
+    drm_scatter_gather_t sg;
+
+    sg.size   = 0;
+    sg.handle = handle;
+    if (ioctl(fd, DRM_IOCTL_SG_FREE, &sg)) return -errno;
+    return 0;
 }
 
 int drmError(int err, const char *label)

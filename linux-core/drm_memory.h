@@ -63,6 +63,7 @@ static drm_mem_stats_t	  DRM(mem_stats)[]   = {
 	[DRM_MEM_MAPPINGS]  = { "mappings" },
 	[DRM_MEM_BUFLISTS]  = { "buflists" },
 	[DRM_MEM_AGPLISTS]  = { "agplist"  },
+	[DRM_MEM_SGLISTS]   = { "sglist"   },
 	[DRM_MEM_TOTALAGP]  = { "totalagp" },
 	[DRM_MEM_BOUNDAGP]  = { "boundagp" },
 	[DRM_MEM_CTXBITMAP] = { "ctxbitmap"},

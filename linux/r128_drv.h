@@ -28,10 +28,14 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Kevin E. Martin <martin@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
+ *    Michel Dänzer <daenzerm@student.ethz.ch>
  */
 
 #ifndef __R128_DRV_H__
 #define __R128_DRV_H__
+
+#define GET_RING_HEAD( ring )		le32_to_cpu( *(ring)->head )
+#define SET_RING_HEAD( ring, val )	*(ring)->head = cpu_to_le32( val )
 
 typedef struct drm_r128_freelist {
    	unsigned int age;
@@ -67,6 +71,8 @@ typedef struct drm_r128_private {
 
 	int usec_timeout;
 	int is_pci;
+	unsigned long phys_pci_gart;
+	unsigned long cce_buffers_offset;
 
 	atomic_t idle_count;
 
@@ -134,7 +140,7 @@ extern int r128_wait_ring( drm_r128_private_t *dev_priv, int n );
 static inline void
 r128_update_ring_snapshot( drm_r128_ring_buffer_t *ring )
 {
-	ring->space = (*(volatile int *)ring->head - ring->tail) * sizeof(u32);
+	ring->space = (GET_RING_HEAD( ring ) - ring->tail) * sizeof(u32);
 	if ( ring->space <= 0 )
 		ring->space += ring->size;
 }
@@ -248,6 +254,7 @@ extern int r128_cce_indirect( struct inode *inode, struct file *filp,
 #	define R128_PC_FLUSH_ALL		0x00ff
 #	define R128_PC_BUSY			(1 << 31)
 
+#define R128_PCI_GART_PAGE		0x017c
 #define R128_PRIM_TEX_CNTL_C		0x1cb0
 
 #define R128_SCALE_3D_CNTL		0x1a00
@@ -365,7 +372,7 @@ extern int r128_cce_indirect( struct inode *inode, struct file *filp,
 
 #define R128_LAST_FRAME_REG		R128_GUI_SCRATCH_REG0
 #define R128_LAST_DISPATCH_REG		R128_GUI_SCRATCH_REG1
-#define R128_MAX_VB_AGE			0xffffffff
+#define R128_MAX_VB_AGE			0x7fffffff
 #define R128_MAX_VB_VERTS		(0xffff)
 
 #define R128_RING_HIGH_MARK		128
@@ -373,17 +380,36 @@ extern int r128_cce_indirect( struct inode *inode, struct file *filp,
 #define R128_PERFORMANCE_BOXES		0
 
 
-#define R128_BASE(reg)		((u32)(dev_priv->mmio->handle))
+#define R128_BASE(reg)		((unsigned long)(dev_priv->mmio->handle))
 #define R128_ADDR(reg)		(R128_BASE( reg ) + reg)
 
 #define R128_DEREF(reg)		*(volatile u32 *)R128_ADDR( reg )
-#define R128_READ(reg)		R128_DEREF( reg )
-#define R128_WRITE(reg,val)	do { R128_DEREF( reg ) = val; } while (0)
+#ifdef __alpha__
+#define R128_READ(reg)         (_R128_READ((u32 *)R128_ADDR(reg)))
+static inline u32 _R128_READ(u32 *addr) {
+       mb();
+       return *(volatile u32 *)addr;
+}
+#define R128_WRITE(reg,val)	\
+	do { wmb(); R128_DEREF(reg) = val; } while (0)
+#else
+#define R128_READ(reg)		le32_to_cpu( R128_DEREF( reg ) )
+#define R128_WRITE(reg,val)	do { R128_DEREF( reg ) = cpu_to_le32( val ); } while (0)
+#endif
 
 #define R128_DEREF8(reg)	*(volatile u8 *)R128_ADDR( reg )
+#ifdef __alpha__
+#define R128_READ8(reg)		_R128_READ8((u8 *)R128_ADDR(reg))
+static inline u8 _R128_READ8(u8 *addr) {
+	mb();
+	return *(volatile u8 *)addr;
+}
+#define R128_WRITE8(reg,val)   \
+       do { wmb(); R128_DEREF8(reg) = val; } while (0)
+#else
 #define R128_READ8(reg)		R128_DEREF8( reg )
 #define R128_WRITE8(reg,val)	do { R128_DEREF8( reg ) = val; } while (0)
-
+#endif
 
 #define R128_WRITE_PLL(addr,val)                                              \
 do {                                                                          \
@@ -485,7 +511,7 @@ do {									\
 
 #define ADVANCE_RING() do {						\
 	if ( R128_VERBOSE ) {						\
-		DRM_INFO( "ADVANCE_RING() tail=0x%06x wr=0x%06x\n",	\
+		DRM_INFO( "ADVANCE_RING() wr=0x%06x tail=0x%06x\n",	\
 			  write, dev_priv->ring.tail );			\
 	}								\
 	if ( R128_BROKEN_CCE && write < 32 ) {				\
@@ -503,7 +529,7 @@ do {									\
 		DRM_INFO( "   OUT_RING( 0x%08x ) at 0x%x\n",		\
 			   (unsigned int)(x), write );			\
 	}								\
-	ring[write++] = (x);						\
+	ring[write++] = cpu_to_le32( x );				\
 	write &= tail_mask;						\
 } while (0)
 
