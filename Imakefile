@@ -1,3 +1,5 @@
+XCOMM $XFree86$
+
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -22,4 +24,8 @@ InstallNonExecFileNoClobber(fonts.dtd,$(FONTCONFIGDIR))
 all:: fonts.conf
 
 fonts.conf: fonts.conf.in
+	RemoveFile($@)
 	sh ./setfontdirs
+
+clean::
+	RemoveFile(fonts.conf)
