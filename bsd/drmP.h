@@ -392,6 +392,14 @@ typedef struct drm_map_list_entry {
 	drm_map_t	*map;
 } drm_map_list_entry_t;
 
+TAILQ_HEAD(drm_vbl_sig_list, drm_vbl_sig);
+typedef struct drm_vbl_sig {
+	TAILQ_ENTRY(drm_vbl_sig) link;
+	unsigned int	sequence;
+	int		signo;
+	int		pid;
+} drm_vbl_sig_t;
+
 struct drm_device {
 #ifdef __NetBSD__
 	struct device	  device;	/* NetBSD's softc is an extension of struct device */
@@ -469,6 +477,8 @@ struct drm_device {
 #if __HAVE_VBL_IRQ
    	wait_queue_head_t vbl_queue;	/* vbl wait channel */
    	atomic_t          vbl_received;
+	struct drm_vbl_sig_list vbl_sig_list;
+	DRM_SPINTYPE      vbl_lock;
 #endif
 	cycles_t	  ctx_start;
 	cycles_t	  lck_start;
@@ -613,6 +623,7 @@ extern drm_buf_t     *DRM(freelist_get)(drm_freelist_t *bl, int block);
 #endif /* __HAVE_DMA */
 #if __HAVE_VBL_IRQ
 extern int           DRM(vblank_wait)(drm_device_t *dev, unsigned int *vbl_seq);
+extern void          DRM(vbl_send_signals)( drm_device_t *dev );
 #endif
 
 #if __REALLY_HAVE_AGP

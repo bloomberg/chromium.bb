@@ -524,6 +524,11 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	TASK_INIT(&dev->task, 0, DRM(dma_immediate_bh), dev);
 #endif
 
+#if __HAVE_VBL_IRQ
+	DRM_SPININIT( dev->vbl_lock, "vblsig" );
+	TAILQ_INIT( &dev->vbl_sig_list );
+#endif
+
 				/* Before installing handler */
 	DRM(driver_irq_preinstall)( dev );
 
@@ -612,21 +617,67 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	DRM_COPY_FROM_USER_IOCTL( vblwait, (drm_wait_vblank_t *)data,
 				  sizeof(vblwait) );
 
-	if ( vblwait.type == _DRM_VBLANK_RELATIVE ) {
-		vblwait.sequence += atomic_read( &dev->vbl_received );
+	if (vblwait.request.type & _DRM_VBLANK_RELATIVE) {
+		vblwait.request.sequence += atomic_read(&dev->vbl_received);
 	}
 
-	ret = DRM(vblank_wait)( dev, &vblwait.sequence );
+	flags = vblwait.request.type & _DRM_VBLANK_FLAGS_MASK;
+	if (flags & _DRM_VBLANK_SIGNAL) {
+		drm_vbl_sig_t *vbl_sig = DRM_MALLOC(sizeof(drm_vbl_sig_t));
+		if (vbl_sig == NULL)
+			return ENOMEM;
+		bzero(vbl_sig, sizeof(*vbl_sig));
+		
+		vbl_sig->sequence = vblwait.request.sequence;
+		vbl_sig->signo = vblwait.request.signal;
+		vbl_sig->pid = DRM_CURRENTPID;
 
-	microtime( &now );
-	vblwait.tval_sec = now.tv_sec;
-	vblwait.tval_usec = now.tv_usec;
+		vblwait.reply.sequence = atomic_read(&dev->vbl_received);
+		
+		DRM_SPINLOCK(&dev->vbl_lock);
+		TAILQ_INSERT_HEAD(&dev->vbl_sig_list, vbl_sig, link);
+		DRM_SPINUNLOCK(&dev->vbl_lock);
+		ret = 0;
+	} else {
+		ret = DRM(vblank_wait)(dev, &vblwait.request.sequence);
+		
+		microtime(&now);
+		vblwait.reply.tval_sec = now.tv_sec;
+		vblwait.reply.tval_usec = now.tv_usec;
+	}
 
 	DRM_COPY_TO_USER_IOCTL( (drm_wait_vblank_t *)data, vblwait,
 				sizeof(vblwait) );
 
 	return ret;
 }
+
+void DRM(vbl_send_signals)( drm_device_t *dev )
+{
+	drm_vbl_sig_t *vbl_sig;
+	unsigned int vbl_seq = atomic_read( &dev->vbl_received );
+	struct proc *p;
+
+	DRM_SPINLOCK(&dev->vbl_lock);
+
+	vbl_sig = TAILQ_FIRST(&dev->vbl_sig_list);
+	while (vbl_sig != NULL) {
+		drm_vbl_sig_t *next = TAILQ_NEXT(vbl_sig, link);
+
+		if ( ( vbl_seq - vbl_sig->sequence ) <= (1<<23) ) {
+			p = pfind(vbl_sig->pid);
+			if (p != NULL)
+				psignal(p, vbl_sig->signo);
+
+			TAILQ_REMOVE(&dev->vbl_sig_list, vbl_sig, link);
+			DRM_FREE(vbl_sig);
+		}
+		vbl_sig = next;
+	}
+
+	DRM_SPINUNLOCK(&dev->vbl_lock);
+}
+
 #endif /*  __HAVE_VBL_IRQ */
 
 #else
