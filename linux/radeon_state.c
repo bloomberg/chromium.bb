@@ -1054,8 +1054,10 @@ static int radeon_cp_dispatch_texture( drm_device_t *dev,
 		image->height -= height;
 		image->data = (char *)image->data + size;
 
-		if ( copy_to_user( tex->image, image, sizeof(*image) ) )
+		if ( copy_to_user( tex->image, image, sizeof(*image) ) ) {
+			DRM_ERROR( "EFAULT on tex->image\n" );
 			return -EFAULT;
+		}
 	} else if ( size < 4 ) {
 		size = 4;
 	}
@@ -1089,16 +1091,21 @@ static int radeon_cp_dispatch_texture( drm_device_t *dev,
 		/* Texture image width is larger than the minimum, so we
 		 * can upload it directly.
 		 */
-		if ( copy_from_user( buffer, data, dwords * sizeof(u32) ) )
+		if ( copy_from_user( buffer, data, dwords * sizeof(u32) ) ) {
+			DRM_ERROR( "EFAULT on data, %d dwords\n", dwords );
 			return -EFAULT;
+		}
 	} else {
 		/* Texture image width is less than the minimum, so we
 		 * need to pad out each image scanline to the minimum
 		 * width.
 		 */
 		for ( i = 0 ; i < tex->height ; i++ ) {
-			if ( copy_from_user( buffer, data, tex_width ) )
+			if ( copy_from_user( buffer, data, tex_width ) ) {
+				DRM_ERROR( "EFAULT on pad, %d bytes\n",
+					   tex_width );
 				return -EFAULT;
+			}
 			buffer += 8;
 			data += tex_width;
 		}

@@ -178,7 +178,7 @@ void mga_do_dma_flush( drm_mga_private_t *dev_priv )
 
 	primary->last_flush = primary->tail;
 
-	head = *primary->head;
+	head = MGA_READ( MGA_PRIMADDRESS );
 
 	if ( head <= tail ) {
 		primary->space = primary->size - primary->tail;
@@ -218,7 +218,7 @@ void mga_do_dma_wrap_start( drm_mga_private_t *dev_priv )
 	primary->last_flush = 0;
 	primary->last_wrap++;
 
-	head = *primary->head;
+	head = MGA_READ( MGA_PRIMADDRESS );
 
 	if ( head == dev_priv->primary->offset ) {
 		primary->space = primary->size;
@@ -240,15 +240,12 @@ void mga_do_dma_wrap_start( drm_mga_private_t *dev_priv )
 
 void mga_do_dma_wrap_end( drm_mga_private_t *dev_priv )
 {
-	drm_mga_primary_buffer_t *primary = &dev_priv->prim;
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	u32 head = dev_priv->primary->offset;
 	DRM_DEBUG( "%s:\n", __FUNCTION__ );
 
 	sarea_priv->last_wrap++;
 	DRM_DEBUG( "   wrap = %d\n", sarea_priv->last_wrap );
-
-	*primary->head = head;
 
 	mga_flush_write_combine();
 	MGA_WRITE( MGA_PRIMADDRESS, head | MGA_DMA_GENERAL );
@@ -272,7 +269,7 @@ static void mga_freelist_print( drm_device_t *dev )
 	DRM_INFO( "\n" );
 	DRM_INFO( "current dispatch: last=0x%x done=0x%x\n",
 		  dev_priv->sarea_priv->last_dispatch,
-		  (unsigned int)(*dev_priv->prim.head - 
+		  (unsigned int)(MGA_READ( MGA_PRIMADDRESS ) -
 				 dev_priv->primary->offset) );
 	DRM_INFO( "current freelist:\n" );
 
@@ -375,7 +372,7 @@ static drm_buf_t *mga_freelist_get( drm_device_t *dev )
 	u32 head, wrap;
 	DRM_DEBUG( "%s:\n", __FUNCTION__ );
 
-	head = *dev_priv->prim.head;
+	head = MGA_READ( MGA_PRIMADDRESS );
 	wrap = dev_priv->sarea_priv->last_wrap;
 
 	DRM_DEBUG( "   tail=0x%06lx %d\n",
@@ -403,7 +400,7 @@ int mga_freelist_put( drm_device_t *dev, drm_buf_t *buf )
 {
 	drm_mga_private_t *dev_priv = dev->dev_private;
 	drm_mga_buf_priv_t *buf_priv = buf->dev_private;
-	drm_mga_freelist_t *head, *next, *prev;
+	drm_mga_freelist_t *head, *entry, *prev;
 
 	DRM_DEBUG( "%s: age=0x%06lx wrap=%d\n",
 		   __FUNCTION__,
@@ -411,21 +408,22 @@ int mga_freelist_put( drm_device_t *dev, drm_buf_t *buf )
 		   dev_priv->primary->offset,
 		   buf_priv->list_entry->age.wrap );
 
-	/* Put buffer on the head + 1, as the head is a sentinal.
-	 */
-
-	next = buf_priv->list_entry;
+	entry = buf_priv->list_entry;
 	head = dev_priv->head;
-	prev = head->next;
 
 	if ( buf_priv->list_entry->age.head == MGA_BUFFER_USED ) {
-		SET_AGE( &next->age, MGA_BUFFER_FREE, 0 );
+		SET_AGE( &entry->age, MGA_BUFFER_FREE, 0 );
+		prev = dev_priv->tail;
+		prev->next = entry;
+		entry->prev = prev;
+		entry->next = NULL;
+	} else {
+		prev = head->next;
+		head->next = entry;
+		prev->prev = entry;
+		entry->prev = head;
+		entry->next = prev;
 	}
-
-	head->next = next;
-	prev->prev = next;
-	next->prev = head;
-	next->next = prev;
 
 	return 0;
 }
@@ -520,7 +518,6 @@ static int mga_do_init_dma( drm_device_t *dev, drm_mga_init_t *init )
 			      + dev_priv->primary->size);
 	dev_priv->prim.size = dev_priv->primary->size;
 
-	dev_priv->prim.head = &dev_priv->prim.status[0];
 	dev_priv->prim.tail = 0;
 	dev_priv->prim.space = dev_priv->prim.size;
 
@@ -616,10 +613,11 @@ int mga_dma_flush( struct inode *inode, struct file *filp,
 
 	WRAP_TEST_WITH_RETURN( dev_priv );
 
+#if 0
 	if ( lock.flags & (_DRM_LOCK_FLUSH | _DRM_LOCK_FLUSH_ALL) ) {
 		mga_do_dma_flush( dev_priv );
 	}
-
+#endif
 	if ( lock.flags & _DRM_LOCK_QUIESCENT ) {
 		return mga_do_wait_for_idle( dev_priv );
 	} else {

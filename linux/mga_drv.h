@@ -36,7 +36,6 @@ typedef struct drm_mga_primary_buffer {
 	u8 *end;
 	int size;
 
-	volatile u32 *head;
 	u32 tail;
 	int space;
 
@@ -246,6 +245,13 @@ do {									\
 
 #define FLUSH_DMA()							\
 do {									\
+	if ( 0 ) {							\
+		DRM_INFO( __FUNCTION__ ":\n" );				\
+		DRM_INFO( "   tail=0x%06x head=0x%06lx\n",		\
+			  dev_priv->prim.tail,				\
+			  MGA_READ( MGA_PRIMADDRESS ) -			\
+			  dev_priv->primary->offset );			\
+	}								\
 	if ( dev_priv->prim.space < dev_priv->prim.high_mark ) {	\
 		mga_do_dma_wrap_start( dev_priv );			\
 	} else {							\
@@ -278,7 +284,7 @@ do {									\
 } while (0)
 
 
-/* Buffer ageing via primary DMA stream head pointer.
+/* Buffer aging via primary DMA stream head pointer.
  */
 
 #define SET_AGE( age, h, w )						\

@@ -97,7 +97,7 @@
 /* 32 buffers of 64k each, total 2 meg.
  */
 #define MGA_BUFFER_SIZE		(1 << 16)
-#define MGA_NUM_BUFFERS		32
+#define MGA_NUM_BUFFERS		128
 
 /* Keep these small for testing.
  */
