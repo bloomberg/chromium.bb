@@ -20,6 +20,7 @@
 #include <sys/lkm.h>
 /* For TIOCSPGRP/TIOCGPGRP */
 #include <sys/ttycom.h>
+#include <sys/endian.h>
 
 #include <uvm/uvm.h>
 
@@ -202,7 +203,8 @@ typedef struct drm_chipinfo
 	char *name;
 } drm_chipinfo_t;
 
-#define cpu_to_le32(x) (x)	/* FIXME */
+#define cpu_to_le32(x) htole32(x)
+#define le32_to_cpu(x) le32toh(x)
 
 typedef u_int32_t dma_addr_t;
 typedef volatile long atomic_t;

@@ -27,6 +27,7 @@
 #include <machine/pmap.h>
 #include <machine/bus.h>
 #include <machine/resource.h>
+#include <sys/endian.h>
 #include <sys/mman.h>
 #include <sys/rman.h>
 #include <sys/memrange.h>
@@ -240,7 +241,8 @@ typedef struct drm_chipinfo
 	char *name;
 } drm_chipinfo_t;
 
-#define cpu_to_le32(x) (x)	/* FIXME */
+#define cpu_to_le32(x) htole32(x)
+#define le32_to_cpu(x) le32toh(x)
 
 typedef unsigned long dma_addr_t;
 typedef u_int32_t atomic_t;
