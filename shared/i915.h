@@ -64,7 +64,7 @@
 		drm_i915_private_t *dev_priv = dev->dev_private;	\
 	        i915_mem_takedown( &(dev_priv->agp_heap) );             \
  	}								\
-	i915_cleanup( dev );					\
+	i915_dma_cleanup( dev );					\
 } while (0)
 
 
