@@ -30,11 +30,11 @@
 
 #define DRIVER_NAME	"savage"
 #define DRIVER_DESC	"Savage3D/MX/IX, Savage4, SuperSavage, Twister, ProSavage[DDR]"
-#define DRIVER_DATE	"20050106"
+#define DRIVER_DATE	"20050109"
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		1
-#define DRIVER_PATCHLEVEL	0
+#define DRIVER_PATCHLEVEL	1
 /* Interface history:
  *
  * 1.x   The DRM driver from the VIA/S3 code drop, basically a dummy
@@ -152,6 +152,9 @@ typedef struct drm_savage_private {
 	uint32_t hw_scissors_start, hw_scissors_end;
 
 	drm_savage_state_t state;
+
+	/* after emitting a wait cmd Savage3D needs 63 nops before next DMA */
+	unsigned int waiting;
 
 	/* config/hardware-dependent function pointers */
 	int (*wait_fifo)(struct drm_savage_private *dev_priv, unsigned int n);

@@ -47,6 +47,7 @@ void savage_emit_clip_rect_s3d(drm_savage_private_t *dev_priv,
 		BCI_WRITE(scend);
 		dev_priv->state.s3d.scstart = scstart;
 		dev_priv->state.s3d.scend   = scend;
+		dev_priv->waiting = 1;
 	}
 }
 
@@ -71,6 +72,7 @@ void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
 		BCI_WRITE(drawctrl1);
 		dev_priv->state.s4.drawctrl0 = drawctrl0;
 		dev_priv->state.s4.drawctrl1 = drawctrl1;
+		dev_priv->waiting = 1;
 	}
 }
 
@@ -244,6 +246,7 @@ static int savage_dispatch_state(drm_savage_private_t *dev_priv,
 	if (cmd_header->state.global) {
 		BEGIN_BCI(bci_size+1);
 		BCI_WRITE(BCI_CMD_WAIT | BCI_CMD_WAIT_3D);
+		dev_priv->waiting = 1;
 	} else {
 		BEGIN_BCI(bci_size);
 	}
@@ -338,7 +341,7 @@ static int savage_dispatch_dma_prim(drm_savage_private_t *dev_priv,
 		BCI_WRITE(dmabuf->bus_address | dev_priv->dma_type);
 		dev_priv->state.common.vbaddr = dmabuf->bus_address;
 	}
-	if (S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
+	if (S3_SAVAGE3D_SERIES(dev_priv->chipset) && dev_priv->waiting) {
 		/* Workaround for what looks like a hardware bug. If a
 		 * WAIT_3D_IDLE was emitted some time before the
 		 * indexed drawing command then the engine will lock
@@ -347,6 +350,7 @@ static int savage_dispatch_dma_prim(drm_savage_private_t *dev_priv,
 		BEGIN_BCI(63);
 		for (i = 0; i < 63; ++i)
 			BCI_WRITE(BCI_CMD_WAIT);
+		dev_priv->waiting = 0;
 	}
 
 	prim <<= 25;
@@ -726,6 +730,10 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 	/* Make sure writes to DMA buffers are finished before sending
 	 * DMA commands to the graphics hardware. */
 	DRM_MEMORYBARRIER();
+
+	/* Coming from user space. Don't know if the Xserver has
+	 * emitted wait commands. Assuming the worst. */
+	dev_priv->waiting = 1;
 
 	i = 0;
 	first_draw_cmd = NULL;
