@@ -2649,8 +2649,13 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 /* space + head + id */
 #define OTLAYOUT_LEN	    (1 + OTLAYOUT_HEAD_LEN + OTLAYOUT_ID_LEN)
 
-#define FcIsNumber(x)	    (060 <= (x) && (x) <= 071)
-#define FcIsAlNum(x)	    (FcIsLower(x) || FcIsUpper (x) || FcIsNumber (x))
+/*
+ * This is a bit generous; the registry has only lower case and space
+ * except for 'DFLT'.
+ */
+#define FcIsSpace(x)	    (040 == (x))
+#define FcIsValidScript(x)  (FcIsLower(x) || FcIsUpper (x) || FcIsSpace(x))
+			     
 static void
 addtag(FcChar8 *complex, FT_ULong tag)
 {
@@ -2662,13 +2667,13 @@ addtag(FcChar8 *complex, FT_ULong tag)
     tagstring[3] = (FcChar8)(tag);
     tagstring[4] = '\0';
     
-    /* skip tags which aren't alphanumeric, under the assumption that
+    /* skip tags which aren't alphabetic, under the assumption that
      * they're probably broken
      */
-    if (!FcIsAlNum(tagstring[0]) ||
-	!FcIsAlNum(tagstring[1]) ||
-	!FcIsAlNum(tagstring[2]) ||
-	!FcIsAlNum(tagstring[3]))
+    if (!FcIsValidScript(tagstring[0]) ||
+	!FcIsValidScript(tagstring[1]) ||
+	!FcIsValidScript(tagstring[2]) ||
+	!FcIsValidScript(tagstring[3]))
 	return;
 
     if (*complex != '\0')
@@ -2806,7 +2811,6 @@ FcFontCapabilities(FT_Face face)
         strcpy(complex, "ttable:Silf ");
 
     while ((indx1 < gsub_count) || (indx2 < gpos_count)) {
-	int len = strlen (complex);
 	if (indx1 == gsub_count) {
 	    addtag(complex, gpostags[indx2]);
 	    indx2++;

@@ -1,5 +1,13 @@
 2005-03-05  Keith Packard  <keithp@keithp.com>
 
+	* src/fcfreetype.c: (addtag), (FcFontCapabilities):
+	Include space and remove numbers from valid script tags.
+	This ensures that tags like 'lao ' work while rejecting
+	those which have any digits.
+	Eliminate a spurious debugging variable (len)
+
+2005-03-05  Keith Packard  <keithp@keithp.com>
+
 	* src/fcfreetype.c: (addtag), (GetScriptTags),
 	(FcFontCapabilities):
 	Rework GSUB/GPOS script parsing to survive broken fonts.
