@@ -243,6 +243,7 @@ FcExprDestroy (FcExpr *e)
     case FcOpMore:
     case FcOpMoreEqual:
     case FcOpContains:
+    case FcOpListing:
     case FcOpNotContains:
     case FcOpPlus:
     case FcOpMinus:
