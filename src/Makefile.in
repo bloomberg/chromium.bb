@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/src/Makefile.in,v 1.2 2002/05/21 17:48:15 keithp Exp $
+# $XFree86: xc/lib/fontconfig/src/Makefile.in,v 1.3 2002/05/22 04:12:35 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -71,20 +71,9 @@ OBJS=fcatomic.@OBJEXT@ \
 	
 all:: $(LIBFILE) $(LIBMAJOR) $(LIBBASE)
 
-install:: $(LIBDIR)/$(LIB) $(LIBDIR)/$(LIBMAJOR) $(LIBDIR)/$(LIBBASE)
-
-$(LIBDIR)/$(LIBFILE): $(LIBFILE)
-	$(INSTALL_PROGRAM) $< $(LIBDIR)
-
-$(LIBDIR)/$(LIBMAJOR): $(LIBDIR)/$(LIBFILE)
-	$(LN_S) $(LIBDIR)/$(LIBFILE) $(LIBDIR)/$(LIBMAJOR)
-
-$(LIBDIR)/$(LIBBASE): $(LIBDIR)/$(LIBMAJOR)
-	$(LN_S) $(LIBDIR)/$(LIBMAJOR) $(LIBDIR)/$(LIBBASE)
-
-clean::
-	rm -f $(LIBFILE) $(LIBMAJOR) $(LIBBASE) $(OBJS)
-
+# 
+# build the library and the various version links
+#
 $(LIBFILE): $(OBJS)
 	rm -f $@
 	$(MKSHLIB) $(OBJS) $(LIBS)
@@ -98,3 +87,32 @@ $(LIBBASE): $(LIBMAJOR)
 	$(LN_S) $(LIBMAJOR) $(LIBBASE)
 
 $(OBJS): fcint.h $(HEADERS)
+
+#
+# install directories
+#
+install:: $(DESTDIR)$(LIBDIR)
+
+$(DESTDIR)$(LIBDIR):
+	mkdir -p $@
+
+# 
+# install library
+#
+
+install:: $(DESTDIR)$(LIBDIR)/$(LIB) $(DESTDIR)$(LIBDIR)/$(LIBMAJOR)
+install:: $(DESTDIR)$(LIBDIR)/$(LIBBASE)
+
+$(DESTDIR)$(LIBDIR)/$(LIBFILE): $(LIBFILE)
+	$(INSTALL_PROGRAM) $< $(DESTDIR)$(LIBDIR)
+
+$(DESTDIR)$(LIBDIR)/$(LIBMAJOR): $(DESTDIR)$(LIBDIR)/$(LIBFILE)
+	rm -f $(DESTDIR)$(LIBDIR)/$(LIBMAJOR)
+	$(LN_S) $(LIBFILE) $(DESTDIR)$(LIBDIR)/$(LIBMAJOR)
+
+$(DESTDIR)$(LIBDIR)/$(LIBBASE): $(DESTDIR)$(LIBDIR)/$(LIBMAJOR)
+	rm -f $(DESTDIR)$(LIBDIR)/$(LIBBASE)
+	$(LN_S) $(LIBMAJOR) $(DESTDIR)$(LIBDIR)/$(LIBBASE)
+
+clean::
+	rm -f $(LIBFILE) $(LIBMAJOR) $(LIBBASE) $(OBJS)

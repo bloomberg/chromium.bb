@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/Makefile.in,v 1.2 2002/05/21 17:48:15 keithp Exp $
+# $XFree86: xc/lib/fontconfig/Makefile.in,v 1.4 2002/05/24 05:19:30 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -31,40 +31,65 @@ DIRS          = src fc-cache fc-list fontconfig
 all install clean::
 	for d in $(DIRS); do $(MAKE) -C $$d $@; done
 
+#
+# create fonts.conf file
+#
 all:: fonts.conf
 
 fonts.conf: fonts.conf.in
 	rm -f $@
 	sh ./setfontdirs $(FC_DEFAULT_FONTS) $(X_FONT_DIR)
 
-install:: $(CONFDIR)/fonts.conf $(CONFDIR)/fonts.dtd
-
-$(CONFDIR)/fonts.conf:: fonts.conf
-	if [ -f $@ ]; then \
-		echo "Not overwriting existing $@"; \
-	else \
-		$(INSTALL_DATA) fonts.conf $(CONFDIR); \
-	fi
-
-$(CONFDIR)/fonts.dtd:: fonts.dtd
-	$(INSTALL_DATA) fonts.dtd $(CONFDIR)
-
 clean::
 	rm -f fonts.conf
 
-install:: $(BINDIR)/fontconfig-config
+#
+# installation directories
+#
 
-all:: fontconfig-config
+install:: $(DESTDIR)$(CONFDIR) $(DESTDIR)$(BINDIR) 
+install:: $(DESTDIR)$(LIBDIR) $(DESTDIR)$(LIBDIR)/pkgconfig
 
-$(BINDIR)/fontconfig-config: fontconfig-config
-	$(INSTALL_SCRIPT) $< $(BINDIR)
-
-install:: $(LIBDIR)/pkgconfig $(LIBDIR)/pkgconfig/fontconfig.pc
-
-$(LIBDIR)/pkgconfig:
+$(DESTDIR)$(CONFDIR):
 	mkdir -p $@
 
-all:: fontconfig.pc
+$(DESTDIR)$(BINDIR):
+	mkdir -p $@
 
-$(LIBDIR)/pkgconfig/fontconfig.pc: fontconfig.pc
-	$(INSTALL_DATA) $< $(LIBDIR)/pkgconfig
+$(DESTDIR)$(LIBDIR):
+	mkdir -p $@
+
+$(DESTDIR)$(LIBDIR)/pkgconfig:
+	mkdir -p $@
+
+#
+# install config files
+#
+install:: $(DESTDIR)$(CONFDIR)/fonts.conf $(DESTDIR)$(CONFDIR)/fonts.dtd
+
+$(DESTDIR)$(CONFDIR)/fonts.conf:: fonts.conf
+	if [ -f $@ ]; then \
+		echo "Not overwriting existing $@"; \
+	else \
+		$(INSTALL_DATA) fonts.conf $(DESTDIR)$(CONFDIR); \
+	fi
+
+$(DESTDIR)$(CONFDIR)/fonts.dtd:: fonts.dtd
+	$(INSTALL_DATA) fonts.dtd $(DESTDIR)$(CONFDIR)
+
+#
+# install fontconfig-config script
+#
+
+install:: $(DESTDIR)$(BINDIR)/fontconfig-config
+
+$(DESTDIR)$(BINDIR)/fontconfig-config: fontconfig-config
+	$(INSTALL_SCRIPT) $< $(DESTDIR)$(BINDIR)
+
+#
+# install pkgconfig control file
+#
+install:: $(DESTDIR)$(LIBDIR)/pkgconfig/fontconfig.pc
+
+$(DESTDIR)$(LIBDIR)/pkgconfig/fontconfig.pc: fontconfig.pc
+	$(INSTALL_DATA) $< $(DESTDIR)$(LIBDIR)/pkgconfig

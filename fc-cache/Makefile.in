@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/fc-cache/Makefile.in,v 1.1 2002/05/21 17:06:21 keithp Exp $
+# $XFree86: xc/lib/fontconfig/fc-cache/Makefile.in,v 1.2 2002/05/21 17:48:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -34,15 +34,20 @@ PROG=fc-cache
 
 all:: $(PROG)
 
-install:: $(BINDIR)/$(PROG)
-
-$(BINDIR)/$(PROG): $(PROG)
-	$(INSTALL_PROGRAM) $(PROG) $(BINDIR)
-
-clean::
-	rm -f $(PROG) $(OBJS)
-
 $(PROG): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBFONTCONFIG)
 
 $(OBJS): $(HEADERS)
+
+install:: $(DESTDIR)$(BINDIR)
+
+$(DESTDIR)$(BINDIR):
+	mkdir -p $@
+
+install:: $(DESTDIR)$(BINDIR)/$(PROG)
+
+$(DESTDIR)$(BINDIR)/$(PROG): $(PROG)
+	$(INSTALL_PROGRAM) $(PROG) $(DESTDIR)$(BINDIR)
+
+clean::
+	rm -f $(PROG) $(OBJS)
