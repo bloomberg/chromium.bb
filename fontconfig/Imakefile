@@ -1,6 +1,6 @@
 #define IncSubdir fontconfig
 
-HEADERS=fcfreetype.h fcprivate.h fcxml.h fontconfig.h
+HEADERS=fcfreetype.h fcprivate.h fontconfig.h
 
 BuildIncludes($(HEADERS),IncSubdir,..)
 #if BuildLibraries
