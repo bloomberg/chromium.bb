@@ -59,15 +59,6 @@
 #include <asm/io.h>
 #include <asm/mman.h>
 #include <asm/uaccess.h>
-
-#ifndef copy_to_user_ret
-#define copy_to_user_ret(to,from,n,retval) ({ if (copy_to_user(to,from,n)) return retval; })
-#endif
-
-#ifndef copy_from_user_ret
-#define copy_from_user_ret(to,from,n,retval) ({ if (copy_from_user(to,from,n)) return retval; })
-#endif
-
 #ifdef CONFIG_MTRR
 #include <asm/mtrr.h>
 #endif
@@ -519,19 +510,6 @@ typedef struct drm_agp_head {
 	unsigned long      base;
    	int 		   agp_mtrr;
 } drm_agp_head_t;
-
-typedef struct {
-	void       (*free_memory)(agp_memory *);
-	agp_memory *(*allocate_memory)(size_t, u32);
-	int        (*bind_memory)(agp_memory *, off_t);
-	int        (*unbind_memory)(agp_memory *);
-	void       (*enable)(u32);
-	int        (*acquire)(void);
-	void       (*release)(void);
-	void       (*copy_info)(agp_kern_info *);
-} drm_agp_func_t;
-
-extern drm_agp_func_t drm_agp;
 #endif
 
 typedef struct drm_sigdata {
@@ -833,6 +811,7 @@ extern drm_agp_head_t *drm_agp_init(void);
 extern void           drm_agp_uninit(void);
 extern int            drm_agp_acquire(struct inode *inode, struct file *filp,
 				      unsigned int cmd, unsigned long arg);
+extern void           _drm_agp_release(void);
 extern int            drm_agp_release(struct inode *inode, struct file *filp,
 				      unsigned int cmd, unsigned long arg);
 extern int            drm_agp_enable(struct inode *inode, struct file *filp,
@@ -847,6 +826,10 @@ extern int            drm_agp_unbind(struct inode *inode, struct file *filp,
 				     unsigned int cmd, unsigned long arg);
 extern int            drm_agp_bind(struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg);
+extern agp_memory     *drm_agp_allocate_memory(size_t pages, u32 type);
+extern int            drm_agp_free_memory(agp_memory *handle);
+extern int            drm_agp_bind_memory(agp_memory *handle, off_t start);
+extern int            drm_agp_unbind_memory(agp_memory *handle);
 #endif
 #endif
 #endif

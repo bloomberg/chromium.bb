@@ -235,7 +235,7 @@ static int tdfx_takedown(drm_device_t *dev)
 			drm_free(temp, sizeof(*temp), DRM_MEM_AGPLISTS);
 			temp = temp_next;
 		}
-		if (dev->agp->acquired) (*drm_agp.release)();
+		if (dev->agp->acquired) _drm_agp_release();
 	}
 #endif
 				/* Clear vma list (only built for debugging) */
@@ -298,7 +298,7 @@ static int tdfx_takedown(drm_device_t *dev)
 /* tdfx_init is called via init_module at module load time, or via
  * linux/init/main.c (this is not currently supported). */
 
-static int tdfx_init(void)
+static int __init tdfx_init(void)
 {
 	int		      retcode;
 	drm_device_t	      *dev = &tdfx_device;
@@ -346,7 +346,7 @@ static int tdfx_init(void)
 
 /* tdfx_cleanup is called via cleanup_module at module unload time. */
 
-static void tdfx_cleanup(void)
+static void __exit tdfx_cleanup(void)
 {
 	drm_device_t	      *dev = &tdfx_device;
 

@@ -250,7 +250,7 @@ static int sis_takedown(drm_device_t *dev)
 			drm_free(temp, sizeof(*temp), DRM_MEM_AGPLISTS);
 			temp = temp_next;
 		}
-		if (dev->agp->acquired) (*drm_agp.release)();
+		if (dev->agp->acquired) _drm_agp_release();
 	}
 #endif
 				/* Clear vma list (only built for debugging) */
@@ -394,17 +394,16 @@ int sis_version(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_version_t version;
 	int	      len;
 
-	copy_from_user_ret(&version,
-			   (drm_version_t *)arg,
-			   sizeof(version),
-			   -EFAULT);
+	if (copy_from_user(&version, (drm_version_t *)arg, sizeof(version)))
+		return -EFAULT;
 
 #define DRM_COPY(name,value)				     \
 	len = strlen(value);				     \
 	if (len > name##_len) len = name##_len;		     \
 	name##_len = strlen(value);			     \
 	if (len && name) {				     \
-		copy_to_user_ret(name, value, len, -EFAULT); \
+		if (copy_to_user(name, value, len))          \
+			return -EFAULT;                      \
 	}
 
 	version.version_major	   = SIS_MAJOR;
@@ -415,10 +414,8 @@ int sis_version(struct inode *inode, struct file *filp, unsigned int cmd,
 	DRM_COPY(version.date, SIS_DATE);
 	DRM_COPY(version.desc, SIS_DESC);
 
-	copy_to_user_ret((drm_version_t *)arg,
-			 &version,
-			 sizeof(version),
-			 -EFAULT);
+	if (copy_to_user((drm_version_t *)arg, &version, sizeof(version)))
+		return -EFAULT;
 	return 0;
 }
 
@@ -533,7 +530,8 @@ int sis_lock(struct inode *inode, struct file *filp, unsigned int cmd,
         dev->lck_start = start = get_cycles();
 #endif
 
-        copy_from_user_ret(&lock, (drm_lock_t *)arg, sizeof(lock), -EFAULT);
+        if (copy_from_user(&lock, (drm_lock_t *)arg, sizeof(lock)))
+		return -EFAULT;
 
         if (lock.context == DRM_KERNEL_CONTEXT) {
                 DRM_ERROR("Process %d using kernel context %d\n",
@@ -667,7 +665,8 @@ int sis_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_t	  *dev	  = priv->dev;
 	drm_lock_t	  lock;
 
-	copy_from_user_ret(&lock, (drm_lock_t *)arg, sizeof(lock), -EFAULT);
+	if (copy_from_user(&lock, (drm_lock_t *)arg, sizeof(lock)))
+		return -EFAULT;
 	
 	if (lock.context == DRM_KERNEL_CONTEXT) {
 		DRM_ERROR("Process %d using kernel context %d\n",

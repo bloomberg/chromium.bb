@@ -339,7 +339,7 @@ int gamma_find_devices(void)
 /* gamma_init is called via init_module at module load time, or via
  * linux/init/main.c (this is not currently supported). */
 
-static int gamma_init(void)
+static int __init gamma_init(void)
 {
 	int		      retcode;
 	drm_device_t	      *dev = &gamma_device;
@@ -380,7 +380,7 @@ static int gamma_init(void)
 
 /* gamma_cleanup is called via cleanup_module at module unload time. */
 
-static void gamma_cleanup(void)
+static void __exit gamma_cleanup(void)
 {
 	drm_device_t	      *dev = &gamma_device;
 

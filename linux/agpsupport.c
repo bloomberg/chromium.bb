@@ -31,48 +31,14 @@
 #define __NO_VERSION__
 #include "drmP.h"
 #include <linux/module.h>
+#if LINUX_VERSION_CODE < 0x020400
+#include "agpsupport-pre24.h"
+#else
+#define DRM_AGP_GET (drm_agp_t *)inter_module_get("drm_agp")
+#define DRM_AGP_PUT inter_module_put("drm_agp")
+#endif
 
-drm_agp_func_t drm_agp = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-
-/* The C standard says that 'void *' is not guaranteed to hold a function
-   pointer, so we use this union to define a generic pointer that is
-   guaranteed to hold any of the function pointers we care about. */
-typedef union {
-	void          (*free_memory)(agp_memory *);
-	agp_memory    *(*allocate_memory)(size_t, u32);
-	int           (*bind_memory)(agp_memory *, off_t);
-	int           (*unbind_memory)(agp_memory *);
-	void          (*enable)(u32);
-	int           (*acquire)(void);
-	void          (*release)(void);
-	void          (*copy_info)(agp_kern_info *);
-	unsigned long address;
-} drm_agp_func_u;
-
-typedef struct drm_agp_fill {
-        const char     *name;
-	drm_agp_func_u *f;
-} drm_agp_fill_t;
-
-static drm_agp_fill_t drm_agp_fill[] = {
-	{ __MODULE_STRING(agp_free_memory),
-	   (drm_agp_func_u *)&drm_agp.free_memory     },
-	{ __MODULE_STRING(agp_allocate_memory), 
-	   (drm_agp_func_u *)&drm_agp.allocate_memory },
-	{ __MODULE_STRING(agp_bind_memory),     
-	   (drm_agp_func_u *)&drm_agp.bind_memory     },
-	{ __MODULE_STRING(agp_unbind_memory),   
-	   (drm_agp_func_u *)&drm_agp.unbind_memory   },
-	{ __MODULE_STRING(agp_enable),          
-	   (drm_agp_func_u *)&drm_agp.enable          },
-	{ __MODULE_STRING(agp_backend_acquire), 
-	   (drm_agp_func_u *)&drm_agp.acquire         },
-	{ __MODULE_STRING(agp_backend_release), 
-	   (drm_agp_func_u *)&drm_agp.release         },
-	{ __MODULE_STRING(agp_copy_info),       
-	   (drm_agp_func_u *)&drm_agp.copy_info       },
-	{ NULL, NULL }
-};
+static const drm_agp_t *drm_agp = NULL;
 
 int drm_agp_info(struct inode *inode, struct file *filp, unsigned int cmd,
 		 unsigned long arg)
@@ -82,7 +48,7 @@ int drm_agp_info(struct inode *inode, struct file *filp, unsigned int cmd,
 	agp_kern_info    *kern;
 	drm_agp_info_t   info;
 
-	if (!dev->agp->acquired || !drm_agp.copy_info) return -EINVAL;
+	if (!dev->agp->acquired || !drm_agp->copy_info) return -EINVAL;
 
 	kern                   = &dev->agp->agp_info;
 	info.agp_version_major = kern->version.major;
@@ -107,8 +73,8 @@ int drm_agp_acquire(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_t	 *dev	 = priv->dev;
 	int              retcode;
 
-	if (dev->agp->acquired || !drm_agp.acquire) return -EINVAL;
-	if ((retcode = (*drm_agp.acquire)())) return retcode;
+	if (dev->agp->acquired || !drm_agp->acquire) return -EINVAL;
+	if ((retcode = drm_agp->acquire())) return retcode;
 	dev->agp->acquired = 1;
 	return 0;
 }
@@ -119,11 +85,16 @@ int drm_agp_release(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_file_t	 *priv	 = filp->private_data;
 	drm_device_t	 *dev	 = priv->dev;
 
-	if (!dev->agp->acquired || !drm_agp.release) return -EINVAL;
-	(*drm_agp.release)();
+	if (!dev->agp->acquired || !drm_agp->release) return -EINVAL;
+	drm_agp->release();
 	dev->agp->acquired = 0;
 	return 0;
 	
+}
+
+void _drm_agp_release(void)
+{
+	if (drm_agp->release) drm_agp->release();
 }
 
 int drm_agp_enable(struct inode *inode, struct file *filp, unsigned int cmd,
@@ -133,13 +104,13 @@ int drm_agp_enable(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_t	 *dev	 = priv->dev;
 	drm_agp_mode_t   mode;
 
-	if (!dev->agp->acquired || !drm_agp.enable) return -EINVAL;
+	if (!dev->agp->acquired || !drm_agp->enable) return -EINVAL;
 
 	if (copy_from_user(&mode, (drm_agp_mode_t *)arg, sizeof(mode)))
 		return -EFAULT;
 	
 	dev->agp->mode    = mode.mode;
-	(*drm_agp.enable)(mode.mode);
+	drm_agp->enable(mode.mode);
 	dev->agp->base    = dev->agp->agp_info.aper_base;
 	dev->agp->enabled = 1;
 	return 0;
@@ -231,7 +202,7 @@ int drm_agp_bind(struct inode *inode, struct file *filp, unsigned int cmd,
 	int               retcode;
 	int               page;
 	
-	if (!dev->agp->acquired || !drm_agp.bind_memory) return -EINVAL;
+	if (!dev->agp->acquired || !drm_agp->bind_memory) return -EINVAL;
 	if (copy_from_user(&request, (drm_agp_binding_t *)arg, sizeof(request)))
 		return -EFAULT;
 	if (!(entry = drm_agp_lookup_entry(dev, request.handle)))
@@ -270,24 +241,14 @@ int drm_agp_free(struct inode *inode, struct file *filp, unsigned int cmd,
 
 drm_agp_head_t *drm_agp_init(void)
 {
-	drm_agp_fill_t *fill;
 	drm_agp_head_t *head         = NULL;
-	int            agp_available = 1;
 
-	for (fill = &drm_agp_fill[0]; fill->name; fill++) {
-		char *n  = (char *)fill->name;
-		*fill->f = (drm_agp_func_u)get_module_symbol(NULL, n);
-		DRM_DEBUG("%s resolves to 0x%08lx\n", n, (*fill->f).address);
-		if (!(*fill->f).address) agp_available = 0;
-	}
-   
-	DRM_DEBUG("agp_available = %d\n", agp_available);
-
-	if (agp_available) {
+	drm_agp = DRM_AGP_GET;
+	if (drm_agp) {
 		if (!(head = drm_alloc(sizeof(*head), DRM_MEM_AGPLISTS)))
 			return NULL;
 		memset((void *)head, 0, sizeof(*head));
-		(*drm_agp.copy_info)(&head->agp_info);
+		drm_agp->copy_info(&head->agp_info);
 		if (head->agp_info.chipset == NOT_SUPPORTED) {
 			drm_free(head, sizeof(*head), DRM_MEM_AGPLISTS);
 			return NULL;
@@ -337,12 +298,31 @@ drm_agp_head_t *drm_agp_init(void)
 
 void drm_agp_uninit(void)
 {
-	drm_agp_fill_t *fill;
-	
-	for (fill = &drm_agp_fill[0]; fill->name; fill++) {
-#if LINUX_VERSION_CODE >= 0x020400
-		if ((*fill->f).address) put_module_symbol((*fill->f).address);
-#endif
-		(*fill->f).address = 0;
-	}
+	DRM_AGP_PUT;
+	drm_agp = NULL;
+}
+
+agp_memory *drm_agp_allocate_memory(size_t pages, u32 type)
+{
+	if (!drm_agp->allocate_memory) return NULL;
+	return drm_agp->allocate_memory(pages, type);
+}
+
+int drm_agp_free_memory(agp_memory *handle)
+{
+	if (!handle || !drm_agp->free_memory) return 0;
+	drm_agp->free_memory(handle);
+	return 1;
+}
+
+int drm_agp_bind_memory(agp_memory *handle, off_t start)
+{
+	if (!handle || !drm_agp->bind_memory) return -EINVAL;
+	return drm_agp->bind_memory(handle, start);
+}
+
+int drm_agp_unbind_memory(agp_memory *handle)
+{
+	if (!handle || !drm_agp->unbind_memory) return -EINVAL;
+	return drm_agp->unbind_memory(handle);
 }

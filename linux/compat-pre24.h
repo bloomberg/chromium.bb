@@ -38,4 +38,8 @@
 #define block_all_signals(a,b,c)
 #define unblock_all_signals()
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,0)
+#define __exit
+#endif
+
 #endif

@@ -255,8 +255,7 @@ static int i810_takedown(drm_device_t *dev)
 		}
 		dev->agp->memory = NULL;
 
-		if (dev->agp->acquired && drm_agp.release)
-			(*drm_agp.release)();
+		if (dev->agp->acquired) _drm_agp_release();
 
 		dev->agp->acquired = 0;
 		dev->agp->enabled  = 0;
@@ -338,7 +337,7 @@ static int i810_takedown(drm_device_t *dev)
 /* i810_init is called via init_module at module load time, or via
  * linux/init/main.c (this is not currently supported). */
 
-static int i810_init(void)
+static int __init i810_init(void)
 {
 	int		      retcode;
 	drm_device_t	      *dev = &i810_device;
@@ -397,7 +396,7 @@ static int i810_init(void)
 
 /* i810_cleanup is called via cleanup_module at module unload time. */
 
-static void i810_cleanup(void)
+static void __exit i810_cleanup(void)
 {
 	drm_device_t	      *dev = &i810_device;
 

@@ -352,16 +352,13 @@ agp_memory *drm_alloc_agp(int pages, u32 type)
 		return NULL;
 	}
 	
-	if (drm_agp.allocate_memory) {
-		if ((handle = (*drm_agp.allocate_memory)(pages,
-							 type))) {
-			spin_lock(&drm_mem_lock);
-			++drm_mem_stats[DRM_MEM_TOTALAGP].succeed_count;
-			drm_mem_stats[DRM_MEM_TOTALAGP].bytes_allocated
-				+= pages << PAGE_SHIFT;
-			spin_unlock(&drm_mem_lock);
-			return handle;
-		}
+	if ((handle = drm_agp_allocate_memory(pages, type))) {
+		spin_lock(&drm_mem_lock);
+		++drm_mem_stats[DRM_MEM_TOTALAGP].succeed_count;
+		drm_mem_stats[DRM_MEM_TOTALAGP].bytes_allocated
+			+= pages << PAGE_SHIFT;
+		spin_unlock(&drm_mem_lock);
+		return handle;
 	}
 	spin_lock(&drm_mem_lock);
 	++drm_mem_stats[DRM_MEM_TOTALAGP].fail_count;
@@ -381,8 +378,7 @@ int drm_free_agp(agp_memory *handle, int pages)
 		return retval;;
 	}
 	
-	if (drm_agp.free_memory) {
-		(*drm_agp.free_memory)(handle);
+	if (drm_agp_free_memory(handle)) {
 		spin_lock(&drm_mem_lock);
 		free_count  = ++drm_mem_stats[DRM_MEM_TOTALAGP].free_count;
 		alloc_count =   drm_mem_stats[DRM_MEM_TOTALAGP].succeed_count;
@@ -403,24 +399,19 @@ int drm_bind_agp(agp_memory *handle, unsigned int start)
 {
 	int retcode = -EINVAL;
 
-   DRM_DEBUG("drm_bind_agp called\n");
 	if (!handle) {
 		DRM_MEM_ERROR(DRM_MEM_BOUNDAGP,
 			      "Attempt to bind NULL AGP handle\n");
 		return retcode;
 	}
 
-   DRM_DEBUG("drm_agp.bind_memory : %p\n", drm_agp.bind_memory);
-	if (drm_agp.bind_memory) {
-		if (!(retcode = (*drm_agp.bind_memory)(handle, start))) {
-			spin_lock(&drm_mem_lock);
-			++drm_mem_stats[DRM_MEM_BOUNDAGP].succeed_count;
-			drm_mem_stats[DRM_MEM_BOUNDAGP].bytes_allocated
-				+= handle->page_count << PAGE_SHIFT;
-			spin_unlock(&drm_mem_lock);
-		   DRM_DEBUG("drm_agp.bind_memory: retcode %d\n", retcode);
-			return retcode;
-		}
+	if (!(retcode = drm_agp_bind_memory(handle, start))) {
+		spin_lock(&drm_mem_lock);
+		++drm_mem_stats[DRM_MEM_BOUNDAGP].succeed_count;
+		drm_mem_stats[DRM_MEM_BOUNDAGP].bytes_allocated
+			+= handle->page_count << PAGE_SHIFT;
+		spin_unlock(&drm_mem_lock);
+		return retcode;
 	}
 	spin_lock(&drm_mem_lock);
 	++drm_mem_stats[DRM_MEM_BOUNDAGP].fail_count;
@@ -440,20 +431,17 @@ int drm_unbind_agp(agp_memory *handle)
 		return retcode;
 	}
 
-	if (drm_agp.unbind_memory) {
-		int c = handle->page_count;
-		if ((retcode = (*drm_agp.unbind_memory)(handle)))
-			return retcode;
-		spin_lock(&drm_mem_lock);
-		free_count  = ++drm_mem_stats[DRM_MEM_BOUNDAGP].free_count;
-		alloc_count = drm_mem_stats[DRM_MEM_BOUNDAGP].succeed_count;
-		drm_mem_stats[DRM_MEM_BOUNDAGP].bytes_freed += c << PAGE_SHIFT;
-		spin_unlock(&drm_mem_lock);
-		if (free_count > alloc_count) {
-			DRM_MEM_ERROR(DRM_MEM_BOUNDAGP,
-				      "Excess frees: %d frees, %d allocs\n",
-				      free_count, alloc_count);
-		}
+	if ((retcode = drm_agp_unbind_memory(handle))) return retcode;
+	spin_lock(&drm_mem_lock);
+	free_count  = ++drm_mem_stats[DRM_MEM_BOUNDAGP].free_count;
+	alloc_count = drm_mem_stats[DRM_MEM_BOUNDAGP].succeed_count;
+	drm_mem_stats[DRM_MEM_BOUNDAGP].bytes_freed
+		+= handle->page_count << PAGE_SHIFT;
+	spin_unlock(&drm_mem_lock);
+	if (free_count > alloc_count) {
+		DRM_MEM_ERROR(DRM_MEM_BOUNDAGP,
+			      "Excess frees: %d frees, %d allocs\n",
+			      free_count, alloc_count);
 	}
 	return retcode;
 }
