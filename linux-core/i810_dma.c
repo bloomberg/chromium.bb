@@ -276,7 +276,11 @@ static unsigned long i810_alloc_page(drm_device_t *dev)
 	set_bit(PG_locked, &virt_to_page(address)->flags);
 #else
 	get_page(virt_to_page(address));
+#if LINUX_VERSION_CODE < 0x020500
+	LockPage(virt_to_page(address));
+#else
 	SetPageLocked(virt_to_page(address));
+#endif
 #endif
 	return address;
 }
