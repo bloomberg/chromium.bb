@@ -601,7 +601,7 @@ static struct pci_driver drm_driver = {
  */
 static int __init drm_init( void )
 {
-	struct pci_dev *pdev = NULL;
+	struct pci_dev *pdev;
 	struct pci_device_id *pid;
 	int i;
 	
@@ -616,6 +616,7 @@ static int __init drm_init( void )
 	for (i=0; (DRM(pciidlist)[i].vendor != 0) && !DRM(fb_loaded); i++) {
 		pid = &DRM(pciidlist[i]);
 		
+		pdev = NULL;
 		/* pass back in pdev to account for multiple identical cards */
 		while ((pdev = pci_get_subsys(pid->vendor, pid->device, pid->subvendor, pid->subdevice, pdev))) {
 			/* is there already a driver loaded, or (short circuit saves work) */
@@ -638,6 +639,7 @@ static int __init drm_init( void )
 		for (i=0; DRM(pciidlist)[i].vendor != 0; i++) {
 			pid = &DRM(pciidlist[i]);
 			
+			pdev = NULL;
 			/* pass back in pdev to account for multiple identical cards */
 			while ((pdev = pci_get_subsys(pid->vendor, pid->device, pid->subvendor, pid->subdevice, pdev))) {
 				/* stealth mode requires a manual probe */
