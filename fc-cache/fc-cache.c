@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-cache/fc-cache.c,v 1.5 2002/06/19 20:55:19 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fc-cache/fc-cache.c,v 1.6 2002/07/01 05:11:20 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -70,7 +70,7 @@ usage (char *program)
     fprintf (stderr, "Build font information caches in [dirs]\n"
 	     "(all directories in font configuration by default).\n");
     fprintf (stderr, "\n");
-    fprintf (stderr, "  -v, --force          scan directories with apparently valid caches\n");
+    fprintf (stderr, "  -f, --force          scan directories with apparently valid caches\n");
     fprintf (stderr, "  -v, --verbose        display status information while busy\n");
     fprintf (stderr, "  -V, --version        display font config version and exit\n");
     fprintf (stderr, "  -?, --help           display this help and exit\n");
