@@ -122,13 +122,17 @@ int DRM(irq_install)( drm_device_t *dev )
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 
+#if 0 /* this is already done in DRM(setup) - why do it here ?? */
 	dev->context_flag = 0;
 	dev->interrupt_flag = 0;
 	dev->dma_flag = 0;
+#endif
 
+#if __HAVE_DMA
 	dev->dma->next_buffer = NULL;
 	dev->dma->next_queue = NULL;
 	dev->dma->this_buffer = NULL;
+#endif
 
 #if __HAVE_IRQ_BH
 #if !HAS_WORKQUEUE
