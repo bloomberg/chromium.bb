@@ -280,7 +280,8 @@ static int i830_dma_cleanup(drm_device_t *dev)
 		for (i = 0; i < dma->buf_count; i++) {
 			drm_buf_t *buf = dma->buflist[ i ];
 			drm_i830_buf_priv_t *buf_priv = buf->dev_private;
-			DRM(ioremapfree)(buf_priv->kernel_virtual, buf->total);
+			if ( buf_priv->kernel_virtual && buf->total )
+				DRM(ioremapfree)(buf_priv->kernel_virtual, buf->total);
 		}
 	}
    	return 0;

@@ -673,7 +673,8 @@ int gamma_do_cleanup_dma( drm_device_t *dev )
 	if ( dev->dev_private ) {
 		drm_gamma_private_t *dev_priv = dev->dev_private;
 
-		DRM_IOREMAPFREE( dev_priv->buffers );
+		if ( dev_priv->buffers != NULL )
+			DRM_IOREMAPFREE( dev_priv->buffers );
 
 		DRM(free)( dev->dev_private, sizeof(drm_gamma_private_t),
 			   DRM_MEM_DRIVER );
