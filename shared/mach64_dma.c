@@ -28,10 +28,9 @@
  *   Gareth Hughes <gareth@valinux.com>
  *   Frank C. Earl <fearl@airmail.net>
  *   Leif Delgass <ldelgass@retinalburn.net>
- *   José Fonseca <j_r_fonseca@yahoo.co.uk>
+ *   Josï¿½Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
-#include "mach64.h"
 #include "drmP.h"
 #include "drm.h"
 #include "mach64_drm.h"
@@ -447,7 +446,7 @@ static int mach64_bm_dma_test( drm_device_t *dev )
 
 	/* FIXME: get a dma buffer from the freelist here */
 	DRM_DEBUG( "Allocating data memory ...\n" );
-	cpu_addr_data = DRM(pci_alloc)( dev, 0x1000, 0x1000, 0xfffffffful, &data_handle );
+	cpu_addr_data = drm_pci_alloc( dev, 0x1000, 0x1000, 0xfffffffful, &data_handle );
 	if (!cpu_addr_data || !data_handle) {
 		DRM_INFO( "data-memory allocation failed!\n" );
 		return DRM_ERR(ENOMEM);
@@ -481,7 +480,7 @@ static int mach64_bm_dma_test( drm_device_t *dev )
 			DRM_INFO( "resetting engine ...\n");
 			mach64_do_engine_reset( dev_priv );
 			DRM_INFO( "freeing data buffer memory.\n" );
-			DRM(pci_free)( dev, 0x1000, cpu_addr_data, data_handle );
+			drm_pci_free( dev, 0x1000, cpu_addr_data, data_handle );
 			return DRM_ERR(EIO);
 		}
 	}
@@ -535,7 +534,7 @@ static int mach64_bm_dma_test( drm_device_t *dev )
 		MACH64_WRITE( MACH64_PAT_REG0, pat_reg0 );
 		MACH64_WRITE( MACH64_PAT_REG1, pat_reg1 );
 		DRM_INFO( "freeing data buffer memory.\n" );
-		DRM(pci_free)( dev, 0x1000, cpu_addr_data, data_handle );
+		drm_pci_free( dev, 0x1000, cpu_addr_data, data_handle );
 		return i;
 	}
 	DRM_DEBUG( "waiting for idle...done\n" );
@@ -572,7 +571,7 @@ static int mach64_bm_dma_test( drm_device_t *dev )
 		MACH64_WRITE( MACH64_PAT_REG0, pat_reg0 );
 		MACH64_WRITE( MACH64_PAT_REG1, pat_reg1 );
 		DRM_INFO( "freeing data buffer memory.\n" );
-		DRM(pci_free)( dev, 0x1000, cpu_addr_data, data_handle );
+		drm_pci_free( dev, 0x1000, cpu_addr_data, data_handle );
 		return i;
 	}
 
@@ -600,7 +599,7 @@ static int mach64_bm_dma_test( drm_device_t *dev )
 	MACH64_WRITE( MACH64_PAT_REG1, pat_reg1 );
 
 	DRM_DEBUG( "freeing data buffer memory.\n" );
-	DRM(pci_free)( dev, 0x1000, cpu_addr_data, data_handle );
+	drm_pci_free( dev, 0x1000, cpu_addr_data, data_handle );
 	DRM_DEBUG( "returning ...\n" );
 
 	return failed;
@@ -615,7 +614,7 @@ static int mach64_do_dma_init( drm_device_t *dev, drm_mach64_init_t *init )
 
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	dev_priv = DRM(alloc)( sizeof(drm_mach64_private_t), DRM_MEM_DRIVER );
+	dev_priv = drm_alloc( sizeof(drm_mach64_private_t), DRM_MEM_DRIVER );
 	if ( dev_priv == NULL )
 		return DRM_ERR(ENOMEM);
 	
@@ -747,7 +746,7 @@ static int mach64_do_dma_init( drm_device_t *dev, drm_mach64_init_t *init )
 	dev_priv->ring.size = 0x4000; /* 16KB */
 
 	if ( dev_priv->is_pci ) {
-		dev_priv->ring.start = DRM(pci_alloc)( dev, dev_priv->ring.size, 
+		dev_priv->ring.start = drm_pci_alloc( dev, dev_priv->ring.size, 
 						       dev_priv->ring.size, 0xfffffffful,
 						       &dev_priv->ring.handle );
 
@@ -976,14 +975,14 @@ int mach64_do_cleanup_dma( drm_device_t *dev )
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
-	if ( dev->irq ) DRM(irq_uninstall)(dev);
+	if ( dev->irq ) drm_irq_uninstall(dev);
 
 	if ( dev->dev_private ) {
 		drm_mach64_private_t *dev_priv = dev->dev_private;
 
 		if ( dev_priv->is_pci ) {
 			if ( (dev_priv->ring.start != NULL) && dev_priv->ring.handle ) {
-				DRM(pci_free)( dev, dev_priv->ring.size, 
+				drm_pci_free( dev, dev_priv->ring.size, 
 					       dev_priv->ring.start, dev_priv->ring.handle );
 			}
 		} else {
@@ -998,7 +997,7 @@ int mach64_do_cleanup_dma( drm_device_t *dev )
 
 		mach64_destroy_freelist( dev );
 
-		DRM(free)( dev_priv, sizeof(drm_mach64_private_t),
+		drm_free( dev_priv, sizeof(drm_mach64_private_t),
 			   DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 	}
@@ -1085,7 +1084,7 @@ int mach64_init_freelist( drm_device_t *dev )
 
 	for ( i = 0 ; i < dma->buf_count ; i++ ) {
 		if ((entry = 
-		     (drm_mach64_freelist_t *) DRM(alloc)(sizeof(drm_mach64_freelist_t), 
+		     (drm_mach64_freelist_t *) drm_alloc(sizeof(drm_mach64_freelist_t), 
 							  DRM_MEM_BUFLISTS)) == NULL)
 			return DRM_ERR(ENOMEM);
 		memset( entry, 0, sizeof(drm_mach64_freelist_t) );
@@ -1110,20 +1109,20 @@ void mach64_destroy_freelist( drm_device_t *dev )
 	{
 		list_del(ptr);
 		entry = list_entry(ptr, drm_mach64_freelist_t, list);
-		DRM(free)(entry, sizeof(*entry), DRM_MEM_BUFLISTS);
+		drm_free(entry, sizeof(*entry), DRM_MEM_BUFLISTS);
 	}
 	list_for_each_safe(ptr, tmp, &dev_priv->placeholders)
 	{
 		list_del(ptr);
 		entry = list_entry(ptr, drm_mach64_freelist_t, list);
-		DRM(free)(entry, sizeof(*entry), DRM_MEM_BUFLISTS);
+		drm_free(entry, sizeof(*entry), DRM_MEM_BUFLISTS);
 	}
 
 	list_for_each_safe(ptr, tmp, &dev_priv->free_list)
 	{
 		list_del(ptr);
 		entry = list_entry(ptr, drm_mach64_freelist_t, list);
-		DRM(free)(entry, sizeof(*entry), DRM_MEM_BUFLISTS);
+		drm_free(entry, sizeof(*entry), DRM_MEM_BUFLISTS);
 	}
 }
 
@@ -1313,7 +1312,7 @@ int mach64_dma_buffers( DRM_IOCTL_ARGS )
 			   DRM_CURRENTPID, d.request_count, dma->buf_count );
 		ret = DRM_ERR(EINVAL);
 	}
-        
+
 	d.granted_count = 0;
 
 	if ( d.request_count ) 
@@ -1326,18 +1325,7 @@ int mach64_dma_buffers( DRM_IOCTL_ARGS )
         return ret;
 }
 
-static void mach64_driver_pretakedown(drm_device_t *dev)
+void mach64_driver_pretakedown(drm_device_t *dev)
 {
-	mach64_do_cleanup_dma( dev );					
-}
-
-void mach64_driver_register_fns(drm_device_t *dev)
-{
-	dev->driver_features = DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_HAVE_DMA | DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL;
-	dev->fn_tbl.pretakedown = mach64_driver_pretakedown;
-	dev->fn_tbl.vblank_wait = mach64_driver_vblank_wait;
-	dev->fn_tbl.irq_preinstall = mach64_driver_irq_preinstall;
-	dev->fn_tbl.irq_postinstall = mach64_driver_irq_postinstall;
-	dev->fn_tbl.irq_uninstall = mach64_driver_irq_uninstall;
-	dev->fn_tbl.irq_handler = mach64_driver_irq_handler;
+	mach64_do_cleanup_dma( dev );
 }

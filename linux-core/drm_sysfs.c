@@ -1,4 +1,3 @@
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
 /*
  * drm_sysfs.c - Modifications to drm_sysfs_class.c to support 
  *               extra sysfs attribute from DRM. Normal drm_sysfs_class
@@ -16,6 +15,8 @@
 #include <linux/device.h>
 #include <linux/kdev_t.h>
 #include <linux/err.h>
+
+#include "drm_core.h"
 
 struct drm_sysfs_class {
 	struct class_device_attribute attr;
@@ -54,23 +55,23 @@ static void drm_sysfs_class_release(struct class *class)
 /* Display the version of drm_core. This doesn't work right in current design */
 static ssize_t version_show(struct class *dev, char *buf)
 {
-	return sprintf(buf, "fixme for drm_core %s %d.%d.%d %s\n", DRIVER_NAME, DRIVER_MAJOR, 
+	return sprintf(buf, "%s %d.%d.%d %s\n", DRIVER_NAME, DRIVER_MAJOR, 
 				DRIVER_MINOR, DRIVER_PATCHLEVEL, DRIVER_DATE);
 }
 static CLASS_ATTR(version, S_IRUGO, version_show, NULL);
 
 /**
- * DRM(sysfs_create) - create a struct drm_sysfs_class structure
+ * drm_sysfs_create - create a struct drm_sysfs_class structure
  * @owner: pointer to the module that is to "own" this struct drm_sysfs_class
  * @name: pointer to a string for the name of this class.
  *
  * This is used to create a struct drm_sysfs_class pointer that can then be used
- * in calls to DRM(sysfs_device_add)().
+ * in calls to drm_sysfs_device_add().
  *
  * Note, the pointer created here is to be destroyed when finished by making a
- * call to DRM(sysfs_destroy)().
+ * call to drm_sysfs_destroy().
  */
-struct drm_sysfs_class *DRM(sysfs_create)(struct module *owner, char *name)
+struct drm_sysfs_class *drm_sysfs_create(struct module *owner, char *name)
 {
 	struct drm_sysfs_class *cs;
 	int retval;
@@ -105,13 +106,13 @@ error:
 }
 
 /**
- * DRM(sysfs_destroy) - destroys a struct drm_sysfs_class structure
+ * drm_sysfs_destroy - destroys a struct drm_sysfs_class structure
  * @cs: pointer to the struct drm_sysfs_class that is to be destroyed
  *
  * Note, the pointer to be destroyed must have been created with a call to
- * DRM(sysfs_create)().
+ * drm_sysfs_create().
  */
-void DRM(sysfs_destroy)(struct drm_sysfs_class *cs)
+void drm_sysfs_destroy(struct drm_sysfs_class *cs)
 {
 	if ((cs == NULL) || (IS_ERR(cs)))
 		return;
@@ -120,7 +121,7 @@ void DRM(sysfs_destroy)(struct drm_sysfs_class *cs)
 }
 
 /**
- * DRM(sysfs_device_add) - adds a class device to sysfs for a character driver
+ * drm_sysfs_device_add - adds a class device to sysfs for a character driver
  * @cs: pointer to the struct drm_sysfs_class that this device should be registered to.
  * @dev: the dev_t for the device to be added.
  * @device: a pointer to a struct device that is assiociated with this class device.
@@ -131,9 +132,9 @@ void DRM(sysfs_destroy)(struct drm_sysfs_class *cs)
  * pointer to the struct class_device will be returned from the call.  Any further
  * sysfs files that might be required can be created using this pointer.
  * Note: the struct drm_sysfs_class passed to this function must have previously been
- * created with a call to DRM(sysfs_create)().
+ * created with a call to drm_sysfs_create().
  */
-struct class_device *DRM(sysfs_device_add)(struct drm_sysfs_class *cs, dev_t dev, struct device *device, const char *fmt, ...)
+struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs, dev_t dev, struct device *device, const char *fmt, ...)
 {
 	va_list args;
 	struct simple_dev *s_dev = NULL;
@@ -176,13 +177,13 @@ error:
 }
 
 /**
- * DRM(sysfs_device_remove) - removes a class device that was created with DRM(sysfs_device_add)()
+ * drm_sysfs_device_remove - removes a class device that was created with drm_sysfs_device_add()
  * @dev: the dev_t of the device that was previously registered.
  *
  * This call unregisters and cleans up a class device that was created with a
- * call to DRM(sysfs_device_add)()
+ * call to drm_sysfs_device_add()
  */
-void DRM(sysfs_device_remove)(dev_t dev)
+void drm_sysfs_device_remove(dev_t dev)
 {
 	struct simple_dev *s_dev = NULL;
 	int found = 0;
@@ -203,4 +204,3 @@ void DRM(sysfs_device_remove)(dev_t dev)
 	}
 }
 
-#endif

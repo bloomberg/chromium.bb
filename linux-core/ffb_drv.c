@@ -237,9 +237,7 @@ unsigned long ffb_get_unmapped_area(struct file *filp,
 	return addr;
 }
 
-#include "drm_core.h"
-
-/* This functions must be here since it references DRM(numdevs)
+/* This functions must be here since it references drm_numdevs)
  * which drm_drv.h declares.
  */
 int ffb_presetup(drm_device_t *dev)
@@ -254,13 +252,13 @@ int ffb_presetup(drm_device_t *dev)
 		return -ENODEV;
 
 	/* Find our instance number by finding our device in dev structure */
-	for (i = 0; i < DRM(numdevs); i++) {
-		temp_dev = &(DRM(device)[i]);
+	for (i = 0; i < drm_numdevs; i++) {
+		temp_dev = &(drm_device[i]);
 		if(temp_dev == dev)
 			break;
 	}
 
-	if (i == DRM(numdevs))
+	if (i == drm_numdevs)
 		return -ENODEV;
 
 	ffb_priv = kmalloc(sizeof(ffb_dev_priv_t), GFP_KERNEL);
@@ -276,3 +274,80 @@ int ffb_presetup(drm_device_t *dev)
 	return ret;
 }
 
+#include "drm_pciids.h"
+
+static int postinit( struct drm_device *dev, unsigned long flags )
+{
+	DRM(fops).get_unmapped_area = ffb_get_unmapped_area;
+	
+	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d: %s\n",
+		DRIVER_NAME,
+		DRIVER_MAJOR,
+		DRIVER_MINOR,
+		DRIVER_PATCHLEVEL,
+		DRIVER_DATE,
+		dev->minor,
+		pci_pretty_name(pdev)
+		);
+	return 0;
+}
+
+static int version( drm_version_t *version )
+{
+	int len;
+
+	version->version_major = DRIVER_MAJOR;
+	version->version_minor = DRIVER_MINOR;
+	version->version_patchlevel = DRIVER_PATCHLEVEL;
+	DRM_COPY( version->name, DRIVER_NAME );
+	DRM_COPY( version->date, DRIVER_DATE );
+	DRM_COPY( version->desc, DRIVER_DESC );
+	return 0;
+}
+
+static struct pci_device_id pciidlist[] = {
+	ffb_PCI_IDS
+};
+
+static struct drm_driver_fn ffb_driver_fn = {
+	.release = ffb_driver_release,
+	.presetup = ffb_driver_presetup,
+	.pretakedown = ffb_driver_pretakedown,
+	.postcleanup = ffb_driver_postcleanup,
+	.kernel_context_switch = ffb_context_switch,
+	.kernel_context_switch_unlock = ffb_driver_kernel_context_switch_unlock,
+	.get_map_ofs = ffb_driver_get_map_ofs,
+	.get_reg_ofs = ffb_driver_get_reg_ofs,
+	.reclaim_buffers = drm_core_reclaim_buffers,
+	.postinit = postinit,
+	.version = version,
+};
+
+static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+{
+	return drm_probe(pdev, ent, &driver_fn);
+}
+
+static struct pci_driver driver = {
+	.name          = DRIVER_NAME,
+	.id_table      = pciidlist,
+	.probe         = probe,
+	.remove        = __devexit_p(drm_cleanup_pci),
+};
+
+static int __init ffb_init(void)
+{
+	return drm_init(&driver, pciidlist, &driver_fn);
+}
+
+static void __exit ffb_exit(void)
+{
+	drm_exit(&driver);
+}
+
+drm_module_init(ffb_init);
+drm_module_exit(ffb_exit));
+
+MODULE_AUTHOR( DRIVER_AUTHOR );
+MODULE_DESCRIPTION( DRIVER_DESC );
+MODULE_LICENSE("GPL and additional rights");

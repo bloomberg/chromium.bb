@@ -28,12 +28,24 @@
  *    Gareth Hughes <gareth@valinux.com>
  *    Frank C. Earl <fearl@airmail.net>
  *    Leif Delgass <ldelgass@retinalburn.net>
- *    José Fonseca <j_r_fonseca@yahoo.co.uk>
+ *    Josï¿½Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
 #ifndef __MACH64_DRV_H__
 #define __MACH64_DRV_H__
 
+/* General customization:
+ */
+
+#define DRIVER_AUTHOR		"Gareth Hughes, Leif Delgass, JosÃ© Fonseca"
+
+#define DRIVER_NAME		"mach64"
+#define DRIVER_DESC		"DRM module for the ATI Rage Pro"
+#define DRIVER_DATE		"20020904"
+
+#define DRIVER_MAJOR		1
+#define DRIVER_MINOR		0
+#define DRIVER_PATCHLEVEL	0
 
 /* FIXME: remove these when not needed */
 /* Development driver options */
@@ -102,6 +114,7 @@ extern int mach64_dma_idle( DRM_IOCTL_ARGS );
 extern int mach64_dma_flush( DRM_IOCTL_ARGS );
 extern int mach64_engine_reset( DRM_IOCTL_ARGS );
 extern int mach64_dma_buffers( DRM_IOCTL_ARGS );
+extern void mach64_driver_pretakedown(drm_device_t *dev);
 
 extern int mach64_init_freelist( drm_device_t *dev );
 extern void mach64_destroy_freelist( drm_device_t *dev );

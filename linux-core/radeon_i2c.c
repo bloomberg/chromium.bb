@@ -26,7 +26,6 @@
 #include <asm/io.h>
 #include <video/radeon.h>
 
-#include "radeon.h"
 #include "drmP.h"
 #include "drm.h"
 #include "radeon_drm.h"

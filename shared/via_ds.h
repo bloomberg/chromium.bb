@@ -26,7 +26,6 @@
 #ifndef _via_ds_h_ 
 #define _via_ds_h_
 
-#include "via.h"
 #include "drmP.h"
 
 /* Set Data Structure */

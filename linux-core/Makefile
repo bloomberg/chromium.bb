@@ -50,7 +50,7 @@ endif
 MACHINE := $(shell uname -m)
 
 # Modules for all architectures
-MODULE_LIST := tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o mach64.o
+MODULE_LIST := drm.0 tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o mach64.o
 
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))
@@ -67,44 +67,36 @@ DRM_MODULES ?= $(MODULE_LIST)
 
 # These definitions are for handling dependencies in the out of kernel build.
 
-DRMTEMPLATES =  drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
-                drm_drv.h drm_fops.h drm_init.h drm_ioctl.h drm_irq.h \
-                drm_lock.h drm_memory.h drm_proc.h drm_stub.h drm_vm.h \
-                drm_core.h
-
 DRMSHARED =     drm.h drm_sarea.h
-DRMHEADERS =    drmP.h $(DRMSHARED)
+DRMHEADERS =    drmP.h drm_compat.h drm_os_linux.h drm_module.h $(DRMSHARED)
+COREHEADERS =   drm_core.h 
 
-TDFXHEADERS =   tdfx.h $(DRMHEADERS) $(DRMTEMPLATES)
-TDFXSHARED =    tdfx.h
-R128HEADERS =   r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
-R128SHARED =    r128.h r128_drv.h r128_drm.h r128_cce.c r128_state.c r128_irq.c
-RADEONHEADERS = radeon.h radeon_drv.h radeon_drm.h $(DRMHEADERS) \
-                $(DRMTEMPLATES)
-RADEONSHARED =  radeon.h radeon_drv.h radeon_drm.h radeon_cp.c radeon_irq.c \
+TDFXHEADERS =   tdfx_drv.h $(DRMHEADERS)
+TDFXSHARED =    tdfx_drv.h
+R128HEADERS =   r128_drv.h r128_drm.h $(DRMHEADERS)
+R128SHARED =    r128_drv.h r128_drm.h r128_cce.c r128_state.c r128_irq.c
+RADEONHEADERS = radeon_drv.h radeon_drm.h $(DRMHEADERS)
+RADEONSHARED =  radeon_drv.h radeon_drm.h radeon_cp.c radeon_irq.c \
                 radeon_mem.c radeon_state.c
-MGAHEADERS =    mga.h mga_drv.h mga_drm.h mga_ucode.h $(DRMHEADERS) \
-		$(DRMTEMPLATES)
-MGASHARED =     mga.h mga_dma.c mga_drm.h mga_drv.h mga_irq.c mga_state.c \
+MGAHEADERS =    mga_drv.h mga_drm.h mga_ucode.h $(DRMHEADERS)
+MGASHARED =     mga_dma.c mga_drm.h mga_drv.h mga_irq.c mga_state.c \
                 mga_ucode.h mga_warp.c
-I810HEADERS =   i810.h i810_drv.h i810_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
-I830HEADERS =   i830.h i830_drv.h i830_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
-I915HEADERS =   i915.h i915_drv.h i915_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
-I915SHARED  =   i915.h i915_drv.h i915_drm.h i915_irq.c i915_mem.c i915_dma.c
-SISHEADERS=     sis.h sis_drv.h sis_drm.h $(DRMHEADERS)
-SISSHARED=      sis.h sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
-SAVAGEHEADERS=  savage.h savage_drv.h savage_drm.h $(DRMHEADERS) \
-                $(DRMTEMPLATES)
-VIAHEADERS	= via_drm.h via_drv.h via.h via_mm.h via_ds.h \
-		via_3d_reg.h $(DRMHEADERS) $(DRMTEMPLATES)
-VIASHARED	= via_drm.h via_drv.h via.h via_mm.h via_ds.h \
+I810HEADERS =   i810_drv.h i810_drm.h $(DRMHEADERS)
+I830HEADERS =   i830_drv.h i830_drm.h $(DRMHEADERS)
+I915HEADERS =   i915_drv.h i915_drm.h $(DRMHEADERS)
+I915SHARED  =   i915_drv.h i915_drm.h i915_irq.c i915_mem.c i915_dma.c
+SISHEADERS=     sis_drv.h sis_drm.h $(DRMHEADERS)
+SISSHARED=      sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
+SAVAGEHEADERS=  savage_drv.h savage_drm.h $(DRMHEADERS)
+VIAHEADERS =	via_drm.h via_drv.h via_mm.h via_ds.h \
+		via_3d_reg.h $(DRMHEADERS)
+VIASHARED	= via_drm.h via_drv.h via_mm.h via_ds.h \
 		via_3d_reg.h via_drv.c via_ds.c via_irq.c via_map.c \
 		via_mm.c via_dma.c
-MACH64HEADERS	= mach64.h mach64_drv.h mach64_drm.h $(DRMHEADERS) \
-		$(DRMTEMPLATES)
-MACH64SHARED 	= mach64.h mach64_drv.h mach64_drm.h mach64_dma.c \
+MACH64HEADERS = mach64_drv.h mach64_drm.h $(DRMHEADERS)
+MACH64SHARED = 	mach64_drv.h mach64_drm.h mach64_dma.c \
 		mach64_irq.c mach64_state.c
-FFBHEADERS	= ffb.h ffb_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
+FFBHEADERS = 	ffb_drv.h $(DRMHEADERS)
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
 	$(SISSHARED) $(TDFXSHARED) $(VIASHARED) $(MACH64SHARED) \
@@ -172,10 +164,6 @@ endif
 
 endif
 
-ifneq ($(findstring 2.6,$(RUNNING_REL)),)
-$(error Building 2.4 version on $(RUNNING_REL))
-endif
-
 CLEANCONFIG := $(shell if cmp -s $(LINUXDIR)/.config .config; then echo y; fi)
 ifeq ($(CLEANCONFIG),y)
 CLEANFILES += $(LINUXDIR)/.config .config $(LINUXDIR)/tmp_include_depends
@@ -227,7 +215,7 @@ endif
 # Make sure that the shared source files are linked into this directory.
 
 
-SHAREDDIR := ../shared
+SHAREDDIR := ../shared-core
 
 HASSHARED := $(shell if [ -d $(SHAREDDIR) ]; then echo y; fi)
 
@@ -389,6 +377,7 @@ endif
 include $(DRMSRCDIR)/Makefile.kernel
 
 # Depencencies
+$(drm-objs):	$(DRMHEADERS) $(COREHEADERS)
 $(tdfx-objs):	$(TDFXHEADERS)
 $(r128-objs):	$(R128HEADERS)
 $(mga-objs):	$(MGAHEADERS)

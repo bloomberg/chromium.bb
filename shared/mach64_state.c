@@ -26,10 +26,9 @@
  * Authors:
  *    Gareth Hughes <gareth@valinux.com>
  *    Leif Delgass <ldelgass@retinalburn.net>
- *    José Fonseca <j_r_fonseca@yahoo.co.uk>
+ *    Josï¿½Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
-#include "mach64.h"
 #include "drmP.h"
 #include "drm.h"
 #include "mach64_drm.h"

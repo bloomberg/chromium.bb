@@ -50,7 +50,7 @@
  * This IOCTL is deprecated, and will now return EINVAL for any busid not equal
  * to that of the device that this DRM instance attached to.
  */
-int DRM(irq_by_busid)(struct inode *inode, struct file *filp,
+int drm_irq_by_busid(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
@@ -85,10 +85,10 @@ int DRM(irq_by_busid)(struct inode *inode, struct file *filp,
  * \param dev DRM device.
  *
  * Initializes the IRQ related data, and setups drm_device::vbl_queue. Installs the handler, calling the driver
- * \c DRM(driver_irq_preinstall)() and \c DRM(driver_irq_postinstall)() functions
+ * \c drm_driver_irq_preinstall() and \c drm_driver_irq_postinstall() functions
  * before and after the installation.
  */
-int DRM(irq_install)( drm_device_t *dev )
+int drm_irq_install( drm_device_t *dev )
 {
 	int ret;
 	unsigned long sh_flags=0;
@@ -131,13 +131,13 @@ int DRM(irq_install)( drm_device_t *dev )
 	}
 
 				/* Before installing handler */
-	dev->fn_tbl.irq_preinstall(dev);
+	dev->fn_tbl->irq_preinstall(dev);
 
 				/* Install handler */
 	if (drm_core_check_feature(dev, DRIVER_IRQ_SHARED))
 		sh_flags = SA_SHIRQ;
 	
-	ret = request_irq( dev->irq, dev->fn_tbl.irq_handler,
+	ret = request_irq( dev->irq, dev->fn_tbl->irq_handler,
 			   sh_flags, dev->devname, dev );
 	if ( ret < 0 ) {
 		down( &dev->struct_sem );
@@ -147,7 +147,7 @@ int DRM(irq_install)( drm_device_t *dev )
 	}
 
 				/* After installing handler */
-	dev->fn_tbl.irq_postinstall(dev);
+	dev->fn_tbl->irq_postinstall(dev);
 
 	return 0;
 }
@@ -157,9 +157,9 @@ int DRM(irq_install)( drm_device_t *dev )
  *
  * \param dev DRM device.
  *
- * Calls the driver's \c DRM(driver_irq_uninstall)() function, and stops the irq.
+ * Calls the driver's \c drm_driver_irq_uninstall() function, and stops the irq.
  */
-int DRM(irq_uninstall)( drm_device_t *dev )
+int drm_irq_uninstall( drm_device_t *dev )
 {
 	int irq_enabled;
 
@@ -176,12 +176,13 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 
-	dev->fn_tbl.irq_uninstall(dev);
+	dev->fn_tbl->irq_uninstall(dev);
 
 	free_irq( dev->irq, dev );
 
 	return 0;
 }
+EXPORT_SYMBOL(drm_irq_uninstall);
 
 /**
  * IRQ control ioctl.
@@ -194,7 +195,7 @@ int DRM(irq_uninstall)( drm_device_t *dev )
  *
  * Calls irq_install() or irq_uninstall() according to \p arg.
  */
-int DRM(control)( struct inode *inode, struct file *filp,
+int drm_control( struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg )
 {
 	drm_file_t *priv = filp->private_data;
@@ -213,11 +214,11 @@ int DRM(control)( struct inode *inode, struct file *filp,
 		if (dev->if_version < DRM_IF_VERSION(1, 2) &&
 		    ctl.irq != dev->irq)
 			return -EINVAL;
-		return DRM(irq_install)( dev );
+		return drm_irq_install( dev );
 	case DRM_UNINST_HANDLER:
 		if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 			return 0;
-		return DRM(irq_uninstall)( dev );
+		return drm_irq_uninstall( dev );
 	default:
 		return -EINVAL;
 	}
@@ -242,7 +243,7 @@ int DRM(control)( struct inode *inode, struct file *filp,
  *
  * If a signal is not requested, then calls vblank_wait().
  */
-int DRM(wait_vblank)( DRM_IOCTL_ARGS )
+int drm_wait_vblank( DRM_IOCTL_ARGS )
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->dev;
@@ -303,7 +304,7 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 
 		spin_unlock_irqrestore( &dev->vbl_lock, irqflags );
 
-		if ( !( vbl_sig = DRM(alloc)( sizeof( drm_vbl_sig_t ), DRM_MEM_DRIVER ) ) ) {
+		if ( !( vbl_sig = drm_alloc( sizeof( drm_vbl_sig_t ), DRM_MEM_DRIVER ) ) ) {
 			return -ENOMEM;
 		}
 
@@ -319,8 +320,8 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 
 		spin_unlock_irqrestore( &dev->vbl_lock, irqflags );
 	} else {
-		if (dev->fn_tbl.vblank_wait)
-			ret = dev->fn_tbl.vblank_wait( dev, &vblwait.request.sequence );
+		if (dev->fn_tbl->vblank_wait)
+			ret = dev->fn_tbl->vblank_wait( dev, &vblwait.request.sequence );
 
 		do_gettimeofday( &now );
 		vblwait.reply.tval_sec = now.tv_sec;
@@ -342,7 +343,7 @@ done:
  *
  * If a signal is not requested, then calls vblank_wait().
  */
-void DRM(vbl_send_signals)( drm_device_t *dev )
+void drm_vbl_send_signals( drm_device_t *dev )
 {
 	struct list_head *list, *tmp;
 	drm_vbl_sig_t *vbl_sig;
@@ -359,7 +360,7 @@ void DRM(vbl_send_signals)( drm_device_t *dev )
 
 			list_del( list );
 
-			DRM(free)( vbl_sig, sizeof(*vbl_sig), DRM_MEM_DRIVER );
+			drm_free( vbl_sig, sizeof(*vbl_sig), DRM_MEM_DRIVER );
 
 			dev->vbl_pending--;
 		}
@@ -367,5 +368,6 @@ void DRM(vbl_send_signals)( drm_device_t *dev )
 
 	spin_unlock_irqrestore( &dev->vbl_lock, flags );
 }
+EXPORT_SYMBOL(drm_vbl_send_signals);
 
 

@@ -23,7 +23,6 @@
  */
 
 #include <linux/config.h>
-#include "via.h"
 #include "drmP.h"
 #include "via_drm.h"
 #include "via_drv.h"
@@ -38,18 +37,95 @@
 #define DRIVER_MINOR		5
 #define DRIVER_PATCHLEVEL	0
 
+#include "drm_pciids.h"
 
-#define DRIVER_IOCTLS							\
-        [DRM_IOCTL_NR(DRM_IOCTL_VIA_ALLOCMEM)]  = { via_mem_alloc,  1, 0 }, \
-        [DRM_IOCTL_NR(DRM_IOCTL_VIA_FREEMEM)]   = { via_mem_free,   1, 0 }, \
-        [DRM_IOCTL_NR(DRM_IOCTL_VIA_AGP_INIT)]   = { via_agp_init,  1, 0 }, \
-        [DRM_IOCTL_NR(DRM_IOCTL_VIA_FB_INIT)]   = { via_fb_init,    1, 0 }, \
-        [DRM_IOCTL_NR(DRM_IOCTL_VIA_MAP_INIT)]   = { via_map_init,  1, 0 }, \
-        [DRM_IOCTL_NR(DRM_IOCTL_VIA_DEC_FUTEX)] = { via_decoder_futex, 1, 0}, \
-        [DRM_IOCTL_NR(DRM_IOCTL_VIA_DMA_INIT)] = { via_dma_init, 1, 0}, \
-        [DRM_IOCTL_NR(DRM_IOCTL_VIA_CMDBUFFER)] = { via_cmdbuffer, 1, 0}, \
-	[DRM_IOCTL_NR(DRM_IOCTL_VIA_FLUSH)] = { via_flush_ioctl, 1, 0}, \
-        [DRM_IOCTL_NR(DRM_IOCTL_VIA_PCICMD)] = { via_pci_cmdbuffer, 1, 0}
+static int postinit( struct drm_device *dev, unsigned long flags )
+{
+	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d: %s\n",
+		DRIVER_NAME,
+		DRIVER_MAJOR,
+		DRIVER_MINOR,
+		DRIVER_PATCHLEVEL,
+		DRIVER_DATE,
+		dev->minor,
+		pci_pretty_name(dev->pdev)
+		);
+	return 0;
+}
 
+static int version( drm_version_t *version )
+{
+	int len;
 
-#include "drm_core.h"
+	version->version_major = DRIVER_MAJOR;
+	version->version_minor = DRIVER_MINOR;
+	version->version_patchlevel = DRIVER_PATCHLEVEL;
+	DRM_COPY( version->name, DRIVER_NAME );
+	DRM_COPY( version->date, DRIVER_DATE );
+	DRM_COPY( version->desc, DRIVER_DESC );
+	return 0;
+}
+
+static struct pci_device_id pciidlist[] = {
+	viadrv_PCI_IDS
+};
+
+static drm_ioctl_desc_t ioctls[] = {
+	[DRM_IOCTL_NR(DRM_VIA_ALLOCMEM)]  = { via_mem_alloc,     1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_FREEMEM)]   = { via_mem_free,      1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_AGP_INIT)]  = { via_agp_init,      1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_FB_INIT)]   = { via_fb_init,       1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_MAP_INIT)]  = { via_map_init,      1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_DEC_FUTEX)] = { via_decoder_futex, 1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_DMA_INIT)]  = { via_dma_init,      1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_CMDBUFFER)] = { via_cmdbuffer,     1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_FLUSH)]     = { via_flush_ioctl,   1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_PCICMD)]    = { via_pci_cmdbuffer, 1, 0}
+};
+
+static struct drm_driver_fn driver_fn = {
+	.driver_features = DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL,
+	.context_ctor = via_init_context,
+	.context_dtor = via_final_context,
+	.vblank_wait = via_driver_vblank_wait,
+	.irq_preinstall = via_driver_irq_preinstall,
+	.irq_postinstall = via_driver_irq_postinstall,
+	.irq_uninstall = via_driver_irq_uninstall,
+	.irq_handler = via_driver_irq_handler,
+	.reclaim_buffers = drm_core_reclaim_buffers,
+	.get_map_ofs = drm_core_get_map_ofs,
+	.get_reg_ofs = drm_core_get_reg_ofs,
+	.postinit = postinit,
+	.version = version,
+	.ioctls = ioctls,
+	.num_ioctls = DRM_ARRAY_SIZE(ioctls),
+};
+
+static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+{
+	return drm_probe(pdev, ent, &driver_fn);
+}
+
+static struct pci_driver driver = {
+	.name          = DRIVER_NAME,
+	.id_table      = pciidlist,
+	.probe         = probe,
+	.remove        = __devexit_p(drm_cleanup_pci),
+};
+
+static int __init via_init(void)
+{
+	return drm_init(&driver, pciidlist, &driver_fn);
+}
+
+static void __exit via_exit(void)
+{
+	drm_exit(&driver);
+}
+
+module_init(via_init);
+module_exit(via_exit);
+
+MODULE_AUTHOR( DRIVER_AUTHOR );
+MODULE_DESCRIPTION( DRIVER_DESC );
+MODULE_LICENSE("GPL and additional rights");

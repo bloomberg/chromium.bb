@@ -37,10 +37,11 @@
 
 /** Debug flags.  Set by parse_option(). */
 #if 0
-int DRM(flags) = DRM_FLAG_DEBUG;
+int drm_flags = DRM_FLAG_DEBUG;
 #else
-int DRM(flags) = 0;
+int drm_flags = 0;
 #endif
+EXPORT_SYMBOL(drm_flags);
 
 /**
  * Parse a single option.
@@ -49,7 +50,7 @@ int DRM(flags) = 0;
  *
  * \sa See parse_options() for details.
  */
-static void DRM(parse_option)(char *s)
+static void drm_parse_option(char *s)
 {
 	char *c, *r;
 
@@ -59,7 +60,7 @@ static void DRM(parse_option)(char *s)
 	if (*c) r = c + 1; else r = NULL;  /* remember remainder */
 	*c = '\0';			   /* terminate */
 	if (!strcmp(s, "debug")) {
-		DRM(flags) |= DRM_FLAG_DEBUG;
+		drm_flags |= DRM_FLAG_DEBUG;
 		DRM_INFO("Debug messages ON\n");
 		return;
 	}
@@ -96,7 +97,7 @@ static void DRM(parse_option)(char *s)
  * checked.
  */
 
-void DRM(parse_options)(char *s)
+void drm_parse_options(char *s)
 {
 	char *h, *t, *n;
 
@@ -107,7 +108,7 @@ void DRM(parse_options)(char *s)
 		for (; *t && *t != ';'; t++);	       /* find ; or \0 */
 		if (*t) n = t + 1; else n = NULL;      /* remember next */
 		*t = '\0';			       /* terminate */
-		DRM(parse_option)(h);		       /* parse */
+		drm_parse_option(h);		       /* parse */
 	}
 }
 
@@ -116,7 +117,7 @@ void DRM(parse_options)(char *s)
  *
  * \return non-zero if the DRI will run on this CPU, or zero otherwise.
  */
-int DRM(cpu_valid)(void)
+int drm_cpu_valid(void)
 {
 #if defined(__i386__)
 	if (boot_cpu_data.x86 == 3) return 0; /* No cmpxchg on a 386 */

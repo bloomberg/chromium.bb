@@ -21,7 +21,6 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#include "via.h"
 #include "drmP.h"
 #include "via_drm.h"
 #include "via_drv.h"
@@ -175,7 +174,7 @@ int via_final_context(struct drm_device *dev, int context)
         /* Linux specific until context tracking code gets ported to BSD */
 	/* Last context, perform cleanup */
 	if (dev->ctx_count == 1 && dev->dev_private) {
-		if (dev->irq) DRM(irq_uninstall)(dev);
+		if (dev->irq) drm_irq_uninstall(dev);
 
 		via_do_cleanup_map(dev);
 	}
@@ -211,13 +210,13 @@ int via_fb_alloc(drm_via_mem_t* mem)
         drm_via_mm_t fb;
         PMemBlock block;
         int retval = 0;
-   
+
         if (!FBHeap)
                 return -1;
 
         fb.size = mem->size;
         fb.context = mem->context;
-  
+
         block = via_mmAllocMem(FBHeap, fb.size, 5, 0);
         if (block) {
                 fb.offset = block->ofs;
@@ -234,13 +233,13 @@ int via_fb_alloc(drm_via_mem_t* mem)
                 fb.free = 0;
                 retval = -1;
         }
-   
+
         mem->offset = fb.offset;
         mem->index = fb.free;
 
         DRM_DEBUG("alloc fb, size = %d, offset = %d\n", fb.size, 
                   (int)fb.offset);
-  
+
         return retval;
 }
 int via_agp_alloc(drm_via_mem_t* mem)
@@ -270,7 +269,7 @@ int via_agp_alloc(drm_via_mem_t* mem)
                 agp.size = 0;
                 agp.free = 0;
         }	
-   
+
         mem->offset = agp.offset;
         mem->index = agp.free;
 
@@ -282,7 +281,7 @@ int via_agp_alloc(drm_via_mem_t* mem)
 int via_mem_free( DRM_IOCTL_ARGS )
 {
         drm_via_mem_t mem;
-    
+
         DRM_COPY_FROM_USER_IOCTL(mem, (drm_via_mem_t *)data, sizeof(mem));
 
         switch (mem.type) {
@@ -296,22 +295,23 @@ int via_mem_free( DRM_IOCTL_ARGS )
                         return 0;
                 break;
         }
-    
+
         return -EFAULT;
 }
+
 int via_fb_free(drm_via_mem_t* mem)
 {
         drm_via_mm_t fb;
         int retval = 0;
 
-    
+
         if (!FBHeap) {
                 return -1;
         }
 
         fb.free = mem->index;
         fb.context = mem->context;
-    
+
         if (!fb.free)
                 {
                         return -1;
@@ -319,50 +319,37 @@ int via_fb_free(drm_via_mem_t* mem)
                 }
 
         via_mmFreeMem((PMemBlock)fb.free);
-    
+
         if (!del_alloc_set(fb.context, VIDEO, fb.free))
                 {
                         retval = -1;
                 }
-    
+
         DRM_DEBUG("free fb, free = %d\n", fb.free);
-    
+
         return retval;
-} 
+}
+
 int via_agp_free(drm_via_mem_t* mem)
 {
         drm_via_mm_t agp;
-  
+
         int retval = 0;
 
         agp.free = mem->index;
         agp.context = mem->context;
-    
+
         if (!agp.free)
                 return -1;
 
         via_mmFreeMem((PMemBlock)agp.free);
-    
+
         if (!del_alloc_set(agp.context, AGP, agp.free)) {
                 retval = -1;
 	}
 
         DRM_DEBUG("free agp, free = %d\n", agp.free);
-  
+
         return retval;
 }
 
-EXPORT_SYMBOL(via_fb_alloc);
-EXPORT_SYMBOL(via_fb_free);
-
-void DRM(driver_register_fns)(drm_device_t *dev)
-{
-	dev->driver_features = DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL;
-	dev->fn_tbl.context_ctor = via_init_context;
-	dev->fn_tbl.context_dtor = via_final_context;
-	dev->fn_tbl.vblank_wait = via_driver_vblank_wait;
-	dev->fn_tbl.irq_preinstall = via_driver_irq_preinstall;
-	dev->fn_tbl.irq_postinstall = via_driver_irq_postinstall;
-	dev->fn_tbl.irq_uninstall = via_driver_irq_uninstall;
-	dev->fn_tbl.irq_handler = via_driver_irq_handler;
-}

@@ -21,7 +21,6 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#include "via.h"
 #include "drmP.h"
 #include "via_drv.h"
 
@@ -32,7 +31,7 @@ int via_do_init_map(drm_device_t *dev, drm_via_init_t *init)
 	
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	dev_priv = DRM(alloc)(sizeof(drm_via_private_t), DRM_MEM_DRIVER);
+	dev_priv = drm_alloc(sizeof(drm_via_private_t), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
 		return -ENOMEM;
 
@@ -84,7 +83,7 @@ int via_do_cleanup_map(drm_device_t *dev)
 
 		via_dma_cleanup(dev);
 
-		DRM(free)(dev_priv, sizeof(drm_via_private_t),
+		drm_free(dev_priv, sizeof(drm_via_private_t),
                           DRM_MEM_DRIVER);
 		dev->dev_private = NULL;
 	}

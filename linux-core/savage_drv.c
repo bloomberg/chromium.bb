@@ -23,7 +23,6 @@
  */
 
 #include <linux/config.h>
-#include "savage.h"
 #include "drmP.h"
 #include "savage_drm.h"
 #include "savage_drv.h"
@@ -44,14 +43,6 @@
 
 #if SAVAGE_CMD_DMA /* Check the 3D driver, and we need to fix this anyway */
 
-#define DRIVER_IOCTLS \
-	[DRM_IOCTL_NR(DRM_IOCTL_SAVAGE_ALLOC_CONTINUOUS_MEM)] \
-	= {savage_alloc_continuous_mem,1,0},\
-	[DRM_IOCTL_NR( DRM_IOCTL_SAVAGE_GET_PHYSICS_ADDRESS)] \
-	= {savage_get_physics_address,1,0},\
-        [DRM_IOCTL_NR(DRM_IOCTL_SAVAGE_FREE_CONTINUOUS_MEM)]  \
-        = {savage_free_cont_mem,1,0}
-
 int savage_alloc_continuous_mem(struct inode *inode, struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
@@ -71,7 +62,7 @@ int savage_alloc_continuous_mem(struct inode *inode, struct file *filp,
   if (copy_from_user(&cont_mem,(drm_savage_alloc_cont_mem_t *)arg,sizeof(cont_mem)))
     return -EFAULT;
  
-  map = DRM(alloc)( sizeof(*map), DRM_MEM_MAPS );
+  map = savage_alloc)( sizeof(*map), DRM_MEM_MAPS );
   if ( !map )
     return -ENOMEM;
   
@@ -119,9 +110,9 @@ int savage_alloc_continuous_mem(struct inode *inode, struct file *filp,
   map->mtrr=-1;
   /*map-flags,type??*/
   
-  list = DRM(alloc)(sizeof(*list), DRM_MEM_MAPS);
+  list = savage_alloc)(sizeof(*list), DRM_MEM_MAPS);
   if(!list) {
-    DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
+    savage_free)(map, sizeof(*map), DRM_MEM_MAPS);
     return -EINVAL;
   }
   memset(list, 0, sizeof(*list));
@@ -215,7 +206,7 @@ int savage_free_cont_mem(struct inode *inode, struct file *filp,
   }
   map = r_list->map;
   list_del(list);
-  DRM(free)(list, sizeof(*list), DRM_MEM_MAPS);
+  savage_free)(list, sizeof(*list), DRM_MEM_MAPS);
 
   /*unmap the user space */
 #ifdef DO_MUNMAP_4_ARGS
@@ -250,6 +241,84 @@ int savage_free_cont_mem(struct inode *inode, struct file *filp,
 
 #endif /* end #if 0 */
 
-#include "drm_core.h"
+#include "drm_pciids.h"
 
+static int postinit( struct drm_device *dev, unsigned long flags )
+{
+	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d: %s\n",
+		DRIVER_NAME,
+		DRIVER_MAJOR,
+		DRIVER_MINOR,
+		DRIVER_PATCHLEVEL,
+		DRIVER_DATE,
+		dev->minor,
+		pci_pretty_name(dev->pdev)
+		);
+	return 0;
+}
 
+static int version( drm_version_t *version )
+{
+	int len;
+
+	version->version_major = DRIVER_MAJOR;
+	version->version_minor = DRIVER_MINOR;
+	version->version_patchlevel = DRIVER_PATCHLEVEL;
+	DRM_COPY( version->name, DRIVER_NAME );
+	DRM_COPY( version->date, DRIVER_DATE );
+	DRM_COPY( version->desc, DRIVER_DESC );
+	return 0;
+}
+
+static struct pci_device_id pciidlist[] = {
+	savage_PCI_IDS
+};
+
+static drm_ioctl_desc_t ioctls[] = {
+#if SAVAGE_CMD_DMA /* Check the 3D driver, and we need to fix this anyway */
+	[DRM_IOCTL_NR(DRM_SAVAGE_ALLOC_CONTINUOUS_MEM)] = {savage_alloc_continuous_mem, 1, 0},
+	[DRM_IOCTL_NR(DRM_SAVAGE_GET_PHYSICS_ADDRESS)]  = {savage_get_physics_address,  1, 0},
+	[DRM_IOCTL_NR(DRM_SAVAGE_FREE_CONTINUOUS_MEM)]  = {savage_free_cont_mem,        1, 0},
+#endif	
+};
+
+static struct drm_driver_fn driver_fn = {
+	.driver_features = DRIVER_USE_AGP | DRIVER_USE_MTRR,
+	.reclaim_buffers = drm_core_reclaim_buffers,
+	.get_map_ofs = drm_core_get_map_ofs,
+	.get_reg_ofs = drm_core_get_reg_ofs,
+	.preinit = savage_preinit,
+	.postinit = postinit,
+	.version = version,
+	.ioctls = ioctls,
+	.num_ioctls = DRM_ARRAY_SIZE(ioctls),
+};
+
+static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+{
+	return drm_probe(pdev, ent, &driver_fn);
+}
+
+static struct pci_driver driver = {
+	.name          = DRIVER_NAME,
+	.id_table      = pciidlist,
+	.probe         = probe,
+	.remove        = __devexit_p(drm_cleanup_pci),
+};
+
+static int __init savage_init(void)
+{
+	return drm_init(&driver, pciidlist, &driver_fn);
+}
+
+static void __exit savage_exit(void)
+{
+	drm_exit(&driver);
+}
+
+module_init(savage_init);
+module_exit(savage_exit);
+
+MODULE_AUTHOR( DRIVER_AUTHOR );
+MODULE_DESCRIPTION( DRIVER_DESC );
+MODULE_LICENSE("GPL and additional rights");

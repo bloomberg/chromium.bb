@@ -38,6 +38,8 @@ enum savage_family {
     S3_LAST
 };
 
+extern int savage_preinit( drm_device_t *dev, unsigned long chipset );
+
 #define S3_SAVAGE3D_SERIES(chip)  ((chip>=S3_SAVAGE3D) && (chip<=S3_SAVAGE_MX))
 
 #define S3_SAVAGE4_SERIES(chip)  ((chip==S3_SAVAGE4)            \

@@ -9,12 +9,12 @@
  * \todo Add support to map these buffers.
  * \todo The wrappers here are so thin that they would be better off inlined..
  *
- * \author José Fonseca <jrfonseca@tungstengraphics.com>
+ * \author Josï¿½Fonseca <jrfonseca@tungstengraphics.com>
  * \author Leif Delgass <ldelgass@retinalburn.net>
  */
 
 /*
- * Copyright 2003 José Fonseca.
+ * Copyright 2003 Josï¿½Fonseca.
  * Copyright 2003 Leif Delgass.
  * All Rights Reserved.
  *
@@ -50,7 +50,7 @@
  * \brief Allocate a PCI consistent memory block, for DMA.
  */
 void *
-DRM(pci_alloc)(drm_device_t *dev, size_t size, size_t align, 
+drm_pci_alloc(drm_device_t *dev, size_t size, size_t align, 
 	       dma_addr_t maxaddr, dma_addr_t *busaddr)
 {
 	void *address;
@@ -61,13 +61,13 @@ DRM(pci_alloc)(drm_device_t *dev, size_t size, size_t align,
 #if DRM_DEBUG_MEMORY
 	int area = DRM_MEM_DMA;
 
-	spin_lock(&DRM(mem_lock));
-	if ((DRM(ram_used) >> PAGE_SHIFT)
-	    > (DRM_RAM_PERCENT * DRM(ram_available)) / 100) {
-		spin_unlock(&DRM(mem_lock));
+	spin_lock(&drm_mem_lock);
+	if ((drm_ram_used >> PAGE_SHIFT)
+	    > (DRM_RAM_PERCENT * drm_ram_available) / 100) {
+		spin_unlock(&drm_mem_lock);
 		return 0;
 	}
-	spin_unlock(&DRM(mem_lock));
+	spin_unlock(&drm_mem_lock);
 #endif
 
 	/* pci_alloc_consistent only guarantees alignment to the smallest 
@@ -86,17 +86,17 @@ DRM(pci_alloc)(drm_device_t *dev, size_t size, size_t align,
 
 #if DRM_DEBUG_MEMORY
 	if (address == NULL) {
-		spin_lock(&DRM(mem_lock));
-		++DRM(mem_stats)[area].fail_count;
-		spin_unlock(&DRM(mem_lock));
+		spin_lock(&drm_mem_lock);
+		++drm_mem_stats[area].fail_count;
+		spin_unlock(&drm_mem_lock);
 		return NULL;
 	}
 
-	spin_lock(&DRM(mem_lock));
-	++DRM(mem_stats)[area].succeed_count;
-	DRM(mem_stats)[area].bytes_allocated += size;
-	DRM(ram_used)		             += size;
-	spin_unlock(&DRM(mem_lock));
+	spin_lock(&drm_mem_lock);
+	++drm_mem_stats[area].succeed_count;
+	drm_mem_stats[area].bytes_allocated += size;
+	drm_ram_used		             += size;
+	spin_unlock(&drm_mem_lock);
 #else
 	if (address == NULL)
 		return NULL;
@@ -116,12 +116,13 @@ DRM(pci_alloc)(drm_device_t *dev, size_t size, size_t align,
 
 	return address;
 }
+EXPORT_SYMBOL(drm_pci_alloc);
 
 /**
  * \brief Free a PCI consistent memory block.
  */
 void
-DRM(pci_free)(drm_device_t *dev, size_t size, void *vaddr, dma_addr_t busaddr)
+drm_pci_free(drm_device_t *dev, size_t size, void *vaddr, dma_addr_t busaddr)
 {
 #if 0
 	unsigned long addr;
@@ -151,12 +152,12 @@ DRM(pci_free)(drm_device_t *dev, size_t size, void *vaddr, dma_addr_t busaddr)
 	}
 
 #if DRM_DEBUG_MEMORY
-	spin_lock(&DRM(mem_lock));
-	free_count  = ++DRM(mem_stats)[area].free_count;
-	alloc_count =	DRM(mem_stats)[area].succeed_count;
-	DRM(mem_stats)[area].bytes_freed += size;
-	DRM(ram_used)			 -= size;
-	spin_unlock(&DRM(mem_lock));
+	spin_lock(&drm_mem_lock);
+	free_count  = ++drm_mem_stats[area].free_count;
+	alloc_count =	drm_mem_stats[area].succeed_count;
+	drm_mem_stats[area].bytes_freed += size;
+	drm_ram_used			 -= size;
+	spin_unlock(&drm_mem_lock);
 	if (free_count > alloc_count) {
 		DRM_MEM_ERROR(area,
 			      "Excess frees: %d frees, %d allocs\n",
@@ -165,5 +166,6 @@ DRM(pci_free)(drm_device_t *dev, size_t size, void *vaddr, dma_addr_t busaddr)
 #endif
 
 }
+EXPORT_SYMBOL(drm_pci_free);
 
 /*@}*/
