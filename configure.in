@@ -467,6 +467,7 @@ fc-glyphname/Makefile
 fc-case/Makefile
 src/Makefile
 src/fontconfig.def
+conf.d/Makefile
 fc-cache/Makefile
 fc-list/Makefile
 fc-match/Makefile

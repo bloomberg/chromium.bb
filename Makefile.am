@@ -22,13 +22,13 @@
 #  PERFORMANCE OF THIS SOFTWARE.
 
 DOCSRC=@DOCSRC@
-SUBDIRS=fontconfig fc-case fc-lang fc-glyphname src fc-cache fc-list fc-match $(DOCSRC) test
+SUBDIRS=fontconfig fc-case fc-lang fc-glyphname src \
+	fc-cache fc-list fc-match conf.d $(DOCSRC) test
 
 EXTRA_DIST = \
         fontconfig.pc.in \
         fonts.conf.in \
 	fonts.dtd \
-	local.conf \
         fontconfig.spec.in \
         fontconfig.spec \
 	fontconfig-zip.in
@@ -58,15 +58,6 @@ install-data-local:
 	  echo " $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf"; \
 	  $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf; \
 	fi; fi
-	if [ -f $(DESTDIR)$(configdir)/local.conf ]; then \
-	  echo "not overwriting existing $(DESTDIR)$(configdir)/local.conf"; \
-	else if [ -f $(srcdir)/local.conf ]; then \
-	  echo " $(INSTALL_DATA) $(srcdir)/local.conf $(DESTDIR)$(configdir)/local.conf"; \
-	  $(INSTALL_DATA) $(srcdir)/local.conf $(DESTDIR)$(configdir)/local.conf; \
-	else if [ -f local.conf ]; then \
-	  echo " $(INSTALL_DATA) local.conf $(DESTDIR)$(configdir)/local.conf"; \
-	  $(INSTALL_DATA) local.conf $(DESTDIR)$(configdir)/local.conf; \
-	fi; fi; fi
 	if $(RUN_FC_CACHE_TEST); then \
 	    echo " fc-cache/fc-cache -f -v"; \
 	    fc-cache/fc-cache -f -v; \
@@ -88,16 +79,5 @@ uninstall-local:
 	  if cmp -s fonts.conf $(DESTDIR)$(configdir)/fonts.conf; then \
 	     echo " uninstall standard $(DESTDIR)$(configdir)/fonts.conf"; \
 	     rm -f $(DESTDIR)$(configdir)/fonts.conf; \
-	  fi; \
-	fi; fi
-	if [ -f $(srcdir)/local.conf ]; then \
-	  if cmp -s $(srcdir)/local.conf $(DESTDIR)$(configdir)/local.conf; then \
-	     echo " uninstall standard $(DESTDIR)$(configdir)/local.conf"; \
-	     rm -f $(DESTDIR)$(configdir)/local.conf; \
-	  fi; \
-	else if [ -f local.conf ]; then \
-	  if cmp -s local.conf $(DESTDIR)$(configdir)/local.conf; then \
-	     echo " uninstall standard $(DESTDIR)$(configdir)/local.conf"; \
-	     rm -f $(DESTDIR)$(configdir)/local.conf; \
 	  fi; \
 	fi; fi

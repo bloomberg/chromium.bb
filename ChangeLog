@@ -1,3 +1,21 @@
+2005-02-28  Keith Packard  <keithp@keithp.com>
+
+	* Makefile.am:
+	* conf.d/Makefile.am:
+	* conf.d/README:
+	* conf.d/no-bitmaps.conf:
+	* conf.d/sub-pixel.conf:
+	* conf.d/yes-bitmaps.conf:
+	* configure.in:
+	Create prototype /etc/fonts/conf.d directory with a few
+	sample configuration files.
+	Deprecate use of local.conf for local customizations in favor of
+	this directory based scheme which is more easily integrated into
+	installation systems.
+	
+	* src/fcname.c:
+	Tag FC_EMBOLDEN as a boolean variable
+
 2005-02-10  Keith Packard  <keithp@keithp.com>
 
 	reviewed by: pborelli@katamail.com

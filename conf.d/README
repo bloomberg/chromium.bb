@@ -1,0 +1,8 @@
+conf.d/README
+
+Each file in this directory is a fontconfig configuration file.  Fontconfig
+scans this directory, loading all files of the form [0-9][0-9]*, so if you
+want to use any of these options, link them to a name of that form.  E.g.
+
+	$ ln -s no-bitmaps.conf 10no-bitmaps.conf
+
