@@ -44,6 +44,7 @@ enum radeon_family {
 	CHIP_RV280,
 	CHIP_R300,
 	CHIP_RS300,
+	CHIP_RV350,
 	CHIP_LAST,
 };
 
