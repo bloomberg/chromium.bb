@@ -1,4 +1,4 @@
-#include <linux/autoconf.h>
+#include <linux/config.h>
 #include <linux/version.h>
 
 #ifndef CONFIG_SMP
