@@ -206,7 +206,7 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 
 	if (DRM(stub_info).info_register) {
 		ret2 = DRM(stub_info).info_register(name, fops, dev);
-		if (ret2) {
+		if (ret2 < 0) {
 			if (!i) {
 				inter_module_unregister("drm");
 				unregister_chrdev(DRM_MAJOR, "drm");
