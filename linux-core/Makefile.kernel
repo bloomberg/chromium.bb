@@ -9,7 +9,6 @@
 # Note 2! The CFLAGS definitions are now inherited from the
 # parent makes..
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.kernel,v 1.2 1999/09/27 14:59:24 dawes Exp $
 
 L_TARGET        := libdrm.a
 
@@ -22,7 +21,14 @@ ifdef CONFIG_DRM_GAMMA
 M_OBJS          += gamma.o
 endif
 
+ifdef CONFIG_DRM_TDFX
+M_OBJS          += tdfx.o
+endif
+
 include $(TOPDIR)/Rules.make
 
 gamma.o: gamma_drv.o gamma_dma.o $(L_TARGET)
 	$(LD) $(LD_RFLAG) -r -o $@ gamma_drv.o gamma_dma.o -L. -ldrm
+
+tdfx.o: tdfx_drv.o tdfx_context.o $(L_TARGET)
+	$(LD) $(LD_RFLAG) -r -o $@ tdfx_drv.o tdfx_context.o -L. -ldrm
