@@ -146,7 +146,7 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 #ifdef __alpha__
 		map->offset += dev->hose->mem_space->start;
 #endif
-		map->offset = map->offset + dev->agp->base;
+		map->offset += dev->agp->base;
 		map->mtrr   = dev->agp->agp_mtrr; /* for getmap */
 		break;
 #endif
@@ -155,7 +155,7 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 			DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
 			return -EINVAL;
 		}
-		map->offset = map->offset + dev->sg->handle;
+		map->offset += dev->sg->handle;
 		break;
 
 	default:
@@ -681,9 +681,11 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 	/* No allocations failed, so now we can replace the orginal pagelist
 	 * with the new one.
 	 */
-	DRM(free)(dma->pagelist,
-		  dma->page_count * sizeof(*dma->pagelist),
-		  DRM_MEM_PAGES);
+	if (dma->page_count) {
+		DRM(free)(dma->pagelist,
+			  dma->page_count * sizeof(*dma->pagelist),
+			  DRM_MEM_PAGES);
+	}
 	dma->pagelist = temp_pagelist;
 
 	dma->buf_count += entry->buf_count;
