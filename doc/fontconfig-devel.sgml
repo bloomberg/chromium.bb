@@ -15,6 +15,7 @@
 <!ENTITY fcstring SYSTEM "fcstring.sgml">
 <!ENTITY fcstrset SYSTEM "fcstrset.sgml">
 <!ENTITY fcvalue SYSTEM "fcvalue.sgml">
+<!ENTITY version SYSTEM "version.sgml">
 ]>
 <!--
     $Id$
@@ -40,7 +41,7 @@
     PERFORMANCE OF THIS SOFTWARE.
 -->
 <article>
-	<title>Fontconfig Developers Reference</title>
+	<title>Fontconfig Developers Reference, Version &version; </title>
 	<artheader>
 		<author>
 			<firstname>Keith</firstname>
@@ -51,7 +52,7 @@
 		</author>
 		<authorinitials>KRP</authorinitials>
 		<productname>Fontconfig</productname>
-		<productnumber>2.1.91</productnumber>
+		<productnumber>&version;</productnumber>
 		<LegalNotice>
 			<simpara>		
 Copyright © 2002 Keith Packard
@@ -76,14 +77,6 @@ PERFORMANCE OF THIS SOFTWARE.
 			</simpara>
 		</LegalNotice>
 	</artheader>
-<!--
-<refsynopsisdiv>
-  <synopsis>
-  #include &lt;fontconfig/fontconfig.h&gt;
-  #include &lt;fontconfig/fcfreetype.h&gt;
-  </synopsis>
-</refsynopsisdiv>
--->
 <sect1><title>DESCRIPTION</title>
   <para>
 Fontconfig is a library designed to provide system-wide font configuration,

@@ -81,4 +81,8 @@
 @DESC@
 	    </para>
 	</refsect1>
+	<refsect1><title>Version</title>
+	    <para>
+Fontconfig version &version;
+	    </para>
     </refentry>
