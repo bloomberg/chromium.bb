@@ -228,7 +228,7 @@ static int i810_dma_get_buffer(drm_device_t * dev, drm_i810_dma_t * d,
 	return retcode;
 }
 
-int i810_dma_cleanup(drm_device_t * dev)
+static int i810_dma_cleanup(drm_device_t * dev)
 {
 	drm_device_dma_t *dma = dev->dma;
 
@@ -456,7 +456,7 @@ static int i810_dma_initialize(drm_device_t * dev,
  *    If it isn't then we have a v1.1 client. Fix up params.
  *    If it is, then we have a 1.2 client... get the rest of the data.
  */
-int i810_dma_init_compat(drm_i810_init_t * init, unsigned long arg)
+static int i810_dma_init_compat(drm_i810_init_t * init, unsigned long arg)
 {
 
 	/* Get v1.1 init data */
@@ -488,7 +488,7 @@ int i810_dma_init_compat(drm_i810_init_t * init, unsigned long arg)
 	return 0;
 }
 
-int i810_dma_init(struct inode *inode, struct file *filp,
+static int i810_dma_init(struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
@@ -929,7 +929,7 @@ static void i810_dma_dispatch_flip(drm_device_t * dev)
 
 }
 
-void i810_dma_quiescent(drm_device_t * dev)
+static void i810_dma_quiescent(drm_device_t * dev)
 {
 	drm_i810_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
@@ -1013,8 +1013,8 @@ void i810_reclaim_buffers(drm_device_t *dev, struct file *filp)
 	}
 }
 
-int i810_flush_ioctl(struct inode *inode, struct file *filp,
-		     unsigned int cmd, unsigned long arg)
+static int i810_flush_ioctl(struct inode *inode, struct file *filp,
+			    unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1025,8 +1025,8 @@ int i810_flush_ioctl(struct inode *inode, struct file *filp,
 	return 0;
 }
 
-int i810_dma_vertex(struct inode *inode, struct file *filp,
-		    unsigned int cmd, unsigned long arg)
+static int i810_dma_vertex(struct inode *inode, struct file *filp,
+			   unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1061,8 +1061,8 @@ int i810_dma_vertex(struct inode *inode, struct file *filp,
 	return 0;
 }
 
-int i810_clear_bufs(struct inode *inode, struct file *filp,
-		    unsigned int cmd, unsigned long arg)
+static int i810_clear_bufs(struct inode *inode, struct file *filp,
+			   unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1084,8 +1084,8 @@ int i810_clear_bufs(struct inode *inode, struct file *filp,
 	return 0;
 }
 
-int i810_swap_bufs(struct inode *inode, struct file *filp,
-		   unsigned int cmd, unsigned long arg)
+static int i810_swap_bufs(struct inode *inode, struct file *filp,
+			  unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1098,8 +1098,8 @@ int i810_swap_bufs(struct inode *inode, struct file *filp,
 	return 0;
 }
 
-int i810_getage(struct inode *inode, struct file *filp, unsigned int cmd,
-		unsigned long arg)
+static int i810_getage(struct inode *inode, struct file *filp, unsigned int cmd,
+		       unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1112,8 +1112,8 @@ int i810_getage(struct inode *inode, struct file *filp, unsigned int cmd,
 	return 0;
 }
 
-int i810_getbuf(struct inode *inode, struct file *filp, unsigned int cmd,
-		unsigned long arg)
+static int i810_getbuf(struct inode *inode, struct file *filp, unsigned int cmd,
+		       unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1143,15 +1143,15 @@ int i810_getbuf(struct inode *inode, struct file *filp, unsigned int cmd,
 	return retcode;
 }
 
-int i810_copybuf(struct inode *inode,
-		 struct file *filp, unsigned int cmd, unsigned long arg)
+static int i810_copybuf(struct inode *inode, struct file *filp, 
+			unsigned int cmd, unsigned long arg)
 {
 	/* Never copy - 2.4.x doesn't need it */
 	return 0;
 }
 
-int i810_docopy(struct inode *inode, struct file *filp, unsigned int cmd,
-		unsigned long arg)
+static int i810_docopy(struct inode *inode, struct file *filp, unsigned int cmd,
+		       unsigned long arg)
 {
 	/* Never copy - 2.4.x doesn't need it */
 	return 0;
@@ -1217,8 +1217,8 @@ static void i810_dma_dispatch_mc(drm_device_t * dev, drm_buf_t * buf, int used,
 	ADVANCE_LP_RING();
 }
 
-int i810_dma_mc(struct inode *inode, struct file *filp,
-		unsigned int cmd, unsigned long arg)
+static int i810_dma_mc(struct inode *inode, struct file *filp,
+		       unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1248,8 +1248,8 @@ int i810_dma_mc(struct inode *inode, struct file *filp,
 	return 0;
 }
 
-int i810_rstatus(struct inode *inode, struct file *filp,
-		 unsigned int cmd, unsigned long arg)
+static int i810_rstatus(struct inode *inode, struct file *filp,
+			unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1258,8 +1258,8 @@ int i810_rstatus(struct inode *inode, struct file *filp,
 	return (int)(((u32 *) (dev_priv->hw_status_page))[4]);
 }
 
-int i810_ov0_info(struct inode *inode, struct file *filp,
-		  unsigned int cmd, unsigned long arg)
+static int i810_ov0_info(struct inode *inode, struct file *filp,
+			 unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1274,8 +1274,8 @@ int i810_ov0_info(struct inode *inode, struct file *filp,
 	return 0;
 }
 
-int i810_fstatus(struct inode *inode, struct file *filp,
-		 unsigned int cmd, unsigned long arg)
+static int i810_fstatus(struct inode *inode, struct file *filp,
+			unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1285,8 +1285,8 @@ int i810_fstatus(struct inode *inode, struct file *filp,
 	return I810_READ(0x30008);
 }
 
-int i810_ov0_flip(struct inode *inode, struct file *filp,
-		  unsigned int cmd, unsigned long arg)
+static int i810_ov0_flip(struct inode *inode, struct file *filp,
+			 unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1311,7 +1311,7 @@ static void i810_do_init_pageflip(drm_device_t * dev)
 	dev_priv->sarea_priv->pf_current_page = dev_priv->current_page;
 }
 
-int i810_do_cleanup_pageflip(drm_device_t * dev)
+static int i810_do_cleanup_pageflip(drm_device_t * dev)
 {
 	drm_i810_private_t *dev_priv = dev->dev_private;
 
@@ -1323,8 +1323,8 @@ int i810_do_cleanup_pageflip(drm_device_t * dev)
 	return 0;
 }
 
-int i810_flip_bufs(struct inode *inode, struct file *filp,
-		   unsigned int cmd, unsigned long arg)
+static int i810_flip_bufs(struct inode *inode, struct file *filp,
+			  unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1346,6 +1346,16 @@ void i810_driver_pretakedown(drm_device_t * dev)
 	i810_dma_cleanup(dev);
 }
 
+void i810_driver_prerelease(drm_device_t * dev, DRMFILE filp)
+{
+	if (dev->dev_private) {
+		drm_i810_private_t *dev_priv = dev->dev_private;
+		if (dev_priv->page_flipping) {
+			i810_do_cleanup_pageflip(dev);
+		}
+	}
+}
+
 void i810_driver_release(drm_device_t * dev, struct file *filp)
 {
 	i810_reclaim_buffers(dev, filp);
@@ -1356,3 +1366,23 @@ int i810_driver_dma_quiescent(drm_device_t * dev)
 	i810_dma_quiescent(dev);
 	return 0;
 }
+
+drm_ioctl_desc_t i810_ioctls[] = {
+	[DRM_IOCTL_NR(DRM_I810_INIT)] = {i810_dma_init, 1, 1},
+	[DRM_IOCTL_NR(DRM_I810_VERTEX)] = {i810_dma_vertex, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_CLEAR)] = {i810_clear_bufs, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_FLUSH)] = {i810_flush_ioctl, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_GETAGE)] = {i810_getage, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_GETBUF)] = {i810_getbuf, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_SWAP)] = {i810_swap_bufs, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_COPY)] = {i810_copybuf, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_DOCOPY)] = {i810_docopy, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_OV0INFO)] = {i810_ov0_info, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_FSTATUS)] = {i810_fstatus, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_OV0FLIP)] = {i810_ov0_flip, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_MC)] = {i810_dma_mc, 1, 1},
+	[DRM_IOCTL_NR(DRM_I810_RSTATUS)] = {i810_rstatus, 1, 0},
+	[DRM_IOCTL_NR(DRM_I810_FLIP)] = {i810_flip_bufs, 1, 0}
+};
+
+int i810_max_ioctl = DRM_ARRAY_SIZE(i810_ioctls);
