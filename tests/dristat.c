@@ -131,7 +131,7 @@ static void getclients(int fd)
 
     for (i = 0; !drmGetClient(fd, i, &auth, &pid, &uid, &magic, &iocs); i++) {
 	sprintf(buf, "/proc/%d/cmdline", pid);
-	memset(cmd, sizeof(cmd), 0);
+	memset(cmd, 0, sizeof(cmd));
 	if ((procfd = open(buf, O_RDONLY, 0)) >= 0) {
 	    read(procfd, cmd, sizeof(cmd)-1);
 	    close(procfd);
