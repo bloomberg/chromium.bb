@@ -76,8 +76,8 @@ static void mgaEmitClipRect(drm_mga_private_t * dev_priv,
 
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 	PRIMOUTREG(MGAREG_CXBNDRY, ((box->x2) << 16) | (box->x1));
-	PRIMOUTREG(MGAREG_YTOP, box->y1 * dev_priv->stride / 2);
-	PRIMOUTREG(MGAREG_YBOT, box->y2 * dev_priv->stride / 2);
+	PRIMOUTREG(MGAREG_YTOP, box->y1 * dev_priv->stride / dev_priv->cpp);
+	PRIMOUTREG(MGAREG_YBOT, box->y2 * dev_priv->stride / dev_priv->cpp);
 
 	PRIMADVANCE(dev_priv);
 }
@@ -746,6 +746,8 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 	int nbox = sarea_priv->nbox;
 	drm_clip_rect_t *pbox = sarea_priv->boxes;
 	int i;
+	int pixel_stride = dev_priv->stride / dev_priv->cpp;
+
 	PRIMLOCALS;
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
@@ -759,7 +761,7 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 	PRIMOUTREG(MGAREG_DSTORG, dev_priv->frontOffset);
 	PRIMOUTREG(MGAREG_MACCESS, dev_priv->mAccess);
 	PRIMOUTREG(MGAREG_SRCORG, dev_priv->backOffset);
-	PRIMOUTREG(MGAREG_AR5, dev_priv->stride / 2);
+	PRIMOUTREG(MGAREG_AR5, pixel_stride);
 
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
@@ -768,7 +770,7 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 
 	for (i = 0; i < nbox; i++) {
 		unsigned int h = pbox[i].y2 - pbox[i].y1;
-		unsigned int start = pbox[i].y1 * dev_priv->stride / 2;
+		unsigned int start = pbox[i].y1 * pixel_stride;
 
 		DRM_DEBUG("dispatch swap %d,%d-%d,%d!\n",
 			  pbox[i].x1, pbox[i].y1, pbox[i].x2, pbox[i].y2);
