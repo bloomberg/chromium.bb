@@ -71,6 +71,9 @@
 #define __HAVE_OLD_DMA			1
 #define __HAVE_PCI_DMA			1
 
+#define __HAVE_DRIVER_FOPS_READ		1
+#define __HAVE_DRIVER_FOPS_POLL		1
+
 #define __HAVE_MULTIPLE_DMA_QUEUES	1
 #define __HAVE_DMA_WAITQUEUE		1
 
@@ -88,7 +91,7 @@
 #define __HAVE_DMA_QUIESCENT		1
 #define DRIVER_DMA_QUIESCENT() do {					\
 	/* FIXME ! */ 							\
-	gamma_dma_quiescent_single(dev);					\
+	gamma_dma_quiescent_single(dev);				\
 	return 0;							\
 } while (0)
 
@@ -98,22 +101,5 @@
 #define DRIVER_AGP_BUFFERS_MAP( dev )					\
 	((drm_gamma_private_t *)((dev)->dev_private))->buffers
 
-/* Gamma makes use of a wierd mechanism to get the DDX driver to do
- * context switches on behalf of the 3d clients via a trip to the
- * kernel module.  This requires read/poll functionality on the drm
- * file descriptor not normally present:
- */
-#define DRIVER_FOPS				\
-static struct file_operations	DRM(fops) = {	\
-	.owner   = THIS_MODULE,			\
-	.open	 = DRM(open),			\
-	.flush	 = DRM(flush),			\
-	.release = DRM(release),		\
-	.ioctl	 = DRM(ioctl),			\
-	.mmap	 = DRM(mmap),			\
-	.read	 = DRM(read),			\
-	.fasync  = DRM(fasync),			\
-	.poll	 = DRM(poll),			\
-}
 
 #endif /* __GAMMA_H__ */

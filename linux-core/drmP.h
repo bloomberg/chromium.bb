@@ -684,6 +684,8 @@ extern void	     DRM(vm_shm_close)(struct vm_area_struct *vma);
 extern int	     DRM(mmap_dma)(struct file *filp,
 				   struct vm_area_struct *vma);
 extern int	     DRM(mmap)(struct file *filp, struct vm_area_struct *vma);
+extern unsigned int  DRM(poll)(struct file *filp, struct poll_table_struct *wait);
+extern ssize_t       DRM(read)(struct file *filp, char *buf, size_t count, loff_t *off);
 
 				/* Memory management support (drm_memory.h) */
 extern void	     DRM(mem_init)(void);

@@ -84,6 +84,12 @@
 #ifndef __HAVE_SG
 #define __HAVE_SG			0
 #endif
+#ifndef __HAVE_DRIVER_FOPS_READ
+#define __HAVE_DRIVER_FOPS_READ		0
+#endif
+#ifndef __HAVE_DRIVER_FOPS_POLL
+#define __HAVE_DRIVER_FOPS_POLL		0
+#endif
 
 #ifndef DRIVER_PREINIT
 #define DRIVER_PREINIT()
@@ -119,6 +125,8 @@ static struct file_operations	DRM(fops) = {	\
 	.ioctl	 = DRM(ioctl),			\
 	.mmap	 = DRM(mmap),			\
 	.fasync  = DRM(fasync),			\
+	.poll	 = DRM(poll),			\
+	.read	 = DRM(read),			\
 }
 #endif
 
