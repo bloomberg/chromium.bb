@@ -121,6 +121,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     FcPattern	    *pat;
     int		    slant;
     int		    weight;
+    int		    width = -1;
     int		    i;
     FcCharSet	    *cs;
     FcLangSet	    *ls;
@@ -162,15 +163,10 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (face->style_flags & FT_STYLE_FLAG_ITALIC)
 	slant = FC_SLANT_ITALIC;
 
-    if (!FcPatternAddInteger (pat, FC_SLANT, slant))
-	goto bail1;
 
     weight = FC_WEIGHT_MEDIUM;
     if (face->style_flags & FT_STYLE_FLAG_BOLD)
 	weight = FC_WEIGHT_BOLD;
-
-    if (!FcPatternAddInteger (pat, FC_WEIGHT, weight))
-	goto bail1;
 
     /*
      * Grub through the name table looking for family
@@ -529,6 +525,54 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    }
 	}
     }
+
+    if (os2 && os2->version != 0xffff)
+    {
+	if (os2->usWeightClass == 0)
+	    weight = -1;
+	else if (os2->usWeightClass < 150)
+	    weight = FC_WEIGHT_THIN;
+	else if (os2->usWeightClass < 250)
+	    weight = FC_WEIGHT_EXTRALIGHT;
+	else if (os2->usWeightClass < 350)
+	    weight = FC_WEIGHT_LIGHT;
+	else if (os2->usWeightClass < 450)
+	    weight = FC_WEIGHT_REGULAR;
+	else if (os2->usWeightClass < 550)
+	    weight = FC_WEIGHT_MEDIUM;
+	else if (os2->usWeightClass < 650)
+	    weight = FC_WEIGHT_SEMIBOLD;
+	else if (os2->usWeightClass < 750)
+	    weight = FC_WEIGHT_BOLD;
+	else if (os2->usWeightClass < 850)
+	    weight = FC_WEIGHT_EXTRABOLD;
+	else if (os2->usWeightClass < 950)
+	    weight = FC_WEIGHT_BLACK;
+	else
+	    weight = FC_WEIGHT_MEDIUM;
+
+	switch (os2->usWidthClass) {
+	case 1:	width = FC_WIDTH_ULTRACONDENSED; break;
+	case 2:	width = FC_WIDTH_EXTRACONDENSED; break;
+	case 3:	width = FC_WIDTH_CONDENSED; break;
+	case 4:	width = FC_WIDTH_SEMICONDENSED; break;
+	case 5:	width = FC_WIDTH_NORMAL; break;
+	case 6:	width = FC_WIDTH_SEMIEXPANDED; break;
+	case 7:	width = FC_WIDTH_EXPANDED; break;
+	case 8:	width = FC_WIDTH_EXTRAEXPANDED; break;
+	case 9:	width = FC_WIDTH_ULTRAEXPANDED; break;
+	}
+    }
+    
+    if (!FcPatternAddInteger (pat, FC_SLANT, slant))
+	goto bail1;
+
+    if (!FcPatternAddInteger (pat, FC_WEIGHT, weight))
+	goto bail1;
+
+    if (width != -1)
+	if (!FcPatternAddInteger (pat, FC_WIDTH, width))
+	    goto bail1;
 
     /*
      * Compute the unicode coverage for the font

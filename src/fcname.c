@@ -33,6 +33,7 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_STYLE,		FcTypeString, },
     { FC_SLANT,		FcTypeInteger, },
     { FC_WEIGHT,	FcTypeInteger, },
+    { FC_WIDTH,		FcTypeInteger, },
     { FC_SIZE,		FcTypeDouble, },
     { FC_ASPECT,	FcTypeDouble, },
     { FC_PIXEL_SIZE,	FcTypeDouble, },
@@ -137,16 +138,33 @@ FcNameGetObjectType (const char *object)
 }
 
 static const FcConstant _FcBaseConstants[] = {
+    { (FcChar8 *) "thin",	    "weight",   FC_WEIGHT_THIN, },
+    { (FcChar8 *) "extralight",	    "weight",   FC_WEIGHT_EXTRALIGHT, },
+    { (FcChar8 *) "ultralight",	    "weight",   FC_WEIGHT_EXTRALIGHT, },
     { (FcChar8 *) "light",	    "weight",   FC_WEIGHT_LIGHT, },
+    { (FcChar8 *) "regular",	    "weight",   FC_WEIGHT_REGULAR, },
     { (FcChar8 *) "medium",	    "weight",   FC_WEIGHT_MEDIUM, },
     { (FcChar8 *) "demibold",	    "weight",   FC_WEIGHT_DEMIBOLD, },
+    { (FcChar8 *) "semibold",	    "weight",   FC_WEIGHT_DEMIBOLD, },
     { (FcChar8 *) "bold",	    "weight",   FC_WEIGHT_BOLD, },
+    { (FcChar8 *) "extrabold",	    "weight",   FC_WEIGHT_EXTRABOLD, },
+    { (FcChar8 *) "ultrabold",	    "weight",   FC_WEIGHT_EXTRABOLD, },
     { (FcChar8 *) "black",	    "weight",   FC_WEIGHT_BLACK, },
 
     { (FcChar8 *) "roman",	    "slant",    FC_SLANT_ROMAN, },
     { (FcChar8 *) "italic",	    "slant",    FC_SLANT_ITALIC, },
     { (FcChar8 *) "oblique",	    "slant",    FC_SLANT_OBLIQUE, },
 
+    { (FcChar8 *) "ultracondensed", "width",	FC_WIDTH_ULTRACONDENSED },
+    { (FcChar8 *) "extracondensed", "width",	FC_WIDTH_EXTRACONDENSED },
+    { (FcChar8 *) "condensed",	    "width",	FC_WIDTH_CONDENSED },
+    { (FcChar8 *) "semicondensed", "width",	FC_WIDTH_SEMICONDENSED },
+    { (FcChar8 *) "normal",	    "width",	FC_WIDTH_NORMAL },
+    { (FcChar8 *) "semiexpanded",   "width",	FC_WIDTH_SEMIEXPANDED },
+    { (FcChar8 *) "expanded",	    "width",	FC_WIDTH_EXPANDED },
+    { (FcChar8 *) "extraexpanded",  "width",	FC_WIDTH_EXTRAEXPANDED },
+    { (FcChar8 *) "ultraexpanded",  "width",	FC_WIDTH_ULTRAEXPANDED },
+    
     { (FcChar8 *) "proportional",   "spacing",  FC_PROPORTIONAL, },
     { (FcChar8 *) "mono",	    "spacing",  FC_MONO, },
     { (FcChar8 *) "charcell",	    "spacing",  FC_CHARCELL, },

@@ -73,6 +73,7 @@ typedef int		FcBool;
 #define FC_VERTICAL_LAYOUT  "verticallayout"	/* Bool (false) */
 #define FC_AUTOHINT	    "autohint"		/* Bool (false) */
 #define FC_GLOBAL_ADVANCE   "globaladvance"	/* Bool (true) */
+#define FC_WIDTH	    "width"		/* Int */
 #define FC_FILE		    "file"		/* String */
 #define FC_INDEX	    "index"		/* Int */
 #define FC_FT_FACE	    "ftface"		/* FT_Face */
@@ -96,19 +97,36 @@ typedef int		FcBool;
 #define FC_CHAR_HEIGHT	    "charheight"/* Int */
 #define FC_MATRIX	    "matrix"    /* FcMatrix */
 
-#define FC_WEIGHT_LIGHT	    0
-#define FC_WEIGHT_MEDIUM    100
-#define FC_WEIGHT_DEMIBOLD  180
-#define FC_WEIGHT_BOLD	    200
-#define FC_WEIGHT_BLACK	    210
+#define FC_WEIGHT_THIN		    0
+#define FC_WEIGHT_EXTRALIGHT	    40
+#define FC_WEIGHT_ULTRALIGHT	    FC_WEIGHT_EXTRALIGHT
+#define FC_WEIGHT_LIGHT		    50
+#define FC_WEIGHT_REGULAR	    80
+#define FC_WEIGHT_NORMAL	    FC_WEIGHT_REGULAR
+#define FC_WEIGHT_MEDIUM	    100
+#define FC_WEIGHT_DEMIBOLD	    180
+#define FC_WEIGHT_SEMIBOLD	    FC_WEIGHT_DEMIBOLD
+#define FC_WEIGHT_BOLD		    200
+#define FC_WEIGHT_EXTRABOLD	    205
+#define FC_WEIGHT_BLACK		    210
 
-#define FC_SLANT_ROMAN	    0
-#define FC_SLANT_ITALIC	    100
-#define FC_SLANT_OBLIQUE    110
+#define FC_SLANT_ROMAN		    0
+#define FC_SLANT_ITALIC		    100
+#define FC_SLANT_OBLIQUE	    110
 
-#define FC_PROPORTIONAL	    0
-#define FC_MONO		    100
-#define FC_CHARCELL	    110
+#define FC_WIDTH_ULTRACONDENSED	    50
+#define FC_WIDTH_EXTRACONDENSED	    63
+#define FC_WIDTH_CONDENSED	    75
+#define FC_WIDTH_SEMICONDENSED	    87
+#define FC_WIDTH_NORMAL		    100
+#define FC_WIDTH_SEMIEXPANDED	    113
+#define FC_WIDTH_EXPANDED	    125
+#define FC_WIDTH_EXTRAEXPANDED	    150
+#define FC_WIDTH_ULTRAEXPANDED	    200
+
+#define FC_PROPORTIONAL		    0
+#define FC_MONO			    100
+#define FC_CHARCELL		    110
 
 /* sub-pixel order */
 #define FC_RGBA_UNKNOWN	    0

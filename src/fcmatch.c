@@ -206,20 +206,23 @@ static FcMatcher _FcMatchers [] = {
     { FC_WEIGHT,	FcCompareNumber,	9, 9 },
 #define MATCH_WEIGHT	    8
     
-    { FC_ANTIALIAS,	FcCompareBool,		10, 10 },
-#define MATCH_ANTIALIAS	    9
+    { FC_WIDTH,		FcCompareNumber,	10, 10 },
+#define MATCH_WIDTH	    9
     
-    { FC_RASTERIZER,	FcCompareString,	11, 11 },
-#define MATCH_RASTERIZER    10
+    { FC_ANTIALIAS,	FcCompareBool,		11, 11 },
+#define MATCH_ANTIALIAS	    10
     
-    { FC_OUTLINE,	FcCompareBool,		12, 12 },
-#define MATCH_OUTLINE	    11
+    { FC_RASTERIZER,	FcCompareString,	12, 12 },
+#define MATCH_RASTERIZER    11
+    
+    { FC_OUTLINE,	FcCompareBool,		13, 13 },
+#define MATCH_OUTLINE	    12
 
-    { FC_FONTVERSION,	FcCompareNumber,	13, 13 },
-#define MATCH_FONTVERSION   12
+    { FC_FONTVERSION,	FcCompareNumber,	14, 14 },
+#define MATCH_FONTVERSION   13
 };
 
-#define NUM_MATCH_VALUES    14
+#define NUM_MATCH_VALUES    15
 
 static FcBool
 FcCompareValueList (const char  *object,
@@ -273,7 +276,13 @@ FcCompareValueList (const char  *object,
     case 'p':
 	i = MATCH_PIXEL_SIZE; break;
     case 'w':
-	i = MATCH_WEIGHT; break;
+	switch (FcToLower (object[1])) {
+	case 'i':
+	    i = MATCH_WIDTH; break;
+	case 'e':
+	    i = MATCH_WEIGHT; break;
+	}
+	break;
     case 'r':
 	i = MATCH_RASTERIZER; break;
     case 'o':

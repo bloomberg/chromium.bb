@@ -55,6 +55,9 @@ FcDefaultSubstitute (FcPattern *pattern)
 	}
     }
 
+    if (FcPatternGet (pattern, FC_WIDTH, 0, &v) == FcResultNoMatch)
+	FcPatternAddInteger (pattern, FC_WIDTH, FC_WIDTH_NORMAL);
+
     for (i = 0; i < NUM_FC_BOOL_DEFAULTS; i++)
 	if (FcPatternGet (pattern, FcBoolDefaults[i].field, 0, &v) == FcResultNoMatch)
 	    FcPatternAddBool (pattern, FcBoolDefaults[i].field, FcBoolDefaults[i].value);
