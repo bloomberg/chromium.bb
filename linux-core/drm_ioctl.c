@@ -338,7 +338,7 @@ int drm_setversion(DRM_IOCTL_ARGS)
 		if (sv.drm_di_major != DRM_IF_MAJOR ||
 		    sv.drm_di_minor < 0 || sv.drm_di_minor > DRM_IF_MINOR)
 			return EINVAL;
-		if_version = DRM_IF_VERSION(sv.drm_di_major, sv.drm_dd_minor);
+		if_version = DRM_IF_VERSION(sv.drm_di_major, sv.drm_di_minor);
 		dev->if_version = DRM_MAX(if_version, dev->if_version);
 		if (sv.drm_di_minor >= 1) {
 			/*
