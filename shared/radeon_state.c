@@ -2499,8 +2499,8 @@ int radeon_cp_getparam( DRM_IOCTL_ARGS )
 	 */
 	case RADEON_PARAM_SAREA_HANDLE:
 		/* The lock is the first dword in the sarea. */
-		value = (long)dev->lock.hw_lock; 
-		break;	
+		value = (long)dev->lock.hw_lock;
+		break;
 #endif
 	case RADEON_PARAM_GART_TEX_HANDLE:
 		value = dev_priv->gart_textures_offset;
