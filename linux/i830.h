@@ -81,6 +81,7 @@
 	{0x8086, 0x3577, 0, "Intel i830M GMCH"},			\
 	{0x8086, 0x2562, 0, "Intel i845G GMCH"},			\
 	{0x8086, 0x3582, 0, "Intel i852GM/i855GM GMCH"},		\
+ 	{0x8086, 0x2572, 0, "Intel i865G GMCH"}, 		\
 	{0, 0, 0, NULL}
 
 #define __HAVE_COUNTERS         4
