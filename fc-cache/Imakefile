@@ -10,4 +10,4 @@ ComplexProgramTarget(fc-cache)
 LinkBuildBinary(ProgramTargetName(fc-cache))
 
 install::
-	FC_DEBUG=128 FONTCONFIG_PATH=.. ./fc-cache -v
+	FC_DEBUG=128 $(FCCACHE) -v
