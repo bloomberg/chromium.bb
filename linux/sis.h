@@ -30,13 +30,15 @@
 #define __SIS_H__
 
 /* This remains constant for all DRM template files.
+ * Name it sisdrv_##x as there's a conflict with sis_free/malloc in the kernel
+ * that's used for fb devices 
  */
-#define DRM(x) sis_##x
+#define DRM(x) sisdrv_##x
 
 /* General customization:
  */
 #define __HAVE_AGP		1
-#define __MUST_HAVE_AGP		1
+#define __MUST_HAVE_AGP		0
 #define __HAVE_MTRR		1
 #define __HAVE_CTX_BITMAP	1
 

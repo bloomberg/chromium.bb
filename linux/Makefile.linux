@@ -175,7 +175,7 @@ ifeq ($(SIS),1)
 # file to see if we can, at least, compile the driver.
 MODS += sis.o
 
-SISOBJS=	sis_drv.o 
+SISOBJS=	sis_drv.o sis_mm.o sis_ds.o 
 SISHEADERS=	sis_drv.h sis_drm.h $(DRMHEADERS)
 MODCFLAGS += -DCONFIG_DRM_SIS
 endif

@@ -17,4 +17,16 @@ typedef struct {
   unsigned int left, right;
 } drm_sis_flip_t;
 
+int sis_fb_alloc(struct inode *inode, struct file *filp, unsigned int cmd,
+		  unsigned long arg);
+int sis_fb_free(struct inode *inode, struct file *filp, unsigned int cmd,
+		  unsigned long arg);
+
+int sisp_agp_init(struct inode *inode, struct file *filp, unsigned int cmd,
+		  unsigned long arg);
+int sisp_agp_alloc(struct inode *inode, struct file *filp, unsigned int cmd,
+		  unsigned long arg);
+int sisp_agp_free(struct inode *inode, struct file *filp, unsigned int cmd,
+		  unsigned long arg);
+
 #endif
