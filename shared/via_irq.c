@@ -54,14 +54,15 @@ irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
 {
 	drm_device_t *dev = (drm_device_t *) arg;
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
-	int handled = IRQ_NONE;
 	u32 status = VIA_READ(VIA_REG_INTERRUPT);
 
 	if (status & VIA_IRQ_VBI_PENDING) {
 		atomic_inc(&dev->vbl_received);
 		DRM_WAKEUP(&dev->vbl_queue);
 		DRM(vbl_send_signals) (dev);
-		handled = IRQ_HANDLED;
+
+		VIA_WRITE(VIA_REG_INTERRUPT, status);
+		return IRQ_HANDLED;
 	}
 
 #if 0
@@ -74,7 +75,7 @@ irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
 #endif
 
 	VIA_WRITE(VIA_REG_INTERRUPT, status);
-	return handled;
+	return IRQ_NONE;
 }
 
 static __inline__ void viadrv_acknowledge_irqs(drm_via_private_t * dev_priv)
