@@ -28,8 +28,8 @@
  */
 
 
-#include "via_3d_reg.h"
 #include "via.h"
+#include "via_3d_reg.h"
 #include "drmP.h"
 
 typedef enum{
@@ -251,6 +251,7 @@ typedef struct{
 	uint32_t height[2][10];
 	uint32_t tex_level_lo[2]; 
 	uint32_t tex_level_hi[2];
+	uint32_t tex_palette_size[2];
 	sequence_t unfinished;
 	int agp_texture;
 	drm_device_t *dev;
@@ -258,6 +259,19 @@ typedef struct{
 } sequence_context_t;
 
 static sequence_context_t hc_sequence;
+
+
+static __inline__ int
+eat_words(const uint32_t **buf, const uint32_t *buf_end, unsigned num_words)
+{
+	if ((*buf - buf_end) >= num_words) {
+		*buf += num_words;
+		return 0;
+	} 
+	DRM_ERROR("Illegal termination of DMA command buffer\n");
+	return 1;
+}
+
 
 /*
  * Partially stolen from drm_memory.h
@@ -475,12 +489,14 @@ investigate_hazard( uint32_t cmd, hazard_t hz, sequence_context_t *cur_seq)
 		return 0;
 	case check_texture_addr_mode:
 		cur_seq->unfinished = tex_address;
-		if ( 2 != (tmp = cmd & 0x00000003)) {
-			cur_seq->agp_texture = (tmp == 3);
-			return 0;
+		if ( 2 == (tmp = cmd & 0x00000003)) {
+			DRM_ERROR("Attempt to fetch texture from system memory.\n"); 
+			return 2;
 		}
-		DRM_ERROR("Attempt to fetch texture from system memory.\n"); 
-		return 2;
+		cur_seq->agp_texture = (tmp == 3);
+		cur_seq->tex_palette_size[cur_seq->texture] = 
+			(cmd >> 16) & 0x000000007;
+		return 0;
 	default:
 		DRM_ERROR("Illegal DMA data: 0x%x\n", cmd);
 		return 2;
@@ -489,8 +505,6 @@ investigate_hazard( uint32_t cmd, hazard_t hz, sequence_context_t *cur_seq)
 }
 
 
-
-		
 static __inline__ verifier_state_t
 via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 {
@@ -513,8 +527,8 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 		/* 
 		 * Command vertex data.
 		 * It is assumed that the command regulator remains in this state
-		 * until it encounters a double fire command or a header2 data.
-		 * CHECK: Could vertex data accidently be header2 or fire?
+		 * until it encounters a possibly double fire command or a header2 data.
+		 * FIXME: Vertex data can accidently be header2 or fire.
 		 * CHECK: What does the regulator do if it encounters a header1 
 		 * cmd?
 		 */
@@ -527,7 +541,7 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 				    ((*buf & HALCYON_FIREMASK) == HALCYON_FIRECMD))
 					buf++;
 				if ((buf < buf_end) && 
-				    ((*buf & HALCYON_CMDBMASK) != HC_ACMD_HCmdB))
+				    ((*buf & HALCYON_FIREMASK) == HALCYON_FIRECMD))
 					break;
 			}
 			buf++;
@@ -550,9 +564,24 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 		hz_table = table3;
 		break;
 	case HC_ParaType_Auto:
-		buf += 2;
+		if (eat_words(&buf, buf_end, 2))
+			return state_error;
 		*buffer = buf;
 		return state_command;
+	case (HC_ParaType_Palette | (HC_SubType_Stipple << 8)):
+		if (eat_words(&buf, buf_end, 32))
+			return state_error;
+		*buffer = buf;
+		return state_command;
+	case (HC_ParaType_Palette | (HC_SubType_TexPalette0 << 8)):
+	case (HC_ParaType_Palette | (HC_SubType_TexPalette1 << 8)):
+		DRM_ERROR("Texture palettes are rejected because of "
+			  "lack of info how to determine their size.\n");
+		return state_error;
+	case (HC_ParaType_Palette | (HC_SubType_FogTable << 8)):
+		DRM_ERROR("Fog factor palettes are rejected because of "
+			  "lack of info how to determine their size.\n");
+		return state_error;
 	default:
 
 		/*

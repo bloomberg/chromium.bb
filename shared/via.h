@@ -30,11 +30,11 @@
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome"
-#define DRIVER_DATE		"20041221"
+#define DRIVER_DATE		"20041231"
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		3
-#define DRIVER_PATCHLEVEL	3
+#define DRIVER_PATCHLEVEL	4
 
 #define DRIVER_IOCTLS							\
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_ALLOCMEM)]  = { via_mem_alloc,  1, 0 }, \
