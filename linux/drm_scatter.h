@@ -179,7 +179,7 @@ int DRM(sg_alloc)( struct inode *inode, struct file *filp,
 	for ( i = 0 ; i < pages ; i++ ) {
 		unsigned long *tmp;
 
-		tmp = (unsigned long *)entry->pagelist[i]->virtual;
+		tmp = page_address( entry->pagelist[i] );
 		for ( j = 0 ;
 		      j < PAGE_SIZE / sizeof(unsigned long) ;
 		      j++, tmp++ ) {
@@ -197,7 +197,7 @@ int DRM(sg_alloc)( struct inode *inode, struct file *filp,
 					   "virtual mapping\n" );
 			}
 		}
-		tmp = (unsigned long *)entry->pagelist[i]->virtual;
+		tmp = page_address( entry->pagelist[i] );
 		for(j = 0 ;
 		    j < PAGE_SIZE / sizeof(unsigned long) ;
 		    j++, tmp++) {

@@ -133,9 +133,9 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 #if defined(__alpha__) && (LINUX_VERSION_CODE >= 0x020400)
 		/* we need to support large memory configurations */
 		entry->busaddr[i] = pci_map_single(dev->pdev,
-						   entry->pagelist[i]->virtual,
-						   PAGE_SIZE,
-						   PCI_DMA_TODEVICE);
+					   page_address( entry->pagelist[i] ),
+					   PAGE_SIZE,
+					   PCI_DMA_TODEVICE);
 		if (entry->busaddr[i] == 0) {
 			DRM_ERROR( "unable to map PCIGART pages!\n" );
 			DRM(ati_pcigart_cleanup)( dev, address, bus_address );
@@ -145,7 +145,7 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 		}
 		page_base = (u32) entry->busaddr[i];
 #else
-		page_base = virt_to_bus( entry->pagelist[i]->virtual );
+		page_base = page_to_bus( entry->pagelist[i] );
 #endif
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
 			*pci_gart++ = cpu_to_le32( page_base );

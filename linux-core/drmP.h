@@ -76,6 +76,11 @@
 #include <asm/pgalloc.h>
 #include "drm.h"
 
+/* page_to_bus for earlier kernels, not optimal in all cases */
+#ifndef page_to_bus
+#define page_to_bus(page)	(virt_to_bus(page_address(page)))
+#endif
+
 /* DRM template customization defaults
  */
 #ifndef __HAVE_AGP

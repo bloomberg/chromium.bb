@@ -358,10 +358,10 @@ static void r128_cce_init_ring_buffer( drm_device_t *dev,
      			   entry->handle + tmp_ofs );
 #else
 		R128_WRITE( R128_PM4_BUFFER_DL_RPTR_ADDR,
-			    virt_to_bus(entry->pagelist[page_ofs]->virtual));
+			    page_to_bus(entry->pagelist[page_ofs]));
 
 		DRM_DEBUG( "ring rptr: offset=0x%08lx handle=0x%08lx\n",
-			   virt_to_bus(entry->pagelist[page_ofs]->virtual),
+			   page_to_bus(entry->pagelist[page_ofs]),
 			   entry->handle + tmp_ofs );
 #endif
 	}
