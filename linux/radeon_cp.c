@@ -24,12 +24,12 @@
  * DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Kevin E. Martin <martin@valinux.com>
- *    Gareth Hughes <gareth@valinux.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
+ *
  */
 
 #define __NO_VERSION__
-#include "radeon.h"
 #include "drmP.h"
 #include "radeon_drv.h"
 
@@ -298,6 +298,26 @@ static u32 radeon_cp_microcode[][2] = {
 	{ 0000000000, 0000000000 },
 	{ 0000000000, 0000000000 },
 };
+
+
+#define DO_IOREMAP(_m) (_m)->handle = drm_ioremap((_m)->offset, (_m)->size)
+
+#define DO_IOREMAPFREE(_m)						\
+	do {								\
+		if ((_m)->handle && (_m)->size)				\
+			drm_ioremapfree((_m)->handle, (_m)->size);	\
+	} while (0)
+
+#define DO_FIND_MAP(_m, _o)						\
+	do {								\
+		int _i;							\
+		for (_i = 0; _i < dev->map_count; _i++) {		\
+			if (dev->maplist[_i]->offset == _o) {		\
+				_m = dev->maplist[_i];			\
+				break;					\
+			}						\
+		}							\
+	} while (0)
 
 
 int RADEON_READ_PLL(drm_device_t *dev, int addr)
@@ -601,9 +621,9 @@ static void radeon_cp_init_ring_buffer( drm_device_t *dev )
 static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 {
 	drm_radeon_private_t *dev_priv;
-	struct list_head *list;
+        int i;
 
-	dev_priv = DRM(alloc)( sizeof(drm_radeon_private_t), DRM_MEM_DRIVER );
+	dev_priv = drm_alloc( sizeof(drm_radeon_private_t), DRM_MEM_DRIVER );
 	if ( dev_priv == NULL )
 		return -ENOMEM;
 	dev->dev_private = (void *)dev_priv;
@@ -617,7 +637,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	 * the CP ring code.
 	 */
 	if ( dev_priv->is_pci ) {
-		DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
+		drm_free( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 		return -EINVAL;
 	}
@@ -625,7 +645,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	dev_priv->usec_timeout = init->usec_timeout;
 	if ( dev_priv->usec_timeout < 1 ||
 	     dev_priv->usec_timeout > RADEON_MAX_USEC_TIMEOUT ) {
-		DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
+		drm_free( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 		return -EINVAL;
 	}
@@ -642,7 +662,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	 */
 	if ( ( init->cp_mode != RADEON_CSQ_PRIBM_INDDIS ) &&
 	     ( init->cp_mode != RADEON_CSQ_PRIBM_INDBM ) ) {
-		DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
+		drm_free( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 		return -EINVAL;
 	}
@@ -702,42 +722,49 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 					 RADEON_BFACE_SOLID |
 					 RADEON_FFACE_SOLID |
 					 RADEON_FLAT_SHADE_VTX_LAST |
+
 					 RADEON_DIFFUSE_SHADE_FLAT |
 					 RADEON_ALPHA_SHADE_FLAT |
 					 RADEON_SPECULAR_SHADE_FLAT |
 					 RADEON_FOG_SHADE_FLAT |
+
 					 RADEON_VTX_PIX_CENTER_OGL |
 					 RADEON_ROUND_MODE_TRUNC |
 					 RADEON_ROUND_PREC_8TH_PIX);
 
-	list_for_each(list, &dev->maplist->head) {
-		drm_map_list_t *r_list = (drm_map_list_t *)list;
-		if( r_list->map &&
-		    r_list->map->type == _DRM_SHM &&
-		    r_list->map->flags & _DRM_CONTAINS_LOCK ) {
-			dev_priv->sarea = r_list->map;
- 			break;
- 		}
- 	}
+	/* FIXME: We want multiple shared areas, including one shared
+	 * only by the X Server and kernel module.
+	 */
+	for ( i = 0 ; i < dev->map_count ; i++ ) {
+		if ( dev->maplist[i]->type == _DRM_SHM ) {
+			dev_priv->sarea = dev->maplist[i];
+			break;
+		}
+	}
 
-	DRM_FIND_MAP( dev_priv->fb, init->fb_offset );
-	DRM_FIND_MAP( dev_priv->mmio, init->mmio_offset );
-	DRM_FIND_MAP( dev_priv->cp_ring, init->ring_offset );
-	DRM_FIND_MAP( dev_priv->ring_rptr, init->ring_rptr_offset );
-	DRM_FIND_MAP( dev_priv->buffers, init->buffers_offset );
+	DO_FIND_MAP( dev_priv->fb, init->fb_offset );
+	DO_FIND_MAP( dev_priv->mmio, init->mmio_offset );
+	DO_FIND_MAP( dev_priv->cp_ring, init->ring_offset );
+	DO_FIND_MAP( dev_priv->ring_rptr, init->ring_rptr_offset );
+	DO_FIND_MAP( dev_priv->buffers, init->buffers_offset );
 
 	if ( !dev_priv->is_pci ) {
-		DRM_FIND_MAP( dev_priv->agp_textures,
-			      init->agp_textures_offset );
+		DO_FIND_MAP( dev_priv->agp_textures,
+			     init->agp_textures_offset );
 	}
 
 	dev_priv->sarea_priv =
 		(drm_radeon_sarea_t *)((u8 *)dev_priv->sarea->handle +
 				       init->sarea_priv_offset);
 
-	DRM_IOREMAP( dev_priv->cp_ring );
-	DRM_IOREMAP( dev_priv->ring_rptr );
-	DRM_IOREMAP( dev_priv->buffers );
+	DO_IOREMAP( dev_priv->cp_ring );
+	DO_IOREMAP( dev_priv->ring_rptr );
+	DO_IOREMAP( dev_priv->buffers );
+#if 0
+	if ( !dev_priv->is_pci ) {
+		DO_IOREMAP( dev_priv->agp_textures );
+	}
+#endif
 
 	dev_priv->agp_size = init->agp_size;
 	dev_priv->agp_vm_start = RADEON_READ( RADEON_CONFIG_APER_SIZE );
@@ -752,12 +779,10 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	dev_priv->ring.end = ((u32 *)dev_priv->cp_ring->handle
 			      + init->ring_size / sizeof(u32));
 	dev_priv->ring.size = init->ring_size;
-	dev_priv->ring.size_l2qw = DRM(order)( init->ring_size / 8 );
+	dev_priv->ring.size_l2qw = drm_order( init->ring_size / 8 );
 
 	dev_priv->ring.tail_mask =
 		(dev_priv->ring.size / sizeof(u32)) - 1;
-
-	dev_priv->ring.high_mark = RADEON_RING_HIGH_MARK;
 
 #if 0
 	/* Initialize the scratch register pointer.  This will cause
@@ -798,17 +823,22 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	return 0;
 }
 
-int radeon_do_cleanup_cp( drm_device_t *dev )
+static int radeon_do_cleanup_cp( drm_device_t *dev )
 {
 	if ( dev->dev_private ) {
 		drm_radeon_private_t *dev_priv = dev->dev_private;
 
-		DRM_IOREMAPFREE( dev_priv->cp_ring );
-		DRM_IOREMAPFREE( dev_priv->ring_rptr );
-		DRM_IOREMAPFREE( dev_priv->buffers );
+		DO_IOREMAPFREE( dev_priv->cp_ring );
+		DO_IOREMAPFREE( dev_priv->ring_rptr );
+		DO_IOREMAPFREE( dev_priv->buffers );
+#if 0
+		if ( !dev_priv->is_pci ) {
+			DO_IOREMAPFREE( dev_priv->agp_textures );
+		}
+#endif
 
-		DRM(free)( dev->dev_private, sizeof(drm_radeon_private_t),
-			   DRM_MEM_DRIVER );
+		drm_free( dev->dev_private, sizeof(drm_radeon_private_t),
+			  DRM_MEM_DRIVER );
 		dev->dev_private = NULL;
 	}
 
@@ -843,8 +873,11 @@ int radeon_cp_start( struct inode *inode, struct file *filp,
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	LOCK_TEST_WITH_RETURN( dev );
-
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
+	     dev->lock.pid != current->pid ) {
+		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
+		return -EINVAL;
+	}
 	if ( dev_priv->cp_running ) {
 		DRM_DEBUG( "%s while CP running\n", __FUNCTION__ );
 		return 0;
@@ -873,7 +906,11 @@ int radeon_cp_stop( struct inode *inode, struct file *filp,
 	int ret;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	LOCK_TEST_WITH_RETURN( dev );
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
+	     dev->lock.pid != current->pid ) {
+		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
+		return -EINVAL;
+	}
 
 	if ( copy_from_user( &stop, (drm_radeon_init_t *)arg, sizeof(stop) ) )
 		return -EFAULT;
@@ -915,8 +952,11 @@ int radeon_cp_reset( struct inode *inode, struct file *filp,
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	LOCK_TEST_WITH_RETURN( dev );
-
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
+	     dev->lock.pid != current->pid ) {
+		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
+		return -EINVAL;
+	}
 	if ( !dev_priv ) {
 		DRM_DEBUG( "%s called before init done\n", __FUNCTION__ );
 		return -EINVAL;
@@ -938,7 +978,11 @@ int radeon_cp_idle( struct inode *inode, struct file *filp,
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	LOCK_TEST_WITH_RETURN( dev );
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
+	     dev->lock.pid != current->pid ) {
+		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
+		return -EINVAL;
+	}
 
 	return radeon_do_cp_idle( dev_priv );
 }
@@ -950,7 +994,11 @@ int radeon_engine_reset( struct inode *inode, struct file *filp,
         drm_device_t *dev = priv->dev;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	LOCK_TEST_WITH_RETURN( dev );
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
+	     dev->lock.pid != current->pid ) {
+		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
+		return -EINVAL;
+	}
 
 	return radeon_do_engine_reset( dev );
 }
@@ -1000,7 +1048,11 @@ int radeon_fullscreen( struct inode *inode, struct file *filp,
         drm_device_t *dev = priv->dev;
 	drm_radeon_fullscreen_t fs;
 
-	LOCK_TEST_WITH_RETURN( dev );
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
+	     dev->lock.pid != current->pid ) {
+		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
+		return -EINVAL;
+	}
 
 	if ( copy_from_user( &fs, (drm_radeon_fullscreen_t *)arg,
 			     sizeof(fs) ) )
@@ -1033,8 +1085,8 @@ static int radeon_freelist_init( drm_device_t *dev )
 	drm_radeon_freelist_t *entry;
 	int i;
 
-	dev_priv->head = DRM(alloc)( sizeof(drm_radeon_freelist_t),
-				     DRM_MEM_DRIVER );
+	dev_priv->head = drm_alloc( sizeof(drm_radeon_freelist_t),
+				    DRM_MEM_DRIVER );
 	if ( dev_priv->head == NULL )
 		return -ENOMEM;
 
@@ -1045,8 +1097,8 @@ static int radeon_freelist_init( drm_device_t *dev )
 		buf = dma->buflist[i];
 		buf_priv = buf->dev_private;
 
-		entry = DRM(alloc)( sizeof(drm_radeon_freelist_t),
-				    DRM_MEM_DRIVER );
+		entry = drm_alloc( sizeof(drm_radeon_freelist_t),
+				   DRM_MEM_DRIVER );
 		if ( !entry ) return -ENOMEM;
 
 		entry->age = RADEON_BUFFER_FREE;
@@ -1166,15 +1218,30 @@ int radeon_wait_ring( drm_radeon_private_t *dev_priv, int n )
 	int i;
 
 	for ( i = 0 ; i < dev_priv->usec_timeout ; i++ ) {
-		radeon_update_ring_snapshot( ring );
-		if ( ring->space > n )
+		ring->space = *ring->head - ring->tail;
+		if ( ring->space <= 0 )
+			ring->space += ring->size;
+
+		if ( ring->space >= n )
 			return 0;
+
 		udelay( 1 );
 	}
 
 	/* FIXME: This return value is ignored in the BEGIN_RING macro! */
 	DRM_ERROR( "failed!\n" );
 	return -EBUSY;
+}
+
+void radeon_update_ring_snapshot( drm_radeon_private_t *dev_priv )
+{
+	drm_radeon_ring_buffer_t *ring = &dev_priv->ring;
+
+	ring->space = *ring->head - ring->tail;
+	if ( ring->space == 0 )
+		atomic_inc( &dev_priv->idle_count );
+	if ( ring->space <= 0 )
+		ring->space += ring->size;
 }
 
 static int radeon_cp_get_buffers( drm_device_t *dev, drm_dma_t *d )
@@ -1209,10 +1276,14 @@ int radeon_cp_buffers( struct inode *inode, struct file *filp,
 	int ret = 0;
 	drm_dma_t d;
 
-	LOCK_TEST_WITH_RETURN( dev );
-
-	if ( copy_from_user( &d, (drm_dma_t *)arg, sizeof(d) ) )
+	if ( copy_from_user( &d, (drm_dma_t *) arg, sizeof(d) ) )
 		return -EFAULT;
+
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
+	     dev->lock.pid != current->pid ) {
+		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
+		return -EINVAL;
+	}
 
 	/* Please don't send us buffers.
 	 */
@@ -1236,7 +1307,7 @@ int radeon_cp_buffers( struct inode *inode, struct file *filp,
 		ret = radeon_cp_get_buffers( dev, &d );
 	}
 
-	if ( copy_to_user( (drm_dma_t *)arg, &d, sizeof(d) ) )
+	if ( copy_to_user( (drm_dma_t *) arg, &d, sizeof(d) ) )
 		return -EFAULT;
 
 	return ret;

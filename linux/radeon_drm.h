@@ -26,6 +26,7 @@
  * Authors:
  *    Kevin E. Martin <martin@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
+ *
  */
 
 #ifndef __RADEON_DRM_H__
@@ -73,7 +74,7 @@
 
 /* Vertex/indirect buffer size
  */
-#define RADEON_BUFFER_SIZE		65536
+#define RADEON_BUFFER_SIZE		16384
 
 /* Byte offsets for indirect buffer data
  */
@@ -275,18 +276,15 @@ typedef struct drm_radeon_fullscreen {
 #define CLEAR_Y2	3
 #define CLEAR_DEPTH	4
 
-typedef union drm_radeon_clear_rect {
-	float f[5];
-	unsigned int ui[5];
-} drm_radeon_clear_rect_t;
-
 typedef struct drm_radeon_clear {
 	unsigned int flags;
+	int x, y, w, h;
 	unsigned int clear_color;
 	unsigned int clear_depth;
-	unsigned int color_mask;
-	unsigned int depth_mask;
-	drm_radeon_clear_rect_t *depth_boxes;
+	union {
+		float f[5];
+		unsigned int ui[5];
+	} rect;
 } drm_radeon_clear_t;
 
 typedef struct drm_radeon_vertex {
@@ -304,20 +302,14 @@ typedef struct drm_radeon_indices {
 	int discard;			/* Client finished with buffer? */
 } drm_radeon_indices_t;
 
-typedef struct drm_radeon_tex_image {
-	unsigned int x, y;		/* Blit coordinates */
-	unsigned int width, height;
-	const void *data;
-} drm_radeon_tex_image_t;
-
-typedef struct drm_radeon_texture {
-	int offset;
+typedef struct drm_radeon_blit {
+	int idx;
 	int pitch;
+	int offset;
 	int format;
-	int width;			/* Texture image coordinates */
-	int height;
-	drm_radeon_tex_image_t *image;
-} drm_radeon_texture_t;
+	unsigned short x, y;
+	unsigned short width, height;
+} drm_radeon_blit_t;
 
 typedef struct drm_radeon_stipple {
 	unsigned int *mask;
