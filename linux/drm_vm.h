@@ -353,7 +353,12 @@ int DRM(mmap_dma)(struct file *filp, struct vm_area_struct *vma)
 	unlock_kernel();
 
 	vma->vm_ops   = &DRM(vm_dma_ops);
+
+#if LINUX_VERSION_CODE <= 0x020414
 	vma->vm_flags |= VM_LOCKED | VM_SHM; /* Don't swap */
+#else
+	vma->vm_flags |= VM_RESERVED; /* Don't swap */
+#endif
 
 	vma->vm_file  =	 filp;	/* Needed for drm_vm_open() */
 	DRM(vm_open)(vma);
@@ -479,17 +484,29 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 		vma->vm_private_data = (void *)map;
 				/* Don't let this area swap.  Change when
 				   DRM_KERNEL advisory is supported. */
+#if LINUX_VERSION_CODE <= 0x020414
 		vma->vm_flags |= VM_LOCKED;
+#else
+		vma->vm_flags |= VM_RESERVED;
+#endif
 		break;
 	case _DRM_SCATTER_GATHER:
 		vma->vm_ops = &DRM(vm_sg_ops);
 		vma->vm_private_data = (void *)map;
-                vma->vm_flags |= VM_LOCKED;
+#if LINUX_VERSION_CODE <= 0x020414
+		vma->vm_flags |= VM_LOCKED;
+#else
+		vma->vm_flags |= VM_RESERVED;
+#endif
                 break;
 	default:
 		return -EINVAL;	/* This should never happen. */
 	}
+#if LINUX_VERSION_CODE <= 0x020414
 	vma->vm_flags |= VM_LOCKED | VM_SHM; /* Don't swap */
+#else
+	vma->vm_flags |= VM_RESERVED; /* Don't swap */
+#endif
 
 	vma->vm_file  =	 filp;	/* Needed for drm_vm_open() */
 	DRM(vm_open)(vma);

@@ -268,7 +268,13 @@ drm_agp_head_t *DRM(agp_init)(void)
 		case INTEL_I810:	head->chipset = "Intel i810";    break;
 
 		case INTEL_I815:	head->chipset = "Intel i815";	 break;
+#if LINUX_VERSION_CODE >= 0x020415
+	 	case INTEL_I820:	head->chipset = "Intel i820";	 break;
+#endif
 		case INTEL_I840:	head->chipset = "Intel i840";    break;
+#if LINUX_VERSION_CODE >= 0x020415
+		case INTEL_I845:	head->chipset = "Intel i845";    break;
+#endif
 		case INTEL_I850:	head->chipset = "Intel i850";	 break;
 
 		case VIA_GENERIC:	head->chipset = "VIA";           break;
