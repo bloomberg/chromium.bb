@@ -191,8 +191,8 @@ static int DRM(_queues_info)DRM_SYSCTL_HANDLER_ARGS
 		q = dev->queuelist[i];
 		atomic_inc(&q->use_count);
 		DRM_SYSCTL_PRINT_RET(atomic_dec(&q->use_count),
-				     "%5d/0x%03x %5ld %5ld"
-				     " %5ld/%c%c/%c%c%c %5d %10ld %10ld %10ld\n",
+				     "%5d/0x%03x %5d %5d"
+				     " %5d/%c%c/%c%c%c %5d %10d %10d %10d\n",
 				     i,
 				     q->flags,
 				     atomic_read(&q->use_count),
@@ -240,7 +240,7 @@ static int DRM(_bufs_info) DRM_SYSCTL_HANDLER_ARGS
 	DRM_SYSCTL_PRINT(" o     size count  free	 segs pages    kB\n\n");
 	for (i = 0; i <= DRM_MAX_ORDER; i++) {
 		if (dma->bufs[i].buf_count)
-			DRM_SYSCTL_PRINT("%2d %8d %5d %5ld %5d %5d %5d\n",
+			DRM_SYSCTL_PRINT("%2d %8d %5d %5d %5d %5d %5d\n",
 				       i,
 				       dma->bufs[i].buf_size,
 				       dma->bufs[i].buf_count,
