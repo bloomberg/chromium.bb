@@ -71,17 +71,20 @@
 #define DRM_VIA_CMDBUFFER	0x08
 #define DRM_VIA_FLUSH	        0x09
 #define DRM_VIA_PCICMD	        0x0a
+#define DRM_VIA_CMDBUF_SIZE	0x0b
 
-#define DRM_IOCTL_VIA_ALLOCMEM	DRM_IOWR(DRM_COMMAND_BASE + DRM_VIA_ALLOCMEM, drm_via_mem_t)
-#define DRM_IOCTL_VIA_FREEMEM	DRM_IOW( DRM_COMMAND_BASE + DRM_VIA_FREEMEM, drm_via_mem_t)
-#define DRM_IOCTL_VIA_AGP_INIT	DRM_IOWR(DRM_COMMAND_BASE + DRM_VIA_AGP_INIT, drm_via_agp_t)
-#define DRM_IOCTL_VIA_FB_INIT	DRM_IOWR(DRM_COMMAND_BASE + DRM_VIA_FB_INIT, drm_via_fb_t)
-#define DRM_IOCTL_VIA_MAP_INIT	DRM_IOWR(DRM_COMMAND_BASE + DRM_VIA_MAP_INIT, drm_via_init_t)
-#define DRM_IOCTL_VIA_DEC_FUTEX DRM_IOW( DRM_COMMAND_BASE + DRM_VIA_DEC_FUTEX, drm_via_futex_t)
-#define DRM_IOCTL_VIA_DMA_INIT	DRM_IOWR(DRM_COMMAND_BASE + DRM_VIA_DMA_INIT, drm_via_dma_init_t)
-#define DRM_IOCTL_VIA_CMDBUFFER	DRM_IOW( DRM_COMMAND_BASE + DRM_VIA_CMDBUFFER, drm_via_cmdbuffer_t)
-#define DRM_IOCTL_VIA_FLUSH	DRM_IO(  DRM_COMMAND_BASE + DRM_VIA_FLUSH)
-#define DRM_IOCTL_VIA_PCICMD	DRM_IOW( DRM_COMMAND_BASE + DRM_VIA_PCICMD, drm_via_cmdbuffer_t)
+#define DRM_IOCTL_VIA_ALLOCMEM	  DRM_IOWR(DRM_COMMAND_BASE + DRM_VIA_ALLOCMEM, drm_via_mem_t)
+#define DRM_IOCTL_VIA_FREEMEM	  DRM_IOW( DRM_COMMAND_BASE + DRM_VIA_FREEMEM, drm_via_mem_t)
+#define DRM_IOCTL_VIA_AGP_INIT	  DRM_IOWR(DRM_COMMAND_BASE + DRM_VIA_AGP_INIT, drm_via_agp_t)
+#define DRM_IOCTL_VIA_FB_INIT	  DRM_IOWR(DRM_COMMAND_BASE + DRM_VIA_FB_INIT, drm_via_fb_t)
+#define DRM_IOCTL_VIA_MAP_INIT	  DRM_IOWR(DRM_COMMAND_BASE + DRM_VIA_MAP_INIT, drm_via_init_t)
+#define DRM_IOCTL_VIA_DEC_FUTEX   DRM_IOW( DRM_COMMAND_BASE + DRM_VIA_DEC_FUTEX, drm_via_futex_t)
+#define DRM_IOCTL_VIA_DMA_INIT	  DRM_IOWR(DRM_COMMAND_BASE + DRM_VIA_DMA_INIT, drm_via_dma_init_t)
+#define DRM_IOCTL_VIA_CMDBUFFER	  DRM_IOW( DRM_COMMAND_BASE + DRM_VIA_CMDBUFFER, drm_via_cmdbuffer_t)
+#define DRM_IOCTL_VIA_FLUSH	  DRM_IO(  DRM_COMMAND_BASE + DRM_VIA_FLUSH)
+#define DRM_IOCTL_VIA_PCICMD	  DRM_IOW( DRM_COMMAND_BASE + DRM_VIA_PCICMD, drm_via_cmdbuffer_t)
+#define DRM_IOCTL_VIA_CMDBUF_SIZE DRM_IOWR( DRM_COMMAND_BASE + DRM_VIA_CMDBUF_SIZE, \
+					    drm_via_cmdbuf_size_t)
 
 /* Indices into buf.Setup where various bits of state are mirrored per
  * context and per buffer.  These can be fired at the card as a unit,
@@ -187,20 +190,14 @@ typedef struct _drm_via_sarea {
 
 } drm_via_sarea_t;
 
-typedef struct _drm_via_flush_agp {
-	unsigned int offset;
-	unsigned int size;
-	unsigned int index;
-	int discard;		/* client is finished with the buffer? */
-} drm_via_flush_agp_t;
-
-typedef struct _drm_via_flush_sys {
-	unsigned int offset;
-	unsigned int size;
-	unsigned long index;
-	int discard;		/* client is finished with the buffer? */
-} drm_via_flush_sys_t;
-
+typedef struct _drm_via_cmdbuf_size {
+	enum {
+		VIA_CMDBUF_SPACE = 0x01,
+		VIA_CMDBUF_LAG = 0x02
+	} func;
+	int wait;
+	uint32_t size;
+} drm_via_cmdbuf_size_t;
 
 
 #ifdef __KERNEL__
@@ -215,6 +212,7 @@ int via_dma_init(DRM_IOCTL_ARGS);
 int via_cmdbuffer(DRM_IOCTL_ARGS);
 int via_flush_ioctl(DRM_IOCTL_ARGS);
 int via_pci_cmdbuffer(DRM_IOCTL_ARGS);
+int via_cmdbuf_size(DRM_IOCTL_ARGS);
 
 #endif
 #endif				/* _VIA_DRM_H_ */

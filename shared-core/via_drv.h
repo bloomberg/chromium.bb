@@ -28,11 +28,11 @@
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome"
-#define DRIVER_DATE		"20041206"
+#define DRIVER_DATE		"20041212"
 
 #define DRIVER_MAJOR		2
-#define DRIVER_MINOR		2
-#define DRIVER_PATCHLEVEL	1
+#define DRIVER_MINOR		3
+#define DRIVER_PATCHLEVEL	0
 
 typedef struct drm_via_ring_buffer {
 	drm_map_t map;
@@ -50,6 +50,7 @@ typedef struct drm_via_private {
 	unsigned int dma_low;
 	unsigned int dma_high;
 	unsigned int dma_offset;
+	uint32_t dma_wrap;
 	volatile uint32_t *last_pause_ptr;
 	volatile uint32_t *hw_addr_ptr;
 	drm_via_ring_buffer_t ring;

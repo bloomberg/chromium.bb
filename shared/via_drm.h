@@ -70,6 +70,8 @@
 #define DRM_IOCTL_VIA_CMDBUFFER	DRM_IOW(0x48, drm_via_cmdbuffer_t)
 #define DRM_IOCTL_VIA_FLUSH	DRM_IO(0x49)
 #define DRM_IOCTL_VIA_PCICMD	DRM_IOW(0x4A, drm_via_cmdbuffer_t)
+#define DRM_IOCTL_VIA_CMDBUF_SIZE DRM_IOWR(0x4B, drm_via_cmdbuf_size_t)
+
 
 /* Indices into buf.Setup where various bits of state are mirrored per
  * context and per buffer.  These can be fired at the card as a unit,
@@ -189,7 +191,14 @@ typedef struct _drm_via_flush_sys {
 	int discard;		/* client is finished with the buffer? */
 } drm_via_flush_sys_t;
 
-
+typedef struct _drm_via_cmdbuf_size {
+	enum {
+		VIA_CMDBUF_SPACE = 0x01,
+		VIA_CMDBUF_LAG = 0x02
+	} func;
+	int wait;
+	uint32_t size;
+} drm_via_cmdbuf_size_t;
 
 #ifdef __KERNEL__
 
@@ -203,6 +212,7 @@ int via_dma_init(DRM_IOCTL_ARGS);
 int via_cmdbuffer(DRM_IOCTL_ARGS);
 int via_flush_ioctl(DRM_IOCTL_ARGS);
 int via_pci_cmdbuffer(DRM_IOCTL_ARGS);
+int via_cmdbuf_size(DRM_IOCTL_ARGS);
 
 #endif
 #endif				/* _VIA_DRM_H_ */

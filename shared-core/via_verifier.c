@@ -253,39 +253,48 @@ typedef struct{
 	sequence_t unfinished;
 	int agp_texture;
 	drm_device_t *dev;
+	drm_map_t *map_cache;
 } sequence_context_t;
 
 static sequence_context_t hc_sequence;
 
 /*
- * stolen from drm_memory.h
+ * Partially stolen from drm_memory.h
  */
 
 static __inline__ drm_map_t *
-via_drm_lookup_map (unsigned long offset, unsigned long size, drm_device_t *dev)
+via_drm_lookup_agp_map (sequence_context_t *seq, unsigned long offset, unsigned long size, 
+			drm_device_t *dev)
 {
 	struct list_head *list;
 	drm_map_list_t *r_list;
-	drm_map_t *map;
+	drm_map_t *map = seq->map_cache;
 
+	if (map && map->offset <= offset && (offset + size) <= (map->offset + map->size)) {
+		return map;
+	}
+		
 	list_for_each(list, &dev->maplist->head) {
 		r_list = (drm_map_list_t *) list;
 		map = r_list->map;
 		if (!map)
 			continue;
-		if (map->offset <= offset && (offset + size) <= (map->offset + map->size))
+		if (map->offset <= offset && (offset + size) <= (map->offset + map->size) && 
+		    !(map->flags & _DRM_RESTRICTED) && (map->type == _DRM_AGP)) {
+			seq->map_cache = map;
 			return map;
+		}
 	}
 	return NULL;
 }
 
 
 /*
- * Require that all AGP texture levels reside in the same map which should 
- * be mapped by the client. This is not a big restriction.
- * FIXME: To actually enforce this security policy strictly, drm_unmap 
- * would have to wait for dma quiescent before unmapping an AGP page. 
- * The via_drm_lookup_map call in reality seems to take
+ * Require that all AGP texture levels reside in the same AGP map which should 
+ * be mappable by the client. This is not a big restriction.
+ * FIXME: To actually enforce this security policy strictly, drm_rmmap 
+ * would have to wait for dma quiescent before removing an AGP map. 
+ * The via_drm_lookup_agp_map call in reality seems to take
  * very little CPU time.
  */
 
@@ -322,8 +331,8 @@ finish_current_sequence(sequence_context_t *cur_seq)
 				if (tmp > hi) hi = tmp;
 			}
 
-			if (! via_drm_lookup_map (lo, hi - lo, cur_seq->dev)) {
-				DRM_ERROR("AGP texture is not in client map\n");
+			if (! via_drm_lookup_agp_map (cur_seq, lo, hi - lo, cur_seq->dev)) {
+				DRM_ERROR("AGP texture is not in allowed map\n");
 				return 2;
 			}
 		}	
@@ -619,6 +628,7 @@ via_verify_command_stream(const uint32_t * buf, unsigned int size, drm_device_t 
 	
 	hc_sequence.dev = dev;
 	hc_sequence.unfinished = no_sequence;
+	hc_sequence.map_cache = NULL;
 
 	while (buf < buf_end) {
 		switch (state) {
