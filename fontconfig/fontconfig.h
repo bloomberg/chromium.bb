@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.18 2002/06/19 20:08:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.19 2002/06/30 23:45:17 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -612,6 +612,9 @@ FcPatternHash (const FcPattern *p);
 
 FcBool
 FcPatternAdd (FcPattern *p, const char *object, FcValue value, FcBool append);
+    
+FcBool
+FcPatternAddWeak (FcPattern *p, const char *object, FcValue value, FcBool append);
     
 FcResult
 FcPatternGet (FcPattern *p, const char *object, int id, FcValue *v);

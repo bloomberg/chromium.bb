@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.4 2002/05/31 23:21:25 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.5 2002/06/29 20:31:02 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -29,140 +29,201 @@
 #include <freetype/freetype.h>
 #include <freetype/internal/ftobjs.h>
 #include <freetype/tttables.h>
-#include "fcknownsets.h"
 
+static const FcChar8	*fcLangLatin1[] = {
+    (FcChar8 *) "br",   /* Breton */
+    (FcChar8 *) "ca",   /* Catalan */
+    (FcChar8 *) "da",   /* Danish */
+    (FcChar8 *) "de",   /* German */
+    (FcChar8 *) "en",   /* English */
+    (FcChar8 *) "es",   /* Spanish */
+    (FcChar8 *) "eu",   /* Basque */
+    (FcChar8 *) "fi",   /* Finnish */
+    (FcChar8 *) "fo",   /* Faroese */
+    (FcChar8 *) "fr",   /* French */
+    (FcChar8 *) "ga",   /* Irish */
+    (FcChar8 *) "gd",   /* Scottish */
+    (FcChar8 *) "gl",   /* Galician */
+    (FcChar8 *) "is",   /* Islandic */
+    (FcChar8 *) "it",   /* Italian */
+    (FcChar8 *) "kl",   /* Greenlandic */
+    (FcChar8 *) "la",   /* Latin */
+    (FcChar8 *) "nl",   /* Dutch */
+    (FcChar8 *) "no",   /* Norwegian */
+    (FcChar8 *) "pt",   /* Portuguese */
+    (FcChar8 *) "rm",   /* Rhaeto-Romanic */
+    (FcChar8 *) "sq",   /* Albanian */
+    (FcChar8 *) "sv",   /* Swedish */
+    0
+};
+
+static const FcChar8	*fcLangLatin2[] = {
+    (FcChar8 *) "cs",   /* Czech */
+    (FcChar8 *) "de",   /* German */
+    (FcChar8 *) "en",   /* English */
+    (FcChar8 *) "fi",   /* Finnish */
+    (FcChar8 *) "hr",   /* Croatian */
+    (FcChar8 *) "hu",   /* Hungarian */
+    (FcChar8 *) "la",   /* Latin */
+    (FcChar8 *) "pl",   /* Polish */
+    (FcChar8 *) "ro",   /* Romanian */
+    (FcChar8 *) "sk",   /* Slovak */
+    (FcChar8 *) "sl",   /* Slovenian */
+    (FcChar8 *) "sq",   /* Albanian */
+    0
+};
+
+static const FcChar8	*fcLangCyrillic[] = {
+    (FcChar8 *) "az",   /* Azerbaijani */
+    (FcChar8 *) "ba",   /* Bashkir */
+    (FcChar8 *) "bg",   /* Bulgarian */
+    (FcChar8 *) "be",   /* Byelorussian */
+    (FcChar8 *) "kk",   /* Kazakh */
+    (FcChar8 *) "ky",   /* Kirghiz */
+    (FcChar8 *) "mk",   /* Macedonian */
+    (FcChar8 *) "mo",   /* Moldavian */
+    (FcChar8 *) "mn",   /* Mongolian */
+    (FcChar8 *) "ru",   /* Russian */
+    (FcChar8 *) "sr",   /* Serbian */
+    (FcChar8 *) "tg",   /* Tadzhik */
+    (FcChar8 *) "tt",   /* Tatar */
+    (FcChar8 *) "tk",   /* Turkmen */
+    (FcChar8 *) "uz",   /* Uzbek */
+    (FcChar8 *) "uk",   /* Ukrainian */
+    0,
+};
+
+static const FcChar8	*fcLangGreek[] = {
+    (FcChar8 *) "el",   /* Greek */
+    0
+};
+
+static const FcChar8	*fcLangTurkish[] = {
+    (FcChar8 *) "tr",   /* Turkish */
+    0
+};
+
+static const FcChar8	*fcLangHebrew[] = {
+    (FcChar8 *) "he",   /* Hebrew */
+    (FcChar8 *) "yi",   /* Yiddish */
+    0
+};
+
+static const FcChar8	*fcLangArabic[] = {
+    (FcChar8 *) "ar",   /* arabic */
+    0
+};
+
+static const FcChar8	*fcLangWindowsBaltic[] = {
+    (FcChar8 *) "da",   /* Danish */
+    (FcChar8 *) "de",   /* German */
+    (FcChar8 *) "en",   /* English */
+    (FcChar8 *) "et",   /* Estonian */
+    (FcChar8 *) "fi",   /* Finnish */
+    (FcChar8 *) "la",   /* Latin */
+    (FcChar8 *) "lt",   /* Lithuanian */
+    (FcChar8 *) "lv",   /* Latvian */
+    (FcChar8 *) "no",   /* Norwegian */
+    (FcChar8 *) "pl",   /* Polish */
+    (FcChar8 *) "sl",   /* Slovenian */
+    (FcChar8 *) "sv",   /* Swedish */
+    0
+};
+
+static const FcChar8	*fcLangVietnamese[] = {
+    (FcChar8 *) "vi",   /* Vietnamese */
+    0,
+};
+
+static const FcChar8	*fcLangThai[] = {
+    (FcChar8 *) "th",   /* Thai */
+    0,
+};
+
+static const FcChar8	*fcLangJapanese[] = {
+    (FcChar8 *) "ja",   /* Japanese */
+    0,
+};
+
+static const FcChar8	*fcLangSimplifiedChinese[] = {
+    (FcChar8 *) "zh-cn",    /* Chinese-China */
+    0,
+};
+
+static const FcChar8	*fcLangKorean[] = {
+    (FcChar8 *) "ko",   /* Korean */
+    0,
+};
+
+static const FcChar8	*fcLangTraditionalChinese[] = {
+    (FcChar8 *) "zh-tw",    /* Chinese-Taiwan */
+    0,
+};
+
+static const FcChar8	*fcLangEnglish[] = {
+    (FcChar8 *) "en",   /* English */
+    0,
+};
+
+/*
+ * Elide some of the less useful bits
+ */
 static const struct {
-    int	    bit;
-    FcChar8 *name;
+    int		    bit;
+    const FcChar8   **lang;
 } FcCodePageRange[] = {
-    { 0,	(FcChar8 *) FC_LANG_LATIN_1 },
-    { 1,	(FcChar8 *) FC_LANG_LATIN_2 },
-    { 2,	(FcChar8 *) FC_LANG_CYRILLIC },
-    { 3,	(FcChar8 *) FC_LANG_GREEK },
-    { 4,	(FcChar8 *) FC_LANG_TURKISH },
-    { 5,	(FcChar8 *) FC_LANG_HEBREW },
-    { 6,	(FcChar8 *) FC_LANG_ARABIC },
-    { 7,	(FcChar8 *) FC_LANG_WINDOWS_BALTIC },
-    { 8,	(FcChar8 *) FC_LANG_VIETNAMESE },
+    { 0,	fcLangLatin1 },
+    { 1,	fcLangLatin2 },
+    { 2,	fcLangCyrillic },
+    { 3,	fcLangGreek },
+    { 4,	fcLangTurkish },
+    { 5,	fcLangHebrew },
+    { 6,	fcLangArabic },
+    { 7,	fcLangWindowsBaltic },
+    { 8,	fcLangVietnamese },
 /* 9-15 reserved for Alternate ANSI */
-    { 16,	(FcChar8 *) FC_LANG_THAI },
-    { 17,	(FcChar8 *) FC_LANG_JAPANESE },
-    { 18,	(FcChar8 *) FC_LANG_SIMPLIFIED_CHINESE },
-    { 19,	(FcChar8 *) FC_LANG_KOREAN_WANSUNG },
-    { 20,	(FcChar8 *) FC_LANG_TRADITIONAL_CHINESE },
-    { 21,	(FcChar8 *) FC_LANG_KOREAN_JOHAB },
+    { 16,	fcLangThai },
+    { 17,	fcLangJapanese },
+    { 18,	fcLangSimplifiedChinese },
+    { 19,	fcLangKorean },
+    { 20,	fcLangTraditionalChinese },
+    { 21,	fcLangKorean },
 /* 22-28 reserved for Alternate ANSI & OEM */
-    { 29,	(FcChar8 *) FC_LANG_MACINTOSH },
-    { 30,	(FcChar8 *) FC_LANG_OEM },
-    { 31,	(FcChar8 *) FC_LANG_SYMBOL },
+/*    { 29,	fcLangMacintosh }, */
+/*    { 30,	fcLangOem }, */
+/*     { 31,	fcLangSymbol },*/
 /* 32-47 reserved for OEM */
-    { 48,	(FcChar8 *) FC_LANG_IBM_GREEK },
-    { 49,	(FcChar8 *) FC_LANG_MSDOS_RUSSIAN },
-    { 50,	(FcChar8 *) FC_LANG_MSDOS_NORDIC },
-    { 51,	(FcChar8 *) FC_LANG_ARABIC_864 },
-    { 52,	(FcChar8 *) FC_LANG_MSDOS_CANADIAN_FRENCH },
-    { 53,	(FcChar8 *) FC_LANG_HEBREW_862 },
-    { 54,	(FcChar8 *) FC_LANG_MSDOS_ICELANDIC },
-    { 55,	(FcChar8 *) FC_LANG_MSDOS_PORTUGUESE },
-    { 56,	(FcChar8 *) FC_LANG_IBM_TURKISH },
-    { 57,	(FcChar8 *) FC_LANG_IBM_CYRILLIC },
-    { 58,	(FcChar8 *) FC_LANG_LATIN_2 },
-    { 59,	(FcChar8 *) FC_LANG_MSDOS_BALTIC },
-    { 60,	(FcChar8 *) FC_LANG_GREEK_437_G },
-    { 61,	(FcChar8 *) FC_LANG_ARABIC_ASMO_708 },
-    { 62,	(FcChar8 *) FC_LANG_WE_LATIN_1 },
-    { 63,	(FcChar8 *) FC_LANG_US },
+    { 48,	fcLangGreek },
+    { 49,	fcLangCyrillic },
+/*    { 50,	fcLangMsdosNordic }, */
+    { 51,	fcLangArabic },
+/*    { 52,	fcLangMSDOS_CANADIAN_FRENCH }, */
+    { 53,	fcLangHebrew },
+/*    { 54,	fcLangMSDOS_ICELANDIC }, */
+/*    { 55,	fcLangMSDOS_PORTUGUESE }, */
+    { 56,	fcLangTurkish },
+    { 57,	fcLangCyrillic },
+    { 58,	fcLangLatin2 },
+    { 59,	fcLangWindowsBaltic },
+    { 60,	fcLangGreek },
+    { 61,	fcLangArabic },
+    { 62,	fcLangLatin1 },
+    { 63,	fcLangEnglish },
 };
 
 #define NUM_CODE_PAGE_RANGE (sizeof FcCodePageRange / sizeof FcCodePageRange[0])
 
-static const struct {
-    const FcCharSet *set;
-    FcChar32	    size;
-    FcChar32	    missing_tolerance;
-    FcChar8	    *name;
-} FcCodePageSet[] = {
-    {
-	&fcCharSet_Latin1_1252,
-	fcCharSet_Latin1_1252_size,
-	8,
-	(FcChar8 *) FC_LANG_LATIN_1,
-    },
-    {
-	&fcCharSet_Latin2_1250,
-	fcCharSet_Latin2_1250_size,
-	8,
-	(FcChar8 *) FC_LANG_LATIN_2,
-    },
-    {
-	&fcCharSet_Cyrillic_1251,
-	fcCharSet_Cyrillic_1251_size,
-	16,
-	(FcChar8 *) FC_LANG_CYRILLIC,
-    },
-    {
-	&fcCharSet_Greek_1253,
-	fcCharSet_Greek_1253_size,
-	8,
-	(FcChar8 *) FC_LANG_GREEK,
-    },
-    {
-	&fcCharSet_Turkish_1254,
-	fcCharSet_Turkish_1254_size,
-	16,
-	(FcChar8 *) FC_LANG_TURKISH,
-    },
-    {
-	&fcCharSet_Hebrew_1255,
-	fcCharSet_Hebrew_1255_size,
-	16,
-	(FcChar8 *) FC_LANG_HEBREW,
-    },
-    {
-	&fcCharSet_Arabic_1256,
-	fcCharSet_Arabic_1256_size,
-	16,
-	(FcChar8 *) FC_LANG_ARABIC,
-    },
-    {
-	&fcCharSet_Windows_Baltic_1257,
-	fcCharSet_Windows_Baltic_1257_size,
-	16,
-	(FcChar8 *) FC_LANG_WINDOWS_BALTIC,
-    },
-    {	
-	&fcCharSet_Thai_874,		
-	fcCharSet_Thai_874_size,
-	16,
-	(FcChar8 *) FC_LANG_THAI,
-    },
-    { 
-	&fcCharSet_Japanese_932,		
-	fcCharSet_Japanese_932_size,		
-	500,
-	(FcChar8 *) FC_LANG_JAPANESE,
-    },
-    { 
-	&fcCharSet_SimplifiedChinese_936,
-	fcCharSet_SimplifiedChinese_936_size,	
-	500,
-	(FcChar8 *) FC_LANG_SIMPLIFIED_CHINESE,
-    },
-    {
-	&fcCharSet_Korean_949,
-	fcCharSet_Korean_949_size,
-	500,
-	(FcChar8 *) FC_LANG_KOREAN_WANSUNG,
-    },
-    {
-	&fcCharSet_TraditionalChinese_950,
-	fcCharSet_TraditionalChinese_950_size,
-	500,
-	(FcChar8 *) FC_LANG_TRADITIONAL_CHINESE,
-    },
-};
+FcBool
+FcFreeTypeHasLang (FcPattern *pattern, const FcChar8 *lang)
+{
+    FcChar8	*old;
+    int		i;
 
-#define NUM_CODE_PAGE_SET (sizeof FcCodePageSet / sizeof FcCodePageSet[0])
+    for (i = 0; FcPatternGetString (pattern, FC_LANG, i, &old) == FcResultMatch; i++)
+	if (!FcStrCmp (lang, old))
+	    return FcTrue;
+    return FcFalse;
+}
 
 FcPattern *
 FcFreeTypeQuery (const FcChar8	*file,
@@ -179,9 +240,10 @@ FcFreeTypeQuery (const FcChar8	*file,
     FT_Library	    ftLibrary;
     const FcChar8   *family;
     TT_OS2	    *os2;
-    FcBool	    hasLang = FcFalse;
     FcChar32	    codepoints;
-    FcBool	    matchCodePage[NUM_CODE_PAGE_SET];
+    FcChar8	    *lang;
+    FcBool	    hasLang = FcFalse;
+    
 
     if (FT_Init_FreeType (&ftLibrary))
 	return 0;
@@ -273,10 +335,16 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    }
 	    if (bits & (1 << bit))
 	    {
-		if (!FcPatternAddString (pat, FC_LANG,
-					 FcCodePageRange[i].name))
-		    goto bail1;
-		hasLang = FcTrue;
+		int		j;
+		const FcChar8	*lang;
+
+		for (j = 0; (lang = FcCodePageRange[i].lang[j]); j++)
+		    if (!FcFreeTypeHasLang (pat, lang))
+		    {
+			if (!FcPatternAddString (pat, FC_LANG, lang))
+			    goto bail1;
+			hasLang = FcTrue;
+		    }
 	    }
 	}
     }
@@ -302,79 +370,19 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!FcPatternAddCharSet (pat, FC_CHARSET, cs))
 	goto bail2;
 
-    if (!hasLang || (FcDebug() & FC_DBG_SCANV))
-    {
-	/*
-	 * Use the Unicode coverage to set lang if it wasn't
-	 * set from the OS/2 tables
-	 */
-
-        if (FcDebug() & FC_DBG_SCANV)
-	    printf ("%s: ", family);
-	for (i = 0; i < NUM_CODE_PAGE_SET; i++)
-	{
-	    FcChar32    missing;
-
-	    missing = FcCharSetSubtractCount (FcCodePageSet[i].set,
-					      cs);
-	    matchCodePage[i] = missing <= FcCodePageSet[i].missing_tolerance;
-	    if (FcDebug() & FC_DBG_SCANV)
-		printf ("%s(%d) ", FcCodePageSet[i].name, missing);
-	}
-        if (FcDebug() & FC_DBG_SCANV)
-	    printf ("\n");
-
-	if (hasLang)
-	{
-	    FcChar8	*lang;
-	    int	j;
-	    /*
-	     * Validate the lang selections
-	     */
-	    for (i = 0; FcPatternGetString (pat, FC_LANG, i, &lang) == FcResultMatch; i++)
-	    {
-		for (j = 0; j < NUM_CODE_PAGE_SET; j++)
-		    if (!strcmp ((char *) FcCodePageSet[j].name,
-				 (char *) lang))
-		    {
-			if (!matchCodePage[j])
-			    printf ("%s(%s): missing lang %s\n", file, family, lang);
-		    }
-	    }
-	    for (j = 0; j < NUM_CODE_PAGE_SET; j++)
-	    {
-		if (!matchCodePage[j])
-		    continue;
-		lang = 0;
-		for (i = 0; FcPatternGetString (pat, FC_LANG, i, &lang) == FcResultMatch; i++)
-		{
-		    if (!strcmp ((char *) FcCodePageSet[j].name, (char *) lang))
-			break;
-		    lang = 0;
-		}
-		if (!lang)
-		    printf ("%s(%s): extra lang %s\n", file, family, FcCodePageSet[j].name);
-	    }
-	}
-	else
-	{
-	    /*
-	     * None provided, use the charset derived ones
-	     */
-	    for (i = 0; i < NUM_CODE_PAGE_SET; i++)
-		if (matchCodePage[i])
-		{
-		    if (!FcPatternAddString (pat, FC_LANG,
-					     FcCodePageRange[i].name))
-			goto bail1;
-		    hasLang = TRUE;
-		}
-	}
-    }
     if (!hasLang)
-	if (!FcPatternAddString (pat, FC_LANG, (FcChar8 *) FC_LANG_UNKNOWN))
-	    goto bail1;
-     
+    {
+	if (!FcFreeTypeSetLang (pat, cs))
+	    goto bail2;
+
+	/*
+	 * Make sure it has a lang entry
+	 */
+	if (FcPatternGetString (pat, FC_LANG, 0, &lang) != FcResultMatch)
+	    if (!FcPatternAddString (pat, FC_LANG, (FcChar8 *) "x-unknown"))
+		goto bail2;
+    }
+
     /*
      * Drop our reference to the charset
      */

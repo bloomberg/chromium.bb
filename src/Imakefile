@@ -29,12 +29,12 @@ EXPATLIB=-lexpat
 REQUIREDLIBS=$(LDPRELIBS) $(FREETYPE2LIB) $(EXPATLIB)
 
 SRCS=fcatomic.c fcblanks.c fccache.c fccfg.c fccharset.c fcdbg.c \
-     fcdefault.c fcdir.c fcfreetype.c fcfs.c fcinit.c fclist.c fcmatch.c \
-     fcmatrix.c fcname.c fcpat.c fcstr.c fcxml.c
+     fcdefault.c fcdir.c fcfreetype.c fcfs.c fcinit.c fclang.c fclist.c \
+     fcmatch.c fcmatrix.c fcname.c fcpat.c fcstr.c fcxml.c
 
 OBJS=fcatomic.o fcblanks.o fccache.o fccfg.o fccharset.o fcdbg.o \
-     fcdefault.o fcdir.o fcfreetype.o fcfs.o fcinit.o fclist.o fcmatch.o \
-     fcmatrix.o fcname.o fcpat.o fcstr.o fcxml.o
+     fcdefault.o fcdir.o fcfreetype.o fcfs.o fcinit.o fclang.o fclist.o \
+     fcmatch.o fcmatrix.o fcname.o fcpat.o fcstr.o fcxml.o
 
 #include <Library.tmpl>
 

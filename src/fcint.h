@@ -163,6 +163,10 @@ typedef struct _FcCharLeaf {
     FcChar32	map[256/32];
 } FcCharLeaf;
 
+typedef enum _FcLangResult {
+    FcLangEqual, FcLangDifferentCountry, FcLangDifferentLang
+} FcLangResult;
+
 struct _FcCharSet {
     int		    ref;	/* reference count */
     FcBool	    constant;	/* in hash table constant */
@@ -393,6 +397,10 @@ FcDebug (void);
 int
 FcFontDebug (void);
     
+/* fcfreetype.c */
+FcBool
+FcFreeTypeHasLang (FcPattern *pattern, const FcChar8 *lang);
+
 /* fcfs.c */
 /* fcgram.y */
 int
@@ -460,6 +468,16 @@ FcMemAlloc (int kind, int size);
 void
 FcMemFree (int kind, int size);
 
+/* fclang.c */
+FcBool
+FcFreeTypeSetLang (FcPattern *pattern, FcCharSet *charset);
+
+FcLangResult
+FcLangCompare (const FcChar8 *s1, const FcChar8 *s2);
+    
+const FcCharSet *
+FcCharSetForLang (const FcChar8 *lang);
+
 /* fclist.c */
 
 /* fcmatch.c */
@@ -478,6 +496,13 @@ FcPatternFindElt (const FcPattern *p, const char *object);
 
 FcPatternElt *
 FcPatternInsertElt (FcPattern *p, const char *object);
+
+FcBool
+FcPatternAddWithBinding  (FcPattern	    *p,
+			  const char	    *object,
+			  FcValue	    value,
+			  FcValueBinding    binding,
+			  FcBool	    append);
 
 /* fcrender.c */
 
@@ -509,5 +534,8 @@ FcStrBufString (FcStrBuf *buf, const FcChar8 *s);
 
 FcBool
 FcStrBufData (FcStrBuf *buf, const FcChar8 *s, int len);
+
+int
+FcStrCmpIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2);
 
 #endif /* _FC_INT_H_ */

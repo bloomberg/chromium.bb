@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.14 2002/06/19 21:32:18 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.15 2002/06/29 20:31:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -46,6 +46,33 @@ FcCompareString (char *object, FcValue value1, FcValue value2)
     if (value2.type != FcTypeString || value1.type != FcTypeString)
 	return -1.0;
     return (double) FcStrCmpIgnoreCase (value1.u.s, value2.u.s) != 0;
+}
+
+static double
+FcCompareFamily (char *object, FcValue value1, FcValue value2)
+{
+    if (value2.type != FcTypeString || value1.type != FcTypeString)
+	return -1.0;
+    return (double) FcStrCmpIgnoreBlanksAndCase (value1.u.s, value2.u.s) != 0;
+}
+
+static double
+FcCompareLang (char *object, FcValue value1, FcValue value2)
+{
+    FcLangResult    result;
+    
+    if (value2.type != FcTypeString || value1.type != FcTypeString)
+	return -1.0;
+    result = FcLangCompare (value1.u.s, value2.u.s);
+    switch (result) {
+    case FcLangEqual:
+	return 0;
+    case FcLangDifferentCountry:
+	return 1;
+    case FcLangDifferentLang:
+    default:
+	return 2;
+    }
 }
 
 static double
@@ -115,10 +142,10 @@ static FcMatcher _FcMatchers [] = {
     { FC_CHARSET,	FcCompareCharSet,	1, 1 },
 #define MATCH_CHARSET	    1
     
-    { FC_FAMILY,    	FcCompareString,	2, 4 },
+    { FC_FAMILY,    	FcCompareFamily,	2, 4 },
 #define MATCH_FAMILY	    2
     
-    { FC_LANG,		FcCompareString,	3, 3 },
+    { FC_LANG,		FcCompareLang,		3, 3 },
 #define MATCH_LANG	    3
     
     { FC_SPACING,	FcCompareInteger,	5, 5 },
@@ -545,6 +572,11 @@ FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool tri
 		    ncs = FcCharSetCopy (ncs);
 		*cs = ncs;
 		FcPatternReference (node->pattern);
+		if (FcDebug () & FC_DBG_MATCH)
+		{
+		    printf ("Add ");
+		    FcPatternPrint (node->pattern);
+		}
 		if (!FcFontSetAdd (fs, node->pattern))
 		{
 		    FcPatternDestroy (node->pattern);
@@ -582,6 +614,11 @@ FcFontSetSort (FcConfig	    *config,
     int		    f;
     int		    i;
 
+    if (FcDebug () & FC_DBG_MATCH)
+    {
+	printf ("Sort ");
+	FcPatternPrint (p);
+    }
     nnodes = 0;
     for (set = 0; set < nsets; set++)
     {

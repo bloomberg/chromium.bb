@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.13 2002/06/26 22:56:51 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.14 2002/06/29 20:31:02 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -111,7 +111,7 @@ FcCharSetFindLeafPos (const FcCharSet *fcs, FcChar32 ucs4)
 	else
 	    high = mid - 1;
     }
-    if (numbers[high] < ucs4)
+    if (high < 0 || numbers[high] < ucs4)
 	high++;
     return -(high + 1);
 }
@@ -711,7 +711,7 @@ FcCharSetCoverage (const FcCharSet *a, FcChar32 page, FcChar32 *result)
  * it's not exactly human readable output.  As a special case, 0 is encoded as a space
  */
 
-static unsigned char	charToValue[256] = {
+static const unsigned char	charToValue[256] = {
     /*     "" */ 0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff, 
     /*   "\b" */ 0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff, 
     /* "\020" */ 0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff, 
@@ -746,7 +746,7 @@ static unsigned char	charToValue[256] = {
     /* "\370" */ 0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff,  0xff, 
 };
 
-static FcChar8 valueToChar[0x55] = {
+static const FcChar8 valueToChar[0x55] = {
     /* 0x00 */ '!', '#', '$', '%', '&', '(', ')', '*',
     /* 0x08 */ '+', '.', '/', '0', '1', '2', '3', '4',
     /* 0x10 */ '5', '6', '7', '8', '9', ';', '<', '>',

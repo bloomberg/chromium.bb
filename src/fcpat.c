@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.9 2002/06/19 20:08:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.10 2002/06/29 20:31:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -392,7 +392,11 @@ FcPatternEqualSubset (const FcPattern *pa, const FcPattern *pb, const FcObjectSe
 }
 
 FcBool
-FcPatternAdd (FcPattern *p, const char *object, FcValue value, FcBool append)
+FcPatternAddWithBinding  (FcPattern	    *p,
+			  const char	    *object,
+			  FcValue	    value,
+			  FcValueBinding    binding,
+			  FcBool	    append)
 {
     FcPatternElt   *e;
     FcValueList    *new, **prev;
@@ -408,7 +412,7 @@ FcPatternAdd (FcPattern *p, const char *object, FcValue value, FcBool append)
 	goto bail1;
 
     new->value = value;
-    new->binding = FcValueBindingStrong;
+    new->binding = binding;
     new->next = 0;
     
     e = FcPatternInsertElt (p, object);
@@ -447,6 +451,18 @@ bail1:
     free (new);
 bail0:
     return FcFalse;
+}
+
+FcBool
+FcPatternAdd (FcPattern *p, const char *object, FcValue value, FcBool append)
+{
+    return FcPatternAddWithBinding (p, object, value, FcValueBindingStrong, append);
+}
+
+FcBool
+FcPatternAddWeak  (FcPattern *p, const char *object, FcValue value, FcBool append)
+{
+    return FcPatternAddWithBinding (p, object, value, FcValueBindingWeak, append);
 }
 
 FcBool
