@@ -598,26 +598,6 @@ int DRM(control)( DRM_IOCTL_ARGS )
 
 #if __HAVE_VBL_IRQ
 
-int DRM(vblank_wait)(drm_device_t *dev, unsigned int *sequence)
-{
-	unsigned int cur_vblank;
-	int ret = 0;
-
-	/* Assume that the user has missed the current sequence number by about
-	 * a day rather than she wants to wait for years using vertical blanks :)
-	 */
-	while ( ( ( cur_vblank = atomic_read(&dev->vbl_received ) )
-		+ ~*sequence + 1 ) > (1<<23) ) {
-		ret = tsleep( &dev->vbl_queue, 3*hz, "rdnvbl", PZERO | PCATCH);
-		if (ret)
-			break;
-	}
-
-	*sequence = cur_vblank;
-
-	return ret;
-}
-
 int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 {
 	DRM_DEVICE;

@@ -92,7 +92,7 @@ void DRM(dma_service)( DRM_IRQ_ARGS )
 		RADEON_WRITE(RADEON_GEN_INT_STATUS, ack);
 }
 
-static inline void radeon_acknowledge_irqs(drm_radeon_private_t *dev_priv)
+static __inline__ void radeon_acknowledge_irqs(drm_radeon_private_t *dev_priv)
 {
    	RADEON_WRITE( RADEON_GEN_INT_STATUS, RADEON_READ( RADEON_GEN_INT_STATUS ) );
 }
@@ -156,10 +156,14 @@ int radeon_wait_irq(drm_device_t *dev, int swi_nr)
 #endif /* __linux__ */
 	
 #ifdef __FreeBSD__
-	ret = tsleep( &dev_priv->swi_queue, PZERO | PCATCH, \
-		"rdnirq", 3*hz );
-	if ( (ret == EWOULDBLOCK) || (ret == EINTR) )
-		return DRM_ERR(EBUSY);
+	for (;;) {
+	   	if (RADEON_READ( RADEON_LAST_SWI_REG ) >= swi_nr) 
+			break;
+		ret = tsleep( &dev_priv->swi_queue, PZERO | PCATCH, \
+			"rdnirq", 3*hz );
+		if (ret)
+			break;
+	}
 	return ret;
 #endif /* __FreeBSD__ */
 }
@@ -200,7 +204,7 @@ int radeon_vblank_wait(drm_device_t *dev, unsigned int *sequence)
 		}
 #endif /* __linux__ */
 #ifdef __FreeBSD__
-		ret = tsleep( &dev_priv->vbl_queue, 3*hz, "rdnvbl", PZERO | PCATCH);
+		ret = tsleep( &dev->vbl_queue, 3*hz, "rdnvbl", PZERO | PCATCH);
 		if (ret)
 			break;
 #endif /* __FreeBSD__ */
