@@ -1090,6 +1090,7 @@ static int radeon_do_init_pageflip( drm_device_t *dev )
 
 	dev_priv->page_flipping = 1;
 	dev_priv->current_page = 0;
+	dev_priv->sarea_priv->pfCurrentPage = dev_priv->current_page;
 
 	return 0;
 }
@@ -1104,6 +1105,7 @@ int radeon_do_cleanup_pageflip( drm_device_t *dev )
 
 	dev_priv->page_flipping = 0;
 	dev_priv->current_page = 0;
+	dev_priv->sarea_priv->pfCurrentPage = dev_priv->current_page;
 
 	return 0;
 }
