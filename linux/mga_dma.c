@@ -42,6 +42,7 @@
 #include <linux/delay.h>
 
 #define MGA_DEFAULT_USEC_TIMEOUT	10000
+#define MGA_FREELIST_DEBUG		0
 
 
 /* ================================================================
@@ -261,6 +262,7 @@ void mga_do_dma_wrap_end( drm_mga_private_t *dev_priv )
 #define MGA_BUFFER_USED		~0
 #define MGA_BUFFER_FREE		0
 
+#if MGA_FREELIST_DEBUG
 static void mga_freelist_print( drm_device_t *dev )
 {
 	drm_mga_private_t *dev_priv = dev->dev_private;
@@ -280,6 +282,7 @@ static void mga_freelist_print( drm_device_t *dev )
 	}
 	DRM_INFO( "\n" );
 }
+#endif
 
 static int mga_freelist_init( drm_device_t *dev )
 {
@@ -348,6 +351,9 @@ static void mga_freelist_cleanup( drm_device_t *dev )
 	dev_priv->head = dev_priv->tail = NULL;
 }
 
+#if 0
+/* FIXME: Still needed?
+ */
 static void mga_freelist_reset( drm_device_t *dev )
 {
 	drm_device_dma_t *dma = dev->dma;
@@ -362,6 +368,7 @@ static void mga_freelist_reset( drm_device_t *dev )
 			 MGA_BUFFER_FREE, 0 );
 	}
 }
+#endif
 
 static drm_buf_t *mga_freelist_get( drm_device_t *dev )
 {
@@ -467,6 +474,11 @@ static int mga_do_init_dma( drm_device_t *dev, drm_mga_init_t *init )
 	dev_priv->depth_cpp	= init->depth_cpp;
 	dev_priv->depth_offset	= init->depth_offset;
 	dev_priv->depth_pitch	= init->depth_pitch;
+
+	/* FIXME: Need to support AGP textures...
+	 */
+	dev_priv->texture_offset = init->texture_offset[0];
+	dev_priv->texture_size = init->texture_size[0];
 
 	list_for_each( list, &dev->maplist->head ) {
 		drm_map_list_t *entry = (drm_map_list_t *)list;
