@@ -622,13 +622,20 @@ static void radeon_cp_init_ring_buffer( drm_device_t *dev,
 
 		tmp_ofs = dev_priv->ring_rptr->offset - dev->sg->handle;
 		page_ofs = tmp_ofs >> PAGE_SHIFT;
-
+#if defined(__alpha__) && (LINUX_VERSION_CODE >= 0x020400)
+		RADEON_WRITE( RADEON_CP_RB_RPTR_ADDR,
+			     entry->busaddr[page_ofs]);
+		DRM_DEBUG( "ring rptr: offset=0x%08x handle=0x%08lx\n",
+			   entry->busaddr[page_ofs],
+			   entry->handle + tmp_ofs );
+#else
 		RADEON_WRITE( RADEON_CP_RB_RPTR_ADDR,
 			      virt_to_bus(entry->pagelist[page_ofs]->virtual));
 
 		DRM_DEBUG( "ring rptr: offset=0x%08lx handle=0x%08lx\n",
 			   virt_to_bus(entry->pagelist[page_ofs]->virtual),
 			   entry->handle + tmp_ofs );
+#endif
 	}
 
 	/* Set ring buffer size */
@@ -929,8 +936,8 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 		      dev_priv->sarea_priv->last_clear );
 
 	if ( dev_priv->is_pci ) {
-		dev_priv->phys_pci_gart = DRM(ati_pcigart_init)( dev );
-		if ( !dev_priv->phys_pci_gart ) {
+		if (!DRM(ati_pcigart_init)( dev, &dev_priv->phys_pci_gart,
+					    &dev_priv->bus_pci_gart)) {
 			DRM_ERROR( "failed to init PCI GART!\n" );
 			dev->dev_private = (void *)dev_priv;
 			radeon_do_cleanup_cp(dev);
@@ -944,8 +951,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 
 		/* set PCI GART page-table base address
 		 */
-		RADEON_WRITE( RADEON_AIC_PT_BASE,
-			      virt_to_bus( (void *)dev_priv->phys_pci_gart ) );
+		RADEON_WRITE( RADEON_AIC_PT_BASE, dev_priv->bus_pci_gart );
 
 		/* set address range for PCI address translate
 		 */
@@ -990,6 +996,11 @@ int radeon_do_cleanup_cp( drm_device_t *dev )
 			DRM_IOREMAPFREE( dev_priv->cp_ring );
 			DRM_IOREMAPFREE( dev_priv->ring_rptr );
 			DRM_IOREMAPFREE( dev_priv->buffers );
+		} else {
+			if (!DRM(ati_pcigart_cleanup)( dev,
+						dev_priv->phys_pci_gart,
+						dev_priv->bus_pci_gart ))
+				DRM_ERROR( "failed to cleanup PCI GART!\n" );
 		}
 
 		DRM(free)( dev->dev_private, sizeof(drm_radeon_private_t),

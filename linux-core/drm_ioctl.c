@@ -114,8 +114,10 @@ int DRM(setunique)(struct inode *inode, struct file *filp,
                 if (*p) break;
  
                 pci_dev = pci_find_slot(b, PCI_DEVFN(d,f));
-                if (pci_dev)
+                if (pci_dev) {
+			dev->pdev = pci_dev;
                         dev->hose = pci_dev->sysdata;
+		}
         } while(0);
 #endif
 

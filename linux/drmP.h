@@ -624,6 +624,9 @@ typedef struct drm_sg_mem {
 	void            *virtual;
 	int             pages;
 	struct page     **pagelist;
+#if defined(__alpha__) && (LINUX_VERSION_CODE >= 0x020400)
+	dma_addr_t	*busaddr;
+#endif
 } drm_sg_mem_t;
 
 typedef struct drm_sigdata {
@@ -715,6 +718,7 @@ typedef struct drm_device {
 	drm_agp_head_t    *agp;
 #endif
 #ifdef __alpha__
+	struct pci_dev *pdev;
 #if LINUX_VERSION_CODE < 0x020403
 	struct pci_controler *hose;
 #else
@@ -1018,8 +1022,12 @@ extern int            DRM(sg_free)(struct inode *inode, struct file *filp,
 #endif
 
                                /* ATI PCIGART support (ati_pcigart.h) */
-extern unsigned long  DRM(ati_pcigart_init)(drm_device_t *dev);
-extern int            DRM(ati_pcigart_cleanup)(unsigned long address);
+extern int            DRM(ati_pcigart_init)(drm_device_t *dev,
+					    unsigned long *addr,
+					    dma_addr_t *bus_addr);
+extern int            DRM(ati_pcigart_cleanup)(drm_device_t *dev,
+					       unsigned long addr,
+					       dma_addr_t bus_addr);
 
 #endif /* __KERNEL__ */
 #endif

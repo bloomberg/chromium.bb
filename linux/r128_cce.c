@@ -350,12 +350,20 @@ static void r128_cce_init_ring_buffer( drm_device_t *dev,
 		tmp_ofs = dev_priv->ring_rptr->offset - dev->sg->handle;
 		page_ofs = tmp_ofs >> PAGE_SHIFT;
 
+#if defined(__alpha__) && (LINUX_VERSION_CODE >= 0x020400)
+		R128_WRITE( R128_PM4_BUFFER_DL_RPTR_ADDR,
+     			    entry->busaddr[page_ofs]);
+		DRM_DEBUG( "ring rptr: offset=0x%08x handle=0x%08lx\n",
+			   entry->busaddr[page_ofs],
+     			   entry->handle + tmp_ofs );
+#else
 		R128_WRITE( R128_PM4_BUFFER_DL_RPTR_ADDR,
 			    virt_to_bus(entry->pagelist[page_ofs]->virtual));
 
 		DRM_DEBUG( "ring rptr: offset=0x%08lx handle=0x%08lx\n",
 			   virt_to_bus(entry->pagelist[page_ofs]->virtual),
 			   entry->handle + tmp_ofs );
+#endif
 	}
 
 	/* Set watermark control */
@@ -599,15 +607,14 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 		    dev_priv->sarea_priv->last_dispatch );
 
 	if ( dev_priv->is_pci ) {
-		dev_priv->phys_pci_gart = DRM(ati_pcigart_init)( dev );
-		if ( !dev_priv->phys_pci_gart ) {
+		if (!DRM(ati_pcigart_init)( dev, &dev_priv->phys_pci_gart,
+     					    &dev_priv->bus_pci_gart) ) {
 			DRM_ERROR( "failed to init PCI GART!\n" );
 			dev->dev_private = (void *)dev_priv;
 			r128_do_cleanup_cce( dev );
 			return -ENOMEM;
 		}
-		R128_WRITE( R128_PCI_GART_PAGE,
-			    virt_to_bus( (void *)dev_priv->phys_pci_gart ) );
+		R128_WRITE( R128_PCI_GART_PAGE, dev_priv->bus_pci_gart );
 	}
 
 	r128_cce_init_ring_buffer( dev, dev_priv );
@@ -629,6 +636,11 @@ int r128_do_cleanup_cce( drm_device_t *dev )
 			DRM_IOREMAPFREE( dev_priv->cce_ring );
 			DRM_IOREMAPFREE( dev_priv->ring_rptr );
 			DRM_IOREMAPFREE( dev_priv->buffers );
+		} else {
+			if (!DRM(ati_pcigart_cleanup)( dev,
+						dev_priv->phys_pci_gart,
+						dev_priv->bus_pci_gart ))
+				DRM_ERROR( "failed to cleanup PCI GART!\n" );
 		}
 
 		DRM(free)( dev->dev_private, sizeof(drm_r128_private_t),
