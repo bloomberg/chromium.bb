@@ -428,9 +428,10 @@ FcStrCopyFilename (const FcChar8 *s)
     if (*s == '~')
     {
 	FcChar8	*home = (FcChar8 *) getenv ("HOME");
-	int	size = strlen ((char *) home) + strlen ((char *) s);
+	int	size;
 	if (!home)
 	    return 0;
+	size = strlen ((char *) home) + strlen ((char *) s);
 	new = (FcChar8 *) malloc (size);
 	if (!new)
 	    return 0;
