@@ -460,7 +460,7 @@ static int i830_dma_initialize(drm_device_t *dev,
    	memset((void *) dev_priv->hw_status_page, 0, PAGE_SIZE);
 	DRM_DEBUG("hw status page @ %lx\n", dev_priv->hw_status_page);
    
-   	I830_WRITE(0x02080, virt_to_bus((void *)dev_priv->hw_status_page));
+   	I830_WRITE(0x02080, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
    
    	/* Now we need to init our freelist */
