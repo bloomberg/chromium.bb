@@ -999,6 +999,11 @@ static __inline__ struct drm_map *drm_core_findmap(struct drm_device *dev,
 	return NULL;
 }
 
+static __inline__ int drm_device_is_agp(drm_device_t *dev)
+{
+	return pci_find_capability(dev->pdev, PCI_CAP_ID_AGP);
+}
+
 static __inline__ void drm_core_dropmap(struct drm_map *map)
 {
 }

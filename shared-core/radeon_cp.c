@@ -2006,9 +2006,6 @@ int radeon_cp_buffers(DRM_IOCTL_ARGS)
 /* Always create a map record for MMIO and FB memory, done from DRIVER_POSTINIT */
 int radeon_preinit(struct drm_device *dev, unsigned long flags)
 {
-#if defined(__linux__)
-	u32 save, temp;
-#endif
 	drm_radeon_private_t *dev_priv;
 	int ret = 0;
 
@@ -2043,28 +2040,12 @@ int radeon_preinit(struct drm_device *dev, unsigned long flags)
 	if (ret != 0)
 		return ret;
 
-#if defined(__linux__)
-	/* There are signatures in BIOS and PCI-SSID for a PCI card, but they are not very reliable.
-	   Following detection method works for all cards tested so far.
-	   Note, checking AGP_ENABLE bit after drmAgpEnable call can also give the correct result.
-	   However, calling drmAgpEnable on a PCI card can cause some strange lockup when the server
-	   restarts next time.
-	 */
-	pci_read_config_dword(dev->pdev, RADEON_AGP_COMMAND_PCI_CONFIG, &save);
-	pci_write_config_dword(dev->pdev, RADEON_AGP_COMMAND_PCI_CONFIG,
-			       save | RADEON_AGP_ENABLE);
-	pci_read_config_dword(dev->pdev, RADEON_AGP_COMMAND_PCI_CONFIG, &temp);
-	pci_write_config_dword(dev->pdev, RADEON_AGP_COMMAND_PCI_CONFIG, save);
-	if (temp & RADEON_AGP_ENABLE)
-		dev_priv->flags |= CHIP_IS_AGP;
-#else
-	/* The above method of detecting AGP is known to not work correctly,
+	/* The original method of detecting AGP is known to not work correctly,
 	 * according to Mike Harris.  The solution is to walk the capabilities
 	 * list, which should be done in drm_device_is_agp().
 	 */
 	if (drm_device_is_agp(dev))
 		dev_priv->flags |= CHIP_IS_AGP;
-#endif
 
 	DRM_DEBUG("%s card detected\n",
 		  ((dev_priv->flags & CHIP_IS_AGP) ? "AGP" : "PCI"));
