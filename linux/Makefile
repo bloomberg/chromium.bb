@@ -41,6 +41,10 @@ RUNNING_REL := $(shell uname -r)
 LINUXDIR := /lib/modules/$(RUNNING_REL)/build
 endif
 
+ifndef O
+O := $(LINUXDIR)
+endif
+
 MACHINE := $(shell uname -m)
 
 # Modules for all architectures
@@ -151,6 +155,13 @@ HAVECONFIG := $(shell if [ -e $(LINUXDIR)/$(RHCONFIG) ]; then echo y; fi)
 ifneq ($(HAVECONFIG),y)
 RHCONFIG :=
 endif
+endif
+
+ifneq ($(HAVECONFIG),y)
+ifneq ($(0),$(LINUXDIR))
+GETCONFIG += O=$(O)
+endif
+HAVECONFIG := $(shell if [ -e $(O)/.config ]; then echo y; fi)
 endif
 
 ifneq ($(HAVECONFIG),y)
