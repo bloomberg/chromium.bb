@@ -1,3 +1,13 @@
+2005-01-28  Keith Packard  <keithp@keithp.com>
+
+	* src/fcint.h:
+	* src/fcname.c: (FcNameBool):
+	* src/fcxml.c: (FcTypeName), (FcTypecheckValue), (FcTypecheckExpr),
+	(FcTestCreate), (FcEditCreate), (FcConfigLexBool), (FcParseBool),
+	(FcParseAlias), (FcParseInclude), (FcParseTest), (FcParseEdit):
+	Polite typechecking for test and edit expressions.  Helps
+	catch errors in the font configuration.
+
 2005-01-15  Alan Coopersmith <alan.coopersmith@sun.com>
 
 	reviewed by: Keith Packard <keithp@keithp.com>

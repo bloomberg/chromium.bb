@@ -42,27 +42,6 @@
 #undef STRICT
 #endif
 
-FcTest *
-FcTestCreate (FcMatchKind   kind, 
-	      FcQual	    qual,
-	      const FcChar8 *field,
-	      FcOp	    compare,
-	      FcExpr	    *expr)
-{
-    FcTest	*test = (FcTest *) malloc (sizeof (FcTest));
-
-    if (test)
-    {
-	FcMemAlloc (FC_MEM_TEST, sizeof (FcTest));
-	test->next = 0;
-	test->kind = kind;
-	test->qual = qual;
-	test->field = (char *) FcStrCopy (field);
-	test->op = compare;
-	test->expr = expr;
-    }
-    return test;
-}
 
 void
 FcTestDestroy (FcTest *test)
@@ -267,22 +246,6 @@ FcExprDestroy (FcExpr *e)
     }
     FcMemFree (FC_MEM_EXPR, sizeof (FcExpr));
     free (e);
-}
-
-FcEdit *
-FcEditCreate (const char *field, FcOp op, FcExpr *expr, FcValueBinding binding)
-{
-    FcEdit *e = (FcEdit *) malloc (sizeof (FcEdit));
-
-    if (e)
-    {
-	e->next = 0;
-	e->field = field;   /* already saved in grammar */
-	e->op = op;
-	e->expr = expr;
-	e->binding = binding;
-    }
-    return e;
 }
 
 void
@@ -526,6 +489,187 @@ FcConfigMessage (FcConfigParse *parse, FcConfigSeverity severe, char *fmt, ...)
     vfprintf (stderr, fmt, args);
     fprintf (stderr, "\n");
     va_end (args);
+}
+
+
+static char *
+FcTypeName (FcType type)
+{
+    switch (type) {
+    case FcTypeVoid:
+	return "void";
+    case FcTypeInteger:
+    case FcTypeDouble:
+	return "number";
+    case FcTypeString:
+	return "string";
+    case FcTypeBool:
+	return "bool";
+    case FcTypeMatrix:
+	return "matrix";
+    case FcTypeCharSet:
+	return "charset";
+    case FcTypeFTFace:
+	return "FT_Face";
+    case FcTypeLangSet:
+	return "langset";
+    default:
+	return "unknown";
+    }
+}
+
+static void
+FcTypecheckValue (FcConfigParse *parse, FcType value, FcType type)
+{
+    if (value == FcTypeInteger)
+	value = FcTypeDouble;
+    if (type == FcTypeInteger)
+	type = FcTypeDouble;
+    if (value != type)
+    {
+	if ((value == FcTypeLangSet && type == FcTypeString) ||
+	    (value == FcTypeString && type == FcTypeLangSet))
+	    return;
+	FcConfigMessage (parse, FcSevereWarning, "saw %s, expected %s",
+			 FcTypeName (value), FcTypeName (type));
+    }
+}
+
+static void
+FcTypecheckExpr (FcConfigParse *parse, FcExpr *expr, FcType type)
+{
+    const FcObjectType	*o;
+    const FcConstant	*c;
+    
+    switch (expr->op) {
+    case FcOpInteger:
+    case FcOpDouble:
+	FcTypecheckValue (parse, FcTypeDouble, type);
+	break;
+    case FcOpString:
+	FcTypecheckValue (parse, FcTypeString, type);
+	break;
+    case FcOpMatrix:
+	FcTypecheckValue (parse, FcTypeMatrix, type);
+	break;
+    case FcOpBool:
+	FcTypecheckValue (parse, FcTypeBool, type);
+	break;
+    case FcOpCharSet:
+	FcTypecheckValue (parse, FcTypeCharSet, type);
+	break;
+    case FcOpNil:
+	break;
+    case FcOpField:
+	o = FcNameGetObjectType (expr->u.field);
+	if (o)
+	    FcTypecheckValue (parse, o->type, type);
+	break;
+    case FcOpConst:
+	c = FcNameGetConstant (expr->u.constant);
+	if (c)
+	{
+	    o = FcNameGetObjectType (c->object);
+	    if (o)
+		FcTypecheckValue (parse, o->type, type);
+	}
+	break;
+    case FcOpQuest:
+	FcTypecheckExpr (parse, expr->u.tree.left, FcTypeBool);
+	FcTypecheckExpr (parse, expr->u.tree.right->u.tree.left, type);
+	FcTypecheckExpr (parse, expr->u.tree.right->u.tree.right, type);
+	break;
+    case FcOpAssign:
+    case FcOpAssignReplace:
+	break;
+    case FcOpEqual:
+    case FcOpNotEqual:
+    case FcOpLess:
+    case FcOpLessEqual:
+    case FcOpMore:
+    case FcOpMoreEqual:
+    case FcOpContains:
+    case FcOpNotContains:
+    case FcOpListing:
+	FcTypecheckValue (parse, FcTypeBool, type);
+	break;
+    case FcOpComma:
+    case FcOpOr:
+    case FcOpAnd:
+    case FcOpPlus:
+    case FcOpMinus:
+    case FcOpTimes:
+    case FcOpDivide:
+	FcTypecheckExpr (parse, expr->u.tree.left, type);
+	FcTypecheckExpr (parse, expr->u.tree.right, type);
+	break;
+    case FcOpNot:
+	FcTypecheckValue (parse, FcTypeBool, type);
+	FcTypecheckExpr (parse, expr->u.tree.left, FcTypeBool);
+	break;
+    case FcOpFloor:
+    case FcOpCeil:
+    case FcOpRound:
+    case FcOpTrunc:
+	FcTypecheckValue (parse, FcTypeDouble, type);
+	FcTypecheckExpr (parse, expr->u.tree.left, FcTypeDouble);
+	break;
+    default:
+	break;
+    }
+}
+
+static FcTest *
+FcTestCreate (FcConfigParse *parse,
+	      FcMatchKind   kind, 
+	      FcQual	    qual,
+	      const FcChar8 *field,
+	      FcOp	    compare,
+	      FcExpr	    *expr)
+{
+    FcTest	*test = (FcTest *) malloc (sizeof (FcTest));
+
+    if (test)
+    {
+	const FcObjectType	*o;
+	
+	FcMemAlloc (FC_MEM_TEST, sizeof (FcTest));
+	test->next = 0;
+	test->kind = kind;
+	test->qual = qual;
+	test->field = (char *) FcStrCopy (field);
+	test->op = compare;
+	test->expr = expr;
+	o = FcNameGetObjectType (test->field);
+	if (o)
+	    FcTypecheckExpr (parse, expr, o->type);
+    }
+    return test;
+}
+
+static FcEdit *
+FcEditCreate (FcConfigParse	*parse,
+	      const char	*field,
+	      FcOp		op,
+	      FcExpr		*expr,
+	      FcValueBinding	binding)
+{
+    FcEdit *e = (FcEdit *) malloc (sizeof (FcEdit));
+
+    if (e)
+    {
+	const FcObjectType	*o;
+
+	e->next = 0;
+	e->field = field;   /* already saved in grammar */
+	e->op = op;
+	e->expr = expr;
+	e->binding = binding;
+	o = FcNameGetObjectType (e->field);
+	if (o)
+	    FcTypecheckExpr (parse, expr, o->type);
+    }
+    return e;
 }
 
 static void
@@ -1091,15 +1235,14 @@ FcParseMatrix (FcConfigParse *parse)
 }
 
 static FcBool
-FcConfigLexBool (const FcChar8 *bool)
+FcConfigLexBool (FcConfigParse *parse, const FcChar8 *bool)
 {
-    if (*bool == 't' || *bool == 'T')
-	return FcTrue;
-    if (*bool == 'y' || *bool == 'Y')
-	return FcTrue;
-    if (*bool == '1')
-	return FcTrue;
-    return FcFalse;
+    FcBool  result = FcFalse;
+
+    if (!FcNameBool (bool, &result))
+	FcConfigMessage (parse, FcSevereWarning, "\"%s\" is not known boolean",
+			 bool);
+    return result;
 }
 
 static void
@@ -1115,7 +1258,7 @@ FcParseBool (FcConfigParse *parse)
 	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
-    FcVStackPushBool (parse, FcConfigLexBool (s));
+    FcVStackPushBool (parse, FcConfigLexBool (parse, s));
     FcStrFree (s);
 }
 
@@ -1247,7 +1390,8 @@ FcParseAlias (FcConfigParse *parse)
     }
     if (prefer)
     {
-	edit = FcEditCreate (FcConfigSaveField ("family"),
+	edit = FcEditCreate (parse, 
+			     FcConfigSaveField ("family"),
 			     FcOpPrepend,
 			     prefer,
 			     FcValueBindingWeak);
@@ -1259,7 +1403,8 @@ FcParseAlias (FcConfigParse *parse)
     if (accept)
     {
 	next = edit;
-	edit = FcEditCreate (FcConfigSaveField ("family"),
+	edit = FcEditCreate (parse,
+			     FcConfigSaveField ("family"),
 			     FcOpAppend,
 			     accept,
 			     FcValueBindingWeak);
@@ -1271,7 +1416,8 @@ FcParseAlias (FcConfigParse *parse)
     if (def)
     {
 	next = edit;
-	edit = FcEditCreate (FcConfigSaveField ("family"),
+	edit = FcEditCreate (parse,
+			     FcConfigSaveField ("family"),
 			     FcOpAppendLast,
 			     def,
 			     FcValueBindingWeak);
@@ -1282,7 +1428,7 @@ FcParseAlias (FcConfigParse *parse)
     }
     if (edit)
     {
-	test = FcTestCreate (FcMatchPattern,
+	test = FcTestCreate (parse, FcMatchPattern,
 			     FcQualAny,
 			     (FcChar8 *) FC_FAMILY,
 			     FcOpEqual,
@@ -1437,7 +1583,7 @@ FcParseInclude (FcConfigParse *parse)
 	return;
     }
     i = FcConfigGetAttribute (parse, "ignore_missing");
-    if (i && FcConfigLexBool ((FcChar8 *) i) == FcTrue)
+    if (i && FcConfigLexBool (parse, (FcChar8 *) i) == FcTrue)
 	ignore_missing = FcTrue;
     if (!FcConfigParseAndLoad (parse->config, s, !ignore_missing))
 	parse->error = FcTrue;
@@ -1553,7 +1699,7 @@ FcParseTest (FcConfigParse *parse)
 	FcConfigMessage (parse, FcSevereWarning, "missing test expression");
 	return;
     }
-    test = FcTestCreate (kind, qual, name, compare, expr);
+    test = FcTestCreate (parse, kind, qual, name, compare, expr);
     if (!test)
     {
 	FcConfigMessage (parse, FcSevereError, "out of memory");
@@ -1626,7 +1772,7 @@ FcParseEdit (FcConfigParse *parse)
 	}
     }
     expr = FcPopBinary (parse, FcOpComma);
-    edit = FcEditCreate ((char *) FcStrCopy (name), mode, expr, binding);
+    edit = FcEditCreate (parse, (char *) FcStrCopy (name), mode, expr, binding);
     if (!edit)
     {
 	FcConfigMessage (parse, FcSevereError, "out of memory");

@@ -274,7 +274,7 @@ FcNameConstant (FcChar8 *string, int *result)
 }
 
 FcBool
-FcNameBool (FcChar8 *v, FcBool *result)
+FcNameBool (const FcChar8 *v, FcBool *result)
 {
     char    c0, c1;
 

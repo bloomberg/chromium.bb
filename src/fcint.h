@@ -609,13 +609,6 @@ FcConfigerror (char *fmt, ...);
 char *
 FcConfigSaveField (const char *field);
 
-FcTest *
-FcTestCreate (FcMatchKind   kind,
-	      FcQual	    qual,
-	      const FcChar8 *field,
-	      FcOp	    compare,
-	      FcExpr	    *expr);
-
 void
 FcTestDestroy (FcTest *test);
 
@@ -648,9 +641,6 @@ FcExprCreateOp (FcExpr *left, FcOp op, FcExpr *right);
 
 void
 FcExprDestroy (FcExpr *e);
-
-FcEdit *
-FcEditCreate (const char *field, FcOp op, FcExpr *expr, FcValueBinding binding);
 
 void
 FcEditDestroy (FcEdit *e);
@@ -697,7 +687,7 @@ FcListPatternMatchAny (const FcPattern *p,
 /* fcname.c */
 
 FcBool
-FcNameBool (FcChar8 *v, FcBool *result);
+FcNameBool (const FcChar8 *v, FcBool *result);
 
 /* fcpat.c */
 void
