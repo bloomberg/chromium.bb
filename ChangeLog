@@ -1,3 +1,11 @@
+Fri Mar  7 07:55:00 EST 2003    Mike A. Harris <mharris@redhat.com>
+	+ RPM specfile cleanups for 2.1.92: Removed man1/* and added man5/*
+	  to main package and man3/* to devel package
+
+	+ Added missing defattr(-, root, root) to main RPM package
+ 
+	+ Added HTML and text development documentation to -devel subpackage
+
 Wed Mar  5 05:08:00 EST 2003	Mike A. Harris <mharris@redhat.com>
 	+ Added back the configure macro options --disable-docs, otherwise
 	  fontconfig installs docs into /usr/share/doc/fontconfig (with no
