@@ -1395,7 +1395,11 @@ void radeon_do_release( drm_device_t *dev )
 			/* Stop the cp */
 			while ((ret = radeon_do_cp_idle( dev_priv )) != 0) {
 				DRM_DEBUG("radeon_do_cp_idle %d\n", ret);
-				schedule(); /* BSD? */
+#ifdef __linux__
+				schedule();
+#else
+				tsleep(&ret, PZERO, "rdnrel", 1);
+#endif
 			}
 			radeon_do_cp_stop( dev_priv );
 			radeon_do_engine_reset( dev );
