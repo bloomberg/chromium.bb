@@ -766,7 +766,7 @@ int DRM(release)( struct inode *inode, struct file *filp )
 	DRM_DEBUG( "pid = %d, device = 0x%lx, open_count = %d\n",
 		   current->pid, (long)dev->device, dev->open_count );
 
-	if ( dev->lock.hw_lock &&
+	if ( priv->lock_count && dev->lock.hw_lock &&
 	     _DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) &&
 	     dev->lock.filp == filp ) {
 		DRM_DEBUG( "File %p released, freeing lock for context %d\n",
@@ -784,7 +784,7 @@ int DRM(release)( struct inode *inode, struct file *filp )
                                    server. */
 	}
 #if __HAVE_RELEASE
-	else if ( dev->lock.hw_lock ) {
+	else if ( priv->lock_count && dev->lock.hw_lock ) {
 		/* The lock is required to reclaim buffers */
 		DECLARE_WAITQUEUE( entry, current );
 
@@ -932,6 +932,8 @@ int DRM(lock)( struct inode *inode, struct file *filp,
 
         dev->lck_start = start = get_cycles();
 #endif
+
+	++priv->lock_count;
 
         if ( copy_from_user( &lock, (drm_lock_t *)arg, sizeof(lock) ) )
 		return -EFAULT;

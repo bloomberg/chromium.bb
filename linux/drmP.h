@@ -448,6 +448,7 @@ typedef struct drm_file {
 	struct drm_file	  *prev;
 	struct drm_device *dev;
 	int 		  remove_auth_on_close;
+	unsigned long     lock_count;
 } drm_file_t;
 
 
