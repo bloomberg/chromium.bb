@@ -101,10 +101,10 @@
 #define _DRM_LOCKING_CONTEXT(lock) ((lock) & ~(_DRM_LOCK_HELD|_DRM_LOCK_CONT))
 
 
-typedef unsigned long drm_handle_t;
-typedef unsigned int  drm_context_t;
+typedef unsigned long drm_handle_t;     /**< To mapped regions */
+typedef unsigned int  drm_context_t;    /**< GLXContext handle */
 typedef unsigned int  drm_drawable_t;
-typedef unsigned int  drm_magic_t;
+typedef unsigned int  drm_magic_t;      /**< Magic for authentication */
 
 
 /**
@@ -401,8 +401,8 @@ typedef struct drm_buf_desc {
  * DRM_IOCTL_INFO_BUFS ioctl argument type.
  */
 typedef struct drm_buf_info {
-	int	       count;	/**< Entries in list */
-	drm_buf_desc_t *list;
+	int	       count;	  /**< Number of buffers described in list */
+	drm_buf_desc_t *list;	  /**< List of buffer descriptions */
 } drm_buf_info_t;
 
 
