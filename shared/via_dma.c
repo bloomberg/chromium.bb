@@ -17,17 +17,57 @@
 #include "via_drm.h"
 #include "via_drv.h"
 
-
-
-
-static inline uint32_t * via_check_dma(drm_via_private_t * dev_priv,
-		unsigned int size);
 static void via_cmdbuf_start(drm_via_private_t * dev_priv);
 static void via_cmdbuf_pause(drm_via_private_t * dev_priv);
 static void via_cmdbuf_reset(drm_via_private_t * dev_priv);
 static void via_cmdbuf_rewind(drm_via_private_t * dev_priv);
 static int  via_wait_idle(drm_via_private_t * dev_priv);
 
+static inline int
+via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
+{
+	uint32_t agp_base = dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr;
+	uint32_t cur_addr, hw_addr, next_addr;
+	volatile uint32_t * hw_addr_ptr;
+	uint32_t count;
+	hw_addr_ptr = dev_priv->hw_addr_ptr;
+	cur_addr = agp_base + dev_priv->dma_low;
+	/* At high resolution (i.e. 1280x1024) and with high workload within
+	 * a short commmand stream, the following test will fail. It may be
+	 * that the engine is too busy to update hw_addr. Therefore, add
+	 * a large 64KB window between buffer head and tail.
+	 */
+	next_addr = cur_addr + size + 64 * 1024;
+	count = 1000000; /* How long is this? */
+	do {
+		hw_addr = *hw_addr_ptr;
+		if (count-- == 0) {
+			DRM_ERROR("via_cmdbuf_wait timed out hw %x dma_low %x\n",
+					hw_addr, dev_priv->dma_low);
+			return -1;
+		}
+	} while ((cur_addr < hw_addr) && (next_addr >= hw_addr));
+	return 0;
+}
+
+/*
+ * Checks whether buffer head has reach the end. Rewind the ring buffer
+ * when necessary.
+ *
+ * Returns virtual pointer to ring buffer.
+ */
+static inline uint32_t *
+via_check_dma(drm_via_private_t * dev_priv, unsigned int size)
+{
+	if ((dev_priv->dma_low + size + 0x400) > dev_priv->dma_high) {
+		via_cmdbuf_rewind(dev_priv);
+	}
+	if (via_cmdbuf_wait(dev_priv, size) != 0) {
+		return NULL;
+	}
+
+	return (uint32_t*)(dev_priv->dma_ptr + dev_priv->dma_low);
+}
 
 int via_dma_cleanup(drm_device_t *dev)
 {
@@ -222,52 +262,6 @@ via_align_buffer(drm_via_private_t * dev_priv, uint32_t * vb, int qw_count)
 	}
 	via_swap_count = (via_swap_count + 1) & 0xffff;
 	return vb;
-}
-
-static inline int
-via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
-{
-	uint32_t agp_base = dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr;
-	uint32_t cur_addr, hw_addr, next_addr;
-	volatile uint32_t * hw_addr_ptr;
-	uint32_t count;
-	hw_addr_ptr = dev_priv->hw_addr_ptr;
-	cur_addr = agp_base + dev_priv->dma_low;
-	/* At high resolution (i.e. 1280x1024) and with high workload within
-	 * a short commmand stream, the following test will fail. It may be
-	 * that the engine is too busy to update hw_addr. Therefore, add
-	 * a large 64KB window between buffer head and tail.
-	 */
-	next_addr = cur_addr + size + 64 * 1024;
-	count = 1000000; /* How long is this? */
-	do {
-		hw_addr = *hw_addr_ptr;
-		if (count-- == 0) {
-			DRM_ERROR("via_cmdbuf_wait timed out hw %x dma_low %x\n",
-					hw_addr, dev_priv->dma_low);
-			return -1;
-		}
-	} while ((cur_addr < hw_addr) && (next_addr >= hw_addr));
-	return 0;
-}
-
-/*
- * Checks whether buffer head has reach the end. Rewind the ring buffer
- * when necessary.
- *
- * Returns virtual pointer to ring buffer.
- */
-static inline uint32_t *
-via_check_dma(drm_via_private_t * dev_priv, unsigned int size)
-{
-	if ((dev_priv->dma_low + size + 0x400) > dev_priv->dma_high) {
-		via_cmdbuf_rewind(dev_priv);
-	}
-	if (via_cmdbuf_wait(dev_priv, size) != 0) {
-		return NULL;
-	}
-
-	return (uint32_t*)(dev_priv->dma_ptr + dev_priv->dma_low);
 }
 
 /*
