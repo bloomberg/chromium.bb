@@ -2,6 +2,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/Imakefi
 
 #include <Server.tmpl>
 
+#if 0
 LinkSourceFile(xf86drm.c,..)
 LinkSourceFile(xf86drmHash.c,..)
 LinkSourceFile(xf86drmRandom.c,..)
@@ -9,6 +10,7 @@ LinkSourceFile(xf86drmSL.c,..)
 LinkSourceFile(xf86drm.h,$(XF86OSSRC))
 LinkSourceFile(xf86_OSproc.h,$(XF86OSSRC))
 LinkSourceFile(sigio.c,$(XF86OSSRC)/shared)
+#endif
 
 XCOMM Try to use the Linux version of the DRM headers.  This avoids skew
 XCOMM and missing headers.  If there's a need to break them out, they
