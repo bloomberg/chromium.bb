@@ -1,11 +1,13 @@
 /**
- * \file drm_sg_tmp.h 
+ * \file drm_scatter.h 
  * IOCTLs to manage scatter/gather memory
  *
  * \author Gareth Hughes <gareth@valinux.com>
  */
 
 /*
+ * Created: Mon Dec 18 23:20:54 2000 by gareth@valinux.com
+ *
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
@@ -29,29 +31,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-
-#if __HAVE_SG
-
-
 #define __NO_VERSION__
 #include <linux/config.h>
 #include <linux/vmalloc.h>
 #include "drmP.h"
 
-
-/**
- * Define to non-zero to verify that each page points to its virtual address,
- * and vice versa, in sg_alloc().
- */
 #define DEBUG_SCATTER 0
 
-
-/** 
- * Free scatter/gather memory. 
- *
- * \param entry scatter/gather memory entry to free, as returned by sg_alloc().
- */
-void DRM(sg_free)( drm_sg_mem_t *entry )
+void DRM(sg_cleanup)( drm_sg_mem_t *entry )
 {
 	struct page *page;
 	int i;
@@ -75,34 +62,40 @@ void DRM(sg_free)( drm_sg_mem_t *entry )
 		   DRM_MEM_SGLISTS );
 }
 
-/** 
- * Allocate scatter/gather memory. 
- *
- * \param size size of memory to allocate.
- * \return pointer to a drm_sg_mem structure on success or NULL on failure.
- */
-drm_sg_mem_t * DRM(sg_alloc)( unsigned long size )
+int DRM(sg_alloc)( struct inode *inode, struct file *filp,
+		   unsigned int cmd, unsigned long arg )
 {
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->dev;
+	drm_scatter_gather_t request;
 	drm_sg_mem_t *entry;
 	unsigned long pages, i, j;
 
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
+	if ( dev->sg )
+		return -EINVAL;
+
+	if ( copy_from_user( &request,
+			     (drm_scatter_gather_t *)arg,
+			     sizeof(request) ) )
+		return -EFAULT;
+
 	entry = DRM(alloc)( sizeof(*entry), DRM_MEM_SGLISTS );
 	if ( !entry )
-		return NULL;
+		return -ENOMEM;
 
    	memset( entry, 0, sizeof(*entry) );
 
-	pages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
-	DRM_DEBUG( "sg size=%ld pages=%ld\n", size, pages );
+	pages = (request.size + PAGE_SIZE - 1) / PAGE_SIZE;
+	DRM_DEBUG( "sg size=%ld pages=%ld\n", request.size, pages );
 
 	entry->pages = pages;
 	entry->pagelist = DRM(alloc)( pages * sizeof(*entry->pagelist),
 				     DRM_MEM_PAGES );
 	if ( !entry->pagelist ) {
 		DRM(free)( entry, sizeof(*entry), DRM_MEM_SGLISTS );
-		return NULL;
+		return -ENOMEM;
 	}
 
 	memset(entry->pagelist, 0, pages * sizeof(*entry->pagelist));
@@ -116,7 +109,7 @@ drm_sg_mem_t * DRM(sg_alloc)( unsigned long size )
 		DRM(free)( entry,
 			   sizeof(*entry),
 			   DRM_MEM_SGLISTS );
-		return NULL;
+		return -ENOMEM;
 	}
 	memset( (void *)entry->busaddr, 0, pages * sizeof(*entry->busaddr) );
 
@@ -131,7 +124,7 @@ drm_sg_mem_t * DRM(sg_alloc)( unsigned long size )
 		DRM(free)( entry,
 			   sizeof(*entry),
 			   DRM_MEM_SGLISTS );
-		return NULL;
+		return -ENOMEM;
 	}
 
 	/* This also forces the mapping of COW pages, so our page list
@@ -151,7 +144,21 @@ drm_sg_mem_t * DRM(sg_alloc)( unsigned long size )
 		SetPageReserved(entry->pagelist[j]);
 	}
 
+	request.handle = entry->handle;
+
+	if ( copy_to_user( (drm_scatter_gather_t *)arg,
+			   &request,
+			   sizeof(request) ) ) {
+		DRM(sg_cleanup)( entry );
+		return -EFAULT;
+	}
+
+	dev->sg = entry;
+
 #if DEBUG_SCATTER
+	/* Verify that each page points to its virtual address, and vice
+	 * versa.
+	 */
 	{
 	int error = 0;
 
@@ -188,83 +195,14 @@ drm_sg_mem_t * DRM(sg_alloc)( unsigned long size )
 	}
 #endif
 
-	return entry;
+	return 0;
 
  failed:
-	DRM(sg_free)( entry );
-	return NULL;
+	DRM(sg_cleanup)( entry );
+	return -ENOMEM;
 }
 
-
-/**********************************************************************/
-/** \name Ioctl's 
- *
- * These expose the scatter/gather memory functions to user-space, 
- * doing the necessary parameter verification and book-keeping to avoid memory
- * leaks.
- *
- * In the current implementation only one scatter/gather memory block can be
- * allocated per device at a given instance.
- *
- * The information about the currently allocated scatter/gather memory block is
- * stored in drm_device_t::sg.
- */
-/*@{*/
-
-/** 
- * Wrapper ioctl around sg_alloc().
- * 
- * \param inode device inode.
- * \param filp file pointer.
- * \param cmd command.
- * \param arg user argument, pointing to a drm_scatter_gather structure.
- * \return zero on success or a negative number on failure.
- */
-int DRM(sg_alloc_ioctl)( struct inode *inode, struct file *filp,
-		   unsigned int cmd, unsigned long arg )
-{
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
-	drm_scatter_gather_t request;
-	drm_sg_mem_t *entry;
-
-	DRM_DEBUG( "%s\n", __FUNCTION__ );
-
-	if ( dev->sg )
-		return -EINVAL;
-
-	if ( copy_from_user( &request,
-			     (drm_scatter_gather_t *)arg,
-			     sizeof(request) ) )
-		return -EFAULT;
-
-	entry = DRM(sg_alloc)( request.size  );
-	if ( !entry )
-		return -ENOMEM;
-
-	request.handle = entry->handle;
-
-	if ( copy_to_user( (drm_scatter_gather_t *)arg,
-			   &request,
-			   sizeof(request) ) ) {
-		DRM(sg_free)( entry );
-		return -EFAULT;
-	}
-
-	dev->sg = entry;
-
-	return 0;
-}
-
-/** Wrapper around sg_free().
- * 
- * \param inode device inode.
- * \param filp file pointer.
- * \param cmd command.
- * \param arg user argument, pointing to a drm_scatter_gather structure.
- * \return zero on success or a negative number on failure.
- */
-int DRM(sg_free_ioctl)( struct inode *inode, struct file *filp,
+int DRM(sg_free)( struct inode *inode, struct file *filp,
 		 unsigned int cmd, unsigned long arg )
 {
 	drm_file_t *priv = filp->private_data;
@@ -285,25 +223,7 @@ int DRM(sg_free_ioctl)( struct inode *inode, struct file *filp,
 
 	DRM_DEBUG( "sg free virtual  = %p\n", entry->virtual );
 
-	DRM(sg_free)( entry );
+	DRM(sg_cleanup)( entry );
 
 	return 0;
 }
-
-/*@}*/
-
-
-/**
- * Called by takedown() to free the scatter/gather memory resources associated
- * with a given device, i.e., to free drm_device_t::sg.
- */
-void DRM(sg_cleanup)(drm_device_t *dev)
-{
-	if ( dev->sg ) {
-		DRM(sg_free)( dev->sg );
-		dev->sg = NULL;
-	}
-}
-
-
-#endif

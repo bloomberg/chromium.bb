@@ -225,19 +225,19 @@ static drm_ioctl_desc_t		  DRM(ioctls)[] = {
 #endif
 
 #if __REALLY_HAVE_AGP
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)]   = { DRM(agp_acquire_ioctl), 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)]   = { DRM(agp_release_ioctl), 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]    = { DRM(agp_enable_ioctl),  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]      = { DRM(agp_info_ioctl), 1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]     = { DRM(agp_alloc_ioctl), 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]      = { DRM(agp_free_ioctl), 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]      = { DRM(agp_bind_ioctl), 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]    = { DRM(agp_unbind_ioctl), 1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)]   = { DRM(agp_acquire), 1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)]   = { DRM(agp_release), 1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]    = { DRM(agp_enable),  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]      = { DRM(agp_info),    1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]     = { DRM(agp_alloc),   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]      = { DRM(agp_free),    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]      = { DRM(agp_bind),    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]    = { DRM(agp_unbind),  1, 1 },
 #endif
 
 #if __HAVE_SG
-	[DRM_IOCTL_NR(DRM_IOCTL_SG_ALLOC)]      = { DRM(sg_alloc_ioctl), 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_SG_FREE)]       = { DRM(sg_free_ioctl), 1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SG_ALLOC)]      = { DRM(sg_alloc),    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SG_FREE)]       = { DRM(sg_free),     1, 1 },
 #endif
 
 #if __HAVE_VBL_IRQ
@@ -416,6 +416,29 @@ static int DRM(takedown)( drm_device_t *dev )
 		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
 	}
 
+#if __REALLY_HAVE_AGP
+				/* Clear AGP information */
+	if ( dev->agp ) {
+		drm_agp_mem_t *entry;
+		drm_agp_mem_t *nexte;
+
+				/* Remove AGP resources, but leave dev->agp
+                                   intact until drv_cleanup is called. */
+		for ( entry = dev->agp->memory ; entry ; entry = nexte ) {
+			nexte = entry->next;
+			if ( entry->bound ) DRM(unbind_agp)( entry->memory );
+			DRM(free_agp)( entry->memory, entry->pages );
+			DRM(free)( entry, sizeof(*entry), DRM_MEM_AGPLISTS );
+		}
+		dev->agp->memory = NULL;
+
+		if ( dev->agp->acquired ) DRM(agp_do_release)();
+
+		dev->agp->acquired = 0;
+		dev->agp->enabled  = 0;
+	}
+#endif
+
 				/* Clear vma list (only built for debugging) */
 	if ( dev->vmalist ) {
 		for ( vma = dev->vmalist ; vma ; vma = vma_next ) {
@@ -463,7 +486,10 @@ static int DRM(takedown)( drm_device_t *dev )
 				 * isn't defined.
 				 */
 #if __HAVE_SG
-				DRM(sg_cleanup)(dev);
+				if(dev->sg) {
+					DRM(sg_cleanup)(dev->sg);
+					dev->sg = NULL;
+				}
 #endif
 				break;
 			}
@@ -592,10 +618,6 @@ static int __init drm_init( void )
 
 	DRM(mem_init)();
 
-#if __REALLY_HAVE_AGP
-	DRM(agp_init)();
-#endif
-		
 	for (i = 0; i < DRM(numdevs); i++) {
 		dev = &(DRM(device)[i]);
 		memset( (void *)dev, 0, sizeof(*dev) );
@@ -608,9 +630,8 @@ static int __init drm_init( void )
 		dev->name   = DRIVER_NAME;
 
 #if __REALLY_HAVE_AGP
-		DRM(agp_init_dev)( dev );
+		dev->agp = DRM(agp_init)();
 #if __MUST_HAVE_AGP
-		
 		if ( dev->agp == NULL ) {
 			DRM_ERROR( "Cannot initialize the agpgart module.\n" );
 			DRM(stub_unregister)(DRM(minor)[i]);
@@ -618,11 +639,13 @@ static int __init drm_init( void )
 			return -ENOMEM;
 		}
 #endif
+#if __REALLY_HAVE_MTRR
 		if (dev->agp)
 			dev->agp->agp_mtrr = mtrr_add( dev->agp->agp_info.aper_base,
 				       dev->agp->agp_info.aper_size*1024*1024,
 				       MTRR_TYPE_WRCOMB,
 				       1 );
+#endif
 #endif
 
 #if __HAVE_CTX_BITMAP
@@ -689,14 +712,13 @@ static void __exit drm_cleanup( void )
 		DRM(takedown)( dev );
 
 #if __REALLY_HAVE_AGP
-		DRM(agp_cleanup_dev)( dev );
+		if ( dev->agp ) {
+			DRM(agp_uninit)();
+			DRM(free)( dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS );
+			dev->agp = NULL;
+		}
 #endif
 	}
-
-#if __REALLY_HAVE_AGP
-	DRM(agp_cleanup)();
-#endif
-
 	DRIVER_POSTCLEANUP();
 	kfree(DRM(minor));
 	kfree(DRM(device));

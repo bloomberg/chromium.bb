@@ -332,29 +332,27 @@ void DRM(ioremapfree)(void *pt, unsigned long size, drm_device_t *dev)
 
 #if __REALLY_HAVE_AGP
 /** Wrapper around agp_allocate_memory() */
-agp_memory *DRM(agp_alloc)(int pages, u32 type)
+agp_memory *DRM(alloc_agp)(int pages, u32 type)
 {
 	return DRM(agp_allocate_memory)(pages, type);
 }
 
 /** Wrapper around agp_free_memory() */
-int DRM(agp_free)(agp_memory *handle, int pages)
+int DRM(free_agp)(agp_memory *handle, int pages)
 {
 	return DRM(agp_free_memory)(handle) ? 0 : -EINVAL;
 }
 
 /** Wrapper around agp_bind_memory() */
-int DRM(agp_bind)(agp_memory *handle, unsigned int start)
+int DRM(bind_agp)(agp_memory *handle, unsigned int start)
 {
 	return DRM(agp_bind_memory)(handle, start);
 }
 
 /** Wrapper around agp_unbind_memory() */
-int DRM(agp_unbind)(agp_memory *handle)
+int DRM(unbind_agp)(agp_memory *handle)
 {
 	return DRM(agp_unbind_memory)(handle);
 }
-#endif /* __REALLY_HAVE_AGP */
-
-
+#endif /* agp */
 #endif /* debug_memory */

@@ -37,7 +37,7 @@
 #include "i810_drm.h"
 #include "i810_drv.h"
 
-#include "drm_agp_tmp.h"
+#include "drm_agpsupport.h"
 #include "drm_auth.h"
 #include "drm_bufs.h"
 #include "drm_context.h"

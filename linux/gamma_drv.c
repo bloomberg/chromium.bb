@@ -37,7 +37,7 @@
 #include "gamma_drv.h"
 
 #include "drm_auth.h"
-#include "drm_agp_tmp.h"
+#include "drm_agpsupport.h"
 #include "drm_bufs.h"
 #include "gamma_context.h"	/* NOTE! */
 #include "drm_dma.h"

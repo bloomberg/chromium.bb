@@ -174,8 +174,6 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 		map->mtrr   = dev->agp->agp_mtrr; /* for getmap */
 		break;
 #endif
-		
-#if __HAVE_SG
 	case _DRM_SCATTER_GATHER:
 		if (!dev->sg) {
 			DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
@@ -183,7 +181,6 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 		}
 		map->offset += dev->sg->handle;
 		break;
-#endif
 
 	default:
 		DRM(free)( map, sizeof(*map), DRM_MEM_MAPS );
