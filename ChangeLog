@@ -1,6 +1,78 @@
-2003-05-04  Keith Packard <keithp@keithp.com
+2003-06-09  Keith Packard <keithp@keithp.com>
+
+	* Optimization in FcLangSetIndex was broken, occasionally
+	  returning a pointer to the wrong location on miss
+
+	* Add fc-match to test font matching from the command line.
+
+2003-05-31  Keith Packard <keithp@keithp.com>
+
+	* (Bug 85) add support for culmus fonts
+	* (Bug 87) Automake 1.4 doesn't do man_MAN1 correctly
+	* (Bug 88) Fix usage info on non-long option systems (Tim Mooney)
+
+2003-05-28  James Su <suzhe@turbolinux.com.cn>
+
+	* Fix "contains" op for strings and langsets.
+
+2003-05-17  Keith Packard <keithp@keithp.com>
+
+	* Fix build error with BDF prop local.  Free langset after query
+
+2003-05-14  Keith Packard <keithp@keithp.com>
+
+	* Extract spacing from XLFD atom
+
+2003-05-12  Juliusz Chroboczek <jch@pps.jussieu.fr>
+
+	* Reinstate SETWIDTH_NAME parsing for legacy fonts, 
+	  disappeared in 1.30.
+
+	* Generate FC_SIZE and FC_DPI for legacy bitmap fonts
+
+2003-05-12  Keith Packard <keithp@keithp.com>
+
+	* Use FcIsWidth to share code
+
+	* Set FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH when scanning fonts to avoid
+	  misclassifying some Han fonts as monospaced.
+	  
+2003-05-07  Keith Packard <keithp@keithp.com>
+
+	* Add filename-based accept/reject to ammend available fonts.
+
+	* Change FT_ENCODING_ADOBE_CUSTOM to ft_encoding_adobe_custom for
+	  older FreeType releases.
+
+2003-05-06  Keith Packard <keithp@keithp.com>
+
+	* Remove 0b82 and Tamil numbers from tamil 
+	  orthography (Jungshik Shin <jshin@mailaps.org>)
+
+2003-05-04  Keith Packard <keithp@keithp.com>
 
 	+ Map glyph names in fonts with adobe custom encoding to unicode
+
+2003-05-02  Keith Packard <keithp@keithp.com>
+
+	* Add FC_WEIGHT_BOOK as weight 75
+
+2003-04-30  Keith Packard <keithp@keithp.com>
+
+	* Typo in bitstream foundry name
+
+2003-04-24  Keith Packard <keithp@keithp.com>
+
+	* Eliminate italic_angle check for PS fonts
+
+2003-04-23  Noah Levitt <nlevitt@columbia.edu>
+
+	* Getting closer to fixing /etc/fonts hard-coding.
+
+2003-04-22  Keith Packard <keithp@keithp.com>
+
+	* Update autogen.sh to work with newer automake versions
+	* Handle pattern elements moving during multiple edits
 
 2003-04-23  James Henstridge  <james@daa.com.au>
 
@@ -9,6 +81,11 @@
 	* doc/fcpattern.fncs: close the <para> element.
 
 	* doc/func.sgml: close the <refsynopsisdiv> element.
+
+2003-04-22  Keith Packard <keithp@keithp.com
+
+	* Update autogen.sh to work with newer automake versions
+	* Handle pattern elements moving during multiple edits
 
 2003-04-17  Colin Walters <walters@debian.org>
 
