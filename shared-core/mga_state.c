@@ -60,9 +60,9 @@ static void mga_emit_clip_rect(drm_mga_private_t * dev_priv,
 			  MGA_LEN + MGA_EXEC, 0x80000000);
 	}
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
-		  MGA_CXBNDRY, (box->x2 << 16) | box->x1,
+		  MGA_CXBNDRY, ((box->x2 - 1) << 16) | box->x1,
 		  MGA_YTOP, box->y1 * pitch,
-		  MGA_YBOT, box->y2 * pitch);
+		  MGA_YBOT, (box->y2 - 1) * pitch);
 
 	ADVANCE_DMA();
 }
