@@ -991,7 +991,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 #if 0
 			atomic_inc( &dev->total_sleeps );
 #endif
-			retcode = tsleep(&dev->lock.lock_queue,
+			retcode = tsleep((void *)&dev->lock.lock_queue,
 					PZERO|PCATCH,
 					"drmlk2",
 					0);
