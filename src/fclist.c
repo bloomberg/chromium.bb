@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fclist.c,v 1.9 2002/08/19 19:32:05 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fclist.c,v 1.10 2002/08/22 07:36:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -142,7 +142,7 @@ FcListValueListEqual (FcValueList   *v1orig,
     for (v1 = v1orig; v1; v1 = v1->next)
     {
 	for (v2 = v2orig; v2; v2 = v2->next)
-	    if (FcConfigCompareValue (v1->value, FcOpEqual, v2->value))
+	    if (FcValueEqual (v1->value, v2->value))
 		break;
 	if (!v2)
 	    return FcFalse;
@@ -150,7 +150,7 @@ FcListValueListEqual (FcValueList   *v1orig,
     for (v2 = v2orig; v2; v2 = v2->next)
     {
 	for (v1 = v1orig; v1; v1 = v1->next)
-	    if (FcConfigCompareValue (v1->value, FcOpEqual, v2->value))
+	    if (FcValueEqual (v1->value, v2->value))
 		break;
 	if (!v1)
 	    return FcFalse;
@@ -171,7 +171,7 @@ FcListPatternEqual (FcPattern	*p1,
 	e1 = FcPatternFindElt (p1, os->objects[i]);
 	e2 = FcPatternFindElt (p2, os->objects[i]);
 	if (!e1 && !e2)
-	    return FcTrue;
+	    continue;
 	if (!e1 || !e2)
 	    return FcFalse;
 	if (!FcListValueListEqual (e1->values, e2->values))

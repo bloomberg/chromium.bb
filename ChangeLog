@@ -1,3 +1,16 @@
+Thu Aug 22 11:36:18 PDT 2002	keithp
+
+	+ Add "contains" and "not_contains" operators and elements to
+	  font configuration
+	  
+	+ Changed semantics of eq operator for LangSets to check for
+	  FcLangEqual so that any match will do
+	
+	+ FcFontList was using FcConfigCompareValue (...FcOpEqual) instead
+	  of FcValueEqual to check for identical values when inserting into
+	  the results.  This broke when the above semantic change was made,
+	  now it uses FcValueEqual which is "more correct" in any case.
+
 Thu Aug 22 00:32:29 PDT 2002	keithp
 
 	+ Reimplement FC_LANG as new datatype.  Lists of strings

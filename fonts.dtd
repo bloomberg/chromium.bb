@@ -90,7 +90,7 @@
 
 <!ENTITY % expr 'int|double|string|matrix|bool|charset
 		|name|const
-		|or|and|eq|not_eq|less|less_eq|more|more_eq
+		|or|and|eq|not_eq|less|less_eq|more|more_eq|contains|not_contains
 		|plus|minus|times|divide|not|if'>
 
 <!--
@@ -121,7 +121,7 @@
 	  qual (any|all|first|not_first)    "any"
 	  name CDATA	    #REQUIRED
 	  target (pattern|font|default)		"default"
-	  compare (eq|not_eq|less|less_eq|more|more_eq)	"eq">
+	  compare (eq|not_eq|less|less_eq|more|more_eq|contains|not_contains)	"eq">
 
 <!--
     Edit a field in a pattern
@@ -172,6 +172,8 @@
 <!ELEMENT less_eq ((%expr;), (%expr;))>
 <!ELEMENT more ((%expr;), (%expr;))>
 <!ELEMENT more_eq ((%expr;), (%expr;))>
+<!ELEMENT contains ((%expr;), (%expr;))>
+<!ELEMENT not_contains ((%expr;), (%expr;))>
 <!ELEMENT plus (%expr;)*>
 <!ELEMENT minus (%expr;)*>
 <!ELEMENT times (%expr;)*>

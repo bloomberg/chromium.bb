@@ -384,6 +384,7 @@ FcLangSetPromote (const FcChar8 *lang)
 	strs.num = 1;
 	strs.size = 1;
 	strs.strs = &str;
+	strs.ref = 1;
 	str = (FcChar8 *) lang;
     }
     return &ls;

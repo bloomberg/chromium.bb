@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.19 2002/08/19 19:32:05 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.20 2002/08/20 23:17:03 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -218,12 +218,13 @@ FcExprDestroy (FcExpr *e)
     case FcOpOr:
     case FcOpAnd:
     case FcOpEqual:
-    case FcOpContains:
     case FcOpNotEqual:
     case FcOpLess:
     case FcOpLessEqual:
     case FcOpMore:
     case FcOpMoreEqual:
+    case FcOpContains:
+    case FcOpNotContains:
     case FcOpPlus:
     case FcOpMinus:
     case FcOpTimes:
@@ -310,6 +311,8 @@ typedef enum _FcElement {
     FcElementLessEq,
     FcElementMore,
     FcElementMoreEq,
+    FcElementContains,
+    FcElementNotContains,
     FcElementPlus,
     FcElementMinus,
     FcElementTimes,
@@ -360,6 +363,8 @@ FcElementMap (const XML_Char *name)
 	{ "less_eq",	FcElementLessEq },
 	{ "more",	FcElementMore },
 	{ "more_eq",	FcElementMoreEq },
+	{ "contains",	FcElementContains },
+	{ "not_contains",FcElementNotContains },
 	{ "plus",	FcElementPlus },
 	{ "minus",	FcElementMinus },
 	{ "times",	FcElementTimes },
@@ -1337,7 +1342,9 @@ static const FcOpMap fcCompareOps[] = {
     { "less",		FcOpLess	    },
     { "less_eq",	FcOpLessEqual	    },
     { "more",		FcOpMore	    },
-    { "more_eq",	FcOpMoreEqual	    }
+    { "more_eq",	FcOpMoreEqual	    },
+    { "contains",	FcOpContains	    },
+    { "not_contains",	FcOpNotContains	    }
 };
 
 #define NUM_COMPARE_OPS (sizeof fcCompareOps / sizeof fcCompareOps[0])
@@ -1673,6 +1680,12 @@ FcEndElement(void *userData, const XML_Char *name)
 	break;
     case FcElementMoreEq:
 	FcParseExpr (parse, FcOpMoreEqual);
+	break;
+    case FcElementContains:
+	FcParseExpr (parse, FcOpContains);
+	break;
+    case FcElementNotContains:
+	FcParseExpr (parse, FcOpNotContains);
 	break;
     case FcElementPlus:
 	FcParseExpr (parse, FcOpPlus);

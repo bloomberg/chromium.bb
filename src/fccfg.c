@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.20 2002/08/19 19:32:05 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.21 2002/08/22 07:36:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -501,7 +501,8 @@ FcConfigCompareValue (FcValue	m,
 	    case FcOpContains:
 		ret = m.u.d == v.u.d;
 		break;
-	    case FcOpNotEqual:    
+	    case FcOpNotEqual:
+	    case FcOpNotContains:
 		ret = m.u.d != v.u.d;
 		break;
 	    case FcOpLess:    
@@ -526,7 +527,8 @@ FcConfigCompareValue (FcValue	m,
 	    case FcOpContains:
 		ret = m.u.b == v.u.b;
 		break;
-	    case FcOpNotEqual:    
+	    case FcOpNotEqual:
+	    case FcOpNotContains:
 		ret = m.u.b != v.u.b;
 		break;
 	    default:
@@ -539,7 +541,8 @@ FcConfigCompareValue (FcValue	m,
 	    case FcOpContains:
 		ret = FcStrCmpIgnoreCase (m.u.s, v.u.s) == 0;
 		break;
-	    case FcOpNotEqual:    
+	    case FcOpNotEqual:
+	    case FcOpNotContains:
 		ret = FcStrCmpIgnoreCase (m.u.s, v.u.s) != 0;
 		break;
 	    default:
@@ -553,6 +556,7 @@ FcConfigCompareValue (FcValue	m,
 		ret = FcMatrixEqual (m.u.m, v.u.m);
 		break;
 	    case FcOpNotEqual:
+	    case FcOpNotContains:
 		ret = !FcMatrixEqual (m.u.m, v.u.m);
 		break;
 	    default:
@@ -564,6 +568,10 @@ FcConfigCompareValue (FcValue	m,
 	    case FcOpContains:
 		/* m contains v if v is a subset of m */
 		ret = FcCharSetIsSubset (v.u.c, m.u.c);
+		break;
+	    case FcOpNotContains:
+		/* m contains v if v is a subset of m */
+		ret = !FcCharSetIsSubset (v.u.c, m.u.c);
 		break;
 	    case FcOpEqual:
 		ret = FcCharSetEqual (m.u.c, v.u.c);
@@ -579,6 +587,9 @@ FcConfigCompareValue (FcValue	m,
 	    switch (op) {
 	    case FcOpContains:
 		ret = FcLangSetCompare (v.u.l, m.u.l) != FcLangDifferentLang;
+		break;
+	    case FcOpNotContains:
+		ret = FcLangSetCompare (v.u.l, m.u.l) == FcLangDifferentLang;
 		break;
 	    case FcOpEqual:
 		ret = FcLangSetEqual (v.u.l, m.u.l);
@@ -603,9 +614,11 @@ FcConfigCompareValue (FcValue	m,
 	case FcTypeFTFace:
 	    switch (op) {
 	    case FcOpEqual:
+	    case FcOpContains:
 		ret = m.u.f == v.u.f;
 		break;
 	    case FcOpNotEqual:
+	    case FcOpNotContains:
 		ret = m.u.f != v.u.f;
 		break;
 	    default:
@@ -616,7 +629,7 @@ FcConfigCompareValue (FcValue	m,
     }
     else
     {
-	if (op == FcOpNotEqual)
+	if (op == FcOpNotEqual || op == FcOpNotContains)
 	    ret = FcTrue;
     }
     return ret;
@@ -682,12 +695,14 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	    v.type = FcTypeVoid;
 	FcValueDestroy (vl);
 	break;
-    case FcOpContains:
+    case FcOpEqual:
     case FcOpNotEqual:
     case FcOpLess:
     case FcOpLessEqual:
     case FcOpMore:
     case FcOpMoreEqual:
+    case FcOpContains:
+    case FcOpNotContains:
 	vl = FcConfigEvaluate (p, e->u.tree.left);
 	vr = FcConfigEvaluate (p, e->u.tree.right);
 	v.type = FcTypeBool;
@@ -697,7 +712,6 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	break;	
     case FcOpOr:
     case FcOpAnd:
-    case FcOpEqual:
     case FcOpPlus:
     case FcOpMinus:
     case FcOpTimes:

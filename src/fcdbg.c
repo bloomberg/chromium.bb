@@ -111,12 +111,13 @@ FcOpPrint (FcOp op)
     case FcOpOr: printf ("Or"); break;
     case FcOpAnd: printf ("And"); break;
     case FcOpEqual: printf ("Equal"); break;
-    case FcOpContains: printf ("Contains"); break;
     case FcOpNotEqual: printf ("NotEqual"); break;
     case FcOpLess: printf ("Less"); break;
     case FcOpLessEqual: printf ("LessEqual"); break;
     case FcOpMore: printf ("More"); break;
     case FcOpMoreEqual: printf ("MoreEqual"); break;
+    case FcOpContains: printf ("Contains"); break;
+    case FcOpNotContains: printf ("NotContains"); break;
     case FcOpPlus: printf ("Plus"); break;
     case FcOpMinus: printf ("Minus"); break;
     case FcOpTimes: printf ("Times"); break;
@@ -161,12 +162,13 @@ FcExprPrint (const FcExpr *expr)
     case FcOpOr:
     case FcOpAnd:
     case FcOpEqual:
-    case FcOpContains:
     case FcOpNotEqual:
     case FcOpLess:
     case FcOpLessEqual:
     case FcOpMore:
     case FcOpMoreEqual:
+    case FcOpContains:
+    case FcOpNotContains:
     case FcOpPlus:
     case FcOpMinus:
     case FcOpTimes:
@@ -184,12 +186,13 @@ FcExprPrint (const FcExpr *expr)
 	case FcOpOr: printf ("Or"); break;
 	case FcOpAnd: printf ("And"); break;
 	case FcOpEqual: printf ("Equal"); break;
-	case FcOpContains: printf ("Contains"); break;
 	case FcOpNotEqual: printf ("NotEqual"); break;
 	case FcOpLess: printf ("Less"); break;
 	case FcOpLessEqual: printf ("LessEqual"); break;
 	case FcOpMore: printf ("More"); break;
 	case FcOpMoreEqual: printf ("MoreEqual"); break;
+	case FcOpContains: printf ("Contains"); break;
+	case FcOpNotContains: printf ("NotContains"); break;
 	case FcOpPlus: printf ("Plus"); break;
 	case FcOpMinus: printf ("Minus"); break;
 	case FcOpTimes: printf ("Times"); break;

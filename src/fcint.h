@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.21 2002/07/31 01:36:37 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.24 2002/08/22 07:36:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -114,7 +114,7 @@ typedef enum _FcOp {
     FcOpAssign, FcOpAssignReplace, 
     FcOpPrependFirst, FcOpPrepend, FcOpAppend, FcOpAppendLast,
     FcOpQuest,
-    FcOpOr, FcOpAnd, FcOpEqual, FcOpNotEqual, FcOpContains,
+    FcOpOr, FcOpAnd, FcOpEqual, FcOpNotEqual, FcOpContains, FcOpNotContains,
     FcOpLess, FcOpLessEqual, FcOpMore, FcOpMoreEqual,
     FcOpPlus, FcOpMinus, FcOpTimes, FcOpDivide,
     FcOpNot, FcOpComma, FcOpInvalid
