@@ -167,4 +167,4 @@ FcExprCreateString
 FcExprDestroy
 FcTestCreate
 FcTestDestroy
-/* $XFree86$ */
+/* $XFree86: xc/lib/fontconfig/fontconfig-def.cpp,v 1.1 2002/04/07 15:19:46 alanh Exp $ */
