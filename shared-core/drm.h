@@ -148,6 +148,22 @@ typedef struct drm_hw_lock {
 } drm_hw_lock_t;
 
 
+/* This is beyond ugly, and only works on GCC.  However, it allows me to use
+ * drm.h in places (i.e., in the X-server) where I can't use size_t.  The real
+ * fix is to use uint32_t instead of size_t, but that fix will break existing
+ * LP64 (i.e., PowerPC64, SPARC64, IA-64, Alpha, etc.) systems.  That *will* 
+ * eventually happen, though.  I chose 'unsigned long' to be the fallback type
+ * because that works on all the platforms I know about.  Hopefully, the
+ * real fix will happen before that bites us.
+ */
+
+#ifdef __SIZE_TYPE__
+# define DRM_SIZE_T __SIZE_TYPE__
+#else
+# warning "__SIZE_TYPE__ not defined.  Assuming sizeof(size_t) == sizeof(unsigned long)!"
+# define DRM_SIZE_T unsigned long
+#endif
+
 /**
  * DRM_IOCTL_VERSION ioctl argument type.
  * 
@@ -157,11 +173,11 @@ typedef struct drm_version {
 	int    version_major;	  /**< Major version */
 	int    version_minor;	  /**< Minor version */
 	int    version_patchlevel;/**< Patch level */
-	size_t name_len;	  /**< Length of name buffer */
+	DRM_SIZE_T name_len;	  /**< Length of name buffer */
 	char   *name;		  /**< Name of driver */
-	size_t date_len;	  /**< Length of date buffer */
+	DRM_SIZE_T date_len;	  /**< Length of date buffer */
 	char   *date;		  /**< User-space buffer to hold date */
-	size_t desc_len;	  /**< Length of desc buffer */
+	DRM_SIZE_T desc_len;	  /**< Length of desc buffer */
 	char   *desc;		  /**< User-space buffer to hold desc */
 } drm_version_t;
 
@@ -172,10 +188,11 @@ typedef struct drm_version {
  * \sa drmGetBusid() and drmSetBusId().
  */
 typedef struct drm_unique {
-	size_t unique_len;	  /**< Length of unique */
+	DRM_SIZE_T unique_len;	  /**< Length of unique */
 	char   *unique;		  /**< Unique name for driver instantiation */
 } drm_unique_t;
 
+#undef DRM_SIZE_T
 
 typedef struct drm_list {
 	int		 count;	  /**< Length of user-space structures */
