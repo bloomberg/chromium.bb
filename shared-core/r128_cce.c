@@ -80,7 +80,7 @@ static u32 r128_cce_microcode[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-int R128_READ_PLL(drm_device_t * dev, int addr)
+static int R128_READ_PLL(drm_device_t * dev, int addr)
 {
 	drm_r128_private_t *dev_priv = dev->dev_private;
 
@@ -808,7 +808,7 @@ static int r128_freelist_init(drm_device_t * dev)
 }
 #endif
 
-drm_buf_t *r128_freelist_get(drm_device_t * dev)
+static drm_buf_t *r128_freelist_get(drm_device_t * dev)
 {
 	drm_device_dma_t *dma = dev->dma;
 	drm_r128_private_t *dev_priv = dev->dev_private;

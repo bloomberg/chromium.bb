@@ -101,12 +101,4 @@ PMemBlock via_mmAllocMem(memHeap_t * heap, int size, int align2,
  */
 int via_mmFreeMem(PMemBlock b);
 
-/*
- * destroy MM
- */
-void via_mmDestroy(memHeap_t * mmInit);
-
-/* For debugging purpose. */
-void via_mmDumpMemInfo(memHeap_t * mmInit);
-
 #endif

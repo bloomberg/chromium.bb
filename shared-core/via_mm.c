@@ -29,8 +29,6 @@
 
 #define MAX_CONTEXT 100
 
-unsigned int VIA_DEBUG = 1;
-
 typedef struct {
 	int used;
 	int context;
@@ -38,6 +36,11 @@ typedef struct {
 } via_context_t;
 
 static via_context_t global_ppriv[MAX_CONTEXT];
+
+static int via_agp_alloc(drm_via_mem_t * mem);
+static int via_agp_free(drm_via_mem_t * mem);
+static int via_fb_alloc(drm_via_mem_t * mem);
+static int via_fb_free(drm_via_mem_t * mem);
 
 static int add_alloc_set(int context, int type, unsigned int val)
 {
@@ -224,7 +227,7 @@ int via_mem_alloc(DRM_IOCTL_ARGS)
 	return -EFAULT;
 }
 
-int via_fb_alloc(drm_via_mem_t * mem)
+static int via_fb_alloc(drm_via_mem_t * mem)
 {
 	drm_via_mm_t fb;
 	PMemBlock block;
@@ -261,7 +264,7 @@ int via_fb_alloc(drm_via_mem_t * mem)
 	return retval;
 }
 
-int via_agp_alloc(drm_via_mem_t * mem)
+static int via_agp_alloc(drm_via_mem_t * mem)
 {
 	drm_via_mm_t agp;
 	PMemBlock block;
@@ -317,7 +320,7 @@ int via_mem_free(DRM_IOCTL_ARGS)
 	return -EFAULT;
 }
 
-int via_fb_free(drm_via_mem_t * mem)
+static int via_fb_free(drm_via_mem_t * mem)
 {
 	drm_via_mm_t fb;
 	int retval = 0;
@@ -345,7 +348,7 @@ int via_fb_free(drm_via_mem_t * mem)
 	return retval;
 }
 
-int via_agp_free(drm_via_mem_t * mem)
+static int via_agp_free(drm_via_mem_t * mem)
 {
 	drm_via_mm_t agp;
 

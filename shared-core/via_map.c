@@ -25,7 +25,7 @@
 #include "via_drm.h"
 #include "via_drv.h"
 
-int via_do_init_map(drm_device_t * dev, drm_via_init_t * init)
+static int via_do_init_map(drm_device_t * dev, drm_via_init_t * init)
 {
 	drm_via_private_t *dev_priv;
 	unsigned int i;

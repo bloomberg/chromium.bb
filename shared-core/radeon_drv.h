@@ -290,38 +290,16 @@ extern drm_buf_t *radeon_freelist_get(drm_device_t * dev);
 extern int radeon_wait_ring(drm_radeon_private_t * dev_priv, int n);
 
 extern int radeon_do_cp_idle(drm_radeon_private_t * dev_priv);
-extern int radeon_do_cleanup_cp(drm_device_t * dev);
-extern int radeon_do_cleanup_pageflip(drm_device_t * dev);
-
-				/* radeon_state.c */
-extern int radeon_cp_clear(DRM_IOCTL_ARGS);
-extern int radeon_cp_swap(DRM_IOCTL_ARGS);
-extern int radeon_cp_vertex(DRM_IOCTL_ARGS);
-extern int radeon_cp_indices(DRM_IOCTL_ARGS);
-extern int radeon_cp_texture(DRM_IOCTL_ARGS);
-extern int radeon_cp_stipple(DRM_IOCTL_ARGS);
-extern int radeon_cp_indirect(DRM_IOCTL_ARGS);
-extern int radeon_cp_vertex2(DRM_IOCTL_ARGS);
-extern int radeon_cp_cmdbuf(DRM_IOCTL_ARGS);
-extern int radeon_cp_getparam(DRM_IOCTL_ARGS);
-extern int radeon_cp_setparam(DRM_IOCTL_ARGS);
-extern int radeon_cp_flip(DRM_IOCTL_ARGS);
 
 extern int radeon_mem_alloc(DRM_IOCTL_ARGS);
 extern int radeon_mem_free(DRM_IOCTL_ARGS);
 extern int radeon_mem_init_heap(DRM_IOCTL_ARGS);
 extern void radeon_mem_takedown(struct mem_block **heap);
 extern void radeon_mem_release(DRMFILE filp, struct mem_block *heap);
-extern int radeon_surface_alloc(DRM_IOCTL_ARGS);
-extern int radeon_surface_free(DRM_IOCTL_ARGS);
 
 				/* radeon_irq.c */
 extern int radeon_irq_emit(DRM_IOCTL_ARGS);
 extern int radeon_irq_wait(DRM_IOCTL_ARGS);
-
-extern int radeon_emit_and_wait_irq(drm_device_t * dev);
-extern int radeon_wait_irq(drm_device_t * dev, int swi_nr);
-extern int radeon_emit_irq(drm_device_t * dev);
 
 extern void radeon_do_release(drm_device_t * dev);
 extern int radeon_driver_vblank_wait(drm_device_t * dev,
@@ -864,7 +842,6 @@ do {									\
 	RADEON_WRITE( RADEON_CLOCK_CNTL_DATA, (val) );			\
 } while (0)
 
-extern int RADEON_READ_PLL(drm_device_t * dev, int addr);
 extern int radeon_preinit(struct drm_device *dev, unsigned long flags);
 extern int radeon_postcleanup(struct drm_device *dev);
 

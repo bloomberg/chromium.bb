@@ -93,7 +93,7 @@ static __inline__ void radeon_acknowledge_irqs(drm_radeon_private_t * dev_priv)
 		RADEON_WRITE(RADEON_GEN_INT_STATUS, tmp);
 }
 
-int radeon_emit_irq(drm_device_t * dev)
+static int radeon_emit_irq(drm_device_t * dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	unsigned int ret;
@@ -111,7 +111,7 @@ int radeon_emit_irq(drm_device_t * dev)
 	return ret;
 }
 
-int radeon_wait_irq(drm_device_t * dev, int swi_nr)
+static int radeon_wait_irq(drm_device_t * dev, int swi_nr)
 {
 	drm_radeon_private_t *dev_priv =
 	    (drm_radeon_private_t *) dev->dev_private;
@@ -131,11 +131,6 @@ int radeon_wait_irq(drm_device_t * dev, int swi_nr)
 		    RADEON_READ(RADEON_LAST_SWI_REG) >= swi_nr);
 
 	return ret;
-}
-
-int radeon_emit_and_wait_irq(drm_device_t * dev)
-{
-	return radeon_wait_irq(dev, radeon_emit_irq(dev));
 }
 
 int radeon_driver_vblank_wait(drm_device_t * dev, unsigned int *sequence)

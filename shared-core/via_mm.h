@@ -37,9 +37,4 @@ typedef struct {
 	void *virtual;
 } drm_via_dma_t;
 
-int via_fb_alloc(drm_via_mem_t * mem);
-int via_fb_free(drm_via_mem_t * mem);
-int via_agp_alloc(drm_via_mem_t * mem);
-int via_agp_free(drm_via_mem_t * mem);
-
 #endif

@@ -126,30 +126,7 @@ int via_setDestroy(set_t * set)
 
 #define ISFREE(bptr) ((bptr)->free)
 
-#define PRINTF(fmt, arg...) do{}while(0)
 #define fprintf(fmt, arg...) do{}while(0)
-
-void via_mmDumpMemInfo(memHeap_t * heap)
-{
-	TMemBlock *p;
-
-	PRINTF("Memory heap %p:\n", heap);
-
-	if (heap == 0)
-		PRINTF("  heap == 0\n");
-	else {
-		p = (TMemBlock *) heap;
-
-		while (p) {
-			PRINTF("  Offset:%08x, Size:%08x, %c%c\n", p->ofs,
-			       p->size, p->free ? '.' : 'U',
-			       p->reserved ? 'R' : '.');
-			p = p->next;
-		}
-	}
-
-	PRINTF("End of memory blocks\n");
-}
 
 memHeap_t *via_mmInit(int ofs, int size)
 {
@@ -167,29 +144,6 @@ memHeap_t *via_mmInit(int ofs, int size)
 		return (memHeap_t *) blocks;
 	} else
 		return 0;
-}
-
-memHeap_t *via_mmAddRange(memHeap_t * heap, int ofs, int size)
-{
-	PMemBlock blocks;
-	blocks = (TMemBlock *) drm_calloc(2, sizeof(TMemBlock), DRM_MEM_DRIVER);
-
-	if (blocks) {
-		blocks[0].size = size;
-		blocks[0].free = 1;
-		blocks[0].ofs = ofs;
-		blocks[0].next = &blocks[1];
-
-		/* Discontinuity - stops JoinBlock from trying to join non-adjacent
-		 * ranges.
-		 */
-		blocks[1].size = 0;
-		blocks[1].free = 0;
-		blocks[1].ofs = ofs + size;
-		blocks[1].next = (PMemBlock) heap;
-		return (memHeap_t *) blocks;
-	} else
-		return heap;
 }
 
 static TMemBlock *SliceBlock(TMemBlock * p,
@@ -323,66 +277,4 @@ int via_mmFreeMem(PMemBlock b)
 		Join2Blocks(prev);
 
 	return 0;
-}
-
-int via_mmReserveMem(memHeap_t * heap, int offset, int size)
-{
-	int endofs;
-	TMemBlock *p;
-
-	if (!heap || size <= 0)
-		return -1;
-	endofs = offset + size;
-	p = (TMemBlock *) heap;
-
-	while (p && p->ofs <= offset) {
-		if (ISFREE(p) && endofs <= (p->ofs + p->size)) {
-			SliceBlock(p, offset, size, 1, 1);
-			return 0;
-		}
-		p = p->next;
-	}
-	return -1;
-}
-
-int via_mmFreeReserved(memHeap_t * heap, int offset)
-{
-	TMemBlock *p, *prev;
-
-	if (!heap)
-		return -1;
-
-	p = (TMemBlock *) heap;
-	prev = NULL;
-
-	while (p && p->ofs != offset) {
-		prev = p;
-		p = p->next;
-	}
-
-	if (!p || !p->reserved)
-		return -1;
-	p->free = 1;
-	p->reserved = 0;
-	Join2Blocks(p);
-
-	if (prev)
-		Join2Blocks(prev);
-
-	return 0;
-}
-
-void via_mmDestroy(memHeap_t * heap)
-{
-	TMemBlock *p, *q;
-
-	if (!heap)
-		return;
-	p = (TMemBlock *) heap;
-
-	while (p) {
-		q = p->next;
-		drm_free(p, sizeof(TMemBlock), DRM_MEM_DRIVER);
-		p = q;
-	}
 }

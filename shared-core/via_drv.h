@@ -79,7 +79,6 @@ typedef struct drm_via_private {
 extern int via_init_context(drm_device_t * dev, int context);
 extern int via_final_context(drm_device_t * dev, int context);
 
-extern int via_do_init_map(drm_device_t * dev, drm_via_init_t * init);
 extern int via_do_cleanup_map(drm_device_t * dev);
 extern int via_map_init(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
@@ -92,7 +91,6 @@ extern void via_driver_irq_uninstall(drm_device_t * dev);
 
 extern int via_dma_cleanup(drm_device_t * dev);
 extern void via_init_command_verifier(void);
-extern int via_wait_idle(drm_via_private_t * dev_priv);
 extern int via_driver_dma_quiescent(drm_device_t * dev);
 
 

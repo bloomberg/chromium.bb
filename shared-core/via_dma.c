@@ -69,7 +69,7 @@ static void via_cmdbuf_start(drm_via_private_t * dev_priv);
 static void via_cmdbuf_pause(drm_via_private_t * dev_priv);
 static void via_cmdbuf_reset(drm_via_private_t * dev_priv);
 static void via_cmdbuf_rewind(drm_via_private_t * dev_priv);
-
+static int via_wait_idle(drm_via_private_t * dev_priv);
 /*
  * Free space in command buffer.
  */
@@ -514,7 +514,7 @@ static int via_hook_segment(drm_via_private_t *dev_priv,
 
 
 
-int via_wait_idle(drm_via_private_t * dev_priv)
+static int via_wait_idle(drm_via_private_t * dev_priv)
 {
 	int count = 10000000;
 	while (count-- && (VIA_READ(VIA_REG_STATUS) &
