@@ -106,11 +106,6 @@
  [DRM_IOCTL_NR(DRM_IOCTL_RADEON_IRQ_WAIT)]   = { radeon_irq_wait, 1, 0 },
 
 
-#define USE_IRQS 1
-#if USE_IRQS
-#define __HAVE_DMA_IRQ		1
-#define __HAVE_VBL_IRQ		1
-#define __HAVE_SHARED_IRQ       1
 
 /* When a client dies:
  *    - Check for and clean up flipped page state
@@ -118,41 +113,35 @@
  *
  * DRM infrastructure takes care of reclaiming dma buffers.
  */
-#define DRIVER_PRERELEASE() do {					\
+#define DRIVER_PRERELEASE() 						\
+do {									\
 	if ( dev->dev_private ) {					\
 		drm_radeon_private_t *dev_priv = dev->dev_private;	\
 		if ( dev_priv->page_flipping ) {			\
 			radeon_do_cleanup_pageflip( dev );		\
 		}							\
                 radeon_mem_release( dev_priv->agp_heap );		\
+                radeon_mem_release( dev_priv->fb_heap );		\
 	}								\
 } while (0)
 
-#define __HAVE_RELEASE 1
-#define DRIVER_RELEASE() do {				\
-	if ( dev->open_count == 1)			\
-                 radeon_do_release( dev );	\
-        } while (0)
-
-/* On unloading the module:
- *    - Free memory heap structure
- *    - Remove mappings made at startup and free dev_private.
+/* When the last client dies, shut down the CP and free dev->dev_priv.
  */
-#define DRIVER_PRETAKEDOWN() do {					\
-	if ( dev->dev_private ) {					\
-		drm_radeon_private_t *dev_priv = dev->dev_private;	\
-		radeon_mem_takedown( &(dev_priv->agp_heap) );		\
-		radeon_do_cleanup_cp( dev );				\
-	}								\
+#define __HAVE_RELEASE 1
+#define DRIVER_RELEASE() 			\
+do {						\
+	if ( dev->open_count == 1)		\
+                 radeon_do_release( dev );	\
 } while (0)
 
-#else
-#define __HAVE_DMA_IRQ 0
-#endif
+
 
 /* DMA customization:
  */
 #define __HAVE_DMA		1
+#define __HAVE_DMA_IRQ		1
+#define __HAVE_VBL_IRQ		1
+#define __HAVE_SHARED_IRQ       1
 
 
 /* Buffer customization:

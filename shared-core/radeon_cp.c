@@ -1398,9 +1398,10 @@ void radeon_do_release( drm_device_t *dev )
 
 		/* Disable *all* interrupts */
 		RADEON_WRITE( RADEON_GEN_INT_CNTL, 0 );
-	
-		/* Destroy agp heap ??? */
-/* 		radeon_mem_takedown( &(dev_priv->agp_heap) );		 */
+
+		/* Free memory heap structures */
+		radeon_mem_takedown( &(dev_priv->agp_heap) );
+		radeon_mem_takedown( &(dev_priv->fb_heap) );
 
 		/* deallocate kernel resources */
 		radeon_do_cleanup_cp( dev );
