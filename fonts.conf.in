@@ -81,6 +81,7 @@
 		<family>Kochi Mincho</family>
 		<family>AR PL SungtiL GB</family>
 		<family>AR PL Mingti2L Big5</family>
+		<family>ＭＳ 明朝</family>
 		<family>Baekmuk Batang</family>
 		<family>FreeSerif</family>
 		<default><family>serif</family></default>
@@ -99,6 +100,7 @@
 		<family>Kochi Gothic</family>
 		<family>AR PL KaitiM GB</family>
 		<family>AR PL KaitiM Big5</family>
+		<family>ＭＳ ゴシック</family>
 		<family>Baekmuk Dotum</family>
 		<family>SimSun</family>
 		<family>FreeSans</family>
@@ -169,15 +171,15 @@
  	<alias>
 		<family>Times New Roman</family>
 		<accept><family>Thorndale AMT</family></accept>
-	</alias
+	</alias>
  	<alias>
 		<family>Arial</family>
 		<accept><family>Albany AMT</family></accept>
-	</alias
+	</alias>
  	<alias>
 		<family>Courier New</family>
 		<accept><family>Cumberland AMT</family></accept>
-	</alias
+	</alias>
  
 <!--
   Some Asian fonts misadvertise themselves as monospaced when
@@ -275,6 +277,7 @@
 			<family>Kochi Mincho</family>
 			<family>AR PL SungtiL GB</family>
 			<family>AR PL Mingti2L Big5</family>
+			<family>ＭＳ 明朝</family>
 			<family>Baekmuk Batang</family>
 			<family>FreeSerif</family>
 		</prefer>
@@ -293,6 +296,7 @@
 			<family>Kochi Gothic</family>
 			<family>AR PL KaitiM GB</family>
 			<family>AR PL KaitiM Big5</family>
+			<family>ＭＳ ゴシック</family>
 			<family>Baekmuk Dotum</family>
 			<family>SimSun</family>
 			<family>FreeSans</family>

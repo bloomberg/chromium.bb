@@ -1,5 +1,13 @@
 2004-12-29  Keith Packard  <keithp@keithp.com>
 
+	* Makefile.am:
+	Reorder utility programs to make sure fc-case is run before fc-lang
+	as fc-lang uses fcstr.c which uses fccase.h
+	* fonts.conf.in:
+	Fix broken XML
+
+2004-12-29  Keith Packard  <keithp@keithp.com>
+
 	* fonts.conf.in:
 	Adopt some RedHat suggestions for standard font configuration.
 
