@@ -21,6 +21,10 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 
+CC = @CC_FOR_BUILD@
+EXEEXT = @EXEEXT_FOR_BUILD@
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+
 DOC_SRC = $(srcdir)
 DOC_MODULE = fontconfig
 DOC2HTML = docbook2html
@@ -87,7 +91,7 @@ if USEDOCBOOK
 
 .fncs.sgml:
 	$(RM) $@
-	./edit-sgml $(FNCS_TMPL) < '$<' > $*.sgml
+	./edit-sgml$(EXEEXT) $(FNCS_TMPL) < '$<' > $*.sgml
 
 .sgml.txt:
 	$(RM) $@
@@ -104,7 +108,7 @@ func.refs: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sg
 local-fontconfig-devel.sgml: fontconfig-devel.sgml
 	$(LN_S) $< $@
 
-$(DOC_FUNCS_SGML): edit-sgml $(FNCS_TMPL)
+$(DOC_FUNCS_SGML): edit-sgml$(EXEEXT) $(FNCS_TMPL)
 
 fonts-conf.5: local-fontconfig-user.sgml version.sgml confdir.sgml
 	$(RM) $@

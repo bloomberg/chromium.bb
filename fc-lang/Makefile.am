@@ -22,6 +22,10 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
+CC = @CC_FOR_BUILD@
+EXEEXT = @EXEEXT_FOR_BUILD@
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+
 INCLUDES=-I${top_srcdir}/src -I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
 TMPL=fclang.tmpl.h
@@ -38,8 +42,8 @@ ORTH=@ORTH_FILES@
 
 EXTRA_DIST=$(TMPL) $(ORTH)
 
-$(TARG):$(ORTH) fc-lang $(STMPL)
+$(TARG):$(ORTH) fc-lang${EXEEXT} $(STMPL)
 	rm -f $(TARG)
-	./fc-lang -d ${srcdir} $(ORTH) < $(STMPL) > $(TARG)
+	./fc-lang${EXEEXT} -d ${srcdir} $(ORTH) < $(STMPL) > $(TARG)
 
 CLEANFILES=$(TARG)

@@ -22,6 +22,10 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
+CC = @CC_FOR_BUILD@
+EXEEXT = @EXEEXT_FOR_BUILD@
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+
 INCLUDES=-I${top_srcdir}/src -I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
 TMPL=fccase.tmpl.h
@@ -44,9 +48,9 @@ SCASEFOLDING=${top_srcdir}/fc-case/CaseFolding.txt
 
 EXTRA_DIST=$(TMPL) $(CASEFOLDING)
 
-$(TARG): $(STMPL) fc-case $(SCASEFOLDING)
+$(TARG): $(STMPL) fc-case$(EXEEXT) $(SCASEFOLDING)
 	rm -f $(TARG)
-	./fc-case $(SCASEFOLDING) < $(STMPL) > $(TARG)
+	./fc-case$(EXEEXT) $(SCASEFOLDING) < $(STMPL) > $(TARG)
 
 CLEANFILES=$(TARG)
 

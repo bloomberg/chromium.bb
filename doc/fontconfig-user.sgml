@@ -575,6 +575,11 @@ is the conventional repository of font information that isn't found in the
 per-directory caches.  This file is automatically maintained by fontconfig.
   </para>
 </refsect1>
+<refsect1><title>See Also</title>
+  <para>
+fc-cache(1), fc-match(1), fc-list(1)
+  </para>
+</refsect1>
 <refsect1><title>Version</title>
 	    <para>
 Fontconfig version &version;

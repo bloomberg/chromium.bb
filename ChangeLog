@@ -1,5 +1,23 @@
 2005-01-13  Keith Packard  <keithp@keithp.com>
 
+	* doc/fontconfig-user.sgml:
+	Add SEE ALSO section (bug 2085)
+	
+2005-01-13  J. Ali Harlow <ali@juiblex.co.uk>
+
+	reviewed by: Keith Packard  <keithp@keithp.com>
+
+	* Makefile.am:
+	* configure.in:
+	* doc/Makefile.am:
+	* fc-case/Makefile.am:
+	* fc-glyphname/Makefile.am:
+	* fc-lang/Makefile.am:
+	* src/fontconfig.def.in:
+	Cross compiling fixes (bug 280)
+
+2005-01-13  Keith Packard  <keithp@keithp.com>
+
 	* fonts.conf.in:
 	Update blanks list (Closes bug 86)
 

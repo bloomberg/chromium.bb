@@ -39,6 +39,12 @@ pkgconfig_DATA = fontconfig.pc
 configdir=$(CONFDIR)
 config_DATA=fonts.dtd
 
+if CROSS_COMPILING
+  RUN_FC_CACHE_TEST=false
+else
+  RUN_FC_CACHE_TEST=test -z "$(DESTDIR)"
+endif
+
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(configdir)
 	if [ -f $(DESTDIR)$(configdir)/fonts.conf ]; then \
@@ -61,7 +67,16 @@ install-data-local:
 	  echo " $(INSTALL_DATA) local.conf $(DESTDIR)$(configdir)/local.conf"; \
 	  $(INSTALL_DATA) local.conf $(DESTDIR)$(configdir)/local.conf; \
 	fi; fi; fi
-	if [ x$(DESTDIR) = x ]; then fc-cache/fc-cache -f -v; fi
+	if $(RUN_FC_CACHE_TEST); then \
+	    echo " fc-cache/fc-cache -f -v"; \
+	    fc-cache/fc-cache -f -v; \
+	else \
+	    echo "***"; \
+	    echo "*** Warning: fonts.cache not built"; \
+	    echo "***"; \
+	    echo "*** Generate this file manually on host system using fc-cache"; \
+	    echo "***"; \
+	fi
 
 uninstall-local:
 	if [ -f $(srcdir)/fonts.conf ]; then \

@@ -22,6 +22,10 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
+CC = @CC_FOR_BUILD@
+EXEEXT = @EXEEXT_FOR_BUILD@
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+
 INCLUDES=-I${top_srcdir}/src -I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
 TMPL=fcglyphname.tmpl.h
@@ -39,9 +43,9 @@ SGLYPHNAME=${top_srcdir}/fc-glyphname/zapfdingbats.txt
 
 EXTRA_DIST=$(TMPL) $(GLYPHNAME)
 
-$(TARG): $(STMPL) fc-glyphname $(SGLYPHNAME)
+$(TARG): $(STMPL) fc-glyphname$(EXEEXT) $(SGLYPHNAME)
 	rm -f $(TARG)
-	./fc-glyphname $(SGLYPHNAME) < $(STMPL) > $(TARG)
+	./fc-glyphname$(EXEEXT) $(SGLYPHNAME) < $(STMPL) > $(TARG)
 
 CLEANFILES=$(TARG)
 
