@@ -333,12 +333,11 @@ static inline unsigned long __cmpxchg(volatile void *ptr, unsigned long old,
 #define DRM_FIND_MAP(_map, _o)						\
 do {									\
 	struct list_head *_list;					\
-	list_for_each(_list, &dev->maplist->head) {			\
-		drm_map_list_t *_r_list;				\
-		_r_list = (drm_map_list_t *)_list;			\
-		if(_r_list->map &&					\
-		   _r_list->map->offset == (_o)) {			\
-			(_map) = _r_list->map;				\
+	list_for_each( _list, &dev->maplist->head ) {			\
+		drm_map_list_t *_entry = (drm_map_list_t *)_list;	\
+		if ( _entry->map &&					\
+		     _entry->map->offset == (_o) ) {			\
+			(_map) = _entry->map;				\
 			break;						\
  		}							\
 	}								\

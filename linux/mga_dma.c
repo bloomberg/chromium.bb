@@ -468,12 +468,12 @@ static int mga_do_init_dma( drm_device_t *dev, drm_mga_init_t *init )
 	dev_priv->depth_offset	= init->depth_offset;
 	dev_priv->depth_pitch	= init->depth_pitch;
 
-	list_for_each(list, &dev->maplist->head) {
-		drm_map_list_t *r_list = (drm_map_list_t *)list;
-		if( r_list->map &&
-		    r_list->map->type == _DRM_SHM &&
-		    r_list->map->flags & _DRM_CONTAINS_LOCK ) {
-			dev_priv->sarea = r_list->map;
+	list_for_each( list, &dev->maplist->head ) {
+		drm_map_list_t *entry = (drm_map_list_t *)list;
+		if ( entry->map &&
+		     entry->map->type == _DRM_SHM &&
+		     (entry->map->flags & _DRM_CONTAINS_LOCK) ) {
+			dev_priv->sarea = entry->map;
  			break;
  		}
  	}
@@ -516,11 +516,12 @@ static int mga_do_init_dma( drm_device_t *dev, drm_mga_init_t *init )
 	 */
 	MGA_WRITE( MGA_PRIMADDRESS,
 		   dev_priv->primary->offset | MGA_DMA_GENERAL );
-
+#if 0
 	MGA_WRITE( MGA_PRIMPTR,
 		   virt_to_bus((void *)dev_priv->prim.status) |
 		   MGA_PRIMPTREN0 |	/* Soft trap, SECEND, SETUPEND */
 		   MGA_PRIMPTREN1 );	/* DWGSYNC */
+#endif
 
 	dev_priv->prim.start = (u8 *)dev_priv->primary->handle;
 	dev_priv->prim.end = ((u8 *)dev_priv->primary->handle
