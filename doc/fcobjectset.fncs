@@ -21,20 +21,41 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-@RET@		void
-@FUNC@		FcValueDestroy
-@TYPE1@		FcValue			@ARG1@		v
-@PURPOSE@	Free a value
+@RET@		FcObjectSet *
+@FUNC@		FcObjectSetCreate
+@TYPE1@		void
+@PURPOSE@	Create an object set
 @DESC@
-Frees any memory referenced by `v'.  Values of type FcTypeString,
-FcTypeMatrix and FcTypeCharSet reference memory, the other types do not.
+Creates an empty set.
 @@
 
-@RET@		FcValue 
-@FUNC@		FcValueSave
-@TYPE1@		FcValue 		@ARG1@		v
-@PURPOSE@	Copy a value
+@RET@		FcBool
+@FUNC@		FcObjectSetAdd
+@TYPE1@		FcObjectSet *			@ARG1@		os
+@TYPE2@		const char *			@ARG2@		object
+@PURPOSE@	Add to an object set
 @DESC@
-Returns a copy of `v' duplicating any object referenced by it so that `v'
-may be safely destroyed without harming the new value.
+Adds a proprety name to the set.
+@@
+
+@RET@		void
+@FUNC@		FcObjectSetDestroy
+@TYPE1@		FcObjectSet *			@ARG1@		os
+@PURPOSE@	Destroy an object set
+@DESC@
+Destroys an object set.
+@@
+
+@RET@		FcObjectSet *
+@FUNC@		FcObjectSetBuild
+@TYPE1@		const char *			@ARG1@		first
+@TYPE2@		...
+@PROTOTYPE+@
+@RET+@		FcObjectSet *
+@FUNC+@		FcObjectSetVaBuild
+@TYPE1+@	const char *			@ARG1+@		first
+@TYPE2+@	va_list				@ARG2+@		va
+@PURPOSE@	Build object set from args
+@DESC@
+These build an object set from a null-terminated list of property names.
 @@

@@ -1,0 +1,279 @@
+/*
+ * $Id$
+ *
+ * Copyright © 2003 Keith Packard
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Keith Packard not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Keith Packard makes no
+ * representations about the suitability of this software for any purpose.  It
+ * is provided "as is" without express or implied warranty.
+ *
+ * KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+@RET@           FcConfig *      		
+@FUNC@          FcConfigCreate
+@TYPE1@		void
+@PURPOSE@	Create a configuration
+@DESC@
+Creates an empty configuration.
+@@
+
+@RET@           void       			
+@FUNC@          FcConfigDestroy       
+@TYPE1@         FcConfig *                      @ARG1@          config      
+@PURPOSE@	Destroy a configuration
+@DESC@
+Destroys a configuration and any data associated with it.  Note that calling
+this function with the return from FcConfigGetCurrent will place the library
+in an indeterminate state.
+@@
+
+@RET@           FcBool       			
+@FUNC@          FcConfigSetCurrent       
+@TYPE1@         FcConfig *                      @ARG1@          config      
+@PURPOSE@	Set configuration as default
+@DESC@
+Sets the current default configuration to 'config'.  Implicitly calls
+FcConfigBuildFonts if necessary, returning FcFalse if that call fails.
+@@
+
+@RET@           FcConfig *      		
+@FUNC@          FcConfigGetCurrent
+@TYPE1@		void
+@PURPOSE@	Return current configuration
+@DESC@
+Returns the current default configuration.
+@@
+
+@RET@           FcBool       			
+@FUNC@          FcConfigUptoDate       
+@TYPE1@         FcConfig *                      @ARG1@          config      
+@PURPOSE@	Check timestamps on config files
+@DESC@
+Checks all of the files related to 'config' and returns whether the
+in-memory version is in sync with the disk version.
+@@
+
+@RET@           FcBool       			
+@FUNC@          FcConfigBuildFonts       
+@TYPE1@         FcConfig *                      @ARG1@          config      
+@PURPOSE@	Build font database
+@DESC@
+Builds the set of available fonts for the given configuration.  Note that
+any changes to the configuration after this call have indeterminate effects.
+Returns FcFalse if this operation runs out of memory.
+@@
+
+@RET@           FcStrList *      		
+@FUNC@          FcConfigGetConfigDirs       
+@TYPE1@         FcConfig *                      @ARG1@          config      
+@PURPOSE@	Get config directories
+@DESC@
+Returns the list of font directories specified in the configuration files
+for 'config'.  Does not include any subdirectories.
+@@
+
+@RET@           FcStrList *      		
+@FUNC@          FcConfigGetFontDirs       
+@TYPE1@         FcConfig *                      @ARG1@          config      
+@PURPOSE@	Get font directories
+@DESC@
+Returns the list of font directories in 'config'. This includes the
+configured font directories along with any directories below those in the
+filesystem.
+@@
+
+@RET@           FcStrList *      		
+@FUNC@          FcConfigGetConfigFiles       
+@TYPE1@         FcConfig *                      @ARG1@          config      
+@PURPOSE@	Get config files
+@DESC@
+Returns the list of known configuration files used to generate 'config'.
+Note that this will not include any configuration done with FcConfigParse.
+@@
+
+@RET@           char *      			
+@FUNC@          FcConfigGetCache       
+@TYPE1@         FcConfig *                      @ARG1@          config      
+@PURPOSE@	Get cache filename
+@DESC@
+Returns the name of the file used to store per-user font information.
+@@
+
+@RET@           FcFontSet *      		
+@FUNC@          FcConfigGetFonts       
+@TYPE1@         FcConfig *			@ARG1@		config
+@TYPE2@		FcSetName                       @ARG2@          set      
+@PURPOSE@	Get config font set
+@DESC@
+Returns one of the two sets of fonts from the configuration as specified 
+by 'set'.
+@@
+
+@RET@           FcBlanks *      		
+@FUNC@          FcConfigGetBlanks       
+@TYPE1@         FcConfig *                      @ARG1@          config      
+@PURPOSE@	Get config blanks
+@DESC@
+Returns the FcBlanks object associated with the given configuration, if no
+blanks were present in the configuration, this function will return 0.
+@@
+
+@RET@           int       			
+@FUNC@          FcConfigGetRescanInverval       
+@TYPE1@         FcConfig *                      @ARG1@          config      
+@PURPOSE@	Get config rescan interval
+@DESC@
+Returns the interval between automatic checks of the configuration (in
+seconds) specified in 'config'.  The configuration is checked during
+a call to FcFontList when this interval has passed since the last check.
+@@
+
+@RET@           FcBool       			
+@FUNC@          FcConfigSetRescanInverval       
+@TYPE1@         FcConfig *			@ARG1@		config
+@TYPE2@		int                       	@ARG2@          rescanInterval
+@PURPOSE@	Set config rescan interval
+@DESC@
+Sets the rescan interval; returns FcFalse if an error occurred.
+@@
+
+@RET@           FcBool       			
+@FUNC@          FcConfigAppFontAddFile       
+@TYPE1@         FcConfig *			@ARG1@		config
+@TYPE2@		const char *                    @ARG2@          file      
+@PURPOSE@	Add font file to font database
+@DESC@
+Adds an application-specific font to the configuration.
+@@
+
+@RET@           FcBool       			
+@FUNC@          FcConfigAppFontAddDir       
+@TYPE1@         FcConfig *			@ARG1@		config
+@TYPE2@		const char *                    @ARG1@          dir      
+@PURPOSE@	Add fonts from directory to font database
+@DESC@
+Scans the specified directory for fonts, adding each one found to the
+application-specific set of fonts.
+@@
+
+@RET@           void       			
+@FUNC@          FcConfigAppFontClear       
+@TYPE1@         FcConfig *                      @ARG1@          config      
+@PURPOSE@	Remove all app fonts from font database
+@DESC@
+Clears the set of application-specific fonts.
+@@
+
+@RET@           FcBool       			
+@FUNC@          FcConfigSubstituteWithPat       
+@TYPE1@         FcConfig *			@ARG1@		config
+@TYPE2@		FcPattern *			@ARG2@		p
+@TYPE3@		FcPattern *			@ARG3@		p_pat
+@TYPE4@		FcMatchKind                     @ARG4@          kind      
+@PURPOSE@	Execute substitutions
+@DESC@
+Performs the sequence of pattern modification operations, if 'kind' is
+FcMatchPattern, then those tagged as pattern operations are applied, else 
+if 'kind' is FcMatchFont, those tagged as font operations are applied and
+p_pat is used for &lt;test&gt; elements with target=pattern.
+@@
+
+@RET@           FcBool       			
+@FUNC@          FcConfigSubstitute       
+@TYPE1@         FcConfig *			@ARG1@		config
+@TYPE2@		FcPattern *			@ARG2@		p
+@TYPE3@		FcMatchKind                     @ARG3@          kind      
+@PURPOSE@	Execute substitutions
+@DESC@
+Calls FcConfigSubstituteWithPat setting p_pat to NULL.
+@@
+
+@RET@           FcPattern *      		
+@FUNC@          FcFontMatch       
+@TYPE1@         FcConfig *			@ARG1@		config
+@TYPE2@		FcPattern *			@ARG2@		p
+@TYPE3@		FcResult *                      @ARG3@          result      
+@PURPOSE@	Return best font
+@DESC@
+Returns the font in 'config' most close matching 'p'.  This function
+should be called only after FcConfigSubstitute and FcDefaultSubstitute have
+been called for 'p'; otherwise the results will not be correct.
+@@
+
+@RET@           FcFontSet *      		
+@FUNC@          FcFontSort       
+@TYPE1@         FcConfig *			@ARG1@		config
+@TYPE2@		FcPattern *			@ARG2@		p
+@TYPE3@		FcBool				@ARG3@		trim
+@TYPE4@		FcCharSet **			@ARG4@		csp
+@TYPE5@		FcResult *                      @ARG5@          result      
+@PURPOSE@	Return list of matching fonts
+@DESC@
+Returns the list of fonts sorted by closeness to 'p'.  If 'trim' is FcTrue,
+elements in the list which don't include Unicode coverage not provided by
+earlier elements in the list are elided.  The union of Unicode coverage of
+all of the fonts is returned in 'csp', if 'csp' is not NULL.  This function
+should be called only after FcConfigSubstitute and FcDefaultSubstitute have
+been called for 'p'; otherwise the results will not be correct.
+    </para><para>
+The returned FcFontSet references FcPattern structures which may be shared
+by the return value from multiple FcFontSort calls, applications must not
+modify these patterns.  Instead, they should be passed, along with 'p' to
+FcFontRenderPrepare which combines them into a complete pattern.
+    </para><para>
+The FcFontSet returned by FcFontSort is destroyed by caling FcFontSetDestroy.
+@@
+
+@RET@           FcPattern *      		
+@FUNC@          FcFontRenderPrepare       
+@TYPE1@         FcConfig *			@ARG1@		config
+@TYPE2@		FcPattern *			@ARG2@		pat
+@TYPE3@		FcPattern *                     @ARG3@          font      
+@PURPOSE@	Prepare pattern for loading font file
+@DESC@
+Creates a new pattern consisting of elements of 'font' not appearing
+in 'pat', elements of 'pat' not appearing in 'font' and the best matching
+value from 'pat' for elements appearing in both.  The result is passed to
+FcConfigSubstitute with 'kind' FcMatchFont and then returned.
+@@
+
+@RET@           FcFontSet *      		
+@FUNC@          FcFontList       
+@TYPE1@         FcConfig *			@ARG1@		config
+@TYPE2@		FcPattern *			@ARG2@		p
+@TYPE3@		FcObjectSet *                   @ARG3@          os      
+@PURPOSE@	List fonts
+@DESC@
+Selects fonts matching 'p', creates patterns from those fonts containing
+only the objects in 'os' and returns the set of unique such patterns.
+@@
+
+@RET@           char *      			
+@FUNC@          FcConfigFilename       
+@TYPE1@         const char *                    @ARG1@          name      
+@PURPOSE@	Find a config file
+@DESC@
+Given the specified external entity name, return the associated filename.
+This provides applications a way to convert various configuration file
+references into filename form. 
+    </para><para>
+A null or empty 'name' indicates that the default configuration file should
+be used; which file this references can be overridden with the
+FC_CONFIG_FILE environment variable.  Next, if the name starts with '~', it
+refers to a file in the current users home directory.  Otherwise if the name
+doesn't start with '/', it refers to a file in the default configuration
+directory; the built-in default directory can be overridden with the
+FC_CONFIG_DIR environment variable.
+@@

@@ -11,13 +11,25 @@ DOC_FUNCS_FNCS=\
 	fcmatrix.fncs \
 	fccharset.fncs \
 	fcvalue.fncs \
-	fcpattern.fncs
+	fcpattern.fncs \
+	fcfontset.fncs \
+	fcobjectset.fncs \
+	fcobjecttype.fncs \
+	fcconstant.fncs \
+	fcblanks.fncs \
+	fcconfig.fncs
 	
 DOC_FUNCS_SGML=\
 	fcmatrix.sgml \
 	fccharset.sgml \
 	fcvalue.sgml \
-	fcpattern.sgml
+	fcpattern.sgml \
+	fcfontset.sgml \
+	fcobjectset.sgml \
+	fcobjecttype.sgml \
+	fcconstant.sgml \
+	fcblanks.sgml \
+	fcconfig.sgml
 	
 man3_MANS= \
 	FcCharSetAddChar.3 \

@@ -21,20 +21,28 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-@RET@		void
-@FUNC@		FcValueDestroy
-@TYPE1@		FcValue			@ARG1@		v
-@PURPOSE@	Free a value
+@RET@		FcBool
+@FUNC@		FcNameRegisterObjectTypes
+@TYPE1@		const FcObjectType *		@ARG1@		types
+@TYPE2@		int				@ARG2@		ntype
+@PURPOSE@	Register object types
 @DESC@
-Frees any memory referenced by `v'.  Values of type FcTypeString,
-FcTypeMatrix and FcTypeCharSet reference memory, the other types do not.
+Register 'ntype' new object types.
 @@
 
-@RET@		FcValue 
-@FUNC@		FcValueSave
-@TYPE1@		FcValue 		@ARG1@		v
-@PURPOSE@	Copy a value
+@RET@		FcBool
+@FUNC@		FcNameUnregisterObjectTypes
+@TYPE1@		const FcObjectType *		@ARG1@		types
+@TYPE2@		int 				@ARG2@		ntype
+@PURPOSE@	Unregister object types
 @DESC@
-Returns a copy of `v' duplicating any object referenced by it so that `v'
-may be safely destroyed without harming the new value.
+Unregister 'ntype' object types.
+@@
+
+@RET@		const FcObjectType *
+@FUNC@		FcNameGetObjectType 
+@TYPE1@		const char *			@ARG1@		object
+@PURPOSE@	Lookup an object type
+@DESC@
+Return the object type for the pattern element named 'object'.
 @@

@@ -21,20 +21,29 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-@RET@		void
-@FUNC@		FcValueDestroy
-@TYPE1@		FcValue			@ARG1@		v
-@PURPOSE@	Free a value
+@RET@		FcFontSet *
+@FUNC@		FcFontSetCreate
+@TYPE1@		void
+@PURPOSE@	Create a font set
 @DESC@
-Frees any memory referenced by `v'.  Values of type FcTypeString,
-FcTypeMatrix and FcTypeCharSet reference memory, the other types do not.
+Creates an empty font set.
 @@
 
-@RET@		FcValue 
-@FUNC@		FcValueSave
-@TYPE1@		FcValue 		@ARG1@		v
-@PURPOSE@	Copy a value
+@RET@		void
+@FUNC@		FcFontSetDestroy
+@TYPE1@		FcFontSet *			@ARG1@		s
+@PURPOSE@	Destroy a font set
 @DESC@
-Returns a copy of `v' duplicating any object referenced by it so that `v'
-may be safely destroyed without harming the new value.
+Destroys a font set.  Note that this destroys any referenced patterns as
+well.
+@@
+
+@RET@		FcBool
+@FUNC@		FcFontSetAdd
+@TYPE1@		FcFontSet *			@ARG1@		s
+@TYPE2@		FcPattern *			@ARG2@		font
+@PURPOSE@	Add to a font set
+@DESC@
+Adds a pattern to a font set.  Note that the pattern is not copied before
+being inserted into the set.
 @@

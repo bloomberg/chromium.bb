@@ -21,20 +21,38 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-@RET@		void
-@FUNC@		FcValueDestroy
-@TYPE1@		FcValue			@ARG1@		v
-@PURPOSE@	Free a value
+@RET@		FcBool
+@FUNC@		FcNameRegisterConstants 
+@TYPE1@		const FcConstant *		@ARG1@		consts
+@TYPE2@		int				@ARG2@		nconsts
+@PURPOSE@	Register symbolic constants
 @DESC@
-Frees any memory referenced by `v'.  Values of type FcTypeString,
-FcTypeMatrix and FcTypeCharSet reference memory, the other types do not.
+Register 'nconsts' new symbolic constants.
 @@
 
-@RET@		FcValue 
-@FUNC@		FcValueSave
-@TYPE1@		FcValue 		@ARG1@		v
-@PURPOSE@	Copy a value
+@RET@		FcBool
+@FUNC@		FcNameUnregisterConstants
+@TYPE1@		const FcConstant *		@ARG1@		consts
+@TYPE2@		int				@ARG2@		nconsts
+@PURPOSE@	Unregister symbolic constants
 @DESC@
-Returns a copy of `v' duplicating any object referenced by it so that `v'
-may be safely destroyed without harming the new value.
+Unregister 'nconsts' symbolic constants.
+@@
+
+@RET@		const FcConstant *
+@FUNC@		FcNameGetConstant
+@TYPE1@		FcChar8 *			@ARG1@		string
+@PURPOSE@	Lookup symbolic constant
+@DESC@
+Return the FcConstant structure related to symbolic constant 'string'.
+@@
+
+@RET@		FcBool
+@FUNC@		FcNameConstant
+@TYPE1@		FcChar8 *			@ARG1@		string
+@TYPE2@		int *				@ARG2@		result
+@PURPOSE@	Get the value for a symbolic constant
+@DESC@
+Returns whether a symbolic constant with name 'string' is registered,
+placing the value of the constant in 'result' if present.
 @@

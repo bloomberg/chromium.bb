@@ -3,6 +3,12 @@
 <!ENTITY fccharset SYSTEM "fccharset.sgml">
 <!ENTITY fcvalue SYSTEM "fcvalue.sgml">
 <!ENTITY fcpattern SYSTEM "fcpattern.sgml">
+<!ENTITY fcfontset SYSTEM "fcfontset.sgml">
+<!ENTITY fcobjectset SYSTEM "fcobjectset.sgml">
+<!ENTITY fcobjecttype SYSTEM "fcobjecttype.sgml">
+<!ENTITY fcconstant SYSTEM "fcconstant.sgml">
+<!ENTITY fcblanks SYSTEM "fcblanks.sgml">
+<!ENTITY fcconfig SYSTEM "fcconfig.sgml">
 ]>
 <!--
     $Id$
@@ -410,103 +416,29 @@ available fonts, as well as the information about each font.
 An FcFontSet simply holds a list of patterns; these are used to return the
 results of listing available fonts.
     </para>
-    <variablelist>
-    <varlistentry><term>
-FcFontSet *FcFontSetCreate (void);
-    </term><listitem><para>
-Creates an empty font set.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-void FcFontSetDestroy (FcFontSet *s);
-    </term><listitem><para>
-Destroys a font set.  Note that this destroys any referenced patterns as
-well.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcFontSetAdd (FcFontSet *s, FcPattern *font);
-    </term><listitem><para>
-Adds a pattern to a font set.  Note that the pattern is not copied before
-being inserted into the set.
-    </para></listitem></varlistentry>
-  </variablelist></sect2>
+    &fcfontset;
+  </sect2>
   <sect2><title>FcObjectSet</title>
     <para>
 An FcObjectSet holds a list of pattern property names; it is used to
 indiciate which properties are to be returned in the patterns from
 FcFontList.
     </para>
-    <variablelist>
-    <varlistentry><term>
-FcObjectSet *FcObjectSetCreate (void);
-    </term><listitem><para>
-Creates an empty set.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcObjectSetAdd (FcObjectSet *os, const char *object);
-    </term><listitem><para>
-Adds a proprety name to the set.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-void FcObjectSetDestroy (FcObjectSet *os);
-    </term><listitem><para>
-Destroys an object set.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcObjectSet *FcObjectSetBuild (const char *first, ...);
-FcObjectSet *FcObjectSetVaBuild (const char *first, va_list va);
-    </term><listitem><para>
-These build an object set from a null-terminated list of property names.
-    </para></listitem></varlistentry>
-  </variablelist></sect2>
+    &fcobjectset;
+  </sect2>
   <sect2><title>FcObjectType</title>
     <para>
 Provides for applcation-specified font name object types so that new
 pattern elements can be generated from font names.
     </para>
-    <variablelist>
-    <varlistentry><term>
-FcBool FcNameRegisterObjectTypes (const FcObjectType *types, int ntype);
-    </term><listitem><para>
-Register 'ntype' new object types.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcNameUnregisterObjectTypes (const FcObjectType *types, int ntype);
-    </term><listitem><para>
-Unregister 'ntype' object types.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-const FcObjectType *FcNameGetObjectType (const char *object);
-    </term><listitem><para>
-Return the object type for the pattern element named 'object'.
-    </para></listitem></varlistentry>  
-  </variablelist></sect2>
+    &fcobjecttype;
+  </sect2>
   <sect2><title>FcConstant</title>
     <para>
 Provides for application-specified symbolic constants for font names.
     </para>
-    <variablelist>
-    <varlistentry><term>
-FcBool FcNameRegisterConstants (const FcConstant *consts, int nconsts);
-    </term><listitem><para>
-Register 'nconsts' new symbolic constants.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcNameUnregisterConstants (const FcConstant *consts, int nconsts);
-    </term><listitem><para>
-Unregister 'nconsts' symbolic constants.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-const FcConstant *FcNameGetConstant (FcChar8 *string);
-    </term><listitem><para>
-Return the FcConstant structure related to symbolic constant 'string'.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcNameConstant (FcChar8 *string, int *result);
-    </term><listitem><para>
-Returns whether a symbolic constant with name 'string' is registered,
-placing the value of the constant in 'result' if present.
-    </para></listitem></varlistentry>
-  </variablelist></sect2>
+    &fcconstant;
+  </sect2>
   <sect2><title>FcBlanks</title>
     <para>
 An FcBlanks object holds a list of Unicode chars which are expected to
@@ -515,204 +447,16 @@ empty and not in this list will be assumed to be broken and not placed in
 the FcCharSet associated with the font.  This provides a significantly more
 accurate CharSet for applications.
     </para>
-    <variablelist>
-    <varlistentry><term>
-FcBlanks *FcBlanksCreate (void);
-    </term><listitem><para>
-Creates an empty FcBlanks object.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-void FcBlanksDestroy (FcBlanks *b);
-    </term><listitem><para>
-Destroys an FcBlanks object, freeing any associated memory.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcBlanksAdd (FcBlanks *b, FcChar32 ucs4);
-    </term><listitem><para>
-Adds a single character to an FcBlanks object, returning FcFalse
-if this process ran out of memory.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcBlanksIsMember (FcBlanks *b, FcChar32 ucs4);
-    </term><listitem><para>
-Returns whether the specified FcBlanks object contains the indicated Unicode
-value.
-    </para></listitem></varlistentry>
-  </variablelist></sect2>
+    &fcblanks;
+  </sect2>
   <sect2><title>FcConfig</title>
     <para>
 An FcConfig object holds the internal representation of a configuration.
 There is a default configuration which applications may use by passing 0 to
 any function using the data within an FcConfig.
     </para>
-    <variablelist>
-    <varlistentry><term>
-FcConfig *FcConfigCreate (void);
-    </term><listitem><para>
-Creates an empty configuration.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-void FcConfigDestroy (FcConfig *config);
-    </term><listitem><para>
-Destroys a configuration and any data associated with it.  Note that calling
-this function with the return from FcConfigGetCurrent will place the library
-in an indeterminate state.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcConfigSetCurrent (FcConfig *config);
-    </term><listitem><para>
-Sets the current default configuration to 'config'.  Implicitly calls
-FcConfigBuildFonts if necessary, returning FcFalse if that call fails.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcConfig *FcConfigGetCurrent (void);
-    </term><listitem><para>
-Returns the current default configuration.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcConfigUptoDate (FcConfig *config);
-    </term><listitem><para>
-Checks all of the files related to 'config' and returns whether the
-in-memory version is in sync with the disk version.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcConfigBuildFonts (FcConfig *config);
-    </term><listitem><para>
-Builds the set of available fonts for the given configuration.  Note that
-any changes to the configuration after this call have indeterminate effects.
-Returns FcFalse if this operation runs out of memory.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcStrList *FcConfigGetConfigDirs (FcConfig *config);
-    </term><listitem><para>
-Returns the list of font directories specified in the configuration files
-for 'config'.  Does not include any subdirectories.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcStrList *FcConfigGetFontDirs (FcConfig *config);
-    </term><listitem><para>
-Returns the list of font directories in 'config'. This includes the
-configured font directories along with any directories below those in the
-filesystem.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcStrList *FcConfigGetConfigFiles (FcConfig *config);
-    </term><listitem><para>
-Returns the list of known configuration files used to generate 'config'.
-Note that this will not include any configuration done with FcConfigParse.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-char *FcConfigGetCache (FcConfig *config);
-    </term><listitem><para>
-Returns the name of the file used to store per-user font information.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcFontSet *FcConfigGetFonts (FcConfig *config, FcSetName set);
-    </term><listitem><para>
-Returns one of the two sets of fonts from the configuration as specified 
-by 'set'.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBlanks *FcConfigGetBlanks (FcConfig *config);
-    </term><listitem><para>
-Returns the FcBlanks object associated with the given configuration, if no
-blanks were present in the configuration, this function will return 0.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-int FcConfigGetRescanInverval (FcConfig *config);
-    </term><listitem><para>
-Returns the interval between automatic checks of the configuration (in
-seconds) specified in 'config'.  The configuration is checked during
-a call to FcFontList when this interval has passed since the last check.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcConfigSetRescanInverval (FcConfig *config, int rescanInterval);
-    </term><listitem><para>
-Sets the rescan interval; returns FcFalse if an error occurred.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcConfigAppFontAddFile (FcConfig *config, const char *file);
-    </term><listitem><para>
-Adds an application-specific font to the configuration.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcConfigAppFontAddDir (FcConfig *config, const char *dir);
-    </term><listitem><para>
-Scans the specified directory for fonts, adding each one found to the
-application-specific set of fonts.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-void FcConfigAppFontClear (FcConfig *config);
-    </term><listitem><para>
-Clears the set of application-specific fonts.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcConfigSubstituteWithPat (FcConfig *config, FcPattern *p, FcPattern *p_pat FcMatchKind kind);
-    </term><listitem><para>
-Performs the sequence of pattern modification operations, if 'kind' is
-FcMatchPattern, then those tagged as pattern operations are applied, else 
-if 'kind' is FcMatchFont, those tagged as font operations are applied and
-p_pat is used for &lt;test&gt; elements with target=pattern.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcBool FcConfigSubstitute (FcConfig *config, FcPattern *p, FcMatchKind kind);
-    </term><listitem><para>
-Calls FcConfigSubstituteWithPat setting p_pat to NULL.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcPattern *FcFontMatch (FcConfig *config, FcPattern *p, FcResult *result);
-    </term><listitem><para>
-Returns the font in 'config' most close matching 'p'.  This function
-should be called only after FcConfigSubstitute and FcDefaultSubstitute have
-been called for 'p'; otherwise the results will not be correct.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcFontSet *FcFontSort (FcConfig *config, FcPattern *p, FcBool trim, FcCharSet **csp, FcResult *result);
-    </term><listitem><para>
-Returns the list of fonts sorted by closeness to 'p'.  If 'trim' is FcTrue,
-elements in the list which don't include Unicode coverage not provided by
-earlier elements in the list are elided.  The union of Unicode coverage of
-all of the fonts is returned in 'csp', if 'csp' is not NULL.  This function
-should be called only after FcConfigSubstitute and FcDefaultSubstitute have
-been called for 'p'; otherwise the results will not be correct.
-    </para><para>
-The returned FcFontSet references FcPattern structures which may be shared
-by the return value from multiple FcFontSort calls, applications must not
-modify these patterns.  Instead, they should be passed, along with 'p' to
-FcFontRenderPrepare which combines them into a complete pattern.
-    </para><para>
-The FcFontSet returned by FcFontSort is destroyed by caling FcFontSetDestroy.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcPattern *FcFontRenderPrepare (FcConfig *config, FcPattern *pat, FcPattern *font);
-    </term><listitem><para>
-Creates a new pattern consisting of elements of 'font' not appearing
-in 'pat', elements of 'pat' not appearing in 'font' and the best matching
-value from 'pat' for elements appearing in both.  The result is passed to
-FcConfigSubstitute with 'kind' FcMatchFont and then returned.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-FcFontSet *FcFontList (FcConfig *config, FcPattern *p, FcObjectSet *os);
-    </term><listitem><para>
-Selects fonts matching 'p', creates patterns from those fonts containing
-only the objects in 'os' and returns the set of unique such patterns.
-    </para></listitem></varlistentry>
-    <varlistentry><term>
-char *FcConfigFilename (const char *name);
-    </term><listitem><para>
-Given the specified external entity name, return the associated filename.
-This provides applications a way to convert various configuration file
-references into filename form. 
-    </para><para>
-A null or empty 'name' indicates that the default configuration file should
-be used; which file this references can be overridden with the
-FC_CONFIG_FILE environment variable.  Next, if the name starts with '~', it
-refers to a file in the current users home directory.  Otherwise if the name
-doesn't start with '/', it refers to a file in the default configuration
-directory; the built-in default directory can be overridden with the
-FC_CONFIG_DIR environment variable.
-    </para></listitem></varlistentry>
-  </variablelist></sect2>
+    &fcconfig;
+  </sect2>
   <sect2><title>Initialization</title>
     <para>
 These functions provide some control over how the library is initialized.

@@ -21,20 +21,38 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-@RET@		void
-@FUNC@		FcValueDestroy
-@TYPE1@		FcValue			@ARG1@		v
-@PURPOSE@	Free a value
+@RET@		FcBlanks *
+@FUNC@		FcBlanksCreate
+@TYPE1@		void
+@PURPOSE@	Create an FcBlanks
 @DESC@
-Frees any memory referenced by `v'.  Values of type FcTypeString,
-FcTypeMatrix and FcTypeCharSet reference memory, the other types do not.
+Creates an empty FcBlanks object.
 @@
 
-@RET@		FcValue 
-@FUNC@		FcValueSave
-@TYPE1@		FcValue 		@ARG1@		v
-@PURPOSE@	Copy a value
+@RET@		void
+@FUNC@		FcBlanksDestroy
+@TYPE1@		FcBlanks *			@ARG1@		b
+@PURPOSE@	Destroy and FcBlanks
 @DESC@
-Returns a copy of `v' duplicating any object referenced by it so that `v'
-may be safely destroyed without harming the new value.
+Destroys an FcBlanks object, freeing any associated memory.
+@@
+
+@RET@		FcBool
+@FUNC@		FcBlanksAdd
+@TYPE1@		FcBlanks *			@ARG1@		b
+@TYPE2@		FcChar32 			@ARG2@		ucs4
+@PURPOSE@	Add a character to an FcBlanks
+@DESC@
+Adds a single character to an FcBlanks object, returning FcFalse
+if this process ran out of memory.
+@@
+
+@RET@		FcBool
+@FUNC@		FcBlanksIsMember
+@TYPE1@		FcBlanks *			@ARG1@		b
+@TYPE2@		FcChar32 			@ARG2@		ucs4
+@PURPOSE@	Query membership in an FcBlanks
+@DESC@
+Returns whether the specified FcBlanks object contains the indicated Unicode
+value.
 @@
