@@ -74,8 +74,6 @@ DRMTEMPLATES =  drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
 DRMSHARED =     drm.h drm_sarea.h
 DRMHEADERS =    drmP.h $(DRMSHARED)
 
-GAMMAHEADERS =  gamma.h gamma_context.h gamma_drm.h gamma_drv.h gamma_lists.h \
-                gamma_old_dma.h gamma_lock.h $(DRMHEADERS) $(DRMTEMPLATES)
 TDFXHEADERS =   tdfx.h $(DRMHEADERS) $(DRMTEMPLATES)
 TDFXSHARED =    tdfx.h
 R128HEADERS =   r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
@@ -341,9 +339,6 @@ CONFIG_DRM_MACH64 := n
 
 # Enable module builds for the modules requested/supported.
 
-ifneq (,$(findstring gamma,$(DRM_MODULES)))
-CONFIG_DRM_GAMMA := m
-endif
 ifneq (,$(findstring tdfx,$(DRM_MODULES)))
 CONFIG_DRM_TDFX := m
 endif
@@ -389,7 +384,6 @@ endif
 include $(DRMSRCDIR)/Makefile.kernel
 
 # Depencencies
-$(gamma-objs):	$(GAMMAHEADERS)
 $(tdfx-objs):	$(TDFXHEADERS)
 $(r128-objs):	$(R128HEADERS)
 $(mga-objs):	$(MGAHEADERS)

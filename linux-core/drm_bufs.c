@@ -404,9 +404,6 @@ static void DRM(cleanup_buf_error)(drm_device_t *dev, drm_buf_entry_t *entry)
 			  sizeof(*entry->buflist),
 			  DRM_MEM_BUFS);
 
-		if (dev->fn_tbl.freelist_destroy)
-			dev->fn_tbl.freelist_destroy(&entry->freelist);
-
 		entry->buf_count = 0;
 	}
 }
@@ -574,14 +571,6 @@ int DRM(addbufs_agp)( struct inode *inode, struct file *filp,
 
 	DRM_DEBUG( "dma->buf_count : %d\n", dma->buf_count );
 	DRM_DEBUG( "entry->buf_count : %d\n", entry->buf_count );
-
-	if (dev->fn_tbl.freelist_create)
-	{
-		dev->fn_tbl.freelist_create( &entry->freelist, entry->buf_count);
-		for ( i = 0 ; i < entry->buf_count ; i++ ) {
-			dev->fn_tbl.freelist_put( dev, &entry->freelist, &entry->buflist[i] );
-		}
-	}
 
 	up( &dev->struct_sem );
 
@@ -817,14 +806,6 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 	dma->page_count += entry->seg_count << page_order;
 	dma->byte_count += PAGE_SIZE * (entry->seg_count << page_order);
 
-	if (dev->fn_tbl.freelist_create)
-	{
-		dev->fn_tbl.freelist_create( &entry->freelist, entry->buf_count);
-		for ( i = 0 ; i < entry->buf_count ; i++ ) {
-			dev->fn_tbl.freelist_put( dev, &entry->freelist, &entry->buflist[i] );
-		}
-	}
-
 	up( &dev->struct_sem );
 
 	request.count = entry->buf_count;
@@ -989,14 +970,6 @@ int DRM(addbufs_sg)( struct inode *inode, struct file *filp,
 
 	DRM_DEBUG( "dma->buf_count : %d\n", dma->buf_count );
 	DRM_DEBUG( "entry->buf_count : %d\n", entry->buf_count );
-
-	if (dev->fn_tbl.freelist_create)
-	{
-		dev->fn_tbl.freelist_create( &entry->freelist, entry->buf_count);
-		for ( i = 0 ; i < entry->buf_count ; i++ ) {
-			dev->fn_tbl.freelist_put( dev, &entry->freelist, &entry->buflist[i] );
-		}
-	}
 
 	up( &dev->struct_sem );
 

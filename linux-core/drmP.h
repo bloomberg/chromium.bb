@@ -525,17 +525,10 @@ struct drm_driver_fn {
 	void (*release)(struct drm_device *, struct file *filp);
 	void (*dma_ready)(struct drm_device *);
 	int (*dma_quiescent)(struct drm_device *);
-	int (*dma_flush_block_and_flush)(struct drm_device *, int context, drm_lock_flags_t flags);
-	int (*dma_flush_unblock)(struct drm_device *, int context, drm_lock_flags_t flags);
 	int (*context_ctor)(struct drm_device *dev, int context);
 	int (*context_dtor)(struct drm_device *dev, int context);
 	int (*kernel_context_switch)(struct drm_device *dev, int old, int new);
 	int (*kernel_context_switch_unlock)(struct drm_device *dev);
-	int (*dma_schedule)(struct drm_device *dev, int locked);
-	int (*waitlist_destroy)(drm_waitlist_t *bl);	
-	int (*freelist_create)(drm_freelist_t *bl, int count);
-	int (*freelist_put)(struct drm_device *dev, drm_freelist_t *bl, drm_buf_t *buf);
-  	int (*freelist_destroy)(drm_freelist_t *bl);
 	int (*vblank_wait)(struct drm_device *dev, unsigned int *sequence);
 /* these have to be filled in */
 	irqreturn_t (*irq_handler)( DRM_IRQ_ARGS );

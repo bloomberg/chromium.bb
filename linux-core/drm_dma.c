@@ -108,8 +108,6 @@ void DRM(dma_takedown)(drm_device_t *dev)
 				  sizeof(*dma->bufs[0].buflist),
 				  DRM_MEM_BUFS);
 
-			if (dev->fn_tbl.freelist_destroy)
-			  dev->fn_tbl.freelist_destroy(&dma->bufs[i].freelist);
 		}
 	}
 
@@ -149,13 +147,6 @@ void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
 	if ( (dev->driver_features & DRIVER_DMA_QUEUE) && waitqueue_active(&buf->dma_wait)) {
 		wake_up_interruptible(&buf->dma_wait);
 	}
-	/* If processes are waiting, the last one
-	   to wake will put the buffer on the free
-	   list.  If no processes are waiting, we
-	   put the buffer on the freelist here. */
-	else if (dev->fn_tbl.freelist_put) 
-		dev->fn_tbl.freelist_put(dev, &dev->dma->bufs[buf->order].freelist, buf);
-
 }
 
 /**

@@ -413,8 +413,6 @@ static int DRM(takedown)( drm_device_t *dev )
 	
 	if ( (dev->driver_features & DRIVER_DMA_QUEUE) && dev->queuelist ) {
 		for ( i = 0 ; i < dev->queue_count ; i++ ) {
-			if (dev->fn_tbl.waitlist_destroy)
-				dev->fn_tbl.waitlist_destroy( &dev->queuelist[i]->waitlist);
 
 			if ( dev->queuelist[i] ) {
 				DRM(free)( dev->queuelist[i],
@@ -1106,40 +1104,33 @@ int DRM(lock)( struct inode *inode, struct file *filp,
 		if ( lock.context < 0 )
 			return -EINVAL;
 
-	if (dev->fn_tbl.dma_flush_block_and_flush)
-		ret = dev->fn_tbl.dma_flush_block_and_flush(dev, lock.context, lock.flags);
-        if ( !ret ) {
-                add_wait_queue( &dev->lock.lock_queue, &entry );
-                for (;;) {
-                        current->state = TASK_INTERRUPTIBLE;
-                        if ( !dev->lock.hw_lock ) {
-                                /* Device has been unregistered */
-                                ret = -EINTR;
-                                break;
-                        }
-                        if ( DRM(lock_take)( &dev->lock.hw_lock->lock,
-					     lock.context ) ) {
-                                dev->lock.filp      = filp;
-                                dev->lock.lock_time = jiffies;
-                                atomic_inc( &dev->counts[_DRM_STAT_LOCKS] );
-                                break;  /* Got lock */
-                        }
-
-                                /* Contention */
-                        schedule();
-                        if ( signal_pending( current ) ) {
-                                ret = -ERESTARTSYS;
-                                break;
-                        }
-                }
-                current->state = TASK_RUNNING;
-                remove_wait_queue( &dev->lock.lock_queue, &entry );
-        }
-
-	if (dev->fn_tbl.dma_flush_unblock)
-		dev->fn_tbl.dma_flush_unblock(dev, lock.context, lock.flags);
-
-        if ( !ret ) {
+	add_wait_queue( &dev->lock.lock_queue, &entry );
+	for (;;) {
+		current->state = TASK_INTERRUPTIBLE;
+		if ( !dev->lock.hw_lock ) {
+			/* Device has been unregistered */
+			ret = -EINTR;
+			break;
+		}
+		if ( DRM(lock_take)( &dev->lock.hw_lock->lock,
+				     lock.context ) ) {
+			dev->lock.filp      = filp;
+			dev->lock.lock_time = jiffies;
+			atomic_inc( &dev->counts[_DRM_STAT_LOCKS] );
+			break;  /* Got lock */
+		}
+		
+		/* Contention */
+		schedule();
+		if ( signal_pending( current ) ) {
+			ret = -ERESTARTSYS;
+			break;
+		}
+	}
+	current->state = TASK_RUNNING;
+	remove_wait_queue( &dev->lock.lock_queue, &entry );
+	
+	if ( !ret ) {
 		sigemptyset( &dev->sigmask );
 		sigaddset( &dev->sigmask, SIGSTOP );
 		sigaddset( &dev->sigmask, SIGTSTP );
@@ -1203,9 +1194,6 @@ int DRM(unlock)( struct inode *inode, struct file *filp,
 	{
 		DRM(lock_transfer)( dev, &dev->lock.hw_lock->lock,
 				    DRM_KERNEL_CONTEXT );
-
-		if (dev->fn_tbl.dma_schedule)
-		  dev->fn_tbl.dma_schedule(dev, 1);
 
 		if ( DRM(lock_free)( dev, &dev->lock.hw_lock->lock,
 				     DRM_KERNEL_CONTEXT ) ) {
