@@ -229,7 +229,7 @@ int sis_fb_free( DRM_IOCTL_ARGS )
 		return DRM_ERR(EINVAL);
 	mmFreeMem((PMemBlock)fb.free);
 
-	DRM_DEBUG("free fb, free = %d\n", fb.free);
+	DRM_DEBUG("free fb, free = 0x%lx\n", fb.free);
 
 	return 0;
 }
@@ -318,7 +318,7 @@ int sis_ioctl_agp_free( DRM_IOCTL_ARGS )
 	if (!del_alloc_set(agp.context, AGP_TYPE, agp.free))
 		return DRM_ERR(EINVAL);
 
-	DRM_DEBUG("free agp, free = %d\n", agp.free);
+	DRM_DEBUG("free agp, free = 0x%lx\n", agp.free);
 
 	return 0;
 }
