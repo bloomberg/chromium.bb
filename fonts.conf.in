@@ -243,36 +243,44 @@
   won't appear in the resulting charsets
  -->
 		<blank>
-			<int>0x20</int>		<!-- space -->
-			<int>0xa0</int>		<!-- nsbp  -->
-			<int>0x115f</int>	<!-- choseong filler -->
-			<int>0x1160</int>	<!-- jungseong filler -->
-			<int>0x2000</int>	<!-- general punctuation spaces -->
-			<int>0x2001</int>
-			<int>0x2002</int>
-			<int>0x2003</int>
-			<int>0x2004</int>
-			<int>0x2005</int>
-			<int>0x2005</int>
-			<int>0x2006</int>
-			<int>0x2007</int>
-			<int>0x2008</int>
-			<int>0x2009</int>
-			<int>0x200a</int>
-			<int>0x200b</int>
-			<int>0x200c</int>
-			<int>0x200d</int>
-			<int>0x200e</int>
-			<int>0x200f</int>
-			<int>0x202a</int>
-			<int>0x202b</int>
-			<int>0x202c</int>
-			<int>0x202d</int>
-			<int>0x202e</int>
-			<int>0x202f</int>
-			<int>0x3000</int>	<!-- CJK space -->
+			<int>0x0020</int>	<!-- SPACE -->
+			<int>0x00a0</int>	<!-- NO-BREAK SPACE -->
+			<int>0x00ad</int>	<!-- SOFT HYPHEN -->
+			<int>0x115f</int>	<!-- HANGUL CHOSEONG FILLER -->
+			<int>0x1160</int>	<!-- HANGUL JUNGSEONG FILLER -->
+			<int>0x1680</int>	<!-- OGHAM SPACE MARK -->
+			<int>0x2000</int>	<!-- EN QUAD -->
+			<int>0x2001</int>	<!-- EM QUAD -->
+			<int>0x2002</int>	<!-- EN SPACE -->
+			<int>0x2003</int>	<!-- EM SPACE -->
+			<int>0x2004</int>	<!-- THREE-PER-EM SPACE -->
+			<int>0x2005</int>	<!-- FOUR-PER-EM SPACE -->
+			<int>0x2006</int>	<!-- SIX-PER-EM SPACE -->
+			<int>0x2007</int>	<!-- FIGURE SPACE -->
+			<int>0x2008</int>	<!-- PUNCTUATION SPACE -->
+			<int>0x2009</int>	<!-- THIN SPACE -->
+			<int>0x200a</int>	<!-- HAIR SPACE -->
+			<int>0x200b</int>	<!-- ZERO WIDTH SPACE -->
+			<int>0x200c</int>	<!-- ZERO WIDTH NON-JOINER -->
+			<int>0x200d</int>	<!-- ZERO WIDTH JOINER -->
+			<int>0x200e</int>	<!-- LEFT-TO-RIGHT MARK -->
+			<int>0x200f</int>	<!-- RIGHT-TO-LEFT MARK -->
+			<int>0x2028</int>	<!-- LINE SEPARATOR -->
+			<int>0x2029</int>	<!-- PARAGRAPH SEPARATOR -->
+			<int>0x202a</int>	<!-- LEFT-TO-RIGHT EMBEDDING -->
+			<int>0x202b</int>	<!-- RIGHT-TO-LEFT EMBEDDING -->
+			<int>0x202c</int>	<!-- POP DIRECTIONAL FORMATTING -->
+			<int>0x202d</int>	<!-- LEFT-TO-RIGHT OVERRIDE -->
+			<int>0x202e</int>	<!-- RIGHT-TO-LEFT OVERRIDE -->
+			<int>0x202f</int>	<!-- NARROW NO-BREAK SPACE -->
+			<int>0x205f</int>	<!-- MEDIUM MATHEMATICAL SPACE -->
+			<int>0x2060</int>	<!-- WORD JOINER -->
+			<int>0x2061</int>	<!-- FUNCTION APPLICATION -->
+			<int>0x2062</int>	<!-- INVISIBLE TIMES -->
+			<int>0x2063</int>	<!-- INVISIBLE SEPARATOR -->
+			<int>0x3000</int>	<!-- IDEOGRAPHIC SPACE -->
 			<int>0x3164</int>	<!-- HANGUL FILLER -->
-			<int>0xfeff</int>	<!-- zero width no-break space -->
+			<int>0xfeff</int>	<!-- ZERO WIDTH NO-BREAK SPACE -->
 			<int>0xffa0</int>	<!-- HALFWIDTH HANGUL FILLER -->
 			<int>0xfff9</int>	<!-- INTERLINEAR ANNOTATION ANCHOR -->
 			<int>0xfffa</int>	<!-- INTERLINEAR ANNOTATION SEPARATOR -->
