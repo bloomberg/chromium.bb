@@ -211,6 +211,55 @@ static drmHashEntry *drmGetEntry(int fd)
 }
 
 /**
+ * Compare two busid strings
+ *
+ * \param first
+ * \param second
+ *
+ * \return 1 if matched.
+ *
+ * \internal
+ * This function compares two bus ID strings.  It understands the older
+ * PCI:b:d:f format and the newer pci:oooo:bb:dd.f format.  In the format, o is
+ * domain, b is bus, d is device, f is function.
+ */
+static int drmMatchBusID(const char *id1, const char *id2)
+{
+    /* First, check if the IDs are exactly the same */
+    if (strcasecmp(id1, id2) == 0)
+	return 1;
+
+    /* Try to match old/new-style PCI bus IDs. */
+    if (strncasecmp(id1, "pci", 3) == 0) {
+	int o1, b1, d1, f1;
+	int o2, b2, d2, f2;
+	int ret;
+
+	ret = sscanf(id1, "pci:%04x:%02x:%02x.%d", &o1, &b1, &d1, &f1);
+	if (ret != 4) {
+	    o1 = 0;
+	    ret = sscanf(id1, "PCI:%d:%d:%d", &b1, &d1, &f1);
+	    if (ret != 3)
+		return 0;
+	}
+
+	ret = sscanf(id2, "pci:%04x:%02x:%02x.%d", &o2, &b2, &d2, &f2);
+	if (ret != 4) {
+	    o2 = 0;
+	    ret = sscanf(id2, "PCI:%d:%d:%d", &b2, &d2, &f2);
+	    if (ret != 3)
+		return 0;
+	}
+
+	if ((o1 != o2) || (b1 != b2) || (d1 != d2) || (f1 != f2))
+	    return 0;
+	else
+	    return 1;
+    }
+    return 0;
+}
+
+/**
  * Open the DRM device, creating it if necessary.
  *
  * \param dev major and minor numbers of the device.
@@ -235,7 +284,8 @@ static int drmOpenDevice(long dev, int minor)
     gid_t           group   = DRM_DEV_GID;
 #endif
 
-    drmMsg("drmOpenDevice: minor is %d\n", minor);
+    sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);
+    drmMsg("drmOpenDevice: node name is %s\n", buf);
 
 #if defined(XFree86Server)
     devmode  = xf86ConfigDRI.mode ? xf86ConfigDRI.mode : DRM_DEV_MODE;
@@ -250,8 +300,7 @@ static int drmOpenDevice(long dev, int minor)
 	chmod(DRM_DIR_NAME, DRM_DEV_DIRMODE);
     }
 
-    sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);
-    drmMsg("drmOpenDevice: node name is %s\n", buf);
+    /* Check if the device node exists and create it if necessary. */
     if (stat(buf, &st)) {
 	if (!isroot) return DRM_ERR_NOT_ROOT;
 	remove(buf);
@@ -267,10 +316,17 @@ static int drmOpenDevice(long dev, int minor)
 		fd, fd < 0 ? strerror(errno) : "OK");
     if (fd >= 0) return fd;
 
+    /* Check if the device node is not what we expect it to be, and recreate it
+     * and try again if so.
+     */
     if (st.st_rdev != dev) {
 	if (!isroot) return DRM_ERR_NOT_ROOT;
 	remove(buf);
 	mknod(buf, S_IFCHR | devmode, dev);
+#if defined(XFree86Server)
+	chown(buf, user, group);
+	chmod(buf, devmode);
+#endif
     }
     fd = open(buf, O_RDWR, 0);
     drmMsg("drmOpenDevice: open result is %d, (%s)\n",
@@ -360,15 +416,20 @@ static int drmOpenByBusid(const char *busid)
     int        i;
     int        fd;
     const char *buf;
-    
-    drmMsg("drmOpenByBusid: busid is %s\n", busid);
+    drmSetVersion sv;
+
+    drmMsg("drmOpenByBusid: Searching for BusID %s\n", busid);
     for (i = 0; i < DRM_MAX_MINOR; i++) {
 	fd = drmOpenMinor(i, 1);
 	drmMsg("drmOpenByBusid: drmOpenMinor returns %d\n", fd);
 	if (fd >= 0) {
+	    sv.drm_di_major = 1;
+	    sv.drm_di_minor = 1;
+	    sv.drm_dd_major = -1;	/* Don't care */
+	    drmSetInterfaceVersion(fd, &sv);
 	    buf = drmGetBusid(fd);
 	    drmMsg("drmOpenByBusid: drmGetBusid reports %s\n", buf);
-	    if (buf && !strcmp(buf, busid)) {
+	    if (buf && drmMatchBusID(buf, busid)) {
 		drmFreeBusid(buf);
 		return fd;
 	    }
@@ -494,9 +555,27 @@ static int drmOpenByName(const char *name)
  */
 int drmOpen(const char *name, const char *busid)
 {
+#ifdef XFree86Server
+    if (!drmAvailable() && name != NULL) {
+	/* try to load the kernel */
+	if (!xf86LoadKernelModule(name)) {
+	    ErrorF("[drm] failed to load kernel module \"%s\"\n",
+	           name);
+	    return -1;
+	}
+    }
+#endif
 
-    if (busid) return drmOpenByBusid(busid);
-    return drmOpenByName(name);
+    if (busid) {
+	int fd;
+
+	fd = drmOpenByBusid(busid);
+	if (fd >= 0)
+	    return fd;
+    }
+    if (name)
+	return drmOpenByName(name);
+    return -1;
 }
 
 
@@ -647,9 +726,11 @@ drmVersionPtr drmGetLibVersion(int fd)
      *                    entry point and many drm<Device> extensions
      *   revision 1.1.x = added drmCommand entry points for device extensions
      *                    added drmGetLibVersion to identify libdrm.a version
+     *   revision 1.2.x = added drmSetInterfaceVersion
+     *                    modified drmOpen to handle both busid and name
      */
     version->version_major      = 1;
-    version->version_minor      = 1;
+    version->version_minor      = 2;
     version->version_patchlevel = 0;
 
     return (drmVersionPtr)version;
@@ -693,6 +774,7 @@ char *drmGetBusid(int fd)
     u.unique = drmMalloc(u.unique_len + 1);
     if (ioctl(fd, DRM_IOCTL_GET_UNIQUE, &u)) return NULL;
     u.unique[u.unique_len] = '\0';
+
     return u.unique;
 }
 
@@ -2027,6 +2109,42 @@ int drmGetStats(int fd, drmStatsT *stats)
 	}
     }
     return 0;
+}
+
+/**
+ * Issue a set-version ioctl.
+ *
+ * \param fd file descriptor.
+ * \param drmCommandIndex command index 
+ * \param data source pointer of the data to be read and written.
+ * \param size size of the data to be read and written.
+ * 
+ * \return zero on success, or a negative value on failure.
+ * 
+ * \internal
+ * It issues a read-write ioctl given by 
+ * \code DRM_COMMAND_BASE + drmCommandIndex \endcode.
+ */
+int drmSetInterfaceVersion(int fd, drmSetVersion *version )
+{
+    int retcode = 0;
+    drm_set_version_t sv;
+
+    sv.drm_di_major = version->drm_di_major;
+    sv.drm_di_minor = version->drm_di_minor;
+    sv.drm_dd_major = version->drm_dd_major;
+    sv.drm_dd_minor = version->drm_dd_minor;
+
+    if (ioctl(fd, DRM_IOCTL_SET_VERSION, &sv)) {
+	retcode = -errno;
+    }
+
+    version->drm_di_major = sv.drm_di_major;
+    version->drm_di_minor = sv.drm_di_minor;
+    version->drm_dd_major = sv.drm_dd_major;
+    version->drm_dd_minor = sv.drm_dd_minor;
+
+    return retcode;
 }
 
 /**

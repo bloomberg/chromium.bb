@@ -390,9 +390,6 @@ struct drm_device {
 
 extern int	     DRM(flags);
 
-				/* Driver support (drm_drv.h) */
-extern int           DRM(version)( DRM_IOCTL_ARGS );
-
 				/* Memory management support (drm_memory.h) */
 extern void	     DRM(mem_init)(void);
 extern void	     DRM(mem_uninit)(void);
@@ -491,6 +488,8 @@ extern int            DRM(ati_pcigart_cleanup)(drm_device_t *dev,
 /* Locking IOCTL support (drm_drv.h) */
 extern int		DRM(lock)(DRM_IOCTL_ARGS);
 extern int		DRM(unlock)(DRM_IOCTL_ARGS);
+extern int		DRM(version)( DRM_IOCTL_ARGS );
+extern int		DRM(setversion)( DRM_IOCTL_ARGS );
 
 /* Misc. IOCTL support (drm_ioctl.h) */
 extern int		DRM(irq_busid)(DRM_IOCTL_ARGS);
