@@ -1074,6 +1074,16 @@ int mga_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 	}
 	
 	if (!ret) {
+#if LINUX_VERSION_CODE >= 0x020400 /* KERNEL_VERSION(2,4,0) */
+		sigemptyset(&dev->sigmask);
+		sigaddset(&dev->sigmask, SIGSTOP);
+		sigaddset(&dev->sigmask, SIGTSTP);
+		sigaddset(&dev->sigmask, SIGTTIN);
+		sigaddset(&dev->sigmask, SIGTTOU);
+		dev->sigdata.context = lock.context;
+		dev->sigdata.lock    = dev->lock.hw_lock;
+		block_all_signals(drm_notifier, &dev->sigdata, &dev->sigmask);
+#endif
 		if (lock.flags & _DRM_LOCK_QUIESCENT) {
 		   DRM_DEBUG("_DRM_LOCK_QUIESCENT\n");
 		   mga_flush_queue(dev);

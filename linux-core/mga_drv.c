@@ -655,5 +655,8 @@ int mga_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 	   DRM_ERROR("\n");
 	}
 
+#if LINUX_VERSION_CODE >= 0x020400 /* KERNEL_VERSION(2,4,0) */
+	unblock_all_signals();
+#endif
 	return 0;
 }

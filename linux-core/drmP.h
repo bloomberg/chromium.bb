@@ -57,7 +57,7 @@
 #include <linux/types.h>
 #include <linux/agp_backend.h>
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,1,0)
+#if LINUX_VERSION_CODE >= 0x020100 /* KERNEL_VERSION(2,1,0) */
 #include <linux/tqueue.h>
 #include <linux/poll.h>
 #endif
@@ -451,6 +451,11 @@ typedef struct {
 extern drm_agp_func_t drm_agp;
 #endif
 
+typedef struct drm_sigdata {
+	int           context;
+	drm_hw_lock_t *lock;
+} drm_sigdata_t;
+
 typedef struct drm_device {
 	const char	  *name;	/* Simple driver name		   */
 	char		  *unique;	/* Unique identifier: e.g., busid  */
@@ -535,6 +540,8 @@ typedef struct drm_device {
 #endif
 	unsigned long     *ctx_bitmap;
 	void		  *dev_private;
+	drm_sigdata_t     sigdata; /* For block_all_signals */
+	sigset_t          sigmask;
 } drm_device_t;
 
 
@@ -729,6 +736,7 @@ extern int	     drm_flush_unblock(drm_device_t *dev, int context,
 				       drm_lock_flags_t flags);
 extern int	     drm_flush_block_and_flush(drm_device_t *dev, int context,
 					       drm_lock_flags_t flags);
+extern int           drm_notifier(void *priv);
 
 				/* Context Bitmap support (ctxbitmap.c) */
 extern int	     drm_ctxbitmap_init(drm_device_t *dev);
