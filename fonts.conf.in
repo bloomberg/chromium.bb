@@ -311,6 +311,26 @@
 		</edit>
 	</match>
 
+<!--
+ Synthetic emboldening for fonts that do not have bold face available
+ -->
+
+	<match target="font">
+		<!-- check to see if the font is just regular -->
+		<test name="weight" compare="less_eq">
+			<int>100</int>
+		</test>
+		<!-- check to see if the pattern requests bold -->
+		<test target="pattern" name="weight" compare="more_eq">
+			<int>200</int>
+		</test>
+		<!-- set the embolden flag -->
+		<edit name="embolden" mode="assign">
+			<bool>true</bool>
+		</edit>
+	</match>
+
+
 	<config>
 <!--
   These are the default Unicode chars that are expected to be blank

@@ -1,3 +1,13 @@
+2004-12-10  Jakub Pavelek <jakub.pavelek@nokia.com>
+
+	reviewed by: Keith Packard  <keithp@keithp.com>
+
+	* fontconfig/fontconfig.h:
+	* fonts.conf.in:
+
+	Configuration changes to request synthetic emboldening of
+	fonts.  The actual emboldening code will live in Xft.
+
 2004-12-09  John Thacker <thacker@math.cornell.edu>
 
 	reviewed by: Keith Packard  <keithp@keithp.com>

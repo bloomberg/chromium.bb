@@ -95,6 +95,7 @@ typedef int		FcBool;
 #define FC_FULLNAMELANG	    "fullnamelang"	/* String RFC 3066 langs */
 #define FC_CAPABILITY       "capability"	/* String */
 #define FC_FONTFORMAT	    "fontformat"	/* String */
+#define FC_EMBOLDEN	    "embolden"		/* Bool - true if emboldening needed*/
 
 #define FC_DIR_CACHE_FILE	    "fonts.cache-"FC_CACHE_VERSION
 #define FC_USER_CACHE_FILE	    ".fonts.cache-"FC_CACHE_VERSION
