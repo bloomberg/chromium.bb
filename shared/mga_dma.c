@@ -166,7 +166,7 @@ void mga_do_dma_flush( drm_mga_private_t *dev_priv )
 	for ( i = 0 ; i < dev_priv->usec_timeout ; i++ ) {
 		status = MGA_READ( MGA_STATUS ) & MGA_ENGINE_IDLE_MASK;
 		if ( status == MGA_ENDPRDMASTS ) break;
-		udelay( 1 );
+		DRM_UDELAY( 1 );
 	}
 
 	if ( primary->tail == primary->last_flush ) {
