@@ -548,8 +548,6 @@ static int DRM(takedown)( drm_device_t *dev )
 		wake_up_interruptible( &dev->lock.lock_queue );
 	}
 	
-	if (DRM(fb_loaded)==0)
-		pci_disable_device(dev->pdev);
 	up( &dev->struct_sem );
 
 	return 0;
@@ -708,18 +706,14 @@ static int __init drm_init( void )
 		pdev = pci_get_subsys(DRM(pciidlist[i]).vendor, DRM(pciidlist[i]).device, DRM(pciidlist[i]).subvendor, DRM(pciidlist[i]).subdevice, NULL);
 		if (pdev)
 		{
-#ifndef __MACH64_H__
 			pdriver = pci_dev_driver(pdev);
 			if (pdriver)
 			{
-#endif
 				DRM(fb_loaded)=1;
 				drm_probe(pdev, &DRM(pciidlist[i]));
-#ifndef __MACH64_H__
 			}
 			else
 				pci_dev_put(pdev);
-#endif
 		}
 	}
 	
@@ -746,6 +740,9 @@ static void __exit drm_cleanup( drm_device_t *dev )
 	}
 
 	DRM(takedown)(dev);
+
+	if (DRM(fb_loaded)==0)
+		pci_disable_device(dev->pdev);
 
 	if ( DRM(stub_unregister)(dev->minor) ) {
 		DRM_ERROR( "Cannot unload module\n" );
