@@ -1,0 +1,8 @@
+.depend
+bus_if.h
+device_if.h
+export_syms
+opt_drm.h
+pci_if.h
+i915.kld
+i915.ko
