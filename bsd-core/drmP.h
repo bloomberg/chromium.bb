@@ -619,7 +619,6 @@ struct drm_device {
 	int	(*kernel_context_switch)(struct drm_device *dev, int old,
 					 int new);
 	int	(*kernel_context_switch_unlock)(struct drm_device *dev);
-	int	(*dma_schedule)(struct drm_device *dev, int locked);
 	void	(*irq_preinstall)(drm_device_t *dev);
 	void	(*irq_postinstall)(drm_device_t *dev);
 	void	(*irq_uninstall)(drm_device_t *dev);

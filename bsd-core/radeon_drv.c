@@ -53,11 +53,6 @@ static void radeon_configure(drm_device_t *dev)
 	dev->irq_uninstall = radeon_driver_irq_uninstall;
 	dev->irq_handler = radeon_driver_irq_handler;
 	dev->dma_ioctl = radeon_cp_buffers;
-	/* XXX dev->reclaim_buffers = drm_core_reclaim_buffers;*/
-	/* XXX dev->get_map_ofs = drm_core_get_map_ofs;
-	dev->get_reg_ofs = drm_core_get_reg_ofs;*/
-	/* XXX: Postinit inlined into drm_drv
-	dev->postinit = postinit; */
 
 	dev->driver_ioctls = radeon_ioctls;
 	dev->max_driver_ioctl = radeon_max_ioctl;

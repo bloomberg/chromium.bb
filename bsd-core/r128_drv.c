@@ -55,11 +55,6 @@ static void r128_configure(drm_device_t *dev)
 	dev->irq_uninstall = r128_driver_irq_uninstall;
 	dev->irq_handler = r128_driver_irq_handler;
 	dev->dma_ioctl = r128_cce_buffers;
-	/* XXX dev->reclaim_buffers = drm_core_reclaim_buffers;*/
-	/* XXX dev->get_map_ofs = drm_core_get_map_ofs;
-	dev->get_reg_ofs = drm_core_get_reg_ofs;*/
-	/* XXX: Postinit inlined into drm_drv
-	dev->postinit = postinit; */
 
 	dev->driver_ioctls = r128_ioctls;
 	dev->max_driver_ioctl = r128_max_ioctl;
