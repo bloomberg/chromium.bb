@@ -333,8 +333,6 @@ typedef vaddr_t vm_offset_t;
 	copyout(arg2, arg1, arg3)
 #define DRM_GET_USER_UNCHECKED(val, uaddr)			\
 	((val) = fuword(uaddr), 0)
-#define DRM_PUT_USER_UNCHECKED(uaddr, val)			\
-	suword(uaddr, val)
 
 #define cpu_to_le32(x) htole32(x)
 #define le32_to_cpu(x) le32toh(x)
