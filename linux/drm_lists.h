@@ -38,9 +38,12 @@ int DRM(waitlist_create)(drm_waitlist_t *bl, int count)
 {
 	if (bl->count) return -EINVAL;
 
-	bl->count      = count;
 	bl->bufs       = DRM(alloc)((bl->count + 2) * sizeof(*bl->bufs),
 				    DRM_MEM_BUFLISTS);
+
+	if(!bl->bufs) return -ENOMEM;
+
+	bl->count      = count;
 	bl->rp	       = bl->bufs;
 	bl->wp	       = bl->bufs;
 	bl->end	       = &bl->bufs[bl->count+1];

@@ -910,7 +910,7 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 		return -EFAULT;
 	}
 
-	buffer = kmalloc( depth->n * sizeof(u32), 0 );
+	buffer = kmalloc( depth->n * sizeof(u32), GFP_KERNEL );
 	if ( buffer == NULL )
 		return -ENOMEM;
 	if ( copy_from_user( buffer, depth->buffer,
@@ -920,7 +920,7 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 	}
 
 	if ( depth->mask ) {
-		mask = kmalloc( depth->n * sizeof(u8), 0 );
+		mask = kmalloc( depth->n * sizeof(u8), GFP_KERNEL );
 		if ( mask == NULL ) {
 			kfree( buffer );
 			return -ENOMEM;
@@ -997,11 +997,11 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 
 	count = depth->n;
 
-	x = kmalloc( count * sizeof(*x), 0 );
+	x = kmalloc( count * sizeof(*x), GFP_KERNEL );
 	if ( x == NULL ) {
 		return -ENOMEM;
 	}
-	y = kmalloc( count * sizeof(*y), 0 );
+	y = kmalloc( count * sizeof(*y), GFP_KERNEL );
 	if ( y == NULL ) {
 		kfree( x );
 		return -ENOMEM;
@@ -1017,7 +1017,7 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 		return -EFAULT;
 	}
 
-	buffer = kmalloc( depth->n * sizeof(u32), 0 );
+	buffer = kmalloc( depth->n * sizeof(u32), GFP_KERNEL );
 	if ( buffer == NULL ) {
 		kfree( x );
 		kfree( y );
@@ -1032,7 +1032,7 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 	}
 
 	if ( depth->mask ) {
-		mask = kmalloc( depth->n * sizeof(u8), 0 );
+		mask = kmalloc( depth->n * sizeof(u8), GFP_KERNEL );
 		if ( mask == NULL ) {
 			kfree( x );
 			kfree( y );
@@ -1157,11 +1157,11 @@ static int r128_cce_dispatch_read_pixels( drm_device_t *dev,
 		count = dev_priv->depth_pitch;
 	}
 
-	x = kmalloc( count * sizeof(*x), 0 );
+	x = kmalloc( count * sizeof(*x), GFP_KERNEL );
 	if ( x == NULL ) {
 		return -ENOMEM;
 	}
-	y = kmalloc( count * sizeof(*y), 0 );
+	y = kmalloc( count * sizeof(*y), GFP_KERNEL );
 	if ( y == NULL ) {
 		kfree( x );
 		return -ENOMEM;

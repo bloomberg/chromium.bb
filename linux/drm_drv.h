@@ -84,6 +84,9 @@
 #ifndef __HAVE_SG
 #define __HAVE_SG			0
 #endif
+#ifndef __HAVE_KERNEL_CTX_SWITCH
+#define __HAVE_KERNEL_CTX_SWITCH	0
+#endif
 
 #ifndef DRIVER_PREINIT
 #define DRIVER_PREINIT()
@@ -97,9 +100,47 @@
 #ifndef DRIVER_PRETAKEDOWN
 #define DRIVER_PRETAKEDOWN()
 #endif
+#ifndef DRIVER_POSTCLEANUP
+#define DRIVER_POSTCLEANUP()
+#endif
+#ifndef DRIVER_PRESETUP
+#define DRIVER_PRESETUP()
+#endif
+#ifndef DRIVER_POSTSETUP
+#define DRIVER_POSTSETUP()
+#endif
 #ifndef DRIVER_IOCTLS
 #define DRIVER_IOCTLS
 #endif
+#ifndef DRIVER_FOPS
+#if LINUX_VERSION_CODE >= 0x020400
+#define DRIVER_FOPS				\
+static struct file_operations	DRM(fops) = {	\
+	owner:   THIS_MODULE,			\
+	open:	 DRM(open),			\
+	flush:	 DRM(flush),			\
+	release: DRM(release),			\
+	ioctl:	 DRM(ioctl),			\
+	mmap:	 DRM(mmap),			\
+	read:	 DRM(read),			\
+	fasync:	 DRM(fasync),			\
+	poll:	 DRM(poll),			\
+}
+#else
+#define DRIVER_FOPS				\
+static struct file_operations	DRM(fops) = {	\
+	open:	 DRM(open),			\
+	flush:	 DRM(flush),			\
+	release: DRM(release),			\
+	ioctl:	 DRM(ioctl),			\
+	mmap:	 DRM(mmap),			\
+	read:	 DRM(read),			\
+	fasync:	 DRM(fasync),			\
+	poll:	 DRM(poll),			\
+}
+#endif
+#endif
+
 
 /*
  * The default number of instances (minor numbers) to initialize.
@@ -112,21 +153,7 @@ static drm_device_t	*DRM(device);
 static int		*DRM(minor);
 static int		DRM(numdevs) = 0;
 
-static struct file_operations	DRM(fops) = {
-#if LINUX_VERSION_CODE >= 0x020400
-				/* This started being used during 2.4.0-test */
-	owner:   THIS_MODULE,
-#endif
-	open:	 DRM(open),
-	flush:	 DRM(flush),
-	release: DRM(release),
-	ioctl:	 DRM(ioctl),
-	mmap:	 DRM(mmap),
-	read:	 DRM(read),
-	fasync:	 DRM(fasync),
-	poll:	 DRM(poll),
-};
-
+DRIVER_FOPS;
 
 static drm_ioctl_desc_t		  DRM(ioctls)[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)]       = { DRM(version),     0, 0 },
@@ -212,6 +239,7 @@ static int DRM(setup)( drm_device_t *dev )
 {
 	int i;
 
+	DRIVER_PRESETUP();
 	atomic_set( &dev->ioctl_count, 0 );
 	atomic_set( &dev->vma_count, 0 );
 	dev->buf_use = 0;
@@ -311,6 +339,7 @@ static int DRM(setup)( drm_device_t *dev )
 	 * drm_select_queue fails between the time the interrupt is
 	 * initialized and the time the queues are initialized.
 	 */
+	DRIVER_POSTSETUP();
 	return 0;
 }
 
@@ -320,7 +349,7 @@ static int DRM(takedown)( drm_device_t *dev )
 	drm_magic_entry_t *pt, *next;
 	drm_map_t *map;
 	drm_map_list_t *r_list;
-	struct list_head *list;
+	struct list_head *list, *list_next;
 	drm_vma_entry_t *vma, *vma_next;
 	int i;
 
@@ -388,7 +417,10 @@ static int DRM(takedown)( drm_device_t *dev )
 	}
 
 	if( dev->maplist ) {
-		list_for_each(list, &dev->maplist->head) {
+		for(list = dev->maplist->head.next;
+		    list != &dev->maplist->head;
+		    list = list_next) {
+			list_next = list->next;
 			r_list = (drm_map_list_t *)list;
 			map = r_list->map;
 			DRM(free)(r_list, sizeof(*r_list), DRM_MEM_MAPS);
@@ -635,6 +667,7 @@ static void __exit drm_cleanup( void )
 		}
 #endif
 	}
+	DRIVER_POSTCLEANUP();
 	kfree(DRM(minor));
 	kfree(DRM(device));
 	DRM(numdevs) = 0;
@@ -977,6 +1010,12 @@ int DRM(lock)( struct inode *inode, struct file *filp,
 #if __HAVE_DMA_QUIESCENT
                 if ( lock.flags & _DRM_LOCK_QUIESCENT ) {
 			DRIVER_DMA_QUIESCENT();
+		}
+#endif
+#if __HAVE_KERNEL_CTX_SWITCH
+		if ( dev->last_context != lock.context ) {
+			DRM(context_switch)(dev, dev->last_context,
+					    lock.context);
 		}
 #endif
         }

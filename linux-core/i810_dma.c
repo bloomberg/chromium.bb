@@ -379,10 +379,9 @@ static void i810_kernel_lost_context(drm_device_t *dev)
      	if (ring->space < 0) ring->space += ring->Size;
 }
 
-static int i810_freelist_init(drm_device_t *dev)
+static int i810_freelist_init(drm_device_t *dev, drm_i810_private_t *dev_priv)
 {
       	drm_device_dma_t *dma = dev->dma;
-   	drm_i810_private_t *dev_priv = (drm_i810_private_t *)dev->dev_private;
    	int my_idx = 24;
    	u32 *hw_status = (u32 *)(dev_priv->hw_status_page + my_idx);
    	int i;
@@ -414,7 +413,6 @@ static int i810_dma_initialize(drm_device_t *dev,
 {
 	struct list_head *list;
 
-   	dev->dev_private = (void *) dev_priv;
    	memset(dev_priv, 0, sizeof(drm_i810_private_t));
 
 	list_for_each(list, &dev->maplist->head) {
@@ -426,9 +424,26 @@ static int i810_dma_initialize(drm_device_t *dev,
  			break;
  		}
  	}
-
+	if(!dev_priv->sarea_map) {
+		dev->dev_private = (void *)dev_priv;
+	   	i810_dma_cleanup(dev);
+	   	DRM_ERROR("can not find sarea!\n");
+	   	return -EINVAL;
+	}
 	DRM_FIND_MAP( dev_priv->mmio_map, init->mmio_offset );
+	if(!dev_priv->mmio_map) {
+		dev->dev_private = (void *)dev_priv;
+	   	i810_dma_cleanup(dev);
+	   	DRM_ERROR("can not find mmio map!\n");
+	   	return -EINVAL;
+	}
 	DRM_FIND_MAP( dev_priv->buffer_map, init->buffers_offset );
+	if(!dev_priv->buffer_map) {
+		dev->dev_private = (void *)dev_priv;
+	   	i810_dma_cleanup(dev);
+	   	DRM_ERROR("can not find dma buffer map!\n");
+	   	return -EINVAL;
+	}
 
 	dev_priv->sarea_priv = (drm_i810_sarea_t *)
 		((u8 *)dev_priv->sarea_map->handle +
@@ -445,14 +460,15 @@ static int i810_dma_initialize(drm_device_t *dev,
 						    init->ring_start,
 						    init->ring_size);
 
-   	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
-
    	if (dev_priv->ring.virtual_start == NULL) {
+		dev->dev_private = (void *) dev_priv;
 	   	i810_dma_cleanup(dev);
 	   	DRM_ERROR("can not ioremap virtual address for"
 			  " ring buffer\n");
 	   	return -ENOMEM;
 	}
+
+   	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
 
 	dev_priv->w = init->w;
 	dev_priv->h = init->h;
@@ -464,27 +480,30 @@ static int i810_dma_initialize(drm_device_t *dev,
 	dev_priv->back_di1 = init->back_offset | init->pitch_bits;
 	dev_priv->zi1 = init->depth_offset | init->pitch_bits;
 
-
    	/* Program Hardware Status Page */
    	dev_priv->hw_status_page = i810_alloc_page(dev);
-   	memset((void *) dev_priv->hw_status_page, 0, PAGE_SIZE);
    	if(dev_priv->hw_status_page == 0UL) {
+		dev->dev_private = (void *)dev_priv;
 		i810_dma_cleanup(dev);
 		DRM_ERROR("Can not allocate hardware status page\n");
 		return -ENOMEM;
 	}
+   	memset((void *) dev_priv->hw_status_page, 0, PAGE_SIZE);
    	DRM_DEBUG("hw status page @ %lx\n", dev_priv->hw_status_page);
 
    	I810_WRITE(0x02080, virt_to_bus((void *)dev_priv->hw_status_page));
    	DRM_DEBUG("Enabled hardware status page\n");
 
    	/* Now we need to init our freelist */
-   	if(i810_freelist_init(dev) != 0) {
+   	if(i810_freelist_init(dev, dev_priv) != 0) {
+		dev->dev_private = (void *)dev_priv;
 	   	i810_dma_cleanup(dev);
 	   	DRM_ERROR("Not enough space in the status page for"
 			  " the freelist\n");
 	   	return -ENOMEM;
 	}
+	dev->dev_private = (void *)dev_priv;
+
    	return 0;
 }
 

@@ -292,10 +292,9 @@ static void mga_freelist_print( drm_device_t *dev )
 }
 #endif
 
-static int mga_freelist_init( drm_device_t *dev )
+static int mga_freelist_init( drm_device_t *dev, drm_mga_private_t *dev_priv )
 {
 	drm_device_dma_t *dma = dev->dma;
-	drm_mga_private_t *dev_priv = dev->dev_private;
 	drm_buf_t *buf;
 	drm_mga_buf_priv_t *buf_priv;
 	drm_mga_freelist_t *entry;
@@ -458,7 +457,6 @@ static int mga_do_init_dma( drm_device_t *dev, drm_mga_init_t *init )
 	dev_priv = DRM(alloc)( sizeof(drm_mga_private_t), DRM_MEM_DRIVER );
 	if ( !dev_priv )
 		return -ENOMEM;
-	dev->dev_private = (void *)dev_priv;
 
 	memset( dev_priv, 0, sizeof(drm_mga_private_t) );
 
@@ -497,14 +495,63 @@ static int mga_do_init_dma( drm_device_t *dev, drm_mga_init_t *init )
  			break;
  		}
  	}
+	if(!dev_priv->sarea) {
+		DRM_ERROR( "failed to find sarea!\n" );
+		/* Assign dev_private so we can do cleanup. */
+		dev->dev_private = (void *)dev_priv;
+		mga_do_cleanup_dma( dev );
+		return -EINVAL;
+	}
 
 	DRM_FIND_MAP( dev_priv->fb, init->fb_offset );
+	if(!dev_priv->fb) {
+		DRM_ERROR( "failed to find framebuffer!\n" );
+		/* Assign dev_private so we can do cleanup. */
+		dev->dev_private = (void *)dev_priv;
+		mga_do_cleanup_dma( dev );
+		return -EINVAL;
+	}
 	DRM_FIND_MAP( dev_priv->mmio, init->mmio_offset );
+	if(!dev_priv->mmio) {
+		DRM_ERROR( "failed to find mmio region!\n" );
+		/* Assign dev_private so we can do cleanup. */
+		dev->dev_private = (void *)dev_priv;
+		mga_do_cleanup_dma( dev );
+		return -EINVAL;
+	}
 	DRM_FIND_MAP( dev_priv->status, init->status_offset );
+	if(!dev_priv->status) {
+		DRM_ERROR( "failed to find status page!\n" );
+		/* Assign dev_private so we can do cleanup. */
+		dev->dev_private = (void *)dev_priv;
+		mga_do_cleanup_dma( dev );
+		return -EINVAL;
+	}
 
 	DRM_FIND_MAP( dev_priv->warp, init->warp_offset );
+	if(!dev_priv->warp) {
+		DRM_ERROR( "failed to find warp microcode region!\n" );
+		/* Assign dev_private so we can do cleanup. */
+		dev->dev_private = (void *)dev_priv;
+		mga_do_cleanup_dma( dev );
+		return -EINVAL;
+	}
 	DRM_FIND_MAP( dev_priv->primary, init->primary_offset );
+	if(!dev_priv->primary) {
+		DRM_ERROR( "failed to find primary dma region!\n" );
+		/* Assign dev_private so we can do cleanup. */
+		dev->dev_private = (void *)dev_priv;
+		mga_do_cleanup_dma( dev );
+		return -EINVAL;
+	}
 	DRM_FIND_MAP( dev_priv->buffers, init->buffers_offset );
+	if(!dev_priv->buffers) {
+		DRM_ERROR( "failed to find dma buffer region!\n" );
+		/* Assign dev_private so we can do cleanup. */
+		dev->dev_private = (void *)dev_priv;
+		mga_do_cleanup_dma( dev );
+		return -EINVAL;
+	}
 
 	dev_priv->sarea_priv =
 		(drm_mga_sarea_t *)((u8 *)dev_priv->sarea->handle +
@@ -514,16 +561,30 @@ static int mga_do_init_dma( drm_device_t *dev, drm_mga_init_t *init )
 	DRM_IOREMAP( dev_priv->primary );
 	DRM_IOREMAP( dev_priv->buffers );
 
-	ret = mga_warp_install_microcode( dev );
+	if(!dev_priv->warp->handle ||
+	   !dev_priv->primary->handle ||
+	   !dev_priv->buffers->handle ) {
+		DRM_ERROR( "failed to ioremap agp regions!\n" );
+		/* Assign dev_private so we can do cleanup. */
+		dev->dev_private = (void *)dev_priv;
+		mga_do_cleanup_dma( dev );
+		return -ENOMEM;
+	}
+
+	ret = mga_warp_install_microcode( dev_priv );
 	if ( ret < 0 ) {
 		DRM_ERROR( "failed to install WARP ucode!\n" );
+		/* Assign dev_private so we can do cleanup. */
+		dev->dev_private = (void *)dev_priv;
 		mga_do_cleanup_dma( dev );
 		return ret;
 	}
 
-	ret = mga_warp_init( dev );
+	ret = mga_warp_init( dev_priv );
 	if ( ret < 0 ) {
 		DRM_ERROR( "failed to init WARP engine!\n" );
+		/* Assign dev_private so we can do cleanup. */
+		dev->dev_private = (void *)dev_priv;
 		mga_do_cleanup_dma( dev );
 		return ret;
 	}
@@ -566,12 +627,16 @@ static int mga_do_init_dma( drm_device_t *dev, drm_mga_init_t *init )
 	dev_priv->sarea_priv->last_frame.head = 0;
 	dev_priv->sarea_priv->last_frame.wrap = 0;
 
-	if ( mga_freelist_init( dev ) < 0 ) {
+	if ( mga_freelist_init( dev, dev_priv ) < 0 ) {
 		DRM_ERROR( "could not initialize freelist\n" );
+		/* Assign dev_private so we can do cleanup. */
+		dev->dev_private = (void *)dev_priv;
 		mga_do_cleanup_dma( dev );
 		return -ENOMEM;
 	}
 
+	/* Make dev_private visable to others. */
+	dev->dev_private = (void *)dev_priv;
 	return 0;
 }
 

@@ -93,6 +93,7 @@ int DRM(sg_alloc)( struct inode *inode, struct file *filp,
 		DRM(free)( entry, sizeof(*entry), DRM_MEM_SGLISTS );
 		return -ENOMEM;
 	}
+	memset(entry->pagelist, 0, pages * sizeof(*entry->pagelist));
 
 	entry->virtual = vmalloc_32( pages << PAGE_SHIFT );
 	if ( !entry->virtual ) {

@@ -70,13 +70,20 @@ int DRM(ctxbitmap_next)( drm_device_t *dev )
 		if((bit+1) > dev->max_context) {
 			dev->max_context = (bit+1);
 			if(dev->context_sareas) {
-				dev->context_sareas = DRM(realloc)(
-					dev->context_sareas,
-					(dev->max_context - 1) * 
-					sizeof(*dev->context_sareas),
-					dev->max_context * 
-					sizeof(*dev->context_sareas),
-					DRM_MEM_MAPS);
+				drm_map_t **ctx_sareas;
+
+				ctx_sareas = DRM(realloc)(dev->context_sareas,
+						(dev->max_context - 1) * 
+						sizeof(*dev->context_sareas),
+						dev->max_context * 
+						sizeof(*dev->context_sareas),
+						DRM_MEM_MAPS);
+				if(!ctx_sareas) {
+					clear_bit(bit, dev->ctx_bitmap);
+					up(&dev->struct_sem);
+					return -1;
+				}
+				dev->context_sareas = ctx_sareas;
 				dev->context_sareas[bit] = NULL;
 			} else {
 				/* max_context == 1 at this point */
@@ -84,6 +91,11 @@ int DRM(ctxbitmap_next)( drm_device_t *dev )
 						dev->max_context * 
 						sizeof(*dev->context_sareas),
 						DRM_MEM_MAPS);
+				if(!dev->context_sareas) {
+					clear_bit(bit, dev->ctx_bitmap);
+					up(&dev->struct_sem);
+					return -1;
+				}
 				dev->context_sareas[bit] = NULL;
 			}
 		}

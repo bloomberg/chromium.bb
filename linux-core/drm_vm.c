@@ -126,7 +126,7 @@ void DRM(vm_shm_close)(struct vm_area_struct *vma)
 {
 	drm_file_t	*priv	= vma->vm_file->private_data;
 	drm_device_t	*dev	= priv->dev;
-	drm_vma_entry_t *pt, *prev;
+	drm_vma_entry_t *pt, *prev, *next;
 	drm_map_t *map;
 	drm_map_list_t *r_list;
 	struct list_head *list;
@@ -146,7 +146,8 @@ void DRM(vm_shm_close)(struct vm_area_struct *vma)
 #endif
 
 	down(&dev->struct_sem);
-	for (pt = dev->vmalist, prev = NULL; pt; prev = pt, pt = pt->next) {
+	for (pt = dev->vmalist, prev = NULL; pt; pt = next) {
+		next = pt->next;
 #if LINUX_VERSION_CODE >= 0x020300
 		if (pt->vma->vm_private_data == map) found_maps++;
 #else
@@ -159,6 +160,8 @@ void DRM(vm_shm_close)(struct vm_area_struct *vma)
 				dev->vmalist = pt->next;
 			}
 			DRM(free)(pt, sizeof(*pt), DRM_MEM_VMAS);
+		} else {
+			prev = pt;
 		}
 	}
 	/* We were the only map that was found */
@@ -365,6 +368,19 @@ int DRM(mmap_dma)(struct file *filp, struct vm_area_struct *vma)
 	return 0;
 }
 
+#ifndef DRIVER_GET_MAP_OFS
+#define DRIVER_GET_MAP_OFS()	(map->offset)
+#endif
+
+#ifndef DRIVER_GET_REG_OFS
+#ifdef __alpha__
+#define DRIVER_GET_REG_OFS()	(dev->hose->dense_mem_base -	\
+				 dev->hose->mem_space->start)
+#else
+#define DRIVER_GET_REG_OFS()	0
+#endif
+#endif
+
 int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 {
 	drm_file_t	*priv	= filp->private_data;
@@ -389,10 +405,13 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 				   for performance, even if the list was a
 				   bit longer. */
 	list_for_each(list, &dev->maplist->head) {
+		unsigned long off;
+
 		r_list = (drm_map_list_t *)list;
 		map = r_list->map;
 		if (!map) continue;
-		if (map->offset == VM_OFFSET(vma)) break;
+		off = DRIVER_GET_MAP_OFS();
+		if (off == VM_OFFSET(vma)) break;
 	}
 
 	if (!map || ((map->flags&_DRM_RESTRICTED) && !capable(CAP_SYS_ADMIN)))
@@ -433,10 +452,7 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 #endif
 			vma->vm_flags |= VM_IO;	/* not in core dump */
 		}
-#ifdef __alpha__
-                offset = dev->hose->dense_mem_base -
-		         dev->hose->mem_space->start;
-#endif
+		offset = DRIVER_GET_REG_OFS();
 		if (remap_page_range(vma->vm_start,
 				     VM_OFFSET(vma) + offset,
 				     vma->vm_end - vma->vm_start,

@@ -160,11 +160,8 @@ static int mga_warp_install_g200_microcode( drm_mga_private_t *dev_priv )
 	return 0;
 }
 
-int mga_warp_install_microcode( drm_device_t *dev )
+int mga_warp_install_microcode(	drm_mga_private_t *dev_priv )
 {
-	drm_mga_private_t *dev_priv = dev->dev_private;
-	DRM_DEBUG( "%s\n", __FUNCTION__ );
-
 	switch ( dev_priv->chipset ) {
 	case MGA_CARD_TYPE_G400:
 		return mga_warp_install_g400_microcode( dev_priv );
@@ -177,11 +174,9 @@ int mga_warp_install_microcode( drm_device_t *dev )
 
 #define WMISC_EXPECTED		(MGA_WUCODECACHE_ENABLE | MGA_WMASTER_ENABLE)
 
-int mga_warp_init( drm_device_t *dev )
+int mga_warp_init( drm_mga_private_t *dev_priv )
 {
-	drm_mga_private_t *dev_priv = dev->dev_private;
 	u32 wmisc;
-	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
 	/* FIXME: Get rid of these damned magic numbers...
 	 */

@@ -76,23 +76,26 @@ int DRM(setunique)(struct inode *inode, struct file *filp,
 	drm_device_t	 *dev	 = priv->dev;
 	drm_unique_t	 u;
 
-	if (dev->unique_len || dev->unique)
-		return -EBUSY;
+	if (dev->unique_len || dev->unique) return -EBUSY;
 
-	if (copy_from_user(&u, (drm_unique_t *)arg, sizeof(u)))
-		return -EFAULT;
+	if (copy_from_user(&u, (drm_unique_t *)arg, sizeof(u))) return -EFAULT;
 
-	if (!u.unique_len || u.unique_len > 1024)
-		return -EINVAL;
+	if (!u.unique_len || u.unique_len > 1024) return -EINVAL;
 
 	dev->unique_len = u.unique_len;
 	dev->unique	= DRM(alloc)(u.unique_len + 1, DRM_MEM_DRIVER);
+	if(!dev->unique) return -ENOMEM;
 	if (copy_from_user(dev->unique, u.unique, dev->unique_len))
 		return -EFAULT;
+
 	dev->unique[dev->unique_len] = '\0';
 
 	dev->devname = DRM(alloc)(strlen(dev->name) + strlen(dev->unique) + 2,
 				  DRM_MEM_DRIVER);
+	if(!dev->devname) {
+		DRM(free)(dev->devname, sizeof(*dev->devname), DRM_MEM_DRIVER);
+		return -ENOMEM;
+	}
 	sprintf(dev->devname, "%s@%s", dev->name, dev->unique);
 
 #ifdef __alpha__

@@ -84,6 +84,7 @@ static int DRM(stub_getminor)(const char *name, struct file_operations *fops,
 	if (!DRM(stub_list)) {
 		DRM(stub_list) = DRM(alloc)(sizeof(*DRM(stub_list))
 					    * DRM_STUB_MAXCARDS, DRM_MEM_STUB);
+		if(!DRM(stub_list)) return -1;
 		for (i = 0; i < DRM_STUB_MAXCARDS; i++) {
 			DRM(stub_list)[i].name = NULL;
 			DRM(stub_list)[i].fops = NULL;

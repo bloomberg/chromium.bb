@@ -139,8 +139,8 @@ extern int  mga_dma_blit( struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg );
 
 				/* mga_warp.c */
-extern int mga_warp_install_microcode( drm_device_t *dev );
-extern int mga_warp_init( drm_device_t *dev );
+extern int mga_warp_install_microcode( drm_mga_private_t *dev_priv );
+extern int mga_warp_init( drm_mga_private_t *dev_priv );
 
 #define mga_flush_write_combine()	mb()
 
