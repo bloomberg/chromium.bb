@@ -1,7 +1,7 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fclist.c,v 1.11tsi Exp $
+ * $RCSId: xc/lib/fontconfig/src/fclist.c,v 1.11tsi Exp $
  *
- * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
+ * Copyright © 2000 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -128,7 +128,7 @@ FcListValueListMatchAny (FcValueList *v1orig,
 
     for (v1 = v1orig; v1; v1 = v1->next)
 	for (v2 = v2orig; v2; v2 = v2->next)
-	    if (FcConfigCompareValue (v2->value, FcOpContains, v1->value))
+	    if (FcConfigCompareValue (v1->value, FcOpContains, v2->value))
 		return FcTrue;
     return FcFalse;
 }

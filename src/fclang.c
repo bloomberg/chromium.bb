@@ -1,7 +1,7 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fclang.c,v 1.7 2002/08/26 23:34:31 keithp Exp $
+ * $RCSId: xc/lib/fontconfig/src/fclang.c,v 1.7 2002/08/26 23:34:31 keithp Exp $
  *
- * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
+ * Copyright © 2002 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -28,6 +28,11 @@ typedef struct {
     FcChar8	*lang;
     FcCharSet	charset;
 } FcLangCharSet;
+
+typedef struct {
+    int begin;
+    int end;
+} FcLangCharSetRange;
 
 #include "../fc-lang/fclang.h"
 
@@ -138,6 +143,37 @@ FcLangCompare (const FcChar8 *s1, const FcChar8 *s2)
     }
 }
 
+/*
+ * Return FcTrue when s1 contains s2. 
+ *
+ * s1 contains s2 if s1 equals s2 or if s1 is a
+ * language with a country and s2 is just a language
+ */
+
+static FcBool
+FcLangContains (const FcChar8 *s1, const FcChar8 *s2)
+{
+    FcChar8	    c1, c2;
+
+    for (;;)
+    {
+	c1 = *s1++;
+	c2 = *s2++;
+	
+	c1 = FcToLower (c1);
+	c2 = FcToLower (c2);
+	if (c1 != c2)
+	{
+	    /* see if s1 has a country while s2 is mising one */
+	    if (c1 == '-' && c2 == '\0')
+		return FcTrue;
+	    return FcFalse;
+	}
+	else if (!c1)
+	    return FcTrue;
+    }
+}
+
 const FcCharSet *
 FcCharSetForLang (const FcChar8 *lang)
 {
@@ -225,14 +261,53 @@ FcLangSetIndex (const FcChar8 *lang)
 {
     int	    low, high, mid;
     int	    cmp;
+    FcChar8 firstChar = FcToLower(lang[0]); 
+    
+    if (firstChar < 'a')
+    {
+	low = 0;
+	high = fcLangCharSetRanges[0].begin;
+    }
+    else if(firstChar > 'z')
+    {
+	low = fcLangCharSetRanges[25].begin;
+	high = NUM_LANG_CHAR_SET - 1;
+    }
+    else
+    {
+	low = fcLangCharSetRanges[firstChar - 'a'].begin;
+	high = fcLangCharSetRanges[firstChar - 'a'].end;
+	/* no matches */
+	if (low > high)
+	    return -low; /* next entry after where it would be */
+    }
 
-    low = 0;
-    high = NUM_LANG_CHAR_SET - 1;
     while (low <= high)
     {
 	mid = (high + low) >> 1;
-	cmp = FcStrCmpIgnoreCase (fcLangCharSets[mid].lang, lang);
-	if (cmp == 0) 
+	if(fcLangCharSets[mid].lang[0] != firstChar)
+	    cmp = FcStrCmpIgnoreCase(fcLangCharSets[mid].lang, lang);
+	else
+	{   /* fast path for resolving 2-letter languages (by far the most common) after
+	     * finding the first char (probably already true because of the hash table) */
+	    FcChar8 secondChar = FcToLower(lang[1]);
+	    if (fcLangCharSets[mid].lang[1] > secondChar) // check second chars
+	    {
+		high = mid - 1;
+		continue;
+	    }
+	    else if (fcLangCharSets[mid].lang[1] < secondChar)
+	    {
+		low = mid + 1;
+		continue;
+	    }
+	    else if (fcLangCharSets[mid].lang[2] == '\0' && lang[2] == '\0')
+		return mid;
+
+	    else /* identical through the first two charcters, but at least one string didn't end there */
+		cmp = FcStrCmpIgnoreCase(fcLangCharSets[mid].lang+2, lang+2);
+	}
+	if (cmp == 0)
 	    return mid;
 	if (cmp < 0)
 	    low = mid + 1;
@@ -412,32 +487,28 @@ FcLangSetHash (const FcLangSet *ls)
 FcLangSet *
 FcNameParseLangSet (const FcChar8 *string)
 {
-    FcChar8	    lang[32];
-    const FcChar8   *end, *next;
+    FcChar8	    lang[32],c;
+    int i;
     FcLangSet	    *ls;
 
     ls = FcLangSetCreate ();
     if (!ls)
 	goto bail0;
 
-    while (string && *string) 
+    for(;;)
     {
-	end = (FcChar8 *) strchr ((char *) string, '|');
-	if (!end)
+	for(i = 0; i < 31;i++)
 	{
-	    end = string + strlen ((char *) string);
-	    next = end;
+	    c = *string++;
+	    if(c == '\0' || c == '|')
+		break; /* end of this code */
+	    lang[i] = c;
 	}
-	else
-	    next = end + 1;
-	if (end - string < sizeof (lang) - 1)
-	{
-	    strncpy ((char *) lang, (char *) string, end - string);
-	    lang[end-string] = '\0';
-	    if (!FcLangSetAdd (ls, lang))
-		goto bail1;
-	}
-	string = next;
+	lang[i] = '\0';
+	if (!FcLangSetAdd (ls, lang))
+	    goto bail1;
+	if(c == '\0')
+	    break;
     }
     return ls;
 bail1:
@@ -482,7 +553,7 @@ FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls)
 	    if (!first)
 		if (!FcStrBufChar (buf, '|'))
 		    return FcFalse;
-	    if (!FcStrBufString (buf, extra));
+	    if (!FcStrBufString (buf, extra))
 		return FcFalse;
 	    first = FcFalse;
 	}
@@ -505,4 +576,116 @@ FcLangSetEqual (const FcLangSet *lsa, const FcLangSet *lsb)
     if (lsa->extra && lsb->extra)
 	return FcStrSetEqual (lsa->extra, lsb->extra);
     return FcFalse;
+}
+
+static FcBool
+FcLangSetContainsLang (const FcLangSet *ls, const FcChar8 *lang)
+{
+    int		    id;
+    FcLangResult    r;
+    int		    i;
+
+    id = FcLangSetIndex (lang);
+    if (id < 0)
+	id = -id - 1;
+    else if (FcLangSetBitGet (ls, id))
+	return FcTrue;
+    /*
+     * search up and down among equal languages for a match
+     */
+    for (i = id - 1; i >= 0; i--)
+    {
+	if (FcLangCompare (fcLangCharSets[i].lang, lang) == FcLangDifferentLang)
+	    break;
+	if (FcLangSetBitGet (ls, i) &&
+	    FcLangContains (fcLangCharSets[i].lang, lang))
+	    return FcTrue;
+    }
+    for (i = id; i < NUM_LANG_CHAR_SET; i++)
+    {
+	if (FcLangCompare (fcLangCharSets[i].lang, lang) == FcLangDifferentLang)
+	    break;
+	if (FcLangSetBitGet (ls, i) &&
+	    FcLangContains (fcLangCharSets[i].lang, lang))
+	    return FcTrue;
+    }
+    if (ls->extra)
+    {
+	FcStrList	*list = FcStrListCreate (ls->extra);
+	FcChar8		*extra;
+	FcLangResult	r;
+	
+	if (list)
+	{
+	    while ((extra = FcStrListNext (list)))
+	    {
+		if (FcLangContains (extra, lang))
+		    break;
+	    }
+	    FcStrListDone (list);
+    	    if (extra)
+		return FcTrue;
+	}
+    }
+    return FcFalse;
+}
+
+/*
+ * return FcTrue if lsa contains every language in lsb
+ */
+FcBool
+FcLangSetContains (const FcLangSet *lsa, const FcLangSet *lsb)
+{
+    int		    i, j;
+    FcChar32	    missing;
+
+    if (FcDebug() & FC_DBG_MATCHV)
+    {
+	printf ("FcLangSet "); FcLangSetPrint (lsa);
+	printf (" contains "); FcLangSetPrint (lsb);
+	printf ("\n");
+    }
+    /*
+     * check bitmaps for missing language support
+     */
+    for (i = 0; i < NUM_LANG_SET_MAP; i++)
+    {
+	missing = lsb->map[i] & ~lsa->map[i];
+	if (missing)
+	{
+	    for (j = 0; j < 32; j++)
+		if (missing & (1 << j)) 
+		{
+		    if (!FcLangSetContainsLang (lsa,
+						fcLangCharSets[i*32 + j].lang))
+		    {
+			if (FcDebug() & FC_DBG_MATCHV)
+			    printf ("\tMissing bitmap %s\n", fcLangCharSets[i*32+j].lang);
+			return FcFalse;
+		    }
+		}
+	}
+    }
+    if (lsb->extra)
+    {
+	FcStrList   *list = FcStrListCreate (lsb->extra);
+	FcChar8	    *extra;
+
+	if (list)
+	{
+	    while ((extra = FcStrListNext (list)))
+	    {
+		if (!FcLangSetContainsLang (lsa, extra))
+		{
+		    if (FcDebug() & FC_DBG_MATCHV)
+			printf ("\tMissing string %s\n", extra);
+		    break;
+		}
+	    }
+	    FcStrListDone (list);
+	    if (extra)
+		return FcFalse;
+	}
+    }
+    return FcTrue;
 }

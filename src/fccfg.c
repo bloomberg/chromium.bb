@@ -1,7 +1,7 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.23 2002/08/31 22:17:32 keithp Exp $
+ * $RCSId: xc/lib/fontconfig/src/fccfg.c,v 1.23 2002/08/31 22:17:32 keithp Exp $
  *
- * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
+ * Copyright © 2000 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -590,10 +590,10 @@ FcConfigCompareValue (const FcValue	m_o,
 	case FcTypeLangSet:
 	    switch (op) {
 	    case FcOpContains:
-		ret = FcLangSetCompare (v.u.l, m.u.l) != FcLangDifferentLang;
+		ret = FcLangSetContains (v.u.l, m.u.l);
 		break;
 	    case FcOpNotContains:
-		ret = FcLangSetCompare (v.u.l, m.u.l) == FcLangDifferentLang;
+		ret = FcLangSetContains (v.u.l, m.u.l);
 		break;
 	    case FcOpEqual:
 		ret = FcLangSetEqual (v.u.l, m.u.l);
