@@ -127,6 +127,12 @@
 	}								\
 } while (0)
 
+#define __HAVE_RELEASE 1
+#define DRIVER_RELEASE() do {				\
+	if ( dev->open_count == 1)			\
+                 radeon_do_release( dev );	\
+        } while (0)
+
 /* On unloading the module:
  *    - Free memory heap structure
  *    - Remove mappings made at startup and free dev_private.

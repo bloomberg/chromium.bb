@@ -193,6 +193,7 @@ extern int radeon_emit_and_wait_irq(drm_device_t *dev);
 extern int radeon_wait_irq(drm_device_t *dev, int swi_nr);
 extern int radeon_emit_irq(drm_device_t *dev);
 
+extern void radeon_do_release(drm_device_t *dev);
 
 /* Flags for stats.boxes
  */

@@ -1354,6 +1354,9 @@ int radeon_cp_stop( DRM_IOCTL_ARGS )
 
 	DRM_COPY_FROM_USER_IOCTL( stop, (drm_radeon_cp_stop_t *)data, sizeof(stop) );
 
+	if (!dev_priv->cp_running)
+		return 0;
+
 	/* Flush any pending CP commands.  This ensures any outstanding
 	 * commands are exectuted by the engine before we turn it off.
 	 */
@@ -1379,6 +1382,31 @@ int radeon_cp_stop( DRM_IOCTL_ARGS )
 	radeon_do_engine_reset( dev );
 
 	return 0;
+}
+
+
+void radeon_do_release( drm_device_t *dev )
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
+	printk("radeon_do_release: %p\n", dev_priv);
+
+	if (dev_priv) {
+		/* Stop the cp */
+		radeon_do_cp_flush( dev_priv );
+		radeon_do_cp_idle( dev_priv );
+		radeon_do_cp_stop( dev_priv );
+		radeon_do_engine_reset( dev );
+
+		/* Disable *all* interrupts */
+		RADEON_WRITE( RADEON_GEN_INT_CNTL, 0 );
+	
+		/* Destroy agp heap ??? */
+/* 		radeon_mem_takedown( &(dev_priv->agp_heap) );		 */
+
+		/* deallocate kernel resources */
+		radeon_do_cleanup_cp( dev );
+	}
 }
 
 /* Just reset the CP ring.  Called as part of an X Server engine reset.
@@ -1411,9 +1439,6 @@ int radeon_cp_idle( DRM_IOCTL_ARGS )
 	DRM_DEBUG( "\n" );
 
 	LOCK_TEST_WITH_RETURN( dev );
-
-/* 	if (dev->irq)  */
-/* 		radeon_emit_and_wait_irq( dev ); */
 
 	return radeon_do_cp_idle( dev_priv );
 }
