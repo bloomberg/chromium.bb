@@ -108,7 +108,7 @@ $AUTOCONF
 cd $ORIGDIR
 
 if test -z "$AUTOGEN_SUBDIR_MODE"; then
-	echo Running $srcdir/configure
+	echo Running $srcdir/configure --enable-maintainer-mode "$@"
         $srcdir/configure --enable-maintainer-mode "$@"
 
         echo 

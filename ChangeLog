@@ -1,9 +1,15 @@
 2004-12-04  Keith Packard  <keithp@keithp.com>
 
+	* autogen.sh:
+	Report command line for $srcdir/configure accurately.
+	Bug #212.
+
+2004-12-04  Keith Packard  <keithp@keithp.com>
+
 	* src/fcfreetype.c: (FcFreeTypeQuery):
 	Check for non-empty face->family_name and face->style_name
 	before using those for the font.  Empty names match everything.
-	Bug #171.
+	Bug #210.
 
 2004-12-04  Keith Packard  <keithp@keithp.com>
 
