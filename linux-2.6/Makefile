@@ -281,6 +281,7 @@ $(MODULE_LIST)::
 
 install: modules 
 	cp -p $(MODULE_LIST:.o=.ko) /lib/modules/$(RUNNING_REL)/kernel/drivers/char/drm
+	depmod -A
 
 
 # Build test utilities
