@@ -1,14 +1,13 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_mm.c,v 1.2 2000/08/04 03:51:48 tsi Exp $ */
 
 #define __NO_VERSION__
-#include <linux/fb.h>
-#include <linux/sisfb.h>
-#include <linux/interrupt.h>
-
 #include "drmP.h"
 #include "sis_drm_public.h"
 #include "sis_ds.h"
 #include "sis_drv.h"
+#include <linux/fb.h>
+#include <linux/sisfb.h>
+#include <linux/interrupt.h>
 
 #define MAX_CONTEXT 100
 #define VIDEO_TYPE 0 
