@@ -112,7 +112,7 @@ main (int argc, char **argv)
 	return 1;
     }
     if (argv[i])
-	pat = FcNameParse ((const FcChar8 *)argv[i]);
+	pat = FcNameParse ((FcChar8 *) argv[i]);
     else
 	pat = FcPatternCreate ();
     

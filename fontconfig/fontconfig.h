@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.2 2002/02/15 06:01:27 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.3 2002/02/19 07:50:43 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -400,11 +400,25 @@ FcObjectSet *
 FcObjectSetBuild (const char *first, ...);
 
 FcFontSet *
+FcFontSetList (FcConfig	    *config,
+	       FcFontSet    **sets,
+	       int	    nsets,
+	       FcPattern    *p,
+	       FcObjectSet  *os);
+
+FcFontSet *
 FcFontList (FcConfig	*config,
 	    FcPattern	*p,
 	    FcObjectSet *os);
 
 /* fcmatch.c */
+FcPattern *
+FcFontSetMatch (FcConfig    *config,
+		FcFontSet   **sets,
+		int	    nsets,
+		FcPattern   *p,
+		FcResult    *result);
+
 FcPattern *
 FcFontMatch (FcConfig	*config,
 	     FcPattern	*p, 

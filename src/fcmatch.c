@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -239,16 +239,18 @@ FcCompare (FcPattern	*pat,
 }
 
 FcPattern *
-FcFontMatch (FcConfig	*config,
-	     FcPattern	*p, 
-	     FcResult	*result)
+FcFontSetMatch (FcConfig    *config,
+		FcFontSet   **sets,
+		int	    nsets,
+		FcPattern   *p,
+		FcResult    *result)
 {
     double    	    score[NUM_MATCHER], bestscore[NUM_MATCHER];
     int		    f;
     FcFontSet	    *s;
     FcPattern	    *best;
     FcPattern	    *new;
-    FcPatternElt   *fe, *pe;
+    FcPatternElt    *fe, *pe;
     FcValue	    v;
     int		    i;
     FcSetName	    set;
@@ -267,9 +269,9 @@ FcFontMatch (FcConfig	*config,
 	if (!config)
 	    return 0;
     }
-    for (set = FcSetSystem; set <= FcSetApplication; set++)
+    for (set = 0; set < nsets; set++)
     {
-	s = config->fonts[set];
+	s = sets[set];
 	if (!s)
 	    continue;
 	for (f = 0; f < s->nfont; f++)
@@ -345,4 +347,26 @@ FcFontMatch (FcConfig	*config,
     }
     FcConfigSubstitute (config, new, FcMatchFont);
     return new;
+}
+
+FcPattern *
+FcFontMatch (FcConfig	*config,
+	     FcPattern	*p, 
+	     FcResult	*result)
+{
+    FcFontSet	*sets[2];
+    int		nsets;
+
+    if (!config)
+    {
+	config = FcConfigGetCurrent ();
+	if (!config)
+	    return 0;
+    }
+    nsets = 0;
+    if (config->fonts[FcSetSystem])
+	sets[nsets++] = config->fonts[FcSetSystem];
+    if (config->fonts[FcSetApplication])
+	sets[nsets++] = config->fonts[FcSetApplication];
+    return FcFontSetMatch (config, sets, nsets, p, result);
 }
