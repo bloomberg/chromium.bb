@@ -81,6 +81,9 @@ PRGLIBS =
 # This may not be correct, but it is the best assumption we can make.
 
 VERSION := $(shell uname -r)
+# For Red Hat...
+RHVERS := $(shell uname -r)custom
+
 A := /lib/modules/$(VERSION)/build/include
 B := /usr/src/linux-$(VERSION)/include
 C := /usr/src/linux/include
@@ -91,22 +94,30 @@ V := $(shell gcc -E -nostdinc -I$A picker.c 2>/dev/null \
 ifeq ($(V),"$(VERSION)")
 TREE := $A
 else
+ifeq ($(V),"$(RHVERS)")
+  TREE := $A
+else
   V := $(shell gcc -E -nostdinc -I$B picker.c 2>/dev/null \
         | grep -s 'RELEASE = ' | cut -d' ' -f3)
 ifeq ($(V),"$(VERSION)")
-  TREE := $B
+    TREE := $B
 else
-    V := $(shell gcc -E -nostdinc -I$C picker.c 2>/dev/null \
+ifeq ($(V),"$(RHVERS)")
+      TREE := $B
+else
+      V := $(shell gcc -E -nostdinc -I$C picker.c 2>/dev/null \
           | grep -s 'RELEASE = ' | cut -d' ' -f3)
 ifeq ($(V),"$(VERSION)")
-  TREE := $C
+        TREE := $C
 else
-    V := $(shell gcc -E -nostdinc -I$D picker.c 2>/dev/null \
+        V := $(shell gcc -E -nostdinc -I$D picker.c 2>/dev/null \
           | grep -s 'RELEASE = ' | cut -d' ' -f3)
 ifeq ($(V),"$(VERSION)")
-    TREE := $D
+          TREE := $D
 else
-    TREE := 0
+          TREE := 0
+endif
+endif
 endif
 endif
 endif
@@ -124,11 +135,16 @@ MODVERSIONS := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'AGP = ' | cut -d' ' -f3)
 MACHINE := $(shell echo `uname -m`)
+# Red Hat's kernels have 4 args to do_munmap()
+DOMUNMAP := $(shell grep do_munmap $(TREE)/linux/mm.h | grep -c acct)
 ifeq ($(AGP),0)
 AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'AGP_MODULE = ' | cut -d' ' -f3)
 endif
 
+ifeq ($(DOMUNMAP),1)
+MODCFLAGS += -DDO_MUNMAP_4_ARGS
+endif
 ifeq ($(AGP),1)
 MODCFLAGS += -DCONFIG_AGP -DCONFIG_AGP_MODULE
 DRMTEMPLATES += drm_agpsupport.h
