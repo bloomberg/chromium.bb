@@ -273,6 +273,10 @@
 			<int>0x3000</int>	<!-- CJK space -->
 			<int>0x3164</int>	<!-- HANGUL FILLER -->
 			<int>0xfeff</int>	<!-- zero width no-break space -->
+			<int>0xffa0</int>	<!-- HALFWIDTH HANGUL FILLER -->
+			<int>0xfff9</int>	<!-- INTERLINEAR ANNOTATION ANCHOR -->
+			<int>0xfffa</int>	<!-- INTERLINEAR ANNOTATION SEPARATOR -->
+			<int>0xfffa</int>	<!-- INTERLINEAR ANNOTATION TERMINATOR -->
 		</blank>
 <!--
   Rescan configuration every 30 seconds when FcFontSetList is called
