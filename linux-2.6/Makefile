@@ -111,7 +111,7 @@ VIAHEADERS	= via_drm.h via_drv.h via.h via_mm.h via_ds.h \
 		via_3d_reg.h $(DRMHEADERS) $(DRMTEMPLATES)
 VIASHARED	= via_drm.h via_drv.h via.h via_mm.h via_ds.h \
 		via_3d_reg.h via_drv.c via_ds.c via_irq.c via_map.c \
-		via_mm.c via_dma.c via_verifier.c
+		via_mm.c via_dma.c via_verifier.c via_verifier.h
 MACH64HEADERS	= mach64.h mach64_drv.h mach64_drm.h $(DRMHEADERS) \
 		$(DRMTEMPLATES)
 MACH64SHARED 	= mach64.h mach64_drv.h mach64_drm.h mach64_dma.c \
@@ -279,7 +279,7 @@ clean cleandir:
 $(MODULE_LIST)::
 	make DRM_MODULES=$@ modules
 
-install: 
+install: modules 
 	cp -p $(MODULE_LIST:.o=.ko) /lib/modules/$(RUNNING_REL)/kernel/drivers/char/drm
 
 
