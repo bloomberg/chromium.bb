@@ -2,6 +2,7 @@
  * Created: Thu Oct  7 10:50:22 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,12 +25,12 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * Authors:
- *    Rickard E. (Rik) Faith <faith@precisioninsight.com>
- *
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
+ *    Daryll Strauss <daryll@valinux.com>
+ *    Sung-Ching Lin <sclin@sis.com.tw>
+ * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_context.c,v 1.2 2000/08/04 03:51:47 tsi Exp $ */
-
-#include <linux/sched.h>
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_context.c,v 1.5 2000/08/28 02:43:16 tsi Exp $ */
 
 #define __NO_VERSION__
 #include "drmP.h"
@@ -39,9 +40,7 @@ extern drm_ctx_t sis_res_ctx;
 
 static int sis_alloc_queue(drm_device_t *dev)
 {
-	static int context = 0;
-
-	return ++context;	/* Should this reuse contexts in the future? */
+	return drm_ctxbitmap_next(dev);
 }
 
 int sis_context_switch(drm_device_t *dev, int old, int new)
@@ -138,10 +137,15 @@ int sis_addctx(struct inode *inode, struct file *filp, unsigned int cmd,
 		ctx.handle = sis_alloc_queue(dev);
 	}
 	DRM_DEBUG("%d\n", ctx.handle);
-	
+	if (ctx.handle == -1) {
+		DRM_DEBUG("Not enough free contexts.\n");
+				/* Should this return -EBUSY instead? */
+		return -ENOMEM;
+	}
+   
 	/* new added */
 	sis_init_context(ctx.handle);
-	
+
 	copy_to_user_ret((drm_ctx_t *)arg, &ctx, sizeof(ctx), -EFAULT);
 	return 0;
 }
@@ -198,16 +202,13 @@ int sis_newctx(struct inode *inode, struct file *filp, unsigned int cmd,
 int sis_rmctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	       unsigned long arg)
 {
+	drm_file_t      *priv   = filp->private_data;
+	drm_device_t    *dev    = priv->dev;
 	drm_ctx_t	ctx;
 
 	copy_from_user_ret(&ctx, (drm_ctx_t *)arg, sizeof(ctx), -EFAULT);
 	DRM_DEBUG("%d\n", ctx.handle);
-				/* This is currently a noop because we
-				   don't reuse context values.  Perhaps we
-				   should? */
-	
-	/* new added */
-	sis_final_context(ctx.handle);
+	drm_ctxbitmap_free(dev, ctx.handle);
 
 	return 0;
 }
