@@ -55,10 +55,18 @@ FcConfigCreate (void)
     if (!config->fontDirs)
 	goto bail3;
     
+    config->acceptGlobs = FcStrSetCreate ();
+    if (!config->acceptGlobs)
+	goto bail4;
+
+    config->rejectGlobs = FcStrSetCreate ();
+    if (!config->rejectGlobs)
+	goto bail5;
+
     config->cache = 0;
     if (FcConfigHome())
 	if (!FcConfigSetCache (config, (FcChar8 *) ("~/" FC_USER_CACHE_FILE)))
-	    goto bail4;
+	    goto bail6;
 
     config->blanks = 0;
 
@@ -73,6 +81,10 @@ FcConfigCreate (void)
     
     return config;
 
+bail6:
+    FcStrSetDestroy (config->rejectGlobs);
+bail5:
+    FcStrSetDestroy (config->acceptGlobs);
 bail4:
     FcStrSetDestroy (config->fontDirs);
 bail3:
@@ -159,6 +171,8 @@ FcConfigDestroy (FcConfig *config)
     FcStrSetDestroy (config->configDirs);
     FcStrSetDestroy (config->fontDirs);
     FcStrSetDestroy (config->configFiles);
+    FcStrSetDestroy (config->acceptGlobs);
+    FcStrSetDestroy (config->rejectGlobs);
 
     FcStrFree (config->cache);
 
@@ -203,7 +217,8 @@ FcConfigBuildFonts (FcConfig *config)
     {
 	if (FcDebug () & FC_DBG_FONTSET)
 	    printf ("scan dir %s\n", dir);
-	FcDirScan (fonts, config->fontDirs, cache, config->blanks, dir, FcFalse);
+	FcDirScanConfig (fonts, config->fontDirs, cache, 
+			 config->blanks, dir, FcFalse, config);
     }
     
     FcStrListDone (list);
@@ -1620,7 +1635,7 @@ FcConfigAppFontAddFile (FcConfig    *config,
 	FcConfigSetFonts (config, set, FcSetApplication);
     }
 	
-    if (!FcFileScan (set, subdirs, 0, config->blanks, file, FcFalse))
+    if (!FcFileScanConfig (set, subdirs, 0, config->blanks, file, FcFalse, config))
     {
 	FcStrSetDestroy (subdirs);
 	return FcFalse;
@@ -1667,7 +1682,7 @@ FcConfigAppFontAddDir (FcConfig	    *config,
 	FcConfigSetFonts (config, set, FcSetApplication);
     }
     
-    if (!FcDirScan (set, subdirs, 0, config->blanks, dir, FcFalse))
+    if (!FcDirScanConfig (set, subdirs, 0, config->blanks, dir, FcFalse, config))
     {
 	FcStrSetDestroy (subdirs);
 	return FcFalse;
@@ -1687,4 +1702,77 @@ void
 FcConfigAppFontClear (FcConfig	    *config)
 {
     FcConfigSetFonts (config, 0, FcSetApplication);
+}
+
+/*
+ * Manage filename-based font source selectors
+ */
+
+FcBool
+FcConfigGlobAdd (FcConfig	*config,
+		 const FcChar8  *glob,
+		 FcBool		accept)
+{
+    FcStrSet	*set = accept ? config->acceptGlobs : config->rejectGlobs;
+
+    return FcStrSetAdd (set, glob);
+}
+
+static FcBool
+FcConfigGlobMatch (const FcChar8    *glob,
+		   const FcChar8    *string)
+{
+    FcChar8	c;
+
+    while ((c = *glob++)) 
+    {
+	switch (c) {
+	case '*':
+	    /* short circuit common case */
+	    if (!*glob)
+		return FcTrue;
+	    /* short circuit another common case */
+	    if (strchr ((char *) glob, '*') == 0)
+		string += strlen ((char *) string) - strlen ((char *) glob);
+	    while (*string)
+	    {
+		if (FcConfigGlobMatch (glob, string))
+		    return FcTrue;
+		string++;
+	    }
+	    return FcFalse;
+	case '?':
+	    if (*string++ == '\0')
+		return FcFalse;
+	    break;
+	default:
+	    if (*string++ != c)
+		return FcFalse;
+	    break;
+	}
+    }
+    return *string == '\0';
+}
+
+static FcBool
+FcConfigGlobsMatch (const FcStrSet	*globs,
+		    const FcChar8	*string)
+{
+    int	i;
+
+    for (i = 0; i < globs->num; i++)
+	if (FcConfigGlobMatch (globs->strs[i], string))
+	    return FcTrue;
+    return FcFalse;
+}
+
+FcBool
+FcConfigAcceptFilename (FcConfig	*config,
+			const FcChar8	*filename)
+{
+    if (FcConfigGlobsMatch (config->acceptGlobs, filename))
+	return FcTrue;
+    if (FcConfigGlobsMatch (config->rejectGlobs, filename))
+	return FcFalse;
+    return FcTrue;
 }

@@ -324,6 +324,11 @@ struct _FcConfig {
     FcSubst	*substFont;	    /* substitutions for fonts */
     int		maxObjects;	    /* maximum number of tests in all substs */
     /*
+     * List of patterns used to control font file selection
+     */
+    FcStrSet	*acceptGlobs;
+    FcStrSet	*rejectGlobs;
+    /*
      * The set of fonts loaded from the listed directories; the
      * order within the set does not determine the font selection,
      * except in the case of identical matches in which case earlier fonts
@@ -375,7 +380,8 @@ FcBool
 FcGlobalCacheScanDir (FcFontSet		*set,
 		      FcStrSet		*dirs,
 		      FcGlobalCache	*cache,
-		      const FcChar8	*dir);
+		      const FcChar8	*dir,
+		      FcConfig		*config);
 
 FcGlobalCacheFile *
 FcGlobalCacheFileGet (FcGlobalCache *cache,
@@ -399,7 +405,10 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 		   const FcChar8    *cache_file);
 
 FcBool
-FcDirCacheReadDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir);
+FcDirCacheReadDir (FcFontSet	    *set, 
+		   FcStrSet	    *dirs,
+		   const FcChar8    *dir,
+		   FcConfig	    *config);
 
 FcBool
 FcDirCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir);
@@ -446,6 +455,15 @@ FcConfigCompareValue (const FcValue m,
 		      FcOp	    op,
 		      const FcValue v);
 
+FcBool
+FcConfigGlobAdd (FcConfig	*config,
+		 const FcChar8	*glob,
+		 FcBool		accept);
+
+FcBool
+FcConfigAcceptFilename (FcConfig	*config,
+			const FcChar8	*filename);
+
 /* fccharset.c */
 FcCharSet *
 FcCharSetFreeze (FcCharSet *cs);
@@ -485,6 +503,24 @@ int
 FcDebug (void);
 
 /* fcdir.c */
+
+FcBool
+FcFileScanConfig (FcFontSet	*set,
+		  FcStrSet	*dirs,
+		  FcFileCache	*cache,
+		  FcBlanks	*blanks,
+		  const FcChar8 *file,
+		  FcBool	force,
+		  FcConfig	*config);
+
+FcBool
+FcDirScanConfig (FcFontSet	*set,
+		 FcStrSet	*dirs,
+		 FcFileCache	*cache,
+		 FcBlanks	*blanks,
+		 const FcChar8  *dir,
+		 FcBool		force,
+		 FcConfig	*config);
 
 /* fcfont.c */
 int

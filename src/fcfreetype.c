@@ -1575,7 +1575,7 @@ FcFreeTypeUseNames (FT_Face face)
     if (!FT_Has_PS_Glyph_Names (face))
 	return FcFalse;
     for (map = 0; map < face->num_charmaps; map++)
-	if (face->charmaps[map]->encoding == FT_ENCODING_ADOBE_CUSTOM)
+	if (face->charmaps[map]->encoding == ft_encoding_adobe_custom)
 	    return FcTrue;
     return FcFalse;
 }

@@ -317,6 +317,11 @@ typedef enum _FcElement {
     FcElementDefault,
     FcElementFamily,
 
+    FcElementSelectfont,
+    FcElementAcceptfont,
+    FcElementRejectfont,
+    FcElementGlob,
+
     FcElementTest,
     FcElementEdit,
     FcElementInt,
@@ -373,6 +378,11 @@ FcElementMap (const XML_Char *name)
 	{ "default",	FcElementDefault },
 	{ "family",	FcElementFamily },
 
+	{ "selectfont",	FcElementSelectfont },
+	{ "acceptfont",	FcElementAcceptfont },
+	{ "rejectfont",	FcElementRejectfont },
+	{ "glob",	FcElementGlob },
+
 	{ "test",	FcElementTest },
 	{ "edit",	FcElementEdit },
 	{ "int",	FcElementInt },
@@ -428,6 +438,7 @@ typedef enum _FcVStackTag {
     FcVStackFamily,
     FcVStackField,
     FcVStackConstant,
+    FcVStackGlob,
     
     FcVStackPrefer,
     FcVStackAccept,
@@ -544,6 +555,7 @@ FcVStackDestroy (FcVStack *vstack)
 	case FcVStackFamily:
 	case FcVStackField:
 	case FcVStackConstant:
+	case FcVStackGlob:
 	    FcStrFree (vstack->u.string);
 	    break;
 	case FcVStackInteger:
@@ -1640,6 +1652,30 @@ FcParseMatch (FcConfigParse *parse)
 }
 
 static void
+FcParseAcceptRejectFont (FcConfigParse *parse, FcElement element)
+{
+    FcVStack	*vstack;
+
+    while ((vstack = FcVStackPop (parse)))
+    {
+	switch (vstack->tag) {
+	case FcVStackGlob:
+	    if (!FcConfigGlobAdd (parse->config, 
+				  vstack->u.string,
+				  element == FcElementAcceptfont))
+	    {
+		FcConfigMessage (parse, FcSevereError, "out of memory");
+	    }
+	    break;
+	default:
+	    FcConfigMessage (parse, FcSevereWarning, "bad font selector");
+	    break;
+	}
+	FcVStackDestroy (vstack);
+    }
+}
+
+static void
 FcEndElement(void *userData, const XML_Char *name)
 {
     FcConfigParse   *parse = userData;
@@ -1761,7 +1797,15 @@ FcEndElement(void *userData, const XML_Char *name)
     case FcElementCharset:
 /*	FcParseCharset (parse); */
 	break;
-
+    case FcElementSelectfont:
+	break;
+    case FcElementAcceptfont:
+    case FcElementRejectfont:
+	FcParseAcceptRejectFont (parse, parse->pstack->element);
+	break;
+    case FcElementGlob:
+	FcParseString (parse, FcVStackGlob);
+	break;
     case FcElementName:
 	FcParseString (parse, FcVStackField);
 	break;

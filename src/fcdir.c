@@ -36,12 +36,13 @@ FcFileIsDir (const FcChar8 *file)
 }
 
 FcBool
-FcFileScan (FcFontSet	    *set,
-	    FcStrSet	    *dirs,
-	    FcGlobalCache   *cache,
-	    FcBlanks	    *blanks,
-	    const FcChar8   *file,
-	    FcBool	    force)
+FcFileScanConfig (FcFontSet	*set,
+		  FcStrSet	*dirs,
+		  FcGlobalCache *cache,
+		  FcBlanks	*blanks,
+		  const FcChar8	*file,
+		  FcBool	force,
+		  FcConfig	*config)
 {
     int			id;
     FcChar8		*name;
@@ -53,6 +54,9 @@ FcFileScan (FcFontSet	    *set,
     FcGlobalCacheDir	*cache_dir;
     FcBool		need_scan;
     
+    if (config && !FcConfigAcceptFilename (config, file))
+	return FcTrue;
+
     if (force)
 	cache = 0;
     id = 0;
@@ -151,6 +155,17 @@ FcFileScan (FcFontSet	    *set,
     return ret;
 }
 
+FcBool
+FcFileScan (FcFontSet	    *set,
+	    FcStrSet	    *dirs,
+	    FcGlobalCache   *cache,
+	    FcBlanks	    *blanks,
+	    const FcChar8   *file,
+	    FcBool	    force)
+{
+    return FcFileScanConfig (set, dirs, cache, blanks, file, force, 0);
+}
+
 #define FC_MAX_FILE_LEN	    4096
 
 /*
@@ -159,12 +174,13 @@ FcFileScan (FcFontSet	    *set,
  */
 
 FcBool
-FcDirScan (FcFontSet	    *set,
-	   FcStrSet	    *dirs,
-	   FcGlobalCache    *cache,
-	   FcBlanks	    *blanks,
-	   const FcChar8    *dir,
-	   FcBool	    force)
+FcDirScanConfig (FcFontSet	*set,
+		 FcStrSet	*dirs,
+		 FcGlobalCache  *cache,
+		 FcBlanks	*blanks,
+		 const FcChar8  *dir,
+		 FcBool		force,
+		 FcConfig	*config)
 {
     DIR			*d;
     struct dirent	*e;
@@ -172,12 +188,15 @@ FcDirScan (FcFontSet	    *set,
     FcChar8		*base;
     FcBool		ret = FcTrue;
 
+    if (config && !FcConfigAcceptFilename (config, dir))
+	return FcTrue;
+
     if (!force)
     {
 	/*
 	 * Check fonts.cache-<version> file
 	 */
-	if (FcDirCacheReadDir (set, dirs, dir))
+	if (FcDirCacheReadDir (set, dirs, dir, config))
 	{
 	    if (cache)
 		FcGlobalCacheReferenceSubdir (cache, dir);
@@ -187,7 +206,7 @@ FcDirScan (FcFontSet	    *set,
 	/*
 	 * Check ~/.fonts.cache-<version> file
 	 */
-	if (cache && FcGlobalCacheScanDir (set, dirs, cache, dir))
+	if (cache && FcGlobalCacheScanDir (set, dirs, cache, dir, config))
 	    return FcTrue;
     }
     
@@ -218,7 +237,7 @@ FcDirScan (FcFontSet	    *set,
 	if (e->d_name[0] != '.' && strlen (e->d_name) < FC_MAX_FILE_LEN)
 	{
 	    strcpy ((char *) base, (char *) e->d_name);
-	    ret = FcFileScan (set, dirs, cache, blanks, file, force);
+	    ret = FcFileScanConfig (set, dirs, cache, blanks, file, force, config);
 	}
     }
     free (file);
@@ -231,6 +250,17 @@ FcDirScan (FcFontSet	    *set,
 	FcGlobalCacheUpdate (cache, dir, 0, 0);
 	
     return ret;
+}
+
+FcBool
+FcDirScan (FcFontSet	    *set,
+	   FcStrSet	    *dirs,
+	   FcGlobalCache    *cache,
+	   FcBlanks	    *blanks,
+	   const FcChar8    *dir,
+	   FcBool	    force)
+{
+    return FcDirScanConfig (set, dirs, cache, blanks, dir, force, 0);
 }
 
 FcBool
