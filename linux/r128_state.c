@@ -372,8 +372,6 @@ static void r128_cce_dispatch_clear( drm_device_t *dev,
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	r128_update_ring_snapshot( dev_priv );
-
 	if ( dev_priv->page_flipping && dev_priv->current_page == 1 ) {
 		unsigned int tmp = flags;
 
@@ -477,8 +475,6 @@ static void r128_cce_dispatch_swap( drm_device_t *dev )
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	r128_update_ring_snapshot( dev_priv );
-
 #if R128_PERFORMANCE_BOXES
 	/* Do some trivial performance monitoring...
 	 */
@@ -535,8 +531,6 @@ static void r128_cce_dispatch_flip( drm_device_t *dev )
 	RING_LOCALS;
 	DRM_DEBUG( "%s: page=%d\n", __FUNCTION__, dev_priv->current_page );
 
-	r128_update_ring_snapshot( dev_priv );
-
 #if R128_PERFORMANCE_BOXES
 	/* Do some trivial performance monitoring...
 	 */
@@ -586,8 +580,6 @@ static void r128_cce_dispatch_vertex( drm_device_t *dev,
 	RING_LOCALS;
 	DRM_DEBUG( "%s: buf=%d nbox=%d\n",
 		   __FUNCTION__, buf->idx, sarea_priv->nbox );
-
-	r128_update_ring_snapshot( dev_priv );
 
 	if ( 0 )
 		r128_print_dirty( "dispatch_vertex", sarea_priv->dirty );
@@ -656,8 +648,6 @@ static void r128_cce_dispatch_indirect( drm_device_t *dev,
 	DRM_DEBUG( "indirect: buf=%d s=0x%x e=0x%x\n",
 		   buf->idx, start, end );
 
-	r128_update_ring_snapshot( dev_priv );
-
 	if ( start != end ) {
 		int offset = buf->bus_address + start;
 		int dwords = (end - start + 3) / sizeof(u32);
@@ -721,8 +711,6 @@ static void r128_cce_dispatch_indices( drm_device_t *dev,
 	int i = 0;
 	RING_LOCALS;
 	DRM_DEBUG( "indices: s=%d e=%d c=%d\n", start, end, count );
-
-	r128_update_ring_snapshot( dev_priv );
 
 	if ( 0 )
 		r128_print_dirty( "dispatch_indices", sarea_priv->dirty );
@@ -798,8 +786,6 @@ static int r128_cce_dispatch_blit( drm_device_t *dev,
 	int dword_shift, dwords;
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
-
-	r128_update_ring_snapshot( dev_priv );
 
 	/* The compiler won't optimize away a division by a variable,
 	 * even if the only legal values are powers of two.  Thus, we'll
@@ -911,8 +897,6 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	r128_update_ring_snapshot( dev_priv );
-
 	count = depth->n;
 	if ( copy_from_user( &x, depth->x, sizeof(x) ) ) {
 		return -EFAULT;
@@ -1005,8 +989,6 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 	int i;
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
-
-	r128_update_ring_snapshot( dev_priv );
 
 	count = depth->n;
 
@@ -1123,8 +1105,6 @@ static int r128_cce_dispatch_read_span( drm_device_t *dev,
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	r128_update_ring_snapshot( dev_priv );
-
 	count = depth->n;
 	if ( copy_from_user( &x, depth->x, sizeof(x) ) ) {
 		return -EFAULT;
@@ -1166,8 +1146,6 @@ static int r128_cce_dispatch_read_pixels( drm_device_t *dev,
 	int i;
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
-
-	r128_update_ring_snapshot( dev_priv );
 
 	count = depth->n;
 	if ( count > dev_priv->depth_pitch ) {
@@ -1235,8 +1213,6 @@ static void r128_cce_dispatch_stipple( drm_device_t *dev, u32 *stipple )
 	int i;
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
-
-	r128_update_ring_snapshot( dev_priv );
 
 	BEGIN_RING( 33 );
 

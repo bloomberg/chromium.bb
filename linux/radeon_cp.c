@@ -1166,30 +1166,15 @@ int radeon_wait_ring( drm_radeon_private_t *dev_priv, int n )
 	int i;
 
 	for ( i = 0 ; i < dev_priv->usec_timeout ; i++ ) {
-		ring->space = *ring->head - ring->tail;
-		if ( ring->space <= 0 )
-			ring->space += ring->size;
-
-		if ( ring->space >= n )
+		radeon_update_ring_snapshot( ring );
+		if ( ring->space > n )
 			return 0;
-
 		udelay( 1 );
 	}
 
 	/* FIXME: This return value is ignored in the BEGIN_RING macro! */
 	DRM_ERROR( "failed!\n" );
 	return -EBUSY;
-}
-
-void radeon_update_ring_snapshot( drm_radeon_private_t *dev_priv )
-{
-	drm_radeon_ring_buffer_t *ring = &dev_priv->ring;
-
-	ring->space = *ring->head - ring->tail;
-	if ( ring->space == 0 )
-		atomic_inc( &dev_priv->idle_count );
-	if ( ring->space <= 0 )
-		ring->space += ring->size;
 }
 
 static int radeon_cp_get_buffers( drm_device_t *dev, drm_dma_t *d )

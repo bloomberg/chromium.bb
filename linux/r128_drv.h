@@ -130,7 +130,14 @@ extern void r128_freelist_reset( drm_device_t *dev );
 extern drm_buf_t *r128_freelist_get( drm_device_t *dev );
 
 extern int r128_wait_ring( drm_r128_private_t *dev_priv, int n );
-extern void r128_update_ring_snapshot( drm_r128_private_t *dev_priv );
+
+static inline void
+r128_update_ring_snapshot( drm_r128_ring_buffer_t *ring )
+{
+	ring->space = (*(volatile int *)ring->head - ring->tail) * sizeof(u32);
+	if ( ring->space <= 0 )
+		ring->space += ring->size;
+}
 
 extern int r128_do_cce_idle( drm_r128_private_t *dev_priv );
 extern int r128_do_cleanup_cce( drm_device_t *dev );
@@ -415,9 +422,7 @@ do {									\
 	drm_r128_ring_buffer_t *ring = &dev_priv->ring; int i;		\
 	if ( ring->space < ring->high_mark ) {				\
 		for ( i = 0 ; i < dev_priv->usec_timeout ; i++ ) {	\
-			ring->space = *ring->head - ring->tail;		\
-			if ( ring->space <= 0 )				\
-				ring->space += ring->size;		\
+			r128_update_ring_snapshot( ring );		\
 			if ( ring->space >= ring->high_mark )		\
 				goto __ring_space_done;			\
 			udelay( 1 );					\
@@ -462,7 +467,7 @@ do {									\
 		DRM_INFO( "BEGIN_RING( %d ) in %s\n",			\
 			   (n), __FUNCTION__ );				\
 	}								\
-	if ( dev_priv->ring.space < (n) * sizeof(u32) ) {		\
+	if ( dev_priv->ring.space <= (n) * sizeof(u32) ) {		\
 		r128_wait_ring( dev_priv, (n) * sizeof(u32) );		\
 	}								\
 	dev_priv->ring.space -= (n) * sizeof(u32);			\

@@ -498,8 +498,6 @@ static void radeon_cp_dispatch_clear( drm_device_t *dev,
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	radeon_update_ring_snapshot( dev_priv );
-
 	if ( dev_priv->page_flipping && dev_priv->current_page == 1 ) {
 		unsigned int tmp = flags;
 
@@ -656,8 +654,6 @@ static void radeon_cp_dispatch_swap( drm_device_t *dev )
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	radeon_update_ring_snapshot( dev_priv );
-
 #if RADEON_PERFORMANCE_BOXES
 	/* Do some trivial performance monitoring...
 	 */
@@ -725,8 +721,6 @@ static void radeon_cp_dispatch_flip( drm_device_t *dev )
 	RING_LOCALS;
 	DRM_DEBUG( "%s: page=%d\n", __FUNCTION__, dev_priv->current_page );
 
-	radeon_update_ring_snapshot( dev_priv );
-
 #if RADEON_PERFORMANCE_BOXES
 	/* Do some trivial performance monitoring...
 	 */
@@ -776,8 +770,6 @@ static void radeon_cp_dispatch_vertex( drm_device_t *dev,
 	int i = 0;
 	RING_LOCALS;
 	DRM_DEBUG( "%s: nbox=%d\n", __FUNCTION__, sarea_priv->nbox );
-
-	radeon_update_ring_snapshot( dev_priv );
 
 	if ( 0 )
 		radeon_print_dirty( "dispatch_vertex", sarea_priv->dirty );
@@ -845,8 +837,6 @@ static void radeon_cp_dispatch_indirect( drm_device_t *dev,
 	DRM_DEBUG( "indirect: buf=%d s=0x%x e=0x%x\n",
 		   buf->idx, start, end );
 
-	radeon_update_ring_snapshot( dev_priv );
-
 	if ( start != end ) {
 		int offset = (dev_priv->agp_buffers_offset
 			      + buf->offset + start);
@@ -908,8 +898,6 @@ static void radeon_cp_dispatch_indices( drm_device_t *dev,
 	int i = 0;
 	RING_LOCALS;
 	DRM_DEBUG( "indices: s=%d e=%d c=%d\n", start, end, count );
-
-	radeon_update_ring_snapshot( dev_priv );
 
 	if ( 0 )
 		radeon_print_dirty( "dispatch_indices", sarea_priv->dirty );
@@ -1143,8 +1131,6 @@ static void radeon_cp_dispatch_stipple( drm_device_t *dev, u32 *stipple )
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	radeon_update_ring_snapshot( dev_priv );
-
 	BEGIN_RING( 35 );
 
 	OUT_RING( CP_PACKET0( RADEON_RE_STIPPLE_ADDR, 0 ) );
@@ -1179,7 +1165,6 @@ int radeon_cp_clear( struct inode *inode, struct file *filp,
 	if ( copy_from_user( &clear, (drm_radeon_clear_t *)arg,
 			     sizeof(clear) ) )
 		return -EFAULT;
-
 
 	RING_SPACE_TEST_WITH_RETURN( dev_priv );
 

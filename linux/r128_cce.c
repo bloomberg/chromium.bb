@@ -839,32 +839,15 @@ int r128_wait_ring( drm_r128_private_t *dev_priv, int n )
 	int i;
 
 	for ( i = 0 ; i < dev_priv->usec_timeout ; i++ ) {
-		ring->space = *ring->head - ring->tail;
-		if ( ring->space <= 0 )
-			ring->space += ring->size;
-
+		r128_update_ring_snapshot( ring );
 		if ( ring->space >= n )
 			return 0;
-
 		udelay( 1 );
 	}
 
 	/* FIXME: This is being ignored... */
 	DRM_ERROR( "failed!\n" );
 	return -EBUSY;
-}
-
-void r128_update_ring_snapshot( drm_r128_private_t *dev_priv )
-{
-	drm_r128_ring_buffer_t *ring = &dev_priv->ring;
-
-	ring->space = *ring->head - ring->tail;
-#if R128_PERFORMANCE_BOXES
-	if ( ring->space == 0 )
-		atomic_inc( &dev_priv->idle_count );
-#endif
-	if ( ring->space <= 0 )
-		ring->space += ring->size;
 }
 
 static int r128_cce_get_buffers( drm_device_t *dev, drm_dma_t *d )

@@ -146,7 +146,14 @@ extern void radeon_freelist_reset( drm_device_t *dev );
 extern drm_buf_t *radeon_freelist_get( drm_device_t *dev );
 
 extern int radeon_wait_ring( drm_radeon_private_t *dev_priv, int n );
-extern void radeon_update_ring_snapshot( drm_radeon_private_t *dev_priv );
+
+static inline void
+radeon_update_ring_snapshot( drm_radeon_ring_buffer_t *ring )
+{
+	ring->space = (*(volatile int *)ring->head - ring->tail) * sizeof(u32);
+	if ( ring->space <= 0 )
+		ring->space += ring->size;
+}
 
 extern int radeon_do_cp_idle( drm_radeon_private_t *dev_priv );
 extern int radeon_do_cleanup_cp( drm_device_t *dev );
@@ -601,9 +608,7 @@ do {									\
 	drm_radeon_ring_buffer_t *ring = &dev_priv->ring; int i;	\
 	if ( ring->space < ring->high_mark ) {				\
 		for ( i = 0 ; i < dev_priv->usec_timeout ; i++ ) {	\
-			ring->space = *ring->head - ring->tail;		\
-			if ( ring->space <= 0 )				\
-				ring->space += ring->size;		\
+			radeon_update_ring_snapshot( ring );		\
 			if ( ring->space >= ring->high_mark )		\
 				goto __ring_space_done;			\
 			udelay( 1 );					\
@@ -657,7 +662,7 @@ do {									\
 		DRM_INFO( "BEGIN_RING( %d ) in %s\n",			\
 			   n, __FUNCTION__ );				\
 	}								\
-	if ( dev_priv->ring.space < (n) * sizeof(u32) ) {		\
+	if ( dev_priv->ring.space <= (n) * sizeof(u32) ) {		\
 		radeon_wait_ring( dev_priv, (n) * sizeof(u32) );	\
 	}								\
 	dev_priv->ring.space -= (n) * sizeof(u32);			\

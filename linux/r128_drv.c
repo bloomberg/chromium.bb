@@ -38,11 +38,11 @@
 
 #define DRIVER_NAME		"r128"
 #define DRIVER_DESC		"ATI Rage 128"
-#define DRIVER_DATE		"20010216"
+#define DRIVER_DATE		"20010308"
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		1
-#define DRIVER_PATCHLEVEL	4
+#define DRIVER_PATCHLEVEL	5
 
 #define DRIVER_IOCTLS							    \
    [DRM_IOCTL_NR(DRM_IOCTL_DMA)]             = { r128_cce_buffers,  1, 0 }, \
