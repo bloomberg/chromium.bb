@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.16tsi Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.17tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -395,7 +395,7 @@ FcPatternBaseHash (FcPattern *b)
     int		i;
 
     for (i = 0; i < b->num; i++)
-	hash = ((hash << 1) | (hash >> 31)) ^ ((FcChar32) b->elts[i].values);
+	hash = ((hash << 1) | (hash >> 31)) ^ ((long) b->elts[i].values);
     return hash;
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-cache/fc-cache.c,v 1.7 2002/08/11 15:09:33 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fc-cache/fc-cache.c,v 1.8tsi Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,6 +24,7 @@
 
 #include <fontconfig/fontconfig.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
