@@ -34,6 +34,8 @@
 #include <linux/config.h>
 #include "drmP.h"
 
+#ifdef DEBUG_MEMORY
+
 typedef struct drm_mem_stats {
 	const char *name;
 	int succeed_count;
@@ -167,6 +169,7 @@ void *drm_alloc(size_t size, int area)
 	spin_unlock(&drm_mem_lock);
 	return pt;
 }
+EXPORT_SYMBOL(drm_alloc);
 
 void *drm_calloc(size_t nmemb, size_t size, int area)
 {
@@ -178,6 +181,7 @@ void *drm_calloc(size_t nmemb, size_t size, int area)
 
 	return addr;
 }
+EXPORT_SYMBOL(drm_calloc);
 
 void *drm_realloc(void *oldpt, size_t oldsize, size_t size, int area)
 {
@@ -191,6 +195,7 @@ void *drm_realloc(void *oldpt, size_t oldsize, size_t size, int area)
 	}
 	return pt;
 }
+EXPORT_SYMBOL(drm_realloc);
 
 void drm_free(void *pt, size_t size, int area)
 {
@@ -211,6 +216,7 @@ void drm_free(void *pt, size_t size, int area)
 			      free_count, alloc_count);
 	}
 }
+EXPORT_SYMBOL(drm_free);
 
 unsigned long drm_alloc_pages(int order, int area)
 {
@@ -306,6 +312,7 @@ void *drm_ioremap(unsigned long offset, unsigned long size, drm_device_t * dev)
 	spin_unlock(&drm_mem_lock);
 	return pt;
 }
+EXPORT_SYMBOL(drm_ioremap);
 
 void *drm_ioremap_nocache(unsigned long offset, unsigned long size,
 			  drm_device_t * dev)
@@ -330,6 +337,7 @@ void *drm_ioremap_nocache(unsigned long offset, unsigned long size,
 	spin_unlock(&drm_mem_lock);
 	return pt;
 }
+EXPORT_SYMBOL(drm_ioremap_nocache);
 
 void drm_ioremapfree(void *pt, unsigned long size, drm_device_t * dev)
 {
@@ -353,6 +361,7 @@ void drm_ioremapfree(void *pt, unsigned long size, drm_device_t * dev)
 			      free_count, alloc_count);
 	}
 }
+EXPORT_SYMBOL(drm_ioremapfree);
 
 #if __OS_HAS_AGP
 
@@ -459,4 +468,6 @@ int drm_unbind_agp(DRM_AGP_MEM * handle)
 	}
 	return retcode;
 }
+
+#endif
 #endif

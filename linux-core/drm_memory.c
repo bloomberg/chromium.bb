@@ -37,9 +37,7 @@
 #include <linux/highmem.h>
 #include "drmP.h"
 
-#ifdef DEBUG_MEMORY
-#include "drm_memory_debug.h"
-#else
+#ifndef DEBUG_MEMORY
 
 /** No-op. */
 void drm_mem_init(void)

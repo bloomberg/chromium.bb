@@ -176,7 +176,7 @@
  */
 #define DRM_MEM_ERROR(area, fmt, arg...) \
 	printk(KERN_ERR "[" DRM_NAME ":%s:%s] *ERROR* " fmt , __FUNCTION__, \
-	       drm_mem_stats)[area].name , ##arg)
+	       drm_mem_stats[area].name , ##arg)
 #define DRM_INFO(fmt, arg...)  printk(KERN_INFO "[" DRM_NAME "] " fmt , ##arg)
 
 /**

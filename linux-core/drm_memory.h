@@ -160,9 +160,9 @@ static inline unsigned long drm_follow_page(void *vaddr)
 {
 	return 0;
 }
-
 #endif
 
+#ifndef DEBUG_MEMORY
 static inline void *drm_ioremap(unsigned long offset, unsigned long size,
 				drm_device_t * dev)
 {
@@ -218,3 +218,11 @@ static inline void drm_ioremapfree(void *pt, unsigned long size,
 #endif
 	iounmap(pt);
 }
+#else
+extern void *drm_ioremap(unsigned long offset, unsigned long size,
+				drm_device_t * dev);
+extern void *drm_ioremap_nocache(unsigned long offset,
+					unsigned long size, drm_device_t * dev);
+extern void drm_ioremapfree(void *pt, unsigned long size,
+				   drm_device_t * dev);
+#endif
