@@ -104,7 +104,8 @@ typedef enum {
     DRM_REGISTERS       = 1,      /**< no caching, no core dump */
     DRM_SHM             = 2,      /**< shared, cached */
     DRM_AGP             = 3,	  /**< AGP/GART */
-    DRM_SCATTER_GATHER  = 4	  /**< PCI scatter/gather */
+    DRM_SCATTER_GATHER  = 4,	  /**< PCI scatter/gather */
+    DRM_CONSISTENT      = 5	  /**< PCI consistent */
 } drmMapType;
 
 typedef enum {

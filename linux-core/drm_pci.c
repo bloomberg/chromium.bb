@@ -6,7 +6,6 @@
  * \warning These interfaces aren't stable yet.
  *
  * \todo Implement the remaining ioctl's for the PCI pools.
- * \todo Add support to map these buffers.
  * \todo The wrappers here are so thin that they would be better off inlined..
  *
  * \author Jose Fonseca <jrfonseca@tungstengraphics.com>

@@ -227,6 +227,10 @@ int drm_takedown(drm_device_t * dev)
 						dev->sg = NULL;
 					}
 					break;
+				case _DRM_CONSISTENT:
+					drm_pci_free(dev, map->size,
+						     map->handle, map->offset);
+					break;
 				}
 				drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 			}
@@ -396,6 +400,7 @@ static void __exit drm_cleanup(drm_device_t * dev)
 				case _DRM_SHM:
 				case _DRM_AGP:
 				case _DRM_SCATTER_GATHER:
+				case _DRM_CONSISTENT:
 					DRM_DEBUG("Extra maplist item\n");
 					break;
 				}

@@ -211,9 +211,9 @@ static int drm__vm_info(char *buf, char **start, off_t offset, int request,
 	struct list_head *list;
 
 	/* Hardcoded from _DRM_FRAME_BUFFER,
-	   _DRM_REGISTERS, _DRM_SHM, _DRM_AGP, and
-	   _DRM_SCATTER_GATHER. */
-	const char *types[] = { "FB", "REG", "SHM", "AGP", "SG" };
+	   _DRM_REGISTERS, _DRM_SHM, _DRM_AGP,
+	   _DRM_SCATTER_GATHER, and _DRM_CONSISTENT. */
+	const char *types[] = { "FB", "REG", "SHM", "AGP", "SG", "PCI" };
 	const char *type;
 	int i;
 
@@ -234,7 +234,7 @@ static int drm__vm_info(char *buf, char **start, off_t offset, int request,
 		map = r_list->map;
 		if (!map)
 			continue;
-		if (map->type < 0 || map->type > 4)
+		if (map->type < 0 || map->type > 5)
 			type = "??";
 		else
 			type = types[map->type];
