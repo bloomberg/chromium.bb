@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.13 2002/08/22 07:36:45 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.14 2002/08/31 22:17:32 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -60,6 +60,7 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_MATRIX,	FcTypeMatrix },
     { FC_CHARSET,	FcTypeCharSet },
     { FC_LANG,		FcTypeLangSet },
+    { FC_FONTVERSION,	FcTypeInteger },
 };
 
 #define NUM_OBJECT_TYPES    (sizeof _FcBaseObjectTypes / sizeof _FcBaseObjectTypes[0])

@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fcdefault.c,v 1.2 2002/07/09 22:08:14 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -136,5 +136,9 @@ FcDefaultSubstitute (FcPattern *pattern)
 	    else
 		FcPatternAddString (pattern, FC_LANG, (FcChar8 *) lang);
 	}
+    }
+    if (FcPatternGet (pattern, FC_FONTVERSION, 0, &v) == FcResultNoMatch)
+    {
+	FcPatternAddInteger (pattern, FC_FONTVERSION, 0x7fffffff);
     }
 }

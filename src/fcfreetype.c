@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.10 2002/08/22 07:36:44 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.11 2002/08/31 22:17:32 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -128,6 +128,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     FcChar8	    *family;
     FcChar8	    *style;
     TT_OS2	    *os2;
+    TT_Header	    *head;
     const FcChar8   *exclusiveLang = 0;
     FT_SfntName	    sname;
     FT_UInt    	    snamei, snamec;
@@ -471,6 +472,21 @@ FcFreeTypeQuery (const FcChar8	*file,
 	if (!FcPatternAddInteger (pat, FC_SPACING, FC_MONO))
 	    goto bail1;
 #endif
+
+    /*
+     * Find the font revision (if available)
+     */
+    head = (TT_Header *) FT_Get_Sfnt_Table (face, ft_sfnt_head);
+    if (head)
+    {
+	if (!FcPatternAddInteger (pat, FC_FONTVERSION, head->Font_Revision))
+	    goto bail1;
+    }
+    else
+    {
+	if (!FcPatternAddInteger (pat, FC_FONTVERSION, 0))
+	    goto bail1;
+    }
 
     /*
      * Get the OS/2 table and poke about

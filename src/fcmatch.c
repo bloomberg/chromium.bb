@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.19 2002/08/22 07:36:44 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.20 2002/08/31 22:17:32 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -196,9 +196,12 @@ static FcMatcher _FcMatchers [] = {
     
     { FC_OUTLINE,	FcCompareBool,		12, 12 },
 #define MATCH_OUTLINE	    11
+
+    { FC_FONTVERSION,	FcCompareInteger,	13, 13 },
+#define MATCH_FONTVERSION   12
 };
 
-#define NUM_MATCH_VALUES    13
+#define NUM_MATCH_VALUES    14
 
 static FcBool
 FcCompareValueList (const char  *object,
@@ -222,7 +225,13 @@ FcCompareValueList (const char  *object,
     case 'f':
 	switch (FcToLower (object[1])) {
 	case 'o':
-	    i = MATCH_FOUNDRY; break;
+	    switch (FcToLower (object[2])) {
+	    case 'u':
+		i = MATCH_FOUNDRY; break;
+	    case 'n':
+		i = MATCH_FONTVERSION; break;
+	    }
+	    break;
 	case 'a':
 	    i = MATCH_FAMILY; break;
 	}
