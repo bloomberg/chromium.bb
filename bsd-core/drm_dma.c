@@ -160,6 +160,9 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	if ( !irq )
 		return DRM_ERR(EINVAL);
 
+	if (dev->dev_private == NULL)
+		return DRM_ERR(EINVAL);
+
 	DRM_LOCK;
 	if ( dev->irq ) {
 		DRM_UNLOCK;
