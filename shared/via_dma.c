@@ -16,6 +16,8 @@
 #include "via_drm.h"
 #include "via_drv.h"
 
+#define VIA_2D_CMD 0xF0000000
+
 static void via_cmdbuf_start(drm_via_private_t * dev_priv);
 static void via_cmdbuf_pause(drm_via_private_t * dev_priv);
 static void via_cmdbuf_reset(drm_via_private_t * dev_priv);
@@ -216,6 +218,92 @@ int via_cmdbuffer( DRM_IOCTL_ARGS )
 	}
 
 	ret = via_dispatch_cmdbuffer( dev, &cmdbuf );
+	if (ret) {
+		return ret;
+	}
+
+	return 0;
+}
+
+static int via_parse_pci_cmdbuffer( drm_device_t *dev, const char *buf, 
+				    unsigned int size )
+{
+	drm_via_private_t *dev_priv = dev->dev_private;
+	uint32_t offset, value;
+	const uint32_t *regbuf = (uint32_t *)buf;
+	unsigned int i;
+
+	size >>=3 ;
+	for (i=0; i<size; ++i) {
+		offset = *regbuf; 
+		regbuf += 2;
+		if ((offset > ((0x7FF >> 2) | VIA_2D_CMD)) && 
+		    (offset < ((0xC00 >> 2) | VIA_2D_CMD)) ) {
+			DRM_DEBUG("Attempt to access Burst Command Area.\n");
+			return DRM_ERR( EINVAL );
+		} else if (offset > ((0xDFF >> 2) | VIA_2D_CMD)) {
+			DRM_DEBUG("Attempt to access DMA or VGA registers.\n");
+			return DRM_ERR( EINVAL );
+		}
+	}
+			
+	regbuf = (uint32_t *)buf;
+	for ( i=0; i<size; ++i ) {
+		offset = (*regbuf++ & ~VIA_2D_CMD) << 2;
+		value = *regbuf++;
+		VIA_WRITE( offset, value );
+	}
+	return 0;
+}
+		
+static int via_dispatch_pci_cmdbuffer(drm_device_t *dev, 
+				      drm_via_cmdbuffer_t *cmd )
+{
+	drm_via_private_t *dev_priv = dev->dev_private;
+	char *hugebuf;
+	int ret;
+
+	/*
+	 * We must be able to parse the buffer all at a time, so as
+	 * to return an error on an invalid operation without doing
+	 * anything.
+	 * Small buffers must, on the other hand be handled fast.
+	 */
+
+	if ( cmd->size > VIA_MAX_PCI_SIZE ) {
+		return DRM_ERR( ENOMEM );
+	} else if ( cmd->size > VIA_PREALLOCATED_PCI_SIZE ) {
+	  if (NULL == (hugebuf = (char *) kmalloc( cmd-> size, GFP_KERNEL )))
+			return DRM_ERR( ENOMEM );
+		DRM_COPY_FROM_USER( hugebuf, cmd->buf, cmd->size );
+		ret = via_parse_pci_cmdbuffer( dev, hugebuf, cmd->size );
+		kfree( hugebuf );
+	} else {
+		DRM_COPY_FROM_USER( dev_priv->pci_buf, cmd->buf, cmd->size );
+		ret = via_parse_pci_cmdbuffer( dev, dev_priv->pci_buf, cmd->size );
+	}
+	return ret;
+}
+
+
+
+int via_pci_cmdbuffer( DRM_IOCTL_ARGS )
+{
+	DRM_DEVICE;
+	drm_via_cmdbuffer_t cmdbuf;
+	int ret;
+
+	DRM_COPY_FROM_USER_IOCTL( cmdbuf, (drm_via_cmdbuffer_t *)data, 
+			sizeof(cmdbuf) );
+
+	DRM_DEBUG("via_pci_cmdbuffer, buf %p size %lu\n", cmdbuf.buf, cmdbuf.size);
+
+	if(!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
+		DRM_ERROR("via_pci_cmdbuffer called without lock held\n");
+		return DRM_ERR(EINVAL);
+	}
+
+	ret = via_dispatch_pci_cmdbuffer( dev, &cmdbuf );
 	if (ret) {
 		return ret;
 	}

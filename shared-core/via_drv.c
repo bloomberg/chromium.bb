@@ -21,6 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 #include <linux/config.h>
 #include "via.h"
 #include "drmP.h"
@@ -31,10 +32,10 @@
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome"
-#define DRIVER_DATE		"20040819"
+#define DRIVER_DATE		"20040907"
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		4
+#define DRIVER_MINOR		5
 #define DRIVER_PATCHLEVEL	0
 
 
@@ -47,7 +48,8 @@
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_DEC_FUTEX)] = { via_decoder_futex, 1, 0}, \
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_DMA_INIT)] = { via_dma_init, 1, 0}, \
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_CMDBUFFER)] = { via_cmdbuffer, 1, 0}, \
-        [DRM_IOCTL_NR(DRM_IOCTL_VIA_FLUSH)] = { via_flush_ioctl, 1, 0}
+	[DRM_IOCTL_NR(DRM_IOCTL_VIA_FLUSH)] = { via_flush_ioctl, 1, 0}, \
+        [DRM_IOCTL_NR(DRM_IOCTL_VIA_PCICMD)] = { via_pci_cmdbuffer, 1, 0}
 
 
 #define __HAVE_COUNTERS		0

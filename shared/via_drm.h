@@ -38,6 +38,8 @@
 #define VIA_NR_XVMC_PORTS               10
 #define VIA_NR_XVMC_LOCKS               5
 #define VIA_MAX_CACHELINE_SIZE          64
+#define VIA_PREALLOCATED_PCI_SIZE       16384
+#define VIA_MAX_PCI_SIZE                65536
 #define XVMCLOCKPTR(saPriv,lockNo)					\
         ((volatile int *)(((((unsigned long) (saPriv)->XvMCLockArea) +	\
                             (VIA_MAX_CACHELINE_SIZE - 1)) &             \
@@ -67,8 +69,10 @@
 #define DRM_IOCTL_VIA_MAP_INIT	DRM_IOWR(0x44, drm_via_init_t)
 #define DRM_IOCTL_VIA_DEC_FUTEX DRM_IOW(0x45, drm_via_futex_t)
 #define DRM_IOCTL_VIA_DMA_INIT	DRM_IOWR(0x47, drm_via_dma_init_t)
-#define DRM_IOCTL_VIA_CMDBUFFER	DRM_IOWR(0x48, drm_via_dma_init_t)
+#define DRM_IOCTL_VIA_CMDBUFFER	DRM_IOW(0x48, drm_via_cmdbuffer_t)
 #define DRM_IOCTL_VIA_FLUSH	DRM_IO(0x49)
+#define DRM_IOCTL_VIA_PCICMD	DRM_IOW(0x4A, drm_via_cmdbuffer_t)
+
 
 /* Indices into buf.Setup where various bits of state are mirrored per
  * context and per buffer.  These can be fired at the card as a unit,
@@ -200,6 +204,7 @@ int via_decoder_futex( DRM_IOCTL_ARGS );
 int via_dma_init( DRM_IOCTL_ARGS );
 int via_cmdbuffer( DRM_IOCTL_ARGS );
 int via_flush_ioctl( DRM_IOCTL_ARGS );
+int via_pci_cmdbuffer( DRM_IOCTL_ARGS );
 
 #endif
 #endif /* _VIA_DRM_H_ */

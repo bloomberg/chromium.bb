@@ -46,6 +46,7 @@ typedef struct drm_via_private {
         uint32_t * last_pause_ptr;
         volatile uint32_t * hw_addr_ptr;
         drm_via_ring_buffer_t ring;
+	char pci_buf[VIA_PREALLOCATED_PCI_SIZE];
 } drm_via_private_t;
 
  
