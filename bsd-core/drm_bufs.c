@@ -933,17 +933,17 @@ int DRM(mapbufs)( DRM_IOCTL_ARGS )
 	drm_device_dma_t *dma = dev->dma;
 	int retcode = 0;
 	const int zero = 0;
-	vm_offset_t virtual, address;
+	vm_offset_t address;
+	struct vmspace *vms;
 #ifdef __FreeBSD__
-#if __FreeBSD_version >= 500000
-	struct vmspace *vms = p->td_proc->p_vmspace;
-#else
-	struct vmspace *vms = p->p_vmspace;
-#endif
+	vm_ooffset_t foff;
+	vm_size_t size;
+	vm_offset_t vaddr;
 #endif /* __FreeBSD__ */
 #ifdef __NetBSD__
 	struct vnode *vn;
-	struct vmspace *vms = p->p_vmspace;
+	vm_size_t size;
+	vaddr_t vaddr;
 #endif /* __NetBSD__ */
 
 	drm_buf_map_t request;
@@ -962,98 +962,79 @@ int DRM(mapbufs)( DRM_IOCTL_ARGS )
 	DRM_COPY_FROM_USER_IOCTL( request, (drm_buf_map_t *)data, sizeof(request) );
 
 #ifdef __NetBSD__
-	if(!vfinddev(kdev, VCHR, &vn))
+	if (!vfinddev(kdev, VCHR, &vn))
 		return 0;	/* FIXME: Shouldn't this be EINVAL or something? */
 #endif /* __NetBSD__ */
 
-	if ( request.count >= dma->buf_count ) {
-		if ( (__HAVE_AGP && (dma->flags & _DRM_DMA_USE_AGP)) ||
-		     (__HAVE_SG && (dma->flags & _DRM_DMA_USE_SG)) ) {
-			drm_local_map_t *map = DRIVER_AGP_BUFFERS_MAP( dev );
+#if defined(__FreeBSD__) && __FreeBSD_version >= 500000
+	vms = p->td_proc->p_vmspace;
+#else
+	vms = p->p_vmspace;
+#endif
 
-			if ( !map ) {
-				retcode = EINVAL;
-				goto done;
-			}
+	if (request.count < dma->buf_count)
+		goto done;
 
-#ifdef __FreeBSD__
-			virtual = round_page((vm_offset_t)vms->vm_daddr + MAXDSIZ);
-			retcode = vm_mmap(&vms->vm_map,
-					  &virtual,
-					  round_page(map->size),
-					  PROT_READ|PROT_WRITE, VM_PROT_ALL,
-					  MAP_SHARED,
-					  SLIST_FIRST(&kdev->si_hlist),
-					  (unsigned long)map->offset );
-#elif defined(__NetBSD__)
-			virtual = round_page((vaddr_t)vms->vm_daddr + MAXDSIZ);
-			retcode = uvm_mmap(&vms->vm_map,
-					   (vaddr_t *)&virtual,
-					   round_page(map->size),
-					   UVM_PROT_READ | UVM_PROT_WRITE,
-					   UVM_PROT_ALL, MAP_SHARED,
-					   &vn->v_uobj, map->offset,
-					   p->p_rlimit[RLIMIT_MEMLOCK].rlim_cur);
-#endif /* __NetBSD__ */
-		} else {
-#ifdef __FreeBSD__
-			virtual = round_page((vm_offset_t)vms->vm_daddr + MAXDSIZ);
-			retcode = vm_mmap(&vms->vm_map,
-					  &virtual,
-					  round_page(dma->byte_count),
-					  PROT_READ|PROT_WRITE, VM_PROT_ALL,
-					  MAP_SHARED,
-					  SLIST_FIRST(&kdev->si_hlist),
-					  0);
-#elif defined(__NetBSD__)
-			virtual = round_page((vaddr_t)vms->vm_daddr + MAXDSIZ);
-			retcode = uvm_mmap(&vms->vm_map,
-					   (vaddr_t *)&virtual,
-					   round_page(dma->byte_count),
-					   UVM_PROT_READ | UVM_PROT_WRITE,
-					   UVM_PROT_ALL, MAP_SHARED,
-					   &vn->v_uobj, 0,
-					   p->p_rlimit[RLIMIT_MEMLOCK].rlim_cur);
-#endif /* __NetBSD__ */
-		}
-		if (retcode)
+	if ((__HAVE_AGP && (dma->flags & _DRM_DMA_USE_AGP)) ||
+	    (__HAVE_SG && (dma->flags & _DRM_DMA_USE_SG))) {
+		drm_local_map_t *map = DRIVER_AGP_BUFFERS_MAP(dev);
+
+		if (map == NULL) {
+			retcode = EINVAL;
 			goto done;
-		request.virtual = (void *)virtual;
+		}
+		size = round_page(map->size);
+		foff = map->offset;
+	} else {
+		size = round_page(dma->byte_count),
+		foff = 0;
+	}
 
-		for ( i = 0 ; i < dma->buf_count ; i++ ) {
-			if ( DRM_COPY_TO_USER( &request.list[i].idx,
-					   &dma->buflist[i]->idx,
-					   sizeof(request.list[0].idx) ) ) {
-				retcode = EFAULT;
-				goto done;
-			}
-			if ( DRM_COPY_TO_USER( &request.list[i].total,
-					   &dma->buflist[i]->total,
-					   sizeof(request.list[0].total) ) ) {
-				retcode = EFAULT;
-				goto done;
-			}
-			if ( DRM_COPY_TO_USER( &request.list[i].used,
-					   &zero,
-					   sizeof(zero) ) ) {
-				retcode = EFAULT;
-				goto done;
-			}
-			address = virtual + dma->buflist[i]->offset; /* *** */
-			if ( DRM_COPY_TO_USER( &request.list[i].address,
-					   &address,
-					   sizeof(address) ) ) {
-				retcode = EFAULT;
-				goto done;
-			}
+#ifdef __FreeBSD__
+	vaddr = round_page((vm_offset_t)vms->vm_daddr + MAXDSIZ);
+	retcode = vm_mmap(&vms->vm_map, &vaddr, size, PROT_READ | PROT_WRITE,
+	    VM_PROT_ALL, MAP_SHARED, SLIST_FIRST(&kdev->si_hlist), foff );
+#elif defined(__NetBSD__)
+	vaddr = round_page((vaddr_t)vms->vm_daddr + MAXDSIZ);
+	retcode = uvm_mmap(&vms->vm_map, &vaddr, size,
+	    UVM_PROT_READ | UVM_PROT_WRITE, UVM_PROT_ALL, MAP_SHARED,
+	    &vn->v_uobj, foff, p->p_rlimit[RLIMIT_MEMLOCK].rlim_cur);
+#endif /* __NetBSD__ */
+	if (retcode)
+		goto done;
+
+	request.virtual = (void *)vaddr;
+
+	for ( i = 0 ; i < dma->buf_count ; i++ ) {
+		if (DRM_COPY_TO_USER(&request.list[i].idx,
+		    &dma->buflist[i]->idx, sizeof(request.list[0].idx))) {
+			retcode = EFAULT;
+			goto done;
+		}
+		if (DRM_COPY_TO_USER(&request.list[i].total,
+		    &dma->buflist[i]->total, sizeof(request.list[0].total))) {
+			retcode = EFAULT;
+			goto done;
+		}
+		if (DRM_COPY_TO_USER(&request.list[i].used, &zero,
+		    sizeof(zero))) {
+			retcode = EFAULT;
+			goto done;
+		}
+		address = vaddr + dma->buflist[i]->offset; /* *** */
+		if (DRM_COPY_TO_USER(&request.list[i].address, &address,
+		    sizeof(address))) {
+			retcode = EFAULT;
+			goto done;
 		}
 	}
+
  done:
 	request.count = dma->buf_count;
 
 	DRM_DEBUG( "%d buffers, retcode = %d\n", request.count, retcode );
 
-	DRM_COPY_TO_USER_IOCTL( (drm_buf_map_t *)data, request, sizeof(request) );
+	DRM_COPY_TO_USER_IOCTL((drm_buf_map_t *)data, request, sizeof(request));
 
 	return DRM_ERR(retcode);
 }

@@ -853,7 +853,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	drm_file_t *priv;
 	DRM_DEVICE;
 	int retcode = 0;
-	DRMFILE __unused filp = (void *)(DRM_CURRENTPID);
+	DRMFILE filp = (void *)(DRM_CURRENTPID);
 	
 	DRM_DEBUG( "open_count = %d\n", dev->open_count );
 	priv = DRM(find_file_by_proc)(dev, p);
@@ -877,7 +877,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 #endif
 
 	if (dev->lock.hw_lock && _DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)
-	    && dev->lock.filp == (void *)DRM_CURRENTPID) {
+	    && dev->lock.filp == filp) {
 		DRM_DEBUG("Process %d dead, freeing lock for context %d\n",
 			  DRM_CURRENTPID,
 			  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
@@ -1019,22 +1019,21 @@ int DRM(ioctl)(dev_t kdev, u_long cmd, caddr_t data, int flags,
 #endif /* __NetBSD__ */
 	}
 
-	if ( nr >= DRIVER_IOCTL_COUNT ) {
-		retcode = EINVAL;
-	} else {
-		ioctl = &DRM(ioctls)[nr];
-		func = ioctl->func;
+	if (nr >= DRIVER_IOCTL_COUNT)
+		return EINVAL;
 
-		if ( !func ) {
-			DRM_DEBUG( "no function\n" );
-			retcode = EINVAL;
-		} else if ( ( ioctl->root_only && DRM_SUSER(p) ) 
-			 || ( ioctl->auth_needed && !priv->authenticated ) ) {
-			retcode = EACCES;
-		} else {
-			retcode = func(kdev, cmd, data, flags, p, (void *)DRM_CURRENTPID);
-		}
+	ioctl = &DRM(ioctls)[nr];
+	func = ioctl->func;
+
+	if (func == NULL) {
+		DRM_DEBUG( "no function\n" );
+		return EINVAL;
 	}
+	if ((ioctl->root_only && DRM_SUSER(p)) || (ioctl->auth_needed &&
+	    !priv->authenticated))
+		return EACCES;
+
+	retcode = func(kdev, cmd, data, flags, p, (void *)DRM_CURRENTPID);
 
 	return DRM_ERR(retcode);
 }
@@ -1062,44 +1061,39 @@ int DRM(lock)( DRM_IOCTL_ARGS )
                 return DRM_ERR(EINVAL);
 #endif
 
-        if ( !ret ) {
-                for (;;) {
-                        if ( !dev->lock.hw_lock ) {
-                                /* Device has been unregistered */
-                                ret = EINTR;
-                                break;
-                        }
-                        if ( DRM(lock_take)( &dev->lock.hw_lock->lock,
-					     lock.context ) ) {
-                                dev->lock.filp = (void *)DRM_CURRENTPID;
-                                dev->lock.lock_time = jiffies;
-                                atomic_inc( &dev->counts[_DRM_STAT_LOCKS] );
-                                break;  /* Got lock */
-                        }
+	for (;;) {
+		if (dev->lock.hw_lock == NULL) {
+			/* Device has been unregistered */
+			ret = DRM_ERR(EINTR);
+			break;
+		}
+		if (DRM(lock_take)(&dev->lock.hw_lock->lock, lock.context)) {
+			dev->lock.filp = (void *)DRM_CURRENTPID;
+			dev->lock.lock_time = jiffies;
+			atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
+			break;  /* Got lock */
+		}
 
-                                /* Contention */
-			ret = tsleep((void *)&dev->lock.lock_queue,
-					PZERO|PCATCH,
-					"drmlk2",
-					0);
-			if (ret)
-				break;
-                }
-        }
+		/* Contention */
+		ret = tsleep((void *)&dev->lock.lock_queue, PZERO|PCATCH,
+		    "drmlk2", 0);
+		if (ret != 0)
+			break;
+	}
+	DRM_DEBUG( "%d %s\n", lock.context, ret ? "interrupted" : "has lock" );
 
-        if ( !ret ) {
-		/* FIXME: Add signal blocking here */
+	if (ret != 0)
+		return ret;
+
+	/* XXX: Add signal blocking here */
 
 #if __HAVE_DMA_QUIESCENT
-                if ( lock.flags & _DRM_LOCK_QUIESCENT ) {
-			DRIVER_DMA_QUIESCENT();
-		}
+	if (lock.flags & _DRM_LOCK_QUIESCENT) {
+		DRIVER_DMA_QUIESCENT();
+	}
 #endif
-        }
 
-        DRM_DEBUG( "%d %s\n", lock.context, ret ? "interrupted" : "has lock" );
-
-	return DRM_ERR(ret);
+	return 0;
 }
 
 
