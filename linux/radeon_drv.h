@@ -254,6 +254,12 @@ extern int radeon_cp_indirect( struct inode *inode, struct file *filp,
 #define RADEON_MC_AGP_LOCATION		0x014c
 #define RADEON_MC_FB_LOCATION		0x0148
 #define RADEON_MCLK_CNTL		0x0012
+#	define RADEON_FORCEON_MCLKA		(1 << 16)
+#	define RADEON_FORCEON_MCLKB		(1 << 17)
+#	define RADEON_FORCEON_YCLKA		(1 << 18)
+#	define RADEON_FORCEON_YCLKB		(1 << 19)
+#	define RADEON_FORCEON_MC		(1 << 20)
+#	define RADEON_FORCEON_AIC		(1 << 21)
 
 #define RADEON_PP_BORDER_COLOR_0	0x1d40
 #define RADEON_PP_BORDER_COLOR_1	0x1d44

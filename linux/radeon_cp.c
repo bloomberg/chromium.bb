@@ -520,8 +520,13 @@ static int radeon_do_engine_reset( drm_device_t *dev )
 	clock_cntl_index = RADEON_READ( RADEON_CLOCK_CNTL_INDEX );
 	mclk_cntl = RADEON_READ_PLL( dev, RADEON_MCLK_CNTL );
 
-	/* FIXME: remove magic number here and in radeon ddx driver!!! */
-	RADEON_WRITE_PLL( RADEON_MCLK_CNTL, mclk_cntl | 0x003f00000 );
+	RADEON_WRITE_PLL( RADEON_MCLK_CNTL, ( mclk_cntl |
+					      RADEON_FORCEON_MCLKA |
+					      RADEON_FORCEON_MCLKB |
+ 					      RADEON_FORCEON_YCLKA |
+					      RADEON_FORCEON_YCLKB |
+					      RADEON_FORCEON_MC |
+					      RADEON_FORCEON_AIC ) );
 
 	rbbm_soft_reset = RADEON_READ( RADEON_RBBM_SOFT_RESET );
 
