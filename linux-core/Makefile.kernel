@@ -17,6 +17,7 @@ radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o
 sis-objs    := sis_drv.o sis_ds.o sis_mm.o
 ffb-objs    := ffb_drv.o ffb_context.o
 savage-objs := savage_drv.o savage_dma.o
+via-objs    := via_irq.o via_drv.o via_ds.o via_map.o via_mm.o 
 
 # Kernel version checks
 
@@ -32,7 +33,7 @@ endif
 ifeq ($(BELOW25),y)
 O_TARGET	:= drm.o
 list-multi	:= gamma.o tdfx.o r128.o mga.o i810.o i830.o ffb.o radeon.o \
-                   savage.o
+                   savage.o via.o
 obj-m		:=
 obj-n		:=
 obj-		:=
@@ -48,6 +49,7 @@ obj-$(CONFIG_DRM_I830)	+= i830.o
 obj-$(CONFIG_DRM_SIS)   += sis.o
 obj-$(CONFIG_DRM_FFB)   += ffb.o
 obj-$(CONFIG_DRM_SAVAGE)+= savage.o
+obj-$(CONFIG_DRM_VIA)   += via.o
 
 ifeq ($(BELOW2552),y)
 include $(TOPDIR)/Rules.make
@@ -83,5 +85,9 @@ ffb.o: $(ffb-objs) $(lib)
 
 savage.o: $(savage-objs) $(lib)
 	$(LD) -r -o $@ $(savage-objs) $(lib)
+
+via.o: $(via-objs) $(lib)
+	$(LD) -r -o $@ $(via-objs) $(lib)
+
 endif
 
