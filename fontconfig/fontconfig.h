@@ -37,7 +37,7 @@ typedef int		FcBool;
  */
 #define FC_MAJOR	1
 #define FC_MINOR	0
-#define FC_REVISION	1
+#define FC_REVISION	2
 
 #define FC_VERSION	((FC_MAJOR * 10000) + (FC_MINOR * 100) + (FC_REVISION))
 
@@ -600,7 +600,7 @@ FcPattern *
 FcPatternCreate (void);
 
 FcPattern *
-FcPatternDuplicate (FcPattern *p);
+FcPatternDuplicate (const FcPattern *p);
 
 void
 FcPatternReference (FcPattern *p);
@@ -633,7 +633,7 @@ FcBool
 FcPatternAddWeak (FcPattern *p, const char *object, FcValue value, FcBool append);
     
 FcResult
-FcPatternGet (FcPattern *p, const char *object, int id, FcValue *v);
+FcPatternGet (const FcPattern *p, const char *object, int id, FcValue *v);
     
 FcBool
 FcPatternDel (FcPattern *p, const char *object);
@@ -660,25 +660,25 @@ FcBool
 FcPatternAddLangSet (FcPattern *p, const char *object, const FcLangSet *ls);
 
 FcResult
-FcPatternGetInteger (FcPattern *p, const char *object, int n, int *i);
+FcPatternGetInteger (const FcPattern *p, const char *object, int n, int *i);
 
 FcResult
-FcPatternGetDouble (FcPattern *p, const char *object, int n, double *d);
+FcPatternGetDouble (const FcPattern *p, const char *object, int n, double *d);
 
 FcResult
-FcPatternGetString (FcPattern *p, const char *object, int n, FcChar8 ** s);
+FcPatternGetString (const FcPattern *p, const char *object, int n, FcChar8 ** s);
 
 FcResult
-FcPatternGetMatrix (FcPattern *p, const char *object, int n, FcMatrix **s);
+FcPatternGetMatrix (const FcPattern *p, const char *object, int n, FcMatrix **s);
 
 FcResult
-FcPatternGetCharSet (FcPattern *p, const char *object, int n, FcCharSet **c);
+FcPatternGetCharSet (const FcPattern *p, const char *object, int n, FcCharSet **c);
 
 FcResult
-FcPatternGetBool (FcPattern *p, const char *object, int n, FcBool *b);
+FcPatternGetBool (const FcPattern *p, const char *object, int n, FcBool *b);
 
 FcResult
-FcPatternGetLangSet (FcPattern *p, const char *object, int n, FcLangSet **ls);
+FcPatternGetLangSet (const FcPattern *p, const char *object, int n, FcLangSet **ls);
 
 FcPattern *
 FcPatternVaBuild (FcPattern *orig, va_list va);

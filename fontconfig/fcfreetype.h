@@ -33,7 +33,7 @@ FcCharSet *
 FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks);
 
 FcResult
-FcPatternGetFTFace (FcPattern *p, const char *object, int n, FT_Face *f);
+FcPatternGetFTFace (const FcPattern *p, const char *object, int n, FT_Face *f);
 
 FcBool
 FcPatternAddFTFace (FcPattern *p, const char *object, const FT_Face f);

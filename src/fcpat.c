@@ -856,7 +856,7 @@ FcPatternAddLangSet (FcPattern *p, const char *object, const FcLangSet *ls)
 }
 
 FcResult
-FcPatternGet (FcPattern *p, const char *object, int id, FcValue *v)
+FcPatternGet (const FcPattern *p, const char *object, int id, FcValue *v)
 {
     FcPatternElt   *e;
     FcValueList    *l;
@@ -877,7 +877,7 @@ FcPatternGet (FcPattern *p, const char *object, int id, FcValue *v)
 }
 
 FcResult
-FcPatternGetInteger (FcPattern *p, const char *object, int id, int *i)
+FcPatternGetInteger (const FcPattern *p, const char *object, int id, int *i)
 {
     FcValue	v;
     FcResult	r;
@@ -899,7 +899,7 @@ FcPatternGetInteger (FcPattern *p, const char *object, int id, int *i)
 }
 
 FcResult
-FcPatternGetDouble (FcPattern *p, const char *object, int id, double *d)
+FcPatternGetDouble (const FcPattern *p, const char *object, int id, double *d)
 {
     FcValue	v;
     FcResult	r;
@@ -921,7 +921,7 @@ FcPatternGetDouble (FcPattern *p, const char *object, int id, double *d)
 }
 
 FcResult
-FcPatternGetString (FcPattern *p, const char *object, int id, FcChar8 ** s)
+FcPatternGetString (const FcPattern *p, const char *object, int id, FcChar8 ** s)
 {
     FcValue	v;
     FcResult	r;
@@ -936,7 +936,7 @@ FcPatternGetString (FcPattern *p, const char *object, int id, FcChar8 ** s)
 }
 
 FcResult
-FcPatternGetMatrix (FcPattern *p, const char *object, int id, FcMatrix **m)
+FcPatternGetMatrix(const FcPattern *p, const char *object, int id, FcMatrix **m)
 {
     FcValue	v;
     FcResult	r;
@@ -952,7 +952,7 @@ FcPatternGetMatrix (FcPattern *p, const char *object, int id, FcMatrix **m)
 
 
 FcResult
-FcPatternGetBool (FcPattern *p, const char *object, int id, FcBool *b)
+FcPatternGetBool(const FcPattern *p, const char *object, int id, FcBool *b)
 {
     FcValue	v;
     FcResult	r;
@@ -967,7 +967,7 @@ FcPatternGetBool (FcPattern *p, const char *object, int id, FcBool *b)
 }
 
 FcResult
-FcPatternGetCharSet (FcPattern *p, const char *object, int id, FcCharSet **c)
+FcPatternGetCharSet(const FcPattern *p, const char *object, int id, FcCharSet **c)
 {
     FcValue	v;
     FcResult	r;
@@ -982,7 +982,7 @@ FcPatternGetCharSet (FcPattern *p, const char *object, int id, FcCharSet **c)
 }
 
 FcResult
-FcPatternGetFTFace (FcPattern *p, const char *object, int id, FT_Face *f)
+FcPatternGetFTFace(const FcPattern *p, const char *object, int id, FT_Face *f)
 {
     FcValue	v;
     FcResult	r;
@@ -997,7 +997,7 @@ FcPatternGetFTFace (FcPattern *p, const char *object, int id, FT_Face *f)
 }
 
 FcResult
-FcPatternGetLangSet (FcPattern *p, const char *object, int id, FcLangSet **ls)
+FcPatternGetLangSet(const FcPattern *p, const char *object, int id, FcLangSet **ls)
 {
     FcValue	v;
     FcResult	r;
@@ -1012,7 +1012,7 @@ FcPatternGetLangSet (FcPattern *p, const char *object, int id, FcLangSet **ls)
 }
 
 FcPattern *
-FcPatternDuplicate (FcPattern *orig)
+FcPatternDuplicate (const FcPattern *orig)
 {
     FcPattern	    *new;
     int		    i;
