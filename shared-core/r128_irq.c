@@ -36,7 +36,7 @@
 #include "r128_drm.h"
 #include "r128_drv.h"
 
-void r128_dma_service( DRM_IRQ_ARGS )
+DRM_IRQ_RET r128_dma_service( DRM_IRQ_ARGS )
 {
 	drm_device_t *dev = (drm_device_t *) arg;
 	drm_r128_private_t *dev_priv = 
@@ -51,7 +51,9 @@ void r128_dma_service( DRM_IRQ_ARGS )
 		atomic_inc(&dev->vbl_received);
 		DRM_WAKEUP(&dev->vbl_queue);
 		DRM(vbl_send_signals)( dev );
+		return DRM_IRQ_HANDLED;
 	}
+	return DRM_IRQ_NONE;
 }
 
 int DRM(vblank_wait)(drm_device_t *dev, unsigned int *sequence)

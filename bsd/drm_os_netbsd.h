@@ -85,6 +85,9 @@ extern struct cfdriver DRM(cd);
 #define DRM_SUSER(p)		suser(p->p_ucred, &p->p_acflag)
 #define DRM_TASKQUEUE_ARGS	void *dev, int pending
 #define DRM_IRQ_ARGS		void *arg
+#define DRM_IRQ_RET		int
+#define DRM_NONE		/* FIXME */
+#define DRM_HANDLED		/* FIXME */
 #define DRM_DEVICE		drm_device_t *dev = device_lookup(&DRM(cd), minor(kdev))
 /* XXX Not sure if this is the 'right' version.. */
 #if __NetBSD_Version__ >= 106140000

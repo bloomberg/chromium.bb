@@ -580,7 +580,7 @@ typedef struct drm_device_dma {
  */
 typedef struct drm_agp_mem {
 	unsigned long      handle;	/**< handle */
-	agp_memory         *memory;	
+	DRM_AGP_MEM        *memory;	
 	unsigned long      bound;	/**< address */
 	int                pages;
 	struct drm_agp_mem *prev;	/**< previous entry */
@@ -593,7 +593,7 @@ typedef struct drm_agp_mem {
  * \sa DRM(agp_init)() and drm_device::agp.
  */
 typedef struct drm_agp_head {
-	agp_kern_info      agp_info;	/**< AGP device information */
+	DRM_AGP_KERN       agp_info;	/**< AGP device information */
 	drm_agp_mem_t      *memory;	/**< memory entries */
 	unsigned long      mode;	/**< AGP mode */
 	int                enabled;	/**< whether the AGP bus as been enabled */
@@ -829,10 +829,10 @@ extern void	     *DRM(ioremap_nocache)(unsigned long offset, unsigned long size,
 extern void	     DRM(ioremapfree)(void *pt, unsigned long size, drm_device_t *dev);
 
 #if __REALLY_HAVE_AGP
-extern agp_memory    *DRM(alloc_agp)(int pages, u32 type);
-extern int           DRM(free_agp)(agp_memory *handle, int pages);
-extern int           DRM(bind_agp)(agp_memory *handle, unsigned int start);
-extern int           DRM(unbind_agp)(agp_memory *handle);
+extern DRM_AGP_MEM   *DRM(alloc_agp)(int pages, u32 type);
+extern int           DRM(free_agp)(DRM_AGP_MEM *handle, int pages);
+extern int           DRM(bind_agp)(DRM_AGP_MEM *handle, unsigned int start);
+extern int           DRM(unbind_agp)(DRM_AGP_MEM *handle);
 #endif
 
 				/* Misc. IOCTL support (drm_ioctl.h) */
@@ -937,8 +937,7 @@ extern int           DRM(control)( struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg );
 extern int           DRM(irq_install)( drm_device_t *dev, int irq );
 extern int           DRM(irq_uninstall)( drm_device_t *dev );
-extern void          DRM(dma_service)( int irq, void *device,
-				       struct pt_regs *regs );
+extern DRM_IRQ_RET   DRM(dma_service)( DRM_IRQ_ARGS );
 extern void          DRM(driver_irq_preinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_postinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_uninstall)( drm_device_t *dev );
@@ -976,10 +975,10 @@ extern int            DRM(agp_unbind)(struct inode *inode, struct file *filp,
 				      unsigned int cmd, unsigned long arg);
 extern int            DRM(agp_bind)(struct inode *inode, struct file *filp,
 				    unsigned int cmd, unsigned long arg);
-extern agp_memory     *DRM(agp_allocate_memory)(size_t pages, u32 type);
-extern int            DRM(agp_free_memory)(agp_memory *handle);
-extern int            DRM(agp_bind_memory)(agp_memory *handle, off_t start);
-extern int            DRM(agp_unbind_memory)(agp_memory *handle);
+extern DRM_AGP_MEM    *DRM(agp_allocate_memory)(size_t pages, u32 type);
+extern int            DRM(agp_free_memory)(DRM_AGP_MEM *handle);
+extern int            DRM(agp_bind_memory)(DRM_AGP_MEM *handle, off_t start);
+extern int            DRM(agp_unbind_memory)(DRM_AGP_MEM *handle);
 #endif
 
 				/* Stub support (drm_stub.h) */

@@ -34,8 +34,28 @@
 #define DRM_DEVICE	drm_file_t	*priv	= filp->private_data; \
 			drm_device_t	*dev	= priv->dev
 			
-/** IRQ handler arguments */
-#define DRM_IRQ_ARGS	        int irq, void *arg, struct pt_regs *regs
+/** IRQ handler arguments and return type and values */
+#define DRM_IRQ_ARGS		int irq, void *arg, struct pt_regs *regs
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,69)
+#define DRM_IRQ_RET		void
+#define DRM_IRQ_NONE
+#define DRM_IRQ_HANDLED
+#else
+#define DRM_IRQ_RET		irqreturn_t
+#define DRM_IRQ_NONE		IRQ_NONE
+#define DRM_IRQ_HANDLED		IRQ_HANDLED
+#endif
+
+/** AGP types */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,70)
+#define DRM_AGP_MEM		agp_memory
+#define DRM_AGP_KERN		agp_kern_info
+#else
+#define DRM_AGP_MEM		struct agp_memory
+#define DRM_AGP_KERN		struct agp_kern_info
+#endif
+
 /** Task queue handler arguments */
 #define DRM_TASKQUEUE_ARGS	void *arg
 
