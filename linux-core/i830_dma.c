@@ -62,7 +62,7 @@ do {								\
    do { 							\
       _head = I830_READ(LP_RING + RING_HEAD) & HEAD_ADDR;	\
       _tail = I830_READ(LP_RING + RING_TAIL) & TAIL_ADDR;	\
-      for(_i = 0; _i < 65535; _i++);				\
+      udelay(10);						\
    } while(_head != _tail);					\
 } while(0)
 
@@ -390,8 +390,7 @@ static int i830_wait_ring(drm_device_t *dev, int n)
 		   	DRM_ERROR("lockup\n");
 		   	goto out_wait_ring;
 		}
-
-	   	for (i = 0 ; i < 2000 ; i++) ;
+		udelay(1);
 	}
 
 out_wait_ring:   

@@ -352,8 +352,7 @@ static int i810_wait_ring(drm_device_t *dev, int n)
 		   	DRM_ERROR("lockup\n");
 		   	goto out_wait_ring;
 		}
-
-	   	for (i = 0 ; i < 2000 ; i++) ;
+		udelay(1);
 	}
 
 out_wait_ring:
