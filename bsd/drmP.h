@@ -96,21 +96,20 @@ typedef struct drm_file drm_file_t;
 #define DRM_MEM_MAGIC	   3
 #define DRM_MEM_IOCTLS	   4
 #define DRM_MEM_MAPS	   5
-#define DRM_MEM_VMAS	   6
-#define DRM_MEM_BUFS	   7
-#define DRM_MEM_SEGS	   8
-#define DRM_MEM_PAGES	   9
-#define DRM_MEM_FILES	  10
-#define DRM_MEM_QUEUES	  11
-#define DRM_MEM_CMDS	  12
-#define DRM_MEM_MAPPINGS  13
-#define DRM_MEM_BUFLISTS  14
-#define DRM_MEM_AGPLISTS  15
-#define DRM_MEM_TOTALAGP  16
-#define DRM_MEM_BOUNDAGP  17
-#define DRM_MEM_CTXBITMAP 18
-#define DRM_MEM_STUB      19
-#define DRM_MEM_SGLISTS   20
+#define DRM_MEM_BUFS	   6
+#define DRM_MEM_SEGS	   7
+#define DRM_MEM_PAGES	   8
+#define DRM_MEM_FILES	  9
+#define DRM_MEM_QUEUES	  10
+#define DRM_MEM_CMDS	  11
+#define DRM_MEM_MAPPINGS  12
+#define DRM_MEM_BUFLISTS  13
+#define DRM_MEM_AGPLISTS  14
+#define DRM_MEM_TOTALAGP  15
+#define DRM_MEM_BOUNDAGP  16
+#define DRM_MEM_CTXBITMAP 17
+#define DRM_MEM_STUB	  18
+#define DRM_MEM_SGLISTS	  19
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 
@@ -158,11 +157,6 @@ typedef struct drm_ioctl_desc {
 	int		     root_only;
 } drm_ioctl_desc_t;
 
-typedef struct drm_devstate {
-	pid_t		  owner;	/* X server pid holding x_lock */
-
-} drm_devstate_t;
-
 typedef struct drm_magic_entry {
 	drm_magic_t	       magic;
 	struct drm_file	       *priv;
@@ -173,12 +167,6 @@ typedef struct drm_magic_head {
 	struct drm_magic_entry *head;
 	struct drm_magic_entry *tail;
 } drm_magic_head_t;
-
-typedef struct drm_vma_entry {
-	struct vm_area_struct *vma;
-	struct drm_vma_entry  *next;
-	pid_t		      pid;
-} drm_vma_entry_t;
 
 typedef struct drm_buf {
 	int		  idx;	       /* Index into master buflist	     */
@@ -436,7 +424,6 @@ struct drm_device {
 				/* Usage Counters */
 	int		  open_count;	/* Outstanding files open	   */
 	atomic_t	  ioctl_count;	/* Outstanding IOCTLs pending	   */
-	atomic_t	  vma_count;	/* Outstanding vma areas open	   */
 	int		  buf_use;	/* Buffers in use -- cannot alloc  */
 	atomic_t	  buf_alloc;	/* Buffer allocation in progress   */
 
@@ -456,7 +443,6 @@ struct drm_device {
 	drm_local_map_t	  **context_sareas;
 	int		  max_context;
 
-	drm_vma_entry_t	  *vmalist;	/* List of vmas (for debugging)	   */
 	drm_lock_data_t	  lock;		/* Information on hardware lock	   */
 
 				/* DMA queues (contexts) */

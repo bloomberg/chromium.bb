@@ -11,9 +11,6 @@ static int	   DRM(vm_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(clients_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(queues_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(bufs_info)DRM_SYSCTL_HANDLER_ARGS;
-#if DRM_DEBUG_CODExx
-static int	   DRM(vma_info)DRM_SYSCTL_HANDLER_ARGS;
-#endif
 #if DRM_DMA_HISTOGRAM
 static int	   DRM(histo_info)DRM_SYSCTL_HANDLER_ARGS;
 #endif
@@ -28,9 +25,6 @@ struct DRM(sysctl_list) {
 	{ "clients", DRM(clients_info) },
 	{ "queues",  DRM(queues_info)  },
 	{ "bufs",    DRM(bufs_info)    },
-#if DRM_DEBUG_CODExx
-	{ "vma",     DRM(vma_info)     },
-#endif
 #if DRM_DMA_HISTOGRAM
 	{ "histo",   drm_histo_info)   },
 #endif
@@ -308,92 +302,6 @@ static int DRM(clients_info)DRM_SYSCTL_HANDLER_ARGS
 	DRM_UNLOCK;
 	return ret;
 }
-
-#if DRM_DEBUG_CODExx
-
-static int DRM(_vma_info)DRM_SYSCTL_HANDLER_ARGS
-{
-	drm_device_t	      *dev = arg1;
-	drm_vma_entry_t	      *pt;
-	pgd_t		      *pgd;
-	pmd_t		      *pmd;
-	pte_t		      *pte;
-	unsigned long	      i;
-	struct vm_area_struct *vma;
-	unsigned long	      address;
-#if defined(__i386__)
-	unsigned int	      pgprot;
-#endif
-	char		      buf[128];
-	int		      error;
-
-	DRM_SYSCTL_PRINT("vma use count: %d, high_memory = %p, 0x%08lx\n",
-		       atomic_read(&dev->vma_count),
-		       high_memory, virt_to_phys(high_memory));
-	for (pt = dev->vmalist; pt; pt = pt->next) {
-		if (!(vma = pt->vma)) continue;
-		DRM_SYSCTL_PRINT("\n%5d 0x%08lx-0x%08lx %c%c%c%c%c%c 0x%08lx",
-			       pt->pid,
-			       vma->vm_start,
-			       vma->vm_end,
-			       vma->vm_flags & VM_READ	   ? 'r' : '-',
-			       vma->vm_flags & VM_WRITE	   ? 'w' : '-',
-			       vma->vm_flags & VM_EXEC	   ? 'x' : '-',
-			       vma->vm_flags & VM_MAYSHARE ? 's' : 'p',
-			       vma->vm_flags & VM_LOCKED   ? 'l' : '-',
-			       vma->vm_flags & VM_IO	   ? 'i' : '-',
-			       vma->vm_offset );
-#if defined(__i386__)
-		pgprot = pgprot_val(vma->vm_page_prot);
-		DRM_SYSCTL_PRINT(" %c%c%c%c%c%c%c%c%c",
-			       pgprot & _PAGE_PRESENT  ? 'p' : '-',
-			       pgprot & _PAGE_RW       ? 'w' : 'r',
-			       pgprot & _PAGE_USER     ? 'u' : 's',
-			       pgprot & _PAGE_PWT      ? 't' : 'b',
-			       pgprot & _PAGE_PCD      ? 'u' : 'c',
-			       pgprot & _PAGE_ACCESSED ? 'a' : '-',
-			       pgprot & _PAGE_DIRTY    ? 'd' : '-',
-			       pgprot & _PAGE_4M       ? 'm' : 'k',
-			       pgprot & _PAGE_GLOBAL   ? 'g' : 'l' );
-#endif		
-		DRM_SYSCTL_PRINT("\n");
-		for (i = vma->vm_start; i < vma->vm_end; i += PAGE_SIZE) {
-			pgd = pgd_offset(vma->vm_mm, i);
-			pmd = pmd_offset(pgd, i);
-			pte = pte_offset(pmd, i);
-			if (pte_present(*pte)) {
-				address = __pa(pte_page(*pte))
-					+ (i & (PAGE_SIZE-1));
-				DRM_SYSCTL_PRINT("      0x%08lx -> 0x%08lx"
-					       " %c%c%c%c%c\n",
-					       i,
-					       address,
-					       pte_read(*pte)  ? 'r' : '-',
-					       pte_write(*pte) ? 'w' : '-',
-					       pte_exec(*pte)  ? 'x' : '-',
-					       pte_dirty(*pte) ? 'd' : '-',
-					       pte_young(*pte) ? 'a' : '-' );
-			} else {
-				DRM_SYSCTL_PRINT("      0x%08lx\n", i);
-			}
-		}
-	}
-	
-	SYSCTL_OUT(req, "", 1);
-	return 0;
-}
-
-static int DRM(vma_info)DRM_SYSCTL_HANDLER_ARGS
-{
-	drm_device_t *dev = arg1;
-	int	     ret;
-
-	DRM_LOCK;
-	ret = DRM(_vma_info)(oidp, arg1, arg2, req);
-	DRM_UNLOCK;
-	return ret;
-}
-#endif
 
 
 #if DRM_DMA_HISTOGRAM

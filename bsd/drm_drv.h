@@ -433,7 +433,6 @@ static int DRM(setup)( drm_device_t *dev )
 
 	DRIVER_PRESETUP();
 	atomic_set( &dev->ioctl_count, 0 );
-	atomic_set( &dev->vma_count, 0 );
 	dev->buf_use = 0;
 	atomic_set( &dev->buf_alloc, 0 );
 
@@ -496,7 +495,6 @@ static int DRM(setup)( drm_device_t *dev )
 	TAILQ_INIT(dev->maplist);
 	dev->map_count = 0;
 
-	dev->vmalist = NULL;
 	dev->lock.hw_lock = NULL;
 	dev->lock.lock_queue = 0;
 	dev->queue_count = 0;
@@ -550,7 +548,6 @@ static int DRM(takedown)( drm_device_t *dev )
 	drm_magic_entry_t *pt, *next;
 	drm_local_map_t *map;
 	drm_map_list_entry_t *list;
-	drm_vma_entry_t *vma, *vma_next;
 	int i;
 
 	DRM_DEBUG( "\n" );
@@ -606,15 +603,6 @@ static int DRM(takedown)( drm_device_t *dev )
 		dev->agp->enabled  = 0;
 	}
 #endif
-
-				/* Clear vma list (only built for debugging) */
-	if ( dev->vmalist ) {
-		for ( vma = dev->vmalist ; vma ; vma = vma_next ) {
-			vma_next = vma->next;
-			DRM(free)( vma, sizeof(*vma), DRM_MEM_VMAS );
-		}
-		dev->vmalist = NULL;
-	}
 
 	if( dev->maplist ) {
 		while ((list=TAILQ_FIRST(dev->maplist))) {
