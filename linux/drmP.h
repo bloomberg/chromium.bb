@@ -202,6 +202,14 @@
                     prefetch(pos->member.next))
 #endif
 
+#ifndef list_for_each_entry_safe
+#define list_for_each_entry_safe(pos, n, head, member)                  \
+        for (pos = list_entry((head)->next, typeof(*pos), member),      \
+                n = list_entry(pos->member.next, typeof(*pos), member); \
+             &pos->member != (head);                                    \
+             pos = n, n = list_entry(n->member.next, typeof(*n), member))
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,19)
 static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 {
