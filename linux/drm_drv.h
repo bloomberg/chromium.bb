@@ -532,7 +532,7 @@ static drm_pci_id_list_t DRM(pciidlist)[] = {
 	DRIVER_PCI_IDS
 };
 
-static int probe(struct pci_dev *pdev, const struct pci_device_id *id)
+static int DRM(probe)(struct pci_dev *pdev)
 {
 	drm_device_t *dev;
 #if __HAVE_CTX_BITMAP
@@ -603,33 +603,20 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *id)
 #endif
 	DRM(numdevs)++; /* no errors, mark it reserved */
 	
-	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d\n",
+	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d: %s\n",
 		DRIVER_NAME,
 		DRIVER_MAJOR,
 		DRIVER_MINOR,
 		DRIVER_PATCHLEVEL,
 		DRIVER_DATE,
-		dev->minor );
+		dev->minor,
+		desc );
 
 	DRIVER_POSTINIT();
 
 	return 0;
 }
 
-static void __exit remove(struct pci_dev *dev)
-{
-}
-
-static struct pci_device_id device_id_table[] = {
-	{ PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-};
-
-static struct pci_driver driver = {
-	.name	  = DRIVER_NAME,
-	.id_table = device_id_table,
-	.probe	  = probe,
-	.remove	  = remove,
-};
 
 /**
  * Module initialization. Called via init_module at module load time, or via
@@ -646,6 +633,8 @@ static struct pci_driver driver = {
  */
 static int __init drm_init( void )
 {
+	struct pci_dev *pdev;
+
 	DRM_DEBUG( "\n" );
 
 #ifdef MODULE
@@ -654,7 +643,10 @@ static int __init drm_init( void )
 
 	DRM(mem_init)();
 
-	return pci_module_init (&driver);;
+	pci_for_each_dev(pdev) {
+		DRM(probe)(pdev);
+	}
+	return 0;
 }
 
 /**
@@ -670,8 +662,6 @@ static void __exit drm_cleanup( void )
 	int i;
 
 	DRM_DEBUG( "\n" );
-
-	pci_unregister_driver (&driver);
 
 	for (i = DRM(numdevs) - 1; i >= 0; i--) {
 		dev = &(DRM(device)[i]);
