@@ -1,3 +1,10 @@
+2004-02-01  Tor Lillqvist  <tml@iki.fi>
+
+	* src/fccfg.c (FcConfigCreate): fontconfig, at least as used by
+	GIMP and/or PangoFT2 on Windows, crashes when trying to save the
+	cache if config->cache is NULL, which happens if FcConfigHome() is
+	NULL. Guard against that by using the temp folder in that case.
+
 2004-01-03  Roozbeh Pournader  <roozbeh@sharif.edu>
 
 	* fc-lang/az_ir.orth:

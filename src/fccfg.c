@@ -72,6 +72,31 @@ FcConfigCreate (void)
 	if (!FcConfigSetCache (config, (FcChar8 *) ("~/" FC_USER_CACHE_FILE)))
 	    goto bail6;
 
+#ifdef _WIN32
+    if (config->cache == 0)
+    {
+	/* If no home, use the temp folder. */
+	FcChar8	    dummy[1];
+	int	    templen = GetTempPath (1, dummy);
+	FcChar8     *temp = malloc (templen + 1);
+
+	if (temp)
+	{
+	    FcChar8 *cache_dir;
+
+	    GetTempPath (templen + 1, temp);
+	    cache_dir = FcStrPlus (temp, FC_USER_CACHE_FILE);
+	    free (temp);
+	    if (!FcConfigSetCache (config, cache_dir))
+	    {
+		FcStrFree (cache_dir);
+		goto bail6;
+	    }
+	    FcStrFree (cache_dir);
+	}
+    }
+#endif
+
     config->blanks = 0;
 
     config->substPattern = 0;
