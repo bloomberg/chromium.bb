@@ -1786,12 +1786,6 @@ FcParsePatelt (FcConfigParse *parse)
 	FcConfigMessage (parse, FcSevereWarning, "missing pattern element name");
 	return;
     }
-    name = FcObjectStaticName (name);
-    if (!name)
-    {
-	FcConfigMessage (parse, FcSevereError, "out of memory");
-	return;
-    }
     
     for (;;)
     {

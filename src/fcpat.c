@@ -321,18 +321,12 @@ FcValueListEntCreate (FcValueList *h)
     FcValueListEnt  *e;
     FcValueList	    *l, *new;
     int		    n;
-    int		    string_size = 0;
-    FcChar8	    *strs;
     int		    size;
 
     n = 0;
     for (l = h; l; l = l->next)
-    {
-	if (l->value.type == FcTypeString)
-	    string_size += strlen ((char *) l->value.u.s) + 1;
 	n++;
-    }
-    size = sizeof (FcValueListAlign) + n * sizeof (FcValueList) + string_size;
+    size = sizeof (FcValueListAlign) + n * sizeof (FcValueList);
     FcValueListFrozenCount[h->value.type]++;
     FcValueListFrozenBytes[h->value.type] += size;
     ea = malloc (size);
@@ -341,21 +335,17 @@ FcValueListEntCreate (FcValueList *h)
     FcMemAlloc (FC_MEM_VALLIST, size);
     e = &ea->ent;
     e->list = (FcValueList *) (ea + 1);
-    strs = (FcChar8 *) (e->list + n);
     new = e->list;
     for (l = h; l; l = l->next, new++)
     {
 	if (l->value.type == FcTypeString)
 	{
 	    new->value.type = FcTypeString;
-	    new->value.u.s = strs;
-	    strcpy ((char *) strs, (char *) l->value.u.s);
-	    strs += strlen ((char *) strs) + 1;
+	    new->value.u.s = FcObjectStaticName (l->value.u.s);
 	}
 	else
 	{
-	    new->value = l->value;
-	    new->value = FcValueSave (new->value);
+	    new->value = FcValueSave (l->value);
 	}
 	new->binding = l->binding;
 	if (l->next)
@@ -474,8 +464,6 @@ FcPatternBaseFreeze (FcPattern *b)
     FcPatternEnt	**bucket = &FcPatternHashTable[hash % FC_VALUE_LIST_HASH_SIZE];
     FcPatternEnt	*ent;
     int			i;
-    char		*objects;
-    int			size_objects;
     int			size;
 
     FcPatternTotal++;
@@ -485,7 +473,7 @@ FcPatternBaseFreeze (FcPattern *b)
 	{
 	    for (i = 0; i < b->num; i++)
 	    {
-		if (strcmp (b->elts[i].object, ent->pattern.elts[i].object))
+		if (b->elts[i].object != ent->pattern.elts[i].object)
 		    break;
 		if (b->elts[i].values != ent->pattern.elts[i].values)
 		    break;
@@ -496,13 +484,9 @@ FcPatternBaseFreeze (FcPattern *b)
     }
 
     /*
-     * Compute size of pattern + elts + object names
+     * Compute size of pattern + elts
      */
-    size_objects = 0;
-    for (i = 0; i < b->num; i++)
-	size_objects += strlen (b->elts[i].object) + 1;
-
-    size = sizeof (FcPatternEnt) + b->num*sizeof (FcPatternElt) + size_objects;
+    size = sizeof (FcPatternEnt) + b->num*sizeof (FcPatternElt);
     ent = malloc (size);
     if (!ent)
 	return 0;
@@ -515,13 +499,10 @@ FcPatternBaseFreeze (FcPattern *b)
     ent->pattern.size = b->num;
     ent->pattern.ref = FC_REF_CONSTANT;
 
-    objects = (char *) (ent->pattern.elts + b->num);
     for (i = 0; i < b->num; i++)
     {
 	ent->pattern.elts[i].values = b->elts[i].values;
-	strcpy (objects, b->elts[i].object);
-	ent->pattern.elts[i].object = objects;
-	objects += strlen (objects) + 1;
+	ent->pattern.elts[i].object = b->elts[i].object;
     }
 
     ent->hash = hash;
@@ -678,7 +659,7 @@ FcPatternInsertElt (FcPattern *p, const char *object)
 	/* bump count */
 	p->num++;
 	
-	p->elts[i].object = object;
+	p->elts[i].object = FcObjectStaticName (object);
 	p->elts[i].values = 0;
     }
     
@@ -697,7 +678,7 @@ FcPatternEqual (const FcPattern *pa, const FcPattern *pb)
 	return FcFalse;
     for (i = 0; i < pa->num; i++)
     {
-	if (strcmp (pa->elts[i].object, pb->elts[i].object) != 0)
+	if (pa->elts[i].object != pb->elts[i].object)
 	    return FcFalse;
 	if (!FcValueListEqual (pa->elts[i].values, pb->elts[i].values))
 	    return FcFalse;
@@ -1199,11 +1180,14 @@ FcObjectStaticName (const char *name)
     FcChar32		hash = FcStringHash ((const FcChar8 *) name);
     struct objectBucket	**p;
     struct objectBucket	*b;
+    int			size;
 
     for (p = &buckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
 	if (b->hash == hash && !strcmp (name, (char *) (b + 1)))
 	    return (char *) (b + 1);
-    b = malloc (sizeof (struct objectBucket) + strlen (name) + 1);
+    size = sizeof (struct objectBucket) + strlen (name) + 1;
+    b = malloc (size);
+    FcMemAlloc (FC_MEM_STATICSTR, size);
     if (!b)
 	return NULL;
     b->next = 0;

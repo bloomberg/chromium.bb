@@ -1,3 +1,18 @@
+2004-12-06  michael meeks <mmeeks@novell.com>
+
+	Reviewed by: Keith Packard  <keithp@keithp.com>
+
+	* src/fcinit.c: (FcMemReport):
+	* src/fcint.h:
+	* src/fclist.c: (FcObjectSetAdd):
+	* src/fcpat.c: (FcValueListEntCreate), (FcPatternBaseFreeze),
+	(FcPatternInsertElt), (FcPatternEqual), (FcObjectStaticName):
+	* src/fcxml.c: (FcParsePatelt):
+	memoize strings and share a single copy for all uses.  Note that
+	this could be improved further by using statically allocated blocks
+	and gluing multiple strings together, but I'm basically lazy.
+	In my environment with 800 font files, I get a savings of about 90KB.
+
 2004-12-06  Keith Packard  <keithp@keithp.com>
 
 	* COPYING:

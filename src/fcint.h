@@ -100,8 +100,9 @@ typedef struct _FcSymbolic {
 #define FC_MEM_VSTACK	    26
 #define FC_MEM_ATTR	    27
 #define FC_MEM_PSTACK	    28
+#define FC_MEM_STATICSTR    29
 
-#define FC_MEM_NUM	    29
+#define FC_MEM_NUM	    30
 
 typedef enum _FcValueBinding {
     FcValueBindingWeak, FcValueBindingStrong, FcValueBindingSame

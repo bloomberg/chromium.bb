@@ -82,7 +82,7 @@ FcObjectSetAdd (FcObjectSet *os, const char *object)
 	mid++;
     memmove (os->objects + mid + 1, os->objects + mid, 
 	     (os->nobject - mid) * sizeof (const char *));
-    os->objects[mid] = object;
+    os->objects[mid] = FcObjectStaticName (object);
     os->nobject++;
     return FcTrue;
 }

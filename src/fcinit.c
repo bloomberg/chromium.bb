@@ -196,6 +196,7 @@ static struct {
     { "vstack" },
     { "attr" },
     { "pstack" },
+    { "staticstr" },
 };
 
 static int  FcAllocCount, FcAllocMem;
@@ -216,13 +217,13 @@ FcMemReport (void)
     printf ("\t   Which       Alloc           Free           Active\n");
     printf ("\t           count   bytes   count   bytes   count   bytes\n");
     for (i = 0; i < FC_MEM_NUM; i++)
-	printf ("\t%8.8s%8d%8d%8d%8d%8d%8d\n",
+	printf ("%16.16s%8d%8d%8d%8d%8d%8d\n",
 		FcInUse[i].name,
 		FcInUse[i].alloc_count, FcInUse[i].alloc_mem,
 		FcInUse[i].free_count, FcInUse[i].free_mem,
 		FcInUse[i].alloc_count - FcInUse[i].free_count,
 		FcInUse[i].alloc_mem - FcInUse[i].free_mem);
-    printf ("\t%8.8s%8d%8d%8d%8d%8d%8d\n",
+    printf ("%16.16s%8d%8d%8d%8d%8d%8d\n",
 	    "Total",
 	    FcAllocCount, FcAllocMem,
 	    FcFreeCount, FcFreeMem,
