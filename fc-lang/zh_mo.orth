@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/fc-lang/ka.orth,v 1.2 2002/07/06 23:59:16 keithp Exp $
+# $XFree86$
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -21,13 +21,7 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Georgian (KA)
-0589	# Armenian full stop (vertsaket)
-10a0-10c5
-10d0-10f6
-#10f7-10f8	# additional letters for Mingrelian and Svan
-10fb
-#2018	# single quote
-#201a	# single quote
-#201c	# double quote
-#201e	# double quote
+# Chinese in Macau (ZH-MO)
+#
+# Just use Big5 as for ZH-TW
+include zh_tw.orth

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.5 2002/06/29 20:31:02 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.6 2002/07/06 23:47:43 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -30,198 +30,33 @@
 #include <freetype/internal/ftobjs.h>
 #include <freetype/tttables.h>
 
-static const FcChar8	*fcLangLatin1[] = {
-    (FcChar8 *) "br",   /* Breton */
-    (FcChar8 *) "ca",   /* Catalan */
-    (FcChar8 *) "da",   /* Danish */
-    (FcChar8 *) "de",   /* German */
-    (FcChar8 *) "en",   /* English */
-    (FcChar8 *) "es",   /* Spanish */
-    (FcChar8 *) "eu",   /* Basque */
-    (FcChar8 *) "fi",   /* Finnish */
-    (FcChar8 *) "fo",   /* Faroese */
-    (FcChar8 *) "fr",   /* French */
-    (FcChar8 *) "ga",   /* Irish */
-    (FcChar8 *) "gd",   /* Scottish */
-    (FcChar8 *) "gl",   /* Galician */
-    (FcChar8 *) "is",   /* Islandic */
-    (FcChar8 *) "it",   /* Italian */
-    (FcChar8 *) "kl",   /* Greenlandic */
-    (FcChar8 *) "la",   /* Latin */
-    (FcChar8 *) "nl",   /* Dutch */
-    (FcChar8 *) "no",   /* Norwegian */
-    (FcChar8 *) "pt",   /* Portuguese */
-    (FcChar8 *) "rm",   /* Rhaeto-Romanic */
-    (FcChar8 *) "sq",   /* Albanian */
-    (FcChar8 *) "sv",   /* Swedish */
-    0
-};
-
-static const FcChar8	*fcLangLatin2[] = {
-    (FcChar8 *) "cs",   /* Czech */
-    (FcChar8 *) "de",   /* German */
-    (FcChar8 *) "en",   /* English */
-    (FcChar8 *) "fi",   /* Finnish */
-    (FcChar8 *) "hr",   /* Croatian */
-    (FcChar8 *) "hu",   /* Hungarian */
-    (FcChar8 *) "la",   /* Latin */
-    (FcChar8 *) "pl",   /* Polish */
-    (FcChar8 *) "ro",   /* Romanian */
-    (FcChar8 *) "sk",   /* Slovak */
-    (FcChar8 *) "sl",   /* Slovenian */
-    (FcChar8 *) "sq",   /* Albanian */
-    0
-};
-
-static const FcChar8	*fcLangCyrillic[] = {
-    (FcChar8 *) "az",   /* Azerbaijani */
-    (FcChar8 *) "ba",   /* Bashkir */
-    (FcChar8 *) "bg",   /* Bulgarian */
-    (FcChar8 *) "be",   /* Byelorussian */
-    (FcChar8 *) "kk",   /* Kazakh */
-    (FcChar8 *) "ky",   /* Kirghiz */
-    (FcChar8 *) "mk",   /* Macedonian */
-    (FcChar8 *) "mo",   /* Moldavian */
-    (FcChar8 *) "mn",   /* Mongolian */
-    (FcChar8 *) "ru",   /* Russian */
-    (FcChar8 *) "sr",   /* Serbian */
-    (FcChar8 *) "tg",   /* Tadzhik */
-    (FcChar8 *) "tt",   /* Tatar */
-    (FcChar8 *) "tk",   /* Turkmen */
-    (FcChar8 *) "uz",   /* Uzbek */
-    (FcChar8 *) "uk",   /* Ukrainian */
-    0,
-};
-
-static const FcChar8	*fcLangGreek[] = {
-    (FcChar8 *) "el",   /* Greek */
-    0
-};
-
-static const FcChar8	*fcLangTurkish[] = {
-    (FcChar8 *) "tr",   /* Turkish */
-    0
-};
-
-static const FcChar8	*fcLangHebrew[] = {
-    (FcChar8 *) "he",   /* Hebrew */
-    (FcChar8 *) "yi",   /* Yiddish */
-    0
-};
-
-static const FcChar8	*fcLangArabic[] = {
-    (FcChar8 *) "ar",   /* arabic */
-    0
-};
-
-static const FcChar8	*fcLangWindowsBaltic[] = {
-    (FcChar8 *) "da",   /* Danish */
-    (FcChar8 *) "de",   /* German */
-    (FcChar8 *) "en",   /* English */
-    (FcChar8 *) "et",   /* Estonian */
-    (FcChar8 *) "fi",   /* Finnish */
-    (FcChar8 *) "la",   /* Latin */
-    (FcChar8 *) "lt",   /* Lithuanian */
-    (FcChar8 *) "lv",   /* Latvian */
-    (FcChar8 *) "no",   /* Norwegian */
-    (FcChar8 *) "pl",   /* Polish */
-    (FcChar8 *) "sl",   /* Slovenian */
-    (FcChar8 *) "sv",   /* Swedish */
-    0
-};
-
-static const FcChar8	*fcLangVietnamese[] = {
-    (FcChar8 *) "vi",   /* Vietnamese */
-    0,
-};
-
-static const FcChar8	*fcLangThai[] = {
-    (FcChar8 *) "th",   /* Thai */
-    0,
-};
-
-static const FcChar8	*fcLangJapanese[] = {
-    (FcChar8 *) "ja",   /* Japanese */
-    0,
-};
-
-static const FcChar8	*fcLangSimplifiedChinese[] = {
-    (FcChar8 *) "zh-cn",    /* Chinese-China */
-    0,
-};
-
-static const FcChar8	*fcLangKorean[] = {
-    (FcChar8 *) "ko",   /* Korean */
-    0,
-};
-
-static const FcChar8	*fcLangTraditionalChinese[] = {
-    (FcChar8 *) "zh-tw",    /* Chinese-Taiwan */
-    0,
-};
-
-static const FcChar8	*fcLangEnglish[] = {
-    (FcChar8 *) "en",   /* English */
-    0,
-};
-
 /*
- * Elide some of the less useful bits
+ * Keep Han languages separated by eliminating languages
+ * that the codePageRange bits says aren't supported
  */
+
 static const struct {
     int		    bit;
-    const FcChar8   **lang;
+    const FcChar8   *lang;
 } FcCodePageRange[] = {
-    { 0,	fcLangLatin1 },
-    { 1,	fcLangLatin2 },
-    { 2,	fcLangCyrillic },
-    { 3,	fcLangGreek },
-    { 4,	fcLangTurkish },
-    { 5,	fcLangHebrew },
-    { 6,	fcLangArabic },
-    { 7,	fcLangWindowsBaltic },
-    { 8,	fcLangVietnamese },
-/* 9-15 reserved for Alternate ANSI */
-    { 16,	fcLangThai },
-    { 17,	fcLangJapanese },
-    { 18,	fcLangSimplifiedChinese },
-    { 19,	fcLangKorean },
-    { 20,	fcLangTraditionalChinese },
-    { 21,	fcLangKorean },
-/* 22-28 reserved for Alternate ANSI & OEM */
-/*    { 29,	fcLangMacintosh }, */
-/*    { 30,	fcLangOem }, */
-/*     { 31,	fcLangSymbol },*/
-/* 32-47 reserved for OEM */
-    { 48,	fcLangGreek },
-    { 49,	fcLangCyrillic },
-/*    { 50,	fcLangMsdosNordic }, */
-    { 51,	fcLangArabic },
-/*    { 52,	fcLangMSDOS_CANADIAN_FRENCH }, */
-    { 53,	fcLangHebrew },
-/*    { 54,	fcLangMSDOS_ICELANDIC }, */
-/*    { 55,	fcLangMSDOS_PORTUGUESE }, */
-    { 56,	fcLangTurkish },
-    { 57,	fcLangCyrillic },
-    { 58,	fcLangLatin2 },
-    { 59,	fcLangWindowsBaltic },
-    { 60,	fcLangGreek },
-    { 61,	fcLangArabic },
-    { 62,	fcLangLatin1 },
-    { 63,	fcLangEnglish },
+    { 17,	(const FcChar8 *) "ja" },
+    { 18,	(const FcChar8 *) "zh-tw" },
+    { 19,	(const FcChar8 *) "ko" },
+    { 20,	(const FcChar8 *) "zh-cn" },
 };
 
 #define NUM_CODE_PAGE_RANGE (sizeof FcCodePageRange / sizeof FcCodePageRange[0])
 
 FcBool
-FcFreeTypeHasLang (FcPattern *pattern, const FcChar8 *lang)
+FcFreeTypeIsExclusiveLang (const FcChar8  *lang)
 {
-    FcChar8	*old;
-    int		i;
+    int	    i;
 
-    for (i = 0; FcPatternGetString (pattern, FC_LANG, i, &old) == FcResultMatch; i++)
-	if (!FcStrCmp (lang, old))
+    for (i = 0; i < NUM_CODE_PAGE_RANGE; i++)
+    {
+	if (FcLangCompare (lang, FcCodePageRange[i].lang) != FcLangDifferentLang)
 	    return FcTrue;
+    }
     return FcFalse;
 }
 
@@ -240,10 +75,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     FT_Library	    ftLibrary;
     const FcChar8   *family;
     TT_OS2	    *os2;
-    FcChar32	    codepoints;
-    FcChar8	    *lang;
-    FcBool	    hasLang = FcFalse;
-    
+    const FcChar8   *exclusiveLang = 0;
 
     if (FT_Init_FreeType (&ftLibrary))
 	return 0;
@@ -335,16 +167,17 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    }
 	    if (bits & (1 << bit))
 	    {
-		int		j;
-		const FcChar8	*lang;
-
-		for (j = 0; (lang = FcCodePageRange[i].lang[j]); j++)
-		    if (!FcFreeTypeHasLang (pat, lang))
-		    {
-			if (!FcPatternAddString (pat, FC_LANG, lang))
-			    goto bail1;
-			hasLang = FcTrue;
-		    }
+		/* 
+		 * If the font advertises support for multiple
+		 * "exclusive" languages, then include support
+		 * for any language found to have coverage
+		 */
+		if (exclusiveLang)
+		{
+		    exclusiveLang = 0;
+		    break;
+		}
+		exclusiveLang = FcCodePageRange[i].lang;
 	    }
 	}
     }
@@ -356,12 +189,11 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!cs)
 	goto bail1;
 
-    codepoints = FcCharSetCount (cs);
     /*
      * Skip over PCF fonts that have no encoded characters; they're
      * usually just Unicode fonts transcoded to some legacy encoding
      */
-    if (codepoints == 0)
+    if (FcCharSetCount (cs) == 0)
     {
 	if (!strcmp(FT_MODULE_CLASS(&face->driver->root)->module_name, "pcf"))
 	    goto bail2;
@@ -370,18 +202,8 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!FcPatternAddCharSet (pat, FC_CHARSET, cs))
 	goto bail2;
 
-    if (!hasLang)
-    {
-	if (!FcFreeTypeSetLang (pat, cs))
-	    goto bail2;
-
-	/*
-	 * Make sure it has a lang entry
-	 */
-	if (FcPatternGetString (pat, FC_LANG, 0, &lang) != FcResultMatch)
-	    if (!FcPatternAddString (pat, FC_LANG, (FcChar8 *) "x-unknown"))
-		goto bail2;
-    }
+    if (!FcFreeTypeSetLang (pat, cs, exclusiveLang))
+        goto bail2;
 
     /*
      * Drop our reference to the charset

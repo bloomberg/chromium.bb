@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.13 2002/06/03 08:31:15 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.16 2002/07/06 23:47:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -399,6 +399,9 @@ FcFontDebug (void);
     
 /* fcfreetype.c */
 FcBool
+FcFreeTypeIsExclusiveLang (const FcChar8  *lang);
+
+FcBool
 FcFreeTypeHasLang (FcPattern *pattern, const FcChar8 *lang);
 
 /* fcfs.c */
@@ -470,7 +473,9 @@ FcMemFree (int kind, int size);
 
 /* fclang.c */
 FcBool
-FcFreeTypeSetLang (FcPattern *pattern, FcCharSet *charset);
+FcFreeTypeSetLang (FcPattern	    *pattern, 
+		   FcCharSet	    *charset, 
+		   const FcChar8    *exclusiveLang);
 
 FcLangResult
 FcLangCompare (const FcChar8 *s1, const FcChar8 *s2);

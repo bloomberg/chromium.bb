@@ -14,7 +14,7 @@ built.
     afr		af	Afrikaans 					afrikaans
     aka			Akan 						akan
     akk			Akkadian 					akkadien
-    alb/sqi*	sq	Albanian 					albanais
+*   alb/sqi*	sq	Albanian 					albanais
     ale			Aleut 						aléoute
     alg			Algonquian languages				algonquines, langues
     amh		am	Amharic 					amharique
@@ -22,7 +22,7 @@ built.
     apa			Apache languages				apache
 *   ara		ar	Arabic 						arabe
     arc			Aramaic 					araméen
-    arm/hye*	hy	Armenian 					arménien
+*   arm/hye*	hy	Armenian 					arménien
     arn			Araucanian 					araucan
     arp			Arapaho 					arapaho
     art			Artificial (Other)				artificielles, autres langues
@@ -42,7 +42,7 @@ built.
     bal			Baluchi						baloutchi
     bam			Bambara						bambara
     ban			Balinese					balinais
-    baq/eus*	eu	Basque						basque
+*   baq/eus*	eu	Basque						basque
     bas			Basa						basa
     bat			Baltic (Other)					baltiques, autres langues
     bej			Beja						bedja
@@ -57,7 +57,7 @@ built.
     bis		bi	Bislama						bichlamar
     bla			Siksika						blackfoot
     bnt			Bantu (Other)					bantoues, autres langues
-    tib/bod*	bo	Tibetan						tibétain
+*   tib/bod*	bo	Tibetan						tibétain
     bos		bs	Bosnian						bosniaque
     bra			Braj						braj
 *   bre		br	Breton						breton
@@ -73,12 +73,12 @@ built.
     cau			Caucasian (Other)				caucasiennes, autres langues
     ceb			Cebuano						cebuano
     cel			Celtic (Other)					celtiques, autres langues
-    cze/ces*	cs	Czech						tchèque
+*   cze/ces*	cs	Czech						tchèque
     cha		ch	Chamorro					chamorro
     chb			Chibcha						chibcha
     che		ce	Chechen						tchétchène
     chg			Chagatai					djaghataï
-    chi/zho*	zh	Chinese						chinois
+*   chi/zho*	zh	Chinese						chinois
     chk			Chuukese					chuuk
     chm			Mari						mari
     chn			Chinook jargon					chinook, jargon
@@ -113,7 +113,7 @@ built.
     dra			Dravidian (Other)				dravidiennes, autres langues
     dua			Duala						douala
     dum			Dutch, Middle (ca.1050-1350)			néerlandais moyen (ca. 1050-1350)
-    dut/nld*	nl	Dutch						néerlandais
+*   dut/nld*	nl	Dutch						néerlandais
     dyu			Dyula						dioula
     dzo		dz	Dzongkha					dzongkha
     efi			Efik						efik
@@ -146,8 +146,8 @@ built.
     gay			Gayo						gayo
     gba			Gbaya						gbaya
     gem			Germanic (Other)				germaniques, autres langues
-    geo/kat*	ka	Georgian					géorgien
-    ger/deu*	de	German						allemand
+*   geo/kat*	ka	Georgian					géorgien
+*   ger/deu*	de	German						allemand
     gez			Geez						guèze
     gil			Gilbertese					kiribati
 *   gla		gd	Gaelic; Scottish Gaelic				gaélique; gaélique écossais
@@ -161,7 +161,7 @@ built.
     got			Gothic						gothique
     grb			Grebo						grebo
     grc			Greek, Ancient (to 1453)			grec ancien (jusqu'à 1453)
-    gre/ell*	el	Greek, Modern (1453-)				grec moderne (après 1453)
+*   gre/ell*	el	Greek, Modern (1453-)				grec moderne (après 1453)
     grn		gn	Guarani						guarani
 *   guj		gu	Gujarati					goudjrati
     gwi			Gwich´in					gwich´in
@@ -195,7 +195,7 @@ built.
     ipk		ik	Inupiaq						inupiaq
     ira			Iranian (Other)					iraniennes, autres langues
     iro			Iroquoian languages				iroquoises, langues (famille)
-    ice/isl*	is	Icelandic					islandais
+*   ice/isl*	is	Icelandic					islandais
 *   ita		it	Italian						italien
     jav		jv	Javanese					javanais
 *   jpn		ja	Japanese					japonais
@@ -271,7 +271,7 @@ built.
     mic			Micmac						micmac
     min			Minangkabau					minangkabau
     mis			Miscellaneous languages				diverses, langues
-    mac/mkd*	mk	Macedonian					macédonien
+*   mac/mkd*	mk	Macedonian					macédonien
     mkh			Mon-Khmer (Other)				môn-khmer, autres langues
     mlg		mg	Malagasy					malgache
 *   mlt		mt	Maltese						maltais
@@ -361,9 +361,9 @@ built.
     san		sa	Sanskrit					sanskrit
     sas			Sasak						sasak
     sat			Santali						santal
-    scc/srp*	sr	Serbian						serbe
+*   scc/srp*	sr	Serbian						serbe
     sco			Scots						écossais
-    scr/hrv*	hr	Croatian					croate
+*   scr/hrv*	hr	Croatian					croate
     sel			Selkup						selkoupe
     sem			Semitic (Other)					sémitiques, autres langues
     sga			Irish, Old (to 900)				irlandais ancien (jusqu'à 900)
@@ -455,7 +455,7 @@ built.
     was			Washo						washo
     wel/cym*	cy	Welsh						gallois
     wen			Sorbian languages				sorabes, langues
-    wln		wa	Walloon						wallon
+*   wln		wa	Walloon						wallon
     wol		wo	Wolof						wolof
     xho		xh	Xhosa						xhosa
     yao			Yao						yao
