@@ -62,7 +62,7 @@
 extern int xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *);
 extern int xf86RemoveSIGIOHandler(int fd);
 # else
-#  include <Xlibint.h>
+#  include <X11/Xlibint.h>
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif
