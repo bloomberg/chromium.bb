@@ -31,6 +31,7 @@
 #define EXPORT_SYMTAB
 #include "drmP.h"
 #include "gamma_drv.h"
+#include <linux/pci.h>
 EXPORT_SYMBOL(gamma_init);
 EXPORT_SYMBOL(gamma_cleanup);
 
@@ -98,10 +99,13 @@ static drm_ioctl_desc_t	      gamma_ioctls[] = {
 int			      init_module(void);
 void			      cleanup_module(void);
 static char		      *gamma = NULL;
+static int 		      devices = 0;
 
 MODULE_AUTHOR("Precision Insight, Inc., Cedar Park, Texas.");
 MODULE_DESCRIPTION("3dlabs GMX 2000");
 MODULE_PARM(gamma, "s");
+MODULE_PARM(devices, "i");
+MODULE_PARM_DESC(devices, "devices=x, where x is the number of MX chips on your card\n");
 
 /* init_module is called when insmod is used to load the module */
 
@@ -314,6 +318,34 @@ static int gamma_takedown(drm_device_t *dev)
 	return 0;
 }
 
+int gamma_found(void)
+{
+	return devices;
+}
+
+int gamma_find_devices(void)
+{
+	struct pci_dev *d = NULL, *one = NULL, *two = NULL;
+
+	d = pci_find_device(PCI_VENDOR_ID_3DLABS,PCI_DEVICE_ID_3DLABS_GAMMA,d);
+	if (!d) return 0;
+
+	one = pci_find_device(PCI_VENDOR_ID_3DLABS,PCI_DEVICE_ID_3DLABS_MX,d);
+	if (!one) return 0;
+
+	/* Make sure it's on the same card, if not - no MX's found */
+	if (PCI_SLOT(d->devfn) != PCI_SLOT(one->devfn)) return 0;
+
+	two = pci_find_device(PCI_VENDOR_ID_3DLABS,PCI_DEVICE_ID_3DLABS_MX,one);
+	if (!two) return 1;
+
+	/* Make sure it's on the same card, if not - only 1 MX found */
+	if (PCI_SLOT(d->devfn) != PCI_SLOT(two->devfn)) return 1;
+
+	/* Two MX's found - we don't currently support more than 2 */
+	return 2;
+}
+
 /* gamma_init is called via init_module at module load time, or via
  * linux/init/main.c (this is not currently supported). */
 
@@ -331,6 +363,8 @@ int gamma_init(void)
 #ifdef MODULE
 	drm_parse_options(gamma);
 #endif
+	devices = gamma_find_devices();
+	if (devices == 0) return -1;
 
 	if ((retcode = misc_register(&gamma_misc))) {
 		DRM_ERROR("Cannot register \"%s\"\n", GAMMA_NAME);
@@ -342,13 +376,14 @@ int gamma_init(void)
 	drm_mem_init();
 	drm_proc_init(dev);
 
-	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
+	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d with %d MX devices\n",
 		 GAMMA_NAME,
 		 GAMMA_MAJOR,
 		 GAMMA_MINOR,
 		 GAMMA_PATCHLEVEL,
 		 GAMMA_DATE,
-		 gamma_misc.minor);
+		 gamma_misc.minor,
+		 devices);
 	
 	return 0;
 }

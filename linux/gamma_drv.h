@@ -53,5 +53,7 @@ extern int  gamma_irq_install(drm_device_t *dev, int irq);
 extern int  gamma_irq_uninstall(drm_device_t *dev);
 extern int  gamma_control(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg);
+extern int  gamma_find_devices(void);
+extern int  gamma_found(void);
 
 #endif
