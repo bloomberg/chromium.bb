@@ -144,6 +144,15 @@ static struct file_operations	DRM(fops) = {	\
 }
 #endif
 
+/** Stub information */
+struct drm_stub_info {
+	int (*info_register)(const char *name, struct file_operations *fops,
+			     drm_device_t *dev);
+	int (*info_unregister)(int minor);
+	struct class_simple *drm_class;
+};
+extern struct drm_stub_info DRM(stub_info);
+
 #ifndef MODULE
 /** Use an additional macro to avoid preprocessor troubles */
 #define DRM_OPTIONS_FUNC DRM(options)
@@ -637,6 +646,11 @@ static int DRM(probe)(struct pci_dev *pdev)
 		);
 
 	DRIVER_POSTINIT();
+	/*
+	 * don't move this earlier, for upcoming hotplugging support
+	 */
+	class_simple_device_add(DRM(stub_info).drm_class, 
+					MKDEV(DRM_MAJOR, dev->minor), &pdev->dev, "card%d", dev->minor);
 
 	return 0;
 }
@@ -721,6 +735,7 @@ static void __exit drm_cleanup( void )
 		}
 #endif
 	}
+	class_simple_device_remove(MKDEV(DRM_MAJOR, 0));
 	DRIVER_POSTCLEANUP();
 	DRM(numdevs) = 0;
 }
