@@ -55,7 +55,7 @@
 #include "drm_scatter.h"
 
 #ifdef __FreeBSD__
-DRIVER_MODULE(DRIVER_NAME, pci, DRM(driver), DRM(devclass), 0, 0);
+DRIVER_MODULE(DRIVER_NAME, agp, DRM(driver), DRM(devclass), 0, 0);
 #elif defined(__NetBSD__)
 CFDRIVER_DECL(i915, DV_TTY, NULL);
 #endif /* __FreeBSD__ */
