@@ -34,22 +34,20 @@
 #define DRM_SAVAGE_MEM_LOCATION_AGP 2
 #define DRM_SAVAGE_DMA_AGP_SIZE (16*1024*1024)
 
-typedef struct drm_savage_alloc_cont_mem
-{
-   size_t size; /*size of buffer*/
-   unsigned long type; /*4k page or word*/
-   unsigned long alignment;
-   unsigned long location; /*agp or pci*/
+typedef struct drm_savage_alloc_cont_mem {
+	size_t size;		/*size of buffer */
+	unsigned long type;	/*4k page or word */
+	unsigned long alignment;
+	unsigned long location;	/*agp or pci */
 
-   unsigned long phyaddress;
-   unsigned long linear;
+	unsigned long phyaddress;
+	unsigned long linear;
 } drm_savage_alloc_cont_mem_t;
 
-typedef struct drm_savage_get_physcis_address
-{
-   unsigned long v_address;
-   unsigned long p_address;
-}drm_savage_get_physcis_address_t;
+typedef struct drm_savage_get_physcis_address {
+	unsigned long v_address;
+	unsigned long p_address;
+} drm_savage_get_physcis_address_t;
 
 /*ioctl number*/
 #define DRM_IOCTL_SAVAGE_ALLOC_CONTINUOUS_MEM \
@@ -69,12 +67,12 @@ typedef struct drm_savage_get_physcis_address
 #define SAVAGE_UPLOAD_CTX	0x1
 #define SAVAGE_UPLOAD_TEX0	0x2
 #define SAVAGE_UPLOAD_TEX1	0x4
-#define SAVAGE_UPLOAD_PIPE	0x8  /* <- seems should be removed, Jiayo Hsu */
-#define SAVAGE_UPLOAD_TEX0IMAGE	0x10 /* handled client-side */
-#define SAVAGE_UPLOAD_TEX1IMAGE	0x20 /* handled client-side */
+#define SAVAGE_UPLOAD_PIPE	0x8	/* <- seems should be removed, Jiayo Hsu */
+#define SAVAGE_UPLOAD_TEX0IMAGE	0x10	/* handled client-side */
+#define SAVAGE_UPLOAD_TEX1IMAGE	0x20	/* handled client-side */
 #define SAVAGE_UPLOAD_2D	0x40
-#define SAVAGE_WAIT_AGE		0x80 /* handled client-side */
-#define SAVAGE_UPLOAD_CLIPRECTS	0x100 /* handled client-side */
+#define SAVAGE_WAIT_AGE		0x80	/* handled client-side */
+#define SAVAGE_UPLOAD_CLIPRECTS	0x100	/* handled client-side */
 /*frank:add Buffer state 2001/11/15*/
 #define SAVAGE_UPLOAD_BUFFERS 0x200
 /* original marked off in MGA drivers , Jiayo Hsu Oct.23,2001 */
@@ -93,10 +91,10 @@ typedef struct drm_savage_get_physcis_address
 #define SAVAGE_CARD_HEAP		0
 #define SAVAGE_AGP_HEAP			1
 #define SAVAGE_NR_TEX_HEAPS		2
-#define SAVAGE_NR_TEX_REGIONS		16   /* num. of global texture manage list element*/
-#define SAVAGE_LOG_MIN_TEX_REGION_SIZE	16   /* each region 64K, Jiayo Hsu */
+#define SAVAGE_NR_TEX_REGIONS		16	/* num. of global texture manage list element */
+#define SAVAGE_LOG_MIN_TEX_REGION_SIZE	16	/* each region 64K, Jiayo Hsu */
 
-#endif /* __SAVAGE_SAREA_DEFINES__ */
+#endif				/* __SAVAGE_SAREA_DEFINES__ */
 
 /* drm_tex_region_t define in drm.h */
 
@@ -108,22 +106,21 @@ typedef struct {
 	unsigned int pitch;
 } drm_savage_server_regs_t;
 
-
 typedef struct _drm_savage_sarea {
 	/* The channel for communication of state information to the kernel
 	 * on firing a vertex dma buffer.
 	 */
-	unsigned int setup[28];    /* 3D context registers */
-   	drm_savage_server_regs_t server_state;
- 
-   	unsigned int dirty;
-   	
-   	unsigned int vertsize;   /* vertext  size */
+	unsigned int setup[28];	/* 3D context registers */
+	drm_savage_server_regs_t server_state;
+
+	unsigned int dirty;
+
+	unsigned int vertsize;	/* vertext  size */
 
 	/* The current cliprects, or a subset thereof.
 	 */
-   	drm_clip_rect_t boxes[SAVAGE_NR_SAREA_CLIPRECTS];
-   	unsigned int nbox;
+	drm_clip_rect_t boxes[SAVAGE_NR_SAREA_CLIPRECTS];
+	unsigned int nbox;
 
 	/* Information about the most recently used 3d drawable.  The
 	 * client fills in the req_* fields, the server fills in the
@@ -132,58 +129,56 @@ typedef struct _drm_savage_sarea {
 	 * The client clears the exported_drawable field before
 	 * clobbering the boxes data.
 	 */
-        unsigned int req_drawable;	 /* the X drawable id */
-	unsigned int req_draw_buffer;	 /* SAVAGE_FRONT or SAVAGE_BACK */
+	unsigned int req_drawable;	/* the X drawable id */
+	unsigned int req_draw_buffer;	/* SAVAGE_FRONT or SAVAGE_BACK */
 
-        unsigned int exported_drawable;
+	unsigned int exported_drawable;
 	unsigned int exported_index;
-        unsigned int exported_stamp;
-        unsigned int exported_buffers;
-        unsigned int exported_nfront;
-        unsigned int exported_nback;
+	unsigned int exported_stamp;
+	unsigned int exported_buffers;
+	unsigned int exported_nfront;
+	unsigned int exported_nback;
 	int exported_back_x, exported_front_x, exported_w;
 	int exported_back_y, exported_front_y, exported_h;
-   	drm_clip_rect_t exported_boxes[SAVAGE_NR_SAREA_CLIPRECTS];
+	drm_clip_rect_t exported_boxes[SAVAGE_NR_SAREA_CLIPRECTS];
 
 	/* Counters for aging textures and for client-side throttling.
 	 */
 	unsigned int status[4];
 
-
 	/* LRU lists for texture memory in agp space and on the card.
 	 */
-	drm_tex_region_t texList[SAVAGE_NR_TEX_HEAPS][SAVAGE_NR_TEX_REGIONS+1];
+	drm_tex_region_t texList[SAVAGE_NR_TEX_HEAPS][SAVAGE_NR_TEX_REGIONS +
+						      1];
 	unsigned int texAge[SAVAGE_NR_TEX_HEAPS];
 
 	/* Mechanism to validate card state.
 	 */
-   	int ctxOwner;
-	unsigned long shadow_status[64];/*too big?*/
+	int ctxOwner;
+	unsigned long shadow_status[64];	/*too big? */
 
-	/*agp offset*/
+	/*agp offset */
 	unsigned long agp_offset;
-} drm_savage_sarea_t,*drm_savage_sarea_ptr;
-
-
+} drm_savage_sarea_t, *drm_savage_sarea_ptr;
 
 typedef struct drm_savage_init {
 
-   	unsigned long sarea_priv_offset;
+	unsigned long sarea_priv_offset;
 
 	int chipset;
-   	int sgram;
+	int sgram;
 
 	unsigned int maccess;
 
-   	unsigned int fb_cpp;
+	unsigned int fb_cpp;
 	unsigned int front_offset, front_pitch;
-   	unsigned int back_offset, back_pitch;
+	unsigned int back_offset, back_pitch;
 
-   	unsigned int depth_cpp;
-   	unsigned int depth_offset, depth_pitch;
+	unsigned int depth_cpp;
+	unsigned int depth_offset, depth_pitch;
 
-   	unsigned int texture_offset[SAVAGE_NR_TEX_HEAPS];
-   	unsigned int texture_size[SAVAGE_NR_TEX_HEAPS];
+	unsigned int texture_offset[SAVAGE_NR_TEX_HEAPS];
+	unsigned int texture_size[SAVAGE_NR_TEX_HEAPS];
 
 	unsigned long fb_offset;
 	unsigned long mmio_offset;
@@ -192,7 +187,7 @@ typedef struct drm_savage_init {
 
 typedef struct drm_savage_fullscreen {
 	enum {
-		SAVAGE_INIT_FULLSCREEN    = 0x01,
+		SAVAGE_INIT_FULLSCREEN = 0x01,
 		SAVAGE_CLEANUP_FULLSCREEN = 0x02
 	} func;
 } drm_savage_fullscreen_t;
@@ -206,16 +201,16 @@ typedef struct drm_savage_clear {
 } drm_savage_clear_t;
 
 typedef struct drm_savage_vertex {
-   	int idx;			/* buffer to queue */
-	int used;			/* bytes in use */
-	int discard;			/* client finished with buffer?  */
+	int idx;		/* buffer to queue */
+	int used;		/* bytes in use */
+	int discard;		/* client finished with buffer?  */
 } drm_savage_vertex_t;
 
 typedef struct drm_savage_indices {
-   	int idx;			/* buffer to queue */
+	int idx;		/* buffer to queue */
 	unsigned int start;
 	unsigned int end;
-	int discard;			/* client finished with buffer?  */
+	int discard;		/* client finished with buffer?  */
 } drm_savage_indices_t;
 
 typedef struct drm_savage_iload {
@@ -231,7 +226,7 @@ typedef struct _drm_savage_blit {
 	int src_pitch, dst_pitch;
 	int delta_sx, delta_sy;
 	int delta_dx, delta_dy;
-	int height, ydir;		/* flip image vertically */
+	int height, ydir;	/* flip image vertically */
 	int source_pitch, dest_pitch;
 } drm_savage_blit_t;
 

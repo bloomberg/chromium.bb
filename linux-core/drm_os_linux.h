@@ -3,7 +3,6 @@
  * OS abstraction macros.
  */
 
-
 #include <linux/interrupt.h>	/* For task queue support */
 #include <linux/delay.h>
 
@@ -15,7 +14,7 @@
 /** Current process ID */
 #define DRM_CURRENTPID			current->pid
 #define DRM_UDELAY(d)			udelay(d)
-#if LINUX_VERSION_CODE <= 0x020608 /* KERNEL_VERSION(2,6,8) */
+#if LINUX_VERSION_CODE <= 0x020608	/* KERNEL_VERSION(2,6,8) */
 /** Read a byte from a MMIO region */
 #define DRM_READ8(map, offset)		readb(((unsigned long)(map)->handle) + (offset))
 /** Read a word from a MMIO region */
@@ -57,8 +56,8 @@
 /** backwards compatibility with old irq return values */
 #ifndef IRQ_HANDLED
 typedef void irqreturn_t;
-#define IRQ_HANDLED   /* nothing */
-#define IRQ_NONE      /* nothing */
+#define IRQ_HANDLED		/* nothing */
+#define IRQ_NONE		/* nothing */
 #endif
 
 /** AGP types */
@@ -81,17 +80,17 @@ struct no_agp_kern {
 #endif
 
 #if !(__OS_HAS_MTRR)
-static __inline__ int mtrr_add (unsigned long base, unsigned long size,
-				unsigned int type, char increment)
+static __inline__ int mtrr_add(unsigned long base, unsigned long size,
+			       unsigned int type, char increment)
 {
 	return -ENODEV;
 }
 
-static __inline__ int mtrr_del (int reg, unsigned long base,
-				unsigned long size)
+static __inline__ int mtrr_del(int reg, unsigned long base, unsigned long size)
 {
 	return -ENODEV;
 }
+
 #define MTRR_TYPE_WRCOMB     1
 #endif
 
@@ -124,10 +123,9 @@ static __inline__ int mtrr_del (int reg, unsigned long base,
 #define DRM_PUT_USER_UNCHECKED(uaddr, val)		\
 	__put_user(val, uaddr)
 
-
 #define DRM_GET_PRIV_WITH_RETURN(_priv, _filp) _priv = _filp->private_data
 
-/** 
+/**
  * Get the pointer to the SAREA.
  *
  * Searches the SAREA on the mapping lists and points drm_device::sarea to it.
@@ -171,7 +169,5 @@ do {								\
 	remove_wait_queue(&(queue), &entry);			\
 } while (0)
 
-
 #define DRM_WAKEUP( queue ) wake_up_interruptible( queue )
 #define DRM_INIT_WAITQUEUE( queue ) init_waitqueue_head( queue )
- 

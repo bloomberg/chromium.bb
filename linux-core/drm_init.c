@@ -1,5 +1,5 @@
 /**
- * \file drm_init.h 
+ * \file drm_init.h
  * Setup/Cleanup for DRM
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>
@@ -55,10 +55,14 @@ static void drm_parse_option(char *s)
 	char *c, *r;
 
 	DRM_DEBUG("\"%s\"\n", s);
-	if (!s || !*s) return;
-	for (c = s; *c && *c != ':'; c++); /* find : or \0 */
-	if (*c) r = c + 1; else r = NULL;  /* remember remainder */
-	*c = '\0';			   /* terminate */
+	if (!s || !*s)
+		return;
+	for (c = s; *c && *c != ':'; c++) ;	/* find : or \0 */
+	if (*c)
+		r = c + 1;
+	else
+		r = NULL;	/* remember remainder */
+	*c = '\0';		/* terminate */
 	if (!strcmp(s, "debug")) {
 		drm_flags |= DRM_FLAG_DEBUG;
 		DRM_INFO("Debug messages ON\n");
@@ -70,7 +74,7 @@ static void drm_parse_option(char *s)
 
 /**
  * Parse the insmod "drm_opts=" options, or the command-line
- * options passed to the kernel via LILO.  
+ * options passed to the kernel via LILO.
  *
  * \param s contains option_list without the 'drm_opts=' part.
  *
@@ -101,14 +105,18 @@ void drm_parse_options(char *s)
 {
 	char *h, *t, *n;
 
-	DRM_DEBUG("\"%s\"\n", s ?: "");
-	if (!s || !*s) return;
+	DRM_DEBUG("\"%s\"\n", s ? : "");
+	if (!s || !*s)
+		return;
 
 	for (h = t = n = s; h && *h; h = n) {
-		for (; *t && *t != ';'; t++);	       /* find ; or \0 */
-		if (*t) n = t + 1; else n = NULL;      /* remember next */
-		*t = '\0';			       /* terminate */
-		drm_parse_option(h);		       /* parse */
+		for (; *t && *t != ';'; t++) ;	/* find ; or \0 */
+		if (*t)
+			n = t + 1;
+		else
+			n = NULL;	/* remember next */
+		*t = '\0';	/* terminate */
+		drm_parse_option(h);	/* parse */
 	}
 }
 
@@ -120,10 +128,11 @@ void drm_parse_options(char *s)
 int drm_cpu_valid(void)
 {
 #if defined(__i386__)
-	if (boot_cpu_data.x86 == 3) return 0; /* No cmpxchg on a 386 */
+	if (boot_cpu_data.x86 == 3)
+		return 0;	/* No cmpxchg on a 386 */
 #endif
 #if defined(__sparc__) && !defined(__sparc_v9__)
-	return 0; /* No cmpxchg before v9 sparc. */
+	return 0;		/* No cmpxchg before v9 sparc. */
 #endif
 	return 1;
 }

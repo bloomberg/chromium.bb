@@ -5,16 +5,14 @@
  */
 
 #include <linux/config.h>
-#include "ffb.h"
-#include "drmP.h"
-
-#include "ffb_drv.h"
-
 #include <linux/sched.h>
 #include <linux/smp_lock.h>
 #include <asm/shmparam.h>
 #include <asm/oplib.h>
 #include <asm/upa.h>
+
+#include "drmP.h"
+#include "ffb_drv.h"
 
 #define DRIVER_AUTHOR		"David S. Miller"
 
@@ -86,7 +84,7 @@ static void get_ffb_type(ffb_dev_priv_t *ffb_priv, int instance)
 	};
 }
 
-static void ffb_apply_upa_parent_ranges(int parent, 
+static void ffb_apply_upa_parent_ranges(int parent,
 					struct linux_prom64_registers *regs)
 {
 	struct linux_prom64_ranges ranges[PROMREG_MAX];
@@ -136,7 +134,7 @@ static int ffb_init_one(drm_device_t *dev, int prom_node, int parent_node,
 	get_ffb_type(ffb_priv, instance);
 	for (i = 0; i < FFB_MAX_CTXS; i++)
 		ffb_priv->hw_state[i] = NULL;
-	
+
 	return 0;
 }
 
@@ -279,7 +277,7 @@ int ffb_presetup(drm_device_t *dev)
 static int postinit( struct drm_device *dev, unsigned long flags )
 {
 	DRM(fops).get_unmapped_area = ffb_get_unmapped_area;
-	
+
 	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d: %s\n",
 		DRIVER_NAME,
 		DRIVER_MAJOR,

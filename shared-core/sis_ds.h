@@ -10,11 +10,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -22,10 +22,10 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Authors:
  *    Sung-Ching Lin <sclin@sis.com.tw>
- * 
+ *
  */
 
 #ifndef __SIS_DS_H__
@@ -50,11 +50,11 @@ typedef struct {
 } set_t;
 
 set_t *setInit(void);
-int setAdd(set_t *set, ITEM_TYPE item);
-int setDel(set_t *set, ITEM_TYPE item);
-int setFirst(set_t *set, ITEM_TYPE *item);
-int setNext(set_t *set, ITEM_TYPE *item);
-int setDestroy(set_t *set);
+int setAdd(set_t * set, ITEM_TYPE item);
+int setDel(set_t * set, ITEM_TYPE item);
+int setFirst(set_t * set, ITEM_TYPE * item);
+int setNext(set_t * set, ITEM_TYPE * item);
+int setDestroy(set_t * set);
 
 /*
  * GLX Hardware Device Driver common code
@@ -73,9 +73,9 @@ int setDestroy(set_t *set);
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * KEITH WHITWELL, OR ANY OTHER CONTRIBUTORS BE LIABLE FOR ANY CLAIM, 
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+ * KEITH WHITWELL, OR ANY OTHER CONTRIBUTORS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
@@ -83,7 +83,7 @@ int setDestroy(set_t *set);
 struct mem_block_t {
 	struct mem_block_t *next;
 	struct mem_block_t *heap;
-	int ofs,size;
+	int ofs, size;
 	int align;
 	int free:1;
 	int reserved:1;
@@ -109,15 +109,13 @@ static __inline__ void mmMarkReserved(PMemBlock b)
 	b->reserved = 1;
 }
 
-/* 
+/*
  * input: total size in bytes
  * return: a heap pointer if OK, NULL if error
  */
-memHeap_t *mmInit( int ofs, int size );
+memHeap_t *mmInit(int ofs, int size);
 
-memHeap_t *mmAddRange( memHeap_t *heap,
-		       int ofs,
-		       int size );
+memHeap_t *mmAddRange(memHeap_t * heap, int ofs, int size);
 
 /*
  * Allocate 'size' bytes with 2^align2 bytes alignment,
@@ -129,19 +127,19 @@ memHeap_t *mmAddRange( memHeap_t *heap,
  *		startSearch = linear offset from start of heap to begin search
  * return: pointer to the allocated block, 0 if error
  */
-PMemBlock mmAllocMem( memHeap_t *heap, int size, int align2, int startSearch );
+PMemBlock mmAllocMem(memHeap_t * heap, int size, int align2, int startSearch);
 
 /*
  * Returns 1 if the block 'b' is part of the heap 'heap'
  */
-int mmBlockInHeap( PMemBlock heap, PMemBlock b );
+int mmBlockInHeap(PMemBlock heap, PMemBlock b);
 
 /*
  * Free block starts at offset
  * input: pointer to a block
  * return: 0 if OK, -1 if error
  */
-int mmFreeMem( PMemBlock b );
+int mmFreeMem(PMemBlock b);
 
 /*
  * Reserve 'size' bytes block start at offset
@@ -150,15 +148,15 @@ int mmFreeMem( PMemBlock b );
  * input: size, offset
  * output: 0 if OK, -1 if error
  */
-int mmReserveMem( memHeap_t *heap, int offset,int size );
-int mmFreeReserved( memHeap_t *heap, int offset );
+int mmReserveMem(memHeap_t * heap, int offset, int size);
+int mmFreeReserved(memHeap_t * heap, int offset);
 
 /*
  * destroy MM
  */
-void mmDestroy( memHeap_t *mmInit );
+void mmDestroy(memHeap_t * mmInit);
 
 /* For debuging purpose. */
-void mmDumpMemInfo( memHeap_t *mmInit );
+void mmDumpMemInfo(memHeap_t * mmInit);
 
-#endif /* __SIS_DS_H__ */
+#endif				/* __SIS_DS_H__ */

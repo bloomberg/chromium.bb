@@ -1,10 +1,10 @@
 /* i915_dma.c -- DMA support for the I915 -*- linux-c -*-
  */
 /**************************************************************************
- * 
+ *
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
- * 
+ *
  **************************************************************************/
 
 #include "drmP.h"
@@ -83,7 +83,7 @@ int i915_dma_cleanup(drm_device_t * dev)
 	 * is freed, it's too late.
 	 */
 	if (dev->irq)
-		drm_irq_uninstall (dev);
+		drm_irq_uninstall(dev);
 
 	if (dev->dev_private) {
 		drm_i915_private_t *dev_priv =
@@ -108,8 +108,8 @@ int i915_dma_cleanup(drm_device_t * dev)
 			I915_WRITE(0x02080, 0x1ffff000);
 		}
 
-		drm_free (dev->dev_private, sizeof(drm_i915_private_t),
-			   DRM_MEM_DRIVER);
+		drm_free(dev->dev_private, sizeof(drm_i915_private_t),
+			 DRM_MEM_DRIVER);
 
 		dev->dev_private = NULL;
 	}
@@ -254,8 +254,8 @@ int i915_dma_init(DRM_IOCTL_ARGS)
 
 	switch (init.func) {
 	case I915_INIT_DMA:
-		dev_priv = drm_alloc (sizeof(drm_i915_private_t),
-				       DRM_MEM_DRIVER);
+		dev_priv = drm_alloc(sizeof(drm_i915_private_t),
+				     DRM_MEM_DRIVER);
 		if (dev_priv == NULL)
 			return DRM_ERR(ENOMEM);
 		retcode = i915_initialize(dev, dev_priv, &init);
@@ -732,7 +732,7 @@ int i915_setparam(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-void i915_driver_pretakedown(drm_device_t *dev)
+void i915_driver_pretakedown(drm_device_t * dev)
 {
 	if (dev->dev_private) {
 		drm_i915_private_t *dev_priv = dev->dev_private;
@@ -741,7 +741,7 @@ void i915_driver_pretakedown(drm_device_t *dev)
 	i915_dma_cleanup(dev);
 }
 
-void i915_driver_prerelease(drm_device_t *dev, DRMFILE filp)
+void i915_driver_prerelease(drm_device_t * dev, DRMFILE filp)
 {
 	if (dev->dev_private) {
 		drm_i915_private_t *dev_priv = dev->dev_private;

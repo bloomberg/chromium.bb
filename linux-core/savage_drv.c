@@ -46,14 +46,14 @@
 int savage_alloc_continuous_mem(struct inode *inode, struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
-  drm_savage_alloc_cont_mem_t cont_mem;	
+  drm_savage_alloc_cont_mem_t cont_mem;
   unsigned long size,addr;
   void * ret;
   int i;
   mem_map_t *p;
   pgprot_t flags;
 
-  /* add to list */  
+  /* add to list */
   drm_file_t *priv = filp->private_data;
   drm_device_t *dev = priv->dev;
   drm_map_t *map;
@@ -61,33 +61,33 @@ int savage_alloc_continuous_mem(struct inode *inode, struct file *filp,
 
   if (copy_from_user(&cont_mem,(drm_savage_alloc_cont_mem_t *)arg,sizeof(cont_mem)))
     return -EFAULT;
- 
+
   map = savage_alloc)( sizeof(*map), DRM_MEM_MAPS );
   if ( !map )
     return -ENOMEM;
-  
+
   /*check the parameters*/
   if (cont_mem.size <= 0 )
     return -EINVAL;
-  
+
   size = cont_mem.type * cont_mem.size;
   printk("[drm]JTLIsize = %lu\n",size);
-  
+
   ret = (void *)__get_free_pages(GFP_KERNEL, get_order(size));
   if (ret == NULL)
     {
       printk("Kalloc error\n");
       return 0;
     }
-  
+
   /*set the reserverd flag so that the remap_page_range can map these page*/
   for(i=0,p=virt_to_page(ret);i< size /PAGE_SIZE; i++,p++)
     SetPageReserved(p);
-  
+
   cont_mem.phyaddress = virt_to_bus(ret);
   cont_mem.location = DRM_SAVAGE_MEM_LOCATION_PCI; /* pci only at present*/
-  
-  
+
+
   /*Map the memory to user space*/
   down_write(&current->mm->mmap_sem);
   addr=do_mmap(NULL,0,size,PROT_READ|PROT_WRITE,MAP_PRIVATE,cont_mem.phyaddress);
@@ -97,19 +97,19 @@ int savage_alloc_continuous_mem(struct inode *inode, struct file *filp,
   if (remap_page_range(addr,cont_mem.phyaddress,size,flags))
     return -EFAULT;
   up_write(&current->mm->mmap_sem);
-  
+
   for(i=0,p=virt_to_page(ret);i< size /PAGE_SIZE; i++,p++)
     ClearPageReserved(p);
-  
+
   cont_mem.linear = addr;
-  
+
   /*map list*/
   map->handle =  ret; /* to distinguish with other*/
   map->offset = cont_mem.phyaddress;
   map->size = size;
   map->mtrr=-1;
   /*map-flags,type??*/
-  
+
   list = savage_alloc)(sizeof(*list), DRM_MEM_MAPS);
   if(!list) {
     savage_free)(map, sizeof(*map), DRM_MEM_MAPS);
@@ -117,54 +117,54 @@ int savage_alloc_continuous_mem(struct inode *inode, struct file *filp,
   }
   memset(list, 0, sizeof(*list));
   list->map = map;
-  
+
   down(&dev->struct_sem);
   list_add(&list->head, &dev->maplist->head);
   up(&dev->struct_sem);
-  
+
   if (copy_to_user((drm_savage_alloc_cont_mem_t *)arg,&cont_mem,sizeof(cont_mem)))
     return -EFAULT;
 
   for(i=0,p=virt_to_page(ret);i< size /PAGE_SIZE; i++,p++)
     atomic_set(&p->count,1);
 
-  return 1;/*success*/  
+  return 1;/*success*/
 }
 
 int savage_get_physics_address(struct inode *inode, struct file *filp,
 			       unsigned int cmd, unsigned long arg)
 {
-  
+
   drm_savage_get_physcis_address_t req;
   unsigned long buf;
   pgd_t *pgd;
   pmd_t *pmd;
   pte_t *pte;
   struct mm_struct *mm;
-  
+
   if (copy_from_user(&req,(drm_savage_get_physcis_address_t *)arg,sizeof(req)))
     return -EFAULT;
   buf = req.v_address;
-  
+
   /*What kind of virtual address ?*/
   if (buf >= (unsigned long)high_memory)
     mm = &init_mm;
   else
     mm = current->mm;
-  
+
 #ifdef LINUX_24
   spin_lock(&mm->page_table_lock);
 #endif
-  
+
   pgd=pgd_offset(mm,buf);
   pmd=pmd_offset(pgd,buf);
   pte=pte_offset_map(pmd,buf);
-  
+
   if (!pte_present(*pte))
     return -EFAULT;
-  
+
   req.p_address = ((pte_val(*pte) &PAGE_MASK) |( buf&(PAGE_SIZE-1)));
-  
+
   if (copy_to_user((drm_savage_get_physcis_address_t  *)arg,&req,sizeof(req)))
     return -EFAULT;
   return 1;
@@ -174,10 +174,10 @@ int savage_get_physics_address(struct inode *inode, struct file *filp,
 int savage_free_cont_mem(struct inode *inode, struct file *filp,
 			       unsigned int cmd, unsigned long arg)
 {
-  drm_savage_alloc_cont_mem_t cont_mem;	
+  drm_savage_alloc_cont_mem_t cont_mem;
   unsigned long size;
 
-  /*map  list */  
+  /*map  list */
   drm_file_t *priv = filp->private_data;
   drm_device_t *dev = priv->dev;
   drm_map_t *map;
@@ -194,10 +194,10 @@ int savage_free_cont_mem(struct inode *inode, struct file *filp,
   list_for_each(list,&dev->maplist->head)
     {
       r_list = (drm_map_list_t *) list;
-      
+
       if(r_list->map &&
 	 r_list->map->offset == cont_mem.phyaddress )
-	 break;   
+	 break;
     }
   /*find none*/
   if(list == (&dev->maplist->head)) {
@@ -279,7 +279,7 @@ static drm_ioctl_desc_t ioctls[] = {
 	[DRM_IOCTL_NR(DRM_SAVAGE_ALLOC_CONTINUOUS_MEM)] = {savage_alloc_continuous_mem, 1, 0},
 	[DRM_IOCTL_NR(DRM_SAVAGE_GET_PHYSICS_ADDRESS)]  = {savage_get_physics_address,  1, 0},
 	[DRM_IOCTL_NR(DRM_SAVAGE_FREE_CONTINUOUS_MEM)]  = {savage_free_cont_mem,        1, 0},
-#endif	
+#endif
 };
 
 static struct drm_driver_fn driver_fn = {

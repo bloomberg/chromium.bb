@@ -22,59 +22,58 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-
 /*=========================================================*/
+#include <linux/interrupt.h>	/* For task queue support */
+#include <linux/delay.h>
+
 #include "drmP.h"
 #include "savage_drm.h"
 #include "savage_drv.h"
 
-#include <linux/interrupt.h>	/* For task queue support */
-#include <linux/delay.h>
-
 #define SAVAGE_DEFAULT_USEC_TIMEOUT	10000
 #define SAVAGE_FREELIST_DEBUG		0
 
-int savage_preinit( drm_device_t *dev, unsigned long chipset )
+int savage_preinit(drm_device_t * dev, unsigned long chipset)
 {
 	drm_savage_private_t *dev_priv;
 	unsigned mmioBase, fbBase, fbSize, apertureBase;
 	int ret = 0;
 
-	dev_priv = drm_alloc( sizeof(drm_savage_private_t), DRM_MEM_DRIVER );
-	if ( dev_priv == NULL )
+	dev_priv = drm_alloc(sizeof(drm_savage_private_t), DRM_MEM_DRIVER);
+	if (dev_priv == NULL)
 		return DRM_ERR(ENOMEM);
 
-	memset( dev_priv, 0, sizeof(drm_savage_private_t) );
+	memset(dev_priv, 0, sizeof(drm_savage_private_t));
 	dev->dev_private = (void *)dev_priv;
 	dev_priv->chipset = (enum savage_family)chipset;
 
-	if( S3_SAVAGE3D_SERIES(dev_priv->chipset) ) {
-		fbBase = pci_resource_start( dev->pdev, 0 );
+	if (S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
+		fbBase = pci_resource_start(dev->pdev, 0);
 		fbSize = SAVAGE_FB_SIZE_S3;
 		mmioBase = fbBase + fbSize;
 		apertureBase = fbBase + SAVAGE_APERTURE_OFFSET;
-	} else if( chipset != S3_SUPERSAVAGE ) {
-		mmioBase = pci_resource_start( dev->pdev, 0 );
-		fbBase = pci_resource_start( dev->pdev, 1 );
+	} else if (chipset != S3_SUPERSAVAGE) {
+		mmioBase = pci_resource_start(dev->pdev, 0);
+		fbBase = pci_resource_start(dev->pdev, 1);
 		fbSize = SAVAGE_FB_SIZE_S4;
 		apertureBase = fbBase + SAVAGE_APERTURE_OFFSET;
 	} else {
-		mmioBase = pci_resource_start( dev->pdev, 0 );
-		fbBase = pci_resource_start( dev->pdev, 1 );
-		fbSize = pci_resource_len( dev->pdev, 1 );
-		apertureBase = pci_resource_start( dev->pdev, 2 );
+		mmioBase = pci_resource_start(dev->pdev, 0);
+		fbBase = pci_resource_start(dev->pdev, 1);
+		fbSize = pci_resource_len(dev->pdev, 1);
+		apertureBase = pci_resource_start(dev->pdev, 2);
 	}
 
-	if( (ret = drm_initmap( dev, mmioBase, SAVAGE_MMIO_SIZE,
-				 _DRM_REGISTERS, 0 )))
+	if ((ret = drm_initmap(dev, mmioBase, SAVAGE_MMIO_SIZE,
+			       _DRM_REGISTERS, 0)))
 		return ret;
 
-	if( (ret = drm_initmap( dev, fbBase, fbSize,
-				 _DRM_FRAME_BUFFER, _DRM_WRITE_COMBINING )))
+	if ((ret = drm_initmap(dev, fbBase, fbSize,
+			       _DRM_FRAME_BUFFER, _DRM_WRITE_COMBINING)))
 		return ret;
 
-	if( (ret = drm_initmap( dev, apertureBase, SAVAGE_APERTURE_SIZE,
-				 _DRM_FRAME_BUFFER, _DRM_WRITE_COMBINING )))
+	if ((ret = drm_initmap(dev, apertureBase, SAVAGE_APERTURE_SIZE,
+			       _DRM_FRAME_BUFFER, _DRM_WRITE_COMBINING)))
 		return ret;
 
 	return ret;

@@ -1,5 +1,5 @@
 /*
- * drm_sysfs.c - Modifications to drm_sysfs_class.c to support 
+ * drm_sysfs.c - Modifications to drm_sysfs_class.c to support
  *               extra sysfs attribute from DRM. Normal drm_sysfs_class
  *               does not allow adding attributes.
  *
@@ -55,9 +55,10 @@ static void drm_sysfs_class_release(struct class *class)
 /* Display the version of drm_core. This doesn't work right in current design */
 static ssize_t version_show(struct class *dev, char *buf)
 {
-	return sprintf(buf, "%s %d.%d.%d %s\n", DRIVER_NAME, DRIVER_MAJOR, 
-				DRIVER_MINOR, DRIVER_PATCHLEVEL, DRIVER_DATE);
+	return sprintf(buf, "%s %d.%d.%d %s\n", DRIVER_NAME, DRIVER_MAJOR,
+		       DRIVER_MINOR, DRIVER_PATCHLEVEL, DRIVER_DATE);
 }
+
 static CLASS_ATTR(version, S_IRUGO, version_show, NULL);
 
 /**
@@ -100,7 +101,7 @@ struct drm_sysfs_class *drm_sysfs_create(struct module *owner, char *name)
 
 	return cs;
 
-error:
+      error:
 	kfree(cs);
 	return ERR_PTR(retval);
 }
@@ -127,14 +128,16 @@ void drm_sysfs_destroy(struct drm_sysfs_class *cs)
  * @device: a pointer to a struct device that is assiociated with this class device.
  * @fmt: string for the class device's name
  *
- * A struct class_device will be created in sysfs, registered to the specified 
- * class.  A "dev" file will be created, showing the dev_t for the device.  The 
+ * A struct class_device will be created in sysfs, registered to the specified
+ * class.  A "dev" file will be created, showing the dev_t for the device.  The
  * pointer to the struct class_device will be returned from the call.  Any further
  * sysfs files that might be required can be created using this pointer.
  * Note: the struct drm_sysfs_class passed to this function must have previously been
  * created with a call to drm_sysfs_create().
  */
-struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs, dev_t dev, struct device *device, const char *fmt, ...)
+struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs, dev_t dev,
+					  struct device *device,
+					  const char *fmt, ...)
 {
 	va_list args;
 	struct simple_dev *s_dev = NULL;
@@ -171,7 +174,7 @@ struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs, dev_t dev,
 
 	return &s_dev->class_dev;
 
-error:
+      error:
 	kfree(s_dev);
 	return ERR_PTR(retval);
 }
@@ -203,4 +206,3 @@ void drm_sysfs_device_remove(dev_t dev)
 		spin_unlock(&simple_dev_list_lock);
 	}
 }
-

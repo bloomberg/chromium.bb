@@ -39,47 +39,48 @@
 #include "mach64_drm.h"
 #include "mach64_drv.h"
 
-irqreturn_t mach64_driver_irq_handler( DRM_IRQ_ARGS )
+irqreturn_t mach64_driver_irq_handler(DRM_IRQ_ARGS)
 {
 	drm_device_t *dev = (drm_device_t *) arg;
-	drm_mach64_private_t *dev_priv = 
-	   (drm_mach64_private_t *)dev->dev_private;
+	drm_mach64_private_t *dev_priv =
+	    (drm_mach64_private_t *) dev->dev_private;
 	int status;
 
-	status = MACH64_READ( MACH64_CRTC_INT_CNTL );
+	status = MACH64_READ(MACH64_CRTC_INT_CNTL);
 
 	/* VBLANK interrupt */
 	if (status & MACH64_CRTC_VBLANK_INT) {
-	    /* Mask off all interrupt ack bits before setting the ack bit, since
-	     * there may be other handlers outside the DRM.  
-	     *
-	     * NOTE: On mach64, you need to keep the enable bits set when doing
-	     * the ack, despite what the docs say about not acking and enabling
-	     * in a single write.
-	     */
-	    MACH64_WRITE( MACH64_CRTC_INT_CNTL, (status & ~MACH64_CRTC_INT_ACKS)
-			  | MACH64_CRTC_VBLANK_INT );
+		/* Mask off all interrupt ack bits before setting the ack bit, since
+		 * there may be other handlers outside the DRM.
+		 *
+		 * NOTE: On mach64, you need to keep the enable bits set when doing
+		 * the ack, despite what the docs say about not acking and enabling
+		 * in a single write.
+		 */
+		MACH64_WRITE(MACH64_CRTC_INT_CNTL,
+			     (status & ~MACH64_CRTC_INT_ACKS)
+			     | MACH64_CRTC_VBLANK_INT);
 
-	    atomic_inc(&dev->vbl_received);
-	    DRM_WAKEUP(&dev->vbl_queue);
-	    drm_vbl_send_signals( dev );
-            return IRQ_HANDLED;
+		atomic_inc(&dev->vbl_received);
+		DRM_WAKEUP(&dev->vbl_queue);
+		drm_vbl_send_signals(dev);
+		return IRQ_HANDLED;
 	}
 	return IRQ_NONE;
 }
 
-int mach64_driver_vblank_wait(drm_device_t *dev, unsigned int *sequence)
+int mach64_driver_vblank_wait(drm_device_t * dev, unsigned int *sequence)
 {
 	unsigned int cur_vblank;
 	int ret = 0;
 
 	/* Assume that the user has missed the current sequence number
 	 * by about a day rather than she wants to wait for years
-	 * using vertical blanks... 
+	 * using vertical blanks...
 	 */
-	DRM_WAIT_ON( ret, dev->vbl_queue, 3*DRM_HZ, 
-		     ( ( ( cur_vblank = atomic_read(&dev->vbl_received ) )
-			 - *sequence ) <= (1<<23) ) );
+	DRM_WAIT_ON(ret, dev->vbl_queue, 3 * DRM_HZ,
+		    (((cur_vblank = atomic_read(&dev->vbl_received))
+		      - *sequence) <= (1 << 23)));
 
 	*sequence = cur_vblank;
 
@@ -88,42 +89,47 @@ int mach64_driver_vblank_wait(drm_device_t *dev, unsigned int *sequence)
 
 /* drm_dma.h hooks
 */
-void mach64_driver_irq_preinstall( drm_device_t *dev ) {
+void mach64_driver_irq_preinstall(drm_device_t * dev)
+{
 	drm_mach64_private_t *dev_priv =
-		(drm_mach64_private_t *)dev->dev_private;
+	    (drm_mach64_private_t *) dev->dev_private;
 
-	u32 status = MACH64_READ( MACH64_CRTC_INT_CNTL );
+	u32 status = MACH64_READ(MACH64_CRTC_INT_CNTL);
 
-	DRM_DEBUG("before install CRTC_INT_CTNL: 0x%08x\n", status );
+	DRM_DEBUG("before install CRTC_INT_CTNL: 0x%08x\n", status);
 
- 	/* Disable and clear VBLANK interrupt */
-	MACH64_WRITE( MACH64_CRTC_INT_CNTL, (status & ~MACH64_CRTC_VBLANK_INT_EN) 
-		      | MACH64_CRTC_VBLANK_INT );
+	/* Disable and clear VBLANK interrupt */
+	MACH64_WRITE(MACH64_CRTC_INT_CNTL, (status & ~MACH64_CRTC_VBLANK_INT_EN)
+		     | MACH64_CRTC_VBLANK_INT);
 }
 
-void mach64_driver_irq_postinstall( drm_device_t *dev ) {
+void mach64_driver_irq_postinstall(drm_device_t * dev)
+{
 	drm_mach64_private_t *dev_priv =
-		(drm_mach64_private_t *)dev->dev_private;
+	    (drm_mach64_private_t *) dev->dev_private;
 
 	/* Turn on VBLANK interrupt */
-   	MACH64_WRITE( MACH64_CRTC_INT_CNTL, MACH64_READ( MACH64_CRTC_INT_CNTL )
-		      | MACH64_CRTC_VBLANK_INT_EN );
+	MACH64_WRITE(MACH64_CRTC_INT_CNTL, MACH64_READ(MACH64_CRTC_INT_CNTL)
+		     | MACH64_CRTC_VBLANK_INT_EN);
 
-	DRM_DEBUG("after install CRTC_INT_CTNL: 0x%08x\n", MACH64_READ( MACH64_CRTC_INT_CNTL ));
+	DRM_DEBUG("after install CRTC_INT_CTNL: 0x%08x\n",
+		  MACH64_READ(MACH64_CRTC_INT_CNTL));
 
 }
 
-void mach64_driver_irq_uninstall( drm_device_t *dev ) {
+void mach64_driver_irq_uninstall(drm_device_t * dev)
+{
 	drm_mach64_private_t *dev_priv =
-		(drm_mach64_private_t *)dev->dev_private;
-	if ( !dev_priv )
+	    (drm_mach64_private_t *) dev->dev_private;
+	if (!dev_priv)
 		return;
 
 	/* Disable and clear VBLANK interrupt */
-	MACH64_WRITE( MACH64_CRTC_INT_CNTL, 
-		      (MACH64_READ( MACH64_CRTC_INT_CNTL ) & ~MACH64_CRTC_VBLANK_INT_EN) 
-		      | MACH64_CRTC_VBLANK_INT );
+	MACH64_WRITE(MACH64_CRTC_INT_CNTL,
+		     (MACH64_READ(MACH64_CRTC_INT_CNTL) &
+		      ~MACH64_CRTC_VBLANK_INT_EN)
+		     | MACH64_CRTC_VBLANK_INT);
 
-	DRM_DEBUG("after uninstall CRTC_INT_CTNL: 0x%08x\n", 
-		  MACH64_READ( MACH64_CRTC_INT_CNTL ));
+	DRM_DEBUG("after uninstall CRTC_INT_CTNL: 0x%08x\n",
+		  MACH64_READ(MACH64_CRTC_INT_CNTL));
 }

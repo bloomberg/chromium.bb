@@ -1,12 +1,12 @@
-/** 
- * \file drm_memory.h 
+/**
+ * \file drm_memory.h
  * Memory management wrappers for DRM
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>
  * \author Gareth Hughes <gareth@valinux.com>
  */
 
-/* 
+/*
  * Created: Thu Feb  4 14:00:34 1999 by faith@valinux.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -48,7 +48,7 @@ void drm_mem_init(void)
 
 /**
  * Called when "/proc/dri/%dev%/mem" is read.
- * 
+ *
  * \param buf output buffer.
  * \param start start of output data.
  * \param offset requested start offset.
@@ -57,10 +57,10 @@ void drm_mem_init(void)
  * \param data private data.
  * \return number of written bytes.
  *
- * No-op. 
+ * No-op.
  */
 int drm_mem_info(char *buf, char **start, off_t offset,
-		  int len, int *eof, void *data)
+		 int len, int *eof, void *data)
 {
 	return 0;
 }
@@ -83,7 +83,8 @@ void *drm_realloc(void *oldpt, size_t oldsize, size_t size, int area)
 {
 	void *pt;
 
-	if (!(pt = kmalloc(size, GFP_KERNEL))) return NULL;
+	if (!(pt = kmalloc(size, GFP_KERNEL)))
+		return NULL;
 	if (oldpt && oldsize) {
 		memcpy(pt, oldpt, oldsize);
 		kfree(oldpt);
@@ -103,21 +104,20 @@ void *drm_realloc(void *oldpt, size_t oldsize, size_t size, int area)
 unsigned long drm_alloc_pages(int order, int area)
 {
 	unsigned long address;
-	unsigned long bytes	  = PAGE_SIZE << order;
+	unsigned long bytes = PAGE_SIZE << order;
 	unsigned long addr;
-	unsigned int  sz;
+	unsigned int sz;
 
 	address = __get_free_pages(GFP_KERNEL, order);
-	if (!address) 
+	if (!address)
 		return 0;
 
-				/* Zero */
+	/* Zero */
 	memset((void *)address, 0, bytes);
 
-				/* Reserve */
+	/* Reserve */
 	for (addr = address, sz = bytes;
-	     sz > 0;
-	     addr += PAGE_SIZE, sz -= PAGE_SIZE) {
+	     sz > 0; addr += PAGE_SIZE, sz -= PAGE_SIZE) {
 		SetPageReserved(virt_to_page(addr));
 	}
 
@@ -126,7 +126,7 @@ unsigned long drm_alloc_pages(int order, int area)
 
 /**
  * Free pages.
- * 
+ *
  * \param address address of the pages to free.
  * \param order size order.
  * \param area memory area. (Not used.)
@@ -137,21 +137,19 @@ void drm_free_pages(unsigned long address, int order, int area)
 {
 	unsigned long bytes = PAGE_SIZE << order;
 	unsigned long addr;
-	unsigned int  sz;
+	unsigned int sz;
 
-	if (!address) 
+	if (!address)
 		return;
 
 	/* Unreserve */
 	for (addr = address, sz = bytes;
-	     sz > 0;
-	     addr += PAGE_SIZE, sz -= PAGE_SIZE) {
+	     sz > 0; addr += PAGE_SIZE, sz -= PAGE_SIZE) {
 		ClearPageReserved(virt_to_page(addr));
 	}
 
 	free_pages(address, order);
 }
-
 
 #if __OS_HAS_AGP
 /** Wrapper around agp_allocate_memory() */
@@ -161,21 +159,21 @@ DRM_AGP_MEM *drm_alloc_agp(int pages, u32 type)
 }
 
 /** Wrapper around agp_free_memory() */
-int drm_free_agp(DRM_AGP_MEM *handle, int pages)
+int drm_free_agp(DRM_AGP_MEM * handle, int pages)
 {
 	return drm_agp_free_memory(handle) ? 0 : -EINVAL;
 }
 
 /** Wrapper around agp_bind_memory() */
-int drm_bind_agp(DRM_AGP_MEM *handle, unsigned int start)
+int drm_bind_agp(DRM_AGP_MEM * handle, unsigned int start)
 {
 	return drm_agp_bind_memory(handle, start);
 }
 
 /** Wrapper around agp_unbind_memory() */
-int drm_unbind_agp(DRM_AGP_MEM *handle)
+int drm_unbind_agp(DRM_AGP_MEM * handle)
 {
 	return drm_agp_unbind_memory(handle);
 }
-#endif /* agp */
-#endif /* debug_memory */
+#endif				/* agp */
+#endif				/* debug_memory */

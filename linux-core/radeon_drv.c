@@ -29,7 +29,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 #include <linux/config.h>
 #include "drmP.h"
 #include "drm.h"
@@ -39,30 +38,28 @@
 
 #include "drm_pciids.h"
 
-static int postinit( struct drm_device *dev, unsigned long flags )
+static int postinit(struct drm_device *dev, unsigned long flags)
 {
-	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d: %s\n",
-		DRIVER_NAME,
-		DRIVER_MAJOR,
-		DRIVER_MINOR,
-		DRIVER_PATCHLEVEL,
-		DRIVER_DATE,
-		dev->minor,
-		pci_pretty_name(dev->pdev)
-		);
+	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d: %s\n",
+		 DRIVER_NAME,
+		 DRIVER_MAJOR,
+		 DRIVER_MINOR,
+		 DRIVER_PATCHLEVEL,
+		 DRIVER_DATE, dev->minor, pci_pretty_name(dev->pdev)
+	    );
 	return 0;
 }
 
-static int version( drm_version_t *version )
+static int version(drm_version_t * version)
 {
 	int len;
 
 	version->version_major = DRIVER_MAJOR;
 	version->version_minor = DRIVER_MINOR;
 	version->version_patchlevel = DRIVER_PATCHLEVEL;
-	DRM_COPY( version->name, DRIVER_NAME );
-	DRM_COPY( version->date, DRIVER_DATE );
-	DRM_COPY( version->desc, DRIVER_DESC );
+	DRM_COPY(version->name, DRIVER_NAME);
+	DRM_COPY(version->date, DRIVER_DATE);
+	DRM_COPY(version->desc, DRIVER_DESC);
 	return 0;
 }
 
@@ -98,41 +95,44 @@ static struct pci_device_id pciidlist[] = {
  * 1.9 - Add DRM_IOCTL_RADEON_CP_RESUME ioctl.
  *       Add texture rectangle support for r100.
  * 1.10- Add SETPARAM ioctl; first parameter to set is FB_LOCATION, which
- *       clients use to tell the DRM where they think the framebuffer is 
+ *       clients use to tell the DRM where they think the framebuffer is
  *       located in the card's address space
  * 1.11- Add packet R200_EMIT_RB3D_BLENDCOLOR to support GL_EXT_blend_color
  *       and GL_EXT_blend_[func|equation]_separate on r200
  */
 static drm_ioctl_desc_t ioctls[] = {
- [DRM_IOCTL_NR(DRM_RADEON_CP_INIT)]    = { radeon_cp_init,      1, 1 },
- [DRM_IOCTL_NR(DRM_RADEON_CP_START)]   = { radeon_cp_start,     1, 1 },
- [DRM_IOCTL_NR(DRM_RADEON_CP_STOP)]    = { radeon_cp_stop,      1, 1 },
- [DRM_IOCTL_NR(DRM_RADEON_CP_RESET)]   = { radeon_cp_reset,     1, 1 },
- [DRM_IOCTL_NR(DRM_RADEON_CP_IDLE)]    = { radeon_cp_idle,      1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_CP_RESUME)]  = { radeon_cp_resume,    1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_RESET)]      = { radeon_engine_reset, 1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_FULLSCREEN)] = { radeon_fullscreen,   1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_SWAP)]       = { radeon_cp_swap,      1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_CLEAR)]      = { radeon_cp_clear,     1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_VERTEX)]     = { radeon_cp_vertex,    1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_INDICES)]    = { radeon_cp_indices,   1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_TEXTURE)]    = { radeon_cp_texture,   1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_STIPPLE)]    = { radeon_cp_stipple,   1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_INDIRECT)]   = { radeon_cp_indirect,  1, 1 },
- [DRM_IOCTL_NR(DRM_RADEON_VERTEX2)]    = { radeon_cp_vertex2,   1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_CMDBUF)]     = { radeon_cp_cmdbuf,    1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_GETPARAM)]   = { radeon_cp_getparam,  1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_FLIP)]       = { radeon_cp_flip,      1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_ALLOC)]      = { radeon_mem_alloc,    1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_FREE)]       = { radeon_mem_free,     1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_INIT_HEAP)]  = { radeon_mem_init_heap,1, 1 },
- [DRM_IOCTL_NR(DRM_RADEON_IRQ_EMIT)]   = { radeon_irq_emit,     1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_IRQ_WAIT)]   = { radeon_irq_wait,     1, 0 },
- [DRM_IOCTL_NR(DRM_RADEON_SETPARAM)]   = { radeon_cp_setparam,  1, 0 },
+	[DRM_IOCTL_NR(DRM_RADEON_CP_INIT)] = {radeon_cp_init, 1, 1},
+	[DRM_IOCTL_NR(DRM_RADEON_CP_START)] = {radeon_cp_start, 1, 1},
+	[DRM_IOCTL_NR(DRM_RADEON_CP_STOP)] = {radeon_cp_stop, 1, 1},
+	[DRM_IOCTL_NR(DRM_RADEON_CP_RESET)] = {radeon_cp_reset, 1, 1},
+	[DRM_IOCTL_NR(DRM_RADEON_CP_IDLE)] = {radeon_cp_idle, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_CP_RESUME)] = {radeon_cp_resume, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_RESET)] = {radeon_engine_reset, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_FULLSCREEN)] = {radeon_fullscreen, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_SWAP)] = {radeon_cp_swap, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_CLEAR)] = {radeon_cp_clear, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_VERTEX)] = {radeon_cp_vertex, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_INDICES)] = {radeon_cp_indices, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_TEXTURE)] = {radeon_cp_texture, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_STIPPLE)] = {radeon_cp_stipple, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_INDIRECT)] = {radeon_cp_indirect, 1, 1},
+	[DRM_IOCTL_NR(DRM_RADEON_VERTEX2)] = {radeon_cp_vertex2, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_CMDBUF)] = {radeon_cp_cmdbuf, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_GETPARAM)] = {radeon_cp_getparam, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_FLIP)] = {radeon_cp_flip, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_ALLOC)] = {radeon_mem_alloc, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_FREE)] = {radeon_mem_free, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_INIT_HEAP)] = {radeon_mem_init_heap, 1, 1},
+	[DRM_IOCTL_NR(DRM_RADEON_IRQ_EMIT)] = {radeon_irq_emit, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_IRQ_WAIT)] = {radeon_irq_wait, 1, 0},
+	[DRM_IOCTL_NR(DRM_RADEON_SETPARAM)] = {radeon_cp_setparam, 1, 0},
 };
 
 static struct drm_driver_fn driver_fn = {
-	.driver_features = DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_SG | DRIVER_HAVE_IRQ | DRIVER_HAVE_DMA | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL,
+	.driver_features =
+	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_SG |
+	    DRIVER_HAVE_IRQ | DRIVER_HAVE_DMA | DRIVER_IRQ_SHARED |
+	    DRIVER_IRQ_VBL,
 	.dev_priv_size = sizeof(drm_radeon_buf_priv_t),
 	.preinit = radeon_preinit,
 	.postinit = radeon_postinit,
@@ -155,13 +155,14 @@ static struct drm_driver_fn driver_fn = {
 	.num_ioctls = DRM_ARRAY_SIZE(ioctls),
 	.dma_ioctl = radeon_cp_buffers,
 	.fops = {
-		.owner   = THIS_MODULE,
-		.open	 = drm_open,
-		.release = drm_release,
-		.ioctl	 = drm_ioctl,
-		.mmap	 = drm_mmap,
-		.fasync  = drm_fasync,
-	},
+		 .owner = THIS_MODULE,
+		 .open = drm_open,
+		 .release = drm_release,
+		 .ioctl = drm_ioctl,
+		 .mmap = drm_mmap,
+		 .fasync = drm_fasync,
+		 }
+	,
 };
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
@@ -170,10 +171,10 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 }
 
 static struct pci_driver driver = {
-	.name          = DRIVER_NAME,
-	.id_table      = pciidlist,
-	.probe         = probe,
-	.remove        = __devexit_p(drm_cleanup_pci),
+	.name = DRIVER_NAME,
+	.id_table = pciidlist,
+	.probe = probe,
+	.remove = __devexit_p(drm_cleanup_pci),
 };
 
 static int __init radeon_init(void)
@@ -189,6 +190,6 @@ static void __exit radeon_exit(void)
 module_init(radeon_init);
 module_exit(radeon_exit);
 
-MODULE_AUTHOR( DRIVER_AUTHOR );
-MODULE_DESCRIPTION( DRIVER_DESC );
+MODULE_AUTHOR(DRIVER_AUTHOR);
+MODULE_DESCRIPTION(DRIVER_DESC);
 MODULE_LICENSE("GPL and additional rights");

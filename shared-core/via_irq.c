@@ -10,21 +10,21 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * BEAM LTD, TUNGSTEN GRAPHICS  AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, 
+ * BEAM LTD, TUNGSTEN GRAPHICS  AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Authors: 
+ * Authors:
  *    Terry Barnaby <terry1@beam.ltd.uk>
  *    Keith Whitwell <keith@tungstengraphics.com>
  *
@@ -39,126 +39,128 @@
 #include "via_drv.h"
 
 #define VIA_REG_INTERRUPT       0x200
- 
+
 /* VIA_REG_INTERRUPT */
 #define VIA_IRQ_GLOBAL          (1 << 31)
 #define VIA_IRQ_VBI_ENABLE      (1 << 19)
 #define VIA_IRQ_VBI_PENDING     (1 << 3)
 
-irqreturn_t via_driver_irq_handler( DRM_IRQ_ARGS )
+irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
 {
-        drm_device_t*	dev = (drm_device_t*)arg;
-        drm_via_private_t*	dev_priv = (drm_via_private_t*)dev->dev_private;
-        u32			status;
-        int			handled = 0;
-	
-        status = VIA_READ(VIA_REG_INTERRUPT);
-        DRM_DEBUG("viadrv_irq_handler Status: %x\n",status);
-        if(status & VIA_IRQ_VBI_PENDING){
-                atomic_inc(&dev->vbl_received);
-                DRM_WAKEUP(&dev->vbl_queue);
-                drm_vbl_send_signals(dev);
-                handled = 1;
-        }
-    
-        /* Acknowlege interrupts ?? */
-        VIA_WRITE(VIA_REG_INTERRUPT, status);
+	drm_device_t *dev = (drm_device_t *) arg;
+	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
+	u32 status;
+	int handled = 0;
+
+	status = VIA_READ(VIA_REG_INTERRUPT);
+	DRM_DEBUG("viadrv_irq_handler Status: %x\n", status);
+	if (status & VIA_IRQ_VBI_PENDING) {
+		atomic_inc(&dev->vbl_received);
+		DRM_WAKEUP(&dev->vbl_queue);
+		drm_vbl_send_signals(dev);
+		handled = 1;
+	}
+
+	/* Acknowlege interrupts ?? */
+	VIA_WRITE(VIA_REG_INTERRUPT, status);
 
 	if (handled)
-        	return IRQ_HANDLED;
+		return IRQ_HANDLED;
 	else
 		return IRQ_NONE;
 }
 
-static __inline__ void viadrv_acknowledge_irqs(drm_via_private_t* dev_priv)
+static __inline__ void viadrv_acknowledge_irqs(drm_via_private_t * dev_priv)
 {
-        u32	status;
-	
-        if(dev_priv){
-                /* Acknowlege interrupts ?? */
-                status = VIA_READ(VIA_REG_INTERRUPT);
-                VIA_WRITE(VIA_REG_INTERRUPT, status | VIA_IRQ_VBI_PENDING);
-        }
+	u32 status;
+
+	if (dev_priv) {
+		/* Acknowlege interrupts ?? */
+		status = VIA_READ(VIA_REG_INTERRUPT);
+		VIA_WRITE(VIA_REG_INTERRUPT, status | VIA_IRQ_VBI_PENDING);
+	}
 }
 
-int via_driver_vblank_wait(drm_device_t* dev, unsigned int* sequence)
+int via_driver_vblank_wait(drm_device_t * dev, unsigned int *sequence)
 {
-        drm_via_private_t*	dev_priv = (drm_via_private_t*)dev->dev_private;
-        unsigned int		cur_vblank;
-        int			ret = 0;
+	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
+	unsigned int cur_vblank;
+	int ret = 0;
 
-        DRM_DEBUG("viadrv_vblank_wait\n");
-        if(!dev_priv){
-                DRM_ERROR("%s called with no initialization\n", __FUNCTION__ );
-                return -EINVAL;
-        }
+	DRM_DEBUG("viadrv_vblank_wait\n");
+	if (!dev_priv) {
+		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		return -EINVAL;
+	}
 
-        viadrv_acknowledge_irqs(dev_priv);
+	viadrv_acknowledge_irqs(dev_priv);
 
-        /* Assume that the user has missed the current sequence number
-         * by about a day rather than she wants to wait for years
-         * using vertical blanks... 
-         */
-        DRM_WAIT_ON(ret, dev->vbl_queue, 3*DRM_HZ, 
-                    (((cur_vblank = atomic_read(&dev->vbl_received)) - 
-                      *sequence ) <= (1<<23)));
+	/* Assume that the user has missed the current sequence number
+	 * by about a day rather than she wants to wait for years
+	 * using vertical blanks...
+	 */
+	DRM_WAIT_ON(ret, dev->vbl_queue, 3 * DRM_HZ,
+		    (((cur_vblank = atomic_read(&dev->vbl_received)) -
+		      *sequence) <= (1 << 23)));
 
-        *sequence = cur_vblank;
-        return ret;
+	*sequence = cur_vblank;
+	return ret;
 }
 
 /*
  * drm_dma.h hooks
  */
-void via_driver_irq_preinstall(drm_device_t* dev){
-        drm_via_private_t*	dev_priv = (drm_via_private_t *)dev->dev_private;
-        u32			status;
+void via_driver_irq_preinstall(drm_device_t * dev)
+{
+	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
+	u32 status;
 
-        DRM_DEBUG("driver_irq_preinstall: dev_priv: %p\n", dev_priv);
-        if(dev_priv){
-                DRM_DEBUG("mmio: %p\n", dev_priv->mmio);
-                status = VIA_READ(VIA_REG_INTERRUPT);
-                DRM_DEBUG("intreg: %x\n", status & VIA_IRQ_VBI_ENABLE);
-		
-                // Clear VSync interrupt regs
-                VIA_WRITE(VIA_REG_INTERRUPT, status & ~VIA_IRQ_VBI_ENABLE);
+	DRM_DEBUG("driver_irq_preinstall: dev_priv: %p\n", dev_priv);
+	if (dev_priv) {
+		DRM_DEBUG("mmio: %p\n", dev_priv->mmio);
+		status = VIA_READ(VIA_REG_INTERRUPT);
+		DRM_DEBUG("intreg: %x\n", status & VIA_IRQ_VBI_ENABLE);
 
-                /* Clear bits if they're already high */
-                viadrv_acknowledge_irqs(dev_priv);
-        }
+		// Clear VSync interrupt regs
+		VIA_WRITE(VIA_REG_INTERRUPT, status & ~VIA_IRQ_VBI_ENABLE);
+
+		/* Clear bits if they're already high */
+		viadrv_acknowledge_irqs(dev_priv);
+	}
 }
 
-void via_driver_irq_postinstall(drm_device_t* dev){
-        drm_via_private_t*	dev_priv = (drm_via_private_t *)dev->dev_private;
-        u32			status;
+void via_driver_irq_postinstall(drm_device_t * dev)
+{
+	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
+	u32 status;
 
-        DRM_DEBUG("via_driver_irq_postinstall\n");
-        if(dev_priv){
-                status = VIA_READ(VIA_REG_INTERRUPT);
-                VIA_WRITE(VIA_REG_INTERRUPT, status | VIA_IRQ_GLOBAL 
-                          | VIA_IRQ_VBI_ENABLE);
-                /* Some magic, oh for some data sheets ! */		
+	DRM_DEBUG("via_driver_irq_postinstall\n");
+	if (dev_priv) {
+		status = VIA_READ(VIA_REG_INTERRUPT);
+		VIA_WRITE(VIA_REG_INTERRUPT, status | VIA_IRQ_GLOBAL
+			  | VIA_IRQ_VBI_ENABLE);
+		/* Some magic, oh for some data sheets ! */
 
-                VIA_WRITE8(0x83d4, 0x11);
-                VIA_WRITE8(0x83d5, VIA_READ8(0x83d5) | 0x30);
+		VIA_WRITE8(0x83d4, 0x11);
+		VIA_WRITE8(0x83d5, VIA_READ8(0x83d5) | 0x30);
 
-        }
+	}
 }
 
-void via_driver_irq_uninstall(drm_device_t* dev){
-        drm_via_private_t*	dev_priv = (drm_via_private_t *)dev->dev_private;
-        u32			status;
+void via_driver_irq_uninstall(drm_device_t * dev)
+{
+	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
+	u32 status;
 
-        DRM_DEBUG("driver_irq_uninstall)\n");
-        if(dev_priv){ 
+	DRM_DEBUG("driver_irq_uninstall)\n");
+	if (dev_priv) {
 
-                /* Some more magic, oh for some data sheets ! */		
+		/* Some more magic, oh for some data sheets ! */
 
-                VIA_WRITE8(0x83d4, 0x11);
-                VIA_WRITE8(0x83d5, VIA_READ8(0x83d5) & ~0x30);
+		VIA_WRITE8(0x83d4, 0x11);
+		VIA_WRITE8(0x83d5, VIA_READ8(0x83d5) & ~0x30);
 
-                status = VIA_READ(VIA_REG_INTERRUPT);
-                VIA_WRITE(VIA_REG_INTERRUPT, status & ~VIA_IRQ_VBI_ENABLE);
-        }
+		status = VIA_READ(VIA_REG_INTERRUPT);
+		VIA_WRITE(VIA_REG_INTERRUPT, status & ~VIA_IRQ_VBI_ENABLE);
+	}
 }
-

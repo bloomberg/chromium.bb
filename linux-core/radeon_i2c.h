@@ -17,13 +17,11 @@
 #include <linux/i2c-algo-bit.h>
 
 struct radeon_i2c_chan {
-	drm_device_t 			*dev;
-	u32		 		ddc_reg;
-	struct i2c_adapter		adapter;
-	struct i2c_algo_bit_data	algo;
+	drm_device_t *dev;
+	u32 ddc_reg;
+	struct i2c_adapter adapter;
+	struct i2c_algo_bit_data algo;
 };
 
-extern int radeon_create_i2c_busses(drm_device_t *dev);
-extern void radeon_delete_i2c_busses(drm_device_t *dev);
-
- 
+extern int radeon_create_i2c_busses(drm_device_t * dev);
+extern void radeon_delete_i2c_busses(drm_device_t * dev);

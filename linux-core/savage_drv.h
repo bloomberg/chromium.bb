@@ -26,19 +26,19 @@
 
 /* these chip tags should match the ones in the 2D driver in savage_regs.h. */
 enum savage_family {
-    S3_UNKNOWN = 0,
-    S3_SAVAGE3D,
-    S3_SAVAGE_MX,
-    S3_SAVAGE4,
-    S3_PROSAVAGE,
-    S3_TWISTER,
-    S3_PROSAVAGEDDR,
-    S3_SUPERSAVAGE,
-    S3_SAVAGE2000,
-    S3_LAST
+	S3_UNKNOWN = 0,
+	S3_SAVAGE3D,
+	S3_SAVAGE_MX,
+	S3_SAVAGE4,
+	S3_PROSAVAGE,
+	S3_TWISTER,
+	S3_PROSAVAGEDDR,
+	S3_SUPERSAVAGE,
+	S3_SAVAGE2000,
+	S3_LAST
 };
 
-extern int savage_preinit( drm_device_t *dev, unsigned long chipset );
+extern int savage_preinit(drm_device_t * dev, unsigned long chipset);
 
 #define S3_SAVAGE3D_SERIES(chip)  ((chip>=S3_SAVAGE3D) && (chip<=S3_SAVAGE_MX))
 
@@ -62,13 +62,13 @@ typedef struct drm_savage_private {
 
 	enum savage_family chipset;
 	unsigned flags;
-	
+
 } drm_savage_private_t;
 
-#define SAVAGE_FB_SIZE_S3	0x01000000  /*  16MB */
-#define SAVAGE_FB_SIZE_S4	0x02000000  /*  32MB */
-#define SAVAGE_MMIO_SIZE        0x00080000  /* 512kB */
-#define SAVAGE_APERTURE_OFFSET  0x02000000  /*  32MB */
-#define SAVAGE_APERTURE_SIZE    0x05000000  /* 5 tiled surfaces, 16MB each */
+#define SAVAGE_FB_SIZE_S3	0x01000000	/*  16MB */
+#define SAVAGE_FB_SIZE_S4	0x02000000	/*  32MB */
+#define SAVAGE_MMIO_SIZE        0x00080000	/* 512kB */
+#define SAVAGE_APERTURE_OFFSET  0x02000000	/*  32MB */
+#define SAVAGE_APERTURE_SIZE    0x05000000	/* 5 tiled surfaces, 16MB each */
 
-#endif /* end #ifndef __SAVAGE_DRV_ */
+#endif				/* end #ifndef __SAVAGE_DRV_ */

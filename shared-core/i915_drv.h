@@ -1,10 +1,10 @@
 /* i915_drv.h -- Private header for the I915 driver -*- linux-c -*-
  */
 /**************************************************************************
- * 
+ *
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
- * 
+ *
  **************************************************************************/
 
 #ifndef _I915_DRV_H_
@@ -88,8 +88,8 @@ extern int i915_getparam(DRM_IOCTL_ARGS);
 extern int i915_setparam(DRM_IOCTL_ARGS);
 extern int i915_cmdbuffer(DRM_IOCTL_ARGS);
 extern void i915_kernel_lost_context(drm_device_t * dev);
-extern void i915_driver_pretakedown(drm_device_t *dev);
-extern void i915_driver_prerelease(drm_device_t *dev, DRMFILE filp);
+extern void i915_driver_pretakedown(drm_device_t * dev);
+extern void i915_driver_prerelease(drm_device_t * dev, DRMFILE filp);
 
 /* i915_irq.c */
 extern int i915_irq_emit(DRM_IOCTL_ARGS);
@@ -98,9 +98,9 @@ extern int i915_wait_irq(drm_device_t * dev, int irq_nr);
 extern int i915_emit_irq(drm_device_t * dev);
 
 extern irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS);
-extern void i915_driver_irq_preinstall(drm_device_t *dev);
-extern void i915_driver_irq_postinstall(drm_device_t *dev);
-extern void i915_driver_irq_uninstall(drm_device_t *dev);
+extern void i915_driver_irq_preinstall(drm_device_t * dev);
+extern void i915_driver_irq_postinstall(drm_device_t * dev);
+extern void i915_driver_irq_uninstall(drm_device_t * dev);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(DRM_IOCTL_ARGS);

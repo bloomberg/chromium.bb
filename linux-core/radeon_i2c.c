@@ -31,7 +31,7 @@
 #include "radeon_drm.h"
 #include "radeon_drv.h"
 
-static void gpio_setscl(void* data, int state)
+static void gpio_setscl(void *data, int state)
 {
 	struct radeon_i2c_chan *chan = data;
 	drm_radeon_private_t *dev_priv = chan->dev->dev_private;
@@ -45,7 +45,7 @@ static void gpio_setscl(void* data, int state)
 	(void)RADEON_READ(chan->ddc_reg);
 }
 
-static void gpio_setsda(void* data, int state)
+static void gpio_setsda(void *data, int state)
 {
 	struct radeon_i2c_chan *chan = data;
 	drm_radeon_private_t *dev_priv = chan->dev->dev_private;
@@ -59,7 +59,7 @@ static void gpio_setsda(void* data, int state)
 	(void)RADEON_READ(chan->ddc_reg);
 }
 
-static int gpio_getscl(void* data)
+static int gpio_getscl(void *data)
 {
 	struct radeon_i2c_chan *chan = data;
 	drm_radeon_private_t *dev_priv = chan->dev->dev_private;
@@ -70,12 +70,12 @@ static int gpio_getscl(void* data)
 	return (val & VGA_DDC_CLK_INPUT) ? 1 : 0;
 }
 
-static int gpio_getsda(void* data)
+static int gpio_getsda(void *data)
 {
 	struct radeon_i2c_chan *chan = data;
 	drm_radeon_private_t *dev_priv = chan->dev->dev_private;
 	u32 val;
-	
+
 	val = RADEON_READ(chan->ddc_reg);
 
 	return (val & VGA_DDC_DATA_INPUT) ? 1 : 0;
@@ -86,17 +86,17 @@ static int setup_i2c_bus(struct radeon_i2c_chan *chan, const char *name)
 	int rc;
 
 	strcpy(chan->adapter.name, name);
-	chan->adapter.owner		= THIS_MODULE;
-	chan->adapter.id		= I2C_ALGO_ATI;
-	chan->adapter.algo_data		= &chan->algo;
-	chan->adapter.dev.parent	= &chan->dev->pdev->dev;
-	chan->algo.setsda		= gpio_setsda;
-	chan->algo.setscl		= gpio_setscl;
-	chan->algo.getsda		= gpio_getsda;
-	chan->algo.getscl		= gpio_getscl;
-	chan->algo.udelay		= 40;
-	chan->algo.timeout		= 20;
-	chan->algo.data 		= chan;	
+	chan->adapter.owner = THIS_MODULE;
+	chan->adapter.id = I2C_ALGO_ATI;
+	chan->adapter.algo_data = &chan->algo;
+	chan->adapter.dev.parent = &chan->dev->pdev->dev;
+	chan->algo.setsda = gpio_setsda;
+	chan->algo.setscl = gpio_setscl;
+	chan->algo.getsda = gpio_getsda;
+	chan->algo.getscl = gpio_getscl;
+	chan->algo.udelay = 40;
+	chan->algo.timeout = 20;
+	chan->algo.data = chan;
 
 	i2c_set_adapdata(&chan->adapter, chan);
 
@@ -113,7 +113,7 @@ static int setup_i2c_bus(struct radeon_i2c_chan *chan, const char *name)
 	return rc;
 }
 
-int radeon_create_i2c_busses(drm_device_t *dev)
+int radeon_create_i2c_busses(drm_device_t * dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	int ret;
@@ -140,11 +140,11 @@ int radeon_create_i2c_busses(drm_device_t *dev)
 	return 0;
 }
 
-void radeon_delete_i2c_busses(drm_device_t *dev)
+void radeon_delete_i2c_busses(drm_device_t * dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	int i, ret;
-	
+
 	for (i = 0; i < 4; i++) {
 		if (dev_priv->i2c[i].dev) {
 			ret = i2c_bit_del_bus(&dev_priv->i2c[i].adapter);

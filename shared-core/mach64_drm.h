@@ -33,7 +33,6 @@
 #ifndef __MACH64_DRM_H__
 #define __MACH64_DRM_H__
 
-
 /* WARNING: If you change any of these defines, make sure to change the
  * defines in the Xserver file (mach64_sarea.h)
  */
@@ -57,7 +56,7 @@
 #define MACH64_UPLOAD_TEXTURE		0x0200
 #define MACH64_UPLOAD_TEX0IMAGE		0x0400
 #define MACH64_UPLOAD_TEX1IMAGE		0x0800
-#define MACH64_UPLOAD_CLIPRECTS		0x1000 /* handled client-side */
+#define MACH64_UPLOAD_CLIPRECTS		0x1000	/* handled client-side */
 #define MACH64_UPLOAD_CONTEXT		0x00ff
 #define MACH64_UPLOAD_ALL		0x1fff
 
@@ -78,7 +77,6 @@
  */
 #define MACH64_NR_SAREA_CLIPRECTS	8
 
-
 #define MACH64_CARD_HEAP		0
 #define MACH64_AGP_HEAP			1
 #define MACH64_NR_TEX_HEAPS		2
@@ -90,7 +88,7 @@
 #define MACH64_NR_CONTEXT_REGS		15
 #define MACH64_NR_TEXTURE_REGS		4
 
-#endif /* __MACH64_SAREA_DEFINES__ */
+#endif				/* __MACH64_SAREA_DEFINES__ */
 
 typedef struct {
 	unsigned int dst_off_pitch;
@@ -140,17 +138,17 @@ typedef struct drm_mach64_sarea {
 
 	/* Texture memory LRU.
 	 */
-	drm_tex_region_t tex_list[MACH64_NR_TEX_HEAPS][MACH64_NR_TEX_REGIONS+1];
+	drm_tex_region_t tex_list[MACH64_NR_TEX_HEAPS][MACH64_NR_TEX_REGIONS +
+						       1];
 	unsigned int tex_age[MACH64_NR_TEX_HEAPS];
 	int ctx_owner;
 } drm_mach64_sarea_t;
-
 
 /* WARNING: If you change any of these defines, make sure to change the
  * defines in the Xserver file (mach64_common.h)
  */
 
-/* Mach64 specific ioctls 
+/* Mach64 specific ioctls
  * The device specific ioctl range is 0x40 to 0x79.
  */
 
@@ -193,11 +191,10 @@ typedef struct drm_mach64_sarea {
 #define MACH64_PRIM_QUAD_STRIP		0x00000008
 #define MACH64_PRIM_POLYGON		0x00000009
 
-
 typedef enum _drm_mach64_dma_mode_t {
-   MACH64_MODE_DMA_ASYNC,
-   MACH64_MODE_DMA_SYNC,
-   MACH64_MODE_MMIO
+	MACH64_MODE_DMA_ASYNC,
+	MACH64_MODE_DMA_SYNC,
+	MACH64_MODE_MMIO
 } drm_mach64_dma_mode_t;
 
 typedef struct drm_mach64_init {
@@ -233,9 +230,9 @@ typedef struct drm_mach64_clear {
 
 typedef struct drm_mach64_vertex {
 	int prim;
-	void *buf;			/* Address of vertex buffer */
-	unsigned long used;		/* Number of bytes in buffer */
-	int discard;			/* Client finished with buffer? */
+	void *buf;		/* Address of vertex buffer */
+	unsigned long used;	/* Number of bytes in buffer */
+	int discard;		/* Client finished with buffer? */
 } drm_mach64_vertex_t;
 
 typedef struct drm_mach64_blit {

@@ -1,10 +1,10 @@
 /* i915_dma.c -- DMA support for the I915 -*- linux-c -*-
  */
 /**************************************************************************
- * 
+ *
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
- * 
+ *
  **************************************************************************/
 
 #include "drmP.h"

@@ -10,11 +10,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -22,10 +22,10 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Authors:
  *    Sung-Ching Lin <sclin@sis.com.tw>
- * 
+ *
  */
 
 #include "drmP.h"
@@ -41,13 +41,13 @@ set_t *setInit(void)
 	int i;
 	set_t *set;
 
-	set = (set_t *)drm_alloc(sizeof(set_t), DRM_MEM_DRIVER);
+	set = (set_t *) drm_alloc(sizeof(set_t), DRM_MEM_DRIVER);
 	if (set != NULL) {
 		for (i = 0; i < SET_SIZE; i++) {
-			set->list[i].free_next = i + 1;    
+			set->list[i].free_next = i + 1;
 			set->list[i].alloc_next = -1;
 		}
-		set->list[SET_SIZE-1].free_next = -1;
+		set->list[SET_SIZE - 1].free_next = -1;
 		set->free = 0;
 		set->alloc = -1;
 		set->trace = -1;
@@ -55,10 +55,10 @@ set_t *setInit(void)
 	return set;
 }
 
-int setAdd(set_t *set, ITEM_TYPE item)
+int setAdd(set_t * set, ITEM_TYPE item)
 {
 	int free = set->free;
-  
+
 	if (free != -1) {
 		set->list[free].val = item;
 		set->free = set->list[free].free_next;
@@ -67,16 +67,16 @@ int setAdd(set_t *set, ITEM_TYPE item)
 	}
 
 	set->list[free].alloc_next = set->alloc;
-	set->alloc = free;  
-	set->list[free].free_next = -1;    
+	set->alloc = free;
+	set->list[free].free_next = -1;
 
 	return 1;
 }
 
-int setDel(set_t *set, ITEM_TYPE item)
+int setDel(set_t * set, ITEM_TYPE item)
 {
 	int alloc = set->alloc;
-	int prev = -1;  
+	int prev = -1;
 
 	while (alloc != -1) {
 		if (set->list[alloc].val == item) {
@@ -103,7 +103,7 @@ int setDel(set_t *set, ITEM_TYPE item)
 
 /* setFirst -> setAdd -> setNext is wrong */
 
-int setFirst(set_t *set, ITEM_TYPE *item)
+int setFirst(set_t * set, ITEM_TYPE * item)
 {
 	if (set->alloc == -1)
 		return 0;
@@ -114,7 +114,7 @@ int setFirst(set_t *set, ITEM_TYPE *item)
 	return 1;
 }
 
-int setNext(set_t *set, ITEM_TYPE *item)
+int setNext(set_t * set, ITEM_TYPE * item)
 {
 	if (set->trace == -1)
 		return 0;
@@ -125,7 +125,7 @@ int setNext(set_t *set, ITEM_TYPE *item)
 	return 1;
 }
 
-int setDestroy(set_t *set)
+int setDestroy(set_t * set)
 {
 	drm_free(set, sizeof(set_t), DRM_MEM_DRIVER);
 
@@ -149,35 +149,34 @@ int setDestroy(set_t *set)
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * KEITH WHITWELL, OR ANY OTHER CONTRIBUTORS BE LIABLE FOR ANY CLAIM, 
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+ * KEITH WHITWELL, OR ANY OTHER CONTRIBUTORS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
 #define ISFREE(bptr) ((bptr)->free)
 
-memHeap_t *mmInit(int ofs,
-		  int size)
+memHeap_t *mmInit(int ofs, int size)
 {
 	PMemBlock blocks;
 
 	if (size <= 0)
 		return NULL;
 
-	blocks = (TMemBlock *)drm_calloc(1, sizeof(TMemBlock), DRM_MEM_DRIVER);
+	blocks = (TMemBlock *) drm_calloc(1, sizeof(TMemBlock), DRM_MEM_DRIVER);
 	if (blocks != NULL) {
 		blocks->ofs = ofs;
 		blocks->size = size;
 		blocks->free = 1;
-		return (memHeap_t *)blocks;
+		return (memHeap_t *) blocks;
 	} else
 		return NULL;
 }
 
 /* Checks if a pointer 'b' is part of the heap 'heap' */
-int mmBlockInHeap(memHeap_t *heap, PMemBlock b)
+int mmBlockInHeap(memHeap_t * heap, PMemBlock b)
 {
 	TMemBlock *p;
 
@@ -196,12 +195,10 @@ int mmBlockInHeap(memHeap_t *heap, PMemBlock b)
 
 /* Kludgey workaround for existing i810 server.  Remove soon.
  */
-memHeap_t *mmAddRange( memHeap_t *heap,
-		       int ofs,
-		       int size )
+memHeap_t *mmAddRange(memHeap_t * heap, int ofs, int size)
 {
 	PMemBlock blocks;
-	blocks = (TMemBlock *)drm_calloc(2, sizeof(TMemBlock), DRM_MEM_DRIVER);
+	blocks = (TMemBlock *) drm_calloc(2, sizeof(TMemBlock), DRM_MEM_DRIVER);
 	if (blocks != NULL) {
 		blocks[0].size = size;
 		blocks[0].free = 1;
@@ -213,23 +210,23 @@ memHeap_t *mmAddRange( memHeap_t *heap,
 		 */
 		blocks[1].size = 0;
 		blocks[1].free = 0;
-		blocks[1].ofs = ofs+size;
-		blocks[1].next = (PMemBlock)heap;
-		return (memHeap_t *)blocks;
+		blocks[1].ofs = ofs + size;
+		blocks[1].next = (PMemBlock) heap;
+		return (memHeap_t *) blocks;
 	} else
 		return heap;
 }
 
-static TMemBlock* SliceBlock(TMemBlock *p, 
-			     int startofs, int size, 
+static TMemBlock *SliceBlock(TMemBlock * p,
+			     int startofs, int size,
 			     int reserved, int alignment)
 {
 	TMemBlock *newblock;
 
 	/* break left */
 	if (startofs > p->ofs) {
-		newblock = (TMemBlock*) drm_calloc(1, sizeof(TMemBlock),
-		    DRM_MEM_DRIVER);
+		newblock = (TMemBlock *) drm_calloc(1, sizeof(TMemBlock),
+						    DRM_MEM_DRIVER);
 		newblock->ofs = startofs;
 		newblock->size = p->size - (startofs - p->ofs);
 		newblock->free = 1;
@@ -241,8 +238,8 @@ static TMemBlock* SliceBlock(TMemBlock *p,
 
 	/* break right */
 	if (size < p->size) {
-		newblock = (TMemBlock*) drm_calloc(1, sizeof(TMemBlock),
-		    DRM_MEM_DRIVER);
+		newblock = (TMemBlock *) drm_calloc(1, sizeof(TMemBlock),
+						    DRM_MEM_DRIVER);
 		newblock->ofs = startofs + size;
 		newblock->size = p->size - size;
 		newblock->free = 1;
@@ -258,37 +255,37 @@ static TMemBlock* SliceBlock(TMemBlock *p,
 	return p;
 }
 
-PMemBlock mmAllocMem( memHeap_t *heap, int size, int align2, int startSearch)
+PMemBlock mmAllocMem(memHeap_t * heap, int size, int align2, int startSearch)
 {
-	int mask,startofs, endofs;
+	int mask, startofs, endofs;
 	TMemBlock *p;
-	
+
 	if (heap == NULL || align2 < 0 || size <= 0)
 		return NULL;
 
-	mask = (1 << align2)-1;
+	mask = (1 << align2) - 1;
 	startofs = 0;
-	p = (TMemBlock *)heap;
+	p = (TMemBlock *) heap;
 	while (p != NULL) {
 		if (ISFREE(p)) {
 			startofs = (p->ofs + mask) & ~mask;
-			if ( startofs < startSearch ) {
+			if (startofs < startSearch) {
 				startofs = startSearch;
 			}
-			endofs = startofs+size;
-			if (endofs <= (p->ofs+p->size))
+			endofs = startofs + size;
+			if (endofs <= (p->ofs + p->size))
 				break;
 		}
 		p = p->next;
 	}
 	if (p == NULL)
 		return NULL;
-	p = SliceBlock(p,startofs,size,0,mask+1);
+	p = SliceBlock(p, startofs, size, 0, mask + 1);
 	p->heap = heap;
 	return p;
 }
 
-static __inline__ int Join2Blocks(TMemBlock *p)
+static __inline__ int Join2Blocks(TMemBlock * p)
 {
 	if (p->free && p->next && p->next->free) {
 		TMemBlock *q = p->next;
@@ -321,11 +318,11 @@ int mmFreeMem(PMemBlock b)
 	p->free = 1;
 	Join2Blocks(p);
 	if (prev)
-	Join2Blocks(prev);
+		Join2Blocks(prev);
 	return 0;
 }
 
-int mmReserveMem(memHeap_t *heap, int offset,int size)
+int mmReserveMem(memHeap_t * heap, int offset, int size)
 {
 	int endofs;
 	TMemBlock *p;
@@ -334,10 +331,10 @@ int mmReserveMem(memHeap_t *heap, int offset,int size)
 		return -1;
 
 	endofs = offset + size;
-	p = (TMemBlock *)heap;
+	p = (TMemBlock *) heap;
 	while (p && p->ofs <= offset) {
-		if (ISFREE(p) && endofs <= (p->ofs+p->size)) {
-			SliceBlock(p,offset,size,1,1);
+		if (ISFREE(p) && endofs <= (p->ofs + p->size)) {
+			SliceBlock(p, offset, size, 1, 1);
 			return 0;
 		}
 		p = p->next;
@@ -345,14 +342,14 @@ int mmReserveMem(memHeap_t *heap, int offset,int size)
 	return -1;
 }
 
-int mmFreeReserved(memHeap_t *heap, int offset)
+int mmFreeReserved(memHeap_t * heap, int offset)
 {
-	TMemBlock *p,*prev;
+	TMemBlock *p, *prev;
 
 	if (heap == NULL)
 		return -1;
 
-	p = (TMemBlock *)heap;
+	p = (TMemBlock *) heap;
 	prev = NULL;
 	while (p != NULL && p->ofs != offset) {
 		prev = p;
@@ -369,14 +366,14 @@ int mmFreeReserved(memHeap_t *heap, int offset)
 	return 0;
 }
 
-void mmDestroy(memHeap_t *heap)
+void mmDestroy(memHeap_t * heap)
 {
-	TMemBlock *p,*q;
+	TMemBlock *p, *q;
 
 	if (heap == NULL)
 		return;
 
-	p = (TMemBlock *)heap;
+	p = (TMemBlock *) heap;
 	while (p != NULL) {
 		q = p->next;
 		drm_free(p, sizeof(TMemBlock), DRM_MEM_DRIVER);

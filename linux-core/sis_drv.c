@@ -10,11 +10,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -32,30 +32,28 @@
 
 #include "drm_pciids.h"
 
-static int postinit( struct drm_device *dev, unsigned long flags )
+static int postinit(struct drm_device *dev, unsigned long flags)
 {
-	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d: %s\n",
-		DRIVER_NAME,
-		DRIVER_MAJOR,
-		DRIVER_MINOR,
-		DRIVER_PATCHLEVEL,
-		DRIVER_DATE,
-		dev->minor,
-		pci_pretty_name(dev->pdev)
-		);
+	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d: %s\n",
+		 DRIVER_NAME,
+		 DRIVER_MAJOR,
+		 DRIVER_MINOR,
+		 DRIVER_PATCHLEVEL,
+		 DRIVER_DATE, dev->minor, pci_pretty_name(dev->pdev)
+	    );
 	return 0;
 }
 
-static int version( drm_version_t *version )
+static int version(drm_version_t * version)
 {
 	int len;
 
 	version->version_major = DRIVER_MAJOR;
 	version->version_minor = DRIVER_MINOR;
 	version->version_patchlevel = DRIVER_PATCHLEVEL;
-	DRM_COPY( version->name, DRIVER_NAME );
-	DRM_COPY( version->date, DRIVER_DATE );
-	DRM_COPY( version->desc, DRIVER_DESC );
+	DRM_COPY(version->name, DRIVER_NAME);
+	DRM_COPY(version->date, DRIVER_DATE);
+	DRM_COPY(version->desc, DRIVER_DESC);
 	return 0;
 }
 
@@ -64,12 +62,12 @@ static struct pci_device_id pciidlist[] = {
 };
 
 static drm_ioctl_desc_t ioctls[] = {
-	[DRM_IOCTL_NR(DRM_SIS_FB_ALLOC)]  = { sis_fb_alloc,        1, 0 },
-	[DRM_IOCTL_NR(DRM_SIS_FB_FREE)]   = { sis_fb_free,         1, 0 },
-	[DRM_IOCTL_NR(DRM_SIS_AGP_INIT)]  = { sis_ioctl_agp_init,  1, 1 },
-	[DRM_IOCTL_NR(DRM_SIS_AGP_ALLOC)] = { sis_ioctl_agp_alloc, 1, 0 },
-	[DRM_IOCTL_NR(DRM_SIS_AGP_FREE)]  = { sis_ioctl_agp_free,  1, 0 },
-	[DRM_IOCTL_NR(DRM_SIS_FB_INIT)]   = { sis_fb_init,         1, 1 }
+	[DRM_IOCTL_NR(DRM_SIS_FB_ALLOC)] = {sis_fb_alloc, 1, 0},
+	[DRM_IOCTL_NR(DRM_SIS_FB_FREE)] = {sis_fb_free, 1, 0},
+	[DRM_IOCTL_NR(DRM_SIS_AGP_INIT)] = {sis_ioctl_agp_init, 1, 1},
+	[DRM_IOCTL_NR(DRM_SIS_AGP_ALLOC)] = {sis_ioctl_agp_alloc, 1, 0},
+	[DRM_IOCTL_NR(DRM_SIS_AGP_FREE)] = {sis_ioctl_agp_free, 1, 0},
+	[DRM_IOCTL_NR(DRM_SIS_FB_INIT)] = {sis_fb_init, 1, 1}
 };
 
 static struct drm_driver_fn driver_fn = {
@@ -84,13 +82,13 @@ static struct drm_driver_fn driver_fn = {
 	.ioctls = ioctls,
 	.num_ioctls = DRM_ARRAY_SIZE(ioctls),
 	.fops = {
-		.owner   = THIS_MODULE,
-		.open	 = drm_open,
-		.release = drm_release,
-		.ioctl	 = drm_ioctl,
-		.mmap	 = drm_mmap,
-		.fasync  = drm_fasync,
-	},
+		 .owner = THIS_MODULE,
+		 .open = drm_open,
+		 .release = drm_release,
+		 .ioctl = drm_ioctl,
+		 .mmap = drm_mmap,
+		 .fasync = drm_fasync,
+		 },
 };
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
@@ -99,10 +97,10 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 }
 
 static struct pci_driver driver = {
-	.name          = DRIVER_NAME,
-	.id_table      = pciidlist,
-	.probe         = probe,
-	.remove        = __devexit_p(drm_cleanup_pci),
+	.name = DRIVER_NAME,
+	.id_table = pciidlist,
+	.probe = probe,
+	.remove = __devexit_p(drm_cleanup_pci),
 };
 
 static int __init sis_init(void)
@@ -118,6 +116,6 @@ static void __exit sis_exit(void)
 module_init(sis_init);
 module_exit(sis_exit);
 
-MODULE_AUTHOR( DRIVER_AUTHOR );
-MODULE_DESCRIPTION( DRIVER_DESC );
+MODULE_AUTHOR(DRIVER_AUTHOR);
+MODULE_DESCRIPTION(DRIVER_DESC);
 MODULE_LICENSE("GPL and additional rights");
