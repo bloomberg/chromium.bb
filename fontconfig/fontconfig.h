@@ -458,6 +458,20 @@ FcFontMatch (FcConfig	*config,
 	     FcPattern	*p, 
 	     FcResult	*result);
 
+FcPattern *
+FcFontRenderPrepare (FcConfig	    *config,
+		     FcPattern	    *pat,
+		     FcPattern	    *font);
+
+FcFontSet *
+FcFontSetSort (FcConfig	    *config,
+	       FcFontSet    **sets,
+	       int	    nsets,
+	       FcPattern    *p,
+	       FcBool	    trim,
+	       FcCharSet    **csp,
+	       FcResult	    *result);
+
 /* fcmatrix.c */
 FcMatrix *
 FcMatrixCopy (const FcMatrix *mat);
