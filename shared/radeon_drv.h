@@ -764,6 +764,12 @@ extern void radeon_driver_irq_uninstall( drm_device_t *dev );
 #define RADEON_PP_TEX_SIZE_1                0x1d0c
 #define RADEON_PP_TEX_SIZE_2                0x1d14
 
+#define RADEON_PP_CUBIC_FACES_0             0x1d24
+#define RADEON_PP_CUBIC_FACES_1             0x1d28
+#define RADEON_PP_CUBIC_FACES_2             0x1d2c
+#define RADEON_PP_CUBIC_OFFSET_T0_0         0x1dd0	/* bits [31:5] */
+#define RADEON_PP_CUBIC_OFFSET_T1_0         0x1e00
+#define RADEON_PP_CUBIC_OFFSET_T2_0         0x1e14
 
 #define SE_VAP_CNTL__TCL_ENA_MASK                          0x00000001
 #define SE_VAP_CNTL__FORCE_W_TO_ONE_MASK                   0x00010000

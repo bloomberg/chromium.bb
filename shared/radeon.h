@@ -42,10 +42,10 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20050125"
+#define DRIVER_DATE		"20050208"
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		14
+#define DRIVER_MINOR		15
 #define DRIVER_PATCHLEVEL	0
 
 /* Interface history:
@@ -86,6 +86,8 @@
  *     - Add hyperz support, add hyperz flags to clear ioctl.
  * 1.14- Add support for color tiling
  *     - Add R100/R200 surface allocation/free support
+ * 1.15- Add support for texture micro tiling
+ *     - Add support for r100 cube maps
  */
 #define DRIVER_IOCTLS							     \
  [DRM_IOCTL_NR(DRM_IOCTL_DMA)]               = { radeon_cp_buffers,  1, 0 }, \

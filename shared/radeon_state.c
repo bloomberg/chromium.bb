@@ -127,6 +127,22 @@ static __inline__ int radeon_check_and_fixup_packets( drm_radeon_private_t *dev_
 		break;
 	}
 
+	case RADEON_EMIT_PP_CUBIC_OFFSETS_T0:
+	case RADEON_EMIT_PP_CUBIC_OFFSETS_T1:
+	case RADEON_EMIT_PP_CUBIC_OFFSETS_T2:{
+			int i;
+			for (i = 0; i < 5; i++) {
+				if (radeon_check_and_fixup_offset(dev_priv,
+								  filp_priv,
+								  &data[i])) {
+					DRM_ERROR
+					    ("Invalid R100 cubic texture offset\n");
+					return DRM_ERR(EINVAL);
+				}
+			}
+		}
+		break;
+
 	case RADEON_EMIT_RB3D_COLORPITCH:
 	case RADEON_EMIT_RE_LINE_PATTERN:
 	case RADEON_EMIT_SE_LINE_WIDTH:
@@ -188,6 +204,9 @@ static __inline__ int radeon_check_and_fixup_packets( drm_radeon_private_t *dev_
 	case RADEON_EMIT_PP_TEX_SIZE_2:
 	case R200_EMIT_RB3D_BLENDCOLOR:
 	case R200_EMIT_TCL_POINT_SPRITE_CNTL:
+	case RADEON_EMIT_PP_CUBIC_FACES_0:
+	case RADEON_EMIT_PP_CUBIC_FACES_1:
+	case RADEON_EMIT_PP_CUBIC_FACES_2:
 		/* These packets don't contain memory offsets */
 		break;
 
@@ -542,6 +561,12 @@ static struct {
 	{ RADEON_PP_TEX_SIZE_2, 2, "RADEON_PP_TEX_SIZE_2" },
 	{ R200_RB3D_BLENDCOLOR, 3, "R200_RB3D_BLENDCOLOR" },
 	{ R200_SE_TCL_POINT_SPRITE_CNTL, 1, "R200_SE_TCL_POINT_SPRITE_CNTL"},
+	{ RADEON_PP_CUBIC_FACES_0, 1, "RADEON_PP_CUBIC_FACES_0"},
+	{ RADEON_PP_CUBIC_OFFSET_T0_0, 5, "RADEON_PP_CUBIC_OFFSET_T0_0"},
+	{ RADEON_PP_CUBIC_FACES_1, 1, "RADEON_PP_CUBIC_FACES_1"},
+	{ RADEON_PP_CUBIC_OFFSET_T1_0, 5, "RADEON_PP_CUBIC_OFFSET_T1_0"},
+	{ RADEON_PP_CUBIC_FACES_2, 1, "RADEON_PP_CUBIC_FACES_2"},
+	{ RADEON_PP_CUBIC_OFFSET_T2_0, 5, "RADEON_PP_CUBIC_OFFSET_T2_0"},
 };
 
 
@@ -1484,6 +1509,7 @@ static int radeon_cp_dispatch_texture( DRMFILE filp,
 	int size, dwords, tex_width, blit_width;
 	u32 height;
 	int i;
+	u32 texpitch, microtile;
 	RING_LOCALS;
 
 	DRM_GET_PRIV_WITH_RETURN( filp_priv, filp );
@@ -1546,6 +1572,16 @@ static int radeon_cp_dispatch_texture( DRMFILE filp,
 		DRM_ERROR( "invalid texture format %d\n", tex->format );
 		return DRM_ERR(EINVAL);
 	}
+	texpitch = tex->pitch;
+	if ((texpitch << 22) & RADEON_DST_TILE_MICRO) {
+		microtile = 1;
+		if (tex_width < 64) {
+			texpitch &= ~(RADEON_DST_TILE_MICRO >> 22);
+			/* we got tiled coordinates, untile them */
+			image->x *= 2;
+		}
+	}
+	else microtile = 0;
 
 	DRM_DEBUG("tex=%dx%d blit=%d\n", tex_width, tex->height, blit_width );
 
@@ -1598,7 +1634,7 @@ static int radeon_cp_dispatch_texture( DRMFILE filp,
 			     RADEON_GMC_CLR_CMP_CNTL_DIS |
 			     RADEON_GMC_WR_MSK_DIS);
 		
-		buffer[2] = (tex->pitch << 22) | (tex->offset >> 10);
+ 		buffer[2] = (texpitch << 22) | (tex->offset >> 10);
 		buffer[3] = 0xffffffff;
 		buffer[4] = 0xffffffff;
 		buffer[5] = (image->y << 16) | image->x;
@@ -1606,30 +1642,109 @@ static int radeon_cp_dispatch_texture( DRMFILE filp,
 		buffer[7] = dwords;
 		buffer += 8;
 
-		if ( tex_width >= 32 ) {
-			/* Texture image width is larger than the minimum, so we
-			 * can upload it directly.
-			 */
-			if ( DRM_COPY_FROM_USER( buffer, data, 
-						 dwords * sizeof(u32) ) ) {
-				DRM_ERROR( "EFAULT on data, %d dwords\n", 
-					   dwords );
-				return DRM_ERR(EFAULT);
-			}
-		} else {
-			/* Texture image width is less than the minimum, so we
-			 * need to pad out each image scanline to the minimum
-			 * width.
-			 */
-			for ( i = 0 ; i < tex->height ; i++ ) {
-				if ( DRM_COPY_FROM_USER( buffer, data, 
-							 tex_width ) ) {
-					DRM_ERROR( "EFAULT on pad, %d bytes\n",
-						   tex_width );
+		if (microtile) {
+			/* texture micro tiling in use, minimum texture width is thus 16 bytes.
+			   however, we cannot use blitter directly for texture width < 64 bytes,
+			   since minimum tex pitch is 64 bytes and we need this to match
+			   the texture width, otherwise the blitter will tile it wrong.
+			   Thus, tiling manually in this case. Additionally, need to special
+			   case tex height = 1, since our actual image will have height 2
+			   and we need to ensure we don't read beyond the texture size
+			   from user space. */
+			if (tex->height == 1) {
+				if (tex_width >= 64 || tex_width <= 16) {
+					if (DRM_COPY_FROM_USER(buffer, data,
+						       tex_width * sizeof(u32))) {
+						DRM_ERROR("EFAULT on pad, %d bytes\n",
+							  tex_width);
+						return DRM_ERR(EFAULT);
+					}
+				} else if (tex_width == 32) {
+					if (DRM_COPY_FROM_USER(buffer, data, 16)) {
+						DRM_ERROR("EFAULT on pad, %d bytes\n",
+							  tex_width);
+						return DRM_ERR(EFAULT);
+					}
+					if (DRM_COPY_FROM_USER(buffer + 8, data + 16, 16)) {
+						DRM_ERROR("EFAULT on pad, %d bytes\n",
+							  tex_width);
+						return DRM_ERR(EFAULT);
+					}
+				}
+			} else if (tex_width >= 64 || tex_width == 16) {
+				if (DRM_COPY_FROM_USER(buffer, data,
+						       dwords * sizeof(u32))) {
+					DRM_ERROR("EFAULT on data, %d dwords\n",
+						  dwords);
 					return DRM_ERR(EFAULT);
 				}
-				buffer += 8;
-				data += tex_width;
+			} else if (tex_width < 16) {
+				for (i = 0; i < tex->height; i++) {
+					if (DRM_COPY_FROM_USER(buffer, data, tex_width)) {
+						DRM_ERROR("EFAULT on pad, %d bytes\n",
+							  tex_width);
+						return DRM_ERR(EFAULT);
+					}
+					buffer += 4;
+					data += tex_width;
+				}
+			} else if (tex_width == 32) {
+			/* TODO: make sure this works when not fitting in one buffer
+				(i.e. 32bytes x 2048...) */
+				for (i = 0; i < tex->height; i += 2) {
+					if (DRM_COPY_FROM_USER(buffer, data, 16)) {
+						DRM_ERROR("EFAULT on pad, %d bytes\n",
+							  tex_width);
+						return DRM_ERR(EFAULT);
+					}
+					data += 16;
+					if (DRM_COPY_FROM_USER(buffer + 8, data, 16)) {
+						DRM_ERROR("EFAULT on pad, %d bytes\n",
+							  tex_width);
+						return DRM_ERR(EFAULT);
+					}
+					data += 16;
+					if (DRM_COPY_FROM_USER(buffer + 4, data, 16)) {
+						DRM_ERROR("EFAULT on pad, %d bytes\n",
+							  tex_width);
+						return DRM_ERR(EFAULT);
+					}
+					data += 16;
+					if (DRM_COPY_FROM_USER(buffer + 12, data, 16)) {
+						DRM_ERROR("EFAULT on pad, %d bytes\n",
+							  tex_width);
+						return DRM_ERR(EFAULT);
+					}
+					data += 16;
+					buffer += 16;
+				}
+			}
+		}
+		else {
+			if (tex_width >= 32) {
+				/* Texture image width is larger than the minimum, so we
+				 * can upload it directly.
+				 */
+				if (DRM_COPY_FROM_USER(buffer, data,
+						       dwords * sizeof(u32))) {
+					DRM_ERROR("EFAULT on data, %d dwords\n",
+						  dwords);
+					return DRM_ERR(EFAULT);
+				}
+			} else {
+				/* Texture image width is less than the minimum, so we
+				 * need to pad out each image scanline to the minimum
+				 * width.
+				 */
+				for (i = 0; i < tex->height; i++) {
+					if (DRM_COPY_FROM_USER(buffer, data, tex_width)) {
+						DRM_ERROR("EFAULT on pad, %d bytes\n",
+							  tex_width);
+						return DRM_ERR(EFAULT);
+					}
+					buffer += 8;
+					data += tex_width;
+				}
 			}
 		}
 
