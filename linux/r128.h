@@ -60,11 +60,14 @@
  */
 #define __HAVE_DMA		1
 
+#if 0
+/* GH: Remove this for now... */
 #define __HAVE_DMA_QUIESCENT	1
 #define DRIVER_DMA_QUIESCENT() do {					\
 	drm_r128_private_t *dev_priv = dev->dev_private;		\
 	return r128_do_cce_idle( dev_priv );				\
 } while (0)
+#endif
 
 /* Buffer customization:
  */
