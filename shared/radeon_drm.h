@@ -145,7 +145,8 @@
 #define RADEON_EMIT_PP_TEX_SIZE_1                   74
 #define RADEON_EMIT_PP_TEX_SIZE_2                   75
 #define R200_EMIT_RB3D_BLENDCOLOR                   76
-#define RADEON_MAX_STATE_PACKETS                    77
+#define R200_EMIT_TCL_POINT_SPRITE_CNTL             77
+#define RADEON_MAX_STATE_PACKETS                    78
 
 
 /* Commands understood by cmd_buffer ioctl.  More can be added but
@@ -193,6 +194,9 @@ typedef union {
 #define RADEON_BACK			0x2
 #define RADEON_DEPTH			0x4
 #define RADEON_STENCIL                  0x8
+#define RADEON_CLEAR_FASTZ		0x80000000
+#define RADEON_USE_HIERZ		0x40000000
+#define RADEON_USE_COMP_ZBUF		0x20000000
 
 /* Primitive types
  */

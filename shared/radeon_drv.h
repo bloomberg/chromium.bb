@@ -68,6 +68,7 @@ enum radeon_chip_flags {
 	CHIP_IS_IGP		= 0x00020000UL,
 	CHIP_SINGLE_CRTC	= 0x00040000UL,
 	CHIP_IS_AGP		= 0x00080000UL, 
+	CHIP_HAS_HIERZ		= 0x00100000UL, 
 };
 
 #define GET_RING_HEAD(dev_priv)		DRM_READ32(  (dev_priv)->ring_rptr, 0 )
@@ -411,6 +412,7 @@ extern void radeon_driver_irq_uninstall( drm_device_t *dev );
 #	define RADEON_STENCIL_ENABLE		(1 << 7)
 #	define RADEON_Z_ENABLE			(1 << 8)
 #define RADEON_RB3D_DEPTHOFFSET		0x1c24
+#define RADEON_RB3D_DEPTHCLEARVALUE	0x3230
 #define RADEON_RB3D_DEPTHPITCH		0x1c28
 #define RADEON_RB3D_PLANEMASK		0x1d84
 #define RADEON_RB3D_STENCILREFMASK	0x1d7c
@@ -423,11 +425,15 @@ extern void radeon_driver_irq_uninstall( drm_device_t *dev );
 #define RADEON_RB3D_ZSTENCILCNTL	0x1c2c
 #	define RADEON_Z_TEST_MASK		(7 << 4)
 #	define RADEON_Z_TEST_ALWAYS		(7 << 4)
+#	define RADEON_Z_HIERARCHY_ENABLE        (1 << 8)
 #	define RADEON_STENCIL_TEST_ALWAYS	(7 << 12)
 #	define RADEON_STENCIL_S_FAIL_REPLACE	(2 << 16)
 #	define RADEON_STENCIL_ZPASS_REPLACE	(2 << 20)
 #	define RADEON_STENCIL_ZFAIL_REPLACE	(2 << 24)
+#	define RADEON_Z_COMPRESSION_ENABLE      (1 << 28)
+#	define RADEON_FORCE_Z_DIRTY             (1 << 29)
 #	define RADEON_Z_WRITE_ENABLE		(1 << 30)
+#	define RADEON_Z_DECOMPRESSION_ENABLE    (1 << 31)
 #define RADEON_RBBM_SOFT_RESET		0x00f0
 #	define RADEON_SOFT_RESET_CP		(1 <<  0)
 #	define RADEON_SOFT_RESET_HI		(1 <<  1)
@@ -535,7 +541,7 @@ extern void radeon_driver_irq_uninstall( drm_device_t *dev );
 #	define RADEON_WAIT_3D_IDLECLEAN		(1 << 17)
 #	define RADEON_WAIT_HOST_IDLECLEAN	(1 << 18)
 
-#define RADEON_RB3D_ZMASKOFFSET		0x1c34
+#define RADEON_RB3D_ZMASKOFFSET		0x3234
 #define RADEON_RB3D_ZSTENCILCNTL	0x1c2c
 #	define RADEON_DEPTH_FORMAT_16BIT_INT_Z	(0 << 0)
 #	define RADEON_DEPTH_FORMAT_24BIT_INT_Z	(2 << 0)
@@ -590,6 +596,8 @@ extern void radeon_driver_irq_uninstall( drm_device_t *dev );
 #	define RADEON_3D_DRAW_IMMD		0x00002900
 #	define RADEON_3D_DRAW_INDX		0x00002A00
 #	define RADEON_3D_LOAD_VBPNTR		0x00002F00
+#	define RADEON_3D_CLEAR_ZMASK		0x00003200
+#	define RADEON_3D_CLEAR_HIZ		0x00003700
 #	define RADEON_CNTL_HOSTDATA_BLT		0x00009400
 #	define RADEON_CNTL_PAINT_MULTI		0x00009A00
 #	define RADEON_CNTL_BITBLT_MULTI		0x00009B00
@@ -747,6 +755,8 @@ extern void radeon_driver_irq_uninstall( drm_device_t *dev );
 #define R200_RE_CNTL                      0x1c50 
 
 #define R200_RB3D_BLENDCOLOR              0x3218
+
+#define R200_SE_TCL_POINT_SPRITE_CNTL     0x22c4
 
 /* Constants */
 #define RADEON_MAX_USEC_TIMEOUT		100000	/* 100 ms */

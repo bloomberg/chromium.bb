@@ -2017,6 +2017,18 @@ int radeon_preinit( struct drm_device *dev, unsigned long flags )
 	dev->dev_private = (void *)dev_priv;
 	dev_priv->flags = flags;
 
+	switch (flags & CHIP_FAMILY_MASK) {
+	case CHIP_R100:
+	case CHIP_RV200:
+	case CHIP_R200:
+	case CHIP_R300:
+		dev_priv->flags |= CHIP_HAS_HIERZ;
+		break;
+	default:
+	/* all other chips have no hierarchical z buffer */
+		break;
+	}
+
 	/* registers */
 	if( (ret = DRM(initmap)( dev, pci_resource_start( dev->pdev, 2 ),
 			pci_resource_len( dev->pdev, 2 ), _DRM_REGISTERS, 0 )))

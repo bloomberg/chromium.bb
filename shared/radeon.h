@@ -42,10 +42,10 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20020828"
+#define DRIVER_DATE		"20041207"
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		12
+#define DRIVER_MINOR		13
 #define DRIVER_PATCHLEVEL	0
 
 /* Interface history:
@@ -82,6 +82,8 @@
  *       and GL_EXT_blend_[func|equation]_separate on r200
  * 1.12- Add R300 CP microcode support - this just loads the CP on r300
  *       (No 3D support yet - just microcode loading).
+ * 1.13- Add packet R200_EMIT_TCL_POINT_SPRITE_CNTL for ARB_point_parameters
+ *     - Add hyperz support, add hyperz flags to clear ioctl.
  */
 #define DRIVER_IOCTLS							     \
  [DRM_IOCTL_NR(DRM_IOCTL_DMA)]               = { radeon_cp_buffers,  1, 0 }, \
