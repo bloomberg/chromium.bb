@@ -87,7 +87,7 @@
  */
 #define __HAVE_RELEASE		1
 #define DRIVER_RELEASE() do {						\
-	i830_reclaim_buffers( dev, priv->pid );				\
+	i830_reclaim_buffers( filp );				\
 } while (0)
 
 /* DMA customization:

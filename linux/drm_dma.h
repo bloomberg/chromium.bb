@@ -189,7 +189,7 @@ void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
 
 	buf->waiting  = 0;
 	buf->pending  = 0;
-	buf->pid      = 0;
+	buf->filp     = 0;
 	buf->used     = 0;
 #if __HAVE_DMA_HISTOGRAM
 	buf->time_completed = get_cycles();
@@ -211,14 +211,16 @@ void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
 }
 
 #if !__HAVE_DMA_RECLAIM
-void DRM(reclaim_buffers)(drm_device_t *dev, pid_t pid)
+void DRM(reclaim_buffers)( struct file *filp )
 {
+	drm_file_t    *priv   = filp->private_data;
+	drm_device_t  *dev    = priv->dev;
 	drm_device_dma_t *dma = dev->dma;
 	int		 i;
 
 	if (!dma) return;
 	for (i = 0; i < dma->buf_count; i++) {
-		if (dma->buflist[i]->pid == pid) {
+		if (dma->buflist[i]->filp == filp) {
 			switch (dma->buflist[i]->list) {
 			case DRM_LIST_NONE:
 				DRM(free_buffer)(dev, dma->buflist[i]);
@@ -319,8 +321,10 @@ int DRM(select_queue)(drm_device_t *dev, void (*wrapper)(unsigned long))
 }
 
 
-int DRM(dma_enqueue)(drm_device_t *dev, drm_dma_t *d)
+int DRM(dma_enqueue)(struct file *filp, drm_dma_t *d)
 {
+	drm_file_t    *priv   = filp->private_data;
+	drm_device_t  *dev    = priv->dev;
 	int		  i;
 	drm_queue_t	  *q;
 	drm_buf_t	  *buf;
@@ -382,10 +386,10 @@ int DRM(dma_enqueue)(drm_device_t *dev, drm_dma_t *d)
 			return -EINVAL;
 		}
 		buf = dma->buflist[ idx ];
-		if (buf->pid != current->pid) {
+		if (buf->filp != filp) {
 			atomic_dec(&q->use_count);
-			DRM_ERROR("Process %d using buffer owned by %d\n",
-				  current->pid, buf->pid);
+			DRM_ERROR("Process %d using buffer not owned\n",
+				  current->pid);
 			return -EINVAL;
 		}
 		if (buf->list != DRM_LIST_NONE) {
@@ -427,9 +431,11 @@ int DRM(dma_enqueue)(drm_device_t *dev, drm_dma_t *d)
 	return 0;
 }
 
-static int DRM(dma_get_buffers_of_order)(drm_device_t *dev, drm_dma_t *d,
+static int DRM(dma_get_buffers_of_order)(struct file *filp, drm_dma_t *d,
 					 int order)
 {
+	drm_file_t    *priv   = filp->private_data;
+	drm_device_t  *dev    = priv->dev;
 	int		  i;
 	drm_buf_t	  *buf;
 	drm_device_dma_t  *dma = dev->dma;
@@ -439,13 +445,13 @@ static int DRM(dma_get_buffers_of_order)(drm_device_t *dev, drm_dma_t *d,
 					d->flags & _DRM_DMA_WAIT);
 		if (!buf) break;
 		if (buf->pending || buf->waiting) {
-			DRM_ERROR("Free buffer %d in use by %d (w%d, p%d)\n",
+			DRM_ERROR("Free buffer %d in use by %x (w%d, p%d)\n",
 				  buf->idx,
-				  buf->pid,
+				  buf->filp,
 				  buf->waiting,
 				  buf->pending);
 		}
-		buf->pid     = current->pid;
+		buf->filp     = filp;
 		if (copy_to_user(&d->request_indices[i],
 				 &buf->idx,
 				 sizeof(buf->idx)))
@@ -462,7 +468,7 @@ static int DRM(dma_get_buffers_of_order)(drm_device_t *dev, drm_dma_t *d,
 }
 
 
-int DRM(dma_get_buffers)(drm_device_t *dev, drm_dma_t *dma)
+int DRM(dma_get_buffers)(struct file *filp, drm_dma_t *dma)
 {
 	int		  order;
 	int		  retcode = 0;
@@ -471,7 +477,7 @@ int DRM(dma_get_buffers)(drm_device_t *dev, drm_dma_t *dma)
 	order = DRM(order)(dma->request_size);
 
 	dma->granted_count = 0;
-	retcode		   = DRM(dma_get_buffers_of_order)(dev, dma, order);
+	retcode		   = DRM(dma_get_buffers_of_order)(filp, dma, order);
 
 	if (dma->granted_count < dma->request_count
 	    && (dma->flags & _DRM_DMA_SMALLER_OK)) {
@@ -481,7 +487,7 @@ int DRM(dma_get_buffers)(drm_device_t *dev, drm_dma_t *dma)
 			     && tmp_order >= DRM_MIN_ORDER;
 		     --tmp_order) {
 
-			retcode = DRM(dma_get_buffers_of_order)(dev, dma,
+			retcode = DRM(dma_get_buffers_of_order)(filp, dma,
 								tmp_order);
 		}
 	}
@@ -494,7 +500,7 @@ int DRM(dma_get_buffers)(drm_device_t *dev, drm_dma_t *dma)
 			     && tmp_order <= DRM_MAX_ORDER;
 		     ++tmp_order) {
 
-			retcode = DRM(dma_get_buffers_of_order)(dev, dma,
+			retcode = DRM(dma_get_buffers_of_order)(filp, dma,
 								tmp_order);
 		}
 	}

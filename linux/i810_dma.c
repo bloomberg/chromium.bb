@@ -209,7 +209,6 @@ static int i810_unmap_buffer(drm_buf_t *buf)
 static int i810_dma_get_buffer(drm_device_t *dev, drm_i810_dma_t *d,
 			       struct file *filp)
 {
-	drm_file_t	  *priv	  = filp->private_data;
 	drm_buf_t	  *buf;
 	drm_i810_buf_priv_t *buf_priv;
 	int retcode = 0;
@@ -227,7 +226,7 @@ static int i810_dma_get_buffer(drm_device_t *dev, drm_i810_dma_t *d,
 	   	DRM_ERROR("mapbuf failed, retcode %d\n", retcode);
 		return retcode;
 	}
-	buf->pid     = priv->pid;
+	buf->filp = filp;
 	buf_priv = buf->dev_private;
 	d->granted = 1;
    	d->request_idx = buf->idx;
@@ -856,8 +855,10 @@ static int i810_flush_queue(drm_device_t *dev)
 }
 
 /* Must be called with the lock held */
-void i810_reclaim_buffers(drm_device_t *dev, pid_t pid)
+void i810_reclaim_buffers(struct file *filp)
 {
+	drm_file_t    *priv   = filp->private_data;
+	drm_device_t  *dev    = priv->dev;
 	drm_device_dma_t *dma = dev->dma;
 	int		 i;
 
@@ -871,7 +872,7 @@ void i810_reclaim_buffers(drm_device_t *dev, pid_t pid)
 	   	drm_buf_t *buf = dma->buflist[ i ];
 	   	drm_i810_buf_priv_t *buf_priv = buf->dev_private;
 
-		if (buf->pid == pid && buf_priv) {
+		if (buf->filp == filp && buf_priv) {
 			int used = cmpxchg(buf_priv->in_use, I810_BUF_CLIENT,
 					   I810_BUF_FREE);
 
