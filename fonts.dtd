@@ -157,7 +157,7 @@
 <!ELEMENT string (#PCDATA)>
 <!ATTLIST string xml:space (default|preserve) 'preserve'>
 <!ELEMENT matrix (double,double,double,double)>
-<!ELEMENT bool (true|false)>
+<!ELEMENT bool (#PCDATA)>
 <!ELEMENT charset (#PCDATA)>
 <!ATTLIST charset xml:space (default|preserve) 'preserve'>
 <!ELEMENT name (#PCDATA)>
