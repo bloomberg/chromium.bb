@@ -34,6 +34,7 @@
  *    Leif Delgass <ldelgass@retinalburn.net>
  */
 
+#include "mach64.h"
 #include "drmP.h"
 #include "drm.h"
 #include "mach64_drm.h"
@@ -62,7 +63,7 @@ irqreturn_t mach64_driver_irq_handler( DRM_IRQ_ARGS )
 
 	    atomic_inc(&dev->vbl_received);
 	    DRM_WAKEUP(&dev->vbl_queue);
-	    drm_vbl_send_signals( dev );
+	    DRM(vbl_send_signals)( dev );
             return IRQ_HANDLED;
 	}
 	return IRQ_NONE;

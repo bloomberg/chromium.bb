@@ -27,9 +27,10 @@
  *
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
- *    Michel Dï¿½zer <michel@daenzer.net>
+ *    Michel Dänzer <michel@daenzer.net>
  */
 
+#include "radeon.h"
 #include "drmP.h"
 #include "drm.h"
 #include "radeon_drm.h"
@@ -77,7 +78,7 @@ irqreturn_t radeon_driver_irq_handler( DRM_IRQ_ARGS )
 	if (stat & RADEON_CRTC_VBLANK_STAT) {
 		atomic_inc(&dev->vbl_received);
 		DRM_WAKEUP(&dev->vbl_queue);
-		drm_vbl_send_signals( dev );
+		DRM(vbl_send_signals)( dev );
 	}
 
 	/* Acknowledge interrupts we handle */
@@ -222,7 +223,7 @@ int radeon_irq_wait( DRM_IOCTL_ARGS )
 
 /* drm_dma.h hooks
 */
-void radeon_driver_irq_preinstall( drm_device_t *dev ) {
+void DRM(driver_irq_preinstall)( drm_device_t *dev ) {
 	drm_radeon_private_t *dev_priv =
 		(drm_radeon_private_t *)dev->dev_private;
 
@@ -233,7 +234,7 @@ void radeon_driver_irq_preinstall( drm_device_t *dev ) {
 	radeon_acknowledge_irqs( dev_priv );
 }
 
-void radeon_driver_irq_postinstall( drm_device_t *dev ) {
+void DRM(driver_irq_postinstall)( drm_device_t *dev ) {
 	drm_radeon_private_t *dev_priv =
 		(drm_radeon_private_t *)dev->dev_private;
 
@@ -246,7 +247,7 @@ void radeon_driver_irq_postinstall( drm_device_t *dev ) {
 		      RADEON_SW_INT_ENABLE );
 }
 
-void radeon_driver_irq_uninstall( drm_device_t *dev ) {
+void DRM(driver_irq_uninstall)( drm_device_t *dev ) {
 	drm_radeon_private_t *dev_priv =
 		(drm_radeon_private_t *)dev->dev_private;
 	if (!dev_priv)

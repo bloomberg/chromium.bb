@@ -28,6 +28,7 @@
  *    Gareth Hughes <gareth@valinux.com>
  */
 
+#include "radeon.h"
 #include "drmP.h"
 #include "drm.h"
 #include "radeon_drm.h"
@@ -1215,7 +1216,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	dev_priv->ring.end = ((u32 *)dev_priv->cp_ring->handle
 			      + init->ring_size / sizeof(u32));
 	dev_priv->ring.size = init->ring_size;
-	dev_priv->ring.size_l2qw = drm_order( init->ring_size / 8 );
+	dev_priv->ring.size_l2qw = DRM(order)( init->ring_size / 8 );
 
 	dev_priv->ring.tail_mask =
 		(dev_priv->ring.size / sizeof(u32)) - 1;
@@ -1229,7 +1230,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	} else
 #endif
 	{
-		if (!drm_ati_pcigart_init( dev, &dev_priv->phys_pci_gart,
+		if (!DRM(ati_pcigart_init)( dev, &dev_priv->phys_pci_gart,
 					    &dev_priv->bus_pci_gart)) {
 			DRM_ERROR( "failed to init PCI GART!\n" );
 			radeon_do_cleanup_cp(dev);
@@ -1259,7 +1260,7 @@ int radeon_do_cleanup_cp( drm_device_t *dev )
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
-	if ( dev->irq_enabled ) drm_irq_uninstall(dev);
+	if ( dev->irq_enabled ) DRM(irq_uninstall)(dev);
 
 #if __OS_HAS_AGP
 	if (dev_priv->flags & CHIP_IS_AGP) {
@@ -1278,7 +1279,7 @@ int radeon_do_cleanup_cp( drm_device_t *dev )
 	} else
 #endif
 	{
-		if (!drm_ati_pcigart_cleanup( dev,
+		if (!DRM(ati_pcigart_cleanup)( dev,
 					       dev_priv->phys_pci_gart,
 					       dev_priv->bus_pci_gart ))
 			DRM_ERROR( "failed to cleanup PCI GART!\n" );
@@ -1733,7 +1734,7 @@ int radeon_preinit( struct drm_device *dev, unsigned long flags )
 	drm_radeon_private_t *dev_priv;
 	int ret = 0;
 
-	dev_priv = drm_alloc( sizeof(drm_radeon_private_t), DRM_MEM_DRIVER );
+	dev_priv = DRM(alloc)( sizeof(drm_radeon_private_t), DRM_MEM_DRIVER );
 	if ( dev_priv == NULL )
 		return DRM_ERR(ENOMEM);
 
@@ -1742,12 +1743,12 @@ int radeon_preinit( struct drm_device *dev, unsigned long flags )
 	dev_priv->flags = flags;
 
 	/* registers */
-	if( (ret = drm_initmap( dev, pci_resource_start( dev->pdev, 2 ),
+	if( (ret = DRM(initmap)( dev, pci_resource_start( dev->pdev, 2 ),
 			pci_resource_len( dev->pdev, 2 ), _DRM_REGISTERS, 0 )))
 		return ret;
 
 	/* framebuffer */
-	if( (ret = drm_initmap( dev, pci_resource_start( dev->pdev, 0 ),
+	if( (ret = DRM(initmap)( dev, pci_resource_start( dev->pdev, 0 ),
 			pci_resource_len( dev->pdev, 0 ), _DRM_FRAME_BUFFER, _DRM_WRITE_COMBINING )))
 		return ret;
 
@@ -1775,6 +1776,11 @@ int radeon_preinit( struct drm_device *dev, unsigned long flags )
         return ret;
 }
 
+int radeon_postinit( struct drm_device *dev, unsigned long flags )
+{
+	return 0;
+}
+
 int radeon_postcleanup( struct drm_device *dev )
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
@@ -1783,7 +1789,7 @@ int radeon_postcleanup( struct drm_device *dev )
 #if defined(__linux__)
 	radeon_delete_i2c_busses(dev);
 #endif
-	drm_free( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
+	DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 
 	dev->dev_private = NULL;
 	return 0;

@@ -10,6 +10,7 @@
  * 
  **************************************************************************/
 
+#include "via.h"
 #include "drmP.h"
 #include "drm.h"
 #include "via_drm.h"

@@ -33,6 +33,7 @@
  * interrupt.
  */
 
+#include "via.h"
 #include "drmP.h"
 #include "drm.h"
 #include "via_drm.h"
@@ -57,7 +58,7 @@ irqreturn_t via_driver_irq_handler( DRM_IRQ_ARGS )
         if(status & VIA_IRQ_VBI_PENDING){
                 atomic_inc(&dev->vbl_received);
                 DRM_WAKEUP(&dev->vbl_queue);
-                drm_vbl_send_signals(dev);
+                DRM(vbl_send_signals)(dev);
                 handled = 1;
         }
     

@@ -27,6 +27,7 @@
  *    Gareth Hughes <gareth@valinux.com>
  */
 
+#include "r128.h"
 #include "drmP.h"
 #include "drm.h"
 #include "r128_drm.h"
@@ -925,24 +926,24 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 	}
 
 	buffer_size = depth->n * sizeof(u32);
-	buffer = drm_alloc( buffer_size, DRM_MEM_BUFS );
+	buffer = DRM(alloc)( buffer_size, DRM_MEM_BUFS );
 	if ( buffer == NULL )
 		return DRM_ERR(ENOMEM);
 	if ( DRM_COPY_FROM_USER( buffer, depth->buffer, buffer_size ) ) {
-		drm_free( buffer, buffer_size, DRM_MEM_BUFS);
+		DRM(free)( buffer, buffer_size, DRM_MEM_BUFS);
 		return DRM_ERR(EFAULT);
 	}
 
 	mask_size = depth->n * sizeof(u8);
 	if ( depth->mask ) {
-		mask = drm_alloc( mask_size, DRM_MEM_BUFS );
+		mask = DRM(alloc)( mask_size, DRM_MEM_BUFS );
 		if ( mask == NULL ) {
-			drm_free( buffer, buffer_size, DRM_MEM_BUFS );
+			DRM(free)( buffer, buffer_size, DRM_MEM_BUFS );
 			return DRM_ERR(ENOMEM);
 		}
 		if ( DRM_COPY_FROM_USER( mask, depth->mask, mask_size ) ) {
-			drm_free( buffer, buffer_size, DRM_MEM_BUFS );
-			drm_free( mask, mask_size, DRM_MEM_BUFS );
+			DRM(free)( buffer, buffer_size, DRM_MEM_BUFS );
+			DRM(free)( mask, mask_size, DRM_MEM_BUFS );
 			return DRM_ERR(EFAULT);
 		}
 
@@ -969,7 +970,7 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 			}
 		}
 
-		drm_free( mask, mask_size, DRM_MEM_BUFS );
+		DRM(free)( mask, mask_size, DRM_MEM_BUFS );
 	} else {
 		for ( i = 0 ; i < count ; i++, x++ ) {
 			BEGIN_RING( 6 );
@@ -993,7 +994,7 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 		}
 	}
 
-	drm_free( buffer, buffer_size, DRM_MEM_BUFS );
+	DRM(free)( buffer, buffer_size, DRM_MEM_BUFS );
 
 	return 0;
 }
@@ -1015,54 +1016,54 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 
 	xbuf_size = count * sizeof(*x);
 	ybuf_size = count * sizeof(*y);
-	x = drm_alloc( xbuf_size, DRM_MEM_BUFS );
+	x = DRM(alloc)( xbuf_size, DRM_MEM_BUFS );
 	if ( x == NULL ) {
 		return DRM_ERR(ENOMEM);
 	}
-	y = drm_alloc( ybuf_size, DRM_MEM_BUFS );
+	y = DRM(alloc)( ybuf_size, DRM_MEM_BUFS );
 	if ( y == NULL ) {
-		drm_free( x, xbuf_size, DRM_MEM_BUFS );
+		DRM(free)( x, xbuf_size, DRM_MEM_BUFS );
 		return DRM_ERR(ENOMEM);
 	}
 	if ( DRM_COPY_FROM_USER( x, depth->x, xbuf_size ) ) {
-		drm_free( x, xbuf_size, DRM_MEM_BUFS );
-		drm_free( y, ybuf_size, DRM_MEM_BUFS );
+		DRM(free)( x, xbuf_size, DRM_MEM_BUFS );
+		DRM(free)( y, ybuf_size, DRM_MEM_BUFS );
 		return DRM_ERR(EFAULT);
 	}
 	if ( DRM_COPY_FROM_USER( y, depth->y, xbuf_size ) ) {
-		drm_free( x, xbuf_size, DRM_MEM_BUFS );
-		drm_free( y, ybuf_size, DRM_MEM_BUFS );
+		DRM(free)( x, xbuf_size, DRM_MEM_BUFS );
+		DRM(free)( y, ybuf_size, DRM_MEM_BUFS );
 		return DRM_ERR(EFAULT);
 	}
 
 	buffer_size = depth->n * sizeof(u32);
-	buffer = drm_alloc( buffer_size, DRM_MEM_BUFS );
+	buffer = DRM(alloc)( buffer_size, DRM_MEM_BUFS );
 	if ( buffer == NULL ) {
-		drm_free( x, xbuf_size, DRM_MEM_BUFS );
-		drm_free( y, ybuf_size, DRM_MEM_BUFS );
+		DRM(free)( x, xbuf_size, DRM_MEM_BUFS );
+		DRM(free)( y, ybuf_size, DRM_MEM_BUFS );
 		return DRM_ERR(ENOMEM);
 	}
 	if ( DRM_COPY_FROM_USER( buffer, depth->buffer, buffer_size ) ) {
-		drm_free( x, xbuf_size, DRM_MEM_BUFS );
-		drm_free( y, ybuf_size, DRM_MEM_BUFS );
-		drm_free( buffer, buffer_size, DRM_MEM_BUFS );
+		DRM(free)( x, xbuf_size, DRM_MEM_BUFS );
+		DRM(free)( y, ybuf_size, DRM_MEM_BUFS );
+		DRM(free)( buffer, buffer_size, DRM_MEM_BUFS );
 		return DRM_ERR(EFAULT);
 	}
 
 	if ( depth->mask ) {
 		mask_size = depth->n * sizeof(u8);
-		mask = drm_alloc( mask_size, DRM_MEM_BUFS );
+		mask = DRM(alloc)( mask_size, DRM_MEM_BUFS );
 		if ( mask == NULL ) {
-			drm_free( x, xbuf_size, DRM_MEM_BUFS );
-			drm_free( y, ybuf_size, DRM_MEM_BUFS );
-			drm_free( buffer, buffer_size, DRM_MEM_BUFS );
+			DRM(free)( x, xbuf_size, DRM_MEM_BUFS );
+			DRM(free)( y, ybuf_size, DRM_MEM_BUFS );
+			DRM(free)( buffer, buffer_size, DRM_MEM_BUFS );
 			return DRM_ERR(ENOMEM);
 		}
 		if ( DRM_COPY_FROM_USER( mask, depth->mask, mask_size ) ) {
-			drm_free( x, xbuf_size, DRM_MEM_BUFS  );
-			drm_free( y, ybuf_size, DRM_MEM_BUFS  );
-			drm_free( buffer, buffer_size, DRM_MEM_BUFS  );
-			drm_free( mask, mask_size, DRM_MEM_BUFS  );
+			DRM(free)( x, xbuf_size, DRM_MEM_BUFS  );
+			DRM(free)( y, ybuf_size, DRM_MEM_BUFS  );
+			DRM(free)( buffer, buffer_size, DRM_MEM_BUFS  );
+			DRM(free)( mask, mask_size, DRM_MEM_BUFS  );
 			return DRM_ERR(EFAULT);
 		}
 
@@ -1089,7 +1090,7 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 			}
 		}
 
-		drm_free( mask, mask_size, DRM_MEM_BUFS );
+		DRM(free)( mask, mask_size, DRM_MEM_BUFS );
 	} else {
 		for ( i = 0 ; i < count ; i++ ) {
 			BEGIN_RING( 6 );
@@ -1113,9 +1114,9 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 		}
 	}
 
-	drm_free( x, xbuf_size, DRM_MEM_BUFS );
-	drm_free( y, ybuf_size, DRM_MEM_BUFS );
-	drm_free( buffer, buffer_size, DRM_MEM_BUFS );
+	DRM(free)( x, xbuf_size, DRM_MEM_BUFS );
+	DRM(free)( y, ybuf_size, DRM_MEM_BUFS );
+	DRM(free)( buffer, buffer_size, DRM_MEM_BUFS );
 
 	return 0;
 }
@@ -1183,23 +1184,23 @@ static int r128_cce_dispatch_read_pixels( drm_device_t *dev,
 
 	xbuf_size = count * sizeof(*x);
 	ybuf_size = count * sizeof(*y);
-	x = drm_alloc( xbuf_size, DRM_MEM_BUFS );
+	x = DRM(alloc)( xbuf_size, DRM_MEM_BUFS );
 	if ( x == NULL ) {
 		return DRM_ERR(ENOMEM);
 	}
-	y = drm_alloc( ybuf_size, DRM_MEM_BUFS );
+	y = DRM(alloc)( ybuf_size, DRM_MEM_BUFS );
 	if ( y == NULL ) {
-		drm_free( x, xbuf_size, DRM_MEM_BUFS );
+		DRM(free)( x, xbuf_size, DRM_MEM_BUFS );
 		return DRM_ERR(ENOMEM);
 	}
 	if ( DRM_COPY_FROM_USER( x, depth->x, xbuf_size ) ) {
-		drm_free( x, xbuf_size, DRM_MEM_BUFS );
-		drm_free( y, ybuf_size, DRM_MEM_BUFS );
+		DRM(free)( x, xbuf_size, DRM_MEM_BUFS );
+		DRM(free)( y, ybuf_size, DRM_MEM_BUFS );
 		return DRM_ERR(EFAULT);
 	}
 	if ( DRM_COPY_FROM_USER( y, depth->y, ybuf_size ) ) {
-		drm_free( x, xbuf_size, DRM_MEM_BUFS );
-		drm_free( y, ybuf_size, DRM_MEM_BUFS );
+		DRM(free)( x, xbuf_size, DRM_MEM_BUFS );
+		DRM(free)( y, ybuf_size, DRM_MEM_BUFS );
 		return DRM_ERR(EFAULT);
 	}
 
@@ -1227,8 +1228,8 @@ static int r128_cce_dispatch_read_pixels( drm_device_t *dev,
 		ADVANCE_RING();
 	}
 
-	drm_free( x, xbuf_size, DRM_MEM_BUFS );
-	drm_free( y, ybuf_size, DRM_MEM_BUFS );
+	DRM(free)( x, xbuf_size, DRM_MEM_BUFS );
+	DRM(free)( y, ybuf_size, DRM_MEM_BUFS );
 
 	return 0;
 }
@@ -1694,7 +1695,7 @@ int r128_getparam( DRM_IOCTL_ARGS )
 	return 0;
 }
 
-void r128_driver_prerelease(drm_device_t *dev, DRMFILE filp)
+static void r128_driver_prerelease(drm_device_t *dev, DRMFILE filp)
 {
 	if ( dev->dev_private ) {
 		drm_r128_private_t *dev_priv = dev->dev_private;
@@ -1704,7 +1705,20 @@ void r128_driver_prerelease(drm_device_t *dev, DRMFILE filp)
 	}			
 }
 
-void r128_driver_pretakedown(drm_device_t *dev)
+static void r128_driver_pretakedown(drm_device_t *dev)
 {
 	r128_do_cleanup_cce( dev );
+}
+
+void r128_driver_register_fns(drm_device_t *dev)
+{
+	dev->driver_features = DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_SG | DRIVER_HAVE_DMA | DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL;
+	dev->dev_priv_size = sizeof(drm_r128_buf_priv_t); 
+	dev->fn_tbl.prerelease = r128_driver_prerelease;
+	dev->fn_tbl.pretakedown = r128_driver_pretakedown;
+	dev->fn_tbl.vblank_wait = r128_driver_vblank_wait;
+	dev->fn_tbl.irq_preinstall = r128_driver_irq_preinstall;
+	dev->fn_tbl.irq_postinstall = r128_driver_irq_postinstall;
+	dev->fn_tbl.irq_uninstall = r128_driver_irq_uninstall;
+	dev->fn_tbl.irq_handler = r128_driver_irq_handler;
 }

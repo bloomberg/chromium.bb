@@ -28,6 +28,7 @@
  * 
  */
 
+#include "sis.h"
 #include "drmP.h"
 #include "drm.h"
 #include "sis_ds.h"
@@ -41,7 +42,7 @@ set_t *setInit(void)
 	int i;
 	set_t *set;
 
-	set = (set_t *)drm_alloc(sizeof(set_t), DRM_MEM_DRIVER);
+	set = (set_t *)DRM(alloc)(sizeof(set_t), DRM_MEM_DRIVER);
 	if (set != NULL) {
 		for (i = 0; i < SET_SIZE; i++) {
 			set->list[i].free_next = i + 1;    
@@ -127,7 +128,7 @@ int setNext(set_t *set, ITEM_TYPE *item)
 
 int setDestroy(set_t *set)
 {
-	drm_free(set, sizeof(set_t), DRM_MEM_DRIVER);
+	DRM(free)(set, sizeof(set_t), DRM_MEM_DRIVER);
 
 	return 1;
 }
@@ -166,7 +167,7 @@ memHeap_t *mmInit(int ofs,
 	if (size <= 0)
 		return NULL;
 
-	blocks = (TMemBlock *)drm_calloc(1, sizeof(TMemBlock), DRM_MEM_DRIVER);
+	blocks = (TMemBlock *)DRM(calloc)(1, sizeof(TMemBlock), DRM_MEM_DRIVER);
 	if (blocks != NULL) {
 		blocks->ofs = ofs;
 		blocks->size = size;
@@ -201,7 +202,7 @@ memHeap_t *mmAddRange( memHeap_t *heap,
 		       int size )
 {
 	PMemBlock blocks;
-	blocks = (TMemBlock *)drm_calloc(2, sizeof(TMemBlock), DRM_MEM_DRIVER);
+	blocks = (TMemBlock *)DRM(calloc)(2, sizeof(TMemBlock), DRM_MEM_DRIVER);
 	if (blocks != NULL) {
 		blocks[0].size = size;
 		blocks[0].free = 1;
@@ -228,7 +229,7 @@ static TMemBlock* SliceBlock(TMemBlock *p,
 
 	/* break left */
 	if (startofs > p->ofs) {
-		newblock = (TMemBlock*) drm_calloc(1, sizeof(TMemBlock),
+		newblock = (TMemBlock*) DRM(calloc)(1, sizeof(TMemBlock),
 		    DRM_MEM_DRIVER);
 		newblock->ofs = startofs;
 		newblock->size = p->size - (startofs - p->ofs);
@@ -241,7 +242,7 @@ static TMemBlock* SliceBlock(TMemBlock *p,
 
 	/* break right */
 	if (size < p->size) {
-		newblock = (TMemBlock*) drm_calloc(1, sizeof(TMemBlock),
+		newblock = (TMemBlock*) DRM(calloc)(1, sizeof(TMemBlock),
 		    DRM_MEM_DRIVER);
 		newblock->ofs = startofs + size;
 		newblock->size = p->size - size;
@@ -294,7 +295,7 @@ static __inline__ int Join2Blocks(TMemBlock *p)
 		TMemBlock *q = p->next;
 		p->size += q->size;
 		p->next = q->next;
-		drm_free(q, sizeof(TMemBlock), DRM_MEM_DRIVER);
+		DRM(free)(q, sizeof(TMemBlock), DRM_MEM_DRIVER);
 		return 1;
 	}
 	return 0;
@@ -379,7 +380,7 @@ void mmDestroy(memHeap_t *heap)
 	p = (TMemBlock *)heap;
 	while (p != NULL) {
 		q = p->next;
-		drm_free(p, sizeof(TMemBlock), DRM_MEM_DRIVER);
+		DRM(free)(p, sizeof(TMemBlock), DRM_MEM_DRIVER);
 		p = q;
 	}
 }

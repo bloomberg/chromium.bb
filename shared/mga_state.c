@@ -32,6 +32,7 @@
  *    Gareth Hughes <gareth@valinux.com>
  */
 
+#include "mga.h"
 #include "drmP.h"
 #include "drm.h"
 #include "mga_drm.h"
