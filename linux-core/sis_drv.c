@@ -626,7 +626,6 @@ int sis_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 #endif
 
         if (!ret) {
-#if LINUX_VERSION_CODE >= 0x020400 /* KERNEL_VERSION(2,4,0) */
 		sigemptyset(&dev->sigmask);
 		sigaddset(&dev->sigmask, SIGSTOP);
 		sigaddset(&dev->sigmask, SIGTSTP);
@@ -635,7 +634,7 @@ int sis_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 		dev->sigdata.context = lock.context;
 		dev->sigdata.lock    = dev->lock.hw_lock;
 		block_all_signals(drm_notifier, &dev->sigdata, &dev->sigmask);
-#endif
+
                 if (lock.flags & _DRM_LOCK_READY) {
 				/* Wait for space in DMA/FIFO */
 		}
@@ -687,9 +686,7 @@ int sis_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 		}
 	}
 
-#if LINUX_VERSION_CODE >= 0x020400 /* KERNEL_VERSION(2,4,0) */
 	unblock_all_signals();
-#endif
 	return 0;
 }
 

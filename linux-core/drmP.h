@@ -61,6 +61,9 @@
 #include <linux/tqueue.h>
 #include <linux/poll.h>
 #endif
+#if LINUX_VERSION_CODE < 0x020400
+#include "compat-pre24.h"
+#endif
 #include "drm.h"
 
 #define DRM_DEBUG_CODE 2	  /* Include debugging code (if > 1, then
@@ -138,11 +141,6 @@ typedef struct wait_queue *wait_queue_head_t;
 #endif
 #ifndef module_exit
 #define module_exit(x)  void cleanup_module(void) { x(); }
-#endif
-
-				/* virt_to_page added in 2.4.0-test6 */
-#if LINUX_VERSION_CODE < 0x020400
-#define virt_to_page(kaddr) (mem_map + MAP_NR(kaddr))
 #endif
 
 				/* Generic cmpxchg added in 2.3.x */
