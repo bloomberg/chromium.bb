@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/Imakefile,v 1.2 2000/08/16 01:45:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/Imakefile,v 1.3 2000/10/27 16:59:40 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -18,7 +18,7 @@ LinkSourceFile(drm.h,$(XF86OSSRC)/linux/drm/kernel)
 LinkSourceFile(i810_drm.h,$(XF86OSSRC)/linux/drm/kernel)
 LinkSourceFile(mga_drm.h,$(XF86OSSRC)/linux/drm/kernel)
 LinkSourceFile(r128_drm.h,$(XF86OSSRC)/linux/drm/kernel)
-LinkSourceFile(sis_drm_public.h,$(XF86OSSRC)/linux/drm/kernel)
+LinkSourceFile(sis_drm.h,$(XF86OSSRC)/linux/drm/kernel)
 
 
 XCOMM This is a kludge until we determine how best to build the

@@ -33,9 +33,6 @@
 #include "sis_drm.h"
 #include "sis_ds.h"
 #include "sis_drv.h"
-#include <linux/fb.h>
-#include <linux/sisfb.h>
-#include <linux/interrupt.h>
 
 #define MAX_CONTEXT 100
 #define VIDEO_TYPE 0 
@@ -73,7 +70,7 @@ static int del_alloc_set(int context, int type, unsigned int val)
 }
 
 /* fb management via fb device */ 
-#if 1
+#if 0
 int sis_fb_alloc(struct inode *inode, struct file *filp, unsigned int cmd,
 		  unsigned long arg)
 {

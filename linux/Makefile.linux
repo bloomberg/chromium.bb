@@ -113,15 +113,15 @@ all:; @echo Error: Could not locate kernel tree in $A $B $C
 else
 SMP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'SMP = ' | cut -d' ' -f3)
-MODULES := $(shell gcc -E -nostdinc -I $(TREE) picker.c 2>/dev/null \
+MODULES := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'MODULES = ' | cut -d' ' -f3)
-MODVERSIONS := $(shell gcc -E -nostdinc -I $(TREE) picker.c 2>/dev/null \
+MODVERSIONS := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'MODVERSIONS = ' | cut -d' ' -f3)
 AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'AGP = ' | cut -d' ' -f3)
 SIS := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'SIS = ' | cut -d' ' -f3)
-PARAMS := $(shell if fgrep kill_fasync $(TREE)/linux/fs.h \
+PARAMS := $(shell if fgrep kill_fasync $(TREE)/linux/fs.h 2>/dev/null \
 	| egrep -q '(band|int, int)'; then echo 3; else echo 2; fi)
 MACHINE := $(shell echo `uname -m`)
 ifeq ($(AGP),0)

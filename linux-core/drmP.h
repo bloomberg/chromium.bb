@@ -59,6 +59,15 @@
 #include <asm/io.h>
 #include <asm/mman.h>
 #include <asm/uaccess.h>
+
+#ifndef copy_to_user_ret
+#define copy_to_user_ret(to,from,n,retval) ({ if (copy_to_user(to,from,n)) return retval; })
+#endif
+
+#ifndef copy_from_user_ret
+#define copy_from_user_ret(to,from,n,retval) ({ if (copy_from_user(to,from,n)) return retval; })
+#endif
+
 #ifdef CONFIG_MTRR
 #include <asm/mtrr.h>
 #endif

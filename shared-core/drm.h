@@ -82,6 +82,7 @@ typedef struct drm_clip_rect {
 #include "mga_drm.h"
 #include "i810_drm.h"
 #include "r128_drm.h"
+#include "sis_drm.h"
 
 typedef struct drm_version {
 	int    version_major;	  /* Major version			    */
@@ -368,5 +369,15 @@ typedef struct drm_agp_info {
 #define DRM_IOCTL_R128_IDLE	DRM_IO(  0x43)
 #define DRM_IOCTL_R128_PACKET	DRM_IOW( 0x44, drm_r128_packet_t)
 #define DRM_IOCTL_R128_VERTEX	DRM_IOW( 0x45, drm_r128_vertex_t)
+
+/* SiS specific ioctls */
+#define SIS_IOCTL_FB_ALLOC     DRM_IOWR( 0x44, drm_sis_mem_t)
+#define SIS_IOCTL_FB_FREE      DRM_IOW( 0x45, drm_sis_mem_t)
+#define SIS_IOCTL_AGP_INIT     DRM_IOWR( 0x53, drm_sis_agp_t)
+#define SIS_IOCTL_AGP_ALLOC    DRM_IOWR( 0x54, drm_sis_mem_t)
+#define SIS_IOCTL_AGP_FREE     DRM_IOW( 0x55, drm_sis_mem_t)
+#define SIS_IOCTL_FLIP         DRM_IOW( 0x48, drm_sis_flip_t)
+#define SIS_IOCTL_FLIP_INIT    DRM_IO( 0x49)
+#define SIS_IOCTL_FLIP_FINAL   DRM_IO( 0x50)
 
 #endif

@@ -420,6 +420,7 @@ int mga_infobufs(struct inode *inode, struct file *filp, unsigned int cmd,
 						 sizeof(dma->bufs[0]
 							.freelist.high_mark)))
 					return -EFAULT;
+
 				++count;
 			}
 		}
