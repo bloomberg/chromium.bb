@@ -1,6 +1,6 @@
 /* drmstat.c -- DRM device status and testing program
  * Created: Tue Jan  5 08:19:24 1999 by faith@precisioninsight.com
- * Revised: Sun Aug  1 11:02:00 1999 by faith@precisioninsight.com
+ * Revised: Mon Dec  6 10:33:46 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -218,8 +218,8 @@ int main(int argc, char **argv)
 		       info->list[i].low_mark,
 		       info->list[i].high_mark);
 	    }
-	    printf("===== /proc/drm/1/meminfo =====\n");
-	    sprintf(buf, "cat /proc/drm/1/meminfo");
+	    printf("===== /proc/graphics/0/mem =====\n");
+	    sprintf(buf, "cat /proc/graphics/0/mem");
 	    system(buf);
 #if 1
 	    if (!(bufs = drmMapBufs(fd))) {
@@ -234,8 +234,8 @@ int main(int argc, char **argv)
 			bufs->list[i].total,
 			bufs->list[i].address);
 	    }
-	    printf("===== /proc/drm/1/vmainfo =====\n");
-	    sprintf(buf, "cat /proc/drm/1/vmainfo");
+	    printf("===== /proc/graphics/0/vma =====\n");
+	    sprintf(buf, "cat /proc/graphics/0/vma");
 	    system(buf);
 #endif
 	    break;
@@ -249,8 +249,8 @@ int main(int argc, char **argv)
 		return 1;
 	    }
 	    printf("0x%08lx:0x%04lx added\n", offset, size);
-	    printf("===== /proc/drm/1/meminfo =====\n");
-	    sprintf(buf, "cat /proc/drm/1/meminfo");
+	    printf("===== /proc/graphics/0/mem =====\n");
+	    sprintf(buf, "cat /proc/graphics/0/mem");
 	    system(buf);
 	    break;
 	case 'r':
@@ -266,8 +266,8 @@ int main(int argc, char **argv)
 		return 1;
 	    }
 	    printf("0x%08lx:0x%04lx added\n", offset, size);
-	    printf("===== /proc/drm/1/meminfo =====\n");
-	    sprintf(buf, "cat /proc/drm/1/meminfo");
+	    printf("===== /proc/graphics/0/mem =====\n");
+	    sprintf(buf, "cat /proc/graphics/0/mem");
 	    system(buf);
 	    break;
 	case 's':
@@ -315,11 +315,11 @@ int main(int argc, char **argv)
 	    printf("===== /proc/%d/maps =====\n", getpid());
 	    sprintf(buf, "cat /proc/%d/maps", getpid());
 	    system(buf);
-	    printf("===== /proc/drm/1/meminfo =====\n");
-	    sprintf(buf, "cat /proc/drm/1/meminfo");
+	    printf("===== /proc/grphics/0/mem =====\n");
+	    sprintf(buf, "cat /proc/graphics/0/mem");
 	    system(buf);
-	    printf("===== /proc/drm/1/vmainfo =====\n");
-	    sprintf(buf, "cat /proc/drm/1/vmainfo");
+	    printf("===== /proc/graphics/0/vma =====\n");
+	    sprintf(buf, "cat /proc/graphics/0/vma");
 	    system(buf);
 	    printf("===== READING =====\n");
 	    for (i = 0; i < 0x10; i++)
@@ -336,8 +336,8 @@ int main(int argc, char **argv)
 	    for (i = 0; i < 0x10; i++)
 		printf("%02x ", (unsigned int)((unsigned char *)address)[i]);
 	    printf("\n");
-	    printf("===== /proc/drm/1/vmainfo =====\n");
-	    sprintf(buf, "cat /proc/drm/1/vmainfo");
+	    printf("===== /proc/graphics/0/vma =====\n");
+	    sprintf(buf, "cat /proc/graphics/0/vma");
 	    system(buf);
 	    break;
 	case 'L':

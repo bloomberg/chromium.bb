@@ -1,6 +1,6 @@
 /* vm.c -- Memory mapping for DRM -*- linux-c -*-
  * Created: Mon Jan  4 08:58:31 1999 by faith@precisioninsight.com
- * Revised: Fri Aug 20 22:48:11 1999 by faith@precisioninsight.com
+ * Revised: Mon Dec  6 16:54:35 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -50,18 +50,32 @@ struct vm_operations_struct   drm_vm_dma_ops = {
 	close:	 drm_vm_close,
 };
 
+#if LINUX_VERSION_CODE < 0x020317
 unsigned long drm_vm_nopage(struct vm_area_struct *vma,
 			    unsigned long address,
 			    int write_access)
+#else
+				/* Return type changed in 2.3.23 */
+struct page *drm_vm_nopage(struct vm_area_struct *vma,
+			   unsigned long address,
+			   int write_access)
+#endif
 {
 	DRM_DEBUG("0x%08lx, %d\n", address, write_access);
 
-	return 0;		/* Disallow mremap */
+	return NOPAGE_SIGBUS;		/* Disallow mremap */
 }
 
+#if LINUX_VERSION_CODE < 0x020317
 unsigned long drm_vm_shm_nopage(struct vm_area_struct *vma,
 				unsigned long address,
 				int write_access)
+#else
+				/* Return type changed in 2.3.23 */
+struct page *drm_vm_shm_nopage(struct vm_area_struct *vma,
+			       unsigned long address,
+			       int write_access)
+#endif
 {
 	drm_file_t	 *priv	 = vma->vm_file->private_data;
 	drm_device_t	 *dev	 = priv->dev;
@@ -69,8 +83,8 @@ unsigned long drm_vm_shm_nopage(struct vm_area_struct *vma,
 	unsigned long	 offset;
 	unsigned long	 page;
 
-	if (address > vma->vm_end) return 0; /* Disallow mremap */
-	if (!dev->lock.hw_lock)    return 0; /* Nothing allocated */
+	if (address > vma->vm_end) return NOPAGE_SIGBUS; /* Disallow mremap */
+	if (!dev->lock.hw_lock)    return NOPAGE_OOM;  /* Nothing allocated */
 
 	offset	 = address - vma->vm_start;
 	page	 = offset >> PAGE_SHIFT;
@@ -78,12 +92,23 @@ unsigned long drm_vm_shm_nopage(struct vm_area_struct *vma,
 	atomic_inc(&mem_map[MAP_NR(physical)].count); /* Dec. by kernel */
 
 	DRM_DEBUG("0x%08lx (page %lu) => 0x%08lx\n", address, page, physical);
+#if LINUX_VERSION_CODE < 0x020317
 	return physical;
+#else
+	return mem_map + MAP_NR(physical);
+#endif
 }
 
+#if LINUX_VERSION_CODE < 0x020317
 unsigned long drm_vm_dma_nopage(struct vm_area_struct *vma,
 				unsigned long address,
 				int write_access)
+#else
+				/* Return type changed in 2.3.23 */
+struct page *drm_vm_dma_nopage(struct vm_area_struct *vma,
+			       unsigned long address,
+			       int write_access)
+#endif
 {
 	drm_file_t	 *priv	 = vma->vm_file->private_data;
 	drm_device_t	 *dev	 = priv->dev;
@@ -92,17 +117,21 @@ unsigned long drm_vm_dma_nopage(struct vm_area_struct *vma,
 	unsigned long	 offset;
 	unsigned long	 page;
 
-	if (!dma)		   return 0; /* Error */
-	if (address > vma->vm_end) return 0; /* Disallow mremap */
-	if (!dma->pagelist)	   return 0; /* Nothing allocated */
+	if (!dma)		   return NOPAGE_SIGBUS; /* Error */
+	if (address > vma->vm_end) return NOPAGE_SIGBUS; /* Disallow mremap */
+	if (!dma->pagelist)	   return NOPAGE_OOM ; /* Nothing allocated */
 
-	offset	 = address - vma->vm_start; /* vm_offset should be 0 */
+	offset	 = address - vma->vm_start; /* vm_[pg]off[set] should be 0 */
 	page	 = offset >> PAGE_SHIFT;
 	physical = dma->pagelist[page] + (offset & (~PAGE_MASK));
 	atomic_inc(&mem_map[MAP_NR(physical)].count); /* Dec. by kernel */
 
 	DRM_DEBUG("0x%08lx (page %lu) => 0x%08lx\n", address, page, physical);
+#if LINUX_VERSION_CODE < 0x020317
 	return physical;
+#else
+	return mem_map + MAP_NR(physical);
+#endif
 }
 
 void drm_vm_open(struct vm_area_struct *vma)
@@ -169,7 +198,7 @@ int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 	unsigned long	 length	 = vma->vm_end - vma->vm_start;
 	
 	DRM_DEBUG("start = 0x%lx, end = 0x%lx, offset = 0x%lx\n",
-		  vma->vm_start, vma->vm_end, vma->vm_offset);
+		  vma->vm_start, vma->vm_end, VM_OFFSET(vma));
 
 				/* Length must match exact page count */
 	if ((length >> PAGE_SHIFT) != dma->page_count) return -EINVAL;
@@ -195,9 +224,9 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	int		i;
 	
 	DRM_DEBUG("start = 0x%lx, end = 0x%lx, offset = 0x%lx\n",
-		  vma->vm_start, vma->vm_end, vma->vm_offset);
+		  vma->vm_start, vma->vm_end, VM_OFFSET(vma));
 
-	if (!vma->vm_offset) return drm_mmap_dma(filp, vma);
+	if (!VM_OFFSET(vma)) return drm_mmap_dma(filp, vma);
 
 				/* A sequential search of a linked list is
 				   fine here because: 1) there will only be
@@ -208,7 +237,7 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 				   bit longer. */
 	for (i = 0; i < dev->map_count; i++) {
 		map = dev->maplist[i];
-		if (map->offset == vma->vm_offset) break;
+		if (map->offset == VM_OFFSET(vma)) break;
 	}
 	
 	if (i >= dev->map_count) return -EINVAL;
@@ -222,7 +251,7 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	switch (map->type) {
 	case _DRM_FRAME_BUFFER:
 	case _DRM_REGISTERS:
-		if (vma->vm_offset >= __pa(high_memory)) {
+		if (VM_OFFSET(vma) >= __pa(high_memory)) {
 #if defined(__i386__)
 			if (boot_cpu_data.x86 > 3) {
 				pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
@@ -232,7 +261,7 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 			vma->vm_flags |= VM_IO;	/* not in core dump */
 		}
 		if (remap_page_range(vma->vm_start,
-				     vma->vm_offset,
+				     VM_OFFSET(vma),
 				     vma->vm_end - vma->vm_start,
 				     vma->vm_page_prot))
 				return -EAGAIN;
@@ -249,7 +278,15 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	}
 	vma->vm_flags |= VM_LOCKED | VM_SHM; /* Don't swap */
 	if (map->flags & _DRM_READ_ONLY) {
+#if defined(__i386__)
 		pgprot_val(vma->vm_page_prot) &= ~_PAGE_RW;
+#else
+				/* Ye gads this is ugly.  With more thought
+                                   we could move this up higher and use
+                                   `protection_map' instead.  */
+		vma->vm_page_prot = __pgprot(pte_val(pte_wrprotect(
+			__pte(pgprot_val(vma->vm_page_prot)))));
+#endif
 	}
 
 	

@@ -1,6 +1,6 @@
 /* lists.c -- Buffer list handling routines -*- linux-c -*-
  * Created: Mon Apr 19 20:54:22 1999 by faith@precisioninsight.com
- * Revised: Fri Aug 20 09:27:01 1999 by faith@precisioninsight.com
+ * Revised: Mon Dec  6 16:04:44 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -130,11 +130,9 @@ int drm_freelist_destroy(drm_freelist_t *bl)
 
 int drm_freelist_put(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 {
-	unsigned int	 old;
-	unsigned int	 new;
-	char		 failed;
+	drm_buf_t        *old, *prev;
 	int		 count = 0;
-	drm_device_dma_t *dma = dev->dma;
+	drm_device_dma_t *dma  = dev->dma;
 
 	if (!dma) {
 		DRM_ERROR("No DMA support\n");
@@ -155,15 +153,14 @@ int drm_freelist_put(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 #endif
 	buf->list	= DRM_LIST_FREE;
 	do {
-		old	  = (unsigned long)bl->next;
-		buf->next = (void *)old;
-		new	  = (unsigned long)buf;
-		_DRM_CAS(&bl->next, old, new, failed);
+		old       = bl->next;
+		bl->next  = old;
+		prev      = cmpxchg(&bl->next, old, buf);
 		if (++count > DRM_LOOPING_LIMIT) {
 			DRM_ERROR("Looping\n");
 			return 1;
 		}
-	} while (failed);
+	} while (prev != old);
 	atomic_inc(&bl->count);
 	if (atomic_read(&bl->count) > dma->buf_count) {
 		DRM_ERROR("%d of %d buffers free after addition of %d\n",
@@ -180,9 +177,7 @@ int drm_freelist_put(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 
 static drm_buf_t *drm_freelist_try(drm_freelist_t *bl)
 {
-	unsigned int	  old;
-	unsigned int	  new;
-	char		  failed;
+	drm_buf_t         *old, *new, *prev;
 	drm_buf_t	  *buf;
 	int		  count = 0;
 
@@ -190,20 +185,18 @@ static drm_buf_t *drm_freelist_try(drm_freelist_t *bl)
 	
 				/* Get buffer */
 	do {
-		old = (unsigned int)bl->next;
-		if (!old) {
-			return NULL;
-		}
-		new = (unsigned long)bl->next->next;
-		_DRM_CAS(&bl->next, old, new, failed);
+		old = bl->next;
+		if (!old) return NULL;
+		new  = bl->next->next;
+		prev = cmpxchg(&bl->next, old, new);
 		if (++count > DRM_LOOPING_LIMIT) {
 			DRM_ERROR("Looping\n");
 			return NULL;
 		}
-	} while (failed);
+	} while (prev != old);
 	atomic_dec(&bl->count);
 	
-	buf	  = (drm_buf_t *)old;
+	buf	  = old;
 	buf->next = NULL;
 	buf->list = DRM_LIST_NONE;
 	DRM_DEBUG("%d, count = %d, wfh = %d, w%d, p%d\n",

@@ -1,6 +1,6 @@
 /* lock.c -- IOCTLs for locking -*- linux-c -*-
  * Created: Tue Feb  2 08:37:54 1999 by faith@precisioninsight.com
- * Revised: Tue Oct 12 08:51:06 1999 by faith@precisioninsight.com
+ * Revised: Mon Dec  6 16:04:44 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -48,17 +48,15 @@ int drm_unblock(struct inode *inode, struct file *filp, unsigned int cmd,
 
 int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
 {
-	unsigned int old;
-	unsigned int new;
-	char	     failed;
+	unsigned int old, new, prev;
 
 	DRM_DEBUG("%d attempts\n", context);
 	do {
 		old = *lock;
 		if (old & _DRM_LOCK_HELD) new = old | _DRM_LOCK_CONT;
 		else			  new = context | _DRM_LOCK_HELD;
-		_DRM_CAS(lock, old, new, failed);
-	} while (failed);
+		prev = cmpxchg(lock, old, new);
+	} while (prev != old);
 	if (_DRM_LOCKING_CONTEXT(old) == context) {
 		if (old & _DRM_LOCK_HELD) {
 			if (context != DRM_KERNEL_CONTEXT) {
@@ -83,16 +81,14 @@ int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
 int drm_lock_transfer(drm_device_t *dev,
 		      __volatile__ unsigned int *lock, unsigned int context)
 {
-	unsigned int old;
-	unsigned int new;
-	char	     failed;
+	unsigned int old, new, prev;
 
 	dev->lock.pid = 0;
 	do {
-		old = *lock;
-		new = context | _DRM_LOCK_HELD;
-		_DRM_CAS(lock, old, new, failed);
-	} while (failed);
+		old  = *lock;
+		new  = context | _DRM_LOCK_HELD;
+		prev = cmpxchg(lock, old, new);
+	} while (prev != old);
 	DRM_DEBUG("%d => %d\n", _DRM_LOCKING_CONTEXT(old), context);
 	return 1;
 }
@@ -100,18 +96,16 @@ int drm_lock_transfer(drm_device_t *dev,
 int drm_lock_free(drm_device_t *dev,
 		  __volatile__ unsigned int *lock, unsigned int context)
 {
-	unsigned int old;
-	unsigned int new;
-	char	     failed;
+	unsigned int old, new, prev;
 	pid_t        pid = dev->lock.pid;
 
 	DRM_DEBUG("%d\n", context);
 	dev->lock.pid = 0;
 	do {
-		old = *lock;
-		new = 0;
-		_DRM_CAS(lock, old, new, failed);
-	} while (failed);
+		old  = *lock;
+		new  = 0;
+		prev = cmpxchg(lock, old, new);
+	} while (prev != old);
 	if (_DRM_LOCK_IS_HELD(old) && _DRM_LOCKING_CONTEXT(old) != context) {
 		DRM_ERROR("%d freed heavyweight lock held by %d (pid %d)\n",
 			  context,

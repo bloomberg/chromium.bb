@@ -1,6 +1,6 @@
 /* proc.c -- /proc support for DRM -*- linux-c -*-
  * Created: Mon Jan 11 09:48:47 1999 by faith@precisioninsight.com
- * Revised: Fri Aug 20 11:31:48 1999 by faith@precisioninsight.com
+ * Revised: Fri Dec  3 09:44:16 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -382,7 +382,8 @@ static int _drm_vma_info(char *buf, char **start, off_t offset, int len,
 			       vma->vm_flags & VM_MAYSHARE ? 's' : 'p',
 			       vma->vm_flags & VM_LOCKED   ? 'l' : '-',
 			       vma->vm_flags & VM_IO	   ? 'i' : '-',
-			       vma->vm_offset );
+			       VM_OFFSET(vma));
+		
 #if defined(__i386__)
 		pgprot = pgprot_val(vma->vm_page_prot);
 		DRM_PROC_PRINT(" %c%c%c%c%c%c%c%c%c",
@@ -393,7 +394,7 @@ static int _drm_vma_info(char *buf, char **start, off_t offset, int len,
 			       pgprot & _PAGE_PCD      ? 'u' : 'c',
 			       pgprot & _PAGE_ACCESSED ? 'a' : '-',
 			       pgprot & _PAGE_DIRTY    ? 'd' : '-',
-			       pgprot & _PAGE_4M       ? 'm' : 'k',
+			       pgprot & _PAGE_PSE      ? 'm' : 'k',
 			       pgprot & _PAGE_GLOBAL   ? 'g' : 'l' );
 #endif		
 		DRM_PROC_PRINT("\n");

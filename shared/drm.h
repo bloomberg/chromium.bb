@@ -1,6 +1,6 @@
 /* drm.h -- Header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
- * Revised: Fri Aug 20 13:08:18 1999 by faith@precisioninsight.com
+ * Revised: Mon Dec  6 17:11:19 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All rights reserved.
@@ -26,7 +26,10 @@
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drm.h,v 1.46 1999/08/20 20:00:53 faith Exp $
  * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drm.h,v 1.1 1999/09/25 14:37:58 dawes Exp $
- * 
+ *
+ * Acknowledgements:
+ * Dec 1999, Richard Henderson <rth@twiddle.net>, move to generic cmpxchg.
+ *
  */
 
 #ifndef _DRM_H_

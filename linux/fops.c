@@ -1,6 +1,6 @@
 /* fops.c -- File operations for DRM -*- linux-c -*-
  * Created: Mon Jan  4 08:58:31 1999 by faith@precisioninsight.com
- * Revised: Tue Oct 12 08:48:59 1999 by faith@precisioninsight.com
+ * Revised: Fri Dec  3 10:26:26 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -75,8 +75,8 @@ int drm_flush(struct file *filp)
 	drm_file_t    *priv   = filp->private_data;
 	drm_device_t  *dev    = priv->dev;
 
-	DRM_DEBUG("pid = %d, device = 0x%x, open_count = %d, f_count = %d\n",
-		  current->pid, dev->device, dev->open_count, filp->f_count);
+	DRM_DEBUG("pid = %d, device = 0x%x, open_count = %d\n",
+		  current->pid, dev->device, dev->open_count);
 	return 0;
 }
 
@@ -211,7 +211,12 @@ int drm_write_string(drm_device_t *dev, const char *s)
 		send -= count;
 	}
 
+#if LINUX_VERSION_CODE < 0x020315
 	if (dev->buf_async) kill_fasync(dev->buf_async, SIGIO);
+#else
+				/* Parameter added in 2.3.21 */
+	if (dev->buf_async) kill_fasync(dev->buf_async, SIGIO, POLL_IN);
+#endif
 	DRM_DEBUG("waking\n");
 	wake_up_interruptible(&dev->buf_readers);
 	return 0;

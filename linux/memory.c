@@ -1,6 +1,6 @@
 /* memory.c -- Memory management wrappers for DRM -*- linux-c -*-
  * Created: Thu Feb  4 14:00:34 1999 by faith@precisioninsight.com
- * Revised: Fri Aug 20 13:04:33 1999 by faith@precisioninsight.com
+ * Revised: Mon Dec  6 10:28:18 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -42,7 +42,7 @@ typedef struct drm_mem_stats {
 } drm_mem_stats_t;
 
 static spinlock_t	  drm_mem_lock	    = SPIN_LOCK_UNLOCKED;
-static unsigned long	  drm_ram_available = 0;
+static unsigned long	  drm_ram_available = 0; /* In pages */
 static unsigned long	  drm_ram_used	    = 0;
 static drm_mem_stats_t	  drm_mem_stats[]   = {
 	[DRM_MEM_DMA]	   = { "dmabufs"  },
@@ -77,7 +77,12 @@ void drm_mem_init(void)
 	}
 	
 	si_meminfo(&si);
+#if LINUX_VERSION_CODE < 0x020317
+				/* Changed to page count in 2.3.23 */
+	drm_ram_available = si.totalram >> PAGE_SHIFT;
+#else
 	drm_ram_available = si.totalram;
+#endif
 	drm_ram_used	  = 0;
 }
 
@@ -95,10 +100,11 @@ static int _drm_mem_info(char *buf, char **start, off_t offset, int len,
 		       " |    outstanding  \n");
 	DRM_PROC_PRINT("type	   alloc freed fail	bytes	   freed"
 		       " | allocs      bytes\n\n");
-	DRM_PROC_PRINT("%-9.9s %5d %5d %4d %10lu	    |\n",
-		       "system", 0, 0, 0, drm_ram_available);
-	DRM_PROC_PRINT("%-9.9s %5d %5d %4d %10lu	    |\n",
-		       "locked", 0, 0, 0, drm_ram_used);
+	DRM_PROC_PRINT("%-9.9s %5d %5d %4d %10lu kB         |\n",
+		       "system", 0, 0, 0,
+		       drm_ram_available << (PAGE_SHIFT - 10));
+	DRM_PROC_PRINT("%-9.9s %5d %5d %4d %10lu kB         |\n",
+		       "locked", 0, 0, 0, drm_ram_used >> 10);
 	DRM_PROC_PRINT("\n");
 	for (pt = drm_mem_stats; pt->name; pt++) {
 		DRM_PROC_PRINT("%-9.9s %5d %5d %4d %10lu %10lu | %6d %10ld\n",
@@ -207,7 +213,8 @@ unsigned long drm_alloc_pages(int order, int area)
 	unsigned int  sz;
 	
 	spin_lock(&drm_mem_lock);
-	if (drm_ram_used > +(DRM_RAM_PERCENT * drm_ram_available) / 100) {
+	if ((drm_ram_used >> PAGE_SHIFT)
+	    > (DRM_RAM_PERCENT * drm_ram_available) / 100) {
 		spin_unlock(&drm_mem_lock);
 		return 0;
 	}

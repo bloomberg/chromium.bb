@@ -1,6 +1,6 @@
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
- * Revised: Tue Oct 12 08:51:07 1999 by faith@precisioninsight.com
+ * Revised: Mon Dec  6 16:06:49 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All rights reserved.
@@ -83,33 +83,77 @@
 #define DRM_MEM_BUFLISTS 14
 
 				/* Backward compatibility section */
+				/* _PAGE_WT changed to _PAGE_PWT in 2.2.6 */
 #ifndef _PAGE_PWT
-				/* The name of _PAGE_WT was changed to
-				   _PAGE_PWT in Linux 2.2.6 */
 #define _PAGE_PWT _PAGE_WT
 #endif
-				/* Wait queue declarations changes in 2.3.1 */
+				/* Wait queue declarations changed in 2.3.1 */
 #ifndef DECLARE_WAITQUEUE
 #define DECLARE_WAITQUEUE(w,c) struct wait_queue w = { c, NULL }
 typedef struct wait_queue *wait_queue_head_t;
 #define init_waitqueue_head(q) *q = NULL;
 #endif
 
-#define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)
-#define _DRM_CAS(lock,old,new,__ret)				       \
-	do {							       \
-		int __dummy;	/* Can't mark eax as clobbered */      \
-		__asm__ __volatile__(				       \
-			"lock ; cmpxchg %4,%1\n\t"		       \
-			"setnz %0"				       \
-			: "=d" (__ret),				       \
-			  "=m" (__drm_dummy_lock(lock)),	       \
-			  "=a" (__dummy)			       \
-			: "2" (old),				       \
-			  "r" (new));				       \
-	} while (0)
+				/* _PAGE_4M changed to _PAGE_PSE in 2.3.23 */
+#ifndef _PAGE_PSE
+#define _PAGE_PSE _PAGE_4M
+#endif
 
+				/* vm_offset changed to vm_pgoff in 2.3.25 */
+#if LINUX_VERSION_CODE < 0x020319
+#define VM_OFFSET(vma) ((vma)->vm_offset)
+#else
+#define VM_OFFSET(vma) ((vma)->vm_pgoff << PAGE_SHIFT)
+#endif
 
+				/* *_nopage return values defined in 2.3.26 */
+#ifndef NOPAGE_SIGBUS
+#define NOPAGE_SIGBUS 0
+#endif
+#ifndef NOPAGE_OOM
+#define NOPAGE_OOM 0
+#endif
+
+				/* Generic cmpxchg added in 2.3.x */
+#if CPU != 386
+#ifndef __HAVE_ARCH_CMPXCHG
+				/* Include this here so that driver can be
+                                   used with older kernels. */
+static inline unsigned long __cmpxchg(volatile void *ptr, unsigned long old,
+				      unsigned long new, int size)
+{
+	unsigned long prev;
+	switch (size) {
+	case 1:
+		__asm__ __volatile__(LOCK_PREFIX "cmpxchgb %b1,%2"
+				     : "=a"(prev)
+				     : "q"(new), "m"(*__xg(ptr)), "0"(old)
+				     : "memory");
+		return prev;
+	case 2:
+		__asm__ __volatile__(LOCK_PREFIX "cmpxchgw %w1,%2"
+				     : "=a"(prev)
+				     : "q"(new), "m"(*__xg(ptr)), "0"(old)
+				     : "memory");
+		return prev;
+	case 4:
+		__asm__ __volatile__(LOCK_PREFIX "cmpxchgl %1,%2"
+				     : "=a"(prev)
+				     : "q"(new), "m"(*__xg(ptr)), "0"(old)
+				     : "memory");
+		return prev;
+	}
+	return old;
+}
+
+#define cmpxchg(ptr,o,n)						\
+  ((__typeof__(*(ptr)))__cmpxchg((ptr),(unsigned long)(o),		\
+				 (unsigned long)(n),sizeof(*(ptr))))
+#endif
+#else
+				/* Compiling for a 386 proper... */
+#error DRI not supported on Intel 80386
+#endif
 
 				/* Macros to make printk easier */
 #define DRM_ERROR(fmt, arg...) \
@@ -436,6 +480,7 @@ extern ssize_t	     drm_read(struct file *filp, char *buf, size_t count,
 extern int	     drm_write_string(drm_device_t *dev, const char *s);
 
 				/* Mapping support (vm.c) */
+#if LINUX_VERSION_CODE < 0x020317
 extern unsigned long drm_vm_nopage(struct vm_area_struct *vma,
 				   unsigned long address,
 				   int write_access);
@@ -445,6 +490,18 @@ extern unsigned long drm_vm_shm_nopage(struct vm_area_struct *vma,
 extern unsigned long drm_vm_dma_nopage(struct vm_area_struct *vma,
 				       unsigned long address,
 				       int write_access);
+#else
+				/* Return type changed in 2.3.23 */
+extern struct page *drm_vm_nopage(struct vm_area_struct *vma,
+				  unsigned long address,
+				  int write_access);
+extern struct page *drm_vm_shm_nopage(struct vm_area_struct *vma,
+				      unsigned long address,
+				      int write_access);
+extern struct page *drm_vm_dma_nopage(struct vm_area_struct *vma,
+				      unsigned long address,
+				      int write_access);
+#endif
 extern void	     drm_vm_open(struct vm_area_struct *vma);
 extern void	     drm_vm_close(struct vm_area_struct *vma);
 extern int	     drm_mmap_dma(struct file *filp,

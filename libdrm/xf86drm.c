@@ -1,6 +1,6 @@
 /* xf86drm.c -- User-level interface to DRM device
  * Created: Tue Jan  5 08:16:21 1999 by faith@precisioninsight.com
- * Revised: Wed Aug  4 07:54:23 1999 by faith@precisioninsight.com
+ * Revised: Mon Dec  6 11:34:13 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.43 1999/08/04 18:14:43 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.4 1999/09/25 14:37:49 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.5 1999/10/13 22:33:07 dawes Exp $
  * 
  */
 
@@ -57,7 +57,7 @@
 # ifdef DRM_USE_MALLOC
 #  define _DRM_MALLOC malloc
 #  define _DRM_FREE   free
-extern int xf86InstallSIGIOHandler(int fd, void (*f)(int));
+extern int xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *);
 extern int xf86RemoveSIGIOHandler(int fd);
 # else
 #  include <Xlibint.h>
@@ -174,6 +174,28 @@ static int drmOpenDevice(const char *path, long dev,
     return drm_open(path);
 }
 
+static int drmOpenByBusid(const char *busid)
+{
+    int    i;
+    char   dev_name[64];
+    char   *buf;
+    int    fd;
+
+    for (i = 0; i < 8; i++) {
+	sprintf(dev_name, "/dev/graphics/card%d", i);
+	if ((fd = drm_open(dev_name)) >= 0) {
+	    buf = drmGetBusid(fd);
+	    if (buf && !strcmp(buf, busid)) {
+	      drmFreeBusid(buf);
+	      return fd;
+	    }
+	    if (buf) drmFreeBusid(buf);
+	    close(fd);
+	}
+    }
+    return -1;
+}
+
 static int drmOpenByName(const char *name)
 {
     int    i;
@@ -236,29 +258,6 @@ static int drmOpenByName(const char *name)
     }
     return -1;
 }
-
-static int drmOpenByBusid(const char *busid)
-{
-    int    i;
-    char   dev_name[64];
-    char   *buf;
-    int    fd;
-
-    for (i = 0; i < 8; i++) {
-	sprintf(dev_name, "/dev/graphics/card%d", i);
-	if ((fd = drm_open(dev_name)) >= 0) {
-	    buf = drmGetBusid(fd);
-	    if (buf && !strcmp(buf, busid)) {
-	      drmFreeBusid(buf);
-	      return fd;
-	    }
-	    if (buf) drmFreeBusid(buf);
-	    close(fd);
-	}
-    }
-    return -1;
-}
-
 
 /* drmOpen looks up the specified name and busid, and opens the device
    found.  The entry in /dev/graphics is created if necessary (and if root).
@@ -838,7 +837,7 @@ void *drmGetContextTag(int fd, drmContext context)
 }
 
 #if defined(XFree86Server) || defined(DRM_USE_MALLOC)
-static void drmSIGIOHandler(int interrupt)
+static void drmSIGIOHandler(int interrupt, void *closure)
 {
     unsigned long key;
     void          *value;
@@ -890,7 +889,7 @@ int drmInstallSIGIOHandler(int fd, void (*f)(int, void *, void *))
     entry     = drmGetEntry(fd);
     entry->f  = f;
 
-    return xf86InstallSIGIOHandler(fd, drmSIGIOHandler);
+    return xf86InstallSIGIOHandler(fd, drmSIGIOHandler, 0);
 }
 
 int drmRemoveSIGIOHandler(int fd)

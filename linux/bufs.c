@@ -1,6 +1,6 @@
 /* bufs.c -- IOCTLs to manage buffers -*- linux-c -*-
  * Created: Tue Feb  2 08:37:54 1999 by faith@precisioninsight.com
- * Revised: Fri Aug 20 22:48:10 1999 by faith@precisioninsight.com
+ * Revised: Fri Dec  3 12:11:11 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -89,10 +89,11 @@ int drm_addmap(struct inode *inode, struct file *filp, unsigned int cmd,
 			
 
 	case _DRM_SHM:
-		DRM_DEBUG("%ld %d\n", map->size, drm_order(map->size));
 		map->handle = (void *)drm_alloc_pages(drm_order(map->size)
 						      - PAGE_SHIFT,
 						      DRM_MEM_SAREA);
+		DRM_DEBUG("%ld %d %p\n", map->size, drm_order(map->size),
+			  map->handle);
 		if (!map->handle) {
 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 			return -ENOMEM;
