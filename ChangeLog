@@ -1,3 +1,10 @@
+Wed Mar  5 05:08:00 EST 2003	Mike A. Harris <mharris@redhat.com>
+	+ Added back the configure macro options --disable-docs, otherwise
+	  fontconfig installs docs into /usr/share/doc/fontconfig (with no
+	  version number) unconditionally, causing RPM to fail the build due
+	  to _unpackaged_files_terminate_build.  We pick up the pregenerated
+	  docs with %doc already.
+
 Wed Mar  5 04:26:20 EST 2003	Mike A. Harris <mharris@redhat.com>
 	+ Removed commented out rpm macro define at top of spec file,
 	  replacing it with a simple explanation, since rpm macros are
