@@ -1,6 +1,12 @@
-/* drm_agpsupport.h -- DRM support for AGP/GART backend -*- linux-c -*-
- * Created: Mon Dec 13 09:56:45 1999 by faith@precisioninsight.com
- *
+/**
+ * \file drm_agpsupport.h 
+ * DRM support for AGP/GART backend
+ *    
+ * \author Rickard E. (Rik) Faith <faith@valinux.com>
+ * \author Gareth Hughes <gareth@valinux.com>
+ */
+
+/*
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
@@ -23,10 +29,6 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
- *
- * Author:
- *    Rickard E. (Rik) Faith <faith@valinux.com>
- *    Gareth Hughes <gareth@valinux.com>
  */
 
 #define __NO_VERSION__
@@ -35,11 +37,27 @@
 
 #if __REALLY_HAVE_AGP
 
+
 #define DRM_AGP_GET (drm_agp_t *)inter_module_get("drm_agp")
 #define DRM_AGP_PUT inter_module_put("drm_agp")
 
+/**
+ * Pointer to the drm_agp_t structure made available by the agpgart module.
+ */
 static const drm_agp_t *drm_agp = NULL;
 
+/**
+ * AGP information ioctl.
+ *
+ * \param inode device inode.
+ * \param filp file pointer.
+ * \param cmd command.
+ * \param arg pointer to a (output) drm_agp_info structure.
+ * \return zero on success or a negative number on failure.
+ *
+ * Verifies the AGP device has been initialized and acquired and fills in the
+ * drm_agp_info structure with the information in drm_agp_head::agp_info.
+ */
 int DRM(agp_info)(struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg)
 {
@@ -67,6 +85,18 @@ int DRM(agp_info)(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+/**
+ * Acquire the AGP device (ioctl).
+ *
+ * \param inode device inode.
+ * \param filp file pointer.
+ * \param cmd command.
+ * \param arg user argument.
+ * \return zero on success or a negative number on failure. 
+ *
+ * Verifies the AGP device hasn't been acquired before and calls
+ * drm_agp->acquire().
+ */
 int DRM(agp_acquire)(struct inode *inode, struct file *filp,
 		     unsigned int cmd, unsigned long arg)
 {
@@ -81,6 +111,17 @@ int DRM(agp_acquire)(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+/**
+ * Release the AGP device (ioctl).
+ *
+ * \param inode device inode.
+ * \param filp file pointer.
+ * \param cmd command.
+ * \param arg user argument.
+ * \return zero on success or a negative number on failure.
+ *
+ * Verifies the AGP device has been acquired and calls drm_agp->release().
+ */
 int DRM(agp_release)(struct inode *inode, struct file *filp,
 		     unsigned int cmd, unsigned long arg)
 {
@@ -95,11 +136,28 @@ int DRM(agp_release)(struct inode *inode, struct file *filp,
 
 }
 
+/**
+ * Release the AGP device.
+ *
+ * Calls drm_agp->release().
+ */
 void DRM(agp_do_release)(void)
 {
 	if (drm_agp->release) drm_agp->release();
 }
 
+/**
+ * Enable the AGP bus.
+ * 
+ * \param inode device inode.
+ * \param filp file pointer.
+ * \param cmd command.
+ * \param arg pointer to a drm_agp_mode structure.
+ * \return zero on success or a negative number on failure.
+ *
+ * Verifies the AGP device has been acquired but not enabled, and calls
+ * drm_agp->enable().
+ */
 int DRM(agp_enable)(struct inode *inode, struct file *filp,
 		    unsigned int cmd, unsigned long arg)
 {
@@ -120,6 +178,18 @@ int DRM(agp_enable)(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+/**
+ * Allocate AGP memory.
+ *
+ * \param inode device inode.
+ * \param filp file pointer.
+ * \param cmd command.
+ * \param arg pointer to a drm_agp_buffer structure.
+ * \return zero on success or a negative number on failure.
+ * 
+ * Verifies the AGP device is present and has been acquired, allocates the
+ * memory via alloc_agp() and creates a drm_agp_mem entry for it.
+ */
 int DRM(agp_alloc)(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
 {
@@ -169,6 +239,15 @@ int DRM(agp_alloc)(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+/**
+ * Search for the AGP memory entry associated with a handle.
+ *
+ * \param dev DRM device structure.
+ * \param handle AGP memory handle.
+ * \return pointer to the drm_agp_mem structure associated with \p handle.
+ * 
+ * Walks through drm_agp_head::memory until finding a matching handle.
+ */
 static drm_agp_mem_t *DRM(agp_lookup_entry)(drm_device_t *dev,
 					    unsigned long handle)
 {
@@ -180,6 +259,18 @@ static drm_agp_mem_t *DRM(agp_lookup_entry)(drm_device_t *dev,
 	return NULL;
 }
 
+/**
+ * Unbind AGP memory from the GATT (ioctl).
+ *
+ * \param inode device inode.
+ * \param filp file pointer.
+ * \param cmd command.
+ * \param arg pointer to a drm_agp_binding structure.
+ * \return zero on success or a negative number on failure.
+ *
+ * Verifies the AGP device is present and acquired, looks-up the AGP memory
+ * entry and passes it to the unbind_agp() function.
+ */
 int DRM(agp_unbind)(struct inode *inode, struct file *filp,
 		    unsigned int cmd, unsigned long arg)
 {
@@ -201,6 +292,19 @@ int DRM(agp_unbind)(struct inode *inode, struct file *filp,
 	return ret;
 }
 
+/**
+ * Bind AGP memory into the GATT (ioctl)
+ *
+ * \param inode device inode.
+ * \param filp file pointer.
+ * \param cmd command.
+ * \param arg pointer to a drm_agp_binding structure.
+ * \return zero on success or a negative number on failure.
+ *
+ * Verifies the AGP device is present and has been acquired and that no memory
+ * is currently bound into the GATT. Looks-up the AGP memory entry and passes
+ * it to bind_agp() function.
+ */
 int DRM(agp_bind)(struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg)
 {
@@ -226,6 +330,20 @@ int DRM(agp_bind)(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+/**
+ * Free AGP memory (ioctl).
+ *
+ * \param inode device inode.
+ * \param filp file pointer.
+ * \param cmd command.
+ * \param arg pointer to a drm_agp_buffer structure.
+ * \return zero on success or a negative number on failure.
+ *
+ * Verifies the AGP device is present and has been acquired and looks up the
+ * AGP memory entry. If the memory it's currently bound, unbind it via
+ * unbind_agp(). Frees it via free_agp() as well as the entry itself
+ * and unlinks from the doubly linked list it's inserted in.
+ */
 int DRM(agp_free)(struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg)
 {
@@ -249,6 +367,15 @@ int DRM(agp_free)(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+/**
+ * Initialize the AGP resources.
+ *
+ * \return pointer to a drm_agp_head structure.
+ *
+ * Gets the drm_agp_t structure which is made available by the agpgart module
+ * via the inter_module_* functions. Creates and initializes a drm_agp_head
+ * structure.
+ */
 drm_agp_head_t *DRM(agp_init)(void)
 {
 	drm_agp_head_t *head         = NULL;
@@ -281,18 +408,25 @@ drm_agp_head_t *DRM(agp_init)(void)
 	return head;
 }
 
+/**
+ * Free the AGP resources.
+ *
+ * Releases the pointer in ::drm_agp.
+ */
 void DRM(agp_uninit)(void)
 {
 	DRM_AGP_PUT;
 	drm_agp = NULL;
 }
 
+/** Calls drm_agp->allocate_memory() */
 agp_memory *DRM(agp_allocate_memory)(size_t pages, u32 type)
 {
 	if (!drm_agp->allocate_memory) return NULL;
 	return drm_agp->allocate_memory(pages, type);
 }
 
+/** Calls drm_agp->free_memory() */
 int DRM(agp_free_memory)(agp_memory *handle)
 {
 	if (!handle || !drm_agp->free_memory) return 0;
@@ -300,12 +434,14 @@ int DRM(agp_free_memory)(agp_memory *handle)
 	return 1;
 }
 
+/** Calls drm_agp->bind_memory() */
 int DRM(agp_bind_memory)(agp_memory *handle, off_t start)
 {
 	if (!handle || !drm_agp->bind_memory) return -EINVAL;
 	return drm_agp->bind_memory(handle, start);
 }
 
+/** Calls drm_agp->unbind_memory() */
 int DRM(agp_unbind_memory)(agp_memory *handle)
 {
 	if (!handle || !drm_agp->unbind_memory) return -EINVAL;
