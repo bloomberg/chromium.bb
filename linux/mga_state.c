@@ -820,7 +820,9 @@ int mga_clear_bufs(struct inode *inode, struct file *filp,
 	mga_dma_dispatch_clear(dev, clear.flags,
 			       clear.clear_color, clear.clear_depth);
 	PRIMUPDATE(dev_priv);
+#ifdef __i386__
 	mga_flush_write_combine();
+#endif
 	mga_dma_schedule(dev, 1);
 	return 0;
 }
@@ -850,7 +852,9 @@ int mga_swap_bufs(struct inode *inode, struct file *filp,
 	PRIMUPDATE(dev_priv);
 	set_bit(MGA_BUF_SWAP_PENDING,
 		&dev_priv->current_prim->buffer_status);
+#ifdef __i386__
 	mga_flush_write_combine();
+#endif
 	mga_dma_schedule(dev, 1);
 	return 0;
 }
@@ -898,7 +902,9 @@ int mga_iload(struct inode *inode, struct file *filp,
 	AGEBUF(dev_priv, buf_priv);
 	buf_priv->discard = 1;
 	mga_freelist_put(dev, buf);
+#ifdef __i386__
 	mga_flush_write_combine();
+#endif
 	mga_dma_schedule(dev, 1);
 	return 0;
 }
@@ -946,7 +952,9 @@ int mga_vertex(struct inode *inode, struct file *filp,
 	mga_dma_dispatch_vertex(dev, buf);
 
 	PRIMUPDATE(dev_priv);
+#ifdef __i386__
 	mga_flush_write_combine();
+#endif
 	mga_dma_schedule(dev, 1);
 	return 0;
 }
@@ -993,7 +1001,9 @@ int mga_indices(struct inode *inode, struct file *filp,
 	mga_dma_dispatch_indices(dev, buf, indices.start, indices.end);
 
 	PRIMUPDATE(dev_priv);
+#ifdef __i386__
 	mga_flush_write_combine();
+#endif
 	mga_dma_schedule(dev, 1);
 	return 0;
 }
