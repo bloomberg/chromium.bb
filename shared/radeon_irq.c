@@ -1,4 +1,4 @@
-/* radeon_mem.c -- Simple agp/fb memory manager for radeon -*- linux-c -*-
+/* radeon_irq.c -- IRQ handling for radeon -*- linux-c -*-
  *
  * Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
  * 
@@ -58,46 +58,47 @@ void DRM(dma_service)( DRM_IRQ_ARGS )
 	drm_device_t *dev = (drm_device_t *) arg;
 	drm_radeon_private_t *dev_priv = 
 	   (drm_radeon_private_t *)dev->dev_private;
-   	u32 temp;
+   	u32 stat, ack = 0;
 
 	/* Need to wait for fifo to drain?
 	 */
-	temp = RADEON_READ(RADEON_GEN_INT_STATUS);  
-	temp = temp & RADEON_SW_INT_TEST_ACK;  
-	if (temp == 0) return;  
-	RADEON_WRITE(RADEON_GEN_INT_STATUS, temp);  
+	stat = RADEON_READ(RADEON_GEN_INT_STATUS);
 
-	atomic_inc(&dev_priv->irq_received);
+	/* SW interrupt */
+	if (stat & RADEON_SW_INT_TEST) {
+		ack |= RADEON_SW_INT_TEST_ACK;
+		atomic_inc(&dev_priv->swi_received);
 #ifdef __linux__
-	queue_task(&dev->tq, &tq_immediate);  
-	mark_bh(IMMEDIATE_BH);  
-#endif /* __linux__ */
-#ifdef __FreeBSD__
-	taskqueue_enqueue(taskqueue_swi, &dev->task);
-#endif /* __FreeBSD__ */
-}
-
-void DRM(dma_immediate_bh)( DRM_TASKQUEUE_ARGS )
-{
-	drm_device_t *dev = (drm_device_t *) arg;
-	drm_radeon_private_t *dev_priv = 
-	   (drm_radeon_private_t *)dev->dev_private;
-
-#ifdef __linux__
-	wake_up_interruptible(&dev_priv->irq_queue); 
-#endif /* __linux__ */
-#ifdef __FreeBSD__
-	wakeup( &dev_priv->irq_queue );
+		wake_up_interruptible(&dev_priv->swi_queue);
 #endif
-}
+#ifdef __FreeBSD__
+		wakeup(&dev->vbl_queue);
+#endif
+	}
 
+	/* VBLANK interrupt */
+	if (stat & RADEON_CRTC_VBLANK_STAT) {
+		ack |= RADEON_CRTC_VBLANK_STAT_ACK;
+		atomic_inc(&dev->vbl_received);
+#ifdef __linux__
+		wake_up_interruptible(&dev->vbl_queue);
+#endif
+#ifdef __FreeBSD__
+		wakeup(&dev->vbl_queue);
+#endif
+	}
+
+	if (ack)
+		RADEON_WRITE(RADEON_GEN_INT_STATUS, ack);
+}
+ 
 
 int radeon_emit_irq(drm_device_t *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
 
-	atomic_inc(&dev_priv->irq_emitted);
+	atomic_inc(&dev_priv->swi_emitted);
 
 	BEGIN_RING(2); 
 	OUT_RING( CP_PACKET0( RADEON_GEN_INT_STATUS, 0 ) );
@@ -105,11 +106,11 @@ int radeon_emit_irq(drm_device_t *dev)
 	ADVANCE_RING(); 
  	COMMIT_RING();
 
-	return atomic_read(&dev_priv->irq_emitted);
+	return atomic_read(&dev_priv->swi_emitted);
 }
 
 
-int radeon_wait_irq(drm_device_t *dev, int irq_nr)
+int radeon_wait_irq(drm_device_t *dev, int swi_nr)
 {
   	drm_radeon_private_t *dev_priv = 
 	   (drm_radeon_private_t *)dev->dev_private;
@@ -119,17 +120,17 @@ int radeon_wait_irq(drm_device_t *dev, int irq_nr)
 #endif /* __linux__ */
 	int ret = 0;
 
- 	if (atomic_read(&dev_priv->irq_received) >= irq_nr)  
+ 	if (atomic_read(&dev_priv->swi_received) >= swi_nr)  
  		return 0; 
 
 	dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
 
 #ifdef __linux__
-	add_wait_queue(&dev_priv->irq_queue, &entry);
+	add_wait_queue(&dev_priv->swi_queue, &entry);
 
 	for (;;) {
 		current->state = TASK_INTERRUPTIBLE;
-	   	if (atomic_read(&dev_priv->irq_received) >= irq_nr) 
+	   	if (atomic_read(&dev_priv->swi_received) >= swi_nr) 
 		   break;
 		if((signed)(end - jiffies) <= 0) {
 		   	ret = -EBUSY;	/* Lockup?  Missed irq? */
@@ -143,19 +144,18 @@ int radeon_wait_irq(drm_device_t *dev, int irq_nr)
 	}
 
 	current->state = TASK_RUNNING;
-	remove_wait_queue(&dev_priv->irq_queue, &entry);
+	remove_wait_queue(&dev_priv->swi_queue, &entry);
 	return ret;
 #endif /* __linux__ */
 	
 #ifdef __FreeBSD__
-	ret = tsleep( &dev_priv->irq_queue, PZERO | PCATCH, \
+	ret = tsleep( &dev_priv->swi_queue, PZERO | PCATCH, \
 		"rdnirq", 3*hz );
 	if ( (ret == EWOULDBLOCK) || (ret == EINTR) )
 		return DRM_ERR(EBUSY);
 	return ret;
 #endif /* __FreeBSD__ */
 }
-
 
 int radeon_emit_and_wait_irq(drm_device_t *dev)
 {
@@ -212,3 +212,41 @@ int radeon_irq_wait( DRM_IOCTL_ARGS )
 	return radeon_wait_irq( dev, irqwait.irq_seq );
 }
 
+ 
+void DRM(driver_irq_preinstall)( drm_device_t *dev ) {
+	drm_radeon_private_t *dev_priv =
+		(drm_radeon_private_t *)dev->dev_private;
+	u32 tmp;
+
+ 	/* Disable *all* interrupts */
+      	RADEON_WRITE( RADEON_GEN_INT_CNTL, 0 );
+
+	/* Clear bits if they're already high */
+   	tmp = RADEON_READ( RADEON_GEN_INT_STATUS );
+   	RADEON_WRITE( RADEON_GEN_INT_STATUS, tmp );
+}
+
+void DRM(driver_irq_postinstall)( drm_device_t *dev ) {
+	drm_radeon_private_t *dev_priv =
+		(drm_radeon_private_t *)dev->dev_private;
+
+   	atomic_set(&dev_priv->swi_received, 0);
+   	atomic_set(&dev_priv->swi_emitted, 0);
+#ifdef __linux__
+	init_waitqueue_head(&dev_priv->swi_queue);
+#endif
+
+	/* Turn on SW and VBL ints */
+   	RADEON_WRITE( RADEON_GEN_INT_CNTL,
+		      RADEON_CRTC_VBLANK_MASK |	
+		      RADEON_SW_INT_ENABLE );
+}
+
+void DRM(driver_irq_uninstall)( drm_device_t *dev ) {
+	drm_radeon_private_t *dev_priv =
+		(drm_radeon_private_t *)dev->dev_private;
+	if ( dev_priv ) {
+		/* Disable *all* interrupts */
+		RADEON_WRITE( RADEON_GEN_INT_CNTL, 0 );
+	}
+}

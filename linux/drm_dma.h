@@ -538,8 +538,12 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	dev->tq.data = dev;
 #endif
 
+#if __HAVE_VBL_IRQ
+	init_waitqueue_head(&dev->vbl_queue);
+#endif
+
 				/* Before installing handler */
-	DRIVER_PREINSTALL();
+	DRM(driver_irq_preinstall)(dev);
 
 				/* Install handler */
 	ret = request_irq( dev->irq, DRM(dma_service),
@@ -552,7 +556,7 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	}
 
 				/* After installing handler */
-	DRIVER_POSTINSTALL();
+	DRM(driver_irq_postinstall)(dev);
 
 	return 0;
 }
@@ -571,7 +575,7 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, irq );
 
-	DRIVER_UNINSTALL();
+	DRM(driver_irq_uninstall)( dev );
 
 	free_irq( irq, dev );
 
@@ -597,6 +601,78 @@ int DRM(control)( struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 }
+
+#if __HAVE_VBL_IRQ
+
+int DRM(vblank_wait)(drm_device_t *dev, unsigned int *sequence)
+{
+  	drm_radeon_private_t *dev_priv = 
+	   (drm_radeon_private_t *)dev->dev_private;
+	unsigned int cur_vblank;
+	int ret = 0;
+
+	if ( !dev_priv ) {
+		DRM_ERROR( "%s called with no initialization\n", __func__ );
+		return DRM_ERR(EINVAL);
+	}
+
+	/* Assume that the user has missed the current sequence number by about
+	 * a day rather than she wants to wait for years using vertical blanks :)
+	 */
+	while ( ( ( cur_vblank = atomic_read(&dev->vbl_received ) )
+		+ ~*sequence + 1 ) > (1<<23) ) {
+		dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
+#ifdef __linux__
+		interruptible_sleep_on( &dev->vbl_queue );
+
+		if (signal_pending(current)) {
+			ret = -EINTR;
+			break;
+		}
+#endif /* __linux__ */
+#ifdef __FreeBSD__
+		ret = tsleep( &dev_priv->vbl_queue, 3*hz, "rdnvbl", PZERO | PCATCH);
+		if (ret)
+			break;
+#endif /* __FreeBSD__ */
+	}
+
+	*sequence = cur_vblank;
+
+	return ret;
+}
+
+int DRM(wait_vblank)( DRM_IOCTL_ARGS )
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->dev;
+	drm_wait_vblank_t vblwait;
+	struct timeval now;
+	int ret;
+
+	if (!dev->irq)
+		return -EINVAL;
+
+	DRM_COPY_FROM_USER_IOCTL( vblwait, (drm_wait_vblank_t *)data,
+				  sizeof(vblwait) );
+
+	if ( vblwait.type == _DRM_VBLANK_RELATIVE ) {
+		vblwait.sequence += atomic_read( &dev->vbl_received );
+	}
+
+	ret = DRM(vblank_wait)( dev, &vblwait.sequence );
+
+	do_gettimeofday( &now );
+	vblwait.tval_sec = now.tv_sec;
+	vblwait.tval_usec = now.tv_usec;
+
+	DRM_COPY_TO_USER_IOCTL( (drm_wait_vblank_t *)data, vblwait,
+				sizeof(vblwait) );
+
+	return ret;
+}
+
+#endif	/* __HAVE_VBL_IRQ */
 
 #else
 

@@ -1105,6 +1105,17 @@ int drmScatterGatherFree(int fd, unsigned long handle)
     return 0;
 }
 
+int drmWaitVBlank(int fd, drmVBlankPtr vbl)
+{
+    int ret;
+
+    do {
+       ret = ioctl(fd, DRM_IOCTL_WAIT_VBLANK, vbl);
+    } while (ret && errno == EINTR);
+
+    return ret;
+}
+
 int drmError(int err, const char *label)
 {
     switch (err) {
