@@ -95,27 +95,6 @@ int DRM(setunique)(struct inode *inode, struct file *filp,
 				  DRM_MEM_DRIVER);
 	sprintf(dev->devname, "%s@%s", dev->name, dev->unique);
 
-#ifdef __alpha__
-	do {
-		struct pci_dev *pci_dev;
-                int b, d, f;
-                char *p;
- 
-                for(p = dev->unique; p && *p && *p != ':'; p++);
-                if (!p || !*p) break;
-                b = (int)simple_strtoul(p+1, &p, 10);
-                if (*p != ':') break;
-                d = (int)simple_strtoul(p+1, &p, 10);
-                if (*p != ':') break;
-                f = (int)simple_strtoul(p+1, &p, 10);
-                if (*p) break;
- 
-                pci_dev = pci_find_slot(b, PCI_DEVFN(d,f));
-                if (pci_dev)
-                        dev->hose = pci_dev->sysdata;
-        } while(0);
-#endif
-
 	return 0;
 }
 

@@ -50,12 +50,6 @@ struct vm_operations_struct   drm_vm_dma_ops = {
 	close:	 DRM(vm_close),
 };
 
-struct vm_operations_struct   drm_vm_sg_ops = {
-	nopage:  DRM(vm_sg_nopage),
-	open:    DRM(vm_open),
-	close:   DRM(vm_close),
-};
-
 #if LINUX_VERSION_CODE < 0x020317
 unsigned long DRM(vm_nopage)(struct vm_area_struct *vma,
 			     unsigned long address,
@@ -99,7 +93,7 @@ struct page *DRM(vm_shm_nopage)(struct vm_area_struct *vma,
 	offset	 = address - vma->vm_start;
 	i = (unsigned long)map->handle + offset;
 	/* We have to walk page tables here because we need large SAREA's, and
-	 * they need to be virtually contiguous in kernel space.
+	 * they need to be virtually contigious in kernel space.
 	 */
 	pgd = pgd_offset_k( i );
 	if( !pgd_present( *pgd ) ) return NOPAGE_OOM;
@@ -193,7 +187,6 @@ void DRM(vm_shm_close)(struct vm_area_struct *vma)
 				vfree(map->handle);
 				break;
 			case _DRM_AGP:
-			case _DRM_SCATTER_GATHER:
 				break;
 			}
 			DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
@@ -234,48 +227,6 @@ struct page *DRM(vm_dma_nopage)(struct vm_area_struct *vma,
 	return physical;
 #else
 	return virt_to_page(physical);
-#endif
-}
-
-#if LINUX_VERSION_CODE < 0x020317
-unsigned long DRM(vm_sg_nopage)(struct vm_area_struct *vma,
-				unsigned long address,
-				int write_access)
-#else
-				/* Return type changed in 2.3.23 */
-struct page *DRM(vm_sg_nopage)(struct vm_area_struct *vma,
-			       unsigned long address,
-			       int write_access)
-#endif
-{
-#if LINUX_VERSION_CODE >= 0x020300
-	drm_map_t        *map    = (drm_map_t *)vma->vm_private_data;
-#else
-	drm_map_t        *map    = (drm_map_t *)vma->vm_pte;
-#endif
-	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->dev;
-	drm_sg_mem_t *entry = dev->sg;
-	unsigned long offset;
-	unsigned long map_offset;
-	unsigned long page_offset;
-	struct page *page;
-
-	if (!entry)                return NOPAGE_SIGBUS; /* Error */
-	if (address > vma->vm_end) return NOPAGE_SIGBUS; /* Disallow mremap */
-	if (!entry->pagelist)      return NOPAGE_OOM ;  /* Nothing allocated */
-
-
-	offset = address - vma->vm_start;
-	map_offset = map->offset - dev->sg->handle;
-	page_offset = (offset >> PAGE_SHIFT) + (map_offset >> PAGE_SHIFT);
-	page = entry->pagelist[page_offset];
-	atomic_inc(&page->count);                       /* Dec. by kernel */
-
-#if LINUX_VERSION_CODE < 0x020317
-	return (unsigned long)virt_to_phys(page->virtual);
-#else
-	return page;
 #endif
 }
 
@@ -371,7 +322,6 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 	drm_device_t	*dev	= priv->dev;
 	drm_map_t	*map	= NULL;
 	drm_map_list_t  *r_list;
-	unsigned long   offset  = 0;
 	struct list_head *list;
 
 	DRM_DEBUG("start = 0x%lx, end = 0x%lx, offset = 0x%lx\n",
@@ -424,26 +374,19 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 			}
 #elif defined(__ia64__)
 			if (map->type != _DRM_AGP)
-				vma->vm_page_prot =
-					pgprot_writecombine(vma->vm_page_prot);
-#elif defined(__powerpc__)
-			pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE | _PAGE_GUARDED;
+				vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
 #endif
 			vma->vm_flags |= VM_IO;	/* not in core dump */
 		}
-#ifdef __alpha__
-                offset = dev->hose->dense_mem_base -
-		         dev->hose->mem_space->start;
-#endif
 		if (remap_page_range(vma->vm_start,
-				     VM_OFFSET(vma) + offset,
+				     VM_OFFSET(vma),
 				     vma->vm_end - vma->vm_start,
 				     vma->vm_page_prot))
 				return -EAGAIN;
 		DRM_DEBUG("   Type = %d; start = 0x%lx, end = 0x%lx,"
 			  " offset = 0x%lx\n",
 			  map->type,
-			  vma->vm_start, vma->vm_end, VM_OFFSET(vma) + offset);
+			  vma->vm_start, vma->vm_end, VM_OFFSET(vma));
 		vma->vm_ops = &drm_vm_ops;
 		break;
 	case _DRM_SHM:
@@ -457,15 +400,6 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 				   DRM_KERNEL advisory is supported. */
 		vma->vm_flags |= VM_LOCKED;
 		break;
-	case _DRM_SCATTER_GATHER:
-		vma->vm_ops = &drm_vm_sg_ops;
-#if LINUX_VERSION_CODE >= 0x020300
-		vma->vm_private_data = (void *)map;
-#else
-		vma->vm_pte = (unsigned long)map;
-#endif
-                vma->vm_flags |= VM_LOCKED;
-                break;
 	default:
 		return -EINVAL;	/* This should never happen. */
 	}

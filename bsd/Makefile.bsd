@@ -1,5 +1,5 @@
 # $FreeBSD$
 
-SUBDIR = drm tdfx gamma
+SUBDIR = drm tdfx mga gamma
 
 .include <bsd.subdir.mk>

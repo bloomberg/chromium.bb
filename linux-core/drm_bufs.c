@@ -37,10 +37,6 @@
 #define __HAVE_PCI_DMA		0
 #endif
 
-#ifndef __HAVE_SG
-#define __HAVE_SG		0
-#endif
-
 #ifndef DRIVER_BUF_PRIV_T
 #define DRIVER_BUF_PRIV_T		u32
 #endif
@@ -107,15 +103,12 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 	switch ( map->type ) {
 	case _DRM_REGISTERS:
 	case _DRM_FRAME_BUFFER:
-#if !defined(__sparc__) && !defined(__alpha__)
+#ifndef __sparc__
 		if ( map->offset + map->size < map->offset ||
 		     map->offset < virt_to_phys(high_memory) ) {
 			DRM(free)( map, sizeof(*map), DRM_MEM_MAPS );
 			return -EINVAL;
 		}
-#endif
-#ifdef __alpha__
-		map->offset += dev->hose->mem_space->start;
 #endif
 #if __REALLY_HAVE_MTRR
 		if ( map->type == _DRM_FRAME_BUFFER ||
@@ -142,21 +135,10 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 		break;
 #if __REALLY_HAVE_AGP
 	case _DRM_AGP:
-#ifdef __alpha__
-		map->offset += dev->hose->mem_space->start;
-#endif
 		map->offset = map->offset + dev->agp->base;
 		map->mtrr   = dev->agp->agp_mtrr; /* for getmap */
 		break;
 #endif
-	case _DRM_SCATTER_GATHER:
-		if (!dev->sg) {
-			DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
-			return -EINVAL;
-		}
-		map->offset = map->offset + dev->sg->handle;
-		break;
-
 	default:
 		DRM(free)( map, sizeof(*map), DRM_MEM_MAPS );
 		return -EINVAL;
@@ -255,7 +237,6 @@ int DRM(rmmap)(struct inode *inode, struct file *filp,
 			vfree(map->handle);
 			break;
 		case _DRM_AGP:
-		case _DRM_SCATTER_GATHER:
 			break;
 		}
 		DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
@@ -584,159 +565,6 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 }
 #endif /* __HAVE_PCI_DMA */
 
-#ifdef __HAVE_SG
-int DRM(addbufs_sg)( struct inode *inode, struct file *filp,
-                     unsigned int cmd, unsigned long arg )
-{
-       drm_file_t *priv = filp->private_data;
-       drm_device_t *dev = priv->dev;
-       drm_device_dma_t *dma = dev->dma;
-       drm_buf_desc_t request;
-       drm_buf_entry_t *entry;
-       drm_buf_t *buf;
-       unsigned long offset;
-       unsigned long agp_offset;
-       int count;
-       int order;
-       int size;
-       int alignment;
-       int page_order;
-       int total;
-       int byte_count;
-       int i;
-
-       if ( !dma ) return -EINVAL;
-
-       if ( copy_from_user( &request, (drm_buf_desc_t *)arg,
-                            sizeof(request) ) )
-               return -EFAULT;
-
-       count = request.count;
-       order = DRM(order)( request.size );
-       size = 1 << order;
-
-       alignment  = (request.flags & _DRM_PAGE_ALIGN)
-               ? PAGE_ALIGN(size) : size;
-       page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
-       total = PAGE_SIZE << page_order;
-
-       byte_count = 0;
-       agp_offset = request.agp_start;
-
-       DRM_DEBUG( "count:      %d\n",  count );
-       DRM_DEBUG( "order:      %d\n",  order );
-       DRM_DEBUG( "size:       %d\n",  size );
-       DRM_DEBUG( "agp_offset: %ld\n", agp_offset );
-       DRM_DEBUG( "alignment:  %d\n",  alignment );
-       DRM_DEBUG( "page_order: %d\n",  page_order );
-       DRM_DEBUG( "total:      %d\n",  total );
-
-       if ( order < DRM_MIN_ORDER || order > DRM_MAX_ORDER ) return -EINVAL;
-       if ( dev->queue_count ) return -EBUSY; /* Not while in use */
-
-       spin_lock( &dev->count_lock );
-       if ( dev->buf_use ) {
-               spin_unlock( &dev->count_lock );
-               return -EBUSY;
-       }
-       atomic_inc( &dev->buf_alloc );
-       spin_unlock( &dev->count_lock );
-
-       down( &dev->struct_sem );
-       entry = &dma->bufs[order];
-       if ( entry->buf_count ) {
-               up( &dev->struct_sem );
-               atomic_dec( &dev->buf_alloc );
-               return -ENOMEM; /* May only call once for each order */
-       }
-
-       entry->buflist = DRM(alloc)( count * sizeof(*entry->buflist),
-                                   DRM_MEM_BUFS );
-       if ( !entry->buflist ) {
-               up( &dev->struct_sem );
-               atomic_dec( &dev->buf_alloc );
-               return -ENOMEM;
-       }
-       memset( entry->buflist, 0, count * sizeof(*entry->buflist) );
-
-       entry->buf_size = size;
-       entry->page_order = page_order;
-
-       offset = 0;
-
-       while ( entry->buf_count < count ) {
-               buf          = &entry->buflist[entry->buf_count];
-               buf->idx     = dma->buf_count + entry->buf_count;
-               buf->total   = alignment;
-               buf->order   = order;
-               buf->used    = 0;
-
-               buf->offset  = (dma->byte_count + offset);
-               buf->bus_address = agp_offset + offset;
-               buf->address = (void *)(agp_offset + offset + dev->sg->handle);
-               buf->next    = NULL;
-               buf->waiting = 0;
-               buf->pending = 0;
-               init_waitqueue_head( &buf->dma_wait );
-               buf->pid     = 0;
-
-               buf->dev_priv_size = sizeof(DRIVER_BUF_PRIV_T);
-               buf->dev_private = DRM(alloc)( sizeof(DRIVER_BUF_PRIV_T),
-                                              DRM_MEM_BUFS );
-               memset( buf->dev_private, 0, buf->dev_priv_size );
-
-#if __HAVE_DMA_HISTOGRAM
-               buf->time_queued = 0;
-               buf->time_dispatched = 0;
-               buf->time_completed = 0;
-               buf->time_freed = 0;
-#endif
-               DRM_DEBUG( "buffer %d @ %p\n",
-                          entry->buf_count, buf->address );
-
-               offset += alignment;
-               entry->buf_count++;
-               byte_count += PAGE_SIZE << page_order;
-       }
-
-       DRM_DEBUG( "byte_count: %d\n", byte_count );
-
-       dma->buflist = DRM(realloc)( dma->buflist,
-                                    dma->buf_count * sizeof(*dma->buflist),
-                                    (dma->buf_count + entry->buf_count)
-                                    * sizeof(*dma->buflist),
-                                    DRM_MEM_BUFS );
-       for ( i = 0 ; i < entry->buf_count ; i++ ) {
-               dma->buflist[i + dma->buf_count] = &entry->buflist[i];
-       }
-
-       dma->buf_count += entry->buf_count;
-       dma->byte_count += byte_count;
-
-       DRM_DEBUG( "dma->buf_count : %d\n", dma->buf_count );
-       DRM_DEBUG( "entry->buf_count : %d\n", entry->buf_count );
-
-#if __HAVE_DMA_FREELIST
-       DRM(freelist_create)( &entry->freelist, entry->buf_count );
-       for ( i = 0 ; i < entry->buf_count ; i++ ) {
-               DRM(freelist_put)( dev, &entry->freelist, &entry->buflist[i] );
-       }
-#endif
-       up( &dev->struct_sem );
-
-       request.count = entry->buf_count;
-       request.size = size;
-
-       if ( copy_to_user( (drm_buf_desc_t *)arg, &request, sizeof(request) ) )
-               return -EFAULT;
-
-       dma->flags = _DRM_DMA_USE_SG;
-
-       atomic_dec( &dev->buf_alloc );
-       return 0;
-}
-#endif /* __HAVE_SG */
-
 int DRM(addbufs)( struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg )
 {
@@ -749,11 +577,6 @@ int DRM(addbufs)( struct inode *inode, struct file *filp,
 #if __REALLY_HAVE_AGP
 	if ( request.flags & _DRM_AGP_BUFFER )
 		return DRM(addbufs_agp)( inode, filp, cmd, arg );
-	else
-#endif
-#if __HAVE_SG
-	if ( request.flags & _DRM_SG_BUFFER )
-		return DRM(addbufs_sg)( inode, filp, cmd, arg );
 	else
 #endif
 #if __HAVE_PCI_DMA
@@ -937,8 +760,7 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 	if ( request.count >= dma->buf_count ) {
-		if ( (__HAVE_AGP && (dma->flags & _DRM_DMA_USE_AGP)) ||
-		     (__HAVE_SG && (dma->flags & _DRM_DMA_USE_SG)) ) {
+		if ( __HAVE_AGP && (dma->flags & _DRM_DMA_USE_AGP) ) {
 			drm_map_t *map = DRIVER_AGP_BUFFERS_MAP( dev );
 
 			if ( !map ) {
@@ -946,34 +768,18 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 				goto done;
 			}
 
-#if LINUX_VERSION_CODE <= 0x020402
 			down( &current->mm->mmap_sem );
-#else
-			down_write( &current->mm->mmap_sem );
-#endif
 			virtual = do_mmap( filp, 0, map->size,
 					   PROT_READ | PROT_WRITE,
 					   MAP_SHARED,
 					   (unsigned long)map->offset );
-#if LINUX_VERSION_CODE <= 0x020402
 			up( &current->mm->mmap_sem );
-#else
-			up_write( &current->mm->mmap_sem );
-#endif
 		} else {
-#if LINUX_VERSION_CODE <= 0x020402
 			down( &current->mm->mmap_sem );
-#else
-			down_write( &current->mm->mmap_sem );
-#endif
 			virtual = do_mmap( filp, 0, dma->byte_count,
 					   PROT_READ | PROT_WRITE,
 					   MAP_SHARED, 0 );
-#if LINUX_VERSION_CODE <= 0x020402
 			up( &current->mm->mmap_sem );
-#else
-			up_write( &current->mm->mmap_sem );
-#endif
 		}
 		if ( virtual > -1024UL ) {
 			/* Real error */

@@ -121,6 +121,7 @@ int drm_freelist_create(drm_freelist_t *bl, int count)
 	bl->low_mark  = 0;
 	bl->high_mark = 0;
 	atomic_set(&bl->wfh,   0);
+/*	bl->lock	= SPIN_LOCK_UNLOCKED; */
 	++bl->initialized;
 	return 0;
 }
@@ -159,6 +160,7 @@ int drm_freelist_put(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 	drm_histogram_compute(dev, buf);
 #endif
 	buf->list	= DRM_LIST_FREE;
+/*
 	do {
 		old	  = (unsigned long)bl->next;
 		buf->next = (void *)old;
@@ -169,6 +171,13 @@ int drm_freelist_put(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 			return 1;
 		}
 	} while (failed);
+*/
+
+	simple_lock(&bl->lock);
+	buf->next	= bl->next;
+	bl->next	= buf;
+	simple_unlock(&bl->lock);
+
 	atomic_inc(&bl->count);
 	if (atomic_read(&bl->count) > dma->buf_count) {
 		DRM_ERROR("%d of %d buffers free after addition of %d\n",
@@ -195,6 +204,7 @@ static drm_buf_t *drm_freelist_try(drm_freelist_t *bl)
 	if (!bl) return NULL;
 	
 				/* Get buffer */
+/*
 	do {
 		old = (unsigned int)bl->next;
 		if (!old) {
@@ -210,6 +220,16 @@ static drm_buf_t *drm_freelist_try(drm_freelist_t *bl)
 	atomic_dec(&bl->count);
 	
 	buf	  = (drm_buf_t *)old;
+*/
+	simple_lock(&bl->lock);
+	if(!bl->next){
+		simple_unlock(&bl->lock);
+		return NULL;
+	}
+	buf	= bl->next;
+	bl->next = bl->next->next;
+	simple_unlock(&bl->lock);
+	atomic_dec(&bl->count);
 	buf->next = NULL;
 	buf->list = DRM_LIST_NONE;
 	DRM_DEBUG("%d, count = %d, wfh = %d, w%d, p%d\n",

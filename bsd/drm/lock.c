@@ -135,9 +135,12 @@ static int drm_flush_queue(drm_device_t *dev, int context)
 	if (atomic_read(&q->use_count) > 1) {
 		atomic_inc(&q->block_write);
 		atomic_inc(&q->block_count);
-		error = tsleep(&q->flush_queue, PCATCH|PZERO, "drmfq", 0);
-		if (error)
-			return error;
+		for (;;) {
+			if (!DRM_BUFCOUNT(&q->waitlist)) break;
+			error = tsleep(&q->flush_queue, PCATCH|PZERO, "drmfq", 0);
+			if (error)
+				return error;
+		}
 		atomic_dec(&q->block_count);
 	}
 	atomic_dec(&q->use_count);

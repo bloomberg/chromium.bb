@@ -135,12 +135,12 @@ int drm_getmagic(dev_t kdev, u_long cmd, caddr_t data,
 	if (priv->magic) {
 		auth.magic = priv->magic;
 	} else {
-		simple_lock(&lock);
 		do {
+			simple_lock(&lock);
 			if (!sequence) ++sequence; /* reserve 0 */
 			auth.magic = sequence++;
-		} while (drm_find_file(dev, auth.magic));
 		simple_unlock(&lock);
+		} while (drm_find_file(dev, auth.magic));
 		priv->magic = auth.magic;
 		drm_add_magic(dev, priv, auth.magic);
 	}

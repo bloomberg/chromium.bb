@@ -188,7 +188,11 @@ int mga_rmctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
 
 	ctx = *(drm_ctx_t *) data;
 	DRM_DEBUG("%d\n", ctx.handle);
-      	if(ctx.handle != DRM_KERNEL_CONTEXT) {
+/*
+	if(ctx.handle == DRM_KERNEL_CONTEXT+1)
+		priv->remove_auth_on_close = 1;
+*/
+      	if(ctx.handle != DRM_KERNEL_CONTEXT ) {
 	   	drm_ctxbitmap_free(dev, ctx.handle);
 	}
 	

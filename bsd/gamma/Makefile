@@ -3,7 +3,7 @@
 KMOD	= gamma
 SRCS    = gamma_drv.c gamma_dma.c
 SRCS   += device_if.h bus_if.h pci_if.h
-CFLAGS += ${DEBUG_FLAGS} -I..
+CFLAGS += ${DEBUG_FLAGS} -I. -I..
 KMODDEPS = drm
 
 @:

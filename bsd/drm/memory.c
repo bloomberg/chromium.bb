@@ -95,7 +95,7 @@ void drm_mem_init(void)
 
 /* drm_mem_info is called whenever a process reads /dev/drm/mem. */
 
-static int _drm_mem_info SYSCTL_HANDLER_ARGS
+static int _drm_mem_info DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_mem_stats_t *pt;
 	char buf[128];
@@ -127,7 +127,7 @@ static int _drm_mem_info SYSCTL_HANDLER_ARGS
 	return 0;
 }
 
-int drm_mem_info SYSCTL_HANDLER_ARGS
+int drm_mem_info DRM_SYSCTL_HANDLER_ARGS
 {
 	int ret;
 	

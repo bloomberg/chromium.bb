@@ -130,7 +130,6 @@ static int mga_freelist_init(drm_device_t *dev)
 	   	item->buf = buf;
 	   	buf_priv->my_freelist = item;
 		buf_priv->discard = 0;
-		buf_priv->dispatched = 0;
 	   	dev_priv->head->next = item;
 	}
    
@@ -176,7 +175,7 @@ static __inline void mga_dma_quiescent(drm_device_t *dev)
 				  atomic_read(&dev->total_irq), 
 				  atomic_read(&dma->total_lost));
 			DRM_ERROR("lockup\n"); 
-			goto out_nolock;
+			return;
 		}
 		for (i = 0 ; i < 2000 ; i++) mga_delay();
 	}
@@ -188,15 +187,15 @@ static __inline void mga_dma_quiescent(drm_device_t *dev)
 				  atomic_read(&dev->total_irq), 
 				  atomic_read(&dma->total_lost));
 			DRM_ERROR("lockup\n"); 
-			goto out_status;
+			clear_bit(MGA_IN_DISPATCH, &dev_priv->dispatch_status);
+			return;
 		}
 		for (i = 0 ; i < 2000 ; i++) mga_delay();	  
 	}
     	sarea_priv->dirty |= MGA_DMA_FLUSH;
 
-out_status:
     	clear_bit(MGA_IN_DISPATCH, &dev_priv->dispatch_status);
-out_nolock:
+	DRM_DEBUG("exit, dispatch_status = 0x%02x\n",dev_priv->dispatch_status);
 }
 
 static void mga_reset_freelist(drm_device_t *dev)
@@ -236,20 +235,22 @@ drm_buf_t *mga_freelist_get(drm_device_t *dev)
 	   	set_bit(MGA_IN_GETBUF, &dev_priv->dispatch_status);
 	   	for (;;) {
 		   	mga_dma_schedule(dev, 0);
-		   	if(!test_bit(MGA_IN_GETBUF, 
-				     &dev_priv->dispatch_status)) 
+/*		   	if(!test_bit(MGA_IN_GETBUF, 
+				     &dev_priv->dispatch_status)) */
+			if(dev_priv->tail->age < dev_priv->last_prim_age)
 				break;
 		   	atomic_inc(&dev->total_sleeps);
 			ret = tsleep(&dev_priv->buf_queue, PZERO|PCATCH,
 				     "mgafg", 0);
-			if (ret) {
+			if (ret == EINTR) {
 				clear_bit(MGA_IN_GETBUF,
 					  &dev_priv->dispatch_status);
-				splx(s);
-			   	goto failed_getbuf;
+				break;
 			}
 		}
 		splx(s);
+		clear_bit(MGA_IN_GETBUF, &dev_priv->dispatch_status);
+		if (ret) return NULL;
 	}
    
    	if(dev_priv->tail->age < dev_priv->last_prim_age) {
@@ -263,7 +264,6 @@ drm_buf_t *mga_freelist_get(drm_device_t *dev)
 	   	return next->buf;
 	}
 
-failed_getbuf:
 	failed++;
    	return NULL;
 }
@@ -520,61 +520,55 @@ int mga_advance_primary(drm_device_t *dev)
 static __inline int mga_decide_to_fire(drm_device_t *dev)
 {
    	drm_mga_private_t *dev_priv = (drm_mga_private_t *)dev->dev_private;
-      	drm_device_dma_t  *dma	    = dev->dma;
 
    	DRM_DEBUG("%s\n", __FUNCTION__);
 
    	if(test_bit(MGA_BUF_FORCE_FIRE, &dev_priv->next_prim->buffer_status)) {
-	   	atomic_inc(&dma->total_prio);
 	   	return 1;
 	}
 
 	if (test_bit(MGA_IN_GETBUF, &dev_priv->dispatch_status) &&
 	    dev_priv->next_prim->num_dwords) {
-	   	atomic_inc(&dma->total_prio);
 	   	return 1;
 	}
 
 	if (test_bit(MGA_IN_FLUSH, &dev_priv->dispatch_status) &&
 	    dev_priv->next_prim->num_dwords) {
-	   	atomic_inc(&dma->total_prio);
 	   	return 1;
 	}
    
    	if(atomic_read(&dev_priv->pending_bufs) <= MGA_NUM_PRIM_BUFS - 1) {
 		if(test_bit(MGA_BUF_SWAP_PENDING, 
 			    &dev_priv->next_prim->buffer_status)) {
-			atomic_inc(&dma->total_dmas);
 			return 1;
 		}
 	}
 
    	if(atomic_read(&dev_priv->pending_bufs) <= MGA_NUM_PRIM_BUFS / 2) {
 		if(dev_priv->next_prim->sec_used >= MGA_DMA_BUF_NR / 8) {
-			atomic_inc(&dma->total_hit);
 			return 1;
 		}
 	}
 
    	if(atomic_read(&dev_priv->pending_bufs) >= MGA_NUM_PRIM_BUFS / 2) {
 		if(dev_priv->next_prim->sec_used >= MGA_DMA_BUF_NR / 4) {
-			atomic_inc(&dma->total_missed_free);
 			return 1;
 		}
 	}
 
-   	atomic_inc(&dma->total_tried);
    	return 0;
 }
 
 int mga_dma_schedule(drm_device_t *dev, int locked)
 {
       	drm_mga_private_t *dev_priv = (drm_mga_private_t *)dev->dev_private;
-      	drm_device_dma_t  *dma	    = dev->dma;
+	int	retval =0 ;
+
+	if (!dev_priv) return EBUSY;
 
    	if (test_and_set_bit(0, &dev->dma_flag)) {
-		atomic_inc(&dma->total_missed_dma);
-		return EBUSY;
+		retval = EBUSY;
+		goto sch_out_wakeup;
 	}
    
 	DRM_DEBUG("%s\n", __FUNCTION__);
@@ -591,17 +585,15 @@ int mga_dma_schedule(drm_device_t *dev, int locked)
    
    	if (!locked && 
 	    !drm_lock_take(&dev->lock.hw_lock->lock, DRM_KERNEL_CONTEXT)) {
-	   	atomic_inc(&dma->total_missed_lock);
 	   	clear_bit(0, &dev->dma_flag);
 		DRM_DEBUG("Not locked\n");
-	   	return EBUSY;
+		retval = EBUSY;
+		goto sch_out_wakeup;
 	}
-   	DRM_DEBUG("I'm locked\n");
 
    	if(!test_and_set_bit(MGA_IN_DISPATCH, &dev_priv->dispatch_status)) {
 	   	/* Fire dma buffer */
 	   	if(mga_decide_to_fire(dev)) {
-		   	DRM_DEBUG("idx :%d\n", dev_priv->next_prim->idx);
 			clear_bit(MGA_BUF_FORCE_FIRE, 
 				  &dev_priv->next_prim->buffer_status);
 		   	if(dev_priv->current_prim == dev_priv->next_prim) {
@@ -613,8 +605,6 @@ int mga_dma_schedule(drm_device_t *dev, int locked)
 		} else {
 			clear_bit(MGA_IN_DISPATCH, &dev_priv->dispatch_status);
 		}
-	} else {
-		DRM_DEBUG("I can't get the dispatch lock\n");
 	}
    	
 	if (!locked) {
@@ -623,9 +613,9 @@ int mga_dma_schedule(drm_device_t *dev, int locked)
 			DRM_ERROR("\n");
 		}
 	}
-
+	clear_bit(0, &dev->dma_flag);
+sch_out_wakeup:
       	if(test_bit(MGA_IN_FLUSH, &dev_priv->dispatch_status) &&
-	   dev_priv->next_prim->num_dwords == 0 &&
 	   atomic_read(&dev_priv->pending_bufs) == 0) {
 	   	/* Everything has been processed by the hardware */
 		clear_bit(MGA_IN_FLUSH, &dev_priv->dispatch_status);
@@ -633,18 +623,10 @@ int mga_dma_schedule(drm_device_t *dev, int locked)
 	}
 
 	if(test_bit(MGA_IN_GETBUF, &dev_priv->dispatch_status) &&
-	   dev_priv->tail->age < dev_priv->last_prim_age) {
-		clear_bit(MGA_IN_GETBUF, &dev_priv->dispatch_status);
-		DRM_DEBUG("Waking up buf queue\n");
+	   dev_priv->tail->age < dev_priv->last_prim_age) 
 		wakeup(&dev_priv->buf_queue);
-	} else if (test_bit(MGA_IN_GETBUF, &dev_priv->dispatch_status)) {
-	   	DRM_DEBUG("Not waking buf_queue on %d %d\n", 
-			  atomic_read(&dev->total_irq), 
-			  dev_priv->last_prim_age);
-	}
 
-   	clear_bit(0, &dev->dma_flag);
-	return 0;
+	return retval;
 }
 
 static void mga_dma_service(void *arg)
@@ -653,7 +635,6 @@ static void mga_dma_service(void *arg)
     	drm_mga_private_t *dev_priv = (drm_mga_private_t *)dev->dev_private;
     	drm_mga_prim_buf_t *last_prim_buffer;
 
-	DRM_DEBUG("%s\n", __FUNCTION__);
     	atomic_inc(&dev->total_irq);
 	if((MGA_READ(MGAREG_STATUS) & 0x00000001) != 0x00000001) return;
       	MGA_WRITE(MGAREG_ICLEAR, 0x00000001);
@@ -663,11 +644,11 @@ static void mga_dma_service(void *arg)
 	dev_priv->sarea_priv->last_dispatch = 
 		dev_priv->last_prim_age = last_prim_buffer->prim_age;
       	clear_bit(MGA_BUF_IN_USE, &last_prim_buffer->buffer_status);
-   	wakeup(&dev_priv->wait_queue);
       	clear_bit(MGA_BUF_SWAP_PENDING, &last_prim_buffer->buffer_status);
       	clear_bit(MGA_IN_DISPATCH, &dev_priv->dispatch_status);
       	atomic_dec(&dev_priv->pending_bufs);
 	taskqueue_enqueue(taskqueue_swi, &dev->task);
+   	wakeup(&dev_priv->wait_queue);
 }
 
 static void mga_dma_task_queue(void *device, int pending)
@@ -684,6 +665,8 @@ int mga_dma_cleanup(drm_device_t *dev)
 		drm_mga_private_t *dev_priv = 
 			(drm_mga_private_t *) dev->dev_private;
       
+		if (dev->irq) mga_flush_queue(dev);
+		mga_dma_quiescent(dev);
 		if(dev_priv->ioremap) {
 			int temp = (dev_priv->warp_ucode_size + 
 				    dev_priv->primary_size + 
@@ -723,9 +706,6 @@ int mga_dma_cleanup(drm_device_t *dev)
 static int mga_dma_initialize(drm_device_t *dev, drm_mga_init_t *init) {
 	drm_mga_private_t *dev_priv;
 	drm_map_t *sarea_map = NULL;
-	int i;
-
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	dev_priv = drm_alloc(sizeof(drm_mga_private_t), DRM_MEM_DRIVER);
 	if(dev_priv == NULL) return ENOMEM;
@@ -760,8 +740,8 @@ static int mga_dma_initialize(drm_device_t *dev, drm_mga_init_t *init) {
 
 	dev_priv->mAccess = init->mAccess;
    	dev_priv->flush_queue = 0;
-	dev_priv->buf_queue = 0;
-	dev_priv->WarpPipe = -1;
+	dev_priv->WarpPipe = 0xff000000;
+	dev_priv->vertexsize = 0;
 
    	DRM_DEBUG("chipset: %d ucode_size: %d backOffset: %x depthOffset: %x\n",
 		  dev_priv->chipset, dev_priv->warp_ucode_size, 
@@ -772,13 +752,6 @@ static int mga_dma_initialize(drm_device_t *dev, drm_mga_init_t *init) {
    
 	memcpy(&dev_priv->WarpIndex, &init->WarpIndex, 
 	       sizeof(drm_mga_warp_index_t) * MGA_MAX_WARP_PIPES);
-
-   	for (i = 0 ; i < MGA_MAX_WARP_PIPES ; i++) 
-		DRM_DEBUG("warp pipe %d: installed: %d phys: %lx size: %x\n",
-			  i, 
-			  dev_priv->WarpIndex[i].installed,
-			  dev_priv->WarpIndex[i].phys_addr,
-			  dev_priv->WarpIndex[i].size);
 
    	if(mga_init_primary_bufs(dev, init) != 0) {
 		DRM_ERROR("Can not initialize primary buffers\n");
@@ -951,9 +924,7 @@ static int mga_flush_queue(drm_device_t *dev)
 
    	DRM_DEBUG("%s\n", __FUNCTION__);
 
-   	if(dev_priv == NULL) {
-	   	return 0;
-	}
+   	if(!dev_priv) return 0;
    
    	if(dev_priv->next_prim->num_dwords != 0) {
 		s = splsofttq();
@@ -1065,7 +1036,7 @@ int mga_lock(dev_t kdev, u_long cmd, caddr_t data,
 		}
 	}
    
-	DRM_DEBUG("%d %s\n", lock.context, ret ? "interrupted" : "has lock");
+	if (ret) DRM_DEBUG("%d %s\n", lock.context, ret ? "interrupted" : "has lock");
 	return ret;
 }
 		
@@ -1086,16 +1057,16 @@ int mga_flush_ioctl(dev_t kdev, u_long cmd, caddr_t data,
 	}
 
    	if(lock.flags & _DRM_LOCK_FLUSH || lock.flags & _DRM_LOCK_FLUSH_ALL) {
-		drm_mga_prim_buf_t *temp_buf =
-			dev_priv->prim_bufs[dev_priv->current_prim_idx];
+		drm_mga_prim_buf_t *temp_buf; 
+		temp_buf = dev_priv->current_prim;
 
-		if(temp_buf && temp_buf->num_dwords) {
 			s = splsofttq();
+		if(temp_buf && temp_buf->num_dwords) {
 			set_bit(MGA_BUF_FORCE_FIRE, &temp_buf->buffer_status);
 			mga_advance_primary(dev);
+ 		}
 			mga_dma_schedule(dev, 1);
 			splx(s);
- 		}
 	}
    	if(lock.flags & _DRM_LOCK_QUIESCENT) {
 		mga_flush_queue(dev);

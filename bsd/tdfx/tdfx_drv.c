@@ -42,7 +42,7 @@ MODULE_DEPEND(tdfx, agp, 1, 1, 1);
 
 #define TDFX_NAME	 "tdfx"
 #define TDFX_DESC	 "tdfx"
-#define TDFX_DATE	 "19991009"
+#define TDFX_DATE	 "20000928"
 #define TDFX_MAJOR	 1
 #define TDFX_MINOR	 0
 #define TDFX_PATCHLEVEL  0
@@ -63,6 +63,9 @@ static int tdfx_probe(device_t dev)
 		
 	case 0x0005121a:
 		s = "3Dfx Voodoo 3 graphics accelerator";
+		break;
+	case 0x0009121a:
+		s = "3Dfx Voodoo 5 graphics accelerator";
 		break;
 	}
 
