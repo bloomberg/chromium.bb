@@ -42,10 +42,10 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20041207"
+#define DRIVER_DATE		"20050125"
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		13
+#define DRIVER_MINOR		14
 #define DRIVER_PATCHLEVEL	0
 
 /* Interface history:
@@ -84,6 +84,8 @@
  *       (No 3D support yet - just microcode loading).
  * 1.13- Add packet R200_EMIT_TCL_POINT_SPRITE_CNTL for ARB_point_parameters
  *     - Add hyperz support, add hyperz flags to clear ioctl.
+ * 1.14- Add support for color tiling
+ *     - Add R100/R200 surface allocation/free support
  */
 #define DRIVER_IOCTLS							     \
  [DRM_IOCTL_NR(DRM_IOCTL_DMA)]               = { radeon_cp_buffers,  1, 0 }, \
@@ -112,5 +114,7 @@
  [DRM_IOCTL_NR(DRM_IOCTL_RADEON_IRQ_EMIT)]   = { radeon_irq_emit,    1, 0 }, \
  [DRM_IOCTL_NR(DRM_IOCTL_RADEON_IRQ_WAIT)]   = { radeon_irq_wait,    1, 0 }, \
  [DRM_IOCTL_NR(DRM_IOCTL_RADEON_SETPARAM)]   = { radeon_cp_setparam, 1, 0 }, \
+ [DRM_IOCTL_NR(DRM_IOCTL_RADEON_SURF_ALLOC)] = { radeon_surface_alloc, 1, 0 }, \
+ [DRM_IOCTL_NR(DRM_IOCTL_RADEON_SURF_FREE)]  = { radeon_surface_free, 1, 0 }, \
 
 #endif
