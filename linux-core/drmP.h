@@ -46,6 +46,7 @@
 #include <linux/version.h>
 #include <linux/sched.h>
 #include <linux/smp_lock.h>	/* For (un)lock_kernel */
+#include <linux/mm.h>
 #include <asm/io.h>
 #include <asm/mman.h>
 #include <asm/uaccess.h>
@@ -140,7 +141,7 @@ typedef struct wait_queue *wait_queue_head_t;
 #endif
 
 				/* virt_to_page added in 2.4.0-test6 */
-#ifndef virt_to_page
+#if LINUX_VERSION_CODE < 0x020400
 #define virt_to_page(kaddr) (mem_map + MAP_NR(kaddr))
 #endif
 

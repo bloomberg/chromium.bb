@@ -250,7 +250,7 @@ int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 		  vma->vm_start, vma->vm_end, VM_OFFSET(vma));
 
 				/* Length must match exact page count */
-	if ((length >> PAGE_SHIFT) != dma->page_count) {
+	if (!dma || (length >> PAGE_SHIFT) != dma->page_count) {
 		unlock_kernel();
 		return -EINVAL;
 	}
@@ -323,6 +323,9 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 				pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
 				pgprot_val(vma->vm_page_prot) &= ~_PAGE_PWT;
 			}
+#elif defined(__ia64__)
+			if (map->type != _DRM_AGP)
+				vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
 #endif
 			vma->vm_flags |= VM_IO;	/* not in core dump */
 		}
