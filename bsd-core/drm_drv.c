@@ -140,17 +140,11 @@ static struct cdevsw drm_cdevsw = {
 int drm_probe(device_t dev, drm_pci_id_list_t *idlist)
 {
 	const char *s = NULL;
-	int pciid, vendor, device;
+	int vendor, device;
 
-	/* XXX: Cope with agp bridge device? */
-	if (!strcmp(device_get_name(dev), "drmsub"))
-		pciid = pci_get_devid(device_get_parent(dev));
-	else
-		pciid = pci_get_devid(dev);
+	vendor = pci_get_vendor(dev);
+	device = pci_get_device(dev);
 
-	vendor = (pciid & 0x0000ffff);
-	device = (pciid & 0xffff0000) >> 16;
-	
 	s = drm_find_description(vendor, device, idlist);
 	if (s != NULL) {
 		device_set_desc(dev, s);
