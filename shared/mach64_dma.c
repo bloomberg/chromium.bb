@@ -680,7 +680,7 @@ static int mach64_do_dma_init( drm_device_t *dev, drm_mach64_init_t *init )
 			DRM_ERROR( "can not find ring map!\n" );
 			dev->dev_private = (void *)dev_priv;
 			mach64_do_cleanup_dma(dev);
-			return -EINVAL;
+			return DRM_ERR(EINVAL);
 		}
 		DRM_IOREMAP( dev_priv->ring_map, dev );
 		if ( !dev_priv->ring_map->handle ) {
@@ -688,7 +688,7 @@ static int mach64_do_dma_init( drm_device_t *dev, drm_mach64_init_t *init )
                                    " descriptor ring\n" );
 			dev->dev_private = (void *) dev_priv;
 			mach64_do_cleanup_dma( dev );
-			return -ENOMEM;
+			return DRM_ERR(ENOMEM);
                 }
 	        DRM_FIND_MAP( dev_priv->buffers, init->buffers_offset );
 		if ( !dev_priv->buffers ) {
