@@ -68,6 +68,7 @@ DRMHEADERS =    drm.h drmP.h $(DRMSHARED)
 GAMMAHEADERS =  gamma.h gamma_context.h gamma_drm.h gamma_drv.h gamma_lists.h \
                 gamma_old_dma.h gamma_lock.h $(DRMHEADERS) $(DRMTEMPLATES)
 TDFXHEADERS =   tdfx.h $(DRMHEADERS) $(DRMTEMPLATES)
+TDFXSHARED =    tdfx.h
 R128HEADERS =   r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 R128SHARED =    r128.h r128_drv.h r128_drm.h r128_cce.c r128_state.c r128_irq.c
 RADEONHEADERS = radeon.h radeon_drv.h radeon_drm.h $(DRMHEADERS) \
@@ -81,8 +82,10 @@ MGASHARED =     mga.h mga_dma.c mga_drm.h mga_drv.h mga_irq.c mga_state.c \
 I810HEADERS =   i810.h i810_drv.h i810_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 I830HEADERS =   i830.h i830_drv.h i830_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 SISHEADERS=     sis_drv.h sis_drm.h $(DRMHEADERS)
+SISSHARED=      sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
 
-SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED)
+SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
+	$(SISSHARED) $(TDFXSHARED)
 
 PROGS = dristat drmstat
 

@@ -219,11 +219,14 @@ static struct cdevsw DRM(cdevsw) = {
 #endif
 };
 
+static drm_pci_id_list_t DRM(pciidlist)[] = {
+	DRIVER_PCI_IDS
+};
+
 static int DRM(probe)(device_t dev)
 {
 	const char *s = NULL;
 	int pciid, vendor, device;
-   
 
 	/* XXX: Cope with agp bridge device? */
 	if (!strcmp(device_get_name(dev), "drmsub"))
@@ -235,7 +238,7 @@ static int DRM(probe)(device_t dev)
 	device = (pciid & 0xffff0000) >> 16;
 	
 	s = DRM(find_description)(vendor, device);
-	if (s) {
+	if (s != NULL) {
 		device_set_desc(dev, s);
 		return 0;
 	}
@@ -349,7 +352,8 @@ int DRM(probe)(struct pci_attach_args *pa)
 {
 	const char *desc;
 
-	desc = DRM(find_description)(PCI_VENDOR(pa->pa_id), PCI_PRODUCT(pa->pa_id));
+	desc = DRM(find_description)(PCI_VENDOR(pa->pa_id),
+	    PCI_PRODUCT(pa->pa_id));
 	if (desc != NULL) {
 		return 1;
 	}
@@ -396,21 +400,15 @@ int DRM(activate)(struct device *self, enum devact act)
 #endif /* __NetBSD__ */
 
 const char *DRM(find_description)(int vendor, int device) {
-	const char *s = NULL;
-	int i=0, done=0;
+	int i = 0;
 	
-	while ( !done && (DRM(devicelist)[i].vendor != 0 ) ) {
-		if ( (DRM(devicelist)[i].vendor == vendor) &&
-		     (DRM(devicelist)[i].device == device) ) {
-			done=1;
-			if ( DRM(devicelist)[i].supported )
-				s = DRM(devicelist)[i].name;
-			else
-				DRM_INFO("%s not supported\n", DRM(devicelist)[i].name);
+	for (i = 0; DRM(pciidlist)[i].vendor != 0; i++) {
+		if ((DRM(pciidlist)[i].vendor == vendor) &&
+		    (DRM(pciidlist)[i].device == device)) {
+			return DRM(pciidlist)[i].name;
 		}
-		i++;
 	}
-	return s;
+	return NULL;
 }
 
 static int DRM(setup)( drm_device_t *dev )

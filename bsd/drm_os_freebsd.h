@@ -270,14 +270,6 @@ for ( ret = 0 ; !ret && !(condition) ; ) {		\
 MALLOC_DECLARE(malloctype);
 #undef malloctype
 
-typedef struct drm_chipinfo
-{
-	int vendor;
-	int device;
-	int supported;
-	char *name;
-} drm_chipinfo_t;
-
 #if __FreeBSD_version >= 480000
 #define cpu_to_le32(x) htole32(x)
 #define le32_to_cpu(x) le32toh(x)

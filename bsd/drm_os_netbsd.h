@@ -230,14 +230,6 @@ while (!condition) {						\
 
 #define PAGE_ALIGN(addr) (((addr)+PAGE_SIZE-1)&PAGE_MASK)
 
-typedef struct drm_chipinfo
-{
-	int vendor;
-	int device;
-	int supported;
-	char *name;
-} drm_chipinfo_t;
-
 #define cpu_to_le32(x) htole32(x)
 #define le32_to_cpu(x) le32toh(x)
 

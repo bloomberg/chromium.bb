@@ -391,10 +391,13 @@ do {									\
 typedef int drm_ioctl_t( struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg );
 
-typedef struct drm_pci_list {
-	u16 vendor;
-	u16 device;
-} drm_pci_list_t;
+typedef struct drm_pci_id_list
+{
+	int vendor;
+	int device;
+	long driver_private;
+	char *name;
+} drm_pci_id_list_t;
 
 typedef struct drm_ioctl_desc {
 	drm_ioctl_t	     *func;
@@ -651,6 +654,7 @@ typedef struct drm_device {
 	int		  unique_len;	/**< Length of unique field */
 	dev_t		  device;	/**< Device number for mknod */
 	char		  *devname;	/**< For /proc/interrupts */
+	int		  minor;        /**< Minor device number */
 
 	int		  blocked;	/**< Blocked due to VC switch? */
 	struct proc_dir_entry *root;	/**< Root for this device's entries */
