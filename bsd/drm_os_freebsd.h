@@ -163,8 +163,10 @@ typedef void			irqreturn_t;
 
 /* Read/write from bus space, with byteswapping to le if necessary */
 #define DRM_READ8(map, offset)		*(volatile u_int8_t *) (((unsigned long)(map)->handle) + (offset))
+#define DRM_READ16(map, offset)		*(volatile u_int16_t *) (((unsigned long)(map)->handle) + (offset))
 #define DRM_READ32(map, offset)		*(volatile u_int32_t *)(((unsigned long)(map)->handle) + (offset))
 #define DRM_WRITE8(map, offset, val)	*(volatile u_int8_t *) (((unsigned long)(map)->handle) + (offset)) = val
+#define DRM_WRITE16(map, offset, val)	*(volatile u_int16_t *) (((unsigned long)(map)->handle) + (offset)) = val
 #define DRM_WRITE32(map, offset, val)	*(volatile u_int32_t *)(((unsigned long)(map)->handle) + (offset)) = val
 /*
 #define DRM_READ8(map, offset)		bus_space_read_1(  (map)->iot, (map)->ioh, (offset) )
