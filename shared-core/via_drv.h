@@ -32,7 +32,9 @@
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		4
-#define DRIVER_PATCHLEVEL	2
+#define DRIVER_PATCHLEVEL	3
+
+#include "via_verifier.h"
 
 typedef struct drm_via_ring_buffer {
 	drm_map_t map;
@@ -57,6 +59,7 @@ typedef struct drm_via_private {
         struct timeval last_vblank;
         int last_vblank_valid;
         unsigned usec_per_vblank;
+	drm_via_state_t hc_state;
 } drm_via_private_t;
 
 /* VIA MMIO register access */
@@ -83,7 +86,6 @@ extern void via_driver_irq_uninstall(drm_device_t * dev);
 
 extern int via_dma_cleanup(drm_device_t * dev);
 extern void via_init_command_verifier(void);
-extern int via_verify_command_stream(const uint32_t * buf, unsigned int size, drm_device_t *dev);
 extern int via_wait_idle(drm_via_private_t * dev_priv);
 extern int via_driver_dma_quiescent(drm_device_t * dev);
 

@@ -30,6 +30,10 @@
 
 #include "via_3d_reg.h"
 #include "drmP.h"
+#include "drm.h"
+#include "via_drm.h"
+#include "via_verifier.h"
+#include "via_drv.h"
 
 typedef enum{
 	state_command,
@@ -39,13 +43,6 @@ typedef enum{
 	state_vheader6,
 	state_error
 } verifier_state_t;
-
-typedef enum{
-	no_sequence = 0, 
-	z_address,
-	dest_address,
-	tex_address
-}sequence_t;
 
 
 typedef enum{
@@ -85,7 +82,7 @@ typedef enum{
  * that does not include any part of the address.
  */
 
-static sequence_t seqs[] = { 
+static drm_via_sequence_t seqs[] = { 
 	no_sequence,
 	no_sequence,
 	no_sequence,
@@ -245,27 +242,6 @@ static hazard_t table3[256];
 
 
 
-typedef struct{
-	unsigned texture;
-	uint32_t z_addr; 
-	uint32_t d_addr; 
-        uint32_t t_addr[2][10];
-	uint32_t pitch[2][10];
-	uint32_t height[2][10];
-	uint32_t tex_level_lo[2]; 
-	uint32_t tex_level_hi[2];
-	uint32_t tex_palette_size[2];
-	sequence_t unfinished;
-	int agp_texture;
-	int multitex;
-	drm_device_t *dev;
-	drm_map_t *map_cache;
-	uint32_t vertex_count;
-} sequence_context_t;
-
-static sequence_context_t hc_sequence;
-
-
 static __inline__ int
 eat_words(const uint32_t **buf, const uint32_t *buf_end, unsigned num_words)
 {
@@ -283,7 +259,7 @@ eat_words(const uint32_t **buf, const uint32_t *buf_end, unsigned num_words)
  */
 
 static __inline__ drm_map_t *
-via_drm_lookup_agp_map (sequence_context_t *seq, unsigned long offset, unsigned long size, 
+via_drm_lookup_agp_map (drm_via_state_t *seq, unsigned long offset, unsigned long size, 
 			drm_device_t *dev)
 {
 	struct list_head *list;
@@ -320,7 +296,7 @@ via_drm_lookup_agp_map (sequence_context_t *seq, unsigned long offset, unsigned 
 
 
 static __inline__ int
-finish_current_sequence(sequence_context_t *cur_seq) 
+finish_current_sequence(drm_via_state_t *cur_seq) 
 {
 	switch(cur_seq->unfinished) {
 	case z_address:
@@ -365,7 +341,7 @@ finish_current_sequence(sequence_context_t *cur_seq)
 }
 
 static __inline__ int 
-investigate_hazard( uint32_t cmd, hazard_t hz, sequence_context_t *cur_seq)
+investigate_hazard( uint32_t cmd, hazard_t hz, drm_via_state_t *cur_seq)
 {
 	register uint32_t tmp, *tmp_addr;
 
@@ -518,7 +494,7 @@ investigate_hazard( uint32_t cmd, hazard_t hz, sequence_context_t *cur_seq)
 
 static __inline__ int
 via_check_prim_list(uint32_t const **buffer, const uint32_t *buf_end,
-		    sequence_context_t *cur_seq)
+		    drm_via_state_t *cur_seq)
 {
 	uint32_t a_fire, bcmd , dw_count;
 	int ret = 0;
@@ -546,7 +522,7 @@ via_check_prim_list(uint32_t const **buffer, const uint32_t *buf_end,
 		 * How many dwords per vertex ?
 		 */ 
 		
-		if ((bcmd & (0xF << 11)) == 0) {
+		if (cur_seq->agp && ((bcmd & (0xF << 11)) == 0)) {
 			DRM_ERROR("Illegal B command vertex data for AGP.\n");
 			ret = 1;
 			break;
@@ -563,12 +539,6 @@ via_check_prim_list(uint32_t const **buffer, const uint32_t *buf_end,
 		if (bcmd & (1 << 14)) dw_count++;
 
 		while(buf < buf_end) {
-			if (*buf == HALCYON_HEADER2) {
-				DRM_ERROR("Missing Vertex Fire command or verifier "
-					  "lost sync.\n");
-				ret = 1;
-				break;
-			}
 			if (*buf == a_fire) {
 			        have_fire = 1;
 				buf++;
@@ -576,8 +546,11 @@ via_check_prim_list(uint32_t const **buffer, const uint32_t *buf_end,
 					buf++;
 				break;
 			}
-			if ((*buf & HALCYON_FIREMASK) == HALCYON_FIRECMD) {
-				DRM_ERROR("Stray Vertex Fire command encountered.\n");
+			if ((*buf == HALCYON_HEADER2) || 
+			    ((*buf & HALCYON_FIREMASK) == HALCYON_FIRECMD)) {
+				DRM_ERROR("Missing Vertex Fire command, "
+					  "Stray Vertex Fire command  or verifier "
+					  "lost sync.\n");
 				ret = 1;
 				break;
 			}
@@ -587,6 +560,11 @@ via_check_prim_list(uint32_t const **buffer, const uint32_t *buf_end,
 		if (buf >= buf_end && !have_fire) {
 			DRM_ERROR("Missing Vertex Fire command or verifier "
 				  "lost sync.\n");
+			ret = 1;
+			break;
+		}
+		if (cur_seq->agp && ((buf - cur_seq->buf_start) & 0x01)) {
+			DRM_ERROR("AGP Primitive list end misaligned.\n");
 			ret = 1;
 			break;
 		}
@@ -600,7 +578,8 @@ via_check_prim_list(uint32_t const **buffer, const uint32_t *buf_end,
 
 
 static __inline__ verifier_state_t
-via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
+via_check_header2( uint32_t const **buffer, const uint32_t *buf_end, 
+		   drm_via_state_t *hc_state)
 {
 	uint32_t cmd;
 	int hz_mode;
@@ -618,7 +597,7 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 
 	switch(cmd) {
 	case HC_ParaType_CmdVdata:
-		if (via_check_prim_list(&buf, buf_end, &hc_sequence )) 
+		if (via_check_prim_list(&buf, buf_end, hc_state )) 
 			return state_error;
 		*buffer = buf;
 		return state_command;
@@ -626,11 +605,11 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 		hz_table = table1;
 		break;
 	case HC_ParaType_Tex:
-		hc_sequence.texture = 0;
+		hc_state->texture = 0;
 		hz_table = table2;
 		break;
 	case (HC_ParaType_Tex | (HC_SubType_Tex1 << 8)):
-		hc_sequence.texture = 1;
+		hc_state->texture = 1;
 		hz_table = table2;
 		break;
 	case (HC_ParaType_Tex | (HC_SubType_TexGeneral << 8)):
@@ -672,19 +651,19 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 	while(buf < buf_end) {
 		cmd = *buf++;
 		if ((hz = hz_table[cmd >> 24])) {
-			if ((hz_mode = investigate_hazard(cmd, hz, &hc_sequence))) {
+			if ((hz_mode = investigate_hazard(cmd, hz, hc_state))) {
 				if (hz_mode == 1) {
 					buf--;
 					break;
 				}
 				return state_error;
 			}
-		} else if (hc_sequence.unfinished && 
-			   finish_current_sequence(&hc_sequence)) {
+		} else if (hc_state->unfinished && 
+			   finish_current_sequence(hc_state)) {
 			return state_error;
 		}
 	}
-	if (hc_sequence.unfinished && finish_current_sequence(&hc_sequence)) {
+	if (hc_state->unfinished && finish_current_sequence(hc_state)) {
 		return state_error;
 	}
 	*buffer = buf;
@@ -831,22 +810,29 @@ via_check_vheader6( uint32_t const **buffer, const uint32_t *buf_end )
 
 
 int 
-via_verify_command_stream(const uint32_t * buf, unsigned int size, drm_device_t *dev)
+via_verify_command_stream(const uint32_t * buf, unsigned int size, drm_device_t *dev,
+			  int agp)
 {
 
+	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
+	drm_via_state_t *hc_state = &dev_priv->hc_state;
+	drm_via_state_t saved_state = *hc_state;
 	uint32_t cmd;
 	const uint32_t *buf_end = buf + ( size >> 2 );
 	verifier_state_t state = state_command;
 	
-	hc_sequence.dev = dev;
-	hc_sequence.unfinished = no_sequence;
-	hc_sequence.map_cache = NULL;
+	
+	hc_state->dev = dev;
+	hc_state->unfinished = no_sequence;
+	hc_state->map_cache = NULL;
+	hc_state->agp = agp;
+	hc_state->buf_start = buf;
 
 	while (buf < buf_end) {
 
 		switch (state) {
 		case state_header2:
-			state = via_check_header2( &buf, buf_end );
+			state = via_check_header2( &buf, buf_end, hc_state );
 			break;
 		case state_header1:
 			state = via_check_header1( &buf, buf_end );
@@ -874,10 +860,15 @@ via_verify_command_stream(const uint32_t * buf, unsigned int size, drm_device_t 
 			break;
 		case state_error:
 		default:
+			*hc_state = saved_state;
 			return DRM_ERR(EINVAL);			
 		}
 	}	
-	return (state == state_error) ? DRM_ERR(EINVAL) : 0;
+	if (state == state_error) {
+		*hc_state = saved_state;
+		return DRM_ERR(EINVAL);
+	}
+	return 0;
 }
 
 static void 
@@ -897,7 +888,6 @@ setup_hazard_table(hz_init_t init_table[], hazard_t table[], int size)
 void 
 via_init_command_verifier( void )
 {
-	hc_sequence.texture = 0;
 	setup_hazard_table(init_table1, table1, sizeof(init_table1) / sizeof(hz_init_t));
 	setup_hazard_table(init_table2, table2, sizeof(init_table2) / sizeof(hz_init_t));
 	setup_hazard_table(init_table3, table3, sizeof(init_table3) / sizeof(hz_init_t));

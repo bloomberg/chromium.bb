@@ -90,10 +90,10 @@ SISSHARED=      sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
 SAVAGEHEADERS=  savage_drv.h savage_drm.h $(DRMHEADERS)
 SAVAGESHARED=	savage_drv.h savage_drm.h savage_bci.c savage_state.c
 VIAHEADERS =	via_drm.h via_drv.h via_mm.h via_ds.h \
-		via_3d_reg.h $(DRMHEADERS)
+		via_3d_reg.h via_verifier.h $(DRMHEADERS)
 VIASHARED	= via_drm.h via_drv.h via_mm.h via_ds.h \
 		via_3d_reg.h via_drv.c via_ds.c via_irq.c via_map.c \
-		via_mm.c via_dma.c via_verifier.c
+		via_mm.c via_dma.c via_verifier.c via_verifier.h
 MACH64HEADERS = mach64_drv.h mach64_drm.h $(DRMHEADERS)
 MACH64SHARED = 	mach64_drv.h mach64_drm.h mach64_dma.c \
 		mach64_irq.c mach64_state.c

@@ -281,7 +281,7 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 	 */
 
 	
-	if ((ret = via_verify_command_stream((uint32_t *)pci_buf, cmd->size, dev))) {
+	if ((ret = via_verify_command_stream((uint32_t *)pci_buf, cmd->size, dev, 1))) {
 		return ret;
 	}
        	
@@ -347,7 +347,7 @@ static int via_parse_pci_cmdbuffer(drm_device_t * dev, const char *buf,
 	int ret;
 	int check_2d_cmd = 1;
 
-	if ((ret = via_verify_command_stream(regbuf, size, dev)))
+	if ((ret = via_verify_command_stream(regbuf, size, dev, 0)))
 		return ret;
 
 	while (regbuf != regend) {	
