@@ -350,20 +350,11 @@ static void r128_cce_init_ring_buffer( drm_device_t *dev,
 		tmp_ofs = dev_priv->ring_rptr->offset - dev->sg->handle;
 		page_ofs = tmp_ofs >> PAGE_SHIFT;
 
-#if defined(__alpha__)
 		R128_WRITE( R128_PM4_BUFFER_DL_RPTR_ADDR,
      			    entry->busaddr[page_ofs]);
 		DRM_DEBUG( "ring rptr: offset=0x%08x handle=0x%08lx\n",
 			   entry->busaddr[page_ofs],
      			   entry->handle + tmp_ofs );
-#else
-		R128_WRITE( R128_PM4_BUFFER_DL_RPTR_ADDR,
-			    page_to_bus(entry->pagelist[page_ofs]));
-
-		DRM_DEBUG( "ring rptr: offset=0x%08x handle=0x%08lx\n",
-			   page_to_bus(entry->pagelist[page_ofs]),
-			   entry->handle + tmp_ofs );
-#endif
 	}
 
 	/* Set watermark control */

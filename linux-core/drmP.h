@@ -443,6 +443,8 @@ typedef struct drm_agp_head {
 	int                acquired;
 	unsigned long      base;
    	int 		   agp_mtrr;
+	int		   cant_use_aperture;
+	unsigned long	   page_mask;
 } drm_agp_head_t;
 #endif
 
@@ -451,9 +453,7 @@ typedef struct drm_sg_mem {
 	void            *virtual;
 	int             pages;
 	struct page     **pagelist;
-#if defined(__alpha__)
 	dma_addr_t	*busaddr;
-#endif
 } drm_sg_mem_t;
 
 typedef struct drm_sigdata {
@@ -544,8 +544,8 @@ typedef struct drm_device {
 #if __REALLY_HAVE_AGP
 	drm_agp_head_t    *agp;
 #endif
-#ifdef __alpha__
 	struct pci_dev *pdev;
+#ifdef __alpha__
 #if LINUX_VERSION_CODE < 0x020403
 	struct pci_controler *hose;
 #else

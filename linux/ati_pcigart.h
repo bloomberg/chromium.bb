@@ -103,7 +103,6 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 		goto done;
 	}
 
-#if defined(__alpha__)
 	if ( !dev->pdev ) {
 		DRM_ERROR( "PCI device unknown!\n" );
 		goto done;
@@ -118,9 +117,6 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 		address = 0;
 		goto done;
 	}
-#else
-	bus_address = virt_to_bus( (void *)address );
-#endif
 
 	pci_gart = (u32 *)address;
 
@@ -130,7 +126,6 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 	memset( pci_gart, 0, ATI_MAX_PCIGART_PAGES * sizeof(u32) );
 
 	for ( i = 0 ; i < pages ; i++ ) {
-#if defined(__alpha__)
 		/* we need to support large memory configurations */
 		entry->busaddr[i] = pci_map_single(dev->pdev,
 					   page_address( entry->pagelist[i] ),
@@ -144,9 +139,7 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 			goto done;
 		}
 		page_base = (u32) entry->busaddr[i];
-#else
-		page_base = page_to_bus( entry->pagelist[i] );
-#endif
+
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
 			*pci_gart++ = cpu_to_le32( page_base );
 			page_base += ATI_PCIGART_PAGE_SIZE;
@@ -155,7 +148,7 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 
 	ret = 1;
 
-#if __i386__
+#if defined(__i386__) || defined(__x86_64__)
 	asm volatile ( "wbinvd" ::: "memory" );
 #else
 	mb();
@@ -171,7 +164,6 @@ int DRM(ati_pcigart_cleanup)( drm_device_t *dev,
 			      unsigned long addr,
 			      dma_addr_t bus_addr)
 {
-#if defined(__alpha__)
 	drm_sg_mem_t *entry = dev->sg;
 	unsigned long pages;
 	int i;
@@ -196,8 +188,6 @@ int DRM(ati_pcigart_cleanup)( drm_device_t *dev,
 					 PAGE_SIZE, PCI_DMA_TODEVICE);
 		}
 	}
-
-#endif
 
 	if ( addr ) {
 		DRM(ati_free_pcigart_table)( addr );

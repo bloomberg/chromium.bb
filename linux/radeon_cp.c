@@ -543,8 +543,7 @@ static int radeon_do_engine_reset( drm_device_t *dev )
 						RADEON_SOFT_RESET_RE |
 						RADEON_SOFT_RESET_PP |
 						RADEON_SOFT_RESET_E2 |
-						RADEON_SOFT_RESET_RB |
-						RADEON_SOFT_RESET_HDP ) );
+						RADEON_SOFT_RESET_RB ) );
 	RADEON_READ( RADEON_RBBM_SOFT_RESET );
 	RADEON_WRITE( RADEON_RBBM_SOFT_RESET, ( rbbm_soft_reset &
 						~( RADEON_SOFT_RESET_CP |
@@ -553,8 +552,7 @@ static int radeon_do_engine_reset( drm_device_t *dev )
 						   RADEON_SOFT_RESET_RE |
 						   RADEON_SOFT_RESET_PP |
 						   RADEON_SOFT_RESET_E2 |
-						   RADEON_SOFT_RESET_RB |
-						   RADEON_SOFT_RESET_HDP ) ) );
+						   RADEON_SOFT_RESET_RB ) ) );
 	RADEON_READ( RADEON_RBBM_SOFT_RESET );
 
 
@@ -622,20 +620,12 @@ static void radeon_cp_init_ring_buffer( drm_device_t *dev,
 
 		tmp_ofs = dev_priv->ring_rptr->offset - dev->sg->handle;
 		page_ofs = tmp_ofs >> PAGE_SHIFT;
-#if defined(__alpha__)
+
 		RADEON_WRITE( RADEON_CP_RB_RPTR_ADDR,
 			     entry->busaddr[page_ofs]);
 		DRM_DEBUG( "ring rptr: offset=0x%08x handle=0x%08lx\n",
 			   entry->busaddr[page_ofs],
 			   entry->handle + tmp_ofs );
-#else
-		RADEON_WRITE( RADEON_CP_RB_RPTR_ADDR,
-			      page_to_bus(entry->pagelist[page_ofs]));
-
-		DRM_DEBUG( "ring rptr: offset=0x%08x handle=0x%08lx\n",
-			   page_to_bus(entry->pagelist[page_ofs]),
-			   entry->handle + tmp_ofs );
-#endif
 	}
 
 	/* Set ring buffer size */

@@ -60,7 +60,7 @@ struct page *DRM(vm_nopage)(struct vm_area_struct *vma,
 			    unsigned long address,
 			    int write_access)
 {
-#if defined(__alpha__) && __REALLY_HAVE_AGP
+#if __REALLY_HAVE_AGP
 	drm_file_t *priv  = vma->vm_file->private_data;
 	drm_device_t *dev = priv->dev;
 	drm_map_t *map    = NULL;
@@ -70,6 +70,9 @@ struct page *DRM(vm_nopage)(struct vm_area_struct *vma,
 	/*
          * Find the right map
          */
+
+	if(!dev->agp->cant_use_aperture) goto vm_nopage_error;
+
 	list_for_each(list, &dev->maplist->head) {
 		r_list = (drm_map_list_t *)list;
 		map = r_list->map;
@@ -83,10 +86,12 @@ struct page *DRM(vm_nopage)(struct vm_area_struct *vma,
 		struct drm_agp_mem *agpmem;
 		struct page *page;
 
+#if __alpha__
 		/*
-                 * Make it a bus-relative address
+                 * Adjust to a bus-relative address
                  */
 		baddr -= dev->hose->mem_space->start;
+#endif
 
 		/*
                  * It's AGP memory - find the real physical page to map
@@ -97,27 +102,24 @@ struct page *DRM(vm_nopage)(struct vm_area_struct *vma,
 				break;
 		}
 
-		if (!agpmem) {
-			/*
-                         * Oops - no memory found
-                         */
-			return NOPAGE_SIGBUS;   /* couldn't find it */
-                }
+		if (!agpmem) goto vm_nopage_error;
 
 		/*
                  * Get the page, inc the use count, and return it
                  */
 		offset = (baddr - agpmem->bound) >> PAGE_SHIFT;
-		agpmem->memory->memory[offset] &= ~1UL; /* HACK */
+		agpmem->memory->memory[offset] &= dev->agp->page_mask;
 		page = virt_to_page(__va(agpmem->memory->memory[offset]));
-#if 0
-		DRM_ERROR("baddr = 0x%lx page = 0x%lx, offset = 0x%lx\n",
-			  baddr, __va(agpmem->memory->memory[offset]), offset);
-#endif
 		get_page(page);
+
+		DRM_DEBUG("baddr = 0x%lx page = 0x%p, offset = 0x%lx\n",
+			  baddr, __va(agpmem->memory->memory[offset]), offset);
+
 		return page;
         }
-#endif
+vm_nopage_error:
+#endif /* __REALLY_HAVE_AGP */
+
 	return NOPAGE_SIGBUS;		/* Disallow mremap */
 }
 
