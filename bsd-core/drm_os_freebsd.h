@@ -1,5 +1,5 @@
 /*
- * $FreeBSD: src/sys/dev/drm/drm_os_freebsd.h,v 1.9 2003/04/25 01:18:46 anholt Exp $
+ * $FreeBSD: src/sys/dev/drm/drm_os_freebsd.h,v 1.11 2003/05/31 19:31:46 phk Exp $
  */
 #include <sys/param.h>
 #include <sys/queue.h>
@@ -331,8 +331,6 @@ find_first_zero_bit(volatile void *p, int max)
 }
 
 #define spldrm()		spltty()
-
-#define memset(p, v, s)		bzero(p, s)
 
 /*
  * Fake out the module macros for versions of FreeBSD where they don't
