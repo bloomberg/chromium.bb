@@ -1,10 +1,20 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.2.99
-		         2005-1-28
+		      Version 2.3.0
+		         2005-3-1
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.3.0
+
+Fix memory leak of patterns rejected by configuration (#2518)
+
+Create prototype /etc/fonts/conf.d directory and populate it with a few
+sample files.  These samples are unused as the file names don't start with
+numbers.
+
+Update documentation.
 
 2.2.99
 

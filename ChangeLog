@@ -1,5 +1,12 @@
 2005-03-01  Keith Packard  <keithp@keithp.com>
 
+	* README:
+	* configure.in:
+	* fontconfig/fontconfig.h:
+	Update for 2.3.0
+
+2005-03-01  Keith Packard  <keithp@keithp.com>
+
 	* doc/Makefile.am:
 	Generate and install PDF versions of the manuals
 
