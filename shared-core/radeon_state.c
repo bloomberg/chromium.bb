@@ -1843,6 +1843,15 @@ int radeon_cp_getparam( DRM_IOCTL_ARGS )
 	case RADEON_PARAM_AGP_BUFFER_OFFSET:
 		value = dev_priv->agp_buffers_offset;
 		break;
+	case RADEON_PARAM_LAST_FRAME:
+		value = DRM_READ32(&dev_priv->scratch[0]);
+		break;
+	case RADEON_PARAM_LAST_DISPATCH:
+		value = DRM_READ32(&dev_priv->scratch[1]);
+		break;
+	case RADEON_PARAM_LAST_CLEAR:
+		value = DRM_READ32(&dev_priv->scratch[2]);
+		break;
 	default:
 		return DRM_ERR(EINVAL);
 	}

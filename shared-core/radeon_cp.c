@@ -628,6 +628,34 @@ static void radeon_cp_init_ring_buffer( drm_device_t *dev,
 			   entry->handle + tmp_ofs );
 	}
 
+	/* Initialize the scratch register pointer.  This will cause
+	 * the scratch register values to be written out to memory
+	 * whenever they are updated.
+	 *
+	 * We simply put this behind the ring read pointer, this works
+	 * with PCI GART as well as (whatever kind of) AGP GART
+	 */
+	RADEON_WRITE( RADEON_SCRATCH_ADDR, RADEON_READ( RADEON_CP_RB_RPTR_ADDR )
+					 + RADEON_SCRATCH_REG_OFFSET );
+
+	dev_priv->scratch = ((__volatile__ u32 *)
+			     dev_priv->ring.head +
+			     (RADEON_SCRATCH_REG_OFFSET / sizeof(u32)));
+
+	RADEON_WRITE( RADEON_SCRATCH_UMSK, 0x7 );
+
+	dev_priv->sarea_priv->last_frame = dev_priv->scratch[0] = 0;
+	RADEON_WRITE( RADEON_LAST_FRAME_REG,
+		      dev_priv->sarea_priv->last_frame );
+
+	dev_priv->sarea_priv->last_dispatch = dev_priv->scratch[1] = 0;
+	RADEON_WRITE( RADEON_LAST_DISPATCH_REG,
+		      dev_priv->sarea_priv->last_dispatch );
+
+	dev_priv->sarea_priv->last_clear = dev_priv->scratch[2] = 0;
+	RADEON_WRITE( RADEON_LAST_CLEAR_REG,
+		      dev_priv->sarea_priv->last_clear );
+
 	/* Set ring buffer size */
 #ifdef __BIG_ENDIAN
 	RADEON_WRITE( RADEON_CP_RB_CNTL, dev_priv->ring.size_l2qw | RADEON_BUF_SWAP_32BIT );
@@ -893,34 +921,6 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 
 	dev_priv->ring.high_mark = RADEON_RING_HIGH_MARK;
 
-#if 0
-	/* Initialize the scratch register pointer.  This will cause
-	 * the scratch register values to be written out to memory
-	 * whenever they are updated.
-	 * FIXME: This doesn't quite work yet, so we're disabling it
-	 * for the release.
-	 */
-	RADEON_WRITE( RADEON_SCRATCH_ADDR, (dev_priv->ring_rptr->offset +
-					    RADEON_SCRATCH_REG_OFFSET) );
-	RADEON_WRITE( RADEON_SCRATCH_UMSK, 0x7 );
-#endif
-
-	dev_priv->scratch = ((__volatile__ u32 *)
-			     dev_priv->ring_rptr->handle +
-			     (RADEON_SCRATCH_REG_OFFSET / sizeof(u32)));
-
-	dev_priv->sarea_priv->last_frame = 0;
-	RADEON_WRITE( RADEON_LAST_FRAME_REG,
-		      dev_priv->sarea_priv->last_frame );
-
-	dev_priv->sarea_priv->last_dispatch = 0;
-	RADEON_WRITE( RADEON_LAST_DISPATCH_REG,
-		      dev_priv->sarea_priv->last_dispatch );
-
-	dev_priv->sarea_priv->last_clear = 0;
-	RADEON_WRITE( RADEON_LAST_CLEAR_REG,
-		      dev_priv->sarea_priv->last_clear );
-
 #if __REALLY_HAVE_SG
 	if ( dev_priv->is_pci ) {
 		if (!DRM(ati_pcigart_init)( dev, &dev_priv->phys_pci_gart,
@@ -1168,7 +1168,8 @@ drm_buf_t *radeon_freelist_get( drm_device_t *dev )
 	start = dev_priv->last_buf;
 
 	for ( t = 0 ; t < dev_priv->usec_timeout ; t++ ) {
-		u32 done_age = RADEON_READ( RADEON_LAST_DISPATCH_REG );
+		u32 done_age = DRM_READ32(&dev_priv->scratch[1]);
+		DRM_DEBUG("done_age = %d\n",done_age);
 		for ( i = start ; i < dma->buf_count ; i++ ) {
 			buf = dma->buflist[i];
 			buf_priv = buf->dev_private;

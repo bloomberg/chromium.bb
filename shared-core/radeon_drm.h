@@ -458,6 +458,9 @@ typedef struct drm_radeon_indirect {
  * client any other way.  
  */
 #define RADEON_PARAM_AGP_BUFFER_OFFSET 0x1
+#define RADEON_PARAM_LAST_FRAME 0x2
+#define RADEON_PARAM_LAST_DISPATCH 0x3
+#define RADEON_PARAM_LAST_CLEAR 0x4
 
 typedef struct drm_radeon_getparam {
 	int param;
