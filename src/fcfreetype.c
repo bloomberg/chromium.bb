@@ -857,28 +857,13 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    case 9: width = FC_WIDTH_ULTRAEXPANDED; break;
 	    }
 	}
-	else if (MY_Get_BDF_Property (face, "SETWIDTH_NAME", &prop) == 0 &&
-		 prop.type == BDF_PROPERTY_TYPE_ATOM)
+	if (width == -1 &&
+	    MY_Get_BDF_Property (face, "SETWIDTH_NAME", &prop) == 0 &&
+	    prop.type == BDF_PROPERTY_TYPE_ATOM)
 	{
-	    static struct {
-		FcChar8	    *width_name;
-		int	    width;
-	    } FcSetWidths[] = {
-                { "Condensed",      FC_WIDTH_CONDENSED },
-                { "SemiCondensed",  FC_WIDTH_SEMICONDENSED },
-                { "Normal",         FC_WIDTH_NORMAL },
-   	    };
-	    int	i;
-
+	    width = FcIsWidth (prop.u.atom);
 	    if (FcDebug () & FC_DBG_SCANV)
-		printf ("\tsetwidth: %s\n", prop.u.atom);
-	    for (i = 0; i < sizeof (FcSetWidths) / sizeof (FcSetWidths[0]); i++)
-		if (!FcStrCmpIgnoreBlanksAndCase ((FcChar8 *) prop.u.atom,
-					 FcSetWidths[i].width_name))
-		{
-		    width = FcSetWidths[i].width;
-		    break;
-		}
+		printf ("\tsetwidth %s maps to %d\n", prop.u.atom, width);
 	}
     }
 
@@ -1760,7 +1745,7 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
 		      FT_UInt glyph, FcBlanks *blanks,
 		      FT_Pos *advance)
 {
-    FT_Int	    load_flags = FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
+    FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
     FT_GlyphSlot    slot;
     
     /*
