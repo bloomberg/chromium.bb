@@ -27,18 +27,8 @@
 
 #define DRM(x) viadrv_##x
 
-
-#define __HAVE_AGP		1
-#define __MUST_HAVE_AGP		0
-#define __HAVE_MTRR		1
-#define __HAVE_CTX_BITMAP	1
-
 /* BEAM: Have enabled DMA,DMA_IRQ and VBL_IRQ needed to do this to get standard
  * support for VBL_IRQ.
  */
-
-#define __HAVE_IRQ              1
-#define __HAVE_SHARED_IRQ	1
-#define __HAVE_VBL_IRQ		1
 
 #endif

@@ -36,10 +36,6 @@
 
 /* General customization:
  */
-#define __HAVE_AGP		1
-#define __MUST_HAVE_AGP		1
-#define __HAVE_MTRR		1
-#define __HAVE_CTX_BITMAP	1
 
 #define DRIVER_AUTHOR		"VA Linux Systems Inc."
 
@@ -83,17 +79,5 @@
 #define __HAVE_COUNTER7         _DRM_STAT_PRIMARY
 #define __HAVE_COUNTER8         _DRM_STAT_SECONDARY
 #define __HAVE_COUNTER9         _DRM_STAT_DMA
-
-/* DMA customization:
- */
-#define __HAVE_DMA		1
-#define __HAVE_DMA_QUEUE	1
-#define __HAVE_DMA_RECLAIM	1
-
-/* Don't need an irq any more.  The template code will make sure that
- * a noop stub is generated for compatibility.
- */
-/* XXX: Add vblank support? */
-#define __HAVE_IRQ		0
 
 #endif

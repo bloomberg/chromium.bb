@@ -490,3 +490,17 @@ int DRM(rmctx)(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+void DRM(ctxbitmap_free)( drm_device_t *dev, int ctx_handle )
+{
+
+}
+
+void DRM(ctxbitmap_cleanup)( drm_device_t *dev )
+{
+
+}
+
+int DRM(ctxbitmap_init)( drm_device_t *dev )
+{
+	return 0;
+}

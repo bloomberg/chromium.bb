@@ -50,7 +50,7 @@ endif
 MACHINE := $(shell uname -m)
 
 # Modules for all architectures
-MODULE_LIST := gamma.o tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o mach64.o
+MODULE_LIST := tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o mach64.o
 
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))

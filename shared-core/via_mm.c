@@ -358,6 +358,12 @@ EXPORT_SYMBOL(via_fb_free);
 
 void DRM(driver_register_fns)(drm_device_t *dev)
 {
-  dev->fn_tbl.context_ctor = via_init_context;
-  dev->fn_tbl.context_dtor = via_final_context;
+	dev->driver_features = DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL;
+	dev->fn_tbl.context_ctor = via_init_context;
+	dev->fn_tbl.context_dtor = via_final_context;
+	dev->fn_tbl.vblank_wait = via_driver_vblank_wait;
+	dev->fn_tbl.irq_preinstall = via_driver_irq_preinstall;
+	dev->fn_tbl.irq_postinstall = via_driver_irq_postinstall;
+	dev->fn_tbl.irq_uninstall = via_driver_irq_uninstall;
+	dev->fn_tbl.irq_handler = via_driver_irq_handler;
 }

@@ -36,7 +36,7 @@
 #include <linux/delay.h>
 
 
-irqreturn_t DRM(irq_handler)( DRM_IRQ_ARGS )
+irqreturn_t i830_driver_irq_handler( DRM_IRQ_ARGS )
 {
 	drm_device_t	 *dev = (drm_device_t *)arg;
       	drm_i830_private_t *dev_priv = (drm_i830_private_t *)dev->dev_private;
@@ -179,7 +179,7 @@ int i830_irq_wait( struct inode *inode, struct file *filp, unsigned int cmd,
 
 /* drm_dma.h hooks
 */
-void DRM(driver_irq_preinstall)( drm_device_t *dev ) {
+void i830_driver_irq_preinstall( drm_device_t *dev ) {
 	drm_i830_private_t *dev_priv =
 		(drm_i830_private_t *)dev->dev_private;
 
@@ -191,14 +191,14 @@ void DRM(driver_irq_preinstall)( drm_device_t *dev ) {
 	init_waitqueue_head(&dev_priv->irq_queue);
 }
 
-void DRM(driver_irq_postinstall)( drm_device_t *dev ) {
+void i830_driver_irq_postinstall( drm_device_t *dev ) {
 	drm_i830_private_t *dev_priv =
 		(drm_i830_private_t *)dev->dev_private;
 
 	I830_WRITE16( I830REG_INT_ENABLE_R, 0x2 );
 }
 
-void DRM(driver_irq_uninstall)( drm_device_t *dev ) {
+void i830_driver_irq_uninstall( drm_device_t *dev ) {
 	drm_i830_private_t *dev_priv =
 		(drm_i830_private_t *)dev->dev_private;
 	if (!dev_priv)

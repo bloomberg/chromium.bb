@@ -46,7 +46,7 @@
 #define DEBUG_MEMORY 0
 
 /* Need the 4-argument version of vmap().  */
-#if __REALLY_HAVE_AGP && defined(VMAP_4_ARGS)
+#if __OS_HAS_AGP && defined(VMAP_4_ARGS)
 
 #include <linux/vmalloc.h>
 
@@ -142,12 +142,12 @@ drm_follow_page (void *vaddr)
 	return pte_pfn(*ptep) << PAGE_SHIFT;
 }
 
-#endif /* __REALLY_HAVE_AGP && defined(VMAP_4_ARGS) */
+#endif /* __OS_HAS_AGP && defined(VMAP_4_ARGS) */
 
 static inline void *drm_ioremap(unsigned long offset, unsigned long size, drm_device_t *dev)
 {
-#if __REALLY_HAVE_AGP && defined(VMAP_4_ARGS)
-	if (dev->agp && dev->agp->cant_use_aperture) {
+#if __OS_HAS_AGP && defined(VMAP_4_ARGS)
+  if ( (dev->driver_features & DRIVER_USE_AGP) && dev->agp && dev->agp->cant_use_aperture) {
 		drm_map_t *map = drm_lookup_map(offset, size, dev);
 
 		if (map && map->type == _DRM_AGP)
@@ -161,8 +161,8 @@ static inline void *drm_ioremap(unsigned long offset, unsigned long size, drm_de
 static inline void *drm_ioremap_nocache(unsigned long offset, unsigned long size,
 					drm_device_t *dev)
 {
-#if __REALLY_HAVE_AGP && defined(VMAP_4_ARGS)
-	if (dev->agp && dev->agp->cant_use_aperture) {
+#if __OS_HAS_AGP&& defined(VMAP_4_ARGS)
+	if ( (dev->driver_features & DRIVER_USE_AGP) && dev->agp && dev->agp->cant_use_aperture) {
 		drm_map_t *map = drm_lookup_map(offset, size, dev);
 
 		if (map && map->type == _DRM_AGP)
@@ -175,13 +175,13 @@ static inline void *drm_ioremap_nocache(unsigned long offset, unsigned long size
 
 static inline void drm_ioremapfree(void *pt, unsigned long size, drm_device_t *dev)
 {
-#if __REALLY_HAVE_AGP && defined(VMAP_4_ARGS)
+#if __OS_HAS_AGP && defined(VMAP_4_ARGS)
 	/*
 	 * This is a bit ugly.  It would be much cleaner if the DRM API would use separate
 	 * routines for handling mappings in the AGP space.  Hopefully this can be done in
 	 * a future revision of the interface...
 	 */
-	if (dev->agp && dev->agp->cant_use_aperture
+	if ((dev->driver_features & DRIVER_USE_AGP) && dev->agp && dev->agp->cant_use_aperture
 	    && ((unsigned long) pt >= VMALLOC_START && (unsigned long) pt < VMALLOC_END))
 	{
 		unsigned long offset;
@@ -344,7 +344,7 @@ void DRM(ioremapfree)(void *pt, unsigned long size, drm_device_t *dev)
 	drm_ioremapfree(pt, size, dev);
 }
 
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 /** Wrapper around agp_allocate_memory() */
 DRM_AGP_MEM *DRM(alloc_agp)(int pages, u32 type)
 {

@@ -64,6 +64,14 @@ extern int via_do_init_map(drm_device_t *dev, drm_via_init_t *init);
 extern int via_do_cleanup_map(drm_device_t *dev);
 extern int via_map_init(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
+extern int via_driver_vblank_wait(drm_device_t* dev, unsigned int* sequence);
+
+extern irqreturn_t via_driver_irq_handler( DRM_IRQ_ARGS );
+extern void via_driver_irq_preinstall( drm_device_t *dev );
+extern void via_driver_irq_postinstall( drm_device_t *dev );
+extern void via_driver_irq_uninstall( drm_device_t *dev );
+
+extern int via_dma_cleanup(drm_device_t *dev);
 
 extern int via_dma_cleanup(drm_device_t *dev);
 

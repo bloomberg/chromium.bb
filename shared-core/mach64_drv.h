@@ -127,6 +127,12 @@ extern int mach64_dma_swap( DRM_IOCTL_ARGS );
 extern int mach64_dma_vertex( DRM_IOCTL_ARGS );
 extern int mach64_dma_blit( DRM_IOCTL_ARGS );
 extern int mach64_get_param( DRM_IOCTL_ARGS );
+extern int mach64_driver_vblank_wait(drm_device_t *dev, unsigned int *sequence);
+
+extern irqreturn_t mach64_driver_irq_handler( DRM_IRQ_ARGS );
+extern void mach64_driver_irq_preinstall( drm_device_t *dev );
+extern void mach64_driver_irq_postinstall( drm_device_t *dev );
+extern void mach64_driver_irq_uninstall( drm_device_t *dev );
 
 /* ================================================================
  * Registers

@@ -117,7 +117,7 @@ static inline int gamma_dma_is_ready(drm_device_t *dev)
 	return (!GAMMA_READ(GAMMA_DMACOUNT));
 }
 
-irqreturn_t gamma_irq_handler( DRM_IRQ_ARGS )
+irqreturn_t gamma_driver_irq_handler( DRM_IRQ_ARGS )
 {
 	drm_device_t	 *dev = (drm_device_t *)arg;
 	drm_device_dma_t *dma = dev->dma;
@@ -696,13 +696,13 @@ int gamma_do_cleanup_dma( drm_device_t *dev )
 {
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-#if __HAVE_IRQ
 	/* Make sure interrupts are disabled here because the uninstall ioctl
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
-	if ( dev->irq_enabled ) DRM(irq_uninstall)(dev);
-#endif
+	if ( dev->driver_features & DRIVER_HAVE_IRQ )
+		if ( dev->irq_enabled ) 
+			DRM(irq_uninstall)(dev);
 
 	if ( dev->dev_private ) {
 
@@ -873,7 +873,7 @@ int gamma_setsareactx(struct inode *inode, struct file *filp,
 	return 0;
 }
 
-void DRM(driver_irq_preinstall)( drm_device_t *dev ) {
+void gamma_driver_irq_preinstall( drm_device_t *dev ) {
 	drm_gamma_private_t *dev_priv =
 				(drm_gamma_private_t *)dev->dev_private;
 
@@ -884,7 +884,7 @@ void DRM(driver_irq_preinstall)( drm_device_t *dev ) {
 	GAMMA_WRITE( GAMMA_GDMACONTROL,		0x00000000 );
 }
 
-void DRM(driver_irq_postinstall)( drm_device_t *dev ) {
+void gamma_driver_irq_postinstall( drm_device_t *dev ) {
 	drm_gamma_private_t *dev_priv =
 				(drm_gamma_private_t *)dev->dev_private;
 
@@ -896,7 +896,7 @@ void DRM(driver_irq_postinstall)( drm_device_t *dev ) {
 	GAMMA_WRITE( GAMMA_GDELAYTIMER,		0x00039090 );
 }
 
-void DRM(driver_irq_uninstall)( drm_device_t *dev ) {
+void gamma_driver_irq_uninstall( drm_device_t *dev ) {
 	drm_gamma_private_t *dev_priv =
 				(drm_gamma_private_t *)dev->dev_private;
 	if (!dev_priv)
@@ -941,6 +941,7 @@ static int gamma_driver_dma_quiescent(drm_device_t *dev)
 
 void gamma_driver_register_fns(drm_device_t *dev)
 {
+	dev->driver_features = DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_HAVE_DMA | DRIVER_HAVE_IRQ;
 	DRM(fops).read = gamma_fops_read;
 	DRM(fops).poll = gamma_fops_poll;
 	dev->fn_tbl.preinit = gamma_driver_preinit;
@@ -954,4 +955,8 @@ void gamma_driver_register_fns(drm_device_t *dev)
 	dev->fn_tbl.freelist_create = gamma_freelist_create;
 	dev->fn_tbl.freelist_put = gamma_freelist_put;
 	dev->fn_tbl.freelist_destroy = gamma_freelist_destroy;
+	dev->fn_tbl.irq_preinstall = gamma_driver_irq_preinstall;
+	dev->fn_tbl.irq_postinstall = gamma_driver_irq_postinstall;
+	dev->fn_tbl.irq_uninstall = gamma_driver_irq_uninstall;
+	dev->fn_tbl.irq_handler = gamma_driver_irq_handler;
 }

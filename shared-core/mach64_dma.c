@@ -972,13 +972,11 @@ int mach64_do_cleanup_dma( drm_device_t *dev )
 {
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-#if _HAVE_DMA_IRQ
 	/* Make sure interrupts are disabled here because the uninstall ioctl
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
 	if ( dev->irq ) DRM(irq_uninstall)(dev);
-#endif
 
 	if ( dev->dev_private ) {
 		drm_mach64_private_t *dev_priv = dev->dev_private;
@@ -1335,5 +1333,11 @@ static void mach64_driver_pretakedown(drm_device_t *dev)
 
 void mach64_driver_register_fns(drm_device_t *dev)
 {
+	dev->driver_features = DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_HAVE_DMA | DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL;
 	dev->fn_tbl.pretakedown = mach64_driver_pretakedown;
+	dev->fn_tbl.vblank_wait = mach64_driver_vblank_wait;
+	dev->fn_tbl.irq_preinstall = mach64_driver_irq_preinstall;
+	dev->fn_tbl.irq_postinstall = mach64_driver_irq_postinstall;
+	dev->fn_tbl.irq_uninstall = mach64_driver_irq_uninstall;
+	dev->fn_tbl.irq_handler = mach64_driver_irq_handler;
 }

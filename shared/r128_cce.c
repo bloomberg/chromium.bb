@@ -322,7 +322,7 @@ static void r128_cce_init_ring_buffer( drm_device_t *dev,
 	/* The manual (p. 2) says this address is in "VM space".  This
 	 * means it's an offset from the start of AGP space.
 	 */
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 	if ( !dev_priv->is_pci )
 		ring_start = dev_priv->cce_ring->offset - dev->agp->base;
 	else
@@ -510,7 +510,7 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 		(drm_r128_sarea_t *)((u8 *)dev_priv->sarea->handle +
 				     init->sarea_priv_offset);
 
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 	if ( !dev_priv->is_pci ) {
 		drm_core_ioremap( dev_priv->cce_ring, dev );
 		drm_core_ioremap( dev_priv->ring_rptr, dev );
@@ -533,7 +533,7 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 		dev->agp_buffer_map->handle = (void *)dev->agp_buffer_map->offset;
 	}
 
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 	if ( !dev_priv->is_pci )
 		dev_priv->cce_buffers_offset = dev->agp->base;
 	else
@@ -558,7 +558,7 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 	R128_WRITE( R128_LAST_DISPATCH_REG,
 		    dev_priv->sarea_priv->last_dispatch );
 
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 	if ( dev_priv->is_pci ) {
 #endif
 		if (!DRM(ati_pcigart_init)( dev, &dev_priv->phys_pci_gart,
@@ -569,7 +569,7 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 			return DRM_ERR(ENOMEM);
 		}
 		R128_WRITE( R128_PCI_GART_PAGE, dev_priv->bus_pci_gart );
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 	}
 #endif
 
@@ -586,18 +586,16 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 int r128_do_cleanup_cce( drm_device_t *dev )
 {
 
-#if __HAVE_IRQ
 	/* Make sure interrupts are disabled here because the uninstall ioctl
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
 	if ( dev->irq_enabled ) DRM(irq_uninstall)(dev);
-#endif
 
 	if ( dev->dev_private ) {
 		drm_r128_private_t *dev_priv = dev->dev_private;
 
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 		if ( !dev_priv->is_pci ) {
 			if ( dev_priv->cce_ring != NULL )
 				drm_core_ioremapfree( dev_priv->cce_ring, dev );

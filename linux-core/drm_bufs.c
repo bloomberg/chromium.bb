@@ -37,14 +37,6 @@
 #include <linux/vmalloc.h>
 #include "drmP.h"
 
-#ifndef __HAVE_PCI_DMA
-#define __HAVE_PCI_DMA		0
-#endif
-
-#ifndef __HAVE_SG
-#define __HAVE_SG		0
-#endif
-
 /**
  * Compute size order.  Returns the exponent of the smaller power of two which
  * is greater or equal to given number.
@@ -111,11 +103,13 @@ int DRM(initmap)( drm_device_t *dev, unsigned int offset, unsigned int size, int
 #ifdef __alpha__
 	map->offset += dev->hose->mem_space->start;
 #endif
-#if __REALLY_HAVE_MTRR
-	if ( map->type == _DRM_FRAME_BUFFER ||
-		(map->flags & _DRM_WRITE_COMBINING) ) {
-		map->mtrr = mtrr_add( map->offset, map->size,
-					MTRR_TYPE_WRCOMB, 1 );
+#if __OS_HAS_MTRR
+	if ( dev->driver_features & DRIVER_USE_MTRR) {
+		if ( map->type == _DRM_FRAME_BUFFER ||
+		     (map->flags & _DRM_WRITE_COMBINING) ) {
+			map->mtrr = mtrr_add( map->offset, map->size,
+					      MTRR_TYPE_WRCOMB, 1 );
+		}
 	}
 #endif
 	if (map->type == _DRM_REGISTERS)
@@ -129,7 +123,6 @@ int DRM(initmap)( drm_device_t *dev, unsigned int offset, unsigned int size, int
 
 	return 0;
 }
-
 
 /**
  * Ioctl to specify a range of memory that is available for mapping by a non-root process.
@@ -208,11 +201,13 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 #ifdef __alpha__
 		map->offset += dev->hose->mem_space->start;
 #endif
-#if __REALLY_HAVE_MTRR
-		if ( map->type == _DRM_FRAME_BUFFER ||
-		     (map->flags & _DRM_WRITE_COMBINING) ) {
-			map->mtrr = mtrr_add( map->offset, map->size,
-					      MTRR_TYPE_WRCOMB, 1 );
+#if __OS_HAS_MTRR
+		if (dev->driver_features & DRIVER_USE_MTRR) {
+			if ( map->type == _DRM_FRAME_BUFFER ||
+			     (map->flags & _DRM_WRITE_COMBINING) ) {
+				map->mtrr = mtrr_add( map->offset, map->size,
+						      MTRR_TYPE_WRCOMB, 1 );
+			}
 		}
 #endif
 		if (map->type == _DRM_REGISTERS)
@@ -240,13 +235,15 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 			dev->lock.hw_lock = map->handle; /* Pointer to lock */
 		}
 		break;
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 	case _DRM_AGP:
+		if (dev->driver_features & DRIVER_USE_AGP) {
 #ifdef __alpha__
-		map->offset += dev->hose->mem_space->start;
+			map->offset += dev->hose->mem_space->start;
 #endif
-		map->offset += dev->agp->base;
-		map->mtrr   = dev->agp->agp_mtrr; /* for getmap */
+			map->offset += dev->agp->base;
+			map->mtrr   = dev->agp->agp_mtrr; /* for getmap */
+		}
 		break;
 #endif
 	case _DRM_SCATTER_GATHER:
@@ -368,8 +365,6 @@ int DRM(rmmap)(struct inode *inode, struct file *filp,
 	return 0;
 }
 
-#if __HAVE_DMA
-
 /**
  * Cleanup after an error on one of the addbufs() functions.
  *
@@ -417,7 +412,7 @@ static void DRM(cleanup_buf_error)(drm_device_t *dev, drm_buf_entry_t *entry)
 	}
 }
 
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 /**
  * Add AGP buffers for DMA transfers (ioctl).
  *
@@ -602,9 +597,8 @@ int DRM(addbufs_agp)( struct inode *inode, struct file *filp,
 	atomic_dec( &dev->buf_alloc );
 	return 0;
 }
-#endif /* __REALLY_HAVE_AGP */
+#endif /* __OS_HAS_AGP */
 
-#if __HAVE_PCI_DMA
 int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 		      unsigned int cmd, unsigned long arg )
 {
@@ -628,6 +622,8 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 	unsigned long *temp_pagelist;
 	drm_buf_t **temp_buflist;
 	drm_buf_desc_t __user *argp = (void __user *)arg;
+
+	if (!(dev->driver_features & DRIVER_PCI_DMA)) return -EINVAL;
 
 	if ( !dma ) return -EINVAL;
 
@@ -842,9 +838,7 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 	return 0;
 
 }
-#endif /* __HAVE_PCI_DMA */
 
-#if __HAVE_SG
 int DRM(addbufs_sg)( struct inode *inode, struct file *filp,
                      unsigned int cmd, unsigned long arg )
 {
@@ -867,6 +861,8 @@ int DRM(addbufs_sg)( struct inode *inode, struct file *filp,
 	int i;
 	drm_buf_t **temp_buflist;
 
+	if (!(dev->driver_features & DRIVER_SG)) return -EINVAL;
+	
 	if ( !dma ) return -EINVAL;
 
 	if ( copy_from_user( &request, argp, sizeof(request) ) )
@@ -1016,7 +1012,6 @@ int DRM(addbufs_sg)( struct inode *inode, struct file *filp,
 	atomic_dec( &dev->buf_alloc );
 	return 0;
 }
-#endif /* __HAVE_SG */
 
 /**
  * Add buffers for DMA transfers (ioctl).
@@ -1036,26 +1031,25 @@ int DRM(addbufs)( struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg )
 {
 	drm_buf_desc_t request;
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->dev;
+	
+	if (!(dev->driver_features & DRIVER_HAVE_DMA))
+		return -EINVAL;
 
 	if ( copy_from_user( &request, (drm_buf_desc_t __user *)arg,
 			     sizeof(request) ) )
 		return -EFAULT;
 
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 	if ( request.flags & _DRM_AGP_BUFFER )
 		return DRM(addbufs_agp)( inode, filp, cmd, arg );
 	else
 #endif
-#if __HAVE_SG
 	if ( request.flags & _DRM_SG_BUFFER )
 		return DRM(addbufs_sg)( inode, filp, cmd, arg );
 	else
-#endif
-#if __HAVE_PCI_DMA
 		return DRM(addbufs_pci)( inode, filp, cmd, arg );
-#else
-		return -EINVAL;
-#endif
 }
 
 
@@ -1086,6 +1080,9 @@ int DRM(infobufs)( struct inode *inode, struct file *filp,
 	drm_buf_info_t __user *argp = (void __user *)arg;
 	int i;
 	int count;
+
+	if (!(dev->driver_features & DRIVER_HAVE_DMA))
+		return -EINVAL;
 
 	if ( !dma ) return -EINVAL;
 
@@ -1168,6 +1165,9 @@ int DRM(markbufs)( struct inode *inode, struct file *filp,
 	int order;
 	drm_buf_entry_t *entry;
 
+	if (!(dev->driver_features & DRIVER_HAVE_DMA))
+		return -EINVAL;
+
 	if ( !dma ) return -EINVAL;
 
 	if ( copy_from_user( &request,
@@ -1214,6 +1214,9 @@ int DRM(freebufs)( struct inode *inode, struct file *filp,
 	int i;
 	int idx;
 	drm_buf_t *buf;
+
+	if (!(dev->driver_features & DRIVER_HAVE_DMA))
+		return -EINVAL;
 
 	if ( !dma ) return -EINVAL;
 
@@ -1272,6 +1275,9 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 	drm_buf_map_t request;
 	int i;
 
+	if (!(dev->driver_features & DRIVER_HAVE_DMA))
+		return -EINVAL;
+
 	if ( !dma ) return -EINVAL;
 
 	spin_lock( &dev->count_lock );
@@ -1286,8 +1292,8 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 	if ( request.count >= dma->buf_count ) {
-		if ( (__HAVE_AGP && (dma->flags & _DRM_DMA_USE_AGP)) ||
-		     (__HAVE_SG && (dma->flags & _DRM_DMA_USE_SG)) ) {
+		if (( (dev->driver_features & DRIVER_USE_AGP) && (dma->flags & _DRM_DMA_USE_AGP)) ||
+		    ( (dev->driver_features & DRIVER_SG) && (dma->flags & _DRM_DMA_USE_SG)) ) {
 			drm_map_t *map = dev->agp_buffer_map;
 
 			if ( !map ) {
@@ -1369,4 +1375,3 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 	return retcode;
 }
 
-#endif /* __HAVE_DMA */

@@ -90,27 +90,20 @@
 /** \name DRM template customization defaults */
 /*@{*/
 
-#ifndef __HAVE_AGP
-#define __HAVE_AGP		0
-#endif
-#ifndef __HAVE_MTRR
-#define __HAVE_MTRR		0
-#endif
-#ifndef __HAVE_CTX_BITMAP
-#define __HAVE_CTX_BITMAP	0
-#endif
-#ifndef __HAVE_DMA
-#define __HAVE_DMA		0
-#endif
-#ifndef __HAVE_IRQ
-#define __HAVE_IRQ		0
-#endif
+/* driver capabilities and requirements mask */
+#define DRIVER_USE_AGP     0x1
+#define DRIVER_REQUIRE_AGP 0x2
+#define DRIVER_USE_MTRR   0x4
+#define DRIVER_HAVE_DMA    0x10
+#define DRIVER_HAVE_IRQ    0x20
+#define DRIVER_SG          0x40
+#define DRIVER_PCI_DMA     0x80
+#define DRIVER_IRQ_SHARED  0x100
+#define DRIVER_IRQ_VBL     0x200
+#define DRIVER_DMA_QUEUE   0x800
 
-#define __REALLY_HAVE_AGP	(__HAVE_AGP && (defined(CONFIG_AGP) || \
-						defined(CONFIG_AGP_MODULE)))
-#define __REALLY_HAVE_MTRR	(__HAVE_MTRR && defined(CONFIG_MTRR))
-#define __REALLY_HAVE_SG	(__HAVE_SG)
-
+#define __OS_HAS_AGP (defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE))
+#define __OS_HAS_MTRR (defined(CONFIG_MTRR))
 /*@}*/
 
 
@@ -378,9 +371,7 @@ typedef struct drm_file {
 	struct drm_device *dev;
 	int 		  remove_auth_on_close;
 	unsigned long     lock_count;
-#ifdef DRIVER_FILE_FIELDS
-	DRIVER_FILE_FIELDS;
-#endif
+	void              *driver_priv;
 } drm_file_t;
 
 /** Wait queue */
@@ -438,7 +429,7 @@ typedef struct drm_device_dma {
 	/*@}*/
 } drm_device_dma_t;
 
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 /** 
  * AGP memory entry.  Stored as a doubly linked list.
  */
@@ -504,7 +495,6 @@ typedef struct drm_ctx_list {
 	drm_file_t		*tag;   /**< associated fd private data */
 } drm_ctx_list_t;
 
-#ifdef __HAVE_VBL_IRQ
 
 typedef struct drm_vbl_sig {
 	struct list_head	head;
@@ -513,7 +503,6 @@ typedef struct drm_vbl_sig {
 	struct task_struct	*task;
 } drm_vbl_sig_t;
 
-#endif
 
 /** 
  * DRM device functions structure
@@ -528,7 +517,11 @@ struct drm_driver_fn {
 	int (*postcleanup)(struct drm_device *);
 	int (*presetup)(struct drm_device *);
 	int (*postsetup)(struct drm_device *);
-	void (*open_helper)(struct drm_device *, drm_file_t *);
+
+	/* these are opposites at the moment */
+	int (*open_helper)(struct drm_device *, drm_file_t *);
+	void (*free_filp_private)(struct drm_device *, drm_file_t *);
+
 	void (*release)(struct drm_device *, struct file *filp);
 	void (*dma_ready)(struct drm_device *);
 	int (*dma_quiescent)(struct drm_device *);
@@ -542,7 +535,17 @@ struct drm_driver_fn {
 	int (*waitlist_destroy)(drm_waitlist_t *bl);	
 	int (*freelist_create)(drm_freelist_t *bl, int count);
 	int (*freelist_put)(struct drm_device *dev, drm_freelist_t *bl, drm_buf_t *buf);
-	int (*freelist_destroy)(drm_freelist_t *bl);
+  	int (*freelist_destroy)(drm_freelist_t *bl);
+	int (*vblank_wait)(struct drm_device *dev, unsigned int *sequence);
+/* these have to be filled in */
+	irqreturn_t (*irq_handler)( DRM_IRQ_ARGS );
+	void (*irq_preinstall)(struct drm_device *dev);
+	void (*irq_postinstall)(struct drm_device *dev);
+	void (*irq_uninstall)(struct drm_device *dev);
+	void (*reclaim_buffers)(struct file *filp);
+	unsigned long (*get_map_ofs)(drm_map_t *map);
+	unsigned long (*get_reg_ofs)(struct drm_device *dev);
+	void (*set_version)(struct drm_device *dev, drm_set_version_t *sv);
 };
 
 /**
@@ -637,13 +640,13 @@ typedef struct drm_device {
 #endif
 	/** \name VBLANK IRQ support */
 	/*@{*/
-#ifdef __HAVE_VBL_IRQ
+
    	wait_queue_head_t vbl_queue;	/**< VBLANK wait queue */
    	atomic_t          vbl_received;
 	spinlock_t        vbl_lock;
 	drm_vbl_sig_t     vbl_sigs;	/**< signal list to send on VBLANK */
 	unsigned int      vbl_pending;
-#endif
+
 	/*@}*/
 	cycles_t	  ctx_start;
 	cycles_t	  lck_start;
@@ -656,7 +659,7 @@ typedef struct drm_device {
 	wait_queue_head_t buf_readers;	/**< Processes waiting to read */
 	wait_queue_head_t buf_writers;	/**< Processes waiting to ctx switch */
 
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 	drm_agp_head_t    *agp;	/**< AGP data */
 #endif
 
@@ -682,6 +685,7 @@ typedef struct drm_device {
 	struct drm_driver_fn fn_tbl;
 	drm_local_map_t   *agp_buffer_map;
 	int               dev_priv_size;
+	u32               driver_features;
 } drm_device_t;
 
 extern void DRM(driver_register_fns)(struct drm_device *dev);
@@ -742,7 +746,7 @@ extern void	     *DRM(ioremap_nocache)(unsigned long offset, unsigned long size,
 					   drm_device_t *dev);
 extern void	     DRM(ioremapfree)(void *pt, unsigned long size, drm_device_t *dev);
 
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 extern DRM_AGP_MEM   *DRM(alloc_agp)(int pages, u32 type);
 extern int           DRM(free_agp)(DRM_AGP_MEM *handle, int pages);
 extern int           DRM(bind_agp)(DRM_AGP_MEM *handle, unsigned int start);
@@ -784,10 +788,8 @@ extern int	     DRM(rmctx)( struct inode *inode, struct file *filp,
 extern int	     DRM(context_switch)(drm_device_t *dev, int old, int new);
 extern int	     DRM(context_switch_complete)(drm_device_t *dev, int new);
 
-#if __HAVE_CTX_BITMAP
 extern int	     DRM(ctxbitmap_init)( drm_device_t *dev );
 extern void	     DRM(ctxbitmap_cleanup)( drm_device_t *dev );
-#endif
 
 extern int	     DRM(setsareactx)( struct inode *inode, struct file *filp,
 				       unsigned int cmd, unsigned long arg );
@@ -833,7 +835,6 @@ extern int	     DRM(rmmap)( struct inode *inode, struct file *filp,
 				 unsigned int cmd, unsigned long arg );
 extern int 	     DRM(initmap)( drm_device_t *dev, unsigned int offset,
 				 unsigned int size, int type, int flags );
-#if __HAVE_DMA
 extern int	     DRM(addbufs)( struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg );
 extern int	     DRM(infobufs)( struct inode *inode, struct file *filp,
@@ -850,33 +851,24 @@ extern int	     DRM(dma_setup)(drm_device_t *dev);
 extern void	     DRM(dma_takedown)(drm_device_t *dev);
 extern void	     DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf);
 extern void	     DRM(reclaim_buffers)( struct file *filp );
-#endif /* __HAVE_DMA */
 
 				/* IRQ support (drm_irq.h) */
-#if __HAVE_IRQ || __HAVE_DMA
 extern int           DRM(control)( struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg );
-#endif
-#if __HAVE_IRQ
 extern int           DRM(irq_install)( drm_device_t *dev );
 extern int           DRM(irq_uninstall)( drm_device_t *dev );
 extern irqreturn_t   DRM(irq_handler)( DRM_IRQ_ARGS );
 extern void          DRM(driver_irq_preinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_postinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_uninstall)( drm_device_t *dev );
-#ifdef __HAVE_VBL_IRQ
+
 extern int           DRM(wait_vblank)(struct inode *inode, struct file *filp,
 				      unsigned int cmd, unsigned long arg);
 extern int           DRM(vblank_wait)(drm_device_t *dev, unsigned int *vbl_seq);
 extern void          DRM(vbl_send_signals)( drm_device_t *dev );
-#endif
-#ifdef __HAVE_IRQ_BH
-extern void          DRM(irq_immediate_bh)( void *dev );
-#endif
-#endif
 
 
-#if __REALLY_HAVE_AGP
+#if __OS_HAS_AGP
 				/* AGP/GART support (drm_agpsupport.h) */
 extern drm_agp_head_t *DRM(agp_init)(void);
 extern void           DRM(agp_uninit)(void);
@@ -918,14 +910,12 @@ extern int            DRM(proc_cleanup)(int minor,
 					struct proc_dir_entry *root,
 					struct proc_dir_entry *dev_root);
 
-#ifdef __HAVE_SG
 				/* Scatter Gather Support (drm_scatter.h) */
 extern void           DRM(sg_cleanup)(drm_sg_mem_t *entry);
 extern int            DRM(sg_alloc)(struct inode *inode, struct file *filp,
 				    unsigned int cmd, unsigned long arg);
 extern int            DRM(sg_free)(struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg);
-#endif
 
                                /* ATI PCIGART support (ati_pcigart.h) */
 extern int            DRM(ati_pcigart_init)(drm_device_t *dev,
@@ -977,5 +967,7 @@ static __inline__ void drm_core_dropmap(struct drm_map *map)
 }
 /*@}*/
 
+extern unsigned long DRM(core_get_map_ofs)(drm_map_t *map);
+extern unsigned long DRM(core_get_reg_ofs)(struct drm_device *dev);
 #endif /* __KERNEL__ */
 #endif

@@ -38,16 +38,6 @@
 
 #include <linux/interrupt.h>	/* For task queue support */
 
-#ifndef __HAVE_SHARED_IRQ
-#define __HAVE_SHARED_IRQ	0
-#endif
-
-#if __HAVE_SHARED_IRQ
-#define DRM_IRQ_TYPE		SA_SHIRQ
-#else
-#define DRM_IRQ_TYPE		0
-#endif
-
 /**
  * Get interrupt from bus id.
  * 
@@ -69,6 +59,9 @@ int DRM(irq_by_busid)(struct inode *inode, struct file *filp,
 	drm_irq_busid_t __user *argp = (void __user *)arg;
 	drm_irq_busid_t p;
 
+	if (!(dev->driver_features & DRIVER_HAVE_IRQ))
+		return -EINVAL;
+
 	if (copy_from_user(&p, argp, sizeof(p)))
 		return -EFAULT;
 
@@ -87,8 +80,6 @@ int DRM(irq_by_busid)(struct inode *inode, struct file *filp,
 	return 0;
 }
 
-#if __HAVE_IRQ
-
 /**
  * Install IRQ handler.
  *
@@ -102,7 +93,11 @@ int DRM(irq_by_busid)(struct inode *inode, struct file *filp,
 int DRM(irq_install)( drm_device_t *dev )
 {
 	int ret;
- 
+	unsigned long sh_flags=0;
+
+	if (!(dev->driver_features & DRIVER_HAVE_IRQ ))
+		return -EINVAL;
+
 	if ( dev->irq == 0 )
 		return -EINVAL;
 
@@ -123,39 +118,29 @@ int DRM(irq_install)( drm_device_t *dev )
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 
-#if __HAVE_DMA
 	dev->dma->next_buffer = NULL;
 	dev->dma->next_queue = NULL;
 	dev->dma->this_buffer = NULL;
-#endif
 
-#ifdef __HAVE_IRQ_BH
-#if !HAS_WORKQUEUE
-	INIT_LIST_HEAD( &dev->tq.list );
-	dev->tq.sync = 0;
-	dev->tq.routine = DRM(irq_immediate_bh);
-	dev->tq.data = dev;
-#else
-	INIT_WORK(&dev->work, DRM(irq_immediate_bh), dev);
-#endif
-#endif
-
-#ifdef __HAVE_VBL_IRQ
-	init_waitqueue_head(&dev->vbl_queue);
-
-	spin_lock_init( &dev->vbl_lock );
-
-	INIT_LIST_HEAD( &dev->vbl_sigs.head );
-
-	dev->vbl_pending = 0;
-#endif
+	if (dev->driver_features & DRIVER_IRQ_VBL) {
+		init_waitqueue_head(&dev->vbl_queue);
+		
+		spin_lock_init( &dev->vbl_lock );
+		
+		INIT_LIST_HEAD( &dev->vbl_sigs.head );
+		
+		dev->vbl_pending = 0;
+	}
 
 				/* Before installing handler */
-	DRM(driver_irq_preinstall)(dev);
+	dev->fn_tbl.irq_preinstall(dev);
 
 				/* Install handler */
-	ret = request_irq( dev->irq, DRM(irq_handler),
-			   DRM_IRQ_TYPE, dev->devname, dev );
+	if (dev->driver_features & DRIVER_IRQ_SHARED)
+		sh_flags = SA_SHIRQ;
+	
+	ret = request_irq( dev->irq, dev->fn_tbl.irq_handler,
+			   sh_flags, dev->devname, dev );
 	if ( ret < 0 ) {
 		down( &dev->struct_sem );
 		dev->irq_enabled = 0;
@@ -164,7 +149,7 @@ int DRM(irq_install)( drm_device_t *dev )
 	}
 
 				/* After installing handler */
-	DRM(driver_irq_postinstall)(dev);
+	dev->fn_tbl.irq_postinstall(dev);
 
 	return 0;
 }
@@ -180,6 +165,9 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 {
 	int irq_enabled;
 
+	if (!(dev->driver_features & DRIVER_HAVE_IRQ ))
+		return -EINVAL;
+
 	down( &dev->struct_sem );
 	irq_enabled = dev->irq_enabled;
 	dev->irq_enabled = 0;
@@ -190,7 +178,7 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 
-	DRM(driver_irq_uninstall)( dev );
+	dev->fn_tbl.irq_uninstall(dev);
 
 	free_irq( dev->irq, dev );
 
@@ -214,24 +202,32 @@ int DRM(control)( struct inode *inode, struct file *filp,
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->dev;
 	drm_control_t ctl;
+	
+	/* if we haven't dma then no need for this control */
+	if (!(dev->driver_features & DRIVER_HAVE_DMA))
+		return -EINVAL;
+
+	/* if we haven't irq we fallback for compatibility reasons - this used to be a separate function in drm_dma.h */
 
 	if ( copy_from_user( &ctl, (drm_control_t __user *)arg, sizeof(ctl) ) )
 		return -EFAULT;
 
 	switch ( ctl.func ) {
 	case DRM_INST_HANDLER:
+		if (!(dev->driver_features & DRIVER_HAVE_IRQ))
+			return 0;
 		if (dev->if_version < DRM_IF_VERSION(1, 2) &&
 		    ctl.irq != dev->irq)
 			return -EINVAL;
 		return DRM(irq_install)( dev );
 	case DRM_UNINST_HANDLER:
+		if (!(dev->driver_features & DRIVER_HAVE_IRQ))
+			return 0;
 		return DRM(irq_uninstall)( dev );
 	default:
 		return -EINVAL;
 	}
 }
-
-#ifdef __HAVE_VBL_IRQ
 
 /**
  * Wait for VBLANK.
@@ -261,6 +257,9 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	struct timeval now;
 	int ret = 0;
 	unsigned int flags;
+
+	if (!(dev->driver_features & DRIVER_IRQ_VBL))
+		return -EINVAL;
 
 	if (!dev->irq)
 		return -EINVAL;
@@ -326,7 +325,8 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 
 		spin_unlock_irqrestore( &dev->vbl_lock, irqflags );
 	} else {
-		ret = DRM(vblank_wait)( dev, &vblwait.request.sequence );
+		if (dev->fn_tbl.vblank_wait)
+			ret = dev->fn_tbl.vblank_wait( dev, &vblwait.request.sequence );
 
 		do_gettimeofday( &now );
 		vblwait.reply.tval_sec = now.tv_sec;
@@ -374,6 +374,4 @@ void DRM(vbl_send_signals)( drm_device_t *dev )
 	spin_unlock_irqrestore( &dev->vbl_lock, flags );
 }
 
-#endif	/* __HAVE_VBL_IRQ */
 
-#endif /* __HAVE_IRQ */

@@ -40,6 +40,8 @@
 #include "drm_agpsupport.h"
 #include "drm_bufs.h"
 #include "gamma_context.h"	/* NOTE! */
+#define DRIVER_ALTERNATE_CONTEXT
+#include "drm_context.h"
 #include "drm_dma.h"
 #include "gamma_old_dma.h"	/* NOTE */
 #include "drm_drawable.h"
@@ -56,3 +58,4 @@
 #include "drm_proc.h"
 #include "drm_vm.h"
 #include "drm_stub.h"
+#include "drm_scatter.h"

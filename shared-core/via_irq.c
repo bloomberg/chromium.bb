@@ -46,8 +46,7 @@
 #define VIA_IRQ_VBI_ENABLE      (1 << 19)
 #define VIA_IRQ_VBI_PENDING     (1 << 3)
 
-irqreturn_t DRM(irq_handler)( DRM_IRQ_ARGS )
-
+irqreturn_t via_driver_irq_handler( DRM_IRQ_ARGS )
 {
         drm_device_t*	dev = (drm_device_t*)arg;
         drm_via_private_t*	dev_priv = (drm_via_private_t*)dev->dev_private;
@@ -83,7 +82,7 @@ static __inline__ void viadrv_acknowledge_irqs(drm_via_private_t* dev_priv)
         }
 }
 
-int DRM(vblank_wait)(drm_device_t* dev, unsigned int* sequence)
+int via_driver_vblank_wait(drm_device_t* dev, unsigned int* sequence)
 {
         drm_via_private_t*	dev_priv = (drm_via_private_t*)dev->dev_private;
         unsigned int		cur_vblank;
@@ -112,7 +111,7 @@ int DRM(vblank_wait)(drm_device_t* dev, unsigned int* sequence)
 /*
  * drm_dma.h hooks
  */
-void DRM(driver_irq_preinstall)(drm_device_t* dev){
+void via_driver_irq_preinstall(drm_device_t* dev){
         drm_via_private_t*	dev_priv = (drm_via_private_t *)dev->dev_private;
         u32			status;
 
@@ -130,7 +129,7 @@ void DRM(driver_irq_preinstall)(drm_device_t* dev){
         }
 }
 
-void DRM(driver_irq_postinstall)(drm_device_t* dev){
+void via_driver_irq_postinstall(drm_device_t* dev){
         drm_via_private_t*	dev_priv = (drm_via_private_t *)dev->dev_private;
         u32			status;
 
@@ -147,7 +146,7 @@ void DRM(driver_irq_postinstall)(drm_device_t* dev){
         }
 }
 
-void DRM(driver_irq_uninstall)(drm_device_t* dev){
+void via_driver_irq_uninstall(drm_device_t* dev){
         drm_via_private_t*	dev_priv = (drm_via_private_t *)dev->dev_private;
         u32			status;
 

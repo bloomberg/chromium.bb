@@ -1,5 +1,5 @@
 /**
- * \file drm_context.h 
+* \file drm_context.h 
  * IOCTLs for generic contexts
  * 
  * \author Rickard E. (Rik) Faith <faith@valinux.com>
@@ -43,11 +43,7 @@
 #define __NO_VERSION__
 #include "drmP.h"
 
-#if !__HAVE_CTX_BITMAP
-#error "__HAVE_CTX_BITMAP must be defined"
-#endif
-
-
+#ifndef DRIVER_ALTERNATE_CONTEXT
 /******************************************************************/
 /** \name Context bitmap support */
 /*@{*/
@@ -579,5 +575,18 @@ int DRM(rmctx)( struct inode *inode, struct file *filp,
 
 	return 0;
 }
+#endif
 
+extern drm_ioctl_desc_t DRM(ioctls)[];
+void DRM(context_add_ioctls)(void)
+{
+  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_SET_SAREA_CTX)].func = DRM(setsareactx);
+  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_SET_SAREA_CTX)].auth_needed = 1;
+  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_SET_SAREA_CTX)].root_only = 1;
+
+  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_GET_SAREA_CTX)].func = DRM(getsareactx);
+  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_GET_SAREA_CTX)].auth_needed = 1;
+  DRM(ioctls)[DRM_IOCTL_NR(DRM_IOCTL_GET_SAREA_CTX)].root_only = 0;
+}
 /*@}*/
+

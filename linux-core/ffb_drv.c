@@ -28,10 +28,6 @@
 
 #define DRIVER_COUNT_CARDS()	ffb_count_card_instances()
 
-/* For mmap customization */
-#define DRIVER_GET_MAP_OFS()	(map->offset & 0xffffffff)
-#define DRIVER_GET_REG_OFS()	ffb_get_reg_offset(dev)
-
 typedef struct _ffb_position_t {
 	int node;
 	int root;
@@ -271,16 +267,6 @@ unsigned long ffb_get_unmapped_area(struct file *filp,
 	}
 
 	return addr;
-}
-
-static unsigned long ffb_get_reg_offset(drm_device_t *dev)
-{
-	ffb_dev_priv_t *ffb_priv = (ffb_dev_priv_t *)dev->dev_private;
-
-	if (ffb_priv)
-		return ffb_priv->card_phys_base;
-
-	return 0;
 }
 
 #include "drm_auth.h"
