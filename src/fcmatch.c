@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.6 2002/05/29 08:21:33 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.7 2002/05/29 22:07:33 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -612,4 +612,28 @@ bail1:
     free (nodes);
 bail0:
     return 0;
+}
+
+FcFontSet *
+FcFontSort (FcConfig	*config,
+	    FcPattern	*p, 
+	    FcBool	trim,
+	    FcCharSet	**csp,
+	    FcResult	*result)
+{
+    FcFontSet	*sets[2];
+    int		nsets;
+
+    if (!config)
+    {
+	config = FcConfigGetCurrent ();
+	if (!config)
+	    return 0;
+    }
+    nsets = 0;
+    if (config->fonts[FcSetSystem])
+	sets[nsets++] = config->fonts[FcSetSystem];
+    if (config->fonts[FcSetApplication])
+	sets[nsets++] = config->fonts[FcSetApplication];
+    return FcFontSetSort (config, sets, nsets, p, trim, csp, result);
 }

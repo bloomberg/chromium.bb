@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.8 2002/05/21 17:06:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.10 2002/05/29 22:07:33 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -157,29 +157,16 @@ typedef struct _FcSubst {
     FcEdit		*edit;
 } FcSubst;
 
-typedef struct _FcCharLeaf FcCharLeaf;
-typedef struct _FcCharBranch FcCharBranch;
-typedef union  _FcCharNode FcCharNode;
-
-struct _FcCharLeaf {
+typedef struct _FcCharLeaf {
     FcChar32	map[256/32];
-};
-
-union _FcCharNode {
-    FcCharBranch    *branch;
-    FcCharLeaf	    *leaf;
-};
-
-struct _FcCharBranch {
-    FcCharNode	    nodes[256];
-    FcChar8	    next[256];
-};
+} FcCharLeaf;
 
 struct _FcCharSet {
-    int		    levels;
     int		    ref;	/* reference count */
-    FcBool	    constant;	/* shared constant */
-    FcCharNode	    node;
+    FcBool	    constant;	/* in hash table constant */
+    int		    num;	/* size of leaves and numbers arrays */
+    FcCharLeaf	    **leaves;
+    FcChar16	    *numbers;
 };
 
 struct _FcStrSet {

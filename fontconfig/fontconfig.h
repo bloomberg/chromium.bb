@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.11 2002/05/24 05:20:02 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.12 2002/05/29 08:21:33 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -515,6 +515,13 @@ FcFontSetSort (FcConfig	    *config,
 	       FcBool	    trim,
 	       FcCharSet    **csp,
 	       FcResult	    *result);
+
+FcFontSet *
+FcFontSort (FcConfig	 *config,
+	    FcPattern    *p,
+	    FcBool	 trim,
+	    FcCharSet    **csp,
+	    FcResult	 *result);
 
 void
 FcFontSetSortDestroy (FcFontSet *fs);

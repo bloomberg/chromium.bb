@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.8 2002/05/29 08:21:33 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.9 2002/05/29 22:07:33 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -27,53 +27,7 @@
 
 /* #define CHECK */
 
-static int
-FcCharSetLevels (FcChar32 ucs4)
-{
-    if (ucs4 <= 0xff)
-	return 1;
-    if (ucs4 <= 0xffff)
-	return 2;
-    if (ucs4 <= 0xffffff)
-	return 3;
-    return 4;
-}
-
-static FcBool
-FcCharSetCheckLevel (FcCharSet *fcs, FcChar32 ucs4)
-{
-    int	level = FcCharSetLevels (ucs4);
-    
-    if (level <= fcs->levels)
-	return FcTrue;
-    while (fcs->levels < level)
-    {
-	if (fcs->levels == 0)
-	{
-	    FcCharLeaf	    *leaf;
-
-	    leaf = (FcCharLeaf *) calloc (1, sizeof (FcCharLeaf));
-	    if (!leaf)
-		return FcFalse;
-	    FcMemAlloc (FC_MEM_CHARNODE, sizeof (FcCharLeaf));
-	    fcs->node.leaf = leaf;
-	}
-	else
-	{
-	    FcCharBranch    *branch;
-    
-	    branch = (FcCharBranch *) calloc (1, sizeof (FcCharBranch));
-	    if (!branch)
-		return FcFalse;
-	    FcMemAlloc (FC_MEM_CHARNODE, sizeof (FcCharBranch));
-	    branch->nodes[0] = fcs->node;
-	    /* next pointers are all zero */
-	    fcs->node.branch = branch;
-	}
-	++fcs->levels;
-    }
-    return FcTrue;
-}
+/* #define CHATTY */
 
 FcCharSet *
 FcCharSetCreate (void)
@@ -85,8 +39,9 @@ FcCharSetCreate (void)
 	return 0;
     FcMemAlloc (FC_MEM_CHARSET, sizeof (FcCharSet));
     fcs->ref = 1;
-    fcs->levels = 0;
-    fcs->node.leaf = 0;
+    fcs->num = 0;
+    fcs->leaves = 0;
+    fcs->numbers = 0;
     fcs->constant = FcFalse;
     return fcs;
 }
@@ -100,64 +55,111 @@ FcCharSetNew (void)
     return FcCharSetCreate ();
 }
 
-static void
-FcCharNodeDestroy (FcCharNode node, int level)
-{
-    int	i;
-
-    switch (level) {
-    case 0:
-	break;
-    case 1:
-	FcMemFree (FC_MEM_CHARNODE, sizeof (FcCharLeaf));
-	free (node.leaf);
-	break;
-    default:
-	for (i = 0; i < 256; i++)
-	    if (node.branch->nodes[i].branch)
-		FcCharNodeDestroy (node.branch->nodes[i], level - 1);
-        FcMemFree (FC_MEM_CHARNODE, sizeof (FcCharBranch));
-	free (node.branch);
-    }
-}
 
 void
 FcCharSetDestroy (FcCharSet *fcs)
 {
-    if (fcs->constant)
-	return;
-    if (--fcs->ref <= 0)
+    if (!fcs->constant && --fcs->ref <= 0)
     {
-	FcCharNodeDestroy (fcs->node, fcs->levels);
+	int i;
+
+	for (i = 0; i < fcs->num; i++)
+	{
+	    FcMemFree (FC_MEM_CHARNODE, sizeof (FcCharLeaf));
+	    free (fcs->leaves[i]);
+	}
+	if (fcs->leaves)
+	{
+	    FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcCharLeaf *));
+	    free (fcs->leaves);
+	}
+	if (fcs->numbers)
+	{
+	    FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcChar16));
+	    free (fcs->numbers);
+	}
 	FcMemFree (FC_MEM_CHARSET, sizeof (FcCharSet));
 	free (fcs);
     }
 }
 
 /*
- * Locate the leaf containing the specified char, returning
- * null if it doesn't exist
+ * Locate the leaf containing the specified char, return
+ * its index if it exists, otherwise return negative of
+ * the (position + 1) where it should be inserted
  */
+
+static int
+FcCharSetFindLeafPos (const FcCharSet *fcs, FcChar32 ucs4)
+{
+    FcChar16		*numbers = fcs->numbers;
+    FcChar16		page;
+    int			low = 0;
+    int			high = fcs->num - 1;
+
+    if (!numbers)
+	return -1;
+    ucs4 >>= 8;
+    while (low <= high)
+    {
+	int mid = (low + high) >> 1;
+	page = numbers[mid];
+	if (page == ucs4)
+	    return mid;
+	if (page < ucs4)
+	    low = mid + 1;
+	else
+	    high = mid - 1;
+    }
+    if (numbers[high] < ucs4)
+	high++;
+    return -(high + 1);
+}
 
 static FcCharLeaf *
 FcCharSetFindLeaf (const FcCharSet *fcs, FcChar32 ucs4)
 {
-    int			l;
-    const FcCharNode	*prev;
-    FcCharNode		node;
-    FcChar32    	i;
+    int	pos = FcCharSetFindLeafPos (fcs, ucs4);
+    if (pos >= 0)
+	return fcs->leaves[pos];
+    return 0;
+}
 
-    prev = &fcs->node;
-    l = fcs->levels;
-    while (--l > 0)
-    {
-	node = *prev;
-	if (!node.branch)
-	    return 0;
-	i = (ucs4 >> (l << 3)) & 0xff;
-	prev = &node.branch->nodes[i];
-    }
-    return prev->leaf;
+static FcBool
+FcCharSetPutLeaf (FcCharSet	*fcs, 
+		  FcChar32	ucs4,
+		  FcCharLeaf	*leaf, 
+		  int		pos)
+{
+    FcCharLeaf	**leaves;
+    FcChar16	*numbers;
+
+    ucs4 >>= 8;
+    if (ucs4 >= 0x10000)
+	return FcFalse;
+    if (!fcs->leaves)
+	leaves = malloc (sizeof (FcCharLeaf *));
+    else
+	leaves = realloc (fcs->leaves, (fcs->num + 1) * sizeof (FcCharLeaf *));
+    if (!leaves)
+	return FcFalse;
+    fcs->leaves = leaves;
+    if (!fcs->numbers)
+	numbers = malloc (sizeof (FcChar16));
+    else
+	numbers = realloc (fcs->numbers, (fcs->num + 1) * sizeof (FcChar16));
+    if (!numbers)
+	return FcFalse;
+    fcs->numbers = numbers;
+    
+    memmove (fcs->leaves + pos + 1, fcs->leaves + pos, 
+	     (fcs->num - pos) * sizeof (FcCharLeaf *));
+    memmove (fcs->numbers + pos + 1, fcs->numbers + pos,
+	     (fcs->num - pos) * sizeof (FcChar16));
+    fcs->numbers[pos] = (FcChar16) ucs4;
+    fcs->leaves[pos] = leaf;
+    fcs->num++;
+    return FcTrue;
 }
 
 /*
@@ -168,54 +170,41 @@ FcCharSetFindLeaf (const FcCharSet *fcs, FcChar32 ucs4)
 static FcCharLeaf *
 FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4)
 {
-    int		    l;
-    FcCharNode	    *prev, node;
-    FcChar32	    i = 0;
-    int		    j;
-    FcChar8	    *next = 0, old;
+    int			pos;
+    FcCharLeaf		*leaf;
 
-    if (!FcCharSetCheckLevel (fcs, ucs4))
-	return FcFalse;
-    prev = &fcs->node;
-    l = fcs->levels;
-    while (--l > 0)
+    pos = FcCharSetFindLeafPos (fcs, ucs4);
+    if (pos >= 0)
+	return fcs->leaves[pos];
+    
+    leaf = calloc (1, sizeof (FcCharLeaf));
+    if (!leaf)
+	return 0;
+    
+    pos = -pos - 1;
+    if (!FcCharSetPutLeaf (fcs, ucs4, leaf, pos))
     {
-	node = *prev;
-	if (!node.branch)
-	{
-	    node.branch = calloc (1, sizeof (FcCharBranch));
-	    if (!node.branch)
-		return 0;
-	    FcMemAlloc (FC_MEM_CHARNODE, sizeof (FcCharBranch));
-	    *prev = node;
-	    if (next)
-	    {
-		old = next[i];
-		for (j = (int) i - 1; j >= 0 && next[j] == old; j--)
-		    next[j] = i;
-	    }
-	}
-	i = (ucs4 >> (l << 3)) & 0xff;
-	prev = &node.branch->nodes[i];
-	next = &node.branch->next[0];
+	free (leaf);
+	return 0;
     }
-    node = *prev;
-    if (!node.leaf)
+    return leaf;
+}
+
+static FcBool
+FcCharSetInsertLeaf (FcCharSet *fcs, FcChar32 ucs4, FcCharLeaf *leaf)
+{
+    int		    pos;
+
+    pos = FcCharSetFindLeafPos (fcs, ucs4);
+    if (pos >= 0)
     {
-	node.leaf = calloc (1, sizeof (FcCharLeaf));
-	if (!node.leaf)
-	    return 0;
 	FcMemAlloc (FC_MEM_CHARNODE, sizeof (FcCharLeaf));
-	*prev = node;
-	ucs4 = ucs4 & ~0xff;
-	if (next)
-	{
-	    old = next[i];
-	    for (j = i - 1; j >= 0 && next[j] == old; j--)
-		next[j] = i;
-	}
+	free (fcs->leaves[pos]);
+	fcs->leaves[pos] = leaf;
+	return FcTrue;
     }
-    return node.leaf;
+    pos = -pos - 1;
+    return FcCharSetPutLeaf (fcs, ucs4, leaf, pos);
 }
 
 FcBool
@@ -241,179 +230,66 @@ FcCharSetAddChar (FcCharSet *fcs, FcChar32 ucs4)
 typedef struct _fcCharSetIter {
     FcCharLeaf	    *leaf;
     FcChar32	    ucs4;
-    FcCharBranch    *branch_stack[5];
-    int		    branch_stackp;
+    int		    pos;
 } FcCharSetIter;
 
 /*
- * Find the nearest leaf at or beyond *ucs4, return 0 if no leaf
- * exists
+ * Set iter->leaf to the leaf containing iter->ucs4 or higher
  */
-static FcCharLeaf *
-FcCharSetIterLeaf (FcCharNode node, int level, FcChar32 *ucs4)
-{
-    if (level <= 1)
-        return node.leaf;
-    else if (!node.branch)
-	return 0;
-    else
-    {
-	int	    shift = ((level - 1) << 3);
-	FcChar32    inc = 1 << shift;
-	FcChar32    mask = ~(inc - 1);
-	FcChar32    byte = (*ucs4 >> shift) & 0xff;
-	FcCharLeaf  *leaf;
-
-	for (;;)
-	{
-	    leaf = FcCharSetIterLeaf (node.branch->nodes[byte], 
-				      level - 1, 
-				      ucs4);
-	    if (leaf)
-		break;
-	    /* step to next branch, resetting lower indices */
-	    *ucs4 = (*ucs4 & mask) + inc;
-	    byte = (byte + 1) & 0xff;
-	    if (byte == 0)
-		break;
-	}
-	return leaf;
-    }
-}
 
 static void
 FcCharSetIterSet (const FcCharSet *fcs, FcCharSetIter *iter)
 {
-    int		    level = fcs->levels;
-    FcChar32	    ucs4 = iter->ucs4;
-    FcCharNode	    node = fcs->node;
+    int		    pos = FcCharSetFindLeafPos (fcs, iter->ucs4);
 
-    iter->branch_stackp = 0;
-    if (ucs4 >= 1 << (level << 3))
+    if (pos < 0)
     {
-	iter->leaf = 0;
-	iter->ucs4 = ~0;
-	return;
-    }
-    if (level > 1)
-    {
-	level--;
-	for (;;)
+	pos = -pos - 1;
+	if (pos == fcs->num)
 	{
-	    FcCharBranch	*branch = node.branch;
-	    FcChar32		byte;
-    
-	    byte = (ucs4 >> (level << 3)) & 0xff;
-	    
-	    node = branch->nodes[byte];
-	    if (!node.leaf)
-	    {
-		while (!(byte = branch->next[byte]))
-		{
-		    if (iter->branch_stackp == 0)
-		    {
-			iter->leaf = 0;
-			iter->ucs4 = ~0;
-			return;
-		    }
-		    branch = node.branch = iter->branch_stack[--iter->branch_stackp];
-		    level++;
-		    ucs4 += 1 << (level << 3);
-		    byte = (ucs4 >> (level << 3)) & 0xff;
-		}
-		ucs4 = (ucs4 & ~ ((1 << ((level + 1) << 3)) - 1)) |
-			    (byte << (level << 3));
-		node = branch->nodes[byte];
-	    }
-	    iter->branch_stack[iter->branch_stackp++] = branch;
-	    if (--level == 0)
-		break;
+	    iter->ucs4 = ~0;
+	    iter->leaf = 0;
+	    return;
 	}
+        iter->ucs4 = (FcChar32) fcs->numbers[pos] << 8;
     }
-    if (!(iter->leaf = node.leaf))
-	ucs4 = ~0;
-    iter->ucs4 = ucs4;
-#if 0
-    printf ("set %08x: %08x\n", ucs4, node.leaf);
+    iter->leaf = fcs->leaves[pos];
+    iter->pos = pos;
+#ifdef CHATTY
+    printf ("set %08x: %08x\n", iter->ucs4, (FcChar32) iter->leaf);
 #endif
 }
 
 static void
 FcCharSetIterNext (const FcCharSet *fcs, FcCharSetIter *iter)
 {
-    FcCharNode	    node;
-    FcCharBranch    *branch;
-    FcChar32	    ucs4;
-    int		    level;
-
-    if (!iter->branch_stackp)
+    int	pos = iter->pos + 1;
+    if (pos >= fcs->num)
     {
 	iter->ucs4 = ~0;
 	iter->leaf = 0;
-	return;
-    }
-
-    level = 1;
-    node.branch = iter->branch_stack[--iter->branch_stackp];
-    ucs4 = iter->ucs4;
-    for (;;)
-    {
-	FcChar32    byte;
-
-	branch = node.branch;
-	while (!(byte = branch->next[(ucs4 >> (level << 3)) & 0xff]))
-	{
-	    if (iter->branch_stackp == 0)
-	    {
-		iter->leaf = 0;
-		iter->ucs4 = ~0;
-		return;
-	    }
-	    branch = node.branch = iter->branch_stack[--iter->branch_stackp];
-	    level++;
-	    ucs4 += 1 << (level << 3);
-	}
-        ucs4 = (ucs4 & ~ ((1 << ((level + 1) << 3)) - 1)) |
-    		(byte << (level << 3));
-        node = branch->nodes[byte];
-        iter->branch_stack[iter->branch_stackp++] = branch;
-	if (--level == 0)
-	    break;
-    }
-    iter->ucs4 = ucs4;
-    iter->leaf = node.leaf;
-}
-
-#if 0
-static void
-FcCharSetDump (FcCharNode node, int level, FcChar32 ucs4, int indent)
-{
-    if (level)
-    {
-	if (node.branch)
-	{
-	    FcChar32	inc = (1 << (level << 3));
-	    int		i;
-	    FcCharBranch    *branch = node.branch;
-    
-	    for (i = 0; i < indent; i++)
-		printf ("    ");
-	    printf ("%08x: %08x\n", ucs4, branch);
-	    for (i = 0; i < 256; i++)
-	    {
-		FcCharSetDump (branch->nodes[i], level - 1, ucs4, indent+1);
-		ucs4 += inc;
-	    }
-	}
     }
     else
     {
-	if (node.leaf)
-	{
-	    while (indent--)
-		printf ("    ");
-	    printf ("%08x: %08x\n", ucs4, node.leaf);
-	}
+	iter->ucs4 = (FcChar32) fcs->numbers[pos] << 8;
+	iter->leaf = fcs->leaves[pos];
+	iter->pos = pos;
+    }
+}
+
+#ifdef CHATTY
+static void
+FcCharSetDump (const FcCharSet *fcs)
+{
+    int		pos;
+
+    printf ("fcs %08x:\n", (FcChar32) fcs);
+    for (pos = 0; pos < fcs->num; pos++)
+    {
+	FcCharLeaf	*leaf = fcs->leaves[pos];
+	FcChar32	ucs4 = (FcChar32) fcs->numbers[pos] << 8;
+	
+	printf ("    %08x: %08x\n", ucs4, (FcChar32) leaf);
     }
 }
 #endif
@@ -421,8 +297,8 @@ FcCharSetDump (FcCharNode node, int level, FcChar32 ucs4, int indent)
 static void
 FcCharSetIterStart (const FcCharSet *fcs, FcCharSetIter *iter)
 {
-#if 0
-    FcCharSetDump (fcs->node, fcs->levels - 1, 0, 0);
+#ifdef CHATTY
+    FcCharSetDump (fcs);
 #endif
     iter->ucs4 = 0;
     FcCharSetIterSet (fcs, iter);
@@ -697,93 +573,61 @@ FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b)
     return count;
 }
 
-typedef struct {
-    FcCharBranch    *ab, *bb;
-    FcChar32	    byte;
-} FcCharSetPairStack;
-
 /*
  * return FcTrue iff a is a subset of b
  */
 FcBool
 FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
 {
-    FcCharSetPairStack	stack[5], *stackp;
-    FcChar32		byte;
-    FcCharBranch	*ab, *bb;
-    int			level;
-    FcCharNode		an, bn;
-
-    if (a->levels > b->levels)
-	return FcFalse;
-
-    level = b->levels;
-    an = a->node;
-    bn = b->node;
-    while (level != a->levels)
+    int		ai, bi;
+    FcChar16	an, bn;
+    
+    if (a == b) return FcTrue;
+    bi = 0;
+    ai = 0;
+    while (ai < a->num && bi < b->num)
     {
-	bn = bn.branch->nodes[0];
-	level--;
-    }
-
-    if (level == 0)
-	;
-    if (level == 1)
-    {
-	FcChar32	*am = an.leaf->map;
-	FcChar32	*bm = bn.leaf->map;
-	int		i = 256/32;
-
-	while (i--)
-	    if (*am++ & ~*bm++)
-		return FcFalse;
-    }
-    else
-    {
-	byte = 0;
-	stackp = stack;
-	ab = an.branch;
-	bb = bn.branch;
-	for (;;)
+	an = a->numbers[ai];
+	bn = b->numbers[bi];
+	if (an == bn)
 	{
-	    an = ab->nodes[byte];
-	    if (an.branch)
+	    FcChar32	*am = a->leaves[ai]->map;
+	    FcChar32	*bm = b->leaves[bi]->map;
+	    
+	    if (am != bm)
 	    {
-		bn = bb->nodes[byte];
-		if (!bn.branch)
-		    return FcFalse;
-		if (level == 2)
-		{
-		    FcChar32	*am = an.leaf->map;
-		    FcChar32	*bm = bn.leaf->map;
-		    int		i = 256/32;
+		int	i = 256/32;
+		while (i--)
+		    if (*am++ & ~*bm++)
+			return FcFalse;
+	    }
+	    ai++;
+	    bi++;
+	}
+	else if (an < bn)
+	    return FcFalse;
+	else
+	{
+	    int	    low = bi + 1;
+	    int	    high = b->num - 1;
 
-		    while (i--)
-			if (*am++ & ~*bm++)
-			    return FcFalse;
-		}
-		else
-		{
-		    level--;
-		    stackp->ab = ab;
-		    stackp->bb = bb;
-		    stackp->byte = byte;
-		    stackp++;
-		    byte = 0;
-		    continue;
-		}
-	    }
-	    byte = ab->next[byte];
-	    if (!byte)
+	    while (low <= high)
 	    {
-		if (stackp == stack)
+		int mid = (low + high) >> 1;
+		bn = b->numbers[mid];
+		if (bn == an)
+		{
+		    high = mid;
 		    break;
-		level++;
-		--stackp;
-		ab = stackp->ab;
-		bb = stackp->bb;
-		byte = stackp->byte;
+		}
+		if (bn < an)
+		    low = mid + 1;
+		else
+		    high = mid - 1;
 	    }
+	    bi = high;
+	    while (bi < b->num && b->numbers[bi] < an)
+		bi++;
 	}
     }
     return FcTrue;
@@ -828,6 +672,33 @@ FcCharSetFirstPage (const FcCharSet *a,
 {
     *next = 0;
     return FcCharSetNextPage (a, map, next);
+}
+
+/*
+ * old coverage API, rather hard to use correctly
+ */
+FcChar32
+FcCharSetCoverage (const FcCharSet *a, FcChar32 page, FcChar32 *result);
+    
+FcChar32
+FcCharSetCoverage (const FcCharSet *a, FcChar32 page, FcChar32 *result)
+{
+    FcCharSetIter   ai;
+
+    ai.ucs4 = page;
+    FcCharSetIterSet (a, &ai);
+    if (!ai.leaf)
+    {
+	memset (result, '\0', 256 / 8);
+	page = 0;
+    }
+    else
+    {
+	memcpy (result, ai.leaf->map, sizeof (ai.leaf->map));
+	FcCharSetIterNext (a, &ai);
+	page = ai.ucs4;
+    }
+    return page;
 }
 
 /*
@@ -943,12 +814,159 @@ FcCharSetUnparseValue (FcStrBuf *buf, FcChar32 value)
     return FcTrue;
 }
 
+typedef struct _FcCharLeafEnt FcCharLeafEnt;
+
+struct _FcCharLeafEnt {
+    FcCharLeafEnt   *next;
+    FcChar32	    hash;
+    FcCharLeaf	    leaf;
+};
+
+#define FC_CHAR_LEAF_BLOCK	(4096 / sizeof (FcCharLeafEnt))
+
+static FcCharLeafEnt *
+FcCharLeafEntCreate (void)
+{
+    static FcCharLeafEnt    *block;
+    static int		    remain;
+
+    if (!remain)
+    {
+	block = malloc (FC_CHAR_LEAF_BLOCK * sizeof (FcCharLeafEnt));
+	if (!block)
+	    return 0;
+	remain = FC_CHAR_LEAF_BLOCK;
+    }
+    remain--;
+    return block++;
+}
+
+#define FC_CHAR_LEAF_HASH_SIZE	257
+
+static FcChar32
+FcCharLeafHash (FcCharLeaf *leaf)
+{
+    FcChar32	hash = 0;
+    int		i;
+
+    for (i = 0; i < 256/32; i++)
+	hash = ((hash << 1) | (hash >> 31)) ^ leaf->map[i];
+    return hash;
+}
+
+static int	FcCharLeafTotal;
+static int	FcCharLeafUsed;
+
+static FcCharLeaf *
+FcNameParseBuildLeaf (FcCharLeaf *leaf)
+{
+    static FcCharLeafEnt	*hashTable[FC_CHAR_LEAF_HASH_SIZE];
+    FcChar32			hash = FcCharLeafHash (leaf);
+    FcCharLeafEnt		**bucket = &hashTable[hash % FC_CHAR_LEAF_HASH_SIZE];
+    FcCharLeafEnt		*ent;
+    
+    FcCharLeafTotal++;
+    for (ent = *bucket; ent; ent = ent->next)
+    {
+	if (ent->hash == hash && !memcmp (&ent->leaf, leaf, sizeof (FcCharLeaf)))
+	    return &ent->leaf;
+    }
+
+    ent = FcCharLeafEntCreate();
+    if (!ent)
+	return 0;
+    FcCharLeafUsed++;
+    ent->leaf = *leaf;
+    ent->hash = hash;
+    ent->next = *bucket;
+    *bucket = ent;
+    return &ent->leaf;
+}
+
+typedef struct _FcCharSetEnt FcCharSetEnt;
+
+struct _FcCharSetEnt {
+    FcCharSetEnt	*next;
+    FcChar32		hash;
+    FcCharSet		set;
+};
+
+#define FC_CHAR_SET_HASH_SIZE    67
+
+static FcChar32
+FcCharSetHash (FcCharSet *fcs)
+{
+    FcChar32	hash = 0;
+    FcChar32	*p;
+    int		i;
+
+    /* hash in leaves */
+    p = (FcChar32 *) fcs->leaves;
+    for (i = 0; i < fcs->num * sizeof (FcCharLeaf *) / sizeof (FcChar32); i++)
+	hash = ((hash << 1) | (hash >> 31)) ^ *p++;
+    /* hash in numbers */
+    for (i = 0; i < fcs->num; i++)
+	hash = ((hash << 1) | (hash >> 31)) ^ fcs->numbers[i];
+    return hash;
+}
+
+static int	FcCharSetTotal;
+static int	FcCharSetUsed;
+static int	FcCharSetTotalEnts, FcCharSetUsedEnts;
+
+static FcCharSet *
+FcNameParseBuildSet (FcCharSet *fcs)
+{
+    static FcCharSetEnt	*hashTable[FC_CHAR_SET_HASH_SIZE];
+    FcChar32		hash = FcCharSetHash (fcs);
+    FcCharSetEnt	**bucket = &hashTable[hash % FC_CHAR_SET_HASH_SIZE];
+    FcCharSetEnt	*ent;
+
+    FcCharSetTotal++;
+    FcCharSetTotalEnts += fcs->num;
+    for (ent = *bucket; ent; ent = ent->next)
+    {
+	if (ent->hash == hash &&
+	    ent->set.num == fcs->num &&
+	    !memcmp (ent->set.leaves, fcs->leaves,
+		     fcs->num * sizeof (FcCharLeaf *)) &&
+	    !memcmp (ent->set.numbers, fcs->numbers,
+		     fcs->num * sizeof (FcChar16)))
+	{
+	    return &ent->set;
+	}
+    }
+
+    ent = malloc (sizeof (FcCharSetEnt) +
+		  fcs->num * sizeof (FcCharLeaf *) +
+		  fcs->num * sizeof (FcChar16));
+    if (!ent)
+	return 0;
+    FcCharSetUsed++;
+    FcCharSetUsedEnts += fcs->num;
+    
+    ent->set.ref = 0;
+    ent->set.constant = FcTrue;
+    ent->set.num = fcs->num;
+    ent->set.leaves = (FcCharLeaf **) (ent + 1);
+    ent->set.numbers = (FcChar16 *) (ent->set.leaves + fcs->num);
+    memcpy (ent->set.leaves, fcs->leaves, fcs->num * sizeof (FcCharLeaf *));
+    memcpy (ent->set.numbers, fcs->numbers, fcs->num * sizeof (FcChar16));
+
+    ent->hash = hash;
+    ent->next = *bucket;
+    *bucket = ent;
+    return &ent->set;
+}
+
 FcCharSet *
 FcNameParseCharSet (FcChar8 *string)
 {
-    FcCharSet	*c;
+    FcCharSet	*c, *n = 0;
     FcChar32	ucs4;
     FcCharLeaf	*leaf;
+    FcCharLeaf	temp;
+    FcChar32	bits;
     int		i;
 
     c = FcCharSetCreate ();
@@ -959,21 +977,53 @@ FcNameParseCharSet (FcChar8 *string)
 	string = FcCharSetParseValue (string, &ucs4);
 	if (!string)
 	    goto bail1;
-	leaf = FcCharSetFindLeafCreate (c, ucs4);
-	if (!leaf)
-	    goto bail1;
+	bits = 0;
 	for (i = 0; i < 256/32; i++)
 	{
-	    string = FcCharSetParseValue (string, &leaf->map[i]);
+	    string = FcCharSetParseValue (string, &temp.map[i]);
 	    if (!string)
+		goto bail1;
+	    bits |= temp.map[i];
+	}
+	if (bits)
+	{
+	    leaf = FcNameParseBuildLeaf (&temp);
+	    if (!leaf)
+		goto bail1;
+	    if (!FcCharSetInsertLeaf (c, ucs4, leaf))
 		goto bail1;
 	}
     }
-    return c;
+#ifdef CHATTY
+    printf ("          %8s %8s %8s %8s\n", "total", "totalmem", "new", "newmem");
+    printf ("Leaves:   %8d %8d %8d %8d\n",
+	    FcCharLeafTotal, sizeof (FcCharLeaf) * FcCharLeafTotal,
+	    FcCharLeafUsed, sizeof (FcCharLeaf) * FcCharLeafUsed);
+    printf ("Charsets: %8d %8d %8d %8d\n",
+	    FcCharSetTotal, sizeof (FcCharSet) * FcCharSetTotal,
+	    FcCharSetUsed, sizeof (FcCharSet) * FcCharSetUsed);
+    printf ("Tables:   %8d %8d %8d %8d\n",
+	    FcCharSetTotalEnts, FcCharSetTotalEnts * (sizeof (FcCharLeaf *) + sizeof (FcChar16)),
+	    FcCharSetUsedEnts, FcCharSetUsedEnts * (sizeof (FcCharLeaf *) + sizeof (FcChar16)));
+    printf ("Total:    %8s %8d %8s %8d\n", 
+	    "", 
+	    sizeof (FcCharLeaf) * FcCharLeafTotal +
+	    sizeof (FcCharSet) * FcCharSetTotal +
+	    FcCharSetTotalEnts * (sizeof (FcCharLeaf *) + sizeof (FcChar16)),
+	    "",
+	    sizeof (FcCharLeaf) * FcCharLeafUsed +
+	    sizeof (FcCharSet) * FcCharSetUsed +
+	    FcCharSetUsedEnts * (sizeof (FcCharLeaf *) + sizeof (FcChar16)));
+#endif
+    n = FcNameParseBuildSet (c);
 bail1:
-    FcCharSetDestroy (c);
+    if (c->leaves)
+	free (c->leaves);
+    if (c->numbers)
+	free (c->numbers);
+    free (c);
 bail0:
-    return 0;
+    return n;
 }
 
 FcBool
