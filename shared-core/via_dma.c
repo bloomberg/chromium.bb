@@ -80,7 +80,7 @@ via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
 	volatile uint32_t *hw_addr_ptr;
 	uint32_t count;
 	hw_addr_ptr = dev_priv->hw_addr_ptr;
-	cur_addr = agp_base + dev_priv->dma_low;
+	cur_addr = dev_priv->dma_low;
 	/* At high resolution (i.e. 1280x1024) and with high workload within
 	 * a short commmand stream, the following test will fail. It may be
 	 * that the engine is too busy to update hw_addr. Therefore, add
@@ -89,11 +89,10 @@ via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
 	next_addr = cur_addr + size + 64 * 1024;
 	count = 1000000;	/* How long is this? */
 	do {
-		hw_addr = *hw_addr_ptr;
+		hw_addr = *hw_addr_ptr - agp_base;
 		if (count-- == 0) {
-			DRM_ERROR
-			    ("via_cmdbuf_wait timed out hw %x dma_low %x\n",
-			     hw_addr, dev_priv->dma_low);
+			DRM_ERROR("via_cmdbuf_wait timed out hw %x cur_addr %x next_addr %x\n",
+				  hw_addr, cur_addr, next_addr);
 			return -1;
 		}
 	} while ((cur_addr < hw_addr) && (next_addr >= hw_addr));
