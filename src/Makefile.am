@@ -36,8 +36,8 @@ uninstall-ms-import-lib:
 
 else
 
-install-ms-lib:
-uninstall-ms-lib:
+install-ms-import-lib:
+uninstall-ms-import-lib:
 
 endif
 
