@@ -31,6 +31,17 @@
 #ifndef __RADEON_DRV_H__
 #define __RADEON_DRV_H__
 
+/*
+ * Chip flags
+ */
+enum radeon_chip_flags {
+	CHIP_FAMILY_MASK	= 0x0000ffffUL,
+	CHIP_FLAGS_MASK		= 0xffff0000UL,
+	CHIP_IS_MOBILITY	= 0x00010000UL,
+	CHIP_IS_IGP		= 0x00020000UL,
+	CHIP_SINGLE_CRTC	= 0x00040000UL,
+};
+
 #define GET_RING_HEAD(dev_priv)		DRM_READ32(  (dev_priv)->ring_rptr, 0 )
 #define SET_RING_HEAD(dev_priv,val)	DRM_WRITE32( (dev_priv)->ring_rptr, 0, (val) )
 

@@ -581,13 +581,6 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	sema_init( &dev->struct_sem, 1 );
 	sema_init( &dev->ctxlist_sem, 1 );
 
-	if ((dev->minor = DRM(stub_register)(DRIVER_NAME, &DRM(fops),dev)) < 0)
-	{
-		retcode = -EPERM;
-		goto error_out;
-	}
-			
-	dev->device = MKDEV(DRM_MAJOR, dev->minor );
 	dev->name   = DRIVER_NAME;
 
 	dev->pdev   = pdev;
@@ -631,6 +624,14 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 		goto error_out_unreg;
  	}
 #endif
+	if ((dev->minor = DRM(stub_register)(DRIVER_NAME, &DRM(fops),dev)) < 0)
+	{
+		retcode = -EPERM;
+		goto error_out;
+	}
+			
+	dev->device = MKDEV(DRM_MAJOR, dev->minor );
+	
 	DRM(numdevs)++; /* no errors, mark it reserved */
 
 	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d: %s\n",
@@ -645,13 +646,6 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 	if ((retcode = DRIVER_POSTINIT(dev)))
 		goto error_out_unreg;
-
-
-	/*
-	 * don't move this earlier, for upcoming hotplugging support
-	 */
-	class_simple_device_add(DRM(stub_info).drm_class, 
-					MKDEV(DRM_MAJOR, dev->minor), &pdev->dev, "card%d", dev->minor);
 
 	return 0;
 
@@ -752,11 +746,9 @@ static void __exit drm_cleanup( drm_device_t *dev )
 	} else {
 		DRM_DEBUG( "minor %d unregistered\n", dev->minor);
 	}
-	
 #if __HAVE_CTX_BITMAP
 	DRM(ctxbitmap_cleanup)( dev );
 #endif
-
 #if __REALLY_HAVE_AGP && __REALLY_HAVE_MTRR
 	if ( dev->agp && dev->agp->agp_mtrr >= 0) {
 		int retval;
@@ -766,8 +758,6 @@ static void __exit drm_cleanup( drm_device_t *dev )
 		DRM_DEBUG( "mtrr_del=%d\n", retval );
 	}
 #endif
-
-
 #if __REALLY_HAVE_AGP
 	if ( dev->agp ) {
 		DRM(agp_uninit)();
@@ -775,8 +765,6 @@ static void __exit drm_cleanup( drm_device_t *dev )
 		dev->agp = NULL;
 	}
 #endif
-
-	class_simple_device_remove(MKDEV(DRM_MAJOR, dev->minor));
 }
 
 static void __exit drm_exit (void)

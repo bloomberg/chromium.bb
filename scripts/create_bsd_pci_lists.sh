@@ -14,7 +14,7 @@ cat > $OUTFILE <<EOF
 */
 EOF
 
-while read pcivend pcidev pciname
+while read pcivend pcidev attribs pciname
 do
 	if [ "x$pcivend" = "x" ]; then
 		if [ "$finished" = "0" ]; then
@@ -27,7 +27,7 @@ do
 		cardtype=`echo "$pcivend" | cut -s -f2 -d'[' | cut -s -f1 -d']'`
 		if [ "x$cardtype" = "x" ];
 		then
-			echo "	{$pcivend, $pcidev, 0, $pciname}, \\" >> $OUTFILE
+			echo "	{$pcivend, $pcidev, $attribs, $pciname}, \\" >> $OUTFILE
 		else
 			echo "#define "$cardtype"_PCI_IDS \\" >> $OUTFILE
 			finished=0
