@@ -55,6 +55,12 @@
 #include <freetype/ttnameid.h>
 #include <freetype/t1tables.h>
 
+#if (FREETYPE_MINOR > 1 || (FREETYPE_MINOR == 1 && FREETYPE_PATCH >= 3))
+#include <freetype/ftbdf.h>
+#define USE_FTBDF
+#endif
+
+
 /*
  * Keep Han languages separated by eliminating languages
  * that the codePageRange bits says aren't supported
@@ -312,7 +318,8 @@ FcFreeTypeQuery (const FcChar8	*file,
      * Look first in the OS/2 table for the foundry, if
      * not found here, the various notices will be searched for
      * that information, either from the sfnt name tables or
-     * the Postscript FontInfo dictionary
+     * the Postscript FontInfo dictionary.  Finally, the
+     * BDF properties will queried.
      */
     
     if (os2 && os2->version >= 0x0001 && os2->version != 0xffff)
@@ -764,6 +771,73 @@ FcFreeTypeQuery (const FcChar8	*file,
             foundry = FcNoticeFoundry(psfontinfo.notice);
     }
     
+#ifdef USE_FTBDF
+    /*
+     * Finally, look for a FOUNDRY BDF property if no other
+     * mechanism has managed to locate a foundry
+     */
+
+    if (!foundry)
+    {
+	int             rc;
+	BDF_PropertyRec prop;
+	rc = FT_Get_BDF_Property(face, "FOUNDRY", &prop);
+	if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_ATOM)
+	    foundry = prop.u.atom;
+    }
+
+    if (width == -1)
+    {
+	BDF_PropertyRec prop;
+	if (FT_Get_BDF_Property(face, "RELATIVE_SETWIDTH", &prop) == 0 &&
+	    (prop.type == BDF_PROPERTY_TYPE_INTEGER ||
+	     prop.type == BDF_PROPERTY_TYPE_CARDINAL))
+	{
+	    FT_Int32	value;
+	    
+	    if (prop.type == BDF_PROPERTY_TYPE_INTEGER)
+		value = prop.u.integer;
+	    else
+		value = (FT_Int32) prop.u.cardinal;
+	    switch ((value + 5) / 10) {
+	    case 1: width = FC_WIDTH_ULTRACONDENSED; break;
+	    case 2: width = FC_WIDTH_EXTRACONDENSED; break;
+	    case 3: width = FC_WIDTH_CONDENSED; break;
+	    case 4: width = FC_WIDTH_SEMICONDENSED; break;
+	    case 5: width = FC_WIDTH_NORMAL; break;
+	    case 6: width = FC_WIDTH_SEMIEXPANDED; break;
+	    case 7: width = FC_WIDTH_EXPANDED; break;
+	    case 8: width = FC_WIDTH_EXTRAEXPANDED; break;
+	    case 9: width = FC_WIDTH_ULTRAEXPANDED; break;
+	    }
+	}
+	else if (FT_Get_BDF_Property (face, "SETWIDTH_NAME", &prop) == 0 &&
+		 prop.type == BDF_PROPERTY_TYPE_ATOM)
+	{
+	    static struct {
+		FcChar8	    *width_name;
+		int	    width;
+	    } FcSetWidths[] = {
+		{ "Condensed",	    FC_WIDTH_CONDENSED },
+		{ "SemiCondensed",  FC_WIDTH_SEMICONDENSED },
+		{ "Normal",	    FC_WIDTH_NORMAL },
+	    };
+	    int	i;
+
+	    if (FcDebug () & FC_DBG_SCANV)
+		printf ("\nsetwidth: %s\n", prop.u.atom);
+	    for (i = 0; i < sizeof (FcSetWidths) / sizeof (FcSetWidths[0]); i++)
+		if (!FcStrCmpIgnoreCase ((FcChar8 *) prop.u.atom,
+					 FcSetWidths[i].width_name))
+		{
+		    width = FcSetWidths[i].width;
+		    break;
+		}
+	}
+    }
+
+#endif
+
     if (!FcPatternAddInteger (pat, FC_SLANT, slant))
 	goto bail1;
 
