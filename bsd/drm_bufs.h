@@ -799,21 +799,15 @@ int DRM(infobufs)( DRM_IOCTL_ARGS )
 	if ( request.count >= count ) {
 		for ( i = 0, count = 0 ; i < DRM_MAX_ORDER + 1 ; i++ ) {
 			if ( dma->bufs[i].buf_count ) {
-				drm_buf_desc_t *to = &request.list[count];
-				drm_buf_entry_t *from = &dma->bufs[i];
-				drm_freelist_t *list = &dma->bufs[i].freelist;
-				if ( DRM_COPY_TO_USER( &to->count,
-						   &from->buf_count,
-						   sizeof(from->buf_count) ) ||
-				     DRM_COPY_TO_USER( &to->size,
-						   &from->buf_size,
-						   sizeof(from->buf_size) ) ||
-				     DRM_COPY_TO_USER( &to->low_mark,
-						   &list->low_mark,
-						   sizeof(list->low_mark) ) ||
-				     DRM_COPY_TO_USER( &to->high_mark,
-						   &list->high_mark,
-						   sizeof(list->high_mark) ) )
+				drm_buf_desc_t from;
+
+				from.count = dma->bufs[i].buf_count;
+				from.size = dma->bufs[i].buf_size;
+				from.low_mark = dma->bufs[i].freelist.low_mark;
+				from.high_mark = dma->bufs[i].freelist.high_mark;
+
+				if (DRM_COPY_TO_USER(&request.list[count], &from,
+				    sizeof(drm_buf_desc_t)) != 0)
 					return DRM_ERR(EFAULT);
 
 				DRM_DEBUG( "%d %d %d %d %d\n",
