@@ -55,10 +55,9 @@
 #include <freetype/ttnameid.h>
 #include <freetype/t1tables.h>
 
-#if (FREETYPE_MINOR > 1 || (FREETYPE_MINOR == 1 && FREETYPE_PATCH >= 4))
+#if HAVE_FT_GET_BDF_PROPERTY
 #include <freetype/ftbdf.h>
 #include <freetype/ftmodule.h>
-#define USE_FTBDF
 #define HAS_BDF_PROPERTY(f) ((f) && (f)->driver && \
 			     (f)->driver->root.clazz->get_interface)
 #define MY_Get_BDF_Property(f,n,p) (HAS_BDF_PROPERTY(f) ? \
@@ -66,6 +65,13 @@
 				    FT_Err_Invalid_Argument)
 #endif
 
+#if !HAVE_FT_GET_BDF_PROPERTY
+#warning "No FT_Get_BDF_Property"
+#endif
+
+#if !HAVE_FT_GET_PS_FONT_INFO
+#warning "No FT_Get_Font_Info"
+#endif
 
 /*
  * Keep Han languages separated by eliminating languages
@@ -357,8 +363,10 @@ FcFreeTypeQuery (const FcChar8	*file,
     const FcChar8   *foundry = 0;
     int		    spacing;
     TT_OS2	    *os2;
+#if HAVE_FT_GET_PS_FONT_INFO
     PS_FontInfoRec  psfontinfo;
-#ifdef USE_FTBDF
+#endif
+#if HAVE_FT_GET_BDF_PROPERTY
     BDF_PropertyRec prop;
 #endif
     TT_Header	    *head;
@@ -793,6 +801,7 @@ FcFreeTypeQuery (const FcChar8	*file,
      * Code from g2@magestudios.net (Gerard Escalante)
      */
     
+#if HAVE_FT_GET_PS_FONT_INFO
     if (FT_Get_PS_Font_Info(face, &psfontinfo) == 0)
     {
 	if (weight == -1 && psfontinfo.weight)
@@ -817,8 +826,9 @@ FcFreeTypeQuery (const FcChar8	*file,
         if(!foundry)
             foundry = FcNoticeFoundry(psfontinfo.notice);
     }
+#endif /* HAVE_FT_GET_PS_FONT_INFO */
     
-#ifdef USE_FTBDF
+#if HAVE_FT_GET_BDF_PROPERTY
     /*
      * Finally, look for a FOUNDRY BDF property if no other
      * mechanism has managed to locate a foundry
@@ -866,7 +876,6 @@ FcFreeTypeQuery (const FcChar8	*file,
 		printf ("\tsetwidth %s maps to %d\n", prop.u.atom, width);
 	}
     }
-
 #endif
 
     /*
@@ -934,7 +943,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!cs)
 	goto bail1;
 
-#ifdef USE_FTBDF
+#if HAVE_FT_GET_BDF_PROPERTY
     /* For PCF fonts, override the computed spacing with the one from
        the property */
     if(MY_Get_BDF_Property(face, "SPACING", &prop) == 0 &&
@@ -985,7 +994,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 		goto bail1;
 	if (!FcPatternAddBool (pat, FC_ANTIALIAS, FcFalse))
 	    goto bail1;
-#ifdef USE_FTBDF
+#if HAVE_FT_GET_BDF_PROPERTY
         if(face->num_fixed_sizes == 1) {
             int rc;
             int value;
@@ -1063,30 +1072,9 @@ bail:
 
 
 /*
- * Figure out whether the available freetype has FT_Get_Next_Char
- */
-
-#if FREETYPE_MAJOR > 2
-# define HAS_NEXT_CHAR
-#else
-# if FREETYPE_MAJOR == 2
-#  if FREETYPE_MINOR > 0
-#   define HAS_NEXT_CHAR
-#  else
-#   if FREETYPE_MINOR == 0
-#    if FREETYPE_PATCH >= 9
-#     define HAS_NEXT_CHAR
-#    endif
-#   endif
-#  endif
-# endif
-#endif
-
-/*
  * For our purposes, this approximation is sufficient
  */
-#ifndef HAS_NEXT_CHAR
-#define FT_Get_First_Char(face, gi) ((*(gi) = 1), 1)
+#if !HAVE_FT_GET_NEXT_CHAR
 #define FT_Get_Next_Char(face, ucs4, gi) ((ucs4) >= 0xffffff ? \
 					  (*(gi) = 0), 0 : \
 					  (*(gi) = 1), (ucs4) + 1)

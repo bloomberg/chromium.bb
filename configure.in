@@ -113,12 +113,15 @@ AC_SUBST(FREETYPE_LIBS)
 AC_SUBST(FREETYPE_CFLAGS)
 
 #
-# Check to see whether we have FT_Get_First_Char(), new in 2.0.9
+# Check to see whether we have:
+#  FT_Get_Next_Char
+#  FT_Get_BDF_Property
+#  FT_Get_PS_Font_Info
 #
 
 fontconfig_save_libs=$LIBS
 LIBS="$LIBS $FREETYPE_LIBS"
-AC_CHECK_FUNCS(FT_Get_First_Char)
+AC_CHECK_FUNCS(FT_Get_Next_Char FT_Get_BDF_Property FT_Get_PS_Font_Info)
 LIBS=$fontconfig_save_libs
 
 #
