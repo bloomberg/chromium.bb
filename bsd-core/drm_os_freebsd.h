@@ -59,7 +59,7 @@
 #include <sys/mman.h>
 #include <sys/rman.h>
 #include <sys/memrange.h>
-#include <pci/pcivar.h>
+#include <dev/pci/pcivar.h>
 #if __FreeBSD_version >= 500000
 #include <sys/selinfo.h>
 #else
