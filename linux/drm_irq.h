@@ -202,10 +202,6 @@ int DRM(control)( struct inode *inode, struct file *filp,
 	drm_device_t *dev = priv->dev;
 	drm_control_t ctl;
 	
-	/* if we haven't dma then no need for this control */
-	if (!(dev->driver_features & DRIVER_HAVE_DMA))
-		return -EINVAL;
-
 	/* if we haven't irq we fallback for compatibility reasons - this used to be a separate function in drm_dma.h */
 
 	if ( copy_from_user( &ctl, (drm_control_t __user *)arg, sizeof(ctl) ) )
