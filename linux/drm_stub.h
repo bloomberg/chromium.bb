@@ -76,6 +76,7 @@ static struct file_operations DRM(stub_fops) = {
 	.open  = DRM(stub_open)
 };
 
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,0)
 static int drm_hotplug (struct class_device *dev, char **envp, int num_envp,
 				char *buffer, int buffer_size)
 {
@@ -142,6 +143,7 @@ static int drm_hotplug (struct class_device *dev, char **envp, int num_envp,
 	
 	return 0;
 }
+#endif
 
 /**
  * Get a device minor number.

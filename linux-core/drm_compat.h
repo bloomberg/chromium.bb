@@ -120,11 +120,15 @@ struct device;
 
 #define class_simple_device_add(...) do {} while (0)
 
-static inline void class_simple_device_remove(dev_t dev){};
+static inline void class_simple_device_remove(dev_t dev){}
 
-static inline void class_simple_destroy(struct class_simple *cs){};
+static inline void class_simple_destroy(struct class_simple *cs){}
 
 static inline struct class_simple *class_simple_create(struct module *owner, char *name) { return (struct class_simple *)owner; }
+
+static inline void drm_hotplug(void) {}
+
+static inline void class_simple_set_hotplug(struct class_simple *cs, void (*fn)(void));
 
 #ifndef pci_pretty_name
 #define pci_pretty_name(x) x->name

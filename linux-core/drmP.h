@@ -569,6 +569,7 @@ typedef struct drm_vbl_sig {
 
 #endif
 
+
 /**
  * DRM device structure.
  */
