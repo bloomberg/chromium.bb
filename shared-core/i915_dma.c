@@ -12,6 +12,23 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
+drm_ioctl_desc_t i915_ioctls[] = {
+	[DRM_IOCTL_NR(DRM_I915_INIT)] = {i915_dma_init, 1, 1},
+	[DRM_IOCTL_NR(DRM_I915_FLUSH)] = {i915_flush_ioctl, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_FLIP)] = {i915_flip_bufs, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_BATCHBUFFER)] = {i915_batchbuffer, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_IRQ_EMIT)] = {i915_irq_emit, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_IRQ_WAIT)] = {i915_irq_wait, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_GETPARAM)] = {i915_getparam, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_SETPARAM)] = {i915_setparam, 1, 1},
+	[DRM_IOCTL_NR(DRM_I915_ALLOC)] = {i915_mem_alloc, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_FREE)] = {i915_mem_free, 1, 0},
+	[DRM_IOCTL_NR(DRM_I915_INIT_HEAP)] = {i915_mem_init_heap, 1, 1},
+	[DRM_IOCTL_NR(DRM_I915_CMDBUFFER)] = {i915_cmdbuffer, 1, 0}
+};
+
+int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);
+
 static inline void i915_print_status_page(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
@@ -94,15 +111,8 @@ int i915_dma_cleanup(drm_device_t * dev)
 		}
 
 		if (dev_priv->hw_status_page) {
-#ifdef __FreeBSD__
-#if __FreeBSD_version > 500000
-			contigfree(dev_priv->hw_status_page, PAGE_SIZE, M_DRM);
-#endif
-#else
-			pci_free_consistent(dev->pdev, PAGE_SIZE,
-					    dev_priv->hw_status_page,
-					    dev_priv->dma_status_page);
-#endif
+			drm_pci_free(dev, PAGE_SIZE, dev_priv->hw_status_page,
+				     dev_priv->dma_status_page);
 			/* Need to rewrite hardware status page */
 			I915_WRITE(0x02080, 0x1ffff000);
 		}
@@ -179,15 +189,8 @@ static int i915_initialize(drm_device_t * dev,
 	dev_priv->allow_batchbuffer = 1;
 
 	/* Program Hardware Status Page */
-#ifdef __FreeBSD__
-	dev_priv->hw_status_page =
-	    contigmalloc(PAGE_SIZE, M_DRM, M_NOWAIT, 0ul, 0, 0, 0);
-	dev_priv->dma_status_page = vtophys(dev_priv->hw_status_page);
-#else
-	dev_priv->hw_status_page =
-	    pci_alloc_consistent(dev->pdev, PAGE_SIZE,
-				 &dev_priv->dma_status_page);
-#endif
+	dev_priv->hw_status_page = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 
+	    0xffffffff, &dev_priv->dma_status_page);
 
 	if (!dev_priv->hw_status_page) {
 		dev->dev_private = (void *)dev_priv;

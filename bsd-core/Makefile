@@ -40,7 +40,7 @@ SHAREDFILES=	drm.h \
 		sis_ds.c \
 		sis_ds.h \
 		sis_mm.c \
-		tdfx.h \
+		tdfx_drv.h \
 		via.h \
 		via_drm.h \
 		via_drv.c \

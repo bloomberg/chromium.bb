@@ -25,29 +25,75 @@
  *
  */
 
-#include "sis.h"
 #include "drmP.h"
 #include "sis_drm.h"
 #include "sis_drv.h"
+#include "drm_pciids.h"
 
-#include "drm_auth.h"
-#include "drm_agpsupport.h"
-#include "drm_bufs.h"
-#include "drm_context.h"
-#include "drm_dma.h"
-#include "drm_drawable.h"
-#include "drm_drv.h"
-#include "drm_fops.h"
-#include "drm_ioctl.h"
-#include "drm_lock.h"
-#include "drm_memory.h"
-#include "drm_vm.h"
-#include "drm_sysctl.h"
+/* drv_PCI_IDs comes from drm_pciids.h, generated from drm_pciids.txt. */
+static drm_pci_id_list_t sis_pciidlist[] = {
+	sis_PCI_IDS
+};
+
+extern drm_ioctl_desc_t sis_ioctls[];
+extern int sis_max_ioctl;
+
+static void sis_configure(drm_device_t *dev)
+{
+	dev->dev_priv_size = 1; /* No dev_priv */
+	dev->context_ctor = sis_init_context;
+	dev->context_dtor = sis_final_context;
+
+	dev->driver_ioctls = sis_ioctls;
+	dev->max_driver_ioctl = sis_max_ioctl;
+
+	dev->driver_name = DRIVER_NAME;
+	dev->driver_desc = DRIVER_DESC;
+	dev->driver_date = DRIVER_DATE;
+	dev->driver_major = DRIVER_MAJOR;
+	dev->driver_minor = DRIVER_MINOR;
+	dev->driver_patchlevel = DRIVER_PATCHLEVEL;
+
+	dev->use_agp = 1;
+	dev->use_mtrr = 1;
+}
 
 #ifdef __FreeBSD__
-/* Avoid clash with sis ethernet */
-DRIVER_MODULE(sisdrm, pci, sisdrv_driver, sisdrv_devclass, 0, 0);
-#elif defined(__NetBSD__)
-CFDRIVER_DECL(sis, DV_TTY, NULL);
-#endif /* __FreeBSD__ */
+static int
+sis_probe(device_t dev)
+{
+	return drm_probe(dev, sis_pciidlist);
+}
 
+static int
+sis_attach(device_t nbdev)
+{
+	drm_device_t *dev = device_get_softc(nbdev);
+
+	bzero(dev, sizeof(drm_device_t));
+	sis_configure(dev);
+	return drm_attach(nbdev, sis_pciidlist);
+}
+
+static device_method_t sis_methods[] = {
+	/* Device interface */
+	DEVMETHOD(device_probe,		sis_probe),
+	DEVMETHOD(device_attach,	sis_attach),
+	DEVMETHOD(device_detach,	drm_detach),
+
+	{ 0, 0 }
+};
+
+static driver_t sis_driver = {
+	"drm",
+	sis_methods,
+	sizeof(drm_device_t)
+};
+
+extern devclass_t drm_devclass;
+DRIVER_MODULE(sisdrm, pci, sis_driver, drm_devclass, 0, 0);
+MODULE_DEPEND(sisdrm, drm, 1, 1, 1);
+
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
+CFDRIVER_DECL(sis, DV_TTY, NULL);
+#endif

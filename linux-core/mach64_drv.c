@@ -64,22 +64,8 @@ static struct pci_device_id pciidlist[] = {
 	mach64_PCI_IDS
 };
 
-/* Interface history:
- *
- * 1.0 - Initial mach64 DRM
- *
- */
-static drm_ioctl_desc_t ioctls[] = {
-	[DRM_IOCTL_NR(DRM_MACH64_INIT)] = {mach64_dma_init, 1, 1},
-	[DRM_IOCTL_NR(DRM_MACH64_CLEAR)] = {mach64_dma_clear, 1, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_SWAP)] = {mach64_dma_swap, 1, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_IDLE)] = {mach64_dma_idle, 1, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_RESET)] = {mach64_engine_reset, 1, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_VERTEX)] = {mach64_dma_vertex, 1, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_BLIT)] = {mach64_dma_blit, 1, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_FLUSH)] = {mach64_dma_flush, 1, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_GETPARAM)] = {mach64_get_param, 1, 0},
-};
+extern drm_ioctl_desc_t mach64_ioctls[];
+extern int mach64_max_ioctl;
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
@@ -97,8 +83,8 @@ static struct drm_driver driver = {
 	.get_reg_ofs = drm_core_get_reg_ofs,
 	.postinit = postinit,
 	.version = version,
-	.ioctls = ioctls,
-	.num_ioctls = DRM_ARRAY_SIZE(ioctls),
+	.ioctls = mach64_ioctls,
+	.num_ioctls = mach64_max_ioctl,
 	.dma_ioctl = mach64_dma_buffers,
 	.fops = {
 		.owner = THIS_MODULE,

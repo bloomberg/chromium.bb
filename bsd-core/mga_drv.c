@@ -30,29 +30,87 @@
  *
  */
 
-#include "mga.h"
 #include "drmP.h"
 #include "drm.h"
 #include "mga_drm.h"
 #include "mga_drv.h"
+#include "drm_pciids.h"
 
-#include "drm_agpsupport.h"
-#include "drm_auth.h"
-#include "drm_bufs.h"
-#include "drm_context.h"
-#include "drm_dma.h"
-#include "drm_drawable.h"
-#include "drm_drv.h"
-#include "drm_fops.h"
-#include "drm_ioctl.h"
-#include "drm_irq.h"
-#include "drm_lock.h"
-#include "drm_memory.h"
-#include "drm_vm.h"
-#include "drm_sysctl.h"
+/* drv_PCI_IDs comes from drm_pciids.h, generated from drm_pciids.txt. */
+static drm_pci_id_list_t mga_pciidlist[] = {
+	mga_PCI_IDS
+};
+
+extern drm_ioctl_desc_t mga_ioctls[];
+extern int mga_max_ioctl;
+
+static void mga_configure(drm_device_t *dev)
+{
+	dev->dev_priv_size = sizeof(drm_mga_buf_priv_t);
+	/* XXX dev->prerelease = mga_driver_prerelease; */
+	dev->pretakedown = mga_driver_pretakedown;
+	dev->vblank_wait = mga_driver_vblank_wait;
+	dev->irq_preinstall = mga_driver_irq_preinstall;
+	dev->irq_postinstall = mga_driver_irq_postinstall;
+	dev->irq_uninstall = mga_driver_irq_uninstall;
+	dev->irq_handler = mga_driver_irq_handler;
+	dev->dma_ioctl = mga_dma_buffers;
+	dev->dma_quiescent = mga_driver_dma_quiescent;
+
+	dev->driver_ioctls = mga_ioctls;
+	dev->max_driver_ioctl = mga_max_ioctl;
+
+	dev->driver_name = DRIVER_NAME;
+	dev->driver_desc = DRIVER_DESC;
+	dev->driver_date = DRIVER_DATE;
+	dev->driver_major = DRIVER_MAJOR;
+	dev->driver_minor = DRIVER_MINOR;
+	dev->driver_patchlevel = DRIVER_PATCHLEVEL;
+
+	dev->use_agp = 1;
+	dev->require_agp = 1;
+	dev->use_mtrr = 1;
+	dev->use_dma = 1;
+	dev->use_irq = 1;
+	dev->use_vbl_irq = 1;
+}
 
 #ifdef __FreeBSD__
-DRIVER_MODULE(mga, pci, mga_driver, mga_devclass, 0, 0);
-#elif defined(__NetBSD__)
+static int
+mga_probe(device_t dev)
+{
+	return drm_probe(dev, mga_pciidlist);
+}
+
+static int
+mga_attach(device_t nbdev)
+{
+	drm_device_t *dev = device_get_softc(nbdev);
+
+	bzero(dev, sizeof(drm_device_t));
+	mga_configure(dev);
+	return drm_attach(nbdev, mga_pciidlist);
+}
+
+static device_method_t mga_methods[] = {
+	/* Device interface */
+	DEVMETHOD(device_probe,		mga_probe),
+	DEVMETHOD(device_attach,	mga_attach),
+	DEVMETHOD(device_detach,	drm_detach),
+
+	{ 0, 0 }
+};
+
+static driver_t mga_driver = {
+	"drm",
+	mga_methods,
+	sizeof(drm_device_t)
+};
+
+extern devclass_t drm_devclass;
+DRIVER_MODULE(mga, pci, mga_driver, drm_devclass, 0, 0);
+MODULE_DEPEND(mga, drm, 1, 1, 1);
+
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 CFDRIVER_DECL(mga, DV_TTY, NULL);
 #endif

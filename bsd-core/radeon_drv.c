@@ -109,6 +109,6 @@ extern devclass_t drm_devclass;
 DRIVER_MODULE(radeon, pci, radeon_driver, drm_devclass, 0, 0);
 MODULE_DEPEND(radeon, drm, 1, 1, 1);
 
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 CFDRIVER_DECL(radeon, DV_TTY, NULL);
 #endif /* __FreeBSD__ */

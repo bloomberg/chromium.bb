@@ -58,17 +58,11 @@ static int version(drm_version_t * version)
 }
 
 static struct pci_device_id pciidlist[] = {
-	sisdrv_PCI_IDS
+	sis_PCI_IDS
 };
 
-static drm_ioctl_desc_t ioctls[] = {
-	[DRM_IOCTL_NR(DRM_SIS_FB_ALLOC)] = {sis_fb_alloc, 1, 0},
-	[DRM_IOCTL_NR(DRM_SIS_FB_FREE)] = {sis_fb_free, 1, 0},
-	[DRM_IOCTL_NR(DRM_SIS_AGP_INIT)] = {sis_ioctl_agp_init, 1, 1},
-	[DRM_IOCTL_NR(DRM_SIS_AGP_ALLOC)] = {sis_ioctl_agp_alloc, 1, 0},
-	[DRM_IOCTL_NR(DRM_SIS_AGP_FREE)] = {sis_ioctl_agp_free, 1, 0},
-	[DRM_IOCTL_NR(DRM_SIS_FB_INIT)] = {sis_fb_init, 1, 1}
-};
+extern drm_ioctl_desc_t sis_ioctls[];
+extern int sis_max_ioctl;
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
@@ -80,8 +74,8 @@ static struct drm_driver driver = {
 	.get_reg_ofs = drm_core_get_reg_ofs,
 	.postinit = postinit,
 	.version = version,
-	.ioctls = ioctls,
-	.num_ioctls = DRM_ARRAY_SIZE(ioctls),
+	.ioctls = sis_ioctls,
+	.num_ioctls = sis_max_ioctl,
 	.fops = {
 		.owner = THIS_MODULE,
 		.open = drm_open,

@@ -1,4 +1,4 @@
-/* r128_drv.c -- ATI Rage 128 driver -*- linux-c -*-
+/* mach64_drv.c -- ATI Rage 128 driver -*- linux-c -*-
  * Created: Mon Dec 13 09:47:27 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -32,26 +32,85 @@
 
 #include <sys/types.h>
 
-#include "mach64.h"
 #include "drmP.h"
 #include "drm.h"
 #include "mach64_drm.h"
 #include "mach64_drv.h"
+#include "drm_pciids.h"
 
-#include "drm_agpsupport.h"
-#include "drm_auth.h"
-#include "drm_bufs.h"
-#include "drm_context.h"
-#include "drm_dma.h"
-#include "drm_drawable.h"
-#include "drm_drv.h"
-#include "drm_fops.h"
-#include "drm_ioctl.h"
-#include "drm_irq.h"
-#include "drm_lock.h"
-#include "drm_memory.h"
-#include "drm_pci.h"
-#include "drm_sysctl.h"
-#include "drm_vm.h"
+/* drv_PCI_IDs comes from drm_pciids.h, generated from drm_pciids.txt. */
+static drm_pci_id_list_t mach64_pciidlist[] = {
+	mach64_PCI_IDS
+};
 
-DRIVER_MODULE(mach64, pci, mach64_driver, mach64_devclass, 0, 0);
+extern drm_ioctl_desc_t mach64_ioctls[];
+extern int mach64_max_ioctl;
+
+static void mach64_configure(drm_device_t *dev)
+{
+	dev->dev_priv_size = 1; /* No dev_priv */
+	dev->pretakedown = mach64_driver_pretakedown;
+	dev->vblank_wait = mach64_driver_vblank_wait;
+	dev->irq_preinstall = mach64_driver_irq_preinstall;
+	dev->irq_postinstall = mach64_driver_irq_postinstall;
+	dev->irq_uninstall = mach64_driver_irq_uninstall;
+	dev->irq_handler = mach64_driver_irq_handler;
+	dev->dma_ioctl = mach64_dma_buffers;
+
+	dev->driver_ioctls = mach64_ioctls;
+	dev->max_driver_ioctl = mach64_max_ioctl;
+
+	dev->driver_name = DRIVER_NAME;
+	dev->driver_desc = DRIVER_DESC;
+	dev->driver_date = DRIVER_DATE;
+	dev->driver_major = DRIVER_MAJOR;
+	dev->driver_minor = DRIVER_MINOR;
+	dev->driver_patchlevel = DRIVER_PATCHLEVEL;
+
+	dev->use_agp = 1;
+	dev->use_mtrr = 1;
+	dev->use_pci_dma = 1;
+	dev->use_dma = 1;
+	dev->use_irq = 1;
+	dev->use_vbl_irq = 1;
+}
+
+#ifdef __FreeBSD__
+static int
+mach64_probe(device_t dev)
+{
+	return drm_probe(dev, mach64_pciidlist);
+}
+
+static int
+mach64_attach(device_t nbdev)
+{
+	drm_device_t *dev = device_get_softc(nbdev);
+
+	bzero(dev, sizeof(drm_device_t));
+	mach64_configure(dev);
+	return drm_attach(nbdev, mach64_pciidlist);
+}
+
+static device_method_t mach64_methods[] = {
+	/* Device interface */
+	DEVMETHOD(device_probe,		mach64_probe),
+	DEVMETHOD(device_attach,	mach64_attach),
+	DEVMETHOD(device_detach,	drm_detach),
+
+	{ 0, 0 }
+};
+
+static driver_t mach64_driver = {
+	"drm",
+	mach64_methods,
+	sizeof(drm_device_t)
+};
+
+extern devclass_t drm_devclass;
+DRIVER_MODULE(mach64, pci, mach64_driver, drm_devclass, 0, 0);
+MODULE_DEPEND(mach64, drm, 1, 1, 1);
+
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
+CFDRIVER_DECL(mach64, DV_TTY, NULL);
+#endif

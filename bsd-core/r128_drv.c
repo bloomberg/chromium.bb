@@ -111,6 +111,6 @@ extern devclass_t drm_devclass;
 DRIVER_MODULE(r128, pci, r128_driver, drm_devclass, 0, 0);
 MODULE_DEPEND(r128, drm, 1, 1, 1);
 
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 CFDRIVER_DECL(r128, DV_TTY, NULL);
 #endif

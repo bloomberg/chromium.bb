@@ -71,18 +71,8 @@ static struct pci_device_id pciidlist[] = {
 	mga_PCI_IDS
 };
 
-static drm_ioctl_desc_t ioctls[] = {
-	[DRM_IOCTL_NR(DRM_MGA_INIT)] = {mga_dma_init, 1, 1},
-	[DRM_IOCTL_NR(DRM_MGA_FLUSH)] = {mga_dma_flush, 1, 0},
-	[DRM_IOCTL_NR(DRM_MGA_RESET)] = {mga_dma_reset, 1, 0},
-	[DRM_IOCTL_NR(DRM_MGA_SWAP)] = {mga_dma_swap, 1, 0},
-	[DRM_IOCTL_NR(DRM_MGA_CLEAR)] = {mga_dma_clear, 1, 0},
-	[DRM_IOCTL_NR(DRM_MGA_VERTEX)] = {mga_dma_vertex, 1, 0},
-	[DRM_IOCTL_NR(DRM_MGA_INDICES)] = {mga_dma_indices, 1, 0},
-	[DRM_IOCTL_NR(DRM_MGA_ILOAD)] = {mga_dma_iload, 1, 0},
-	[DRM_IOCTL_NR(DRM_MGA_BLIT)] = {mga_dma_blit, 1, 0},
-	[DRM_IOCTL_NR(DRM_MGA_GETPARAM)] = {mga_getparam, 1, 0},
-};
+extern drm_ioctl_desc_t mga_ioctls[];
+extern int mga_max_ioctl;
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
@@ -102,8 +92,8 @@ static struct drm_driver driver = {
 	.get_reg_ofs = drm_core_get_reg_ofs,
 	.postinit = postinit,
 	.version = version,
-	.ioctls = ioctls,
-	.num_ioctls = DRM_ARRAY_SIZE(ioctls),
+	.ioctls = mga_ioctls,
+	.num_ioctls = mga_max_ioctl,
 	.dma_ioctl = mga_dma_buffers,
 	.fops = {
 		.owner = THIS_MODULE,
