@@ -745,6 +745,7 @@ static void __exit drm_cleanup( drm_device_t *dev )
 	if (DRM(fb_loaded)==0)
 		pci_disable_device(dev->pdev);
 
+	DRM(numdevs)--;
 	if ( DRM(stub_unregister)(dev->minor) ) {
 		DRM_ERROR( "Cannot unload module\n" );
 	} else {

@@ -140,10 +140,12 @@ static int DRM(stub_putminor)(int minor)
 	(*DRM(stub_info).info_count)--;
 
 	if ((*DRM(stub_info).info_count)!=0) {
-       	        DRM_DEBUG("inter_module_put called %d\n", *DRM(stub_info).info_count);
-		inter_module_put("drm");
+		if (DRM(numdevs)==0) {
+			DRM_DEBUG("inter_module_put called %d\n", *DRM(stub_info).info_count);
+			inter_module_put("drm");
+		}
 	} else {
-	        DRM_DEBUG("unregistering inter_module \n");
+		DRM_DEBUG("unregistering inter_module \n");
 		inter_module_unregister("drm");
 		DRM(free)(DRM(stub_list),
 			  sizeof(*DRM(stub_list)) * DRM_STUB_MAXCARDS,
@@ -176,38 +178,46 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 	int ret2;
 
 	DRM_DEBUG("\n");
-	/* use the inter_module_get to check - as if the same module
-	   registers chrdev twice it succeeds */
-	i = (struct drm_stub_info *)inter_module_get("drm");
-	if (i) {
-				/* Already registered */
-		DRM(stub_info).info_register   = i->info_register;
-		DRM(stub_info).info_unregister = i->info_unregister;
-		DRM(stub_info).drm_class = i->drm_class;
-		DRM(stub_info).info_count = i->info_count;
-		DRM_DEBUG("already registered %d\n", *i->info_count);
-	} else if (*DRM(stub_info).info_count == 0) {
 
-	        ret1 = register_chrdev(DRM_MAJOR, "drm", &DRM(stub_fops));
-                if (ret1 < 0) {
-		  printk (KERN_ERR "Error registering drm major number.\n");
-		  return ret1;
+	/* if we are registering a second device we don't need to worry 
+	   about inter module get/put and other things as they've been
+	   done already */
+	if (DRM(numdevs) == 0) {
+		/* use the inter_module_get to check - as if the same module
+		   registers chrdev twice it succeeds */
+		i = (struct drm_stub_info *)inter_module_get("drm");
+		if (i) {
+			/* Already registered */
+			DRM(stub_info).info_register   = i->info_register;
+			DRM(stub_info).info_unregister = i->info_unregister;
+			DRM(stub_info).drm_class = i->drm_class;
+			DRM(stub_info).info_count = i->info_count;
+			DRM_DEBUG("already registered %d\n", *i->info_count);
+		} else if (*DRM(stub_info).info_count == 0) {
+
+			ret1 = register_chrdev(DRM_MAJOR, "drm", &DRM(stub_fops));
+			if (ret1 < 0) {
+				printk (KERN_ERR "Error registering drm major number.\n");
+				return ret1;
+			}
+
+			DRM(stub_info).drm_class = class_simple_create(THIS_MODULE, "drm");
+			if (IS_ERR(DRM(stub_info).drm_class)) {
+				printk (KERN_ERR "Error creating drm class.\n");
+				unregister_chrdev(DRM_MAJOR, "drm");
+				return PTR_ERR(DRM(stub_info).drm_class);
+			}
+			DRM_DEBUG("calling inter_module_register\n");
+			inter_module_register("drm", THIS_MODULE, &DRM(stub_info));
 		}
-		
-		DRM(stub_info).drm_class = class_simple_create(THIS_MODULE, "drm");
-		if (IS_ERR(DRM(stub_info).drm_class)) {
-                        printk (KERN_ERR "Error creating drm class.\n");
-                        unregister_chrdev(DRM_MAJOR, "drm");
-                        return PTR_ERR(DRM(stub_info).drm_class);
-		}
-		DRM_DEBUG("calling inter_module_register\n");
-		inter_module_register("drm", THIS_MODULE, &DRM(stub_info));
 	}
+	else 
+		DRM_DEBUG("already retrieved inter_module information\n");
 
 	if (DRM(stub_info).info_register) {
 		ret2 = DRM(stub_info).info_register(name, fops, dev);
 		if (ret2 < 0) {
-			if (!i) {
+			if (DRM(numdevs)==0 && !i) {
 				inter_module_unregister("drm");
 				unregister_chrdev(DRM_MAJOR, "drm");
 				class_simple_destroy(DRM(stub_info).drm_class);
@@ -219,7 +229,7 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 	}
 	return -1;
 }
-
+	
 /**
  * Unregister.
  *
