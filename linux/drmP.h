@@ -166,6 +166,12 @@
 #define pte_unmap(pte)
 #endif
 
+#ifndef list_for_each_safe
+#define list_for_each_safe(pos, n, head)				\
+	for (pos = (head)->next, n = pos->next; pos != (head);		\
+		pos = n, n = pos->next)
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,19)
 static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 {
