@@ -318,8 +318,12 @@ the property are given the indicated binding. 'mode' is one of:
     </programlisting>
   </para></refsect2>
   <refsect2><title><sgmltag>int</>, <sgmltag>double</>, <sgmltag>string</>, <sgmltag>bool</></title><para>
-These elements hold a single value of the indicated type.  <sgmltag>bool</> elements
-hold either true or false.
+These elements hold a single value of the indicated type.  <sgmltag>bool</>
+elements hold either true or false.  An important limitation exists in
+the parsing of floating point numbers -- fontconfig requires that
+the mantissa start with a digit, not a decimal point, so insert a leading
+zero for purely fractional values (e.g. use 0.5 instead of .5 and -0.5
+instead of -.5).
   </para></refsect2>
   <refsect2><title><sgmltag>matrix</></title><para>
 This element holds the four <sgmltag>double</> elements of an affine
