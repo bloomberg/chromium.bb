@@ -1597,21 +1597,16 @@ FcFreeTypeMapChar (FcChar32 ucs4, const FcCharMap *map)
     high = map->nent - 1;
     if (ucs4 < map->ent[low].bmp || map->ent[high].bmp < ucs4)
 	return ~0;
-    while (high - low > 1)
+    while (low <= high)
     {
 	mid = (high + low) >> 1;
 	bmp = map->ent[mid].bmp;
 	if (ucs4 == bmp)
 	    return (FT_ULong) map->ent[mid].encode;
 	if (ucs4 < bmp)
-	    high = mid;
+	    high = mid - 1;
 	else
-	    low = mid;
-    }
-    for (mid = low; mid <= high; mid++)
-    {
-	if (ucs4 == map->ent[mid].bmp)
-	    return (FT_ULong) map->ent[mid].encode;
+	    low = mid + 1;
     }
     return ~0;
 }

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.10 2002/06/08 17:32:05 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.12 2002/06/19 20:08:22 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1666,6 +1666,9 @@ FcConfigParseAndLoad (FcConfig	    *config,
 
     if (!FcConfigInit (&parse, name, config, p))
 	goto bail2;
+
+    if (!FcConfigAddConfigFile (config, filename))
+	goto bail3;
 
     XML_SetUserData (p, &parse);
     

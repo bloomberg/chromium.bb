@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.13 2002/06/19 20:08:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.14 2002/06/20 03:43:09 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -79,27 +79,25 @@ bail0:
     return 0;
 }
 
-static time_t
+typedef struct _FcFileTime {
+    time_t  time;
+    FcBool  set;
+} FcFileTime;
+
+static FcFileTime
 FcConfigNewestFile (FcStrSet *files)
 {
     FcStrList	    *list = FcStrListCreate (files);
-    FcBool	    set = FcFalse;
-    time_t	    newest = 0;
+    FcFileTime	    newest = { 0, FcFalse };
     FcChar8	    *file;
     struct  stat    statb;
 
     if (list)
     {
 	while ((file = FcStrListNext (list)))
-	{
 	    if (stat ((char *) file, &statb) == 0)
-	    {
-		if (!set)
-		    newest = statb.st_mtime;
-		else if (statb.st_mtime - newest > 0)
-		    newest = statb.st_mtime;
-	    }
-	}
+		if (!newest.set || statb.st_mtime - newest.time > 0)
+		    newest.time = statb.st_mtime;
 	FcStrListDone (list);
     }
     return newest;
@@ -108,9 +106,8 @@ FcConfigNewestFile (FcStrSet *files)
 FcBool
 FcConfigUptoDate (FcConfig *config)
 {
-    time_t  config_time;
-    time_t  font_time;
-    time_t  now = time(0);
+    FcFileTime	config_time, font_time;
+    time_t	now = time(0);
     if (!config)
     {
 	config = FcConfigGetCurrent ();
@@ -119,8 +116,8 @@ FcConfigUptoDate (FcConfig *config)
     }
     config_time = FcConfigNewestFile (config->configFiles);
     font_time = FcConfigNewestFile (config->configDirs);
-    if (config_time - config->rescanTime > 0 ||
-	font_time - config->rescanTime > 0)
+    if ((config_time.set && config_time.time - config->rescanTime > 0) ||
+	(font_time.set && font_time.time - config->rescanTime) > 0)
     {
 	return FcFalse;
     }
