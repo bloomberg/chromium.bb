@@ -211,7 +211,7 @@
 	<include ignore_missing="yes">local.conf</include>
 
 <!--
-  Alias well known font names to available TrueType fonts
+  Alias well known Type1 font names to metric equivalent TrueType fonts
 -->
 	<alias>
 		<family>Times</family>
@@ -219,45 +219,13 @@
 	</alias>
 	<alias>
 		<family>Helvetica</family>
-		<accept><family>Verdana</family></accept>
-	</alias>
-	<alias>
-		<family>Arial</family>
-		<accept><family>Verdana</family></accept>
+		<accept><family>Arial</family></accept>
 	</alias>
 	<alias>
 		<family>Courier</family>
 		<accept><family>Courier New</family></accept>
 	</alias>
 
-<!--
- Check user preference to avoid bitmap fonts and replace
- bitmap face names with equivalent scalable fonts
- -->
-
-	<match target="pattern">
-	        <test name="prefer_outline">
-	                <bool>true</bool>
-	        </test>
-	        <test name="family">
-	                <string>Helvetica</string>
-	        </test>
-	        <edit name="family" mode="prepend" binding="same">
-	                <string>Arial</string>
-	        </edit>
-	</match>
-
-	<match target="pattern">
-	        <test name="prefer_outline">
-	                <bool>true</bool>
-	        </test>
-	        <test name="family">
-	                <string>Times</string>
-	        </test>
-	        <edit name="family" mode="prepend" binding="same">
-	                <string>Times New Roman</string>
-	        </edit>
-	</match>
 <!--
   Provide required aliases for standard names
 -->
@@ -269,6 +237,7 @@
 			<family>Nimbus Roman No9 L</family>
 			<family>Luxi Serif</family>
 			<family>Times</family>
+			<family>Frank Ruehl</family>
 			<family>Kochi Mincho</family>
 			<family>AR PL SungtiL GB</family>
 			<family>AR PL Mingti2L Big5</family>
@@ -284,6 +253,7 @@
 			<family>Luxi Sans</family>
 			<family>Arial</family>
 			<family>Helvetica</family>
+			<family>Nachlieli</family>
 			<family>Kochi Gothic</family>
 			<family>AR PL KaitiM GB</family>
 			<family>AR PL KaitiM Big5</family>
@@ -299,6 +269,7 @@
 			<family>Courier New</family>
 			<family>Luxi Mono</family>
 			<family>Nimbus Mono L</family>
+			<family>Miriam Mono</family>
 			<family>Kochi Gothic</family>
 			<family>AR PL KaitiM GB</family>
 			<family>Baekmuk Dotum</family>
