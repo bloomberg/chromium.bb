@@ -39,15 +39,16 @@ void savage_emit_clip_rect_s3d(drm_savage_private_t *dev_priv,
 		((((uint32_t)pbox->y2-1) << 16) & 0x07ff0000);
 	if (scstart != dev_priv->state.s3d.scstart ||
 	    scend   != dev_priv->state.s3d.scend) {
-		BCI_LOCALS;
-		BEGIN_BCI(4);
-		BCI_WRITE(BCI_CMD_WAIT|BCI_CMD_WAIT_3D);
-		BCI_SET_REGISTERS(SAVAGE_SCSTART_S3D, 2);
-		BCI_WRITE(scstart);
-		BCI_WRITE(scend);
+		DMA_LOCALS;
+		BEGIN_DMA(4);
+		DMA_WRITE(BCI_CMD_WAIT|BCI_CMD_WAIT_3D);
+		DMA_SET_REGISTERS(SAVAGE_SCSTART_S3D, 2);
+		DMA_WRITE(scstart);
+		DMA_WRITE(scend);
 		dev_priv->state.s3d.scstart = scstart;
 		dev_priv->state.s3d.scend   = scend;
 		dev_priv->waiting = 1;
+		DMA_COMMIT();
 	}
 }
 
@@ -64,15 +65,16 @@ void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
 		((((uint32_t)pbox->y2-1) << 12) & 0x00fff000);
 	if (drawctrl0 != dev_priv->state.s4.drawctrl0 ||
 	    drawctrl1 != dev_priv->state.s4.drawctrl1) {
-		BCI_LOCALS;
-		BEGIN_BCI(4);
-		BCI_WRITE(BCI_CMD_WAIT|BCI_CMD_WAIT_3D);
-		BCI_SET_REGISTERS(SAVAGE_DRAWCTRL0_S4, 2);
-		BCI_WRITE(drawctrl0);
-		BCI_WRITE(drawctrl1);
+		DMA_LOCALS;
+		BEGIN_DMA(4);
+		DMA_WRITE(BCI_CMD_WAIT|BCI_CMD_WAIT_3D);
+		DMA_SET_REGISTERS(SAVAGE_DRAWCTRL0_S4, 2);
+		DMA_WRITE(drawctrl0);
+		DMA_WRITE(drawctrl1);
 		dev_priv->state.s4.drawctrl0 = drawctrl0;
 		dev_priv->state.s4.drawctrl1 = drawctrl1;
 		dev_priv->waiting = 1;
+		DMA_COMMIT();
 	}
 }
 
@@ -192,7 +194,7 @@ static int savage_dispatch_state(drm_savage_private_t *dev_priv,
 				 const drm_savage_cmd_header_t *cmd_header,
 				 const uint32_t __user *regs)
 {
-	BCI_LOCALS;
+	DMA_LOCALS;
 	unsigned int count = cmd_header->state.count;
 	unsigned int start = cmd_header->state.start;
 	unsigned int count2 = 0;
@@ -244,18 +246,18 @@ static int savage_dispatch_state(drm_savage_private_t *dev_priv,
 	bci_size = count + (count+254)/255 + count2 + (count2+254)/255;
 
 	if (cmd_header->state.global) {
-		BEGIN_BCI(bci_size+1);
-		BCI_WRITE(BCI_CMD_WAIT | BCI_CMD_WAIT_3D);
+		BEGIN_DMA(bci_size+1);
+		DMA_WRITE(BCI_CMD_WAIT | BCI_CMD_WAIT_3D);
 		dev_priv->waiting = 1;
 	} else {
-		BEGIN_BCI(bci_size);
+		BEGIN_DMA(bci_size);
 	}
 
 	do {
 		while (count > 0) {
 			unsigned int n = count < 255 ? count : 255;
-			BCI_SET_REGISTERS(start, n);
-			BCI_COPY_FROM_USER(regs, n);
+			DMA_SET_REGISTERS(start, n);
+			DMA_COPY_FROM_USER(regs, n);
 			count -= n;
 			start += n;
 			regs += n;
@@ -265,6 +267,8 @@ static int savage_dispatch_state(drm_savage_private_t *dev_priv,
 		count = count2;
 		count2 = 0;
 	} while (count);
+
+	DMA_COMMIT();
 
 	return 0;
 }
@@ -280,6 +284,11 @@ static int savage_dispatch_dma_prim(drm_savage_private_t *dev_priv,
 	unsigned int n = cmd_header->prim.count;
 	unsigned int start = cmd_header->prim.start;
 	unsigned int i;
+
+	if (!dmabuf) {
+	    DRM_ERROR("called without dma buffers!\n");
+	    return DRM_ERR(EINVAL);
+	}
 
 	if (!n)
 		return 0;
@@ -334,6 +343,11 @@ static int savage_dispatch_dma_prim(drm_savage_private_t *dev_priv,
 			  start, start + n - 1, dmabuf->total/32);
 		return DRM_ERR(EINVAL);
 	}
+
+	/* Vertex DMA doesn't work with command DMA at the same time,
+	 * so we use BCI_... to submit commands here. Flush buffered
+	 * faked DMA first. */
+	DMA_FLUSH();
 
 	if (dmabuf->bus_address != dev_priv->state.common.vbaddr) {
 		BEGIN_BCI(2);
@@ -405,7 +419,7 @@ static int savage_dispatch_vb_prim(drm_savage_private_t *dev_priv,
 				   unsigned int vb_size,
 				   unsigned int vb_stride)
 {
-	BCI_LOCALS;
+	DMA_LOCALS;
 	unsigned char reorder = 0;
 	unsigned int prim = cmd_header->prim.prim;
 	unsigned int skip = cmd_header->prim.skip;
@@ -482,28 +496,32 @@ static int savage_dispatch_vb_prim(drm_savage_private_t *dev_priv,
 			int reorder[3] = {-1, -1, -1};
 			reorder[start%3] = 2;
 
-			BEGIN_BCI(count*vtx_size+1);
-			BCI_DRAW_PRIMITIVE(count, prim, skip);
+			BEGIN_DMA(count*vtx_size+1);
+			DMA_DRAW_PRIMITIVE(count, prim, skip);
 
 			for (i = start; i < start+count; ++i) {
 				unsigned int j = i + reorder[i % 3];
-				BCI_COPY_FROM_USER(&vtxbuf[vb_stride*j],
+				DMA_COPY_FROM_USER(&vtxbuf[vb_stride*j],
 						   vtx_size);
 			}
+
+			DMA_COMMIT();
 		} else {
-			BEGIN_BCI(count*vtx_size+1);
-			BCI_DRAW_PRIMITIVE(count, prim, skip);
+			BEGIN_DMA(count*vtx_size+1);
+			DMA_DRAW_PRIMITIVE(count, prim, skip);
 
 			if (vb_stride == vtx_size) {
-				BCI_COPY_FROM_USER(&vtxbuf[vb_stride*start],
+				DMA_COPY_FROM_USER(&vtxbuf[vb_stride*start],
 						   vtx_size*count);
 			} else {
 				for (i = start; i < start+count; ++i) {
-					BCI_COPY_FROM_USER(
+					DMA_COPY_FROM_USER(
 						&vtxbuf[vb_stride*i],
 						vtx_size);
 				}
 			}
+
+			DMA_COMMIT();
 		}
 
 		start += count;
@@ -526,6 +544,11 @@ static int savage_dispatch_dma_idx(drm_savage_private_t *dev_priv,
 	unsigned int skip = cmd_header->idx.skip;
 	unsigned int n = cmd_header->idx.count;
 	unsigned int i;
+
+	if (!dmabuf) {
+	    DRM_ERROR("called without dma buffers!\n");
+	    return DRM_ERR(EINVAL);
+	}
 
 	if (!n)
 		return 0;
@@ -574,6 +597,11 @@ static int savage_dispatch_dma_idx(drm_savage_private_t *dev_priv,
 			return DRM_ERR(EINVAL);
 		}
 	}
+
+	/* Vertex DMA doesn't work with command DMA at the same time,
+	 * so we use BCI_... to submit commands here. Flush buffered
+	 * faked DMA first. */
+	DMA_FLUSH();
 
 	if (dmabuf->bus_address != dev_priv->state.common.vbaddr) {
 		BEGIN_BCI(2);
@@ -658,7 +686,7 @@ static int savage_dispatch_vb_idx(drm_savage_private_t *dev_priv,
 				  unsigned int vb_size,
 				  unsigned int vb_stride)
 {
-	BCI_LOCALS;
+	DMA_LOCALS;
 	unsigned char reorder = 0;
 	unsigned int prim = cmd_header->idx.prim;
 	unsigned int skip = cmd_header->idx.skip;
@@ -740,23 +768,27 @@ static int savage_dispatch_vb_idx(drm_savage_private_t *dev_priv,
 			 * for correct culling. Only on Savage3D. */
 			int reorder[3] = {2, -1, -1};
 
-			BEGIN_BCI(count*vtx_size+1);
-			BCI_DRAW_PRIMITIVE(count, prim, skip);
+			BEGIN_DMA(count*vtx_size+1);
+			DMA_DRAW_PRIMITIVE(count, prim, skip);
 
 			for (i = 0; i < count; ++i) {
 				unsigned int j = idx[i + reorder[i % 3]];
-				BCI_COPY_FROM_USER(&vtxbuf[vb_stride*j],
+				DMA_COPY_FROM_USER(&vtxbuf[vb_stride*j],
 						   vtx_size);
 			}
+
+			DMA_COMMIT();
 		} else {
-			BEGIN_BCI(count*vtx_size+1);
-			BCI_DRAW_PRIMITIVE(count, prim, skip);
+			BEGIN_DMA(count*vtx_size+1);
+			DMA_DRAW_PRIMITIVE(count, prim, skip);
 
 			for (i = 0; i < count; ++i) {
 				unsigned int j = idx[i];
-				BCI_COPY_FROM_USER(&vtxbuf[vb_stride*j],
+				DMA_COPY_FROM_USER(&vtxbuf[vb_stride*j],
 						   vtx_size);
 			}
+
+			DMA_COMMIT();
 		}
 
 		usr_idx += count;
@@ -774,7 +806,7 @@ static int savage_dispatch_clear(drm_savage_private_t *dev_priv,
 				 unsigned int nbox,
 				 const drm_clip_rect_t __user *usr_boxes)
 {
-	BCI_LOCALS;
+	DMA_LOCALS;
 	unsigned int flags = cmd_header->clear0.flags, mask, value;
 	unsigned int clear_cmd;
 	unsigned int i, nbufs;
@@ -799,9 +831,10 @@ static int savage_dispatch_clear(drm_savage_private_t *dev_priv,
 
 	if (mask != 0xffffffff) {
 		/* set mask */
-		BEGIN_BCI(2);
-		BCI_SET_REGISTERS(SAVAGE_BITPLANEWTMASK, 1);
-		BCI_WRITE(mask);
+		BEGIN_DMA(2);
+		DMA_SET_REGISTERS(SAVAGE_BITPLANEWTMASK, 1);
+		DMA_WRITE(mask);
+		DMA_COMMIT();
 	}
 	for (i = 0; i < nbox; ++i) {
 		drm_clip_rect_t box;
@@ -811,35 +844,37 @@ static int savage_dispatch_clear(drm_savage_private_t *dev_priv,
 		x = box.x1, y = box.y1;
 		w = box.x2 - box.x1;
 		h = box.y2 - box.y1;
-		BEGIN_BCI(nbufs*6);
+		BEGIN_DMA(nbufs*6);
 		for (buf = SAVAGE_FRONT; buf <= SAVAGE_DEPTH; buf <<= 1) {
 			if (!(flags & buf))
 				continue;
-			BCI_WRITE(clear_cmd);
+			DMA_WRITE(clear_cmd);
 			switch(buf) {
 			case SAVAGE_FRONT:
-				BCI_WRITE(dev_priv->front_offset);
-				BCI_WRITE(dev_priv->front_bd);
+				DMA_WRITE(dev_priv->front_offset);
+				DMA_WRITE(dev_priv->front_bd);
 				break;
 			case SAVAGE_BACK:
-				BCI_WRITE(dev_priv->back_offset);
-				BCI_WRITE(dev_priv->back_bd);
+				DMA_WRITE(dev_priv->back_offset);
+				DMA_WRITE(dev_priv->back_bd);
 				break;
 			case SAVAGE_DEPTH:
-				BCI_WRITE(dev_priv->depth_offset);
-				BCI_WRITE(dev_priv->depth_bd);
+				DMA_WRITE(dev_priv->depth_offset);
+				DMA_WRITE(dev_priv->depth_bd);
 				break;
 			}
-			BCI_WRITE(value);
-			BCI_WRITE(BCI_X_Y(x, y));
-			BCI_WRITE(BCI_W_H(w, h));
+			DMA_WRITE(value);
+			DMA_WRITE(BCI_X_Y(x, y));
+			DMA_WRITE(BCI_W_H(w, h));
 		}
+		DMA_COMMIT();
 	}
 	if (mask != 0xffffffff) {
 		/* reset mask */
-		BEGIN_BCI(2);
-		BCI_SET_REGISTERS(SAVAGE_BITPLANEWTMASK, 1);
-		BCI_WRITE(0xffffffff);
+		BEGIN_DMA(2);
+		DMA_SET_REGISTERS(SAVAGE_BITPLANEWTMASK, 1);
+		DMA_WRITE(0xffffffff);
+		DMA_COMMIT();
 	}
 
 	return 0;
@@ -849,7 +884,7 @@ static int savage_dispatch_swap(drm_savage_private_t *dev_priv,
 				unsigned int nbox,
 				const drm_clip_rect_t __user *usr_boxes)
 {
-	BCI_LOCALS;
+	DMA_LOCALS;
 	unsigned int swap_cmd;
 	unsigned int i;
 
@@ -864,13 +899,14 @@ static int savage_dispatch_swap(drm_savage_private_t *dev_priv,
 		drm_clip_rect_t box;
 		DRM_COPY_FROM_USER_UNCHECKED(&box, &usr_boxes[i], sizeof(box));
 
-		BEGIN_BCI(6);
-		BCI_WRITE(swap_cmd);
-		BCI_WRITE(dev_priv->back_offset);
-		BCI_WRITE(dev_priv->back_bd);
-		BCI_WRITE(BCI_X_Y(box.x1, box.y1));
-		BCI_WRITE(BCI_X_Y(box.x1, box.y1));
-		BCI_WRITE(BCI_W_H(box.x2-box.x1, box.y2-box.y1));
+		BEGIN_DMA(6);
+		DMA_WRITE(swap_cmd);
+		DMA_WRITE(dev_priv->back_offset);
+		DMA_WRITE(dev_priv->back_bd);
+		DMA_WRITE(BCI_X_Y(box.x1, box.y1));
+		DMA_WRITE(BCI_X_Y(box.x1, box.y1));
+		DMA_WRITE(BCI_W_H(box.x2-box.x1, box.y2-box.y1));
+		DMA_COMMIT();
 	}
 
 	return 0;
@@ -967,12 +1003,16 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 	DRM_COPY_FROM_USER_IOCTL(cmdbuf, (drm_savage_cmdbuf_t __user *)data,
 				 sizeof(cmdbuf));
 
-	if (cmdbuf.dma_idx > dma->buf_count) {
-		DRM_ERROR("vertex buffer index %u out of range (0-%u)\n",
-			  cmdbuf.dma_idx, dma->buf_count-1);
-		return DRM_ERR(EINVAL);
+	if (dma && dma->buflist) {
+		if (cmdbuf.dma_idx > dma->buf_count) {
+			DRM_ERROR("vertex buffer index %u out of range (0-%u)\n",
+				  cmdbuf.dma_idx, dma->buf_count-1);
+			return DRM_ERR(EINVAL);
+		}
+		dmabuf = dma->buflist[cmdbuf.dma_idx];
+	} else {
+		dmabuf = NULL;
 	}
-	dmabuf = dma->buflist[cmdbuf.dma_idx];
 
 	usr_cmdbuf = (drm_savage_cmd_header_t __user *)cmdbuf.cmd_addr;
 	usr_vtxbuf = (unsigned int __user *)cmdbuf.vb_addr;
@@ -1011,6 +1051,7 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 			if (i + j > cmdbuf.size) {
 				DRM_ERROR("indexed drawing command extends "
 					  "beyond end of command buffer\n");
+				DMA_FLUSH();
 				return DRM_ERR(EINVAL);
 			}
 			/* fall through */
@@ -1042,6 +1083,7 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 			if (i + j > cmdbuf.size) {
 				DRM_ERROR("command SAVAGE_CMD_STATE extends "
 					  "beyond end of command buffer\n");
+				DMA_FLUSH();
 				return DRM_ERR(EINVAL);
 			}
 			ret = savage_dispatch_state(
@@ -1054,6 +1096,7 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 			if (i + 1 > cmdbuf.size) {
 				DRM_ERROR("command SAVAGE_CMD_CLEAR extends "
 					  "beyond end of command buffer\n");
+				DMA_FLUSH();
 				return DRM_ERR(EINVAL);
 			}
 			ret = savage_dispatch_clear(dev_priv, &cmd_header,
@@ -1068,11 +1111,14 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 			break;
 		default:
 			DRM_ERROR("invalid command 0x%x\n", cmd_header.cmd.cmd);
+			DMA_FLUSH();
 			return DRM_ERR(EINVAL);
 		}
 
-		if (ret != 0)
+		if (ret != 0) {
+			DMA_FLUSH();
 			return ret;
+		}
 	}
 
 	if (first_draw_cmd) {
@@ -1080,11 +1126,15 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 			dev_priv, first_draw_cmd, usr_cmdbuf, dmabuf,
 			usr_vtxbuf, cmdbuf.vb_size, cmdbuf.vb_stride,
 			cmdbuf.nbox, usr_boxes);
-		if (ret != 0)
+		if (ret != 0) {
+			DMA_FLUSH();
 			return ret;
+		}
 	}
 
-	if (cmdbuf.discard) {
+	DMA_FLUSH();
+
+	if (dmabuf && cmdbuf.discard) {
 		drm_savage_buf_priv_t *buf_priv = dmabuf->dev_private;
 		uint16_t event;
 		event = savage_bci_emit_event(dev_priv, SAVAGE_WAIT_3D);

@@ -30,10 +30,10 @@
 
 #define DRIVER_NAME	"savage"
 #define DRIVER_DESC	"Savage3D/MX/IX, Savage4, SuperSavage, Twister, ProSavage[DDR]"
-#define DRIVER_DATE	"20050222"
+#define DRIVER_DATE	"20050305"
 
 #define DRIVER_MAJOR		2
-#define DRIVER_MINOR		3
+#define DRIVER_MINOR		4
 #define DRIVER_PATCHLEVEL	0
 /* Interface history:
  *
@@ -45,6 +45,8 @@
  * 2.3   Event counters used by BCI_EVENT_EMIT/WAIT ioctls are now 32 bits
  *       wide and thus very long lived (unlikely to ever wrap). The size
  *       in the struct was 32 bits before, but only 16 bits were used
+ * 2.4   Implemented command DMA. Now drm_savage_init_t.cmd_dma_offset is
+ *       actually used
  */
 
 typedef struct drm_savage_age {
@@ -58,6 +60,16 @@ typedef struct drm_savage_buf_priv {
 	drm_savage_age_t age;
 	drm_buf_t *buf;
 } drm_savage_buf_priv_t;
+
+typedef struct drm_savage_dma_page {
+	drm_savage_age_t age;
+	unsigned int used;
+} drm_savage_dma_page_t;
+#define SAVAGE_DMA_PAGE_SIZE 1024 /* in dwords */
+/* Fake DMA buffer size in bytes. 4 pages. Allows a maximum command
+ * size of 16kbytes or 4k entries. Minimum requirement would be
+ * 10kbytes for 255 40-byte vertices in one drawing command. */
+#define SAVAGE_FAKE_DMA_SIZE (SAVAGE_DMA_PAGE_SIZE*4*4)
 
 /* interesting bits of hardware state that are saved in dev_priv */
 typedef union {
@@ -143,6 +155,7 @@ typedef struct drm_savage_private {
 	drm_local_map_t *status;
 	drm_local_map_t *agp_textures;
 	drm_local_map_t *cmd_dma;
+	drm_local_map_t fake_dma;
 
 	struct {
 		int handle;
@@ -154,6 +167,10 @@ typedef struct drm_savage_private {
 	uint32_t status_used_mask;
 	uint16_t event_counter;
 	unsigned int event_wrap;
+
+	/* Savage4 command DMA */
+	drm_savage_dma_page_t *dma_pages;
+	unsigned int nr_dma_pages, first_dma_page, current_dma_page;
 
 	/* saved hw state for global/local check on S3D */
 	uint32_t hw_draw_ctrl, hw_zbuf_ctrl;
@@ -172,6 +189,7 @@ typedef struct drm_savage_private {
 	 * Avoid unwanted macro expansion. */
 	void (*emit_clip_rect)(struct drm_savage_private *dev_priv,
 			       drm_clip_rect_t *pbox);
+	void (*dma_flush)(struct drm_savage_private *dev_priv);
 } drm_savage_private_t;
 
 /* ioctls */
@@ -185,6 +203,10 @@ extern int savage_bci_buffers(DRM_IOCTL_ARGS);
 extern uint16_t savage_bci_emit_event(drm_savage_private_t *dev_priv,
 				      unsigned int flags);
 extern void savage_freelist_put(drm_device_t *dev, drm_buf_t *buf);
+extern void savage_dma_reset(drm_savage_private_t *dev_priv);
+extern void savage_dma_wait(drm_savage_private_t *dev_priv, unsigned int page);
+extern uint32_t *savage_dma_alloc(drm_savage_private_t *dev_priv,
+				  unsigned int n);
 extern int savage_preinit(drm_device_t *dev, unsigned long chipset);
 extern int savage_postcleanup(drm_device_t *dev);
 extern int savage_do_cleanup_bci(drm_device_t *dev);
@@ -290,6 +312,7 @@ extern void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
 /* common stuff */
 #define SAVAGE_VERTBUFADDR		0x3e
 #define SAVAGE_BITPLANEWTMASK		0xd7
+#define SAVAGE_DMABUFADDR		0x51
 
 /* texture enable bits (needed for tex addr checking) */
 #define SAVAGE_TEXCTRL_TEXEN_MASK	0x00010000 /* S3D */
@@ -408,6 +431,8 @@ extern void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
 #define BCI_CMD_DRAW_NO_V1		0x00000080
 #define BCI_CMD_DRAW_NO_UV1		0x000000c0
 
+#define BCI_CMD_DMA			0xa8000000
+
 #define BCI_W_H(w, h)                ((((h) << 16) | (w)) & 0x0FFF0FFF)
 #define BCI_X_Y(x, y)                ((((y) << 16) | (x)) & 0x0FFF0FFF)
 #define BCI_X_W(x, y)                ((((w) << 16) | (x)) & 0x0FFF0FFF)
@@ -431,9 +456,16 @@ extern void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
 	BCI_WRITE(BCI_CMD_SET_REGISTER |		\
 		  ((uint32_t)(n) & 0xff) << 16 |	\
 		  ((uint32_t)(first) & 0xffff))
+#define DMA_SET_REGISTERS( first, n )			\
+	DMA_WRITE(BCI_CMD_SET_REGISTER |		\
+		  ((uint32_t)(n) & 0xff) << 16 |	\
+		  ((uint32_t)(first) & 0xffff))
 
 #define BCI_DRAW_PRIMITIVE(n, type, skip)         \
         BCI_WRITE(BCI_CMD_DRAW_PRIM | (type) | (skip) | \
+		  ((n) << 16))
+#define DMA_DRAW_PRIMITIVE(n, type, skip)         \
+        DMA_WRITE(BCI_CMD_DRAW_PRIM | (type) | (skip) | \
 		  ((n) << 16))
 
 #define BCI_DRAW_INDICES_S3D(n, type, i0)         \
@@ -443,6 +475,9 @@ extern void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
 #define BCI_DRAW_INDICES_S4(n, type, skip)        \
         BCI_WRITE(BCI_CMD_DRAW_INDEXED_PRIM | (type) |  \
                   (skip) | ((n) << 16))
+
+#define BCI_DMA(n)	\
+	BCI_WRITE(BCI_CMD_DMA | (((n) >> 1) - 1))
 
 /*
  * access to MMIO
@@ -472,6 +507,54 @@ extern void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
 	BCI_WRITE(val);						\
     }								\
 } while(0)
+
+/*
+ * command DMA support
+ */
+#define SAVAGE_DMA_DEBUG 1
+
+#define DMA_LOCALS   uint32_t *dma_ptr;
+
+#define BEGIN_DMA( n ) do {						\
+	unsigned int cur = dev_priv->current_dma_page;			\
+	unsigned int rest = SAVAGE_DMA_PAGE_SIZE -			\
+		dev_priv->dma_pages[cur].used;				\
+	if ((n) > rest) {						\
+		dma_ptr = savage_dma_alloc(dev_priv, (n));		\
+	} else { /* fast path for small allocations */			\
+		dma_ptr = (uint32_t *)dev_priv->cmd_dma->handle +	\
+			cur * SAVAGE_DMA_PAGE_SIZE +			\
+			dev_priv->dma_pages[cur].used;			\
+		if (dev_priv->dma_pages[cur].used == 0)			\
+			savage_dma_wait(dev_priv, cur);			\
+		dev_priv->dma_pages[cur].used += (n);			\
+	}								\
+} while(0)
+
+#define DMA_WRITE( val ) *dma_ptr++ = (uint32_t)(val)
+
+#define DMA_COPY_FROM_USER(src,n) do {				\
+	DRM_COPY_FROM_USER_UNCHECKED(dma_ptr, (src), (n)*4);	\
+	dma_ptr += n;						\
+} while(0)
+
+#if SAVAGE_DMA_DEBUG
+#define DMA_COMMIT() do {						\
+	unsigned int cur = dev_priv->current_dma_page;			\
+	uint32_t *expected = (uint32_t *)dev_priv->cmd_dma->handle +	\
+			cur * SAVAGE_DMA_PAGE_SIZE +			\
+			dev_priv->dma_pages[cur].used;			\
+	if (dma_ptr != expected) {					\
+		DRM_ERROR("DMA allocation and use don't match: "	\
+			  "%p != %p\n", expected, dma_ptr);		\
+		savage_dma_reset(dev_priv);				\
+	}								\
+} while(0)
+#else
+#define DMA_COMMIT() do {/* nothing */} while(0)
+#endif
+
+#define DMA_FLUSH() dev_priv->dma_flush(dev_priv)
 
 /* Buffer aging via event tag
  */

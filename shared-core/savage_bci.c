@@ -47,6 +47,7 @@ savage_bci_wait_fifo_shadow(drm_savage_private_t *dev_priv, unsigned int n)
 #endif
 
 	for (i = 0; i < SAVAGE_DEFAULT_USEC_TIMEOUT; i++) {
+		DRM_MEMORYBARRIER();
 		status = dev_priv->status_ptr[0];
 		if ((status & mask) < threshold)
 			return 0;
@@ -120,6 +121,7 @@ savage_bci_wait_event_shadow(drm_savage_private_t *dev_priv, uint16_t e)
 	int i;
 
 	for (i = 0; i < SAVAGE_EVENT_USEC_TIMEOUT; i++) {
+		DRM_MEMORYBARRIER();
 		status = dev_priv->status_ptr[1];
 		if ((((status & 0xffff) - e) & 0xffff) <= 0x7fff ||
 		    (status & 0xffff) == 0)
@@ -247,7 +249,7 @@ static drm_buf_t *savage_freelist_get(drm_device_t *dev)
 		event = SAVAGE_READ(SAVAGE_STATUS_WORD1) & 0xffff;
 	wrap = dev_priv->event_wrap;
 	if (event > dev_priv->event_counter)
-	    wrap--; /* hardware hasn't passed the last wrap yet */
+		wrap--; /* hardware hasn't passed the last wrap yet */
 
 	DRM_DEBUG("   tail=0x%04x %d\n", tail->age.event, tail->age.wrap);
 	DRM_DEBUG("   head=0x%04x %d\n", event, wrap);
@@ -283,6 +285,225 @@ void savage_freelist_put(drm_device_t *dev, drm_buf_t *buf)
 	next->prev = entry;
 	entry->prev = prev;
 	entry->next = next;
+}
+
+/*
+ * Command DMA
+ */
+static int savage_dma_init(drm_savage_private_t *dev_priv)
+{
+	unsigned int i;
+
+	dev_priv->nr_dma_pages = dev_priv->cmd_dma->size /
+		(SAVAGE_DMA_PAGE_SIZE*4);
+	dev_priv->dma_pages = drm_alloc(sizeof(drm_savage_dma_page_t) *
+					dev_priv->nr_dma_pages,
+					DRM_MEM_DRIVER);
+	if (dev_priv->dma_pages == NULL)
+		return DRM_ERR(ENOMEM);
+
+	for (i = 0; i < dev_priv->nr_dma_pages; ++i) {
+		dev_priv->dma_pages[i].age.event = 0;
+		dev_priv->dma_pages[i].age.wrap = 0;
+		dev_priv->dma_pages[i].used = 0;
+	}
+
+	dev_priv->first_dma_page = 0;
+	dev_priv->current_dma_page = 0;
+
+	return 0;
+}
+
+void savage_dma_reset(drm_savage_private_t *dev_priv)
+{
+	uint16_t event;
+	unsigned int wrap, i;
+	event = savage_bci_emit_event(dev_priv, 0);
+	wrap = dev_priv->event_wrap;
+	for (i = 0; i < dev_priv->nr_dma_pages; ++i) {
+		SET_AGE(&dev_priv->dma_pages[i].age, event, wrap);
+		dev_priv->dma_pages[i].used = 0;
+	}
+	dev_priv->first_dma_page = dev_priv->current_dma_page = 0;
+}
+
+void savage_dma_wait(drm_savage_private_t *dev_priv, unsigned int page)
+{
+	uint16_t event;
+	unsigned int wrap;
+
+	/* Faked DMA buffer pages don't age. */
+	if (dev_priv->cmd_dma == &dev_priv->fake_dma)
+		return;
+
+	UPDATE_EVENT_COUNTER();
+	if (dev_priv->status_ptr)
+		event = dev_priv->status_ptr[1] & 0xffff;
+	else
+		event = SAVAGE_READ(SAVAGE_STATUS_WORD1) & 0xffff;
+	wrap = dev_priv->event_wrap;
+	if (event > dev_priv->event_counter)
+		wrap--; /* hardware hasn't passed the last wrap yet */
+
+	if (dev_priv->dma_pages[page].age.wrap >= wrap &&
+	    dev_priv->dma_pages[page].age.event > event) {
+		if (dev_priv->wait_evnt(dev_priv,
+					dev_priv->dma_pages[page].age.event)
+		    < 0)
+			DRM_ERROR("wait_evnt failed!\n");
+	}
+}
+
+uint32_t *savage_dma_alloc(drm_savage_private_t *dev_priv, unsigned int n)
+{
+	unsigned int cur = dev_priv->current_dma_page;
+	unsigned int rest = SAVAGE_DMA_PAGE_SIZE -
+		dev_priv->dma_pages[cur].used;
+	unsigned int nr_pages = (n - rest + SAVAGE_DMA_PAGE_SIZE-1) /
+		SAVAGE_DMA_PAGE_SIZE;
+	uint32_t *dma_ptr;
+	unsigned int i;
+
+	DRM_DEBUG("cur=%u, cur->used=%u, n=%u, rest=%u, nr_pages=%u\n",
+		  cur, dev_priv->dma_pages[cur].used, n, rest, nr_pages);
+
+	if (cur + nr_pages < dev_priv->nr_dma_pages) {
+		dma_ptr = (uint32_t *)dev_priv->cmd_dma->handle +
+			cur*SAVAGE_DMA_PAGE_SIZE +
+			dev_priv->dma_pages[cur].used;
+		if (n < rest)
+			rest = n;
+		dev_priv->dma_pages[cur].used += rest;
+		n -= rest;
+		cur++;
+	} else {
+		dev_priv->dma_flush(dev_priv);
+		nr_pages = (n + SAVAGE_DMA_PAGE_SIZE-1) / SAVAGE_DMA_PAGE_SIZE;
+		for (i = cur+1; i < dev_priv->nr_dma_pages; ++i) {
+			dev_priv->dma_pages[i].age =
+				dev_priv->dma_pages[cur].age;
+			dev_priv->dma_pages[i].used = 0;
+		}
+		dma_ptr = (uint32_t *)dev_priv->cmd_dma->handle;
+		dev_priv->first_dma_page = cur = 0;
+	}
+	for (i = cur; nr_pages > 0; ++i, --nr_pages) {
+#if SAVAGE_DMA_DEBUG
+		if (dev_priv->dma_pages[i].used) {
+			DRM_ERROR("unflushed page %u: used=%u\n",
+				  i, dev_priv->dma_pages[i].used);
+		}
+#endif
+		if (n > SAVAGE_DMA_PAGE_SIZE)
+			dev_priv->dma_pages[i].used = SAVAGE_DMA_PAGE_SIZE;
+		else
+			dev_priv->dma_pages[i].used = n;
+		n -= SAVAGE_DMA_PAGE_SIZE;
+	}
+	dev_priv->current_dma_page = --i;
+
+	DRM_DEBUG("cur=%u, cur->used=%u, n=%u\n",
+		  i, dev_priv->dma_pages[i].used, n);
+
+	savage_dma_wait(dev_priv, dev_priv->current_dma_page);
+
+	return dma_ptr;
+}
+
+static void savage_dma_flush(drm_savage_private_t *dev_priv)
+{
+	BCI_LOCALS;
+	unsigned int cur = dev_priv->current_dma_page;
+	uint16_t event;
+	unsigned int wrap, pad, len, i;
+	unsigned long phys_addr;
+
+	if (dev_priv->first_dma_page == dev_priv->current_dma_page &&
+	    dev_priv->dma_pages[dev_priv->current_dma_page].used == 0)
+		return;
+
+	/* pad to multiples of 8 entries (really needed? 2 should do it) */
+	pad = -dev_priv->dma_pages[cur].used & 7;
+	DRM_DEBUG("used=%d, pad=%u\n", dev_priv->dma_pages[cur].used, pad);
+
+	if (pad) {
+		uint32_t *dma_ptr = (uint32_t *)dev_priv->cmd_dma->handle +
+			cur * SAVAGE_DMA_PAGE_SIZE +
+			dev_priv->dma_pages[cur].used;
+		dev_priv->dma_pages[cur].used += pad;
+		while(pad != 0) {
+			*dma_ptr++ = BCI_CMD_WAIT;
+			pad--;
+		}
+	}
+
+	DRM_MEMORYBARRIER();
+
+	/* do flush ... */
+	phys_addr = dev_priv->cmd_dma->offset +
+		dev_priv->first_dma_page * SAVAGE_DMA_PAGE_SIZE*4;
+	len = (cur - dev_priv->first_dma_page) * SAVAGE_DMA_PAGE_SIZE +
+		dev_priv->dma_pages[cur].used;
+
+	DRM_DEBUG("phys_addr=%lx, len=%u\n",
+		  phys_addr | dev_priv->dma_type, len);
+
+	BEGIN_BCI(3);
+	BCI_SET_REGISTERS(SAVAGE_DMABUFADDR, 1);
+	BCI_WRITE(phys_addr | dev_priv->dma_type);
+	BCI_DMA(len);
+
+	/* age DMA pages */
+	event = savage_bci_emit_event(dev_priv, 0);
+	wrap = dev_priv->event_wrap;
+	for (i = dev_priv->first_dma_page;
+	     i <= dev_priv->current_dma_page; ++i) {
+		SET_AGE(&dev_priv->dma_pages[i].age, event, wrap);
+		dev_priv->dma_pages[i].used = 0;
+	}
+
+	/* advance to next page */
+	if (i == dev_priv->nr_dma_pages)
+		i = 0;
+	dev_priv->first_dma_page = dev_priv->current_dma_page = i;
+}
+
+static void savage_fake_dma_flush(drm_savage_private_t *dev_priv)
+{
+	BCI_LOCALS;
+	unsigned int i, j;
+	if (dev_priv->first_dma_page == dev_priv->current_dma_page &&
+	    dev_priv->dma_pages[dev_priv->current_dma_page].used == 0)
+		return;
+
+	DRM_DEBUG("first=%u, cur=%u, cur->used=%u\n",
+		  dev_priv->first_dma_page, dev_priv->current_dma_page,
+		  dev_priv->dma_pages[dev_priv->current_dma_page].used);
+
+	for (i = dev_priv->first_dma_page;
+	     i <= dev_priv->current_dma_page && dev_priv->dma_pages[i].used;
+	     ++i) {
+		uint32_t *dma_ptr = (uint32_t *)dev_priv->cmd_dma->handle +
+			i * SAVAGE_DMA_PAGE_SIZE;
+#if SAVAGE_DMA_DEBUG
+		/* Sanity check: all pages except the last one must be full. */
+		if (i < dev_priv->current_dma_page &&
+		    dev_priv->dma_pages[i].used != SAVAGE_DMA_PAGE_SIZE) {
+			DRM_ERROR("partial DMA page %u: used=%u",
+				  i, dev_priv->dma_pages[i].used);
+		}
+#endif
+		BEGIN_BCI(dev_priv->dma_pages[i].used);
+		for (j = 0; j < dev_priv->dma_pages[i].used; ++j) {
+			BCI_WRITE(dma_ptr[j]);
+		}
+		dev_priv->dma_pages[i].used = 0;
+	}
+
+	/* advance to next page */
+	if (i == dev_priv->nr_dma_pages)
+		i = 0;
+	dev_priv->first_dma_page = dev_priv->current_dma_page = i;
 }
 
 /*
@@ -464,13 +685,19 @@ static int savage_do_init_bci(drm_device_t *dev, drm_savage_init_t *init)
 	} else {
 		dev_priv->status = NULL;
 	}
-	if (dev_priv->dma_type == SAVAGE_DMA_AGP) {
+	if (dev_priv->dma_type == SAVAGE_DMA_AGP && init->buffers_offset) {
 		dev->agp_buffer_map = drm_core_findmap(dev,
 						       init->buffers_offset);
 		if (!dev->agp_buffer_map) {
-			DRM_ERROR("could not find dma buffer region!\n");
+			DRM_ERROR("could not find DMA buffer region!\n");
 			savage_do_cleanup_bci(dev);
 			return DRM_ERR(EINVAL);
+		}
+		drm_core_ioremap(dev->agp_buffer_map, dev);
+		if (!dev->agp_buffer_map) {
+			DRM_ERROR("failed to ioremap DMA buffer region!\n");
+			savage_do_cleanup_bci(dev);
+			return DRM_ERR(ENOMEM);
 		}
 	}
 	if (init->agp_textures_offset) {
@@ -484,11 +711,43 @@ static int savage_do_init_bci(drm_device_t *dev, drm_savage_init_t *init)
 	} else {
 		dev_priv->agp_textures = NULL;
 	}
-	if (0 && !S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
-		/* command DMA not implemented yet */
+
+	if (init->cmd_dma_offset) {
+		if (S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
+			DRM_ERROR("command DMA not supported on "
+				  "Savage3D/MX/IX.\n");
+			savage_do_cleanup_bci(dev);
+			return DRM_ERR(EINVAL);
+		}
+		if (dev->dma && dev->dma->buflist) {
+			DRM_ERROR("command and vertex DMA not supported "
+				  "at the same time.\n");
+			savage_do_cleanup_bci(dev);
+			return DRM_ERR(EINVAL);
+		}
 		dev_priv->cmd_dma = drm_core_findmap(dev, init->cmd_dma_offset);
 		if (!dev_priv->cmd_dma) {
 			DRM_ERROR("could not find command DMA region!\n");
+			savage_do_cleanup_bci(dev);
+			return DRM_ERR(EINVAL);
+		}
+		if (dev_priv->dma_type == SAVAGE_DMA_AGP) {
+			if (dev_priv->cmd_dma->type != _DRM_AGP) {
+				DRM_ERROR("AGP command DMA region is not a "
+					  "_DRM_AGP map!\n");
+				savage_do_cleanup_bci(dev);
+				return DRM_ERR(EINVAL);
+			}
+			drm_core_ioremap(dev_priv->cmd_dma, dev);
+			if (!dev_priv->cmd_dma->handle) {
+				DRM_ERROR("failed to ioremap command "
+					  "DMA region!\n");
+				savage_do_cleanup_bci(dev);
+				return DRM_ERR(ENOMEM);
+			}
+		} else if (dev_priv->cmd_dma->type != _DRM_CONSISTENT) {
+			DRM_ERROR("PCI command DMA region is not a "
+				  "_DRM_CONSISTENT map!\n");
 			savage_do_cleanup_bci(dev);
 			return DRM_ERR(EINVAL);
 		}
@@ -496,13 +755,21 @@ static int savage_do_init_bci(drm_device_t *dev, drm_savage_init_t *init)
 		dev_priv->cmd_dma = NULL;
 	}
 
-	if (dev_priv->cmd_dma && dev_priv->dma_type == SAVAGE_DMA_AGP) {
-		drm_core_ioremap(dev_priv->cmd_dma, dev);
-		if (!dev_priv->cmd_dma->handle) {
-			DRM_ERROR("failed to ioremap command DMA region!\n");
+	dev_priv->dma_flush = savage_dma_flush;
+	if (!dev_priv->cmd_dma) {
+		DRM_DEBUG("falling back to faked command DMA.\n");
+		dev_priv->fake_dma.offset = 0;
+		dev_priv->fake_dma.size = SAVAGE_FAKE_DMA_SIZE;
+		dev_priv->fake_dma.type = _DRM_SHM;
+		dev_priv->fake_dma.handle = drm_alloc(SAVAGE_FAKE_DMA_SIZE,
+						      DRM_MEM_DRIVER);
+		if (!dev_priv->fake_dma.handle) {
+			DRM_ERROR("could not allocate faked DMA buffer!\n");
 			savage_do_cleanup_bci(dev);
 			return DRM_ERR(ENOMEM);
 		}
+		dev_priv->cmd_dma = &dev_priv->fake_dma;
+		dev_priv->dma_flush = savage_fake_dma_flush;
 	}
 
 	dev_priv->sarea_priv =
@@ -578,6 +845,12 @@ static int savage_do_init_bci(drm_device_t *dev, drm_savage_init_t *init)
 		return DRM_ERR(ENOMEM);
 	}
 
+	if (savage_dma_init(dev_priv) <  0) {
+		DRM_ERROR("could not initialize command DMA\n");
+		savage_do_cleanup_bci(dev);
+		return DRM_ERR(ENOMEM);
+	}
+
 	return 0;
 }
 
@@ -585,8 +858,28 @@ int savage_do_cleanup_bci(drm_device_t *dev)
 {
 	drm_savage_private_t *dev_priv = dev->dev_private;
 
-	if (dev_priv->cmd_dma && dev_priv->dma_type == SAVAGE_DMA_AGP)
+	if (dev_priv->cmd_dma == &dev_priv->fake_dma) {
+		if (dev_priv->fake_dma.handle)
+			drm_free(dev_priv->fake_dma.handle,
+				 SAVAGE_FAKE_DMA_SIZE, DRM_MEM_DRIVER);
+	} else if (dev_priv->cmd_dma && dev_priv->cmd_dma->handle &&
+		   dev_priv->cmd_dma->type == _DRM_AGP &&
+		   dev_priv->dma_type == SAVAGE_DMA_AGP)
 		drm_core_ioremapfree(dev_priv->cmd_dma, dev);
+
+	if (dev_priv->dma_type == SAVAGE_DMA_AGP &&
+	    dev->agp_buffer_map && dev->agp_buffer_map->handle) {
+		drm_core_ioremapfree(dev->agp_buffer_map, dev);
+		/* make sure the next instance (which may be running
+		 * in PCI mode) doesn't try to use an old
+		 * agp_buffer_map. */
+		dev->agp_buffer_map = NULL;
+	}
+
+	if (dev_priv->dma_pages)
+		drm_free(dev_priv->dma_pages,
+			 sizeof(drm_savage_dma_page_t)*dev_priv->nr_dma_pages,
+			 DRM_MEM_DRIVER);
 
 	return 0;
 }
@@ -651,7 +944,7 @@ int savage_bci_event_wait(DRM_IOCTL_ARGS)
 		hw_e = SAVAGE_READ(SAVAGE_STATUS_WORD1) & 0xffff;
 	hw_w = dev_priv->event_wrap;
 	if (hw_e > dev_priv->event_counter)
-	    hw_w--; /* hardware hasn't passed the last wrap yet */
+		hw_w--; /* hardware hasn't passed the last wrap yet */
 
 	event_e = event.count & 0xffff;
 	event_w = event.count >> 16;
