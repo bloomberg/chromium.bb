@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/config/Makedefs.in,v 1.1 2002/05/21 17:06:21 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -52,12 +52,17 @@ INSTALL_DATA=@INSTALL_DATA@
 MKSHLIB=@MKSHLIB@
 LN_S=@LN_S@
 
+X_FONT_DIR=@X_FONT_DIR@
+FC_DEFAULT_FONTS=@FC_DEFAULT_FONTS@
+
 # shared libraries
 LIBDIR=$(libdir)
 # programs
 BINDIR=$(bindir)
 # font configuration files
 CONFDIR=$(sysconfdir)/fonts
+# include files
+INCLUDEDIR=$(includedir)/fontconfig
 
 LIBBASE=libfontconfig.so
 LIBFILE=$(LIBBASE).@PACKAGE_MAJOR@.@PACKAGE_MINOR@
@@ -66,3 +71,6 @@ LIBMAJOR=$(LIBBASE).@PACKAGE_MAJOR@
 LIBFONTCONFIG=-L$(SRCDIR) -lfontconfig
 
 SRCDIR=$(TOPDIR)/src
+
+INCDIR=$(TOPDIR)/fontconfig
+HEADERS=$(INCDIR)/fontconfig.h $(INCDIR)/fcfreetype.h $(INCDIR)/fcprivate.h

@@ -41,7 +41,6 @@ SRCS=fcatomic.c \
      fcfs.c \
      fcinit.c \
      fclist.c \
-     fclock.c \
      fcmatch.c \
      fcmatrix.c \
      fcname.c \
@@ -62,7 +61,6 @@ OBJS=fcatomic.@OBJEXT@ \
      fcfs.@OBJEXT@ \
      fcinit.@OBJEXT@ \
      fclist.@OBJEXT@ \
-     fclock.@OBJEXT@ \
      fcmatch.@OBJEXT@ \
      fcmatrix.@OBJEXT@ \
      fcname.@OBJEXT@ \
@@ -101,5 +99,4 @@ $(LIBBASE): $(LIBMAJOR)
 	rm -f $@
 	$(LN_S) $(LIBMAJOR) $(LIBBASE)
 
-$(OBJS): fcint.h $(TOPDIR)/fontconfig/fontconfig.h 
-$(OBJS): $(TOPDIR)/fontconfig/fcprivate.h $(TOPDIR)/config.h
+$(OBJS): fcint.h $(HEADERS)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcinit.c,v 1.3 2002/02/19 08:33:23 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcinit.c,v 1.4 2002/05/21 17:06:22 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -33,7 +33,7 @@ FcInitFallbackConfig (void)
     config = FcConfigCreate ();
     if (!config)
 	goto bail0;
-    if (!FcConfigAddDir (config, (FcChar8 *) FC_FALLBACK_FONTS))
+    if (!FcConfigAddDir (config, (FcChar8 *) FC_DEFAULT_FONTS))
 	goto bail1;
     return config;
 

@@ -22,11 +22,9 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-TOPDIR=.
+DEPTH         = .
 
-include $(TOPDIR)/config/Makedefs
-
-DIRS          = src fc-cache fc-list
+DIRS          = src fc-cache fc-list fontconfig
 
 all install clean::
 	for d in $(DIRS); do $(MAKE) -C $$d $@; done
@@ -35,7 +33,7 @@ all:: fonts.conf
 
 fonts.conf: fonts.conf.in
 	rm -f $@
-	sh ./setfontdirs /usr/share/fonts $(FONTDIR)
+	sh ./setfontdirs $(FC_DEFAULT_FONTS) $(X_FONT_DIR)
 
 install:: $(CONFDIR)/fonts.conf $(CONFDIR)/fonts.dtd
 

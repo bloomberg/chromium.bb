@@ -1,7 +1,7 @@
 /* config.h.in.  Generated manually by keithp.  */
 
 /* Path library uses when config file is broken */
-#undef FC_FALLBACK_FONTS
+#undef FC_DEFAULT_FONTS
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */

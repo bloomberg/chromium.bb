@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-list/Makefile.in,v 1.1 2002/05/21 17:06:21 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -44,3 +44,5 @@ clean::
 
 $(PROG): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBFONTCONFIG)
+
+$(OBJS): $(HEADERS)
