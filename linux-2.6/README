@@ -1,4 +1,1 @@
-To make a 2.6 version of a 2.4 file:
-1) copy the CVS ,v file on the freedesktop server so that we don't lose the history
-2) remove it from $(L24SHARED) in the Makefile
-3) update from CVS to get the copied file
+Use linux-core for 2.6 kernels
