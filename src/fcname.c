@@ -1,7 +1,7 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.15 2002/09/26 00:17:28 keithp Exp $
+ * $RCSId: xc/lib/fontconfig/src/fcname.c,v 1.15 2002/09/26 00:17:28 keithp Exp $
  *
- * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
+ * Copyright © 2000 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -218,7 +218,7 @@ FcNameGetConstant (FcChar8 *string)
 {
     const FcConstantList    *l;
     int			    i;
-    
+
     for (l = _FcConstants; l; l = l->next)
     {
 	for (i = 0; i < l->nconsts; i++)
@@ -247,8 +247,7 @@ FcNameBool (FcChar8 *v, FcBool *result)
     char    c0, c1;
 
     c0 = *v;
-    if (isupper (c0))
-	c0 = tolower (c0);
+    c0 = FcToLower (c0);
     if (c0 == 't' || c0 == 'y' || c0 == '1')
     {
 	*result = FcTrue;
@@ -262,8 +261,7 @@ FcNameBool (FcChar8 *v, FcBool *result)
     if (c0 == 'o')
     {
 	c1 = v[1];
-	if (isupper (c1))
-	    c1 = tolower (c1);
+	c1 = FcToLower (c1);
 	if (c1 == 'n')
 	{
 	    *result = FcTrue;
