@@ -278,7 +278,6 @@ typedef struct drm_radeon_fullscreen {
 
 typedef struct drm_radeon_clear {
 	unsigned int flags;
-	int x, y, w, h;
 	unsigned int clear_color;
 	unsigned int clear_depth;
 	unsigned int color_mask;

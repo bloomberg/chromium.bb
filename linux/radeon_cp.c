@@ -738,11 +738,6 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	DRM_IOREMAP( dev_priv->cp_ring );
 	DRM_IOREMAP( dev_priv->ring_rptr );
 	DRM_IOREMAP( dev_priv->buffers );
-#if 0
-	if ( !dev_priv->is_pci ) {
-		DRM_IOREMAP( dev_priv->agp_textures );
-	}
-#endif
 
 	dev_priv->agp_size = init->agp_size;
 	dev_priv->agp_vm_start = RADEON_READ( RADEON_CONFIG_APER_SIZE );
@@ -811,11 +806,6 @@ static int radeon_do_cleanup_cp( drm_device_t *dev )
 		DRM_IOREMAPFREE( dev_priv->cp_ring );
 		DRM_IOREMAPFREE( dev_priv->ring_rptr );
 		DRM_IOREMAPFREE( dev_priv->buffers );
-#if 0
-		if ( !dev_priv->is_pci ) {
-			DRM_IOREMAPFREE( dev_priv->agp_textures );
-		}
-#endif
 
 		drm_free( dev->dev_private, sizeof(drm_radeon_private_t),
 			  DRM_MEM_DRIVER );
