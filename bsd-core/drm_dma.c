@@ -46,16 +46,10 @@
 
 int DRM(dma_setup)( drm_device_t *dev )
 {
-	int i;
 
-	dev->dma = DRM(alloc)( sizeof(*dev->dma), DRM_MEM_DRIVER );
-	if ( !dev->dma )
+	dev->dma = DRM(calloc)(1, sizeof(*dev->dma), DRM_MEM_DRIVER);
+	if (dev->dma == NULL)
 		return DRM_ERR(ENOMEM);
-
-	memset( dev->dma, 0, sizeof(*dev->dma) );
-
-	for ( i = 0 ; i <= DRM_MAX_ORDER ; i++ )
-		memset(&dev->dma->bufs[i], 0, sizeof(dev->dma->bufs[0]));
 
 	return 0;
 }
