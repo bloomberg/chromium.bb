@@ -113,7 +113,8 @@ int DRM(setunique)( DRM_IOCTL_ARGS )
 	dev->unique_len = u.unique_len;
 	dev->unique	= DRM(alloc)(u.unique_len + 1, DRM_MEM_DRIVER);
 
-	if(!dev->unique) return DRM_ERR(ENOMEM);
+	if (dev->unique == NULL)
+		return DRM_ERR(ENOMEM);
 
 	if (DRM_COPY_FROM_USER(dev->unique, u.unique, dev->unique_len))
 		return DRM_ERR(EFAULT);

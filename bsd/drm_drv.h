@@ -255,9 +255,9 @@ static int DRM(detach)(device_t dev)
 }
 static device_method_t DRM(methods)[] = {
 	/* Device interface */
-	DEVMETHOD(device_probe,		DRM( probe)),
-	DEVMETHOD(device_attach,	DRM( attach)),
-	DEVMETHOD(device_detach,	DRM( detach)),
+	DEVMETHOD(device_probe,		DRM(probe)),
+	DEVMETHOD(device_attach,	DRM(attach)),
+	DEVMETHOD(device_detach,	DRM(detach)),
 
 	{ 0, 0 }
 };
@@ -473,10 +473,9 @@ static int DRM(setup)( drm_device_t *dev )
 		dev->magiclist[i].tail = NULL;
 	}
 
-	dev->maplist = DRM(alloc)(sizeof(*dev->maplist),
-				  DRM_MEM_MAPS);
-	if(dev->maplist == NULL) return DRM_ERR(ENOMEM);
-	memset(dev->maplist, 0, sizeof(*dev->maplist));
+	dev->maplist = DRM(calloc)(1, sizeof(*dev->maplist), DRM_MEM_MAPS);
+	if (dev->maplist == NULL)
+		return DRM_ERR(ENOMEM);
 	TAILQ_INIT(dev->maplist);
 
 	dev->lock.hw_lock = NULL;
@@ -514,7 +513,8 @@ static int DRM(takedown)( drm_device_t *dev )
 
 	DRIVER_PRETAKEDOWN();
 #if __HAVE_DMA_IRQ
-	if ( dev->irq ) DRM(irq_uninstall)( dev );
+	if (dev->irq != 0)
+		DRM(irq_uninstall)( dev );
 #endif
 
 	DRM_LOCK;
@@ -557,8 +557,14 @@ static int DRM(takedown)( drm_device_t *dev )
 		dev->agp->enabled  = 0;
 	}
 #endif
+#if __REALLY_HAVE_SG
+	if (dev->sg != NULL) {
+		DRM(sg_cleanup)(dev->sg);
+		dev->sg = NULL;
+	}
+#endif
 
-	if( dev->maplist ) {
+	if (dev->maplist != NULL) {
 		while ((list=TAILQ_FIRST(dev->maplist))) {
 			map = list->map;
 			switch ( map->type ) {
@@ -599,20 +605,10 @@ static int DRM(takedown)( drm_device_t *dev )
 				break;
 
 			case _DRM_AGP:
+			case _DRM_SCATTER_GATHER:
 				/* Do nothing here, because this is all
-				 * handled in the AGP/GART driver.
+				 * handled in the AGP/GART/SG functions.
 				 */
-				break;
-                       case _DRM_SCATTER_GATHER:
-				/* Handle it, but do nothing, if REALLY_HAVE_SG
-				 * isn't defined.
-				 */
-#if __REALLY_HAVE_SG
-				if(dev->sg) {
-					DRM(sg_cleanup)(dev->sg);
-					dev->sg = NULL;
-				}
-#endif
 				break;
 			}
 			TAILQ_REMOVE(dev->maplist, list, link);
@@ -720,7 +716,7 @@ static int DRM(init)( device_t nbdev )
 
 #if __HAVE_CTX_BITMAP
 	retcode = DRM(ctxbitmap_init)( dev );
-	if( retcode ) {
+	if (retcode != 0) {
 		DRM_ERROR( "Cannot allocate memory for context bitmap.\n" );
 		DRM(sysctl_cleanup)( dev );
 #ifdef __FreeBSD__
@@ -885,7 +881,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 		DRM_DEBUG("Process %d dead, freeing lock for context %d\n",
 			  DRM_CURRENTPID,
 			  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
-#if HAVE_DRIVER_RELEASE
+#if __HAVE_RELEASE
 		DRIVER_RELEASE();
 #endif
 		DRM(lock_free)(dev,
@@ -914,9 +910,6 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 				break;	/* Got lock */
 			}
 				/* Contention */
-#if 0
-			atomic_inc( &dev->total_sleeps );
-#endif
 			retcode = tsleep((void *)&dev->lock.lock_queue,
 					PZERO|PCATCH,
 					"drmlk2",
@@ -924,7 +917,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 			if (retcode)
 				break;
 		}
-		if( !retcode ) {
+		if (retcode == 0) {
 			DRIVER_RELEASE();
 			DRM(lock_free)( dev, &dev->lock.hw_lock->lock,
 					DRM_KERNEL_CONTEXT );
@@ -1131,13 +1124,9 @@ int DRM(unlock)( DRM_IOCTL_ARGS )
 	DRM(dma_schedule)( dev, 1 );
 #endif
 
-	/* FIXME: Do we ever really need to check this?
-	 */
-	if ( 1 /* !dev->context_flag */ ) {
-		if ( DRM(lock_free)( dev, &dev->lock.hw_lock->lock,
-				     DRM_KERNEL_CONTEXT ) ) {
-			DRM_ERROR( "\n" );
-		}
+	if ( DRM(lock_free)( dev, &dev->lock.hw_lock->lock,
+			     DRM_KERNEL_CONTEXT ) ) {
+		DRM_ERROR( "\n" );
 	}
 
 	return 0;

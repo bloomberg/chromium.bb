@@ -171,12 +171,11 @@ int DRM(addmap)( DRM_IOCTL_ARGS )
 		return DRM_ERR(EINVAL);
 	}
 
-	list = DRM(alloc)(sizeof(*list), DRM_MEM_MAPS);
-	if(!list) {
+	list = DRM(calloc)(1, sizeof(*list), DRM_MEM_MAPS);
+	if (list == NULL) {
 		DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
 		return DRM_ERR(EINVAL);
 	}
-	memset(list, 0, sizeof(*list));
 	list->map = map;
 
 	DRM_LOCK;
@@ -210,68 +209,65 @@ int DRM(rmmap)( DRM_IOCTL_ARGS )
 	drm_map_list_entry_t *list;
 	drm_local_map_t *map;
 	drm_map_t request;
-	int found_maps = 0;
 
 	DRM_COPY_FROM_USER_IOCTL( request, (drm_map_t *)data, sizeof(request) );
 
 	DRM_LOCK;
 	TAILQ_FOREACH(list, dev->maplist, link) {
 		map = list->map;
-		if(map->handle == request.handle &&
-		   map->flags & _DRM_REMOVABLE) break;
+		if (map->handle == request.handle &&
+		    map->flags & _DRM_REMOVABLE)
+			break;
 	}
 
-	/* List has wrapped around to the head pointer, or its empty we didn't
-	 * find anything.
-	 */
-	if(list == NULL) {
+	/* No match found. */
+	if (list == NULL) {
 		DRM_UNLOCK;
 		return DRM_ERR(EINVAL);
 	}
 	TAILQ_REMOVE(dev->maplist, list, link);
 	DRM(free)(list, sizeof(*list), DRM_MEM_MAPS);
 
-
-	if(!found_maps) {
-		switch (map->type) {
-		case _DRM_REGISTERS:
-		case _DRM_FRAME_BUFFER:
+	switch (map->type) {
+	case _DRM_REGISTERS:
+	case _DRM_FRAME_BUFFER:
 #if __REALLY_HAVE_MTRR
-			if (map->mtrr >= 0) {
-				int retcode;
+		if (map->mtrr >= 0) {
+			int retcode;
 #ifdef __FreeBSD__
-				int act;
-				struct mem_range_desc mrdesc;
-				mrdesc.mr_base = map->offset;
-				mrdesc.mr_len = map->size;
-				mrdesc.mr_flags = MDF_WRITECOMBINE;
-				act = MEMRANGE_SET_REMOVE;
-				bcopy(DRIVER_NAME, &mrdesc.mr_owner, strlen(DRIVER_NAME));
-				retcode = mem_range_attr_set(&mrdesc, &act);
+			int act;
+			struct mem_range_desc mrdesc;
+			mrdesc.mr_base = map->offset;
+			mrdesc.mr_len = map->size;
+			mrdesc.mr_flags = MDF_WRITECOMBINE;
+			act = MEMRANGE_SET_REMOVE;
+			bcopy(DRIVER_NAME, &mrdesc.mr_owner,
+			    strlen(DRIVER_NAME));
+			retcode = mem_range_attr_set(&mrdesc, &act);
 #elif defined __NetBSD__
-				struct mtrr mtrrmap;
-				int one = 1;
-				mtrrmap.base = map->offset;
-				mtrrmap.len = map->size;
-				mtrrmap.type = 0;
-				mtrrmap.flags = 0;
-				mtrrmap.owner = p->p_pid;
-				retcode = mtrr_set( &mtrrmap, &one, p, MTRR_GETSET_KERNEL);
-				DRM_DEBUG("mtrr_del = %d\n", retcode);
+			struct mtrr mtrrmap;
+			int one = 1;
+			mtrrmap.base = map->offset;
+			mtrrmap.len = map->size;
+			mtrrmap.type = 0;
+			mtrrmap.flags = 0;
+			mtrrmap.owner = p->p_pid;
+			retcode = mtrr_set(&mtrrmap, &one, p,
+			    MTRR_GETSET_KERNEL);
+			DRM_DEBUG("mtrr_del = %d\n", retcode);
 #endif
-			}
-#endif
-			DRM(ioremapfree)( map );
-			break;
-		case _DRM_SHM:
-			DRM(free)( map->handle, map->size, DRM_MEM_SAREA );
-			break;
-		case _DRM_AGP:
-		case _DRM_SCATTER_GATHER:
-			break;
 		}
-		DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
+#endif
+		DRM(ioremapfree)(map);
+		break;
+	case _DRM_SHM:
+		DRM(free)(map->handle, map->size, DRM_MEM_SAREA);
+		break;
+	case _DRM_AGP:
+	case _DRM_SCATTER_GATHER:
+		break;
 	}
+	DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
 	DRM_UNLOCK;
 	return 0;
 }
@@ -392,16 +388,15 @@ static int DRM(addbufs_agp)(drm_device_t *dev, drm_buf_desc_t *request)
 		buf->filp    = NULL;
 
 		buf->dev_priv_size = sizeof(DRIVER_BUF_PRIV_T);
-		buf->dev_private = DRM(alloc)( sizeof(DRIVER_BUF_PRIV_T),
-					       DRM_MEM_BUFS );
-		if(!buf->dev_private) {
+		buf->dev_private = DRM(calloc)(1, buf->dev_priv_size,
+		    DRM_MEM_BUFS);
+		if (buf->dev_private == NULL) {
 			/* Set count correctly so we free the proper amount. */
 			entry->buf_count = count;
 			DRM(cleanup_buf_error)(dev, entry);
 			DRM_UNLOCK;
 			return DRM_ERR(ENOMEM);
 		}
-		memset( buf->dev_private, 0, buf->dev_priv_size );
 
 		offset += alignment;
 		entry->buf_count++;
@@ -415,7 +410,7 @@ static int DRM(addbufs_agp)(drm_device_t *dev, drm_buf_desc_t *request)
 				     (dma->buf_count + entry->buf_count)
 				     * sizeof(*dma->buflist),
 				     DRM_MEM_BUFS );
-	if(!temp_buflist) {
+	if (temp_buflist == NULL) {
 		/* Free the entry because it isn't valid */
 		DRM(cleanup_buf_error)(dev, entry);
 		DRM_UNLOCK;
@@ -705,17 +700,15 @@ static int DRM(addbufs_sg)(drm_device_t *dev, drm_buf_desc_t *request)
 		buf->filp    = NULL;
 
 		buf->dev_priv_size = sizeof(DRIVER_BUF_PRIV_T);
-		buf->dev_private = DRM(alloc)( sizeof(DRIVER_BUF_PRIV_T),
-					       DRM_MEM_BUFS );
-		if(!buf->dev_private) {
+		buf->dev_private = DRM(calloc)(1, buf->dev_priv_size,
+		    DRM_MEM_BUFS);
+		if (buf->dev_private == NULL) {
 			/* Set count correctly so we free the proper amount. */
 			entry->buf_count = count;
 			DRM(cleanup_buf_error)(dev, entry);
 			DRM_UNLOCK;
 			return DRM_ERR(ENOMEM);
 		}
-
-		memset( buf->dev_private, 0, buf->dev_priv_size );
 
 		DRM_DEBUG( "buffer %d @ %p\n",
 			   entry->buf_count, buf->address );
@@ -732,7 +725,7 @@ static int DRM(addbufs_sg)(drm_device_t *dev, drm_buf_desc_t *request)
 				     (dma->buf_count + entry->buf_count)
 				     * sizeof(*dma->buflist),
 				     DRM_MEM_BUFS );
-	if(!temp_buflist) {
+	if (temp_buflist == NULL) {
 		/* Free the entry because it isn't valid */
 		DRM(cleanup_buf_error)(dev, entry);
 		DRM_UNLOCK;
