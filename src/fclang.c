@@ -291,7 +291,7 @@ FcLangSetIndex (const FcChar8 *lang)
 	{   /* fast path for resolving 2-letter languages (by far the most common) after
 	     * finding the first char (probably already true because of the hash table) */
 	    FcChar8 secondChar = FcToLower(lang[1]);
-	    if (fcLangCharSets[mid].lang[1] > secondChar) // check second chars
+	    if (fcLangCharSets[mid].lang[1] > secondChar) /* check second chars */
 	    {
 		high = mid - 1;
 		continue;
