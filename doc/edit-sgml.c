@@ -189,7 +189,7 @@ ReplaceRead (FILE *f)
 	StringAdd (r->text, c);
     if (c == '@')
 	ungetc (c, f);
-    while (StringLast (r->text) == '\n')
+    while (isspace (StringLast (r->text)))
 	StringDel (r->text);
     return r;
 }
