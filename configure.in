@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/lib/fontconfig/configure.in,v 1.4 2002/05/23 17:06:46 keithp Exp $
+dnl $XFree86: xc/lib/fontconfig/configure.in,v 1.5 2002/05/24 05:19:30 keithp Exp $
 dnl
 dnl Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 dnl
@@ -81,10 +81,21 @@ if test "$GCC" = "yes"; then
     DSO_CFLAGS=''
     DSO_PIC_CFLAGS='-fPIC -DPIC'
 else
+    AC_CANONICAL_HOST
+    
     MKSHLIB='$(LD) $(DSO_LDOPTS) -o $@'
-    DSO_LDOPTS='-shared -h $@'
     DSO_CFLAGS=''
     DSO_PIC_CFLAGS='-KPIC -DPIC'
+    
+    case "$host" in
+    *solaris*)
+    	DSO_LDOPTS='-G -z text -z defs -h $@'
+	LIBS="$LIBS -lc"
+	;;
+    *)
+    	DSO_LDOPTS='-shared -h $@'
+    	;;
+    esac
 fi
 
 AC_SUBST(MKSHLIB)
