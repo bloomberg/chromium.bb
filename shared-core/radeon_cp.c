@@ -1732,32 +1732,9 @@ int radeon_cp_buffers( DRM_IOCTL_ARGS )
 	return ret;
 }
 
-static int radeon_register_regions(struct pci_dev *pdev) {
-	int retcode = -EINVAL;
-
-	/* request the mem regions */
-	if (!request_mem_region (pci_resource_start( pdev, 2 ),
-					pci_resource_len(pdev, 2), DRIVER_NAME)) {
-		DRM_ERROR("cannot reserve MMIO region\n");
-		return retcode;
-	}
-	if (!request_mem_region (pci_resource_start( pdev, 0 ),
-					pci_resource_len(pdev, 0), DRIVER_NAME)) {
-		DRM_ERROR("cannot reserve FB region\n");
-		return retcode;
-	}
-	return 0;
-}
-
-static void radeon_release_regions(struct pci_dev *pdev) {
-        release_mem_region (pci_resource_start( pdev, 2 ), pci_resource_len(pdev, 2));
-        release_mem_region (pci_resource_start( pdev, 0 ), pci_resource_len(pdev, 0));
-}
-
 /* Always create a map record for MMIO and FB memory, done from DRIVER_POSTINIT */
 int radeon_preinit( struct drm_device *dev, unsigned long flags )
 {
-	int retcode = -EINVAL;
 	u32 save, temp;
 	drm_radeon_private_t *dev_priv;
 
@@ -1768,11 +1745,6 @@ int radeon_preinit( struct drm_device *dev, unsigned long flags )
 	memset( dev_priv, 0, sizeof(drm_radeon_private_t) );
 	dev->dev_private = (void *)dev_priv;
 	dev_priv->flags = flags;
-
-	/* request the mem regions */
-	if (!DRM(fb_loaded))
-		if ((retcode = radeon_register_regions(dev->pdev)) != 0)
-			return retcode;
 
 	/* There are signatures in BIOS and PCI-SSID for a PCI card, but they are not very reliable.
 		Following detection method works for all cards tested so far.
@@ -1802,9 +1774,6 @@ int radeon_postcleanup( struct drm_device *dev )
 	
 	DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 
-	if (!DRM(fb_loaded))
-		radeon_release_regions(dev->pdev);
-	
 	dev->dev_private = NULL;
 	return 0;
 }

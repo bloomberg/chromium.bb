@@ -464,8 +464,10 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 		return -ENODEV;
 
 	dev = &(DRM(device)[DRM(numdevs)]);
-	if (DRM(fb_loaded)==0)
+	if (DRM(fb_loaded)==0) {
 		pci_set_drvdata(pdev, dev);
+		pci_request_regions(pdev, DRIVER_NAME);
+	}
 
 	memset( (void *)dev, 0, sizeof(*dev) );
 	dev->count_lock = SPIN_LOCK_UNLOCKED;
@@ -568,6 +570,7 @@ static void __exit drm_cleanup_pci(struct pci_dev *pdev)
 	
 	pci_set_drvdata(pdev, NULL);
 	drm_cleanup(dev);
+	pci_release_regions(pdev);
 }
 
 static struct pci_driver drm_driver = {
