@@ -454,7 +454,8 @@ do {									\
 
 #define R128_VERBOSE	0
 
-#define RING_LOCALS	int write; unsigned int tail_mask; volatile u32 *ring;
+#define RING_LOCALS							\
+	int write; unsigned int tail_mask; volatile u32 *ring;
 
 #define BEGIN_RING( n ) do {						\
 	if ( R128_VERBOSE ) {						\
@@ -474,6 +475,11 @@ do {									\
 	if ( R128_VERBOSE ) {						\
 		DRM_INFO( "ADVANCE_RING() tail=0x%06x wr=0x%06x\n",	\
 			  write, dev_priv->ring.tail );			\
+	}								\
+	if ( write < 32 ) {						\
+		memcpy( dev_priv->ring.end,				\
+			dev_priv->ring.start,				\
+			write * sizeof(u32) );				\
 	}								\
 	r128_flush_write_combine();					\
 	dev_priv->ring.tail = write;					\
