@@ -24,6 +24,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 # 
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.9 2000/08/04 03:51:47 tsi Exp $
 #
 # ***** NOTE NOTE NOTE NOTE NOTE *****
 # To override the automatic Linux source tree determination, pass the
@@ -47,7 +48,7 @@
 
 # **** End of SMP/MODVERSIONS detection
 
-MODS=           gamma.o tdfx.o r128.o
+MODS=           gamma.o tdfx.o r128.o sis.o
 LIBS=           libdrm.a
 PROGS=		drmstat
 
@@ -63,6 +64,9 @@ TDFXHEADERS=    tdfx_drv.h $(DRMHEADERS)
 
 R128OBJS=	r128_drv.o r128_dma.o r128_bufs.o r128_context.o
 R128HEADERS=	r128_drv.h r128_drm.h $(DRMHEADERS)
+
+SISOBJS=	sis_drv.o sis_context.o sis_ds.o sis_mm.o
+SISHEADERS=	sis_drv.h sis_ds.h sis_drm_public.h $(DRMHEADERS)
 
 PROGOBJS=       drmstat.po xf86drm.po xf86drmHash.po xf86drmRandom.po sigio.po
 PROGHEADERS=    xf86drm.h $(DRMHEADERS)
@@ -178,6 +182,9 @@ tdfx.o: $(TDFXOBJS) $(LIBS)
 r128_drv.o: r128_drv.c
 	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
 r128.o: $(R128OBJS) $(LIBS)
+	$(LD) -r $^ -o $@
+
+sis.o: $(SISOBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
 ifeq ($(AGP),1)
