@@ -58,7 +58,7 @@ static unsigned long mga_alloc_page(drm_device_t *dev)
 		return 0;
 	}
 	atomic_inc(&virt_to_page(address)->count);
-	set_bit(PG_locked, &virt_to_page(address)->flags);
+	set_bit(PG_reserved, &virt_to_page(address)->flags);
 
 	return address;
 }
@@ -67,8 +67,7 @@ static void mga_free_page(drm_device_t *dev, unsigned long page)
 {
 	if(!page) return;
 	atomic_dec(&virt_to_page(page)->count);
-	clear_bit(PG_locked, &virt_to_page(page)->flags);
-	wake_up(&virt_to_page(page)->wait);
+	clear_bit(PG_reserved, &virt_to_page(page)->flags);
 	free_page(page);
 	return;
 }
