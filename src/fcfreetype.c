@@ -864,7 +864,10 @@ FcFreeTypeQuery (const FcChar8	*file,
 		FcChar8	    *width_name;
 		int	    width;
 	    } FcSetWidths[] = {
-	    };
+                { "Condensed",      FC_WIDTH_CONDENSED },
+                { "SemiCondensed",  FC_WIDTH_SEMICONDENSED },
+                { "Normal",         FC_WIDTH_NORMAL },
+   	    };
 	    int	i;
 
 	    if (FcDebug () & FC_DBG_SCANV)
