@@ -43,8 +43,6 @@ static struct drm_stub_list {
 	struct proc_dir_entry  *dev_root;	/**< proc directory entry */
 } *DRM(stub_list);
 
-static struct proc_dir_entry *DRM(stub_root);
-
 /**
  * File \c open operation.
  *
@@ -175,9 +173,8 @@ static int DRM(stub_getminor)(const char *name, struct file_operations *fops,
 		if (!DRM(stub_list)[i].fops) {
 			DRM(stub_list)[i].name = name;
 			DRM(stub_list)[i].fops = fops;
-			DRM(stub_root) = DRM(proc_init)(dev, i, DRM(stub_root),
-							&DRM(stub_list)[i]
-							.dev_root);
+			DRM(proc_init)(dev, i, DRM(stub_info).proc_root,
+							&DRM(stub_list)[i].dev_root);
 			(*DRM(stub_info).info_count)++;
 			DRM_DEBUG("info count increased %d\n", *DRM(stub_info).info_count);
 			return i;
@@ -201,13 +198,13 @@ static int DRM(stub_putminor)(int minor)
 	if (minor < 0 || minor >= DRM_STUB_MAXCARDS) return -1;
 	DRM(stub_list)[minor].name = NULL;
 	DRM(stub_list)[minor].fops = NULL;
-	DRM(proc_cleanup)(minor, DRM(stub_root),
+	DRM(proc_cleanup)(minor, DRM(stub_info).proc_root,
 			  DRM(stub_list)[minor].dev_root);
 
 	(*DRM(stub_info).info_count)--;
 
-	if ((*DRM(stub_info).info_count)!=0) {
-		if (DRM(numdevs)==0) {
+	if ((*DRM(stub_info).info_count) != 0) {
+		if (DRM(numdevs) == 0) {
 			DRM_DEBUG("inter_module_put called %d\n", *DRM(stub_info).info_count);
 			inter_module_put("drm");
 		}
@@ -217,6 +214,7 @@ static int DRM(stub_putminor)(int minor)
 		DRM(free)(DRM(stub_list),
 			  sizeof(*DRM(stub_list)) * DRM_STUB_MAXCARDS,
 			  DRM_MEM_STUB);
+		remove_proc_entry("dri", NULL);
 		class_simple_destroy(DRM(stub_info).drm_class);
 		unregister_chrdev(DRM_MAJOR, "drm");
 	}
@@ -269,27 +267,38 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 			}
 
 			DRM(stub_info).drm_class = class_simple_create(THIS_MODULE, "drm");
-			class_simple_set_hotplug(DRM(stub_info).drm_class, drm_hotplug);
 			if (IS_ERR(DRM(stub_info).drm_class)) {
 				printk (KERN_ERR "Error creating drm class.\n");
 				unregister_chrdev(DRM_MAJOR, "drm");
 				return PTR_ERR(DRM(stub_info).drm_class);
 			}
+			class_simple_set_hotplug(DRM(stub_info).drm_class, drm_hotplug);
+
 			DRM_DEBUG("calling inter_module_register\n");
 			inter_module_register("drm", THIS_MODULE, &DRM(stub_info));
+			
+			DRM(stub_info).proc_root = create_proc_entry("dri", S_IFDIR, NULL);
+			if (!DRM(stub_info).proc_root) {
+				DRM_ERROR("Cannot create /proc/dri\n");
+				inter_module_unregister("drm");
+				unregister_chrdev(DRM_MAJOR, "drm");
+				class_simple_destroy(DRM(stub_info).drm_class);
+				return -1;
+			}
+		
 		}
-	}
-	else
+	} else
 		DRM_DEBUG("already retrieved inter_module information\n");
 
 	if (DRM(stub_info).info_register) {
 		ret2 = DRM(stub_info).info_register(name, fops, dev);
 		if (ret2 < 0) {
-			if (DRM(numdevs)==0 && !i) {
+			if (DRM(numdevs) == 0 && !i) {
 				inter_module_unregister("drm");
 				unregister_chrdev(DRM_MAJOR, "drm");
 				class_simple_destroy(DRM(stub_info).drm_class);
-				DRM_DEBUG("info_register failed deregistered everything\n");
+				remove_proc_entry("dri", NULL);
+				DRM_DEBUG("info_register failed, deregistered everything\n");
 			}
 			DRM_DEBUG("info_register failed\n");
 		}
@@ -321,4 +330,5 @@ struct drm_stub_info DRM(stub_info) = {
 	.info_unregister = DRM(stub_putminor),
 	.drm_class = NULL,
 	.info_count = &DRM(stub_count),
+	.proc_root = NULL,
 };

@@ -153,6 +153,7 @@ struct drm_stub_info {
 	int (*info_unregister)(int minor);
 	struct class_simple *drm_class;
 	int *info_count;
+	struct proc_dir_entry *proc_root;
 };
 extern struct drm_stub_info DRM(stub_info);
 
@@ -775,7 +776,7 @@ static void __exit drm_cleanup( drm_device_t *dev )
 	}
 #endif
 
-	class_simple_device_remove(MKDEV(DRM_MAJOR, 0));
+	class_simple_device_remove(MKDEV(DRM_MAJOR, dev->minor));
 }
 
 static void __exit drm_exit (void)

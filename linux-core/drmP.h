@@ -927,10 +927,10 @@ int                   DRM(stub_register)(const char *name,
 int                   DRM(stub_unregister)(int minor);
 
 				/* Proc support (drm_proc.h) */
-extern struct proc_dir_entry *DRM(proc_init)(drm_device_t *dev,
-					     int minor,
-					     struct proc_dir_entry *root,
-					     struct proc_dir_entry **dev_root);
+extern int 	      DRM(proc_init)(drm_device_t *dev,
+					int minor,
+					struct proc_dir_entry *root,
+					struct proc_dir_entry **dev_root);
 extern int            DRM(proc_cleanup)(int minor,
 					struct proc_dir_entry *root,
 					struct proc_dir_entry *dev_root);
