@@ -31,10 +31,10 @@
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome"
-#define DRIVER_DATE		"20040907"
+#define DRIVER_DATE		"20041010"
 
-#define DRIVER_MAJOR		1
-#define DRIVER_MINOR		5
+#define DRIVER_MAJOR		2
+#define DRIVER_MINOR		0
 #define DRIVER_PATCHLEVEL	0
 
 #include "drm_pciids.h"

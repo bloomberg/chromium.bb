@@ -101,19 +101,19 @@
 #define VIDEO 0
 #define AGP 1
 typedef struct {
-	unsigned int offset;
-	unsigned int size;
+	uint32_t offset;
+	uint32_t size;
 } drm_via_agp_t;
 
 typedef struct {
-	unsigned int offset;
-	unsigned int size;
+	uint32_t offset;
+	uint32_t size;
 } drm_via_fb_t;
 
 typedef struct {
-	unsigned int context;
-	unsigned int type;
-	unsigned int size;
+        uint32_t context;
+	uint32_t type;
+	uint32_t size;
 	unsigned long index;
 	unsigned long offset;
 } drm_via_mem_t;
@@ -134,11 +134,10 @@ typedef struct _drm_via_futex {
 	enum {
 		VIA_FUTEX_WAIT = 0x00,
 		VIA_FUTEX_WAKE = 0X01
-	} fut;
-	unsigned int op;
-	unsigned int ms;
-	unsigned int lock;
-	unsigned int val;
+	} func;
+	uint32_t ms;
+	uint32_t lock;
+	uint32_t val;
 } drm_via_futex_t;
 
 typedef struct _drm_via_dma_init {

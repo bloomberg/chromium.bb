@@ -124,7 +124,7 @@ int via_decoder_futex(DRM_IOCTL_ARGS)
 
 	lock = XVMCLOCKPTR(sAPriv, fx.lock);
 
-	switch (fx.op) {
+	switch (fx.func) {
 	case VIA_FUTEX_WAIT:
 		DRM_WAIT_ON(ret, dev_priv->decoder_queue[fx.lock],
 			    (fx.ms / 10) * (DRM_HZ / 100), *lock != fx.val);
