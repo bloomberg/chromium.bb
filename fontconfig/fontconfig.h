@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.19 2002/06/30 23:45:17 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.20 2002/07/06 23:47:43 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -100,46 +100,6 @@ typedef int		FcBool;
 #define FC_RGBA_BGR	    2
 #define FC_RGBA_VRGB	    3
 #define FC_RGBA_VBGR	    4
-
-/* language groups from the OS/2 CodePageRange bits */
-#define FC_LANG_LATIN_1			"latin1"		/* 0 */
-#define FC_LANG_LATIN_2_EASTERN_EUROPE	"latin2easterneurope"	/* 1 */
-#define FC_LANG_CYRILLIC		"cyrillic"		/* 2 */
-#define FC_LANG_GREEK			"greek"			/* 3 */
-#define FC_LANG_TURKISH			"turkish"		/* 4 */
-#define FC_LANG_HEBREW			"hebrew"		/* 5 */
-#define FC_LANG_ARABIC			"arabic"		/* 6 */
-#define FC_LANG_WINDOWS_BALTIC		"windowsbaltic"		/* 7 */
-#define FC_LANG_VIETNAMESE		"vietnamese"		/* 8 */
-/* 9-15 reserved for Alternate ANSI */
-#define FC_LANG_THAI			"thai"			/* 16 */
-#define FC_LANG_JAPANESE		"japanese"		/* 17 */
-#define FC_LANG_SIMPLIFIED_CHINESE	"simplifiedchinese"	/* 18 */
-#define FC_LANG_KOREAN_WANSUNG		"koreanwansung"		/* 19 */
-#define FC_LANG_TRADITIONAL_CHINESE	"traditionalchinese"	/* 20 */
-#define FC_LANG_KOREAN_JOHAB		"koreanjohab"		/* 21 */
-/* 22-28 reserved for Alternate ANSI & OEM */
-#define FC_LANG_MACINTOSH		"macintosh"		/* 29 */
-#define FC_LANG_OEM			"oem"			/* 30 */
-#define FC_LANG_SYMBOL			"symbol"		/* 31 */
-/* 32-47 reserved for OEM */
-#define FC_LANG_IBM_GREEK		"ibmgreek"		/* 48 */
-#define FC_LANG_MSDOS_RUSSIAN		"msdosrussian"		/* 49 */
-#define FC_LANG_MSDOS_NORDIC		"msdosnordic"		/* 50 */
-#define FC_LANG_ARABIC_864    		"arabic864"		/* 51 */
-#define FC_LANG_MSDOS_CANADIAN_FRENCH	"msdoscanadianfrench"	/* 52 */
-#define FC_LANG_HEBREW_862		"hebrew862"		/* 53 */
-#define FC_LANG_MSDOS_ICELANDIC		"msdosicelandic"	/* 54 */
-#define FC_LANG_MSDOS_PORTUGUESE	"msdosportuguese"	/* 55 */
-#define FC_LANG_IBM_TURKISH		"ibmturkish"		/* 56 */
-#define FC_LANG_IBM_CYRILLIC		"ibmcyrillic"		/* 57 */
-#define FC_LANG_LATIN_2			"latin2"		/* 58 */
-#define FC_LANG_MSDOS_BALTIC		"msdosbaltic"		/* 59 */
-#define FC_LANG_GREEK_437_G		"greek437g"		/* 60 */
-#define FC_LANG_ARABIC_ASMO_708		"arabicasmo708"		/* 61 */
-#define FC_LANG_WE_LATIN_1		"welatin1"		/* 62 */
-#define FC_LANG_US			"us"			/* 63 */
-#define FC_LANG_UNKNOWN			"unknown"		/* none of the above */
 
 typedef enum _FcType {
     FcTypeVoid, 
