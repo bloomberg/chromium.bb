@@ -300,26 +300,6 @@ static u32 radeon_cp_microcode[][2] = {
 };
 
 
-#define DO_IOREMAP(_m) (_m)->handle = drm_ioremap((_m)->offset, (_m)->size)
-
-#define DO_IOREMAPFREE(_m)						\
-	do {								\
-		if ((_m)->handle && (_m)->size)				\
-			drm_ioremapfree((_m)->handle, (_m)->size);	\
-	} while (0)
-
-#define DO_FIND_MAP(_m, _o)						\
-	do {								\
-		int _i;							\
-		for (_i = 0; _i < dev->map_count; _i++) {		\
-			if (dev->maplist[_i]->offset == _o) {		\
-				_m = dev->maplist[_i];			\
-				break;					\
-			}						\
-		}							\
-	} while (0)
-
-
 int RADEON_READ_PLL(drm_device_t *dev, int addr)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
@@ -722,12 +702,10 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 					 RADEON_BFACE_SOLID |
 					 RADEON_FFACE_SOLID |
 					 RADEON_FLAT_SHADE_VTX_LAST |
-
 					 RADEON_DIFFUSE_SHADE_FLAT |
 					 RADEON_ALPHA_SHADE_FLAT |
 					 RADEON_SPECULAR_SHADE_FLAT |
 					 RADEON_FOG_SHADE_FLAT |
-
 					 RADEON_VTX_PIX_CENTER_OGL |
 					 RADEON_ROUND_MODE_TRUNC |
 					 RADEON_ROUND_PREC_8TH_PIX);
@@ -742,27 +720,27 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 		}
 	}
 
-	DO_FIND_MAP( dev_priv->fb, init->fb_offset );
-	DO_FIND_MAP( dev_priv->mmio, init->mmio_offset );
-	DO_FIND_MAP( dev_priv->cp_ring, init->ring_offset );
-	DO_FIND_MAP( dev_priv->ring_rptr, init->ring_rptr_offset );
-	DO_FIND_MAP( dev_priv->buffers, init->buffers_offset );
+	DRM_FIND_MAP( dev_priv->fb, init->fb_offset );
+	DRM_FIND_MAP( dev_priv->mmio, init->mmio_offset );
+	DRM_FIND_MAP( dev_priv->cp_ring, init->ring_offset );
+	DRM_FIND_MAP( dev_priv->ring_rptr, init->ring_rptr_offset );
+	DRM_FIND_MAP( dev_priv->buffers, init->buffers_offset );
 
 	if ( !dev_priv->is_pci ) {
-		DO_FIND_MAP( dev_priv->agp_textures,
-			     init->agp_textures_offset );
+		DRM_FIND_MAP( dev_priv->agp_textures,
+			      init->agp_textures_offset );
 	}
 
 	dev_priv->sarea_priv =
 		(drm_radeon_sarea_t *)((u8 *)dev_priv->sarea->handle +
 				       init->sarea_priv_offset);
 
-	DO_IOREMAP( dev_priv->cp_ring );
-	DO_IOREMAP( dev_priv->ring_rptr );
-	DO_IOREMAP( dev_priv->buffers );
+	DRM_IOREMAP( dev_priv->cp_ring );
+	DRM_IOREMAP( dev_priv->ring_rptr );
+	DRM_IOREMAP( dev_priv->buffers );
 #if 0
 	if ( !dev_priv->is_pci ) {
-		DO_IOREMAP( dev_priv->agp_textures );
+		DRM_IOREMAP( dev_priv->agp_textures );
 	}
 #endif
 
@@ -783,6 +761,8 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 
 	dev_priv->ring.tail_mask =
 		(dev_priv->ring.size / sizeof(u32)) - 1;
+
+	dev_priv->ring.high_mark = RADEON_RING_HIGH_MARK;
 
 #if 0
 	/* Initialize the scratch register pointer.  This will cause
@@ -828,12 +808,12 @@ static int radeon_do_cleanup_cp( drm_device_t *dev )
 	if ( dev->dev_private ) {
 		drm_radeon_private_t *dev_priv = dev->dev_private;
 
-		DO_IOREMAPFREE( dev_priv->cp_ring );
-		DO_IOREMAPFREE( dev_priv->ring_rptr );
-		DO_IOREMAPFREE( dev_priv->buffers );
+		DRM_IOREMAPFREE( dev_priv->cp_ring );
+		DRM_IOREMAPFREE( dev_priv->ring_rptr );
+		DRM_IOREMAPFREE( dev_priv->buffers );
 #if 0
 		if ( !dev_priv->is_pci ) {
-			DO_IOREMAPFREE( dev_priv->agp_textures );
+			DRM_IOREMAPFREE( dev_priv->agp_textures );
 		}
 #endif
 

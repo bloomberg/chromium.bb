@@ -281,6 +281,8 @@ typedef struct drm_radeon_clear {
 	int x, y, w, h;
 	unsigned int clear_color;
 	unsigned int clear_depth;
+	unsigned int color_mask;
+	unsigned int depth_mask;
 	union {
 		float f[5];
 		unsigned int ui[5];

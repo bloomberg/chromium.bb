@@ -51,6 +51,8 @@ typedef struct drm_r128_ring_buffer {
 	u32 tail;
 	u32 tail_mask;
 	int space;
+
+	int high_mark;
 } drm_r128_ring_buffer_t;
 
 typedef struct drm_r128_private {
@@ -74,13 +76,13 @@ typedef struct drm_r128_private {
 	u32 crtc_offset;
 	u32 crtc_offset_cntl;
 
-	unsigned int fb_bpp;
+	u32 color_fmt;
 	unsigned int front_offset;
 	unsigned int front_pitch;
 	unsigned int back_offset;
 	unsigned int back_pitch;
 
-	unsigned int depth_bpp;
+	u32 depth_fmt;
 	unsigned int depth_offset;
 	unsigned int depth_pitch;
 	unsigned int span_offset;
@@ -143,6 +145,7 @@ extern drm_buf_t *r128_freelist_get( drm_device_t *dev );
 extern int r128_wait_ring( drm_r128_private_t *dev_priv, int n );
 extern void r128_update_ring_snapshot( drm_r128_private_t *dev_priv );
 
+extern int r128_do_cce_idle( drm_r128_private_t *dev_priv );
 extern int r128_do_cleanup_pageflip( drm_device_t *dev );
 
 				/* r128_state.c */
@@ -386,23 +389,24 @@ extern int  r128_context_switch_complete(drm_device_t *dev, int new);
 #define R128_WATERMARK_N		8
 #define R128_WATERMARK_K		128
 
-#define R128_MAX_USEC_TIMEOUT	100000	/* 100 ms */
+#define R128_MAX_USEC_TIMEOUT		100000	/* 100 ms */
 
 #define R128_LAST_FRAME_REG		R128_GUI_SCRATCH_REG0
 #define R128_LAST_DISPATCH_REG		R128_GUI_SCRATCH_REG1
 #define R128_MAX_VB_AGE			0xffffffff
-
 #define R128_MAX_VB_VERTS		(0xffff)
+
+#define R128_RING_HIGH_MARK		128
 
 
 #define R128_BASE(reg)		((u32)(dev_priv->mmio->handle))
 #define R128_ADDR(reg)		(R128_BASE(reg) + reg)
 
-#define R128_DEREF(reg)		*(__volatile__ int *)R128_ADDR(reg)
+#define R128_DEREF(reg)		*(volatile u32 *)R128_ADDR(reg)
 #define R128_READ(reg)		R128_DEREF(reg)
 #define R128_WRITE(reg,val)	do { R128_DEREF(reg) = val; } while (0)
 
-#define R128_DEREF8(reg)	*(__volatile__ char *)R128_ADDR(reg)
+#define R128_DEREF8(reg)	*(volatile u8 *)R128_ADDR(reg)
 #define R128_READ8(reg)		R128_DEREF8(reg)
 #define R128_WRITE8(reg,val)	do { R128_DEREF8(reg) = val; } while (0)
 
@@ -414,13 +418,6 @@ do {                                                                          \
 
 extern int R128_READ_PLL(drm_device_t *dev, int addr);
 
-#define R128CCE0(p,r,n)   ((p) | ((n) << 16) | ((r) >> 2))
-#define R128CCE1(p,r1,r2) ((p) | (((r2) >> 2) << 11) | ((r1) >> 2))
-#define R128CCE2(p)       ((p))
-#define R128CCE3(p,n)     ((p) | ((n) << 16))
-
-
-
 
 #define CCE_PACKET0( reg, n )		(R128_CCE_PACKET0 |		\
 					 ((n) << 16) | ((reg) >> 2))
@@ -431,7 +428,57 @@ extern int R128_READ_PLL(drm_device_t *dev, int addr);
 					 (pkt) | ((n) << 16))
 
 
-#define r128_flush_write_combine()		mb()
+
+
+/* ================================================================
+ * Misc helper macros
+ */
+
+#define LOCK_TEST_WITH_RETURN( dev )					\
+do {									\
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||		\
+	     dev->lock.pid != current->pid ) {				\
+		DRM_ERROR( "%s called without lock held\n",		\
+			   __FUNCTION__ );				\
+		return -EINVAL;						\
+	}								\
+} while (0)
+
+#define RING_SPACE_TEST_WITH_RETURN( dev_priv )				\
+do {									\
+	drm_r128_ring_buffer_t *ring = &dev_priv->ring; int i;		\
+	if ( ring->space < ring->high_mark ) {				\
+		for ( i = 0 ; i < dev_priv->usec_timeout ; i++ ) {	\
+			ring->space = *ring->head - ring->tail;		\
+			if ( ring->space <= 0 )				\
+				ring->space += ring->size;		\
+			if ( ring->space >= ring->high_mark )		\
+				goto __ring_space_done;			\
+			udelay( 1 );					\
+		}							\
+		DRM_ERROR( "ring space check failed!\n" );		\
+		return -EBUSY;						\
+	}								\
+ __ring_space_done:							\
+} while (0)
+
+#define VB_AGE_TEST_WITH_RETURN( dev_priv )				\
+do {									\
+	drm_r128_sarea_t *sarea_priv = dev_priv->sarea_priv;		\
+	if ( sarea_priv->last_dispatch >= R128_MAX_VB_AGE ) {		\
+		int __ret = r128_do_cce_idle( dev_priv );		\
+		if ( __ret < 0 ) return __ret;				\
+		sarea_priv->last_dispatch = 0;				\
+		r128_freelist_reset( dev );				\
+	}								\
+} while (0)
+
+
+/* ================================================================
+ * Ring control
+ */
+
+#define r128_flush_write_combine()	mb()
 
 
 #define R128_VERBOSE	0

@@ -23,9 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Kevin E. Martin <martin@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
- *
+ *    Kevin E. Martin <martin@valinux.com>
  */
 
 #define __NO_VERSION__
@@ -525,7 +524,7 @@ static void radeon_cp_dispatch_clear( drm_device_t *dev,
 			RADEON_WAIT_UNTIL_3D_IDLE();
 
 			OUT_RING( CP_PACKET0( RADEON_DP_WRITE_MASK, 0 ) );
-			OUT_RING( sarea_priv->context_state.rb3d_planemask );
+			OUT_RING( clear->color_mask );
 
 			ADVANCE_RING();
 
@@ -1130,6 +1129,8 @@ int radeon_cp_clear( struct inode *inode, struct file *filp,
 			     sizeof(clear) ) )
 		return -EFAULT;
 
+	RING_SPACE_TEST_WITH_RETURN( dev_priv );
+
 	if ( sarea_priv->nbox > RADEON_NR_SAREA_CLIPRECTS )
 		sarea_priv->nbox = RADEON_NR_SAREA_CLIPRECTS;
 
@@ -1152,6 +1153,8 @@ int radeon_cp_swap( struct inode *inode, struct file *filp,
 		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
 		return -EINVAL;
 	}
+
+	RING_SPACE_TEST_WITH_RETURN( dev_priv );
 
 	if ( sarea_priv->nbox > RADEON_NR_SAREA_CLIPRECTS )
 		sarea_priv->nbox = RADEON_NR_SAREA_CLIPRECTS;
@@ -1207,7 +1210,8 @@ int radeon_cp_vertex( struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 
-	VB_AGE_CHECK_WITH_RET( dev_priv );
+	RING_SPACE_TEST_WITH_RETURN( dev_priv );
+	VB_AGE_TEST_WITH_RETURN( dev_priv );
 
 	buf = dma->buflist[vertex.idx];
 	buf_priv = buf->dev_private;
@@ -1272,7 +1276,8 @@ int radeon_cp_indices( struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 
-	VB_AGE_CHECK_WITH_RET( dev_priv );
+	RING_SPACE_TEST_WITH_RETURN( dev_priv );
+	VB_AGE_TEST_WITH_RETURN( dev_priv );
 
 	buf = dma->buflist[elts.idx];
 	buf_priv = buf->dev_private;
@@ -1336,7 +1341,8 @@ int radeon_cp_blit( struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 
-	VB_AGE_CHECK_WITH_RET( dev_priv );
+	RING_SPACE_TEST_WITH_RETURN( dev_priv );
+	VB_AGE_TEST_WITH_RETURN( dev_priv );
 
 	return radeon_cp_dispatch_blit( dev, &blit );
 }
@@ -1346,6 +1352,7 @@ int radeon_cp_stipple( struct inode *inode, struct file *filp,
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->dev;
+	drm_radeon_private_t *dev_priv = dev->dev_private;
 	drm_radeon_stipple_t stipple;
 	u32 mask[32];
 
@@ -1362,6 +1369,8 @@ int radeon_cp_stipple( struct inode *inode, struct file *filp,
 	if ( copy_from_user( &mask, stipple.mask,
 			     32 * sizeof(u32) ) )
 		return -EFAULT;
+
+	RING_SPACE_TEST_WITH_RETURN( dev_priv );
 
 	radeon_cp_dispatch_stipple( dev, mask );
 
@@ -1423,7 +1432,8 @@ int radeon_cp_indirect( struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 
-	VB_AGE_CHECK_WITH_RET( dev_priv );
+	RING_SPACE_TEST_WITH_RETURN( dev_priv );
+	VB_AGE_TEST_WITH_RETURN( dev_priv );
 
 	buf->used = indirect.end;
 	buf_priv->discard = indirect.discard;

@@ -218,9 +218,10 @@ typedef struct drm_r128_fullscreen {
 
 typedef struct drm_r128_clear {
 	unsigned int flags;
-	int x, y, w, h;
 	unsigned int clear_color;
 	unsigned int clear_depth;
+	unsigned int color_mask;
+	unsigned int depth_mask;
 } drm_r128_clear_t;
 
 typedef struct drm_r128_vertex {
