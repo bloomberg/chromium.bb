@@ -113,8 +113,8 @@
 #define DRM_TASKQUEUE_ARGS	void *arg, int pending
 #define DRM_IRQ_ARGS		void *arg
 #define DRM_IRQ_RET		void
-#define DRM_NONE
-#define DRM_HANDLED
+#define DRM_IRQ_NONE
+#define DRM_IRQ_HANDLED
 #define DRM_DEVICE		drm_device_t	*dev	= kdev->si_drv1
 #define DRM_MALLOC(size)	malloc( size, DRM(M_DRM), M_NOWAIT )
 #define DRM_FREE(pt,size)		free( pt, DRM(M_DRM) )
