@@ -1,7 +1,7 @@
 /*
  * $RCSId: xc/lib/fontconfig/src/fcdefault.c,v 1.2 2002/07/09 22:08:14 keithp Exp $
  *
- * Copyright © 2001 Keith Packard
+ * Copyright Â© 2001 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

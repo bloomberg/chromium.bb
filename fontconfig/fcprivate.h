@@ -1,7 +1,7 @@
 /*
  * $RCSId: xc/lib/fontconfig/fontconfig/fcprivate.h,v 1.5 2002/08/19 19:32:04 keithp Exp $
  *
- * Copyright © 2001 Keith Packard
+ * Copyright Â© 2001 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

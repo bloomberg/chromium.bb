@@ -1,7 +1,7 @@
 #
 # $RCSId: xc/lib/fontconfig/fc-lang/fy.orth,v 1.3 2002/08/07 17:34:15 keithp Exp $
 #
-# Copyright © 2002 Keith Packard
+# Copyright Â© 2002 Keith Packard
 #
 # Permission to use, copy, modify, distribute, and sell this software and its
 # documentation for any purpose is hereby granted without fee, provided that
@@ -30,7 +30,7 @@
 # Checked with orthography from eki.ee/letter which include
 # a few others (commented out here).
 #
-# Added in ß from German orthography
+# Added in ÃŸ from German orthography
 #
 0041-005a
 0061-007a

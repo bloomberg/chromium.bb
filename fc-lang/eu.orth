@@ -1,7 +1,7 @@
 #
 # $RCSId: xc/lib/fontconfig/fc-lang/eu.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
 #
-# Copyright © 2002 Keith Packard
+# Copyright Â© 2002 Keith Packard
 #
 # Permission to use, copy, modify, distribute, and sell this software and its
 # documentation for any purpose is hereby granted without fee, provided that
@@ -27,7 +27,7 @@
 #	www.evertype.com
 #	www.eki.ee/letter
 #
-# The orthography from evertype.com comes from the Académie de la Langue
+# The orthography from evertype.com comes from the AcadÃ©mie de la Langue
 # Basque prior to 1926.  eki.ee adds some additional letters, marked here
 # and commented out.  I've also commented out some older letters
 # from the evertype.com orthography which are (apparently) no longer

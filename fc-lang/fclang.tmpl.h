@@ -1,7 +1,7 @@
 /*
  * $RCSId: xc/lib/fontconfig/fc-lang/fclang.tmpl.h,v 1.1 2002/07/06 23:21:36 keithp Exp $
  *
- * Copyright © 2002 Keith Packard
+ * Copyright Â© 2002 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
