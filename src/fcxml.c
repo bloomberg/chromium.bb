@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.6 2002/02/28 16:51:48 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.7 2002/05/21 17:06:22 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,10 +24,17 @@
 
 #include <stdarg.h>
 #include "fcint.h"
+
+#if HAVE_EXPAT
 #if HAVE_XMLPARSE_H
 #include <xmlparse.h>
 #else
 #include <expat.h>
+#endif
+#endif
+
+#if HAVE_XML2
+#include "fclibxml2.h"
 #endif
 
 FcTest *

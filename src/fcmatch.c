@@ -383,62 +383,57 @@ FcFontMatch (FcConfig	*config,
     return FcFontSetMatch (config, sets, nsets, p, result);
 }
 
-#include "fcavl.h"
-
 typedef struct _FcSortNode {
-    FcAvlNode	avl;
     FcPattern	*pattern;
     double	score[NUM_MATCHER];
 } FcSortNode;
 
-static FcBool
-FcSortMore (FcAvlNode *aa, FcAvlNode *ab)
+static int
+FcSortCompare (const void *aa, const void *ab)
 {
-    FcSortNode	*a = (FcSortNode *) aa;
-    FcSortNode	*b = (FcSortNode *) ab;
-    int		i;
+    FcSortNode  *a = *(FcSortNode **) aa;
+    FcSortNode  *b = *(FcSortNode **) ab;
+    int         i;
 
     for (i = 0; i < NUM_MATCHER; i++)
     {
 	if (a->score[i] > b->score[i])
-	    return FcTrue;
+	    return -1;
 	if (a->score[i] < b->score[i])
-	    return FcFalse;
+	    return 1;
     }
-    if (aa > ab)
-	return FcTrue;
-    return FcFalse;
+    return 0;
 }
 
 static FcBool
-FcSortWalk (FcSortNode *n, FcFontSet *fs, FcCharSet **cs, FcBool trim)
+FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool trim)
 {
     FcCharSet	*ncs;
-    
-    if (!n)
-	return FcTrue;
-    if (!FcSortWalk ((FcSortNode *) n->avl.left, fs, cs, trim))
-	return FcFalse;
-    if (FcPatternGetCharSet (n->pattern, FC_CHARSET, 0, &ncs) == FcResultMatch)
+    FcSortNode	*node;
+
+    while (nnode--)
     {
-	if (!trim || !*cs || FcCharSetSubtractCount (ncs, *cs) != 0)
+	node = *n++;
+	if (FcPatternGetCharSet (node->pattern, FC_CHARSET, 0, &ncs) == 
+	    FcResultMatch)
 	{
-	    if (*cs)
+	    if (!trim || !*cs || FcCharSetSubtractCount (ncs, *cs) != 0)
 	    {
-		ncs = FcCharSetUnion (ncs, *cs);
-		if (!ncs)
+		if (*cs)
+		{
+		    ncs = FcCharSetUnion (ncs, *cs);
+		    if (!ncs)
+			return FcFalse;
+		    FcCharSetDestroy (*cs);
+		}
+		else
+		    ncs = FcCharSetCopy (ncs);
+		*cs = ncs;
+		if (!FcFontSetAdd (fs, node->pattern))
 		    return FcFalse;
-		FcCharSetDestroy (*cs);
 	    }
-	    else
-		ncs = FcCharSetCopy (ncs);
-	    *cs = ncs;
-	    if (!FcFontSetAdd (fs, n->pattern))
-		return FcFalse;
 	}
     }
-    if (!FcSortWalk ((FcSortNode *) n->avl.right, fs, cs, trim))
-	return FcFalse;
     return FcTrue;
 }
 
@@ -454,8 +449,8 @@ FcFontSetSort (FcConfig	    *config,
     FcFontSet	    *ret;
     FcFontSet	    *s;
     FcSortNode	    *nodes;
+    FcSortNode	    **nodeps, **nodep;
     int		    nnodes;
-    FcSortNode	    *root;
     FcSortNode	    *new;
     FcCharSet	    *cs;
     int		    set;
@@ -472,12 +467,13 @@ FcFontSetSort (FcConfig	    *config,
     }
     if (!nnodes)
 	goto bail0;
-    nodes = malloc (nnodes * sizeof (FcSortNode));
+    nodes = malloc (nnodes * sizeof (FcSortNode) + nnodes * sizeof (FcSortNode *));
     if (!nodes)
 	goto bail0;
+    nodeps = (FcSortNode **) nodes + nnodes;
     
-    root = 0;
     new = nodes;
+    nodep = nodeps;
     for (set = 0; set < nsets; set++)
     {
 	s = sets[set];
@@ -502,10 +498,16 @@ FcFontSetSort (FcConfig	    *config,
 		}
 		printf ("\n");
 	    }
-	    FcAvlInsert (FcSortMore, (FcAvlNode **) &root, &new->avl);
+	    *nodep = new;
 	    new++;
+	    nodep++;
 	}
     }
+
+    nnodes = new - nodes;
+    
+    qsort (nodeps, sizeof (FcSortNode *), nnodes,
+	   FcSortCompare);
 
     ret = FcFontSetCreate ();
     if (!ret)
@@ -513,7 +515,7 @@ FcFontSetSort (FcConfig	    *config,
 
     cs = 0;
 
-    if (!FcSortWalk (root, ret, &cs, trim))
+    if (!FcSortWalk (nodeps, nnodes, ret, &cs, trim))
 	goto bail2;
 
     *csp = cs;

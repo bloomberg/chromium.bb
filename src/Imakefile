@@ -23,16 +23,16 @@ SOFONTCONFIGREV=1.0
 
 INCLUDES=$(FREETYPE2INCLUDES) $(LIBXML2INCLUDES) -I..
 
-DEFINES=-DFC_DEFAULT_FONTS='"$(FC_DEFAULT_FONTS)"'
+DEFINES=-DFC_DEFAULT_FONTS='"$(FC_DEFAULT_FONTS)"' -DHAVE_EXPAT
 
 EXPATLIB=-lexpat
 REQUIREDLIBS=$(LDPRELIBS) $(FREETYPE2LIB) $(EXPATLIB)
 
-SRCS=fcatomic.c fcavl.c fcblanks.c fccache.c fccfg.c fccharset.c fcdbg.c \
+SRCS=fcatomic.c fcblanks.c fccache.c fccfg.c fccharset.c fcdbg.c \
      fcdefault.c fcdir.c fcfreetype.c fcfs.c fcinit.c fclist.c fcmatch.c \
      fcmatrix.c fcname.c fcpat.c fcstr.c fcxml.c
 
-OBJS=fcatomic.o fcavl.o fcblanks.o fccache.o fccfg.o fccharset.o fcdbg.o \
+OBJS=fcatomic.o fcblanks.o fccache.o fccfg.o fccharset.o fcdbg.o \
      fcdefault.o fcdir.o fcfreetype.o fcfs.o fcinit.o fclist.o fcmatch.o \
      fcmatrix.o fcname.o fcpat.o fcstr.o fcxml.o
 

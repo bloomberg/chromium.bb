@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.3 2002/02/19 07:50:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -109,6 +109,58 @@ FcValueListDestroy (FcValueList *l)
     }
 }
 
+FcBool
+FcValueEqual (FcValue va, FcValue vb)
+{
+    if (va.type != vb.type)
+    {
+	if (va.type == FcTypeInteger)
+	{
+	    va.type = FcTypeDouble;
+	    va.u.d = va.u.i;
+	}
+	if (vb.type == FcTypeInteger)
+	{
+	    vb.type = FcTypeDouble;
+	    vb.u.d = vb.u.i;
+	}
+	if (va.type != vb.type)
+	    return FcFalse;
+    }
+    switch (va.type) {
+    case FcTypeVoid:
+	return FcTrue;
+    case FcTypeInteger:
+	return va.u.i == vb.u.i;
+    case FcTypeDouble:
+	return va.u.d == vb.u.d;
+    case FcTypeString:
+	return FcStrCmpIgnoreCase (va.u.s, vb.u.s) == 0;
+    case FcTypeBool:
+	return va.u.b == vb.u.b;
+    case FcTypeMatrix:
+	return FcMatrixEqual (va.u.m, vb.u.m);
+    case FcTypeCharSet:
+	return FcCharSetEqual (va.u.c, vb.u.c);
+    }
+    return FcFalse;
+}
+
+static FcBool
+FcValueListEqual (FcValueList *la, FcValueList *lb)
+{
+    while (la && lb)
+    {
+	if (!FcValueEqual (la->value, lb->value))
+	    return FcFalse;
+	la = la->next;
+	lb = lb->next;
+    }
+    if (la || lb)
+	return FcFalse;
+    return FcTrue;
+}
+
 void
 FcPatternDestroy (FcPattern *p)
 {
@@ -136,18 +188,40 @@ FcPatternFind (FcPattern *p, const char *object, FcBool insert)
     int		    s;
     FcPatternElt   *e;
     
+    int		    low, high;
+
     /* match existing */
-    for (i = 0; i < p->num; i++)
+    low = 0;
+    high = p->num;
+
+    while (low + 1 < high)
     {
-	if (!FcStrCmpIgnoreCase ((FcChar8 *) object, (FcChar8 *) p->elts[i].object))
+	i = (low + high) >> 1;
+	s = FcStrCmpIgnoreCase ((FcChar8 *) object, (FcChar8 *) p->elts[i].object);
+	if (s == 0)
 	    return &p->elts[i];
+	if (s < 0)
+	    low = i;
+	else
+	    high = i;
+    }
+
+    i = low;
+    while (i < high)
+    {
+	s = FcStrCmpIgnoreCase ((FcChar8 *) object, (FcChar8 *) p->elts[i].object);
+	if (s == 0)
+	    return &p->elts[i];
+	if (s > 0)
+	    break;
+	i++;
     }
 
     if (!insert)
-	return FcFalse;
+	return 0;
 
     /* grow array */
-    if (i == p->size)
+    if (p->num + 1 >= p->size)
     {
 	s = p->size + 16;
 	if (p->elts)
@@ -168,12 +242,37 @@ FcPatternFind (FcPattern *p, const char *object, FcBool insert)
 	}
     }
     
+    /* move elts up */
+    memmove (p->elts + i + 1,
+	     p->elts + i,
+	     sizeof (FcPatternElt) *
+	     (p->num - i));
+	     
     /* bump count */
     p->num++;
     
     p->elts[i].object = object;
+    p->elts[i].values = 0;
     
     return &p->elts[i];
+}
+
+FcBool
+FcPatternEqual (FcPattern *pa, FcPattern *pb)
+{
+    int	i;
+
+    if (pa->num != pb->num)
+	return FcFalse;
+    for (i = 0; i < pa->num; i++)
+    {
+	if (FcStrCmpIgnoreCase ((FcChar8 *) pa->elts[i].object,
+				(FcChar8 *) pb->elts[i].object) != 0)
+	    return FcFalse;
+	if (!FcValueListEqual (pa->elts[i].values, pb->elts[i].values))
+	    return FcFalse;
+    }
+    return FcTrue;
 }
 
 FcBool

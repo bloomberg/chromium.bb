@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/src/Makefile.in,v 1.2 2002/05/21 17:48:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -29,7 +29,6 @@ include $(TOPDIR)/config/Makedefs
 LIBS=@LIBS@
 
 SRCS=fcatomic.c \
-     fcavl.c \
      fcblanks.c \
      fccache.c \
      fccfg.c \
@@ -49,7 +48,6 @@ SRCS=fcatomic.c \
      fcxml.c
 
 OBJS=fcatomic.@OBJEXT@ \
-     fcavl.@OBJEXT@ \
      fcblanks.@OBJEXT@ \
      fccache.@OBJEXT@ \
      fccfg.@OBJEXT@ \
