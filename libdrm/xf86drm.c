@@ -106,10 +106,6 @@ extern unsigned long _bus_base(void);
 #define DRM_MAX_MINOR 16
 #endif
 
-#ifdef __linux__
-#include <sys/sysmacros.h>	/* for makedev() */
-#endif
-
 #ifndef makedev
 				/* This definition needs to be changed on
                                    some systems if dev_t is a structure.
