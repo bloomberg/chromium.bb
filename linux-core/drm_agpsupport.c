@@ -106,6 +106,10 @@ int DRM(agp_acquire)(struct inode *inode, struct file *filp,
 
 	if (!dev->agp || dev->agp->acquired || !drm_agp->acquire)
 		return -EINVAL;
+#ifndef VMAP_4_ARGS
+	if ( dev->agp->cant_use_aperture )
+		return -EINVAL;
+#endif
 	if ((retcode = drm_agp->acquire())) return retcode;
 	dev->agp->acquired = 1;
 	return 0;
