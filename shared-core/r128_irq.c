@@ -50,10 +50,7 @@ void r128_dma_service( DRM_IRQ_ARGS )
 		R128_WRITE( R128_GEN_INT_STATUS, R128_CRTC_VBLANK_INT_AK );
 		atomic_inc(&dev->vbl_received);
 		DRM_WAKEUP(&dev->vbl_queue);
-
-		/* kick off bottom half for signals */
-		queue_task(&dev->vbl_tq, &tq_immediate);
-		mark_bh(IMMEDIATE_BH);
+		DRM(vbl_send_signals)( dev );
 	}
 }
 

@@ -509,6 +509,9 @@ int DRM(dma_get_buffers)(drm_device_t *dev, drm_dma_t *dma)
 int DRM(irq_install)( drm_device_t *dev, int irq )
 {
 	int ret;
+#if __HAVE_VBL_IRQ
+	unsigned long flags;
+#endif
 
 	if ( !irq )
 		return -EINVAL;
@@ -541,16 +544,9 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 #if __HAVE_VBL_IRQ
 	init_waitqueue_head(&dev->vbl_queue);
 
-	sema_init( &dev->vbl_sem, 0 );
+	spin_lock_init( &dev->vbl_lock );
 
 	INIT_LIST_HEAD( &dev->vbl_sigs.head );
-
-	up( &dev->vbl_sem );
-
-	INIT_LIST_HEAD( &dev->vbl_tq.list );
-	dev->vbl_tq.sync = 0;
-	dev->vbl_tq.routine = DRM(vbl_immediate_bh);
-	dev->vbl_tq.data = dev;
 #endif
 
 				/* Before installing handler */
@@ -642,6 +638,7 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	flags = vblwait.request.type & _DRM_VBLANK_FLAGS_MASK;
 	
 	if ( flags & _DRM_VBLANK_SIGNAL ) {
+		unsigned long flags;
 		drm_vbl_sig_t *vbl_sig = DRM_MALLOC( sizeof( drm_vbl_sig_t ) );
 
 		if ( !vbl_sig )
@@ -656,11 +653,11 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 		vblwait.reply.sequence = atomic_read( &dev->vbl_received );
 
 		/* Hook signal entry into list */
-		down( &dev->vbl_sem );
+		spin_lock_irqsave( &dev->vbl_lock, flags );
 
 		list_add_tail( (struct list_head *) vbl_sig, &dev->vbl_sigs.head );
 
-		up( &dev->vbl_sem );
+		spin_unlock_irqrestore( &dev->vbl_lock, flags );
 	} else {
 		ret = DRM(vblank_wait)( dev, &vblwait.request.sequence );
 
@@ -675,14 +672,14 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	return ret;
 }
 
-void DRM(vbl_immediate_bh)( void *arg )
+void DRM(vbl_send_signals)( drm_device_t *dev )
 {
-	drm_device_t *dev = (drm_device_t *) arg;
 	struct list_head *entry, *tmp;
 	drm_vbl_sig_t *vbl_sig;
 	unsigned int vbl_seq = atomic_read( &dev->vbl_received );
+	unsigned long flags;
 
-	down( &dev->vbl_sem );
+	spin_lock_irqsave( &dev->vbl_lock, flags );
 
 	list_for_each_safe( entry, tmp, &dev->vbl_sigs.head ) {
 
@@ -699,7 +696,7 @@ void DRM(vbl_immediate_bh)( void *arg )
 		}
 	}
 
-	up( &dev->vbl_sem );
+	spin_unlock_irqrestore( &dev->vbl_lock, flags );
 }
 
 #endif	/* __HAVE_VBL_IRQ */

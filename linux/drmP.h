@@ -591,8 +591,7 @@ typedef struct drm_device {
 #if __HAVE_VBL_IRQ
    	wait_queue_head_t vbl_queue;
    	atomic_t          vbl_received;
-	struct tq_struct  vbl_tq;
-	struct semaphore  vbl_sem;
+	spinlock_t        vbl_lock;
 	drm_vbl_sig_t     vbl_sigs;
 #endif
 	cycles_t	  ctx_start;
@@ -834,7 +833,7 @@ extern void          DRM(driver_irq_uninstall)( drm_device_t *dev );
 extern int           DRM(wait_vblank)(struct inode *inode, struct file *filp,
 				      unsigned int cmd, unsigned long arg);
 extern int           DRM(vblank_wait)(drm_device_t *dev, unsigned int *vbl_seq);
-extern void          DRM(vbl_immediate_bh)( void *arg );
+extern void          DRM(vbl_send_signals)( drm_device_t *dev );
 #endif
 #if __HAVE_DMA_IRQ_BH
 extern void          DRM(dma_immediate_bh)( void *dev );
