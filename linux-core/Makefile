@@ -88,6 +88,7 @@ I915SHARED  =   i915_drv.h i915_drm.h i915_irq.c i915_mem.c i915_dma.c
 SISHEADERS=     sis_drv.h sis_drm.h $(DRMHEADERS)
 SISSHARED=      sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
 SAVAGEHEADERS=  savage_drv.h savage_drm.h $(DRMHEADERS)
+SAVAGESHARED=	savage_drv.h savage_drm.h savage_bci.c savage_state.c
 VIAHEADERS =	via_drm.h via_drv.h via_mm.h via_ds.h \
 		via_3d_reg.h $(DRMHEADERS)
 VIASHARED	= via_drm.h via_drv.h via_mm.h via_ds.h \
@@ -100,7 +101,7 @@ FFBHEADERS = 	ffb_drv.h $(DRMHEADERS)
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
 	$(SISSHARED) $(TDFXSHARED) $(VIASHARED) $(MACH64SHARED) \
-	$(I915SHARED)
+	$(I915SHARED) $(SAVAGESHARED)
 
 PROGS = dristat drmstat
 
