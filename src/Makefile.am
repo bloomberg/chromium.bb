@@ -49,7 +49,7 @@ INCLUDES = 						\
 
 EXTRA_DIST = fontconfig.def.in
 
-noinst_HEADERS=fcint.h
+noinst_HEADERS=fcint.h data.h
 
 libfontconfig_la_SOURCES = \
 	fcatomic.c \

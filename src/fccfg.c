@@ -648,6 +648,13 @@ FcConfigCompareValue (const FcValue	m_o,
 }
 
 
+#define _FcDoubleFloor(d)	((int) (d))
+#define _FcDoubleCeil(d)	((double) (int) (d) == (d) ? (int) (d) : (int) ((d) + 1))
+#define FcDoubleFloor(d)	((d) >= 0 ? _FcDoubleFloor(d) : -_FcDoubleCeil(-(d)))
+#define FcDoubleCeil(d)		((d) >= 0 ? _FcDoubleCeil(d) : -_FcDoubleFloor(-(d)))
+#define FcDoubleRound(d)	FcDoubleFloor ((d) + 0.5)
+#define FcDoubleTrunc(d)	((d) >= 0 ? _FcDoubleFloor (d) : -_FcDoubleFloor (-(d)))
+
 static FcValue
 FcConfigEvaluate (FcPattern *p, FcExpr *e)
 {
@@ -829,6 +836,70 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	case FcTypeBool:
 	    v.type = FcTypeBool;
 	    v.u.b = !vl.u.b;
+	    break;
+	default:
+	    v.type = FcTypeVoid;
+	    break;
+	}
+	FcValueDestroy (vl);
+	break;
+    case FcOpFloor:
+	vl = FcConfigEvaluate (p, e->u.tree.left);
+	switch (vl.type) {
+	case FcTypeInteger:
+	    v = vl;
+	    break;
+	case FcTypeDouble:
+	    v.type = FcTypeInteger;
+	    v.u.i = FcDoubleFloor (vl.u.d);
+	    break;
+	default:
+	    v.type = FcTypeVoid;
+	    break;
+	}
+	FcValueDestroy (vl);
+	break;
+    case FcOpCeil:
+	vl = FcConfigEvaluate (p, e->u.tree.left);
+	switch (vl.type) {
+	case FcTypeInteger:
+	    v = vl;
+	    break;
+	case FcTypeDouble:
+	    v.type = FcTypeInteger;
+	    v.u.i = FcDoubleCeil (vl.u.d);
+	    break;
+	default:
+	    v.type = FcTypeVoid;
+	    break;
+	}
+	FcValueDestroy (vl);
+	break;
+    case FcOpRound:
+	vl = FcConfigEvaluate (p, e->u.tree.left);
+	switch (vl.type) {
+	case FcTypeInteger:
+	    v = vl;
+	    break;
+	case FcTypeDouble:
+	    v.type = FcTypeInteger;
+	    v.u.i = FcDoubleRound (vl.u.d);
+	    break;
+	default:
+	    v.type = FcTypeVoid;
+	    break;
+	}
+	FcValueDestroy (vl);
+	break;
+    case FcOpTrunc:
+	vl = FcConfigEvaluate (p, e->u.tree.left);
+	switch (vl.type) {
+	case FcTypeInteger:
+	    v = vl;
+	    break;
+	case FcTypeDouble:
+	    v.type = FcTypeInteger;
+	    v.u.i = FcDoubleTrunc (vl.u.d);
 	    break;
 	default:
 	    v.type = FcTypeVoid;

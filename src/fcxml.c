@@ -203,6 +203,8 @@ FcExprCreateOp (FcExpr *left, FcOp op, FcExpr *right)
 void
 FcExprDestroy (FcExpr *e)
 {
+    if (!e)
+	return;
     switch (e->op) {
     case FcOpInteger:
 	break;
@@ -251,6 +253,10 @@ FcExprDestroy (FcExpr *e)
 	FcExprDestroy (e->u.tree.right);
 	/* fall through */
     case FcOpNot:
+    case FcOpFloor:
+    case FcOpCeil:
+    case FcOpRound:
+    case FcOpTrunc:
 	FcExprDestroy (e->u.tree.left);
 	break;
     case FcOpNil:
@@ -337,6 +343,10 @@ typedef enum _FcElement {
     FcElementDivide,
     FcElementNot,
     FcElementIf,
+    FcElementFloor,
+    FcElementCeil,
+    FcElementRound,
+    FcElementTrunc,
     FcElementUnknown
 } FcElement;
 
@@ -389,6 +399,10 @@ FcElementMap (const XML_Char *name)
 	{ "divide",	FcElementDivide },
 	{ "not",	FcElementNot },
 	{ "if",		FcElementIf },
+	{ "floor",	FcElementFloor },
+	{ "ceil",	FcElementCeil },
+	{ "round",	FcElementRound },
+	{ "trunc",	FcElementTrunc },
 	
 	{ 0,		0 }
     };
@@ -1292,8 +1306,17 @@ FcPopExpr (FcConfigParse *parse)
     return expr;
 }
 
+/*
+ * This builds a tree of binary operations.  Note
+ * that every operator is defined so that if only
+ * a single operand is contained, the value of the
+ * whole expression is the value of the operand.
+ *
+ * This code reduces in that case to returning that
+ * operand.
+ */
 static FcExpr *
-FcPopExprs (FcConfigParse *parse, FcOp op)
+FcPopBinary (FcConfigParse *parse, FcOp op)
 {
     FcExpr  *left, *expr = 0, *new;
 
@@ -1318,9 +1341,39 @@ FcPopExprs (FcConfigParse *parse, FcOp op)
 }
 
 static void
-FcParseExpr (FcConfigParse *parse, FcOp op)
+FcParseBinary (FcConfigParse *parse, FcOp op)
 {
-    FcExpr  *expr = FcPopExprs (parse, op);
+    FcExpr  *expr = FcPopBinary (parse, op);
+    if (expr)
+	FcVStackPushExpr (parse, FcVStackExpr, expr);
+}
+
+/*
+ * This builds a a unary operator, it consumes only
+ * a single operand
+ */
+
+static FcExpr *
+FcPopUnary (FcConfigParse *parse, FcOp op)
+{
+    FcExpr  *operand, *new = 0;
+
+    if ((operand = FcPopExpr (parse)))
+    {
+	new = FcExprCreateOp (operand, op, 0);
+	if (!new)
+	{
+	    FcExprDestroy (operand);
+	    FcConfigMessage (parse, FcSevereError, "out of memory");
+	}
+    }
+    return new;
+}
+
+static void
+FcParseUnary (FcConfigParse *parse, FcOp op)
+{
+    FcExpr  *expr = FcPopUnary (parse, op);
     if (expr)
 	FcVStackPushExpr (parse, FcVStackExpr, expr);
 }
@@ -1449,7 +1502,7 @@ FcParseTest (FcConfigParse *parse)
 	    return;
 	}
     }
-    expr = FcPopExprs (parse, FcOpComma);
+    expr = FcPopBinary (parse, FcOpComma);
     if (!expr)
     {
 	FcConfigMessage (parse, FcSevereWarning, "missing test expression");
@@ -1527,7 +1580,7 @@ FcParseEdit (FcConfigParse *parse)
 	    return;
 	}
     }
-    expr = FcPopExprs (parse, FcOpComma);
+    expr = FcPopBinary (parse, FcOpComma);
     edit = FcEditCreate ((char *) FcStrCopy (name), mode, expr, binding);
     if (!edit)
     {
@@ -1716,52 +1769,64 @@ FcEndElement(void *userData, const XML_Char *name)
 	FcParseString (parse, FcVStackConstant);
 	break;
     case FcElementOr:
-	FcParseExpr (parse, FcOpOr);
+	FcParseBinary (parse, FcOpOr);
 	break;
     case FcElementAnd:
-	FcParseExpr (parse, FcOpAnd);
+	FcParseBinary (parse, FcOpAnd);
 	break;
     case FcElementEq:
-	FcParseExpr (parse, FcOpEqual);
+	FcParseBinary (parse, FcOpEqual);
 	break;
     case FcElementNotEq:
-	FcParseExpr (parse, FcOpNotEqual);
+	FcParseBinary (parse, FcOpNotEqual);
 	break;
     case FcElementLess:
-	FcParseExpr (parse, FcOpLess);
+	FcParseBinary (parse, FcOpLess);
 	break;
     case FcElementLessEq:
-	FcParseExpr (parse, FcOpLessEqual);
+	FcParseBinary (parse, FcOpLessEqual);
 	break;
     case FcElementMore:
-	FcParseExpr (parse, FcOpMore);
+	FcParseBinary (parse, FcOpMore);
 	break;
     case FcElementMoreEq:
-	FcParseExpr (parse, FcOpMoreEqual);
+	FcParseBinary (parse, FcOpMoreEqual);
 	break;
     case FcElementContains:
-	FcParseExpr (parse, FcOpContains);
+	FcParseBinary (parse, FcOpContains);
 	break;
     case FcElementNotContains:
-	FcParseExpr (parse, FcOpNotContains);
+	FcParseBinary (parse, FcOpNotContains);
 	break;
     case FcElementPlus:
-	FcParseExpr (parse, FcOpPlus);
+	FcParseBinary (parse, FcOpPlus);
 	break;
     case FcElementMinus:
-	FcParseExpr (parse, FcOpMinus);
+	FcParseBinary (parse, FcOpMinus);
 	break;
     case FcElementTimes:
-	FcParseExpr (parse, FcOpTimes);
+	FcParseBinary (parse, FcOpTimes);
 	break;
     case FcElementDivide:
-	FcParseExpr (parse, FcOpDivide);
+	FcParseBinary (parse, FcOpDivide);
 	break;
     case FcElementNot:
-	FcParseExpr (parse, FcOpNot);
+	FcParseUnary (parse, FcOpNot);
 	break;
     case FcElementIf:
-	FcParseExpr (parse, FcOpQuest);
+	FcParseBinary (parse, FcOpQuest);
+	break;
+    case FcElementFloor:
+	FcParseUnary (parse, FcOpFloor);
+	break;
+    case FcElementCeil:
+	FcParseUnary (parse, FcOpCeil);
+	break;
+    case FcElementRound:
+	FcParseUnary (parse, FcOpRound);
+	break;
+    case FcElementTrunc:
+	FcParseUnary (parse, FcOpTrunc);
 	break;
     case FcElementUnknown:
 	break;

@@ -91,7 +91,7 @@
 <!ENTITY % expr 'int|double|string|matrix|bool|charset
 		|name|const
 		|or|and|eq|not_eq|less|less_eq|more|more_eq|contains|not_contains
-		|plus|minus|times|divide|not|if'>
+		|plus|minus|times|divide|not|if|floor|ceil|round|trunc'>
 
 <!--
     Match and edit patterns.
@@ -180,3 +180,7 @@
 <!ELEMENT divide (%expr;)*>
 <!ELEMENT not (%expr;)>
 <!ELEMENT if ((%expr;), (%expr;), (%expr;))>
+<!ELEMENT floor (%expr;)>
+<!ELEMENT ceil (%expr;)>
+<!ELEMENT round (%expr;)>
+<!ELEMENT trunc (%expr;)>

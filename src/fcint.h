@@ -135,7 +135,8 @@ typedef enum _FcOp {
     FcOpOr, FcOpAnd, FcOpEqual, FcOpNotEqual, FcOpContains, FcOpNotContains,
     FcOpLess, FcOpLessEqual, FcOpMore, FcOpMoreEqual,
     FcOpPlus, FcOpMinus, FcOpTimes, FcOpDivide,
-    FcOpNot, FcOpComma, FcOpInvalid
+    FcOpNot, FcOpComma, FcOpFloor, FcOpCeil, FcOpRound, FcOpTrunc,
+    FcOpInvalid
 } FcOp;
 
 typedef struct _FcExpr {

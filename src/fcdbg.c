@@ -153,6 +153,10 @@ FcOpPrint (FcOp op)
     case FcOpNot: printf ("Not"); break;
     case FcOpNil: printf ("Nil"); break;
     case FcOpComma: printf ("Comma"); break;
+    case FcOpFloor: printf ("Floor"); break;
+    case FcOpCeil: printf ("Ceil"); break;
+    case FcOpRound: printf ("Round"); break;
+    case FcOpTrunc: printf ("Trunc"); break;
     case FcOpInvalid: printf ("Invalid"); break;
     }
 }
@@ -234,6 +238,22 @@ FcExprPrint (const FcExpr *expr)
 	break;
     case FcOpNot:
 	printf ("Not ");
+	FcExprPrint (expr->u.tree.left);
+	break;
+    case FcOpFloor:
+	printf ("Floor ");
+	FcExprPrint (expr->u.tree.left);
+	break;
+    case FcOpCeil:
+	printf ("Ceil ");
+	FcExprPrint (expr->u.tree.left);
+	break;
+    case FcOpRound:
+	printf ("Round ");
+	FcExprPrint (expr->u.tree.left);
+	break;
+    case FcOpTrunc:
+	printf ("Trunc ");
 	FcExprPrint (expr->u.tree.left);
 	break;
     case FcOpInvalid: printf ("Invalid"); break;
