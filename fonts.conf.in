@@ -245,6 +245,8 @@
 		<blank>
 			<int>0x20</int>		<!-- space -->
 			<int>0xa0</int>		<!-- nsbp  -->
+			<int>0x115f</int>	<!-- choseong filler -->
+			<int>0x1160</int>	<!-- jungseong filler -->
 			<int>0x2000</int>	<!-- general punctuation spaces -->
 			<int>0x2001</int>
 			<int>0x2002</int>
@@ -258,7 +260,19 @@
 			<int>0x2009</int>
 			<int>0x200a</int>
 			<int>0x200b</int>
+			<int>0x200c</int>
+			<int>0x200d</int>
+			<int>0x200e</int>
+			<int>0x200f</int>
+			<int>0x202a</int>
+			<int>0x202b</int>
+			<int>0x202c</int>
+			<int>0x202d</int>
+			<int>0x202e</int>
+			<int>0x202f</int>
 			<int>0x3000</int>	<!-- CJK space -->
+			<int>0x3164</int>	<!-- HANGUL FILLER -->
+			<int>0xfeff</int>	<!-- zero width no-break space -->
 		</blank>
 <!--
   Rescan configuration every 30 seconds when FcFontSetList is called
