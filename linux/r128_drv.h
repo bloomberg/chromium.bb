@@ -471,12 +471,19 @@ do {									\
 	tail_mask = dev_priv->ring.tail_mask;				\
 } while (0)
 
+/* You can set this to zero if you want.  If the card locks up, you'll
+ * need to keep this set.  It works around a bug in early revs of the
+ * Rage 128 chipset, where the CCE would read 32 dwords past the end of
+ * the ring buffer before wrapping around.
+ */
+#define R128_BROKEN_CCE	1
+
 #define ADVANCE_RING() do {						\
 	if ( R128_VERBOSE ) {						\
 		DRM_INFO( "ADVANCE_RING() tail=0x%06x wr=0x%06x\n",	\
 			  write, dev_priv->ring.tail );			\
 	}								\
-	if ( write < 32 ) {						\
+	if ( R128_BROKEN_CCE && write < 32 ) {				\
 		memcpy( dev_priv->ring.end,				\
 			dev_priv->ring.start,				\
 			write * sizeof(u32) );				\
