@@ -652,7 +652,9 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	 */
 	class_simple_device_add(DRM(stub_info).drm_class, 
 					MKDEV(DRM_MAJOR, dev->minor), &pdev->dev, "card%d", dev->minor);
-	
+
+	return 0;
+
  error_out_unreg:
 	DRM(stub_unregister)(dev->minor);
 	DRM(takedown)(dev);
