@@ -30,10 +30,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "../../../xf86drm.h"
-#include "../xf86drmRandom.c"
-#include "../xf86drmHash.c"
-#include "../xf86drm.c"
+#include "xf86drm.h"
+#include "xf86drmRandom.c"
+#include "xf86drmHash.c"
+#include "xf86drm.c"
 
 #define DRM_VERSION 0x00000001
 #define DRM_MEMORY  0x00000002

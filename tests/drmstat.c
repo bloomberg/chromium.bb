@@ -85,7 +85,7 @@ void process_sigio(char *device)
     }
 
     sigio_fd = fd;
-    drmInstallSIGIOHandler(fd, handler);
+    /*  drmInstallSIGIOHandler(fd, handler); */
     for (;;) sleep(60);
 }
 
@@ -94,13 +94,13 @@ int main(int argc, char **argv)
     int            c;
     int            r  = 0;
     int            fd = -1;
-    drmHandle      handle;
+    drm_handle_t      handle;
     void           *address;
     char           *pt;
     unsigned long  count;
     unsigned long  offset;
     unsigned long  size;
-    drmContext     context;
+    drm_context_t  context;
     int            loops;
     char           buf[1024];
     int            i;
