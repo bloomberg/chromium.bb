@@ -128,6 +128,7 @@ struct class_simple;
 struct device;
 
 #define pci_dev_put(x) do {} while (0)
+#define pci_dev_get(x) do {} while (0)
 #define pci_get_subsys pci_find_subsys
 
 static inline struct class_device *DRM(sysfs_device_add)(struct drm_sysfs_class *cs, dev_t dev, struct device *device, const char *fmt, ...){return NULL;}
