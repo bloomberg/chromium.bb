@@ -21,6 +21,7 @@ DEB_SHLIBDEPS_INCLUDE_fontconfig := debian/libfontconfig1/usr/lib/
 DEB_DH_STRIP_ARGS := --dbg-package=libfontconfig1
 
 clean::
+	chmod +w debian/po/*.po
 	debconf-updatepo
 	rm -f config/Makedefs Makefile {src,fontconfig}/Makefile fc-{cache,list}/Makefile fontconfig-config fontconfig.pc config.h
 

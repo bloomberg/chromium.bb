@@ -1,3 +1,14 @@
+fontconfig (2.3.1-1) unstable; urgency=low
+
+  * Move from experimental to unstable
+  * Fix a few minor bugs in handling broken GSUB/GPOS tables
+  * Adopt suggestions by former maintainer (Josselin Mouette)
+    reguarding debian packaging.
+  * Get library man pages to install in -dev package
+  * Translations of the configuration questions remain incomplete
+
+ -- Keith Packard <keithp@debian.org>  Tue,  8 Mar 2005 20:47:35 -0800
+
 fontconfig (2.3.0-1) experimental; urgency=low
 
   * Change of maintainer

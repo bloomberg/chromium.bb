@@ -1,3 +1,9 @@
+2005-03-08  Keith Packard  <keithp@keithp.com>
+
+	* debian/changelog:
+	* debian/rules:
+	Update debian for 2.3.1
+
 2005-03-09  Tor Lillqvist  <tml@novell.com>
 
 	* fontconfig-zip.in: Get the DLL from "bin" where modern libtools
