@@ -152,7 +152,7 @@
 	{0, 0, 0, NULL}
 
 #define DRIVER_FILE_FIELDS						\
-	s64 radeon_fb_delta;						\
+	int64_t radeon_fb_delta;					\
 
 #define DRIVER_OPEN_HELPER( filp_priv, dev )				\
 do {									\
