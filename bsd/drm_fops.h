@@ -62,8 +62,6 @@ int DRM(open_helper)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 	if (flags & O_EXCL)
 		return EBUSY; /* No exclusive opens */
 	dev->flags = flags;
-	if (!DRM(cpu_valid)())
-		return DRM_ERR(EINVAL);
 
 	DRM_DEBUG("pid = %d, minor = %d\n", DRM_CURRENTPID, m);
 

@@ -28,10 +28,9 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Daryll Strauss <daryll@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
+ *
+ * $FreeBSD: src/sys/dev/drm/tdfx_drv.c,v 1.3 2003/03/09 02:08:28 anholt Exp $
  */
-
-
-#include <sys/types.h>
 
 #include "tdfx.h"
 #include "drmP.h"
@@ -87,7 +86,6 @@ drm_chipinfo_t DRM(devicelist)[] = {
 
 
 #include "drm_fops.h"
-#include "drm_init.h"
 #include "drm_ioctl.h"
 #include "drm_lock.h"
 #include "drm_memory.h"
@@ -96,4 +94,6 @@ drm_chipinfo_t DRM(devicelist)[] = {
 
 #ifdef __FreeBSD__
 DRIVER_MODULE(tdfx, pci, tdfx_driver, tdfx_devclass, 0, 0);
+#elif defined(__NetBSD__)
+CFDRIVER_DECL(tdfx, DV_TTY, NULL);
 #endif /* __FreeBSD__ */

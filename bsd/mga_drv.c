@@ -27,9 +27,9 @@
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
+ *
+ * $FreeBSD: src/sys/dev/drm/mga_drv.c,v 1.4 2003/03/09 02:08:28 anholt Exp $
  */
-
-#include <sys/types.h>
 
 #include "mga.h"
 #include "drmP.h"
@@ -56,11 +56,14 @@ drm_chipinfo_t DRM(devicelist)[] = {
 #include "drm_drawable.h"
 #include "drm_drv.h"
 #include "drm_fops.h"
-#include "drm_init.h"
 #include "drm_ioctl.h"
 #include "drm_lock.h"
 #include "drm_memory.h"
 #include "drm_vm.h"
 #include "drm_sysctl.h"
 
+#ifdef __FreeBSD__
 DRIVER_MODULE(mga, pci, mga_driver, mga_devclass, 0, 0);
+#elif defined(__NetBSD__)
+CFDRIVER_DECL(mga, DV_TTY, NULL);
+#endif

@@ -127,6 +127,12 @@
 #define DRIVER_NUM_CARDS 1
 #endif
 
+#if 1 && DRM_DEBUG_CODE
+int DRM(flags) = DRM_FLAG_DEBUG;
+#else
+int DRM(flags) = 0;
+#endif
+
 static int DRM(init)(device_t nbdev);
 static void DRM(cleanup)(device_t nbdev);
 

@@ -470,8 +470,6 @@ struct drm_device {
 };
 
 extern int	     DRM(flags);
-extern void	     DRM(parse_options)( char *s );
-extern int           DRM(cpu_valid)( void );
 
 				/* Authentication (drm_auth.h) */
 extern int           DRM(add_magic)(drm_device_t *dev, drm_file_t *priv, 
