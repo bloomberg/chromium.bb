@@ -139,7 +139,7 @@ fontconfig-devel: fontconfig-devel.sgml $(DOCS_FUNCS_SGML)
 	$(DOC2HTML) -o fontconfig-devel fontconfig-devel.sgml
 
 fontconfig-user.html: fontconfig-user.sgml
-	$(DOC2HTML) -o fontconfig-user fontconfig-user.sgml
+	$(DOC2HTML) -u fontconfig-user.sgml
 
 install-local-docs:
 	$(mkinstalldirs) $(DESTDIR)$(DOCDIR)
