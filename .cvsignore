@@ -11,6 +11,7 @@ config.sub
 configure
 fontconfig.pc
 fontconfig.spec
+fontconfig-zip
 fonts.conf
 libtool
 stamp-h
