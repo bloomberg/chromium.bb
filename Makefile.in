@@ -40,10 +40,10 @@ fonts.conf: fonts.conf.in
 install:: $(CONFDIR)/fonts.conf $(CONFDIR)/fonts.dtd
 
 $(CONFDIR)/fonts.conf:: fonts.conf
-	if [ -f $@ ]; then
-		echo "Not overwriting existing $@"
-	else
-		$(INSTALL_DATA) fonts.conf $(CONFDIR)
+	if [ -f $@ ]; then \
+		echo "Not overwriting existing $@"; \
+	else \
+		$(INSTALL_DATA) fonts.conf $(CONFDIR); \
 	fi
 
 $(CONFDIR)/fonts.dtd:: fonts.dtd
@@ -54,6 +54,8 @@ clean::
 
 install:: $(BINDIR)/fontconfig-config
 
+all:: fontconfig-config
+
 $(BINDIR)/fontconfig-config: fontconfig-config
 	$(INSTALL_SCRIPT) $< $(BINDIR)
 
@@ -61,6 +63,8 @@ install:: $(LIBDIR)/pkgconfig $(LIBDIR)/pkgconfig/fontconfig.pc
 
 $(LIBDIR)/pkgconfig:
 	mkdir -p $@
+
+all:: fontconfig.pc
 
 $(LIBDIR)/pkgconfig/fontconfig.pc: fontconfig.pc
 	$(INSTALL_DATA) $< $(LIBDIR)/pkgconfig

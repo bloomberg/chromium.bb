@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/lib/fontconfig/configure.in,v 1.3 2002/05/21 17:48:15 keithp Exp $
+dnl $XFree86: xc/lib/fontconfig/configure.in,v 1.4 2002/05/23 17:06:46 keithp Exp $
 dnl
 dnl Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 dnl
@@ -29,7 +29,7 @@ AC_CONFIG_HEADER(config.h)
 
 AC_ARG_WITH(freetype_includes, [  --with-freetype-includes=DIR  Use FreeType includes in DIR], freetype_includes=$withval, freetype_includes=yes)
 AC_ARG_WITH(freetype_lib,      [  --with-freetype-lib=DIR       Use FreeType library in DIR], freetype_lib=$withval, freetype_lib=yes)
-AC_ARG_WITH(freetype_config,   [  --with-freeetype-config=PROG  Use FreeType configuration program PROG], freetype_config=$withval, freetype_config=yes)
+AC_ARG_WITH(freetype_config,   [  --with-freetype-config=PROG   Use FreeType configuration program PROG], freetype_config=$withval, freetype_config=yes)
 AC_ARG_WITH(expat,             [  --with-expat=DIR              Use Expat in DIR instead of xml2], expat=$withval, expat=maybe)
 AC_ARG_WITH(expat_includes,    [  --with-expat-includes=DIR     Use Expat includes in DIR], expat_includes=$withval, expat_includes=yes)
 AC_ARG_WITH(expat_lib,         [  --with-expat-lib=DIR          Use Expat library in DIR], expat_lib=$withval, expat_lib=yes)
