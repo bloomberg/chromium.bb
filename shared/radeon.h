@@ -45,7 +45,7 @@
 #define DRIVER_DATE		"20020828"
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		11
+#define DRIVER_MINOR		12
 #define DRIVER_PATCHLEVEL	0
 
 /* Interface history:
@@ -80,6 +80,8 @@
  *       located in the card's address space
  * 1.11- Add packet R200_EMIT_RB3D_BLENDCOLOR to support GL_EXT_blend_color
  *       and GL_EXT_blend_[func|equation]_separate on r200
+ * 1.12- Add R300 CP microcode support - this just loads the CP on r300
+ *       (No 3D support yet - just microcode loading).
  */
 #define DRIVER_IOCTLS							     \
  [DRM_IOCTL_NR(DRM_IOCTL_DMA)]               = { radeon_cp_buffers,  1, 0 }, \

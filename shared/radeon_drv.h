@@ -47,6 +47,12 @@ enum radeon_family {
 	CHIP_LAST,
 };
 
+enum radeon_cp_microcode_version {
+	UCODE_R100,
+	UCODE_R200,
+	UCODE_R300,
+};
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
 #include "radeon_i2c.h"
 #endif
@@ -126,7 +132,7 @@ typedef struct drm_radeon_private {
 
 	int usec_timeout;
 
-	int is_r200;
+	int microcode_version;
 
 	unsigned long phys_pci_gart;
 	dma_addr_t bus_pci_gart;
