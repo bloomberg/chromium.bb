@@ -12,3 +12,4 @@ fc*.sgml
 .libs
 func.refs
 version.sgml
+confdir.sgml
