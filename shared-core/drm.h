@@ -83,7 +83,8 @@
 #if CONFIG_XFREE86_VERSION >= XFREE86_VERSION(4,1,0,0)
 #ifdef __OpenBSD__
 #define DRM_MAJOR       81
-#else
+#endif
+#if defined(__Linux__) || defined(__NetBSD__)
 #define DRM_MAJOR       226
 #endif
 #define DRM_MAX_MINOR   15

@@ -19,6 +19,7 @@ all::
 	@echo 'Use "make -f Makefile.bsd" to manually build the modules'
 #endif
 
+LinkSourceFile(drm.h,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(drm_sarea.h,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(mga.h,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(mga_dma.c,$(XF86OSSRC)/shared/drm/kernel)
