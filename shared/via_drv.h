@@ -42,7 +42,7 @@ typedef struct drm_via_private {
 	unsigned int dma_low;
 	unsigned int dma_high;
 	unsigned int dma_offset;
-	uint32_t *last_pause_ptr;
+	volatile uint32_t *last_pause_ptr;
 	volatile uint32_t *hw_addr_ptr;
 	drm_via_ring_buffer_t ring;
 	char pci_buf[VIA_PREALLOCATED_PCI_SIZE];
