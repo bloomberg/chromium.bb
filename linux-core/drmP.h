@@ -1057,6 +1057,12 @@ extern int            DRM(ati_pcigart_cleanup)(drm_device_t *dev,
 					       unsigned long addr,
 					       dma_addr_t bus_addr);
 
+extern void	      *DRM(pci_alloc)(drm_device_t *dev, size_t size, 
+					size_t align, dma_addr_t maxaddr,
+					dma_addr_t *busaddr);
+extern void	      DRM(pci_free)(drm_device_t *dev, size_t size, 
+					void *vaddr, dma_addr_t busaddr);
+
 /*@}*/
 
 #endif /* __KERNEL__ */
