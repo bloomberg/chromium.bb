@@ -15,9 +15,11 @@ ed fonts.conf << EOF
 .
 +r $FONTDIRS
 a
+	<dir>~/.fonts</dir>
 
 .
 /FONTPATH_START/,/FONTPATH_END/d
+
 w
 q
 EOF

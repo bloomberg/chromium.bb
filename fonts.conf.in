@@ -3,6 +3,17 @@
 <!-- /etc/fonts.conf file to configure system font access -->
 <fontconfig>
 
+<!--
+	The intent of this standard configuration file is to be adequate for
+	most environments.  If you have a reasonably normal environment and
+	have found problems with this configuration, they are probably
+	things that others will also want fixed.  Please send any suggested
+	changes to fonts@xfree86.org so that future releases can include
+	such changes.
+
+	Keith Packard
+-->
+
 <!-- FONTPATH_START -->
 
 <!-- 
@@ -11,6 +22,7 @@
 
 	<dir>/usr/X11R6/lib/X11/fonts</dir>
  	<dir>/usr/share/fonts</dir>
+	<dir>~/.fonts</dir>
 
 <!-- FONTPATH_END -->
 

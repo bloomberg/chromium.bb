@@ -26,8 +26,21 @@ DependSubdirs($(SUBDIRS))
 MakeLintLibSubdirs($(LINTSUBDIRS))
 MakeLintSubdirs($(LINTSUBDIRS),install.ln,install.ln)
 
-InstallNonExecFileNoClobber(fonts.conf,$(FONTCONFIGDIR))
-InstallNonExecFileNoClobber(fonts.dtd,$(FONTCONFIGDIR))
+#ifndef InstallNamedTargetBackup
+#define InstallNamedTargetBackup(step,srcname,flags,dest,dstname)	@@\
+step:: srcname								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	MoveToBakFile($(DESTDIR)dest/dstname)				@@\
+	$(INSTALL) $(INSTALLFLAGS) flags srcname $(DESTDIR)dest/dstname
+#endif /* InstallNamedTargetBackup */
+
+#ifndef InstallNonExecFileBackup
+#define InstallNonExecFileBackup(file,dest)				@@\
+InstallNamedTargetBackup(install,file,$(INSTDATFLAGS),dest,file)
+#endif /* InstallNonExecFileBackup */
+
+InstallNonExecFileBackup(fonts.conf,$(FONTCONFIGDIR))
+InstallNonExecFile(fonts.dtd,$(FONTCONFIGDIR))
 
 all:: fonts.conf
 
