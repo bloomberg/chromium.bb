@@ -128,6 +128,7 @@ typedef int		FcBool;
 #define FC_WIDTH_ULTRAEXPANDED	    200
 
 #define FC_PROPORTIONAL		    0
+#define FC_DUAL			    90
 #define FC_MONO			    100
 #define FC_CHARCELL		    110
 

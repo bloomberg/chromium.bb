@@ -1,3 +1,16 @@
+2003-09-06  Noah Levitt  <nlevitt@columbia.edu>
+
+	* doc/fontconfig-devel.sgml:
+	* doc/fontconfig-user.sgml:
+	* fontconfig/fontconfig.h:
+	* src/fcname.c:
+	* src/fcfreetype.c (FcFreeTypeCharSetAndSpacing): Add new spacing
+	value FC_DUAL (dual-width, as some CJK fonts). (bug #111)
+
+	* src/fcfreetype.c (FcFreeTypeCharSetAndSpacing): When checking for
+	monospace and dual-width fonts, allow roughly a 3% variance in the
+	advances.
+
 2003-08-31  Manish Singh  <yosh@gimp.org>
 
 	* src/fccfg.c (FcConfigAppFontClear): Support passing NULL to

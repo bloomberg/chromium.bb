@@ -98,7 +98,7 @@ convenience for the applications rendering mechanism.
   size            Double  Point size
   aspect          Double  Stretches glyphs horizontally before hinting
   pixelsize       Double  Pixel size
-  spacing         Int     Proportional, monospace or charcell
+  spacing         Int     Proportional, dual-width, monospace or charcell
   foundry         String  Font foundry name
   antialias       Bool    Whether glyphs can be antialiased
   hinting         Bool    Whether the rasterizer should use hinting
@@ -349,6 +349,7 @@ symbolic names for common font values:
   italic          slant           100
   oblique         slant           110
   proportional    spacing         0
+  dual            spacing         90
   mono            spacing         100
   charcell        spacing         110
   unknown         rgba            0

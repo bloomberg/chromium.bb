@@ -1807,6 +1807,8 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
     return FcFalse;
 }
 
+#define APPROXIMATELY_EQUAL(x,y) (ABS ((x) - (y)) <= MAX (ABS (x), ABS (y)) / 33)
+
 FcCharSet *
 FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 {
@@ -1820,8 +1822,8 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
     int		    o;
     int		    i;
     FT_UInt	    glyph;
-    FT_Pos	    advance, all_advance = 0;
-    FcBool	    has_advance = FcFalse, fixed_advance = FcTrue;
+    FT_Pos	    advance, advance_one = 0, advance_two = 0;
+    FcBool	    has_advance = FcFalse, fixed_advance = FcTrue, dual_advance = FcFalse;
 
     fcs = FcCharSetCreate ();
     if (!fcs)
@@ -1851,10 +1853,20 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 		    if (!has_advance)
 		    {
 			has_advance = FcTrue;
-			all_advance = advance;
+			advance_one = advance;
 		    }
-		    else if (advance != all_advance)
-			fixed_advance = FcFalse;
+		    else if (!APPROXIMATELY_EQUAL (advance, advance_one))
+                    {
+                        if (fixed_advance)
+                        {
+                            dual_advance = FcTrue;
+                            fixed_advance = FcFalse;
+                            advance_two = advance;
+                        }
+                        else if (!APPROXIMATELY_EQUAL (advance, advance_two))
+                            dual_advance = FcFalse;
+                    }
+
 		    leaf = FcCharSetFindLeafCreate (fcs, ucs4);
 		    if (!leaf)
 			goto bail1;
@@ -1899,10 +1911,20 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 			if (!has_advance)
 			{
 			    has_advance = FcTrue;
-			    all_advance = advance;
+			    advance_one = advance;
 			}
-			else if (advance != all_advance)
-			    fixed_advance = FcFalse;
+		        else if (!APPROXIMATELY_EQUAL (advance, advance_one))
+                        {
+                            if (fixed_advance)
+                            {
+                                dual_advance = FcTrue;
+                                fixed_advance = FcFalse;
+                                advance_two = advance;
+                            }
+                            else if (!APPROXIMATELY_EQUAL (advance, advance_two))
+                                dual_advance = FcFalse;
+                        }
+
 			if (!leaf)
 			{
 			    leaf = FcCharSetFindLeafCreate (fcs, ucs4);
@@ -1956,10 +1978,19 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 		    if (!has_advance)
 		    {
 			has_advance = FcTrue;
-			all_advance = advance;
+			advance_one = advance;
 		    }
-		    else if (advance != all_advance)
-			fixed_advance = FcFalse;
+		    else if (!APPROXIMATELY_EQUAL (advance, advance_one))
+                    {
+                        if (fixed_advance)
+                        {
+                            dual_advance = FcTrue;
+                            fixed_advance = FcFalse;
+                            advance_two = advance;
+                        }
+                        else if (!APPROXIMATELY_EQUAL (advance, advance_two))
+                            dual_advance = FcFalse;
+                    }
 		    leaf = FcCharSetFindLeafCreate (fcs, ucs4);
 		    if (!leaf)
 			goto bail1;
@@ -1993,6 +2024,8 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 #endif
     if (fixed_advance)
 	*spacing = FC_MONO;
+    else if (dual_advance && APPROXIMATELY_EQUAL (2 * MIN (advance_one, advance_two), MAX (advance_one, advance_two)))
+        *spacing = FC_DUAL;
     else
 	*spacing = FC_PROPORTIONAL;
     return fcs;

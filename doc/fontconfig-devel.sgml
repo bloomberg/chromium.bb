@@ -139,8 +139,8 @@ convenience for the applications rendering mechanism.
     aspect         FC_ASPECT            Double  Stretches glyphs horizontally
                                                 before hinting
     pixelsize      FC_PIXEL_SIZE        Double  Pixel size
-    spacing        FC_SPACING           Int     Proportional, monospace or
-                                                charcell
+    spacing        FC_SPACING           Int     Proportional, dual-width,
+                                                monospace or charcell
     foundry        FC_FOUNDRY           String  Font foundry name
     antialias      FC_ANTIALIAS         Bool    Whether glyphs can be
                                                 antialiased
