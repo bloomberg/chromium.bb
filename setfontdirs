@@ -1,12 +1,12 @@
 #!/bin/sh
 FONTDIRS=fontdirs$$
 trap "rm $FONTDIRS" 0
-sh ./findfonts > $FONTDIRS
+sh ./findfonts ${1+"$@"} > $FONTDIRS
 cp fonts.conf.in fonts.conf
 chmod +w fonts.conf
 ed fonts.conf << EOF
 /FONTPATH_END/a
-<!-- Font directories found on `date` -->
+<!-- Font directory list configured on `date` -->
 .
 +r $FONTDIRS
 a

@@ -39,7 +39,7 @@
 <!--
     Global library configuration data
  -->
-<!ELEMENT config (blanks)*>
+<!ELEMENT config (blanks|rescan)*>
 
 <!--
     Specify the set of Unicode encoding values which
@@ -74,7 +74,14 @@
 	</edit>
     </match>
 -->
-<!ELEMENT alias (family, prefer?, accept?, default?)>
+<!--
+    Periodically rescan the font configuration and
+    directories to synch internal state with filesystem
+ -->
+<!ELEMENT rescan (int)>
+
+
+<!ELEMENT alias (family*, prefer?, accept?, default?)>
 <!ELEMENT prefer (family)*>
 <!ELEMENT accept (family)*>
 <!ELEMENT default (family)*>
@@ -103,7 +110,7 @@
     if 'qual' is 'any', then the match succeeds if any value in the field matches.
     if 'qual' is 'all', then the match succeeds only if all values match.
 -->
-<!ELEMENT test (%expr;)>
+<!ELEMENT test (%expr;)*>
 <!ATTLIST test 
 	  qual (any|all)    "any"
 	  name CDATA	    #REQUIRED

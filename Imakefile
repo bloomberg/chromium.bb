@@ -25,7 +25,7 @@ all:: fonts.conf
 
 fonts.conf: fonts.conf.in
 	RemoveFile($@)
-	sh ./setfontdirs
+	sh ./setfontdirs /usr/share/fonts $(FONTDIR)
 
 clean::
 	RemoveFile(fonts.conf)

@@ -49,10 +49,9 @@
  -->
 	<alias>
 		<family>Times</family>
-		<default><family>serif</family></default>
-	</alias>
-	<alias>
 		<family>Times New Roman</family>
+		<family>Nimbus Roman No9 L</family>
+		<family>Luxi Serif</family>
 		<default><family>serif</family></default>
 	</alias>
 <!--
@@ -60,14 +59,10 @@
  -->
 	<alias>
 		<family>Helvetica</family>
-		<default><family>sans-serif</family></default>
-	</alias>
-	<alias>
 		<family>Arial</family>
-		<default><family>sans-serif</family></default>
-	</alias>
-	<alias>
 		<family>Verdana</family>
+		<family>Nimbus Sans L</family>
+		<family>Luxi Sans</family>
 		<default><family>sans-serif</family></default>
 	</alias>
 <!--
@@ -75,14 +70,10 @@
  -->
  	<alias>
 		<family>Courier</family>
-		<default><family>monospace</family></default>
-	</alias>
-	<alias>
 		<family>Courier New</family>
-		<default><family>monospace</family></default>
-	</alias>
-	<alias>
 		<family>Andale Mono</family>
+		<family>Nimbus Mono L</family>
+		<family>Luxi Mono</family>
 		<default><family>monospace</family></default>
 	</alias>
 <!--
@@ -113,23 +104,19 @@
 -->
 	<alias>
 		<family>Times</family>
-		<prefer><family>Times New Roman</family></prefer>
-		<default><family>serif</family></default>
+		<accept><family>Times New Roman</family></accept>
 	</alias>
 	<alias>
 		<family>Helvetica</family>
-		<prefer><family>Verdana</family></prefer>
-		<default><family>sans-serif</family></default>
+		<accept><family>Verdana</family></accept>
 	</alias>
 	<alias>
 		<family>Arial</family>
-		<prefer><family>Verdana</family></prefer>
-		<default><family>sans-serif</family></default>
+		<accept><family>Verdana</family></accept>
 	</alias>
 	<alias>
 		<family>Courier</family>
-		<prefer><family>Courier New</family></prefer>
-		<default><family>monospace</family></default>
+		<accept><family>Courier New</family></accept>
 	</alias>
 
 <!--
@@ -164,28 +151,36 @@
 		</prefer>
 	</alias>
 
+	<config>
 <!--
   These are the default Unicode chars that are expected to be blank
   in fonts.  All other blank chars are assumed to be broken and
   won't appear in the resulting charsets
  -->
-	<config><blank>
-		<int>0x20</int>		<!-- space -->
-		<int>0xa0</int>		<!-- nsbp  -->
-		<int>0x2000</int>	<!-- general punctuation spaces -->
-		<int>0x2001</int>
-		<int>0x2002</int>
-		<int>0x2003</int>
-		<int>0x2004</int>
-		<int>0x2005</int>
-		<int>0x2005</int>
-		<int>0x2006</int>
-		<int>0x2007</int>
-		<int>0x2008</int>
-		<int>0x2009</int>
-		<int>0x200a</int>
-		<int>0x200b</int>
-		<int>0x3000</int>	<!-- CJK space -->
-	</blank></config>
+		<blank>
+			<int>0x20</int>		<!-- space -->
+			<int>0xa0</int>		<!-- nsbp  -->
+			<int>0x2000</int>	<!-- general punctuation spaces -->
+			<int>0x2001</int>
+			<int>0x2002</int>
+			<int>0x2003</int>
+			<int>0x2004</int>
+			<int>0x2005</int>
+			<int>0x2005</int>
+			<int>0x2006</int>
+			<int>0x2007</int>
+			<int>0x2008</int>
+			<int>0x2009</int>
+			<int>0x200a</int>
+			<int>0x200b</int>
+			<int>0x3000</int>	<!-- CJK space -->
+		</blank>
+<!--
+  Rescan configuration every 30 seconds when FcFontSetList is called
+ -->
+		<rescan>
+			<int>30</int>
+		</rescan>
+	</config>
 
 </fontconfig>

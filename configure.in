@@ -1,72 +1,110 @@
-AC_INIT(fontconfig/fontconfig.h)
+dnl
+dnl $XFree86$
+dnl
+dnl Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
+dnl
+dnl Permission to use, copy, modify, distribute, and sell this software and its
+dnl documentation for any purpose is hereby granted without fee, provided that
+dnl the above copyright notice appear in all copies and that both that
+dnl copyright notice and this permission notice appear in supporting
+dnl documentation, and that the name of Keith Packard not be used in
+dnl advertising or publicity pertaining to distribution of the software without
+dnl specific, written prior permission.  Keith Packard makes no
+dnl representations about the suitability of this software for any purpose.  It
+dnl is provided "as is" without express or implied warranty.
+dnl
+dnl KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+dnl INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+dnl EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+dnl CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+dnl DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+dnl TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+dnl PERFORMANCE OF THIS SOFTWARE.
+dnl
 
-AC_PREREQ(2.13)
-
-FC_MAJOR=1
-FC_MINOR=0
-FC_SUB=1
-FC_PRE=
-FC_IFACE_AGE=0
-FC_BIN_AGE=0
-
-AC_SUBST(FC_MAJOR)
-AC_SUBST(FC_MINOR)
-AC_SUBST(FC_SUB)
-AC_SUBST(FC_IFACE_AGE)
-AC_SUBST(FC_BIN_AGE)
-
-LT_RELEASE=$FC_MAJOR.$FC_MINOR
-LT_CURRENT=`expr $FC_SUB - $FC_IFACE_AGE`
-LT_REVISION=$FC_IFACE_AGE
-LT_AGE=`expr $FC_BIN_AGE - $FC_IFACE_AGE`
-AC_SUBST(LT_RELEASE)
-AC_SUBST(LT_CURRENT)
-AC_SUBST(LT_REVISION)
-AC_SUBST(LT_AGE)
-
-AM_INIT_AUTOMAKE("fontconfig", $FC_MAJOR.$FC_MINOR.$FC_SUB$FC_PRE)
-
-AC_CANONICAL_HOST
-AM_CONFIG_HEADER(config.h)
+# Process this file with autoconf to produce a configure script.
+AC_INIT(fontconfig, 1.0.1, fonts@xfree86.org)
+AC_CONFIG_AUX_DIR(config)
+AC_CONFIG_HEADER(config.h)
 
 AC_ARG_WITH(freetype_includes, [  --with-freetype-includes=DIR  Use FreeType includes in DIR], freetype_includes=$withval, freetype_includes=yes)
 AC_ARG_WITH(freetype_lib,      [  --with-freetype-lib=DIR       Use FreeType library in DIR], freetype_lib=$withval, freetype_lib=yes)
 AC_ARG_WITH(freetype_config,   [  --with-freeetype-config=PROG  Use FreeType configuration program PROG], freetype_config=$withval, freetype_config=yes)
-AC_ARG_WITH(xml2_includes,     [  --with-xml2-includes=DIR      Use xml2 includes in DIR], xml2_includes=$withval, xml2_includes=yes)
-AC_ARG_WITH(xml2_lib,          [  --with-xml2-lib=DIR           Use xml2 library in DIR], xml2_lib=$withval, xml2_lib=yes)
-AC_ARG_WITH(xml2_config,       [  --with-freeetype-config=PROG  Use FreeType configuration program PROG], xml2_config=$withval, xml2_config=yes)
+AC_ARG_WITH(expat,             [  --with-expat=DIR              Use Expat in DIR instead of xml2], expat=$withval, expat=maybe)
+AC_ARG_WITH(expat_includes,    [  --with-expat-includes=DIR     Use Expat includes in DIR], expat_includes=$withval, expat_includes=yes)
+AC_ARG_WITH(expat_lib,         [  --with-expat-lib=DIR          Use Expat library in DIR], expat_lib=$withval, expat_lib=yes)
+AC_ARG_WITH(xml2,              [  --with-xml2=DIR               Use Libxml2 in DIR instead of expat], xml2=$withval, xml2=maybe)
+AC_ARG_WITH(xml2_includes,     [  --with-xml2-includes=DIR      Use Libxml2 includes in DIR], xml2_includes=$withval, xml2_includes=yes)
+AC_ARG_WITH(xml2_lib,          [  --with-xml2-lib=DIR           Use Libxml2 library in DIR], xml2_lib=$withval, xml2_lib=yes)
 AC_ARG_WITH(fallback_fonts,    [  --with-fallback-fonts=DIR     Use fonts from DIR when config is busted], fallback_fonts="$withval", fallback_fonts=yes)
-AC_ISC_POSIX
-AC_PROG_CC
-AC_STDC_HEADERS
-AC_PROG_MAKE_SET
-AC_PROG_INSTALL
 
+# Checks for programs.
+AC_PROG_CC
+AC_PROG_INSTALL
 AC_PROG_LN_S
 
-dnl
-dnl Libtool
-dnl
-AM_DISABLE_STATIC
-AM_PROG_LIBTOOL
-AC_SUBST(LIBTOOL_DEPS)
-if libtool --features | grep "enable static" >/dev/null; then
-  STATIC="-static"
+PACKAGE_VERSION=1.0.1
+
+# Set major version
+PACKAGE_MAJOR=`echo $PACKAGE_VERSION | awk -F . '{ print $1 }'`
+PACKAGE_MINOR=`echo $PACKAGE_VERSION | awk -F . '{ print $2 }'`
+PACKAGE_REVISION=`echo $PACKAGE_VERSION | awk -F . '{ print $3 }'`
+AC_SUBST(PACKAGE_MAJOR)
+AC_SUBST(PACKAGE_MINOR)
+AC_SUBST(PACKAGE_REVISION)
+
+OBJEXT="o"
+AC_SUBST(OBJEXT)
+
+AC_DEFINE_UNQUOTED(PACKAGE_MAJOR,$PACKAGE_MAJOR)
+AC_DEFINE_UNQUOTED(PACKAGE_MINOR,$PACKAGE_MINOR)
+AC_DEFINE_UNQUOTED(PACKAGE_REVISION,$PACKAGE_REVISION)
+	 
+#AH_TEMPLATE([PACKAGE_MAJOR],[Library major version])
+#AH_TEMPLATE([PACKAGE_MINOR],[Library minor version])
+#AH_TEMPLATE([PACKAGE_REVISION],[Library revision])
+
+# Checks for header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_CHECK_HEADERS([fcntl.h stdlib.h string.h unistd.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_PID_T
+
+# Checks for library functions.
+#AC_FUNC_MALLOC
+#AC_FUNC_STAT
+#AC_FUNC_STRTOD
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS([memmove memset strchr strrchr strtol getopt getopt_long])
+
+if test "$GCC" = "yes"; then
+    MKSHLIB='$(CC) $(CFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
+    DSO_LDOPTS='-shared -Wl,-h,`echo $@ | sed '"'s/\.so\.\([[0-9][0-9]]*\).*/.so.\1/'"'`'
+    DSO_CFLAGS=''
+    DSO_PIC_CFLAGS='-fPIC -DPIC'
 else
-  STATIC=
+    MKSHLIB='$(LD) $(DSO_LDOPTS) -o $@'
+    DSO_LDOPTS='-shared -h $@'
+    DSO_CFLAGS=''
+    DSO_PIC_CFLAGS='-KPIC -DPIC'
 fi
-AC_SUBST(STATIC)
 
-AC_SUBST(DEBUG_CFLAGS)
-AC_SUBST(GLOBAL_CFLAGS)
+AC_SUBST(MKSHLIB)
+AC_SUBST(DSO_LDOPTS)
+AC_SUBST(DSO_CFLAGS)
+AC_SUBST(DSO_PIC_CFLAGS)
 
-AC_CHECK_FUNCS(getopt_long getopt)
-
+#
+# Check freetype configuration
+#
 case "$freetype_config" in
 no)
 	;;
 yes)
-	AC_CHECK_PROG(ft_config, freetype-config, freetype-config, no)
+	AC_CHECK_PROG(ft_config,freetype-config,freetype-config,no)
 	;;
 *)
 	ft_config="$freetype_config"
@@ -111,22 +149,13 @@ yes)
 	;;
 esac
 
-case "$fallback_fonts" in
-yes)
-	AC_DEFINE_UNQUOTED(FC_FALLBACK_FONTS, "/usr/X11R6/lib/X11/fonts/Type1")
-	;;
-*)
-	AC_DEFINE_UNQUOTED(FC_FALLBACK_FONTS, "$fallback_fonts")
-	;;
-esac
-
 saved_LIBS="$LIBS"
 LIBS="$LIBS $freetype_lib"
 saved_CPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS $freetype_includes"
-AC_CHECK_HEADERS(ft2build.h)
+AC_CHECK_HEADERS(freetype/freetype.h)
 
-case "$ac_cv_header_ft2build_h" in
+case "$ac_cv_header_freetype_freetype_h" in
 no)
 	CPPFLAGS="$saved_CPPFLAGS"
 	LIBS="$saved_LIBS"
@@ -144,59 +173,210 @@ yes)
 	esac
 	;;
 esac
+#AH_TEMPLATE([HAVE_FREETYPE],[whether system has freetype2 library])
 
-case "$xml2_config" in
-no)
-	;;
+case "$fallback_fonts" in
 yes)
-	AC_CHECK_PROG(xml2_config_prog, xml2-config, xml2-config, no)
+	AC_DEFINE_UNQUOTED(FC_FALLBACK_FONTS, "/usr/share/fonts")
 	;;
 *)
+	AC_DEFINE_UNQUOTED(FC_FALLBACK_FONTS, "$fallback_fonts")
+	;;
+esac
+#AH_TEMPLATE([FC_FALLBACK_FONTS],
+#	    [Path library uses when config file is broken])
+
+#
+# Check expat/libxml2 configuration
+#
+
+case "$expat" in
+maybe)
+	;;
+no)
+	xml2=yes
+	;;
+*)
+	xml2=no
 	;;
 esac
 
-case "$xml2_includes" in
-no)
-	xml2_includes=""
+case "$xml2" in
+maybe)
 	;;
-yes)
-	case "$xml2_config_prog" in
-	no)
-		xml2_includes=""
+no)
+	expat=yes
+	;;
+*)
+	expat=no
+	;;
+esac
+
+case "$expat" in
+no)
+	;;
+*)
+	case "$expat_includes" in
+	yes|no)
+		expat_include_path=""
 		;;
 	*)
-		xml2_includes="`$xml2_config_prog --cflags`"
+		expat_include_path="-I$expat_includes"
+		;;
+	esac
+	case "$expat_lib" in
+	yes)
+		case "$expat" in
+		yes|maybe)
+			expat_library="-lexpat"
+			;;
+		*)
+			expat_library="-L$expat/lib -lexpat"
+			;;
+		esac
+		;;
+	no)
+		;;
+	*)
+		expat_library="-L$expat_lib -lexpat"
+		;;
+	esac
+
+	saved_CPPFLAGS="$CPPFLAGS"
+	CPPFLAGS="$CPPFLAGS $expat_include_path"
+	saved_LIBS="$LIBS"
+	LIBS="$LIBS $expat_library"
+
+	AC_CHECK_HEADER(expat.h)
+	case "$ac_cv_header_expat_h" in
+	no)
+		AC_CHECK_HEADER(xmlparse.h)
+		case "$ac_cv_header_xmlparse_h" in
+		no)
+			have_expat_header=no;
+			;;
+		yes)
+			HAVE_XMLPARSE_H=1
+			AC_SUBST(HAVE_XMLPARSE_H)
+			AC_DEFINE_UNQUOTED(HAVE_XMLPARSE_H,$HAVE_XMLPARSE_H)
+			have_expat_header=yes
+			;;
+		esac
+		;;
+	yes)
+		have_expat_header=yes
+		;;
+	esac
+	case "$have_expat_header" in
+	no)
+		CPPFLAGS="$saved_CPPFLAGS"
+		LIBS="$saved_LIBS"
+		expat=no
+		;;
+	yes)
+		AC_CHECK_FUNCS(XML_ParserCreate)
+		case "$ac_cv_func_XML_ParserCreate" in
+		no)
+			CPPFLAGS="$saved_CPPFLAGS"
+			LIBS="$saved_LIBS"
+			expat=no
+			;;
+		yes)
+			HAVE_EXPAT=1
+			AC_SUBST(HAVE_EXPAT)
+			AC_DEFINE_UNQUOTED(HAVE_EXPAT,$HAVE_EXPAT)
+			xml2=no
+			;;
+		esac
 		;;
 	esac
 	;;
-*)
-	xml2_includes="-I$xml2_includes"
-	;;
 esac
-
-case "$xml2_lib" in
+	
+case "$xml2" in
 no)
-	xml2_lib=""
 	;;
-yes)
-	case "$xml2_config_prog" in
-	no)
-		xml2_lib=""
+*)
+	case "$xml2_includes" in
+	yes|no)
+		xml2_include_path=""
 		;;
 	*)
-		xml2_lib="`$xml2_config_prog --libs`"
+		xml2_include_path="-I$xml2_includes"
+		;;
+	esac
+	case "$xml2_lib" in
+	yes)
+		case "$xml2" in
+		yes|maybe)
+			xml2_library="-lxml2"
+			;;
+		*)
+			xml2_library="-L$xml2/lib -lxml2"
+			;;
+		esac
+		;;
+	no)
+		;;
+	*)
+		xml2_library="-L$xml2_lib -lxml2"
+		;;
+	esac
+
+	saved_CPPFLAGS="$CPPFLAGS"
+	CPPFLAGS="$CPPFLAGS $xml2_include_path"
+	saved_LIBS="$LIBS"
+	LIBS="$LIBS $xml2_library"
+
+	AC_CHECK_HEADER(libxml/parser.h)
+	case "$ac_cv_header_libxml_parser_h" in
+	no)
+		CPPFLAGS="$saved_CPPFLAGS"
+		LIBS="$saved_LIBS"
+		xml2=no
+		;;
+	yes)
+		AC_CHECK_FUNCS(xmlInitParser)
+		case "$ac_cv_func_xmlInitParser" in
+		no)
+			CPPFLAGS="$saved_CPPFLAGS"
+			LIBS="$saved_LIBS"
+			xml2=no
+			;;
+		yes)
+			HAVE_XML2=1
+			AC_SUBST(HAVE_XML2)
+			AC_DEFINE_UNQUOTED(HAVE_XML2,$HAVE_XML2)
+			expat=no
+			;;
+		esac
 		;;
 	esac
 	;;
-*)
-	xml2_lib="-L$xml2_lib -lxml2"
+esac
+	
+#AH_TEMPLATE([HAVE_EXPAT],[Use expat library for xml parsing])
+#AH_TEMPLATE([HAVE_XML2],[Use libxml2 library for xml parsing])
+
+case "$expat""$xml2" in
+nono)
+	AC_MSG_ERROR([cannot find either libxml2 or expat])
 	;;
 esac
 
-saved_LIBS="$LIBS"
-LIBS="$LIBS $xml2_lib"
-saved_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $xml2_includes"
-AC_CHECK_HEADERS(xmlversion.h)
-
-AC_OUTPUT(Makefile src/Makefile fontconfig/Makefile fc-cache/Makefile fc-list/Makefile)
+#AC_CONFIG_FILES([Makefile
+#                 fc-cache/Makefile
+#                 fc-list/Makefile
+#                 fontconfig/Makefile
+#                 src/Makefile])
+#AC_CONFIG_FILES([Makefile
+#		 config/Makedefs
+#		 src/Makefile
+#		 fc-cache/Makefile
+#		 fc-list/Makefile])
+AC_OUTPUT([Makefile
+	  config/Makedefs
+	  src/Makefile
+	  fc-cache/Makefile
+	  fc-list/Makefile])
+#AC_OUTPUT
