@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -384,7 +384,7 @@ FcPatternGetDouble (FcPattern *p, const char *object, int id, double *d)
 }
 
 FcResult
-FcPatternGetString (FcPattern *p, const char *object, int id, FcChar8 const ** s)
+FcPatternGetString (FcPattern *p, const char *object, int id, FcChar8 ** s)
 {
     FcValue	v;
     FcResult	r;
@@ -394,7 +394,7 @@ FcPatternGetString (FcPattern *p, const char *object, int id, FcChar8 const ** s
 	return r;
     if (v.type != FcTypeString)
         return FcResultTypeMismatch;
-    *s = v.u.s;
+    *s = (FcChar8 *) v.u.s;
     return FcResultMatch;
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.2 2002/02/15 06:01:27 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -590,7 +590,7 @@ FcFileCacheWriteDir (FcFontSet *set, const FcChar8 *cache_file)
     for (n = 0; n < set->nfont; n++)
     {
 	font = set->fonts[n];
-	if (FcPatternGetString (font, FC_FILE, 0, &file) != FcResultMatch)
+	if (FcPatternGetString (font, FC_FILE, 0, (FcChar8 **) &file) != FcResultMatch)
 	    goto bail1;
 	base = (FcChar8 *) strrchr ((char *) file, '/');
 	if (base)

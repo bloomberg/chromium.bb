@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.3 2002/02/18 22:29:28 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -555,6 +555,27 @@ FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b)
 	}
     }
     return count;
+}
+
+FcChar32
+FcCharSetCoverage (const FcCharSet *a, FcChar32 page, FcChar32 *result)
+{
+    FcCharSetIter   ai;
+
+    ai.ucs4 = page;
+    FcCharSetIterSet (a, &ai);
+    if (!ai.leaf)
+    {
+	memset (result, '\0', 256 / 8);
+	page = 0;
+    }
+    else
+    {
+	memcpy (result, ai.leaf->map, sizeof (ai.leaf->map));
+	FcCharSetIterNext (a, &ai);
+	page = ai.ucs4;
+    }
+    return page;
 }
 
 /*

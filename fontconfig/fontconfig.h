@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.2 2002/02/15 06:01:27 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -329,6 +329,9 @@ FcCharSetIntersectCount (const FcCharSet *a, const FcCharSet *b);
 FcChar32
 FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b);
 
+FcChar32
+FcCharSetCoverage (const FcCharSet *a, FcChar32 page, FcChar32 *result);
+
 /* fcdbg.c */
 void
 FcPatternPrint (FcPattern *p);
@@ -505,7 +508,7 @@ FcResult
 FcPatternGetDouble (FcPattern *p, const char *object, int n, double *d);
 
 FcResult
-FcPatternGetString (FcPattern *p, const char *object, int n, FcChar8 const** s);
+FcPatternGetString (FcPattern *p, const char *object, int n, FcChar8 ** s);
 
 FcResult
 FcPatternGetMatrix (FcPattern *p, const char *object, int n, FcMatrix **s);
