@@ -33,27 +33,27 @@
 #include "drmP.h"
 
 struct vm_operations_struct   DRM(vm_ops) = {
-	nopage:	 DRM(vm_nopage),
-	open:	 DRM(vm_open),
-	close:	 DRM(vm_close),
+	.nopage = DRM(vm_nopage),
+	.open	= DRM(vm_open),
+	.close	= DRM(vm_close),
 };
 
 struct vm_operations_struct   DRM(vm_shm_ops) = {
-	nopage:	 DRM(vm_shm_nopage),
-	open:	 DRM(vm_open),
-	close:	 DRM(vm_shm_close),
+	.nopage = DRM(vm_shm_nopage),
+	.open	= DRM(vm_open),
+	.close	= DRM(vm_shm_close),
 };
 
 struct vm_operations_struct   DRM(vm_dma_ops) = {
-	nopage:	 DRM(vm_dma_nopage),
-	open:	 DRM(vm_open),
-	close:	 DRM(vm_close),
+	.nopage = DRM(vm_dma_nopage),
+	.open	= DRM(vm_open),
+	.close	= DRM(vm_close),
 };
 
 struct vm_operations_struct   DRM(vm_sg_ops) = {
-	nopage:  DRM(vm_sg_nopage),
-	open:    DRM(vm_open),
-	close:   DRM(vm_close),
+	.nopage = DRM(vm_sg_nopage),
+	.open   = DRM(vm_open),
+	.close  = DRM(vm_close),
 };
 
 struct page *DRM(vm_nopage)(struct vm_area_struct *vma,

@@ -153,14 +153,14 @@ static int i830_freelist_put(drm_device_t *dev, drm_buf_t *buf)
 }
 
 static struct file_operations i830_buffer_fops = {
-	open:	 DRM(open),
-	flush:	 DRM(flush),
-	release: DRM(release),
-	ioctl:	 DRM(ioctl),
-	mmap:	 i830_mmap_buffers,
-	read:	 DRM(read),
-	fasync:	 DRM(fasync),
-      	poll:	 DRM(poll),
+	.open	 = DRM(open),
+	.flush	 = DRM(flush),
+	.release = DRM(release),
+	.ioctl	 = DRM(ioctl),
+	.mmap	 = i830_mmap_buffers,
+	.read	 = DRM(read),
+	.fasync  = DRM(fasync),
+      	.poll	 = DRM(poll),
 };
 
 int i830_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
