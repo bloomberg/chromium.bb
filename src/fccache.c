@@ -427,13 +427,29 @@ static FcGlobalCacheInfo *
 FcGlobalCacheDirAdd (FcGlobalCache  *cache,
 		     const FcChar8  *dir,
 		     time_t	    time,
-		     FcBool	    replace)
+		     FcBool	    replace,
+		     FcBool	    create_missing)
 {
     FcGlobalCacheDir	*d;
     FcFilePathInfo	i;
     FcGlobalCacheSubdir	*subdir;
     FcGlobalCacheDir	*parent;
 
+    i = FcFilePathInfoGet (dir);
+    parent = FcGlobalCacheDirGet (cache, i.dir, i.dir_len, create_missing);
+    /*
+     * Tricky here -- directories containing fonts.cache-1 files
+     * need entries only when the parent doesn't have a cache file.
+     * That is, when the parent already exists in the cache, is
+     * referenced and has a "real" timestamp.  The time of 0 is
+     * special and marks directories which got stuck in the
+     * global cache for this very reason.  Yes, it could
+     * use a separate boolean field, and probably should.
+     */
+    if (!parent || (!create_missing && 
+		    (!parent->info.referenced ||
+		    (parent->info.time == 0))))
+	return 0;
     /*
      * Add this directory to the cache
      */
@@ -441,13 +457,9 @@ FcGlobalCacheDirAdd (FcGlobalCache  *cache,
     if (!d)
 	return 0;
     d->info.time = time;
-    i = FcFilePathInfoGet (dir);
     /*
      * Add this directory to the subdirectory list of the parent
      */
-    parent = FcGlobalCacheDirGet (cache, i.dir, i.dir_len, FcTrue);
-    if (!parent)
-	return 0;
     subdir = malloc (sizeof (FcGlobalCacheSubdir));
     if (!subdir)
 	return 0;
@@ -482,6 +494,25 @@ FcGlobalCacheDirDestroy (FcGlobalCacheDir *d)
     }
     FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheDir) + d->len + 1);
     free (d);
+}
+
+/*
+ * If the parent is in the global cache and referenced, add
+ * an entry for 'dir' to the global cache.  This is used
+ * for directories with fonts.cache files
+ */
+
+void
+FcGlobalCacheReferenceSubdir (FcGlobalCache *cache,
+			      const FcChar8 *dir)
+{
+    FcGlobalCacheInfo	*info;
+    info = FcGlobalCacheDirAdd (cache, dir, 0, FcFalse, FcFalse);
+    if (info && !info->referenced)
+    {
+	info->referenced = FcTrue;
+	cache->referenced++;
+    }
 }
 
 /*
@@ -739,7 +770,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	if (FcDebug () & FC_DBG_CACHEV)
 	    printf ("FcGlobalCacheLoad \"%s\" \"%20.20s\"\n", file, name);
 	if (!FcStrCmp (name, FC_FONT_FILE_DIR))
-	    info = FcGlobalCacheDirAdd (cache, file, time, FcFalse);
+	    info = FcGlobalCacheDirAdd (cache, file, time, FcFalse, FcTrue);
 	else
 	    info = FcGlobalCacheFileAdd (cache, file, id, time, name, FcFalse);
 	if (!info)
@@ -779,7 +810,7 @@ FcGlobalCacheUpdate (FcGlobalCache  *cache,
 	return FcFalse;
     if (S_ISDIR (statb.st_mode))
 	info = FcGlobalCacheDirAdd (cache, file, statb.st_mtime, 
-				   FcTrue);
+				    FcTrue, FcTrue);
     else
 	info = FcGlobalCacheFileAdd (cache, file, id, statb.st_mtime, 
 				    name, FcTrue);

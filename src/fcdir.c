@@ -177,7 +177,10 @@ FcDirScan (FcFontSet	    *set,
 	 * Check fonts.cache-<version> file
 	 */
 	if (FcDirCacheReadDir (set, dirs, dir))
+	{
+	    FcGlobalCacheReferenceSubdir (cache, dir);
 	    return FcTrue;
+	}
     
 	/*
 	 * Check ~/.fonts.cache-<version> file

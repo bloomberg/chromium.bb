@@ -344,6 +344,10 @@ void
 FcGlobalCacheReferenced (FcGlobalCache	    *cache,
 			 FcGlobalCacheInfo  *info);
 
+void
+FcGlobalCacheReferenceSubdir (FcGlobalCache *cache,
+			      const FcChar8 *dir);
+
 FcGlobalCacheDir *
 FcGlobalCacheDirGet (FcGlobalCache  *cache,
 		     const FcChar8  *dir,
