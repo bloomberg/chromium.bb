@@ -1,0 +1,8 @@
+#define IncSubdir fontconfig
+
+HEADERS=fcfreetype.h fcprivate.h fcxml.h fontconfig.h
+
+BuildIncludes($(HEADERS),IncSubdir,..)
+#if BuildLibraries
+InstallMultipleFlags($(HEADERS),$(INCDIR)/IncSubdir,$(INSTINCFLAGS))
+#endif

@@ -1,0 +1,202 @@
+AC_INIT(fontconfig/fontconfig.h)
+
+AC_PREREQ(2.13)
+
+FC_MAJOR=1
+FC_MINOR=0
+FC_SUB=1
+FC_PRE=
+FC_IFACE_AGE=0
+FC_BIN_AGE=0
+
+AC_SUBST(FC_MAJOR)
+AC_SUBST(FC_MINOR)
+AC_SUBST(FC_SUB)
+AC_SUBST(FC_IFACE_AGE)
+AC_SUBST(FC_BIN_AGE)
+
+LT_RELEASE=$FC_MAJOR.$FC_MINOR
+LT_CURRENT=`expr $FC_SUB - $FC_IFACE_AGE`
+LT_REVISION=$FC_IFACE_AGE
+LT_AGE=`expr $FC_BIN_AGE - $FC_IFACE_AGE`
+AC_SUBST(LT_RELEASE)
+AC_SUBST(LT_CURRENT)
+AC_SUBST(LT_REVISION)
+AC_SUBST(LT_AGE)
+
+AM_INIT_AUTOMAKE("fontconfig", $FC_MAJOR.$FC_MINOR.$FC_SUB$FC_PRE)
+
+AC_CANONICAL_HOST
+AM_CONFIG_HEADER(config.h)
+
+AC_ARG_WITH(freetype_includes, [  --with-freetype-includes=DIR  Use FreeType includes in DIR], freetype_includes=$withval, freetype_includes=yes)
+AC_ARG_WITH(freetype_lib,      [  --with-freetype-lib=DIR       Use FreeType library in DIR], freetype_lib=$withval, freetype_lib=yes)
+AC_ARG_WITH(freetype_config,   [  --with-freeetype-config=PROG  Use FreeType configuration program PROG], freetype_config=$withval, freetype_config=yes)
+AC_ARG_WITH(xml2_includes,     [  --with-xml2-includes=DIR      Use xml2 includes in DIR], xml2_includes=$withval, xml2_includes=yes)
+AC_ARG_WITH(xml2_lib,          [  --with-xml2-lib=DIR           Use xml2 library in DIR], xml2_lib=$withval, xml2_lib=yes)
+AC_ARG_WITH(xml2_config,       [  --with-freeetype-config=PROG  Use FreeType configuration program PROG], xml2_config=$withval, xml2_config=yes)
+AC_ARG_WITH(fallback_fonts,    [  --with-fallback-fonts=DIR     Use fonts from DIR when config is busted], fallback_fonts="$withval", fallback_fonts=yes)
+AC_ISC_POSIX
+AC_PROG_CC
+AC_STDC_HEADERS
+AC_PROG_MAKE_SET
+AC_PROG_INSTALL
+
+AC_PROG_LN_S
+
+dnl
+dnl Libtool
+dnl
+AM_DISABLE_STATIC
+AM_PROG_LIBTOOL
+AC_SUBST(LIBTOOL_DEPS)
+if libtool --features | grep "enable static" >/dev/null; then
+  STATIC="-static"
+else
+  STATIC=
+fi
+AC_SUBST(STATIC)
+
+AC_SUBST(DEBUG_CFLAGS)
+AC_SUBST(GLOBAL_CFLAGS)
+
+AC_CHECK_FUNCS(getopt_long getopt)
+
+case "$freetype_config" in
+no)
+	;;
+yes)
+	AC_CHECK_PROG(ft_config, freetype-config, freetype-config, no)
+	;;
+*)
+	ft_config="$freetype_config"
+	;;
+esac
+
+case "$freetype_includes" in
+no)
+	freetype_includes=""
+	;;
+yes)
+	case "$ft_config" in
+	no)
+		freetype_includes=""
+		;;
+	*)
+		freetype_includes="`$ft_config --cflags`"
+		;;
+	esac
+	;;
+*)
+	freetype_includes="-I$freetype_includes"
+	;;
+esac
+
+case "$freetype_lib" in
+no)
+	freetype_lib=""
+	;;
+yes)
+	case "$ft_config" in
+	no)
+		freetype_lib=""
+		;;
+	*)
+		freetype_lib="`$ft_config --libs`"
+		;;
+	esac
+	;;
+*)
+	freetype_lib="-L$freetype_lib -lfreetype"
+	;;
+esac
+
+case "$fallback_fonts" in
+yes)
+	AC_DEFINE_UNQUOTED(FC_FALLBACK_FONTS, "/usr/X11R6/lib/X11/fonts/Type1")
+	;;
+*)
+	AC_DEFINE_UNQUOTED(FC_FALLBACK_FONTS, "$fallback_fonts")
+	;;
+esac
+
+saved_LIBS="$LIBS"
+LIBS="$LIBS $freetype_lib"
+saved_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $freetype_includes"
+AC_CHECK_HEADERS(ft2build.h)
+
+case "$ac_cv_header_ft2build_h" in
+no)
+	CPPFLAGS="$saved_CPPFLAGS"
+	LIBS="$saved_LIBS"
+	;;
+yes)
+	AC_CHECK_FUNCS(FT_Init_FreeType)
+	case "$ac_cv_func_FT_Init_FreeType" in
+	no)
+		CPPFLAGS="$saved_CPPFLAGS"
+		LIBS="$saved_LIBS"
+		;;
+	yes)
+		AC_DEFINE(HAVE_FREETYPE)
+		;;
+	esac
+	;;
+esac
+
+case "$xml2_config" in
+no)
+	;;
+yes)
+	AC_CHECK_PROG(xml2_config_prog, xml2-config, xml2-config, no)
+	;;
+*)
+	;;
+esac
+
+case "$xml2_includes" in
+no)
+	xml2_includes=""
+	;;
+yes)
+	case "$xml2_config_prog" in
+	no)
+		xml2_includes=""
+		;;
+	*)
+		xml2_includes="`$xml2_config_prog --cflags`"
+		;;
+	esac
+	;;
+*)
+	xml2_includes="-I$xml2_includes"
+	;;
+esac
+
+case "$xml2_lib" in
+no)
+	xml2_lib=""
+	;;
+yes)
+	case "$xml2_config_prog" in
+	no)
+		xml2_lib=""
+		;;
+	*)
+		xml2_lib="`$xml2_config_prog --libs`"
+		;;
+	esac
+	;;
+*)
+	xml2_lib="-L$xml2_lib -lxml2"
+	;;
+esac
+
+saved_LIBS="$LIBS"
+LIBS="$LIBS $xml2_lib"
+saved_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $xml2_includes"
+AC_CHECK_HEADERS(xmlversion.h)
+
+AC_OUTPUT(Makefile src/Makefile fontconfig/Makefile fc-cache/Makefile fc-list/Makefile)

@@ -1,0 +1,2 @@
+#undef HAVE_FREETYPE 
+#undef FC_FALLBACK_FONTS

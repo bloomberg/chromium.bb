@@ -1,0 +1,25 @@
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+LINTSUBDIRS=src fc-cache fc-list
+
+SUBDIRS=fontconfig $(LINTSUBDIRS)
+
+#ifndef FontconfigDir
+#define FontconfigDir /etc/fonts
+#endif
+
+FONTCONFIGDIR=FontconfigDir
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+MakeLintLibSubdirs($(LINTSUBDIRS))
+MakeLintSubdirs($(LINTSUBDIRS),install.ln,install.ln)
+
+InstallNonExecFileNoClobber(fonts.conf,$(FONTCONFIGDIR))
+InstallNonExecFileNoClobber(fonts.dtd,$(FONTCONFIGDIR))
+
+all:: fonts.conf
+
+fonts.conf: fonts.conf.in
+	sh ./setfontdirs
