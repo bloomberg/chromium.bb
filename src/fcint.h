@@ -338,7 +338,7 @@ void
 FcGlobalCacheDestroy (FcGlobalCache *cache);
 
 FcBool
-FcGlobalCacheCheckTime (FcGlobalCacheInfo *info);
+FcGlobalCacheCheckTime (const FcChar8*file, FcGlobalCacheInfo *info);
 
 void
 FcGlobalCacheReferenced (FcGlobalCache	    *cache,
