@@ -416,7 +416,7 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 	if (map->size != vma->vm_end - vma->vm_start) return -EINVAL;
 
 	if (!capable(CAP_SYS_ADMIN) && (map->flags & _DRM_READ_ONLY)) {
-		vma->vm_flags &= VM_MAYWRITE;
+		vma->vm_flags &= (VM_READ | VM_MAYREAD);
 #if defined(__i386__) || defined(__x86_64__)
 		pgprot_val(vma->vm_page_prot) &= ~_PAGE_RW;
 #else
