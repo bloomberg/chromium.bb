@@ -87,7 +87,7 @@ _FcPatternVapBuild_bail1:					    \
     if (!orig)							    \
 	FcPatternDestroy (__p__);				    \
 _FcPatternVapBuild_bail0:					    \
-    result = 0;							    \
+    result = (void*)0;						    \
 								    \
 _FcPatternVapBuild_return:					    \
     ;								    \
