@@ -768,7 +768,7 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 				goto done;
 			}
 
-#if LINUX_VERSION_CODE < 0x020402
+#if LINUX_VERSION_CODE <= 0x020402
 			down( &current->mm->mmap_sem );
 #else
 			down_write( &current->mm->mmap_sem );
@@ -777,13 +777,13 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 					   PROT_READ | PROT_WRITE,
 					   MAP_SHARED,
 					   (unsigned long)map->offset );
-#if LINUX_VERSION_CODE < 0x020402
+#if LINUX_VERSION_CODE <= 0x020402
 			up( &current->mm->mmap_sem );
 #else
 			up_write( &current->mm->mmap_sem );
 #endif
 		} else {
-#if LINUX_VERSION_CODE < 0x020402
+#if LINUX_VERSION_CODE <= 0x020402
 			down( &current->mm->mmap_sem );
 #else
 			down_write( &current->mm->mmap_sem );
@@ -791,7 +791,7 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 			virtual = do_mmap( filp, 0, dma->byte_count,
 					   PROT_READ | PROT_WRITE,
 					   MAP_SHARED, 0 );
-#if LINUX_VERSION_CODE < 0x020402
+#if LINUX_VERSION_CODE <= 0x020402
 			up( &current->mm->mmap_sem );
 #else
 			up_write( &current->mm->mmap_sem );
