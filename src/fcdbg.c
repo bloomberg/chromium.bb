@@ -1,7 +1,7 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcdbg.c,v 1.10 2002/08/22 18:53:22 keithp Exp $
+ * $RCSId: xc/lib/fontconfig/src/fcdbg.c,v 1.10 2002/08/22 18:53:22 keithp Exp $
  *
- * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
+ * Copyright © 2000 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -29,9 +29,6 @@
 void
 FcValuePrint (const FcValue v)
 {
-    FcStrBuf	buf;
-    FcChar8	init_buf[1024];
-    
     switch (v.type) {
     case FcTypeVoid:
 	printf (" <void>");
@@ -55,12 +52,8 @@ FcValuePrint (const FcValue v)
 	printf (" set");
 	break;
     case FcTypeLangSet:
-	FcStrBufInit (&buf, init_buf, sizeof (init_buf));
-        if (FcNameUnparseLangSet (&buf, v.u.l) && FcStrBufChar (&buf,'\0'))
-	    printf (" %s", buf.buf);
-	else
-	    printf ("langset (alloc error)");
-	FcStrBufDestroy (&buf);
+	printf (" ");
+	FcLangSetPrint (v.u.l);
 	break;
     case FcTypeFTFace:
 	printf (" face");
@@ -86,6 +79,20 @@ FcValueListPrint (const FcValueList *l)
 	    break;
 	}
     }
+}
+
+void
+FcLangSetPrint (const FcLangSet *ls)
+{
+    FcStrBuf	buf;
+    FcChar8	init_buf[1024];
+    
+    FcStrBufInit (&buf, init_buf, sizeof (init_buf));
+    if (FcNameUnparseLangSet (&buf, ls) && FcStrBufChar (&buf,'\0'))
+	printf ("%s", buf.buf);
+    else
+	printf ("langset (alloc error)");
+    FcStrBufDestroy (&buf);
 }
 
 void
