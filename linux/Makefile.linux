@@ -275,6 +275,15 @@ endif
 ifneq (,$(findstring tdfx,$(DRM_MODULES)))
 CONFIG_DRM_TDFX := m
 endif
+ifneq (,$(findstring r128,$(DRM_MODULES)))
+CONFIG_DRM_R128 := m
+endif
+ifneq (,$(findstring radeon,$(DRM_MODULES)))
+CONFIG_DRM_RADEON := m
+endif
+ifneq (,$(findstring sis,$(DRM_MODULES)))
+CONFIG_DRM_SIS := m
+endif
 
 # These require AGP support
 
@@ -285,17 +294,8 @@ endif
 ifneq (,$(findstring i810,$(DRM_MODULES)))
 CONFIG_DRM_I810 := m
 endif
-ifneq (,$(findstring r128,$(DRM_MODULES)))
-CONFIG_DRM_R128 := m
-endif
-ifneq (,$(findstring radeon,$(DRM_MODULES)))
-CONFIG_DRM_RADEON := m
-endif
 ifneq (,$(findstring i830,$(DRM_MODULES)))
 CONFIG_DRM_I830 := m
-endif
-ifneq (,$(findstring sis,$(DRM_MODULES)))
-CONFIG_DRM_SIS := m
 endif
 endif
 
