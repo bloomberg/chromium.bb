@@ -1,3 +1,9 @@
+2003-10-27  Keith Packard  <set EMAIL_ADDRESS environment variable>
+
+	* configure.in:
+	* fontconfig/fontconfig.h:
+	Update to version 2.2.92
+
 2003-10-27  Keith Packard  <keithp@keithp.com>
 
 	* Makefile.am:
