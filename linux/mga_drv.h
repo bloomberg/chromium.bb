@@ -152,7 +152,8 @@ extern int mga_warp_init( drm_device_t *dev );
 #define MGA_DEREF( reg )	*(volatile u32 *)MGA_ADDR( reg )
 #define MGA_READ( reg )		MGA_DEREF( reg )
 #define MGA_WRITE( reg, val )	do { MGA_DEREF( reg ) = val; } while (0)
-
+#define MGA_DEREF8( reg )	*(volatile u8 *)MGA_ADDR( reg )
+#define MGA_WRITE8( reg, val )  do { MGA_DEREF8( reg ) = val; } while (0)
 
 #define DWGREG0 	0x1c00
 #define DWGREG0_END 	0x1dff
@@ -316,6 +317,7 @@ do {									\
 
 /* A reduced set of the mga registers.
  */
+#define MGA_CRTC_INDEX			0x1fd4
 
 #define MGA_ALPHACTRL 			0x2c7c
 #define MGA_AR0 			0x1c60
