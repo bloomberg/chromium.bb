@@ -70,7 +70,7 @@ do {								\
 		current->state = TASK_INTERRUPTIBLE;		\
 		if (condition)					\
 			break;					\
-		if((signed)(end - jiffies) <= 0) {		\
+		if (time_after_eq(jiffies, end)) {		\
 			ret = -EBUSY;				\
 			break;					\
 		}						\
