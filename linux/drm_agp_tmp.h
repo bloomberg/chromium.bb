@@ -62,6 +62,8 @@ static const drm_agp_t *drm_agp = NULL;
  */
 int DRM(agp_acquire)(void)
 {
+	if (!drm_agp || !drm_agp->acquire)
+		return -EINVAL;
 	return drm_agp->acquire();
 }
 
@@ -70,8 +72,9 @@ int DRM(agp_acquire)(void)
  */
 void DRM(agp_release)(void)
 {
-	if (drm_agp->release)
-		drm_agp->release();
+	if (!drm_agp || !drm_agp->release)
+		return;
+	drm_agp->release();
 }
 
 /**
@@ -79,8 +82,9 @@ void DRM(agp_release)(void)
  */
 void DRM(agp_enable)(unsigned long mode)
 {
-	if (drm_agp->enable)
-		drm_agp->enable(mode);
+	if (!drm_agp || !drm_agp->enable)
+		return;
+	drm_agp->enable(mode);
 }
 
 /** 
@@ -91,7 +95,7 @@ void DRM(agp_enable)(unsigned long mode)
  */
 agp_memory *DRM(agp_allocate_memory)(size_t pages, u32 type)
 {
-	if (!drm_agp->allocate_memory) 
+	if (!drm_agp || !drm_agp->allocate_memory)
 		return NULL;
 	return drm_agp->allocate_memory(pages, type);
 }
@@ -104,7 +108,7 @@ agp_memory *DRM(agp_allocate_memory)(size_t pages, u32 type)
  */
 int DRM(agp_free_memory)(agp_memory *handle)
 {
-	if (!handle || !drm_agp->free_memory) 
+	if (!handle || !drm_agp || !drm_agp->free_memory) 
 		return 0;
 	drm_agp->free_memory(handle);
 	return 1;
@@ -118,7 +122,7 @@ int DRM(agp_free_memory)(agp_memory *handle)
  */
 int DRM(agp_bind_memory)(agp_memory *handle, off_t start)
 {
-	if (!handle || !drm_agp->bind_memory) 
+	if (!handle || !drm_agp || !drm_agp->bind_memory) 
 		return -EINVAL;
 	return drm_agp->bind_memory(handle, start);
 }
@@ -131,7 +135,7 @@ int DRM(agp_bind_memory)(agp_memory *handle, off_t start)
  */
 int DRM(agp_unbind_memory)(agp_memory *handle)
 {
-	if (!handle || !drm_agp->unbind_memory)
+	if (!handle || !drm_agp || !drm_agp->unbind_memory)
 		return -EINVAL;
 	return drm_agp->unbind_memory(handle);
 }
