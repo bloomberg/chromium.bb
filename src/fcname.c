@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.7 2002/06/03 08:31:15 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.8 2002/06/19 20:08:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -383,7 +383,7 @@ FcNameParse (const FcChar8 *name)
 		for (;;)
 		{
 		    name = FcNameFindNext (name, ":,", save, &delim);
-		    if (save[0] && t)
+		    if (t)
 		    {
 			v = FcNameConvert (t->type, save, &m);
 			if (!FcPatternAdd (pat, t->object, v, FcTrue))
