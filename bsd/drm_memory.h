@@ -124,6 +124,7 @@ int DRM(unbind_agp)(agp_memory *handle)
 {
 	return DRM(agp_unbind_memory)(handle);
 }
+#endif /* __REALLY_HAVE_AGP */
 
 #ifdef __FreeBSD__
 int
@@ -181,5 +182,4 @@ DRM(mtrr_del)(unsigned long offset, size_t size, int flags)
 }
 #endif
 
-#endif /* __REALLY_HAVE_AGP */
 #endif /* DEBUG_MEMORY */
