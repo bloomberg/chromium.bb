@@ -135,7 +135,7 @@ int setDestroy(set_t *set)
 
 /*
  * GLX Hardware Device Driver common code
- * Copyright (C) 1999 Keith Whitwell
+ * Copyright (C) 1999 Wittawat Yamwong
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
