@@ -67,6 +67,11 @@ extern int xf86RemoveSIGIOHandler(int fd);
 # endif
 #endif
 
+#if defined(__alpha__) && defined(__linux__)
+extern unsigned long _bus_base(void);
+#define BUS_BASE _bus_base()
+#endif
+
 /* Not all systems have MAP_FAILED defined */
 #ifndef MAP_FAILED
 #define MAP_FAILED ((void *)-1)
