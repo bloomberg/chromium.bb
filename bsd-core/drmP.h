@@ -476,10 +476,6 @@ extern int	     DRM(lock_transfer)(drm_device_t *dev,
 extern int	     DRM(lock_free)(drm_device_t *dev,
 				    __volatile__ unsigned int *lock,
 				    unsigned int context);
-extern int	     DRM(flush_unblock)(drm_device_t *dev, int context,
-					drm_lock_flags_t flags);
-extern int	     DRM(flush_block_and_flush)(drm_device_t *dev, int context,
-						drm_lock_flags_t flags);
 
 				/* Buffer management support (drm_bufs.h) */
 extern int	     DRM(order)( unsigned long size );
@@ -490,15 +486,6 @@ extern int	     DRM(dma_setup)(drm_device_t *dev);
 extern void	     DRM(dma_takedown)(drm_device_t *dev);
 extern void	     DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf);
 extern void	     DRM(reclaim_buffers)(drm_device_t *dev, DRMFILE filp);
-#if __HAVE_OLD_DMA
-/* GH: This is a dirty hack for now...
- */
-extern void	     DRM(clear_next_buffer)(drm_device_t *dev);
-extern int	     DRM(select_queue)(drm_device_t *dev,
-				       void (*wrapper)(unsigned long));
-extern int	     DRM(dma_enqueue)(drm_device_t *dev, drm_dma_t *dma);
-extern int	     DRM(dma_get_buffers)(drm_device_t *dev, drm_dma_t *dma);
-#endif
 #if __HAVE_DMA_IRQ
 extern int           DRM(irq_install)( drm_device_t *dev, int irq );
 extern int           DRM(irq_uninstall)( drm_device_t *dev );
@@ -568,6 +555,7 @@ extern int		DRM(setunique)(DRM_IOCTL_ARGS);
 extern int		DRM(getmap)(DRM_IOCTL_ARGS);
 extern int		DRM(getclient)(DRM_IOCTL_ARGS);
 extern int		DRM(getstats)(DRM_IOCTL_ARGS);
+extern int		DRM(noop)(DRM_IOCTL_ARGS);
 
 /* Context IOCTL support (drm_context.h) */
 extern int		DRM(resctx)(DRM_IOCTL_ARGS);
@@ -587,11 +575,6 @@ extern int		DRM(rmdraw)(DRM_IOCTL_ARGS);
 /* Authentication IOCTL support (drm_auth.h) */
 extern int		DRM(getmagic)(DRM_IOCTL_ARGS);
 extern int		DRM(authmagic)(DRM_IOCTL_ARGS);
-
-/* Locking IOCTL support (drm_lock.h) */
-extern int		DRM(block)(DRM_IOCTL_ARGS);
-extern int		DRM(unblock)(DRM_IOCTL_ARGS);
-extern int		DRM(finish)(DRM_IOCTL_ARGS);
 
 /* Buffer management support (drm_bufs.h) */
 extern int		DRM(addmap)(DRM_IOCTL_ARGS);

@@ -68,12 +68,6 @@
 #ifndef __HAVE_DMA_SCHEDULE
 #define __HAVE_DMA_SCHEDULE		0
 #endif
-#ifndef __HAVE_DMA_FLUSH
-#define __HAVE_DMA_FLUSH		0
-#endif
-#ifndef __HAVE_DMA_READY
-#define __HAVE_DMA_READY		0
-#endif
 #ifndef __HAVE_DMA_QUIESCENT
 #define __HAVE_DMA_QUIESCENT		0
 #endif
@@ -150,8 +144,8 @@ static drm_ioctl_desc_t		  DRM(ioctls)[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_GET_STATS)]     = { DRM(getstats),    0, 0 },
 
 	[DRM_IOCTL_NR(DRM_IOCTL_SET_UNIQUE)]    = { DRM(setunique),   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]         = { DRM(block),       1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]       = { DRM(unblock),     1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]         = { DRM(noop),        1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]       = { DRM(noop),        1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)]    = { DRM(authmagic),   1, 1 },
 
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]       = { DRM(addmap),      1, 1 },
@@ -175,7 +169,7 @@ static drm_ioctl_desc_t		  DRM(ioctls)[] = {
 
 	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	        = { DRM(lock),        1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]        = { DRM(unlock),      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]        = { DRM(finish),      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]        = { DRM(noop),        1, 0 },
 
 #if __HAVE_DMA
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_BUFS)]      = { DRM(addbufs),     1, 1 },
@@ -514,12 +508,6 @@ static int DRM(setup)( drm_device_t *dev )
 
 	DRM_DEBUG( "\n" );
 
-	/* The kernel's context could be created here, but is now created
-	 * in drm_dma_enqueue.	This is more resource-efficient for
-	 * hardware that does not do DMA, but may mean that
-	 * drm_select_queue fails between the time the interrupt is
-	 * initialized and the time the queues are initialized.
-	 */
 	DRIVER_POSTSETUP();
 	return 0;
 }
@@ -1112,9 +1100,6 @@ int DRM(lock)( DRM_IOCTL_ARGS )
 	q = dev->queuelist[lock.context];
 #endif
 
-#if __HAVE_DMA_FLUSH
-	ret = DRM(flush_block_and_flush)( dev, lock.context, lock.flags );
-#endif
         if ( !ret ) {
                 for (;;) {
                         if ( !dev->lock.hw_lock ) {
@@ -1140,18 +1125,9 @@ int DRM(lock)( DRM_IOCTL_ARGS )
                 }
         }
 
-#if __HAVE_DMA_FLUSH
-	DRM(flush_unblock)( dev, lock.context, lock.flags ); /* cleanup phase */
-#endif
-
         if ( !ret ) {
 		/* FIXME: Add signal blocking here */
 
-#if __HAVE_DMA_READY
-                if ( lock.flags & _DRM_LOCK_READY ) {
-			DRIVER_DMA_READY();
-		}
-#endif
 #if __HAVE_DMA_QUIESCENT
                 if ( lock.flags & _DRM_LOCK_QUIESCENT ) {
 			DRIVER_DMA_QUIESCENT();

@@ -230,3 +230,9 @@ int DRM(getstats)( DRM_IOCTL_ARGS )
 
 	return 0;
 }
+
+int DRM(noop)(DRM_IOCTL_ARGS)
+{
+	DRM_DEBUG("\n");
+	return 0;
+}
