@@ -1,3 +1,16 @@
+2004-12-04  Daniel Glassey <danglassey@ntlworld.com>
+
+	reviewed by: Keith Packard  <keithp@keithp.com>
+
+	* doc/fontconfig-user.sgml:
+	Fix typo.
+	
+	* fontconfig/fontconfig.h:
+	* src/fcfreetype.c: (FcFreeTypeQuery), (addtag), (compareulong),
+	(GetScriptTags), (FcFontCapabilities):
+	* src/fcname.c:
+	Add detection for font capabilities (bug #105)
+
 2004-12-04  Keith Packard  <keithp@keithp.com>
 
 	* Makefile.am:

@@ -319,6 +319,7 @@ elements have a matching value, then the pattern matches the font.  This can
 be used to select fonts based on attributes of the font (scalable, bold,
 etc), which is a more reliable mechanism than using file extensions.
 Pattern elements include patelt elements.
+  </para></refsect2>
   <refsect2><title><sgmltag>patelt name="property"</></title><para>
 Patelt elements hold a single pattern element and list of values.  They must
 have a 'name' attribute which indicates the pattern element name.  Patelt

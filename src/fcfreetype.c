@@ -55,6 +55,9 @@
 #include FT_SFNT_NAMES_H
 #include FT_TRUETYPE_IDS_H
 #include FT_TYPE1_TABLES_H
+#include FT_INTERNAL_STREAM_H
+#include FT_INTERNAL_SFNT_H
+#include FT_INTERNAL_TRUETYPE_TYPES_H
 
 #if HAVE_FT_GET_BDF_PROPERTY
 #include FT_BDF_H
@@ -551,6 +554,9 @@ static const FcMacRomanFake fcMacRomanFake[] = {
  {  TT_MS_LANGID_ENGLISH_UNITED_STATES,	"ASCII" },
 };
 
+static FcChar8 *
+FcFontCapabilities(FT_Face face);
+
 #define NUM_FC_MAC_ROMAN_FAKE	(sizeof (fcMacRomanFake) / sizeof (fcMacRomanFake[0]))
 
 #if HAVE_ICONV && HAVE_ICONV_H
@@ -985,6 +991,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 #if 0
     FcChar8	    *family = 0;
 #endif
+    FcChar8	    *complex;
     const FcChar8   *foundry = 0;
     int		    spacing;
     TT_OS2	    *os2;
@@ -1365,6 +1372,15 @@ FcFreeTypeQuery (const FcChar8	*file,
 	case 8:	width = FC_WIDTH_EXTRAEXPANDED; break;
 	case 9:	width = FC_WIDTH_ULTRAEXPANDED; break;
 	}
+    }
+    if (os2 && (complex = FcFontCapabilities(face)))
+    {
+	if (!FcPatternAddString (pat, FC_CAPABILITY, complex))
+	{
+	    free (complex);
+	    goto bail1;
+	}
+	free (complex);
     }
 
     /*
@@ -2603,4 +2619,176 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
     int spacing;
 
     return FcFreeTypeCharSetAndSpacing (face, blanks, &spacing);
+}
+
+
+#define TTAG_GPOS  FT_MAKE_TAG( 'G', 'P', 'O', 'S' )
+#define TTAG_GSUB  FT_MAKE_TAG( 'G', 'S', 'U', 'B' )
+#define TTAG_SILF  FT_MAKE_TAG( 'S', 'i', 'l', 'f')
+#define TT_Err_Ok FT_Err_Ok
+#define TT_Err_Invalid_Face_Handle FT_Err_Invalid_Face_Handle
+#define TTO_Err_Empty_Script              0x1005
+#define TTO_Err_Invalid_SubTable          0x1001
+
+
+static void
+addtag(FcChar8 *complex, FT_ULong tag)
+{
+    FcChar8 tagstring[15];
+    sprintf (tagstring, "otlayout:%c%c%c%c ",
+       (unsigned char)(tag >> 24),
+       (unsigned char)((tag & 0xff0000) >> 16),
+       (unsigned char)((tag & 0xff00) >> 8),
+       (unsigned char)(tag & 0xff));
+    strncat(complex, tagstring, 14);
+}
+
+static int
+compareulong (const void *a, const void *b)
+{
+    const FT_ULong *ua = (const FT_ULong *) a;
+    const FT_ULong *ub = (const FT_ULong *) b;
+    return *ua - *ub;
+}
+
+
+static FT_Error
+GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *script_count)
+{
+    FT_ULong         cur_offset, new_offset, base_offset;
+    TT_Face          tt_face = (TT_Face)face;
+    FT_Stream  stream = face->stream;
+    FT_Error   error;
+    FT_UShort          n, p;
+    FT_Memory  memory = stream->memory;
+
+    if ( !stream )
+	return TT_Err_Invalid_Face_Handle;
+
+    if (( error = tt_face->goto_table( tt_face, tabletag, stream, 0 ) ))
+	return error;
+
+    base_offset = FT_STREAM_POS();
+
+    /* skip version */
+
+    if ( FT_STREAM_SEEK( base_offset + 4L ) || FT_FRAME_ENTER( 2L ) )
+	return error;
+
+    new_offset = FT_GET_USHORT() + base_offset;
+
+    FT_FRAME_EXIT();
+
+    cur_offset = FT_STREAM_POS();
+
+    if ( FT_STREAM_SEEK( new_offset ) != TT_Err_Ok )
+	return error;
+
+    base_offset = FT_STREAM_POS();
+
+    if ( FT_FRAME_ENTER( 2L ) )
+	return error;
+
+    *script_count = FT_GET_USHORT();
+
+    FT_FRAME_EXIT();
+
+    if ( FT_SET_ERROR (FT_MEM_ALLOC_ARRAY( *stags, *script_count, FT_ULong )) )
+	return error;
+
+    p = 0;
+    for ( n = 0; n < *script_count; n++ )
+    {
+	if ( FT_FRAME_ENTER( 6L ) )
+	    goto Fail;
+
+	(*stags)[p] = FT_GET_ULONG();
+	new_offset = FT_GET_USHORT() + base_offset;
+
+	FT_FRAME_EXIT();
+
+	cur_offset = FT_STREAM_POS();
+
+	if ( FT_STREAM_SEEK( new_offset ) )
+	    goto Fail;
+
+	if ( error == TT_Err_Ok )
+	    p++;
+	else if ( error != TTO_Err_Empty_Script )
+	    goto Fail;
+
+	(void)FT_STREAM_SEEK( cur_offset );
+    }
+
+    if (!p)
+    {
+	error = TTO_Err_Invalid_SubTable;
+	goto Fail;
+    }
+
+    // sort the tag list before returning it
+    qsort(*stags, *script_count, sizeof(FT_ULong), compareulong);
+
+    return TT_Err_Ok;
+
+Fail:
+    FT_FREE( *stags );
+    return error;
+}
+
+static FcChar8 *
+FcFontCapabilities(FT_Face face)
+{
+    FcBool issilgraphitefont = 0;
+    FT_Error err;
+    FT_ULong len = 0;
+    FT_ULong *gsubtags=NULL, *gpostags=NULL;
+    FT_UShort gsub_count=0, gpos_count=0, maxsize;
+    FT_Memory  memory = face->stream->memory;
+    FcChar8 *complex = NULL;
+    int indx1 = 0, indx2 = 0;
+
+    err = FT_Load_Sfnt_Table(face, TTAG_SILF, 0, 0, &len);
+    issilgraphitefont = ( err == FT_Err_Ok);
+
+    err = GetScriptTags(face, TTAG_GPOS, &gpostags, &gpos_count);
+    err = GetScriptTags(face, TTAG_GSUB, &gsubtags, &gsub_count);
+    if (!issilgraphitefont && !gsub_count && !gpos_count)
+    {
+    	goto bail;
+    }
+
+    maxsize = ((gpos_count + gsub_count) * 15) + (issilgraphitefont ? 13 : 0);
+    complex = malloc (sizeof (FcChar8) * maxsize);
+    if (issilgraphitefont)
+    {
+        strcpy(complex, "ttable:Silf ");
+    }
+    else
+    {
+        strcpy(complex, "");
+    }
+
+    while ((indx1 < gsub_count) || (indx2 < gpos_count)) {
+	if (indx1 == gsub_count) {
+	    addtag(complex, gpostags[indx2]);
+	    indx2++;
+	} else if ((indx2 == gpos_count) || (gsubtags[indx1] < gpostags[indx2])) {
+	    addtag(complex, gsubtags[indx1]);
+	    indx1++;
+	} else if (gsubtags[indx1] == gpostags[indx2]) {
+	    addtag(complex, gsubtags[indx1]);
+	    indx1++;
+	    indx2++;
+	} else {
+	    addtag(complex, gpostags[indx2]);
+	    indx2++;
+	}
+    }
+    if (FcDebug () & FC_DBG_SCANV)
+	printf("complex features in this font: %s\n", complex);
+bail:
+    FT_FREE(gsubtags);
+    FT_FREE(gpostags);
+    return complex;
 }
