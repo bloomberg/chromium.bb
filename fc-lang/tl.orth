@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/tl.orth,v 1.1 2002/07/07 19:18:51 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -25,5 +25,10 @@
 #
 # Taken from the Unicode coverage of this language
 #
-1700-170c
-170e-1714
+# Independent vowels
+1700-1702
+# Consonants
+1703-170c
+170e-1711
+# Dependent vowel signs
+1712-1713

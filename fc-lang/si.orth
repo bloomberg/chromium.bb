@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/si.orth,v 1.1 2002/07/07 19:18:51 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -25,14 +25,16 @@
 #
 # Taken from the Unicode coverage of this language
 #
-0d82-0d83
+# Independent vowels
 0d85-0d96
+# Consonants
 0d9a-0db1
 0db3-0dbb
 0dbd
 0dc0-0dc6
-0dca
+# Dependent vowel signs
 0dcf-0dd4
 0dd6
 0dd8-0ddf
+# Additional dependent vowel signs
 0df2-0df4

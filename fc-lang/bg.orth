@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/bg.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,14 +22,15 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Bulgarian (BG)
-0400
-04ad
+0400		# CYRILLIC CAPITAL IE WITH GRAVE
+040d		# CYRILLIC CAPITAL I WITH GRAVE
 0410-042a
 042c
-042e-044a
+042e-042f
+0430-044a
 044c
 044e-044f
-0450
-045d
+0450		# CYRILLIC SMALL IE WITH GRAVE
+045d		# CYRILLIC SMALL I WITH GRAVE
 0462-0463
 046a-046b

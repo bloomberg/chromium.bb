@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/mn.orth,v 1.1 2002/07/07 19:18:51 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -25,7 +25,13 @@
 #
 # Taken from the Unicode coverage of this language
 #
-1800-180a
-1810-1819
-1820-1877
+# Basic letters
+1820-1842
+# Todo letters
+1843-185c
+# Sibe letters
+185d-1872
+# Manchu letters
+1873-1877
+# Extensions for Sanskrit and Tibetan
 1880-18a9

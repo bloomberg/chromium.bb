@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/mg.orth,v 1.1 2002/07/12 19:19:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -29,7 +29,7 @@
 0061-007a
 00c1
 00e1
-e010
-e011
+#e010	# LATIN CAPITAL LETTER N WITH DIAERESIS
+#e011	# LATIN SMALL LETTER N WITH DIAERESIS
 00d4
 00f4

@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/bo.orth,v 1.1 2002/07/07 19:18:51 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -25,6 +25,15 @@
 #
 # Taken from the Unicode coverage of this language
 #
-0f00-0f47
-0f49-0f6a
-0f71-0f7f
+0f40-0f47
+0f49-0f69
+0f71-0f76
+0f78
+0f7a-0f7d
+0f80-0f81
+0f90-0f97
+0f99-0fb9
+# Fixed-form subjoined consonants
+# These characters are used only for transliteration and transcription.
+#0fba-0fbc
+

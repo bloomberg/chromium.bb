@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/bi.orth,v 1.1 2002/07/12 19:19:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -31,9 +31,9 @@
 00e9
 00cf
 00ef
-e000
-e001
-e002
-e003
+#e000	# LATIN CAPITAL LETTER M WITH MACRON (no UCS code)
+#e001	# LATIN SMALL LETTER M WITH MACRON (no UCS code)
+#e002	# LATIN CAPITAL LETTER P WITH MACRON (no UCS code)
+#e003	# LATIN SMALL LETTER P WITH MACRON (no UCS code)
 00dc
 00fc

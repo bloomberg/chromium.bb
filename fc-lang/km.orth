@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/km.orth,v 1.1 2002/07/07 19:18:51 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -25,5 +25,5 @@
 #
 # Taken from the Unicode coverage of this language
 #
-1780-17dc
-17e0-17e9
+1780-17c5
+

@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/ro.orth,v 1.2 2002/07/06 23:59:19 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -29,6 +29,6 @@
 00e2
 00ee
 0102-0103
-0218-021b
+0218-021b	# comma-below forms (preferred over cedilla)
 #2019-201a	# single quotes
 #201d-201e	# double quotes

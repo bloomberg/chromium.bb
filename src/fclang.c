@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-lang/fclang.tmpl.c,v 1.1 2002/07/06 23:21:36 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fclang.c,v 1.3 2002/07/08 07:31:53 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -60,7 +60,36 @@ FcFreeTypeSetLang (FcPattern	    *pattern,
 	}
 	missing = FcCharSetSubtractCount (&fcLangCharSets[i].charset, charset);
         if (FcDebug() & FC_DBG_SCANV)
-	    printf ("%s(%d) ", fcLangCharSets[i].lang, missing);
+	{
+	    if (missing && missing < 10)
+	    {
+		FcCharSet   *missed = FcCharSetSubtract (&fcLangCharSets[i].charset, 
+							 charset);
+		FcChar32    ucs4;
+		FcChar32    map[FC_CHARSET_MAP_SIZE];
+		FcChar32    next;
+
+		printf ("\n%s(%d) ", fcLangCharSets[i].lang, missing);
+		printf ("{");
+		for (ucs4 = FcCharSetFirstPage (missed, map, &next);
+		     ucs4 != FC_CHARSET_DONE;
+		     ucs4 = FcCharSetNextPage (missed, map, &next))
+		{
+		    int	    i, j;
+		    for (i = 0; i < FC_CHARSET_MAP_SIZE; i++)
+			if (map[i])
+			{
+			    for (j = 0; j < 32; j++)
+				if (map[i] & (1 << j))
+				    printf (" %04x", ucs4 + i * 32 + j);
+			}
+		}
+		printf (" }\n\t");
+		FcCharSetDestroy (missed);
+	    }
+	    else
+		printf ("%s(%d) ", fcLangCharSets[i].lang, missing);
+	}
 	if (!missing)
 	{
 	    if (!FcPatternAddString (pattern, FC_LANG, fcLangCharSets[i].lang))

@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/hy.orth,v 1.2 2002/07/06 23:59:15 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -23,6 +23,4 @@
 #
 # Armenian (HY)
 0531-0556
-055a-055f
-0561-0586
-0589-058a
+0561-0587
