@@ -464,21 +464,26 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 		return -ENODEV;
 
 	dev = &(DRM(device)[DRM(numdevs)]);
-	if (DRM(fb_loaded)==0) {
-		pci_set_drvdata(pdev, dev);
-		pci_request_regions(pdev, DRIVER_NAME);
-	}
-
 	memset( (void *)dev, 0, sizeof(*dev) );
 	dev->count_lock = SPIN_LOCK_UNLOCKED;
 	init_timer( &dev->timer );
 	sema_init( &dev->struct_sem, 1 );
 	sema_init( &dev->ctxlist_sem, 1 );
 
-	dev->name   = DRIVER_NAME;
+	dev->maplist = DRM(alloc)(sizeof(*dev->maplist), DRM_MEM_MAPS);
+	if(dev->maplist == NULL) 
+		return -ENOMEM;
+	memset(dev->maplist, 0, sizeof(*dev->maplist));
+	INIT_LIST_HEAD(&dev->maplist->head);
 
+	if (DRM(fb_loaded)==0) {
+		pci_set_drvdata(pdev, dev);
+		pci_request_regions(pdev, DRIVER_NAME);
+		pci_enable_device(pdev);
+	}
+
+	dev->name   = DRIVER_NAME;
 	dev->pdev   = pdev;
-	pci_enable_device(pdev);
 #ifdef __alpha__
 	dev->hose   = pdev->sysdata;
 	dev->pci_domain = dev->hose->bus->number;
@@ -490,11 +495,6 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	dev->pci_func = PCI_FUNC(pdev->devfn);
 	dev->irq = pdev->irq;
 
-	dev->maplist = DRM(alloc)(sizeof(*dev->maplist), DRM_MEM_MAPS);
-	if(dev->maplist == NULL) return -ENOMEM;
-	memset(dev->maplist, 0, sizeof(*dev->maplist));
-	INIT_LIST_HEAD(&dev->maplist->head);
-
 	/* dev_priv_size can be changed by a driver in driver_register_fns */
 	dev->dev_priv_size = sizeof(u32);
 	
@@ -504,14 +504,14 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	
 	if (dev->fn_tbl.preinit)
 		if ((retcode = dev->fn_tbl.preinit(dev, ent->driver_data)))
-			goto error_out_unreg;
+			goto error_out;
 
 	if (drm_core_has_AGP(dev)) {
 		dev->agp = DRM(agp_init)();
 		if (drm_core_check_feature(dev, DRIVER_REQUIRE_AGP) && (dev->agp == NULL)) {
 			DRM_ERROR( "Cannot initialize the agpgart module.\n" );
 			retcode = -EINVAL;
-			goto error_out_unreg;
+			goto error_out;
 		}
 		
 
@@ -527,7 +527,7 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	retcode = DRM(ctxbitmap_init)( dev );
 	if( retcode ) {
 	  DRM_ERROR( "Cannot allocate memory for context bitmap.\n" );
-	  goto error_out_unreg;
+	  goto error_out;
 	}
 
 	if ((dev->minor = DRM(stub_register)(DRIVER_NAME, &DRM(fops),dev)) < 0)
@@ -561,6 +561,11 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	DRM(stub_unregister)(dev->minor);
 	DRM(takedown)(dev);
  error_out:
+	if (DRM(fb_loaded)==0) {
+		pci_set_drvdata(pdev, NULL);
+		pci_release_regions(pdev);
+		pci_disable_device(pdev);
+	}
 	return retcode;
 }
 
