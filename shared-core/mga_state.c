@@ -61,7 +61,8 @@ static void mga_emit_clip_rect(drm_mga_private_t * dev_priv,
 	}
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
 		  MGA_CXBNDRY, (box->x2 << 16) | box->x1,
-		  MGA_YTOP, box->y1 * pitch, MGA_YBOT, box->y2 * pitch);
+		  MGA_YTOP, box->y1 * pitch,
+		  MGA_YBOT, box->y2 * pitch);
 
 	ADVANCE_DMA();
 }
@@ -76,15 +77,18 @@ static __inline__ void mga_g200_emit_context(drm_mga_private_t * dev_priv)
 
 	DMA_BLOCK(MGA_DSTORG, ctx->dstorg,
 		  MGA_MACCESS, ctx->maccess,
-		  MGA_PLNWT, ctx->plnwt, MGA_DWGCTL, ctx->dwgctl);
+		  MGA_PLNWT, ctx->plnwt,
+		  MGA_DWGCTL, ctx->dwgctl);
 
 	DMA_BLOCK(MGA_ALPHACTRL, ctx->alphactrl,
 		  MGA_FOGCOL, ctx->fogcolor,
-		  MGA_WFLAG, ctx->wflag, MGA_ZORG, dev_priv->depth_offset);
+		  MGA_WFLAG, ctx->wflag,
+		  MGA_ZORG, dev_priv->depth_offset);
 
 	DMA_BLOCK(MGA_FCOL, ctx->fcol,
 		  MGA_DMAPAD, 0x00000000,
-		  MGA_DMAPAD, 0x00000000, MGA_DMAPAD, 0x00000000);
+		  MGA_DMAPAD, 0x00000000,
+		  MGA_DMAPAD, 0x00000000);
 
 	ADVANCE_DMA();
 }
@@ -99,19 +103,23 @@ static __inline__ void mga_g400_emit_context(drm_mga_private_t * dev_priv)
 
 	DMA_BLOCK(MGA_DSTORG, ctx->dstorg,
 		  MGA_MACCESS, ctx->maccess,
-		  MGA_PLNWT, ctx->plnwt, MGA_DWGCTL, ctx->dwgctl);
+		  MGA_PLNWT, ctx->plnwt,
+		  MGA_DWGCTL, ctx->dwgctl);
 
 	DMA_BLOCK(MGA_ALPHACTRL, ctx->alphactrl,
 		  MGA_FOGCOL, ctx->fogcolor,
-		  MGA_WFLAG, ctx->wflag, MGA_ZORG, dev_priv->depth_offset);
+		  MGA_WFLAG, ctx->wflag,
+		  MGA_ZORG, dev_priv->depth_offset);
 
 	DMA_BLOCK(MGA_WFLAG1, ctx->wflag,
 		  MGA_TDUALSTAGE0, ctx->tdualstage0,
-		  MGA_TDUALSTAGE1, ctx->tdualstage1, MGA_FCOL, ctx->fcol);
+		  MGA_TDUALSTAGE1, ctx->tdualstage1,
+		  MGA_FCOL, ctx->fcol);
 
 	DMA_BLOCK(MGA_STENCIL, ctx->stencil,
 		  MGA_STENCILCTL, ctx->stencilctl,
-		  MGA_DMAPAD, 0x00000000, MGA_DMAPAD, 0x00000000);
+		  MGA_DMAPAD, 0x00000000,
+		  MGA_DMAPAD, 0x00000000);
 
 	ADVANCE_DMA();
 }
@@ -131,15 +139,18 @@ static __inline__ void mga_g200_emit_tex0(drm_mga_private_t * dev_priv)
 
 	DMA_BLOCK(MGA_TEXORG, tex->texorg,
 		  MGA_TEXORG1, tex->texorg1,
-		  MGA_TEXORG2, tex->texorg2, MGA_TEXORG3, tex->texorg3);
+		  MGA_TEXORG2, tex->texorg2,
+		  MGA_TEXORG3, tex->texorg3);
 
 	DMA_BLOCK(MGA_TEXORG4, tex->texorg4,
 		  MGA_TEXWIDTH, tex->texwidth,
-		  MGA_TEXHEIGHT, tex->texheight, MGA_WR24, tex->texwidth);
+		  MGA_TEXHEIGHT, tex->texheight,
+		  MGA_WR24, tex->texwidth);
 
 	DMA_BLOCK(MGA_WR34, tex->texheight,
 		  MGA_TEXTRANS, 0x0000ffff,
-		  MGA_TEXTRANSHIGH, 0x0000ffff, MGA_DMAPAD, 0x00000000);
+		  MGA_TEXTRANSHIGH, 0x0000ffff,
+		  MGA_DMAPAD, 0x00000000);
 
 	ADVANCE_DMA();
 }
@@ -162,15 +173,18 @@ static __inline__ void mga_g400_emit_tex0(drm_mga_private_t * dev_priv)
 
 	DMA_BLOCK(MGA_TEXORG, tex->texorg,
 		  MGA_TEXORG1, tex->texorg1,
-		  MGA_TEXORG2, tex->texorg2, MGA_TEXORG3, tex->texorg3);
+		  MGA_TEXORG2, tex->texorg2,
+		  MGA_TEXORG3, tex->texorg3);
 
 	DMA_BLOCK(MGA_TEXORG4, tex->texorg4,
 		  MGA_TEXWIDTH, tex->texwidth,
-		  MGA_TEXHEIGHT, tex->texheight, MGA_WR49, 0x00000000);
+		  MGA_TEXHEIGHT, tex->texheight,
+		  MGA_WR49, 0x00000000);
 
 	DMA_BLOCK(MGA_WR57, 0x00000000,
 		  MGA_WR53, 0x00000000,
-		  MGA_WR61, 0x00000000, MGA_WR52, MGA_G400_WR_MAGIC);
+		  MGA_WR61, 0x00000000,
+		  MGA_WR52, MGA_G400_WR_MAGIC);
 
 	DMA_BLOCK(MGA_WR60, MGA_G400_WR_MAGIC,
 		  MGA_WR54, tex->texwidth | MGA_G400_WR_MAGIC,
@@ -179,7 +193,8 @@ static __inline__ void mga_g400_emit_tex0(drm_mga_private_t * dev_priv)
 
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
 		  MGA_DMAPAD, 0x00000000,
-		  MGA_TEXTRANS, 0x0000ffff, MGA_TEXTRANSHIGH, 0x0000ffff);
+		  MGA_TEXTRANS, 0x0000ffff,
+		  MGA_TEXTRANSHIGH, 0x0000ffff);
 
 	ADVANCE_DMA();
 }
@@ -204,11 +219,13 @@ static __inline__ void mga_g400_emit_tex1(drm_mga_private_t * dev_priv)
 
 	DMA_BLOCK(MGA_TEXORG, tex->texorg,
 		  MGA_TEXORG1, tex->texorg1,
-		  MGA_TEXORG2, tex->texorg2, MGA_TEXORG3, tex->texorg3);
+		  MGA_TEXORG2, tex->texorg2,
+		  MGA_TEXORG3, tex->texorg3);
 
 	DMA_BLOCK(MGA_TEXORG4, tex->texorg4,
 		  MGA_TEXWIDTH, tex->texwidth,
-		  MGA_TEXHEIGHT, tex->texheight, MGA_WR49, 0x00000000);
+		  MGA_TEXHEIGHT, tex->texheight,
+		  MGA_WR49, 0x00000000);
 
 	DMA_BLOCK(MGA_WR57, 0x00000000,
 		  MGA_WR53, 0x00000000,
@@ -233,11 +250,13 @@ static __inline__ void mga_g200_emit_pipe(drm_mga_private_t * dev_priv)
 
 	DMA_BLOCK(MGA_WIADDR, MGA_WMODE_SUSPEND,
 		  MGA_WVRTXSZ, 0x00000007,
-		  MGA_WFLAG, 0x00000000, MGA_WR24, 0x00000000);
+		  MGA_WFLAG, 0x00000000,
+		  MGA_WR24, 0x00000000);
 
 	DMA_BLOCK(MGA_WR25, 0x00000100,
 		  MGA_WR34, 0x00000000,
-		  MGA_WR42, 0x0000ffff, MGA_WR60, 0x0000ffff);
+		  MGA_WR42, 0x0000ffff,
+		  MGA_WR60, 0x0000ffff);
 
 	/* Padding required to to hardware bug.
 	 */
@@ -262,12 +281,14 @@ static __inline__ void mga_g400_emit_pipe(drm_mga_private_t * dev_priv)
 
 	DMA_BLOCK(MGA_WIADDR2, MGA_WMODE_SUSPEND,
 		  MGA_DMAPAD, 0x00000000,
-		  MGA_DMAPAD, 0x00000000, MGA_DMAPAD, 0x00000000);
+		  MGA_DMAPAD, 0x00000000,
+		  MGA_DMAPAD, 0x00000000);
 
 	if (pipe & MGA_T2) {
 		DMA_BLOCK(MGA_WVRTXSZ, 0x00001e09,
 			  MGA_DMAPAD, 0x00000000,
-			  MGA_DMAPAD, 0x00000000, MGA_DMAPAD, 0x00000000);
+			  MGA_DMAPAD, 0x00000000,
+			  MGA_DMAPAD, 0x00000000);
 
 		DMA_BLOCK(MGA_WACCEPTSEQ, 0x00000000,
 			  MGA_WACCEPTSEQ, 0x00000000,
@@ -295,7 +316,8 @@ static __inline__ void mga_g400_emit_pipe(drm_mga_private_t * dev_priv)
 
 		DMA_BLOCK(MGA_WVRTXSZ, 0x00001807,
 			  MGA_DMAPAD, 0x00000000,
-			  MGA_DMAPAD, 0x00000000, MGA_DMAPAD, 0x00000000);
+			  MGA_DMAPAD, 0x00000000,
+			  MGA_DMAPAD, 0x00000000);
 
 		DMA_BLOCK(MGA_WACCEPTSEQ, 0x00000000,
 			  MGA_WACCEPTSEQ, 0x00000000,
@@ -305,7 +327,8 @@ static __inline__ void mga_g400_emit_pipe(drm_mga_private_t * dev_priv)
 
 	DMA_BLOCK(MGA_WFLAG, 0x00000000,
 		  MGA_WFLAG1, 0x00000000,
-		  MGA_WR56, MGA_G400_WR56_MAGIC, MGA_DMAPAD, 0x00000000);
+		  MGA_WR56, MGA_G400_WR56_MAGIC,
+		  MGA_DMAPAD, 0x00000000);
 
 	DMA_BLOCK(MGA_WR49, 0x00000000,	/* tex0              */
 		  MGA_WR57, 0x00000000,	/* tex0              */
@@ -495,7 +518,8 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, drm_mga_clear_t * clear)
 
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
 		  MGA_DMAPAD, 0x00000000,
-		  MGA_DWGSYNC, 0x00007100, MGA_DWGSYNC, 0x00007000);
+		  MGA_DWGSYNC, 0x00007100,
+		  MGA_DWGSYNC, 0x00007000);
 
 	ADVANCE_DMA();
 
@@ -561,7 +585,8 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, drm_mga_clear_t * clear)
 	/* Force reset of DWGCTL */
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
 		  MGA_DMAPAD, 0x00000000,
-		  MGA_PLNWT, ctx->plnwt, MGA_DWGCTL, ctx->dwgctl);
+		  MGA_PLNWT, ctx->plnwt,
+		  MGA_DWGCTL, ctx->dwgctl);
 
 	ADVANCE_DMA();
 
@@ -586,7 +611,8 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
 		  MGA_DMAPAD, 0x00000000,
-		  MGA_DWGSYNC, 0x00007100, MGA_DWGSYNC, 0x00007000);
+		  MGA_DWGSYNC, 0x00007100,
+		  MGA_DWGSYNC, 0x00007000);
 
 	DMA_BLOCK(MGA_DSTORG, dev_priv->front_offset,
 		  MGA_MACCESS, dev_priv->maccess,
@@ -595,7 +621,8 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
 		  MGA_DMAPAD, 0x00000000,
-		  MGA_PLNWT, 0xffffffff, MGA_DWGCTL, MGA_DWGCTL_COPY);
+		  MGA_PLNWT, 0xffffffff,
+		  MGA_DWGCTL, MGA_DWGCTL_COPY);
 
 	for (i = 0; i < nbox; i++) {
 		drm_clip_rect_t *box = &pbox[i];
@@ -613,7 +640,8 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
 		  MGA_PLNWT, ctx->plnwt,
-		  MGA_SRCORG, dev_priv->front_offset, MGA_DWGCTL, ctx->dwgctl);
+		  MGA_SRCORG, dev_priv->front_offset,
+		  MGA_DWGCTL, ctx->dwgctl);
 
 	ADVANCE_DMA();
 
@@ -735,22 +763,28 @@ static void mga_dma_dispatch_iload(drm_device_t * dev, drm_buf_t * buf,
 
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
 		  MGA_DMAPAD, 0x00000000,
-		  MGA_DWGSYNC, 0x00007100, MGA_DWGSYNC, 0x00007000);
+		  MGA_DWGSYNC, 0x00007100,
+		  MGA_DWGSYNC, 0x00007000);
 
 	DMA_BLOCK(MGA_DSTORG, dstorg,
-		  MGA_MACCESS, 0x00000000, MGA_SRCORG, srcorg, MGA_AR5, 64);
+		  MGA_MACCESS, 0x00000000,
+		  MGA_SRCORG, srcorg,
+		  MGA_AR5, 64);
 
 	DMA_BLOCK(MGA_PITCH, 64,
 		  MGA_PLNWT, 0xffffffff,
-		  MGA_DMAPAD, 0x00000000, MGA_DWGCTL, MGA_DWGCTL_COPY);
+		  MGA_DMAPAD, 0x00000000,
+		  MGA_DWGCTL, MGA_DWGCTL_COPY);
 
 	DMA_BLOCK(MGA_AR0, 63,
 		  MGA_AR3, 0,
-		  MGA_FXBNDRY, (63 << 16) | 0, MGA_YDSTLEN + MGA_EXEC, y2);
+		  MGA_FXBNDRY, (63 << 16) | 0,
+		  MGA_YDSTLEN + MGA_EXEC, y2);
 
 	DMA_BLOCK(MGA_PLNWT, ctx->plnwt,
 		  MGA_SRCORG, dev_priv->front_offset,
-		  MGA_PITCH, dev_priv->front_pitch, MGA_DWGSYNC, 0x00007000);
+		  MGA_PITCH, dev_priv->front_pitch,
+		  MGA_DWGSYNC, 0x00007000);
 
 	ADVANCE_DMA();
 
@@ -780,11 +814,13 @@ static void mga_dma_dispatch_blit(drm_device_t * dev, drm_mga_blit_t * blit)
 
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
 		  MGA_DMAPAD, 0x00000000,
-		  MGA_DWGSYNC, 0x00007100, MGA_DWGSYNC, 0x00007000);
+		  MGA_DWGSYNC, 0x00007100,
+		  MGA_DWGSYNC, 0x00007000);
 
 	DMA_BLOCK(MGA_DWGCTL, MGA_DWGCTL_COPY,
 		  MGA_PLNWT, blit->planemask,
-		  MGA_SRCORG, blit->srcorg, MGA_DSTORG, blit->dstorg);
+		  MGA_SRCORG, blit->srcorg,
+		  MGA_DSTORG, blit->dstorg);
 
 	DMA_BLOCK(MGA_SGN, scandir,
 		  MGA_MACCESS, dev_priv->maccess,
@@ -818,7 +854,8 @@ static void mga_dma_dispatch_blit(drm_device_t * dev, drm_mga_blit_t * blit)
 	/* Force reset of DWGCTL */
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
 		  MGA_PLNWT, ctx->plnwt,
-		  MGA_PITCH, dev_priv->front_pitch, MGA_DWGCTL, ctx->dwgctl);
+		  MGA_PITCH, dev_priv->front_pitch,
+		  MGA_DWGCTL, ctx->dwgctl);
 
 	ADVANCE_DMA();
 }
