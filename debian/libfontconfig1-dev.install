@@ -1,0 +1,7 @@
+debian/tmp/usr/include/fontconfig/*
+debian/tmp/usr/lib/pkgconfig/fontconfig.pc
+debian/tmp/usr/lib/libfontconfig*.a
+debian/tmp/usr/lib/libfontconfig*.so
+debian/tmp/usr/share/man/man3
+debian/tmp/usr/share/doc/fontconfig/fontconfig-devel* usr/share/doc/libfontconfig1-dev/
+

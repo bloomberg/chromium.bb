@@ -1,0 +1,51 @@
+Template: fontconfig/hinting_type
+Type: select
+_Choices: Native, Autohinter, None
+Default: Native
+_Description: With what method should fonts be hinted?
+
+ The FreeType font library can adjust glyph outlines to accomodate the pixel
+ grid for improved legibility.  This process is called "hinting". 
+ FreeType can either use the hints built-in to each font or it can use a
+ format-indepedent Autohinter.  For most font formats, using the
+ format-specific hints generates better results.  However, many
+ freely available TrueType format fonts don't include any hints at all.
+ When loading such a font, unless you specifically ask to use the
+ Autohinter, these fonts will end up unhinted, which will make them appear
+ fuzzy on the screen.
+ .
+ If the TrueType fonts you use most include hints, then the Native hinter
+ gives better results.  However, if the fonts you use most do not include
+ such hints, then the Autohinter will work better.  Yes, FreeType should do
+ this automatically.
+ .
+ You can also select None to disable all hinting and make your screen look
+ like Mac OS X. 
+ .
+
+Template: fontconfig/subpixel_rendering
+Type: select
+_Choices: Automatic, Enable, Disable
+Default: Automatic
+_Description: Should font be rendered using sub-pixel elements?
+ With known sub-pixel geometry, LCD screens can synthesize higher resolution
+ in one dimension.  Taking advantage of this when rendering glyphs sharpens
+ the appearance of text on the screen.  This can cause color artifacts,
+ especially when rendering unhinted or autohinted fonts.  
+ .  
+ This option selects when sub-pixel rendering should be used.  Automatic
+ enables sub-pixel rendering whenever the X server detects an LCD monitor,
+ which it can generally do when the monitor is built into the computer or
+ connected with a digital (DVI) cable.  Enable forces the system to use
+ sub-pixel rendering while Disable forces the system to not use sub-pixel
+ rendering.
+
+Template: fontconfig/enable_bitmaps
+Type: boolean
+Default: false
+_Description: Enable bitmapped fonts by default?
+ By default, only outline fonts are used by applications which support
+ fontconfig.  Outline fonts are fonts which scale well to various sizes. 
+ In contrast, bitmapped fonts are often lower quality. Enabling this option
+ will affect the systemwide default; this and many other fontconfig options
+ may be enabled or disabled on a per-user basis.

@@ -1,3 +1,56 @@
+2005-03-02  Keith Packard  <keithp@keithp.com>
+
+	* .cvsignore:
+	* conf.d/.cvsignore:
+	* doc/.cvsignore:
+	Ignore more build detritus
+
+	* Makefile.am:
+	Add debian package construction stuff.
+	
+	* config/config.guess:
+	* config/config.sub:
+	Update to newer versions of these tools
+	
+	* doc/Makefile.am:
+	Get library manuals to build again (we love automake).
+	
+	* debian/README.Debian:
+	* debian/autohint.conf:
+	* debian/changelog:
+	* debian/compat:
+	* debian/control:
+	* debian/copyright:
+	* debian/fontconfig-udeb.install:
+	* debian/fontconfig.config:
+	* debian/fontconfig.defoma:
+	* debian/fontconfig.dirs:
+	* debian/fontconfig.install:
+	* debian/fontconfig.postinst:
+	* debian/fontconfig.postrm:
+	* debian/fontconfig.templates:
+	* debian/libfontconfig1-dev.install:
+	* debian/libfontconfig1.install:
+	* debian/local.conf.md5sum:
+	* debian/no-sub-pixel.conf:
+	* debian/po/POTFILES.in:
+	* debian/po/cs.po:
+	* debian/po/da.po:
+	* debian/po/de.po:
+	* debian/po/es.po:
+	* debian/po/fr.po:
+	* debian/po/ja.po:
+	* debian/po/nl.po:
+	* debian/po/pt.po:
+	* debian/po/pt_BR.po:
+	* debian/po/templates.pot:
+	* debian/po/tr.po:
+	* debian/po/zh_CN.po:
+	* debian/rules:
+	* debian/unhinted.conf:
+	Update debian build system to switch maintainers and
+	deal with 2.3 functionality
+
 2005-03-01  Keith Packard  <keithp@keithp.com>
 
 	* README:

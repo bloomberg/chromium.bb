@@ -1,0 +1,120 @@
+#
+#    Translators, if you are not familiar with the PO format, gettext
+#    documentation is worth reading, especially sections dedicated to
+#    this format, e.g. by running:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+#    Some information specific to po-debconf are available at
+#            /usr/share/doc/po-debconf/README-trans
+#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+#    Developers do not need to manually edit POT or PO files.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-03-02 13:41-0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: select
+#. Choices
+#: ../fontconfig.templates:3
+msgid "Native, Autohinter, None"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../fontconfig.templates:5
+msgid "With what method should fonts be hinted?"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../fontconfig.templates:5
+msgid ""
+"The FreeType font library can adjust glyph outlines to accomodate the pixel "
+"grid for improved legibility.  This process is called \"hinting\".  FreeType "
+"can either use the hints built-in to each font or it can use a format-"
+"indepedent Autohinter.  For most font formats, using the format-specific "
+"hints generates better results.  However, many freely available TrueType "
+"format fonts don't include any hints at all. When loading such a font, "
+"unless you specifically ask to use the Autohinter, these fonts will end up "
+"unhinted, which will make them appear fuzzy on the screen."
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../fontconfig.templates:5
+msgid ""
+"If the TrueType fonts you use most include hints, then the Native hinter "
+"gives better results.  However, if the fonts you use most do not include "
+"such hints, then the Autohinter will work better.  Yes, FreeType should do "
+"this automatically."
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../fontconfig.templates:5
+msgid ""
+"You can also select None to disable all hinting and make your screen look "
+"like Mac OS X."
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../fontconfig.templates:28
+msgid "Automatic, Enable, Disable"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../fontconfig.templates:30
+msgid "Should font be rendered using sub-pixel elements?"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../fontconfig.templates:30
+msgid ""
+"With known sub-pixel geometry, LCD screens can synthesize higher resolution "
+"in one dimension.  Taking advantage of this when rendering glyphs sharpens "
+"the appearance of text on the screen.  This can cause color artifacts, "
+"especially when rendering unhinted or autohinted fonts."
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../fontconfig.templates:30
+msgid ""
+"This option selects when sub-pixel rendering should be used.  Automatic "
+"enables sub-pixel rendering whenever the X server detects an LCD monitor, "
+"which it can generally do when the monitor is built into the computer or "
+"connected with a digital (DVI) cable.  Enable forces the system to use sub-"
+"pixel rendering while Disable forces the system to not use sub-pixel "
+"rendering."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../fontconfig.templates:46
+msgid "Enable bitmapped fonts by default?"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../fontconfig.templates:46
+msgid ""
+"By default, only outline fonts are used by applications which support "
+"fontconfig.  Outline fonts are fonts which scale well to various sizes.  In "
+"contrast, bitmapped fonts are often lower quality. Enabling this option will "
+"affect the systemwide default; this and many other fontconfig options may be "
+"enabled or disabled on a per-user basis."
+msgstr ""

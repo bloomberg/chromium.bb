@@ -1,0 +1,78 @@
+Source: fontconfig
+Section: devel
+Priority: optional
+Maintainer: Keith Packard <keithp@debian.org>
+Build-Depends: cdbs (>= 0.4.5.4), debhelper (>= 4.1.76), libfreetype6-dev (>= 2.1.7), libexpat1-dev, docbook-utils (>= 0.6.13), docbook-to-man, defoma (>= 0.7.0), binutils (>= 2.12.90.0.9)
+Standards-Version: 3.6.1
+
+Package: fontconfig
+Section: utils
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, defoma (>= 0.7.0), ucf (>= 0.29), ttf-bitstream-vera | ttf-freefont | gsfonts-x11 | msttcorefonts
+Conflicts: libfontconfig1-dev (<< 2.2.2-1)
+Description: generic font configuration library
+ Fontconfig is a font configuration and customization library, which
+ does not depend on the X Window System.  It is designed to locate
+ fonts within the system and select them according to requirements
+ specified by applications.
+ .
+ Fontconfig is not a rasterization library, nor does it impose a
+ particular rasterization library on the application.  The X-specific
+ library 'Xft' uses fontconfig along with freetype to specify and
+ rasterize fonts.
+ .
+ This package contains a program to maintain the fontconfig cache
+ (fc-cache), and a sample program to list installed fonts (fc-list).
+
+Package: fontconfig-udeb
+Section: debian-installer
+Architecture: any
+Depends: libexpat1-udeb, libfreetype6-udeb, zlib1g-udeb
+Description: generic font configuration library (shared library)
+ Fontconfig is a font configuration and customization library, which
+ does not depend on the X Window System.  It is designed to locate
+ fonts within the system and select them according to requirements
+ specified by applications.
+ .
+ See the "fontconfig" package description for more information.
+
+Package: libfontconfig1-dev
+Section: libdevel
+Architecture: any
+Depends: libfontconfig1 (= ${Source-Version}), libexpat1-dev, libfreetype6-dev (>= 2.1.7), pkg-config
+Provides: libfontconfig-dev
+Conflicts: libfontconfig-dev, fontconfig (<< 2.1-5)
+Description: generic font configuration library (development headers)
+ Fontconfig is a font configuration and customization library, which
+ does not depend on the X Window System.  It is designed to locate
+ fonts within the system and select them according to requirements
+ specified by applications.
+ .
+ See the "fontconfig" package description for more information.
+
+Package: libfontconfig1
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, fontconfig
+Description: generic font configuration library (shared library)
+ Fontconfig is a font configuration and customization library, which
+ does not depend on the X Window System.  It is designed to locate
+ fonts within the system and select them according to requirements
+ specified by applications.
+ .
+ See the "fontconfig" package description for more information.
+
+Package: libfontconfig1-dbg
+Section: libdevel
+Priority: extra
+Architecture: any
+Depends: libfontconfig1 (= ${Source-Version})
+Description: generic font configuration library (debugging symbols)
+ Fontconfig is a font configuration and customization library, which
+ does not depend on the X Window System.  It is designed to locate
+ fonts within the system and select them according to requirements
+ specified by applications.
+ .
+ This package contains the debugging symbols associated with
+ libfontconfig1. They will automatically be used by gdb for debugging
+ fontconfig-related issues.

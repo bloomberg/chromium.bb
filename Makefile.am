@@ -25,13 +25,49 @@ DOCSRC=@DOCSRC@
 SUBDIRS=fontconfig fc-case fc-lang fc-glyphname src \
 	fc-cache fc-list fc-match conf.d $(DOCSRC) test
 
+DEBIAN = \
+	debian/changelog \
+	debian/compat \
+	debian/control \
+	debian/copyright \
+	debian/fontconfig.config \
+	debian/fontconfig.defoma \
+	debian/fontconfig.dirs \
+	debian/fontconfig.install \
+	debian/fontconfig.postinst \
+	debian/fontconfig.postrm \
+	debian/fontconfig.templates \
+	debian/fontconfig-udeb.install \
+	debian/libfontconfig1-dev.install \
+	debian/libfontconfig1.install \
+	debian/local.conf.md5sum \
+	debian/README.Debian \
+	debian/rules \
+	debian/autohint.conf \
+	debian/no-sub-pixel.conf \
+	debian/unhinted.conf \
+	debian/po/POTFILES.in \
+	debian/po/templates.pot \
+	debian/po/cs.po \
+	debian/po/da.po \
+	debian/po/de.po \
+	debian/po/es.po \
+	debian/po/fr.po \
+	debian/po/ja.po \
+	debian/po/nl.po \
+	debian/po/pt_BR.po \
+	debian/po/pt.po \
+	debian/po/tr.po \
+	debian/po/zh_CN.po
+	 
 EXTRA_DIST = \
         fontconfig.pc.in \
         fonts.conf.in \
 	fonts.dtd \
         fontconfig.spec.in \
         fontconfig.spec \
-	fontconfig-zip.in
+	fontconfig-zip.in \
+	$(DEBIAN)
 
 pkgconfigdir=$(libdir)/pkgconfig
 pkgconfig_DATA = fontconfig.pc
@@ -81,3 +117,15 @@ uninstall-local:
 	     rm -f $(DESTDIR)$(configdir)/fonts.conf; \
 	  fi; \
 	fi; fi
+
+debuild debuild-signed: debuild-dirs
+	(cd $(distdir)/debian && debuild)
+
+debuild-unsigned: debuild-dirs
+	(cd $(distdir)/debian && debuild -us -uc)
+
+debuild-dirs: distdir
+	rm -f $(PACKAGE)_$(VERSION).orig.tar.gz
+	rm -rf $(distdir).orig
+	cp -a $(distdir) $(distdir).orig
+	rm -rf $(distdir).orig/debian

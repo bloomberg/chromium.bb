@@ -25,3 +25,10 @@ fontconfig-*.tar.gz
 ltmain.sh
 autom4te.cache
 ChangeLog-*
+*.deb
+*.dsc
+*.changes
+*.build
+*.tar.gz
+*.diff.gz
+*.udeb

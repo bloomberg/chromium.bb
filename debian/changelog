@@ -1,0 +1,661 @@
+fontconfig (2.3.0-1) unstable; urgency=low
+
+  * Change of maintainer
+  * New upstream release
+
+ -- Keith Packard <keithp@debian.org>  Wed,  2 Mar 2005 00:03:56 -0800
+
+fontconfig (2.2.3-4) unstable; urgency=low
+
+  * New translations of debconf templates:
+    + Brazilian
+    + Simplified Chinese (closes: #279326)
+    + Dutch (closes: #280657)
+    + German (closes: #281077)
+    + Danish (closes: #282094)
+  * fontconfig.defoma: patch from SU Yong <yoyosu@ustc.edu.cn> for missing
+    <family> tags (closes: #280560).
+
+ -- Josselin Mouette <joss@debian.org>  Sat, 20 Nov 2004 15:38:00 +0100
+
+fontconfig (2.2.3-3) unstable; urgency=low
+
+  * fontconfig.templates: merge the autohinter and subpixel rendering
+    questions in a single "select" template.
+  * fontconfig.config, fontconfig.postinst: update accordingly.
+  * debian/po/*.po: updated translations (closes: #277927).
+  * fontconfig.postinst: default to use the bytecode interpreter when the
+    subpixel rendering is activated (closes: #277874, #277883, #278211).
+  * fontconfig.config: try to get the answer to deXconf's LCD question to set
+    the default.
+
+ -- Josselin Mouette <joss@debian.org>  Thu, 28 Oct 2004 20:27:49 +0200
+
+fontconfig (2.2.3-2) unstable; urgency=low
+
+  * debian/po/pt_BR.po: updated translation from Gustavo Franco
+    <stratus@acm.org> (closes: #276693).
+  * debian/po/fr.po: correct subpixel rendering question.
+  * fontconfig.config: change question ordering.
+  * fontconfig.templates: default the autohinter to "true", but keep the
+    subpixel rendering to "false". This is because the bytecode interpreter
+    (previous default) renders very badly on TFT screens, and the subpixel
+    rendering looks bad on non-RGBA screens (closes: #268321).
+  * fontconfig.postinst: always enable the autohinter if the subpixel
+    rendering is activated (otherwise it doesn't work).
+
+ -- Josselin Mouette <joss@debian.org>  Thu, 21 Oct 2004 22:59:51 +0200
+
+fontconfig (2.2.3-1) unstable; urgency=low
+
+  * New upstream release.
+  * 00maintainer_mode.patch, autoreconf.patch: removed, obsoleted upstream.
+  * German translation of debconf templates (closes: #252723).
+  * Turkish translation of debconf templates (closes: #246080).
+  * objcopy now works correctly on alpha:
+    - libfontconfig1-dbg.install.alpha: removed.
+    - rules: use --dbg-package on all arches.
+  * shlibs.local: removed.
+
+ -- Josselin Mouette <joss@debian.org>  Tue, 13 Jul 2004 11:32:02 +0200
+
+fontconfig (2.2.2-2) unstable; urgency=low
+
+  * added debian/patches/00maintainer_mode.patch: introduce
+    AM_MAINTAINER_MODE to avoid brain damage.
+  * added debian/patches/autoreconf.patch: this is the result of
+    libtoolize --force --copy; aclocal; autoheader; automake -acf;
+    autoconf with libtool 1.5.4 (closes: #218441).
+  * debian/po/nl.po: added Dutch debconf translation (closes: #237813).
+  * debian/po/da.po: updated Danish translation (closes: #241123).
+
+ -- Josselin Mouette <joss@debian.org>  Wed,  7 Apr 2004 14:28:05 +0200
+
+fontconfig (2.2.2-1) unstable; urgency=low
+
+  * New upstream release.
+  * debian/rules:
+    + only require libfontconfig1 2.2.1 for dh_makeshlibs.
+  * debian/control:
+    + build-depend on binutils 2.12.90.0.9 for dh_strip (closes: #237417).
+    + build-depend on freetype 2.1.7, ditto for -dev depends.
+    + fontconfig now conflicts with libfontconfig1-dev << 2.2.2.
+  * Added debian/po/cs.po (closes: #236275).
+  * Added debian/po/pt_BR.po (closes: #235465).
+  * Removed freetype-build.patch.
+  * fontconfig.install: install fonts-conf.5.
+  * libfontconfig1-dev.install: only install manpages in section 3.
+
+ -- Josselin Mouette <joss@debian.org>  Thu, 11 Mar 2004 14:17:58 +0100
+
+fontconfig (2.2.1-16) unstable; urgency=low
+
+  * Use the new debconf interface for ucf:
+    + fontconfig.postinst: use --debconf-ok option for ucf.
+    + fontconfig.postinst: remove the hack to get back stdio from debconf.
+    + control: depend on ucf 0.29.
+  * Work around objcopy breakage on alpha:
+    + libfontconfig1-dbg.install.alpha: copy the library to the debug
+      directory.
+    + rules: don't use --dbg-package on alpha.
+
+ -- Josselin Mouette <joss@debian.org>  Sun, 22 Feb 2004 17:02:47 +0100
+
+fontconfig (2.2.1-15) unstable; urgency=low
+
+  * Make the dependencies back to ${misc:Depends} now debhelper was updated.
+  * Spanish debconf templates (closes: #232211).
+  * Danish debconf templates (closes: #233071).
+
+ -- Josselin Mouette <joss@debian.org>  Fri, 20 Feb 2004 16:27:21 +0100
+
+fontconfig (2.2.1-14) unstable; urgency=low
+
+  * Rebuild with up to date cdbs (closes: #230357).
+  * Build-depend on docbook-utils 0.6.13.
+  * Make a libfontconfig1-dbg package, requiring debhelper 4.1.76.
+  * Remove po/ru.po (closes: #223349).
+  * Depend on debconf | debconf-2.0 (closes: #230520).
+
+ -- Josselin Mouette <joss@debian.org>  Tue,  3 Feb 2004 13:16:29 +0100
+
+fontconfig (2.2.1-13) unstable; urgency=low
+
+  * patches/freetype-build.patch: include correctly freetype header 
+    files (closes: #222680).
+
+ -- Josselin Mouette <joss@debian.org>  Sat,  6 Dec 2003 15:32:30 +0100
+
+fontconfig (2.2.1-12) unstable; urgency=low
+
+  * fontconfig.postrm: support the case where /usr/local/share/fonts 
+    doesn't exist (closes: #219992).
+
+ -- Josselin Mouette <joss@debian.org>  Tue, 11 Nov 2003 10:42:24 +0100
+
+fontconfig (2.2.1-11) unstable; urgency=low
+
+  * fontconfig.postinst: support the case where /usr/local is mounted 
+    read-only (closes: #219684).
+
+ -- Josselin Mouette <joss@debian.org>  Sat,  8 Nov 2003 09:44:56 +0100
+
+fontconfig (2.2.1-10) unstable; urgency=low
+
+  * shlibs.local: require libfreetype6 2.1.5-3 to avoid the
+    gsfonts-other bug (closes: #218662).
+  * fontconfig.{config,postinst}: remove bashism.
+  * fontconfig.post{inst,rm}: really create /usr/local/share/fonts,
+    and remove it if non-empty on purge.
+  * po/ru.po: updated translation (closes: #219265).
+  * culmus-support.patch: removed, see below.
+  * fonts-conf-aliases.patch: patch from CVS, still add Culmus support,
+    now also support ttf-freefont (closes: #218924).
+
+ -- Josselin Mouette <joss@debian.org>  Fri,  7 Nov 2003 17:02:37 +0100
+
+fontconfig (2.2.1-9) unstable; urgency=low
+
+  * rules: add /usr/local/share/fonts to the list of directories to
+    search for fonts.
+  * po/fr.po: update (closes: #218301).
+  * po/ja.po: update (closes: #217420).
+  * README.Debian: correct typo.
+  * patches/culmus-support.patch: support Culmus fonts for Hebrew 
+    systems (closes: #198374).
+
+ -- Josselin Mouette <joss@debian.org>  Sun,  2 Nov 2003 18:32:11 +0100
+
+fontconfig (2.2.1-8) unstable; urgency=low
+
+  * fontconfig.postinst: revert changes from 2.2.1-7 and just get back
+    stdin back from debconf before running ucf. Thanks a lot to Samuel
+    Hocevar for finding out this trick.
+
+ -- Josselin Mouette <joss@debian.org>  Mon, 20 Oct 2003 15:36:03 +0200
+
+fontconfig (2.2.1-7) unstable; urgency=low
+
+  * fontconfig.postinst: when ucf fails (most likely due to being on
+    an autobuilder with no /dev/tty), just create local.conf if it is
+    not here, otherwise do nothing.
+
+ -- Josselin Mouette <joss@debian.org>  Mon, 20 Oct 2003 13:45:20 +0200
+
+fontconfig (2.2.1-6) unstable; urgency=low
+
+  * Use ucf for local.conf handling (closes: #186730):
+    + fontconfig.{config,postinst}: remove debconf handling of
+      local.conf overwriting.
+    + fontconfig.postrm: new file.
+    + templates: remove overwrite_existing_local_conf.
+    + control: fontconfig depends on ucf 0.25.
+    + local.conf.md5sum: new file, containing all possible md5sums
+      for local.conf generated with debconf in the previous versions.
+  * Apply defoma patch from Angus Lees (closes: #206532, #204771):
+    + fontconfig.defoma: new file.
+    + control: build-depend and depend on defoma.
+    + rules:
+      - Run dh_installdefoma.
+      - Remove x-ttcidfont-conf stuff.
+    + README.Debian: document that fontconfig can now use defoma fonts.
+    + fontconfig.postinst:
+      - Remove old cache files in /var/lib/defoma/x-ttcidfont-conf.d
+        subdirectories.
+      - Include the defoma-generated file in local.conf.
+    + fontconfig.postrm: remove /var/lib/defoma/fontconfig.d.
+  * fonts-conf-ordering.patch: patches fonts.conf to include local.conf
+    before ~/.fonts.conf (closes: #215356).
+  * control:
+    + Remove po-debconf dependency, all autobuilders have a working
+      version now and it never made it to testing.
+    + Make libfontconfig1-dev depend on libfontconfig1 instead of
+      fontconfig.
+    + libfontconfig1-dev depends on libexpat1-dev.
+    + Make fontconfig require one of the 4 most widely used font
+      packages, as anyway all packages using fontconfig should
+      (closes: #189883). Also remove Suggests and Recommends.
+  * fontconfig.postrm: remove old fonts.cache-1 files in /usr/share/fonts
+    and /usr/X11R6/lib/X11/fonts on purge.
+  * No more scripts in fontconfig-udeb (closes: #216132):
+    + fontconfig-udeb.postinst: removed.
+    + rules: make dh_makeshlibs not run on fontconfig-udeb.
+
+ -- Josselin Mouette <joss@debian.org>  Sun, 19 Oct 2003 11:04:35 +0200
+
+fontconfig (2.2.1-5) unstable; urgency=low
+
+  * debian/control:
+    + Build-depend on po-debconf 0.8.1 (closes: #214973).
+    + Remove trailing lines, by request of Ralf Nolden.
+
+ -- Josselin Mouette <joss@debian.org>  Wed, 15 Oct 2003 21:05:45 +0200
+
+fontconfig (2.2.1-4) unstable; urgency=low
+
+  * Russian debconf templates (closes: #214337).
+  * French debconf templates (closes: #213141).
+  * Update manpages.
+  * Patch fc-cache to handle correctly -s (closes: #214091).
+  * Remove defoma comment in README.Debian.
+  * Ask whether to enable the autohinter (closes: #188829).
+  * Add a general documentation about font handling in README.Debian
+    (closes: #186944).
+
+ -- Josselin Mouette <joss@debian.org>  Wed,  8 Oct 2003 22:23:41 +0200
+
+fontconfig (2.2.1-3) unstable; urgency=low
+
+  * New maintainer.
+  * fontconfig.postinst: nitpick output improvement.
+  * Standards-version is 3.6.1.
+  * Switch to po-debconf.
+  * Include japanese debconf templates (closes: #210733).
+  * Move libfontconfig1-dev to libdevel.
+  * Provide manpages for fc-list and fc-cache (closes: #191467).
+
+ -- Josselin Mouette <joss@debian.org>  Tue, 16 Sep 2003 18:31:18 +0200
+
+fontconfig (2.2.1-2) unstable; urgency=low
+
+  * debian/control:
+    - Build-Depend on the latest cdbs to fix a udeb build error
+      (Closes: #205062)
+
+ -- Colin Walters <walters@debian.org>  Tue, 26 Aug 2003 22:54:24 -0400
+
+fontconfig (2.2.1-1) unstable; urgency=low
+
+  * New upstream release.
+    - Eliminates italic_angle check for PS fonts
+      (Closes: #196739, #194832).
+  * debian/rules:
+    - Work around dh_installman bug and put fonts-conf.5 in section 5
+      (Closes: #191026).
+
+ -- Colin Walters <walters@debian.org>  Mon,  9 Jun 2003 20:40:57 -0400
+
+fontconfig (2.2.0-5) unstable; urgency=low
+
+  * debian/rules:
+    - Tighten up shlibs versioning again (Closes: #195118).
+
+ -- Colin Walters <walters@debian.org>  Wed, 28 May 2003 18:53:21 -0400
+
+fontconfig (2.2.0-4) unstable; urgency=low
+
+  * debian/rules:
+      - Ensure fontconfig is built after libfontconfig1 (Closes: #194960).
+
+ -- Colin Walters <walters@debian.org>  Tue, 27 May 2003 18:39:23 -0400
+
+fontconfig (2.2.0-3) unstable; urgency=low
+
+  * debian/control:
+    - Bump Standards-Version: 3.5.10, no changes required.
+    - Build-Depend on cdbs.
+  * debian/rules:
+    - Convert to cdbs.
+  * debian/rocks:
+    - Removed.
+
+ -- Colin Walters <walters@debian.org>  Sun, 25 May 2003 04:42:10 -0400
+
+fontconfig (2.2.0-2) unstable; urgency=low
+
+  * The "Society For Creative Anachronism Seizes Control Of Russia"
+    release.
+  * debian/control:
+    - Recommend ttf-bitstream-vera, since it is the default fallback font
+      now.  Plus it does look pretty nice.  (Closes: #190675).
+    - Suggest: ttf-freefont, my favorite font.
+  * debian/rules:
+    - Update to the latest version of Colin's Build System.
+
+ -- Colin Walters <walters@debian.org>  Tue,  6 May 2003 02:55:40 -0400
+
+fontconfig (2.2.0-1) unstable; urgency=low
+
+  * The "Harsh Light Of Morning Falls On One Night Stand's DVD Collection"
+    release.
+  * New upstream release.
+
+ -- Colin Walters <walters@debian.org>  Wed, 23 Apr 2003 20:39:54 -0400
+
+fontconfig (2.1.94-1) unstable; urgency=low
+
+  * The "I speak better English than this villian Bush" release.
+    (Courtesy of Mohammed Saeed al-Sahaf).
+  * New upstream (pre)release.
+  * README.Debian:
+    - Remove experimental notice.
+  * debian/patches/fonts-conf-cleanup.patch:
+    - Update.
+  * debian/rules:
+    - Update to the latest version of Colin's Build System.
+
+ -- Colin Walters <walters@debian.org>  Thu, 17 Apr 2003 00:13:37 -0400
+
+fontconfig (2.1.93-1) unstable; urgency=low
+
+  * The "Saddam Speech Suspiciously Mentions Nelly Song From Last Summer"
+    release.
+  * New upstream (pre)release.
+    - Actually puts some bytes in fontconfig-user.html (Closes: #185065)
+    - Handles "same" font binding (Closes: #184353)
+    - Handles aliases better (Closes: #179416)
+    - Will handle xfonts-terminus, although it's kinda ugly
+      (Closes: #176690)
+  * debian/control:
+    - Bump Standards-Version to 3.5.9, no changes required.
+    - Minor description fixes.
+  * debian/rocks:
+    - Add --enable-docs to DEB_CONFIGURE_EXTRA_FLAGS.
+  * debian/patches/fontconfig_pc_in-fix-version-var.patch:
+    - Deleted; fix was incorporated upstream.
+  * debian/patches/mono-font-enable.patch:
+    - Deleted; a better fix was incorporated upstream.
+
+ -- Colin Walters <walters@debian.org>  Mon,  7 Apr 2003 22:16:52 -0400
+
+fontconfig (2.1.92-5) unstable; urgency=low
+
+  * The "Wingslinger's is definitely a mafia front" release.
+  * debian/control:
+    - Add back Depends line for fontconfig-udeb, and put libexpat1-udeb,
+    libfreetype6-udeb, zlib1g-udeb there.
+    
+ -- Colin Walters <walters@debian.org>  Sun,  6 Apr 2003 14:07:58 -0400
+
+fontconfig (2.1.92-4) unstable; urgency=low
+
+  * debian/control:
+    - Remove Depends for fontconfig-udeb (Closes: #187833).
+  * debian/fontconfig-udeb.postinst:
+    - New file, hacked up from fontconfig.postinst.
+  * debian/rules:
+    - Update to the latest version of Colin's Build System.
+
+ -- Colin Walters <walters@debian.org>  Sun,  6 Apr 2003 13:18:06 -0400
+
+fontconfig (2.1.92-3) unstable; urgency=low
+
+  * debian/control:
+    - Merge libfontconfig1 and fontconfig packages (Closes: #185466).
+    - Turn libfontconfig1 and libfontconfig1-dev into dummy packages.
+    - Generate new fontconfig-udeb package (Closes: #183822).
+  * debian/patches/mono-font-enable.patch:
+    - New patch; enables marking fonts as monospaced again (Closes: #185239).
+  * debian/rocks:
+    - Remove old cruft like deb-common-build target.
+  * debian/rules:
+    - Update to the latest version of Colin's Build System.
+
+ -- Colin Walters <walters@debian.org>  Fri, 28 Mar 2003 16:16:38 -0500
+
+fontconfig (2.1.92-2) unstable; urgency=low
+
+  * The "I should take up Tae Kwon Do again as a stress reliever" release.
+  * debian/README.Debian:
+    - Update with warning about bitmapped fonts.
+  * debian/fontconfig.templates:
+    - New question about overwriting existing local.conf.
+  * debian/fontconfig.config:
+    - Place into the public domain.
+    - Support new question about overwriting existing local.conf.
+  * debian/fontconfig.postinst:
+    - Place into the public domain.
+    - Support new question about overwriting existing local.conf.
+    - Rewrite so that we always write out the bits for bitmapped fonts and
+      subpixel rendering, but if they're disabled, then comment them out.
+      This will allow people to easily see the code so they can enable it by
+      hand.
+    - Add -v to fc-cache invocation so /var/log/fontconfig.log is a bit
+      more useful.
+
+ -- Colin Walters <walters@debian.org>  Sun,  9 Mar 2003 14:40:43 -0500
+
+fontconfig (2.1.92-1) unstable; urgency=low
+
+  * The "I wish upstream actually used ChangeLog" release.
+  * New upstream (pre)release.
+  * debian/libfontconfig1-dev.install:
+    - Install upstream development HTML and text documentation.
+    - Install upstream development manpages.
+  * debian/fontconfig.install:
+    - Install upstream user HTML and text documentation.
+    - Don't include local.conf in package.  D'oh!
+  * debian/control:
+    - Minor description improvements.
+  * debian/fontconfig.config,debian/fontconfig.postinst,
+    debian/fontconfig.templates:
+    - New debconf question about enabling bitmapped fonts.
+
+ -- Colin Walters <walters@debian.org>  Fri,  7 Mar 2003 17:23:42 -0500
+
+fontconfig (2.1.91-2) unstable; urgency=low
+
+  * debian/control:
+    - Bump Build-Depends (and Depends for libfontconfig1-dev) on
+      libfreetype6-dev to the latest.  This, in combination with this
+      version of fontconfig, will hopefully fix a lot of outstanding bugs.
+    - Drop Build-Depends on xlibs-dev and ed.
+  * debian/rocks:
+    - Hardcode font path here, and include
+      /var/lib/defoma/x-ttcidfont-conf.d/dirs in default font path
+      (Closes: #183342, #176020).
+
+ -- Colin Walters <walters@debian.org>  Thu,  6 Mar 2003 22:00:13 -0500
+
+fontconfig (2.1.91-1) unstable; urgency=low
+
+  * New upstream (pre)release.
+  * debian/patches/fontconfig_pc_in-fix-version-var.patch:
+    - New patch (Closes: #183418).
+
+ -- Colin Walters <walters@debian.org>  Wed,  5 Mar 2003 01:02:17 -0500
+
+fontconfig (2.1.90-1) unstable; urgency=low
+
+  * New upstream (pre)release.
+  * debian/patches/CVS-HEAD-subpixel-rendering-fix.patch,
+    debian/patches/fail-on-submake-failure.patch,
+    debian/patches/owen-fc-cache-fix.patch:
+    - Included upstream now; deleted.
+  * debian/patches/fonts-conf-cleanup.patch:
+    - New patch.  Removes the date from fonts.conf, and helps move
+    subpixel rendering bits into local.conf.
+  * debian/control:
+    - [libfontconfig1-dev] Add Depends on pkg-config.
+    - Add Build-Depends on docbook-utils.
+  * debian/rocks:
+    - Remove manpage stuff.
+  * debian/fontconfig.templates, debian/fontconfig.config,
+    debian/fontconfig.postinst:
+    - Debconfiscation.  Now prompts for subpixel rendering bits
+      (Closes: #182748).
+  * debian/rules:
+    - Update to the latest version of Colin's Build System.
+
+ -- Colin Walters <walters@debian.org>  Sun,  2 Mar 2003 13:29:35 -0500
+
+fontconfig (2.1-15) unstable; urgency=low
+
+  * debian/control:
+    - Build-Depend on xlibs-dev (>= 4.2.0).
+  * debian/patches/owen-fc-cache-fix.patch:
+    - New patch, pulled from the GARNOME CVS; edited slightly.
+      This should fix those crashes in FcConfigAdd (Closes: #178780).
+  * debian/rules:
+    - Update to the latest version of Colin's Build System.
+   
+ -- Colin Walters <walters@debian.org>  Fri, 17 Jan 2003 13:20:09 -0500
+
+fontconfig (2.1-14) unstable; urgency=low
+
+  * debian/patches/CVS-HEAD-subpixel-rendering-fix.patch:
+    - New patch, should fix crashes when subpixel rendering is
+    turned on (Closes: #175903).  Big thanks to
+    Michael Guntsche <mike@it-loops.com> for extracting the relevant fix
+    from CVS!
+
+ -- Colin Walters <walters@debian.org>  Fri, 10 Jan 2003 13:30:28 -0500
+
+fontconfig (2.1-13) unstable; urgency=low
+
+  * debian/rocks:
+    - Tighten up shlibs for libfontconfig1.
+
+ -- Colin Walters <walters@debian.org>  Wed,  8 Jan 2003 22:34:53 -0500
+
+fontconfig (2.1-12) unstable; urgency=low
+
+  * debian/fontconfig.postinst:
+    - Redirect fc-cache error messages to /var/log/fontconfig.log, and
+    refer the user to this upon failure (Closes: #174507).
+
+ -- Colin Walters <walters@debian.org>  Fri,  3 Jan 2003 15:04:05 -0500
+
+fontconfig (2.1-11) unstable; urgency=low
+
+  * debian/control:
+    - Remove Build-Depends on zlib1g; instead Build-Depend on the very
+    latest libfreetype6-dev which does this for us.
+  * debian/fontconfig.postinst:
+    - Display a little message about regenerating the fonts cache.
+
+ -- Colin Walters <walters@debian.org>  Wed, 25 Dec 2002 01:08:05 -0500
+
+fontconfig (2.1-10) unstable; urgency=low
+
+  * debian/patches/fail-on-submake-failure.patch:
+    - New patch.  This way at least the package won't build in the future
+      if there is a failure.
+  * debian/control:
+    - Build-Depend on zlib1g-dev directly until freetype is fixed.
+    - Change fontconfig section to utils.
+
+ -- Colin Walters <walters@debian.org>  Sun, 22 Dec 2002 21:37:25 -0500
+
+fontconfig (2.1-9) unstable; urgency=low
+
+  * The "<Overfiend> "*PANT* *PANT*  YEAH BABY!!!!
+    FRESH COMMITS TO (freetype) CVS!!!!"  *PANT* *PANT*" release.
+  * debian/control:
+    - Build-Depend on the very latest freetype, the previous version of
+    which was a CVS snapshot that broke the fontconfig build, and in fact
+    the build of almost any package dependent on freetype; see #173834.
+    Closes: #173900.
+    - Build-Depend on debhelper (>= 4.1.1) since we use some features from
+    it with CBS in this package (Closes: #173941).
+  * debian/fontconfig.postinst:
+    - New file, with the important contents stolen from Red Hat 8's
+    postinst.  Thanks Anthony Fok <foka@debian.org>. (Closes: #173949).
+
+ -- Colin Walters <walters@debian.org>  Sun, 22 Dec 2002 03:36:21 -0500
+
+fontconfig (2.1-8) unstable; urgency=low
+
+  * debian/control:
+    - Build-Depend on xlibs-dev.  This should fix the issue with
+    /usr/X11R6/lib/fonts or whatever being missing from fonts.conf.
+    - Mention more prominently that fontconfig doesn't depend on X.
+  * debian/rocks:
+    - Install fc-cache, fc-list, and fontconfig manpages
+    (Closes: #173748).
+
+ -- Colin Walters <walters@debian.org>  Sat, 21 Dec 2002 02:54:36 -0500
+
+fontconfig (2.1-7) unstable; urgency=low
+
+  * debian/control:
+    - [libfontconfig1-dev] Add a Conflicts: fontconfig (<< 2.1-5) so that
+    we ensure upgrading happens in the correct order (due to
+    fontconfig-config switching packages).
+
+ -- Colin Walters <walters@debian.org>  Wed, 11 Dec 2002 00:48:31 -0500
+
+fontconfig (2.1-6) unstable; urgency=low
+
+  * debian/patches/no-date-in-fonts-conf.patch:
+    - New patch; this will prevent the fonts.conf conffile from changing
+    on every package upload.
+  * debian/README.Debian:
+    - Update.
+  * debian/rules:
+    - Update to the latest version of Colin's Build System.
+
+ -- Colin Walters <walters@debian.org>  Tue, 10 Dec 2002 14:48:24 -0500
+
+fontconfig (2.1-5) unstable; urgency=low
+
+  * debian/libfontconfig1-dev.install:
+    - Install fontconfig-config.
+  * debian/fontconfig.install
+    - Don't install fontconfig-config.
+  * debian/control:
+    - [libfontconfig1-dev] Add Depends: on libfreetype6-dev
+    (Closes: #172488)
+  * debian/rules:
+    - Update to the latest version of Colin's Build System.
+  * debian/rocks:
+    - Add debian/tmp/usr/lib/ to DEB_SHLIBDEPS_INCLUDE
+      (Closes: #172432).
+    - Ensure libfontconfig1 is built before fontconfig.
+
+ -- Colin Walters <walters@debian.org>  Mon,  9 Dec 2002 23:54:06 -0500
+
+fontconfig (2.1-4) unstable; urgency=low
+
+  * debian/control:
+    - Really Build-Depend on ed (Closes: #172245).  Now how did I add it
+      to the changelog, but not control?  Don't ask me...)
+  * debian/rules:
+    - Update to the latest version of Colin's Build System.
+
+ -- Colin Walters <walters@debian.org>  Mon,  9 Dec 2002 12:59:07 -0500
+
+fontconfig (2.1-3) unstable; urgency=low
+
+  * debian/control:
+    - Build-Depend on ed.
+  * debian/rules:
+    - Update to the latest version of Colin's Build System.
+  * debian/rocks:
+    - Remove extra cruft in deb-extra-clean rule.
+
+ -- Colin Walters <walters@debian.org>  Sun,  8 Dec 2002 20:58:26 -0500
+
+fontconfig (2.1-2) unstable; urgency=low
+
+  * First upload to unstable; Closes: #170559.
+  * debian/rules:
+    - Update to latest version of Colin's Build System.
+
+ -- Colin Walters <walters@debian.org>  Fri,  6 Dec 2002 01:37:16 -0500
+
+fontconfig (2.1-1) unstable; urgency=low
+
+  * New upstream version.
+  * debian/rules:
+    - Use Colin's Build System.
+  * debian/control:
+    - Bump Standards-Version to 3.5.8.
+  * debian/copyright:
+    - Fix Upstream Authors.
+
+ -- Colin Walters <walters@debian.org>  Tue,  3 Dec 2002 22:38:28 -0500
+
+fontconfig (2.0-2) unstable; urgency=low
+
+  * debian/control:
+    - [fontconfig] New package; install configuration files and binaries in it.
+    - [libfontconfig1-dev] Fix up description.
+
+ -- Colin Walters <walters@debian.org>  Mon, 14 Oct 2002 23:06:59 -0400
+
+fontconfig (2.0-1) unstable; urgency=low
+
+  * Initial version.
+  
+ -- Colin Walters <walters@debian.org>  Sun, 13 Oct 2002 14:43:56 -0400

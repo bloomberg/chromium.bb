@@ -2,6 +2,7 @@ Makefile
 Makefile.in
 *.txt
 *.html
+*.pdf
 fontconfig-devel
 edit-sgml
 *.o

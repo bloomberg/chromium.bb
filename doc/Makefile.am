@@ -75,7 +75,8 @@ DOC_FUNCS_SGML=\
 	fcstrset.sgml \
 	fcvalue.sgml
 
-man_MANS=fonts-conf.5 @DOCMAN3@
+man5_MANS=fonts-conf.5 
+man3_MANS=$(DOCMAN3)
 
 noinst_PROGRAMS=edit-sgml
 edit_sgml_SOURCES=edit-sgml.c
@@ -83,7 +84,7 @@ edit_sgml_SOURCES=edit-sgml.c
 docdir=@DOCDIR@
 
 DOC_FILES=$(TXT) $(PDF) $(HTML_FILES)
-LOCAL_DOCS=$(man_MANS) $(DOC_FILES) $(HTML_DIR)/*
+LOCAL_DOCS=$(man3_MANS) $(man5_MANS) $(DOC_FILES) $(HTML_DIR)/*
 
 EXTRA_DIST=$(LOCAL_DOCS) $(SGML) $(DOC_FUNCS_FNCS) $(FNCS_TMPL) confdir.sgml.in
 
@@ -103,7 +104,7 @@ if USEDOCBOOK
 	$(RM) $@
 	$(DOC2PDF) $<
 
-$(man_MANS): func.refs
+$(man3_MANS): func.refs
 
 func.refs: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) func.refs
@@ -127,19 +128,19 @@ local-fontconfig-user.sgml: fontconfig-user.sgml
 all-local: $(LOCAL_DOCS)
 
 clean-local:
-	$(RM) $(man_MANS) $(DOC_FILES) $(DOC_FUNCS_SGML) func.refs
+	$(RM) $(man3_MANS) $(man5_MANS) $(DOC_FILES) $(DOC_FUNCS_SGML) func.refs
 	$(RM) -r $(HTML_DIR)
 
 $(HTML_DIR): local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) -r $(HTML_DIR)
 	$(DOC2HTML) -o $(HTML_DIR) local-fontconfig-devel.sgml
 
-fontconfig-devel.txt: local-fontconfig-devel.sgml version.sgml confdir.sgml
+fontconfig-devel.txt: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) $@
 	$(DOC2TXT) local-fontconfig-devel.sgml
 	mv local-fontconfig-devel.txt $@
 
-fontconfig-devel.pdf: local-fontconfig-devel.sgml version.sgml confdir.sgml
+fontconfig-devel.pdf: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) $@
 	$(DOC2PDF) local-fontconfig-devel.sgml
 	mv local-fontconfig-devel.pdf $@
