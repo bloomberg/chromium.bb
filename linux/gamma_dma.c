@@ -583,6 +583,8 @@ static int gamma_do_init_dma( drm_device_t *dev, drm_gamma_init_t *init )
 
 	memset( dev_priv, 0, sizeof(drm_gamma_private_t) );
 
+	dev_priv->num_rast = init->num_rast;
+
 	list_for_each(list, &dev->maplist->head) {
 		drm_map_list_t *r_list = list_entry(list, drm_map_list_t, head);
 		if( r_list->map &&

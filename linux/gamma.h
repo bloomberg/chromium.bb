@@ -90,8 +90,11 @@
 
 #define __HAVE_DMA_QUIESCENT		1
 #define DRIVER_DMA_QUIESCENT() do {					\
-	/* FIXME ! */ 							\
-	gamma_dma_quiescent_single(dev);				\
+	drm_gamma_private_t *dev_priv =					\
+		(drm_gamma_private_t *)dev->dev_private;		\
+	if (dev_priv->num_rast == 2)					\
+		gamma_dma_quiescent_dual(dev);				\
+	else gamma_dma_quiescent_single(dev);				\
 	return 0;							\
 } while (0)
 
