@@ -59,7 +59,7 @@ GAMMAOBJS =	gamma_drv.o gamma_dma.o
 GAMMAHEADERS =	gamma_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
 
 TDFXOBJS =	tdfx_drv.o
-TDFXHEADERS =	tdfx.h $(DRMHEADERS)
+TDFXHEADERS =	tdfx.h $(DRMHEADERS) $(DRMTEMPLATES)
 
 R128OBJS =	r128_drv.o r128_cce.o r128_state.o
 R128HEADERS =	r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)

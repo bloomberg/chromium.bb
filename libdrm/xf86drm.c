@@ -171,11 +171,7 @@ static drmHashEntry *drmGetEntry(int fd)
 
 static int drmOpenDevice(long dev, int minor)
 {
-#ifdef XFree86LOADER
-    struct xf86stat st;
-#else
-    struct stat     st;
-#endif
+    stat_t          st;
     char            buf[64];
     int             fd;
     mode_t          dirmode = DRM_DEV_DIRMODE;
