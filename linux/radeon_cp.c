@@ -910,12 +910,6 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 		 */
 		RADEON_WRITE( RADEON_MC_AGP_LOCATION, 0xffffffc0 ); /* ?? */
 		RADEON_WRITE( RADEON_AGP_COMMAND, 0 ); /* clear AGP_COMMAND */
-#if defined(__alpha__)
-		/* HACK! something is clobbering MEM_CNTL on Alpha! */
-		DRM_ERROR( "MEM_CNTL 0x%x\n",
-			   RADEON_READ(0x0140) );
-		RADEON_WRITE(0x0140, 0x29002901);
-#endif
 	} else {
 		/* Turn off PCI GART
 		 */

@@ -44,8 +44,27 @@
 #define DRM_IOCTL_NR(n)	     ((n) & 0xff)
 #endif
 
+#define XFREE86_VERSION(major,minor,patch,snap) \
+		((major << 16) | (minor < 8) | patch)
+
+#ifndef CONFIG_XFREE86_VERSION
+#define CONFIG_XFREE86_VERSION XFREE86_VERSION(4,1,0,0)
+#endif
+
+#if CONFIG_XFREE86_VERSION < XFREE86_VERSION(4,1,0,0)
+#define DRM_PROC_DEVICES "/proc/devices"
+#define DRM_PROC_MISC	 "/proc/misc"
+#define DRM_PROC_DRM	 "/proc/drm"
+#define DRM_DEV_DRM	 "/dev/drm"
+#define DRM_DEV_MODE	 (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP)
+#define DRM_DEV_UID	 0
+#define DRM_DEV_GID	 0
+#endif
+
+#if CONFIG_XFREE86_VERSION >= XFREE86_VERSION(4,1,0,0)
 #define DRM_MAJOR       226
 #define DRM_MAX_MINOR   15
+#endif
 #define DRM_NAME	"drm"	  /* Name in kernel, /dev, and /proc	    */
 #define DRM_MIN_ORDER	5	  /* At least 2^5 bytes = 32 bytes	    */
 #define DRM_MAX_ORDER	22	  /* Up to 2^22 bytes = 4MB		    */
@@ -438,15 +457,15 @@ typedef struct drm_scatter_gather {
 #define DRM_IOCTL_R128_CCE_RESET	DRM_IO(  0x43)
 #define DRM_IOCTL_R128_CCE_IDLE		DRM_IO(  0x44)
 #define DRM_IOCTL_R128_RESET		DRM_IO(  0x46)
-#define DRM_IOCTL_R128_FULLSCREEN	DRM_IOW( 0x47, drm_r128_fullscreen_t)
-#define DRM_IOCTL_R128_SWAP		DRM_IO(  0x48)
-#define DRM_IOCTL_R128_CLEAR		DRM_IOW( 0x49, drm_r128_clear_t)
-#define DRM_IOCTL_R128_VERTEX		DRM_IOW( 0x4a, drm_r128_vertex_t)
-#define DRM_IOCTL_R128_INDICES		DRM_IOW( 0x4b, drm_r128_indices_t)
-#define DRM_IOCTL_R128_BLIT		DRM_IOW( 0x4c, drm_r128_blit_t)
-#define DRM_IOCTL_R128_DEPTH		DRM_IOW( 0x4d, drm_r128_depth_t)
-#define DRM_IOCTL_R128_STIPPLE		DRM_IOW( 0x4e, drm_r128_stipple_t)
+#define DRM_IOCTL_R128_SWAP		DRM_IO(  0x47)
+#define DRM_IOCTL_R128_CLEAR		DRM_IOW( 0x48, drm_r128_clear_t)
+#define DRM_IOCTL_R128_VERTEX		DRM_IOW( 0x49, drm_r128_vertex_t)
+#define DRM_IOCTL_R128_INDICES		DRM_IOW( 0x4a, drm_r128_indices_t)
+#define DRM_IOCTL_R128_BLIT		DRM_IOW( 0x4b, drm_r128_blit_t)
+#define DRM_IOCTL_R128_DEPTH		DRM_IOW( 0x4c, drm_r128_depth_t)
+#define DRM_IOCTL_R128_STIPPLE		DRM_IOW( 0x4d, drm_r128_stipple_t)
 #define DRM_IOCTL_R128_INDIRECT		DRM_IOWR(0x4f, drm_r128_indirect_t)
+#define DRM_IOCTL_R128_FULLSCREEN	DRM_IOW( 0x50, drm_r128_fullscreen_t)
 
 /* Radeon specific ioctls */
 #define DRM_IOCTL_RADEON_CP_INIT	DRM_IOW( 0x40, drm_radeon_init_t)
@@ -460,9 +479,9 @@ typedef struct drm_scatter_gather {
 #define DRM_IOCTL_RADEON_CLEAR		DRM_IOW( 0x48, drm_radeon_clear_t)
 #define DRM_IOCTL_RADEON_VERTEX		DRM_IOW( 0x49, drm_radeon_vertex_t)
 #define DRM_IOCTL_RADEON_INDICES	DRM_IOW( 0x4a, drm_radeon_indices_t)
-#define DRM_IOCTL_RADEON_TEXTURE	DRM_IOWR(0x4b, drm_radeon_texture_t)
 #define DRM_IOCTL_RADEON_STIPPLE	DRM_IOW( 0x4c, drm_radeon_stipple_t)
 #define DRM_IOCTL_RADEON_INDIRECT	DRM_IOWR(0x4d, drm_radeon_indirect_t)
+#define DRM_IOCTL_RADEON_TEXTURE	DRM_IOWR(0x4e, drm_radeon_texture_t)
 
 #ifdef CONFIG_DRM_SIS
 /* SiS specific ioctls */
