@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/fontconfig/fc-lang/fc-lang.c,v 1.1 2002/07/06 23:21:36 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -163,6 +163,7 @@ int
 main (int argc, char **argv)
 {
     FcCharSet	*sets[1024];
+    int		duplicate[1024];
     char	*names[1024];
     FILE	*f;
     int		i = 0;
@@ -231,6 +232,24 @@ main (int argc, char **argv)
     }
     printf ("};\n\n");
     printf ("#define L(n) ((FcCharLeaf *) &leaves[n])\n\n");
+
+    /*
+     * Find duplicate charsets
+     */
+    duplicate[0] = -1;
+    for (i = 1; sets[i]; i++)
+    {
+	int j;
+
+	duplicate[i] = -1;
+	for (j = 0; j < i; j++)
+	    if (sets[j] == sets[i])
+	    {
+		duplicate[i] = j;
+		break;
+	    }
+    }
+
     /*
      * Dump arrays
      */
@@ -238,6 +257,8 @@ main (int argc, char **argv)
     {
 	int n;
 	
+	if (duplicate[i] >= 0)
+	    continue;
 	printf ("static const FcCharLeaf *leaves_%s[%d] = {\n",
 		names[i], sets[i]->num);
 	for (n = 0; n < sets[i]->num; n++)
@@ -279,12 +300,15 @@ main (int argc, char **argv)
     printf ("static const FcLangCharSet  fcLangCharSets[] = {\n");
     for (i = 0; sets[i]; i++)
     {
+	int	j = duplicate[i];
+	if (j < 0)
+	    j = i;
 	printf ("    { (FcChar8 *) \"%s\",\n"
 		"      { 1, FcTrue, %d, "
 		"(FcCharLeaf **) leaves_%s, "
 		"(FcChar16 *) numbers_%s } },\n",
 		get_lang(names[i]),
-		sets[i]->num, names[i], names[i]);
+		sets[j]->num, names[j], names[j]);
     }
     printf ("};\n\n");
     while (fgets (line, sizeof (line), stdin))

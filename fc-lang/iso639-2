@@ -48,7 +48,7 @@ built.
     bej			Beja						bedja
 *   bel		be	Belarusian					biélorusse
     bem			Bemba						bemba
-    ben		bn	Bengali						bengali
+*   ben		bn	Bengali						bengali
     ber			Berber (Other)					berbères, autres langues
     bho			Bhojpuri					bhojpuri
     bih		bh	Bihari						bihari
@@ -163,7 +163,7 @@ built.
     grc			Greek, Ancient (to 1453)			grec ancien (jusqu'à 1453)
     gre/ell*	el	Greek, Modern (1453-)				grec moderne (après 1453)
     grn		gn	Guarani						guarani
-    guj		gu	Gujarati					goudjrati
+*   guj		gu	Gujarati					goudjrati
     gwi			Gwich´in					gwich´in
     hai			Haida						haida
     hau		ha	Hausa						haoussa
@@ -206,7 +206,7 @@ built.
     kac			Kachin						kachin
 *   kal		kl	Kalaallisut					groenlandais
     kam			Kamba						kamba
-    kan		kn	Kannada						kannada
+*   kan		kn	Kannada						kannada
     kar			Karen						karen
     kas		ks	Kashmiri					kashmiri
 *   geo/kat*	ka	Georgian					géorgien
@@ -215,7 +215,7 @@ built.
 *   kaz		kk	Kazakh						kazakh
     kha			Khasi						khasi
     khi			Khoisan (Other)					khoisan, autres langues
-    khm		km	Khmer						khmer
+*   khm		km	Khmer						khmer
     kho			Khotanese					khotanais
     kik		ki	Kikuyu; Gikuyu					kikuyu
     kin		rw	Kinyarwanda					rwanda
@@ -236,7 +236,7 @@ built.
     lad			Ladino						judéo-espagnol
     lah			Lahnda						lahnda
     lam			Lamba						lamba
-    lao		lo	Lao						lao
+*   lao		lo	Lao						lao
 *   lat		la	Latin						latin
 *   lav		lv	Latvian						letton
     lez			Lezghian					lezghien
@@ -258,7 +258,7 @@ built.
     mah		mh	Marshallese					marshall
     mai			Maithili					maithili
     mak			Makasar						makassar
-    mal		ml	Malayalam					malayalam
+*   mal		ml	Malayalam					malayalam
     man			Mandingo					mandingue
     mao/mri*	mi	Maori						maori
     map			Austronesian (Other)				malayo-polynésiennes, autres langues
@@ -280,7 +280,7 @@ built.
     mno			Manobo languages				manobo, langues
     moh			Mohawk						mohawk
 *   mol		mo	Moldavian					moldave
-    mon		mn	Mongolian					mongol
+*   mon		mn	Mongolian					mongol
     mos			Mossi						moré
     mao/mri*	mi	Maori						maori
     may/msa*	ms	Malay						malais
@@ -317,7 +317,7 @@ built.
     nzi			Nzima						nzema
 *   oci		oc	Occitan (post 1500); Provençal			occitan (après 1500); provençal
     oji			Ojibwa						ojibwa
-    ori		or	Oriya						oriya
+*   ori		or	Oriya						oriya
     orm		om	Oromo						galla
     osa			Osage						osage
     oss		os	Ossetian; Ossetic				ossète
@@ -370,7 +370,7 @@ built.
     sgn			Sign Languages					langues des signes
     shn			Shan						chan
     sid			Sidamo						sidamo
-    sin		si	Sinhalese					singhalais
+*   sin		si	Sinhalese					singhalais
     sio			Siouan languages				sioux, langues
     sit			Sino-Tibetan (Other)				sino-tibétaines, autres langues
     sla			Slavic (Other)					slaves, autres langues
@@ -407,16 +407,16 @@ built.
     syr			Syriac						syriaque
     tah		ty	Tahitian					tahitien
     tai			Tai (Other)					thaïes, autres langues
-    tam		ta	Tamil						tamoul
+*   tam		ta	Tamil						tamoul
     tat		tt	Tatar						tatar
-    tel		te	Telugu						télougou
+*   tel		te	Telugu						télougou
     tem			Timne						temne
     ter			Tereno						tereno
     tet			Tetum						tetum
     tgk		tg	Tajik						tadjik
-    tgl		tl	Tagalog						tagalog
+*   tgl		tl	Tagalog						tagalog
 *   tha		th	Thai						thaï
-    tib/bod*	bo	Tibetan						tibétain
+*   tib/bod*	bo	Tibetan						tibétain
     tig			Tigre						tigré
     tir		ti	Tigrinya					tigrigna
     tiv			Tiv						tiv
