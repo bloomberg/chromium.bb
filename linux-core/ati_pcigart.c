@@ -1,5 +1,5 @@
 /**
- * \file ati_pcigart.h 
+ * \file ati_pcigart.h
  * ATI PCI GART support
  *
  * \author Gareth Hughes <gareth@valinux.com>
@@ -52,7 +52,7 @@
 # define ATI_MAX_PCIGART_PAGES		8192	/**< 32 MB aperture, 4K pages */
 # define ATI_PCIGART_PAGE_SIZE		4096	/**< PCI GART page size */
 
-static unsigned long drm_ati_alloc_pcigart_table(void)
+unsigned long drm_ati_alloc_pcigart_table(void)
 {
 	unsigned long address;
 	struct page *page;
@@ -167,6 +167,7 @@ int drm_ati_pcigart_init(drm_device_t * dev,
 	*bus_addr = bus_address;
 	return ret;
 }
+EXPORT_SYMBOL(drm_ati_pcigart_init);
 
 int drm_ati_pcigart_cleanup(drm_device_t * dev,
 			    unsigned long addr, dma_addr_t bus_addr)
@@ -203,3 +204,5 @@ int drm_ati_pcigart_cleanup(drm_device_t * dev,
 
 	return 1;
 }
+EXPORT_SYMBOL(drm_ati_pcigart_cleanup);
+

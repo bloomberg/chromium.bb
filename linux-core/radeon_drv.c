@@ -34,7 +34,6 @@
 #include "drm.h"
 #include "radeon_drm.h"
 #include "radeon_drv.h"
-#include "ati_pcigart.h"
 
 #include "drm_pciids.h"
 
