@@ -289,6 +289,14 @@ main (int argc, char **argv)
     else
 	list = FcConfigGetConfigDirs (config);
     ret = scanDirs (list, config, argv[0], force, verbose);
+    /* 
+     * Now we need to sleep a second  (or two, to be extra sure), to make
+     * sure that timestamps for changes after this run of fc-cache are later
+     * then any timestamps we wrote.  We don't use gettimeofday() because
+     * sleep(3) can't be interrupted by a signal here -- this isn't in the
+     * library, and there aren't any signals flying around here.
+     */
+    sleep (2);
     if (verbose)
 	printf ("%s: %s\n", argv[0], ret ? "failed" : "succeeded");
     return ret;
