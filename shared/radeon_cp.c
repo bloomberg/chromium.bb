@@ -1389,8 +1389,6 @@ void radeon_do_release( drm_device_t *dev )
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
-	printk("radeon_do_release: %p\n", dev_priv);
-
 	if (dev_priv) {
 		/* Stop the cp */
 		radeon_do_cp_flush( dev_priv );
