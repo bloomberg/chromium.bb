@@ -1,5 +1,5 @@
 /*
- * linux/radeon_gpl.h
+ * linux/radeon_i2c.h
  *
  * Original author probably Benjamin Herrenschmidt <benh@kernel.crashing.org>
  * or Kronos <kronos@kronoz.cjb.net>

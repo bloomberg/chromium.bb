@@ -70,11 +70,23 @@ DRM_MODULES ?= $(MODULE_LIST)
 DRMTEMPLATES =  drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
                 drm_drv.h drm_fops.h drm_init.h drm_ioctl.h drm_irq.h \
                 drm_lock.h drm_memory.h drm_proc.h drm_stub.h drm_vm.h \
-                drm_core.h
+                drm_sysfs.h drm_core.h
 
 DRMSHARED =     drm.h drm_sarea.h
 DRMHEADERS =    drmP.h $(DRMSHARED)
 
+L24SHARED =	ati_pcigart.h drm_drawable.h drm_pci.h i810_dma.c i830_irq.c savage_dma.c \
+		Config.in drm_drv.h drmP.h i810_drm.h i915_drv.c savage_drm.h \
+		Doxyfile drm_fops.h drm_proc.h i810_drv.c Kconfig savage_drv.c \
+		drm_agpsupport.h drm_init.h drm_scatter.h i810_drv.h mach64_drv.c \
+		savage_drv.h drm_auth.h drm_ioctl.h drm_stub.h i810.h savage.h \
+		drm_bufs.h drm_irq.h drm_vm.h i830_dma.c drm_compat.h drm_lock.h \
+		ffb_context.c i830_drm.h mga_drv.c sis_drv.c drm_context.h \
+		drm_memory_debug.h ffb_drv.c i830_drv.c r128_drv.c tdfx_drv.c \
+		drm_memory.h ffb_drv.h i830_drv.h radeon_drv.c \
+		drm_dma.h drm_os_linux.h ffb.h i830.h README.drm
+
+            
 TDFXHEADERS =   tdfx.h $(DRMHEADERS) $(DRMTEMPLATES)
 TDFXSHARED =    tdfx.h
 R128HEADERS =   r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
@@ -238,6 +250,21 @@ $(SHAREDSRC):
 		(rm -f $@; set -x; ln -s $(SHAREDDIR)/$@ $@); fi
 
 CLEANFILES += $(SHAREDSRC)
+endif
+
+L24SHAREDDIR := ../linux
+
+HAS24SHARED := $(shell if [ -d $(L24SHAREDDIR) ]; then echo y; fi)
+
+ifeq ($(HAS24SHARED),y)
+
+includes:: $(L24SHARED)
+
+$(L24SHARED):
+	@if [ -r $(L24SHAREDDIR)/$@ ]; then \
+		(rm -f $@; set -x; ln -s $(L24SHAREDDIR)/$@ $@); fi
+
+CLEANFILES += $(L24SHARED)
 endif
 
 includes:: linux

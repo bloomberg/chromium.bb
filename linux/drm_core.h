@@ -39,6 +39,5 @@
 #include "drm_pci.h"
 #include "drm_proc.h"
 #include "drm_vm.h"
-#include "drm_sysfs.h"
 #include "drm_stub.h"
 #include "drm_scatter.h"

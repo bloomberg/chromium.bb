@@ -47,8 +47,8 @@ enum radeon_family {
 	CHIP_LAST,
 };
 
-#if defined(__linux__)
-#include "radeon_gpl.h"
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+#include "radeon_i2c.h"
 #endif
 
 /*
@@ -184,7 +184,7 @@ typedef struct drm_radeon_private {
 
 	/* starting from here on, data is preserved accross an open */
 	uint32_t flags;		/* see radeon_chip_flags */
-#if defined(__linux__)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
 	struct radeon_i2c_chan 	i2c[4];
 #endif
 } drm_radeon_private_t;
