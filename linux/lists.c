@@ -28,14 +28,12 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/lists.c,v 1.9 2000/08/28 02:43:15 tsi Exp $ */
 
 #define __NO_VERSION__
 #include "drmP.h"
 
 int drm_waitlist_create(drm_waitlist_t *bl, int count)
 {
-	DRM_DEBUG("%d\n", count);
 	if (bl->count) return -EINVAL;
 	
 	bl->count      = count;
@@ -51,7 +49,6 @@ int drm_waitlist_create(drm_waitlist_t *bl, int count)
 
 int drm_waitlist_destroy(drm_waitlist_t *bl)
 {
-	DRM_DEBUG("\n");
 	if (bl->rp != bl->wp) return -EINVAL;
 	if (bl->bufs) drm_free(bl->bufs,
 			       (bl->count + 2) * sizeof(*bl->bufs),
@@ -70,8 +67,6 @@ int drm_waitlist_put(drm_waitlist_t *bl, drm_buf_t *buf)
 	unsigned long flags;
 
 	left = DRM_LEFTCOUNT(bl);
-	DRM_DEBUG("put %d (%d left, rp = %p, wp = %p)\n",
-		  buf->idx, left, bl->rp, bl->wp);
 	if (!left) {
 		DRM_ERROR("Overflow while adding buffer %d from pid %d\n",
 			  buf->idx, buf->pid);
@@ -104,13 +99,11 @@ drm_buf_t *drm_waitlist_get(drm_waitlist_t *bl)
 	if (++bl->rp >= bl->end) bl->rp = bl->bufs;
 	spin_unlock_irqrestore(&bl->read_lock, flags);
 	
-	DRM_DEBUG("get %d\n", buf->idx);
 	return buf;
 }
 
 int drm_freelist_create(drm_freelist_t *bl, int count)
 {
-	DRM_DEBUG("\n");
 	atomic_set(&bl->count, 0);
 	bl->next      = NULL;
 	init_waitqueue_head(&bl->waiting);
@@ -124,7 +117,6 @@ int drm_freelist_create(drm_freelist_t *bl, int count)
 
 int drm_freelist_destroy(drm_freelist_t *bl)
 {
-	DRM_DEBUG("\n");
 	atomic_set(&bl->count, 0);
 	bl->next = NULL;
 	return 0;
@@ -143,9 +135,6 @@ int drm_freelist_put(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 		DRM_ERROR("Freed buffer %d: w%d, p%d, l%d\n",
 			  buf->idx, buf->waiting, buf->pending, buf->list);
 	}
-	DRM_DEBUG("%d, count = %d, wfh = %d, w%d, p%d\n",
-		  buf->idx, atomic_read(&bl->count), atomic_read(&bl->wfh),
-		  buf->waiting, buf->pending);
 	if (!bl) return 1;
 #if DRM_DMA_HISTOGRAM
 	buf->time_freed = get_cycles();
@@ -191,9 +180,6 @@ static drm_buf_t *drm_freelist_try(drm_freelist_t *bl)
 	atomic_dec(&bl->count);
 	buf->next = NULL;
 	buf->list = DRM_LIST_NONE;
-	DRM_DEBUG("%d, count = %d, wfh = %d, w%d, p%d\n",
-		  buf->idx, atomic_read(&bl->count), atomic_read(&bl->wfh),
-		  buf->waiting, buf->pending);
 	if (buf->waiting || buf->pending) {
 		DRM_ERROR("Free buffer %d: w%d, p%d, l%d\n",
 			  buf->idx, buf->waiting, buf->pending, buf->list);
@@ -213,13 +199,10 @@ drm_buf_t *drm_freelist_get(drm_freelist_t *bl, int block)
 	if (atomic_read(&bl->count) <= bl->low_mark) /* Became low */
 		atomic_set(&bl->wfh, 1);
 	if (atomic_read(&bl->wfh)) {
-		DRM_DEBUG("Block = %d, count = %d, wfh = %d\n",
-			  block, atomic_read(&bl->count),
-			  atomic_read(&bl->wfh));
 		if (block) {
 			add_wait_queue(&bl->waiting, &entry);
-			current->state = TASK_INTERRUPTIBLE;
 			for (;;) {
+				current->state = TASK_INTERRUPTIBLE;
 				if (!atomic_read(&bl->wfh)
 				    && (buf = drm_freelist_try(bl))) break;
 				schedule();
@@ -231,7 +214,5 @@ drm_buf_t *drm_freelist_get(drm_freelist_t *bl, int block)
 		return buf;
 	}
 		
-	DRM_DEBUG("Count = %d, wfh = %d\n",
-		  atomic_read(&bl->count), atomic_read(&bl->wfh));
 	return drm_freelist_try(bl);
 }

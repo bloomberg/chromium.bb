@@ -51,7 +51,7 @@ typedef struct {
 } drm_mga_prim_buf_t;
 
 typedef struct _drm_mga_freelist {
-   	unsigned int age;
+   	__volatile__ unsigned int age;
    	drm_buf_t *buf;
    	struct _drm_mga_freelist *next;
    	struct _drm_mga_freelist *prev;
@@ -378,6 +378,72 @@ drm_mga_prim_buf_t *tmp_buf = 					\
 #define MGAREG_YTOP 				0x1c98
 #define MGAREG_ZORG 				0x1c0c
 
+/* Warp registers */
+#define MGAREG_WR0                              0x2d00
+#define MGAREG_WR1                              0x2d04
+#define MGAREG_WR2                              0x2d08
+#define MGAREG_WR3                              0x2d0c
+#define MGAREG_WR4                              0x2d10
+#define MGAREG_WR5                              0x2d14
+#define MGAREG_WR6                              0x2d18
+#define MGAREG_WR7                              0x2d1c
+#define MGAREG_WR8                              0x2d20
+#define MGAREG_WR9                              0x2d24
+#define MGAREG_WR10                             0x2d28
+#define MGAREG_WR11                             0x2d2c
+#define MGAREG_WR12                             0x2d30
+#define MGAREG_WR13                             0x2d34
+#define MGAREG_WR14                             0x2d38
+#define MGAREG_WR15                             0x2d3c
+#define MGAREG_WR16                             0x2d40
+#define MGAREG_WR17                             0x2d44
+#define MGAREG_WR18                             0x2d48
+#define MGAREG_WR19                             0x2d4c
+#define MGAREG_WR20                             0x2d50
+#define MGAREG_WR21                             0x2d54
+#define MGAREG_WR22                             0x2d58
+#define MGAREG_WR23                             0x2d5c
+#define MGAREG_WR24                             0x2d60
+#define MGAREG_WR25                             0x2d64
+#define MGAREG_WR26                             0x2d68
+#define MGAREG_WR27                             0x2d6c
+#define MGAREG_WR28                             0x2d70
+#define MGAREG_WR29                             0x2d74
+#define MGAREG_WR30                             0x2d78
+#define MGAREG_WR31                             0x2d7c
+#define MGAREG_WR32                             0x2d80
+#define MGAREG_WR33                             0x2d84
+#define MGAREG_WR34                             0x2d88
+#define MGAREG_WR35                             0x2d8c
+#define MGAREG_WR36                             0x2d90
+#define MGAREG_WR37                             0x2d94
+#define MGAREG_WR38                             0x2d98
+#define MGAREG_WR39                             0x2d9c
+#define MGAREG_WR40                             0x2da0
+#define MGAREG_WR41                             0x2da4
+#define MGAREG_WR42                             0x2da8
+#define MGAREG_WR43                             0x2dac
+#define MGAREG_WR44                             0x2db0
+#define MGAREG_WR45                             0x2db4
+#define MGAREG_WR46                             0x2db8
+#define MGAREG_WR47                             0x2dbc
+#define MGAREG_WR48                             0x2dc0
+#define MGAREG_WR49                             0x2dc4
+#define MGAREG_WR50                             0x2dc8
+#define MGAREG_WR51                             0x2dcc
+#define MGAREG_WR52                             0x2dd0
+#define MGAREG_WR53                             0x2dd4
+#define MGAREG_WR54                             0x2dd8
+#define MGAREG_WR55                             0x2ddc
+#define MGAREG_WR56                             0x2de0
+#define MGAREG_WR57                             0x2de4
+#define MGAREG_WR58                             0x2de8
+#define MGAREG_WR59                             0x2dec
+#define MGAREG_WR60                             0x2df0
+#define MGAREG_WR61                             0x2df4
+#define MGAREG_WR62                             0x2df8
+#define MGAREG_WR63                             0x2dfc
+
 #define PDEA_pagpxfer_enable			0x2
 
 #define WIA_wmode_suspend			0x0
@@ -430,6 +496,7 @@ drm_mga_prim_buf_t *tmp_buf = 					\
 #define DC_transc_enable 			0x40000000
 #define DC_clipdis_disable 			0x0
 #define DC_clipdis_enable 			0x80000000
+
 
 #define SETADD_mode_vertlist                   	0x0
 

@@ -44,7 +44,7 @@
 #define MGAG200EMITTEX_SIZE 	20
 #define MGAG400EMITTEX0_SIZE	30
 #define MGAG400EMITTEX1_SIZE	25
-#define MGAG400EMITPIPE_SIZE	55
+#define MGAG400EMITPIPE_SIZE	50
 #define MGAG200EMITPIPE_SIZE	15
 
 #define MAX_STATE_SIZE ((MGAEMITCLIP_SIZE * MGA_NR_SAREA_CLIPRECTS) + \
@@ -57,24 +57,24 @@ static void mgaEmitClipRect(drm_mga_private_t * dev_priv,
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	unsigned int *regs = sarea_priv->ContextState;
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	/* This takes 10 dwords */
 	PRIMGETPTR(dev_priv);
 
-	/* Force reset of dwgctl (eliminates clip disable) */
+	/* Force reset of dwgctl on G400 (eliminates clip disable bit) */
+	if (dev_priv->chipset == MGA_CARD_TYPE_G400) {
 #if 0
-	PRIMOUTREG(MGAREG_DMAPAD, 0);
-	PRIMOUTREG(MGAREG_DWGSYNC, 0);
-	PRIMOUTREG(MGAREG_DWGSYNC, 0);
-	PRIMOUTREG(MGAREG_DWGCTL, regs[MGA_CTXREG_DWGCTL]);
+		PRIMOUTREG(MGAREG_DMAPAD, 0);
+		PRIMOUTREG(MGAREG_DWGSYNC, 0);
+		PRIMOUTREG(MGAREG_DWGSYNC, 0);
+		PRIMOUTREG(MGAREG_DWGCTL, regs[MGA_CTXREG_DWGCTL]);
 #else
-	PRIMOUTREG(MGAREG_DWGCTL, regs[MGA_CTXREG_DWGCTL]);
-	PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0x80000000);
-	PRIMOUTREG(MGAREG_DWGCTL, regs[MGA_CTXREG_DWGCTL]);
-	PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0x80000000);
+		PRIMOUTREG(MGAREG_DWGCTL, regs[MGA_CTXREG_DWGCTL]);
+		PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0x80000000);
+		PRIMOUTREG(MGAREG_DWGCTL, regs[MGA_CTXREG_DWGCTL]);
+		PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0x80000000);
 #endif
-
+	}
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 	PRIMOUTREG(MGAREG_CXBNDRY, ((box->x2) << 16) | (box->x1));
 	PRIMOUTREG(MGAREG_YTOP, box->y1 * dev_priv->stride / dev_priv->cpp);
@@ -88,7 +88,6 @@ static void mgaEmitContext(drm_mga_private_t * dev_priv)
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	unsigned int *regs = sarea_priv->ContextState;
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	/* This takes a max of 20 dwords */
 	PRIMGETPTR(dev_priv);
@@ -128,7 +127,6 @@ static void mgaG200EmitTex(drm_mga_private_t * dev_priv)
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	unsigned int *regs = sarea_priv->TexState[0];
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	PRIMGETPTR(dev_priv);
 
@@ -147,9 +145,9 @@ static void mgaG200EmitTex(drm_mga_private_t * dev_priv)
 	PRIMOUTREG(MGAREG_TEXORG4, regs[MGA_TEXREG_ORG4]);
 	PRIMOUTREG(MGAREG_TEXWIDTH, regs[MGA_TEXREG_WIDTH]);
 	PRIMOUTREG(MGAREG_TEXHEIGHT, regs[MGA_TEXREG_HEIGHT]);
-	PRIMOUTREG(0x2d00 + 24 * 4, regs[MGA_TEXREG_WIDTH]);
+	PRIMOUTREG(MGAREG_WR24, regs[MGA_TEXREG_WIDTH]);
 
-	PRIMOUTREG(0x2d00 + 34 * 4, regs[MGA_TEXREG_HEIGHT]);
+	PRIMOUTREG(MGAREG_WR34, regs[MGA_TEXREG_HEIGHT]);
 	PRIMOUTREG(MGAREG_TEXTRANS, 0xffff);
 	PRIMOUTREG(MGAREG_TEXTRANSHIGH, 0xffff);
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
@@ -163,13 +161,11 @@ static void mgaG400EmitTex0(drm_mga_private_t * dev_priv)
 {
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	unsigned int *regs = sarea_priv->TexState[0];
-	int multitex = regs[MGA_TEXREG_CTL2] & TMC_dualtex_enable;
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	PRIMGETPTR(dev_priv);
 
-	/* This takes a max of 30 dwords */
+	/* This takes 30 dwords */
 
 	PRIMOUTREG(MGAREG_TEXCTL2, regs[MGA_TEXREG_CTL2] | 0x00008000);
 	PRIMOUTREG(MGAREG_TEXCTL, regs[MGA_TEXREG_CTL]);
@@ -184,22 +180,20 @@ static void mgaG400EmitTex0(drm_mga_private_t * dev_priv)
 	PRIMOUTREG(MGAREG_TEXORG4, regs[MGA_TEXREG_ORG4]);
 	PRIMOUTREG(MGAREG_TEXWIDTH, regs[MGA_TEXREG_WIDTH]);
 	PRIMOUTREG(MGAREG_TEXHEIGHT, regs[MGA_TEXREG_HEIGHT]);
-	PRIMOUTREG(0x2d00 + 49 * 4, 0);
+	PRIMOUTREG(MGAREG_WR49, 0);
 
-	PRIMOUTREG(0x2d00 + 57 * 4, 0);
-	PRIMOUTREG(0x2d00 + 53 * 4, 0);
-	PRIMOUTREG(0x2d00 + 61 * 4, 0);
+	PRIMOUTREG(MGAREG_WR57, 0);
+	PRIMOUTREG(MGAREG_WR53, 0);
+	PRIMOUTREG(MGAREG_WR61, 0);
+	PRIMOUTREG(MGAREG_WR52, 0x40);
+
+	PRIMOUTREG(MGAREG_WR60, 0x40);
+	PRIMOUTREG(MGAREG_WR54, regs[MGA_TEXREG_WIDTH] | 0x40);
+	PRIMOUTREG(MGAREG_WR62, regs[MGA_TEXREG_HEIGHT] | 0x40);
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 
-	if (!multitex || 1) {
-		PRIMOUTREG(0x2d00 + 52 * 4, 0x40);
-		PRIMOUTREG(0x2d00 + 60 * 4, 0x40);
-		PRIMOUTREG(MGAREG_DMAPAD, 0);
-		PRIMOUTREG(MGAREG_DMAPAD, 0);
-	}
-
-	PRIMOUTREG(0x2d00 + 54 * 4, regs[MGA_TEXREG_WIDTH] | 0x40);
-	PRIMOUTREG(0x2d00 + 62 * 4, regs[MGA_TEXREG_HEIGHT] | 0x40);
+	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_DMAPAD, 0);
 	PRIMOUTREG(MGAREG_TEXTRANS, 0xffff);
 	PRIMOUTREG(MGAREG_TEXTRANSHIGH, 0xffff);
 
@@ -208,12 +202,11 @@ static void mgaG400EmitTex0(drm_mga_private_t * dev_priv)
 
 #define TMC_map1_enable 		0x80000000
 
-static void mgaG400EmitTex1(drm_mga_private_t * dev_priv, int source )
+static void mgaG400EmitTex1(drm_mga_private_t * dev_priv)
 {
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
-	unsigned int *regs = sarea_priv->TexState[source];
+	unsigned int *regs = sarea_priv->TexState[1];
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	PRIMGETPTR(dev_priv);
 
@@ -233,14 +226,14 @@ static void mgaG400EmitTex1(drm_mga_private_t * dev_priv, int source )
 	PRIMOUTREG(MGAREG_TEXORG4, regs[MGA_TEXREG_ORG4]);
 	PRIMOUTREG(MGAREG_TEXWIDTH, regs[MGA_TEXREG_WIDTH]);
 	PRIMOUTREG(MGAREG_TEXHEIGHT, regs[MGA_TEXREG_HEIGHT]);
-	PRIMOUTREG(0x2d00 + 49 * 4, 0);
+	PRIMOUTREG(MGAREG_WR49, 0);
 
-	PRIMOUTREG(0x2d00 + 57 * 4, 0);
-	PRIMOUTREG(0x2d00 + 53 * 4, 0);
-	PRIMOUTREG(0x2d00 + 61 * 4, 0);
-	PRIMOUTREG(0x2d00 + 52 * 4, regs[MGA_TEXREG_WIDTH] | 0x40);
+	PRIMOUTREG(MGAREG_WR57, 0);
+	PRIMOUTREG(MGAREG_WR53, 0);
+	PRIMOUTREG(MGAREG_WR61, 0);
+	PRIMOUTREG(MGAREG_WR52, regs[MGA_TEXREG_WIDTH] | 0x40);
 
-	PRIMOUTREG(0x2d00 + 60 * 4, regs[MGA_TEXREG_HEIGHT] | 0x40);
+	PRIMOUTREG(MGAREG_WR60, regs[MGA_TEXREG_HEIGHT] | 0x40);
 	PRIMOUTREG(MGAREG_TEXTRANS, 0xffff);
 	PRIMOUTREG(MGAREG_TEXTRANSHIGH, 0xffff);
 	PRIMOUTREG(MGAREG_TEXCTL2, regs[MGA_TEXREG_CTL2] | 0x00008000);
@@ -248,50 +241,29 @@ static void mgaG400EmitTex1(drm_mga_private_t * dev_priv, int source )
 	PRIMADVANCE(dev_priv);
 }
 
+#define MAGIC_FPARAM_HEX_VALUE 0x46480000
+/* This is the hex value of 12800.0f which is a magic value we must
+ * set in wr56.
+ */
+
 static void mgaG400EmitPipe(drm_mga_private_t * dev_priv)
 {
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	unsigned int pipe = sarea_priv->WarpPipe;
-	float fParam = 12800.0f;
-	int multitex = (sarea_priv->TexState[0][MGA_TEXREG_CTL2] &
-			TMC_dualtex_enable);
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	PRIMGETPTR(dev_priv);
 
 	/* This takes 50 dwords */
 
-	/* Establish vertex size.
+	/* Establish vertex size.  
 	 */
 	PRIMOUTREG(MGAREG_WIADDR2, WIA_wmode_suspend);
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 
-	if (sarea_priv->vertexsize == 10) {
-		PRIMOUTREG(MGAREG_YDST, 0);
-		PRIMOUTREG(MGAREG_FXLEFT, 0);
-		PRIMOUTREG(MGAREG_FXRIGHT, 1);
-		PRIMOUTREG(MGAREG_DWGCTL, MGA_FLUSH_CMD);
-
-		PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 1);
-		PRIMOUTREG(MGAREG_DMAPAD, 0);
-		PRIMOUTREG(MGAREG_DWGSYNC, 0x7000);
-		PRIMOUTREG(MGAREG_DMAPAD, 0);
-
-		if (multitex) {
-			PRIMOUTREG(MGAREG_TEXCTL2, 0 | 0x00008000);
-			PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0);
-			PRIMOUTREG(MGAREG_TEXCTL2, 0x80 | 0x00008000);
-			PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0);
-		} else {
-			PRIMOUTREG(MGAREG_TEXCTL2, 0 | 0x00008000);
-			PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0);
-			PRIMOUTREG(MGAREG_TEXCTL2, 0 | 0x00008000);
-			PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0);
-		}
-
+	if (pipe & MGA_T2) {
 		PRIMOUTREG(MGAREG_WVRTXSZ, 0x00001e09);
 		PRIMOUTREG(MGAREG_DMAPAD, 0);
 		PRIMOUTREG(MGAREG_DMAPAD, 0);
@@ -302,21 +274,23 @@ static void mgaG400EmitPipe(drm_mga_private_t * dev_priv)
 		PRIMOUTREG(MGAREG_WACCEPTSEQ, 0);
 		PRIMOUTREG(MGAREG_WACCEPTSEQ, 0x1e000000);
 	} else {
-		/* Flush the WARP pipe */
-		PRIMOUTREG(MGAREG_YDST, 0);
-		PRIMOUTREG(MGAREG_FXLEFT, 0);
-		PRIMOUTREG(MGAREG_FXRIGHT, 1);
-		PRIMOUTREG(MGAREG_DWGCTL, MGA_FLUSH_CMD);
+		if (dev_priv->WarpPipe & MGA_T2) {
+			/* Flush the WARP pipe */
+			PRIMOUTREG(MGAREG_YDST, 0);
+			PRIMOUTREG(MGAREG_FXLEFT, 0);
+			PRIMOUTREG(MGAREG_FXRIGHT, 1);
+			PRIMOUTREG(MGAREG_DWGCTL, MGA_FLUSH_CMD);
 
-		PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 1);
-		PRIMOUTREG(MGAREG_DMAPAD, 0);
-		PRIMOUTREG(MGAREG_DWGSYNC, 0x7000);
-		PRIMOUTREG(MGAREG_DMAPAD, 0);
+			PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 1);
+			PRIMOUTREG(MGAREG_DWGSYNC, 0x7000);
+			PRIMOUTREG(MGAREG_TEXCTL2, 0x00008000);
+			PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0);
 
-		PRIMOUTREG(MGAREG_TEXCTL2, 0 | 0x00008000);
-		PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0);
-		PRIMOUTREG(MGAREG_TEXCTL2, 0 | 0x00008000);
-		PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0);
+			PRIMOUTREG(MGAREG_TEXCTL2, 0x80 | 0x00008000);
+			PRIMOUTREG(MGAREG_LEN + MGAREG_MGA_EXEC, 0);
+			PRIMOUTREG(MGAREG_DMAPAD, 0);
+			PRIMOUTREG(MGAREG_DMAPAD, 0);
+		}
 
 		PRIMOUTREG(MGAREG_WVRTXSZ, 0x00001807);
 		PRIMOUTREG(MGAREG_DMAPAD, 0);
@@ -331,29 +305,26 @@ static void mgaG400EmitPipe(drm_mga_private_t * dev_priv)
 
 	PRIMOUTREG(MGAREG_WFLAG, 0);
 	PRIMOUTREG(MGAREG_WFLAG1, 0);
-	PRIMOUTREG(0x2d00 + 56 * 4, *((u32 *) (&fParam)));
+	PRIMOUTREG(MGAREG_WR56, MAGIC_FPARAM_HEX_VALUE);
 	PRIMOUTREG(MGAREG_DMAPAD, 0);
 
-	PRIMOUTREG(0x2d00 + 49 * 4, 0);	/* Tex stage 0 */
-	PRIMOUTREG(0x2d00 + 57 * 4, 0);	/* Tex stage 0 */
-	PRIMOUTREG(0x2d00 + 53 * 4, 0);	/* Tex stage 1 */
-	PRIMOUTREG(0x2d00 + 61 * 4, 0);	/* Tex stage 1 */
+	PRIMOUTREG(MGAREG_WR49, 0);	/* Tex stage 0 */
+	PRIMOUTREG(MGAREG_WR57, 0);	/* Tex stage 0 */
+	PRIMOUTREG(MGAREG_WR53, 0);	/* Tex stage 1 */
+	PRIMOUTREG(MGAREG_WR61, 0);	/* Tex stage 1 */
 
-	PRIMOUTREG(0x2d00 + 54 * 4, 0x40);	/* Tex stage 0 : w */
-	PRIMOUTREG(0x2d00 + 62 * 4, 0x40);	/* Tex stage 0 : h */
-	PRIMOUTREG(0x2d00 + 52 * 4, 0x40);	/* Tex stage 1 : w */
-	PRIMOUTREG(0x2d00 + 60 * 4, 0x40);	/* Tex stage 1 : h */
+	PRIMOUTREG(MGAREG_WR54, 0x40);	/* Tex stage 0 : w */
+	PRIMOUTREG(MGAREG_WR62, 0x40);	/* Tex stage 0 : h */
+	PRIMOUTREG(MGAREG_WR52, 0x40);	/* Tex stage 1 : w */
+	PRIMOUTREG(MGAREG_WR60, 0x40);	/* Tex stage 1 : h */
 
-	if (dev_priv->WarpPipe != pipe || 1) {
-		/* Dma pading required due to hw bug */
-		PRIMOUTREG(MGAREG_DMAPAD, 0xffffffff);
-		PRIMOUTREG(MGAREG_DMAPAD, 0xffffffff);
-		PRIMOUTREG(MGAREG_DMAPAD, 0xffffffff);
-		PRIMOUTREG(MGAREG_WIADDR2,
-			   (u32) (dev_priv->WarpIndex[pipe].phys_addr |
-				  WIA_wmode_start | WIA_wagp_agp));
-	}
-
+	/* Dma pading required due to hw bug */
+	PRIMOUTREG(MGAREG_DMAPAD, 0xffffffff);
+	PRIMOUTREG(MGAREG_DMAPAD, 0xffffffff);
+	PRIMOUTREG(MGAREG_DMAPAD, 0xffffffff);
+	PRIMOUTREG(MGAREG_WIADDR2,
+		   (u32) (dev_priv->WarpIndex[pipe].
+			  phys_addr | WIA_wmode_start | WIA_wagp_agp));
 	PRIMADVANCE(dev_priv);
 }
 
@@ -362,7 +333,6 @@ static void mgaG200EmitPipe(drm_mga_private_t * dev_priv)
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	unsigned int pipe = sarea_priv->WarpPipe;
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	PRIMGETPTR(dev_priv);
 
@@ -371,12 +341,12 @@ static void mgaG200EmitPipe(drm_mga_private_t * dev_priv)
 	PRIMOUTREG(MGAREG_WIADDR, WIA_wmode_suspend);
 	PRIMOUTREG(MGAREG_WVRTXSZ, 7);
 	PRIMOUTREG(MGAREG_WFLAG, 0);
-	PRIMOUTREG(0x2d00 + 24 * 4, 0);	/* tex w/h */
+	PRIMOUTREG(MGAREG_WR24, 0);	/* tex w/h */
 
-	PRIMOUTREG(0x2d00 + 25 * 4, 0x100);
-	PRIMOUTREG(0x2d00 + 34 * 4, 0);	/* tex w/h */
-	PRIMOUTREG(0x2d00 + 42 * 4, 0xFFFF);
-	PRIMOUTREG(0x2d00 + 60 * 4, 0xFFFF);
+	PRIMOUTREG(MGAREG_WR25, 0x100);
+	PRIMOUTREG(MGAREG_WR34, 0);	/* tex w/h */
+	PRIMOUTREG(MGAREG_WR42, 0xFFFF);
+	PRIMOUTREG(MGAREG_WR60, 0xFFFF);
 
 	/* Dma pading required due to hw bug */
 	PRIMOUTREG(MGAREG_DMAPAD, 0xffffffff);
@@ -393,23 +363,13 @@ static void mgaEmitState(drm_mga_private_t * dev_priv)
 {
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	unsigned int dirty = sarea_priv->dirty;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	if (dev_priv->chipset == MGA_CARD_TYPE_G400) {
-	        int multitex = (sarea_priv->TexState[0][MGA_TEXREG_CTL2] &
-				TMC_dualtex_enable);
+		int multitex = sarea_priv->WarpPipe & MGA_T2;
 
-  		dirty = ~0;
-
-		if (dirty & MGA_UPLOAD_PIPE
-/*  		    && (sarea_priv->WarpPipe != dev_priv->WarpPipe || */
-/*  		        sarea_priv->vertexsize != dev_priv->vertexsize) */
-		   )
-		{
+		if (sarea_priv->WarpPipe != dev_priv->WarpPipe) {
 			mgaG400EmitPipe(dev_priv);
 			dev_priv->WarpPipe = sarea_priv->WarpPipe;
-			dev_priv->vertexsize = sarea_priv->vertexsize;
-			sarea_priv->dirty &= ~MGA_UPLOAD_PIPE;
 		}
 
 		if (dirty & MGA_UPLOAD_CTX) {
@@ -422,11 +382,8 @@ static void mgaEmitState(drm_mga_private_t * dev_priv)
 			sarea_priv->dirty &= ~MGA_UPLOAD_TEX0;
 		}
 
-		if (dirty & MGA_UPLOAD_TEX1) {
-			if (multitex)
-				mgaG400EmitTex1(dev_priv, 1);
-			else
-				mgaG400EmitTex1(dev_priv, 0);
+		if ((dirty & MGA_UPLOAD_TEX1) && multitex) {
+			mgaG400EmitTex1(dev_priv);
 			sarea_priv->dirty &= ~MGA_UPLOAD_TEX1;
 		}
 	} else {
@@ -447,15 +404,12 @@ static void mgaEmitState(drm_mga_private_t * dev_priv)
 	}
 }
 
-
 /* Disallow all write destinations except the front and backbuffer.
  */
 static int mgaVerifyContext(drm_mga_private_t * dev_priv)
 {
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	unsigned int *regs = sarea_priv->ContextState;
-
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	if (regs[MGA_CTXREG_DSTORG] != dev_priv->frontOffset &&
 	    regs[MGA_CTXREG_DSTORG] != dev_priv->backOffset) {
@@ -475,8 +429,6 @@ static int mgaVerifyTex(drm_mga_private_t * dev_priv, int unit)
 {
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 
-	DRM_DEBUG("%s\n", __FUNCTION__);
-
 	if ((sarea_priv->TexState[unit][MGA_TEXREG_ORG] & 0x3) == 0x1) {
 		DRM_DEBUG("BAD TEXREG_ORG: %x, unit %d\n",
 			  sarea_priv->TexState[unit][MGA_TEXREG_ORG],
@@ -493,8 +445,6 @@ static int mgaVerifyState(drm_mga_private_t * dev_priv)
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	unsigned int dirty = sarea_priv->dirty;
 	int rv = 0;
-
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	if (sarea_priv->nbox > MGA_NR_SAREA_CLIPRECTS)
 		sarea_priv->nbox = MGA_NR_SAREA_CLIPRECTS;
@@ -523,8 +473,6 @@ static int mgaVerifyIload(drm_mga_private_t * dev_priv,
 			  unsigned long bus_address,
 			  unsigned int dstOrg, int length)
 {
-	DRM_DEBUG("%s\n", __FUNCTION__);
-
 	if (dstOrg < dev_priv->textureOffset ||
 	    dstOrg + length >
 	    (dev_priv->textureOffset + dev_priv->textureSize)) {
@@ -547,7 +495,6 @@ static void mga_dma_dispatch_tex_blit(drm_device_t * dev,
 	int use_agp = PDEA_pagpxfer_enable | 0x00000001;
 	u16 y2;
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	y2 = length / 64;
 
@@ -555,7 +502,6 @@ static void mga_dma_dispatch_tex_blit(drm_device_t * dev,
 
 	PRIMOUTREG(MGAREG_DSTORG, destOrg);
 	PRIMOUTREG(MGAREG_MACCESS, 0x00000000);
-	DRM_DEBUG("srcorg : %lx\n", bus_address | use_agp);
 	PRIMOUTREG(MGAREG_SRCORG, (u32) bus_address | use_agp);
 	PRIMOUTREG(MGAREG_AR5, 64);
 
@@ -569,10 +515,10 @@ static void mga_dma_dispatch_tex_blit(drm_device_t * dev,
 	PRIMOUTREG(MGAREG_FXBNDRY, (63 << 16));
 	PRIMOUTREG(MGAREG_YDSTLEN + MGAREG_MGA_EXEC, y2);
 
+	PRIMOUTREG(MGAREG_DMAPAD, 0);
 	PRIMOUTREG(MGAREG_SRCORG, 0);
 	PRIMOUTREG(MGAREG_PITCH, dev_priv->stride / dev_priv->cpp);
-	PRIMOUTREG(MGAREG_DMAPAD, 0);
-	PRIMOUTREG(MGAREG_DMAPAD, 0);
+	PRIMOUTREG(MGAREG_DWGSYNC, 0x7000);
 	PRIMADVANCE(dev_priv);
 }
 
@@ -586,14 +532,6 @@ static void mga_dma_dispatch_vertex(drm_device_t * dev, drm_buf_t * buf)
 	int use_agp = PDEA_pagpxfer_enable;
 	int i = 0;
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
-
-	DRM_DEBUG("dispatch vertex %d addr 0x%lx, "
-		  "length 0x%x nbox %d dirty %x\n",
-		  buf->idx, address, length,
-		  sarea_priv->nbox, sarea_priv->dirty);
-
-	DRM_DEBUG("used : %d, total : %d\n", buf->used, buf->total);
 
 	if (buf->used) {
 		/* WARNING: if you change any of the state functions verify
@@ -604,19 +542,12 @@ static void mga_dma_dispatch_vertex(drm_device_t * dev, drm_buf_t * buf)
 			      (MAX_STATE_SIZE + (5 * MGA_NR_SAREA_CLIPRECTS)));
 		mgaEmitState(dev_priv);
 
-/*  		length = dev_priv->vertexsize * 3 * 4; */
+#if 0
+		length = dev_priv->vertexsize * 3 * 4;
+#endif
 
 		do {
 			if (i < sarea_priv->nbox) {
-				DRM_DEBUG("idx %d Emit box %d/%d:"
-					  "%d,%d - %d,%d\n",
-					  buf->idx,
-					  i, sarea_priv->nbox,
-					  sarea_priv->boxes[i].x1,
-					  sarea_priv->boxes[i].y1,
-					  sarea_priv->boxes[i].x2,
-					  sarea_priv->boxes[i].y2);
-
 				mgaEmitClipRect(dev_priv,
 						&sarea_priv->boxes[i]);
 			}
@@ -653,12 +584,6 @@ static void mga_dma_dispatch_indices(drm_device_t * dev,
 	int use_agp = PDEA_pagpxfer_enable;
 	int i = 0;
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
-
-	DRM_DEBUG("dispatch indices %d addr 0x%x, "
-		  "start 0x%x end 0x%x nbox %d dirty %x\n",
-		  buf->idx, address, start, end,
-		  sarea_priv->nbox, sarea_priv->dirty);
 
 	if (start != end) {
 		/* WARNING: if you change any of the state functions verify
@@ -671,15 +596,6 @@ static void mga_dma_dispatch_indices(drm_device_t * dev,
 
 		do {
 			if (i < sarea_priv->nbox) {
-				DRM_DEBUG("idx %d Emit box %d/%d:"
-					  "%d,%d - %d,%d\n",
-					  buf->idx,
-					  i, sarea_priv->nbox,
-					  sarea_priv->boxes[i].x1,
-					  sarea_priv->boxes[i].y1,
-					  sarea_priv->boxes[i].x2,
-					  sarea_priv->boxes[i].y2);
-
 				mgaEmitClipRect(dev_priv,
 						&sarea_priv->boxes[i]);
 			}
@@ -719,7 +635,6 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, int flags,
 	unsigned int cmd;
 	int i;
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	if (dev_priv->sgram)
 		cmd = MGA_CLEAR_CMD | DC_atype_blk;
@@ -731,12 +646,7 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, int flags,
 	for (i = 0; i < nbox; i++) {
 		unsigned int height = pbox[i].y2 - pbox[i].y1;
 
-		DRM_DEBUG("dispatch clear %d,%d-%d,%d flags %x!\n",
-			  pbox[i].x1, pbox[i].y1, pbox[i].x2,
-			  pbox[i].y2, flags);
-
 		if (flags & MGA_FRONT) {
-			DRM_DEBUG("clear front\n");
 			PRIMOUTREG(MGAREG_DMAPAD, 0);
 			PRIMOUTREG(MGAREG_PLNWT, clear_colormask);
 			PRIMOUTREG(MGAREG_YDSTLEN,
@@ -751,7 +661,6 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, int flags,
 		}
 
 		if (flags & MGA_BACK) {
-			DRM_DEBUG("clear back\n");
 			PRIMOUTREG(MGAREG_DMAPAD, 0);
 			PRIMOUTREG(MGAREG_PLNWT, clear_colormask);
 			PRIMOUTREG(MGAREG_YDSTLEN,
@@ -766,7 +675,6 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, int flags,
 		}
 
 		if (flags & MGA_DEPTH) {
-			DRM_DEBUG("clear depth\n");
 			PRIMOUTREG(MGAREG_DMAPAD, 0);
 			PRIMOUTREG(MGAREG_PLNWT, clear_depthmask);
 			PRIMOUTREG(MGAREG_YDSTLEN,
@@ -800,7 +708,6 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 	int pixel_stride = dev_priv->stride / dev_priv->cpp;
 
 	PRIMLOCALS;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	PRIM_OVERFLOW(dev, dev_priv, (MGA_NR_SAREA_CLIPRECTS * 5) + 20);
 
@@ -822,9 +729,6 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 	for (i = 0; i < nbox; i++) {
 		unsigned int h = pbox[i].y2 - pbox[i].y1;
 		unsigned int start = pbox[i].y1 * pixel_stride;
-
-		DRM_DEBUG("dispatch swap %d,%d-%d,%d!\n",
-			  pbox[i].x1, pbox[i].y1, pbox[i].x2, pbox[i].y2);
 
 		PRIMOUTREG(MGAREG_AR0, start + pbox[i].x2 - 1);
 		PRIMOUTREG(MGAREG_AR3, start + pbox[i].x1);
@@ -855,7 +759,6 @@ int mga_clear_bufs(struct inode *inode, struct file *filp,
 
 	if (copy_from_user(&clear, (drm_mga_clear_t *) arg, sizeof(clear)))
 		return -EFAULT;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
 		DRM_ERROR("mga_clear_bufs called without lock held\n");
@@ -887,7 +790,6 @@ int mga_swap_bufs(struct inode *inode, struct file *filp,
 	drm_mga_private_t *dev_priv =
 	    (drm_mga_private_t *) dev->dev_private;
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
 		DRM_ERROR("mga_swap_bufs called without lock held\n");
@@ -922,9 +824,7 @@ int mga_iload(struct inode *inode, struct file *filp,
 	drm_mga_buf_priv_t *buf_priv;
 	drm_mga_iload_t iload;
 	unsigned long bus_address;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	DRM_DEBUG("Starting Iload\n");
 	if (copy_from_user(&iload, (drm_mga_iload_t *) arg, sizeof(iload)))
 		return -EFAULT;
 
@@ -936,8 +836,6 @@ int mga_iload(struct inode *inode, struct file *filp,
 	buf = dma->buflist[iload.idx];
 	buf_priv = buf->dev_private;
 	bus_address = buf->bus_address;
-	DRM_DEBUG("bus_address %lx, length %d, destorg : %x\n",
-		  bus_address, iload.length, iload.destOrg);
 
 	if (mgaVerifyIload(dev_priv,
 			   bus_address, iload.destOrg, iload.length)) {
@@ -968,7 +866,6 @@ int mga_vertex(struct inode *inode, struct file *filp,
 	drm_buf_t *buf;
 	drm_mga_buf_priv_t *buf_priv;
 	drm_mga_vertex_t vertex;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	if (copy_from_user(&vertex, (drm_mga_vertex_t *) arg, sizeof(vertex)))
 		return -EFAULT;
@@ -977,8 +874,6 @@ int mga_vertex(struct inode *inode, struct file *filp,
 		DRM_ERROR("mga_vertex called without lock held\n");
 		return -EINVAL;
 	}
-
-	DRM_DEBUG("mga_vertex\n");
 
 	buf = dma->buflist[vertex.idx];
 	buf_priv = buf->dev_private;
@@ -993,7 +888,6 @@ int mga_vertex(struct inode *inode, struct file *filp,
 			buf_priv->dispatched = 0;
 			mga_freelist_put(dev, buf);
 		}
-		DRM_DEBUG("bad state\n");
 		return -EINVAL;
 	}
 
@@ -1017,17 +911,15 @@ int mga_indices(struct inode *inode, struct file *filp,
 	drm_buf_t *buf;
 	drm_mga_buf_priv_t *buf_priv;
 	drm_mga_indices_t indices;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	if (copy_from_user(&indices, (drm_mga_indices_t *) arg, sizeof(indices)))
+	if (copy_from_user(&indices,
+			   (drm_mga_indices_t *)arg, sizeof(indices)))
 		return -EFAULT;
 
 	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
 		DRM_ERROR("mga_indices called without lock held\n");
 		return -EINVAL;
 	}
-
-	DRM_DEBUG("mga_indices\n");
 
 	buf = dma->buflist[indices.idx];
 	buf_priv = buf->dev_private;
@@ -1058,7 +950,6 @@ static int mga_dma_get_buffers(drm_device_t * dev, drm_dma_t * d)
 {
 	int i;
 	drm_buf_t *buf;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	for (i = d->granted_count; i < d->request_count; i++) {
 		buf = mga_freelist_get(dev);
@@ -1084,12 +975,9 @@ int mga_dma(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_dma_t *dma = dev->dma;
 	int retcode = 0;
 	drm_dma_t d;
-	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	if (copy_from_user(&d, (drm_dma_t *) arg, sizeof(d)))
 		return -EFAULT;
-	DRM_DEBUG("%d %d: %d send, %d req\n",
-		  current->pid, d.context, d.send_count, d.request_count);
 
 	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
 		DRM_ERROR("mga_dma called without lock held\n");
@@ -1120,8 +1008,6 @@ int mga_dma(struct inode *inode, struct file *filp, unsigned int cmd,
 		retcode = mga_dma_get_buffers(dev, &d);
 	}
 
-	DRM_DEBUG("%d returning, granted = %d\n",
-		  current->pid, d.granted_count);
 	if (copy_to_user((drm_dma_t *) arg, &d, sizeof(d)))
 		return -EFAULT;
 	return retcode;

@@ -436,6 +436,7 @@ typedef struct drm_file {
 	struct drm_file	  *next;
 	struct drm_file	  *prev;
 	struct drm_device *dev;
+	int 		  remove_auth_on_close;
 } drm_file_t;
 
 

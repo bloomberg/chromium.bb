@@ -68,8 +68,6 @@ struct page *drm_vm_nopage(struct vm_area_struct *vma,
 			   int write_access)
 #endif
 {
-	DRM_DEBUG("0x%08lx, %d\n", address, write_access);
-
 	return NOPAGE_SIGBUS;		/* Disallow mremap */
 }
 

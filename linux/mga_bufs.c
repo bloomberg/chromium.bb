@@ -66,7 +66,7 @@ int mga_addbufs_agp(struct inode *inode, struct file *filp, unsigned int cmd,
 	order = drm_order(request.size);
 	size	= 1 << order;
 	agp_offset = request.agp_start;
-	alignment  = (request.flags & _DRM_PAGE_ALIGN) ? PAGE_ALIGN(size) :size;
+	alignment  = (request.flags & _DRM_PAGE_ALIGN) ? PAGE_ALIGN(size):size;
 	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
 	total = PAGE_SIZE << page_order;
 	byte_count = 0;
@@ -119,8 +119,6 @@ int mga_addbufs_agp(struct inode *inode, struct file *filp, unsigned int cmd,
 		buf->order = order;
 		buf->used = 0;
 
-		DRM_DEBUG("offset : %ld\n", offset);
-
 		buf->offset = offset; /* Hrm */
 		buf->bus_address = dev->agp->base + agp_offset + offset;
 		buf->address = (void *)(agp_offset + offset + dev->agp->base);
@@ -130,7 +128,8 @@ int mga_addbufs_agp(struct inode *inode, struct file *filp, unsigned int cmd,
 		init_waitqueue_head(&buf->dma_wait);
 		buf->pid = 0;
 
-		buf->dev_private = drm_alloc(sizeof(drm_mga_buf_priv_t), DRM_MEM_BUFS);
+		buf->dev_private = drm_alloc(sizeof(drm_mga_buf_priv_t),
+					     DRM_MEM_BUFS);
 		buf->dev_priv_size = sizeof(drm_mga_buf_priv_t);
 
 #if DRM_DMA_HISTOGRAM
@@ -142,9 +141,6 @@ int mga_addbufs_agp(struct inode *inode, struct file *filp, unsigned int cmd,
 		offset = offset + alignment;
 		entry->buf_count++;
 		byte_count += PAGE_SIZE << page_order;
-      
-		DRM_DEBUG("buffer %d @ %p\n",
-			  entry->buf_count, buf->address);
 	}
    
 	dma->buflist = drm_realloc(dma->buflist,
@@ -234,7 +230,7 @@ int mga_addbufs_pci(struct inode *inode, struct file *filp, unsigned int cmd,
 	if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER) return -EINVAL;
 	if (dev->queue_count) return -EBUSY; /* Not while in use */
 
-	alignment  = (request.flags & _DRM_PAGE_ALIGN) ? PAGE_ALIGN(size) :size;
+	alignment  = (request.flags & _DRM_PAGE_ALIGN) ? PAGE_ALIGN(size):size;
 	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
 	total	   = PAGE_SIZE << page_order;
 
@@ -402,8 +398,6 @@ int mga_infobufs(struct inode *inode, struct file *filp, unsigned int cmd,
 		if (dma->bufs[i].buf_count) ++count;
 	}
 	
-	DRM_DEBUG("count = %d\n", count);
-	
 	if (request.count >= count) {
 		for (i = 0, count = 0; i < DRM_MAX_ORDER+1; i++) {
 			if (dma->bufs[i].buf_count) {
@@ -426,13 +420,6 @@ int mga_infobufs(struct inode *inode, struct file *filp, unsigned int cmd,
 						 sizeof(dma->bufs[0]
 							.freelist.high_mark)))
 					return -EFAULT;
-
-				DRM_DEBUG("%d %d %d %d %d\n",
-					  i,
-					  dma->bufs[i].buf_count,
-					  dma->bufs[i].buf_size,
-					  dma->bufs[i].freelist.low_mark,
-					  dma->bufs[i].freelist.high_mark);
 				++count;
 			}
 		}
@@ -459,13 +446,9 @@ int mga_markbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	if (!dma) return -EINVAL;
 
-	if (copy_from_user(&request,
-			   (drm_buf_desc_t *)arg,
-			   sizeof(request)))
+	if (copy_from_user(&request, (drm_buf_desc_t *)arg, sizeof(request)))
 		return -EFAULT;
 
-	DRM_DEBUG("%d, %d, %d\n",
-		  request.size, request.low_mark, request.high_mark);
 	order = drm_order(request.size);
 	if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER) return -EINVAL;
 	entry = &dma->bufs[order];
@@ -499,7 +482,6 @@ int mga_freebufs(struct inode *inode, struct file *filp, unsigned int cmd,
 			   sizeof(request)))
 		return -EFAULT;
 
-	DRM_DEBUG("%d\n", request.count);
 	for (i = 0; i < request.count; i++) {
 		if (copy_from_user(&idx,
 				   &request.list[i],
@@ -537,12 +519,9 @@ int mga_mapbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	if (!dma) return -EINVAL;
 	
-	DRM_DEBUG("\n");
-
 	spin_lock(&dev->count_lock);
 	if (atomic_read(&dev->buf_alloc)) {
 		spin_unlock(&dev->count_lock);
-		DRM_DEBUG("Busy\n");
 		return -EBUSY;
 	}
 	++dev->buf_use;		/* Can't allocate more after this call */
@@ -553,9 +532,6 @@ int mga_mapbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 			   sizeof(request)))
 		return -EFAULT;
 
-	DRM_DEBUG("mga_mapbufs\n");
-   	DRM_DEBUG("dma->flags : %x\n", dma->flags);
-   
 	if (request.count >= dma->buf_count) {
 		if(dma->flags & _DRM_DMA_USE_AGP) {
 			drm_mga_private_t *dev_priv = dev->dev_private;
@@ -563,7 +539,6 @@ int mga_mapbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 	 
 			map = dev->maplist[dev_priv->buffer_map_idx];
 			if (!map) {
-				DRM_DEBUG("map is null\n");
 				retcode = -EINVAL;
 				goto done;
 			}

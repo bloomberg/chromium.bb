@@ -50,7 +50,6 @@ int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
 {
 	unsigned int old, new, prev;
 
-	DRM_DEBUG("%d attempts\n", context);
 	do {
 		old = *lock;
 		if (old & _DRM_LOCK_HELD) new = old | _DRM_LOCK_CONT;
@@ -68,11 +67,8 @@ int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
 	}
 	if (new == (context | _DRM_LOCK_HELD)) {
 				/* Have lock */
-		DRM_DEBUG("%d\n", context);
 		return 1;
 	}
-	DRM_DEBUG("%d unable to get lock held by %d\n",
-		  context, _DRM_LOCKING_CONTEXT(old));
 	return 0;
 }
 
@@ -89,7 +85,6 @@ int drm_lock_transfer(drm_device_t *dev,
 		new  = context | _DRM_LOCK_HELD;
 		prev = cmpxchg(lock, old, new);
 	} while (prev != old);
-	DRM_DEBUG("%d => %d\n", _DRM_LOCKING_CONTEXT(old), context);
 	return 1;
 }
 
@@ -99,7 +94,6 @@ int drm_lock_free(drm_device_t *dev,
 	unsigned int old, new, prev;
 	pid_t        pid = dev->lock.pid;
 
-	DRM_DEBUG("%d\n", context);
 	dev->lock.pid = 0;
 	do {
 		old  = *lock;
@@ -128,10 +122,10 @@ static int drm_flush_queue(drm_device_t *dev, int context)
 	atomic_inc(&q->use_count);
 	if (atomic_read(&q->use_count) > 1) {
 		atomic_inc(&q->block_write);
-		current->state = TASK_INTERRUPTIBLE;
 		add_wait_queue(&q->flush_queue, &entry);
 		atomic_inc(&q->block_count);
 		for (;;) {
+			current->state = TASK_INTERRUPTIBLE;
 			if (!DRM_BUFCOUNT(&q->waitlist)) break;
 			schedule();
 			if (signal_pending(current)) {
