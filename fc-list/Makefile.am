@@ -23,10 +23,10 @@
 
 bin_PROGRAMS=fc-list
 
-man1_MANS=fc-list.man
+man_MANS=fc-list.1
 
 INCLUDES=$(FREETYPE_CFLAGS)
 
-EXTRA_DIST=$(man1_MANS)
+EXTRA_DIST=$(man_MANS)
 
 fc_list_LDADD = ../src/libfontconfig.la

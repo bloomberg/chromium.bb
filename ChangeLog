@@ -1,3 +1,7 @@
+2003-05-04  Keith Packard <keithp@keithp.com
+
+	+ Map glyph names in fonts with adobe custom encoding to unicode
+
 2003-04-23  James Henstridge  <james@daa.com.au>
 
 	* doc/fontconfig-devel.sgml: close the <para> element.

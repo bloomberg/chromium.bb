@@ -23,10 +23,10 @@
 
 INCLUDES=$(FREETYPE_CFLAGS)
 
-man1_MANS=fc-cache.man
+man_MANS=fc-cache.1
 
 bin_PROGRAMS=fc-cache
 
-EXTRA_DIST=$(man1_MANS)
+EXTRA_DIST=$(man_MANS)
 
 fc_cache_LDADD = ../src/libfontconfig.la

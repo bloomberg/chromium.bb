@@ -27,10 +27,11 @@
 fc-list \- list available fonts
 .SH SYNOPSIS
 .B "fc-list"
-.RI [ font-pattern ]
+.RI [-vV?] [--verbose] [--version] [ font-pattern ] { element ... }
 .SH DESCRIPTION
 If font pattern is not given,
 .I fc-list
 lists all available faces and styles in the current font configuration.
+If elements are provided, list only those elements of each matching pattern.
 .SH "SEE ALSO"
 fontconfig(3)

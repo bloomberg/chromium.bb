@@ -61,13 +61,24 @@ extern int optind, opterr, optopt;
 
 static void usage (char *program)
 {
+#if HAVE_GETOPT_LONG
     fprintf (stderr, "usage: %s [-vV?] [--verbose] [--version] [--help] [pattern] {element ...} \n",
 	     program);
+#else
+    fprintf (stderr, "usage: %s [-vV?] [pattern] {element ...} \n",
+	     program);
+#endif
     fprintf (stderr, "List fonts matching [pattern]\n");
     fprintf (stderr, "\n");
+#if HAVE_GETOPT_LONG
     fprintf (stderr, "  -v, --verbose        display status information while busy\n");
     fprintf (stderr, "  -V, --version        display font config version and exit\n");
     fprintf (stderr, "  -?, --help           display this help and exit\n");
+#else
+    fprintf (stderr, "  -v         (verbose) display status information while busy\n");
+    fprintf (stderr, "  -V         (version) display font config version and exit\n");
+    fprintf (stderr, "  -?         (help)    display this help and exit\n");
+#endif
     exit (1);
 }
 

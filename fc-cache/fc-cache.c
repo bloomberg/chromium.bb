@@ -67,16 +67,29 @@ extern int optind, opterr, optopt;
 static void
 usage (char *program)
 {
-    fprintf (stderr, "usage: %s [-fvV?] [--force] [--verbose] [--version] [--help] [dirs]\n",
+#if HAVE_GETOPT_LONG
+    fprintf (stderr, "usage: %s [-fsvV?] [--force] [--system-only] [--verbose] [--version] [--help] [dirs]\n",
 	     program);
+#else
+    fprintf (stderr, "usage: %s [-fsvV?] [dirs]\n",
+	     program);
+#endif
     fprintf (stderr, "Build font information caches in [dirs]\n"
 	     "(all directories in font configuration by default).\n");
     fprintf (stderr, "\n");
+#if HAVE_GETOPT_LONG
     fprintf (stderr, "  -f, --force          scan directories with apparently valid caches\n");
     fprintf (stderr, "  -s, --system-only    scan system-wide directories only\n");
     fprintf (stderr, "  -v, --verbose        display status information while busy\n");
     fprintf (stderr, "  -V, --version        display font config version and exit\n");
     fprintf (stderr, "  -?, --help           display this help and exit\n");
+#else
+    fprintf (stderr, "  -f         (force)   scan directories with apparently valid caches\n");
+    fprintf (stderr, "  -s         (system)  scan system-wide directories only\n");
+    fprintf (stderr, "  -v         (verbose) display status information while busy\n");
+    fprintf (stderr, "  -V         (version) display font config version and exit\n");
+    fprintf (stderr, "  -?         (help)    display this help and exit\n");
+#endif
     exit (1);
 }
 
@@ -216,9 +229,9 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "fVv?", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "fsVv?", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "fVv?")) != -1)
+    while ((c = getopt (argc, argv, "fsVv?")) != -1)
 #endif
     {
 	switch (c) {

@@ -27,7 +27,7 @@
 fc-cache, fonts.cache \- create an index of FreeType font files in a directory
 .SH SYNOPSIS
 .B "fc-cache"
-.RI [ directory-name
+.RI [-fsvV?] [--force] [--system-only] [--verbose] [--version] [--help] [ directory-name
 \|.\|.\|. ]
 .SH DESCRIPTION
 If directory arguments are not given,
@@ -36,6 +36,12 @@ uses each directory in the current font configuration.  Each directory is
 scanned for font files readable by FreeType.  A cache is created which
 contains properties of each font and the associated filename.  This cache is
 used to speed application startup when using the fontconfig library.
+.P
+Use -f (or --force on systems supporting long arguments) to override the
+usual timestamp checking and ensure that new cache files are built.
+.P
+Use -s (or --system-only on systems supporting long arguments) to restrict
+the updates to fonts not located in the current users home directory.
 .SH FILES
 .TP 15
 .B fonts.cache
