@@ -689,15 +689,15 @@ int
 FcStrCmp (const FcChar8 *s1, const FcChar8 *s2);
 
 int
-FcUtf8ToUcs4 (FcChar8   *src_orig,
-	      FcChar32  *dst,
-	      int	len);
+FcUtf8ToUcs4 (const FcChar8 *src_orig,
+	      FcChar32	    *dst,
+	      int	    len);
 
 FcBool
-FcUtf8Len (FcChar8	*string,
-	   int		len,
-	   int		*nchar,
-	   int		*wchar);
+FcUtf8Len (const FcChar8    *string,
+	   int		    len,
+	   int		    *nchar,
+	   int		    *wchar);
 
 #define FC_UTF8_MAX_LEN	6
 
@@ -706,17 +706,17 @@ FcUcs4ToUtf8 (FcChar32	ucs4,
 	      FcChar8	dest[FC_UTF8_MAX_LEN]);
 
 int
-FcUtf16ToUcs4 (FcChar8	*src_orig,
-	       FcEndian	endian,
-	       FcChar32 *dst,
-	       int	len);	    /* in bytes */
+FcUtf16ToUcs4 (const FcChar8	*src_orig,
+	       FcEndian		endian,
+	       FcChar32		*dst,
+	       int		len);	    /* in bytes */
 
 FcBool
-FcUtf16Len (FcChar8	*string,
-	    FcEndian	endian,
-	    int		len,	    /* in bytes */
-	    int		*nchar,
-	    int		*wchar);
+FcUtf16Len (const FcChar8   *string,
+	    FcEndian	    endian,
+	    int		    len,	    /* in bytes */
+	    int		    *nchar,
+	    int		    *wchar);
 
 FcChar8 *
 FcStrDirname (const FcChar8 *file);

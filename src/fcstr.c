@@ -125,14 +125,14 @@ FcStrCmp (const FcChar8 *s1, const FcChar8 *s2)
 }
 
 int
-FcUtf8ToUcs4 (FcChar8   *src_orig,
-	      FcChar32  *dst,
-	      int	len)
+FcUtf8ToUcs4 (const FcChar8 *src_orig,
+	      FcChar32	    *dst,
+	      int	    len)
 {
-    FcChar8	*src = src_orig;
-    FcChar8	s;
-    int		extra;
-    FcChar32	result;
+    const FcChar8   *src = src_orig;
+    FcChar8	    s;
+    int		    extra;
+    FcChar32	    result;
 
     if (len == 0)
 	return 0;
@@ -196,10 +196,10 @@ FcUtf8ToUcs4 (FcChar8   *src_orig,
 }
 
 FcBool
-FcUtf8Len (FcChar8	*string,
-	    int		len,
-	    int		*nchar,
-	    int		*wchar)
+FcUtf8Len (const FcChar8    *string,
+	   int		    len,
+	   int		    *nchar,
+	   int		    *wchar)
 {
     int		n;
     int		clen;
@@ -255,14 +255,14 @@ FcUcs4ToUtf8 (FcChar32	ucs4,
      (FcChar16) ((src)[endian == FcEndianBig ? 1 : 0]))
 
 int
-FcUtf16ToUcs4 (FcChar8	*src_orig,
-	       FcEndian	endian,
-	       FcChar32	*dst,
-	       int	len)	/* in bytes */
+FcUtf16ToUcs4 (const FcChar8	*src_orig,
+	       FcEndian		endian,
+	       FcChar32		*dst,
+	       int		len)	/* in bytes */
 {
-    FcChar8	*src = src_orig;
-    FcChar16	a, b;
-    FcChar32	result;
+    const FcChar8   *src = src_orig;
+    FcChar16	    a, b;
+    FcChar32	    result;
 
     if (len < 2)
 	return 0;
@@ -292,11 +292,11 @@ FcUtf16ToUcs4 (FcChar8	*src_orig,
 }
 
 FcBool
-FcUtf16Len (FcChar8	*string,
-	    FcEndian	endian,
-	    int		len,	/* in bytes */
-	    int		*nchar,
-	    int		*wchar)
+FcUtf16Len (const FcChar8   *string,
+	    FcEndian	    endian,
+	    int		    len,	/* in bytes */
+	    int		    *nchar,
+	    int		    *wchar)
 {
     int		n;
     int		clen;
