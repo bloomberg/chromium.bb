@@ -33,11 +33,7 @@
 #include "drmP.h"
 #include "drm.h"
 
-#ifdef DRM_DEBUG_DEFAULT_ON
-int drm_flags = DRM_FLAG_DEBUG;
-#else
-int drm_flags = 0;
-#endif
+int drm_debug_flag = 0;
 
 static int drm_init(device_t nbdev);
 static void drm_cleanup(drm_device_t *dev);

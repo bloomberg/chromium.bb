@@ -128,8 +128,6 @@ typedef struct drm_file drm_file_t;
 #define DRM_KERNEL_CONTEXT    0	 /* Change drm_resctx if changed	  */
 #define DRM_RESERVED_CONTEXTS 1	 /* Change drm_resctx if changed	  */
 
-#define DRM_FLAG_DEBUG	  0x01
-
 #define DRM_MEM_DMA	   0
 #define DRM_MEM_SAREA	   1
 #define DRM_MEM_DRIVER	   2
@@ -414,7 +412,7 @@ for ( ret = 0 ; !ret && !(condition) ; ) {		\
 #define DRM_INFO(fmt, arg...)  printf("info: [" DRM_NAME "] " fmt , ## arg)
 
 #define DRM_DEBUG(fmt, arg...) do {					\
-	if (drm_flags & DRM_FLAG_DEBUG)					\
+	if (drm_debug_flag)						\
 		printf("[" DRM_NAME ":pid%d:%s] " fmt, DRM_CURRENTPID,	\
 			__func__ , ## arg);				\
 } while (0)
@@ -729,8 +727,7 @@ struct drm_device {
 	drm_local_map_t   *agp_buffer_map;
 };
 
-extern int	drm_flags;
-
+extern int	drm_debug_flag;
 
 /* Device setup support (drm_drv.c) */
 #ifdef __FreeBSD__

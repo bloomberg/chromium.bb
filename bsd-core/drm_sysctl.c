@@ -96,6 +96,10 @@ int drm_sysctl_init(drm_device_t *dev)
 		if (!oid)
 			return 1;
 	}
+	SYSCTL_ADD_INT(&info->ctx, SYSCTL_CHILDREN(top), OID_AUTO, "debug",
+	    CTLFLAG_RW, &drm_debug_flag, sizeof(drm_debug_flag),
+	    "Enable debugging output");
+
 	return 0;
 }
 
