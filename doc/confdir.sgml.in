@@ -22,4 +22,4 @@
    PERFORMANCE OF THIS SOFTWARE.
 -->
 <!-- this is filled in at make time -->
-@SYSCONFDIR@/fonts
+@CONFDIR@

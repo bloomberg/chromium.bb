@@ -135,8 +135,9 @@ fontconfig-user.html: fontconfig-user.sgml version.sgml confdir.sgml
 
 fontconfig-user.txt:  fontconfig-user.sgml version.sgml confdir.sgml
 
+STRIPNL=awk '{ if (NR > 1) printf ("\n"); printf ("%s", $$0); }'
 confdir.sgml: confdir.sgml.in
-	sed "s,@SYSCONFDIR@,${sysconfdir}," < confdir.sgml.in > confdir.sgml
+	sed "s,@CONFDIR\@,${CONFDIR}," < confdir.sgml.in | $(STRIPNL) > confdir.sgml
 
 else
 all-local:
