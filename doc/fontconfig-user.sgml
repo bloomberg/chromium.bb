@@ -1,4 +1,6 @@
-<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V3.1//EN">
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V3.1//EN" [
+<!ENTITY version SYSTEM "version.sgml">
+]>
 <!--
     $Id$
    
@@ -38,19 +40,19 @@
    ~/.fonts.conf
 </synopsis>
 </refsynopsisdiv>
-<refsect1><title>DESCRIPTION</title>
+<refsect1><title>Description</title>
   <para>
 Fontconfig is a library designed to provide system-wide font configuration,
 customization and application access.
   </para>
 </refsect1>
-<refsect1><title>FUNCTIONAL OVERVIEW</title>
+<refsect1><title>Functional Overview</title>
   <para>
 Fontconfig contains two essential modules, the configuration module which
 builds an internal configuration from XML files and the matching module
 which accepts font patterns and returns the nearest matching font.
   </para>
-  <refsect2><title>FONT CONFIGURATION</title>
+  <refsect2><title>Font Configuration</title>
     <para>
 The configuration module consists of the FcConfig datatype, libexpat and
 FcConfigParse which walks over an XML tree and ammends a configuration with
@@ -78,7 +80,7 @@ simplify and regularize font installation and customization.
     </para>
   </refsect2>
   <refsect2>
-    <title>FONT PROPERTIES</title>
+    <title>Font Properties</title>
     <para>
 While font patterns may contain essentially any properties, there are some
 well known properties with associated types.  Fontconfig uses some of these
@@ -119,7 +121,7 @@ convenience for the applications rendering mechanism.
     </programlisting>
   </refsect2>
   <refsect2>
-  <title>FONT MATCHING</title>
+  <title>Font Matching</title>
     <para>
 Fontconfig performs matching by measuring the distance from a provided
 pattern to all of the available fonts in the system.  The closest matching
@@ -177,7 +179,7 @@ rasterized.  Those must apply to the selected font, not the original pattern
 as false matches will often occur.
     </para>
   </refsect2>
-  <refsect2><title>FONT NAMES</title>
+  <refsect2><title>Font Names</title>
     <para>
 Fontconfig provides a textual representation for patterns that the library
 can both accept and generate.  The representation is in three parts, first a
@@ -204,7 +206,7 @@ Here are some examples:
     </programlisting>
   </refsect2>
 </refsect1>
-<refsect1><title>LANG TAGS</title>
+<refsect1><title>Lang Tags</title>
   <para>
 Each font in the database contains a list of languages it supports.  This is
 computed by comparing the Unicode coverage of the font with the orthography
@@ -219,7 +221,7 @@ library.  It currently supports 122 of the 139 languages named in ISO 639-1,
 languages with only three-letter codes.
   </para>
 </refsect1>
-<refsect1><title>CONFIGURATION FILE FORMAT</title>
+<refsect1><title>Configuration File Format</title>
   <para>
 Configuration files for fontconfig are stored in XML format; this
 format makes external configuration tools easier to write and ensures that
@@ -499,7 +501,7 @@ This is an example of a per-user configuration file that lives in
     </programlisting>
   </refsect2>
 </refsect1>
-<refsect1><title>FILES</title>
+<refsect1><title>Files</title>
   <para>
 <emphasis>fonts.conf</emphasis>
 contains configuration information for the fontconfig library
@@ -521,5 +523,10 @@ actual location is specified in the global fonts.conf file.
 is the conventional repository of font information that isn't found in the
 per-directory caches.  This file is automatically maintained by fontconfig.
   </para>
+</refsect1>
+<refsect1><title>Version</title>
+	    <para>
+Fontconfig version &version;
+	    </para>
 </refsect1>
 </refentry>

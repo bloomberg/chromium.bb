@@ -85,4 +85,5 @@
 	    <para>
 Fontconfig version &version;
 	    </para>
+	</refsect1>
     </refentry>
