@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-lang/fc-lang.c,v 1.2 2002/07/07 19:18:51 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fc-lang/fc-lang.c,v 1.3 2002/08/22 07:36:43 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -165,22 +165,38 @@ static int compare (const void *a, const void *b)
     return FcStrCmpIgnoreCase (*as, *bs);
 }
 
+#define MAX_LANG	    1024
+#define MAX_LANG_SET_MAP    ((MAX_LANG + 31) / 32)
+
+#define BitSet(map, id)   ((map)[(id)>>5] |= ((FcChar32) 1 << ((id) & 0x1f)))
+#define BitGet(map, id)   ((map)[(id)>>5] >> ((id) & 0x1f)) & 1)
+
 int
 main (int argc, char **argv)
 {
-    char	*files[1024];
-    FcCharSet	*sets[1024];
-    int		duplicate[1024];
-    char	*names[1024];
+    char	*files[MAX_LANG];
+    FcCharSet	*sets[MAX_LANG];
+    int		duplicate[MAX_LANG];
+    int		country[MAX_LANG];
+    char	*names[MAX_LANG];
+    char	*langs[MAX_LANG];
     FILE	*f;
+    int		ncountry = 0;
     int		i = 0;
     FcCharLeaf	**leaves, **sleaves;
     int		total_leaves = 0;
     int		l, sl, tl;
+    int		c;
     char	line[1024];
+    FcChar32	map[MAX_LANG_SET_MAP];
+    int		num_lang_set_map;
     
     while (*++argv)
+    {
+	if (i == MAX_LANG)
+	    fatal (*argv, 0, "Too many languages");
 	files[i++] = *argv;
+    }
     files[i] = 0;
     qsort (files, i, sizeof (char *), compare);
     i = 0;
@@ -191,6 +207,10 @@ main (int argc, char **argv)
 	    fatal (files[i], 0, strerror (errno));
 	sets[i] = scan (f, files[i]);
 	names[i] = get_name (files[i]);
+	langs[i] = get_lang(names[i]);
+	if (strchr (langs[i], '-'))
+	    country[ncountry++] = i;
+
 	total_leaves += sets[i]->num;
 	i++;
 	fclose (f);
@@ -319,10 +339,54 @@ main (int argc, char **argv)
 		"      { FC_REF_CONSTANT, %d, "
 		"(FcCharLeaf **) leaves_%s, "
 		"(FcChar16 *) numbers_%s } },\n",
-		get_lang(names[i]),
+		langs[i],
 		sets[j]->num, names[j], names[j]);
     }
     printf ("};\n\n");
+    printf ("#define NUM_LANG_CHAR_SET	%d\n", i);
+    num_lang_set_map = (i + 31) / 32;
+    printf ("#define NUM_LANG_SET_MAP	%d\n", num_lang_set_map);
+    /*
+     * Dump indices with country codes
+     */
+    if (ncountry)
+    {
+	int	ncountry_ent = 0;
+	printf ("\n");
+	printf ("static const FcChar32 fcLangCountrySets[][NUM_LANG_SET_MAP] = {\n");
+	for (c = 0; c < ncountry; c++)
+	{
+	    i = country[c];
+	    if (i >= 0)
+	    {
+		int l = strchr (langs[i], '-') - langs[i];
+		int d, k;
+
+		for (k = 0; k < num_lang_set_map; k++)
+		    map[k] = 0;
+
+		BitSet (map, i);
+		for (d = c + 1; d < ncountry; d++)
+		{
+		    int j = country[d];
+		    if (j >= 0 && !strncmp (langs[j], langs[i], l))
+		    {
+			BitSet(map, j);
+			country[d] = -1;
+		    }
+		}
+		printf ("    {");
+		for (k = 0; k < num_lang_set_map; k++)
+		    printf (" 0x%08x,", map[k]);
+		printf (" }, /* %*.*s */\n",
+			l, l, langs[i]);
+		++ncountry_ent;
+	    }
+	}
+	printf ("};\n\n");
+	printf ("#define NUM_COUNTRY_SET %d\n", ncountry_ent);
+    }
+    
     while (fgets (line, sizeof (line), stdin))
 	fputs (line, stdout);
     
