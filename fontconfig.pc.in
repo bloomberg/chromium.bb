@@ -6,6 +6,5 @@ includedir=@includedir@
 Name: Fontconfig
 Description: Font configuration and customization library
 Version: @PACKAGE_VERSION@
-Requires: freetype2
 Libs: -L${libdir} -lfontconfig
 Cflags: -I${includedir}
