@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-list/fc-list.c,v 1.2 2002/02/15 06:01:26 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fc-list/fc-list.c,v 1.5 2002/06/30 23:45:40 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -124,7 +124,7 @@ main (int argc, char **argv)
 	pat = FcPatternCreate ();
     
     if (!os)
-	os = FcObjectSetBuild (FC_FAMILY, FC_STYLE);
+	os = FcObjectSetBuild (FC_FAMILY, FC_STYLE, 0);
     fs = FcFontList (0, pat, os);
     if (pat)
 	FcPatternDestroy (pat);
