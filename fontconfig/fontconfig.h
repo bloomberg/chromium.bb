@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.12 2002/05/29 08:21:33 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.13 2002/05/31 04:42:42 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -59,6 +59,7 @@ typedef int		FcBool;
 #define FC_GLOBAL_ADVANCE   "globaladvance"	/* Bool (true) */
 #define FC_FILE		    "file"		/* String */
 #define FC_INDEX	    "index"		/* Int */
+#define FC_FT_FACE	    "ftface"		/* FT_Face */
 #define FC_RASTERIZER	    "rasterizer"	/* String */
 #define FC_OUTLINE	    "outline"		/* Bool */
 #define FC_SCALABLE	    "scalable"		/* Bool */
@@ -145,7 +146,8 @@ typedef enum _FcType {
     FcTypeString, 
     FcTypeBool,
     FcTypeMatrix,
-    FcTypeCharSet
+    FcTypeCharSet,
+    FcTypeFTFace
 } FcType;
 
 typedef struct _FcMatrix {
@@ -186,6 +188,7 @@ typedef struct _FcValue {
 	double		d;
 	const FcMatrix	*m;
 	const FcCharSet	*c;
+	void		*f;
     } u;
 } FcValue;
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.10 2002/05/29 22:07:33 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.11 2002/05/31 04:42:42 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -36,6 +36,7 @@
 #include <time.h>
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcprivate.h>
+#include <fontconfig/fcfreetype.h>
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif

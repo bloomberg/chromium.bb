@@ -29,7 +29,6 @@
 #include <freetype/freetype.h>
 #include <freetype/internal/ftobjs.h>
 #include <freetype/tttables.h>
-#include <fontconfig/fcfreetype.h>
 
 static const struct {
     int	    bit;

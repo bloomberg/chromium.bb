@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.9 2002/05/29 22:07:33 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.10 2002/05/31 04:42:42 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1098,9 +1098,6 @@ FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c)
     
     return FcTrue;
 }
-
-#include <freetype/freetype.h>
-#include <fontconfig/fcfreetype.h>
 
 /*
  * Figure out whether the available freetype has FT_Get_Next_Char

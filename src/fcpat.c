@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.4 2002/05/22 04:12:35 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.5 2002/05/29 22:07:33 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -142,6 +142,8 @@ FcValueEqual (FcValue va, FcValue vb)
 	return FcMatrixEqual (va.u.m, vb.u.m);
     case FcTypeCharSet:
 	return FcCharSetEqual (va.u.c, vb.u.c);
+    case FcTypeFTFace:
+	return va.u.f == vb.u.f;
     }
     return FcFalse;
 }
@@ -416,6 +418,16 @@ FcPatternAddCharSet (FcPattern *p, const char *object, const FcCharSet *c)
     return FcPatternAdd (p, object, v, FcTrue);
 }
 
+FcBool
+FcPatternAddFTFace (FcPattern *p, const char *object, const FT_Face f)
+{
+    FcValue	v;
+
+    v.type = FcTypeFTFace;
+    v.u.f = (void *) f;
+    return FcPatternAdd (p, object, v, FcTrue);
+}
+
 FcResult
 FcPatternGet (FcPattern *p, const char *object, int id, FcValue *v)
 {
@@ -539,6 +551,21 @@ FcPatternGetCharSet (FcPattern *p, const char *object, int id, FcCharSet **c)
     if (v.type != FcTypeCharSet)
         return FcResultTypeMismatch;
     *c = (FcCharSet *) v.u.c;
+    return FcResultMatch;
+}
+
+FcResult
+FcPatternGetFTFace (FcPattern *p, const char *object, int id, FT_Face *f)
+{
+    FcValue	v;
+    FcResult	r;
+
+    r = FcPatternGet (p, object, id, &v);
+    if (r != FcResultMatch)
+	return r;
+    if (v.type != FcTypeFTFace)
+	return FcResultTypeMismatch;
+    *f = (FT_Face) v.u.f;
     return FcResultMatch;
 }
 

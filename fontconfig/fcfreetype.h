@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fcfreetype.h,v 1.2 2002/02/15 06:01:27 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -31,5 +31,11 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4);
 
 FcCharSet *
 FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks);
+
+FcResult
+FcPatternGetFTFace (FcPattern *p, const char *object, int n, FT_Face *f);
+
+FcBool
+FcPatternAddFTFace (FcPattern *p, const char *object, const FT_Face f);
 
 #endif
