@@ -24,7 +24,6 @@
  * DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_drv.c,v 1.5 2000/09/22 11:35:47 alanh Exp $ */
 
 #include <linux/config.h>
 #include "drmP.h"
@@ -575,6 +574,7 @@ int sis_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 #endif
                 add_wait_queue(&dev->lock.lock_queue, &entry);
                 for (;;) {
+                        current->state = TASK_INTERRUPTIBLE;
                         if (!dev->lock.hw_lock) {
                                 /* Device has been unregistered */
                                 ret = -EINTR;
@@ -590,7 +590,6 @@ int sis_lock(struct inode *inode, struct file *filp, unsigned int cmd,
                         
                                 /* Contention */
                         atomic_inc(&dev->total_sleeps);
-                        current->state = TASK_INTERRUPTIBLE;
 #if 1
 			current->policy |= SCHED_YIELD;
 #endif

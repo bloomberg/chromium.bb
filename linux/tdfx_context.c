@@ -29,7 +29,6 @@
  *    Daryll Strauss <daryll@valinux.com>
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/tdfx_context.c,v 1.5 2000/08/28 02:43:16 tsi Exp $ */
 
 #define __NO_VERSION__
 #include "drmP.h"

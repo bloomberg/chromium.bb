@@ -24,7 +24,6 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.11 2000/09/01 02:31:38 tsi Exp $
 #
 # ***** NOTE NOTE NOTE NOTE NOTE *****
 # To override the automatic Linux source tree determination, pass the
@@ -50,7 +49,6 @@
 
 MODS=           gamma.o tdfx.o r128.o
 LIBS=           libdrm.a
-PROGS=		drmstat
 
 DRMOBJS=	init.o memory.o proc.o auth.o context.o drawable.o bufs.o \
 		lists.o lock.o ioctl.o fops.o vm.o dma.o ctxbitmap.o
@@ -64,9 +62,6 @@ TDFXHEADERS=    tdfx_drv.h $(DRMHEADERS)
 
 R128OBJS=	r128_drv.o r128_dma.o r128_bufs.o r128_context.o
 R128HEADERS=	r128_drv.h r128_drm.h $(DRMHEADERS)
-
-PROGOBJS=       drmstat.po xf86drm.po xf86drmHash.po xf86drmRandom.po sigio.po
-PROGHEADERS=    xf86drm.h $(DRMHEADERS)
 
 INC=		/usr/include
 
@@ -227,9 +222,6 @@ i810.o: $(I810OBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 endif
 
-drmstat: $(PROGOBJS)
-	$(CC) $(PRGCFLAGS) $^ $(PRGLIBS) -o $@
-
 .PHONY: ChangeLog
 ChangeLog:
 	@rm -f Changelog
@@ -243,9 +235,6 @@ ChangeLog:
 %.o: %.c
 	$(CC) $(MODCFLAGS) -I$(TREE) -c $< -o $@
 
-%.po: %.c
-	$(CC) $(PRGCFLAGS) -DDRM_USE_MALLOC -c $< -o $@
-
 $(DRMOBJS): $(DRMHEADERS)
 $(GAMMAOBJS): $(GAMMAHEADERS)
 $(TDFXOBJS): $(TDFXHEADERS)
@@ -254,7 +243,6 @@ ifeq ($(AGP),1)
 $(MGAOBJS): $(MGAHEADERS)
 $(I810OBJS): $(I810HEADERS)
 endif
-$(PROGOBJS): $(PROGHEADERS)
 
 clean:
-	rm -f *.o *.a *.po *~ core $(PROGS)
+	rm -f *.o *.a *~ core

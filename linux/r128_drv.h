@@ -28,7 +28,6 @@
  *          Kevin E. Martin <martin@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/r128_drv.h,v 1.4 2000/08/28 02:43:16 tsi Exp $ */
 
 #ifndef _R128_DRV_H_
 #define _R128_DRV_H_

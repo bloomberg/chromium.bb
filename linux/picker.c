@@ -1,6 +1,6 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/picker.c,v 1.3 2000/09/01 02:31:40 tsi Exp $ */
 
-#include <linux/autoconf.h>
+#include <linux/config.h>
 #include <linux/version.h>
 
 #ifndef CONFIG_SMP

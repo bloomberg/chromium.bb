@@ -29,7 +29,6 @@
  *	    Keith Whitwell <keithw@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/mga_dma.c,v 1.5 2000/08/28 02:43:15 tsi Exp $ */
 
 #define __NO_VERSION__
 #include "drmP.h"
@@ -84,7 +83,7 @@ static void mga_delay(void)
 
 static int mga_freelist_init(drm_device_t *dev)
 {
-     	drm_device_dma_t *dma = dev->dma;
+      	drm_device_dma_t *dma = dev->dma;
    	drm_buf_t *buf;
    	drm_mga_buf_priv_t *buf_priv;
       	drm_mga_private_t *dev_priv = (drm_mga_private_t *)dev->dev_private;
@@ -766,8 +765,7 @@ static int mga_dma_initialize(drm_device_t *dev, drm_mga_init_t *init) {
 		MGA_WRITE(MGAREG_PRIMEND, ((phys_head + num_dwords * 4) |
 					   PDEA_pagpxfer_enable));
 
-				/* Do we need a looping check? */
-	   	while(MGA_READ(MGAREG_DWGSYNC) != 0x0100);
+	   	while(MGA_READ(MGAREG_DWGSYNC) != 0x0100) ;
 	}
 
 	if(mga_freelist_init(dev) != 0) {

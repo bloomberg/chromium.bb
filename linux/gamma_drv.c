@@ -28,7 +28,6 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/gamma_drv.c,v 1.8 2000/08/28 02:43:14 tsi Exp $ */
 
 #include <linux/config.h>
 #include "drmP.h"

@@ -31,7 +31,6 @@
  * Dec 1999, Richard Henderson <rth@twiddle.net>, move to generic cmpxchg.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drm.h,v 1.9 2000/08/24 22:20:18 tsi Exp $ */
 
 #ifndef _DRM_H_
 #define _DRM_H_

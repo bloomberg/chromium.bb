@@ -28,7 +28,6 @@
  *          Kevin E. Martin <martin@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/r128_drv.c,v 1.3 2000/08/28 02:43:16 tsi Exp $ */
 
 #include <linux/config.h>
 #include "drmP.h"
@@ -36,7 +35,7 @@
 
 #define R128_NAME	 "r128"
 #define R128_DESC	 "ATI Rage 128"
-#define R128_DATE	 "20000910"
+#define R128_DATE	 "20000928"
 #define R128_MAJOR	 1
 #define R128_MINOR	 0
 #define R128_PATCHLEVEL  0

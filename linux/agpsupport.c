@@ -28,8 +28,6 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/agpsupport.c,v 1.4 2000/08/28 02:43:14 tsi Exp $ */
-
 #define __NO_VERSION__
 #include "drmP.h"
 #include <linux/module.h>

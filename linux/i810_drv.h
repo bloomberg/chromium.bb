@@ -28,7 +28,6 @@
  * 	    Jeff Hartmann <jhartmann@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/i810_drv.h,v 1.5 2000/08/28 02:43:15 tsi Exp $ */
 
 #ifndef _I810_DRV_H_
 #define _I810_DRV_H_

@@ -1,4 +1,4 @@
-/* tdfx.c -- tdfx driver -*- linux-c -*-
+/* tdfx_drv.c -- tdfx driver -*- linux-c -*-
  * Created: Thu Oct  7 10:38:32 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,7 +29,6 @@
  *    Daryll Strauss <daryll@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/tdfx_drv.c,v 1.6 2000/08/28 02:43:16 tsi Exp $ */
 
 #include <linux/config.h>
 #include "drmP.h"
@@ -37,7 +36,7 @@
 
 #define TDFX_NAME	 "tdfx"
 #define TDFX_DESC	 "3dfx Banshee/Voodoo3+"
-#define TDFX_DATE	 "20000910"
+#define TDFX_DATE	 "20000928"
 #define TDFX_MAJOR	 1
 #define TDFX_MINOR	 0
 #define TDFX_PATCHLEVEL  0

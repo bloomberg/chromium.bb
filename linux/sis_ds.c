@@ -27,7 +27,6 @@
  *    Sung-Ching Lin <sclin@sis.com.tw>
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_ds.c,v 1.2 2000/09/22 11:35:47 alanh Exp $ */
 
 #define __NO_VERSION__
 #include <linux/module.h>
@@ -163,7 +162,6 @@ int setDestroy(set_t *set)
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_ds.c,v 1.2 2000/09/22 11:35:47 alanh Exp $ */
 
 #define ISFREE(bptr) ((bptr)->free)
 

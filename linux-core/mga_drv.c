@@ -29,7 +29,6 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/mga_drv.c,v 1.4 2000/08/28 02:43:15 tsi Exp $ */
 
 #include <linux/config.h>
 #include "drmP.h"
@@ -37,10 +36,10 @@
 
 #define MGA_NAME	 "mga"
 #define MGA_DESC	 "Matrox G200/G400"
-#define MGA_DATE	 "20000910"
+#define MGA_DATE	 "20000928"
 #define MGA_MAJOR	 2
 #define MGA_MINOR	 0
-#define MGA_PATCHLEVEL	 0
+#define MGA_PATCHLEVEL	 1
 
 static drm_device_t	      mga_device;
 drm_ctx_t		      mga_res_ctx;
@@ -524,6 +523,7 @@ int mga_release(struct inode *inode, struct file *filp)
 	   	DECLARE_WAITQUEUE(entry, current);
 	   	add_wait_queue(&dev->lock.lock_queue, &entry);
 		for (;;) {
+			current->state = TASK_INTERRUPTIBLE;
 			if (!dev->lock.hw_lock) {
 				/* Device has been unregistered */
 				retcode = -EINTR;
@@ -538,7 +538,6 @@ int mga_release(struct inode *inode, struct file *filp)
 			}
 				/* Contention */
 			atomic_inc(&dev->total_sleeps);
-			current->state = TASK_INTERRUPTIBLE;
 			schedule();
 			if (signal_pending(current)) {
 				retcode = -ERESTARTSYS;

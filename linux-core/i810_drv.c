@@ -28,7 +28,6 @@
  *	    Jeff Hartmann <jhartmann@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/i810_drv.c,v 1.5 2000/08/28 02:43:15 tsi Exp $ */
 
 #include <linux/config.h>
 #include "drmP.h"
@@ -36,7 +35,7 @@
 
 #define I810_NAME	 "i810"
 #define I810_DESC	 "Intel I810"
-#define I810_DATE	 "20000910"
+#define I810_DATE	 "20000928"
 #define I810_MAJOR	 1
 #define I810_MINOR	 1
 #define I810_PATCHLEVEL	 0

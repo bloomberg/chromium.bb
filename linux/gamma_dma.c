@@ -542,10 +542,9 @@ static int gamma_dma_send_buffers(drm_device_t *dev, drm_dma_t *d)
 	
 	if (d->flags & _DRM_DMA_BLOCK) {
 		DRM_DEBUG("%d waiting\n", current->pid);
-		current->state = TASK_INTERRUPTIBLE;
 		for (;;) {
-			if (!last_buf->waiting
-			    && !last_buf->pending)
+			current->state = TASK_INTERRUPTIBLE;
+			if (!last_buf->waiting && !last_buf->pending)
 				break; /* finished */
 			schedule();
 			if (signal_pending(current)) {
