@@ -159,7 +159,7 @@ int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
    	buf_priv->currently_mapped = I810_BUF_MAPPED;
 	unlock_kernel();
 
-	if (remap_page_range(vma->vm_start,
+	if (remap_page_range(DRM_RPR_ARG(vma) vma->vm_start,
 			     VM_OFFSET(vma),
 			     vma->vm_end - vma->vm_start,
 			     vma->vm_page_prot)) return -EAGAIN;
@@ -270,22 +270,30 @@ static unsigned long i810_alloc_page(drm_device_t *dev)
 	if(address == 0UL)
 		return 0;
 
+#if LINUX_VERSION_CODE < 0x020500
 	atomic_inc(&virt_to_page(address)->count);
 	set_bit(PG_locked, &virt_to_page(address)->flags);
-
+#else
+	get_page(virt_to_page(address));
+	SetPageLocked(virt_to_page(address));
+#endif
 	return address;
 }
 
 static void i810_free_page(drm_device_t *dev, unsigned long page)
 {
-	if(page == 0UL)
-		return;
-
-	atomic_dec(&virt_to_page(page)->count);
-	clear_bit(PG_locked, &virt_to_page(page)->flags);
-	wake_up(&virt_to_page(page)->wait);
-	free_page(page);
-	return;
+	if (page) {
+#if LINUX_VERSION_CODE < 0x020500
+		atomic_dec(&virt_to_page(page)->count);
+		clear_bit(PG_locked, &virt_to_page(page)->flags);
+		wake_up(&virt_to_page(page)->wait);
+#else
+		struct page *p = virt_to_page(page);
+		put_page(p);
+		unlock_page(p);
+#endif
+		free_page(page);
+	}
 }
 
 static int i810_dma_cleanup(drm_device_t *dev)

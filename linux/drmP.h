@@ -144,6 +144,57 @@
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 
+				/* Backward compatibility section */
+#ifndef minor
+#define minor(x) MINOR((x))
+#endif
+
+#ifndef MODULE_LICENSE
+#define MODULE_LICENSE(x) 
+#endif
+
+#ifndef preempt_disable
+#define preempt_disable()
+#define preempt_enable()
+#endif
+
+#ifndef pte_offset_map 
+#define pte_offset_map pte_offset
+#define pte_unmap(pte)
+#endif
+
+#if LINUX_VERSION_CODE < 0x020500
+static inline struct page * vmalloc_to_page(void * vmalloc_addr)
+{
+	unsigned long addr = (unsigned long) vmalloc_addr;
+	struct page *page = NULL;
+	pgd_t *pgd = pgd_offset_k(addr);
+	pmd_t *pmd;
+	pte_t *ptep, pte;
+  
+	if (!pgd_none(*pgd)) {
+		pmd = pmd_offset(pgd, addr);
+		if (!pmd_none(*pmd)) {
+			preempt_disable();
+			ptep = pte_offset_map(pmd, addr);
+			pte = *ptep;
+			if (pte_present(pte))
+				page = pte_page(pte);
+			pte_unmap(ptep);
+			preempt_enable();
+		}
+	}
+	return page;
+}
+#endif
+
+#if LINUX_VERSION_CODE < 0x020500
+#define DRM_RPR_ARG(vma)
+#else
+#define DRM_RPR_ARG(vma) vma,
+#endif
+
+
 #define VM_OFFSET(vma) ((vma)->vm_pgoff << PAGE_SHIFT)
 
 				/* Macros to make printk easier */

@@ -218,9 +218,7 @@ static char *drm_opts = NULL;
 MODULE_AUTHOR( DRIVER_AUTHOR );
 MODULE_DESCRIPTION( DRIVER_DESC );
 MODULE_PARM( drm_opts, "s" );
-#ifdef MODULE_LICENSE
 MODULE_LICENSE("GPL and additional rights");
-#endif
 
 static int DRM(setup)( drm_device_t *dev )
 {
@@ -705,7 +703,7 @@ int DRM(open)( struct inode *inode, struct file *filp )
 	int i;
 
 	for (i = 0; i < DRM(numdevs); i++) {
-		if (MINOR(inode->i_rdev) == DRM(minor)[i]) {
+		if (minor(inode->i_rdev) == DRM(minor)[i]) {
 			dev = &(DRM(device)[i]);
 			break;
 		}

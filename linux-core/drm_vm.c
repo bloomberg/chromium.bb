@@ -130,9 +130,6 @@ struct page *DRM(vm_shm_nopage)(struct vm_area_struct *vma,
 	drm_map_t	 *map	 = (drm_map_t *)vma->vm_private_data;
 	unsigned long	 offset;
 	unsigned long	 i;
-	pgd_t		 *pgd;
-	pmd_t		 *pmd;
-	pte_t		 *pte;
 	struct page	 *page;
 
 	if (address > vma->vm_end) return NOPAGE_SIGBUS; /* Disallow mremap */
@@ -140,17 +137,9 @@ struct page *DRM(vm_shm_nopage)(struct vm_area_struct *vma,
 
 	offset	 = address - vma->vm_start;
 	i = (unsigned long)map->handle + offset;
-	/* We have to walk page tables here because we need large SAREA's, and
-	 * they need to be virtually contiguous in kernel space.
-	 */
-	pgd = pgd_offset_k( i );
-	if( !pgd_present( *pgd ) ) return NOPAGE_OOM;
-	pmd = pmd_offset( pgd, i );
-	if( !pmd_present( *pmd ) ) return NOPAGE_OOM;
-	pte = pte_offset( pmd, i );
-	if( !pte_present( *pte ) ) return NOPAGE_OOM;
-
-	page = pte_page(*pte);
+	page = vmalloc_to_page((void *)i);
+	if (!page)
+		return NOPAGE_OOM;
 	get_page(page);
 
 	DRM_DEBUG("shm_nopage 0x%lx\n", address);
@@ -462,12 +451,12 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 		}
 		offset = DRIVER_GET_REG_OFS();
 #ifdef __sparc__
-		if (io_remap_page_range(vma->vm_start,
+		if (io_remap_page_range(DRM_RPR_ARG(vma) vma->vm_start,
 					VM_OFFSET(vma) + offset,
 					vma->vm_end - vma->vm_start,
 					vma->vm_page_prot, 0))
 #else
-		if (remap_page_range(vma->vm_start,
+		if (remap_page_range(DRM_RPR_ARG(vma) vma->vm_start,
 				     VM_OFFSET(vma) + offset,
 				     vma->vm_end - vma->vm_start,
 				     vma->vm_page_prot))
