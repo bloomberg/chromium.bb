@@ -134,6 +134,8 @@ int radeon_create_i2c_busses(drm_device_t * dev)
 	dev_priv->i2c[3].ddc_reg = GPIO_CRT2_DDC;
 	setup_i2c_bus(dev, &dev_priv->i2c[3], "crt2");
 
+	request_module("eeprom");
+
 	return 0;
 }
 

@@ -463,6 +463,8 @@ static struct file_operations drm_stub_fops = {
 	.open = drm_stub_open
 };
 
+static int use_inter_module = 0;
+
 static int __init drm_core_init(void)
 {
 	int ret = -ENOMEM;
@@ -489,7 +491,12 @@ static int __init drm_core_init(void)
 		ret = -1;
 		goto err_p3;
 	}
-	drm_agp = (drm_agp_t *) inter_module_get("drm_agp");
+	drm_agp = symbol_get(drm_agp_entry);
+	if (!drm_agp) {
+		drm_agp = inter_module_get("agp");
+		use_inter_module = 1;
+	}
+	DRM_DEBUG("drm_agp %p\n", drm_agp);
 
 	DRM_INFO("Initialized %s %d.%d.%d %s\n",
 		 DRIVER_NAME,
@@ -506,9 +513,12 @@ err_p1:
 
 static void __exit drm_core_exit(void)
 {
-	if (drm_agp)
-		inter_module_put("drm_agp");
-
+	if (drm_agp) {
+		if (use_inter_module)
+			inter_module_put("agp");
+		else
+			symbol_put(drm_agp_entry);
+	}
 	remove_proc_entry("dri", NULL);
 	drm_sysfs_destroy(drm_class);
 
