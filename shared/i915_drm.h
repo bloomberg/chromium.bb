@@ -13,7 +13,6 @@
 				 * of chars for next/prev indices */
 #define I915_LOG_MIN_TEX_REGION_SIZE 14
 
-
 typedef struct _drm_i915_init {
 	enum {
 		I915_INIT_DMA = 0x01,
@@ -35,31 +34,29 @@ typedef struct _drm_i915_init {
 	unsigned int back_pitch;
 	unsigned int depth_pitch;
 	unsigned int cpp;
-        unsigned int chipset;
+	unsigned int chipset;
 } drm_i915_init_t;
 
-
 typedef struct _drm_i915_sarea {
-	drm_tex_region_t texList[I915_NR_TEX_REGIONS+1];
-        int last_upload;	/* last time texture was uploaded */
-        int last_enqueue;	/* last time a buffer was enqueued */
+	drm_tex_region_t texList[I915_NR_TEX_REGIONS + 1];
+	int last_upload;	/* last time texture was uploaded */
+	int last_enqueue;	/* last time a buffer was enqueued */
 	int last_dispatch;	/* age of the most recently dispatched buffer */
 	int ctxOwner;		/* last context to upload state */
 	int texAge;
-        int pf_enabled;		/* is pageflipping allowed? */
-        int pf_active;               
-        int pf_current_page;	/* which buffer is being displayed? */
-        int perf_boxes;	        /* performance boxes to be displayed */   
+	int pf_enabled;		/* is pageflipping allowed? */
+	int pf_active;
+	int pf_current_page;	/* which buffer is being displayed? */
+	int perf_boxes;		/* performance boxes to be displayed */
 } drm_i915_sarea_t;
 
 /* Flags for perf_boxes
  */
-#define I915_BOX_RING_EMPTY    0x1 
-#define I915_BOX_FLIP          0x2 
-#define I915_BOX_WAIT          0x4 
-#define I915_BOX_TEXTURE_LOAD  0x8 
-#define I915_BOX_LOST_CONTEXT  0x10 
-
+#define I915_BOX_RING_EMPTY    0x1
+#define I915_BOX_FLIP          0x2
+#define I915_BOX_WAIT          0x4
+#define I915_BOX_TEXTURE_LOAD  0x8
+#define I915_BOX_LOST_CONTEXT  0x10
 
 /* I915 specific ioctls
  * The device specific ioctl range is 0x40 to 0x79.
@@ -77,31 +74,29 @@ typedef struct _drm_i915_sarea {
 #define DRM_IOCTL_I915_INIT_HEAP        DRM_IOW( 0x4a, drm_i915_mem_init_heap_t)
 #define DRM_IOCTL_I915_CMDBUFFER	DRM_IOW( 0x4b, drm_i915_cmdbuffer_t)
 
-
 /* Allow drivers to submit batchbuffers directly to hardware, relying
  * on the security mechanisms provided by hardware.
  */
 typedef struct _drm_i915_batchbuffer {
-   	int start;		/* agp offset */
+	int start;		/* agp offset */
 	int used;		/* nr bytes in use */
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
-        int DR4;		/* window origin for GFX_OP_DRAWRECT_INFO*/
+	int DR4;		/* window origin for GFX_OP_DRAWRECT_INFO */
 	int num_cliprects;	/* mulitpass with multiple cliprects? */
-        drm_clip_rect_t __user *cliprects; /* pointer to userspace cliprects */
+	drm_clip_rect_t __user *cliprects;	/* pointer to userspace cliprects */
 } drm_i915_batchbuffer_t;
 
 /* As above, but pass a pointer to userspace buffer which can be
  * validated by the kernel prior to sending to hardware.
  */
 typedef struct _drm_i915_cmdbuffer {
-   	char __user *buf;	/* pointer to userspace command buffer */
-	int sz;		        /* nr bytes in buf */
+	char __user *buf;	/* pointer to userspace command buffer */
+	int sz;			/* nr bytes in buf */
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
-        int DR4;		/* window origin for GFX_OP_DRAWRECT_INFO*/
+	int DR4;		/* window origin for GFX_OP_DRAWRECT_INFO */
 	int num_cliprects;	/* mulitpass with multiple cliprects? */
-        drm_clip_rect_t __user *cliprects; /* pointer to userspace cliprects */
+	drm_clip_rect_t __user *cliprects;	/* pointer to userspace cliprects */
 } drm_i915_cmdbuffer_t;
-
 
 /* Userspace can request & wait on irq's:
  */
@@ -113,7 +108,6 @@ typedef struct drm_i915_irq_wait {
 	int irq_seq;
 } drm_i915_irq_wait_t;
 
-
 /* Ioctl to query kernel params:
  */
 #define I915_PARAM_IRQ_ACTIVE            1
@@ -123,7 +117,6 @@ typedef struct drm_i915_getparam {
 	int param;
 	int __user *value;
 } drm_i915_getparam_t;
-
 
 /* Ioctl to set kernel params:
  */
@@ -155,8 +148,7 @@ typedef struct drm_i915_mem_free {
 typedef struct drm_i915_mem_init_heap {
 	int region;
 	int size;
-	int start;	
+	int start;
 } drm_i915_mem_init_heap_t;
 
-
-#endif /* _I915_DRM_H_ */
+#endif				/* _I915_DRM_H_ */
