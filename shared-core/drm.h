@@ -45,7 +45,7 @@
 #endif
 
 #define XFREE86_VERSION(major,minor,patch,snap) \
-		((major << 16) | (minor < 8) | patch)
+		((major << 16) | (minor << 8) | patch)
 
 #ifndef CONFIG_XFREE86_VERSION
 #define CONFIG_XFREE86_VERSION XFREE86_VERSION(4,1,0,0)
