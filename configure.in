@@ -271,13 +271,13 @@ AC_ARG_WITH(confdir,           [  --with-confdir=DIR            Use DIR to store
 
 case "$confdir" in
 no|yes)
-	confdir=/etc/fonts
+	confdir='${sysconfdir}'/fonts
 	;;
 *)
 	;;
 esac
 AC_SUBST(confdir)
-CONFDIR='${confdir}'
+CONFDIR=${confdir}
 AC_DEFINE_UNQUOTED(CONFDIR, "$CONFDIR",[Font configuration directory])
 AC_SUBST(CONFDIR)
 
