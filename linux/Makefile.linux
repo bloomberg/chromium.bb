@@ -83,6 +83,8 @@ SISHEADERS=     sis_drv.h sis_drm.h $(DRMHEADERS)
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED)
 
+PROGS = dristat drmstat
+
 CLEANFILES = *.o *.ko $(PROGS) .depend .*.flags .*.d .*.cmd
 
 # VERSION is not defined from the initial invocation.  It is defined when
@@ -226,6 +228,23 @@ clean cleandir:
 
 $(MODULE_LIST)::
 	make -f Makefile.linux DRM_MODULES=$@ modules
+
+# Build test utilities
+
+PRGCFLAGS = $(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
+	    -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE \
+	    -I. -I../../..
+
+DRMSTATLIBS = -L../../.. -L.. -ldrm -lxf86_os \
+	      -L../../../../dummylib -ldummy -lm
+
+programs: $(PROGS)
+
+dristat: dristat.c
+	$(CC) $(PRGCFLAGS) $< -o $@
+
+drmstat: drmstat.c
+	$(CC) $(PRGCFLAGS) $< -o $@ $(DRMSTATLIBS)
 
 else
 

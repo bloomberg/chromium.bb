@@ -414,3 +414,12 @@ int main(int argc, char **argv)
 
     return r; 
 }
+
+void
+xf86VDrvMsgVerb(int scrnIndex, int type, int verb, const char *format,
+                va_list args)
+{
+	vfprintf(stderr, format, args);
+}
+
+int xf86ConfigDRI[10];
