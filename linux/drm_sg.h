@@ -1,7 +1,11 @@
-/* gamma.c -- 3dlabs GMX 2000 driver -*- linux-c -*-
- * Created: Mon Jan  4 08:58:31 1999 by faith@precisioninsight.com
+/**
+ * \file drm_sg.h 
+ * IOCTLs to manage scatter/gather memory
  *
- * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * \author Gareth Hughes <gareth@valinux.com>
+ */
+
+/*
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
@@ -23,35 +27,39 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- *
- * Authors:
- *    Rickard E. (Rik) Faith <faith@valinux.com>
- *    Gareth Hughes <gareth@valinux.com>
  */
 
-#include <linux/config.h>
-#include "gamma.h"
-#include "drmP.h"
-#include "drm.h"
-#include "gamma_drm.h"
-#include "gamma_drv.h"
 
-#include "drm_auth.h"
-#include "drm_agp_tmp.h"
-#include "drm_bufs.h"
-#include "gamma_context.h"	/* NOTE! */
-#include "drm_dma.h"
-#include "gamma_old_dma.h"	/* NOTE */
-#include "drm_drawable.h"
-#include "drm_drv.h"
+#ifndef _DRM_SCATTER_H_
+#define _DRM_SCATTER_H_
 
-#include "drm_fops.h"
-#include "drm_init.h"
-#include "drm_ioctl.h"
-#include "gamma_lists.h"        /* NOTE */
-#include "drm_lock.h"
-#include "gamma_lock.h"		/* NOTE */
-#include "drm_memory.h"
-#include "drm_proc.h"
-#include "drm_vm.h"
-#include "drm_stub.h"
+
+/**
+ * Scatter/gather memory entry.
+ *
+ * This structure is used by sg_alloc() sg_free() to store all the necessary
+ * information about a scatter/gather memory block.
+ * 
+ * Also one instance of this structure is used to hold the user-space
+ * allocation done via the sg_alloc_ioctl() and sg_free_ioctl() ioctl's.
+ */
+typedef struct drm_sg_mem {
+	unsigned long   handle;
+	void            *virtual;	/**< virtual address */
+	int             pages;
+	struct page     **pagelist;
+	dma_addr_t	*busaddr;	/**< bus address */
+} drm_sg_mem_t;
+
+
+/** \name Prototypes */
+/*@{*/
+extern void DRM(sg_free)( drm_sg_mem_t *entry );
+extern drm_sg_mem_t * DRM(sg_alloc)( unsigned long size );
+extern int DRM(sg_alloc_ioctl)(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg);
+extern int DRM(sg_free_ioctl)(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg);
+extern void DRM(sg_cleanup)(drm_device_t *dev);
+/*@}*/
+
+
+#endif

@@ -35,7 +35,7 @@
 #include "drm.h"
 #include "mga_drm.h"
 #include "mga_drv.h"
-#include "drm_agpsupport.h"
+#include "drm_agp_tmp.h"
 #include "drm_auth.h"
 #include "drm_bufs.h"
 #include "drm_context.h"

@@ -86,7 +86,6 @@
 
 #include "drm_os_linux.h"
 
-
 /***********************************************************************/
 /** \name DRM template customization defaults */
 /*@{*/
@@ -119,6 +118,12 @@
 #define __REALLY_HAVE_SG	(__HAVE_SG)
 
 /*@}*/
+
+
+typedef struct drm_device drm_device_t;
+
+#include "drm_agp.h"
+#include "drm_sg.h"
 
 
 /***********************************************************************/
@@ -575,48 +580,6 @@ typedef struct drm_device_dma {
 	/*@}*/
 } drm_device_dma_t;
 
-#if __REALLY_HAVE_AGP
-/** 
- * AGP memory entry.  Stored as a doubly linked list.
- */
-typedef struct drm_agp_mem {
-	unsigned long      handle;	/**< handle */
-	agp_memory         *memory;	
-	unsigned long      bound;	/**< address */
-	int                pages;
-	struct drm_agp_mem *prev;	/**< previous entry */
-	struct drm_agp_mem *next;	/**< next entry */
-} drm_agp_mem_t;
-
-/**
- * AGP data.
- *
- * \sa DRM(agp_init)() and drm_device::agp.
- */
-typedef struct drm_agp_head {
-	agp_kern_info      agp_info;	/**< AGP device information */
-	drm_agp_mem_t      *memory;	/**< memory entries */
-	unsigned long      mode;	/**< AGP mode */
-	int                enabled;	/**< whether the AGP bus as been enabled */
-	int                acquired;	/**< whether the AGP device has been acquired */
-	unsigned long      base;
-   	int 		   agp_mtrr;
-	int		   cant_use_aperture;
-	unsigned long	   page_mask;
-} drm_agp_head_t;
-#endif
-
-/**
- * Scatter-gather memory.
- */
-typedef struct drm_sg_mem {
-	unsigned long   handle;
-	void            *virtual;
-	int             pages;
-	struct page     **pagelist;
-	dma_addr_t	*busaddr;
-} drm_sg_mem_t;
-
 typedef struct drm_sigdata {
 	int           context;
 	drm_hw_lock_t *lock;
@@ -646,7 +609,7 @@ typedef struct drm_vbl_sig {
 /**
  * DRM device structure.
  */
-typedef struct drm_device {
+struct drm_device {
 	const char	  *name;	/**< Simple driver name */
 	char		  *unique;	/**< Unique identifier: e.g., busid */
 	int		  unique_len;	/**< Length of unique field */
@@ -757,11 +720,12 @@ typedef struct drm_device {
 #endif
 #endif
 	drm_sg_mem_t      *sg;  /**< Scatter gather memory */
+
 	unsigned long     *ctx_bitmap;	/**< context bitmap */
 	void		  *dev_private; /**< device private data */
 	drm_sigdata_t     sigdata; /**< For block_all_signals */
 	sigset_t          sigmask;
-} drm_device_t;
+};
 
 
 /******************************************************************/
@@ -830,10 +794,10 @@ extern void	     *DRM(ioremap_nocache)(unsigned long offset, unsigned long size,
 extern void	     DRM(ioremapfree)(void *pt, unsigned long size, drm_device_t *dev);
 
 #if __REALLY_HAVE_AGP
-extern agp_memory    *DRM(alloc_agp)(int pages, u32 type);
-extern int           DRM(free_agp)(agp_memory *handle, int pages);
-extern int           DRM(bind_agp)(agp_memory *handle, unsigned int start);
-extern int           DRM(unbind_agp)(agp_memory *handle);
+extern agp_memory    *DRM(agp_alloc)(int pages, u32 type);
+extern int           DRM(agp_free)(agp_memory *handle, int pages);
+extern int           DRM(agp_bind)(agp_memory *handle, unsigned int start);
+extern int           DRM(agp_unbind)(agp_memory *handle);
 #endif
 
 				/* Misc. IOCTL support (drm_ioctl.h) */
@@ -956,32 +920,6 @@ extern void          DRM(dma_immediate_bh)( void *dev );
 
 #endif /* __HAVE_DMA */
 
-#if __REALLY_HAVE_AGP
-				/* AGP/GART support (drm_agpsupport.h) */
-extern drm_agp_head_t *DRM(agp_init)(void);
-extern void           DRM(agp_uninit)(void);
-extern int            DRM(agp_acquire)(struct inode *inode, struct file *filp,
-				       unsigned int cmd, unsigned long arg);
-extern void           DRM(agp_do_release)(void);
-extern int            DRM(agp_release)(struct inode *inode, struct file *filp,
-				       unsigned int cmd, unsigned long arg);
-extern int            DRM(agp_enable)(struct inode *inode, struct file *filp,
-				      unsigned int cmd, unsigned long arg);
-extern int            DRM(agp_info)(struct inode *inode, struct file *filp,
-				    unsigned int cmd, unsigned long arg);
-extern int            DRM(agp_alloc)(struct inode *inode, struct file *filp,
-				     unsigned int cmd, unsigned long arg);
-extern int            DRM(agp_free)(struct inode *inode, struct file *filp,
-				    unsigned int cmd, unsigned long arg);
-extern int            DRM(agp_unbind)(struct inode *inode, struct file *filp,
-				      unsigned int cmd, unsigned long arg);
-extern int            DRM(agp_bind)(struct inode *inode, struct file *filp,
-				    unsigned int cmd, unsigned long arg);
-extern agp_memory     *DRM(agp_allocate_memory)(size_t pages, u32 type);
-extern int            DRM(agp_free_memory)(agp_memory *handle);
-extern int            DRM(agp_bind_memory)(agp_memory *handle, off_t start);
-extern int            DRM(agp_unbind_memory)(agp_memory *handle);
-#endif
 
 				/* Stub support (drm_stub.h) */
 int                   DRM(stub_register)(const char *name,
@@ -997,15 +935,6 @@ extern struct proc_dir_entry *DRM(proc_init)(drm_device_t *dev,
 extern int            DRM(proc_cleanup)(int minor,
 					struct proc_dir_entry *root,
 					struct proc_dir_entry *dev_root);
-
-#if __HAVE_SG
-				/* Scatter Gather Support (drm_scatter.h) */
-extern void           DRM(sg_cleanup)(drm_sg_mem_t *entry);
-extern int            DRM(sg_alloc)(struct inode *inode, struct file *filp,
-				    unsigned int cmd, unsigned long arg);
-extern int            DRM(sg_free)(struct inode *inode, struct file *filp,
-				   unsigned int cmd, unsigned long arg);
-#endif
 
                                /* ATI PCIGART support (ati_pcigart.h) */
 extern int            DRM(ati_pcigart_init)(drm_device_t *dev,

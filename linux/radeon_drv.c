@@ -38,7 +38,7 @@
 #include "radeon_drv.h"
 #include "ati_pcigart.h"
 
-#include "drm_agpsupport.h"
+#include "drm_agp_tmp.h"
 #include "drm_auth.h"
 #include "drm_bufs.h"
 #include "drm_context.h"
@@ -53,4 +53,4 @@
 #include "drm_proc.h"
 #include "drm_vm.h"
 #include "drm_stub.h"
-#include "drm_scatter.h"
+#include "drm_sg_tmp.h"
