@@ -371,28 +371,58 @@ drm_mga_prim_buf_t *tmp_buf = 					\
 #define MGAREG_YTOP 				0x1c98
 #define MGAREG_ZORG 				0x1c0c
 
-#define DC_atype_rstr				0x10
-#define DC_atype_blk				0x40
 #define PDEA_pagpxfer_enable			0x2
+
 #define WIA_wmode_suspend			0x0
 #define WIA_wmode_start 			0x3
 #define WIA_wagp_agp				0x4
-#define DC_opcod_trap				0x4
-#define DC_arzero_enable			0x1000
-#define DC_sgnzero_enable			0x2000
-#define DC_shftzero_enable			0x4000
-#define DC_bop_SHIFT				16
-#define DC_clipdis_enable			0x80000000
-#define DC_solid_enable				0x800
-#define DC_transc_enable			0x40000000
+
+#define DC_opcod_line_open 			0x0
+#define DC_opcod_autoline_open 			0x1
+#define DC_opcod_line_close 			0x2
+#define DC_opcod_autoline_close 		0x3
+#define DC_opcod_trap 				0x4
+#define DC_opcod_texture_trap 			0x6
 #define DC_opcod_bitblt 			0x8
-#define DC_atype_rpl				0x0
-#define DC_linear_xy				0x0
-#define DC_solid_disable			0x0
-#define DC_arzero_disable			0x0
-#define DC_bltmod_bfcol				0x4000000
-#define DC_pattern_disable			0x0
-#define DC_transc_disable			0x0
+#define DC_opcod_iload 				0x9
+#define DC_atype_rpl 				0x0
+#define DC_atype_rstr 				0x10
+#define DC_atype_zi 				0x30
+#define DC_atype_blk 				0x40
+#define DC_atype_i 				0x70
+#define DC_linear_xy 				0x0 		
+#define DC_linear_linear 			0x80 		
+#define DC_zmode_nozcmp 			0x0
+#define DC_zmode_ze 				0x200
+#define DC_zmode_zne 				0x300
+#define DC_zmode_zlt 				0x400
+#define DC_zmode_zlte 				0x500
+#define DC_zmode_zgt 				0x600
+#define DC_zmode_zgte 				0x700
+#define DC_solid_disable 			0x0 		
+#define DC_solid_enable 			0x800 		
+#define DC_arzero_disable 			0x0 		
+#define DC_arzero_enable 			0x1000 		
+#define DC_sgnzero_disable 			0x0 		
+#define DC_sgnzero_enable 			0x2000 		
+#define DC_shftzero_disable 			0x0 		
+#define DC_shftzero_enable 			0x4000 		
+#define DC_bop_SHIFT 				16 		
+#define DC_trans_SHIFT 				20 		
+#define DC_bltmod_bmonolef 			0x0
+#define DC_bltmod_bmonowf 			0x8000000
+#define DC_bltmod_bplan 			0x2000000
+#define DC_bltmod_bfcol 			0x4000000
+#define DC_bltmod_bu32bgr 			0x6000000
+#define DC_bltmod_bu32rgb 			0xe000000
+#define DC_bltmod_bu24bgr 			0x16000000
+#define DC_bltmod_bu24rgb 			0x1e000000
+#define DC_pattern_disable 			0x0 		
+#define DC_pattern_enable 			0x20000000 	
+#define DC_transc_disable 			0x0 		
+#define DC_transc_enable 			0x40000000 	
+#define DC_clipdis_disable 			0x0 		
+#define DC_clipdis_enable 			0x80000000 	
 
 #define SETADD_mode_vertlist                   	0x0 	
 
@@ -409,5 +439,9 @@ drm_mga_prim_buf_t *tmp_buf = 					\
 		      (0xC << DC_bop_SHIFT) | DC_bltmod_bfcol | 	\
 		      DC_pattern_disable | DC_transc_disable | 		\
 		      DC_clipdis_enable)				\
+
+#define MGA_FLUSH_CMD (DC_opcod_texture_trap | (0xF << DC_trans_SHIFT) |\
+		       DC_arzero_enable | DC_sgnzero_enable |		\
+		       DC_atype_i)
 
 #endif
