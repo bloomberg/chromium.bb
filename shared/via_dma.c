@@ -38,7 +38,6 @@
 #include "via_drv.h"
 #include "via_3d_reg.h"
 
-#define PCI_BUF_SIZE 512000
 #define CMDBUF_ALIGNMENT_SIZE   (0x100)
 #define CMDBUF_ALIGNMENT_MASK   (0xff)
 
@@ -66,10 +65,6 @@
 	*vb++ = (w1);				\
 	*vb++ = (w2);				\
 	dev_priv->dma_low += 8; 
-
-
-static char pci_buf[PCI_BUF_SIZE];
-static unsigned long pci_bufsiz = PCI_BUF_SIZE;  
 
 static void via_cmdbuf_start(drm_via_private_t * dev_priv);
 static void via_cmdbuf_pause(drm_via_private_t * dev_priv);
@@ -267,12 +262,12 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 		return DRM_ERR(EFAULT);
 	}
 
-	if (cmd->size > pci_bufsiz && pci_bufsiz > 0) {
+	if (cmd->size > VIA_PCI_BUF_SIZE) {
 		return DRM_ERR(ENOMEM);
 	} 
 
 
-	if (DRM_COPY_FROM_USER(pci_buf, cmd->buf, cmd->size))
+	if (DRM_COPY_FROM_USER(dev_priv->pci_buf, cmd->buf, cmd->size))
 		return DRM_ERR(EFAULT);
 
 	/*
@@ -282,7 +277,7 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 	 */
 
 	
-	if ((ret = via_verify_command_stream((uint32_t *)pci_buf, cmd->size, dev, 1))) {
+	if ((ret = via_verify_command_stream((uint32_t *)dev_priv->pci_buf, cmd->size, dev, 1))) {
 		return ret;
 	}
        	
@@ -291,7 +286,7 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 		return DRM_ERR(EAGAIN);
 	}
 
-	memcpy(vb, pci_buf, cmd->size);
+	memcpy(vb, dev_priv->pci_buf, cmd->size);
 	
 	dev_priv->dma_low += cmd->size;
 	via_cmdbuf_pause(dev_priv);
@@ -345,12 +340,17 @@ static int via_parse_pci_cmdbuffer(drm_device_t * dev, const char *buf,
 	drm_via_private_t *dev_priv = dev->dev_private;
 	const uint32_t *regbuf = (const uint32_t *) buf;
 	const uint32_t *regend = regbuf + (size >> 2);
+	const uint32_t *next_fire; 
+	int fire_count = 0;
 	int ret;
 	int check_2d_cmd = 1;
+
+
 
 	if ((ret = via_verify_command_stream(regbuf, size, dev, 0)))
 		return ret;
 
+	next_fire = dev_priv->fire_offsets[fire_count];
 	while (regbuf != regend) {	
 		if ( *regbuf == HALCYON_HEADER2 ) {
 		  
@@ -363,9 +363,14 @@ static int via_parse_pci_cmdbuffer(drm_device_t * dev, const char *buf,
 			register uint32_t addr = ( (*regbuf++ ) & ~HALCYON_HEADER1MASK) << 2;
 			VIA_WRITE( addr, *regbuf++ );
 
-		} else if ( ( *regbuf & HALCYON_FIREMASK ) == HALCYON_FIRECMD ) {
+		} else if ( (fire_count < dev_priv->num_fire_offsets) && 
+			    (regbuf == next_fire) &&
+			    (( *regbuf & HALCYON_FIREMASK ) == HALCYON_FIRECMD) ) {
+
+			next_fire = dev_priv->fire_offsets[++fire_count];
 
 			VIA_WRITE(HC_REG_TRANS_SPACE + HC_REG_BASE, *regbuf++);
+
 			if ( ( regbuf != regend ) && 
 			     ((*regbuf & HALCYON_FIREMASK) == HALCYON_FIRECMD))
 				regbuf++;
@@ -384,14 +389,15 @@ static int via_parse_pci_cmdbuffer(drm_device_t * dev, const char *buf,
 static int via_dispatch_pci_cmdbuffer(drm_device_t * dev,
 				      drm_via_cmdbuffer_t * cmd)
 {
+	drm_via_private_t *dev_priv = dev->dev_private;
 	int ret;
 
-	if (cmd->size > pci_bufsiz && pci_bufsiz > 0) {
+	if (cmd->size > VIA_PCI_BUF_SIZE) {
 		return DRM_ERR(ENOMEM);
 	} 
-	if (DRM_COPY_FROM_USER(pci_buf, cmd->buf, cmd->size))
+	if (DRM_COPY_FROM_USER(dev_priv->pci_buf, cmd->buf, cmd->size))
 		return DRM_ERR(EFAULT);
-	ret = via_parse_pci_cmdbuffer(dev, pci_buf, cmd->size);
+	ret = via_parse_pci_cmdbuffer(dev, dev_priv->pci_buf, cmd->size);
 	return ret;
 }
 

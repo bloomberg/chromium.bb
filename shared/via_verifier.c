@@ -497,6 +497,7 @@ static __inline__ int
 via_check_prim_list(uint32_t const **buffer, const uint32_t *buf_end,
 		    drm_via_state_t *cur_seq)
 {
+	drm_via_private_t *dev_priv = (drm_via_private_t *) cur_seq->dev->dev_private;
 	uint32_t a_fire, bcmd , dw_count;
 	int ret = 0;
 	int have_fire;
@@ -541,6 +542,12 @@ via_check_prim_list(uint32_t const **buffer, const uint32_t *buf_end,
 
 		while(buf < buf_end) {
 			if (*buf == a_fire) {
+				if (dev_priv->num_fire_offsets >= VIA_FIRE_BUF_SIZE) {
+					DRM_ERROR("Fire offset buffer full.\n");
+					ret = 1;
+					break;
+				}
+				dev_priv->fire_offsets[dev_priv->num_fire_offsets++] = buf;
 			        have_fire = 1;
 				buf++;
 				if (buf < buf_end && *buf == a_fire) 
@@ -828,6 +835,7 @@ via_verify_command_stream(const uint32_t * buf, unsigned int size, drm_device_t 
 	hc_state->map_cache = NULL;
 	hc_state->agp = agp;
 	hc_state->buf_start = buf;
+	dev_priv->num_fire_offsets = 0;
 
 	while (buf < buf_end) {
 

@@ -28,13 +28,16 @@
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome"
-#define DRIVER_DATE		"20050107"
+#define DRIVER_DATE		"20050127"
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		4
-#define DRIVER_PATCHLEVEL	3
+#define DRIVER_PATCHLEVEL	4
 
 #include "via_verifier.h"
+
+#define VIA_PCI_BUF_SIZE 120000
+#define VIA_FIRE_BUF_SIZE  2048
 
 typedef struct drm_via_ring_buffer {
 	drm_map_t map;
@@ -60,6 +63,9 @@ typedef struct drm_via_private {
         int last_vblank_valid;
         unsigned usec_per_vblank;
 	drm_via_state_t hc_state;
+	char pci_buf[VIA_PCI_BUF_SIZE];
+	const uint32_t *fire_offsets[VIA_FIRE_BUF_SIZE];
+	uint32_t num_fire_offsets;
 } drm_via_private_t;
 
 /* VIA MMIO register access */

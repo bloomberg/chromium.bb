@@ -27,6 +27,9 @@
 #include "via_drm.h"
 #include "via_verifier.h"
 
+#define VIA_PCI_BUF_SIZE 120000
+#define VIA_FIRE_BUF_SIZE  2048
+
 typedef struct drm_via_ring_buffer {
 	drm_map_t map;
 	char *virtual_start;
@@ -51,6 +54,9 @@ typedef struct drm_via_private {
         int last_vblank_valid;
         unsigned usec_per_vblank;
 	drm_via_state_t hc_state;
+	char pci_buf[VIA_PCI_BUF_SIZE];
+	const uint32_t *fire_offsets[VIA_FIRE_BUF_SIZE];
+	uint32_t num_fire_offsets;
 } drm_via_private_t;
 
 /* VIA MMIO register access */
