@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-cache/fc-cache.c,v 1.4 2002/05/21 17:06:21 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fc-cache/fc-cache.c,v 1.5 2002/06/19 20:55:19 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -93,7 +93,7 @@ nsubdirs (FcStrSet *set)
 }
 
 static int
-scanDirs (FcStrList *list, char *program, FcBool force, FcBool verbose)
+scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool verbose)
 {
     int		ret = 0;
     FcChar8	*dir;
@@ -147,7 +147,7 @@ scanDirs (FcStrList *list, char *program, FcBool force, FcBool verbose)
 	    fprintf (stderr, "\"%s\": not a directory, skipping\n", dir);
 	    continue;
 	}
-	if (!FcDirScan (set, subdirs, 0, FcConfigGetBlanks (0), dir, force))
+	if (!FcDirScan (set, subdirs, 0, FcConfigGetBlanks (config), dir, force))
 	{
 	    fprintf (stderr, "\"%s\": error scanning\n", dir);
 	    ret++;
@@ -178,7 +178,7 @@ scanDirs (FcStrList *list, char *program, FcBool force, FcBool verbose)
 	    ret++;
 	    continue;
 	}
-	ret += scanDirs (sublist, program, force, verbose);
+	ret += scanDirs (sublist, config, program, force, verbose);
 	FcStrSetDestroy (subdirs);
     }
     FcStrListDone (list);
@@ -253,7 +253,7 @@ main (int argc, char **argv)
     }
     else
 	list = FcConfigGetConfigDirs (config);
-    ret = scanDirs (list, argv[0], force, verbose);
+    ret = scanDirs (list, config, argv[0], force, verbose);
     if (verbose)
 	printf ("%s: %s\n", argv[0], ret ? "failed" : "succeeded");
     return ret;
