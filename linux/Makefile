@@ -106,7 +106,7 @@ SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
 
 PROGS = dristat drmstat
 
-CLEANFILES = *.o *.ko $(PROGS) .depend .*.flags .*.d .*.cmd *.mod.c linux
+CLEANFILES = *.o *.ko $(PROGS) .depend .*.flags .*.d .*.cmd *.mod.c linux drm_pciids.h .tmp_versions
 
 # VERSION is not defined from the initial invocation.  It is defined when
 # this Makefile is invoked from the kernel's root Makefile.
@@ -234,7 +234,7 @@ linux:
 	ln -s . linux
 
 clean cleandir:
-	rm -f $(CLEANFILES)
+	rm -rf $(CLEANFILES)
 
 $(MODULE_LIST)::
 	make DRM_MODULES=$@ modules
