@@ -451,3 +451,19 @@ int drm_release(struct inode *inode, struct file *filp)
 	return retcode;
 }
 EXPORT_SYMBOL(drm_release);
+
+/** No-op. */
+/* This is to deal with older X servers that believe 0 means data is
+ * available which is not the correct return for a poll function.
+ * By alternating returns both interfaces are happy. This is fixed
+ * in newer X servers.
+ */
+unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait)
+{
+	static int flip;
+	if ((flip = !flip))
+		return (POLLIN | POLLOUT | POLLRDNORM | POLLWRNORM);
+	return 0;
+}
+EXPORT_SYMBOL(drm_poll);
+

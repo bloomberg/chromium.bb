@@ -749,6 +749,7 @@ extern int drm_open_helper(struct inode *inode, struct file *filp,
 			   drm_device_t * dev);
 extern int drm_fasync(int fd, struct file *filp, int on);
 extern int drm_release(struct inode *inode, struct file *filp);
+unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait);
 
 				/* Mapping support (drm_vm.h) */
 extern void drm_vm_open(struct vm_area_struct *vma);

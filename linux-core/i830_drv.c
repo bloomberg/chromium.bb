@@ -124,6 +124,7 @@ static struct drm_driver driver = {
 		.release = drm_release,
 		.ioctl = drm_ioctl,
 		.mmap = i830_mmap_buffers,
+		.poll = drm_poll,
 		.fasync = drm_fasync,
 		},
 	.pci_driver = {

@@ -324,6 +324,7 @@ static struct drm_driver ffb_driver = {
 		.ioctl	 = drm_ioctl,
 		.mmap	 = drm_mmap,
 		.fasync  = drm_fasync,
+		.poll    = drm_poll,
 		.get_unmapped_area = ffb_get_unmapped_area,
 	},
 };
