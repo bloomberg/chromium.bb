@@ -27,6 +27,8 @@
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
+ *
+ * $FreeBSD: src/sys/dev/drm/drm_drv.h,v 1.11 2003/03/03 12:48:14 phk Exp $
  */
 
 /*
@@ -223,23 +225,18 @@ const char *DRM(find_description)(int vendor, int device);
 
 #ifdef __FreeBSD__
 static struct cdevsw DRM(cdevsw) = {
-	/* open */	DRM( open ),
-	/* close */	DRM( close ),
-	/* read */	DRM( read ),
-	/* write */	DRM( write ),
-	/* ioctl */	DRM( ioctl ),
-	/* poll */	DRM( poll ),
-	/* mmap */	DRM( mmap ),
-	/* strategy */	nostrategy,
-	/* name */	DRIVER_NAME,
-	/* maj */	CDEV_MAJOR,
-	/* dump */	nodump,
-	/* psize */	nopsize,
-	/* flags */	D_TTY | D_TRACKCLOSE,
-#if __FreeBSD_version >= 500000
-	/* kqfilter */	0
-#else
-	/* bmaj */	-1
+	.d_open =	DRM( open ),
+	.d_close =	DRM( close ),
+	.d_read =	DRM( read ),
+	.d_write =	DRM( write ),
+	.d_ioctl =	DRM( ioctl ),
+	.d_poll =	DRM( poll ),
+	.d_mmap =	DRM( mmap ),
+	.d_name =	DRIVER_NAME,
+	.d_maj =	CDEV_MAJOR,
+	.d_flags =	D_TTY | D_TRACKCLOSE,
+#if __FreeBSD_version < 500000
+	.d_bmaj =	-1
 #endif
 };
 
