@@ -166,8 +166,13 @@ int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent,
 				return -ENOMEM;
 
 			*minors = (drm_minor_t) {
-			.dev = dev,.class = DRM_MINOR_PRIMARY};
+				.dev = dev,.class = DRM_MINOR_PRIMARY};
 			dev->minor = minor;
+			if (!drm_fb_loaded) {
+				pci_set_drvdata(pdev, dev);
+				pci_request_regions(pdev, DRIVER_NAME);
+				pci_enable_device(pdev);
+			}
 			if ((ret = fill_in_dev(dev, pdev, ent, driver_fn))) {
 				printk(KERN_ERR "DRM: Fill_in_dev failed.\n");
 				goto err_g1;
@@ -178,11 +183,6 @@ int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent,
 				printk(KERN_ERR
 				       "DRM: Failed to initialize /proc/dri.\n");
 				goto err_g1;
-			}
-			if (!drm_fb_loaded) {
-				pci_set_drvdata(pdev, dev);
-				pci_request_regions(pdev, DRIVER_NAME);
-				pci_enable_device(pdev);
 			}
 			dev_class = drm_sysfs_device_add(drm_class,
 							 MKDEV(DRM_MAJOR,
@@ -202,16 +202,16 @@ int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent,
 	}
 	DRM_ERROR("out of minors\n");
 	return -ENOMEM;
-      err_g2:
+err_g2:
+	drm_proc_cleanup(minor, drm_proc_root, minors->dev_root);
+err_g1:
 	if (!drm_fb_loaded) {
 		pci_set_drvdata(pdev, NULL);
 		pci_release_regions(pdev);
 		pci_disable_device(pdev);
 	}
-	drm_proc_cleanup(minor, drm_proc_root, minors->dev_root);
-      err_g1:
 	*minors = (drm_minor_t) {
-	.dev = NULL,.class = DRM_MINOR_FREE};
+		.dev = NULL,.class = DRM_MINOR_FREE};
 	drm_free(dev, sizeof(*dev), DRM_MEM_STUB);
 	return ret;
 }

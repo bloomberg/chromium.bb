@@ -318,7 +318,7 @@ MODULE_PARM(drm_opts, "s");
  * Expands the \c DRIVER_PREINIT and \c DRIVER_POST_INIT macros before and
  * after the initialization for driver customization.
  */
-int __devinit drm_init(struct pci_driver *driver,
+int drm_init(struct pci_driver *driver,
 		       struct pci_device_id *pciidlist,
 		       struct drm_driver_fn *driver_fn)
 {
