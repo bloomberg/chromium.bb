@@ -601,7 +601,7 @@ static int DRM(probe)(struct pci_dev *pdev)
 		DRM_ERROR( "Cannot initialize the agpgart module.\n" );
 		DRM(stub_unregister)(dev->minor);
 		DRM(takedown)( dev );
-		return -ENOMEM;
+		return -EINVAL;
 	}
 #endif
 #if __REALLY_HAVE_MTRR
