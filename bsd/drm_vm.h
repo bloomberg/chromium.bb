@@ -27,7 +27,7 @@ paddr_t DRM(mmap)(dev_t kdev, off_t offset, int prot)
 #endif
 {
 	DRM_DEVICE;
-	drm_map_t	*map	= NULL;
+	drm_local_map_t *map	= NULL;
 	drm_map_list_entry_t *listentry=NULL;
 	drm_file_t *priv;
 

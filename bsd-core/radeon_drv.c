@@ -27,8 +27,6 @@
  *    Gareth Hughes <gareth@valinux.com>
  */
 
-#include <sys/types.h>
-
 #include "radeon.h"
 #include "drmP.h"
 #include "drm.h"
@@ -38,21 +36,40 @@
 #include "ati_pcigart.h"
 #endif
 
-/* List acquired from http://www.yourvote.com/pci/pcihdr.h and xc/xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h
- * Please report to eta@lclark.edu inaccuracies or if a chip you have works that is marked unsupported here.
- */
 drm_chipinfo_t DRM(devicelist)[] = {
+	{0x1002, 0x4242, 1, "ATI Radeon BB AIW 8500DV (AGP)"},
+	{0x1002, 0x4336, 1, "ATI Radeon Mobility"},
+	{0x1002, 0x4337, 1, "ATI Radeon IGP 340"},
+	{0x1002, 0x4964, 1, "ATI Radeon Id 9000"},
+	{0x1002, 0x4965, 1, "ATI Radeon Ie 9000"},
+	{0x1002, 0x4966, 1, "ATI Radeon If 9000"},
+	{0x1002, 0x4967, 1, "ATI Radeon Ig 9000"},
+	{0x1002, 0x496e, 1, "ATI Radeon Ig 9000"},
 	{0x1002, 0x4C57, 1, "ATI Radeon LW Mobility 7 (AGP)"},
+	{0x1002, 0x4C58, 1, "ATI Radeon LX Mobility 7 (AGP)"},
 	{0x1002, 0x4C59, 1, "ATI Radeon LY Mobility 6 (AGP)"},
 	{0x1002, 0x4C5A, 1, "ATI Radeon LZ Mobility 6 (AGP)"},
-	{0x1002, 0x5144, 1, "ATI Radeon QD (AGP)"},
-	{0x1002, 0x5145, 1, "ATI Radeon QE (AGP)"},
-	{0x1002, 0x5146, 1, "ATI Radeon QF (AGP)"},
-	{0x1002, 0x5147, 1, "ATI Radeon QG (AGP)"},
+	{0x1002, 0x4C64, 1, "ATI Radeon Ld Mobility 9000 (AGP)"},
+	{0x1002, 0x4C65, 1, "ATI Radeon Le Mobility 9000 (AGP)"},
+	{0x1002, 0x4C66, 1, "ATI Radeon Lf Mobility 9000 (AGP)"},
+	{0x1002, 0x4C67, 1, "ATI Radeon Lg Mobility 9000 (AGP)"},
+	{0x1002, 0x5144, 1, "ATI Radeon QD R100 (AGP)"},
+	{0x1002, 0x5145, 1, "ATI Radeon QE R100 (AGP)"},
+	{0x1002, 0x5146, 1, "ATI Radeon QF R100 (AGP)"},
+	{0x1002, 0x5147, 1, "ATI Radeon QG R100 (AGP)"},
+	{0x1002, 0x5148, 1, "ATI Radeon QH FireGL 8x00 (AGP)"},
+	{0x1002, 0x5149, 1, "ATI Radeon QI R200"},
+	{0x1002, 0x514A, 1, "ATI Radeon QJ R200"},
+	{0x1002, 0x514B, 1, "ATI Radeon QK R200"},
+	{0x1002, 0x514C, 1, "ATI Radeon QL 8500 (AGP)"},
 	{0x1002, 0x5157, 1, "ATI Radeon QW 7500 (AGP)"},
+	{0x1002, 0x5158, 1, "ATI Radeon QX 7500 (AGP)"},
 	{0x1002, 0x5159, 1, "ATI Radeon QY VE (AGP)"},
 	{0x1002, 0x515A, 1, "ATI Radeon QZ VE (AGP)"},
-	{0x1002, 0x514C, 1, "ATI Radeon QL 8500 (AGP)"},
+	{0x1002, 0x5168, 1, "ATI Radeon Qh R200"},
+	{0x1002, 0x5169, 1, "ATI Radeon Qi R200"},
+	{0x1002, 0x516A, 1, "ATI Radeon Qj R200"},
+	{0x1002, 0x516B, 1, "ATI Radeon Qk R200"},
 	{0, 0, 0, NULL}
 };
 
@@ -74,4 +91,8 @@ drm_chipinfo_t DRM(devicelist)[] = {
 #include "drm_scatter.h"
 #endif
 
+#ifdef __FreeBSD__
 DRIVER_MODULE(DRIVER_NAME, pci, DRM(driver), DRM(devclass), 0, 0);
+#elif defined(__NetBSD__)
+CFDRIVER_DECL(radeon, DV_TTY, NULL);
+#endif /* __FreeBSD__ */

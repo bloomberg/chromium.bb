@@ -84,13 +84,16 @@ extern unsigned long _bus_base(void);
 
 #include "xf86drm.h"
 
-#ifndef DRM_MAJOR
-#define DRM_MAJOR 226		/* Linux */
+#ifdef __FreeBSD__
+#define DRM_MAJOR 145
 #endif
 
-#ifndef __linux__
-#undef  DRM_MAJOR
-#define DRM_MAJOR 145		/* Should set in drm.h for *BSD */
+#ifdef __NetBSD__
+#define DRM_MAJOR 34
+#endif
+
+#ifndef DRM_MAJOR
+#define DRM_MAJOR 226		/* Linux */
 #endif
 
 #ifndef DRM_MAX_MINOR

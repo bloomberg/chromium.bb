@@ -255,6 +255,7 @@ do {									\
  		}							\
 	}								\
 } while(0)
+#define DRM_DROP_MAP(_map)
 
 				/* Internal types and structures */
 #define DRM_ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
@@ -516,6 +517,8 @@ typedef struct drm_map_list {
 	struct list_head	head;
 	drm_map_t		*map;
 } drm_map_list_t;
+
+typedef drm_map_t drm_local_map_t;
 
 #if __HAVE_VBL_IRQ
 

@@ -926,11 +926,11 @@ static void radeon_cp_init_ring_buffer( drm_device_t *dev,
 	RADEON_WRITE( RADEON_SCRATCH_UMSK, 0x7 );
 
 	/* Writeback doesn't seem to work everywhere, test it first */
-	DRM_WRITE32( &dev_priv->scratch[1], 0 );
+	DRM_WRITE32( dev_priv->ring_rptr, RADEON_SCRATCHOFF(1), 0 );
 	RADEON_WRITE( RADEON_SCRATCH_REG1, 0xdeadbeef );
 
 	for ( tmp = 0 ; tmp < dev_priv->usec_timeout ; tmp++ ) {
-		if ( DRM_READ32( &dev_priv->scratch[1] ) == 0xdeadbeef )
+		if ( DRM_READ32( dev_priv->ring_rptr, RADEON_SCRATCHOFF(1) ) == 0xdeadbeef )
 			break;
 		DRM_UDELAY( 1 );
 	}
@@ -1217,6 +1217,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 		(dev_priv->ring.size / sizeof(u32)) - 1;
 
 	dev_priv->ring.high_mark = RADEON_RING_HIGH_MARK;
+	dev_priv->ring.ring_rptr = dev_priv->ring_rptr;
 
 #if __REALLY_HAVE_SG
 	if ( dev_priv->is_pci ) {
@@ -1542,7 +1543,7 @@ drm_buf_t *radeon_freelist_get( drm_device_t *dev )
 	drm_buf_t *buf;
 	int i, t;
 	int start;
-	u32 done_age = DRM_READ32(&dev_priv->scratch[1]);
+	u32 done_age = DRM_READ32(dev_priv->ring_rptr, RADEON_SCRATCHOFF(1));
 
 	if ( ++dev_priv->last_buf >= dma->buf_count )
 		dev_priv->last_buf = 0;

@@ -136,7 +136,7 @@ int DRM(getmap)( DRM_IOCTL_ARGS )
 {
 	DRM_DEVICE;
 	drm_map_t    map;
-	drm_map_t    *mapinlist;
+	drm_local_map_t    *mapinlist;
 	drm_map_list_entry_t *list;
 	int          idx;
 	int	     i = 0;

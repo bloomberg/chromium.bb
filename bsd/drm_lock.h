@@ -47,14 +47,12 @@ int DRM(lock_take)(__volatile__ unsigned int *lock, unsigned int context)
 {
 	unsigned int old, new;
 
-	char failed;
-
 	do {
 		old = *lock;
 		if (old & _DRM_LOCK_HELD) new = old | _DRM_LOCK_CONT;
 		else			  new = context | _DRM_LOCK_HELD;
-		_DRM_CAS(lock, old, new, failed);
-	} while (failed);
+	} while (!atomic_cmpset_int(lock, old, new));
+
 	if (_DRM_LOCKING_CONTEXT(old) == context) {
 		if (old & _DRM_LOCK_HELD) {
 			if (context != DRM_KERNEL_CONTEXT) {
@@ -77,14 +75,13 @@ int DRM(lock_transfer)(drm_device_t *dev,
 		       __volatile__ unsigned int *lock, unsigned int context)
 {
 	unsigned int old, new;
-	char failed;
 
 	dev->lock.pid = 0;
 	do {
 		old  = *lock;
 		new  = context | _DRM_LOCK_HELD;
-		_DRM_CAS(lock, old, new, failed);
-	} while (failed);
+	} while (!atomic_cmpset_int(lock, old, new));
+
 	return 1;
 }
 
@@ -93,14 +90,13 @@ int DRM(lock_free)(drm_device_t *dev,
 {
 	unsigned int old, new;
 	pid_t        pid = dev->lock.pid;
-	char failed;
 
 	dev->lock.pid = 0;
 	do {
 		old  = *lock;
 		new  = 0;
-		_DRM_CAS(lock, old, new, failed);
-	} while (failed);
+	} while (!atomic_cmpset_int(lock, old, new));
+
 	if (_DRM_LOCK_IS_HELD(old) && _DRM_LOCKING_CONTEXT(old) != context) {
 		DRM_ERROR("%d freed heavyweight lock held by %d (pid %d)\n",
 			  context,
@@ -224,8 +220,6 @@ int DRM(notifier)(void *priv)
 {
 	drm_sigdata_t *s = (drm_sigdata_t *)priv;
 	unsigned int  old, new;
-	char failed;
-
 
 				/* Allow signal delivery if lock isn't held */
 	if (!_DRM_LOCK_IS_HELD(s->lock->lock)
@@ -236,8 +230,8 @@ int DRM(notifier)(void *priv)
 	do {
 		old  = s->lock->lock;
 		new  = old | _DRM_LOCK_CONT;
-		_DRM_CAS(&s->lock->lock, old, new, failed);
-	} while (failed);
+	} while (!atomic_cmpset_int(&s->lock->lock, old, new));
+
 	return 0;
 }
 

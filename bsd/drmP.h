@@ -121,15 +121,15 @@ typedef struct drm_file drm_file_t;
 
 				/* Mapping helper macros */
 #define DRM_IOREMAP(map)						\
-	(map)->handle = DRM(ioremap)( (map)->offset, (map)->size )
+	(map)->handle = DRM(ioremap)( dev, map )
 
 #define DRM_IOREMAP_NOCACHE(map)					\
-	(map)->handle = DRM(ioremap_nocache)((map)->offset, (map)->size)
+	(map)->handle = DRM(ioremap_nocache)( dev, map )
 
 #define DRM_IOREMAPFREE(map)						\
 	do {								\
 		if ( (map)->handle && (map)->size )			\
-			DRM(ioremapfree)( (map)->handle, (map)->size );	\
+			DRM(ioremapfree)( map );			\
 	} while (0)
 
 				/* Internal types and structures */
@@ -377,7 +377,6 @@ typedef struct drm_sg_mem {
 	unsigned long   handle;
 	void            *virtual;
 	int             pages;
-	struct page     **pagelist;
 	dma_addr_t	*busaddr;
 } drm_sg_mem_t;
 
@@ -386,10 +385,23 @@ typedef struct drm_sigdata {
 	drm_hw_lock_t *lock;
 } drm_sigdata_t;
 
+typedef struct drm_local_map {
+	unsigned long	offset;	 /* Physical address (0 for SAREA)*/
+	unsigned long	size;	 /* Physical size (bytes)	    */
+	drm_map_type_t	type;	 /* Type of memory mapped		    */
+	drm_map_flags_t flags;	 /* Flags				    */
+	void		*handle; /* User-space: "Handle" to pass to mmap    */
+				 /* Kernel-space: kernel-virtual address    */
+	int		mtrr;	 /* MTRR slot used			    */
+				 /* Private data			    */
+	bus_space_tag_t iot;
+	bus_space_handle_t ioh;
+} drm_local_map_t;
+
 typedef TAILQ_HEAD(drm_map_list, drm_map_list_entry) drm_map_list_t;
 typedef struct drm_map_list_entry {
 	TAILQ_ENTRY(drm_map_list_entry) link;
-	drm_map_t	*map;
+	drm_local_map_t	*map;
 } drm_map_list_entry_t;
 
 TAILQ_HEAD(drm_vbl_sig_list, drm_vbl_sig);
@@ -440,7 +452,7 @@ struct drm_device {
 	drm_map_list_t	  *maplist;	/* Linked list of regions	   */
 	int		  map_count;	/* Number of mappable regions	   */
 
-	drm_map_t	  **context_sareas;
+	drm_local_map_t	  **context_sareas;
 	int		  max_context;
 
 	drm_vma_entry_t	  *vmalist;	/* List of vmas (for debugging)	   */
@@ -454,9 +466,9 @@ struct drm_device {
 	drm_device_dma_t  *dma;		/* Optional pointer for DMA support */
 
 				/* Context support */
-#ifdef __FreeBSD__
 	int		  irq;		/* Interrupt used by board	   */
 	int		  irqrid;		/* Interrupt used by board	   */
+#ifdef __FreeBSD__
 	struct resource   *irqr;	/* Resource for interrupt used by board	   */
 #elif defined(__NetBSD__)
 	struct pci_attach_args  pa;
@@ -530,15 +542,16 @@ extern int	     DRM(write_string)(drm_device_t *dev, const char *s);
 
 				/* Memory management support (drm_memory.h) */
 extern void	     DRM(mem_init)(void);
+extern void	     DRM(mem_uninit)(void);
 extern void	     *DRM(alloc)(size_t size, int area);
 extern void	     *DRM(realloc)(void *oldpt, size_t oldsize, size_t size,
 				   int area);
 extern char	     *DRM(strdup)(const char *s, int area);
 extern void	     DRM(strfree)(char *s, int area);
 extern void	     DRM(free)(void *pt, size_t size, int area);
-extern void	     *DRM(ioremap)(unsigned long offset, unsigned long size);
-extern void	     *DRM(ioremap_nocache)(unsigned long offset, unsigned long size);
-extern void	     DRM(ioremapfree)(void *pt, unsigned long size);
+extern void	     *DRM(ioremap)(drm_device_t *dev, drm_local_map_t *map);
+extern void	     *DRM(ioremap_nocache)(drm_device_t *dev, drm_local_map_t *map);
+extern void	     DRM(ioremapfree)(drm_local_map_t *map);
 
 #if __REALLY_HAVE_AGP
 extern agp_memory    *DRM(alloc_agp)(int pages, u32 type);

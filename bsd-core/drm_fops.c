@@ -100,7 +100,7 @@ int DRM(open_helper)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p,
    the circular buffer), is based on Alessandro Rubini's LINUX DEVICE
    DRIVERS (Cambridge: O'Reilly, 1998), pages 111-113. */
 
-ssize_t DRM(read)(dev_t kdev, struct uio *uio, int ioflag)
+int DRM(read)(dev_t kdev, struct uio *uio, int ioflag)
 {
 	DRM_DEVICE;
 	int	      left;
@@ -182,8 +182,8 @@ int DRM(write_string)(drm_device_t *dev, const char *s)
 		selwakeup(&dev->buf_sel);
 	}
 		
-	DRM_DEBUG("dev->buf_sigio=%p\n", dev->buf_sigio);
 #ifdef __FreeBSD__
+	DRM_DEBUG("dev->buf_sigio=%p\n", dev->buf_sigio);
 	if (dev->buf_sigio) {
 		DRM_DEBUG("dev->buf_sigio->sio_pgid=%d\n", dev->buf_sigio->sio_pgid);
 #if __FreeBSD_version >= 500000
@@ -200,6 +200,7 @@ int DRM(write_string)(drm_device_t *dev, const char *s)
 			gsignal(dev->buf_pgid, SIGIO);
 		else if(dev->buf_pgid && (p = pfind(-dev->buf_pgid)) != NULL)
 			psignal(p, SIGIO);
+	}
 #endif /* __NetBSD__ */
 	DRM_DEBUG("waking\n");
 	wakeup(&dev->buf_rp);

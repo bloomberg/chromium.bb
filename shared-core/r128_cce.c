@@ -579,6 +579,7 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 		(dev_priv->ring.size / sizeof(u32)) - 1;
 
 	dev_priv->ring.high_mark = 128;
+	dev_priv->ring.ring_rptr = dev_priv->ring_rptr;
 
 	dev_priv->sarea_priv->last_frame = 0;
 	R128_WRITE( R128_LAST_FRAME_REG, dev_priv->sarea_priv->last_frame );

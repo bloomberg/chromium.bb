@@ -116,25 +116,20 @@ int DRM(getmagic)(DRM_IOCTL_ARGS)
 {
 	static drm_magic_t sequence = 0;
 	drm_auth_t	   auth;
-	static DRM_SPINTYPE lock;
-	static int	   first = 1;
 	DRM_DEVICE;
 	DRM_PRIV;
-
-	if (first) {
-		DRM_SPININIT(lock, "drm getmagic");
-		first = 0;
-	}
 
 				/* Find unique magic */
 	if (priv->magic) {
 		auth.magic = priv->magic;
 	} else {
 		do {
-			DRM_SPINLOCK(&lock);
-			if (!sequence) ++sequence; /* reserve 0 */
-			auth.magic = sequence++;
-			DRM_SPINUNLOCK(&lock);
+			int old = sequence;
+			
+			auth.magic = old+1;
+			
+			if (!atomic_cmpset_int(&sequence, old, auth.magic))
+				continue;
 		} while (DRM(find_file)(dev, auth.magic));
 		priv->magic = auth.magic;
 		DRM(add_magic)(dev, priv, auth.magic);

@@ -31,9 +31,9 @@
 
 #include "drmP.h"
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 #define malloctype DRM(M_DRM)
-/* The macros confliced in the MALLOC_DEFINE */
+/* The macros conflicted in the MALLOC_DEFINE */
 
 MALLOC_DEFINE(malloctype, "drm", "DRM Data Structures");
 
@@ -81,6 +81,10 @@ void DRM(mem_init)(void)
 {
 	drm_mem_stats_t *mem;
 
+#ifdef __NetBSD__
+	malloc_type_attach(DRM(M_DRM));
+#endif
+
 	DRM_SPININIT(DRM(mem_lock), "drm memory");
 
 	for (mem = DRM(mem_stats); mem->name; ++mem) {
@@ -95,9 +99,15 @@ void DRM(mem_init)(void)
 	DRM(ram_used)	   = 0;
 }
 
+void DRM(mem_uninit)(void)
+{
+	DRM_SPINUNINIT(DRM(mem_lock));
+}
+
 #ifdef __FreeBSD__
 /* drm_mem_info is called whenever a process reads /dev/drm/mem. */
-static int DRM(_mem_info) DRM_SYSCTL_HANDLER_ARGS
+static int DRM(_mem_info)(drm_mem_stats_t *stats, struct sysctl_oid *oidp, void *arg1, 
+    int arg2, struct sysctl_req *req)
 {
 	drm_mem_stats_t *pt;
 	char buf[128];
@@ -112,7 +122,7 @@ static int DRM(_mem_info) DRM_SYSCTL_HANDLER_ARGS
 	DRM_SYSCTL_PRINT("%-9.9s %5d %5d %4d %10lu	    |\n",
 		       "locked", 0, 0, 0, DRM(ram_used));
 	DRM_SYSCTL_PRINT("\n");
-	for (pt = DRM(mem_stats); pt->name; pt++) {
+	for (pt = stats; pt->name; pt++) {
 		DRM_SYSCTL_PRINT("%-9.9s %5d %5d %4d %10lu %10lu | %6d %10ld\n",
 			       pt->name,
 			       pt->succeed_count,
@@ -132,13 +142,22 @@ static int DRM(_mem_info) DRM_SYSCTL_HANDLER_ARGS
 int DRM(mem_info) DRM_SYSCTL_HANDLER_ARGS
 {
 	int ret;
-
+	drm_mem_stats_t *stats;
+	
+	stats = malloc(sizeof(DRM(mem_stats)), DRM(M_DRM), M_NOWAIT);
+	if (stats == NULL)
+		return ENOMEM;
+	
 	DRM_SPINLOCK(&DRM(mem_lock));
-	ret = DRM(_mem_info)(oidp, arg1, arg2, req);
+	bcopy(DRM(mem_stats), stats, sizeof(DRM(mem_stats)));
 	DRM_SPINUNLOCK(&DRM(mem_lock));
+	
+	ret = DRM(_mem_info)(stats, oidp, arg1, arg2, req);
+	
+	free(stats, DRM(M_DRM));
 	return ret;
 }
-#endif
+#endif /* __FreeBSD__ */
 
 void *DRM(alloc)(size_t size, int area)
 {
@@ -149,11 +168,7 @@ void *DRM(alloc)(size_t size, int area)
 		return NULL;
 	}
 
-#ifdef __FreeBSD__
 	if (!(pt = malloc(size, DRM(M_DRM), M_NOWAIT))) {
-#elif defined(__NetBSD__)
-	if (!(pt = malloc(size, M_DEVBUF, M_NOWAIT))) {
-#endif
 		DRM_SPINLOCK(&DRM(mem_lock));
 		++DRM(mem_stats)[area].fail_count;
 		DRM_SPINUNLOCK(&DRM(mem_lock));
@@ -203,13 +218,10 @@ void DRM(free)(void *pt, size_t size, int area)
 	int alloc_count;
 	int free_count;
 
-	if (!pt) DRM_MEM_ERROR(area, "Attempt to free NULL pointer\n");
+	if (!pt)
+		DRM_MEM_ERROR(area, "Attempt to free NULL pointer\n");
 	else
-#ifdef __FreeBSD__
-	free(pt, DRM(M_DRM));
-#elif defined(__NetBSD__)
-	free(pt, M_DEVBUF);
-#endif
+		free(pt, DRM(M_DRM));
 	DRM_SPINLOCK(&DRM(mem_lock));
 	DRM(mem_stats)[area].bytes_freed += size;
 	free_count  = ++DRM(mem_stats)[area].free_count;
@@ -221,25 +233,36 @@ void DRM(free)(void *pt, size_t size, int area)
 	}
 }
 
-void *DRM(ioremap)(unsigned long offset, unsigned long size)
+void *DRM(ioremap)( drm_device_t *dev, drm_local_map_t *map )
 {
 	void *pt;
 
-	if (!size) {
+	if (!map->size) {
 		DRM_MEM_ERROR(DRM_MEM_MAPPINGS,
-			      "Mapping 0 bytes at 0x%08lx\n", offset);
+			      "Mapping 0 bytes at 0x%08lx\n", map->offset);
 		return NULL;
 	}
+#ifdef __NetBSD__
+	map->iot = dev->pa.pa_memt;
+#endif
 
-	if (!(pt = pmap_mapdev(offset, size))) {
+#ifdef __FreeBSD__
+	if (!(pt = pmap_mapdev(map->offset, map->size))) {
+#elif defined(__NetBSD__)
+	if (bus_space_map(map->iot, map->offset, map->size, 
+		BUS_SPACE_MAP_LINEAR, &map->ioh)) {
+#endif
 		DRM_SPINLOCK(&DRM(mem_lock));
 		++DRM(mem_stats)[DRM_MEM_MAPPINGS].fail_count;
 		DRM_SPINUNLOCK(&DRM(mem_lock));
 		return NULL;
 	}
+#ifdef __NetBSD__
+	pt = bus_space_vaddr(map->iot, map->ioh);
+#endif
 	DRM_SPINLOCK(&DRM(mem_lock));
 	++DRM(mem_stats)[DRM_MEM_MAPPINGS].succeed_count;
-	DRM(mem_stats)[DRM_MEM_MAPPINGS].bytes_allocated += size;
+	DRM(mem_stats)[DRM_MEM_MAPPINGS].bytes_allocated += map->size;
 	DRM_SPINUNLOCK(&DRM(mem_lock));
 	return pt;
 }
@@ -271,19 +294,23 @@ void *DRM(ioremap_nocache)(unsigned long offset, unsigned long size)
 }
 #endif
 
-void DRM(ioremapfree)(void *pt, unsigned long size)
+void DRM(ioremapfree)(drm_local_map_t *map)
 {
 	int alloc_count;
 	int free_count;
 
-	if (!pt)
+	if (map->handle == NULL)
 		DRM_MEM_ERROR(DRM_MEM_MAPPINGS,
 			      "Attempt to free NULL pointer\n");
 	else
-		pmap_unmapdev((vm_offset_t) pt, size);
+#ifdef __FreeBSD__
+		pmap_unmapdev((vm_offset_t) map->handle, map->size);
+#elif defined(__NetBSD__)
+		bus_space_unmap(map->iot, map->ioh, map->size);
+#endif
 
 	DRM_SPINLOCK(&DRM(mem_lock));
-	DRM(mem_stats)[DRM_MEM_MAPPINGS].bytes_freed += size;
+	DRM(mem_stats)[DRM_MEM_MAPPINGS].bytes_freed += map->size;
 	free_count  = ++DRM(mem_stats)[DRM_MEM_MAPPINGS].free_count;
 	alloc_count =	DRM(mem_stats)[DRM_MEM_MAPPINGS].succeed_count;
 	DRM_SPINUNLOCK(&DRM(mem_lock));

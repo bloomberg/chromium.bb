@@ -69,7 +69,7 @@ int DRM(ctxbitmap_next)( drm_device_t *dev )
 		if((bit+1) > dev->max_context) {
 			dev->max_context = (bit+1);
 			if(dev->context_sareas) {
-				drm_map_t **ctx_sareas;
+				drm_local_map_t **ctx_sareas;
 
 				ctx_sareas = DRM(realloc)(dev->context_sareas,
 						(dev->max_context - 1) * 
@@ -149,7 +149,7 @@ int DRM(getsareactx)( DRM_IOCTL_ARGS )
 {
 	DRM_DEVICE;
 	drm_ctx_priv_map_t request;
-	drm_map_t *map;
+	drm_local_map_t *map;
 
 	DRM_COPY_FROM_USER_IOCTL( request, (drm_ctx_priv_map_t *)data, 
 			   sizeof(request) );
@@ -174,7 +174,7 @@ int DRM(setsareactx)( DRM_IOCTL_ARGS )
 {
 	DRM_DEVICE;
 	drm_ctx_priv_map_t request;
-	drm_map_t *map = NULL;
+	drm_local_map_t *map = NULL;
 	drm_map_list_entry_t *list;
 
 	DRM_COPY_FROM_USER_IOCTL( request, (drm_ctx_priv_map_t *)data,
@@ -183,24 +183,20 @@ int DRM(setsareactx)( DRM_IOCTL_ARGS )
 	DRM_LOCK;
 	TAILQ_FOREACH(list, dev->maplist, link) {
 		map=list->map;
-		if(map->handle == request.handle) 
-			goto found;
+		if(map->handle == request.handle) {
+			if (dev->max_context < 0)
+				goto bad;
+			if (request.ctx_id >= (unsigned) dev->max_context)
+				goto bad;
+			dev->context_sareas[request.ctx_id] = map;
+			DRM_UNLOCK;
+			return 0;
+		}
 	}
 
 bad:
 	DRM_UNLOCK;
 	return DRM_ERR(EINVAL);
-
-found:
-	map = list->map;
-	if (!map) goto bad;
-	if (dev->max_context < 0)
-		goto bad;
-	if (request.ctx_id >= (unsigned) dev->max_context)
-		goto bad;
-	dev->context_sareas[request.ctx_id] = map;
-	DRM_UNLOCK;
-	return 0;
 }
 
 /* ================================================================

@@ -125,7 +125,7 @@ static int DRM(name_info)DRM_SYSCTL_HANDLER_ARGS
 static int DRM(_vm_info)DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
-	drm_map_t    *map;
+	drm_local_map_t    *map;
 	drm_map_list_entry_t    *listentry;
 	const char   *types[] = { "FB", "REG", "SHM" };
 	const char   *type;
@@ -203,7 +203,7 @@ static int DRM(_queues_info)DRM_SYSCTL_HANDLER_ARGS
 				     q->read_queue ? 'r':'-',
 				     q->write_queue ? 'w':'-',
 				     q->flush_queue ? 'f':'-',
-				     DRM_BUFCOUNT(&q->waitlist),
+				     (int)DRM_BUFCOUNT(&q->waitlist),
 				     atomic_read(&q->total_flushed),
 				     atomic_read(&q->total_queued),
 				     atomic_read(&q->total_locks));

@@ -29,8 +29,6 @@
  *    Gareth Hughes <gareth@valinux.com>
  */
 
-#include <sys/types.h>
-
 #include "mga.h"
 #include "drmP.h"
 #include "drm.h"
@@ -63,4 +61,8 @@ drm_chipinfo_t DRM(devicelist)[] = {
 #include "drm_vm.h"
 #include "drm_sysctl.h"
 
+#ifdef __FreeBSD__
 DRIVER_MODULE(mga, pci, mga_driver, mga_devclass, 0, 0);
+#elif defined(__NetBSD__)
+CFDRIVER_DECL(mga, DV_TTY, NULL);
+#endif

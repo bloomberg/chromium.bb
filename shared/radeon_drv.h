@@ -31,8 +31,8 @@
 #ifndef __RADEON_DRV_H__
 #define __RADEON_DRV_H__
 
-#define GET_RING_HEAD(ring)		DRM_READ32(  (volatile u32 *) (ring)->head )
-#define SET_RING_HEAD(ring,val)		DRM_WRITE32( (volatile u32 *) (ring)->head , (val))
+#define GET_RING_HEAD(ring)		DRM_READ32(  (ring)->ring_rptr, 0 ) /* (ring)->head */
+#define SET_RING_HEAD(ring,val)		DRM_WRITE32( (ring)->ring_rptr, 0, (val) ) /* (ring)->head */
 
 typedef struct drm_radeon_freelist {
    	unsigned int age;
@@ -53,6 +53,7 @@ typedef struct drm_radeon_ring_buffer {
 	int space;
 
 	int high_mark;
+	drm_local_map_t *ring_rptr;
 } drm_radeon_ring_buffer_t;
 
 typedef struct drm_radeon_depth_clear_t {
@@ -126,13 +127,13 @@ typedef struct drm_radeon_private {
 
 	drm_radeon_depth_clear_t depth_clear;
 
-	drm_map_t *sarea;
-	drm_map_t *fb;
-	drm_map_t *mmio;
-	drm_map_t *cp_ring;
-	drm_map_t *ring_rptr;
-	drm_map_t *buffers;
-	drm_map_t *agp_textures;
+	drm_local_map_t *sarea;
+	drm_local_map_t *fb;
+	drm_local_map_t *mmio;
+	drm_local_map_t *cp_ring;
+	drm_local_map_t *ring_rptr;
+	drm_local_map_t *buffers;
+	drm_local_map_t *agp_textures;
 
 	struct mem_block *agp_heap;
 	struct mem_block *fb_heap;
@@ -267,8 +268,10 @@ extern void radeon_do_release(drm_device_t *dev);
 #define RADEON_SCRATCH_UMSK		0x0770
 #define RADEON_SCRATCH_ADDR		0x0774
 
+#define RADEON_SCRATCHOFF( x )		(RADEON_SCRATCH_REG_OFFSET + 4*(x))
+
 #define GET_SCRATCH( x )	(dev_priv->writeback_works			\
-				? DRM_READ32( &dev_priv->scratch[(x)] )		\
+				? DRM_READ32( dev_priv->ring_rptr, RADEON_SCRATCHOFF(x) ) \
 				: RADEON_READ( RADEON_SCRATCH_REG0 + 4*(x) ) )
 
 
@@ -687,15 +690,10 @@ extern void radeon_do_release(drm_device_t *dev);
 
 #define RADEON_RING_HIGH_MARK		128
 
-
-#define RADEON_BASE(reg)	((unsigned long)(dev_priv->mmio->handle))
-#define RADEON_ADDR(reg)	(RADEON_BASE( reg ) + reg)
-
-#define RADEON_READ(reg)	DRM_READ32(  (volatile u32 *) RADEON_ADDR(reg) )
-#define RADEON_WRITE(reg,val)	DRM_WRITE32( (volatile u32 *) RADEON_ADDR(reg), (val) )
-
-#define RADEON_READ8(reg)	DRM_READ8(  (volatile u8 *) RADEON_ADDR(reg) )
-#define RADEON_WRITE8(reg,val)	DRM_WRITE8( (volatile u8 *) RADEON_ADDR(reg), (val) )
+#define RADEON_READ(reg)	DRM_READ32(  dev_priv->mmio, (reg) )
+#define RADEON_WRITE(reg,val)	DRM_WRITE32( dev_priv->mmio, (reg), (val) )
+#define RADEON_READ8(reg)	DRM_READ8(  dev_priv->mmio, (reg) )
+#define RADEON_WRITE8(reg,val)	DRM_WRITE8( dev_priv->mmio, (reg), (val) )
 
 #define RADEON_WRITE_PLL( addr, val )					\
 do {									\
@@ -859,7 +857,7 @@ do {									\
 
 #define COMMIT_RING() do {						\
 	/* Flush writes to ring */					\
-	DRM_READMEMORYBARRIER();					\
+	DRM_READMEMORYBARRIER(dev_priv->mmio);					\
 	GET_RING_HEAD( &dev_priv->ring );				\
 	RADEON_WRITE( RADEON_CP_RB_WPTR, dev_priv->ring.tail );		\
 	/* read from PCI bus to ensure correct posting */		\
