@@ -547,10 +547,6 @@ int gamma_dma(struct inode *inode, struct file *filp, unsigned int cmd,
 	int		  retcode   = 0;
 	drm_dma_t	  d;
 
-#if 0
-	LOCK_TEST_WITH_RETURN( dev );
-#endif
-
 	if (copy_from_user(&d, (drm_dma_t *)arg, sizeof(d)))
 		return -EFAULT;
 

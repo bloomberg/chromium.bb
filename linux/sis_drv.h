@@ -28,53 +28,11 @@
 #ifndef _SIS_DRV_H_
 #define _SIS_DRV_H_
 
-				/* sis_drv.c */
-extern int  sis_version(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int  sis_open(struct inode *inode, struct file *filp);
-extern int  sis_release(struct inode *inode, struct file *filp);
-extern int  sis_ioctl(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg);
-extern int  sis_irq_install(drm_device_t *dev, int irq);
-extern int  sis_irq_uninstall(drm_device_t *dev);
-extern int  sis_control(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int  sis_lock(struct inode *inode, struct file *filp,
-		       unsigned int cmd, unsigned long arg);
-extern int  sis_unlock(struct inode *inode, struct file *filp,
-			 unsigned int cmd, unsigned long arg);
+typedef struct drm_sis_private {
+	drm_map_t *buffers;
+} drm_sis_private_t;
 
-				/* sis_context.c */
-
-extern int  sis_resctx(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg);
-extern int  sis_addctx(struct inode *inode, struct file *filp,
-		        unsigned int cmd, unsigned long arg);
-extern int  sis_modctx(struct inode *inode, struct file *filp,
-		        unsigned int cmd, unsigned long arg);
-extern int  sis_getctx(struct inode *inode, struct file *filp,
-		        unsigned int cmd, unsigned long arg);
-extern int  sis_switchctx(struct inode *inode, struct file *filp,
-			   unsigned int cmd, unsigned long arg);
-extern int  sis_newctx(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg);
-extern int  sis_rmctx(struct inode *inode, struct file *filp,
-		       unsigned int cmd, unsigned long arg);
-
-extern int  sis_context_switch(drm_device_t *dev, int old, int new);
-extern int  sis_context_switch_complete(drm_device_t *dev, int new);
-
-int sis_fb_alloc(struct inode *inode, struct file *filp, unsigned int cmd,
-		  unsigned long arg);
-int sis_fb_free(struct inode *inode, struct file *filp, unsigned int cmd,
-		  unsigned long arg);
-
-int sis_agp_init(struct inode *inode, struct file *filp, unsigned int cmd,
-		  unsigned long arg);
-int sis_agp_alloc(struct inode *inode, struct file *filp, unsigned int cmd,
-		  unsigned long arg);
-int sis_agp_free(struct inode *inode, struct file *filp, unsigned int cmd,
-		  unsigned long arg);
+/* Stereo ? - this was never committed */
 
 int sis_flip(struct inode *inode, struct file *filp, unsigned int cmd,
 		  unsigned long arg);
@@ -83,8 +41,5 @@ int sis_flip_init(struct inode *inode, struct file *filp, unsigned int cmd,
 int sis_flip_final(struct inode *inode, struct file *filp, unsigned int cmd,
 		  unsigned long arg);
 void flip_final(void);
-		 		  
-int sis_init_context(int contexy);
-int sis_final_context(int context);
 
 #endif
