@@ -1,8 +1,7 @@
-/* r128_drv.c -- ATI Rage 128 driver -*- linux-c -*-
- * Created: Mon Dec 13 09:47:27 1999 by faith@precisioninsight.com
+/* radeon_drv.c -- ATI Radeon driver -*- linux-c -*-
  *
  * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
- * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
+ * Copyright 2000 VA Linux Systems, Inc., Fremont, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,133 +23,130 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Authors:
- *    Rickard E. (Rik) Faith <faith@valinux.com>
- *    Kevin E. Martin <martin@valinux.com>
- *    Gareth Hughes <gareth@valinux.com>
+ * Authors: Kevin E. Martin <martin@valinux.com>
+ *          Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 
 #include <linux/config.h>
 #include "drmP.h"
-#include "r128_drv.h"
+#include "radeon_drv.h"
 
-#define R128_NAME		"r128"
-#define R128_DESC		"ATI Rage 128"
-#define R128_DATE		"20010101"
-#define R128_MAJOR		2
-#define R128_MINOR		1
-#define R128_PATCHLEVEL		4
+#define RADEON_NAME		"radeon"
+#define RADEON_DESC		"ATI Radeon"
+#define RADEON_DATE		"20010105"
+#define RADEON_MAJOR		1
+#define RADEON_MINOR		0
+#define RADEON_PATCHLEVEL	0
 
-static drm_device_t	r128_device;
-drm_ctx_t		r128_res_ctx;
+static drm_device_t	      radeon_device;
+drm_ctx_t	              radeon_res_ctx;
 
-static struct file_operations r128_fops = {
+static struct file_operations radeon_fops = {
 #if LINUX_VERSION_CODE >= 0x020400
 				/* This started being used during 2.4.0-test */
 	owner:   THIS_MODULE,
 #endif
-	open:	 r128_open,
+	open:	 radeon_open,
 	flush:	 drm_flush,
-	release: r128_release,
-	ioctl:	 r128_ioctl,
+	release: radeon_release,
+	ioctl:	 radeon_ioctl,
 	mmap:	 drm_mmap,
 	read:	 drm_read,
 	fasync:	 drm_fasync,
 	poll:	 drm_poll,
 };
 
-static struct miscdevice      r128_misc = {
+static struct miscdevice      radeon_misc = {
 	minor: MISC_DYNAMIC_MINOR,
-	name:  R128_NAME,
-	fops:  &r128_fops,
+	name:  RADEON_NAME,
+	fops:  &radeon_fops,
 };
 
-static drm_ioctl_desc_t	      r128_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)]      = { r128_version,      0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_UNIQUE)]   = { drm_getunique,     0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAGIC)]    = { drm_getmagic,      0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_IRQ_BUSID)]    = { drm_irq_busid,     0, 1 },
+static drm_ioctl_desc_t	      radeon_ioctls[] = {
+	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)]       = { radeon_version,	0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_UNIQUE)]    = { drm_getunique,	0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAGIC)]     = { drm_getmagic,	0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_IRQ_BUSID)]     = { drm_irq_busid,	0, 1 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_SET_UNIQUE)]   = { drm_setunique,     1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]	       = { drm_block,         1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]      = { drm_unblock,       1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)]   = { drm_authmagic,     1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]      = { drm_addmap,        1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_BUFS)]     = { r128_addbufs,      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MARK_BUFS)]    = { drm_markbufs,      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]    = { drm_infobufs,      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]     = { r128_mapbufs,      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]    = { drm_freebufs,      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SET_UNIQUE)]    = { drm_setunique,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]	        = { drm_block,		1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]       = { drm_unblock,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)]    = { drm_authmagic,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]       = { drm_addmap,		1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_BUFS)]      = { radeon_addbufs,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MARK_BUFS)]     = { drm_markbufs,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]     = { drm_infobufs,	1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]      = { radeon_mapbufs,	1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]     = { drm_freebufs,	1, 0 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]      = { r128_addctx,	      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]       = { r128_rmctx,	      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]      = { r128_modctx,	      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_CTX)]      = { r128_getctx,	      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)]   = { r128_switchctx,    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_NEW_CTX)]      = { r128_newctx,	      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]      = { r128_resctx,	      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]     = { drm_adddraw,	      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RM_DRAW)]      = { drm_rmdraw,	      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_DMA)]	       = { r128_cce_buffers,  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	       = { r128_lock,	      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]       = { r128_unlock,	      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]       = { drm_finish,	      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]       = { radeon_addctx,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]        = { radeon_rmctx,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]       = { radeon_modctx,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_CTX)]       = { radeon_getctx,	1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)]    = { radeon_switchctx,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_NEW_CTX)]       = { radeon_newctx,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]       = { radeon_resctx,	1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]      = { drm_adddraw,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RM_DRAW)]       = { drm_rmdraw,		1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_DMA)]	        = { radeon_cp_buffers,	1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	        = { radeon_lock,	1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]        = { radeon_unlock,	1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]        = { drm_finish,		1, 0 },
 
 #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)]  = { drm_agp_acquire,   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)]  = { drm_agp_release,   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]   = { drm_agp_enable,    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]     = { drm_agp_info,      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]    = { drm_agp_alloc,     1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]     = { drm_agp_free,      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]     = { drm_agp_bind,      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]   = { drm_agp_unbind,    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)]   = { drm_agp_acquire,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)]   = { drm_agp_release,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]    = { drm_agp_enable,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]      = { drm_agp_info,	1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]     = { drm_agp_alloc,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]      = { drm_agp_free,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]      = { drm_agp_bind,	1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]    = { drm_agp_unbind,	1, 1 },
 #endif
 
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_INIT)]      = { r128_cce_init,     1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_CCE_START)] = { r128_cce_start,    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_CCE_STOP)]  = { r128_cce_stop,     1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_CCE_RESET)] = { r128_cce_reset,    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_CCE_IDLE)]  = { r128_cce_idle,     1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_RESET)]     = { r128_engine_reset, 1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_FULLSCREEN)]= { r128_fullscreen,   1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_CP_INIT)]  = { radeon_cp_init,   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_CP_START)] = { radeon_cp_start,  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_CP_STOP)]  = { radeon_cp_stop,   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_CP_RESET)] = { radeon_cp_reset,  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_CP_IDLE)]  = { radeon_cp_idle,   1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_RESET)] = { radeon_engine_reset, 1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_FULLSCREEN)] = { radeon_fullscreen, 1, 0 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_SWAP)]     = { r128_cce_swap,      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_CLEAR)]    = { r128_cce_clear,     1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_VERTEX)]   = { r128_cce_vertex,    1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_INDICES)]  = { r128_cce_indices,   1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_BLIT)]     = { r128_cce_blit,      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_DEPTH)]    = { r128_cce_depth,     1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_STIPPLE)]  = { r128_cce_stipple,   1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_R128_INDIRECT)] = { r128_cce_indirect,  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_SWAP)]    = { radeon_cp_swap,    1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_CLEAR)]   = { radeon_cp_clear,   1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_VERTEX)]  = { radeon_cp_vertex,  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_INDICES)] = { radeon_cp_indices, 1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_BLIT)]    = { radeon_cp_blit,    1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_STIPPLE)] = { radeon_cp_stipple, 1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RADEON_INDIRECT)]= { radeon_cp_indirect,1, 1 },
 };
-#define R128_IOCTL_COUNT DRM_ARRAY_SIZE(r128_ioctls)
+#define RADEON_IOCTL_COUNT DRM_ARRAY_SIZE(radeon_ioctls)
 
 #ifdef MODULE
-static char		      *r128 = NULL;
+static char		      *radeon = NULL;
 #endif
 
 MODULE_AUTHOR("VA Linux Systems, Inc.");
-MODULE_DESCRIPTION("r128");
-MODULE_PARM(r128, "s");
+MODULE_DESCRIPTION("radeon");
+MODULE_PARM(radeon, "s");
 
 #ifndef MODULE
-/* r128_options is called by the kernel to parse command-line options
+/* radeon_options is called by the kernel to parse command-line options
  * passed via the boot-loader (e.g., LILO).  It calls the insmod option
  * routine, drm_parse_drm.
  */
 
-static int __init r128_options(char *str)
+static int __init radeon_options(char *str)
 {
 	drm_parse_options(str);
 	return 1;
 }
 
-__setup("r128=", r128_options);
+__setup("radeon=", radeon_options);
 #endif
 
-static int r128_setup(drm_device_t *dev)
+static int radeon_setup(drm_device_t *dev)
 {
 	int i;
 
@@ -197,14 +193,14 @@ static int r128_setup(drm_device_t *dev)
 	dev->ctx_start	    = 0;
 	dev->lck_start	    = 0;
 
-	dev->buf_rp	  = dev->buf;
-	dev->buf_wp	  = dev->buf;
-	dev->buf_end	  = dev->buf + DRM_BSZ;
-	dev->buf_async	  = NULL;
+	dev->buf_rp	    = dev->buf;
+	dev->buf_wp	    = dev->buf;
+	dev->buf_end	    = dev->buf + DRM_BSZ;
+	dev->buf_async	    = NULL;
 	init_waitqueue_head(&dev->buf_readers);
 	init_waitqueue_head(&dev->buf_writers);
 
-	r128_res_ctx.handle=-1;
+	radeon_res_ctx.handle = -1;
 
 	DRM_DEBUG("\n");
 
@@ -218,7 +214,7 @@ static int r128_setup(drm_device_t *dev)
 }
 
 
-static int r128_takedown(drm_device_t *dev)
+static int radeon_takedown(drm_device_t *dev)
 {
 	int		  i;
 	drm_magic_entry_t *pt, *next;
@@ -256,7 +252,7 @@ static int r128_takedown(drm_device_t *dev)
 		drm_agp_mem_t *nexte;
 
 				/* Remove AGP resources, but leave dev->agp
-                                   intact until r128_cleanup is called. */
+                                   intact until radeon_cleanup is called. */
 		for (entry = dev->agp->memory; entry; entry = nexte) {
 			nexte = entry->next;
 			if (entry->bound) drm_unbind_agp(entry->memory);
@@ -332,13 +328,13 @@ static int r128_takedown(drm_device_t *dev)
 	return 0;
 }
 
-/* r128_init is called via init_module at module load time, or via
+/* radeon_init is called via init_module at module load time, or via
  * linux/init/main.c (this is not currently supported). */
 
-static int __init r128_init(void)
+static int __init radeon_init(void)
 {
 	int		      retcode;
-	drm_device_t	      *dev = &r128_device;
+	drm_device_t	      *dev = &radeon_device;
 
 	DRM_DEBUG("\n");
 
@@ -347,27 +343,27 @@ static int __init r128_init(void)
 	sema_init(&dev->struct_sem, 1);
 
 #ifdef MODULE
-	drm_parse_options(r128);
+	drm_parse_options(radeon);
 #endif
 
-	if ((retcode = misc_register(&r128_misc))) {
-		DRM_ERROR("Cannot register \"%s\"\n", R128_NAME);
+	if ((retcode = misc_register(&radeon_misc))) {
+		DRM_ERROR("Cannot register \"%s\"\n", RADEON_NAME);
 		return retcode;
 	}
-	dev->device = MKDEV(MISC_MAJOR, r128_misc.minor);
-	dev->name   = R128_NAME;
+	dev->device = MKDEV(MISC_MAJOR, radeon_misc.minor);
+	dev->name   = RADEON_NAME;
 
 	drm_mem_init();
 	drm_proc_init(dev);
 
 #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 	dev->agp    = drm_agp_init();
-	if (dev->agp == NULL) {
-		DRM_ERROR("Cannot initialize agpgart module.\n");
-		drm_proc_cleanup();
-		misc_deregister(&r128_misc);
-		r128_takedown(dev);
-		return -ENOMEM;
+      	if (dev->agp == NULL) {
+	   	DRM_ERROR("Cannot initialize agpgart module.\n");
+	   	drm_proc_cleanup();
+	   	misc_deregister(&radeon_misc);
+	   	radeon_takedown(dev);
+	   	return -ENOMEM;
 	}
 
 #ifdef CONFIG_MTRR
@@ -381,38 +377,38 @@ static int __init r128_init(void)
 	if((retcode = drm_ctxbitmap_init(dev))) {
 		DRM_ERROR("Cannot allocate memory for context bitmap.\n");
 		drm_proc_cleanup();
-		misc_deregister(&r128_misc);
-		r128_takedown(dev);
+		misc_deregister(&radeon_misc);
+		radeon_takedown(dev);
 		return retcode;
 	}
 
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
-		 R128_NAME,
-		 R128_MAJOR,
-		 R128_MINOR,
-		 R128_PATCHLEVEL,
-		 R128_DATE,
-		 r128_misc.minor);
+		 RADEON_NAME,
+		 RADEON_MAJOR,
+		 RADEON_MINOR,
+		 RADEON_PATCHLEVEL,
+		 RADEON_DATE,
+		 radeon_misc.minor);
 
 	return 0;
 }
 
-/* r128_cleanup is called via cleanup_module at module unload time. */
+/* radeon_cleanup is called via cleanup_module at module unload time. */
 
-static void __exit r128_cleanup(void)
+static void __exit radeon_cleanup(void)
 {
-	drm_device_t	      *dev = &r128_device;
+	drm_device_t	      *dev = &radeon_device;
 
 	DRM_DEBUG("\n");
 
 	drm_proc_cleanup();
-	if (misc_deregister(&r128_misc)) {
+	if (misc_deregister(&radeon_misc)) {
 		DRM_ERROR("Cannot unload module\n");
 	} else {
 		DRM_INFO("Module unloaded\n");
 	}
 	drm_ctxbitmap_cleanup(dev);
-	r128_takedown(dev);
+	radeon_takedown(dev);
 #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 	if (dev->agp) {
 		drm_agp_uninit();
@@ -422,12 +418,12 @@ static void __exit r128_cleanup(void)
 #endif
 }
 
-module_init(r128_init);
-module_exit(r128_cleanup);
+module_init(radeon_init);
+module_exit(radeon_cleanup);
 
 
-int r128_version(struct inode *inode, struct file *filp,
-		 unsigned int cmd, unsigned long arg)
+int radeon_version(struct inode *inode, struct file *filp, unsigned int cmd,
+		   unsigned long arg)
 {
 	drm_version_t version;
 	int	      len;
@@ -437,22 +433,22 @@ int r128_version(struct inode *inode, struct file *filp,
 			   sizeof(version)))
 		return -EFAULT;
 
-#define DRM_COPY(name,value)					\
-	len = strlen(value);					\
-	if (len > name##_len) len = name##_len;			\
-	name##_len = strlen(value);				\
-	if (len && name) {					\
-		if (copy_to_user(name, value, len))		\
-			return -EFAULT;				\
+#define DRM_COPY(name,value)				     \
+	len = strlen(value);				     \
+	if (len > name##_len) len = name##_len;		     \
+	name##_len = strlen(value);			     \
+	if (len && name) {				     \
+		if (copy_to_user(name, value, len))	     \
+			return -EFAULT;			     \
 	}
 
-	version.version_major	   = R128_MAJOR;
-	version.version_minor	   = R128_MINOR;
-	version.version_patchlevel = R128_PATCHLEVEL;
+	version.version_major	   = RADEON_MAJOR;
+	version.version_minor	   = RADEON_MINOR;
+	version.version_patchlevel = RADEON_PATCHLEVEL;
 
-	DRM_COPY(version.name, R128_NAME);
-	DRM_COPY(version.date, R128_DATE);
-	DRM_COPY(version.desc, R128_DESC);
+	DRM_COPY(version.name, RADEON_NAME);
+	DRM_COPY(version.date, RADEON_DATE);
+	DRM_COPY(version.desc, RADEON_DESC);
 
 	if (copy_to_user((drm_version_t *)arg,
 			 &version,
@@ -461,9 +457,9 @@ int r128_version(struct inode *inode, struct file *filp,
 	return 0;
 }
 
-int r128_open(struct inode *inode, struct file *filp)
+int radeon_open(struct inode *inode, struct file *filp)
 {
-	drm_device_t  *dev    = &r128_device;
+	drm_device_t  *dev    = &radeon_device;
 	int	      retcode = 0;
 
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
@@ -475,7 +471,7 @@ int r128_open(struct inode *inode, struct file *filp)
 		spin_lock(&dev->count_lock);
 		if (!dev->open_count++) {
 			spin_unlock(&dev->count_lock);
-			return r128_setup(dev);
+			return radeon_setup(dev);
 		}
 		spin_unlock(&dev->count_lock);
 	}
@@ -483,7 +479,7 @@ int r128_open(struct inode *inode, struct file *filp)
 	return retcode;
 }
 
-int r128_release(struct inode *inode, struct file *filp)
+int radeon_release(struct inode *inode, struct file *filp)
 {
 	drm_file_t    *priv   = filp->private_data;
 	drm_device_t  *dev;
@@ -496,9 +492,9 @@ int r128_release(struct inode *inode, struct file *filp)
 
 	/* Force the cleanup of page flipping when required */
 	if ( dev->dev_private ) {
-		drm_r128_private_t *dev_priv = dev->dev_private;
+		drm_radeon_private_t *dev_priv = dev->dev_private;
 		if ( dev_priv->page_flipping ) {
-			r128_do_cleanup_pageflip( dev );
+			radeon_do_cleanup_pageflip( dev );
 		}
 	}
 
@@ -519,7 +515,7 @@ int r128_release(struct inode *inode, struct file *filp)
 			}
 			spin_unlock(&dev->count_lock);
 			unlock_kernel();
-			return r128_takedown(dev);
+			return radeon_takedown(dev);
 		}
 		spin_unlock(&dev->count_lock);
 	}
@@ -528,9 +524,10 @@ int r128_release(struct inode *inode, struct file *filp)
 	return retcode;
 }
 
-/* r128_ioctl is called whenever a process performs an ioctl on /dev/drm. */
-int r128_ioctl(struct inode *inode, struct file *filp,
-	       unsigned int cmd, unsigned long arg)
+/* radeon_ioctl is called whenever a process performs an ioctl on /dev/drm. */
+
+int radeon_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
+		 unsigned long arg)
 {
 	int		 nr	 = DRM_IOCTL_NR(cmd);
 	drm_file_t	 *priv	 = filp->private_data;
@@ -546,35 +543,29 @@ int r128_ioctl(struct inode *inode, struct file *filp,
 	DRM_DEBUG("pid = %d, cmd = 0x%02x, nr = 0x%02x, dev 0x%x, auth = %d\n",
 		  current->pid, cmd, nr, dev->device, priv->authenticated);
 
-	if (nr >= R128_IOCTL_COUNT) {
+	if (nr >= RADEON_IOCTL_COUNT) {
 		retcode = -EINVAL;
 	} else {
-		ioctl	  = &r128_ioctls[nr];
+		ioctl	  = &radeon_ioctls[nr];
 		func	  = ioctl->func;
 
 		if (!func) {
 			DRM_DEBUG("no function\n");
 			retcode = -EINVAL;
 		} else if ((ioctl->root_only && !capable(CAP_SYS_ADMIN))
-			   || (ioctl->auth_needed && !priv->authenticated)) {
+			    || (ioctl->auth_needed && !priv->authenticated)) {
 			retcode = -EACCES;
 		} else {
 			retcode = (func)(inode, filp, cmd, arg);
 		}
 	}
 
-#if 0
-	if ( retcode ) {
-		DRM_INFO( "%s 0x%x ret = %d\n", __FUNCTION__, nr, retcode );
-	}
-#endif
-
 	atomic_dec(&dev->ioctl_count);
 	return retcode;
 }
 
-int r128_lock(struct inode *inode, struct file *filp,
-	      unsigned int cmd, unsigned long arg)
+int radeon_lock(struct inode *inode, struct file *filp, unsigned int cmd,
+		unsigned long arg)
 {
         drm_file_t        *priv   = filp->private_data;
         drm_device_t      *dev    = priv->dev;
@@ -600,7 +591,7 @@ int r128_lock(struct inode *inode, struct file *filp,
                   lock.context, current->pid, dev->lock.hw_lock->lock,
                   lock.flags);
 
-        if (lock.context < 0)
+        if (lock.context < 0 /* || lock.context >= dev->queue_count */)
                 return -EINVAL;
 
         if (!ret) {
@@ -646,15 +637,15 @@ int r128_lock(struct inode *inode, struct file *filp,
 		}
                 if (lock.flags & _DRM_LOCK_QUIESCENT) {
 				/* Make hardware quiescent */
-			DRM_DEBUG( "not quiescent!\n" );
+			DRM_DEBUG("not quiescent!\n");
 #if 0
-                        r128_quiescent(dev);
+                        radeon_quiescent(dev);
 #endif
 		}
         }
 
 #if LINUX_VERSION_CODE < 0x020400
-	if (lock.context != r128_res_ctx.handle) {
+	if (lock.context != radeon_res_ctx.handle) {
 		current->counter = 5;
 		current->priority = DEF_PRIORITY/4;
 	}
@@ -669,8 +660,8 @@ int r128_lock(struct inode *inode, struct file *filp,
 }
 
 
-int r128_unlock(struct inode *inode, struct file *filp,
-		unsigned int cmd, unsigned long arg)
+int radeon_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
+		  unsigned long arg)
 {
 	drm_file_t	  *priv	  = filp->private_data;
 	drm_device_t	  *dev	  = priv->dev;
@@ -701,7 +692,7 @@ int r128_unlock(struct inode *inode, struct file *filp,
 	}
 
 #if LINUX_VERSION_CODE < 0x020400
-	if (lock.context != r128_res_ctx.handle) {
+	if (lock.context != radeon_res_ctx.handle) {
 		current->counter = 5;
 		current->priority = DEF_PRIORITY;
 	}

@@ -181,14 +181,14 @@ static inline void r128_emit_tex0( drm_r128_private_t *dev_priv )
 	RING_LOCALS;
 	DRM_DEBUG( "    %s\n", __FUNCTION__ );
 
-	BEGIN_RING( 7 + R128_TEX_MAXLEVELS );
+	BEGIN_RING( 7 + R128_MAX_TEXTURE_LEVELS );
 
 	OUT_RING( CCE_PACKET0( R128_PRIM_TEX_CNTL_C,
-			       2 + R128_TEX_MAXLEVELS ) );
+			       2 + R128_MAX_TEXTURE_LEVELS ) );
 	OUT_RING( tex->tex_cntl );
 	OUT_RING( tex->tex_combine_cntl );
 	OUT_RING( ctx->tex_size_pitch_c );
-	for ( i = 0 ; i < R128_TEX_MAXLEVELS ; i++ ) {
+	for ( i = 0 ; i < R128_MAX_TEXTURE_LEVELS ; i++ ) {
 		OUT_RING( tex->tex_offset[i] );
 	}
 
@@ -207,13 +207,13 @@ static inline void r128_emit_tex1( drm_r128_private_t *dev_priv )
 	RING_LOCALS;
 	DRM_DEBUG( "    %s\n", __FUNCTION__ );
 
-	BEGIN_RING( 5 + R128_TEX_MAXLEVELS );
+	BEGIN_RING( 5 + R128_MAX_TEXTURE_LEVELS );
 
 	OUT_RING( CCE_PACKET0( R128_SEC_TEX_CNTL_C,
-			       1 + R128_TEX_MAXLEVELS ) );
+			       1 + R128_MAX_TEXTURE_LEVELS ) );
 	OUT_RING( tex->tex_cntl );
 	OUT_RING( tex->tex_combine_cntl );
-	for ( i = 0 ; i < R128_TEX_MAXLEVELS ; i++ ) {
+	for ( i = 0 ; i < R128_MAX_TEXTURE_LEVELS ; i++ ) {
 		OUT_RING( tex->tex_offset[i] );
 	}
 
@@ -310,13 +310,13 @@ static void r128_clear_box( drm_r128_private_t *dev_priv,
 	BEGIN_RING( 6 );
 
 	OUT_RING( CCE_PACKET3( R128_CNTL_PAINT_MULTI, 4 ) );
-	OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL
-		  | R128_GMC_BRUSH_SOLID_COLOR
-		  | fb_bpp
-		  | R128_GMC_SRC_DATATYPE_COLOR
-		  | R128_ROP3_P
-		  | R128_GMC_CLR_CMP_CNTL_DIS
-		  | R128_GMC_AUX_CLIP_DIS );
+	OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL |
+		  R128_GMC_BRUSH_SOLID_COLOR |
+		  fb_bpp |
+		  R128_GMC_SRC_DATATYPE_COLOR |
+		  R128_ROP3_P |
+		  R128_GMC_CLR_CMP_CNTL_DIS |
+		  R128_GMC_AUX_CLIP_DIS );
 
 	OUT_RING( (pitch << 21) | (offset >> 5) );
 	OUT_RING( color );
@@ -398,6 +398,14 @@ static void r128_cce_dispatch_clear( drm_device_t *dev,
 		return;
 	}
 
+	if ( dev_priv->page_flipping && dev_priv->current_page == 1) {
+		unsigned int tmp = flags;
+
+		flags &= ~(R128_FRONT | R128_BACK);
+		if ( tmp & R128_FRONT ) flags |= R128_BACK;
+		if ( tmp & R128_BACK )  flags |= R128_FRONT;
+	}
+
 	for ( i = 0 ; i < nbox ; i++ ) {
 		int x = pbox[i].x1;
 		int y = pbox[i].y1;
@@ -421,13 +429,13 @@ static void r128_cce_dispatch_clear( drm_device_t *dev,
 			BEGIN_RING( 6 );
 
 			OUT_RING( CCE_PACKET3( R128_CNTL_PAINT_MULTI, 4 ) );
-			OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL
-				  | R128_GMC_BRUSH_SOLID_COLOR
-				  | fb_bpp
-				  | R128_GMC_SRC_DATATYPE_COLOR
-				  | R128_ROP3_P
-				  | R128_GMC_CLR_CMP_CNTL_DIS
-				  | R128_GMC_AUX_CLIP_DIS );
+			OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL |
+				  R128_GMC_BRUSH_SOLID_COLOR |
+				  fb_bpp |
+				  R128_GMC_SRC_DATATYPE_COLOR |
+				  R128_ROP3_P |
+				  R128_GMC_CLR_CMP_CNTL_DIS |
+				  R128_GMC_AUX_CLIP_DIS );
 
 			OUT_RING( dev_priv->front_pitch_offset_c );
 			OUT_RING( clear_color );
@@ -442,13 +450,13 @@ static void r128_cce_dispatch_clear( drm_device_t *dev,
 			BEGIN_RING( 6 );
 
 			OUT_RING( CCE_PACKET3( R128_CNTL_PAINT_MULTI, 4 ) );
-			OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL
-				  | R128_GMC_BRUSH_SOLID_COLOR
-				  | fb_bpp
-				  | R128_GMC_SRC_DATATYPE_COLOR
-				  | R128_ROP3_P
-				  | R128_GMC_CLR_CMP_CNTL_DIS
-				  | R128_GMC_AUX_CLIP_DIS );
+			OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL |
+				  R128_GMC_BRUSH_SOLID_COLOR |
+				  fb_bpp |
+				  R128_GMC_SRC_DATATYPE_COLOR |
+				  R128_ROP3_P |
+				  R128_GMC_CLR_CMP_CNTL_DIS |
+				  R128_GMC_AUX_CLIP_DIS );
 
 			OUT_RING( dev_priv->back_pitch_offset_c );
 			OUT_RING( clear_color );
@@ -463,14 +471,14 @@ static void r128_cce_dispatch_clear( drm_device_t *dev,
 			BEGIN_RING( 6 );
 
 			OUT_RING( CCE_PACKET3( R128_CNTL_PAINT_MULTI, 4 ) );
-			OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL
-				  | R128_GMC_BRUSH_SOLID_COLOR
-				  | depth_bpp
-				  | R128_GMC_SRC_DATATYPE_COLOR
-				  | R128_ROP3_P
-				  | R128_GMC_CLR_CMP_CNTL_DIS
-				  | R128_GMC_AUX_CLIP_DIS
-				  | R128_GMC_WR_MSK_DIS );
+			OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL |
+				  R128_GMC_BRUSH_SOLID_COLOR |
+				  depth_bpp |
+				  R128_GMC_SRC_DATATYPE_COLOR |
+				  R128_ROP3_P |
+				  R128_GMC_CLR_CMP_CNTL_DIS |
+				  R128_GMC_AUX_CLIP_DIS |
+				  R128_GMC_WR_MSK_DIS );
 
 			OUT_RING( dev_priv->depth_pitch_offset_c );
 			OUT_RING( clear_depth );
@@ -521,16 +529,16 @@ static void r128_cce_dispatch_swap( drm_device_t *dev )
 		BEGIN_RING( 7 );
 
 		OUT_RING( CCE_PACKET3( R128_CNTL_BITBLT_MULTI, 5 ) );
-		OUT_RING( R128_GMC_SRC_PITCH_OFFSET_CNTL
-			  | R128_GMC_DST_PITCH_OFFSET_CNTL
-			  | R128_GMC_BRUSH_NONE
-			  | fb_bpp
-			  | R128_GMC_SRC_DATATYPE_COLOR
-			  | R128_ROP3_S
-			  | R128_DP_SRC_SOURCE_MEMORY
-			  | R128_GMC_CLR_CMP_CNTL_DIS
-			  | R128_GMC_AUX_CLIP_DIS
-			  | R128_GMC_WR_MSK_DIS );
+		OUT_RING( R128_GMC_SRC_PITCH_OFFSET_CNTL |
+			  R128_GMC_DST_PITCH_OFFSET_CNTL |
+			  R128_GMC_BRUSH_NONE |
+			  fb_bpp |
+			  R128_GMC_SRC_DATATYPE_COLOR |
+			  R128_ROP3_S |
+			  R128_DP_SRC_SOURCE_MEMORY |
+			  R128_GMC_CLR_CMP_CNTL_DIS |
+			  R128_GMC_AUX_CLIP_DIS |
+			  R128_GMC_WR_MSK_DIS );
 
 		OUT_RING( dev_priv->back_pitch_offset_c );
 		OUT_RING( dev_priv->front_pitch_offset_c );
@@ -541,6 +549,48 @@ static void r128_cce_dispatch_swap( drm_device_t *dev )
 
 		ADVANCE_RING();
 	}
+
+	/* Increment the frame counter.  The client-side 3D driver must
+	 * throttle the framerate by waiting for this value before
+	 * performing the swapbuffer ioctl.
+	 */
+	dev_priv->sarea_priv->last_frame++;
+
+	BEGIN_RING( 2 );
+
+	OUT_RING( CCE_PACKET0( R128_LAST_FRAME_REG, 0 ) );
+	OUT_RING( dev_priv->sarea_priv->last_frame );
+
+	ADVANCE_RING();
+}
+
+static void r128_cce_dispatch_flip( drm_device_t *dev )
+{
+	drm_r128_private_t *dev_priv = dev->dev_private;
+	RING_LOCALS;
+	DRM_DEBUG( "%s: page=%d\n", __FUNCTION__, dev_priv->current_page );
+
+	r128_update_ring_snapshot( dev_priv );
+
+#if R128_PERFORMANCE_BOXES
+	/* Do some trivial performance monitoring...
+	 */
+	r128_cce_performance_boxes( dev_priv );
+#endif
+
+	BEGIN_RING( 2 );
+
+	OUT_RING( CCE_PACKET0( R128_CRTC_OFFSET, 0 ) );
+
+	if ( dev_priv->current_page == 0 ) {
+		OUT_RING( dev_priv->back_offset );
+		dev_priv->current_page = 1;
+	} else {
+		OUT_RING( dev_priv->front_offset );
+		dev_priv->current_page = 0;
+	}
+
+	ADVANCE_RING();
 
 	/* Increment the frame counter.  The client-side 3D driver must
 	 * throttle the framerate by waiting for this value before
@@ -821,13 +871,17 @@ static int r128_cce_dispatch_blit( drm_device_t *dev,
 	 * use a shift instead.
 	 */
 	switch ( blit->format ) {
+	case R128_DATATYPE_ARGB8888:
+		dword_shift = 0;
+		break;
 	case R128_DATATYPE_ARGB1555:
 	case R128_DATATYPE_RGB565:
 	case R128_DATATYPE_ARGB4444:
 		dword_shift = 1;
 		break;
-	case R128_DATATYPE_ARGB8888:
-		dword_shift = 0;
+	case R128_DATATYPE_CI8:
+	case R128_DATATYPE_RGB8:
+		dword_shift = 2;
 		break;
 	default:
 		DRM_ERROR( "invalid blit format %d\n", blit->format );
@@ -868,15 +922,15 @@ static int r128_cce_dispatch_blit( drm_device_t *dev,
 	data = (u32 *)((char *)dev_priv->buffers->handle + buf->offset);
 
 	data[0] = CCE_PACKET3( R128_CNTL_HOSTDATA_BLT, dwords + 6 );
-	data[1] = ( R128_GMC_DST_PITCH_OFFSET_CNTL
-		    | R128_GMC_BRUSH_NONE
-		    | (blit->format << 8)
-		    | R128_GMC_SRC_DATATYPE_COLOR
-		    | R128_ROP3_S
-		    | R128_DP_SRC_SOURCE_HOST_DATA
-		    | R128_GMC_CLR_CMP_CNTL_DIS
-		    | R128_GMC_AUX_CLIP_DIS
-		    | R128_GMC_WR_MSK_DIS );
+	data[1] = (R128_GMC_DST_PITCH_OFFSET_CNTL |
+		   R128_GMC_BRUSH_NONE |
+		   (blit->format << 8) |
+		   R128_GMC_SRC_DATATYPE_COLOR |
+		   R128_ROP3_S |
+		   R128_DP_SRC_SOURCE_HOST_DATA |
+		   R128_GMC_CLR_CMP_CNTL_DIS |
+		   R128_GMC_AUX_CLIP_DIS |
+		   R128_GMC_WR_MSK_DIS);
 
 	data[2] = (blit->pitch << 21) | (blit->offset >> 5);
 	data[3] = 0xffffffff;
@@ -971,15 +1025,14 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 			if ( mask[i] ) {
 				BEGIN_RING( 6 );
 
-				OUT_RING( CCE_PACKET3( R128_CNTL_PAINT_MULTI,
-						       4 ) );
-				OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL
-					  | R128_GMC_BRUSH_SOLID_COLOR
-					  | depth_bpp
-					  | R128_GMC_SRC_DATATYPE_COLOR
-					  | R128_ROP3_P
-					  | R128_GMC_CLR_CMP_CNTL_DIS
-					  | R128_GMC_WR_MSK_DIS );
+				OUT_RING( CCE_PACKET3( R128_CNTL_PAINT_MULTI, 4 ) );
+				OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL |
+					  R128_GMC_BRUSH_SOLID_COLOR |
+					  depth_bpp |
+					  R128_GMC_SRC_DATATYPE_COLOR |
+					  R128_ROP3_P |
+					  R128_GMC_CLR_CMP_CNTL_DIS |
+					  R128_GMC_WR_MSK_DIS );
 
 				OUT_RING( dev_priv->depth_pitch_offset_c );
 				OUT_RING( buffer[i] );
@@ -997,13 +1050,13 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 			BEGIN_RING( 6 );
 
 			OUT_RING( CCE_PACKET3( R128_CNTL_PAINT_MULTI, 4 ) );
-			OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL
-				  | R128_GMC_BRUSH_SOLID_COLOR
-				  | depth_bpp
-				  | R128_GMC_SRC_DATATYPE_COLOR
-				  | R128_ROP3_P
-				  | R128_GMC_CLR_CMP_CNTL_DIS
-				  | R128_GMC_WR_MSK_DIS );
+			OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL |
+				  R128_GMC_BRUSH_SOLID_COLOR |
+				  depth_bpp |
+				  R128_GMC_SRC_DATATYPE_COLOR |
+				  R128_ROP3_P |
+				  R128_GMC_CLR_CMP_CNTL_DIS |
+				  R128_GMC_WR_MSK_DIS );
 
 			OUT_RING( dev_priv->depth_pitch_offset_c );
 			OUT_RING( buffer[i] );
@@ -1103,15 +1156,14 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 			if ( mask[i] ) {
 				BEGIN_RING( 6 );
 
-				OUT_RING( CCE_PACKET3( R128_CNTL_PAINT_MULTI,
-						       4 ) );
-				OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL
-					  | R128_GMC_BRUSH_SOLID_COLOR
-					  | depth_bpp
-					  | R128_GMC_SRC_DATATYPE_COLOR
-					  | R128_ROP3_P
-					  | R128_GMC_CLR_CMP_CNTL_DIS
-					  | R128_GMC_WR_MSK_DIS );
+				OUT_RING( CCE_PACKET3( R128_CNTL_PAINT_MULTI, 4 ) );
+				OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL |
+					  R128_GMC_BRUSH_SOLID_COLOR |
+					  depth_bpp |
+					  R128_GMC_SRC_DATATYPE_COLOR |
+					  R128_ROP3_P |
+					  R128_GMC_CLR_CMP_CNTL_DIS |
+					  R128_GMC_WR_MSK_DIS );
 
 				OUT_RING( dev_priv->depth_pitch_offset_c );
 				OUT_RING( buffer[i] );
@@ -1129,13 +1181,13 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 			BEGIN_RING( 6 );
 
 			OUT_RING( CCE_PACKET3( R128_CNTL_PAINT_MULTI, 4 ) );
-			OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL
-				  | R128_GMC_BRUSH_SOLID_COLOR
-				  | depth_bpp
-				  | R128_GMC_SRC_DATATYPE_COLOR
-				  | R128_ROP3_P
-				  | R128_GMC_CLR_CMP_CNTL_DIS
-				  | R128_GMC_WR_MSK_DIS );
+			OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL |
+				  R128_GMC_BRUSH_SOLID_COLOR |
+				  depth_bpp |
+				  R128_GMC_SRC_DATATYPE_COLOR |
+				  R128_ROP3_P |
+				  R128_GMC_CLR_CMP_CNTL_DIS |
+				  R128_GMC_WR_MSK_DIS );
 
 			OUT_RING( dev_priv->depth_pitch_offset_c );
 			OUT_RING( buffer[i] );
@@ -1188,15 +1240,15 @@ static int r128_cce_dispatch_read_span( drm_device_t *dev,
 	BEGIN_RING( 7 );
 
 	OUT_RING( CCE_PACKET3( R128_CNTL_BITBLT_MULTI, 5 ) );
-	OUT_RING( R128_GMC_SRC_PITCH_OFFSET_CNTL
-		  | R128_GMC_DST_PITCH_OFFSET_CNTL
-		  | R128_GMC_BRUSH_NONE
-		  | depth_bpp
-		  | R128_GMC_SRC_DATATYPE_COLOR
-		  | R128_ROP3_S
-		  | R128_DP_SRC_SOURCE_MEMORY
-		  | R128_GMC_CLR_CMP_CNTL_DIS
-		  | R128_GMC_WR_MSK_DIS );
+	OUT_RING( R128_GMC_SRC_PITCH_OFFSET_CNTL |
+		  R128_GMC_DST_PITCH_OFFSET_CNTL |
+		  R128_GMC_BRUSH_NONE |
+		  depth_bpp |
+		  R128_GMC_SRC_DATATYPE_COLOR |
+		  R128_ROP3_S |
+		  R128_DP_SRC_SOURCE_MEMORY |
+		  R128_GMC_CLR_CMP_CNTL_DIS |
+		  R128_GMC_WR_MSK_DIS );
 
 	OUT_RING( dev_priv->depth_pitch_offset_c );
 	OUT_RING( dev_priv->span_pitch_offset_c );
@@ -1263,15 +1315,15 @@ static int r128_cce_dispatch_read_pixels( drm_device_t *dev,
 		BEGIN_RING( 7 );
 
 		OUT_RING( CCE_PACKET3( R128_CNTL_BITBLT_MULTI, 5 ) );
-		OUT_RING( R128_GMC_SRC_PITCH_OFFSET_CNTL
-			  | R128_GMC_DST_PITCH_OFFSET_CNTL
-			  | R128_GMC_BRUSH_NONE
-			  | depth_bpp
-			  | R128_GMC_SRC_DATATYPE_COLOR
-			  | R128_ROP3_S
-			  | R128_DP_SRC_SOURCE_MEMORY
-			  | R128_GMC_CLR_CMP_CNTL_DIS
-			  | R128_GMC_WR_MSK_DIS );
+		OUT_RING( R128_GMC_SRC_PITCH_OFFSET_CNTL |
+			  R128_GMC_DST_PITCH_OFFSET_CNTL |
+			  R128_GMC_BRUSH_NONE |
+			  depth_bpp |
+			  R128_GMC_SRC_DATATYPE_COLOR |
+			  R128_ROP3_S |
+			  R128_DP_SRC_SOURCE_MEMORY |
+			  R128_GMC_CLR_CMP_CNTL_DIS |
+			  R128_GMC_WR_MSK_DIS );
 
 		OUT_RING( dev_priv->depth_pitch_offset_c );
 		OUT_RING( dev_priv->span_pitch_offset_c );
@@ -1305,7 +1357,7 @@ static void r128_cce_dispatch_stipple( drm_device_t *dev, u32 *stipple )
 
 	BEGIN_RING( 33 );
 
-	OUT_RING(  CCE_PACKET0( R128_BRUSH_DATA0, 31 ) );
+	OUT_RING( CCE_PACKET0( R128_BRUSH_DATA0, 31 ) );
 	for ( i = 0 ; i < 32 ; i++ ) {
 		OUT_RING( stipple[i] );
 	}
@@ -1370,11 +1422,13 @@ int r128_cce_swap( struct inode *inode, struct file *filp,
 	if ( sarea_priv->nbox > R128_NR_SAREA_CLIPRECTS )
 		sarea_priv->nbox = R128_NR_SAREA_CLIPRECTS;
 
-	r128_cce_dispatch_swap( dev );
-
-	/* Make sure we restore the 3D state next time.
-	 */
-	dev_priv->sarea_priv->dirty |= R128_UPLOAD_CONTEXT | R128_UPLOAD_MASKS;
+	if ( !dev_priv->page_flipping ) {
+		r128_cce_dispatch_swap( dev );
+		dev_priv->sarea_priv->dirty |= (R128_UPLOAD_CONTEXT |
+						R128_UPLOAD_MASKS);
+	} else {
+		r128_cce_dispatch_flip( dev );
+	}
 
 	return 0;
 }
@@ -1602,4 +1656,21 @@ int r128_cce_stipple( struct inode *inode, struct file *filp,
 	r128_cce_dispatch_stipple( dev, mask );
 
 	return 0;
+}
+
+int r128_cce_indirect( struct inode *inode, struct file *filp,
+		       unsigned int cmd, unsigned long arg )
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->dev;
+
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
+	     dev->lock.pid != current->pid ) {
+		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
+		return -EINVAL;
+	}
+
+	/* Indirect buffer firing is not supported at this time.
+	 */
+	return -EINVAL;
 }

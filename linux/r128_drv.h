@@ -59,7 +59,6 @@ typedef struct drm_r128_private {
 
 	int cce_mode;
 	int cce_fifo_size;
-	int cce_secure;
 	int cce_running;
 
    	drm_r128_freelist_t *head;
@@ -69,6 +68,11 @@ typedef struct drm_r128_private {
 	int is_pci;
 
 	atomic_t idle_count;
+
+	int page_flipping;
+	int current_page;
+	u32 crtc_offset;
+	u32 crtc_offset_cntl;
 
 	unsigned int fb_bpp;
 	unsigned int front_offset;
@@ -128,7 +132,7 @@ extern int r128_cce_idle( struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg );
 extern int r128_engine_reset( struct inode *inode, struct file *filp,
 			      unsigned int cmd, unsigned long arg );
-extern int r128_cce_packet( struct inode *inode, struct file *filp,
+extern int r128_fullscreen( struct inode *inode, struct file *filp,
 			    unsigned int cmd, unsigned long arg );
 extern int r128_cce_buffers( struct inode *inode, struct file *filp,
 			     unsigned int cmd, unsigned long arg );
@@ -138,6 +142,8 @@ extern drm_buf_t *r128_freelist_get( drm_device_t *dev );
 
 extern int r128_wait_ring( drm_r128_private_t *dev_priv, int n );
 extern void r128_update_ring_snapshot( drm_r128_private_t *dev_priv );
+
+extern int r128_do_cleanup_pageflip( drm_device_t *dev );
 
 				/* r128_state.c */
 extern int r128_cce_clear( struct inode *inode, struct file *filp,
@@ -154,6 +160,8 @@ extern int r128_cce_depth( struct inode *inode, struct file *filp,
 			   unsigned int cmd, unsigned long arg );
 extern int r128_cce_stipple( struct inode *inode, struct file *filp,
 			     unsigned int cmd, unsigned long arg );
+extern int r128_cce_indirect( struct inode *inode, struct file *filp,
+			      unsigned int cmd, unsigned long arg );
 
 				/* r128_bufs.c */
 extern int r128_addbufs(struct inode *inode, struct file *filp,
@@ -215,8 +223,10 @@ extern int  r128_context_switch_complete(drm_device_t *dev, int new);
 #define R128_CLOCK_CNTL_INDEX		0x0008
 #define R128_CLOCK_CNTL_DATA		0x000c
 #	define R128_PLL_WR_EN			(1 << 7)
-
 #define R128_CONSTANT_COLOR_C		0x1d34
+#define R128_CRTC_OFFSET		0x0224
+#define R128_CRTC_OFFSET_CNTL		0x0228
+#	define R128_CRTC_OFFSET_FLIP_CNTL	(1 << 16)
 
 #define R128_DP_GUI_MASTER_CNTL		0x146c
 #       define R128_GMC_SRC_PITCH_OFFSET_CNTL	(1    <<  0)
@@ -431,12 +441,12 @@ extern int R128_READ_PLL(drm_device_t *dev, int addr);
 #define BEGIN_RING( n ) do {						\
 	if ( R128_VERBOSE ) {						\
 		DRM_INFO( "BEGIN_RING( %d ) in %s\n",			\
-			   n, __FUNCTION__ );				\
+			   (n), __FUNCTION__ );				\
 	}								\
-	if ( dev_priv->ring.space < n * sizeof(u32) ) {			\
-		r128_wait_ring( dev_priv, n * sizeof(u32) );		\
+	if ( dev_priv->ring.space < (n) * sizeof(u32) ) {		\
+		r128_wait_ring( dev_priv, (n) * sizeof(u32) );		\
 	}								\
-	dev_priv->ring.space -= n * sizeof(u32);			\
+	dev_priv->ring.space -= (n) * sizeof(u32);			\
 	ring = dev_priv->ring.start;					\
 	write = dev_priv->ring.tail;					\
 	tail_mask = dev_priv->ring.tail_mask;				\
@@ -457,7 +467,7 @@ extern int R128_READ_PLL(drm_device_t *dev, int addr);
 		DRM_INFO( "   OUT_RING( 0x%08x ) at 0x%x\n",		\
 			   (unsigned int)(x), write );			\
 	}								\
-	ring[write++] = x;						\
+	ring[write++] = (x);						\
 	write &= tail_mask;						\
 } while (0)
 

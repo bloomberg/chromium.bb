@@ -36,9 +36,8 @@
 #include <linux/interrupt.h>	/* For task queue support */
 #include <linux/delay.h>
 
+#define R128_FIFO_DEBUG		0
 
-/* FIXME: Temporary CCE packet buffer */
-u32 r128_cce_buffer[(1 << 14)] __attribute__ ((aligned (32)));
 
 /* CCE microcode (from ATI) */
 static u32 r128_cce_microcode[] = {
@@ -86,23 +85,23 @@ static u32 r128_cce_microcode[] = {
 };
 
 
-#define DO_REMAP(_m) (_m)->handle = drm_ioremap((_m)->offset, (_m)->size)
+#define DO_IOREMAP(_m) (_m)->handle = drm_ioremap((_m)->offset, (_m)->size)
 
-#define DO_REMAPFREE(_m)                                                    \
-	do {                                                                \
-		if ((_m)->handle && (_m)->size)                             \
-			drm_ioremapfree((_m)->handle, (_m)->size);          \
+#define DO_IOREMAPFREE(_m)						\
+	do {								\
+		if ((_m)->handle && (_m)->size)				\
+			drm_ioremapfree((_m)->handle, (_m)->size);	\
 	} while (0)
 
-#define DO_FIND_MAP(_m, _o)                                                 \
-	do {                                                                \
-		int _i;                                                     \
-		for (_i = 0; _i < dev->map_count; _i++) {                   \
-			if (dev->maplist[_i]->offset == _o) {               \
-				_m = dev->maplist[_i];                      \
-				break;                                      \
-			}                                                   \
-		}                                                           \
+#define DO_FIND_MAP(_m, _o)						\
+	do {								\
+		int _i;							\
+		for (_i = 0; _i < dev->map_count; _i++) {		\
+			if (dev->maplist[_i]->offset == _o) {		\
+				_m = dev->maplist[_i];			\
+				break;					\
+			}						\
+		}							\
 	} while (0)
 
 
@@ -114,7 +113,7 @@ int R128_READ_PLL(drm_device_t *dev, int addr)
 	return R128_READ(R128_CLOCK_CNTL_DATA);
 }
 
-#if 0
+#if R128_FIFO_DEBUG
 static void r128_status( drm_r128_private_t *dev_priv )
 {
 	printk( "GUI_STAT           = 0x%08x\n",
@@ -175,7 +174,7 @@ static int r128_do_wait_for_idle( drm_r128_private_t *dev_priv )
 	int i, ret;
 
 	ret = r128_do_wait_for_fifo( dev_priv, 64 );
-	if ( !ret ) return ret;
+	if ( ret < 0 ) return ret;
 
 	for ( i = 0 ; i < dev_priv->usec_timeout ; i++ ) {
 		if ( !(R128_READ( R128_GUI_STAT ) & R128_GUI_ACTIVE) ) {
@@ -241,7 +240,7 @@ static int r128_do_cce_idle( drm_r128_private_t *dev_priv )
 		udelay( 1 );
 	}
 
-#if 0
+#if R128_FIFO_DEBUG
 	DRM_ERROR( "failed!\n" );
 	r128_status( dev_priv );
 #endif
@@ -263,7 +262,7 @@ static void r128_do_cce_start( drm_r128_private_t *dev_priv )
 }
 
 /* Reset the Concurrent Command Engine.  This will not flush any pending
- * commangs, so you must wait for the CCE command stream to complete
+ * commands, so you must wait for the CCE command stream to complete
  * before calling this routine.
  */
 static void r128_do_cce_reset( drm_r128_private_t *dev_priv )
@@ -275,7 +274,7 @@ static void r128_do_cce_reset( drm_r128_private_t *dev_priv )
 }
 
 /* Stop the Concurrent Command Engine.  This will not flush any pending
- * commangs, so you must flush the command stream and wait for the CCE
+ * commands, so you must flush the command stream and wait for the CCE
  * to go idle before calling this routine.
  */
 static void r128_do_cce_stop( drm_r128_private_t *dev_priv )
@@ -395,7 +394,6 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 	}
 
 	dev_priv->cce_mode = init->cce_mode;
-	dev_priv->cce_secure = init->cce_secure;
 
 	/* GH: Simple idle check.
 	 */
@@ -481,12 +479,12 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 		(drm_r128_sarea_t *)((u8 *)dev_priv->sarea->handle +
 				     init->sarea_priv_offset);
 
-	DO_REMAP( dev_priv->cce_ring );
-	DO_REMAP( dev_priv->ring_rptr );
-	DO_REMAP( dev_priv->buffers );
+	DO_IOREMAP( dev_priv->cce_ring );
+	DO_IOREMAP( dev_priv->ring_rptr );
+	DO_IOREMAP( dev_priv->buffers );
 #if 0
 	if ( !dev_priv->is_pci ) {
-		DO_REMAP( dev_priv->agp_textures );
+		DO_IOREMAP( dev_priv->agp_textures );
 	}
 #endif
 
@@ -521,12 +519,12 @@ static int r128_do_cleanup_cce( drm_device_t *dev )
 	if ( dev->dev_private ) {
 		drm_r128_private_t *dev_priv = dev->dev_private;
 
-		DO_REMAPFREE( dev_priv->cce_ring );
-		DO_REMAPFREE( dev_priv->ring_rptr );
-		DO_REMAPFREE( dev_priv->buffers );
+		DO_IOREMAPFREE( dev_priv->cce_ring );
+		DO_IOREMAPFREE( dev_priv->ring_rptr );
+		DO_IOREMAPFREE( dev_priv->buffers );
 #if 0
 		if ( !dev_priv->is_pci ) {
-			DO_REMAPFREE( dev_priv->agp_textures );
+			DO_IOREMAPFREE( dev_priv->agp_textures );
 		}
 #endif
 
@@ -697,6 +695,69 @@ int r128_engine_reset( struct inode *inode, struct file *filp,
 
 
 /* ================================================================
+ * Fullscreen mode
+ */
+
+static int r128_do_init_pageflip( drm_device_t *dev )
+{
+	drm_r128_private_t *dev_priv = dev->dev_private;
+	DRM_DEBUG( "%s\n", __FUNCTION__ );
+
+	dev_priv->crtc_offset =      R128_READ( R128_CRTC_OFFSET );
+	dev_priv->crtc_offset_cntl = R128_READ( R128_CRTC_OFFSET_CNTL );
+
+	R128_WRITE( R128_CRTC_OFFSET, dev_priv->front_offset );
+	R128_WRITE( R128_CRTC_OFFSET_CNTL,
+		    dev_priv->crtc_offset_cntl | R128_CRTC_OFFSET_FLIP_CNTL );
+
+	dev_priv->page_flipping = 1;
+	dev_priv->current_page = 0;
+
+	return 0;
+}
+
+int r128_do_cleanup_pageflip( drm_device_t *dev )
+{
+	drm_r128_private_t *dev_priv = dev->dev_private;
+	DRM_DEBUG( "%s\n", __FUNCTION__ );
+
+	R128_WRITE( R128_CRTC_OFFSET,      dev_priv->crtc_offset );
+	R128_WRITE( R128_CRTC_OFFSET_CNTL, dev_priv->crtc_offset_cntl );
+
+	dev_priv->page_flipping = 0;
+	dev_priv->current_page = 0;
+
+	return 0;
+}
+
+int r128_fullscreen( struct inode *inode, struct file *filp,
+		     unsigned int cmd, unsigned long arg )
+{
+        drm_file_t *priv = filp->private_data;
+        drm_device_t *dev = priv->dev;
+	drm_r128_fullscreen_t fs;
+
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
+	     dev->lock.pid != current->pid ) {
+		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
+		return -EINVAL;
+	}
+
+	if ( copy_from_user( &fs, (drm_r128_fullscreen_t *)arg, sizeof(fs) ) )
+		return -EFAULT;
+
+	switch ( fs.func ) {
+	case R128_INIT_FULLSCREEN:
+		return r128_do_init_pageflip( dev );
+	case R128_CLEANUP_FULLSCREEN:
+		return r128_do_cleanup_pageflip( dev );
+	}
+
+	return -EINVAL;
+}
+
+
+/* ================================================================
  * Freelist management
  */
 #define R128_BUFFER_USED	0xffffffff
@@ -802,7 +863,7 @@ void r128_freelist_reset( drm_device_t *dev )
 
 
 /* ================================================================
- * CCE packet submission
+ * CCE command submission
  */
 
 int r128_wait_ring( drm_r128_private_t *dev_priv, int n )
@@ -821,6 +882,8 @@ int r128_wait_ring( drm_r128_private_t *dev_priv, int n )
 		udelay( 1 );
 	}
 
+	/* FIXME: This is being ignored... */
+	DRM_ERROR( "failed!\n" );
 	return -EBUSY;
 }
 
@@ -836,352 +899,6 @@ void r128_update_ring_snapshot( drm_r128_private_t *dev_priv )
 	if ( ring->space <= 0 )
 		ring->space += ring->size;
 }
-
-#if 0
-static int r128_verify_command( drm_r128_private_t *dev_priv,
-				u32 cmd, int *size )
-{
-	int writing = 1;
-
-	*size = 0;
-
-	switch ( cmd & R128_CCE_PACKET_MASK ) {
-	case R128_CCE_PACKET0:
-		if ( (cmd & R128_CCE_PACKET0_REG_MASK) <= (0x1004 >> 2) &&
-		     (cmd & R128_CCE_PACKET0_REG_MASK) !=
-		     (R128_PM4_VC_FPU_SETUP >> 2) ) {
-			writing = 0;
-		}
-		*size = ((cmd & R128_CCE_PACKET_COUNT_MASK) >> 16) + 2;
-		break;
-
-	case R128_CCE_PACKET1:
-		if ( (cmd & R128_CCE_PACKET1_REG0_MASK) <= (0x1004 >> 2) &&
-		     (cmd & R128_CCE_PACKET1_REG0_MASK) !=
-		     (R128_PM4_VC_FPU_SETUP >> 2) ) {
-			writing = 0;
-		}
-		if ( (cmd & R128_CCE_PACKET1_REG1_MASK) <= (0x1004 << 9) &&
-		     (cmd & R128_CCE_PACKET1_REG1_MASK) !=
-		     (R128_PM4_VC_FPU_SETUP << 9) ) {
-			writing = 0;
-		}
-		*size = 3;
-		break;
-
-	case R128_CCE_PACKET2:
-		break;
-
-	case R128_CCE_PACKET3:
-		*size = ((cmd & R128_CCE_PACKET_COUNT_MASK) >> 16) + 2;
-		break;
-
-	}
-
-	return writing;
-}
-
-static int r128_submit_packet_ring_secure( drm_r128_private_t *dev_priv,
-					   u32 *commands, int *count )
-{
-#if 0
-	int write = dev_priv->sarea_priv->ring_write;
-	int *write_ptr = dev_priv->ring_start + write;
-	int c = *count;
-	u32 tmp = 0;
-	int psize = 0;
-	int writing = 1;
-	int timeout;
-
-	while ( c > 0 ) {
-		tmp = *commands++;
-		if ( !psize ) {
-			writing = r128_verify_command( dev_priv, tmp, &psize );
-		}
-		psize--;
-
-		if ( writing ) {
-			write++;
-			*write_ptr++ = tmp;
-		}
-		if ( write >= dev_priv->ring_entries ) {
-			write = 0;
-			write_ptr = dev_priv->ring_start;
-		}
-		timeout = 0;
-		while ( write == *dev_priv->ring_read_ptr ) {
-			R128_READ( R128_PM4_BUFFER_DL_RPTR );
-			if ( timeout++ >= dev_priv->usec_timeout )
-				return -EBUSY;
-			udelay( 1 );
-		}
-		c--;
-	}
-
-	if ( write < 32 ) {
-		memcpy( dev_priv->ring_end,
-			dev_priv->ring_start,
-			write * sizeof(u32) );
-	}
-
-	/* Make sure WC cache has been flushed */
-	r128_flush_write_combine();
-
-	dev_priv->sarea_priv->ring_write = write;
-	R128_WRITE( R128_PM4_BUFFER_DL_WPTR, write );
-
-	*count = 0;
-#endif
-	return 0;
-}
-
-static int r128_submit_packet_ring_insecure( drm_r128_private_t *dev_priv,
-					     u32 *commands, int *count )
-{
-#if 0
-	int write = dev_priv->sarea_priv->ring_write;
-	int *write_ptr = dev_priv->ring_start + write;
-	int c = *count;
-	int timeout;
-
-	while ( c > 0 ) {
-		write++;
-		*write_ptr++ = *commands++;
-		if ( write >= dev_priv->ring_entries ) {
-			write = 0;
-			write_ptr = dev_priv->ring_start;
-		}
-
-		timeout = 0;
-		while ( write == *dev_priv->ring_read_ptr ) {
-			R128_READ( R128_PM4_BUFFER_DL_RPTR );
-			if ( timeout++ >= dev_priv->usec_timeout )
-				return -EBUSY;
-			udelay( 1 );
-		}
-		c--;
-	}
-
-	if ( write < 32 ) {
-		memcpy( dev_priv->ring_end,
-			dev_priv->ring_start,
-			write * sizeof(u32) );
-	}
-
-	/* Make sure WC cache has been flushed */
-	r128_flush_write_combine();
-
-	dev_priv->sarea_priv->ring_write = write;
-	R128_WRITE( R128_PM4_BUFFER_DL_WPTR, write );
-
-	*count = 0;
-#endif
-	return 0;
-}
-#endif
-
-/* Internal packet submission routine.  This uses the insecure versions
- * of the packet submission functions, and thus should only be used for
- * packets generated inside the kernel module.
- */
-int r128_do_submit_packet( drm_r128_private_t *dev_priv,
-			   u32 *buffer, int count )
-{
-	int c = count;
-	int ret = 0;
-
-#if 0
-	int left = 0;
-
-	if ( c >= dev_priv->ring_entries ) {
-		c = dev_priv->ring_entries - 1;
-		left = count - c;
-	}
-
-	/* Since this is only used by the kernel we can use the
-	 * insecure ring buffer submit packet routine.
-	 */
-	ret = r128_submit_packet_ring_insecure( dev_priv, buffer, &c );
-	c += left;
-#endif
-
-	return ( ret < 0 ) ? ret : c;
-}
-
-/* External packet submission routine.  This uses the secure versions
- * by default, and can thus submit packets received from user space.
- */
-int r128_cce_packet( struct inode *inode, struct file *filp,
-		     unsigned int cmd, unsigned long arg )
-{
-        drm_file_t *priv = filp->private_data;
-        drm_device_t *dev = priv->dev;
-	drm_r128_private_t *dev_priv = dev->dev_private;
-	drm_r128_packet_t packet;
-	u32 *buffer;
-	int c;
-	int size;
-	int ret = 0;
-
-#if 0
-	/* GH: Disable packet submission for now.
-	 */
-	return -EINVAL;
-#endif
-
-	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
-	     dev->lock.pid != current->pid ) {
-		DRM_ERROR( "r128_submit_packet called without lock held\n" );
-		return -EINVAL;
-	}
-
-	if ( copy_from_user( &packet, (drm_r128_packet_t *)arg,
-			     sizeof(packet) ) )
-		return -EFAULT;
-
-#if 0
-	c = packet.count;
-	size = c * sizeof(*buffer);
-
-	{
-		int left = 0;
-
-		if ( c >= dev_priv->ring_entries ) {
-			c = dev_priv->ring_entries - 1;
-			size = c * sizeof(*buffer);
-			left = packet.count - c;
-		}
-
-		buffer = kmalloc( size, 0 );
-		if ( buffer == NULL)
-			return -ENOMEM;
-		if ( copy_from_user( buffer, packet.buffer, size ) )
-			return -EFAULT;
-
-		if ( dev_priv->cce_secure ) {
-			ret = r128_submit_packet_ring_secure( dev_priv,
-							      buffer, &c );
-		} else {
-			ret = r128_submit_packet_ring_insecure( dev_priv,
-								buffer, &c );
-		}
-		c += left;
-	}
-
-	kfree( buffer );
-#else
-	c = 0;
-#endif
-
-	packet.count = c;
-	if ( copy_to_user( (drm_r128_packet_t *)arg, &packet,
-			   sizeof(packet) ) )
-		return -EFAULT;
-
-	if ( ret ) {
-		return ret;
-	} else if ( c > 0 ) {
-		return -EAGAIN;
-	}
-	return 0;
-}
-
-#if 0
-static int r128_send_vertbufs( drm_device_t *dev, drm_r128_vertex_t *v )
-{
-	drm_device_dma_t    *dma      = dev->dma;
-	drm_r128_private_t  *dev_priv = dev->dev_private;
-	drm_r128_buf_priv_t *buf_priv;
-	drm_buf_t           *buf;
-	int                  i, ret;
-	RING_LOCALS;
-
-	/* Make sure we have valid data */
-	for (i = 0; i < v->send_count; i++) {
-		int idx = v->send_indices[i];
-
-		if (idx < 0 || idx >= dma->buf_count) {
-			DRM_ERROR("Index %d (of %d max)\n",
-				  idx, dma->buf_count - 1);
-			return -EINVAL;
-		}
-		buf = dma->buflist[idx];
-		if (buf->pid != current->pid) {
-			DRM_ERROR("Process %d using buffer owned by %d\n",
-				  current->pid, buf->pid);
-			return -EINVAL;
-		}
-		if (buf->pending) {
-			DRM_ERROR("Sending pending buffer:"
-				  " buffer %d, offset %d\n",
-				  v->send_indices[i], i);
-			return -EINVAL;
-		}
-	}
-
-	/* Wait for idle, if we've wrapped to make sure that all pending
-           buffers have been processed */
-	if (dev_priv->submit_age == R128_MAX_VBUF_AGE) {
-		if ((ret = r128_do_cce_idle(dev)) < 0) return ret;
-		dev_priv->submit_age = 0;
-		r128_freelist_reset(dev);
-	}
-
-	/* Make sure WC cache has been flushed (if in PIO mode) */
-	if (!dev_priv->cce_is_bm_mode) r128_flush_write_combine();
-
-	/* FIXME: Add support for sending vertex buffer to the CCE here
-	   instead of in client code.  The v->prim holds the primitive
-	   type that should be drawn.  Loop over the list buffers in
-	   send_indices[] and submit a packet for each VB.
-
-	   This will require us to loop over the clip rects here as
-	   well, which implies that we extend the kernel driver to allow
-	   cliprects to be stored here.  Note that the cliprects could
-	   possibly come from the X server instead of the client, but
-	   this will require additional changes to the DRI to allow for
-	   this optimization. */
-
-	/* Submit a CCE packet that writes submit_age to R128_VB_AGE_REG */
-#if 0
-	cce_buffer[0] = R128CCE0(R128_CCE_PACKET0, R128_VB_AGE_REG, 0);
-	cce_buffer[1] = dev_priv->submit_age;
-
-	if ((ret = r128_do_submit_packet(dev, cce_buffer, 2)) < 0) {
-		/* Until we add support for sending VBs to the CCE in
-		   this routine, we can recover from this error.  After
-		   we add that support, we won't be able to easily
-		   recover, so we will probably have to implement
-		   another mechanism for handling timeouts from packets
-		   submitted directly by the kernel. */
-		return ret;
-	}
-#else
-	BEGIN_RING( 2 );
-
-	OUT_RING( CCE_PACKET0( R128_VB_AGE_REG, 0 ) );
-	OUT_RING( dev_priv->submit_age );
-
-	ADVANCE_RING();
-#endif
-	/* Now that the submit packet request has succeeded, we can mark
-           the buffers as pending */
-	for (i = 0; i < v->send_count; i++) {
-		buf = dma->buflist[v->send_indices[i]];
-		buf->pending = 1;
-
-		buf_priv      = buf->dev_private;
-		buf_priv->age = dev_priv->submit_age;
-	}
-
-	dev_priv->submit_age++;
-
-	return 0;
-}
-#endif
-
-
-
 
 static int r128_cce_get_buffers( drm_device_t *dev, drm_dma_t *d )
 {
