@@ -314,6 +314,29 @@ void *DRM(ioremap)(unsigned long offset, unsigned long size)
 	return pt;
 }
 
+void *DRM(ioremap_nocache)(unsigned long offset, unsigned long size)
+{
+	void *pt;
+
+	if (!size) {
+		DRM_MEM_ERROR(DRM_MEM_MAPPINGS,
+			      "Mapping 0 bytes at 0x%08lx\n", offset);
+		return NULL;
+	}
+
+	if (!(pt = ioremap_nocache(offset, size))) {
+		spin_lock(&DRM(mem_lock));
+		++DRM(mem_stats)[DRM_MEM_MAPPINGS].fail_count;
+		spin_unlock(&DRM(mem_lock));
+		return NULL;
+	}
+	spin_lock(&DRM(mem_lock));
+	++DRM(mem_stats)[DRM_MEM_MAPPINGS].succeed_count;
+	DRM(mem_stats)[DRM_MEM_MAPPINGS].bytes_allocated += size;
+	spin_unlock(&DRM(mem_lock));
+	return pt;
+}
+
 void DRM(ioremapfree)(void *pt, unsigned long size)
 {
 	int alloc_count;
