@@ -705,7 +705,7 @@ static int DRM(takedown)( drm_device_t *dev )
 #endif
 	if ( dev->lock.hw_lock ) {
 		dev->lock.hw_lock = NULL; /* SHM removed */
-		dev->lock.pid = 0;
+		dev->lock.filp = NULL;
 		DRM_WAKEUP_INT((void *)&dev->lock.lock_queue);
 	}
 	DRM_UNLOCK;
@@ -929,7 +929,8 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	drm_file_t *priv;
 	DRM_DEVICE;
 	int retcode = 0;
-
+	DRMFILE __unused filp = (void *)(DRM_CURRENTPID);
+	
 	DRM_DEBUG( "open_count = %d\n", dev->open_count );
 	priv = DRM(find_file_by_proc)(dev, p);
 	if (!priv) {
@@ -952,7 +953,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 #endif
 
 	if (dev->lock.hw_lock && _DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)
-	    && dev->lock.pid == DRM_CURRENTPID) {
+	    && dev->lock.filp == (void *)DRM_CURRENTPID) {
 		DRM_DEBUG("Process %d dead, freeing lock for context %d\n",
 			  DRM_CURRENTPID,
 			  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
@@ -1002,7 +1003,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 		}
 	}
 #elif __HAVE_DMA
-	DRM(reclaim_buffers)( dev, priv->pid );
+	DRM(reclaim_buffers)( dev, (void *)priv->pid );
 #endif
 
 #if defined (__FreeBSD__) && (__FreeBSD_version >= 500000)
@@ -1052,12 +1053,13 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 
 /* DRM(ioctl) is called whenever a process performs an ioctl on /dev/drm.
  */
-int DRM(ioctl)( DRM_IOCTL_ARGS )
+int DRM(ioctl)(dev_t kdev, u_long cmd, caddr_t data, int flags, 
+    DRM_STRUCTPROC *p)
 {
 	DRM_DEVICE;
 	int retcode = 0;
 	drm_ioctl_desc_t *ioctl;
-	d_ioctl_t *func;
+	int (*func)(DRM_IOCTL_ARGS);
 	int nr = DRM_IOCTL_NR(cmd);
 	DRM_PRIV;
 
@@ -1123,7 +1125,7 @@ int DRM(ioctl)( DRM_IOCTL_ARGS )
 			 || ( ioctl->auth_needed && !priv->authenticated ) ) {
 			retcode = EACCES;
 		} else {
-			retcode = func( kdev, cmd, data, flags, p );
+			retcode = func(kdev, cmd, data, flags, p, (void *)DRM_CURRENTPID);
 		}
 	}
 
@@ -1178,7 +1180,7 @@ int DRM(lock)( DRM_IOCTL_ARGS )
                         }
                         if ( DRM(lock_take)( &dev->lock.hw_lock->lock,
 					     lock.context ) ) {
-                                dev->lock.pid       = DRM_CURRENTPID;
+                                dev->lock.filp = (void *)DRM_CURRENTPID;
                                 dev->lock.lock_time = jiffies;
                                 atomic_inc( &dev->counts[_DRM_STAT_LOCKS] );
                                 break;  /* Got lock */

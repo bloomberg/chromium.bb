@@ -417,7 +417,7 @@ int DRM(addbufs_agp)( DRM_IOCTL_ARGS )
 		buf->waiting = 0;
 		buf->pending = 0;
 		buf->dma_wait = 0;
-		buf->pid     = 0;
+		buf->filp    = NULL;
 
 		buf->dev_priv_size = sizeof(DRIVER_BUF_PRIV_T);
 		buf->dev_private = DRM(alloc)( sizeof(DRIVER_BUF_PRIV_T),
@@ -625,7 +625,7 @@ int DRM(addbufs_pci)( DRM_IOCTL_ARGS )
 			buf->waiting = 0;
 			buf->pending = 0;
 			buf->dma_wait = 0;
-			buf->pid     = 0;
+			buf->filp    = NULL;
 #if __HAVE_DMA_HISTOGRAM
 			buf->time_queued     = 0;
 			buf->time_dispatched = 0;
@@ -778,7 +778,7 @@ int DRM(addbufs_sg)( DRM_IOCTL_ARGS )
 		buf->waiting = 0;
 		buf->pending = 0;
 		buf->dma_wait = 0;
-		buf->pid     = 0;
+		buf->filp    = NULL;
 
 		buf->dev_priv_size = sizeof(DRIVER_BUF_PRIV_T);
 		buf->dev_private = DRM(alloc)( sizeof(DRIVER_BUF_PRIV_T),
@@ -862,16 +862,16 @@ int DRM(addbufs)( DRM_IOCTL_ARGS )
 
 #if __REALLY_HAVE_AGP
 	if ( request.flags & _DRM_AGP_BUFFER )
-		return DRM(addbufs_agp)( kdev, cmd, data, flags, p );
+		return DRM(addbufs_agp)( kdev, cmd, data, flags, p, filp );
 	else
 #endif
 #if __REALLY_HAVE_SG
 	if ( request.flags & _DRM_SG_BUFFER )
-		return DRM(addbufs_sg)( kdev, cmd, data, flags, p );
+		return DRM(addbufs_sg)( kdev, cmd, data, flags, p, filp );
 	else
 #endif
 #if __HAVE_PCI_DMA
-		return DRM(addbufs_pci)( kdev, cmd, data, flags, p );
+		return DRM(addbufs_pci)( kdev, cmd, data, flags, p, filp );
 #else
 		return DRM_ERR(EINVAL);
 #endif
@@ -995,9 +995,9 @@ int DRM(freebufs)( DRM_IOCTL_ARGS )
 			return DRM_ERR(EINVAL);
 		}
 		buf = dma->buflist[idx];
-		if ( buf->pid != DRM_CURRENTPID ) {
-			DRM_ERROR( "Process %d freeing buffer owned by %d\n",
-				   DRM_CURRENTPID, buf->pid );
+		if ( buf->filp != filp ) {
+			DRM_ERROR("Process %d freeing buffer not owned\n",
+				   DRM_CURRENTPID);
 			return DRM_ERR(EINVAL);
 		}
 		DRM(free_buffer)( dev, buf );

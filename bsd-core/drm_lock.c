@@ -78,7 +78,7 @@ int DRM(lock_transfer)(drm_device_t *dev,
 {
 	unsigned int old, new;
 
-	dev->lock.pid = 0;
+	dev->lock.filp = NULL;
 	do {
 		old  = *lock;
 		new  = context | _DRM_LOCK_HELD;
@@ -91,19 +91,16 @@ int DRM(lock_free)(drm_device_t *dev,
 		   __volatile__ unsigned int *lock, unsigned int context)
 {
 	unsigned int old, new;
-	pid_t        pid = dev->lock.pid;
 
-	dev->lock.pid = 0;
+	dev->lock.filp = NULL;
 	do {
 		old  = *lock;
 		new  = 0;
 	} while (!atomic_cmpset_int(lock, old, new));
 
 	if (_DRM_LOCK_IS_HELD(old) && _DRM_LOCKING_CONTEXT(old) != context) {
-		DRM_ERROR("%d freed heavyweight lock held by %d (pid %d)\n",
-			  context,
-			  _DRM_LOCKING_CONTEXT(old),
-			  pid);
+		DRM_ERROR("%d freed heavyweight lock held by %d\n",
+			  context, _DRM_LOCKING_CONTEXT(old));
 		return 1;
 	}
 	DRM_WAKEUP_INT((void *)&dev->lock.lock_queue);

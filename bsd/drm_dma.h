@@ -182,7 +182,7 @@ void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
 
 	buf->waiting  = 0;
 	buf->pending  = 0;
-	buf->pid      = 0;
+	buf->filp     = NULL;
 	buf->used     = 0;
 #if __HAVE_DMA_HISTOGRAM
 	buf->time_completed = get_cycles();
@@ -205,14 +205,14 @@ void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
 }
 
 #if !__HAVE_DMA_RECLAIM
-void DRM(reclaim_buffers)(drm_device_t *dev, pid_t pid)
+void DRM(reclaim_buffers)(drm_device_t *dev, DRMFILE filp)
 {
 	drm_device_dma_t *dma = dev->dma;
 	int		 i;
 
 	if (!dma) return;
 	for (i = 0; i < dma->buf_count; i++) {
-		if (dma->buflist[i]->pid == pid) {
+		if (dma->buflist[i]->filp == filp) {
 			switch (dma->buflist[i]->list) {
 			case DRM_LIST_NONE:
 				DRM(free_buffer)(dev, dma->buflist[i]);
