@@ -12,8 +12,8 @@ Source:		http://fontconfig.org/release/fontconfig-%{version}.tar.gz
 URL:            http://fontconfig.org
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 
-BuildRequires: /usr/bin/docbook2html
-BuildRequires: /usr/bin/docbook2txt
+BuildRequires: %{_bindir}/docbook2html
+BuildRequires: %{_bindir}/docbook2txt
 BuildRequires: %{freetype2}-devel
 BuildRequires: expat-devel
 BuildRequires: perl
