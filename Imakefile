@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.7 2002/08/01 16:17:33 keithp Exp $
+XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.8 2002/11/15 09:29:35 alanh Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -9,15 +9,15 @@ SUBDIRS=fontconfig $(LINTSUBDIRS)
 
 FONTCONFIG_REVISION=1
 
-#ifndef FontconfigDir
+#ifndef FontconfigFontsConfDir
 #if NothingOutsideProjectRoot
-#define FontconfigDir $(PROJECTROOT)/etc/fonts
+#define FontconfigFontsConfDir $(PROJECTROOT)/etc/fonts
 #else
-#define FontconfigDir /etc/fonts
+#define FontconfigFontsConfDir /etc/fonts
 #endif
 #endif
 
-FONTCONFIGDIR=FontconfigDir
+FONTCONFIGFONTSCONFDIR=FontconfigFontsConfDir
 
 #if NothingOutsideProjectRoot
 FONTDIRS=$(FONTDIR)
@@ -49,8 +49,8 @@ step:: srcname								@@\
 InstallNamedTargetBackup(install,file,$(INSTDATFLAGS),dest,file)
 #endif /* InstallNonExecFileBackup */
 
-InstallNonExecFileBackup(fonts.conf,$(FONTCONFIGDIR))
-InstallNonExecFile(fonts.dtd,$(FONTCONFIGDIR))
+InstallNonExecFileBackup(fonts.conf,$(FONTCONFIGFONTSCONFDIR))
+InstallNonExecFile(fonts.dtd,$(FONTCONFIGFONTSCONFDIR))
 
 all:: fonts.conf
 
