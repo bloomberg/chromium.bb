@@ -116,7 +116,7 @@ static __inline__ int gamma_dma_is_ready(drm_device_t *dev)
 
 void gamma_dma_service( DRM_IRQ_ARGS)
 {
-	drm_device_t	    *dev      = (drm_device_t *)device;
+	drm_device_t	    *dev      = (drm_device_t *)arg;
 	drm_device_dma_t    *dma      = dev->dma;
 	drm_gamma_private_t *dev_priv =
 		(drm_gamma_private_t *)dev->dev_private;
@@ -262,7 +262,7 @@ static void gamma_dma_timer_bh(unsigned long dev)
 
 void gamma_dma_immediate_bh(DRM_TASKQUEUE_ARGS)
 {
-	gamma_dma_schedule(dev, 0);
+	gamma_dma_schedule(arg, 0);
 }
 
 int gamma_dma_schedule(drm_device_t *dev, int locked)

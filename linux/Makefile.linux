@@ -55,7 +55,7 @@ TDFXHEADERS =	tdfx.h $(DRMHEADERS) $(DRMTEMPLATES)
 R128OBJS =	r128_drv.o r128_cce.o r128_state.o
 R128HEADERS =	r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-RADEONOBJS =	radeon_drv.o radeon_cp.o radeon_state.o
+RADEONOBJS =	radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o
 RADEONHEADERS =	radeon.h radeon_drv.h radeon_drm.h $(DRMHEADERS) \
 		$(DRMTEMPLATES)
 

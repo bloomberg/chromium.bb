@@ -962,11 +962,11 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 		priv->refs--;
 		if (!priv->refs) {
 			TAILQ_REMOVE(&dev->files, priv, link);
+			DRM(free)( priv, sizeof(*priv), DRM_MEM_FILES );
 		}
 	}
 	DRM_UNLOCK;
 
-	DRM(free)( priv, sizeof(*priv), DRM_MEM_FILES );
 
 	/* ========================================================
 	 * End inline drm_release

@@ -96,8 +96,8 @@
 #define DRM_LOCK		lockmgr(&dev->dev_lock, LK_EXCLUSIVE, 0, DRM_CURPROC)
 #define DRM_UNLOCK 		lockmgr(&dev->dev_lock, LK_RELEASE, 0, DRM_CURPROC)
 #define DRM_SUSER(p)		suser(p)
-#define DRM_TASKQUEUE_ARGS	void *dev, int pending
-#define DRM_IRQ_ARGS		void *device
+#define DRM_TASKQUEUE_ARGS	void *arg, int pending
+#define DRM_IRQ_ARGS		void *arg
 #define DRM_DEVICE		drm_device_t	*dev	= kdev->si_drv1
 #define DRM_MALLOC(size)	malloc( size, DRM(M_DRM), M_NOWAIT )
 #define DRM_FREE(pt)		free( pt, DRM(M_DRM) )
