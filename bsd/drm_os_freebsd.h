@@ -142,13 +142,11 @@ do {								\
 #define DRM_HZ hz
 
 #define DRM_WAIT_ON( ret, queue, timeout, condition )			\
-do {									\
-	if (condition)							\
-		break;							\
-	ret = tsleep( &(queue), PZERO | PCATCH, "rdnirq", (timeout) );	\
-	if ( (ret == EWOULDBLOCK) || (ret == EINTR) )			\
-		return DRM_ERR(EBUSY);					\
-} while (1)
+while (condition) {							\
+	ret = tsleep( &(queue), PZERO | PCATCH, "drmwtq", (timeout) );	\
+	if ( ret )							\
+		return ret;						\
+}
 
 #define DRM_WAKEUP( queue ) wakeup( queue )
 #define DRM_WAKEUP_INT( queue ) wakeup( queue )
