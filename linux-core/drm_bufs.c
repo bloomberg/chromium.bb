@@ -128,6 +128,7 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 #if __REALLY_HAVE_AGP
 	case _DRM_AGP:
 		map->offset = map->offset + dev->agp->base;
+		map->mtrr   = dev->agp->agp_mtrr; /* for getmap */
 		break;
 #endif
 	default:
