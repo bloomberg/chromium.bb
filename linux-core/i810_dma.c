@@ -37,6 +37,7 @@
 #include "i810_drm.h"
 #include "i810_drv.h"
 #include <linux/interrupt.h>	/* For task queue support */
+#include <linux/delay.h>
 
 #define I810_BUF_FREE		2
 #define I810_BUF_CLIENT		1
@@ -337,8 +338,6 @@ static int i810_wait_ring(drm_device_t *dev, int n)
 
 	end = jiffies + (HZ*3);
    	while (ring->space < n) {
-	   	int i;
-
 	   	ring->head = I810_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
 	   	ring->space = ring->head - (ring->tail+8);
 		if (ring->space < 0) ring->space += ring->Size;
