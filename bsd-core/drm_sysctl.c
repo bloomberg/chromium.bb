@@ -41,7 +41,9 @@ struct DRM(sysctl_list) {
 #endif
 	{ "vm",	     DRM(vm_info)      },
 	{ "clients", DRM(clients_info) },
+#if __HAVE_DMA
 	{ "bufs",    DRM(bufs_info)    },
+#endif
 };
 #define DRM_SYSCTL_ENTRIES (sizeof(DRM(sysctl_list))/sizeof(DRM(sysctl_list)[0]))
 
@@ -112,90 +114,128 @@ int DRM(sysctl_cleanup)(drm_device_t *dev)
 	return error;
 }
 
+#define DRM_SYSCTL_PRINT(fmt, arg...)				\
+do {								\
+	snprintf(buf, sizeof(buf), fmt, ##arg);			\
+	retcode = SYSCTL_OUT(req, buf, strlen(buf));		\
+	if (retcode)						\
+		goto done;					\
+} while (0)
+
 static int DRM(name_info)DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
 	char buf[128];
-	int error;
+	int retcode;
+	int hasunique = 0;
 
+	DRM_SYSCTL_PRINT("%s 0x%x", dev->name, dev2udev(dev->devnode));
+	
+	DRM_LOCK();
 	if (dev->unique) {
-		DRM_SYSCTL_PRINT("%s 0x%x %s",
-			       dev->name, dev2udev(dev->devnode), dev->unique);
-	} else {
-		DRM_SYSCTL_PRINT("%s 0x%x", dev->name, dev2udev(dev->devnode));
+		snprintf(buf, sizeof(buf), " %s", dev->unique);
+		hasunique = 1;
 	}
+	DRM_UNLOCK();
+	
+	if (hasunique)
+		SYSCTL_OUT(req, buf, strlen(buf));
 
 	SYSCTL_OUT(req, "", 1);
 
-	return 0;
-}
-
-static int DRM(_vm_info)DRM_SYSCTL_HANDLER_ARGS
-{
-	drm_device_t *dev = arg1;
-	drm_local_map_t    *map;
-	drm_map_list_entry_t    *listentry;
-	const char   *types[] = { "FB", "REG", "SHM", "AGP", "SG" };
-	const char   *type;
-	int	     i=0;
-	char         buf[128];
-	int          error;
-
-	DRM_SYSCTL_PRINT("\nslot	 offset	      size type flags	 "
-			 "address mtrr\n");
-
-	if (dev->maplist != NULL) {
-		TAILQ_FOREACH(listentry, dev->maplist, link) {
-			map = listentry->map;
-			if (map->type < 0 || map->type > 4)
-				type = "??";
-			else
-				type = types[map->type];
-			DRM_SYSCTL_PRINT("%4d 0x%08lx 0x%08lx %4.4s  0x%02x 0x%08lx ",
-					 i,
-					 map->offset,
-					 map->size,
-					 type,
-					 map->flags,
-					 (unsigned long)map->handle);
-			if (map->mtrr < 0) {
-				DRM_SYSCTL_PRINT("no\n");
-			} else {
-				DRM_SYSCTL_PRINT("yes\n");
-			}
-			i++;
-		}
-	}
-	SYSCTL_OUT(req, "", 1);
-
-	return 0;
+done:
+	return retcode;
 }
 
 static int DRM(vm_info)DRM_SYSCTL_HANDLER_ARGS
 {
-	drm_device_t __unused *dev = arg1;
-	int	     ret;
+	drm_device_t *dev = arg1;
+	drm_local_map_t *map, *tempmaps;
+	drm_map_list_entry_t    *listentry;
+	const char   *types[] = { "FB", "REG", "SHM", "AGP", "SG" };
+	const char *type, *yesno;
+	int i, mapcount;
+	char buf[128];
+	int retcode;
 
+	/* We can't hold the lock while doing SYSCTL_OUTs, so allocate a
+	 * temporary copy of all the map entries and then SYSCTL_OUT that.
+	 */
 	DRM_LOCK();
-	ret = DRM(_vm_info)(oidp, arg1, arg2, req);
+
+	mapcount = 0;
+	TAILQ_FOREACH(listentry, dev->maplist, link)
+		mapcount++;
+
+	tempmaps = DRM(alloc)(sizeof(drm_local_map_t) * mapcount, DRM_MEM_MAPS);
+	if (tempmaps == NULL) {
+		DRM_UNLOCK();
+		return ENOMEM;
+	}
+
+	i = 0;
+	TAILQ_FOREACH(listentry, dev->maplist, link)
+		tempmaps[i++] = *listentry->map;
+
 	DRM_UNLOCK();
 
-	return ret;
+	DRM_SYSCTL_PRINT("\nslot	 offset	      size type flags	 "
+			 "address mtrr\n");
+
+	for (i = 0; i < mapcount; i++) {
+		map = &tempmaps[i];
+
+		if (map->type < 0 || map->type > 4)
+			type = "??";
+		else
+			type = types[map->type];
+
+		if (map->mtrr <= 0)
+			yesno = "no";
+		else
+			yesno = "yes";
+
+		DRM_SYSCTL_PRINT(
+		    "%4d 0x%08lx 0x%08lx %4.4s  0x%02x 0x%08lx %s\n", i,
+		    map->offset, map->size, type, map->flags,
+		    (unsigned long)map->handle, yesno);
+	}
+	SYSCTL_OUT(req, "", 1);
+
+done:
+	DRM(free)(tempmaps, sizeof(drm_local_map_t) * mapcount, DRM_MEM_MAPS);
+	return retcode;
 }
 
-
-/* drm_bufs_info is called whenever a process reads
-   hw.dri.0.bufs. */
-
-static int DRM(_bufs_info) DRM_SYSCTL_HANDLER_ARGS
+#if __HAVE_DMA
+static int DRM(bufs_info) DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t	 *dev = arg1;
 	drm_device_dma_t *dma = dev->dma;
-	int		 i;
-	char             buf[128];
-	int              error;
+	drm_device_dma_t tempdma;
+	int *templists;
+	int i;
+	char buf[128];
+	int retcode;
 
-	if (!dma)	return 0;
+	/* We can't hold the locks around DRM_SYSCTL_PRINT, so make a temporary
+	 * copy of the whole structure and the relevant data from buflist.
+	 */
+	DRM_LOCK();
+	DRM_SPINLOCK(&dev->dma_lock);
+	if (dma == NULL) {
+		DRM_SPINUNLOCK(&dev->dma_lock);
+		DRM_UNLOCK();
+		return 0;
+	}
+	tempdma = *dma;
+	templists = DRM(alloc)(sizeof(int) * dma->buf_count, DRM_MEM_BUFS);
+	for (i = 0; i < dma->buf_count; i++)
+		templists[i] = dma->buflist[i]->list;
+	dma = &tempdma;
+	DRM_SPINUNLOCK(&dev->dma_lock);
+	DRM_UNLOCK();
+
 	DRM_SYSCTL_PRINT("\n o     size count  free	 segs pages    kB\n");
 	for (i = 0; i <= DRM_MAX_ORDER; i++) {
 		if (dma->bufs[i].buf_count)
@@ -215,35 +255,45 @@ static int DRM(_bufs_info) DRM_SYSCTL_HANDLER_ARGS
 	DRM_SYSCTL_PRINT("\n");
 	for (i = 0; i < dma->buf_count; i++) {
 		if (i && !(i%32)) DRM_SYSCTL_PRINT("\n");
-		DRM_SYSCTL_PRINT(" %d", dma->buflist[i]->list);
+		DRM_SYSCTL_PRINT(" %d", templists[i]);
 	}
 	DRM_SYSCTL_PRINT("\n");
 
 	SYSCTL_OUT(req, "", 1);
-	return 0;
+done:
+	DRM(free)(templists, sizeof(int) * dma->buf_count, DRM_MEM_BUFS);
+	return retcode;
 }
+#endif
 
-static int DRM(bufs_info) DRM_SYSCTL_HANDLER_ARGS
-{
-	drm_device_t __unused *dev = arg1;
-	int	     ret;
-
-	DRM_LOCK();
-	ret = DRM(_bufs_info)(oidp, arg1, arg2, req);
-	DRM_UNLOCK();
-	return ret;
-}
-
-
-static int DRM(_clients_info) DRM_SYSCTL_HANDLER_ARGS
+static int DRM(clients_info)DRM_SYSCTL_HANDLER_ARGS
 {
 	drm_device_t *dev = arg1;
-	drm_file_t   *priv;
-	char         buf[128];
-	int          error;
+	drm_file_t *priv, *tempprivs;
+	char buf[128];
+	int retcode;
+	int privcount, i;
+
+	DRM_LOCK();
+
+	privcount = 0;
+	TAILQ_FOREACH(priv, &dev->files, link)
+		privcount++;
+
+	tempprivs = DRM(alloc)(sizeof(drm_file_t) * privcount, DRM_MEM_FILES);
+	if (tempprivs == NULL) {
+		DRM_UNLOCK();
+		return ENOMEM;
+	}
+	i = 0;
+	TAILQ_FOREACH(priv, &dev->files, link)
+		tempprivs[i++] = *priv;
+
+	DRM_UNLOCK();
 
 	DRM_SYSCTL_PRINT("\na dev	pid    uid	magic	  ioctls\n");
-	TAILQ_FOREACH(priv, &dev->files, link) {
+	for (i = 0; i < privcount; i++) {
+		priv = &tempprivs[i];
 		DRM_SYSCTL_PRINT("%c %3d %5d %5d %10u %10lu\n",
 			       priv->authenticated ? 'y' : 'n',
 			       priv->minor,
@@ -254,20 +304,10 @@ static int DRM(_clients_info) DRM_SYSCTL_HANDLER_ARGS
 	}
 
 	SYSCTL_OUT(req, "", 1);
-	return 0;
+done:
+	DRM(free)(tempprivs, sizeof(drm_file_t) * privcount, DRM_MEM_FILES);
+	return retcode;
 }
-
-static int DRM(clients_info)DRM_SYSCTL_HANDLER_ARGS
-{
-	drm_device_t __unused *dev = arg1;
-	int	     ret;
-
-	DRM_LOCK();
-	ret = DRM(_clients_info)(oidp, arg1, arg2, req);
-	DRM_UNLOCK();
-	return ret;
-}
-
 
 #elif defined(__NetBSD__)
 /* stub it out for now, sysctl is only for debugging */

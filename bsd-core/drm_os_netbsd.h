@@ -342,12 +342,6 @@ do { \
 #define DRM_DEBUG(fmt, arg...)		 do { } while (0)
 #endif
 
-#define DRM_SYSCTL_PRINT(fmt, arg...)		\
-  snprintf(buf, sizeof(buf), fmt, ##arg);	\
-  error = SYSCTL_OUT(req, buf, strlen(buf));	\
-  if (error) return error;
-
-
 #define DRM_FIND_MAP(dest, o)						\
 	do {								\
 		drm_map_list_entry_t *listentry;			\

@@ -413,14 +413,6 @@ find_first_zero_bit(volatile void *p, int max)
 #define DRM_SYSCTL_HANDLER_ARGS	SYSCTL_HANDLER_ARGS
 #endif
 
-#define DRM_SYSCTL_PRINT(fmt, arg...)		\
-do {						\
-  snprintf(buf, sizeof(buf), fmt, ##arg);	\
-  error = SYSCTL_OUT(req, buf, strlen(buf));	\
-  if (error) return error;			\
-} while (0)
-
-
 #define DRM_FIND_MAP(dest, o)						\
 	do {								\
 		drm_map_list_entry_t *listentry;			\

@@ -472,11 +472,6 @@ static int DRM(setup)( drm_device_t *dev )
 		dev->magiclist[i].tail = NULL;
 	}
 
-	dev->maplist = DRM(calloc)(1, sizeof(*dev->maplist), DRM_MEM_MAPS);
-	if (dev->maplist == NULL)
-		return DRM_ERR(ENOMEM);
-	TAILQ_INIT(dev->maplist);
-
 	dev->lock.hw_lock = NULL;
 	dev->lock.lock_queue = 0;
 	dev->irq = 0;
@@ -591,8 +586,6 @@ static int DRM(takedown)( drm_device_t *dev )
 			DRM(free)(list, sizeof(*list), DRM_MEM_MAPS);
 			DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
 		}
-		DRM(free)(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
-		dev->maplist   = NULL;
  	}
 
 #if __HAVE_DMA
@@ -647,6 +640,14 @@ static int DRM(init)( device_t nbdev )
 #elif defined(__NetBSD__)
 	unit = minor(dev->device.dv_unit);
 #endif
+
+	dev->maplist = DRM(calloc)(1, sizeof(*dev->maplist), DRM_MEM_MAPS);
+	if (dev->maplist == NULL) {
+		retcode = ENOMEM;
+		goto error;
+	}
+	TAILQ_INIT(dev->maplist);
+
 	dev->name = DRIVER_NAME;
 	DRM(mem_init)();
 	DRM(sysctl_init)(dev);
@@ -680,6 +681,7 @@ static int DRM(init)( device_t nbdev )
 		goto error;
 	}
 #endif
+	
 	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d\n",
 	  	DRIVER_NAME,
 	  	DRIVER_MAJOR,
@@ -703,6 +705,7 @@ error:
 	mtx_destroy(&dev->dev_lock);
 #endif
 #endif
+	DRM(free)(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 	return retcode;
 }
 
@@ -749,6 +752,7 @@ static void DRM(cleanup)(drm_device_t *dev)
 #if defined(__FreeBSD__) &&  __FreeBSD_version >= 500000
 	mtx_destroy(&dev->dev_lock);
 #endif
+	DRM(free)(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 }
 
 
