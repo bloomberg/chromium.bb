@@ -28,10 +28,10 @@
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome"
-#define DRIVER_DATE		"20041127"
+#define DRIVER_DATE		"20041204"
 
 #define DRIVER_MAJOR		2
-#define DRIVER_MINOR		1
+#define DRIVER_MINOR		2
 #define DRIVER_PATCHLEVEL	0
 
 typedef struct drm_via_ring_buffer {
@@ -81,7 +81,9 @@ extern void via_driver_irq_postinstall(drm_device_t * dev);
 extern void via_driver_irq_uninstall(drm_device_t * dev);
 
 extern int via_dma_cleanup(drm_device_t * dev);
-
+extern void via_init_command_verifier(void);
+extern int via_verify_command_stream(const uint32_t * buf, unsigned int size, drm_device_t *dev);
+extern int via_wait_idle(drm_via_private_t * dev_priv);
 
 
 #endif

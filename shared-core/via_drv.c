@@ -113,6 +113,7 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 static int __init via_init(void)
 {
+	via_init_command_verifier();
 	return drm_init(&driver, pciidlist);
 }
 

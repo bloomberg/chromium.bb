@@ -1,13 +1,13 @@
 /* via_dma.c -- DMA support for the VIA Unichrome/Pro
  */
 /**************************************************************************
- *
+ * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
  *
  * Copyright 2004 Digeo, Inc., Palo Alto, CA, U.S.A.
  * All Rights Reserved.
- *
+ * 
  * Copyright 2004 The Unichrome project.
  * All Rights Reserved.
  *
@@ -36,57 +36,6 @@ static void via_cmdbuf_start(drm_via_private_t * dev_priv);
 static void via_cmdbuf_pause(drm_via_private_t * dev_priv);
 static void via_cmdbuf_reset(drm_via_private_t * dev_priv);
 static void via_cmdbuf_rewind(drm_via_private_t * dev_priv);
-static int via_wait_idle(drm_via_private_t * dev_priv);
-
-
-/*
- * This function needs to be extended whenever a new command set
- * is implemented. Currently it works only for the 2D engine
- * command, which on the Unichrome allows writing to
- * at least the 2D engine and the mpeg engine, but not the
- * video engine.
- *
- * If you update this function with new commands, please also
- * consider implementing these commands in 
- * via_parse_pci_cmdbuffer below.
- *
- * Carefully review this function for security holes 
- * after an update!!!!!!!!!
- */
-
-static int via_check_command_stream(const uint32_t * buf, unsigned int size)
-{
-
-	uint32_t offset;
-	unsigned int i;
-
-	if (size & 7) {
-		DRM_ERROR("Illegal command buffer size.\n");
-		return DRM_ERR(EINVAL);
-	}
-	size >>= 3;
-	for (i = 0; i < size; ++i) {
-		offset = *buf;
-		buf += 2;
-		if ((offset > ((0x3FF >> 2) | HALCYON_HEADER1)) &&
-		    (offset < ((0xC00 >> 2) | HALCYON_HEADER1))) {
-			DRM_ERROR
-				("Attempt to access Burst Command / 3D Area.\n");
-			return DRM_ERR(EINVAL);
-		} else if (offset > ((0xDFF >> 2) | HALCYON_HEADER1)) {
-			DRM_ERROR("Attempt to access DMA or VGA registers.\n");
-			return DRM_ERR(EINVAL);
-		}
-
-		/*
-		 * ...
-		 * A volunteer should complete this to allow non-root
-		 * usage of accelerated 3D OpenGL.
-		 */
-
-	}
-	return 0;
-}
 
 static inline int
 via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
@@ -97,10 +46,10 @@ via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
 	uint32_t count;
 	hw_addr_ptr = dev_priv->hw_addr_ptr;
 	cur_addr = dev_priv->dma_low;
-	next_addr = cur_addr + size;
+	next_addr = cur_addr + size + 512*1024;
 	count = 1000000;	/* How long is this? */
 	do {
-		hw_addr = *hw_addr_ptr - agp_base;
+	        hw_addr = *hw_addr_ptr - agp_base;
 		if (count-- == 0) {
 			DRM_ERROR("via_cmdbuf_wait timed out hw %x cur_addr %x next_addr %x\n",
 				  hw_addr, cur_addr, next_addr);
@@ -141,6 +90,7 @@ int via_dma_cleanup(drm_device_t * dev)
 			drm_core_ioremapfree(&dev_priv->ring.map, dev);
 			dev_priv->ring.virtual_start = NULL;
 		}
+
 	}
 
 	return 0;
@@ -224,17 +174,32 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 	uint32_t *vb;
 	int ret;
 
+
+	if (cmd->size > pci_bufsiz && pci_bufsiz > 0) {
+		return DRM_ERR(ENOMEM);
+	} 
+
 	vb = via_check_dma(dev_priv, cmd->size);
 	if (vb == NULL) {
 		return DRM_ERR(EAGAIN);
 	}
-	if (DRM_COPY_FROM_USER(vb, cmd->buf, cmd->size)) {
+
+	if (DRM_COPY_FROM_USER(pci_buf, cmd->buf, cmd->size))
 		return DRM_ERR(EFAULT);
-	}
 
-	if ((ret = via_check_command_stream(vb, cmd->size)))
+	/*
+	 * Running this function on AGP memory is dead slow. Therefore
+	 * we run it on a temporary cacheable system memory buffer and
+	 * copy it to AGP memory when ready.
+	 */
+
+	
+	if ((ret = via_verify_command_stream((uint32_t *)pci_buf, cmd->size, dev))) {
 		return ret;
-
+	}
+       	
+	memcpy(vb, pci_buf, cmd->size);
+	
 	dev_priv->dma_low += cmd->size;
 	via_cmdbuf_pause(dev_priv);
 
@@ -285,12 +250,12 @@ static int via_parse_pci_cmdbuffer(drm_device_t * dev, const char *buf,
 				   unsigned int size)
 {
 	drm_via_private_t *dev_priv = dev->dev_private;
-	const uint32_t *regbuf = (uint32_t *) buf;
+	const uint32_t *regbuf = (const uint32_t *) buf;
 	const uint32_t *regend = regbuf + (size >> 2);
 	int ret;
 	int check_2d_cmd = 1;
 
-	if ((ret = via_check_command_stream(regbuf, size)))
+	if ((ret = via_verify_command_stream(regbuf, size, dev)))
 		return ret;
 
 	while (regbuf != regend) {	
@@ -454,7 +419,7 @@ static int via_hook_segment(drm_via_private_t *dev_priv,
 
 
 
-static int via_wait_idle(drm_via_private_t * dev_priv)
+int via_wait_idle(drm_via_private_t * dev_priv)
 {
 	int count = 10000000;
 	while (count-- && (VIA_READ(VIA_REG_STATUS) &
@@ -465,14 +430,16 @@ static int via_wait_idle(drm_via_private_t * dev_priv)
 
 static uint32_t *via_align_cmd(drm_via_private_t * dev_priv, uint32_t cmd_type,
 			       uint32_t addr, uint32_t *cmd_addr_hi, 
-			       uint32_t *cmd_addr_lo)
+			       uint32_t *cmd_addr_lo,
+			       int skip_wait)
 {
 	uint32_t agp_base;
 	uint32_t cmd_addr, addr_lo, addr_hi;
 	uint32_t *vb;
 	uint32_t qw_pad_count;
 
-	via_cmdbuf_wait(dev_priv, 2*CMDBUF_ALIGNMENT_SIZE);
+	if (!skip_wait)
+	  via_cmdbuf_wait(dev_priv, 2*CMDBUF_ALIGNMENT_SIZE);
 
 	vb = via_get_dma(dev_priv);
 	VIA_OUT_RING_QW( HC_HEADER2 | ((VIA_REG_TRANSET >> 2) << 12) |
@@ -519,7 +486,7 @@ static void via_cmdbuf_start(drm_via_private_t * dev_priv)
 
 	dev_priv->last_pause_ptr = 
 		via_align_cmd(dev_priv, HC_HAGPBpID_PAUSE, 0, 
-			      &pause_addr_hi, & pause_addr_lo) - 1;
+			      &pause_addr_hi, & pause_addr_lo, 1) - 1;
 
 	via_flush_write_combine();
 	while(! *dev_priv->last_pause_ptr);
@@ -539,8 +506,9 @@ static inline void via_dummy_bitblt(drm_via_private_t * dev_priv)
 	uint32_t *vb = via_get_dma(dev_priv);
 	SetReg2DAGP(0x0C, (0 | (0 << 16)));
 	SetReg2DAGP(0x10, 0 | (0 << 16));
-	SetReg2DAGP(0x0, 0x1 | 0x2000 | 0xAA000000);
+	SetReg2DAGP(0x0, 0x1 | 0x2000 | 0xAA000000); 
 }
+
 
 static void via_cmdbuf_jump(drm_via_private_t * dev_priv)
 {
@@ -551,7 +519,7 @@ static void via_cmdbuf_jump(drm_via_private_t * dev_priv)
 
 	agp_base = dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr;
 	via_align_cmd(dev_priv,  HC_HAGPBpID_JUMP, 0, &jump_addr_hi, 
-		      &jump_addr_lo);
+		      &jump_addr_lo, 0);
 	
 	dev_priv->dma_low = 0;
 	if (via_cmdbuf_wait(dev_priv, CMDBUF_ALIGNMENT_SIZE) != 0) {
@@ -567,7 +535,7 @@ static void via_cmdbuf_jump(drm_via_private_t * dev_priv)
 	via_dummy_bitblt(dev_priv);
 	via_dummy_bitblt(dev_priv); 
 	last_pause_ptr = via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi, 
-				       &pause_addr_lo) -1;
+				       &pause_addr_lo, 0) -1;
 
 	/*
 	 * The regulator may still be suffering from the shock of the jump.
@@ -576,11 +544,10 @@ static void via_cmdbuf_jump(drm_via_private_t * dev_priv)
 	 */
 
 	via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi, 
-		      &pause_addr_lo);
+		      &pause_addr_lo, 0);
 	*last_pause_ptr = pause_addr_lo; 
 	via_hook_segment( dev_priv, jump_addr_hi, jump_addr_lo, 0);
 }
-
 
 
 static void via_cmdbuf_rewind(drm_via_private_t * dev_priv)
@@ -592,7 +559,7 @@ static void via_cmdbuf_flush(drm_via_private_t * dev_priv, uint32_t cmd_type)
 {
 	uint32_t pause_addr_lo, pause_addr_hi;
 
-	via_align_cmd(dev_priv, cmd_type, 0, &pause_addr_hi, &pause_addr_lo);
+	via_align_cmd(dev_priv, cmd_type, 0, &pause_addr_hi, &pause_addr_lo, 0);
 	via_hook_segment( dev_priv, pause_addr_hi, pause_addr_lo, 0);
 }
 
@@ -607,3 +574,5 @@ static void via_cmdbuf_reset(drm_via_private_t * dev_priv)
 	via_cmdbuf_flush(dev_priv, HC_HAGPBpID_STOP);
 	via_wait_idle(dev_priv);
 }
+
+/************************************************************************/
