@@ -46,9 +46,6 @@
 #define DRIVER_AGP_BUFFERS_MAP( dev )				\
     ((drm_via_private_t *)((dev)->dev_private))->buffers
 
-extern int via_init_context(int context);
-extern int via_final_context(int context);
-
 #define DRIVER_CTX_CTOR via_init_context
 #define DRIVER_CTX_DTOR via_final_context
 

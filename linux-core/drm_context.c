@@ -422,7 +422,7 @@ int DRM(addctx)( struct inode *inode, struct file *filp,
 	}
 #ifdef DRIVER_CTX_CTOR
 	if ( ctx.handle != DRM_KERNEL_CONTEXT )
-		DRIVER_CTX_CTOR(ctx.handle); /* XXX: also pass dev ? */
+		DRIVER_CTX_CTOR(dev, ctx.handle);
 #endif
 	ctx_entry = DRM(alloc)( sizeof(*ctx_entry), DRM_MEM_CTXLIST );
 	if ( !ctx_entry ) {
@@ -556,7 +556,7 @@ int DRM(rmctx)( struct inode *inode, struct file *filp,
 	}
 	if ( ctx.handle != DRM_KERNEL_CONTEXT ) {
 #ifdef DRIVER_CTX_DTOR
-		DRIVER_CTX_DTOR(ctx.handle); /* XXX: also pass dev ? */
+		DRIVER_CTX_DTOR(dev, ctx.handle);
 #endif
 		DRM(ctxbitmap_free)( dev, ctx.handle );
 	}

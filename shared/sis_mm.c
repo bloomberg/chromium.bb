@@ -330,7 +330,7 @@ int sis_ioctl_agp_free( DRM_IOCTL_ARGS )
 	return 0;
 }
 
-int sis_init_context(int context)
+int sis_init_context(drm_device_t *dev, int context)
 {
 	int i;
 
@@ -362,7 +362,7 @@ int sis_init_context(int context)
 	return 1;
 }
 
-int sis_final_context(int context)
+int sis_final_context(drm_device_t *dev, int context)
 {
 	int i;
 

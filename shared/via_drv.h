@@ -46,7 +46,9 @@ typedef struct drm_via_private {
 #define VIA_READ8(reg)		DRM_READ8(VIA_BASE, reg)
 #define VIA_WRITE8(reg,val)	DRM_WRITE8(VIA_BASE, reg, val)
 
- 
+extern int via_init_context(drm_device_t *dev, int context);
+extern int via_final_context(drm_device_t *dev, int context);
+
 extern int via_do_init_map(drm_device_t *dev, drm_via_init_t *init);
 extern int via_do_cleanup_map(drm_device_t *dev);
 extern int via_map_init(struct inode *inode, struct file *filp,

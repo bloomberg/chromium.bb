@@ -103,7 +103,7 @@ int via_fb_init( DRM_IOCTL_ARGS )
         return 0;
 }
 
-int via_init_context(int context)
+int via_init_context(drm_device_t *dev, int context)
 {
         int i;
     
@@ -134,7 +134,7 @@ int via_init_context(int context)
         return 1;
 }
 
-int via_final_context(int context)
+int via_final_context(drm_device_t *dev, int context)
 {
         int i;
         for (i=0; i<MAX_CONTEXT; i++)
