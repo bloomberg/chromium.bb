@@ -62,17 +62,6 @@
 
 static void __exit drm_cleanup( drm_device_t *dev );
 
-/** Stub information */
-struct drm_stub_info {
-	int (*info_register)(const char *name, struct file_operations *fops,
-			     drm_device_t *dev);
-	int (*info_unregister)(int minor);
-	struct class_simple *drm_class;
-	int *info_count;
-	struct proc_dir_entry *proc_root;
-};
-extern struct drm_stub_info DRM(stub_info);
-
 #ifndef MODULE
 /** Use an additional macro to avoid preprocessor troubles */
 #define DRM_OPTIONS_FUNC DRM(options)
@@ -91,9 +80,6 @@ __setup( DRIVER_NAME "=", DRM_OPTIONS_FUNC );
 #undef DRM_OPTIONS_FUNC
 #endif
 
-#define MAX_DEVICES 4
-drm_device_t            DRM(device)[MAX_DEVICES];
-int DRM(numdevs) = 0;
 int DRM(fb_loaded) = 0;
 
 struct file_operations	DRM(fops) = {
@@ -175,15 +161,6 @@ drm_ioctl_desc_t		  DRM(ioctls)[] = {
 };
 
 #define DRIVER_IOCTL_COUNT	DRM_ARRAY_SIZE( DRM(ioctls) )
-
-#ifdef MODULE
-static char *drm_opts = NULL;
-#endif
-
-MODULE_AUTHOR( DRIVER_AUTHOR );
-MODULE_DESCRIPTION( DRIVER_DESC );
-MODULE_PARM( drm_opts, "s" );
-MODULE_LICENSE("GPL and additional rights");
 
 static int DRM(setup)( drm_device_t *dev )
 {
@@ -453,37 +430,19 @@ static struct pci_device_id DRM(pciidlist)[] = {
 	DRM(PCI_IDS)
 };
 
-static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+int DRM(fill_in_dev)(drm_device_t *dev, struct pci_dev *pdev, const struct pci_device_id *ent)
 {
-	drm_device_t *dev;
 	int retcode;
 
-	DRM_DEBUG( "\n" );
-
-	if (DRM(numdevs) >= MAX_DEVICES)
-		return -ENODEV;
-
-	dev = &(DRM(device)[DRM(numdevs)]);
-	memset( (void *)dev, 0, sizeof(*dev) );
 	dev->count_lock = SPIN_LOCK_UNLOCKED;
 	init_timer( &dev->timer );
 	sema_init( &dev->struct_sem, 1 );
 	sema_init( &dev->ctxlist_sem, 1 );
 
-	dev->maplist = DRM(alloc)(sizeof(*dev->maplist), DRM_MEM_MAPS);
-	if(dev->maplist == NULL) 
-		return -ENOMEM;
-	memset(dev->maplist, 0, sizeof(*dev->maplist));
-	INIT_LIST_HEAD(&dev->maplist->head);
-
-	if (DRM(fb_loaded)==0) {
-		pci_set_drvdata(pdev, dev);
-		pci_request_regions(pdev, DRIVER_NAME);
-		pci_enable_device(pdev);
-	}
-
 	dev->name   = DRIVER_NAME;
+
 	dev->pdev   = pdev;
+
 #ifdef __alpha__
 	dev->hose   = pdev->sysdata;
 	dev->pci_domain = dev->hose->bus->number;
@@ -495,6 +454,10 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	dev->pci_func = PCI_FUNC(pdev->devfn);
 	dev->irq = pdev->irq;
 
+	dev->maplist = DRM(calloc)(1, sizeof(*dev->maplist), DRM_MEM_MAPS);
+	if(dev->maplist == NULL) return -ENOMEM;
+	INIT_LIST_HEAD(&dev->maplist->head);
+
 	/* dev_priv_size can be changed by a driver in driver_register_fns */
 	dev->dev_priv_size = sizeof(u32);
 	
@@ -504,14 +467,14 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	
 	if (dev->fn_tbl.preinit)
 		if ((retcode = dev->fn_tbl.preinit(dev, ent->driver_data)))
-			goto error_out;
+			goto error_out_unreg;
 
 	if (drm_core_has_AGP(dev)) {
 		dev->agp = DRM(agp_init)();
 		if (drm_core_check_feature(dev, DRIVER_REQUIRE_AGP) && (dev->agp == NULL)) {
 			DRM_ERROR( "Cannot initialize the agpgart module.\n" );
 			retcode = -EINVAL;
-			goto error_out;
+			goto error_out_unreg;
 		}
 		
 
@@ -527,18 +490,10 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	retcode = DRM(ctxbitmap_init)( dev );
 	if( retcode ) {
 	  DRM_ERROR( "Cannot allocate memory for context bitmap.\n" );
-	  goto error_out;
+	  goto error_out_unreg;
 	}
 
-	if ((dev->minor = DRM(stub_register)(DRIVER_NAME, &DRM(fops),dev)) < 0)
-	{
-		retcode = -EPERM;
-		goto error_out;
-	}
-			
 	dev->device = MKDEV(DRM_MAJOR, dev->minor );
-	
-	DRM(numdevs)++; /* no errors, mark it reserved */
 
 	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d: %s\n",
 		DRIVER_NAME,
@@ -558,14 +513,7 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	return 0;
 
  error_out_unreg:
-	DRM(stub_unregister)(dev->minor);
 	DRM(takedown)(dev);
- error_out:
-	if (DRM(fb_loaded)==0) {
-		pci_set_drvdata(pdev, NULL);
-		pci_release_regions(pdev);
-		pci_disable_device(pdev);
-	}
 	return retcode;
 }
 
@@ -574,16 +522,22 @@ static void __exit drm_cleanup_pci(struct pci_dev *pdev)
 	drm_device_t *dev = pci_get_drvdata(pdev);
 	
 	pci_set_drvdata(pdev, NULL);
-	drm_cleanup(dev);
 	pci_release_regions(pdev);
+	if (dev)
+		drm_cleanup(dev);
 }
 
 static struct pci_driver drm_driver = {
 	.name          = DRIVER_NAME,
 	.id_table      = DRM(pciidlist),
-	.probe         = drm_probe,
+	.probe         = DRM(probe),
 	.remove        = __devexit_p(drm_cleanup_pci),
 };
+
+#ifdef MODULE
+static char *drm_opts = NULL;
+#endif
+MODULE_PARM( drm_opts, "s" );
 
 /**
  * Module initialization. Called via init_module at module load time, or via
@@ -641,7 +595,7 @@ static int __init drm_init( void )
 			/* pass back in pdev to account for multiple identical cards */
 			while ((pdev = pci_get_subsys(pid->vendor, pid->device, pid->subvendor, pid->subdevice, pdev))) {
 				/* stealth mode requires a manual probe */
-				drm_probe(pdev, &DRM(pciidlist[i]));
+				DRM(probe)(pdev, &DRM(pciidlist[i]));
 			}
 		}
 		DRM_INFO("Used old pci detect: framebuffer loaded\n");
@@ -709,13 +663,6 @@ static void __exit drm_cleanup( drm_device_t *dev )
 	if (DRM(fb_loaded)==0)
 		pci_disable_device(dev->pdev);
 
-	DRM(numdevs)--;
-	if ( DRM(stub_unregister)(dev->minor) ) {
-		DRM_ERROR( "Cannot unload module\n" );
-	} else {
-		DRM_DEBUG( "minor %d unregistered\n", dev->minor);
-	}
-
 	DRM(ctxbitmap_cleanup)( dev );
 
 	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) && dev->agp && dev->agp->agp_mtrr >= 0) {
@@ -733,25 +680,33 @@ static void __exit drm_cleanup( drm_device_t *dev )
 	}
 	if (dev->fn_tbl.postcleanup)
 		dev->fn_tbl.postcleanup(dev);
+
+	if ( DRM(put_minor)(dev) )
+		DRM_ERROR( "Cannot unload module\n" );
 }
 
 static void __exit drm_exit (void)
 {
+	int i;
+	drm_device_t *dev;
+	drm_minor_t *minor;
+	
 	DRM_DEBUG( "\n" );
-	if (DRM(fb_loaded)==1)
-	{
-		int i;
-		drm_device_t *dev;
-
-		for (i = DRM(numdevs) - 1; i >= 0; i--) {
-			dev = &(DRM(device)[i]);
-			/* release the pci driver */
-			if (dev->pdev)
-				pci_dev_put(dev->pdev);
-			drm_cleanup(dev);
+	if (DRM(fb_loaded)) {
+		if (DRM(global)) {
+			for (i = 0; i < DRM(global)->cards_limit; i++) {
+				minor = &DRM(global)->minors[i];
+				dev = minor->dev;
+				DRM_DEBUG("fb loaded release minor %d\n", dev->minor);
+				if ((minor->class == DRM_MINOR_PRIMARY) && (dev->fops == &DRM(fops))) {
+					/* release the pci driver */
+					if (dev->pdev)
+						pci_dev_put(dev->pdev);
+					drm_cleanup(dev);
+				}
+			}
 		}
-	}
-	else
+	} else
 		pci_unregister_driver(&drm_driver);
 	DRM_INFO( "Module unloaded\n" );
 }
@@ -818,18 +773,15 @@ int DRM(version)( struct inode *inode, struct file *filp,
 int DRM(open)( struct inode *inode, struct file *filp )
 {
 	drm_device_t *dev = NULL;
+	int minor = iminor(inode);
 	int retcode = 0;
-	int i;
 
-	for (i = 0; i < DRM(numdevs); i++) {
-		if (iminor(inode) == DRM(device)[i].minor) {
-			dev = &(DRM(device)[i]);
-			break;
-		}
-	}
-	if (!dev) {
+	if (!((minor >= 0) && (minor < DRM(global)->cards_limit)))
 		return -ENODEV;
-	}
+		
+	dev = DRM(global)->minors[minor].dev;
+	if (!dev)
+		return -ENODEV;
 
 	retcode = DRM(open_helper)( inode, filp, dev );
 	if ( !retcode ) {
