@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.5 2002/02/22 18:54:07 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.6 2002/02/28 16:51:48 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -23,8 +23,12 @@
  */
 
 #include <stdarg.h>
-#include <expat.h>
 #include "fcint.h"
+#if HAVE_XMLPARSE_H
+#include <xmlparse.h>
+#else
+#include <expat.h>
+#endif
 
 FcTest *
 FcTestCreate (FcQual qual, const FcChar8 *field, FcOp compare, FcExpr *expr)
@@ -270,6 +274,7 @@ typedef enum _FcElement {
     FcElementAlias,
 	
     FcElementBlank,
+    FcElementRescan,
 
     FcElementPrefer,
     FcElementAccept,
@@ -319,6 +324,7 @@ FcElementMap (const XML_Char *name)
 	{ "alias",	FcElementAlias },
 	
 	{ "blank",	FcElementBlank },
+	{ "rescan",	FcElementRescan },
 
 	{ "prefer",	FcElementPrefer },
 	{ "accept",	FcElementAccept },
@@ -418,24 +424,36 @@ typedef struct _FcConfigParse {
     XML_Parser	    parser;
 } FcConfigParse;
 
+typedef enum _FcConfigSeverity {
+    FcSevereInfo, FcSevereWarning, FcSevereError
+} FcConfigSeverity;
+
 static void
-FcConfigError (FcConfigParse *parse, char *fmt, ...)
+FcConfigMessage (FcConfigParse *parse, FcConfigSeverity severe, char *fmt, ...)
 {
+    char	*s = "unknown";
     va_list	args;
 
     va_start (args, fmt);
+
+    switch (severe) {
+    case FcSevereInfo: s = "info"; break;
+    case FcSevereWarning: s = "warning"; break;
+    case FcSevereError: s = "error"; break;
+    }
     if (parse)
     {
 	if (parse->name)
-	    fprintf (stderr, "Fontconfig error: \"%s\", line %d: ",
+	    fprintf (stderr, "Fontconfig %s: \"%s\", line %d: ", s,
 		     parse->name, XML_GetCurrentLineNumber (parse->parser));
 	else
-	    fprintf (stderr, "Fontconfig error: line %d: ",
+	    fprintf (stderr, "Fontconfig %s: line %d: ", s,
 		     XML_GetCurrentLineNumber (parse->parser));
-	parse->error = FcTrue;
+	if (severe >= FcSevereError)
+	    parse->error = FcTrue;
     }
     else
-	fprintf (stderr, "Fontconfig error: ");
+	fprintf (stderr, "Fontconfig %s: ", s);
     vfprintf (stderr, fmt, args);
     fprintf (stderr, "\n");
     va_end (args);
@@ -694,7 +712,7 @@ FcPStackPush (FcConfigParse *parse, FcElement element, const XML_Char **attr)
     {
 	new->attr = FcConfigSaveAttr (attr);
 	if (!new->attr)
-	    FcConfigError (parse, "out of memory");
+	    FcConfigMessage (parse, FcSevereError, "out of memory");
     }
     else
 	new->attr = 0;
@@ -710,7 +728,7 @@ FcPStackPop (FcConfigParse *parse)
     
     if (!parse->pstack) 
     {
-	FcConfigError (parse, "mismatching element");
+	FcConfigMessage (parse, FcSevereError, "mismatching element");
 	return FcFalse;
     }
     FcVStackClear (parse);
@@ -767,14 +785,11 @@ FcStartElement(void *userData, const XML_Char *name, const XML_Char **attr)
     
     element = FcElementMap (name);
     if (element == FcElementUnknown)
-    {
-	FcConfigError (parse, "unknown element \"%s\"", name);
-	return;
-    }
+	FcConfigMessage (parse, FcSevereWarning, "unknown element \"%s\"", name);
     
     if (!FcPStackPush (parse, element, attr))
     {
-	FcConfigError (parse, "out of memory");
+	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
     return;
@@ -788,7 +803,7 @@ FcParseBlank (FcConfigParse *parse)
     {
 	FcVStack    *v = FcVStackFetch (parse, n);
 	if (v->tag != FcVStackInteger)
-	    FcConfigError (parse, "non-integer blank");
+	    FcConfigMessage (parse, FcSevereError, "non-integer blank");
 	else
 	{
 	    if (!parse->config->blanks)
@@ -796,16 +811,30 @@ FcParseBlank (FcConfigParse *parse)
 		parse->config->blanks = FcBlanksCreate ();
 		if (!parse->config->blanks)
 		{
-		    FcConfigError (parse, "out of memory");
+		    FcConfigMessage (parse, FcSevereError, "out of memory");
 		    break;
 		}
 	    }
 	    if (!FcBlanksAdd (parse->config->blanks, v->u.integer))
 	    {
-		FcConfigError (parse, "out of memory");
+		FcConfigMessage (parse, FcSevereError, "out of memory");
 		break;
 	    }
 	}
+    }
+}
+
+static void
+FcParseRescan (FcConfigParse *parse)
+{
+    int	    n = FcVStackElements (parse);
+    while (n-- > 0)
+    {
+	FcVStack    *v = FcVStackFetch (parse, n);
+	if (v->tag != FcVStackInteger)
+	    FcConfigMessage (parse, FcSevereWarning, "non-integer rescan");
+	else
+	    parse->config->rescanInterval = v->u.integer;
     }
 }
 
@@ -820,13 +849,13 @@ FcParseInt (FcConfigParse *parse)
     s = FcStrBufDone (&parse->pstack->str);
     if (!s)
     {
-	FcConfigError (parse, "out of memory");
+	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
     end = 0;
     l = (int) strtol ((char *) s, (char **)&end, 0);
     if (end != s + strlen ((char *) s))
-	FcConfigError (parse, "\"%s\": not a valid integer", s);
+	FcConfigMessage (parse, FcSevereError, "\"%s\": not a valid integer", s);
     else
 	FcVStackPushInteger (parse, l);
     FcStrFree (s);
@@ -843,13 +872,13 @@ FcParseDouble (FcConfigParse *parse)
     s = FcStrBufDone (&parse->pstack->str);
     if (!s)
     {
-	FcConfigError (parse, "out of memory");
+	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
     end = 0;
     d = strtod ((char *) s, (char **)&end);
     if (end != s + strlen ((char *) s))
-	FcConfigError (parse, "\"%s\": not a valid double", s);
+	FcConfigMessage (parse, FcSevereError, "\"%s\": not a valid double", s);
     else
 	FcVStackPushDouble (parse, d);
     FcStrFree (s);
@@ -865,7 +894,7 @@ FcParseString (FcConfigParse *parse, FcVStackTag tag)
     s = FcStrBufDone (&parse->pstack->str);
     if (!s)
     {
-	FcConfigError (parse, "out of memory");
+	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
     if (!FcVStackPushString (parse, tag, s))
@@ -881,23 +910,30 @@ FcParseMatrix (FcConfigParse *parse)
     
     while ((vstack = FcVStackPop (parse)))
     {
-	if (vstack->tag != FcVStackDouble)
-	    FcConfigError (parse, "non-double matrix element");
-	else
-	{
-	    double v = vstack->u._double;
-	    switch (matrix_state) {
-	    case m_xx: m.xx = v; break;
-	    case m_xy: m.xy = v; break;
-	    case m_yx: m.yx = v; break;
-	    case m_yy: m.yy = v; break;
-	    default: break;
-	    }
-	    matrix_state--;
+	double	v;
+	switch (vstack->tag) {
+	case FcVStackInteger:
+	    v = vstack->u.integer;
+	    break;
+	case FcVStackDouble:
+	    v = vstack->u._double;
+	    break;
+	default:
+	    FcConfigMessage (parse, FcSevereError, "non-double matrix element");
+	    v = 1.0;
+	    break;
 	}
+	switch (matrix_state) {
+	case m_xx: m.xx = v; break;
+	case m_xy: m.xy = v; break;
+	case m_yx: m.yx = v; break;
+	case m_yy: m.yy = v; break;
+	default: break;
+	}
+	matrix_state--;
     }
     if (matrix_state != m_done)
-	FcConfigError (parse, "wrong number of matrix elements");
+	FcConfigMessage (parse, FcSevereError, "wrong number of matrix elements");
     else
 	FcVStackPushMatrix (parse, &m);
 }
@@ -924,7 +960,7 @@ FcParseBool (FcConfigParse *parse)
     s = FcStrBufDone (&parse->pstack->str);
     if (!s)
     {
-	FcConfigError (parse, "out of memory");
+	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
     FcVStackPushBool (parse, FcConfigLexBool (s));
@@ -941,8 +977,9 @@ FcParseFamilies (FcConfigParse *parse, FcVStackTag tag)
     {
 	if (vstack->tag != FcVStackFamily)
 	{
-	    FcConfigError (parse, "non-family");
-	    break;
+	    FcConfigMessage (parse, FcSevereWarning, "non-family");
+	    FcVStackDestroy (vstack);
+	    continue;
 	}
 	left = vstack->u.expr;
 	vstack->tag = FcVStackNone;
@@ -952,7 +989,7 @@ FcParseFamilies (FcConfigParse *parse, FcVStackTag tag)
 	    new = FcExprCreateOp (left, FcOpComma, expr);
 	    if (!new)
 	    {
-		FcConfigError (parse, "out of memory");
+		FcConfigMessage (parse, FcSevereError, "out of memory");
 		FcExprDestroy (left);
 		FcExprDestroy (expr);
 		break;
@@ -966,7 +1003,7 @@ FcParseFamilies (FcConfigParse *parse, FcVStackTag tag)
     {
 	if (!FcVStackPushExpr (parse, tag, expr))
 	{
-	    FcConfigError (parse, "out of memory");
+	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	    if (expr)
 		FcExprDestroy (expr);
 	}
@@ -984,7 +1021,7 @@ FcParseFamily (FcConfigParse *parse)
     s = FcStrBufDone (&parse->pstack->str);
     if (!s)
     {
-	FcConfigError (parse, "out of memory");
+	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
     expr = FcExprCreateString (s);
@@ -996,7 +1033,7 @@ FcParseFamily (FcConfigParse *parse)
 static void
 FcParseAlias (FcConfigParse *parse)
 {
-    FcExpr	*family = 0, *accept = 0, *prefer = 0, *def = 0;
+    FcExpr	*family = 0, *accept = 0, *prefer = 0, *def = 0, *new = 0;
     FcEdit	*edit = 0, *next;
     FcVStack	*vstack;
     FcTest	*test;
@@ -1006,9 +1043,20 @@ FcParseAlias (FcConfigParse *parse)
 	switch (vstack->tag) {
 	case FcVStackFamily:
 	    if (family)
-		FcExprDestroy (family);
-	    family = vstack->u.expr;
-	    vstack->tag = FcVStackNone;
+	    {
+		new = FcExprCreateOp (vstack->u.expr, FcOpComma, family);
+		if (!new)
+		    FcConfigMessage (parse, FcSevereError, "out of memory");
+		else
+		    family = new;
+	    }
+	    else
+		new = vstack->u.expr;
+	    if (new)
+	    {
+		family = new;
+		vstack->tag = FcVStackNone;
+	    }
 	    break;
 	case FcVStackPrefer:
 	    if (prefer)
@@ -1029,14 +1077,20 @@ FcParseAlias (FcConfigParse *parse)
 	    vstack->tag = FcVStackNone;
 	    break;
 	default:
-	    FcConfigError (parse, "bad alias");
+	    FcConfigMessage (parse, FcSevereWarning, "bad alias");
 	    break;
 	}
 	FcVStackDestroy (vstack);
     }
     if (!family)
     {
-	FcConfigError (parse, "missing family in alias");
+	FcConfigMessage (parse, FcSevereError, "missing family in alias");
+	if (prefer)
+	    FcExprDestroy (prefer);
+	if (accept)
+	    FcExprDestroy (accept);
+	if (def)
+	    FcExprDestroy (def);
 	return;
     }
     if (prefer)
@@ -1147,7 +1201,7 @@ FcPopExprs (FcConfigParse *parse, FcOp op)
 	    new = FcExprCreateOp (left, op, expr);
 	    if (!new)
 	    {
-		FcConfigError (parse, "out of memory");
+		FcConfigMessage (parse, FcSevereError, "out of memory");
 		FcExprDestroy (left);
 		FcExprDestroy (expr);
 		break;
@@ -1178,7 +1232,7 @@ FcParseInclude (FcConfigParse *parse)
     s = FcStrBufDone (&parse->pstack->str);
     if (!s)
     {
-	FcConfigError (parse, "out of memory");
+	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
     i = FcConfigGetAttribute (parse, "ignore_missing");
@@ -1245,15 +1299,15 @@ FcParseTest (FcConfigParse *parse)
 	    qual = FcQualAll;
 	else
 	{
-	    FcConfigError (parse, "invalid test qual \"%s\"", qual_string);
-	    return;
+	    FcConfigMessage (parse, FcSevereWarning, "invalid test qual \"%s\"", qual_string);
+	    qual = FcQualAny;
 	}
     }
     name = FcConfigGetAttribute (parse, "name");
     if (!name)
     {
-	FcConfigError (parse, "missing test name");
-	return;
+	FcConfigMessage (parse, FcSevereWarning, "missing test name");
+	name = (FcChar8 *) FC_FAMILY;
     }
     compare_string = FcConfigGetAttribute (parse, "compare");
     if (!compare_string)
@@ -1263,20 +1317,20 @@ FcParseTest (FcConfigParse *parse)
 	compare = FcConfigLexCompare (compare_string);
 	if (compare == FcOpInvalid)
 	{
-	    FcConfigError (parse, "invalid test compare \"%s\"", compare_string);
-	    return;
+	    FcConfigMessage (parse, FcSevereWarning, "invalid test compare \"%s\"", compare_string);
+	    compare = FcOpEqual;
 	}
     }
-    expr = FcPopExpr (parse);
+    expr = FcPopExprs (parse, FcOpComma);
     if (!expr)
     {
-	FcConfigError (parse, "missing test expression");
+	FcConfigMessage (parse, FcSevereWarning, "missing test expression");
 	return;
     }
     test = FcTestCreate (qual, name, compare, expr);
     if (!test)
     {
-	FcConfigError (parse, "out of memory");
+	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
     FcVStackPushTest (parse, test);
@@ -1311,8 +1365,8 @@ FcParseEdit (FcConfigParse *parse)
     name = FcConfigGetAttribute (parse, "name");
     if (!name)
     {
-	FcConfigError (parse, "missing edit name");
-	return;
+	FcConfigMessage (parse, FcSevereWarning, "missing edit name");
+	name = (FcChar8 *) FC_FAMILY;
     }
     mode_string = FcConfigGetAttribute (parse, "mode");
     if (!mode_string)
@@ -1322,15 +1376,15 @@ FcParseEdit (FcConfigParse *parse)
 	mode = FcConfigLexMode (mode_string);
 	if (mode == FcOpInvalid)
 	{
-	    FcConfigError (parse, "invalid edit mode \"%s\"", mode_string);
-	    return;
+	    FcConfigMessage (parse, FcSevereWarning, "invalid edit mode \"%s\"", mode_string);
+	    mode = FcOpAssign;
 	}
     }
     expr = FcPopExprs (parse, FcOpComma);
     edit = FcEditCreate ((char *) FcStrCopy (name), mode, expr);
     if (!edit)
     {
-	FcConfigError (parse, "out of memory");
+	FcConfigMessage (parse, FcSevereError, "out of memory");
 	FcExprDestroy (expr);
 	return;
     }
@@ -1358,8 +1412,8 @@ FcParseMatch (FcConfigParse *parse)
 	    kind = FcMatchFont;
 	else
 	{
-	    FcConfigError (parse, "invalid match target \"%s\"", kind_name);
-	    return;
+	    FcConfigMessage (parse, FcSevereWarning, "invalid match target \"%s\"", kind_name);
+	    kind = FcMatchPattern;
 	}
     }
     while ((vstack = FcVStackPop (parse)))
@@ -1376,13 +1430,13 @@ FcParseMatch (FcConfigParse *parse)
 	    vstack->tag = FcVStackNone;
 	    break;
 	default:
-	    FcConfigError (parse, "invalid match element");
+	    FcConfigMessage (parse, FcSevereWarning, "invalid match element");
 	    break;
 	}
 	FcVStackDestroy (vstack);
     }
     if (!FcConfigAddEdit (parse->config, test, edit, kind))
-	FcConfigError (parse, "out of memory");
+	FcConfigMessage (parse, FcSevereError, "out of memory");
 }
 
 static void
@@ -1402,22 +1456,22 @@ FcEndElement(void *userData, const XML_Char *name)
 	data = FcStrBufDone (&parse->pstack->str);
 	if (!data)
 	{
-	    FcConfigError (parse, "out of memory");
+	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	    break;
 	}
 	if (!FcConfigAddDir (parse->config, data))
-	    FcConfigError (parse, "out of memory");
+	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	free (data);
 	break;
     case FcElementCache:
 	data = FcStrBufDone (&parse->pstack->str);
 	if (!data)
 	{
-	    FcConfigError (parse, "out of memory");
+	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	    break;
 	}
 	if (!FcConfigSetCache (parse->config, data))
-	    FcConfigError (parse, "out of memory");
+	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	free (data);
 	break;
     case FcElementInclude:
@@ -1434,6 +1488,9 @@ FcEndElement(void *userData, const XML_Char *name)
 
     case FcElementBlank:
 	FcParseBlank (parse);
+	break;
+    case FcElementRescan:
+	FcParseRescan (parse);
 	break;
 	
     case FcElementPrefer:
@@ -1537,7 +1594,7 @@ FcCharacterData (void *userData, const XML_Char *s, int len)
     if (!parse->pstack)
 	return;
     if (!FcStrBufData (&parse->pstack->str, (FcChar8 *) s, len))
-	FcConfigError (parse, "out of memory");
+	FcConfigMessage (parse, FcSevereError, "out of memory");
 }
 
 static void
@@ -1550,7 +1607,7 @@ FcStartDoctypeDecl (void	    *userData,
     FcConfigParse   *parse = userData;
 
     if (strcmp ((char *) doctypeName, "fontconfig") != 0)
-	FcConfigError (parse, "invalid doctype \"%s\"", doctypeName);
+	FcConfigMessage (parse, FcSevereError, "invalid doctype \"%s\"", doctypeName);
 }
 
 static void
@@ -1597,18 +1654,18 @@ FcConfigParseAndLoad (FcConfig	    *config,
 	buf = XML_GetBuffer (p, BUFSIZ);
 	if (!buf)
 	{
-	    FcConfigError (&parse, "cannot get parse buffer");
+	    FcConfigMessage (&parse, FcSevereError, "cannot get parse buffer");
 	    goto bail3;
 	}
 	len = fread (buf, 1, BUFSIZ, f);
 	if (len < 0)
 	{
-	    FcConfigError (&parse, "failed reading config file");
+	    FcConfigMessage (&parse, FcSevereError, "failed reading config file");
 	    goto bail3;
 	}
 	if (!XML_ParseBuffer (p, len, len == 0))
 	{
-	    FcConfigError (&parse, "%s", 
+	    FcConfigMessage (&parse, FcSevereError, "%s", 
 			   XML_ErrorString (XML_GetErrorCode (p)));
 	    goto bail3;
 	}
@@ -1624,9 +1681,9 @@ bail0:
     if (error && complain)
     {
 	if (name)
-	    FcConfigError (0, "Cannot load config file \"%s\"", name);
+	    FcConfigMessage (0, FcSevereError, "Cannot load config file \"%s\"", name);
 	else
-	    FcConfigError (0, "Cannot load default config file");
+	    FcConfigMessage (0, FcSevereError, "Cannot load default config file");
 	return FcFalse;
     }
     return FcTrue;

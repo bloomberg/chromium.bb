@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fclist.c,v 1.2 2002/02/28 16:51:48 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -372,6 +372,9 @@ FcFontSetList (FcConfig	    *config,
 
     if (!config)
     {
+	if (!FcInitBringUptoDate ())
+	    goto bail0;
+
 	config = FcConfigGetCurrent ();
 	if (!config)
 	    goto bail0;

@@ -46,6 +46,7 @@
 #define _GNU_SOURCE
 #include <getopt.h>
 const struct option longopts[] = {
+    {"force", 0, 0, 'f'},
     {"version", 0, 0, 'V'},
     {"verbose", 0, 0, 'v'},
     {"help", 0, 0, '?'},
@@ -61,41 +62,134 @@ extern int optind, opterr, optopt;
 static void
 usage (char *program)
 {
-    fprintf (stderr, "usage: %s [-vV?] [--verbose] [--version] [--help] [dirs]\n",
+    fprintf (stderr, "usage: %s [-fvV?] [--force] [--verbose] [--version] [--help] [dirs]\n",
 	     program);
     fprintf (stderr, "Build font information caches in [dirs]\n"
 	     "(all directories in font configuration by default).\n");
     fprintf (stderr, "\n");
+    fprintf (stderr, "  -v, --force          scan directories with apparently valid caches\n");
     fprintf (stderr, "  -v, --verbose        display status information while busy\n");
     fprintf (stderr, "  -V, --version        display font config version and exit\n");
     fprintf (stderr, "  -?, --help           display this help and exit\n");
     exit (1);
 }
 
+static int
+nsubdirs (FcStrSet *set)
+{
+    FcStrList	*list;
+    int		n = 0;
+
+    list = FcStrListCreate (set);
+    if (!list)
+	return 0;
+    while (FcStrListNext (list))
+	n++;
+    FcStrListDone (list);
+    return n;
+}
+
+static int
+scanDirs (FcStrList *list, char *program, FcBool force, FcBool verbose)
+{
+    int		ret = 0;
+    FcChar8	*dir;
+    FcFontSet	*set;
+    FcStrSet	*subdirs;
+    FcStrList	*sublist;
+    
+    /*
+     * Now scan all of the directories into separate databases
+     * and write out the results
+     */
+    while ((dir = FcStrListNext (list)))
+    {
+	if (verbose)
+	{
+	    printf ("%s: \"%s\": ", program, dir);
+	    fflush (stdout);
+	}
+	set = FcFontSetCreate ();
+	if (!set)
+	{
+	    fprintf (stderr, "Can't create font set\n");
+	    ret++;
+	    continue;
+	}
+	subdirs = FcStrSetCreate ();
+	if (!subdirs)
+	{
+	    fprintf (stderr, "Can't create directory set\n");
+	    ret++;
+	    continue;
+	}
+	if (!FcDirScan (set, subdirs, 0, FcConfigGetBlanks (0), dir, force))
+	{
+	    fprintf (stderr, "Can't scan \"%s\"\n", dir);
+	    ret++;
+	    continue;
+	}
+	if (!force && FcDirCacheValid (dir))
+	{
+	    if (verbose)
+		printf ("skipping, %d fonts, %d dirs\n",
+			set->nfont, nsubdirs(subdirs));
+	}
+	else
+	{
+	    if (verbose)
+		printf ("caching, %d fonts, %d dirs\n", 
+			set->nfont, nsubdirs (subdirs));
+	    if (!FcDirSave (set, subdirs, dir))
+	    {
+		fprintf (stderr, "Can't save cache in \"%s\"\n", dir);
+		ret++;
+	    }
+	}
+	FcFontSetDestroy (set);
+	sublist = FcStrListCreate (subdirs);
+	if (!sublist)
+	{
+	    fprintf (stderr, "Can't create subdir list in \"%s\"\n", dir);
+	    ret++;
+	    continue;
+	}
+	ret += scanDirs (sublist, program, force, verbose);
+	FcStrSetDestroy (subdirs);
+    }
+    FcStrListDone (list);
+    return ret;
+}
+
 int
 main (int argc, char **argv)
 {
-    int		ret = 0;
-    FcFontSet	*set;
-    FcChar8	**dirs;
-    int		verbose = 0;
+    FcStrSet	*dirs;
+    FcStrList	*list;
+    FcBool    	verbose = FcFalse;
+    FcBool	force = FcFalse;
+    FcConfig	*config;
     int		i;
+    int		ret;
 #if HAVE_GETOPT_LONG || HAVE_GETOPT
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "Vv?", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "fVv?", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "Vv?")) != -1)
+    while ((c = getopt (argc, argv, "fVv?")) != -1)
 #endif
     {
 	switch (c) {
+	case 'f':
+	    force = FcTrue;
+	    break;
 	case 'V':
 	    fprintf (stderr, "fontconfig version %d.%d.%d\n", 
 		     FC_MAJOR, FC_MINOR, FC_REVISION);
 	    exit (0);
 	case 'v':
-	    verbose = 1;
+	    verbose = FcTrue;
 	    break;
 	default:
 	    usage (argv[0]);
@@ -106,51 +200,36 @@ main (int argc, char **argv)
     i = 1;
 #endif
 
-    if (!FcInitConfig ())
+    config = FcInitLoadConfig ();
+    if (!config)
     {
-	fprintf (stderr, "Can't init font config library\n");
+	fprintf (stderr, "%s: Can't init font config library\n", argv[0]);
 	return 1;
     }
     if (argv[i])
-	dirs = (FcChar8 **) (argv+i);
-    else
-	dirs = FcConfigGetDirs (0);
-    /*
-     * Now scan all of the directories into separate databases
-     * and write out the results
-     */
-    while (dirs && *dirs)
     {
-	if (verbose)
-	    printf ("%s: Scanning directory \"%s\"\n", argv[0], *dirs);
-	set = FcFontSetCreate ();
-	if (!set)
+	dirs = FcStrSetCreate ();
+	if (!dirs)
 	{
-	    fprintf (stderr, "Out of memory in \"%s\"\n", *dirs);
-	    ret++;
+	    fprintf (stderr, "%s: Can't create list of directories\n",
+		     argv[0]);
+	    return 1;
 	}
-	else
+	while (argv[i])
 	{
-	    if (!FcDirScan (set, 0, FcConfigGetBlanks (0), *dirs, FcTrue))
+	    if (!FcStrSetAdd (dirs, (FcChar8 *) argv[i]))
 	    {
-		fprintf (stderr, "Can't scan directory \"%s\"\n", *dirs);
-		ret++;
+		fprintf (stderr, "%s: Can't add directory\n", argv[0]);
+		return 1;
 	    }
-	    else
-	    {
-		if (verbose)
-		    printf ("%s: Saving %d font names for \"%s\"\n", 
-			    argv[0], set->nfont, *dirs);
-		if (!FcDirSave (set, *dirs))
-		{
-		    fprintf (stderr, "Can't save cache in \"%s\"\n", *dirs);
-		    ret++;
-		}
-	    }
-	    FcFontSetDestroy (set);
+	    i++;
 	}
-	++dirs;
+	list = FcStrListCreate (dirs);
+	FcStrSetDestroy (dirs);
     }
+    else
+	list = FcConfigGetConfigDirs (config);
+    ret = scanDirs (list, argv[0], force, verbose);
     if (verbose)
 	printf ("%s: %s\n", argv[0], ret ? "failed" : "succeeded");
     return ret;

@@ -228,6 +228,10 @@ typedef struct _FcFileCache FcFileCache;
 
 typedef struct _FcBlanks    FcBlanks;
 
+typedef struct _FcStrList   FcStrList;
+
+typedef struct _FcStrSet    FcStrSet;
+
 _FCFUNCPROTOBEGIN
 
 /* fcblanks.c */
@@ -260,12 +264,18 @@ FcConfig *
 FcConfigGetCurrent (void);
 
 FcBool
+FcConfigUptoDate (FcConfig *config);
+    
+FcBool
 FcConfigBuildFonts (FcConfig *config);
 
-FcChar8 **
-FcConfigGetDirs (FcConfig   *config);
+FcStrList *
+FcConfigGetFontDirs (FcConfig   *config);
 
-FcChar8 **
+FcStrList *
+FcConfigGetConfigDirs (FcConfig   *config);
+
+FcStrList *
 FcConfigGetConfigFiles (FcConfig    *config);
 
 FcChar8 *
@@ -273,6 +283,12 @@ FcConfigGetCache (FcConfig  *config);
 
 FcBlanks *
 FcConfigGetBlanks (FcConfig *config);
+
+int
+FcConfigGetRescanInverval (FcConfig *config);
+
+FcBool
+FcConfigSetRescanInverval (FcConfig *config, int rescanInterval);
 
 FcFontSet *
 FcConfigGetFonts (FcConfig	*config,
@@ -351,6 +367,7 @@ FcDefaultSubstitute (FcPattern *pattern);
 /* fcdir.c */
 FcBool
 FcFileScan (FcFontSet	    *set,
+	    FcStrSet	    *dirs,
 	    FcFileCache	    *cache,
 	    FcBlanks	    *blanks,
 	    const FcChar8   *file,
@@ -358,13 +375,17 @@ FcFileScan (FcFontSet	    *set,
 
 FcBool
 FcDirScan (FcFontSet	    *set,
+	   FcStrSet	    *dirs,
 	   FcFileCache	    *cache,
 	   FcBlanks	    *blanks,
 	   const FcChar8    *dir,
 	   FcBool	    force);
 
 FcBool
-FcDirSave (FcFontSet *set, const FcChar8 *dir);
+FcDirSave (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir);
+
+FcBool
+FcDirCacheValid (const FcChar8 *dir);
 
 /* fcfreetype.c */
 FcPattern *
@@ -382,14 +403,20 @@ FcBool
 FcFontSetAdd (FcFontSet *s, FcPattern *font);
 
 /* fcinit.c */
-FcBool
-FcInitFonts (void);
+FcConfig *
+FcInitLoadConfig (void);
 
-FcBool
-FcInitConfig (void);
+FcConfig *
+FcInitLoadConfigAndFonts (void);
 
 FcBool
 FcInit (void);
+
+FcBool
+FcInitReinitialize (void);
+
+FcBool
+FcInitBringUptoDate (void);
 
 /* fclist.c */
 FcObjectSet *
@@ -592,10 +619,16 @@ FcPatternBuild (FcPattern *orig, ...);
 FcChar8 *
 FcStrCopy (const FcChar8 *s);
 
+FcChar8 *
+FcStrCopyFilename (const FcChar8 *s);
+    
 #define FcToLower(c)	(('A' <= (c) && (c) <= 'Z') ? (c) - 'A' + 'a' : (c))
 
 int
 FcStrCmpIgnoreCase (const FcChar8 *s1, const FcChar8 *s2);
+
+int
+FcStrCmp (const FcChar8 *s1, const FcChar8 *s2);
 
 int
 FcUtf8ToUcs4 (FcChar8   *src_orig,
@@ -607,6 +640,39 @@ FcUtf8Len (FcChar8	*string,
 	   int		len,
 	   int		*nchar,
 	   int		*wchar);
+
+FcChar8 *
+FcStrDirname (const FcChar8 *file);
+
+FcChar8 *
+FcStrBasename (const FcChar8 *file);
+
+FcStrSet *
+FcStrSetCreate (void);
+
+FcBool
+FcStrSetMember (FcStrSet *set, const FcChar8 *s);
+
+FcBool
+FcStrSetAdd (FcStrSet *set, const FcChar8 *s);
+
+FcBool
+FcStrSetAddFilename (FcStrSet *set, const FcChar8 *s);
+
+FcBool
+FcStrSetDel (FcStrSet *set, const FcChar8 *s);
+
+void
+FcStrSetDestroy (FcStrSet *set);
+
+FcStrList *
+FcStrListCreate (FcStrSet *set);
+
+FcChar8 *
+FcStrListNext (FcStrList *list);
+
+void
+FcStrListDone (FcStrList *list);
 
 /* fcxml.c */
 FcBool

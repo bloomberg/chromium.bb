@@ -1,0 +1,68 @@
+#
+# $XFree86$
+#
+# Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
+#
+# Permission to use, copy, modify, distribute, and sell this software and its
+# documentation for any purpose is hereby granted without fee, provided that
+# the above copyright notice appear in all copies and that both that
+# copyright notice and this permission notice appear in supporting
+# documentation, and that the name of Keith Packard not be used in
+# advertising or publicity pertaining to distribution of the software without
+# specific, written prior permission.  Keith Packard makes no
+# representations about the suitability of this software for any purpose.  It
+# is provided "as is" without express or implied warranty.
+#
+# KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+# EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+# CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+# DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+# TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+#
+
+SHELL = @SHELL@
+
+srcdir=@srcdir@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+bindir=@bindir@
+datadir=@datadir@
+includedir=@includedir@
+sysconfdir=@sysconfdir@
+
+CDEBUGFLAGS=@CFLAGS@
+CPPFLAGS=@CPPFLAGS@
+DEFS=@DEFS@
+
+DSO_LDOPTS=@DSO_LDOPTS@
+DSO_CFLAGS=@DSO_CFLAGS@
+DSO_PIC_CFLAGS=@DSO_PIC_CFLAGS@
+
+INCLUDES=-I$(TOPDIR) -I$(srcdir)
+
+CFLAGS=$(CDEBUGFLAGS) $(INCLUDES) $(DEFS) $(CPPFLAGS)
+
+INSTALL=@INSTALL@
+INSTALL_PROGRAM=@INSTALL_PROGRAM@
+INSTALL_SCRIPT=@INSTALL_SCRIPT@
+INSTALL_DATA=@INSTALL_DATA@
+MKSHLIB=@MKSHLIB@
+LN_S=@LN_S@
+
+# shared libraries
+LIBDIR=$(libdir)
+# programs
+BINDIR=$(bindir)
+# font configuration files
+CONFDIR=$(sysconfdir)/fonts
+
+LIBBASE=libfontconfig.so
+LIBFILE=$(LIBBASE).@PACKAGE_MAJOR@.@PACKAGE_MINOR@
+LIBMAJOR=$(LIBBASE).@PACKAGE_MAJOR@
+
+LIBFONTCONFIG=-L$(SRCDIR) -lfontconfig
+
+SRCDIR=$(TOPDIR)/src

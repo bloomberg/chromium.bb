@@ -487,15 +487,42 @@ bail0:
 }
 
 FcBool
-FcFileCacheReadDir (FcFontSet *set, const FcChar8 *cache_file)
+FcFileCacheValid (const FcChar8 *cache_file)
+{
+    FcChar8	*dir = FcStrDirname (cache_file);
+    struct stat	file_stat, dir_stat;
+
+    if (!dir)
+	return FcFalse;
+    if (stat ((char *) dir, &dir_stat) < 0)
+    {
+	FcStrFree (dir);
+	return FcFalse;
+    }
+    FcStrFree (dir);
+    if (stat ((char *) cache_file, &file_stat) < 0)
+	return FcFalse;
+    /*
+     * If the directory has been modified more recently than
+     * the cache file, the cache is not valid
+     */
+    if (dir_stat.st_mtime - file_stat.st_mtime > 0)
+	return FcFalse;
+    return FcTrue;
+}
+
+FcBool
+FcFileCacheReadDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *cache_file)
 {
     FcPattern	    *font;
     FILE	    *f;
-    FcChar8	    *path;
     FcChar8	    *base;
-    FcChar8	    file_buf[8192], *file;
     int		    id;
+    int		    dir_len;
+    int		    file_len;
+    FcChar8	    file_buf[8192], *file;
     FcChar8	    name_buf[8192], *name;
+    FcChar8	    path_buf[8192], *path;
     FcBool	    ret = FcFalse;
 
     if (FcDebug () & FC_DBG_CACHE)
@@ -513,39 +540,72 @@ FcFileCacheReadDir (FcFontSet *set, const FcChar8 *cache_file)
 	goto bail0;
     }
 
+    if (!FcFileCacheValid (cache_file))
+    {
+	if (FcDebug () & FC_DBG_CACHE)
+	{
+	    printf (" cache file older than directory\n");
+	}
+	goto bail1;
+    }
+    
     base = (FcChar8 *) strrchr ((char *) cache_file, '/');
     if (!base)
 	goto bail1;
     base++;
-    path = malloc (base - cache_file + 8192 + 1);
-    if (!path)
-	goto bail1;
-    memcpy (path, cache_file, base - cache_file);
-    base = path + (base - cache_file);
+    dir_len = base - cache_file;
+    if (dir_len < sizeof (path_buf))
+	strncpy ((char *) path_buf, (const char *) cache_file, dir_len);
     
     file = 0;
     name = 0;
+    path = 0;
     while ((file = FcFileCacheReadString (f, file_buf, sizeof (file_buf))) &&
 	   FcFileCacheReadInt (f, &id) &&
 	   (name = FcFileCacheReadString (f, name_buf, sizeof (name_buf))))
     {
-	font = FcNameParse (name);
-	if (font)
+	file_len = strlen ((const char *) file);
+	if (dir_len + file_len + 1 > sizeof (path_buf))
 	{
-	    strcpy ((char *) base, (const char *) file);
+	    path = malloc (dir_len + file_len + 1);
+	    if (!path)
+		goto bail2;
+	    strncpy ((char *) path, (const char *) cache_file, dir_len);
+	}
+	else
+	    path = path_buf;
+	
+    	strcpy ((char *) path + dir_len, (const char *) file);
+	if (!FcStrCmp (name, FC_FONT_FILE_DIR))
+	{
 	    if (FcDebug () & FC_DBG_CACHEV)
 	    {
-		printf (" dir cache file \"%s\"\n", file);
+		printf (" dir cache dir \"%s\"\n", path);
 	    }
-	    FcPatternAddString (font, FC_FILE, path);
-	    if (!FcFontSetAdd (set, font))
+	    if (!FcStrSetAdd (dirs, path))
 		goto bail2;
 	}
+	else
+	{
+	    font = FcNameParse (name);
+	    if (font)
+	    {
+		if (FcDebug () & FC_DBG_CACHEV)
+		{
+		    printf (" dir cache file \"%s\"\n", file);
+		}
+		FcPatternAddString (font, FC_FILE, path);
+		if (!FcFontSetAdd (set, font))
+		    goto bail2;
+	    }
+	}
+	if (path != path_buf)
+	    free (path);
 	if (file != file_buf)
 	    free (file);
 	if (name != name_buf)
 	    free (name);
-	file = name = 0;
+	path = file = name = 0;
     }
     if (FcDebug () & FC_DBG_CACHE)
     {
@@ -554,7 +614,8 @@ FcFileCacheReadDir (FcFontSet *set, const FcChar8 *cache_file)
     
     ret = FcTrue;
 bail2:
-    free (path);
+    if (path && path != path_buf)
+	free (path);
     if (file && file != file_buf)
 	free (file);
     if (name && name != name_buf)
@@ -565,8 +626,24 @@ bail0:
     return ret;
 }
 
+/*
+ * return the path from the directory containing 'cache' to 'file'
+ */
+
+static const FcChar8 *
+FcFileBaseName (const FcChar8 *cache, const FcChar8 *file)
+{
+    const FcChar8   *cache_slash;
+
+    cache_slash = (const FcChar8 *) strrchr ((const char *) cache, '/');
+    if (cache_slash && !strncmp ((const char *) cache, (const char *) file,
+				 (cache_slash + 1) - cache))
+	return file + ((cache_slash + 1) - cache);
+    return file;
+}
+
 FcBool
-FcFileCacheWriteDir (FcFontSet *set, const FcChar8 *cache_file)
+FcFileCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *cache_file)
 {
     FcPattern	    *font;
     FILE	    *f;
@@ -575,6 +652,8 @@ FcFileCacheWriteDir (FcFontSet *set, const FcChar8 *cache_file)
     int		    n;
     int		    id;
     FcBool	    ret;
+    FcStrList	    *list;
+    FcChar8	    *dir;
 
     if (FcDebug () & FC_DBG_CACHE)
 	printf ("FcFileCacheWriteDir cache_file \"%s\"\n", cache_file);
@@ -586,38 +665,59 @@ FcFileCacheWriteDir (FcFontSet *set, const FcChar8 *cache_file)
 	    printf (" can't create \"%s\"\n", cache_file);
 	goto bail0;
     }
+    
+    list = FcStrListCreate (dirs);
+    if (!list)
+	goto bail1;
+    
+    while ((dir = FcStrListNext (list)))
+    {
+	base = FcFileBaseName (cache_file, dir);
+	if (!FcFileCacheWriteString (f, base))
+	    goto bail2;
+	if (putc (' ', f) == EOF)
+	    goto bail2;
+	if (!FcFileCacheWriteInt (f, 0))
+	    goto bail2;
+        if (putc (' ', f) == EOF)
+	    goto bail2;
+	if (!FcFileCacheWriteString (f, FC_FONT_FILE_DIR))
+	    goto bail2;
+	if (putc ('\n', f) == EOF)
+	    goto bail2;
+    }
+    
     for (n = 0; n < set->nfont; n++)
     {
 	font = set->fonts[n];
 	if (FcPatternGetString (font, FC_FILE, 0, (FcChar8 **) &file) != FcResultMatch)
-	    goto bail1;
-	base = (FcChar8 *) strrchr ((char *) file, '/');
-	if (base)
-	    base = base + 1;
-	else
-	    base = file;
+	    goto bail2;
+	base = FcFileBaseName (cache_file, file);
 	if (FcPatternGetInteger (font, FC_INDEX, 0, &id) != FcResultMatch)
-	    goto bail1;
+	    goto bail2;
 	if (FcDebug () & FC_DBG_CACHEV)
 	    printf (" write file \"%s\"\n", base);
 	if (!FcFileCacheWriteString (f, base))
-	    goto bail1;
+	    goto bail2;
 	if (putc (' ', f) == EOF)
-	    goto bail1;
+	    goto bail2;
 	if (!FcFileCacheWriteInt (f, id))
-	    goto bail1;
+	    goto bail2;
         if (putc (' ', f) == EOF)
-	    goto bail1;
+	    goto bail2;
 	name = FcNameUnparse (font);
 	if (!name)
-	    goto bail1;
+	    goto bail2;
 	ret = FcFileCacheWriteString (f, name);
 	free (name);
 	if (!ret)
-	    goto bail1;
+	    goto bail2;
 	if (putc ('\n', f) == EOF)
-	    goto bail1;
+	    goto bail2;
     }
+    
+    FcStrListDone (list);
+
     if (fclose (f) == EOF)
 	goto bail0;
     
@@ -625,6 +725,8 @@ FcFileCacheWriteDir (FcFontSet *set, const FcChar8 *cache_file)
 	printf (" cache written\n");
     return FcTrue;
     
+bail2:
+    FcStrListDone (list);
 bail1:
     fclose (f);
 bail0:

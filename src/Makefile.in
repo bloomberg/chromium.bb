@@ -1,0 +1,105 @@
+#
+# $XFree86$
+#
+# Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
+#
+# Permission to use, copy, modify, distribute, and sell this software and its
+# documentation for any purpose is hereby granted without fee, provided that
+# the above copyright notice appear in all copies and that both that
+# copyright notice and this permission notice appear in supporting
+# documentation, and that the name of Keith Packard not be used in
+# advertising or publicity pertaining to distribution of the software without
+# specific, written prior permission.  Keith Packard makes no
+# representations about the suitability of this software for any purpose.  It
+# is provided "as is" without express or implied warranty.
+#
+# KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+# EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+# CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+# DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+# TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+#
+
+TOPDIR=..
+
+include $(TOPDIR)/config/Makedefs
+
+LIBS=@LIBS@
+
+SRCS=fcatomic.c \
+     fcavl.c \
+     fcblanks.c \
+     fccache.c \
+     fccfg.c \
+     fccharset.c \
+     fcdbg.c \
+     fcdefault.c \
+     fcdir.c \
+     fcfreetype.c \
+     fcfs.c \
+     fcinit.c \
+     fclist.c \
+     fclock.c \
+     fcmatch.c \
+     fcmatrix.c \
+     fcname.c \
+     fcpat.c \
+     fcstr.c \
+     fcxml.c
+
+OBJS=fcatomic.@OBJEXT@ \
+     fcavl.@OBJEXT@ \
+     fcblanks.@OBJEXT@ \
+     fccache.@OBJEXT@ \
+     fccfg.@OBJEXT@ \
+     fccharset.@OBJEXT@ \
+     fcdbg.@OBJEXT@ \
+     fcdefault.@OBJEXT@ \
+     fcdir.@OBJEXT@ \
+     fcfreetype.@OBJEXT@ \
+     fcfs.@OBJEXT@ \
+     fcinit.@OBJEXT@ \
+     fclist.@OBJEXT@ \
+     fclock.@OBJEXT@ \
+     fcmatch.@OBJEXT@ \
+     fcmatrix.@OBJEXT@ \
+     fcname.@OBJEXT@ \
+     fcpat.@OBJEXT@ \
+     fcstr.@OBJEXT@ \
+     fcxml.@OBJEXT@
+
+.c.@OBJEXT@:
+	$(CC) $(CFLAGS) $(DSO_PIC_CFLAGS) -c $< -o $@
+	
+all:: $(LIBFILE) $(LIBMAJOR) $(LIBBASE)
+
+install:: $(LIBDIR)/$(LIB) $(LIBDIR)/$(LIBMAJOR) $(LIBDIR)/$(LIBBASE)
+
+$(LIBDIR)/$(LIBFILE): $(LIBFILE)
+	$(INSTALL_PROGRAM) $< $(LIBDIR)
+
+$(LIBDIR)/$(LIBMAJOR): $(LIBDIR)/$(LIBFILE)
+	$(LN_S) $(LIBDIR)/$(LIBFILE) $(LIBDIR)/$(LIBMAJOR)
+
+$(LIBDIR)/$(LIBBASE): $(LIBDIR)/$(LIBMAJOR)
+	$(LN_S) $(LIBDIR)/$(LIBMAJOR) $(LIBDIR)/$(LIBBASE)
+
+clean::
+	rm -f $(LIBFILE) $(LIBMAJOR) $(LIBBASE) $(OBJS)
+
+$(LIBFILE): $(OBJS)
+	rm -f $@
+	$(MKSHLIB) $(OBJS) $(LIBS)
+
+$(LIBMAJOR): $(LIBFILE)
+	rm -f  $@
+	$(LN_S) $(LIBFILE) $(LIBMAJOR)
+
+$(LIBBASE): $(LIBMAJOR)
+	rm -f $@
+	$(LN_S) $(LIBMAJOR) $(LIBBASE)
+
+$(OBJS): fcint.h $(TOPDIR)/fontconfig/fontconfig.h 
+$(OBJS): $(TOPDIR)/fontconfig/fcprivate.h $(TOPDIR)/config.h

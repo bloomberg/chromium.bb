@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.3 2002/02/18 22:29:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -76,6 +76,25 @@ FcStrCmpIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
 	    break;
 	c1 = FcToLower (c1);
 	c2 = FcToLower (c2);
+	if (c1 != c2)
+	    break;
+    }
+    return (int) c2 - (int) c1;
+}
+
+int
+FcStrCmp (const FcChar8 *s1, const FcChar8 *s2)
+{
+    FcChar8 c1, c2;
+    
+    if (s1 == s2)
+	return 0;
+    for (;;) 
+    {
+	c1 = *s1++;
+	c2 = *s2++;
+	if (!c1 || !c2)
+	    break;
 	if (c1 != c2)
 	    break;
     }
@@ -276,3 +295,210 @@ FcStrBufData (FcStrBuf *buf, const FcChar8 *s, int len)
     return FcTrue;
 }
 
+FcChar8 *
+FcStrCopyFilename (const FcChar8 *s)
+{
+    FcChar8 *new;
+    
+    if (*s == '~')
+    {
+	FcChar8	*home = (FcChar8 *) getenv ("HOME");
+	int	size = strlen ((char *) home) + strlen ((char *) s);
+	if (!home)
+	    return 0;
+	new = (FcChar8 *) malloc (size);
+	if (!new)
+	    return 0;
+	FcMemAlloc (FC_MEM_STRING, size);
+	strcpy ((char *) new, (char *) home);
+	strcat ((char *) new, (char *) s + 1);
+    }
+    else
+    {
+	int	size = strlen ((char *) s) + 1;
+	new = (FcChar8 *) malloc (size);
+	if (!new)
+	    return 0;
+	FcMemAlloc (FC_MEM_STRING, size);
+	strcpy ((char *) new, (const char *) s);
+    }
+    return new;
+}
+
+FcChar8 *
+FcStrDirname (const FcChar8 *file)
+{
+    FcChar8 *slash;
+    FcChar8 *dir;
+
+    slash = (FcChar8 *) strrchr ((char *) file, '/');
+    if (!slash)
+	return FcStrCopy ((FcChar8 *) ".");
+    dir = malloc ((slash - file) + 1);
+    if (!dir)
+	return 0;
+    FcMemAlloc (FC_MEM_STRING, (slash - file) + 1);
+    strncpy ((char *) dir, (const char *) file, slash - file);
+    dir[slash - file] = '\0';
+    return dir;
+}
+
+FcChar8 *
+FcStrBasename (const FcChar8 *file)
+{
+    FcChar8 *slash;
+
+    slash = (FcChar8 *) strrchr ((char *) file, '/');
+    if (!slash)
+	return FcStrCopy (file);
+    return FcStrCopy (slash + 1);
+}
+
+FcStrSet *
+FcStrSetCreate (void)
+{
+    FcStrSet	*set = malloc (sizeof (FcStrSet));
+    if (!set)
+	return 0;
+    FcMemAlloc (FC_MEM_STRSET, sizeof (FcStrSet));
+    set->ref = 1;
+    set->num = 0;
+    set->size = 0;
+    set->strs = 0;
+    return set;
+}
+
+static FcBool
+_FcStrSetAppend (FcStrSet *set, FcChar8 *s)
+{
+    if (FcStrSetMember (set, s))
+    {
+	FcStrFree (s);
+	return FcTrue;
+    }
+    if (set->num == set->size)
+    {
+	FcChar8	**strs = malloc ((set->size + 2) * sizeof (FcChar8 *));
+
+	if (!strs)
+	    return FcFalse;
+	FcMemAlloc (FC_MEM_STRSET, (set->size + 2) * sizeof (FcChar8 *));
+	set->size = set->size + 1;
+	if (set->num)
+	    memcpy (strs, set->strs, set->num * sizeof (FcChar8 *));
+	if (set->strs)
+	    free (set->strs);
+	set->strs = strs;
+    }
+    set->strs[set->num++] = s;
+    set->strs[set->num] = 0;
+    return FcTrue;
+}
+
+FcBool
+FcStrSetMember (FcStrSet *set, const FcChar8 *s)
+{
+    int	i;
+
+    for (i = 0; i < set->num; i++)
+	if (!FcStrCmp (set->strs[i], s))
+	    return FcTrue;
+    return FcFalse;
+}
+
+FcBool
+FcStrSetAdd (FcStrSet *set, const FcChar8 *s)
+{
+    FcChar8 *new = FcStrCopy (s);
+    if (!new)
+	return FcFalse;
+    if (!_FcStrSetAppend (set, new))
+    {
+	FcStrFree (new);
+	return FcFalse;
+    }
+    return FcTrue;
+}
+
+FcBool
+FcStrSetAddFilename (FcStrSet *set, const FcChar8 *s)
+{
+    FcChar8 *new = FcStrCopyFilename (s);
+    if (!new)
+	return FcFalse;
+    if (!_FcStrSetAppend (set, new))
+    {
+	FcStrFree (new);
+	return FcFalse;
+    }
+    return FcTrue;
+}
+
+FcBool
+FcStrSetDel (FcStrSet *set, const FcChar8 *s)
+{
+    int	i;
+
+    for (i = 0; i < set->num; i++)
+	if (!FcStrCmp (set->strs[i], s))
+	{
+	    FcStrFree (set->strs[i]);
+	    /*
+	     * copy remaining string pointers and trailing
+	     * NULL
+	     */
+	    memmove (&set->strs[i], &set->strs[i+1], 
+		     (set->num - i) * sizeof (FcChar8 *));
+	    set->num--;
+	    return FcTrue;
+	}
+    return FcFalse;
+}
+
+void
+FcStrSetDestroy (FcStrSet *set)
+{
+    if (--set->ref == 0)
+    {
+	int	i;
+    
+	for (i = 0; i < set->num; i++)
+	    FcStrFree (set->strs[i]);
+	FcMemFree (FC_MEM_STRSET, (set->size) * sizeof (FcChar8 *));
+	if (set->strs)
+	    free (set->strs);
+	FcMemFree (FC_MEM_STRSET, sizeof (FcStrSet));
+	free (set);
+    }
+}
+
+FcStrList *
+FcStrListCreate (FcStrSet *set)
+{
+    FcStrList	*list;
+
+    list = malloc (sizeof (FcStrList));
+    if (!list)
+	return 0;
+    FcMemAlloc (FC_MEM_STRLIST, sizeof (FcStrList));
+    list->set = set;
+    set->ref++;
+    list->n = 0;
+    return list;
+}
+
+FcChar8 *
+FcStrListNext (FcStrList *list)
+{
+    if (list->n >= list->set->num)
+	return 0;
+    return list->set->strs[list->n++];
+}
+
+void
+FcStrListDone (FcStrList *list)
+{
+    FcStrSetDestroy (list->set);
+    FcMemFree (FC_MEM_STRLIST, sizeof (FcStrList));
+    free (list);
+}

@@ -1,3 +1,8 @@
+#ifdef UseInstalled
+/* building outside the tree, use private defines */
+#include "../local.def"
+#endif
+
 INCLUDES=$(FREETYPE2INCLUDES) $(LIBXML2INCLUDES) -I..
 
 LOCAL_LIBRARIES=FontconfigClientLibs
@@ -11,5 +16,5 @@ LinkBuildBinary(ProgramTargetName(fc-cache))
 
 install::
 	if [ x$${DESTDIR} = x ]; then \
-		FC_DEBUG=128 $(FCCACHE) -v ;\
+		$(FCCACHE) -v -f;\
 	fi

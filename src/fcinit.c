@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcinit.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcinit.c,v 1.3 2002/02/19 08:33:23 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -25,22 +25,7 @@
 #include <stdlib.h>
 #include "fcint.h"
 
-FcBool
-FcInitFonts (void)
-{
-    FcConfig	*config;
-
-    config = FcConfigGetCurrent ();
-    if (!config)
-	return FcFalse;
-
-    if (FcConfigGetFonts (config, FcSetSystem))
-	return FcTrue;
-
-    return FcConfigBuildFonts (config);
-}
-
-static FcBool
+static FcConfig *
 FcInitFallbackConfig (void)
 {
     FcConfig	*config;
@@ -50,25 +35,21 @@ FcInitFallbackConfig (void)
 	goto bail0;
     if (!FcConfigAddDir (config, (FcChar8 *) FC_FALLBACK_FONTS))
 	goto bail1;
-    FcConfigSetCurrent (config);
-    return FcTrue;
+    return config;
 
 bail1:
     FcConfigDestroy (config);
 bail0:
-    return FcFalse;
+    return 0;
 }
 
 /*
- * Locate and parse the configuration file
+ * Load the configuration files
  */
-FcBool
-FcInitConfig (void)
+FcConfig *
+FcInitLoadConfig (void)
 {
-    FcConfig    *config;
-    
-    if (_fcConfig)
-	return FcTrue;
+    FcConfig	*config;
     
     config = FcConfigCreate ();
     if (!config)
@@ -79,15 +60,83 @@ FcInitConfig (void)
 	FcConfigDestroy (config);
 	return FcInitFallbackConfig ();
     }
-    
+
+    return config;
+}
+
+/*
+ * Load the configuration files and scan for available fonts
+ */
+FcConfig *
+FcInitLoadConfigAndFonts (void)
+{
+    FcConfig	*config = FcInitLoadConfig ();
+
+    if (!config)
+	return 0;
+    if (!FcConfigBuildFonts (config))
+    {
+	FcConfigDestroy (config);
+	return 0;
+    }
+    return config;
+}
+
+/*
+ * Initialize the default library configuration
+ */
+FcBool
+FcInit (void)
+{
+    FcConfig	*config;
+
+    if (_fcConfig)
+	return FcTrue;
+    config = FcInitLoadConfigAndFonts ();
+    if (!config)
+	return FcTrue;
+    FcConfigSetCurrent (config);
+    return FcTrue;
+}
+
+/*
+ * Reread the configuration and available font lists
+ */
+FcBool
+FcInitReinitialize (void)
+{
+    FcConfig	*config;
+
+    config = FcInitLoadConfigAndFonts ();
+    if (!config)
+	return FcFalse;
     FcConfigSetCurrent (config);
     return FcTrue;
 }
 
 FcBool
-FcInit (void)
+FcInitBringUptoDate (void)
 {
-    return FcInitConfig () && FcInitFonts ();
+    FcConfig	*config = FcConfigGetCurrent ();
+    time_t	now;
+
+    /*
+     * rescanInterval == 0 disables automatic up to date
+     */
+    if (config->rescanInterval == 0)
+	return FcTrue;
+    /*
+     * Check no more often than rescanInterval seconds
+     */
+    now = time (0);
+    if (config->rescanTime + config->rescanInterval - now > 0)
+	return FcTrue;
+    /*
+     * If up to date, don't reload configuration
+     */
+    if (FcConfigUptoDate (0))
+	return FcTrue;
+    return FcInitReinitialize ();
 }
 
 static struct {

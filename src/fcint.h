@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcprivate.h>
 #ifdef HAVE_CONFIG_H
@@ -52,6 +53,9 @@ typedef struct _FcSymbolic {
 #ifndef FC_CONFIG_PATH
 #define FC_CONFIG_PATH "fonts.conf"
 #endif
+
+#define FC_FONT_FILE_INVALID	((FcChar8 *) ".")
+#define FC_FONT_FILE_DIR	((FcChar8 *) ".dir")
 
 #define FC_DBG_MATCH	1
 #define FC_DBG_MATCHV	2
@@ -77,6 +81,9 @@ typedef struct _FcSymbolic {
 #define FC_MEM_STRING	    11
 #define FC_MEM_LISTBUCK	    12
 #define FC_MEM_NUM	    13
+#define FC_MEM_STRSET	    14
+#define FC_MEM_STRLIST	    15
+#define FC_MEM_CONFIG	    16
 
 typedef struct _FcValueList {
     struct _FcValueList    *next;
@@ -173,6 +180,18 @@ struct _FcCharSet {
     FcCharNode	    node;
 };
 
+struct _FcStrSet {
+    int		    ref;	/* reference count */
+    int		    num;
+    int		    size;
+    FcChar8	    **strs;
+};
+
+struct _FcStrList {
+    FcStrSet	    *set;
+    int		    n;
+};
+
 typedef struct _FcStrBuf {
     FcChar8 *buf;
     FcBool  allocated;
@@ -219,7 +238,7 @@ struct _FcConfig {
      * cache file must be consulted before the directories are scanned,
      * and those directives may occur in any order
      */
-    FcChar8	**dirs;		    /* directories containing fonts */
+    FcStrSet	*configDirs;	    /* directories to scan for fonts */
     FcChar8	*cache;		    /* name of per-user cache file */
     /*
      * Set of allowed blank chars -- used to
@@ -227,10 +246,16 @@ struct _FcConfig {
      */
     FcBlanks	*blanks;
     /*
+     * List of directories containing fonts,
+     * built by recursively scanning the set 
+     * of configured directories
+     */
+    FcStrSet	*fontDirs;
+    /*
      * Names of all of the configuration files used
      * to create this configuration
      */
-    FcChar8	**configFiles;	    /* config files loaded */
+    FcStrSet	*configFiles;	    /* config files loaded */
     /*
      * Substitution instructions for patterns and fonts;
      * maxObjects is used to allocate appropriate intermediate storage
@@ -246,6 +271,14 @@ struct _FcConfig {
      * match preferrentially
      */
     FcFontSet	*fonts[FcSetApplication + 1];
+    /*
+     * Fontconfig can periodically rescan the system configuration
+     * and font directories.  This rescanning occurs when font
+     * listing requests are made, but no more often than rescanInterval
+     * seconds apart.
+     */
+    time_t	rescanTime;	    /* last time information was scanned */
+    int		rescanInterval;	    /* interval between scans */
 };
  
 extern FcConfig	*_fcConfig;
@@ -266,6 +299,9 @@ FcFileCacheFind (FcFileCache	*cache,
 void
 FcFileCacheDestroy (FcFileCache	*cache);
 
+FcBool
+FcFileCacheValid (const FcChar8 *cache_file);
+
 void
 FcFileCacheLoad (FcFileCache	*cache,
 		 const FcChar8	*cache_file);
@@ -281,12 +317,20 @@ FcFileCacheSave (FcFileCache	*cache,
 		 const FcChar8	*cache_file);
 
 FcBool
-FcFileCacheReadDir (FcFontSet *set, const FcChar8 *cache_file);
+FcFileCacheReadDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *cache_file);
 
 FcBool
-FcFileCacheWriteDir (FcFontSet *set, const FcChar8 *cache_file);
+FcFileCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *cache_file);
     
 /* fccfg.c */
+
+FcBool
+FcConfigAddConfigDir (FcConfig	    *config,
+		      const FcChar8 *d);
+
+FcBool
+FcConfigAddFontDir (FcConfig	    *config,
+		    const FcChar8   *d);
 
 FcBool
 FcConfigAddDir (FcConfig	*config,
