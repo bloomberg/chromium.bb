@@ -110,7 +110,7 @@ static __inline__ int radeon_check_and_fixup_packets( drm_radeon_private_t *dev_
 		    id == R200_PP_CUBIC_OFFSET_F1_2 || id == R200_PP_CUBIC_OFFSET_F1_3 ||
 		    id == R200_PP_CUBIC_OFFSET_F1_4 || id == R200_PP_CUBIC_OFFSET_F1_5 ) {
 		int i;
-		for ( i = 0; i < 6; i++ ) {
+		for ( i = 0; i < 5; i++ ) {
 			if ( radeon_check_and_fixup_offset_user( dev_priv,
 								 filp_priv,
 								 &data[i] ) ) {
