@@ -262,6 +262,17 @@ Deletes all values associated with the property `object', returning
 whether the property existed or not.
 @@
 
+@RET@		FcBool
+@FUNC@		FcPatternRemove
+@TYPE1@		FcPattern *			@ARG1@		p
+@TYPE2@		const char *			@ARG2@		object 
+@TYPE3@		int				@ARG3@		id
+@PURPOSE@	Remove one object of the specified type from the pattern
+@DESC@
+Removes the value associated with the property `object' at position `id', returning 
+whether the property existed and had a value at that position or not.
+@@
+		
 @RET@		void
 @FUNC@		FcPatternPrint
 @TYPE1@		const FcPattern *		@ARG1@		p 

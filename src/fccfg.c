@@ -67,10 +67,18 @@ FcConfigCreate (void)
     if (!config->rejectGlobs)
 	goto bail5;
 
+    config->acceptPatterns = FcFontSetCreate ();
+    if (!config->acceptPatterns)
+	goto bail6;
+    
+    config->rejectPatterns = FcFontSetCreate ();
+    if (!config->rejectPatterns)
+	goto bail7;
+
     config->cache = 0;
     if (FcConfigHome())
 	if (!FcConfigSetCache (config, (FcChar8 *) ("~/" FC_USER_CACHE_FILE)))
-	    goto bail6;
+	    goto bail8;
 
 #ifdef _WIN32
     if (config->cache == 0)
@@ -110,6 +118,10 @@ FcConfigCreate (void)
     
     return config;
 
+bail8:
+    FcFontSetDestroy (config->rejectPatterns);
+bail7:
+    FcFontSetDestroy (config->acceptPatterns);
 bail6:
     FcStrSetDestroy (config->rejectGlobs);
 bail5:
@@ -207,6 +219,8 @@ FcConfigDestroy (FcConfig *config)
     FcStrSetDestroy (config->configFiles);
     FcStrSetDestroy (config->acceptGlobs);
     FcStrSetDestroy (config->rejectGlobs);
+    FcFontSetDestroy (config->acceptPatterns);
+    FcFontSetDestroy (config->rejectPatterns);
 
     if (config->blanks)
 	FcBlanksDestroy (config->blanks);
@@ -665,7 +679,7 @@ FcConfigCompareValue (const FcValue	left_o,
 		ret = FcLangSetContains (left.u.l, right.u.l);
 		break;
 	    case FcOpNotContains:
-		ret = FcLangSetContains (left.u.l, right.u.l);
+		ret = !FcLangSetContains (left.u.l, right.u.l);
 		break;
 	    case FcOpEqual:
 		ret = FcLangSetEqual (left.u.l, right.u.l);
@@ -1834,6 +1848,43 @@ FcConfigAcceptFilename (FcConfig	*config,
     if (FcConfigGlobsMatch (config->acceptGlobs, filename))
 	return FcTrue;
     if (FcConfigGlobsMatch (config->rejectGlobs, filename))
+	return FcFalse;
+    return FcTrue;
+}
+
+/*
+ * Manage font-pattern based font source selectors
+ */
+
+FcBool
+FcConfigPatternsAdd (FcConfig	*config,
+		     FcPattern	*pattern,
+		     FcBool	accept)
+{
+    FcFontSet	*set = accept ? config->acceptPatterns : config->rejectPatterns;
+
+    return FcFontSetAdd (set, pattern);
+}
+
+static FcBool
+FcConfigPatternsMatch (const FcFontSet	*patterns,
+		       const FcPattern	*font)
+{
+    int i;
+    
+    for (i = 0; i < patterns->nfont; i++)
+	if (FcListPatternMatchAny (patterns->fonts[i], font))
+	    return FcTrue;
+    return FcFalse;
+}
+
+FcBool
+FcConfigAcceptFont (FcConfig	    *config,
+		    const FcPattern *font)
+{
+    if (FcConfigPatternsMatch (config->acceptPatterns, font))
+	return FcTrue;
+    if (FcConfigPatternsMatch (config->rejectPatterns, font))
 	return FcFalse;
     return FcTrue;
 }

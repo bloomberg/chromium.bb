@@ -200,9 +200,9 @@ FcListPatternEqual (FcPattern	*p1,
  * FcTrue iff all objects in "p" match "font"
  */
 
-static FcBool
-FcListPatternMatchAny (FcPattern *p,
-		       FcPattern *font)
+FcBool
+FcListPatternMatchAny (const FcPattern *p,
+		       const FcPattern *font)
 {
     int		    i;
     FcPatternElt   *e;

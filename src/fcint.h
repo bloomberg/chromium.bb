@@ -329,6 +329,8 @@ struct _FcConfig {
      */
     FcStrSet	*acceptGlobs;
     FcStrSet	*rejectGlobs;
+    FcFontSet	*acceptPatterns;
+    FcFontSet	*rejectPatterns;
     /*
      * The set of fonts loaded from the listed directories; the
      * order within the set does not determine the font selection,
@@ -464,6 +466,15 @@ FcConfigGlobAdd (FcConfig	*config,
 FcBool
 FcConfigAcceptFilename (FcConfig	*config,
 			const FcChar8	*filename);
+
+FcBool
+FcConfigPatternsAdd (FcConfig	*config,
+		     FcPattern	*pattern,
+		     FcBool	accept);
+
+FcBool
+FcConfigAcceptFont (FcConfig	    *config,
+		    const FcPattern *font);
 
 /* fccharset.c */
 FcCharSet *
@@ -639,6 +650,10 @@ FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls);
 
 /* fclist.c */
 
+FcBool
+FcListPatternMatchAny (const FcPattern *p,
+		       const FcPattern *font);
+
 /* fcmatch.c */
 
 /* fcname.c */
@@ -668,6 +683,12 @@ FcPatternFreeze (FcPattern *p);
 
 void
 FcPatternThawAll (void);
+
+FcBool
+FcPatternAppend (FcPattern *p, FcPattern *s);
+
+const char *
+FcObjectStaticName (const char *name);
 
 /* fcrender.c */
 

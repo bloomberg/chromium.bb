@@ -37,10 +37,21 @@ pkgconfigdir=$(libdir)/pkgconfig
 pkgconfig_DATA = fontconfig.pc
 
 configdir=$(CONFDIR)
-config_DATA=fonts.conf fonts.dtd
+config_DATA=fonts.dtd
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(configdir)
+	if [ -f $(DESTDIR)$(configdir)/fonts.conf ]; then \
+	  echo "backing up existing $(DESTDIR)$(configdir)/fonts.conf"; \
+	  mv $(DESTDIR)$(configdir)/fonts.conf $(DESTDIR)$(configdir)/fonts.conf.bak; \
+	fi
+	if [ -f $(srcdir)/fonts.conf ]; then \
+	  echo " $(INSTALL_DATA) $(srcdir)/fonts.conf $(DESTDIR)$(configdir)/fonts.conf"; \
+	  $(INSTALL_DATA) $(srcdir)/fonts.conf $(DESTDIR)$(configdir)/fonts.conf; \
+	else if [ -f fonts.conf ]; then \
+	  echo " $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf"; \
+	  $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf; \
+	fi; fi
 	if [ -f $(DESTDIR)$(configdir)/local.conf ]; then \
 	  echo "not overwriting existing $(DESTDIR)$(configdir)/local.conf"; \
 	else if [ -f $(srcdir)/local.conf ]; then \

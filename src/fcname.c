@@ -30,7 +30,11 @@
 
 static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_FAMILY,	FcTypeString, },
+    { FC_FAMILYLANG,	FcTypeString, },
     { FC_STYLE,		FcTypeString, },
+    { FC_STYLELANG,	FcTypeString, },
+    { FC_FULLNAME,	FcTypeString, },
+    { FC_FULLNAMELANG,	FcTypeString, },
     { FC_SLANT,		FcTypeInteger, },
     { FC_WEIGHT,	FcTypeInteger, },
     { FC_WIDTH,		FcTypeInteger, },

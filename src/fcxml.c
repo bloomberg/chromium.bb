@@ -323,6 +323,8 @@ typedef enum _FcElement {
     FcElementAcceptfont,
     FcElementRejectfont,
     FcElementGlob,
+    FcElementPattern,
+    FcElementPatelt,
 
     FcElementTest,
     FcElementEdit,
@@ -384,6 +386,8 @@ FcElementMap (const XML_Char *name)
 	{ "acceptfont",	FcElementAcceptfont },
 	{ "rejectfont",	FcElementRejectfont },
 	{ "glob",	FcElementGlob },
+	{ "pattern",	FcElementPattern },
+	{ "patelt",	FcElementPatelt },
 
 	{ "test",	FcElementTest },
 	{ "edit",	FcElementEdit },
@@ -441,6 +445,7 @@ typedef enum _FcVStackTag {
     FcVStackField,
     FcVStackConstant,
     FcVStackGlob,
+    FcVStackPattern,
     
     FcVStackPrefer,
     FcVStackAccept,
@@ -473,6 +478,8 @@ typedef struct _FcVStack {
 	FcOp		op;
 	FcExpr		*expr;
 	FcEdit		*edit;
+
+	FcPattern	*pattern;
     } u;
 } FcVStack;
 
@@ -559,6 +566,9 @@ FcVStackDestroy (FcVStack *vstack)
 	case FcVStackConstant:
 	case FcVStackGlob:
 	    FcStrFree (vstack->u.string);
+	    break;
+	case FcVStackPattern:
+	    FcPatternDestroy (vstack->u.pattern);
 	    break;
 	case FcVStackInteger:
 	case FcVStackDouble:
@@ -684,6 +694,18 @@ FcVStackPushEdit (FcConfigParse *parse, FcEdit *edit)
 	return FcFalse;
     vstack->u.edit = edit;
     vstack->tag = FcVStackEdit;
+    FcVStackPush (parse, vstack);
+    return FcTrue;
+}
+
+static FcBool
+FcVStackPushPattern (FcConfigParse *parse, FcPattern *pattern)
+{
+    FcVStack    *vstack = FcVStackCreate ();
+    if (!vstack)
+	return FcFalse;
+    vstack->u.pattern = pattern;
+    vstack->tag = FcVStackPattern;
     FcVStackPush (parse, vstack);
     return FcTrue;
 }
@@ -1321,6 +1343,8 @@ FcPopExpr (FcConfigParse *parse)
 	break;
     case FcVStackEdit:
 	break;
+    default:
+	break;
     }
     FcVStackDestroy (vstack);
     return expr;
@@ -1675,12 +1699,144 @@ FcParseAcceptRejectFont (FcConfigParse *parse, FcElement element)
 		FcConfigMessage (parse, FcSevereError, "out of memory");
 	    }
 	    break;
+	case FcVStackPattern:
+	    if (!FcConfigPatternsAdd (parse->config,
+				      vstack->u.pattern,
+				      element == FcElementAcceptfont))
+	    {
+		FcConfigMessage (parse, FcSevereError, "out of memory");
+	    }
+	    else
+		vstack->tag = FcVStackNone;
+	    break;
 	default:
 	    FcConfigMessage (parse, FcSevereWarning, "bad font selector");
 	    break;
 	}
 	FcVStackDestroy (vstack);
     }
+}
+
+
+static FcValue
+FcPopValue (FcConfigParse *parse)
+{
+    FcVStack	*vstack = FcVStackPop (parse);
+    FcValue	value;
+    
+    value.type = FcTypeVoid;
+    
+    if (!vstack)
+	return value;
+    
+    switch (vstack->tag) {
+    case FcVStackString:
+	value.u.s = FcStrCopy (vstack->u.string);
+	if (value.u.s)
+	    value.type = FcTypeString;
+	break;
+    case FcVStackConstant:
+	if (FcNameConstant (vstack->u.string, &value.u.i))
+	    value.type = FcTypeInteger;
+	break;
+    case FcVStackInteger:
+	value.u.i = vstack->u.integer;
+	value.type = FcTypeInteger;
+	break;
+    case FcVStackDouble:
+	value.u.d = vstack->u._double;
+	value.type = FcTypeInteger;
+	break;
+    case FcVStackMatrix:
+	value.u.m = FcMatrixCopy (vstack->u.matrix);
+	if (value.u.m)
+	    value.type = FcTypeMatrix;
+	break;
+    case FcVStackBool:
+	value.u.b = vstack->u.bool;
+	value.type = FcTypeBool;
+	break;
+    default:
+	FcConfigMessage (parse, FcSevereWarning, "unknown pattern element %d", 
+			 vstack->tag);
+	break;
+    }
+    FcVStackDestroy (vstack);
+    
+    return value;
+}
+
+static void
+FcParsePatelt (FcConfigParse *parse)
+{
+    FcValue	value;
+    FcPattern	*pattern = FcPatternCreate ();
+    const char	*name;
+
+    if (!pattern)
+    {
+	FcConfigMessage (parse, FcSevereError, "out of memory");
+	return;
+    }
+
+    name = FcConfigGetAttribute (parse, "name");
+    if (!name)
+    {
+	FcConfigMessage (parse, FcSevereWarning, "missing pattern element name");
+	return;
+    }
+    name = FcObjectStaticName (name);
+    if (!name)
+    {
+	FcConfigMessage (parse, FcSevereError, "out of memory");
+	return;
+    }
+    
+    for (;;)
+    {
+	value = FcPopValue (parse);
+	if (value.type == FcTypeVoid)
+	    break;
+	if (!FcPatternAdd (pattern, name, value, FcTrue))
+	{
+	    FcConfigMessage (parse, FcSevereError, "out of memory");
+	    break;
+	}
+    }
+
+    FcVStackPushPattern (parse, pattern);
+}
+
+static void
+FcParsePattern (FcConfigParse *parse)
+{
+    FcVStack	*vstack;
+    FcPattern	*pattern = FcPatternCreate ();
+
+    if (!pattern)
+    {
+	FcConfigMessage (parse, FcSevereError, "out of memory");
+	return;
+    }
+	
+    while ((vstack = FcVStackPop (parse)))
+    {
+	switch (vstack->tag) {
+	case FcVStackPattern:
+	    if (!FcPatternAppend (pattern, vstack->u.pattern))
+	    {
+		FcConfigMessage (parse, FcSevereError, "out of memory");
+		return;
+	    }
+	    break;
+	default:
+	    FcConfigMessage (parse, FcSevereWarning, "unknown pattern element");
+	    break;
+	}
+	FcVStackDestroy (vstack);
+    }
+
+    FcVStackPushPattern (parse, pattern);
 }
 
 static void
@@ -1813,6 +1969,12 @@ FcEndElement(void *userData, const XML_Char *name)
 	break;
     case FcElementGlob:
 	FcParseString (parse, FcVStackGlob);
+	break;
+    case FcElementPattern:
+	FcParsePattern (parse);
+	break;
+    case FcElementPatelt:
+	FcParsePatelt (parse);
 	break;
     case FcElementName:
 	FcParseString (parse, FcVStackField);

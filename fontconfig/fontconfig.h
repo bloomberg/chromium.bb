@@ -89,6 +89,10 @@ typedef int		FcBool;
 #define FC_CHARSET	    "charset"		/* CharSet */
 #define FC_LANG		    "lang"		/* String RFC 3066 langs */
 #define FC_FONTVERSION	    "fontversion"	/* Int from 'head' table */
+#define FC_FULLNAME	    "fullname"		/* String */
+#define FC_FAMILYLANG	    "familylang"	/* String RFC 3066 langs */
+#define FC_STYLELANG	    "stylelang"		/* String RFC 3066 langs */
+#define FC_FULLNAMELANG	    "fullnamelang"	/* String RFC 3066 langs */
 
 #define FC_DIR_CACHE_FILE	    "fonts.cache-"FC_CACHE_VERSION
 #define FC_USER_CACHE_FILE	    ".fonts.cache-"FC_CACHE_VERSION
@@ -682,6 +686,9 @@ FcPatternGet (const FcPattern *p, const char *object, int id, FcValue *v);
     
 FcBool
 FcPatternDel (FcPattern *p, const char *object);
+
+FcBool
+FcPatternRemove (FcPattern *p, const char *object, int id);
 
 FcBool
 FcPatternAddInteger (FcPattern *p, const char *object, int i);

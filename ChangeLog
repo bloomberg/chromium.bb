@@ -1,3 +1,50 @@
+2004-12-04  Keith Packard  <keithp@keithp.com>
+
+	* Makefile.am:
+	Move existing fonts.conf to fonts.conf.bak
+	
+	* configure.in:
+	Add detection of iconv
+	
+	* doc/fcpattern.fncs:
+	* doc/fontconfig-devel.sgml:
+	* doc/fontconfig-user.sgml:
+	* fonts.dtd:
+	Document new selectfont elements
+	
+	* fc-lang/nb.orth:
+	Switch to UTF-8 in comment
+	
+	* fontconfig/fontconfig.h:
+	* src/fcname.c:
+	Add fullname, and family/style/fullname language entries
+	
+	* src/fccache.c: (FcCacheFontSetAdd):
+	* src/fcdir.c: (FcFileScanConfig):
+	Respect selectfont/*/glob
+	
+	* src/fcint.h:
+	* src/fccfg.c: (FcConfigCreate), (FcConfigDestroy),
+	(FcConfigCompareValue), (FcConfigPatternsAdd),
+	(FcConfigPatternsMatch), (FcConfigAcceptFont):
+	* src/fcxml.c: (FcElementMap), (FcVStackDestroy),
+	(FcVStackPushPattern), (FcPopExpr), (FcParseAcceptRejectFont),
+	(FcPopValue), (FcParsePatelt), (FcParsePattern), (FcEndElement):
+	Add support for selectfont
+	
+	* src/fcfreetype.c: (FcSfntNameTranscode), (FcSfntNameLanguage),
+	(FcStringInPatternElement), (FcFreeTypeQuery):
+	Add multi-lingual family/style/fullname support
+	
+	* src/fclist.c: (FcListPatternMatchAny):
+	Expose FcListPatternMatchAny (which selectfont/*/pattern uses)
+	
+	* src/fcpat.c: (FcPatternRemove), (FcPatternAppend),
+	(FcObjectStaticName):
+	Add new FcPatternRemove/FcPatternAppend.
+	FcObjectStaticName stores computed pattern element names which
+	are required to be static.
+	
 2004-09-09 "NAKAMURA Ken'ichi" <nakamura@sbp.fp.a.u-tokyo.ac.jp>
 
 	reviewed by: keithp

@@ -127,11 +127,20 @@ convenience for the applications rendering mechanism.
     <programlisting>
                  Property Definitions
 
-    Property    CPP Symbol      Type    Description
+    Property       CPP Symbol           Type    Description
     ----------------------------------------------------
-    family         FC_FAMILY            String  Font family name
+    family         FC_FAMILY            String  Font family names
+    familylang     FC_FAMILYLANG        String  Language cooresponding to
+                                                each family name
     style          FC_STYLE             String  Font style. Overrides weight
                                                 and slant
+    stylelang      FC_STYLELANG         String  Language cooresponding to
+                                                each style name
+    fullname       FC_FULLNAME          String  Font face full name where
+                                                different from family and
+						family + style
+    fullnamelang   FC_FULLNAMELANG      String  Language cooresponding to
+                                                each fullname
     slant          FC_SLANT             Int     Italic, oblique or roman
     weight         FC_WEIGHT            Int     Light, medium, demibold,
                                                 bold or black

@@ -91,8 +91,12 @@ convenience for the applications rendering mechanism.
     <programlisting>
   Property        Type    Description
   --------------------------------------------------------------
-  family          String  Font family name
+  family          String  Font family names
+  familylang      String  Languages cooresponding to each family
   style           String  Font style. Overrides weight and slant
+  stylelang       String  Languages cooresponding to each style
+  fullname        String  Font full names (often includes style)
+  fullnamelang    String  Languages cooresponding to each fullname
   slant           Int     Italic, oblique or roman
   weight          Int     Light, medium, demibold, bold or black
   size            Double  Point size
@@ -283,6 +287,43 @@ The <sgmltag>rescan</> element holds an <sgmltag>int</> element which indicates 
 interval between automatic checks for font configuration changes.
 Fontconfig will validate all of the configuration files and directories and
 automatically rebuild the internal datastructures when this interval passes.
+  </para></refsect2>
+  <refsect2><title><sgmltag>selectfont</></title><para>
+This element is used to black/white list fonts from being listed or matched
+against.  It holds acceptfont and rejectfont elements.
+  </para></refsect2>
+  <refsect2><title><sgmltag>acceptfont</></title><para>
+Fonts matched by an acceptfont element are "whitelisted"; such fonts are
+explicitly included in the set of fonts used to resolve list and match
+requests; including them in this list protects them from being "blacklisted"
+by a rejectfont element.  Acceptfont elements include glob and pattern
+elements which are used to match fonts.
+  </para></refsect2>
+  <refsect2><title><sgmltag>rejectfont</></title><para>
+Fonts matched by an rejectfont element are "blacklisted"; such fonts are
+excluded from the set of fonts used to resolve list and match requests as if
+they didn't exist in the system.  Rejectfont elements include glob and
+pattern elements which are used to match fonts.
+  </para></refsect2>
+  <refsect2><title><sgmltag>glob</></title><para>
+Glob elements hold shell-style filename matching patterns (including ? and
+*) which match fonts based on their complete pathnames.  This can be used to
+exclude a set of directories (/usr/share/fonts/uglyfont*), or particular
+font file types (*.pcf.gz), but the latter mechanism relies rather heavily
+on filenaming conventions which can't be relied upon.
+  </para></refsect2>
+  <refsect2><title><sgmltag>pattern</></title><para>
+Pattern elements perform list-style matching on incoming fonts; that is,
+they hold a list of elements and associated values.  If all of those
+elements have a matching value, then the pattern matches the font.  This can
+be used to select fonts based on attributes of the font (scalable, bold,
+etc), which is a more reliable mechanism than using file extensions.
+Pattern elements include patelt elements.
+  <refsect2><title><sgmltag>patelt name="property"</></title><para>
+Patelt elements hold a single pattern element and list of values.  They must
+have a 'name' attribute which indicates the pattern element name.  Patelt
+elements include int, double, string, matrix, bool, charset and const
+elements.
   </para></refsect2>
   <refsect2><title><sgmltag>match target="pattern"</></title><para>
 This element holds first a (possibly empty) list of <sgmltag>test</> elements and then

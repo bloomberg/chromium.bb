@@ -850,6 +850,31 @@ FcPatternDel (FcPattern *p, const char *object)
 }
 
 FcBool
+FcPatternRemove (FcPattern *p, const char *object, int id)
+{
+    FcPatternElt   *e;
+    FcValueList    **prev, *l;
+
+    e = FcPatternFindElt (p, object);
+    if (!e)
+	return FcFalse;
+    for (prev = &e->values; (l = *prev); prev = &l->next)
+    {
+	if (!id)
+	{
+	    *prev = l->next;
+	    l->next = 0;
+	    FcValueListDestroy (l);
+	    if (!e->values)
+		FcPatternDel (p, object);
+	    return FcTrue;
+	}
+	id--;
+    }
+    return FcFalse;
+}
+
+FcBool
 FcPatternAddInteger (FcPattern *p, const char *object, int i)
 {
     FcValue	v;
@@ -1138,4 +1163,52 @@ FcPatternBuild (FcPattern *orig, ...)
     FcPatternVapBuild (orig, orig, va);
     va_end (va);
     return orig;
+}
+
+/*
+ * Add all of the elements in 's' to 'p'
+ */
+FcBool
+FcPatternAppend (FcPattern *p, FcPattern *s)
+{
+    int		    i;
+    FcPatternElt    *e;
+    FcValueList	    *v;
+    
+    for (i = 0; i < s->num; i++)
+    {
+	e = &s->elts[i];
+	for (v = e->values; v; v = v->next)
+	{
+	    if (!FcPatternAddWithBinding (p, e->object,
+					  v->value, v->binding, FcTrue))
+		return FcFalse;
+	}
+    }
+    return FcTrue;
+}
+
+const char *
+FcObjectStaticName (const char *name)
+{
+#define OBJECT_HASH_SIZE    31
+    static struct objectBucket {
+	struct objectBucket	*next;
+	FcChar32		hash;
+    } *buckets[OBJECT_HASH_SIZE];
+    FcChar32		hash = FcStringHash ((const FcChar8 *) name);
+    struct objectBucket	**p;
+    struct objectBucket	*b;
+
+    for (p = &buckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
+	if (b->hash == hash && !strcmp (name, (char *) (b + 1)))
+	    return (char *) (b + 1);
+    b = malloc (sizeof (struct objectBucket) + strlen (name) + 1);
+    if (!b)
+	return NULL;
+    b->next = 0;
+    b->hash = hash;
+    strcpy ((char *) (b + 1), name);
+    *p = b;
+    return (char *) (b + 1);
 }

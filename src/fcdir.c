@@ -141,7 +141,7 @@ FcFileScanConfig (FcFontSet	*set,
 	/*
 	 * Add the font
 	 */
-	if (font)
+	if (font && (!config || FcConfigAcceptFont (config, font)))
 	{
 	    if (!FcFontSetAdd (set, font))
 	    {

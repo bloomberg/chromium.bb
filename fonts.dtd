@@ -3,6 +3,7 @@
 		      cache | 
 		      include | 
 		      config |
+		      selectfont |
 		      match | 
 		      alias)* >
 
@@ -80,6 +81,24 @@
  -->
 <!ELEMENT rescan (int)>
 
+<!--
+    Edit list of available fonts at startup/reload time
+ -->
+<!ELEMENT selectfont (rejectfont | acceptfont)* >
+
+<!ELEMENT rejectfont (glob | pattern)*>
+
+<!ELEMENT acceptfont (glob | pattern)*>
+
+<!ELEMENT glob (#PCDATA)>
+
+<!ELEMENT pattern (patelt)*>
+
+<!ELEMENT patelt (constant)*>
+<!ATTLIST patelt
+	  name CDATA	#REQUIRED>
+
+<!ELEMENT constant (int|double|string|matrix|bool|charset|const)>
 
 <!ELEMENT alias (family*, prefer?, accept?, default?)>
 <!ELEMENT prefer (family)*>

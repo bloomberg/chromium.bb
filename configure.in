@@ -91,7 +91,7 @@ dnl ==========================================================================
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
-AC_CHECK_HEADERS([fcntl.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([fcntl.h stdlib.h string.h unistd.h iconv.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -99,7 +99,7 @@ AC_TYPE_PID_T
 
 # Checks for library functions.
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([geteuid getuid link memmove memset mkstemp strchr strrchr strtol getopt getopt_long])
+AC_CHECK_FUNCS([geteuid getuid link memmove memset mkstemp strchr strrchr strtol getopt getopt_long iconv])
 
 #
 # Checks for FreeType
@@ -324,7 +324,7 @@ esac
 
 AC_SUBST(FC_FONTPATH)
 
-FC_FONTDATE=`date`
+FC_FONTDATE=`LC_ALL=C date`
 
 AC_SUBST(FC_FONTDATE)
 

@@ -297,7 +297,7 @@ FcCacheFontSetAdd (FcFontSet	    *set,
 	    if (FcDebug () & FC_DBG_CACHEV)
 		printf (" dir cache file \"%s\"\n", file);
 	    ret = FcPatternAddString (font, FC_FILE, path);
-	    if (ret)
+	    if (ret && (!config || FcConfigAcceptFont (config, font)))
 	    {
 		frozen = FcPatternFreeze (font);
 		ret = (frozen != 0);

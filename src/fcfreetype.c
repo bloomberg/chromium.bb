@@ -104,54 +104,639 @@ FcFreeTypeIsExclusiveLang (const FcChar8  *lang)
     return FcFalse;
 }
 
-#define FC_NAME_PRIO_LANG	    0x0f00
-#define FC_NAME_PRIO_LANG_ENGLISH   0x0200
-#define FC_NAME_PRIO_LANG_LATIN	    0x0100
-#define FC_NAME_PRIO_LANG_NONE	    0x0000
+typedef struct {
+    FT_UShort	platform_id;
+    FT_UShort	encoding_id;
+    char	*fromcode;
+} FcFtEncoding;
 
-#define FC_NAME_PRIO_ENC	    0x00f0
-#define FC_NAME_PRIO_ENC_UNICODE    0x0010
-#define FC_NAME_PRIO_ENC_NONE	    0x0000
+#define TT_ENCODING_DONT_CARE	0xffff
+#define FC_ENCODING_MAC_ROMAN	"MACINTOSH"
 
-#define FC_NAME_PRIO_NAME	    0x000f
-#define FC_NAME_PRIO_NAME_FAMILY    0x0002
-#define FC_NAME_PRIO_NAME_PS	    0x0001
-#define FC_NAME_PRIO_NAME_NONE	    0x0000
+static const FcFtEncoding   fcFtEncoding[] = {
+ {  TT_PLATFORM_APPLE_UNICODE,	TT_ENCODING_DONT_CARE,	"UCS-2BE" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_ID_ROMAN,	"MACINTOSH" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_ID_JAPANESE,	"SJIS" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_ID_UNICODE_CS,	"UTF-16BE" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_ID_SJIS,		"SJIS-WIN" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_ID_GB2312,	"GB3212" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_ID_BIG_5,		"BIG-5" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_ID_WANSUNG,	"Wansung" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_ID_JOHAB,		"Johap" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_ID_UCS_4,		"UCS4" },
+ {  TT_PLATFORM_ISO,		TT_ISO_ID_7BIT_ASCII,	"ASCII" },
+ {  TT_PLATFORM_ISO,		TT_ISO_ID_10646,	"UCS-2BE" },
+ {  TT_PLATFORM_ISO,		TT_ISO_ID_8859_1,	"ISO-8859-1" },
+};
 
-static FcBool
-FcUcs4IsLatin (FcChar32 ucs4)
-{
-    FcChar32	page = ucs4 >> 8;
+#define NUM_FC_FT_ENCODING  (sizeof (fcFtEncoding) / sizeof (fcFtEncoding[0]))
+
+typedef struct {
+    FT_UShort	platform_id;
+    FT_UShort	language_id;
+    char	*lang;
+} FcFtLanguage;
+
+#define TT_LANGUAGE_DONT_CARE	0xffff
+
+static const FcFtLanguage   fcFtLanguage[] = {
+ {  TT_PLATFORM_APPLE_UNICODE,	TT_LANGUAGE_DONT_CARE,		    0 },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ENGLISH,		    "en" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_FRENCH,		    "fr" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_GERMAN,		    "de" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ITALIAN,		    "it" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_DUTCH,		    "nl" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SWEDISH,		    "sv" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SPANISH,		    "es" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_DANISH,		    "da" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_PORTUGUESE,	    "pt" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_NORWEGIAN,	    "no" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_HEBREW,		    "he" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_JAPANESE,		    "ja" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ARABIC,		    "ar" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_FINNISH,		    "fi" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_GREEK,		    "el" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ICELANDIC,	    "is" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MALTESE,		    "mt" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_TURKISH,		    "tr" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_CROATIAN,		    "hr" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_CHINESE_TRADITIONAL,  "zh-tw" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_URDU,		    "ur" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_HINDI,		    "hi" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_THAI,		    "th" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_KOREAN,		    "ko" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_LITHUANIAN,	    "lt" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_POLISH,		    "pl" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_HUNGARIAN,	    "hu" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ESTONIAN,		    "et" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_LETTISH,		    "lv" },
+/* {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SAAMISK, ??? */
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_FAEROESE,		    "fo" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_FARSI,		    "fa" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_RUSSIAN,		    "ru" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_CHINESE_SIMPLIFIED,   "zh-cn" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_FLEMISH,		    "nl" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_IRISH,		    "ga" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ALBANIAN,		    "sq" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ROMANIAN,		    "ro" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_CZECH,		    "cs" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SLOVAK,		    "sk" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SLOVENIAN,	    "sl" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_YIDDISH,		    "yi" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SERBIAN,		    "sr" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MACEDONIAN,	    "mk" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_BULGARIAN,	    "bg" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_UKRAINIAN,	    "uk" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_BYELORUSSIAN,	    "be" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_UZBEK,		    "uz" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_KAZAKH,		    "kk" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_AZERBAIJANI,	    "az" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_AZERBAIJANI_CYRILLIC_SCRIPT, "az" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_AZERBAIJANI_ARABIC_SCRIPT,    "ar" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ARMENIAN,		    "hy" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_GEORGIAN,		    "ka" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MOLDAVIAN,	    "mo" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_KIRGHIZ,		    "ky" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_TAJIKI,		    "tg" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_TURKMEN,		    "tk" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MONGOLIAN,	    "mo" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MONGOLIAN_MONGOLIAN_SCRIPT,"mo" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MONGOLIAN_CYRILLIC_SCRIPT, "mo" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_PASHTO,		    "ps" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_KURDISH,		    "ku" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_KASHMIRI,		    "ks" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SINDHI,		    "sd" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_TIBETAN,		    "bo" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_NEPALI,		    "ne" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SANSKRIT,		    "sa" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MARATHI,		    "mr" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_BENGALI,		    "bn" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ASSAMESE,		    "as" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_GUJARATI,		    "gu" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_PUNJABI,		    "pa" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ORIYA,		    "or" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MALAYALAM,	    "ml" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_KANNADA,		    "kn" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_TAMIL,		    "ta" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_TELUGU,		    "te" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SINHALESE,	    "si" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_BURMESE,		    "my" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_KHMER,		    "km" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_LAO,		    "lo" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_VIETNAMESE,	    "vi" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_INDONESIAN,	    "id" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_TAGALOG,		    "tl" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MALAY_ROMAN_SCRIPT,   "ms" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MALAY_ARABIC_SCRIPT,  "ms" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_AMHARIC,		    "am" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_TIGRINYA,		    "ti" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_GALLA,		    "om" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SOMALI,		    "so" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SWAHILI,		    "sw" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_RUANDA,		    "rw" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_RUNDI,		    "rn" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_CHEWA,		    "ny" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MALAGASY,		    "mg" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ESPERANTO,	    "eo" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_WELSH,		    "cy" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_BASQUE,		    "eu" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_CATALAN,		    "ca" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_LATIN,		    "la" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_QUECHUA,		    "qu" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_GUARANI,		    "gn" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_AYMARA,		    "ay" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_TATAR,		    "tt" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_UIGHUR,		    "ug" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_DZONGKHA,		    "dz" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_JAVANESE,		    "jw" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SUNDANESE,	    "su" },
     
-    if (page <= 2)
-	return FcTrue;
-    if (page == 0x1e)
-	return FcTrue;
-    if (0x20 <= page && page <= 0x23)
-	return FcTrue;
-    if (page == 0xfb)
-	return FcTrue;
-    /* halfwidth forms, don't include kana or white parens */
-    if (0xff01 <= ucs4 && ucs4 <= 0xff5e)
-	return FcTrue;
-    return FcFalse;
+#if 0  /* these seem to be errors that have been dropped */
+
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SCOTTISH_GAELIC },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_IRISH_GAELIC },
+
+#endif
+    
+  /* The following codes are new as of 2000-03-10 */
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_GALICIAN,		    "gl" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_AFRIKAANS,	    "af" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_BRETON,		    "br" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_INUKTITUT,	    "iu" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_SCOTTISH_GAELIC,	    "gd" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_MANX_GAELIC,	    "gv" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_IRISH_GAELIC,	    "ga" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_TONGAN,		    "to" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_GREEK_POLYTONIC,	    "el" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_GREELANDIC,	    "ik" },
+ {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_AZERBAIJANI_ROMAN_SCRIPT,"az" },
+
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_SAUDI_ARABIA,	"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_IRAQ,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_EGYPT,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_LIBYA,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_ALGERIA,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_MOROCCO,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_TUNISIA,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_OMAN,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_YEMEN,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_SYRIA,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_JORDAN,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_LEBANON,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_KUWAIT,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_UAE,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_BAHRAIN,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_QATAR,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_BULGARIAN_BULGARIA,	"bg" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CATALAN_SPAIN,		"ca" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CHINESE_TAIWAN,		"zh-tw" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CHINESE_PRC,		"zh-cn" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CHINESE_HONG_KONG,		"zh-hk" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CHINESE_SINGAPORE,		"zh-sg" },
+
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CHINESE_MACAU,		"zh-mo" },
+
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CZECH_CZECH_REPUBLIC,	"cs" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_DANISH_DENMARK,		"da" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_GERMAN_GERMANY,		"de" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_GERMAN_SWITZERLAND,	"de" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_GERMAN_AUSTRIA,		"de" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_GERMAN_LUXEMBOURG,		"de" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_GERMAN_LIECHTENSTEI,	"de" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_GREEK_GREECE,		"el" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_UNITED_STATES,	"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_UNITED_KINGDOM,	"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_AUSTRALIA,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_CANADA,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_NEW_ZEALAND,	"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_IRELAND,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_SOUTH_AFRICA,	"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_JAMAICA,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_CARIBBEAN,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_BELIZE,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_TRINIDAD,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_ZIMBABWE,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_PHILIPPINES,	"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_SPAIN_TRADITIONAL_SORT,"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_MEXICO,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_SPAIN_INTERNATIONAL_SORT,"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_GUATEMALA,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_COSTA_RICA,	"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_PANAMA,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_DOMINICAN_REPUBLIC,"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_VENEZUELA,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_COLOMBIA,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_PERU,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_ARGENTINA,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_ECUADOR,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_CHILE,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_URUGUAY,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_PARAGUAY,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_BOLIVIA,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_EL_SALVADOR,	"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_HONDURAS,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_NICARAGUA,		"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_PUERTO_RICO,	"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FINNISH_FINLAND,		"fi" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_FRANCE,		"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_BELGIUM,		"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_CANADA,		"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_SWITZERLAND,	"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_LUXEMBOURG,		"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_MONACO,		"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_HEBREW_ISRAEL,		"he" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_HUNGARIAN_HUNGARY,		"hu" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ICELANDIC_ICELAND,		"is" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ITALIAN_ITALY,		"it" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ITALIAN_SWITZERLAND,	"it" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_JAPANESE_JAPAN,		"ja" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_KOREAN_EXTENDED_WANSUNG_KOREA,"ko" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_KOREAN_JOHAB_KOREA,	"ko" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_DUTCH_NETHERLANDS,		"nl" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_DUTCH_BELGIUM,		"nl" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_NORWEGIAN_NORWAY_BOKMAL,	"no" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_NORWEGIAN_NORWAY_NYNORSK,	"nn" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_POLISH_POLAND,		"pl" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_PORTUGUESE_BRAZIL,		"pt" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_PORTUGUESE_PORTUGAL,	"pt" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_RHAETO_ROMANIC_SWITZERLAND,"rm" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ROMANIAN_ROMANIA,		"ro" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MOLDAVIAN_MOLDAVIA,	"mo" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_RUSSIAN_RUSSIA,		"ru" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_RUSSIAN_MOLDAVIA,		"ru" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CROATIAN_CROATIA,		"hr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SERBIAN_SERBIA_LATIN,	"sr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SERBIAN_SERBIA_CYRILLIC,	"sr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SLOVAK_SLOVAKIA,		"sk" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ALBANIAN_ALBANIA,		"sq" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SWEDISH_SWEDEN,		"sv" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SWEDISH_FINLAND,		"sv" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_THAI_THAILAND,		"th" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TURKISH_TURKEY,		"tr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_URDU_PAKISTAN,		"ur" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_INDONESIAN_INDONESIA,	"id" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_UKRAINIAN_UKRAINE,		"uk" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_BELARUSIAN_BELARUS,	"be" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SLOVENE_SLOVENIA,		"sl" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ESTONIAN_ESTONIA,		"et" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_LATVIAN_LATVIA,		"lv" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_LITHUANIAN_LITHUANIA,	"lt" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CLASSIC_LITHUANIAN_LITHUANIA,"lt" },
+
+#ifdef TT_MS_LANGID_MAORI_NEW_ZELAND
+    /* this seems to be an error that have been dropped */
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MAORI_NEW_ZEALAND,		"mi" },
+#endif
+
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FARSI_IRAN,		"fa" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_VIETNAMESE_VIET_NAM,	"vi" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARMENIAN_ARMENIA,		"hy" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_AZERI_AZERBAIJAN_LATIN,	"az" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_AZERI_AZERBAIJAN_CYRILLIC,	"az" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_BASQUE_SPAIN,		"eu" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SORBIAN_GERMANY,		"wen" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MACEDONIAN_MACEDONIA,	"mk" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SUTU_SOUTH_AFRICA,		"st" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TSONGA_SOUTH_AFRICA,	"ts" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TSWANA_SOUTH_AFRICA,	"tn" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_VENDA_SOUTH_AFRICA,	"ven" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_XHOSA_SOUTH_AFRICA,	"xh" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ZULU_SOUTH_AFRICA,		"zu" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_AFRIKAANS_SOUTH_AFRICA,	"af" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_GEORGIAN_GEORGIA,		"ka" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FAEROESE_FAEROE_ISLANDS,	"fo" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_HINDI_INDIA,		"hi" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MALTESE_MALTA,		"mt" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SAAMI_LAPONIA,		"se" },
+
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SCOTTISH_GAELIC_UNITED_KINGDOM,"gd" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_IRISH_GAELIC_IRELAND,	"ga" },
+
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MALAY_MALAYSIA,		"ms" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MALAY_BRUNEI_DARUSSALAM,	"ms" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_KAZAK_KAZAKSTAN,		"kk" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SWAHILI_KENYA,		"sw" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_UZBEK_UZBEKISTAN_LATIN,	"uz" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_UZBEK_UZBEKISTAN_CYRILLIC,	"uz" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TATAR_TATARSTAN,		"tt" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_BENGALI_INDIA,		"bn" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_PUNJABI_INDIA,		"pa" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_GUJARATI_INDIA,		"gu" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ORIYA_INDIA,		"or" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TAMIL_INDIA,		"ta" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TELUGU_INDIA,		"te" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_KANNADA_INDIA,		"kn" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MALAYALAM_INDIA,		"ml" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ASSAMESE_INDIA,		"as" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MARATHI_INDIA,		"mr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SANSKRIT_INDIA,		"sa" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_KONKANI_INDIA,		"kok" },
+
+  /* new as of 2001-01-01 */
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARABIC_GENERAL,		"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CHINESE_GENERAL,		"zh" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_GENERAL,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_WEST_INDIES,	"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_REUNION,		"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_CONGO,		"fr" },
+
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_SENEGAL,		"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_CAMEROON,		"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_COTE_D_IVOIRE,	"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_MALI,		"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_BOSNIAN_BOSNIA_HERZEGOVINA,"bs" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_URDU_INDIA,		"ur" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TAJIK_TAJIKISTAN,		"tg" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_YIDDISH_GERMANY,		"yi" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_KIRGHIZ_KIRGHIZSTAN,	"ky" },
+
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TURKMEN_TURKMENISTAN,	"tk" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MONGOLIAN_MONGOLIA,	"mn" },
+
+  /* the following seems to be inconsistent;
+     here is the current "official" way: */
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TIBETAN_BHUTAN,		"bo" },
+  /* and here is what is used by Passport SDK */
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TIBETAN_CHINA,		"bo" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_DZONGHKA_BHUTAN,		"dz" },
+  /* end of inconsistency */
+
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_WELSH_WALES,		"cy" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_KHMER_CAMBODIA,		"km" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_LAO_LAOS,			"lo" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_BURMESE_MYANMAR,		"my" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_GALICIAN_SPAIN,		"gl" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MANIPURI_INDIA,		"mni" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SINDHI_INDIA,		"sd" },
+  /* the following one is only encountered in Microsoft RTF specification */
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_KASHMIRI_PAKISTAN,		"ks" },
+  /* the following one is not in the Passport list, looks like an omission */
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_KASHMIRI_INDIA,		"ks" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_NEPALI_NEPAL,		"ne" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_NEPALI_INDIA,		"ne" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRISIAN_NETHERLANDS,	"fy" },
+
+  /* new as of 2001-03-01 (from Office Xp) */
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_HONG_KONG,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_INDIA,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_MALAYSIA,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ENGLISH_SINGAPORE,		"en" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SYRIAC_SYRIA,		"syr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SINHALESE_SRI_LANKA,	"si" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CHEROKEE_UNITED_STATES,	"chr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_INUKTITUT_CANADA,		"iu" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_AMHARIC_ETHIOPIA,		"am" },
+#if 0
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TAMAZIGHT_MOROCCO },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TAMAZIGHT_MOROCCO_LATIN },
+#endif
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_PASHTO_AFGHANISTAN,	"ps" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FILIPINO_PHILIPPINES,	"phi" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_DHIVEHI_MALDIVES,		"div" },
+    
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_OROMO_ETHIOPIA,		"om" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TIGRIGNA_ETHIOPIA,		"ti" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_TIGRIGNA_ERYTHREA,		"ti" },
+
+  /* New additions from Windows Xp/Passport SDK 2001-11-10. */
+
+  /* don't ask what this one means... It is commented out currently. */
+#if 0
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_GREEK_GREECE2 },
+#endif
+
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_UNITED_STATES,	"es" },
+  /* The following two IDs blatantly violate MS specs by using a */
+  /* sublanguage >,.                                         */
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SPANISH_LATIN_AMERICA,	"es" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_NORTH_AFRICA,	"fr" },
+
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_MOROCCO,		"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FRENCH_HAITI,		"fr" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_BENGALI_BANGLADESH,	"bn" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_PUNJABI_ARABIC_PAKISTAN,	"ar" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MONGOLIAN_MONGOLIA_MONGOLIAN,"mn" },
+#if 0
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_EDO_NIGERIA },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FULFULDE_NIGERIA },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_IBIBIO_NIGERIA },
+#endif
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_HAUSA_NIGERIA,		"ha" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_YORUBA_NIGERIA,		"yo" },
+  /* language codes from, to, are (still) unknown. */
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_IGBO_NIGERIA,		"ibo" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_KANURI_NIGERIA,		"kau" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_GUARANI_PARAGUAY,		"gn" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_HAWAIIAN_UNITED_STATES,	"haw" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_LATIN,			"la" },
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_SOMALI_SOMALIA,		"so" },
+#if 0
+  /* Note: Yi does not have a (proper) ISO 639-2 code, since it is mostly */
+  /*       not written (but OTOH the peculiar writing system is worth     */
+  /*       studying).                                                     */
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_YI_CHINA },
+#endif
+ {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_PAPIAMENTU_NETHERLANDS_ANTILLES,"pap" },
+};
+
+#define NUM_FC_FT_LANGUAGE  (sizeof (fcFtLanguage) / sizeof (fcFtLanguage[0]))
+
+typedef struct {
+    FT_UShort	language_id;
+    char	*fromcode;
+} FcMacRomanFake;
+
+static const FcMacRomanFake fcMacRomanFake[] = {
+ {  TT_MS_LANGID_JAPANESE_JAPAN,	"SJIS-WIN" },
+ {  TT_MS_LANGID_ENGLISH_UNITED_STATES,	"ASCII" },
+};
+
+#define NUM_FC_MAC_ROMAN_FAKE	(sizeof (fcMacRomanFake) / sizeof (fcMacRomanFake[0]))
+
+#if HAVE_ICONV && HAVE_ICONV_H
+#define USE_ICONV 1
+#include <iconv.h>
+#endif
+
+static FcChar8 *
+FcSfntNameTranscode (FT_SfntName *sname)
+{
+    int	    i;
+    char    *fromcode;
+#if USE_ICONV
+    iconv_t cd;
+#endif
+    FcChar8 *utf8;
+
+    for (i = 0; i < NUM_FC_FT_ENCODING; i++)
+	if (fcFtEncoding[i].platform_id == sname->platform_id &&
+	    (fcFtEncoding[i].encoding_id == TT_ENCODING_DONT_CARE ||
+	     fcFtEncoding[i].encoding_id == sname->encoding_id))
+	    break;
+    if (i == NUM_FC_FT_ENCODING)
+	return 0;
+    fromcode = fcFtEncoding[i].fromcode;
+
+    /*
+     * "real" Mac language IDs are all less than 150.
+     * Names using one of the MS language IDs are assumed
+     * to use an associated encoding (Yes, this is a kludge)
+     */
+    if (!strcmp (fromcode, FC_ENCODING_MAC_ROMAN) &&
+	sname->language_id >= 0x100)
+    {
+	int	f;
+
+	fromcode = 0;
+	for (f = 0; f < NUM_FC_MAC_ROMAN_FAKE; f++)
+	    if (fcMacRomanFake[f].language_id == sname->language_id)
+	    {
+		fromcode = fcMacRomanFake[f].fromcode;
+		break;
+	    }
+	if (!fromcode)
+	    return 0;
+    }
+#if USE_ICONV
+    cd = iconv_open ("UTF-8", fromcode);
+    if (cd)
+    {
+	size_t	    in_bytes_left = sname->string_len;
+	size_t	    out_bytes_left = sname->string_len * FC_UTF8_MAX_LEN;
+	char	    *inbuf, *outbuf;
+	
+	utf8 = malloc (out_bytes_left + 1);
+	if (!utf8)
+	    return 0;
+	
+	outbuf = (char *) utf8;
+	inbuf = (char *) sname->string;
+	
+	while (in_bytes_left)
+	{
+	    size_t	did = iconv (cd, 
+				 &inbuf, &in_bytes_left,
+				 &outbuf, &out_bytes_left);
+	    if (did == (size_t) (-1))
+	    {
+		free (utf8);
+		return 0;
+	    }
+	}
+	*outbuf = '\0';
+	goto done;
+    }
+#endif
+    if (!strcmp (fromcode, "UCS-2BE") || !strcmp (fromcode, "UTF-16BE"))
+    {
+	FcChar8	    *src = sname->string;
+	int	    src_len = sname->string_len;
+	int	    len;
+	int	    wchar;
+	int	    ilen, olen;
+	FcChar8	    *u8;
+	FcChar32    ucs4;
+	
+	/*
+	 * Convert Utf16 to Utf8
+	 */
+
+	if (!FcUtf16Len (src, FcEndianBig, src_len, &len, &wchar))
+	    return 0;
+
+	/*
+	 * Allocate plenty of space.  Freed below
+	 */
+	utf8 = malloc (len * FC_UTF8_MAX_LEN + 1);
+	if (!utf8)
+	    return 0;
+
+	u8 = utf8;
+
+	while ((ilen = FcUtf16ToUcs4 (src, FcEndianBig, &ucs4, src_len)) > 0)
+	{
+	    src_len -= ilen;
+	    src += ilen;
+	    olen = FcUcs4ToUtf8 (ucs4, u8);
+	    u8 += olen;
+	}
+	*u8 = '\0';
+	goto done;
+    }
+    if (!strcmp (fromcode, "ASCII") || !strcmp (fromcode, "ISO-8859-1"))
+    {
+	FcChar8	    *src = sname->string;
+	int	    src_len = sname->string_len;
+	int	    olen;
+	FcChar8	    *u8;
+	FcChar32    ucs4;
+	
+	/*
+	 * Convert Latin1 to Utf8. Freed below
+	 */
+	utf8 = malloc (src_len * 2 + 1);
+	if (!utf8)
+	    return 0;
+
+	u8 = utf8;
+	while (src_len > 0)
+	{
+	    ucs4 = *src++;
+	    src_len--;
+	    olen = FcUcs4ToUtf8 (ucs4, u8);
+	    u8 += olen;
+	}
+	*u8 = '\0';
+	goto done;
+    }
+    if (!strcmp (fromcode, FC_ENCODING_MAC_ROMAN))
+    {
+	FcChar8		*u8;
+	const FcCharMap	*map = FcFreeTypeGetPrivateMap (ft_encoding_apple_roman);
+	FcChar8		*src = (FcChar8 *) sname->string;
+	int		src_len = sname->string_len;
+	
+	/*
+	 * Convert AppleRoman to Utf8
+	 */
+	if (!map)
+	    return 0;
+
+	utf8 = malloc (sname->string_len * 3 + 1);
+	if (!utf8)
+	    return 0;
+
+	u8 = utf8;
+	while (src_len > 0)
+	{
+	    FcChar32	ucs4 = FcFreeTypePrivateToUcs4 (*src++, map);
+	    int		olen = FcUcs4ToUtf8 (ucs4, u8);
+	    src_len--;
+	    u8 += olen;
+	}
+	*u8 = '\0';
+	goto done;
+    }
+    return 0;
+done:
+    if (FcStrCmpIgnoreBlanksAndCase (utf8, "") == 0)
+    {
+	free (utf8);
+	return 0;
+    }
+    return utf8;
 }
 
-static FcBool
-FcUtf8IsLatin (FcChar8 *str, int len)
+static FcChar8 *
+FcSfntNameLanguage (FT_SfntName *sname)
 {
-    while (len)
-    {
-	FcChar32    ucs4;
-	int	    clen = FcUtf8ToUcs4 (str, &ucs4, len);
-	if (clen <= 0)
-	    return FcFalse;
-	if (!FcUcs4IsLatin (ucs4))
-	    return FcFalse;
-	len -= clen;
-	str += clen;
-    }
-    return FcTrue;
+    int i;
+    for (i = 0; i < NUM_FC_FT_LANGUAGE; i++)
+	if (fcFtLanguage[i].platform_id == sname->platform_id &&
+	    (fcFtLanguage[i].language_id == TT_LANGUAGE_DONT_CARE ||
+	     fcFtLanguage[i].language_id == sname->language_id))
+	    return fcFtLanguage[i].lang;
+    return 0;
 }
 
 /* Order is significant.  For example, some B&H fonts are hinted by
@@ -368,6 +953,20 @@ FcGetPixelSize (FT_Face face, int i)
 #endif
 }
 
+static FcBool
+FcStringInPatternElement (FcPattern *pat, char *elt, FcChar8 *string)
+{
+    int	    e;
+    FcChar8 *old;
+    for (e = 0; FcPatternGetString (pat, elt, e, &old) == FcResultMatch; e++)
+	if (!FcStrCmpIgnoreBlanksAndCase (old, string))
+	{
+	    return FcTrue;
+	    break;
+	}
+    return FcFalse;
+}
+
 FcPattern *
 FcFreeTypeQuery (const FcChar8	*file,
 		 int		id,
@@ -383,8 +982,9 @@ FcFreeTypeQuery (const FcChar8	*file,
     FcCharSet	    *cs;
     FcLangSet	    *ls;
     FT_Library	    ftLibrary;
+#if 0
     FcChar8	    *family = 0;
-    FcChar8	    *style = 0;
+#endif
     const FcChar8   *foundry = 0;
     int		    spacing;
     TT_OS2	    *os2;
@@ -398,11 +998,17 @@ FcFreeTypeQuery (const FcChar8	*file,
     const FcChar8   *exclusiveLang = 0;
     FT_SfntName	    sname;
     FT_UInt    	    snamei, snamec;
-    FcBool	    family_allocated = FcFalse;
-    FcBool	    style_allocated = FcFalse;
-    int		    family_prio = 0;
-    int		    style_prio = 0;
+    
+    int		    nfamily = 0;
+    int		    nfamily_lang = 0;
+    int		    nstyle = 0;
+    int		    nstyle_lang = 0;
+    int		    nfullname = 0;
+    int		    nfullname_lang = 0;
 
+    FcChar8	    *style = 0;
+    int		    st;
+    
     if (FT_Init_FreeType (&ftLibrary))
 	return 0;
     
@@ -440,6 +1046,8 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (os2 && os2->version >= 0x0001 && os2->version != 0xffff)
         foundry = FcVendorFoundry(os2->achVendID);
 
+    if (FcDebug () & FC_DBG_SCANV)
+	printf ("\n");
     /*
      * Grub through the name table looking for family
      * and style names.  FreeType makes quite a hash
@@ -449,225 +1057,60 @@ FcFreeTypeQuery (const FcChar8	*file,
     for (snamei = 0; snamei < snamec; snamei++)
     {
 	FcChar8		*utf8;
-	int		len;
-	int		wchar;
-	FcChar8		*src;
-	int		src_len;
-	FcChar8		*u8;
-	FcChar32	ucs4;
-	int		ilen, olen;
-	int		prio = 0;
-	
-	const FcCharMap	*map;
-	enum {
-	    FcNameEncodingUtf16, 
-	    FcNameEncodingAppleRoman,
-	    FcNameEncodingLatin1 
-	} encoding;
-	
-	
+	FcChar8		*lang;
+	char		*elt = 0, *eltlang = 0;
+	int		*np = 0, *nlangp = 0;
+
 	if (FT_Get_Sfnt_Name (face, snamei, &sname) != 0)
-	    break;
-	
-	/*
-	 * Look for Unicode strings
-	 */
-	switch (sname.platform_id) {
-	case TT_PLATFORM_APPLE_UNICODE:
-	    /*
-	     * All APPLE_UNICODE encodings are Utf16 BE
-	     *
-	     * Because there's no language id for Unicode,
-	     * assume it's English
-	     */
-	    prio |= FC_NAME_PRIO_LANG_ENGLISH;
-	    prio |= FC_NAME_PRIO_ENC_UNICODE;
-	    encoding = FcNameEncodingUtf16;
-	    break;
-	case TT_PLATFORM_MACINTOSH:
-	    switch (sname.encoding_id) {
-	    case TT_MAC_ID_ROMAN:
-		encoding = FcNameEncodingAppleRoman;
-		break;
-	    default:
-		continue;
-	    }
-	    switch (sname.language_id) {
-	    case TT_MAC_LANGID_ENGLISH:
-		prio |= FC_NAME_PRIO_LANG_ENGLISH;
-		break;
-	    default:
-		/*
-		 * Sometimes Microsoft language ids
-		 * end up in the macintosh table.  This
-		 * is often accompanied by data in
-		 * some mystic encoding.  Ignore these names
-		 */
-		if (sname.language_id >= 0x100)
-		    continue;
-		break;
-	    }
-	    break;
-	case TT_PLATFORM_MICROSOFT:
-	    switch (sname.encoding_id) {
-	    case TT_MS_ID_UNICODE_CS:
-		encoding = FcNameEncodingUtf16;
-		prio |= FC_NAME_PRIO_ENC_UNICODE;
-		break;
-	    default:
-		continue;
-	    }
-	    switch (sname.language_id & 0xff) {
-	    case 0x09:
-		prio |= FC_NAME_PRIO_LANG_ENGLISH;
-		break;
-	    default:
-		break;
-	    }
-	    break;
-	case TT_PLATFORM_ISO:
-	    switch (sname.encoding_id) {
-	    case TT_ISO_ID_10646:
-		encoding = FcNameEncodingUtf16;
-		prio |= FC_NAME_PRIO_ENC_UNICODE;
-		break;
-	    case TT_ISO_ID_7BIT_ASCII:
-	    case TT_ISO_ID_8859_1:
-		encoding = FcNameEncodingLatin1;
-		break;
-	    default:
-		continue;
-	    }
-	    break;
-	default:
 	    continue;
-	}
 	
-	/*
-	 * Look for family and style names 
-	 */
+	utf8 = FcSfntNameTranscode (&sname);
+	lang = FcSfntNameLanguage (&sname);
+
+	if (!utf8)
+	    continue;
+	
 	switch (sname.name_id) {
 	case TT_NAME_ID_FONT_FAMILY:
-	    prio |= FC_NAME_PRIO_NAME_FAMILY;
-	    break;
+#if 0	    
 	case TT_NAME_ID_PS_NAME:
-	    prio |= FC_NAME_PRIO_NAME_PS;
-	    break;
-	case TT_NAME_ID_FONT_SUBFAMILY:
-        case TT_NAME_ID_TRADEMARK:
-        case TT_NAME_ID_MANUFACTURER:
-            break;
-	default:
-	    continue;
-	}
-	    
-        src = (FcChar8 *) sname.string;
-        src_len = sname.string_len;
-	
-	switch (encoding) {
-	case FcNameEncodingUtf16:
-	    /*
-	     * Convert Utf16 to Utf8
-	     */
-	    
-	    if (!FcUtf16Len (src, FcEndianBig, src_len, &len, &wchar))
-		continue;
-    
-	    /*
-	     * Allocate plenty of space.  Freed below
-	     */
-	    utf8 = malloc (len * FC_UTF8_MAX_LEN + 1);
-	    if (!utf8)
-		continue;
-		
-	    u8 = utf8;
-	    
-	    while ((ilen = FcUtf16ToUcs4 (src, FcEndianBig, &ucs4, src_len)) > 0)
-	    {
-		src_len -= ilen;
-		src += ilen;
-		olen = FcUcs4ToUtf8 (ucs4, u8);
-		u8 += olen;
-	    }
-	    *u8 = '\0';
-	    break;
-	case FcNameEncodingLatin1:
-	    /*
-	     * Convert Latin1 to Utf8. Freed below
-	     */
-	    utf8 = malloc (src_len * 2 + 1);
-	    if (!utf8)
-		continue;
-
-	    u8 = utf8;
-	    while (src_len > 0)
-	    {
-		ucs4 = *src++;
-		src_len--;
-		olen = FcUcs4ToUtf8 (ucs4, u8);
-		u8 += olen;
-	    }
-	    *u8 = '\0';
-	    break;
-	case FcNameEncodingAppleRoman:
-	    /*
-	     * Convert AppleRoman to Utf8
-	     */
-	    map = FcFreeTypeGetPrivateMap (ft_encoding_apple_roman);
-	    if (!map)
-		continue;
-
-	    /* freed below */
-	    utf8 = malloc (src_len * 3 + 1);
-	    if (!utf8)
-		continue;
-
-	    u8 = utf8;
-	    while (src_len > 0)
-	    {
-		ucs4 = FcFreeTypePrivateToUcs4 (*src++, map);
-		src_len--;
-		olen = FcUcs4ToUtf8 (ucs4, u8);
-		u8 += olen;
-	    }
-	    *u8 = '\0';
-	    break;
-	default:
-	    continue;
-	}
-	if ((prio & FC_NAME_PRIO_LANG) == FC_NAME_PRIO_LANG_NONE)
-	    if (FcUtf8IsLatin (utf8, strlen ((char *) utf8)))
-		prio |= FC_NAME_PRIO_LANG_LATIN;
-			       
-	if (FcDebug () & FC_DBG_SCANV)
-	    printf ("\nfound name (name %d platform %d encoding %d language 0x%x prio 0x%x) %s\n",
+	case TT_NAME_ID_UNIQUE_ID:
+#endif
+	    if (FcDebug () & FC_DBG_SCANV)
+		printf ("found family (n %2d p %d e %d l 0x%04x) %s\n",
 		    sname.name_id, sname.platform_id,
 		    sname.encoding_id, sname.language_id,
-		    prio, utf8);
+		    utf8);
     
-	switch (sname.name_id) {
-	case TT_NAME_ID_FONT_FAMILY:
-	case TT_NAME_ID_PS_NAME:
-	    if (!family || prio > family_prio)
-	    {
-		if (family)
-		    free (family);
-		family = utf8;
-		utf8 = 0;
-		family_allocated = FcTrue;
-		family_prio = prio;
-	    }
+	    elt = FC_FAMILY;
+	    eltlang = FC_FAMILYLANG;
+	    np = &nfamily;
+	    nlangp = &nfamily_lang;
+	    break;
+	case TT_NAME_ID_FULL_NAME:
+	case TT_NAME_ID_MAC_FULL_NAME:
+	    if (FcDebug () & FC_DBG_SCANV)
+		printf ("found full   (n %2d p %d e %d l 0x%04x) %s\n",
+		    sname.name_id, sname.platform_id,
+		    sname.encoding_id, sname.language_id,
+		    utf8);
+    
+	    elt = FC_FULLNAME;
+	    eltlang = FC_FULLNAMELANG;
+	    np = &nfullname;
+	    nlangp = &nfullname_lang;
 	    break;
 	case TT_NAME_ID_FONT_SUBFAMILY:
-	    if (!style || prio > style_prio)
-	    {
-		if (style)
-		    free (style);
-		style = utf8;
-		utf8 = 0;
-		style_allocated = FcTrue;
-		style_prio = prio;
-	    }
+	    if (FcDebug () & FC_DBG_SCANV)
+		printf ("found style  (n %2d p %d e %d l 0x%04x) %s\n",
+		    sname.name_id, sname.platform_id,
+		    sname.encoding_id, sname.language_id,
+		    utf8);
+    
+	    elt = FC_STYLE;
+	    eltlang = FC_STYLELANG;
+	    np = &nstyle;
+	    nlangp = &nstyle_lang;
 	    break;
         case TT_NAME_ID_TRADEMARK:
         case TT_NAME_ID_MANUFACTURER:
@@ -676,19 +1119,62 @@ FcFreeTypeQuery (const FcChar8	*file,
                 foundry = FcNoticeFoundry((FT_String *) utf8);
             break;
 	}
-	if (utf8)
+	if (elt)
+	{
+	    if (FcStringInPatternElement (pat, elt, utf8))
+	    {
+		free (utf8);
+		continue;
+	    }
+
+	    /* add new element */
+	    if (!FcPatternAddString (pat, elt, utf8))
+	    {
+		free (utf8);
+		goto bail1;
+	    }
+	    free (utf8);
+	    if (lang)
+	    {
+		/* pad lang list with 'xx' to line up with elt */
+		while (*nlangp < *np)
+		{
+		    if (!FcPatternAddString (pat, eltlang, "xx"))
+			goto bail1;
+		    ++*nlangp;
+		}
+		if (!FcPatternAddString (pat, eltlang, lang))
+		    goto bail1;
+		++*nlangp;
+	    }
+	    ++*np;
+	}
+        else
 	    free (utf8);
     }
     
-    if (!family)
-	family = (FcChar8 *) face->family_name;
+    if (!nfamily && face->family_name)
+    {
+	if (FcDebug () & FC_DBG_SCANV)
+	    printf ("using FreeType family %s", face->family_name);
+	if (!FcPatternAddString (pat, FC_FAMILY, face->family_name))
+	    goto bail1;
+	++nfamily;
+    }
     
-    if (!style)
-	style = (FcChar8 *) face->style_name;
+    if (!nstyle && face->style_name)
+    {
+	if (FcDebug () & FC_DBG_SCANV)
+	    printf ("using FreeType style %s", face->family_name);
+	if (!FcPatternAddString (pat, FC_STYLE, face->style_name))
+	    goto bail1;
+	++nstyle;
+    }
     
-    if (!family)
+    if (!nfamily)
     {
 	FcChar8	*start, *end;
+	FcChar8	*family;
 	
 	start = (FcChar8 *) strrchr ((char *) file, '/');
 	if (start)
@@ -702,19 +1188,79 @@ FcFreeTypeQuery (const FcChar8	*file,
 	family = malloc (end - start + 1);
 	strncpy ((char *) family, (char *) start, end - start);
 	family[end - start] = '\0';
-	family_allocated = FcTrue;
+	if (FcDebug () & FC_DBG_SCANV)
+	    printf ("using filename for family %s", family);
+	if (!FcPatternAddString (pat, FC_FAMILY, family))
+	{
+	    free (family);
+	    goto bail1;
+	}
+	free (family);
+	++nfamily;
     }
 
-    if (FcDebug() & FC_DBG_SCAN)
-	printf ("\n\"%s\" \"%s\"\n", family, style ? style : (FcChar8 *) "<none>");
-
-    if (!FcPatternAddString (pat, FC_FAMILY, family))
-	goto bail1;
-
-    if (style)
+    /*
+     * Walk through FC_FULLNAME entries eliding those in FC_FAMILY
+     * or which are simply a FC_FAMILY and FC_STYLE glued together
+     */
     {
-	if (!FcPatternAddString (pat, FC_STYLE, style))
-	    goto bail1;
+	int	fn, fa, st;
+	FcChar8	*full;
+	FcChar8	*fam;
+	FcChar8	*style;
+
+	for (fn = 0; FcPatternGetString (pat, FC_FULLNAME, fn, &full) == FcResultMatch; fn++)
+	{
+	    FcBool  remove = FcFalse;
+	    /*
+	     * Check each family
+	     */
+	    for (fa = 0; !remove && 
+		 FcPatternGetString (pat, FC_FAMILY, 
+				     fa, &fam) == FcResultMatch;
+		 fa++)
+	    {
+		/*
+		 * for exact match
+		 */
+		if (!FcStrCmpIgnoreBlanksAndCase (full, fam))
+		{
+		    remove = FcTrue;
+		    break;
+		}
+		/*
+		 * If the family is in the full name, check the
+		 * combination of this family with every style
+		 */
+		if (!FcStrContainsIgnoreBlanksAndCase (full, fam))
+		    continue;
+		for (st = 0; !remove && 
+		     FcPatternGetString (pat, FC_STYLE, 
+					 st, &style) == FcResultMatch;
+		     st++)
+		{
+		    FcChar8	*both = FcStrPlus (fam, style);
+
+		    if (both)
+		    {
+			if (FcStrCmpIgnoreBlanksAndCase (full, both) == 0)
+			    remove = FcTrue;
+			free (both);
+		    }
+		}
+	    }
+	    if (remove)
+	    {
+		FcPatternRemove (pat, FC_FULLNAME, fn);
+		FcPatternRemove (pat, FC_FULLNAMELANG, fn);
+		fn--;
+		nfullname--;
+		nfullname_lang--;
+	    }
+	}
+	if (FcDebug () & FC_DBG_SCANV)
+	    for (fn = 0; FcPatternGetString (pat, FC_FULLNAME, fn, &full) == FcResultMatch; fn++)
+		printf ("Saving unique fullname %s\n", full);
     }
 
     if (!FcPatternAddString (pat, FC_FILE, file))
@@ -906,7 +1452,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     /*
      * Look for weight, width and slant names in the style value
      */
-    if (style)
+    for (st = 0; FcPatternGetString (pat, FC_STYLE, st, &style) == FcResultMatch; st++)
     {
 	if (weight == -1)
 	{
@@ -1062,11 +1608,6 @@ FcFreeTypeQuery (const FcChar8	*file,
      * Deallocate family/style values
      */
     
-    if (family_allocated)
-	free (family);
-    if (style_allocated)
-	free (style);
-    
     FT_Done_Face (face);
     FT_Done_FreeType (ftLibrary);
     return pat;
@@ -1075,10 +1616,6 @@ bail2:
     FcCharSetDestroy (cs);
 bail1:
     FcPatternDestroy (pat);
-    if (family_allocated)
-	free (family);
-    if (style_allocated)
-	free (style);
 bail0:
     FT_Done_Face (face);
 bail:
