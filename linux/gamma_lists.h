@@ -32,7 +32,6 @@
 #define __NO_VERSION__
 #include "drmP.h"
 
-#if __HAVE_DMA_WAITLIST
 
 int DRM(waitlist_create)(drm_waitlist_t *bl, int count)
 {
@@ -103,11 +102,6 @@ drm_buf_t *DRM(waitlist_get)(drm_waitlist_t *bl)
 
 	return buf;
 }
-
-#endif /* __HAVE_DMA_WAITLIST */
-
-
-#if __HAVE_DMA_FREELIST
 
 int DRM(freelist_create)(drm_freelist_t *bl, int count)
 {
@@ -220,4 +214,3 @@ drm_buf_t *DRM(freelist_get)(drm_freelist_t *bl, int block)
 	return DRM(freelist_try)(bl);
 }
 
-#endif /* __HAVE_DMA_FREELIST */

@@ -833,20 +833,6 @@ extern void          DRM(dma_immediate_bh)( void *dev );
 #endif
 #endif
 
-				/* Buffer list support (drm_lists.h) */
-#if __HAVE_DMA_WAITLIST
-extern int	     DRM(waitlist_create)(drm_waitlist_t *bl, int count);
-extern int	     DRM(waitlist_destroy)(drm_waitlist_t *bl);
-extern int	     DRM(waitlist_put)(drm_waitlist_t *bl, drm_buf_t *buf);
-extern drm_buf_t     *DRM(waitlist_get)(drm_waitlist_t *bl);
-#endif
-#if __HAVE_DMA_FREELIST
-extern int	     DRM(freelist_create)(drm_freelist_t *bl, int count);
-extern int	     DRM(freelist_destroy)(drm_freelist_t *bl);
-extern int	     DRM(freelist_put)(drm_device_t *dev, drm_freelist_t *bl,
-				       drm_buf_t *buf);
-extern drm_buf_t     *DRM(freelist_get)(drm_freelist_t *bl, int block);
-#endif
 #endif /* __HAVE_DMA */
 
 #if __REALLY_HAVE_AGP
