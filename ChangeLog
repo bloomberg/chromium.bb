@@ -1,3 +1,21 @@
+2003-04-16  Keith Packard <keithp@keithp.com>
+
+	+ tag version 2.1.94
+
+2003-04-16  Keith Packard <keithp@keithp.com>
+
+	+ add BDF property fetching support for foundry 
+	  (from Juliusz Chroboczek)
+	+ add BDF property fetching support for width
+
+2003-04-11  Juliusz Chroboczek <jch@pps.jussieu.fr>
+
+	+ Implemented foundry generation for Type 1 and TrueType
+
+2003-04-11  Gerard Escalante <g2@magestudios.net>
+
+	+ Retrieve information from Type1 FontInfo dictionaries
+
 2003-04-07  Colin Walters <walters@verbum.org>
 
 	+ src/Makefile.am: Fix dummy makefile target names when
