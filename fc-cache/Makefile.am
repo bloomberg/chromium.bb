@@ -39,16 +39,16 @@ if USEDOCBOOK
 
 man_MANS=fc-cache.1
 
-${man_MANS}: ${SGML}										
+${man_MANS}: ${SGML}	
 	$(RM) $@
 	$(DOC2MAN) ${SGML}
 	$(RM) manpage.refs manpage.links
-                                                                                
+
 all-local: $(man_MANS)
-                                                                                
+
 clean-local:
 	$(RM) $(man_MANS)
-                                                                                
+
 else
 all-local:
 clean-local:
