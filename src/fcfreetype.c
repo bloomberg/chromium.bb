@@ -156,7 +156,7 @@ static const struct {
 } FcNoticeFoundries[] = {
     { (const FcChar8*) "Bigelow",	(const FcChar8 *) "b&h" },
     { (const FcChar8*) "Adobe",		(const FcChar8 *) "adobe" },
-    { (const FcChar8*) "Bitstream",	(const FcChar8 *) "bitsteam" },
+    { (const FcChar8*) "Bitstream",	(const FcChar8 *) "bitstream" },
     { (const FcChar8*) "Monotype",	(const FcChar8 *) "monotype" },
     { (const FcChar8*) "Linotype",	(const FcChar8 *) "linotype" },
     { (const FcChar8*) "LINOTYPE-HELL", (const FcChar8 *) "linotype" },
