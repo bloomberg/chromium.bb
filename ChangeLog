@@ -1,3 +1,7 @@
+2003-11-16  Noah Levitt  <nlevitt@columbia.edu>
+
+	* fc-list/fc-list.sgml: Add some example usages.
+
 2003-11-10  Roozbeh Pournader  <roozbeh@sharif.edu>
 
 	* src/fcxml.c:

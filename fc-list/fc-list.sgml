@@ -129,6 +129,29 @@ manpage.1: manpage.sgml
       </varlistentry>
     </variablelist>
   </refsect1>
+
+  <refsect1>
+    <title>EXAMPLES</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>fc-list</term>
+        <listitem><para>Lists all font faces.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>fc-list :lang=hi</term>
+        <listitem><para>Lists font faces that cover Hindi.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>fc-list : family style file spacing </term>
+        <listitem><para>Lists the filename and spacing value for each font
+            face.  <quote>:</quote> is an empty pattern that matches all
+            fonts.</para></listitem>
+      </varlistentry>
+    </variablelist>
+
+  </refsect1>
+
   <refsect1>
     <title>SEE ALSO</title>
 
