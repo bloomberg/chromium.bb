@@ -168,7 +168,7 @@ int drm_addmap(DRM_IOCTL_ARGS)
 	if (request.offset + request.size < request.offset)
 		return EINVAL;
 
-	DRM_ERROR("offset = 0x%08lx, size = 0x%08lx, type = %d\n",
+	DRM_DEBUG("offset = 0x%08lx, size = 0x%08lx, type = %d\n",
 	    request.offset, request.size, request.type);
 
 	/* Check if this is just another version of a kernel-allocated map, and
