@@ -145,8 +145,8 @@ int DRM(addmap)( DRM_IOCTL_ARGS )
 				DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
 				return DRM_ERR(EBUSY);
 			}
-			DRM_UNLOCK();
 			dev->lock.hw_lock = map->handle; /* Pointer to lock */
+			DRM_UNLOCK();
 		}
 		break;
 #if __REALLY_HAVE_AGP

@@ -33,7 +33,6 @@
 
 #include "drmP.h"
 
-/* Requires device lock held */
 drm_file_t *DRM(find_file_by_proc)(drm_device_t *dev, DRM_STRUCTPROC *p)
 {
 #if __FreeBSD_version >= 500021
@@ -44,6 +43,8 @@ drm_file_t *DRM(find_file_by_proc)(drm_device_t *dev, DRM_STRUCTPROC *p)
 	pid_t pid = p->p_pid;
 #endif
 	drm_file_t *priv;
+
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
 
 	TAILQ_FOREACH(priv, &dev->files, link)
 		if (priv->pid == pid && priv->uid == uid)
@@ -65,7 +66,7 @@ int DRM(open_helper)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 	DRM_DEBUG("pid = %d, minor = %d\n", DRM_CURRENTPID, m);
 
 	DRM_LOCK();
-	priv = (drm_file_t *) DRM(find_file_by_proc)(dev, p);
+	priv = DRM(find_file_by_proc)(dev, p);
 	if (priv) {
 		priv->refs++;
 	} else {

@@ -122,6 +122,7 @@
 #define DRM_SPINUNINIT(l)	mtx_destroy(&l)
 #define DRM_SPINLOCK(l)		mtx_lock(l)
 #define DRM_SPINUNLOCK(u)	mtx_unlock(u);
+#define DRM_SPINLOCK_ASSERT(l)	mtx_assert(l, MA_OWNED)
 #define DRM_CURRENTPID		curthread->td_proc->p_pid
 #define DRM_LOCK()		mtx_lock(&dev->dev_lock)
 #define DRM_UNLOCK() 		mtx_unlock(&dev->dev_lock)
@@ -137,6 +138,7 @@
 #define DRM_SPINUNINIT(l)
 #define DRM_SPINLOCK(l)
 #define DRM_SPINUNLOCK(u)
+#define DRM_SPINLOCK_ASSERT(l)
 #define DRM_CURRENTPID		curproc->p_pid
 #define DRM_LOCK()
 #define DRM_UNLOCK()

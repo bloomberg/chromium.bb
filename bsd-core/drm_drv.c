@@ -417,10 +417,12 @@ const char *DRM(find_description)(int vendor, int device) {
 	return NULL;
 }
 
-/* Initialize the DRM on first open.  Called with device's lock held */
+/* Initialize the DRM on first open. */
 static int DRM(setup)( drm_device_t *dev )
 {
 	int i;
+
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
 
 	DRIVER_PRESETUP();
 	dev->buf_use = 0;
@@ -496,15 +498,15 @@ static int DRM(setup)( drm_device_t *dev )
 	return 0;
 }
 
-/* Free resources associated with the DRM on the last close.
- * Called with the device's lock held.
- */
+/* Free resources associated with the DRM on the last close. */
 static int DRM(takedown)( drm_device_t *dev )
 {
 	drm_magic_entry_t *pt, *next;
 	drm_local_map_t *map;
 	drm_map_list_entry_t *list;
 	int i;
+
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
 
 	DRM_DEBUG( "\n" );
 
