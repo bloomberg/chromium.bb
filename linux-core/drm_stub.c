@@ -31,7 +31,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#define __NO_VERSION__
 #include "drmP.h"
 
 #define DRM_STUB_MAXCARDS 16	/* Enough for one machine */

@@ -31,7 +31,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#define __NO_VERSION__
 #include <linux/config.h>
 #include "drmP.h"
 

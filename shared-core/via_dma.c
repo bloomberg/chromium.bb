@@ -10,7 +10,6 @@
  * 
  **************************************************************************/
 
-#define __NO_VERSION__
 #include "via.h"
 #include "drmP.h"
 #include "drm.h"

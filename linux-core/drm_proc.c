@@ -37,7 +37,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#define __NO_VERSION__
 #include "drmP.h"
 
 static int	   DRM(name_info)(char *buf, char **start, off_t offset,

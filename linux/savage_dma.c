@@ -24,7 +24,6 @@
 
 
 /*=========================================================*/
-#define __NO_VERSION__
 #include "savage.h"
 #include "drmP.h"
 #include "savage_drv.h"

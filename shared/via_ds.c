@@ -22,7 +22,6 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#define __NO_VERSION__
 #include <linux/module.h>
 #include <linux/delay.h>
 #include <linux/errno.h>

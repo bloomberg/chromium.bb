@@ -29,7 +29,6 @@
  *    José Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
-#define __NO_VERSION__
 #include "mach64.h"
 #include "drmP.h"
 #include "drm.h"

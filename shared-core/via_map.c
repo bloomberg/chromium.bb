@@ -21,7 +21,6 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#define __NO_VERSION__
 #include "via.h"
 #include "drmP.h"
 #include "via_drv.h"

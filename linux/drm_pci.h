@@ -38,7 +38,6 @@
  */
 
 
-#define __NO_VERSION__
 #include <linux/pci.h>
 #include "drmP.h"
 

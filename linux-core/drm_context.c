@@ -40,7 +40,6 @@
  *		needed by SiS driver's memory management.
  */
 
-#define __NO_VERSION__
 #include "drmP.h"
 
 #ifndef DRIVER_ALTERNATE_CONTEXT
