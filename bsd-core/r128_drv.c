@@ -60,6 +60,9 @@ static void r128_configure(drm_device_t *dev)
 	/* XXX: Postinit inlined into drm_drv
 	dev->postinit = postinit; */
 
+	dev->driver_ioctls = r128_ioctls;
+	dev->max_driver_ioctl = r128_max_ioctl;
+
 	dev->driver_name = DRIVER_NAME;
 	dev->driver_desc = DRIVER_DESC;
 	dev->driver_date = DRIVER_DATE;
