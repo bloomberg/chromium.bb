@@ -506,8 +506,9 @@ static int drm_count_cards(void)
 {
 	int num = 0;
 #if defined(DRIVER_CARD_LIST)
-	u_int *l;
-	u_int device, vendor;
+	int i;
+	drm_pci_list_t *l;
+	u16 device, vendor;
 	struct pci_dev *pdev = NULL;
 #endif
 
@@ -516,14 +517,12 @@ static int drm_count_cards(void)
 #if defined(DRIVER_COUNT_CARDS)
 	num = DRIVER_COUNT_CARDS();
 #elif defined(DRIVER_CARD_LIST)
-	for (l = DRIVER_CARD_LIST; *l; l++) {
+	for (i = 0, l = DRIVER_CARD_LIST; l[i].vendor != 0; i++) {
 		pdev = NULL;
-		device = *l & 0xFFFF;
-		if (device == 0xFFFF)
-			device = PCI_ANY_ID;
-		vendor = (*l >> 16) & 0xFFFF;
-		if (vendor == 0xFFFF)
-			vendor = PCI_ANY_ID;
+		vendor = l[i].vendor;
+		device = l[i].device;
+		if(device == 0xffff) device = PCI_ANY_ID;
+		if(vendor == 0xffff) vendor = PCI_ANY_ID;
 		while ((pdev = pci_find_device(vendor, device, pdev))) {
 			num++;
 		}
@@ -648,7 +647,7 @@ static void __exit drm_cleanup( void )
 #endif
 
 #if __REALLY_HAVE_AGP && __REALLY_HAVE_MTRR
-		if ( dev->agp && dev->agp->agp_mtrr ) {
+		if ( dev->agp && dev->agp->agp_mtrr >= 0) {
 			int retval;
 			retval = mtrr_del( dev->agp->agp_mtrr,
 				   dev->agp->agp_info.aper_base,
