@@ -30,6 +30,10 @@
 #undef STRICT
 #endif
 
+#if defined (_WIN32) && !defined (R_OK)
+#define R_OK 4
+#endif
+
 FcConfig    *_fcConfig;
 
 FcConfig *
@@ -1371,7 +1375,7 @@ FcConfigSubstitute (FcConfig	*config,
     return FcConfigSubstituteWithPat (config, p, 0, kind);
 }
 
-#if defined (_WIN32) && defined (PIC)
+#if defined (_WIN32) && (defined (PIC) || defined (DLL_EXPORT))
 
 static FcChar8 fontconfig_path[1000] = "";
 

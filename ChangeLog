@@ -10,6 +10,9 @@
 	end, not to confuse libtool, which expects the EXPORTS line to be
 	the first. Add FcConfigEnableHome.
 
+	* src/fccfg.c: Check also for DLL_EXPORT as indication of being
+	built as a DLL on Win32.
+
 2003-06-09  Keith Packard <keithp@keithp.com>
 
 	* Tag version 2.2.90
