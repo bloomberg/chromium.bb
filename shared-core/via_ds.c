@@ -38,7 +38,7 @@ set_t *via_setInit(void)
 {
         int i;
         set_t *set;
-        set = (set_t *)DRM_MALLOC(sizeof(set_t));
+        set = (set_t *)DRM(alloc)(sizeof(set_t), DRM_MEM_DRIVER);
         for (i = 0; i < SET_SIZE; i++) {
                 set->list[i].free_next = i+1;    
                 set->list[i].alloc_next = -1;
@@ -120,7 +120,7 @@ int via_setNext(set_t *set, ITEM_TYPE *item)
 
 int via_setDestroy(set_t *set)
 {
-        DRM_FREE(set, sizeof(set_t));
+        DRM(free)(set, sizeof(set_t), DRM_MEM_DRIVER);
 
         return 1;
 }
@@ -130,15 +130,6 @@ int via_setDestroy(set_t *set)
 #define PRINTF(fmt, arg...) do{}while(0)
 #define fprintf(fmt, arg...) do{}while(0)
 
-static void *calloc(size_t nmemb, size_t size)
-{
-        void *addr;
-        addr = kmalloc(nmemb*size, GFP_KERNEL);
-        memset(addr, 0, nmemb*size);
-        return addr;
-}
-#define free(n) kfree(n)
-           
 void via_mmDumpMemInfo( memHeap_t *heap )
 {
         TMemBlock *p;
@@ -170,7 +161,7 @@ memHeap_t *via_mmInit(int ofs,
                 return 0;
 
       
-        blocks = (TMemBlock *)calloc(1,sizeof(TMemBlock));
+        blocks = (TMemBlock *)DRM(calloc)(1,sizeof(TMemBlock),DRM_MEM_DRIVER);
    
         if (blocks) {
                 blocks->ofs = ofs;
@@ -186,7 +177,7 @@ memHeap_t *via_mmAddRange(memHeap_t *heap,
 			  int size)
 {
         PMemBlock blocks;
-        blocks = (TMemBlock *) calloc(2,sizeof(TMemBlock));
+        blocks = (TMemBlock *)DRM(calloc)(2,sizeof(TMemBlock),DRM_MEM_DRIVER);
     
         if (blocks) {
                 blocks[0].size = size;
@@ -215,7 +206,7 @@ static TMemBlock* SliceBlock(TMemBlock *p,
 
         /* break left */
         if (startofs > p->ofs) {
-                newblock = (TMemBlock*)calloc(1,sizeof(TMemBlock));
+                newblock = (TMemBlock*)DRM(calloc)(1,sizeof(TMemBlock),DRM_MEM_DRIVER);
                 newblock->ofs = startofs;
                 newblock->size = p->size - (startofs - p->ofs);
                 newblock->free = 1;
@@ -227,7 +218,7 @@ static TMemBlock* SliceBlock(TMemBlock *p,
 
         /* break right */
         if (size < p->size) {
-                newblock = (TMemBlock*) calloc(1,sizeof(TMemBlock));
+                newblock = (TMemBlock*)DRM(calloc)(1,sizeof(TMemBlock),DRM_MEM_DRIVER);
                 newblock->ofs = startofs + size;
                 newblock->size = p->size - size;
                 newblock->free = 1;
@@ -286,7 +277,7 @@ static __inline__ int Join2Blocks(TMemBlock *p)
                 TMemBlock *q = p->next;
                 p->size += q->size;
                 p->next = q->next;
-                free(q);
+                DRM(free)(q,sizeof(TMemBlock),DRM_MEM_DRIVER);
 	
                 return 1;
         }
@@ -393,7 +384,7 @@ void via_mmDestroy(memHeap_t *heap)
     
         while (p) {
                 q = p->next;
-                free(p);
+                DRM(free)(p,sizeof(TMemBlock),DRM_MEM_DRIVER);
                 p = q;
         }
 }
