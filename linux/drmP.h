@@ -488,7 +488,6 @@ typedef struct drm_agp_mem {
 
 typedef struct drm_agp_head {
 	agp_kern_info      agp_info;
-	const char         *chipset;
 	drm_agp_mem_t      *memory;
 	unsigned long      mode;
 	int                enabled;
