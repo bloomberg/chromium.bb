@@ -1,6 +1,5 @@
-/* bufs.c -- IOCTLs to manage buffers -*- linux-c -*-
- * Created: Tue Feb  2 08:37:54 1999 by faith@precisioninsight.com
- * Revised: Mon Feb 14 00:14:11 2000 by kevin@precisioninsight.com
+/* i810_bufs.c -- IOCTLs to manage buffers -*- linux-c -*-
+ * Created: Thu Jan 6 01:47:26 2000 by jhartmann@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +23,10 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/bufs.c,v 1.8 1999/08/30 13:05:00 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/bufs.c,v 1.4 2000/02/14 06:27:25 martin Exp $
+ * Authors: Rickard E. (Rik) Faith <faith@precisioninsight.com>
+ *	    Jeff Hartmann <jhartmann@precisioninsight.com>
+ * 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/i810_bufs.c,v 1.1 2000/02/11 17:26:04 dawes Exp $
  *
  */
 
@@ -33,112 +34,134 @@
 #include "drmP.h"
 #include "linux/un.h"
 
-				/* Compute order.  Can be made faster. */
-int drm_order(unsigned long size)
+int i810_addbufs_agp(struct inode *inode, struct file *filp, unsigned int cmd,
+		    unsigned long arg)
 {
-	int	      order;
-	unsigned long tmp;
+   drm_file_t *priv = filp->private_data;
+   drm_device_t *dev = priv->dev;
+   drm_device_dma_t *dma = dev->dma;
+   drm_buf_desc_t request;
+   drm_buf_entry_t *entry;
+   drm_buf_t *buf;
+   unsigned long offset;
+   unsigned long agp_offset;
+   int count;
+   int order;
+   int size;
+   int alignment;
+   int page_order;
+   int total;
+   int byte_count;
+   int i;
 
-	for (order = 0, tmp = size; tmp >>= 1; ++order);
-	if (size & ~(1 << order)) ++order;
-	return order;
-}
+   if (!dma) return -EINVAL;
 
-int drm_addmap(struct inode *inode, struct file *filp, unsigned int cmd,
-	       unsigned long arg)
-{
-	drm_file_t	*priv	= filp->private_data;
-	drm_device_t	*dev	= priv->dev;
-	drm_map_t	*map;
-	
-	if (!(filp->f_mode & 3)) return -EACCES; /* Require read/write */
+   copy_from_user_ret(&request,
+		      (drm_buf_desc_t *)arg,
+		      sizeof(request),
+		      -EFAULT);
 
-	map	     = drm_alloc(sizeof(*map), DRM_MEM_MAPS);
-	if (!map) return -ENOMEM;
-	if (copy_from_user(map, (drm_map_t *)arg, sizeof(*map))) {
-		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-		return -EFAULT;
-	}
-
-	DRM_DEBUG("offset = 0x%08lx, size = 0x%08lx, type = %d\n",
-		  map->offset, map->size, map->type);
-	if ((map->offset & (~PAGE_MASK)) || (map->size & (~PAGE_MASK))) {
-		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-		return -EINVAL;
-	}
-	map->mtrr   = -1;
-	map->handle = 0;
-
-	switch (map->type) {
-	case _DRM_REGISTERS:
-	case _DRM_FRAME_BUFFER:	
-		if (map->offset + map->size < map->offset
-		    || map->offset < virt_to_phys(high_memory)) {
-			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-			return -EINVAL;
-		}
-#ifdef CONFIG_MTRR
-		if (map->type == _DRM_FRAME_BUFFER
-		    || (map->flags & _DRM_WRITE_COMBINING)) {
-			map->mtrr = mtrr_add(map->offset, map->size,
-					     MTRR_TYPE_WRCOMB, 1);
-		}
+   count = request.count;
+   order = drm_order(request.size);
+   size	= 1 << order;
+   agp_offset = request.agp_start;
+   alignment  = (request.flags & _DRM_PAGE_ALIGN) ? PAGE_ALIGN(size) :size;
+   page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
+   total = PAGE_SIZE << page_order;
+   byte_count = 0;
+   
+   if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER) return -EINVAL;
+   if (dev->queue_count) return -EBUSY; /* Not while in use */
+   spin_lock(&dev->count_lock);
+   if (dev->buf_use) {
+      spin_unlock(&dev->count_lock);
+      return -EBUSY;
+   }
+   atomic_inc(&dev->buf_alloc);
+   spin_unlock(&dev->count_lock);
+   
+   down(&dev->struct_sem);
+   entry = &dma->bufs[order];
+   if (entry->buf_count) {
+      up(&dev->struct_sem);
+      atomic_dec(&dev->buf_alloc);
+      return -ENOMEM; /* May only call once for each order */
+   }
+   
+   entry->buflist = drm_alloc(count * sizeof(*entry->buflist),
+			      DRM_MEM_BUFS);
+   if (!entry->buflist) {
+      up(&dev->struct_sem);
+      atomic_dec(&dev->buf_alloc);
+      return -ENOMEM;
+   }
+   memset(entry->buflist, 0, count * sizeof(*entry->buflist));
+   
+   entry->buf_size   = size;
+   entry->page_order = page_order;
+   
+   while(entry->buf_count < count) {
+      for(offset = 0; offset + size <= total && entry->buf_count < count;
+	  offset += alignment, ++entry->buf_count) {
+	 buf = &entry->buflist[entry->buf_count];
+	 buf->idx = dma->buf_count + entry->buf_count;
+	 buf->total = alignment;
+	 buf->order = order;
+	 buf->used = 0;
+	 buf->offset = agp_offset - dev->agp->base + offset;/* ?? */
+	 buf->bus_address = agp_offset + offset;
+	 buf->address = agp_offset + offset + dev->agp->base;
+	 buf->next = NULL;
+	 buf->waiting = 0;
+	 buf->pending = 0;
+	 init_waitqueue_head(&buf->dma_wait);
+	 buf->pid = 0;
+#if DRM_DMA_HISTOGRAM
+	 buf->time_queued = 0;
+	 buf->time_dispatched = 0;
+	 buf->time_completed = 0;
+	 buf->time_freed = 0;
 #endif
-		map->handle = drm_ioremap(map->offset, map->size);
-		break;
-			
-
-	case _DRM_SHM:
-		map->handle = (void *)drm_alloc_pages(drm_order(map->size)
-						      - PAGE_SHIFT,
-						      DRM_MEM_SAREA);
-		DRM_DEBUG("%ld %d %p\n", map->size, drm_order(map->size),
-			  map->handle);
-		if (!map->handle) {
-			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-			return -ENOMEM;
-		}
-		map->offset = (unsigned long)map->handle;
-		if (map->flags & _DRM_CONTAINS_LOCK) {
-			dev->lock.hw_lock = map->handle; /* Pointer to lock */
-		}
-		break;
-	default:
-		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-		return -EINVAL;
-	}
-
-	down(&dev->struct_sem);
-	if (dev->maplist) {
-		++dev->map_count;
-		dev->maplist = drm_realloc(dev->maplist,
-					   (dev->map_count-1)
-					   * sizeof(*dev->maplist),
-					   dev->map_count
-					   * sizeof(*dev->maplist),
-					   DRM_MEM_MAPS);
-	} else {
-		dev->map_count = 1;
-		dev->maplist = drm_alloc(dev->map_count*sizeof(*dev->maplist),
-					 DRM_MEM_MAPS);
-	}
-	dev->maplist[dev->map_count-1] = map;
-	up(&dev->struct_sem);
-
-	copy_to_user_ret((drm_map_t *)arg, map, sizeof(*map), -EFAULT);
-	if (map->type != _DRM_SHM) {
-		copy_to_user_ret(&((drm_map_t *)arg)->handle,
-				 &map->offset,
-				 sizeof(map->offset),
-				 -EFAULT);
-	}		
-	return 0;
+	 DRM_DEBUG("buffer %d @ %p\n",
+		   entry->buf_count, buf->address);
+      }
+      byte_count += PAGE_SIZE << page_order;
+   }
+   
+   dma->buflist = drm_realloc(dma->buflist,
+			      dma->buf_count * sizeof(*dma->buflist),
+			      (dma->buf_count + entry->buf_count)
+			      * sizeof(*dma->buflist),
+			      DRM_MEM_BUFS);
+   for (i = dma->buf_count; i < dma->buf_count + entry->buf_count; i++)
+     dma->buflist[i] = &entry->buflist[i - dma->buf_count];
+   
+   dma->buf_count  += entry->buf_count;
+   dma->byte_count += PAGE_SIZE * (entry->seg_count << page_order);
+   
+   drm_freelist_create(&entry->freelist, entry->buf_count);
+   for (i = 0; i < entry->buf_count; i++) {
+      drm_freelist_put(dev, &entry->freelist, &entry->buflist[i]);
+   }
+   
+   up(&dev->struct_sem);
+   
+   request.count = entry->buf_count;
+   request.size  = size;
+   
+   copy_to_user_ret((drm_buf_desc_t *)arg,
+		    &request,
+		    sizeof(request),
+		    -EFAULT);
+   
+   atomic_dec(&dev->buf_alloc);
+   return 0;
 }
 
-int drm_addbufs(struct inode *inode, struct file *filp, unsigned int cmd,
-		unsigned long arg)
+int i810_addbufs_pci(struct inode *inode, struct file *filp, unsigned int cmd,
+		    unsigned long arg)
 {
-	drm_file_t	 *priv	 = filp->private_data;
+   	drm_file_t	 *priv	 = filp->private_data;
 	drm_device_t	 *dev	 = priv->dev;
 	drm_device_dma_t *dma	 = dev->dma;
 	drm_buf_desc_t	 request;
@@ -173,7 +196,7 @@ int drm_addbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 	if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER) return -EINVAL;
 	if (dev->queue_count) return -EBUSY; /* Not while in use */
 
-	alignment  = (request.flags & DRM_PAGE_ALIGN) ? PAGE_ALIGN(size) :size;
+	alignment  = (request.flags & _DRM_PAGE_ALIGN) ? PAGE_ALIGN(size) :size;
 	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
 	total	   = PAGE_SIZE << page_order;
 
@@ -296,7 +319,23 @@ int drm_addbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 	return 0;
 }
 
-int drm_infobufs(struct inode *inode, struct file *filp, unsigned int cmd,
+int i810_addbufs(struct inode *inode, struct file *filp, unsigned int cmd,
+		unsigned long arg)
+{
+   drm_buf_desc_t	 request;
+
+   copy_from_user_ret(&request,
+		      (drm_buf_desc_t *)arg,
+		      sizeof(request),
+		      -EFAULT);
+
+   if(request.flags & _DRM_AGP_BUFFER)
+     return i810_addbufs_agp(inode, filp, cmd, arg);
+   else
+     return i810_addbufs_pci(inode, filp, cmd, arg);
+}
+
+int i810_infobufs(struct inode *inode, struct file *filp, unsigned int cmd,
 		 unsigned long arg)
 {
 	drm_file_t	 *priv	 = filp->private_data;
@@ -372,7 +411,7 @@ int drm_infobufs(struct inode *inode, struct file *filp, unsigned int cmd,
 	return 0;
 }
 
-int drm_markbufs(struct inode *inode, struct file *filp, unsigned int cmd,
+int i810_markbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 		 unsigned long arg)
 {
 	drm_file_t	 *priv	 = filp->private_data;
@@ -406,7 +445,7 @@ int drm_markbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 	return 0;
 }
 
-int drm_freebufs(struct inode *inode, struct file *filp, unsigned int cmd,
+int i810_freebufs(struct inode *inode, struct file *filp, unsigned int cmd,
 		 unsigned long arg)
 {
 	drm_file_t	 *priv	 = filp->private_data;
@@ -447,7 +486,7 @@ int drm_freebufs(struct inode *inode, struct file *filp, unsigned int cmd,
 	return 0;
 }
 
-int drm_mapbufs(struct inode *inode, struct file *filp, unsigned int cmd,
+int i810_mapbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 		unsigned long arg)
 {
 	drm_file_t	 *priv	 = filp->private_data;
@@ -478,8 +517,25 @@ int drm_mapbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 			   -EFAULT);
 
 	if (request.count >= dma->buf_count) {
-		virtual = do_mmap(filp, 0, dma->byte_count,
-				  PROT_READ|PROT_WRITE, MAP_SHARED, 0);
+	   if(dma->flags & _DRM_DMA_USE_AGP) {
+	      /* This is an ugly vicious hack */
+	      drm_map_t *map = NULL;
+	      for(i = 0; i < dev->map_count; i++) {
+		 map = dev->maplist[i];
+		 if(map->type == _DRM_AGP) break;
+	      }
+	      if (i >= dev->map_count || !map) {
+		 retcode = -EINVAL;
+		 goto done;
+	      }
+	      
+	      virtual = do_mmap(filp, 0, map->size, PROT_READ|PROT_WRITE,
+				MAP_SHARED, (unsigned long)map->handle);
+	   }
+	   else {
+	      virtual = do_mmap(filp, 0, dma->byte_count,
+				PROT_READ|PROT_WRITE, MAP_SHARED, 0);
+	   }
 		if (virtual > -1024UL) {
 				/* Real error */
 			retcode = (signed long)virtual;

@@ -1,6 +1,6 @@
 /* drmstat.c -- DRM device status and testing program
  * Created: Tue Jan  5 08:19:24 1999 by faith@precisioninsight.com
- * Revised: Mon Dec  6 10:33:46 1999 by faith@precisioninsight.com
+ * Revised: Sun Feb 13 23:35:00 2000 by kevin@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmstat.c,v 1.28 1999/08/04 18:12:11 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmstat.c,v 1.2 1999/12/14 01:33:56 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmstat.c,v 1.5 2000/02/14 06:27:27 martin Exp $
  * 
  */
 
@@ -218,8 +218,8 @@ int main(int argc, char **argv)
 		       info->list[i].low_mark,
 		       info->list[i].high_mark);
 	    }
-	    printf("===== /proc/graphics/0/mem =====\n");
-	    sprintf(buf, "cat /proc/graphics/0/mem");
+	    printf("===== /proc/dri/0/mem =====\n");
+	    sprintf(buf, "cat /proc/dri/0/mem");
 	    system(buf);
 #if 1
 	    if (!(bufs = drmMapBufs(fd))) {
@@ -234,8 +234,8 @@ int main(int argc, char **argv)
 			bufs->list[i].total,
 			bufs->list[i].address);
 	    }
-	    printf("===== /proc/graphics/0/vma =====\n");
-	    sprintf(buf, "cat /proc/graphics/0/vma");
+	    printf("===== /proc/dri/0/vma =====\n");
+	    sprintf(buf, "cat /proc/dri/0/vma");
 	    system(buf);
 #endif
 	    break;
@@ -249,8 +249,8 @@ int main(int argc, char **argv)
 		return 1;
 	    }
 	    printf("0x%08lx:0x%04lx added\n", offset, size);
-	    printf("===== /proc/graphics/0/mem =====\n");
-	    sprintf(buf, "cat /proc/graphics/0/mem");
+	    printf("===== /proc/dri/0/mem =====\n");
+	    sprintf(buf, "cat /proc/dri/0/mem");
 	    system(buf);
 	    break;
 	case 'r':
@@ -266,8 +266,8 @@ int main(int argc, char **argv)
 		return 1;
 	    }
 	    printf("0x%08lx:0x%04lx added\n", offset, size);
-	    printf("===== /proc/graphics/0/mem =====\n");
-	    sprintf(buf, "cat /proc/graphics/0/mem");
+	    printf("===== /proc/dri/0/mem =====\n");
+	    sprintf(buf, "cat /proc/dri/0/mem");
 	    system(buf);
 	    break;
 	case 's':
@@ -280,7 +280,7 @@ int main(int argc, char **argv)
 		return 1;
 	    }
 	    printf("0x%04lx byte shm added at 0x%08lx\n", size, handle);
-	    sprintf(buf, "cat /proc/graphics/0/vm");
+	    sprintf(buf, "cat /proc/dri/0/vm");
 	    system(buf);
 	    break;
 	case 'P':
@@ -293,12 +293,12 @@ int main(int argc, char **argv)
 	    }
 	    printf("0x%08lx:0x%04lx mapped at %p for pid %d\n",
 		   offset, size, address, getpid());
-	    printf("===== /proc/graphics/0/vma =====\n");
-	    sprintf(buf, "cat /proc/graphics/0/vma");
+	    printf("===== /proc/dri/0/vma =====\n");
+	    sprintf(buf, "cat /proc/dri/0/vma");
 	    system(buf);
 	    mprotect((void *)offset, size, PROT_READ);
-	    printf("===== /proc/graphics/0/vma =====\n");
-	    sprintf(buf, "cat /proc/graphics/0/vma");
+	    printf("===== /proc/dri/0/vma =====\n");
+	    sprintf(buf, "cat /proc/dri/0/vma");
 	    system(buf);
 	    break;
 	case 'w':
@@ -316,10 +316,10 @@ int main(int argc, char **argv)
 	    sprintf(buf, "cat /proc/%d/maps", getpid());
 	    system(buf);
 	    printf("===== /proc/grphics/0/mem =====\n");
-	    sprintf(buf, "cat /proc/graphics/0/mem");
+	    sprintf(buf, "cat /proc/dri/0/mem");
 	    system(buf);
-	    printf("===== /proc/graphics/0/vma =====\n");
-	    sprintf(buf, "cat /proc/graphics/0/vma");
+	    printf("===== /proc/dri/0/vma =====\n");
+	    sprintf(buf, "cat /proc/dri/0/vma");
 	    system(buf);
 	    printf("===== READING =====\n");
 	    for (i = 0; i < 0x10; i++)
@@ -336,8 +336,8 @@ int main(int argc, char **argv)
 	    for (i = 0; i < 0x10; i++)
 		printf("%02x ", (unsigned int)((unsigned char *)address)[i]);
 	    printf("\n");
-	    printf("===== /proc/graphics/0/vma =====\n");
-	    sprintf(buf, "cat /proc/graphics/0/vma");
+	    printf("===== /proc/dri/0/vma =====\n");
+	    sprintf(buf, "cat /proc/dri/0/vma");
 	    system(buf);
 	    break;
 	case 'L':

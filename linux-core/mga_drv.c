@@ -1,7 +1,6 @@
-/* gamma.c -- 3dlabs GMX 2000 driver -*- linux-c -*-
- * Created: Mon Jan  4 08:58:31 1999 by faith@precisioninsight.com
- * Revised: Tue Oct 12 08:51:36 1999 by faith@precisioninsight.com
- *
+/* mga_drv.c -- Matrox g200/g400 driver -*- linux-c -*-
+ * Created: Mon Dec 13 01:56:22 1999 by jhartmann@precisioninsight.com
+ * 
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
  *
@@ -23,104 +22,123 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/gamma_drv.c,v 1.17 1999/08/30 13:05:00 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/gamma_drv.c,v 1.3 2000/01/20 07:25:35 martin Exp $
+ *
+ * Authors: Rickard E. (Rik) Faith <faith@precisioninsight.com>
+ *	    Jeff Hartmann <jhartmann@precisioninsight.com>
+ *
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/mga_drv.c,v 1.1 2000/02/11 17:26:07 dawes Exp $
  *
  */
 
 #define EXPORT_SYMTAB
 #include "drmP.h"
-#include "gamma_drv.h"
-EXPORT_SYMBOL(gamma_init);
-EXPORT_SYMBOL(gamma_cleanup);
+#include "mga_drv.h"
+EXPORT_SYMBOL(mga_init);
+EXPORT_SYMBOL(mga_cleanup);
 
-#define GAMMA_NAME	 "gamma"
-#define GAMMA_DESC	 "3dlabs GMX 2000"
-#define GAMMA_DATE	 "19990830"
-#define GAMMA_MAJOR	 0
-#define GAMMA_MINOR	 0
-#define GAMMA_PATCHLEVEL 5
+#define MGA_NAME	 "mga"
+#define MGA_DESC	 "Matrox g200/g400"
+#define MGA_DATE	 "19991213"
+#define MGA_MAJOR	 0
+#define MGA_MINOR	 0
+#define MGA_PATCHLEVEL	 1
 
-static drm_device_t	      gamma_device;
+static drm_device_t	      mga_device;
+drm_ctx_t		      mga_res_ctx;
 
-static struct file_operations gamma_fops = {
-	open:	 gamma_open,
+static struct file_operations mga_fops = {
+	open:	 mga_open,
 	flush:	 drm_flush,
-	release: gamma_release,
-	ioctl:	 gamma_ioctl,
+	release: mga_release,
+	ioctl:	 mga_ioctl,
 	mmap:	 drm_mmap,
 	read:	 drm_read,
 	fasync:	 drm_fasync,
-	poll:	 drm_poll,
 };
 
-static struct miscdevice      gamma_misc = {
+static struct miscdevice      mga_misc = {
 	minor: MISC_DYNAMIC_MINOR,
-	name:  GAMMA_NAME,
-	fops:  &gamma_fops,
+	name:  MGA_NAME,
+	fops:  &mga_fops,
 };
 
-static drm_ioctl_desc_t	      gamma_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)]    = { gamma_version,	  0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_UNIQUE)] = { drm_getunique,	  0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAGIC)]  = { drm_getmagic,	  0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_IRQ_BUSID)]  = { drm_irq_busid,	  0, 1 },
+static drm_ioctl_desc_t	      mga_ioctls[] = {
+	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)]     = { mga_version,	  0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_UNIQUE)]  = { drm_getunique,  0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAGIC)]   = { drm_getmagic,	  0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_IRQ_BUSID)]   = { drm_irq_busid,  0, 1 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_SET_UNIQUE)] = { drm_setunique,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]	     = { drm_block,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]    = { drm_unblock,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_CONTROL)]    = { gamma_control,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)] = { drm_authmagic,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]    = { drm_addmap,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_BUFS)]   = { drm_addbufs,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MARK_BUFS)]  = { drm_markbufs,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]  = { drm_infobufs,	  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]   = { drm_mapbufs,	  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]  = { drm_freebufs,	  1, 0 },
-	
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]    = { drm_addctx,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]     = { drm_rmctx,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]    = { drm_modctx,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_CTX)]    = { drm_getctx,	  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)] = { drm_switchctx,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_NEW_CTX)]    = { drm_newctx,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]    = { drm_resctx,	  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]   = { drm_adddraw,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RM_DRAW)]    = { drm_rmdraw,	  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_DMA)]	     = { gamma_dma,	  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	     = { gamma_lock,	  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]     = { gamma_unlock,	  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]     = { drm_finish,	  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SET_UNIQUE)]  = { drm_setunique,  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]	      = { drm_block,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]     = { drm_unblock,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_CONTROL)]     = { mga_control,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)]  = { drm_authmagic,  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]     = { drm_addmap,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_BUFS)]    = { mga_addbufs,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MARK_BUFS)]   = { mga_markbufs,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]   = { mga_infobufs,	  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]    = { mga_mapbufs,	  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]   = { mga_freebufs,	  1, 0 },
+
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]     = { mga_addctx,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]      = { mga_rmctx,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]     = { mga_modctx,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_CTX)]     = { mga_getctx,	  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)]  = { mga_switchctx,  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_NEW_CTX)]     = { mga_newctx,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]     = { mga_resctx,	  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]    = { drm_adddraw,	  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RM_DRAW)]     = { drm_rmdraw,	  1, 1 },
+
+	[DRM_IOCTL_NR(DRM_IOCTL_DMA)]	      = { mga_dma,	  1, 0 },
+
+	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	      = { mga_lock,	  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]      = { mga_unlock,	  1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]      = { drm_finish,	  1, 0 },
+
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)] = { drm_agp_acquire, 1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)] = { drm_agp_release, 1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]  = { drm_agp_enable,  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]    = { drm_agp_info,    1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]   = { drm_agp_alloc,   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]    = { drm_agp_free,    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]    = { drm_agp_bind,    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]  = { drm_agp_unbind,  1, 1 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_INIT)]    = { mga_dma_init,    1, 1 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_SWAP)]    = { mga_clear_bufs,  1, 1 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_CLEAR)]   = { mga_swap_bufs,   1, 1 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_MGA_ILOAD)]   = { mga_iload,       1, 1 },
 };
-#define GAMMA_IOCTL_COUNT DRM_ARRAY_SIZE(gamma_ioctls)
+
+#define MGA_IOCTL_COUNT DRM_ARRAY_SIZE(mga_ioctls)
 
 #ifdef MODULE
 int			      init_module(void);
 void			      cleanup_module(void);
-static char		      *gamma = NULL;
+static char		      *mga = NULL;
 
 MODULE_AUTHOR("Precision Insight, Inc., Cedar Park, Texas.");
-MODULE_DESCRIPTION("3dlabs GMX 2000");
-MODULE_PARM(gamma, "s");
+MODULE_DESCRIPTION("Matrox g200/g400");
+MODULE_PARM(mga, "s");
 
 /* init_module is called when insmod is used to load the module */
 
 int init_module(void)
 {
-	return gamma_init();
+	DRM_DEBUG("doing mga_init()\n");
+	return mga_init();
 }
 
 /* cleanup_module is called when rmmod is used to unload the module */
 
 void cleanup_module(void)
 {
-	gamma_cleanup();
+	mga_cleanup();
 }
 #endif
 
 #ifndef MODULE
-/* gamma_setup is called by the kernel to parse command-line options passed
+/* mga_setup is called by the kernel to parse command-line options passed
  * via the boot-loader (e.g., LILO).  It calls the insmod option routine,
  * drm_parse_drm.
  *
@@ -128,7 +146,7 @@ void cleanup_module(void)
  * linux/init/main.c. */
  
 
-void __init gamma_setup(char *str, int *ints)
+void __init mga_setup(char *str, int *ints)
 {
 	if (ints[0] != 0) {
 		DRM_ERROR("Illegal command line format, ignored\n");
@@ -138,7 +156,7 @@ void __init gamma_setup(char *str, int *ints)
 }
 #endif
 
-static int gamma_setup(drm_device_t *dev)
+static int mga_setup(drm_device_t *dev)
 {
 	int i;
 	
@@ -181,9 +199,7 @@ static int gamma_setup(drm_device_t *dev)
 	dev->last_checked   = 0;
 	init_timer(&dev->timer);
 	init_waitqueue_head(&dev->context_wait);
-#if DRM_DMA_HISTO
-	memset(&dev->histo, 0, sizeof(dev->histo));
-#endif
+
 	dev->ctx_start	    = 0;
 	dev->lck_start	    = 0;
 	
@@ -206,7 +222,7 @@ static int gamma_setup(drm_device_t *dev)
 }
 
 
-static int gamma_takedown(drm_device_t *dev)
+static int mga_takedown(drm_device_t *dev)
 {
 	int		  i;
 	drm_magic_entry_t *pt, *next;
@@ -215,7 +231,7 @@ static int gamma_takedown(drm_device_t *dev)
 
 	DRM_DEBUG("\n");
 
-	if (dev->irq) gamma_irq_uninstall(dev);
+	if (dev->irq) mga_irq_uninstall(dev);
 	
 	down(&dev->struct_sem);
 	del_timer(&dev->timer);
@@ -238,7 +254,27 @@ static int gamma_takedown(drm_device_t *dev)
 		}
 		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
 	}
-	
+   				/* Clear AGP information */
+	if (dev->agp) {
+		drm_agp_mem_t *entry;
+		drm_agp_mem_t *nexte;
+		
+				/* Remove AGP resources, but leave dev->agp
+                                   intact until cleanup is called. */
+		for (entry = dev->agp->memory; entry; entry = nexte) {
+			nexte = entry->next;
+			if (entry->bound) drm_unbind_agp(entry->memory);
+			drm_free_agp(entry->memory, entry->pages);
+			drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
+		}
+		dev->agp->memory = NULL;
+		
+		if (dev->agp->acquired && drm_agp.release)
+			(*drm_agp.release)();
+		
+		dev->agp->acquired = 0;
+		dev->agp->enabled  = 0;
+	}
 				/* Clear vma list (only built for debugging) */
 	if (dev->vmalist) {
 		for (vma = dev->vmalist; vma; vma = vma_next) {
@@ -271,6 +307,8 @@ static int gamma_takedown(drm_device_t *dev)
 					       drm_order(map->size)
 					       - PAGE_SHIFT,
 					       DRM_MEM_SAREA);
+				break;
+			case _DRM_AGP:
 				break;
 			}
 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
@@ -311,13 +349,13 @@ static int gamma_takedown(drm_device_t *dev)
 	return 0;
 }
 
-/* gamma_init is called via init_module at module load time, or via
+/* mga_init is called via init_module at module load time, or via
  * linux/init/main.c (this is not currently supported). */
 
-int gamma_init(void)
+int mga_init(void)
 {
 	int		      retcode;
-	drm_device_t	      *dev = &gamma_device;
+	drm_device_t	      *dev = &mga_device;
 
 	DRM_DEBUG("\n");
 
@@ -326,48 +364,66 @@ int gamma_init(void)
 	sema_init(&dev->struct_sem, 1);
 	
 #ifdef MODULE
-	drm_parse_options(gamma);
+	drm_parse_options(mga);
 #endif
-
-	if ((retcode = misc_register(&gamma_misc))) {
-		DRM_ERROR("Cannot register \"%s\"\n", GAMMA_NAME);
+	DRM_DEBUG("doing misc_register\n");
+	if ((retcode = misc_register(&mga_misc))) {
+		DRM_ERROR("Cannot register \"%s\"\n", MGA_NAME);
 		return retcode;
 	}
-	dev->device = MKDEV(MISC_MAJOR, gamma_misc.minor);
-	dev->name   = GAMMA_NAME;
+	dev->device = MKDEV(MISC_MAJOR, mga_misc.minor);
+	dev->name   = MGA_NAME;
 
+   	DRM_DEBUG("doing mem init\n");
 	drm_mem_init();
+	DRM_DEBUG("doing proc init\n");
 	drm_proc_init(dev);
+	DRM_DEBUG("doing agp init\n");
+	dev->agp    = drm_agp_init();
+	DRM_DEBUG("doing ctxbitmap init\n");
+	if((retcode = drm_ctxbitmap_init(dev))) {
+		DRM_ERROR("Cannot allocate memory for context bitmap.\n");
+		drm_proc_cleanup();
+		misc_deregister(&mga_misc);
+		mga_takedown(dev);
+		return retcode;
+	}
 
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
-		 GAMMA_NAME,
-		 GAMMA_MAJOR,
-		 GAMMA_MINOR,
-		 GAMMA_PATCHLEVEL,
-		 GAMMA_DATE,
-		 gamma_misc.minor);
-	
+		 MGA_NAME,
+		 MGA_MAJOR,
+		 MGA_MINOR,
+		 MGA_PATCHLEVEL,
+		 MGA_DATE,
+		 mga_misc.minor);
+
 	return 0;
 }
 
-/* gamma_cleanup is called via cleanup_module at module unload time. */
+/* mga_cleanup is called via cleanup_module at module unload time. */
 
-void gamma_cleanup(void)
+void mga_cleanup(void)
 {
-	drm_device_t	      *dev = &gamma_device;
+	drm_device_t	      *dev = &mga_device;
 
 	DRM_DEBUG("\n");
 	
 	drm_proc_cleanup();
-	if (misc_deregister(&gamma_misc)) {
+	if (misc_deregister(&mga_misc)) {
 		DRM_ERROR("Cannot unload module\n");
 	} else {
 		DRM_INFO("Module unloaded\n");
 	}
-	gamma_takedown(dev);
+	drm_ctxbitmap_cleanup(dev);
+	mga_dma_cleanup(dev);
+	mga_takedown(dev);
+	if (dev->agp) {
+		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
+		dev->agp = NULL;
+	}
 }
 
-int gamma_version(struct inode *inode, struct file *filp, unsigned int cmd,
+int mga_version(struct inode *inode, struct file *filp, unsigned int cmd,
 		  unsigned long arg)
 {
 	drm_version_t version;
@@ -386,13 +442,13 @@ int gamma_version(struct inode *inode, struct file *filp, unsigned int cmd,
 		copy_to_user_ret(name, value, len, -EFAULT); \
 	}
 
-	version.version_major	   = GAMMA_MAJOR;
-	version.version_minor	   = GAMMA_MINOR;
-	version.version_patchlevel = GAMMA_PATCHLEVEL;
+	version.version_major	   = MGA_MAJOR;
+	version.version_minor	   = MGA_MINOR;
+	version.version_patchlevel = MGA_PATCHLEVEL;
 
-	DRM_COPY(version.name, GAMMA_NAME);
-	DRM_COPY(version.date, GAMMA_DATE);
-	DRM_COPY(version.desc, GAMMA_DESC);
+	DRM_COPY(version.name, MGA_NAME);
+	DRM_COPY(version.date, MGA_DATE);
+	DRM_COPY(version.desc, MGA_DESC);
 
 	copy_to_user_ret((drm_version_t *)arg,
 			 &version,
@@ -401,9 +457,9 @@ int gamma_version(struct inode *inode, struct file *filp, unsigned int cmd,
 	return 0;
 }
 
-int gamma_open(struct inode *inode, struct file *filp)
+int mga_open(struct inode *inode, struct file *filp)
 {
-	drm_device_t  *dev    = &gamma_device;
+	drm_device_t  *dev    = &mga_device;
 	int	      retcode = 0;
 	
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
@@ -413,14 +469,14 @@ int gamma_open(struct inode *inode, struct file *filp)
 		spin_lock(&dev->count_lock);
 		if (!dev->open_count++) {
 			spin_unlock(&dev->count_lock);
-			return gamma_setup(dev);
+			return mga_setup(dev);
 		}
 		spin_unlock(&dev->count_lock);
 	}
 	return retcode;
 }
 
-int gamma_release(struct inode *inode, struct file *filp)
+int mga_release(struct inode *inode, struct file *filp)
 {
 	drm_file_t    *priv   = filp->private_data;
 	drm_device_t  *dev    = priv->dev;
@@ -440,7 +496,7 @@ int gamma_release(struct inode *inode, struct file *filp)
 				return -EBUSY;
 			}
 			spin_unlock(&dev->count_lock);
-			return gamma_takedown(dev);
+			return mga_takedown(dev);
 		}
 		spin_unlock(&dev->count_lock);
 	}
@@ -449,7 +505,7 @@ int gamma_release(struct inode *inode, struct file *filp)
 
 /* drm_ioctl is called whenever a process performs an ioctl on /dev/drm. */
 
-int gamma_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
+int mga_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 		unsigned long arg)
 {
 	int		 nr	 = DRM_IOCTL_NR(cmd);
@@ -466,10 +522,10 @@ int gamma_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 	DRM_DEBUG("pid = %d, cmd = 0x%02x, nr = 0x%02x, dev 0x%x, auth = %d\n",
 		  current->pid, cmd, nr, dev->device, priv->authenticated);
 
-	if (nr >= GAMMA_IOCTL_COUNT) {
+	if (nr >= MGA_IOCTL_COUNT) {
 		retcode = -EINVAL;
 	} else {
-		ioctl	  = &gamma_ioctls[nr];
+		ioctl	  = &mga_ioctls[nr];
 		func	  = ioctl->func;
 
 		if (!func) {
@@ -487,8 +543,7 @@ int gamma_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 	return retcode;
 }
 
-
-int gamma_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
+int mga_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 		 unsigned long arg)
 {
 	drm_file_t	  *priv	  = filp->private_data;
@@ -510,17 +565,12 @@ int gamma_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 	if (_DRM_LOCK_IS_CONT(dev->lock.hw_lock->lock))
 		atomic_inc(&dev->total_contends);
 	drm_lock_transfer(dev, &dev->lock.hw_lock->lock, DRM_KERNEL_CONTEXT);
-	gamma_dma_schedule(dev, 1);
-	if (!dev->context_flag) {
-		if (drm_lock_free(dev, &dev->lock.hw_lock->lock,
-				  DRM_KERNEL_CONTEXT)) {
-			DRM_ERROR("\n");
-		}
+	mga_dma_schedule(dev, 1);
+
+	if (drm_lock_free(dev, &dev->lock.hw_lock->lock,
+			  DRM_KERNEL_CONTEXT)) {
+	   DRM_ERROR("\n");
 	}
-#if DRM_DMA_HISTOGRAM
-	atomic_inc(&dev->histo.lhld[drm_histogram_slot(get_cycles()
-						       - dev->lck_start)]);
-#endif
-	
+
 	return 0;
 }

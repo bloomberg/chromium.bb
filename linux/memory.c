@@ -1,6 +1,6 @@
 /* memory.c -- Memory management wrappers for DRM -*- linux-c -*-
  * Created: Thu Feb  4 14:00:34 1999 by faith@precisioninsight.com
- * Revised: Mon Dec  6 10:28:18 1999 by faith@precisioninsight.com
+ * Revised: Sun Feb 13 23:39:37 2000 by kevin@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/memory.c,v 1.4 1999/08/20 20:00:53 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/memory.c,v 1.2 1999/12/14 01:33:57 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/memory.c,v 1.4 2000/02/14 06:27:28 martin Exp $
  *
  */
 
