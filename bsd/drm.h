@@ -100,6 +100,7 @@ typedef struct drm_tex_region {
 #include "r128_drm.h"
 #include "radeon_drm.h"
 #include "sis_drm.h"
+#include "gamma_drm.h"
 
 typedef struct drm_version {
 	int    version_major;	  /* Major version			    */
@@ -459,6 +460,7 @@ typedef struct drm_scatter_gather {
 #define DRM_IOCTL_R128_STIPPLE		DRM_IOW( 0x4d, drm_r128_stipple_t)
 #define DRM_IOCTL_R128_INDIRECT		DRM_IOWR(0x4f, drm_r128_indirect_t)
 #define DRM_IOCTL_R128_FULLSCREEN	DRM_IOW( 0x50, drm_r128_fullscreen_t)
+#define DRM_IOCTL_R128_CLEAR2		DRM_IOW( 0x51, drm_r128_clear2_t)
 
 /* Radeon specific ioctls */
 #define DRM_IOCTL_RADEON_CP_INIT	DRM_IOW( 0x40, drm_radeon_init_t)
@@ -475,6 +477,11 @@ typedef struct drm_scatter_gather {
 #define DRM_IOCTL_RADEON_STIPPLE	DRM_IOW( 0x4c, drm_radeon_stipple_t)
 #define DRM_IOCTL_RADEON_INDIRECT	DRM_IOWR(0x4d, drm_radeon_indirect_t)
 #define DRM_IOCTL_RADEON_TEXTURE	DRM_IOWR(0x4e, drm_radeon_texture_t)
+#define DRM_IOCTL_RADEON_VERTEX2	DRM_IOW( 0x4f, drm_radeon_vertex_t)
+
+/* Gamma specific ioctls */
+#define DRM_IOCTL_GAMMA_INIT		DRM_IOW( 0x40, drm_gamma_init_t)
+#define DRM_IOCTL_GAMMA_COPY		DRM_IOW( 0x41, drm_gamma_copy_t)
 
 /* SiS specific ioctls */
 

@@ -44,6 +44,8 @@ int DRM(waitlist_create)(drm_waitlist_t *bl, int count)
 
 	if(!bl->bufs) DRM_OS_RETURN(ENOMEM);
 
+	memset(bl->bufs, 0, sizeof(*bl->bufs));
+
 	bl->count      = count;
 	bl->rp	       = bl->bufs;
 	bl->wp	       = bl->bufs;
