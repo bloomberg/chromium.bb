@@ -26,6 +26,8 @@
 #define _FCFREETYPE_H_
 #include <freetype/freetype.h>
 
+_FCFUNCPROTOBEGIN
+
 FT_UInt
 FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4);
 
@@ -40,5 +42,7 @@ FcPatternGetFTFace (const FcPattern *p, const char *object, int n, FT_Face *f);
 
 FcBool
 FcPatternAddFTFace (FcPattern *p, const char *object, const FT_Face f);
+
+_FCFUNCPROTOEND
 
 #endif
