@@ -29,7 +29,7 @@ include $(TOPDIR)/config/Makedefs
 DIRS          = src fc-cache fc-list fontconfig
 
 all install clean::
-	for d in $(DIRS); do (cd $$d && $(MAKE) $@); done
+	for d in $(DIRS); do (cd $$d && $(MAKE) $@) || exit 1; done
 
 #
 # create fonts.conf file
