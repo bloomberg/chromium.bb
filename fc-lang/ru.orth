@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/fc-lang/ru.orth,v 1.2 2002/07/06 23:59:19 keithp Exp $
+# $XFree86: xc/lib/fontconfig/fc-lang/ru.orth,v 1.3 2002/07/12 09:12:37 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -29,6 +29,10 @@
 0410-044f
 0451
 0456
-0462-0463
-0472-0475
+#0462		# CYRILLIC CAPITAL LETTER YAT
+#0463		# CYRILLIC SMALL LETTER YAT
+#0472		# CYRILLIC CAPITAL LETTER FITA
+#0473		# CYRILLIC SMALL LETTER FITA
+#0474		# CYRILLIC CAPITAL LETTER IZHITSA
+#0475		# CYRILLIC SMALL LETTER IZHITSA
 #2039-203a	# angle quotes

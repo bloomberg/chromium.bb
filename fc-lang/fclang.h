@@ -142,7 +142,7 @@ static const FcCharLeaf	leaves[599] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
     { { /* 29 */
-    0xffff0002, 0xffffffff, 0x0002ffff, 0x000c0000,
+    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
     0x00000000, 0x0c00c000, 0x00000000, 0x00000000,
     } },
     { { /* 30 */
@@ -718,7 +718,7 @@ static const FcCharLeaf	leaves[599] = {
     0x00000000, 0xffffffff, 0xffff003f, 0x087fffff,
     } },
     { { /* 173 */
-    0xffff0002, 0xffffffff, 0x0002ffff, 0x000c0000,
+    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
     0x0c0c0000, 0x000cc00c, 0x03000000, 0x00000000,
     } },
     { { /* 174 */
@@ -1110,7 +1110,7 @@ static const FcCharLeaf	leaves[599] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
     { { /* 271 */
-    0xffff0002, 0xffffffff, 0x0002ffff, 0x000c0000,
+    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
     0x00000000, 0x0000c00c, 0x00000000, 0x00000000,
     } },
     { { /* 272 */
@@ -1218,11 +1218,11 @@ static const FcCharLeaf	leaves[599] = {
     0x00000000, 0x00000000, 0x02045301, 0x02045301,
     } },
     { { /* 298 */
-    0xffff0042, 0xffffffff, 0x0042ffff, 0x003c000c,
+    0xffff0042, 0xffffffff, 0x0042ffff, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
     { { /* 299 */
-    0xffff0002, 0xffffffff, 0x0002ffff, 0x000c0000,
+    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
     0x00300000, 0x0c00c030, 0x03000000, 0x00000000,
     } },
     { { /* 300 */
@@ -1314,7 +1314,7 @@ static const FcCharLeaf	leaves[599] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
     { { /* 322 */
-    0xffff0002, 0xffffffff, 0x0002ffff, 0x000c0000,
+    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
     0x00c00000, 0x0000c00c, 0x03000000, 0x00000000,
     } },
     { { /* 323 */
@@ -1334,7 +1334,7 @@ static const FcCharLeaf	leaves[599] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     } },
     { { /* 327 */
-    0xffff0002, 0xffffffff, 0x0002ffff, 0x000c0000,
+    0xffff0002, 0xffffffff, 0x0002ffff, 0x00000000,
     0x00c00000, 0x0c00c00c, 0x03000000, 0x00000000,
     } },
     { { /* 328 */

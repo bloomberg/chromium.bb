@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/tyv.orth,v 1.1 2002/07/12 07:52:16 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -94,8 +94,8 @@
 044e
 044f
 0451
-0472
-0473
+#0472		# CYRILLIC CAPITAL LETTER FITA
+#0473		# CYRILLIC SMALL LETTER FITA
 04a2
 04a3
 04ae
