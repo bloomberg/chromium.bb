@@ -101,13 +101,13 @@ typedef struct drm_file drm_file_t;
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 
 				/* Mapping helper macros */
-#define DRM_IOREMAP(map)						\
+#define DRM_IOREMAP(map, dev)						\
 	(map)->handle = DRM(ioremap)( dev, map )
 
-#define DRM_IOREMAP_NOCACHE(map)					\
+#define DRM_IOREMAP_NOCACHE(map, dev)					\
 	(map)->handle = DRM(ioremap_nocache)( dev, map )
 
-#define DRM_IOREMAPFREE(map)						\
+#define DRM_IOREMAPFREE(map, dev)						\
 	do {								\
 		if ( (map)->handle && (map)->size )			\
 			DRM(ioremapfree)( map );			\

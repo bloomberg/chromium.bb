@@ -270,7 +270,7 @@ void DRM(free_pages)(unsigned long address, int order, int area)
 	}
 }
 
-void *DRM(ioremap)(unsigned long offset, unsigned long size)
+void *DRM(ioremap)(unsigned long offset, unsigned long size, drm_device_t *dev)
 {
 	void *pt;
 
@@ -280,7 +280,7 @@ void *DRM(ioremap)(unsigned long offset, unsigned long size)
 		return NULL;
 	}
 
-	if (!(pt = ioremap(offset, size))) {
+	if (!(pt = drm_ioremap(offset, size, dev))) {
 		spin_lock(&DRM(mem_lock));
 		++DRM(mem_stats)[DRM_MEM_MAPPINGS].fail_count;
 		spin_unlock(&DRM(mem_lock));
@@ -293,7 +293,7 @@ void *DRM(ioremap)(unsigned long offset, unsigned long size)
 	return pt;
 }
 
-void *DRM(ioremap_nocache)(unsigned long offset, unsigned long size)
+void *DRM(ioremap_nocache)(unsigned long offset, unsigned long size, drm_device_t *dev)
 {
 	void *pt;
 
@@ -303,7 +303,7 @@ void *DRM(ioremap_nocache)(unsigned long offset, unsigned long size)
 		return NULL;
 	}
 
-	if (!(pt = ioremap_nocache(offset, size))) {
+	if (!(pt = drm_ioremap_nocache(offset, size, dev))) {
 		spin_lock(&DRM(mem_lock));
 		++DRM(mem_stats)[DRM_MEM_MAPPINGS].fail_count;
 		spin_unlock(&DRM(mem_lock));
@@ -316,7 +316,7 @@ void *DRM(ioremap_nocache)(unsigned long offset, unsigned long size)
 	return pt;
 }
 
-void DRM(ioremapfree)(void *pt, unsigned long size)
+void DRM(ioremapfree)(void *pt, unsigned long size, drm_device_t *dev)
 {
 	int alloc_count;
 	int free_count;
@@ -325,7 +325,7 @@ void DRM(ioremapfree)(void *pt, unsigned long size)
 		DRM_MEM_ERROR(DRM_MEM_MAPPINGS,
 			      "Attempt to free NULL pointer\n");
 	else
-		iounmap(pt);
+		drm_ioremapfree(pt, size, dev);
 
 	spin_lock(&DRM(mem_lock));
 	DRM(mem_stats)[DRM_MEM_MAPPINGS].bytes_freed += size;

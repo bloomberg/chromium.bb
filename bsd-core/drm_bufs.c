@@ -136,7 +136,7 @@ int DRM(addmap)( DRM_IOCTL_ARGS )
 #endif
 		}
 #endif /* __REALLY_HAVE_MTRR */
-		DRM_IOREMAP(map);
+		DRM_IOREMAP(map, dev);
 		break;
 
 	case _DRM_SHM:
