@@ -386,11 +386,14 @@ static int savage_do_init_bci(drm_device_t *dev, drm_savage_init_t *init)
 	} else {
 		dev_priv->status = NULL;
 	}
-	dev->agp_buffer_map = drm_core_findmap(dev, init->buffers_offset);
-	if (!dev->agp_buffer_map) {
-		DRM_ERROR("could not find dma buffer region!\n");
-		savage_do_cleanup_bci(dev);
-		return DRM_ERR(EINVAL);
+	if (dev_priv->dma_type == SAVAGE_DMA_AGP) {
+		dev->agp_buffer_map = drm_core_findmap(dev,
+						       init->buffers_offset);
+		if (!dev->agp_buffer_map) {
+			DRM_ERROR("could not find dma buffer region!\n");
+			savage_do_cleanup_bci(dev);
+			return DRM_ERR(EINVAL);
+		}
 	}
 	if (init->agp_textures_offset) {
 		dev_priv->agp_textures =
