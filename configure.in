@@ -289,6 +289,20 @@ AC_SUBST(CONFDIR)
 ORTH_FILES=`cd fc-lang && echo *.orth`
 AC_SUBST(ORTH_FILES)
 
+#
+# Figure out where to install documentation
+#
+
+AC_ARG_WITH(docdir,           [  --with-docdir=DIR            Use DIR to store documentation files (default ${datadir}/doc/fontconfig)], confdir="$withval")
+
+if test "x$with_docdir" = "x" ; then
+  DOCDIR='${datadir}/doc/fontconfig'
+else
+  DOCDIR=$with_docdir
+fi
+
+AC_SUBST(DOCDIR)
+
 AC_OUTPUT([
 Makefile 
 fontconfig/Makefile
@@ -296,6 +310,7 @@ fc-lang/Makefile
 src/Makefile
 fc-cache/Makefile
 fc-list/Makefile
+doc/Makefile
 fontconfig.spec
 fontconfig.pc
 fonts.conf
