@@ -94,6 +94,10 @@ extern unsigned long _bus_base(void);
 #define DRM_MAJOR 34
 #endif
 
+# ifdef __OpenBSD__
+#  define DRM_MAJOR 81
+# endif
+
 #ifndef DRM_MAJOR
 #define DRM_MAJOR 226		/* Linux */
 #endif
@@ -321,8 +325,10 @@ int drmAvailable(void)
     int           fd;
 
     if ((fd = drmOpenMinor(0, 1)) < 0) {
+#ifdef __linux__
 				/* Try proc for backward Linux compatibility */
 	if (!access("/proc/dri/0", R_OK)) return 1;
+#endif
 	return 0;
     }
     
@@ -598,6 +604,7 @@ drmVersionPtr drmGetVersion(int fd)
 	version->desc    = drmMalloc(version->desc_len + 1);
 
     if (ioctl(fd, DRM_IOCTL_VERSION, version)) {
+	drmMsg("DRM_IOCTL_VERSION: %s\n", strerror(errno));
 	drmFreeKernelVersion(version);
 	return NULL;
     }
@@ -1167,8 +1174,6 @@ int drmGetLock(int fd, drmContext context, drmLockFlags flags)
     return 0;
 }
 
-static void (*drm_unlock_callback)( void ) = 0;
-
 /**
  * Release the hardware lock.
  *
@@ -1412,7 +1417,8 @@ int drmAgpAlloc(int fd, unsigned long size, unsigned long type,
 		unsigned long *address, unsigned long *handle)
 {
     drm_agp_buffer_t b;
-    *handle = 0;
+
+    *handle = DRM_AGP_NO_HANDLE;
     b.size   = size;
     b.handle = 0;
     b.type   = type;
