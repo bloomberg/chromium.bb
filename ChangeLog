@@ -1,3 +1,11 @@
+2005-02-10  Keith Packard  <keithp@keithp.com>
+
+	reviewed by: pborelli@katamail.com
+
+	* src/fcdir.c: (FcFileScanConfig):
+	Free patterns from fonts which are rejected by configuration
+	(bug #2518)
+
 2005-01-28  Keith Packard  <keithp@keithp.com>
 
 	* README:
