@@ -1232,6 +1232,14 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		    !FcStrCmpIgnoreCase ((FcChar8 *) t->field, 
 					 (FcChar8 *) e->field))
 		{
+		    /* 
+		     * KLUDGE - the pattern may have been reallocated or
+		     * things may have been inserted or deleted above
+		     * this element by other edits.  Go back and find
+		     * the element again
+		     */
+		    if (e != s->edit && st[i].elt)
+			st[i].elt = FcPatternFindElt (p, t->field);
 		    if (!st[i].elt)
 			t = 0;
 		    break;
