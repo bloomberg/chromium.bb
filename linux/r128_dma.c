@@ -480,10 +480,8 @@ static int r128_submit_packets_ring_secure(drm_device_t *dev,
 		   dev_priv->ring_start,
 		   write * sizeof(u32));
 
-#ifdef __i386__
 	/* Make sure WC cache has been flushed */
 	r128_flush_write_combine();
-#endif
 
 	dev_priv->sarea_priv->ring_write = write;
 	R128_WRITE(R128_PM4_BUFFER_DL_WPTR, write);
@@ -585,10 +583,8 @@ static int r128_submit_packets_ring(drm_device_t *dev,
 		   dev_priv->ring_start,
 		   write * sizeof(u32));
 
-#ifdef __i386__
 	/* Make sure WC cache has been flushed */
 	r128_flush_write_combine();
-#endif
 
 	dev_priv->sarea_priv->ring_write = write;
 	R128_WRITE(R128_PM4_BUFFER_DL_WPTR, write);
@@ -756,10 +752,8 @@ static int r128_send_vertbufs(drm_device_t *dev, drm_r128_vertex_t *v)
 		r128_mark_vertbufs_done(dev);
 	}
 
-#ifdef __i386__
 	/* Make sure WC cache has been flushed (if in PIO mode) */
 	if (!dev_priv->cce_is_bm_mode) r128_flush_write_combine();
-#endif
 
 	/* FIXME: Add support for sending vertex buffer to the CCE here
 	   instead of in client code.  The v->prim holds the primitive

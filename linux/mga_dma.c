@@ -416,9 +416,7 @@ void mga_fire_primary(drm_device_t *dev, drm_mga_prim_buf_t *prim)
 		}
 	}
 
-#ifdef __i386__
    	mga_flush_write_combine();
-#endif
     	atomic_inc(&dev_priv->pending_bufs);
        	MGA_WRITE(MGAREG_PRIMADDRESS, phys_head | TT_GENERAL);
  	MGA_WRITE(MGAREG_PRIMEND, (phys_head + num_dwords * 4) | use_agp);
@@ -815,10 +813,8 @@ static int mga_dma_initialize(drm_device_t *dev, drm_mga_init_t *init) {
 		/* Poll for the first buffer to insure that
 		 * the status register will be correct
 		 */
-	   
-#ifdef __i386__
+
 		mga_flush_write_combine();
-#endif
 	   	MGA_WRITE(MGAREG_PRIMADDRESS, phys_head | TT_GENERAL);
 
 		MGA_WRITE(MGAREG_PRIMEND, ((phys_head + num_dwords * 4) |

@@ -218,8 +218,8 @@ static void mgaG400EmitTex1(drm_mga_private_t * dev_priv, int source )
 
 	/* This takes 25 dwords */
 
-	PRIMOUTREG(MGAREG_TEXCTL2, regs[MGA_TEXREG_CTL2] | TMC_map1_enable | 
-		   0x00008000);
+	PRIMOUTREG(MGAREG_TEXCTL2,
+		   regs[MGA_TEXREG_CTL2] | TMC_map1_enable | 0x00008000);
 	PRIMOUTREG(MGAREG_TEXCTL, regs[MGA_TEXREG_CTL]);
 	PRIMOUTREG(MGAREG_TEXFILTER, regs[MGA_TEXREG_FILTER]);
 	PRIMOUTREG(MGAREG_TEXBORDERCOL, regs[MGA_TEXREG_BORDERCOL]);
@@ -873,9 +873,7 @@ int mga_clear_bufs(struct inode *inode, struct file *filp,
 			       clear.clear_color_mask,
 			       clear.clear_depth_mask);
 	PRIMUPDATE(dev_priv);
-#ifdef __i386__
 	mga_flush_write_combine();
-#endif
 	mga_dma_schedule(dev, 1);
 	return 0;
 }
@@ -905,9 +903,7 @@ int mga_swap_bufs(struct inode *inode, struct file *filp,
 	PRIMUPDATE(dev_priv);
 	set_bit(MGA_BUF_SWAP_PENDING,
 		&dev_priv->current_prim->buffer_status);
-#ifdef __i386__
 	mga_flush_write_combine();
-#endif
 	mga_dma_schedule(dev, 1);
 	return 0;
 }
@@ -955,9 +951,7 @@ int mga_iload(struct inode *inode, struct file *filp,
 	AGEBUF(dev_priv, buf_priv);
 	buf_priv->discard = 1;
 	mga_freelist_put(dev, buf);
-#ifdef __i386__
 	mga_flush_write_combine();
-#endif
 	mga_dma_schedule(dev, 1);
 	return 0;
 }
@@ -1005,9 +999,7 @@ int mga_vertex(struct inode *inode, struct file *filp,
 	mga_dma_dispatch_vertex(dev, buf);
 
 	PRIMUPDATE(dev_priv);
-#ifdef __i386__
 	mga_flush_write_combine();
-#endif
 	mga_dma_schedule(dev, 1);
 	return 0;
 }
@@ -1054,9 +1046,7 @@ int mga_indices(struct inode *inode, struct file *filp,
 	mga_dma_dispatch_indices(dev, buf, indices.start, indices.end);
 
 	PRIMUPDATE(dev_priv);
-#ifdef __i386__
 	mga_flush_write_combine();
-#endif
 	mga_dma_schedule(dev, 1);
 	return 0;
 }
