@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.9 2002/06/02 21:07:56 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.11 2002/06/08 17:32:04 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -109,29 +109,29 @@ static FcMatcher _FcMatchers [] = {
     { FC_CHARSET,	FcCompareCharSet },
 #define MATCH_CHARSET	1
     
-    { FC_ANTIALIAS,	FcCompareBool, },
-#define MATCH_ANTIALIAS	2
-    
     { FC_LANG,		FcCompareString },
-#define MATCH_LANG	3
+#define MATCH_LANG	2
     
     { FC_FAMILY,	FcCompareString, },
-#define MATCH_FAMILY	4
+#define MATCH_FAMILY	3
     
     { FC_SPACING,	FcCompareInteger, },
-#define MATCH_SPACING	5
+#define MATCH_SPACING	4
     
     { FC_PIXEL_SIZE,	FcCompareSize, },
-#define MATCH_PIXEL_SIZE	6
+#define MATCH_PIXEL_SIZE	5
     
     { FC_STYLE,		FcCompareString, },
-#define MATCH_STYLE	7
+#define MATCH_STYLE	6
     
     { FC_SLANT,		FcCompareInteger, },
-#define MATCH_SLANT	8
+#define MATCH_SLANT	7
     
     { FC_WEIGHT,	FcCompareInteger, },
-#define MATCH_WEIGHT	9
+#define MATCH_WEIGHT	8
+    
+    { FC_ANTIALIAS,	FcCompareBool, },
+#define MATCH_ANTIALIAS	9
     
     { FC_RASTERIZER,	FcCompareString, },
 #define MATCH_RASTERIZER	10

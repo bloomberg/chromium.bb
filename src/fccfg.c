@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.7 2002/05/29 08:21:33 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.11 2002/06/08 17:32:04 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -866,11 +866,12 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 static FcValueList *
 FcConfigMatchValueList (FcPattern	*p,
 			FcTest		*t,
-			FcValueList	*v)
+			FcValueList	*values)
 {
     FcValueList	    *ret = 0;
     FcExpr	    *e = t->expr;
     FcValue	    value;
+    FcValueList	    *v;
     
     while (e)
     {
@@ -885,7 +886,7 @@ FcConfigMatchValueList (FcPattern	*p,
 	    e = 0;
 	}
 
-	for (; v; v = v->next)
+	for (v = values; v; v = v->next)
 	{
 	    if (FcConfigCompareValue (v->value, t->op, value))
 	    {
