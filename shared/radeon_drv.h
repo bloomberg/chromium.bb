@@ -126,6 +126,13 @@ typedef struct drm_radeon_private {
 	u32 depth_pitch_offset;
 
 	drm_radeon_depth_clear_t depth_clear;
+	
+	unsigned long fb_offset;
+	unsigned long mmio_offset;
+	unsigned long ring_offset;
+	unsigned long ring_rptr_offset;
+	unsigned long buffers_offset;
+	unsigned long agp_textures_offset;
 
 	drm_local_map_t *sarea;
 	drm_local_map_t *fb;
