@@ -97,9 +97,10 @@ SISSHARED=      sis.h sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
 SAVAGEHEADERS=  savage.h savage_drv.h savage_drm.h $(DRMHEADERS) \
                 $(DRMTEMPLATES)
 VIAHEADERS	= via_drm.h via_drv.h via.h via_mm.h via_ds.h \
-		$(DRMHEADERS) $(DRMTEMPLATES)
-VIASHARED	= via_drm.h via_drv.h via.h via_mm.h via_ds.h via_drv.c \
-		via_ds.c via_irq.c via_map.c via_mm.c
+		via_3d_reg.h $(DRMHEADERS) $(DRMTEMPLATES)
+VIASHARED	= via_drm.h via_drv.h via.h via_mm.h via_ds.h \
+		via_3d_reg.h via_drv.c via_ds.c via_irq.c via_map.c \
+		via_mm.c via_dma.c
 MACH64HEADERS	= mach64.h mach64_drv.h mach64_drm.h $(DRMHEADERS) \
 		$(DRMTEMPLATES)
 MACH64SHARED 	= mach64.h mach64_drv.h mach64_drm.h mach64_dma.c \

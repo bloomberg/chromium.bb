@@ -50,7 +50,9 @@ SHAREDFILES=	drm.h \
 		via_irq.c \
 		via_map.c \
 		via_mm.c \
-		via_mm.h
+		via_mm.h \
+		via_3d_reg.h \
+		via_dma.c
 
 SUBDIR = i915 mach64 mga r128 radeon sis tdfx
 

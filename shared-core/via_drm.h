@@ -66,6 +66,9 @@
 #define DRM_IOCTL_VIA_FB_INIT	DRM_IOWR(0x43, drm_via_fb_t)
 #define DRM_IOCTL_VIA_MAP_INIT	DRM_IOWR(0x44, drm_via_init_t)
 #define DRM_IOCTL_VIA_DEC_FUTEX DRM_IOW(0x45, drm_via_futex_t)
+#define DRM_IOCTL_VIA_DMA_INIT	DRM_IOWR(0x47, drm_via_dma_init_t)
+#define DRM_IOCTL_VIA_CMDBUFFER	DRM_IOWR(0x48, drm_via_dma_init_t)
+#define DRM_IOCTL_VIA_FLUSH	DRM_IO(0x49)
 
 /* Indices into buf.Setup where various bits of state are mirrored per
  * context and per buffer.  These can be fired at the card as a unit,
@@ -123,6 +126,22 @@ typedef struct _drm_via_futex {
         unsigned int val;
 } drm_via_futex_t;
 
+typedef struct _drm_via_dma_init {
+        enum {
+                VIA_INIT_DMA = 0x01,
+                VIA_CLEANUP_DMA = 0x02
+        } func;
+
+        unsigned long offset;
+        unsigned long size;
+        unsigned long reg_pause_addr;
+} drm_via_dma_init_t;
+
+typedef struct _drm_via_cmdbuffer {
+        char *buf;
+        unsigned long size;
+} drm_via_cmdbuffer_t;
+
 /* Warning: If you change the SAREA structure you must change the Xserver
  * structure as well */
 
@@ -178,6 +197,9 @@ int via_mem_free( DRM_IOCTL_ARGS );
 int via_agp_init( DRM_IOCTL_ARGS );				
 int via_map_init( DRM_IOCTL_ARGS );				
 int via_decoder_futex( DRM_IOCTL_ARGS ); 
+int via_dma_init( DRM_IOCTL_ARGS );
+int via_cmdbuffer( DRM_IOCTL_ARGS );
+int via_flush_ioctl( DRM_IOCTL_ARGS );
 
 #endif
 #endif /* _VIA_DRM_H_ */

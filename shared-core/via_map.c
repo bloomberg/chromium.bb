@@ -83,6 +83,8 @@ int via_do_cleanup_map(drm_device_t *dev)
 
 		drm_via_private_t *dev_priv = dev->dev_private;
 
+		via_dma_cleanup(dev);
+
 		DRM(free)(dev_priv, sizeof(drm_via_private_t),
                           DRM_MEM_DRIVER);
 		dev->dev_private = NULL;
