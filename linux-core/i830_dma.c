@@ -38,6 +38,7 @@
 #include "i830_drm.h"
 #include "i830_drv.h"
 #include <linux/interrupt.h>	/* For task queue support */
+#include <linux/delay.h>
 
 /* in case we don't have a 2.3.99-pre6 kernel or later: */
 #ifndef VM_DONTCOPY
@@ -58,7 +59,6 @@
 do {								\
    int _head;							\
    int _tail;							\
-   int _i;							\
    do { 							\
       _head = I830_READ(LP_RING + RING_HEAD) & HEAD_ADDR;	\
       _tail = I830_READ(LP_RING + RING_TAIL) & TAIL_ADDR;	\
@@ -369,9 +369,7 @@ static int i830_wait_ring(drm_device_t *dev, int n)
 	unsigned int last_head = I830_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
 
 	end = jiffies + (HZ*3);
-   	while (ring->space < n) {
-	   	int i;
-	
+   	while (ring->space < n) {	
 	   	ring->head = I830_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
 	   	ring->space = ring->head - (ring->tail+8);
 		if (ring->space < 0) ring->space += ring->Size;
