@@ -32,6 +32,16 @@
 #ifndef _I810_DRV_H_
 #define _I810_DRV_H_
 
+typedef struct drm_i810_buf_priv {
+   	u32 *in_use;
+   	int my_use_idx;
+	int currently_mapped;
+	void *virtual;
+	void *kernel_virtual;
+	int map_count;
+   	struct vm_area_struct *vma;
+} drm_i810_buf_priv_t;
+
 typedef struct _drm_i810_ring_buffer{
 	int tail_mask;
 	unsigned long Start;
@@ -55,6 +65,15 @@ typedef struct drm_i810_private {
 
    	atomic_t flush_done;
    	wait_queue_head_t flush_queue;	/* Processes waiting until flush    */
+	drm_buf_t *mmap_buffer;
+
+	
+	u32 front_di1, back_di1, zi1;
+	
+	int back_offset;
+	int depth_offset;
+	int w, h;
+	int pitch;
 } drm_i810_private_t;
 
 				/* i810_drv.c */
@@ -71,8 +90,8 @@ extern int  i810_unlock(struct inode *inode, struct file *filp,
 
 				/* i810_dma.c */
 extern int  i810_dma_schedule(drm_device_t *dev, int locked);
-extern int  i810_dma(struct inode *inode, struct file *filp,
-		      unsigned int cmd, unsigned long arg);
+extern int  i810_getbuf(struct inode *inode, struct file *filp,
+			unsigned int cmd, unsigned long arg);
 extern int  i810_irq_install(drm_device_t *dev, int irq);
 extern int  i810_irq_uninstall(drm_device_t *dev);
 extern int  i810_control(struct inode *inode, struct file *filp,
@@ -86,6 +105,7 @@ extern int  i810_flush_ioctl(struct inode *inode, struct file *filp,
 extern void i810_reclaim_buffers(drm_device_t *dev, pid_t pid);
 extern int  i810_getage(struct inode *inode, struct file *filp, unsigned int cmd,
 			unsigned long arg);
+extern int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma);
 
 
 				/* i810_bufs.c */
@@ -97,8 +117,6 @@ extern int  i810_markbufs(struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg);
 extern int  i810_freebufs(struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg);
-extern int  i810_mapbufs(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg);
 extern int  i810_addmap(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 
@@ -121,32 +139,17 @@ extern int  i810_rmctx(struct inode *inode, struct file *filp,
 extern int  i810_context_switch(drm_device_t *dev, int old, int new);
 extern int  i810_context_switch_complete(drm_device_t *dev, int new);
 
-
-
-
-/* Copy the outstanding cliprects for every I810_DMA_VERTEX buffer.
- * This can be fixed by emitting directly to the ringbuffer in the
- * 'vertex_dma' ioctl.  
-*/
-typedef struct {
-   	u32 *in_use;
-   	int my_use_idx;
-} drm_i810_buf_priv_t;
-
-
-#define I810_DMA_GENERAL 0
-#define I810_DMA_VERTEX  1
-#define I810_DMA_DISCARD 2	/* not used */
-
 #define I810_VERBOSE 0
 
 
 int i810_dma_vertex(struct inode *inode, struct file *filp,
 		    unsigned int cmd, unsigned long arg);
 
-int i810_dma_general(struct inode *inode, struct file *filp,
-		     unsigned int cmd, unsigned long arg);
+int i810_swap_bufs(struct inode *inode, struct file *filp,
+		   unsigned int cmd, unsigned long arg);
 
+int i810_clear_bufs(struct inode *inode, struct file *filp,
+		    unsigned int cmd, unsigned long arg);
 
 #define GFX_OP_USER_INTERRUPT 		((0<<29)|(2<<23))
 #define GFX_OP_BREAKPOINT_INTERRUPT	((0<<29)|(1<<23))
@@ -199,6 +202,23 @@ int i810_dma_general(struct inode *inode, struct file *filp,
 #define SCI_XMIN_MASK      (0xffff<<0)
 #define SCI_YMAX_MASK      (0xffff<<16)
 #define SCI_XMAX_MASK      (0xffff<<0)
+
+#define GFX_OP_COLOR_FACTOR      ((0x3<<29)|(0x1d<<24)|(0x1<<16)|0x0)
+#define GFX_OP_STIPPLE           ((0x3<<29)|(0x1d<<24)|(0x83<<16))
+#define GFX_OP_MAP_INFO          ((0x3<<29)|(0x1d<<24)|0x2)
+#define GFX_OP_DESTBUFFER_VARS   ((0x3<<29)|(0x1d<<24)|(0x85<<16)|0x0)
+#define GFX_OP_DRAWRECT_INFO     ((0x3<<29)|(0x1d<<24)|(0x80<<16)|(0x3))
+#define GFX_OP_PRIMITIVE         ((0x3<<29)|(0x1f<<24))
+
+#define CMD_OP_Z_BUFFER_INFO     ((0x0<<29)|(0x16<<23))
+#define CMD_OP_DESTBUFFER_INFO   ((0x0<<29)|(0x15<<23))
+
+#define BR00_BITBLT_CLIENT   0x40000000
+#define BR00_OP_COLOR_BLT    0x10000000
+#define BR00_OP_SRC_COPY_BLT 0x10C00000
+#define BR13_SOLID_PATTERN   0x80000000
+
+
 
 #endif
 

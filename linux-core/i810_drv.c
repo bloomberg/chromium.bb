@@ -80,7 +80,6 @@ static drm_ioctl_desc_t	      i810_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_BUFS)]    = { i810_addbufs,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_MARK_BUFS)]   = { i810_markbufs,  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]   = { i810_infobufs,  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]    = { i810_mapbufs,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]   = { i810_freebufs,  1, 0 },
 
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]     = { i810_addctx,	  1, 1 },
@@ -92,8 +91,6 @@ static drm_ioctl_desc_t	      i810_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]     = { i810_resctx,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]    = { drm_adddraw,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_RM_DRAW)]     = { drm_rmdraw,	  1, 1 },
-
-	[DRM_IOCTL_NR(DRM_IOCTL_DMA)]	      = { i810_dma,	  1, 0 },
 
 	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	      = { i810_lock,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]      = { i810_unlock,	  1, 0 },
@@ -107,11 +104,14 @@ static drm_ioctl_desc_t	      i810_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]    = { drm_agp_free,    1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]    = { drm_agp_bind,    1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]  = { drm_agp_unbind,  1, 1 },
+
    	[DRM_IOCTL_NR(DRM_IOCTL_I810_INIT)]   = { i810_dma_init,   1, 1 },
    	[DRM_IOCTL_NR(DRM_IOCTL_I810_VERTEX)] = { i810_dma_vertex, 1, 0 },
-   	[DRM_IOCTL_NR(DRM_IOCTL_I810_DMA)]    = { i810_dma_general,1, 0 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_CLEAR)]  = { i810_clear_bufs, 1, 0 },
       	[DRM_IOCTL_NR(DRM_IOCTL_I810_FLUSH)]  = { i810_flush_ioctl,1, 0 },
    	[DRM_IOCTL_NR(DRM_IOCTL_I810_GETAGE)] = { i810_getage,     1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_I810_GETBUF)] = { i810_getbuf,     1, 0 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_SWAP)]   = { i810_swap_bufs,  1, 0 },
 };
 
 #define I810_IOCTL_COUNT DRM_ARRAY_SIZE(i810_ioctls)

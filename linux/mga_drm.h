@@ -37,6 +37,7 @@
  */
 #ifndef _MGA_DEFINES_
 #define _MGA_DEFINES_
+
 #define MGA_F  0x1		/* fog */
 #define MGA_A  0x2		/* alpha */
 #define MGA_S  0x4		/* specular */
@@ -61,11 +62,11 @@
 
 #define MGA_MAX_G400_PIPES 16
 #define MGA_MAX_G200_PIPES  8	/* no multitex */
-
 #define MGA_MAX_WARP_PIPES MGA_MAX_G400_PIPES
 
 #define MGA_CARD_TYPE_G200 1
 #define MGA_CARD_TYPE_G400 2
+
 #define MGA_FRONT   0x1
 #define MGA_BACK    0x2
 #define MGA_DEPTH   0x4
@@ -110,19 +111,19 @@
 #define MGA_UPLOAD_TEX0       0x2
 #define MGA_UPLOAD_TEX1       0x4
 #define MGA_UPLOAD_PIPE       0x8
-#define MGA_UPLOAD_TEX0IMAGE  0x10
-#define MGA_UPLOAD_TEX1IMAGE  0x20
+#define MGA_UPLOAD_TEX0IMAGE  0x10 /* handled client-side */
+#define MGA_UPLOAD_TEX1IMAGE  0x20 /* handled client-side */
 #define MGA_UPLOAD_2D 	      0x40
 #define MGA_WAIT_AGE          0x80 /* handled client-side */
 #define MGA_UPLOAD_CLIPRECTS  0x100 /* handled client-side */
 #define MGA_DMA_FLUSH	      0x200 /* set when someone gets the lock
                                        quiescent */
 
-/* 64 buffers of 16k each, total 1 meg.
+/* 32 buffers of 64k each, total 2 meg.
  */
-#define MGA_DMA_BUF_ORDER     14
+#define MGA_DMA_BUF_ORDER     16
 #define MGA_DMA_BUF_SZ        (1<<MGA_DMA_BUF_ORDER)
-#define MGA_DMA_BUF_NR        63
+#define MGA_DMA_BUF_NR        31
 
 /* Keep these small for testing.
  */
@@ -159,19 +160,19 @@ typedef struct drm_mga_init {
    	int sarea_priv_offset;
    	int primary_size;
    	int warp_ucode_size;
-   	int frontOffset;
-   	int backOffset;
-   	int depthOffset;
-   	int textureOffset;
-   	int textureSize;
-        int agpTextureOffset;
-        int agpTextureSize;
-   	int cpp;
-   	int stride;
+   	unsigned int frontOffset;
+   	unsigned int backOffset;
+   	unsigned int depthOffset;
+   	unsigned int textureOffset;
+   	unsigned int textureSize;
+        unsigned int agpTextureOffset;
+        unsigned int agpTextureSize;
+   	unsigned int cpp;
+   	unsigned int stride;
    	int sgram;
 	int chipset;
    	drm_mga_warp_index_t WarpIndex[MGA_MAX_WARP_PIPES];
-	int mAccess;
+	unsigned int mAccess;
 } drm_mga_init_t;
 
 /* Warning: if you change the sarea structure, you must change the Xserver
@@ -180,7 +181,7 @@ typedef struct drm_mga_init {
 typedef struct _drm_mga_tex_region {
 	unsigned char next, prev;	
 	unsigned char in_use;	
-	int age;			
+	unsigned int age;			
 } drm_mga_tex_region_t;
 
 typedef struct _drm_mga_sarea {
@@ -219,9 +220,9 @@ typedef struct _drm_mga_sarea {
    
 	/* Counters for aging textures and for client-side throttling.
 	 */
-        int last_enqueue;	/* last time a buffer was enqueued */
-	int last_dispatch;	/* age of the most recently dispatched buffer */
-	int last_quiescent;     /*  */
+        unsigned int last_enqueue;	/* last time a buffer was enqueued */
+	unsigned int last_dispatch;	/* age of the most recently dispatched buffer */
+	unsigned int last_quiescent;     /*  */
 
 
 	/* LRU lists for texture memory in agp space and on the card
@@ -237,9 +238,9 @@ typedef struct _drm_mga_sarea {
 /* Device specific ioctls:
  */
 typedef struct _drm_mga_clear {
-	int clear_color;
-	int clear_depth;
-	int flags;
+	unsigned int clear_color;
+	unsigned int clear_depth;
+	unsigned int flags;
 } drm_mga_clear_t;
 
 typedef struct _drm_mga_swap {
@@ -257,5 +258,12 @@ typedef struct _drm_mga_vertex {
 	int used;		/* bytes in use */
 	int discard;		/* client finished with buffer?  */
 } drm_mga_vertex_t;
+
+typedef struct _drm_mga_indices {
+   	int idx;		/* buffer to queue */
+	unsigned int start;		
+	unsigned int end;		
+	int discard;		/* client finished with buffer?  */
+} drm_mga_indices_t;
 
 #endif
