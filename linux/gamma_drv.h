@@ -49,6 +49,7 @@ extern int gamma_dma_init( struct inode *inode, struct file *filp,
 extern int gamma_dma_copy( struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg );
 
+extern int gamma_do_cleanup_dma( drm_device_t *dev );
 extern void gamma_dma_ready(drm_device_t *dev);
 extern void gamma_dma_quiescent_single(drm_device_t *dev);
 extern void gamma_dma_quiescent_dual(drm_device_t *dev);
