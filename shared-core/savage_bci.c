@@ -48,7 +48,7 @@ savage_bci_wait_fifo_shadow(drm_savage_private_t *dev_priv, unsigned int n)
 
 	for (i = 0; i < SAVAGE_DEFAULT_USEC_TIMEOUT; i++) {
 		status = dev_priv->status_ptr[0];
-		if ((status & mask) <= threshold)
+		if ((status & mask) < threshold)
 			return 0;
 		DRM_UDELAY(1);
 	}
