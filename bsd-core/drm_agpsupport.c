@@ -32,11 +32,47 @@
 
 #include "drmP.h"
 
+#ifdef __FreeBSD__
+#include <pci/agpreg.h>
+#include <dev/pci/pcireg.h>
+#endif
+
 int
 drm_device_is_agp(drm_device_t *dev)
 {
-	/* XXX: FILL ME IN HERE */
+#ifdef __FreeBSD__
+	/* Code taken from agp.c.  IWBNI that was a public interface. */
+	u_int32_t status;
+	u_int8_t ptr, next;
+
+	/*
+	 * Check the CAP_LIST bit of the PCI status register first.
+	 */
+	status = pci_read_config(dev->device, PCIR_STATUS, 2);
+	if (!(status & 0x10))
+		return 0;
+
+	/*
+	 * Traverse the capabilities list.
+	 */
+	for (ptr = pci_read_config(dev->device, AGP_CAPPTR, 1);
+	     ptr != 0;
+	     ptr = next) {
+		u_int32_t capid = pci_read_config(dev->device, ptr, 4);
+		next = AGP_CAPID_GET_NEXT_PTR(capid);
+
+		/*
+		 * If this capability entry ID is 2, then we are done.
+		 */
+		if (AGP_CAPID_GET_CAP_ID(capid) == 2)
+			return 1;
+	}
+
+	return 0;
+#else
+	/* XXX: fill me in for non-FreeBSD */
 	return 1;
+#endif
 }
 
 int drm_agp_info(DRM_IOCTL_ARGS)
