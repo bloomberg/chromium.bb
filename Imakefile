@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.5 2002/05/25 13:52:37 herrb Exp $
+XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.7 2002/08/01 16:17:33 keithp Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -10,10 +10,20 @@ SUBDIRS=fontconfig $(LINTSUBDIRS)
 FONTCONFIG_REVISION=1
 
 #ifndef FontconfigDir
+#if NothingOutsideProjectRoot
+#define FontconfigDir $(PROJECTROOT)/etc/fonts
+#else
 #define FontconfigDir /etc/fonts
+#endif
 #endif
 
 FONTCONFIGDIR=FontconfigDir
+
+#if NothingOutsideProjectRoot
+FONTDIRS=$(FONTDIR)
+#else
+FONTDIRS=/usr/share/fonts $(FONTDIR)
+#endif
 
 SUBSTVARS=prefix=$(PROJECTROOT) \
 	  exec_prefix=$(BINDIR) \
@@ -46,7 +56,7 @@ all:: fonts.conf
 
 fonts.conf: fonts.conf.in
 	RemoveFile($@)
-	sh ./setfontdirs /usr/share/fonts $(FONTDIR)
+	sh ./setfontdirs $(FONTDIRS)
 
 clean::
 	RemoveFile(fonts.conf)
