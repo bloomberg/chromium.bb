@@ -24,7 +24,8 @@
 
 #ifndef _FCFREETYPE_H_
 #define _FCFREETYPE_H_
-#include <freetype/freetype.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 _FCFUNCPROTOBEGIN
 

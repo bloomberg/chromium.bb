@@ -134,6 +134,7 @@ fontconfig-user.html: local-fontconfig-user.sgml version.sgml confdir.sgml
 	$(DOC2HTML) -u local-fontconfig-user.sgml > $@.tmp
 	-test -f local-$@ && mv local-$@ $@
 	-test -f $@ || mv $@.tmp $@
+	-test -f $@.tmp && $(RM) $@.tmp
 
 fontconfig-user.txt: local-fontconfig-user.sgml version.sgml confdir.sgml
 	$(RM) $@

@@ -48,16 +48,17 @@
 #include <stdio.h>
 #include <string.h>
 #include "fcint.h"
-#include <freetype/freetype.h>
-#include <freetype/internal/ftobjs.h>
-#include <freetype/tttables.h>
-#include <freetype/ftsnames.h>
-#include <freetype/ttnameid.h>
-#include <freetype/t1tables.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_INTERNAL_OBJECTS_H
+#include FT_TRUETYPE_TABLES_H
+#include FT_SFNT_NAMES_H
+#include FT_TRUETYPE_IDS_H
+#include FT_TYPE1_TABLES_H
 
 #if HAVE_FT_GET_BDF_PROPERTY
-#include <freetype/ftbdf.h>
-#include <freetype/ftmodule.h>
+#include FT_BDF_H
+#include FT_MODULE_H
 #define HAS_BDF_PROPERTY(f) ((f) && (f)->driver && \
 			     (f)->driver->root.clazz->get_interface)
 #define MY_Get_BDF_Property(f,n,p) (HAS_BDF_PROPERTY(f) ? \
