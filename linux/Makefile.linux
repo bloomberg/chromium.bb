@@ -188,7 +188,9 @@ drmstat: $(PROGOBJS)
 ChangeLog:
 	@rm -f Changelog
 	@rcs2log -i 2 -r -l \
-		| sed 's,@.*alephnull.com,@precisioninsight.com,' > ChangeLog
+		| sed 's,@.*light,,' \
+		| sed 's,/cvsroot/.*/drm/kernel/,,g' \
+		> ChangeLog
 
 
 # .o files are used for modules

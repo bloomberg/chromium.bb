@@ -9,9 +9,8 @@
 # Note 2! The CFLAGS definitions are now inherited from the
 # parent makes..
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.kernel,v 1.6 2000/06/17 00:03:34 martin Exp $
 
-L_TARGET        := libdrm.a
+O_TARGET	:= drm.o
 
 L_OBJS		:= init.o memory.o proc.o auth.o context.o drawable.o bufs.o \
 			lists.o lock.o ioctl.o fops.o vm.o dma.o ctxbitmap.o \
@@ -19,35 +18,92 @@ L_OBJS		:= init.o memory.o proc.o auth.o context.o drawable.o bufs.o \
 
 M_OBJS		:= 
 
-ifdef CONFIG_DRM_GAMMA
-M_OBJS          += gamma.o
+ifeq ($(CONFIG_DRM_GAMMA),y)
+ OX_OBJS += gamma_drv.o
+ O_OBJS += gamma_dma.o
+else
+  ifeq ($(CONFIG_DRM_GAMMA),m)
+    MIX_OBJS += gamma_drv.o
+    MI_OBJS += gamma_dma.o
+    M_OBJS += gamma.o
+  endif
 endif
 
-ifdef CONFIG_DRM_TDFX
-M_OBJS          += tdfx.o
+ifeq ($(CONFIG_DRM_TDFX),y)
+ OX_OBJS += tdfx_drv.o
+ O_OBJS += tdfx_context.o
+else
+  ifeq ($(CONFIG_DRM_TDFX),m)
+    MIX_OBJS += tdfx_drv.o
+    MI_OBJS += tdfx_context.o
+    M_OBJS += tdfx.o
+  endif
 endif
 
-ifdef CONFIG_DRM_MGA
-M_OBJS		+= mga.o
+ifeq ($(CONFIG_DRM_MGA),y)
+ OX_OBJS += mga_drv.o
+ O_OBJS += mga_context.o mga_dma.o mga_bufs.o mga_state.o
+else
+  ifeq ($(CONFIG_DRM_MGA),m)
+    MIX_OBJS += mga_drv.o
+    MI_OBJS += mga_context.o mga_dma.o mga_bufs.o mga_state.o
+    M_OBJS += mga.o
+  endif
 endif
 
-ifdef CONFIG_DRM_R128
-M_OBJS		+= r128.o
+ifeq ($(CONFIG_DRM_I810),y)
+ OX_OBJS += i810_drv.o
+ O_OBJS += i810_context.o i810_bufs.o i810_dma.o
+else
+  ifeq ($(CONFIG_DRM_I810),m)
+    MIX_OBJS += i810_drv.o
+    MI_OBJS += i810_context.o i810_bufs.o i810_dma.o
+    M_OBJS += i810.o
+  endif
 endif
+
+ifeq ($(CONFIG_DRM_R128),y)
+ OX_OBJS += r128_drv.o
+ O_OBJS += r128_context.o
+else
+  ifeq ($(CONFIG_DRM_I810),m)
+    MIX_OBJS += r128_drv.o
+    MI_OBJS += r128_context.o
+    M_OBJS += r128.o
+  endif
+endif
+
+ifeq ($(CONFIG_DRM_FFB),y)
+ OX_OBJS += ffb_drv.o
+ O_OBJS += ffb_context.o
+else
+  ifeq ($(CONFIG_DRM_FFB),m)
+    MIX_OBJC += ffb_drv.o
+    MI_OBJS += ffb_context.o
+    M_OBJS += ffb.o
+  endif
+endif
+
+O_OBJS += $(L_OBJS)
 
 include $(TOPDIR)/Rules.make
 
-gamma.o: gamma_drv.o gamma_dma.o $(L_TARGET)
-	$(LD) $(LD_RFLAG) -r -o $@ gamma_drv.o gamma_dma.o -L. -ldrm
+gamma.o : gamma_drv.o gamma_dma.o $(L_OBJS)
+	$(LD) $(LD_RFLAG) -r -o $@ gamma_drv.o gamma_dma.o $(L_OBJS)
 
-tdfx.o: tdfx_drv.o tdfx_context.o $(L_TARGET)
-	$(LD) $(LD_RFLAG) -r -o $@ tdfx_drv.o tdfx_context.o -L. -ldrm
+tdfx.o: tdfx_drv.o tdfx_context.o $(L_OBJS)
+	$(LD) $(LD_RFLAG) -r -o $@ tdfx_drv.o tdfx_context.o $(L_OBJS)
 
-i810.o: i810_drv.o i810_context.o $(L_TARGET)
-	$(LD) $(LD_RFLAG) -r -o $@ i810_drv.o i810_bufs.o i810_dma.o i810_context.o -L. -ldrm
+mga.o: mga_drv.o mga_context.o mga_dma.o mga_bufs.o mga_state.o $(L_OBJS)
+	$(LD) $(LD_RFLAG) -r -o $@ mga_drv.o mga_bufs.o mga_dma.o \
+		mga_context.o mga_state.o $(L_OBJS)
 
-mga.o: mga_drv.o mga_context.o mga_dma.o mga_bufs.o $(L_TARGET)
-	$(LD) $(LD_RFLAG) -r -o $@ mga_drv.o mga_bufs.o mga_dma.o mga_context.o mga_state.o -L. -ldrm
+i810.o: i810_drv.o i810_context.o i810_bufs.o i810_dma.o $(L_TARGET)
+	$(LD) $(LD_RFLAG) -r -o $@ i810_drv.o i810_bufs.o i810_dma.o \
+		i810_context.o $(L_OBJS)
 
 r128.o: r128_drv.o r128_context.o $(L_TARGET)
-	$(LD) $(LD_RFLAG) -r -o $@ r128_drv.o r128_context.o -L. -ldrm
+	$(LD) $(LD_RFLAG) -r -o $@ r128_drv.o r128_context.o $(L_OBJS)
+
+ffb.o: ffb_drv.o ffb_context.o $(L_OBJS)
+	$(LD) $(LD_RFLAG) -r -o $@ ffb_drv.o ffb_context.o $(L_OBJS)

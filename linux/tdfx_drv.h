@@ -25,8 +25,8 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * Authors:
- *    Rickard E. (Rik) Faith <faith@precisioninsight.com>
- *    Daryll Strauss <daryll@precisioninsight.com>
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
+ *    Daryll Strauss <daryll@valinux.com>
  * 
  */
 

@@ -34,6 +34,7 @@
 #include "drmP.h"
 #include "gamma_drv.h"
 #include <linux/pci.h>
+#include <linux/smp_lock.h>	/* For (un)lock_kernel */
 EXPORT_SYMBOL(gamma_init);
 EXPORT_SYMBOL(gamma_cleanup);
 
@@ -54,6 +55,10 @@ EXPORT_SYMBOL(gamma_cleanup);
 static drm_device_t	      gamma_device;
 
 static struct file_operations gamma_fops = {
+#if LINUX_VERSION_CODE >= 0x020322
+				/* This started being used approx. 2.3.34 */
+	owner:   THIS_MODULE,
+#endif
 	open:	 gamma_open,
 	flush:	 drm_flush,
 	release: gamma_release,
@@ -284,12 +289,12 @@ static int gamma_takedown(drm_device_t *dev)
 					       - PAGE_SHIFT,
 					       DRM_MEM_SAREA);
 				break;
-#ifdef DRM_AGP
 			case _DRM_AGP:
+#ifdef DRM_AGP
 				/* Do nothing here, because this is all
                                    handled in the AGP/GART driver. */
-				break;
 #endif
+				break;
 			}
 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 		}
@@ -476,6 +481,7 @@ int gamma_release(struct inode *inode, struct file *filp)
 	int	      retcode = 0;
 
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
+	lock_kernel();
 	if (!(retcode = drm_release(inode, filp))) {
 		MOD_DEC_USE_COUNT;
 		atomic_inc(&dev->total_close);
@@ -486,13 +492,17 @@ int gamma_release(struct inode *inode, struct file *filp)
 					  atomic_read(&dev->ioctl_count),
 					  dev->blocked);
 				spin_unlock(&dev->count_lock);
+				unlock_kernel();
 				return -EBUSY;
 			}
 			spin_unlock(&dev->count_lock);
-			return gamma_takedown(dev);
+			retcode = gamma_takedown(dev);
+			unlock_kernel();
+			return retcode;
 		}
 		spin_unlock(&dev->count_lock);
 	}
+	unlock_kernel();
 	return retcode;
 }
 

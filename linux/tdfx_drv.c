@@ -48,6 +48,10 @@ static drm_device_t	      tdfx_device;
 drm_ctx_t	              tdfx_res_ctx;
 
 static struct file_operations tdfx_fops = {
+#if LINUX_VERSION_CODE >= 0x020322
+				/* This started being used approx. 2.3.34 */
+	owner:   THIS_MODULE,
+#endif
 	open:	 tdfx_open,
 	flush:	 drm_flush,
 	release: tdfx_release,
@@ -625,19 +629,11 @@ int tdfx_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 		}
         }
 
-#if 0
-	DRM_ERROR("pid = %5d, old counter = %5ld\n", 
-		current->pid, current->counter);
-#endif
+#if LINUX_VERSION_CODE < 0x020400
 	if (lock.context != tdfx_res_ctx.handle) {
 		current->counter = 5;
 		current->priority = DEF_PRIORITY/4;
 	}
-#if 0
-	while (current->counter > 25)
-		current->counter >>= 1; /* decrease time slice */
-	DRM_ERROR("pid = %5d, new counter = %5ld\n",
-		 current->pid, current->counter);
 #endif
         DRM_DEBUG("%d %s\n", lock.context, ret ? "interrupted" : "has lock");
 
@@ -679,19 +675,11 @@ int tdfx_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 		}
 	}
 
-#if 0
-	current->policy |= SCHED_YIELD;
-	current->state = TASK_INTERRUPTIBLE;
-	schedule_timeout(1000);
-#endif
-
+#if LINUX_VERSION_CODE < 0x020400
 	if (lock.context != tdfx_res_ctx.handle) {
 		current->counter = 5;
 		current->priority = DEF_PRIORITY;
 	}
-#if 0
-	current->state = TASK_INTERRUPTIBLE;
-	schedule_timeout(10);
 #endif
 	
 	return 0;

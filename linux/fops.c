@@ -94,7 +94,8 @@ int drm_release(struct inode *inode, struct file *filp)
 	DRM_DEBUG("pid = %d, device = 0x%x, open_count = %d\n",
 		  current->pid, dev->device, dev->open_count);
 
-	if (_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)
+	if (dev->lock.hw_lock
+	    && _DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)
 	    && dev->lock.pid == current->pid) {
 		DRM_ERROR("Process %d dead, freeing lock for context %d\n",
 			  current->pid,
@@ -222,8 +223,15 @@ int drm_write_string(drm_device_t *dev, const char *s)
            KILLFASYNCHASTHREEPARAMETERS if three parameters are found. */
 	if (dev->buf_async) kill_fasync(dev->buf_async, SIGIO);
 #else
-	/* Parameter added in 2.3.21 */
+
+				/* Parameter added in 2.3.21. */
+#if LINUX_VERSION_CODE < 0x020400
 	if (dev->buf_async) kill_fasync(dev->buf_async, SIGIO, POLL_IN);
+#else
+				/* Type of first parameter changed in
+                                   Linux 2.4.0-test2... */
+	if (dev->buf_async) kill_fasync(&dev->buf_async, SIGIO, POLL_IN);
+#endif
 #endif
 	DRM_DEBUG("waking\n");
 	wake_up_interruptible(&dev->buf_readers);

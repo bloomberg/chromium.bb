@@ -47,6 +47,10 @@ static drm_device_t	      r128_device;
 drm_ctx_t	              r128_res_ctx;
 
 static struct file_operations r128_fops = {
+#if LINUX_VERSION_CODE >= 0x020322
+				/* This started being used approx. 2.3.34 */
+	owner:   THIS_MODULE,
+#endif
 	open:	 r128_open,
 	flush:	 drm_flush,
 	release: r128_release,
@@ -369,6 +373,13 @@ int r128_init(void)
 
 #ifdef DRM_AGP
 	dev->agp    = drm_agp_init();
+      	if (dev->agp == NULL) {
+	   	DRM_ERROR("Cannot initialize agpgart module.\n");
+	   	drm_proc_cleanup();
+	   	misc_deregister(&r128_misc);
+	   	r128_takedown(dev);
+	   	return -ENOMEM;
+	}
 
 #ifdef CONFIG_MTRR
 	dev->agp->agp_mtrr = mtrr_add(dev->agp->agp_info.aper_base,
@@ -664,19 +675,11 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 		}
         }
 
-#if 0
-	DRM_ERROR("pid = %5d, old counter = %5ld\n",
-		current->pid, current->counter);
-#endif
+#if LINUX_VERSION_CODE < 0x020400
 	if (lock.context != r128_res_ctx.handle) {
 		current->counter = 5;
 		current->priority = DEF_PRIORITY/4;
 	}
-#if 0
-	while (current->counter > 25)
-		current->counter >>= 1; /* decrease time slice */
-	DRM_ERROR("pid = %5d, new counter = %5ld\n",
-		 current->pid, current->counter);
 #endif
         DRM_DEBUG("%d %s\n", lock.context, ret ? "interrupted" : "has lock");
 
@@ -718,19 +721,11 @@ int r128_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 		}
 	}
 
-#if 0
-	current->policy |= SCHED_YIELD;
-	current->state = TASK_INTERRUPTIBLE;
-	schedule_timeout(1000);
-#endif
-
+#if LINUX_VERSION_CODE < 0x020400
 	if (lock.context != r128_res_ctx.handle) {
 		current->counter = 5;
 		current->priority = DEF_PRIORITY;
 	}
-#if 0
-	current->state = TASK_INTERRUPTIBLE;
-	schedule_timeout(10);
 #endif
 
 	return 0;
