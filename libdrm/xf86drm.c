@@ -35,11 +35,9 @@
 # include "xf86.h"
 # include "xf86_OSproc.h"
 # include "xf86_ansic.h"
-# include "xf86Priv.h"
 # define _DRM_MALLOC xalloc
 # define _DRM_FREE   xfree
 # ifndef XFree86LOADER
-#  include <sys/stat.h>
 #  include <sys/mman.h>
 # endif
 #else
@@ -53,6 +51,7 @@
 # include <signal.h>
 # include <sys/types.h>
 # include <sys/stat.h>
+# define stat_t struct stat
 # include <sys/ioctl.h>
 # include <sys/mman.h>
 # include <sys/time.h>
@@ -141,11 +140,7 @@ static char *drmStrdup(const char *s)
 
 static unsigned long drmGetKeyFromFd(int fd)
 {
-#ifdef XFree86LOADER
-    struct xf86stat st;
-#else
-    struct stat     st;
-#endif
+    stat_t     st;
 
     st.st_rdev = 0;
     fstat(fd, &st);
@@ -174,11 +169,7 @@ static drmHashEntry *drmGetEntry(int fd)
 
 static int drmOpenDevice(long dev, int minor)
 {
-#ifdef XFree86LOADER
-    struct xf86stat st;
-#else
-    struct stat     st;
-#endif
+    stat_t          st;
     char            buf[64];
     int             fd;
     mode_t          dirmode = DRM_DEV_DIRMODE;
@@ -225,7 +216,7 @@ static int drmOpenDevice(long dev, int minor)
     return -errno;
 }
 
-int drmOpenMinor(int minor, int create)
+static int drmOpenMinor(int minor, int create)
 {
     int  fd;
     char buf[64];
