@@ -61,7 +61,7 @@ typedef struct drm_i915_private {
 
 				/* i915_dma.c */
 extern int i915_dma_init( DRM_IOCTL_ARGS );
-extern int i915_cleanup(drm_device_t *dev);
+extern int i915_dma_cleanup(drm_device_t *dev);
 extern int i915_flush_ioctl( DRM_IOCTL_ARGS );
 extern int i915_batchbuffer( DRM_IOCTL_ARGS );
 extern int i915_flip_bufs( DRM_IOCTL_ARGS );

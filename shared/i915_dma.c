@@ -81,7 +81,7 @@ void i915_kernel_lost_context(drm_device_t *dev)
 }
 
 
-int i915_cleanup(drm_device_t *dev)
+static int i915_dma_cleanup(drm_device_t *dev)
 {
 	/* Make sure interrupts are disabled here because the uninstall ioctl
 	 * may not have been called from userspace and after dev_private
@@ -98,9 +98,15 @@ int i915_cleanup(drm_device_t *dev)
 		}
 
 	   	if (dev_priv->hw_status_page) {
+#ifdef __FreeBSD__
+#if __FreeBSD_version > 500000	
+			contigfree(dev_priv->hw_status_page, PAGE_SIZE, DRM(M_DRM));
+#endif
+#else
 			pci_free_consistent(dev->pdev, PAGE_SIZE,
 				      dev_priv->hw_status_page,
 				      dev_priv->dma_status_page);
+#endif
 		   	/* Need to rewrite hardware status page */
 		   	I915_WRITE(0x02080, 0x1ffff000);
 		}
@@ -126,14 +132,14 @@ static int i915_initialize(drm_device_t *dev,
 	if(!dev_priv->sarea) {
 		DRM_ERROR("can not find sarea!\n");
 		dev->dev_private = (void *)dev_priv;
-		i915_cleanup(dev);
+		i915_dma_cleanup(dev);
 		return DRM_ERR(EINVAL);
 	}
 
 	DRM_FIND_MAP( dev_priv->mmio_map, init->mmio_offset );
 	if(!dev_priv->mmio_map) {
 		dev->dev_private = (void *)dev_priv;
-		i915_cleanup(dev);
+		i915_dma_cleanup(dev);
 		DRM_ERROR("can not find mmio map!\n");
 		return DRM_ERR(EINVAL);
 	}
@@ -157,7 +163,7 @@ static int i915_initialize(drm_device_t *dev,
 
    	if (dev_priv->ring.map.handle == NULL) {
 		dev->dev_private = (void *) dev_priv;
-	   	i915_cleanup(dev);
+	   	i915_dma_cleanup(dev);
 	   	DRM_ERROR("can not ioremap virtual address for"
 			  " ring buffer\n");
 	   	return DRM_ERR(ENOMEM);
@@ -180,13 +186,18 @@ static int i915_initialize(drm_device_t *dev,
 	dev_priv->allow_batchbuffer = 1;
 
    	/* Program Hardware Status Page */
+#ifdef __FreeBSD__
+   	dev_priv->hw_status_page = contigmalloc(PAGE_SIZE, DRM(M_DRM), M_NOWAIT, 0ul, 0, 0, 0);
+	dev_priv->dma_status_page = vtophys(dev_priv->hw_status_page);	
+#else
    	dev_priv->hw_status_page =
 		pci_alloc_consistent( dev->pdev, PAGE_SIZE, 
 						&dev_priv->dma_status_page );
+#endif
 
    	if (!dev_priv->hw_status_page) {
 		dev->dev_private = (void *)dev_priv;
-		i915_cleanup(dev);
+		i915_dma_cleanup(dev);
 		DRM_ERROR("Can not allocate hardware status page\n");
 		return DRM_ERR(ENOMEM);
 	}
@@ -257,7 +268,7 @@ int i915_dma_init( DRM_IOCTL_ARGS )
 	   		retcode = i915_initialize(dev, dev_priv, &init);
 	   	break;
 	 	case I915_CLEANUP_DMA:
-	   		retcode = i915_cleanup(dev);
+	   		retcode = i915_dma_cleanup(dev);
 	   	break;
 		case I915_RESUME_DMA:
 			retcode = i915_resume(dev);
