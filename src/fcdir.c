@@ -178,7 +178,8 @@ FcDirScan (FcFontSet	    *set,
 	 */
 	if (FcDirCacheReadDir (set, dirs, dir))
 	{
-	    FcGlobalCacheReferenceSubdir (cache, dir);
+	    if (cache)
+		FcGlobalCacheReferenceSubdir (cache, dir);
 	    return FcTrue;
 	}
     
