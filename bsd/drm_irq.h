@@ -149,7 +149,6 @@ err:
  */
 int DRM(irq_uninstall)( drm_device_t *dev )
 {
-	int irq_enabled;
 	int irqrid;
 
 	if (!dev->irq_enabled)
