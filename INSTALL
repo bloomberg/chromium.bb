@@ -17,13 +17,15 @@ important steps:
  		Change version number
 		Set the date
  3.	Commit those changes
- 4.	make checkdist
- 5.	tag the tree
+ 4. 	rebuild the configuration files with autogen.sh
+ 		sh autogen.sh --sysconfdir=/etc --prefix=/usr --mandir=/usr/share/man
+ 5.	make distcheck
+ 6.	tag the tree
  		cvs tag fc-2_2_xx
- 6.	Split out the ChangeLog into ChangeLog-2.2.xx with
+ 7.	Split out the ChangeLog into ChangeLog-2.2.xx with
  	the changes since the previous release
- 7.	Copy ChangeLog-2.2.xx and fontconfig-2.2.xx.tar.gz to
+ 8.	Copy ChangeLog-2.2.xx and fontconfig-2.2.xx.tar.gz to
  	freedesktop.org:~fontconfig/public_html/release
- 8.	Update the Fontconfig Devel wiki page
+ 9.	Update the Fontconfig Devel wiki page
  	http://freedesktop.org/Software/FontconfigDevel
- 9.	Post a note to fontconfig@fontconfig.org
+10.	Post a note to fontconfig@fontconfig.org
