@@ -38,7 +38,6 @@
 #define DRIVER_MINOR		0
 #define DRIVER_PATCHLEVEL	0
 
-
 #define DRIVER_IOCTLS							\
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_ALLOCMEM)]  = { via_mem_alloc,  1, 0 }, \
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_FREEMEM)]   = { via_mem_free,   1, 0 }, \
@@ -50,6 +49,5 @@
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_CMDBUFFER)] = { via_cmdbuffer, 1, 0}, \
 	[DRM_IOCTL_NR(DRM_IOCTL_VIA_FLUSH)] = { via_flush_ioctl, 1, 0}, \
         [DRM_IOCTL_NR(DRM_IOCTL_VIA_PCICMD)] = { via_pci_cmdbuffer, 1, 0}
-
 
 #include "drm_core.h"

@@ -24,7 +24,6 @@
 #ifndef __VIA_H__
 #define __VIA_H__
 
-
 #define DRM(x) viadrv_##x
 
 /* BEAM: Have enabled DMA,DMA_IRQ and VBL_IRQ needed to do this to get standard

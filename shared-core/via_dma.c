@@ -23,7 +23,6 @@ static void via_cmdbuf_reset(drm_via_private_t * dev_priv);
 static void via_cmdbuf_rewind(drm_via_private_t * dev_priv);
 static int via_wait_idle(drm_via_private_t * dev_priv);
 
-
 /*
  * This function needs to be extended whenever a new command set
  * is implemented. Currently it works only for the 2D engine
@@ -39,8 +38,7 @@ static int via_wait_idle(drm_via_private_t * dev_priv);
  * after an update!!!!!!!!!
  */
 
-static int via_check_command_stream(const uint32_t *buf,
-				    unsigned int size) 
+static int via_check_command_stream(const uint32_t * buf, unsigned int size)
 {
 
 	uint32_t offset;
@@ -48,19 +46,20 @@ static int via_check_command_stream(const uint32_t *buf,
 
 	if (size & 7) {
 		DRM_ERROR("Illegal command buffer size.\n");
-		return DRM_ERR( EINVAL );
+		return DRM_ERR(EINVAL);
 	}
-	size >>=3;
-	for (i=0; i<size; ++i) {
-		offset = *buf; 
+	size >>= 3;
+	for (i = 0; i < size; ++i) {
+		offset = *buf;
 		buf += 2;
-		if ((offset > ((0x3FF >> 2) | VIA_2D_CMD)) && 
-		    (offset < ((0xC00 >> 2) | VIA_2D_CMD)) ) {
-			DRM_ERROR("Attempt to access Burst Command / 3D Area.\n");
-			return DRM_ERR( EINVAL );
+		if ((offset > ((0x3FF >> 2) | VIA_2D_CMD)) &&
+		    (offset < ((0xC00 >> 2) | VIA_2D_CMD))) {
+			DRM_ERROR
+			    ("Attempt to access Burst Command / 3D Area.\n");
+			return DRM_ERR(EINVAL);
 		} else if (offset > ((0xDFF >> 2) | VIA_2D_CMD)) {
 			DRM_ERROR("Attempt to access DMA or VGA registers.\n");
-			return DRM_ERR( EINVAL );
+			return DRM_ERR(EINVAL);
 		}
 
 		/*
@@ -72,7 +71,6 @@ static int via_check_command_stream(const uint32_t *buf,
 	}
 	return 0;
 }
-  
 
 static inline int
 via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
@@ -220,8 +218,8 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 	if (DRM_COPY_FROM_USER(vb, cmd->buf, cmd->size)) {
 		return DRM_ERR(EFAULT);
 	}
-	  
-	if ((ret = via_check_command_stream( vb, cmd->size)))
+
+	if ((ret = via_check_command_stream(vb, cmd->size)))
 		return ret;
 
 	dev_priv->dma_low += cmd->size;
@@ -285,7 +283,7 @@ static int via_parse_pci_cmdbuffer(drm_device_t * dev, const char *buf,
 	unsigned int i;
 	int ret;
 
- 	if ((ret = via_check_command_stream( regbuf, size)))
+	if ((ret = via_check_command_stream(regbuf, size)))
 		return ret;
 
 	size >>= 3;

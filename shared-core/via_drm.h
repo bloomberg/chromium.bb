@@ -111,7 +111,7 @@ typedef struct {
 } drm_via_fb_t;
 
 typedef struct {
-        uint32_t context;
+	uint32_t context;
 	uint32_t type;
 	uint32_t size;
 	unsigned long index;

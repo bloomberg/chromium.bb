@@ -25,21 +25,21 @@
 #define _via_drm_mm_h_
 
 typedef struct {
-        unsigned int context;
-        unsigned int size;
-        unsigned long offset;
-        unsigned int free;
+	unsigned int context;
+	unsigned int size;
+	unsigned long offset;
+	unsigned int free;
 } drm_via_mm_t;
 
 typedef struct {
-        unsigned int size;
-        unsigned long handle;
-        void *virtual;
+	unsigned int size;
+	unsigned long handle;
+	void *virtual;
 } drm_via_dma_t;
 
-int via_fb_alloc(drm_via_mem_t *mem);
-int via_fb_free(drm_via_mem_t *mem);
-int via_agp_alloc(drm_via_mem_t *mem);
-int via_agp_free(drm_via_mem_t *mem);
+int via_fb_alloc(drm_via_mem_t * mem);
+int via_fb_free(drm_via_mem_t * mem);
+int via_agp_alloc(drm_via_mem_t * mem);
+int via_agp_free(drm_via_mem_t * mem);
 
 #endif

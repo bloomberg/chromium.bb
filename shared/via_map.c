@@ -25,19 +25,19 @@
 #include "drmP.h"
 #include "via_drv.h"
 
-int via_do_init_map(drm_device_t *dev, drm_via_init_t *init)
+int via_do_init_map(drm_device_t * dev, drm_via_init_t * init)
 {
 	drm_via_private_t *dev_priv;
 	unsigned int i;
-	
+
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	dev_priv = DRM(alloc)(sizeof(drm_via_private_t), DRM_MEM_DRIVER);
+	dev_priv = DRM(alloc) (sizeof(drm_via_private_t), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
 		return -ENOMEM;
 
 	memset(dev_priv, 0, sizeof(drm_via_private_t));
-	
+
 	DRM_GETSAREA();
 	if (!dev_priv->sarea) {
 		DRM_ERROR("could not find sarea!\n");
@@ -60,23 +60,22 @@ int via_do_init_map(drm_device_t *dev, drm_via_init_t *init)
 		via_do_cleanup_map(dev);
 		return -EINVAL;
 	}
-	
+
 	dev_priv->sarea_priv =
-		(drm_via_sarea_t *)((u8 *)dev_priv->sarea->handle +
-                                    init->sarea_priv_offset);
+	    (drm_via_sarea_t *) ((u8 *) dev_priv->sarea->handle +
+				 init->sarea_priv_offset);
 
 	dev_priv->agpAddr = init->agpAddr;
 
-	
-	for (i=0; i<VIA_NR_XVMC_LOCKS; ++i) 
-                DRM_INIT_WAITQUEUE( &(dev_priv->decoder_queue[i]) );
+	for (i = 0; i < VIA_NR_XVMC_LOCKS; ++i)
+		DRM_INIT_WAITQUEUE(&(dev_priv->decoder_queue[i]));
 
 	dev->dev_private = (void *)dev_priv;
 
 	return 0;
 }
 
-int via_do_cleanup_map(drm_device_t *dev)
+int via_do_cleanup_map(drm_device_t * dev)
 {
 	if (dev->dev_private) {
 
@@ -84,61 +83,56 @@ int via_do_cleanup_map(drm_device_t *dev)
 
 		via_dma_cleanup(dev);
 
-		DRM(free)(dev_priv, sizeof(drm_via_private_t),
-                          DRM_MEM_DRIVER);
+		DRM(free) (dev_priv, sizeof(drm_via_private_t), DRM_MEM_DRIVER);
 		dev->dev_private = NULL;
 	}
 
 	return 0;
 }
 
-int via_map_init( DRM_IOCTL_ARGS )
+int via_map_init(DRM_IOCTL_ARGS)
 {
-        DRM_DEVICE;
+	DRM_DEVICE;
 	drm_via_init_t init;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	DRM_COPY_FROM_USER_IOCTL(init, (drm_via_init_t *)data, sizeof(init));
+	DRM_COPY_FROM_USER_IOCTL(init, (drm_via_init_t *) data, sizeof(init));
 
 	switch (init.func) {
-        case VIA_INIT_MAP:
+	case VIA_INIT_MAP:
 		return via_do_init_map(dev, &init);
-        case VIA_CLEANUP_MAP:
+	case VIA_CLEANUP_MAP:
 		return via_do_cleanup_map(dev);
 	}
 
 	return -EINVAL;
 }
 
-int via_decoder_futex( DRM_IOCTL_ARGS ) 
+int via_decoder_futex(DRM_IOCTL_ARGS)
 {
-        DRM_DEVICE;
-        drm_via_futex_t fx;
-        volatile int *lock;
-        drm_via_private_t *dev_priv = (drm_via_private_t*) dev->dev_private;
-        drm_via_sarea_t *sAPriv = dev_priv->sarea_priv;
-        int ret = 0;
+	DRM_DEVICE;
+	drm_via_futex_t fx;
+	volatile int *lock;
+	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
+	drm_via_sarea_t *sAPriv = dev_priv->sarea_priv;
+	int ret = 0;
 
-        DRM_COPY_FROM_USER_IOCTL(fx, (drm_via_futex_t *) data, sizeof(fx));
-    
-        if (fx.lock > VIA_NR_XVMC_LOCKS)
-                return -EFAULT;
+	DRM_COPY_FROM_USER_IOCTL(fx, (drm_via_futex_t *) data, sizeof(fx));
 
-        lock = XVMCLOCKPTR(sAPriv,fx.lock);
+	if (fx.lock > VIA_NR_XVMC_LOCKS)
+		return -EFAULT;
 
-        switch(fx.func) {
-        case VIA_FUTEX_WAIT:
-                DRM_WAIT_ON(ret, dev_priv->decoder_queue[fx.lock], 
-                            (fx.ms / 10)*(DRM_HZ/100), 
-                            *lock != fx.val);
-                return ret;
-        case VIA_FUTEX_WAKE:
-                DRM_WAKEUP( &(dev_priv->decoder_queue[fx.lock]) );
-                return 0;
-        }
-        return 0;
+	lock = XVMCLOCKPTR(sAPriv, fx.lock);
+
+	switch (fx.func) {
+	case VIA_FUTEX_WAIT:
+		DRM_WAIT_ON(ret, dev_priv->decoder_queue[fx.lock],
+			    (fx.ms / 10) * (DRM_HZ / 100), *lock != fx.val);
+		return ret;
+	case VIA_FUTEX_WAKE:
+		DRM_WAKEUP(&(dev_priv->decoder_queue[fx.lock]));
+		return 0;
+	}
+	return 0;
 }
-	    
-	
-    
