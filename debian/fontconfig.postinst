@@ -26,7 +26,7 @@ fi
 case "$hinting_type" in
 "Native")
 	;;
-"Autohint")
+"Autohinter")
 	ln -s $CONFDIR/$autohint $CONFDIR/$hint_prio$autohint
 	;;
 "None")

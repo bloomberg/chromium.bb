@@ -1,3 +1,14 @@
+2005-03-10  Keith Packard  <keithp@keithp.com>
+
+	* debian/README.Debian:
+	Update to reflect configuration changes
+	* debian/changelog:
+	* debian/fontconfig.postinst:
+	Fix Autohint vs Autohinter mistake
+	* debian/fontconfig.templates:
+	Adopt changes from Josselin Mouette for configuration descriptions
+	Update debian to version 2.3.1-2
+
 2005-03-08  Keith Packard  <keithp@keithp.com>
 
 	* debian/changelog:

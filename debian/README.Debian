@@ -1,14 +1,11 @@
 *** IMPORTANT ***
 
 Recently, fontconfig changed to not include bitmapped fonts in the
-default font path.  There is now a Debconf question about this.
+default font set.  There is now a Debconf question about this.
 
-If you wish to enable bitmapped fonts manually, please edit
-/etc/fonts/local.conf, and uncomment the portion with:
-
-<dir>/usr/X11R6/lib/X11/fonts</dir>
-
-in between the <fontconfig> and </fontconfig>.
+If you wish to enable bitmapped fonts manually, either reconfigure this
+package (with dpkg-reconfigure fontconfig), or remove the 
+symbolic link /etc/fonts/conf.d/30-debconf-no-bitmaps.conf
 
 *****************
 
@@ -38,7 +35,11 @@ accessible to these applications. This is now also true for fonts added
 using defoma.
 These programs can all benefit from antialiasing, autohinting and
 sub-pixel rendering. You can configure it through fontconfig, using
-debconf (dpkg-reconfigure fontconfig), or by editing
-/etc/fonts/local.conf by hand.
+debconf (dpkg-reconfigure fontconfig), or by changing
+links in /etc/fonts/conf.d by hand.
 
+Original text by:
  -- Josselin Mouette <joss@debian.org>  Wed,  8 Oct 2003 21:51:35 +0200
+
+Changes for fontconfig 2.3 packages by:
+ -- Keith Packard <keithp@debian.org>  Thu, 10 Mar 2005 13:29:11 -0800

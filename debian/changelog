@@ -1,3 +1,13 @@
+fontconfig (2.3.1-2) unstable; urgency=low
+
+  * Change priority of fontconfig-udeb package to extra
+  * Fixed incorrect hinting_type case in postinst script (closes: #298817)
+  * Replaced Descriptions in fontconfig.templates with shorter
+    versions (Thanks to Josselin Mouette)
+  * Change README.Debian to match new configuration mechanism.
+
+ -- Keith Packard <keithp@debian.org>  Thu, 10 Mar 2005 13:29:11 -0800
+
 fontconfig (2.3.1-1) unstable; urgency=low
 
   * Move from experimental to unstable
