@@ -11,9 +11,8 @@
 	The intent of this standard configuration file is to be adequate for
 	most environments.  If you have a reasonably normal environment and
 	have found problems with this configuration, they are probably
-	things that others will also want fixed.  Please send any suggested
-	changes to fonts@xfree86.org so that future releases can include
-	such changes.
+	things that others will also want fixed.  Please submit any
+	problems to the fontconfig bugzilla system located at fontconfig.org
 
 	Note that the normal 'make install' procedure for fontconfig is to
 	replace any existing fonts.conf file with the new version.  Place
@@ -27,16 +26,6 @@
 	<dir>@FC_DEFAULT_FONTS@</dir>
 	@FC_FONTPATH@
 	<dir>~/.fonts</dir>
-
-<!--
-  Enable sub-pixel rendering
-	<match target="font">
-		<test qual="all" name="rgba">
-			<const>unknown</const>
-		</test>
-		<edit name="rgba" mode="assign"><const>rgb</const></edit>
-	</match>
--->
 
 <!--
   Accept deprecated 'mono' alias, replacing it with 'monospace'
