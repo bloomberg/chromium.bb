@@ -1195,7 +1195,8 @@ information.  If it starts with '~', it refers to a file in the users
 home directory.  This file is used to hold information about fonts that
 isn't present in the per-directory cache files.  It is automatically
 maintained by the fontconfig library.  The default for this file 
-is ``~/.fonts.cache''.
+is ``~/.fonts.cache-<version>'', where <version> is the font configuration
+file version number (currently 1).
 
 .SS <include ignore_missing="no">
 This element contains the name of an additional configuration file.  When
@@ -1451,7 +1452,7 @@ is a DTD that describes the format of the configuration files.
 is the conventional location for per-user font configuration, although the
 actual location is specified in the global fonts.conf file.
 
-.B ~/.fonts.cache
+.B ~/.fonts.cache-*
 is the conventional repository of font information that isn't found in the
 per-directory caches.  This file is automatically maintained by fontconfig.
 

@@ -200,7 +200,7 @@ typedef struct _FcStrBuf {
 } FcStrBuf;
 
 /*
- * The per-user ~/.fonts.cache file is loaded into
+ * The per-user ~/.fonts.cache-<version> file is loaded into
  * this data structure.  Each directory gets a substructure
  * which is validated by comparing the directory timestamp with
  * that saved in the cache.  When valid, the entire directory cache

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcdir.c,v 1.5 2002/05/21 17:06:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcdir.c,v 1.7 2002/07/28 10:50:59 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -169,13 +169,13 @@ FcDirScan (FcFontSet	    *set,
     if (!force)
     {
 	/*
-	 * Check fonts.cache file
+	 * Check fonts.cache-<version> file
 	 */
 	if (FcDirCacheReadDir (set, dirs, dir))
 	    return FcTrue;
     
 	/*
-	 * Check ~/.fonts.cache file
+	 * Check ~/.fonts.cache-<version> file
 	 */
 	if (cache && FcGlobalCacheScanDir (set, dirs, cache, dir))
 	    return FcTrue;

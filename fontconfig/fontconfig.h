@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.26 2002/08/19 19:32:04 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.28 2002/08/24 20:08:53 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -41,6 +41,18 @@ typedef int		FcBool;
 
 #define FC_VERSION	((FC_MAJOR * 10000) + (FC_MINOR * 100) + (FC_REVISION))
 
+/*
+ * Current font cache file format version
+ * This is appended to the cache files so that multiple
+ * versions of the library will peacefully coexist
+ *
+ * Change this value whenever the disk format for the cache file
+ * changes in any non-compatible way.  Try to avoid such changes as
+ * it means multiple copies of the font information.
+ */
+
+#define FC_CACHE_VERSION    "1"
+
 #define FcTrue		1
 #define FcFalse		0
 
@@ -72,8 +84,8 @@ typedef int		FcBool;
 #define FC_CHARSET	    "charset"		/* CharSet */
 #define FC_LANG		    "lang"		/* String OS/2 CodePageRange */
 
-#define FC_DIR_CACHE_FILE	    "fonts.cache"
-#define FC_USER_CACHE_FILE	    ".fonts.cache"
+#define FC_DIR_CACHE_FILE	    "fonts.cache-"FC_CACHE_VERSION
+#define FC_USER_CACHE_FILE	    ".fonts.cache-"FC_CACHE_VERSION
 
 /* Adjust outline rasterizer */
 #define FC_CHAR_WIDTH	    "charwidth"	/* Int */
