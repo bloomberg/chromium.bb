@@ -106,9 +106,6 @@
 #ifndef __HAVE_DMA_FREELIST
 #define __HAVE_DMA_FREELIST	0
 #endif
-#ifndef __HAVE_DMA_HISTOGRAM
-#define __HAVE_DMA_HISTOGRAM	0
-#endif
 
 #define __REALLY_HAVE_AGP	(__HAVE_AGP && (defined(CONFIG_AGP) || \
 						defined(CONFIG_AGP_MODULE)))
@@ -365,38 +362,11 @@ typedef struct drm_buf {
 		DRM_LIST_RECLAIM = 5
 	}		  list;	       /* Which list we're on		     */
 
-#if DRM_DMA_HISTOGRAM
-	cycles_t	  time_queued;	   /* Queued to kernel DMA queue     */
-	cycles_t	  time_dispatched; /* Dispatched to hardware	     */
-	cycles_t	  time_completed;  /* Completed by hardware	     */
-	cycles_t	  time_freed;	   /* Back on freelist		     */
-#endif
 
 	int		  dev_priv_size; /* Size of buffer private stoarge   */
 	void		  *dev_private;  /* Per-buffer private storage       */
 } drm_buf_t;
 
-#if DRM_DMA_HISTOGRAM
-#define DRM_DMA_HISTOGRAM_SLOTS		  9
-#define DRM_DMA_HISTOGRAM_INITIAL	 10
-#define DRM_DMA_HISTOGRAM_NEXT(current)	 ((current)*10)
-typedef struct drm_histogram {
-	atomic_t	  total;
-
-	atomic_t	  queued_to_dispatched[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  dispatched_to_completed[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  completed_to_freed[DRM_DMA_HISTOGRAM_SLOTS];
-
-	atomic_t	  queued_to_completed[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  queued_to_freed[DRM_DMA_HISTOGRAM_SLOTS];
-
-	atomic_t	  dma[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  schedule[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  ctx[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  lacq[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  lhld[DRM_DMA_HISTOGRAM_SLOTS];
-} drm_histogram_t;
-#endif
 
 				/* bufs is one longer than it has to be */
 typedef struct drm_waitlist {
@@ -639,9 +609,6 @@ typedef struct drm_device {
 #endif
 	cycles_t	  ctx_start;
 	cycles_t	  lck_start;
-#if __HAVE_DMA_HISTOGRAM
-	drm_histogram_t	  histo;
-#endif
 
 				/* Callback to X server for context switch
 				   and for heavy-handed reset. */
@@ -875,10 +842,6 @@ extern void          DRM(vbl_send_signals)( drm_device_t *dev );
 #if __HAVE_DMA_IRQ_BH
 extern void          DRM(dma_immediate_bh)( void *dev );
 #endif
-#endif
-#if DRM_DMA_HISTOGRAM
-extern int	     DRM(histogram_slot)(unsigned long count);
-extern void	     DRM(histogram_compute)(drm_device_t *dev, drm_buf_t *buf);
 #endif
 
 				/* Buffer list support (drm_lists.h) */

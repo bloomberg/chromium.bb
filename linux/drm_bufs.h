@@ -416,12 +416,6 @@ int DRM(addbufs_agp)( struct inode *inode, struct file *filp,
 		}
 		memset( buf->dev_private, 0, buf->dev_priv_size );
 
-#if __HAVE_DMA_HISTOGRAM
-		buf->time_queued = 0;
-		buf->time_dispatched = 0;
-		buf->time_completed = 0;
-		buf->time_freed = 0;
-#endif
 		DRM_DEBUG( "buffer %d @ %p\n",
 			   entry->buf_count, buf->address );
 
@@ -618,12 +612,6 @@ int DRM(addbufs_pci)( struct inode *inode, struct file *filp,
 			buf->pending = 0;
 			init_waitqueue_head( &buf->dma_wait );
 			buf->filp    = 0;
-#if __HAVE_DMA_HISTOGRAM
-			buf->time_queued     = 0;
-			buf->time_dispatched = 0;
-			buf->time_completed  = 0;
-			buf->time_freed      = 0;
-#endif
 			DRM_DEBUG( "buffer %d @ %p\n",
 				   entry->buf_count, buf->address );
 		}
@@ -790,12 +778,6 @@ int DRM(addbufs_sg)( struct inode *inode, struct file *filp,
 
 		memset( buf->dev_private, 0, buf->dev_priv_size );
 
-# if __HAVE_DMA_HISTOGRAM
-		buf->time_queued = 0;
-		buf->time_dispatched = 0;
-		buf->time_completed = 0;
-		buf->time_freed = 0;
-# endif
 		DRM_DEBUG( "buffer %d @ %p\n",
 			   entry->buf_count, buf->address );
 

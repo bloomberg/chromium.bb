@@ -145,15 +145,9 @@ static int gamma_do_dma(drm_device_t *dev, int locked)
 	drm_buf_t	 *buf;
 	int		 retcode = 0;
 	drm_device_dma_t *dma = dev->dma;
-#if DRM_DMA_HISTOGRAM
-	cycles_t	 dma_start, dma_stop;
-#endif
 
 	if (test_and_set_bit(0, &dev->dma_flag)) return -EBUSY;
 
-#if DRM_DMA_HISTOGRAM
-	dma_start = get_cycles();
-#endif
 
 	if (!dma->next_buffer) {
 		DRM_ERROR("No next_buffer\n");
@@ -227,9 +221,6 @@ static int gamma_do_dma(drm_device_t *dev, int locked)
 	buf->pending	 = 1;
 	buf->waiting	 = 0;
 	buf->list	 = DRM_LIST_PEND;
-#if DRM_DMA_HISTOGRAM
-	buf->time_dispatched = get_cycles();
-#endif
 
 	/* WE NOW ARE ON LOGICAL PAGES!!! - overriding address */
 	address = buf->idx << 12;
@@ -251,10 +242,6 @@ cleanup:
 
 	clear_bit(0, &dev->dma_flag);
 
-#if DRM_DMA_HISTOGRAM
-	dma_stop = get_cycles();
-	atomic_inc(&dev->histo.dma[gamma_histogram_slot(dma_stop - dma_start)]);
-#endif
 
 	return retcode;
 }
@@ -279,9 +266,6 @@ int gamma_dma_schedule(drm_device_t *dev, int locked)
 	int		 missed;
 	int		 expire	   = 20;
 	drm_device_dma_t *dma	   = dev->dma;
-#if DRM_DMA_HISTOGRAM
-	cycles_t	 schedule_start;
-#endif
 
 	if (test_and_set_bit(0, &dev->interrupt_flag)) {
 				/* Not reentrant */
@@ -290,9 +274,6 @@ int gamma_dma_schedule(drm_device_t *dev, int locked)
 	}
 	missed = atomic_read(&dev->counts[10]);
 
-#if DRM_DMA_HISTOGRAM
-	schedule_start = get_cycles();
-#endif
 
 again:
 	if (dev->context_flag) {
@@ -339,10 +320,6 @@ again:
 
 	clear_bit(0, &dev->interrupt_flag);
 
-#if DRM_DMA_HISTOGRAM
-	atomic_inc(&dev->histo.schedule[gamma_histogram_slot(get_cycles()
-							   - schedule_start)]);
-#endif
 	return retcode;
 }
 
@@ -454,10 +431,6 @@ static int gamma_dma_priority(struct file *filp,
 			}
 		}
 
-#if DRM_DMA_HISTOGRAM
-		buf->time_queued     = get_cycles();
-		buf->time_dispatched = buf->time_queued;
-#endif
 		gamma_dma_dispatch(dev, address, length);
 		atomic_inc(&dev->counts[9]); /* _DRM_STAT_SPECIAL */
 		atomic_add(length, &dev->counts[8]); /* _DRM_STAT_PRIMARY */

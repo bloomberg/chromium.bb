@@ -925,11 +925,6 @@ int DRM(lock)( struct inode *inode, struct file *filp,
 #if __HAVE_MULTIPLE_DMA_QUEUES
 	drm_queue_t *q;
 #endif
-#if __HAVE_DMA_HISTOGRAM
-        cycles_t start;
-
-        dev->lck_start = start = get_cycles();
-#endif
 
 	++priv->lock_count;
 
@@ -1021,9 +1016,6 @@ int DRM(lock)( struct inode *inode, struct file *filp,
 
         DRM_DEBUG( "%d %s\n", lock.context, ret ? "interrupted" : "has lock" );
 
-#if __HAVE_DMA_HISTOGRAM
-        atomic_inc(&dev->histo.lacq[DRM(histogram_slot)(get_cycles()-start)]);
-#endif
         return ret;
 }
 

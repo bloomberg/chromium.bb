@@ -127,61 +127,6 @@ void DRM(dma_takedown)(drm_device_t *dev)
 }
 
 
-#if __HAVE_DMA_HISTOGRAM
-/* This is slow, but is useful for debugging. */
-int DRM(histogram_slot)(unsigned long count)
-{
-	int value = DRM_DMA_HISTOGRAM_INITIAL;
-	int slot;
-
-	for (slot = 0;
-	     slot < DRM_DMA_HISTOGRAM_SLOTS;
-	     ++slot, value = DRM_DMA_HISTOGRAM_NEXT(value)) {
-		if (count < value) return slot;
-	}
-	return DRM_DMA_HISTOGRAM_SLOTS - 1;
-}
-
-void DRM(histogram_compute)(drm_device_t *dev, drm_buf_t *buf)
-{
-	cycles_t queued_to_dispatched;
-	cycles_t dispatched_to_completed;
-	cycles_t completed_to_freed;
-	int	 q2d, d2c, c2f, q2c, q2f;
-
-	if (buf->time_queued) {
-		queued_to_dispatched	= (buf->time_dispatched
-					   - buf->time_queued);
-		dispatched_to_completed = (buf->time_completed
-					   - buf->time_dispatched);
-		completed_to_freed	= (buf->time_freed
-					   - buf->time_completed);
-
-		q2d = DRM(histogram_slot)(queued_to_dispatched);
-		d2c = DRM(histogram_slot)(dispatched_to_completed);
-		c2f = DRM(histogram_slot)(completed_to_freed);
-
-		q2c = DRM(histogram_slot)(queued_to_dispatched
-					  + dispatched_to_completed);
-		q2f = DRM(histogram_slot)(queued_to_dispatched
-					  + dispatched_to_completed
-					  + completed_to_freed);
-
-		atomic_inc(&dev->histo.total);
-		atomic_inc(&dev->histo.queued_to_dispatched[q2d]);
-		atomic_inc(&dev->histo.dispatched_to_completed[d2c]);
-		atomic_inc(&dev->histo.completed_to_freed[c2f]);
-
-		atomic_inc(&dev->histo.queued_to_completed[q2c]);
-		atomic_inc(&dev->histo.queued_to_freed[q2f]);
-
-	}
-	buf->time_queued     = 0;
-	buf->time_dispatched = 0;
-	buf->time_completed  = 0;
-	buf->time_freed	     = 0;
-}
-#endif
 
 void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
 {
@@ -191,9 +136,6 @@ void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
 	buf->pending  = 0;
 	buf->filp     = 0;
 	buf->used     = 0;
-#if __HAVE_DMA_HISTOGRAM
-	buf->time_completed = get_cycles();
-#endif
 
 	if ( __HAVE_DMA_WAITQUEUE && waitqueue_active(&buf->dma_wait)) {
 		wake_up_interruptible(&buf->dma_wait);
