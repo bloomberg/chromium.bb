@@ -622,7 +622,7 @@ static void radeon_cp_init_ring_buffer( drm_device_t *dev,
 
 		tmp_ofs = dev_priv->ring_rptr->offset - dev->sg->handle;
 		page_ofs = tmp_ofs >> PAGE_SHIFT;
-#if defined(__alpha__) && (LINUX_VERSION_CODE >= 0x020400)
+#if defined(__alpha__)
 		RADEON_WRITE( RADEON_CP_RB_RPTR_ADDR,
 			     entry->busaddr[page_ofs]);
 		DRM_DEBUG( "ring rptr: offset=0x%08x handle=0x%08lx\n",

@@ -53,7 +53,7 @@ LIBS =
 DRMTEMPLATES =	drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
 		drm_drv.h drm_fops.h drm_init.h drm_ioctl.h drm_lists.h \
 		drm_lock.h drm_memory.h drm_proc.h drm_stub.h drm_vm.h
-DRMHEADERS =	drm.h drmP.h compat-pre24.h
+DRMHEADERS =	drm.h drmP.h
 
 GAMMAOBJS =	gamma_drv.o gamma_dma.o
 GAMMAHEADERS =	gamma_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
@@ -145,7 +145,6 @@ endif
 ifeq ($(AGP),1)
 MODCFLAGS += -DCONFIG_AGP -DCONFIG_AGP_MODULE
 DRMTEMPLATES += drm_agpsupport.h
-DRMHEADERS += agpsupport-pre24.h
 MODS += mga.o
 ifeq ($(MACHINE),i386)
 MODS += i810.o
@@ -185,7 +184,7 @@ all::;@echo === SMP=${SMP} MODULES=${MODULES} MODVERSIONS=${MODVERSIONS} AGP=${A
 all::;@echo === kill_fasync has $(PARAMS) parameters
 all::;@echo === Compiling for machine $(MACHINE)
 all::;@echo === WARNING
-all::;@echo === WARNING 2.4.0 kernels before 2.4.0-test11 DO NOT WORK
+all::;@echo === WARNING Use 2.4.x kernels ONLY !
 all::;@echo === WARNING
 
 ifeq ($(MODULES),0)

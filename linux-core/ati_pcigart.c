@@ -103,7 +103,7 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 		goto done;
 	}
 
-#if defined(__alpha__) && (LINUX_VERSION_CODE >= 0x020400)
+#if defined(__alpha__)
 	if ( !dev->pdev ) {
 		DRM_ERROR( "PCI device unknown!\n" );
 		goto done;
@@ -130,7 +130,7 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 	memset( pci_gart, 0, ATI_MAX_PCIGART_PAGES * sizeof(u32) );
 
 	for ( i = 0 ; i < pages ; i++ ) {
-#if defined(__alpha__) && (LINUX_VERSION_CODE >= 0x020400)
+#if defined(__alpha__)
 		/* we need to support large memory configurations */
 		entry->busaddr[i] = pci_map_single(dev->pdev,
 					   page_address( entry->pagelist[i] ),
@@ -171,7 +171,7 @@ int DRM(ati_pcigart_cleanup)( drm_device_t *dev,
 			      unsigned long addr,
 			      dma_addr_t bus_addr)
 {
-#if defined(__alpha__) && (LINUX_VERSION_CODE >= 0x020400)
+#if defined(__alpha__)
 	drm_sg_mem_t *entry = dev->sg;
 	unsigned long pages;
 	int i;

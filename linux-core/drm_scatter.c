@@ -47,7 +47,7 @@ void DRM(sg_cleanup)( drm_sg_mem_t *entry )
 
 	vfree( entry->virtual );
 
-#if defined(__alpha__) && (LINUX_VERSION_CODE >= 0x020400)
+#if defined(__alpha__)
 	DRM(free)( entry->busaddr,
 		   entry->pages * sizeof(*entry->busaddr),
 		   DRM_MEM_PAGES );
@@ -99,7 +99,7 @@ int DRM(sg_alloc)( struct inode *inode, struct file *filp,
 		return -ENOMEM;
 	}
 
-#if defined(__alpha__) && (LINUX_VERSION_CODE >= 0x020400)
+#if defined(__alpha__)
 	entry->busaddr = DRM(alloc)( pages * sizeof(*entry->busaddr),
 				     DRM_MEM_PAGES );
 	if ( !entry->busaddr ) {
@@ -116,7 +116,7 @@ int DRM(sg_alloc)( struct inode *inode, struct file *filp,
 
 	entry->virtual = vmalloc_32( pages << PAGE_SHIFT );
 	if ( !entry->virtual ) {
-#if defined(__alpha__) && (LINUX_VERSION_CODE >= 0x020400)
+#if defined(__alpha__)
 		DRM(free)( entry->busaddr,
 			   entry->pages * sizeof(*entry->busaddr),
 			   DRM_MEM_PAGES );
