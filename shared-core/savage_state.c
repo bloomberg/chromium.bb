@@ -26,16 +26,52 @@
 #include "savage_drm.h"
 #include "savage_drv.h"
 
-void savage_emit_cliprect_s3d(drm_savage_private_t *dev_priv,
-			      drm_clip_rect_t *pbox)
+void savage_emit_clip_rect_s3d(drm_savage_private_t *dev_priv,
+			       drm_clip_rect_t *pbox)
 {
-	
+	uint32_t scstart = dev_priv->state.s3d.new_scstart;
+	uint32_t scend   = dev_priv->state.s3d.new_scend;
+	scstart = (scstart & ~SAVAGE_SCISSOR_MASK_S3D) |
+		((uint32_t)pbox->x1 & 0x000007ff) | 
+		(((uint32_t)pbox->y1 << 16) & 0x07ff0000);
+	scend   = (scend   & ~SAVAGE_SCISSOR_MASK_S3D) |
+		(((uint32_t)pbox->x2-1) & 0x000007ff) |
+		((((uint32_t)pbox->y2-1) << 16) & 0x07ff0000);
+	if (scstart != dev_priv->state.s3d.scstart ||
+	    scend   != dev_priv->state.s3d.scend) {
+		BCI_LOCALS;
+		BEGIN_BCI(4);
+		BCI_WRITE(BCI_CMD_WAIT|BCI_CMD_WAIT_3D);
+		BCI_SET_REGISTERS(SAVAGE_SCSTART_S3D, 2);
+		BCI_WRITE(scstart);
+		BCI_WRITE(scend);
+		dev_priv->state.s3d.scstart = scstart;
+		dev_priv->state.s3d.scend   = scend;
+	}
 }
 
-void savage_emit_cliprect_s4(drm_savage_private_t *dev_priv,
-			     drm_clip_rect_t *pbox)
+void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
+			      drm_clip_rect_t *pbox)
 {
-	
+	uint32_t drawctrl0 = dev_priv->state.s4.new_drawctrl0;
+	uint32_t drawctrl1 = dev_priv->state.s4.new_drawctrl1;
+	drawctrl0 = (drawctrl0 & ~SAVAGE_SCISSOR_MASK_S4) |
+		((uint32_t)pbox->x1 & 0x000007ff) |
+		(((uint32_t)pbox->y1 << 12) & 0x00fff000);
+	drawctrl1 = (drawctrl1 & ~SAVAGE_SCISSOR_MASK_S4) |
+		(((uint32_t)pbox->x2-1) & 0x000007ff) |
+		((((uint32_t)pbox->y2-1) << 12) & 0x00fff000);
+	if (drawctrl0 != dev_priv->state.s4.drawctrl0 ||
+	    drawctrl1 != dev_priv->state.s4.drawctrl1) {
+		BCI_LOCALS;
+		BEGIN_BCI(4);
+		BCI_WRITE(BCI_CMD_WAIT|BCI_CMD_WAIT_3D);
+		BCI_SET_REGISTERS(SAVAGE_DRAWCTRL0_S4, 2);
+		BCI_WRITE(drawctrl0);
+		BCI_WRITE(drawctrl1);
+		dev_priv->state.s4.drawctrl0 = drawctrl0;
+		dev_priv->state.s4.drawctrl1 = drawctrl1;
+	}
 }
 
 static int savage_verify_texaddr(drm_savage_private_t *dev_priv, int unit,
@@ -71,6 +107,17 @@ static int savage_verify_texaddr(drm_savage_private_t *dev_priv, int unit,
 	return 0;
 }
 
+#define SAVE_STATE(reg,where)			\
+	if(start <= reg && start+count > reg)	\
+		DRM_GET_USER_UNCHECKED(dev_priv->state.where, &regs[reg-start])
+#define SAVE_STATE_MASK(reg,where,mask) do {			\
+	if(start <= reg && start+count > reg) {			\
+		uint32_t tmp;					\
+		DRM_GET_USER_UNCHECKED(tmp, &regs[reg-start]);	\
+		dev_priv->state.where = (tmp & (mask)) |	\
+			(dev_priv->state.where & ~(mask));	\
+	}							\
+} while (0)
 static int savage_verify_state_s3d(drm_savage_private_t *dev_priv,
 				   unsigned int start, unsigned int count,
 				   const uint32_t __user *regs)
@@ -82,16 +129,20 @@ static int savage_verify_state_s3d(drm_savage_private_t *dev_priv,
 		return DRM_ERR(EINVAL);
 	}
 
-	if (start <= SAVAGE_TEXCTRL_S3D && start+count > SAVAGE_TEXCTRL_S3D) {
-		DRM_GET_USER_UNCHECKED(dev_priv->state.s3d.texctrl,
-				       &regs[SAVAGE_TEXCTRL_S3D-start]);
-	}
+	SAVE_STATE_MASK(SAVAGE_SCSTART_S3D, s3d.new_scstart,
+			~SAVAGE_SCISSOR_MASK_S3D);
+	SAVE_STATE_MASK(SAVAGE_SCEND_S3D, s3d.new_scend,
+			~SAVAGE_SCISSOR_MASK_S3D);
 
-	if (dev_priv->state.s3d.texctrl & SAVAGE_TEXCTRL_TEXEN_MASK &&
-	    start <= SAVAGE_TEXADDR_S3D && start+count > SAVAGE_TEXADDR_S3D) {
-		uint32_t addr;
-		DRM_GET_USER_UNCHECKED(addr, &regs[SAVAGE_TEXADDR_S3D-start]);
-		return savage_verify_texaddr(dev_priv, 0, addr);
+	/* if any texture regs were changed ... */
+	if (start <= SAVAGE_TEXCTRL_S3D &&
+	    start+count > SAVAGE_TEXPALADDR_S3D) {
+		/* ... check texture state */
+		SAVE_STATE(SAVAGE_TEXCTRL_S3D, s3d.texctrl);
+		SAVE_STATE(SAVAGE_TEXADDR_S3D, s3d.texaddr);
+		if (dev_priv->state.s3d.texctrl & SAVAGE_TEXCTRL_TEXEN_MASK)
+			return savage_verify_texaddr(
+				dev_priv, 0, dev_priv->state.s3d.texaddr);
 	}
 
 	return 0;
@@ -110,26 +161,30 @@ static int savage_verify_state_s4(drm_savage_private_t *dev_priv,
 		return DRM_ERR(EINVAL);
 	}
 
-	if (start <= SAVAGE_TEXDESCR_S4 && start+count > SAVAGE_TEXDESCR_S4) {
-		DRM_GET_USER_UNCHECKED(dev_priv->state.s4.texdescr,
-				       &regs[SAVAGE_TEXDESCR_S4-start]);
-	}
+	SAVE_STATE_MASK(SAVAGE_DRAWCTRL0_S4, s4.new_drawctrl0,
+			~SAVAGE_SCISSOR_MASK_S4);
+	SAVE_STATE_MASK(SAVAGE_DRAWCTRL1_S4, s4.new_drawctrl1,
+			~SAVAGE_SCISSOR_MASK_S4);
 
-	if (dev_priv->state.s4.texdescr & SAVAGE_TEXDESCR_TEX0EN_MASK &&
-	    start <= SAVAGE_TEXADDR0_S4 && start+count > SAVAGE_TEXADDR0_S4) {
-		uint32_t addr;
-		DRM_GET_USER_UNCHECKED(addr, &regs[SAVAGE_TEXADDR0_S4-start]);
-		ret |= savage_verify_texaddr(dev_priv, 0, addr);
-	}
-	if (dev_priv->state.s4.texdescr & SAVAGE_TEXDESCR_TEX1EN_MASK &&
-	    start <= SAVAGE_TEXADDR1_S4 && start+count > SAVAGE_TEXADDR1_S4) {
-		uint32_t addr;
-		DRM_GET_USER_UNCHECKED(addr, &regs[SAVAGE_TEXADDR1_S4-start]);
-		ret |= savage_verify_texaddr(dev_priv, 1, addr);
+	/* if any texture regs were changed ... */
+	if (start <= SAVAGE_TEXDESCR_S4 &&
+	    start+count > SAVAGE_TEXPALADDR_S4) {
+		/* ... check texture state */
+		SAVE_STATE(SAVAGE_TEXDESCR_S4, s4.texdescr);
+		SAVE_STATE(SAVAGE_TEXADDR0_S4, s4.texaddr0);
+		SAVE_STATE(SAVAGE_TEXADDR1_S4, s4.texaddr1);
+		if (dev_priv->state.s4.texdescr & SAVAGE_TEXDESCR_TEX0EN_MASK)
+			ret |= savage_verify_texaddr(
+				dev_priv, 0, dev_priv->state.s4.texaddr0);
+		if (dev_priv->state.s4.texdescr & SAVAGE_TEXDESCR_TEX1EN_MASK)
+			ret |= savage_verify_texaddr(
+				dev_priv, 1, dev_priv->state.s4.texaddr1);
 	}
 
 	return ret;
 }
+#undef SAVE_STATE
+#undef SAVE_STATE_MASK
 
 static int savage_dispatch_state(drm_savage_private_t *dev_priv,
 				 const drm_savage_cmd_header_t *cmd_header,
@@ -138,8 +193,12 @@ static int savage_dispatch_state(drm_savage_private_t *dev_priv,
 	BCI_LOCALS;
 	unsigned int count = cmd_header->state.count;
 	unsigned int start = cmd_header->state.start;
-	unsigned int bci_size = count + (count+254)/255;
+	unsigned int count2 = 0;
+	unsigned int bci_size;
 	int ret;
+
+	if (!count)
+		return 0;
 
 	if (DRM_VERIFYAREA_READ(regs, count*4))
 		return DRM_ERR(EFAULT);
@@ -148,11 +207,39 @@ static int savage_dispatch_state(drm_savage_private_t *dev_priv,
 		ret = savage_verify_state_s3d(dev_priv, start, count, regs);
 		if (ret != 0)
 			return ret;
+		/* scissor regs are emitted in savage_dispatch_draw */
+		if (start < SAVAGE_SCSTART_S3D) {
+			if (start+count > SAVAGE_SCEND_S3D+1)
+				count2 = count - (SAVAGE_SCEND_S3D+1 - start);
+			if (start+count > SAVAGE_SCSTART_S3D)
+				count = SAVAGE_SCSTART_S3D - start;
+		} else if (start <= SAVAGE_SCEND_S3D) {
+			if (start+count > SAVAGE_SCEND_S3D+1) {
+				count -= SAVAGE_SCEND_S3D+1 - start;
+				start = SAVAGE_SCEND_S3D+1;
+			} else
+				return 0;
+		}
 	} else {
 		ret = savage_verify_state_s4(dev_priv, start, count, regs);
 		if (ret != 0)
 			return ret;
+		/* scissor regs are emitted in savage_dispatch_draw */
+		if (start < SAVAGE_DRAWCTRL0_S4) {
+			if (start+count > SAVAGE_DRAWCTRL1_S4+1)
+				count2 = count - (SAVAGE_DRAWCTRL1_S4+1 - start);
+			if (start+count > SAVAGE_DRAWCTRL0_S4)
+				count = SAVAGE_DRAWCTRL0_S4 - start;
+		} else if (start <= SAVAGE_DRAWCTRL1_S4) {
+			if (start+count > SAVAGE_DRAWCTRL1_S4+1) {
+				count -= SAVAGE_DRAWCTRL1_S4+1 - start;
+				start = SAVAGE_DRAWCTRL1_S4+1;
+			} else
+				return 0;
+		}
 	}
+
+	bci_size = count + (count+254)/255 + count2 + (count2+254)/255;
 
 	if (cmd_header->state.global) {
 		BEGIN_BCI(bci_size+1);
@@ -161,14 +248,20 @@ static int savage_dispatch_state(drm_savage_private_t *dev_priv,
 		BEGIN_BCI(bci_size);
 	}
 
-	while (count > 0) {
-		unsigned int n = count < 255 ? count : 255;
-		BCI_SET_REGISTERS(start, n);
-		BCI_COPY_FROM_USER(regs, n);
-		count -= n;
-		start += n;
-		regs += n;
-	}
+	do {
+		while (count > 0) {
+			unsigned int n = count < 255 ? count : 255;
+			BCI_SET_REGISTERS(start, n);
+			BCI_COPY_FROM_USER(regs, n);
+			count -= n;
+			start += n;
+			regs += n;
+		}
+		start += 2;
+		regs += 2;
+		count = count2;
+		count2 = 0;
+	} while (count);
 
 	return 0;
 }
@@ -184,6 +277,9 @@ static int savage_dispatch_dma_prim(drm_savage_private_t *dev_priv,
 	unsigned int n = cmd_header->prim.count;
 	unsigned int start = cmd_header->prim.start;
 	unsigned int i;
+
+	if (!n)
+		return 0;
 
 	switch (prim) {
 	case SAVAGE_PRIM_TRILIST_201:
@@ -314,6 +410,9 @@ static int savage_dispatch_vb_prim(drm_savage_private_t *dev_priv,
 	unsigned int vtx_size;
 	unsigned int i;
 
+	if (!n)
+		return 0;
+
 	switch (prim) {
 	case SAVAGE_PRIM_TRILIST_201:
 		reorder = 1;
@@ -421,7 +520,7 @@ static int savage_dispatch_clear(drm_savage_private_t *dev_priv,
 	BCI_LOCALS;
 	unsigned int flags = cmd_header->clear0.flags, mask, value;
 	unsigned int clear_cmd;
-	unsigned int i;
+	unsigned int i, nbufs;
 
 	if (nbox == 0)
 		return 0;
@@ -435,16 +534,15 @@ static int savage_dispatch_clear(drm_savage_private_t *dev_priv,
 		BCI_CMD_SEND_COLOR | BCI_CMD_DEST_PBD_NEW;
 	BCI_CMD_SET_ROP(clear_cmd,0xCC);
 
-	i = ((flags & SAVAGE_FRONT) ? 1 : 0) +
+	nbufs = ((flags & SAVAGE_FRONT) ? 1 : 0) +
 		((flags & SAVAGE_BACK) ? 1 : 0) +
 		((flags & SAVAGE_DEPTH) ? 1 : 0);
-	if (i == 0)
+	if (nbufs == 0)
 		return 0;
-
-	BEGIN_BCI(nbox * i * 6 + (mask != 0xffffffff ? 4 : 0));
 
 	if (mask != 0xffffffff) {
 		/* set mask */
+		BEGIN_BCI(2);
 		BCI_SET_REGISTERS(SAVAGE_BITPLANEWTMASK, 1);
 		BCI_WRITE(mask);
 	}
@@ -456,6 +554,7 @@ static int savage_dispatch_clear(drm_savage_private_t *dev_priv,
 		x = box.x1, y = box.y1;
 		w = box.x2 - box.x1;
 		h = box.y2 - box.y1;
+		BEGIN_BCI(nbufs*6);
 		for (buf = SAVAGE_FRONT; buf <= SAVAGE_DEPTH; buf <<= 1) {
 			if (!(flags & buf))
 				continue;
@@ -481,6 +580,7 @@ static int savage_dispatch_clear(drm_savage_private_t *dev_priv,
 	}
 	if (mask != 0xffffffff) {
 		/* reset mask */
+		BEGIN_BCI(2);
 		BCI_SET_REGISTERS(SAVAGE_BITPLANEWTMASK, 1);
 		BCI_WRITE(0xffffffff);
 	}
@@ -503,17 +603,83 @@ static int savage_dispatch_swap(drm_savage_private_t *dev_priv,
 		BCI_CMD_SRC_PBD_COLOR_NEW | BCI_CMD_DEST_GBD;
 	BCI_CMD_SET_ROP(swap_cmd,0xCC);
 
-	BEGIN_BCI(nbox*6);
 	for (i = 0; i < nbox; ++i) {
 		drm_clip_rect_t box;
 		DRM_COPY_FROM_USER_UNCHECKED(&box, &usr_boxes[i], sizeof(box));
 
+		BEGIN_BCI(6);
 		BCI_WRITE(swap_cmd);
 		BCI_WRITE(dev_priv->back_offset);
 		BCI_WRITE(dev_priv->back_bd);
 		BCI_WRITE(BCI_X_Y(box.x1, box.y1));
 		BCI_WRITE(BCI_X_Y(box.x1, box.y1));
 		BCI_WRITE(BCI_W_H(box.x2-box.x1, box.y2-box.y1));
+	}
+
+	return 0;
+}
+
+static int savage_dispatch_draw(drm_savage_private_t *dev_priv,
+				const drm_savage_cmd_header_t __user *start,
+				const drm_savage_cmd_header_t __user *end,
+				const drm_buf_t *dmabuf,
+				const unsigned int __user *usr_vtxbuf,
+				unsigned int vb_size, unsigned int vb_stride,
+				unsigned int nbox,
+				const drm_clip_rect_t __user *usr_boxes)
+{
+	unsigned int i;
+	int ret;
+
+	for (i = 0; i < nbox; ++i) {
+		drm_clip_rect_t box;
+		const drm_savage_cmd_header_t __user *usr_cmdbuf;
+		DRM_COPY_FROM_USER_UNCHECKED(&box, &usr_boxes[i], sizeof(box));
+		dev_priv->emit_clip_rect(dev_priv, &box);
+
+		usr_cmdbuf = start;
+		while (usr_cmdbuf < end) {
+			drm_savage_cmd_header_t cmd_header;
+			DRM_COPY_FROM_USER_UNCHECKED(&cmd_header, usr_cmdbuf,
+						     sizeof(cmd_header));
+			usr_cmdbuf++;
+			switch (cmd_header.cmd.cmd) {
+			case SAVAGE_CMD_DMA_PRIM:
+				ret = savage_dispatch_dma_prim(
+					dev_priv, &cmd_header, dmabuf);
+				break;
+			case SAVAGE_CMD_VB_PRIM:
+				ret = savage_dispatch_vb_prim(
+					dev_priv, &cmd_header,
+					(uint32_t __user *)usr_vtxbuf,
+					vb_size, vb_stride);
+				break;
+#if 0 /* to be implemented */
+			case SAVAGE_CMD_DMA_IDX:
+				ret = savage_dispatch_dma_idx(
+					dev_priv, &cmd_header, usr_cmdbuf,
+					dmabuf);
+				j = (cmd_header.idx.count + 3) / 4;
+				usr_cmdbuf += j;
+				break;
+			case SAVAGE_CMD_VB_IDX:
+				ret = savage_dispatch_vtx_idx(
+					dev_priv, &cmd_header, usr_cmdbuf,
+					(uint32_t __user *)usr_vtxbuf,
+					cmdbuf.vb_size, cmdbuf.vb_stride);
+				j = (cmd_header.idx.count + 3) / 4;
+				usr_cmdbuf += j;
+				break;
+#endif
+			default:
+				DRM_ERROR("non-drawing-command 0x%x\n",
+					  cmd_header.cmd.cmd);
+				return DRM_ERR(EINVAL);
+			}
+
+			if (ret != 0)
+				return ret;
+		}
 	}
 
 	return 0;
@@ -527,6 +693,7 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 	drm_buf_t *dmabuf;
 	drm_savage_cmdbuf_t cmdbuf;
 	drm_savage_cmd_header_t __user *usr_cmdbuf;
+	drm_savage_cmd_header_t __user *first_draw_cmd;
 	unsigned int __user *usr_vtxbuf;
 	drm_clip_rect_t __user *usr_boxes;
 	unsigned int i, j;
@@ -561,12 +728,31 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 	DRM_MEMORYBARRIER();
 
 	i = 0;
-	while (i < cmdbuf.size && ret == 0) {
+	first_draw_cmd = NULL;
+	while (i < cmdbuf.size) {
 		drm_savage_cmd_header_t cmd_header;
 		DRM_COPY_FROM_USER_UNCHECKED(&cmd_header, usr_cmdbuf,
 					     sizeof(cmd_header));
 		usr_cmdbuf++;
 		i++;
+
+		/* Group drawing commands with same state to minimize
+		 * iterations over clip rects. */
+		if (cmd_header.cmd.cmd >= SAVAGE_CMD_DMA_PRIM &&
+		    cmd_header.cmd.cmd <= SAVAGE_CMD_VB_PRIM) {
+			if (!first_draw_cmd)
+				first_draw_cmd = usr_cmdbuf-1;
+			continue;
+		}
+		if (first_draw_cmd) {
+			ret = savage_dispatch_draw (
+				dev_priv, first_draw_cmd, usr_cmdbuf-1, dmabuf,
+				usr_vtxbuf, cmdbuf.vb_size, cmdbuf.vb_stride,
+				cmdbuf.nbox, usr_boxes);
+			if (ret != 0)
+				return ret;
+			first_draw_cmd = NULL;
+		}
 
 		switch (cmd_header.cmd.cmd) {
 		case SAVAGE_CMD_STATE:
@@ -577,33 +763,6 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 			usr_cmdbuf += j;
 			i += j;
 			break;
-		case SAVAGE_CMD_DMA_PRIM:
-			ret = savage_dispatch_dma_prim(
-				dev_priv, &cmd_header, dmabuf);
-			break;
-		case SAVAGE_CMD_VB_PRIM:
-			ret = savage_dispatch_vb_prim(
-				dev_priv, &cmd_header,
-				(uint32_t __user *)usr_vtxbuf,
-				cmdbuf.vb_size, cmdbuf.vb_stride);
-			break;
-#if 0 /* to be implemented */
-		case SAVAGE_CMD_DMA_IDX:
-			ret = savage_dispatch_dma_idx(
-				dev_priv, &cmd_header, usr_cmdbuf, dmabuf);
-			j = (cmd_header.state.count + 3) / 4;
-			usr_cmdbuf += j;
-			i += j;
-			break;
-		case SAVAGE_CMD_VB_IDX:
-			ret = savage_dispatch_vtx_idx(
-				dev_priv, &cmd_header, usr_cmdbuf, usr_vtxbuf,
-				cmdbuf.vb_size, cmdbuf.vb_stride);
-			j = (cmd_header.state.count + 3) / 4;
-			usr_cmdbuf += j;
-			i += j;
-			break;
-#endif
 		case SAVAGE_CMD_CLEAR:
 			ret = savage_dispatch_clear(dev_priv, &cmd_header,
 						    usr_cmdbuf,
@@ -620,6 +779,15 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 			return DRM_ERR(EINVAL);
 		}
 
+		if (ret != 0)
+			return ret;
+	}
+
+	if (first_draw_cmd) {
+		ret = savage_dispatch_draw (
+			dev_priv, first_draw_cmd, usr_cmdbuf, dmabuf,
+			usr_vtxbuf, cmdbuf.vb_size, cmdbuf.vb_stride,
+			cmdbuf.nbox, usr_boxes);
 		if (ret != 0)
 			return ret;
 	}

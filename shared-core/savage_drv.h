@@ -30,11 +30,18 @@
 
 #define DRIVER_NAME	"savage"
 #define DRIVER_DESC	"Savage3D/MX/IX, Savage4, SuperSavage, Twister, ProSavage[DDR]"
-#define DRIVER_DATE	"20050105"
+#define DRIVER_DATE	"20050106"
 
 #define DRIVER_MAJOR		2
-#define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	1
+#define DRIVER_MINOR		1
+#define DRIVER_PATCHLEVEL	0
+/* Interface history:
+ *
+ * 1.x   The DRM driver from the VIA/S3 code drop, basically a dummy
+ * 2.0   The first real DRM
+ * 2.1   Scissors registers managed by the DRM, 3D operations clipped by
+ *       cliprects of the cmdbuf ioctl
+ */
 
 typedef struct drm_savage_age {
 	uint16_t event;
@@ -55,11 +62,15 @@ typedef union {
 	} common;
 	struct {
 		unsigned char pad[sizeof(struct drm_savage_common_state)];
-		uint32_t texctrl;
+		uint32_t texctrl, texaddr;
+		uint32_t scstart, new_scstart;
+		uint32_t scend, new_scend;
 	} s3d;
 	struct {
 		unsigned char pad[sizeof(struct drm_savage_common_state)];
-		uint32_t texdescr;
+		uint32_t texdescr, texaddr0, texaddr1;
+		uint32_t drawctrl0, new_drawctrl0;
+		uint32_t drawctrl1, new_drawctrl1;
 	} s4;
 } drm_savage_state_t;
 
@@ -147,6 +158,8 @@ typedef struct drm_savage_private {
 	int (*wait_evnt)(struct drm_savage_private *dev_priv, uint16_t e);
 	/* Err, there is a macro wait_event in include/linux/wait.h.
 	 * Avoid unwanted macro expansion. */
+	void (*emit_clip_rect)(struct drm_savage_private *dev_priv,
+			       drm_clip_rect_t *pbox);
 } drm_savage_private_t;
 
 /* ioctls */
@@ -156,12 +169,19 @@ extern int savage_bci_event_emit(DRM_IOCTL_ARGS);
 extern int savage_bci_event_wait(DRM_IOCTL_ARGS);
 extern int savage_bci_buffers(DRM_IOCTL_ARGS);
 
+/* BCI functions */
 extern uint16_t savage_bci_emit_event(drm_savage_private_t *dev_priv,
 				      unsigned int flags);
 extern void savage_freelist_put(drm_device_t *dev, drm_buf_t *buf);
 extern int savage_preinit(drm_device_t *dev, unsigned long chipset);
 extern int savage_do_cleanup_bci(drm_device_t *dev);
 extern void savage_reclaim_buffers(drm_device_t *dev, DRMFILE filp);
+
+/* state functions */
+extern void savage_emit_clip_rect_s3d(drm_savage_private_t *dev_priv,
+				      drm_clip_rect_t *pbox);
+extern void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
+				     drm_clip_rect_t *pbox);
 
 #define SAVAGE_FB_SIZE_S3	0x01000000	/*  16MB */
 #define SAVAGE_FB_SIZE_S4	0x02000000	/*  32MB */
@@ -233,8 +253,8 @@ extern void savage_reclaim_buffers(drm_device_t *dev, DRMFILE filp);
 #define SAVAGE_ZBUFCTRL_S4		0x32
 #define SAVAGE_ZBUFOFF_S4		0x33
 #define SAVAGE_DESTCTRL_S4		0x34
-#define SAVAGE_DRAWCTRLGLOBAL0_S4	0x35
-#define SAVAGE_DRAWCTRLGLOBAL1_S4	0x36
+#define SAVAGE_DRAWCTRL0_S4		0x35
+#define SAVAGE_DRAWCTRL1_S4		0x36
 #define SAVAGE_ZWATERMARK_S4		0x37
 #define SAVAGE_DESTTEXRWWATERMARK_S4	0x38
 #define SAVAGE_TEXBLENDCOLOR_S4		0x39
@@ -278,6 +298,11 @@ extern void savage_reclaim_buffers(drm_device_t *dev, DRMFILE filp);
  */
 #define SAVAGE_DRAWCTRL_S3D_GLOBAL	0x03f3c00c
 #define SAVAGE_ZBUFCTRL_S3D_GLOBAL	0x00000027
+
+/* Masks for scissor bits (drawCtrl[01] on s4, scissorStart/End on s3d)
+ */
+#define SAVAGE_SCISSOR_MASK_S4		0x00fff7ff
+#define SAVAGE_SCISSOR_MASK_S3D		0x07ff07ff
 
 /*
  * BCI commands

@@ -42,7 +42,8 @@ savage_bci_wait_fifo_shadow(drm_savage_private_t *dev_priv, unsigned int n)
 
 #if SAVAGE_BCI_DEBUG
 	if (n > dev_priv->cob_size + SAVAGE_BCI_FIFO_SIZE - threshold)
-		DRM_ERROR("Trying to emit more than guaranteed space in COB");
+		DRM_ERROR("Trying to emit %d words "
+			  "(more than guaranteed space in COB)\n", n);
 #endif
 
 	for (i = 0; i < SAVAGE_DEFAULT_USEC_TIMEOUT; i++) {
@@ -483,6 +484,12 @@ static int savage_do_init_bci(drm_device_t *dev, drm_savage_init_t *init)
 		}
 		dev_priv->wait_evnt = savage_bci_wait_event_reg;
 	}
+
+	/* cliprect functions */
+	if (S3_SAVAGE3D_SERIES(dev_priv->chipset))
+		dev_priv->emit_clip_rect = savage_emit_clip_rect_s3d;
+	else
+		dev_priv->emit_clip_rect = savage_emit_clip_rect_s4;
 
 	if (savage_freelist_init(dev) < 0) {
 		DRM_ERROR("could not initialize freelist\n");
