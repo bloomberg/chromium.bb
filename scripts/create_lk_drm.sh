@@ -9,6 +9,11 @@ if [ $# -lt 2 ] ;then
 	exit 1
 fi
 
+if [ ! -d shared -o ! -d linux ]  ;then
+	echo not in DRM toplevel
+	exit 1
+fi
+
 OUTDIR=$1/drivers/char/drm/
 VERS=$2
 
