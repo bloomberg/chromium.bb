@@ -1,0 +1,57 @@
+#
+# $XFree86$
+#
+# Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
+#
+# Permission to use, copy, modify, distribute, and sell this software and its
+# documentation for any purpose is hereby granted without fee, provided that
+# the above copyright notice appear in all copies and that both that
+# copyright notice and this permission notice appear in supporting
+# documentation, and that the name of Keith Packard not be used in
+# advertising or publicity pertaining to distribution of the software without
+# specific, written prior permission.  Keith Packard makes no
+# representations about the suitability of this software for any purpose.  It
+# is provided "as is" without express or implied warranty.
+#
+# KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+# EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+# CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+# DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+# TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+#
+# Ethiopic (Geez) (eth)
+#
+# Taken from Unicode coverage (1200-137f)
+#
+# Sylables
+1200-1206
+1208-1246
+1248
+1248-124d
+1250-1256
+1258
+125a-125d
+1260-1286
+1288
+128a-128d
+1290-12ae
+12b0
+12b2-12b5
+12b8-12be
+12c0
+12c2-12c5
+12c8-12ce
+12d0-12d6
+12d8-12ee
+12f0-130e
+1310
+1312-1315
+1318-131e
+1320-1346
+1348-135a
+#1361-1368	# punctuation
+#1369-1371	# digits
+#1372-137c	# numbers
+#
