@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.6 2002/05/21 17:06:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.7 2002/05/29 08:21:33 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -471,8 +471,9 @@ FcConfigPromote (FcValue v, FcValue u)
     }
     else if (v.type == FcTypeVoid && u.type == FcTypeMatrix)
     {
-	v.u.m = (FcMatrix *) &FcIdentityMatrix;
-	v.type = FcTypeMatrix;
+	v.u.m = FcMatrixCopy (&FcIdentityMatrix);
+	if (v.u.m)
+	    v.type = FcTypeMatrix;
     }
     return v;
 }
@@ -582,6 +583,17 @@ FcConfigCompareValue (FcValue	m,
 		break;
 	    }
 	    break;
+	case FcTypeFTFace:
+	    switch (op) {
+	    case FcOpEqual:
+		ret = m.u.f == v.u.f;
+		break;
+	    case FcOpNotEqual:
+		ret = m.u.f != v.u.f;
+		break;
+	    default:
+		break;
+	    }
 	}
     }
     else

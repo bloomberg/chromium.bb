@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.7 2002/05/21 17:06:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.8 2002/05/22 04:12:35 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1188,6 +1188,7 @@ FcPopExpr (FcConfigParse *parse)
 	break;
     case FcVStackExpr:
 	expr = vstack->u.expr;
+	vstack->tag = FcVStackNone;
 	break;
     case FcVStackEdit:
 	break;
@@ -1377,7 +1378,7 @@ FcParseEdit (FcConfigParse *parse)
     }
     mode_string = FcConfigGetAttribute (parse, "mode");
     if (!mode_string)
-	mode = FcOpEqual;
+	mode = FcOpAssign;
     else
     {
 	mode = FcConfigLexMode (mode_string);
