@@ -224,13 +224,13 @@ drm_buf_t *mga_freelist_get(drm_device_t *dev)
 		       dev_priv->last_prim_age);
 	   	set_bit(MGA_IN_GETBUF, &dev_priv->dispatch_status);
 	   	add_wait_queue(&dev_priv->buf_queue, &entry);
+		current->state = TASK_INTERRUPTIBLE;
 	   	for (;;) {
 		   	mga_dma_schedule(dev, 0);
 		   	if(!test_bit(MGA_IN_GETBUF,
 				     &dev_priv->dispatch_status))
 				break;
 		   	atomic_inc(&dev->total_sleeps);
-			current->state = TASK_INTERRUPTIBLE;
 		   	schedule();
 		   	if (signal_pending(current)) {
 				++return_null;
@@ -239,6 +239,7 @@ drm_buf_t *mga_freelist_get(drm_device_t *dev)
 				break;
 			}
 		}
+		current->state = TASK_RUNNING;
 	   	remove_wait_queue(&dev_priv->buf_queue, &entry);
 		if (return_null) return NULL;
 	}
