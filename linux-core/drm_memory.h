@@ -136,9 +136,14 @@ static inline void *agp_remap(unsigned long offset, unsigned long size,
 
 static inline unsigned long drm_follow_page(void *vaddr)
 {
-	pgd_t *pgd = pgd_offset_k((unsigned long)vaddr);
+	pgd_t *pgd = pgd_offset_k((unsigned long) vaddr);
+#if LINUX_VERSION_CODE < 0x02060a     /* KERNEL_VERSION(2,6,10) */
 	pmd_t *pmd = pmd_offset(pgd, (unsigned long)vaddr);
-	pte_t *ptep = pte_offset_kernel(pmd, (unsigned long)vaddr);
+#else
+	pud_t *pud = pud_offset(pgd, (unsigned long) vaddr);
+	pmd_t *pmd = pmd_offset(pud, (unsigned long) vaddr);
+#endif
+	pte_t *ptep = pte_offset_kernel(pmd, (unsigned long) vaddr);
 	return pte_pfn(*ptep) << PAGE_SHIFT;
 }
 
