@@ -45,6 +45,9 @@ static void drm_cleanup(drm_device_t *dev);
 MODULE_VERSION(drm, 1);
 MODULE_DEPEND(drm, agp, 1, 1, 1);
 MODULE_DEPEND(drm, pci, 1, 1, 1);
+#if __FreeBSD_version > 502127
+MODULE_DEPEND(drm, mem, 1, 1, 1);
+#endif
 #endif /* __FreeBSD__ */
 
 #if defined(__NetBSD__) || defined(__OpenBSD__)
