@@ -278,6 +278,8 @@ struct _FcConfig {
  
 extern FcConfig	*_fcConfig;
 
+typedef struct _FcCharMap FcCharMap;
+
 /* fcblanks.c */
 
 /* fccache.c */
@@ -369,6 +371,15 @@ FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c);
 FcCharSet *
 FcNameParseCharSet (FcChar8 *string);
 
+FcChar32
+FcFreeTypeUcs4ToPrivate (FcChar32 ucs4, const FcCharMap *map);
+
+FcChar32
+FcFreeTypePrivateToUcs4 (FcChar32 private, const FcCharMap *map);
+
+const FcCharMap *
+FcFreeTypeGetPrivateMap (FT_Encoding encoding);
+    
 /* fcdbg.c */
 void
 FcValueListPrint (FcValueList *l);

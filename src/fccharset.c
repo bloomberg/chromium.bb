@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.15 2002/07/06 23:47:43 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.16 2002/07/09 02:28:29 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1173,10 +1173,10 @@ typedef struct _FcCharEnt {
     unsigned char   encode;
 } FcCharEnt;
 
-typedef struct _FcCharMap {
+struct _FcCharMap {
     const FcCharEnt *ent;
     int		    nent;
-} FcCharMap;
+};
 
 typedef struct _FcFontDecode {
     FT_Encoding	    encoding;
@@ -1625,8 +1625,8 @@ static const FcFontDecode fcFontDecoders[] = {
 
 #define NUM_DECODE  (sizeof (fcFontDecoders) / sizeof (fcFontDecoders[0]))
 
-static FT_ULong
-FcFreeTypeMapChar (FcChar32 ucs4, const FcCharMap *map)
+FcChar32
+FcFreeTypeUcs4ToPrivate (FcChar32 ucs4, const FcCharMap *map)
 {
     int		low, high, mid;
     FcChar16	bmp;
@@ -1649,6 +1649,28 @@ FcFreeTypeMapChar (FcChar32 ucs4, const FcCharMap *map)
     return ~0;
 }
 
+FcChar32
+FcFreeTypePrivateToUcs4 (FcChar32 private, const FcCharMap *map)
+{
+    int	    i;
+
+    for (i = 0; i < map->nent; i++)
+	if (map->ent[i].encode == private)
+	    return (FcChar32) map->ent[i].bmp;
+    return ~0;
+}
+
+const FcCharMap *
+FcFreeTypeGetPrivateMap (FT_Encoding encoding)
+{
+    int	i;
+
+    for (i = 0; i < NUM_DECODE; i++)
+	if (fcFontDecoders[i].encoding == encoding)
+	    return fcFontDecoders[i].map;
+    return 0;
+}
+
 /*
  * Map a UCS4 glyph to a glyph index.  Use all available encoding
  * tables to try and find one that works.  This information is expected
@@ -1660,7 +1682,7 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
 {
     int		    initial, offset, decode;
     FT_UInt	    glyphindex;
-    FT_ULong	    charcode;
+    FcChar32	    charcode;
 
     initial = 0;
     /*
@@ -1685,13 +1707,13 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
 		continue;
 	if (fcFontDecoders[decode].map)
 	{
-	    charcode = FcFreeTypeMapChar (ucs4, fcFontDecoders[decode].map);
+	    charcode = FcFreeTypeUcs4ToPrivate (ucs4, fcFontDecoders[decode].map);
 	    if (charcode == ~0)
 		continue;
 	}
 	else
-	    charcode = (FT_ULong) ucs4;
-	glyphindex = FT_Get_Char_Index (face, charcode);
+	    charcode = ucs4;
+	glyphindex = FT_Get_Char_Index (face, (FT_ULong) charcode);
 	if (glyphindex)
 	    return glyphindex;
     }

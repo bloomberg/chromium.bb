@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.5 2002/05/29 22:07:33 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.6 2002/07/06 23:47:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -211,6 +211,103 @@ FcUtf8Len (FcChar8	*string,
     while (len)
     {
 	clen = FcUtf8ToUcs4 (string, &c, len);
+	if (clen <= 0)	/* malformed UTF8 string */
+	    return FcFalse;
+	if (c > max)
+	    max = c;
+	string += clen;
+	len -= clen;
+	n++;
+    }
+    *nchar = n;
+    if (max >= 0x10000)
+	*wchar = 4;
+    else if (max > 0x100)
+	*wchar = 2;
+    else
+	*wchar = 1;
+    return FcTrue;
+}
+
+int
+FcUcs4ToUtf8 (FcChar32	ucs4,
+	      FcChar8	dest[FC_UTF8_MAX_LEN])
+{
+    int	bits;
+    FcChar8 *d = dest;
+    
+    if      (ucs4 <       0x80) {  *d++=  ucs4;                         bits= -6; }
+    else if (ucs4 <      0x800) {  *d++= ((ucs4 >>  6) & 0x1F) | 0xC0;  bits=  0; }
+    else if (ucs4 <    0x10000) {  *d++= ((ucs4 >> 12) & 0x0F) | 0xE0;  bits=  6; }
+    else if (ucs4 <   0x200000) {  *d++= ((ucs4 >> 18) & 0x07) | 0xF0;  bits= 12; }
+    else if (ucs4 <  0x4000000) {  *d++= ((ucs4 >> 24) & 0x03) | 0xF8;  bits= 18; }
+    else if (ucs4 < 0x80000000) {  *d++= ((ucs4 >> 30) & 0x01) | 0xFC;  bits= 24; }
+    else return 0;
+
+    for ( ; bits >= 0; bits-= 6) {
+	*d++= ((ucs4 >> bits) & 0x3F) | 0x80;
+    }
+    return d - dest;
+}
+
+#define GetUtf16(src,endian) \
+    ((FcChar16) ((src)[endian == FcEndianBig ? 0 : 1] << 8) | \
+     (FcChar16) ((src)[endian == FcEndianBig ? 1 : 0]))
+
+int
+FcUtf16ToUcs4 (FcChar8	*src_orig,
+	       FcEndian	endian,
+	       FcChar32	*dst,
+	       int	len)	/* in bytes */
+{
+    FcChar8	*src = src_orig;
+    FcChar16	a, b;
+    FcChar32	result;
+
+    if (len < 2)
+	return 0;
+    
+    a = GetUtf16 (src, endian); src += 2; len -= 2;
+    
+    /* 
+     * Check for surrogate 
+     */
+    if ((a & 0xfc00) == 0xd800)
+    {
+	if (len < 2)
+	    return 0;
+	b = GetUtf16 (src, endian); src += 2; len -= 2;
+	/*
+	 * Check for invalid surrogate sequence
+	 */
+	if ((b & 0xfc00) != 0xdc00)
+	    return 0;
+	result = ((((FcChar32) a & 0x3ff) << 10) |
+		  ((FcChar32) b & 0x3ff)) | 0x10000;
+    }
+    else
+	result = a;
+    *dst = result;
+    return src - src_orig;
+}
+
+FcBool
+FcUtf16Len (FcChar8	*string,
+	    FcEndian	endian,
+	    int		len,	/* in bytes */
+	    int		*nchar,
+	    int		*wchar)
+{
+    int		n;
+    int		clen;
+    FcChar32	c;
+    FcChar32	max;
+    
+    n = 0;
+    max = 0;
+    while (len)
+    {
+	clen = FcUtf16ToUcs4 (string, endian, &c, len);
 	if (clen <= 0)	/* malformed UTF8 string */
 	    return FcFalse;
 	if (c > max)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.20 2002/07/06 23:47:43 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.21 2002/07/11 02:47:50 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -186,6 +186,8 @@ typedef struct _FcAtomic FcAtomic;
 #define _FCFUNCPROTOBEGIN
 #define _FCFUNCPROTOEND
 #endif
+
+typedef enum { FcEndianBig, FcEndianLittle } FcEndian;
 
 typedef struct _FcConfig    FcConfig;
 
@@ -650,6 +652,25 @@ FcUtf8Len (FcChar8	*string,
 	   int		len,
 	   int		*nchar,
 	   int		*wchar);
+
+#define FC_UTF8_MAX_LEN	6
+
+int
+FcUcs4ToUtf8 (FcChar32	ucs4,
+	      FcChar8	dest[FC_UTF8_MAX_LEN]);
+
+int
+FcUtf16ToUcs4 (FcChar8	*src_orig,
+	       FcEndian	endian,
+	       FcChar32 *dst,
+	       int	len);	    /* in bytes */
+
+FcBool
+FcUtf16Len (FcChar8	*string,
+	    FcEndian	endian,
+	    int		len,	    /* in bytes */
+	    int		*nchar,
+	    int		*wchar);
 
 FcChar8 *
 FcStrDirname (const FcChar8 *file);
