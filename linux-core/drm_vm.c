@@ -153,7 +153,7 @@ struct page *DRM(vm_shm_nopage)(struct vm_area_struct *vma,
 	page = pte_page(*pte);
 	get_page(page);
 
-	DRM_DEBUG("0x%08lx => 0x%08x\n", address, page_to_bus(page));
+	DRM_DEBUG("shm_nopage 0x%lx\n", address);
 	return page;
 }
 
@@ -255,8 +255,7 @@ struct page *DRM(vm_dma_nopage)(struct vm_area_struct *vma,
 
 	get_page(page);
 
-	DRM_DEBUG("0x%08lx (page %lu) => 0x%08x\n", address, page_nr, 
-		  page_to_bus(page));
+	DRM_DEBUG("dma_nopage 0x%lx (page %lu)\n", address, page_nr);
 	return page;
 }
 
@@ -457,10 +456,17 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 			vma->vm_flags |= VM_IO;	/* not in core dump */
 		}
 		offset = DRIVER_GET_REG_OFS();
+#ifdef __sparc__
+		if (io_remap_page_range(vma->vm_start,
+					VM_OFFSET(vma) + offset,
+					vma->vm_end - vma->vm_start,
+					vma->vm_page_prot, 0))
+#else
 		if (remap_page_range(vma->vm_start,
 				     VM_OFFSET(vma) + offset,
 				     vma->vm_end - vma->vm_start,
 				     vma->vm_page_prot))
+#endif
 				return -EAGAIN;
 		DRM_DEBUG("   Type = %d; start = 0x%lx, end = 0x%lx,"
 			  " offset = 0x%lx\n",
