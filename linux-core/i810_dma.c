@@ -244,7 +244,7 @@ int i810_dma_cleanup(drm_device_t *dev)
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
-	if (dev->irq_enabled) DRM(irq_uninstall)(dev);
+	if ( dev->irq_enabled ) DRM(irq_uninstall)(dev);
 #endif
 
 	if (dev->dev_private) {
@@ -851,11 +851,12 @@ static void i810_dma_dispatch_vertex(drm_device_t *dev,
 	if (buf_priv->currently_mapped == I810_BUF_MAPPED) {
 		unsigned int prim = (sarea_priv->vertex_prim & PR_MASK);
 
-		*(u32 *)buf_priv->virtual = (GFX_OP_PRIMITIVE | prim | 
-					     ((used/4)-2));
+		DRM_PUT_USER_UNCHECKED((u32 *)buf_priv->virtual, 
+					(GFX_OP_PRIMITIVE | prim | 
+					((used/4)-2)));
 
 		if (used & 4) {
-			*(u32 *)((u32)buf_priv->virtual + used) = 0;
+			DRM_PUT_USER_UNCHECKED((u32 *)((u32)buf_priv->virtual + used), 0);
 			used += 4;
 		}
 

@@ -1173,17 +1173,17 @@ static void i830_dma_dispatch_vertex(drm_device_t *dev,
 	if (buf_priv->currently_mapped == I830_BUF_MAPPED) {
 		u32 *vp = buf_priv->virtual;
 
-		vp[0] = (GFX_OP_PRIMITIVE |
+		DRM_PUT_USER_UNCHECKED(&vp[0], (GFX_OP_PRIMITIVE |
 			 sarea_priv->vertex_prim |
-			 ((used/4)-2));
+			 ((used/4)-2)));
 
 		if (dev_priv->use_mi_batchbuffer_start) {
-			vp[used/4] = MI_BATCH_BUFFER_END; 
+			DRM_PUT_USER_UNCHECKED(&vp[used/4], MI_BATCH_BUFFER_END);
 			used += 4; 
 		}
 		
 		if (used & 4) {
-			vp[used/4] = 0;
+			DRM_PUT_USER_UNCHECKED(&vp[used/4], 0);
 			used += 4;
 		}
 
