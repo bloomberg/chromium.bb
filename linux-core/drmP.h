@@ -999,12 +999,14 @@ extern int            DRM(proc_cleanup)(int minor,
 					struct proc_dir_entry *root,
 					struct proc_dir_entry *dev_root);
 
+#if __HAVE_SG
 				/* Scatter Gather Support (drm_scatter.h) */
 extern void           DRM(sg_cleanup)(drm_sg_mem_t *entry);
 extern int            DRM(sg_alloc)(struct inode *inode, struct file *filp,
 				    unsigned int cmd, unsigned long arg);
 extern int            DRM(sg_free)(struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg);
+#endif
 
                                /* ATI PCIGART support (ati_pcigart.h) */
 extern unsigned long  DRM(ati_pcigart_init)(drm_device_t *dev);

@@ -424,10 +424,15 @@ static int DRM(takedown)( drm_device_t *dev )
 				 */
 				break;
                        case _DRM_SCATTER_GATHER:
+				/* Handle it, but do nothing, if HAVE_SG
+				 * isn't defined.
+				 */
+#if __HAVE_SG
 				if(dev->sg) {
 					DRM(sg_cleanup)(dev->sg);
 					dev->sg = NULL;
 				}
+#endif
 				break;
 			}
  			DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
