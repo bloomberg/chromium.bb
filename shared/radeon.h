@@ -124,8 +124,8 @@ do {									\
 		if ( dev_priv->page_flipping ) {			\
 			radeon_do_cleanup_pageflip( dev );		\
 		}							\
-                radeon_mem_release( filp, dev_priv->gart_heap );	\
-                radeon_mem_release( filp, dev_priv->fb_heap );		\
+		radeon_mem_release( filp, dev_priv->gart_heap );	\
+		radeon_mem_release( filp, dev_priv->fb_heap );		\
 	}								\
 } while (0)
 
