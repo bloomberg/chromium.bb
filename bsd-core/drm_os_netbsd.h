@@ -89,7 +89,7 @@ MALLOC_DECLARE(DRM(M_DRM));
 extern const int DRM(M_DRM) = M_DEVBUF;
 #endif /* __NetBSD_Version__ */
 #define DRM_MALLOC(size)	malloc( size, DRM(M_DRM), M_NOWAIT )
-#define DRM_FREE(pt)		free( pt, DRM(M_DRM) )
+#define DRM_FREE(pt,size)		free( pt, DRM(M_DRM) )
 #define DRM_VTOPHYS(addr)	vtophys(addr)
 
 #define DRM_READ8(map, offset)		bus_space_read_1(  (map)->iot, (map)->ioh, (offset) )

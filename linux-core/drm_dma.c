@@ -714,7 +714,7 @@ void DRM(vbl_send_signals)( drm_device_t *dev )
 
 			list_del( (struct list_head *) vbl_sig );
 
-			DRM_FREE( vbl_sig );
+			DRM_FREE(vbl_sig,sizeof(*vbl_sig));
 
 			dev->vbl_pending--;
 		}

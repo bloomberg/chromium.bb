@@ -896,7 +896,7 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 	int count, x, y;
 	u32 *buffer;
 	u8 *mask;
-	int i;
+	int i, buffer_size, mask_size;
 	RING_LOCALS;
 	DRM_DEBUG( "\n" );
 
@@ -908,25 +908,25 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 		return DRM_ERR(EFAULT);
 	}
 
-	buffer = DRM_MALLOC( depth->n * sizeof(u32) );
+	buffer_size = depth->n * sizeof(u32);
+	buffer = DRM_MALLOC( buffer_size );
 	if ( buffer == NULL )
 		return DRM_ERR(ENOMEM);
-	if ( DRM_COPY_FROM_USER( buffer, depth->buffer,
-			     depth->n * sizeof(u32) ) ) {
-		DRM_FREE( buffer );
+	if ( DRM_COPY_FROM_USER( buffer, depth->buffer, buffer_size ) ) {
+		DRM_FREE( buffer, buffer_size);
 		return DRM_ERR(EFAULT);
 	}
 
+	mask_size = depth->n * sizeof(u8);
 	if ( depth->mask ) {
-		mask = DRM_MALLOC( depth->n * sizeof(u8) );
+		mask = DRM_MALLOC( mask_size );
 		if ( mask == NULL ) {
-			DRM_FREE( buffer );
+			DRM_FREE( buffer, buffer_size );
 			return DRM_ERR(ENOMEM);
 		}
-		if ( DRM_COPY_FROM_USER( mask, depth->mask,
-				     depth->n * sizeof(u8) ) ) {
-			DRM_FREE( buffer );
-			DRM_FREE( mask );
+		if ( DRM_COPY_FROM_USER( mask, depth->mask, mask_size ) ) {
+			DRM_FREE( buffer, buffer_size );
+			DRM_FREE( mask, mask_size );
 			return DRM_ERR(EFAULT);
 		}
 
@@ -953,7 +953,7 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 			}
 		}
 
-		DRM_FREE( mask );
+		DRM_FREE( mask, mask_size );
 	} else {
 		for ( i = 0 ; i < count ; i++, x++ ) {
 			BEGIN_RING( 6 );
@@ -977,7 +977,7 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 		}
 	}
 
-	DRM_FREE( buffer );
+	DRM_FREE( buffer, buffer_size );
 
 	return 0;
 }
@@ -989,60 +989,62 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 	int count, *x, *y;
 	u32 *buffer;
 	u8 *mask;
-	int i;
+	int i, xbuf_size, ybuf_size, buffer_size, mask_size;
 	RING_LOCALS;
 	DRM_DEBUG( "\n" );
 
 	count = depth->n;
 
-	x = DRM_MALLOC( count * sizeof(*x) );
+	xbuf_size = count * sizeof(*x);
+	ybuf_size = count * sizeof(*y);
+	x = DRM_MALLOC( xbuf_size );
 	if ( x == NULL ) {
 		return DRM_ERR(ENOMEM);
 	}
-	y = DRM_MALLOC( count * sizeof(*y) );
+	y = DRM_MALLOC( ybuf_size );
 	if ( y == NULL ) {
-		DRM_FREE( x );
+		DRM_FREE( x, xbuf_size );
 		return DRM_ERR(ENOMEM);
 	}
-	if ( DRM_COPY_FROM_USER( x, depth->x, count * sizeof(int) ) ) {
-		DRM_FREE( x );
-		DRM_FREE( y );
+	if ( DRM_COPY_FROM_USER( x, depth->x, xbuf_size ) ) {
+		DRM_FREE( x, xbuf_size );
+		DRM_FREE( y, ybuf_size );
 		return DRM_ERR(EFAULT);
 	}
-	if ( DRM_COPY_FROM_USER( y, depth->y, count * sizeof(int) ) ) {
-		DRM_FREE( x );
-		DRM_FREE( y );
+	if ( DRM_COPY_FROM_USER( y, depth->y, xbuf_size ) ) {
+		DRM_FREE( x, xbuf_size );
+		DRM_FREE( y, ybuf_size );
 		return DRM_ERR(EFAULT);
 	}
 
-	buffer = DRM_MALLOC( depth->n * sizeof(u32) );
+	buffer_size = depth->n * sizeof(u32);
+	buffer = DRM_MALLOC( buffer_size );
 	if ( buffer == NULL ) {
-		DRM_FREE( x );
-		DRM_FREE( y );
+		DRM_FREE( x, xbuf_size );
+		DRM_FREE( y, ybuf_size );
 		return DRM_ERR(ENOMEM);
 	}
-	if ( DRM_COPY_FROM_USER( buffer, depth->buffer,
-			     depth->n * sizeof(u32) ) ) {
-		DRM_FREE( x );
-		DRM_FREE( y );
-		DRM_FREE( buffer );
+	if ( DRM_COPY_FROM_USER( buffer, depth->buffer, buffer_size ) ) {
+		DRM_FREE( x, xbuf_size );
+		DRM_FREE( y, ybuf_size );
+		DRM_FREE( buffer, buffer_size );
 		return DRM_ERR(EFAULT);
 	}
 
 	if ( depth->mask ) {
-		mask = DRM_MALLOC( depth->n * sizeof(u8) );
+		mask_size = depth->n * sizeof(u8);
+		mask = DRM_MALLOC( mask_size );
 		if ( mask == NULL ) {
-			DRM_FREE( x );
-			DRM_FREE( y );
-			DRM_FREE( buffer );
+			DRM_FREE( x, xbuf_size );
+			DRM_FREE( y, ybuf_size );
+			DRM_FREE( buffer, buffer_size );
 			return DRM_ERR(ENOMEM);
 		}
-		if ( DRM_COPY_FROM_USER( mask, depth->mask,
-				     depth->n * sizeof(u8) ) ) {
-			DRM_FREE( x );
-			DRM_FREE( y );
-			DRM_FREE( buffer );
-			DRM_FREE( mask );
+		if ( DRM_COPY_FROM_USER( mask, depth->mask, mask_size ) ) {
+			DRM_FREE( x, xbuf_size );
+			DRM_FREE( y, ybuf_size );
+			DRM_FREE( buffer, buffer_size );
+			DRM_FREE( mask, mask_size );
 			return DRM_ERR(EFAULT);
 		}
 
@@ -1069,7 +1071,7 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 			}
 		}
 
-		DRM_FREE( mask );
+		DRM_FREE( mask, mask_size );
 	} else {
 		for ( i = 0 ; i < count ; i++ ) {
 			BEGIN_RING( 6 );
@@ -1093,9 +1095,9 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 		}
 	}
 
-	DRM_FREE( x );
-	DRM_FREE( y );
-	DRM_FREE( buffer );
+	DRM_FREE( x, xbuf_size );
+	DRM_FREE( y, ybuf_size );
+	DRM_FREE( buffer, buffer_size );
 
 	return 0;
 }
@@ -1146,7 +1148,7 @@ static int r128_cce_dispatch_read_pixels( drm_device_t *dev,
 {
 	drm_r128_private_t *dev_priv = dev->dev_private;
 	int count, *x, *y;
-	int i;
+	int i, xbuf_size, ybuf_size;
 	RING_LOCALS;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
@@ -1155,23 +1157,25 @@ static int r128_cce_dispatch_read_pixels( drm_device_t *dev,
 		count = dev_priv->depth_pitch;
 	}
 
-	x = DRM_MALLOC( count * sizeof(*x) );
+	xbuf_size = count * sizeof(*x);
+	ybuf_size = count * sizeof(*y);
+	x = DRM_MALLOC( xbuf_size );
 	if ( x == NULL ) {
 		return DRM_ERR(ENOMEM);
 	}
-	y = DRM_MALLOC( count * sizeof(*y) );
+	y = DRM_MALLOC( ybuf_size );
 	if ( y == NULL ) {
-		DRM_FREE( x );
+		DRM_FREE( x, xbuf_size );
 		return DRM_ERR(ENOMEM);
 	}
-	if ( DRM_COPY_FROM_USER( x, depth->x, count * sizeof(int) ) ) {
-		DRM_FREE( x );
-		DRM_FREE( y );
+	if ( DRM_COPY_FROM_USER( x, depth->x, xbuf_size ) ) {
+		DRM_FREE( x, xbuf_size );
+		DRM_FREE( y, ybuf_size );
 		return DRM_ERR(EFAULT);
 	}
-	if ( DRM_COPY_FROM_USER( y, depth->y, count * sizeof(int) ) ) {
-		DRM_FREE( x );
-		DRM_FREE( y );
+	if ( DRM_COPY_FROM_USER( y, depth->y, ybuf_size ) ) {
+		DRM_FREE( x, xbuf_size );
+		DRM_FREE( y, ybuf_size );
 		return DRM_ERR(EFAULT);
 	}
 
@@ -1199,8 +1203,8 @@ static int r128_cce_dispatch_read_pixels( drm_device_t *dev,
 		ADVANCE_RING();
 	}
 
-	DRM_FREE( x );
-	DRM_FREE( y );
+	DRM_FREE( x, xbuf_size );
+	DRM_FREE( y, ybuf_size );
 
 	return 0;
 }

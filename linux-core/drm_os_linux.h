@@ -42,7 +42,7 @@
 
 /* malloc/free without the overhead of DRM(alloc) */
 #define DRM_MALLOC(x) kmalloc(x, GFP_KERNEL)
-#define DRM_FREE(x) kfree(x)
+#define DRM_FREE(x,size) kfree(x)
 
 #define DRM_GETSAREA()							 \
 do { 									 \

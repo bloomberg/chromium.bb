@@ -118,7 +118,7 @@ static void free_block( struct mem_block *p )
 		p->size += q->size;
 		p->next = q->next;
 		p->next->prev = p;
-		DRM_FREE(q);
+		DRM_FREE(q, sizeof(*q));
 	}
 
 	if (p->prev->pid == 0) {
@@ -126,7 +126,7 @@ static void free_block( struct mem_block *p )
 		q->size += p->size;
 		q->next = p->next;
 		q->next->prev = q;
-		DRM_FREE(p);
+		DRM_FREE(p, sizeof(*q));
 	}
 }
 
@@ -141,7 +141,7 @@ static int init_heap(struct mem_block **heap, int start, int size)
 	
 	*heap = DRM_MALLOC(sizeof(**heap));
 	if (!*heap) {
-		DRM_FREE( blocks );
+		DRM_FREE( blocks, sizeof(*blocks) );
 		return -ENOMEM;
 	}
 
@@ -181,7 +181,7 @@ void radeon_mem_release( struct mem_block *heap )
 			p->size += q->size;
 			p->next = q->next;
 			p->next->prev = p;
-			DRM_FREE(q);
+			DRM_FREE(q, sizeof(*q));
 		}
 	}
 }
@@ -198,10 +198,10 @@ void radeon_mem_takedown( struct mem_block **heap )
 	for (p = (*heap)->next ; p != *heap ; ) {
 		struct mem_block *q = p;
 		p = p->next;
-		DRM_FREE(q);
+		DRM_FREE(q, sizeof(*q));
 	}
 
-	DRM_FREE( *heap );
+	DRM_FREE( *heap, sizeof(**heap) );
 	*heap = 0;
 }
 

@@ -102,7 +102,7 @@
 #define DRM_IRQ_ARGS		void *arg
 #define DRM_DEVICE		drm_device_t	*dev	= kdev->si_drv1
 #define DRM_MALLOC(size)	malloc( size, DRM(M_DRM), M_NOWAIT )
-#define DRM_FREE(pt)		free( pt, DRM(M_DRM) )
+#define DRM_FREE(pt,size)		free( pt, DRM(M_DRM) )
 #define DRM_VTOPHYS(addr)	vtophys(addr)
 
 /* Read/write from bus space, with byteswapping to le if necessary */

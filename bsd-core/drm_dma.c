@@ -692,7 +692,7 @@ void DRM(vbl_send_signals)( drm_device_t *dev )
 				psignal(p, vbl_sig->signo);
 
 			TAILQ_REMOVE(&dev->vbl_sig_list, vbl_sig, link);
-			DRM_FREE(vbl_sig);
+			DRM_FREE(vbl_sig,sizeof(*vbl_sig));
 		}
 		vbl_sig = next;
 	}
