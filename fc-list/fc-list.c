@@ -135,7 +135,7 @@ main (int argc, char **argv)
 	pat = FcPatternCreate ();
     
     if (!os)
-	os = FcObjectSetBuild (FC_FAMILY, FC_STYLE, 0);
+	os = FcObjectSetBuild (FC_FAMILY, FC_STYLE, (char *) 0);
     fs = FcFontList (0, pat, os);
     if (pat)
 	FcPatternDestroy (pat);
