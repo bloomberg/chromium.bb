@@ -84,7 +84,6 @@ static struct drm_driver driver = {
 	.postinit = postinit,
 	.version = version,
 	.ioctls = mach64_ioctls,
-	.num_ioctls = mach64_max_ioctl,
 	.dma_ioctl = mach64_dma_buffers,
 	.fops = {
 		.owner = THIS_MODULE,
@@ -111,6 +110,7 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 static int __init mach64_init(void)
 {
+	driver.num_ioctls = mach64_max_ioctl;
 	return drm_init(&driver, pciidlist);
 }
 

@@ -75,7 +75,6 @@ static struct drm_driver driver = {
 	.postinit = postinit,
 	.version = version,
 	.ioctls = sis_ioctls,
-	.num_ioctls = sis_max_ioctl,
 	.fops = {
 		.owner = THIS_MODULE,
 		.open = drm_open,
@@ -100,6 +99,7 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 static int __init sis_init(void)
 {
+	driver.num_ioctls = sis_max_ioctl;
 	return drm_init(&driver, pciidlist);
 }
 
