@@ -765,7 +765,7 @@ static int mga_dma_initialize(drm_device_t *dev, drm_mga_init_t *init) {
 	dev_priv->mAccess = init->mAccess;
    	init_waitqueue_head(&dev_priv->flush_queue);
 	init_waitqueue_head(&dev_priv->buf_queue);
-	dev_priv->WarpPipe = -1;
+	dev_priv->WarpPipe = 0xff000000;
 
    	DRM_DEBUG("chipset: %d ucode_size: %d backOffset: %x depthOffset: %x\n",
 		  dev_priv->chipset, dev_priv->warp_ucode_size, 
