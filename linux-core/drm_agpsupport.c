@@ -36,13 +36,10 @@
 
 #if __OS_HAS_AGP
 
-#define DRM_AGP_GET (drm_agp_t *)inter_module_get("drm_agp")
-#define DRM_AGP_PUT inter_module_put("drm_agp")
-
 /**
  * Pointer to the drm_agp_t structure made available by the agpgart module.
  */
-static const drm_agp_t *drm_agp = NULL;
+const drm_agp_t *drm_agp = NULL;
 
 /**
  * AGP information ioctl.
@@ -401,9 +398,8 @@ int drm_agp_free(struct inode *inode, struct file *filp,
  */
 drm_agp_head_t *drm_agp_init(void)
 {
-	drm_agp_head_t *head         = NULL;
+	drm_agp_head_t *head = NULL;
 
-	drm_agp = DRM_AGP_GET;
 	if (drm_agp) {
 		if (!(head = drm_alloc(sizeof(*head), DRM_MEM_AGPLISTS)))
 			return NULL;
@@ -423,17 +419,6 @@ drm_agp_head_t *drm_agp_init(void)
 #endif
 	}
 	return head;
-}
-
-/**
- * Free the AGP resources.
- *
- * Releases the pointer in ::drm_agp.
- */
-void drm_agp_uninit(void)
-{
-	DRM_AGP_PUT;
-	drm_agp = NULL;
 }
 
 /** Calls drm_agp->allocate_memory() */

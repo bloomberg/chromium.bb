@@ -608,7 +608,6 @@ static void __exit drm_cleanup( drm_device_t *dev )
 	}
 
 	if (drm_core_has_AGP(dev) && dev->agp ) {
-		drm_agp_uninit();
 		drm_free( dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS );
 		dev->agp = NULL;
 	}
@@ -670,7 +669,7 @@ static int __init drm_core_init(void)
 		ret = -1;
 		goto err_p3;
 	}
-	DRM_DEBUG("calling inter_module_register\n");
+	drm_agp = (drm_agp_t *)inter_module_get("drm_agp");
 		
 	DRM_INFO( "Initialized %s %d.%d.%d %s\n",
 		DRIVER_NAME,
@@ -691,6 +690,9 @@ err_p1:
 
 static void __exit drm_core_exit (void)
 {
+	if (drm_agp)
+		inter_module_put("drm_agp");
+
 	remove_proc_entry("dri", NULL);
 	drm_sysfs_destroy(drm_class);
 
