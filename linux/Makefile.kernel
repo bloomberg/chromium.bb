@@ -17,7 +17,7 @@ L_OBJS		:= init.o memory.o proc.o auth.o context.o drawable.o bufs.o \
 
 M_OBJS		:=
 
-ifneq ($(CONFIG_AGP),n)
+ifneq ($(CONFIG_AGP),)
  L_OBJS         += agpsupport.o
 endif
 
@@ -43,7 +43,7 @@ else
   endif
 endif
 
-ifneq ($(CONFIG_AGP),n)
+ifneq ($(CONFIG_AGP),)
 ifeq ($(CONFIG_DRM_MGA),y)
  OX_OBJS += mga_drv.o
  O_OBJS += mga_context.o mga_dma.o mga_bufs.o mga_state.o
@@ -56,7 +56,7 @@ else
 endif
 endif
 
-ifneq ($(CONFIG_AGP),n)
+ifneq ($(CONFIG_AGP),)
 ifeq ($(CONFIG_DRM_I810),y)
  OX_OBJS += i810_drv.o
  O_OBJS += i810_context.o i810_bufs.o i810_dma.o
