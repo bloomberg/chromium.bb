@@ -747,10 +747,12 @@ FcFreeTypeQuery (const FcChar8	*file,
 		{ "extralight",		FC_WEIGHT_EXTRALIGHT },
 		{ "ultralight",		FC_WEIGHT_ULTRALIGHT },
 		{ "light",		FC_WEIGHT_LIGHT },
+		{ "book",		FC_WEIGHT_BOOK },
 		{ "regular",		FC_WEIGHT_REGULAR },
 		{ "normal",		FC_WEIGHT_NORMAL },
 		{ "medium",		FC_WEIGHT_MEDIUM },
 		{ "demibold",		FC_WEIGHT_DEMIBOLD },
+		{ "demi",		FC_WEIGHT_DEMIBOLD },
 		{ "semibold",		FC_WEIGHT_SEMIBOLD },
 		{ "bold",		FC_WEIGHT_BOLD },
 		{ "extrabold",		FC_WEIGHT_EXTRABOLD },
@@ -761,7 +763,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 #define NUM_PS_WEIGHTS	(sizeof (ps_weights) / sizeof (ps_weights[0]))
 	    int	w;
 	    for (w = 0; w < NUM_PS_WEIGHTS; w++)
-		if (!FcStrCmpIgnoreCase ((FcChar8 *) ps_weights[w].name,
+		if (!FcStrCmpIgnoreBlanksAndCase ((FcChar8 *) ps_weights[w].name,
 					 (FcChar8 *) psfontinfo.weight))
 		{
 		    weight = ps_weights[w].value;
@@ -845,7 +847,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    if (FcDebug () & FC_DBG_SCANV)
 		printf ("\nsetwidth: %s\n", prop.u.atom);
 	    for (i = 0; i < sizeof (FcSetWidths) / sizeof (FcSetWidths[0]); i++)
-		if (!FcStrCmpIgnoreCase ((FcChar8 *) prop.u.atom,
+		if (!FcStrCmpIgnoreBlanksAndCase ((FcChar8 *) prop.u.atom,
 					 FcSetWidths[i].width_name))
 		{
 		    width = FcSetWidths[i].width;
