@@ -99,8 +99,23 @@ enum weston_led {
 	LED_SCROLL_LOCK = (1 << 2),
 };
 
+enum weston_mode_aspect_ratio {
+	/** The picture aspect ratio values, for the aspect_ratio field of
+	 *  weston_mode. The values here, are taken from
+	 *  DRM_MODE_PICTURE_ASPECT_* from drm_mode.h.
+	 */
+	WESTON_MODE_PIC_AR_NONE = 0,	/* DRM_MODE_PICTURE_ASPECT_NONE */
+	WESTON_MODE_PIC_AR_4_3 = 1,	/* DRM_MODE_PICTURE_ASPECT_4_3 */
+	WESTON_MODE_PIC_AR_16_9 = 2,	/* DRM_MODE_PICTURE_ASPECT_16_9 */
+	WESTON_MODE_PIC_AR_64_27 = 3,	/* DRM_MODE_PICTURE_ASPECT_64_27 */
+	WESTON_MODE_PIC_AR_256_135 = 4,	/* DRM_MODE_PICTURE_ASPECT_256_135*/
+};
+
+
+
 struct weston_mode {
 	uint32_t flags;
+	enum weston_mode_aspect_ratio aspect_ratio;
 	int32_t width, height;
 	uint32_t refresh;
 	struct wl_list link;

@@ -73,6 +73,10 @@
 #define DRM_CLIENT_CAP_UNIVERSAL_PLANES 2
 #endif
 
+#ifndef DRM_CLIENT_CAP_ASPECT_RATIO
+#define DRM_CLIENT_CAP_ASPECT_RATIO	4
+#endif
+
 #ifndef DRM_CAP_CURSOR_WIDTH
 #define DRM_CAP_CURSOR_WIDTH 0x8
 #endif
@@ -86,6 +90,15 @@
 #endif
 
 #define MAX_CLONED_CONNECTORS 4
+
+/**
+ * aspect ratio info taken from the drmModeModeInfo flag bits 19-22,
+ * which should be used to fill the aspect ratio field in weston_mode.
+ */
+#define DRM_MODE_FLAG_PIC_AR_BITS_POS	19
+#ifndef DRM_MODE_FLAG_PIC_AR_MASK
+#define DRM_MODE_FLAG_PIC_AR_MASK (0xF << DRM_MODE_FLAG_PIC_AR_BITS_POS)
+#endif
 
 /**
  * Represents the values of an enum-type KMS property
@@ -273,6 +286,8 @@ struct drm_backend {
 	uint32_t pageflip_timeout;
 
 	bool shutting_down;
+
+	bool aspect_ratio_supported;
 };
 
 struct drm_mode {
@@ -463,6 +478,14 @@ struct drm_output {
 	struct wl_listener recorder_frame_listener;
 
 	struct wl_event_source *pageflip_timer;
+};
+
+static const char *const aspect_ratio_as_string[] = {
+	[WESTON_MODE_PIC_AR_NONE] = "",
+	[WESTON_MODE_PIC_AR_4_3] = " 4:3",
+	[WESTON_MODE_PIC_AR_16_9] = " 16:9",
+	[WESTON_MODE_PIC_AR_64_27] = " 64:27",
+	[WESTON_MODE_PIC_AR_256_135] = " 256:135",
 };
 
 static struct gl_renderer_interface *gl_renderer;
@@ -3042,6 +3065,29 @@ err:
 	drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
 }
 
+/*
+ * Get the aspect-ratio from drmModeModeInfo mode flags.
+ *
+ * @param drm_mode_flags- flags from drmModeModeInfo structure.
+ * @returns aspect-ratio as encoded in enum 'weston_mode_aspect_ratio'.
+ */
+static enum weston_mode_aspect_ratio
+drm_to_weston_mode_aspect_ratio(uint32_t drm_mode_flags)
+{
+	return (drm_mode_flags & DRM_MODE_FLAG_PIC_AR_MASK) >>
+		DRM_MODE_FLAG_PIC_AR_BITS_POS;
+}
+
+static const char *
+aspect_ratio_to_string(enum weston_mode_aspect_ratio ratio)
+{
+	if (ratio < 0 || ratio >= ARRAY_LENGTH(aspect_ratio_as_string) ||
+	    !aspect_ratio_as_string[ratio])
+		return " (unknown aspect ratio)";
+
+	return aspect_ratio_as_string[ratio];
+}
+
 static void
 drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 {
@@ -3172,24 +3218,42 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 static struct drm_mode *
 choose_mode (struct drm_output *output, struct weston_mode *target_mode)
 {
-	struct drm_mode *tmp_mode = NULL, *mode;
+	struct drm_mode *tmp_mode = NULL, *mode_fall_back = NULL, *mode;
+	enum weston_mode_aspect_ratio src_aspect = WESTON_MODE_PIC_AR_NONE;
+	enum weston_mode_aspect_ratio target_aspect = WESTON_MODE_PIC_AR_NONE;
+	struct drm_backend *b;
 
+	b = to_drm_backend(output->base.compositor);
+	target_aspect = target_mode->aspect_ratio;
+	src_aspect = output->base.current_mode->aspect_ratio;
 	if (output->base.current_mode->width == target_mode->width &&
 	    output->base.current_mode->height == target_mode->height &&
 	    (output->base.current_mode->refresh == target_mode->refresh ||
-	     target_mode->refresh == 0))
-		return to_drm_mode(output->base.current_mode);
+	     target_mode->refresh == 0)) {
+		if (!b->aspect_ratio_supported || src_aspect == target_aspect)
+			return to_drm_mode(output->base.current_mode);
+	}
 
 	wl_list_for_each(mode, &output->base.mode_list, base.link) {
+
+		src_aspect = mode->base.aspect_ratio;
 		if (mode->mode_info.hdisplay == target_mode->width &&
 		    mode->mode_info.vdisplay == target_mode->height) {
 			if (mode->base.refresh == target_mode->refresh ||
 			    target_mode->refresh == 0) {
-				return mode;
-			} else if (!tmp_mode)
+				if (!b->aspect_ratio_supported ||
+				    src_aspect == target_aspect)
+					return mode;
+				else if (!mode_fall_back)
+					mode_fall_back = mode;
+			} else if (!tmp_mode) {
 				tmp_mode = mode;
+			}
 		}
 	}
+
+	if (mode_fall_back)
+		return mode_fall_back;
 
 	return tmp_mode;
 }
@@ -3327,6 +3391,11 @@ init_kms_caps(struct drm_backend *b)
 #endif
 	weston_log("DRM: %s atomic modesetting\n",
 		   b->atomic_modeset ? "supports" : "does not support");
+
+	ret = drmSetClientCap(b->drm.fd, DRM_CLIENT_CAP_ASPECT_RATIO, 1);
+	b->aspect_ratio_supported = (ret == 0);
+	weston_log("DRM: %s picture aspect ratio\n",
+		   b->aspect_ratio_supported ? "supports" : "does not support");
 
 	return 0;
 }
@@ -3732,6 +3801,8 @@ drm_output_add_mode(struct drm_output *output, const drmModeModeInfo *info)
 	if (info->type & DRM_MODE_TYPE_PREFERRED)
 		mode->base.flags |= WL_OUTPUT_MODE_PREFERRED;
 
+	mode->base.aspect_ratio = drm_to_weston_mode_aspect_ratio(info->flags);
+
 	wl_list_insert(output->base.mode_list.prev, &mode->base.link);
 
 	return mode;
@@ -4116,7 +4187,7 @@ drm_output_init_pixman(struct drm_output *output, struct drm_backend *b)
 
 	if (pixman_renderer_output_create(&output->base, flags) < 0)
  		goto err;
- 
+
 	weston_log("DRM: output %s %s shadow framebuffer.\n", output->base.name,
 		   b->use_pixman_shadow ? "uses" : "does not use");
 
@@ -4605,17 +4676,35 @@ drm_output_choose_initial_mode(struct drm_backend *backend,
 	struct drm_mode *preferred = NULL;
 	struct drm_mode *current = NULL;
 	struct drm_mode *configured = NULL;
+	struct drm_mode *config_fall_back = NULL;
 	struct drm_mode *best = NULL;
 	struct drm_mode *drm_mode;
 	drmModeModeInfo drm_modeline;
 	int32_t width = 0;
 	int32_t height = 0;
 	uint32_t refresh = 0;
+	uint32_t aspect_width = 0;
+	uint32_t aspect_height = 0;
+	enum weston_mode_aspect_ratio aspect_ratio = WESTON_MODE_PIC_AR_NONE;
 	int n;
 
 	if (mode == WESTON_DRM_BACKEND_OUTPUT_PREFERRED && modeline) {
-		n = sscanf(modeline, "%dx%d@%d", &width, &height, &refresh);
-		if (n != 2 && n != 3) {
+		n = sscanf(modeline, "%dx%d@%d %u:%u", &width, &height,
+			   &refresh, &aspect_width, &aspect_height);
+		if (backend->aspect_ratio_supported && n == 5) {
+			if (aspect_width == 4 && aspect_height == 3)
+				aspect_ratio = WESTON_MODE_PIC_AR_4_3;
+			else if (aspect_width == 16 && aspect_height == 9)
+				aspect_ratio = WESTON_MODE_PIC_AR_16_9;
+			else if (aspect_width == 64 && aspect_height == 27)
+				aspect_ratio = WESTON_MODE_PIC_AR_64_27;
+			else if (aspect_width == 256 && aspect_height == 135)
+				aspect_ratio = WESTON_MODE_PIC_AR_256_135;
+			else
+				weston_log("Invalid modeline \"%s\" for output %s\n",
+					   modeline, output->base.name);
+		}
+		if (n != 2 && n != 3 && n != 5) {
 			width = -1;
 
 			if (parse_modeline(modeline, &drm_modeline) == 0) {
@@ -4632,8 +4721,13 @@ drm_output_choose_initial_mode(struct drm_backend *backend,
 	wl_list_for_each_reverse(drm_mode, &output->base.mode_list, base.link) {
 		if (width == drm_mode->base.width &&
 		    height == drm_mode->base.height &&
-		    (refresh == 0 || refresh == drm_mode->mode_info.vrefresh))
-			configured = drm_mode;
+		    (refresh == 0 || refresh == drm_mode->mode_info.vrefresh)) {
+			if (!backend->aspect_ratio_supported ||
+			    aspect_ratio == drm_mode->base.aspect_ratio)
+				configured = drm_mode;
+			else
+				config_fall_back = drm_mode;
+		}
 
 		if (memcmp(current_mode, &drm_mode->mode_info,
 			   sizeof *current_mode) == 0)
@@ -4656,6 +4750,9 @@ drm_output_choose_initial_mode(struct drm_backend *backend,
 
 	if (configured)
 		return configured;
+
+	if (config_fall_back)
+		return config_fall_back;
 
 	if (preferred)
 		return preferred;
@@ -5039,12 +5136,15 @@ drm_output_print_modes(struct drm_output *output)
 {
 	struct weston_mode *m;
 	struct drm_mode *dm;
+	const char *aspect_ratio;
 
 	wl_list_for_each(m, &output->base.mode_list, link) {
 		dm = to_drm_mode(m);
 
-		weston_log_continue(STAMP_SPACE "%dx%d@%.1f%s%s, %.1f MHz\n",
+		aspect_ratio = aspect_ratio_to_string(m->aspect_ratio);
+		weston_log_continue(STAMP_SPACE "%dx%d@%.1f%s%s%s, %.1f MHz\n",
 				    m->width, m->height, m->refresh / 1000.0,
+				    aspect_ratio,
 				    m->flags & WL_OUTPUT_MODE_PREFERRED ?
 				    ", preferred" : "",
 				    m->flags & WL_OUTPUT_MODE_CURRENT ?
