@@ -52,10 +52,10 @@ fi
 case "$subpixel_rendering" in
 "Automatic")
 	;;
-"Enable")
+"Always")
 	ln -s $CONFDIR/$subpixel $CONFDIR/$subpixel_prio$subpixel
 	;;
-"Disable")
+"Never")
 	ln -s $CONFDIR/$no_subpixel $CONFDIR/$subpixel_prio$no_subpixel
 	;;
 esac

@@ -43,9 +43,6 @@ DEBIAN = \
 	debian/local.conf.md5sum \
 	debian/README.Debian \
 	debian/rules \
-	debian/autohint.conf \
-	debian/no-sub-pixel.conf \
-	debian/unhinted.conf \
 	debian/po/POTFILES.in \
 	debian/po/templates.pot \
 	debian/po/cs.po \

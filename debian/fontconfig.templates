@@ -3,7 +3,6 @@ Type: select
 _Choices: Native, Autohinter, None
 Default: Native
 _Description: With what method should fonts be hinted?
-
  The FreeType font library can adjust glyph outlines to accomodate the pixel
  grid for improved legibility.  This process is called "hinting". 
  FreeType can either use the hints built-in to each font or it can use a
@@ -25,19 +24,19 @@ _Description: With what method should fonts be hinted?
 
 Template: fontconfig/subpixel_rendering
 Type: select
-_Choices: Automatic, Enable, Disable
+_Choices: Automatic, Always, Never
 Default: Automatic
-_Description: Should font be rendered using sub-pixel elements?
+_Description: Should fonts be rendered using sub-pixel elements?
  With known sub-pixel geometry, LCD screens can synthesize higher resolution
  in one dimension.  Taking advantage of this when rendering glyphs sharpens
  the appearance of text on the screen.  This can cause color artifacts,
  especially when rendering unhinted or autohinted fonts.  
- .  
+ .
  This option selects when sub-pixel rendering should be used.  Automatic
  enables sub-pixel rendering whenever the X server detects an LCD monitor,
  which it can generally do when the monitor is built into the computer or
- connected with a digital (DVI) cable.  Enable forces the system to use
- sub-pixel rendering while Disable forces the system to not use sub-pixel
+ connected with a digital (DVI) cable.  Always forces the system to use
+ sub-pixel rendering while Never forces the system to not use sub-pixel
  rendering.
 
 Template: fontconfig/enable_bitmaps

@@ -22,9 +22,12 @@
 #  PERFORMANCE OF THIS SOFTWARE.
 
 CONF_FILES = \
+	autohint.conf \
 	no-bitmaps.conf \
-	yes-bitmaps.conf \
-	sub-pixel.conf
+	no-sub-pixel.conf \
+	sub-pixel.conf \
+	unhinted.conf \
+	yes-bitmaps.conf
 
 EXTRA_DIST = $(CONF_FILES)
 

@@ -1,5 +1,27 @@
 2005-03-02  Keith Packard  <keithp@keithp.com>
 
+	* Makefile.am:
+	* conf.d/Makefile.am:
+	* conf.d/autohint.conf:
+	* conf.d/no-sub-pixel.conf:
+	* conf.d/sub-pixel.conf:
+	* conf.d/unhinted.conf:
+	* debian/autohint.conf:
+	* debian/fontconfig.install:
+	* debian/fontconfig.postinst:
+	* debian/fontconfig.templates:
+	* debian/no-sub-pixel.conf:
+	* debian/unhinted.conf:
+	Move debian-specific conf file examples upstream.
+	
+	Sub-pixel configuration examples must smash subpixel value
+	as Xft always sets it from X.
+
+	Change sub-pixel rendering debconf descriptions from
+	Enable/Disable to Always/Never.
+
+2005-03-02  Keith Packard  <keithp@keithp.com>
+
 	* .cvsignore:
 	* conf.d/.cvsignore:
 	* doc/.cvsignore:
