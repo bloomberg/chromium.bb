@@ -72,6 +72,7 @@ typedef struct drm_i915_private {
 	int tex_lru_log_granularity;
 	int allow_batchbuffer;
 	struct mem_block *agp_heap;
+	unsigned int sr01, adpa, ppcr, dvob, dvoc, lvds;
 } drm_i915_private_t;
 
 				/* i915_dma.c */
@@ -96,10 +97,10 @@ extern void i915_mem_takedown(struct mem_block **heap);
 extern void i915_mem_release(drm_device_t * dev,
 			     DRMFILE filp, struct mem_block *heap);
 
-#define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, reg)
-#define I915_WRITE(reg,val)     DRM_WRITE32(dev_priv->mmio_map, reg, val)
-#define I915_READ16(reg) 	DRM_READ16(dev_priv->mmio_map, reg)
-#define I915_WRITE16(reg,val)	DRM_WRITE16(dev_priv->mmio_map, reg, val)
+#define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
+#define I915_WRITE(reg,val)     DRM_WRITE32(dev_priv->mmio_map, (reg), (val))
+#define I915_READ16(reg) 	DRM_READ16(dev_priv->mmio_map, (reg))
+#define I915_WRITE16(reg,val)	DRM_WRITE16(dev_priv->mmio_map, (reg), (val))
 
 #define I915_VERBOSE 0
 
@@ -162,6 +163,13 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 #define PPCR			0x61204
 #define PPCR_ON			(1<<0)
+
+#define DVOB			0x61140
+#define DVOB_ON			(1<<31)
+#define DVOC			0x61160
+#define DVOC_ON			(1<<31)
+#define LVDS			0x61180
+#define LVDS_ON			(1<<31)
 
 #define ADPA			0x61100
 #define ADPA_DPMS_MASK		(~(3<<10))
