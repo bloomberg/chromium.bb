@@ -465,9 +465,9 @@ static int savage_dispatch_vb_prim(drm_savage_private_t *dev_priv,
 		return DRM_ERR(EINVAL);
 	}
 
-	if (start + n > vb_size / (vtx_size*4)) {
+	if (start + n > vb_size / (vb_stride*4)) {
 		DRM_ERROR("vertex indices (%u-%u) out of range (0-%u)\n",
-			  start, start + n - 1, vb_size / (vtx_size*4));
+			  start, start + n - 1, vb_size / (vb_stride*4));
 		return DRM_ERR(EINVAL);
 	}
 
@@ -482,7 +482,7 @@ static int savage_dispatch_vb_prim(drm_savage_private_t *dev_priv,
 			int reorder[3] = {-1, -1, -1};
 			reorder[start%3] = 2;
 
-			BEGIN_BCI(vtx_size+1);
+			BEGIN_BCI(count*vtx_size+1);
 			BCI_DRAW_PRIMITIVE(count, prim, skip);
 
 			for (i = start; i < start+count; ++i) {
@@ -491,11 +491,11 @@ static int savage_dispatch_vb_prim(drm_savage_private_t *dev_priv,
 						   vtx_size);
 			}
 		} else {
-			BEGIN_BCI(vtx_size+1);
+			BEGIN_BCI(count*vtx_size+1);
 			BCI_DRAW_PRIMITIVE(count, prim, skip);
 
 			if (vb_stride == vtx_size) {
-				BCI_COPY_FROM_USER(&vtxbuf[vtx_size*start],
+				BCI_COPY_FROM_USER(&vtxbuf[vb_stride*start],
 						   vtx_size*count);
 			} else {
 				for (i = start; i < start+count; ++i) {
@@ -507,6 +507,259 @@ static int savage_dispatch_vb_prim(drm_savage_private_t *dev_priv,
 		}
 
 		start += count;
+		n -= count;
+
+		prim |= BCI_CMD_DRAW_CONT;
+	}
+
+	return 0;
+}
+
+static int savage_dispatch_dma_idx(drm_savage_private_t *dev_priv,
+				   const drm_savage_cmd_header_t *cmd_header,
+				   const uint16_t __user *usr_idx,
+				   const drm_buf_t *dmabuf)
+{
+	BCI_LOCALS;
+	unsigned char reorder = 0;
+	unsigned int prim = cmd_header->idx.prim;
+	unsigned int skip = cmd_header->idx.skip;
+	unsigned int n = cmd_header->idx.count;
+	unsigned int i;
+
+	if (!n)
+		return 0;
+
+	switch (prim) {
+	case SAVAGE_PRIM_TRILIST_201:
+		reorder = 1;
+		prim = SAVAGE_PRIM_TRILIST;
+	case SAVAGE_PRIM_TRILIST:
+		if (n % 3 != 0) {
+			DRM_ERROR("wrong number of indices %u in TRILIST\n",
+				  n);
+			return DRM_ERR(EINVAL);
+		}
+		break;
+	case SAVAGE_PRIM_TRISTRIP:
+	case SAVAGE_PRIM_TRIFAN:
+		if (n < 3) {
+			DRM_ERROR("wrong number of indices %u in TRIFAN/STRIP\n",
+				  n);
+			return DRM_ERR(EINVAL);
+		}
+		break;
+	default:
+		DRM_ERROR("invalid primitive type %u\n", prim);
+		return DRM_ERR(EINVAL);
+	}
+
+	if (S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
+		if (skip != 0) {
+			DRM_ERROR("invalid skip flags 0x%04x for DMA\n",
+				  skip);
+			return DRM_ERR(EINVAL);
+		}
+	} else {
+		unsigned int size = 10 - (skip & 1) - (skip >> 1 & 1) -
+			(skip >> 2 & 1) - (skip >> 3 & 1) - (skip >> 4 & 1) -
+			(skip >> 5 & 1) - (skip >> 6 & 1) - (skip >> 7 & 1);
+		if (skip > SAVAGE_SKIP_ALL_S4 || size != 8) {
+			DRM_ERROR("invalid skip flags 0x%04x for DMA\n",
+				  skip);
+			return DRM_ERR(EINVAL);
+		}
+		if (reorder) {
+			DRM_ERROR("TRILIST_201 used on Savage4 hardware\n");
+			return DRM_ERR(EINVAL);
+		}
+	}
+
+	if (dmabuf->bus_address != dev_priv->state.common.vbaddr) {
+		BEGIN_BCI(2);
+		BCI_SET_REGISTERS(SAVAGE_VERTBUFADDR, 1);
+		BCI_WRITE(dmabuf->bus_address | dev_priv->dma_type);
+		dev_priv->state.common.vbaddr = dmabuf->bus_address;
+	}
+	if (S3_SAVAGE3D_SERIES(dev_priv->chipset) && dev_priv->waiting) {
+		/* Workaround for what looks like a hardware bug. If a
+		 * WAIT_3D_IDLE was emitted some time before the
+		 * indexed drawing command then the engine will lock
+		 * up. There are two known workarounds:
+		 * WAIT_IDLE_EMPTY or emit at least 63 NOPs. */
+		BEGIN_BCI(63);
+		for (i = 0; i < 63; ++i)
+			BCI_WRITE(BCI_CMD_WAIT);
+		dev_priv->waiting = 0;
+	}
+
+	prim <<= 25;
+	while (n != 0) {
+		/* Can emit up to 255 indices (85 triangles) at once. */
+		unsigned int count = n > 255 ? 255 : n;
+		/* Is it ok to allocate 510 bytes on the stack in an ioctl? */
+		uint16_t idx[255];
+
+		/* Copy and check indices */
+		DRM_COPY_FROM_USER_UNCHECKED(idx, usr_idx, count*2);
+		for (i = 0; i < count; ++i) {
+			if (idx[i] > dmabuf->total/32) {
+				DRM_ERROR("idx[%u]=%u out of range (0-%u)\n",
+					  i, idx[i], dmabuf->total/32);
+				return DRM_ERR(EINVAL);
+			}
+		}
+
+		if (reorder) {
+			/* Need to reorder indices for correct flat
+			 * shading while preserving the clock sense
+			 * for correct culling. Only on Savage3D. */
+			int reorder[3] = {2, -1, -1};
+
+			BEGIN_BCI((count+1+1)/2);
+			BCI_DRAW_INDICES_S3D(count, prim, idx[2]);
+
+			for (i = 1; i+1 < count; i += 2)
+				BCI_WRITE(idx[i + reorder[i % 3]] |
+					  (idx[i+1 + reorder[(i+1) % 3]] << 16));
+			if (i < count)
+				BCI_WRITE(idx[i + reorder[i%3]]);
+		} else if (S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
+			BEGIN_BCI((count+1+1)/2);
+			BCI_DRAW_INDICES_S3D(count, prim, idx[0]);
+
+			for (i = 1; i+1 < count; i += 2)
+				BCI_WRITE(idx[i] | (idx[i+1] << 16));
+			if (i < count)
+				BCI_WRITE(idx[i]);
+		} else {
+			BEGIN_BCI((count+2+1)/2);
+			BCI_DRAW_INDICES_S4(count, prim, skip);
+
+			for (i = 0; i+1 < count; i += 2)
+				BCI_WRITE(idx[i] | (idx[i+1] << 16));
+			if (i < count)
+				BCI_WRITE(idx[i]);
+		}
+
+		usr_idx += count;
+		n -= count;
+
+		prim |= BCI_CMD_DRAW_CONT;
+	}
+
+	return 0;
+}
+
+static int savage_dispatch_vb_idx(drm_savage_private_t *dev_priv,
+				  const drm_savage_cmd_header_t *cmd_header,
+				  const uint16_t __user *usr_idx,
+				  const uint32_t __user *vtxbuf,
+				  unsigned int vb_size,
+				  unsigned int vb_stride)
+{
+	BCI_LOCALS;
+	unsigned char reorder = 0;
+	unsigned int prim = cmd_header->idx.prim;
+	unsigned int skip = cmd_header->idx.skip;
+	unsigned int n = cmd_header->idx.count;
+	unsigned int vtx_size;
+	unsigned int i;
+
+	if (!n)
+		return 0;
+
+	switch (prim) {
+	case SAVAGE_PRIM_TRILIST_201:
+		reorder = 1;
+		prim = SAVAGE_PRIM_TRILIST;
+	case SAVAGE_PRIM_TRILIST:
+		if (n % 3 != 0) {
+			DRM_ERROR("wrong number of indices %u in TRILIST\n",
+				  n);
+			return DRM_ERR(EINVAL);
+		}
+		break;
+	case SAVAGE_PRIM_TRISTRIP:
+	case SAVAGE_PRIM_TRIFAN:
+		if (n < 3) {
+			DRM_ERROR("wrong number of indices %u in TRIFAN/STRIP\n",
+				  n);
+			return DRM_ERR(EINVAL);
+		}
+		break;
+	default:
+		DRM_ERROR("invalid primitive type %u\n", prim);
+		return DRM_ERR(EINVAL);
+	}
+
+	if (S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
+		if (skip > SAVAGE_SKIP_ALL_S3D) {
+			DRM_ERROR("invalid skip flags 0x%04x\n", skip);
+			return DRM_ERR(EINVAL);
+		}
+		vtx_size = 8; /* full vertex */
+	} else {
+		if (skip > SAVAGE_SKIP_ALL_S4) {
+			DRM_ERROR("invalid skip flags 0x%04x\n", skip);
+			return DRM_ERR(EINVAL);
+		}
+		vtx_size = 10; /* full vertex */
+	}
+
+	vtx_size -= (skip & 1) + (skip >> 1 & 1) +
+		(skip >> 2 & 1) + (skip >> 3 & 1) + (skip >> 4 & 1) +
+		(skip >> 5 & 1) + (skip >> 6 & 1) + (skip >> 7 & 1);
+
+	if (vtx_size > vb_stride) {
+		DRM_ERROR("vertex size greater than vb stride (%u > %u)\n",
+			  vtx_size, vb_stride);
+		return DRM_ERR(EINVAL);
+	}
+
+	prim <<= 25;
+	while (n != 0) {
+		/* Can emit up to 255 vertices (85 triangles) at once. */
+		unsigned int count = n > 255 ? 255 : n;
+		/* Is it ok to allocate 510 bytes on the stack in an ioctl? */
+		uint16_t idx[255];
+
+		/* Copy and check indices */
+		DRM_COPY_FROM_USER_UNCHECKED(idx, usr_idx, count*2);
+		for (i = 0; i < count; ++i) {
+			if (idx[i] > vb_size / (vb_stride*4)) {
+				DRM_ERROR("idx[%u]=%u out of range (0-%u)\n",
+					  i, idx[i],  vb_size / (vb_stride*4));
+				return DRM_ERR(EINVAL);
+			}
+		}
+
+		if (reorder) {
+			/* Need to reorder vertices for correct flat
+			 * shading while preserving the clock sense
+			 * for correct culling. Only on Savage3D. */
+			int reorder[3] = {2, -1, -1};
+
+			BEGIN_BCI(count*vtx_size+1);
+			BCI_DRAW_PRIMITIVE(count, prim, skip);
+
+			for (i = 0; i < count; ++i) {
+				unsigned int j = idx[i + reorder[i % 3]];
+				BCI_COPY_FROM_USER(&vtxbuf[vb_stride*j],
+						   vtx_size);
+			}
+		} else {
+			BEGIN_BCI(count*vtx_size+1);
+			BCI_DRAW_PRIMITIVE(count, prim, skip);
+
+			for (i = 0; i < count; ++i) {
+				unsigned int j = idx[i];
+				BCI_COPY_FROM_USER(&vtxbuf[vb_stride*j],
+						   vtx_size);
+			}
+		}
+
+		usr_idx += count;
 		n -= count;
 
 		prim |= BCI_CMD_DRAW_CONT;
@@ -632,7 +885,7 @@ static int savage_dispatch_draw(drm_savage_private_t *dev_priv,
 				unsigned int nbox,
 				const drm_clip_rect_t __user *usr_boxes)
 {
-	unsigned int i;
+	unsigned int i, j;
 	int ret;
 
 	for (i = 0; i < nbox; ++i) {
@@ -658,25 +911,29 @@ static int savage_dispatch_draw(drm_savage_private_t *dev_priv,
 					(uint32_t __user *)usr_vtxbuf,
 					vb_size, vb_stride);
 				break;
-#if 0 /* to be implemented */
 			case SAVAGE_CMD_DMA_IDX:
-				ret = savage_dispatch_dma_idx(
-					dev_priv, &cmd_header, usr_cmdbuf,
-					dmabuf);
 				j = (cmd_header.idx.count + 3) / 4;
+				/* j was check in savage_bci_cmdbuf */
+				ret = savage_dispatch_dma_idx(
+					dev_priv, &cmd_header,
+					(uint16_t __user *)usr_cmdbuf,
+					dmabuf);
 				usr_cmdbuf += j;
 				break;
 			case SAVAGE_CMD_VB_IDX:
-				ret = savage_dispatch_vtx_idx(
-					dev_priv, &cmd_header, usr_cmdbuf,
-					(uint32_t __user *)usr_vtxbuf,
-					cmdbuf.vb_size, cmdbuf.vb_stride);
 				j = (cmd_header.idx.count + 3) / 4;
+				/* j was check in savage_bci_cmdbuf */
+				ret = savage_dispatch_vb_idx(
+					dev_priv, &cmd_header,
+					(uint16_t __user *)usr_cmdbuf,
+					(uint32_t __user *)usr_vtxbuf,
+					vb_size, vb_stride);
 				usr_cmdbuf += j;
 				break;
-#endif
 			default:
-				DRM_ERROR("non-drawing-command 0x%x\n",
+				/* What's the best return code? EFAULT? */
+				DRM_ERROR("IMPLEMENTATION ERROR: "
+					  "non-drawing-command %d\n",
 					  cmd_header.cmd.cmd);
 				return DRM_ERR(EINVAL);
 			}
@@ -746,32 +1003,59 @@ int savage_bci_cmdbuf(DRM_IOCTL_ARGS)
 
 		/* Group drawing commands with same state to minimize
 		 * iterations over clip rects. */
-		if (cmd_header.cmd.cmd >= SAVAGE_CMD_DMA_PRIM &&
-		    cmd_header.cmd.cmd <= SAVAGE_CMD_VB_PRIM) {
+		j = 0;
+		switch (cmd_header.cmd.cmd) {
+		case SAVAGE_CMD_DMA_IDX:
+		case SAVAGE_CMD_VB_IDX:
+			j = (cmd_header.idx.count + 3) / 4;
+			if (i + j > cmdbuf.size) {
+				DRM_ERROR("indexed drawing command extends "
+					  "beyond end of command buffer\n");
+				return DRM_ERR(EINVAL);
+			}
+			/* fall through */
+		case SAVAGE_CMD_DMA_PRIM:
+		case SAVAGE_CMD_VB_PRIM:
 			if (!first_draw_cmd)
 				first_draw_cmd = usr_cmdbuf-1;
+			usr_cmdbuf += j;
+			i += j;
+			break;
+		default:
+			if (first_draw_cmd) {
+				ret = savage_dispatch_draw (
+					dev_priv, first_draw_cmd, usr_cmdbuf-1,
+					dmabuf, usr_vtxbuf, cmdbuf.vb_size,
+					cmdbuf.vb_stride,
+					cmdbuf.nbox, usr_boxes);
+				if (ret != 0)
+					return ret;
+				first_draw_cmd = NULL;
+			}
+		}
+		if (first_draw_cmd)
 			continue;
-		}
-		if (first_draw_cmd) {
-			ret = savage_dispatch_draw (
-				dev_priv, first_draw_cmd, usr_cmdbuf-1, dmabuf,
-				usr_vtxbuf, cmdbuf.vb_size, cmdbuf.vb_stride,
-				cmdbuf.nbox, usr_boxes);
-			if (ret != 0)
-				return ret;
-			first_draw_cmd = NULL;
-		}
 
 		switch (cmd_header.cmd.cmd) {
 		case SAVAGE_CMD_STATE:
+			j = (cmd_header.state.count + 1) / 2;
+			if (i + j > cmdbuf.size) {
+				DRM_ERROR("command SAVAGE_CMD_STATE extends "
+					  "beyond end of command buffer\n");
+				return DRM_ERR(EINVAL);
+			}
 			ret = savage_dispatch_state(
 				dev_priv, &cmd_header,
 				(uint32_t __user *)usr_cmdbuf);
-			j = (cmd_header.state.count + 1) / 2;
 			usr_cmdbuf += j;
 			i += j;
 			break;
 		case SAVAGE_CMD_CLEAR:
+			if (i + 1 > cmdbuf.size) {
+				DRM_ERROR("command SAVAGE_CMD_CLEAR extends "
+					  "beyond end of command buffer\n");
+				return DRM_ERR(EINVAL);
+			}
 			ret = savage_dispatch_clear(dev_priv, &cmd_header,
 						    usr_cmdbuf,
 						    cmdbuf.nbox, usr_boxes);

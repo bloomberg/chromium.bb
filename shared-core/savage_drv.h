@@ -30,17 +30,18 @@
 
 #define DRIVER_NAME	"savage"
 #define DRIVER_DESC	"Savage3D/MX/IX, Savage4, SuperSavage, Twister, ProSavage[DDR]"
-#define DRIVER_DATE	"20050115"
+#define DRIVER_DATE	"20050120"
 
 #define DRIVER_MAJOR		2
-#define DRIVER_MINOR		1
-#define DRIVER_PATCHLEVEL	3
+#define DRIVER_MINOR		2
+#define DRIVER_PATCHLEVEL	0
 /* Interface history:
  *
  * 1.x   The DRM driver from the VIA/S3 code drop, basically a dummy
  * 2.0   The first real DRM
  * 2.1   Scissors registers managed by the DRM, 3D operations clipped by
  *       cliprects of the cmdbuf ioctl
+ * 2.2   Implemented SAVAGE_CMD_DMA_IDX and SAVAGE_CMD_VB_IDX
  */
 
 typedef struct drm_savage_age {
