@@ -21,42 +21,12 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Urdu (UR)
+# Azerbaijani in Iran (AZ-IR)
 #
 # Data from Roozbeh Pournader <roozbeh@sharif.edu>
 #
-# Select fonts based on support for presentation forms; this may
-# exclude some OpenType fonts, but the hope is those would be
-# located by a clever shaper by Unicode codepoints in any case.
+# Iran's Azerbaijani uses Persian letters plus an obligatory HAMZA ABOVE
+# (only used over FARSI YEH).
 #
-# General forms.
-#0621-0624
-#0626-063a
-#0641-0642
-#0644-0648
-#0679
-#067e
-#0686
-#0688
-#0691
-#0698
-#06a9
-#06af
-#06ba
-#06be
-#06cc
-#06d2
-# Presentations Forms:
-fb56-fb59
-fb66-fb69
-fb7a-fb7d
-fb88-fb8d
-fb8e-fb95
-fb9e-fb9f
-fbfc-fbff
-fbaa-fbaf
-fe80-fe86
-fe89-fed8
-fedd-feee
-#fef5-fef8      # These four happen very rarely
-fefb-fefc
+include fa.orth
+0654 # ARABIC HAMZA ABOVE

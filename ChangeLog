@@ -1,3 +1,14 @@
+2004-01-03  Roozbeh Pournader  <roozbeh@sharif.edu>
+
+	* fc-lang/az_ir.orth:
+	* fc-lang/ku_ir.orth:
+	* fc-lang/ps_af.orth:
+	* fc-lang/ps_pk.orth:
+	Added orthographies for Iranian Azerbaijani and Kurdish, and Pashto
+	(Afghan and Pakistani).
+	* fc-lang/ur.orth:
+	Updated Urdu orthography with real data.
+
 2003-12-11  Carl Worth  <cworth@east.isi.edu>
 
 	* fc-list/Makefile.am (man_MANS): Move man_MANS into the 'if
