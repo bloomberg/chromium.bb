@@ -35,7 +35,8 @@
 #define VIA_DMA_BUF_SZ 		        (1 << VIA_DMA_BUF_ORDER)
 #define VIA_DMA_BUF_NR 			256
 #define VIA_NR_SAREA_CLIPRECTS 		8
-#define VIA_NR_XVMC_LOCKS               2
+#define VIA_NR_XVMC_PORTS               10
+#define VIA_NR_XVMC_LOCKS               5
 #define VIA_MAX_CACHELINE_SIZE          64
 #define XVMCLOCKPTR(saPriv,lockNo)					\
         ((volatile int *)(((((unsigned long) (saPriv)->XvMCLockArea) +	\
@@ -142,18 +143,15 @@ typedef struct _drm_via_sarea {
 
         /*
          * Below is for XvMC.
-         */
-
-        unsigned int XvMCSubPicOn;         /* Subpicture displaying flag */
-        unsigned int XvMCDisplaying;       /* Surface displaying flag */
-        unsigned int XvMCCtxNoGrabbed;     /* Last context to hold decoder */
-
-        /*
          * We want the lock integers alone on, and aligned to, a cache line.
          * Therefore this somewhat strange construct.
          */
 
         char XvMCLockArea[VIA_MAX_CACHELINE_SIZE * (VIA_NR_XVMC_LOCKS + 1)];
+
+        unsigned int XvMCDisplaying[VIA_NR_XVMC_PORTS];      
+        unsigned int XvMCSubPicOn[VIA_NR_XVMC_PORTS]; 
+        unsigned int XvMCCtxNoGrabbed;     /* Last context to hold decoder */
 
 } drm_via_sarea_t;
 

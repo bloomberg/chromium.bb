@@ -31,10 +31,10 @@
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome"
-#define DRIVER_DATE		"20040317"
+#define DRIVER_DATE		"20040411"
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		2
+#define DRIVER_MINOR		3
 #define DRIVER_PATCHLEVEL	0
 
 
