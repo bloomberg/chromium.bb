@@ -275,8 +275,7 @@ void drm_attach(struct pci_attach_args *pa, dev_t kdev,
 	drm_device_t *dev;
 
 	config_makeroom(kdev, &drm_cd);
-	drm_cd.cd_devs[(kdev)] = drm_alloc(sizeof(drm_device_t),
-	    DRM_MEM_DRIVER);
+	drm_cd.cd_devs[(kdev)] = malloc(sizeof(drm_device_t), M_DRM, M_WAITOK);
 	dev = DRIVER_SOFTC(kdev);
 
 	memset(dev, 0, sizeof(drm_device_t));
@@ -393,8 +392,7 @@ static int drm_takedown(drm_device_t *dev)
 		drm_irq_uninstall(dev);
 
 	if ( dev->unique ) {
-		drm_free(dev->unique, strlen( dev->unique ) + 1,
-			   DRM_MEM_DRIVER);
+		free(dev->unique, M_DRM);
 		dev->unique = NULL;
 		dev->unique_len = 0;
 	}
@@ -402,7 +400,7 @@ static int drm_takedown(drm_device_t *dev)
 	for ( i = 0 ; i < DRM_HASH_SIZE ; i++ ) {
 		for ( pt = dev->magiclist[i].head ; pt ; pt = next ) {
 			next = pt->next;
-			drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
+			free(pt, M_DRM);
 		}
 		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
 	}
@@ -419,7 +417,7 @@ static int drm_takedown(drm_device_t *dev)
 			if ( entry->bound )
 				drm_agp_unbind_memory(entry->handle);
 			drm_agp_free_memory(entry->handle);
-			drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
+			free(entry, M_DRM);
 		}
 		dev->agp->memory = NULL;
 
@@ -451,9 +449,7 @@ static int drm_takedown(drm_device_t *dev)
 				}
 				break;
 			case _DRM_SHM:
-				drm_free(map->handle,
-					       map->size,
-					       DRM_MEM_SAREA);
+				free(map->handle, M_DRM);
 				break;
 
 			case _DRM_AGP:
@@ -464,8 +460,8 @@ static int drm_takedown(drm_device_t *dev)
 				break;
 			}
 			TAILQ_REMOVE(dev->maplist, list, link);
-			drm_free(list, sizeof(*list), DRM_MEM_MAPS);
-			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+			free(list, M_DRM);
+			free(map, M_DRM);
 		}
  	}
 
@@ -526,7 +522,7 @@ static int drm_init(device_t nbdev)
 	dev->pci_slot = pci_get_slot(dev->device);
 	dev->pci_func = pci_get_function(dev->device);
 
-	dev->maplist = drm_calloc(1, sizeof(*dev->maplist), DRM_MEM_MAPS);
+	dev->maplist = malloc(sizeof(*dev->maplist), M_DRM, M_WAITOK);
 	if (dev->maplist == NULL) {
 		retcode = ENOMEM;
 		goto error;
@@ -585,7 +581,7 @@ error:
 	mtx_destroy(&dev->dev_lock);
 #endif
 #endif
-	drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
+	free(dev->maplist, M_DRM);
 	return retcode;
 }
 
@@ -619,7 +615,7 @@ static void drm_cleanup(drm_device_t *dev)
 
 	if ( dev->agp ) {
 		drm_agp_uninit();
-		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
+		free(dev->agp, M_DRM);
 		dev->agp = NULL;
 	}
 
@@ -630,7 +626,7 @@ static void drm_cleanup(drm_device_t *dev)
 #if defined(__FreeBSD__) &&  __FreeBSD_version >= 500000
 	mtx_destroy(&dev->dev_lock);
 #endif
-	drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
+	free(dev->maplist, M_DRM);
 }
 
 
@@ -783,7 +779,7 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 
 	if (--priv->refs == 0) {
 		TAILQ_REMOVE(&dev->files, priv, link);
-		drm_free(priv, sizeof(*priv), DRM_MEM_FILES);
+		free(priv, M_DRM);
 	}
 
 	/* ========================================================

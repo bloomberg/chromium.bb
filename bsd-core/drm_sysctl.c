@@ -55,10 +55,9 @@ int drm_sysctl_init(drm_device_t *dev)
 	struct sysctl_oid *top, *drioid;
 	int		  i;
 
-	info = drm_alloc(sizeof *info, DRM_MEM_DRIVER);
+	info = malloc(sizeof *info, M_DRM, M_WAITOK | M_ZERO);
 	if ( !info )
 		return 1;
-	bzero(info, sizeof *info);
 	dev->sysctl = info;
 
 	/* Add the sysctl node for DRI if it doesn't already exist */
@@ -108,7 +107,7 @@ int drm_sysctl_cleanup(drm_device_t *dev)
 	int error;
 	error = sysctl_ctx_free( &dev->sysctl->ctx );
 
-	drm_free(dev->sysctl, sizeof *dev->sysctl, DRM_MEM_DRIVER);
+	free(dev->sysctl, M_DRM);
 	dev->sysctl = NULL;
 
 	return error;
@@ -167,7 +166,7 @@ static int drm_vm_info DRM_SYSCTL_HANDLER_ARGS
 	TAILQ_FOREACH(listentry, dev->maplist, link)
 		mapcount++;
 
-	tempmaps = drm_alloc(sizeof(drm_local_map_t) * mapcount, DRM_MEM_MAPS);
+	tempmaps = malloc(sizeof(drm_local_map_t) * mapcount, M_DRM, M_NOWAIT);
 	if (tempmaps == NULL) {
 		DRM_UNLOCK();
 		return ENOMEM;
@@ -203,7 +202,7 @@ static int drm_vm_info DRM_SYSCTL_HANDLER_ARGS
 	SYSCTL_OUT(req, "", 1);
 
 done:
-	drm_free(tempmaps, sizeof(drm_local_map_t) * mapcount, DRM_MEM_MAPS);
+	free(tempmaps, M_DRM);
 	return retcode;
 }
 
@@ -227,7 +226,7 @@ static int drm_bufs_info DRM_SYSCTL_HANDLER_ARGS
 	}
 	DRM_SPINLOCK(&dev->dma_lock);
 	tempdma = *dma;
-	templists = drm_alloc(sizeof(int) * dma->buf_count, DRM_MEM_BUFS);
+	templists = malloc(sizeof(int) * dma->buf_count, M_DRM, M_NOWAIT);
 	for (i = 0; i < dma->buf_count; i++)
 		templists[i] = dma->buflist[i]->list;
 	dma = &tempdma;
@@ -259,7 +258,7 @@ static int drm_bufs_info DRM_SYSCTL_HANDLER_ARGS
 
 	SYSCTL_OUT(req, "", 1);
 done:
-	drm_free(templists, sizeof(int) * dma->buf_count, DRM_MEM_BUFS);
+	free(templists, M_DRM);
 	return retcode;
 }
 
@@ -277,7 +276,7 @@ static int drm_clients_info DRM_SYSCTL_HANDLER_ARGS
 	TAILQ_FOREACH(priv, &dev->files, link)
 		privcount++;
 
-	tempprivs = drm_alloc(sizeof(drm_file_t) * privcount, DRM_MEM_FILES);
+	tempprivs = malloc(sizeof(drm_file_t) * privcount, M_DRM, M_NOWAIT);
 	if (tempprivs == NULL) {
 		DRM_UNLOCK();
 		return ENOMEM;
@@ -302,6 +301,6 @@ static int drm_clients_info DRM_SYSCTL_HANDLER_ARGS
 
 	SYSCTL_OUT(req, "", 1);
 done:
-	drm_free(tempprivs, sizeof(drm_file_t) * privcount, DRM_MEM_FILES);
+	free(tempprivs, M_DRM);
 	return retcode;
 }

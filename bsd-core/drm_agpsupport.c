@@ -131,16 +131,15 @@ int drm_agp_alloc(DRM_IOCTL_ARGS)
 
 	request = *(drm_agp_buffer_t *) data;
 
-	if (!(entry = drm_alloc(sizeof(*entry), DRM_MEM_AGPLISTS)))
+	entry = malloc(sizeof(*entry), M_DRM, M_NOWAIT | M_ZERO);
+	if (entry == NULL)
 		return ENOMEM;
-   
-   	bzero(entry, sizeof(*entry));
 
 	pages = (request.size + PAGE_SIZE - 1) / PAGE_SIZE;
 	type = (u_int32_t) request.type;
 
 	if (!(handle = drm_agp_allocate_memory(pages, type))) {
-		drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
+		free(entry, M_DRM);
 		return ENOMEM;
 	}
 	
@@ -239,7 +238,7 @@ int drm_agp_free(DRM_IOCTL_ARGS)
 	if (entry->next)
 		entry->next->prev = entry->prev;
 	drm_agp_free_memory(entry->handle);
-	drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
+	free(entry, M_DRM);
 	return 0;
 }
 
@@ -256,9 +255,9 @@ drm_agp_head_t *drm_agp_init(void)
 	DRM_DEBUG("agp_available = %d\n", agp_available);
 
 	if (agp_available) {
-		if (!(head = drm_alloc(sizeof(*head), DRM_MEM_AGPLISTS)))
+		head = malloc(sizeof(*head), M_DRM, M_NOWAIT | M_ZERO);
+		if (head == NULL)
 			return NULL;
-		bzero((void *)head, sizeof(*head));
 		head->agpdev = agpdev;
 		agp_get_info(agpdev, &head->info);
 		head->memory = NULL;

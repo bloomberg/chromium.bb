@@ -37,10 +37,8 @@ void drm_sg_cleanup(drm_sg_mem_t *entry)
 {
 	free(entry->virtual, M_DRM);
 
-	drm_free(entry->busaddr,
-		   entry->pages * sizeof(*entry->busaddr),
-		   DRM_MEM_PAGES );
-	drm_free(entry, sizeof(*entry), DRM_MEM_SGLISTS);
+	free(entry->busaddr, M_DRM);
+	free(entry, M_DRM);
 }
 
 int drm_sg_alloc(DRM_IOCTL_ARGS)
@@ -58,35 +56,28 @@ int drm_sg_alloc(DRM_IOCTL_ARGS)
 	DRM_COPY_FROM_USER_IOCTL(request, (drm_scatter_gather_t *)data,
 			     sizeof(request) );
 
-	entry = drm_alloc(sizeof(*entry), DRM_MEM_SGLISTS);
+	entry = malloc(sizeof(*entry), M_DRM, M_NOWAIT | M_ZERO);
 	if ( !entry )
 		return ENOMEM;
-
-   	bzero( entry, sizeof(*entry) );
 
 	pages = round_page(request.size) / PAGE_SIZE;
 	DRM_DEBUG( "sg size=%ld pages=%ld\n", request.size, pages );
 
 	entry->pages = pages;
 
-	entry->busaddr = drm_alloc(pages * sizeof(*entry->busaddr),
-				     DRM_MEM_PAGES);
+	entry->busaddr = malloc(pages * sizeof(*entry->busaddr), M_DRM,
+	    M_NOWAIT | M_ZERO);
 	if ( !entry->busaddr ) {
-		drm_free(entry, sizeof(*entry), DRM_MEM_SGLISTS);
+		free(entry, M_DRM);
 		return ENOMEM;
 	}
-	bzero( (void *)entry->busaddr, pages * sizeof(*entry->busaddr) );
 
-	entry->virtual = malloc(pages << PAGE_SHIFT, M_DRM, M_WAITOK);
+	entry->virtual = malloc(pages << PAGE_SHIFT, M_DRM, M_WAITOK | M_ZERO);
 	if ( !entry->virtual ) {
-		drm_free(entry->busaddr,
-			   entry->pages * sizeof(*entry->busaddr),
-			   DRM_MEM_PAGES);
-		drm_free(entry, sizeof(*entry), DRM_MEM_SGLISTS);
+		free(entry->busaddr, M_DRM);
+		free(entry, M_DRM);
 		return ENOMEM;
 	}
-
-	bzero( entry->virtual, pages << PAGE_SHIFT );
 
 	entry->handle = (unsigned long)entry->virtual;
 

@@ -74,7 +74,7 @@ int drm_setunique(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 
 	dev->unique_len = u.unique_len;
-	dev->unique = drm_alloc(u.unique_len + 1, DRM_MEM_DRIVER);
+	dev->unique = malloc(u.unique_len + 1, M_DRM, M_NOWAIT);
 
 	if (dev->unique == NULL)
 		return DRM_ERR(ENOMEM);
@@ -111,7 +111,7 @@ drm_set_busid(drm_device_t *dev)
 		return EBUSY;
 
 	dev->unique_len = 20;
-	dev->unique = drm_alloc(dev->unique_len + 1, DRM_MEM_DRIVER);
+	dev->unique = malloc(dev->unique_len + 1, M_DRM, M_NOWAIT);
 	if (dev->unique == NULL)
 		return ENOMEM;
 

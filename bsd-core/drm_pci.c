@@ -58,6 +58,8 @@ void
 drm_pci_free(drm_device_t *dev, size_t size, void *vaddr, dma_addr_t busaddr)
 {
 #if __FreeBSD_version > 500000
+	if (vaddr == NULL)
+		return;
 	contigfree(vaddr, size, M_DRM);	/* Not available on 4.x */
 #endif
 }

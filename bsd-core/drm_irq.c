@@ -224,11 +224,11 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 	flags = vblwait.request.type & _DRM_VBLANK_FLAGS_MASK;
 	if (flags & _DRM_VBLANK_SIGNAL) {
 #if 0 /* disabled */
-		drm_vbl_sig_t *vbl_sig = DRM_MALLOC(sizeof(drm_vbl_sig_t));
+		drm_vbl_sig_t *vbl_sig = malloc(sizeof(drm_vbl_sig_t), M_DRM,
+		    M_NOWAIT | M_ZERO);
 		if (vbl_sig == NULL)
 			return ENOMEM;
-		bzero(vbl_sig, sizeof(*vbl_sig));
-		
+
 		vbl_sig->sequence = vblwait.request.sequence;
 		vbl_sig->signo = vblwait.request.signal;
 		vbl_sig->pid = DRM_CURRENTPID;

@@ -63,10 +63,9 @@ static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 
 	DRM_DEBUG("%d\n", magic);
 
-	hash	     = drm_hash_magic(magic);
-	entry	     = (drm_magic_entry_t*) drm_alloc(sizeof(*entry), DRM_MEM_MAGIC);
+	hash = drm_hash_magic(magic);
+	entry = malloc(sizeof(*entry), M_DRM, M_ZERO | M_NOWAIT);
 	if (!entry) return DRM_ERR(ENOMEM);
-	memset(entry, 0, sizeof(*entry));
 	entry->magic = magic;
 	entry->priv  = priv;
 	entry->next  = NULL;
@@ -111,7 +110,7 @@ static int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
 	}
 	DRM_UNLOCK();
 
-	drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
+	free(pt, M_DRM);
 	return DRM_ERR(EINVAL);
 }
 

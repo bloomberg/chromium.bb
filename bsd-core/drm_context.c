@@ -73,12 +73,9 @@ int drm_ctxbitmap_next(drm_device_t *dev)
 		if (dev->context_sareas != NULL) {
 			drm_local_map_t **ctx_sareas;
 
-			ctx_sareas = drm_realloc(dev->context_sareas,
-					(dev->max_context - 1) * 
-					sizeof(*dev->context_sareas),
-					dev->max_context * 
-					sizeof(*dev->context_sareas),
-					DRM_MEM_MAPS);
+			ctx_sareas = realloc(dev->context_sareas,
+			    dev->max_context * sizeof(*dev->context_sareas),
+			    M_DRM, M_NOWAIT);
 			if (ctx_sareas == NULL) {
 				clear_bit(bit, dev->ctx_bitmap);
 				DRM_UNLOCK();
@@ -88,8 +85,8 @@ int drm_ctxbitmap_next(drm_device_t *dev)
 			dev->context_sareas[bit] = NULL;
 		} else {
 			/* max_context == 1 at this point */
-			dev->context_sareas = drm_alloc(dev->max_context * 
-			    sizeof(*dev->context_sareas), DRM_MEM_MAPS);
+			dev->context_sareas = malloc(dev->max_context * 
+			    sizeof(*dev->context_sareas), M_DRM, M_NOWAIT);
 			if (dev->context_sareas == NULL) {
 				clear_bit(bit, dev->ctx_bitmap);
 				DRM_UNLOCK();
@@ -108,8 +105,7 @@ int drm_ctxbitmap_init(drm_device_t *dev)
    	int temp;
 
 	DRM_LOCK();
-	dev->ctx_bitmap = (atomic_t *)drm_calloc(1, PAGE_SIZE,
-	    DRM_MEM_CTXBITMAP);
+	dev->ctx_bitmap = malloc(PAGE_SIZE, M_DRM, M_NOWAIT | M_ZERO);
 	if ( dev->ctx_bitmap == NULL ) {
 		DRM_UNLOCK();
 		return DRM_ERR(ENOMEM);
@@ -130,9 +126,8 @@ void drm_ctxbitmap_cleanup(drm_device_t *dev)
 {
 	DRM_LOCK();
 	if (dev->context_sareas != NULL)
-		drm_free(dev->context_sareas, sizeof(*dev->context_sareas) * 
-		    dev->max_context, DRM_MEM_MAPS);
-	drm_free((void *)dev->ctx_bitmap, PAGE_SIZE, DRM_MEM_CTXBITMAP);
+		free(dev->context_sareas, M_DRM);
+	free(dev->ctx_bitmap, M_DRM);
 	DRM_UNLOCK();
 }
 

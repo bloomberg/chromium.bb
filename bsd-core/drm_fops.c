@@ -70,12 +70,11 @@ int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 	if (priv) {
 		priv->refs++;
 	} else {
-		priv = (drm_file_t *)drm_alloc(sizeof(*priv), DRM_MEM_FILES);
+		priv = malloc(sizeof(*priv), M_DRM, M_NOWAIT | M_ZERO);
 		if (priv == NULL) {
 			DRM_UNLOCK();
 			return DRM_ERR(ENOMEM);
 		}
-		bzero(priv, sizeof(*priv));
 #if __FreeBSD_version >= 500000
 		priv->uid		= p->td_ucred->cr_svuid;
 		priv->pid		= p->td_proc->p_pid;
