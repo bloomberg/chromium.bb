@@ -50,7 +50,7 @@
 #ifdef CONFIG_MTRR
 #include <asm/mtrr.h>
 #endif
-#ifdef CONFIG_AGP
+#if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 #define DRM_AGP
 #endif
 #ifdef DRM_AGP
