@@ -128,6 +128,11 @@
 	<include ignore_missing="yes">~/.fonts.conf</include>
 
 <!--
+  Load local system customization file
+-->
+	<include ignore_missing="yes">local.conf</include>
+
+<!--
   Alias well known font names to available TrueType fonts
 -->
 	<alias>
@@ -197,11 +202,11 @@
  
 	<match target="font">
 		<!-- check to see if the font is roman -->
-		<test qual="first" name="slant">
+		<test name="slant">
 			<const>roman</const>
 		</test>
 		<!-- check to see if the pattern requested non-roman -->
-		<test qual="not_first" name="slant" compare="not_eq">
+		<test target="pattern" name="slant" compare="not_eq">
 			<const>roman</const>
 		</test>
 		<!-- multiply the matrix to slant the font -->

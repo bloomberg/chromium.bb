@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.16 2002/07/12 19:19:16 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.17 2002/07/31 01:36:37 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -49,13 +49,18 @@
 #endif
 
 FcTest *
-FcTestCreate (FcQual qual, const FcChar8 *field, FcOp compare, FcExpr *expr)
+FcTestCreate (FcMatchKind   kind, 
+	      FcQual	    qual,
+	      const FcChar8 *field,
+	      FcOp	    compare,
+	      FcExpr	    *expr)
 {
     FcTest	*test = (FcTest *) malloc (sizeof (FcTest));
 
     if (test)
     {
 	test->next = 0;
+	test->kind = kind;
 	test->qual = qual;
 	test->field = (char *) FcStrCopy (field);
 	test->op = compare;
@@ -1204,7 +1209,8 @@ FcParseAlias (FcConfigParse *parse)
     }
     if (edit)
     {
-	test = FcTestCreate (FcQualAny,
+	test = FcTestCreate (FcMatchPattern,
+			     FcQualAny,
 			     (FcChar8 *) FC_FAMILY,
 			     FcOpEqual,
 			     family);
@@ -1358,6 +1364,8 @@ FcConfigLexCompare (const FcChar8 *compare)
 static void
 FcParseTest (FcConfigParse *parse)
 {
+    const FcChar8   *kind_string;
+    FcMatchKind	    kind;
     const FcChar8   *qual_string;
     FcQual	    qual;
     const FcChar8   *name;
@@ -1366,6 +1374,23 @@ FcParseTest (FcConfigParse *parse)
     FcExpr	    *expr;
     FcTest	    *test;
 
+    kind_string = FcConfigGetAttribute (parse, "target");
+    if (!kind_string)
+	kind = FcMatchDefault;
+    else
+    {
+	if (!strcmp ((char *) kind_string, "pattern"))
+	    kind = FcMatchPattern;
+	else if (!strcmp ((char *) kind_string, "font"))
+	    kind = FcMatchFont;
+	else if (!strcmp ((char *) kind_string, "default"))
+	    kind = FcMatchDefault;
+	else
+	{
+	    FcConfigMessage (parse, FcSevereWarning, "invalid test target \"%s\"", kind_string);
+	    return;
+	}
+    }
     qual_string = FcConfigGetAttribute (parse, "qual");
     if (!qual_string)
 	qual = FcQualAny;
@@ -1409,7 +1434,7 @@ FcParseTest (FcConfigParse *parse)
 	FcConfigMessage (parse, FcSevereWarning, "missing test expression");
 	return;
     }
-    test = FcTestCreate (qual, name, compare, expr);
+    test = FcTestCreate (kind, qual, name, compare, expr);
     if (!test)
     {
 	FcConfigMessage (parse, FcSevereError, "out of memory");

@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86: fontconfig.man,v 1.2 2000/11/30 06:59:45 keithp Exp $
+.\" $XFree86: xc/lib/fontconfig/src/fontconfig.man,v 1.2 2002/08/06 19:54:10 keithp Exp $
 .\"
 .\" Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 .\"
@@ -166,6 +166,22 @@ first is to modify how fonts are selected; aliasing families and adding
 suitable defaults.  The second is to modify how the selected fonts are
 rasterized.  Those must apply to the selected font, not the original pattern
 as false matches will often occur.
+.SS FONT LIST MATCHING
+.P
+While many applications want to locate a single font best matching their
+search criteria, other applications need to build a set of fonts which can
+be used to present any Unicode data.  Fontconfig provides an API to generate
+a list sorted by the nearness of each font to the pattern.  Every font in
+the system is considered, the best matching fonts are placed first.  The
+application then can select whether the remaining fonts are unconditionally 
+included in the list, or whether they are included only if they cover
+portions of Unicode not covered by any of the preceeding fonts.
+.P
+The list resulting from this match is represented by references to the
+original font patterns and so consumes very little memory.  Using a list
+entry involves creating a pattern which combines the information from the
+font with the information from the original pattern and executing the font
+substitutions.
 .SS FONT NAMES
 Fontconfig provides a textual representation for patterns that the library
 can both accept and generate.  The representation is in three parts, first a
@@ -200,8 +216,8 @@ by the ISO 3166 country code.  The hyphen and country code may be elided.
 .P
 Fontconfig has orthographies for several languages built into the library.
 No provision has been made for adding new ones aside from rebuilding the
-library.  It currently supports 104 of the 139 languages named in ISO 639-1,
-117 of the languages with two-letter codes from ISO 639-2 and another 24
+library.  It currently supports 122 of the 139 languages named in ISO 639-1,
+141 of the languages with two-letter codes from ISO 639-2 and another 30
 languages with only three-letter codes.
 
 .SH DATATYPES
@@ -296,6 +312,15 @@ patterns in the 'fonts' array; 'sfont' is used to indicate the size of that
 array.
 
 .TP
+.B FcStrSet
+.B FcStrList
+FcStrSet holds a list of strings that can be appended to and enumerated.
+Its unique characteristic is that the enumeration works even while strings
+are appended during enumeration.  FcStrList is used during enumeration to
+safely and correctly walk the list of strings even while that list is edited
+in the middle of enumeration.
+
+.TP
 .B FcObjectSet
 .sp
 .nf
@@ -305,8 +330,33 @@ array.
 		const char **objects;
 	} FcObjectSet;
 .fi
+.sp
 holds a set of names and is used to specify which fields from fonts are
 placed in the the list of returned patterns when listing fonts.
+
+.TP
+.B FcObjectType
+.sp
+	typedef struct _FcObjectType {
+		const char *object;
+		FcType type;
+	} FcObjectType;
+.fi
+marks the type of a pattern element generated when parsing font names.
+Applications can add new object types so that font names may contain the new
+elements.
+
+.TP
+.B FcConstant
+.sp
+	typedef struct _FcConstant {
+	    const FcChar8 *name;
+	    const char *object;
+	    int value;
+	} FcConstant;
+.fi
+Provides for symbolic constants for new pattern elements.  When 'name' is
+seen in a font name, an 'object' element is created with value 'value'.
 
 .TP
 .B FcBlanks
@@ -356,6 +406,11 @@ Used as a return type for functions manipulating FcPattern objects.
 	FcResultNoId	Object exists, but has fewer values than specified
 .br
 .DT
+
+.TP
+.B FcAtomic
+Used for locking access to config files.  Provides a safe way to update
+configuration files.
 
 .SH FUNCTIONS
 
@@ -450,6 +505,18 @@ Returns the number of chars that are in both 'a' and 'b'.
 FcChar32 FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b)
 Returns the number of chars that are in 'a' but not in 'b'.
 
+.TP
+FcBool FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
+Returns whether 'a' is a subset of 'b'.
+
+.TP FcChar32 FcCharSetFirstPage (const FcCharSet *a, FcChar32 [FC_CHARSET_MAP_SIZE], FcChar32 *next)
+Builds an array of bits marking the first page of Unicode coverage of 'a'.
+Returns the base of the array.  'next' contains the next page in the font.
+
+.TP FcChar32 FcCharSetNextPage (const FcCharSet *a, FcChar32 [FC_CHARSET_MAP_SIZE], FcChar32 *next)
+Builds an array of bits marking the Unicode coverage of 'a' for page '*next'.
+Returns the base of the array.  'next' contains the next page in the font.
+
 .SS FcValue
 FcValue is a structure containing a type tag and a union of all possible
 datatypes.  The tag is an enum of type 
@@ -478,6 +545,20 @@ Creates a pattern with no properties; used to build patterns from scratch.
 .TP
 void FcPatternDestroy (FcPattern *p)
 Destroys a pattern, in the process destroying all related values.
+
+.TP
+FcBool FcPatternEqual (const FcPattern *pa, const FcPattern *pb);
+Returns whether 'pa' and 'pb' are exactly alike.
+
+.TP
+FcBool FcPatternEqualSubset (const FcPattern *pa, const FcPattern *pb, const FcObjectSet *os)
+Returns whether 'pa' and 'pb' have exactly the same values for all of the
+objects in 'os'.
+
+.TP
+FcChar32 FcPatternHash (const FcPattern *p)
+Returns a 32-bit number which is the same for any two patterns which are
+exactly alike.
 
 .TP
 FcBool FcPatternAdd (FcPattern *p, const char *object, FcValue value, FcBool append)
@@ -565,7 +646,7 @@ Deletes all values associated with the property `object', returning
 whether the property existed or not.
 
 .TP
-void FcPatternPrint (FcPattern *p)
+void FcPatternPrint (const FcPattern *p)
 Prints an easily readable version of the pattern to stdout.  There is
 no provision for reparsing data in this format, it's just for diagnostics
 and debugging.
@@ -635,6 +716,41 @@ FcObjectSet *FcObjectSetBuild (const char *first, ...)
 FcObjectSet *FcObjectSetVaBuild (const char *first, va_list va)
 These build an object set from a null-terminated list of property names.
 
+.SS FcObjectType
+Provides for applcation-specified font name object types so that new
+pattern elements can be generated from font names.
+
+.TP FcBool FcNameRegisterObjectTypes (const FcObjectType *types, int ntype)
+Register 'ntype' new object types.
+
+.TP
+FcBool FcNameUnregisterObjectTypes (const FcObjectType *types, int ntype)
+Unregister 'ntype' object types.
+    
+.TP
+const FcObjectType *FcNameGetObjectType (const char *object)
+Return the object type for the pattern element named 'object'.
+
+.SS FcConstant
+Provides for application-specified symbolic constants for font names.
+
+.TP
+FcBool FcNameRegisterConstants (const FcConstant *consts, int nconsts)
+Register 'nconsts' new symbolic constants.
+
+.TP
+FcBool FcNameUnregisterConstants (const FcConstant *consts, int nconsts)
+Unregister 'nconsts' symbolic constants.
+    
+.TP
+const FcConstant *FcNameGetConstant (FcChar8 *string)
+Return the FcConstant structure related to symbolic constant 'string'.
+
+.TP
+FcBool FcNameConstant (FcChar8 *string, int *result);
+Returns whether a symbolic constant with name 'string' is registered,
+placing the value of the constant in 'result' if present.
+
 .SS FcBlanks
 An FcBlanks object holds a list of Unicode chars which are expected to
 be blank when drawn.  When scanning new fonts, any glyphs which are
@@ -685,17 +801,29 @@ FcConfig *FcConfigGetCurrent (void)
 Returns the current default configuration.
 
 .TP
+FcBool FcConfigUptoDate (FcConfig *config)
+Checks all of the files related to 'config' and returns whether the
+in-memory version is in sync with the disk version.
+
+.TP
 FcBool FcConfigBuildFonts (FcConfig *config)
 Builds the set of available fonts for the given configuration.  Note that
 any changes to the configuration after this call have indeterminate effects.
 Returns FcFalse if this operation runs out of memory.
 
 .TP
-char **FcConfigGetDirs (FcConfig *config)
-Returns the list of font directories specified in 'config'.
+FcStrList *FcConfigGetConfigDirs (FcConfig *config)
+Returns the list of font directories specified in the configuration files
+for 'config'.  Does not include any subdirectories.
+
+.TP
+FcStrList *FcConfigGetFontDirs (FcConfig *config)
+Returns the list of font directories in 'config'. This includes the
+configured font directories along with any directories below those in the
+filesystem.
 
 .TP 
-char **FcConfigGetConfigFiles (FcConfig *config)
+FcStrList *FcConfigGetConfigFiles (FcConfig *config)
 Returns the list of known configuration files used to generate 'config'.
 Note that this will not include any configuration done with FcConfigParse.
 
@@ -712,6 +840,16 @@ by 'set'.
 FcBlanks *FcConfigGetBlanks (FcConfig *config)
 Returns the FcBlanks object associated with the given configuration, if no
 blanks were present in the configuration, this function will return 0.
+
+.TP
+int FcConfigGetRescanInverval (FcConfig *config)
+Returns the interval between automatic checks of the configuration (in
+seconds) specified in 'config'.  The configuration is checked during
+a call to FcFontList when this interval has passed since the last check.
+
+.TP
+FcBool FcConfigSetRescanInverval (FcConfig *config, int rescanInterval)
+Sets the rescan interval; returns FcFalse if an error occurred.
 
 .TP
 FcBool FcConfigAppFontAddFile (FcConfig *config, const char *file)
@@ -736,7 +874,30 @@ if 'kind' is FcMatchFont, those tagged as font operations are applied.
 FcPattern *FcFontMatch (FcConfig *config, FcPattern *p, FcResult *result)
 Returns the font in 'config' most close matching 'p'.  This function
 should be called only after FcConfigSubstitute and FcDefaultSubstitute have
-been called; otherwise the results will be less useful.
+been called for 'p'; otherwise the results will not be correct.
+
+.TP
+FcFontSet *FcFontSort (FcConfig *config, FcPattern *p, FcBool trim, FcCharSet **csp, FcResult *result) Returns the list of fonts sorted by
+closeness to 'p'.  If 'trim' is FcTrue, elements in the list which don't
+include Unicode coverage not provided by earlier elements in the list are
+elided.  The union of Unicode coverage of all of the fonts is returned in
+'csp', if 'csp' is not NULL.  This function should be called only after
+FcConfigSubstitute and FcDefaultSubstitute have been called for 'p';
+otherwise the results will not be correct.
+.P
+The returned FcFontSet references FcPattern structures which may be shared
+by the return value from multiple FcFontSort calls, applications must not
+modify these patterns.  Instead, they should be passed, along with 'p' to
+FcFontRenderPrepare which combines them into a complete pattern.
+.P
+The FcFontSet returned by FcFontSort is destroyed by caling FcFontSetDestroy.
+
+.TP
+FcPattern *FcFontRenderPrepare (FcConfig *config, FcPattern *pat, FcPattern *font)
+Creates a new pattern consisting of elements of 'font' not appearing in
+'pat', elements of 'pat' not appearing in 'font' and the best matching value
+from 'pat' for elements appearing in both.  The result is passed to
+FcConfigSubstitute with 'kind' FcMatchFont and then returned.
 
 .TP
 FcFontSet *FcFontList (FcConfig *config, FcPattern *p, FcObjectSet *os)
@@ -761,17 +922,79 @@ FC_CONFIG_DIR environment variable.
 These functions provide some control over how the library is initialized.
 
 .TP
-FcBool FcInitConfig (void)
-Initializes the default configuration using the default configuration file
+FcConfig *FcInitLoadConfig (void)
+Loads the default configuration file and returns the resulting configuration.
+Does not load any font information.
 
 .TP
-FcBool FcInitFonts (void)
-Initializes the set of fonts available in the default configuration
+FcConfig *FcInitLoadConfigAndFonts (void)
+Loads the default configuration file and builds information about the
+available fonts.  Returns the resulting configuration.
 
 .TP
 FcBool FcInit (void)
-Calls FcInitConfig and FcInitFonts to completely initialize the default
+Loads the default configuration file and the fonts referenced therein and
+sets the default configuration to that result.  Returns whether this
+process succeeded or not.  If the default configuration has already
+been loaded, this routine does nothing and returns FcTrue.
+
+.TP
+int FcGetVersion (void)
+Returns the version number of the library.
+
+.TP
+FcBool FcInitReinitialize (void)
+Forces the default configuration file to be reloaded and resets the default
 configuration.
+
+.TP
+FcBool FcInitBringUptoDate (void)
+Checks the rescan interval in the default configuration, checking the
+configuration if the interval has passed and reloading the configuration if
+when any changes are detected.
+
+.SS FcAtomic
+These functions provide a safe way to update config files, allowing ongoing
+reading of the old config file while locked for writing and ensuring that a
+consistent and complete version of the config file is always available.
+
+.TP
+FcAtomic * FcAtomicCreate (const FcChar8   *file)
+Creates a data structure containing data needed to control access to 'file'.
+Writing is done to a separate file.  Once that file is complete, the original
+configuration file is atomically replaced so that reading process always see
+a consistent and complete file without the need to lock for reading.
+
+.TP
+FcBool FcAtomicLock (FcAtomic *atomic)
+Attempts to lock the file referenced by 'atomic'.  Returns FcFalse if the
+file is locked by another process, else returns FcTrue and leaves the file
+locked.
+
+.TP
+FcChar8 *FcAtomicNewFile (FcAtomic *atomic)
+Returns the filename for writing a new version of the file refernced by
+'atomic'.
+
+.TP
+FcChar8 *FcAtomicOrigFile (FcAtomic *atomic)
+Returns the file refernced by 'atomic'.
+
+.TP
+FcBool FcAtomicReplaceOrig (FcAtomic *atomic)
+Replaces the original file referenced by 'atomic' with the new file.
+
+.TP
+void FcAtomicDeleteNew (FcAtomic *atomic)
+Deletes the new file.
+
+.TP
+void FcAtomicUnlock (FcAtomic *atomic)
+Unlocks the file.
+
+.TP
+void FcAtomicDestroy (FcAtomic *atomic)
+Destroys 'atomic'.
 
 .SS FreeType specific functions
 .nf
@@ -814,28 +1037,78 @@ FcConfigFilename.  This doesn't load a complete configuration as any
 include files referenced from 'file' will not be loaded.
 
 .TP
-FcBool FcConfigParse (FcConfig *config, xmlDocPtr doc)
-Walks the given configuration and constructs the internal representation in
-'config'.  Any include files referenced from within 'doc' will be loaded
-with FcConfigLoad and also parsed.
+FcBool FcConfigParseAndLoad (FcConfig *config, const FcChar8 *file, FcBool complain)
+Walks the configuration in 'file' and constructs the internal representation in
+'config'.  Any include files referenced from within 'file' will be loaded
+with FcConfigLoad and also parsed.  If 'complain' is FcFalse, no warning
+will be displayed if 'file' does not exist.
 
 .SS File and Directory routines
 
 .TP
-FcBool FcFileScan (FcFontSet *set, FcFileCache *cache, FcBlanks *blanks, const char *file, FcBool force)
+FcBool FcFileScan (FcFontSet *set, FcStrSet *dirs, FcFileCache *cache, FcBlanks *blanks, const char *file, FcBool force)
 Scans a single file and adds all fonts found to 'set'.  If 'force' is FcTrue,
 then the file is scanned even if associated information is found in 'cache'.
+If 'file' is a directory, it is added to 'dirs'.
 
 .TP
-FcBool FcDirScan (FcFontSet *set, FcFileCache *cache, FcBlanks *blanks, const char *dir, FcBool force)
+FcBool FcDirScan (FcFontSet *set, FcStrSet *dirs, FcFileCache *cache, FcBlanks *blanks, const char *dir, FcBool force)
 Scans an entire directory and adds all fonts found to 'set'.  If 'force' is
 FcTrue, then the directory and all files within it are scanned even if
-information is present in the per-directory cache file or 'cache'.
+information is present in the per-directory cache file or 'cache'.  Any
+subdirectories found are added to 'dirs'.
 
 .TP
-FcBool FcDirSave (FcFontSet *set, const char *dir)
+FcBool FcDirSave (FcFontSet *set, FcStrSet *dirs, const char *dir)
 Creates the per-directory cache file for 'dir' and populates it with the
-fonts in 'set'.
+fonts in 'set' and subdirectories in 'dirs'.
+
+.TP
+FcBool FcDirCacheValid (const FcChar8 *cache_file)
+Returns FcTrue if 'cache_file' is no older than the directory containing it,
+else FcFalse.
+
+.SS FcStrSet and FcStrList
+A data structure for enumerating strings, used to list directories while
+scanning the configuration as directories are added while scanning.
+
+.TP
+FcStrSet *FcStrSetCreate (void)
+Create an empty set.
+
+.TP
+FcBool FcStrSetMember (FcStrSet *set, const FcChar8 *s)
+Returns whether 's' is a member of 'set'.
+
+.TP
+FcBool FcStrSetAdd (FcStrSet *set, const FcChar8 *s)
+Adds a copy of 's' to 'set'.
+
+.TP
+FcBool FcStrSetAddFilename (FcStrSet *set, const FcChar8 *s)
+Adds a copy 's' to 'set', The copy is created with FcStrCopyFilename
+so that leading '~' values are replaced with the value of the HOME
+environment variable.
+
+.TP
+FcBool FcStrSetDel (FcStrSet *set, const FcChar8 *s)
+Removes 's' from 'set', returning FcTrue if 's' was a member else FcFalse.
+
+.TP
+void FcStrSetDestroy (FcStrSet *set)
+Destroys 'set'.
+
+.TP
+FcStrList *FcStrListCreate (FcStrSet *set)
+Creates an enumerator to list the strings in 'set'.
+
+.TP
+FcChar8 *FcStrListNext (FcStrList *list)
+Returns the next string in 'set'.
+
+.TP
+void FcStrListDone (FcStrList *list)
+Destroys the enumerator 'list'.
 
 .SS String utilities
 
@@ -871,15 +1144,28 @@ bytes needed to hold the largest unicode char counted.  The return value
 indicates whether 'string' is a well-formed UTF16 string.
 
 .TP
-char *FcStrCopy (const char *s)
+FcChar8 *FcStrCopy (const FcChar8 *s)
 Allocates memory, copies 's' and returns the resulting buffer.  Yes, this is
 'strdup', but that function isn't available on every platform.
 
+.TP
+FcChar8 *FcStrCopyFilename (const FcChar8 *s)
+Just like FcStrCopy except that it converts any leading '~' characters in
+'s' to the value of the HOME environment variable.
+    
 .TP
 int FcStrCmpIgnoreCase (const char *s1, const char *s2)
 Returns the usual <0, 0, >0 result of comparing 's1' and 's2'.  This test
 is case-insensitive in the ASCII range and will operate properly with UTF8
 encoded strings, although it does not check for well formed strings.
+
+.TP
+FcChar8 *FcStrDirname (const FcChar8 *file)
+Returns the directory containing 'file'.
+
+.TP
+FcChar8 *FcStrBasename (const FcChar8 *file)
+Returns the filename of 'file' stripped of any leading directory names.
 
 .SH CONFIGURATION FILE FORMAT
 Configuration files for fontconfig are stored in XML format; this

@@ -112,11 +112,15 @@
     if 'qual' is 'first', then the match succeeds only if the first value matches.
     if 'qual' is 'not_first', then the match succeeds only if any value other than
     	the first matches.
+    For match elements with target=font, if test 'target' is 'pattern',
+    then the test is applied to the pattern used in matching rather than
+    to the resulting font.
 -->
 <!ELEMENT test (%expr;)*>
 <!ATTLIST test 
 	  qual (any|all|first|not_first)    "any"
 	  name CDATA	    #REQUIRED
+	  target (pattern|font|default)		"default"
 	  compare (eq|not_eq|less|less_eq|more|more_eq)	"eq">
 
 <!--

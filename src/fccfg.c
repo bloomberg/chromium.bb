@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.15 2002/06/21 06:14:45 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.18 2002/07/31 01:36:37 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -438,16 +438,20 @@ FcConfigAddEdit (FcConfig	*config,
     subst->next = 0;
     subst->test = test;
     subst->edit = edit;
+    num = 0;
+    for (t = test; t; t = t->next)
+    {
+	if (t->kind == FcMatchDefault)
+	    t->kind = kind;
+	num++;
+    }
+    if (config->maxObjects < num)
+	config->maxObjects = num;
     if (FcDebug () & FC_DBG_EDIT)
     {
 	printf ("Add Subst ");
 	FcSubstPrint (subst);
     }
-    num = 0;
-    for (t = test; t; t = t->next)
-	num++;
-    if (config->maxObjects < num)
-	config->maxObjects = num;
     return FcTrue;
 }
 
@@ -483,7 +487,6 @@ FcConfigCompareValue (FcValue	m,
     v = FcConfigPromote (v, m);
     if (m.type == v.type) 
     {
-	ret = FcFalse;
 	switch (m.type) {
 	case FcTypeInteger:
 	    break;	/* FcConfigPromote prevents this from happening */
@@ -588,6 +591,19 @@ FcConfigCompareValue (FcValue	m,
 	    default:
 		break;
 	    }
+	    break;
+	case FcTypePattern:
+	    switch (op) {
+	    case FcOpEqual:
+		ret = FcPatternEqual (m.u.p, v.u.p);
+		break;
+	    case FcOpNotEqual:
+		ret = !FcPatternEqual (m.u.p, v.u.p);
+		break;
+	    default:
+		break;
+	    }
+	    break;
 	}
     }
     else
@@ -658,15 +674,22 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	    v.type = FcTypeVoid;
 	FcValueDestroy (vl);
 	break;
-    case FcOpOr:
-    case FcOpAnd:
-    case FcOpEqual:
     case FcOpContains:
     case FcOpNotEqual:
     case FcOpLess:
     case FcOpLessEqual:
     case FcOpMore:
     case FcOpMoreEqual:
+	vl = FcConfigEvaluate (p, e->u.tree.left);
+	vr = FcConfigEvaluate (p, e->u.tree.right);
+	v.type = FcTypeBool;
+	v.u.b = FcConfigCompareValue (vl, e->op, vr);
+	FcValueDestroy (vl);
+	FcValueDestroy (vr);
+	break;	
+    case FcOpOr:
+    case FcOpAnd:
+    case FcOpEqual:
     case FcOpPlus:
     case FcOpMinus:
     case FcOpTimes:
@@ -696,31 +719,6 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		    v.type = FcTypeDouble;
 		    v.u.d = vl.u.d / vr.u.d; 
 		    break;
-		case FcOpEqual:
-		case FcOpContains:
-		    v.type = FcTypeBool; 
-		    v.u.b = vl.u.d == vr.u.d;
-		    break;
-		case FcOpNotEqual:    
-		    v.type = FcTypeBool; 
-		    v.u.b = vl.u.d != vr.u.d;
-		    break;
-		case FcOpLess:    
-		    v.type = FcTypeBool; 
-		    v.u.b = vl.u.d < vr.u.d;
-		    break;
-		case FcOpLessEqual:    
-		    v.type = FcTypeBool; 
-		    v.u.b = vl.u.d <= vr.u.d;
-		    break;
-		case FcOpMore:    
-		    v.type = FcTypeBool; 
-		    v.u.b = vl.u.d > vr.u.d;
-		    break;
-		case FcOpMoreEqual:    
-		    v.type = FcTypeBool; 
-		    v.u.b = vl.u.d >= vr.u.d;
-		    break;
 		default:
 		    v.type = FcTypeVoid; 
 		    break;
@@ -742,15 +740,6 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		    v.type = FcTypeBool;
 		    v.u.b = vl.u.b && vr.u.b;
 		    break;
-		case FcOpEqual:
-		case FcOpContains:
-		    v.type = FcTypeBool;
-		    v.u.b = vl.u.b == vr.u.b;
-		    break;
-		case FcOpNotEqual:
-		    v.type = FcTypeBool;
-		    v.u.b = vl.u.b != vr.u.b;
-		    break;
 		default:
 		    v.type = FcTypeVoid; 
 		    break;
@@ -758,15 +747,6 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		break;
 	    case FcTypeString:
 		switch (e->op) {
-		case FcOpEqual:
-		case FcOpContains:
-		    v.type = FcTypeBool;
-		    v.u.b = FcStrCmpIgnoreCase (vl.u.s, vr.u.s) == 0;
-		    break;
-		case FcOpNotEqual:
-		    v.type = FcTypeBool;
-		    v.u.b = FcStrCmpIgnoreCase (vl.u.s, vr.u.s) != 0;
-		    break;
 		case FcOpPlus:
 		    v.type = FcTypeString;
 		    v.u.s = FcStrPlus (vl.u.s, vr.u.s);
@@ -780,15 +760,6 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		break;
 	    case FcTypeMatrix:
 		switch (e->op) {
-		case FcOpEqual:
-		case FcOpContains:
-		    v.type = FcTypeBool;
-		    v.u.b = FcMatrixEqual (vl.u.m, vr.u.m);
-		    break;
-		case FcOpNotEqual:
-		    v.type = FcTypeBool;
-		    v.u.b = FcMatrixEqual (vl.u.m, vr.u.m);
-		    break;
 		case FcOpTimes:
 		    v.type = FcTypeMatrix;
 		    m = malloc (sizeof (FcMatrix));
@@ -802,26 +773,6 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		    {
 			v.type = FcTypeVoid;
 		    }
-		    break;
-		default:
-		    v.type = FcTypeVoid;
-		    break;
-		}
-		break;
-	    case FcTypeCharSet:
-		switch (e->op) {
-		case FcOpContains:
-		    /* vl contains vr if vr is a subset of vl */
-		    v.type = FcTypeBool;
-		    v.u.b = FcCharSetIsSubset (vr.u.c, vl.u.c);
-		    break;
-		case FcOpEqual:
-		    v.type = FcTypeBool;
-		    v.u.b = FcCharSetEqual (vl.u.c, vr.u.c);
-		    break;
-		case FcOpNotEqual:
-		    v.type = FcTypeBool;
-		    v.u.b = !FcCharSetEqual (vl.u.c, vr.u.c);
 		    break;
 		default:
 		    v.type = FcTypeVoid;
@@ -1068,6 +1019,8 @@ FcConfigSubstitute (FcConfig	*config,
     FcTest	    *t;
     FcEdit	    *e;
     FcValueList	    *l;
+    FcPattern	    *p_pat = 0;
+    FcPattern	    *m;
 
     if (!config)
     {
@@ -1089,7 +1042,10 @@ FcConfigSubstitute (FcConfig	*config,
     if (kind == FcMatchPattern)
 	s = config->substPattern;
     else
+    {
 	s = config->substFont;
+	(void) FcPatternGetPattern (p, FC_PATTERN, 0, &p_pat);
+    }
     for (; s; s = s->next)
     {
 	/*
@@ -1103,7 +1059,15 @@ FcConfigSubstitute (FcConfig	*config,
 		printf ("FcConfigSubstitute test ");
 		FcTestPrint (t);
 	    }
-	    st[i].elt = FcPatternFindElt (p, t->field);
+	    st[i].elt = 0;
+	    if (kind == FcMatchFont && t->kind == FcMatchPattern)
+		m = p_pat;
+	    else
+		m = p;
+	    if (m)
+		st[i].elt = FcPatternFindElt (m, t->field);
+	    else
+		st[i].elt = 0;
 	    /*
 	     * If there's no such field in the font,
 	     * then FcQualAll matches while FcQualAny does not
@@ -1122,7 +1086,7 @@ FcConfigSubstitute (FcConfig	*config,
 	     * Check to see if there is a match, mark the location
 	     * to apply match-relative edits
 	     */
-	    st[i].value = FcConfigMatchValueList (p, t, st[i].elt->values);
+	    st[i].value = FcConfigMatchValueList (m, t, st[i].elt->values);
 	    if (!st[i].value)
 		break;
 	    if (t->qual == FcQualFirst && st[i].value != st[i].elt->values)
@@ -1148,11 +1112,17 @@ FcConfigSubstitute (FcConfig	*config,
 	     */
 	    l = FcConfigValues (p, e->expr, e->binding);
 	    /*
-	     * Locate any test associated with this field
+	     * Locate any test associated with this field, skipping
+	     * tests associated with the pattern when substituting in
+	     * the font
 	     */
 	    for (t = s->test, i = 0; t; t = t->next, i++)
-		if (!FcStrCmpIgnoreCase ((FcChar8 *) t->field, (FcChar8 *) e->field))
+	    {
+		if ((t->kind == FcMatchFont || kind == FcMatchPattern) &&
+		    !FcStrCmpIgnoreCase ((FcChar8 *) t->field, 
+					 (FcChar8 *) e->field))
 		    break;
+	    }
 	    switch (e->op) {
 	    case FcOpAssign:
 		/*

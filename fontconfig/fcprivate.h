@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fcprivate.h,v 1.2 2002/02/15 06:01:27 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fcprivate.h,v 1.3 2002/05/31 23:21:24 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -72,6 +72,9 @@
 	    break;						    \
 	case FcTypeFTFace:					    \
 	    __v__.u.f = va_arg (va, FT_Face);			    \
+	    break;						    \
+	case FcTypePattern:					    \
+	    __v__.u.p = va_arg (va, FcPattern *);		    \
 	}							    \
 	if (!FcPatternAdd (__p__, __o__, __v__, FcTrue))	    \
 	    goto _FcPatternVapBuild_bail1;			    \

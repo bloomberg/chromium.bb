@@ -71,6 +71,7 @@ typedef int		FcBool;
 #define FC_SOURCE	    "source"		/* String (X11, freetype) */
 #define FC_CHARSET	    "charset"		/* CharSet */
 #define FC_LANG		    "lang"		/* String OS/2 CodePageRange */
+#define FC_PATTERN	    "pattern"		/* FcPattern */
 
 #define FC_DIR_CACHE_FILE	    "fonts.cache"
 #define FC_USER_CACHE_FILE	    ".fonts.cache"
@@ -109,7 +110,8 @@ typedef enum _FcType {
     FcTypeBool,
     FcTypeMatrix,
     FcTypeCharSet,
-    FcTypeFTFace
+    FcTypeFTFace,
+    FcTypePattern
 } FcType;
 
 typedef struct _FcMatrix {
@@ -141,6 +143,8 @@ typedef enum _FcResult {
     FcResultMatch, FcResultNoMatch, FcResultTypeMismatch, FcResultNoId
 } FcResult;
 
+typedef struct _FcPattern   FcPattern;
+
 typedef struct _FcValue {
     FcType	type;
     union {
@@ -151,10 +155,9 @@ typedef struct _FcValue {
 	const FcMatrix	*m;
 	const FcCharSet	*c;
 	void		*f;
+	const FcPattern	*p;
     } u;
 } FcValue;
-
-typedef struct _FcPattern   FcPattern;
 
 typedef struct _FcFontSet {
     int		nfont;
@@ -169,7 +172,7 @@ typedef struct _FcObjectSet {
 } FcObjectSet;
     
 typedef enum _FcMatchKind {
-    FcMatchPattern, FcMatchFont 
+    FcMatchPattern, FcMatchFont
 } FcMatchKind;
 
 typedef enum _FcSetName {
@@ -336,13 +339,13 @@ FcCharSetNextPage (const FcCharSet  *a,
 
 /* fcdbg.c */
 void
-FcValuePrint (FcValue v);
+FcValuePrint (const FcValue v);
 
 void
-FcPatternPrint (FcPattern *p);
+FcPatternPrint (const FcPattern *p);
 
 void
-FcFontSetPrint (FcFontSet *s);
+FcFontSetPrint (const FcFontSet *s);
 
 /* fcdefault.c */
 void
@@ -602,6 +605,9 @@ FcPatternAddCharSet (FcPattern *p, const char *object, const FcCharSet *c);
 FcBool
 FcPatternAddBool (FcPattern *p, const char *object, FcBool b);
 
+FcBool
+FcPatternAddPattern (FcPattern *p, const char *object, const FcPattern *pp);
+
 FcResult
 FcPatternGetInteger (FcPattern *p, const char *object, int n, int *i);
 
@@ -619,6 +625,9 @@ FcPatternGetCharSet (FcPattern *p, const char *object, int n, FcCharSet **c);
 
 FcResult
 FcPatternGetBool (FcPattern *p, const char *object, int n, FcBool *b);
+
+FcResult
+FcPatternGetPattern (FcPattern *p, const char *object, int n, FcPattern **pp);
 
 FcPattern *
 FcPatternVaBuild (FcPattern *orig, va_list va);

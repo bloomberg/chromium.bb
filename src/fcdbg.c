@@ -27,7 +27,7 @@
 #include "fcint.h"
 
 void
-FcValuePrint (FcValue v)
+FcValuePrint (const FcValue v)
 {
     switch (v.type) {
     case FcTypeVoid:
@@ -54,18 +54,23 @@ FcValuePrint (FcValue v)
     case FcTypeFTFace:
 	printf (" face");
 	break;
+    case FcTypePattern:
+	printf (" pattern {");
+	FcPatternPrint (v.u.p);
+	printf (" } ");
+	break;
     }
 }
 
 void
-FcValueListPrint (FcValueList *l)
+FcValueListPrint (const FcValueList *l)
 {
     for (; l; l = l->next)
 	FcValuePrint (l->value);
 }
 
 void
-FcPatternPrint (FcPattern *p)
+FcPatternPrint (const FcPattern *p)
 {
     int		    i;
     FcPatternElt   *e;
@@ -126,7 +131,7 @@ FcOpPrint (FcOp op)
 }
 
 void
-FcExprPrint (FcExpr *expr)
+FcExprPrint (const FcExpr *expr)
 {
     switch (expr->op) {
     case FcOpInteger: printf ("%d", expr->u.ival); break;
@@ -206,8 +211,16 @@ FcExprPrint (FcExpr *expr)
 }
 
 void
-FcTestPrint (FcTest *test)
+FcTestPrint (const FcTest *test)
 {
+    switch (test->kind) {
+    case FcMatchPattern:
+	printf ("pattern ");
+	break;
+    case FcMatchFont:
+	printf ("font ");
+	break;
+    }
     switch (test->qual) {
     case FcQualAny:
 	printf ("any ");
@@ -230,7 +243,7 @@ FcTestPrint (FcTest *test)
 }
 
 void
-FcEditPrint (FcEdit *edit)
+FcEditPrint (const FcEdit *edit)
 {
     printf ("Edit %s ", edit->field);
     FcOpPrint (edit->op);
@@ -239,7 +252,7 @@ FcEditPrint (FcEdit *edit)
 }
 
 void
-FcSubstPrint (FcSubst *subst)
+FcSubstPrint (const FcSubst *subst)
 {
     FcEdit	*e;
     FcTest	*t;
@@ -261,7 +274,7 @@ FcSubstPrint (FcSubst *subst)
 }
 
 void
-FcFontSetPrint (FcFontSet *s)
+FcFontSetPrint (const FcFontSet *s)
 {
     int	    i;
 

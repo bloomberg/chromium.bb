@@ -138,8 +138,11 @@ typedef enum _FcQual {
     FcQualAny, FcQualAll, FcQualFirst, FcQualNotFirst
 } FcQual;
 
+#define FcMatchDefault	((FcMatchKind) -1)
+
 typedef struct _FcTest {
     struct _FcTest	*next;
+    FcMatchKind		kind;
     FcQual		qual;
     const char		*field;
     FcOp		op;
@@ -429,22 +432,22 @@ FcFreeTypeGetPrivateMap (FT_Encoding encoding);
     
 /* fcdbg.c */
 void
-FcValueListPrint (FcValueList *l);
+FcValueListPrint (const FcValueList *l);
 
 void
 FcOpPrint (FcOp op);
 
 void
-FcTestPrint (FcTest *test);
+FcTestPrint (const FcTest *test);
 
 void
-FcExprPrint (FcExpr *expr);
+FcExprPrint (const FcExpr *expr);
 
 void
-FcEditPrint (FcEdit *edit);
+FcEditPrint (const FcEdit *edit);
 
 void
-FcSubstPrint (FcSubst *subst);
+FcSubstPrint (const FcSubst *subst);
 
 int
 FcDebug (void);
@@ -477,7 +480,11 @@ char *
 FcConfigSaveField (const char *field);
 
 FcTest *
-FcTestCreate (FcQual qual, const FcChar8 *field, FcOp compare, FcExpr *expr);
+FcTestCreate (FcMatchKind   kind,
+	      FcQual	    qual,
+	      const FcChar8 *field,
+	      FcOp	    compare,
+	      FcExpr	    *expr);
 
 void
 FcTestDestroy (FcTest *test);
