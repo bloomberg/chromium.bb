@@ -153,6 +153,12 @@ int drm_takedown(drm_device_t * dev)
 	down(&dev->struct_sem);
 	del_timer(&dev->timer);
 
+	if (dev->unique) {
+		drm_free(dev->unique, strlen(dev->unique) + 1, DRM_MEM_DRIVER);
+		dev->unique = NULL;
+		dev->unique_len = 0;
+	}
+
 	/* Clear pid list */
 	for (i = 0; i < DRM_HASH_SIZE; i++) {
 		for (pt = dev->magiclist[i].head; pt; pt = next) {
