@@ -655,10 +655,10 @@ static void radeon_cp_init_ring_buffer( drm_device_t *dev,
 	}
 
 	if ( tmp < dev_priv->usec_timeout ) {
-		dev_priv->writeback_works = TRUE;
+		dev_priv->writeback_works = 1;
 		DRM_DEBUG( "writeback test succeeded, tmp=%d\n", tmp );
 	} else {
-		dev_priv->writeback_works = FALSE;
+		dev_priv->writeback_works = 0;
 		DRM_DEBUG( "writeback test failed\n" );
 	}
 
