@@ -36,7 +36,6 @@
 
 #define RADEON_FIFO_DEBUG	0
 
-
 /* CP microcode (from ATI) */
 static u32 R200_cp_microcode[][2] = {
 	{ 0x21007000, 0000000000 },        
@@ -1285,12 +1284,8 @@ int radeon_do_cleanup_cp( drm_device_t *dev )
 					       dev_priv->bus_pci_gart ))
 			DRM_ERROR( "failed to cleanup PCI GART!\n" );
 	}
-	
-	{
-		int flags = dev_priv->flags;
-		memset(dev_priv, 0, sizeof(*dev_priv));
-		dev_priv->flags = flags;
-	}
+	/* only clear to the start of flags */
+	memset(dev_priv, 0, offsetof(drm_radeon_private_t, flags));
 
 	return 0;
 }
@@ -1735,8 +1730,9 @@ int radeon_cp_buffers( DRM_IOCTL_ARGS )
 /* Always create a map record for MMIO and FB memory, done from DRIVER_POSTINIT */
 int radeon_preinit( struct drm_device *dev, unsigned long flags )
 {
-	u32 save, temp;
+	u32 save, temp, memmode;
 	drm_radeon_private_t *dev_priv;
+	int ret = 0;
 
 	dev_priv = DRM(alloc)( sizeof(drm_radeon_private_t), DRM_MEM_DRIVER );
 	if ( dev_priv == NULL )
@@ -1745,6 +1741,17 @@ int radeon_preinit( struct drm_device *dev, unsigned long flags )
 	memset( dev_priv, 0, sizeof(drm_radeon_private_t) );
 	dev->dev_private = (void *)dev_priv;
 	dev_priv->flags = flags;
+
+	/* registers */
+	/* PCI space is twice the real size, so that you can have a RW and RO mapping */
+	if( (ret = DRM(initmap)( dev, pci_resource_start( dev->pdev, 2 ),
+			pci_resource_len( dev->pdev, 2 ) / 2, _DRM_REGISTERS, 0 )))
+		return ret;
+
+	/* framebuffer */
+	if( (ret = DRM(initmap)( dev, pci_resource_start( dev->pdev, 0 ),
+			pci_resource_len( dev->pdev, 0 ), _DRM_FRAME_BUFFER, _DRM_WRITE_COMBINING )))
+		return ret;
 
 	/* There are signatures in BIOS and PCI-SSID for a PCI card, but they are not very reliable.
 		Following detection method works for all cards tested so far.
@@ -1759,8 +1766,19 @@ int radeon_preinit( struct drm_device *dev, unsigned long flags )
 		dev_priv->flags |= CHIP_IS_AGP;
 	DRM_DEBUG("%s card detected\n", ((dev_priv->flags & CHIP_IS_AGP) ? "AGP" : "PCI"));
 	pci_write_config_dword(dev->pdev, RADEON_AGP_COMMAND_PCI_CONFIG, save);
+	
+	/* Check if we need a reset */
+	if (!(dev_priv->mmio = drm_core_findmap(dev , pci_resource_start( dev->pdev, 2 ))))
+		return DRM_ERR(ENOMEM);
 
-        return 0;
+	memmode = RADEON_READ(RADEON_MEM_SDRAM_MODE_REG);
+	DRM_DEBUG("Memmode is %x, if zero needs reset\n", memmode);
+	dev->need_reset = (memmode == 0);
+	
+#if defined(__linux__)
+	ret = radeon_create_i2c_busses(dev);
+#endif
+        return ret;
 }
 
 int radeon_postinit( struct drm_device *dev, unsigned long flags )
@@ -1772,6 +1790,10 @@ int radeon_postcleanup( struct drm_device *dev )
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	
+	DRM_DEBUG("\n");
+#if defined(__linux__)
+	radeon_delete_i2c_busses(dev);
+#endif
 	DRM(free)( dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER );
 
 	dev->dev_private = NULL;

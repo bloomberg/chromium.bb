@@ -47,6 +47,10 @@ enum radeon_family {
 	CHIP_LAST,
 };
 
+#if defined(__linux__)
+#include "radeon_gpl.h"
+#endif
+
 /*
  * Chip flags
  */
@@ -101,8 +105,6 @@ struct mem_block {
 };
 
 typedef struct drm_radeon_private {
-
-	uint32_t flags;		/* see radeon_chip_flags */
 
 	drm_radeon_ring_buffer_t ring;
 	drm_radeon_sarea_t *sarea_priv;
@@ -180,6 +182,11 @@ typedef struct drm_radeon_private {
    	wait_queue_head_t swi_queue;
    	atomic_t swi_emitted;
 
+	/* starting from here on, data is preserved accross an open */
+	uint32_t flags;		/* see radeon_chip_flags */
+#if defined(__linux__)
+	struct radeon_i2c_chan 	i2c[4];
+#endif
 } drm_radeon_private_t;
 
 typedef struct drm_radeon_buf_priv {
