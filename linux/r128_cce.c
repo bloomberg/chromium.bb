@@ -344,7 +344,7 @@ static void r128_cce_init_ring_buffer( drm_device_t *dev )
 static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 {
 	drm_r128_private_t *dev_priv;
-        int i;
+	struct list_head *list;
 
 	dev_priv = DRM(alloc)( sizeof(drm_r128_private_t), DRM_MEM_DRIVER );
 	if ( dev_priv == NULL )
@@ -451,15 +451,15 @@ static int r128_do_init_cce( drm_device_t *dev, drm_r128_init_t *init )
 	dev_priv->span_pitch_offset_c = (((dev_priv->depth_pitch/8) << 21) |
 					 (dev_priv->span_offset >> 5));
 
-	/* FIXME: We want multiple shared areas, including one shared
-	 * only by the X Server and kernel module.
-	 */
-	for ( i = 0 ; i < dev->map_count ; i++ ) {
-		if ( dev->maplist[i]->type == _DRM_SHM ) {
-			dev_priv->sarea = dev->maplist[i];
-			break;
-		}
-	}
+	list_for_each(list, &dev->maplist->head) {
+		drm_map_list_t *r_list = (drm_map_list_t *)list;
+		if( r_list->map &&
+		    r_list->map->type == _DRM_SHM &&
+		    r_list->map->flags & _DRM_CONTAINS_LOCK ) {
+			dev_priv->sarea = r_list->map;
+ 			break;
+ 		}
+ 	}
 
 	DRM_FIND_MAP( dev_priv->fb, init->fb_offset );
 	DRM_FIND_MAP( dev_priv->mmio, init->mmio_offset );

@@ -98,8 +98,8 @@ typedef struct _drm_i810_init {
 		I810_INIT_DMA = 0x01,
 		I810_CLEANUP_DMA = 0x02
 	} func;
-	int ring_map_idx;
-	int buffer_map_idx;
+	unsigned int mmio_offset;
+	unsigned int buffers_offset;
 	int sarea_priv_offset;
 	unsigned int ring_start;
 	unsigned int ring_end;

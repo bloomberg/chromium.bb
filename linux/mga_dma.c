@@ -436,6 +436,7 @@ int mga_freelist_put( drm_device_t *dev, drm_buf_t *buf )
 static int mga_do_init_dma( drm_device_t *dev, drm_mga_init_t *init )
 {
 	drm_mga_private_t *dev_priv;
+	struct list_head *list;
 	int ret;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
@@ -467,7 +468,15 @@ static int mga_do_init_dma( drm_device_t *dev, drm_mga_init_t *init )
 	dev_priv->depth_offset	= init->depth_offset;
 	dev_priv->depth_pitch	= init->depth_pitch;
 
-	dev_priv->sarea = dev->maplist[0];
+	list_for_each(list, &dev->maplist->head) {
+		drm_map_list_t *r_list = (drm_map_list_t *)list;
+		if( r_list->map &&
+		    r_list->map->type == _DRM_SHM &&
+		    r_list->map->flags & _DRM_CONTAINS_LOCK ) {
+			dev_priv->sarea = r_list->map;
+ 			break;
+ 		}
+ 	}
 
 	DRM_FIND_MAP( dev_priv->fb, init->fb_offset );
 	DRM_FIND_MAP( dev_priv->mmio, init->mmio_offset );

@@ -68,17 +68,23 @@
 #define __HAVE_DMA_IRQ			1
 #define __HAVE_DMA_IRQ_BH		1
 #define DRIVER_PREINSTALL() do {					\
+	drm_gamma_private_t *dev_priv =					\
+				(drm_gamma_private_t *)dev->dev_private;\
 	GAMMA_WRITE( GAMMA_GCOMMANDMODE,	0x00000000 );		\
 	GAMMA_WRITE( GAMMA_GDMACONTROL,		0x00000000 );		\
 } while (0)
 
 #define DRIVER_POSTINSTALL() do {					\
+	drm_gamma_private_t *dev_priv =					\
+				(drm_gamma_private_t *)dev->dev_private;\
 	GAMMA_WRITE( GAMMA_GINTENABLE,		0x00002001 );		\
 	GAMMA_WRITE( GAMMA_COMMANDINTENABLE,	0x00000008 );		\
 	GAMMA_WRITE( GAMMA_GDELAYTIMER,		0x00039090 );		\
 } while (0)
 
 #define DRIVER_UNINSTALL() do {						\
+	drm_gamma_private_t *dev_priv =					\
+				(drm_gamma_private_t *)dev->dev_private;\
 	GAMMA_WRITE( GAMMA_GDELAYTIMER,		0x00000000 );		\
 	GAMMA_WRITE( GAMMA_COMMANDINTENABLE,	0x00000000 );		\
 	GAMMA_WRITE( GAMMA_GINTENABLE,		0x00000000 );		\

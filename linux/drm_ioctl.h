@@ -105,22 +105,40 @@ int DRM(getmap)( struct inode *inode, struct file *filp,
 	drm_file_t   *priv = filp->private_data;
 	drm_device_t *dev  = priv->dev;
 	drm_map_t    map;
+	drm_map_list_t *r_list = NULL;
+	struct list_head *list;
 	int          idx;
+	int	     i;
 
 	if (copy_from_user(&map, (drm_map_t *)arg, sizeof(map)))
 		return -EFAULT;
 	idx = map.offset;
+
 	down(&dev->struct_sem);
 	if (idx < 0 || idx >= dev->map_count) {
 		up(&dev->struct_sem);
 		return -EINVAL;
 	}
-	map.offset = dev->maplist[idx]->offset;
-	map.size   = dev->maplist[idx]->size;
-	map.type   = dev->maplist[idx]->type;
-	map.flags  = dev->maplist[idx]->flags;
-	map.handle = dev->maplist[idx]->handle;
-	map.mtrr   = dev->maplist[idx]->mtrr;
+
+	i = 0;
+	list_for_each(list, &dev->maplist->head) {
+		if(i == idx) {
+			r_list = (drm_map_list_t *)list;
+			break;
+		}
+		i++;
+	}
+	if(!r_list || !r_list->map) {
+		up(&dev->struct_sem);
+		return -EINVAL;
+	}
+
+	map.offset = r_list->map->offset;
+	map.size   = r_list->map->size;
+	map.type   = r_list->map->type;
+	map.flags  = r_list->map->flags;
+	map.handle = r_list->map->handle;
+	map.mtrr   = r_list->map->mtrr;
 	up(&dev->struct_sem);
 
 	if (copy_to_user((drm_map_t *)arg, &map, sizeof(map))) return -EFAULT;

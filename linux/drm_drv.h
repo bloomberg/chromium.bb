@@ -118,60 +118,64 @@ static struct file_operations	DRM(fops) = {
 };
 
 
-static drm_ioctl_desc_t		DRM(ioctls)[] = {
-	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)]     = { DRM(version),     0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_UNIQUE)]  = { DRM(getunique),   0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAGIC)]   = { DRM(getmagic),    0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_IRQ_BUSID)]   = { DRM(irq_busid),   0, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAP)]     = { DRM(getmap),      0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_CLIENT)]  = { DRM(getclient),   0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_STATS)]   = { DRM(getstats),    0, 0 },
+static drm_ioctl_desc_t		  DRM(ioctls)[] = {
+	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)]       = { DRM(version),     0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_UNIQUE)]    = { DRM(getunique),   0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAGIC)]     = { DRM(getmagic),    0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_IRQ_BUSID)]     = { DRM(irq_busid),   0, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAP)]       = { DRM(getmap),      0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_CLIENT)]    = { DRM(getclient),   0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_STATS)]     = { DRM(getstats),    0, 0 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_SET_UNIQUE)]  = { DRM(setunique),   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]       = { DRM(block),       1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]     = { DRM(unblock),     1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)]  = { DRM(authmagic),   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SET_UNIQUE)]    = { DRM(setunique),   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]         = { DRM(block),       1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]       = { DRM(unblock),     1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)]    = { DRM(authmagic),   1, 1 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]     = { DRM(addmap),      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]       = { DRM(addmap),      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RM_MAP)]        = { DRM(rmmap),       1, 0 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]     = { DRM(addctx),      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]      = { DRM(rmctx),       1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]     = { DRM(modctx),      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_GET_CTX)]     = { DRM(getctx),      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)]  = { DRM(switchctx),   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_NEW_CTX)]     = { DRM(newctx),      1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]     = { DRM(resctx),      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SET_SAREA_CTX)] = { DRM(setsareactx), 1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_SAREA_CTX)] = { DRM(getsareactx), 1, 0 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]    = { DRM(adddraw),     1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RM_DRAW)]     = { DRM(rmdraw),      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]       = { DRM(addctx),      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]        = { DRM(rmctx),       1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]       = { DRM(modctx),      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_CTX)]       = { DRM(getctx),      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SWITCH_CTX)]    = { DRM(switchctx),   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_NEW_CTX)]       = { DRM(newctx),      1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]       = { DRM(resctx),      1, 0 },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	      = { DRM(lock),        1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]      = { DRM(unlock),      1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]      = { DRM(finish),      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]      = { DRM(adddraw),     1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_RM_DRAW)]       = { DRM(rmdraw),      1, 1 },
+
+	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	        = { DRM(lock),        1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]        = { DRM(unlock),      1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]        = { DRM(finish),      1, 0 },
 
 #if __HAVE_DMA
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_BUFS)]    = { DRM(addbufs),     1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MARK_BUFS)]   = { DRM(markbufs),    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]   = { DRM(infobufs),    1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]    = { DRM(mapbufs),     1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]   = { DRM(freebufs),    1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_BUFS)]      = { DRM(addbufs),     1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MARK_BUFS)]     = { DRM(markbufs),    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]     = { DRM(infobufs),    1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]      = { DRM(mapbufs),     1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]     = { DRM(freebufs),    1, 0 },
 
 	/* The DRM_IOCTL_DMA ioctl should be defined by the driver.
 	 */
 #if __HAVE_DMA_IRQ
-	[DRM_IOCTL_NR(DRM_IOCTL_CONTROL)]     = { DRM(control),     1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_CONTROL)]       = { DRM(control),     1, 1 },
 #endif
 #endif
 
 #if __REALLY_HAVE_AGP
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)] = { DRM(agp_acquire), 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)] = { DRM(agp_release), 1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]  = { DRM(agp_enable),  1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]    = { DRM(agp_info),    1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]   = { DRM(agp_alloc),   1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]    = { DRM(agp_free),    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]    = { DRM(agp_bind),    1, 1 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]  = { DRM(agp_unbind),  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)]   = { DRM(agp_acquire), 1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)]   = { DRM(agp_release), 1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]    = { DRM(agp_enable),  1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]      = { DRM(agp_info),    1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]     = { DRM(agp_alloc),   1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]      = { DRM(agp_free),    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]      = { DRM(agp_bind),    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]    = { DRM(agp_unbind),  1, 1 },
 #endif
 
 	DRIVER_IOCTLS
@@ -262,8 +266,14 @@ static int DRM(setup)( drm_device_t *dev )
 		dev->magiclist[i].head = NULL;
 		dev->magiclist[i].tail = NULL;
 	}
-	dev->maplist = NULL;
+
+	dev->maplist = DRM(alloc)(sizeof(*dev->maplist),
+				  DRM_MEM_MAPS);
+	if(dev->maplist == NULL) return -ENOMEM;
+	memset(dev->maplist, 0, sizeof(*dev->maplist));
+	INIT_LIST_HEAD(&dev->maplist->head);
 	dev->map_count = 0;
+
 	dev->vmalist = NULL;
 	dev->lock.hw_lock = NULL;
 	init_waitqueue_head( &dev->lock.lock_queue );
@@ -307,6 +317,8 @@ static int DRM(takedown)( drm_device_t *dev )
 {
 	drm_magic_entry_t *pt, *next;
 	drm_map_t *map;
+	drm_map_list_t *r_list;
+	struct list_head *list;
 	drm_vma_entry_t *vma, *vma_next;
 	int i;
 
@@ -373,10 +385,13 @@ static int DRM(takedown)( drm_device_t *dev )
 		dev->vmalist = NULL;
 	}
 
-				/* Clear map area and mtrr information */
-	if ( dev->maplist ) {
-		for ( i = 0 ; i < dev->map_count ; i++ ) {
-			map = dev->maplist[i];
+	if( dev->maplist ) {
+		list_for_each(list, &dev->maplist->head) {
+			r_list = (drm_map_list_t *)list;
+			map = r_list->map;
+			DRM(free)(r_list, sizeof(*r_list), DRM_MEM_MAPS);
+			if(!map) continue;
+
 			switch ( map->type ) {
 			case _DRM_REGISTERS:
 			case _DRM_FRAME_BUFFER:
@@ -392,25 +407,20 @@ static int DRM(takedown)( drm_device_t *dev )
 				DRM(ioremapfree)( map->handle, map->size );
 				break;
 			case _DRM_SHM:
-				DRM(free_pages)( (unsigned long)map->handle,
-						 DRM(order)( map->size )
-						 - PAGE_SHIFT,
-						 DRM_MEM_SAREA );
+				vfree(map->handle);
 				break;
+
 			case _DRM_AGP:
 				/* Do nothing here, because this is all
 				 * handled in the AGP/GART driver.
 				 */
 				break;
 			}
-			DRM(free)( map, sizeof(*map), DRM_MEM_MAPS );
-		}
-		DRM(free)( dev->maplist,
-			  dev->map_count * sizeof(*dev->maplist),
-			  DRM_MEM_MAPS );
+ 			DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
+ 		}
+		DRM(free)(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		dev->maplist = NULL;
-		dev->map_count = 0;
-	}
+ 	}
 
 #if __HAVE_DMA_QUEUE || __HAVE_MULTIPLE_DMA_QUEUES
 	if ( dev->queuelist ) {

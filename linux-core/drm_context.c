@@ -41,9 +41,13 @@
 void DRM(ctxbitmap_free)( drm_device_t *dev, int ctx_handle )
 {
 	if ( ctx_handle < 0 ) goto failed;
+	if ( !dev->ctx_bitmap ) goto failed;
 
 	if ( ctx_handle < DRM_MAX_CTXBITMAP ) {
+		down(&dev->struct_sem);
 		clear_bit( ctx_handle, dev->ctx_bitmap );
+		dev->context_sareas[ctx_handle] = NULL;
+		up(&dev->struct_sem);
 		return;
 	}
 failed:
@@ -56,12 +60,37 @@ int DRM(ctxbitmap_next)( drm_device_t *dev )
 {
 	int bit;
 
+	if(!dev->ctx_bitmap) return -1;
+
+	down(&dev->struct_sem);
 	bit = find_first_zero_bit( dev->ctx_bitmap, DRM_MAX_CTXBITMAP );
 	if ( bit < DRM_MAX_CTXBITMAP ) {
 		set_bit( bit, dev->ctx_bitmap );
 	   	DRM_DEBUG( "drm_ctxbitmap_next bit : %d\n", bit );
+		if((bit+1) > dev->max_context) {
+			dev->max_context = (bit+1);
+			if(dev->context_sareas) {
+				dev->context_sareas = DRM(realloc)(
+					dev->context_sareas,
+					(dev->max_context - 1) * 
+					sizeof(*dev->context_sareas),
+					dev->max_context * 
+					sizeof(*dev->context_sareas),
+					DRM_MEM_MAPS);
+				dev->context_sareas[bit] = NULL;
+			} else {
+				/* max_context == 1 at this point */
+				dev->context_sareas = DRM(alloc)(
+						dev->max_context * 
+						sizeof(*dev->context_sareas),
+						DRM_MEM_MAPS);
+				dev->context_sareas[bit] = NULL;
+			}
+		}
+		up(&dev->struct_sem);
 		return bit;
 	}
+	up(&dev->struct_sem);
 	return -1;
 }
 
@@ -70,12 +99,18 @@ int DRM(ctxbitmap_init)( drm_device_t *dev )
 	int i;
    	int temp;
 
+	down(&dev->struct_sem);
 	dev->ctx_bitmap = (unsigned long *) DRM(alloc)( PAGE_SIZE,
 							DRM_MEM_CTXBITMAP );
 	if ( dev->ctx_bitmap == NULL ) {
+		up(&dev->struct_sem);
 		return -ENOMEM;
 	}
 	memset( (void *)dev->ctx_bitmap, 0, PAGE_SIZE );
+	dev->context_sareas = NULL;
+	dev->max_context = -1;
+	up(&dev->struct_sem);
+
 	for ( i = 0 ; i < DRM_RESERVED_CONTEXTS ; i++ ) {
 		temp = DRM(ctxbitmap_next)( dev );
 	   	DRM_DEBUG( "drm_ctxbitmap_init : %d\n", temp );
@@ -86,9 +121,86 @@ int DRM(ctxbitmap_init)( drm_device_t *dev )
 
 void DRM(ctxbitmap_cleanup)( drm_device_t *dev )
 {
+	down(&dev->struct_sem);
+	if( dev->context_sareas ) DRM(free)( dev->context_sareas,
+					     sizeof(*dev->context_sareas) * 
+					     dev->max_context,
+					     DRM_MEM_MAPS );
 	DRM(free)( (void *)dev->ctx_bitmap, PAGE_SIZE, DRM_MEM_CTXBITMAP );
+	up(&dev->struct_sem);
 }
 
+/* ================================================================
+ * Per Context SAREA Support
+ */
+
+int DRM(getsareactx)(struct inode *inode, struct file *filp,
+		     unsigned int cmd, unsigned long arg)
+{
+	drm_file_t	*priv	= filp->private_data;
+	drm_device_t	*dev	= priv->dev;
+	drm_ctx_priv_map_t request;
+	drm_map_t *map;
+
+	if (copy_from_user(&request,
+			   (drm_ctx_priv_map_t *)arg,
+			   sizeof(request)))
+		return -EFAULT;
+
+	down(&dev->struct_sem);
+	if ((int)request.ctx_id >= dev->max_context) {
+		up(&dev->struct_sem);
+		return -EINVAL;
+	}
+
+	map = dev->context_sareas[request.ctx_id];
+	up(&dev->struct_sem);
+
+	request.handle = map->handle;
+	if (copy_to_user((drm_ctx_priv_map_t *)arg, &request, sizeof(request)))
+		return -EFAULT;
+	return 0;
+}
+
+int DRM(setsareactx)(struct inode *inode, struct file *filp,
+		     unsigned int cmd, unsigned long arg)
+{
+	drm_file_t	*priv	= filp->private_data;
+	drm_device_t	*dev	= priv->dev;
+	drm_ctx_priv_map_t request;
+	drm_map_t *map = NULL;
+	drm_map_list_t *r_list;
+	struct list_head *list;
+
+	if (copy_from_user(&request,
+			   (drm_ctx_priv_map_t *)arg,
+			   sizeof(request)))
+		return -EFAULT;
+
+	down(&dev->struct_sem);
+	list_for_each(list, &dev->maplist->head) {
+		r_list = (drm_map_list_t *)list;
+		if(r_list->map &&
+		   r_list->map->handle == request.handle) break;
+	}
+	if (list == &(dev->maplist->head)) {
+		up(&dev->struct_sem);
+		return -EINVAL;
+	}
+	map = r_list->map;
+	up(&dev->struct_sem);
+
+	if (!map) return -EINVAL;
+
+	down(&dev->struct_sem);
+	if ((int)request.ctx_id >= dev->max_context) {
+		up(&dev->struct_sem);
+		return -EINVAL;
+	}
+	dev->context_sareas[request.ctx_id] = map;
+	up(&dev->struct_sem);
+	return 0;
+}
 
 /* ================================================================
  * The actual DRM context handling routines

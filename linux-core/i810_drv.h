@@ -54,11 +54,12 @@ typedef struct _drm_i810_ring_buffer{
 } drm_i810_ring_buffer_t;
 
 typedef struct drm_i810_private {
-   	int ring_map_idx;
-   	int buffer_map_idx;
+	drm_map_t *sarea_map;
+	drm_map_t *buffer_map;
+	drm_map_t *mmio_map;
 
-   	drm_i810_ring_buffer_t ring;
 	drm_i810_sarea_t *sarea_priv;
+   	drm_i810_ring_buffer_t ring;
 
       	unsigned long hw_status_page;
    	unsigned long counter;
@@ -108,9 +109,8 @@ int i810_clear_bufs(struct inode *inode, struct file *filp,
 		    unsigned int cmd, unsigned long arg);
 
 
-#define I810_REG(reg)		2
 #define I810_BASE(reg)		((unsigned long) \
-				dev->maplist[I810_REG(reg)]->handle)
+				dev_priv->mmio_map->handle)
 #define I810_ADDR(reg)		(I810_BASE(reg) + reg)
 #define I810_DEREF(reg)		*(__volatile__ int *)I810_ADDR(reg)
 #define I810_READ(reg)		I810_DEREF(reg)

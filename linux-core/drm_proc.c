@@ -165,6 +165,9 @@ static int DRM(_vm_info)(char *buf, char **start, off_t offset, int request,
 	drm_device_t *dev = (drm_device_t *)data;
 	int          len  = 0;
 	drm_map_t    *map;
+	drm_map_list_t *r_list;
+	struct list_head *list;
+
 				/* Hardcoded from _DRM_FRAME_BUFFER,
                                    _DRM_REGISTERS, _DRM_SHM, and
                                    _DRM_AGP. */
@@ -182,8 +185,11 @@ static int DRM(_vm_info)(char *buf, char **start, off_t offset, int request,
 
 	DRM_PROC_PRINT("slot	 offset	      size type flags	 "
 		       "address mtrr\n\n");
-	for (i = 0; i < dev->map_count; i++) {
-		map = dev->maplist[i];
+	i = 0;
+	list_for_each(list, &dev->maplist->head) {
+		r_list = (drm_map_list_t *)list;
+		map = r_list->map;
+		if(!map) continue;
 		if (map->type < 0 || map->type > 3) type = "??";
 		else				    type = types[map->type];
 		DRM_PROC_PRINT("%4d 0x%08lx 0x%08lx %4.4s  0x%02x 0x%08lx ",
@@ -198,6 +204,7 @@ static int DRM(_vm_info)(char *buf, char **start, off_t offset, int request,
 		} else {
 			DRM_PROC_PRINT("%4d\n", map->mtrr);
 		}
+		i++;
 	}
 
 	if (len > request + offset) return request;

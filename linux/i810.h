@@ -63,6 +63,8 @@
 #define __HAVE_DMA_IRQ		1
 #define __HAVE_DMA_IRQ_BH	1
 #define DRIVER_PREINSTALL() do {					\
+	drm_i810_private_t *dev_priv =					\
+				(drm_i810_private_t *)dev->dev_private;	\
 	u16 tmp;							\
    	tmp = I810_READ16( I810REG_HWSTAM );				\
    	tmp = tmp & 0x6000;						\
@@ -77,6 +79,8 @@
 } while (0)
 
 #define DRIVER_POSTINSTALL() do {					\
+	drm_i810_private_t *dev_priv =					\
+				(drm_i810_private_t *)dev->dev_private;	\
 	u16 tmp;							\
    	tmp = I810_READ16( I810REG_INT_ENABLE_R );			\
    	tmp = tmp & 0x6000;						\
@@ -85,6 +89,8 @@
 } while (0)
 
 #define DRIVER_UNINSTALL() do {						\
+	drm_i810_private_t *dev_priv =					\
+				(drm_i810_private_t *)dev->dev_private;	\
 	u16 tmp;							\
    	tmp = I810_READ16( I810REG_INT_IDENTITY_R );			\
    	tmp = tmp & ~(0x6000);		/* Clear all interrupts */	\
@@ -101,10 +107,6 @@
 #define DRIVER_BUF_PRIV_T	drm_i810_buf_priv_t
 
 #define DRIVER_AGP_BUFFERS_MAP( dev )					\
-({									\
-	drm_i810_private_t *dev_priv = (dev)->dev_private;		\
-	drm_map_t *map = (dev)->maplist[dev_priv->buffer_map_idx];	\
-	map;								\
-})
+	((drm_i810_private_t *)((dev)->dev_private))->buffer_map
 
 #endif

@@ -138,8 +138,14 @@ typedef enum drm_map_flags {
 	_DRM_LOCKED	     = 0x04, /* shared, cached, locked		    */
 	_DRM_KERNEL	     = 0x08, /* kernel requires access		    */
 	_DRM_WRITE_COMBINING = 0x10, /* use write-combining if available    */
-	_DRM_CONTAINS_LOCK   = 0x20  /* SHM page that contains lock	    */
+	_DRM_CONTAINS_LOCK   = 0x20, /* SHM page that contains lock	    */
+	_DRM_REMOVABLE	     = 0x40  /* Removable mapping		    */
 } drm_map_flags_t;
+
+typedef struct drm_ctx_priv_map {
+	unsigned int	ctx_id;  /* Context requesting private mapping */
+	void		*handle; /* Handle of map */
+} drm_ctx_priv_map_t;
 
 typedef struct drm_map {
 	unsigned long	offset;	 /* Requested physical address (0 for SAREA)*/
@@ -364,6 +370,11 @@ typedef struct drm_agp_info {
 #define DRM_IOCTL_INFO_BUFS		DRM_IOWR(0x18, drm_buf_info_t)
 #define DRM_IOCTL_MAP_BUFS		DRM_IOWR(0x19, drm_buf_map_t)
 #define DRM_IOCTL_FREE_BUFS		DRM_IOW( 0x1a, drm_buf_free_t)
+
+#define DRM_IOCTL_RM_MAP		DRM_IOW( 0x1b, drm_map_t)
+
+#define DRM_IOCTL_SET_SAREA_CTX		DRM_IOW( 0x1c, drm_ctx_priv_map_t)
+#define DRM_IOCTL_GET_SAREA_CTX 	DRM_IOWR(0x1d, drm_ctx_priv_map_t)
 
 #define DRM_IOCTL_ADD_CTX		DRM_IOWR(0x20, drm_ctx_t)
 #define DRM_IOCTL_RM_CTX		DRM_IOWR(0x21, drm_ctx_t)

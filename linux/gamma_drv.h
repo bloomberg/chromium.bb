@@ -35,6 +35,10 @@
 
 typedef struct drm_gamma_private {
 	drm_map_t *buffers;
+	drm_map_t *mmio0;
+	drm_map_t *mmio1;
+	drm_map_t *mmio2;
+	drm_map_t *mmio3;
 } drm_gamma_private_t;
 
 #define LOCK_TEST_WITH_RETURN( dev )					\
@@ -60,16 +64,6 @@ extern int  gamma_find_devices(void);
 extern int  gamma_found(void);
 
 
-/* WARNING!!! MAGIC NUMBER!!!  The number of regions already added to the
-   kernel must be specified here.  Currently, the number is 2.	This must
-   match the order the X server uses for instantiating register regions ,
-   or must be passed in a new ioctl. */
-#define GAMMA_REG(reg)						   \
-	(2							   \
-	 + ((reg < 0x1000)					   \
-	    ? 0							   \
-	    : ((reg < 0x10000) ? 1 : ((reg < 0x11000) ? 2 : 3))))
-
 #define GAMMA_OFF(reg)						   \
 	((reg < 0x1000)						   \
 	 ? reg							   \
@@ -79,7 +73,12 @@ extern int  gamma_found(void);
 	       ? (reg - 0x10000)				   \
 	       : (reg - 0x11000))))
 
-#define GAMMA_BASE(reg)	 ((unsigned long)dev->maplist[GAMMA_REG(reg)]->handle)
+#define GAMMA_BASE(reg)	 ((unsigned long)				     \
+			  ((reg < 0x1000)    ? dev_priv->mmio0->handle :     \
+			   ((reg < 0x10000)  ? dev_priv->mmio1->handle :     \
+			    ((reg < 0x11000) ? dev_priv->mmio2->handle :     \
+					       dev_priv->mmio3->handle))))
+	
 #define GAMMA_ADDR(reg)	 (GAMMA_BASE(reg) + GAMMA_OFF(reg))
 #define GAMMA_DEREF(reg) *(__volatile__ int *)GAMMA_ADDR(reg)
 #define GAMMA_READ(reg)	 GAMMA_DEREF(reg)

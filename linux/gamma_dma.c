@@ -41,6 +41,9 @@
 static inline void gamma_dma_dispatch(drm_device_t *dev, unsigned long address,
 				      unsigned long length)
 {
+	drm_gamma_private_t *dev_priv =
+		(drm_gamma_private_t *)dev->dev_private;
+
 	GAMMA_WRITE(GAMMA_DMAADDRESS, virt_to_phys((void *)address));
 	while (GAMMA_READ(GAMMA_GCOMMANDSTATUS) != 4)
 		;
@@ -49,6 +52,9 @@ static inline void gamma_dma_dispatch(drm_device_t *dev, unsigned long address,
 
 void gamma_dma_quiescent_single(drm_device_t *dev)
 {
+	drm_gamma_private_t *dev_priv =
+		(drm_gamma_private_t *)dev->dev_private;
+
 	while (GAMMA_READ(GAMMA_DMACOUNT))
 		;
 	while (GAMMA_READ(GAMMA_INFIFOSPACE) < 3)
@@ -65,6 +71,9 @@ void gamma_dma_quiescent_single(drm_device_t *dev)
 
 void gamma_dma_quiescent_dual(drm_device_t *dev)
 {
+	drm_gamma_private_t *dev_priv =
+		(drm_gamma_private_t *)dev->dev_private;
+
 	while (GAMMA_READ(GAMMA_DMACOUNT))
 		;
 	while (GAMMA_READ(GAMMA_INFIFOSPACE) < 3)
@@ -90,19 +99,27 @@ void gamma_dma_quiescent_dual(drm_device_t *dev)
 
 void gamma_dma_ready(drm_device_t *dev)
 {
+	drm_gamma_private_t *dev_priv =
+		(drm_gamma_private_t *)dev->dev_private;
+
 	while (GAMMA_READ(GAMMA_DMACOUNT))
 		;
 }
 
 static inline int gamma_dma_is_ready(drm_device_t *dev)
 {
+	drm_gamma_private_t *dev_priv =
+		(drm_gamma_private_t *)dev->dev_private;
+
 	return !GAMMA_READ(GAMMA_DMACOUNT);
 }
 
 void gamma_dma_service(int irq, void *device, struct pt_regs *regs)
 {
-	drm_device_t	 *dev = (drm_device_t *)device;
-	drm_device_dma_t *dma = dev->dma;
+	drm_device_t	    *dev      = (drm_device_t *)device;
+	drm_device_dma_t    *dma      = dev->dma;
+	drm_gamma_private_t *dev_priv =
+		(drm_gamma_private_t *)dev->dev_private;
 
 	atomic_inc(&dev->counts[6]); /* _DRM_STAT_IRQ */
 	GAMMA_WRITE(GAMMA_GDELAYTIMER, 0xc350/2); /* 0x05S */
