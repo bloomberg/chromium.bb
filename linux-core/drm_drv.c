@@ -633,7 +633,7 @@ static int DRM(probe)(struct pci_dev *pdev)
  */
 static int __init drm_init( void )
 {
-	struct pci_dev *pdev;
+	struct pci_dev *pdev = NULL;
 
 	DRM_DEBUG( "\n" );
 
@@ -643,7 +643,7 @@ static int __init drm_init( void )
 
 	DRM(mem_init)();
 
-	pci_for_each_dev(pdev) {
+	while ((pdev = pci_find_device(PCI_ANY_ID, PCI_ANY_ID, pdev)) != NULL) {
 		DRM(probe)(pdev);
 	}
 	return 0;
