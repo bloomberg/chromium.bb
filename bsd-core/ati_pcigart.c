@@ -27,7 +27,6 @@
  *   Gareth Hughes <gareth@valinux.com>
  */
 
-#define __NO_VERSION__
 #include "drmP.h"
 
 #if PAGE_SIZE == 8192
@@ -46,40 +45,20 @@
 static unsigned long DRM(ati_alloc_pcigart_table)( void )
 {
 	unsigned long address;
-	struct page *page;
-	int i;
-	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	address = __get_free_pages( GFP_KERNEL, ATI_PCIGART_TABLE_ORDER );
-	if ( address == 0UL ) {
-		return 0;
-	}
+	DRM_DEBUG( "\n" );
 
-	page = virt_to_page( address );
+	address = (unsigned long) malloc( (1 << ATI_PCIGART_TABLE_ORDER) * PAGE_SIZE, DRM(M_DRM), M_WAITOK );
 
-	for ( i = 0 ; i <= ATI_PCIGART_TABLE_PAGES ; i++, page++ ) {
-		atomic_inc( &page->count );
-		SetPageReserved( page );
-	}
-
-	DRM_DEBUG( "%s: returning 0x%08lx\n", __FUNCTION__, address );
+	DRM_DEBUG( "returning 0x%08lx\n", address );
 	return address;
 }
 
 static void DRM(ati_free_pcigart_table)( unsigned long address )
 {
-	struct page *page;
-	int i;
-	DRM_DEBUG( "%s\n", __FUNCTION__ );
+	DRM_DEBUG( "\n" );
 
-	page = virt_to_page( address );
-
-	for ( i = 0 ; i <= ATI_PCIGART_TABLE_PAGES ; i++, page++ ) {
-		atomic_dec( &page->count );
-		ClearPageReserved( page );
-	}
-
-	free_pages( address, ATI_PCIGART_TABLE_ORDER );
+	free( (void *)address, DRM(M_DRM));
 }
 
 int DRM(ati_pcigart_init)( drm_device_t *dev,
@@ -89,7 +68,7 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 	drm_sg_mem_t *entry = dev->sg;
 	unsigned long address = 0;
 	unsigned long pages;
-	u32 *pci_gart, page_base, bus_address = 0;
+	u32 *pci_gart=0, page_base, bus_address = 0;
 	int i, j, ret = 0;
 
 	if ( !entry ) {
@@ -103,41 +82,36 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 		goto done;
 	}
 
-	if ( !dev->pdev ) {
-		DRM_ERROR( "PCI device unknown!\n" );
-		goto done;
-	}
-
-	bus_address = pci_map_single(dev->pdev, (void *)address,
+	/* FIXME non-vtophys==bustophys-arches */
+	bus_address = vtophys( address );
+	/*pci_map_single(dev->pdev, (void *)address,
 				  ATI_PCIGART_TABLE_PAGES * PAGE_SIZE,
-				  PCI_DMA_TODEVICE);
-	if (bus_address == 0) {
+				  PCI_DMA_TODEVICE);*/
+/*	if (bus_address == 0) {
 		DRM_ERROR( "unable to map PCIGART pages!\n" );
-		DRM(ati_free_pcigart_table)( address );
+		DRM(ati_free_pcigart_table)( (unsigned long)address );
 		address = 0;
 		goto done;
-	}
+	}*/
 
 	pci_gart = (u32 *)address;
 
 	pages = ( entry->pages <= ATI_MAX_PCIGART_PAGES )
 		? entry->pages : ATI_MAX_PCIGART_PAGES;
 
-	memset( pci_gart, 0, ATI_MAX_PCIGART_PAGES * sizeof(u32) );
+	bzero( pci_gart, ATI_MAX_PCIGART_PAGES * sizeof(u32) );
 
 	for ( i = 0 ; i < pages ; i++ ) {
 		/* we need to support large memory configurations */
-		entry->busaddr[i] = pci_map_single(dev->pdev,
-					   page_address( entry->pagelist[i] ),
-					   PAGE_SIZE,
-					   PCI_DMA_TODEVICE);
-		if (entry->busaddr[i] == 0) {
+		/* FIXME non-vtophys==vtobus-arches */
+		entry->busaddr[i] = vtophys( entry->handle + (i*PAGE_SIZE) );
+/*		if (entry->busaddr[i] == 0) {
 			DRM_ERROR( "unable to map PCIGART pages!\n" );
-			DRM(ati_pcigart_cleanup)( dev, address, bus_address );
+			DRM(ati_pcigart_cleanup)( dev, (unsigned long)address, bus_address );
 			address = 0;
 			bus_address = 0;
 			goto done;
-		}
+		}*/
 		page_base = (u32) entry->busaddr[i];
 
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
@@ -148,11 +122,7 @@ int DRM(ati_pcigart_init)( drm_device_t *dev,
 
 	ret = 1;
 
-#if defined(__i386__) || defined(__x86_64__)
-	asm volatile ( "wbinvd" ::: "memory" );
-#else
-	mb();
-#endif
+	DRM_READMEMORYBARRIER();
 
 done:
 	*addr = address;
@@ -165,28 +135,11 @@ int DRM(ati_pcigart_cleanup)( drm_device_t *dev,
 			      dma_addr_t bus_addr)
 {
 	drm_sg_mem_t *entry = dev->sg;
-	unsigned long pages;
-	int i;
 
 	/* we need to support large memory configurations */
 	if ( !entry ) {
 		DRM_ERROR( "no scatter/gather memory!\n" );
 		return 0;
-	}
-
-	if ( bus_addr ) {
-		pci_unmap_single(dev->pdev, bus_addr,
-				 ATI_PCIGART_TABLE_PAGES * PAGE_SIZE,
-				 PCI_DMA_TODEVICE);
-
-		pages = ( entry->pages <= ATI_MAX_PCIGART_PAGES )
-		        ? entry->pages : ATI_MAX_PCIGART_PAGES;
-
-		for ( i = 0 ; i < pages ; i++ ) {
-			if ( !entry->busaddr[i] ) break;
-			pci_unmap_single(dev->pdev, entry->busaddr[i],
-					 PAGE_SIZE, PCI_DMA_TODEVICE);
-		}
 	}
 
 	if ( addr ) {

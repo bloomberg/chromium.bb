@@ -1,4 +1,10 @@
-SYSCTL_NODE(_hw, OID_AUTO, dri, CTLFLAG_RW, 0, "DRI Graphics");
+/*
+ * $FreeBSD: src/sys/dev/drm/drm_sysctl.h,v 1.1 2002/04/27 20:47:57 anholt Exp $
+ */
+
+#ifdef __FreeBSD__
+
+#include <sys/sysctl.h>
 
 static int	   DRM(name_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(vm_info)DRM_SYSCTL_HANDLER_ARGS;
@@ -32,8 +38,7 @@ struct DRM(sysctl_list) {
 #define DRM_SYSCTL_ENTRIES (sizeof(DRM(sysctl_list))/sizeof(DRM(sysctl_list)[0]))
 
 struct drm_sysctl_info {
-	struct sysctl_oid      oids[DRM_SYSCTL_ENTRIES + 1];
-	struct sysctl_oid_list list;
+	struct sysctl_ctx_list ctx;
 	char		       name[2];
 };
 
@@ -41,65 +46,62 @@ int DRM(sysctl_init)(drm_device_t *dev)
 {
 	struct drm_sysctl_info *info;
 	struct sysctl_oid *oid;
-	struct sysctl_oid *top;
+	struct sysctl_oid *top, *drioid;
 	int		  i;
 
-	/* Find the next free slot under hw.graphics */
+	info = DRM(alloc)(sizeof *info, DRM_MEM_DRIVER);
+	if ( !info )
+		return 1;
+	bzero(info, sizeof *info);
+	dev->sysctl = info;
+
+	/* Add the sysctl node for DRI if it doesn't already exist */
+	drioid = SYSCTL_ADD_NODE( &info->ctx, &sysctl__hw_children, OID_AUTO, "dri", CTLFLAG_RW, NULL, "DRI Graphics");
+	if (!drioid)
+		return 1;
+
+	/* Find the next free slot under hw.dri */
 	i = 0;
-	SLIST_FOREACH(oid, &sysctl__hw_dri_children, oid_link) {
+	SLIST_FOREACH(oid, SYSCTL_CHILDREN(drioid), oid_link) {
 		if (i <= oid->oid_arg2)
 			i = oid->oid_arg2 + 1;
 	}
+	if (i>9)
+		return 1;
 	
-	info = DRM(alloc)(sizeof *info, DRM_MEM_DRIVER);
-	dev->sysctl = info;
-
-	/* Construct the node under hw.graphics */
+	/* Add the hw.dri.x for our device */
 	info->name[0] = '0' + i;
 	info->name[1] = 0;
-	oid = &info->oids[DRM_SYSCTL_ENTRIES];
-	bzero(oid, sizeof(*oid));
-	oid->oid_parent = &sysctl__hw_dri_children;
-	oid->oid_number = OID_AUTO;
-	oid->oid_kind = CTLTYPE_NODE | CTLFLAG_RW;
-	oid->oid_arg1 = &info->list;
-	oid->oid_arg2 = i;
-	oid->oid_name = info->name;
-	oid->oid_handler = 0;
-	oid->oid_fmt = "N";
-	SLIST_INIT(&info->list);
-	sysctl_register_oid(oid);
-	top = oid;
-
+	top = SYSCTL_ADD_NODE( &info->ctx, SYSCTL_CHILDREN(drioid), OID_AUTO, info->name, CTLFLAG_RW, NULL, NULL);
+	if (!top)
+		return 1;
+	
 	for (i = 0; i < DRM_SYSCTL_ENTRIES; i++) {
-		oid = &info->oids[i];
-		bzero(oid, sizeof(*oid));
-		oid->oid_parent = top->oid_arg1;
-		oid->oid_number = OID_AUTO;
-		oid->oid_kind = CTLTYPE_INT | CTLFLAG_RD;
-		oid->oid_arg1 = dev;
-		oid->oid_arg2 = 0;
-		oid->oid_name = DRM(sysctl_list)[i].name;
-		oid->oid_handler = DRM(sysctl_list[)i].f;
-		oid->oid_fmt = "A";
-		sysctl_register_oid(oid);
+		oid = sysctl_add_oid( &info->ctx, 
+			SYSCTL_CHILDREN(top), 
+			OID_AUTO, 
+			DRM(sysctl_list)[i].name, 
+			CTLTYPE_INT | CTLFLAG_RD, 
+			dev, 
+			0, 
+			DRM(sysctl_list)[i].f, 
+			"A", 
+			NULL);
+		if (!oid)
+			return 1;
 	}
-
 	return 0;
 }
 
 int DRM(sysctl_cleanup)(drm_device_t *dev)
 {
-	int i;
-
-	DRM_DEBUG("dev->sysctl=%p\n", dev->sysctl);
-	for (i = 0; i < DRM_SYSCTL_ENTRIES + 1; i++)
-		sysctl_unregister_oid(&dev->sysctl->oids[i]);
+	int error;
+	error = sysctl_ctx_free( &dev->sysctl->ctx );
 
 	DRM(free)(dev->sysctl, sizeof *dev->sysctl, DRM_MEM_DRIVER);
 	dev->sysctl = NULL;
 
-	return 0;
+	return error;
 }
 
 static int DRM(name_info)DRM_SYSCTL_HANDLER_ARGS
@@ -166,9 +168,9 @@ static int DRM(vm_info)DRM_SYSCTL_HANDLER_ARGS
 	drm_device_t *dev = arg1;
 	int	     ret;
 
-	DRM_OS_LOCK;
+	DRM_LOCK;
 	ret = DRM(_vm_info)(oidp, arg1, arg2, req);
-	DRM_OS_UNLOCK;
+	DRM_UNLOCK;
 
 	return ret;
 }
@@ -217,9 +219,9 @@ static int DRM(queues_info) DRM_SYSCTL_HANDLER_ARGS
 	drm_device_t *dev = arg1;
 	int	     ret;
 
-	DRM_OS_LOCK;
+	DRM_LOCK;
 	ret = DRM(_queues_info)(oidp, arg1, arg2, req);
-	DRM_OS_UNLOCK;
+	DRM_UNLOCK;
 	return ret;
 }
 
@@ -267,9 +269,9 @@ static int DRM(bufs_info) DRM_SYSCTL_HANDLER_ARGS
 	drm_device_t *dev = arg1;
 	int	     ret;
 
-	DRM_OS_LOCK;
+	DRM_LOCK;
 	ret = DRM(_bufs_info)(oidp, arg1, arg2, req);
-	DRM_OS_UNLOCK;
+	DRM_UNLOCK;
 	return ret;
 }
 
@@ -301,9 +303,9 @@ static int DRM(clients_info)DRM_SYSCTL_HANDLER_ARGS
 	drm_device_t *dev = arg1;
 	int	     ret;
 
-	DRM_OS_LOCK;
+	DRM_LOCK;
 	ret = DRM(_clients_info)(oidp, arg1, arg2, req);
-	DRM_OS_UNLOCK;
+	DRM_UNLOCK;
 	return ret;
 }
 
@@ -386,9 +388,9 @@ static int DRM(vma_info)DRM_SYSCTL_HANDLER_ARGS
 	drm_device_t *dev = arg1;
 	int	     ret;
 
-	DRM_OS_LOCK;
+	DRM_LOCK;
 	ret = DRM(_vma_info)(oidp, arg1, arg2, req);
-	DRM_OS_UNLOCK;
+	DRM_UNLOCK;
 	return ret;
 }
 #endif
@@ -515,9 +517,22 @@ static int DRM(histo_info)DRM_SYSCTL_HANDLER_ARGS
 	drm_device_t *dev = arg1;
 	int	     ret;
 
-	DRM_OS_LOCK;
+	DRM_LOCK;
 	ret = _drm_histo_info(oidp, arg1, arg2, req);
-	DRM_OS_UNLOCK;
+	DRM_UNLOCK;
 	return ret;
+}
+#endif
+
+#elif defined(__NetBSD__)
+/* stub it out for now, sysctl is only for debugging */
+int DRM(sysctl_init)(drm_device_t *dev)
+{
+	return 0;
+}
+
+int DRM(sysctl_cleanup)(drm_device_t *dev)
+{
+	return 0;
 }
 #endif

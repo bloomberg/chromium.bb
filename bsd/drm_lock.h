@@ -29,16 +29,15 @@
  *    Gareth Hughes <gareth@valinux.com>
  */
 
-#define __NO_VERSION__
 #include "drmP.h"
 
-int DRM(block)( DRM_OS_IOCTL )
+int DRM(block)( DRM_IOCTL_ARGS )
 {
 	DRM_DEBUG("\n");
 	return 0;
 }
 
-int DRM(unblock)( DRM_OS_IOCTL )
+int DRM(unblock)( DRM_IOCTL_ARGS )
 {
 	DRM_DEBUG("\n");
 	return 0;
@@ -109,7 +108,7 @@ int DRM(lock_free)(drm_device_t *dev,
 			  pid);
 		return 1;
 	}
-	DRM_OS_WAKEUP_INT(&dev->lock.lock_queue);
+	DRM_WAKEUP_INT((void *)&dev->lock.lock_queue);
 	return 0;
 }
 
@@ -125,7 +124,7 @@ static int DRM(flush_queue)(drm_device_t *dev, int context)
 	if (atomic_read(&q->use_count) > 1) {
 		atomic_inc(&q->block_write);
 		atomic_inc(&q->block_count);
-		error = tsleep(&q->flush_queue, PZERO|PCATCH, "drmfq", 0);
+		error = tsleep((void *)&q->flush_queue, PZERO|PCATCH, "drmfq", 0);
 		if (error)
 			return error;
 		atomic_dec(&q->block_count);
@@ -147,7 +146,7 @@ static int DRM(flush_unblock_queue)(drm_device_t *dev, int context)
 	if (atomic_read(&q->use_count) > 1) {
 		if (atomic_read(&q->block_write)) {
 			atomic_dec(&q->block_write);
-			DRM_OS_WAKEUP_INT(&q->write_queue);
+			DRM_WAKEUP_INT((void *)&q->write_queue);
 		}
 	}
 	atomic_dec(&q->use_count);
@@ -194,15 +193,15 @@ int DRM(flush_unblock)(drm_device_t *dev, int context, drm_lock_flags_t flags)
 	return ret;
 }
 
-int DRM(finish)( DRM_OS_IOCTL )
+int DRM(finish)( DRM_IOCTL_ARGS )
 {
-	DRM_OS_DEVICE;
+	DRM_DEVICE;
 	int		  ret	  = 0;
 	drm_lock_t	  lock;
 
 	DRM_DEBUG("\n");
 
-	DRM_OS_KRNFROMUSR( lock, (drm_lock_t *)data, sizeof(lock) );
+	DRM_COPY_FROM_USER_IOCTL( lock, (drm_lock_t *)data, sizeof(lock) );
 
 	ret = DRM(flush_block_and_flush)(dev, lock.context, lock.flags);
 	DRM(flush_unblock)(dev, lock.context, lock.flags);

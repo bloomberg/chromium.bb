@@ -29,11 +29,11 @@ typedef struct {
 
 #if defined(__KERNEL__) || defined(_KERNEL)
 
-int sis_fb_alloc(DRM_OS_IOCTL);
-int sis_fb_free(DRM_OS_IOCTL);
-int sisp_agp_init(DRM_OS_IOCTL);
-int sisp_agp_alloc(DRM_OS_IOCTL);
-int sisp_agp_free(DRM_OS_IOCTL);
+int sis_fb_alloc(DRM_IOCTL_ARGS);
+int sis_fb_free(DRM_IOCTL_ARGS);
+int sisp_agp_init(DRM_IOCTL_ARGS);
+int sisp_agp_alloc(DRM_IOCTL_ARGS);
+int sisp_agp_free(DRM_IOCTL_ARGS);
 
 #endif
 

@@ -69,7 +69,11 @@ typedef struct drm_file drm_file_t;
 
 /* There's undoubtably more of this file to go into these OS dependent ones. */
 
+#ifdef __FreeBSD__
 #include "drm_os_freebsd.h"
+#elif defined __NetBSD__
+#include "drm_os_netbsd.h"
+#endif
 
 #include "drm.h"
 
@@ -239,8 +243,8 @@ typedef struct drm_waitlist {
 	drm_buf_t	  **rp;		/* Read pointer			   */
 	drm_buf_t	  **wp;		/* Write pointer		   */
 	drm_buf_t	  **end;	/* End pointer			   */
-	DRM_OS_SPINTYPE	  read_lock;
-	DRM_OS_SPINTYPE	  write_lock;
+	DRM_SPINTYPE	  read_lock;
+	DRM_SPINTYPE	  write_lock;
 } drm_waitlist_t;
 
 typedef struct drm_freelist {
@@ -252,7 +256,7 @@ typedef struct drm_freelist {
 	int		  low_mark;    /* Low water mark		   */
 	int		  high_mark;   /* High water mark		   */
 	atomic_t	  wfh;	       /* If waiting for high mark	   */
-	DRM_OS_SPINTYPE   lock;
+	DRM_SPINTYPE   lock;
 } drm_freelist_t;
 
 typedef struct drm_buf_entry {
@@ -374,6 +378,7 @@ typedef struct drm_sg_mem {
 	void            *virtual;
 	int             pages;
 	struct page     **pagelist;
+	dma_addr_t	*busaddr;
 } drm_sg_mem_t;
 
 typedef struct drm_sigdata {
@@ -388,20 +393,24 @@ typedef struct drm_map_list_entry {
 } drm_map_list_entry_t;
 
 struct drm_device {
+#ifdef __NetBSD__
+	struct device	  device;	/* NetBSD's softc is an extension of struct device */
+#endif
 	const char	  *name;	/* Simple driver name		   */
 	char		  *unique;	/* Unique identifier: e.g., busid  */
 	int		  unique_len;	/* Length of unique field	   */
+#ifdef __FreeBSD__
 	device_t	  device;	/* Device instance from newbus     */
+#endif
 	dev_t		  devnode;	/* Device number for mknod	   */
 	char		  *devname;	/* For /proc/interrupts		   */
 
 	int		  blocked;	/* Blocked due to VC switch?	   */
 	int		  flags;	/* Flags to open(2)		   */
 	int		  writable;	/* Opened with FWRITE		   */
-	struct proc_dir_entry *root;	/* Root for this device's entries  */
 
 				/* Locks */
-	DRM_OS_SPINTYPE	  count_lock;	/* For inuse, open_count, buf_use  */
+	DRM_SPINTYPE	  count_lock;	/* For inuse, open_count, buf_use  */
 	struct lock       dev_lock;	/* For others			   */
 				/* Usage Counters */
 	int		  open_count;	/* Outstanding files open	   */
@@ -437,12 +446,17 @@ struct drm_device {
 	drm_device_dma_t  *dma;		/* Optional pointer for DMA support */
 
 				/* Context support */
+#ifdef __FreeBSD__
 	int		  irq;		/* Interrupt used by board	   */
 	struct resource   *irqr;	/* Resource for interrupt used by board	   */
+#elif defined(__NetBSD__)
+	struct pci_attach_args  pa;
+	pci_intr_handle_t	ih;
+#endif
 	void		  *irqh;	/* Handle from bus_setup_intr      */
-	__volatile__ long context_flag;	/* Context swapping flag	   */
-	__volatile__ long interrupt_flag; /* Interruption handler flag	   */
-	__volatile__ long dma_flag;	/* DMA dispatch flag		   */
+	atomic_t	  context_flag;	/* Context swapping flag	   */
+	atomic_t	  interrupt_flag; /* Interruption handler flag	   */
+	atomic_t	  dma_flag;	/* DMA dispatch flag		   */
 	struct callout    timer;	/* Timer for delaying ctx switch   */
 	wait_queue_head_t context_wait; /* Processes waiting on ctx switch */
 	int		  last_checked;	/* Last context checked for DMA	   */
@@ -463,7 +477,11 @@ struct drm_device {
 	char		  *buf_rp;	/* Read pointer			   */
 	char		  *buf_wp;	/* Write pointer		   */
 	char		  *buf_end;	/* End pointer			   */
+#ifdef __FreeBSD__
 	struct sigio      *buf_sigio;	/* Processes waiting for SIGIO     */
+#elif defined(__NetBSD__)
+	pid_t		  buf_pgid;
+#endif
 	struct selinfo    buf_sel;	/* Workspace for select/poll       */
 	int               buf_selecting;/* True if poll sleeper            */
 	wait_queue_head_t buf_readers;	/* Processes waiting to read	   */
@@ -475,16 +493,8 @@ struct drm_device {
 #if __REALLY_HAVE_AGP
 	drm_agp_head_t    *agp;
 #endif
-	struct pci_dev *pdev;
-#ifdef __alpha__
-#if LINUX_VERSION_CODE < 0x020403
-	struct pci_controler *hose;
-#else
-	struct pci_controller *hose;
-#endif
-#endif
 	drm_sg_mem_t      *sg;  /* Scatter gather memory */
-	unsigned long     *ctx_bitmap;
+	atomic_t          *ctx_bitmap;
 	void		  *dev_private;
 	drm_sigdata_t     sigdata; /* For block_all_signals */
 	sigset_t          sigmask;
@@ -500,7 +510,7 @@ extern int           DRM(add_magic)(drm_device_t *dev, drm_file_t *priv,
 extern int           DRM(remove_magic)(drm_device_t *dev, drm_magic_t magic);
 
 				/* Driver support (drm_drv.h) */
-extern int           DRM(version)( DRM_OS_IOCTL );
+extern int           DRM(version)( DRM_IOCTL_ARGS );
 extern int	     DRM(write_string)(drm_device_t *dev, const char *s);
 
 				/* Memory management support (drm_memory.h) */
@@ -511,9 +521,6 @@ extern void	     *DRM(realloc)(void *oldpt, size_t oldsize, size_t size,
 extern char	     *DRM(strdup)(const char *s, int area);
 extern void	     DRM(strfree)(char *s, int area);
 extern void	     DRM(free)(void *pt, size_t size, int area);
-extern unsigned long DRM(alloc_pages)(int order, int area);
-extern void	     DRM(free_pages)(unsigned long address, int order,
-				     int area);
 extern void	     *DRM(ioremap)(unsigned long offset, unsigned long size);
 extern void	     *DRM(ioremap_nocache)(unsigned long offset, unsigned long size);
 extern void	     DRM(ioremapfree)(void *pt, unsigned long size);
@@ -571,9 +578,9 @@ extern int	     DRM(dma_get_buffers)(drm_device_t *dev, drm_dma_t *dma);
 #if __HAVE_DMA_IRQ
 extern int           DRM(irq_install)( drm_device_t *dev, int irq );
 extern int           DRM(irq_uninstall)( drm_device_t *dev );
-extern void          DRM(dma_service)( DRM_OS_IRQ_ARGS );
+extern void          DRM(dma_service)( DRM_IRQ_ARGS );
 #if __HAVE_DMA_IRQ_BH
-extern void          DRM(dma_immediate_bh)( DRM_OS_TASKQUEUE_ARGS );
+extern void          DRM(dma_immediate_bh)( DRM_TASKQUEUE_ARGS );
 #endif
 #endif
 #if DRM_DMA_HISTOGRAM
@@ -608,15 +615,6 @@ extern int            DRM(agp_bind_memory)(agp_memory *handle, off_t start);
 extern int            DRM(agp_unbind_memory)(agp_memory *handle);
 #endif
 
-				/* Proc support (drm_proc.h) */
-extern struct proc_dir_entry *DRM(proc_init)(drm_device_t *dev,
-					     int minor,
-					     struct proc_dir_entry *root,
-					     struct proc_dir_entry **dev_root);
-extern int            DRM(proc_cleanup)(int minor,
-					struct proc_dir_entry *root,
-					struct proc_dir_entry *dev_root);
-
 #if __HAVE_SG
 				/* Scatter Gather Support (drm_scatter.h) */
 extern void           DRM(sg_cleanup)(drm_sg_mem_t *entry);
@@ -633,4 +631,4 @@ extern int            DRM(ati_pcigart_cleanup)(drm_device_t *dev,
 #endif
 
 #endif /* __KERNEL__ */
-#endif
+#endif /* _DRM_P_H_ */

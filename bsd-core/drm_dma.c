@@ -29,10 +29,6 @@
  *    Gareth Hughes <gareth@valinux.com>
  */
 
-#include <machine/bus.h>
-#include <machine/resource.h>
-#include <sys/rman.h>
-
 #include "drmP.h"
 
 #ifndef __HAVE_DMA_WAITQUEUE
@@ -59,7 +55,7 @@ int DRM(dma_setup)( drm_device_t *dev )
 
 	dev->dma = DRM(alloc)( sizeof(*dev->dma), DRM_MEM_DRIVER );
 	if ( !dev->dma )
-		DRM_OS_RETURN(ENOMEM);
+		return DRM_ERR(ENOMEM);
 
 	memset( dev->dma, 0, sizeof(*dev->dma) );
 
@@ -85,8 +81,8 @@ void DRM(dma_takedown)(drm_device_t *dev)
 				  dma->bufs[i].buf_count,
 				  dma->bufs[i].seg_count);
 			for (j = 0; j < dma->bufs[i].seg_count; j++) {
-				DRM(free_pages)(dma->bufs[i].seglist[j],
-						dma->bufs[i].page_order,
+				DRM(free)((void *)dma->bufs[i].seglist[j],
+						dma->bufs[i].buf_size,
 						DRM_MEM_DMA);
 			}
 			DRM(free)(dma->bufs[i].seglist,
@@ -197,7 +193,7 @@ void DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf)
 #endif
 
 	if ( buf->dma_wait ) {
-		wakeup( &buf->dma_wait );
+		wakeup( (void *)&buf->dma_wait );
 		buf->dma_wait = 0;
 	}
 #if __HAVE_DMA_FREELIST
@@ -248,7 +244,7 @@ void DRM(clear_next_buffer)(drm_device_t *dev)
 
 	dma->next_buffer = NULL;
 	if (dma->next_queue && !DRM_BUFCOUNT(&dma->next_queue->waitlist)) {
-		DRM_OS_WAKEUP_INT(&dma->next_queue->flush_queue);
+		DRM_WAKEUP_INT(&dma->next_queue->flush_queue);
 	}
 	dma->next_queue	 = NULL;
 }
@@ -340,7 +336,7 @@ int DRM(dma_enqueue)(drm_device_t *dev, drm_dma_t *d)
 		if (!_DRM_LOCK_IS_HELD(context)) {
 			DRM_ERROR("No lock held during \"while locked\""
 				  " request\n");
-			DRM_OS_RETURN(EINVAL);
+			return DRM_ERR(EINVAL);
 		}
 		if (d->context != _DRM_LOCKING_CONTEXT(context)
 		    && _DRM_LOCKING_CONTEXT(context) != DRM_KERNEL_CONTEXT) {
@@ -348,7 +344,7 @@ int DRM(dma_enqueue)(drm_device_t *dev, drm_dma_t *d)
 				  " \"while locked\" request\n",
 				  _DRM_LOCKING_CONTEXT(context),
 				  d->context);
-			DRM_OS_RETURN(EINVAL);
+			return DRM_ERR(EINVAL);
 		}
 		q = dev->queuelist[DRM_KERNEL_CONTEXT];
 		while_locked = 1;
@@ -378,19 +374,19 @@ int DRM(dma_enqueue)(drm_device_t *dev, drm_dma_t *d)
 			atomic_dec(&q->use_count);
 			DRM_ERROR("Index %d (of %d max)\n",
 				  d->send_indices[i], dma->buf_count - 1);
-			DRM_OS_RETURN(EINVAL);
+			return DRM_ERR(EINVAL);
 		}
 		buf = dma->buflist[ idx ];
-		if (buf->pid != DRM_OS_CURRENTPID) {
+		if (buf->pid != DRM_CURRENTPID) {
 			atomic_dec(&q->use_count);
 			DRM_ERROR("Process %d using buffer owned by %d\n",
-				  DRM_OS_CURRENTPID, buf->pid);
-			DRM_OS_RETURN(EINVAL);
+				  DRM_CURRENTPID, buf->pid);
+			return DRM_ERR(EINVAL);
 		}
 		if (buf->list != DRM_LIST_NONE) {
 			atomic_dec(&q->use_count);
 			DRM_ERROR("Process %d using buffer %d on list %d\n",
-				  DRM_OS_CURRENTPID, buf->idx, buf->list);
+				  DRM_CURRENTPID, buf->idx, buf->list);
 		}
 		buf->used	  = d->send_sizes[i];
 		buf->while_locked = while_locked;
@@ -403,14 +399,14 @@ int DRM(dma_enqueue)(drm_device_t *dev, drm_dma_t *d)
 			DRM_ERROR("Queueing pending buffer:"
 				  " buffer %d, offset %d\n",
 				  d->send_indices[i], i);
-			DRM_OS_RETURN(EINVAL);
+			return DRM_ERR(EINVAL);
 		}
 		if (buf->waiting) {
 			atomic_dec(&q->use_count);
 			DRM_ERROR("Queueing waiting buffer:"
 				  " buffer %d, offset %d\n",
 				  d->send_indices[i], i);
-			DRM_OS_RETURN(EINVAL);
+			return DRM_ERR(EINVAL);
 		}
 		buf->waiting = 1;
 		if (atomic_read(&q->use_count) == 1
@@ -444,16 +440,16 @@ static int DRM(dma_get_buffers_of_order)(drm_device_t *dev, drm_dma_t *d,
 				  buf->waiting,
 				  buf->pending);
 		}
-		buf->pid     = DRM_OS_CURRENTPID;
-		if (DRM_OS_COPYTOUSR(&d->request_indices[i],
+		buf->pid     = DRM_CURRENTPID;
+		if (DRM_COPY_TO_USER(&d->request_indices[i],
 				 &buf->idx,
 				 sizeof(buf->idx)))
-			DRM_OS_RETURN(EFAULT);
+			return DRM_ERR(EFAULT);
 
-		if (DRM_OS_COPYTOUSR(&d->request_sizes[i],
+		if (DRM_COPY_TO_USER(&d->request_sizes[i],
 				 &buf->total,
 				 sizeof(buf->total)))
-			DRM_OS_RETURN(EFAULT);
+			return DRM_ERR(EFAULT);
 
 		++d->granted_count;
 	}
@@ -511,15 +507,15 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	int retcode;
 
 	if ( !irq )
-		DRM_OS_RETURN(EINVAL);
+		return DRM_ERR(EINVAL);
 
-	DRM_OS_LOCK;
+	DRM_LOCK;
 	if ( dev->irq ) {
-		DRM_OS_UNLOCK;
-		DRM_OS_RETURN(EBUSY);
+		DRM_UNLOCK;
+		return DRM_ERR(EBUSY);
 	}
 	dev->irq = irq;
-	DRM_OS_UNLOCK;
+	DRM_UNLOCK;
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, irq );
 
@@ -548,10 +544,10 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	retcode = bus_setup_intr(dev->device, dev->irqr, INTR_TYPE_TTY,
 				 DRM(dma_service), dev, &dev->irqh);
 	if ( retcode ) {
-		DRM_OS_LOCK;
+		DRM_LOCK;
 		bus_release_resource(dev->device, SYS_RES_IRQ, 0, dev->irqr);
 		dev->irq = 0;
-		DRM_OS_UNLOCK;
+		DRM_UNLOCK;
 		return retcode;
 	}
 
@@ -565,13 +561,13 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 {
 	int irq;
 
-	DRM_OS_LOCK;
+	DRM_LOCK;
 	irq = dev->irq;
 	dev->irq = 0;
-	DRM_OS_UNLOCK;
+	DRM_UNLOCK;
 
 	if ( !irq )
-		DRM_OS_RETURN(EINVAL);
+		return DRM_ERR(EINVAL);
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, irq );
 
@@ -583,12 +579,12 @@ int DRM(irq_uninstall)( drm_device_t *dev )
 	return 0;
 }
 
-int DRM(control)( DRM_OS_IOCTL )
+int DRM(control)( DRM_IOCTL_ARGS )
 {
-	DRM_OS_DEVICE;
+	DRM_DEVICE;
 	drm_control_t ctl;
 
-	DRM_OS_KRNFROMUSR( ctl, (drm_control_t *) data, sizeof(ctl) );
+	DRM_COPY_FROM_USER_IOCTL( ctl, (drm_control_t *) data, sizeof(ctl) );
 
 	switch ( ctl.func ) {
 	case DRM_INST_HANDLER:
@@ -596,25 +592,24 @@ int DRM(control)( DRM_OS_IOCTL )
 	case DRM_UNINST_HANDLER:
 		return DRM(irq_uninstall)( dev );
 	default:
-		DRM_OS_RETURN(EINVAL);
+		return DRM_ERR(EINVAL);
 	}
 }
 
 #else
 
-int DRM(control)( DRM_OS_IOCTL )
+int DRM(control)( DRM_IOCTL_ARGS )
 {
-	DRM_OS_DEVICE;
 	drm_control_t ctl;
 
-	DRM_OS_KRNFROMUSR( ctl, (drm_control_t *) data, sizeof(ctl) );
+	DRM_COPY_FROM_USER_IOCTL( ctl, (drm_control_t *) data, sizeof(ctl) );
 
 	switch ( ctl.func ) {
 	case DRM_INST_HANDLER:
 	case DRM_UNINST_HANDLER:
 		return 0;
 	default:
-		DRM_OS_RETURN(EINVAL);
+		return DRM_ERR(EINVAL);
 	}
 }
 

@@ -1381,7 +1381,8 @@ int drmCommandRead(int fd, unsigned long drmCommandIndex,
 {
     unsigned long request;
 
-    request = DRM_IOR( DRM_COMMAND_BASE + drmCommandIndex, size);
+    request = DRM_IOC( DRM_IOC_READ, DRM_IOCTL_BASE, 
+	DRM_COMMAND_BASE + drmCommandIndex, size);
 
     if (ioctl(fd, request, data)) {
 	return -errno;
@@ -1394,7 +1395,8 @@ int drmCommandWrite(int fd, unsigned long drmCommandIndex,
 {
     unsigned long request;
 
-    request = DRM_IOW( DRM_COMMAND_BASE + drmCommandIndex, size);
+    request = DRM_IOC( DRM_IOC_WRITE, DRM_IOCTL_BASE, 
+	DRM_COMMAND_BASE + drmCommandIndex, size);
 
     if (ioctl(fd, request, data)) {
 	return -errno;
@@ -1407,7 +1409,8 @@ int drmCommandWriteRead(int fd, unsigned long drmCommandIndex,
 {
     unsigned long request;
 
-    request = DRM_IOWR( DRM_COMMAND_BASE + drmCommandIndex, size);
+    request = DRM_IOC( DRM_IOC_READ|DRM_IOC_WRITE, DRM_IOCTL_BASE, 
+	DRM_COMMAND_BASE + drmCommandIndex, size);
 
     if (ioctl(fd, request, data)) {
 	return -errno;

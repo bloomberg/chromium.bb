@@ -27,25 +27,15 @@
  *   Gareth Hughes <gareth@valinux.com>
  */
 
-#define __NO_VERSION__
-#include <linux/config.h>
-#include <linux/vmalloc.h>
 #include "drmP.h"
 
 #define DEBUG_SCATTER 0
 
+#if __REALLY_HAVE_SG
+
 void DRM(sg_cleanup)( drm_sg_mem_t *entry )
 {
-	struct page *page;
-	int i;
-
-	for ( i = 0 ; i < entry->pages ; i++ ) {
-		page = entry->pagelist[i];
-		if ( page )
-			ClearPageReserved( page );
-	}
-
-	vfree( entry->virtual );
+	free( entry->virtual, DRM(M_DRM) );
 
 	DRM(free)( entry->busaddr,
 		   entry->pages * sizeof(*entry->busaddr),
@@ -58,35 +48,28 @@ void DRM(sg_cleanup)( drm_sg_mem_t *entry )
 		   DRM_MEM_SGLISTS );
 }
 
-int DRM(sg_alloc)( struct inode *inode, struct file *filp,
-		   unsigned int cmd, unsigned long arg )
+int DRM(sg_alloc)( DRM_IOCTL_ARGS )
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	DRM_DEVICE;
 	drm_scatter_gather_t request;
 	drm_sg_mem_t *entry;
-	unsigned long pages, i, j;
-	pgd_t *pgd;
-	pmd_t *pmd;
-	pte_t *pte;
+	unsigned long pages;
 
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
 	if ( dev->sg )
-		return -EINVAL;
+		return EINVAL;
 
-	if ( copy_from_user( &request,
-			     (drm_scatter_gather_t *)arg,
-			     sizeof(request) ) )
-		return -EFAULT;
+	DRM_COPY_FROM_USER_IOCTL(request, (drm_scatter_gather_t *)data,
+			     sizeof(request) );
 
 	entry = DRM(alloc)( sizeof(*entry), DRM_MEM_SGLISTS );
 	if ( !entry )
-		return -ENOMEM;
+		return ENOMEM;
 
-   	memset( entry, 0, sizeof(*entry) );
+   	bzero( entry, sizeof(*entry) );
 
-	pages = (request.size + PAGE_SIZE - 1) / PAGE_SIZE;
+	pages = round_page(request.size) / PAGE_SIZE;
 	DRM_DEBUG( "sg size=%ld pages=%ld\n", request.size, pages );
 
 	entry->pages = pages;
@@ -94,10 +77,10 @@ int DRM(sg_alloc)( struct inode *inode, struct file *filp,
 				     DRM_MEM_PAGES );
 	if ( !entry->pagelist ) {
 		DRM(free)( entry, sizeof(*entry), DRM_MEM_SGLISTS );
-		return -ENOMEM;
+		return ENOMEM;
 	}
 
-	memset(entry->pagelist, 0, pages * sizeof(*entry->pagelist));
+	bzero(entry->pagelist, pages * sizeof(*entry->pagelist));
 
 	entry->busaddr = DRM(alloc)( pages * sizeof(*entry->busaddr),
 				     DRM_MEM_PAGES );
@@ -108,11 +91,11 @@ int DRM(sg_alloc)( struct inode *inode, struct file *filp,
 		DRM(free)( entry,
 			   sizeof(*entry),
 			   DRM_MEM_SGLISTS );
-		return -ENOMEM;
+		return ENOMEM;
 	}
-	memset( (void *)entry->busaddr, 0, pages * sizeof(*entry->busaddr) );
+	bzero( (void *)entry->busaddr, pages * sizeof(*entry->busaddr) );
 
-	entry->virtual = vmalloc_32( pages << PAGE_SHIFT );
+	entry->virtual = malloc( pages << PAGE_SHIFT, DRM(M_DRM), M_WAITOK );
 	if ( !entry->virtual ) {
 		DRM(free)( entry->busaddr,
 			   entry->pages * sizeof(*entry->busaddr),
@@ -123,45 +106,21 @@ int DRM(sg_alloc)( struct inode *inode, struct file *filp,
 		DRM(free)( entry,
 			   sizeof(*entry),
 			   DRM_MEM_SGLISTS );
-		return -ENOMEM;
+		return ENOMEM;
 	}
 
-	/* This also forces the mapping of COW pages, so our page list
-	 * will be valid.  Please don't remove it...
-	 */
-	memset( entry->virtual, 0, pages << PAGE_SHIFT );
+	bzero( entry->virtual, pages << PAGE_SHIFT );
 
 	entry->handle = (unsigned long)entry->virtual;
 
 	DRM_DEBUG( "sg alloc handle  = %08lx\n", entry->handle );
 	DRM_DEBUG( "sg alloc virtual = %p\n", entry->virtual );
 
-	for ( i = entry->handle, j = 0 ; j < pages ; i += PAGE_SIZE, j++ ) {
-		pgd = pgd_offset_k( i );
-		if ( !pgd_present( *pgd ) )
-			goto failed;
-
-		pmd = pmd_offset( pgd, i );
-		if ( !pmd_present( *pmd ) )
-			goto failed;
-
-		pte = pte_offset( pmd, i );
-		if ( !pte_present( *pte ) )
-			goto failed;
-
-		entry->pagelist[j] = pte_page( *pte );
-
-		SetPageReserved( entry->pagelist[j] );
-	}
-
 	request.handle = entry->handle;
 
-	if ( copy_to_user( (drm_scatter_gather_t *)arg,
-			   &request,
-			   sizeof(request) ) ) {
-		DRM(sg_cleanup)( entry );
-		return -EFAULT;
-	}
+	DRM_COPY_TO_USER_IOCTL( (drm_scatter_gather_t *)data,
+			   request,
+			   sizeof(request) );
 
 	dev->sg = entry;
 
@@ -207,29 +166,24 @@ int DRM(sg_alloc)( struct inode *inode, struct file *filp,
 
 	return 0;
 
- failed:
 	DRM(sg_cleanup)( entry );
-	return -ENOMEM;
+	return ENOMEM;
 }
 
-int DRM(sg_free)( struct inode *inode, struct file *filp,
-		 unsigned int cmd, unsigned long arg )
+int DRM(sg_free)( DRM_IOCTL_ARGS )
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	DRM_DEVICE;
 	drm_scatter_gather_t request;
 	drm_sg_mem_t *entry;
 
-	if ( copy_from_user( &request,
-			     (drm_scatter_gather_t *)arg,
-			     sizeof(request) ) )
-		return -EFAULT;
+	DRM_COPY_FROM_USER_IOCTL( request, (drm_scatter_gather_t *)data,
+			     sizeof(request) );
 
 	entry = dev->sg;
 	dev->sg = NULL;
 
 	if ( !entry || entry->handle != request.handle )
-		return -EINVAL;
+		return EINVAL;
 
 	DRM_DEBUG( "sg free virtual  = %p\n", entry->virtual );
 
@@ -237,3 +191,16 @@ int DRM(sg_free)( struct inode *inode, struct file *filp,
 
 	return 0;
 }
+
+#else /* __REALLY_HAVE_SG */
+
+int DRM(sg_alloc)( DRM_IOCTL_ARGS )
+{
+	return DRM_ERR(EINVAL);
+}
+int DRM(sg_free)( DRM_IOCTL_ARGS )
+{
+	return DRM_ERR(EINVAL);
+}
+
+#endif

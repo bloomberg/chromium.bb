@@ -12,12 +12,26 @@
 #include <sys/uio.h>
 #include <sys/filio.h>
 #include <sys/sysctl.h>
-#include <sys/select.h>
+#include <sys/bus.h>
+#include <sys/signalvar.h>
+#include <sys/poll.h>
 #include <vm/vm.h>
 #include <vm/pmap.h>
+#include <vm/vm_extern.h>
+#include <vm/vm_map.h>
+#include <vm/vm_param.h>
+#include <machine/param.h>
 #include <machine/pmap.h>
+#include <machine/bus.h>
+#include <machine/resource.h>
+#include <sys/mman.h>
+#include <sys/rman.h>
+#include <sys/memrange.h>
+#include <pci/pcivar.h>
 #if __FreeBSD_version >= 500000
 #include <sys/selinfo.h>
+#else
+#include <sys/select.h>
 #endif
 #include <sys/bus.h>
 #if __FreeBSD_version >= 400005
@@ -31,11 +45,27 @@
 #define __REALLY_HAVE_AGP	__HAVE_AGP
 #endif
 
-#define __REALLY_HAVE_MTRR	0
-#define __REALLY_HAVE_SG	0
+#define __REALLY_HAVE_MTRR	(__HAVE_MTRR)
+#define __REALLY_HAVE_SG	(__HAVE_SG)
 
 #if __REALLY_HAVE_AGP
 #include <pci/agpvar.h>
+#include <sys/agpio.h>
+#endif
+
+#include <opt_drm.h>
+#if DRM_DEBUG
+#undef  DRM_DEBUG_CODE
+#define DRM_DEBUG_CODE 2
+#endif
+#undef DRM_DEBUG
+
+#if DRM_LINUX
+#include <sys/file.h>
+#include <sys/proc.h>
+#include <machine/../linux/linux.h>
+#include <machine/../linux/linux_proto.h>
+#include "drm_linux.h"
 #endif
 
 #define DRM_TIME_SLICE	      (hz/20)  /* Time slice for GLXContexts	  */
@@ -43,49 +73,51 @@
 #define DRM_DEV_MODE	(S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP)
 #define DRM_DEV_UID	0
 #define DRM_DEV_GID	0
-
+#define CDEV_MAJOR	145
 
 #if __FreeBSD_version >= 500000
-#define DRM_OS_SPINTYPE		struct mtx
-#define DRM_OS_SPININIT(l,name)	mtx_init(&l, name, MTX_DEF)
-#define DRM_OS_SPINLOCK(l)	mtx_lock(l)
-#define DRM_OS_SPINUNLOCK(u)	mtx_unlock(u);
-#define DRM_OS_LOCK	lockmgr(&dev->dev_lock, LK_EXCLUSIVE, 0, curthread)
-#define DRM_OS_UNLOCK 	lockmgr(&dev->dev_lock, LK_RELEASE, 0, curthread)
-#define DRM_OS_CURPROC		curthread
-#define DRM_OS_STRUCTPROC	struct thread
-#define DRM_OS_CURRENTPID       curthread->td_proc->p_pid
-#define DRM_OS_IOCTL 		dev_t kdev, u_long cmd, caddr_t data, int flags, struct thread *p
-#define DRM_OS_CHECKSUSER	suser(p->td_proc)
+#define DRM_CURPROC		curthread
+#define DRM_STRUCTPROC		struct thread
+#define DRM_SPINTYPE		struct mtx
+#define DRM_SPININIT(l,name)	mtx_init(&l, name, NULL, MTX_DEF)
+#define DRM_SPINLOCK(l)		mtx_lock(l)
+#define DRM_SPINUNLOCK(u)	mtx_unlock(u);
+#define DRM_CURRENTPID		curthread->td_proc->p_pid
 #else
-#define DRM_OS_CURPROC		curproc
-#define DRM_OS_STRUCTPROC	struct proc
-#define DRM_OS_SPINTYPE		struct simplelock
-#define DRM_OS_SPININIT(l,name)	simple_lock_init(&l)
-#define DRM_OS_SPINLOCK(l)	simple_lock(l)
-#define DRM_OS_SPINUNLOCK(u)	simple_unlock(u);
-#define DRM_OS_IOCTL		dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p
-#define DRM_OS_LOCK	lockmgr(&dev->dev_lock, LK_EXCLUSIVE, 0, curproc)
-#define DRM_OS_UNLOCK 	lockmgr(&dev->dev_lock, LK_RELEASE, 0, curproc)
-#define DRM_OS_CURRENTPID       curproc->p_pid
-#define DRM_OS_CHECKSUSER	suser(p)
+#define DRM_CURPROC		curproc
+#define DRM_STRUCTPROC		struct proc
+#define DRM_SPINTYPE		struct simplelock
+#define DRM_SPININIT(l,name)	simple_lock_init(&l)
+#define DRM_SPINLOCK(l)		simple_lock(l)
+#define DRM_SPINUNLOCK(u)	simple_unlock(u);
+#define DRM_CURRENTPID		curproc->p_pid
 #endif
 
-#define DRM_OS_TASKQUEUE_ARGS	void *dev, int pending
-#define DRM_OS_IRQ_ARGS	void *device
-#define DRM_OS_DEVICE	drm_device_t	*dev	= kdev->si_drv1
-#define DRM_OS_MALLOC(size) malloc( size, DRM(M_DRM), M_NOWAIT )
-#define DRM_OS_FREE(pt) free( pt, DRM(M_DRM) )
-#define DRM_OS_VTOPHYS(addr) vtophys(addr)
+#define DRM_IOCTL_ARGS		dev_t kdev, u_long cmd, caddr_t data, int flags, DRM_STRUCTPROC *p
+#define DRM_LOCK		lockmgr(&dev->dev_lock, LK_EXCLUSIVE, 0, DRM_CURPROC)
+#define DRM_UNLOCK 		lockmgr(&dev->dev_lock, LK_RELEASE, 0, DRM_CURPROC)
+#define DRM_SUSER(p)		suser(p)
+#define DRM_TASKQUEUE_ARGS	void *dev, int pending
+#define DRM_IRQ_ARGS		void *device
+#define DRM_DEVICE		drm_device_t	*dev	= kdev->si_drv1
+#define DRM_MALLOC(size)	malloc( size, DRM(M_DRM), M_NOWAIT )
+#define DRM_FREE(pt)		free( pt, DRM(M_DRM) )
+#define DRM_VTOPHYS(addr)	vtophys(addr)
+#define DRM_READ8(addr)		*((volatile char *)(addr))
+#define DRM_READ32(addr)	*((volatile long *)(addr))
+#define DRM_WRITE8(addr, val)	*((volatile char *)(addr)) = (val)
+#define DRM_WRITE32(addr, val)	*((volatile long *)(addr)) = (val)
+#define DRM_AGP_FIND_DEVICE()	agp_find_device()
+#define DRM_ERR(v)		v
 
-#define DRM_OS_PRIV					\
+#define DRM_PRIV					\
 	drm_file_t	*priv	= (drm_file_t *) DRM(find_file_by_proc)(dev, p); \
 	if (!priv) {						\
 		DRM_DEBUG("can't find authenticator\n");	\
 		return EINVAL;					\
 	}
 
-#define DRM_OS_DELAY( udelay )					\
+#define DRM_UDELAY( udelay )					\
 do {								\
 	struct timeval tv1, tv2;				\
 	microtime(&tv1);					\
@@ -95,34 +127,53 @@ do {								\
 	while (((tv2.tv_sec-tv1.tv_sec)*1000000 + tv2.tv_usec - tv1.tv_usec) < udelay ); \
 } while (0)
 
-#define DRM_OS_RETURN(v)	return v;
+#define DRM_GETSAREA()					\
+do {								\
+	drm_map_list_entry_t *listentry;			\
+	TAILQ_FOREACH(listentry, dev->maplist, link) {		\
+		drm_map_t *map = listentry->map;		\
+		if (map->type == _DRM_SHM &&			\
+			map->flags & _DRM_CONTAINS_LOCK) {	\
+			dev_priv->sarea = map;			\
+			break;					\
+		}						\
+	}							\
+} while (0)
 
-
-#define DRM_OS_KRNTOUSR(arg1, arg2, arg3) \
+#define DRM_COPY_TO_USER_IOCTL(arg1, arg2, arg3) \
 	*arg1 = arg2
-#define DRM_OS_KRNFROMUSR(arg1, arg2, arg3) \
+#define DRM_COPY_FROM_USER_IOCTL(arg1, arg2, arg3) \
 	arg1 = *arg2
-#define DRM_OS_COPYTOUSR(arg1, arg2, arg3) \
+#define DRM_COPY_TO_USER(arg1, arg2, arg3) \
 	copyout(arg2, arg1, arg3)
-#define DRM_OS_COPYFROMUSR(arg1, arg2, arg3) \
+#define DRM_COPY_FROM_USER(arg1, arg2, arg3) \
 	copyin(arg2, arg1, arg3)
+/* Macros for userspace access with checking readability once */
+/* FIXME: can't find equivalent functionality for nocheck yet.
+ * It's be slower than linux, but should be correct.
+ */
+#define DRM_VERIFYAREA_READ( uaddr, size )		\
+	(!useracc((caddr_t)uaddr, size, VM_PROT_READ))
+#define DRM_COPY_FROM_USER_UNCHECKED(arg1, arg2, arg3) 	\
+	copyin(arg2, arg1, arg3)
+#define DRM_GET_USER_UNCHECKED(val, uaddr)			\
+	((val) = fuword(uaddr), 0)
 
-#define DRM_OS_READMEMORYBARRIER \
-{												\
-   	int xchangeDummy;									\
-	DRM_DEBUG("%s\n", __FUNCTION__);							\
-   	__asm__ volatile(" push %%eax ; xchg %%eax, %0 ; pop %%eax" : : "m" (xchangeDummy));	\
-   	__asm__ volatile(" push %%eax ; push %%ebx ; push %%ecx ; push %%edx ;"			\
-			 " movl $0,%%eax ; cpuid ; pop %%edx ; pop %%ecx ; pop %%ebx ;"		\
-			 " pop %%eax" : /* no outputs */ :  /* no inputs */ );			\
-} while (0);
+/* From machine/bus_at386.h on i386 */
+#define DRM_READMEMORYBARRIER()					\
+do {									\
+   	__asm __volatile("lock; addl $0,0(%%esp)" : : : "memory");	\
+} while (0)
 
-#define DRM_OS_WRITEMEMORYBARRIER DRM_OS_READMEMORYBARRIER
+#define DRM_WRITEMEMORYBARRIER()					\
+do {									\
+   	__asm __volatile("" : : : "memory");				\
+} while (0)
 
-#define DRM_OS_WAKEUP(w) wakeup(w)
-#define DRM_OS_WAKEUP_INT(w) wakeup(w)
+#define DRM_WAKEUP(w) wakeup(w)
+#define DRM_WAKEUP_INT(w) wakeup(w)
 
-#define PAGE_ALIGN(addr) (((addr)+PAGE_SIZE-1)&PAGE_MASK)
+#define PAGE_ALIGN(addr) round_page(addr)
 
 #define malloctype DRM(M_DRM)
 /* The macros confliced in the MALLOC_DEFINE */
@@ -137,7 +188,10 @@ typedef struct drm_chipinfo
 	char *name;
 } drm_chipinfo_t;
 
-typedef unsigned long atomic_t;
+#define cpu_to_le32(x) (x)
+
+typedef u_int32_t dma_addr_t;
+typedef u_int32_t atomic_t;
 typedef u_int32_t cycles_t;
 typedef u_int32_t spinlock_t;
 typedef u_int32_t u32;
@@ -145,14 +199,14 @@ typedef u_int16_t u16;
 typedef u_int8_t u8;
 #define atomic_set(p, v)	(*(p) = (v))
 #define atomic_read(p)		(*(p))
-#define atomic_inc(p)		atomic_add_long(p, 1)
-#define atomic_dec(p)		atomic_subtract_long(p, 1)
-#define atomic_add(n, p)	atomic_add_long(p, n)
-#define atomic_sub(n, p)	atomic_subtract_long(p, n)
+#define atomic_inc(p)		atomic_add_int(p, 1)
+#define atomic_dec(p)		atomic_subtract_int(p, 1)
+#define atomic_add(n, p)	atomic_add_int(p, n)
+#define atomic_sub(n, p)	atomic_subtract_int(p, n)
 
 /* Fake this */
-static __inline unsigned int
-test_and_set_bit(int b, volatile unsigned long *p)
+static __inline atomic_t
+test_and_set_bit(int b, atomic_t *p)
 {
 	int s = splhigh();
 	unsigned int m = 1<<b;
@@ -163,25 +217,25 @@ test_and_set_bit(int b, volatile unsigned long *p)
 }
 
 static __inline void
-clear_bit(int b, volatile unsigned long *p)
+clear_bit(int b, atomic_t *p)
 {
-    atomic_clear_long(p + (b >> 5), 1 << (b & 0x1f));
+    atomic_clear_int(p + (b >> 5), 1 << (b & 0x1f));
 }
 
 static __inline void
-set_bit(int b, volatile unsigned long *p)
+set_bit(int b, atomic_t *p)
 {
-    atomic_set_long(p + (b >> 5), 1 << (b & 0x1f));
+    atomic_set_int(p + (b >> 5), 1 << (b & 0x1f));
 }
 
 static __inline int
-test_bit(int b, volatile unsigned long *p)
+test_bit(int b, atomic_t *p)
 {
     return p[b >> 5] & (1 << (b & 0x1f));
 }
 
 static __inline int
-find_first_zero_bit(volatile unsigned long *p, int max)
+find_first_zero_bit(atomic_t *p, int max)
 {
     int b;
 
@@ -227,24 +281,23 @@ find_first_zero_bit(volatile unsigned long *p, int max)
 	} while (0)
 
 /* Redefinitions to make templating easy */
-#define wait_queue_head_t	long
+#define wait_queue_head_t	atomic_t
 #define agp_memory		void
 #define jiffies			ticks
 
 				/* Macros to make printf easier */
 #define DRM_ERROR(fmt, arg...) \
-	printf("error: " "[" DRM_NAME ":" __FUNCTION__ "] *ERROR* " fmt , ##arg)
+	printf("error: " "[" DRM_NAME ":%s] *ERROR* " fmt , __func__ , ## arg)
 #define DRM_MEM_ERROR(area, fmt, arg...) \
-	printf("error: " "[" DRM_NAME ":" __FUNCTION__ ":%s] *ERROR* " fmt , \
-	       DRM(mem_stats)[area].name , ##arg)
-#define DRM_INFO(fmt, arg...)  printf("info: " "[" DRM_NAME "] " fmt , ##arg)
+	printf("error: " "[" DRM_NAME ":%s:%s] *ERROR* " fmt , \
+		__func__, DRM(mem_stats)[area].name , ##arg)
+#define DRM_INFO(fmt, arg...)  printf("info: " "[" DRM_NAME "] " fmt , ## arg)
 
 #if DRM_DEBUG_CODE
 #define DRM_DEBUG(fmt, arg...)						  \
 	do {								  \
-		if (DRM(flags) & DRM_FLAG_DEBUG)				  \
-			printf("[" DRM_NAME ":" __FUNCTION__ "] " fmt ,	  \
-			       ##arg);					  \
+		if (DRM(flags) & DRM_FLAG_DEBUG)			  \
+			printf("[" DRM_NAME ":%s] " fmt , __func__ , ## arg); \
 	} while (0)
 #else
 #define DRM_DEBUG(fmt, arg...)		 do { } while (0)
@@ -294,9 +347,9 @@ extern d_write_t	DRM(write);
 extern d_poll_t		DRM(poll);
 extern d_mmap_t		DRM(mmap);
 extern int		DRM(open_helper)(dev_t kdev, int flags, int fmt, 
-					 DRM_OS_STRUCTPROC *p, drm_device_t *dev);
+					 DRM_STRUCTPROC *p, drm_device_t *dev);
 extern drm_file_t	*DRM(find_file_by_proc)(drm_device_t *dev, 
-					 DRM_OS_STRUCTPROC *p);
+					 DRM_STRUCTPROC *p);
 
 /* Misc. IOCTL support (drm_ioctl.h) */
 extern d_ioctl_t	DRM(irq_busid);
@@ -348,7 +401,7 @@ extern d_ioctl_t	DRM(mapbufs);
 extern int		DRM(mem_info) DRM_SYSCTL_HANDLER_ARGS;
 
 /* DMA support (drm_dma.h) */
-#if __HAVE_DMA_IRQ
+#if __HAVE_DMA
 extern d_ioctl_t	DRM(control);
 #endif
 

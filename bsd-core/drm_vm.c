@@ -1,9 +1,11 @@
-#include <vm/vm.h>
-#include <vm/pmap.h>
 
+#ifdef __FreeBSD__
 static int DRM(dma_mmap)(dev_t kdev, vm_offset_t offset, int prot)
+#elif defined(__NetBSD__)
+static paddr_t DRM(dma_mmap)(dev_t kdev, vm_offset_t offset, int prot)
+#endif
 {
-	drm_device_t	 *dev	 = kdev->si_drv1;
+	DRM_DEVICE;
 	drm_device_dma_t *dma	 = dev->dma;
 	unsigned long	 physical;
 	unsigned long	 page;
@@ -14,27 +16,30 @@ static int DRM(dma_mmap)(dev_t kdev, vm_offset_t offset, int prot)
 	page	 = offset >> PAGE_SHIFT;
 	physical = dma->pagelist[page];
 
-	DRM_DEBUG("0x%08x (page %lu) => 0x%08lx\n", offset, page, physical);
+	DRM_DEBUG("0x%08lx (page %lu) => 0x%08lx\n", (long)offset, page, physical);
 	return atop(physical);
 }
 
+#ifdef __FreeBSD__
 int DRM(mmap)(dev_t kdev, vm_offset_t offset, int prot)
+#elif defined(__NetBSD__)
+paddr_t DRM(mmap)(dev_t kdev, off_t offset, int prot)
+#endif
 {
-	drm_device_t	*dev	= kdev->si_drv1;
+	DRM_DEVICE;
 	drm_map_t	*map	= NULL;
 	drm_map_list_entry_t *listentry=NULL;
-	/*drm_file_t *priv;*/
+	drm_file_t *priv;
 
 /*	DRM_DEBUG("offset = 0x%x\n", offset);*/
 
-	/*XXX Fixme */
-	/*priv = DRM(find_file_by_proc)(dev, p);
+	priv = DRM(find_file_by_proc)(dev, DRM_CURPROC);
 	if (!priv) {
 		DRM_DEBUG("can't find authenticator\n");
 		return EINVAL;
 	}
 
-	if (!priv->authenticated) DRM_OS_RETURN(EACCES);*/
+	if (!priv->authenticated) return DRM_ERR(EACCES);
 
 	if (dev->dma
 	    && offset >= 0
@@ -59,7 +64,7 @@ int DRM(mmap)(dev_t kdev, vm_offset_t offset, int prot)
 		DRM_DEBUG("can't find map\n");
 		return -1;
 	}
-	if (((map->flags&_DRM_RESTRICTED) && suser(curproc))) {
+	if (((map->flags&_DRM_RESTRICTED) && DRM_SUSER(DRM_CURPROC))) {
 		DRM_DEBUG("restricted map\n");
 		return -1;
 	}
@@ -69,6 +74,7 @@ int DRM(mmap)(dev_t kdev, vm_offset_t offset, int prot)
 	case _DRM_REGISTERS:
 	case _DRM_AGP:
 		return atop(offset);
+	case _DRM_SCATTER_GATHER:
 	case _DRM_SHM:
 		return atop(vtophys(offset));
 	default:

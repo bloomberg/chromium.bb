@@ -1,9 +1,10 @@
 # $FreeBSD$
 
+.PATH:	${.CURDIR}/..
 KMOD	= radeon
 NOMAN=	YES
 SRCS    = radeon_cp.c radeon_drv.c radeon_state.c
-SRCS   += device_if.h bus_if.h pci_if.h opt_drm_linux.h
+SRCS   += device_if.h bus_if.h pci_if.h opt_drm.h
 CFLAGS += ${DEBUG_FLAGS} -I. -I..
 
 @:
@@ -12,14 +13,17 @@ CFLAGS += ${DEBUG_FLAGS} -I. -I..
 machine:
 	ln -sf /sys/i386/include machine
 
-.if ${MACHINE_ARCH} == "i386"
-# This line enables linux ioctl handling
-# If you want support for this uncomment this line
-#RADEON_OPTS=     "\#define DRM_LINUX" 1
+.if defined(DRM_DEBUG)
+DRM_DEBUG_OPT= "\#define DRM_DEBUG 1"
 .endif
 
-opt_drm_linux.h:
-	touch opt_drm_linux.h
-	echo $(RADEON_OPTS) >> opt_drm_linux.h
+.if !defined(DRM_NOLINUX)
+DRM_LINUX_OPT= "\#define DRM_LINUX 1"
+.endif
+
+opt_drm.h:
+	touch opt_drm.h
+	echo $(DRM_DEBUG_OPT) >> opt_drm.h
+	echo $(DRM_LINUX_OPT) >> opt_drm.h
 
 .include <bsd.kmod.mk>

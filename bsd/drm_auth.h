@@ -29,7 +29,6 @@
  *    Gareth Hughes <gareth@valinux.com>
  */
 
-#define __NO_VERSION__
 #include "drmP.h"
 
 static int DRM(hash_magic)(drm_magic_t magic)
@@ -43,14 +42,14 @@ static drm_file_t *DRM(find_file)(drm_device_t *dev, drm_magic_t magic)
 	drm_magic_entry_t *pt;
 	int		  hash	  = DRM(hash_magic)(magic);
 
-	DRM_OS_LOCK;
+	DRM_LOCK;
 	for (pt = dev->magiclist[hash].head; pt; pt = pt->next) {
 		if (pt->magic == magic) {
 			retval = pt->priv;
 			break;
 		}
 	}
-	DRM_OS_UNLOCK;
+	DRM_UNLOCK;
 	return retval;
 }
 
@@ -63,13 +62,13 @@ int DRM(add_magic)(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 
 	hash	     = DRM(hash_magic)(magic);
 	entry	     = (drm_magic_entry_t*) DRM(alloc)(sizeof(*entry), DRM_MEM_MAGIC);
-	if (!entry) DRM_OS_RETURN(ENOMEM);
+	if (!entry) return DRM_ERR(ENOMEM);
 	memset(entry, 0, sizeof(*entry));
 	entry->magic = magic;
 	entry->priv  = priv;
 	entry->next  = NULL;
 
-	DRM_OS_LOCK;
+	DRM_LOCK;
 	if (dev->magiclist[hash].tail) {
 		dev->magiclist[hash].tail->next = entry;
 		dev->magiclist[hash].tail	= entry;
@@ -77,7 +76,7 @@ int DRM(add_magic)(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 		dev->magiclist[hash].head	= entry;
 		dev->magiclist[hash].tail	= entry;
 	}
-	DRM_OS_UNLOCK;
+	DRM_UNLOCK;
 
 	return 0;
 }
@@ -91,7 +90,7 @@ int DRM(remove_magic)(drm_device_t *dev, drm_magic_t magic)
 	DRM_DEBUG("%d\n", magic);
 	hash = DRM(hash_magic)(magic);
 
-	DRM_OS_LOCK;
+	DRM_LOCK;
 	for (pt = dev->magiclist[hash].head; pt; prev = pt, pt = pt->next) {
 		if (pt->magic == magic) {
 			if (dev->magiclist[hash].head == pt) {
@@ -103,28 +102,27 @@ int DRM(remove_magic)(drm_device_t *dev, drm_magic_t magic)
 			if (prev) {
 				prev->next = pt->next;
 			}
-			DRM_OS_UNLOCK;
-			DRM(free)(pt, sizeof(*pt), DRM_MEM_MAGIC);
+			DRM_UNLOCK;
 			return 0;
 		}
 	}
-	DRM_OS_UNLOCK;
+	DRM_UNLOCK;
 
 	DRM(free)(pt, sizeof(*pt), DRM_MEM_MAGIC);
-	DRM_OS_RETURN(EINVAL);
+	return DRM_ERR(EINVAL);
 }
 
-int DRM(getmagic)(DRM_OS_IOCTL)
+int DRM(getmagic)(DRM_IOCTL_ARGS)
 {
 	static drm_magic_t sequence = 0;
 	drm_auth_t	   auth;
-	static DRM_OS_SPINTYPE lock;
+	static DRM_SPINTYPE lock;
 	static int	   first = 1;
-	DRM_OS_DEVICE;
-	DRM_OS_PRIV;
+	DRM_DEVICE;
+	DRM_PRIV;
 
 	if (first) {
-		DRM_OS_SPININIT(lock, "drm getmagic");
+		DRM_SPININIT(lock, "drm getmagic");
 		first = 0;
 	}
 
@@ -133,10 +131,10 @@ int DRM(getmagic)(DRM_OS_IOCTL)
 		auth.magic = priv->magic;
 	} else {
 		do {
-			DRM_OS_SPINLOCK(&lock);
+			DRM_SPINLOCK(&lock);
 			if (!sequence) ++sequence; /* reserve 0 */
 			auth.magic = sequence++;
-			DRM_OS_SPINUNLOCK(&lock);
+			DRM_SPINUNLOCK(&lock);
 		} while (DRM(find_file)(dev, auth.magic));
 		priv->magic = auth.magic;
 		DRM(add_magic)(dev, priv, auth.magic);
@@ -144,18 +142,18 @@ int DRM(getmagic)(DRM_OS_IOCTL)
 
 	DRM_DEBUG("%u\n", auth.magic);
 
-	DRM_OS_KRNTOUSR((drm_auth_t *)data, auth, sizeof(auth));
+	DRM_COPY_TO_USER_IOCTL((drm_auth_t *)data, auth, sizeof(auth));
 
 	return 0;
 }
 
-int DRM(authmagic)(DRM_OS_IOCTL)
+int DRM(authmagic)(DRM_IOCTL_ARGS)
 {
 	drm_auth_t	   auth;
 	drm_file_t	   *file;
-	DRM_OS_DEVICE;
+	DRM_DEVICE;
 
-	DRM_OS_KRNFROMUSR(auth, (drm_auth_t *)data, sizeof(auth));
+	DRM_COPY_FROM_USER_IOCTL(auth, (drm_auth_t *)data, sizeof(auth));
 
 	DRM_DEBUG("%u\n", auth.magic);
 	if ((file = DRM(find_file)(dev, auth.magic))) {
@@ -163,5 +161,5 @@ int DRM(authmagic)(DRM_OS_IOCTL)
 		DRM(remove_magic)(dev, auth.magic);
 		return 0;
 	}
-	DRM_OS_RETURN(EINVAL);
+	return DRM_ERR(EINVAL);
 }
