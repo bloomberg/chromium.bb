@@ -485,7 +485,8 @@ static void radeon_print_dirty( const char *msg, unsigned int flags )
 }
 
 static void radeon_cp_dispatch_clear( drm_device_t *dev,
-				      drm_radeon_clear_t *clear )
+				      drm_radeon_clear_t *clear,
+				      drm_radeon_clear_rect_t *depth_boxes )
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	drm_radeon_sarea_t *sarea_priv = dev_priv->sarea_priv;
@@ -608,17 +609,17 @@ static void radeon_cp_dispatch_clear( drm_device_t *dev,
 				   RADEON_VTX_FMT_RADEON_MODE |
 				   (3 << RADEON_NUM_VERTICES_SHIFT)) );
 
-			OUT_RING( clear->rect.ui[CLEAR_X1] );
-			OUT_RING( clear->rect.ui[CLEAR_Y1] );
-			OUT_RING( clear->rect.ui[CLEAR_DEPTH] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_X1] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_Y1] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_DEPTH] );
 
-			OUT_RING( clear->rect.ui[CLEAR_X1] );
-			OUT_RING( clear->rect.ui[CLEAR_Y2] );
-			OUT_RING( clear->rect.ui[CLEAR_DEPTH] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_X1] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_Y2] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_DEPTH] );
 
-			OUT_RING( clear->rect.ui[CLEAR_X2] );
-			OUT_RING( clear->rect.ui[CLEAR_Y2] );
-			OUT_RING( clear->rect.ui[CLEAR_DEPTH] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_X2] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_Y2] );
+			OUT_RING( depth_boxes[i].ui[CLEAR_DEPTH] );
 
 			ADVANCE_RING();
 
@@ -1117,6 +1118,7 @@ int radeon_cp_clear( struct inode *inode, struct file *filp,
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	drm_radeon_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_radeon_clear_t clear;
+	drm_radeon_clear_rect_t depth_boxes[RADEON_NR_SAREA_CLIPRECTS];
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
 	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
@@ -1125,16 +1127,21 @@ int radeon_cp_clear( struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 
-	if ( copy_from_user( &clear, (drm_radeon_clear_t *) arg,
+	if ( copy_from_user( &clear, (drm_radeon_clear_t *)arg,
 			     sizeof(clear) ) )
 		return -EFAULT;
+
 
 	RING_SPACE_TEST_WITH_RETURN( dev_priv );
 
 	if ( sarea_priv->nbox > RADEON_NR_SAREA_CLIPRECTS )
 		sarea_priv->nbox = RADEON_NR_SAREA_CLIPRECTS;
 
-	radeon_cp_dispatch_clear( dev, &clear );
+	if ( copy_from_user( &depth_boxes, clear.depth_boxes,
+			     sarea_priv->nbox * sizeof(depth_boxes[0]) ) )
+		return -EFAULT;
+
+	radeon_cp_dispatch_clear( dev, &clear, depth_boxes );
 
 	return 0;
 }

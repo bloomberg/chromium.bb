@@ -276,16 +276,18 @@ typedef struct drm_radeon_fullscreen {
 #define CLEAR_Y2	3
 #define CLEAR_DEPTH	4
 
+typedef union drm_radeon_clear_rect {
+	float f[5];
+	unsigned int ui[5];
+} drm_radeon_clear_rect_t;
+
 typedef struct drm_radeon_clear {
 	unsigned int flags;
 	unsigned int clear_color;
 	unsigned int clear_depth;
 	unsigned int color_mask;
 	unsigned int depth_mask;
-	union {
-		float f[5];
-		unsigned int ui[5];
-	} rect;
+	drm_radeon_clear_rect_t *depth_boxes;
 } drm_radeon_clear_t;
 
 typedef struct drm_radeon_vertex {
