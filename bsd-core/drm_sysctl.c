@@ -82,7 +82,7 @@ int drm_sysctl_init(drm_device_t *dev)
 		return 1;
 	
 	for (i = 0; i < DRM_SYSCTL_ENTRIES; i++) {
-		oid = sysctl_add_oid( &info->ctx, 
+		oid = SYSCTL_ADD_OID(&info->ctx, 
 			SYSCTL_CHILDREN(top), 
 			OID_AUTO, 
 			drm_sysctl_list[i].name, 
