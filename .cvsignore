@@ -9,11 +9,15 @@ config.log
 config.status
 config.sub
 configure
+depcomp
 fontconfig.pc
 fontconfig.spec
 fontconfig-zip
 fonts.conf
+install-sh
 libtool
+missing
+mkinstalldirs
 stamp-h
 stamp-h.in
 stamp-h1
