@@ -27,9 +27,10 @@
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
- *
- * $FreeBSD: src/sys/dev/drm/r128_drv.c,v 1.4 2003/03/09 02:08:28 anholt Exp $
  */
+
+
+#include <sys/types.h>
 
 #include "r128.h"
 #include "drmP.h"
@@ -82,8 +83,4 @@ drm_chipinfo_t DRM(devicelist)[] = {
 #include "drm_scatter.h"
 #endif
 
-#ifdef __FreeBSD__
 DRIVER_MODULE(r128, pci, r128_driver, r128_devclass, 0, 0);
-#elif defined(__NetBSD__)
-CFDRIVER_DECL(r128, DV_TTY, NULL);
-#endif /* __FreeBSD__ */

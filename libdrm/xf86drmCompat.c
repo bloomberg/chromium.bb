@@ -26,7 +26,7 @@
  *   Jens Owen <jens@tungstengraphics.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.4 2001/08/27 17:40:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmCompat.c,v 1.1 2002/10/30 12:52:33 alanh Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"

@@ -118,7 +118,7 @@ static void free_block( struct mem_block *p )
 		p->size += q->size;
 		p->next = q->next;
 		p->next->prev = p;
-		DRM_FREE(q, sizeof(*q));
+		DRM_FREE(q);
 	}
 
 	if (p->prev->pid == 0) {
@@ -126,8 +126,18 @@ static void free_block( struct mem_block *p )
 		q->size += p->size;
 		q->next = p->next;
 		q->next->prev = q;
-		DRM_FREE(p, sizeof(*q));
+		DRM_FREE(p);
 	}
+}
+
+static void print_heap( struct mem_block *heap )
+{
+	struct mem_block *p;
+
+	for (p = heap->next ; p != heap ; p = p->next) 
+		DRM_DEBUG("0x%x..0x%x (0x%x) -- owner %d\n",
+			  p->start, p->start + p->size,
+			  p->size, p->pid);
 }
 
 /* Initialize.  How to check for an uninitialized heap?
@@ -141,7 +151,7 @@ static int init_heap(struct mem_block **heap, int start, int size)
 	
 	*heap = DRM_MALLOC(sizeof(**heap));
 	if (!*heap) {
-		DRM_FREE( blocks, sizeof(*blocks) );
+		DRM_FREE( blocks );
 		return -ENOMEM;
 	}
 
@@ -181,7 +191,7 @@ void radeon_mem_release( struct mem_block *heap )
 			p->size += q->size;
 			p->next = q->next;
 			p->next->prev = p;
-			DRM_FREE(q, sizeof(*q));
+			DRM_FREE(q);
 		}
 	}
 }
@@ -198,10 +208,10 @@ void radeon_mem_takedown( struct mem_block **heap )
 	for (p = (*heap)->next ; p != *heap ; ) {
 		struct mem_block *q = p;
 		p = p->next;
-		DRM_FREE(q, sizeof(*q));
+		DRM_FREE(q);
 	}
 
-	DRM_FREE( *heap, sizeof(**heap) );
+	DRM_FREE( *heap );
 	*heap = 0;
 }
 

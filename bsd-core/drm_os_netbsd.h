@@ -17,7 +17,6 @@
 #include <uvm/uvm.h>
 #include <sys/vnode.h>
 #include <sys/poll.h>
-#include <sys/lkm.h>
 /* For TIOCSPGRP/TIOCGPGRP */
 #include <sys/ttycom.h>
 
@@ -32,9 +31,11 @@
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
  
+#include "drmvar.h"
+
 #define __REALLY_HAVE_AGP	__HAVE_AGP
 
-#define __REALLY_HAVE_MTRR	1
+#define __REALLY_HAVE_MTRR	0
 #define __REALLY_HAVE_SG	0
 
 #if __REALLY_HAVE_AGP
@@ -42,7 +43,8 @@
 #include <sys/agpio.h>
 #endif
 
-#include <opt_drm.h>
+#define device_t struct device *
+extern struct cfdriver DRM(_cd);
 
 #if DRM_DEBUG
 #undef  DRM_DEBUG_CODE
@@ -50,20 +52,12 @@
 #endif
 #undef DRM_DEBUG
 
-#if DRM_LINUX
-#undef DRM_LINUX	/* FIXME: Linux compat has not been ported yet */
-#endif
-
-typedef drm_device_t *device_t;
-
-extern struct cfdriver DRM(cd);
-
 #define DRM_TIME_SLICE	      (hz/20)  /* Time slice for GLXContexts	  */
 
 #define DRM_DEV_MODE	(S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP)
 #define DRM_DEV_UID	0
 #define DRM_DEV_GID	0
-#define CDEV_MAJOR	34
+#define CDEV_MAJOR	90
 
 #define DRM_CURPROC		curproc
 #define DRM_STRUCTPROC		struct proc
@@ -79,25 +73,16 @@ extern struct cfdriver DRM(cd);
 #define DRM_UNLOCK 		lockmgr(&dev->dev_lock, LK_RELEASE, NULL)
 #define DRM_SUSER(p)		suser(p->p_ucred, &p->p_acflag)
 #define DRM_TASKQUEUE_ARGS	void *dev, int pending
-#define DRM_IRQ_ARGS		void *arg
-#define DRM_DEVICE		drm_device_t *dev = device_lookup(&DRM(cd), minor(kdev))
-/* XXX Not sure if this is the 'right' version.. */
-#if __NetBSD_Version__ >= 106140000
-MALLOC_DECLARE(DRM(M_DRM));
-#else
-/* XXX Make sure this works */
-extern const int DRM(M_DRM) = M_DEVBUF;
-#endif /* __NetBSD_Version__ */
+#define DRM_IRQ_ARGS		void *device
+#define DRM_DEVICE		drm_device_t *dev = device_lookup(&DRM(_cd), minor(kdev))
 #define DRM_MALLOC(size)	malloc( size, DRM(M_DRM), M_NOWAIT )
-#define DRM_FREE(pt,size)		free( pt, DRM(M_DRM) )
+#define DRM_FREE(pt)		free( pt, DRM(M_DRM) )
 #define DRM_VTOPHYS(addr)	vtophys(addr)
-
-#define DRM_READ8(map, offset)		bus_space_read_1(  (map)->iot, (map)->ioh, (offset) )
-#define DRM_READ32(map, offset)		bus_space_read_4(  (map)->iot, (map)->ioh, (offset) )
-#define DRM_WRITE8(map, offset, val)	bus_space_write_1( (map)->iot, (map)->ioh, (offset), (val) )
-#define DRM_WRITE32(map, offset, val)	bus_space_write_4( (map)->iot, (map)->ioh, (offset), (val) )
-
-#define DRM_AGP_FIND_DEVICE()	agp_find_device(0)
+#define DRM_READ8(addr)	*((volatile char *)(addr))
+#define DRM_READ32(addr)	*((volatile long *)(addr))
+#define DRM_WRITE8(addr, val)	*((volatile char *)(addr)) = (val)
+#define DRM_WRITE32(addr, val)	*((volatile long *)(addr)) = (val)
+#define DRM_AGP_FIND_DEVICE()
 
 #define DRM_PRIV					\
 	drm_file_t	*priv	= (drm_file_t *) DRM(find_file_by_proc)(dev, p); \
@@ -120,7 +105,7 @@ do {								\
 do {								\
 	drm_map_list_entry_t *listentry;			\
 	TAILQ_FOREACH(listentry, dev->maplist, link) {		\
-		drm_local_map_t *map = listentry->map;		\
+		drm_map_t *map = listentry->map;		\
 		if (map->type == _DRM_SHM &&			\
 			map->flags & _DRM_CONTAINS_LOCK) {	\
 			dev_priv->sarea = map;			\
@@ -129,15 +114,7 @@ do {								\
 	}							\
 } while (0)
 
-#define DRM_HZ hz
-
-#define DRM_WAIT_ON( ret, queue, timeout, condition )		\
-while (!condition) {						\
-	ret = tsleep( (void *)&(queue), PZERO | PCATCH, "drmwtq", (timeout) ); \
-	if ( ret )						\
-		return ret;					\
-}
-
+#define return DRM_ERR(v)	return v;
 #define DRM_ERR(v)		v
 
 #define DRM_COPY_TO_USER_IOCTL(arg1, arg2, arg3) \
@@ -148,25 +125,21 @@ while (!condition) {						\
 	copyout(arg2, arg1, arg3)
 #define DRM_COPY_FROM_USER(arg1, arg2, arg3) \
 	copyin(arg2, arg1, arg3)
-/* Macros for userspace access with checking readability once */
-/* FIXME: can't find equivalent functionality for nocheck yet.
- * It'll be slower than linux, but should be correct.
- */
-#define DRM_VERIFYAREA_READ( uaddr, size )		\
-	(!uvm_useracc((caddr_t)uaddr, size, VM_PROT_READ))
-#define DRM_COPY_FROM_USER_UNCHECKED(arg1, arg2, arg3) 	\
-	copyin(arg2, arg1, arg3)
-#define DRM_GET_USER_UNCHECKED(val, uaddr)			\
-	((val) = fuword(uaddr), 0)
 
-#define DRM_WRITEMEMORYBARRIER( map )					\
-	bus_space_barrier((map)->iot, (map)->ioh, 0, (map)->size, 0);
-#define DRM_READMEMORYBARRIER( map )					\
-	bus_space_barrier((map)->iot, (map)->ioh, 0, (map)->size, BUS_SPACE_BARRIER_READ);
+#define DRM_READMEMORYBARRIER \
+{												\
+   	int xchangeDummy;									\
+	DRM_DEBUG("%s\n", __FUNCTION__);							\
+   	__asm__ volatile(" push %%eax ; xchg %%eax, %0 ; pop %%eax" : : "m" (xchangeDummy));	\
+   	__asm__ volatile(" push %%eax ; push %%ebx ; push %%ecx ; push %%edx ;"			\
+			 " movl $0,%%eax ; cpuid ; pop %%edx ; pop %%ecx ; pop %%ebx ;"		\
+			 " pop %%eax" : /* no outputs */ :  /* no inputs */ );			\
+} while (0);
 
-#define DRM_WAKEUP(w) wakeup((void *)w)
+#define DRM_WRITEMEMORYBARRIER DRM_READMEMORYBARRIER
+
+#define DRM_WAKEUP(w) wakeup(w)
 #define DRM_WAKEUP_INT(w) wakeup(w)
-#define DRM_INIT_WAITQUEUE( queue )  do {} while (0)
 
 #define PAGE_ALIGN(addr) (((addr)+PAGE_SIZE-1)&PAGE_MASK)
 
@@ -178,46 +151,30 @@ typedef struct drm_chipinfo
 	char *name;
 } drm_chipinfo_t;
 
-#define cpu_to_le32(x) (x)	/* FIXME */
-
 typedef u_int32_t dma_addr_t;
-typedef volatile long atomic_t;
+typedef volatile u_int32_t atomic_t;
 typedef u_int32_t cycles_t;
+typedef u_int32_t spinlock_t;
 typedef u_int32_t u32;
 typedef u_int16_t u16;
 typedef u_int8_t u8;
 typedef dev_type_ioctl(d_ioctl_t);
 typedef vaddr_t vm_offset_t;
 
-/* FIXME */
 #define atomic_set(p, v)	(*(p) = (v))
 #define atomic_read(p)		(*(p))
-#define atomic_inc(p)		(*(p) += 1)
-#define atomic_dec(p)		(*(p) -= 1)
-#define atomic_add(n, p)	(*(p) += (n))
-#define atomic_sub(n, p)	(*(p) -= (n))
+#define atomic_inc(p)		atomic_add_int(p, 1)
+#define atomic_dec(p)		atomic_subtract_int(p, 1)
+#define atomic_add(n, p)	atomic_add_int(p, n)
+#define atomic_sub(n, p)	atomic_subtract_int(p, n)
 
-/* FIXME */
+/* FIXME: Is NetBSD's kernel non-reentrant? */
 #define atomic_add_int(p, v)      *(p) += v
 #define atomic_subtract_int(p, v) *(p) -= v
 #define atomic_set_int(p, bits)   *(p) |= (bits)
 #define atomic_clear_int(p, bits) *(p) &= ~(bits)
 
 /* Fake this */
-
-static __inline int
-atomic_cmpset_int(__volatile__ int *dst, int old, int new)
-{
-	int s = splhigh();
-	if (*dst==old) {
-		*dst = new;
-		splx(s);
-		return 1;
-	}
-	splx(s);
-	return 0;
-}
-
 static __inline atomic_t
 test_and_set_bit(int b, atomic_t *p)
 {
@@ -267,6 +224,20 @@ find_first_zero_bit(atomic_t *p, int max)
 #define spldrm()		spltty()
 #define jiffies			hardclock_ticks
 
+#define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)
+#define _DRM_CAS(lock,old,new,__ret)				       \
+	do {							       \
+		int __dummy;	/* Can't mark eax as clobbered */      \
+		__asm__ __volatile__(				       \
+			"lock ; cmpxchg %4,%1\n\t"		       \
+			"setnz %0"				       \
+			: "=d" (__ret),				       \
+			  "=m" (__drm_dummy_lock(lock)),	       \
+			  "=a" (__dummy)			       \
+			: "2" (old),				       \
+			  "r" (new));				       \
+	} while (0)
+
 /* Redefinitions to make templating easy */
 #define wait_queue_head_t	atomic_t
 #define agp_memory		void
@@ -287,7 +258,7 @@ do { \
 #define DRM_DEBUG(fmt, arg...)						  \
 	do {								  \
 		if (DRM(flags) & DRM_FLAG_DEBUG)			  \
-			printf("[" DRM_NAME ":%s] " fmt , __FUNCTION__ ,## arg); \
+			printf("[" DRM_NAME ":%s] " fmt , __FUNCTION__,## arg); \
 	} while (0)
 #else
 #define DRM_DEBUG(fmt, arg...)		 do { } while (0)
