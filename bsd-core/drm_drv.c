@@ -211,6 +211,9 @@ const char *DRM(find_description)(int vendor, int device);
 
 #ifdef __FreeBSD__
 static struct cdevsw DRM(cdevsw) = {
+#if __FreeBSD_version >= 502103
+	.d_version =	D_VERSION,
+#endif
 	.d_open =	DRM( open ),
 	.d_close =	DRM( close ),
 	.d_read =	DRM( read ),
@@ -218,8 +221,12 @@ static struct cdevsw DRM(cdevsw) = {
 	.d_poll =	DRM( poll ),
 	.d_mmap =	DRM( mmap ),
 	.d_name =	DRIVER_NAME,
-	.d_maj =	CDEV_MAJOR,
-	.d_flags =	D_TTY | D_TRACKCLOSE,
+#if __FreeBSD_version >= 502103
+	.d_flags =	D_TRACKCLOSE | D_NEEDGIANT,
+#else
+	.d_maj =	145,
+	.d_flags =	D_TRACKCLOSE,
+#endif
 #if __FreeBSD_version < 500000
 	.d_bmaj =	-1
 #endif
@@ -830,7 +837,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	drm_file_t *priv;
 	DRM_DEVICE;
 	int retcode = 0;
-	DRMFILE filp = (void *)(DRM_CURRENTPID);
+	DRMFILE filp = (void *)(uintptr_t)(DRM_CURRENTPID);
 	
 	DRM_DEBUG( "open_count = %d\n", dev->open_count );
 
@@ -908,7 +915,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 		}
 	}
 #elif __HAVE_DMA
-	DRM(reclaim_buffers)( dev, (void *)priv->pid );
+	DRM(reclaim_buffers)( dev, (void *)(uintptr_t)priv->pid );
 #endif
 
 #if defined (__FreeBSD__) && (__FreeBSD_version >= 500000)
@@ -953,7 +960,7 @@ int DRM(ioctl)(dev_t kdev, u_long cmd, caddr_t data, int flags,
 	int nr = DRM_IOCTL_NR(cmd);
 	drm_file_t *priv;
 
-	DRM_GET_PRIV_WITH_RETURN(priv, (DRMFILE)DRM_CURRENTPID);
+	DRM_GET_PRIV_WITH_RETURN(priv, (DRMFILE)(uintptr_t)DRM_CURRENTPID);
 
 	atomic_inc( &dev->counts[_DRM_STAT_IOCTLS] );
 	++priv->ioctl_count;
@@ -1008,7 +1015,7 @@ int DRM(ioctl)(dev_t kdev, u_long cmd, caddr_t data, int flags,
 	    !priv->authenticated))
 		return EACCES;
 
-	retcode = func(kdev, cmd, data, flags, p, (void *)DRM_CURRENTPID);
+	retcode = func(kdev, cmd, data, flags, p, (void *)(uintptr_t)DRM_CURRENTPID);
 
 	return DRM_ERR(retcode);
 }
@@ -1039,7 +1046,7 @@ int DRM(lock)( DRM_IOCTL_ARGS )
 	DRM_LOCK();
 	for (;;) {
 		if (DRM(lock_take)(&dev->lock.hw_lock->lock, lock.context)) {
-			dev->lock.filp = (void *)DRM_CURRENTPID;
+			dev->lock.filp = (void *)(uintptr_t)DRM_CURRENTPID;
 			dev->lock.lock_time = jiffies;
 			atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
 			break;  /* Got lock */
