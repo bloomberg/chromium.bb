@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.14 2002/08/31 22:17:32 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.15 2002/09/26 00:17:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -151,11 +151,12 @@ static const FcConstant _FcBaseConstants[] = {
     { (FcChar8 *) "mono",	    "spacing",  FC_MONO, },
     { (FcChar8 *) "charcell",	    "spacing",  FC_CHARCELL, },
 
-    { (FcChar8 *) "none",	    "rgba",	    FC_RGBA_NONE },
+    { (FcChar8 *) "unknown",	    "rgba",	    FC_RGBA_UNKNOWN },
     { (FcChar8 *) "rgb",	    "rgba",	    FC_RGBA_RGB, },
     { (FcChar8 *) "bgr",	    "rgba",	    FC_RGBA_BGR, },
     { (FcChar8 *) "vrgb",	    "rgba",	    FC_RGBA_VRGB },
     { (FcChar8 *) "vbgr",	    "rgba",	    FC_RGBA_VBGR },
+    { (FcChar8 *) "none",	    "rgba",	    FC_RGBA_NONE },
 };
 
 #define NUM_FC_CONSTANTS   (sizeof _FcBaseConstants/sizeof _FcBaseConstants[0])

@@ -105,7 +105,7 @@ outline	FC_OUTLINE	Bool	Whether the glyphs are outlines
 scalable	FC_SCALABLE	Bool	Whether glyphs can be scaled
 scale	FC_SCALE	Double	Scale factor for point->pixel conversions
 dpi	FC_DPI	Double	Target dots per inch
-rgba	FC_RGBA	Int	rgb, bgr, vrgb, vbgr - subpixel geometry
+rgba	FC_RGBA	Int	unknown, rgb, bgr, vrgb, vbgr, none - subpixel geometry
 minspace	FC_MINSPACE	Bool	Eliminate leading from line spacing
 charset	FC_CHARSET	CharSet	Unicode chars encoded by the font
 lang	FC_LANG	String	List of RFC-3066-style languages this font supports
@@ -1296,10 +1296,12 @@ oblique	slant	FC_SLANT_OBLIQUE
 proportional	spacing	FC_PROPORTIONAL
 mono	spacing	FC_MONO
 charcell	spacing	FC_CHARCELL
+unknown	rgba	FC_RGBA_UNKNOWN
 rgb	rgba	FC_RGBA_RGB
 bgr	rgba	FC_RGBA_BGR
 vrgb	rgba	FC_RGBA_VRGB
 vbgr	rgba	FC_RGBA_VBGR
+none	rgba	FC_RGBA_NONE
 .DT
 .fi
 .RE

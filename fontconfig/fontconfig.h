@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.28 2002/08/24 20:08:53 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.30 2002/09/26 00:17:27 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -108,11 +108,12 @@ typedef int		FcBool;
 #define FC_CHARCELL	    110
 
 /* sub-pixel order */
-#define FC_RGBA_NONE	    0
+#define FC_RGBA_UNKNOWN	    0
 #define FC_RGBA_RGB	    1
 #define FC_RGBA_BGR	    2
 #define FC_RGBA_VRGB	    3
 #define FC_RGBA_VBGR	    4
+#define FC_RGBA_NONE	    5
 
 typedef enum _FcType {
     FcTypeVoid, 
