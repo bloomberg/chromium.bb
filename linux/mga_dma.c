@@ -233,7 +233,6 @@ drm_buf_t *mga_freelist_get(drm_device_t *dev)
 			current->state = TASK_INTERRUPTIBLE;
 		   	schedule();
 		   	if (signal_pending(current)) {
-				DRM_ERROR("Returning NULL\n");
 				++return_null;
 				clear_bit(MGA_IN_GETBUF,
 					  &dev_priv->dispatch_status);
