@@ -787,6 +787,8 @@ extern void radeon_driver_irq_uninstall( drm_device_t *dev );
 
 #define R200_SE_TCL_POINT_SPRITE_CNTL     0x22c4
 
+#define R200_PP_TRI_PERF                  0x2cf8
+
 /* Constants */
 #define RADEON_MAX_USEC_TIMEOUT		100000	/* 100 ms */
 

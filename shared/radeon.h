@@ -42,10 +42,10 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20050208"
+#define DRIVER_DATE		"20050311"
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		15
+#define DRIVER_MINOR		16
 #define DRIVER_PATCHLEVEL	0
 
 /* Interface history:
@@ -88,6 +88,8 @@
  *     - Add R100/R200 surface allocation/free support
  * 1.15- Add support for texture micro tiling
  *     - Add support for r100 cube maps
+ * 1.16- Add R200_EMIT_PP_TRI_PERF_CNTL packet to support brilinear
+ *       texture filtering on r200
  */
 #define DRIVER_IOCTLS							     \
  [DRM_IOCTL_NR(DRM_IOCTL_DMA)]               = { radeon_cp_buffers,  1, 0 }, \

@@ -209,6 +209,7 @@ static __inline__ int radeon_check_and_fixup_packets(drm_radeon_private_t *
 	case RADEON_EMIT_PP_CUBIC_FACES_0:
 	case RADEON_EMIT_PP_CUBIC_FACES_1:
 	case RADEON_EMIT_PP_CUBIC_FACES_2:
+	case R200_EMIT_PP_TRI_PERF_CNTL:
 		/* These packets don't contain memory offsets */
 		break;
 
@@ -581,7 +582,8 @@ static struct {
 	RADEON_PP_CUBIC_FACES_1, 1, "RADEON_PP_CUBIC_FACES_1"}, {
 	RADEON_PP_CUBIC_OFFSET_T1_0, 5, "RADEON_PP_CUBIC_OFFSET_T1_0"}, {
 	RADEON_PP_CUBIC_FACES_2, 1, "RADEON_PP_CUBIC_FACES_2"}, {
-	RADEON_PP_CUBIC_OFFSET_T2_0, 5, "RADEON_PP_CUBIC_OFFSET_T2_0"},
+	RADEON_PP_CUBIC_OFFSET_T2_0, 5, "RADEON_PP_CUBIC_OFFSET_T2_0"}, {
+	R200_PP_TRI_PERF, 2, "R200_PP_TRI_PERF"},
 };
 
 /* ================================================================

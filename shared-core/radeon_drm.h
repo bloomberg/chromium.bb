@@ -151,7 +151,8 @@
 #define RADEON_EMIT_PP_CUBIC_OFFSETS_T1             81
 #define RADEON_EMIT_PP_CUBIC_FACES_2                82
 #define RADEON_EMIT_PP_CUBIC_OFFSETS_T2             83
-#define RADEON_MAX_STATE_PACKETS                    84
+#define R200_EMIT_PP_TRI_PERF_CNTL                  84
+#define RADEON_MAX_STATE_PACKETS                    85
 
 /* Commands understood by cmd_buffer ioctl.  More can be added but
  * obviously these can't be removed or changed:
