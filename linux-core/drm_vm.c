@@ -101,9 +101,12 @@ static __inline__ struct page *DRM(do_vm_nopage)(struct vm_area_struct *vma,
 		page = virt_to_page(__va(agpmem->memory->memory[offset]));
 		get_page(page);
 
+#if 0 
+		/* page_count() not defined everywhere */
 		DRM_DEBUG("baddr = 0x%lx page = 0x%p, offset = 0x%lx, count=%d\n",
 			  baddr, __va(agpmem->memory->memory[offset]), offset,
 			  page_count(page));
+#endif
 
 		return page;
         }

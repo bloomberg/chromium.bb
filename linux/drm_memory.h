@@ -61,9 +61,15 @@
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)
+#ifndef pte_offset_kernel
 # define pte_offset_kernel(dir, address)	pte_offset(dir, address)
+#endif
+#ifndef pte_pfn
 # define pte_pfn(pte)				(pte_page(pte) - mem_map)
+#endif
+#ifndef pfn_to_page
 # define pfn_to_page(pfn)			(mem_map + (pfn))
+#endif
 #endif
 
 /*
