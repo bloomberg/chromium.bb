@@ -30,7 +30,7 @@
 
 #define DRIVER_NAME	"savage"
 #define DRIVER_DESC	"Savage3D/MX/IX, Savage4, SuperSavage, Twister, ProSavage[DDR]"
-#define DRIVER_DATE	"20050307"
+#define DRIVER_DATE	"20050313"
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		4
@@ -63,7 +63,7 @@ typedef struct drm_savage_buf_priv {
 
 typedef struct drm_savage_dma_page {
 	drm_savage_age_t age;
-	unsigned int used;
+	unsigned int used, flushed;
 } drm_savage_dma_page_t;
 #define SAVAGE_DMA_PAGE_SIZE 1024 /* in dwords */
 /* Fake DMA buffer size in bytes. 4 pages. Allows a maximum command

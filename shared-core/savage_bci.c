@@ -305,6 +305,7 @@ static int savage_dma_init(drm_savage_private_t *dev_priv)
 	for (i = 0; i < dev_priv->nr_dma_pages; ++i) {
 		SET_AGE(&dev_priv->dma_pages[i].age, 0, 0);
 		dev_priv->dma_pages[i].used = 0;
+		dev_priv->dma_pages[i].flushed = 0;
 	}
 	SET_AGE(&dev_priv->last_dma_age, 0, 0);
 
@@ -323,6 +324,7 @@ void savage_dma_reset(drm_savage_private_t *dev_priv)
 	for (i = 0; i < dev_priv->nr_dma_pages; ++i) {
 		SET_AGE(&dev_priv->dma_pages[i].age, event, wrap);
 		dev_priv->dma_pages[i].used = 0;
+		dev_priv->dma_pages[i].flushed = 0;
 	}
 	SET_AGE(&dev_priv->last_dma_age, event, wrap);
 	dev_priv->first_dma_page = dev_priv->current_dma_page = 0;
@@ -384,6 +386,7 @@ uint32_t *savage_dma_alloc(drm_savage_private_t *dev_priv, unsigned int n)
 		for (i = cur; i < dev_priv->nr_dma_pages; ++i) {
 			dev_priv->dma_pages[i].age = dev_priv->last_dma_age;
 			dev_priv->dma_pages[i].used = 0;
+			dev_priv->dma_pages[i].flushed = 0;
 		}
 		dma_ptr = (uint32_t *)dev_priv->cmd_dma->handle;
 		dev_priv->first_dma_page = cur = 0;
@@ -414,21 +417,27 @@ uint32_t *savage_dma_alloc(drm_savage_private_t *dev_priv, unsigned int n)
 static void savage_dma_flush(drm_savage_private_t *dev_priv)
 {
 	BCI_LOCALS;
+	unsigned int first = dev_priv->first_dma_page;
 	unsigned int cur = dev_priv->current_dma_page;
 	uint16_t event;
-	unsigned int wrap, pad, len, i;
+	unsigned int wrap, pad, align, len, i;
 	unsigned long phys_addr;
 
-	if (dev_priv->first_dma_page == dev_priv->current_dma_page &&
-	    dev_priv->dma_pages[dev_priv->current_dma_page].used == 0)
+	if (first == cur &&
+	    dev_priv->dma_pages[cur].used == dev_priv->dma_pages[cur].flushed)
 		return;
 
-	/* pad to multiples of 8 entries (really needed? 2 should do it) */
-	pad = -dev_priv->dma_pages[cur].used & 7;
-	DRM_DEBUG("first=%u, cur=%u, cur->used=%u, pad=%u\n",
-		  dev_priv->first_dma_page, cur, dev_priv->dma_pages[cur].used,
-		  pad);
+	/* pad length to multiples of 2 entries
+	 * align start of next DMA block to multiles of 8 entries */
+	pad = -dev_priv->dma_pages[cur].used & 1;
+	align = -(dev_priv->dma_pages[cur].used + pad) & 7;
 
+	DRM_DEBUG("first=%u, cur=%u, first->flushed=%u, cur->used=%u, "
+		  "pad=%u, align=%u\n",
+		  first, cur, dev_priv->dma_pages[first].flushed,
+		  dev_priv->dma_pages[cur].used, pad, align);
+
+	/* pad with noops */
 	if (pad) {
 		uint32_t *dma_ptr = (uint32_t *)dev_priv->cmd_dma->handle +
 			cur * SAVAGE_DMA_PAGE_SIZE +
@@ -444,9 +453,11 @@ static void savage_dma_flush(drm_savage_private_t *dev_priv)
 
 	/* do flush ... */
 	phys_addr = dev_priv->cmd_dma->offset +
-		dev_priv->first_dma_page * SAVAGE_DMA_PAGE_SIZE*4;
-	len = (cur - dev_priv->first_dma_page) * SAVAGE_DMA_PAGE_SIZE +
-		dev_priv->dma_pages[cur].used;
+		(first * SAVAGE_DMA_PAGE_SIZE +
+		 dev_priv->dma_pages[first].flushed) * 4;
+	len = (cur - first) * SAVAGE_DMA_PAGE_SIZE +
+		dev_priv->dma_pages[cur].used -
+		dev_priv->dma_pages[first].flushed;
 
 	DRM_DEBUG("phys_addr=%lx, len=%u\n",
 		  phys_addr | dev_priv->dma_type, len);
@@ -456,23 +467,36 @@ static void savage_dma_flush(drm_savage_private_t *dev_priv)
 	BCI_WRITE(phys_addr | dev_priv->dma_type);
 	BCI_DMA(len);
 
+	/* fix alignment of the start of the next block */
+	dev_priv->dma_pages[cur].used += align;
+
 	/* age DMA pages */
 	event = savage_bci_emit_event(dev_priv, 0);
 	wrap = dev_priv->event_wrap;
-	for (i = dev_priv->first_dma_page;
-	     i <= dev_priv->current_dma_page; ++i) {
+	for (i = first; i < cur; ++i) {
 		SET_AGE(&dev_priv->dma_pages[i].age, event, wrap);
 		dev_priv->dma_pages[i].used = 0;
+		dev_priv->dma_pages[i].flushed = 0;
+	}
+	/* age the current page only when it's full */
+	if (dev_priv->dma_pages[cur].used == SAVAGE_DMA_PAGE_SIZE) {
+		SET_AGE(&dev_priv->dma_pages[cur].age, event, wrap);
+		dev_priv->dma_pages[cur].used = 0;
+		dev_priv->dma_pages[cur].flushed = 0;
+		/* advance to next page */
+		cur++;
+		if (cur == dev_priv->nr_dma_pages)
+			cur = 0;
+		dev_priv->first_dma_page = dev_priv->current_dma_page = cur;
+	} else {
+		dev_priv->first_dma_page = cur;
+		dev_priv->dma_pages[cur].flushed = dev_priv->dma_pages[i].used;
 	}
 	SET_AGE(&dev_priv->last_dma_age, event, wrap);
 
-	/* advance to next page */
-	if (i == dev_priv->nr_dma_pages)
-		i = 0;
-	dev_priv->first_dma_page = dev_priv->current_dma_page = i;
-
-	DRM_DEBUG("first=cur=%u, cur->used=%u\n", i,
-		  dev_priv->dma_pages[i].used);
+	DRM_DEBUG("first=cur=%u, cur->used=%u, cur->flushed=%u\n", cur,
+		  dev_priv->dma_pages[cur].used,
+		  dev_priv->dma_pages[cur].flushed);
 }
 
 static void savage_fake_dma_flush(drm_savage_private_t *dev_priv)
@@ -507,10 +531,8 @@ static void savage_fake_dma_flush(drm_savage_private_t *dev_priv)
 		dev_priv->dma_pages[i].used = 0;
 	}
 
-	/* advance to next page */
-	if (i == dev_priv->nr_dma_pages)
-		i = 0;
-	dev_priv->first_dma_page = dev_priv->current_dma_page = i;
+	/* reset to first page */
+	dev_priv->first_dma_page = dev_priv->current_dma_page = 0;
 }
 
 /*
