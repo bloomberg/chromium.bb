@@ -357,6 +357,7 @@ AC_OUTPUT([
 Makefile 
 fontconfig/Makefile
 fc-lang/Makefile
+fc-glyphname/Makefile
 src/Makefile
 src/fontconfig.def
 fc-cache/Makefile

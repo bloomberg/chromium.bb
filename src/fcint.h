@@ -219,6 +219,16 @@ typedef struct _FcStrBuf {
 } FcStrBuf;
 
 /*
+ * To map adobe glyph names to unicode values, a precomputed hash
+ * table is used
+ */
+
+typedef struct _FcGlyphName {
+    FcChar32	ucs;		/* unicode value */
+    FcChar8	name[1];	/* name extends beyond struct */
+} FcGlyphName;
+
+/*
  * The per-user ~/.fonts.cache-<version> file is loaded into
  * this data structure.  Each directory gets a substructure
  * which is validated by comparing the directory timestamp with
