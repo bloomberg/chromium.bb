@@ -477,7 +477,7 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 	while ( entry->buf_count < count ) {
 		vaddr = (vm_offset_t) DRM(pci_alloc)(dev, size, alignment,
 		    0xfffffffful, &bus_addr);
-		if (vaddr == NULL) {
+		if (vaddr == 0) {
 			/* Set count correctly so we free the proper amount. */
 			entry->buf_count = count;
 			entry->seg_count = count;
