@@ -792,7 +792,6 @@ FcFreeTypeQuery (const FcChar8	*file,
     
     if (FT_Get_PS_Font_Info(face, &psfontinfo) == 0)
     {
-#if 0
 	if (weight == -1 && psfontinfo.weight)
 	{
 	    weight = FcIsWeight (psfontinfo.weight);
@@ -800,7 +799,6 @@ FcFreeTypeQuery (const FcChar8	*file,
     		printf ("\tType1 weight %s maps to %d\n",
 			psfontinfo.weight, weight);
 	}
-#endif
      
 #if 0
 	/* 
