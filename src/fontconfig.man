@@ -35,7 +35,6 @@ fontconfig \- Font configuration and customization library
 .nf
 .B #include <fontconfig/fontconfig.h>
 .B #include <fontconfig/fcfreetype.h>
-.B #include <fontconfig/fcxml.h>
 .fi
 .SH DESCRIPTION
 .B Fontconfig
@@ -48,7 +47,7 @@ builds an internal configuration from XML files and the matching module
 which accepts font patterns and returns the nearest matching font.
 
 .SS FONT CONFIGURATION
-The configuration module consists of the FcConfig datatype, libxml2 and
+The configuration module consists of the FcConfig datatype, libexpat and
 FcConfigParse which walks over an XML tree and ammends a configuration with
 data found within.  From an external perspective, configuration of the
 library consists of generating a valid XML tree and feeding that to
@@ -88,15 +87,18 @@ style	FC_STYLE	String	Font style. Overrides weight and slant
 slant	FC_SLANT	Int	Italic, oblique or roman
 weight	FC_WEIGHT	Int	Light, medium, demibold, bold or black
 size	FC_SIZE	Double	Point size
+aspect	FC_ASPECT	Double	Stretches glyphs horizontally before hinting
 pixelsize	FC_PIXEL_SIZE	Double	Pixel size
 spacing	FC_SPACING	Int	Proportional, monospace or charcell
 foundry	FC_FOUNDRY	String	Font foundry name
 antialias	FC_ANTIALIAS	Bool	Whether glyphs can be antialiased
 hinting	FC_HINTING	Bool	Whether the rasterizer should use hinting
 verticallayout	FC_VERTICAL_LAYOUT	Bool	Use vertical layout
+autohint	FC_AUTOHINT	Bool	Use autohinter instead of normal hinter
 globaladvance	FC_GLOBAL_ADVANCE	Bool	Use font global advance data
 file	FC_FILE	String	The filename holding the font
 index	FC_INDEX	Int	The index of the font within the file
+ftface	FC_FT_FACE	FT_Face	Use the specified FreeType face object
 rasterizer	FC_RASTERIZER	String	Which rasterizer is in use
 outline	FC_OUTLINE	Bool	Whether the glyphs are outlines
 scalable	FC_SCALABLE	Bool	Whether glyphs can be scaled
@@ -105,7 +107,7 @@ dpi	FC_DPI	Double	Target dots per inch
 rgba	FC_RGBA	Int	rgb, bgr, vrgb, vbgr - subpixel geometry
 minspace	FC_MINSPACE	Bool	Eliminate leading from line spacing
 charset	FC_CHARSET	CharSet	Unicode chars encoded by the font
-lang	FC_LANG	String	List of language groups this font is designed for
+lang	FC_LANG	String	List of RFC-3066-style languages this font supports
 .DT
 .fi
 
@@ -134,10 +136,16 @@ font properties during rendering.
 .P
 The canonical font pattern is finally matched against all available fonts.
 The distance from the pattern to the font is measured for each of several
-properties: foundry, charset, antialias, family, spacing, pixelsize, style,
-slant, weight, rasterizer and outline.  This list is in priority order --
-results of comparing earlier elements of this list weigh more heavily than
-later elements.
+properties: foundry, charset, family, lang, spacing, pixelsize, style,
+slant, weight, antialias, rasterizer and outline.  This list is in priority
+order -- results of comparing earlier elements of this list weigh more
+heavily than later elements.
+.P
+There is one special case to this rule; family names are split into two
+bindings; strong and weak.  Strong family names are given greater precedence
+in the match than lang elements while weak family names are given lower
+precedence than lang elements.  This permits the document language to drive
+font selection when any document specified font is unavailable.
 .P
 The pattern representing that font is augmented to include any properties
 found in the pattern but not found in the font itself; this permits the
@@ -180,6 +188,21 @@ Here are some examples:
 		with artificial obliquing
 .fi
 .DT
+
+.SH LANG TAGS
+.P
+Each font in the database contains a list of languages it supports.  This is
+computed by comparing the Unicode coverage of the font with the orthography
+of each language.  Languages are tagged using an RFC-3066 compatible naming
+and occur in two parts -- the ISO639 language tag followed a hyphen and then
+by the ISO 3166 country code.  The hyphen and country code may be elided.
+
+.P
+Fontconfig has orthographies for several languages built into the library.
+No provision has been made for adding new ones aside from rebuilding the
+library.  It currently supports 104 of the 139 languages named in ISO 639-1,
+117 of the languages with two-letter codes from ISO 639-2 and another 24
+languages with only three-letter codes.
 
 .SH DATATYPES
 
@@ -463,6 +486,11 @@ Adds a single value to the list of values associated with the property named
 existing list, otherwise it is inserted at the begining.  `value' is saved
 (with FcValueSave) when inserted into the pattern so that the library
 retains no reference to any application-supplied data structure.
+
+.TP
+FcBool FcPatternAddWeak (FcPattern *p, const char *object, FcValue value, FcBool append)
+FcPatternAddWeak is essentially the same as FcPatternAdd except that any
+values added to the list have binding 'weak' instead of 'strong'.
 
 .TP
 FcBool FcPatternAddInteger (FcPattern *p, const char *object, int i)
@@ -817,11 +845,30 @@ Converts the next Unicode char from 'src' into 'dst' and returns the number
 of bytes containing the char.  'src' nust be at least 'len' bytes long.
 
 .TP
-FcBool FcUtf8Len (FcChar8 *string, int len, int *nchar, int *wchar)
-Counts the number of Unicode chars in 'len' bytes of 'string'.  Places that
+int FcUcs4ToUtf8 (FcChar32 src, FcChar8 dst[FC_UTF8_MAX_LEN])
+Converts the Unicode char from 'src' into 'dst' and returns the
+number of bytes needed to encode the char.
+
+.TP
+FcBool FcUtf8Len (FcChar8 *src, int len, int *nchar, int *wchar)
+Counts the number of Unicode chars in 'len' bytes of 'src'.  Places that
 count in 'nchar'.  'wchar' contains 1, 2 or 4 depending on the number of
 bytes needed to hold the largest unicode char counted.  The return value
-indicates whether 'string' is a well-formed UTF8 string.
+indicates whether 'src' is a well-formed UTF8 string.
+
+.TP
+int FcUtf16ToUcs4 (FcChar8 *src, FcEndian endian, FcChar32 *dst, int len)
+Converts the next Unicode char from 'src' into 'dst' and returns the
+number of bytes containing the char. 'src' must be at least 'len' bytes
+long.  Bytes of 'src' are combined into 16-bit units according to 'endian'.
+
+.TP
+FcBool FcUtf16Len (FcChar8 *src, FcEndian endian, int len, int *nchar, int *wchar)
+Counts the number of Unicode chars in 'len' bytes of 'src'.  Bytes of
+'src' are combined into 16-bit units according to 'endian'.  Places that
+count in 'nchar'.  'wchar' contains 1, 2 or 4 depending on the number of
+bytes needed to hold the largest unicode char counted.  The return value
+indicates whether 'string' is a well-formed UTF16 string.
 
 .TP
 char *FcStrCopy (const char *s)
@@ -877,12 +924,30 @@ will also be incorporated into the configuration by passing the filename to
 FcConfigLoadAndParse.  If 'ignore_missing' is set to "yes" instead of the
 default "no", a missing file will elicit no warning message from the library.
 
+.SS <config>
+This element provides a place to consolodate additional configuration
+information.  <config> can contain <blank> and <rescan> elements in any
+order.
+
+.SS <blank>
+Fonts often include "broken" glyphs which appear in the encoding but are
+drawn as blanks on the screen.  Within the <blank> element, place each
+Unicode characters which is supposed to be blank in an <int> element.
+Characters outside of this set which are drawn as blank will be elided from
+the set of characters supported by the font.  <b
+
+.SS <rescan>
+The <rescan> element holds an <int> element which indicates the default
+interval between automatic checks for font configuration changes.
+Fontconfig will validate all of the configuration files and directories and
+automatically rebuild the internal datastructures when this interval passes.
+
 .SS <match target="pattern">
-This element holds first a (possibly empty) list of tests and then a
-(possibly empty) list of edits.  Patterns which match all of the tests are
-subjected to all the edits.  If 'target' is set to "font" instead of the
-default "pattern", then this element applies to the font name resulting from
-a match rather than a font pattern to be matched.
+This element holds first a (possibly empty) list of <test> elements and then
+a (possibly empty) list of <edit> elements.  Patterns which match all of the
+tests are subjected to all the edits.  If 'target' is set to "font" instead
+of the default "pattern", then this element applies to the font name
+resulting from a match rather than a font pattern to be matched.
 
 .SS <test qual="any" name="property" compare="eq">
 This element contains a single value which is compared with the pattern
@@ -893,12 +958,13 @@ succeeds if any value associated with the property matches the test value, or
 "all", in which case all of the values associated with the property must
 match the test value.
 
-.SS <edit name="property" mode="assign">
+.SS <edit name="property" mode="assign" binding="weak">
 This element contains a list of expression elements (any of the value or
 operator elements).  The expression elements are evaluated at run-time and
 modify the property "property".  The modification depends on whether
 "property" was matched by one of the associated <test> elements, if so, the
-modification may affect the first matched value.  'mode' is one of:
+modification may affect the first matched value.  Any values inserted into
+the property are given the indicated binding. 'mode' is one of:
 .nf
 .RS
 .ta 1i 3i 5i
