@@ -248,8 +248,7 @@ int DRM(put_minor)(drm_device_t *dev)
 	remove_proc_entry("dri", NULL);
 	DRM(sysfs_destroy)(DRM(global)->drm_class);
 
-	cdev_del(&DRM(global)->drm_cdev);
-	unregister_chrdev_region(MKDEV(DRM_MAJOR, 0), DRM_MAX_MINOR);
+	unregister_chrdev(DRM_MAJOR, "drm");
 
 	DRM(free)(DRM(global)->minors, sizeof(*DRM(global)->minors) *
 				DRM(global)->cards_limit, DRM_MEM_STUB);
@@ -296,7 +295,6 @@ int DRM(put_secondary_minor)(drm_minor_t *sec_minor)
  */
 int DRM(probe)(struct pci_dev *pdev, const struct pci_device_id *ent)
 {
-	dev_t dev = MKDEV(DRM_MAJOR, 0);
 	drm_global_t *global;
 	int ret = -ENOMEM;
 
@@ -321,30 +319,21 @@ int DRM(probe)(struct pci_dev *pdev, const struct pci_device_id *ent)
 		if(!global->minors) 
 			goto err_p1;
 
-		if (register_chrdev_region(dev, DRM_MAX_MINOR, "drm"))
+		if (register_chrdev(DRM_MAJOR, "drm", &DRM(stub_fops)))
 			goto err_p1;
 	
-		strncpy(global->drm_cdev.kobj.name, "drm", KOBJ_NAME_LEN);
-		global->drm_cdev.owner = THIS_MODULE;
-		cdev_init(&global->drm_cdev, &DRM(stub_fops));
-		if (cdev_add(&global->drm_cdev, dev, DRM_MAX_MINOR)) {
-			kobject_put(&global->drm_cdev.kobj);
-			printk (KERN_ERR "DRM: Error registering drm major number.\n");
-			goto err_p2;
-		}
-
 		global->drm_class = DRM(sysfs_create)(THIS_MODULE, "drm");
 		if (IS_ERR(global->drm_class)) {
 			printk (KERN_ERR "DRM: Error creating drm class.\n");
 			ret = PTR_ERR(global->drm_class);
-			goto err_p3;
+			goto err_p2;
 		}
 
 		global->proc_root = create_proc_entry("dri", S_IFDIR, NULL);
 		if (!global->proc_root) {
 			DRM_ERROR("Cannot create /proc/dri\n");
 			ret = -1;
-			goto err_p4;
+			goto err_p3;
 		}
 		DRM_DEBUG("calling inter_module_register\n");
 		inter_module_register("drm", THIS_MODULE, global);
@@ -353,16 +342,14 @@ int DRM(probe)(struct pci_dev *pdev, const struct pci_device_id *ent)
 	}
 	if ((ret = get_minor(pdev, ent))) {
 		if (global)
-			goto err_p4;
+			goto err_p3;
 		return ret;
 	}
 	return 0;
-err_p4:
-	DRM(sysfs_destroy)(global->drm_class);
 err_p3:
-	cdev_del(&global->drm_cdev);
-	unregister_chrdev_region(dev, DRM_MAX_MINOR);
+	DRM(sysfs_destroy)(global->drm_class);
 err_p2:
+	unregister_chrdev(DRM_MAJOR, "drm");
 	DRM(free)(global->minors, sizeof(*global->minors) * global->cards_limit, DRM_MEM_STUB);
 err_p1:	
 	DRM(free)(global, sizeof(*global), DRM_MEM_STUB);

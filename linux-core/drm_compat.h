@@ -142,32 +142,9 @@ static inline struct drm_sysfs_class *DRM(sysfs_create)(struct module *owner, ch
 #define pci_pretty_name(x) x->name
 #endif
 
-/* not used in 2.4, just makes the code compile */
-#define KOBJ_NAME_LEN 20
-struct kobject {
-	char name[KOBJ_NAME_LEN];
-};
-struct cdev {
-        struct kobject kobj;
-        struct module *owner;
-        struct file_operations *ops;
-        struct list_head list;
-        dev_t dev;
-        unsigned int count;
-};
-static inline void cdev_del(struct cdev *cd){}
-static inline void cdev_init(struct cdev *cd, struct file_operations *fop){}
-static inline int cdev_add(struct cdev *cd, dev_t dt, unsigned u){ return 0;}
-
-static inline int register_chrdev_region(dev_t device, unsigned minor, char *name) {
-	return register_chrdev(device, name, NULL);
-}
-
-static inline int unregister_chrdev_region(dev_t device, unsigned minor) {
-	return unregister_chrdev(device, NULL);
-}
-
-static inline int kobject_put(struct kobject *kobj){ return 0;};
+struct drm_device;
+static inline int radeon_create_i2c_busses(struct drm_device *dev){return 0;};
+static inline void radeon_delete_i2c_busses(struct drm_device *dev){};
 
 #endif
 

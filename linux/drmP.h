@@ -56,9 +56,6 @@
 #include <linux/smp_lock.h>	/* For (un)lock_kernel */
 #include <linux/mm.h>
 #include <linux/pagemap.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
-#include <linux/cdev.h>
-#endif
 #if defined(__alpha__) || defined(__powerpc__)
 #include <asm/pgtable.h> /* For pte_wrprotect */
 #endif
@@ -697,7 +694,6 @@ typedef struct drm_global {
 	drm_minor_t *minors;
 	struct drm_sysfs_class *drm_class;
 	struct proc_dir_entry *proc_root;
-	struct cdev drm_cdev;
 } drm_global_t;
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev, int feature)
