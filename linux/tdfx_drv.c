@@ -44,6 +44,15 @@
 #define DRIVER_MINOR		0
 #define DRIVER_PATCHLEVEL	0
 
+static u_int DRM(idlist)[] = {
+	0x121A0003,				/* Banshee */
+	0x121A0005,				/* Voodoo3 */
+	0x121A0009,				/* Voodoo5 */
+	0
+};
+
+#define DRIVER_CARD_LIST DRM(idlist)
+
 
 #include "drm_auth.h"
 #include "drm_bufs.h"

@@ -64,18 +64,18 @@ static void DRM(parse_option)(char *s)
 	return;
 }
 
-/* drm_parse_options parse the insmod "drm=" options, or the command-line
+/* drm_parse_options parse the insmod "drm_opts=" options, or the command-line
  * options passed to the kernel via LILO.  The grammar of the format is as
  * follows:
  *
- * drm		::= 'drm=' option_list
+ * drm		::= 'drm_opts=' option_list
  * option_list	::= option [ ';' option_list ]
  * option	::= 'device:' major
  *		|   'debug'
  *		|   'noctx'
  * major	::= INTEGER
  *
- * Note that 's' contains option_list without the 'drm=' part.
+ * Note that 's' contains option_list without the 'drm_opts=' part.
  *
  * device=major,minor specifies the device number used for /dev/drm
  *	  if major == 0 then the misc device is used

@@ -121,11 +121,13 @@ static int DRM(stub_putminor)(int minor)
 	return 0;
 }
 
+
 int DRM(stub_register)(const char *name, struct file_operations *fops,
 		       drm_device_t *dev)
 {
 	struct drm_stub_info *i = NULL;
-	
+
+	DRM_DEBUG("\n");
 	if (register_chrdev(DRM_MAJOR, "drm", &DRM(stub_fops)))
 		i = (struct drm_stub_info *)inter_module_get("drm");
 
@@ -133,9 +135,11 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 				/* Already registered */
 		DRM(stub_info).info_register   = i->info_register;
 		DRM(stub_info).info_unregister = i->info_unregister;
-	} else {
+		DRM_DEBUG("already registered\n");
+	} else if (DRM(stub_info).info_register != DRM(stub_getminor)) {
 		DRM(stub_info).info_register   = DRM(stub_getminor);
 		DRM(stub_info).info_unregister = DRM(stub_putminor);
+		DRM_DEBUG("calling inter_module_register\n");
 		inter_module_register("drm", THIS_MODULE, &DRM(stub_info));
 	}
 	if (DRM(stub_info).info_register)

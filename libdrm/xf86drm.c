@@ -55,6 +55,7 @@
 # include <sys/ioctl.h>
 # include <sys/mman.h>
 # include <sys/time.h>
+# include <stdarg.h>
 # ifdef DRM_USE_MALLOC
 #  define _DRM_MALLOC malloc
 #  define _DRM_FREE   free
@@ -106,6 +107,28 @@ extern unsigned long _bus_base(void);
                                    from, there would be best. */
 #define makedev(x,y)    ((dev_t)(((x) << 8) | (y)))
 #endif
+
+#define DRM_MSG_VERBOSITY 3
+
+static void
+drmMsg(const char *format, ...)
+{
+    va_list	ap;
+
+#ifndef XFree86Server
+    const char *env;
+    if ((env = getenv("LIBGL_DEBUG")) && strstr(env, "verbose"))
+#endif
+    {
+	va_start(ap, format);
+#ifdef XFree86Server
+	xf86VDrvMsgVerb(-1, X_NONE, DRM_MSG_VERBOSITY, format, ap);
+#else
+	vfprintf(stderr, format, ap);
+#endif
+	va_end(ap);
+    }
+}
 
 static void *drmHashTable = NULL; /* Context switch callbacks */
 
@@ -182,6 +205,8 @@ static int drmOpenDevice(long dev, int minor)
     gid_t           group   = DRM_DEV_GID;
 #endif
 
+    drmMsg("drmOpenDevice: minor is %d\n", minor);
+
 #if defined(XFree86Server)
     devmode  = xf86ConfigDRI.mode ? xf86ConfigDRI.mode : DRM_DEV_MODE;
     dirmode  = (devmode & S_IRUSR) ? S_IXUSR : 0;
@@ -203,6 +228,7 @@ static int drmOpenDevice(long dev, int minor)
 #endif
 
     sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);
+    drmMsg("drmOpenDevice: node name is %s\n", buf);
     if (stat(buf, &st) || st.st_rdev != dev) {
 	if (!isroot) return DRM_ERR_NOT_ROOT;
 	remove(buf);
@@ -213,7 +239,11 @@ static int drmOpenDevice(long dev, int minor)
     chmod(buf, devmode);
 #endif
 
-    if ((fd = open(buf, O_RDWR, 0)) >= 0) return fd;
+    fd = open(buf, O_RDWR, 0);
+    drmMsg("drmOpenDevice: open result is %d, (%s)\n",
+		fd, fd < 0 ? strerror(errno) : "OK");
+    if (fd >= 0) return fd;
+    drmMsg("drmOpenDevice: Open failed\n");
     remove(buf);
     return -errno;
 }
@@ -261,9 +291,13 @@ static int drmOpenByBusid(const char *busid)
     int        fd;
     const char *buf;
     
+    drmMsg("drmOpenByBusid: busid is %s\n", busid);
     for (i = 0; i < DRM_MAX_MINOR; i++) {
-	if ((fd = drmOpenMinor(i, 0)) >= 0) {
+	fd = drmOpenMinor(i, 1);
+	drmMsg("drmOpenByBusid: drmOpenMinor returns %d\n", fd);
+	if (fd >= 0) {
 	    buf = drmGetBusid(fd);
+	    drmMsg("drmOpenByBusid: drmGetBusid reports %s\n", buf);
 	    if (buf && !strcmp(buf, busid)) {
 		drmFreeBusid(buf);
 		return fd;
@@ -280,6 +314,7 @@ static int drmOpenByName(const char *name)
     int           i;
     int           fd;
     drmVersionPtr version;
+    char *        id;
     
     if (!drmAvailable()) {
 #if !defined(XFree86Server)
@@ -294,15 +329,30 @@ static int drmOpenByName(const char *name)
 #endif
     }
 
+    /*
+     * Open the first minor number that matches the driver name and isn't
+     * already in use.  If it's in use it will have a busid assigned already.
+     */
     for (i = 0; i < DRM_MAX_MINOR; i++) {
 	if ((fd = drmOpenMinor(i, 1)) >= 0) {
 	    if ((version = drmGetVersion(fd))) {
 		if (!strcmp(version->name, name)) {
 		    drmFreeVersion(version);
-		    return fd;
+		    id = drmGetBusid(fd);
+		    drmMsg("drmGetBusid returned '%s'\n", id ? id : "NULL");
+		    if (!id || !*id) {
+			if (id) {
+			    drmFreeBusid(id);
+			}
+			return fd;
+		    } else {
+			drmFreeBusid(id);
+		    }
+		} else {
+		    drmFreeVersion(version);
 		}
-		drmFreeVersion(version);
 	    }
+	    close(fd);
 	}
     }
 
@@ -459,7 +509,9 @@ int drmSetBusid(int fd, const char *busid)
     u.unique     = (char *)busid;
     u.unique_len = strlen(busid);
 
-    if (ioctl(fd, DRM_IOCTL_SET_UNIQUE, &u)) return -errno;
+    if (ioctl(fd, DRM_IOCTL_SET_UNIQUE, &u)) {
+	return -errno;
+    }
     return 0;
 }
 
