@@ -64,7 +64,7 @@ db_get fontconfig/enable_bitmaps
 enable_bitmaps="$RET"
 
 bitmaps_prio="30-debconf-"
-yes_bitmaps="yes_bitmaps.conf"
+yes_bitmaps="yes-bitmaps.conf"
 no_bitmaps="no-bitmaps.conf"
 
 if [ -h $CONFDIR/$bitmaps_prio$yes_bitmaps ]; then

@@ -9,11 +9,11 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/rules/simple-patchsys.mk
 include /usr/share/cdbs/1/class/autotools.mk
 
-DEB_CONFIGURE_EXTRA_FLAGS := --enable-docs --with-add-fonts=/usr/X11R6/lib/X11/fonts/Type1,/usr/local/share/fonts
+DEB_CONFIGURE_EXTRA_FLAGS := --enable-docs --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
 
 # tight versioning
 DEB_DH_MAKESHLIBS_ARGS_fontconfig-udeb := --no-act
-DEB_DH_MAKESHLIBS_ARGS_libfontconfig1 := -V"libfontconfig1 (>= 2.2.1)"
+DEB_DH_MAKESHLIBS_ARGS_libfontconfig1 := -V"libfontconfig1 (>= 2.3.0)"
 
 DEB_SHLIBDEPS_LIBRARY_fontconfig := libfontconfig1
 DEB_SHLIBDEPS_INCLUDE_fontconfig := debian/libfontconfig1/usr/lib/

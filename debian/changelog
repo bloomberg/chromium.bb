@@ -1,8 +1,17 @@
-fontconfig (2.3.0-1) unstable; urgency=low
+fontconfig (2.3.0-1) experimental; urgency=low
 
   * Change of maintainer
   * New upstream release
-
+  * Support for current Freetype versions
+  * Multi-lingual family/style/fullname values with parallel language
+    tags to enable locale-sensitive presentation of these names.
+  * Font black- and white-listing in the configuration file
+    enables users to select their desired font attributes without
+    having to carefully construct the font directory list.
+  * Support for local configuration directory provides a place for system
+    distributors and administrators to make local changes to the font 
+    configuration without having to edit any configuration files.
+					      
  -- Keith Packard <keithp@debian.org>  Wed,  2 Mar 2005 00:03:56 -0800
 
 fontconfig (2.2.3-4) unstable; urgency=low

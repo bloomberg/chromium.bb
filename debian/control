@@ -2,6 +2,7 @@ Source: fontconfig
 Section: devel
 Priority: optional
 Maintainer: Keith Packard <keithp@debian.org>
+Uploaders: Keith Packard <keithp@debian.org>, Josselin Mouette <joss@debian.org>
 Build-Depends: cdbs (>= 0.4.5.4), debhelper (>= 4.1.76), libfreetype6-dev (>= 2.1.7), libexpat1-dev, docbook-utils (>= 0.6.13), docbook-to-man, defoma (>= 0.7.0), binutils (>= 2.12.90.0.9)
 Standards-Version: 3.6.1
 

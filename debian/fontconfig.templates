@@ -18,8 +18,8 @@ _Description: With what method should fonts be hinted?
  such hints, then the Autohinter will work better.  Yes, FreeType should do
  this automatically.
  .
- You can also select None to disable all hinting and make your screen look
- like Mac OS X. 
+ You can also select None to disable all hinting, causing all text
+ to look fuzzy on even the sharpest monitors.
  .
 
 Template: fontconfig/subpixel_rendering

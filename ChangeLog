@@ -1,3 +1,23 @@
+2005-03-05  Keith Packard  <keithp@keithp.com>
+
+	Josselin Mouette:
+	* debian/changelog:
+	* debian/control:
+	* debian/fontconfig.config:
+	* debian/fontconfig.templates:
+	* debian/rules:
+		Include 2.3 release information in changelog
+		Add Josselin Mouette as an Uploader
+		Set hinting_type to low priority configuration option
+		
+	Manish Singh:
+	* debian/fontconfig.postinst:
+		yes_bitmaps.conf -> yes-bitmaps.conf
+		
+	Funda Wang:
+	* src/fcfreetype.c:
+		Johap -> Johab
+		
 2005-03-02  Keith Packard  <keithp@keithp.com>
 
 	* Makefile.am:
