@@ -824,13 +824,6 @@ do {									\
  * Ring control
  */
 
-#if defined(__powerpc__)
-#define radeon_flush_write_combine()	(void) GET_RING_HEAD( &dev_priv->ring )
-#else
-#define radeon_flush_write_combine()	DRM_WRITEMEMORYBARRIER()
-#endif
-
-
 #define RADEON_VERBOSE	0
 
 #define RING_LOCALS	int write, _nr; unsigned int mask; u32 *ring;
@@ -864,8 +857,13 @@ do {									\
 		dev_priv->ring.tail = write;				\
 } while (0)
 
-#define COMMIT_RING() do {					    \
-	RADEON_WRITE( RADEON_CP_RB_WPTR, dev_priv->ring.tail );		    \
+#define COMMIT_RING() do {						\
+	/* Flush writes to ring */					\
+	DRM_READMEMORYBARRIER();					\
+	GET_RING_HEAD( &dev_priv->ring );				\
+	RADEON_WRITE( RADEON_CP_RB_WPTR, dev_priv->ring.tail );		\
+	/* read from PCI bus to ensure correct posting */		\
+	RADEON_READ( RADEON_CP_RB_RPTR );				\
 } while (0)
 
 #define OUT_RING( x ) do {						\
