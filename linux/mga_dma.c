@@ -57,8 +57,8 @@ static unsigned long mga_alloc_page(drm_device_t *dev)
 	if(address == 0UL) {
 		return 0;
 	}
-	atomic_inc(&mem_map[MAP_NR((void *) address)].count);
-	set_bit(PG_locked, &mem_map[MAP_NR((void *) address)].flags);
+	atomic_inc(&virt_to_page(address)->count);
+	set_bit(PG_locked, &virt_to_page(address)->flags);
    
 	return address;
 }
@@ -70,9 +70,9 @@ static void mga_free_page(drm_device_t *dev, unsigned long page)
 	if(page == 0UL) {
 		return;
 	}
-	atomic_dec(&mem_map[MAP_NR((void *) page)].count);
-	clear_bit(PG_locked, &mem_map[MAP_NR((void *) page)].flags);
-	wake_up(&mem_map[MAP_NR((void *) page)].wait);
+	atomic_dec(&virt_to_page(page)->count);
+	clear_bit(PG_locked, &virt_to_page(page)->flags);
+	wake_up(&virt_to_page(page)->wait);
 	free_page(page);
 	return;
 }

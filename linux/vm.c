@@ -96,13 +96,13 @@ struct page *drm_vm_shm_nopage(struct vm_area_struct *vma,
 
 	offset	 = address - vma->vm_start;
 	physical = (unsigned long)map->handle + offset;
-	atomic_inc(&mem_map[MAP_NR(physical)].count); /* Dec. by kernel */
+	atomic_inc(&virt_to_page(physical)->count); /* Dec. by kernel */
 
 	DRM_DEBUG("0x%08lx => 0x%08lx\n", address, physical);
 #if LINUX_VERSION_CODE < 0x020317
 	return physical;
 #else
-	return mem_map + MAP_NR(physical);
+	return virt_to_page(physical);
 #endif
 }
 
@@ -129,13 +129,13 @@ struct page *drm_vm_shm_nopage_lock(struct vm_area_struct *vma,
 	offset	 = address - vma->vm_start;
 	page	 = offset >> PAGE_SHIFT;
 	physical = (unsigned long)dev->lock.hw_lock + offset;
-	atomic_inc(&mem_map[MAP_NR(physical)].count); /* Dec. by kernel */
+	atomic_inc(&virt_to_page(physical)->count); /* Dec. by kernel */
 
 	DRM_DEBUG("0x%08lx (page %lu) => 0x%08lx\n", address, page, physical);
 #if LINUX_VERSION_CODE < 0x020317
 	return physical;
 #else
-	return mem_map + MAP_NR(physical);
+	return virt_to_page(physical);
 #endif
 }
 
@@ -164,13 +164,13 @@ struct page *drm_vm_dma_nopage(struct vm_area_struct *vma,
 	offset	 = address - vma->vm_start; /* vm_[pg]off[set] should be 0 */
 	page	 = offset >> PAGE_SHIFT;
 	physical = dma->pagelist[page] + (offset & (~PAGE_MASK));
-	atomic_inc(&mem_map[MAP_NR(physical)].count); /* Dec. by kernel */
+	atomic_inc(&virt_to_page(physical)->count); /* Dec. by kernel */
 
 	DRM_DEBUG("0x%08lx (page %lu) => 0x%08lx\n", address, page, physical);
 #if LINUX_VERSION_CODE < 0x020317
 	return physical;
 #else
-	return mem_map + MAP_NR(physical);
+	return virt_to_page(physical);
 #endif
 }
 
