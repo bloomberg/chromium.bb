@@ -811,3 +811,35 @@ int gamma_setsareactx(struct inode *inode, struct file *filp,
 	up(&dev->struct_sem);
 	return 0;
 }
+
+void DRM(driver_irq_preinstall)( drm_device_t *dev ) {
+	drm_gamma_private_t *dev_priv =
+				(drm_gamma_private_t *)dev->dev_private;
+
+	while(GAMMA_READ(GAMMA_INFIFOSPACE) < 2);
+
+	GAMMA_WRITE( GAMMA_GCOMMANDMODE,	0x00000004 );
+	GAMMA_WRITE( GAMMA_GDMACONTROL,		0x00000000 );
+}
+
+void DRM(driver_irq_postinstall)( drm_device_t *dev ) {
+	drm_gamma_private_t *dev_priv =
+				(drm_gamma_private_t *)dev->dev_private;
+
+	while(GAMMA_READ(GAMMA_INFIFOSPACE) < 3);
+
+	GAMMA_WRITE( GAMMA_GINTENABLE,		0x00002001 );
+	GAMMA_WRITE( GAMMA_COMMANDINTENABLE,	0x00000008 );
+	GAMMA_WRITE( GAMMA_GDELAYTIMER,		0x00039090 );
+}
+
+void DRM(driver_irq_uninstall)( drm_device_t *dev ) {
+	drm_gamma_private_t *dev_priv =
+				(drm_gamma_private_t *)dev->dev_private;
+
+	while(GAMMA_READ(GAMMA_INFIFOSPACE) < 3);
+
+	GAMMA_WRITE( GAMMA_GDELAYTIMER,		0x00000000 );
+	GAMMA_WRITE( GAMMA_COMMANDINTENABLE,	0x00000000 );
+	GAMMA_WRITE( GAMMA_GINTENABLE,		0x00000000 );
+}
