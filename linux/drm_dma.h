@@ -604,44 +604,6 @@ int DRM(control)( struct inode *inode, struct file *filp,
 
 #if __HAVE_VBL_IRQ
 
-int DRM(vblank_wait)(drm_device_t *dev, unsigned int *sequence)
-{
-  	drm_radeon_private_t *dev_priv = 
-	   (drm_radeon_private_t *)dev->dev_private;
-	unsigned int cur_vblank;
-	int ret = 0;
-
-	if ( !dev_priv ) {
-		DRM_ERROR( "%s called with no initialization\n", __func__ );
-		return DRM_ERR(EINVAL);
-	}
-
-	/* Assume that the user has missed the current sequence number by about
-	 * a day rather than she wants to wait for years using vertical blanks :)
-	 */
-	while ( ( ( cur_vblank = atomic_read(&dev->vbl_received ) )
-		+ ~*sequence + 1 ) > (1<<23) ) {
-		dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
-#ifdef __linux__
-		interruptible_sleep_on( &dev->vbl_queue );
-
-		if (signal_pending(current)) {
-			ret = -EINTR;
-			break;
-		}
-#endif /* __linux__ */
-#ifdef __FreeBSD__
-		ret = tsleep( &dev_priv->vbl_queue, 3*hz, "rdnvbl", PZERO | PCATCH);
-		if (ret)
-			break;
-#endif /* __FreeBSD__ */
-	}
-
-	*sequence = cur_vblank;
-
-	return ret;
-}
-
 int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 {
 	drm_file_t *priv = filp->private_data;

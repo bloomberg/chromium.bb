@@ -163,6 +163,45 @@ int radeon_emit_and_wait_irq(drm_device_t *dev)
 }
 
 
+int radeon_vblank_wait(drm_device_t *dev, unsigned int *sequence)
+{
+  	drm_radeon_private_t *dev_priv = 
+	   (drm_radeon_private_t *)dev->dev_private;
+	unsigned int cur_vblank;
+	int ret = 0;
+
+	if ( !dev_priv ) {
+		DRM_ERROR( "%s called with no initialization\n", __func__ );
+		return DRM_ERR(EINVAL);
+	}
+
+	/* Assume that the user has missed the current sequence number by about
+	 * a day rather than she wants to wait for years using vertical blanks :)
+	 */
+	while ( ( ( cur_vblank = atomic_read(&dev->vbl_received ) )
+		+ ~*sequence + 1 ) > (1<<23) ) {
+		dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
+#ifdef __linux__
+		interruptible_sleep_on( &dev->vbl_queue );
+
+		if (signal_pending(current)) {
+			ret = -EINTR;
+			break;
+		}
+#endif /* __linux__ */
+#ifdef __FreeBSD__
+		ret = tsleep( &dev_priv->vbl_queue, 3*hz, "rdnvbl", PZERO | PCATCH);
+		if (ret)
+			break;
+#endif /* __FreeBSD__ */
+	}
+
+	*sequence = cur_vblank;
+
+	return ret;
+}
+
+
 /* Needs the lock as it touches the ring.
  */
 int radeon_irq_emit( DRM_IOCTL_ARGS )
