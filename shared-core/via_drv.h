@@ -33,7 +33,6 @@ typedef struct drm_via_private {
         drm_map_t *fb;
         drm_map_t *mmio;
         unsigned long agpAddr;
-        drm_map_t *buffers;
         wait_queue_head_t decoder_queue[VIA_NR_XVMC_LOCKS];
 } drm_via_private_t;
 

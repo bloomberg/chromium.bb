@@ -41,12 +41,4 @@
 #define __HAVE_SHARED_IRQ	1
 #define __HAVE_VBL_IRQ		1
 
-
-
-#define DRIVER_AGP_BUFFERS_MAP( dev )				\
-    ((drm_via_private_t *)((dev)->dev_private))->buffers
-
-#define DRIVER_CTX_CTOR via_init_context
-#define DRIVER_CTX_DTOR via_final_context
-
 #endif

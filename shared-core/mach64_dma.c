@@ -655,14 +655,14 @@ static int mach64_do_dma_init( drm_device_t *dev, drm_mach64_init_t *init )
 	   	mach64_do_cleanup_dma(dev);
 	   	return DRM_ERR(EINVAL);
 	}
-	DRM_FIND_MAP( dev_priv->fb, init->fb_offset );
+	dev_priv->fb = drm_core_findmap(dev, init->fb_offset);
 	if (!dev_priv->fb) {
 		DRM_ERROR("can not find frame buffer map!\n");
 		dev->dev_private = (void *)dev_priv;
 	   	mach64_do_cleanup_dma(dev);
 	   	return DRM_ERR(EINVAL);
 	}
-	DRM_FIND_MAP( dev_priv->mmio, init->mmio_offset );
+	dev_priv->mmio = drm_core_findmap(dev, init->mmio_offset);
 	if (!dev_priv->mmio) {
 		DRM_ERROR("can not find mmio map!\n");
 		dev->dev_private = (void *)dev_priv;
@@ -675,14 +675,14 @@ static int mach64_do_dma_init( drm_device_t *dev, drm_mach64_init_t *init )
 		 init->sarea_priv_offset);
 
 	if( !dev_priv->is_pci ) {
-		DRM_FIND_MAP( dev_priv->ring_map, init->ring_offset );
+		dev_priv->ring_map = drm_core_findmap(dev, init->ring_offset);
 		if ( !dev_priv->ring_map ) {
 			DRM_ERROR( "can not find ring map!\n" );
 			dev->dev_private = (void *)dev_priv;
 			mach64_do_cleanup_dma(dev);
 			return DRM_ERR(EINVAL);
 		}
-		DRM_IOREMAP( dev_priv->ring_map, dev );
+		drm_core_ioremap( dev_priv->ring_map, dev );
 		if ( !dev_priv->ring_map->handle ) {
 		        DRM_ERROR( "can not ioremap virtual address for"
                                    " descriptor ring\n" );
@@ -690,23 +690,26 @@ static int mach64_do_dma_init( drm_device_t *dev, drm_mach64_init_t *init )
 			mach64_do_cleanup_dma( dev );
 			return DRM_ERR(ENOMEM);
                 }
-	        DRM_FIND_MAP( dev_priv->buffers, init->buffers_offset );
-		if ( !dev_priv->buffers ) {
+		dev->agp_buffer_map = drm_core_findmap(dev, init->buffers_offset);
+		if ( !dev->agp_buffer_map ) {
 			DRM_ERROR( "can not find dma buffer map!\n" );
 			dev->dev_private = (void *)dev_priv;
 			mach64_do_cleanup_dma( dev );
 			return DRM_ERR(EINVAL);
 		}
-		DRM_IOREMAP( dev_priv->buffers, dev );
-		if ( !dev_priv->buffers->handle ) {
+		/* there might be a nicer way to do this - 
+		   dev isn't passed all the way though the mach64 - DA */
+		dev_priv->dev_buffers = dev->agp_buffer_map;
+
+		drm_core_ioremap( dev->agp_buffer_map, dev );
+		if ( !dev->agp_buffer_map->handle ) {
 			DRM_ERROR( "can not ioremap virtual address for"
 				   " dma buffer\n" );
 			dev->dev_private = (void *) dev_priv;
 			mach64_do_cleanup_dma( dev );
 			return DRM_ERR(ENOMEM);
 		}
-		DRM_FIND_MAP( dev_priv->agp_textures,
-			      init->agp_textures_offset );
+		dev_priv->agp_textures = drm_core_findmap(dev, init->agp_textures_offset);
 		if (!dev_priv->agp_textures) {
 			DRM_ERROR( "can not find agp texture region!\n" );
 			dev->dev_private = (void *)dev_priv;
@@ -987,11 +990,11 @@ int mach64_do_cleanup_dma( drm_device_t *dev )
 			}
 		} else {
 			if ( dev_priv->ring_map )
-				DRM_IOREMAPFREE( dev_priv->ring_map, dev );
+				drm_core_ioremapfree( dev_priv->ring_map, dev );
 		}
 
-		if ( dev_priv->buffers )
-			DRM_IOREMAPFREE( dev_priv->buffers, dev );
+		if ( dev->agp_buffer_map )
+			drm_core_ioremapfree( dev->agp_buffer_map, dev );
 
 		mach64_destroy_freelist( dev );
 
@@ -1323,3 +1326,12 @@ int mach64_dma_buffers( DRM_IOCTL_ARGS )
         return ret;
 }
 
+static void mach64_driver_pretakedown(drm_device_t *dev)
+{
+	mach64_do_cleanup_dma( dev );					
+}
+
+void mach64_driver_register_fns(drm_device_t *dev)
+{
+	dev->fn_tbl.pretakedown = mach64_driver_pretakedown;
+}

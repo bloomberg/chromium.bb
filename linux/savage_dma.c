@@ -35,4 +35,6 @@
 #define SAVAGE_DEFAULT_USEC_TIMEOUT	10000
 #define SAVAGE_FREELIST_DEBUG		0
 
-
+void DRM(driver_register_fns)(drm_device_t *dev)
+{
+}

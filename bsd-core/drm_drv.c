@@ -77,32 +77,8 @@
 #define __HAVE_SG			0
 #endif
 
-#ifndef DRIVER_PREINIT
-#define DRIVER_PREINIT(dev) do {} while (0)
-#endif
-#ifndef DRIVER_POSTINIT
-#define DRIVER_POSTINIT(dev) do {} while (0)
-#endif
-#ifndef DRIVER_PRERELEASE
-#define DRIVER_PRERELEASE()
-#endif
-#ifndef DRIVER_PRETAKEDOWN
-#define DRIVER_PRETAKEDOWN(dev)
-#endif
-#ifndef DRIVER_POSTCLEANUP
-#define DRIVER_POSTCLEANUP()
-#endif
-#ifndef DRIVER_PRESETUP
-#define DRIVER_PRESETUP()
-#endif
-#ifndef DRIVER_POSTSETUP
-#define DRIVER_POSTSETUP()
-#endif
 #ifndef DRIVER_IOCTLS
 #define DRIVER_IOCTLS
-#endif
-#ifndef DRIVER_OPEN_HELPER
-#define DRIVER_OPEN_HELPER( priv, dev )
 #endif
 #ifndef DRIVER_FOPS
 #endif
@@ -437,7 +413,9 @@ static int DRM(setup)( drm_device_t *dev )
 
 	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
 
-	DRIVER_PRESETUP();
+	if (dev->fn_tbl.presetup)
+		dev->fn_tbl.presetup(dev);
+
 	dev->buf_use = 0;
 
 #if __HAVE_DMA
@@ -507,7 +485,9 @@ static int DRM(setup)( drm_device_t *dev )
 
 	DRM_DEBUG( "\n" );
 
-	DRIVER_POSTSETUP();
+	if (dev->fn_tbl.postsetup)
+		dev->fn_tbl.postsetup(dev);
+
 	return 0;
 }
 
@@ -523,7 +503,9 @@ static int DRM(takedown)( drm_device_t *dev )
 
 	DRM_DEBUG( "\n" );
 
-	DRIVER_PRETAKEDOWN(dev);
+	if (dev->fn_tbl.pretakedown)
+		dev->fn_tbl.pretakedown(dev);
+
 #if __HAVE_IRQ
 	if (dev->irq_enabled)
 		DRM(irq_uninstall)( dev );
@@ -638,8 +620,7 @@ static int DRM(init)( device_t nbdev )
 	int retcode;
 #endif
 	DRM_DEBUG( "\n" );
-	DRIVER_PREINIT(dev);
-
+	
 #ifdef __FreeBSD__
 	unit = device_get_unit(nbdev);
 	dev = device_get_softc(nbdev);
@@ -649,6 +630,13 @@ static int DRM(init)( device_t nbdev )
 		dev->device = device_get_parent(nbdev);
 	else
 		dev->device = nbdev;
+
+	/* dev_priv_size can be changed by a driver in driver_register_fns */
+	dev->dev_priv_size = sizeof(u32);
+	DRM(driver_register_fns)(dev);
+	
+	if (dev->fn_tbl.preinit)
+		dev->fn_tbl.preinit(dev, 0);
 
 	dev->devnode = make_dev( &DRM(cdevsw),
 			unit,
@@ -661,6 +649,14 @@ static int DRM(init)( device_t nbdev )
 #endif
 #elif defined(__NetBSD__)
 	unit = minor(dev->device.dv_unit);
+
+	/* dev_priv_size can be changed by a driver in driver_register_fns */
+	dev->dev_priv_size = sizeof(u32);
+	DRM(driver_register_fns)(dev);
+
+	if (dev->fn_tbl.preinit)
+		dev->fn_tbl.preinit(dev, 0);
+
 #endif
 
 	dev->irq = pci_get_irq(dev->device);
@@ -716,7 +712,8 @@ static int DRM(init)( device_t nbdev )
 	  	DRIVER_DATE,
 	  	unit );
 
-	DRIVER_POSTINIT(dev);
+	if (dev->fn_tbl.postinit)
+		dev->fn_tbl.postinit(dev, 0);
 
 	return 0;
 
@@ -773,7 +770,9 @@ static void DRM(cleanup)(drm_device_t *dev)
 		dev->agp = NULL;
 	}
 #endif
-	DRIVER_POSTCLEANUP();
+	if (dev->fn_tbl.postcleanup)
+		dev->fn_tbl.postcleanup(dev);
+
 	DRM(mem_uninit)();
 #if defined(__FreeBSD__) &&  __FreeBSD_version >= 500000
 	mtx_destroy(&dev->dev_lock);
@@ -854,7 +853,8 @@ int DRM(close)(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 		return EINVAL;
 	}
 
-	DRIVER_PRERELEASE();
+	if (dev->fn_tbl.prerelease)
+		dev->fn_tbl.prerelease(dev, filp);
 
 	/* ========================================================
 	 * Begin inline drm_release

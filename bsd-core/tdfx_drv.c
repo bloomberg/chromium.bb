@@ -52,3 +52,7 @@ DRIVER_MODULE(tdfx, pci, tdfx_driver, tdfx_devclass, 0, 0);
 #elif defined(__NetBSD__)
 CFDRIVER_DECL(tdfx, DV_TTY, NULL);
 #endif /* __FreeBSD__ */
+
+void DRM(driver_register_fns)(drm_device_t *dev)
+{
+}

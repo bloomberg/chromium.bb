@@ -40,17 +40,6 @@
 #define __HAVE_SG		0
 #endif
 
-#ifndef DRIVER_BUF_PRIV_T
-#define DRIVER_BUF_PRIV_T		u32
-#endif
-#ifndef DRIVER_AGP_BUFFERS_MAP
-#if __HAVE_AGP && __HAVE_DMA
-#error "You must define DRIVER_AGP_BUFFERS_MAP()"
-#else
-#define DRIVER_AGP_BUFFERS_MAP( dev )	NULL
-#endif
-#endif
-
 /*
  * Compute order.  Can be made faster.
  */
@@ -111,7 +100,7 @@ int DRM(addmap)( DRM_IOCTL_ARGS )
 
 	switch ( map->type ) {
 	case _DRM_REGISTERS:
-		DRM_IOREMAP(map, dev);
+		drm_core_ioremap(map, dev);
 		if (!(map->flags & _DRM_WRITE_COMBINING))
 			break;
 		/* FALLTHROUGH */
@@ -353,7 +342,7 @@ static int DRM(addbufs_agp)(drm_device_t *dev, drm_buf_desc_t *request)
 		buf->pending = 0;
 		buf->filp    = NULL;
 
-		buf->dev_priv_size = sizeof(DRIVER_BUF_PRIV_T);
+		buf->dev_priv_size = dev->dev_priv_size;
 		buf->dev_private = DRM(calloc)(1, buf->dev_priv_size,
 		    DRM_MEM_BUFS);
 		if (buf->dev_private == NULL) {
@@ -512,8 +501,8 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 			buf->pending = 0;
 			buf->filp    = NULL;
 
-			buf->dev_priv_size = sizeof(DRIVER_BUF_PRIV_T);
-			buf->dev_private = DRM(alloc)(sizeof(DRIVER_BUF_PRIV_T),
+			buf->dev_priv_size = dev->dev_priv_size;
+			buf->dev_private = DRM(alloc)(buf->dev_priv_size,
 			    DRM_MEM_BUFS);
 			if (buf->dev_private == NULL) {
 				/* Set count correctly so we free the proper amount. */
@@ -636,7 +625,7 @@ static int DRM(addbufs_sg)(drm_device_t *dev, drm_buf_desc_t *request)
 		buf->pending = 0;
 		buf->filp    = NULL;
 
-		buf->dev_priv_size = sizeof(DRIVER_BUF_PRIV_T);
+		buf->dev_priv_size = dev->dev_priv_size;
 		buf->dev_private = DRM(calloc)(1, buf->dev_priv_size,
 		    DRM_MEM_BUFS);
 		if (buf->dev_private == NULL) {
@@ -907,7 +896,7 @@ int DRM(mapbufs)( DRM_IOCTL_ARGS )
 
 	if ((__HAVE_AGP && (dma->flags & _DRM_DMA_USE_AGP)) ||
 	    (__HAVE_SG && (dma->flags & _DRM_DMA_USE_SG))) {
-		drm_local_map_t *map = DRIVER_AGP_BUFFERS_MAP(dev);
+		drm_local_map_t *map = dev->agp_buffer_map;
 
 		if (map == NULL) {
 			retcode = EINVAL;

@@ -105,12 +105,6 @@
 #ifndef __HAVE_IRQ
 #define __HAVE_IRQ		0
 #endif
-#ifndef __HAVE_DMA_WAITLIST
-#define __HAVE_DMA_WAITLIST	0
-#endif
-#ifndef __HAVE_DMA_FREELIST
-#define __HAVE_DMA_FREELIST	0
-#endif
 
 #define __REALLY_HAVE_AGP	(__HAVE_AGP && (defined(CONFIG_AGP) || \
 						defined(CONFIG_AGP_MODULE)))
@@ -220,54 +214,6 @@
 #define DRM_PROC_PRINT_RET(ret, fmt, arg...)				\
    len += sprintf(&buf[len], fmt , ##arg);				\
    if (len > DRM_PROC_LIMIT) { ret; *eof = 1; return len - offset; }
-
-/*@}*/
-
-
-/***********************************************************************/
-/** \name Mapping helper macros */
-/*@{*/
-
-#define DRM_IOREMAP(map, dev)							\
-	(map)->handle = DRM(ioremap)( (map)->offset, (map)->size, (dev) )
-
-#define DRM_IOREMAP_NOCACHE(map, dev)						\
-	(map)->handle = DRM(ioremap_nocache)((map)->offset, (map)->size, (dev))
-
-#define DRM_IOREMAPFREE(map, dev)						\
-	do {									\
-		if ( (map)->handle && (map)->size )				\
-			DRM(ioremapfree)( (map)->handle, (map)->size, (dev) );	\
-	} while (0)
-
-/**
- * Find mapping.
- *
- * \param _map matching mapping if found, untouched otherwise.
- * \param _o offset.
- *
- * Expects the existence of a local variable named \p dev pointing to the
- * drm_device structure.
- */
-#define DRM_FIND_MAP(_map, _o)								\
-do {											\
-	struct list_head *_list;							\
-	list_for_each( _list, &dev->maplist->head ) {					\
-		drm_map_list_t *_entry = list_entry( _list, drm_map_list_t, head );	\
-		if ( _entry->map &&							\
-		     _entry->map->offset == (_o) ) {					\
-			(_map) = _entry->map;						\
-			break;								\
- 		}									\
-	}										\
-} while(0)
-
-/**
- * Drop mapping.
- *
- * \sa #DRM_FIND_MAP.
- */
-#define DRM_DROP_MAP(_map)
 
 /*@}*/
 
@@ -569,6 +515,35 @@ typedef struct drm_vbl_sig {
 
 #endif
 
+/** 
+ * DRM device functions structure
+ */
+struct drm_device;
+
+struct drm_driver_fn {
+	int (*preinit)(struct drm_device *, unsigned long flags);
+	int (*postinit)(struct drm_device *, unsigned long flags);
+	void (*prerelease)(struct drm_device *, struct file *filp);
+	void (*pretakedown)(struct drm_device *);
+	int (*postcleanup)(struct drm_device *);
+	int (*presetup)(struct drm_device *);
+	int (*postsetup)(struct drm_device *);
+	void (*open_helper)(struct drm_device *, drm_file_t *);
+	void (*release)(struct drm_device *, struct file *filp);
+	void (*dma_ready)(struct drm_device *);
+	int (*dma_quiescent)(struct drm_device *);
+	int (*dma_flush_block_and_flush)(struct drm_device *, int context, drm_lock_flags_t flags);
+	int (*dma_flush_unblock)(struct drm_device *, int context, drm_lock_flags_t flags);
+	int (*context_ctor)(struct drm_device *dev, int context);
+	int (*context_dtor)(struct drm_device *dev, int context);
+	int (*kernel_context_switch)(struct drm_device *dev, int old, int new);
+	int (*kernel_context_switch_unlock)(struct drm_device *dev);
+	int (*dma_schedule)(struct drm_device *dev, int locked);
+	int (*waitlist_destroy)(drm_waitlist_t *bl);	
+	int (*freelist_create)(drm_freelist_t *bl, int count);
+	int (*freelist_put)(struct drm_device *dev, drm_freelist_t *bl, drm_buf_t *buf);
+	int (*freelist_destroy)(drm_freelist_t *bl);
+};
 
 /**
  * DRM device structure.
@@ -704,8 +679,12 @@ typedef struct drm_device {
 	sigset_t          sigmask;
 	
 	int               need_reset;	/**< secondary device needing reset */
+	struct drm_driver_fn fn_tbl;
+	drm_local_map_t   *agp_buffer_map;
+	int               dev_priv_size;
 } drm_device_t;
 
+extern void DRM(driver_register_fns)(struct drm_device *dev);
 
 /******************************************************************/
 /** \name Internal function definitions */
@@ -960,6 +939,40 @@ extern void	      *DRM(pci_alloc)(drm_device_t *dev, size_t size,
 extern void	      DRM(pci_free)(drm_device_t *dev, size_t size, 
 					void *vaddr, dma_addr_t busaddr);
 
+
+/* Inline replacements for DRM_IOREMAP macros */
+static __inline__ void drm_core_ioremap(struct drm_map *map, struct drm_device *dev)
+{
+	map->handle = DRM(ioremap)( map->offset, map->size, dev );
+}
+
+static __inline__ void drm_core_ioremap_nocache(struct drm_map *map, struct drm_device *dev)
+{
+	map->handle = DRM(ioremap_nocache)(map->offset, map->size, dev);
+}
+
+static __inline__ void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev)
+{
+	if ( map->handle && map->size )
+		DRM(ioremapfree)( map->handle, map->size, dev );
+}
+
+static __inline__ struct drm_map *drm_core_findmap(struct drm_device *dev, unsigned long offset)
+{
+	struct list_head *_list;
+	list_for_each( _list, &dev->maplist->head ) {
+		drm_map_list_t *_entry = list_entry( _list, drm_map_list_t, head );
+		if ( _entry->map &&
+		     _entry->map->offset == offset ) {
+			return _entry->map;
+		}
+	}
+	return NULL;
+}
+
+static __inline__ void drm_core_dropmap(struct drm_map *map)
+{
+}
 /*@}*/
 
 #endif /* __KERNEL__ */

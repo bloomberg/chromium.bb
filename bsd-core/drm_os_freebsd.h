@@ -447,18 +447,6 @@ find_first_zero_bit(volatile void *p, int max)
 #define DRM_SYSCTL_HANDLER_ARGS	SYSCTL_HANDLER_ARGS
 #endif
 
-#define DRM_FIND_MAP(dest, o)						\
-	do {								\
-		drm_map_list_entry_t *listentry;			\
-		TAILQ_FOREACH(listentry, dev->maplist, link) {		\
-			if ( listentry->map->offset == o ) {		\
-				dest = listentry->map;			\
-				break;					\
-			}						\
-		}							\
-	} while (0)
-
-
 /* Internal functions */
 
 /* drm_drv.h */

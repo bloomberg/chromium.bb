@@ -1108,33 +1108,33 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 		return DRM_ERR(EINVAL);
 	}
 
-	DRM_FIND_MAP( dev_priv->mmio, init->mmio_offset );
+	dev_priv->mmio = drm_core_findmap(dev, init->mmio_offset);
 	if(!dev_priv->mmio) {
 		DRM_ERROR("could not find mmio region!\n");
 		radeon_do_cleanup_cp(dev);
 		return DRM_ERR(EINVAL);
 	}
-	DRM_FIND_MAP( dev_priv->cp_ring, init->ring_offset );
+	dev_priv->cp_ring = drm_core_findmap(dev, init->ring_offset);
 	if(!dev_priv->cp_ring) {
 		DRM_ERROR("could not find cp ring region!\n");
 		radeon_do_cleanup_cp(dev);
 		return DRM_ERR(EINVAL);
 	}
-	DRM_FIND_MAP( dev_priv->ring_rptr, init->ring_rptr_offset );
+	dev_priv->ring_rptr = drm_core_findmap(dev, init->ring_rptr_offset);
 	if(!dev_priv->ring_rptr) {
 		DRM_ERROR("could not find ring read pointer!\n");
 		radeon_do_cleanup_cp(dev);
 		return DRM_ERR(EINVAL);
 	}
-	DRM_FIND_MAP( dev_priv->buffers, init->buffers_offset );
-	if(!dev_priv->buffers) {
+	dev->agp_buffer_map = drm_core_findmap(dev, init->buffers_offset);
+	if(!dev->agp_buffer_map) {
 		DRM_ERROR("could not find dma buffer region!\n");
 		radeon_do_cleanup_cp(dev);
 		return DRM_ERR(EINVAL);
 	}
 
 	if ( init->gart_textures_offset ) {
-		DRM_FIND_MAP( dev_priv->gart_textures, init->gart_textures_offset );
+		dev_priv->gart_textures = drm_core_findmap(dev, init->gart_textures_offset);
 		if ( !dev_priv->gart_textures ) {
 			DRM_ERROR("could not find GART texture region!\n");
 			radeon_do_cleanup_cp(dev);
@@ -1147,13 +1147,13 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 				       init->sarea_priv_offset);
 
 #if __REALLY_HAVE_AGP
-	if (dev_priv->flags & CHIP_IS_AGP) {
-		DRM_IOREMAP( dev_priv->cp_ring, dev );
-		DRM_IOREMAP( dev_priv->ring_rptr, dev );
-		DRM_IOREMAP( dev_priv->buffers, dev );
+	if ( dev_priv->flags & CHIP_IS_AGP ) {
+		drm_core_ioremap( dev_priv->cp_ring, dev );
+		drm_core_ioremap( dev_priv->ring_rptr, dev );
+		drm_core_ioremap( dev->agp_buffer_map, dev );
 		if(!dev_priv->cp_ring->handle ||
 		   !dev_priv->ring_rptr->handle ||
-		   !dev_priv->buffers->handle) {
+		   !dev->agp_buffer_map->handle) {
 			DRM_ERROR("could not find ioremap agp regions!\n");
 			radeon_do_cleanup_cp(dev);
 			return DRM_ERR(EINVAL);
@@ -1165,14 +1165,14 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 			(void *)dev_priv->cp_ring->offset;
 		dev_priv->ring_rptr->handle =
 			(void *)dev_priv->ring_rptr->offset;
-		dev_priv->buffers->handle = (void *)dev_priv->buffers->offset;
+		dev->agp_buffer_map->handle = (void *)dev->agp_buffer_map->offset;
 
 		DRM_DEBUG( "dev_priv->cp_ring->handle %p\n",
 			   dev_priv->cp_ring->handle );
 		DRM_DEBUG( "dev_priv->ring_rptr->handle %p\n",
 			   dev_priv->ring_rptr->handle );
-		DRM_DEBUG( "dev_priv->buffers->handle %p\n",
-			   dev_priv->buffers->handle );
+		DRM_DEBUG( "dev->agp_buffer_map->handle %p\n",
+			   dev->agp_buffer_map->handle );
 	}
 
 	dev_priv->fb_location = ( RADEON_READ( RADEON_MC_FB_LOCATION )
@@ -1197,12 +1197,12 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 
 #if __REALLY_HAVE_AGP
 	if (dev_priv->flags & CHIP_IS_AGP)
-		dev_priv->gart_buffers_offset = (dev_priv->buffers->offset
+		dev_priv->gart_buffers_offset = (dev->agp_buffer_map->offset
 						- dev->agp->base
 						+ dev_priv->gart_vm_start);
 	else
 #endif
-		dev_priv->gart_buffers_offset = (dev_priv->buffers->offset
+		dev_priv->gart_buffers_offset = (dev->agp_buffer_map->offset
 						- dev->sg->handle
 						+ dev_priv->gart_vm_start);
 
@@ -1268,19 +1268,20 @@ int radeon_do_cleanup_cp( drm_device_t *dev )
 #if __REALLY_HAVE_AGP
 	if (dev_priv->flags & CHIP_IS_AGP) {
 		if ( dev_priv->cp_ring != NULL )
-			DRM_IOREMAPFREE( dev_priv->cp_ring, dev );
+			drm_core_ioremapfree( dev_priv->cp_ring, dev );
 		if ( dev_priv->ring_rptr != NULL )
-			DRM_IOREMAPFREE( dev_priv->ring_rptr, dev );
-		if ( dev_priv->buffers != NULL )
-			DRM_IOREMAPFREE( dev_priv->buffers, dev );
+			drm_core_ioremapfree( dev_priv->ring_rptr, dev );
+		if ( dev->agp_buffer_map != NULL )
+			drm_core_ioremapfree( dev->agp_buffer_map, dev );
 	} else
 #endif
 	{
 		if (!DRM(ati_pcigart_cleanup)( dev,
-					dev_priv->phys_pci_gart,
-					dev_priv->bus_pci_gart ))
+					       dev_priv->phys_pci_gart,
+					       dev_priv->bus_pci_gart ))
 			DRM_ERROR( "failed to cleanup PCI GART!\n" );
 	}
+	
 	{
 		int flags = dev_priv->flags;
 		memset(dev_priv, 0, sizeof(*dev_priv));
@@ -1734,12 +1735,12 @@ static int radeon_register_regions(struct pci_dev *pdev) {
 	/* request the mem regions */
 	if (!request_mem_region (pci_resource_start( pdev, 2 ),
 					pci_resource_len(pdev, 2), DRIVER_NAME)) {
-		printk(KERN_ERR DRIVER_NAME ": cannot reserve MMIO region\n");
+		DRM_ERROR("cannot reserve MMIO region\n");
 		return retcode;
 	}
 	if (!request_mem_region (pci_resource_start( pdev, 0 ),
 					pci_resource_len(pdev, 0), DRIVER_NAME)) {
-		printk(KERN_ERR DRIVER_NAME ": cannot reserve FB region\n");
+		DRM_ERROR("cannot reserve FB region\n");
 		return retcode;
 	}
 	return 0;
@@ -1751,7 +1752,7 @@ static void radeon_release_regions(struct pci_dev *pdev) {
 }
 
 /* Always create a map record for MMIO and FB memory, done from DRIVER_POSTINIT */
-int radeon_preinit( drm_device_t *dev, unsigned long flags )
+int radeon_preinit( struct drm_device *dev, unsigned long flags )
 {
 	int retcode = -EINVAL;
 	u32 save, temp;
@@ -1788,12 +1789,12 @@ int radeon_preinit( drm_device_t *dev, unsigned long flags )
         return 0;
 }
 
-int radeon_postinit( drm_device_t *dev, unsigned long flags )
+int radeon_postinit( struct drm_device *dev, unsigned long flags )
 {
 	return 0;
 }
 
-void radeon_postcleanup( drm_device_t *dev )
+int radeon_postcleanup( struct drm_device *dev )
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	
@@ -1803,4 +1804,5 @@ void radeon_postcleanup( drm_device_t *dev )
 		radeon_release_regions(dev->pdev);
 	
 	dev->dev_private = NULL;
+	return 0;
 }

@@ -103,7 +103,7 @@ int via_fb_init( DRM_IOCTL_ARGS )
         return 0;
 }
 
-int via_init_context(drm_device_t *dev, int context)
+int via_init_context(struct drm_device *dev, int context)
 {
         int i;
     
@@ -134,7 +134,7 @@ int via_init_context(drm_device_t *dev, int context)
         return 1;
 }
 
-int via_final_context(drm_device_t *dev, int context)
+int via_final_context(struct drm_device *dev, int context)
 {
         int i;
         for (i=0; i<MAX_CONTEXT; i++)
@@ -345,3 +345,9 @@ int via_agp_free(drm_via_mem_t* mem)
 
 EXPORT_SYMBOL(via_fb_alloc);
 EXPORT_SYMBOL(via_fb_free);
+
+void DRM(driver_register_fns)(drm_device_t *dev)
+{
+  dev->fn_tbl.context_ctor = via_init_context;
+  dev->fn_tbl.context_dtor = via_final_context;
+}

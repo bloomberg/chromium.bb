@@ -92,7 +92,7 @@ typedef struct drm_mach64_private {
 	drm_local_map_t *fb;
 	drm_local_map_t *mmio;
 	drm_local_map_t *ring_map;
-	drm_local_map_t *buffers;
+	drm_local_map_t *dev_buffers; /* this is a pointer to a structure in dev */
 	drm_local_map_t *agp_textures;
 } drm_mach64_private_t;
 
@@ -791,7 +791,7 @@ do {									\
 #define GETBUFPTR( __buf )						\
 ((dev_priv->is_pci) ? 							\
 	((u32 *)(__buf)->address) : 					\
-	((u32 *)((char *)dev_priv->buffers->handle + (__buf)->offset)))
+	((u32 *)((char *)dev_priv->dev_buffers->handle + (__buf)->offset)))
 
 #define GETBUFADDR( __buf ) ((u32)(__buf)->bus_address)
 

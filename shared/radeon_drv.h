@@ -83,7 +83,7 @@ struct mem_block {
 
 typedef struct drm_radeon_private {
 
-	u32 flags;		/* see radeon_chip_flags */
+	uint32_t flags;		/* see radeon_chip_flags */
 
 	drm_radeon_ring_buffer_t ring;
 	drm_radeon_sarea_t *sarea_priv;
@@ -152,7 +152,6 @@ typedef struct drm_radeon_private {
 	drm_local_map_t *mmio;
 	drm_local_map_t *cp_ring;
 	drm_local_map_t *ring_rptr;
-	drm_local_map_t *buffers;
 	drm_local_map_t *gart_textures;
 
 	struct mem_block *gart_heap;
@@ -738,9 +737,9 @@ do {									\
 } while (0)
 
 extern int RADEON_READ_PLL( drm_device_t *dev, int addr );
-extern int radeon_preinit( drm_device_t *dev, unsigned long flags );
-extern int radeon_postinit( drm_device_t *dev, unsigned long flags );
-extern void radeon_postcleanup( drm_device_t *dev );
+extern int radeon_preinit( struct drm_device *dev, unsigned long flags );
+extern int radeon_postinit( struct drm_device *dev, unsigned long flags );
+extern int radeon_postcleanup( struct drm_device *dev );
 
 #define CP_PACKET0( reg, n )						\
 	(RADEON_CP_PACKET0 | ((n) << 16) | ((reg) >> 2))

@@ -90,7 +90,8 @@ int DRM(open_helper)(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		priv->ioctl_count 	= 0;
 		priv->authenticated	= !DRM_SUSER(p);
 
-		DRIVER_OPEN_HELPER( priv, dev );
+		if (dev->fn_tbl.open_helper)
+			dev->fn_tbl.open_helper(dev, priv);
 
 		TAILQ_INSERT_TAIL(&dev->files, priv, link);
 	}

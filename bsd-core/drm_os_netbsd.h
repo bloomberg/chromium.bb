@@ -357,17 +357,6 @@ do { \
 #define DRM_DEBUG(fmt, arg...)		 do { } while (0)
 #endif
 
-#define DRM_FIND_MAP(dest, o)						\
-	do {								\
-		drm_map_list_entry_t *listentry;			\
-		TAILQ_FOREACH(listentry, dev->maplist, link) {		\
-			if ( listentry->map->offset == o ) {		\
-				dest = listentry->map;			\
-				break;					\
-			}						\
-		}							\
-	} while (0)
-
 /* Internal functions */
 
 /* drm_drv.h */

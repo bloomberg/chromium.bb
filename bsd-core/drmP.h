@@ -100,19 +100,6 @@ typedef struct drm_file drm_file_t;
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 
-				/* Mapping helper macros */
-#define DRM_IOREMAP(map, dev)						\
-	(map)->handle = DRM(ioremap)( dev, map )
-
-#define DRM_IOREMAP_NOCACHE(map, dev)					\
-	(map)->handle = DRM(ioremap_nocache)( dev, map )
-
-#define DRM_IOREMAPFREE(map, dev)						\
-	do {								\
-		if ( (map)->handle && (map)->size )			\
-			DRM(ioremapfree)( map );			\
-	} while (0)
-
 				/* Internal types and structures */
 #define DRM_ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 #define DRM_MIN(a,b) ((a)<(b)?(a):(b))
@@ -302,6 +289,32 @@ typedef struct drm_vbl_sig {
 	int		pid;
 } drm_vbl_sig_t;
 
+/** 
+ * DRM device functions structure
+ */
+struct drm_device;
+
+struct drm_driver_fn {
+	int (*preinit)(struct drm_device *, unsigned long flags);
+	int (*postinit)(struct drm_device *, unsigned long flags);
+	void (*prerelease)(struct drm_device *, void *filp);
+	void (*pretakedown)(struct drm_device *);
+	int (*postcleanup)(struct drm_device *);
+	int (*presetup)(struct drm_device *);
+	int (*postsetup)(struct drm_device *);
+	void (*open_helper)(struct drm_device *, drm_file_t *);
+	void (*release)(struct drm_device *, void *filp);
+	void (*dma_ready)(struct drm_device *);
+	int (*dma_quiescent)(struct drm_device *);
+	int (*dma_flush_block_and_flush)(struct drm_device *, int context, drm_lock_flags_t flags);
+	int (*dma_flush_unblock)(struct drm_device *, int context, drm_lock_flags_t flags);
+	int (*context_ctor)(struct drm_device *dev, int context);
+	int (*context_dtor)(struct drm_device *dev, int context);
+	int (*kernel_context_switch)(struct drm_device *dev, int old, int new);
+	int (*kernel_context_switch_unlock)(struct drm_device *dev);
+	int (*dma_schedule)(struct drm_device *dev, int locked);
+};
+
 struct drm_device {
 #ifdef __NetBSD__
 	struct device	  device;	/* NetBSD's softc is an extension of struct device */
@@ -393,7 +406,12 @@ struct drm_device {
 	drm_sg_mem_t      *sg;  /* Scatter gather memory */
 	atomic_t          *ctx_bitmap;
 	void		  *dev_private;
+	struct drm_driver_fn fn_tbl;
+	drm_local_map_t   *agp_buffer_map;
+	int               dev_priv_size;
 };
+
+extern void DRM(driver_register_fns)(struct drm_device *dev);
 
 extern int	     DRM(flags);
 
@@ -569,6 +587,38 @@ extern void		*DRM(pci_alloc)(drm_device_t *dev, size_t size,
 					dma_addr_t *busaddr);
 extern void		DRM(pci_free)(drm_device_t *dev, size_t size, 
 				      void *vaddr, dma_addr_t busaddr);
+
+/* Inline replacements for DRM_IOREMAP macros */
+static __inline__ void drm_core_ioremap(struct drm_local_map *map, struct drm_device *dev)
+{
+	map->handle = DRM(ioremap)( dev, map );
+}
+#if 0
+static __inline__ void drm_core_ioremap_nocache(struct drm_map *map, struct drm_device *dev)
+{
+	map->handle = DRM(ioremap_nocache)(dev, map);
+}
+#endif
+static __inline__ void drm_core_ioremapfree(struct drm_local_map *map, struct drm_device *dev)
+{
+	if ( map->handle && map->size )
+		DRM(ioremapfree)( map );
+}
+
+static __inline__ struct drm_local_map *drm_core_findmap(struct drm_device *dev, unsigned long offset)
+{
+	drm_map_list_entry_t *listentry;
+	TAILQ_FOREACH(listentry, dev->maplist, link) {
+		if ( listentry->map->offset == offset ) {
+			return listentry->map;
+		}
+	}
+	return NULL;
+}
+
+static __inline__ void drm_core_dropmap(struct drm_map *map)
+{
+}
 
 #endif /* __KERNEL__ */
 #endif /* _DRM_P_H_ */
