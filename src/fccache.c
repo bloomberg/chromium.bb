@@ -623,6 +623,7 @@ FcGlobalCacheCreate (void)
     cache->entries = 0;
     cache->referenced = 0;
     cache->updated = FcFalse;
+    cache->broken = FcFalse;
     return cache;
 }
 
