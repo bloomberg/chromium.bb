@@ -255,6 +255,87 @@ FcVendorFoundry(const char *vendor)
     return 0;
 }
 
+typedef struct _FcStringConst {
+    const char	*name;
+    int		value;
+} FcStringConst;
+
+static int
+FcStringIsConst (const FcChar8		*string,
+		 const FcStringConst	*c,
+		 int			nc)
+{
+    int	i;
+
+    for (i = 0; i < nc; i++)
+	if (FcStrCmpIgnoreBlanksAndCase (string, c[i].name) == 0)
+	    return c[i].value;
+    return -1;
+}
+
+static int
+FcStringContainsConst (const FcChar8	    *string,
+		       const FcStringConst  *c,
+		       int		    nc)
+{
+    int	i;
+
+    for (i = 0; i < nc; i++)
+	if (FcStrContainsIgnoreBlanksAndCase (string, c[i].name))
+	    return c[i].value;
+    return -1;
+}
+
+static const FcStringConst  weightConsts[] = {
+    { "thin",		FC_WEIGHT_THIN },
+    { "extralight",	FC_WEIGHT_EXTRALIGHT },
+    { "ultralight",	FC_WEIGHT_ULTRALIGHT },
+    { "light",		FC_WEIGHT_LIGHT },
+    { "book",		FC_WEIGHT_BOOK },
+    { "regular",	FC_WEIGHT_REGULAR },
+    { "normal",		FC_WEIGHT_NORMAL },
+    { "medium",		FC_WEIGHT_MEDIUM },
+    { "demibold",	FC_WEIGHT_DEMIBOLD },
+    { "demi",		FC_WEIGHT_DEMIBOLD },
+    { "semibold",	FC_WEIGHT_SEMIBOLD },
+    { "bold",		FC_WEIGHT_BOLD },
+    { "extrabold",	FC_WEIGHT_EXTRABOLD },
+    { "ultrabold",	FC_WEIGHT_ULTRABOLD },
+    { "black",		FC_WEIGHT_BLACK },
+    { "heavy",		FC_WEIGHT_HEAVY },
+};
+
+#define NUM_WEIGHT_CONSTS  (sizeof (weightConsts) / sizeof (weightConsts[0]))
+
+#define FcIsWeight(s)	    FcStringIsConst(s,weightConsts,NUM_WEIGHT_CONSTS)
+#define FcContainsWeight(s) FcStringContainsConst (s,weightConsts,NUM_WEIGHT_CONSTS)
+
+static const FcStringConst  widthConsts[] = {
+    { "ultracondensed",	FC_WIDTH_ULTRACONDENSED },
+    { "extracondensed",	FC_WIDTH_EXTRACONDENSED },
+    { "semicondensed",  FC_WIDTH_SEMICONDENSED },
+    { "condensed",	FC_WIDTH_CONDENSED },	/* must be after *condensed */
+    { "normal",		FC_WIDTH_NORMAL },
+    { "semiexpanded",	FC_WIDTH_SEMIEXPANDED },
+    { "extraexpanded",	FC_WIDTH_EXTRAEXPANDED },
+    { "ultraexpanded",	FC_WIDTH_ULTRAEXPANDED },
+    { "expanded",	FC_WIDTH_EXPANDED },	/* must be after *expanded */
+};
+
+#define NUM_WIDTH_CONSTS    (sizeof (widthConsts) / sizeof (widthConsts[0]))
+
+#define FcIsWidth(s)	    FcStringIsConst(s,widthConsts,NUM_WIDTH_CONSTS)
+#define FcContainsWidth(s)  FcStringContainsConst (s,widthConsts,NUM_WIDTH_CONSTS)
+
+static const FcStringConst  slantConsts[] = {
+    { "italic",		FC_SLANT_ITALIC },
+    { "oblique",	FC_SLANT_OBLIQUE },
+};
+
+#define NUM_SLANT_CONSTS    (sizeof (slantConsts) / sizeof (slantConsts[0]))
+
+#define FcIsSlant(s)	    FcStringIsConst(s,slantConsts,NUM_SLANT_CONSTS)
+#define FcContainsSlant(s)  FcStringContainsConst (s,slantConsts,NUM_SLANT_CONSTS)
 
 FcPattern *
 FcFreeTypeQuery (const FcChar8	*file,
@@ -264,8 +345,8 @@ FcFreeTypeQuery (const FcChar8	*file,
 {
     FT_Face	    face;
     FcPattern	    *pat;
-    int		    slant;
-    int		    weight;
+    int		    slant = -1;
+    int		    weight = -1;
     int		    width = -1;
     int		    i;
     FcCharSet	    *cs;
@@ -306,15 +387,6 @@ FcFreeTypeQuery (const FcChar8	*file,
 			   (face->face_flags & FT_FACE_FLAG_SCALABLE) != 0))
 	goto bail1;
 
-
-    slant = FC_SLANT_ROMAN;
-    if (face->style_flags & FT_STYLE_FLAG_ITALIC)
-	slant = FC_SLANT_ITALIC;
-
-
-    weight = FC_WEIGHT_MEDIUM;
-    if (face->style_flags & FT_STYLE_FLAG_BOLD)
-	weight = FC_WEIGHT_BOLD;
 
     /*
      * Get the OS/2 table
@@ -598,30 +670,15 @@ FcFreeTypeQuery (const FcChar8	*file,
     }
 
     if (FcDebug() & FC_DBG_SCAN)
-	printf ("\"%s\" \"%s\" ", family, style ? style : (FcChar8 *) "<none>");
+	printf ("\n\"%s\" \"%s\"\n", family, style ? style : (FcChar8 *) "<none>");
 
     if (!FcPatternAddString (pat, FC_FAMILY, family))
-    {
-	if (family_allocated)
-	    free (family);
-	if (style_allocated)
-	    free (style);
 	goto bail1;
-    }
-
-    if (family_allocated)
-	free (family);
 
     if (style)
     {
 	if (!FcPatternAddString (pat, FC_STYLE, style))
-	{
-	    if (style_allocated)
-		free (style);
 	    goto bail1;
-	}
-	if (style_allocated)
-	    free (style);
     }
 
     if (!FcPatternAddString (pat, FC_FILE, file))
@@ -695,7 +752,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (os2 && os2->version != 0xffff)
     {
 	if (os2->usWeightClass == 0)
-	    weight = -1;
+	    ;
 	else if (os2->usWeightClass < 150)
 	    weight = FC_WEIGHT_THIN;
 	else if (os2->usWeightClass < 250)
@@ -714,8 +771,6 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    weight = FC_WEIGHT_EXTRABOLD;
 	else if (os2->usWeightClass < 950)
 	    weight = FC_WEIGHT_BLACK;
-	else
-	    weight = FC_WEIGHT_MEDIUM;
 
 	switch (os2->usWidthClass) {
 	case 1:	width = FC_WIDTH_ULTRACONDENSED; break;
@@ -737,44 +792,15 @@ FcFreeTypeQuery (const FcChar8	*file,
     
     if (FT_Get_PS_Font_Info(face, &psfontinfo) == 0)
     {
-	if (psfontinfo.weight)
+#if 0
+	if (weight == -1 && psfontinfo.weight)
 	{
-	    static struct {
-		char    *name;
-		int	value;
-	    } ps_weights[] = {
-		{ "thin",		FC_WEIGHT_THIN },
-		{ "extralight",		FC_WEIGHT_EXTRALIGHT },
-		{ "ultralight",		FC_WEIGHT_ULTRALIGHT },
-		{ "light",		FC_WEIGHT_LIGHT },
-		{ "book",		FC_WEIGHT_BOOK },
-		{ "regular",		FC_WEIGHT_REGULAR },
-		{ "normal",		FC_WEIGHT_NORMAL },
-		{ "medium",		FC_WEIGHT_MEDIUM },
-		{ "demibold",		FC_WEIGHT_DEMIBOLD },
-		{ "demi",		FC_WEIGHT_DEMIBOLD },
-		{ "semibold",		FC_WEIGHT_SEMIBOLD },
-		{ "bold",		FC_WEIGHT_BOLD },
-		{ "extrabold",		FC_WEIGHT_EXTRABOLD },
-		{ "ultrabold",		FC_WEIGHT_ULTRABOLD },
-		{ "black",		FC_WEIGHT_BLACK },
-		{ "heavy",		FC_WEIGHT_HEAVY },
-	    };
-#define NUM_PS_WEIGHTS	(sizeof (ps_weights) / sizeof (ps_weights[0]))
-	    int	w;
-	    for (w = 0; w < NUM_PS_WEIGHTS; w++)
-		if (!FcStrCmpIgnoreBlanksAndCase ((FcChar8 *) ps_weights[w].name,
-					 (FcChar8 *) psfontinfo.weight))
-		{
-		    weight = ps_weights[w].value;
-		    break;
-		}
-	    if (FcDebug () & FC_DBG_SCANV)
-	    {
-		if (w == NUM_PS_WEIGHTS)
-		    printf ("\tunknown PS weight name %s\n", psfontinfo.weight);
-	    }
+	    weight = FcIsWeight (psfontinfo.weight);
+    	    if (FcDebug() & FC_DBG_SCANV)
+    		printf ("\tType1 weight %s maps to %d\n",
+			psfontinfo.weight, weight);
 	}
+#endif
      
 #if 0
 	/* 
@@ -838,14 +864,11 @@ FcFreeTypeQuery (const FcChar8	*file,
 		FcChar8	    *width_name;
 		int	    width;
 	    } FcSetWidths[] = {
-		{ "Condensed",	    FC_WIDTH_CONDENSED },
-		{ "SemiCondensed",  FC_WIDTH_SEMICONDENSED },
-		{ "Normal",	    FC_WIDTH_NORMAL },
 	    };
 	    int	i;
 
 	    if (FcDebug () & FC_DBG_SCANV)
-		printf ("\nsetwidth: %s\n", prop.u.atom);
+		printf ("\tsetwidth: %s\n", prop.u.atom);
 	    for (i = 0; i < sizeof (FcSetWidths) / sizeof (FcSetWidths[0]); i++)
 		if (!FcStrCmpIgnoreBlanksAndCase ((FcChar8 *) prop.u.atom,
 					 FcSetWidths[i].width_name))
@@ -857,6 +880,48 @@ FcFreeTypeQuery (const FcChar8	*file,
     }
 
 #endif
+
+    /*
+     * Look for weight, width and slant names in the style value
+     */
+    if (style)
+    {
+	if (weight == -1)
+	{
+	    weight = FcContainsWeight (style);
+	    if (FcDebug() & FC_DBG_SCANV)
+		printf ("\tStyle %s maps to weight %d\n", style, weight);
+	}
+	if (width == -1)
+	{
+	    width = FcContainsWidth (style);
+	    if (FcDebug() & FC_DBG_SCANV)
+		printf ("\tStyle %s maps to width %d\n", style, width);
+	}
+	if (slant == -1)
+	{
+	    slant = FcContainsSlant (style);
+	    if (FcDebug() & FC_DBG_SCANV)
+		printf ("\tStyle %s maps to slant %d\n", style, slant);
+	}
+    }
+    /*
+     * Pull default values from the FreeType flags if more
+     * specific values not found above
+     */
+    if (slant == -1)
+    {
+	slant = FC_SLANT_ROMAN;
+	if (face->style_flags & FT_STYLE_FLAG_ITALIC)
+	    slant = FC_SLANT_ITALIC;
+    }
+
+    if (weight == -1)
+    {
+	weight = FC_WEIGHT_MEDIUM;
+	if (face->style_flags & FT_STYLE_FLAG_BOLD)
+	    weight = FC_WEIGHT_BOLD;
+    }
 
     if (!FcPatternAddInteger (pat, FC_SLANT, slant))
 	goto bail1;
@@ -905,11 +970,6 @@ FcFreeTypeQuery (const FcChar8	*file,
 	if (!FcPatternAddInteger (pat, FC_SPACING, spacing))
 	    goto bail2;
 
-    /*
-     * Drop our reference to the charset
-     */
-    FcCharSetDestroy (cs);
-    
     if (!(face->face_flags & FT_FACE_FLAG_SCALABLE))
     {
 	for (i = 0; i < face->num_fixed_sizes; i++)
@@ -920,6 +980,20 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    goto bail1;
     }
 
+    /*
+     * Drop our reference to the charset
+     */
+    FcCharSetDestroy (cs);
+    
+    /*
+     * Deallocate family/style values
+     */
+    
+    if (family_allocated)
+	free (family);
+    if (style_allocated)
+	free (style);
+    
     FT_Done_Face (face);
     FT_Done_FreeType (ftLibrary);
     return pat;
@@ -928,6 +1002,10 @@ bail2:
     FcCharSetDestroy (cs);
 bail1:
     FcPatternDestroy (pat);
+    if (family_allocated)
+	free (family);
+    if (style_allocated)
+	free (style);
 bail0:
     FT_Done_Face (face);
 bail:

@@ -114,6 +114,80 @@ FcStrCmp (const FcChar8 *s1, const FcChar8 *s2)
     return (int) c1 - (int) c2;
 }
 
+/*
+ * Is the head of s1 equal to s2?
+ */
+
+static FcBool
+FcStrIsAtIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2)
+{
+    FcChar8 c1, c2;
+    
+    for (;;) 
+    {
+	do
+	    c1 = *s1++;
+	while (c1 == ' ');
+	do
+	    c2 = *s2++;
+	while (c2 == ' ');
+	if (!c1 || (c1 != c2 && (c1 = FcToLower(c1)) != (c2 = FcToLower(c2))))
+	    break;
+    }
+    return c1 == c2 || !c2;
+}
+
+/*
+ * Does s1 contain an instance of s2 (ignoring blanks and case)?
+ */
+
+const FcChar8 *
+FcStrContainsIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2)
+{
+    while (*s1)
+    {
+	if (FcStrIsAtIgnoreBlanksAndCase (s1, s2))
+	    return s1;
+	s1++;
+    }
+    return 0;
+}
+
+/*
+ * Is the head of s1 equal to s2?
+ */
+
+static FcBool
+FcStrIsAtIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
+{
+    FcChar8 c1, c2;
+    
+    for (;;) 
+    {
+	c1 = *s1++;
+	c2 = *s2++;
+	if (!c1 || (c1 != c2 && (c1 = FcToLower(c1)) != (c2 = FcToLower(c2))))
+	    break;
+    }
+    return c1 == c2 || !c2;
+}
+
+/*
+ * Does s1 contain an instance of s2 (ignoring blanks and case)?
+ */
+
+const FcChar8 *
+FcStrContainsIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
+{
+    while (*s1)
+    {
+	if (FcStrIsAtIgnoreCase (s1, s2))
+	    return s1;
+	s1++;
+    }
+    return 0;
+}
+
 int
 FcUtf8ToUcs4 (const FcChar8 *src_orig,
 	      FcChar32	    *dst,

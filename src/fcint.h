@@ -653,6 +653,12 @@ FcStrBufData (FcStrBuf *buf, const FcChar8 *s, int len);
 int
 FcStrCmpIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2);
 
+const FcChar8 *
+FcStrContainsIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2);
+
+const FcChar8 *
+FcStrContainsIgnoreCase (const FcChar8 *s1, const FcChar8 *s2);
+
 FcBool
 FcStrUsesHome (const FcChar8 *s);
 
