@@ -1,5 +1,18 @@
+Sat Aug 31 15:21:22 PDT 2002	keithp
+	+ Xrender and Xft had several bugs related to
+	  rendering manually placed or poly-face text
+
+	+ Added more complete memory tracing in fontconfig
+	  Checked with (patched) mozilla and found no leaks
+
+	+ Updated Latin orthographies by comparing those from
+	  evertype.com with those from eki.ee.  Tried to make
+	  sensible choices, including chars that occured in both
+	  and leaving some optional chars out that occured only
+	  in one.
+
 Mon Aug 26 16:33:04 PDT 2002	keithp
-	+ Owen discovered that FcLangSetHasLang wasn't actuall
+	+ Owen discovered that FcLangSetHasLang wasn't actually
 	  checking the language set.
 
 Mon Aug 26 13:37:23 PDT 2002	keithp
