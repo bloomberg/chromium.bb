@@ -126,6 +126,7 @@ int DRM(unbind_agp)(agp_memory *handle)
 }
 #endif /* __REALLY_HAVE_AGP */
 
+#if __REALLY_HAVE_MTRR
 #ifdef __FreeBSD__
 int
 DRM(mtrr_add)(unsigned long offset, size_t size, int flags)
@@ -181,5 +182,6 @@ DRM(mtrr_del)(unsigned long offset, size_t size, int flags)
 	return mtrr_set(&mtrrmap, &one, NULL, MTRR_GETSET_KERNEL);
 }
 #endif
+#endif /* __REALLY_HAVE_MTRR */
 
 #endif /* DEBUG_MEMORY */
