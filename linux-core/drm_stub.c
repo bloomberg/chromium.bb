@@ -182,7 +182,7 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 		DRM(stub_info).drm_class = i->drm_class;
 		DRM_DEBUG("already registered\n");
 	} else if (DRM(stub_info).drm_class == NULL) {
-		DRM(stub_info).drm_class = class_simple_create(THIS_MODULE, "dri");
+		DRM(stub_info).drm_class = class_simple_create(THIS_MODULE, "drm");
 		if (IS_ERR(DRM(stub_info).drm_class)) {
                         printk (KERN_ERR "Error creating drm class.\n");
                         unregister_chrdev(DRM_MAJOR, "drm");
