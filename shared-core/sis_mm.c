@@ -271,7 +271,7 @@ static int sis_ioctl_agp_alloc(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_sis_private_t *dev_priv = dev->dev_private;
-	drm_sis_mem_t __user *argp = (void __user *)data;
+	drm_sis_mem_t __user *argp = (drm_sis_mem_t __user *)data;
 	drm_sis_mem_t agp;
 	PMemBlock block;
 	int retval = 0;
