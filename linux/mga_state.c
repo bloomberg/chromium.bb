@@ -943,6 +943,7 @@ int mga_dma_vertex( struct inode *inode, struct file *filp,
 			     sizeof(vertex) ) )
 		return -EFAULT;
 
+        if(vertex.idx < 0 || vertex.idx > dma->buf_count) return -EINVAL;
 	buf = dma->buflist[vertex.idx];
 	buf_priv = buf->dev_private;
 
@@ -983,6 +984,8 @@ int mga_dma_indices( struct inode *inode, struct file *filp,
 			     (drm_mga_indices_t *)arg,
 			     sizeof(indices) ) )
 		return -EFAULT;
+
+        if(indices.idx < 0 || indices.idx > dma->buf_count) return -EINVAL;
 
 	buf = dma->buflist[indices.idx];
 	buf_priv = buf->dev_private;
@@ -1030,6 +1033,7 @@ int mga_dma_iload( struct inode *inode, struct file *filp,
 		return -EBUSY;
 	}
 #endif
+        if(iload.idx < 0 || iload.idx > dma->buf_count) return -EINVAL;
 
 	buf = dma->buflist[iload.idx];
 	buf_priv = buf->dev_private;
