@@ -120,13 +120,7 @@ int DRM(getmagic)(DRM_IOCTL_ARGS)
 	drm_file_t *priv;
 	DRM_DEVICE;
 
-	DRM_LOCK();
-	priv = (drm_file_t *) DRM(find_file_by_proc)(dev, p);
-	DRM_UNLOCK();
-	if (priv == NULL) {
-		DRM_DEBUG("can't find authenticator\n");
-		return EINVAL;
-	}
+	DRM_GET_PRIV_WITH_RETURN(priv, filp);
 
 				/* Find unique magic */
 	if (priv->magic) {

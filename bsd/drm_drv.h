@@ -824,7 +824,7 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	priv = DRM(find_file_by_proc)(dev, p);
 	if (!priv) {
 		DRM_UNLOCK();
-		DRM_DEBUG("can't find authenticator\n");
+		DRM_ERROR("can't find authenticator\n");
 		return EINVAL;
 	}
 
@@ -938,13 +938,7 @@ int DRM(ioctl)(dev_t kdev, u_long cmd, caddr_t data, int flags,
 	int nr = DRM_IOCTL_NR(cmd);
 	drm_file_t *priv;
 
-	DRM_LOCK();
-	priv = (drm_file_t *) DRM(find_file_by_proc)(dev, p);
-	DRM_UNLOCK();
-	if (priv == NULL) {
-		DRM_DEBUG("can't find authenticator\n");
-		return EINVAL;
-	}
+	DRM_GET_PRIV_WITH_RETURN(priv, (DRMFILE)DRM_CURRENTPID);
 
 	atomic_inc( &dev->counts[_DRM_STAT_IOCTLS] );
 	++priv->ioctl_count;

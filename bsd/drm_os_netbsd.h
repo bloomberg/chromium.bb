@@ -140,6 +140,19 @@ extern const int DRM(M_DRM) = M_DEVBUF;
 
 #define DRM_AGP_FIND_DEVICE()	agp_find_device(0)
 
+#define DRM_GET_PRIV_WITH_RETURN(_priv, _filp)			\
+do {								\
+	if (_filp != (DRMFILE)DRM_CURRENTPID) {			\
+		DRM_ERROR("filp doesn't match curproc\n");	\
+		return EINVAL;					\
+	}							\
+	_priv = DRM(find_file_by_proc)(dev, DRM_CURPROC);	\
+	if (_priv == NULL) {					\
+		DRM_ERROR("can't find authenticator\n");	\
+		return EINVAL;					\
+	}							\
+} while (0)
+
 #define LOCK_TEST_WITH_RETURN(dev, filp)				\
 do {									\
 	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) ||		\

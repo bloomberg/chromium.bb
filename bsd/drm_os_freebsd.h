@@ -173,6 +173,21 @@ typedef void			irqreturn_t;
 
 #define DRM_MTRR_WC	MDF_WRITECOMBINE
 
+#define DRM_GET_PRIV_WITH_RETURN(_priv, _filp)			\
+do {								\
+	if (_filp != (DRMFILE)DRM_CURRENTPID) {			\
+		DRM_ERROR("filp doesn't match curproc\n");	\
+		return EINVAL;					\
+	}							\
+	DRM_LOCK();						\
+	_priv = DRM(find_file_by_proc)(dev, DRM_CURPROC);	\
+	DRM_UNLOCK();						\
+	if (_priv == NULL) {					\
+		DRM_ERROR("can't find authenticator\n");	\
+		return EINVAL;					\
+	}							\
+} while (0)
+
 #define LOCK_TEST_WITH_RETURN(dev, filp)				\
 do {									\
 	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) ||		\
@@ -391,17 +406,21 @@ find_first_zero_bit(volatile void *p, int max)
 
 				/* Macros to make printf easier */
 #define DRM_ERROR(fmt, arg...) \
-	printf("error: " "[" DRM_NAME ":%s] *ERROR* " fmt , __func__ , ## arg)
+	printf("error: [" DRM_NAME ":pid%d:%s] *ERROR* " fmt,		\
+	    DRM_CURRENTPID, __func__ , ## arg)
+
 #define DRM_MEM_ERROR(area, fmt, arg...) \
-	printf("error: " "[" DRM_NAME ":%s:%s] *ERROR* " fmt , \
-		__func__, DRM(mem_stats)[area].name , ##arg)
-#define DRM_INFO(fmt, arg...)  printf("info: " "[" DRM_NAME "] " fmt , ## arg)
+	printf("error: [" DRM_NAME ":pid%d:%s:%s] *ERROR* " fmt,	\
+	    DRM_CURRENTPID , __func__, DRM(mem_stats)[area].name , ##arg)
+
+#define DRM_INFO(fmt, arg...)  printf("info: [" DRM_NAME "] " fmt , ## arg)
 
 #if DRM_DEBUG_CODE
-#define DRM_DEBUG(fmt, arg...)						  \
-	do {								  \
-		if (DRM(flags) & DRM_FLAG_DEBUG)			  \
-			printf("[" DRM_NAME ":%s] " fmt , __func__ , ## arg); \
+#define DRM_DEBUG(fmt, arg...)						\
+	do {								\
+		if (DRM(flags) & DRM_FLAG_DEBUG)			\
+			printf("[" DRM_NAME ":pid%d:%s] " fmt,		\
+			    DRM_CURRENTPID, __func__ , ## arg);		\
 	} while (0)
 #else
 #define DRM_DEBUG(fmt, arg...)		 do { } while (0)
