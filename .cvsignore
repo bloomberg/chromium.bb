@@ -24,3 +24,4 @@ stamp-h1
 fontconfig-*.tar.gz
 ltmain.sh
 autom4te.cache
+ChangeLog-*

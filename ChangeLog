@@ -1,5 +1,20 @@
 2004-12-29  Keith Packard  <keithp@keithp.com>
 
+	* .cvsignore:
+	* fc-case/.cvsignore:
+	clean up CVS ignore lists
+	* fc-lang/iso-3166.txt:
+	Add territory database
+	
+2004-12-29   Tor Andersson <tor.andersson@gmail.com>
+
+	Reviewed by: Keith Packard
+	
+	* fc-lang/ko.orth:
+	Remove Han characters from Korean orthography
+
+2004-12-29  Keith Packard  <keithp@keithp.com>
+
 	* Makefile.am:
 	Reorder utility programs to make sure fc-case is run before fc-lang
 	as fc-lang uses fcstr.c which uses fccase.h
