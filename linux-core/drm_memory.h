@@ -35,6 +35,7 @@
 
 #define __NO_VERSION__
 #include <linux/config.h>
+#include <linux/highmem.h>
 #include "drmP.h"
 
 /**
