@@ -279,6 +279,18 @@ static struct {
 	{ R200_SE_VTX_STATE_CNTL, 1, "R200_SE_VTX_STATE_CNTL" }, 
 	{ R200_RE_POINTSIZE, 1, "R200_RE_POINTSIZE" }, 
 	{ R200_SE_TCL_INPUT_VTX_VECTOR_ADDR_0, 4, "R200_SE_TCL_INPUT_VTX_VECTOR_ADDR_0" },
+	{ R200_PP_CUBIC_FACES_0, 1, "R200_PP_CUBIC_FACES_0" }, /* 61 */
+	{ R200_PP_CUBIC_OFFSET_F1_0, 5, "R200_PP_CUBIC_OFFSET_F1_0" }, /* 62 */
+	{ R200_PP_CUBIC_FACES_1, 1, "R200_PP_CUBIC_FACES_1" },
+	{ R200_PP_CUBIC_OFFSET_F1_1, 5, "R200_PP_CUBIC_OFFSET_F1_1" },
+	{ R200_PP_CUBIC_FACES_2, 1, "R200_PP_CUBIC_FACES_2" },
+	{ R200_PP_CUBIC_OFFSET_F1_2, 5, "R200_PP_CUBIC_OFFSET_F1_2" },
+	{ R200_PP_CUBIC_FACES_3, 1, "R200_PP_CUBIC_FACES_3" },
+	{ R200_PP_CUBIC_OFFSET_F1_3, 5, "R200_PP_CUBIC_OFFSET_F1_3" },
+	{ R200_PP_CUBIC_FACES_4, 1, "R200_PP_CUBIC_FACES_4" },
+	{ R200_PP_CUBIC_OFFSET_F1_4, 5, "R200_PP_CUBIC_OFFSET_F1_4" },
+	{ R200_PP_CUBIC_FACES_5, 1, "R200_PP_CUBIC_FACES_5" },
+	{ R200_PP_CUBIC_OFFSET_F1_5, 5, "R200_PP_CUBIC_OFFSET_F1_5" },
 };
 
 
@@ -1792,11 +1804,16 @@ static int radeon_emit_packets(
 	drm_radeon_cmd_buffer_t *cmdbuf )
 {
 	int id = (int)header.packet.packet_id;
-	int sz = packet[id].len;
-	int reg = packet[id].start;
+	int sz, reg;
 	int *data = (int *)cmdbuf->buf;
 	RING_LOCALS;
    
+	if (id >= RADEON_MAX_STATE_PACKETS)
+		return DRM_ERR(EINVAL);
+
+	sz = packet[id].len;
+	reg = packet[id].start;
+
 	if (sz * sizeof(int) > cmdbuf->bufsz) 
 		return DRM_ERR(EINVAL);
 

@@ -129,7 +129,19 @@
 #define R200_EMIT_SE_VTX_STATE_CNTL                 58 /* cst/1 */
 #define R200_EMIT_RE_POINTSIZE                      59 /* cst/1 */
 #define R200_EMIT_TCL_INPUT_VTX_VECTOR_ADDR_0       60 /* cst/4 */
-#define RADEON_MAX_STATE_PACKETS                    61
+#define R200_EMIT_PP_CUBIC_FACES_0                  61
+#define R200_EMIT_PP_CUBIC_OFFSETS_0                62
+#define R200_EMIT_PP_CUBIC_FACES_1                  63
+#define R200_EMIT_PP_CUBIC_OFFSETS_1                64
+#define R200_EMIT_PP_CUBIC_FACES_2                  65
+#define R200_EMIT_PP_CUBIC_OFFSETS_2                66
+#define R200_EMIT_PP_CUBIC_FACES_3                  67
+#define R200_EMIT_PP_CUBIC_OFFSETS_3                68
+#define R200_EMIT_PP_CUBIC_FACES_4                  69
+#define R200_EMIT_PP_CUBIC_OFFSETS_4                70
+#define R200_EMIT_PP_CUBIC_FACES_5                  71
+#define R200_EMIT_PP_CUBIC_OFFSETS_5                72
+#define RADEON_MAX_STATE_PACKETS                    73
 
 
 /* Commands understood by cmd_buffer ioctl.  More can be added but
