@@ -576,6 +576,11 @@ via_check_prim_list(uint32_t const **buffer, const uint32_t *buf_end,
 					buf++;
 				break;
 			}
+			if ((*buf & HALCYON_FIREMASK) == HALCYON_FIRECMD) {
+				DRM_ERROR("Stray Vertex Fire command encountered.\n");
+				ret = 1;
+				break;
+			}
 			if ((ret = eat_words(&buf, buf_end, dw_count)))
 				break;
 		}
