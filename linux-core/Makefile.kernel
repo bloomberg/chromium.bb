@@ -1,18 +1,40 @@
 #
 # Makefile for the drm device driver.  This driver provides support for the
 # Direct Rendering Infrastructure (DRI) in XFree86 4.1.0 and higher.
-
-O_TARGET	:= drm.o
-list-multi	:= gamma.o tdfx.o r128.o mga.o i810.o i830.o radeon.o ffb.o
+#
+# Based on David Woodhouse's mtd build.
+#
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.kernel,v 1.17 2003/04/12 17:18:17 dawes Exp $
+#
 
 gamma-objs  := gamma_drv.o gamma_dma.o
 tdfx-objs   := tdfx_drv.o
-r128-objs   := r128_drv.o r128_cce.o r128_irq.o r128_state.o
-mga-objs    := mga_drv.o mga_dma.o mga_irq.o mga_state.o mga_warp.o
+r128-objs   := r128_drv.o r128_cce.o r128_state.o r128_irq.o
+mga-objs    := mga_drv.o mga_dma.o mga_state.o mga_warp.o mga_irq.o 
 i810-objs   := i810_drv.o i810_dma.o
 i830-objs   := i830_drv.o i830_dma.o i830_irq.o
-radeon-objs := radeon_drv.o radeon_cp.o radeon_irq.o radeon_mem.o radeon_state.o
+radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o
+sis-objs    := sis_drv.o sis_ds.o sis_mm.o
 ffb-objs    := ffb_drv.o ffb_context.o
+
+# Kernel version checks
+
+BELOW25 := $(shell if [ $(PATCHLEVEL) -lt 5 ]; then echo y; fi)
+
+# There were major build changes starting with 2.5.52
+ifneq ($(BELOW25),y)
+BELOW2552 := $(shell if [ $(SUBLEVEL) -lt 52 ]; then echo y; fi)
+else
+BELOW2552 := y
+endif
+
+ifeq ($(BELOW25),y)
+O_TARGET	:= drm.o
+list-multi	:= gamma.o tdfx.o r128.o mga.o i810.o i830.o ffb.o radeon.o
+obj-m		:=
+obj-n		:=
+obj-		:=
+endif
 
 obj-$(CONFIG_DRM_GAMMA) += gamma.o
 obj-$(CONFIG_DRM_TDFX)	+= tdfx.o
@@ -21,10 +43,14 @@ obj-$(CONFIG_DRM_RADEON)+= radeon.o
 obj-$(CONFIG_DRM_MGA)	+= mga.o
 obj-$(CONFIG_DRM_I810)	+= i810.o
 obj-$(CONFIG_DRM_I830)	+= i830.o
+obj-$(CONFIG_DRM_SIS)   += sis.o
 obj-$(CONFIG_DRM_FFB)   += ffb.o
 
+ifeq ($(BELOW2552),y)
 include $(TOPDIR)/Rules.make
+endif
 
+ifeq ($(BELOW25),y)
 gamma.o: $(gamma-objs) $(lib)
 	$(LD) -r -o $@ $(gamma-objs) $(lib)
 
@@ -46,5 +72,10 @@ r128.o: $(r128-objs) $(lib)
 radeon.o: $(radeon-objs) $(lib)
 	$(LD) -r -o $@ $(radeon-objs) $(lib)
 
+sis.o: $(sis-objs) $(lib)
+	$(LD) -r -o $@ $(sis-objs) $(lib)
+
 ffb.o: $(ffb-objs) $(lib)
 	$(LD) -r -o $@ $(ffb-objs) $(lib)
+endif
+
