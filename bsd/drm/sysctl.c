@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI$
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drm/sysctl.c,v 1.1 2000/06/17 00:03:31 martin Exp $
  *
  */
 

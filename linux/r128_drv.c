@@ -369,13 +369,6 @@ int r128_init(void)
 
 #ifdef DRM_AGP
 	dev->agp    = drm_agp_init();
-      	if (dev->agp == NULL) {
-	   	DRM_ERROR("Cannot initialize agpgart module.\n");
-	   	drm_proc_cleanup();
-	   	misc_deregister(&r128_misc);
-	   	r128_takedown(dev);
-	   	return -ENOMEM;
-	}
 
 #ifdef CONFIG_MTRR
 	dev->agp->agp_mtrr = mtrr_add(dev->agp->agp_info.aper_base,

@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/proc.c,v 1.4 1999/08/20 15:36:46 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/proc.c,v 1.1 1999/09/25 14:38:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drm/proc.c,v 1.1 2000/06/17 00:03:30 martin Exp $
  *
  */
 

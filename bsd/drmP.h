@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.58 1999/08/30 13:05:00 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.1 1999/09/25 14:37:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drmP.h,v 1.1 2000/06/17 00:03:28 martin Exp $
  * 
  */
 

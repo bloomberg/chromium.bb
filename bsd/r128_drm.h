@@ -25,7 +25,7 @@
  *
  * Authors: Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/r128_drm.h,v 1.1 2000/06/17 00:03:29 martin Exp $
  */
 
 #ifndef _R128_DRM_H_
