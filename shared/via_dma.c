@@ -275,11 +275,13 @@ static int via_dispatch_pci_cmdbuffer(drm_device_t *dev,
 	} else if ( cmd->size > VIA_PREALLOCATED_PCI_SIZE ) {
 	  if (NULL == (hugebuf = (char *) kmalloc( cmd-> size, GFP_KERNEL )))
 			return DRM_ERR( ENOMEM );
-		DRM_COPY_FROM_USER( hugebuf, cmd->buf, cmd->size );
+		if (DRM_COPY_FROM_USER( hugebuf, cmd->buf, cmd->size ))
+			return DRM_ERR(EFAULT);
 		ret = via_parse_pci_cmdbuffer( dev, hugebuf, cmd->size );
 		kfree( hugebuf );
 	} else {
-		DRM_COPY_FROM_USER( dev_priv->pci_buf, cmd->buf, cmd->size );
+		if (DRM_COPY_FROM_USER( dev_priv->pci_buf, cmd->buf, cmd->size ))
+			return DRM_ERR(EFAULT);
 		ret = via_parse_pci_cmdbuffer( dev, dev_priv->pci_buf, cmd->size );
 	}
 	return ret;
