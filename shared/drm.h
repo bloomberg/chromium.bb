@@ -296,7 +296,7 @@ typedef struct drm_agp_info {
 
 #define DRM_IOCTL_VERSION    DRM_IOWR(0x00, drm_version_t)
 #define DRM_IOCTL_GET_UNIQUE DRM_IOWR(0x01, drm_unique_t)
-#define DRM_IOCTL_GET_MAGIC  DRM_IOW( 0x02, drm_auth_t)
+#define DRM_IOCTL_GET_MAGIC  DRM_IOR( 0x02, drm_auth_t)
 #define DRM_IOCTL_IRQ_BUSID  DRM_IOWR(0x03, drm_irq_busid_t)
 
 #define DRM_IOCTL_SET_UNIQUE DRM_IOW( 0x10, drm_unique_t)
@@ -327,11 +327,11 @@ typedef struct drm_agp_info {
 
 #define DRM_IOCTL_AGP_ACQUIRE DRM_IO(  0x30)
 #define DRM_IOCTL_AGP_RELEASE DRM_IO(  0x31)
-#define DRM_IOCTL_AGP_ENABLE  DRM_IOR( 0x32, drm_agp_mode_t)
-#define DRM_IOCTL_AGP_INFO    DRM_IOW( 0x33, drm_agp_info_t)
+#define DRM_IOCTL_AGP_ENABLE  DRM_IOW( 0x32, drm_agp_mode_t)
+#define DRM_IOCTL_AGP_INFO    DRM_IOR( 0x33, drm_agp_info_t)
 #define DRM_IOCTL_AGP_ALLOC   DRM_IOWR(0x34, drm_agp_buffer_t)
 #define DRM_IOCTL_AGP_FREE    DRM_IOW( 0x35, drm_agp_buffer_t)
-#define DRM_IOCTL_AGP_BIND    DRM_IOWR(0x36, drm_agp_binding_t)
+#define DRM_IOCTL_AGP_BIND    DRM_IOW( 0x36, drm_agp_binding_t)
 #define DRM_IOCTL_AGP_UNBIND  DRM_IOW( 0x37, drm_agp_binding_t)
 
 /* Mga specific ioctls */

@@ -1,7 +1,8 @@
-/* drm.h -- Header for Direct Rendering Manager -*- linux-c -*-
+/* drm.h -- Header for Direct Rendering Manager -*- c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
+ * Revised: Fri Aug 20 13:08:18 1999 by faith@precisioninsight.com
  *
- * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,28 +24,23 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drm.h,v 1.5 2000/02/23 04:47:26 martin Exp $
- *
- * Acknowledgements:
- * Dec 1999, Richard Henderson <rth@twiddle.net>, move to generic cmpxchg.
- *
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drm.h,v 1.46 1999/08/20 20:00:53 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drm.h,v 1.1 1999/09/25 14:37:58 dawes Exp $
+ * 
  */
 
 #ifndef _DRM_H_
 #define _DRM_H_
 
-#include <asm/ioctl.h>		/* For _IO* macros */
+#include <sys/ioccom.h>		/* For _IO* macros */
 
-#define DRM_PROC_DEVICES "/proc/devices"
-#define DRM_PROC_MISC	 "/proc/misc"
-#define DRM_PROC_DRM	 "/proc/drm"
 #define DRM_DEV_DRM	 "/dev/drm"
 #define DRM_DEV_MODE	 (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP)
 #define DRM_DEV_UID	 0
 #define DRM_DEV_GID	 0
 
 
-#define DRM_NAME	"drm"	  /* Name in kernel, /dev, and /proc	    */
+#define DRM_NAME	"drm"	  /* Name in kernel, /dev		    */
 #define DRM_MIN_ORDER	5	  /* At least 2^5 bytes = 32 bytes	    */
 #define DRM_MAX_ORDER	22	  /* Up to 2^22 bytes = 4MB		    */
 #define DRM_RAM_PERCENT 10	  /* How much system ram can we lock?	    */
@@ -70,7 +66,7 @@ typedef struct drm_clip_rect {
            unsigned short y2;
 } drm_clip_rect_t;
 
-/* Seperate include files for the i810/mga/r128 specific structures */
+/* Seperate include files for the i810/mga specific structures */
 #include "mga_drm.h"
 #include "i810_drm.h"
 #include "r128_drm.h"
@@ -115,7 +111,7 @@ typedef enum drm_map_type {
 	_DRM_FRAME_BUFFER = 0,	  /* WC (no caching), no core dump	    */
 	_DRM_REGISTERS	  = 1,	  /* no caching, no core dump		    */
 	_DRM_SHM	  = 2,	  /* shared, cached			    */
-	_DRM_AGP          = 3	  /* AGP/GART                               */
+	_DRM_AGP	  = 3	  /* AGP/GART				    */
 } drm_map_type_t;
 
 typedef enum drm_map_flags {
@@ -287,7 +283,7 @@ typedef struct drm_agp_info {
 } drm_agp_info_t;
 
 #define DRM_IOCTL_BASE	     'd'
-#define DRM_IOCTL_NR(n)	     _IOC_NR(n)
+#define DRM_IOCTL_NR(n)	     ((n) & 0xff)
 #define DRM_IO(nr)	     _IO(DRM_IOCTL_BASE,nr)
 #define DRM_IOR(nr,size)     _IOR(DRM_IOCTL_BASE,nr,size)
 #define DRM_IOW(nr,size)     _IOW(DRM_IOCTL_BASE,nr,size)
@@ -349,7 +345,7 @@ typedef struct drm_agp_info {
 #define DRM_IOCTL_I810_CLEAR   DRM_IOW( 0x42, drm_i810_clear_t)
 #define DRM_IOCTL_I810_FLUSH   DRM_IO ( 0x43)
 #define DRM_IOCTL_I810_GETAGE  DRM_IO ( 0x44)
-#define DRM_IOCTL_I810_GETBUF  DRM_IOW( 0x45, drm_i810_dma_t)
+#define DRM_IOCTL_I810_GETBUF  DRM_IOWR(0x45, drm_i810_dma_t)
 #define DRM_IOCTL_I810_SWAP    DRM_IO ( 0x46)
 
 /* Rage 128 specific ioctls */

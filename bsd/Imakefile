@@ -1,0 +1,31 @@
+XCOMM $XFree86$
+XCOMM $PI$
+
+#include <Server.tmpl>
+
+LinkSourceFile(xf86drm.c,..)
+LinkSourceFile(xf86drmHash.c,..)
+LinkSourceFile(xf86drmRandom.c,..)
+LinkSourceFile(xf86drmSL.c,..)
+LinkSourceFile(xf86drm.h,$(XF86OSSRC))
+LinkSourceFile(xf86_OSproc.h,$(XF86OSSRC))
+LinkSourceFile(sigio.c,$(XF86OSSRC)/shared)
+
+XCOMM This is a kludge until we determine how best to build the
+XCOMM kernel-specific device driver.  This allows us to continue
+XCOMM to maintain the single Makefile.bsd with kernel-specific
+XCOMM support.  Later, we can move to a different Imakefile.
+
+#if BuildXF86DRI && BuildXF86DRM
+all::
+	$(MAKE) -f Makefile.bsd
+
+install::
+	$(MAKE) -f Makefile.bsd install
+#else
+all::
+	echo 'Use "make -f Makefile.bsd" to manually build drm.o'
+#endif
+
+clean::
+	$(MAKE) -f Makefile.bsd clean
