@@ -136,6 +136,16 @@ int DRM(addmap)( DRM_IOCTL_ARGS )
 		}
 		map->offset = (unsigned long)map->handle;
 		if ( map->flags & _DRM_CONTAINS_LOCK ) {
+			/* Prevent a 2nd X Server from creating a 2nd lock */
+			DRM_LOCK();
+			if (dev->lock.hw_lock != NULL) {
+				DRM_UNLOCK();
+				DRM(free)(map->handle, map->size,
+				    DRM_MEM_SAREA);
+				DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
+				return DRM_ERR(EBUSY);
+			}
+			DRM_UNLOCK();
 			dev->lock.hw_lock = map->handle; /* Pointer to lock */
 		}
 		break;
