@@ -20,6 +20,7 @@ VERS=$2
 echo "Copying kernel independent files"
 mkdir -p $OUTDIR
 
+( cd linux/ ; make drm_pciids.h )
 cp shared/*.[ch] $OUTDIR
 cp linux/*.[ch] $OUTDIR
 cp linux/Makefile.kernel $OUTDIR/Makefile
