@@ -1123,6 +1123,11 @@ int i810_clear_bufs(struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 
+ 	/* GH: Someone's doing nasty things... */
+ 	if (!dev->dev_private) {
+ 		return -EINVAL;
+ 	}
+
 	i810_dma_dispatch_clear( dev, clear.flags,
 				 clear.clear_color,
 				 clear.clear_depth );

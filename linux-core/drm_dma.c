@@ -40,6 +40,15 @@
 #ifndef __HAVE_DMA_RECLAIM
 #define __HAVE_DMA_RECLAIM	0
 #endif
+#ifndef __HAVE_SHARED_IRQ
+#define __HAVE_SHARED_IRQ	0
+#endif
+
+#if __HAVE_SHARED_IRQ
+#define DRM_IRQ_TYPE		SA_SHIRQ
+#else
+#define DRM_IRQ_TYPE		0
+#endif
 
 #if __HAVE_DMA
 
@@ -534,7 +543,7 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 
 				/* Install handler */
 	ret = request_irq( dev->irq, DRM(dma_service),
-			   0, dev->devname, dev );
+			   DRM_IRQ_TYPE, dev->devname, dev );
 	if ( ret < 0 ) {
 		down( &dev->struct_sem );
 		dev->irq = 0;
