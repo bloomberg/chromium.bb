@@ -128,7 +128,7 @@ AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 endif
 
 ifeq ($(AGP),1)
-MODCFLAGS += -DCONFIG_DRM_AGP
+MODCFLAGS += -DDRM_AGP
 DRMOBJS += agpsupport.o
 MODS += mga.o i810.o
 

@@ -13,12 +13,11 @@
 O_TARGET	:= drm.o
 
 L_OBJS		:= init.o memory.o proc.o auth.o context.o drawable.o bufs.o \
-			lists.o lock.o ioctl.o fops.o vm.o dma.o ctxbitmap.o \
-			agpsupport.o
+			lists.o lock.o ioctl.o fops.o vm.o dma.o ctxbitmap.o
 
 M_OBJS		:=
 
-ifdef CONFIG_DRM_AGP
+ifneq ($(CONFIG_AGP),n)
  L_OBJS         += agpsupport.o
 endif
 
@@ -44,6 +43,7 @@ else
   endif
 endif
 
+ifneq ($(CONFIG_AGP),n)
 ifeq ($(CONFIG_DRM_MGA),y)
  OX_OBJS += mga_drv.o
  O_OBJS += mga_context.o mga_dma.o mga_bufs.o mga_state.o
@@ -54,7 +54,9 @@ else
     M_OBJS += mga.o
   endif
 endif
+endif
 
+ifneq ($(CONFIG_AGP),n)
 ifeq ($(CONFIG_DRM_I810),y)
  OX_OBJS += i810_drv.o
  O_OBJS += i810_context.o i810_bufs.o i810_dma.o
@@ -64,6 +66,7 @@ else
     MI_OBJS += i810_context.o i810_bufs.o i810_dma.o
     M_OBJS += i810.o
   endif
+endif
 endif
 
 ifeq ($(CONFIG_DRM_R128),y)

@@ -330,7 +330,7 @@ void drm_ioremapfree(void *pt, unsigned long size)
 	}
 }
 
-#ifdef CONFIG_DRM_AGP
+#ifdef DRM_AGP
 agp_memory *drm_alloc_agp(int pages, u32 type)
 {
 	agp_memory *handle;
