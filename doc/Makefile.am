@@ -7,6 +7,7 @@ TXT = fontconfig-user.txt fontconfig-devel.txt
 HTML_FILES = fontconfig-user.html
 HTML_DIRS = fontconfig-devel
 SGML = fontconfig-user.sgml fontconfig-devel.sgml
+FNCS_TMPL = func.sgml
 
 DOC_FUNCS_FNCS=\
 	fcatomic.fncs \
@@ -44,9 +45,7 @@ DOC_FUNCS_SGML=\
 	fcstrset.sgml \
 	fcvalue.sgml
 
-man5_MANS=fonts-conf.5
-
-man3_MANS= \
+man_MANS=fonts-conf.5 \
 FcAtomicCreate.3 FcAtomicDeleteNew.3 FcAtomicDestroy.3 FcAtomicLock.3 \
 FcAtomicNewFile.3 FcAtomicOrigFile.3 FcAtomicReplaceOrig.3 FcAtomicUnlock.3 \
 FcBlanksAdd.3 FcBlanksCreate.3 FcBlanksDestroy.3 FcBlanksIsMember.3 \
@@ -86,34 +85,28 @@ edit_sgml_SOURCES=edit-sgml.c
 
 DOCDIR=@DOCDIR@
 
+DOC_FILES=$(TXT) $(HTML_FILES)
+DOC_DIRS=$(HTML_DIRS)
+LOCAL_DOCS=$(man_MANS) $(DOC_FILES) $(DOC_DIRS)
+
+EXTRA_DIST = $(LOCAL_DOCS) $(SGML) $(DOC_FUNCS_FNCS) $(FNCS_TMPL)
+	
 SUFFIXES=.fncs .sgml .txt .html
+
+if ENABLE_DOCS
 
 .fncs.sgml:
 	$(RM) $@
-	./edit-sgml func.sgml < $*.fncs > $*.sgml
+	./edit-sgml $(FNCS_TMPL) < $*.fncs > $*.sgml
 
 .sgml.txt:
 	$(RM) $@
 	$(DOC2TXT) $*.sgml
 
-EXTRA_DIST = $(TXT) $(HTML_FILES) $(HTML_DIR)/* $(SGML) $(man3_MANS)
-	
-if ENABLE_DOCS
-MAN3_FILES=$(man3_MANS)
-MAN5_FILES=$(man5_MANS)
-DOC_FILES=$(TXT) $(HTML_FILES)
-DOC_DIRS=$(HTML_DIRS)
-DOCS=$(MAN3_FILES) $(MAN5_FILES) $(DOC_FILES) $(DOC_DIRS)
 all-local: all-local-docs
 clean-local: clean-local-docs
-install-data-local: install-local-docs
-else
-all-local:
-clean-local:
-install-data-local:
-endif
 
-$(MAN3_FILES): func.refs
+$(man_MANS): func.refs
 
 func.refs: fontconfig-devel.sgml $(DOC_FUNCS_SGML)
 	$(RM) func.refs
@@ -121,9 +114,9 @@ func.refs: fontconfig-devel.sgml $(DOC_FUNCS_SGML)
 	mv manpage.refs func.refs
 	$(RM) manpage.links
 
-$(DOC_FUNCS_SGML): edit-sgml func.sgml
+$(DOC_FUNCS_SGML): edit-sgml $(FNCS_TMPL)
 
-$(MAN5_FILES): fontconfig-user.sgml
+fonts-conf.5: fontconfig-user.sgml
 	$(RM) file.refs
 	$(DOC2MAN) -u fontconfig-user.sgml
 	$(RM) manpage.refs manpage.links
@@ -131,7 +124,7 @@ $(MAN5_FILES): fontconfig-user.sgml
 all-local-docs: $(DOCS)
 
 clean-local-docs:
-	$(RM) $(MAN3_FILES) $(MAN5_FILES) $(DOC_FILES) $(DOC_FUNCS_SGML) func.refs
+	$(RM) $(man_MANS) $(DOC_FILES) $(DOC_FUNCS_SGML) func.refs
 	$(RM) -r $(DOC_DIRS)
 
 fontconfig-devel: fontconfig-devel.sgml $(DOCS_FUNCS_SGML)
@@ -141,7 +134,12 @@ fontconfig-devel: fontconfig-devel.sgml $(DOCS_FUNCS_SGML)
 fontconfig-user.html: fontconfig-user.sgml
 	$(DOC2HTML) -u fontconfig-user.sgml
 
-install-local-docs:
+else
+all-local:
+clean-local:
+endif
+
+install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(DOCDIR)
 	for i in $(DOC_FILES); do \
 	  echo '-- Installing '$$i ; \
