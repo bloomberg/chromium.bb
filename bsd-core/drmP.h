@@ -348,12 +348,12 @@ struct drm_device {
 	int		  flags;	/* Flags to open(2)		   */
 
 				/* Locks */
-	DRM_SPINTYPE	  count_lock;	/* For inuse, open_count, buf_use  */
+	DRM_SPINTYPE	  count_lock;	/* For open_count, buf_use, buf_alloc */
 	struct lock       dev_lock;	/* For others			   */
 				/* Usage Counters */
 	int		  open_count;	/* Outstanding files open	   */
 	int		  buf_use;	/* Buffers in use -- cannot alloc  */
-	atomic_t	  buf_alloc;	/* Buffer allocation in progress   */
+	int		  buf_alloc;	/* Buffer allocation in progress   */
 
 				/* Performance counters */
 	unsigned long     counters;
@@ -597,9 +597,6 @@ extern int		DRM(finish)(DRM_IOCTL_ARGS);
 extern int		DRM(addmap)(DRM_IOCTL_ARGS);
 extern int		DRM(rmmap)(DRM_IOCTL_ARGS);
 #if __HAVE_DMA
-extern int		DRM(addbufs_agp)(DRM_IOCTL_ARGS);
-extern int		DRM(addbufs_pci)(DRM_IOCTL_ARGS);
-extern int		DRM(addbufs_sg)(DRM_IOCTL_ARGS);
 extern int		DRM(addbufs)(DRM_IOCTL_ARGS);
 extern int		DRM(infobufs)(DRM_IOCTL_ARGS);
 extern int		DRM(markbufs)(DRM_IOCTL_ARGS);

@@ -425,7 +425,7 @@ static int DRM(setup)( drm_device_t *dev )
 
 	DRIVER_PRESETUP();
 	dev->buf_use = 0;
-	atomic_set( &dev->buf_alloc, 0 );
+	dev->buf_alloc = 0;
 
 #if __HAVE_DMA
 	i = DRM(dma_setup)( dev );

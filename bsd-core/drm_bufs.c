@@ -319,11 +319,9 @@ static void DRM(cleanup_buf_error)(drm_buf_entry_t *entry)
 }
 
 #if __REALLY_HAVE_AGP
-int DRM(addbufs_agp)( DRM_IOCTL_ARGS )
+static int DRM(addbufs_agp)(drm_device_t *dev, drm_buf_desc_t *request)
 {
-	DRM_DEVICE;
 	drm_device_dma_t *dma = dev->dma;
-	drm_buf_desc_t request;
 	drm_buf_entry_t *entry;
 	drm_buf_t *buf;
 	unsigned long offset;
@@ -338,21 +336,17 @@ int DRM(addbufs_agp)( DRM_IOCTL_ARGS )
 	int i;
 	drm_buf_t **temp_buflist;
 
-	if ( !dma ) return DRM_ERR(EINVAL);
-
-	DRM_COPY_FROM_USER_IOCTL( request, (drm_buf_desc_t *)data, sizeof(request) );
-
-	count = request.count;
-	order = DRM(order)( request.size );
+	count = request->count;
+	order = DRM(order)(request->size);
 	size = 1 << order;
 
-	alignment  = (request.flags & _DRM_PAGE_ALIGN)
+	alignment  = (request->flags & _DRM_PAGE_ALIGN)
 		? round_page(size) : size;
 	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
 	total = PAGE_SIZE << page_order;
 
 	byte_count = 0;
-	agp_offset = dev->agp->base + request.agp_start;
+	agp_offset = dev->agp->base + request->agp_start;
 
 	DRM_DEBUG( "count:      %d\n",  count );
 	DRM_DEBUG( "order:      %d\n",  order );
@@ -364,36 +358,18 @@ int DRM(addbufs_agp)( DRM_IOCTL_ARGS )
 
 	if ( order < DRM_MIN_ORDER || order > DRM_MAX_ORDER ) 
 		return DRM_ERR(EINVAL);
-	if ( dev->queue_count ) 
-		return DRM_ERR(EBUSY); /* Not while in use */
-
-	DRM_SPINLOCK( &dev->count_lock );
-	if ( dev->buf_use ) {
-		DRM_SPINUNLOCK( &dev->count_lock );
-		return DRM_ERR(EBUSY);
-	}
-	atomic_inc( &dev->buf_alloc );
-	DRM_SPINUNLOCK( &dev->count_lock );
 
 	DRM_LOCK;
 	entry = &dma->bufs[order];
 	if ( entry->buf_count ) {
 		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
 		return DRM_ERR(ENOMEM); /* May only call once for each order */
-	}
-
-	if (count < 0 || count > 4096) {
-		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
-		return DRM_ERR(EINVAL);
 	}
 
 	entry->buflist = DRM(alloc)( count * sizeof(*entry->buflist),
 				    DRM_MEM_BUFS );
 	if ( !entry->buflist ) {
 		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
 		return DRM_ERR(ENOMEM);
 	}
 	memset( entry->buflist, 0, count * sizeof(*entry->buflist) );
@@ -445,7 +421,6 @@ int DRM(addbufs_agp)( DRM_IOCTL_ARGS )
 		/* Free the entry because it isn't valid */
 		DRM(cleanup_buf_error)(entry);
 		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
 		return DRM_ERR(ENOMEM);
 	}
 	dma->buflist = temp_buflist;
@@ -468,24 +443,19 @@ int DRM(addbufs_agp)( DRM_IOCTL_ARGS )
 #endif
 	DRM_UNLOCK;
 
-	request.count = entry->buf_count;
-	request.size = size;
-
-	DRM_COPY_TO_USER_IOCTL( (drm_buf_desc_t *)data, request, sizeof(request) );
+	request->count = entry->buf_count;
+	request->size = size;
 
 	dma->flags = _DRM_DMA_USE_AGP;
 
-	atomic_dec( &dev->buf_alloc );
 	return 0;
 }
 #endif /* __REALLY_HAVE_AGP */
 
 #if __HAVE_PCI_DMA
-int DRM(addbufs_pci)( DRM_IOCTL_ARGS )
+static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 {
-	DRM_DEVICE;
 	drm_device_dma_t *dma = dev->dma;
-	drm_buf_desc_t request;
 	int count;
 	int order;
 	int size;
@@ -502,55 +472,33 @@ int DRM(addbufs_pci)( DRM_IOCTL_ARGS )
 	unsigned long *temp_pagelist;
 	drm_buf_t **temp_buflist;
 
-	if ( !dma ) return DRM_ERR(EINVAL);
-
-	DRM_COPY_FROM_USER_IOCTL( request, (drm_buf_desc_t *)data, sizeof(request) );
-
-	count = request.count;
-	order = DRM(order)( request.size );
+	count = request->count;
+	order = DRM(order)(request->size);
 	size = 1 << order;
 
 	DRM_DEBUG( "count=%d, size=%d (%d), order=%d, queue_count=%d\n",
-		   request.count, request.size, size,
+		   request->count, request->size, size,
 		   order, dev->queue_count );
 
 	if ( order < DRM_MIN_ORDER || order > DRM_MAX_ORDER ) 
 		return DRM_ERR(EINVAL);
-	if ( dev->queue_count ) 
-		return DRM_ERR(EBUSY); /* Not while in use */
 
-	alignment = (request.flags & _DRM_PAGE_ALIGN)
+	alignment = (request->flags & _DRM_PAGE_ALIGN)
 		? round_page(size) : size;
 	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
 	total = PAGE_SIZE << page_order;
-
-	DRM_SPINLOCK( &dev->count_lock );
-	if ( dev->buf_use ) {
-		DRM_SPINUNLOCK( &dev->count_lock );
-		return DRM_ERR(EBUSY);
-	}
-	atomic_inc( &dev->buf_alloc );
-	DRM_SPINUNLOCK( &dev->count_lock );
 
 	DRM_LOCK;
 	entry = &dma->bufs[order];
 	if ( entry->buf_count ) {
 		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
 		return DRM_ERR(ENOMEM);	/* May only call once for each order */
-	}
-
-	if (count < 0 || count > 4096) {
-		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
-		return DRM_ERR(EINVAL);
 	}
 
 	entry->buflist = DRM(alloc)( count * sizeof(*entry->buflist),
 				    DRM_MEM_BUFS );
 	if ( !entry->buflist ) {
 		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
 		return DRM_ERR(ENOMEM);
 	}
 	memset( entry->buflist, 0, count * sizeof(*entry->buflist) );
@@ -562,7 +510,6 @@ int DRM(addbufs_pci)( DRM_IOCTL_ARGS )
 			  count * sizeof(*entry->buflist),
 			  DRM_MEM_BUFS );
 		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
 		return DRM_ERR(ENOMEM);
 	}
 	memset( entry->seglist, 0, count * sizeof(*entry->seglist) );
@@ -580,7 +527,6 @@ int DRM(addbufs_pci)( DRM_IOCTL_ARGS )
 			   count * sizeof(*entry->seglist),
 			   DRM_MEM_SEGS );
 		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
 		return DRM_ERR(ENOMEM);
 	}
 
@@ -634,7 +580,6 @@ int DRM(addbufs_pci)( DRM_IOCTL_ARGS )
 		/* Free the entry because it isn't valid */
 		DRM(cleanup_buf_error)(entry);
 		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
 		return DRM_ERR(ENOMEM);
 	}
 	dma->buflist = temp_buflist;
@@ -656,23 +601,18 @@ int DRM(addbufs_pci)( DRM_IOCTL_ARGS )
 #endif
 	DRM_UNLOCK;
 
-	request.count = entry->buf_count;
-	request.size = size;
+	request->count = entry->buf_count;
+	request->size = size;
 
-	DRM_COPY_TO_USER_IOCTL( (drm_buf_desc_t *)data, request, sizeof(request) );
-
-	atomic_dec( &dev->buf_alloc );
 	return 0;
 
 }
 #endif /* __HAVE_PCI_DMA */
 
 #if __REALLY_HAVE_SG
-int DRM(addbufs_sg)( DRM_IOCTL_ARGS )
+static int DRM(addbufs_sg)(drm_device_t *dev, drm_buf_desc_t *request)
 {
-	DRM_DEVICE;
 	drm_device_dma_t *dma = dev->dma;
-	drm_buf_desc_t request;
 	drm_buf_entry_t *entry;
 	drm_buf_t *buf;
 	unsigned long offset;
@@ -687,21 +627,17 @@ int DRM(addbufs_sg)( DRM_IOCTL_ARGS )
 	int i;
 	drm_buf_t **temp_buflist;
 
-	if ( !dma ) return DRM_ERR(EINVAL);
-
-	DRM_COPY_FROM_USER_IOCTL( request, (drm_buf_desc_t *)data, sizeof(request) );
-
-	count = request.count;
-	order = DRM(order)( request.size );
+	count = request->count;
+	order = DRM(order)(request->size);
 	size = 1 << order;
 
-	alignment  = (request.flags & _DRM_PAGE_ALIGN)
+	alignment  = (request->flags & _DRM_PAGE_ALIGN)
 		? round_page(size) : size;
 	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
 	total = PAGE_SIZE << page_order;
 
 	byte_count = 0;
-	agp_offset = request.agp_start;
+	agp_offset = request->agp_start;
 
 	DRM_DEBUG( "count:      %d\n",  count );
 	DRM_DEBUG( "order:      %d\n",  order );
@@ -713,35 +649,18 @@ int DRM(addbufs_sg)( DRM_IOCTL_ARGS )
 
 	if ( order < DRM_MIN_ORDER || order > DRM_MAX_ORDER ) 
 		return DRM_ERR(EINVAL);
-	if ( dev->queue_count ) return DRM_ERR(EBUSY); /* Not while in use */
-
-	DRM_SPINLOCK( &dev->count_lock );
-	if ( dev->buf_use ) {
-		DRM_SPINUNLOCK( &dev->count_lock );
-		return DRM_ERR(EBUSY);
-	}
-	atomic_inc( &dev->buf_alloc );
-	DRM_SPINUNLOCK( &dev->count_lock );
 
 	DRM_LOCK;
 	entry = &dma->bufs[order];
 	if ( entry->buf_count ) {
 		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
 		return DRM_ERR(ENOMEM); /* May only call once for each order */
-	}
-
-	if (count < 0 || count > 4096) {
-		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
-		return DRM_ERR(EINVAL);
 	}
 
 	entry->buflist = DRM(alloc)( count * sizeof(*entry->buflist),
 				     DRM_MEM_BUFS );
 	if ( !entry->buflist ) {
 		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
 		return DRM_ERR(ENOMEM);
 	}
 	memset( entry->buflist, 0, count * sizeof(*entry->buflist) );
@@ -775,7 +694,6 @@ int DRM(addbufs_sg)( DRM_IOCTL_ARGS )
 			entry->buf_count = count;
 			DRM(cleanup_buf_error)(entry);
 			DRM_UNLOCK;
-			atomic_dec( &dev->buf_alloc );
 			return DRM_ERR(ENOMEM);
 		}
 
@@ -800,7 +718,6 @@ int DRM(addbufs_sg)( DRM_IOCTL_ARGS )
 		/* Free the entry because it isn't valid */
 		DRM(cleanup_buf_error)(entry);
 		DRM_UNLOCK;
-		atomic_dec( &dev->buf_alloc );
 		return DRM_ERR(ENOMEM);
 	}
 	dma->buflist = temp_buflist;
@@ -823,39 +740,66 @@ int DRM(addbufs_sg)( DRM_IOCTL_ARGS )
 #endif
 	DRM_UNLOCK;
 
-	request.count = entry->buf_count;
-	request.size = size;
-
-	DRM_COPY_TO_USER_IOCTL( (drm_buf_desc_t *)data, request, sizeof(request) );
+	request->count = entry->buf_count;
+	request->size = size;
 
 	dma->flags = _DRM_DMA_USE_SG;
 
-	atomic_dec( &dev->buf_alloc );
 	return 0;
 }
 #endif /* __REALLY_HAVE_SG */
 
 int DRM(addbufs)( DRM_IOCTL_ARGS )
 {
+	DRM_DEVICE;
 	drm_buf_desc_t request;
+	int err;
 
 	DRM_COPY_FROM_USER_IOCTL( request, (drm_buf_desc_t *)data, sizeof(request) );
 
+	if (dev->dma == NULL)
+		return DRM_ERR(EINVAL);
+
+	if (request.count < 0 || request.count > 4096)
+		return DRM_ERR(EINVAL);
+
+	if (dev->queue_count)
+		return DRM_ERR(EBUSY); /* Not while in use */
+
+	DRM_SPINLOCK(&dev->count_lock);
+	if (dev->buf_use) {
+		DRM_SPINUNLOCK(&dev->count_lock);
+		return DRM_ERR(EBUSY);
+	}
+	/* dev->buf_alloc acts as a lock to prevent infobufs/mapbufs from
+	 * trying to read from the dma->bufs while buffers are being allocated */
+	dev->buf_alloc++;
+	DRM_SPINUNLOCK(&dev->count_lock);
+
+
 #if __REALLY_HAVE_AGP
 	if ( request.flags & _DRM_AGP_BUFFER )
-		return DRM(addbufs_agp)( kdev, cmd, data, flags, p, filp );
+		err = DRM(addbufs_agp)(dev, &request);
 	else
 #endif
 #if __REALLY_HAVE_SG
 	if ( request.flags & _DRM_SG_BUFFER )
-		return DRM(addbufs_sg)( kdev, cmd, data, flags, p, filp );
+		err = DRM(addbufs_sg)(dev, &request);
 	else
 #endif
 #if __HAVE_PCI_DMA
-		return DRM(addbufs_pci)( kdev, cmd, data, flags, p, filp );
+		err = DRM(addbufs_pci)(dev, &request);
 #else
-		return DRM_ERR(EINVAL);
+		err = DRM_ERR(EINVAL);
 #endif
+
+	DRM_COPY_TO_USER_IOCTL((drm_buf_desc_t *)data, request, sizeof(request));
+
+	DRM_SPINLOCK(&dev->count_lock);
+	dev->buf_alloc--;
+	DRM_SPINUNLOCK(&dev->count_lock);
+
+	return err;
 }
 
 int DRM(infobufs)( DRM_IOCTL_ARGS )
@@ -869,7 +813,7 @@ int DRM(infobufs)( DRM_IOCTL_ARGS )
 	if ( !dma ) return DRM_ERR(EINVAL);
 
 	DRM_SPINLOCK( &dev->count_lock );
-	if ( atomic_read( &dev->buf_alloc ) ) {
+	if (dev->buf_alloc != 0) {
 		DRM_SPINUNLOCK( &dev->count_lock );
 		return DRM_ERR(EBUSY);
 	}
@@ -1012,7 +956,7 @@ int DRM(mapbufs)( DRM_IOCTL_ARGS )
 	if ( !dma ) return DRM_ERR(EINVAL);
 
 	DRM_SPINLOCK( &dev->count_lock );
-	if ( atomic_read( &dev->buf_alloc ) ) {
+	if (dev->buf_alloc != 0) {
 		DRM_SPINUNLOCK( &dev->count_lock );
 		return DRM_ERR(EBUSY);
 	}
