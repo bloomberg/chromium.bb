@@ -388,7 +388,7 @@ void mga_fire_primary(drm_device_t *dev, drm_mga_prim_buf_t *prim)
  	/* We never check for overflow, b/c there is always room */
     	PRIMPTR(prim);
    	if(num_dwords <= 0) {
-		DRM_DEBUG("num_dwords == 0 when dispatched\n");
+		DRM_ERROR("num_dwords == 0 when dispatched\n");
 		goto out_prim_wait;
 	}
  	PRIMOUTREG( MGAREG_DMAPAD, 0);
@@ -770,6 +770,7 @@ static int mga_dma_initialize(drm_device_t *dev, drm_mga_init_t *init) {
    	init_waitqueue_head(&dev_priv->flush_queue);
 	init_waitqueue_head(&dev_priv->buf_queue);
 	dev_priv->WarpPipe = 0xff000000;
+	dev_priv->vertexsize = 0;
 
    	DRM_DEBUG("chipset: %d ucode_size: %d backOffset: %x depthOffset: %x\n",
 		  dev_priv->chipset, dev_priv->warp_ucode_size, 

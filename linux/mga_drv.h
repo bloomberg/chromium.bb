@@ -82,6 +82,7 @@ typedef struct _drm_mga_private {
 	int use_agp;
    	drm_mga_warp_index_t WarpIndex[MGA_MAX_G400_PIPES];
 	unsigned int WarpPipe;
+	unsigned int vertexsize;
    	atomic_t pending_bufs;
    	void *status_page;
    	unsigned long real_status_page;
@@ -212,13 +213,12 @@ typedef struct {
 #define PRIM_OVERFLOW(dev, dev_priv, length) do {			   \
 	drm_mga_prim_buf_t *tmp_buf =					   \
  		dev_priv->prim_bufs[dev_priv->current_prim_idx];	   \
-	if( test_bit(MGA_BUF_NEEDS_OVERFLOW,				   \
-		  &tmp_buf->buffer_status)) {				   \
+	if( test_bit(MGA_BUF_NEEDS_OVERFLOW, &tmp_buf->buffer_status)) {   \
  		mga_advance_primary(dev);				   \
  		mga_dma_schedule(dev, 1);				   \
 		tmp_buf = dev_priv->prim_bufs[dev_priv->current_prim_idx]; \
  	} else if( tmp_buf->max_dwords - tmp_buf->num_dwords < length ||   \
- 	    tmp_buf->sec_used > MGA_DMA_BUF_NR/2) {			   \
+ 	           tmp_buf->sec_used > MGA_DMA_BUF_NR/2) {		   \
 		set_bit(MGA_BUF_FORCE_FIRE, &tmp_buf->buffer_status);	   \
  		mga_advance_primary(dev);				   \
  		mga_dma_schedule(dev, 1);				   \
