@@ -1,6 +1,6 @@
 /* xf86drm.c -- User-level interface to DRM device
  * Created: Tue Jan  5 08:16:21 1999 by faith@precisioninsight.com
- * Revised: Fri Jun 18 09:52:23 1999 by faith@precisioninsight.com
+ * Revised: Wed Aug  4 07:54:23 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.41 1999/06/21 14:31:20 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.3 1999/06/27 14:08:19 dawes Exp $
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.43 1999/08/04 18:14:43 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.4 1999/09/25 14:37:49 dawes Exp $
  * 
  */
 
@@ -101,63 +101,6 @@ static char *drmStrdup(const char *s)
 }
 
 
-/* drm_lookup searches file for a line tagged with name, and returns the
-   value for that tag.  If busid is NULL, the file format is that used for
-   /proc/devices and /proc/misc, or the first part of /proc/drm/devices:
- 
-       <value> <whitespace> <tag>
-
-   If the busid is non-NULL, the file format is the extended format used
-   for /proc/drm/devices:
-
-       <value> <whitespace> <name> <whitespace> <busid>
-
-   If both name and busid are non-NULL, both must match.  If either is
-   NULL, then the other is matched.
-*/
-
-static int drm_lookup(const char *file, const char *name, const char *busid)
-{
-    FILE *str;
-    char buf[128];
-    char *pt;
-    int  name_match;
-    int  busid_match;
-    char *namept     = NULL;
-    char *busidpt    = NULL;
-
-    if (!(str = fopen(file, "r"))) return DRM_ERR_NO_DEVICE;
-    while (fgets(buf, sizeof(buf)-1, str)) {
-	buf[sizeof(buf)-1] = '\0';
-	for (pt = buf; *pt && isspace(*pt); ++pt);  /* skip whitespace */
-	for (; *pt && !isspace(*pt); ++pt);         /* next space or null */
-	if (isspace(pt[0]) && pt[1]) {
-	    pt++;
-	    for (; *pt && isspace(*pt); ++pt);      /* skip whitespace */
-	    namept = pt;
-	    for (; *pt && !isspace(*pt); ++pt);	    /* next space or null */
-	    if (isspace(pt[0]) && pt[1]) {          /* busid present */
-		*pt = '\0';		            /* proper termination */
-		pt++;
-		for (; *pt && isspace(*pt); ++pt);  /* skip whitespace */
-		busidpt = pt;
-		for (; *pt && !isspace(*pt); ++pt); /* next space or null */
-	    }
-	    *pt = '\0';		                    /* proper termination */
-	    name_match  = name ? 0 : 1;  /* match if we don't care */
-	    busid_match = busid ? 0 : 1; /* match if we don't care */
-	    if (name && namept && !strcmp(name, namept)) ++name_match;
-	    if (busid && busidpt && !strcmp(busid, busidpt)) ++busid_match;
-	    if (name_match && busid_match) {
-		fclose(str);
-		return atoi(buf); /* stops at whitespace */
-	    }
-	}
-    }
-    fclose(str);
-    return DRM_ERR_NO_DEVICE;
-}
-
 static unsigned long drmGetKeyFromFd(int fd)
 {
 #ifdef XFree86LOADER
@@ -205,123 +148,128 @@ static int drm_open(const char *file)
 
 int drmAvailable(void)
 {
-    if (!access(DRM_PROC_DRM, R_OK)) return 1;
+    if (!access("/proc/graphics/0", R_OK)) return 1;
     return 0;
 }
 
-/* drmGetMajor tries to find the major device number for /dev/drm by
-   searching /proc/devices.  A negative value is returned on error. */
-
-static int drmGetMajor(void)
-{
-    int major;
-
-    if (!drmAvailable()) return DRM_ERR_NO_DEVICE;
-    
-    if ((major = drm_lookup(DRM_PROC_DEVICES, DRM_NAME, NULL)) >= 0)
-	return major;
-    
-    return DRM_ERR_NO_DEVICE;
-}
-
-/* drmGetMinor tries to find the minor device number for name by looking in
-   /proc/drm/devices.  A negative value is retruned on error. */
-
-static int drmGetMinor(const char *name, const char *busid)
-{
-    int  minor;
-    char buf[128];
-     
-    if (!drmAvailable()) return DRM_ERR_NO_DEVICE;
-
-    sprintf(buf, "/proc/%s/%s", DRM_NAME, DRM_DEVICES);
-    
-    if ((minor = drm_lookup(buf, name, busid))) return minor;
-    return 0;
-}
-
-
-/* drmOpen looks up the specified name and/or busid in /proc/drm/devices,
-   and opens the device found.  The entry in /dev is created if necessary
-   (and if root).  A file descriptor is returned.  On error, the return
-   value is negative. */
-
-static int drmOpen(const char *name, const char *busid)
+static int drmOpenDevice(const char *path, long dev,
+			 mode_t mode, uid_t user, gid_t group)
 {
 #ifdef XFree86LOADER
     struct xf86stat st;
 #else
     struct stat     st;
 #endif
-    char            path[128];
-    int             major;
-    int             minor;
-    dev_t           dev;
-    
-    if (!drmAvailable())                       return DRM_ERR_NO_DEVICE;
-    if ((major = drmGetMajor()) < 0)           return major;
-    if ((minor = drmGetMinor(name,busid)) < 0) return minor;
-    dev = makedev(major, minor);
 
-    if (!minor) {
-	sprintf(path, "/dev/%s", DRM_NAME );
-    } else {
-	sprintf(path, "/dev/%s%d", DRM_NAME, minor-1 );
-    }
+    if (!stat(path, &st) && st.st_rdev == dev) return drm_open(path);
 
-				/* Check device major/minor for match */
-    if (!access(path, F_OK)) {
-	if (stat(path, &st))   return DRM_ERR_NO_ACCESS;
-	if (st.st_rdev == dev) {
-#if defined(XFree86Server)
-	    chmod(path,
-		  xf86ConfigDRI.mode  ? xf86ConfigDRI.mode : DRM_DEV_MODE);
-	    chown(path, DRM_DEV_UID,
-		  xf86ConfigDRI.group ? xf86ConfigDRI.group : DRM_DEV_GID);
-#endif
-#if defined(DRM_USE_MALLOC)
-	    chmod(path, DRM_DEV_MODE);
-	    chown(path, DRM_DEV_UID, DRM_DEV_GID);
-#endif
-	    return drm_open(path);
-	}
-    }
-
-				/* Doesn't exist or match failed, so we
-                                   have to be root to create it. */
     if (geteuid()) return DRM_ERR_NOT_ROOT;
     remove(path);
-    if (mknod(path, S_IFCHR | DRM_DEV_MODE, dev)) {
+    if (mknod(path, S_IFCHR, dev)) {
 	remove(path);
 	return DRM_ERR_NOT_ROOT;
     }
-#if defined(XFree86Server)
-    chmod(path, xf86ConfigDRI.mode ? xf86ConfigDRI.mode : DRM_DEV_MODE);
-    chown(path, DRM_DEV_UID,
-	  xf86ConfigDRI.group ? xf86ConfigDRI.group : DRM_DEV_GID);
-#endif
-#if defined(DRM_USE_MALLOC)
-    chmod(path, DRM_DEV_MODE);
-    chown(path, DRM_DEV_UID, DRM_DEV_GID);
-#endif
+    chown(path, user, group);
+    chmod(path, mode);
     return drm_open(path);
 }
 
-/* drmOpenDRM returns a file descriptor for the main /dev/drm control
-   device.  The entry in /dev is created if necessary (and if root).  A
-   file descriptor is returned.  On error, the return value is negative. */
-
-int drmOpenDRM(void)
+static int drmOpenByName(const char *name)
 {
-    return drmOpen(DRM_NAME, NULL);
+    int    i;
+    char   proc_name[64];
+    char   dev_name[64];
+    char   buf[512];
+    mode_t mode   = DRM_DEV_MODE;
+    mode_t dirmode;
+    gid_t  group  = DRM_DEV_GID;
+    uid_t  user   = DRM_DEV_UID;
+    int    fd;
+    char   *pt;
+    char   *driver = NULL;
+    char   *devstring;
+    long   dev     = 0;
+    int    retcode;
+
+#if defined(XFree86Server)
+    mode  = xf86ConfigDRI.mode ? xf86ConfigDRI.mode : DRM_DEV_MODE;
+    group = xf86ConfigDRI.group ? xf86ConfigDRI.group : DRM_DEV_GID;
+#endif
+
+    if (!geteuid()) {
+	dirmode = mode;
+	if (dirmode & S_IRUSR) dirmode |= S_IXUSR;
+	if (dirmode & S_IRGRP) dirmode |= S_IXGRP;
+	if (dirmode & S_IROTH) dirmode |= S_IXOTH;
+	dirmode &= ~(S_IWGRP | S_IWOTH);
+	mkdir("/dev/graphics", 0);
+	chown("/dev/graphics", user, group);
+	chmod("/dev/graphics", dirmode);
+    }
+
+    for (i = 0; i < 8; i++) {
+	sprintf(proc_name, "/proc/graphics/%d/name", i);
+	sprintf(dev_name, "/dev/graphics/card%d", i);
+	if ((fd = open(proc_name, 0, 0)) >= 0) {
+	    retcode = read(fd, buf, sizeof(buf)-1);
+	    close(fd);
+	    if (retcode) {
+		buf[retcode-1] = '\0';
+		for (driver = pt = buf; *pt && *pt != ' '; ++pt)
+		    ;
+		if (*pt) {	/* Device is next */
+		    *pt = '\0';
+		    if (!strcmp(driver, name)) { /* Match */
+			for (devstring = ++pt; *pt && *pt != ' '; ++pt)
+			    ;
+			if (*pt) { /* Found busid */
+			  return drmOpenByBusid(++pt);
+			} else {	/* No busid */
+			  dev = strtol(devstring, NULL, 0);
+			  return drmOpenDevice(dev_name, dev,
+					       mode, user, group);
+			}
+		    }
+		}
+	    }
+	} else remove(dev_name);
+    }
+    return -1;
+}
+
+static int drmOpenByBusid(const char *busid)
+{
+    int    i;
+    char   dev_name[64];
+    char   *buf;
+    int    fd;
+
+    for (i = 0; i < 8; i++) {
+	sprintf(dev_name, "/dev/graphics/card%d", i);
+	if ((fd = drm_open(dev_name)) >= 0) {
+	    buf = drmGetBusid(fd);
+	    if (buf && !strcmp(buf, busid)) {
+	      drmFreeBusid(buf);
+	      return fd;
+	    }
+	    if (buf) drmFreeBusid(buf);
+	    close(fd);
+	}
+    }
+    return -1;
 }
 
 
-/* drmClose closes the file descriptor returned from drmOpen. */
-   
-int drmCloseDRM(int fd)
+/* drmOpen looks up the specified name and busid, and opens the device
+   found.  The entry in /dev/graphics is created if necessary (and if root).
+   A file descriptor is returned.  On error, the return value is
+   negative. */
+
+int drmOpen(const char *name, const char *busid)
 {
-    return close(fd);
+
+    if (busid) return drmOpenByBusid(busid);
+    return drmOpenByName(name);
 }
 
 void drmFreeVersion(drmVersionPtr v)
@@ -404,137 +352,33 @@ drmVersionPtr drmGetVersion(int fd)
     return retval;
 }
 
-void drmFreeVersionList(drmListPtr list)
+void drmFreeBusid(const char *busid)
 {
-    int i;
-    
-    if (!list) return;
-    if (list->version) {
-	for (i = 0; i < list->count; i++) {
-	    if (list->version[i].name) drmFree(list->version[i].name);
-	    if (list->version[i].date) drmFree(list->version[i].date);
-	    if (list->version[i].desc) drmFree(list->version[i].desc);
-	    
-	}
-	drmFree(list->version);
-    }
-    if (list->capability) drmFree(list->capability);
-    drmFree(list);
+    drmFree((void *)busid);
 }
 
-static void drmFreeKernelVersionList(drm_list_t *list)
+char *drmGetBusid(int fd)
 {
-    int i;
-    
-    if (!list) return;
-    if (list->version) {
-	for (i = 0; i < list->count; i++) {
-	    if (list->version[i].name) drmFree(list->version[i].name);
-	    if (list->version[i].date) drmFree(list->version[i].date);
-	    if (list->version[i].desc) drmFree(list->version[i].desc);
-	    
-	}
-	drmFree(list->version);
-    }
-    drmFree(list);
+    drm_unique_t u;
+
+    u.unique_len = 0;
+    u.unique     = NULL;
+
+    if (ioctl(fd, DRM_IOCTL_GET_UNIQUE, &u)) return NULL;
+    u.unique = drmMalloc(u.unique_len + 1);
+    if (ioctl(fd, DRM_IOCTL_GET_UNIQUE, &u)) return NULL;
+    u.unique[u.unique_len] = '\0';
+    return u.unique;
 }
 
-/* drmList obtains a list of all drivers and capabilities via an ioctl. */
-
-drmListPtr drmGetVersionList(int fd)
+int drmSetBusid(int fd, const char *busid)
 {
-    drmListPtr retval;
-    drm_list_t *list = drmMalloc(sizeof(*list));
-    int        i;
+    drm_unique_t u;
 
-    list->count = 0;
+    u.unique     = (char *)busid;
+    u.unique_len = strlen(busid);
 
-				/* First, get the count */
-    
-    if (ioctl(fd, DRM_IOCTL_LIST, list)) {
-	drmFreeKernelVersionList(list);
-	return NULL;
-    }
-
-				/* Next, get the version sizes */
-    for (i = 0; i < list->count; i++) {
-	list->version
-	    = drmMalloc(list->count * sizeof(*list->version));
-	list->version[i].name_len = 0;
-	list->version[i].name     = NULL;
-	list->version[i].date_len = 0;
-	list->version[i].date     = NULL;
-	list->version[i].desc_len = 0;
-	list->version[i].desc     = NULL;
-    }
-
-    if (ioctl(fd, DRM_IOCTL_LIST, list)) {
-	drmFreeKernelVersionList(list);
-	return NULL;
-    }
-    
-				/* Now, allocate space and get the data */
-    for (i = 0; i < list->count; i++) {
-	if (list->version[i].name_len)
-	    list->version[i].name = drmMalloc(list->version[i].name_len + 1);
-	if (list->version[i].date_len)
-	    list->version[i].date = drmMalloc(list->version[i].date_len + 1);
-	if (list->version[i].desc_len)
-	    list->version[i].desc = drmMalloc(list->version[i].desc_len + 1);
-    }
-    
-    if (ioctl(fd, DRM_IOCTL_LIST, list)) {
-	drmFreeKernelVersionList(list);
-	return NULL;
-    }
-
-				/* The results might not be null-terminated
-                                   strings, so terminate them. */
-
-    for (i = 0; i < list->count; i++) {
-	if (list->version[i].name_len)
-	    list->version[i].name[list->version[i].name_len] = '\0';
-	if (list->version[i].date_len)
-	    list->version[i].date[list->version[i].date_len] = '\0';
-	if (list->version[i].desc_len)
-	    list->version[i].desc[list->version[i].desc_len] = '\0';
-    }
-    
-				/* Now, copy it all back into the
-                                   client-visible data structure... */
-    retval = drmMalloc(sizeof(*retval));
-    retval->count      = list->count;
-    retval->version    = drmMalloc(list->count * sizeof(*retval->version));
-    retval->capability = drmMalloc(list->count * sizeof(*retval->capability));
-    for (i = 0; i < list->count; i++) {
-	drmCopyVersion(&retval->version[i], &list->version[i]);
-    }
-    drmFreeKernelVersionList(list);
-    return retval;
-}
-
-int drmCreateSub(int fd, const char *name, const char *busid)
-{
-    drm_request_t request;
-
-    request.device_name  = name;
-    request.device_busid = busid;
-    if (ioctl(fd, DRM_IOCTL_CREATE, &request)) {
-	return -errno;
-    }
-    return 0;
-}
-
-int drmDestroySub(int fd, const char *busid)
-{
-    drm_request_t request;
-
-    request.device_busid = busid;
-    request.device_major = drmGetMajor();
-    request.device_minor = drmGetMinor(NULL, busid);
-    if (ioctl(fd, DRM_IOCTL_DESTROY, &request)) {
-	return -errno;
-    }
+    if (ioctl(fd, DRM_IOCTL_SET_UNIQUE, &u)) return -errno;
     return 0;
 }
 
@@ -634,12 +478,7 @@ int drmFreeBufs(int fd, int count, int *list)
     return 0;
 }
 
-int drmOpenSub(const char *busid)
-{
-    return drmOpen(NULL, busid);
-}
-
-int drmCloseSub(int fd)
+int drmClose(int fd)
 {
     unsigned long key    = drmGetKeyFromFd(fd);
     drmHashEntry  *entry = drmGetEntry(fd);
@@ -923,58 +762,12 @@ int drmError(int err, const char *label)
     return 1;
 }
 
-int drmCtlAddCommand(int fd, drmCtlDesc desc, int count, int *inst)
-{
-    drm_control_t ctl;
-
-    ctl.func  = DRM_ADD_COMMAND;
-    ctl.irq   = 0;
-    ctl.count = count;
-    ctl.inst  = inst;
-
-    switch (desc) {
-    case DRM_IH_PRE_INST:    ctl.desc = _DRM_IH_PRE_INST;    break;
-    case DRM_IH_POST_INST:   ctl.desc = _DRM_IH_POST_INST;   break;
-    case DRM_IH_SERVICE:     ctl.desc = _DRM_IH_SERVICE;     break;
-    case DRM_IH_PRE_UNINST:  ctl.desc = _DRM_IH_PRE_UNINST;  break;
-    case DRM_IH_POST_UNINST: ctl.desc = _DRM_IH_POST_UNINST; break;
-    case DRM_DMA_DISPATCH:   ctl.desc = _DRM_DMA_DISPATCH;   break;
-    case DRM_DMA_READY:      ctl.desc = _DRM_DMA_READY;      break;
-    case DRM_DMA_IS_READY:   ctl.desc = _DRM_DMA_IS_READY;   break;
-    case DRM_DMA_QUIESCENT:  ctl.desc = _DRM_DMA_QUIESCENT;  break;
-    default:
-	return -EINVAL;
-    }
-
-    if (ioctl(fd, DRM_IOCTL_CONTROL, &ctl)) return -errno;
-    return 0;
-}
-
-int drmCtlRemoveCommands(int fd)
-{
-    drm_control_t ctl;
-    drm_desc_t    i;
-
-    for (i = 0; i < DRM_DESC_MAX; i++) {
-	ctl.func  = DRM_RM_COMMAND;
-	ctl.desc  = i;
-	ctl.irq   = 0;
-	ctl.count = 0;
-	ctl.inst  = NULL;
-	ioctl(fd, DRM_IOCTL_CONTROL, &ctl);
-    }
-    return 0;
-}
-
 int drmCtlInstHandler(int fd, int irq)
 {
     drm_control_t ctl;
 
     ctl.func  = DRM_INST_HANDLER;
-    ctl.desc  = 0;		/* unused */
     ctl.irq   = irq;
-    ctl.count = 0;
-    ctl.inst  = NULL;
     if (ioctl(fd, DRM_IOCTL_CONTROL, &ctl)) return -errno;
     return 0;
 }
@@ -984,10 +777,7 @@ int drmCtlUninstHandler(int fd)
     drm_control_t ctl;
 
     ctl.func  = DRM_UNINST_HANDLER;
-    ctl.desc  = 0;		/* unused */
     ctl.irq   = 0;
-    ctl.count = 0;
-    ctl.inst  = NULL;
     if (ioctl(fd, DRM_IOCTL_CONTROL, &ctl)) return -errno;
     return 0;
 }

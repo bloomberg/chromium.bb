@@ -1,0 +1,136 @@
+# Makefile -- For the Direct Rendering Manager module (drm)
+# Created: Mon Jan  4 09:26:53 1999 by faith@precisioninsight.com
+# Revised: Thu Oct  7 10:56:13 1999 by faith@precisioninsight.com
+#
+# Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+# All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice (including the next
+# paragraph) shall be included in all copies or substantial portions of the
+# Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+# PRECISION INSIGHT AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+# 
+# $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/Makefile.linux,v 1.23 1999/07/02 17:46:30 faith Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/Makefile.linux,v 1.3 1999/06/27 14:08:21 dawes Exp $
+# 
+
+.SUFFIXES:
+
+# **** Start of SMP/MODVERSIONS detection
+
+# *** Setup
+LINUX=/usr/src/linux
+AUTOCONF=$(LINUX)/include/linux/autoconf.h
+
+# ** SMP
+SMP := $(shell \
+         if grep -q '^\#define.*CONFIG_SMP.*1' $(AUTOCONF); \
+	 then echo 1; else echo 0; fi)
+# If that doesn't do automatic detection properly on your system,
+# uncomment one of these lines:
+#SMP := 0
+#SMP := 1
+
+# ** MODVERSIONS
+MODVERSIONS := $(shell \
+		 if grep -q '^\#define.*CONFIG_MODVERSIONS.*1' $(AUTOCONF); \
+		 then echo 1; else echo 0; fi)
+# If that doesn't do automatic detection properly on your system,
+# uncomment one of these lines:
+#MODVERSIONS := 0
+#MODVERSIONS := 1
+
+# **** End of SMP/MODVERSIONS detection
+
+MODS=           gamma.o tdfx.o
+LIBS=           libdrm.a
+PROGS=		drmstat
+
+DRMOBJS=	init.o memory.o proc.o auth.o context.o drawable.o bufs.o \
+		lists.o lock.o ioctl.o fops.o vm.o dma.o
+DRMHEADERS=	drm.h drmP.h
+
+GAMMAOBJS=      gamma_drv.o gamma_dma.o
+GAMMAHEADERS=   gamma_drv.h $(DRMHEADERS)
+
+TDFXOBJS=       tdfx_drv.o tdfx_context.o
+TDFXHEADERS=    tdfx_drv.h $(DRMHEADERS)
+
+PROGOBJS=       drmstat.po xf86drm.po xf86drmHash.po xf86drmRandom.po sigio.po
+PROGHEADERS=    xf86drm.h $(DRMHEADERS)
+
+INC=		/usr/include
+
+CFLAGS=		-O2 $(WARNINGS)
+WARNINGS=	-Wall -Wwrite-strings -Wpointer-arith -Wcast-align \
+		-Wstrict-prototypes -Wshadow -Wnested-externs \
+		-Winline -Wpointer-arith
+MODCFLAGS=      $(CFLAGS) -D__KERNEL__ -DMODULE -fomit-frame-pointer
+PRGCFLAGS=      $(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
+		-D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE \
+		-I../../../../../../include -I../../../../../../../../include \
+		-I../../../../../../../../programs/Xserver/hw/xfree86/common
+PRGLIBS=
+
+# **** Handle SMP/MODVERSIONS
+ifeq ($(SMP),1)
+MODCFLAGS += -D__SMP__
+endif
+ifeq ($(MODVERSIONS),1)
+MODCFLAGS += -DMODVERSIONS -include /usr/include/linux/modversions.h
+endif
+
+# **** End of configuration
+
+all: $(LIBS) $(MODS) $(PROGS)
+
+libdrm.a: $(DRMOBJS)
+	-$(RM) -f $@
+	$(AR) rcs $@ $(DRMOBJS)
+
+gamma.o: $(GAMMAOBJS) $(LIBS)
+	$(LD) -r $^ -o $@
+
+tdfx.o: $(TDFXOBJS) $(LIBS)
+	$(LD) -r $^ -o $@
+
+drmstat: $(PROGOBJS)
+	$(CC) $(PRGCFLAGS) $^ $(PRGLIBS) -o $@
+
+.PHONY: ChangeLog
+ChangeLog:
+	@rm -f Changelog
+	@rcs2log -i 2 -r -l \
+		| sed 's,@.*alephnull.com,@precisioninsight.com,' > ChangeLog
+
+
+# .o files are used for modules
+%.o: %.c
+	$(CC) $(MODCFLAGS) -c $< -o $@
+
+%.po: %.c
+	$(CC) $(PRGCFLAGS) -DDRM_USE_MALLOC -c $< -o $@
+
+
+$(DRMOBJS): $(DRMHEADERS)
+$(GAMMAOBJS): $(GAMMAHEADERS)
+$(TDFXOBJS): $(TDFXHEADERS)
+$(PROGOBJS): $(PROGHEADERS)
+
+clean:
+	rm -f *.o *.po *~ core $(PROGS)
+
