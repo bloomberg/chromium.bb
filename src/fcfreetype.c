@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.4 2002/05/31 23:21:25 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -29,13 +29,14 @@
 #include <freetype/freetype.h>
 #include <freetype/internal/ftobjs.h>
 #include <freetype/tttables.h>
+#include "fcknownsets.h"
 
 static const struct {
     int	    bit;
     FcChar8 *name;
 } FcCodePageRange[] = {
     { 0,	(FcChar8 *) FC_LANG_LATIN_1 },
-    { 1,	(FcChar8 *) FC_LANG_LATIN_2_EASTERN_EUROPE },
+    { 1,	(FcChar8 *) FC_LANG_LATIN_2 },
     { 2,	(FcChar8 *) FC_LANG_CYRILLIC },
     { 3,	(FcChar8 *) FC_LANG_GREEK },
     { 4,	(FcChar8 *) FC_LANG_TURKISH },
@@ -75,6 +76,94 @@ static const struct {
 
 #define NUM_CODE_PAGE_RANGE (sizeof FcCodePageRange / sizeof FcCodePageRange[0])
 
+static const struct {
+    const FcCharSet *set;
+    FcChar32	    size;
+    FcChar32	    missing_tolerance;
+    FcChar8	    *name;
+} FcCodePageSet[] = {
+    {
+	&fcCharSet_Latin1_1252,
+	fcCharSet_Latin1_1252_size,
+	8,
+	(FcChar8 *) FC_LANG_LATIN_1,
+    },
+    {
+	&fcCharSet_Latin2_1250,
+	fcCharSet_Latin2_1250_size,
+	8,
+	(FcChar8 *) FC_LANG_LATIN_2,
+    },
+    {
+	&fcCharSet_Cyrillic_1251,
+	fcCharSet_Cyrillic_1251_size,
+	16,
+	(FcChar8 *) FC_LANG_CYRILLIC,
+    },
+    {
+	&fcCharSet_Greek_1253,
+	fcCharSet_Greek_1253_size,
+	8,
+	(FcChar8 *) FC_LANG_GREEK,
+    },
+    {
+	&fcCharSet_Turkish_1254,
+	fcCharSet_Turkish_1254_size,
+	16,
+	(FcChar8 *) FC_LANG_TURKISH,
+    },
+    {
+	&fcCharSet_Hebrew_1255,
+	fcCharSet_Hebrew_1255_size,
+	16,
+	(FcChar8 *) FC_LANG_HEBREW,
+    },
+    {
+	&fcCharSet_Arabic_1256,
+	fcCharSet_Arabic_1256_size,
+	16,
+	(FcChar8 *) FC_LANG_ARABIC,
+    },
+    {
+	&fcCharSet_Windows_Baltic_1257,
+	fcCharSet_Windows_Baltic_1257_size,
+	16,
+	(FcChar8 *) FC_LANG_WINDOWS_BALTIC,
+    },
+    {	
+	&fcCharSet_Thai_874,		
+	fcCharSet_Thai_874_size,
+	16,
+	(FcChar8 *) FC_LANG_THAI,
+    },
+    { 
+	&fcCharSet_Japanese_932,		
+	fcCharSet_Japanese_932_size,		
+	500,
+	(FcChar8 *) FC_LANG_JAPANESE,
+    },
+    { 
+	&fcCharSet_SimplifiedChinese_936,
+	fcCharSet_SimplifiedChinese_936_size,	
+	500,
+	(FcChar8 *) FC_LANG_SIMPLIFIED_CHINESE,
+    },
+    {
+	&fcCharSet_Korean_949,
+	fcCharSet_Korean_949_size,
+	500,
+	(FcChar8 *) FC_LANG_KOREAN_WANSUNG,
+    },
+    {
+	&fcCharSet_TraditionalChinese_950,
+	fcCharSet_TraditionalChinese_950_size,
+	500,
+	(FcChar8 *) FC_LANG_TRADITIONAL_CHINESE,
+    },
+};
+
+#define NUM_CODE_PAGE_SET (sizeof FcCodePageSet / sizeof FcCodePageSet[0])
+
 FcPattern *
 FcFreeTypeQuery (const FcChar8	*file,
 		 int		id,
@@ -90,6 +179,9 @@ FcFreeTypeQuery (const FcChar8	*file,
     FT_Library	    ftLibrary;
     const FcChar8   *family;
     TT_OS2	    *os2;
+    FcBool	    hasLang = FcFalse;
+    FcChar32	    codepoints;
+    FcBool	    matchCodePage[NUM_CODE_PAGE_SET];
 
     if (FT_Init_FreeType (&ftLibrary))
 	return 0;
@@ -159,37 +251,6 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    goto bail1;
 #endif
 
-    cs = FcFreeTypeCharSet (face, blanks);
-    if (!cs)
-	goto bail1;
-
-    /*
-     * Skip over PCF fonts that have no encoded characters; they're
-     * usually just Unicode fonts transcoded to some legacy encoding
-     */
-    if (FcCharSetCount (cs) == 0)
-    {
-	if (!strcmp(FT_MODULE_CLASS(&face->driver->root)->module_name, "pcf"))
-	    goto bail2;
-    }
-
-    if (!FcPatternAddCharSet (pat, FC_CHARSET, cs))
-	goto bail2;
-    /*
-     * Drop our reference to the charset
-     */
-    FcCharSetDestroy (cs);
-    
-    if (!(face->face_flags & FT_FACE_FLAG_SCALABLE))
-    {
-	for (i = 0; i < face->num_fixed_sizes; i++)
-	    if (!FcPatternAddDouble (pat, FC_PIXEL_SIZE,
-				     (double) face->available_sizes[i].height))
-		goto bail1;
-	if (!FcPatternAddBool (pat, FC_ANTIALIAS, FcFalse))
-	    goto bail1;
-    }
-
     /*
      * Get the OS/2 table and poke about
      */
@@ -215,8 +276,118 @@ FcFreeTypeQuery (const FcChar8	*file,
 		if (!FcPatternAddString (pat, FC_LANG,
 					 FcCodePageRange[i].name))
 		    goto bail1;
+		hasLang = FcTrue;
 	    }
 	}
+    }
+
+    /*
+     * Compute the unicode coverage for the font
+     */
+    cs = FcFreeTypeCharSet (face, blanks);
+    if (!cs)
+	goto bail1;
+
+    codepoints = FcCharSetCount (cs);
+    /*
+     * Skip over PCF fonts that have no encoded characters; they're
+     * usually just Unicode fonts transcoded to some legacy encoding
+     */
+    if (codepoints == 0)
+    {
+	if (!strcmp(FT_MODULE_CLASS(&face->driver->root)->module_name, "pcf"))
+	    goto bail2;
+    }
+
+    if (!FcPatternAddCharSet (pat, FC_CHARSET, cs))
+	goto bail2;
+
+    if (!hasLang || (FcDebug() & FC_DBG_SCANV))
+    {
+	/*
+	 * Use the Unicode coverage to set lang if it wasn't
+	 * set from the OS/2 tables
+	 */
+
+        if (FcDebug() & FC_DBG_SCANV)
+	    printf ("%s: ", family);
+	for (i = 0; i < NUM_CODE_PAGE_SET; i++)
+	{
+	    FcChar32    missing;
+
+	    missing = FcCharSetSubtractCount (FcCodePageSet[i].set,
+					      cs);
+	    matchCodePage[i] = missing <= FcCodePageSet[i].missing_tolerance;
+	    if (FcDebug() & FC_DBG_SCANV)
+		printf ("%s(%d) ", FcCodePageSet[i].name, missing);
+	}
+        if (FcDebug() & FC_DBG_SCANV)
+	    printf ("\n");
+
+	if (hasLang)
+	{
+	    FcChar8	*lang;
+	    int	j;
+	    /*
+	     * Validate the lang selections
+	     */
+	    for (i = 0; FcPatternGetString (pat, FC_LANG, i, &lang) == FcResultMatch; i++)
+	    {
+		for (j = 0; j < NUM_CODE_PAGE_SET; j++)
+		    if (!strcmp ((char *) FcCodePageSet[j].name,
+				 (char *) lang))
+		    {
+			if (!matchCodePage[j])
+			    printf ("%s(%s): missing lang %s\n", file, family, lang);
+		    }
+	    }
+	    for (j = 0; j < NUM_CODE_PAGE_SET; j++)
+	    {
+		if (!matchCodePage[j])
+		    continue;
+		lang = 0;
+		for (i = 0; FcPatternGetString (pat, FC_LANG, i, &lang) == FcResultMatch; i++)
+		{
+		    if (!strcmp ((char *) FcCodePageSet[j].name, (char *) lang))
+			break;
+		    lang = 0;
+		}
+		if (!lang)
+		    printf ("%s(%s): extra lang %s\n", file, family, FcCodePageSet[j].name);
+	    }
+	}
+	else
+	{
+	    /*
+	     * None provided, use the charset derived ones
+	     */
+	    for (i = 0; i < NUM_CODE_PAGE_SET; i++)
+		if (matchCodePage[i])
+		{
+		    if (!FcPatternAddString (pat, FC_LANG,
+					     FcCodePageRange[i].name))
+			goto bail1;
+		    hasLang = TRUE;
+		}
+	}
+    }
+    if (!hasLang)
+	if (!FcPatternAddString (pat, FC_LANG, (FcChar8 *) FC_LANG_UNKNOWN))
+	    goto bail1;
+     
+    /*
+     * Drop our reference to the charset
+     */
+    FcCharSetDestroy (cs);
+    
+    if (!(face->face_flags & FT_FACE_FLAG_SCALABLE))
+    {
+	for (i = 0; i < face->num_fixed_sizes; i++)
+	    if (!FcPatternAddDouble (pat, FC_PIXEL_SIZE,
+				     (double) face->available_sizes[i].height))
+		goto bail1;
+	if (!FcPatternAddBool (pat, FC_ANTIALIAS, FcFalse))
+	    goto bail1;
     }
 
     FT_Done_Face (face);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.8 2002/06/19 20:08:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcname.c,v 1.9 2002/06/26 22:14:08 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -40,12 +40,17 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_FOUNDRY,	FcTypeString, },
 /*    { FC_CORE,		FcTypeBool, }, */
     { FC_ANTIALIAS,	FcTypeBool, },
+    { FC_HINTING,	FcTypeBool, },
+    { FC_VERTICAL_LAYOUT,   FcTypeBool, },
+    { FC_AUTOHINT,	FcTypeBool, },
+    { FC_GLOBAL_ADVANCE,    FcTypeBool, },
 /*    { FC_XLFD,		FcTypeString, }, */
     { FC_FILE,		FcTypeString, },
     { FC_INDEX,		FcTypeInteger, },
     { FC_RASTERIZER,	FcTypeString, },
     { FC_OUTLINE,	FcTypeBool, },
     { FC_SCALABLE,	FcTypeBool, },
+    { FC_DPI,		FcTypeDouble },
     { FC_RGBA,		FcTypeInteger, },
     { FC_SCALE,		FcTypeDouble, },
 /*    { FC_RENDER,	FcTypeBool, },*/

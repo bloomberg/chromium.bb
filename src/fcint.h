@@ -41,12 +41,6 @@
 #include <config.h>
 #endif
 
-typedef struct _FcMatcher {
-    char    *object;
-    double  (*compare) (char *object, FcValue value1, FcValue value2);
-    int	    priority;
-} FcMatcher;
-
 typedef struct _FcSymbolic {
     const char	*name;
     int		value;
@@ -67,6 +61,7 @@ typedef struct _FcSymbolic {
 #define FC_DBG_CACHEV	32
 #define FC_DBG_PARSE	64
 #define FC_DBG_SCAN	128
+#define FC_DBG_SCANV	256
 #define FC_DBG_MEMORY	512
 
 #define FC_MEM_CHARSET	    0
@@ -87,8 +82,13 @@ typedef struct _FcSymbolic {
 #define FC_MEM_STRLIST	    15
 #define FC_MEM_CONFIG	    16
 
+typedef enum _FcValueBinding {
+    FcValueBindingWeak, FcValueBindingStrong
+} FcValueBinding;
+
 typedef struct _FcValueList {
     struct _FcValueList    *next;
+    FcValueBinding	    binding;
     FcValue		    value;
 } FcValueList;
 
@@ -356,6 +356,9 @@ FcConfigCompareValue (const FcValue m,
 		      const FcValue v);
 
 /* fccharset.c */
+FcCharSet *
+FcCharSetFreeze (FcCharSet *cs);
+
 FcBool
 FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c);
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.13 2002/06/19 20:08:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcmatch.c,v 1.14 2002/06/19 21:32:18 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -97,50 +97,56 @@ FcCompareSize (char *object, FcValue value1, FcValue value2)
     return v;
 }
 
+typedef struct _FcMatcher {
+    char	    *object;
+    double	    (*compare) (char *object, FcValue value1, FcValue value2);
+    int		    strong, weak;
+} FcMatcher;
+
 /*
  * Order is significant, it defines the precedence of
  * each value, earlier values are more significant than
  * later values
  */
 static FcMatcher _FcMatchers [] = {
-    { FC_FOUNDRY,	FcCompareString, },
-#define MATCH_FOUNDRY	0
+    { FC_FOUNDRY,	FcCompareString,	0, 0 },
+#define MATCH_FOUNDRY	    0
     
-    { FC_CHARSET,	FcCompareCharSet },
-#define MATCH_CHARSET	1
+    { FC_CHARSET,	FcCompareCharSet,	1, 1 },
+#define MATCH_CHARSET	    1
     
-    { FC_LANG,		FcCompareString },
-#define MATCH_LANG	2
+    { FC_FAMILY,    	FcCompareString,	2, 4 },
+#define MATCH_FAMILY	    2
     
-    { FC_FAMILY,	FcCompareString, },
-#define MATCH_FAMILY	3
+    { FC_LANG,		FcCompareString,	3, 3 },
+#define MATCH_LANG	    3
     
-    { FC_SPACING,	FcCompareInteger, },
-#define MATCH_SPACING	4
+    { FC_SPACING,	FcCompareInteger,	5, 5 },
+#define MATCH_SPACING	    4
     
-    { FC_PIXEL_SIZE,	FcCompareSize, },
-#define MATCH_PIXEL_SIZE	5
+    { FC_PIXEL_SIZE,	FcCompareSize,		6, 6 },
+#define MATCH_PIXEL_SIZE    5
     
-    { FC_STYLE,		FcCompareString, },
-#define MATCH_STYLE	6
+    { FC_STYLE,		FcCompareString,	7, 7 },
+#define MATCH_STYLE	    6
     
-    { FC_SLANT,		FcCompareInteger, },
-#define MATCH_SLANT	7
+    { FC_SLANT,		FcCompareInteger,	8, 8 },
+#define MATCH_SLANT	    7
     
-    { FC_WEIGHT,	FcCompareInteger, },
-#define MATCH_WEIGHT	8
+    { FC_WEIGHT,	FcCompareInteger,	9, 9 },
+#define MATCH_WEIGHT	    8
     
-    { FC_ANTIALIAS,	FcCompareBool, },
-#define MATCH_ANTIALIAS	9
+    { FC_ANTIALIAS,	FcCompareBool,		10, 10 },
+#define MATCH_ANTIALIAS	    9
     
-    { FC_RASTERIZER,	FcCompareString, },
-#define MATCH_RASTERIZER	10
+    { FC_RASTERIZER,	FcCompareString,	11, 11 },
+#define MATCH_RASTERIZER    10
     
-    { FC_OUTLINE,	FcCompareBool, },
-#define MATCH_OUTLINE	11
+    { FC_OUTLINE,	FcCompareBool,		12, 12 },
+#define MATCH_OUTLINE	    11
 };
 
-#define NUM_MATCHER (sizeof _FcMatchers / sizeof _FcMatchers[0])
+#define NUM_MATCH_VALUES    13
 
 static FcBool
 FcCompareValueList (const char  *object,
@@ -151,9 +157,9 @@ FcCompareValueList (const char  *object,
 		    FcResult	*result)
 {
     FcValueList    *v1, *v2;
-    double    	    v, best;
-    int		    j;
+    double    	    v, best, bestStrong, bestWeak;
     int		    i;
+    int		    j;
     
     /*
      * Locate the possible matching entry by examining the
@@ -217,6 +223,8 @@ FcCompareValueList (const char  *object,
     }
 #endif
     best = 1e99;
+    bestStrong = 1e99;
+    bestWeak = 1e99;
     j = 0;
     for (v1 = v1orig; v1; v1 = v1->next)
     {
@@ -239,6 +247,16 @@ FcCompareValueList (const char  *object,
 		    *bestValue = v2->value;
 		best = v;
 	    }
+	    if (v1->binding == FcValueBindingStrong)
+	    {
+		if (v < bestStrong)
+		    bestStrong = v;
+	    }
+	    else
+	    {
+		if (v < bestWeak)
+		    bestWeak = v;
+	    }
 	}
 	j++;
     }
@@ -251,7 +269,17 @@ FcCompareValueList (const char  *object,
 	printf ("\n");
     }
     if (value)
-	value[i] += best;
+    {
+	int weak    = _FcMatchers[i].weak;
+	int strong  = _FcMatchers[i].strong;
+	if (weak == strong)
+	    value[strong] += best;
+	else
+	{
+	    value[weak] += bestWeak;
+	    value[strong] += bestStrong;
+	}
+    }
     return FcTrue;
 }
 
@@ -268,7 +296,7 @@ FcCompare (FcPattern	*pat,
 {
     int		    i, i1, i2;
     
-    for (i = 0; i < NUM_MATCHER; i++)
+    for (i = 0; i < NUM_MATCH_VALUES; i++)
 	value[i] = 0.0;
     
     i1 = 0;
@@ -330,9 +358,9 @@ FcFontRenderPrepare (FcConfig	    *config,
 	if (pe)
 	{
 	    int	    j;
-	    double  score[NUM_MATCHER];
+	    double  score[NUM_MATCH_VALUES];
 
-	    for (j = 0; j < NUM_MATCHER; j++)
+	    for (j = 0; j < NUM_MATCH_VALUES; j++)
 		score[j] = 0;
 	    if (!FcCompareValueList (pe->object, pe->values, 
 				     fe->values, &v, score, &result))
@@ -340,7 +368,7 @@ FcFontRenderPrepare (FcConfig	    *config,
 		FcPatternDestroy (new);
 		return 0;
 	    }
-	    for (j = 0; j < NUM_MATCHER; j++)
+	    for (j = 0; j < NUM_MATCH_VALUES; j++)
 		if (score[j] >= 100.0)
 		{
 		    FcValueList	*pv;
@@ -372,14 +400,14 @@ FcFontSetMatch (FcConfig    *config,
 		FcPattern   *p,
 		FcResult    *result)
 {
-    double    	    score[NUM_MATCHER], bestscore[NUM_MATCHER];
+    double    	    score[NUM_MATCH_VALUES], bestscore[NUM_MATCH_VALUES];
     int		    f;
     FcFontSet	    *s;
     FcPattern	    *best;
     int		    i;
     int		    set;
 
-    for (i = 0; i < NUM_MATCHER; i++)
+    for (i = 0; i < NUM_MATCH_VALUES; i++)
 	bestscore[i] = 0;
     best = 0;
     if (FcDebug () & FC_DBG_MATCH)
@@ -410,19 +438,19 @@ FcFontSetMatch (FcConfig    *config,
 	    if (FcDebug () & FC_DBG_MATCHV)
 	    {
 		printf ("Score");
-		for (i = 0; i < NUM_MATCHER; i++)
+		for (i = 0; i < NUM_MATCH_VALUES; i++)
 		{
 		    printf (" %g", score[i]);
 		}
 		printf ("\n");
 	    }
-	    for (i = 0; i < NUM_MATCHER; i++)
+	    for (i = 0; i < NUM_MATCH_VALUES; i++)
 	    {
 		if (best && bestscore[i] < score[i])
 		    break;
 		if (!best || score[i] < bestscore[i])
 		{
-		    for (i = 0; i < NUM_MATCHER; i++)
+		    for (i = 0; i < NUM_MATCH_VALUES; i++)
 			bestscore[i] = score[i];
 		    best = s->fonts[f];
 		    break;
@@ -433,7 +461,7 @@ FcFontSetMatch (FcConfig    *config,
     if (FcDebug () & FC_DBG_MATCH)
     {
 	printf ("Best score");
-	for (i = 0; i < NUM_MATCHER; i++)
+	for (i = 0; i < NUM_MATCH_VALUES; i++)
 	    printf (" %g", bestscore[i]);
 	FcPatternPrint (best);
     }
@@ -469,7 +497,7 @@ FcFontMatch (FcConfig	*config,
 
 typedef struct _FcSortNode {
     FcPattern	*pattern;
-    double	score[NUM_MATCHER];
+    double	score[NUM_MATCH_VALUES];
 } FcSortNode;
 
 static int
@@ -482,7 +510,7 @@ FcSortCompare (const void *aa, const void *ab)
     double	ad = 0, bd = 0;
     int         i;
 
-    i = NUM_MATCHER;
+    i = NUM_MATCH_VALUES;
     while (i-- && (ad = *as++) == (bd = *bs++))
 	;
     return ad < bd ? -1 : ad > bd ? 1 : 0;
@@ -589,7 +617,7 @@ FcFontSetSort (FcConfig	    *config,
 	    if (FcDebug () & FC_DBG_MATCHV)
 	    {
 		printf ("Score");
-		for (i = 0; i < NUM_MATCHER; i++)
+		for (i = 0; i < NUM_MATCH_VALUES; i++)
 		{
 		    printf (" %g", new->score[i]);
 		}

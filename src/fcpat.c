@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.7 2002/06/03 08:31:15 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.9 2002/06/19 20:08:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -408,6 +408,7 @@ FcPatternAdd (FcPattern *p, const char *object, FcValue value, FcBool append)
 	goto bail1;
 
     new->value = value;
+    new->binding = FcValueBindingStrong;
     new->next = 0;
     
     e = FcPatternInsertElt (p, object);

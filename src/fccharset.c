@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.12 2002/06/21 06:14:45 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.13 2002/06/26 22:56:51 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -858,7 +858,7 @@ static int	FcCharLeafTotal;
 static int	FcCharLeafUsed;
 
 static FcCharLeaf *
-FcNameParseBuildLeaf (FcCharLeaf *leaf)
+FcCharSetFreezeLeaf (FcCharLeaf *leaf)
 {
     static FcCharLeafEnt	*hashTable[FC_CHAR_LEAF_HASH_SIZE];
     FcChar32			hash = FcCharLeafHash (leaf);
@@ -915,7 +915,7 @@ static int	FcCharSetUsed;
 static int	FcCharSetTotalEnts, FcCharSetUsedEnts;
 
 static FcCharSet *
-FcNameParseBuildSet (FcCharSet *fcs)
+FcCharSetFreezeBase (FcCharSet *fcs)
 {
     static FcCharSetEnt	*hashTable[FC_CHAR_SET_HASH_SIZE];
     FcChar32		hash = FcCharSetHash (fcs);
@@ -968,6 +968,36 @@ FcNameParseBuildSet (FcCharSet *fcs)
 }
 
 FcCharSet *
+FcCharSetFreeze (FcCharSet *fcs)
+{
+    FcCharSet	*b;
+    FcCharSet	*n = 0;
+    FcCharLeaf	*l;
+    int		i;
+
+    b = FcCharSetCreate ();
+    if (!b)
+	goto bail0;
+    for (i = 0; i < fcs->num; i++)
+    {
+	l = FcCharSetFreezeLeaf (fcs->leaves[i]);
+	if (!l)
+	    goto bail1;
+	if (!FcCharSetInsertLeaf (b, fcs->numbers[i] << 8, l))
+	    goto bail1;
+    }
+    n = FcCharSetFreezeBase (b);
+bail1:
+    if (b->leaves)
+	free (b->leaves);
+    if (b->numbers)
+	free (b->numbers);
+    free (b);
+bail0:
+    return n;
+}
+
+FcCharSet *
 FcNameParseCharSet (FcChar8 *string)
 {
     FcCharSet	*c, *n = 0;
@@ -995,7 +1025,7 @@ FcNameParseCharSet (FcChar8 *string)
 	}
 	if (bits)
 	{
-	    leaf = FcNameParseBuildLeaf (&temp);
+	    leaf = FcCharSetFreezeLeaf (&temp);
 	    if (!leaf)
 		goto bail1;
 	    if (!FcCharSetInsertLeaf (c, ucs4, leaf))
@@ -1023,7 +1053,7 @@ FcNameParseCharSet (FcChar8 *string)
 	    sizeof (FcCharSet) * FcCharSetUsed +
 	    FcCharSetUsedEnts * (sizeof (FcCharLeaf *) + sizeof (FcChar16)));
 #endif
-    n = FcNameParseBuildSet (c);
+    n = FcCharSetFreezeBase (c);
 bail1:
     if (c->leaves)
 	free (c->leaves);
