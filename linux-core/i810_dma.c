@@ -178,7 +178,7 @@ static int i810_map_buffer(drm_buf_t *buf, struct file *filp)
 		/* Real error */
 		DRM_ERROR("mmap error\n");
 		retcode = (signed int)buf_priv->virtual;
-		buf_priv->virtual = 0;
+		buf_priv->virtual = NULL;
 	}
 	up_write( &current->mm->mmap_sem );
 
@@ -200,7 +200,7 @@ static int i810_unmap_buffer(drm_buf_t *buf)
 	up_write(&current->mm->mmap_sem);
 
    	buf_priv->currently_mapped = I810_BUF_UNMAPPED;
-   	buf_priv->virtual = 0;
+   	buf_priv->virtual = NULL;
 
 	return retcode;
 }
