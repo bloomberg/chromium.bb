@@ -166,6 +166,34 @@
 		</prefer>
 	</alias>
 
+<!-- 
+ Artificial oblique for fonts without an italic or oblique version
+ -->
+ 
+	<match target="font">
+		<!-- check to see if the font is roman -->
+		<test qual="first" name="slant">
+			<const>roman</const>
+		</test>
+		<!-- check to see if the pattern requested non-roman -->
+		<test qual="not_first" name="slant" compare="not_eq">
+			<const>roman</const>
+		</test>
+		<!-- multiply the matrix to slant the font -->
+		<edit name="matrix" mode="assign">
+			<times>
+				<name>matrix</name>
+				<matrix><double>1</double><double>.2</double>
+					<double>0</double><double>1</double>
+				</matrix>
+			</times>
+		</edit>
+		<!-- pretend the font is oblique now -->
+		<edit name="slant" mode="assign">
+			<const>oblique</const>
+		</edit>
+	</match>
+
 	<config>
 <!--
   These are the default Unicode chars that are expected to be blank
