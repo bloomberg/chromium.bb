@@ -439,7 +439,7 @@ typedef struct drm_agp_info {
 #define DRM_IOCTL_RADEON_CLEAR		DRM_IOW( 0x48, drm_radeon_clear_t)
 #define DRM_IOCTL_RADEON_VERTEX		DRM_IOW( 0x49, drm_radeon_vertex_t)
 #define DRM_IOCTL_RADEON_INDICES	DRM_IOW( 0x4a, drm_radeon_indices_t)
-#define DRM_IOCTL_RADEON_BLIT		DRM_IOW( 0x4b, drm_radeon_blit_t)
+#define DRM_IOCTL_RADEON_TEXTURE	DRM_IOWR(0x4b, drm_radeon_texture_t)
 #define DRM_IOCTL_RADEON_STIPPLE	DRM_IOW( 0x4c, drm_radeon_stipple_t)
 #define DRM_IOCTL_RADEON_INDIRECT	DRM_IOWR(0x4d, drm_radeon_indirect_t)
 

@@ -843,11 +843,8 @@ int radeon_cp_start( struct inode *inode, struct file *filp,
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
-	     dev->lock.pid != current->pid ) {
-		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN( dev );
+
 	if ( dev_priv->cp_running ) {
 		DRM_DEBUG( "%s while CP running\n", __FUNCTION__ );
 		return 0;
@@ -876,11 +873,7 @@ int radeon_cp_stop( struct inode *inode, struct file *filp,
 	int ret;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
-	     dev->lock.pid != current->pid ) {
-		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN( dev );
 
 	if ( copy_from_user( &stop, (drm_radeon_init_t *)arg, sizeof(stop) ) )
 		return -EFAULT;
@@ -922,11 +915,8 @@ int radeon_cp_reset( struct inode *inode, struct file *filp,
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
-	     dev->lock.pid != current->pid ) {
-		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN( dev );
+
 	if ( !dev_priv ) {
 		DRM_DEBUG( "%s called before init done\n", __FUNCTION__ );
 		return -EINVAL;
@@ -948,11 +938,7 @@ int radeon_cp_idle( struct inode *inode, struct file *filp,
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
-	     dev->lock.pid != current->pid ) {
-		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN( dev );
 
 	return radeon_do_cp_idle( dev_priv );
 }
@@ -964,11 +950,7 @@ int radeon_engine_reset( struct inode *inode, struct file *filp,
         drm_device_t *dev = priv->dev;
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
-	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
-	     dev->lock.pid != current->pid ) {
-		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN( dev );
 
 	return radeon_do_engine_reset( dev );
 }
@@ -1018,11 +1000,7 @@ int radeon_fullscreen( struct inode *inode, struct file *filp,
         drm_device_t *dev = priv->dev;
 	drm_radeon_fullscreen_t fs;
 
-	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
-	     dev->lock.pid != current->pid ) {
-		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN( dev );
 
 	if ( copy_from_user( &fs, (drm_radeon_fullscreen_t *)arg,
 			     sizeof(fs) ) )
@@ -1246,14 +1224,10 @@ int radeon_cp_buffers( struct inode *inode, struct file *filp,
 	int ret = 0;
 	drm_dma_t d;
 
-	if ( copy_from_user( &d, (drm_dma_t *) arg, sizeof(d) ) )
-		return -EFAULT;
+	LOCK_TEST_WITH_RETURN( dev );
 
-	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||
-	     dev->lock.pid != current->pid ) {
-		DRM_ERROR( "%s called without lock held\n", __FUNCTION__ );
-		return -EINVAL;
-	}
+	if ( copy_from_user( &d, (drm_dma_t *)arg, sizeof(d) ) )
+		return -EFAULT;
 
 	/* Please don't send us buffers.
 	 */
@@ -1277,7 +1251,7 @@ int radeon_cp_buffers( struct inode *inode, struct file *filp,
 		ret = radeon_cp_get_buffers( dev, &d );
 	}
 
-	if ( copy_to_user( (drm_dma_t *) arg, &d, sizeof(d) ) )
+	if ( copy_to_user( (drm_dma_t *)arg, &d, sizeof(d) ) )
 		return -EFAULT;
 
 	return ret;

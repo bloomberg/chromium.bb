@@ -73,7 +73,7 @@
 
 /* Vertex/indirect buffer size
  */
-#define RADEON_BUFFER_SIZE		16384
+#define RADEON_BUFFER_SIZE		65536
 
 /* Byte offsets for indirect buffer data
  */
@@ -304,14 +304,20 @@ typedef struct drm_radeon_indices {
 	int discard;			/* Client finished with buffer? */
 } drm_radeon_indices_t;
 
-typedef struct drm_radeon_blit {
-	int idx;
-	int pitch;
+typedef struct drm_radeon_tex_image {
+	unsigned int x, y;		/* Blit coordinates */
+	unsigned int width, height;
+	const void *data;
+} drm_radeon_tex_image_t;
+
+typedef struct drm_radeon_texture {
 	int offset;
+	int pitch;
 	int format;
-	unsigned short x, y;
-	unsigned short width, height;
-} drm_radeon_blit_t;
+	int width;			/* Texture image coordinates */
+	int height;
+	drm_radeon_tex_image_t *image;
+} drm_radeon_texture_t;
 
 typedef struct drm_radeon_stipple {
 	unsigned int *mask;

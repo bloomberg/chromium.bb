@@ -161,8 +161,8 @@ extern int radeon_cp_vertex( struct inode *inode, struct file *filp,
 			     unsigned int cmd, unsigned long arg );
 extern int radeon_cp_indices( struct inode *inode, struct file *filp,
 			      unsigned int cmd, unsigned long arg );
-extern int radeon_cp_blit( struct inode *inode, struct file *filp,
-			   unsigned int cmd, unsigned long arg );
+extern int radeon_cp_texture( struct inode *inode, struct file *filp,
+			      unsigned int cmd, unsigned long arg );
 extern int radeon_cp_stipple( struct inode *inode, struct file *filp,
 			      unsigned int cmd, unsigned long arg );
 extern int radeon_cp_indirect( struct inode *inode, struct file *filp,
@@ -478,14 +478,14 @@ extern int radeon_cp_indirect( struct inode *inode, struct file *filp,
 #define RADEON_COLOR_FORMAT_RGB8	9
 #define RADEON_COLOR_FORMAT_ARGB4444	15
 
-#define RADEON_TXF_8BPP_I		0
-#define RADEON_TXF_16BPP_AI88		1
-#define RADEON_TXF_8BPP_RGB332		2
-#define RADEON_TXF_16BPP_ARGB1555	3
-#define RADEON_TXF_16BPP_RGB565		4
-#define RADEON_TXF_16BPP_ARGB4444	5
-#define RADEON_TXF_32BPP_ARGB8888	6
-#define RADEON_TXF_32BPP_RGBA8888	7
+#define RADEON_TXFORMAT_I8		0
+#define RADEON_TXFORMAT_AI88		1
+#define RADEON_TXFORMAT_RGB332		2
+#define RADEON_TXFORMAT_ARGB1555	3
+#define RADEON_TXFORMAT_RGB565		4
+#define RADEON_TXFORMAT_ARGB4444	5
+#define RADEON_TXFORMAT_ARGB8888	6
+#define RADEON_TXFORMAT_RGBA8888	7
 
 /* Constants */
 #define RADEON_MAX_USEC_TIMEOUT		100000	/* 100 ms */
@@ -585,6 +585,16 @@ extern int RADEON_READ_PLL( drm_device_t *dev, int addr );
 /* ================================================================
  * Misc helper macros
  */
+
+#define LOCK_TEST_WITH_RETURN( dev )					\
+do {									\
+	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||		\
+	     dev->lock.pid != current->pid ) {				\
+		DRM_ERROR( "%s called without lock held\n",		\
+			   __FUNCTION__ );				\
+		return -EINVAL;						\
+	}								\
+} while (0)
 
 #define RING_SPACE_TEST_WITH_RETURN( dev_priv )				\
 do {									\
