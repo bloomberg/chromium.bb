@@ -83,7 +83,7 @@ via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
 	uint32_t count;
 	hw_addr_ptr = dev_priv->hw_addr_ptr;
 	cur_addr = dev_priv->dma_low;
-	next_addr = cur_addr + size;
+	next_addr = cur_addr + size + 512*1024;
 	count = 1000000;
 	do {
 	        hw_addr = *hw_addr_ptr - agp_base;
@@ -425,6 +425,7 @@ static int via_hook_segment(drm_via_private_t *dev_priv,
 			    int no_pci_fire)
 {
 	int paused, count;
+	volatile uint32_t *paused_at = dev_priv->last_pause_ptr;
 
 	via_flush_write_combine();
 	while(! *(via_get_dma(dev_priv)-1));
@@ -438,12 +439,13 @@ static int via_hook_segment(drm_via_private_t *dev_priv,
 
 	while(! *dev_priv->last_pause_ptr);
 	dev_priv->last_pause_ptr = via_get_dma(dev_priv) - 1;
+	while(! *dev_priv->last_pause_ptr);
 
 	paused = 0;
-	count = 3; 
+	count = 20; 
 
 	while (!(paused = (VIA_READ(0x41c) & 0x80000000)) && count--);
-	if ((count < 1) && (count >= 0)) {
+	if ((count <= 8) && (count >= 0)) {
 		uint32_t rgtr, ptr;
 		rgtr = *(dev_priv->hw_addr_ptr);
 		ptr = ((char *)dev_priv->last_pause_ptr - dev_priv->dma_ptr) + 
@@ -458,9 +460,17 @@ static int via_hook_segment(drm_via_private_t *dev_priv,
 	}
 		
 	if (paused && !no_pci_fire) {
-		VIA_WRITE(VIA_REG_TRANSET, (HC_ParaType_PreCR << 16));
-		VIA_WRITE(VIA_REG_TRANSPACE, pause_addr_hi);
-		VIA_WRITE(VIA_REG_TRANSPACE, pause_addr_lo);
+	        uint32_t rgtr,ptr;
+
+		rgtr = *(dev_priv->hw_addr_ptr);
+		ptr = ((char *)paused_at - dev_priv->dma_ptr) + 
+			dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr + 4;
+
+		if (rgtr <= ptr && rgtr >= ptr - 0x100) {
+			VIA_WRITE(VIA_REG_TRANSET, (HC_ParaType_PreCR << 16));
+			VIA_WRITE(VIA_REG_TRANSPACE, pause_addr_hi);
+			VIA_WRITE(VIA_REG_TRANSPACE, pause_addr_lo);
+                }
 	}
 	return paused;
 }
@@ -499,8 +509,8 @@ static uint32_t *via_align_cmd(drm_via_private_t * dev_priv, uint32_t cmd_type,
 	
 	cmd_addr = (addr) ? addr : 
 		agp_base + dev_priv->dma_low - 8 + (qw_pad_count << 3);
-	addr_lo = ((HC_SubA_HAGPBpL << 24) | cmd_type |
-		   (cmd_addr & 0xffffff));
+	addr_lo = ((HC_SubA_HAGPBpL << 24) | (cmd_type & HC_HAGPBpID_MASK) |
+		   (cmd_addr & HC_HAGPBpL_MASK));
 	addr_hi = ((HC_SubA_HAGPBpH << 24) | (cmd_addr >> 24));
 
 	vb = via_align_buffer(dev_priv, vb, qw_pad_count - 1);
@@ -583,6 +593,8 @@ static void via_cmdbuf_jump(drm_via_private_t * dev_priv)
 		DRM_ERROR("via_cmdbuf_jump failed\n");
 	}
 
+	via_dummy_bitblt(dev_priv);
+	via_dummy_bitblt(dev_priv); 
 
 	last_pause_ptr = via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi, 
 				       &pause_addr_lo, 0) -1;
@@ -664,7 +676,7 @@ via_cmdbuf_size(DRM_IOCTL_ARGS)
 		return DRM_ERR(EFAULT);
 	}
 
-	DRM_COPY_FROM_USER_IOCTL(d_siz, (drm_via_cmdbuffer_t *) data,
+	DRM_COPY_FROM_USER_IOCTL(d_siz, (drm_via_cmdbuf_size_t *) data,
 				 sizeof(d_siz));
 
 
@@ -672,7 +684,7 @@ via_cmdbuf_size(DRM_IOCTL_ARGS)
 	tmp_size = d_siz.size;
 	switch(d_siz.func) {
 	case VIA_CMDBUF_SPACE:
-		while (count-- && ((tmp_size = via_cmdbuf_space(dev_priv)) < d_siz.size)) {
+		while (((tmp_size = via_cmdbuf_space(dev_priv)) < d_siz.size) && count--) {
 			if (!d_siz.wait) {
 				break;
 			}
@@ -683,21 +695,22 @@ via_cmdbuf_size(DRM_IOCTL_ARGS)
 		}
 		break;
 	case VIA_CMDBUF_LAG:
-		while (count-- && ((tmp_size = via_cmdbuf_lag(dev_priv)) > d_siz.size)) {
+		while (((tmp_size = via_cmdbuf_lag(dev_priv)) > d_siz.size) && count--) {
 			if (!d_siz.wait) {
 				break;
 			}
 		}
 		if (!count) {
-			DRM_ERROR("VIA_CMDBUF_SPACE timed out.\n");
+			DRM_ERROR("VIA_CMDBUF_LAG timed out.\n");
 			ret = DRM_ERR(EAGAIN);
 		}
 		break;
 	default:
-		return DRM_ERR(EFAULT);
+		ret = DRM_ERR(EFAULT);
 	}
 	d_siz.size = tmp_size;
-	DRM_COPY_TO_USER_IOCTL((drm_via_cmdbuffer_t *) data, d_siz,
+
+	DRM_COPY_TO_USER_IOCTL((drm_via_cmdbuf_size_t *) data, d_siz,
 			       sizeof(d_siz));
 	return ret;
 }
