@@ -1020,7 +1020,7 @@ Bool drmSiSAgpInit(int driSubFD, int offset, int size)
       
    agp.offset = offset;
    agp.size = size;
-   ioctl(driSubFD, SIS_IOCTL_AGP_INIT, &agp);
+   ioctl(driSubFD, DRM_IOCTL_SIS_AGP_INIT, &agp);
 
    return 1; /* TRUE */
 }
