@@ -229,7 +229,7 @@ static int drmOpenDevice(long dev, int minor)
 
     sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);
     drmMsg("drmOpenDevice: node name is %s\n", buf);
-    if (stat(buf, &st) || st.st_rdev != dev) {
+    if (stat(buf, &st)) {
 	if (!isroot) return DRM_ERR_NOT_ROOT;
 	remove(buf);
 	mknod(buf, S_IFCHR | devmode, dev);
@@ -243,6 +243,16 @@ static int drmOpenDevice(long dev, int minor)
     drmMsg("drmOpenDevice: open result is %d, (%s)\n",
 		fd, fd < 0 ? strerror(errno) : "OK");
     if (fd >= 0) return fd;
+
+    if (st.st_rdev != dev) {
+	if (!isroot) return DRM_ERR_NOT_ROOT;
+	remove(buf);
+	mknod(buf, S_IFCHR | devmode, dev);
+    }
+    fd = open(buf, O_RDWR, 0);
+    drmMsg("drmOpenDevice: open result is %d, (%s)\n",
+		fd, fd < 0 ? strerror(errno) : "OK");
+
     drmMsg("drmOpenDevice: Open failed\n");
     remove(buf);
     return -errno;
