@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.17tsi Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.18 2002/09/18 17:11:46 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -280,6 +280,11 @@ struct _FcValueListEnt {
     FcChar32	    hash, pad;
 };
 
+typedef union _FcValueListAlign {
+    FcValueListEnt  ent;
+    FcValueList	    list;
+} FcValueListAlign;
+
 static int	    FcValueListFrozenCount[FcTypeLangSet + 1];
 static int	    FcValueListFrozenBytes[FcTypeLangSet + 1];
 static char	    *FcValueListFrozenName[] = {
@@ -312,6 +317,7 @@ FcValueListReport (void)
 static FcValueListEnt *
 FcValueListEntCreate (FcValueList *h)
 {
+    FcValueListAlign	*ea;
     FcValueListEnt  *e;
     FcValueList	    *l, *new;
     int		    n;
@@ -326,14 +332,15 @@ FcValueListEntCreate (FcValueList *h)
 	    string_size += strlen ((char *) l->value.u.s) + 1;
 	n++;
     }
-    size = sizeof (FcValueListEnt) + n * sizeof (FcValueList) + string_size;
+    size = sizeof (FcValueListAlign) + n * sizeof (FcValueList) + string_size;
     FcValueListFrozenCount[h->value.type]++;
     FcValueListFrozenBytes[h->value.type] += size;
-    e = malloc (size);
-    if (!e)
+    ea = malloc (size);
+    if (!ea)
 	return 0;
     FcMemAlloc (FC_MEM_VALLIST, size);
-    e->list = (FcValueList *) (e + 1);
+    e = &ea->ent;
+    e->list = (FcValueList *) (ea + 1);
     strs = (FcChar8 *) (e->list + n);
     new = e->list;
     for (l = h; l; l = l->next, new++)
