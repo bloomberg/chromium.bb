@@ -172,7 +172,7 @@ endif
 
 endif
 
-ifeq ($(findstring 2.4,$(RUNNING_REL)),)
+ifneq ($(findstring 2.6,$(RUNNING_REL)),)
 $(error Building 2.4 version on $(RUNNING_REL))
 endif
 
