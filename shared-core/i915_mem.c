@@ -237,7 +237,7 @@ void i915_mem_takedown( struct mem_block **heap )
 	}
 
 	DRM_FREE( *heap, sizeof(**heap) );
-	*heap = 0;
+	*heap = NULL;
 }
 
 
@@ -249,7 +249,7 @@ static struct mem_block **get_heap( drm_i915_private_t *dev_priv,
 	case I915_MEM_REGION_AGP:
  		return &dev_priv->agp_heap; 
 	default:
-		return 0;
+		return NULL;
 	}
 }
 

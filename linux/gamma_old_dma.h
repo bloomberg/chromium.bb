@@ -121,7 +121,10 @@ int DRM(dma_enqueue)(struct file *filp, drm_dma_t *d)
 	drm_buf_t	  *buf;
 	int		  idx;
 	int		  while_locked = 0;
+	int		  retcode   = 0;
 	drm_device_dma_t  *dma = dev->dma;
+	int		  *send_indices = NULL;
+	int		  *send_sizes = NULL;
 	DECLARE_WAITQUEUE(entry, current);
 
 	DRM_DEBUG("%d\n", d->send_count);
@@ -168,45 +171,66 @@ int DRM(dma_enqueue)(struct file *filp, drm_dma_t *d)
 		remove_wait_queue(&q->write_queue, &entry);
 	}
 
+	send_indices = DRM(alloc)(d->send_count * sizeof(*send_indices),
+				  DRM_MEM_DRIVER);
+	if (send_indices == NULL)
+		return -ENOMEM;
+	if (copy_from_user(send_indices, d->send_indices, 
+			   d->send_count * sizeof(*send_indices))) {
+		retcode = -EFAULT;
+                goto cleanup;
+	}
+	
+	send_sizes = DRM(alloc)(d->send_count * sizeof(*send_sizes),
+				DRM_MEM_DRIVER);
+	if (send_sizes == NULL)
+		return -ENOMEM;
+	if (copy_from_user(send_sizes, d->send_sizes, 
+			   d->send_count * sizeof(*send_sizes))) {
+		retcode = -EFAULT;
+                goto cleanup;
+	}
+
 	for (i = 0; i < d->send_count; i++) {
-		idx = d->send_indices[i];
+		idx = send_indices[i];
 		if (idx < 0 || idx >= dma->buf_count) {
-			atomic_dec(&q->use_count);
 			DRM_ERROR("Index %d (of %d max)\n",
-				  d->send_indices[i], dma->buf_count - 1);
-			return -EINVAL;
+				  send_indices[i], dma->buf_count - 1);
+			retcode = -EINVAL;
+			goto cleanup;
 		}
 		buf = dma->buflist[ idx ];
 		if (buf->filp != filp) {
-			atomic_dec(&q->use_count);
 			DRM_ERROR("Process %d using buffer not owned\n",
 				  current->pid);
-			return -EINVAL;
+			retcode = -EINVAL;
+			goto cleanup;
 		}
 		if (buf->list != DRM_LIST_NONE) {
-			atomic_dec(&q->use_count);
 			DRM_ERROR("Process %d using buffer %d on list %d\n",
 				  current->pid, buf->idx, buf->list);
+			retcode = -EINVAL;
+			goto cleanup;
 		}
-		buf->used	  = d->send_sizes[i];
+		buf->used	  = send_sizes[i];
 		buf->while_locked = while_locked;
 		buf->context	  = d->context;
 		if (!buf->used) {
 			DRM_ERROR("Queueing 0 length buffer\n");
 		}
 		if (buf->pending) {
-			atomic_dec(&q->use_count);
 			DRM_ERROR("Queueing pending buffer:"
 				  " buffer %d, offset %d\n",
-				  d->send_indices[i], i);
-			return -EINVAL;
+				  send_indices[i], i);
+			retcode = -EINVAL;
+			goto cleanup;
 		}
 		if (buf->waiting) {
-			atomic_dec(&q->use_count);
 			DRM_ERROR("Queueing waiting buffer:"
 				  " buffer %d, offset %d\n",
-				  d->send_indices[i], i);
-			return -EINVAL;
+				  send_indices[i], i);
+			retcode = -EINVAL;
+			goto cleanup;
 		}
 		buf->waiting = 1;
 		if (atomic_read(&q->use_count) == 1
@@ -217,9 +241,15 @@ int DRM(dma_enqueue)(struct file *filp, drm_dma_t *d)
 			atomic_inc(&q->total_queued);
 		}
 	}
+cleanup:
+	if (send_indices)
+		DRM(free)(send_indices, d->send_count * sizeof(*send_indices), 
+			  DRM_MEM_DRIVER);
+	if (send_sizes)
+		DRM(free)(send_sizes, d->send_count * sizeof(*send_sizes), 
+			  DRM_MEM_DRIVER);
 	atomic_dec(&q->use_count);
-
-	return 0;
+	return retcode;
 }
 
 static int DRM(dma_get_buffers_of_order)(struct file *filp, drm_dma_t *d,
