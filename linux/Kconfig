@@ -39,7 +39,7 @@ config DRM_R128
 
 config DRM_RADEON
 	tristate "ATI Radeon"
-	depends on DRM && AGP
+	depends on DRM
 	help
 	  Choose this option if you have an ATI Radeon graphics card.  There
 	  are both PCI and AGP versions.  You don't need to choose this to
