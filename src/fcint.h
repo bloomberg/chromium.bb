@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.2 2002/02/15 06:01:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.3 2002/02/18 22:29:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -241,6 +241,8 @@ struct _FcConfig {
     FcFontSet	*fonts[FcSetApplication + 1];
 };
  
+extern FcConfig	*_fcConfig;
+
 /* fcblanks.c */
 
 /* fccache.c */

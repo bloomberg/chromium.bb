@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fcinit.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -67,7 +67,7 @@ FcInitConfig (void)
 {
     FcConfig    *config;
     
-    if (FcConfigGetCurrent ())
+    if (_fcConfig)
 	return FcTrue;
     
     config = FcConfigCreate ();

@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.2 2002/02/15 06:01:27 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include "fcint.h"
 
-static FcConfig    *fcConfig;
+FcConfig    *_fcConfig;
 
 FcConfig *
 FcConfigCreate (void)
@@ -186,16 +186,19 @@ FcConfigSetCurrent (FcConfig *config)
 	if (!FcConfigBuildFonts (config))
 	    return FcFalse;
 
-    if (fcConfig)
-	FcConfigDestroy (fcConfig);
-    fcConfig = config;
+    if (_fcConfig)
+	FcConfigDestroy (_fcConfig);
+    _fcConfig = config;
     return FcTrue;
 }
 
 FcConfig *
 FcConfigGetCurrent (void)
 {
-    return fcConfig;
+    if (!_fcConfig)
+	if (!FcInit ())
+	    return 0;
+    return _fcConfig;
 }
 
 FcBool
