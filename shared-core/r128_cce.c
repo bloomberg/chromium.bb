@@ -876,7 +876,7 @@ drm_buf_t *r128_freelist_get( drm_device_t *dev )
 		DRM_UDELAY( 1 );
 	}
 
-	DRM_ERROR( "returning NULL!\n" );
+	DRM_DEBUG( "returning NULL!\n" );
 	return NULL;
 }
 
