@@ -252,7 +252,7 @@ following structure:
 	...
 	&lt;/fontconfig&gt;
     </programlisting>
-  </para><para>
+  </para>
   <sect2><title>&lt;fontconfig&gt;</title><para>
 This is the top level element for a font configuration and can contain
 &lt;dir&gt;, &lt;cache&gt;, &lt;include&gt;, &lt;match&gt; and &lt;alias&gt; elements in any order.
@@ -385,6 +385,8 @@ symbolic names for common font values:
         </tbody>
       </tgroup>
     </table>
+      </para>
+    </sect2>
   <sect2><title>&lt;or&gt;,
                 &lt;and&gt;,
                 &lt;plus&gt;,
@@ -393,6 +395,8 @@ symbolic names for common font values:
                 &lt;divide&gt;</title><para>
 These elements perform the specified operation on a list of expression
 elements.  &lt;or&gt; and &lt;and&gt; are boolean, not bitwise.
+      </para>
+    </sect2>
   <sect2><title>&lt;eq&gt;,
                 &lt;not_eq&gt;,
                 &lt;less&gt;,
@@ -506,6 +510,7 @@ This is an example of a system-wide configuration file
 &lt;/alias&gt;
 &lt;/fontconfig&gt;
     </programlisting>
+  </sect2>
   <sect2><title>User configuration file</title>
     <para>
 This is an example of a per-user configuration file that lives in
@@ -533,6 +538,7 @@ This is an example of a per-user configuration file that lives in
 &lt;/fontconfig&gt;
     </programlisting>
   </sect2>
+</sect1>
 <sect1><title>FILES</title>
   <para>
 <emphasis>fonts.conf</emphasis>

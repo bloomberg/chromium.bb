@@ -31,6 +31,8 @@ noinst_PROGRAMS=fc-lang
 
 noinst_HEADERS=$(TARG)
 
+noinst_MANS=fc-lang.man
+
 ORTH=@ORTH_FILES@
 
 EXTRA_DIST=$(TMPL) $(ORTH)

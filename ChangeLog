@@ -1,3 +1,11 @@
+Sun Mar  2 14:16:17 2003  Owen Taylor  <otaylor@redhat.com>
+
+	+ fontconfig.spec.in: Improvements from Red Hat spec file.
+
+	+ {fc-lang,fc-cache,fc-list}/Makefile.am: Add man pages.
+
+	+ docs/*.sgml: SGML fixes.
+
 Sat Mar  1 17:28:53 PST 2003	keithp
 	+ Ok, so the ChangeLog is a bit out of date
 

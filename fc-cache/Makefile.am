@@ -23,6 +23,8 @@
 
 INCLUDES=$(FREETYPE_CFLAGS)
 
+man1_MANS=fc-cache.man
+
 bin_PROGRAMS=fc-cache
 
 fc_cache_LDADD = ../src/libfontconfig.la

@@ -23,6 +23,8 @@
 
 bin_PROGRAMS=fc-list
 
+man1_MANS=fc-list.man
+
 INCLUDES=$(FREETYPE_CFLAGS)
 
 fc_list_LDADD = ../src/libfontconfig.la

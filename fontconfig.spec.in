@@ -1,74 +1,86 @@
-Summary:	System for configuring and customizing font access
+# Different systems call the freetype2 RPM different things
+%define freetype2 freetype
+# %define freetype2 freetype2
+
+Summary:	Font configuration and customization library
 Name:		fontconfig
 Version:	@VERSION@
 Release:	1
 License:	MIT
 Group:		System Environment/Libraries
-Source:		http://fontconfig.org/fontconfig.tar.gz
-BuildRoot:	/var/tmp/%{name}-%{version}-root
-Requires:	freetype2
-BuildRequires:	freetype2-devel
+Source:		http://fontconfig.org/release/fontconfig-%{vesion}.tar.gz
+URL:            http://fontconfig.org
+BuildRoot:	%{_tmppath}/%{name}-%{version}-root
+
+BuildRequires: /usr/bin/docbook2html
+BuildRequires: /usr/bin/docbook2txt
+BuildRequires: %{freetype2}-devel
+BuildRequires: expat-devel
+BuildRequires: perl
+
+PreReq: %{freetype2}
 
 %description
-System for layout and rendering of internationalized text.
+Fontconfig is designed to locate fonts within the
+system and select them according to requirements specified by 
+applications.
 
 %package devel
-Summary:	System for layout and rendering of internationalized text
+Summary:	Font configuration and customization library
 Group:		Development/Libraries
 Requires:	%{name} = %{version}
-Requires:	freetype2-devel
+Requires:	%{freetype2}-devel
 
 %description devel
-The fontconfig-devel package includes the static libraries and header files
-for the fontconfig package.
+The fontconfig-devel package includes the static libraries, 
+header files, and developer docs for the fontconfig package.
 
-Install fontconfig-devel if you want to develop programs which will use
-fontconfig.
+Install fontconfig-devel if you want to develop programs which 
+will use fontconfig.
 
 %prep
-%setup
+%setup -q
 
 %build
-CFLAGS="$RPM_OPT_FLAGS"
-./configure --prefix=%{_prefix} \
-    --bindir=%{_bindir} --mandir=%{_mandir} \
-    --localstatedir=%{_localstatedir} --libdir=%{_libdir} \
-    --datadir=%{_datadir} --includedir=%{_includedir} \
-    --sysconfdir=%{_sysconfdir} --disable-gtk-doc
-make
+%configure --with-x-fonts=/usr/X11R6/lib/X11/fonts
+make -j %{_smp_mflags}
 
 %install
-rm -rf $RPM_BUILD_ROOT
-
-make prefix=$RPM_BUILD_ROOT%{_prefix} bindir=$RPM_BUILD_ROOT%{_bindir} \
-    mandir=$RPM_BUILD_ROOT%{_mandir} libdir=$RPM_BUILD_ROOT%{_libdir} \
-    localstatedir=$RPM_BUILD_ROOT%{_localstatedir} \
-    datadir=$RPM_BUILD_ROOT%{_datadir} \
-    includedir=$RPM_BUILD_ROOT%{_includedir} \
-    sysconfdir=$RPM_BUILD_ROOT%{_sysconfdir} install
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+%makeinstall
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/ldconfig
 
+# Force regeneration of all fontconfig cache files.
+fc-cache -f --system-only
+
 %postun -p /sbin/ldconfig
 
 %files
-%doc README AUTHORS COPYING ChangeLog TODO
-%{_libdir}/libfontconfig*.so
+%doc README AUTHORS COPYING ChangeLog doc/fontconfig-*.{html,txt}
+%{_libdir}/libfontconfig*.so.*
 %{_bindir}/fc-*
-%{_libdir}/pango
-%config %{_sysconfdir}/fonts/fonts.conf
-%config %{_sysconfdir}/fonts/fonts.dtd
+%dir %{_sysconfdir}/fonts
+%{_sysconfdir}/fonts/fonts.conf
+%{_sysconfdir}/fonts/fonts.dtd
 %config %{_sysconfdir}/fonts/local.conf
+%{_mandir}/man1/*
 
 %files devel
 %defattr(-, root, root)
-%{_libdir}/libfontconfig*.so
-%{_libdir}/*a
-%{_libdir}/pkgconfig/*.pc
+%{_libdir}/libfontconfig.so
+%{_libdir}/*.a
+%{_libdir}/*.la
+%{_libdir}/pkgconfig
 %{_includedir}/fontconfig
 
 %changelog
+* Sun Mar  2 2003 Owen Taylor <otaylor@redhat.com>
+- Various improvements from Red Hat spec file
+
+* Sun Mar 2 2003 Mike A. Harris <mharris@redhat.com> 2.1.90-0.1
+- Initial changelog entry
