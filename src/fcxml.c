@@ -974,7 +974,7 @@ FcStrtod (char *s, char **end)
 	    buf_end = 0;
 	    v = strtod (buf, &buf_end);
 	    if (buf_end)
-		buf_end = s + (buf_end - buf);
+		buf_end = s + (buf_end - buf) + 1 - dlen;
 	    if (end)
 		*end = buf_end;
 	}
