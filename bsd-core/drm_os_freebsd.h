@@ -204,11 +204,13 @@ do {								\
 
 #define DRM_HZ hz
 
-#define DRM_WAIT_ON( ret, queue, timeout, condition )			\
-while (!condition) {							\
-	ret = tsleep( &(queue), PZERO | PCATCH, "drmwtq", (timeout) );	\
-	if ( ret )							\
-		return ret;						\
+#define DRM_WAIT_ON( ret, queue, timeout, condition )	\
+for ( ret = 0 ; !ret && !(condition) ; ) {		\
+        int s = spldrm();				\
+	if (!(condition))				\
+	   ret = tsleep( &(queue), PZERO | PCATCH, 	\
+			 "drmwtq", (timeout) );		\
+	splx(s);					\
 }
 
 #define DRM_WAKEUP( queue ) wakeup( queue )
