@@ -106,7 +106,10 @@ extern void i810_reclaim_buffers(drm_device_t *dev, pid_t pid);
 extern int  i810_getage(struct inode *inode, struct file *filp, unsigned int cmd,
 			unsigned long arg);
 extern int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma);
-
+extern int i810_copybuf(struct inode *inode, struct file *filp, 
+			unsigned int cmd, unsigned long arg);
+extern int i810_docopy(struct inode *inode, struct file *filp, 
+		       unsigned int cmd, unsigned long arg);
 
 				/* i810_bufs.c */
 extern int  i810_addbufs(struct inode *inode, struct file *filp, 

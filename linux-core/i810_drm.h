@@ -178,6 +178,12 @@ typedef struct _drm_i810_vertex {
 	int discard;		/* client is finished with the buffer? */
 } drm_i810_vertex_t;
 
+typedef struct _drm_i810_copy_t {
+   	int idx;		/* buffer index */
+	int used;		/* nr bytes in use */
+	void *address;		/* Address to copy from */
+} drm_i810_copy_t;
+
 typedef struct drm_i810_dma {
 	void *virtual;
 	int request_idx;

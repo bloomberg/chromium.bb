@@ -42,7 +42,7 @@ EXPORT_SYMBOL(i810_cleanup);
 #define I810_DESC	 "Intel I810"
 #define I810_DATE	 "19991213"
 #define I810_MAJOR	 1
-#define I810_MINOR	 0
+#define I810_MINOR	 1
 #define I810_PATCHLEVEL	 0
 
 static drm_device_t	      i810_device;
@@ -112,6 +112,8 @@ static drm_ioctl_desc_t	      i810_ioctls[] = {
    	[DRM_IOCTL_NR(DRM_IOCTL_I810_GETAGE)] = { i810_getage,     1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_I810_GETBUF)] = { i810_getbuf,     1, 0 },
    	[DRM_IOCTL_NR(DRM_IOCTL_I810_SWAP)]   = { i810_swap_bufs,  1, 0 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_COPY)]   = { i810_copybuf,    1, 0 },
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_DOCOPY)] = { i810_docopy,     1, 0 },
 };
 
 #define I810_IOCTL_COUNT DRM_ARRAY_SIZE(i810_ioctls)

@@ -353,6 +353,8 @@ typedef struct drm_agp_info {
 #define DRM_IOCTL_I810_GETAGE  DRM_IO ( 0x44)
 #define DRM_IOCTL_I810_GETBUF  DRM_IOWR(0x45, drm_i810_dma_t)
 #define DRM_IOCTL_I810_SWAP    DRM_IO ( 0x46)
+#define DRM_IOCTL_I810_COPY    DRM_IOW( 0x47, drm_i810_copy_t)
+#define DRM_IOCTL_I810_DOCOPY  DRM_IO ( 0x48)
 
 /* Rage 128 specific ioctls */
 #define DRM_IOCTL_R128_INIT	DRM_IOW( 0x40, drm_r128_init_t)

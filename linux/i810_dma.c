@@ -184,23 +184,29 @@ static int i810_map_buffer(drm_buf_t *buf, struct file *filp)
 	int retcode = 0;
 
 	if(buf_priv->currently_mapped == I810_BUF_MAPPED) return -EINVAL;
-	down(&current->mm->mmap_sem);
-   	old_fops = filp->f_op;
-	filp->f_op = &i810_buffer_fops;
-	dev_priv->mmap_buffer = buf;
-	buf_priv->virtual = (void *)do_mmap(filp, 0, buf->total, 
-					    PROT_READ|PROT_WRITE,
-					    MAP_SHARED, 
-					    buf->bus_address);
-	dev_priv->mmap_buffer = NULL;
-   	filp->f_op = old_fops;
-	if ((unsigned long)buf_priv->virtual > -1024UL) {
-		/* Real error */
-		DRM_DEBUG("mmap error\n");
-		retcode = (signed int)buf_priv->virtual;
-		buf_priv->virtual = 0;
+
+	if(VM_DONTCOPY != 0) {
+		down(&current->mm->mmap_sem);
+		old_fops = filp->f_op;
+		filp->f_op = &i810_buffer_fops;
+		dev_priv->mmap_buffer = buf;
+		buf_priv->virtual = (void *)do_mmap(filp, 0, buf->total, 
+						    PROT_READ|PROT_WRITE,
+						    MAP_SHARED, 
+						    buf->bus_address);
+		dev_priv->mmap_buffer = NULL;
+   		filp->f_op = old_fops;
+		if ((unsigned long)buf_priv->virtual > -1024UL) {
+			/* Real error */
+			DRM_DEBUG("mmap error\n");
+			retcode = (signed int)buf_priv->virtual;
+			buf_priv->virtual = 0;
+		}
+   		up(&current->mm->mmap_sem);
+	} else {
+		buf_priv->virtual = buf_priv->kernel_virtual;
+   		buf_priv->currently_mapped = I810_BUF_MAPPED;
 	}
-   	up(&current->mm->mmap_sem);
 	return retcode;
 }
 
@@ -209,13 +215,22 @@ static int i810_unmap_buffer(drm_buf_t *buf)
 	drm_i810_buf_priv_t *buf_priv = buf->dev_private;
 	int retcode = 0;
 
-	if(buf_priv->currently_mapped != I810_BUF_MAPPED) return -EINVAL;
-	down(&current->mm->mmap_sem);
-        retcode = do_munmap(current->mm, (unsigned long)buf_priv->virtual, 
-			    (size_t) buf->total);
+	if(VM_DONTCOPY != 0) {
+		if(buf_priv->currently_mapped != I810_BUF_MAPPED) 
+			return -EINVAL;
+		down(&current->mm->mmap_sem);
+#if LINUX_VERSION_CODE < 0x020399
+        	retcode = do_munmap((unsigned long)buf_priv->virtual, 
+				    (size_t) buf->total);
+#else
+        	retcode = do_munmap(current->mm, 
+				    (unsigned long)buf_priv->virtual, 
+				    (size_t) buf->total);
+#endif
+   		up(&current->mm->mmap_sem);
+	}
    	buf_priv->currently_mapped = I810_BUF_UNMAPPED;
    	buf_priv->virtual = 0;
-   	up(&current->mm->mmap_sem);
 
 	return retcode;
 }
@@ -1353,4 +1368,44 @@ int i810_getbuf(struct inode *inode, struct file *filp, unsigned int cmd,
    	sarea_priv->last_dispatch = (int) hw_status[5];
 
 	return retcode;
+}
+
+int i810_copybuf(struct inode *inode, struct file *filp, unsigned int cmd,
+		unsigned long arg)
+{
+	drm_file_t	  *priv	    = filp->private_data;
+	drm_device_t	  *dev	    = priv->dev;
+	drm_i810_copy_t	  d;
+   	drm_i810_private_t *dev_priv = (drm_i810_private_t *)dev->dev_private;
+   	u32 *hw_status = (u32 *)dev_priv->hw_status_page;
+   	drm_i810_sarea_t *sarea_priv = (drm_i810_sarea_t *) 
+     					dev_priv->sarea_priv; 
+	drm_buf_t *buf;
+	drm_i810_buf_priv_t *buf_priv;
+	drm_device_dma_t *dma = dev->dma;
+
+	if(!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
+		DRM_ERROR("i810_dma called without lock held\n");
+		return -EINVAL;
+	}
+   
+   	copy_from_user_ret(&d, (drm_i810_copy_t *)arg, sizeof(d), -EFAULT);
+
+	if(d.idx > dma->buf_count) return -EINVAL;
+	buf = dma->buflist[ d.idx ];
+   	buf_priv = buf->dev_private;
+	if (buf_priv->currently_mapped != I810_BUF_MAPPED) return -EPERM;
+
+   	copy_from_user_ret(buf_priv->virtual, d.address, d.used, -EFAULT);
+
+   	sarea_priv->last_dispatch = (int) hw_status[5];
+
+	return 0;
+}
+
+int i810_docopy(struct inode *inode, struct file *filp, unsigned int cmd,
+		unsigned long arg)
+{
+	if(VM_DONTCOPY == 0) return 1;
+	return 0;
 }
