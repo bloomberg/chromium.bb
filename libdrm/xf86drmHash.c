@@ -10,11 +10,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -22,7 +22,7 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *
  * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmHash.c,v 1.3 2000/06/17 00:03:34 martin Exp $
@@ -187,7 +187,7 @@ int N(HashDestroy)(void *t)
     int           i;
 
     if (table->magic != HASH_MAGIC) return -1; /* Bad magic */
-    
+
     for (i = 0; i < HASH_SIZE; i++) {
 	for (bucket = table->buckets[i]; bucket;) {
 	    next = bucket->next;
@@ -235,8 +235,8 @@ int N(HashLookup)(void *t, unsigned long key, void **value)
     HashTablePtr  table = (HashTablePtr)t;
     HashBucketPtr bucket;
 
-    if (table->magic != HASH_MAGIC) return -1; /* Bad magic */
-    
+    if (!table || table->magic != HASH_MAGIC) return -1; /* Bad magic */
+
     bucket = HashFind(table, key, NULL);
     if (!bucket) return 1;	/* Not found */
     *value = bucket->value;
@@ -250,7 +250,7 @@ int N(HashInsert)(void *t, unsigned long key, void *value)
     unsigned long hash;
 
     if (table->magic != HASH_MAGIC) return -1; /* Bad magic */
-    
+
     if (HashFind(table, key, &hash)) return 1; /* Already in table */
 
     bucket               = HASH_ALLOC(sizeof(*bucket));
@@ -272,7 +272,7 @@ int N(HashDelete)(void *t, unsigned long key)
     HashBucketPtr bucket;
 
     if (table->magic != HASH_MAGIC) return -1; /* Bad magic */
-    
+
     bucket = HashFind(table, key, &hash);
 
     if (!bucket) return 1;	/* Not found */
@@ -285,7 +285,7 @@ int N(HashDelete)(void *t, unsigned long key)
 int N(HashNext)(void *t, unsigned long *key, void **value)
 {
     HashTablePtr  table = (HashTablePtr)t;
-    
+
     for (; table->p0 < HASH_SIZE;
 	 ++table->p0, table->p1 = table->buckets[table->p0]) {
 	if (table->p1) {
@@ -301,7 +301,7 @@ int N(HashNext)(void *t, unsigned long *key, void **value)
 int N(HashFirst)(void *t, unsigned long *key, void **value)
 {
     HashTablePtr  table = (HashTablePtr)t;
-    
+
     if (table->magic != HASH_MAGIC) return -1; /* Bad magic */
 
     table->p0 = 0;
@@ -337,7 +337,7 @@ static void compute_dist(HashTablePtr table)
 {
     int           i;
     HashBucketPtr bucket;
-    
+
     printf("Entries = %ld, hits = %ld, partials = %ld, misses = %ld\n",
 	   table->entries, table->hits, table->partials, table->misses);
     clear_dist();
@@ -356,7 +356,7 @@ static void check_table(HashTablePtr table,
 {
     unsigned long retval  = 0;
     int           retcode = N(HashLookup)(table, key, &retval);
-    
+
     switch (retcode) {
     case -1:
 	printf("Bad magic = 0x%08lx:"
@@ -391,7 +391,7 @@ int main(void)
     for (i = 256; i >= 0; i--) check_table(table, i, i);
     compute_dist(table);
     N(HashDestroy)(table);
-    
+
     printf("\n***** 1024 consecutive integers ****\n");
     table = N(HashCreate)();
     for (i = 0; i < 1024; i++) N(HashInsert)(table, i, i);
@@ -399,7 +399,7 @@ int main(void)
     for (i = 1024; i >= 0; i--) check_table(table, i, i);
     compute_dist(table);
     N(HashDestroy)(table);
-    
+
     printf("\n***** 1024 consecutive page addresses (4k pages) ****\n");
     table = N(HashCreate)();
     for (i = 0; i < 1024; i++) N(HashInsert)(table, i*4096, i);
@@ -407,7 +407,7 @@ int main(void)
     for (i = 1024; i >= 0; i--) check_table(table, i*4096, i);
     compute_dist(table);
     N(HashDestroy)(table);
-    
+
     printf("\n***** 1024 random integers ****\n");
     table = N(HashCreate)();
     srandom(0xbeefbeef);
@@ -429,7 +429,7 @@ int main(void)
     for (i = 0; i < 5000; i++) check_table(table, random(), i);
     compute_dist(table);
     N(HashDestroy)(table);
-    
+
     return 0;
 }
 #endif
