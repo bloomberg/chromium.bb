@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/Imakefile,v 1.9 2002/02/27 22:18:10 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/Imakefile,v 1.12 2003/04/22 13:55:50 alanh Exp $
 
 XCOMM This is a kludge until we determine how best to build the
 XCOMM kernel-specific device driver.  This allows us to continue
@@ -11,13 +11,13 @@ all::
 
 install::
 	$(MAKE) -f Makefile.bsd install
+
+clean::
+	$(MAKE) -f Makefile.bsd clean
 #else
 all::
 	@echo 'Use "make -f Makefile.bsd" to manually build the modules'
 #endif
-
-clean::
-	$(MAKE) -f Makefile.bsd clean
 
 LinkSourceFile(drm_sarea.h,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(mga.h,$(XF86OSSRC)/shared/drm/kernel)
