@@ -62,3 +62,27 @@ install-data-local:
 	  $(INSTALL_DATA) local.conf $(DESTDIR)$(configdir)/local.conf; \
 	fi; fi; fi
 	if [ x$(DESTDIR) = x ]; then fc-cache/fc-cache -f -v; fi
+
+uninstall-local:
+	if [ -f $(srcdir)/fonts.conf ]; then \
+	  if cmp -s $(srcdir)/fonts.conf $(DESTDIR)$(configdir)/fonts.conf; then \
+	     echo " uninstall standard $(DESTDIR)$(configdir)/fonts.conf"; \
+	     rm -f $(DESTDIR)$(configdir)/fonts.conf; \
+	  fi; \
+	else if [ -f fonts.conf ]; then \
+	  if cmp -s fonts.conf $(DESTDIR)$(configdir)/fonts.conf; then \
+	     echo " uninstall standard $(DESTDIR)$(configdir)/fonts.conf"; \
+	     rm -f $(DESTDIR)$(configdir)/fonts.conf; \
+	  fi; \
+	fi; fi
+	if [ -f $(srcdir)/local.conf ]; then \
+	  if cmp -s $(srcdir)/local.conf $(DESTDIR)$(configdir)/local.conf; then \
+	     echo " uninstall standard $(DESTDIR)$(configdir)/local.conf"; \
+	     rm -f $(DESTDIR)$(configdir)/local.conf; \
+	  fi; \
+	else if [ -f local.conf ]; then \
+	  if cmp -s local.conf $(DESTDIR)$(configdir)/local.conf; then \
+	     echo " uninstall standard $(DESTDIR)$(configdir)/local.conf"; \
+	     rm -f $(DESTDIR)$(configdir)/local.conf; \
+	  fi; \
+	fi; fi

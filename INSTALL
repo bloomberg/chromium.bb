@@ -25,9 +25,9 @@ important steps:
  7.	Split out the ChangeLog into ChangeLog-2.2.xx with
  	the changes since the previous release
  8.	Copy ChangeLog-2.2.xx and fontconfig-2.2.xx.tar.gz to
- 	freedesktop.org:~fontconfig/public_html/release
+ 	freedesktop.org:/srv/fontconfig.freedesktop.org/www/release
  9.	Update the Fontconfig Devel wiki page
- 	http://freedesktop.org/Software/FontconfigDevel
+ 	http://fontconfig.org/wiki/Devel
 10.	Compute md5sums for release files:
 		md5sum fontconfig-2.2.xx.tar.gz ChangeLog-2.2.xx
 11.	Post a note to fontconfig@fontconfig.org.  Include the md5sums.

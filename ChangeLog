@@ -1,5 +1,13 @@
 2004-12-04  Keith Packard  <keithp@keithp.com>
 
+	* INSTALL:
+	Update links to new freedesktop.org locations
+	* Makefile.am:
+	Add uninstall-local to get rid of fonts.conf and local.conf if they
+	match the distributed versions.  Fixes 'make distcheck'
+
+2004-12-04  Keith Packard  <keithp@keithp.com>
+
 	* README:
 	* configure.in:
 	* fontconfig/fontconfig.h:
