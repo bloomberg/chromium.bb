@@ -92,7 +92,9 @@ int drm_agp_acquire(struct inode *inode, struct file *filp,
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 	int retcode;
+#endif
 
 	if (!dev->agp)
 		return -ENODEV;
@@ -102,8 +104,14 @@ int drm_agp_acquire(struct inode *inode, struct file *filp,
 	if (dev->agp->cant_use_aperture)
 		return -EINVAL;
 #endif
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 	if ((retcode = agp_backend_acquire()))
 		return retcode;
+#else
+	if (!(dev->agp->bridge = agp_backend_acquire(dev->pdev)))
+		return -ENODEV;
+#endif
+
 	dev->agp->acquired = 1;
 	return 0;
 }
@@ -127,7 +135,11 @@ int drm_agp_release(struct inode *inode, struct file *filp,
 
 	if (!dev->agp || !dev->agp->acquired)
 		return -EINVAL;
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 	agp_backend_release();
+#else
+	agp_backend_release(dev->agp->bridge);
+#endif
 	dev->agp->acquired = 0;
 	return 0;
 
@@ -138,9 +150,13 @@ int drm_agp_release(struct inode *inode, struct file *filp,
  *
  * Calls agp_backend_release().
  */
-void drm_agp_do_release(void)
+void drm_agp_do_release(drm_device_t *dev)
 {
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 	agp_backend_release();
+#else
+	agp_backend_release(dev->agp->bridge);
+#endif
 }
 
 /**
@@ -169,7 +185,11 @@ int drm_agp_enable(struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 	dev->agp->mode = mode.mode;
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 	agp_enable(mode.mode);
+#else
+	agp_enable(dev->agp->bridge, mode.mode);
+#endif
 	dev->agp->base = dev->agp->agp_info.aper_base;
 	dev->agp->enabled = 1;
 	return 0;
@@ -210,11 +230,17 @@ int drm_agp_alloc(struct inode *inode, struct file *filp,
 
 	pages = (request.size + PAGE_SIZE - 1) / PAGE_SIZE;
 	type = (u32) request.type;
-
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 	if (!(memory = drm_alloc_agp(pages, type))) {
 		drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
 		return -ENOMEM;
 	}
+#else
+	if (!(memory = drm_alloc_agp(dev->agp->bridge, pages, type))) {
+		drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
+		return -ENOMEM;
+	}
+#endif
 
 	entry->handle = (unsigned long)memory->key + 1;
 	entry->memory = memory;
@@ -391,14 +417,29 @@ int drm_agp_free(struct inode *inode, struct file *filp,
  * via the inter_module_* functions. Creates and initializes a drm_agp_head
  * structure.
  */
-drm_agp_head_t *drm_agp_init(void)
+drm_agp_head_t *drm_agp_init(drm_device_t *dev)
 {
 	drm_agp_head_t *head = NULL;
 
 	if (!(head = drm_alloc(sizeof(*head), DRM_MEM_AGPLISTS)))
 		return NULL;
 	memset((void *)head, 0, sizeof(*head));
+
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 	agp_copy_info(&head->agp_info);
+#else
+	head->bridge = agp_find_bridge(dev->pdev);
+	if (!head->bridge) {
+		if (!(head->bridge = agp_backend_acquire(dev->pdev))) {
+			drm_free(head, sizeof(*head), DRM_MEM_AGPLISTS);
+			return NULL;
+	}
+		agp_copy_info(head->bridge, &head->agp_info);
+		agp_backend_release(head->bridge);
+	} else {
+		agp_copy_info(head->bridge, &head->agp_info);
+	}
+#endif
 	if (head->agp_info.chipset == NOT_SUPPORTED) {
 		drm_free(head, sizeof(*head), DRM_MEM_AGPLISTS);
 		return NULL;
@@ -410,10 +451,17 @@ drm_agp_head_t *drm_agp_init(void)
 }
 
 /** Calls agp_allocate_memory() */
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 DRM_AGP_MEM *drm_agp_allocate_memory(size_t pages, u32 type)
 {
 	return agp_allocate_memory(pages, type);
 }
+#else
+DRM_AGP_MEM *drm_agp_allocate_memory(struct agp_bridge_data *bridge, size_t pages, u32 type)
+{
+	return agp_allocate_memory(bridge, pages, type);
+}
+#endif
 
 /** Calls agp_free_memory() */
 int drm_agp_free_memory(DRM_AGP_MEM * handle)
