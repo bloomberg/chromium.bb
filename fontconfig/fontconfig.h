@@ -70,6 +70,7 @@ typedef int		FcBool;
 #define FC_FOUNDRY	    "foundry"		/* String */
 #define FC_ANTIALIAS	    "antialias"		/* Bool (depends) */
 #define FC_HINTING	    "hinting"		/* Bool (true) */
+#define FC_HINT_STYLE	    "hintstyle"		/* Int */
 #define FC_VERTICAL_LAYOUT  "verticallayout"	/* Bool (false) */
 #define FC_AUTOHINT	    "autohint"		/* Bool (false) */
 #define FC_GLOBAL_ADVANCE   "globaladvance"	/* Bool (true) */
@@ -140,6 +141,12 @@ typedef int		FcBool;
 #define FC_RGBA_VBGR	    4
 #define FC_RGBA_NONE	    5
 
+/* hinting style */
+#define FC_HINT_NONE        0
+#define FC_HINT_SLIGHT      1
+#define FC_HINT_MEDIUM      2
+#define FC_HINT_FULL        3
+ 
 typedef enum _FcType {
     FcTypeVoid, 
     FcTypeInteger, 

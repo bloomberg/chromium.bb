@@ -41,6 +41,7 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_FOUNDRY,	FcTypeString, },
 /*    { FC_CORE,		FcTypeBool, }, */
     { FC_ANTIALIAS,	FcTypeBool, },
+    { FC_HINT_STYLE,    FcTypeInteger, },
     { FC_HINTING,	FcTypeBool, },
     { FC_VERTICAL_LAYOUT,   FcTypeBool, },
     { FC_AUTOHINT,	FcTypeBool, },
@@ -177,6 +178,11 @@ static const FcConstant _FcBaseConstants[] = {
     { (FcChar8 *) "vrgb",	    "rgba",	    FC_RGBA_VRGB },
     { (FcChar8 *) "vbgr",	    "rgba",	    FC_RGBA_VBGR },
     { (FcChar8 *) "none",	    "rgba",	    FC_RGBA_NONE },
+
+    { (FcChar8 *) "hintnone",	    "hintstyle",   FC_HINT_NONE },
+    { (FcChar8 *) "hintslight",	    "hintstyle",   FC_HINT_SLIGHT },
+    { (FcChar8 *) "hintmedium",	    "hintstyle",   FC_HINT_MEDIUM },
+    { (FcChar8 *) "hintfull",	    "hintstyle",   FC_HINT_FULL },
 };
 
 #define NUM_FC_CONSTANTS   (sizeof _FcBaseConstants/sizeof _FcBaseConstants[0])

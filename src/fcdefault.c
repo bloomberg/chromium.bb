@@ -144,4 +144,9 @@ FcDefaultSubstitute (FcPattern *pattern)
     {
 	FcPatternAddInteger (pattern, FC_FONTVERSION, 0x7fffffff);
     }
+
+    if (FcPatternGet (pattern, FC_HINT_STYLE, 0, &v) == FcResultNoMatch)
+    {
+	FcPatternAddInteger (pattern, FC_HINT_STYLE, FC_HINT_FULL);
+    }
 }
