@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.4 2002/02/19 08:33:23 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.8 2002/05/21 17:06:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -171,6 +171,7 @@ union _FcCharNode {
 
 struct _FcCharBranch {
     FcCharNode	    nodes[256];
+    FcChar8	    next[256];
 };
 
 struct _FcCharSet {

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.9 2002/05/22 04:37:07 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.11 2002/05/24 05:20:02 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -347,6 +347,9 @@ FcCharSetIntersectCount (const FcCharSet *a, const FcCharSet *b);
 FcChar32
 FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b);
 
+FcBool
+FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b);
+
 #define FC_CHARSET_MAP_SIZE (256/32)
 #define FC_CHARSET_DONE	((FcChar32) -1)
 
@@ -512,6 +515,9 @@ FcFontSetSort (FcConfig	    *config,
 	       FcBool	    trim,
 	       FcCharSet    **csp,
 	       FcResult	    *result);
+
+void
+FcFontSetSortDestroy (FcFontSet *fs);
 
 /* fcmatrix.c */
 FcMatrix *

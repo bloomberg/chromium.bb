@@ -398,9 +398,9 @@ FcSortCompare (const void *aa, const void *ab)
     for (i = 0; i < NUM_MATCHER; i++)
     {
 	if (a->score[i] > b->score[i])
-	    return -1;
-	if (a->score[i] < b->score[i])
 	    return 1;
+	if (a->score[i] < b->score[i])
+	    return -1;
     }
     return 0;
 }
@@ -417,7 +417,11 @@ FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool tri
 	if (FcPatternGetCharSet (node->pattern, FC_CHARSET, 0, &ncs) == 
 	    FcResultMatch)
 	{
-	    if (!trim || !*cs || FcCharSetSubtractCount (ncs, *cs) != 0)
+	    /*
+	     * If this font isn't a subset of the previous fonts,
+	     * add it to the list
+	     */
+	    if (!trim || !*cs || !FcCharSetIsSubset (ncs, *cs))
 	    {
 		if (*cs)
 		{
@@ -435,6 +439,13 @@ FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool tri
 	}
     }
     return FcTrue;
+}
+
+void
+FcFontSetSortDestroy (FcFontSet *fs)
+{
+    fs->nfont = 0;
+    FcFontSetDestroy (fs);
 }
 
 FcFontSet *
@@ -470,7 +481,7 @@ FcFontSetSort (FcConfig	    *config,
     nodes = malloc (nnodes * sizeof (FcSortNode) + nnodes * sizeof (FcSortNode *));
     if (!nodes)
 	goto bail0;
-    nodeps = (FcSortNode **) nodes + nnodes;
+    nodeps = (FcSortNode **) (nodes + nnodes);
     
     new = nodes;
     nodep = nodeps;
@@ -506,7 +517,7 @@ FcFontSetSort (FcConfig	    *config,
 
     nnodes = new - nodes;
     
-    qsort (nodeps, sizeof (FcSortNode *), nnodes,
+    qsort (nodeps, nnodes, sizeof (FcSortNode *),
 	   FcSortCompare);
 
     ret = FcFontSetCreate ();
@@ -519,6 +530,8 @@ FcFontSetSort (FcConfig	    *config,
 	goto bail2;
 
     *csp = cs;
+
+    free (nodes);
 
     return ret;
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.5 2002/03/01 01:00:54 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.6 2002/05/21 17:06:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -559,8 +559,8 @@ FcConfigCompareValue (FcValue	m,
 	case FcTypeCharSet:
 	    switch (op) {
 	    case FcOpContains:
-		/* m contains v if v - m is empty */
-		ret = FcCharSetSubtractCount (v.u.c, m.u.c) == 0;
+		/* m contains v if v is a subset of m */
+		ret = FcCharSetIsSubset (v.u.c, m.u.c);
 		break;
 	    case FcOpEqual:
 		ret = FcCharSetEqual (m.u.c, v.u.c);
@@ -804,9 +804,9 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	    case FcTypeCharSet:
 		switch (e->op) {
 		case FcOpContains:
-		    /* vl contains vr if vr - vl is empty */
+		    /* vl contains vr if vr is a subset of vl */
 		    v.type = FcTypeBool;
-		    v.u.b = FcCharSetSubtractCount (vr.u.c, vl.u.c) == 0;
+		    v.u.b = FcCharSetIsSubset (vr.u.c, vl.u.c);
 		    break;
 		case FcOpEqual:
 		    v.type = FcTypeBool;

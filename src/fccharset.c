@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.6 2002/03/27 04:33:55 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.7 2002/05/24 05:20:02 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -67,6 +67,7 @@ FcCharSetCheckLevel (FcCharSet *fcs, FcChar32 ucs4)
 		return FcFalse;
 	    FcMemAlloc (FC_MEM_CHARNODE, sizeof (FcCharBranch));
 	    branch->nodes[0] = fcs->node;
+	    /* next pointers are all zero */
 	    fcs->node.branch = branch;
 	}
 	++fcs->levels;
@@ -169,7 +170,9 @@ FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4)
 {
     int		    l;
     FcCharNode	    *prev, node;
-    FcChar32	    i;
+    FcChar32	    i = 0;
+    int		    j;
+    FcChar8	    *next = 0, old;
 
     if (!FcCharSetCheckLevel (fcs, ucs4))
 	return FcFalse;
@@ -185,9 +188,16 @@ FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4)
 		return 0;
 	    FcMemAlloc (FC_MEM_CHARNODE, sizeof (FcCharBranch));
 	    *prev = node;
+	    if (next)
+	    {
+		old = next[i];
+		for (j = (int) i - 1; j >= 0 && next[j] == old; j--)
+		    next[j] = i;
+	    }
 	}
 	i = (ucs4 >> (l << 3)) & 0xff;
 	prev = &node.branch->nodes[i];
+	next = &node.branch->next[0];
     }
     node = *prev;
     if (!node.leaf)
@@ -197,6 +207,13 @@ FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4)
 	    return 0;
 	FcMemAlloc (FC_MEM_CHARNODE, sizeof (FcCharLeaf));
 	*prev = node;
+	ucs4 = ucs4 & ~0xff;
+	if (next)
+	{
+	    old = next[i];
+	    for (j = i - 1; j >= 0 && next[j] == old; j--)
+		next[j] = i;
+	}
     }
     return node.leaf;
 }
@@ -224,6 +241,8 @@ FcCharSetAddChar (FcCharSet *fcs, FcChar32 ucs4)
 typedef struct _fcCharSetIter {
     FcCharLeaf	    *leaf;
     FcChar32	    ucs4;
+    FcCharBranch    *branch_stack[5];
+    int		    branch_stackp;
 } FcCharSetIter;
 
 /*
@@ -265,25 +284,146 @@ FcCharSetIterLeaf (FcCharNode node, int level, FcChar32 *ucs4)
 static void
 FcCharSetIterSet (const FcCharSet *fcs, FcCharSetIter *iter)
 {
-    if (FcCharSetLevels (iter->ucs4) > fcs->levels)
+    int		    level = fcs->levels;
+    FcChar32	    ucs4 = iter->ucs4;
+    FcCharNode	    node = fcs->node;
+
+    iter->branch_stackp = 0;
+    if (ucs4 >= 1 << (level << 3))
+    {
 	iter->leaf = 0;
-    else
-	iter->leaf = FcCharSetIterLeaf (fcs->node, fcs->levels,
-					&iter->ucs4);
-    if (!iter->leaf)
 	iter->ucs4 = ~0;
+	return;
+    }
+    if (level > 1)
+    {
+	level--;
+	for (;;)
+	{
+	    FcCharBranch	*branch = node.branch;
+	    FcChar32		byte;
+    
+	    byte = (ucs4 >> (level << 3)) & 0xff;
+	    
+	    node = branch->nodes[byte];
+	    if (!node.leaf)
+	    {
+		while (!(byte = branch->next[byte]))
+		{
+		    if (iter->branch_stackp == 0)
+		    {
+			iter->leaf = 0;
+			iter->ucs4 = ~0;
+			return;
+		    }
+		    branch = node.branch = iter->branch_stack[--iter->branch_stackp];
+		    level++;
+		    ucs4 += 1 << (level << 3);
+		    byte = (ucs4 >> (level << 3)) & 0xff;
+		}
+		ucs4 = (ucs4 & ~ ((1 << ((level + 1) << 3)) - 1)) |
+			    (byte << (level << 3));
+		node = branch->nodes[byte];
+	    }
+	    iter->branch_stack[iter->branch_stackp++] = branch;
+	    if (--level == 0)
+		break;
+	}
+    }
+    if (!(iter->leaf = node.leaf))
+	ucs4 = ~0;
+    iter->ucs4 = ucs4;
+#if 0
+    printf ("set %08x: %08x\n", ucs4, node.leaf);
+#endif
 }
 
 static void
 FcCharSetIterNext (const FcCharSet *fcs, FcCharSetIter *iter)
 {
-    iter->ucs4 += 0x100;
-    FcCharSetIterSet (fcs, iter);
+    FcCharNode	    node;
+    FcCharBranch    *branch;
+    FcChar32	    ucs4;
+    int		    level;
+
+    if (!iter->branch_stackp)
+    {
+	iter->ucs4 = ~0;
+	iter->leaf = 0;
+	return;
+    }
+
+    level = 1;
+    node.branch = iter->branch_stack[--iter->branch_stackp];
+    ucs4 = iter->ucs4;
+    for (;;)
+    {
+	FcChar32    byte;
+
+	branch = node.branch;
+	while (!(byte = branch->next[(ucs4 >> (level << 3)) & 0xff]))
+	{
+	    if (iter->branch_stackp == 0)
+	    {
+		iter->leaf = 0;
+		iter->ucs4 = ~0;
+		return;
+	    }
+	    branch = node.branch = iter->branch_stack[--iter->branch_stackp];
+	    level++;
+	    ucs4 += 1 << (level << 3);
+	}
+        ucs4 = (ucs4 & ~ ((1 << ((level + 1) << 3)) - 1)) |
+    		(byte << (level << 3));
+        node = branch->nodes[byte];
+        iter->branch_stack[iter->branch_stackp++] = branch;
+	if (--level == 0)
+	    break;
+    }
+    iter->ucs4 = ucs4;
+    iter->leaf = node.leaf;
 }
+
+#if 0
+static void
+FcCharSetDump (FcCharNode node, int level, FcChar32 ucs4, int indent)
+{
+    if (level)
+    {
+	if (node.branch)
+	{
+	    FcChar32	inc = (1 << (level << 3));
+	    int		i;
+	    FcCharBranch    *branch = node.branch;
+    
+	    for (i = 0; i < indent; i++)
+		printf ("    ");
+	    printf ("%08x: %08x\n", ucs4, branch);
+	    for (i = 0; i < 256; i++)
+	    {
+		FcCharSetDump (branch->nodes[i], level - 1, ucs4, indent+1);
+		ucs4 += inc;
+	    }
+	}
+    }
+    else
+    {
+	if (node.leaf)
+	{
+	    while (indent--)
+		printf ("    ");
+	    printf ("%08x: %08x\n", ucs4, node.leaf);
+	}
+    }
+}
+#endif
 
 static void
 FcCharSetIterStart (const FcCharSet *fcs, FcCharSetIter *iter)
 {
+#if 0
+    FcCharSetDump (fcs->node, fcs->levels - 1, 0, 0);
+#endif
     iter->ucs4 = 0;
     FcCharSetIterSet (fcs, iter);
 }
@@ -345,7 +485,7 @@ FcCharSetOperate (const FcCharSet   *a,
 	goto bail0;
     FcCharSetIterStart (a, &ai);
     FcCharSetIterStart (b, &bi);
-    while ((ai.leaf || bonly) && (bi.leaf || aonly))
+    while ((ai.leaf || (bonly && bi.leaf)) && (bi.leaf || (aonly && ai.leaf)))
     {
 	if (ai.ucs4 < bi.ucs4)
 	{
@@ -555,6 +695,43 @@ FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b)
 	}
     }
     return count;
+}
+
+/*
+ * return FcTrue iff a is a subset of b
+ */
+FcBool
+FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
+{
+    FcCharSetIter   ai, bi;
+    
+    FcCharSetIterStart (a, &ai);
+    while (ai.leaf)
+    {
+	bi.ucs4 = ai.ucs4;
+	FcCharSetIterSet (b, &bi);
+	/*
+	 * Check if a has a page that b does not
+	 */
+	if (ai.ucs4 < bi.ucs4)
+	    return FcFalse;
+	/*
+	 * Check if they have a page in common, if so,
+	 * look to see if there any bits in a not in b
+	 */
+	if (ai.ucs4 == bi.ucs4)
+	{
+	    FcChar32	*am = ai.leaf->map;
+	    FcChar32	*bm = bi.leaf->map;
+	    int		i = 256/32;
+	    
+	    while (i--)
+		if (*am++ & ~*bm++)
+		    return FcFalse;
+	}
+	FcCharSetIterNext (a, &ai);
+    }
+    return FcTrue;
 }
 
 /*
