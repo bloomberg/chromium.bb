@@ -217,7 +217,7 @@ int DRM(irq_install)( drm_device_t *dev, int irq )
 	if ( retcode ) {
 #elif defined(__NetBSD__)
 	dev->irqh = pci_intr_establish(&dev->pa.pa_pc, dev->ih, IPL_TTY,
-				      (DRM_IRQ_RET (*)(DRM_IRQ_ARGS))DRM(dma_service), dev);
+				      (irqreturn_t (*)(DRM_IRQ_ARGS))DRM(dma_service), dev);
 	if ( !dev->irqh ) {
 #endif
 		DRM_LOCK;

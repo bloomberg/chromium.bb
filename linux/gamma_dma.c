@@ -105,7 +105,7 @@ static inline int gamma_dma_is_ready(drm_device_t *dev)
 	return(!GAMMA_READ(GAMMA_DMACOUNT));
 }
 
-DRM_IRQ_RET gamma_dma_service( DRM_IRQ_ARGS )
+irqreturn_t gamma_dma_service( DRM_IRQ_ARGS )
 {
 	drm_device_t	 *dev = (drm_device_t *)arg;
 	drm_device_dma_t *dma = dev->dma;
@@ -121,7 +121,7 @@ DRM_IRQ_RET gamma_dma_service( DRM_IRQ_ARGS )
 	GAMMA_WRITE(GAMMA_GINTFLAGS, 0x2001);
 	if (gamma_dma_is_ready(dev)) {
 				/* Free previous buffer */
-		if (test_and_set_bit(0, &dev->dma_flag)) return DRM_IRQ_HANDLED;
+		if (test_and_set_bit(0, &dev->dma_flag)) return IRQ_HANDLED;
 		if (dma->this_buffer) {
 			gamma_free_buffer(dev, dma->this_buffer);
 			dma->this_buffer = NULL;
@@ -136,7 +136,7 @@ DRM_IRQ_RET gamma_dma_service( DRM_IRQ_ARGS )
 		schedule_work(&dev->work);
 #endif
 	}
-	return DRM_IRQ_HANDLED;
+	return IRQ_HANDLED;
 }
 
 /* Only called by gamma_dma_schedule. */

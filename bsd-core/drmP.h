@@ -446,7 +446,7 @@ extern void	     DRM(reclaim_buffers)(drm_device_t *dev, DRMFILE filp);
 #if __HAVE_DMA_IRQ
 extern int           DRM(irq_install)( drm_device_t *dev, int irq );
 extern int           DRM(irq_uninstall)( drm_device_t *dev );
-extern DRM_IRQ_RET   DRM(dma_service)( DRM_IRQ_ARGS );
+extern irqreturn_t   DRM(dma_service)( DRM_IRQ_ARGS );
 extern void          DRM(driver_irq_preinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_postinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_uninstall)( drm_device_t *dev );
