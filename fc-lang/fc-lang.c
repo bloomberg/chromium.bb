@@ -23,18 +23,29 @@
  */
 
 #include "fcint.h"
+#include "fccharset.c"
+#include "fcstr.c"
 
 /*
  * fc-lang
  *
  * Read a set of language orthographies and build C declarations for
  * charsets which can then be used to identify which languages are
- * supported by a given font.  Note that it would be nice if
- * this could be done while compiling the library, but this
- * code uses a number of routines from the library.  It's
- * expediant to just ship the pre-built version along with the
- * source orthographies.
+ * supported by a given font.  Note that this uses some utilities
+ * from the fontconfig library, so the necessary file is simply
+ * included in this compilation.  A couple of extra utility
+ * functions are also needed in slightly modified form
  */
+
+void
+FcMemAlloc (int kind, int size)
+{
+}
+
+void
+FcMemFree (int kind, int size)
+{
+}
 
 static void 
 fatal (char *file, int lineno, char *msg)
