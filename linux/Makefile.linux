@@ -90,9 +90,10 @@ PRGLIBS =
 # This may not be correct, but it is the best assumption we can make.
 
 VERSION := $(shell uname -r)
-A := /usr/src/linux-$(VERSION)/include
-B := /usr/src/linux/include
-C := /usr/include
+A := /lib/modules/$(VERSION)/build/include
+B := /usr/src/linux-$(VERSION)/include
+C := /usr/src/linux/include
+D := /usr/include
 
 V := $(shell gcc -E -nostdinc -I$A picker.c 2>/dev/null \
       | grep -s 'RELEASE = ' | cut -d' ' -f3)
@@ -107,15 +108,21 @@ else
     V := $(shell gcc -E -nostdinc -I$C picker.c 2>/dev/null \
           | grep -s 'RELEASE = ' | cut -d' ' -f3)
 ifeq ($(V),"$(VERSION)")
-    TREE := $C
+  TREE := $C
+else
+    V := $(shell gcc -E -nostdinc -I$D picker.c 2>/dev/null \
+          | grep -s 'RELEASE = ' | cut -d' ' -f3)
+ifeq ($(V),"$(VERSION)")
+    TREE := $D
 else
     TREE := 0
 endif
 endif
 endif
+endif
 
 ifeq ($(TREE),0)
-all:; @echo Error: Could not locate kernel tree in $A $B $C
+all:; @echo Error: Could not locate kernel tree in $A $B $C $D
 else
 SMP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'SMP = ' | cut -d' ' -f3)
