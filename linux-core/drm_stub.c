@@ -39,11 +39,15 @@ static unsigned int debug = 0;		/* 1 to enable debug output */
 MODULE_AUTHOR( DRIVER_AUTHOR );
 MODULE_DESCRIPTION( DRIVER_DESC );
 MODULE_LICENSE("GPL and additional rights");
-module_param(cards_limit, int, 0444);
 MODULE_PARM_DESC(cards_limit, "Maximum number of graphics cards");
-module_param(debug, int, 0644);
 MODULE_PARM_DESC(debug, "Enable debug output");
 
+#ifdef module_param
+module_param(cards_limit, int, 0444);
+module_param(debug, int, 0644);
+#endif
+
+MODULE_AUTHOR( DRIVER_AUTHOR );
 drm_global_t *DRM(global);
 
 /**
