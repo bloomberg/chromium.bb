@@ -708,14 +708,18 @@ static int __init drm_init( void )
 		pdev = pci_get_subsys(DRM(pciidlist[i]).vendor, DRM(pciidlist[i]).device, DRM(pciidlist[i]).subvendor, DRM(pciidlist[i]).subdevice, NULL);
 		if (pdev)
 		{
+#ifndef __MACH64_H__
 			pdriver = pci_dev_driver(pdev);
 			if (pdriver)
 			{
+#endif
 				DRM(fb_loaded)=1;
 				drm_probe(pdev, &DRM(pciidlist[i]));
+#ifndef __MACH64_H__
 			}
 			else
 				pci_dev_put(pdev);
+#endif
 		}
 	}
 	
