@@ -141,8 +141,6 @@ int DRM(addmap)( DRM_IOCTL_ARGS )
 		break;
 
 	case _DRM_SHM:
-		DRM_INFO( "%ld %d %d\n",
-			   map->size, DRM(order)( map->size ), PAGE_SHIFT);
 		map->handle = (void *)DRM(alloc)(map->size, DRM_MEM_SAREA);
 		DRM_DEBUG( "%ld %d %p\n",
 			   map->size, DRM(order)( map->size ), map->handle );
