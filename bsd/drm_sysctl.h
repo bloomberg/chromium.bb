@@ -29,7 +29,9 @@
 static int	   DRM(name_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(vm_info)DRM_SYSCTL_HANDLER_ARGS;
 static int	   DRM(clients_info)DRM_SYSCTL_HANDLER_ARGS;
+#if __HAVE_DMA
 static int	   DRM(bufs_info)DRM_SYSCTL_HANDLER_ARGS;
+#endif
 
 struct DRM(sysctl_list) {
 	const char *name;
