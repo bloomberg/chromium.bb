@@ -59,6 +59,7 @@ int DRM(order)( unsigned long size )
 	return order;
 }
 
+static int permanent_maps = 0; 
  /**
  * Adjusts the memory offset to its absolute value according to the mapping
  * type.  Adds the map to the map list drm_device::maplist. Adds MTRR's where
@@ -117,6 +118,7 @@ int DRM(initmap)( drm_device_t *dev, unsigned int offset, unsigned int size, int
 	list_add(&list->head, &dev->maplist->head);
 	up(&dev->struct_sem);
 	
+	permanent_maps = 1;
 	DRM_DEBUG("finished\n");
 
 	return 0;
@@ -178,16 +180,22 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 		/* after all the drivers switch to permanent mapping this should just return an error */
         	struct list_head *_list;
 
-		/* if map already exists, return the existing one instead of creating a new one */
-		list_for_each( _list, &dev->maplist->head ) {
-			drm_map_list_t *_entry = list_entry( _list, drm_map_list_t, head );
-			if ( _entry->map && _entry->map->type == map->type ) {
-				DRM(free)( map, sizeof(*map), DRM_MEM_MAPS );
-				map = _entry->map;
-				DRM_DEBUG( "Found existing: offset = 0x%08lx, size = 0x%08lx, type = %d\n",
-					map->offset, map->size, map->type );
-				goto found_it;
+		/* If permanent maps are implemented, maps must match */
+		if (permanent_maps) {
+			list_for_each( _list, &dev->maplist->head ) {
+				drm_map_list_t *_entry = list_entry( _list, drm_map_list_t, head );
+				if ( _entry->map && _entry->map->type == map->type &&
+						_entry->map->offset == map->offset &&
+						_entry->map->size == map->size ) {
+					DRM(free)( map, sizeof(*map), DRM_MEM_MAPS );
+					map = _entry->map;
+					DRM_DEBUG( "Found existing: offset = 0x%08lx, size = 0x%08lx, type = %d\n",
+						map->offset, map->size, map->type );
+					goto found_it;
+				}
 			}
+			/* addmap didn't match an existing permanent map, that's an error */
+			return -EINVAL;
 		}
 #if !defined(__sparc__) && !defined(__alpha__) && !defined(__ia64__)
 		if ( map->offset + map->size < map->offset ||
