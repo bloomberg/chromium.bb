@@ -588,6 +588,7 @@ FcPatternPosition (const FcPattern *p, const char *object)
 {
     int	    low, high, mid, c;
 
+    object = FcObjectStaticName(object);
     low = 0;
     high = p->num - 1;
     c = 1;
@@ -595,7 +596,7 @@ FcPatternPosition (const FcPattern *p, const char *object)
     while (low <= high)
     {
 	mid = (low + high) >> 1;
-	c = strcmp (p->elts[mid].object, object);
+	c = p->elts[mid].object - object;
 	if (c == 0)
 	    return mid;
 	if (c < 0)

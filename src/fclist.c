@@ -67,10 +67,11 @@ FcObjectSetAdd (FcObjectSet *os, const char *object)
     low = 0;
     mid = 0;
     c = 1;
+    object = FcObjectStaticName (object);
     while (low <= high)
     {
 	mid = (low + high) >> 1;
-	c = strcmp (os->objects[mid], object);
+	c = os->objects[mid] - object;
 	if (c == 0)
 	    return FcTrue;
 	if (c < 0)
@@ -82,7 +83,7 @@ FcObjectSetAdd (FcObjectSet *os, const char *object)
 	mid++;
     memmove (os->objects + mid + 1, os->objects + mid, 
 	     (os->nobject - mid) * sizeof (const char *));
-    os->objects[mid] = FcObjectStaticName (object);
+    os->objects[mid] = object;
     os->nobject++;
     return FcTrue;
 }

@@ -406,7 +406,7 @@ FcCompare (FcPattern	*pat,
     i2 = 0;
     while (i1 < pat->num && i2 < fnt->num)
     {
-	i = strcmp (pat->elts[i1].object, fnt->elts[i2].object);
+	i = pat->elts[i1].object - fnt->elts[i2].object;
 	if (i > 0)
 	    i2++;
 	else if (i < 0)
