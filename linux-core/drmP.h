@@ -523,11 +523,6 @@ typedef struct drm_vbl_sig {
 struct drm_device;
 
 struct drm_driver_fn {
-	u32 driver_features;
-	int dev_priv_size;
-	int permanent_maps;
-	drm_ioctl_desc_t *ioctls;
-	int num_ioctls;
 	int (*preinit)(struct drm_device *, unsigned long flags);
 	void (*prerelease)(struct drm_device *, struct file *filp);
 	void (*pretakedown)(struct drm_device *);
@@ -558,6 +553,13 @@ struct drm_driver_fn {
 	unsigned long (*get_reg_ofs)(struct drm_device *dev);
 	void (*set_version)(struct drm_device *dev, drm_set_version_t *sv);
 	int (*version)(drm_version_t *version);
+/* variables */
+	u32 driver_features;
+	int dev_priv_size;
+	int permanent_maps;
+	drm_ioctl_desc_t *ioctls;
+	int num_ioctls;
+	struct file_operations fops;
 };
 
 
@@ -691,8 +693,6 @@ typedef struct drm_device {
 	drm_sigdata_t     sigdata;	/**< For block_all_signals */
 	sigset_t          sigmask;
 	
-	struct file_operations *fops;	/**< file operations */
-
 	struct drm_driver_fn *fn_tbl;
 	drm_local_map_t   *agp_buffer_map;
 } drm_device_t;
@@ -757,13 +757,11 @@ extern int           drm_unlock(struct inode *inode, struct file *filp,
 extern int 	     drm_fill_in_dev(drm_device_t *dev, struct pci_dev *pdev,
 				 const struct pci_device_id *ent, struct drm_driver_fn *driver_fn);
 extern int           drm_fb_loaded;
-extern struct file_operations drm_fops;
 
 				/* Device support (drm_fops.h) */
 extern int	     drm_open_helper(struct inode *inode, struct file *filp,
 				      drm_device_t *dev);
-extern int	     drm_flush(struct file *filp);
-extern int	     drm_fasync(int fd, struct file *filp, int on);
+extern int 	     drm_fasync(int fd, struct file *filp, int on);
 
 				/* Mapping support (drm_vm.h) */
 extern void	     drm_vm_open(struct vm_area_struct *vma);
@@ -772,8 +770,6 @@ extern void	     drm_vm_shm_close(struct vm_area_struct *vma);
 extern int	     drm_mmap_dma(struct file *filp,
 				   struct vm_area_struct *vma);
 extern int	     drm_mmap(struct file *filp, struct vm_area_struct *vma);
-extern unsigned int  drm_poll(struct file *filp, struct poll_table_struct *wait);
-extern ssize_t       drm_read(struct file *filp, char __user *buf, size_t count, loff_t *off);
 
 				/* Memory management support (drm_memory.h) */
 #include "drm_memory.h"

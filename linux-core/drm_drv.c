@@ -76,18 +76,6 @@ __setup( DRIVER_NAME "=", DRM_OPTIONS_FUNC );
 
 int drm_fb_loaded = 0;
 
-struct file_operations	drm_fops = {
-	.owner   = THIS_MODULE,
-	.open	 = drm_open,
-	.flush	 = drm_flush,
-	.release = drm_release,
-	.ioctl	 = drm_ioctl,
-	.mmap	 = drm_mmap,
-	.fasync  = drm_fasync,
-	.poll	 = drm_poll,
-	.read	 = drm_read,
-};
-
 /** Ioctl table */
 drm_ioctl_desc_t		  drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)]       = { drm_version,     0, 0 },
@@ -384,7 +372,6 @@ int drm_fill_in_dev(drm_device_t *dev, struct pci_dev *pdev, const struct pci_de
 	sema_init( &dev->ctxlist_sem, 1 );
 
 	dev->name   = DRIVER_NAME;
-	dev->fops   = &drm_fops;
 	dev->pdev   = pdev;
 
 #ifdef __alpha__
@@ -630,7 +617,7 @@ void __exit drm_exit (struct pci_driver *driver)
 			minor = &drm_minors[i];
 			dev = minor->dev;
 			DRM_DEBUG("fb loaded release minor %d\n", dev->minor);
-			if ((minor->class == DRM_MINOR_PRIMARY) && (dev->fops == &drm_fops)) {
+			if (minor->class == DRM_MINOR_PRIMARY) {
 				/* release the pci driver */
 				if (dev->pdev)
 					pci_dev_put(dev->pdev);

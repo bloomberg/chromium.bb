@@ -110,15 +110,6 @@ static int i830_freelist_put(drm_device_t *dev, drm_buf_t *buf)
    	return 0;
 }
 
-static struct file_operations i830_buffer_fops = {
-	.open	 = drm_open,
-	.flush	 = drm_flush,
-	.release = drm_release,
-	.ioctl	 = drm_ioctl,
-	.mmap	 = i830_mmap_buffers,
-	.fasync  = drm_fasync,
-};
-
 int i830_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
 {
 	drm_file_t	    *priv	  = filp->private_data;
@@ -152,20 +143,17 @@ static int i830_map_buffer(drm_buf_t *buf, struct file *filp)
 	drm_device_t	  *dev	  = priv->dev;
 	drm_i830_buf_priv_t *buf_priv = buf->dev_private;
       	drm_i830_private_t *dev_priv = dev->dev_private;
-   	struct file_operations *old_fops;
 	unsigned long virtual;
 	int retcode = 0;
 
 	if(buf_priv->currently_mapped == I830_BUF_MAPPED) return -EINVAL;
 
 	down_write( &current->mm->mmap_sem );
-	old_fops = filp->f_op;
-	filp->f_op = &i830_buffer_fops;
 	dev_priv->mmap_buffer = buf;
 	virtual = do_mmap(filp, 0, buf->total, PROT_READ|PROT_WRITE,
 			    MAP_SHARED, buf->bus_address);
 	dev_priv->mmap_buffer = NULL;
-	filp->f_op = old_fops;
+
 	if (IS_ERR((void *)virtual)) {		/* ugh */
 		/* Real error */
 		DRM_ERROR("mmap error\n");

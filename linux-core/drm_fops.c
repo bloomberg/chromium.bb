@@ -116,18 +116,6 @@ out_free:
 }
 
 /** No-op. */
-int drm_flush(struct file *filp)
-{
-	drm_file_t    *priv   = filp->private_data;
-	drm_device_t  *dev    = priv->dev;
-
-	DRM_DEBUG("pid = %d, device = 0x%lx, open_count = %d\n",
-		  current->pid, (long)old_encode_dev(dev->device), dev->open_count);
-	return 0;
-}
-EXPORT_SYMBOL(drm_flush);
-
-/** No-op. */
 int drm_fasync(int fd, struct file *filp, int on)
 {
 	drm_file_t    *priv   = filp->private_data;
@@ -140,16 +128,3 @@ int drm_fasync(int fd, struct file *filp, int on)
 	return 0;
 }
 EXPORT_SYMBOL(drm_fasync);
-
-/** No-op. */
-unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait)
-{
-	return 0;
-}
-
-
-/** No-op. */
-ssize_t drm_read(struct file *filp, char __user *buf, size_t count, loff_t *off)
-{
-	return 0;
-}

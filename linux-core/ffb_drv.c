@@ -321,6 +321,14 @@ static struct drm_driver_fn ffb_driver_fn = {
 	.reclaim_buffers = drm_core_reclaim_buffers,
 	.postinit = postinit,
 	.version = version,
+	fops = {
+		.owner   = THIS_MODULE,
+		.open	 = drm_open,
+		.release = drm_release,
+		.ioctl	 = drm_ioctl,
+		.mmap	 = drm_mmap,
+		.fasync  = drm_fasync,
+	},
 };
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)

@@ -74,6 +74,14 @@ static struct drm_driver_fn driver_fn = {
 	.get_reg_ofs = drm_core_get_reg_ofs,
 	.postinit = postinit,
 	.version = version,
+	.fops = {
+		.owner   = THIS_MODULE,
+		.open	 = drm_open,
+		.release = drm_release,
+		.ioctl	 = drm_ioctl,
+		.mmap	 = drm_mmap,
+		.fasync  = drm_fasync,
+	},
 };
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
