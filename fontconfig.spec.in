@@ -53,10 +53,11 @@ make %{_smp_mflags}
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 
 %post
-/sbin/ldconfig
-
-# Force regeneration of all fontconfig cache files.
-fc-cache -f --system-only
+{
+  /sbin/ldconfig
+  # Force regeneration of all fontconfig cache files.
+  %{_bindir}/fc-cache -f --system-only
+}
 
 %postun -p /sbin/ldconfig
 
