@@ -1,13 +1,7 @@
-#include "../../libxml2/config.h"
-#if HAVE_ZLIB_H
-ZLIB=-lz
-#endif
+INCLUDES=$(FREETYPE2INCLUDES) $(LIBXML2INCLUDES) -I..
 
-INCLUDES=-I../../freetype2 -I/usr/include/libxml2 -I..
-FREETYPE2REQLIB = ../../freetype2/libfreetype.a
-XML2REQLIB=../../libxml2/.libs/libxml2.a $(ZLIB) -lm
-
-LOCAL_LIBRARIES=-L../src -lfontconfig $(FREETYPE2REQLIB) $(XML2REQLIB)
+LOCAL_LIBRARIES=FontconfigClientLibs
+        DEPLIBS=FontconfigDepLibs
 
 SRCS=fc-cache.c
 OBJS=fc-cache.o

@@ -1,26 +1,6 @@
-#include "../../libxml2/config.h"
-#if HAVE_ZLIB_H
-ZLIB=-lz
-#endif
-
-#if 0
-#define SharedLibFontconfig YES
-#endif
-
-#ifndef SharedLibFontconfig
-#define SharedLibFontconfig NO
-#endif
-
-#ifndef NormalLibFontconfig
-#define NormalLibFontconfig (!SharedLibFontConfig | ForceNormalLib)
-#endif
-
-#ifndef DebugLibFontconfig
-#define DebugLibFontconfig		NO
-#endif
-
-#ifndef ProfileLibFontconfig
-#define ProfileLibFontconfig		NO
+#ifdef UseInstalled
+/* building outside the tree, use private defines */
+#include "../local.def"
 #endif
 
 #define LibHeaders NO
@@ -28,15 +8,6 @@ ZLIB=-lz
 FONTCONFIGSRC=.
 
 FALLBACK_FONTS=$(FONTDIR)/Type1
-
-#if SharedLibFontconfig
-#ifndef SharedFontconfigRev
-#define SharedFontconfigRev 1.0
-#endif
-SharedLibReferences(FONTCONFIG,Fontconfig,$(FONTCONFIGSRC),SOXLIBREV,SharedFontconfigRev)
-#else
-ProjectUnsharedLibReferences(FONTCONFIG,Fontconfig,$(FONTCONFIGSRC),BuildLibDir)
-#endif
 
 #define DoNormalLib NormalLibFontconfig
 #define DoSharedLib SharedLibFontconfig
@@ -50,18 +21,11 @@ SOFONTCONFIGREV=1.0
 
 #include <Threads.tmpl>
 
-#if SharedLibFontconfig
-INCLUDES=-I/usr/local/include/freetype2 -I/usr/include/libxml2 -I..
-FREETYPE2REQLIB = -L/usr/local/lib -lfreetype
-XML2REQLIB=-lxml2
-#else
-INCLUDES=-I../../freetype2 -I../../libxml2/include -I..
-FREETYPE2REQLIB = ../../freetype2/libfreetype.a
-XML2REQLIB=../../libxml2/.libs/libxml2.a $(ZLIB) -lm
-#endif
+INCLUDES=$(FREETYPE2INCLUDES) $(LIBXML2INCLUDES) -I..
+
 DEFINES=-DFC_FALLBACK_FONTS='"$(FALLBACK_FONTS)"'
 
-REQUIREDLIBS=$(LDPRELIBS) $(FREETYPE2REQLIB) $(XML2REQLIB)
+REQUIREDLIBS=$(LDPRELIBS) $(FREETYPE2LIB) $(LIBXML2LIB)
 
 SRCS=fcblanks.c fccache.c fccfg.c fccharset.c fcdbg.c fcdefault.c fcdir.c \
      fcfreetype.c fcfs.c fcinit.c fclist.c fcmatch.c fcmatrix.c fcname.c \
@@ -70,13 +34,6 @@ SRCS=fcblanks.c fccache.c fccfg.c fccharset.c fcdbg.c fcdefault.c fcdir.c \
 OBJS=fcblanks.o fccache.o fccfg.o fccharset.o fcdbg.o fcdefault.o fcdir.o \
      fcfreetype.o fcfs.o fcinit.o fclist.o fcmatch.o fcmatrix.o fcname.o \
      fcpat.o fcstr.o fcxml.o
-
-#define LibInstallBuild YES
-#undef LinkBuildLibrary
-#define LinkBuildLibrary(lib) MakeDir($(BUILDLIBDIR))			@@\
-	RemoveFile($(BUILDLIBDIR)/lib)					@@\
-	cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .
-
 
 #include <Library.tmpl>
 
