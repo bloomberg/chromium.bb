@@ -50,6 +50,17 @@ process succeeded or not.  If the default configuration has already
 been loaded, this routine does nothing and returns FcTrue.
 @@
 
+@RET@		void
+@FUNC@		FcFini
+@TYPE1@		void
+@PURPOSE@	finalize fonconfig library
+@DESC@
+Frees all data structures allocated by previous calls to fontconfig
+functions. Fontconfig returns to an uninitialized state, requiring a
+new call to one of the FcInit functions before any other fontconfig
+function may be called.
+@@
+
 @RET@           int       
 @FUNC@          FcGetVersion 
 @TYPE1@		void

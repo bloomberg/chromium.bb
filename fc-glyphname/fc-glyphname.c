@@ -24,6 +24,27 @@
 
 #include "fcint.h"
 
+static int
+rawindex (FcGlyphName *gn);
+
+static void
+scan (FILE *f, char *filename);
+
+static int
+isprime (int i);
+
+static void
+find_hash (void);
+
+static FcChar32
+FcHashGlyphName (const FcChar8 *name);
+
+static void
+insert (FcGlyphName *gn, FcGlyphName **table, FcChar32 h);
+
+static void
+dump (FcGlyphName **table, char *name);
+
 static FcGlyphName *
 FcAllocGlyphName (FcChar32 ucs, FcChar8 *name)
 {
@@ -55,7 +76,7 @@ FcGlyphName *name_to_ucs[MAX_GLYPHNAME*2];
 FcGlyphName *ucs_to_name[MAX_GLYPHNAME*2];
 int	    hash, rehash;
 
-int
+static int
 rawindex (FcGlyphName *gn)
 {
     int	i;
@@ -66,7 +87,7 @@ rawindex (FcGlyphName *gn)
     return -1;
 }
 
-void
+static void
 scan (FILE *f, char *filename)
 {
     char	    buf[MAX_NAMELEN];
@@ -122,7 +143,7 @@ isqrt (int a)
     return h;
 }
 
-int
+static int
 isprime (int i)
 {
     int	l, t;
@@ -146,7 +167,7 @@ isprime (int i)
  * Find a prime pair that leaves at least 25% of the hash table empty
  */
 
-void
+static void
 find_hash (void)
 {
     int	h;
@@ -160,7 +181,7 @@ find_hash (void)
     rehash = h-2;
 }
 
-FcChar32
+static FcChar32
 FcHashGlyphName (const FcChar8 *name)
 {
     FcChar32	h = 0;
@@ -173,7 +194,7 @@ FcHashGlyphName (const FcChar8 *name)
     return h;
 }
 
-void
+static void
 insert (FcGlyphName *gn, FcGlyphName **table, FcChar32 h)
 {
     int		i, r = 0;
@@ -189,7 +210,7 @@ insert (FcGlyphName *gn, FcGlyphName **table, FcChar32 h)
     table[i] = gn;
 }
 
-void
+static void
 dump (FcGlyphName **table, char *name)
 {
     int	i;

@@ -26,7 +26,7 @@ DOC_FUNCS_FNCS=\
 	fcstring.fncs \
 	fcstrset.fncs \
 	fcvalue.fncs
-	
+
 DOC_FUNCS_SGML=\
 	fcatomic.sgml \
 	fcblanks.sgml \
@@ -60,7 +60,7 @@ FcConfigGetConfigDirs.3 FcConfigGetConfigFiles.3 FcConfigGetCurrent.3 \
 FcConfigGetFontDirs.3 FcConfigGetFonts.3 FcConfigGetRescanInverval.3 \
 FcConfigParseAndLoad.3 FcConfigSetCurrent.3 FcConfigSetRescanInverval.3 \
 FcConfigSubstitute.3 FcConfigSubstituteWithPat.3 FcConfigUptoDate.3 \
-FcDefaultSubstitute.3 FcDirCacheValid.3 FcDirSave.3 FcDirScan.3 FcFileScan.3 \
+FcDefaultSubstitute.3 FcDirCacheValid.3 FcDirSave.3 FcDirScan.3 FcFini.3 FcFileScan.3 \
 FcFontList.3 FcFontMatch.3 FcFontRenderPrepare.3 FcFontSetAdd.3 \
 FcFontSetCreate.3 FcFontSetDestroy.3 FcFontSort.3 FcFreeTypeCharIndex.3 \
 FcFreeTypeCharSet.3 FcFreeTypeQuery.3 FcGetVersion.3 FcInit.3 \
@@ -89,8 +89,8 @@ DOC_FILES=$(TXT) $(HTML_FILES)
 DOC_DIRS=$(HTML_DIRS)
 LOCAL_DOCS=$(man_MANS) $(DOC_FILES) $(DOC_DIRS)
 
-EXTRA_DIST = $(LOCAL_DOCS) $(SGML) $(DOC_FUNCS_FNCS) $(FNCS_TMPL)
-	
+EXTRA_DIST=$(LOCAL_DOCS) $(SGML) $(DOC_FUNCS_FNCS) $(FNCS_TMPL)
+
 SUFFIXES=.fncs .sgml .txt .html
 
 if USEDOCBOOK

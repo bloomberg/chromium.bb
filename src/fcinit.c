@@ -108,6 +108,19 @@ FcInit (void)
 }
 
 /*
+ * Free all library-allocated data structures.
+ */
+void
+FcFini (void)
+{
+    if (_fcConfig)
+	FcConfigDestroy (_fcConfig);
+
+    FcPatternThawAll ();
+    FcCharSetThawAll ();
+}
+
+/*
  * Reread the configuration and available font lists
  */
 FcBool

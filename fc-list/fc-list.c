@@ -137,6 +137,7 @@ main (int argc, char **argv)
     if (!os)
 	os = FcObjectSetBuild (FC_FAMILY, FC_STYLE, (char *) 0);
     fs = FcFontList (0, pat, os);
+    FcObjectSetDestroy (os);
     if (pat)
 	FcPatternDestroy (pat);
 
@@ -157,5 +158,8 @@ main (int argc, char **argv)
 	}
 	FcFontSetDestroy (fs);
     }
+
+    FcFini ();
+
     return 0;
 }

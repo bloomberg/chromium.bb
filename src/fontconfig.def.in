@@ -53,6 +53,7 @@ EXPORTS
 	FcDirSave
 	FcDirScan
 	FcFileScan
+	FcFini
 	FcFontList
 	FcFontMatch
 	FcFontRenderPrepare

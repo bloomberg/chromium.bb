@@ -452,6 +452,9 @@ FcInitLoadConfigAndFonts (void);
 FcBool
 FcInit (void);
 
+void
+FcFini (void);
+
 int
 FcGetVersion (void);
 

@@ -292,6 +292,7 @@ FcEditDestroy (FcEdit *e)
     FcStrFree ((FcChar8 *) e->field);
     if (e->expr)
 	FcExprDestroy (e->expr);
+    free (e);
 }
 
 char *
@@ -1287,6 +1288,9 @@ FcPopExpr (FcConfigParse *parse)
 	break;
     case FcVStackConstant:
 	expr = FcExprCreateConst (vstack->u.string);
+	break;
+    case FcVStackGlob:
+	/* XXX: What's the correct action here? (CDW) */
 	break;
     case FcVStackPrefer:
     case FcVStackAccept:

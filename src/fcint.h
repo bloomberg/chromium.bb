@@ -469,6 +469,9 @@ FcConfigAcceptFilename (FcConfig	*config,
 FcCharSet *
 FcCharSetFreeze (FcCharSet *cs);
 
+void
+FcCharSetThawAll (void);
+
 FcBool
 FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c);
 
@@ -662,6 +665,9 @@ FcPatternAddWithBinding  (FcPattern	    *p,
 
 FcPattern *
 FcPatternFreeze (FcPattern *p);
+
+void
+FcPatternThawAll (void);
 
 /* fcrender.c */
 

@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #else
@@ -91,7 +92,6 @@ main (int argc, char **argv)
     int		verbose = 0;
     int		sort = 0;
     int		i;
-    FcObjectSet *os = 0;
     FcFontSet	*fs;
     FcPattern   *pat;
     FcResult	result;

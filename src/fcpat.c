@@ -366,15 +366,43 @@ FcValueListEntCreate (FcValueList *h)
     return e;
 }
 
+static void
+FcValueListEntDestroy (FcValueListEnt *e)
+{
+    FcValueList	*l;
+
+    FcValueListFrozenCount[e->list->value.type]--;
+
+    /* XXX: We should perform these two operations with "size" as
+       computed in FcValueListEntCreate, but we don't have access to
+       that value here. Without this, the FcValueListFrozenBytes
+       values will be wrong as will the FcMemFree counts.
+
+       FcValueListFrozenBytes[e->list->value.type] -= size;
+       FcMemFree (FC_MEM_VALLIST, size);
+    */
+
+    for (l = e->list; l; l = l->next)
+    {
+	if (l->value.type != FcTypeString)
+	    FcValueDestroy (l->value);
+    }
+    /* XXX: Are we being too chummy with the implementation here to
+       free(e) when it was actually the enclosing FcValueListAlign
+       that was allocated? */
+    free (e);
+}
+
 static int	FcValueListTotal;
 static int	FcValueListUsed;
+
+static FcValueListEnt   *FcValueListHashTable[FC_VALUE_LIST_HASH_SIZE];
 
 static FcValueList *
 FcValueListFreeze (FcValueList *l)
 {
-    static FcValueListEnt   *hashTable[FC_VALUE_LIST_HASH_SIZE];
     FcChar32		    hash = FcValueListHash (l);
-    FcValueListEnt	    **bucket = &hashTable[hash % FC_VALUE_LIST_HASH_SIZE];
+    FcValueListEnt	    **bucket = &FcValueListHashTable[hash % FC_VALUE_LIST_HASH_SIZE];
     FcValueListEnt	    *ent;
 
     FcValueListTotal++;
@@ -393,6 +421,26 @@ FcValueListFreeze (FcValueList *l)
     ent->next = *bucket;
     *bucket = ent;
     return ent->list;
+}
+
+static void
+FcValueListThawAll (void)
+{
+    int i;
+    FcValueListEnt	*ent, *next;
+
+    for (i = 0; i < FC_VALUE_LIST_HASH_SIZE; i++)
+    {
+	for (ent = FcValueListHashTable[i]; ent; ent = next)
+	{
+	    next = ent->next;
+	    FcValueListEntDestroy (ent);
+	}
+	FcValueListHashTable[i] = 0;
+    }
+
+    FcValueListTotal = 0;
+    FcValueListUsed = 0;
 }
 
 static FcChar32
@@ -417,12 +465,13 @@ struct _FcPatternEnt {
 static int	FcPatternTotal;
 static int	FcPatternUsed;
 
+static FcPatternEnt	*FcPatternHashTable[FC_VALUE_LIST_HASH_SIZE];
+
 static FcPattern *
 FcPatternBaseFreeze (FcPattern *b)
 {
-    static FcPatternEnt	*hashTable[FC_VALUE_LIST_HASH_SIZE];
     FcChar32		hash = FcPatternBaseHash (b);
-    FcPatternEnt	**bucket = &hashTable[hash % FC_VALUE_LIST_HASH_SIZE];
+    FcPatternEnt	**bucket = &FcPatternHashTable[hash % FC_VALUE_LIST_HASH_SIZE];
     FcPatternEnt	*ent;
     int			i;
     char		*objects;
@@ -481,6 +530,26 @@ FcPatternBaseFreeze (FcPattern *b)
     return &ent->pattern;
 }
 
+static void
+FcPatternBaseThawAll (void)
+{
+    int i;
+    FcPatternEnt	*ent, *next;
+
+    for (i = 0; i < FC_VALUE_LIST_HASH_SIZE; i++)
+    {
+	for (ent = FcPatternHashTable[i]; ent; ent = next)
+	{
+	    next = ent->next;
+	    free (ent);
+	}
+	FcPatternHashTable[i] = 0;
+    }
+
+    FcPatternTotal = 0;
+    FcPatternUsed = 0;
+}
+
 FcPattern *
 FcPatternFreeze (FcPattern *p)
 {
@@ -524,6 +593,13 @@ bail:
     assert (FcPatternEqual (n, p));
 #endif
     return n;
+}
+
+void
+FcPatternThawAll (void)
+{
+    FcPatternBaseThawAll ();
+    FcValueListThawAll ();
 }
 
 static int

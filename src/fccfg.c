@@ -160,6 +160,8 @@ FcSubstDestroy (FcSubst *s)
 	    FcTestDestroy (s->test);
 	if (s->edit)
 	    FcEditDestroy (s->edit);
+	free (s);
+	FcMemFree (FC_MEM_SUBST, sizeof (FcSubst));
 	s = n;
     }
 }
@@ -178,6 +180,9 @@ FcConfigDestroy (FcConfig *config)
     FcStrSetDestroy (config->acceptGlobs);
     FcStrSetDestroy (config->rejectGlobs);
 
+    if (config->blanks)
+	FcBlanksDestroy (config->blanks);
+
     if (config->cache)
 	FcStrFree (config->cache);
 
@@ -186,6 +191,7 @@ FcConfigDestroy (FcConfig *config)
     for (set = FcSetSystem; set <= FcSetApplication; set++)
 	if (config->fonts[set])
 	    FcFontSetDestroy (config->fonts[set]);
+
     free (config);
     FcMemFree (FC_MEM_CONFIG, sizeof (FcConfig));
 }

@@ -1,3 +1,47 @@
+2003-08-15  Carl Worth  <cworth@isi.edu>
+
+	* src/fcxml.c (FcEditDestroy): Fix leak of FcEdit.
+	(FcPopExpr): Add comment about unhandled FcVStackGlob case.
+
+	* src/fcpat.c (FcValueListEntDestroy): New function to support
+	FcFini memory cleanup. Some statistics are not kept in
+	synch. here.
+	(FcValueListFreeze): Move hashTable outside this function so it
+	can be accessed by FcValueListThawAll.
+	(FcValueListThawAll): New function complements FcValueListFreeze.
+	(FcPatternBaseFreeze): Move hashTable outside this function so it
+	can be accessed by FcPatternBaseThawAll.
+	(FcPatternBaseThawAll): New function complements
+	FcPatternBaseFreeze.
+	(FcPatternThawAll): New function complements FcPatternFreeze.
+
+	* src/fcinit.c (FcFini): Add new FcFini to cleanup everything.
+
+	* src/fccharset.c (FcCharLeafEntCreate): Save pointers to all
+	allocated FcCharLeafEnt "blocks" so they can be freed later.
+	(FcCharSetFreezeLeaf): Move hashTable outside this function so it
+	can be accessed by FcCharSetThawAllLeaf.
+	(FcCharSetThawAllLeaf): New function complements FcCharSetFreezeLeaf.
+	(FcCharSetFreezeBase): Move hashTable outside this function so it
+	can be accessed by FcCharSetThawAll.
+	(FcCharSetThawAll): New function complements FcCharSetFreeze.
+
+	* src/fccfg.c (FcSubstDestroy): Fix leak of outer FcSubst.
+	(FcConfigDestroy): Fic leak of FcBlanks.
+
+	* fc-list/fc-list.c (main): Fix leak of FcObjectSet.
+	(main): Add call to FcFini when finished.
+
+	* fc-glyphname/fc-glyphname.c: Mark several local functions as
+	static. Add prototypes.
+
+	* doc/fcinit.fncs: Add documentation for FcFini function.
+
+	* doc/edit-sgml.c: Mark several local functions as static. Add
+	prototypes.
+
+	* doc/Makefile.am (DOC_MODULE): Fix "suspicious" lines.
+
 2003-06-15  Tor Lillqvist  <tml@iki.fi>
 
 	* test/run-test.sh (FONTCONFIG_FILE): Remove CRs from the out file
