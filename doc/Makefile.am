@@ -103,12 +103,9 @@ if ENABLE_DOCS
 	$(RM) $@
 	$(DOC2TXT) $*.sgml
 
-all-local: all-local-docs
-clean-local: clean-local-docs
-
 $(man_MANS): func.refs
 
-func.refs: fontconfig-devel.sgml $(DOC_FUNCS_SGML)
+func.refs: fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml
 	$(RM) func.refs
 	$(DOC2MAN) fontconfig-devel.sgml
 	mv manpage.refs func.refs
@@ -116,24 +113,27 @@ func.refs: fontconfig-devel.sgml $(DOC_FUNCS_SGML)
 
 $(DOC_FUNCS_SGML): edit-sgml $(FNCS_TMPL)
 
-fonts-conf.5: fontconfig-user.sgml
+fonts-conf.5: fontconfig-user.sgml version.sgml
 	$(RM) file.refs
 	$(DOC2MAN) -u fontconfig-user.sgml
 	$(RM) manpage.refs manpage.links
 
-all-local-docs: $(DOCS)
+all-local: $(LOCAL_DOCS)
 
-clean-local-docs:
+clean-local:
 	$(RM) $(man_MANS) $(DOC_FILES) $(DOC_FUNCS_SGML) func.refs
 	$(RM) -r $(DOC_DIRS)
 
-fontconfig-devel: fontconfig-devel.sgml $(DOCS_FUNCS_SGML)
+fontconfig-devel: fontconfig-devel.sgml $(DOCS_FUNCS_SGML) version.sgml
 	$(RM) -r fontconfig-devel
 	$(DOC2HTML) -o fontconfig-devel fontconfig-devel.sgml
 
-fontconfig-user.html: fontconfig-user.sgml
+fontconfig-devel.txt: fontconfig-devel.sgml version.sgml
+
+fontconfig-user.html: fontconfig-user.sgml version.sgml
 	$(DOC2HTML) -u fontconfig-user.sgml
 
+fontconfig-user.txt:  fontconfig-user.sgml version.sgml
 else
 all-local:
 clean-local:
