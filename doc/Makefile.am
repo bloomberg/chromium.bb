@@ -93,7 +93,7 @@ EXTRA_DIST = $(LOCAL_DOCS) $(SGML) $(DOC_FUNCS_FNCS) $(FNCS_TMPL)
 	
 SUFFIXES=.fncs .sgml .txt .html
 
-if ENABLE_DOCS
+if USEDOCBOOK
 
 .fncs.sgml:
 	$(RM) $@
