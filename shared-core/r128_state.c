@@ -38,7 +38,7 @@
  * 2.4 - Add support for ycbcr textures (no new ioctls)
  * 2.5 - Add FLIP ioctl, disable FULLSCREEN.
  */
-static drm_ioctl_desc_t r128_ioctls[] = {
+drm_ioctl_desc_t r128_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_R128_INIT)] = {r128_cce_init, 1, 1},
 	[DRM_IOCTL_NR(DRM_R128_CCE_START)] = {r128_cce_start, 1, 1},
 	[DRM_IOCTL_NR(DRM_R128_CCE_STOP)] = {r128_cce_stop, 1, 1},
