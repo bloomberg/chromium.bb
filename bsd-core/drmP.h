@@ -331,8 +331,13 @@ typedef vaddr_t vm_offset_t;
 	copyin(arg2, arg1, arg3)
 #define DRM_COPY_TO_USER_UNCHECKED(arg1, arg2, arg3)	\
 	copyout(arg2, arg1, arg3)
-#define DRM_GET_USER_UNCHECKED(val, uaddr)			\
+#if __FreeBSD_version > 500000
+#define DRM_GET_USER_UNCHECKED(val, uaddr)		\
+	((val) = fuword32(uaddr), 0)
+#else
+#define DRM_GET_USER_UNCHECKED(val, uaddr)		\
 	((val) = fuword(uaddr), 0)
+#endif
 
 #define cpu_to_le32(x) htole32(x)
 #define le32_to_cpu(x) le32toh(x)
