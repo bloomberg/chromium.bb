@@ -487,21 +487,11 @@ struct drm_device {
 	drm_histogram_t	  histo;
 #endif
 
-				/* Callback to X server for context switch
-				   and for heavy-handed reset. */
-	char		  buf[DRM_BSZ]; /* Output buffer		   */
-	char		  *buf_rp;	/* Read pointer			   */
-	char		  *buf_wp;	/* Write pointer		   */
-	char		  *buf_end;	/* End pointer			   */
 #ifdef __FreeBSD__
 	struct sigio      *buf_sigio;	/* Processes waiting for SIGIO     */
 #elif defined(__NetBSD__)
 	pid_t		  buf_pgid;
 #endif
-	struct selinfo    buf_sel;	/* Workspace for select/poll       */
-	int               buf_selecting;/* True if poll sleeper            */
-	wait_queue_head_t buf_readers;	/* Processes waiting to read	   */
-	wait_queue_head_t buf_writers;	/* Processes waiting to ctx switch */
 
 				/* Sysctl support */
 	struct drm_sysctl_info *sysctl;
@@ -527,7 +517,6 @@ extern int           DRM(remove_magic)(drm_device_t *dev, drm_magic_t magic);
 
 				/* Driver support (drm_drv.h) */
 extern int           DRM(version)( DRM_IOCTL_ARGS );
-extern int	     DRM(write_string)(drm_device_t *dev, const char *s);
 
 				/* Memory management support (drm_memory.h) */
 extern void	     DRM(mem_init)(void);

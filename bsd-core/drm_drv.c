@@ -228,7 +228,6 @@ static struct cdevsw DRM(cdevsw) = {
 	.d_open =	DRM( open ),
 	.d_close =	DRM( close ),
 	.d_read =	DRM( read ),
-	.d_write =	DRM( write ),
 	.d_ioctl =	DRM( ioctl ),
 	.d_poll =	DRM( poll ),
 	.d_mmap =	DRM( mmap ),
@@ -290,7 +289,7 @@ static struct cdevsw DRM(cdevsw) = {
 	DRM(open),
 	DRM(close),
 	DRM(read),
-	DRM(write),
+	nowrite,
 	DRM(ioctl),
 	nostop,
 	notty,
@@ -518,17 +517,11 @@ static int DRM(setup)( drm_device_t *dev )
 	dev->ctx_start = 0;
 	dev->lck_start = 0;
 
-	dev->buf_rp = dev->buf;
-	dev->buf_wp = dev->buf;
-	dev->buf_end = dev->buf + DRM_BSZ;
 #ifdef __FreeBSD__
 	dev->buf_sigio = NULL;
 #elif defined(__NetBSD__)
 	dev->buf_pgid = 0;
 #endif
-	dev->buf_readers = 0;
-	dev->buf_writers = 0;
-	dev->buf_selecting = 0;
 
 	DRM_DEBUG( "\n" );
 

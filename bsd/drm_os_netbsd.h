@@ -338,7 +338,6 @@ extern dev_type_ioctl(DRM(ioctl));
 extern dev_type_open(DRM(open));
 extern dev_type_close(DRM(close));
 extern dev_type_read(DRM(read));
-extern dev_type_write(DRM(write));
 extern dev_type_poll(DRM(poll));
 extern dev_type_mmap(DRM(mmap));
 extern int		DRM(open_helper)(dev_t kdev, int flags, int fmt, 

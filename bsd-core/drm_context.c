@@ -206,8 +206,6 @@ bad:
 
 int DRM(context_switch)( drm_device_t *dev, int old, int new )
 {
-        char buf[64];
-
         if ( test_and_set_bit( 0, &dev->context_flag ) ) {
                 DRM_ERROR( "Reentering -- FIXME\n" );
                 return DRM_ERR(EBUSY);
@@ -226,9 +224,6 @@ int DRM(context_switch)( drm_device_t *dev, int old, int new )
 
         if ( DRM(flags) & DRM_FLAG_NOCTX ) {
                 DRM(context_switch_complete)( dev, new );
-        } else {
-                sprintf( buf, "C %d %d\n", old, new );
-                DRM(write_string)( dev, buf );
         }
 
         return 0;
@@ -374,7 +369,6 @@ int DRM(rmctx)( DRM_IOCTL_ARGS )
 
 int DRM(context_switch)(drm_device_t *dev, int old, int new)
 {
-	char	    buf[64];
 	drm_queue_t *q;
 
 #if 0
@@ -412,9 +406,6 @@ int DRM(context_switch)(drm_device_t *dev, int old, int new)
 
 	if (DRM(flags) & DRM_FLAG_NOCTX) {
 		DRM(context_switch_complete)(dev, new);
-	} else {
-		sprintf(buf, "C %d %d\n", old, new);
-		DRM(write_string)(dev, buf);
 	}
 
 	atomic_dec(&q->use_count);
