@@ -80,7 +80,8 @@
 		<family>Kochi Mincho</family>
 		<family>AR PL SungtiL GB</family>
 		<family>AR PL Mingti2L Big5</family>
-		<family>Baekmuk Batang</family>			
+		<family>Baekmuk Batang</family>
+		<family>FreeSerif</family>
 		<default><family>serif</family></default>
 	</alias>
 <!--
@@ -98,6 +99,7 @@
 		<family>AR PL KaitiM Big5</family>
 		<family>Baekmuk Dotum</family>
 		<family>SimSun</family>
+		<family>FreeSans</family>
 		<default><family>sans-serif</family></default>
 	</alias>
 <!--
@@ -111,6 +113,7 @@
 		<family>Luxi Mono</family>
 		<family>Nimbus Mono L</family>
 		<family>NSimSun</family>
+		<family>FreeMono</family>
 		<default><family>monospace</family></default>
 	</alias>
 <!--
@@ -130,7 +133,7 @@
 			<string>sans-serif</string>
 		</edit>
 	</match>
-	
+
 <!--
   Some Asian fonts misadvertise themselves as monospaced when
   in fact they are dual-spaced (half and full).  This makes
@@ -140,7 +143,7 @@
 		<test name="family"><string>GulimChe</string></test>
 		<edit name="globaladvance"><bool>false</bool></edit>
 	</match>
-	
+
 	<match target="font">
 		<test name="family"><string>DotumChe</string></test>
 		<edit name="globaladvance"><bool>false</bool></edit>
@@ -163,7 +166,7 @@
 	didn't include the right instructions in the 'prep' table. Fix this
 	by disabling hinting manually at smaller sizes (< 8ppem)
  -->
-	
+
 	<match target="font">
 		<test name="family">
 			<string>Bitstream Vera Sans</string>
@@ -175,7 +178,7 @@
 			<bool>false</bool>
 		</edit>
 	</match>
-	
+
 	<match target="font">
 		<test name="family">
 			<string>Bitstream Vera Serif</string>
@@ -187,7 +190,7 @@
 			<bool>false</bool>
 		</edit>
 	</match>
-	
+
 	<match target="font">
 		<test name="family">
 			<string>Bitstream Vera Sans Mono</string>
@@ -199,7 +202,7 @@
 			<bool>false</bool>
 		</edit>
 	</match>
-	
+
 <!--
   Load per-user customization file
 -->
@@ -241,7 +244,8 @@
 			<family>Kochi Mincho</family>
 			<family>AR PL SungtiL GB</family>
 			<family>AR PL Mingti2L Big5</family>
-			<family>Baekmuk Batang</family>			
+			<family>Baekmuk Batang</family>
+			<family>FreeSerif</family>
 		</prefer>
 	</alias>
 	<alias>
@@ -259,6 +263,7 @@
 			<family>AR PL KaitiM Big5</family>
 			<family>Baekmuk Dotum</family>
 			<family>SimSun</family>
+			<family>FreeSans</family>
 		</prefer>
 	</alias>
 	<alias>
@@ -273,6 +278,7 @@
 			<family>Kochi Gothic</family>
 			<family>AR PL KaitiM GB</family>
 			<family>Baekmuk Dotum</family>
+			<family>FreeMono</family>
 		</prefer>
 	</alias>
 
