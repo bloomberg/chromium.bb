@@ -68,6 +68,7 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_LANG,		FcTypeLangSet },
     { FC_FONTVERSION,	FcTypeInteger },
     { FC_CAPABILITY,	FcTypeString },
+    { FC_FONTFORMAT,	FcTypeString },
 };
 
 #define NUM_OBJECT_TYPES    (sizeof _FcBaseObjectTypes / sizeof _FcBaseObjectTypes[0])

@@ -1,3 +1,13 @@
+2004-12-04  Keith Packard  <keithp@keithp.com>
+
+	* configure.in:
+	* fontconfig/fontconfig.h:
+	* src/fcfreetype.c: (FcFreeTypeQuery):
+	* src/fcname.c:
+	Create FC_FONTFORMAT from FT_Get_X11_Font_Format function where
+	available.  This provides font file format information (BDF, Type 1,
+	PCF, TrueType) for each font.  Closes #109.
+
 2004-12-04  Daniel Glassey <danglassey@ntlworld.com>
 
 	reviewed by: Keith Packard  <keithp@keithp.com>

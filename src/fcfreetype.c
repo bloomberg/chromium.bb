@@ -58,6 +58,9 @@
 #include FT_INTERNAL_STREAM_H
 #include FT_INTERNAL_SFNT_H
 #include FT_INTERNAL_TRUETYPE_TYPES_H
+#if HAVE_FT_GET_X11_FONT_FORMAT
+#include FT_XFREE86_H
+#endif
 
 #if HAVE_FT_GET_BDF_PROPERTY
 #include FT_BDF_H
@@ -1614,6 +1617,17 @@ FcFreeTypeQuery (const FcChar8	*file,
         ;
 #endif
     }
+#if HAVE_FT_GET_X11_FONT_FORMAT
+    /*
+     * Use the (not well documented or supported) X-specific function
+     * from FreeType to figure out the font format
+     */
+    {
+	const char *font_format = FT_Get_X11_Font_Format (face);
+	if (font_format)
+	    FcPatternAddString (pat, FC_FONTFORMAT, font_format);
+    }
+#endif
 
     /*
      * Drop our reference to the charset
