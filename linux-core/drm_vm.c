@@ -504,7 +504,7 @@ unsigned long DRM(core_get_map_ofs)(drm_map_t *map)
 unsigned long DRM(core_get_reg_ofs)(struct drm_device *dev)
 {
 #ifdef __alpha__
-  return dev->host->dense_mem_base - dev->hose_mem_space->start;
+  return dev->hose->dense_mem_base - dev->hose->mem_space->start;
 #else
   return 0;
 #endif
