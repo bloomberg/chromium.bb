@@ -218,7 +218,7 @@ while (!condition) {							\
 #endif
 
 #define malloctype DRM(M_DRM)
-/* The macros confliced in the MALLOC_DEFINE */
+/* The macros conflicted in the MALLOC_DEFINE */
 MALLOC_DECLARE(malloctype);
 #undef malloctype
 
@@ -317,10 +317,8 @@ find_first_zero_bit(volatile void *p, int max)
  * exist.
  */
 #if (__FreeBSD_version < 500002 && __FreeBSD_version > 500000) || __FreeBSD_version < 420000
-/* FIXME: again, what's the exact date? */
 #define MODULE_VERSION(a,b)		struct __hack
 #define MODULE_DEPEND(a,b,c,d,e)	struct __hack
-
 #endif
 
 /* Redefinitions to make templating easy */
@@ -345,8 +343,6 @@ find_first_zero_bit(volatile void *p, int max)
 #else
 #define DRM_DEBUG(fmt, arg...)		 do { } while (0)
 #endif
-
-#define DRM_PROC_LIMIT (PAGE_SIZE-80)
 
 #if (__FreeBSD_version >= 500000) || ((__FreeBSD_version < 500000) && (__FreeBSD_version >= 410002))
 #define DRM_SYSCTL_HANDLER_ARGS	(SYSCTL_HANDLER_ARGS)

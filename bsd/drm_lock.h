@@ -202,35 +202,3 @@ int DRM(finish)( DRM_IOCTL_ARGS )
 	DRM(flush_unblock)(dev, lock.context, lock.flags);
 	return ret;
 }
-
-/* If we get here, it means that the process has called DRM_IOCTL_LOCK
-   without calling DRM_IOCTL_UNLOCK.
-
-   If the lock is not held, then let the signal proceed as usual.
-
-   If the lock is held, then set the contended flag and keep the signal
-   blocked.
-
-
-   Return 1 if the signal should be delivered normally.
-   Return 0 if the signal should be blocked.  */
-
-int DRM(notifier)(void *priv)
-{
-	drm_sigdata_t *s = (drm_sigdata_t *)priv;
-	unsigned int  old, new;
-
-				/* Allow signal delivery if lock isn't held */
-	if (!_DRM_LOCK_IS_HELD(s->lock->lock)
-	    || _DRM_LOCKING_CONTEXT(s->lock->lock) != s->context) return 1;
-
-				/* Otherwise, set flag to force call to
-                                   drmUnlock */
-	do {
-		old  = s->lock->lock;
-		new  = old | _DRM_LOCK_CONT;
-	} while (!atomic_cmpset_int(&s->lock->lock, old, new));
-
-	return 0;
-}
-

@@ -218,10 +218,6 @@ int DRM(context_switch)( drm_device_t *dev, int old, int new )
                 return 0;
         }
 
-        if ( DRM(flags) & DRM_FLAG_NOCTX ) {
-                DRM(context_switch_complete)( dev, new );
-        }
-
         return 0;
 }
 
@@ -389,10 +385,6 @@ int DRM(context_switch)(drm_device_t *dev, int old, int new)
 		atomic_dec(&q->use_count);
 		clear_bit(0, &dev->context_flag);
 		return DRM_ERR(EINVAL);
-	}
-
-	if (DRM(flags) & DRM_FLAG_NOCTX) {
-		DRM(context_switch_complete)(dev, new);
 	}
 
 	atomic_dec(&q->use_count);

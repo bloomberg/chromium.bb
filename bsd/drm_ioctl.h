@@ -121,15 +121,6 @@ int DRM(setunique)( DRM_IOCTL_ARGS )
 
 	dev->unique[dev->unique_len] = '\0';
 
-	dev->devname = DRM(alloc)(strlen(dev->name) + strlen(dev->unique) + 2,
-				  DRM_MEM_DRIVER);
-	if(!dev->devname) {
-		DRM(free)(dev->devname, sizeof(*dev->devname), DRM_MEM_DRIVER);
-		return DRM_ERR(ENOMEM);
-	}
-	sprintf(dev->devname, "%s@%s", dev->name, dev->unique);
-
-
 	return 0;
 }
 

@@ -306,8 +306,6 @@ do { \
 #define DRM_DEBUG(fmt, arg...)		 do { } while (0)
 #endif
 
-#define DRM_PROC_LIMIT (PAGE_SIZE-80)
-
 #define DRM_SYSCTL_PRINT(fmt, arg...)		\
   snprintf(buf, sizeof(buf), fmt, ##arg);	\
   error = SYSCTL_OUT(req, buf, strlen(buf));	\

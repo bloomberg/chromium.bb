@@ -80,12 +80,8 @@ typedef struct drm_file drm_file_t;
 #define DRM_HASH_SIZE	      16 /* Size of key hash table		  */
 #define DRM_KERNEL_CONTEXT    0	 /* Change drm_resctx if changed	  */
 #define DRM_RESERVED_CONTEXTS 1	 /* Change drm_resctx if changed	  */
-#define DRM_LOOPING_LIMIT     5000000
-#define DRM_BSZ		      1024 /* Buffer size for /dev/drm? output	  */
-#define DRM_LOCK_SLICE	      1	/* Time slice for lock, in jiffies	  */
 
 #define DRM_FLAG_DEBUG	  0x01
-#define DRM_FLAG_NOCTX	  0x02
 
 #define DRM_MEM_DMA	   0
 #define DRM_MEM_SAREA	   1
@@ -109,12 +105,6 @@ typedef struct drm_file drm_file_t;
 #define DRM_MEM_SGLISTS	  19
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
-
-				/* Backward compatibility section */
-				/* _PAGE_WT changed to _PAGE_PWT in 2.2.6 */
-#ifndef _PAGE_PWT
-#define _PAGE_PWT _PAGE_WT
-#endif
 
 				/* Mapping helper macros */
 #define DRM_IOREMAP(map)						\
@@ -142,11 +132,6 @@ typedef struct drm_file drm_file_t;
 	(_map) = (_dev)->context_sareas[_ctx];		\
 } while(0)
 
-
-typedef struct drm_pci_list {
-	u16 vendor;
-	u16 device;
-} drm_pci_list_t;
 
 typedef struct drm_ioctl_desc {
 	int		     (*func)(DRM_IOCTL_ARGS);
@@ -271,22 +256,6 @@ typedef struct drm_lock_data {
 } drm_lock_data_t;
 
 typedef struct drm_device_dma {
-#if 0
-				/* Performance Counters */
-	atomic_t	  total_prio;	/* Total DRM_DMA_PRIORITY	   */
-	atomic_t	  total_bytes;	/* Total bytes DMA'd		   */
-	atomic_t	  total_dmas;	/* Total DMA buffers dispatched	   */
-
-	atomic_t	  total_missed_dma;  /* Missed drm_do_dma	    */
-	atomic_t	  total_missed_lock; /* Missed lock in drm_do_dma   */
-	atomic_t	  total_missed_free; /* Missed drm_free_this_buffer */
-	atomic_t	  total_missed_sched;/* Missed drm_dma_schedule	    */
-
-	atomic_t	  total_tried;	/* Tried next_buffer		    */
-	atomic_t	  total_hit;	/* Sent next_buffer		    */
-	atomic_t	  total_lost;	/* Lost interrupt		    */
-#endif
-
 	drm_buf_entry_t	  bufs[DRM_MAX_ORDER+1];
 	int		  buf_count;
 	drm_buf_t	  **buflist;	/* Vector of pointers info bufs	   */
@@ -337,11 +306,6 @@ typedef struct drm_sg_mem {
 	dma_addr_t	*busaddr;
 } drm_sg_mem_t;
 
-typedef struct drm_sigdata {
-	int           context;
-	drm_hw_lock_t *lock;
-} drm_sigdata_t;
-
 typedef struct drm_local_map {
 	unsigned long	offset;	 /* Physical address (0 for SAREA)*/
 	unsigned long	size;	 /* Physical size (bytes)	    */
@@ -380,11 +344,8 @@ struct drm_device {
 	device_t	  device;	/* Device instance from newbus     */
 #endif
 	dev_t		  devnode;	/* Device number for mknod	   */
-	char		  *devname;	/* For /proc/interrupts		   */
 
-	int		  blocked;	/* Blocked due to VC switch?	   */
 	int		  flags;	/* Flags to open(2)		   */
-	int		  writable;	/* Opened with FWRITE		   */
 
 				/* Locks */
 	DRM_SPINTYPE	  count_lock;	/* For inuse, open_count, buf_use  */
@@ -444,7 +405,7 @@ struct drm_device {
 #if __HAVE_VBL_IRQ
    	wait_queue_head_t vbl_queue;	/* vbl wait channel */
    	atomic_t          vbl_received;
-#if 0 /* vbl signals are untested, ntested */
+#if 0 /* vbl signals are untested */
 	struct drm_vbl_sig_list vbl_sig_list;
 	DRM_SPINTYPE      vbl_lock;
 #endif
@@ -465,8 +426,6 @@ struct drm_device {
 	drm_sg_mem_t      *sg;  /* Scatter gather memory */
 	atomic_t          *ctx_bitmap;
 	void		  *dev_private;
-	drm_sigdata_t     sigdata; /* For block_all_signals */
-	sigset_t          sigmask;
 };
 
 extern int	     DRM(flags);
@@ -522,7 +481,6 @@ extern int	     DRM(flush_unblock)(drm_device_t *dev, int context,
 					drm_lock_flags_t flags);
 extern int	     DRM(flush_block_and_flush)(drm_device_t *dev, int context,
 						drm_lock_flags_t flags);
-extern int           DRM(notifier)(void *priv);
 
 				/* Buffer management support (drm_bufs.h) */
 extern int	     DRM(order)( unsigned long size );

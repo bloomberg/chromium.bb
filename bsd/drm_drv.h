@@ -86,12 +86,6 @@
 #ifndef __HAVE_SG
 #define __HAVE_SG			0
 #endif
-#ifndef __HAVE_KERNEL_CTX_SWITCH
-#define __HAVE_KERNEL_CTX_SWITCH	0
-#endif
-#ifndef PCI_ANY_ID
-#define PCI_ANY_ID	~0
-#endif
 
 #ifndef DRIVER_PREINIT
 #define DRIVER_PREINIT()
@@ -118,13 +112,6 @@
 #define DRIVER_IOCTLS
 #endif
 #ifndef DRIVER_FOPS
-#endif
-
-/*
- * The default number of instances (minor numbers) to initialize.
- */
-#ifndef DRIVER_NUM_CARDS
-#define DRIVER_NUM_CARDS 1
 #endif
 
 #if 1 && DRM_DEBUG_CODE
@@ -555,12 +542,6 @@ static int DRM(takedown)( drm_device_t *dev )
 
 	DRM_LOCK;
 	callout_stop( &dev->timer );
-
-	if ( dev->devname ) {
-		DRM(free)( dev->devname, strlen( dev->devname ) + 1,
-			   DRM_MEM_DRIVER );
-		dev->devname = NULL;
-	}
 
 	if ( dev->unique ) {
 		DRM(free)( dev->unique, strlen( dev->unique ) + 1,
@@ -1020,10 +1001,9 @@ int DRM(close)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	device_unbusy(dev->device);
 #endif
 	if ( !--dev->open_count ) {
-		if ( atomic_read( &dev->ioctl_count ) || dev->blocked ) {
-			DRM_ERROR( "Device busy: %ld %d\n",
-				(unsigned long)atomic_read( &dev->ioctl_count ),
-				   dev->blocked );
+		if (atomic_read(&dev->ioctl_count)) {
+			DRM_ERROR("Device busy: %ld\n",
+			    (unsigned long)atomic_read( &dev->ioctl_count ));
 			DRM_SPINUNLOCK( &dev->count_lock );
 			return DRM_ERR(EBUSY);
 		}
@@ -1180,6 +1160,7 @@ int DRM(lock)( DRM_IOCTL_ARGS )
 #endif
 
         if ( !ret ) {
+		/* FIXME: Add signal blocking here */
 
 #if __HAVE_DMA_READY
                 if ( lock.flags & _DRM_LOCK_READY ) {
@@ -1189,12 +1170,6 @@ int DRM(lock)( DRM_IOCTL_ARGS )
 #if __HAVE_DMA_QUIESCENT
                 if ( lock.flags & _DRM_LOCK_QUIESCENT ) {
 			DRIVER_DMA_QUIESCENT();
-		}
-#endif
-#if __HAVE_KERNEL_CTX_SWITCH
-		if ( dev->last_context != lock.context ) {
-			DRM(context_switch)(dev, dev->last_context,
-					    lock.context);
 		}
 #endif
         }
@@ -1220,25 +1195,6 @@ int DRM(unlock)( DRM_IOCTL_ARGS )
 
 	atomic_inc( &dev->counts[_DRM_STAT_UNLOCKS] );
 
-#if __HAVE_KERNEL_CTX_SWITCH
-	/* We no longer really hold it, but if we are the next
-	 * agent to request it then we should just be able to
-	 * take it immediately and not eat the ioctl.
-	 */
-	dev->lock.pid = 0;
-	{
-		__volatile__ unsigned int *plock = &dev->lock.hw_lock->lock;
-		unsigned int old, new, prev, ctx;
-
-		ctx = lock.context;
-		do {
-			old  = *plock;
-			new  = ctx;
-			prev = cmpxchg(plock, old, new);
-		} while (prev != old);
-	}
-	wake_up_interruptible(&dev->lock.lock_queue);
-#else
 	DRM(lock_transfer)( dev, &dev->lock.hw_lock->lock,
 			    DRM_KERNEL_CONTEXT );
 #if __HAVE_DMA_SCHEDULE
@@ -1253,7 +1209,6 @@ int DRM(unlock)( DRM_IOCTL_ARGS )
 			DRM_ERROR( "\n" );
 		}
 	}
-#endif /* !__HAVE_KERNEL_CTX_SWITCH */
 
 	return 0;
 }
