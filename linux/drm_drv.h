@@ -637,7 +637,7 @@ int DRM(release)( struct inode *inode, struct file *filp )
 	if ( dev->lock.hw_lock &&
 	     _DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) &&
 	     dev->lock.pid == current->pid ) {
-		DRM_ERROR( "Process %d dead, freeing lock for context %d\n",
+		DRM_DEBUG( "Process %d dead, freeing lock for context %d\n",
 			   current->pid,
 			   _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock) );
 #if __HAVE_RELEASE
