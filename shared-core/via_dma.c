@@ -248,10 +248,7 @@ int via_flush_ioctl(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 
-	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
-		DRM_ERROR("via_flush_ioctl called without lock held\n");
-		return DRM_ERR(EINVAL);
-	}
+	LOCK_TEST_WITH_RETURN( dev, filp );
 
 	return via_quiescent(dev);
 }
@@ -262,15 +259,12 @@ int via_cmdbuffer(DRM_IOCTL_ARGS)
 	drm_via_cmdbuffer_t cmdbuf;
 	int ret;
 
+	LOCK_TEST_WITH_RETURN( dev, filp );
+
 	DRM_COPY_FROM_USER_IOCTL(cmdbuf, (drm_via_cmdbuffer_t *) data,
 				 sizeof(cmdbuf));
 
 	DRM_DEBUG("via cmdbuffer, buf %p size %lu\n", cmdbuf.buf, cmdbuf.size);
-
-	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
-		DRM_ERROR("via_cmdbuffer called without lock held\n");
-		return DRM_ERR(EINVAL);
-	}
 
 	ret = via_dispatch_cmdbuffer(dev, &cmdbuf);
 	if (ret) {
@@ -339,16 +333,13 @@ int via_pci_cmdbuffer(DRM_IOCTL_ARGS)
 	drm_via_cmdbuffer_t cmdbuf;
 	int ret;
 
+	LOCK_TEST_WITH_RETURN( dev, filp );
+
 	DRM_COPY_FROM_USER_IOCTL(cmdbuf, (drm_via_cmdbuffer_t *) data,
 				 sizeof(cmdbuf));
 
 	DRM_DEBUG("via_pci_cmdbuffer, buf %p size %lu\n", cmdbuf.buf,
 		  cmdbuf.size);
-
-	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
-		DRM_ERROR("via_pci_cmdbuffer called without lock held\n");
-		return DRM_ERR(EINVAL);
-	}
 
 	ret = via_dispatch_pci_cmdbuffer(dev, &cmdbuf);
 	if (ret) {
