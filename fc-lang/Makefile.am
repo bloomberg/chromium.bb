@@ -22,7 +22,7 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-INCLUDES=-I${top_srcdir}/src -I${top_srcdir} $(FREETYPE_CFLAGS)
+INCLUDES=-I${top_srcdir}/src -I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
 TMPL=fclang.tmpl.h
 STMPL=${top_srcdir}/fc-lang/fclang.tmpl.h

@@ -29,7 +29,7 @@ SGML = ${FC_LIST_SRC}/fc-list.sgml
 
 bin_PROGRAMS=fc-list
 
-INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
+INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
 EXTRA_DIST=$(SGML)
 

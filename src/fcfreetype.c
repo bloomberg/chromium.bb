@@ -158,31 +158,34 @@ FcUtf8IsLatin (FcChar8 *str, int len)
    URW++, and both strings appear in the notice. */
 
 static const struct {
-    const FcChar8   *notice;
+    const FT_String *notice;
     const FcChar8   *foundry;
 } FcNoticeFoundries[] = {
-    { (const FcChar8*) "Bigelow",	(const FcChar8 *) "b&h" },
-    { (const FcChar8*) "Adobe",		(const FcChar8 *) "adobe" },
-    { (const FcChar8*) "Bitstream",	(const FcChar8 *) "bitstream" },
-    { (const FcChar8*) "Monotype",	(const FcChar8 *) "monotype" },
-    { (const FcChar8*) "Linotype",	(const FcChar8 *) "linotype" },
-    { (const FcChar8*) "LINOTYPE-HELL", (const FcChar8 *) "linotype" },
-    { (const FcChar8*) "IBM",		(const FcChar8 *) "ibm" },
-    { (const FcChar8*) "URW",		(const FcChar8 *) "urw" },
-    { (const FcChar8*) "International Typeface Corporation", 
+    { (const FT_String *) "Bigelow",	(const FcChar8 *) "b&h" },
+    { (const FT_String *) "Adobe",	(const FcChar8 *) "adobe" },
+    { (const FT_String *) "Bitstream",	(const FcChar8 *) "bitstream" },
+    { (const FT_String *) "Monotype",	(const FcChar8 *) "monotype" },
+    { (const FT_String *) "Linotype",	(const FcChar8 *) "linotype" },
+    { (const FT_String *) "LINOTYPE-HELL",
+					(const FcChar8 *) "linotype" },
+    { (const FT_String *) "IBM",	(const FcChar8 *) "ibm" },
+    { (const FT_String *) "URW",	(const FcChar8 *) "urw" },
+    { (const FT_String *) "International Typeface Corporation", 
 					(const FcChar8 *) "itc" },
-    { (const FcChar8*) "Tiro Typeworks",(const FcChar8 *) "tiro" },
-    { (const FcChar8*) "XFree86",	(const FcChar8 *) "xfree86" },
-    { (const FcChar8*) "Microsoft",	(const FcChar8 *) "microsoft" },
-    { (const FcChar8*) "Omega",		(const FcChar8 *) "omega" },
-    { (const FcChar8*) "Font21",	(const FcChar8 *) "hwan" },
-    { (const FcChar8*) "HanYang System",(const FcChar8 *) "hanyang" }
+    { (const FT_String *) "Tiro Typeworks",
+					(const FcChar8 *) "tiro" },
+    { (const FT_String *) "XFree86",	(const FcChar8 *) "xfree86" },
+    { (const FT_String *) "Microsoft",	(const FcChar8 *) "microsoft" },
+    { (const FT_String *) "Omega",	(const FcChar8 *) "omega" },
+    { (const FT_String *) "Font21",	(const FcChar8 *) "hwan" },
+    { (const FT_String *) "HanYang System",
+					(const FcChar8 *) "hanyang" }
 };
 
 #define NUM_NOTICE_FOUNDRIES	(sizeof (FcNoticeFoundries) / sizeof (FcNoticeFoundries[0]))
 
 static const FcChar8 *
-FcNoticeFoundry(const char *notice)
+FcNoticeFoundry(const FT_String *notice)
 {
     int i;
 
@@ -194,7 +197,7 @@ FcNoticeFoundry(const char *notice)
 }
 
 static FcBool
-FcVendorMatch(const char *vendor, const char *vendor_string)
+FcVendorMatch(const FT_Char vendor[4], const FT_Char *vendor_string)
 {
     /* vendor is not necessarily NUL-terminated. */
     int i, len;
@@ -214,44 +217,44 @@ FcVendorMatch(const char *vendor, const char *vendor_string)
    entries for padding both with spaces and NULs. */
 
 static const struct {
-    const FcChar8   *vendor;
+    const FT_Char   *vendor;
     const FcChar8   *foundry;
 } FcVendorFoundries[] = {
-    { (const FcChar8*) "ADBE", (const FcChar8 *) "adobe"},
-    { (const FcChar8*) "AGFA", (const FcChar8 *) "agfa"},
-    { (const FcChar8*) "ALTS", (const FcChar8 *) "altsys"},
-    { (const FcChar8*) "APPL", (const FcChar8 *) "apple"},
-    { (const FcChar8*) "ARPH", (const FcChar8 *) "arphic"},
-    { (const FcChar8*) "ATEC", (const FcChar8 *) "alltype"},
-    { (const FcChar8*) "B&H",  (const FcChar8 *) "b&h"},
-    { (const FcChar8*) "BITS", (const FcChar8 *) "bitstream"},
-    { (const FcChar8*) "CANO", (const FcChar8 *) "cannon"},
-    { (const FcChar8*) "DYNA", (const FcChar8 *) "dynalab"},
-    { (const FcChar8*) "EPSN", (const FcChar8 *) "epson"},
-    { (const FcChar8*) "FJ",   (const FcChar8 *) "fujitsu"},
-    { (const FcChar8*) "IBM",  (const FcChar8 *) "ibm"},
-    { (const FcChar8*) "ITC",  (const FcChar8 *) "itc"},
-    { (const FcChar8*) "IMPR", (const FcChar8 *) "impress"},
-    { (const FcChar8*) "LARA", (const FcChar8 *) "larabiefonts"},
-    { (const FcChar8*) "LEAF", (const FcChar8 *) "interleaf"},
-    { (const FcChar8*) "LETR", (const FcChar8 *) "letraset"},
-    { (const FcChar8*) "LINO", (const FcChar8 *) "linotype"},
-    { (const FcChar8*) "MACR", (const FcChar8 *) "macromedia"},
-    { (const FcChar8*) "MONO", (const FcChar8 *) "monotype"},
-    { (const FcChar8*) "MS",   (const FcChar8 *) "microsoft"},
-    { (const FcChar8*) "MT",   (const FcChar8 *) "monotype"},
-    { (const FcChar8*) "NEC",  (const FcChar8 *) "nec"},
-    { (const FcChar8*) "PARA", (const FcChar8 *) "paratype"},
-    { (const FcChar8*) "QMSI", (const FcChar8 *) "qms"},
-    { (const FcChar8*) "RICO", (const FcChar8 *) "ricoh"},
-    { (const FcChar8*) "URW",  (const FcChar8 *) "urw"},
-    { (const FcChar8*) "Y&Y",  (const FcChar8 *) "y&y"}
+    { (const FT_Char *) "ADBE", (const FcChar8 *) "adobe"},
+    { (const FT_Char *) "AGFA", (const FcChar8 *) "agfa"},
+    { (const FT_Char *) "ALTS", (const FcChar8 *) "altsys"},
+    { (const FT_Char *) "APPL", (const FcChar8 *) "apple"},
+    { (const FT_Char *) "ARPH", (const FcChar8 *) "arphic"},
+    { (const FT_Char *) "ATEC", (const FcChar8 *) "alltype"},
+    { (const FT_Char *) "B&H",  (const FcChar8 *) "b&h"},
+    { (const FT_Char *) "BITS", (const FcChar8 *) "bitstream"},
+    { (const FT_Char *) "CANO", (const FcChar8 *) "cannon"},
+    { (const FT_Char *) "DYNA", (const FcChar8 *) "dynalab"},
+    { (const FT_Char *) "EPSN", (const FcChar8 *) "epson"},
+    { (const FT_Char *) "FJ",   (const FcChar8 *) "fujitsu"},
+    { (const FT_Char *) "IBM",  (const FcChar8 *) "ibm"},
+    { (const FT_Char *) "ITC",  (const FcChar8 *) "itc"},
+    { (const FT_Char *) "IMPR", (const FcChar8 *) "impress"},
+    { (const FT_Char *) "LARA", (const FcChar8 *) "larabiefonts"},
+    { (const FT_Char *) "LEAF", (const FcChar8 *) "interleaf"},
+    { (const FT_Char *) "LETR", (const FcChar8 *) "letraset"},
+    { (const FT_Char *) "LINO", (const FcChar8 *) "linotype"},
+    { (const FT_Char *) "MACR", (const FcChar8 *) "macromedia"},
+    { (const FT_Char *) "MONO", (const FcChar8 *) "monotype"},
+    { (const FT_Char *) "MS",   (const FcChar8 *) "microsoft"},
+    { (const FT_Char *) "MT",   (const FcChar8 *) "monotype"},
+    { (const FT_Char *) "NEC",  (const FcChar8 *) "nec"},
+    { (const FT_Char *) "PARA", (const FcChar8 *) "paratype"},
+    { (const FT_Char *) "QMSI", (const FcChar8 *) "qms"},
+    { (const FT_Char *) "RICO", (const FcChar8 *) "ricoh"},
+    { (const FT_Char *) "URW",  (const FcChar8 *) "urw"},
+    { (const FT_Char *) "Y&Y",  (const FcChar8 *) "y&y"}
 };
 
 #define NUM_VENDOR_FOUNDRIES	(sizeof (FcVendorFoundries) / sizeof (FcVendorFoundries[0]))
 
 static const FcChar8 *
-FcVendorFoundry(const char *vendor)
+FcVendorFoundry(const FT_Char vendor[4])
 {
     int i;
     
@@ -263,8 +266,8 @@ FcVendorFoundry(const char *vendor)
 }
 
 typedef struct _FcStringConst {
-    const char	*name;
-    int		value;
+    const FcChar8   *name;
+    int		    value;
 } FcStringConst;
 
 static int
@@ -361,7 +364,7 @@ FcGetPixelSize (FT_Face face, int i)
 #if HAVE_FT_BITMAP_SIZE_Y_PPEM
     return (double) face->available_sizes[i].y_ppem / 64.0;
 #else
-    return (double) face->available_sizes[i].height / 64.0;
+    return (double) face->available_sizes[i].height;
 #endif
 }
 
@@ -670,7 +673,7 @@ FcFreeTypeQuery (const FcChar8	*file,
         case TT_NAME_ID_MANUFACTURER:
 	    /* If the foundry wasn't found in the OS/2 table, look here */
             if(!foundry)
-                foundry = FcNoticeFoundry(utf8);
+                foundry = FcNoticeFoundry((FT_String *) utf8);
             break;
 	}
 	if (utf8)

@@ -1,3 +1,33 @@
+2004-04-14  Keith Packard  <keithp@keithp.com>
+
+	* INSTALL:
+	Add instructions for doing a release
+	
+	* fontconfig.spec.in:
+	clean up .spec file; perhaps this will be useful to somebody...
+
+	* README:
+	* configure.in:
+	* fontconfig/fontconfig.h:
+	Update to 2.2.93
+	
+	* fc-lang/fc-lang.c:
+	Make 'scanopen' static so GCC doesn't whine about lacking prototype
+	
+	* fc-glyphname/Makefile.am:
+	* fc-lang/Makefile.am:
+	* fc-list/Makefile.am:
+	* fc-match/Makefile.am:
+	* src/Makefile.am:
+	Add WARN_CFLAGS to pass -W flags for GCC systems
+	
+	* src/fcfreetype.c: (FcNoticeFoundry), (FcVendorMatch),
+	(FcVendorFoundry), (FcGetPixelSize), (FcFreeTypeQuery):
+	Change various char types around to match across
+	function calls.
+	Fixed bug in using available_sizes[i].height which 
+	is in pixels, not 64ths of a pixel.
+
 2004-03-06  Keith Packard  <keithp@keithp.com>
 
 	* src/fcfreetype.c: (FcFreeTypeQuery):

@@ -1,7 +1,30 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.2
-		        2003-3-1
+		      Version 2.2.92
+		        2004-2-19
+
+2.2.93
+
+This is the third prerelease of fontconfig 2.3.  Significant changes from
+2.2.92 are:
+
+ o	Use new FreeType #include syntax
+ o	use y_ppem field instead of 'height' in bitmap sizes rec -
+ 	FreeType changed the semantics.  Still uses height for
+	older versions of FreeType
+ o	Don't construct program manuals unless docbook is available
+
+2.2.92
+
+ o	make distcheck work
+
+2.2.91
+
+ o	Switch to SGML manuals
+ o	Add FC_DUAL width spacing value
+ o	Add FcFini to close out fontconfig and release all memory
+ 
+2.2
 
 This is the third public release of fontconfig, a font configuration and
 customization library.  Fontconfig is designed to locate fonts within the

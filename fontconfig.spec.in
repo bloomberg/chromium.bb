@@ -38,22 +38,31 @@ header files, and developer docs for the fontconfig package.
 Install fontconfig-devel if you want to develop programs which 
 will use fontconfig.
 
+# Some rpm specific directories. Prefix 'my' hopefully does not collide with anything.
+%define my_docdir         %{_datadir}/doc/%{name}-%{version}
+%define my_develdocdir    %{_datadir}/doc/%{name}-devel-%{version}
+%define my_tmpdocdir      $RPM_BUILD_ROOT%{my_docdir}
+%define my_tmpdeveldocdir $RPM_BUILD_ROOT%{my_develdocdir}
+
 %prep
 %setup -q
 
 %build
-%configure --with-x-fonts=/usr/X11R6/lib/X11/fonts --disable-gtk-doc --disable-docs
+%configure --with-x-fonts=/usr/X11R6/lib/X11/fonts --disable-gtk-doc \
+	--with-docdir=%{my_docdir}
 make %{_smp_mflags}
 
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 {
-  %makeinstall
-  # fontconfig is currently installing these in improper location for RPM
-  # based Linux distributions, so we remove what it installs here, and let
-  # RPM pick up the same files with 'doc' directives in the file lists as
-  # a workaround
-  rm -rf $RPM_BUILD_ROOT/%{_datadir}/doc/fontconfig
+  %makeinstall docdir=%{my_tmpdocdir} 
+
+  # The make does not distinguish the base and devel packages
+  mkdir -p %{my_tmpdeveldocdir}
+  mv -f %{my_tmpdocdir}/*devel* %{my_tmpdeveldocdir}
+
+  # Use a more informative directory name:
+  mv -f %{my_tmpdeveldocdir}/fontconfig-devel %{my_tmpdeveldocdir}/html
 }
 
 %clean
@@ -70,20 +79,23 @@ make %{_smp_mflags}
 
 %files
 %defattr(-, root, root)
-%doc README AUTHORS COPYING ChangeLog doc/fontconfig-*.{html,txt}
+%doc README AUTHORS COPYING ChangeLog doc/fontconfig-user.{html,txt}
+%{my_docdir}/*
 %dir %{_sysconfdir}/fonts
 %{_sysconfdir}/fonts/fonts.conf
 %{_sysconfdir}/fonts/fonts.dtd
 %config %{_sysconfdir}/fonts/local.conf
 %{_bindir}/fc-*
 %{_libdir}/libfontconfig*.so.*
+%{_mandir}/man1/*
 %{_mandir}/man5/*
 
 %files devel
 %defattr(-, root, root)
-%doc doc/fontconfig-devel.txt doc/fontconfig-devel/*
+#%doc doc/fontconfig-devel.txt doc/fontconfig-devel/*
+%{my_develdocdir}
 %dir %{_includedir}/fontconfig
-%{_includedir}/fontconfig
+%{_includedir}/fontconfig/*
 %{_libdir}/*.a
 %{_libdir}/*.la
 %{_libdir}/libfontconfig.so
@@ -91,6 +103,16 @@ make %{_smp_mflags}
 %{_mandir}/man3/*
 
 %changelog
+* Wed Mar 20 2004 Enrique Perez-Terron <enrio@online.no>
+- Added mandir /man1/* to main file list
+- Added missing '/*' after includedir/fontconfig to avoid "listed twice" error.
+- Removed configure option --disable-docs since its problem is solved, see below.
+- Added option to makeinstall to have it install docs in the proper directory.
+  Notice though that the %doc macro deletes and recreates the docs directory.
+- Cleaner separation of devel docs.
+- Renamed doc/fontconfig-devel-*/fontconfig-devel subdirectory to 'html'.
+- Removed %doc macro from devel filelist, since it deletes installed files.
+
 * Fri Mar  7 2003 Mike A. Harris <mharris@redhat.com> 2.1.92-1
 - Removed man1/* and added man5/* to main package and man3/* to devel package
 - Added missing defattr(-, root, root) to main package

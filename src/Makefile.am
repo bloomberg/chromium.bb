@@ -44,6 +44,7 @@ endif
 INCLUDES = 						\
 	$(FREETYPE_CFLAGS)				\
 	$(EXPAT_CFLAGS)					\
+	$(WARN_CFLAGS)					\
 	-DFONTCONFIG_PATH='"$(CONFDIR)"'		\
 	-I$(top_srcdir)					\
 	-I$(top_srcdir)/src

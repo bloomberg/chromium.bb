@@ -77,7 +77,7 @@ get_line (FILE *f, char *line, int *lineno)
 
 char	*dir = 0;
 
-FILE *
+static FILE *
 scanopen (char *file)
 {
     FILE    *f;

@@ -33,7 +33,8 @@ dnl This is the package version number, not the shared library
 dnl version.  This same version number must appear in fontconfig/fontconfig.h
 dnl Yes, it is a pain to synchronize version numbers.  Unfortunately, it's
 dnl not possible to extract the version number here from fontconfig.h
-AM_INIT_AUTOMAKE(fontconfig, 2.2.92)
+AM_INIT_AUTOMAKE(fontconfig, 2.2.93)
+AM_MAINTAINER_MODE
 
 dnl libtool versioning
 
@@ -75,6 +76,15 @@ if test "$os_win32" = "yes"; then
   AC_CHECK_PROG(ms_librarian, lib.exe, yes, no)
 fi
 AM_CONDITIONAL(MS_LIB_AVAILABLE, test x$ms_librarian = xyes)
+
+WARN_CFLAGS=""
+
+if test "x$GCC" = "xyes"; then
+	WARN_CFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes \
+	-Wmissing-prototypes -Wmissing-declarations \
+	-Wnested-externs -fno-strict-aliasing"
+fi
+AC_SUBST(WARN_CFLAGS)
 
 dnl ==========================================================================
 
@@ -132,6 +142,8 @@ AC_CHECK_MEMBER(FT_Bitmap_Size.y_ppem,
 #include FT_FREETYPE_H])
 AC_DEFINE_UNQUOTED(HAVE_FT_BITMAP_SIZE_Y_PPEM,$HAVE_FT_BITMAP_SIZE_Y_PPEM,
 		   [FT_Bitmap_Size structure includes y_ppem field])
+CFLAGS="$fontconfig_save_cflags"
+LIBS="$fontconfig_save_libs"
 
 #
 # Check expat configuration

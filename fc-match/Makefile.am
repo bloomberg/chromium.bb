@@ -25,7 +25,7 @@ bin_PROGRAMS=fc-match
 
 man_MANS=fc-match.1
 
-INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
+INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
 EXTRA_DIST=$(man_MANS)
 
