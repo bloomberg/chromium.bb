@@ -1,7 +1,7 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.30 2002/09/26 00:17:27 keithp Exp $
+ * $RCSId: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.30 2002/09/26 00:17:27 keithp Exp $
  *
- * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
+ * Copyright © 2001 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -460,6 +460,9 @@ FcLangResult
 FcLangSetCompare (const FcLangSet *lsa, const FcLangSet *lsb);
 
 FcBool
+FcLangSetContains (const FcLangSet *lsa, const FcLangSet *lsb);
+
+FcBool
 FcLangSetEqual (const FcLangSet *lsa, const FcLangSet *lsb);
 
 FcChar32
@@ -703,7 +706,9 @@ FcStrCopy (const FcChar8 *s);
 FcChar8 *
 FcStrCopyFilename (const FcChar8 *s);
     
-#define FcToLower(c)	(('A' <= (c) && (c) <= 'Z') ? (c) - 'A' + 'a' : (c))
+#define FcIsUpper(c)	(('A' <= (c) && (c) <= 'Z'))
+#define FcIsLower(c)	(('a' <= (c) && (c) <= 'z'))
+#define FcToLower(c)	(FcIsUpper(c) ? (c) - 'A' + 'a' : (c))
 
 int
 FcStrCmpIgnoreCase (const FcChar8 *s1, const FcChar8 *s2);
