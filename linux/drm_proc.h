@@ -132,7 +132,6 @@ struct proc_dir_entry *DRM(proc_init)(drm_device_t *dev, int minor,
 /**
  * Cleanup the proc filesystem resources.
  *
- * \param dev DRM device.
  * \param minor device minor number.
  * \param root DRI proc dir entry.
  * \param dev_root DRI device proc dir entry.
@@ -158,7 +157,7 @@ int DRM(proc_cleanup)(int minor, struct proc_dir_entry *root,
 }
 
 /**
- * Called when "/proc/dri/<dev>/name" is read.
+ * Called when "/proc/dri/.../name" is read.
  * 
  * \param buf output buffer.
  * \param start start of output data.
@@ -197,7 +196,7 @@ static int DRM(name_info)(char *buf, char **start, off_t offset, int request,
 }
 
 /**
- * Called when "/proc/dri/<dev>/vm" is read.
+ * Called when "/proc/dri/.../vm" is read.
  * 
  * \param buf output buffer.
  * \param start start of output data.
@@ -278,7 +277,7 @@ static int DRM(vm_info)(char *buf, char **start, off_t offset, int request,
 }
 
 /**
- * Called when "/proc/dri/<dev>/queues" is read.
+ * Called when "/proc/dri/.../queues" is read.
  * 
  * \param buf output buffer.
  * \param start start of output data.
@@ -348,7 +347,7 @@ static int DRM(queues_info)(char *buf, char **start, off_t offset, int request,
 }
 
 /**
- * Called when "/proc/dri/<dev>/bufs" is read.
+ * Called when "/proc/dri/.../bufs" is read.
  * 
  * \param buf output buffer.
  * \param start start of output data.
@@ -418,7 +417,7 @@ static int DRM(bufs_info)(char *buf, char **start, off_t offset, int request,
 }
 
 /**
- * Called when "/proc/dri/<dev>/clients" is read.
+ * Called when "/proc/dri/.../clients" is read.
  * 
  * \param buf output buffer.
  * \param start start of output data.

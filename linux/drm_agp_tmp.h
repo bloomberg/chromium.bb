@@ -47,13 +47,15 @@ static const drm_agp_t *drm_agp = NULL;
 
 
 /**********************************************************************/
-/** \name drm_agp wrappers
+/** 
+ * \name drm_agp wrappers
  *
  * These functions are thin wrappers around the respective methods in drm_agp
  * which are exposed by the AGPGART module.
  *
- * \todo Put these in a header inline.
  */
+/* TODO: Put these in a header inline. */
+/*@{*/
 
 /**
  * Acquire the AGP device.
@@ -139,6 +141,7 @@ int DRM(agp_unbind_memory)(agp_memory *handle)
 
 /**********************************************************************/
 /** \name Ioctl's */
+/*@{*/
 
 /**
  * Acquire the AGP device.
@@ -272,7 +275,7 @@ int DRM(agp_enable_ioctl)(struct inode *inode, struct file *filp,
  * \return zero on success or a negative number on failure.
  * 
  * Verifies the AGP device is present and has been acquired, allocates the
- * memory via alloc_agp() and creates a drm_agp_mem entry for it.
+ * memory via agp_alloc() and creates a drm_agp_mem entry for it.
  */
 int DRM(agp_alloc_ioctl)(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
@@ -353,7 +356,7 @@ static drm_agp_mem_t *DRM(agp_lookup_entry)(drm_device_t *dev,
  * \return zero on success or a negative number on failure.
  *
  * Verifies the AGP device is present and acquired, looks-up the AGP memory
- * entry and passes it to the unbind_agp() function.
+ * entry and passes it to the agp_unbind() function.
  */
 int DRM(agp_unbind_ioctl)(struct inode *inode, struct file *filp,
 		    unsigned int cmd, unsigned long arg)
@@ -387,7 +390,7 @@ int DRM(agp_unbind_ioctl)(struct inode *inode, struct file *filp,
  *
  * Verifies the AGP device is present and has been acquired and that no memory
  * is currently bound into the GATT. Looks-up the AGP memory entry and passes
- * it to bind_agp() function.
+ * it to agp_bind() function.
  */
 int DRM(agp_bind_ioctl)(struct inode *inode, struct file *filp,
 		  unsigned int cmd, unsigned long arg)
@@ -425,7 +428,7 @@ int DRM(agp_bind_ioctl)(struct inode *inode, struct file *filp,
  *
  * Verifies the AGP device is present and has been acquired and looks up the
  * AGP memory entry. If the memory it's currently bound, unbind it via
- * unbind_agp(). Frees it via free_agp() as well as the entry itself
+ * agp_unbind(). Frees it via agp_free() as well as the entry itself
  * and unlinks from the doubly linked list it's inserted in.
  */
 int DRM(agp_free_ioctl)(struct inode *inode, struct file *filp,
