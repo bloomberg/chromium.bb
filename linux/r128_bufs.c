@@ -36,7 +36,7 @@
 #include "linux/un.h"
 
 
-#ifdef DRM_AGP
+#ifdef CONFIG_DRM_AGP
 int r128_addbufs_agp(struct inode *inode, struct file *filp, unsigned int cmd,
 		     unsigned long arg)
 {
@@ -199,7 +199,7 @@ int r128_addbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 			   sizeof(request),
 			   -EFAULT);
 
-#ifdef DRM_AGP
+#ifdef CONFIG_DRM_AGP
 	if (request.flags & _DRM_AGP_BUFFER)
 		return r128_addbufs_agp(inode, filp, cmd, arg);
 	else

@@ -277,10 +277,8 @@ static int gamma_takedown(drm_device_t *dev)
 					       DRM_MEM_SAREA);
 				break;
 			case _DRM_AGP:
-#ifdef DRM_AGP
 				/* Do nothing here, because this is all
                                    handled in the AGP/GART driver. */
-#endif
 				break;
 			}
 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);

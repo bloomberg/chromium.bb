@@ -197,7 +197,7 @@ void drm_free(void *pt, size_t size, int area)
 	int free_count;
 	
 	if (!pt) DRM_MEM_ERROR(area, "Attempt to free NULL pointer\n");
-	else	 kfree(pt, size);
+	else	 kfree(pt);
 	spin_lock(&drm_mem_lock);
 	drm_mem_stats[area].bytes_freed += size;
 	free_count  = ++drm_mem_stats[area].free_count;
@@ -330,7 +330,7 @@ void drm_ioremapfree(void *pt, unsigned long size)
 	}
 }
 
-#ifdef DRM_AGP
+#ifdef CONFIG_DRM_AGP
 agp_memory *drm_alloc_agp(int pages, u32 type)
 {
 	agp_memory *handle;

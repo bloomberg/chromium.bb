@@ -94,7 +94,7 @@ static drm_ioctl_desc_t	      tdfx_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	     = { tdfx_lock,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]     = { tdfx_unlock,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]     = { drm_finish,	  1, 0 },
-#ifdef DRM_AGP
+#ifdef CONFIG_DRM_AGP
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)]   = {drm_agp_acquire, 1, 1},
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)]   = {drm_agp_release, 1, 1},
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]    = {drm_agp_enable,  1, 1},
@@ -230,7 +230,7 @@ static int tdfx_takedown(drm_device_t *dev)
 		}
 		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
 	}
-#ifdef DRM_AGP
+#ifdef CONFIG_DRM_AGP
 				/* Clear AGP information */
 	if (dev->agp) {
 		drm_agp_mem_t *temp;
@@ -330,7 +330,7 @@ int tdfx_init(void)
 
 	drm_mem_init();
 	drm_proc_init(dev);
-#ifdef DRM_AGP
+#ifdef CONFIG_DRM_AGP
 	dev->agp    = drm_agp_init();
 #endif
 	if((retcode = drm_ctxbitmap_init(dev))) {
@@ -368,7 +368,7 @@ void tdfx_cleanup(void)
 	}
 	drm_ctxbitmap_cleanup(dev);
 	tdfx_takedown(dev);
-#ifdef DRM_AGP
+#ifdef CONFIG_DRM_AGP
 	if (dev->agp) {
 		drm_agp_uninit();
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
