@@ -38,6 +38,7 @@
 #include "i810_drv.h"
 #include <linux/interrupt.h>	/* For task queue support */
 #include <linux/delay.h>
+#include <linux/pagemap.h>
 
 #ifdef DO_MUNMAP_4_ARGS
 #define DO_MUNMAP(m, a, l)	do_munmap(m, a, l, 1)
@@ -1184,7 +1185,8 @@ int i810_ov0_info(struct inode *inode, struct file *filp,
 
 	data.offset = dev_priv->overlay_offset;
 	data.physical = dev_priv->overlay_physical;
-	copy_to_user((drm_i810_overlay_t *)arg,&data,sizeof(data));
+	if (copy_to_user((drm_i810_overlay_t *)arg,&data,sizeof(data)))
+		return -EFAULT;
 	return 0;
 }
 
