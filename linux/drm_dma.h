@@ -445,7 +445,7 @@ static int DRM(dma_get_buffers_of_order)(struct file *filp, drm_dma_t *d,
 					d->flags & _DRM_DMA_WAIT);
 		if (!buf) break;
 		if (buf->pending || buf->waiting) {
-			DRM_ERROR("Free buffer %d in use by %x (w%d, p%d)\n",
+			DRM_ERROR("Free buffer %d in use: filp %p (w%d, p%d)\n",
 				  buf->idx,
 				  buf->filp,
 				  buf->waiting,
