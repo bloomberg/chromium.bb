@@ -197,7 +197,7 @@ void drm_free(void *pt, size_t size, int area)
 	int free_count;
 	
 	if (!pt) DRM_MEM_ERROR(area, "Attempt to free NULL pointer\n");
-	else	 kfree_s(pt, size);
+	else	 kfree(pt, size);
 	spin_lock(&drm_mem_lock);
 	drm_mem_stats[area].bytes_freed += size;
 	free_count  = ++drm_mem_stats[area].free_count;
