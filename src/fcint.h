@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.16 2002/07/06 23:47:44 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.21 2002/07/31 01:36:37 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -359,9 +359,6 @@ FcGlobalCacheUpdate (FcGlobalCache  *cache,
 FcBool
 FcGlobalCacheSave (FcGlobalCache    *cache,
 		   const FcChar8    *cache_file);
-
-FcBool
-FcDirCacheValid (const FcChar8 *cache_file);
 
 FcBool
 FcDirCacheReadDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir);

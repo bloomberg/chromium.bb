@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.21 2002/07/11 02:47:50 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.23 2002/07/28 10:50:58 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -200,6 +200,9 @@ typedef struct _FcStrList   FcStrList;
 typedef struct _FcStrSet    FcStrSet;
 
 _FCFUNCPROTOBEGIN
+
+FcBool
+FcDirCacheValid (const FcChar8 *cache_file);
 
 /* fcblanks.c */
 FcBlanks *
