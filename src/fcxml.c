@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.2 2002/02/15 06:01:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.3 2002/02/18 22:29:28 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1180,7 +1180,7 @@ FcParseInclude (FcConfigParse *parse)
     i = FcConfigGetAttribute (parse, "ignore_missing");
     if (i && FcConfigLexBool ((FcChar8 *) i) == FcTrue)
 	ignore_missing = FcTrue;
-    if (!FcConfigParseAndLoad (parse->config, s, ignore_missing))
+    if (!FcConfigParseAndLoad (parse->config, s, !ignore_missing))
 	parse->error = FcTrue;
     free (s);
 }
