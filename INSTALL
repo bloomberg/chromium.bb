@@ -1,6 +1,6 @@
 Fontconfig is built with the traditional configure script:
 
-	$ ./configure --sysconfdir=/etc --prefix=/usr
+	$ ./configure --sysconfdir=/etc --prefix=/usr --mandir=/usr/share/man
 
 This should generate valid Makefiles, then:
 
