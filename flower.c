@@ -157,6 +157,9 @@ int main(int argc, char *argv[])
 	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
+	/* Process connection events. */
+	wl_display_iterate(display, WL_DISPLAY_READABLE);
+
 	flower.compositor = wl_display_get_compositor(display);
 	flower.x = 512;
 	flower.y = 384;
