@@ -38,8 +38,8 @@ EXPORT_SYMBOL(tdfx_init);
 EXPORT_SYMBOL(tdfx_cleanup);
 
 #define TDFX_NAME	 "tdfx"
-#define TDFX_DESC	 "tdfx"
-#define TDFX_DATE	 "19991009"
+#define TDFX_DESC	 "3dfx Banshee/Voodoo3+"
+#define TDFX_DATE	 "20000719"
 #define TDFX_MAJOR	 1
 #define TDFX_MINOR	 0
 #define TDFX_PATCHLEVEL  0

@@ -37,8 +37,8 @@ EXPORT_SYMBOL(r128_init);
 EXPORT_SYMBOL(r128_cleanup);
 
 #define R128_NAME	 "r128"
-#define R128_DESC	 "r128"
-#define R128_DATE	 "20000607"
+#define R128_DESC	 "ATI Rage 128"
+#define R128_DATE	 "20000719"
 #define R128_MAJOR	 1
 #define R128_MINOR	 0
 #define R128_PATCHLEVEL  0
