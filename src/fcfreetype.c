@@ -970,11 +970,11 @@ FcFreeTypeQuery (const FcChar8	*file,
        the property */
     if(MY_Get_BDF_Property(face, "SPACING", &prop) == 0 &&
        prop.type == BDF_PROPERTY_TYPE_ATOM) {
-        if(strcmp(prop.u.atom, "c") || strcmp(prop.u.atom, "C"))
+        if(!strcmp(prop.u.atom, "c") || !strcmp(prop.u.atom, "C"))
             spacing = FC_CHARCELL;
-        else if(strcmp(prop.u.atom, "m") || strcmp(prop.u.atom, "M"))
+        else if(!strcmp(prop.u.atom, "m") || !strcmp(prop.u.atom, "M"))
             spacing = FC_MONO;
-        else if(strcmp(prop.u.atom, "p") || strcmp(prop.u.atom, "P"))
+        else if(!strcmp(prop.u.atom, "p") || !strcmp(prop.u.atom, "P"))
             spacing = FC_PROPORTIONAL;
     }
 #endif
