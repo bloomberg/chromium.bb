@@ -51,8 +51,8 @@ obj-$(CONFIG_DRM_R128)  += r128.o  $(r128-objs)
 obj-$(CONFIG_DRM_FFB)   += ffb.o   $(ffb-objs)
 
 ifneq ($CONFIG_AGP),)
-obj-$(CONFIG_DRM_MGA)   += mga.o   $(mga-objs) $(lib-objs)
-obj-$(CONFIG_DRM_I810)  += i810.o  $(i810-objs) $(lib-objs)
+obj-$(CONFIG_DRM_MGA)   += mga.o   $(mga-objs)
+obj-$(CONFIG_DRM_I810)  += i810.o  $(i810-objs)
 endif
 
 # Take module names out of obj-y and int-m
