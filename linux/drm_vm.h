@@ -46,10 +46,10 @@
  * Find the right map and if it's AGP memory find the real physical page to
  * map, get the page, increment the use count and return it.
  */
+#if __OS_HAS_AGP
 static __inline__ struct page *DRM(do_vm_nopage)(struct vm_area_struct *vma,
 						 unsigned long address)
 {
-#if __OS_HAS_AGP
 	drm_file_t *priv  = vma->vm_file->private_data;
 	drm_device_t *dev = priv->dev;
 	drm_map_t *map    = NULL;
@@ -59,7 +59,7 @@ static __inline__ struct page *DRM(do_vm_nopage)(struct vm_area_struct *vma,
 	/*
          * Find the right map
          */
-	if (!drm_core_check_feature(dev, DRIVER_USE_AGP))
+	if (!drm_core_has_AGP(dev))
 		goto vm_nopage_error;
 
 	if(!dev->agp || !dev->agp->cant_use_aperture) goto vm_nopage_error;
@@ -112,10 +112,15 @@ static __inline__ struct page *DRM(do_vm_nopage)(struct vm_area_struct *vma,
 		return page;
         }
 vm_nopage_error:
-#endif /* __OS_HAS_AGP */
-
 	return NOPAGE_SIGBUS;		/* Disallow mremap */
 }
+#else /* __OS_HAS_AGP */
+static __inline__ struct page *DRM(do_vm_nopage)(struct vm_area_struct *vma,
+						 unsigned long address)
+{
+	return NOPAGE_SIGBUS;
+}
+#endif /* __OS_HAS_AGP */
 
 /**
  * \c nopage method for shared virtual memory.
@@ -206,15 +211,13 @@ void DRM(vm_shm_close)(struct vm_area_struct *vma)
 			switch (map->type) {
 			case _DRM_REGISTERS:
 			case _DRM_FRAME_BUFFER:
-#if __OS_HAS_MTRR
-			  if (drm_core_check_feature(dev, DRIVER_USE_MTRR) && map->mtrr >= 0) {
+				if (drm_core_has_MTRR(dev) && map->mtrr >= 0) {
 					int retcode;
 					retcode = mtrr_del(map->mtrr,
 							   map->offset,
 							   map->size);
 					DRM_DEBUG("mtrr_del = %d\n", retcode);
 				}
-#endif
 				DRM(ioremapfree)(map->handle, map->size, dev);
 				break;
 			case _DRM_SHM:
@@ -583,8 +586,7 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 
 	switch (map->type) {
         case _DRM_AGP:
-#if __OS_HAS_AGP
-	  if (drm_core_check_feature(dev, DRIVER_USE_AGP) && dev->agp->cant_use_aperture) {
+	  if (drm_core_has_AGP(dev) && dev->agp->cant_use_aperture) {
                 /*
                  * On some platforms we can't talk to bus dma address from the CPU, so for
                  * memory of type DRM_AGP, we'll deal with sorting out the real physical
@@ -596,7 +598,6 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
                 vma->vm_ops = &DRM(vm_ops);
                 break;
 	  }
-#endif
                 /* fall through to _DRM_FRAME_BUFFER... */        
 	case _DRM_FRAME_BUFFER:
 	case _DRM_REGISTERS:

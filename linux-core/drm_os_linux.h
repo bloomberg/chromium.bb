@@ -47,12 +47,37 @@ typedef void irqreturn_t;
 #endif
 
 /** AGP types */
+#if __OS_HAS_AGP
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,70)
 #define DRM_AGP_MEM		agp_memory
 #define DRM_AGP_KERN		agp_kern_info
 #else
 #define DRM_AGP_MEM		struct agp_memory
 #define DRM_AGP_KERN		struct agp_kern_info
+#endif
+#else
+/* define some dummy types for non AGP supporting kernels */
+struct no_agp_kern {
+	unsigned long aper_base;
+	unsigned long aper_size;
+};
+#define DRM_AGP_MEM		int
+#define DRM_AGP_KERN		struct no_agp_kern
+#endif
+
+#if !(__OS_HAS_MTRR)
+static __inline__ int mtrr_add (unsigned long base, unsigned long size,
+				unsigned int type, char increment)
+{
+	return -ENODEV;
+}
+
+static __inline__ int mtrr_del (int reg, unsigned long base,
+				unsigned long size)
+{
+	return -ENODEV;
+}
+#define MTRR_TYPE_WRCOMB     1
 #endif
 
 /** Task queue handler arguments */

@@ -83,6 +83,9 @@
 #include <asm/pgalloc.h>
 #include "drm.h"
 
+#define __OS_HAS_AGP (defined(CONFIG_AGP) || (defined(CONFIG_AGP_MODULE) && defined(MODULE)))
+#define __OS_HAS_MTRR (defined(CONFIG_MTRR))
+
 #include "drm_os_linux.h"
 
 /* If you want the memory alloc debug functionality, change define below */
@@ -104,10 +107,7 @@
 #define DRIVER_IRQ_VBL     0x200
 #define DRIVER_DMA_QUEUE   0x800
 
-#define __OS_HAS_AGP (defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE))
-#define __OS_HAS_MTRR (defined(CONFIG_MTRR))
 /*@}*/
-
 
 /***********************************************************************/
 /** \name Begin the DRM... */
@@ -431,7 +431,6 @@ typedef struct drm_device_dma {
 	/*@}*/
 } drm_device_dma_t;
 
-#if __OS_HAS_AGP
 /** 
  * AGP memory entry.  Stored as a doubly linked list.
  */
@@ -460,7 +459,6 @@ typedef struct drm_agp_head {
 	int		   cant_use_aperture;
 	unsigned long	   page_mask;
 } drm_agp_head_t;
-#endif
 
 /**
  * Scatter-gather memory.
@@ -654,9 +652,7 @@ typedef struct drm_device {
 	wait_queue_head_t buf_readers;	/**< Processes waiting to read */
 	wait_queue_head_t buf_writers;	/**< Processes waiting to ctx switch */
 
-#if __OS_HAS_AGP
 	drm_agp_head_t    *agp;	/**< AGP data */
-#endif
 
 	struct pci_dev    *pdev;	/**< PCI device structure */
 	int               pci_domain;	/**< PCI bus domain number */
@@ -687,6 +683,24 @@ static __inline__ int drm_core_check_feature(struct drm_device *dev, int feature
 {
 	return ((dev->driver_features & feature) ? 1 : 0);
 }
+
+#if __OS_HAS_AGP
+static inline int drm_core_has_AGP(struct drm_device *dev)
+{
+  return drm_core_check_feature(dev, DRIVER_USE_AGP);
+}
+#else
+#define drm_core_has_AGP(dev) (0)
+#endif
+
+#if __OS_HAS_MTRR
+static inline int drm_core_has_MTRR(struct drm_device *dev)
+{
+  return drm_core_check_feature(dev, DRIVER_USE_MTRR);
+}
+#else
+#define drm_core_has_MTRR(dev) (0)
+#endif
 
 extern void DRM(driver_register_fns)(struct drm_device *dev);
 
@@ -744,12 +758,10 @@ extern void	     *DRM(ioremap_nocache)(unsigned long offset, unsigned long size,
 					   drm_device_t *dev);
 extern void	     DRM(ioremapfree)(void *pt, unsigned long size, drm_device_t *dev);
 
-#if __OS_HAS_AGP
 extern DRM_AGP_MEM   *DRM(alloc_agp)(int pages, u32 type);
 extern int           DRM(free_agp)(DRM_AGP_MEM *handle, int pages);
 extern int           DRM(bind_agp)(DRM_AGP_MEM *handle, unsigned int start);
 extern int           DRM(unbind_agp)(DRM_AGP_MEM *handle);
-#endif
 
 				/* Misc. IOCTL support (drm_ioctl.h) */
 extern int	     DRM(irq_by_busid)(struct inode *inode, struct file *filp,
@@ -866,7 +878,6 @@ extern int           DRM(vblank_wait)(drm_device_t *dev, unsigned int *vbl_seq);
 extern void          DRM(vbl_send_signals)( drm_device_t *dev );
 
 
-#if __OS_HAS_AGP
 				/* AGP/GART support (drm_agpsupport.h) */
 extern drm_agp_head_t *DRM(agp_init)(void);
 extern void           DRM(agp_uninit)(void);
@@ -891,7 +902,6 @@ extern DRM_AGP_MEM    *DRM(agp_allocate_memory)(size_t pages, u32 type);
 extern int            DRM(agp_free_memory)(DRM_AGP_MEM *handle);
 extern int            DRM(agp_bind_memory)(DRM_AGP_MEM *handle, off_t start);
 extern int            DRM(agp_unbind_memory)(DRM_AGP_MEM *handle);
-#endif
 
 				/* Stub support (drm_stub.h) */
 int                   DRM(stub_register)(const char *name,

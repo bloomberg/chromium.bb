@@ -102,15 +102,14 @@ int DRM(initmap)( drm_device_t *dev, unsigned int offset, unsigned int size, int
 #ifdef __alpha__
 	map->offset += dev->hose->mem_space->start;
 #endif
-#if __OS_HAS_MTRR
-	if ( drm_core_check_feature(dev, DRIVER_USE_MTRR) ) {
+	if (drm_core_has_MTRR(dev)) {
 		if ( map->type == _DRM_FRAME_BUFFER ||
 		     (map->flags & _DRM_WRITE_COMBINING) ) {
 			map->mtrr = mtrr_add( map->offset, map->size,
 					      MTRR_TYPE_WRCOMB, 1 );
 		}
 	}
-#endif
+
 	if (map->type == _DRM_REGISTERS)
 		map->handle = DRM(ioremap)( map->offset, map->size, dev );
 
@@ -200,15 +199,13 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 #ifdef __alpha__
 		map->offset += dev->hose->mem_space->start;
 #endif
-#if __OS_HAS_MTRR
-		if (drm_core_check_feature(dev, DRIVER_USE_MTRR)) {
+		if (drm_core_has_MTRR(dev)) {
 			if ( map->type == _DRM_FRAME_BUFFER ||
 			     (map->flags & _DRM_WRITE_COMBINING) ) {
 				map->mtrr = mtrr_add( map->offset, map->size,
 						      MTRR_TYPE_WRCOMB, 1 );
 			}
 		}
-#endif
 		if (map->type == _DRM_REGISTERS)
 			map->handle = DRM(ioremap)( map->offset, map->size,
 						    dev );
@@ -234,9 +231,8 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 			dev->lock.hw_lock = map->handle; /* Pointer to lock */
 		}
 		break;
-#if __OS_HAS_AGP
 	case _DRM_AGP:
-		if (drm_core_check_feature(dev, DRIVER_USE_AGP)) {
+		if (drm_core_has_AGP(dev)) {
 #ifdef __alpha__
 			map->offset += dev->hose->mem_space->start;
 #endif
@@ -244,7 +240,6 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 			map->mtrr   = dev->agp->agp_mtrr; /* for getmap */
 		}
 		break;
-#endif
 	case _DRM_SCATTER_GATHER:
 		if (!dev->sg) {
 			DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
@@ -1264,8 +1259,8 @@ int DRM(mapbufs)( struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 	if ( request.count >= dma->buf_count ) {
-		if (( drm_core_check_feature(dev, DRIVER_USE_AGP) && (dma->flags & _DRM_DMA_USE_AGP)) ||
-		    ( drm_core_check_feature(dev, DRIVER_SG) && (dma->flags & _DRM_DMA_USE_SG)) ) {
+		if ((drm_core_has_AGP(dev) && (dma->flags & _DRM_DMA_USE_AGP)) ||
+		    (drm_core_check_feature(dev, DRIVER_SG) && (dma->flags & _DRM_DMA_USE_SG))) {
 			drm_map_t *map = dev->agp_buffer_map;
 
 			if ( !map ) {

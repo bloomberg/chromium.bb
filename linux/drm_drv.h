@@ -347,9 +347,8 @@ static int DRM(takedown)( drm_device_t *dev )
 		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
 	}
 
-#if __OS_HAS_AGP
 				/* Clear AGP information */
-	if ( drm_core_check_feature(dev, DRIVER_USE_AGP) && dev->agp ) {
+	if ( drm_core_has_AGP(dev) && dev->agp ) {
 		drm_agp_mem_t *entry;
 		drm_agp_mem_t *nexte;
 
@@ -368,7 +367,6 @@ static int DRM(takedown)( drm_device_t *dev )
 		dev->agp->acquired = 0;
 		dev->agp->enabled  = 0;
 	}
-#endif
 
 				/* Clear vma list (only built for debugging) */
 	if ( dev->vmalist ) {
@@ -509,8 +507,7 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 		if ((retcode = dev->fn_tbl.preinit(dev, ent->driver_data)))
 			goto error_out_unreg;
 
-#if __OS_HAS_AGP
-	if (drm_core_check_feature(dev, DRIVER_USE_AGP)) {
+	if (drm_core_has_AGP(dev)) {
 		dev->agp = DRM(agp_init)();
 		if ( drm_core_check_feature(dev, DRIVER_REQUIRE_AGP) && dev->agp == NULL ) {
 			DRM_ERROR( "Cannot initialize the agpgart module.\n" );
@@ -518,8 +515,8 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 			goto error_out_unreg;
 		}
 		
-#if __OS_HAS_MTRR
-		if (drm_core_check_feature(dev, DRIVER_USE_MTRR)) {
+
+		if (drm_core_has_MTRR(dev)) {
 			if (dev->agp)
 				dev->agp->agp_mtrr = mtrr_add( dev->agp->agp_info.aper_base,
 							       dev->agp->agp_info.aper_size*1024*1024,
@@ -527,8 +524,7 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 							       1 );
 		}
 	}
-#endif
-#endif
+
 	retcode = DRM(ctxbitmap_init)( dev );
 	if( retcode ) {
 	  DRM_ERROR( "Cannot allocate memory for context bitmap.\n" );
@@ -572,7 +568,7 @@ static int drm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 static void __exit drm_cleanup_pci(struct pci_dev *pdev)
 {
 	drm_device_t *dev = pci_get_drvdata(pdev);
-
+	
 	pci_set_drvdata(pdev, NULL);
 	drm_cleanup(dev);
 }
@@ -680,8 +676,7 @@ static void __exit drm_cleanup( drm_device_t *dev )
 					break;
 					
 				case _DRM_FRAME_BUFFER:
-#if __OS_HAS_MTRR
-					if ( drm_core_check_feature(dev, DRIVER_USE_MTRR)) {
+					if ( drm_core_has_MTRR(dev)) {
 						if ( map->mtrr >= 0 ) {
 							int retcode;
 							retcode = mtrr_del( map->mtrr,
@@ -690,7 +685,6 @@ static void __exit drm_cleanup( drm_device_t *dev )
 							DRM_DEBUG( "mtrr_del=%d\n", retcode );
 						}
 					}
-#endif
 					break;
 					
 				case _DRM_SHM:
@@ -719,22 +713,19 @@ static void __exit drm_cleanup( drm_device_t *dev )
 
 	DRM(ctxbitmap_cleanup)( dev );
 
-#if __OS_HAS_AGP
-#if __OS_HAS_MTRR
-	if ( drm_core_check_feature(dev, DRIVER_USE_MTRR) && dev->agp && dev->agp->agp_mtrr >= 0 ) {
+	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) && dev->agp && dev->agp->agp_mtrr >= 0) {
 		int retval;
 		retval = mtrr_del( dev->agp->agp_mtrr,
 				   dev->agp->agp_info.aper_base,
 				   dev->agp->agp_info.aper_size*1024*1024 );
 		DRM_DEBUG( "mtrr_del=%d\n", retval );
 	}
-#endif
-	if ( drm_core_check_feature(dev, DRIVER_USE_AGP) && dev->agp ) {
+
+	if (drm_core_has_AGP(dev) && dev->agp ) {
 		DRM(agp_uninit)();
 		DRM(free)( dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS );
 		dev->agp = NULL;
 	}
-#endif
 	if (dev->fn_tbl.postcleanup)
 		dev->fn_tbl.postcleanup(dev);
 }
@@ -1129,29 +1120,28 @@ int DRM(lock)( struct inode *inode, struct file *filp,
 	current->state = TASK_RUNNING;
 	remove_wait_queue( &dev->lock.lock_queue, &entry );
 	
-	if ( !ret ) {
-		sigemptyset( &dev->sigmask );
-		sigaddset( &dev->sigmask, SIGSTOP );
-		sigaddset( &dev->sigmask, SIGTSTP );
-		sigaddset( &dev->sigmask, SIGTTIN );
-		sigaddset( &dev->sigmask, SIGTTOU );
-		dev->sigdata.context = lock.context;
-		dev->sigdata.lock    = dev->lock.hw_lock;
-		block_all_signals( DRM(notifier),
-				   &dev->sigdata, &dev->sigmask );
-
-		if (dev->fn_tbl.dma_ready && (lock.flags & _DRM_LOCK_READY))
-			dev->fn_tbl.dma_ready(dev);
-			    
-		if ( dev->fn_tbl.dma_quiescent && (lock.flags & _DRM_LOCK_QUIESCENT ))
-			return dev->fn_tbl.dma_quiescent(dev);
-
-
-		if ( dev->fn_tbl.kernel_context_switch && dev->last_context != lock.context ) {
-			dev->fn_tbl.kernel_context_switch(dev, dev->last_context,
-							  lock.context);
-		}
-        }
+	sigemptyset( &dev->sigmask );
+	sigaddset( &dev->sigmask, SIGSTOP );
+	sigaddset( &dev->sigmask, SIGTSTP );
+	sigaddset( &dev->sigmask, SIGTTIN );
+	sigaddset( &dev->sigmask, SIGTTOU );
+	dev->sigdata.context = lock.context;
+	dev->sigdata.lock    = dev->lock.hw_lock;
+	block_all_signals( DRM(notifier),
+			   &dev->sigdata, &dev->sigmask );
+	
+	if (dev->fn_tbl.dma_ready && (lock.flags & _DRM_LOCK_READY))
+		dev->fn_tbl.dma_ready(dev);
+	
+	if ( dev->fn_tbl.dma_quiescent && (lock.flags & _DRM_LOCK_QUIESCENT ))
+		return dev->fn_tbl.dma_quiescent(dev);
+	
+	
+	if ( dev->fn_tbl.kernel_context_switch && dev->last_context != lock.context ) {
+		dev->fn_tbl.kernel_context_switch(dev, dev->last_context,
+						  lock.context);
+	}
+	
 
         DRM_DEBUG( "%d %s\n", lock.context, ret ? "interrupted" : "has lock" );
 
