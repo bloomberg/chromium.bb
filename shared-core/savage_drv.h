@@ -30,10 +30,10 @@
 
 #define DRIVER_NAME	"savage"
 #define DRIVER_DESC	"Savage3D/MX/IX, Savage4, SuperSavage, Twister, ProSavage[DDR]"
-#define DRIVER_DATE	"20050120"
+#define DRIVER_DATE	"20050222"
 
 #define DRIVER_MAJOR		2
-#define DRIVER_MINOR		2
+#define DRIVER_MINOR		3
 #define DRIVER_PATCHLEVEL	0
 /* Interface history:
  *
@@ -42,6 +42,9 @@
  * 2.1   Scissors registers managed by the DRM, 3D operations clipped by
  *       cliprects of the cmdbuf ioctl
  * 2.2   Implemented SAVAGE_CMD_DMA_IDX and SAVAGE_CMD_VB_IDX
+ * 2.3   Event counters used by BCI_EVENT_EMIT/WAIT ioctls are now 32 bits
+ *       wide and thus very long lived (unlikely to ever wrap). The size
+ *       in the struct was 32 bits before, but only 16 bits were used
  */
 
 typedef struct drm_savage_age {
@@ -489,9 +492,7 @@ extern void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
 	(age)->wrap = w;		\
 } while(0)
 
-#define TEST_AGE( age, e, w )						\
-	( (age)->wrap+1 < (w) ||					\
-	  ( (age)->wrap+1 == (w) && (e) <= dev_priv->event_counter ) ||	\
-	  (age)->event <= (e) )
+#define TEST_AGE( age, e, w )				\
+	( (age)->wrap < (w) || (age)->event <= (e) )
 
 #endif /* __SAVAGE_DRV_H__ */

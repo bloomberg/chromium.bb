@@ -246,6 +246,8 @@ static drm_buf_t *savage_freelist_get(drm_device_t *dev)
 	else
 		event = SAVAGE_READ(SAVAGE_STATUS_WORD1) & 0xffff;
 	wrap = dev_priv->event_wrap;
+	if (event > dev_priv->event_counter)
+	    wrap--; /* hardware hasn't passed the last wrap yet */
 
 	DRM_DEBUG("   tail=0x%04x %d\n", tail->age.event, tail->age.wrap);
 	DRM_DEBUG("   head=0x%04x %d\n", event, wrap);
@@ -623,6 +625,7 @@ int savage_bci_event_emit(DRM_IOCTL_ARGS)
 				 sizeof(event));
 
 	event.count = savage_bci_emit_event(dev_priv, event.flags);
+	event.count |= dev_priv->event_wrap << 16;
 	DRM_COPY_TO_USER_IOCTL(&((drm_savage_event_emit_t __user *)data)->count,
 			       event.count, sizeof(event.count));
 	return 0;
@@ -633,16 +636,34 @@ int savage_bci_event_wait(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	drm_savage_private_t *dev_priv = dev->dev_private;
 	drm_savage_event_wait_t event;
+	unsigned int event_e, hw_e;
+	unsigned int event_w, hw_w;
 
 	DRM_DEBUG("\n");
 
 	DRM_COPY_FROM_USER_IOCTL(event, (drm_savage_event_wait_t __user *)data,
 				 sizeof(event));
 
-	if (event.count > 0xffff)
-		return DRM_ERR(EINVAL);
+	UPDATE_EVENT_COUNTER();
+	if (dev_priv->status_ptr)
+		hw_e = dev_priv->status_ptr[1] & 0xffff;
+	else
+		hw_e = SAVAGE_READ(SAVAGE_STATUS_WORD1) & 0xffff;
+	hw_w = dev_priv->event_wrap;
+	if (hw_e > dev_priv->event_counter)
+	    hw_w--; /* hardware hasn't passed the last wrap yet */
 
-	return dev_priv->wait_evnt(dev_priv, event.count);
+	event_e = event.count & 0xffff;
+	event_w = event.count >> 16;
+
+	/* Don't need to wait if
+	 * - event counter wrapped since the event was emitted or
+	 * - the hardware has advanced up to or over the event to wait for.
+	 */
+	if (event_w < hw_w || event_e <= hw_e )
+		return 0;
+	else
+		return dev_priv->wait_evnt(dev_priv, event_e);
 }
 
 /*
