@@ -332,7 +332,6 @@ struct drm_device {
 				/* Usage Counters */
 	int		  open_count;	/* Outstanding files open	   */
 	int		  buf_use;	/* Buffers in use -- cannot alloc  */
-	int		  buf_alloc;	/* Buffer allocation in progress   */
 
 				/* Performance counters */
 	unsigned long     counters;
