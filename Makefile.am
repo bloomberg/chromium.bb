@@ -48,4 +48,4 @@ install-data-local:
 	  echo " $(INSTALL_DATA) local.conf $(DESTDIR)$(configdir)/local.conf"; \
 	  $(INSTALL_DATA) local.conf $(DESTDIR)$(configdir)/local.conf; \
 	fi; fi; fi
-	if [ x$(DESTDIR) = x ]; then $(bindir)/fc-cache -f -v; fi
+	if [ x$(DESTDIR) = x ]; then fc-cache/fc-cache -f -v; fi
