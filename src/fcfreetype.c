@@ -55,7 +55,7 @@
 #include <freetype/ttnameid.h>
 #include <freetype/t1tables.h>
 
-#if (FREETYPE_MINOR > 1 || (FREETYPE_MINOR == 1 && FREETYPE_PATCH >= 3))
+#if (FREETYPE_MINOR > 1 || (FREETYPE_MINOR == 1 && FREETYPE_PATCH >= 4))
 #include <freetype/ftbdf.h>
 #define USE_FTBDF
 #endif
