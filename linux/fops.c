@@ -211,10 +211,11 @@ int drm_write_string(drm_device_t *dev, const char *s)
 		send -= count;
 	}
 
-#if LINUX_VERSION_CODE < 0x020315
+#if LINUX_VERSION_CODE < 0x02020e || \
+	( LINUX_VERSION_CODE > 0x020300 && LINUX_VERSION_CODE < 0x020315 )
 	if (dev->buf_async) kill_fasync(dev->buf_async, SIGIO);
 #else
-				/* Parameter added in 2.3.21 */
+	/* Parameter added in 2.2.14 and 2.3.21 */
 	if (dev->buf_async) kill_fasync(dev->buf_async, SIGIO, POLL_IN);
 #endif
 	DRM_DEBUG("waking\n");
