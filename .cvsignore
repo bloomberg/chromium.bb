@@ -1,0 +1,15 @@
+Makefile
+Makefile.in
+aclocal.m4
+config.cache
+config.h
+config.h.in
+config.log
+config.status
+configure
+fontconfig.pc
+fontconfig.spec
+fonts.conf
+libtool
+stamp-h
+stamp-h.in
