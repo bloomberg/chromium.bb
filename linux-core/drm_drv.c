@@ -493,7 +493,7 @@ static int __init drm_core_init(void)
 	}
 	drm_agp = symbol_get(drm_agp_entry);
 	if (!drm_agp) {
-		drm_agp = inter_module_get("agp");
+		drm_agp = inter_module_get("drm_agp");
 		use_inter_module = 1;
 	}
 	DRM_DEBUG("drm_agp %p\n", drm_agp);
@@ -515,7 +515,7 @@ static void __exit drm_core_exit(void)
 {
 	if (drm_agp) {
 		if (use_inter_module)
-			inter_module_put("agp");
+			inter_module_put("drm_agp");
 		else
 			symbol_put(drm_agp_entry);
 	}
