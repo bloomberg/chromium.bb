@@ -30,7 +30,7 @@
  *    Sung-Ching Lin <sclin@sis.com.tw>
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_context.c,v 1.5 2000/08/28 02:43:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_context.c,v 1.3 2000/09/22 11:35:47 alanh Exp $ */
 
 #define __NO_VERSION__
 #include "drmP.h"
