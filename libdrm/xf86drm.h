@@ -36,9 +36,7 @@
 #ifndef _XF86DRM_H_
 #define _XF86DRM_H_
 
-#ifndef _IN_LIBDRM
-#include <drm/drm.h>
-#endif
+#include <drm.h>
 
 				/* Defaults, if nothing set in xf86config */
 #define DRM_DEV_UID	 0
