@@ -17,20 +17,16 @@
 
 #define DRIVER_NAME		"i915"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20040405"
+#define DRIVER_DATE		"20041217"
 
 /* Interface history:
  *
  * 1.1: Original.
+ * 1.2: Add Power Management
  */
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		1
+#define DRIVER_MINOR		2
 #define DRIVER_PATCHLEVEL	0
-
-/* We use our own dma mechanisms, not the drm template code.  However,
- * the shared IRQ code is useful to us:
- */
-#define __HAVE_PM		1
 
 typedef struct _drm_i915_ring_buffer {
 	int tail_mask;

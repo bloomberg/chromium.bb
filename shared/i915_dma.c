@@ -207,7 +207,7 @@ static int i915_initialize(drm_device_t * dev,
 	return 0;
 }
 
-static int i915_resume(drm_device_t * dev)
+static int i915_dma_resume(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
@@ -264,7 +264,7 @@ int i915_dma_init(DRM_IOCTL_ARGS)
 		retcode = i915_dma_cleanup(dev);
 		break;
 	case I915_RESUME_DMA:
-		retcode = i915_resume(dev);
+		retcode = i915_dma_resume(dev);
 		break;
 	default:
 		retcode = -EINVAL;
