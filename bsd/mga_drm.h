@@ -83,7 +83,9 @@
 #define MGA_CTXREG_TDUAL0    7
 #define MGA_CTXREG_TDUAL1    8
 #define MGA_CTXREG_FCOL      9
-#define MGA_CTX_SETUP_SIZE   10
+#define MGA_CTXREG_STENCIL    10
+#define MGA_CTXREG_STENCILCTL 11
+#define MGA_CTX_SETUP_SIZE   12
 
 /* 2d state
  */
@@ -233,6 +235,7 @@ typedef struct _drm_mga_sarea {
 	/* Mechanism to validate card state.
 	 */
    	int ctxOwner;
+        int vertexsize;
 } drm_mga_sarea_t;	
 
 /* Device specific ioctls:
@@ -241,6 +244,8 @@ typedef struct _drm_mga_clear {
 	unsigned int clear_color;
 	unsigned int clear_depth;
 	unsigned int flags;
+	unsigned int clear_depthmask;
+	unsigned int clear_color_mask;
 } drm_mga_clear_t;
 
 typedef struct _drm_mga_swap {
