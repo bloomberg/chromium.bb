@@ -338,7 +338,7 @@ static void mgaG200EmitPipe(drm_mga_private_t * dev_priv)
 		   (u32) (dev_priv->WarpIndex[pipe].
 			  phys_addr | WIA_wmode_start | WIA_wagp_agp));
 
-	PRIMADVANCE(dev_priv);
+	PRIMADVANCE( dev_priv );
 }
 
 static void mgaEmitState(drm_mga_private_t * dev_priv)
