@@ -358,6 +358,9 @@ FcFreeTypeQuery (const FcChar8	*file,
     int		    spacing;
     TT_OS2	    *os2;
     PS_FontInfoRec  psfontinfo;
+#ifdef USE_FTBDF
+    BDF_PropertyRec prop;
+#endif
     TT_Header	    *head;
     const FcChar8   *exclusiveLang = 0;
     FT_SfntName	    sname;
@@ -832,7 +835,6 @@ FcFreeTypeQuery (const FcChar8	*file,
 
     if (width == -1)
     {
-	BDF_PropertyRec prop;
 	if (MY_Get_BDF_Property(face, "RELATIVE_SETWIDTH", &prop) == 0 &&
 	    (prop.type == BDF_PROPERTY_TYPE_INTEGER ||
 	     prop.type == BDF_PROPERTY_TYPE_CARDINAL))
@@ -964,7 +966,12 @@ FcFreeTypeQuery (const FcChar8	*file,
 	goto bail2;
 
     if (!FcPatternAddLangSet (pat, FC_LANG, ls))
+    {
+	FcLangSetDestroy (ls);
 	goto bail2;
+    }
+
+    FcLangSetDestroy (ls);
 
     if (spacing != FC_PROPORTIONAL)
 	if (!FcPatternAddInteger (pat, FC_SPACING, spacing))
