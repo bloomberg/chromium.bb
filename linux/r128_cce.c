@@ -114,7 +114,7 @@ int R128_READ_PLL(drm_device_t *dev, int addr)
 	return R128_READ(R128_CLOCK_CNTL_DATA);
 }
 
-
+#if 0
 static void r128_status( drm_r128_private_t *dev_priv )
 {
 	printk( "GUI_STAT           = 0x%08x\n",
@@ -130,6 +130,7 @@ static void r128_status( drm_r128_private_t *dev_priv )
 	printk( "PM4_BUFFER_CNTL    = 0x%08x\n",
 		(unsigned int)R128_READ( R128_PM4_BUFFER_CNTL ) );
 }
+#endif
 
 
 /* ================================================================
@@ -701,6 +702,7 @@ int r128_engine_reset( struct inode *inode, struct file *filp,
 #define R128_BUFFER_USED	0xffffffff
 #define R128_BUFFER_FREE	0
 
+#if 0
 static int r128_freelist_init( drm_device_t *dev )
 {
 	drm_device_dma_t *dma = dev->dma;
@@ -746,6 +748,7 @@ static int r128_freelist_init( drm_device_t *dev )
 	return 0;
 
 }
+#endif
 
 drm_buf_t *r128_freelist_get( drm_device_t *dev )
 {
@@ -834,6 +837,7 @@ void r128_update_ring_snapshot( drm_r128_private_t *dev_priv )
 		ring->space += ring->size;
 }
 
+#if 0
 static int r128_verify_command( drm_r128_private_t *dev_priv,
 				u32 cmd, int *size )
 {
@@ -974,6 +978,7 @@ static int r128_submit_packet_ring_insecure( drm_r128_private_t *dev_priv,
 #endif
 	return 0;
 }
+#endif
 
 /* Internal packet submission routine.  This uses the insecure versions
  * of the packet submission functions, and thus should only be used for

@@ -297,10 +297,11 @@ static void r128_clear_box( drm_r128_private_t *dev_priv,
 		color = ((r << 16) | (g << 8) | b);
 		break;
 	case 32:
-	default:
 		fb_bpp = R128_GMC_DST_32BPP;
 		color = (((0xff) << 24) | (r << 16) | (g <<  8) | b);
 		break;
+	default:
+		return;
 	}
 
 	offset = dev_priv->back_offset;
@@ -362,9 +363,7 @@ static void r128_cce_dispatch_clear( drm_device_t *dev,
 				     unsigned int flags,
 				     int cx, int cy, int cw, int ch,
 				     unsigned int clear_color,
-				     unsigned int clear_depth,
-				     unsigned int color_mask,
-				     unsigned int depth_mask )
+				     unsigned int clear_depth )
 {
 	drm_r128_private_t *dev_priv = dev->dev_private;
 	drm_r128_sarea_t *sarea_priv = dev_priv->sarea_priv;
@@ -381,21 +380,17 @@ static void r128_cce_dispatch_clear( drm_device_t *dev,
 	case 16:
 		fb_bpp = R128_GMC_DST_16BPP;
 		break;
-	case 24:
-		fb_bpp = R128_GMC_DST_24BPP;
-		break;
 	case 32:
-	default:
 		fb_bpp = R128_GMC_DST_32BPP;
 		break;
+	default:
+		return;
 	}
 	switch ( dev_priv->depth_bpp ) {
 	case 16:
 		depth_bpp = R128_GMC_DST_16BPP;
 		break;
 	case 24:
-		depth_bpp = R128_GMC_DST_32BPP;
-		break;
 	case 32:
 		depth_bpp = R128_GMC_DST_32BPP;
 		break;
@@ -417,7 +412,7 @@ static void r128_cce_dispatch_clear( drm_device_t *dev,
 			BEGIN_RING( 2 );
 
 			OUT_RING( CCE_PACKET0( R128_DP_WRITE_MASK, 0 ) );
-			OUT_RING( color_mask );
+			OUT_RING( sarea_priv->context_state.plane_3d_mask_c );
 
 			ADVANCE_RING();
 		}
@@ -465,10 +460,7 @@ static void r128_cce_dispatch_clear( drm_device_t *dev,
 		}
 
 		if ( flags & R128_DEPTH ) {
-			BEGIN_RING( 8 );
-
-			OUT_RING( CCE_PACKET0( R128_DP_WRITE_MASK, 0 ) );
-			OUT_RING( depth_mask );
+			BEGIN_RING( 6 );
 
 			OUT_RING( CCE_PACKET3( R128_CNTL_PAINT_MULTI, 4 ) );
 			OUT_RING( R128_GMC_DST_PITCH_OFFSET_CNTL
@@ -477,7 +469,8 @@ static void r128_cce_dispatch_clear( drm_device_t *dev,
 				  | R128_GMC_SRC_DATATYPE_COLOR
 				  | R128_ROP3_P
 				  | R128_GMC_CLR_CMP_CNTL_DIS
-				  | R128_GMC_AUX_CLIP_DIS );
+				  | R128_GMC_AUX_CLIP_DIS
+				  | R128_GMC_WR_MSK_DIS );
 
 			OUT_RING( dev_priv->depth_pitch_offset_c );
 			OUT_RING( clear_depth );
@@ -513,9 +506,6 @@ static void r128_cce_dispatch_swap( drm_device_t *dev )
 	case 16:
 		fb_bpp = R128_GMC_DST_16BPP;
 		break;
-	case 24:
-		fb_bpp = R128_GMC_DST_24BPP;
-		break;
 	case 32:
 	default:
 		fb_bpp = R128_GMC_DST_32BPP;
@@ -542,21 +532,12 @@ static void r128_cce_dispatch_swap( drm_device_t *dev )
 			  | R128_GMC_AUX_CLIP_DIS
 			  | R128_GMC_WR_MSK_DIS );
 
-#if 1
 		OUT_RING( dev_priv->back_pitch_offset_c );
 		OUT_RING( dev_priv->front_pitch_offset_c );
 
 		OUT_RING( (x << 16) | y );
 		OUT_RING( (x << 16) | y );
 		OUT_RING( (w << 16) | h );
-#else
-		OUT_RING( dev_priv->depth_pitch_offset_c /*& ~R128_DST_TILE*/ );
-		OUT_RING( dev_priv->front_pitch_offset_c );
-
-		OUT_RING( (0 << 16) | 0 );
-		OUT_RING( (0 << 16) | 0 );
-		OUT_RING( (800 << 16) | 600 );
-#endif
 
 		ADVANCE_RING();
 	}
@@ -925,6 +906,9 @@ static int r128_cce_dispatch_blit( drm_device_t *dev,
 
 /* ================================================================
  * Tiled depth buffer management
+ *
+ * FIXME: These should all set the destination write mask for when we
+ * have hardware stencil support.
  */
 
 static int r128_cce_dispatch_write_span( drm_device_t *dev,
@@ -946,8 +930,6 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 		depth_bpp = R128_GMC_DST_16BPP;
 		break;
 	case 24:
-		depth_bpp = R128_GMC_DST_32BPP;
-		break;
 	case 32:
 		depth_bpp = R128_GMC_DST_32BPP;
 		break;
@@ -1057,8 +1039,6 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 		depth_bpp = R128_GMC_DST_16BPP;
 		break;
 	case 24:
-		depth_bpp = R128_GMC_DST_32BPP;
-		break;
 	case 32:
 		depth_bpp = R128_GMC_DST_32BPP;
 		break;
@@ -1190,8 +1170,6 @@ static int r128_cce_dispatch_read_span( drm_device_t *dev,
 		depth_bpp = R128_GMC_DST_16BPP;
 		break;
 	case 24:
-		depth_bpp = R128_GMC_DST_32BPP;
-		break;
 	case 32:
 		depth_bpp = R128_GMC_DST_32BPP;
 		break;
@@ -1249,8 +1227,6 @@ static int r128_cce_dispatch_read_pixels( drm_device_t *dev,
 		depth_bpp = R128_GMC_DST_16BPP;
 		break;
 	case 24:
-		depth_bpp = R128_GMC_DST_32BPP;
-		break;
 	case 32:
 		depth_bpp = R128_GMC_DST_32BPP;
 		break;
@@ -1367,8 +1343,7 @@ int r128_cce_clear( struct inode *inode, struct file *filp,
 
 	r128_cce_dispatch_clear( dev, clear.flags,
 				 clear.x, clear.y, clear.w, clear.h,
-				 clear.clear_color, clear.clear_depth,
-				 clear.color_mask, clear.depth_mask );
+				 clear.clear_color, clear.clear_depth );
 
 	/* Make sure we restore the 3D state next time.
 	 */
