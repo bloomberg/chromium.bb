@@ -262,6 +262,7 @@ FcLangSetIndex (const FcChar8 *lang)
     int	    low, high, mid = 0;
     int	    cmp = 0;
     FcChar8 firstChar = FcToLower(lang[0]); 
+    FcChar8 secondChar = firstChar ? FcToLower(lang[1]) : '\0';
     
     if (firstChar < 'a')
     {
@@ -290,22 +291,14 @@ FcLangSetIndex (const FcChar8 *lang)
 	else
 	{   /* fast path for resolving 2-letter languages (by far the most common) after
 	     * finding the first char (probably already true because of the hash table) */
-	    FcChar8 secondChar = FcToLower(lang[1]);
-	    if (fcLangCharSets[mid].lang[1] > secondChar) /* check second chars */
+	    cmp = fcLangCharSets[mid].lang[1] - secondChar;
+	    if (cmp == 0 && 
+		(fcLangCharSets[mid].lang[2] != '\0' || 
+		 lang[2] != '\0'))
 	    {
-		high = mid - 1;
-		continue;
+		cmp = FcStrCmpIgnoreCase(fcLangCharSets[mid].lang+2, 
+					 lang+2);
 	    }
-	    else if (fcLangCharSets[mid].lang[1] < secondChar)
-	    {
-		low = mid + 1;
-		continue;
-	    }
-	    else if (fcLangCharSets[mid].lang[2] == '\0' && lang[2] == '\0')
-		return mid;
-
-	    else /* identical through the first two charcters, but at least one string didn't end there */
-		cmp = FcStrCmpIgnoreCase(fcLangCharSets[mid].lang+2, lang+2);
 	}
 	if (cmp == 0)
 	    return mid;
