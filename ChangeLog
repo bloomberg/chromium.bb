@@ -1,5 +1,12 @@
 2004-06-30  Keith Packard  <keithp@keithp.com>
 
+	* README:
+	* configure.in:
+	* fontconfig/fontconfig.h:
+	Update for 2.2.96
+
+2004-06-30  Keith Packard  <keithp@keithp.com>
+
 	Provided by: Lubos Lunak <l.lunak@suse.cz>
 
 	* src/fccfg.c: (FcConfigUptoDate):
