@@ -749,9 +749,13 @@ FcStrCopy (const FcChar8 *s);
 FcChar8 *
 FcStrCopyFilename (const FcChar8 *s);
     
-#define FcIsUpper(c)	(('A' <= (c) && (c) <= 'Z'))
-#define FcIsLower(c)	(('a' <= (c) && (c) <= 'z'))
-#define FcToLower(c)	(FcIsUpper(c) ? (c) - 'A' + 'a' : (c))
+/* These are ASCII only, suitable only for pattern element names */
+#define FcIsUpper(c)	((0101 <= (c) && (c) <= 0132))
+#define FcIsLower(c)	((0141 <= (c) && (c) <= 0172))
+#define FcToLower(c)	(FcIsUpper(c) ? (c) - 0101 + 0141 : (c))
+
+FcChar8 *
+FcStrDowncase (const FcChar8 *s);
 
 int
 FcStrCmpIgnoreCase (const FcChar8 *s1, const FcChar8 *s2);

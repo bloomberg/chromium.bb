@@ -92,7 +92,7 @@ FcStrCaseWalkerLong (FcCaseWalker *w, FcChar8 r)
     FcChar32	ucs4;
     int		slen;
 
-    slen = FcUtf8ToUcs4 (w->src - 1, &ucs4, w->len);
+    slen = FcUtf8ToUcs4 (w->src - 1, &ucs4, w->len + 1);
     if (slen <= 0)
 	return r;
     if (FC_MIN_FOLD_CHAR <= ucs4 && ucs4 <= FC_MAX_FOLD_CHAR)
@@ -186,6 +186,25 @@ FcStrCaseWalkerNextIgnoreBlanks (FcCaseWalker *w)
     if ('A' <= r && r <= 'Z')
         r = r - 'A' + 'a';
     return r;
+}
+
+FcChar8 *
+FcStrDowncase (const FcChar8 *s)
+{
+    FcCaseWalker    w;
+    int		    len = 0;
+    FcChar8	    *dst, *d;
+
+    FcStrCaseWalkerInit (s, &w);
+    while (FcStrCaseWalkerNext (&w))
+	len++;
+    d = dst = malloc (len + 1);
+    if (!d)
+	return 0;
+    FcMemAlloc (FC_MEM_STRING, len + 1);
+    FcStrCaseWalkerInit (s, &w);
+    while ((*d++ = FcStrCaseWalkerNext (&w)));
+    return dst;
 }
 
 int

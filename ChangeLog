@@ -1,5 +1,13 @@
 2004-12-29  Keith Packard  <keithp@keithp.com>
 
+	* fontconfig/fontconfig.h:
+	Document ASCII limitations of Fc character conversion macros
+	* src/fcstr.c: (FcStrCaseWalkerLong), (FcStrDowncase):
+	Fix off-by-one error in utf-8 case walking code.
+	Add FcStrDowncase (useful for testing case conversion functions)
+
+2004-12-29  Keith Packard  <keithp@keithp.com>
+
 	* .cvsignore:
 	* fc-case/.cvsignore:
 	clean up CVS ignore lists
