@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/Imakefile,v 1.4 2001/01/12 19:28:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/Imakefile,v 1.6 2001/04/18 14:52:43 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -37,7 +37,7 @@ install::
 	$(MAKE) -f Makefile.bsd install
 #else
 all::
-	echo 'Use "make -f Makefile.bsd" to manually build drm.o'
+	@echo 'Use "make -f Makefile.bsd" to manually build drm.o'
 #endif
 
 clean::
