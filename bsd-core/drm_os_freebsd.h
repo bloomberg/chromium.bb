@@ -88,7 +88,7 @@
 #define DRM_STRUCTPROC		struct proc
 #define DRM_SPINTYPE		struct simplelock
 #define DRM_SPININIT(l,name)	simple_lock_init(&l)
-#define DRM_SPINUNINIT(l,name)
+#define DRM_SPINUNINIT(l)
 #define DRM_SPINLOCK(l)		simple_lock(l)
 #define DRM_SPINUNLOCK(u)	simple_unlock(u);
 #define DRM_CURRENTPID		curproc->p_pid
@@ -230,7 +230,7 @@ typedef u_int8_t u8;
 #if __FreeBSD_version < 500000
 /* The extra atomic functions from 5.0 haven't been merged to 4.x */
 static __inline int
-atomic_cmpset_int(int *dst, int old, int new)
+atomic_cmpset_int(volatile int *dst, int old, int new)
 {
 	int s = splhigh();
 	if (*dst==old) {
