@@ -1,3 +1,8 @@
+2003-04-07  Colin Walters <walters@verbum.org>
+
+	+ src/Makefile.am: Fix dummy makefile target names when
+	MS_LIB_AVAILABLE isn't set.
+
 2003-03-22  Tor Lillqvist  <tml@iki.fi>
 
 	Changes for Windows:
