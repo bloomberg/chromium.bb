@@ -226,6 +226,18 @@ void *DRM(alloc)(size_t size, int area)
 	return kmalloc(size, GFP_KERNEL);
 }
 
+/** Wrapper around kmalloc() */
+void *DRM(calloc)(size_t size, size_t nmemb, int area)
+{
+	void *addr;
+
+	addr = kmalloc(size * nmemb, GFP_KERNEL);
+	if (addr != NULL)
+		memset((void *)addr, 0, size * nmemb);
+
+	return addr;
+}
+
 /** Wrapper around kmalloc() and kfree() */
 void *DRM(realloc)(void *oldpt, size_t oldsize, size_t size, int area)
 {
