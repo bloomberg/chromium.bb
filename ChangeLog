@@ -1,3 +1,15 @@
+2003-12-11  Carl Worth  <cworth@east.isi.edu>
+
+	* fc-list/Makefile.am (man_MANS): Move man_MANS into the 'if
+	USEDOCBOOK' block.
+
+	* fc-cache/Makefile.am (man_MANS): Move man_MANS into the 'if
+	USEDOCBOOK' block.
+	(all-local): Remove excessive whitespace.
+
+	* autogen.sh: Add 'set -e' to abort when any program fails,
+	(avoids printing of 'now type make' after configure aborts).
+
 2003-11-17   Eric Christopherson  <rakko@charter.net>
 
 	reviewed by: Keith Packard  <keithp@keithp.com>

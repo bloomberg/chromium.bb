@@ -29,8 +29,6 @@ SGML = ${FC_LIST_SRC}/fc-list.sgml
 
 bin_PROGRAMS=fc-list
 
-man_MANS=fc-list.1
-
 INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
 
 EXTRA_DIST=$(SGML)
@@ -39,6 +37,8 @@ fc_list_LDADD = ${top_builddir}/src/libfontconfig.la
 
 
 if USEDOCBOOK
+
+man_MANS=fc-list.1
 
 ${man_MANS}: ${SGML}
 	$(RM) $@

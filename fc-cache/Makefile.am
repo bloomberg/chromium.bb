@@ -29,8 +29,6 @@ SGML = ${FC_CACHE_SRC}/fc-cache.sgml
 
 INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
 
-man_MANS=fc-cache.1
-
 bin_PROGRAMS=fc-cache
 
 EXTRA_DIST=$(SGML)
@@ -38,7 +36,9 @@ EXTRA_DIST=$(SGML)
 fc_cache_LDADD = ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
-                                                                                
+
+man_MANS=fc-cache.1
+
 ${man_MANS}: ${SGML}										
 	$(RM) $@
 	$(DOC2MAN) ${SGML}
