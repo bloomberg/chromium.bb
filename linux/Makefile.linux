@@ -133,6 +133,9 @@ MODS += mga.o
 ifeq ($(MACHINE),i386)
 MODS += i810.o
 endif
+ifeq ($(MACHINE),i686)
+MODS += i810.o
+endif
 
 
 MGAOBJS=	mga_drv.o mga_dma.o mga_bufs.o mga_context.o mga_state.o
