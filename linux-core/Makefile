@@ -84,7 +84,7 @@ MGASHARED =     mga_dma.c mga_drm.h mga_drv.h mga_irq.c mga_state.c \
 I810HEADERS =   i810_drv.h i810_drm.h $(DRMHEADERS)
 I830HEADERS =   i830_drv.h i830_drm.h $(DRMHEADERS)
 I915HEADERS =   i915_drv.h i915_drm.h $(DRMHEADERS)
-I915SHARED  =   i915_drv.h i915_drm.h i915_irq.c i915_mem.c i915_dma.c
+I915SHARED  =   i915_drv.h i915_drm.h i915_irq.c i915_mem.c i915_dma.c i915_pm.c
 SISHEADERS=     sis_drv.h sis_drm.h $(DRMHEADERS)
 SISSHARED=      sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
 SAVAGEHEADERS=  savage_drv.h savage_drm.h $(DRMHEADERS)
@@ -384,7 +384,7 @@ $(r128-objs):	$(R128HEADERS)
 $(mga-objs):	$(MGAHEADERS)
 $(i810-objs):	$(I810HEADERS)
 $(i830-objs):	$(I830HEADERS)
-$(i915-objs):	$(I830HEADERS)
+$(i915-objs):	$(I915HEADERS)
 $(radeon-objs):	$(RADEONHEADERS)
 $(sis-objs):	$(SISHEADERS)
 $(ffb-objs):	$(FFBHEADERS)
