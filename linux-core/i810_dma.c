@@ -62,7 +62,7 @@ static inline void i810_print_status_page(drm_device_t *dev)
 {
    	drm_device_dma_t *dma = dev->dma;
       	drm_i810_private_t *dev_priv = dev->dev_private;
-	u32 *temp = dev_priv->hw_status_page;
+	u32 *temp = (u32 *)dev_priv->hw_status_page;
    	int i;
 
    	DRM_DEBUG(  "hw_status: Interrupt Status : %x\n", temp[0]);
@@ -484,12 +484,16 @@ int i810_dma_init(struct inode *inode, struct file *filp,
 
 /* Most efficient way to verify state for the i810 is as it is
  * emitted.  Non-conformant state is silently dropped.
+ *
+ * Use 'volatile' & local var tmp to force the emitted values to be
+ * identical to the verified ones.
  */
 static void i810EmitContextVerified( drm_device_t *dev,
-				     unsigned int *code )
+				     volatile unsigned int *code )
 {
    	drm_i810_private_t *dev_priv = dev->dev_private;
 	int i, j = 0;
+	unsigned int tmp;
 	RING_LOCALS;
 
 	BEGIN_LP_RING( I810_CTX_SETUP_SIZE );
@@ -501,10 +505,12 @@ static void i810EmitContextVerified( drm_device_t *dev,
 	OUT_RING( code[I810_CTXREG_ST1] );
 
 	for ( i = 4 ; i < I810_CTX_SETUP_SIZE ; i++ ) {
-		if ((code[i] & (7<<29)) == (3<<29) &&
-		    (code[i] & (0x1f<<24)) < (0x1d<<24))
+		tmp = code[i];
+
+		if ((tmp & (7<<29)) == (3<<29) &&
+		    (tmp & (0x1f<<24)) < (0x1d<<24))
 		{
-			OUT_RING( code[i] );
+			OUT_RING( tmp );
 			j++;
 		}
 		else printk("constext state dropped!!!\n");
@@ -521,6 +527,7 @@ static void i810EmitTexVerified( drm_device_t *dev,
 {
    	drm_i810_private_t *dev_priv = dev->dev_private;
 	int i, j = 0;
+	unsigned int tmp;
 	RING_LOCALS;
 
 	BEGIN_LP_RING( I810_TEX_SETUP_SIZE );
@@ -531,11 +538,12 @@ static void i810EmitTexVerified( drm_device_t *dev,
 	OUT_RING( code[I810_TEXREG_MI3] );
 
 	for ( i = 4 ; i < I810_TEX_SETUP_SIZE ; i++ ) {
+		tmp = code[i];
 
-		if ((code[i] & (7<<29)) == (3<<29) &&
-		    (code[i] & (0x1f<<24)) < (0x1d<<24))
+		if ((tmp & (7<<29)) == (3<<29) &&
+		    (tmp & (0x1f<<24)) < (0x1d<<24))
 		{
-			OUT_RING( code[i] );
+			OUT_RING( tmp );
 			j++;
 		}
 		else printk("texture state dropped!!!\n");
@@ -563,9 +571,9 @@ static void i810EmitDestVerified( drm_device_t *dev,
 	if (tmp == dev_priv->front_di1 || tmp == dev_priv->back_di1) {
 		OUT_RING( CMD_OP_DESTBUFFER_INFO );
 		OUT_RING( tmp );
-	} 
-	else
-	   printk("buffer state dropped\n");
+	} else
+	   DRM_DEBUG("bad di1 %x (allow %x or %x)\n",
+		     tmp, dev_priv->front_di1, dev_priv->back_di1);
 
 	/* invarient:
 	 */
@@ -980,7 +988,7 @@ int i810_dma_vertex(struct inode *inode, struct file *filp,
 	drm_device_t *dev = priv->dev;
 	drm_device_dma_t *dma = dev->dma;
    	drm_i810_private_t *dev_priv = (drm_i810_private_t *)dev->dev_private;
-      	u32 *hw_status = dev_priv->hw_status_page;
+      	u32 *hw_status = (u32 *)dev_priv->hw_status_page;
    	drm_i810_sarea_t *sarea_priv = (drm_i810_sarea_t *)
      					dev_priv->sarea_priv;
 	drm_i810_vertex_t vertex;
@@ -992,6 +1000,9 @@ int i810_dma_vertex(struct inode *inode, struct file *filp,
 		DRM_ERROR("i810_dma_vertex called without lock held\n");
 		return -EINVAL;
 	}
+
+	DRM_DEBUG("i810 dma vertex, idx %d used %d discard %d\n",
+		  vertex.idx, vertex.used, vertex.discard);
 
 	if(vertex.idx < 0 || vertex.idx > dma->buf_count) return -EINVAL;
 
@@ -1041,6 +1052,8 @@ int i810_swap_bufs(struct inode *inode, struct file *filp,
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->dev;
 
+	DRM_DEBUG("i810_swap_bufs\n");
+
    	if(!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
 		DRM_ERROR("i810_swap_buf called without lock held\n");
 		return -EINVAL;
@@ -1056,7 +1069,7 @@ int i810_getage(struct inode *inode, struct file *filp, unsigned int cmd,
    	drm_file_t	  *priv	    = filp->private_data;
 	drm_device_t	  *dev	    = priv->dev;
    	drm_i810_private_t *dev_priv = (drm_i810_private_t *)dev->dev_private;
-      	u32 *hw_status = dev_priv->hw_status_page;
+      	u32 *hw_status = (u32 *)dev_priv->hw_status_page;
    	drm_i810_sarea_t *sarea_priv = (drm_i810_sarea_t *)
      					dev_priv->sarea_priv;
 
@@ -1072,7 +1085,7 @@ int i810_getbuf(struct inode *inode, struct file *filp, unsigned int cmd,
 	int		  retcode   = 0;
 	drm_i810_dma_t	  d;
    	drm_i810_private_t *dev_priv = (drm_i810_private_t *)dev->dev_private;
-   	u32 *hw_status = dev_priv->hw_status_page;
+   	u32 *hw_status = (u32 *)dev_priv->hw_status_page;
    	drm_i810_sarea_t *sarea_priv = (drm_i810_sarea_t *)
      					dev_priv->sarea_priv;
 
@@ -1087,6 +1100,9 @@ int i810_getbuf(struct inode *inode, struct file *filp, unsigned int cmd,
 	d.granted = 0;
 
 	retcode = i810_dma_get_buffer(dev, &d, filp);
+
+	DRM_DEBUG("i810_dma: %d returning %d, granted = %d\n",
+		  current->pid, retcode, d.granted);
 
 	if (copy_to_user((drm_dma_t *)arg, &d, sizeof(d)))
 		return -EFAULT;
@@ -1181,7 +1197,7 @@ int i810_dma_mc(struct inode *inode, struct file *filp,
 	drm_device_t *dev = priv->dev;
 	drm_device_dma_t *dma = dev->dma;
 	drm_i810_private_t *dev_priv = (drm_i810_private_t *)dev->dev_private;
-	u32 *hw_status = dev_priv->hw_status_page;
+	u32 *hw_status = (u32 *)dev_priv->hw_status_page;
 	drm_i810_sarea_t *sarea_priv = (drm_i810_sarea_t *)
 		dev_priv->sarea_priv;
 	drm_i810_mc_t mc;
