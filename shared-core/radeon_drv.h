@@ -31,6 +31,22 @@
 #ifndef __RADEON_DRV_H__
 #define __RADEON_DRV_H__
 
+enum radeon_family {
+	CHIP_R100,
+	CHIP_RS100,
+	CHIP_RV100,
+	CHIP_R200,
+	CHIP_RV200,
+	CHIP_RS200,
+	CHIP_R250,
+	CHIP_RS250,
+	CHIP_RV250,
+	CHIP_RV280,
+	CHIP_R300,
+	CHIP_RS300,
+	CHIP_LAST,
+};
+
 /*
  * Chip flags
  */
