@@ -1105,6 +1105,7 @@ int drmWaitVBlank(int fd, drmVBlankPtr vbl)
 
     do {
        ret = ioctl(fd, DRM_IOCTL_WAIT_VBLANK, vbl);
+       vbl->request.type &= ~DRM_VBLANK_RELATIVE;
     } while (ret && errno == EINTR);
 
     return ret;

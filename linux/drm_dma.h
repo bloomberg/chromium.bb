@@ -628,6 +628,7 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	switch ( vblwait.request.type & ~_DRM_VBLANK_FLAGS_MASK ) {
 	case _DRM_VBLANK_RELATIVE:
 		vblwait.request.sequence += atomic_read( &dev->vbl_received );
+		vblwait.request.type &= ~_DRM_VBLANK_RELATIVE;
 	case _DRM_VBLANK_ABSOLUTE:
 		break;
 	default:
