@@ -29,6 +29,9 @@
 void
 FcValuePrint (const FcValue v)
 {
+    FcStrBuf	buf;
+    FcChar8	init_buf[1024];
+    
     switch (v.type) {
     case FcTypeVoid:
 	printf (" <void>");
@@ -52,7 +55,12 @@ FcValuePrint (const FcValue v)
 	printf (" set");
 	break;
     case FcTypeLangSet:
-	printf (" langset");
+	FcStrBufInit (&buf, init_buf, sizeof (init_buf));
+        if (FcNameUnparseLangSet (&buf, v.u.l) && FcStrBufChar (&buf,'\0'))
+	    printf (" %s", buf.buf);
+	else
+	    printf ("langset (alloc error)");
+	FcStrBufDestroy (&buf);
 	break;
     case FcTypeFTFace:
 	printf (" face");
@@ -66,8 +74,17 @@ FcValueListPrint (const FcValueList *l)
     for (; l; l = l->next)
     {
 	FcValuePrint (l->value);
-	if (l->binding == FcValueBindingWeak)
+	switch (l->binding) {
+	case FcValueBindingWeak:
 	    printf ("(w)");
+	    break;
+	case FcValueBindingStrong:
+	    printf ("(s)");
+	    break;
+	case FcValueBindingSame:
+	    printf ("(=)");
+	    break;
+	}
     }
 }
 
