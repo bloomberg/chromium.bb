@@ -33,6 +33,7 @@ int via_do_init_map(drm_device_t * dev, drm_via_init_t * init)
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
+	via_init_command_verifier();
 	dev_priv = DRM(alloc) (sizeof(drm_via_private_t), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
 		return -ENOMEM;

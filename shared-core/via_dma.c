@@ -170,19 +170,22 @@ int via_dma_init(DRM_IOCTL_ARGS)
 
 static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 {
-	drm_via_private_t *dev_priv = dev->dev_private;
+	drm_via_private_t *dev_priv;
 	uint32_t *vb;
 	int ret;
 
+	dev_priv = (drm_via_private_t *) dev->dev_private;
+
+	if (dev_priv->ring.virtual_start == NULL) {
+		DRM_ERROR("%s called without initializing AGP ring buffer.\n",
+			  __FUNCTION__);
+		return DRM_ERR(EFAULT);
+	}
 
 	if (cmd->size > pci_bufsiz && pci_bufsiz > 0) {
 		return DRM_ERR(ENOMEM);
 	} 
 
-	vb = via_check_dma(dev_priv, cmd->size);
-	if (vb == NULL) {
-		return DRM_ERR(EAGAIN);
-	}
 
 	if (DRM_COPY_FROM_USER(pci_buf, cmd->buf, cmd->size))
 		return DRM_ERR(EFAULT);
@@ -198,6 +201,11 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 		return ret;
 	}
        	
+	vb = via_check_dma(dev_priv, cmd->size);
+	if (vb == NULL) {
+		return DRM_ERR(EAGAIN);
+	}
+
 	memcpy(vb, pci_buf, cmd->size);
 	
 	dev_priv->dma_low += cmd->size;
