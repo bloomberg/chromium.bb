@@ -151,6 +151,7 @@ typedef struct _FcEdit {
     const char	    *field;
     FcOp	    op;
     FcExpr	    *expr;
+    FcValueBinding  binding;
 } FcEdit;
 
 typedef struct _FcSubst {
@@ -515,7 +516,7 @@ void
 FcExprDestroy (FcExpr *e);
 
 FcEdit *
-FcEditCreate (const char *field, FcOp op, FcExpr *expr);
+FcEditCreate (const char *field, FcOp op, FcExpr *expr, FcValueBinding binding);
 
 void
 FcEditDestroy (FcEdit *e);

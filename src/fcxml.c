@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.14 2002/06/21 07:01:11 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.16 2002/07/12 19:19:16 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -251,7 +251,7 @@ FcExprDestroy (FcExpr *e)
 }
 
 FcEdit *
-FcEditCreate (const char *field, FcOp op, FcExpr *expr)
+FcEditCreate (const char *field, FcOp op, FcExpr *expr, FcValueBinding binding)
 {
     FcEdit *e = (FcEdit *) malloc (sizeof (FcEdit));
 
@@ -261,6 +261,7 @@ FcEditCreate (const char *field, FcOp op, FcExpr *expr)
 	e->field = field;   /* already saved in grammar */
 	e->op = op;
 	e->expr = expr;
+	e->binding = binding;
     }
     return e;
 }
@@ -1170,7 +1171,8 @@ FcParseAlias (FcConfigParse *parse)
     {
 	edit = FcEditCreate (FcConfigSaveField ("family"),
 			     FcOpPrepend,
-			     prefer);
+			     prefer,
+			     FcValueBindingWeak);
 	if (edit)
 	    edit->next = 0;
 	else
@@ -1181,7 +1183,8 @@ FcParseAlias (FcConfigParse *parse)
 	next = edit;
 	edit = FcEditCreate (FcConfigSaveField ("family"),
 			     FcOpAppend,
-			     accept);
+			     accept,
+			     FcValueBindingWeak);
 	if (edit)
 	    edit->next = next;
 	else
@@ -1191,8 +1194,9 @@ FcParseAlias (FcConfigParse *parse)
     {
 	next = edit;
 	edit = FcEditCreate (FcConfigSaveField ("family"),
-			      FcOpAppendLast,
-			      def);
+			     FcOpAppendLast,
+			     def,
+			     FcValueBindingWeak);
 	if (edit)
 	    edit->next = next;
 	else
@@ -1436,7 +1440,9 @@ FcParseEdit (FcConfigParse *parse)
 {
     const FcChar8   *name;
     const FcChar8   *mode_string;
+    const FcChar8   *binding_string;
     FcOp	    mode;
+    FcValueBinding  binding;
     FcExpr	    *expr;
     FcEdit	    *edit;
 
@@ -1458,8 +1464,23 @@ FcParseEdit (FcConfigParse *parse)
 	    return;
 	}
     }
+    binding_string = FcConfigGetAttribute (parse, "binding");
+    if (!binding_string)
+	binding = FcValueBindingWeak;
+    else
+    {
+	if (!strcmp ((char *) binding_string, "weak"))
+	    binding = FcValueBindingWeak;
+	else if (!strcmp ((char *) binding_string, "strong"))
+	    binding = FcValueBindingStrong;
+	else
+	{
+	    FcConfigMessage (parse, FcSevereWarning, "invalid edit binding \"%s\"", binding_string);
+	    return;
+	}
+    }
     expr = FcPopExprs (parse, FcOpComma);
-    edit = FcEditCreate ((char *) FcStrCopy (name), mode, expr);
+    edit = FcEditCreate ((char *) FcStrCopy (name), mode, expr, binding);
     if (!edit)
     {
 	FcConfigMessage (parse, FcSevereError, "out of memory");

@@ -903,7 +903,7 @@ FcConfigMatchValueList (FcPattern	*p,
 }
 
 static FcValueList *
-FcConfigValues (FcPattern *p, FcExpr *e)
+FcConfigValues (FcPattern *p, FcExpr *e, FcValueBinding binding)
 {
     FcValueList	*l;
     
@@ -916,14 +916,14 @@ FcConfigValues (FcPattern *p, FcExpr *e)
     if (e->op == FcOpComma)
     {
 	l->value = FcConfigEvaluate (p, e->u.tree.left);
-	l->next  = FcConfigValues (p, e->u.tree.right);
+	l->next  = FcConfigValues (p, e->u.tree.right, binding);
     }
     else
     {
 	l->value = FcConfigEvaluate (p, e);
 	l->next  = 0;
     }
-    l->binding = FcValueBindingWeak;
+    l->binding = binding;
     while (l && l->value.type == FcTypeVoid)
     {
 	FcValueList	*next = l->next;
@@ -1146,7 +1146,7 @@ FcConfigSubstitute (FcConfig	*config,
 	    /*
 	     * Evaluate the list of expressions
 	     */
-	    l = FcConfigValues (p, e->expr);
+	    l = FcConfigValues (p, e->expr, e->binding);
 	    /*
 	     * Locate any test associated with this field
 	     */

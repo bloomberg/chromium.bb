@@ -9,11 +9,17 @@
   Common X11R6 font directories
 -->
 
-	<dir>/usr/X11R6/lib/X11/fonts/truetype</dir>
- 	<dir>/usr/X11R6/lib/X11/fonts/Type1</dir>
-  	<dir>/usr/X11R6/lib/X11/fonts/TrueType</dir>
+	<dir>/usr/X11R6/lib/X11/fonts</dir>
+ 	<dir>/usr/share/fonts</dir>
 
 <!-- FONTPATH_END -->
+
+<!--
+  Enable sub-pixel rendering
+	<match target="font">
+		<edit name="rgba" mode="assign"><const>rgb</const></edit>
+	</match>
+-->
 
 <!--
   Accept deprecated 'mono' alias, replacing it with 'monospace'
