@@ -115,25 +115,12 @@ int DRM(addmap)( DRM_IOCTL_ARGS )
 #if __REALLY_HAVE_MTRR
 		if ( map->type == _DRM_FRAME_BUFFER ||
 		     (map->flags & _DRM_WRITE_COMBINING) ) {
-#ifdef __FreeBSD__
-			int retcode = 0, act;
-			struct mem_range_desc mrdesc;
-			mrdesc.mr_base = map->offset;
-			mrdesc.mr_len = map->size;
-			mrdesc.mr_flags = MDF_WRITECOMBINE;
-			act = MEMRANGE_SET_UPDATE;
-			bcopy(DRIVER_NAME, &mrdesc.mr_owner, strlen(DRIVER_NAME));
-			retcode = mem_range_attr_set(&mrdesc, &act);
-			map->mtrr=1;
-#elif defined __NetBSD__
-			struct mtrr mtrrmap;
-			int one = 1;
-			mtrrmap.base = map->offset;
-			mtrrmap.len = map->size;
-			mtrrmap.type = MTRR_TYPE_WC;
-			mtrrmap.flags = MTRR_VALID;
-			map->mtrr = mtrr_set( &mtrrmap, &one, p, MTRR_GETSET_KERNEL );
-#endif
+			int mtrr;
+			     
+			mtrr = DRM(mtrr_add)(map->offset, map->size,
+			     DRM_MTRR_WC);
+			if (mtrr == 0)
+				map->mtrr = 1;
 		}
 #endif /* __REALLY_HAVE_MTRR */
 		DRM_IOREMAP(map, dev);
@@ -235,29 +222,11 @@ int DRM(rmmap)( DRM_IOCTL_ARGS )
 	case _DRM_FRAME_BUFFER:
 #if __REALLY_HAVE_MTRR
 		if (map->mtrr >= 0) {
-			int retcode;
-#ifdef __FreeBSD__
-			int act;
-			struct mem_range_desc mrdesc;
-			mrdesc.mr_base = map->offset;
-			mrdesc.mr_len = map->size;
-			mrdesc.mr_flags = MDF_WRITECOMBINE;
-			act = MEMRANGE_SET_REMOVE;
-			bcopy(DRIVER_NAME, &mrdesc.mr_owner,
-			    strlen(DRIVER_NAME));
-			retcode = mem_range_attr_set(&mrdesc, &act);
-#elif defined __NetBSD__
-			struct mtrr mtrrmap;
-			int one = 1;
-			mtrrmap.base = map->offset;
-			mtrrmap.len = map->size;
-			mtrrmap.type = 0;
-			mtrrmap.flags = 0;
-			mtrrmap.owner = p->p_pid;
-			retcode = mtrr_set(&mtrrmap, &one, p,
-			    MTRR_GETSET_KERNEL);
-			DRM_DEBUG("mtrr_del = %d\n", retcode);
-#endif
+			int __unused mtrr;
+			
+			mtrr = DRM(mtrr_del)(map->offset, map->size,
+			    DRM_MTRR_WC);
+			DRM_DEBUG("mtrr_del = %d\n", mtrr);
 		}
 #endif
 		DRM(ioremapfree)(map);

@@ -171,6 +171,8 @@ typedef void			irqreturn_t;
 #define DRM_AGP_FIND_DEVICE()	agp_find_device()
 #define DRM_ERR(v)		v
 
+#define DRM_MTRR_WC	MDF_WRITECOMBINE
+
 #define LOCK_TEST_WITH_RETURN(dev, filp)				\
 do {									\
 	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) ||		\

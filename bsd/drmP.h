@@ -403,6 +403,8 @@ extern void	     *DRM(realloc)(void *oldpt, size_t oldsize, size_t size,
 extern void	     DRM(free)(void *pt, size_t size, int area);
 extern void	     *DRM(ioremap)(drm_device_t *dev, drm_local_map_t *map);
 extern void	     DRM(ioremapfree)(drm_local_map_t *map);
+extern int	 DRM(mtrr_add)(unsigned long offset, size_t size, int flags);
+extern int	 DRM(mtrr_del)(unsigned long offset, size_t size, int flags);
 
 #if __REALLY_HAVE_AGP
 extern agp_memory    *DRM(alloc_agp)(int pages, u32 type);

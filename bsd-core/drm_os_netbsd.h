@@ -136,6 +136,8 @@ extern const int DRM(M_DRM) = M_DEVBUF;
 #define DRM_WRITE8(map, offset, val)	bus_space_write_1( (map)->iot, (map)->ioh, (offset), (val) )
 #define DRM_WRITE32(map, offset, val)	bus_space_write_4( (map)->iot, (map)->ioh, (offset), (val) )
 
+#define DRM_MTRR_WC	MTRR_TYPE_WC
+
 #define DRM_AGP_FIND_DEVICE()	agp_find_device(0)
 
 #define LOCK_TEST_WITH_RETURN(dev, filp)				\
