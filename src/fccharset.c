@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.3 2002/02/18 22:29:28 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.6 2002/03/27 04:33:55 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -557,25 +557,45 @@ FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b)
     return count;
 }
 
+/*
+ * These two functions efficiently walk the entire charmap for
+ * other software (like pango) that want their own copy
+ */
+
 FcChar32
-FcCharSetCoverage (const FcCharSet *a, FcChar32 page, FcChar32 *result)
+FcCharSetNextPage (const FcCharSet  *a, 
+		   FcChar32	    map[FC_CHARSET_MAP_SIZE],
+		   FcChar32	    *next)
 {
     FcCharSetIter   ai;
+    FcChar32	    page;
 
-    ai.ucs4 = page;
+    ai.ucs4 = *next;
     FcCharSetIterSet (a, &ai);
     if (!ai.leaf)
-    {
-	memset (result, '\0', 256 / 8);
-	page = 0;
-    }
-    else
-    {
-	memcpy (result, ai.leaf->map, sizeof (ai.leaf->map));
-	FcCharSetIterNext (a, &ai);
-	page = ai.ucs4;
-    }
+	return FC_CHARSET_DONE;
+    
+    /*
+     * Save current information
+     */
+    page = ai.ucs4;
+    memcpy (map, ai.leaf->map, sizeof (ai.leaf->map));
+    /*
+     * Step to next page
+     */
+    FcCharSetIterNext (a, &ai);
+    *next = ai.ucs4;
+
     return page;
+}
+
+FcChar32
+FcCharSetFirstPage (const FcCharSet *a, 
+		    FcChar32	    map[FC_CHARSET_MAP_SIZE],
+		    FcChar32	    *next)
+{
+    *next = 0;
+    return FcCharSetNextPage (a, map, next);
 }
 
 /*

@@ -347,8 +347,19 @@ FcCharSetIntersectCount (const FcCharSet *a, const FcCharSet *b);
 FcChar32
 FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b);
 
+#define FC_CHARSET_MAP_SIZE (256/32)
+#define FC_CHARSET_DONE	((FcChar32) -1)
+
 FcChar32
-FcCharSetCoverage (const FcCharSet *a, FcChar32 page, FcChar32 *result);
+FcCharSetFirstPage (const FcCharSet *a, 
+		    FcChar32	    map[FC_CHARSET_MAP_SIZE],
+		    FcChar32	    *next);
+
+FcChar32
+FcCharSetNextPage (const FcCharSet  *a, 
+		   FcChar32	    map[FC_CHARSET_MAP_SIZE],
+		   FcChar32	    *next);
+
 
 /* fcdbg.c */
 void
