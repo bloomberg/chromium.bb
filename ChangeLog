@@ -1,0 +1,17 @@
+Tue Jul 30 18:37:09 PDT 2002	keithp
+
+	+ Add binding property to edit element so that strong
+	  binding values may be inserted by the config file.
+	  The default remains weak.
+
+Sun 28 Jul 04:16:55 PDT 2002	keithp
+
+	+ Tagged release candidate 1 in the CVS tree and
+	  placed fcpackage.rc1.tar.gz for distribution
+
+Thu Aug  1 08:55:08 PDT 2002	keithp
+
+	+ Fixed autoconf builds to always specify install
+	  target files (for BSD).  Also fixed to
+	  define FONTCONFIG_PATH in config.h so that
+	  nonstandard installs will actually work.

@@ -142,3 +142,6 @@
 
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
+
+/* Define to the directory containing font configuration files */
+#undef FONTCONFIG_PATH

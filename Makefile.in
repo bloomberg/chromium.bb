@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/fontconfig/Makefile.in,v 1.5 2002/05/24 06:25:51 keithp Exp $
+# $XFree86: xc/lib/fontconfig/Makefile.in,v 1.6 2002/05/28 03:50:23 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -71,11 +71,11 @@ $(DESTDIR)$(CONFDIR)/fonts.conf:: fonts.conf
 	if [ -f $@ ]; then \
 		echo "Not overwriting existing $@"; \
 	else \
-		$(INSTALL_DATA) fonts.conf $(DESTDIR)$(CONFDIR); \
+		$(INSTALL_DATA) fonts.conf $(DESTDIR)$(CONFDIR)/fonts.conf; \
 	fi
 
 $(DESTDIR)$(CONFDIR)/fonts.dtd:: fonts.dtd
-	$(INSTALL_DATA) fonts.dtd $(DESTDIR)$(CONFDIR)
+	$(INSTALL_DATA) fonts.dtd $(DESTDIR)$(CONFDIR)/fonts.dtd
 
 #
 # install fontconfig-config script
@@ -84,7 +84,7 @@ $(DESTDIR)$(CONFDIR)/fonts.dtd:: fonts.dtd
 install:: $(DESTDIR)$(BINDIR)/fontconfig-config
 
 $(DESTDIR)$(BINDIR)/fontconfig-config: fontconfig-config
-	$(INSTALL_SCRIPT) $< $(DESTDIR)$(BINDIR)
+	$(INSTALL_SCRIPT) $< $(DESTDIR)$(BINDIR)/$<
 
 #
 # install pkgconfig control file
@@ -92,4 +92,4 @@ $(DESTDIR)$(BINDIR)/fontconfig-config: fontconfig-config
 install:: $(DESTDIR)$(LIBDIR)/pkgconfig/fontconfig.pc
 
 $(DESTDIR)$(LIBDIR)/pkgconfig/fontconfig.pc: fontconfig.pc
-	$(INSTALL_DATA) $< $(DESTDIR)$(LIBDIR)/pkgconfig
+	$(INSTALL_DATA) $< $(DESTDIR)$(LIBDIR)/pkgconfig/$<

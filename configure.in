@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/lib/fontconfig/configure.in,v 1.5 2002/05/24 05:19:30 keithp Exp $
+dnl $XFree86: xc/lib/fontconfig/configure.in,v 1.6 2002/06/07 17:55:41 keithp Exp $
 dnl
 dnl Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 dnl
@@ -205,6 +205,18 @@ yes)
 esac
 
 AC_SUBST(FC_DEFAULT_FONTS)
+
+#
+# Set CONFDIR and FONTCONFIG_PATH
+#
+
+CONFDIR="$sysconfdir/fonts"
+AC_DEFINE_UNQUOTED(CONFDIR, "$CONFDIR")
+AC_SUBST(CONFDIR)
+
+FONTCONFIG_PATH="$CONFDIR"
+AC_DEFINE_UNQUOTED(FONTCONFIG_PATH, "$CONFDIR")
+AC_SUBST(FONTCONFIG_PATH)
 
 #
 # Check expat/libxml2 configuration
