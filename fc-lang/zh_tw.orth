@@ -1,5 +1,5 @@
 #
-# $XFree86$
+# $XFree86: xc/lib/fontconfig/fc-lang/zh_tw.orth,v 1.2 2002/07/06 23:59:19 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -22,20 +22,23 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Chinese (traditional) ZH-TW
-0x3000
-0x3001
-0x3002
-0x3003
-0x3005
-0x3021
-0x3022
-0x3023
-0x3024
-0x3025
-0x3026
-0x3027
-0x3028
-0x3029
+#
+# Made by trimming the Big5 -> unicode mapping down to just Chinese glyphs
+#
+#0x3000		# ideographic space
+#0x3001		# ideographic comma
+#0x3002		# ideographic full stop
+#0x3003		# ditto mark
+#0x3005		# ideographic iteration mark
+#0x3021		# Suzhou numeral 1
+#0x3022		# Suzhou numeral 2
+#0x3023		# Suzhou numeral 3
+#0x3024		# Suzhou numeral 4
+#0x3025		# Suzhou numeral 5
+#0x3026		# Suzhou numeral 6
+#0x3027		# Suzhou numeral 7
+#0x3028		# Suzhou numeral 8
+#0x3029		# Suzhou numeral 9
 # Han
 0x4E00
 0x4E01

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.14 2002/06/29 20:31:02 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.15 2002/07/06 23:47:43 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -111,7 +111,7 @@ FcCharSetFindLeafPos (const FcCharSet *fcs, FcChar32 ucs4)
 	else
 	    high = mid - 1;
     }
-    if (high < 0 || numbers[high] < ucs4)
+    if (high < 0 || (high < fcs->num && numbers[high] < ucs4))
 	high++;
     return -(high + 1);
 }

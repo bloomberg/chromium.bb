@@ -1,0 +1,53 @@
+#
+# $XFree86$
+#
+# Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
+#
+# Permission to use, copy, modify, distribute, and sell this software and its
+# documentation for any purpose is hereby granted without fee, provided that
+# the above copyright notice appear in all copies and that both that
+# copyright notice and this permission notice appear in supporting
+# documentation, and that the name of Keith Packard not be used in
+# advertising or publicity pertaining to distribution of the software without
+# specific, written prior permission.  Keith Packard makes no
+# representations about the suitability of this software for any purpose.  It
+# is provided "as is" without express or implied warranty.
+#
+# KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+# EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+# CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+# DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+# TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+#
+# Persian (FA)
+#
+# Data from Roozbeh Pournader <roozbeh@sharif.edu>
+#
+# Select fonts based on support for presentation forms; this may
+# exclude some OpenType fonts, but the hope is those would be
+# located by a clever shaper by Unicode codepoints in any case.
+#
+# Non presentation forms.
+#0621-0624
+#0626-063a
+#0641-0642
+#0644-0648
+#067e
+#0686
+#0698
+#06a9
+#06af
+#06cc
+# Presentations Forms:
+fb56-fb59
+fb7a-fb7d
+fb8a-fb8b
+fb8e-fb95
+fbfc-fbff
+fe80-fe86
+fe89-fed8
+fedd-feee
+#fef5-fef8      # These four happen very rarely
+fefb-fefc

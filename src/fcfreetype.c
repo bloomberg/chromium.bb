@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.6 2002/07/06 23:47:43 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.7 2002/07/08 07:31:53 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -40,9 +40,9 @@ static const struct {
     const FcChar8   *lang;
 } FcCodePageRange[] = {
     { 17,	(const FcChar8 *) "ja" },
-    { 18,	(const FcChar8 *) "zh-tw" },
+    { 18,	(const FcChar8 *) "zh-cn" },
     { 19,	(const FcChar8 *) "ko" },
-    { 20,	(const FcChar8 *) "zh-cn" },
+    { 20,	(const FcChar8 *) "zh-tw" },
 };
 
 #define NUM_CODE_PAGE_RANGE (sizeof FcCodePageRange / sizeof FcCodePageRange[0])
