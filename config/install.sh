@@ -1,5 +1,7 @@
 #! /bin/sh
 #
+# $RCSId: $
+#
 # install - install a program, script, or datafile
 # This comes from X11R5.
 #
@@ -9,8 +11,6 @@
 #
 # This script is compatible with the BSD install script, but was written
 # from scratch.
-#
-# $XFree86$
 #
 
 
