@@ -290,6 +290,22 @@ ORTH_FILES=`cd fc-lang && echo *.orth`
 AC_SUBST(ORTH_FILES)
 
 #
+# Let people not build/install docs if they don't have docbook
+#
+
+AC_CHECK_PROG(HASDOCBOOK, docbook2html, yes, no)
+
+AC_ARG_ENABLE(docs,           [  --disable-docs               Don't build and install documentation],,enable_docs=yes)
+
+if test "x$enable_docs" = xyes; then
+  if test "x$HASDOCBOOK" != xyes; then
+    enable_docs=no
+  fi
+fi
+
+AM_CONDITIONAL(ENABLE_DOCS, test "x$enable_docs" = xyes)
+
+#
 # Figure out where to install documentation
 #
 

@@ -22,14 +22,25 @@ SUFFIXES=.sgml .txt .html
 
 EXTRA_DIST = $(TXT) $(HTML) $(SGML)
 	
-all-local: $(TXT) $(HTML)
-
+if ENABLE_DOCS
+DOCS=$(TXT) $(HTML)
+all-local: all-docs
+clean-local: clean-docs
+install-data-local: install-docs
+else
+all-local:
 clean-local:
-	rm -f $(TXT) $(HTML)
-
 install-data-local:
+endif
+
+all-docs: $(DOCS)
+
+clean-docs:
+	rm -f $(DOCS)
+
+install-docs:
 	$(mkinstalldirs) $(DESTDIR)$(TARGET_DIR)
-	for i in $(TXT) $(HTML); do \
+	for i in $(DOCS); do \
 	  echo '-- Installing'$$i ; \
 	  $(INSTALL_DATA) $$i $(DESTDIR)$(TARGET_DIR)/$$i; \
 	done

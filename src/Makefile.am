@@ -25,10 +25,6 @@ libfontconfig_la_SOURCES = \
 	fcstr.c \
 	fcxml.c
 	
-man_MANS = fontconfig.3
-
-EXTRA_DIST = $(man_MANS)
-
 lib_LTLIBRARIES = libfontconfig.la
 
 libfontconfig_la_LDFLAGS =			\
