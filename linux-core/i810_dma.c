@@ -1275,11 +1275,13 @@ int i810_dma_mc(struct inode *inode, struct file *filp,
 	if (copy_from_user(&mc, (drm_i810_mc_t *)arg, sizeof(mc)))
 		return -EFAULT;
 
-
 	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
 		DRM_ERROR("i810_dma_mc called without lock held\n");
 		return -EINVAL;
 	}
+
+	if (mc.idx >= dma->buf_count || mc.idx < 0)
+		return -EINVAL;
 
 	i810_dma_dispatch_mc(dev, dma->buflist[mc.idx], mc.used,
 		mc.last_render );
