@@ -81,6 +81,9 @@
 #ifndef __HAVE_COUNTERS
 #define __HAVE_COUNTERS			0
 #endif
+#ifndef __HAVE_SG
+#define __HAVE_SG			0
+#endif
 
 #ifndef DRIVER_PREINIT
 #define DRIVER_PREINIT()
@@ -135,8 +138,10 @@ static drm_ioctl_desc_t		  DRM(ioctls)[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]       = { DRM(addmap),      1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_RM_MAP)]        = { DRM(rmmap),       1, 0 },
 
+#if __HAVE_CTX_BITMAP
 	[DRM_IOCTL_NR(DRM_IOCTL_SET_SAREA_CTX)] = { DRM(setsareactx), 1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_GET_SAREA_CTX)] = { DRM(getsareactx), 1, 0 },
+#endif
 
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]       = { DRM(addctx),      1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]        = { DRM(rmctx),       1, 1 },
@@ -176,6 +181,11 @@ static drm_ioctl_desc_t		  DRM(ioctls)[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]      = { DRM(agp_free),    1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]      = { DRM(agp_bind),    1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]    = { DRM(agp_unbind),  1, 1 },
+#endif
+
+#if __HAVE_SG
+	[DRM_IOCTL_NR(DRM_IOCTL_SG_ALLOC)]      = { DRM(sg_alloc),    1, 1 },
+	[DRM_IOCTL_NR(DRM_IOCTL_SG_FREE)]       = { DRM(sg_free),     1, 1 },
 #endif
 
 	DRIVER_IOCTLS
@@ -414,6 +424,17 @@ static int DRM(takedown)( drm_device_t *dev )
 				/* Do nothing here, because this is all
 				 * handled in the AGP/GART driver.
 				 */
+				break;
+                       case _DRM_SCATTER_GATHER:
+				/* Handle it, but do nothing, if HAVE_SG
+				 * isn't defined.
+				 */
+#if __HAVE_SG
+				if(dev->sg) {
+					DRM(sg_cleanup)(dev->sg);
+					dev->sg = NULL;
+				}
+#endif
 				break;
 			}
  			DRM(free)(map, sizeof(*map), DRM_MEM_MAPS);
