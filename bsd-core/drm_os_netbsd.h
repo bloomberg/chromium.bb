@@ -337,9 +337,6 @@ do { \
 	printf( fmt,## arg ); \
 } while (0)
 
-#define DRM_MEM_ERROR(area, fmt, arg...) \
-	printf("error: [" DRM_NAME ":%s:%s] *ERROR* " fmt , \
-		__func__, drm_mem_stats[area].name ,## arg)
 #define DRM_INFO(fmt, arg...)  printf("info: " "[" DRM_NAME "] " fmt ,## arg)
 
 #if DRM_DEBUG_CODE

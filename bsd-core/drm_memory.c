@@ -38,9 +38,6 @@ MALLOC_DEFINE(M_DRM, "drm", "DRM Data Structures");
 #undef malloctype
 #endif
 
-#ifdef DEBUG_MEMORY
-#include "drm_memory_debug.h"
-#else
 void drm_mem_init(void)
 {
 #ifdef __NetBSD__
@@ -178,5 +175,3 @@ drm_mtrr_del(unsigned long offset, size_t size, int flags)
 	return mtrr_set(&mtrrmap, &one, NULL, MTRR_GETSET_KERNEL);
 }
 #endif
-
-#endif /* DEBUG_MEMORY */

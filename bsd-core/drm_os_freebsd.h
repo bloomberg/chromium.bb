@@ -411,10 +411,6 @@ find_first_zero_bit(volatile void *p, int max)
 	printf("error: [" DRM_NAME ":pid%d:%s] *ERROR* " fmt,		\
 	    DRM_CURRENTPID, __func__ , ## arg)
 
-#define DRM_MEM_ERROR(area, fmt, arg...) \
-	printf("error: [" DRM_NAME ":pid%d:%s:%s] *ERROR* " fmt,	\
-	    DRM_CURRENTPID , __func__, drm_mem_stats[area].name , ##arg)
-
 #define DRM_INFO(fmt, arg...)  printf("info: [" DRM_NAME "] " fmt , ## arg)
 
 #if DRM_DEBUG_CODE
@@ -451,8 +447,3 @@ extern drm_file_t	*drm_find_file_by_proc(drm_device_t *dev,
 /* sysctl support (drm_sysctl.h) */
 extern int		drm_sysctl_init(drm_device_t *dev);
 extern int		drm_sysctl_cleanup(drm_device_t *dev);
-
-/* Memory info sysctl (drm_memory_debug.h) */
-#ifdef DEBUG_MEMORY
-extern int		drm_mem_info DRM_SYSCTL_HANDLER_ARGS;
-#endif

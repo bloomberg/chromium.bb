@@ -39,9 +39,6 @@ struct drm_sysctl_list {
 	int	   (*f) DRM_SYSCTL_HANDLER_ARGS;
 } drm_sysctl_list[] = {
 	{"name",    drm_name_info},
-#ifdef DEBUG_MEMORY
-	{"mem",     drm_mem_info},
-#endif
 	{"vm",	    drm_vm_info},
 	{"clients", drm_clients_info},
 	{"bufs",    drm_bufs_info},
