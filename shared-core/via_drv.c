@@ -27,16 +27,6 @@
 #include "via_drm.h"
 #include "via_drv.h"
 
-#define DRIVER_AUTHOR	"VIA"
-
-#define DRIVER_NAME		"via"
-#define DRIVER_DESC		"VIA Unichrome"
-#define DRIVER_DATE		"20041010"
-
-#define DRIVER_MAJOR		2
-#define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	0
-
 #include "drm_pciids.h"
 
 static int postinit(struct drm_device *dev, unsigned long flags)

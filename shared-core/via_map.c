@@ -22,6 +22,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "drmP.h"
+#include "via_drm.h"
 #include "via_drv.h"
 
 int via_do_init_map(drm_device_t * dev, drm_via_init_t * init)

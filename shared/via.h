@@ -26,8 +26,26 @@
 
 #define DRM(x) viadrv_##x
 
-/* BEAM: Have enabled DMA,DMA_IRQ and VBL_IRQ needed to do this to get standard
- * support for VBL_IRQ.
- */
+#define DRIVER_AUTHOR	"VIA"
+
+#define DRIVER_NAME		"via"
+#define DRIVER_DESC		"VIA Unichrome"
+#define DRIVER_DATE		"20041010"
+
+#define DRIVER_MAJOR		2
+#define DRIVER_MINOR		0
+#define DRIVER_PATCHLEVEL	0
+
+#define DRIVER_IOCTLS							\
+        [DRM_IOCTL_NR(DRM_IOCTL_VIA_ALLOCMEM)]  = { via_mem_alloc,  1, 0 }, \
+        [DRM_IOCTL_NR(DRM_IOCTL_VIA_FREEMEM)]   = { via_mem_free,   1, 0 }, \
+        [DRM_IOCTL_NR(DRM_IOCTL_VIA_AGP_INIT)]   = { via_agp_init,  1, 0 }, \
+        [DRM_IOCTL_NR(DRM_IOCTL_VIA_FB_INIT)]   = { via_fb_init,    1, 0 }, \
+        [DRM_IOCTL_NR(DRM_IOCTL_VIA_MAP_INIT)]   = { via_map_init,  1, 0 }, \
+        [DRM_IOCTL_NR(DRM_IOCTL_VIA_DEC_FUTEX)] = { via_decoder_futex, 1, 0}, \
+        [DRM_IOCTL_NR(DRM_IOCTL_VIA_DMA_INIT)] = { via_dma_init, 1, 0}, \
+        [DRM_IOCTL_NR(DRM_IOCTL_VIA_CMDBUFFER)] = { via_cmdbuffer, 1, 0}, \
+	[DRM_IOCTL_NR(DRM_IOCTL_VIA_FLUSH)] = { via_flush_ioctl, 1, 0}, \
+        [DRM_IOCTL_NR(DRM_IOCTL_VIA_PCICMD)] = { via_pci_cmdbuffer, 1, 0}
 
 #endif

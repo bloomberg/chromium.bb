@@ -78,7 +78,7 @@ int via_agp_init(DRM_IOCTL_ARGS)
 
 	AgpHeap = via_mmInit(agp.offset, agp.size);
 
-	DRM_DEBUG("offset = %lu, size = %lu", agp.offset, agp.size);
+	DRM_DEBUG("offset = %lu, size = %lu", (unsigned long)agp.offset, (unsigned long)agp.size);
 
 	return 0;
 }
@@ -94,7 +94,7 @@ int via_fb_init(DRM_IOCTL_ARGS)
 
 	FBHeap = via_mmInit(fb.offset, fb.size);
 
-	DRM_DEBUG("offset = %lu, size = %lu", fb.offset, fb.size);
+	DRM_DEBUG("offset = %lu, size = %lu", (unsigned long)fb.offset, (unsigned long)fb.size);
 
 	return 0;
 }
