@@ -164,8 +164,8 @@ typedef struct drm_r128_sarea {
 	drm_tex_region_t tex_list[R128_NR_TEX_HEAPS][R128_NR_TEX_REGIONS+1];
 	unsigned int tex_age[R128_NR_TEX_HEAPS];
 	int ctx_owner;
-        int pfAllowPageFlip;        /* number of 3d windows (0,1,2 or more) */
-        int pfCurrentPage;	    /* which buffer is being displayed? */
+	int pfAllowPageFlip;        /* number of 3d windows (0,1,2 or more) */
+	int pfCurrentPage;	    /* which buffer is being displayed? */
 } drm_r128_sarea_t;
 
 
