@@ -214,6 +214,7 @@ drm_buf_t *mga_freelist_get(drm_device_t *dev)
 	drm_mga_freelist_t *prev;
    	drm_mga_freelist_t *next;
 	static int failed = 0;
+	int return_null = 0;
 
 	DRM_DEBUG("%s : tail->age : %d last_prim_age : %d\n", __FUNCTION__,
 	       dev_priv->tail->age, dev_priv->last_prim_age);
@@ -222,7 +223,6 @@ drm_buf_t *mga_freelist_get(drm_device_t *dev)
 		DRM_DEBUG("I'm waiting on the freelist!!! %d\n",
 		       dev_priv->last_prim_age);
 	   	set_bit(MGA_IN_GETBUF, &dev_priv->dispatch_status);
-		current->state = TASK_INTERRUPTIBLE;
 	   	add_wait_queue(&dev_priv->buf_queue, &entry);
 	   	for (;;) {
 		   	mga_dma_schedule(dev, 0);
@@ -230,15 +230,18 @@ drm_buf_t *mga_freelist_get(drm_device_t *dev)
 				     &dev_priv->dispatch_status))
 				break;
 		   	atomic_inc(&dev->total_sleeps);
+			current->state = TASK_INTERRUPTIBLE;
 		   	schedule();
 		   	if (signal_pending(current)) {
+				DRM_ERROR("Returning NULL\n");
+				++return_null;
 				clear_bit(MGA_IN_GETBUF,
 					  &dev_priv->dispatch_status);
-			   	goto failed_getbuf;
+				break;
 			}
 		}
-	   	current->state = TASK_RUNNING;
 	   	remove_wait_queue(&dev_priv->buf_queue, &entry);
+		if (return_null) return NULL;
 	}
 
    	if(dev_priv->tail->age < dev_priv->last_prim_age) {
@@ -251,8 +254,6 @@ drm_buf_t *mga_freelist_get(drm_device_t *dev)
 		failed = 0;
 	   	return next->buf;
 	}
-
-failed_getbuf:
 	failed++;
    	return NULL;
 }
