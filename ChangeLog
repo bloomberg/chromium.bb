@@ -1,5 +1,11 @@
 2004-04-23  Keith Packard  <keithp@keithp.com>
 
+	* INSTALL:
+	Extend release preparation instructions to include
+	notification and distribution steps
+
+2004-04-23  Keith Packard  <keithp@keithp.com>
+
 	* README:
 	* configure.in:
 	* fontconfig/fontconfig.h:
