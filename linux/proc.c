@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/proc.c,v 1.4 1999/08/20 15:36:46 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/proc.c,v 1.1 1999/09/25 14:38:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/proc.c,v 1.2 1999/12/14 01:33:58 robin Exp $
  *
  */
 
@@ -79,26 +79,26 @@ int drm_proc_init(drm_device_t *dev)
 	struct proc_dir_entry *ent;
 	int		      i, j;
 
-	drm_root = create_proc_entry("dri", S_IFDIR, NULL);
+	drm_root = create_proc_entry("graphics", S_IFDIR, NULL);
 	if (!drm_root) {
-		DRM_ERROR("Cannot create /proc/dri\n");
+		DRM_ERROR("Cannot create /proc/graphics\n");
 		return -1;
 	}
 
 				/* Instead of doing this search, we should
-				   add some global support for /proc/dri. */
+				   add some global support for /proc/graphics. */
 	for (i = 0; i < 8; i++) {
-		sprintf(drm_slot_name, "dri/%d", i);
+		sprintf(drm_slot_name, "graphics/%d", i);
 		drm_dev_root = create_proc_entry(drm_slot_name, S_IFDIR, NULL);
 		if (!drm_dev_root) {
 			DRM_ERROR("Cannot create /proc/%s\n", drm_slot_name);
-			remove_proc_entry("dri", NULL);
+			remove_proc_entry("graphics", NULL);
 		}
 		if (drm_dev_root->nlink == 2) break;
 		drm_dev_root = NULL;
 	}
 	if (!drm_dev_root) {
-		DRM_ERROR("Cannot find slot in /proc/dri\n");
+		DRM_ERROR("Cannot find slot in /proc/graphics\n");
 		return -1;
 	}
 
@@ -112,7 +112,7 @@ int drm_proc_init(drm_device_t *dev)
 				remove_proc_entry(drm_proc_list[i].name,
 						  drm_dev_root);
 			remove_proc_entry(drm_slot_name, NULL);
-			remove_proc_entry("dri", NULL);
+			remove_proc_entry("graphics", NULL);
 			return -1;
 		}
 		ent->read_proc = drm_proc_list[i].f;
@@ -135,7 +135,7 @@ int drm_proc_cleanup(void)
 			}
 			remove_proc_entry(drm_slot_name, NULL);
 		}
-		remove_proc_entry("dri", NULL);
+		remove_proc_entry("graphics", NULL);
 		remove_proc_entry(DRM_NAME, NULL);
 	}
 	drm_root = drm_dev_root = NULL;

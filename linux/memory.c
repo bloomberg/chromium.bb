@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/memory.c,v 1.4 1999/08/20 20:00:53 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/memory.c,v 1.1 1999/09/25 14:38:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/memory.c,v 1.2 1999/12/14 01:33:57 robin Exp $
  *
  */
 
