@@ -130,9 +130,7 @@ static struct file_operations i830_buffer_fops = {
 	.release = DRM(release),
 	.ioctl	 = DRM(ioctl),
 	.mmap	 = i830_mmap_buffers,
-	.read	 = DRM(read),
 	.fasync  = DRM(fasync),
-      	.poll	 = DRM(poll),
 };
 
 int i830_mmap_buffers(struct file *filp, struct vm_area_struct *vma)

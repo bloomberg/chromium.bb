@@ -697,13 +697,7 @@ extern int           DRM(unlock)(struct inode *inode, struct file *filp,
 extern int	     DRM(open_helper)(struct inode *inode, struct file *filp,
 				      drm_device_t *dev);
 extern int	     DRM(flush)(struct file *filp);
-extern int	     DRM(release_fuck)(struct inode *inode, struct file *filp);
 extern int	     DRM(fasync)(int fd, struct file *filp, int on);
-extern ssize_t	     DRM(read)(struct file *filp, char *buf, size_t count,
-			       loff_t *off);
-extern int	     DRM(write_string)(drm_device_t *dev, const char *s);
-extern unsigned int  DRM(poll)(struct file *filp,
-			       struct poll_table_struct *wait);
 
 				/* Mapping support (drm_vm.h) */
 extern struct page *DRM(vm_nopage)(struct vm_area_struct *vma,

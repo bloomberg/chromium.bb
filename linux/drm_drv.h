@@ -121,9 +121,7 @@ static struct file_operations	DRM(fops) = {	\
 	.release = DRM(release),		\
 	.ioctl	 = DRM(ioctl),			\
 	.mmap	 = DRM(mmap),			\
-	.read	 = DRM(read),			\
 	.fasync  = DRM(fasync),			\
-	.poll	 = DRM(poll),			\
 }
 #endif
 
