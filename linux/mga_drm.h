@@ -298,8 +298,9 @@ typedef struct drm_mga_iload {
 
 typedef struct _drm_mga_blit {
 	unsigned int planemask;
-	unsigned int source;
-	unsigned int dest;
+	unsigned int srcorg;
+	unsigned int dstorg;
+	int src_pitch, dst_pitch;
 	int delta_sx, delta_sy;
 	int delta_dx, delta_dy;
 	int height, ydir;		/* flip image vertically */
