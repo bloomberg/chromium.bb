@@ -58,13 +58,13 @@ DRM_MODULES ?= $(MODULE_LIST)
 # These definitions are for handling dependencies in the out of kernel build.
 
 DRMTEMPLATES =  drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
-                drm_drv.h drm_fops.h drm_init.h drm_ioctl.h drm_lists.h \
+                drm_drv.h drm_fops.h drm_init.h drm_ioctl.h \
                 drm_lock.h drm_memory.h drm_proc.h drm_stub.h drm_vm.h
 
 DRMSHARED =     drm_sarea.h
 DRMHEADERS =    drm.h drmP.h $(DRMSHARED)
 
-GAMMAHEADERS =  gamma_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
+GAMMAHEADERS =  gamma.h gamma_context.h gamma_drm.h gamma_drv.h gamma_lists.h gamma_old_dma.h gamma_lock.h $(DRMHEADERS) $(DRMTEMPLATES)
 TDFXHEADERS =   tdfx.h $(DRMHEADERS) $(DRMTEMPLATES)
 R128HEADERS =   r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 R128SHARED =    r128.h r128_drv.h r128_drm.h r128_cce.c r128_state.c r128_irq.c
