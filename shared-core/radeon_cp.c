@@ -1388,13 +1388,18 @@ int radeon_cp_stop( DRM_IOCTL_ARGS )
 void radeon_do_release( drm_device_t *dev )
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
+	int ret;
 
 	if (dev_priv) {
-		/* Stop the cp */
-		radeon_do_cp_flush( dev_priv );
-		radeon_do_cp_idle( dev_priv );
-		radeon_do_cp_stop( dev_priv );
-		radeon_do_engine_reset( dev );
+		if (dev_priv->cp_running) {
+			/* Stop the cp */
+			while ((ret = radeon_do_cp_idle( dev_priv )) != 0) {
+				DRM_DEBUG("radeon_do_cp_idle %d\n", ret);
+				schedule(); /* BSD? */
+			}
+			radeon_do_cp_stop( dev_priv );
+			radeon_do_engine_reset( dev );
+		}
 
 		/* Disable *all* interrupts */
 		RADEON_WRITE( RADEON_GEN_INT_CNTL, 0 );
