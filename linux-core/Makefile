@@ -68,7 +68,7 @@ DRM_MODULES ?= $(MODULE_LIST)
 # These definitions are for handling dependencies in the out of kernel build.
 
 DRMSHARED =     drm.h drm_sarea.h
-DRMHEADERS =    drmP.h drm_compat.h drm_os_linux.h drm_module.h $(DRMSHARED)
+DRMHEADERS =    drmP.h drm_compat.h drm_os_linux.h $(DRMSHARED)
 COREHEADERS =   drm_core.h 
 
 TDFXHEADERS =   tdfx_drv.h $(DRMHEADERS)

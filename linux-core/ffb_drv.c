@@ -353,8 +353,8 @@ static void __exit ffb_exit(void)
 	drm_exit(&driver);
 }
 
-drm_module_init(ffb_init);
-drm_module_exit(ffb_exit));
+module_init(ffb_init);
+module_exit(ffb_exit));
 
 MODULE_AUTHOR( DRIVER_AUTHOR );
 MODULE_DESCRIPTION( DRIVER_DESC );
