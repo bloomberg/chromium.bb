@@ -295,7 +295,7 @@ int r128_do_engine_reset(drm_device_t *dev)
 	mclk_cntl        = R128_READ_PLL(dev, R128_MCLK_CNTL);
 
 	R128_WRITE_PLL(R128_MCLK_CNTL,
-		       mclk_cntl | R128_FORCE_GCP | R128_FORCE_PIPE3D_CPP);
+		       mclk_cntl | R128_FORCE_GCP | R128_FORCE_PIPE3D_CP);
 
 	gen_reset_cntl   = R128_READ(R128_GEN_RESET_CNTL);
 

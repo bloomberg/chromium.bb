@@ -136,7 +136,8 @@ extern int  r128_context_switch_complete(drm_device_t *dev, int new);
 
 #define R128_MCLK_CNTL		0x000f
 #       define R128_FORCE_GCP		(1 << 16)
-#       define R128_FORCE_PIPE3D_CPP	(1 << 17)
+#       define R128_FORCE_PIPE3D_CP	(1 << 17)
+#       define R128_FORCE_RCP		(1 << 18)
 
 #define R128_GEN_RESET_CNTL	0x00f0
 #       define R128_SOFT_RESET_GUI	(1 <<  0)
