@@ -1,6 +1,6 @@
 /* mga_drv.c -- Matrox g200/g400 driver -*- linux-c -*-
  * Created: Mon Dec 13 01:56:22 1999 by jhartmann@precisioninsight.com
- * 
+ *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
@@ -11,11 +11,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -36,7 +36,7 @@
 
 #define MGA_NAME	 "mga"
 #define MGA_DESC	 "Matrox g200/g400"
-#define MGA_DATE	 "20000831"
+#define MGA_DATE	 "20000906"
 #define MGA_MAJOR	 2
 #define MGA_MINOR	 0
 #define MGA_PATCHLEVEL	 0
@@ -144,7 +144,7 @@ __setup("mga=", mga_options);
 static int mga_setup(drm_device_t *dev)
 {
 	int i;
-	
+
 	atomic_set(&dev->ioctl_count, 0);
 	atomic_set(&dev->vma_count, 0);
 	dev->buf_use	  = 0;
@@ -187,22 +187,22 @@ static int mga_setup(drm_device_t *dev)
 
 	dev->ctx_start	    = 0;
 	dev->lck_start	    = 0;
-	
+
 	dev->buf_rp	  = dev->buf;
 	dev->buf_wp	  = dev->buf;
 	dev->buf_end	  = dev->buf + DRM_BSZ;
 	dev->buf_async	  = NULL;
 	init_waitqueue_head(&dev->buf_readers);
 	init_waitqueue_head(&dev->buf_writers);
-			
+
 	DRM_DEBUG("\n");
-			
+
 	/* The kernel's context could be created here, but is now created
 	   in drm_dma_enqueue.	This is more resource-efficient for
 	   hardware that does not do DMA, but may mean that
 	   drm_select_queue fails between the time the interrupt is
 	   initialized and the time the queues are initialized. */
-			
+
 	return 0;
 }
 
@@ -217,15 +217,15 @@ static int mga_takedown(drm_device_t *dev)
 	DRM_DEBUG("\n");
 
 	if (dev->irq) mga_irq_uninstall(dev);
-	
+
 	down(&dev->struct_sem);
 	del_timer(&dev->timer);
-	
+
 	if (dev->devname) {
 		drm_free(dev->devname, strlen(dev->devname)+1, DRM_MEM_DRIVER);
 		dev->devname = NULL;
 	}
-	
+
 	if (dev->unique) {
 		drm_free(dev->unique, strlen(dev->unique)+1, DRM_MEM_DRIVER);
 		dev->unique = NULL;
@@ -243,7 +243,7 @@ static int mga_takedown(drm_device_t *dev)
 	if (dev->agp) {
 		drm_agp_mem_t *entry;
 		drm_agp_mem_t *nexte;
-		
+
 				/* Remove AGP resources, but leave dev->agp
                                    intact until cleanup is called. */
 		for (entry = dev->agp->memory; entry; entry = nexte) {
@@ -253,10 +253,10 @@ static int mga_takedown(drm_device_t *dev)
 			drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
 		}
 		dev->agp->memory = NULL;
-		
+
 		if (dev->agp->acquired && drm_agp.release)
 			(*drm_agp.release)();
-		
+
 		dev->agp->acquired = 0;
 		dev->agp->enabled  = 0;
 	}
@@ -268,7 +268,7 @@ static int mga_takedown(drm_device_t *dev)
 		}
 		dev->vmalist = NULL;
 	}
-	
+
 				/* Clear map area and mtrr information */
 	if (dev->maplist) {
 		for (i = 0; i < dev->map_count; i++) {
@@ -304,7 +304,7 @@ static int mga_takedown(drm_device_t *dev)
 		dev->maplist   = NULL;
 		dev->map_count = 0;
 	}
-	
+
 	if (dev->queuelist) {
 		for (i = 0; i < dev->queue_count; i++) {
 			drm_waitlist_destroy(&dev->queuelist[i]->waitlist);
@@ -330,7 +330,7 @@ static int mga_takedown(drm_device_t *dev)
 		wake_up_interruptible(&dev->lock.lock_queue);
 	}
 	up(&dev->struct_sem);
-	
+
 	return 0;
 }
 
@@ -347,7 +347,7 @@ static int mga_init(void)
 	memset((void *)dev, 0, sizeof(*dev));
 	dev->count_lock	  = SPIN_LOCK_UNLOCKED;
 	sema_init(&dev->struct_sem, 1);
-	
+
 #ifdef MODULE
 	drm_parse_options(mga);
 #endif
@@ -407,7 +407,7 @@ static void mga_cleanup(void)
 	drm_device_t	      *dev = &mga_device;
 
 	DRM_DEBUG("\n");
-	
+
 	drm_proc_cleanup();
 	if (misc_deregister(&mga_misc)) {
 		DRM_ERROR("Cannot unload module\n");
@@ -419,7 +419,7 @@ static void mga_cleanup(void)
 #ifdef CONFIG_MTRR
    	if(dev->agp && dev->agp->agp_mtrr) {
 	   	int retval;
-	   	retval = mtrr_del(dev->agp->agp_mtrr, 
+	   	retval = mtrr_del(dev->agp->agp_mtrr,
 				  dev->agp->agp_info.aper_base,
 				  dev->agp->agp_info.aper_size * 1024*1024);
 	   	DRM_DEBUG("mtrr_del = %d\n", retval);
@@ -444,17 +444,18 @@ int mga_version(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_version_t version;
 	int	      len;
 
-	copy_from_user_ret(&version,
+	if (copy_from_user(&version,
 			   (drm_version_t *)arg,
-			   sizeof(version),
-			   -EFAULT);
+			   sizeof(version)))
+		return -EFAULT;
 
 #define DRM_COPY(name,value)				     \
 	len = strlen(value);				     \
 	if (len > name##_len) len = name##_len;		     \
 	name##_len = strlen(value);			     \
 	if (len && name) {				     \
-		copy_to_user_ret(name, value, len, -EFAULT); \
+		if (copy_to_user(name, value, len))	     \
+			return -EFAULT;			     \
 	}
 
 	version.version_major	   = MGA_MAJOR;
@@ -465,10 +466,10 @@ int mga_version(struct inode *inode, struct file *filp, unsigned int cmd,
 	DRM_COPY(version.date, MGA_DATE);
 	DRM_COPY(version.desc, MGA_DESC);
 
-	copy_to_user_ret((drm_version_t *)arg,
+	if (copy_to_user((drm_version_t *)arg,
 			 &version,
-			 sizeof(version),
-			 -EFAULT);
+			 sizeof(version)))
+		return -EFAULT;
 	return 0;
 }
 
@@ -476,7 +477,7 @@ int mga_open(struct inode *inode, struct file *filp)
 {
 	drm_device_t  *dev    = &mga_device;
 	int	      retcode = 0;
-	
+
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
 	if (!(retcode = drm_open_helper(inode, filp, dev))) {
 #if LINUX_VERSION_CODE < 0x020333
@@ -513,7 +514,7 @@ int mga_release(struct inode *inode, struct file *filp)
 		drm_lock_free(dev,
 			      &dev->lock.hw_lock->lock,
 			      _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
-		
+
 				/* FIXME: may require heavy-handed reset of
                                    hardware at this point, possibly
                                    processed via a callback to the X
@@ -534,7 +535,7 @@ int mga_release(struct inode *inode, struct file *filp)
 				dev->lock.lock_time = jiffies;
 				atomic_inc(&dev->total_locks);
 				break;	/* Got lock */
-			}			
+			}
 				/* Contention */
 			atomic_inc(&dev->total_sleeps);
 			current->state = TASK_INTERRUPTIBLE;
@@ -560,7 +561,7 @@ int mga_release(struct inode *inode, struct file *filp)
 	if (priv->next) priv->next->prev = priv->prev;
 	else		dev->file_last	 = priv->prev;
 	up(&dev->struct_sem);
-	
+
 	drm_free(priv, sizeof(*priv), DRM_MEM_FILES);
 #if LINUX_VERSION_CODE < 0x020333
 	MOD_DEC_USE_COUNT; /* Needed before Linux 2.3.51 */
@@ -601,7 +602,7 @@ int mga_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 	atomic_inc(&dev->ioctl_count);
 	atomic_inc(&dev->total_ioctl);
 	++priv->ioctl_count;
-	
+
 	DRM_DEBUG("pid = %d, cmd = 0x%02x, nr = 0x%02x, dev 0x%x, auth = %d\n",
 		  current->pid, cmd, nr, dev->device, priv->authenticated);
 
@@ -621,7 +622,7 @@ int mga_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 			retcode = (func)(inode, filp, cmd, arg);
 		}
 	}
-	
+
 	atomic_dec(&dev->ioctl_count);
 	return retcode;
 }
@@ -633,8 +634,9 @@ int mga_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_t	  *dev	  = priv->dev;
 	drm_lock_t	  lock;
 
-	copy_from_user_ret(&lock, (drm_lock_t *)arg, sizeof(lock), -EFAULT);
-	
+	if (copy_from_user(&lock, (drm_lock_t *)arg, sizeof(lock)))
+		return -EFAULT;
+
 	if (lock.context == DRM_KERNEL_CONTEXT) {
 		DRM_ERROR("Process %d using kernel context %d\n",
 			  current->pid, lock.context);

@@ -11,11 +11,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -23,7 +23,7 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
@@ -42,7 +42,7 @@
 
 #define GAMMA_NAME	 "gamma"
 #define GAMMA_DESC	 "3dlabs GMX 2000"
-#define GAMMA_DATE	 "20000719"
+#define GAMMA_DATE	 "20000906"
 #define GAMMA_MAJOR	 1
 #define GAMMA_MINOR	 0
 #define GAMMA_PATCHLEVEL 0
@@ -87,7 +87,7 @@ static drm_ioctl_desc_t	      gamma_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]  = { drm_infobufs,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]   = { drm_mapbufs,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]  = { drm_freebufs,	  1, 0 },
-	
+
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]    = { drm_addctx,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]     = { drm_rmctx,	  1, 1 },
 	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]    = { drm_modctx,	  1, 1 },
@@ -120,7 +120,7 @@ MODULE_PARM_DESC(devices,
  * passed via the boot-loader (e.g., LILO).  It calls the insmod option
  * routine, drm_parse_options.
  */
- 
+
 
 static int __init gamma_options(char *str)
 {
@@ -134,7 +134,7 @@ __setup("gamma=", gamma_options);
 static int gamma_setup(drm_device_t *dev)
 {
 	int i;
-	
+
 	atomic_set(&dev->ioctl_count, 0);
 	atomic_set(&dev->vma_count, 0);
 	dev->buf_use	  = 0;
@@ -179,22 +179,22 @@ static int gamma_setup(drm_device_t *dev)
 #endif
 	dev->ctx_start	    = 0;
 	dev->lck_start	    = 0;
-	
+
 	dev->buf_rp	  = dev->buf;
 	dev->buf_wp	  = dev->buf;
 	dev->buf_end	  = dev->buf + DRM_BSZ;
 	dev->buf_async	  = NULL;
 	init_waitqueue_head(&dev->buf_readers);
 	init_waitqueue_head(&dev->buf_writers);
-			
+
 	DRM_DEBUG("\n");
-			
+
 	/* The kernel's context could be created here, but is now created
 	   in drm_dma_enqueue.	This is more resource-efficient for
 	   hardware that does not do DMA, but may mean that
 	   drm_select_queue fails between the time the interrupt is
 	   initialized and the time the queues are initialized. */
-			
+
 	return 0;
 }
 
@@ -209,15 +209,15 @@ static int gamma_takedown(drm_device_t *dev)
 	DRM_DEBUG("\n");
 
 	if (dev->irq) gamma_irq_uninstall(dev);
-	
+
 	down(&dev->struct_sem);
 	del_timer(&dev->timer);
-	
+
 	if (dev->devname) {
 		drm_free(dev->devname, strlen(dev->devname)+1, DRM_MEM_DRIVER);
 		dev->devname = NULL;
 	}
-	
+
 	if (dev->unique) {
 		drm_free(dev->unique, strlen(dev->unique)+1, DRM_MEM_DRIVER);
 		dev->unique = NULL;
@@ -231,7 +231,7 @@ static int gamma_takedown(drm_device_t *dev)
 		}
 		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
 	}
-	
+
 				/* Clear vma list (only built for debugging) */
 	if (dev->vmalist) {
 		for (vma = dev->vmalist; vma; vma = vma_next) {
@@ -240,7 +240,7 @@ static int gamma_takedown(drm_device_t *dev)
 		}
 		dev->vmalist = NULL;
 	}
-	
+
 				/* Clear map area and mtrr information */
 	if (dev->maplist) {
 		for (i = 0; i < dev->map_count; i++) {
@@ -278,7 +278,7 @@ static int gamma_takedown(drm_device_t *dev)
 		dev->maplist   = NULL;
 		dev->map_count = 0;
 	}
-	
+
 	if (dev->queuelist) {
 		for (i = 0; i < dev->queue_count; i++) {
 			drm_waitlist_destroy(&dev->queuelist[i]->waitlist);
@@ -304,7 +304,7 @@ static int gamma_takedown(drm_device_t *dev)
 		wake_up_interruptible(&dev->lock.lock_queue);
 	}
 	up(&dev->struct_sem);
-	
+
 	return 0;
 }
 
@@ -349,7 +349,7 @@ static int gamma_init(void)
 	memset((void *)dev, 0, sizeof(*dev));
 	dev->count_lock	  = SPIN_LOCK_UNLOCKED;
 	sema_init(&dev->struct_sem, 1);
-	
+
 #ifdef MODULE
 	drm_parse_options(gamma);
 #endif
@@ -374,7 +374,7 @@ static int gamma_init(void)
 		 GAMMA_DATE,
 		 gamma_misc.minor,
 		 devices);
-	
+
 	return 0;
 }
 
@@ -385,7 +385,7 @@ static void gamma_cleanup(void)
 	drm_device_t	      *dev = &gamma_device;
 
 	DRM_DEBUG("\n");
-	
+
 	drm_proc_cleanup();
 	if (misc_deregister(&gamma_misc)) {
 		DRM_ERROR("Cannot unload module\n");
@@ -405,17 +405,18 @@ int gamma_version(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_version_t version;
 	int	      len;
 
-	copy_from_user_ret(&version,
+	if (copy_from_user(&version,
 			   (drm_version_t *)arg,
-			   sizeof(version),
-			   -EFAULT);
+			   sizeof(version)))
+		return -EFAULT;
 
 #define DRM_COPY(name,value)				     \
 	len = strlen(value);				     \
 	if (len > name##_len) len = name##_len;		     \
 	name##_len = strlen(value);			     \
 	if (len && name) {				     \
-		copy_to_user_ret(name, value, len, -EFAULT); \
+		if (copy_to_user(name, value, len))	     \
+			return -EFAULT;			     \
 	}
 
 	version.version_major	   = GAMMA_MAJOR;
@@ -426,10 +427,10 @@ int gamma_version(struct inode *inode, struct file *filp, unsigned int cmd,
 	DRM_COPY(version.date, GAMMA_DATE);
 	DRM_COPY(version.desc, GAMMA_DESC);
 
-	copy_to_user_ret((drm_version_t *)arg,
+	if (copy_to_user((drm_version_t *)arg,
 			 &version,
-			 sizeof(version),
-			 -EFAULT);
+			 sizeof(version)))
+		return -EFAULT;
 	return 0;
 }
 
@@ -437,7 +438,7 @@ int gamma_open(struct inode *inode, struct file *filp)
 {
 	drm_device_t  *dev    = &gamma_device;
 	int	      retcode = 0;
-	
+
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
 	if (!(retcode = drm_open_helper(inode, filp, dev))) {
 #if LINUX_VERSION_CODE < 0x020333
@@ -504,7 +505,7 @@ int gamma_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 	atomic_inc(&dev->ioctl_count);
 	atomic_inc(&dev->total_ioctl);
 	++priv->ioctl_count;
-	
+
 	DRM_DEBUG("pid = %d, cmd = 0x%02x, nr = 0x%02x, dev 0x%x, auth = %d\n",
 		  current->pid, cmd, nr, dev->device, priv->authenticated);
 
@@ -524,7 +525,7 @@ int gamma_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 			retcode = (func)(inode, filp, cmd, arg);
 		}
 	}
-	
+
 	atomic_dec(&dev->ioctl_count);
 	return retcode;
 }
@@ -537,8 +538,9 @@ int gamma_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_t	  *dev	  = priv->dev;
 	drm_lock_t	  lock;
 
-	copy_from_user_ret(&lock, (drm_lock_t *)arg, sizeof(lock), -EFAULT);
-	
+	if (copy_from_user(&lock, (drm_lock_t *)arg, sizeof(lock)))
+		return -EFAULT;
+
 	if (lock.context == DRM_KERNEL_CONTEXT) {
 		DRM_ERROR("Process %d using kernel context %d\n",
 			  current->pid, lock.context);
@@ -563,7 +565,7 @@ int gamma_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 	atomic_inc(&dev->histo.lhld[drm_histogram_slot(get_cycles()
 						       - dev->lck_start)]);
 #endif
-	
+
 	unblock_all_signals();
 	return 0;
 }

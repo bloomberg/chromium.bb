@@ -176,7 +176,8 @@ ssize_t drm_read(struct file *filp, char *buf, size_t count, loff_t *off)
 		} else {
 			cur = DRM_MIN(send, dev->buf_end - dev->buf_rp);
 		}
-		copy_to_user_ret(buf, dev->buf_rp, cur, -EINVAL);
+		if (copy_to_user(buf, dev->buf_rp, cur))
+			return -EFAULT;
 		dev->buf_rp += cur;
 		if (dev->buf_rp == dev->buf_end) dev->buf_rp = dev->buf;
 		send -= cur;

@@ -60,10 +60,10 @@ int r128_addbufs_agp(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	if (!dma) return -EINVAL;
 
-	copy_from_user_ret(&request,
+	if (copy_from_user(&request,
 			   (drm_buf_desc_t *)arg,
-			   sizeof(request),
-			   -EFAULT);
+			   sizeof(request)))
+		return -EFAULT;
 
 	count      = request.count;
 	order      = drm_order(request.size);
@@ -173,10 +173,10 @@ int r128_addbufs_agp(struct inode *inode, struct file *filp, unsigned int cmd,
 	request.count = entry->buf_count;
 	request.size  = size;
 
-	copy_to_user_ret((drm_buf_desc_t *)arg,
+	if (copy_to_user((drm_buf_desc_t *)arg,
 			 &request,
-			 sizeof(request),
-			 -EFAULT);
+			 sizeof(request)))
+		return -EFAULT;
 
 	dma->flags = _DRM_DMA_USE_AGP;
 
@@ -195,10 +195,10 @@ int r128_addbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	if (!dev_priv || dev_priv->is_pci) return -EINVAL;
 
-	copy_from_user_ret(&request,
+	if (copy_from_user(&request,
 			   (drm_buf_desc_t *)arg,
-			   sizeof(request),
-			   -EFAULT);
+			   sizeof(request)))
+		return -EFAULT;
 
 #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
 	if (request.flags & _DRM_AGP_BUFFER)
@@ -234,10 +234,10 @@ int r128_mapbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 	++dev->buf_use;		/* Can't allocate more after this call */
 	spin_unlock(&dev->count_lock);
 
-	copy_from_user_ret(&request,
+	if (copy_from_user(&request,
 			   (drm_buf_map_t *)arg,
-			   sizeof(request),
-			   -EFAULT);
+			   sizeof(request)))
+		return -EFAULT;
 
 	if (request.count >= dma->buf_count) {
 		if (dma->flags & _DRM_DMA_USE_AGP) {
@@ -300,10 +300,10 @@ int r128_mapbufs(struct inode *inode, struct file *filp, unsigned int cmd,
 	request.count = dma->buf_count;
 	DRM_DEBUG("%d buffers, retcode = %d\n", request.count, retcode);
 
-	copy_to_user_ret((drm_buf_map_t *)arg,
+	if (copy_to_user((drm_buf_map_t *)arg,
 			 &request,
-			 sizeof(request),
-			 -EFAULT);
+			 sizeof(request)))
+		return -EFAULT;
 
 	return retcode;
 }

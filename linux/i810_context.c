@@ -103,19 +103,21 @@ int i810_resctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	int		i;
 
 	DRM_DEBUG("%d\n", DRM_RESERVED_CONTEXTS);
-	copy_from_user_ret(&res, (drm_ctx_res_t *)arg, sizeof(res), -EFAULT);
+	if (copy_from_user(&res, (drm_ctx_res_t *)arg, sizeof(res)))
+		return -EFAULT;
 	if (res.count >= DRM_RESERVED_CONTEXTS) {
 		memset(&ctx, 0, sizeof(ctx));
 		for (i = 0; i < DRM_RESERVED_CONTEXTS; i++) {
 			ctx.handle = i;
-			copy_to_user_ret(&res.contexts[i],
+			if (copy_to_user(&res.contexts[i],
 					 &i,
-					 sizeof(i),
-					 -EFAULT);
+					 sizeof(i)))
+				return -EFAULT;
 		}
 	}
 	res.count = DRM_RESERVED_CONTEXTS;
-	copy_to_user_ret((drm_ctx_res_t *)arg, &res, sizeof(res), -EFAULT);
+	if (copy_to_user((drm_ctx_res_t *)arg, &res, sizeof(res)))
+		return -EFAULT;
 	return 0;
 }
 
@@ -126,7 +128,8 @@ int i810_addctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_t	*dev	= priv->dev;
 	drm_ctx_t	ctx;
 
-	copy_from_user_ret(&ctx, (drm_ctx_t *)arg, sizeof(ctx), -EFAULT);
+	if (copy_from_user(&ctx, (drm_ctx_t *)arg, sizeof(ctx)))
+		return -EFAULT;
 	if ((ctx.handle = i810_alloc_queue(dev)) == DRM_KERNEL_CONTEXT) {
 				/* Skip kernel's context and get a new one. */
 		ctx.handle = i810_alloc_queue(dev);
@@ -137,7 +140,8 @@ int i810_addctx(struct inode *inode, struct file *filp, unsigned int cmd,
 		return -ENOMEM;
 	}
 	DRM_DEBUG("%d\n", ctx.handle);
-	copy_to_user_ret((drm_ctx_t *)arg, &ctx, sizeof(ctx), -EFAULT);
+	if (copy_to_user((drm_ctx_t *)arg, &ctx, sizeof(ctx)))
+		return -EFAULT;
 	return 0;
 }
 
@@ -153,10 +157,12 @@ int i810_getctx(struct inode *inode, struct file *filp, unsigned int cmd,
 {
 	drm_ctx_t ctx;
 
-	copy_from_user_ret(&ctx, (drm_ctx_t*)arg, sizeof(ctx), -EFAULT);
+	if (copy_from_user(&ctx, (drm_ctx_t*)arg, sizeof(ctx)))
+		return -EFAULT;
 	/* This is 0, because we don't hanlde any context flags */
 	ctx.flags = 0;
-	copy_to_user_ret((drm_ctx_t*)arg, &ctx, sizeof(ctx), -EFAULT);
+	if (copy_to_user((drm_ctx_t*)arg, &ctx, sizeof(ctx)))
+		return -EFAULT;
 	return 0;
 }
 
@@ -167,7 +173,8 @@ int i810_switchctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_t	*dev	= priv->dev;
 	drm_ctx_t	ctx;
 
-	copy_from_user_ret(&ctx, (drm_ctx_t *)arg, sizeof(ctx), -EFAULT);
+	if (copy_from_user(&ctx, (drm_ctx_t *)arg, sizeof(ctx)))
+		return -EFAULT;
 	DRM_DEBUG("%d\n", ctx.handle);
 	return i810_context_switch(dev, dev->last_context, ctx.handle);
 }
@@ -179,7 +186,8 @@ int i810_newctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_t	*dev	= priv->dev;
 	drm_ctx_t	ctx;
 
-	copy_from_user_ret(&ctx, (drm_ctx_t *)arg, sizeof(ctx), -EFAULT);
+	if (copy_from_user(&ctx, (drm_ctx_t *)arg, sizeof(ctx)))
+		return -EFAULT;
 	DRM_DEBUG("%d\n", ctx.handle);
 	i810_context_switch_complete(dev, ctx.handle);
 
@@ -193,7 +201,8 @@ int i810_rmctx(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_t	*dev	= priv->dev;
 	drm_ctx_t	ctx;
 
-	copy_from_user_ret(&ctx, (drm_ctx_t *)arg, sizeof(ctx), -EFAULT);
+	if (copy_from_user(&ctx, (drm_ctx_t *)arg, sizeof(ctx)))
+		return -EFAULT;
 	DRM_DEBUG("%d\n", ctx.handle);
    	if(ctx.handle != DRM_KERNEL_CONTEXT) {
 	   	drm_ctxbitmap_free(dev, ctx.handle);

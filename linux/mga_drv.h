@@ -11,11 +11,11 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -98,7 +98,7 @@ typedef struct _drm_mga_private {
       	wait_queue_head_t wait_queue;	/* Processes waiting until interrupt */
 	wait_queue_head_t buf_queue;    /* Processes waiting for a free buf */
 	/* Some validated register values:
-	 */	
+	 */
 	u32 mAccess;
 } drm_mga_private_t;
 
@@ -129,7 +129,6 @@ extern int mga_dma_init(struct inode *inode, struct file *filp,
 extern int mga_dma_cleanup(drm_device_t *dev);
 extern int mga_flush_ioctl(struct inode *inode, struct file *filp,
 			   unsigned int cmd, unsigned long arg);
-extern void mga_flush_write_combine(void);
 extern unsigned int mga_create_sync_tag(drm_device_t *dev);
 extern drm_buf_t *mga_freelist_get(drm_device_t *dev);
 extern int mga_freelist_put(drm_device_t *dev, drm_buf_t *buf);
@@ -138,9 +137,9 @@ extern void mga_reclaim_buffers(drm_device_t *dev, pid_t pid);
 
 
 				/* mga_bufs.c */
-extern int  mga_addbufs(struct inode *inode, struct file *filp, 
+extern int  mga_addbufs(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
-extern int  mga_infobufs(struct inode *inode, struct file *filp, 
+extern int  mga_infobufs(struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg);
 extern int  mga_markbufs(struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg);
@@ -180,6 +179,7 @@ extern int  mga_rmctx(struct inode *inode, struct file *filp,
 extern int  mga_context_switch(drm_device_t *dev, int old, int new);
 extern int  mga_context_switch_complete(drm_device_t *dev, int new);
 
+#define mga_flush_write_combine()	mb()
 
 typedef enum {
 	TT_GENERAL,
@@ -202,7 +202,7 @@ typedef struct {
 #define ISREG0(r)	(r >= DWGREG0 && r <= DWGREG0_END)
 #define ADRINDEX0(r)	(u8)((r - DWGREG0) >> 2)
 #define ADRINDEX1(r)	(u8)(((r - DWGREG1) >> 2) | 0x80)
-#define ADRINDEX(r)	(ISREG0(r) ? ADRINDEX0(r) : ADRINDEX1(r)) 
+#define ADRINDEX(r)	(ISREG0(r) ? ADRINDEX0(r) : ADRINDEX1(r))
 
 #define MGA_VERBOSE 0
 #define MGA_NUM_PRIM_BUFS 	8
@@ -396,8 +396,8 @@ drm_mga_prim_buf_t *tmp_buf = 					\
 #define DC_atype_zi 				0x30
 #define DC_atype_blk 				0x40
 #define DC_atype_i 				0x70
-#define DC_linear_xy 				0x0 		
-#define DC_linear_linear 			0x80 		
+#define DC_linear_xy 				0x0
+#define DC_linear_linear 			0x80
 #define DC_zmode_nozcmp 			0x0
 #define DC_zmode_ze 				0x200
 #define DC_zmode_zne 				0x300
@@ -405,16 +405,16 @@ drm_mga_prim_buf_t *tmp_buf = 					\
 #define DC_zmode_zlte 				0x500
 #define DC_zmode_zgt 				0x600
 #define DC_zmode_zgte 				0x700
-#define DC_solid_disable 			0x0 		
-#define DC_solid_enable 			0x800 		
-#define DC_arzero_disable 			0x0 		
-#define DC_arzero_enable 			0x1000 		
-#define DC_sgnzero_disable 			0x0 		
-#define DC_sgnzero_enable 			0x2000 		
-#define DC_shftzero_disable 			0x0 		
-#define DC_shftzero_enable 			0x4000 		
-#define DC_bop_SHIFT 				16 		
-#define DC_trans_SHIFT 				20 		
+#define DC_solid_disable 			0x0
+#define DC_solid_enable 			0x800
+#define DC_arzero_disable 			0x0
+#define DC_arzero_enable 			0x1000
+#define DC_sgnzero_disable 			0x0
+#define DC_sgnzero_enable 			0x2000
+#define DC_shftzero_disable 			0x0
+#define DC_shftzero_enable 			0x4000
+#define DC_bop_SHIFT 				16
+#define DC_trans_SHIFT 				20
 #define DC_bltmod_bmonolef 			0x0
 #define DC_bltmod_bmonowf 			0x8000000
 #define DC_bltmod_bplan 			0x2000000
@@ -423,21 +423,21 @@ drm_mga_prim_buf_t *tmp_buf = 					\
 #define DC_bltmod_bu32rgb 			0xe000000
 #define DC_bltmod_bu24bgr 			0x16000000
 #define DC_bltmod_bu24rgb 			0x1e000000
-#define DC_pattern_disable 			0x0 		
-#define DC_pattern_enable 			0x20000000 	
-#define DC_transc_disable 			0x0 		
-#define DC_transc_enable 			0x40000000 	
-#define DC_clipdis_disable 			0x0 		
-#define DC_clipdis_enable 			0x80000000 	
+#define DC_pattern_disable 			0x0
+#define DC_pattern_enable 			0x20000000
+#define DC_transc_disable 			0x0
+#define DC_transc_enable 			0x40000000
+#define DC_clipdis_disable 			0x0
+#define DC_clipdis_enable 			0x80000000
 
-#define SETADD_mode_vertlist                   	0x0 	
+#define SETADD_mode_vertlist                   	0x0
 
 
 #define MGA_CLEAR_CMD (DC_opcod_trap | DC_arzero_enable | 		\
 		       DC_sgnzero_enable | DC_shftzero_enable | 	\
 		       (0xC << DC_bop_SHIFT) | DC_clipdis_enable | 	\
 		       DC_solid_enable | DC_transc_enable)
-	  
+
 
 #define MGA_COPY_CMD (DC_opcod_bitblt | DC_atype_rpl | DC_linear_xy |	\
 		      DC_solid_disable | DC_arzero_disable | 		\

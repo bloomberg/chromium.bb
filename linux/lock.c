@@ -218,7 +218,8 @@ int drm_finish(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	DRM_DEBUG("\n");
 
-	copy_from_user_ret(&lock, (drm_lock_t *)arg, sizeof(lock), -EFAULT);
+	if (copy_from_user(&lock, (drm_lock_t *)arg, sizeof(lock)))
+		return -EFAULT;
 	ret = drm_flush_block_and_flush(dev, lock.context, lock.flags);
 	drm_flush_unblock(dev, lock.context, lock.flags);
 	return ret;

@@ -39,7 +39,8 @@ int drm_adddraw(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	draw.handle = 0;	/* NOOP */
 	DRM_DEBUG("%d\n", draw.handle);
-	copy_to_user_ret((drm_draw_t *)arg, &draw, sizeof(draw), -EFAULT);
+	if (copy_to_user((drm_draw_t *)arg, &draw, sizeof(draw)))
+		return -EFAULT;
 	return 0;
 }
 

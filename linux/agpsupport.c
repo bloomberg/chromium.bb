@@ -95,7 +95,8 @@ int drm_agp_info(struct inode *inode, struct file *filp, unsigned int cmd,
 	info.id_vendor         = kern->device->vendor;
 	info.id_device         = kern->device->device;
 
-	copy_to_user_ret((drm_agp_info_t *)arg, &info, sizeof(info), -EFAULT);
+	if (copy_to_user((drm_agp_info_t *)arg, &info, sizeof(info)))
+		return -EFAULT;
 	return 0;
 }
 
@@ -134,8 +135,8 @@ int drm_agp_enable(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	if (!dev->agp->acquired || !drm_agp.enable) return -EINVAL;
 
-	copy_from_user_ret(&mode, (drm_agp_mode_t *)arg, sizeof(mode),
-			   -EFAULT);
+	if (copy_from_user(&mode, (drm_agp_mode_t *)arg, sizeof(mode)))
+		return -EFAULT;
 	
 	dev->agp->mode    = mode.mode;
 	(*drm_agp.enable)(mode.mode);
@@ -155,8 +156,8 @@ int drm_agp_alloc(struct inode *inode, struct file *filp, unsigned int cmd,
 	unsigned long    pages;
 	u32 		 type;
 	if (!dev->agp->acquired) return -EINVAL;
-	copy_from_user_ret(&request, (drm_agp_buffer_t *)arg, sizeof(request),
-			   -EFAULT);
+	if (copy_from_user(&request, (drm_agp_buffer_t *)arg, sizeof(request)))
+		return -EFAULT;
 	if (!(entry = drm_alloc(sizeof(*entry), DRM_MEM_AGPLISTS)))
 		return -ENOMEM;
    
@@ -212,8 +213,8 @@ int drm_agp_unbind(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_agp_mem_t     *entry;
 
 	if (!dev->agp->acquired) return -EINVAL;
-	copy_from_user_ret(&request, (drm_agp_binding_t *)arg, sizeof(request),
-			   -EFAULT);
+	if (copy_from_user(&request, (drm_agp_binding_t *)arg, sizeof(request)))
+		return -EFAULT;
 	if (!(entry = drm_agp_lookup_entry(dev, request.handle)))
 		return -EINVAL;
 	if (!entry->bound) return -EINVAL;
@@ -231,8 +232,8 @@ int drm_agp_bind(struct inode *inode, struct file *filp, unsigned int cmd,
 	int               page;
 	
 	if (!dev->agp->acquired || !drm_agp.bind_memory) return -EINVAL;
-	copy_from_user_ret(&request, (drm_agp_binding_t *)arg, sizeof(request),
-			   -EFAULT);
+	if (copy_from_user(&request, (drm_agp_binding_t *)arg, sizeof(request)))
+		return -EFAULT;
 	if (!(entry = drm_agp_lookup_entry(dev, request.handle)))
 		return -EINVAL;
 	if (entry->bound) return -EINVAL;
@@ -253,8 +254,8 @@ int drm_agp_free(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_agp_mem_t    *entry;
 	
 	if (!dev->agp->acquired) return -EINVAL;
-	copy_from_user_ret(&request, (drm_agp_buffer_t *)arg, sizeof(request),
-			   -EFAULT);
+	if (copy_from_user(&request, (drm_agp_buffer_t *)arg, sizeof(request)))
+		return -EFAULT;
 	if (!(entry = drm_agp_lookup_entry(dev, request.handle)))
 		return -EINVAL;
 	if (entry->bound) drm_unbind_agp(entry->memory);

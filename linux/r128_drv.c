@@ -35,7 +35,7 @@
 
 #define R128_NAME	 "r128"
 #define R128_DESC	 "ATI Rage 128"
-#define R128_DATE	 "20000719"
+#define R128_DATE	 "20000906"
 #define R128_MAJOR	 1
 #define R128_MINOR	 0
 #define R128_PATCHLEVEL  0
@@ -420,17 +420,18 @@ int r128_version(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_version_t version;
 	int	      len;
 
-	copy_from_user_ret(&version,
+	if (copy_from_user(&version,
 			   (drm_version_t *)arg,
-			   sizeof(version),
-			   -EFAULT);
+			   sizeof(version)))
+		return -EFAULT;
 
 #define DRM_COPY(name,value)				     \
 	len = strlen(value);				     \
 	if (len > name##_len) len = name##_len;		     \
 	name##_len = strlen(value);			     \
 	if (len && name) {				     \
-		copy_to_user_ret(name, value, len, -EFAULT); \
+		if (copy_to_user(name, value, len))	     \
+			return -EFAULT;			     \
 	}
 
 	version.version_major	   = R128_MAJOR;
@@ -441,10 +442,10 @@ int r128_version(struct inode *inode, struct file *filp, unsigned int cmd,
 	DRM_COPY(version.date, R128_DATE);
 	DRM_COPY(version.desc, R128_DESC);
 
-	copy_to_user_ret((drm_version_t *)arg,
+	if (copy_to_user((drm_version_t *)arg,
 			 &version,
-			 sizeof(version),
-			 -EFAULT);
+			 sizeof(version)))
+		return -EFAULT;
 	return 0;
 }
 
@@ -466,7 +467,7 @@ int r128_open(struct inode *inode, struct file *filp)
 		}
 		spin_unlock(&dev->count_lock);
 	}
-	
+
 	return retcode;
 }
 
@@ -500,7 +501,7 @@ int r128_release(struct inode *inode, struct file *filp)
 		}
 		spin_unlock(&dev->count_lock);
 	}
-	
+
 	unlock_kernel();
 	return retcode;
 }
@@ -559,7 +560,8 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
         dev->lck_start = start = get_cycles();
 #endif
 
-        copy_from_user_ret(&lock, (drm_lock_t *)arg, sizeof(lock), -EFAULT);
+        if (copy_from_user(&lock, (drm_lock_t *)arg, sizeof(lock)))
+		return -EFAULT;
 
         if (lock.context == DRM_KERNEL_CONTEXT) {
                 DRM_ERROR("Process %d using kernel context %d\n",
@@ -664,7 +666,6 @@ int r128_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 		dev->sigdata.context = lock.context;
 		dev->sigdata.lock    = dev->lock.hw_lock;
 		block_all_signals(drm_notifier, &dev->sigdata, &dev->sigmask);
-
                 if (lock.flags & _DRM_LOCK_READY) {
 				/* Wait for space in DMA/FIFO */
 		}
@@ -699,7 +700,8 @@ int r128_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_device_t	  *dev	  = priv->dev;
 	drm_lock_t	  lock;
 
-	copy_from_user_ret(&lock, (drm_lock_t *)arg, sizeof(lock), -EFAULT);
+	if (copy_from_user(&lock, (drm_lock_t *)arg, sizeof(lock)))
+		return -EFAULT;
 
 	if (lock.context == DRM_KERNEL_CONTEXT) {
 		DRM_ERROR("Process %d using kernel context %d\n",
@@ -728,7 +730,6 @@ int r128_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 		current->priority = DEF_PRIORITY;
 	}
 #endif
-
 	unblock_all_signals();
 	return 0;
 }

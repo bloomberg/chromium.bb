@@ -586,7 +586,8 @@ int gamma_dma(struct inode *inode, struct file *filp, unsigned int cmd,
 	int		  retcode   = 0;
 	drm_dma_t	  d;
 
-	copy_from_user_ret(&d, (drm_dma_t *)arg, sizeof(d), -EFAULT);
+	if (copy_from_user(&d, (drm_dma_t *)arg, sizeof(d)))
+		return -EFAULT;
 	DRM_DEBUG("%d %d: %d send, %d req\n",
 		  current->pid, d.context, d.send_count, d.request_count);
 
@@ -621,7 +622,8 @@ int gamma_dma(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	DRM_DEBUG("%d returning, granted = %d\n",
 		  current->pid, d.granted_count);
-	copy_to_user_ret((drm_dma_t *)arg, &d, sizeof(d), -EFAULT);
+	if (copy_to_user((drm_dma_t *)arg, &d, sizeof(d)))
+		return -EFAULT;
 
 	return retcode;
 }
@@ -710,7 +712,8 @@ int gamma_control(struct inode *inode, struct file *filp, unsigned int cmd,
 	drm_control_t	ctl;
 	int		retcode;
 	
-	copy_from_user_ret(&ctl, (drm_control_t *)arg, sizeof(ctl), -EFAULT);
+	if (copy_from_user(&ctl, (drm_control_t *)arg, sizeof(ctl)))
+		return -EFAULT;
 	
 	switch (ctl.func) {
 	case DRM_INST_HANDLER:
@@ -742,7 +745,8 @@ int gamma_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 	dev->lck_start = start = get_cycles();
 #endif
 
-	copy_from_user_ret(&lock, (drm_lock_t *)arg, sizeof(lock), -EFAULT);
+	if (copy_from_user(&lock, (drm_lock_t *)arg, sizeof(lock)))
+		return -EFAULT;
 
 	if (lock.context == DRM_KERNEL_CONTEXT) {
 		DRM_ERROR("Process %d using kernel context %d\n",
