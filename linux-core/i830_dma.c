@@ -1288,10 +1288,7 @@ int i830_flush_ioctl(struct inode *inode, struct file *filp,
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
 
-	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
-		DRM_ERROR("i830_flush_ioctl called without lock held\n");
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN(dev, filp);
 
 	i830_flush_queue(dev);
 	return 0;
@@ -1313,10 +1310,7 @@ int i830_dma_vertex(struct inode *inode, struct file *filp,
 	    (&vertex, (drm_i830_vertex_t __user *) arg, sizeof(vertex)))
 		return -EFAULT;
 
-	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
-		DRM_ERROR("i830_dma_vertex called without lock held\n");
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN(dev, filp);
 
 	DRM_DEBUG("i830 dma vertex, idx %d used %d discard %d\n",
 		  vertex.idx, vertex.used, vertex.discard);
@@ -1345,10 +1339,7 @@ int i830_clear_bufs(struct inode *inode, struct file *filp,
 	    (&clear, (drm_i830_clear_t __user *) arg, sizeof(clear)))
 		return -EFAULT;
 
-	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
-		DRM_ERROR("i830_clear_bufs called without lock held\n");
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN(dev, filp);
 
 	/* GH: Someone's doing nasty things... */
 	if (!dev->dev_private) {
@@ -1369,10 +1360,7 @@ int i830_swap_bufs(struct inode *inode, struct file *filp,
 
 	DRM_DEBUG("i830_swap_bufs\n");
 
-	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
-		DRM_ERROR("i830_swap_buf called without lock held\n");
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN(dev, filp);
 
 	i830_dma_dispatch_swap(dev);
 	return 0;
@@ -1411,10 +1399,7 @@ int i830_flip_bufs(struct inode *inode, struct file *filp,
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
-		DRM_ERROR("i830_flip_buf called without lock held\n");
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN(dev, filp);
 
 	if (!dev_priv->page_flipping)
 		i830_do_init_pageflip(dev);
@@ -1453,10 +1438,7 @@ int i830_getbuf(struct inode *inode, struct file *filp, unsigned int cmd,
 	if (copy_from_user(&d, (drm_i830_dma_t __user *) arg, sizeof(d)))
 		return -EFAULT;
 
-	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
-		DRM_ERROR("i830_dma called without lock held\n");
-		return -EINVAL;
-	}
+	LOCK_TEST_WITH_RETURN(dev, filp);
 
 	d.granted = 0;
 
