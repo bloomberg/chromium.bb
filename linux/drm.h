@@ -35,8 +35,8 @@
 #ifndef _DRM_H_
 #define _DRM_H_
 
-#include <linux/config.h>
 #if defined(__linux__)
+#include <linux/config.h>
 #include <asm/ioctl.h>		/* For _IO* macros */
 #define DRM_IOCTL_NR(n)	     _IOC_NR(n)
 #elif defined(__FreeBSD__)
