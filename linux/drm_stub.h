@@ -111,6 +111,7 @@ static int DRM(stub_getminor)(const char *name, struct file_operations *fops,
 			DRM(stub_root) = DRM(proc_init)(dev, i, DRM(stub_root),
 							&DRM(stub_list)[i]
 							.dev_root);
+			*DRM(stub_info).info_count++;
 			return i;
 		}
 	}
@@ -134,7 +135,10 @@ static int DRM(stub_putminor)(int minor)
 	DRM(stub_list)[minor].fops = NULL;
 	DRM(proc_cleanup)(minor, DRM(stub_root),
 			  DRM(stub_list)[minor].dev_root);
-	if (minor) {
+
+	*DRM(stub_info).info_count--;
+
+	if ((*DRM(stub_info).info_count)!=0) {
 		inter_module_put("drm");
 	} else {
 		inter_module_unregister("drm");
@@ -180,8 +184,9 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 		DRM(stub_info).info_register   = i->info_register;
 		DRM(stub_info).info_unregister = i->info_unregister;
 		DRM(stub_info).drm_class = i->drm_class;
+		DRM(stub_info).info_count = i->info_count;
 		DRM_DEBUG("already registered\n");
-	} else if (DRM(stub_info).drm_class == NULL) {
+	} else if (*DRM(stub_info).info_count == 0) {
 		DRM(stub_info).drm_class = class_simple_create(THIS_MODULE, "drm");
 		if (IS_ERR(DRM(stub_info).drm_class)) {
                         printk (KERN_ERR "Error creating drm class.\n");
@@ -221,9 +226,12 @@ int DRM(stub_unregister)(int minor)
 	return -1;
 }
 
+int DRM(stub_count);
+
 /** Stub information */
 struct drm_stub_info DRM(stub_info) = {
 	.info_register   = DRM(stub_getminor),
 	.info_unregister = DRM(stub_putminor),
 	.drm_class = NULL,
+	.info_count = &DRM(stub_count),
 };

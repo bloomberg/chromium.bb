@@ -152,6 +152,7 @@ struct drm_stub_info {
 			     drm_device_t *dev);
 	int (*info_unregister)(int minor);
 	struct class_simple *drm_class;
+	int *info_count;
 };
 extern struct drm_stub_info DRM(stub_info);
 
@@ -778,6 +779,7 @@ static void __exit drm_cleanup( drm_device_t *dev )
 
 static void __exit drm_exit (void)
 {
+	DRM_DEBUG( "\n" );
 	if (DRM(fb_loaded)==1)
 	{
 		int i;
