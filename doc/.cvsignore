@@ -11,3 +11,4 @@ fc*.sgml
 .deps
 .libs
 func.refs
+version.sgml
