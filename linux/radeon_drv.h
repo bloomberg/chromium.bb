@@ -730,8 +730,9 @@ do {									\
 		dev_priv->ring.tail = write;				\
 } while (0)
 
-#define COMMIT_RING() do {					    \
-	RADEON_WRITE( RADEON_CP_RB_WPTR, dev_priv->ring.tail );		    \
+#define COMMIT_RING() do {						\
+	radeon_flush_write_combine();					\
+	RADEON_WRITE( RADEON_CP_RB_WPTR, dev_priv->ring.tail );		\
 } while (0)
 
 #define OUT_RING( x ) do {						\
