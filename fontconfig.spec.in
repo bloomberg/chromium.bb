@@ -8,7 +8,7 @@ Version:	@VERSION@
 Release:	1
 License:	MIT
 Group:		System Environment/Libraries
-Source:		http://fontconfig.org/release/fontconfig-%{vesion}.tar.gz
+Source:		http://fontconfig.org/release/fontconfig-%{version}.tar.gz
 URL:            http://fontconfig.org
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 
