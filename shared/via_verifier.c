@@ -549,6 +549,10 @@ via_check_header2( uint32_t const **buffer, const uint32_t *buf_end )
 	case (HC_ParaType_Tex | (HC_SubType_TexGeneral << 8)):
 		hz_table = table3;
 		break;
+	case HC_ParaType_Auto:
+		buf += 2;
+		*buffer = buf;
+		return state_command;
 	default:
 
 		/*
