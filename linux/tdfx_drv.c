@@ -36,7 +36,7 @@
 
 #define TDFX_NAME	 "tdfx"
 #define TDFX_DESC	 "3dfx Banshee/Voodoo3+"
-#define TDFX_DATE	 "20000906"
+#define TDFX_DATE	 "20000910"
 #define TDFX_MAJOR	 1
 #define TDFX_MINOR	 0
 #define TDFX_PATCHLEVEL  0

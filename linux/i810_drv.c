@@ -35,7 +35,7 @@
 
 #define I810_NAME	 "i810"
 #define I810_DESC	 "Intel I810"
-#define I810_DATE	 "20000906"
+#define I810_DATE	 "20000910"
 #define I810_MAJOR	 1
 #define I810_MINOR	 1
 #define I810_PATCHLEVEL	 0

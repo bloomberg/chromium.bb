@@ -42,7 +42,7 @@
 
 #define GAMMA_NAME	 "gamma"
 #define GAMMA_DESC	 "3dlabs GMX 2000"
-#define GAMMA_DATE	 "20000906"
+#define GAMMA_DATE	 "20000910"
 #define GAMMA_MAJOR	 1
 #define GAMMA_MINOR	 0
 #define GAMMA_PATCHLEVEL 0

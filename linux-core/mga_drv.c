@@ -35,8 +35,8 @@
 #include "mga_drv.h"
 
 #define MGA_NAME	 "mga"
-#define MGA_DESC	 "Matrox g200/g400"
-#define MGA_DATE	 "20000906"
+#define MGA_DESC	 "Matrox G200/G400"
+#define MGA_DATE	 "20000910"
 #define MGA_MAJOR	 2
 #define MGA_MINOR	 0
 #define MGA_PATCHLEVEL	 0
@@ -123,7 +123,7 @@ static char		      *mga = NULL;
 #endif
 
 MODULE_AUTHOR("VA Linux Systems, Inc.");
-MODULE_DESCRIPTION("Matrox g200/g400");
+MODULE_DESCRIPTION("Matrox G200/G400");
 MODULE_PARM(mga, "s");
 
 #ifndef MODULE
