@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.13 2002/05/31 04:42:42 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.14 2002/05/31 23:21:24 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -49,6 +49,7 @@ typedef int		FcBool;
 #define FC_SLANT	    "slant"		/* Int */
 #define FC_WEIGHT	    "weight"		/* Int */
 #define FC_SIZE		    "size"		/* Double */
+#define FC_ASPECT	    "aspect"		/* Double */
 #define FC_PIXEL_SIZE	    "pixelsize"		/* Double */
 #define FC_SPACING	    "spacing"		/* Int */
 #define FC_FOUNDRY	    "foundry"		/* String */
