@@ -1460,7 +1460,7 @@ static void drmSIGIOHandler(int interrupt, void *closure)
 #if 0
 	    fprintf(stderr, "Trying %d\n", entry->fd);
 #endif
-	    if ((count = read(entry->fd, buf, sizeof(buf)))) {
+	    if ((count = read(entry->fd, buf, sizeof(buf))) > 0) {
 		buf[count] = '\0';
 #if 0
 		fprintf(stderr, "Got %s\n", buf);
