@@ -1018,7 +1018,7 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	}
 
 	dev_priv->is_r200 = (init->func == RADEON_INIT_R200_CP);
-	dev_priv->do_boxes = 1;
+	dev_priv->do_boxes = 0;
 	dev_priv->cp_mode = init->cp_mode;
 
 	/* We don't support anything other than bus-mastering ring mode,
