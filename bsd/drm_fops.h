@@ -88,6 +88,9 @@ int DRM(open_helper)(dev_t kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		priv->devXX		= dev;
 		priv->ioctl_count 	= 0;
 		priv->authenticated	= !DRM_SUSER(p);
+
+		DRIVER_OPEN_HELPER( priv, dev );
+
 		TAILQ_INSERT_TAIL(&dev->files, priv, link);
 	}
 	DRM_UNLOCK();

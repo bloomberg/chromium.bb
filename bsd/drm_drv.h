@@ -101,6 +101,9 @@
 #ifndef DRIVER_IOCTLS
 #define DRIVER_IOCTLS
 #endif
+#ifndef DRIVER_OPEN_HELPER
+#define DRIVER_OPEN_HELPER( priv, dev )
+#endif
 #ifndef DRIVER_FOPS
 #endif
 

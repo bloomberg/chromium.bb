@@ -210,6 +210,9 @@ struct drm_file {
 	drm_magic_t	  magic;
 	unsigned long	  ioctl_count;
 	struct drm_device *devXX;
+#ifdef DRIVER_FILE_FIELDS
+	DRIVER_FILE_FIELDS;
+#endif
 };
 
 typedef struct drm_lock_data {

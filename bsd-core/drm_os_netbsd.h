@@ -215,6 +215,8 @@ while (!condition) {						\
 	(!uvm_useracc((caddr_t)uaddr, size, VM_PROT_READ))
 #define DRM_COPY_FROM_USER_UNCHECKED(arg1, arg2, arg3) 	\
 	copyin(arg2, arg1, arg3)
+#define DRM_COPY_TO_USER_UNCHECKED(arg1, arg2, arg3)	\
+	copyout(arg2, arg1, arg3)
 #define DRM_GET_USER_UNCHECKED(val, uaddr)			\
 	((val) = fuword(uaddr), 0)
 
