@@ -1,5 +1,23 @@
 2004-12-04  Keith Packard  <keithp@keithp.com>
 
+	* configure.in:
+	Change default set of fonts to include all of
+	/usr/X11R6/lib/X11/fonts (or wherever the X fonts are located).
+	* doc/fontconfig-user.sgml:
+	Document new <include>directory-name</include> semantics
+	* fonts.conf.in:
+	add <include ignore_missing="yes">conf.d</include>
+	* local.conf:
+	Add selectfont to ignore bitmap fonts, add comment for
+	selectfont which accepts bitmap fonts.
+	* src/fcdir.c:
+	* src/fcint.h:
+	* src/fcxml.c: (FcConfigParseAndLoadDir), (FcConfigParseAndLoad):
+	Allow <include> configuration elements to reference directories.
+	Parse and load all files of the form [0-9]* in sorted order.
+
+2004-12-04  Keith Packard  <keithp@keithp.com>
+
 	* autogen.sh:
 	Report command line for $srcdir/configure accurately.
 	Bug #212.

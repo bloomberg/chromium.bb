@@ -211,6 +211,7 @@
 <!--
   Load local system customization file
 -->
+	<include ignore_missing="yes">conf.d</include>
 	<include ignore_missing="yes">local.conf</include>
 
 <!--

@@ -25,7 +25,7 @@
 #include "fcint.h"
 #include <dirent.h>
 
-static FcBool
+FcBool
 FcFileIsDir (const FcChar8 *file)
 {
     struct stat	    statb;
@@ -165,8 +165,6 @@ FcFileScan (FcFontSet	    *set,
 {
     return FcFileScanConfig (set, dirs, cache, blanks, file, force, 0);
 }
-
-#define FC_MAX_FILE_LEN	    4096
 
 /*
  * Scan 'dir', adding font files to 'set' and

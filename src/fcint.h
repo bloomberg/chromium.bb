@@ -69,6 +69,7 @@ typedef struct _FcSymbolic {
 #define FC_DBG_SCAN	128
 #define FC_DBG_SCANV	256
 #define FC_DBG_MEMORY	512
+#define FC_DBG_CONFIG	1024
 
 #define FC_MEM_CHARSET	    0
 #define FC_MEM_CHARLEAF	    1
@@ -228,6 +229,8 @@ typedef struct _FcGlyphName {
     FcChar32	ucs;		/* unicode value */
     FcChar8	name[1];	/* name extends beyond struct */
 } FcGlyphName;
+
+#define FC_MAX_FILE_LEN	    4096
 
 /*
  * The per-user ~/.fonts.cache-<version> file is loaded into
@@ -518,6 +521,9 @@ int
 FcDebug (void);
 
 /* fcdir.c */
+
+FcBool
+FcFileIsDir (const FcChar8 *file);
 
 FcBool
 FcFileScanConfig (FcFontSet	*set,

@@ -281,19 +281,16 @@ yes)
 	for dir in /usr/X11R6/lib/X11 /usr/X11/lib/X11 /usr/lib/X11; do
 		case x"$FC_ADD_FONTS" in
 		x)
-			if test -d "$dir/fonts"; then
-				for sub in "$dir"/fonts/*; do
-					if ls "$sub" | grep -q -i '\.pf\|\.tt\|\.ot'; then
-						case x$FC_ADD_FONTS in
-						x)
-							FC_ADD_FONTS="$sub"
-							;;
-						*)
-							FC_ADD_FONTS="$FC_ADD_FONTS,$sub"
-							;;
-						esac
-					fi
-				done
+			sub="$dir/fonts"
+			if test -d "$sub"; then
+				case x$FC_ADD_FONTS in
+				x)
+					FC_ADD_FONTS="$sub"
+					;;
+				*)
+					FC_ADD_FONTS="$FC_ADD_FONTS,$sub"
+					;;
+				esac
 			fi
 			;;
 		esac

@@ -264,11 +264,14 @@ is ``~/.fonts.cache-<sgmltag>version</>'', where <sgmltag>version</> is the font
 file version number (currently 1).
   </para></refsect2>
   <refsect2><title><sgmltag>include ignore_missing="no"</></title><para>
-This element contains the name of an additional configuration file.  When
-the XML datatype is traversed by FcConfigParse, the contents of the file
-will also be incorporated into the configuration by passing the filename to
+This element contains the name of an additional configuration file or
+directory.  If a directory, every file within that directory starting with a
+number will be processed in sorted order.  When
+the XML datatype is traversed by FcConfigParse, the contents of the file(s)
+will also be incorporated into the configuration by passing the filename(s) to
 FcConfigLoadAndParse.  If 'ignore_missing' is set to "yes" instead of the
-default "no", a missing file will elicit no warning message from the library.
+default "no", a missing file or directory will elicit no warning message from
+the library.
   </para></refsect2>
   <refsect2><title><sgmltag>config</></title><para>
 This element provides a place to consolodate additional configuration
@@ -453,8 +456,8 @@ This is an example of a system-wide configuration file
 &lt;!-- 
 	Find fonts in these directories
 --&gt;
-&lt;dir&gt;/usr/X11R6/lib/X11/fonts/truetype&lt;/dir&gt;
-&lt;dir&gt;/usr/X11R6/lib/X11/fonts/Type1&lt;/dir&gt;
+&lt;dir&gt;/usr/share/fonts&lt;/dir&gt;
+&lt;dir&gt;/usr/X11R6/lib/X11/fonts&lt;/dir&gt;
 
 &lt;!--
 	Accept deprecated 'mono' alias, replacing it with 'monospace'
@@ -535,7 +538,7 @@ This is an example of a per-user configuration file that lives in
 &lt;!--
 	Private font directory
 --&gt;
-&lt;dir&gt;~/misc/fonts&lt;/dir&gt;
+&lt;dir&gt;~/.fonts&lt;/dir&gt;
 
 &lt;!--
 	use rgb sub-pixel ordering to improve glyph appearance on
