@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.24 2002/08/22 07:36:44 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.27 2002/08/31 22:17:32 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -238,18 +238,20 @@ typedef struct _FcGlobalCacheFile {
     FcChar8			*name;
 } FcGlobalCacheFile;
 
+typedef struct _FcGlobalCacheDir FcGlobalCacheDir;
+
 typedef struct _FcGlobalCacheSubdir {
     struct _FcGlobalCacheSubdir	*next;
-    FcChar8			*file;
+    FcGlobalCacheDir		*ent;
 } FcGlobalCacheSubdir;
 
-typedef struct _FcGlobalCacheDir {
+struct _FcGlobalCacheDir {
     struct _FcGlobalCacheDir	*next;
     FcGlobalCacheInfo    	info;
     int				len;
     FcGlobalCacheFile		*ents[FC_GLOBAL_CACHE_FILE_HASH_SIZE];
     FcGlobalCacheSubdir		*subdirs;
-} FcGlobalCacheDir;
+};
 
 typedef struct _FcGlobalCache {
     FcGlobalCacheDir		*ents[FC_GLOBAL_CACHE_DIR_HASH_SIZE];

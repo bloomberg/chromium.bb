@@ -448,14 +448,11 @@ FcGlobalCacheDirAdd (FcGlobalCache  *cache,
     parent = FcGlobalCacheDirGet (cache, i.dir, i.dir_len, FcTrue);
     if (!parent)
 	return 0;
-    subdir = malloc (sizeof (FcGlobalCacheSubdir) + 
-		     strlen ((const char *) i.base) + 1);
+    subdir = malloc (sizeof (FcGlobalCacheSubdir));
     if (!subdir)
 	return 0;
-    FcMemAlloc (FC_MEM_CACHE, sizeof (FcGlobalCacheSubdir) +
-		strlen ((const char *) i.base) + 1);
-    subdir->file = (FcChar8 *) (subdir + 1);
-    strcpy ((char *) subdir->file, (const char *) i.base);
+    FcMemAlloc (FC_MEM_CACHE, sizeof (FcGlobalCacheSubdir));
+    subdir->ent = d;
     subdir->next = parent->subdirs;
     parent->subdirs = subdir;
     return &d->info;
@@ -480,8 +477,7 @@ FcGlobalCacheDirDestroy (FcGlobalCacheDir *d)
     for (s = d->subdirs; s; s = nexts)
     {
 	nexts = s->next;
-	FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheSubdir) +
-		   strlen ((char *) s->file) + 1);
+	FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheSubdir));
 	free (s);
     }
     FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheDir) + d->len + 1);
@@ -535,12 +531,15 @@ FcGlobalCacheScanDir (FcFontSet		*set,
 	}
     for (subdir = d->subdirs; subdir; subdir = subdir->next)
     {
+	FcFilePathInfo	info = FcFilePathInfoGet (subdir->ent->info.file);
+	
 	if (!FcCacheFontSetAdd (set, dirs, dir, dir_len,
-				subdir->file, FC_FONT_FILE_DIR))
+				info.base, FC_FONT_FILE_DIR))
 	{
 	    cache->broken = FcTrue;
 	    return FcFalse;
 	}
+	FcGlobalCacheReferenced (cache, &subdir->ent->info);
     }
     
     FcGlobalCacheReferenced (cache, &d->info);
