@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis.h,v 1.1.2.1 2001/05/22 21:54:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis.h,v 1.1 2001/05/19 18:29:22 dawes Exp $ */
 
 #ifndef __SIS_H__
 #define __SIS_H__
