@@ -1,3 +1,8 @@
+2003-09-23  Owen Taylor <otaylor@redhat.com>
+
+	* fc-lang/ka.orth: Remove Georgian capitals, they
+	aren't used for normal writing. (Bug #116)
+
 2003-09-06  Noah Levitt  <nlevitt@columbia.edu>
 
 	* doc/fontconfig-devel.sgml:

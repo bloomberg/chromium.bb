@@ -23,7 +23,7 @@
 #
 # Georgian (KA)
 0589	# Armenian full stop (vertsaket)
-10a0-10c5
+#10a0-10c5	# capital letters, not used in normal writing
 10d0-10f6
 #10f7-10f8	# additional letters for Mingrelian and Svan
 10fb
