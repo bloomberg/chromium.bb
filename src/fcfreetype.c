@@ -634,34 +634,37 @@ FcFreeTypeQuery (const FcChar8	*file,
     
     if (FT_Get_PS_Font_Info(face, &psfontinfo) == 0)
     {
-        if (FcStrCmpIgnoreCase((FcChar8 *)"thin", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_THIN; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"extralight", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_EXTRALIGHT; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"ultralight", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_ULTRALIGHT; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"light", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_LIGHT; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"regular", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_REGULAR; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"normal", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_NORMAL; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"medium", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_MEDIUM; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"demibold", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_DEMIBOLD; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"semibold", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_SEMIBOLD; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"extrabold", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_EXTRABOLD; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"ultrabold", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_EXTRABOLD; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"bold", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_BOLD; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"black", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_BLACK; 
-        else if (FcStrCmpIgnoreCase((FcChar8 *)"heavy", (FcChar8 *) psfontinfo.weight) == 0) 
-            weight = FC_WEIGHT_BLACK; 
+	if (psfontinfo.weight)
+	{
+	    static struct {
+		char    *name;
+		int	value;
+	    } ps_weights[] = {
+		{ "thin",		FC_WEIGHT_THIN },
+		{ "extralight",		FC_WEIGHT_EXTRALIGHT },
+		{ "ultralight",		FC_WEIGHT_ULTRALIGHT },
+		{ "light",		FC_WEIGHT_LIGHT },
+		{ "regular",		FC_WEIGHT_REGULAR },
+		{ "normal",		FC_WEIGHT_NORMAL },
+		{ "medium",		FC_WEIGHT_MEDIUM },
+		{ "demibold",		FC_WEIGHT_DEMIBOLD },
+		{ "semibold",		FC_WEIGHT_SEMIBOLD },
+		{ "bold",		FC_WEIGHT_BOLD },
+		{ "extrabold",		FC_WEIGHT_EXTRABOLD },
+		{ "ultrabold",		FC_WEIGHT_ULTRABOLD },
+		{ "black",		FC_WEIGHT_BLACK },
+		{ "heavy",		FC_WEIGHT_HEAVY },
+	    };
+#define NUM_PS_WEIGHTS	(sizeof (ps_weights) / sizeof (ps_weights[0]))
+	    int	w;
+	    for (w = 0; w < NUM_PS_WEIGHTS; w++)
+		if (!FcStrCmpIgnoreCase ((FcChar8 *) ps_weights[w].name,
+					 (FcChar8 *) psfontinfo.weight))
+		{
+		    weight = ps_weights[w].value;
+		    break;
+		}
+	}
      
         if (psfontinfo.italic_angle < 0) 
             slant = FC_SLANT_ITALIC; 
