@@ -48,7 +48,7 @@
 
 # **** End of SMP/MODVERSIONS detection
 
-MODS=           gamma.o tdfx.o r128.o sis.o
+MODS=           gamma.o tdfx.o r128.o
 LIBS=           libdrm.a
 PROGS=		drmstat
 
@@ -64,9 +64,6 @@ TDFXHEADERS=    tdfx_drv.h $(DRMHEADERS)
 
 R128OBJS=	r128_drv.o r128_dma.o r128_bufs.o r128_context.o
 R128HEADERS=	r128_drv.h r128_drm.h $(DRMHEADERS)
-
-SISOBJS=	sis_drv.o sis_context.o sis_ds.o sis_mm.o
-SISHEADERS=	sis_drv.h sis_ds.h sis_drm_public.h $(DRMHEADERS)
 
 PROGOBJS=       drmstat.po xf86drm.po xf86drmHash.po xf86drmRandom.po sigio.po
 PROGHEADERS=    xf86drm.h $(DRMHEADERS)
@@ -125,8 +122,10 @@ MODVERSIONS := $(shell gcc -E -I $(TREE) picker.c 2>/dev/null \
 	| grep -s 'MODVERSIONS = ' | cut -d' ' -f3)
 AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'AGP = ' | cut -d' ' -f3)
+SIS := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
+	| grep -s 'SIS = ' | cut -d' ' -f3)
 PARAMS := $(shell if fgrep kill_fasync $(TREE)/linux/fs.h \
-	| fgrep -q band; then echo 3; else echo 2; fi)
+	| egrep -q '(band|int, int)'; then echo 3; else echo 2; fi)
 ifeq ($(AGP),0)
 AGP := $(shell gcc -E -nostdinc -I$(TREE) picker.c 2>/dev/null \
 	| grep -s 'AGP_MODULE = ' | cut -d' ' -f3)
@@ -144,8 +143,21 @@ I810OBJS=	i810_drv.o i810_dma.o i810_bufs.o i810_context.o
 I810HEADERS=	i810_drv.h $(DRMHEADERS)
 endif
 
+ifeq ($(SIS),1)
+# It appears that the SiS driver makes calls to sis_malloc and sis_free, and
+# that these calls are only defined if CONFIG_FB_SIS is selected.  So, key
+# off that to determine if we should attempt to build the SiS driver.
+#
+# A better way would be to detect the appropriate definitions in the header
+# file to see if we can, at least, compile the driver.
+MODS += sis.o
+
+SISOBJS=	sis_drv.o sis_context.o sis_ds.o sis_mm.o
+SISHEADERS=	sis_drv.h sis_ds.h sis_drm.h $(DRMHEADERS)
+endif
+
 all::;@echo === KERNEL HEADERS IN $(TREE)
-all::;@echo === SMP=${SMP} MODVERSIONS=${MODVERSIONS} AGP=${AGP}
+all::;@echo === SMP=${SMP} MODVERSIONS=${MODVERSIONS} AGP=${AGP} SIS=${SIS}
 all::;@echo === kill_fasync has $(PARAMS) parameters
 all:: $(LIBS) $(MODS) $(PROGS)
 endif
