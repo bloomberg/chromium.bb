@@ -664,7 +664,7 @@ static void __exit drm_exit (void)
 	DRM_DEBUG( "\n" );
 	if (DRM(fb_loaded)) {
 		if (DRM(global)) {
-			for (i = 0; i < DRM(global)->cards_limit; i++) {
+			for (i = 0; DRM(global) && (i < DRM(global)->cards_limit); i++) {
 				minor = &DRM(global)->minors[i];
 				dev = minor->dev;
 				DRM_DEBUG("fb loaded release minor %d\n", dev->minor);
