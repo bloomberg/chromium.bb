@@ -220,43 +220,43 @@ typedef u_int8_t u8;
 
 /* Fake this */
 static __inline atomic_t
-test_and_set_bit(int b, atomic_t *p)
+test_and_set_bit(int b, volatile void *p)
 {
 	int s = splhigh();
 	unsigned int m = 1<<b;
-	unsigned int r = *p & m;
-	*p |= m;
+	unsigned int r = *(volatile int *)p & m;
+	*(volatile int *)p |= m;
 	splx(s);
 	return r;
 }
 
 static __inline void
-clear_bit(int b, atomic_t *p)
+clear_bit(int b, volatile void *p)
 {
-    atomic_clear_int(p + (b >> 5), 1 << (b & 0x1f));
+    atomic_clear_int(((volatile int *)p) + (b >> 5), 1 << (b & 0x1f));
 }
 
 static __inline void
-set_bit(int b, atomic_t *p)
+set_bit(int b, volatile void *p)
 {
-    atomic_set_int(p + (b >> 5), 1 << (b & 0x1f));
+    atomic_set_int(((volatile int *)p) + (b >> 5), 1 << (b & 0x1f));
 }
 
 static __inline int
-test_bit(int b, atomic_t *p)
+test_bit(int b, volatile void *p)
 {
-    return p[b >> 5] & (1 << (b & 0x1f));
+    return ((volatile int *)p)[b >> 5] & (1 << (b & 0x1f));
 }
 
 static __inline int
-find_first_zero_bit(atomic_t *p, int max)
+find_first_zero_bit(volatile void *p, int max)
 {
     int b;
 
     for (b = 0; b < max; b += 32) {
-	if (p[b >> 5] != ~0) {
+	if (((volatile int *)p)[b >> 5] != ~0) {
 	    for (;;) {
-		if ((p[b >> 5] & (1 << (b & 0x1f))) == 0)
+		if ((((volatile int *)p)[b >> 5] & (1 << (b & 0x1f))) == 0)
 		    return b;
 		b++;
 	    }
