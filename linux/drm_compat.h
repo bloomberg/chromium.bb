@@ -52,6 +52,10 @@
 #define pte_unmap(pte)
 #endif
 
+#ifndef module_param
+#define module_param(name, type, perm)
+#endif
+
 #ifndef list_for_each_safe
 #define list_for_each_safe(pos, n, head)				\
 	for (pos = (head)->next, n = pos->next; pos != (head);		\
@@ -100,6 +104,17 @@ static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 }
 #endif
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,4,2)
+#define down_write down
+#define up_write up
+#endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+#define DRM_PCI_DEV(pdev) &pdev->dev
+#else
+#define DRM_PCI_DEV(pdev) NULL
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
 static inline unsigned iminor(struct inode *inode)
 {
@@ -108,23 +123,51 @@ static inline unsigned iminor(struct inode *inode)
 
 #define old_encode_dev(x) (x)
 
+struct drm_sysfs_class;
 struct class_simple;
 struct device;
 
 #define pci_dev_put(x) do {} while (0)
 #define pci_get_subsys pci_find_subsys
 
-#define class_simple_device_add(...) do {} while (0)
+static inline struct class_device *DRM(sysfs_device_add)(struct drm_sysfs_class *cs, dev_t dev, struct device *device, const char *fmt, ...){return NULL;}
 
-static inline void class_simple_device_remove(dev_t dev){}
+static inline void DRM(sysfs_device_remove)(dev_t dev){}
 
-static inline void class_simple_destroy(struct class_simple *cs){}
+static inline void DRM(sysfs_destroy)(struct drm_sysfs_class *cs){}
 
-static inline struct class_simple *class_simple_create(struct module *owner, char *name) { return (struct class_simple *)owner; }
+static inline struct drm_sysfs_class *DRM(sysfs_create)(struct module *owner, char *name) { return NULL; }
 
 #ifndef pci_pretty_name
 #define pci_pretty_name(x) x->name
 #endif
+
+/* not used in 2.4, just makes the code compile */
+#define KOBJ_NAME_LEN 20
+struct kobject {
+	char name[KOBJ_NAME_LEN];
+};
+struct cdev {
+        struct kobject kobj;
+        struct module *owner;
+        struct file_operations *ops;
+        struct list_head list;
+        dev_t dev;
+        unsigned int count;
+};
+static inline void cdev_del(struct cdev *cd){}
+static inline void cdev_init(struct cdev *cd, struct file_operations *fop){}
+static inline int cdev_add(struct cdev *cd, dev_t dt, unsigned u){ return 0;}
+
+static inline int register_chrdev_region(dev_t device, unsigned minor, char *name) {
+	return register_chrdev(device, name, NULL);
+}
+
+static inline int unregister_chrdev_region(dev_t device, unsigned minor) {
+	return unregister_chrdev(device, NULL);
+}
+
+static inline int kobject_put(struct kobject *kobj){ return 0;};
 
 #endif
 

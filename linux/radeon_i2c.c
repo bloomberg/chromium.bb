@@ -19,6 +19,9 @@
 #include <linux/delay.h>
 #include <linux/pci.h>
 #include <linux/fb.h>
+#include <linux/version.h>
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
 
 #include <asm/io.h>
 #include <video/radeon.h>
@@ -150,3 +153,5 @@ void radeon_delete_i2c_busses(drm_device_t *dev)
 		dev_priv->i2c[i].dev = NULL;
 	}
 }
+
+#endif

@@ -42,10 +42,8 @@ MODULE_LICENSE("GPL and additional rights");
 MODULE_PARM_DESC(cards_limit, "Maximum number of graphics cards");
 MODULE_PARM_DESC(debug, "Enable debug output");
 
-#ifdef module_param
 module_param(cards_limit, int, 0444);
 module_param(debug, int, 0666);
-#endif
 
 drm_global_t *DRM(global);
 
@@ -135,10 +133,10 @@ static int get_minor(struct pci_dev *pdev, const struct pci_device_id *ent)
 				pci_request_regions(pdev, DRIVER_NAME);
 				pci_enable_device(pdev);
 			}
-			dev_class = class_simple_device_add(DRM(global)->drm_class, 
-					MKDEV(DRM_MAJOR, minor), &pdev->dev, "card%d", minor);
+			dev_class = DRM(sysfs_device_add)(DRM(global)->drm_class, 
+					MKDEV(DRM_MAJOR, minor), DRM_PCI_DEV(pdev), "card%d", minor);
 			if (IS_ERR(dev_class)) {
-				printk (KERN_ERR "DRM: Error class_simple_device_add.\n");
+				printk (KERN_ERR "DRM: Error sysfs_device_add.\n");
 				ret = PTR_ERR(dev_class);
 				goto err_g2;
 			}
@@ -191,10 +189,10 @@ int DRM(get_secondary_minor)(drm_device_t *dev, drm_minor_t **sec_minor)
 				goto err_g1;
 			}
 
-			dev_class = class_simple_device_add(DRM(global)->drm_class, 
-					MKDEV(DRM_MAJOR, minor), &dev->pdev->dev, "card%d", minor);
+			dev_class = DRM(sysfs_device_add)(DRM(global)->drm_class, 
+					MKDEV(DRM_MAJOR, minor), DRM_PCI_DEV(dev->pdev), "card%d", minor);
 			if (IS_ERR(dev_class)) {
-				printk (KERN_ERR "DRM: Error class_simple_device_add.\n");
+				printk (KERN_ERR "DRM: Error sysfs_device_add.\n");
 				ret = PTR_ERR(dev_class);
 				goto err_g2;
 			}
@@ -232,7 +230,7 @@ int DRM(put_minor)(drm_device_t *dev)
 	DRM_DEBUG("release primary minor %d\n", dev->minor);
 
 	DRM(proc_cleanup)(dev->minor, DRM(global)->proc_root, minors->dev_root);
-	class_simple_device_remove(MKDEV(DRM_MAJOR, dev->minor));
+	DRM(sysfs_device_remove)(MKDEV(DRM_MAJOR, dev->minor));
 
 	*minors = (drm_minor_t){.dev = NULL, .class = DRM_MINOR_FREE};
 	DRM(free)(dev, sizeof(*dev), DRM_MEM_STUB);
@@ -248,7 +246,8 @@ int DRM(put_minor)(drm_device_t *dev)
 	DRM_DEBUG("unregistering inter_module \n");
 	inter_module_unregister("drm");
 	remove_proc_entry("dri", NULL);
-	class_simple_destroy(DRM(global)->drm_class);
+	DRM(sysfs_destroy)(DRM(global)->drm_class);
+
 	cdev_del(&DRM(global)->drm_cdev);
 	unregister_chrdev_region(MKDEV(DRM_MAJOR, 0), DRM_MAX_MINOR);
 
@@ -277,7 +276,7 @@ int DRM(put_secondary_minor)(drm_minor_t *sec_minor)
 	DRM_DEBUG("release secondary minor %d\n", minor);
 
 	DRM(proc_cleanup)(minor, DRM(global)->proc_root, sec_minor->dev_root);
-	class_simple_device_remove(MKDEV(DRM_MAJOR, minor));
+	DRM(sysfs_device_remove)(MKDEV(DRM_MAJOR, minor));
 
 	*sec_minor = (drm_minor_t){.dev = NULL, .class = DRM_MINOR_FREE};
 
@@ -333,8 +332,8 @@ int DRM(probe)(struct pci_dev *pdev, const struct pci_device_id *ent)
 			printk (KERN_ERR "DRM: Error registering drm major number.\n");
 			goto err_p2;
 		}
-			
-		global->drm_class = class_simple_create(THIS_MODULE, "drm");
+
+		global->drm_class = DRM(sysfs_create)(THIS_MODULE, "drm");
 		if (IS_ERR(global->drm_class)) {
 			printk (KERN_ERR "DRM: Error creating drm class.\n");
 			ret = PTR_ERR(global->drm_class);
@@ -359,7 +358,7 @@ int DRM(probe)(struct pci_dev *pdev, const struct pci_device_id *ent)
 	}
 	return 0;
 err_p4:
-	class_simple_destroy(global->drm_class);
+	DRM(sysfs_destroy)(global->drm_class);
 err_p3:
 	cdev_del(&global->drm_cdev);
 	unregister_chrdev_region(dev, DRM_MAX_MINOR);

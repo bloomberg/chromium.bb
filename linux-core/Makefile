@@ -69,7 +69,8 @@ DRM_MODULES ?= $(MODULE_LIST)
 
 DRMTEMPLATES =  drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
                 drm_drv.h drm_fops.h drm_init.h drm_ioctl.h drm_irq.h \
-                drm_lock.h drm_memory.h drm_proc.h drm_stub.h drm_vm.h
+                drm_lock.h drm_memory.h drm_proc.h drm_stub.h drm_vm.h \
+                drm_sysfs.h drm_core.h
 
 DRMSHARED =     drm.h drm_sarea.h
 DRMHEADERS =    drmP.h $(DRMSHARED)

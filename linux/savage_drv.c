@@ -250,23 +250,6 @@ int savage_free_cont_mem(struct inode *inode, struct file *filp,
 
 #endif /* end #if 0 */
 
-#include "drm_agpsupport.h"
-#include "drm_auth.h"
-#include "drm_bufs.h"
-#include "drm_context.h"
-#include "drm_dma.h"
-#include "drm_drawable.h"
-#include "drm_drv.h"
-#include "drm_fops.h"
-#include "drm_init.h"
-#include "drm_ioctl.h"
-#include "drm_irq.h"
-#include "drm_lock.h"
-#include "drm_memory.h"
-#include "drm_proc.h"
-#include "drm_vm.h"
-#include "drm_stub.h"
-#include "drm_scatter.h"
-
+#include "drm_core.h"
 
 

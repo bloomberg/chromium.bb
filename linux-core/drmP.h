@@ -56,7 +56,9 @@
 #include <linux/smp_lock.h>	/* For (un)lock_kernel */
 #include <linux/mm.h>
 #include <linux/pagemap.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
 #include <linux/cdev.h>
+#endif
 #if defined(__alpha__) || defined(__powerpc__)
 #include <asm/pgtable.h> /* For pte_wrprotect */
 #endif
@@ -693,7 +695,7 @@ typedef struct drm_minor {
 typedef struct drm_global {
 	unsigned int cards_limit;
 	drm_minor_t *minors;
-	struct class_simple *drm_class;
+	struct drm_sysfs_class *drm_class;
 	struct proc_dir_entry *proc_root;
 	struct cdev drm_cdev;
 } drm_global_t;
