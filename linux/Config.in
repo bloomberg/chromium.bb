@@ -13,4 +13,5 @@ dep_tristate '  Intel I810' CONFIG_DRM_I810 $CONFIG_AGP
 dep_tristate '  Intel 830M/845G/852GM/855GM/865G' CONFIG_DRM_I830 $CONFIG_AGP
 dep_tristate '  Matrox g200/g400' CONFIG_DRM_MGA $CONFIG_AGP
 tristate '  SiS' CONFIG_DRM_SIS
+tristate '  Via Unichrome' CONFIG_DRM_VIA
 
