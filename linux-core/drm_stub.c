@@ -255,7 +255,7 @@ err_g1:
  */
 int drm_put_dev(drm_device_t * dev)
 {
-	DRM_DEBUG("release primary %s\n", dev->pdev->driver->name);
+	DRM_DEBUG("release primary %s\n", dev->driver->pci_driver.name);
 
 	if (dev->unique) {
 		drm_free(dev->unique, strlen(dev->unique) + 1, DRM_MEM_DRIVER);
