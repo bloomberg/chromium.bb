@@ -212,7 +212,7 @@ int drm_addmap(struct inode *inode, struct file *filp,
 	case _DRM_SHM:
 		map->handle = vmalloc_32(map->size);
 		DRM_DEBUG("%lu %d %p\n",
-			  map->size, get_order(map->size), map->handle);
+			  map->size, drm_order(map->size), map->handle);
 		if (!map->handle) {
 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 			return -ENOMEM;
@@ -440,7 +440,7 @@ int drm_addbufs_agp(struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 	count = request.count;
-	order = get_order(request.size);
+	order = drm_order(request.size);
 	size = 1 << order;
 
 	alignment = (request.flags & _DRM_PAGE_ALIGN)
@@ -609,7 +609,7 @@ int drm_addbufs_pci(struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 	count = request.count;
-	order = get_order(request.size);
+	order = drm_order(request.size);
 	size = 1 << order;
 
 	DRM_DEBUG("count=%d, size=%d (%d), order=%d, queue_count=%d\n",
@@ -835,7 +835,7 @@ int drm_addbufs_sg(struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 	count = request.count;
-	order = get_order(request.size);
+	order = drm_order(request.size);
 	size = 1 << order;
 
 	alignment = (request.flags & _DRM_PAGE_ALIGN)
@@ -1137,7 +1137,7 @@ int drm_markbufs(struct inode *inode, struct file *filp,
 
 	DRM_DEBUG("%d, %d, %d\n",
 		  request.size, request.low_mark, request.high_mark);
-	order = get_order(request.size);
+	order = drm_order(request.size);
 	if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER)
 		return -EINVAL;
 	entry = &dma->bufs[order];
@@ -1332,3 +1332,28 @@ int drm_mapbufs(struct inode *inode, struct file *filp,
 
 	return retcode;
 }
+
+/**
+ * Compute size order.  Returns the exponent of the smaller power of two which
+ * is greater or equal to given number.
+ *
+ * \param size size.
+ * \return order.
+ *
+ * \todo Can be made faster.
+ */
+int drm_order( unsigned long size )
+{
+	int order;
+	unsigned long tmp;
+
+	for (order = 0, tmp = size >> 1; tmp; tmp >>= 1, order++)
+		;
+
+	if (size & (size - 1))
+		++order;
+
+	return order;
+}
+EXPORT_SYMBOL(drm_order);
+

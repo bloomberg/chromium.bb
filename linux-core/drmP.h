@@ -868,6 +868,7 @@ extern int drm_freebufs(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
 extern int drm_mapbufs(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
+extern int drm_order(unsigned long size);
 
 				/* DMA support (drm_dma.h) */
 extern int drm_dma_setup(drm_device_t * dev);
