@@ -1503,7 +1503,9 @@ FcConfigFileExists (const FcChar8 *dir, const FcChar8 *file)
 #ifdef _WIN32
     if ((!path[0] || (path[strlen((char *) path)-1] != '/' &&
 		      path[strlen((char *) path)-1] != '\\')) &&
-	 (file[0] != '/' && file[0] != '\\'))
+	!(file[0] == '/' ||
+	  file[0] == '\\' ||
+	  (isalpha (file[0]) && file[1] == ':' && (file[2] == '/' || file[2] == '\\'))))
 	strcat ((char *) path, "\\");
 #else
     if ((!path[0] || path[strlen((char *) path)-1] != '/') && file[0] != '/')

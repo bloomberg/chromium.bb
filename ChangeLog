@@ -1,3 +1,11 @@
+2005-03-09  Tor Lillqvist  <tml@novell.com>
+
+	* fontconfig-zip.in: Get the DLL from "bin" where modern libtools
+	put it, not "lib".
+
+	* src/fccfg.c (FcConfigFileExists): Check also drive letter
+	prefix on Win32.
+
 2005-03-08  Keith Packard  <keithp@keithp.com>
 
 	* README:
