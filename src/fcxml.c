@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.13 2002/06/21 06:14:45 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.14 2002/06/21 07:01:11 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -879,6 +879,61 @@ FcParseInt (FcConfigParse *parse)
     FcStrFree (s);
 }
 
+/*
+ * idea copied from glib g_ascii_strtod with 
+ * permission of the author (Alexander Larsson) 
+ */
+
+#include <locale.h>
+
+static double 
+FcStrtod (char *s, char **end)
+{
+    struct lconv    *locale_data;
+    char	    *dot;
+    double	    v;
+
+    /*
+     * Have to swap the decimal point to match the current locale
+     * if that locale doesn't use 0x2e
+     */
+    if ((dot = strchr (s, 0x2e)) &&
+	(locale_data = localeconv ()) &&
+	(locale_data->decimal_point[0] != 0x2e ||
+	 locale_data->decimal_point[1] != 0))
+    {
+	char	buf[128];
+	int	slen = strlen (s);
+	int	dlen = strlen (locale_data->decimal_point);
+	
+	if (slen + dlen > sizeof (buf))
+	{
+	    if (end)
+		*end = s;
+	    v = 0;
+	}
+	else
+	{
+	    char	*buf_end;
+	    /* mantissa */
+	    strncpy (buf, s, dot - s);
+	    /* decimal point */
+	    strcpy (buf + (dot - s), locale_data->decimal_point);
+	    /* rest of number */
+	    strcpy (buf + (dot - s) + dlen, dot + 1);
+	    buf_end = 0;
+	    v = strtod (buf, &buf_end);
+	    if (buf_end)
+		buf_end = s + (buf_end - buf);
+	    if (end)
+		*end = buf_end;
+	}
+    }
+    else
+	v = strtod (s, end);
+    return v;
+}
+
 static void
 FcParseDouble (FcConfigParse *parse)
 {
@@ -894,7 +949,7 @@ FcParseDouble (FcConfigParse *parse)
 	return;
     }
     end = 0;
-    d = strtod ((char *) s, (char **)&end);
+    d = FcStrtod ((char *) s, (char **)&end);
     if (end != s + strlen ((char *) s))
 	FcConfigMessage (parse, FcSevereError, "\"%s\": not a valid double", s);
     else
