@@ -377,6 +377,8 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 	DRM_DEBUG("start = 0x%lx, end = 0x%lx, offset = 0x%lx\n",
 		  vma->vm_start, vma->vm_end, VM_OFFSET(vma));
 
+	if ( !priv->authenticated ) return -EACCES;
+
 	if (!VM_OFFSET(vma)) return DRM(mmap_dma)(filp, vma);
 
 				/* A sequential search of a linked list is
