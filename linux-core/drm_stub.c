@@ -80,7 +80,6 @@ static struct file_operations DRM(stub_fops) = {
 static int drm_hotplug (struct class_device *dev, char **envp, int num_envp,
 				char *buffer, int buffer_size)
 {
-	drm_device_t *ddev;
 	struct pci_dev *pdev;
 	char *scratch;
 	int i = 0;
@@ -130,6 +129,7 @@ static int drm_hotplug (struct class_device *dev, char **envp, int num_envp,
 	++length;
 	scratch += length;
 #if 0	
+	drm_device_t *ddev;
 	ddev = pci_get_drvdata(pdev);
 	if (ddev) {
 		envp[i++] = scratch;
