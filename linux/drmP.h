@@ -56,7 +56,6 @@
 #include <linux/smp_lock.h>	/* For (un)lock_kernel */
 #include <linux/mm.h>
 #include <linux/pagemap.h>
-#include <linux/cdev.h>
 #if defined(__alpha__) || defined(__powerpc__)
 #include <asm/pgtable.h> /* For pte_wrprotect */
 #endif
@@ -555,6 +554,7 @@ typedef struct drm_device {
 	int		  if_version;	/**< Highest interface version set */
 
 	int		  blocked;	/**< Blocked due to VC switch? */
+	struct proc_dir_entry *root;	/**< Root for this device's entries */
 
 	/** \name Locks */
 	/*@{*/
@@ -673,32 +673,11 @@ typedef struct drm_device {
 	sigset_t          sigmask;
 	
 	int               need_reset;	/**< secondary device needing reset */
-
-	struct file_operations *fops;	/**< file operations */
-
 	struct drm_driver_fn fn_tbl;
 	drm_local_map_t   *agp_buffer_map;
 	int               dev_priv_size;
 	u32               driver_features;
 } drm_device_t;
-
-typedef struct drm_minor {
-	enum {
-		DRM_MINOR_FREE = 0,
-		DRM_MINOR_PRIMARY,
-		DRM_MINOR_SECONDARY,
-	} class;
-	drm_device_t *dev;
-	struct proc_dir_entry  *dev_root; /**< proc directory entry */
-} drm_minor_t;
-
-typedef struct drm_global {
-	unsigned int cards_limit;
-	drm_minor_t *minors;
-	struct class_simple *drm_class;
-	struct proc_dir_entry *proc_root;
-	struct cdev drm_cdev;
-} drm_global_t;
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev, int feature)
 {
@@ -925,11 +904,10 @@ extern int            DRM(agp_bind_memory)(DRM_AGP_MEM *handle, off_t start);
 extern int            DRM(agp_unbind_memory)(DRM_AGP_MEM *handle);
 
 				/* Stub support (drm_stub.h) */
-extern int 	      DRM(probe)(struct pci_dev *pdev, const struct pci_device_id *ent);
-extern int 	      DRM(put_minor)(drm_device_t *dev);
-extern int	      DRM(get_secondary_minor)(drm_device_t *dev, drm_minor_t **sec_minor);
-extern int	      DRM(put_secondary_minor)(drm_minor_t *sec_minor);
-extern drm_global_t   *DRM(global);
+int                   DRM(stub_register)(const char *name,
+					 struct file_operations *fops,
+					 drm_device_t *dev);
+int                   DRM(stub_unregister)(int minor);
 
 				/* Proc support (drm_proc.h) */
 extern int 	      DRM(proc_init)(drm_device_t *dev,
