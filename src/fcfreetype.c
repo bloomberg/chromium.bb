@@ -33,6 +33,8 @@
 #include <freetype/ttnameid.h>
 #include <freetype/t1tables.h>
 
+#include "data.h"
+
 /*
  * Keep Han languages separated by eliminating languages
  * that the codePageRange bits says aren't supported
@@ -112,6 +114,41 @@ FcUtf8IsLatin (FcChar8 *str, int len)
     return FcTrue;
 }
 
+static char*
+notice_foundry(char *notice)
+{
+    int i;
+    for(i = 0; i < sizeof(notice_foundries) / sizeof(notice_foundries[0]); i++)
+        if(notice && strstr(notice, notice_foundries[i][0]))
+            return notice_foundries[i][1];
+    return NULL;
+}
+
+static int
+vendor_match(signed char *vendor, char *vendor_string)
+{
+    /* vendor is not necessarily NUL-terminated. */
+    int i, len;
+    len = strlen(vendor_string);
+    if(memcmp(vendor, vendor_string, len) != 0)
+        return 0;
+    for(i = len; i < 4; i++)
+        if(vendor[i] != ' ' && vendor[i] != '\0')
+            return 0;
+    return 1;
+}
+
+static char*
+vendor_foundry(signed char *vendor)
+{
+    int i;
+    for(i = 0; i < sizeof(vendor_foundries) / sizeof(vendor_foundries[0]); i++)
+        if(vendor_match(vendor, vendor_foundries[i][0]))
+            return vendor_foundries[i][1];
+    return NULL;
+}
+
+
 FcPattern *
 FcFreeTypeQuery (const FcChar8	*file,
 		 int		id,
@@ -129,6 +166,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     FT_Library	    ftLibrary;
     FcChar8	    *family;
     FcChar8	    *style;
+    FcChar8         *foundry;
     int		    spacing;
     TT_OS2	    *os2;
     PS_FontInfoRec  psfontinfo;
@@ -172,12 +210,23 @@ FcFreeTypeQuery (const FcChar8	*file,
 	weight = FC_WEIGHT_BOLD;
 
     /*
+     * Get the OS/2 table
+     */
+    os2 = (TT_OS2 *) FT_Get_Sfnt_Table (face, ft_sfnt_os2);
+
+    if (os2 && os2->version >= 0x0001 && os2->version != 0xffff)
+        foundry = vendor_foundry(os2->achVendID);
+    else
+        foundry = NULL;
+
+    /*
      * Grub through the name table looking for family
      * and style names.  FreeType makes quite a hash
      * of them
      */
     family = 0;
     style = 0;
+    foundry = 0;
     snamec = FT_Get_Sfnt_Name_Count (face);
     for (snamei = 0; snamei < snamec; snamei++)
     {
@@ -287,7 +336,9 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    prio |= FC_NAME_PRIO_NAME_PS;
 	    break;
 	case TT_NAME_ID_FONT_SUBFAMILY:
-	    break;
+        case TT_NAME_ID_TRADEMARK:
+        case TT_NAME_ID_MANUFACTURER:
+            break;
 	default:
 	    continue;
 	}
@@ -400,6 +451,11 @@ FcFreeTypeQuery (const FcChar8	*file,
 		style_prio = prio;
 	    }
 	    break;
+        case TT_NAME_ID_TRADEMARK:
+        case TT_NAME_ID_MANUFACTURER:
+            if(!foundry)
+                foundry = notice_foundry(utf8);
+            break;
 	}
 	if (utf8)
 	    free (utf8);
@@ -457,6 +513,11 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    free (style);
     }
 
+    if(foundry) {
+        if(!FcPatternAddString (pat, FC_FOUNDRY, foundry))
+            goto bail;
+    }
+
     if (!FcPatternAddString (pat, FC_FILE, file))
 	goto bail1;
 
@@ -492,10 +553,6 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    goto bail1;
     }
 
-    /*
-     * Get the OS/2 table and poke about
-     */
-    os2 = (TT_OS2 *) FT_Get_Sfnt_Table (face, ft_sfnt_os2);
     if (os2 && os2->version >= 0x0001 && os2->version != 0xffff)
     {
 	for (i = 0; i < NUM_CODE_PAGE_RANGE; i++)
@@ -527,6 +584,9 @@ FcFreeTypeQuery (const FcChar8	*file,
 		exclusiveLang = FcCodePageRange[i].lang;
 	    }
 	}
+
+        foundry = vendor_foundry(os2->achVendID);
+
     }
 
     if (os2 && os2->version != 0xffff)
@@ -607,6 +667,9 @@ FcFreeTypeQuery (const FcChar8	*file,
             slant = FC_SLANT_ITALIC; 
         else if (psfontinfo.italic_angle >= 0) 
             slant = FC_SLANT_ROMAN; 
+
+        if(!foundry)
+            foundry = notice_foundry(psfontinfo.notice);
     }
     
     if (!FcPatternAddInteger (pat, FC_SLANT, slant))
