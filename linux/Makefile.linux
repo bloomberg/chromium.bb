@@ -262,5 +262,5 @@ $(R128OBJS): $(R128HEADERS)
 $(RADEONOBJS): $(RADEONHEADERS)
 endif
 
-clean:
+clean cleandir::
 	rm -f *.o *.a *~ core
