@@ -76,7 +76,7 @@ static __inline__ struct page *DRM(do_vm_nopage)(struct vm_area_struct *vma,
 		struct drm_agp_mem *agpmem;
 		struct page *page;
 
-#if __alpha__
+#ifdef __alpha__
 		/*
                  * Adjust to a bus-relative address
                  */
@@ -568,7 +568,7 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 
 	if (!capable(CAP_SYS_ADMIN) && (map->flags & _DRM_READ_ONLY)) {
 		vma->vm_flags &= ~(VM_WRITE | VM_MAYWRITE);
-#if defined(__i386__) || defined(__AMD64__)
+#if defined(__i386__) || defined(__AMD64__) || defined(__x86_64__)
 		pgprot_val(vma->vm_page_prot) &= ~_PAGE_RW;
 #else
 				/* Ye gads this is ugly.  With more thought
@@ -599,7 +599,7 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 	case _DRM_FRAME_BUFFER:
 	case _DRM_REGISTERS:
 		if (VM_OFFSET(vma) >= __pa(high_memory)) {
-#if defined(__i386__) || defined(__AMD64__)
+#if defined(__i386__) || defined(__AMD64__) || defined(__x86_64__)
 			if (boot_cpu_data.x86 > 3 && map->type != _DRM_AGP) {
 				pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
 				pgprot_val(vma->vm_page_prot) &= ~_PAGE_PWT;
