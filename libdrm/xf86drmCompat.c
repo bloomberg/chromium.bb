@@ -733,7 +733,7 @@ int drmRadeonInitCP( int fd, drmCompatRadeonInit *info )
    init.sarea_priv_offset	= info->sarea_priv_offset;
    init.is_pci			= info->is_pci;
    init.cp_mode			= info->cp_mode;
-   init.gart_size		= info->gart_size;
+   init.gart_size		= info->agp_size;
    init.ring_size		= info->ring_size;
    init.usec_timeout		= info->usec_timeout;
 
@@ -752,7 +752,7 @@ int drmRadeonInitCP( int fd, drmCompatRadeonInit *info )
    init.ring_offset		= info->ring_offset;
    init.ring_rptr_offset	= info->ring_rptr_offset;
    init.buffers_offset		= info->buffers_offset;
-   init.gart_textures_offset	= info->gart_textures_offset;
+   init.gart_textures_offset	= info->agp_textures_offset;
 
    if ( ioctl( fd, DRM_IOCTL_RADEON_CP_INIT, &init ) ) {
       return -errno;
