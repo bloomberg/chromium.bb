@@ -63,7 +63,7 @@
 	[DRM_IOCTL_NR(DRM_IOCTL_SIS_FB_INIT)]	= { sis_fb_init,	1, 1 }
 
 #define DRIVER_PCI_IDS							\
-	{0x1039, 0x0300, 0, "SiS 300"},					\
+	{0x1039, 0x0300, 0, "SiS 300/305"},				\
 	{0x1039, 0x5300, 0, "SiS 540"},					\
 	{0x1039, 0x6300, 0, "SiS 630"},					\
 	{0x1039, 0x7300, 0, "SiS 730"},					\
