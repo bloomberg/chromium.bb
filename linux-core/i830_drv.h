@@ -132,7 +132,6 @@ extern int i830_flush_ioctl(struct inode *inode, struct file *filp,
 extern void i830_reclaim_buffers(drm_device_t *dev, struct file *filp);
 extern int i830_getage(struct inode *inode, struct file *filp, unsigned int cmd,
 		       unsigned long arg);
-extern int i830_mmap_buffers(struct file *filp, struct vm_area_struct *vma);
 extern int i830_copybuf(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
 extern int i830_docopy(struct inode *inode, struct file *filp,
