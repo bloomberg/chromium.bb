@@ -59,7 +59,8 @@ static __inline__ struct page *DRM(do_vm_nopage)(struct vm_area_struct *vma,
 	/*
          * Find the right map
          */
-	if (!(dev->agp && DRIVER_USE_AGP)) goto vm_nopage_error;
+	if (!drm_core_check_feature(dev, DRIVER_USE_AGP))
+		goto vm_nopage_error;
 
 	if(!dev->agp || !dev->agp->cant_use_aperture) goto vm_nopage_error;
 
