@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.22 2002/08/22 18:53:22 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.23 2002/08/31 22:17:32 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1141,7 +1141,11 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		if ((t->kind == FcMatchFont || kind == FcMatchPattern) &&
 		    !FcStrCmpIgnoreCase ((FcChar8 *) t->field, 
 					 (FcChar8 *) e->field))
+		{
+		    if (!st[i].elt)
+			t = 0;
 		    break;
+		}
 	    }
 	    switch (e->op) {
 	    case FcOpAssign:
