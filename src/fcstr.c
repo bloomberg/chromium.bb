@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.7 2002/07/13 05:43:25 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.10 2002/08/31 22:17:32 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -283,7 +283,7 @@ FcUtf16ToUcs4 (const FcChar8	*src_orig,
 	if ((b & 0xfc00) != 0xdc00)
 	    return 0;
 	result = ((((FcChar32) a & 0x3ff) << 10) |
-		  ((FcChar32) b & 0x3ff)) | 0x10000;
+		  ((FcChar32) b & 0x3ff)) + 0x10000;
     }
     else
 	result = a;
