@@ -1,3 +1,15 @@
+2003-06-13  Tor Lillqvist  <tml@iki.fi>
+
+	* fontconfig-zip.in (DEVZIP): Add share/doc directory. Add Fc*.3
+	man pages.
+
+	* configure.in: Set FC_DEFAULT_FONTS on Win32 to the
+	WINDOWSFONTDIR token.
+
+	* src/fontconfig.def.in: Move the LIBRARY and VERSION lines to the
+	end, not to confuse libtool, which expects the EXPORTS line to be
+	the first. Add FcConfigEnableHome.
+
 2003-06-09  Keith Packard <keithp@keithp.com>
 
 	* Tag version 2.2.90

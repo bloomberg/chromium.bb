@@ -1,5 +1,3 @@
-LIBRARY fontconfig
-VERSION @LT_CURRENT@.@LT_REVISION@
 EXPORTS
 	FcAtomicCreate
 	FcAtomicDeleteNew
@@ -34,6 +32,7 @@ EXPORTS
 	FcConfigBuildFonts
 	FcConfigCreate
 	FcConfigDestroy
+	FcConfigEnableHome
 	FcConfigFilename
 	FcConfigGetBlanks
 	FcConfigGetCache
@@ -159,3 +158,5 @@ EXPORTS
 	FcValueEqual
 	FcValuePrint
 	FcValueSave
+LIBRARY fontconfig
+VERSION @LT_CURRENT@.@LT_REVISION@

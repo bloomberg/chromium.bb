@@ -225,9 +225,15 @@ AC_ARG_WITH(default-fonts,     [  --with-default-fonts=DIR      Use fonts from D
 
 case "$default_fonts" in
 yes)
-	FC_DEFAULT_FONTS="/usr/share/fonts"
-	AC_DEFINE_UNQUOTED(FC_DEFAULT_FONTS, "/usr/share/fonts", 
-			   [System font directory])
+	if test "$os_win32" = "yes"; then
+		FC_DEFAULT_FONTS="WINDOWSFONTDIR"
+		AC_DEFINE_UNQUOTED(FC_DEFAULT_FONTS, "WINDOWSFONTDIR", 
+				   [Windows font directory])
+	else
+		FC_DEFAULT_FONTS="/usr/share/fonts"
+		AC_DEFINE_UNQUOTED(FC_DEFAULT_FONTS, "/usr/share/fonts", 
+				   [System font directory])
+	fi
 	;;
 *)
 	FC_DEFAULT_FONTS="$default_fonts"
