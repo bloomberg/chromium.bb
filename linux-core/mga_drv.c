@@ -30,6 +30,7 @@
  *
  */
 
+#include <linux/config.h>
 #define EXPORT_SYMTAB
 #include "drmP.h"
 #include "mga_drv.h"

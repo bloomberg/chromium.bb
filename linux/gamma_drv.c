@@ -29,6 +29,7 @@
  *
  */
 
+#include <linux/config.h>
 #define EXPORT_SYMTAB
 #include "drmP.h"
 #include "gamma_drv.h"
