@@ -1,6 +1,6 @@
-/* drawable.c -- IOCTLs for drawables -*- c -*-
- * Created: Tue Feb  2 08:37:54 1999 by faith@precisioninsight.com
- *
+/* ctxbitmap.c -- Context bitmap management
+ * Created: Thu Jan 6 03:56:42 2000 by jhartmann@precisioninsight.com
+ * 
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
@@ -23,28 +23,63 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
- * Authors:
- *    Rickard E. (Rik) Faith <faith@valinux.com>
+ *
+ * Author: Jeff Hartmann <jhartmann@valinux.com>
  *
  */
 
 #define __NO_VERSION__
 #include "drmP.h"
 
-int drm_adddraw(dev_t kdev, u_long cmd, caddr_t data,
-		int flags, struct proc *p)
+void drm_ctxbitmap_free(drm_device_t *dev, int ctx_handle)
 {
-	drm_draw_t draw;
+	if (ctx_handle < 0) goto failed;
 
-	draw.handle = 0;	/* NOOP */
-	DRM_DEBUG("%d\n", draw.handle);
-	*(drm_draw_t *) data = draw;
+	if (ctx_handle < DRM_MAX_CTXBITMAP) {
+		clear_bit(ctx_handle, dev->ctx_bitmap);
+		return;
+	}
+failed:
+       	DRM_ERROR("Attempt to free invalid context handle: %d\n",
+		  ctx_handle);
+       	return;
+}
+
+int drm_ctxbitmap_next(drm_device_t *dev)
+{
+	int bit;
+
+	bit = find_first_zero_bit(dev->ctx_bitmap, DRM_MAX_CTXBITMAP);
+	if (bit < DRM_MAX_CTXBITMAP) {
+		set_bit(bit, dev->ctx_bitmap);
+	   	DRM_DEBUG("drm_ctxbitmap_next bit : %d\n", bit);
+		return bit;
+	}
+	return -1;
+}
+
+int drm_ctxbitmap_init(drm_device_t *dev)
+{
+	int i;
+   	int temp;
+
+	dev->ctx_bitmap = (u_int32_t *) drm_alloc(PAGE_SIZE, 
+						  DRM_MEM_CTXBITMAP);
+	if(dev->ctx_bitmap == NULL) {
+		return -ENOMEM;
+	}
+	memset((void *) dev->ctx_bitmap, 0, PAGE_SIZE);
+	for(i = 0; i < DRM_RESERVED_CONTEXTS; i++) {
+		temp = drm_ctxbitmap_next(dev);
+	   	DRM_DEBUG("drm_ctxbitmap_init : %d\n", temp);
+	}
+
 	return 0;
 }
 
-int drm_rmdraw(dev_t kdev, u_long cmd, caddr_t data,
-	       int flags, struct proc *p)
+void drm_ctxbitmap_cleanup(drm_device_t *dev)
 {
-	return 0;		/* NOOP */
+	drm_free((void *)dev->ctx_bitmap, PAGE_SIZE,
+		 DRM_MEM_CTXBITMAP);
 }
+

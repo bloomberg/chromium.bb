@@ -1,8 +1,8 @@
 /* tdfx.c -- tdfx driver -*- c -*-
  * Created: Thu Oct  7 10:38:32 1999 by faith@precisioninsight.com
- * Revised: Tue Oct 12 08:51:35 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,8 +24,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI$
- * $XFree86$
+ * Authors:
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
+ *    Daryll Strauss <daryll@valinux.com>
  *
  */
 
@@ -35,13 +36,16 @@
 #include <pci/pcivar.h>
 
 MODULE_DEPEND(tdfx, drm, 1, 1, 1);
+#ifdef DRM_AGP
+MODULE_DEPEND(tdfx, agp, 1, 1, 1);
+#endif
 
 #define TDFX_NAME	 "tdfx"
 #define TDFX_DESC	 "tdfx"
 #define TDFX_DATE	 "19991009"
-#define TDFX_MAJOR	 0
+#define TDFX_MAJOR	 1
 #define TDFX_MINOR	 0
-#define TDFX_PATCHLEVEL  1
+#define TDFX_PATCHLEVEL  0
 
 static int tdfx_init(device_t nbdev);
 static void tdfx_cleanup(device_t nbdev);
@@ -153,6 +157,16 @@ static drm_ioctl_desc_t	      tdfx_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]	     = { tdfx_lock,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]     = { tdfx_unlock,	  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]     = { drm_finish,	  1, 0 },
+#ifdef DRM_AGP
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)]   = {drm_agp_acquire, 1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)]   = {drm_agp_release, 1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)]    = {drm_agp_enable,  1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)]      = {drm_agp_info,    1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)]     = {drm_agp_alloc,   1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)]      = {drm_agp_free,    1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]      = {drm_agp_unbind,  1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]    = {drm_agp_bind,    1, 1},
+#endif
 };
 #define TDFX_IOCTL_COUNT DRM_ARRAY_SIZE(tdfx_ioctls)
 
@@ -259,6 +273,26 @@ tdfx_takedown(drm_device_t *dev)
 		}
 		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
 	}
+#ifdef DRM_AGP
+				/* Clear AGP information */
+	if (dev->agp) {
+		drm_agp_mem_t *temp;
+		drm_agp_mem_t *temp_next;
+	   
+		temp = dev->agp->memory;
+		while(temp != NULL) {
+			temp_next = temp->next;
+			drm_free_agp(temp->handle, temp->pages);
+			drm_free(temp, sizeof(*temp), DRM_MEM_AGPLISTS);
+			temp = temp_next;
+		}
+
+		if (dev->agp->acquired)
+			agp_release(dev->agp->agpdev);
+		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
+		dev->agp = NULL;
+	}
+#endif
 	
 				/* Clear vma list (only built for debugging) */
 	if (dev->vmalist) {
@@ -312,8 +346,6 @@ tdfx_takedown(drm_device_t *dev)
 	}
 	lockmgr(&dev->dev_lock, LK_RELEASE, 0, curproc);
 
-	device_unbusy(dev->device);
-	
 	return 0;
 }
 
@@ -323,6 +355,7 @@ static int
 tdfx_init(device_t nbdev)
 {
 	drm_device_t *dev = device_get_softc(nbdev);
+	int          retcode;
 
 	DRM_DEBUG("\n");
 
@@ -346,6 +379,16 @@ tdfx_init(device_t nbdev)
 	drm_mem_init();
 	drm_sysctl_init(dev);
 	TAILQ_INIT(&dev->files);
+
+#ifdef DRM_AGP
+	dev->agp    = drm_agp_init();
+#endif
+	if((retcode = drm_ctxbitmap_init(dev))) {
+		DRM_ERROR("Cannot allocate memory for context bitmap.\n");
+		drm_sysctl_cleanup(dev);
+		tdfx_takedown(dev);
+		return retcode;
+	}
 
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 TDFX_NAME,
@@ -372,7 +415,7 @@ tdfx_cleanup(device_t nbdev)
 
 	DRM_INFO("Module unloaded\n");
 
-	device_busy(dev->device);
+	drm_ctxbitmap_cleanup(dev);
 	tdfx_takedown(dev);
 }
 
@@ -447,6 +490,7 @@ tdfx_close(dev_t kdev, int flags, int fmt, struct proc *p)
 				return EBUSY;
 			}
 			simple_unlock(&dev->count_lock);
+			device_unbusy(dev->device);
 			return tdfx_takedown(dev);
 		}
 		simple_unlock(&dev->count_lock);

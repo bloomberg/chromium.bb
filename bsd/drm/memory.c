@@ -1,8 +1,8 @@
 /* memory.c -- Memory management wrappers for DRM -*- c -*-
  * Created: Thu Feb  4 14:00:34 1999 by faith@precisioninsight.com
- * Revised: Fri Aug 20 13:04:33 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/memory.c,v 1.4 1999/08/20 20:00:53 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/memory.c,v 1.1 1999/09/25 14:38:02 dawes Exp $
+ * Authors:
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 
@@ -55,21 +55,21 @@ static struct simplelock  drm_mem_lock;
 static unsigned long	  drm_ram_available = 0;
 static unsigned long	  drm_ram_used	    = 0;
 static drm_mem_stats_t	  drm_mem_stats[]   = {
-	[DRM_MEM_DMA]	   = { "dmabufs"  },
-	[DRM_MEM_SAREA]	   = { "sareas"	  },
-	[DRM_MEM_DRIVER]   = { "driver"	  },
-	[DRM_MEM_MAGIC]	   = { "magic"	  },
-	[DRM_MEM_IOCTLS]   = { "ioctltab" },
-	[DRM_MEM_MAPS]	   = { "maplist"  },
-	[DRM_MEM_VMAS]	   = { "vmalist"  },
-	[DRM_MEM_BUFS]	   = { "buflist"  },
-	[DRM_MEM_SEGS]	   = { "seglist"  },
-	[DRM_MEM_PAGES]	   = { "pagelist" },
-	[DRM_MEM_FILES]	   = { "files"	  },
-	[DRM_MEM_QUEUES]   = { "queues"	  },
-	[DRM_MEM_CMDS]	   = { "commands" },
-	[DRM_MEM_MAPPINGS] = { "mappings" },
-	[DRM_MEM_BUFLISTS] = { "buflists" },
+	[DRM_MEM_DMA]	    = { "dmabufs"  },
+	[DRM_MEM_SAREA]	    = { "sareas"   },
+	[DRM_MEM_DRIVER]    = { "driver"   },
+	[DRM_MEM_MAGIC]	    = { "magic"	   },
+	[DRM_MEM_IOCTLS]    = { "ioctltab" },
+	[DRM_MEM_MAPS]	    = { "maplist"  },
+	[DRM_MEM_VMAS]	    = { "vmalist"  },
+	[DRM_MEM_BUFS]	    = { "buflist"  },
+	[DRM_MEM_SEGS]	    = { "seglist"  },
+	[DRM_MEM_PAGES]	    = { "pagelist" },
+	[DRM_MEM_FILES]	    = { "files"	   },
+	[DRM_MEM_QUEUES]    = { "queues"   },
+	[DRM_MEM_CMDS]	    = { "commands" },
+	[DRM_MEM_MAPPINGS]  = { "mappings" },
+	[DRM_MEM_BUFLISTS]  = { "buflists" },
 	[DRM_MEM_AGPLISTS]  = { "agplist"  },
 	[DRM_MEM_TOTALAGP]  = { "totalagp" },
 	[DRM_MEM_BOUNDAGP]  = { "boundagp" },

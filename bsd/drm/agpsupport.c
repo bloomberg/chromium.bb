@@ -2,6 +2,7 @@
  * Created: Mon Dec 13 09:56:45 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,9 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * Author: Rickard E. (Rik) Faith <faith@precisioninsight.com>
- *
- * $XFree86$
+ * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 
@@ -238,8 +237,8 @@ drm_agp_head_t *drm_agp_init(void)
 	if (agp_available) {
 		if (!(head = drm_alloc(sizeof(*head), DRM_MEM_AGPLISTS)))
 			return NULL;
-		head->agpdev = agpdev;
 		memset((void *)head, 0, sizeof(*head));
+		head->agpdev = agpdev;
 		agp_get_info(agpdev, &head->info);
 		head->memory = NULL;
 #if 0				/* bogus */

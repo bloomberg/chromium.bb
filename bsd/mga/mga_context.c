@@ -1,5 +1,5 @@
-/* tdfx_context.c -- IOCTLs for tdfx contexts -*- c -*-
- * Created: Thu Oct  7 10:50:22 1999 by faith@precisioninsight.com
+/* mga_context.c -- IOCTLs for mga contexts
+ * Created: Mon Dec 13 09:51:35 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -24,23 +24,23 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * Authors:
- *    Rickard E. (Rik) Faith <faith@valinux.com>
- *    Daryll Strauss <daryll@valinux.com>
+ * Author: Rickard E. (Rik) Faith <faith@valinux.com>
+ *	   Jeff Hartmann <jhartmann@valinux.com>
  *
  */
 
+#define __NO_VERSION__
 #include "drmP.h"
-#include "tdfx_drv.h"
+#include "mga_drv.h"
 
-extern drm_ctx_t tdfx_res_ctx;
-
-static int tdfx_alloc_queue(drm_device_t *dev)
+static int mga_alloc_queue(drm_device_t *dev)
 {
-	return drm_ctxbitmap_next(dev);
+   	int temp = drm_ctxbitmap_next(dev);
+   	DRM_DEBUG("mga_alloc_queue: %d\n", temp);
+	return temp;
 }
 
-int tdfx_context_switch(drm_device_t *dev, int old, int new)
+int mga_context_switch(drm_device_t *dev, int old, int new)
 {
         char        buf[64];
 
@@ -48,7 +48,7 @@ int tdfx_context_switch(drm_device_t *dev, int old, int new)
 
         if (test_and_set_bit(0, &dev->context_flag)) {
                 DRM_ERROR("Reentering -- FIXME\n");
-                return -EBUSY;
+                return EBUSY;
         }
 
 #if DRM_DMA_HISTOGRAM
@@ -63,7 +63,7 @@ int tdfx_context_switch(drm_device_t *dev, int old, int new)
         }
         
         if (drm_flags & DRM_FLAG_NOCTX) {
-                tdfx_context_switch_complete(dev, new);
+                mga_context_switch_complete(dev, new);
         } else {
                 sprintf(buf, "C %d %d\n", old, new);
                 drm_write_string(dev, buf);
@@ -72,7 +72,7 @@ int tdfx_context_switch(drm_device_t *dev, int old, int new)
         return 0;
 }
 
-int tdfx_context_switch_complete(drm_device_t *dev, int new)
+int mga_context_switch_complete(drm_device_t *dev, int new)
 {
         dev->last_context = new;  /* PRE/POST: This is the _only_ writer. */
         dev->last_switch  = ticks;
@@ -98,9 +98,8 @@ int tdfx_context_switch_complete(drm_device_t *dev, int new)
         return 0;
 }
 
-
 int
-tdfx_resctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
+mga_resctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
 {
 	drm_ctx_res_t	res;
 	drm_ctx_t	ctx;
@@ -121,42 +120,35 @@ tdfx_resctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
 	return 0;
 }
 
-
 int
-tdfx_addctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
+mga_addctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
 {
 	drm_device_t	*dev	= kdev->si_drv1;
 	drm_ctx_t	ctx;
 
 	ctx = *(drm_ctx_t *) data;
-	if ((ctx.handle = tdfx_alloc_queue(dev)) == DRM_KERNEL_CONTEXT) {
+	if ((ctx.handle = mga_alloc_queue(dev)) == DRM_KERNEL_CONTEXT) {
 				/* Skip kernel's context and get a new one. */
-		ctx.handle = tdfx_alloc_queue(dev);
+		ctx.handle = mga_alloc_queue(dev);
 	}
-	DRM_DEBUG("%d\n", ctx.handle);
-	if (ctx.handle == -1) {
+        if (ctx.handle == -1) {
 		DRM_DEBUG("Not enough free contexts.\n");
-				/* Should this return -EBUSY instead? */
+				/* Should this return EBUSY instead? */
 		return ENOMEM;
 	}
-
+	DRM_DEBUG("%d\n", ctx.handle);
 	*(drm_ctx_t *) data = ctx;
 	return 0;
 }
 
 int
-tdfx_modctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
+mga_modctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
 {
-	drm_ctx_t ctx;
-
-	ctx = *(drm_ctx_t *) data;
-	if (ctx.flags==_DRM_CONTEXT_PRESERVED)
-		tdfx_res_ctx.handle=ctx.handle;
+   	/* This does nothing for the mga */
 	return 0;
 }
 
-int
-tdfx_getctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
+int mga_getctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
 {
 	drm_ctx_t ctx;
 
@@ -167,38 +159,38 @@ tdfx_getctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
 	return 0;
 }
 
-int
-tdfx_switchctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
+int mga_switchctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
 {
 	drm_device_t	*dev	= kdev->si_drv1;
 	drm_ctx_t	ctx;
 
 	ctx = *(drm_ctx_t *) data;
 	DRM_DEBUG("%d\n", ctx.handle);
-	return tdfx_context_switch(dev, dev->last_context, ctx.handle);
+	return mga_context_switch(dev, dev->last_context, ctx.handle);
 }
 
-int
-tdfx_newctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
+int mga_newctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
 {
 	drm_device_t	*dev	= kdev->si_drv1;
 	drm_ctx_t	ctx;
 
 	ctx = *(drm_ctx_t *) data;
 	DRM_DEBUG("%d\n", ctx.handle);
-	tdfx_context_switch_complete(dev, ctx.handle);
+	mga_context_switch_complete(dev, ctx.handle);
 
 	return 0;
 }
 
-int
-tdfx_rmctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
+int mga_rmctx(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
 {
 	drm_device_t	*dev	= kdev->si_drv1;
 	drm_ctx_t	ctx;
 
 	ctx = *(drm_ctx_t *) data;
-	drm_ctxbitmap_free(dev, ctx.handle);
+	DRM_DEBUG("%d\n", ctx.handle);
+      	if(ctx.handle != DRM_KERNEL_CONTEXT) {
+	   	drm_ctxbitmap_free(dev, ctx.handle);
+	}
 	
 	return 0;
 }

@@ -49,7 +49,13 @@
 #include <sys/sysctl.h>
 #include <sys/select.h>
 #include <sys/bus.h>
+#if __FreeBSD_version >= 500005
 #include <sys/taskqueue.h>
+#endif
+
+#if __FreeBSD_version >= 500006
+#define DRM_AGP
+#endif
 
 #ifdef DRM_AGP
 #include <pci/agpvar.h>
@@ -71,9 +77,11 @@ typedef u_int32_t spinlock_t;
 static __inline u_int32_t
 test_and_set_bit(int b, volatile u_int32_t *p)
 {
+	int s = splhigh();
 	u_int32_t m = 1<<b;
 	u_int32_t r = *p & m;
 	*p |= m;
+	splx(s);
 	return r;
 }
 
@@ -101,9 +109,9 @@ find_first_zero_bit(volatile u_int32_t *p, int max)
     int b;
 
     for (b = 0; b < max; b += 32) {
-	if (p[b >> 5]) {
+	if (p[b >> 5] != ~0) {
 	    for (;;) {
-		if (p[b >> 5] & (1 << (b & 0x1f)))
+		if ((p[b >> 5] & (1 << (b & 0x1f))) == 0)
 		    return b;
 		b++;
 	    }
@@ -117,10 +125,15 @@ find_first_zero_bit(volatile u_int32_t *p, int max)
 #define memset(p, v, s)		bzero(p, s)
 
 /*
- * Software interrupts for DMA pipe feeding. The FreeBSD kernel apis
- * are severely lacking here.
+ * Fake out the module macros for versions of FreeBSD where they don't
+ * exist.
  */
-#define SWI_DRI		(SWI_VM+2)
+#if __FreeBSD_version < 500002
+
+#define MODULE_VERSION(a,b)		struct __hack
+#define MODULE_DEPEND(a,b,c,d,e)	struct __hack
+
+#endif
 
 #define DRM_DEBUG_CODE 2	  /* Include debugging code (if > 1, then
 				     also include looping detection. */
@@ -504,7 +517,9 @@ typedef struct drm_device {
 	int		  last_checked;	/* Last context checked for DMA	   */
 	int		  last_context;	/* Last current context		   */
 	int		  last_switch;	/* Time at last context switch  */
+#if __FreeBSD_version >= 500005
 	struct task	  task;
+#endif
 	struct timespec	  ctx_start;
 	struct timespec	  lck_start;
 #if DRM_DMA_HISTOGRAM

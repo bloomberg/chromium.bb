@@ -1,8 +1,8 @@
 /* gamma_dma.c -- DMA support for GMX 2000 -*- c -*-
  * Created: Fri Mar 19 14:30:16 1999 by faith@precisioninsight.com
- * Revised: Thu Sep 16 12:55:37 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/gamma_dma.c,v 1.9 1999/09/16 16:56:18 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/gamma_dma.c,v 1.1 1999/09/25 14:38:00 dawes Exp $
+ * Authors:
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 
@@ -92,13 +92,31 @@ static __inline void gamma_dma_dispatch(drm_device_t *dev,
 	GAMMA_WRITE(GAMMA_DMACOUNT, length / 4);
 }
 
-static __inline void gamma_dma_quiescent(drm_device_t *dev)
+static __inline void gamma_dma_quiescent_single(drm_device_t *dev)
 {
 	while (GAMMA_READ(GAMMA_DMACOUNT))
 		;
 	while (GAMMA_READ(GAMMA_INFIFOSPACE) < 3)
 		;
+
+	GAMMA_WRITE(GAMMA_FILTERMODE, 1 << 10);
+	GAMMA_WRITE(GAMMA_SYNC, 0);
+	
+	do {
+		while (!GAMMA_READ(GAMMA_OUTFIFOWORDS))
+			;
+	} while (GAMMA_READ(GAMMA_OUTPUTFIFO) != GAMMA_SYNC_TAG);
+}
+
+static __inline void gamma_dma_quiescent_dual(drm_device_t *dev)
+{
+	while (GAMMA_READ(GAMMA_DMACOUNT))
+		;
+	while (GAMMA_READ(GAMMA_INFIFOSPACE) < 3)
+		;
+
 	GAMMA_WRITE(GAMMA_BROADCASTMASK, 3);
+
 	GAMMA_WRITE(GAMMA_FILTERMODE, 1 << 10);
 	GAMMA_WRITE(GAMMA_SYNC, 0);
 	
@@ -107,7 +125,6 @@ static __inline void gamma_dma_quiescent(drm_device_t *dev)
 		while (!GAMMA_READ(GAMMA_OUTFIFOWORDS))
 			;
 	} while (GAMMA_READ(GAMMA_OUTPUTFIFO) != GAMMA_SYNC_TAG);
-	
 
 				/* Read from second MX */
 	do {
@@ -784,8 +801,13 @@ int gamma_lock(dev_t kdev, u_long cmd, caddr_t data, int flags, struct proc *p)
 	if (!ret) {
 		if (lock.flags & _DRM_LOCK_READY)
 			gamma_dma_ready(dev);
-		if (lock.flags & _DRM_LOCK_QUIESCENT)
-			gamma_dma_quiescent(dev);
+		if (lock.flags & _DRM_LOCK_QUIESCENT) {
+			if (gamma_found() == 1) {
+				gamma_dma_quiescent_single(dev);
+			} else {
+				gamma_dma_quiescent_dual(dev);
+			}
+		}
 	}
 	DRM_DEBUG("%d %s\n", lock.context, ret ? "interrupted" : "has lock");
 

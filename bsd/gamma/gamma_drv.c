@@ -1,8 +1,8 @@
 /* gamma.c -- 3dlabs GMX 2000 driver -*- c -*-
  * Created: Mon Jan  4 08:58:31 1999 by faith@precisioninsight.com
- * Revised: Tue Oct 12 08:51:36 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/gamma_drv.c,v 1.17 1999/08/30 13:05:00 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/gamma_drv.c,v 1.1 1999/09/25 14:38:00 dawes Exp $
+ * Authors:
+ *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 
@@ -35,6 +35,16 @@
 #include <pci/pcivar.h>
 
 MODULE_DEPEND(gamma, drm, 1, 1, 1);
+
+#ifndef PCI_DEVICE_ID_3DLABS_GAMMA
+#define PCI_DEVICE_ID_3DLABS_GAMMA 0x0008
+#endif
+#ifndef PCI_DEVICE_ID_3DLABS_MX
+#define PCI_DEVICE_ID_3DLABS_MX 0x0006
+#endif
+#ifndef PCI_VENDOR_ID_3DLABS
+#define PCI_VENDOR_ID_3DLABS 0x3d3d
+#endif
 
 static int gamma_init(device_t nbdev);
 static void gamma_cleanup(device_t nbdev);
@@ -46,6 +56,10 @@ static int gamma_probe(device_t dev)
 	switch (pci_get_devid(dev)) {
 	case 0x00083d3d:
 		s = "3D Labs Gamma graphics accelerator";
+		break;
+
+	case 0x00063d3d:
+		s = "3D Labs MX graphics accelerator";
 		break;
 	}
 
@@ -92,10 +106,10 @@ DRIVER_MODULE(if_gamma, pci, gamma_driver, gamma_devclass, 0, 0);
 
 #define GAMMA_NAME	 "gamma"
 #define GAMMA_DESC	 "3dlabs GMX 2000"
-#define GAMMA_DATE	 "19990830"
-#define GAMMA_MAJOR	 0
+#define GAMMA_DATE	 "20000606"
+#define GAMMA_MAJOR	 1
 #define GAMMA_MINOR	 0
-#define GAMMA_PATCHLEVEL 5
+#define GAMMA_PATCHLEVEL 0
 
 #define CDEV_MAJOR	200
 
@@ -149,6 +163,8 @@ static drm_ioctl_desc_t	      gamma_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]     = { drm_finish,	  1, 0 },
 };
 #define GAMMA_IOCTL_COUNT DRM_ARRAY_SIZE(gamma_ioctls)
+
+static int 		      devices = 0;
 
 static int gamma_setup(drm_device_t *dev)
 {
@@ -285,6 +301,10 @@ gamma_takedown(drm_device_t *dev)
 					       - PAGE_SHIFT,
 					       DRM_MEM_SAREA);
 				break;
+			case _DRM_AGP:
+				/* Do nothing here, because this is all
+                                   handled in the AGP/GART driver. */
+				break;
 			}
 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 		}
@@ -326,6 +346,38 @@ gamma_takedown(drm_device_t *dev)
 	return 0;
 }
 
+int gamma_found(void)
+{
+	return devices;
+}
+
+static int
+gamma_find_devices(device_t dev)
+{
+	device_t *children, child;
+	int nchildren, i;
+	int count = 0;
+
+	if (device_get_children(device_get_parent(dev), &children, &nchildren))
+		return 0;
+
+	for (i = 0; i < nchildren; i++) {
+		child = children[i];
+
+		if (pci_get_slot(dev) == pci_get_slot(child) &&
+		    pci_get_vendor(child) == PCI_VENDOR_ID_3DLABS &&
+		    pci_get_device(child) == PCI_DEVICE_ID_3DLABS_MX) {
+			count++;
+		}
+	}
+	free(children, M_TEMP);
+
+	/* we don't currently support more than two */
+	if (count > 2) count = 2;
+
+	return count;
+}
+
 /* gamma_init is called via gamma_attach at module load time */
 
 static int
@@ -342,6 +394,8 @@ gamma_init(device_t nbdev)
 #if 0				/* XXX use getenv I guess */
 	drm_parse_options(gamma);
 #endif
+	devices = gamma_find_devices(nbdev);
+	if (devices == 0) return -1;
 
 #if 0
 	if ((retcode = misc_register(&gamma_misc))) {
@@ -361,13 +415,14 @@ gamma_init(device_t nbdev)
 	drm_mem_init();
 	drm_sysctl_init(dev);
 
-	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
+	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d with %d MX devices\n",
 		 GAMMA_NAME,
 		 GAMMA_MAJOR,
 		 GAMMA_MINOR,
 		 GAMMA_PATCHLEVEL,
 		 GAMMA_DATE,
-		 device_get_unit(nbdev));
+		 device_get_unit(nbdev),
+		 devices);
 
 	return 0;
 }
