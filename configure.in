@@ -363,7 +363,6 @@ fc-cache/Makefile
 fc-list/Makefile
 doc/Makefile
 doc/version.sgml
-doc/confdir.sgml
 test/Makefile
 fontconfig.spec
 fontconfig.pc

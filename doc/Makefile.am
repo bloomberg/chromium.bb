@@ -134,6 +134,10 @@ fontconfig-user.html: fontconfig-user.sgml version.sgml confdir.sgml
 	$(DOC2HTML) -u fontconfig-user.sgml
 
 fontconfig-user.txt:  fontconfig-user.sgml version.sgml confdir.sgml
+
+confdir.sgml: confdir.sgml.in
+	sed "s,@SYSCONFDIR@,${sysconfdir}," < confdir.sgml.in > confdir.sgml
+
 else
 all-local:
 clean-local:
