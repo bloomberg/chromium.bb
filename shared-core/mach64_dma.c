@@ -497,7 +497,7 @@ void mach64_dump_ring_info(drm_mach64_private_t * dev_priv)
 		    (i >= ring->head - MACH64_DUMP_CONTEXT * 4 &&
 		     i <= ring->head + MACH64_DUMP_CONTEXT * 4)) {
 			DRM_INFO("  0x%08x:  0x%08x 0x%08x 0x%08x 0x%08x%s%s\n",
-				 ring->start_addr + i * sizeof(u32),
+				 (u32)(ring->start_addr + i * sizeof(u32)),
 				 le32_to_cpu(((u32 *) ring->start)[i + 0]),
 				 le32_to_cpu(((u32 *) ring->start)[i + 1]),
 				 le32_to_cpu(((u32 *) ring->start)[i + 2]),
@@ -913,8 +913,8 @@ static int mach64_do_dma_init(drm_device_t * dev, drm_mach64_init_t * init)
 	}
 
 	memset(dev_priv->ring.start, 0, dev_priv->ring.size);
-	DRM_INFO("descriptor ring: cpu addr 0x%08x, bus addr: 0x%08x\n",
-		 (u32) dev_priv->ring.start, dev_priv->ring.start_addr);
+	DRM_INFO("descriptor ring: cpu addr %p, bus addr: 0x%08x\n",
+		 dev_priv->ring.start, dev_priv->ring.start_addr);
 
 	ret = 0;
 	if (dev_priv->driver_mode != MACH64_MODE_MMIO) {
