@@ -915,7 +915,7 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 	DRM_DEBUG( "\n" );
 
 	count = depth->n;
-	if (count>4096 || count<=0)
+	if (count > 4096 || count <= 0)
 		return -EMSGSIZE;
 
 	if ( DRM_COPY_FROM_USER( &x, depth->x, sizeof(x) ) ) {

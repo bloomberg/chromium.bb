@@ -217,25 +217,25 @@ typedef struct drm_r128_sarea {
 #define DRM_IOCTL_R128_CLEAR2     DRM_IOW( DRM_COMMAND_BASE + DRM_R128_CLEAR2, drm_r128_clear2_t)
 #define DRM_IOCTL_R128_GETPARAM   DRM_IOW( DRM_COMMAND_BASE + DRM_R128_GETPARAM, drm_r128_getparam_t)
 #define DRM_IOCTL_R128_FLIP       DRM_IO(  DRM_COMMAND_BASE + DRM_R128_FLIP)
-                                           
-typedef struct drm_r128_init {             
-	enum {                                    
-		R128_INIT_CCE    = 0x01,                 
-		R128_CLEANUP_CCE = 0x02                  
-	} func;                                   
+
+typedef struct drm_r128_init {
+	enum {
+		R128_INIT_CCE    = 0x01,
+		R128_CLEANUP_CCE = 0x02
+	} func;
 #if CONFIG_XFREE86_VERSION < XFREE86_VERSION(4,1,0,0)
-	int sarea_priv_offset;                    
-#else                                      
-	unsigned long sarea_priv_offset;          
-#endif                                     
-	int is_pci;                               
-	int cce_mode;                             
-	int cce_secure;                           
-	int ring_size;                            
-	int usec_timeout;                         
-                                           
-	unsigned int fb_bpp;                      
-	unsigned int front_offset, front_pitch;   
+	int sarea_priv_offset;
+#else
+	unsigned long sarea_priv_offset;
+#endif
+	int is_pci;
+	int cce_mode;
+	int cce_secure;
+	int ring_size;
+	int usec_timeout;
+
+	unsigned int fb_bpp;
+	unsigned int front_offset, front_pitch;
 	unsigned int back_offset, back_pitch;
 	unsigned int depth_bpp;
 	unsigned int depth_offset, depth_pitch;
