@@ -1,3 +1,19 @@
+2004-12-09  John Thacker <thacker@math.cornell.edu>
+
+	reviewed by: Keith Packard  <keithp@keithp.com>
+
+	* fc-lang/ru.orth:
+	
+	Currently Russian (ru) requires 0406 and 0456 (І and і), but these
+	were eliminated in Russian in 1918 in favor of 0418 and 0438 (И and
+	и), and don't even appear in KOI8-R.  (The hypothesis that they
+	don't appear in KOI8-R due to their similarity with Latin I and i is
+	eliminated by their presence in KOI8-U.)  I have a couple of fonts
+	with Russian support that don't have the letter.
+
+	Therefore, 0406 and 0456 should be removed from or commented out of
+	ru.orth
+
 2004-12-06  michael meeks <mmeeks@novell.com>
 
 	Reviewed by: Keith Packard  <keithp@keithp.com>
