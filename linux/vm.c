@@ -88,7 +88,7 @@ struct page *drm_vm_shm_nopage(struct vm_area_struct *vma,
 
 	offset	 = address - vma->vm_start;
 	page	 = offset >> PAGE_SHIFT;
-	physical = (unsigned long)dev->lock.hw_lock + (offset & (~PAGE_MASK));
+	physical = (unsigned long)dev->lock.hw_lock + offset;
 	atomic_inc(&mem_map[MAP_NR(physical)].count); /* Dec. by kernel */
 
 	DRM_DEBUG("0x%08lx (page %lu) => 0x%08lx\n", address, page, physical);
