@@ -28,7 +28,7 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
- * $FreeBSD: src/sys/dev/drm/drm_drv.h,v 1.11 2003/03/03 12:48:14 phk Exp $
+ * $FreeBSD: src/sys/dev/drm/drm_drv.h,v 1.12 2003/03/09 02:08:28 anholt Exp $
  */
 
 /*

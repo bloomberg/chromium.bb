@@ -27,6 +27,8 @@
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
+ *
+ * $FreeBSD: src/sys/dev/drm/drm_memory.h,v 1.7 2003/03/09 02:08:28 anholt Exp $
  */
 
 #include "drmP.h"
@@ -106,7 +108,8 @@ void DRM(mem_uninit)(void)
 
 #ifdef __FreeBSD__
 /* drm_mem_info is called whenever a process reads /dev/drm/mem. */
-static int DRM(_mem_info)(drm_mem_stats_t *stats, struct sysctl_oid *oidp, void *arg1, 
+static int
+DRM(_mem_info)(drm_mem_stats_t *stats, struct sysctl_oid *oidp, void *arg1, 
     int arg2, struct sysctl_req *req)
 {
 	drm_mem_stats_t *pt;

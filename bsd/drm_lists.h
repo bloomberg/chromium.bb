@@ -27,6 +27,8 @@
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
+ *
+ * $FreeBSD: src/sys/dev/drm/drm_lists.h,v 1.3 2003/03/09 02:08:28 anholt Exp $
  */
 
 #include "drmP.h"

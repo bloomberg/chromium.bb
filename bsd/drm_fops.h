@@ -28,6 +28,8 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Daryll Strauss <daryll@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
+ *
+ * $FreeBSD: src/sys/dev/drm/drm_fops.h,v 1.5 2003/03/09 02:08:28 anholt Exp $
  */
 
 #include "drmP.h"

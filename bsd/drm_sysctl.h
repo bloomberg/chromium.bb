@@ -1,5 +1,5 @@
 /*
- * $FreeBSD: src/sys/dev/drm/drm_sysctl.h,v 1.1 2002/04/27 20:47:57 anholt Exp $
+ * $FreeBSD: src/sys/dev/drm/drm_sysctl.h,v 1.2 2003/03/09 02:08:28 anholt Exp $
  */
 
 #ifdef __FreeBSD__
