@@ -11,7 +11,7 @@
 # everything required for in-kernel source builds.  It is included into
 # this file, so none of that should be duplicated here.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.37 2003/04/23 01:48:57 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.40 2003/08/17 17:12:25 dawes Exp $
 #
 
 #
@@ -48,6 +48,7 @@ MODULE_LIST := gamma.o tdfx.o r128.o radeon.o mga.o sis.o
 
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))
+ARCHX86 := 1
 MODULE_LIST += i830.o i810.o
 endif
 
@@ -256,6 +257,12 @@ BELOW24 := $(shell if [ $(VERSION) -lt 2 -o $(PATCHLEVEL) -lt 4 ]; then \
 ifeq ($(BELOW24),y)
 $(error Only 2.4.x and later kernels are supported \
 	($(VERSION).$(PATCHLEVEL).$(SUBLEVEL)))
+endif
+
+ifdef ARCHX86
+ifndef CONFIG_X86_CMPXCHG
+$(error CONFIG_X86_CMPXCHG needs to be enabled in the kernel)
+endif
 endif
 
 # This needs to go before all other include paths.

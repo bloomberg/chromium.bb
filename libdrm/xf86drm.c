@@ -31,7 +31,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.31 2003/02/04 03:01:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.36 2003/08/24 17:35:35 tsi Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"

@@ -4,7 +4,7 @@
 #
 # Based on David Woodhouse's mtd build.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.kernel,v 1.17 2003/04/12 17:18:17 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.kernel,v 1.18 2003/08/16 17:59:17 dawes Exp $
 #
 
 gamma-objs  := gamma_drv.o gamma_dma.o
