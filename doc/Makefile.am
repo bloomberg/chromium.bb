@@ -115,7 +115,7 @@ $(DOC_FUNCS_SGML): edit-sgml $(FNCS_TMPL)
 
 fonts-conf.5: fontconfig-user.sgml version.sgml
 	$(RM) file.refs
-	$(DOC2MAN) -u fontconfig-user.sgml
+	$(DOC2MAN) fontconfig-user.sgml
 	$(RM) manpage.refs manpage.links
 
 all-local: $(LOCAL_DOCS)
