@@ -538,6 +538,9 @@ FcPatternFreeze (FcPattern *p)
     int		size;
     int		i;
     
+    if (p->ref == FC_REF_CONSTANT)
+       return p;
+
     size = sizeof (FcPattern) + p->num * sizeof (FcPatternElt);
     b = (FcPattern *) malloc (size);
     if (!b)
