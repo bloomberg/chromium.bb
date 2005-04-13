@@ -979,8 +979,13 @@ int drm_mapbufs(DRM_IOCTL_ARGS)
 
 #ifdef __FreeBSD__
 	vaddr = round_page((vm_offset_t)vms->vm_daddr + MAXDSIZ);
+#if __FreeBSD_version >= 600023
+	retcode = vm_mmap(&vms->vm_map, &vaddr, size, PROT_READ | PROT_WRITE,
+	    VM_PROT_ALL, MAP_SHARED, OBJT_DEVICE, kdev, foff );
+#else
 	retcode = vm_mmap(&vms->vm_map, &vaddr, size, PROT_READ | PROT_WRITE,
 	    VM_PROT_ALL, MAP_SHARED, SLIST_FIRST(&kdev->si_hlist), foff );
+#endif
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
 	vaddr = round_page((vaddr_t)vms->vm_daddr + MAXDSIZ);
 	retcode = uvm_mmap(&vms->vm_map, &vaddr, size,
