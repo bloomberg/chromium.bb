@@ -1,5 +1,6 @@
 /* savage_drv.c -- Savage DRI driver
- *
+ */
+/*-
  * Copyright 2005 Eric Anholt
  * All Rights Reserved.
  *
