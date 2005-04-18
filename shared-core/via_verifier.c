@@ -732,6 +732,10 @@ verify_mmio_address( uint32_t address)
 		DRM_ERROR("Invalid VIDEO DMA command. "
 			  "Attempt to access 3D- or command burst area.\n");
 		return 1;
+	} else if ((address > 0xCFF) && (address < 0x1300)) {
+		DRM_ERROR("Invalid VIDEO DMA command. "
+			  "Attempt to access PCI DMA area.\n");
+		return 1;		
 	} else if (address > 0x13FF ) {
 		DRM_ERROR("Invalid VIDEO DMA command. "
 			  "Attempt to access VGA registers.\n");

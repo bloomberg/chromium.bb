@@ -41,7 +41,7 @@
 #include "via_3d_reg.h"
 
 #define CMDBUF_ALIGNMENT_SIZE   (0x100)
-#define CMDBUF_ALIGNMENT_MASK   (0xff)
+#define CMDBUF_ALIGNMENT_MASK   (0x0ff)
 
 /* defines for VIA 3D registers */
 #define VIA_REG_STATUS          0x400
@@ -73,6 +73,9 @@ static void via_cmdbuf_pause(drm_via_private_t * dev_priv);
 static void via_cmdbuf_reset(drm_via_private_t * dev_priv);
 static void via_cmdbuf_rewind(drm_via_private_t * dev_priv);
 static int via_wait_idle(drm_via_private_t * dev_priv);
+static void via_pad_cache(drm_via_private_t *dev_priv, int qwords);
+
+
 /*
  * Free space in command buffer.
  */
@@ -250,6 +253,8 @@ int via_dma_init(DRM_IOCTL_ARGS)
 	return retcode;
 }
 
+
+
 static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 {
 	drm_via_private_t *dev_priv;
@@ -283,7 +288,8 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 		return ret;
 	}
        	
-	vb = via_check_dma(dev_priv, cmd->size);
+	
+	vb = via_check_dma(dev_priv, (cmd->size < 0x100) ? 0x102 : cmd->size);
 	if (vb == NULL) {
 		return DRM_ERR(EAGAIN);
 	}
@@ -291,6 +297,14 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 	memcpy(vb, dev_priv->pci_buf, cmd->size);
 	
 	dev_priv->dma_low += cmd->size;
+
+	/*
+	 * Small submissions somehow stalls the CPU. (AGP cache effects?)
+	 * pad to greater size.
+	 */
+
+	if (cmd->size < 0x100)
+	  via_pad_cache(dev_priv,(0x100 - cmd->size) >> 3);
 	via_cmdbuf_pause(dev_priv);
 
 	return 0;
@@ -384,7 +398,7 @@ int via_pci_cmdbuffer(DRM_IOCTL_ARGS)
 static inline uint32_t *via_align_buffer(drm_via_private_t * dev_priv,
 					 uint32_t * vb, int qw_count)
 {
-	for (; qw_count > 0; --qw_count) {
+        for (; qw_count > 0; --qw_count) {
 		VIA_OUT_RING_QW(HC_DUMMY, HC_DUMMY);
 	}
 	return vb;
@@ -553,6 +567,16 @@ static void via_cmdbuf_start(drm_via_private_t * dev_priv)
 	VIA_WRITE(VIA_REG_TRANSPACE, pause_addr_lo);
 
 	VIA_WRITE(VIA_REG_TRANSPACE, command | HC_HAGPCMNT_MASK);
+}
+
+static void via_pad_cache(drm_via_private_t *dev_priv, int qwords)
+{
+	uint32_t *vb;
+
+	via_cmdbuf_wait(dev_priv, qwords + 2);
+	vb = via_get_dma(dev_priv);
+	VIA_OUT_RING_QW( HC_HEADER2, HC_ParaType_NotTex << 16);
+	via_align_buffer(dev_priv,vb,qwords);
 }
 
 static inline void via_dummy_bitblt(drm_via_private_t * dev_priv)

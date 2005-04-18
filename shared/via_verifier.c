@@ -28,8 +28,10 @@
  * be very slow.
  */
 
-#include "via.h"
+
+
 #include "via_3d_reg.h"
+#include "via.h"
 #include "drmP.h"
 #include "drm.h"
 #include "via_drm.h"
@@ -693,11 +695,12 @@ via_parse_header2( drm_via_private_t *dev_priv, uint32_t const **buffer, const u
 	VIA_WRITE(HC_REG_TRANS_SET + HC_REG_BASE, *buf++);
 	switch(cmd) {
 	case HC_ParaType_CmdVdata:
-		while ((*fire_count < dev_priv->num_fire_offsets) && 
+		while ((buf < buf_end) &&
+		       (*fire_count < dev_priv->num_fire_offsets) && 
 		       (*buf & HC_ACMD_MASK) == HC_ACMD_HCmdB ) {
 			while(buf <= next_fire) {
-			  VIA_WRITE(HC_REG_TRANS_SPACE + HC_REG_BASE + (burst & 63), *buf++);
-			  burst += 4;
+				VIA_WRITE(HC_REG_TRANS_SPACE + HC_REG_BASE + (burst & 63), *buf++);
+				burst += 4;
 			}
 			if ( ( buf < buf_end ) && ((*buf & HALCYON_FIREMASK) == HALCYON_FIRECMD))
 				buf++;
@@ -731,6 +734,10 @@ verify_mmio_address( uint32_t address)
 		DRM_ERROR("Invalid VIDEO DMA command. "
 			  "Attempt to access 3D- or command burst area.\n");
 		return 1;
+	} else if ((address > 0xCFF) && (address < 0x1300)) {
+		DRM_ERROR("Invalid VIDEO DMA command. "
+			  "Attempt to access PCI DMA area.\n");
+		return 1;		
 	} else if (address > 0x13FF ) {
 		DRM_ERROR("Invalid VIDEO DMA command. "
 			  "Attempt to access VGA registers.\n");
