@@ -111,13 +111,6 @@ irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
 			atomic_inc( &cur_irq->irq_received );
 			DRM_WAKEUP( &cur_irq->irq_queue );
 			handled = 1;
-			VIA_WRITE(VIA_REG_INTERRUPT, status);
-
-			if (handled)
-			  return IRQ_HANDLED;
-			else
-			  return IRQ_NONE;
-
 		}
 		cur_irq++;
 	}
