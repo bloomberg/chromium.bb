@@ -1048,7 +1048,10 @@ int DRM(lock)( struct inode *inode, struct file *filp,
 	}
 	current->state = TASK_RUNNING;
 	remove_wait_queue( &dev->lock.lock_queue, &entry );
-	
+
+        DRM_DEBUG( "%d %s\n", lock.context, ret ? "interrupted" : "has lock" );
+	if (ret) return ret;
+
 	sigemptyset( &dev->sigmask );
 	sigaddset( &dev->sigmask, SIGSTOP );
 	sigaddset( &dev->sigmask, SIGTSTP );
@@ -1062,19 +1065,19 @@ int DRM(lock)( struct inode *inode, struct file *filp,
 	if (dev->fn_tbl.dma_ready && (lock.flags & _DRM_LOCK_READY))
 		dev->fn_tbl.dma_ready(dev);
 	
-	if ( dev->fn_tbl.dma_quiescent && (lock.flags & _DRM_LOCK_QUIESCENT ))
-		return dev->fn_tbl.dma_quiescent(dev);
-	
-	
+	if (dev->fn_tbl.dma_quiescent && (lock.flags & _DRM_LOCK_QUIESCENT)) {
+		if (dev->fn_tbl.dma_quiescent(dev)) {
+			DRM_DEBUG( "%d waiting for DMA quiescent\n", lock.context);
+			return DRM_ERR(EBUSY);
+		}
+	}	
+
 	if ( dev->fn_tbl.kernel_context_switch && dev->last_context != lock.context ) {
 		dev->fn_tbl.kernel_context_switch(dev, dev->last_context,
 						  lock.context);
 	}
 	
-
-        DRM_DEBUG( "%d %s\n", lock.context, ret ? "interrupted" : "has lock" );
-
-        return ret;
+        return 0;
 }
 
 /** 
