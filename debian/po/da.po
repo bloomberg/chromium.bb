@@ -1,14 +1,14 @@
 # translation of fontconfig debconf template to Danish
 # Reviewed by Ole Laursen, 2004
-# Claus Hindsgaul <claus_h@image.dk>, 2004.
+# Claus Hindsgaul <claus_h@image.dk>, 2004, 2005.
 #
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fontconfig_2.2.2-1_da\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-03-02 13:41-0800\n"
-"PO-Revision-Date: 2004-11-19 16:56+0100\n"
+"POT-Creation-Date: 2005-03-10 19:01-0800\n"
+"PO-Revision-Date: 2005-04-14 10:34+0200\n"
 "Last-Translator: Claus Hindsgaul <claus_h@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
 "MIME-Version: 1.0\n"
@@ -20,90 +20,60 @@ msgstr ""
 #. Choices
 #: ../fontconfig.templates:3
 msgid "Native, Autohinter, None"
-msgstr ""
+msgstr "Indbygget, Autohinter, Ingen"
 
 #. Type: select
 #. Description
 #: ../fontconfig.templates:5
-#, fuzzy
-msgid "With what method should fonts be hinted?"
-msgstr "Hvilken metode skal benyttes til at tegne tekst?"
-
-#. Type: select
-#. Description
-#: ../fontconfig.templates:5
-msgid ""
-"The FreeType font library can adjust glyph outlines to accomodate the pixel "
-"grid for improved legibility.  This process is called \"hinting\".  FreeType "
-"can either use the hints built-in to each font or it can use a format-"
-"indepedent Autohinter.  For most font formats, using the format-specific "
-"hints generates better results.  However, many freely available TrueType "
-"format fonts don't include any hints at all. When loading such a font, "
-"unless you specifically ask to use the Autohinter, these fonts will end up "
-"unhinted, which will make them appear fuzzy on the screen."
-msgstr ""
+msgid "How should fonts be tuned for the screen?"
+msgstr "Hvordan skal skrifterne tilpasses skærmen?"
 
 #. Type: select
 #. Description
 #: ../fontconfig.templates:5
 msgid ""
-"If the TrueType fonts you use most include hints, then the Native hinter "
-"gives better results.  However, if the fonts you use most do not include "
-"such hints, then the Autohinter will work better.  Yes, FreeType should do "
-"this automatically."
+"Select Native if you mostly use Bitstream Vera (the default in Debian) or "
+"any of the Microsoft fonts.  Select Autohinter if you mostly use other "
+"TrueType fonts.  Select None if you want blurry text."
 msgstr ""
-
-#. Type: select
-#. Description
-#: ../fontconfig.templates:5
-msgid ""
-"You can also select None to disable all hinting and make your screen look "
-"like Mac OS X."
-msgstr ""
+"Vælg Indbygget hvis du mest benytter Bitstream Vera (standarden i Debian) "
+"eller nogen af Microsoft-skrifterne. Vælg Autohinter hvis du mest benytter "
+"andre Truetype-skrifter. Vælg Ingen hvis du ønsker utydelig tekst."
 
 #. Type: select
 #. Choices
-#: ../fontconfig.templates:28
-msgid "Automatic, Enable, Disable"
-msgstr ""
+#: ../fontconfig.templates:12
+msgid "Automatic, Always, Never"
+msgstr "Automatisk, Altid, Aldrig"
 
 #. Type: select
 #. Description
-#: ../fontconfig.templates:30
-msgid "Should font be rendered using sub-pixel elements?"
-msgstr ""
+#: ../fontconfig.templates:14
+msgid "Enable subpixel rendering of text?"
+msgstr "Aktivér delpiksel-tekstoptegning?"
 
 #. Type: select
 #. Description
-#: ../fontconfig.templates:30
+#: ../fontconfig.templates:14
 msgid ""
-"With known sub-pixel geometry, LCD screens can synthesize higher resolution "
-"in one dimension.  Taking advantage of this when rendering glyphs sharpens "
-"the appearance of text on the screen.  This can cause color artifacts, "
-"especially when rendering unhinted or autohinted fonts."
+"Rendering text at a subpixel level generally makes it look a bit better on "
+"flat (LCD) screens, but can show color artifacts on CRT screens. The "
+"\"Automatic\" choice will enable it only if a LCD screen is detected."
 msgstr ""
-
-#. Type: select
-#. Description
-#: ../fontconfig.templates:30
-msgid ""
-"This option selects when sub-pixel rendering should be used.  Automatic "
-"enables sub-pixel rendering whenever the X server detects an LCD monitor, "
-"which it can generally do when the monitor is built into the computer or "
-"connected with a digital (DVI) cable.  Enable forces the system to use sub-"
-"pixel rendering while Disable forces the system to not use sub-pixel "
-"rendering."
-msgstr ""
+"Optegningen af tekst på delpikselniveau får generelt teksten til at se bedre "
+"ud på fladskærme (LCD), men kan give uønskede farver i kanterne på CRT-skærme. "
+"Valget \"Automatisk\" vil kun aktivere delpiksel-tekstoptegningen, hvis der "
+"detekteres en LCD-skærm."
 
 #. Type: boolean
 #. Description
-#: ../fontconfig.templates:46
+#: ../fontconfig.templates:22
 msgid "Enable bitmapped fonts by default?"
 msgstr "Aktivér billedbaserede skrifttyper som standard?"
 
 #. Type: boolean
 #. Description
-#: ../fontconfig.templates:46
+#: ../fontconfig.templates:22
 msgid ""
 "By default, only outline fonts are used by applications which support "
 "fontconfig.  Outline fonts are fonts which scale well to various sizes.  In "
@@ -117,6 +87,10 @@ msgstr ""
 "dårligere kvalitet. Aktivering af denne funktion vil påvirke hele systemets "
 "standardindstilling. Denne og mange andre fontconfig-tilvalg kan aktiveres "
 "eller deaktiveres for hver enkelt bruger."
+
+#, fuzzy
+#~ msgid "With what method should fonts be hinted?"
+#~ msgstr "Hvilken metode skal benyttes til at tegne tekst?"
 
 #~ msgid ""
 #~ "Bytecode interpreter (CRT screens), Autohinter, Subpixel rendering (LCD "
@@ -147,9 +121,6 @@ msgstr ""
 #~ "en billedrørs-skærm. På den anden side er delpiksel-optegningsmetoden "
 #~ "optimeret til visning på den høje kvalitet, fladskærme (LCD) besidder."
 
-#~ msgid "Enable sub-pixel text rendering?"
-#~ msgstr "Aktivér delpiksel-tekstoptegning?"
-
 #~ msgid ""
 #~ "If you have an LCD display, then you will want to enable this option. It "
 #~ "allows for higher-quality text rendering.  For more information, please "
@@ -172,3 +143,4 @@ msgstr ""
 #~ "Afhængig af din skærm og hvilke skrifttyper, du bruger, kan de se bedre "
 #~ "eller dårligere ud, når du bruger autohinter-modulet. Aktivér det, hvis "
 #~ "du foretrækker det udseende, det giver dine skrifttyper."
+

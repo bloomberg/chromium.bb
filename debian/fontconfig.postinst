@@ -77,7 +77,13 @@ fi
 
 case "$enable_bitmaps" in
 "true")
-	ln -s $CONFDIR/$yes_bitmaps $CONFDIR/$bitmaps_prio$yes_bitmaps
+#
+# Bitmap fonts will be enabled by default, so there's no need
+# to use this configuration file.  However, the file remains useful if
+# you want to force bitmaps to be considered even when some application
+# disables them.
+#
+#	ln -s $CONFDIR/$yes_bitmaps $CONFDIR/$bitmaps_prio$yes_bitmaps
 	;;
 *)
 	ln -s $CONFDIR/$no_bitmaps $CONFDIR/$bitmaps_prio$no_bitmaps

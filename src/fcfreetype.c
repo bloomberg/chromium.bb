@@ -606,36 +606,6 @@ FcSfntNameTranscode (FT_SfntName *sname)
 	if (!fromcode)
 	    return 0;
     }
-#if USE_ICONV
-    cd = iconv_open ("UTF-8", fromcode);
-    if (cd)
-    {
-	size_t	    in_bytes_left = sname->string_len;
-	size_t	    out_bytes_left = sname->string_len * FC_UTF8_MAX_LEN;
-	char	    *inbuf, *outbuf;
-	
-	utf8 = malloc (out_bytes_left + 1);
-	if (!utf8)
-	    return 0;
-	
-	outbuf = (char *) utf8;
-	inbuf = (char *) sname->string;
-	
-	while (in_bytes_left)
-	{
-	    size_t	did = iconv (cd, 
-				 &inbuf, &in_bytes_left,
-				 &outbuf, &out_bytes_left);
-	    if (did == (size_t) (-1))
-	    {
-		free (utf8);
-		return 0;
-	    }
-	}
-	*outbuf = '\0';
-	goto done;
-    }
-#endif
     if (!strcmp (fromcode, "UCS-2BE") || !strcmp (fromcode, "UTF-16BE"))
     {
 	FcChar8	    *src = sname->string;
@@ -726,6 +696,41 @@ FcSfntNameTranscode (FT_SfntName *sname)
 	*u8 = '\0';
 	goto done;
     }
+#if USE_ICONV
+    cd = iconv_open ("UTF-8", fromcode);
+    if (cd && cd != (iconv_t) (-1))
+    {
+	size_t	    in_bytes_left = sname->string_len;
+	size_t	    out_bytes_left = sname->string_len * FC_UTF8_MAX_LEN;
+	char	    *inbuf, *outbuf;
+	
+	utf8 = malloc (out_bytes_left + 1);
+	if (!utf8)
+	{
+	    iconv_close (cd);
+	    return 0;
+	}
+	
+	outbuf = (char *) utf8;
+	inbuf = (char *) sname->string;
+	
+	while (in_bytes_left)
+	{
+	    size_t	did = iconv (cd, 
+				 &inbuf, &in_bytes_left,
+				 &outbuf, &out_bytes_left);
+	    if (did == (size_t) (-1))
+	    {
+		iconv_close (cd);
+		free (utf8);
+		return 0;
+	    }
+	}
+    	iconv_close (cd);
+	*outbuf = '\0';
+	goto done;
+    }
+#endif
     return 0;
 done:
     if (FcStrCmpIgnoreBlanksAndCase (utf8, "") == 0)
@@ -2120,6 +2125,12 @@ static const FcFontDecode fcFontDecoders[] = {
 
 #define NUM_DECODE  (sizeof (fcFontDecoders) / sizeof (fcFontDecoders[0]))
 
+static const FcChar32	prefer_unicode[] = {
+    0x20ac,	/* EURO SIGN */
+};
+
+#define NUM_PREFER_UNICODE  (sizeof (prefer_unicode) / sizeof (prefer_unicode[0]))
+
 FcChar32
 FcFreeTypeUcs4ToPrivate (FcChar32 ucs4, const FcCharMap *map)
 {
@@ -2281,6 +2292,7 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
     int		    initial, offset, decode;
     FT_UInt	    glyphindex;
     FcChar32	    charcode;
+    int		    p;
 
     initial = 0;
     /*
@@ -2294,6 +2306,12 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
 	if (initial == NUM_DECODE)
 	    initial = 0;
     }
+    for (p = 0; p < NUM_PREFER_UNICODE; p++)
+	if (ucs4 == prefer_unicode[p])
+	{
+	    initial = 0;
+	    break;
+	}
     /*
      * Check each encoding for the glyph, starting with the current one
      */
@@ -2341,12 +2359,6 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
     FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
     FT_GlyphSlot    slot;
     
-    /*
-     * For bitmap-only fonts, assume that they're OK.
-     */
-    if ((face->face_flags & FT_FACE_FLAG_SCALABLE) == 0)
-	return FcTrue;
-
     /*
      * When using scalable fonts, only report those glyphs
      * which can be scaled; otherwise those fonts will

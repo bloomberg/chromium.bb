@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontconfig 2.2.3-1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-03-02 13:41-0800\n"
+"POT-Creation-Date: 2005-03-29 13:33-0800\n"
 "PO-Revision-Date: 2004-10-23 17:00+0200\n"
 "Last-Translator: Philippe Batailler <philippe.batailler@free.fr>\n"
 "Language-Team: French <debian-l10n-french@lists.debian.org>\n"
@@ -32,85 +32,49 @@ msgstr ""
 #. Type: select
 #. Description
 #: ../fontconfig.templates:5
-#, fuzzy
-msgid "With what method should fonts be hinted?"
-msgstr "Méthode à utiliser pour le rendu des textes :"
-
-#. Type: select
-#. Description
-#: ../fontconfig.templates:5
-msgid ""
-"The FreeType font library can adjust glyph outlines to accomodate the pixel "
-"grid for improved legibility.  This process is called \"hinting\".  FreeType "
-"can either use the hints built-in to each font or it can use a format-"
-"indepedent Autohinter.  For most font formats, using the format-specific "
-"hints generates better results.  However, many freely available TrueType "
-"format fonts don't include any hints at all. When loading such a font, "
-"unless you specifically ask to use the Autohinter, these fonts will end up "
-"unhinted, which will make them appear fuzzy on the screen."
+msgid "How should fonts be tuned for the screen?"
 msgstr ""
 
 #. Type: select
 #. Description
 #: ../fontconfig.templates:5
 msgid ""
-"If the TrueType fonts you use most include hints, then the Native hinter "
-"gives better results.  However, if the fonts you use most do not include "
-"such hints, then the Autohinter will work better.  Yes, FreeType should do "
-"this automatically."
-msgstr ""
-
-#. Type: select
-#. Description
-#: ../fontconfig.templates:5
-msgid ""
-"You can also select None to disable all hinting and make your screen look "
-"like Mac OS X."
+"Select Native if you mostly use Bitstream Vera (the default in Debian) or "
+"any of the Microsoft fonts.  Select Autohinter if you mostly use other "
+"TrueType fonts.  Select None if you want blurry text."
 msgstr ""
 
 #. Type: select
 #. Choices
-#: ../fontconfig.templates:28
-msgid "Automatic, Enable, Disable"
+#: ../fontconfig.templates:12
+msgid "Automatic, Always, Never"
 msgstr ""
 
 #. Type: select
 #. Description
-#: ../fontconfig.templates:30
-msgid "Should font be rendered using sub-pixel elements?"
-msgstr ""
+#: ../fontconfig.templates:14
+#, fuzzy
+msgid "Enable subpixel rendering of text?"
+msgstr "Voulez-vous activer le lissage sous-pixel pour le texte ?"
 
 #. Type: select
 #. Description
-#: ../fontconfig.templates:30
+#: ../fontconfig.templates:14
 msgid ""
-"With known sub-pixel geometry, LCD screens can synthesize higher resolution "
-"in one dimension.  Taking advantage of this when rendering glyphs sharpens "
-"the appearance of text on the screen.  This can cause color artifacts, "
-"especially when rendering unhinted or autohinted fonts."
-msgstr ""
-
-#. Type: select
-#. Description
-#: ../fontconfig.templates:30
-msgid ""
-"This option selects when sub-pixel rendering should be used.  Automatic "
-"enables sub-pixel rendering whenever the X server detects an LCD monitor, "
-"which it can generally do when the monitor is built into the computer or "
-"connected with a digital (DVI) cable.  Enable forces the system to use sub-"
-"pixel rendering while Disable forces the system to not use sub-pixel "
-"rendering."
+"Rendering text at a subpixel level generally makes it look a bit better on "
+"flat (LCD) screens, but can show color artifacts on CRT screens. The "
+"\"Automatic\" choice will enable it only if a LCD screen is detected."
 msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../fontconfig.templates:46
+#: ../fontconfig.templates:22
 msgid "Enable bitmapped fonts by default?"
 msgstr "Voulez-vous des polices de type « bitmap » par défaut ?"
 
 #. Type: boolean
 #. Description
-#: ../fontconfig.templates:46
+#: ../fontconfig.templates:22
 msgid ""
 "By default, only outline fonts are used by applications which support "
 "fontconfig.  Outline fonts are fonts which scale well to various sizes.  In "
@@ -124,6 +88,10 @@ msgstr ""
 "au contraire, ont souvent une qualité moindre. Cette option affectera la "
 "valeur par défaut pour tout le système ; chaque utilisateur peut activer ou "
 "désactiver cette option ainsi que d'autres options de fontconfig."
+
+#, fuzzy
+#~ msgid "With what method should fonts be hinted?"
+#~ msgstr "Méthode à utiliser pour le rendu des textes :"
 
 #~ msgid ""
 #~ "Bytecode interpreter (CRT screens), Autohinter, Subpixel rendering (LCD "
@@ -153,9 +121,6 @@ msgstr ""
 #~ "offre un rendu précis, c'est souvent le meilleur choix si vous possédez "
 #~ "un écran CRT. Enfin, la méthode du lissage sous-pixel offre un rendu de "
 #~ "haute qualité sur la plupart des écrans LCD."
-
-#~ msgid "Enable sub-pixel text rendering?"
-#~ msgstr "Voulez-vous activer le lissage sous-pixel pour le texte ?"
 
 #~ msgid ""
 #~ "If you have an LCD display, then you will want to enable this option. It "

@@ -1,3 +1,39 @@
+2005-04-21  Keith Packard  <keithp@keithp.com>
+
+	* debian/fontconfig.postinst:
+	Don't force bitmap font enable in default
+	configuration; allows users to override this in
+	~/.fonts.conf
+	* debian/po/cs.po:
+	* debian/po/da.po:
+	* debian/po/de.po:
+	* debian/po/es.po:
+	* debian/po/fr.po:
+	* debian/po/ja.po:
+	* debian/po/nl.po:
+	* debian/po/pt.po:
+	* debian/po/pt_BR.po:
+	* debian/po/templates.pot:
+	* debian/po/tr.po:
+	* debian/po/zh_CN.po:
+	Updated translations
+	
+	* fc-cache/fc-cache.c: (main):
+	Destroy font configuration on exit to help valgrind
+	
+	* fonts.conf.in:
+	* src/fcfreetype.c: (FcSfntNameTranscode), (FcFreeTypeCharIndex),
+	(FcFreeTypeCheckGlyph):
+	Use own transcoding routines in preference to iconv
+	which appears to have leaks in some translators.
+	Call iconv_close after using iconv (oops).
+	
+	Prefer unicode encoding of Euro char as some
+	fonts mis-encode Euro in other ones.
+
+	Must fetch bitmap glyphs to get width values
+	to check for monospace/dual-width fonts.
+
 2005-04-13  Ross Burton  <ross@burtonini.com>
 
 	* src/fcpat.c:

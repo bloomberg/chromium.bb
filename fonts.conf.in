@@ -140,33 +140,24 @@
 	</match>
 
 <!--
-  URW provides metric and shape compatible fonts for these 3 Adobe families
-  Mark these as effective replacements by binding the replacement
-  family names strongly
+  URW provides metric and shape compatible fonts for these 3 Adobe families.
   -->
-        <match target="pattern">
-	  <test name="family"><string>Times</string></test>
-	  <edit name="family" mode="append" binding="same">
-	    <string>Nimbus Roman No9 L</string>
-	  </edit>
-	</match>
-        <match target="pattern">
-	  <test name="family"><string>Helvetica</string></test>
-	  <edit name="family" mode="append" binding="same">
-	    <string>Nimbus Sans L</string>
-	  </edit>
-	</match>
-        <match target="pattern">
-	  <test name="family"><string>Courier</string></test>
-	  <edit name="family" mode="append" binding="same">
-	    <string>Nimbus Mono L</string>
-	  </edit>
-	</match>
+        <alias>
+	  <family>Times</family>
+	  <accept><family>Nimbus Roman No9 L</family></accept>
+	</alias>
+        <alias>
+	  <family>Helvetica</family>
+	  <accept><family>Nimbus Sans L</family></accept>
+	</alias>
+        <alias>
+	  <family>Courier</family>
+	  <accept><family>Nimbus Mono L</family></accept>
+	</alias>
 
 <!--
  AMT provides metric and shape compatible fonts for these three web font
- families.  Bind them weakly as matching here is not as important as
- with web fonts.
+ families.
  -->
  	<alias>
 		<family>Times New Roman</family>

@@ -15,102 +15,72 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontconfig\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-03-02 13:41-0800\n"
-"PO-Revision-Date: 2004-10-24 18:49+0200\n"
+"POT-Creation-Date: 2005-03-10 19:01-0800\n"
+"PO-Revision-Date: 2005-03-30 17:34+0200\n"
 "Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
-"Language-Team: Czech <kurem@debian.cz>\n"
+"Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #. Type: select
 #. Choices
 #: ../fontconfig.templates:3
 msgid "Native, Autohinter, None"
-msgstr ""
+msgstr "NativnÃ­, Autohinter, Nijak"
 
 #. Type: select
 #. Description
 #: ../fontconfig.templates:5
-#, fuzzy
-msgid "With what method should fonts be hinted?"
-msgstr "Která metoda se má pou¾ít pro vykreslování textu?"
-
-#. Type: select
-#. Description
-#: ../fontconfig.templates:5
-msgid ""
-"The FreeType font library can adjust glyph outlines to accomodate the pixel "
-"grid for improved legibility.  This process is called \"hinting\".  FreeType "
-"can either use the hints built-in to each font or it can use a format-"
-"indepedent Autohinter.  For most font formats, using the format-specific "
-"hints generates better results.  However, many freely available TrueType "
-"format fonts don't include any hints at all. When loading such a font, "
-"unless you specifically ask to use the Autohinter, these fonts will end up "
-"unhinted, which will make them appear fuzzy on the screen."
-msgstr ""
+msgid "How should fonts be tuned for the screen?"
+msgstr "Jak se majÃ­ fonty vyladit pro obrazovku?"
 
 #. Type: select
 #. Description
 #: ../fontconfig.templates:5
 msgid ""
-"If the TrueType fonts you use most include hints, then the Native hinter "
-"gives better results.  However, if the fonts you use most do not include "
-"such hints, then the Autohinter will work better.  Yes, FreeType should do "
-"this automatically."
+"Select Native if you mostly use Bitstream Vera (the default in Debian) or "
+"any of the Microsoft fonts.  Select Autohinter if you mostly use other "
+"TrueType fonts.  Select None if you want blurry text."
 msgstr ""
-
-#. Type: select
-#. Description
-#: ../fontconfig.templates:5
-msgid ""
-"You can also select None to disable all hinting and make your screen look "
-"like Mac OS X."
-msgstr ""
+"PouÅ¾Ã­vÃ¡te-li vÄ›tÅ¡inou Bitstream Vera (vÃ½chozÃ­ v Debianu) nebo nÄ›kterÃ½ z "
+"fontÅ¯ Microsoftu, vyberte NativnÃ­. Autohinter je vhodnÃ½ pro ostatnÃ­ "
+"TrueTypovÃ¡ pÃ­sma. Chcete-li rozmazanÃ½ text, zvolte Nijak."
 
 #. Type: select
 #. Choices
-#: ../fontconfig.templates:28
-msgid "Automatic, Enable, Disable"
-msgstr ""
+#: ../fontconfig.templates:12
+msgid "Automatic, Always, Never"
+msgstr "Automaticky, VÅ¾dy, Nikdy"
 
 #. Type: select
 #. Description
-#: ../fontconfig.templates:30
-msgid "Should font be rendered using sub-pixel elements?"
-msgstr ""
+#: ../fontconfig.templates:14
+msgid "Enable subpixel rendering of text?"
+msgstr "Povolit podpixelovÃ© vykreslovÃ¡nÃ­ textu?"
 
 #. Type: select
 #. Description
-#: ../fontconfig.templates:30
+#: ../fontconfig.templates:14
 msgid ""
-"With known sub-pixel geometry, LCD screens can synthesize higher resolution "
-"in one dimension.  Taking advantage of this when rendering glyphs sharpens "
-"the appearance of text on the screen.  This can cause color artifacts, "
-"especially when rendering unhinted or autohinted fonts."
+"Rendering text at a subpixel level generally makes it look a bit better on "
+"flat (LCD) screens, but can show color artifacts on CRT screens. The "
+"\"Automatic\" choice will enable it only if a LCD screen is detected."
 msgstr ""
-
-#. Type: select
-#. Description
-#: ../fontconfig.templates:30
-msgid ""
-"This option selects when sub-pixel rendering should be used.  Automatic "
-"enables sub-pixel rendering whenever the X server detects an LCD monitor, "
-"which it can generally do when the monitor is built into the computer or "
-"connected with a digital (DVI) cable.  Enable forces the system to use sub-"
-"pixel rendering while Disable forces the system to not use sub-pixel "
-"rendering."
-msgstr ""
+"VykreslovÃ¡nÃ­ textu na podpixelovÃ© Ãºrovni zpÅ¯sobÃ­, Å¾e na plochÃ½ch (LCD) "
+"obrazovkÃ¡ch vypadÃ¡ o nÄ›co lÃ©pe, ale na CRT monitorech mÅ¯Å¾e zobrazovat "
+"barevnÃ© artefakty. MoÅ¾nost \"Automaticky\" povolÃ­ podpixelovÃ© vykreslovÃ¡nÃ­ "
+"pouze pokud bude rozpoznÃ¡n LCD monitor."
 
 #. Type: boolean
 #. Description
-#: ../fontconfig.templates:46
+#: ../fontconfig.templates:22
 msgid "Enable bitmapped fonts by default?"
-msgstr "Povolit implicitnì bitmapové fonty?"
+msgstr "Povolit implicitnÄ› bitmapovÃ© fonty?"
 
 #. Type: boolean
 #. Description
-#: ../fontconfig.templates:46
+#: ../fontconfig.templates:22
 msgid ""
 "By default, only outline fonts are used by applications which support "
 "fontconfig.  Outline fonts are fonts which scale well to various sizes.  In "
@@ -118,37 +88,39 @@ msgid ""
 "affect the systemwide default; this and many other fontconfig options may be "
 "enabled or disabled on a per-user basis."
 msgstr ""
-"Standardnì jsou v aplikacích podporujících fontconfig pou¾ívány pouze "
-"obrysové fonty. Tyto fonty se velmi dobøe zvìt¹ují a zmen¹ují. Oproti nim "
-"mohou zvìt¹ované bitmapové fonty vypadat kostrbatì. Tato volba ovlivní "
-"implicitní nastavení celého systému, nicménì u¾ivatelé si ji mohou zmìnit ve "
-"svém osobním nastavení."
+"ImplicitnÄ› jsou v aplikacÃ­ch podporujÃ­cÃ­ch fontconfig pouÅ¾Ã­vÃ¡ny pouze "
+"obrysovÃ© fonty. Tyto fonty se velmi dobÅ™e zvÄ›tÅ¡ujÃ­ a zmenÅ¡ujÃ­. Oproti nim "
+"mohou zvÄ›tÅ¡ovanÃ© bitmapovÃ© fonty vypadat kostrbatÄ›. Tato volba ovlivnÃ­ "
+"implicitnÃ­ nastavenÃ­ celÃ©ho systÃ©mu, nicmÃ©nÄ› uÅ¾ivatelÃ© si ji mohou zmÄ›nit ve "
+"svÃ©m osobnÃ­m nastavenÃ­."
 
-#~ msgid ""
-#~ "Bytecode interpreter (CRT screens), Autohinter, Subpixel rendering (LCD "
-#~ "screens)"
-#~ msgstr ""
-#~ "Interpret bytekódu (CRT monitory), Autohinter, Podpixelové renderování "
-#~ "(LCD obrazovky)"
+msgid "With what method should fonts be hinted?"
+msgstr "KterÃ¡ metoda hintingu se mÃ¡ pro fonty pouÅ¾Ã­t?"
 
-#~ msgid ""
-#~ "The Freetype font library is able to render fonts with different methods. "
-#~ "Depending on your hardware and the fonts you generally use, some will "
-#~ "give better results."
-#~ msgstr ""
-#~ "Knihovna Freetype umí vykreslovat písma rùznımi metodami. Podle va¹eho "
-#~ "hardwaru a typu pou¾itıch fontù mù¾ete s nìkterımi metodami dosáhnout "
-#~ "lep¹ích vısledkù."
+msgid ""
+"Bytecode interpreter (CRT screens), Autohinter, Subpixel rendering (LCD "
+"screens)"
+msgstr ""
+"Interpret bytekÃ³du (CRT monitory), Autohinter, PodpixelovÃ© renderovÃ¡nÃ­ (LCD "
+"obrazovky)"
 
-#~ msgid ""
-#~ "The autohinter module is the default; it gives correct results on most "
-#~ "configurations. The bytecode interpreter renders fonts very sharply, and "
-#~ "is often a better choice if you are using a cathode-ray screen. On the "
-#~ "other hand, the subpixel rendering method is optimized for high-quality "
-#~ "rendering on most liquid crystal displays."
-#~ msgstr ""
-#~ "Modul autohinter je implicitní, proto¾e dává správné vısledky na vìt¹inì "
-#~ "konfigurací. Interpret bytekódu kreslí písma velmi ostøe a pokud máte "
-#~ "klasickı monitor, bıvá èasto lep¹í volbou. Analogicky je podpixelové "
-#~ "renderování pøizpùsobeno pro vysoce kvalitní vıstup na vìt¹inì LCD "
-#~ "monitorù."
+msgid ""
+"The Freetype font library is able to render fonts with different methods. "
+"Depending on your hardware and the fonts you generally use, some will give "
+"better results."
+msgstr ""
+"Knihovna Freetype umÃ­ vykreslovat pÃ­sma rÅ¯znÃ½mi metodami. Podle vaÅ¡eho "
+"hardwaru a typu pouÅ¾itÃ½ch fontÅ¯ mÅ¯Å¾ete s nÄ›kterÃ½mi metodami dosÃ¡hnout "
+"lepÅ¡Ã­ch vÃ½sledkÅ¯."
+
+msgid ""
+"The autohinter module is the default; it gives correct results on most "
+"configurations. The bytecode interpreter renders fonts very sharply, and is "
+"often a better choice if you are using a cathode-ray screen. On the other "
+"hand, the subpixel rendering method is optimized for high-quality rendering "
+"on most liquid crystal displays."
+msgstr ""
+"Modul autohinter je implicitnÃ­, protoÅ¾e dÃ¡vÃ¡ sprÃ¡vnÃ© vÃ½sledky na vÄ›tÅ¡inÄ› "
+"konfiguracÃ­. Interpret bytekÃ³du kreslÃ­ pÃ­sma velmi ostÅ™e a pokud mÃ¡te "
+"klasickÃ½ monitor, bÃ½vÃ¡ Äasto lepÅ¡Ã­ volbou. Analogicky je podpixelovÃ© "
+"renderovÃ¡nÃ­ pÅ™izpÅ¯sobeno pro vysoce kvalitnÃ­ vÃ½stup na vÄ›tÅ¡inÄ› LCD monitorÅ¯."

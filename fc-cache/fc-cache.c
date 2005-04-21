@@ -296,6 +296,7 @@ main (int argc, char **argv)
      * sleep(3) can't be interrupted by a signal here -- this isn't in the
      * library, and there aren't any signals flying around here.
      */
+    FcConfigDestroy (config);
     sleep (2);
     if (verbose)
 	printf ("%s: %s\n", argv[0], ret ? "failed" : "succeeded");
