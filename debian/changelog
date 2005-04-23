@@ -1,3 +1,10 @@
+fontconfig (2.3.2-1) unstable; urgency=low
+  * Patch memory leaks (closes: #305680)
+  * Share strings to save memory (Ross Burton)
+  * Reduce priority of URW fonts
+
+ -- Keith Packard <keithp@debian.org>  Sat, 23 Apr 2005 14:30:18 +1000
+
 fontconfig (2.3.1-2) unstable; urgency=low
 
   * Change priority of fontconfig-udeb package to extra

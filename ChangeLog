@@ -1,3 +1,11 @@
+2005-04-23  Keith Packard  <keithp@keithp.com>
+
+	* README:
+	* configure.in:
+	* debian/changelog:
+	* fontconfig/fontconfig.h:
+	Update for version 2.3.2
+
 2005-04-21  Keith Packard  <keithp@keithp.com>
 
 	* debian/fontconfig.postinst:
