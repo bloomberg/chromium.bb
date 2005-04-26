@@ -46,10 +46,10 @@
 /**
  * \brief Allocate a PCI consistent memory block, for DMA.
  */
-void *drm_pci_alloc(drm_device_t * dev, size_t size, size_t align,
-		    dma_addr_t maxaddr, dma_addr_t * busaddr)
+drm_dma_handle_t *drm_pci_alloc(drm_device_t * dev, size_t size, size_t align,
+				dma_addr_t maxaddr)
 {
-	void *address;
+	drm_dma_handle_t *dmah;
 #if 0
 	unsigned long addr;
 	size_t sz;
@@ -78,13 +78,18 @@ void *drm_pci_alloc(drm_device_t * dev, size_t size, size_t align,
 		return NULL;
 	}
 
-	address = pci_alloc_consistent(dev->pdev, size, busaddr);
+	dmah = kmalloc(sizeof(drm_dma_handle_t), GFP_KERNEL);
+	if (!dmah)
+		return NULL;
+
+	dmah->vaddr = pci_alloc_consistent(dev->pdev, size, &dmah->busaddr);
 
 #if DRM_DEBUG_MEMORY
-	if (address == NULL) {
+	if (dmah->vaddr == NULL) {
 		spin_lock(&drm_mem_lock);
 		++drm_mem_stats[area].fail_count;
 		spin_unlock(&drm_mem_lock);
+		kfree(dmah);
 		return NULL;
 	}
 
@@ -94,22 +99,24 @@ void *drm_pci_alloc(drm_device_t * dev, size_t size, size_t align,
 	drm_ram_used += size;
 	spin_unlock(&drm_mem_lock);
 #else
-	if (address == NULL)
+	if (dmah->vaddr == NULL) {
+		kfree(dmah);
 		return NULL;
+	}
 #endif
 
-	memset(address, 0, size);
+	memset(dmah->vaddr, 0, size);
 
 #if 0
 	/* XXX - Is virt_to_page() legal for consistent mem? */
 	/* Reserve */
-	for (addr = (unsigned long)address, sz = size;
+	for (addr = (unsigned long)dmah->vaddr, sz = size;
 	     sz > 0; addr += PAGE_SIZE, sz -= PAGE_SIZE) {
 		SetPageReserved(virt_to_page(addr));
 	}
 #endif
 
-	return address;
+	return dmah;
 }
 EXPORT_SYMBOL(drm_pci_alloc);
 
@@ -117,7 +124,7 @@ EXPORT_SYMBOL(drm_pci_alloc);
  * \brief Free a PCI consistent memory block.
  */
 void
-drm_pci_free(drm_device_t * dev, size_t size, void *vaddr, dma_addr_t busaddr)
+drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
 {
 #if 0
 	unsigned long addr;
@@ -129,7 +136,7 @@ drm_pci_free(drm_device_t * dev, size_t size, void *vaddr, dma_addr_t busaddr)
 	int free_count;
 #endif
 
-	if (!vaddr) {
+	if (!dmah->vaddr) {
 #if DRM_DEBUG_MEMORY
 		DRM_MEM_ERROR(area, "Attempt to free address 0\n");
 #endif
@@ -137,12 +144,13 @@ drm_pci_free(drm_device_t * dev, size_t size, void *vaddr, dma_addr_t busaddr)
 #if 0
 		/* XXX - Is virt_to_page() legal for consistent mem? */
 		/* Unreserve */
-		for (addr = (unsigned long)vaddr, sz = size;
+		for (addr = (unsigned long)dmah->vaddr, sz = size;
 		     sz > 0; addr += PAGE_SIZE, sz -= PAGE_SIZE) {
 			ClearPageReserved(virt_to_page(addr));
 		}
 #endif
-		pci_free_consistent(dev->pdev, size, vaddr, busaddr);
+		pci_free_consistent(dev->pdev, dmah->size, dmah->vaddr,
+				    dmah->busaddr);
 	}
 
 #if DRM_DEBUG_MEMORY

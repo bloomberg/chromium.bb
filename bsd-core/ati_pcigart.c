@@ -31,53 +31,44 @@
 
 #include "drmP.h"
 
-#if PAGE_SIZE == 8192
-# define ATI_PCIGART_TABLE_ORDER 	2
-# define ATI_PCIGART_TABLE_PAGES 	(1 << 2)
-#elif PAGE_SIZE == 4096
-# define ATI_PCIGART_TABLE_ORDER 	3
-# define ATI_PCIGART_TABLE_PAGES 	(1 << 3)
-#elif
-# error - PAGE_SIZE not 8K or 4K
-#endif
-
-# define ATI_MAX_PCIGART_PAGES		8192	/* 32 MB aperture, 4K pages */
-# define ATI_PCIGART_PAGE_SIZE		4096	/* PCI GART page size */
+#define ATI_PCIGART_PAGE_SIZE		4096	/* PCI GART page size */
+#define ATI_MAX_PCIGART_PAGES		8192	/* 32 MB aperture, 4K pages */
+#define ATI_PCIGART_TABLE_SIZE		32768
 
 int drm_ati_pcigart_init(drm_device_t *dev, unsigned long *addr,
 			 dma_addr_t *bus_addr)
 {
-	drm_sg_mem_t *entry = dev->sg;
-	unsigned long address = 0;
 	unsigned long pages;
-	u32 *pci_gart=0, page_base, bus_address = 0;
-	int i, j, ret = 0;
+	u32 *pci_gart = 0, page_base;
+	int i, j;
 
-	if ( !entry ) {
+	*addr = 0;
+	*bus_addr = 0;
+
+	if (dev->sg == NULL) {
 		DRM_ERROR( "no scatter/gather memory!\n" );
-		goto done;
+		return 0;
 	}
 
-	address = (long)contigmalloc((1 << ATI_PCIGART_TABLE_ORDER) * PAGE_SIZE, 
-	    M_DRM, M_NOWAIT, 0ul, 0xfffffffful, PAGE_SIZE, 0);
-	if ( !address ) {
-		DRM_ERROR( "cannot allocate PCI GART page!\n" );
-		goto done;
+	dev->sg->dmah = drm_pci_alloc(dev, ATI_PCIGART_TABLE_SIZE, 0,
+	    0xfffffffful);
+	if (dev->sg->dmah == NULL) {
+		DRM_ERROR("cannot allocate PCI GART table!\n");
+		return 0;
 	}
 
-	/* XXX: we need to busdma this */
-	bus_address = vtophys( address );
+	*addr = (long)dev->sg->dmah->vaddr;
+	*bus_addr = dev->sg->dmah->busaddr;
+	pci_gart = (u32 *)dev->sg->dmah->vaddr;
 
-	pci_gart = (u32 *)address;
+	pages = DRM_MIN(dev->sg->pages, ATI_MAX_PCIGART_PAGES);
 
-	pages = ( entry->pages <= ATI_MAX_PCIGART_PAGES )
-		? entry->pages : ATI_MAX_PCIGART_PAGES;
+	bzero(pci_gart, ATI_PCIGART_TABLE_SIZE);
 
-	bzero( pci_gart, ATI_MAX_PCIGART_PAGES * sizeof(u32) );
+	KASSERT(PAGE_SIZE >= ATI_PCIGART_PAGE_SIZE, "page size too small");
 
 	for ( i = 0 ; i < pages ; i++ ) {
-		entry->busaddr[i] = vtophys( entry->handle + (i*PAGE_SIZE) );
-		page_base = (u32) entry->busaddr[i];
+		page_base = (u32) dev->sg->busaddr[i];
 
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
 			*pci_gart++ = cpu_to_le32( page_base );
@@ -87,29 +78,18 @@ int drm_ati_pcigart_init(drm_device_t *dev, unsigned long *addr,
 
 	DRM_MEMORYBARRIER();
 
-	ret = 1;
-
-done:
-	*addr = address;
-	*bus_addr = bus_address;
-	return ret;
+	return 1;
 }
 
 int drm_ati_pcigart_cleanup(drm_device_t *dev, unsigned long addr,
 			    dma_addr_t bus_addr)
 {
-	drm_sg_mem_t *entry = dev->sg;
-
-	/* we need to support large memory configurations */
-	if ( !entry ) {
+	if (dev->sg == NULL) {
 		DRM_ERROR( "no scatter/gather memory!\n" );
 		return 0;
 	}
 
-#if __FreeBSD_version > 500000
-	/* Not available on 4.x */
-	contigfree((void *)addr, (1 << ATI_PCIGART_TABLE_ORDER) * PAGE_SIZE,
-		   M_DRM);
-#endif
+	drm_pci_free(dev, dev->sg->dmah);
+
 	return 1;
 }

@@ -151,7 +151,6 @@ int drm_addmap(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	drm_map_t request;
 	drm_local_map_t *map;
-	dma_addr_t bus_addr;
 	
 	if (!(dev->flags & (FREAD|FWRITE)))
 		return DRM_ERR(EACCES); /* Require read/write */
@@ -246,13 +245,14 @@ int drm_addmap(DRM_IOCTL_ARGS)
 		map->offset = map->offset + dev->sg->handle;
 		break;
 	case _DRM_CONSISTENT:
-		map->handle = drm_pci_alloc(dev, map->size, map->size,
-		    0xfffffffful, &bus_addr);
-		if (map->handle == NULL) {
+		map->dmah = drm_pci_alloc(dev, map->size, map->size,
+		    0xfffffffful);
+		if (map->dmah == NULL) {
 			free(map, M_DRM);
 			return ENOMEM;
 		}
-		map->offset = (unsigned long)bus_addr;
+		map->handle = map->dmah->vaddr;
+		map->offset = map->dmah->busaddr;
 		break;
 	default:
 		free(map, M_DRM);
@@ -310,7 +310,7 @@ void drm_remove_map(drm_device_t *dev, drm_local_map_t *map)
 	case _DRM_SCATTER_GATHER:
 		break;
 	case _DRM_CONSISTENT:
-		drm_pci_free(dev, map->size, map->handle, map->offset);
+		drm_pci_free(dev, map->dmah);
 		break;
 	}
 
@@ -361,12 +361,9 @@ static void drm_cleanup_buf_error(drm_device_t *dev, drm_buf_entry_t *entry)
 
 	if (entry->seg_count) {
 		for (i = 0; i < entry->seg_count; i++) {
-			drm_pci_free(dev, entry->buf_size,
-			    (void *)entry->seglist[i],
-			    entry->seglist_bus[i]);
+			drm_pci_free(dev, entry->seglist[i]);
 		}
 		free(entry->seglist, M_DRM);
-		free(entry->seglist_bus, M_DRM);
 
 		entry->seg_count = 0;
 	}
@@ -499,7 +496,6 @@ static int drm_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request)
 	int total;
 	int page_order;
 	drm_buf_entry_t *entry;
-	vm_offset_t vaddr;
 	drm_buf_t *buf;
 	int alignment;
 	unsigned long offset;
@@ -508,7 +504,6 @@ static int drm_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request)
 	int page_count;
 	unsigned long *temp_pagelist;
 	drm_buf_t **temp_buflist;
-	dma_addr_t bus_addr;
 
 	count = request->count;
 	order = drm_order(request->size);
@@ -528,8 +523,6 @@ static int drm_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request)
 	    M_NOWAIT | M_ZERO);
 	entry->seglist = malloc(count * sizeof(*entry->seglist), M_DRM,
 	    M_NOWAIT | M_ZERO);
-	entry->seglist_bus = malloc(count * sizeof(*entry->seglist_bus), M_DRM,
-	    M_NOWAIT | M_ZERO);
 
 	/* Keep the original pagelist until we know all the allocations
 	 * have succeeded
@@ -538,10 +531,9 @@ static int drm_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request)
 	    sizeof(*dma->pagelist), M_DRM, M_NOWAIT);
 
 	if (entry->buflist == NULL || entry->seglist == NULL || 
-	    entry->seglist_bus == NULL || temp_pagelist == NULL) {
+	    temp_pagelist == NULL) {
 		free(entry->buflist, M_DRM);
 		free(entry->seglist, M_DRM);
-		free(entry->seglist_bus, M_DRM);
 		return DRM_ERR(ENOMEM);
 	}
 	
@@ -557,9 +549,9 @@ static int drm_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request)
 	page_count = 0;
 
 	while ( entry->buf_count < count ) {
-		vaddr = (vm_offset_t)drm_pci_alloc(dev, size, alignment,
-		    0xfffffffful, &bus_addr);
-		if (vaddr == 0) {
+		drm_dma_handle_t *dmah = drm_pci_alloc(dev, size, alignment,
+		    0xfffffffful);
+		if (dmah == NULL) {
 			/* Set count correctly so we free the proper amount. */
 			entry->buf_count = count;
 			entry->seg_count = count;
@@ -567,15 +559,14 @@ static int drm_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request)
 			free(temp_pagelist, M_DRM);
 			return DRM_ERR(ENOMEM);
 		}
-	
-		entry->seglist_bus[entry->seg_count] = bus_addr;
-		entry->seglist[entry->seg_count++] = vaddr;
+
+		entry->seglist[entry->seg_count++] = dmah;
 		for ( i = 0 ; i < (1 << page_order) ; i++ ) {
-			DRM_DEBUG( "page %d @ 0x%08lx\n",
+			DRM_DEBUG( "page %d @ %p\n",
 				   dma->page_count + page_count,
-				   (long)vaddr + PAGE_SIZE * i );
+				   (char *)dmah->vaddr + PAGE_SIZE * i );
 			temp_pagelist[dma->page_count + page_count++] = 
-			    vaddr + PAGE_SIZE * i;
+			    (long)dmah->vaddr + PAGE_SIZE * i;
 		}
 		for ( offset = 0 ;
 		      offset + size <= total && entry->buf_count < count ;
@@ -586,8 +577,8 @@ static int drm_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request)
 			buf->order   = order;
 			buf->used    = 0;
 			buf->offset  = (dma->byte_count + byte_count + offset);
-			buf->address = (void *)(vaddr + offset);
-			buf->bus_address = bus_addr + offset;
+			buf->address = ((char *)dmah->vaddr + offset);
+			buf->bus_address = dmah->busaddr + offset;
 			buf->next    = NULL;
 			buf->pending = 0;
 			buf->filp    = NULL;

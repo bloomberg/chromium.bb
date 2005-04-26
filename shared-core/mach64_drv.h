@@ -60,7 +60,7 @@ typedef struct drm_mach64_freelist {
 } drm_mach64_freelist_t;
 
 typedef struct drm_mach64_descriptor_ring {
-	dma_addr_t handle;	/* handle (bus address) of ring returned by pci_alloc_consistent() */
+	drm_dma_handle_t *dmah;	/* Handle to pci dma memory */
 	void *start;		/* write pointer (cpu address) to start of descriptor ring */
 	u32 start_addr;		/* bus address of beginning of descriptor ring */
 	int size;		/* size of ring in bytes */

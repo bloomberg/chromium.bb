@@ -481,14 +481,24 @@ typedef struct drm_freelist {
 	int		  high_mark;   /* High water mark		   */
 } drm_freelist_t;
 
+typedef struct drm_dma_handle {
+	void *vaddr;
+	bus_addr_t busaddr;
+#if defined(__FreeBSD__)
+	bus_dma_tag_t tag;
+	bus_dmamap_t map;
+#elif defined(__NetBSD__)
+	bus_dma_segment_t seg;
+#endif
+} drm_dma_handle_t;
+
 typedef struct drm_buf_entry {
 	int		  buf_size;
 	int		  buf_count;
 	drm_buf_t	  *buflist;
 	int		  seg_count;
+	drm_dma_handle_t  **seglist;
 	int		  page_order;
-	vm_offset_t	  *seglist;
-	dma_addr_t	  *seglist_bus;
 
 	drm_freelist_t	  freelist;
 } drm_buf_entry_t;
@@ -558,9 +568,9 @@ typedef struct drm_agp_head {
 
 typedef struct drm_sg_mem {
 	unsigned long   handle;
-	void            *virtual;
 	int             pages;
 	dma_addr_t	*busaddr;
+	drm_dma_handle_t *dmah;	/* Handle to PCI memory for ATI PCIGART table */
 } drm_sg_mem_t;
 
 typedef TAILQ_HEAD(drm_map_list, drm_local_map) drm_map_list_t;
@@ -579,6 +589,7 @@ typedef struct drm_local_map {
 	struct resource *bsr;
 	bus_space_tag_t bst;
 	bus_space_handle_t bsh;
+	drm_dma_handle_t *dmah;
 	TAILQ_ENTRY(drm_local_map) link;
 } drm_local_map_t;
 
@@ -910,10 +921,9 @@ int	drm_sg_alloc(DRM_IOCTL_ARGS);
 int	drm_sg_free(DRM_IOCTL_ARGS);
 
 /* consistent PCI memory functions (drm_pci.c) */
-void	*drm_pci_alloc(drm_device_t *dev, size_t size, size_t align,
-		       dma_addr_t maxaddr, dma_addr_t *busaddr);
-void	drm_pci_free(drm_device_t *dev, size_t size, void *vaddr,
-		     dma_addr_t busaddr);
+drm_dma_handle_t *drm_pci_alloc(drm_device_t *dev, size_t size, size_t align,
+				dma_addr_t maxaddr);
+void	drm_pci_free(drm_device_t *dev, drm_dma_handle_t *dmah);
 
 /* Inline replacements for DRM_IOREMAP macros */
 static __inline__ void drm_core_ioremap(struct drm_local_map *map, struct drm_device *dev)

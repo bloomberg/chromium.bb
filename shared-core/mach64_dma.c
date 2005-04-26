@@ -575,8 +575,7 @@ void mach64_dump_ring_info(drm_mach64_private_t * dev_priv)
 static int mach64_bm_dma_test(drm_device_t * dev)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
-	dma_addr_t data_handle;
-	void *cpu_addr_data;
+	drm_dma_handle_t *cpu_addr_dmah;
 	u32 data_addr;
 	u32 *table, *data;
 	u32 expected[2];
@@ -589,14 +588,14 @@ static int mach64_bm_dma_test(drm_device_t * dev)
 
 	/* FIXME: get a dma buffer from the freelist here */
 	DRM_DEBUG("Allocating data memory ...\n");
-	cpu_addr_data =
-	    drm_pci_alloc(dev, 0x1000, 0x1000, 0xfffffffful, &data_handle);
-	if (!cpu_addr_data || !data_handle) {
+	cpu_addr_dmah =
+	    drm_pci_alloc(dev, 0x1000, 0x1000, 0xfffffffful);
+	if (!cpu_addr_dmah) {
 		DRM_INFO("data-memory allocation failed!\n");
 		return DRM_ERR(ENOMEM);
 	} else {
-		data = (u32 *) cpu_addr_data;
-		data_addr = (u32) data_handle;
+		data = (u32 *) cpu_addr_dmah->vaddr;
+		data_addr = (u32) cpu_addr_dmah->busaddr;
 	}
 
 	/* Save the X server's value for SRC_CNTL and restore it
@@ -624,7 +623,7 @@ static int mach64_bm_dma_test(drm_device_t * dev)
 			DRM_INFO("resetting engine ...\n");
 			mach64_do_engine_reset(dev_priv);
 			DRM_INFO("freeing data buffer memory.\n");
-			drm_pci_free(dev, 0x1000, cpu_addr_data, data_handle);
+			drm_pci_free(dev, cpu_addr_dmah);
 			return DRM_ERR(EIO);
 		}
 	}
@@ -679,7 +678,7 @@ static int mach64_bm_dma_test(drm_device_t * dev)
 		MACH64_WRITE(MACH64_PAT_REG0, pat_reg0);
 		MACH64_WRITE(MACH64_PAT_REG1, pat_reg1);
 		DRM_INFO("freeing data buffer memory.\n");
-		drm_pci_free(dev, 0x1000, cpu_addr_data, data_handle);
+		drm_pci_free(dev, cpu_addr_dmah);
 		return i;
 	}
 	DRM_DEBUG("waiting for idle...done\n");
@@ -715,7 +714,7 @@ static int mach64_bm_dma_test(drm_device_t * dev)
 		MACH64_WRITE(MACH64_PAT_REG0, pat_reg0);
 		MACH64_WRITE(MACH64_PAT_REG1, pat_reg1);
 		DRM_INFO("freeing data buffer memory.\n");
-		drm_pci_free(dev, 0x1000, cpu_addr_data, data_handle);
+		drm_pci_free(dev, cpu_addr_dmah);
 		return i;
 	}
 
@@ -743,7 +742,7 @@ static int mach64_bm_dma_test(drm_device_t * dev)
 	MACH64_WRITE(MACH64_PAT_REG1, pat_reg1);
 
 	DRM_DEBUG("freeing data buffer memory.\n");
-	drm_pci_free(dev, 0x1000, cpu_addr_data, data_handle);
+	drm_pci_free(dev, cpu_addr_dmah);
 	DRM_DEBUG("returning ...\n");
 
 	return failed;
@@ -896,16 +895,17 @@ static int mach64_do_dma_init(drm_device_t * dev, drm_mach64_init_t * init)
 	dev_priv->ring.size = 0x4000;	/* 16KB */
 
 	if (dev_priv->is_pci) {
-		dev_priv->ring.start = drm_pci_alloc(dev, dev_priv->ring.size,
+		dev_priv->ring.dmah = drm_pci_alloc(dev, dev_priv->ring.size,
 						     dev_priv->ring.size,
-						     0xfffffffful,
-						     &dev_priv->ring.handle);
+						     0xfffffffful);
 
-		if (!dev_priv->ring.start || !dev_priv->ring.handle) {
+		if (!dev_priv->ring.dmah) {
 			DRM_ERROR("Allocating dma descriptor ring failed\n");
 			return DRM_ERR(ENOMEM);
 		} else {
-			dev_priv->ring.start_addr = (u32) dev_priv->ring.handle;
+			dev_priv->ring.start = dev_priv->ring.dmah->vaddr;
+			dev_priv->ring.start_addr =
+			    (u32) dev_priv->ring.dmah->busaddr;
 		}
 	} else {
 		dev_priv->ring.start = dev_priv->ring_map->handle;
@@ -1149,11 +1149,8 @@ int mach64_do_cleanup_dma(drm_device_t * dev)
 		drm_mach64_private_t *dev_priv = dev->dev_private;
 
 		if (dev_priv->is_pci) {
-			if ((dev_priv->ring.start != NULL)
-			    && dev_priv->ring.handle) {
-				drm_pci_free(dev, dev_priv->ring.size,
-					     dev_priv->ring.start,
-					     dev_priv->ring.handle);
+			if (dev_priv->ring.dmah) {
+				drm_pci_free(dev, dev_priv->ring.dmah);
 			}
 		} else {
 			if (dev_priv->ring_map)
