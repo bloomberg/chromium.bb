@@ -814,9 +814,9 @@ static int savage_dispatch_clear(drm_savage_private_t *dev_priv,
 	if (nbox == 0)
 		return 0;
 
-	DRM_GET_USER_UNCHECKED(mask, &((drm_savage_cmd_header_t*)data)
+	DRM_GET_USER_UNCHECKED(mask, &((const drm_savage_cmd_header_t*)data)
 			       ->clear1.mask);
-	DRM_GET_USER_UNCHECKED(value, &((drm_savage_cmd_header_t*)data)
+	DRM_GET_USER_UNCHECKED(value, &((const drm_savage_cmd_header_t*)data)
 			       ->clear1.value);
 
 	clear_cmd = BCI_CMD_RECT | BCI_CMD_RECT_XP | BCI_CMD_RECT_YP |
@@ -944,7 +944,7 @@ static int savage_dispatch_draw(drm_savage_private_t *dev_priv,
 			case SAVAGE_CMD_VB_PRIM:
 				ret = savage_dispatch_vb_prim(
 					dev_priv, &cmd_header,
-					(uint32_t __user *)usr_vtxbuf,
+					(const uint32_t __user *)usr_vtxbuf,
 					vb_size, vb_stride);
 				break;
 			case SAVAGE_CMD_DMA_IDX:
@@ -952,7 +952,7 @@ static int savage_dispatch_draw(drm_savage_private_t *dev_priv,
 				/* j was check in savage_bci_cmdbuf */
 				ret = savage_dispatch_dma_idx(
 					dev_priv, &cmd_header,
-					(uint16_t __user *)usr_cmdbuf,
+					(const uint16_t __user *)usr_cmdbuf,
 					dmabuf);
 				usr_cmdbuf += j;
 				break;
@@ -961,8 +961,8 @@ static int savage_dispatch_draw(drm_savage_private_t *dev_priv,
 				/* j was check in savage_bci_cmdbuf */
 				ret = savage_dispatch_vb_idx(
 					dev_priv, &cmd_header,
-					(uint16_t __user *)usr_cmdbuf,
-					(uint32_t __user *)usr_vtxbuf,
+					(const uint16_t __user *)usr_cmdbuf,
+					(const uint32_t __user *)usr_vtxbuf,
 					vb_size, vb_stride);
 				usr_cmdbuf += j;
 				break;
