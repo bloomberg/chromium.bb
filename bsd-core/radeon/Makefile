@@ -2,7 +2,7 @@
 
 .PATH:	${.CURDIR}/..
 KMOD	= radeon
-NOMAN=	YES
+NO_MAN	= YES
 SRCS    = radeon_cp.c radeon_drv.c radeon_state.c radeon_irq.c radeon_mem.c
 SRCS   += device_if.h bus_if.h pci_if.h opt_drm.h
 CFLAGS += ${DEBUG_FLAGS} -I. -I..

@@ -2,7 +2,7 @@
 
 .PATH:	${.CURDIR}/..
 KMOD	= i915
-NOMAN=	YES
+NO_MAN	= YES
 SRCS    = i915_dma.c i915_drv.c i915_irq.c i915_mem.c
 SRCS   += device_if.h bus_if.h pci_if.h opt_drm.h
 CFLAGS += ${DEBUG_FLAGS} -I. -I..
