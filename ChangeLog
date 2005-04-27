@@ -1,3 +1,17 @@
+2005-04-27  Keith Packard  <keithp@keithp.com>
+
+	* README:
+	* debian/changelog:
+	Update date to real 2.3.2 release date.
+	Fix change attributions
+	
+2005-04-27  Keith Packard  <keithp@keithp.com>
+
+	* configure.in:
+	Bump so revision for 2.3.2
+	* fc-cache/fc-cache.c: (scanDirs):
+	Fix a few minor leaks in error cases.
+
 2005-04-23  Keith Packard  <keithp@keithp.com>
 
 	* README:

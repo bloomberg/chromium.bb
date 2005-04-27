@@ -1,14 +1,15 @@
 			Fontconfig
 	Font configuration and customization library
 		      Version 2.3.2
-		         2005-4-23
+		         2005-4-27
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
 
 2.3.2
 
-Patch memory leaks in using iconv.  (keithp)
+Patch memory leaks in using iconv.  (Reported by Chris Capoccia)
+Patch memory leaks in fc-cache. (Reported by Chris Capoccia)
 Fetch bitmap glyphs to get widths during font evaluation. (keithp)
 Share strings through FcObjectStaticName (Ross Burton)
 Windows build updates (Tor Lillqvist)
