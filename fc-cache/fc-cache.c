@@ -141,6 +141,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	{
 	    fprintf (stderr, "Can't create directory set\n");
 	    ret++;
+	    FcFontSetDestroy (set);
 	    continue;
 	}
 	
@@ -162,23 +163,31 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 		perror ("");
 		ret++;
 	    }
+	    FcFontSetDestroy (set);
+	    FcStrSetDestroy (subdirs);
 	    continue;
 	}
 	if (stat ((char *) dir, &statb) == -1)
 	{
 	    fprintf (stderr, "\"%s\": ", dir);
 	    perror ("");
+	    FcFontSetDestroy (set);
+	    FcStrSetDestroy (subdirs);
 	    ret++;
 	    continue;
 	}
 	if (!S_ISDIR (statb.st_mode))
 	{
 	    fprintf (stderr, "\"%s\": not a directory, skipping\n", dir);
+	    FcFontSetDestroy (set);
+	    FcStrSetDestroy (subdirs);
 	    continue;
 	}
 	if (!FcDirScan (set, subdirs, 0, FcConfigGetBlanks (config), dir, force))
 	{
 	    fprintf (stderr, "\"%s\": error scanning\n", dir);
+	    FcFontSetDestroy (set);
+	    FcStrSetDestroy (subdirs);
 	    ret++;
 	    continue;
 	}
@@ -201,6 +210,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	}
 	FcFontSetDestroy (set);
 	sublist = FcStrListCreate (subdirs);
+	FcStrSetDestroy (subdirs);
 	if (!sublist)
 	{
 	    fprintf (stderr, "Can't create subdir list in \"%s\"\n", dir);
@@ -208,7 +218,6 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    continue;
 	}
 	ret += scanDirs (sublist, config, program, force, verbose);
-	FcStrSetDestroy (subdirs);
     }
     FcStrListDone (list);
     return ret;
