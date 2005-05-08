@@ -188,6 +188,12 @@ static int via_initialize(drm_device_t * dev,
 		return DRM_ERR(EFAULT);
 	}
 
+	if (!dev->agp || !dev->agp->base) {
+		DRM_ERROR("%s called with no agp memory available\n", 
+			  __FUNCTION__);
+		return DRM_ERR(EFAULT);
+	}
+
 	dev_priv->ring.map.offset = dev->agp->base + init->offset;
 	dev_priv->ring.map.size = init->size;
 	dev_priv->ring.map.type = 0;
