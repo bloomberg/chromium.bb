@@ -638,6 +638,18 @@ struct drm_device {
 	void	(*irq_handler)(DRM_IRQ_ARGS);
 	int	(*vblank_wait)(drm_device_t *dev, unsigned int *sequence);
 
+	/**
+	 * Called by \c drm_device_is_agp.  Typically used to determine if a
+	 * card is really attached to AGP or not.
+	 *
+	 * \param dev  DRM device handle
+	 *
+	 * \returns true if the card really is attached to AGP, false
+	 * otherwise.
+	 */
+	int (*device_is_agp) (struct drm_device * dev);
+
+
 	drm_ioctl_desc_t *driver_ioctls;
 	int	max_driver_ioctl;
 

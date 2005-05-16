@@ -99,7 +99,8 @@ static int fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 			goto error_out_unreg;
 
 	if (drm_core_has_AGP(dev)) {
-		dev->agp = drm_agp_init(dev);
+		if (drm_device_is_agp(dev))
+			dev->agp = drm_agp_init(dev);
 		if (drm_core_check_feature(dev, DRIVER_REQUIRE_AGP)
 		    && (dev->agp == NULL)) {
 			DRM_ERROR("Cannot initialize the agpgart module.\n");

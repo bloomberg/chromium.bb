@@ -46,6 +46,12 @@ drm_device_is_agp(drm_device_t *dev)
 	u_int32_t status;
 	u_int8_t ptr, next;
 
+
+	if ( (dev->driver->device_is_agp != NULL)
+	     && ! (*dev->driver->device_is_agp)( dev ) ) {
+		return 0;
+	}
+
 	/*
 	 * Check the CAP_LIST bit of the PCI status register first.
 	 */
@@ -71,6 +77,11 @@ drm_device_is_agp(drm_device_t *dev)
 
 	return 0;
 #else
+	if ( (dev->driver->device_is_agp != NULL)
+	     && ! (*dev->driver->device_is_agp)( dev ) ) {
+		return 0;
+	}
+
 	/* XXX: fill me in for non-FreeBSD */
 	return 1;
 #endif
