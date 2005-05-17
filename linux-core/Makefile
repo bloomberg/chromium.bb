@@ -354,6 +354,9 @@ endif
 ifneq (,$(findstring ffb,$(DRM_MODULES)))
 CONFIG_DRM_FFB := m
 endif
+ifneq (,$(findstring savage,$(DRM_MODULES)))
+CONFIG_DRM_SAVAGE := m
+endif
 
 # These require AGP support
 
@@ -369,9 +372,6 @@ CONFIG_DRM_I830 := m
 endif
 ifneq (,$(findstring i915,$(DRM_MODULES)))
 CONFIG_DRM_I915 := m
-endif
-ifneq (,$(findstring savage,$(DRM_MODULES)))
-CONFIG_DRM_SAVAGE := m
 endif
 endif
 
