@@ -1,3 +1,9 @@
+2005-05-20  Keith Packard  <keithp@keithp.com>
+
+	* debian/changelog:
+	* debian/control:
+	Move fontconfig source package to libs as per override
+
 2005-05-20  Aiet Kolkhi <aietkolkhi@gmail.com>
 
 	reviewed by: Mike Fabian

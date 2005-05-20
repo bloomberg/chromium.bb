@@ -1,3 +1,5 @@
+  * Change section of fontconfig source package to libs (closes: #309864)
+
 fontconfig (2.3.2-1) unstable; urgency=low
   * Patch memory leaks (thanks to Chris Capoccia) (closes: #305680)
   * Share strings to save memory (Ross Burton)

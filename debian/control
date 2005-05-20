@@ -1,5 +1,5 @@
 Source: fontconfig
-Section: devel
+Section: libs
 Priority: optional
 Maintainer: Keith Packard <keithp@debian.org>
 Uploaders: Keith Packard <keithp@debian.org>, Josselin Mouette <joss@debian.org>
