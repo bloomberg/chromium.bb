@@ -22,9 +22,10 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 # Georgian (KA)
-0589	# Armenian full stop (vertsaket)
+# 0589	# Armenian full stop (vertsaket)
 #10a0-10c5	# capital letters, not used in normal writing
-10d0-10f6
+10d0-10f0
+#10f1-10f6	# Archaic letters not included in modern fonts
 #10f7-10f8	# additional letters for Mingrelian and Svan
 10fb
 #2018	# single quote

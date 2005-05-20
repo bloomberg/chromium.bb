@@ -1,3 +1,14 @@
+2005-05-20  Aiet Kolkhi <aietkolkhi@gmail.com>
+
+	reviewed by: Mike Fabian
+
+	* fc-lang/ka.orth:
+	The ka.orth file requires several characters which are not 
+	used anymore in modern Georgian and which are missing in the free 
+	Georgian TrueType fonts downloadable at: 
+	
+	http://aiet.qartuli.net/docs/georgian_on_linux_en.php
+
 2005-04-27  Keith Packard  <keithp@keithp.com>
 
 	* README:
