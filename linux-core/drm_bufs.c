@@ -433,25 +433,19 @@ static void drm_cleanup_buf_error(drm_device_t * dev, drm_buf_entry_t * entry)
 
 #if __OS_HAS_AGP
 /**
- * Add AGP buffers for DMA transfers (ioctl).
+ * Add AGP buffers for DMA transfers
  *
- * \param inode device inode.
- * \param filp file pointer.
- * \param cmd command.
- * \param arg pointer to a drm_buf_desc_t request.
+ * \param dev drm_device_t to which the buffers are to be added.
+ * \param request pointer to a drm_buf_desc_t describing the request.
  * \return zero on success or a negative number on failure.
  *
  * After some sanity checks creates a drm_buf structure for each buffer and
  * reallocates the buffer list of the same size order to accommodate the new
  * buffers.
  */
-int drm_addbufs_agp(struct inode *inode, struct file *filp,
-		    unsigned int cmd, unsigned long arg)
+int drm_addbufs_agp(drm_device_t * dev, drm_buf_desc_t * request)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
 	drm_device_dma_t *dma = dev->dma;
-	drm_buf_desc_t request;
 	drm_buf_entry_t *entry;
 	drm_buf_t *buf;
 	unsigned long offset;
@@ -465,25 +459,22 @@ int drm_addbufs_agp(struct inode *inode, struct file *filp,
 	int byte_count;
 	int i;
 	drm_buf_t **temp_buflist;
-	drm_buf_desc_t __user *argp = (void __user *)arg;
+
 
 	if (!dma)
 		return -EINVAL;
 
-	if (copy_from_user(&request, argp, sizeof(request)))
-		return -EFAULT;
-
-	count = request.count;
-	order = drm_order(request.size);
+	count = request->count;
+	order = drm_order(request->size);
 	size = 1 << order;
 
-	alignment = (request.flags & _DRM_PAGE_ALIGN)
+	alignment = (request->flags & _DRM_PAGE_ALIGN)
 	    ? PAGE_ALIGN(size) : size;
 	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
 	total = PAGE_SIZE << page_order;
 
 	byte_count = 0;
-	agp_offset = dev->agp->base + request.agp_start;
+	agp_offset = dev->agp->base + request->agp_start;
 
 	DRM_DEBUG("count:      %d\n", count);
 	DRM_DEBUG("order:      %d\n", order);
@@ -596,11 +587,8 @@ int drm_addbufs_agp(struct inode *inode, struct file *filp,
 
 	up(&dev->struct_sem);
 
-	request.count = entry->buf_count;
-	request.size = size;
-
-	if (copy_to_user(argp, &request, sizeof(request)))
-		return -EFAULT;
+	request->count = entry->buf_count;
+	request->size = size;
 
 	dma->flags = _DRM_DMA_USE_AGP;
 
@@ -609,13 +597,9 @@ int drm_addbufs_agp(struct inode *inode, struct file *filp,
 }
 #endif				/* __OS_HAS_AGP */
 
-int drm_addbufs_pci(struct inode *inode, struct file *filp,
-		    unsigned int cmd, unsigned long arg)
+int drm_addbufs_pci(drm_device_t * dev, drm_buf_desc_t * request)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
 	drm_device_dma_t *dma = dev->dma;
-	drm_buf_desc_t request;
 	int count;
 	int order;
 	int size;
@@ -631,7 +615,6 @@ int drm_addbufs_pci(struct inode *inode, struct file *filp,
 	int page_count;
 	unsigned long *temp_pagelist;
 	drm_buf_t **temp_buflist;
-	drm_buf_desc_t __user *argp = (void __user *)arg;
 
 	if (!drm_core_check_feature(dev, DRIVER_PCI_DMA))
 		return -EINVAL;
@@ -639,22 +622,19 @@ int drm_addbufs_pci(struct inode *inode, struct file *filp,
 	if (!dma)
 		return -EINVAL;
 
-	if (copy_from_user(&request, argp, sizeof(request)))
-		return -EFAULT;
-
-	count = request.count;
-	order = drm_order(request.size);
+	count = request->count;
+	order = drm_order(request->size);
 	size = 1 << order;
 
 	DRM_DEBUG("count=%d, size=%d (%d), order=%d, queue_count=%d\n",
-		  request.count, request.size, size, order, dev->queue_count);
+		  request->count, request->size, size, order, dev->queue_count);
 
 	if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER)
 		return -EINVAL;
 	if (dev->queue_count)
 		return -EBUSY;	/* Not while in use */
 
-	alignment = (request.flags & _DRM_PAGE_ALIGN)
+	alignment = (request->flags & _DRM_PAGE_ALIGN)
 	    ? PAGE_ALIGN(size) : size;
 	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
 	total = PAGE_SIZE << page_order;
@@ -826,25 +806,17 @@ int drm_addbufs_pci(struct inode *inode, struct file *filp,
 
 	up(&dev->struct_sem);
 
-	request.count = entry->buf_count;
-	request.size = size;
-
-	if (copy_to_user(argp, &request, sizeof(request)))
-		return -EFAULT;
+	request->count = entry->buf_count;
+	request->size = size;
 
 	atomic_dec(&dev->buf_alloc);
 	return 0;
 
 }
 
-int drm_addbufs_sg(struct inode *inode, struct file *filp,
-		   unsigned int cmd, unsigned long arg)
+int drm_addbufs_sg(drm_device_t * dev, drm_buf_desc_t * request)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
 	drm_device_dma_t *dma = dev->dma;
-	drm_buf_desc_t __user *argp = (void __user *)arg;
-	drm_buf_desc_t request;
 	drm_buf_entry_t *entry;
 	drm_buf_t *buf;
 	unsigned long offset;
@@ -865,20 +837,17 @@ int drm_addbufs_sg(struct inode *inode, struct file *filp,
 	if (!dma)
 		return -EINVAL;
 
-	if (copy_from_user(&request, argp, sizeof(request)))
-		return -EFAULT;
-
-	count = request.count;
-	order = drm_order(request.size);
+	count = request->count;
+	order = drm_order(request->size);
 	size = 1 << order;
 
-	alignment = (request.flags & _DRM_PAGE_ALIGN)
+	alignment = (request->flags & _DRM_PAGE_ALIGN)
 	    ? PAGE_ALIGN(size) : size;
 	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
 	total = PAGE_SIZE << page_order;
 
 	byte_count = 0;
-	agp_offset = request.agp_start;
+	agp_offset = request->agp_start;
 
 	DRM_DEBUG("count:      %d\n", count);
 	DRM_DEBUG("order:      %d\n", order);
@@ -993,11 +962,8 @@ int drm_addbufs_sg(struct inode *inode, struct file *filp,
 
 	up(&dev->struct_sem);
 
-	request.count = entry->buf_count;
-	request.size = size;
-
-	if (copy_to_user(argp, &request, sizeof(request)))
-		return -EFAULT;
+	request->count = entry->buf_count;
+	request->size = size;
 
 	dma->flags = _DRM_DMA_USE_SG;
 
@@ -1006,13 +972,9 @@ int drm_addbufs_sg(struct inode *inode, struct file *filp,
 }
 
 
-int drm_addbufs_fb(struct inode *inode, struct file *filp,
-		    unsigned int cmd, unsigned long arg)
+int drm_addbufs_fb(drm_device_t * dev, drm_buf_desc_t * request)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
 	drm_device_dma_t *dma = dev->dma;
-	drm_buf_desc_t request;
 	drm_buf_entry_t *entry;
 	drm_buf_t *buf;
 	unsigned long offset;
@@ -1026,7 +988,6 @@ int drm_addbufs_fb(struct inode *inode, struct file *filp,
 	int byte_count;
 	int i;
 	drm_buf_t **temp_buflist;
-	drm_buf_desc_t __user *argp = (void __user *)arg;
 
 	if (!drm_core_check_feature(dev, DRIVER_FB_DMA))
 		return -EINVAL;
@@ -1034,20 +995,17 @@ int drm_addbufs_fb(struct inode *inode, struct file *filp,
 	if (!dma)
 		return -EINVAL;
 
-	if (copy_from_user(&request, argp, sizeof(request)))
-		return -EFAULT;
-
-	count = request.count;
-	order = drm_order(request.size);
+	count = request->count;
+	order = drm_order(request->size);
 	size = 1 << order;
 
-	alignment = (request.flags & _DRM_PAGE_ALIGN)
+	alignment = (request->flags & _DRM_PAGE_ALIGN)
 	    ? PAGE_ALIGN(size) : size;
 	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
 	total = PAGE_SIZE << page_order;
 
 	byte_count = 0;
-	agp_offset = request.agp_start;
+	agp_offset = request->agp_start;
 
 	DRM_DEBUG("count:      %d\n", count);
 	DRM_DEBUG("order:      %d\n", order);
@@ -1160,11 +1118,8 @@ int drm_addbufs_fb(struct inode *inode, struct file *filp,
 
 	up(&dev->struct_sem);
 
-	request.count = entry->buf_count;
-	request.size = size;
-
-	if (copy_to_user(argp, &request, sizeof(request)))
-		return -EFAULT;
+	request->count = entry->buf_count;
+	request->size = size;
 
 	dma->flags = _DRM_DMA_USE_FB;
 
@@ -1193,6 +1148,8 @@ int drm_addbufs(struct inode *inode, struct file *filp,
 	drm_buf_desc_t request;
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
+	int ret;
+
 
 	if (!drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 		return -EINVAL;
@@ -1202,16 +1159,26 @@ int drm_addbufs(struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 #if __OS_HAS_AGP
-	if (request.flags & _DRM_AGP_BUFFER)
-		return drm_addbufs_agp(inode, filp, cmd, arg);
+	if (request.flags & _DRM_AGP_BUFFER) {
+		ret = drm_addbufs_agp(dev, & request);
+	}
 	else
 #endif
 	if (request.flags & _DRM_SG_BUFFER)
-		return drm_addbufs_sg(inode, filp, cmd, arg);
+		ret = drm_addbufs_sg(dev, & request);
         else if (request.flags & _DRM_FB_BUFFER)
-                return drm_addbufs_fb(inode, filp, cmd, arg);
+                ret = drm_addbufs_fb(dev, & request);
         else
-                return drm_addbufs_pci(inode, filp, cmd, arg);
+		ret = drm_addbufs_pci(dev, & request);
+
+	if (ret == 0) {
+		if (copy_to_user( (void __user *) arg, &request, 
+				  sizeof(request))) {
+			ret = -EFAULT;
+		}
+	}
+
+	return ret;
 }
 
 /**
