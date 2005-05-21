@@ -52,7 +52,8 @@ static void mga_configure(drm_device_t *dev)
 {
 	dev->dev_priv_size = sizeof(drm_mga_buf_priv_t);
 	/* XXX dev->prerelease = mga_driver_prerelease; */
-	dev->pretakedown = mga_driver_pretakedown;
+	dev->preinit = mga_driver_preinit;
+	dev->postcleanup = mga_driver_postcleanup;
 	dev->vblank_wait = mga_driver_vblank_wait;
 	dev->irq_preinstall = mga_driver_irq_preinstall;
 	dev->irq_postinstall = mga_driver_irq_postinstall;

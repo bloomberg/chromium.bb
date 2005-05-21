@@ -81,7 +81,8 @@ static struct drm_driver driver = {
 	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | DRIVER_USE_MTRR |
 	    DRIVER_HAVE_DMA | DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED |
 	    DRIVER_IRQ_VBL,
-	.pretakedown = mga_driver_pretakedown,
+	.preinit = mga_driver_preinit,
+	.postcleanup = mga_driver_postcleanup,
 	.dma_quiescent = mga_driver_dma_quiescent,
 	.device_is_agp = mga_driver_device_is_agp,
 	.vblank_wait = mga_driver_vblank_wait,
