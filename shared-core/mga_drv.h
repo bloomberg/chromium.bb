@@ -38,11 +38,11 @@
 
 #define DRIVER_NAME		"mga"
 #define DRIVER_DESC		"Matrox G200/G400"
-#define DRIVER_DATE		"20051013"
+#define DRIVER_DATE		"20050520"
 
 #define DRIVER_MAJOR		3
 #define DRIVER_MINOR		1
-#define DRIVER_PATCHLEVEL	1
+#define DRIVER_PATCHLEVEL	2
 
 typedef struct drm_mga_primary_buffer {
 	u8 *start;
