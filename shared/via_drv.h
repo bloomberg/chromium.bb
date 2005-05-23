@@ -27,8 +27,8 @@
 #include "via_drm.h"
 #include "via_verifier.h"
 
-#define VIA_PCI_BUF_SIZE 120000
-#define VIA_FIRE_BUF_SIZE  2048
+#define VIA_PCI_BUF_SIZE 60000
+#define VIA_FIRE_BUF_SIZE  1024
 #define VIA_NUM_IRQS 2
 
 

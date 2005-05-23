@@ -28,7 +28,7 @@
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome / Pro"
-#define DRIVER_DATE		"20050508"
+#define DRIVER_DATE		"20050523"
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		6
@@ -36,8 +36,8 @@
 
 #include "via_verifier.h"
 
-#define VIA_PCI_BUF_SIZE 120000
-#define VIA_FIRE_BUF_SIZE  2048
+#define VIA_PCI_BUF_SIZE 60000
+#define VIA_FIRE_BUF_SIZE  1024
 #define VIA_NUM_IRQS 2
 
 

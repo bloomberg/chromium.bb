@@ -142,7 +142,7 @@ int via_final_context(struct drm_device *dev, int context)
 
 	if (i < MAX_CONTEXT) {
 		set_t *set;
-		unsigned int item;
+		ITEM_TYPE item;
 		int retval;
 
 		DRM_DEBUG("find socket %d, context = %d\n", i, context);
@@ -151,7 +151,7 @@ int via_final_context(struct drm_device *dev, int context)
 		set = global_ppriv[i].sets[0];
 		retval = via_setFirst(set, &item);
 		while (retval) {
-			DRM_DEBUG("free video memory 0x%x\n", item);
+			DRM_DEBUG("free video memory 0x%lx\n", item);
 			via_mmFreeMem((PMemBlock) item);
 			retval = via_setNext(set, &item);
 		}
@@ -161,7 +161,7 @@ int via_final_context(struct drm_device *dev, int context)
 		set = global_ppriv[i].sets[1];
 		retval = via_setFirst(set, &item);
 		while (retval) {
-			DRM_DEBUG("free agp memory 0x%x\n", item);
+			DRM_DEBUG("free agp memory 0x%lx\n", item);
 			via_mmFreeMem((PMemBlock) item);
 			retval = via_setNext(set, &item);
 		}
@@ -169,6 +169,8 @@ int via_final_context(struct drm_device *dev, int context)
 
 		global_ppriv[i].used = 0;
 	}
+	via_release_futex(dev_priv, context); 
+
 	
 #if defined(__linux__)
 	/* Linux specific until context tracking code gets ported to BSD */
@@ -223,7 +225,7 @@ int via_fb_alloc(drm_via_mem_t * mem)
 	block = via_mmAllocMem(FBHeap, fb.size, 5, 0);
 	if (block) {
 		fb.offset = block->ofs;
-		fb.free = (unsigned int)block;
+		fb.free = (unsigned long)block;
 		if (!add_alloc_set(fb.context, VIDEO, fb.free)) {
 			DRM_DEBUG("adding to allocation set fails\n");
 			via_mmFreeMem((PMemBlock) fb.free);
@@ -260,7 +262,7 @@ int via_agp_alloc(drm_via_mem_t * mem)
 	block = via_mmAllocMem(AgpHeap, agp.size, 5, 0);
 	if (block) {
 		agp.offset = block->ofs;
-		agp.free = (unsigned int)block;
+		agp.free = (unsigned long)block;
 		if (!add_alloc_set(agp.context, AGP, agp.free)) {
 			DRM_DEBUG("adding to allocation set fails\n");
 			via_mmFreeMem((PMemBlock) agp.free);
@@ -324,7 +326,7 @@ int via_fb_free(drm_via_mem_t * mem)
 		retval = -1;
 	}
 
-	DRM_DEBUG("free fb, free = %d\n", fb.free);
+	DRM_DEBUG("free fb, free = %ld\n", fb.free);
 
 	return retval;
 }
@@ -347,7 +349,7 @@ int via_agp_free(drm_via_mem_t * mem)
 		retval = -1;
 	}
 
-	DRM_DEBUG("free agp, free = %d\n", agp.free);
+	DRM_DEBUG("free agp, free = %ld\n", agp.free);
 
 	return retval;
 }
