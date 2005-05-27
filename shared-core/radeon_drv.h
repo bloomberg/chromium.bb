@@ -831,6 +831,36 @@ extern void radeon_driver_free_filp_priv(drm_device_t * dev,
 
 #define R200_PP_TRI_PERF                  0x2cf8
 
+/* MPEG settings from VHA code */
+#define RADEON_VHA_SETTO16_1                       0x2694
+#define RADEON_VHA_SETTO16_2                       0x2680
+#define RADEON_VHA_SETTO0_1                        0x1840
+#define RADEON_VHA_FB_OFFSET                       0x19e4
+#define RADEON_VHA_SETTO1AND70S                    0x19d8
+#define RADEON_VHA_DST_PITCH                       0x1408
+
+// set as reference header
+#define RADEON_VHA_BACKFRAME0_OFF_Y              0x1840
+#define RADEON_VHA_BACKFRAME1_OFF_PITCH_Y        0x1844
+#define RADEON_VHA_BACKFRAME0_OFF_U              0x1848
+#define RADEON_VHA_BACKFRAME1_OFF_PITCH_U        0x184c
+#define RADOEN_VHA_BACKFRAME0_OFF_V              0x1850
+#define RADEON_VHA_BACKFRAME1_OFF_PITCH_V        0x1854
+#define RADEON_VHA_FORWFRAME0_OFF_Y              0x1858
+#define RADEON_VHA_FORWFRAME1_OFF_PITCH_Y        0x185c
+#define RADEON_VHA_FORWFRAME0_OFF_U              0x1860
+#define RADEON_VHA_FORWFRAME1_OFF_PITCH_U        0x1864
+#define RADEON_VHA_FORWFRAME0_OFF_V              0x1868
+#define RADEON_VHA_FORWFRAME0_OFF_PITCH_V        0x1880
+#define RADEON_VHA_BACKFRAME0_OFF_Y_2            0x1884
+#define RADEON_VHA_BACKFRAME1_OFF_PITCH_Y_2      0x1888
+#define RADEON_VHA_BACKFRAME0_OFF_U_2            0x188c
+#define RADEON_VHA_BACKFRAME1_OFF_PITCH_U_2      0x1890
+#define RADEON_VHA_BACKFRAME0_OFF_V_2            0x1894
+#define RADEON_VHA_BACKFRAME1_OFF_PITCH_V_2      0x1898
+
+
+
 /* Constants */
 #define RADEON_MAX_USEC_TIMEOUT		100000	/* 100 ms */
 
