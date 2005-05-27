@@ -148,8 +148,7 @@ MODULE_LICENSE("GPL and additional rights");
  * \param dev   The device to be tested.
  *
  * \returns
- * If the device is a PCI G450, zero is returned.  Otherwise non-zero is
- * returned.
+ * If the device is a PCI G450, zero is returned.  Otherwise 2 is returned.
  */
 int mga_driver_device_is_agp(drm_device_t * dev)
 {
@@ -176,5 +175,5 @@ int mga_driver_device_is_agp(drm_device_t * dev)
 		return 0;
 	}
 
-	return 1;
+	return 2;
 }

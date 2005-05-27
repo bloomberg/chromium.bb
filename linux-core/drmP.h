@@ -548,8 +548,10 @@ struct drm_driver {
 	 *
 	 * \param dev  DRM device handle
 	 *
-	 * \returns true if the card really is attached to AGP, false
-	 * otherwise.
+	 * \returns
+	 * One of three values is returned depending on whether or not the
+	 * card is absolutely \b not AGP (return of 0), absolutely \b is AGP
+	 * (return of 1), or may or may not be AGP (return of 2).
 	 */
 	int (*device_is_agp) (struct drm_device * dev);
 
@@ -1028,9 +1030,12 @@ static __inline__ struct drm_map *drm_core_findmap(struct drm_device *dev,
 
 static __inline__ int drm_device_is_agp(drm_device_t *dev)
 {
-	if ( (dev->driver->device_is_agp != NULL)
-	     && ! (*dev->driver->device_is_agp)( dev ) ) {
-		return 0;
+	if ( dev->driver->device_is_agp != NULL ) {
+		int err = (*dev->driver->device_is_agp)( dev );
+	
+		if (err != 2) {
+			return err;
+		}
 	}
 
 	return pci_find_capability(dev->pdev, PCI_CAP_ID_AGP);

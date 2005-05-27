@@ -644,8 +644,10 @@ struct drm_device {
 	 *
 	 * \param dev  DRM device handle
 	 *
-	 * \returns true if the card really is attached to AGP, false
-	 * otherwise.
+	 * \returns 
+	 * One of three values is returned depending on whether or not the
+	 * card is absolutely \b not AGP (return of 0), absolutely \b is AGP
+	 * (return of 1), or may or may not be AGP (return of 2).
 	 */
 	int (*device_is_agp) (struct drm_device * dev);
 

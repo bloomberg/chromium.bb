@@ -48,6 +48,7 @@ static void i915_configure(drm_device_t *dev)
 	dev->dev_priv_size = 1;	/* No dev_priv */
 	dev->prerelease = i915_driver_prerelease;
 	dev->pretakedown = i915_driver_pretakedown;
+	dev->device_is_agp = i915_driver_device_is_agp,
 	dev->irq_preinstall = i915_driver_irq_preinstall;
 	dev->irq_postinstall = i915_driver_irq_postinstall;
 	dev->irq_uninstall = i915_driver_irq_uninstall;

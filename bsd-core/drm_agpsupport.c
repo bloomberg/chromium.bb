@@ -47,9 +47,12 @@ drm_device_is_agp(drm_device_t *dev)
 	u_int8_t ptr, next;
 
 
-	if ( (dev->driver->device_is_agp != NULL)
-	     && ! (*dev->driver->device_is_agp)( dev ) ) {
-		return 0;
+	if ( dev->driver->device_is_agp != NULL ) {
+		int err = (*dev->driver->device_is_agp)( dev );
+	
+		if (err != 2) {
+			return err;
+		}
 	}
 
 	/*
