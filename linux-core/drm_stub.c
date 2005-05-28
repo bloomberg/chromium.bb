@@ -67,7 +67,8 @@ static int fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 
 	dev->pdev = pdev;
 
-	drm_pm_setup( dev );
+	if (drm_fb_loaded)
+		drm_pm_setup( dev );
 
 #ifdef __alpha__
 	dev->hose = pdev->sysdata;

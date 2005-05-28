@@ -265,7 +265,8 @@ int drm_takedown(drm_device_t * dev)
 	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 		drm_dma_takedown(dev);
 
-	drm_pm_takedown(dev);
+	if (drm_fb_loaded)
+		drm_pm_takedown(dev);
 
 	if (dev->lock.hw_lock) {
 		dev->sigdata.lock = dev->lock.hw_lock = NULL;	/* SHM removed */
@@ -312,8 +313,6 @@ int drm_init(struct drm_driver *driver,
 
 	drm_mem_init();
 
-	drm_pm_init();
-
 	for (i = 0; (pciidlist[i].vendor != 0) && !drm_fb_loaded; i++) {
 		pid = &pciidlist[i];
 
@@ -336,9 +335,10 @@ int drm_init(struct drm_driver *driver,
 		}
 	}
 
-	if (drm_fb_loaded == 0)
+	if (!drm_fb_loaded)
 		pci_register_driver(&driver->pci_driver);
 	else {
+		drm_pm_init();
 		for (i = 0; pciidlist[i].vendor != 0; i++) {
 			pid = &pciidlist[i];
 
@@ -422,7 +422,8 @@ static void __exit drm_cleanup(drm_device_t * dev)
 		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		dev->maplist = NULL;
 	}
-	if (drm_fb_loaded == 0)
+
+	if (!drm_fb_loaded)
 		pci_disable_device(dev->pdev);
 
 	drm_ctxbitmap_cleanup(dev);
@@ -436,14 +437,15 @@ static void __exit drm_cleanup(drm_device_t * dev)
 		DRM_DEBUG("mtrr_del=%d\n", retval);
 	}
 
+	if (drm_fb_loaded)
+		drm_pm_cleanup();
+
 	if (drm_core_has_AGP(dev) && dev->agp) {
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
 		dev->agp = NULL;
 	}
 	if (dev->driver->postcleanup)
 		dev->driver->postcleanup(dev);
-
-	drm_pm_cleanup();
 
 	drm_put_head(&dev->primary);
 	if (drm_put_dev(dev))
