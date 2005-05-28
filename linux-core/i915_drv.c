@@ -71,6 +71,7 @@ static struct drm_driver driver = {
 	.postinit = postinit,
 	.version = version,
 	.ioctls = i915_ioctls,
+	.power = i915_power,
 	.fops = {
 		.owner = THIS_MODULE,
 		.open = drm_open,
@@ -84,6 +85,8 @@ static struct drm_driver driver = {
 		.name = DRIVER_NAME,
 		.id_table = pciidlist,
 		.probe = probe,
+		.resume = i915_resume,
+		.suspend = i915_suspend,
 		.remove = __devexit_p(drm_cleanup_pci),
 		}
 };

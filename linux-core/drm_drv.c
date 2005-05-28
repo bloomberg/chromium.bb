@@ -265,6 +265,8 @@ int drm_takedown(drm_device_t * dev)
 	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 		drm_dma_takedown(dev);
 
+	drm_pm_takedown(dev);
+
 	if (dev->lock.hw_lock) {
 		dev->sigdata.lock = dev->lock.hw_lock = NULL;	/* SHM removed */
 		dev->lock.filp = NULL;
@@ -309,6 +311,8 @@ int drm_init(struct drm_driver *driver,
 	DRM_DEBUG("\n");
 
 	drm_mem_init();
+
+	drm_pm_init();
 
 	for (i = 0; (pciidlist[i].vendor != 0) && !drm_fb_loaded; i++) {
 		pid = &pciidlist[i];
@@ -438,6 +442,8 @@ static void __exit drm_cleanup(drm_device_t * dev)
 	}
 	if (dev->driver->postcleanup)
 		dev->driver->postcleanup(dev);
+
+	drm_pm_cleanup();
 
 	drm_put_head(&dev->primary);
 	if (drm_put_dev(dev))
