@@ -269,6 +269,7 @@ int drm_addmap(struct inode *inode, struct file *filp,
 		}
 		map->handle = dmah->vaddr;
 		map->offset = (unsigned long)dmah->busaddr;
+		kfree(dmah);
 		break;
 	}
 	default:
@@ -380,7 +381,7 @@ int drm_rmmap(struct inode *inode, struct file *filp,
 			dmah.vaddr = map->handle;
 			dmah.busaddr = map->offset;
 			dmah.size = map->size;
-			drm_pci_free(dev, &dmah);
+			__drm_pci_free(dev, &dmah);
 			break;
 		}
 		drm_free(map, sizeof(*map), DRM_MEM_MAPS);

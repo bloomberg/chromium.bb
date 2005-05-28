@@ -235,7 +235,7 @@ int drm_takedown(drm_device_t * dev)
 					dmah.vaddr = map->handle;
 					dmah.busaddr = map->offset;
 					dmah.size = map->size;
-					drm_pci_free(dev, &dmah);
+					__drm_pci_free(dev, &dmah);
 					break;
 				}
 				drm_free(map, sizeof(*map), DRM_MEM_MAPS);

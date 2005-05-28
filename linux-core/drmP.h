@@ -992,6 +992,7 @@ extern int drm_ati_pcigart_cleanup(drm_device_t * dev,
 
 extern drm_dma_handle_t *drm_pci_alloc(drm_device_t * dev, size_t size,
 			   size_t align, dma_addr_t maxaddr);
+extern void __drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah);
 extern void drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah);
 
 			       /* sysfs support (drm_sysfs.c) */

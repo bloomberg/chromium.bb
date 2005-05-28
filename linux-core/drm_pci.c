@@ -122,10 +122,12 @@ drm_dma_handle_t *drm_pci_alloc(drm_device_t * dev, size_t size, size_t align,
 EXPORT_SYMBOL(drm_pci_alloc);
 
 /**
- * \brief Free a PCI consistent memory block.
+ * \brief Free a PCI consistent memory block without freeing its descriptor.
+ *
+ * This function is for internal use in the Linux-specific DRM core code.
  */
 void
-drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
+__drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
 {
 #if 0
 	unsigned long addr;
@@ -168,6 +170,16 @@ drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
 	}
 #endif
 
+}
+
+/**
+ * \brief Free a PCI consistent memory block.
+ */
+void
+drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
+{
+	__drm_pci_free(dev, dmah);
+	kfree(dmah);
 }
 EXPORT_SYMBOL(drm_pci_free);
 
