@@ -572,10 +572,6 @@ static int mga_do_cleanup_dma(drm_device_t * dev)
 		if (dev_priv->head != NULL) {
 			mga_freelist_cleanup(dev);
 		}
-
-		drm_free(dev->dev_private, sizeof(drm_mga_private_t),
-			 DRM_MEM_DRIVER);
-		dev->dev_private = NULL;
 	}
 
 	return 0;
@@ -723,7 +719,17 @@ int mga_dma_buffers(DRM_IOCTL_ARGS)
 
 int mga_driver_postcleanup(drm_device_t * dev)
 {
-	return mga_do_cleanup_dma(dev);
+	int err;
+	
+	
+	err = mga_do_cleanup_dma(dev);
+	if (!err) {
+		drm_free(dev->dev_private, sizeof(drm_mga_private_t),
+			 DRM_MEM_DRIVER);
+		dev->dev_private = NULL;
+	}
+
+	return err;
 }
 
 int mga_driver_dma_quiescent(drm_device_t * dev)
