@@ -222,9 +222,6 @@ typedef struct _drm_mga_sarea {
 	int ctxOwner;
 } drm_mga_sarea_t;
 
-/* WARNING: If you change any of these defines, make sure to change the
- * defines in the Xserver file (xf86drmMga.h)
- */
 
 /* MGA specific ioctls
  * The device specific ioctl range is 0x40 to 0x79.
@@ -287,13 +284,6 @@ typedef struct drm_mga_init {
 	unsigned long primary_offset;
 	unsigned long buffers_offset;
 } drm_mga_init_t;
-
-typedef struct drm_mga_fullscreen {
-	enum {
-		MGA_INIT_FULLSCREEN = 0x01,
-		MGA_CLEANUP_FULLSCREEN = 0x02
-	} func;
-} drm_mga_fullscreen_t;
 
 typedef struct drm_mga_clear {
 	unsigned int flags;
