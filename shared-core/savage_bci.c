@@ -162,8 +162,8 @@ savage_bci_wait_event_reg(drm_savage_private_t *dev_priv, uint16_t e)
 uint16_t savage_bci_emit_event(drm_savage_private_t *dev_priv,
 			       unsigned int flags)
 {
-	BCI_LOCALS;
 	uint16_t count;
+	BCI_LOCALS;
 
 	if (dev_priv->status_ptr) {
 		/* coordinate with Xserver */
@@ -416,12 +416,12 @@ uint32_t *savage_dma_alloc(drm_savage_private_t *dev_priv, unsigned int n)
 
 static void savage_dma_flush(drm_savage_private_t *dev_priv)
 {
-	BCI_LOCALS;
 	unsigned int first = dev_priv->first_dma_page;
 	unsigned int cur = dev_priv->current_dma_page;
 	uint16_t event;
 	unsigned int wrap, pad, align, len, i;
 	unsigned long phys_addr;
+	BCI_LOCALS;
 
 	if (first == cur &&
 	    dev_priv->dma_pages[cur].used == dev_priv->dma_pages[cur].flushed)
@@ -501,8 +501,9 @@ static void savage_dma_flush(drm_savage_private_t *dev_priv)
 
 static void savage_fake_dma_flush(drm_savage_private_t *dev_priv)
 {
-	BCI_LOCALS;
 	unsigned int i, j;
+	BCI_LOCALS;
+
 	if (dev_priv->first_dma_page == dev_priv->current_dma_page &&
 	    dev_priv->dma_pages[dev_priv->current_dma_page].used == 0)
 		return;

@@ -194,12 +194,12 @@ static int savage_dispatch_state(drm_savage_private_t *dev_priv,
 				 const drm_savage_cmd_header_t *cmd_header,
 				 const uint32_t __user *regs)
 {
-	DMA_LOCALS;
 	unsigned int count = cmd_header->state.count;
 	unsigned int start = cmd_header->state.start;
 	unsigned int count2 = 0;
 	unsigned int bci_size;
 	int ret;
+	DMA_LOCALS;
 
 	if (!count)
 		return 0;
@@ -277,13 +277,13 @@ static int savage_dispatch_dma_prim(drm_savage_private_t *dev_priv,
 				    const drm_savage_cmd_header_t *cmd_header,
 				    const drm_buf_t *dmabuf)
 {
-	BCI_LOCALS;
 	unsigned char reorder = 0;
 	unsigned int prim = cmd_header->prim.prim;
 	unsigned int skip = cmd_header->prim.skip;
 	unsigned int n = cmd_header->prim.count;
 	unsigned int start = cmd_header->prim.start;
 	unsigned int i;
+	BCI_LOCALS;
 
 	if (!dmabuf) {
 	    DRM_ERROR("called without dma buffers!\n");
@@ -419,7 +419,6 @@ static int savage_dispatch_vb_prim(drm_savage_private_t *dev_priv,
 				   unsigned int vb_size,
 				   unsigned int vb_stride)
 {
-	DMA_LOCALS;
 	unsigned char reorder = 0;
 	unsigned int prim = cmd_header->prim.prim;
 	unsigned int skip = cmd_header->prim.skip;
@@ -427,6 +426,7 @@ static int savage_dispatch_vb_prim(drm_savage_private_t *dev_priv,
 	unsigned int start = cmd_header->prim.start;
 	unsigned int vtx_size;
 	unsigned int i;
+	DMA_LOCALS;
 
 	if (!n)
 		return 0;
@@ -538,12 +538,12 @@ static int savage_dispatch_dma_idx(drm_savage_private_t *dev_priv,
 				   const uint16_t __user *usr_idx,
 				   const drm_buf_t *dmabuf)
 {
-	BCI_LOCALS;
 	unsigned char reorder = 0;
 	unsigned int prim = cmd_header->idx.prim;
 	unsigned int skip = cmd_header->idx.skip;
 	unsigned int n = cmd_header->idx.count;
 	unsigned int i;
+	BCI_LOCALS;
 
 	if (!dmabuf) {
 	    DRM_ERROR("called without dma buffers!\n");
@@ -686,13 +686,13 @@ static int savage_dispatch_vb_idx(drm_savage_private_t *dev_priv,
 				  unsigned int vb_size,
 				  unsigned int vb_stride)
 {
-	DMA_LOCALS;
 	unsigned char reorder = 0;
 	unsigned int prim = cmd_header->idx.prim;
 	unsigned int skip = cmd_header->idx.skip;
 	unsigned int n = cmd_header->idx.count;
 	unsigned int vtx_size;
 	unsigned int i;
+	DMA_LOCALS;
 
 	if (!n)
 		return 0;
@@ -806,10 +806,10 @@ static int savage_dispatch_clear(drm_savage_private_t *dev_priv,
 				 unsigned int nbox,
 				 const drm_clip_rect_t __user *usr_boxes)
 {
-	DMA_LOCALS;
 	unsigned int flags = cmd_header->clear0.flags, mask, value;
 	unsigned int clear_cmd;
 	unsigned int i, nbufs;
+	DMA_LOCALS;
 
 	if (nbox == 0)
 		return 0;
@@ -884,9 +884,9 @@ static int savage_dispatch_swap(drm_savage_private_t *dev_priv,
 				unsigned int nbox,
 				const drm_clip_rect_t __user *usr_boxes)
 {
-	DMA_LOCALS;
 	unsigned int swap_cmd;
 	unsigned int i;
+	DMA_LOCALS;
 
 	if (nbox == 0)
 		return 0;
