@@ -53,6 +53,9 @@
 static void __exit drm_cleanup(drm_device_t * dev);
 int drm_fb_loaded = 0;
 
+static int drm_version(struct inode *inode, struct file *filp,
+		unsigned int cmd, unsigned long arg);
+
 /** Ioctl table */
 drm_ioctl_desc_t drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)] = {drm_version, 0, 0},
@@ -552,7 +555,7 @@ module_exit(drm_core_exit);
  *
  * Fills in the version information in \p arg.
  */
-int drm_version(struct inode *inode, struct file *filp,
+static int drm_version(struct inode *inode, struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;

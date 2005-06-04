@@ -134,6 +134,68 @@ error_out_unreg:
 }
 
 /**
+ * Get a secondary minor number.
+ *
+ * \param dev device data structure
+ * \param sec-minor structure to hold the assigned minor
+ * \return negative number on failure.
+ *
+ * Search an empty entry and initialize it to the given parameters, and
+ * create the proc init entry via proc_init(). This routines assigns
+ * minor numbers to secondary heads of multi-headed cards
+ */
+static int drm_get_head(drm_device_t * dev, drm_head_t * head)
+{
+	drm_head_t **heads = drm_heads;
+	int ret;
+	int minor;
+
+	DRM_DEBUG("\n");
+
+	for (minor = 0; minor < cards_limit; minor++, heads++) {
+		if (!*heads) {
+
+			*head = (drm_head_t) {
+				.dev = dev,
+				.device = MKDEV(DRM_MAJOR, minor),
+				.minor = minor,
+			};
+			if ((ret =
+			     drm_proc_init(dev, minor, drm_proc_root,
+					   &head->dev_root))) {
+				printk(KERN_ERR
+				       "DRM: Failed to initialize /proc/dri.\n");
+				goto err_g1;
+			}
+
+			head->dev_class = drm_sysfs_device_add(drm_class,
+							 MKDEV(DRM_MAJOR,
+							       minor),
+							 DRM_PCI_DEV(dev->pdev),
+							 "card%d", minor);
+			if (IS_ERR(head->dev_class)) {
+				printk(KERN_ERR
+				       "DRM: Error sysfs_device_add.\n");
+				ret = PTR_ERR(head->dev_class);
+				goto err_g2;
+			}
+			*heads = head;
+
+			DRM_DEBUG("new minor assigned %d\n", minor);
+			return 0;
+		}
+	}
+	DRM_ERROR("out of minors\n");
+	return -ENOMEM;
+err_g2:
+	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
+err_g1:
+	*head = (drm_head_t) {
+		.dev = NULL};
+	return ret;
+}
+
+/**
  * Register.
  *
  * \param pdev - PCI device structure
@@ -186,67 +248,6 @@ err_g1:
 }
 EXPORT_SYMBOL(drm_get_dev);
 
-/**
- * Get a secondary minor number.
- *
- * \param dev device data structure
- * \param sec-minor structure to hold the assigned minor
- * \return negative number on failure.
- *
- * Search an empty entry and initialize it to the given parameters, and
- * create the proc init entry via proc_init(). This routines assigns
- * minor numbers to secondary heads of multi-headed cards
- */
-int drm_get_head(drm_device_t * dev, drm_head_t * head)
-{
-	drm_head_t **heads = drm_heads;
-	int ret;
-	int minor;
-
-	DRM_DEBUG("\n");
-
-	for (minor = 0; minor < cards_limit; minor++, heads++) {
-		if (!*heads) {
-
-			*head = (drm_head_t) {
-				.dev = dev,
-				.device = MKDEV(DRM_MAJOR, minor),
-				.minor = minor,
-			};
-			if ((ret =
-			     drm_proc_init(dev, minor, drm_proc_root,
-					   &head->dev_root))) {
-				printk(KERN_ERR
-				       "DRM: Failed to initialize /proc/dri.\n");
-				goto err_g1;
-			}
-
-			head->dev_class = drm_sysfs_device_add(drm_class,
-							 MKDEV(DRM_MAJOR,
-							       minor),
-							 DRM_PCI_DEV(dev->pdev),
-							 "card%d", minor);
-			if (IS_ERR(head->dev_class)) {
-				printk(KERN_ERR
-				       "DRM: Error sysfs_device_add.\n");
-				ret = PTR_ERR(head->dev_class);
-				goto err_g2;
-			}
-			*heads = head;
-
-			DRM_DEBUG("new minor assigned %d\n", minor);
-			return 0;
-		}
-	}
-	DRM_ERROR("out of minors\n");
-	return -ENOMEM;
-err_g2:
-	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
-err_g1:
-	*head = (drm_head_t) {
-		.dev = NULL};
-	return ret;
-}
 
 /**
  * Put a device minor number.

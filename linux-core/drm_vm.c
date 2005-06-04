@@ -38,6 +38,9 @@
 #include <linux/efi.h>
 #endif
 
+static void drm_vm_close(struct vm_area_struct *vma);
+static void drm_vm_open(struct vm_area_struct *vma);
+
 /**
  * \c nopage method for AGP virtual memory.
  *
@@ -172,7 +175,7 @@ static __inline__ struct page *drm_do_vm_shm_nopage(struct vm_area_struct *vma,
  * Deletes map information if we are the last
  * person to close a mapping and it's not in the global maplist.
  */
-void drm_vm_shm_close(struct vm_area_struct *vma)
+static void drm_vm_shm_close(struct vm_area_struct *vma)
 {
 	drm_file_t *priv = vma->vm_file->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -422,7 +425,7 @@ static struct vm_operations_struct drm_vm_sg_ops = {
  * Create a new drm_vma_entry structure as the \p vma private data entry and
  * add it to drm_device::vmalist.
  */
-void drm_vm_open(struct vm_area_struct *vma)
+static void drm_vm_open(struct vm_area_struct *vma)
 {
 	drm_file_t *priv = vma->vm_file->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -451,7 +454,7 @@ void drm_vm_open(struct vm_area_struct *vma)
  * Search the \p vma private data entry in drm_device::vmalist, unlink it, and
  * free it.
  */
-void drm_vm_close(struct vm_area_struct *vma)
+static void drm_vm_close(struct vm_area_struct *vma)
 {
 	drm_file_t *priv = vma->vm_file->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -486,7 +489,7 @@ void drm_vm_close(struct vm_area_struct *vma)
  * Sets the virtual memory area operations structure to vm_dma_ops, the file
  * pointer, and calls vm_open().
  */
-int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
+static int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev;

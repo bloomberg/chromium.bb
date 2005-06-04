@@ -37,6 +37,8 @@
 #include "drmP.h"
 #include <linux/poll.h>
 
+static int drm_open_helper(struct inode *inode, struct file *filp, drm_device_t * dev);
+
 static int drm_setup(drm_device_t * dev)
 {
 	int i;
@@ -218,7 +220,7 @@ static int drm_cpu_valid(void)
  * Creates and initializes a drm_file structure for the file private data in \p
  * filp and add it into the double linked list in \p dev.
  */
-int drm_open_helper(struct inode *inode, struct file *filp, drm_device_t * dev)
+static int drm_open_helper(struct inode *inode, struct file *filp, drm_device_t * dev)
 {
 	int minor = iminor(inode);
 	drm_file_t *priv;

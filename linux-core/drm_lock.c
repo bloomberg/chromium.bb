@@ -35,6 +35,10 @@
 
 #include "drmP.h"
 
+static int drm_lock_transfer(drm_device_t * dev,
+		      __volatile__ unsigned int *lock, unsigned int context);
+static int drm_notifier(void *priv);
+
 /**
  * Lock ioctl.
  *
@@ -224,7 +228,7 @@ int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
  * Resets the lock file pointer.
  * Marks the lock as held by the given context, via the \p cmpxchg instruction.
  */
-int drm_lock_transfer(drm_device_t * dev,
+static int drm_lock_transfer(drm_device_t * dev,
 		      __volatile__ unsigned int *lock, unsigned int context)
 {
 	unsigned int old, new, prev;
@@ -280,7 +284,7 @@ int drm_lock_free(drm_device_t * dev,
  * \return one if the signal should be delivered normally, or zero if the
  * signal should be blocked.
  */
-int drm_notifier(void *priv)
+static int drm_notifier(void *priv)
 {
 	drm_sigdata_t *s = (drm_sigdata_t *) priv;
 	unsigned int old, new, prev;
