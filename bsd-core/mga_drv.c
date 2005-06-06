@@ -141,5 +141,10 @@ DRIVER_MODULE(mga, pci, mga_driver, drm_devclass, 0, 0);
 MODULE_DEPEND(mga, drm, 1, 1, 1);
 
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
+#ifdef _LKM
 CFDRIVER_DECL(mga, DV_TTY, NULL);
+#else
+CFATTACH_DECL(mga, sizeof(drm_device_t), drm_probe, drm_attach, drm_detach,
+    drm_activate);
+#endif
 #endif

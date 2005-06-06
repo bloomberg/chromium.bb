@@ -97,5 +97,10 @@ DRIVER_MODULE(tdfx, pci, tdfx_driver, drm_devclass, 0, 0);
 MODULE_DEPEND(tdfx, drm, 1, 1, 1);
 
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
+#ifdef _LKM
 CFDRIVER_DECL(tdfx, DV_TTY, NULL);
+#else
+CFATTACH_DECL(tdfx, sizeof(drm_device_t), drm_probe, drm_attach, drm_detach,
+    drm_activate);
+#endif
 #endif

@@ -202,7 +202,7 @@ MOD_DEV("drm", LM_DT_CHAR, CDEV_MAJOR, &drm_cdevsw);
 int drm_lkmentry(struct lkm_table *lkmtp, int cmd, int ver);
 static int drm_lkmhandle(struct lkm_table *lkmtp, int cmd);
 
-int drm_modprobe();
+int drm_modprobe(void);
 int drm_probe(struct pci_attach_args *pa);
 void drm_attach(struct pci_attach_args *pa, dev_t kdev);
 
@@ -212,10 +212,7 @@ int drm_lkmentry(struct lkm_table *lkmtp, int cmd, int ver) {
 
 static int drm_lkmhandle(struct lkm_table *lkmtp, int cmd)
 {
-	int j, error = 0;
-#if defined(__NetBSD__) && (__NetBSD_Version__ > 106080000)
-	struct lkm_dev *args = lkmtp->private.lkm_dev;
-#endif
+	int error = 0;
 
 	switch(cmd) {
 	case LKM_E_LOAD:
@@ -242,7 +239,8 @@ static int drm_lkmhandle(struct lkm_table *lkmtp, int cmd)
 	return error;
 }
 
-int drm_modprobe() {
+int drm_modprobe(void)
+{
 	struct pci_attach_args pa;
 	int error;
 
@@ -278,6 +276,13 @@ void drm_attach(struct pci_attach_args *pa, dev_t kdev,
 
 	memset(dev, 0, sizeof(drm_device_t));
 	memcpy(&dev->pa, pa, sizeof(dev->pa));
+
+	dev->irq = pa->pa_intrline;
+	dev->pci_domain = 0;
+	dev->pci_bus = pa->pa_bus;
+	dev->pci_slot = pa->pa_device;
+	dev->pci_func = pa->pa_function;
+	dev->dma_tag = pa->pa_dmat;
 
 	DRM_INFO("%s", drm_find_description(PCI_VENDOR(pa->pa_id), PCI_PRODUCT(pa->pa_id), idlist));
 	drm_init(dev);

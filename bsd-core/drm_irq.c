@@ -69,6 +69,9 @@ drm_irq_handler_wrap(DRM_IRQ_ARGS)
 int drm_irq_install(drm_device_t *dev)
 {
 	int retcode;
+#ifdef __NetBSD__
+	pci_intr_handle_t ih;
+#endif
 
 	if (dev->irq == 0 || dev->dev_private == NULL)
 		return DRM_ERR(EINVAL);
@@ -109,12 +112,12 @@ int drm_irq_install(drm_device_t *dev)
 	if (retcode != 0)
 		goto err;
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
-	if (pci_intr_map(&dev->pa, &dev->ih) != 0) {
+	if (pci_intr_map(&dev->pa, &ih) != 0) {
 		retcode = ENOENT;
 		goto err;
 	}
-	dev->irqh = pci_intr_establish(&dev->pa.pa_pc, dev->ih, IPL_TTY,
-	    (irqreturn_t (*)(DRM_IRQ_ARGS))dev->irq_handler, dev);
+	dev->irqh = pci_intr_establish(&dev->pa.pa_pc, ih, IPL_TTY,
+	    (irqreturn_t (*)(void *))dev->irq_handler, dev);
 	if (!dev->irqh) {
 		retcode = ENOENT;
 		goto err;
@@ -144,14 +147,18 @@ err:
 
 int drm_irq_uninstall(drm_device_t *dev)
 {
+#ifdef __FreeBSD__
 	int irqrid;
+#endif
 
 	if (!dev->irq_enabled)
 		return DRM_ERR(EINVAL);
 
 	dev->irq_enabled = 0;
+#ifdef __FreeBSD__
 	irqrid = dev->irqrid;
 	dev->irqrid = 0;
+#endif
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 

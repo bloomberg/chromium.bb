@@ -113,5 +113,10 @@ DRIVER_MODULE(r128, pci, r128_driver, drm_devclass, 0, 0);
 MODULE_DEPEND(r128, drm, 1, 1, 1);
 
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
+#ifdef _LKM
 CFDRIVER_DECL(r128, DV_TTY, NULL);
+#else
+CFATTACH_DECL(r128, sizeof(drm_device_t), drm_probe, drm_attach, drm_detach,
+    drm_activate);
+#endif
 #endif

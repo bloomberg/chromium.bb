@@ -115,5 +115,10 @@ DRIVER_MODULE(radeon, pci, radeon_driver, drm_devclass, 0, 0);
 MODULE_DEPEND(radeon, drm, 1, 1, 1);
 
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
+#ifdef _LKM
 CFDRIVER_DECL(radeon, DV_TTY, NULL);
+#else
+CFATTACH_DECL(radeon, sizeof(drm_device_t), drm_probe, drm_attach, drm_detach,
+    drm_activate);
+#endif
 #endif /* __FreeBSD__ */

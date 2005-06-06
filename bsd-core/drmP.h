@@ -723,7 +723,6 @@ struct drm_device {
 	struct resource   *irqr;	/* Resource for interrupt used by board	   */
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
 	struct pci_attach_args  pa;
-	pci_intr_handle_t	ih;
 #endif
 	void		  *irqh;	/* Handle from bus_setup_intr      */
 

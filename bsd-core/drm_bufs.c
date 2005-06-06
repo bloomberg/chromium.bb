@@ -927,7 +927,8 @@ int drm_mapbufs(DRM_IOCTL_ARGS)
 	vm_offset_t vaddr;
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
 	struct vnode *vn;
-	vm_size_t size;
+	voff_t foff;
+	vsize_t size;
 	vaddr_t vaddr;
 #endif /* __NetBSD__ || __OpenBSD__ */
 
