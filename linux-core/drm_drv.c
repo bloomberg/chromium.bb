@@ -314,8 +314,6 @@ int drm_init(struct drm_driver *driver,
 
 	DRM_DEBUG("\n");
 
-	drm_mem_init();
-
 	for (i = 0; (pciidlist[i].vendor != 0) && !drm_fb_loaded; i++) {
 		pid = &pciidlist[i];
 
@@ -517,6 +515,8 @@ static int __init drm_core_init(void)
 		ret = -1;
 		goto err_p3;
 	}
+
+	drm_mem_init();
 
 	DRM_INFO("Initialized %s %d.%d.%d %s\n",
 		 CORE_NAME,
