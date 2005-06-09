@@ -83,6 +83,7 @@ static struct drm_driver driver = {
 	    DRIVER_IRQ_VBL,
 	.preinit = mga_driver_preinit,
 	.postcleanup = mga_driver_postcleanup,
+	.pretakedown = mga_driver_pretakedown,
 	.dma_quiescent = mga_driver_dma_quiescent,
 	.device_is_agp = mga_driver_device_is_agp,
 	.vblank_wait = mga_driver_vblank_wait,

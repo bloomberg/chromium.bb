@@ -60,6 +60,7 @@ static void mga_configure(drm_device_t *dev)
 	dev->irq_uninstall = mga_driver_irq_uninstall;
 	dev->irq_handler = mga_driver_irq_handler;
 	dev->dma_ioctl = mga_dma_buffers;
+	dev->pretakedown = mga_driver_pretakedown;
 	dev->dma_quiescent = mga_driver_dma_quiescent;
 
 	dev->device_is_agp = mga_driver_device_is_agp;

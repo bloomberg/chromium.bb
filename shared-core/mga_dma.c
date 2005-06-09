@@ -440,38 +440,32 @@ static int mga_do_init_dma(drm_device_t * dev, drm_mga_init_t * init)
 
 	if (!dev_priv->sarea) {
 		DRM_ERROR("failed to find sarea!\n");
-		mga_do_cleanup_dma(dev);
 		return DRM_ERR(EINVAL);
 	}
 
 	dev_priv->mmio = drm_core_findmap(dev, init->mmio_offset);
 	if (!dev_priv->mmio) {
 		DRM_ERROR("failed to find mmio region!\n");
-		mga_do_cleanup_dma(dev);
 		return DRM_ERR(EINVAL);
 	}
 	dev_priv->status = drm_core_findmap(dev, init->status_offset);
 	if (!dev_priv->status) {
 		DRM_ERROR("failed to find status page!\n");
-		mga_do_cleanup_dma(dev);
 		return DRM_ERR(EINVAL);
 	}
 	dev_priv->warp = drm_core_findmap(dev, init->warp_offset);
 	if (!dev_priv->warp) {
 		DRM_ERROR("failed to find warp microcode region!\n");
-		mga_do_cleanup_dma(dev);
 		return DRM_ERR(EINVAL);
 	}
 	dev_priv->primary = drm_core_findmap(dev, init->primary_offset);
 	if (!dev_priv->primary) {
 		DRM_ERROR("failed to find primary dma region!\n");
-		mga_do_cleanup_dma(dev);
 		return DRM_ERR(EINVAL);
 	}
 	dev->agp_buffer_map = drm_core_findmap(dev, init->buffers_offset);
 	if (!dev->agp_buffer_map) {
 		DRM_ERROR("failed to find dma buffer region!\n");
-		mga_do_cleanup_dma(dev);
 		return DRM_ERR(EINVAL);
 	}
 
@@ -486,21 +480,18 @@ static int mga_do_init_dma(drm_device_t * dev, drm_mga_init_t * init)
 	if (!dev_priv->warp->handle ||
 	    !dev_priv->primary->handle || !dev->agp_buffer_map->handle) {
 		DRM_ERROR("failed to ioremap agp regions!\n");
-		mga_do_cleanup_dma(dev);
 		return DRM_ERR(ENOMEM);
 	}
 
 	ret = mga_warp_install_microcode(dev_priv);
 	if (ret < 0) {
 		DRM_ERROR("failed to install WARP ucode!\n");
-		mga_do_cleanup_dma(dev);
 		return ret;
 	}
 
 	ret = mga_warp_init(dev_priv);
 	if (ret < 0) {
 		DRM_ERROR("failed to init WARP engine!\n");
-		mga_do_cleanup_dma(dev);
 		return ret;
 	}
 
@@ -539,7 +530,6 @@ static int mga_do_init_dma(drm_device_t * dev, drm_mga_init_t * init)
 
 	if (mga_freelist_init(dev, dev_priv) < 0) {
 		DRM_ERROR("could not initialize freelist\n");
-		mga_do_cleanup_dma(dev);
 		return DRM_ERR(ENOMEM);
 	}
 
@@ -564,10 +554,20 @@ static int mga_do_cleanup_dma(drm_device_t * dev)
 			drm_core_ioremapfree(dev_priv->warp, dev);
 		if (dev_priv->primary != NULL)
 			drm_core_ioremapfree(dev_priv->primary, dev);
-		if (dev->agp_buffer_map != NULL) {
+		if (dev->agp_buffer_map != NULL)
 			drm_core_ioremapfree(dev->agp_buffer_map, dev);
-			dev->agp_buffer_map = NULL;
-		}
+
+		dev_priv->warp = NULL;
+		dev_priv->primary = NULL;
+		dev_priv->mmio = NULL;
+		dev_priv->status = NULL;
+		dev_priv->sarea = NULL;
+		dev_priv->sarea_priv = NULL;
+		dev->agp_buffer_map = NULL;
+
+		memset(&dev_priv->prim, 0, sizeof(dev_priv->prim));
+		dev_priv->warp_pipe = 0;
+		memset(dev_priv->warp_pipe_phys, 0, sizeof(dev_priv->warp_pipe_phys));
 
 		if (dev_priv->head != NULL) {
 			mga_freelist_cleanup(dev);
@@ -581,6 +581,7 @@ int mga_dma_init(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_mga_init_t init;
+	int err;
 
 	LOCK_TEST_WITH_RETURN(dev, filp);
 
@@ -589,7 +590,11 @@ int mga_dma_init(DRM_IOCTL_ARGS)
 
 	switch (init.func) {
 	case MGA_INIT_DMA:
-		return mga_do_init_dma(dev, &init);
+		err = mga_do_init_dma(dev, &init);
+		if (err) {
+			(void) mga_do_cleanup_dma(dev);
+		}
+		return err;
 	case MGA_CLEANUP_DMA:
 		return mga_do_cleanup_dma(dev);
 	}
@@ -717,19 +722,23 @@ int mga_dma_buffers(DRM_IOCTL_ARGS)
 	return ret;
 }
 
+/**
+ * Called just before the module is unloaded.
+ */
 int mga_driver_postcleanup(drm_device_t * dev)
 {
-	int err;
-	
-	
-	err = mga_do_cleanup_dma(dev);
-	if (!err) {
-		drm_free(dev->dev_private, sizeof(drm_mga_private_t),
-			 DRM_MEM_DRIVER);
-		dev->dev_private = NULL;
-	}
+	drm_free(dev->dev_private, sizeof(drm_mga_private_t), DRM_MEM_DRIVER);
+	dev->dev_private = NULL;
 
-	return err;
+	return 0;
+}
+
+/**
+ * Called when the last opener of the device is closed.
+ */
+void mga_driver_pretakedown(drm_device_t * dev)
+{
+	mga_do_cleanup_dma(dev);
 }
 
 int mga_driver_dma_quiescent(drm_device_t * dev)

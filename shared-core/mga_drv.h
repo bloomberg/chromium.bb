@@ -38,11 +38,11 @@
 
 #define DRIVER_NAME		"mga"
 #define DRIVER_DESC		"Matrox G200/G400"
-#define DRIVER_DATE		"20050520"
+#define DRIVER_DATE		"20050606"
 
 #define DRIVER_MAJOR		3
 #define DRIVER_MINOR		1
-#define DRIVER_PATCHLEVEL	2
+#define DRIVER_PATCHLEVEL	3
 
 typedef struct drm_mga_primary_buffer {
 	u8 *start;
@@ -108,7 +108,6 @@ typedef struct drm_mga_private {
 	drm_local_map_t *status;
 	drm_local_map_t *warp;
 	drm_local_map_t *primary;
-	drm_local_map_t *buffers;
 	drm_local_map_t *agp_textures;
 } drm_mga_private_t;
 
@@ -119,6 +118,7 @@ extern int mga_dma_flush(DRM_IOCTL_ARGS);
 extern int mga_dma_reset(DRM_IOCTL_ARGS);
 extern int mga_dma_buffers(DRM_IOCTL_ARGS);
 extern int mga_driver_postcleanup(drm_device_t * dev);
+extern void mga_driver_pretakedown(drm_device_t * dev);
 extern int mga_driver_dma_quiescent(drm_device_t * dev);
 
 extern int mga_do_wait_for_idle(drm_mga_private_t * dev_priv);
