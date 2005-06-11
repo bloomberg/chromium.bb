@@ -439,7 +439,11 @@ typedef struct drm_buf_pub {
  */
 typedef struct drm_buf_map {
 	int count;		/**< Length of the buffer list */
+#if defined(__cplusplus)
+	void __user *c_virtual;
+#else
 	void __user *virtual;		/**< Mmap'd area in user-virtual */
+#endif
 	drm_buf_pub_t __user *list;	/**< Buffer information */
 } drm_buf_map_t;
 
