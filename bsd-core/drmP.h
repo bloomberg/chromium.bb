@@ -848,7 +848,7 @@ void	drm_vbl_send_signals(drm_device_t *dev);
 int	drm_device_is_agp(drm_device_t *dev);
 drm_agp_head_t *drm_agp_init(void);
 void	drm_agp_uninit(void);
-void	drm_agp_do_release(void);
+int	drm_agp_release(drm_device_t *dev);
 void	*drm_agp_allocate_memory(size_t pages, u32 type);
 int	drm_agp_free_memory(void *handle);
 int	drm_agp_bind_memory(void *handle, off_t start);
@@ -921,7 +921,7 @@ int	drm_wait_vblank(DRM_IOCTL_ARGS);
 
 /* AGP/GART support (drm_agpsupport.c) */
 int	drm_agp_acquire(DRM_IOCTL_ARGS);
-int	drm_agp_release(DRM_IOCTL_ARGS);
+int	drm_agp_release_ioctl(DRM_IOCTL_ARGS);
 int	drm_agp_enable(DRM_IOCTL_ARGS);
 int	drm_agp_info(DRM_IOCTL_ARGS);
 int	drm_agp_alloc(DRM_IOCTL_ARGS);

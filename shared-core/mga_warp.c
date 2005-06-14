@@ -80,6 +80,7 @@ unsigned int mga_warp_microcode_size(const drm_mga_private_t * dev_priv)
 {
 	switch (dev_priv->chipset) {
 	case MGA_CARD_TYPE_G400:
+	case MGA_CARD_TYPE_G550:
 		return PAGE_ALIGN(mga_warp_g400_microcode_size);
 	case MGA_CARD_TYPE_G200:
 		return PAGE_ALIGN(mga_warp_g200_microcode_size);
@@ -148,6 +149,7 @@ int mga_warp_install_microcode(drm_mga_private_t * dev_priv)
 
 	switch (dev_priv->chipset) {
 	case MGA_CARD_TYPE_G400:
+	case MGA_CARD_TYPE_G550:
 		return mga_warp_install_g400_microcode(dev_priv);
 	case MGA_CARD_TYPE_G200:
 		return mga_warp_install_g200_microcode(dev_priv);
@@ -166,6 +168,7 @@ int mga_warp_init(drm_mga_private_t * dev_priv)
 	 */
 	switch (dev_priv->chipset) {
 	case MGA_CARD_TYPE_G400:
+	case MGA_CARD_TYPE_G550:
 		MGA_WRITE(MGA_WIADDR2, MGA_WMODE_SUSPEND);
 		MGA_WRITE(MGA_WGETMSB, 0x00000E00);
 		MGA_WRITE(MGA_WVRTXSZ, 0x00001807);

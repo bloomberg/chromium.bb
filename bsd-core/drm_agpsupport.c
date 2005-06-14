@@ -129,25 +129,20 @@ int drm_agp_acquire(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-int drm_agp_release(DRM_IOCTL_ARGS)
+int drm_agp_release_ioctl(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 
+	return drm_agp_release(dev);
+}
+
+void drm_agp_release(drm_device_t * dev)
+{
 	if (!dev->agp || !dev->agp->acquired)
 		return EINVAL;
 	agp_release(dev->agp->agpdev);
 	dev->agp->acquired = 0;
 	return 0;
-	
-}
-
-void drm_agp_do_release(void)
-{
-	device_t agpdev;
-
-	agpdev = DRM_AGP_FIND_DEVICE();
-	if (agpdev)
-		agp_release(agpdev);
 }
 
 int drm_agp_enable(DRM_IOCTL_ARGS)

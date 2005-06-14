@@ -72,8 +72,8 @@ drm_ioctl_desc_t drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)] = {drm_noop, 1, 1},
 	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)] = {drm_authmagic, 1, 1},
 
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)] = {drm_addmap, 1, 1},
-	[DRM_IOCTL_NR(DRM_IOCTL_RM_MAP)] = {drm_rmmap, 1, 0},
+	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)] = {drm_addmap_ioctl, 1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_RM_MAP)] = {drm_rmmap_ioctl, 1, 0},
 
 	[DRM_IOCTL_NR(DRM_IOCTL_SET_SAREA_CTX)] = {drm_setsareactx, 1, 1},
 	[DRM_IOCTL_NR(DRM_IOCTL_GET_SAREA_CTX)] = {drm_getsareactx, 1, 0},
@@ -105,10 +105,10 @@ drm_ioctl_desc_t drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_CONTROL)] = {drm_control, 1, 1},
 
 #if __OS_HAS_AGP
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)] = {drm_agp_acquire, 1, 1},
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)] = {drm_agp_release, 1, 1},
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)] = {drm_agp_enable, 1, 1},
-	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)] = {drm_agp_info, 1, 0},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ACQUIRE)] = {drm_agp_acquire_ioctl, 1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_RELEASE)] = {drm_agp_release_ioctl, 1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ENABLE)] = {drm_agp_enable_ioctl, 1, 1},
+	[DRM_IOCTL_NR(DRM_IOCTL_AGP_INFO)] = {drm_agp_info_ioctl, 1, 0},
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_ALLOC)] = {drm_agp_alloc, 1, 1},
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_FREE)] = {drm_agp_free, 1, 1},
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)] = {drm_agp_bind, 1, 1},
@@ -130,7 +130,7 @@ drm_ioctl_desc_t drm_ioctls[] = {
  *
  * Frees every resource in \p dev.
  *
- * \sa drm_device and setup().
+ * \sa drm_device
  */
 int drm_takedown(drm_device_t * dev)
 {
@@ -190,7 +190,7 @@ int drm_takedown(drm_device_t * dev)
 		dev->agp->memory = NULL;
 
 		if (dev->agp->acquired)
-			drm_agp_do_release(dev);
+			drm_agp_release(dev);
 
 		dev->agp->acquired = 0;
 		dev->agp->enabled = 0;
@@ -365,7 +365,7 @@ EXPORT_SYMBOL(drm_init);
  *
  * Cleans up all DRM device, calling takedown().
  *
- * \sa drm_init().
+ * \sa drm_init
  */
 static void __exit drm_cleanup(drm_device_t * dev)
 {

@@ -862,10 +862,17 @@ extern int drm_lock_free(drm_device_t * dev,
 			 __volatile__ unsigned int *lock, unsigned int context);
 
 				/* Buffer management support (drm_bufs.h) */
-extern int drm_addmap(struct inode *inode, struct file *filp,
-		      unsigned int cmd, unsigned long arg);
-extern int drm_rmmap(struct inode *inode, struct file *filp,
-		     unsigned int cmd, unsigned long arg);
+extern int drm_addbufs_agp(drm_device_t * dev, drm_buf_desc_t * request);
+extern int drm_addbufs_pci(drm_device_t * dev, drm_buf_desc_t * request);
+extern int drm_addbufs_fb (drm_device_t * dev, drm_buf_desc_t * request);
+extern int drm_addmap(drm_device_t * dev, unsigned int offset,
+		      unsigned int size, drm_map_type_t type,
+		      drm_map_flags_t flags, drm_map_t ** map_ptr);
+extern int drm_addmap_ioctl(struct inode *inode, struct file *filp,
+			    unsigned int cmd, unsigned long arg);
+extern int drm_rmmap(drm_device_t *dev, void *handle);
+extern int drm_rmmap_ioctl(struct inode *inode, struct file *filp,
+			   unsigned int cmd, unsigned long arg);
 extern int drm_initmap(drm_device_t * dev, unsigned int offset,
 		       unsigned int size, unsigned int resource, int type,
 		       int flags);
@@ -913,14 +920,17 @@ extern void drm_vbl_send_signals(drm_device_t * dev);
 
 				/* AGP/GART support (drm_agpsupport.h) */
 extern drm_agp_head_t *drm_agp_init(drm_device_t *dev);
-extern int drm_agp_acquire(struct inode *inode, struct file *filp,
+extern int drm_agp_acquire(drm_device_t * dev);
+extern int drm_agp_acquire_ioctl(struct inode *inode, struct file *filp,
 			   unsigned int cmd, unsigned long arg);
-extern void drm_agp_do_release(drm_device_t *dev);
-extern int drm_agp_release(struct inode *inode, struct file *filp,
+extern int drm_agp_release(drm_device_t *dev);
+extern int drm_agp_release_ioctl(struct inode *inode, struct file *filp,
 			   unsigned int cmd, unsigned long arg);
-extern int drm_agp_enable(struct inode *inode, struct file *filp,
+extern int drm_agp_enable(drm_device_t *dev, drm_agp_mode_t mode);
+extern int drm_agp_enable_ioctl(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg);
-extern int drm_agp_info(struct inode *inode, struct file *filp,
+extern int drm_agp_info(drm_device_t * dev, drm_agp_info_t *info);
+extern int drm_agp_info_ioctl(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
 extern int drm_agp_alloc(struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg);

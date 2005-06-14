@@ -40,6 +40,12 @@
 static int mga_driver_device_is_agp(drm_device_t * dev);
 static int postinit(struct drm_device *dev, unsigned long flags)
 {
+	drm_mga_private_t * const dev_priv =
+		(drm_mga_private_t *) dev->dev_private;
+
+	dev_priv->mmio_base = pci_resource_start(dev->pdev, 1);
+	dev_priv->mmio_size = pci_resource_len(dev->pdev, 1);
+
 	dev->counters += 3;
 	dev->types[6] = _DRM_STAT_IRQ;
 	dev->types[7] = _DRM_STAT_PRIMARY;
@@ -78,7 +84,7 @@ extern int mga_max_ioctl;
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =
-	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | DRIVER_USE_MTRR |
+	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA |
 	    DRIVER_HAVE_DMA | DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED |
 	    DRIVER_IRQ_VBL,
 	.preinit = mga_driver_preinit,
@@ -168,11 +174,6 @@ int mga_driver_device_is_agp(drm_device_t * dev)
 	if ( (pdev->device == 0x0525)
 	     && (pdev->bus->self->vendor == 0x3388)
 	     && (pdev->bus->self->device == 0x0021) ) {
-#if defined( __powerpc__ )
-		DRM_ERROR("GXT135p is not yet supported\n");
-#else
-		DRM_ERROR("PCI G450 is not yet supported\n");
-#endif
 		return 0;
 	}
 
