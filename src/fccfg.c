@@ -629,8 +629,10 @@ FcConfigCompareValue (const FcValue	left_o,
 		ret = FcStrStrIgnoreCase (left.u.s, right.u.s) != 0;
 		break;
 	    case FcOpNotEqual:
-	    case FcOpNotContains:
 		ret = FcStrCmpIgnoreCase (left.u.s, right.u.s) != 0;
+		break;
+	    case FcOpNotContains:
+		ret = FcStrStrIgnoreCase (left.u.s, right.u.s) == 0;
 		break;
 	    default:
 		break;

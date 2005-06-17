@@ -1,3 +1,11 @@
+2005-06-16  Patrick Lam <plam@MIT.EDU>
+
+	reviewed by: keithp
+
+	* src/fccfg.c: (FcConfigCompareValue):
+	Make FcOpNotContains use FcStrStr for strings so that
+	it matches semantics for !FcOpContains.
+
 2005-05-20  Keith Packard  <keithp@keithp.com>
 
 	* debian/changelog:
