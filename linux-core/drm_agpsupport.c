@@ -251,17 +251,10 @@ int drm_agp_alloc(struct inode *inode, struct file *filp,
 
 	pages = (request.size + PAGE_SIZE - 1) / PAGE_SIZE;
 	type = (u32) request.type;
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-	if (!(memory = drm_alloc_agp(pages, type))) {
+	if (!(memory = drm_alloc_agp(dev, pages, type))) {
 		drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
 		return -ENOMEM;
 	}
-#else
-	if (!(memory = drm_alloc_agp(dev->agp->bridge, pages, type))) {
-		drm_free(entry, sizeof(*entry), DRM_MEM_AGPLISTS);
-		return -ENOMEM;
-	}
-#endif
 
 	entry->handle = (unsigned long)memory->key + 1;
 	entry->memory = memory;

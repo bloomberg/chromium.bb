@@ -152,14 +152,14 @@ void drm_free_pages(unsigned long address, int order, int area)
 #if __OS_HAS_AGP
 /** Wrapper around agp_allocate_memory() */
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-DRM_AGP_MEM *drm_alloc_agp(int pages, u32 type)
+DRM_AGP_MEM *drm_alloc_agp(drm_device_t *dev, int pages, u32 type)
 {
 	return drm_agp_allocate_memory(pages, type);
 }
 #else
-DRM_AGP_MEM *drm_alloc_agp(struct agp_bridge_data *bridge, int pages, u32 type)
+DRM_AGP_MEM *drm_alloc_agp(drm_device_t *dev, int pages, u32 type)
 {
-	return drm_agp_allocate_memory(bridge, pages, type);
+	return drm_agp_allocate_memory(dev->agp->bridge, pages, type);
 }
 #endif
 EXPORT_SYMBOL(drm_alloc_agp);

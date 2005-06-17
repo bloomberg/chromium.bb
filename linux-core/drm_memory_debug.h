@@ -346,7 +346,7 @@ void drm_ioremapfree (void *pt, unsigned long size, drm_device_t * dev) {
 
 #if __OS_HAS_AGP
 
-DRM_AGP_MEM *drm_alloc_agp (int pages, u32 type) {
+DRM_AGP_MEM *drm_alloc_agp (drm_device_t *dev, int pages, u32 type) {
 	DRM_AGP_MEM *handle;
 
 	if (!pages) {

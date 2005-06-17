@@ -475,7 +475,7 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 
 	/* Allocate and bind AGP memory. */
 	dev_priv->agp_pages = agp_size / PAGE_SIZE;
-	dev_priv->agp_mem = drm_alloc_agp( dev_priv->agp_pages, 0 );
+	dev_priv->agp_mem = drm_alloc_agp( dev, dev_priv->agp_pages, 0 );
 	if (dev_priv->agp_mem == NULL) {
 		dev_priv->agp_pages = 0;
 		DRM_ERROR("Unable to allocate %uMB AGP memory\n",
