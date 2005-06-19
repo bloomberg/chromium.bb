@@ -31,10 +31,6 @@
 #ifndef __RADEON_DRV_H__
 #define __RADEON_DRV_H__
 
-#ifdef __linux__
-#include "radeon_i2c.h"
-#endif /* __linux__ */
-
 /* General customization:
  */
 
@@ -268,9 +264,6 @@ typedef struct drm_radeon_private {
 	/* starting from here on, data is preserved accross an open */
 	uint32_t flags;		/* see radeon_chip_flags */
 
-#ifdef __linux__
-	struct radeon_i2c_chan i2c[4];
-#endif /* __linux__ */
 } drm_radeon_private_t;
 
 typedef struct drm_radeon_buf_priv {

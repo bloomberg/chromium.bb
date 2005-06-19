@@ -2061,8 +2061,6 @@ int radeon_preinit(struct drm_device *dev, unsigned long flags)
 	    (dev_priv->mmio =
 	     drm_core_findmap(dev, pci_resource_start(dev->pdev, 2))))
 		return DRM_ERR(ENOMEM);
-
-	ret = radeon_create_i2c_busses(dev);
 #endif
 	return ret;
 }
@@ -2072,9 +2070,6 @@ int radeon_postcleanup(struct drm_device *dev)
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
 	DRM_DEBUG("\n");
-#if defined(__linux__)
-	radeon_delete_i2c_busses(dev);
-#endif
 	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
 
 	dev->dev_private = NULL;
