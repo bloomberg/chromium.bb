@@ -624,7 +624,7 @@ int savage_preinit(drm_device_t *dev, unsigned long chipset)
 	}
 
 	if ((ret = drm_initmap(dev, mmio_base, SAVAGE_MMIO_SIZE, 0,
-			       _DRM_REGISTERS, 0)))
+			       _DRM_REGISTERS, _DRM_READ_ONLY)))
 		return ret;
 	if (!(dev_priv->mmio = drm_core_findmap (dev, mmio_base)))
 		return DRM_ERR(ENOMEM);
