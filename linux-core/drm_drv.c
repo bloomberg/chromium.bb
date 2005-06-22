@@ -310,7 +310,7 @@ int drm_init(struct drm_driver *driver,
 {
 	struct pci_dev *pdev;
 	struct pci_device_id *pid;
-	int i;
+	int rc, i;
 
 	DRM_DEBUG("\n");
 
@@ -351,7 +351,10 @@ int drm_init(struct drm_driver *driver,
 					       pdev))) {
 				/* stealth mode requires a manual probe */
 				pci_dev_get(pdev);
-				drm_get_dev(pdev, &pciidlist[i], driver);
+				if ((rc = drm_get_dev(pdev, &pciidlist[i], driver))) {
+					pci_dev_put(pdev);
+					return rc;
+				}
 			}
 		}
 		DRM_INFO("Used old pci detect: framebuffer loaded\n");
@@ -437,9 +440,6 @@ static void __exit drm_cleanup(drm_device_t * dev)
 				  dev->agp->agp_info.aper_size * 1024 * 1024);
 		DRM_DEBUG("mtrr_del=%d\n", retval);
 	}
-
-	if (drm_fb_loaded)
-		drm_pm_cleanup();
 
 	if (drm_core_has_AGP(dev) && dev->agp) {
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
@@ -539,6 +539,7 @@ static void __exit drm_core_exit(void)
 	unregister_chrdev(DRM_MAJOR, "drm");
 
 	drm_free(drm_heads, sizeof(*drm_heads) * cards_limit, DRM_MEM_STUB);
+	drm_pm_exit();
 }
 
 module_init(drm_core_init);

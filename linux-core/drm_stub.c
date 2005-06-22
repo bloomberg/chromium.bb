@@ -67,9 +67,6 @@ static int fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 
 	dev->pdev = pdev;
 
-	if (drm_fb_loaded)
-		drm_pm_setup( dev );
-
 #ifdef __alpha__
 	dev->hose = pdev->sysdata;
 	dev->pci_domain = dev->hose->bus->number;
@@ -96,6 +93,10 @@ static int fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 	dev->types[5] = _DRM_STAT_UNLOCKS;
 
 	dev->driver = driver;
+
+	if (drm_fb_loaded)
+		if ((retcode = drm_pm_setup( dev )))
+			goto error_out_unreg;
 
 	if (dev->driver->preinit)
 		if ((retcode = dev->driver->preinit(dev, ent->driver_data)))

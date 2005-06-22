@@ -32,16 +32,16 @@
 #define __NO_VERSION__
 #include "drmP.h"
 
-
 #include <linux/device.h>
 #include <linux/sysdev.h>
+
 
 static int drm_suspend(struct sys_device *sysdev, u32 state)
 {
 	drm_device_t *dev = (drm_device_t *)sysdev;
-	
-	DRM_DEBUG("%s state=%d\n", __FUNCTION__, state);
-	
+
+	DRM_DEBUG("state=%d\n", state);
+
         if (dev->driver->power)
 		return dev->driver->power(dev, state);
 	else
@@ -51,15 +51,16 @@ static int drm_suspend(struct sys_device *sysdev, u32 state)
 static int drm_resume(struct sys_device *sysdev)
 {
 	drm_device_t *dev = (drm_device_t *)sysdev;
-	
-	DRM_DEBUG("%s\n", __FUNCTION__);
-	
+
+	DRM_DEBUG("\n");
+
         if (dev->driver->power)
 		return dev->driver->power(dev, 0);
 	else
 		return 0;
 }
 
+static int drm_sysdev_class_registered = 0;
 static struct sysdev_class drm_sysdev_class = {
 	set_kset_name("drm"),
 	.resume		= drm_resume,
@@ -75,21 +76,21 @@ static struct sysdev_class drm_sysdev_class = {
  */
 int drm_pm_setup(drm_device_t *dev)
 {
-	int error;
-	
-	DRM_DEBUG("%s\n", __FUNCTION__);
-	
+	int rc;
+
+	DRM_DEBUG("\n");
+
 	dev->sysdev.id = dev->primary.minor;
 	dev->sysdev.cls = &drm_sysdev_class;
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,4)
-	error = sys_device_register(&dev->sysdev);
+	rc = sys_device_register(&dev->sysdev);
 #else
-	error = sysdev_register(&dev->sysdev);
+	rc = sysdev_register(&dev->sysdev);
 #endif
-	if(!error)
+	if (!rc)
 		dev->sysdev_registered = 1;
-	return error;
+	return rc;
 }
 
 /**
@@ -99,28 +100,30 @@ int drm_pm_setup(drm_device_t *dev)
  */
 void drm_pm_takedown(drm_device_t *dev)
 {
-	DRM_DEBUG("%s\n", __FUNCTION__);
-	
+	DRM_DEBUG("\n");
+
 	if(dev->sysdev_registered) {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,4)
 		sys_device_unregister(&dev->sysdev);
 #else
 		sysdev_unregister(&dev->sysdev);
 #endif
-		dev->sysdev_registered = 0;
 	}
 }
 
 int drm_pm_init(void)
 {
-	DRM_DEBUG("%s\n", __FUNCTION__);
-	
-	return sysdev_class_register(&drm_sysdev_class);
+	int rc;
+	DRM_DEBUG("\n");
+	rc = sysdev_class_register(&drm_sysdev_class);
+	if (!rc)
+		drm_sysdev_class_registered = 1;
+	return rc;
 }
 
-void drm_pm_cleanup(void)
+void drm_pm_exit(void)
 {
-	DRM_DEBUG("%s\n", __FUNCTION__);
-	
-	sysdev_class_unregister(&drm_sysdev_class);
+	DRM_DEBUG("\n");
+	if (drm_sysdev_class_registered)
+		sysdev_class_unregister(&drm_sysdev_class);
 }
