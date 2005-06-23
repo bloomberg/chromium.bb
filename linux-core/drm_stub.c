@@ -225,7 +225,6 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		pci_enable_device(pdev);
 	}
 	if ((ret = fill_in_dev(dev, pdev, ent, driver))) {
-		printk(KERN_ERR "DRM: Fill_in_dev failed.\n");
 		goto err_g1;
 	}
 	if ((ret = drm_get_head(dev, &dev->primary)))
@@ -234,10 +233,12 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 	/* postinit is a required function to display the signon banner */
 	/* drivers add secondary heads here if needed */
 	if ((ret = dev->driver->postinit(dev, ent->driver_data)))
-		goto err_g1;
+		goto err_g2;
 
 	return 0;
 
+err_g2:
+	drm_put_head(&dev->primary);
 err_g1:
 	if (!drm_fb_loaded) {
 		pci_set_drvdata(pdev, NULL);
@@ -245,6 +246,7 @@ err_g1:
 		pci_disable_device(pdev);
 	}
 	drm_free(dev, sizeof(*dev), DRM_MEM_STUB);
+	printk(KERN_ERR "DRM: drm_get_dev failed.\n");
 	return ret;
 }
 EXPORT_SYMBOL(drm_get_dev);
