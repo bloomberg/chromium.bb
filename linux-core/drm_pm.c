@@ -38,7 +38,8 @@
 
 static int drm_suspend(struct sys_device *sysdev, u32 state)
 {
-	drm_device_t *dev = (drm_device_t *)sysdev;
+	struct drm_device *dev = 
+			container_of(sysdev, struct drm_device, sysdev);
 
 	DRM_DEBUG("state=%d\n", state);
 
@@ -50,7 +51,8 @@ static int drm_suspend(struct sys_device *sysdev, u32 state)
 
 static int drm_resume(struct sys_device *sysdev)
 {
-	drm_device_t *dev = (drm_device_t *)sysdev;
+	struct drm_device *dev = 
+			container_of(sysdev, struct drm_device, sysdev);
 
 	DRM_DEBUG("\n");
 
