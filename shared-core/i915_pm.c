@@ -45,6 +45,8 @@ static int i915_set_dpms(drm_device_t *dev, int mode)
 	
 	DRM_DEBUG("%s mode=%d\n", __FUNCTION__, mode);
 
+	if (!dev_priv) return 0;
+
 	I915_WRITE( SRX_INDEX, SR01 );
 	sr01 = I915_READ( SRX_DATA );
 
@@ -136,12 +138,18 @@ int i915_suspend( struct pci_dev *pdev, unsigned state )
 			break;
 	}
 
+	pci_disable_device(pdev);
+	pci_set_power_state(pdev, state);
+
 	return 0;
 }
 
 int i915_resume( struct pci_dev *pdev ) 
 {
 	drm_device_t *dev = (drm_device_t *)pci_get_drvdata(pdev);
+
+	pci_enable_device(pdev);
+	pci_set_power_state(pdev, 0);
 
 	/* D0: set DPMS mode on */
 	i915_set_dpms(dev, 0);
