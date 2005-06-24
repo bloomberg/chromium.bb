@@ -62,11 +62,16 @@ static int drm_resume(struct sys_device *sysdev)
 		return 0;
 }
 
-static int drm_sysdev_class_registered = 0;
+static int shutdown(struct sys_device *sysdev)
+{
+	return 0;
+}
+
 static struct sysdev_class drm_sysdev_class = {
 	set_kset_name("drm"),
 	.resume		= drm_resume,
 	.suspend	= drm_suspend,
+	.shutdown	= shutdown,
 };
 
 
@@ -115,17 +120,12 @@ void drm_pm_takedown(drm_device_t *dev)
 
 int drm_pm_init(void)
 {
-	int rc;
 	DRM_DEBUG("\n");
-	rc = sysdev_class_register(&drm_sysdev_class);
-	if (!rc)
-		drm_sysdev_class_registered = 1;
-	return rc;
+	return sysdev_class_register(&drm_sysdev_class);
 }
 
-void drm_pm_exit(void)
+void __exit drm_pm_exit(void)
 {
 	DRM_DEBUG("\n");
-	if (drm_sysdev_class_registered)
-		sysdev_class_unregister(&drm_sysdev_class);
+	sysdev_class_unregister(&drm_sysdev_class);
 }
