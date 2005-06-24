@@ -67,7 +67,7 @@ static int shutdown(struct sys_device *sysdev)
 	return 0;
 }
 
-static int sysdev_loaded = 0;
+static atomic_t sysdev_loaded = ATOMIC_INIT(-1);
 static struct sysdev_class drm_sysdev_class = {
 	set_kset_name("drm"),
 	.resume		= drm_resume,
@@ -124,14 +124,27 @@ int drm_pm_init(void)
 	int rc;
 	DRM_DEBUG("\n");
 
-	if (!(rc = sysdev_class_register(&drm_sysdev_class)))
-		sysdev_loaded = 1;
+	/* triggers on -1 to 0 transition */
+	if (!atomic_inc_and_test(&sysdev_loaded))
+		return 0;
+
+	if ((rc = sysdev_class_register(&drm_sysdev_class))) {
+		/* reset it back to -1 */
+		atomic_dec(&sysdev_loaded);
+	} else {
+		/* inc it up to 1 so that unload will trigger on 1->0 */
+		atomic_inc(&sysdev_loaded);
+		DRM_DEBUG("registered\n");
+	}
 	return rc;
 }
 
 void __exit drm_pm_exit(void)
 {
 	DRM_DEBUG("\n");
-	if (sysdev_loaded)
+	/* triggers on the 1 to 0 transistion */
+	if (atomic_dec_and_test(&sysdev_loaded)) {
 		sysdev_class_unregister(&drm_sysdev_class);
+		DRM_DEBUG("unregisted\n");
+	}
 }
