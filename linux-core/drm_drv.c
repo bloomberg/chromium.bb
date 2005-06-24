@@ -339,6 +339,9 @@ int drm_init(struct drm_driver *driver,
 	if (!drm_fb_loaded)
 		pci_register_driver(&driver->pci_driver);
 	else {
+		if ((rc = drm_pm_init()))
+			return rc;
+
 		for (i = 0; pciidlist[i].vendor != 0; i++) {
 			pid = &pciidlist[i];
 
@@ -352,6 +355,7 @@ int drm_init(struct drm_driver *driver,
 				pci_dev_get(pdev);
 				if ((rc = drm_get_dev(pdev, &pciidlist[i], driver))) {
 					pci_dev_put(pdev);
+					drm_pm_exit();
 					return rc;
 				}
 			}
@@ -515,17 +519,12 @@ static int __init drm_core_init(void)
 		goto err_p3;
 	}
 
-	if ((ret = drm_pm_init()))
-		goto err_p4;
-
 	drm_mem_init();
 
 	DRM_INFO("Initialized %s %d.%d.%d %s\n",
 		 CORE_NAME,
 		 CORE_MAJOR, CORE_MINOR, CORE_PATCHLEVEL, CORE_DATE);
 	return 0;
-err_p4:
-	remove_proc_entry("dri", NULL);
 err_p3:
 	drm_sysfs_destroy(drm_class);
 err_p2:
