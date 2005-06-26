@@ -724,7 +724,6 @@ typedef struct drm_device {
 	drm_head_t primary;		/**< primary screen head */
 
 	struct sys_device sysdev;	/**< Power Management device structure */
-	int sysdev_registered;		/**< Whether the device has been registered */
 } drm_device_t;
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,

@@ -86,6 +86,9 @@ int drm_pm_setup(drm_device_t *dev)
 {
 	int rc;
 
+	if (atomic_read(&sysdev_loaded) == -1)
+		return 0;
+
 	DRM_DEBUG("\n");
 
 	dev->sysdev.id = dev->primary.minor;
@@ -96,8 +99,6 @@ int drm_pm_setup(drm_device_t *dev)
 #else
 	rc = sysdev_register(&dev->sysdev);
 #endif
-	if (!rc)
-		dev->sysdev_registered = 1;
 	return rc;
 }
 
@@ -108,15 +109,16 @@ int drm_pm_setup(drm_device_t *dev)
  */
 void drm_pm_takedown(drm_device_t *dev)
 {
+	if (atomic_read(&sysdev_loaded) == -1)
+		return;
+
 	DRM_DEBUG("\n");
 
-	if(dev->sysdev_registered) {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,4)
-		sys_device_unregister(&dev->sysdev);
+	sys_device_unregister(&dev->sysdev);
 #else
-		sysdev_unregister(&dev->sysdev);
+	sysdev_unregister(&dev->sysdev);
 #endif
-	}
 }
 
 int drm_pm_init(void)
