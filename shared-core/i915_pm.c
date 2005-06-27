@@ -113,18 +113,27 @@ static int i915_set_dpms(drm_device_t *dev, int mode)
 	return 0;
 }
 
-int i915_suspend( struct pci_dev *pdev, unsigned state ) 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12)
+int i915_suspend(struct pci_dev *pdev, pm_message_t state)
+#else
+int i915_suspend(struct pci_dev *pdev, u32 state)
+#endif
 {
 	drm_device_t *dev = (drm_device_t *)pci_get_drvdata(pdev);
 	drm_i915_private_t *dev_priv =
 		(drm_i915_private_t *)dev->dev_private;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12)
+	int event = state.event;
+#else
+	int event = state;
+#endif
 
-	DRM_DEBUG("%s state=%d\n", __FUNCTION__, state);
+	DRM_DEBUG("%s event=%d\n", __FUNCTION__, event);
 
-	if (!dev_priv) return;
+	if (!dev_priv) return 0;
 
 	/* Save state for power up later */
-	if (state != 0) {
+	if (event != 0) {
 		I915_WRITE( SRX_INDEX, SR01 );
 		dev_priv->sr01 = I915_READ( SRX_DATA );
 		dev_priv->dvoc = I915_READ( DVOC );
@@ -134,7 +143,7 @@ int i915_suspend( struct pci_dev *pdev, unsigned state )
 		dev_priv->ppcr = I915_READ( PPCR );
 	}
 
-	switch(state) {
+	switch(event) {
 		case 0:
 			/* D0: set DPMS mode on */
 			i915_set_dpms(dev, 0);
@@ -166,17 +175,26 @@ int i915_resume( struct pci_dev *pdev )
 	return 0;
 }
 
-int i915_power( drm_device_t *dev, unsigned int state )
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12)
+int i915_power( drm_device_t *dev, pm_message_t state)
+#else
+int i915_power( drm_device_t *dev, u32 state)
+#endif
 {
 	drm_i915_private_t *dev_priv =
 		(drm_i915_private_t *)dev->dev_private;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12)
+	int event = state.event;
+#else
+	int event = state;
+#endif
 
-	DRM_DEBUG("%s state=%d\n", __FUNCTION__, state);
+	DRM_DEBUG("%s event=%d\n", __FUNCTION__, event);
 
-	if (!dev_priv) return;
+	if (!dev_priv) return 0;
 
 	/* Save state for power up later */
-	if (state != 0) {
+	if (event != 0) {
 		I915_WRITE( SRX_INDEX, SR01 );
 		dev_priv->sr01 = I915_READ( SRX_DATA );
 		dev_priv->dvoc = I915_READ( DVOC );
@@ -187,7 +205,7 @@ int i915_power( drm_device_t *dev, unsigned int state )
 	}
 
 	/* D0: set DPMS mode on */
-	i915_set_dpms(dev, state);
+	i915_set_dpms(dev, event);
 
 	return 0;
 }
