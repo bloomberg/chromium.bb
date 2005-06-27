@@ -121,6 +121,8 @@ int i915_suspend( struct pci_dev *pdev, unsigned state )
 
 	DRM_DEBUG("%s state=%d\n", __FUNCTION__, state);
 
+	if (!dev_priv) return;
+
 	/* Save state for power up later */
 	if (state != 0) {
 		I915_WRITE( SRX_INDEX, SR01 );
@@ -170,6 +172,8 @@ int i915_power( drm_device_t *dev, unsigned int state )
 		(drm_i915_private_t *)dev->dev_private;
 
 	DRM_DEBUG("%s state=%d\n", __FUNCTION__, state);
+
+	if (!dev_priv) return;
 
 	/* Save state for power up later */
 	if (state != 0) {
