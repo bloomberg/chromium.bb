@@ -36,24 +36,15 @@
 #include <linux/sysdev.h>
 
 
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 static int drm_suspend(struct sys_device *sysdev, u32 state)
-#else
-static int drm_suspend(struct sys_device *sysdev, pm_message_t state)
-#endif
 {
 	struct drm_device *dev = 
 			container_of(sysdev, struct drm_device, sysdev);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12)
-	int event = state.event;
-#else
-	int event = state;
-#endif
 
-	DRM_DEBUG("event=%d\n", event);
+	DRM_DEBUG("state=%d\n", state);
 
         if (dev->driver->power)
-		return dev->driver->power(dev, event);
+		return dev->driver->power(dev, state);
 	else
 		return 0;
 }
