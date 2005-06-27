@@ -59,8 +59,8 @@ static int i915_set_dpms(drm_device_t *dev, int mode)
 	switch(mode) {
 		case 0:
 			/* On */
-			sr01 &= ~SR01_SCREEN_OFF;
-			adpa = (adpa & ADPA_DPMS_MASK) | ADPA_DPMS_ON;
+			sr01 = dev_priv->sr01;
+			adpa = dev_priv->adpa;
 #if 0
 			I915_WRITE( LVDS, lvds | LVDS_ON ); /* Power on LVDS */
 #endif
@@ -116,8 +116,21 @@ static int i915_set_dpms(drm_device_t *dev, int mode)
 int i915_suspend( struct pci_dev *pdev, unsigned state ) 
 {
 	drm_device_t *dev = (drm_device_t *)pci_get_drvdata(pdev);
+	drm_i915_private_t *dev_priv =
+		(drm_i915_private_t *)dev->dev_private;
 
 	DRM_DEBUG("%s state=%d\n", __FUNCTION__, state);
+
+	/* Save state for power up later */
+	if (state != 0) {
+		I915_WRITE( SRX_INDEX, SR01 );
+		dev_priv->sr01 = I915_READ( SRX_DATA );
+		dev_priv->dvoc = I915_READ( DVOC );
+		dev_priv->dvob = I915_READ( DVOB );
+		dev_priv->lvds = I915_READ( LVDS );
+		dev_priv->adpa = I915_READ( ADPA );
+		dev_priv->ppcr = I915_READ( PPCR );
+	}
 
 	switch(state) {
 		case 0:
@@ -138,18 +151,12 @@ int i915_suspend( struct pci_dev *pdev, unsigned state )
 			break;
 	}
 
-	pci_disable_device(pdev);
-	pci_set_power_state(pdev, state);
-
 	return 0;
 }
 
 int i915_resume( struct pci_dev *pdev ) 
 {
 	drm_device_t *dev = (drm_device_t *)pci_get_drvdata(pdev);
-
-	pci_enable_device(pdev);
-	pci_set_power_state(pdev, 0);
 
 	/* D0: set DPMS mode on */
 	i915_set_dpms(dev, 0);
@@ -159,7 +166,21 @@ int i915_resume( struct pci_dev *pdev )
 
 int i915_power( drm_device_t *dev, unsigned int state )
 {
+	drm_i915_private_t *dev_priv =
+		(drm_i915_private_t *)dev->dev_private;
+
 	DRM_DEBUG("%s state=%d\n", __FUNCTION__, state);
+
+	/* Save state for power up later */
+	if (state != 0) {
+		I915_WRITE( SRX_INDEX, SR01 );
+		dev_priv->sr01 = I915_READ( SRX_DATA );
+		dev_priv->dvoc = I915_READ( DVOC );
+		dev_priv->dvob = I915_READ( DVOB );
+		dev_priv->lvds = I915_READ( LVDS );
+		dev_priv->adpa = I915_READ( ADPA );
+		dev_priv->ppcr = I915_READ( PPCR );
+	}
 
 	/* D0: set DPMS mode on */
 	i915_set_dpms(dev, state);
