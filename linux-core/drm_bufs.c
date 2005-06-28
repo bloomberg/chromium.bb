@@ -109,6 +109,15 @@ int drm_initmap(drm_device_t * dev, unsigned int offset, unsigned int size,
 }
 EXPORT_SYMBOL(drm_initmap);
 
+#ifdef CONFIG_COMPAT
+/*
+ * Used to allocate 32-bit handles for _DRM_SHM regions
+ * The 0x10000000 value is chosen to be out of the way of
+ * FB/register and GART physical addresses.
+ */
+static unsigned int map32_handle = 0x10000000;
+#endif
+
 /**
  * Ioctl to specify a range of memory that is available for mapping by a non-root process.
  *
@@ -283,6 +292,13 @@ int drm_addmap(drm_device_t * dev, unsigned int offset,
 
 	down(&dev->struct_sem);
 	list_add(&list->head, &dev->maplist->head);
+#ifdef CONFIG_COMPAT
+	/* Assign a 32-bit handle for _DRM_SHM mappings */
+	/* We do it here so that dev->struct_sem protects the increment */
+	if (map->type == _DRM_SHM)
+		map->offset = map32_handle += PAGE_SIZE;
+#endif
+
 	up(&dev->struct_sem);
       found_it:
 	*map_ptr = map;
@@ -1567,4 +1583,5 @@ int drm_order( unsigned long size )
 	return order;
 }
 EXPORT_SYMBOL(drm_order);
+
 

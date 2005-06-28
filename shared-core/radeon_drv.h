@@ -311,6 +311,8 @@ extern int radeon_driver_open_helper(drm_device_t * dev,
 				     drm_file_t * filp_priv);
 extern void radeon_driver_free_filp_priv(drm_device_t * dev,
 					 drm_file_t * filp_priv);
+extern long radeon_compat_ioctl(struct file *filp, unsigned int cmd,
+					 unsigned long arg);
 
 /* Flags for stats.boxes
  */
