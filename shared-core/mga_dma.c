@@ -553,44 +553,6 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 }
 
 /**
- * Create a "fake" drm_map_t for a pre-mapped range of PCI consistent memory.
- *
- * Unlike \c drm_addmap, this function just creates a \c drm_map_t wrapper for
- * a block of PCI consistent memory.  \c drm_addmap, basically, converts a bus
- * address to a virtual address.  However, \c drm_pci_alloc gives both the bus
- * address and the virtual address for the memory region.  Not only is there
- * no need to map it again, but mapping it again will cause problems.
- * 
- * \param dmah  DRM DMA handle returned by \c drm_pci_alloc.
- * \param map_ptr  Location to store a pointer to the \c drm_map_t.
- * 
- * \returns
- * On success, zero is returned.  Otherwise and error code suitable for
- * returning from an ioctl is returned.
- */
-static int mga_fake_addmap(drm_dma_handle_t * dmah, drm_map_t ** map_ptr)
-{
-	drm_map_t * map;
-
-
-	map = drm_alloc(sizeof(drm_map_t), DRM_MEM_DRIVER);
-	if (map == NULL) {
-		return DRM_ERR(ENOMEM);
-	}
-
-	map->offset = dmah->busaddr;
-	map->size = dmah->size;
-	map->type = _DRM_CONSISTENT;
-	map->flags = _DRM_READ_ONLY;
-	map->handle = dmah->vaddr;
-	map->mtrr = 0;
-	
-	*map_ptr = map;
-	
-	return 0;
-}
-
-/**
  * Bootstrap the driver for PCI DMA.
  * 
  * \todo
@@ -620,51 +582,40 @@ static int mga_do_pci_dma_bootstrap(drm_device_t * dev,
 		return DRM_ERR(EFAULT);
 	}
 
-
-	/* The WARP microcode base address must be 256-byte aligned.
-	 */
-	dev_priv->warp_dmah = drm_pci_alloc(dev, warp_size, 0x100, 0x7fffffff);
-	err = mga_fake_addmap(dev_priv->warp_dmah, & dev_priv->warp);
-	if (err) {
-		DRM_ERROR("Unable to map WARP microcode\n");
+	/* The proper alignment is 0x100 for this mapping */
+	err = drm_addmap(dev, 0, warp_size, _DRM_CONSISTENT,
+			 _DRM_READ_ONLY, &dev_priv->warp);
+	if (err != 0) {
+		DRM_ERROR("Unable to create mapping for WARP microcode\n");
 		return err;
 	}
-
 
 	/* Other than the bottom two bits being used to encode other
 	 * information, there don't appear to be any restrictions on the
 	 * alignment of the primary or secondary DMA buffers.
 	 */
 
-	dev_priv->primary_dmah = NULL;
 	for ( primary_size = dma_bs->primary_size
 	      ; primary_size != 0
 	      ; primary_size >>= 1 ) {
-		dev_priv->primary_dmah = drm_pci_alloc(dev, primary_size,
-					     0x04, 0x7fffffff);
-		if (dev_priv->primary_dmah != NULL) {
+		/* The proper alignment for this mapping is 0x04 */
+		err = drm_addmap(dev, 0, primary_size, _DRM_CONSISTENT,
+				 _DRM_READ_ONLY, &dev_priv->primary);
+		if (!err)
 			break;
-		}
 	}
 
-	if (dev_priv->primary_dmah == NULL) {
+	if (err != 0) {
 		DRM_ERROR("Unable to allocate primary DMA region\n");
 		return DRM_ERR(ENOMEM);
 	}
 
-	if (dev_priv->primary_dmah->size != dma_bs->primary_size) {
+	if (dev_priv->primary->size != dma_bs->primary_size) {
 		DRM_INFO("Primary DMA buffer size reduced from %u to %u.\n",
 			 dma_bs->primary_size, 
-			 (unsigned) dev_priv->primary_dmah->size);
-		dma_bs->primary_size = dev_priv->primary_dmah->size;
+			 (unsigned) dev_priv->primary->size);
+		dma_bs->primary_size = dev_priv->primary->size;
 	}
-
-	err = mga_fake_addmap(dev_priv->primary_dmah, & dev_priv->primary);
-	if (err) {
-		DRM_ERROR("Unable to map primary DMA region\n");
-		return err;
-	}
-
 
 	for ( bin_count = dma_bs->secondary_bin_count
 	      ; bin_count > 0 
@@ -970,47 +921,8 @@ static int mga_do_cleanup_dma(drm_device_t * dev)
 			drm_core_ioremapfree(dev->agp_buffer_map, dev);
 
 		if (dev_priv->used_new_dma_init) {
-			if (dev_priv->warp != NULL) {
-				drm_rmmap(dev, (void *) dev_priv->warp->offset);
-			}
-
-			if (dev_priv->primary != NULL) {
-				if (dev_priv->primary->type != _DRM_CONSISTENT) {
-					drm_rmmap(dev, (void *) dev_priv->primary->offset);
-				}
-				else {
-					drm_free(dev_priv->primary, sizeof(drm_map_t), DRM_MEM_DRIVER);
-				}
-			}
-
-			if (dev_priv->warp_dmah != NULL) {
-				drm_pci_free(dev, dev_priv->warp_dmah);
-				dev_priv->warp_dmah = NULL;
-			}
-
-			if (dev_priv->primary_dmah != NULL) {
-				drm_pci_free(dev, dev_priv->primary_dmah);
-				dev_priv->primary_dmah = NULL;
-			}
-
-			if (dev_priv->mmio != NULL) {
-				drm_rmmap(dev, (void *) dev_priv->mmio->offset);
-			}
-
-			if (dev_priv->status != NULL) {
-				drm_rmmap(dev, (void *) dev_priv->status->offset);
-			}
-
 			if (dev_priv->agp_mem != NULL) {
-				if (dev->agp_buffer_map != NULL) {
-					drm_rmmap(dev, (void *) dev->agp_buffer_map->offset);
-				}
-
-				if (dev_priv->agp_textures != NULL) {
-					drm_rmmap(dev, (void *) dev_priv->agp_textures->offset);
-					dev_priv->agp_textures = NULL;
-				}
-
+				dev_priv->agp_textures = NULL;
 				drm_unbind_agp(dev_priv->agp_mem);
 
 				drm_free_agp(dev_priv->agp_mem, dev_priv->agp_pages);

@@ -572,7 +572,6 @@ struct drm_driver {
 /* variables */
 	u32 driver_features;
 	int dev_priv_size;
-	int permanent_maps;
 	drm_ioctl_desc_t *ioctls;
 	int num_ioctls;
 	struct file_operations fops;
@@ -864,15 +863,13 @@ extern int drm_addbufs_pci(drm_device_t * dev, drm_buf_desc_t * request);
 extern int drm_addbufs_fb (drm_device_t * dev, drm_buf_desc_t * request);
 extern int drm_addmap(drm_device_t * dev, unsigned int offset,
 		      unsigned int size, drm_map_type_t type,
-		      drm_map_flags_t flags, drm_map_t ** map_ptr);
+		      drm_map_flags_t flags, drm_local_map_t ** map_ptr);
 extern int drm_addmap_ioctl(struct inode *inode, struct file *filp,
 			    unsigned int cmd, unsigned long arg);
-extern int drm_rmmap(drm_device_t *dev, void *handle);
+extern int drm_rmmap(drm_device_t *dev, drm_local_map_t *map);
+extern int drm_rmmap_locked(drm_device_t *dev, drm_local_map_t *map);
 extern int drm_rmmap_ioctl(struct inode *inode, struct file *filp,
 			   unsigned int cmd, unsigned long arg);
-extern int drm_initmap(drm_device_t * dev, unsigned int offset,
-		       unsigned int size, unsigned int resource, int type,
-		       int flags);
 extern int drm_addbufs(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 extern int drm_infobufs(struct inode *inode, struct file *filp,

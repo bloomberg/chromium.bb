@@ -48,66 +48,21 @@ unsigned long drm_get_resource_len(drm_device_t *dev, unsigned int resource)
 }
 EXPORT_SYMBOL(drm_get_resource_len);
 
- /**
- * Adjusts the memory offset to its absolute value according to the mapping
- * type.  Adds the map to the map list drm_device::maplist. Adds MTRR's where
- * applicable and if supported by the kernel.
- */
-int drm_initmap(drm_device_t * dev, unsigned int offset, unsigned int size,
-		unsigned int resource, int type, int flags)
+static drm_local_map_t *drm_find_matching_map(drm_device_t *dev,
+					      drm_local_map_t *map)
 {
-	drm_map_t *map;
-	drm_map_list_t *list;
+	struct list_head *list;
 
-	DRM_DEBUG("\n");
-
-	if ((offset & (~PAGE_MASK)) || (size & (~PAGE_MASK)))
-		return -EINVAL;
-#if !defined(__sparc__) && !defined(__alpha__)
-	if (offset + size < offset || offset < virt_to_phys(high_memory))
-		return -EINVAL;
-#endif
-	if (!(list = drm_alloc(sizeof(*list), DRM_MEM_MAPS)))
-		return -ENOMEM;
-	memset(list, 0, sizeof(*list));
-
-	if (!(map = drm_alloc(sizeof(*map), DRM_MEM_MAPS))) {
-		drm_free(list, sizeof(*list), DRM_MEM_MAPS);
-		return -ENOMEM;
-	}
-
-	*map = (drm_map_t) {
-	.offset = offset,.size = size,.type = type,.flags =
-		    flags,.mtrr = -1,.handle = 0,};
-	list->map = map;
-
-	DRM_DEBUG("initmap offset = 0x%08lx, size = 0x%08lx, type = %d\n",
-		  map->offset, map->size, map->type);
-
-#ifdef __alpha__
-	map->offset += dev->hose->mem_space->start;
-#endif
-	if (drm_core_has_MTRR(dev)) {
-		if (map->type == _DRM_FRAME_BUFFER ||
-		    (map->flags & _DRM_WRITE_COMBINING)) {
-			map->mtrr = mtrr_add(map->offset, map->size,
-					     MTRR_TYPE_WRCOMB, 1);
+	list_for_each(list, &dev->maplist->head) {
+		drm_map_list_t *entry = list_entry(list, drm_map_list_t, head);
+		if (entry->map && map->type == entry->map->type &&
+		    entry->map->offset == map->offset) {
+			return entry->map;
 		}
 	}
 
-	if (map->type == _DRM_REGISTERS)
-		map->handle = drm_ioremap(map->offset, map->size, dev);
-
-	down(&dev->struct_sem);
-	list_add(&list->head, &dev->maplist->head);
-	up(&dev->struct_sem);
-
-	dev->driver->permanent_maps = 1;
-	DRM_DEBUG("finished\n");
-
-	return 0;
+	return NULL;
 }
-EXPORT_SYMBOL(drm_initmap);
 
 #ifdef CONFIG_COMPAT
 /*
@@ -133,12 +88,12 @@ static unsigned int map32_handle = 0x10000000;
  */
 int drm_addmap(drm_device_t * dev, unsigned int offset,
 	       unsigned int size, drm_map_type_t type,
-	       drm_map_flags_t flags, drm_map_t ** map_ptr)
+	       drm_map_flags_t flags, drm_local_map_t ** map_ptr)
 {
 	drm_map_t *map;
 	drm_map_list_t *list;
 	drm_dma_handle_t *dmah;
-
+	drm_local_map_t *found_map;
 
 	map = drm_alloc(sizeof(*map), DRM_MEM_MAPS);
 	if (!map)
@@ -168,65 +123,45 @@ int drm_addmap(drm_device_t * dev, unsigned int offset,
 
 	switch (map->type) {
 	case _DRM_REGISTERS:
-	case _DRM_FRAME_BUFFER:{
-			/* after all the drivers switch to permanent mapping this should just return an error */
-			struct list_head *_list;
-
-			/* If permanent maps are implemented, maps must match */
-			if (dev->driver->permanent_maps) {
-				DRM_DEBUG
-				    ("Looking for: offset = 0x%08lx, size = 0x%08lx, type = %d\n",
-				     map->offset, map->size, map->type);
-				list_for_each(_list, &dev->maplist->head) {
-					drm_map_list_t *_entry =
-					    list_entry(_list, drm_map_list_t,
-						       head);
-					DRM_DEBUG
-					    ("Checking: offset = 0x%08lx, size = 0x%08lx, type = %d\n",
-					     _entry->map->offset,
-					     _entry->map->size,
-					     _entry->map->type);
-					if (_entry->map
-					    && map->type == _entry->map->type
-					    && map->offset ==
-					    _entry->map->offset) {
-						_entry->map->size = map->size;
-						drm_free(map, sizeof(*map),
-							 DRM_MEM_MAPS);
-						map = _entry->map;
-						DRM_DEBUG
-						    ("Found existing: offset = 0x%08lx, size = 0x%08lx, type = %d\n",
-						     map->offset, map->size,
-						     map->type);
-						goto found_it;
-					}
-				}
-				/* addmap didn't match an existing permanent map, that's an error */
-				return -EINVAL;
-			}
+	case _DRM_FRAME_BUFFER:
 #if !defined(__sparc__) && !defined(__alpha__) && !defined(__ia64__)
-			if (map->offset + map->size < map->offset ||
-			    map->offset < virt_to_phys(high_memory)) {
-				drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-				return -EINVAL;
-			}
+		if (map->offset + map->size < map->offset ||
+		    map->offset < virt_to_phys(high_memory)) {
+			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+			return -EINVAL;
+		}
 #endif
 #ifdef __alpha__
-			map->offset += dev->hose->mem_space->start;
+		map->offset += dev->hose->mem_space->start;
 #endif
-			if (drm_core_has_MTRR(dev)) {
-				if (map->type == _DRM_FRAME_BUFFER ||
-				    (map->flags & _DRM_WRITE_COMBINING)) {
-					map->mtrr =
-					    mtrr_add(map->offset, map->size,
-						     MTRR_TYPE_WRCOMB, 1);
-				}
+		/* Some drivers preinitialize some maps, without the X Server
+		 * needing to be aware of it.  Therefore, we just return success
+		 * when the server tries to create a duplicate map.
+		 */
+		found_map = drm_find_matching_map(dev, map);
+		if (found_map != NULL) {
+			if (found_map->size != map->size) {
+				DRM_DEBUG("Matching maps of type %d with "
+				   "mismatched sizes, (%ld vs %ld)\n",
+				    map->type, map->size, found_map->size);
+				found_map->size = map->size;
 			}
-			if (map->type == _DRM_REGISTERS)
-				map->handle =
-				    drm_ioremap(map->offset, map->size, dev);
-			break;
+
+			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+			*map_ptr = found_map;
+			return 0;
 		}
+
+		if (drm_core_has_MTRR(dev)) {
+			if (map->type == _DRM_FRAME_BUFFER ||
+			    (map->flags & _DRM_WRITE_COMBINING)) {
+				map->mtrr =  mtrr_add(map->offset, map->size,
+						      MTRR_TYPE_WRCOMB, 1);
+			}
+		}
+		if (map->type == _DRM_REGISTERS)
+			map->handle = drm_ioremap(map->offset, map->size, dev);
+		break;
 	case _DRM_SHM:
 		map->handle = vmalloc_32(map->size);
 		DRM_DEBUG("%lu %d %p\n",
@@ -300,7 +235,7 @@ int drm_addmap(drm_device_t * dev, unsigned int offset,
 #endif
 
 	up(&dev->struct_sem);
-      found_it:
+
 	*map_ptr = map;
 	return 0;
 }
@@ -356,24 +291,106 @@ int drm_addmap_ioctl(struct inode *inode, struct file *filp,
  *
  * \sa drm_addmap
  */
-int drm_rmmap(drm_device_t *dev, void *handle)
+int drm_rmmap_locked(drm_device_t *dev, drm_local_map_t *map)
 {
 	struct list_head *list;
 	drm_map_list_t *r_list = NULL;
-	drm_vma_entry_t *pt, *prev;
-	drm_map_t *map;
-	int found_maps = 0;
+	drm_dma_handle_t dmah;
 
-
-	down(&dev->struct_sem);
-	list = &dev->maplist->head;
+	/* Find the list entry for the map and remove it */
 	list_for_each(list, &dev->maplist->head) {
 		r_list = list_entry(list, drm_map_list_t, head);
 
-		if (r_list->map &&
-		    r_list->map->handle == handle &&
-		    r_list->map->flags & _DRM_REMOVABLE)
+		if (r_list->map == map) {
+			list_del(list);
+			drm_free(list, sizeof(*list), DRM_MEM_MAPS);
 			break;
+		}
+	}
+
+	/* List has wrapped around to the head pointer, or it's empty and we
+	 * didn't find anything.
+	 */
+	if (list == (&dev->maplist->head)) {
+		return -EINVAL;
+	}
+
+	switch (map->type) {
+	case _DRM_REGISTERS:
+		drm_ioremapfree(map->handle, map->size, dev);
+		/* FALLTHROUGH */
+	case _DRM_FRAME_BUFFER:
+		if (drm_core_has_MTRR(dev) && map->mtrr >= 0) {
+			int retcode;
+			retcode = mtrr_del(map->mtrr, map->offset,
+					   map->size);
+			DRM_DEBUG ("mtrr_del=%d\n", retcode);
+		}
+		break;
+	case _DRM_SHM:
+		vfree(map->handle);
+		break;
+	case _DRM_AGP:
+	case _DRM_SCATTER_GATHER:
+		break;
+	case _DRM_CONSISTENT:
+		dmah.vaddr = map->handle;
+		dmah.busaddr = map->offset;
+		dmah.size = map->size;
+		__drm_pci_free(dev, &dmah);
+		break;
+	}
+	drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_rmmap_locked);
+
+int drm_rmmap(drm_device_t *dev, drm_local_map_t *map)
+{
+	int ret;
+
+	down(&dev->struct_sem);
+	ret = drm_rmmap_locked(dev, map);
+	up(&dev->struct_sem);
+
+	return ret;
+}
+EXPORT_SYMBOL(drm_rmmap);
+
+/* The rmmap ioctl appears to be unnecessary.  All mappings are torn down on
+ * the last close of the device, and this is necessary for cleanup when things
+ * exit uncleanly.  Therefore, having userland manually remove mappings seems
+ * like a pointless exercise since they're going away anyway.
+ *
+ * One use case might be after addmap is allowed for normal users for SHM and
+ * gets used by drivers that the server doesn't need to care about.  This seems
+ * unlikely.
+ */
+int drm_rmmap_ioctl(struct inode *inode, struct file *filp,
+		    unsigned int cmd, unsigned long arg)
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->head->dev;
+	drm_map_t request;
+	drm_local_map_t *map;
+	struct list_head *list;
+	int ret;
+
+	if (copy_from_user(&request, (drm_map_t __user *) arg, sizeof(request))) {
+		return -EFAULT;
+	}
+
+	down(&dev->struct_sem);
+	list_for_each(list, &dev->maplist->head) {
+		drm_map_list_t *r_list = list_entry(list, drm_map_list_t, head);
+
+		if (r_list->map &&
+		    r_list->map->handle == request.handle &&
+		    r_list->map->flags & _DRM_REMOVABLE) {
+			map = r_list->map;
+			break;
+		}
 	}
 
 	/* List has wrapped around to the head pointer, or its empty we didn't
@@ -383,61 +400,18 @@ int drm_rmmap(drm_device_t *dev, void *handle)
 		up(&dev->struct_sem);
 		return -EINVAL;
 	}
-	map = r_list->map;
 
 	/* Register and framebuffer maps are permanent */
 	if ((map->type == _DRM_REGISTERS) || (map->type == _DRM_FRAME_BUFFER)) {
 		up(&dev->struct_sem);
 		return 0;
 	}
-	list_del(list);
-	drm_free(list, sizeof(*list), DRM_MEM_MAPS);
 
-	for (pt = dev->vmalist, prev = NULL; pt; prev = pt, pt = pt->next) {
-		if (pt->vma->vm_private_data == map)
-			found_maps++;
-	}
+	ret = drm_rmmap_locked(dev, map);
 
-	if (!found_maps) {
-		drm_dma_handle_t dmah;
-
-		switch (map->type) {
-		case _DRM_REGISTERS:
-		case _DRM_FRAME_BUFFER:
-			break;	/* Can't get here, make compiler happy */
-		case _DRM_SHM:
-			vfree(map->handle);
-			break;
-		case _DRM_AGP:
-		case _DRM_SCATTER_GATHER:
-			break;
-		case _DRM_CONSISTENT:
-			dmah.vaddr = map->handle;
-			dmah.busaddr = map->offset;
-			dmah.size = map->size;
-			__drm_pci_free(dev, &dmah);
-			break;
-		}
-		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-	}
 	up(&dev->struct_sem);
-	return 0;
-}
-EXPORT_SYMBOL(drm_rmmap);
 
-int drm_rmmap_ioctl(struct inode *inode, struct file *filp,
-		    unsigned int cmd, unsigned long arg)
-{
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_map_t request;
-
-
-	if (copy_from_user(&request, (drm_map_t __user *) arg, sizeof(request))) {
-		return -EFAULT;
-	}
-
-	return drm_rmmap(dev, request.handle);
+	return ret;
 }
 
 /**

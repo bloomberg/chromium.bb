@@ -537,18 +537,20 @@ static void savage_fake_dma_flush(drm_savage_private_t *dev_priv)
 }
 
 /*
- * Initalize permanent mappings. On Savage4 and SavageIX the alignment
+ * Initalize mappings. On Savage4 and SavageIX the alignment
  * and size of the aperture is not suitable for automatic MTRR setup
- * in drm_initmap. Therefore we do it manually before the maps are
+ * in drm_addmap. Therefore we do it manually before the maps are
  * initialized. We also need to take care of deleting the MTRRs in
  * postcleanup.
- *
- * FIXME: this is linux-specific
  */
 int savage_preinit(drm_device_t *dev, unsigned long chipset)
 {
 	drm_savage_private_t *dev_priv;
 	unsigned long mmio_base, fb_base, fb_size, aperture_base;
+	/* fb_rsrc and aper_rsrc aren't really used currently, but still exist
+	 * in case we decide we need information on the BAR for BSD in the
+	 * future.
+	 */
 	unsigned int fb_rsrc, aper_rsrc;
 	int ret = 0;
 
@@ -623,24 +625,21 @@ int savage_preinit(drm_device_t *dev, unsigned long chipset)
 		/* Automatic MTRR setup will do the right thing. */
 	}
 
-	if ((ret = drm_initmap(dev, mmio_base, SAVAGE_MMIO_SIZE, 0,
-			       _DRM_REGISTERS, _DRM_READ_ONLY)))
+	ret = drm_addmap(dev, mmio_base, SAVAGE_MMIO_SIZE, _DRM_REGISTERS,
+			 _DRM_READ_ONLY, &dev_priv->mmio);
+	if (ret)
 		return ret;
-	if (!(dev_priv->mmio = drm_core_findmap (dev, mmio_base)))
-		return DRM_ERR(ENOMEM);
 
-	if ((ret = drm_initmap(dev, fb_base, fb_size, fb_rsrc,
-			       _DRM_FRAME_BUFFER, _DRM_WRITE_COMBINING)))
+	ret = drm_addmap(dev, fb_base, fb_size, _DRM_FRAME_BUFFER,
+			 _DRM_WRITE_COMBINING, &dev_priv->fb);
+	if (ret)
 		return ret;
-	if (!(dev_priv->fb = drm_core_findmap (dev, fb_base)))
-		return DRM_ERR(ENOMEM);
 
-	if ((ret = drm_initmap(dev, aperture_base, SAVAGE_APERTURE_SIZE,
-			       aper_rsrc,
-			       _DRM_FRAME_BUFFER, _DRM_WRITE_COMBINING)))
+	ret = drm_addmap(dev, aperture_base, SAVAGE_APERTURE_SIZE,
+			 _DRM_FRAME_BUFFER, _DRM_WRITE_COMBINING,
+			 &dev_priv->aperture);
+	if (ret)
 		return ret;
-	if (!(dev_priv->aperture = drm_core_findmap (dev, aperture_base)))
-		return DRM_ERR(ENOMEM);
 
 	return ret;
 }

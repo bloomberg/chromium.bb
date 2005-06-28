@@ -2034,35 +2034,34 @@ int radeon_preinit(struct drm_device *dev, unsigned long flags)
 		break;
 	}
 
-	ret = drm_initmap(dev, drm_get_resource_start(dev, 2),
-			  drm_get_resource_len(dev, 2), 2, _DRM_REGISTERS, _DRM_READ_ONLY);
-	if (ret != 0)
-		return ret;
-
-	ret = drm_initmap(dev, drm_get_resource_start(dev, 0),
-			  drm_get_resource_len(dev, 0), 0, _DRM_FRAME_BUFFER,
-			  _DRM_WRITE_COMBINING);
-	if (ret != 0)
-		return ret;
-
-	/* The original method of detecting AGP is known to not work correctly,
-	 * according to Mike Harris.  The solution is to walk the capabilities
-	 * list, which should be done in drm_device_is_agp().
-	 */
 	if (drm_device_is_agp(dev))
 		dev_priv->flags |= CHIP_IS_AGP;
 
 	DRM_DEBUG("%s card detected\n",
 		  ((dev_priv->flags & CHIP_IS_AGP) ? "AGP" : "PCI"));
 
-#if defined(__linux__)
-	/* Check if we need a reset */
-	if (!
-	    (dev_priv->mmio =
-	     drm_core_findmap(dev, pci_resource_start(dev->pdev, 2))))
-		return DRM_ERR(ENOMEM);
-#endif
 	return ret;
+}
+
+int radeon_presetup(struct drm_device *dev)
+{
+	int ret;
+	drm_local_map_t *map;
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
+	ret = drm_addmap(dev, drm_get_resource_start(dev, 2),
+			 drm_get_resource_len(dev, 2), _DRM_REGISTERS,
+			 _DRM_READ_ONLY, &dev_priv->mmio);
+	if (ret != 0)
+		return ret;
+
+	ret = drm_addmap(dev, drm_get_resource_start(dev, 0),
+			 drm_get_resource_len(dev, 0), _DRM_FRAME_BUFFER,
+			 _DRM_WRITE_COMBINING, &map);
+	if (ret != 0)
+		return ret;
+
+	return 0;
 }
 
 int radeon_postcleanup(struct drm_device *dev)

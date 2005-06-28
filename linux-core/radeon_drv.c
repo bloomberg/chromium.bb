@@ -77,6 +77,7 @@ static struct drm_driver driver = {
 	    DRIVER_IRQ_VBL,
 	.dev_priv_size = sizeof(drm_radeon_buf_priv_t),
 	.preinit = radeon_preinit,
+	.presetup = radeon_presetup,
 	.postcleanup = radeon_postcleanup,
 	.prerelease = radeon_driver_prerelease,
 	.pretakedown = radeon_driver_pretakedown,

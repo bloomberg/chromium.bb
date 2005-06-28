@@ -107,18 +107,6 @@ typedef struct drm_mga_private {
 	 */
 	u32 wagp_enable;
 
-	
-	/**
-	 * \name Handles for PCI consistent memory.
-	 * 
-	 * \sa drm_mga_private_t::primary, drm_mga_private_t::warp
-	 */
-	/*@{*/
-	drm_dma_handle_t * warp_dmah;    /**< Handle for WARP ucode region. */
-	drm_dma_handle_t * primary_dmah; /**< Handle for primary DMA region. */
-	/*@}*/
-
-
 	/**
 	 * \name MMIO region parameters.
 	 * 

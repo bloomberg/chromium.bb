@@ -883,6 +883,7 @@ do {									\
 } while (0)
 
 extern int radeon_preinit(struct drm_device *dev, unsigned long flags);
+extern int radeon_presetup(struct drm_device *dev);
 extern int radeon_postcleanup(struct drm_device *dev);
 
 #define CP_PACKET0( reg, n )						\
