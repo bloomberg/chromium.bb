@@ -90,7 +90,6 @@ static struct drm_driver driver = {
 	.postinit = postinit,
 	.version = version,
 	.ioctls = i915_ioctls,
-	.power = i915_power,
 	.fops = {
 		.owner = THIS_MODULE,
 		.open = drm_open,

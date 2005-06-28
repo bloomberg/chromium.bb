@@ -268,9 +268,6 @@ int drm_takedown(drm_device_t * dev)
 	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 		drm_dma_takedown(dev);
 
-	if (drm_fb_loaded)
-		drm_pm_takedown(dev);
-
 	if (dev->lock.hw_lock) {
 		dev->sigdata.lock = dev->lock.hw_lock = NULL;	/* SHM removed */
 		dev->lock.filp = NULL;
@@ -339,9 +336,6 @@ int drm_init(struct drm_driver *driver,
 	if (!drm_fb_loaded)
 		pci_register_driver(&driver->pci_driver);
 	else {
-		if ((rc = drm_pm_init()))
-			return rc;
-
 		for (i = 0; pciidlist[i].vendor != 0; i++) {
 			pid = &pciidlist[i];
 
@@ -355,7 +349,6 @@ int drm_init(struct drm_driver *driver,
 				pci_dev_get(pdev);
 				if ((rc = drm_get_dev(pdev, &pciidlist[i], driver))) {
 					pci_dev_put(pdev);
-					drm_pm_exit();
 					return rc;
 				}
 			}
@@ -542,7 +535,6 @@ static void __exit drm_core_exit(void)
 	unregister_chrdev(DRM_MAJOR, "drm");
 
 	drm_free(drm_heads, sizeof(*drm_heads) * cards_limit, DRM_MEM_STUB);
-	drm_pm_exit();
 }
 
 module_init(drm_core_init);

@@ -80,7 +80,6 @@
 #endif
 #include <linux/poll.h>
 #include <asm/pgalloc.h>
-#include <linux/sysdev.h>
 #include "drm.h"
 
 #define __OS_HAS_AGP (defined(CONFIG_AGP) || (defined(CONFIG_AGP_MODULE) && defined(MODULE)))
@@ -542,7 +541,6 @@ struct drm_driver {
 				      int new);
 	int (*kernel_context_switch_unlock) (struct drm_device * dev);
 	int (*vblank_wait) (struct drm_device * dev, unsigned int *sequence);
-	int (*power) (struct drm_device * dev, unsigned int state);
 
 	/**
 	 * Called by \c drm_device_is_agp.  Typically used to determine if a
@@ -722,8 +720,6 @@ typedef struct drm_device {
 	struct drm_driver *driver;
 	drm_local_map_t *agp_buffer_map;
 	drm_head_t primary;		/**< primary screen head */
-
-	struct sys_device sysdev;	/**< Power Management device structure */
 } drm_device_t;
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,

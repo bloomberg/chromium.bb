@@ -94,10 +94,6 @@ static int fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 
 	dev->driver = driver;
 
-	if (drm_fb_loaded)
-		if ((retcode = drm_pm_setup( dev )))
-			goto error_out_unreg;
-
 	if (dev->driver->preinit)
 		if ((retcode = dev->driver->preinit(dev, ent->driver_data)))
 			goto error_out_unreg;

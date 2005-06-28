@@ -165,29 +165,3 @@ int i915_resume( struct pci_dev *pdev )
 
 	return 0;
 }
-
-int i915_power( drm_device_t *dev, unsigned int state )
-{
-	drm_i915_private_t *dev_priv =
-		(drm_i915_private_t *)dev->dev_private;
-
-	DRM_DEBUG("%s state=%d\n", __FUNCTION__, state);
-
-	if (!dev_priv) return 0;
-
-	/* Save state for power up later */
-	if (state != 0) {
-		I915_WRITE( SRX_INDEX, SR01 );
-		dev_priv->sr01 = I915_READ( SRX_DATA );
-		dev_priv->dvoc = I915_READ( DVOC );
-		dev_priv->dvob = I915_READ( DVOB );
-		dev_priv->lvds = I915_READ( LVDS );
-		dev_priv->adpa = I915_READ( ADPA );
-		dev_priv->ppcr = I915_READ( PPCR );
-	}
-
-	/* D0: set DPMS mode on */
-	i915_set_dpms(dev, state);
-
-	return 0;
-}
