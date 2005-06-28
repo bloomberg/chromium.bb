@@ -40,20 +40,24 @@ FcValuePrint (const FcValue v)
 	printf (" %g(f)", v.u.d);
 	break;
     case FcTypeString:
-	printf (" \"%s\"", v.u.s);
+	printf (" \"%s\"", FcObjectPtrU(v.u.si));
 	break;
     case FcTypeBool:
 	printf (" %s", v.u.b ? "FcTrue" : "FcFalse");
 	break;
     case FcTypeMatrix:
-	printf (" (%f %f; %f %f)", v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);
+    {
+	FcMatrix *m = FcMatrixPtrU(v.u.mi);
+
+	printf (" (%f %f; %f %f)", m->xx, m->xy, m->yx, m->yy);
 	break;
+    }
     case FcTypeCharSet:	/* XXX */
 	printf (" set");
 	break;
     case FcTypeLangSet:
 	printf (" ");
-	FcLangSetPrint (v.u.l);
+	FcLangSetPrint (FcLangSetPtrU(v.u.li));
 	break;
     case FcTypeFTFace:
 	printf (" face");
@@ -62,12 +66,12 @@ FcValuePrint (const FcValue v)
 }
 
 void
-FcValueListPrint (const FcValueList *l)
+FcValueListPrint (FcValueListPtr l)
 {
-    for (; l; l = l->next)
+    for (; FcValueListPtrU(l); l = FcValueListPtrU(l)->next)
     {
-	FcValuePrint (l->value);
-	switch (l->binding) {
+	FcValuePrint (FcValueListPtrU(l)->value);
+	switch (FcValueListPtrU(l)->binding) {
 	case FcValueBindingWeak:
 	    printf ("(w)");
 	    break;
@@ -89,9 +93,9 @@ FcLangSetPrint (const FcLangSet *ls)
     
     FcStrBufInit (&buf, init_buf, sizeof (init_buf));
     if (FcNameUnparseLangSet (&buf, ls) && FcStrBufChar (&buf,'\0'))
-	printf ("%s", buf.buf);
+       printf ("%s", buf.buf);
     else
-	printf ("langset (alloc error)");
+       printf ("langset (alloc error)");
     FcStrBufDestroy (&buf);
 }
 
@@ -109,8 +113,8 @@ FcPatternPrint (const FcPattern *p)
     printf ("Pattern %d of %d\n", p->num, p->size);
     for (i = 0; i < p->num; i++)
     {
-	e = &p->elts[i];
-	printf ("\t%s:", e->object);
+	e = FcPatternEltU(p->elts) + i;
+	printf ("\t%s:", FcObjectPtrU(e->object));
 	FcValueListPrint (e->values);
 	printf ("\n");
     }

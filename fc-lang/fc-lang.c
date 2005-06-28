@@ -220,7 +220,7 @@ main (int argc, char **argv)
     FILE	*f;
     int		ncountry = 0;
     int		i = 0;
-    FcCharLeaf	**leaves, **sleaves;
+    FcCharLeaf	**leaves;
     int		total_leaves = 0;
     int		l, sl, tl;
     int		c;
@@ -268,14 +268,13 @@ main (int argc, char **argv)
      */
     for (i = 0; sets[i]; i++)
     {
-	sleaves = sets[i]->leaves;
 	for (sl = 0; sl < sets[i]->num; sl++)
 	{
 	    for (l = 0; l < tl; l++)
-		if (leaves[l] == sleaves[sl])
+		if (leaves[l] == FcCharSetGetLeaf(sets[i], sl))
 		    break;
 	    if (l == tl)
-		leaves[tl++] = sleaves[sl];
+		leaves[tl++] = FcCharSetGetLeaf(sets[i], sl);
 	}
     }
 
@@ -358,7 +357,7 @@ main (int argc, char **argv)
 	    if (n % 8 == 0)
 		printf ("   ");
 	    for (l = 0; l < tl; l++)
-		if (leaves[l] == sets[i]->leaves[n])
+		if (leaves[l] == FcCharSetGetLeaf(sets[i], n))
 		    break;
 	    if (l == tl)
 		fatal (names[i], 0, "can't find leaf");
@@ -377,7 +376,7 @@ main (int argc, char **argv)
 	{
 	    if (n % 8 == 0)
 		printf ("   ");
-	    printf (" 0x%04x,", sets[i]->numbers[n]);
+	    printf (" 0x%04x,", FcCharSetGetNumbers(sets[i])[n]);
 	    if (n % 8 == 7)
 		printf ("\n");
 	}
@@ -399,9 +398,9 @@ main (int argc, char **argv)
 	if (j < 0)
 	    j = i;
 	printf ("    { (FcChar8 *) \"%s\",\n"
-		"      { FC_REF_CONSTANT, %d, "
-		"(FcCharLeaf **) leaves_%s, "
-		"(FcChar16 *) numbers_%s } },\n",
+		"      { FC_REF_CONSTANT, %d, FcStorageDynamic, "
+		"{ { (FcCharLeaf **) leaves_%s, "
+		"(FcChar16 *) numbers_%s } } } },\n",
 		langs[i],
 		sets[j]->num, names[j], names[j]);
     }

@@ -1878,8 +1878,8 @@ FcPopValue (FcConfigParse *parse)
     
     switch (vstack->tag) {
     case FcVStackString:
-	value.u.s = FcStrCopy (vstack->u.string);
-	if (value.u.s)
+	value.u.si = FcObjectPtrCreateDynamic(FcStrCopy (vstack->u.string));
+	if (FcObjectPtrU(value.u.si))
 	    value.type = FcTypeString;
 	break;
     case FcVStackConstant:
@@ -1895,8 +1895,8 @@ FcPopValue (FcConfigParse *parse)
 	value.type = FcTypeInteger;
 	break;
     case FcVStackMatrix:
-	value.u.m = FcMatrixCopy (vstack->u.matrix);
-	if (value.u.m)
+	value.u.mi = FcMatrixPtrCreateDynamic(FcMatrixCopy (vstack->u.matrix));
+	if (FcMatrixPtrU(value.u.mi))
 	    value.type = FcTypeMatrix;
 	break;
     case FcVStackBool:
@@ -2281,10 +2281,9 @@ FcConfigParseAndLoadDir (FcConfig	*config,
     if (ret)
     {
 	int i;
-	qsort (files->strs, files->num, sizeof (FcChar8 *), 
-	       (int (*)(const void *, const void *)) FcStrCmp);
+	FcStrSetSort (files);
 	for (i = 0; ret && i < files->num; i++)
-	    ret = FcConfigParseAndLoad (config, files->strs[i], complain);
+	    ret = FcConfigParseAndLoad (config, FcStrSetGet(files, i), complain);
     }
 bail3:
     FcStrSetDestroy (files);

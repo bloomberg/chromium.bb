@@ -196,22 +196,59 @@ typedef enum _FcResult {
     FcResultOutOfMemory
 } FcResult;
 
+typedef enum _FcStorage {
+    FcStorageStatic, FcStorageDynamic
+} FcStorage;
+
 typedef struct _FcPattern   FcPattern;
 
 typedef struct _FcLangSet   FcLangSet;
 
+typedef struct _FcMatrixPtr {
+    FcStorage               storage;
+    union {
+        int		    stat;
+        FcMatrix	    *dyn;
+    } u;
+} FcMatrixPtr;
+
+typedef struct _FcCharSetPtr {
+    FcStorage               storage;
+    union {
+        int		    stat;
+        FcCharSet	    *dyn;
+    } u;
+} FcCharSetPtr;
+
+typedef struct _FcLangSetPtr {
+    FcStorage               storage;
+    union {
+        int		    stat;
+        FcLangSet	    *dyn;
+    } u;
+} FcLangSetPtr;
+
+typedef struct _FcObjectPtr {
+    FcStorage		    storage;
+    union {
+	int		    stat;
+	const FcChar8 *	    dyn;
+    } u;
+    FcChar32		    hash;
+} FcObjectPtr;
+
 typedef struct _FcValue {
     FcType	type;
     union {
-	const FcChar8	*s;
+	FcObjectPtr     si;
 	int		i;
 	FcBool		b;
 	double		d;
-	const FcMatrix	*m;
-	const FcCharSet	*c;
+	FcMatrixPtr     mi;
+	FcCharSetPtr    ci;
 	void		*f;
 	const FcPattern	*p;
-	const FcLangSet	*l;
+	FcLangSetPtr    li;
     } u;
 } FcValue;
 
@@ -224,7 +261,7 @@ typedef struct _FcFontSet {
 typedef struct _FcObjectSet {
     int		nobject;
     int		sobject;
-    const char	**objects;
+    FcObjectPtr	*objects;
 } FcObjectSet;
     
 typedef enum _FcMatchKind {
@@ -617,6 +654,9 @@ FcMatrixScale (FcMatrix *m, double sx, double sy);
 
 void
 FcMatrixShear (FcMatrix *m, double sh, double sv);
+
+FcMatrix *
+FcMatrixPtrU (FcMatrixPtr mi);
 
 /* fcname.c */
 

@@ -1166,3 +1166,35 @@ bail1:
 bail0:
     return FcFalse;
 }
+
+void
+FcCacheClearStatic()
+{
+    FcFontSetClearStatic();
+    FcPatternClearStatic();
+    FcValueListClearStatic();
+    FcObjectClearStatic();
+    FcMatrixClearStatic();
+    FcCharSetClearStatic();
+    FcLangSetClearStatic();
+}
+
+FcBool
+FcCachePrepareSerialize (FcConfig * config)
+{
+    int i;
+    for (i = FcSetSystem; i <= FcSetApplication; i++)
+	if (config->fonts[i] && !FcFontSetPrepareSerialize(config->fonts[i]))
+	    return FcFalse;
+    return FcTrue;
+}
+
+FcBool
+FcCacheSerialize (FcConfig * config)
+{
+    int i;
+    for (i = FcSetSystem; i <= FcSetApplication; i++)
+	if (config->fonts[i] && !FcFontSetSerialize(config->fonts[i]))
+	    return FcFalse;
+    return FcTrue;
+}

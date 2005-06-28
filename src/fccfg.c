@@ -550,12 +550,13 @@ FcConfigPromote (FcValue v, FcValue u)
     }
     else if (v.type == FcTypeVoid && u.type == FcTypeMatrix)
     {
-	v.u.m = &FcIdentityMatrix;
+	v.u.mi = FcIdentityMatrix;
 	v.type = FcTypeMatrix;
     }
     else if (v.type == FcTypeString && u.type == FcTypeLangSet)
     {
-	v.u.l = FcLangSetPromote (v.u.s);
+	v.u.li = FcLangSetPtrCreateDynamic(FcLangSetPromote 
+					   (FcObjectPtrU(v.u.si)));
 	v.type = FcTypeLangSet;
     }
     return v;
@@ -623,16 +624,19 @@ FcConfigCompareValue (const FcValue	left_o,
 	    switch (op) {
 	    case FcOpEqual:    
 	    case FcOpListing:
-		ret = FcStrCmpIgnoreCase (left.u.s, right.u.s) == 0;
+		ret = FcStrCmpIgnoreCase (FcObjectPtrU(left.u.si), 
+					  FcObjectPtrU(right.u.si)) == 0;
 		break;
 	    case FcOpContains:
-		ret = FcStrStrIgnoreCase (left.u.s, right.u.s) != 0;
+		ret = FcStrStrIgnoreCase (FcObjectPtrU(left.u.si), 
+					  FcObjectPtrU(right.u.si)) != 0;
 		break;
 	    case FcOpNotEqual:
 		ret = FcStrCmpIgnoreCase (left.u.s, right.u.s) != 0;
 		break;
 	    case FcOpNotContains:
-		ret = FcStrStrIgnoreCase (left.u.s, right.u.s) == 0;
+		ret = FcStrCmpIgnoreCase (FcObjectPtrU(left.u.si), 
+					  FcObjectPtrU(right.u.si)) == 0;
 		break;
 	    default:
 		break;
@@ -643,11 +647,11 @@ FcConfigCompareValue (const FcValue	left_o,
 	    case FcOpEqual:
 	    case FcOpContains:
 	    case FcOpListing:
-		ret = FcMatrixEqual (left.u.m, right.u.m);
+		ret = FcMatrixEqual (FcMatrixPtrU(left.u.mi), FcMatrixPtrU(right.u.mi));
 		break;
 	    case FcOpNotEqual:
 	    case FcOpNotContains:
-		ret = !FcMatrixEqual (left.u.m, right.u.m);
+		ret = !FcMatrixEqual (FcMatrixPtrU(left.u.mi), FcMatrixPtrU(right.u.mi));
 		break;
 	    default:
 		break;
@@ -658,17 +662,17 @@ FcConfigCompareValue (const FcValue	left_o,
 	    case FcOpContains:
 	    case FcOpListing:
 		/* left contains right if right is a subset of left */
-		ret = FcCharSetIsSubset (right.u.c, left.u.c);
+		ret = FcCharSetIsSubset (FcCharSetPtrU(right.u.ci), FcCharSetPtrU(left.u.ci));
 		break;
 	    case FcOpNotContains:
 		/* left contains right if right is a subset of left */
-		ret = !FcCharSetIsSubset (right.u.c, left.u.c);
+		ret = !FcCharSetIsSubset (FcCharSetPtrU(right.u.ci), FcCharSetPtrU(left.u.ci));
 		break;
 	    case FcOpEqual:
-		ret = FcCharSetEqual (left.u.c, right.u.c);
+		ret = FcCharSetEqual (FcCharSetPtrU(left.u.ci), FcCharSetPtrU(right.u.ci));
 		break;
 	    case FcOpNotEqual:
-		ret = !FcCharSetEqual (left.u.c, right.u.c);
+		ret = !FcCharSetEqual (FcCharSetPtrU(left.u.ci), FcCharSetPtrU(right.u.ci));
 		break;
 	    default:
 		break;
@@ -678,16 +682,16 @@ FcConfigCompareValue (const FcValue	left_o,
 	    switch (op) {
 	    case FcOpContains:
 	    case FcOpListing:
-		ret = FcLangSetContains (left.u.l, right.u.l);
+		ret = FcLangSetContains (FcLangSetPtrU(left.u.li), FcLangSetPtrU(right.u.li));
 		break;
 	    case FcOpNotContains:
-		ret = !FcLangSetContains (left.u.l, right.u.l);
+		ret = !FcLangSetContains (FcLangSetPtrU(left.u.li), FcLangSetPtrU(right.u.li));
 		break;
 	    case FcOpEqual:
-		ret = FcLangSetEqual (left.u.l, right.u.l);
+		ret = FcLangSetEqual (FcLangSetPtrU(left.u.li), FcLangSetPtrU(right.u.li));
 		break;
 	    case FcOpNotEqual:
-		ret = !FcLangSetEqual (left.u.l, right.u.l);
+		ret = !FcLangSetEqual (FcLangSetPtrU(left.u.li), FcLangSetPtrU(right.u.li));
 		break;
 	    default:
 		break;
@@ -755,17 +759,17 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	break;
     case FcOpString:
 	v.type = FcTypeString;
-	v.u.s = e->u.sval;
+	v.u.si = FcObjectPtrCreateDynamic(e->u.sval);
 	v = FcValueSave (v);
 	break;
     case FcOpMatrix:
 	v.type = FcTypeMatrix;
-	v.u.m = e->u.mval;
+	v.u.mi = FcMatrixPtrCreateDynamic(e->u.mval);
 	v = FcValueSave (v);
 	break;
     case FcOpCharSet:
 	v.type = FcTypeCharSet;
-	v.u.c = e->u.cval;
+	v.u.ci = FcCharSetPtrCreateDynamic(e->u.cval);
 	v = FcValueSave (v);
 	break;
     case FcOpBool:
@@ -873,8 +877,11 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		switch (e->op) {
 		case FcOpPlus:
 		    v.type = FcTypeString;
-		    v.u.s = FcStrPlus (vl.u.s, vr.u.s);
-		    if (!v.u.s)
+		    v.u.si = FcObjectPtrCreateDynamic 
+			(FcStrPlus (FcObjectPtrU(vl.u.si), 
+				    FcObjectPtrU(vr.u.si)));
+			 
+		    if (!FcObjectPtrU(v.u.si))
 			v.type = FcTypeVoid;
 		    break;
 		default:
@@ -890,8 +897,9 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		    if (m)
 		    {
 			FcMemAlloc (FC_MEM_MATRIX, sizeof (FcMatrix));
-			FcMatrixMultiply (m, vl.u.m, vr.u.m);
-			v.u.m = m;
+			FcMatrixMultiply (m, FcMatrixPtrU(vl.u.mi), 
+					  FcMatrixPtrU(vr.u.mi));
+			v.u.mi = FcMatrixPtrCreateDynamic(m);
 		    }
 		    else
 		    {
@@ -1021,7 +1029,7 @@ FcConfigMatchValueList (FcPattern	*p,
 	    e = 0;
 	}
 
-	for (v = values; v; v = v->next)
+	for (v = values; v; v = FcValueListPtrU(v->next))
 	{
 	    /* Compare the pattern value to the match expression value */
 	    if (FcConfigCompareValue (v->value, t->op, value))
@@ -1047,6 +1055,7 @@ static FcValueList *
 FcConfigValues (FcPattern *p, FcExpr *e, FcValueBinding binding)
 {
     FcValueList	*l;
+    FcValueListPtr lp;
     
     if (!e)
 	return 0;
@@ -1057,56 +1066,63 @@ FcConfigValues (FcPattern *p, FcExpr *e, FcValueBinding binding)
     if (e->op == FcOpComma)
     {
 	l->value = FcConfigEvaluate (p, e->u.tree.left);
-	l->next  = FcConfigValues (p, e->u.tree.right, binding);
+	l->next  = FcValueListPtrCreateDynamic(FcConfigValues (p, e->u.tree.right, binding));
     }
     else
     {
 	l->value = FcConfigEvaluate (p, e);
-	l->next  = 0;
+	l->next  = FcValueListPtrCreateDynamic(0);
     }
     l->binding = binding;
-    while (l && l->value.type == FcTypeVoid)
+    lp = FcValueListPtrCreateDynamic(l);
+    while (FcValueListPtrU(lp) && FcValueListPtrU(lp)->value.type == FcTypeVoid)
     {
-	FcValueList	*next = l->next;
-	
-	FcMemFree (FC_MEM_VALLIST, sizeof (FcValueList));
-	free (l);
-	l = next;
+	FcValueListPtr	next = FcValueListPtrU(lp)->next;
+
+	if (lp.storage == FcStorageDynamic)
+	{
+	    FcMemFree (FC_MEM_VALLIST, sizeof (FcValueList));
+	    free (l);
+	}
+	lp = next;
     }
     return l;
 }
 
 static FcBool
-FcConfigAdd (FcValueList    **head,
+FcConfigAdd (FcValueListPtr *head,
 	     FcValueList    *position,
 	     FcBool	    append,
 	     FcValueList    *new)
 {
-    FcValueList	    **prev, *last, *v;
+    FcValueListPtr  *prev, last, v;
     FcValueBinding  sameBinding;
     
     if (position)
 	sameBinding = position->binding;
     else
 	sameBinding = FcValueBindingWeak;
-    for (v = new; v; v = v->next)
-	if (v->binding == FcValueBindingSame)
-	    v->binding = sameBinding;
+    for (v = FcValueListPtrCreateDynamic(new); FcValueListPtrU(v); 
+	 v = FcValueListPtrU(v)->next)
+	if (FcValueListPtrU(v)->binding == FcValueBindingSame)
+	    FcValueListPtrU(v)->binding = sameBinding;
     if (append)
     {
 	if (position)
 	    prev = &position->next;
 	else
-	    for (prev = head; *prev; prev = &(*prev)->next)
+	    for (prev = head; FcValueListPtrU(*prev); 
+		 prev = &(FcValueListPtrU(*prev)->next))
 		;
     }
     else
     {
 	if (position)
 	{
-	    for (prev = head; *prev; prev = &(*prev)->next)
+	    for (prev = head; FcValueListPtrU(*prev); 
+		 prev = &(FcValueListPtrU(*prev)->next))
 	    {
-		if (*prev == position)
+		if (FcValueListPtrU(*prev) == position)
 		    break;
 	    }
 	}
@@ -1115,7 +1131,7 @@ FcConfigAdd (FcValueList    **head,
 
 	if (FcDebug () & FC_DBG_EDIT)
 	{
-	    if (!*prev)
+	    if (!FcValueListPtrU(*prev))
 		printf ("position not on list\n");
 	}
     }
@@ -1129,12 +1145,12 @@ FcConfigAdd (FcValueList    **head,
     
     if (new)
     {
-	last = new;
-	while (last->next)
-	    last = last->next;
+	last = FcValueListPtrCreateDynamic(new);
+	while (FcValueListPtrU(FcValueListPtrU(last)->next))
+	    last = FcValueListPtrU(last)->next;
     
-	last->next = *prev;
-	*prev = new;
+	FcValueListPtrU(last)->next = *prev;
+	*prev = FcValueListPtrCreateDynamic(new);
     }
     
     if (FcDebug () & FC_DBG_EDIT)
@@ -1148,18 +1164,19 @@ FcConfigAdd (FcValueList    **head,
 }
 
 static void
-FcConfigDel (FcValueList    **head,
+FcConfigDel (FcValueListPtr *head,
 	     FcValueList    *position)
 {
-    FcValueList    **prev;
+    FcValueListPtr *prev;
 
-    for (prev = head; *prev; prev = &(*prev)->next)
+    for (prev = head; FcValueListPtrU(*prev); 
+	 prev = &(FcValueListPtrU(*prev)->next))
     {
-	if (*prev == position)
+	if (FcValueListPtrU(*prev) == position)
 	{
 	    *prev = position->next;
-	    position->next = 0;
-	    FcValueListDestroy (position);
+	    position->next = FcValueListPtrCreateDynamic(0);
+	    FcValueListDestroy (FcValueListPtrCreateDynamic(position));
 	    break;
 	}
     }
@@ -1191,8 +1208,8 @@ FcConfigPatternDel (FcPattern	*p,
     FcPatternElt    *e = FcPatternFindElt (p, object);
     if (!e)
 	return;
-    while (e->values)
-	FcConfigDel (&e->values, e->values);
+    while (FcValueListPtrU(e->values))
+	FcConfigDel (&e->values, FcValueListPtrU(e->values));
 }
 
 static void
@@ -1202,7 +1219,7 @@ FcConfigPatternCanon (FcPattern	    *p,
     FcPatternElt    *e = FcPatternFindElt (p, object);
     if (!e)
 	return;
-    if (!e->values)
+    if (!FcValueListPtrU(e->values))
 	FcPatternDel (p, object);
 }
 
@@ -1281,12 +1298,12 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 	     * Check to see if there is a match, mark the location
 	     * to apply match-relative edits
 	     */
-	    st[i].value = FcConfigMatchValueList (m, t, st[i].elt->values);
+	    st[i].value = FcConfigMatchValueList (m, t, FcValueListPtrU(st[i].elt->values));
 	    if (!st[i].value)
 		break;
-	    if (t->qual == FcQualFirst && st[i].value != st[i].elt->values)
+	    if (t->qual == FcQualFirst && st[i].value != FcValueListPtrU(st[i].elt->values))
 		break;
-	    if (t->qual == FcQualNotFirst && st[i].value == st[i].elt->values)
+	    if (t->qual == FcQualNotFirst && st[i].value == FcValueListPtrU(st[i].elt->values))
 		break;
 	}
 	if (t)
@@ -1339,7 +1356,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		if (t)
 		{
 		    FcValueList	*thisValue = st[i].value;
-		    FcValueList	*nextValue = thisValue ? thisValue->next : 0;
+		    FcValueList	*nextValue = thisValue ? FcValueListPtrU(thisValue->next) : 0;
 		    
 		    /*
 		     * Append the new list of values after the current value
@@ -1840,7 +1857,7 @@ FcConfigGlobsMatch (const FcStrSet	*globs,
     int	i;
 
     for (i = 0; i < globs->num; i++)
-	if (FcConfigGlobMatch (globs->strs[i], string))
+	if (FcConfigGlobMatch (FcStrSetGet(globs, i), string))
 	    return FcTrue;
     return FcFalse;
 }

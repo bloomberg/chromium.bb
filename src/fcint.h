@@ -41,6 +41,7 @@
 #include <config.h>
 #endif
 
+/* unused */
 typedef struct _FcSymbolic {
     const char	*name;
     int		value;
@@ -108,22 +109,46 @@ typedef enum _FcValueBinding {
     FcValueBindingWeak, FcValueBindingStrong, FcValueBindingSame
 } FcValueBinding;
 
+typedef struct _FcStrSetPtr {
+    FcStorage               storage;
+    union {
+        int		    stat;
+        struct _FcStrSet    *dyn;
+    } u;
+} FcStrSetPtr;
+
+typedef struct _FcValueListPtr {
+    FcStorage               storage;
+    union {
+        int		    stat;
+        struct _FcValueList *dyn;
+    } u;
+} FcValueListPtr;
+
 typedef struct _FcValueList {
-    struct _FcValueList    *next;
+    FcValueListPtr	    next;
+
     FcValue		    value;
     FcValueBinding	    binding;
 } FcValueList;
 
-typedef struct _FcPatternElt {
-    const char	    *object;
-    FcValueList	    *values;
-} FcPatternElt;
+typedef struct _FcPatternEltPtr {
+    FcStorage               storage;
+    union {
+        int		    stat;
+        struct _FcPatternElt *dyn;
+    } u;
+} FcPatternEltPtr;
 
+typedef struct _FcPatternElt {
+    FcObjectPtr             object;
+    FcValueListPtr          values;
+} FcPatternElt;
 
 struct _FcPattern {
     int		    num;
     int		    size;
-    FcPatternElt    *elts;
+    FcPatternEltPtr elts;
     int		    ref;
 };
 
@@ -197,15 +222,28 @@ typedef struct _FcCharLeaf {
 struct _FcCharSet {
     int		    ref;	/* reference count */
     int		    num;	/* size of leaves and numbers arrays */
-    FcCharLeaf	    **leaves;
-    FcChar16	    *numbers;
+    FcStorage	    storage;
+    union {
+	struct {
+	    FcCharLeaf  **leaves;
+	    FcChar16    *numbers;
+	} dyn;
+	struct {
+	    int	    	leafidx_offset;
+	    int	      	numbers_offset;
+	} stat;
+    } u;
 };
 
 struct _FcStrSet {
     int		    ref;	/* reference count */
     int		    num;
     int		    size;
-    FcChar8	    **strs;
+    FcStorage	    storage;
+    union {
+	FcChar8	    **strs;
+	int	    stridx_offset;
+    } u;
 };
 
 struct _FcStrList {
@@ -527,9 +565,30 @@ FcNameParseCharSet (FcChar8 *string);
 FcCharLeaf *
 FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4);
 
+void
+FcCharSetPtrDestroy (FcCharSetPtr fcs);
+
+void
+FcCharSetClearStatic(void);
+
+FcBool
+FcCharSetPrepareSerialize(FcCharSet *c);
+
+FcCharSetPtr
+FcCharSetSerialize(FcCharSet *c);
+
+FcCharSetPtr
+FcCharSetPtrCreateDynamic(FcCharSet *c);
+
+FcCharLeaf *
+FcCharSetGetLeaf(const FcCharSet *c, int i);
+
+FcChar16 *
+FcCharSetGetNumbers(const FcCharSet *c);
+
 /* fcdbg.c */
 void
-FcValueListPrint (const FcValueList *l);
+FcValueListPrint (const FcValueListPtr l);
 
 void
 FcLangSetPrint (const FcLangSet *ls);
@@ -551,6 +610,9 @@ FcSubstPrint (const FcSubst *subst);
 
 int
 FcDebug (void);
+
+FcCharSet *
+FcCharSetPtrU (FcCharSetPtr mi);
 
 /* fcdir.c */
 
@@ -596,6 +658,16 @@ const FcCharMap *
 FcFreeTypeGetPrivateMap (FT_Encoding encoding);
     
 /* fcfs.c */
+
+void
+FcFontSetClearStatic (void);
+
+FcBool
+FcFontSetPrepareSerialize (FcFontSet * s);
+
+FcBool
+FcFontSetSerialize (FcFontSet * s);
+
 /* fcgram.y */
 int
 FcConfigparse (void);
@@ -676,6 +748,24 @@ FcNameParseLangSet (const FcChar8 *string);
 FcBool
 FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls);
 
+void
+FcLangSetClearStatic (void);
+
+FcBool
+FcLangSetPrepareSerialize (FcLangSet *l);
+
+FcLangSetPtr
+FcLangSetSerialize (FcLangSet *l);
+
+FcLangSet *
+FcLangSetPtrU (FcLangSetPtr li);
+
+FcLangSetPtr
+FcLangSetPtrCreateDynamic (FcLangSet *l);
+
+void
+FcLangSetPtrDestroy (FcLangSetPtr li);
+
 /* fclist.c */
 
 FcBool
@@ -684,6 +774,18 @@ FcListPatternMatchAny (const FcPattern *p,
 
 /* fcmatch.c */
 
+/* fcmmap.c */
+
+void
+FcCacheClearStatic(void);
+
+FcBool
+FcCachePrepareSerialize(FcConfig * config);
+
+FcBool
+FcCacheSerialize (FcConfig * config);
+
+
 /* fcname.c */
 
 FcBool
@@ -691,8 +793,8 @@ FcNameBool (const FcChar8 *v, FcBool *result);
 
 /* fcpat.c */
 void
-FcValueListDestroy (FcValueList *l);
-    
+FcValueListDestroy (FcValueListPtr l);
+
 FcPatternElt *
 FcPatternFindElt (const FcPattern *p, const char *object);
 
@@ -715,19 +817,100 @@ FcPatternThawAll (void);
 FcBool
 FcPatternAppend (FcPattern *p, FcPattern *s);
 
-const char *
+void
+FcObjectClearStatic(void);
+
+FcObjectPtr
 FcObjectStaticName (const char *name);
+
+FcBool
+FcObjectPrepareSerialize (FcObjectPtr si);
+
+const char *
+FcObjectPtrU (FcObjectPtr p);
+
+int
+FcObjectPtrCompare (FcObjectPtr a, FcObjectPtr b);
+
+FcObjectPtr
+FcObjectPtrCreateDynamic (const char * s);
+
+void
+FcObjectPtrDestroy (FcObjectPtr p);
+
+FcBool
+FcPatternPrepareSerialize (FcPattern *p);
+
+void
+FcValueListClearStatic (void);
+
+void
+FcPatternClearStatic (void);
+
+FcValueList * 
+FcValueListPtrU(FcValueListPtr p);
+
+FcPatternElt *
+FcPatternEltU (FcPatternEltPtr pei);
+
+FcValueListPtr
+FcValueListPtrCreateDynamic(FcValueList * p);
+
+FcBool
+FcValueListPrepareSerialize (FcValueList *p);
+
+FcValueListPtr
+FcValueListSerialize(FcValueList *pi);
+
+FcPattern *
+FcPatternSerialize (FcPattern * p);
 
 /* fcrender.c */
 
 /* fcmatrix.c */
 
-extern const FcMatrix    FcIdentityMatrix;
+extern const FcMatrixPtr    FcIdentityMatrix;
 
 void
 FcMatrixFree (FcMatrix *mat);
 
+void
+FcMatrixPtrDestroy (FcMatrixPtr mi);
+
+FcBool
+FcMatrixPrepareSerialize(FcMatrix *m);
+
+FcMatrixPtr
+FcMatrixSerialize(FcMatrix *m);
+
+FcMatrix *
+FcMatrixPtrU (FcMatrixPtr mi);
+
+FcMatrixPtr
+FcMatrixPtrCreateDynamic (FcMatrix *m);
+
+void 
+FcMatrixClearStatic (void);
+
 /* fcstr.c */
+FcStrSet *
+FcStrSetPtrU (const FcStrSetPtr set);
+
+FcStrSetPtr
+FcStrSetPtrCreateDynamic (const FcStrSet * set);
+
+void
+FcStrSetClearStatic (void);
+
+FcBool
+FcStrSetPrepareSerialize (const FcStrSet *set);
+
+void
+FcStrSetSort (FcStrSet * set);
+
+FcChar8 *
+FcStrSetGet (const FcStrSet *set, int i);
+
 FcChar8 *
 FcStrPlus (const FcChar8 *s1, const FcChar8 *s2);
     
@@ -751,6 +934,9 @@ FcStrBufString (FcStrBuf *buf, const FcChar8 *s);
 
 FcBool
 FcStrBufData (FcStrBuf *buf, const FcChar8 *s, int len);
+
+FcStrSetPtr
+FcStrSetSerialize (FcStrSet *set);
 
 int
 FcStrCmpIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2);

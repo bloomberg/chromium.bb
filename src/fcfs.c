@@ -80,3 +80,39 @@ FcFontSetAdd (FcFontSet *s, FcPattern *font)
     s->fonts[s->nfont++] = font;
     return FcTrue;
 }
+
+FcBool
+FcFontSetPrepareSerialize (FcFontSet *s)
+{
+    int i;
+
+    for (i = 0; i < s->nfont; i++)
+	if (!FcPatternPrepareSerialize(s->fonts[i]))
+	    return FcFalse;
+
+    return FcTrue;
+}
+
+FcBool
+FcFontSetSerialize (FcFontSet * s)
+{
+    int i;
+    FcPattern * p;
+
+    for (i = 0; i < s->nfont; i++)
+    {
+	p = FcPatternSerialize (s->fonts[i]);
+	if (!p) return FcFalse;
+	FcPatternDestroy (s->fonts[i]);
+
+	s->fonts[i] = p;
+    }
+
+    return FcTrue;
+}
+
+void
+FcFontSetClearStatic (void)
+{
+    FcPatternClearStatic();
+}

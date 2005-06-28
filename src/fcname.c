@@ -321,7 +321,7 @@ FcNameConvert (FcType type, FcChar8 *string, FcMatrix *m)
 	    v.u.i = atoi ((char *) string);
 	break;
     case FcTypeString:
-	v.u.s = string;
+	v.u.si = FcObjectPtrCreateDynamic(string);
 	break;
     case FcTypeBool:
 	if (!FcNameBool (string, &v.u.b))
@@ -331,14 +331,14 @@ FcNameConvert (FcType type, FcChar8 *string, FcMatrix *m)
 	v.u.d = strtod ((char *) string, 0);
 	break;
     case FcTypeMatrix:
-	v.u.m = m;
+	v.u.mi = FcMatrixPtrCreateDynamic(m);
 	sscanf ((char *) string, "%lg %lg %lg %lg", &m->xx, &m->xy, &m->yx, &m->yy);
 	break;
     case FcTypeCharSet:
-	v.u.c = FcNameParseCharSet (string);
+	v.u.ci = FcCharSetPtrCreateDynamic(FcNameParseCharSet (string));
 	break;
     case FcTypeLangSet:
-	v.u.l = FcNameParseLangSet (string);
+	v.u.li = FcLangSetPtrCreateDynamic(FcNameParseLangSet (string));
 	break;
     default:
 	break;
@@ -436,10 +436,10 @@ FcNameParse (const FcChar8 *name)
 			{
 			    switch (v.type) {
 			    case FcTypeCharSet:
-				FcCharSetDestroy ((FcCharSet *) v.u.c);
+				FcCharSetDestroy ((FcCharSet *) FcCharSetPtrU(v.u.ci));
 				break;
 			    case FcTypeLangSet:
-				FcLangSetDestroy ((FcLangSet *) v.u.l);
+				FcLangSetDestroy ((FcLangSet *) FcLangSetPtrU(v.u.li));
 				break;
 			    default:
 				break;
@@ -448,10 +448,10 @@ FcNameParse (const FcChar8 *name)
 			}
 			switch (v.type) {
 			case FcTypeCharSet:
-			    FcCharSetDestroy ((FcCharSet *) v.u.c);
+			    FcCharSetDestroy ((FcCharSet *) FcCharSetPtrU(v.u.ci));
 			    break;
 			case FcTypeLangSet:
-			    FcLangSetDestroy ((FcLangSet *) v.u.l);
+			    FcLangSetDestroy ((FcLangSet *) FcLangSetPtrU(v.u.li));
 			    break;
 			default:
 			    break;
@@ -518,17 +518,20 @@ FcNameUnparseValue (FcStrBuf	*buf,
 	sprintf ((char *) temp, "%g", v.u.d);
 	return FcNameUnparseString (buf, temp, 0);
     case FcTypeString:
-	return FcNameUnparseString (buf, v.u.s, escape);
+	return FcNameUnparseString (buf, FcObjectPtrU(v.u.si), escape);
     case FcTypeBool:
 	return FcNameUnparseString (buf, v.u.b ? (FcChar8 *) "True" : (FcChar8 *) "False", 0);
     case FcTypeMatrix:
+    {
+	FcMatrix * m = FcMatrixPtrU(v.u.mi);
 	sprintf ((char *) temp, "%g %g %g %g", 
-		 v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);
+		 m->xx, m->xy, m->yx, m->yy);
 	return FcNameUnparseString (buf, temp, 0);
+    }
     case FcTypeCharSet:
-	return FcNameUnparseCharSet (buf, v.u.c);
+	return FcNameUnparseCharSet (buf, FcCharSetPtrU(v.u.ci));
     case FcTypeLangSet:
-	return FcNameUnparseLangSet (buf, v.u.l);
+	return FcNameUnparseLangSet (buf, FcLangSetPtrU(v.u.li));
     case FcTypeFTFace:
 	return FcTrue;
     }
@@ -537,14 +540,14 @@ FcNameUnparseValue (FcStrBuf	*buf,
 
 static FcBool
 FcNameUnparseValueList (FcStrBuf	*buf,
-			FcValueList	*v,
+			FcValueListPtr	v,
 			FcChar8		*escape)
 {
-    while (v)
+    while (FcValueListPtrU(v))
     {
-	if (!FcNameUnparseValue (buf, v->value, escape))
+	if (!FcNameUnparseValue (buf, FcValueListPtrU(v)->value, escape))
 	    return FcFalse;
-	if ((v = v->next))
+	if (FcValueListPtrU(v = FcValueListPtrU(v)->next))
 	    if (!FcNameUnparseString (buf, (FcChar8 *) ",", 0))
 		return FcFalse;
     }

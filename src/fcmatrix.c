@@ -27,7 +27,11 @@
 #include <ctype.h>
 #include "fcint.h"
 
-const FcMatrix    FcIdentityMatrix = { 1, 0, 0, 1 };
+FcMatrix    _id = { 1, 0, 0, 1 };
+const FcMatrixPtr    FcIdentityMatrix = {
+    .storage = FcStorageDynamic,
+    .u.dyn = &_id
+};
 
 FcMatrix *
 FcMatrixCopy (const FcMatrix *mat) 
@@ -44,9 +48,16 @@ FcMatrixCopy (const FcMatrix *mat)
 }
 
 void
+FcMatrixPtrDestroy (FcMatrixPtr mi)
+{
+    if (mi.storage == FcStorageDynamic)
+	FcMatrixFree (mi.u.dyn);
+}
+
+void
 FcMatrixFree (FcMatrix *mat)
 {
-    if (mat != &FcIdentityMatrix)
+    if (mat != FcMatrixPtrU(FcIdentityMatrix))
     {
 	FcMemFree (FC_MEM_MATRIX, sizeof (FcMatrix));
 	free (mat);
@@ -115,3 +126,59 @@ FcMatrixShear (FcMatrix *m, double sh, double sv)
     r.yy = 1;
     FcMatrixMultiply (m, &r, m);
 }
+
+static FcMatrix * matrices = 0;
+static int matrix_ptr = 0, matrix_count = 0;
+
+void 
+FcMatrixClearStatic (void)
+{
+    matrices = 0;
+    matrix_ptr = 0;
+    matrix_count = 0;
+}
+
+FcMatrix *
+FcMatrixPtrU (FcMatrixPtr mi)
+{
+    switch (mi.storage)
+    {
+    case FcStorageDynamic:
+	return mi.u.dyn;
+    case FcStorageStatic:
+	return &matrices[mi.u.stat];
+    default:
+	return 0;
+
+    }
+}
+
+FcMatrixPtr
+FcMatrixPtrCreateDynamic (FcMatrix *mi)
+{
+    FcMatrixPtr new;
+    new.storage = FcStorageDynamic;
+    new.u.dyn = mi;
+    return new;
+}
+
+FcBool
+FcMatrixPrepareSerialize(FcMatrix *m)
+{
+    matrix_count++;
+    return FcTrue;
+}
+
+FcMatrixPtr
+FcMatrixSerialize(FcMatrix *m)
+{
+    FcMatrixPtr new;
+
+    if (matrix_count == matrix_ptr)
+	return FcMatrixPtrCreateDynamic(0);
+
+    new.storage = FcStorageStatic;
+    new.u.stat = matrix_ptr++;
+    return new;
+}
+

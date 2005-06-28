@@ -848,8 +848,65 @@ FcStrSetCreate (void)
     set->ref = 1;
     set->num = 0;
     set->size = 0;
-    set->strs = 0;
+    set->storage = FcStorageDynamic;
+    set->u.strs = 0;
     return set;
+}
+
+static FcChar8 * strset_buf = 0; 
+static int strset_buf_ptr = 0, strset_buf_count = 0;
+static int * strset_idx = 0; 
+static int strset_idx_ptr = 0, strset_idx_count = 0;
+static FcStrSet * strsets = 0; 
+static int strset_ptr = 0, strset_count = 0;
+
+void FcStrSetClearStatic()
+{
+    strset_buf = 0; strset_buf_ptr = 0; strset_buf_count = 0;
+    strset_idx = 0; strset_idx_ptr = 0; strset_idx_count = 0;
+    strsets = 0; strset_ptr = 0; strset_count = 0;
+}
+
+FcChar8 *
+FcStrSetGet (const FcStrSet *set, int i)
+{
+    int index;
+    switch (set->storage)
+    {
+    case FcStorageStatic:
+	index = strset_idx[set->u.stridx_offset];
+	if (index == -1)
+	    return 0;
+	return &strset_buf[index];
+    case FcStorageDynamic:
+	return set->u.strs[i];
+    default:
+	return 0;
+    }
+}
+
+FcStrSet *
+FcStrSetPtrU (const FcStrSetPtr set)
+{
+    switch (set.storage)
+    {
+    case FcStorageStatic:
+	return &strsets[set.u.stat];
+    case FcStorageDynamic:
+	return (FcStrSet *)set.u.dyn;
+    default:
+	return 0;
+    }
+}
+
+FcStrSetPtr
+FcStrSetPtrCreateDynamic (const FcStrSet * set)
+{
+    FcStrSetPtr new;
+
+    new.storage = FcStorageDynamic;
+    new.u.dyn = (FcStrSet *)set;
+    return new;
 }
 
 static FcBool
@@ -860,7 +917,7 @@ _FcStrSetAppend (FcStrSet *set, FcChar8 *s)
 	FcStrFree (s);
 	return FcTrue;
     }
-    if (set->num == set->size)
+    if (set->num == set->size || set->storage == FcStorageStatic)
     {
 	FcChar8	**strs = malloc ((set->size + 2) * sizeof (FcChar8 *));
 
@@ -868,14 +925,24 @@ _FcStrSetAppend (FcStrSet *set, FcChar8 *s)
 	    return FcFalse;
 	FcMemAlloc (FC_MEM_STRSET, (set->size + 2) * sizeof (FcChar8 *));
 	set->size = set->size + 1;
-	if (set->num)
-	    memcpy (strs, set->strs, set->num * sizeof (FcChar8 *));
-	if (set->strs)
-	    free (set->strs);
-	set->strs = strs;
+	if (set->storage == FcStorageDynamic)
+	{
+	    if (set->num)
+		memcpy (strs, set->u.strs, set->num * sizeof (FcChar8 *));
+	    if (set->u.strs)
+		free (set->u.strs);
+	}
+	else 
+	{
+	    if (set->num)
+		memcpy (strs, strset_idx+set->u.stridx_offset, 
+			set->num * sizeof (FcChar8 *));
+	    set->storage = FcStorageDynamic;
+	}
+	set->u.strs = strs;
     }
-    set->strs[set->num++] = s;
-    set->strs[set->num] = 0;
+    set->u.strs[set->num++] = s;
+    set->u.strs[set->num] = 0;
     return FcTrue;
 }
 
@@ -885,7 +952,7 @@ FcStrSetMember (FcStrSet *set, const FcChar8 *s)
     int	i;
 
     for (i = 0; i < set->num; i++)
-	if (!FcStrCmp (set->strs[i], s))
+	if (!FcStrCmp (FcStrSetGet(set, i), s))
 	    return FcTrue;
     return FcFalse;
 }
@@ -897,7 +964,7 @@ FcStrSetEqual (FcStrSet *sa, FcStrSet *sb)
     if (sa->num != sb->num)
 	return FcFalse;
     for (i = 0; i < sa->num; i++)
-	if (!FcStrSetMember (sb, sa->strs[i]))
+	if (!FcStrSetMember (sb, FcStrSetGet(sa, i)))
 	    return FcFalse;
     return FcTrue;
 }
@@ -936,14 +1003,15 @@ FcStrSetDel (FcStrSet *set, const FcChar8 *s)
     int	i;
 
     for (i = 0; i < set->num; i++)
-	if (!FcStrCmp (set->strs[i], s))
+	if (!FcStrCmp (FcStrSetGet(set, i), s))
 	{
-	    FcStrFree (set->strs[i]);
+	    if (set->storage == FcStorageDynamic)
+		FcStrFree (set->u.strs[i]);
 	    /*
 	     * copy remaining string pointers and trailing
 	     * NULL
 	     */
-	    memmove (&set->strs[i], &set->strs[i+1], 
+	    memmove (FcStrSetGet(set, i), FcStrSetGet(set, i+1),
 		     (set->num - i) * sizeof (FcChar8 *));
 	    set->num--;
 	    return FcTrue;
@@ -958,14 +1026,121 @@ FcStrSetDestroy (FcStrSet *set)
     {
 	int	i;
     
-	for (i = 0; i < set->num; i++)
-	    FcStrFree (set->strs[i]);
-	FcMemFree (FC_MEM_STRSET, (set->size) * sizeof (FcChar8 *));
-	if (set->strs)
-	    free (set->strs);
-	FcMemFree (FC_MEM_STRSET, sizeof (FcStrSet));
+	if (set->storage == FcStorageDynamic)
+	{
+	    for (i = 0; i < set->num; i++)
+		FcStrFree (set->u.strs[i]);
+	    FcMemFree (FC_MEM_STRSET, (set->size) * sizeof (FcChar8 *));
+	    if (set->u.strs)
+		free (set->u.strs);
+	    FcMemFree (FC_MEM_STRSET, sizeof (FcStrSet));
+	}
 	free (set);
     }
+}
+
+static int _FcStrSetSort_helper (const void * a, const void * b)
+{
+    return FcStrCmp (&strset_buf[(int)a], 
+		     &strset_buf[(int)b]);
+}
+
+void
+FcStrSetSort (FcStrSet * set)
+{
+    switch (set->storage)
+    {
+    case FcStorageDynamic:
+	qsort (set->u.strs, set->num, sizeof (FcChar8 *), 
+	       (int (*)(const void *, const void *)) FcStrCmp);
+	break;
+    case FcStorageStatic:
+	qsort (strset_idx+set->u.stridx_offset, set->num, sizeof (int), 
+	       _FcStrSetSort_helper);
+	break;
+    default:
+	break;
+    }
+}
+
+FcBool
+FcStrSetPrepareSerialize (const FcStrSet *set)
+{
+    int i;
+
+    if (!set)
+	return FcTrue;
+
+    strset_count ++;
+    strset_idx_count += set->num;
+    for (i = 0; i < set->num; i++)
+    {
+	if (FcStrSetGet(set, i))
+	    strset_buf_count += strlen(FcStrSetGet(set, i));
+    }
+
+    return FcTrue;
+}
+
+FcStrSetPtr
+FcStrSetSerialize (FcStrSet *set)
+{
+    FcStrSet * new;
+    FcStrSetPtr newp;
+    int i;
+
+    if (!strsets)
+    {
+	strsets = malloc (strset_count * sizeof(FcStrSet));
+	if (!strsets) goto bail1;
+	strset_idx = malloc (strset_idx_count * sizeof(int));
+	if (!strset_idx) goto bail2;
+	strset_buf = malloc (strset_buf_count * sizeof (FcChar8));
+	if (!strset_buf) goto bail3;
+    }
+
+    if (!set)
+	return FcStrSetPtrCreateDynamic(0);
+
+    newp.storage = FcStorageStatic;
+    newp.u.stat = strset_ptr;
+
+    new = &strsets[strset_ptr++];
+    new->ref = set->ref;
+    new->num = set->num;
+    new->size = set->num;
+    new->storage = FcStorageStatic;
+    new->u.stridx_offset = strset_idx_ptr;
+    for (i = 0; i < set->num; i++)
+    {
+	FcChar8 * s = FcStrSetGet(set, i);
+
+	if (s)
+	{
+	    memcpy(strset_buf+strset_buf_ptr, s,
+		   strlen((char *)s));
+	    strset_idx[strset_idx_ptr++] = strset_buf_ptr;
+	    strset_buf_ptr += strlen((char *)s)+1;
+	}
+	else
+	    strset_idx[strset_idx_ptr++] = -1;
+    }
+
+    if (strset_ptr > strset_count || strset_idx_ptr > strset_idx_count)
+	return FcStrSetPtrCreateDynamic(0);
+
+    // problem with multiple ptrs to the same LangSet.
+    // should hash LangSets or something.
+    // FcStrSetDestroy (set);
+
+    return newp;
+
+ bail3:
+    free (strset_idx);
+ bail2:
+    free (strsets);
+ bail1:
+    return FcStrSetPtrCreateDynamic(0);
 }
 
 FcStrList *
@@ -988,7 +1163,7 @@ FcStrListNext (FcStrList *list)
 {
     if (list->n >= list->set->num)
 	return 0;
-    return list->set->strs[list->n++];
+    return FcStrSetGet(list->set, list->n++);
 }
 
 void

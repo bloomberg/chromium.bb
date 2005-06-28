@@ -63,7 +63,8 @@ FcCompareString (char *object, FcValue value1, FcValue value2)
 {
     if (value2.type != FcTypeString || value1.type != FcTypeString)
 	return -1.0;
-    return (double) FcStrCmpIgnoreCase (value1.u.s, value2.u.s) != 0;
+    return (double) FcStrCmpIgnoreCase 
+	(FcObjectPtrU(value1.u.si), FcObjectPtrU(value2.u.si)) != 0;
 }
 
 static double
@@ -71,7 +72,8 @@ FcCompareFamily (char *object, FcValue value1, FcValue value2)
 {
     if (value2.type != FcTypeString || value1.type != FcTypeString)
 	return -1.0;
-    return (double) FcStrCmpIgnoreBlanksAndCase (value1.u.s, value2.u.s) != 0;
+    return (double) FcStrCmpIgnoreBlanksAndCase 
+	(FcObjectPtrU(value1.u.si), FcObjectPtrU(value2.u.si)) != 0;
 }
 
 static double
@@ -83,10 +85,12 @@ FcCompareLang (char *object, FcValue value1, FcValue value2)
     case FcTypeLangSet:
 	switch (value2.type) {
 	case FcTypeLangSet:
-	    result = FcLangSetCompare (value1.u.l, value2.u.l);
+	    result = FcLangSetCompare (FcLangSetPtrU(value1.u.li), 
+				       FcLangSetPtrU(value2.u.li));
 	    break;
 	case FcTypeString:
-	    result = FcLangSetHasLang (value1.u.l, value2.u.s);
+	    result = FcLangSetHasLang (FcLangSetPtrU(value1.u.li), 
+				       FcObjectPtrU(value2.u.si));
 	    break;
 	default:
 	    return -1.0;
@@ -95,10 +99,12 @@ FcCompareLang (char *object, FcValue value1, FcValue value2)
     case FcTypeString:
 	switch (value2.type) {
 	case FcTypeLangSet:
-	    result = FcLangSetHasLang (value2.u.l, value1.u.s);
+	    result = FcLangSetHasLang (FcLangSetPtrU(value2.u.li), 
+				       FcObjectPtrU(value1.u.si));
 	    break;
 	case FcTypeString:
-	    result = FcLangCompare (value1.u.s, value2.u.s);
+	    result = FcLangCompare (FcObjectPtrU(value1.u.si), 
+				    FcObjectPtrU(value2.u.si));
 	    break;
 	default:
 	    return -1.0;
@@ -131,7 +137,8 @@ FcCompareCharSet (char *object, FcValue value1, FcValue value2)
 {
     if (value2.type != FcTypeCharSet || value1.type != FcTypeCharSet)
 	return -1.0;
-    return (double) FcCharSetSubtractCount (value1.u.c, value2.u.c);
+    return (double) FcCharSetSubtractCount (FcCharSetPtrU(value1.u.ci), 
+					    FcCharSetPtrU(value2.u.ci));
 }
 
 static double
@@ -241,13 +248,13 @@ static FcMatcher _FcMatchers [] = {
 
 static FcBool
 FcCompareValueList (const char  *object,
-		    FcValueList	*v1orig,	/* pattern */
-		    FcValueList *v2orig,	/* target */
+		    FcValueListPtr v1orig,	/* pattern */
+		    FcValueListPtr v2orig,	/* target */
 		    FcValue	*bestValue,
 		    double	*value,
 		    FcResult	*result)
 {
-    FcValueList    *v1, *v2;
+    FcValueListPtr v1, v2;
     double    	    v, best, bestStrong, bestWeak;
     int		    i;
     int		    j;
@@ -308,7 +315,7 @@ FcCompareValueList (const char  *object,
 			    (FcChar8 *) object) != 0)
     {
 	if (bestValue)
-	    *bestValue = v2orig->value;
+	    *bestValue = FcValueListPtrU(v2orig)->value;
 	return FcTrue;
     }
 #if 0
@@ -329,13 +336,15 @@ FcCompareValueList (const char  *object,
     bestStrong = 1e99;
     bestWeak = 1e99;
     j = 0;
-    for (v1 = v1orig; v1; v1 = v1->next)
+    for (v1 = v1orig; FcValueListPtrU(v1); 
+	 v1 = FcValueListPtrU(v1)->next)
     {
-	for (v2 = v2orig; v2; v2 = v2->next)
+	for (v2 = v2orig; FcValueListPtrU(v2); 
+	     v2 = FcValueListPtrU(v2)->next)
 	{
 	    v = (*_FcMatchers[i].compare) (_FcMatchers[i].object,
-					    v1->value,
-					    v2->value);
+					    FcValueListPtrU(v1)->value,
+					    FcValueListPtrU(v2)->value);
 	    if (v < 0)
 	    {
 		*result = FcResultTypeMismatch;
@@ -347,10 +356,10 @@ FcCompareValueList (const char  *object,
 	    if (v < best)
 	    {
 		if (bestValue)
-		    *bestValue = v2->value;
+		    *bestValue = FcValueListPtrU(v2)->value;
 		best = v;
 	    }
-	    if (v1->binding == FcValueBindingStrong)
+	    if (FcValueListPtrU(v1)->binding == FcValueBindingStrong)
 	    {
 		if (v < bestStrong)
 		    bestStrong = v;
@@ -406,16 +415,17 @@ FcCompare (FcPattern	*pat,
     i2 = 0;
     while (i1 < pat->num && i2 < fnt->num)
     {
-	i = pat->elts[i1].object - fnt->elts[i2].object;
+	i = FcObjectPtrCompare((FcPatternEltU(pat->elts)+i1)->object,
+			       (FcPatternEltU(fnt->elts)+i2)->object);
 	if (i > 0)
 	    i2++;
 	else if (i < 0)
 	    i1++;
 	else
 	{
-	    if (!FcCompareValueList (pat->elts[i1].object,
-				     pat->elts[i1].values,
-				     fnt->elts[i2].values,
+	    if (!FcCompareValueList (FcObjectPtrU((FcPatternEltU(pat->elts)+i1)->object),
+				     (FcPatternEltU(pat->elts)+i1)->values,
+				     (FcPatternEltU(fnt->elts)+i2)->values,
 				     0,
 				     value,
 				     result))
@@ -456,11 +466,11 @@ FcFontRenderPrepare (FcConfig	    *config,
 	return 0;
     for (i = 0; i < font->num; i++)
     {
-	fe = &font->elts[i];
-	pe = FcPatternFindElt (pat, fe->object);
+	fe = FcPatternEltU(font->elts)+i;
+	pe = FcPatternFindElt (pat, FcObjectPtrU(fe->object));
 	if (pe)
 	{
-	    if (!FcCompareValueList (pe->object, pe->values, 
+	    if (!FcCompareValueList (FcObjectPtrU(pe->object), pe->values, 
 				     fe->values, &v, 0, &result))
 	    {
 		FcPatternDestroy (new);
@@ -468,15 +478,16 @@ FcFontRenderPrepare (FcConfig	    *config,
 	    }
 	}
 	else
-	    v = fe->values->value;
-	FcPatternAdd (new, fe->object, v, FcFalse);
+	    v = FcValueListPtrU(fe->values)->value;
+	FcPatternAdd (new, FcObjectPtrU(fe->object), v, FcFalse);
     }
     for (i = 0; i < pat->num; i++)
     {
-	pe = &pat->elts[i];
-	fe = FcPatternFindElt (font, pe->object);
+	pe = FcPatternEltU(pat->elts)+i;
+	fe = FcPatternFindElt (font, FcObjectPtrU(pe->object));
 	if (!fe)
-	    FcPatternAdd (new, pe->object, pe->values->value, FcTrue);
+	    FcPatternAdd (new, FcObjectPtrU(pe->object), 
+                          FcValueListPtrU(pe->values)->value, FcTrue);
     }
     FcConfigSubstituteWithPat (config, new, pat, FcMatchFont);
     return new;

@@ -22,6 +22,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <fcntl.h>
+#include <sys/mman.h>
 #include "fcint.h"
 
 typedef struct {
@@ -38,7 +40,7 @@ typedef struct {
 
 struct _FcLangSet {
     FcChar32	map[NUM_LANG_SET_MAP];
-    FcStrSet	*extra;
+    FcStrSetPtr	extra;
 };
 
 #define FcLangSetBitSet(ls, id)	((ls)->map[(id)>>5] |= ((FcChar32) 1 << ((id) & 0x1f)))
@@ -48,7 +50,7 @@ FcLangSet *
 FcFreeTypeLangSet (const FcCharSet  *charset, 
 		   const FcChar8    *exclusiveLang)
 {
-    int		    i;
+    int		    i, j;
     FcChar32	    missing;
     const FcCharSet *exclusiveCharset = 0;
     FcLangSet	    *ls;
@@ -67,10 +69,15 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
 	 * not support other Han languages
 	 */
 	if (exclusiveCharset &&
-	    FcFreeTypeIsExclusiveLang (fcLangCharSets[i].lang) &&
-	    fcLangCharSets[i].charset.leaves != exclusiveCharset->leaves)
+	    FcFreeTypeIsExclusiveLang (fcLangCharSets[i].lang))
 	{
-	    continue;
+	    if (fcLangCharSets[i].charset.num != exclusiveCharset->num)
+		continue;
+
+	    for (j = 0; j < fcLangCharSets[i].charset.num; j++)
+		if (FcCharSetGetLeaf(&fcLangCharSets[i].charset, j) != 
+		    FcCharSetGetLeaf(exclusiveCharset, j))
+		    continue;
 	}
 	missing = FcCharSetSubtractCount (&fcLangCharSets[i].charset, charset);
         if (FcDebug() & FC_DBG_SCANV)
@@ -210,15 +217,22 @@ FcLangSetCreate (void)
 	return 0;
     FcMemAlloc (FC_MEM_LANGSET, sizeof (FcLangSet));
     memset (ls->map, '\0', sizeof (ls->map));
-    ls->extra = 0;
+    ls->extra = FcStrSetPtrCreateDynamic(0);
     return ls;
+}
+
+void
+FcLangSetPtrDestroy (FcLangSetPtr li)
+{
+    if (li.storage == FcStorageDynamic)
+	FcLangSetDestroy(FcLangSetPtrU(li));
 }
 
 void
 FcLangSetDestroy (FcLangSet *ls)
 {
-    if (ls->extra)
-	FcStrSetDestroy (ls->extra);
+    if (FcStrSetPtrU(ls->extra))
+	FcStrSetDestroy (FcStrSetPtrU(ls->extra));
     FcMemFree (FC_MEM_LANGSET, sizeof (FcLangSet));
     free (ls);
 }
@@ -232,21 +246,21 @@ FcLangSetCopy (const FcLangSet *ls)
     if (!new)
 	goto bail0;
     memcpy (new->map, ls->map, sizeof (new->map));
-    if (ls->extra)
+    if (FcStrSetPtrU(ls->extra))
     {
 	FcStrList	*list;
 	FcChar8		*extra;
 	
-	new->extra = FcStrSetCreate ();
-	if (!new->extra)
+	new->extra = FcStrSetPtrCreateDynamic(FcStrSetCreate ());
+	if (!FcStrSetPtrU(new->extra))
 	    goto bail1;
 
-	list = FcStrListCreate (ls->extra);	
+	list = FcStrListCreate (FcStrSetPtrU(ls->extra));
 	if (!list)
 	    goto bail1;
 	
 	while ((extra = FcStrListNext (list)))
-	    if (!FcStrSetAdd (new->extra, extra))
+	    if (!FcStrSetAdd (FcStrSetPtrU(new->extra), extra))
 	    {
 		FcStrListDone (list);
 		goto bail1;
@@ -327,13 +341,13 @@ FcLangSetAdd (FcLangSet *ls, const FcChar8 *lang)
 	FcLangSetBitSet (ls, id);
 	return FcTrue;
     }
-    if (!ls->extra)
+    if (!FcStrSetPtrU(ls->extra))
     {
-	ls->extra = FcStrSetCreate ();
-	if (!ls->extra)
+	ls->extra = FcStrSetPtrCreateDynamic(FcStrSetCreate ());
+	if (!FcStrSetPtrU(ls->extra))
 	    return FcFalse;
     }
-    return FcStrSetAdd (ls->extra, lang);
+    return FcStrSetAdd (FcStrSetPtrU(ls->extra), lang);
 }
 
 FcLangResult
@@ -365,9 +379,9 @@ FcLangSetHasLang (const FcLangSet *ls, const FcChar8 *lang)
 	if (FcLangSetBitGet (ls, i) && r < best)
 	    best = r;
     }
-    if (ls->extra)
+    if (FcStrSetPtrU(ls->extra))
     {
-	FcStrList	*list = FcStrListCreate (ls->extra);
+	FcStrList	*list = FcStrListCreate (FcStrSetPtrU(ls->extra));
 	FcChar8		*extra;
 	FcLangResult	r;
 	
@@ -423,15 +437,15 @@ FcLangSetCompare (const FcLangSet *lsa, const FcLangSet *lsb)
 		best = FcLangDifferentCountry;
 		break;
 	    }
-    if (lsa->extra)
+    if (FcStrSetPtrU(lsa->extra))
     {
-	r = FcLangSetCompareStrSet (lsb, lsa->extra);
+	r = FcLangSetCompareStrSet (lsb, FcStrSetPtrU(lsa->extra));
 	if (r < best)
 	    best = r;
     }
-    if (best > FcLangEqual && lsb->extra)
+    if (best > FcLangEqual && FcStrSetPtrU(lsb->extra))
     {
-	r = FcLangSetCompareStrSet (lsa, lsb->extra);
+	r = FcLangSetCompareStrSet (lsa, FcStrSetPtrU(lsb->extra));
 	if (r < best)
 	    best = r;
     }
@@ -450,7 +464,7 @@ FcLangSetPromote (const FcChar8 *lang)
     int			id;
 
     memset (ls.map, '\0', sizeof (ls.map));
-    ls.extra = 0;
+    ls.extra = FcStrSetPtrCreateDynamic(0);
     id = FcLangSetIndex (lang);
     if (id > 0)
     {
@@ -458,10 +472,11 @@ FcLangSetPromote (const FcChar8 *lang)
     }
     else
     {
-	ls.extra = &strs;
+	ls.extra = FcStrSetPtrCreateDynamic(&strs);
 	strs.num = 1;
 	strs.size = 1;
-	strs.strs = &str;
+	strs.storage = FcStorageDynamic;
+	strs.u.strs = &str;
 	strs.ref = 1;
 	str = (FcChar8 *) lang;
     }
@@ -476,8 +491,8 @@ FcLangSetHash (const FcLangSet *ls)
 
     for (i = 0; i < NUM_LANG_SET_MAP; i++)
 	h ^= ls->map[i];
-    if (ls->extra)
-	h ^= ls->extra->num;
+    if (FcStrSetPtrU(ls->extra))
+	h ^= FcStrSetPtrU(ls->extra)->num;
     return h;
 }
 
@@ -538,9 +553,9 @@ FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls)
 		}
 	}
     }
-    if (ls->extra)
+    if (FcStrSetPtrU(ls->extra))
     {
-	FcStrList   *list = FcStrListCreate (ls->extra);
+	FcStrList   *list = FcStrListCreate (FcStrSetPtrU(ls->extra));
 	FcChar8	    *extra;
 
 	if (!list)
@@ -568,10 +583,10 @@ FcLangSetEqual (const FcLangSet *lsa, const FcLangSet *lsb)
 	if (lsa->map[i] != lsb->map[i])
 	    return FcFalse;
     }
-    if (!lsa->extra && !lsb->extra)
+    if (!FcStrSetPtrU(lsa->extra) && !FcStrSetPtrU(lsb->extra))
 	return FcTrue;
-    if (lsa->extra && lsb->extra)
-	return FcStrSetEqual (lsa->extra, lsb->extra);
+    if (FcStrSetPtrU(lsa->extra) && FcStrSetPtrU(lsb->extra))
+	return FcStrSetEqual (FcStrSetPtrU(lsa->extra), FcStrSetPtrU(lsb->extra));
     return FcFalse;
 }
 
@@ -605,9 +620,9 @@ FcLangSetContainsLang (const FcLangSet *ls, const FcChar8 *lang)
 	    FcLangContains (fcLangCharSets[i].lang, lang))
 	    return FcTrue;
     }
-    if (ls->extra)
+    if (FcStrSetPtrU(ls->extra))
     {
-	FcStrList	*list = FcStrListCreate (ls->extra);
+	FcStrList	*list = FcStrListCreate (FcStrSetPtrU(ls->extra));
 	FcChar8		*extra;
 	
 	if (list)
@@ -661,9 +676,9 @@ FcLangSetContains (const FcLangSet *lsa, const FcLangSet *lsb)
 		}
 	}
     }
-    if (lsb->extra)
+    if (FcStrSetPtrU(lsb->extra))
     {
-	FcStrList   *list = FcStrListCreate (lsb->extra);
+	FcStrList   *list = FcStrListCreate (FcStrSetPtrU(lsb->extra));
 	FcChar8	    *extra;
 
 	if (list)
@@ -683,4 +698,79 @@ FcLangSetContains (const FcLangSet *lsa, const FcLangSet *lsb)
 	}
     }
     return FcTrue;
+}
+
+static FcLangSet * langsets = 0;
+static int langset_ptr = 0, langset_count = 0;
+
+FcLangSet *
+FcLangSetPtrU (FcLangSetPtr li)
+{
+    switch (li.storage)
+    {
+    case FcStorageDynamic:
+	return li.u.dyn;
+    case FcStorageStatic:
+	return &langsets[li.u.stat];
+    default:
+	return 0;
+
+    }
+}
+
+FcLangSetPtr
+FcLangSetPtrCreateDynamic (FcLangSet *li)
+{
+    FcLangSetPtr new;
+    new.storage = FcStorageDynamic;
+    new.u.dyn = li;
+    return new;
+}
+
+void
+FcLangSetClearStatic (void)
+{
+    FcStrSetClearStatic();
+    langset_ptr = 0;
+    langset_count = 0;
+}
+
+/* should only write one copy of any particular FcLangSet */
+FcBool
+FcLangSetPrepareSerialize (FcLangSet *l)
+{
+    langset_count++;
+    if (l && FcStrSetPtrU(l->extra))
+	return FcStrSetPrepareSerialize (FcStrSetPtrU(l->extra));
+    return FcTrue;
+}
+
+FcLangSetPtr
+FcLangSetSerialize(FcLangSet *l)
+{
+    FcLangSetPtr new;
+    int p = langset_ptr;
+
+    if (!l) return FcLangSetPtrCreateDynamic(0);
+
+    if (!langsets)
+    {
+	FcLangSet* t;
+	t = (FcLangSet *)malloc(langset_count * sizeof(FcLangSet));
+	if (!t)
+	    return FcLangSetPtrCreateDynamic(0);
+	langsets = t;
+	langset_ptr = 0;
+    }
+
+    langsets[langset_ptr] = *l;
+    if (FcStrSetPtrU(l->extra))
+	langsets[langset_ptr].extra = 
+	    FcStrSetSerialize(FcStrSetPtrU(l->extra));
+    else
+	langsets[langset_ptr].extra = FcStrSetPtrCreateDynamic(0);
+    langset_ptr++;
+    new.storage = FcStorageStatic;
+    new.u.stat = p;
+    return new;
 }

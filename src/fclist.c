@@ -23,6 +23,9 @@
  */
 
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #include "fcint.h"
 
 FcObjectSet *
@@ -44,17 +47,18 @@ FcBool
 FcObjectSetAdd (FcObjectSet *os, const char *object)
 {
     int		s;
-    const char	**objects;
+    FcObjectPtr	*objects;
+    FcObjectPtr obj;
     int		high, low, mid, c;
     
     if (os->nobject == os->sobject)
     {
 	s = os->sobject + 4;
 	if (os->objects)
-	    objects = (const char **) realloc ((void *) os->objects,
-					       s * sizeof (const char *));
+	    objects = (FcObjectPtr *) realloc ((void *) os->objects,
+					       s * sizeof (FcObjectPtr));
 	else
-	    objects = (const char **) malloc (s * sizeof (const char *));
+	    objects = (FcObjectPtr *) malloc (s * sizeof (FcObjectPtr));
 	if (!objects)
 	    return FcFalse;
 	if (os->sobject)
@@ -67,11 +71,11 @@ FcObjectSetAdd (FcObjectSet *os, const char *object)
     low = 0;
     mid = 0;
     c = 1;
-    object = FcObjectStaticName (object);
+    obj = FcObjectStaticName (object);
     while (low <= high)
     {
 	mid = (low + high) >> 1;
-	c = os->objects[mid] - object;
+	c = FcObjectPtrCompare(os->objects[mid], obj);
 	if (c == 0)
 	    return FcTrue;
 	if (c < 0)
@@ -82,8 +86,8 @@ FcObjectSetAdd (FcObjectSet *os, const char *object)
     if (c < 0)
 	mid++;
     memmove (os->objects + mid + 1, os->objects + mid, 
-	     (os->nobject - mid) * sizeof (const char *));
-    os->objects[mid] = object;
+	     (os->nobject - mid) * sizeof (FcObjectPtr));
+    os->objects[mid] = obj;
     os->nobject++;
     return FcTrue;
 }
@@ -125,51 +129,59 @@ FcObjectSetBuild (const char *first, ...)
  * Font must have a containing value for every value in the pattern
  */
 static FcBool
-FcListValueListMatchAny (FcValueList *patOrig,	    /* pattern */
-			 FcValueList *fntOrig)	    /* font */
+FcListValueListMatchAny (FcValueListPtr patOrig,	    /* pattern */
+			 FcValueListPtr fntOrig)	    /* font */
 {
-    FcValueList	    *pat, *fnt;
+    FcValueListPtr	 pat, fnt;
 
-    for (pat = patOrig; pat; pat = pat->next)
+    for (pat = patOrig; FcValueListPtrU(pat); 
+	 pat = FcValueListPtrU(pat)->next)
     {
-	for (fnt = fntOrig; fnt; fnt = fnt->next)
+	for (fnt = fntOrig; FcValueListPtrU(fnt); 
+	     fnt = FcValueListPtrU(fnt)->next)
 	{
 	    /*
 	     * make sure the font 'contains' the pattern.
 	     * (OpListing is OpContains except for strings
 	     *  where it requires an exact match)
 	     */
-	    if (FcConfigCompareValue (fnt->value,
+	    if (FcConfigCompareValue (FcValueListPtrU(fnt)->value,
 				      FcOpListing, 
-				      pat->value)) 
+				      FcValueListPtrU(pat)->value)) 
 		break;
 	}
-	if (!fnt)
+	if (!FcValueListPtrU(fnt))
 	    return FcFalse;
     }
     return FcTrue;
 }
 
 static FcBool
-FcListValueListEqual (FcValueList   *v1orig,
-		      FcValueList   *v2orig)
+FcListValueListEqual (FcValueListPtr v1orig,
+		      FcValueListPtr v2orig)
 {
-    FcValueList	    *v1, *v2;
+    FcValueListPtr	    v1, v2;
 
-    for (v1 = v1orig; v1; v1 = v1->next)
+    for (v1 = v1orig; FcValueListPtrU(v1); 
+	 v1 = FcValueListPtrU(v1)->next)
     {
-	for (v2 = v2orig; v2; v2 = v2->next)
-	    if (FcValueEqual (v1->value, v2->value))
+	for (v2 = v2orig; FcValueListPtrU(v2); 
+	     v2 = FcValueListPtrU(v2)->next)
+	    if (FcValueEqual (FcValueListPtrU(v1)->value, 
+			      FcValueListPtrU(v2)->value))
 		break;
-	if (!v2)
+	if (!FcValueListPtrU(v2))
 	    return FcFalse;
     }
-    for (v2 = v2orig; v2; v2 = v2->next)
+    for (v2 = v2orig; FcValueListPtrU(v2); 
+	 v2 = FcValueListPtrU(v2)->next)
     {
-	for (v1 = v1orig; v1; v1 = v1->next)
-	    if (FcValueEqual (v1->value, v2->value))
+	for (v1 = v1orig; FcValueListPtrU(v1); 
+	     v1 = FcValueListPtrU(v1)->next)
+	    if (FcValueEqual (FcValueListPtrU(v1)->value, 
+			      FcValueListPtrU(v2)->value))
 		break;
-	if (!v1)
+	if (!FcValueListPtrU(v1))
 	    return FcFalse;
     }
     return FcTrue;
@@ -185,8 +197,8 @@ FcListPatternEqual (FcPattern	*p1,
 
     for (i = 0; i < os->nobject; i++)
     {
-	e1 = FcPatternFindElt (p1, os->objects[i]);
-	e2 = FcPatternFindElt (p2, os->objects[i]);
+	e1 = FcPatternFindElt (p1, FcObjectPtrU(os->objects[i]));
+	e2 = FcPatternFindElt (p2, FcObjectPtrU(os->objects[i]));
 	if (!e1 && !e2)
 	    continue;
 	if (!e1 || !e2)
@@ -210,10 +222,11 @@ FcListPatternMatchAny (const FcPattern *p,
 
     for (i = 0; i < p->num; i++)
     {
-	e = FcPatternFindElt (font, p->elts[i].object);
+	e = FcPatternFindElt (font, 
+			      FcObjectPtrU((FcPatternEltU(p->elts)+i)->object));
 	if (!e)
 	    return FcFalse;
-	if (!FcListValueListMatchAny (p->elts[i].values,    /* pat elts */
+	if (!FcListValueListMatchAny ((FcPatternEltU(p->elts)+i)->values,    /* pat elts */
 				      e->values))	    /* font elts */
 	    return FcFalse;
     }
@@ -242,30 +255,30 @@ FcListValueHash (FcValue    v)
     case FcTypeDouble:
 	return (FcChar32) (int) v.u.d;
     case FcTypeString:
-	return FcStrHashIgnoreCase (v.u.s);
+	return FcStrHashIgnoreCase (FcObjectPtrU(v.u.si));
     case FcTypeBool:
 	return (FcChar32) v.u.b;
     case FcTypeMatrix:
-	return FcListMatrixHash (v.u.m);
+	return FcListMatrixHash (FcMatrixPtrU(v.u.mi));
     case FcTypeCharSet:
-	return FcCharSetCount (v.u.c);
+	return FcCharSetCount (FcCharSetPtrU(v.u.ci));
     case FcTypeFTFace:
 	return (long) v.u.f;
     case FcTypeLangSet:
-	return FcLangSetHash (v.u.l);
+	return FcLangSetHash (FcLangSetPtrU(v.u.li));
     }
     return 0;
 }
 
 static FcChar32
-FcListValueListHash (FcValueList    *list)
+FcListValueListHash (FcValueListPtr list)
 {
     FcChar32	h = 0;
     
-    while (list)
+    while (FcValueListPtrU(list))
     {
-	h = h ^ FcListValueHash (list->value);
-	list = list->next;
+	h = h ^ FcListValueHash (FcValueListPtrU(list)->value);
+	list = FcValueListPtrU(list)->next;
     }
     return h;
 }
@@ -280,7 +293,7 @@ FcListPatternHash (FcPattern	*font,
 
     for (n = 0; n < os->nobject; n++)
     {
-	e = FcPatternFindElt (font, os->objects[n]);
+	e = FcPatternFindElt (font, FcObjectPtrU(os->objects[n]));
 	if (e)
 	    h = h ^ FcListValueListHash (e->values);
     }
@@ -334,7 +347,7 @@ FcListAppend (FcListHashTable	*table,
 {
     int		    o;
     FcPatternElt    *e;
-    FcValueList	    *v;
+    FcValueListPtr  v;
     FcChar32	    hash;
     FcListBucket    **prev, *bucket;
 
@@ -358,14 +371,15 @@ FcListAppend (FcListHashTable	*table,
     
     for (o = 0; o < os->nobject; o++)
     {
-	e = FcPatternFindElt (font, os->objects[o]);
+	e = FcPatternFindElt (font, FcObjectPtrU(os->objects[o]));
 	if (e)
 	{
-	    for (v = e->values; v; v = v->next)
+	    for (v = e->values; FcValueListPtrU(v); 
+		 v = FcValueListPtrU(v)->next)
 	    {
 		if (!FcPatternAdd (bucket->pattern, 
-				   os->objects[o], 
-				   v->value, FcTrue))
+				   FcObjectPtrU(os->objects[o]), 
+				   FcValueListPtrU(v)->value, FcTrue))
 		    goto bail2;
 	    }
 	}
