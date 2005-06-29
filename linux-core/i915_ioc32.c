@@ -103,10 +103,89 @@ static int compat_i915_cmdbuffer(struct file *file, unsigned int cmd,
 			 DRM_IOCTL_I915_CMDBUFFER, (unsigned long) cmdbuffer);
 }
 
+typedef struct drm_i915_irq_emit32 {
+	u32 irq_seq;
+} drm_i915_irq_emit32_t;
+
+static int compat_i915_irq_emit(struct file *file, unsigned int cmd,
+				  unsigned long arg)
+{
+	drm_i915_irq_emit32_t req32;
+	drm_i915_irq_emit_t __user *request;
+
+	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+		return -EFAULT;
+
+	request = compat_alloc_user_space(sizeof(*request));
+	if (!access_ok(VERIFY_WRITE, request, sizeof(*request))
+	    || __put_user((int __user *)(unsigned long)req32.irq_seq,
+			  &request->irq_seq))
+		return -EFAULT;
+
+	return drm_ioctl(file->f_dentry->d_inode, file,
+			 DRM_IOCTL_I915_IRQ_EMIT, (unsigned long) request);
+}
+typedef struct drm_i915_getparam32 {
+	int param;
+	u32 value;
+} drm_i915_getparam32_t;
+
+static int compat_i915_getparam(struct file *file, unsigned int cmd,
+				     unsigned long arg)
+{
+	drm_i915_getparam32_t req32;
+	drm_i915_getparam_t __user *request;
+
+	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+		return -EFAULT;
+
+	request = compat_alloc_user_space(sizeof(*request));
+	if (!access_ok(VERIFY_WRITE, request, sizeof(*request))
+	    || __put_user(req32.param, &request->param)
+	    || __put_user((void __user *)(unsigned long)req32.value,
+			  &request->value))
+		return -EFAULT;
+
+	return drm_ioctl(file->f_dentry->d_inode, file,
+			 DRM_IOCTL_I915_GETPARAM, (unsigned long) request);
+}
+
+typedef struct drm_i915_mem_alloc32 {
+	int region;
+	int alignment;
+	int size;
+	u32 region_offset;	/* offset from start of fb or agp */
+} drm_i915_mem_alloc32_t;
+
+static int compat_i915_alloc(struct file *file, unsigned int cmd,
+				     unsigned long arg)
+{
+	drm_i915_mem_alloc32_t req32;
+	drm_i915_mem_alloc_t __user *request;
+
+	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+		return -EFAULT;
+
+	request = compat_alloc_user_space(sizeof(*request));
+	if (!access_ok(VERIFY_WRITE, request, sizeof(*request))
+	    || __put_user(req32.region, &request->region)
+	    || __put_user(req32.alignment, &request->alignment)
+	    || __put_user(req32.size, &request->size)
+	    || __put_user((void __user *)(unsigned long)req32.region_offset,
+			  &request->region_offset))
+		return -EFAULT;
+
+	return drm_ioctl(file->f_dentry->d_inode, file,
+			 DRM_IOCTL_I915_ALLOC, (unsigned long) request);
+}
+
 
 drm_ioctl_compat_t *i915_compat_ioctls[] = {
 	[DRM_I915_BATCHBUFFER] = compat_i915_batchbuffer,
 	[DRM_I915_CMDBUFFER] = compat_i915_cmdbuffer,
+	[DRM_I915_GETPARAM] = compat_i915_getparam,
+	[DRM_I915_IRQ_EMIT] = compat_i915_irq_emit,
+	[DRM_I915_ALLOC] = compat_i915_alloc
 };
 
 /**
