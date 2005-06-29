@@ -130,7 +130,7 @@ static int compat_mga_getparam(struct file *file, unsigned int cmd,
 }
 
 drm_ioctl_compat_t *mga_compat_ioctls[] = {
-	[DRM_MGA_DMA_INIT] = compat_mga_init,
+	[DRM_MGA_INIT] = compat_mga_init,
 	[DRM_MGA_GETPARAM] = compat_mga_getparam,
 };
 

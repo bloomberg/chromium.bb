@@ -36,7 +36,7 @@
 #include "drm.h"
 #include "r128_drm.h"
 
-typedef struct drm32_r128_init {
+typedef struct drm_r128_init32 {
 	int func;
 	unsigned int sarea_priv_offset;
 	int is_pci;
@@ -58,7 +58,7 @@ typedef struct drm32_r128_init {
 	unsigned int ring_rptr_offset;
 	unsigned int buffers_offset;
 	unsigned int agp_textures_offset;
-} drm32_r128_init_t;
+} drm_r128_init32_t;
 
 static int compat_r128_init(struct file *file, unsigned int cmd,
 			    unsigned long arg)
@@ -140,7 +140,7 @@ typedef struct drm_r128_stipple32 {
 static int compat_r128_stipple(struct file *file, unsigned int cmd,
 			       unsigned long arg)
 {
-	drm_r128_stipple32 stipple32;
+	drm_r128_stipple32_t stipple32;
 	drm_r128_stipple_t __user *stipple;
 
 	if (copy_from_user(&stipple32, (void __user *)arg, sizeof(stipple32)))
