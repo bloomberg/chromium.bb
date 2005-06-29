@@ -215,6 +215,13 @@ typedef void			irqreturn_t;
 #define IRQ_HANDLED		/* nothing */
 #define IRQ_NONE		/* nothing */
 
+enum {
+	DRM_IS_NOT_AGP,
+	DRM_MIGHT_BE_AGP,
+	DRM_IS_AGP
+};
+#define DRM_AGP_MEM		struct agp_memory_info
+
 #if defined(__FreeBSD__)
 #define DRM_DEVICE							\
 	drm_device_t *dev = kdev->si_drv1
@@ -585,7 +592,6 @@ typedef struct drm_local_map {
 	int		mtrr;	 /* Boolean: MTRR used */
 				 /* Private data			    */
 	int		rid;	 /* PCI resource ID for bus_space */
-	int		kernel_owned; /* Boolean: 1 = initmapped, 0 = addmapped */
 	struct resource *bsr;
 	bus_space_tag_t bst;
 	bus_space_handle_t bsh;
@@ -823,10 +829,14 @@ int	drm_lock_free(drm_device_t *dev,
 /* Buffer management support (drm_bufs.c) */
 unsigned long drm_get_resource_start(drm_device_t *dev, unsigned int resource);
 unsigned long drm_get_resource_len(drm_device_t *dev, unsigned int resource);
-int	drm_initmap(drm_device_t *dev, unsigned long start, unsigned long len,
-		    unsigned int resource, int type, int flags);
-void	drm_remove_map(drm_device_t *dev, drm_local_map_t *map);
+void	drm_rmmap(drm_device_t *dev, drm_local_map_t *map);
 int	drm_order(unsigned long size);
+int	drm_addmap(drm_device_t * dev, unsigned long offset, unsigned long size,
+		   drm_map_type_t type, drm_map_flags_t flags,
+		   drm_local_map_t **map_ptr);
+int	drm_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request);
+int	drm_addbufs_sg(drm_device_t *dev, drm_buf_desc_t *request);
+int	drm_addbufs_agp(drm_device_t *dev, drm_buf_desc_t *request);
 
 /* DMA support (drm_dma.c) */
 int	drm_dma_setup(drm_device_t *dev);
@@ -848,11 +858,18 @@ void	drm_vbl_send_signals(drm_device_t *dev);
 int	drm_device_is_agp(drm_device_t *dev);
 drm_agp_head_t *drm_agp_init(void);
 void	drm_agp_uninit(void);
+int	drm_agp_acquire(drm_device_t *dev);
 int	drm_agp_release(drm_device_t *dev);
+int	drm_agp_info(drm_device_t * dev, drm_agp_info_t *info);
+int	drm_agp_enable(drm_device_t *dev, drm_agp_mode_t mode);
 void	*drm_agp_allocate_memory(size_t pages, u32 type);
 int	drm_agp_free_memory(void *handle);
 int	drm_agp_bind_memory(void *handle, off_t start);
 int	drm_agp_unbind_memory(void *handle);
+#define drm_alloc_agp(dev, pages, type) drm_agp_allocate_memory(pages, type)
+#define drm_free_agp(handle, pages) drm_agp_free_memory(handle)
+#define drm_bind_agp(handle, start) drm_agp_bind_memory(handle, start)
+#define drm_unbind_agp(handle) drm_agp_unbind_memory(handle)
 
 /* Scatter Gather Support (drm_scatter.c) */
 void	drm_sg_cleanup(drm_sg_mem_t *entry);
@@ -904,9 +921,9 @@ int	drm_getmagic(DRM_IOCTL_ARGS);
 int	drm_authmagic(DRM_IOCTL_ARGS);
 
 /* Buffer management support (drm_bufs.c) */
-int	drm_addmap(DRM_IOCTL_ARGS);
-int	drm_rmmap(DRM_IOCTL_ARGS);
-int	drm_addbufs(DRM_IOCTL_ARGS);
+int	drm_addmap_ioctl(DRM_IOCTL_ARGS);
+int	drm_rmmap_ioctl(DRM_IOCTL_ARGS);
+int	drm_addbufs_ioctl(DRM_IOCTL_ARGS);
 int	drm_infobufs(DRM_IOCTL_ARGS);
 int	drm_markbufs(DRM_IOCTL_ARGS);
 int	drm_freebufs(DRM_IOCTL_ARGS);
@@ -920,10 +937,10 @@ int	drm_control(DRM_IOCTL_ARGS);
 int	drm_wait_vblank(DRM_IOCTL_ARGS);
 
 /* AGP/GART support (drm_agpsupport.c) */
-int	drm_agp_acquire(DRM_IOCTL_ARGS);
+int	drm_agp_acquire_ioctl(DRM_IOCTL_ARGS);
 int	drm_agp_release_ioctl(DRM_IOCTL_ARGS);
-int	drm_agp_enable(DRM_IOCTL_ARGS);
-int	drm_agp_info(DRM_IOCTL_ARGS);
+int	drm_agp_enable_ioctl(DRM_IOCTL_ARGS);
+int	drm_agp_info_ioctl(DRM_IOCTL_ARGS);
 int	drm_agp_alloc(DRM_IOCTL_ARGS);
 int	drm_agp_free(DRM_IOCTL_ARGS);
 int	drm_agp_unbind(DRM_IOCTL_ARGS);

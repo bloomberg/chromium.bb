@@ -37,16 +37,35 @@
 #include "mga_drv.h"
 #include "drm_pciids.h"
 
-int mga_driver_device_is_agp(drm_device_t * dev)
 /* drv_PCI_IDs comes from drm_pciids.h, generated from drm_pciids.txt. */
 static drm_pci_id_list_t mga_pciidlist[] = {
 	mga_PCI_IDS
 };
 
-static int mga_driver_device_is_agp(drm_device_t * dev);
-
 extern drm_ioctl_desc_t mga_ioctls[];
 extern int mga_max_ioctl;
+
+/**
+ * Determine if the device really is AGP or not.
+ *
+ * In addition to the usual tests performed by \c drm_device_is_agp, this
+ * function detects PCI G450 cards that appear to the system exactly like
+ * AGP G450 cards.
+ *
+ * \param dev   The device to be tested.
+ *
+ * \returns
+ * If the device is a PCI G450, zero is returned.  Otherwise non-zero is
+ * returned.
+ *
+ * \bug
+ * This function needs to be filled in!  The implementation in
+ * linux-core/mga_drv.c shows what needs to be done.
+ */
+static int mga_driver_device_is_agp(drm_device_t * dev)
+{
+	return 1;
+}
 
 static void mga_configure(drm_device_t *dev)
 {
@@ -62,7 +81,6 @@ static void mga_configure(drm_device_t *dev)
 	dev->dma_ioctl = mga_dma_buffers;
 	dev->pretakedown = mga_driver_pretakedown;
 	dev->dma_quiescent = mga_driver_dma_quiescent;
-
 	dev->device_is_agp = mga_driver_device_is_agp;
 
 	dev->driver_ioctls = mga_ioctls;
@@ -83,27 +101,7 @@ static void mga_configure(drm_device_t *dev)
 	dev->use_vbl_irq = 1;
 }
 
-/**
- * Determine if the device really is AGP or not.
- *
- * In addition to the usual tests performed by \c drm_device_is_agp, this
- * function detects PCI G450 cards that appear to the system exactly like
- * AGP G450 cards.
- *
- * \param dev   The device to be tested.
- *
- * \returns
- * If the device is a PCI G450, zero is returned.  Otherwise non-zero is
- * returned.
- *
- * \bug
- * This function needs to be filled in!  The implementation in
- * linux-core/mga_drv.c shows what needs to be done.
- */
-int mga_driver_device_is_agp(drm_device_t * dev)
-{
-	return 1;
-}
+
 
 #ifdef __FreeBSD__
 static int

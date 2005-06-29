@@ -38,22 +38,24 @@
 #include <dev/pci/pcireg.h>
 #endif
 
+/* Returns 1 if AGP or 0 if not. */
 int
 drm_device_is_agp(drm_device_t *dev)
 {
+	int ret;
+
+	if (dev->device_is_agp != NULL) {
+		ret = (*dev->device_is_agp)(dev);
+		
+		if (ret != DRM_MIGHT_BE_AGP) {
+			return ret == 2;
+		}
+	}
+
 #ifdef __FreeBSD__
 	/* Code taken from agp.c.  IWBNI that was a public interface. */
 	u_int32_t status;
 	u_int8_t ptr, next;
-
-
-	if ( dev->driver->device_is_agp != NULL ) {
-		int err = (*dev->driver->device_is_agp)( dev );
-	
-		if (err != 2) {
-			return err;
-		}
-	}
 
 	/*
 	 * Check the CAP_LIST bit of the PCI status register first.
@@ -80,51 +82,65 @@ drm_device_is_agp(drm_device_t *dev)
 
 	return 0;
 #else
-	if ( (dev->driver->device_is_agp != NULL)
-	     && ! (*dev->driver->device_is_agp)( dev ) ) {
-		return 0;
-	}
-
 	/* XXX: fill me in for non-FreeBSD */
 	return 1;
 #endif
 }
 
-int drm_agp_info(DRM_IOCTL_ARGS)
+int drm_agp_info(drm_device_t * dev, drm_agp_info_t *info)
 {
-	DRM_DEVICE;
 	struct agp_info *kern;
-	drm_agp_info_t   info;
 
 	if (!dev->agp || !dev->agp->acquired)
 		return EINVAL;
 
 	kern                   = &dev->agp->info;
 	agp_get_info(dev->agp->agpdev, kern);
-	info.agp_version_major = 1;
-	info.agp_version_minor = 0;
-	info.mode              = kern->ai_mode;
-	info.aperture_base     = kern->ai_aperture_base;
-	info.aperture_size     = kern->ai_aperture_size;
-	info.memory_allowed    = kern->ai_memory_allowed;
-	info.memory_used       = kern->ai_memory_used;
-	info.id_vendor         = kern->ai_devid & 0xffff;
-	info.id_device         = kern->ai_devid >> 16;
+	info->agp_version_major = 1;
+	info->agp_version_minor = 0;
+	info->mode              = kern->ai_mode;
+	info->aperture_base     = kern->ai_aperture_base;
+	info->aperture_size     = kern->ai_aperture_size;
+	info->memory_allowed    = kern->ai_memory_allowed;
+	info->memory_used       = kern->ai_memory_used;
+	info->id_vendor         = kern->ai_devid & 0xffff;
+	info->id_device         = kern->ai_devid >> 16;
+
+	return 0;
+}
+
+int drm_agp_info_ioctl(DRM_IOCTL_ARGS)
+{
+	int err;
+	drm_agp_info_t info;
+	DRM_DEVICE;
+
+	err = drm_agp_info(dev, &info);
+	if (err != 0)
+		return err;
 
 	*(drm_agp_info_t *) data = info;
 	return 0;
 }
 
-int drm_agp_acquire(DRM_IOCTL_ARGS)
+int drm_agp_acquire_ioctl(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	int          retcode;
+
+	return drm_agp_acquire(dev);
+}
+
+int drm_agp_acquire(drm_device_t *dev)
+{
+	int retcode;
 
 	if (!dev->agp || dev->agp->acquired)
 		return EINVAL;
+
 	retcode = agp_acquire(dev->agp->agpdev);
 	if (retcode)
 		return retcode;
+
 	dev->agp->acquired = 1;
 	return 0;
 }
@@ -136,7 +152,7 @@ int drm_agp_release_ioctl(DRM_IOCTL_ARGS)
 	return drm_agp_release(dev);
 }
 
-void drm_agp_release(drm_device_t * dev)
+int drm_agp_release(drm_device_t * dev)
 {
 	if (!dev->agp || !dev->agp->acquired)
 		return EINVAL;
@@ -145,21 +161,27 @@ void drm_agp_release(drm_device_t * dev)
 	return 0;
 }
 
-int drm_agp_enable(DRM_IOCTL_ARGS)
+int drm_agp_enable(drm_device_t *dev, drm_agp_mode_t mode)
 {
-	DRM_DEVICE;
-	drm_agp_mode_t mode;
 
 	if (!dev->agp || !dev->agp->acquired)
 		return EINVAL;
-
-	mode = *(drm_agp_mode_t *) data;
 	
 	dev->agp->mode    = mode.mode;
 	agp_enable(dev->agp->agpdev, mode.mode);
 	dev->agp->base    = dev->agp->info.ai_aperture_base;
 	dev->agp->enabled = 1;
 	return 0;
+}
+
+int drm_agp_enable_ioctl(DRM_IOCTL_ARGS)
+{
+	drm_agp_mode_t mode;
+	DRM_DEVICE;
+
+	mode = *(drm_agp_mode_t *) data;
+
+	return drm_agp_enable(dev, mode);
 }
 
 int drm_agp_alloc(DRM_IOCTL_ARGS)

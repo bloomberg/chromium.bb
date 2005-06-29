@@ -47,7 +47,7 @@ SHAREDFILES=	drm.h \
 		via_3d_reg.h \
 		via_dma.c
 
-SUBDIR = drm i915 mach64 mga r128 radeon sis tdfx
+SUBDIR = drm mach64 mga r128 radeon sis tdfx # i915
 
 CLEANFILES+= ${SHAREDFILES}
 
