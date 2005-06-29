@@ -373,7 +373,7 @@ int drm_rmmap_ioctl(struct inode *inode, struct file *filp,
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
 	drm_map_t request;
-	drm_local_map_t *map;
+	drm_local_map_t *map = NULL;
 	struct list_head *list;
 	int ret;
 
@@ -400,6 +400,9 @@ int drm_rmmap_ioctl(struct inode *inode, struct file *filp,
 		up(&dev->struct_sem);
 		return -EINVAL;
 	}
+
+	if (!map)
+		return -EINVAL;
 
 	/* Register and framebuffer maps are permanent */
 	if ((map->type == _DRM_REGISTERS) || (map->type == _DRM_FRAME_BUFFER)) {
