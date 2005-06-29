@@ -93,7 +93,6 @@ static struct drm_driver driver = {
 	.device_is_agp = i830_driver_device_is_agp,
 	.release = i830_driver_release,
 	.dma_quiescent = i830_driver_dma_quiescent,
-	.reclaim_buffers = i830_reclaim_buffers,
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
 #if USE_IRQS

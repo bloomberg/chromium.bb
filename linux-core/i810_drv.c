@@ -88,7 +88,6 @@ static struct drm_driver driver = {
 	.device_is_agp = i810_driver_device_is_agp,
 	.release = i810_driver_release,
 	.dma_quiescent = i810_driver_dma_quiescent,
-	.reclaim_buffers = i810_reclaim_buffers,
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
 	.postinit = postinit,
