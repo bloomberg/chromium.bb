@@ -122,7 +122,7 @@ static int compat_mga_getparam(struct file *file, unsigned int cmd,
 	getparam = compat_alloc_user_space(sizeof(*getparam));
 	if (!access_ok(VERIFY_WRITE, getparam, sizeof(*getparam))
 	    || __put_user(getparam32.param, &getparam->param)
-	    || __put_user(getparam32.value, &getparam->value))
+	    || __put_user((void __user *)(unsigned long)getparam32.value, &getparam->value))
 		return -EFAULT;
 
 	return drm_ioctl(file->f_dentry->d_inode, file, 
