@@ -357,13 +357,13 @@ endif
 ifneq (,$(findstring savage,$(DRM_MODULES)))
 CONFIG_DRM_SAVAGE := m
 endif
+ifneq (,$(findstring mga,$(DRM_MODULES)))
+CONFIG_DRM_MGA := m
+endif
 
 # These require AGP support
 
 ifdef CONFIG_AGP
-ifneq (,$(findstring mga,$(DRM_MODULES)))
-CONFIG_DRM_MGA := m
-endif
 ifneq (,$(findstring i810,$(DRM_MODULES)))
 CONFIG_DRM_I810 := m
 endif
