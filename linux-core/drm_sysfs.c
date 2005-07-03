@@ -26,14 +26,10 @@ struct drm_sysfs_class {
 #define to_drm_sysfs_class(d) container_of(d, struct drm_sysfs_class, class)
 
 struct simple_dev {
-	struct list_head node;
 	dev_t dev;
 	struct class_device class_dev;
 };
 #define to_simple_dev(d) container_of(d, struct simple_dev, class_dev)
-
-static LIST_HEAD(simple_dev_list);
-static spinlock_t simple_dev_list_lock = SPIN_LOCK_UNLOCKED;
 
 static void release_simple_dev(struct class_device *class_dev)
 {
@@ -148,11 +144,9 @@ static struct class_device_attribute class_device_attrs[] = {
  * Note: the struct drm_sysfs_class passed to this function must have previously been
  * created with a call to drm_sysfs_create().
  */
-struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs,
-			drm_head_t * head, dev_t dev,
-			struct device *device, const char *fmt, ...)
+struct class_device *drm_sysfs_device_add(
+			struct drm_sysfs_class *cs, drm_head_t * head)
 {
-	va_list args;
 	struct simple_dev *s_dev = NULL;
 	int i, retval;
 
@@ -168,23 +162,16 @@ struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs,
 	}
 	memset(s_dev, 0x00, sizeof(*s_dev));
 
-	s_dev->dev = dev;
-	s_dev->class_dev.dev = device;
+	s_dev->dev = MKDEV(DRM_MAJOR, head->minor);
+	s_dev->class_dev.dev = DRM_PCI_DEV(head->dev->pdev);
 	s_dev->class_dev.class = &cs->class;
 
-	va_start(args, fmt);
-	vsnprintf(s_dev->class_dev.class_id, BUS_ID_SIZE, fmt, args);
-	va_end(args);
+	snprintf(s_dev->class_dev.class_id, BUS_ID_SIZE, "card%d", head->minor);
 	retval = class_device_register(&s_dev->class_dev);
 	if (retval)
 		goto error;
 
 	class_device_create_file(&s_dev->class_dev, &cs->attr);
-
-	spin_lock(&simple_dev_list_lock);
-	list_add(&s_dev->node, &simple_dev_list);
-	spin_unlock(&simple_dev_list_lock);
-
 	class_set_devdata(&s_dev->class_dev, head);
 
 	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
@@ -204,27 +191,13 @@ error:
  * This call unregisters and cleans up a class device that was created with a
  * call to drm_sysfs_device_add()
  */
-void drm_sysfs_device_remove(dev_t dev)
+void drm_sysfs_device_remove(struct class_device *class_dev)
 {
-	struct simple_dev *s_dev = NULL;
-	int i, found = 0;
+	struct simple_dev *s_dev = to_simple_dev(class_dev);
+	int i;
 
-	spin_lock(&simple_dev_list_lock);
-	list_for_each_entry(s_dev, &simple_dev_list, node) {
-		if (s_dev->dev == dev) {
-			found = 1;
-			break;
-		}
-	}
-	if (found) {
-		list_del(&s_dev->node);
-		spin_unlock(&simple_dev_list_lock);
+	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
+		class_device_remove_file(&s_dev->class_dev, &class_device_attrs[i]);
 
-		for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
-			class_device_remove_file(&s_dev->class_dev, &class_device_attrs[i]);
-
-		class_device_unregister(&s_dev->class_dev);
-	} else {
-		spin_unlock(&simple_dev_list_lock);
-	}
+	class_device_unregister(&s_dev->class_dev);
 }
