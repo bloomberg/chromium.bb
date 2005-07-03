@@ -544,6 +544,7 @@ struct drm_driver {
 				      int new);
 	int (*kernel_context_switch_unlock) (struct drm_device * dev);
 	int (*vblank_wait) (struct drm_device * dev, unsigned int *sequence);
+	int (*dri_library_name) (struct drm_device * dev, char * buf);
 
 	/**
 	 * Called by \c drm_device_is_agp.  Typically used to determine if a
@@ -987,6 +988,7 @@ extern struct drm_sysfs_class *drm_sysfs_create(struct module *owner,
 						char *name);
 extern void drm_sysfs_destroy(struct drm_sysfs_class *cs);
 extern struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs,
+						 drm_head_t * head,
 						 dev_t dev,
 						 struct device *device,
 						 const char *fmt, ...);

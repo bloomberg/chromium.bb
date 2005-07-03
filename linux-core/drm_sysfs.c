@@ -16,6 +16,7 @@
 #include <linux/kdev_t.h>
 #include <linux/err.h>
 
+#include "drmP.h"
 #include "drm_core.h"
 
 struct drm_sysfs_class {
@@ -121,6 +122,18 @@ void drm_sysfs_destroy(struct drm_sysfs_class *cs)
 	class_unregister(&cs->class);
 }
 
+static ssize_t show_dri(struct class_device *class_device, char *buf)
+{
+	drm_device_t * dev = ((drm_head_t *)class_get_devdata(class_device))->dev;
+	if (dev->driver->dri_library_name)
+		return dev->driver->dri_library_name(dev, buf);
+	return snprintf(buf, PAGE_SIZE, "%s\n", dev->driver->pci_driver.name);
+}
+
+static struct class_device_attribute class_device_attrs[] = {
+	__ATTR(dri_library_name, S_IRUGO, show_dri, NULL),
+};
+
 /**
  * drm_sysfs_device_add - adds a class device to sysfs for a character driver
  * @cs: pointer to the struct drm_sysfs_class that this device should be registered to.
@@ -135,13 +148,13 @@ void drm_sysfs_destroy(struct drm_sysfs_class *cs)
  * Note: the struct drm_sysfs_class passed to this function must have previously been
  * created with a call to drm_sysfs_create().
  */
-struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs, dev_t dev,
-					  struct device *device,
-					  const char *fmt, ...)
+struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs,
+			drm_head_t * head, dev_t dev,
+			struct device *device, const char *fmt, ...)
 {
 	va_list args;
 	struct simple_dev *s_dev = NULL;
-	int retval;
+	int i, retval;
 
 	if ((cs == NULL) || (IS_ERR(cs))) {
 		retval = -ENODEV;
@@ -172,9 +185,14 @@ struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs, dev_t dev,
 	list_add(&s_dev->node, &simple_dev_list);
 	spin_unlock(&simple_dev_list_lock);
 
+	class_set_devdata(&s_dev->class_dev, head);
+
+	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
+		class_device_create_file(&s_dev->class_dev, &class_device_attrs[i]);
+
 	return &s_dev->class_dev;
 
-      error:
+error:
 	kfree(s_dev);
 	return ERR_PTR(retval);
 }
@@ -189,7 +207,7 @@ struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs, dev_t dev,
 void drm_sysfs_device_remove(dev_t dev)
 {
 	struct simple_dev *s_dev = NULL;
-	int found = 0;
+	int i, found = 0;
 
 	spin_lock(&simple_dev_list_lock);
 	list_for_each_entry(s_dev, &simple_dev_list, node) {
@@ -201,6 +219,10 @@ void drm_sysfs_device_remove(dev_t dev)
 	if (found) {
 		list_del(&s_dev->node);
 		spin_unlock(&simple_dev_list_lock);
+
+		for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
+			class_device_remove_file(&s_dev->class_dev, &class_device_attrs[i]);
+
 		class_device_unregister(&s_dev->class_dev);
 	} else {
 		spin_unlock(&simple_dev_list_lock);

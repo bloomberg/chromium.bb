@@ -166,10 +166,9 @@ static int drm_get_head(drm_device_t * dev, drm_head_t * head)
 			}
 
 			head->dev_class = drm_sysfs_device_add(drm_class,
-							 MKDEV(DRM_MAJOR,
-							       minor),
-							 DRM_PCI_DEV(dev->pdev),
-							 "card%d", minor);
+						head, MKDEV(DRM_MAJOR, minor),
+						DRM_PCI_DEV(dev->pdev),
+						"card%d", minor);
 			if (IS_ERR(head->dev_class)) {
 				printk(KERN_ERR
 				       "DRM: Error sysfs_device_add.\n");
