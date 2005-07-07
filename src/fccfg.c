@@ -632,7 +632,8 @@ FcConfigCompareValue (const FcValue	left_o,
 					  FcObjectPtrU(right.u.si)) != 0;
 		break;
 	    case FcOpNotEqual:
-		ret = FcStrCmpIgnoreCase (left.u.s, right.u.s) != 0;
+		ret = FcStrCmpIgnoreCase (FcObjectPtrU(left.u.si), 
+					  FcObjectPtrU(right.u.si)) != 0;
 		break;
 	    case FcOpNotContains:
 		ret = FcStrCmpIgnoreCase (FcObjectPtrU(left.u.si), 
@@ -759,7 +760,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	break;
     case FcOpString:
 	v.type = FcTypeString;
-	v.u.si = FcObjectPtrCreateDynamic(e->u.sval);
+	v.u.si = FcObjectStaticName(e->u.sval);
 	v = FcValueSave (v);
 	break;
     case FcOpMatrix:
@@ -877,7 +878,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		switch (e->op) {
 		case FcOpPlus:
 		    v.type = FcTypeString;
-		    v.u.si = FcObjectPtrCreateDynamic 
+		    v.u.si = FcObjectStaticName
 			(FcStrPlus (FcObjectPtrU(vl.u.si), 
 				    FcObjectPtrU(vr.u.si)));
 			 

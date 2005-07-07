@@ -35,10 +35,6 @@ static int fcpatternelt_ptr, fcpatternelt_count;
 static FcValueList * fcvaluelists = NULL;
 static int fcvaluelist_ptr, fcvaluelist_count;
 
-static char * object_content;
-static int object_content_count;
-static int object_content_ptr;
-
 static FcBool
 FcPatternEltIsDynamic (FcPatternEltPtr pei);
 
@@ -87,7 +83,7 @@ FcValueSave (FcValue v)
 {
     switch (v.type) {
     case FcTypeString:
-	v.u.si = FcObjectPtrCreateDynamic(FcStrCopy (FcObjectPtrU(v.u.si)));
+	v.u.si = FcObjectStaticName(FcObjectPtrU(v.u.si));
 	if (!FcObjectPtrU(v.u.si))
 	    v.type = FcTypeVoid;
 	break;
@@ -734,7 +730,7 @@ FcPatternInsertElt (FcPattern *p, const char *object)
 	    FcMemAlloc (FC_MEM_PATELT, s * sizeof (FcPatternElt));
 	    while (p->size < s)
 	    {
-		(FcPatternEltU(p->elts)+p->size)->object = FcObjectPtrCreateDynamic(0);
+		(FcPatternEltU(p->elts)+p->size)->object = 0;
 		(FcPatternEltU(p->elts)+p->size)->values = 
 		    FcValueListPtrCreateDynamic(0);
 		p->size++;
@@ -921,7 +917,7 @@ FcPatternDel (FcPattern *p, const char *object)
 	     (FcPatternEltU(p->elts) + p->num - (e + 1)) * 
 	     sizeof (FcPatternElt));
     p->num--;
-    (FcPatternEltU(p->elts)+p->num)->object = FcObjectPtrCreateDynamic(0);
+    (FcPatternEltU(p->elts)+p->num)->object = 0;
     (FcPatternEltU(p->elts)+p->num)->values = FcValueListPtrCreateDynamic(0);
     return FcTrue;
 }
@@ -980,7 +976,7 @@ FcPatternAddString (FcPattern *p, const char *object, const FcChar8 *s)
     FcValue	v;
 
     v.type = FcTypeString;
-    v.u.si = FcObjectPtrCreateDynamic(s);
+    v.u.si = FcObjectStaticName(s);
     return FcPatternAdd (p, object, v, FcTrue);
 }
 
@@ -1275,53 +1271,6 @@ FcPatternAppend (FcPattern *p, FcPattern *s)
     return FcTrue;
 }
 
-#define OBJECT_HASH_SIZE    31
-struct objectBucket {
-    struct objectBucket	*next;
-    FcChar32		hash;
-};
-static struct objectBucket **buckets = 0;
-
-FcObjectPtr
-FcObjectStaticName (const char *name)
-{
-    FcChar32		hash = FcStringHash ((const FcChar8 *) name);
-    struct objectBucket	**p;
-    struct objectBucket	*b;
-    const char *        nn;
-    int			size;
-    FcObjectPtr		new;
-
-    if (!buckets)
-    {
-        buckets = malloc(sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
-        memset (buckets, 0, sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
-    }
-
-    for (p = &buckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
-	if (b->hash == hash && !strcmp (name, FcObjectPtrU(*((FcObjectPtr *) (b + 1)))))
-	    return *((FcObjectPtr *) (b + 1));
-    size = sizeof (struct objectBucket) + sizeof (FcObjectPtr) + 1;
-    b = malloc (size);
-    FcMemAlloc (FC_MEM_STATICSTR, size);
-    if (!b)
-	return FcObjectPtrCreateDynamic(0);
-    b->next = 0;
-    b->hash = hash;
-    nn = malloc(strlen(name)+1);
-    if (!nn)
-        goto bail;
-    strcpy ((char *)nn, name);
-    new = FcObjectPtrCreateDynamic ((char *) nn);
-    *((FcObjectPtr *)(b+1)) = new;
-    *p = b;
-    return new;
-
- bail:
-    free(b);
-    return FcObjectPtrCreateDynamic(0);
-}
-
 FcPatternElt *
 FcPatternEltU (FcPatternEltPtr pei)
 {
@@ -1361,110 +1310,6 @@ FcPatternEltIsDynamic (FcPatternEltPtr pei)
     return pei.storage == FcStorageDynamic;
 }
 
-struct objectTree {
-  struct objectTree * left, * right;
-  char * s;
-};
-
-FcObjectPtr
-FcObjectPtrCreateDynamic (const char * s)
-{
-    FcObjectPtr new;
-    new.storage = FcStorageDynamic;
-    new.u.dyn = s;
-    if (s)
-	new.hash = FcStringHash(s);
-    else
-	new.hash = 0;
-    return new;
-}
-
-void
-FcObjectPtrDestroy (FcObjectPtr p)
-{
-    if (p.storage == FcStorageDynamic)
-	FcStrFree ((char *)p.u.dyn);
-}
-
-const char *
-FcObjectPtrU (FcObjectPtr si)
-{
-    switch (si.storage)
-    {
-    case FcStorageStatic:
-	if (si.u.stat == 0) return 0;
-        return &object_content[si.u.stat];
-    case FcStorageDynamic:
-        return si.u.dyn;
-    default:
-	return 0;
-    }
-}
-
-int
-FcObjectPtrCompare (const FcObjectPtr a, const FcObjectPtr b)
-{
-    int r = a.hash - b.hash;
-
-    if (r == 0)
-	return strcmp (FcObjectPtrU(a), FcObjectPtrU(b));
-    return r;
-}
-
-void
-FcObjectClearStatic(void)
-{
-    object_content = 0;
-    object_content_count = 0;
-    object_content_ptr = 0;
-}
-
-static FcObjectPtr
-FcObjectSerialize (FcObjectPtr si)
-{
-    struct objectBucket	**p;
-    struct objectBucket	*b;
-
-    if (!object_content)
-    {
-	object_content = malloc(object_content_count * sizeof(char));
-	if (!object_content)
-	    return FcObjectPtrCreateDynamic(0);
-    }
-
-    if (!buckets)
-	return FcObjectPtrCreateDynamic(0);
-
-    for (p = &buckets[si.hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
-	if (b->hash == si.hash && !strcmp (FcObjectPtrU(si), FcObjectPtrU(*((FcObjectPtr *) (b + 1)))))
-	{
-	    FcObjectPtr *op = (FcObjectPtr *) (b + 1);
-	    if (op->storage == FcStorageStatic)
-		return *op;
-
-	    if (object_content_ptr >= object_content_count)
-		return FcObjectPtrCreateDynamic(0);
-
-	    strcpy (object_content+object_content_ptr, 
-		    FcObjectPtrU(si));
-
-	    op->storage = FcStorageStatic;
-	    op->u.stat = object_content_ptr;
-	    
-	    object_content_ptr += strlen(FcObjectPtrU(si))+1;
-
-	    return *op;
-	}
-
-    return FcObjectPtrCreateDynamic(0);
-}
-
-FcBool
-FcObjectPrepareSerialize (FcObjectPtr si)
-{
-    object_content_count += strlen(FcObjectPtrU(si)) + 1;
-    return FcTrue;
-}
 
 void
 FcPatternClearStatic (void)
@@ -1485,6 +1330,9 @@ FcValueListClearStatic (void)
     fcvaluelist_ptr = 0;
     fcvaluelist_count = 0;
 }
+
+static FcObjectPtr
+FcObjectSerialize (FcObjectPtr si);
 
 FcBool
 FcPatternPrepareSerialize (FcPattern * p)
@@ -1705,4 +1553,398 @@ FcValueListPtrCreateDynamic(FcValueList * p)
     r.storage = FcStorageDynamic; 
     r.u.dyn = p;
     return r;
+}
+
+/* Indices allow us to convert dynamic strings into static
+ * strings without having to reassign IDs.  We do reassign IDs
+ * when serializing, which effectively performs mark-and-sweep 
+ * garbage collection. */
+
+/* objectptr_count maps FcObjectPtr to:
+     + offsets in objectcontent_static_buf (if positive)
+     - entries in objectcontent_dynamic (if negative)
+*/
+static int objectptr_count = 1;
+static int objectptr_alloc = 0;
+static int * objectptr_indices = 0;
+
+/* invariant: objectcontent_static_buf must be sorted. */
+/* e.g. objectptr_static_buf = "name\0style\0weight\0" */
+static int objectcontent_static_bytes = 0;
+static char * objectcontent_static_buf;
+
+/* just a bunch of strings. */
+static int objectcontent_dynamic_count = 1;
+static int objectcontent_dynamic_alloc = 0;
+static const char ** objectcontent_dynamic = 0;
+static int * objectcontent_dynamic_refcount = 0;
+
+#define OBJECT_HASH_SIZE    31
+struct objectBucket {
+    struct objectBucket	*next;
+    FcChar32		hash;
+};
+static struct objectBucket **buckets = 0;
+
+FcObjectPtr
+FcObjectStaticName (const char *name)
+{
+    FcChar32		hash = FcStringHash ((const FcChar8 *) name);
+    struct objectBucket	**p;
+    struct objectBucket	*b;
+    const char *        nn;
+    int			size;
+    FcObjectPtr		new;
+
+    if (!buckets)
+    {
+        buckets = malloc(sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
+        memset (buckets, 0, sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
+    }
+
+    for (p = &buckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
+    {
+	FcObjectPtr bp = *((FcObjectPtr *) (b + 1));
+	if (b->hash == hash && FcObjectPtrU(bp) && !strcmp (name, FcObjectPtrU(bp)))
+	{
+	    if (objectptr_indices[bp] < 0)
+		objectcontent_dynamic_refcount[-objectptr_indices[bp]]++;
+	    return bp;
+	}
+    }
+
+    /* didn't find it, so add a new dynamic string */
+    if (objectcontent_dynamic_count >= objectcontent_dynamic_alloc)
+    {
+	int s = objectcontent_dynamic_alloc + 4;
+
+	const char ** d = realloc (objectcontent_dynamic, 
+				   s*sizeof(char *));
+	if (!d)
+	    return 0;
+	FcMemFree(FC_MEM_STATICSTR, 
+		  objectcontent_dynamic_alloc * sizeof(char *));
+	FcMemAlloc(FC_MEM_STATICSTR, s*sizeof(char *));
+	objectcontent_dynamic = d;
+	objectcontent_dynamic_alloc = s;
+
+	int * rc = realloc (objectcontent_dynamic_refcount, s*sizeof(int));
+	if (!rc)
+	    return 0;
+	FcMemFree(FC_MEM_STATICSTR, 
+		  objectcontent_dynamic_alloc * sizeof(int));
+	FcMemAlloc(FC_MEM_STATICSTR, s * sizeof(int));
+	objectcontent_dynamic_refcount = rc;
+    }
+    if (objectptr_count >= objectptr_alloc)
+    {
+	int s = objectptr_alloc + 4;
+	int * d = realloc (objectptr_indices, s*sizeof(int));
+	if (!d)
+	    return 0;
+	FcMemFree(FC_MEM_STATICSTR, objectptr_alloc * sizeof(int));
+	FcMemAlloc(FC_MEM_STATICSTR, s);
+	objectptr_indices = d;
+	objectptr_indices[0] = 0;
+	objectptr_alloc = s;
+    }
+
+    size = sizeof (struct objectBucket) + sizeof (FcObjectPtr);
+    b = malloc (size);
+    if (!b)
+	return 0;
+    FcMemAlloc (FC_MEM_STATICSTR, size);
+    b->next = 0;
+    b->hash = hash;
+    nn = malloc(strlen(name)+1);
+    if (!nn)
+        goto bail;
+    strcpy ((char *)nn, name);
+    objectptr_indices[objectptr_count] = -objectcontent_dynamic_count;
+    objectcontent_dynamic_refcount[objectcontent_dynamic_count] = 1;
+    objectcontent_dynamic[objectcontent_dynamic_count++] = nn;
+    new = objectptr_count++;
+    *((FcObjectPtr *)(b+1)) = new;
+    *p = b;
+    return new;
+
+ bail:
+    free(b);
+    return 0;
+}
+
+void
+FcObjectPtrDestroy (FcObjectPtr p)
+{
+    if (objectptr_indices[p] < 0)
+    {
+	objectcontent_dynamic_refcount[-objectptr_indices[p]]--;
+	if (objectcontent_dynamic_refcount[-objectptr_indices[p]] == 0)
+	{
+	    /* this code doesn't seem to be reached terribly often. */
+	    /* (note that objectcontent_dynamic overapproximates 
+	     * the use count, because not every result from
+	     * StaticName is stored. */
+	    FcStrFree((char *)objectcontent_dynamic[-objectptr_indices[p]]);
+	    objectcontent_dynamic[-objectptr_indices[p]] = 0;
+	}
+    }
+}
+
+const char *
+FcObjectPtrU (FcObjectPtr si)
+{
+    if (objectptr_indices[si] > 0)
+	return &objectcontent_static_buf[objectptr_indices[si]];
+    else
+	return objectcontent_dynamic[-objectptr_indices[si]];
+}
+
+static FcBool objectptr_first_serialization = FcFalse;
+static int * object_old_id_to_new = 0;
+
+static void 
+FcObjectRebuildStaticNameHashtable (void)
+{
+    int i;
+    struct objectBucket	*b, *bn;
+
+    if (buckets)
+    {
+	for (i = 0; i < OBJECT_HASH_SIZE; i++)
+	{
+	    b = buckets[i];
+	    while (b)
+	    {
+		bn = b->next;
+		free(b);
+		FcMemFree (FC_MEM_STATICSTR,
+			   sizeof (struct objectBucket)+sizeof (FcObjectPtr));
+		b = bn;
+	    }
+	}
+	free (buckets);
+    }
+
+    buckets = malloc(sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
+    memset (buckets, 0, sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
+
+    for (i = 1; i < objectptr_count; i++)
+    {
+	if (FcObjectPtrU(i))
+	{
+	    const char * name = FcObjectPtrU(i);
+	    FcChar32	 hash = FcStringHash ((const FcChar8 *) name);
+	    struct objectBucket	**p;
+	    int size;
+
+	    for (p = &buckets[hash % OBJECT_HASH_SIZE]; (b = *p); 
+		 p = &(b->next))
+		;
+	    size = sizeof (struct objectBucket) + sizeof (FcObjectPtr);
+	    b = malloc (size);
+	    if (!b)
+		return;
+	    FcMemAlloc (FC_MEM_STATICSTR, size);
+	    b->next = 0;
+	    b->hash = hash;
+	    *((FcObjectPtr *)(b+1)) = i;
+	    *p = b;
+	}
+    }
+}
+
+/* Hmm.  This will have a terrible effect on the memory size,
+ * because the mmapped strings now get reallocated on the heap. 
+ * Is it all worth it? (Of course, the Serialization codepath is
+ * not problematic.) */
+static FcBool
+FcObjectPtrConvertToStatic(FcBool renumber)
+{
+    int active_count, i, j, longest_string = 0, 
+	new_static_bytes = 1;
+    char * fixed_length_buf, * new_static_buf, * p;
+    int * new_indices;
+
+    if (renumber)
+	objectptr_first_serialization = FcFalse;
+
+    /* collect statistics */
+    for (i = 1, active_count = 1; i < objectptr_count; i++)
+	if (!renumber || object_old_id_to_new[i] == -1)
+	{
+	    int sl = strlen(FcObjectPtrU(i));
+	    active_count++;
+	    if (sl > longest_string)
+		longest_string = sl;
+	    new_static_bytes += sl + 1;
+	} 
+
+    /* allocate storage */
+    fixed_length_buf = malloc 
+	((longest_string+1) * active_count * sizeof(char));
+    if (!fixed_length_buf)
+	goto bail;
+    new_static_buf = malloc (new_static_bytes * sizeof(char));
+    if (!new_static_buf)
+	goto bail1;
+    new_indices = malloc (active_count * sizeof(int));
+    if (!new_indices)
+	goto bail2;
+    
+    FcMemAlloc (FC_MEM_STATICSTR, new_static_bytes);
+    FcMemFree (FC_MEM_STATICSTR, objectptr_count * sizeof (int));
+    FcMemAlloc (FC_MEM_STATICSTR, active_count * sizeof (int));
+    
+    /* copy strings to temporary buffers */
+    for (j = 0, i = 1; i < objectptr_count; i++)
+	if (!renumber || object_old_id_to_new[i] == -1)
+	{
+	    strcpy (fixed_length_buf+(j*(longest_string+1)), FcObjectPtrU(i));
+	    j++;
+	}
+    
+    /* sort the new statics */
+    qsort (fixed_length_buf, active_count-1, longest_string+1, 
+	   (int (*)(const void *, const void *)) FcStrCmp);
+    
+    /* now we create the new static buffer in sorted order. */
+    p = new_static_buf+1;
+    for (i = 0; i < active_count-1; i++)
+    {
+	strcpy(p, fixed_length_buf + i * (longest_string+1));
+	p += strlen(p)+1;
+    }
+
+    /* create translation table by iterating over sorted strings
+     * and getting their old values */
+    p = new_static_buf+1;
+    for (i = 0; i < active_count-1; i++)
+    {
+	int n = FcObjectStaticName(fixed_length_buf+i*(longest_string+1));
+	if (renumber)
+	{
+	    object_old_id_to_new[n] = i;
+	    new_indices[i] = p-new_static_buf;
+	}
+	else
+	    new_indices[n] = p-new_static_buf;
+	p += strlen(p)+1;
+    }
+
+    free (objectptr_indices);
+    objectptr_indices = new_indices;
+    objectptr_count = active_count;
+    objectptr_alloc = active_count;
+
+    /* free old storage */
+    for (i = 1; i < objectcontent_dynamic_count; i++)
+    {
+	if (objectcontent_dynamic[i])
+	{
+	    FcMemFree (FC_MEM_STATICSTR, strlen(objectcontent_dynamic[i])+1);
+	    free ((char *)objectcontent_dynamic[i]);
+	}	
+    }
+    free (objectcontent_dynamic);
+    free (objectcontent_dynamic_refcount);
+    FcMemFree (FC_MEM_STATICSTR, objectcontent_dynamic_count*sizeof (int));
+    objectcontent_dynamic = 0;
+    objectcontent_dynamic_refcount = 0;
+    objectcontent_dynamic_count = 1;
+    objectcontent_dynamic_alloc = 0;
+    free (objectcontent_static_buf);
+    FcMemFree (FC_MEM_STATICSTR, objectcontent_static_bytes);
+    objectcontent_static_buf = new_static_buf;
+    objectcontent_static_bytes = new_static_bytes;
+
+    /* fix up hash table */
+    FcObjectRebuildStaticNameHashtable();
+
+    free (fixed_length_buf);
+    return FcTrue;
+
+ bail2: 
+    free (new_static_buf);
+ bail1: 
+    free (fixed_length_buf);
+ bail:
+    return FcFalse;
+}
+
+#define OBJECT_PTR_CONVERSION_TRIGGER 100000
+
+int
+FcObjectPtrCompare (const FcObjectPtr a, const FcObjectPtr b)
+{
+    /* This is the dynamic count.  We could also use a static
+     * count, i.e. the number of slow strings being created.
+     * I think dyncount gives us a better estimate of inefficiency. -PL */
+    static int compare_count = OBJECT_PTR_CONVERSION_TRIGGER;
+
+    /* count on sortedness for fast objectptrs. */
+    if ((a == b) || (objectptr_indices[a] > 0 && objectptr_indices[b] > 0))
+	return objectptr_indices[a] - objectptr_indices[b];
+
+    compare_count--;
+    if (!compare_count)
+    {
+	FcObjectPtrConvertToStatic(FcFalse);
+	compare_count = OBJECT_PTR_CONVERSION_TRIGGER;
+    }
+
+    return strcmp (FcObjectPtrU(a), FcObjectPtrU(b));
+}
+
+void
+FcObjectClearStatic(void)
+{
+    objectptr_count = 1;
+    objectptr_alloc = 0;
+    objectptr_indices = 0;
+
+    objectcontent_static_bytes = 0;
+    objectcontent_static_buf = 0;
+
+    objectcontent_dynamic_count = 1;
+    objectcontent_dynamic_alloc = 0;
+    objectcontent_dynamic = 0;
+    objectcontent_dynamic_refcount = 0;
+
+    object_old_id_to_new = 0;
+}
+
+static FcObjectPtr
+FcObjectSerialize (FcObjectPtr si)
+{
+    if (objectptr_first_serialization)
+	if (!FcObjectPtrConvertToStatic(FcTrue))
+	    return 0;
+
+    return object_old_id_to_new[si];
+}
+
+/* In the pre-serialization phase, mark the used strings with
+ * -1 in the mapping array. */
+/* The first call to the serialization phase assigns actual 
+ * static indices to the strings (sweep). */
+FcBool
+FcObjectPrepareSerialize (FcObjectPtr si)
+{
+    if (object_old_id_to_new == 0)
+    {
+	object_old_id_to_new = malloc(objectptr_count * sizeof(int));
+	if (!object_old_id_to_new)
+	    goto bail;
+	memset (object_old_id_to_new, 0, 
+		objectptr_count * sizeof(int));
+    }
+
+    object_old_id_to_new[si] = -1;
+    objectptr_first_serialization = FcTrue;
+
+    return FcTrue;
+
+ bail:
+    return FcFalse;
 }

@@ -1878,7 +1878,7 @@ FcPopValue (FcConfigParse *parse)
     
     switch (vstack->tag) {
     case FcVStackString:
-	value.u.si = FcObjectPtrCreateDynamic(FcStrCopy (vstack->u.string));
+	value.u.si = FcObjectStaticName(FcStrCopy (vstack->u.string));
 	if (FcObjectPtrU(value.u.si))
 	    value.type = FcTypeString;
 	break;

@@ -228,14 +228,7 @@ typedef struct _FcLangSetPtr {
     } u;
 } FcLangSetPtr;
 
-typedef struct _FcObjectPtr {
-    FcStorage		    storage;
-    union {
-	int		    stat;
-	const FcChar8 *	    dyn;
-    } u;
-    FcChar32		    hash;
-} FcObjectPtr;
+typedef int FcObjectPtr;
 
 typedef struct _FcValue {
     FcType	type;

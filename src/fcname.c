@@ -321,7 +321,7 @@ FcNameConvert (FcType type, FcChar8 *string, FcMatrix *m)
 	    v.u.i = atoi ((char *) string);
 	break;
     case FcTypeString:
-	v.u.si = FcObjectPtrCreateDynamic(string);
+	v.u.si = FcObjectStaticName(string);
 	break;
     case FcTypeBool:
 	if (!FcNameBool (string, &v.u.b))
