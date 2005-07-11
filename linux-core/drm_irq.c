@@ -250,7 +250,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 	if (!drm_core_check_feature(dev, DRIVER_IRQ_VBL))
 		return -EINVAL;
 
-	if (!dev->irq)
+	if ((!dev->irq) || (!dev->irq_enabled))
 		return -EINVAL;
 
 	DRM_COPY_FROM_USER_IOCTL(vblwait, argp, sizeof(vblwait));
