@@ -1,4 +1,4 @@
 By default, this will install into /usr/local.  If you want to install this
 libdrm to replace your system copy, say:
 
-./autogen.sh --enable-system
+./configure --prefix=/usr --exec-prefix=/

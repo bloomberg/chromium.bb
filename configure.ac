@@ -30,17 +30,7 @@ AC_PROG_CC
 
 AC_HEADER_STDC
 
-AC_ARG_ENABLE(system, AC_HELP_STRING([--enable-system],
-              [Configure to be the system libdrm]),
-              [SYSTEM=$enableval], [SYSTEM=no])
-AM_CONDITIONAL(SYSTEM, [test x$SYSTEM = xyes])
-if test x$SYSTEM = xyes; then
-    libdir=/lib
-    includedir=/usr/include
-    pkgconfigdir=/usr/lib/pkgconfig
-else
-    pkgconfigdir=${libdir}/pkgconfig
-fi
+pkgconfigdir=${libdir}/pkgconfig
 AC_SUBST(pkgconfigdir)
 
 AC_OUTPUT([Makefile libdrm/Makefile libdrm.pc])

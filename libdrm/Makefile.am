@@ -19,7 +19,7 @@
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 libdrm_la_LTLIBRARIES = libdrm.la
-libdrm_ladir = /lib
+libdrm_ladir = $(libdir)
 libdrm_la_LDFLAGS = -version-number 1:0:0 -no-undefined
 
 AM_CFLAGS = -I$(top_srcdir)/shared-core
