@@ -116,7 +116,7 @@ FcFini (void)
     if (_fcConfig)
 	FcConfigDestroy (_fcConfig);
 
-    FcPatternThawAll ();
+    FcPatternFini ();
     FcCharSetThawAll ();
 }
 

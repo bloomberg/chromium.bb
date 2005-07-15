@@ -579,13 +579,6 @@ bail:
     return n;
 }
 
-void
-FcPatternThawAll (void)
-{
-    FcPatternBaseThawAll ();
-    FcValueListThawAll ();
-}
-
 static int
 FcPatternPosition (const FcPattern *p, const char *object)
 {
@@ -1173,20 +1166,21 @@ FcPatternAppend (FcPattern *p, FcPattern *s)
     return FcTrue;
 }
 
+#define OBJECT_HASH_SIZE    31
+static struct objectBucket {
+    struct objectBucket	*next;
+    FcChar32		hash;
+} *FcObjectBuckets[OBJECT_HASH_SIZE];
+
 const char *
 FcObjectStaticName (const char *name)
 {
-#define OBJECT_HASH_SIZE    31
-    static struct objectBucket {
-	struct objectBucket	*next;
-	FcChar32		hash;
-    } *buckets[OBJECT_HASH_SIZE];
     FcChar32		hash = FcStringHash ((const FcChar8 *) name);
     struct objectBucket	**p;
     struct objectBucket	*b;
     int			size;
 
-    for (p = &buckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
+    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
 	if (b->hash == hash && !strcmp (name, (char *) (b + 1)))
 	    return (char *) (b + 1);
     size = sizeof (struct objectBucket) + strlen (name) + 1;
@@ -1199,4 +1193,33 @@ FcObjectStaticName (const char *name)
     strcpy ((char *) (b + 1), name);
     *p = b;
     return (char *) (b + 1);
+}
+
+static void
+FcObjectStaticNameFini (void)
+{
+    int i, size;
+    struct objectBucket *b, *next;
+    char *name;
+
+    for (i = 0; i < OBJECT_HASH_SIZE; i++)
+    {
+	for (b = FcObjectBuckets[i]; b; b = next)
+	{
+	    next = b->next;
+	    name = (char *) (b + 1);
+	    size = sizeof (struct objectBucket) + strlen (name) + 1;
+	    FcMemFree (FC_MEM_STATICSTR, size);
+	    free (b);
+	}
+	FcObjectBuckets[i] = 0;
+    }
+}
+
+void
+FcPatternFini (void)
+{
+    FcPatternBaseThawAll ();
+    FcValueListThawAll ();
+    FcObjectStaticNameFini ();
 }
