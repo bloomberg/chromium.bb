@@ -2374,6 +2374,7 @@ bail2:
     XML_ParserFree (p);
 bail1:
     fclose (f);
+    f = NULL;
 bail0:
     if (error && complain)
     {

@@ -651,13 +651,6 @@ FcPatternFreeze (FcPattern *p)
     return n;
 }
 
-void
-FcPatternThawAll (void)
-{
-    FcPatternBaseThawAll ();
-    FcValueListThawAll ();
-}
-
 static int
 FcPatternPosition (const FcPattern *p, const char *object)
 {
@@ -1584,7 +1577,7 @@ struct objectBucket {
     struct objectBucket	*next;
     FcChar32		hash;
 };
-static struct objectBucket **buckets = 0;
+static struct objectBucket **FcObjectBuckets = 0;
 
 FcObjectPtr
 FcObjectStaticName (const char *name)
@@ -1596,13 +1589,13 @@ FcObjectStaticName (const char *name)
     int			size;
     FcObjectPtr		new;
 
-    if (!buckets)
+    if (!FcObjectBuckets)
     {
-        buckets = malloc(sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
-        memset (buckets, 0, sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
+        FcObjectBuckets = malloc(sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
+        memset (FcObjectBuckets, 0, sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
     }
 
-    for (p = &buckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
+    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
     {
 	FcObjectPtr bp = *((FcObjectPtr *) (b + 1));
 	if (b->hash == hash && FcObjectPtrU(bp) && !strcmp (name, FcObjectPtrU(bp)))
@@ -1649,7 +1642,7 @@ FcObjectStaticName (const char *name)
 	objectptr_alloc = s;
     }
 
-    size = sizeof (struct objectBucket) + sizeof (FcObjectPtr);
+    size = sizeof (struct objectBucket) + strlen (name) + 1;
     b = malloc (size);
     if (!b)
 	return 0;
@@ -1709,11 +1702,11 @@ FcObjectRebuildStaticNameHashtable (void)
     int i;
     struct objectBucket	*b, *bn;
 
-    if (buckets)
+    if (FcObjectBuckets)
     {
 	for (i = 0; i < OBJECT_HASH_SIZE; i++)
 	{
-	    b = buckets[i];
+	    b = FcObjectBuckets[i];
 	    while (b)
 	    {
 		bn = b->next;
@@ -1723,11 +1716,11 @@ FcObjectRebuildStaticNameHashtable (void)
 		b = bn;
 	    }
 	}
-	free (buckets);
+	free (FcObjectBuckets);
     }
 
-    buckets = malloc(sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
-    memset (buckets, 0, sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
+    FcObjectBuckets = malloc(sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
+    memset (FcObjectBuckets, 0, sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
 
     for (i = 1; i < objectptr_count; i++)
     {
@@ -1738,7 +1731,7 @@ FcObjectRebuildStaticNameHashtable (void)
 	    struct objectBucket	**p;
 	    int size;
 
-	    for (p = &buckets[hash % OBJECT_HASH_SIZE]; (b = *p); 
+	    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); 
 		 p = &(b->next))
 		;
 	    size = sizeof (struct objectBucket) + sizeof (FcObjectPtr);
@@ -1947,4 +1940,33 @@ FcObjectPrepareSerialize (FcObjectPtr si)
 
  bail:
     return FcFalse;
+}
+
+static void
+FcObjectStaticNameFini (void)
+{
+    int i, size;
+    struct objectBucket *b, *next;
+    char *name;
+
+    for (i = 0; i < OBJECT_HASH_SIZE; i++)
+    {
+	for (b = FcObjectBuckets[i]; b; b = next)
+	{
+	    next = b->next;
+	    name = (char *) (b + 1);
+	    size = sizeof (struct objectBucket) + strlen (name) + 1;
+	    FcMemFree (FC_MEM_STATICSTR, size);
+	    free (b);
+	}
+	FcObjectBuckets[i] = 0;
+    }
+}
+
+void
+FcPatternFini (void)
+{
+    FcPatternBaseThawAll ();
+    FcValueListThawAll ();
+    FcObjectStaticNameFini ();
 }

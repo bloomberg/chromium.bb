@@ -812,7 +812,7 @@ FcPattern *
 FcPatternFreeze (FcPattern *p);
 
 void
-FcPatternThawAll (void);
+FcPatternFini (void);
 
 FcBool
 FcPatternAppend (FcPattern *p, FcPattern *s);

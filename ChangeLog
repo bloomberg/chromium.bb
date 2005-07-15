@@ -1,3 +1,18 @@
+2005-07-15  Carl Worth  <cworth@cworth.org>
+
+	* src/fcint.h:
+	* src/fcinit.c: (FcFini):
+	* src/fcpat.c: (FcPatternFini): Rename FcPatternThawAll to
+	FcPatternFini.
+	
+	* src/fcpat.c: (FcObjectStaticName), (FcObjectStaticNameFini):
+	Pull the FcObjectStateName hash table out to file scope, and add
+	FcObjectStaticNameFini so that FcFini will cleanup this hash table
+	as well.
+
+	* src/fcxml.c: (FcConfigParseAndLoad): Clear FILE* to NULL after
+	fclose.
+
 2005-06-16  Patrick Lam <plam@MIT.EDU>
 
 	reviewed by: keithp
