@@ -47,11 +47,10 @@
  * ??  - ??
  * 2.4 - Add support for ycbcr textures (no new ioctls)
  * 2.5 - Add FLIP ioctl, disable FULLSCREEN.
- * 2.5.1 - fix GETPARAM ioctl direction bits
  */
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		5
-#define DRIVER_PATCHLEVEL	1
+#define DRIVER_PATCHLEVEL	0
 
 #define GET_RING_HEAD(dev_priv)		R128_READ( R128_PM4_BUFFER_DL_RPTR )
 
