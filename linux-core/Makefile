@@ -75,9 +75,9 @@ TDFXHEADERS =   tdfx_drv.h $(DRMHEADERS)
 TDFXSHARED =    tdfx_drv.h
 R128HEADERS =   r128_drv.h r128_drm.h $(DRMHEADERS)
 R128SHARED =    r128_drv.h r128_drm.h r128_cce.c r128_state.c r128_irq.c
-RADEONHEADERS = radeon_drv.h radeon_drm.h $(DRMHEADERS)
+RADEONHEADERS = radeon_drv.h radeon_drm.h r300_reg.h $(DRMHEADERS)
 RADEONSHARED =  radeon_drv.h radeon_drm.h radeon_cp.c radeon_irq.c \
-                radeon_mem.c radeon_state.c
+                radeon_mem.c radeon_state.c r300_cmdbuf.c r300_reg.h
 MGAHEADERS =    mga_drv.h mga_drm.h mga_ucode.h $(DRMHEADERS)
 MGASHARED =     mga_dma.c mga_drm.h mga_drv.h mga_irq.c mga_state.c \
                 mga_ucode.h mga_warp.c

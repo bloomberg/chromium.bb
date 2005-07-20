@@ -29,6 +29,8 @@ SHAREDFILES=	drm.h \
 		radeon_irq.c \
 		radeon_mem.c \
 		radeon_state.c \
+		r300_cmdbuf.c \
+		r300_reg.h \
 		sis_drm.h \
 		sis_drv.h \
 		sis_ds.c \

@@ -973,7 +973,7 @@ extern int drm_sg_free(struct inode *inode, struct file *filp,
 
 			       /* ATI PCIGART support (ati_pcigart.h) */
 extern int drm_ati_pcigart_init(drm_device_t * dev,
-				unsigned long *addr, dma_addr_t * bus_addr);
+				unsigned long *addr, dma_addr_t * bus_addr, int is_pcie);
 extern int drm_ati_pcigart_cleanup(drm_device_t * dev,
 				   unsigned long addr, dma_addr_t bus_addr);
 
@@ -1036,6 +1036,11 @@ static __inline__ int drm_device_is_agp(drm_device_t *dev)
 	}
 
 	return pci_find_capability(dev->pdev, PCI_CAP_ID_AGP);
+}
+
+static __inline__ int drm_device_is_pcie(drm_device_t *dev)
+{
+	return pci_find_capability(dev->pdev, PCI_CAP_ID_EXP);
 }
 
 static __inline__ void drm_core_dropmap(struct drm_map *map)

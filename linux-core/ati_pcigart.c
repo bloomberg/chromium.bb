@@ -92,7 +92,8 @@ static void drm_ati_free_pcigart_table(unsigned long address)
 }
 
 int drm_ati_pcigart_init(drm_device_t * dev,
-			 unsigned long *addr, dma_addr_t * bus_addr)
+			 unsigned long *addr, dma_addr_t * bus_addr,
+			int is_pcie)
 {
 	drm_sg_mem_t *entry = dev->sg;
 	unsigned long address = 0;
@@ -149,7 +150,14 @@ int drm_ati_pcigart_init(drm_device_t * dev,
 		page_base = (u32) entry->busaddr[i];
 
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
-			*pci_gart++ = cpu_to_le32(page_base);
+			if (is_pcie)
+			{
+				*pci_gart = (cpu_to_le32(page_base)>>8) | 0xc;
+				DRM_DEBUG("PCIE: %d %08X %08X to %p\n", i, page_base, (cpu_to_le32(page_base)>>8)|0xc, pci_gart);
+			}
+			else
+				*pci_gart = cpu_to_le32(page_base);
+			pci_gart++;
 			page_base += ATI_PCIGART_PAGE_SIZE;
 		}
 	}

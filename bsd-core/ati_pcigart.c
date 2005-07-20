@@ -36,7 +36,7 @@
 #define ATI_PCIGART_TABLE_SIZE		32768
 
 int drm_ati_pcigart_init(drm_device_t *dev, unsigned long *addr,
-			 dma_addr_t *bus_addr)
+			 dma_addr_t *bus_addr, int is_pcie)
 {
 	unsigned long pages;
 	u32 *pci_gart = 0, page_base;
@@ -71,7 +71,14 @@ int drm_ati_pcigart_init(drm_device_t *dev, unsigned long *addr,
 		page_base = (u32) dev->sg->busaddr[i];
 
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
-			*pci_gart++ = cpu_to_le32( page_base );
+			if (is_pcie) {
+				*pci_gart = (cpu_to_le32(page_base)>>8) | 0xc;
+				DRM_DEBUG("PCIE: %d %08X %08X to %p\n", i,
+				    page_base, (cpu_to_le32(page_base)>>8)|0xc,
+				    pci_gart);
+			} else
+				*pci_gart = cpu_to_le32(page_base);
+			pci_gart++;
 			page_base += ATI_PCIGART_PAGE_SIZE;
 		}
 	}
