@@ -1607,7 +1607,7 @@ FcConfigHome (void)
 	    home = getenv ("USERPROFILE");
 #endif
 
-	return home;
+	return (FcChar8 *) home;
     }
     return 0;
 }

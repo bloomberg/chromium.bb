@@ -341,7 +341,7 @@ FcValueListEntCreate (FcValueList *h)
 	if (l->value.type == FcTypeString)
 	{
 	    new->value.type = FcTypeString;
-	    new->value.u.s = FcObjectStaticName (l->value.u.s);
+	    new->value.u.s = (FcChar8 *) FcObjectStaticName ((char *) l->value.u.s);
 	}
 	else
 	{

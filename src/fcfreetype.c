@@ -733,7 +733,7 @@ FcSfntNameTranscode (FT_SfntName *sname)
 #endif
     return 0;
 done:
-    if (FcStrCmpIgnoreBlanksAndCase (utf8, "") == 0)
+    if (FcStrCmpIgnoreBlanksAndCase (utf8, (FcChar8 *) "") == 0)
     {
 	free (utf8);
 	return 0;
@@ -749,7 +749,7 @@ FcSfntNameLanguage (FT_SfntName *sname)
 	if (fcFtLanguage[i].platform_id == sname->platform_id &&
 	    (fcFtLanguage[i].language_id == TT_LANGUAGE_DONT_CARE ||
 	     fcFtLanguage[i].language_id == sname->language_id))
-	    return fcFtLanguage[i].lang;
+	    return (FcChar8 *) fcFtLanguage[i].lang;
     return 0;
 }
 
@@ -801,7 +801,7 @@ FcVendorMatch(const FT_Char vendor[4], const FT_Char *vendor_string)
     /* vendor is not necessarily NUL-terminated. */
     int i, len;
     
-    len = strlen(vendor_string);
+    len = strlen((char *) vendor_string);
     if (memcmp(vendor, vendor_string, len) != 0)
         return FcFalse;
     for (i = len; i < 4; i++)
@@ -895,23 +895,25 @@ FcStringContainsConst (const FcChar8	    *string,
     return -1;
 }
 
+typedef FcChar8 *FC8;
+
 static const FcStringConst  weightConsts[] = {
-    { "thin",		FC_WEIGHT_THIN },
-    { "extralight",	FC_WEIGHT_EXTRALIGHT },
-    { "ultralight",	FC_WEIGHT_ULTRALIGHT },
-    { "light",		FC_WEIGHT_LIGHT },
-    { "book",		FC_WEIGHT_BOOK },
-    { "regular",	FC_WEIGHT_REGULAR },
-    { "normal",		FC_WEIGHT_NORMAL },
-    { "medium",		FC_WEIGHT_MEDIUM },
-    { "demibold",	FC_WEIGHT_DEMIBOLD },
-    { "demi",		FC_WEIGHT_DEMIBOLD },
-    { "semibold",	FC_WEIGHT_SEMIBOLD },
-    { "bold",		FC_WEIGHT_BOLD },
-    { "extrabold",	FC_WEIGHT_EXTRABOLD },
-    { "ultrabold",	FC_WEIGHT_ULTRABOLD },
-    { "black",		FC_WEIGHT_BLACK },
-    { "heavy",		FC_WEIGHT_HEAVY },
+    { (FC8) "thin",		FC_WEIGHT_THIN },
+    { (FC8) "extralight",	FC_WEIGHT_EXTRALIGHT },
+    { (FC8) "ultralight",	FC_WEIGHT_ULTRALIGHT },
+    { (FC8) "light",		FC_WEIGHT_LIGHT },
+    { (FC8) "book",		FC_WEIGHT_BOOK },
+    { (FC8) "regular",		FC_WEIGHT_REGULAR },
+    { (FC8) "normal",		FC_WEIGHT_NORMAL },
+    { (FC8) "medium",		FC_WEIGHT_MEDIUM },
+    { (FC8) "demibold",		FC_WEIGHT_DEMIBOLD },
+    { (FC8) "demi",		FC_WEIGHT_DEMIBOLD },
+    { (FC8) "semibold",		FC_WEIGHT_SEMIBOLD },
+    { (FC8) "bold",		FC_WEIGHT_BOLD },
+    { (FC8) "extrabold",	FC_WEIGHT_EXTRABOLD },
+    { (FC8) "ultrabold",	FC_WEIGHT_ULTRABOLD },
+    { (FC8) "black",		FC_WEIGHT_BLACK },
+    { (FC8) "heavy",		FC_WEIGHT_HEAVY },
 };
 
 #define NUM_WEIGHT_CONSTS  (sizeof (weightConsts) / sizeof (weightConsts[0]))
@@ -920,15 +922,15 @@ static const FcStringConst  weightConsts[] = {
 #define FcContainsWeight(s) FcStringContainsConst (s,weightConsts,NUM_WEIGHT_CONSTS)
 
 static const FcStringConst  widthConsts[] = {
-    { "ultracondensed",	FC_WIDTH_ULTRACONDENSED },
-    { "extracondensed",	FC_WIDTH_EXTRACONDENSED },
-    { "semicondensed",  FC_WIDTH_SEMICONDENSED },
-    { "condensed",	FC_WIDTH_CONDENSED },	/* must be after *condensed */
-    { "normal",		FC_WIDTH_NORMAL },
-    { "semiexpanded",	FC_WIDTH_SEMIEXPANDED },
-    { "extraexpanded",	FC_WIDTH_EXTRAEXPANDED },
-    { "ultraexpanded",	FC_WIDTH_ULTRAEXPANDED },
-    { "expanded",	FC_WIDTH_EXPANDED },	/* must be after *expanded */
+    { (FC8) "ultracondensed",	FC_WIDTH_ULTRACONDENSED },
+    { (FC8) "extracondensed",	FC_WIDTH_EXTRACONDENSED },
+    { (FC8) "semicondensed",	FC_WIDTH_SEMICONDENSED },
+    { (FC8) "condensed",	FC_WIDTH_CONDENSED },	/* must be after *condensed */
+    { (FC8) "normal",		FC_WIDTH_NORMAL },
+    { (FC8) "semiexpanded",	FC_WIDTH_SEMIEXPANDED },
+    { (FC8) "extraexpanded",	FC_WIDTH_EXTRAEXPANDED },
+    { (FC8) "ultraexpanded",	FC_WIDTH_ULTRAEXPANDED },
+    { (FC8) "expanded",		FC_WIDTH_EXPANDED },	/* must be after *expanded */
 };
 
 #define NUM_WIDTH_CONSTS    (sizeof (widthConsts) / sizeof (widthConsts[0]))
@@ -937,8 +939,8 @@ static const FcStringConst  widthConsts[] = {
 #define FcContainsWidth(s)  FcStringContainsConst (s,widthConsts,NUM_WIDTH_CONSTS)
 
 static const FcStringConst  slantConsts[] = {
-    { "italic",		FC_SLANT_ITALIC },
-    { "oblique",	FC_SLANT_OBLIQUE },
+    { (FC8) "italic",		FC_SLANT_ITALIC },
+    { (FC8) "oblique",		FC_SLANT_OBLIQUE },
 };
 
 #define NUM_SLANT_CONSTS    (sizeof (slantConsts) / sizeof (slantConsts[0]))
@@ -1154,7 +1156,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 		/* pad lang list with 'xx' to line up with elt */
 		while (*nlangp < *np)
 		{
-		    if (!FcPatternAddString (pat, eltlang, "xx"))
+		    if (!FcPatternAddString (pat, eltlang, (FcChar8 *) "xx"))
 			goto bail1;
 		    ++*nlangp;
 		}
@@ -1169,21 +1171,21 @@ FcFreeTypeQuery (const FcChar8	*file,
     }
     
     if (!nfamily && face->family_name && 
-	FcStrCmpIgnoreBlanksAndCase (face->family_name, "") != 0)
+	FcStrCmpIgnoreBlanksAndCase ((FcChar8 *) face->family_name, (FcChar8 *) "") != 0)
     {
 	if (FcDebug () & FC_DBG_SCANV)
 	    printf ("using FreeType family \"%s\"\n", face->family_name);
-	if (!FcPatternAddString (pat, FC_FAMILY, face->family_name))
+	if (!FcPatternAddString (pat, FC_FAMILY, (FcChar8 *) face->family_name))
 	    goto bail1;
 	++nfamily;
     }
     
     if (!nstyle && face->style_name &&
-	FcStrCmpIgnoreBlanksAndCase (face->style_name, "") != 0)
+	FcStrCmpIgnoreBlanksAndCase ((FcChar8 *) face->style_name, (FcChar8 *) "") != 0)
     {
 	if (FcDebug () & FC_DBG_SCANV)
 	    printf ("using FreeType style \"%s\"\n", face->style_name);
-	if (!FcPatternAddString (pat, FC_STYLE, face->style_name))
+	if (!FcPatternAddString (pat, FC_STYLE, (FcChar8 *) face->style_name))
 	    goto bail1;
 	++nstyle;
     }
@@ -1400,7 +1402,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     {
 	if (weight == -1 && psfontinfo.weight)
 	{
-	    weight = FcIsWeight (psfontinfo.weight);
+	    weight = FcIsWeight ((FcChar8 *) psfontinfo.weight);
     	    if (FcDebug() & FC_DBG_SCANV)
     		printf ("\tType1 weight %s maps to %d\n",
 			psfontinfo.weight, weight);
@@ -1434,7 +1436,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 	BDF_PropertyRec prop;
 	rc = MY_Get_BDF_Property(face, "FOUNDRY", &prop);
 	if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_ATOM)
-	    foundry = prop.u.atom;
+	    foundry = (FcChar8 *) prop.u.atom;
     }
 
     if (width == -1)
@@ -1465,7 +1467,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    MY_Get_BDF_Property (face, "SETWIDTH_NAME", &prop) == 0 &&
 	    prop.type == BDF_PROPERTY_TYPE_ATOM)
 	{
-	    width = FcIsWidth (prop.u.atom);
+	    width = FcIsWidth ((FcChar8 *) prop.u.atom);
 	    if (FcDebug () & FC_DBG_SCANV)
 		printf ("\tsetwidth %s maps to %d\n", prop.u.atom, width);
 	}
@@ -1518,7 +1520,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 	width = FC_WIDTH_NORMAL;
 
     if (foundry == 0)
-	foundry = "unknown";
+	foundry = (FcChar8 *) "unknown";
 
     if (!FcPatternAddInteger (pat, FC_SLANT, slant))
 	goto bail1;
@@ -1629,7 +1631,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     {
 	const char *font_format = FT_Get_X11_Font_Format (face);
 	if (font_format)
-	    FcPatternAddString (pat, FC_FONTFORMAT, font_format);
+	    FcPatternAddString (pat, FC_FONTFORMAT, (FcChar8 *) font_format);
     }
 #endif
 
@@ -2453,22 +2455,33 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 		if (glyph && 
 		    FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance))
 		{
-		    if (!has_advance)
+		    /* 
+		     * ignore glyphs with zero advance. They’re
+		     * combining characters, and while their behaviour
+		     * isn’t well defined for monospaced applications in
+		     * Unicode, there are many fonts which include
+		     * zero-width combining characters in otherwise
+		     * monospaced fonts.
+		     */
+		    if (advance)
 		    {
-			has_advance = FcTrue;
-			advance_one = advance;
+			if (!has_advance)
+			{
+			    has_advance = FcTrue;
+			    advance_one = advance;
+			}
+			else if (!APPROXIMATELY_EQUAL (advance, advance_one))
+			{
+			    if (fixed_advance)
+			    {
+				dual_advance = FcTrue;
+				fixed_advance = FcFalse;
+				advance_two = advance;
+			    }
+			    else if (!APPROXIMATELY_EQUAL (advance, advance_two))
+				dual_advance = FcFalse;
+			}
 		    }
-		    else if (!APPROXIMATELY_EQUAL (advance, advance_one))
-                    {
-                        if (fixed_advance)
-                        {
-                            dual_advance = FcTrue;
-                            fixed_advance = FcFalse;
-                            advance_two = advance;
-                        }
-                        else if (!APPROXIMATELY_EQUAL (advance, advance_two))
-                            dual_advance = FcFalse;
-                    }
 
 		    leaf = FcCharSetFindLeafCreate (fcs, ucs4);
 		    if (!leaf)
@@ -2511,22 +2524,25 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 		    if (glyph && FcFreeTypeCheckGlyph (face, ucs4, 
 						       glyph, blanks, &advance))
 		    {
-			if (!has_advance)
+			if (advance)
 			{
-			    has_advance = FcTrue;
-			    advance_one = advance;
+			    if (!has_advance)
+			    {
+				has_advance = FcTrue;
+				advance_one = advance;
+			    }
+			    else if (!APPROXIMATELY_EQUAL (advance, advance_one))
+			    {
+				if (fixed_advance)
+				{
+				    dual_advance = FcTrue;
+				    fixed_advance = FcFalse;
+				    advance_two = advance;
+				}
+				else if (!APPROXIMATELY_EQUAL (advance, advance_two))
+				    dual_advance = FcFalse;
+			    }
 			}
-		        else if (!APPROXIMATELY_EQUAL (advance, advance_one))
-                        {
-                            if (fixed_advance)
-                            {
-                                dual_advance = FcTrue;
-                                fixed_advance = FcFalse;
-                                advance_two = advance;
-                            }
-                            else if (!APPROXIMATELY_EQUAL (advance, advance_two))
-                                dual_advance = FcFalse;
-                        }
 
 			if (!leaf)
 			{
@@ -2578,22 +2594,25 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 		if (ucs4 != 0xffff && 
 		    FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance))
 		{
-		    if (!has_advance)
+		    if (advance)
 		    {
-			has_advance = FcTrue;
-			advance_one = advance;
+			if (!has_advance)
+			{
+			    has_advance = FcTrue;
+			    advance_one = advance;
+			}
+			else if (!APPROXIMATELY_EQUAL (advance, advance_one))
+			{
+			    if (fixed_advance)
+			    {
+				dual_advance = FcTrue;
+				fixed_advance = FcFalse;
+				advance_two = advance;
+			    }
+			    else if (!APPROXIMATELY_EQUAL (advance, advance_two))
+				dual_advance = FcFalse;
+			}
 		    }
-		    else if (!APPROXIMATELY_EQUAL (advance, advance_one))
-                    {
-                        if (fixed_advance)
-                        {
-                            dual_advance = FcTrue;
-                            fixed_advance = FcFalse;
-                            advance_two = advance;
-                        }
-                        else if (!APPROXIMATELY_EQUAL (advance, advance_two))
-                            dual_advance = FcFalse;
-                    }
 		    leaf = FcCharSetFindLeafCreate (fcs, ucs4);
 		    if (!leaf)
 			goto bail1;
@@ -2689,9 +2708,9 @@ addtag(FcChar8 *complex, FT_ULong tag)
 	return;
 
     if (*complex != '\0')
-	strcat (complex, " ");
-    strcat (complex, "otlayout:");
-    strcat (complex, tagstring);
+	strcat ((char *) complex, " ");
+    strcat ((char *) complex, "otlayout:");
+    strcat ((char *) complex, (char *) tagstring);
 }
 
 static int
@@ -2820,7 +2839,7 @@ FcFontCapabilities(FT_Face face)
 
     complex[0] = '\0';
     if (issilgraphitefont)
-        strcpy(complex, "ttable:Silf ");
+        strcpy((char *) complex, "ttable:Silf ");
 
     while ((indx1 < gsub_count) || (indx2 < gpos_count)) {
 	if (indx1 == gsub_count) {

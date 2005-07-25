@@ -1926,7 +1926,7 @@ FcParsePatelt (FcConfigParse *parse)
 	return;
     }
 
-    name = FcConfigGetAttribute (parse, "name");
+    name = (char *) FcConfigGetAttribute (parse, "name");
     if (!name)
     {
 	FcConfigMessage (parse, FcSevereWarning, "missing pattern element name");
@@ -2264,11 +2264,16 @@ FcConfigParseAndLoadDir (FcConfig	*config,
 	
     while (ret && (e = readdir (d)))
     {
+	int d_len;
+#define TAIL	    ".conf"
+#define TAIL_LEN    5
 	/*
-	 * Add all files of the form [0-9]*
+	 * Add all files of the form [0-9]*.conf
 	 */
 	if ('0' <= e->d_name[0] && e->d_name[0] <= '9' &&
-	    strlen (e->d_name) < FC_MAX_FILE_LEN)
+	    (d_len = strlen (e->d_name)) < FC_MAX_FILE_LEN &&
+	    d_len > TAIL_LEN &&
+	    strcmp (e->d_name + d_len - TAIL_LEN, TAIL) == 0)
 	{
 	    strcpy ((char *) base, (char *) e->d_name);
 	    if (!FcStrSetAdd (files, file))

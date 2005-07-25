@@ -167,17 +167,17 @@ main (int argc, char **argv)
 		FcChar8	*file;
 
 		if (FcPatternGetString (fs->fonts[j], FC_FILE, 0, &file) != FcResultMatch)
-		    file = "<unknown filename>";
+		    file = (FcChar8 *) "<unknown filename>";
 		else
 		{
-		    FcChar8 *slash = strrchr (file, '/');
+		    FcChar8 *slash = (FcChar8 *) strrchr ((char *) file, '/');
 		    if (slash)
 			file = slash+1;
 		}
 		if (FcPatternGetString (fs->fonts[j], FC_FAMILY, 0, &family) != FcResultMatch)
-		    family = "<unknown family>";
+		    family = (FcChar8 *) "<unknown family>";
 		if (FcPatternGetString (fs->fonts[j], FC_STYLE, 0, &style) != FcResultMatch)
-		    file = "<unknown style>";
+		    file = (FcChar8 *) "<unknown style>";
 
 		printf ("%s: \"%s\" \"%s\"\n", file, family, style);
 	    }

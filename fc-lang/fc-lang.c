@@ -50,7 +50,7 @@ FcMemFree (int kind, int size)
 FcChar8 *
 FcConfigHome (void)
 {
-    return getenv ("HOME");
+    return (FcChar8 *) getenv ("HOME");
 }
 
 static void 

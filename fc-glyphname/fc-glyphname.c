@@ -105,7 +105,7 @@ scan (FILE *f, char *filename)
 	gn = FcAllocGlyphName ((FcChar32) ucs, (FcChar8 *) name);
 	if (!gn)
 	    fatal (filename, lineno, "out of memory");
-	len = strlen ((FcChar8 *) name);
+	len = strlen (name);
 	if (len > max_name_len)
 	    max_name_len = len;
 	raw[nraw++] = gn;
@@ -286,7 +286,7 @@ main (int argc, char **argv)
     for (i = 0; i < nraw; i++)
 	printf ("static struct { FcChar32 ucs; FcChar8 name[%d]; }"
 	        " glyph%d = { 0x%lx, \"%s\" };\n",
-	        (int) strlen (raw[i]->name) + 1,
+	        (int) strlen ((char *) raw[i]->name) + 1,
 		i, (unsigned long) raw[i]->ucs, raw[i]->name);
 
     /*
