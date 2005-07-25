@@ -25,6 +25,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <sys/mman.h>
 #include "fcint.h"
 
 FcMatrix    _id = { 1, 0, 0, 1 };
@@ -182,3 +183,31 @@ FcMatrixSerialize(FcMatrix *m)
     return new;
 }
 
+FcBool
+FcMatrixRead (int fd, FcCache metadata)
+{
+    matrices = mmap(NULL, 
+		    metadata.matrices_length * sizeof (FcMatrix),
+		    PROT_READ,
+		    MAP_SHARED, fd, metadata.matrices_offset);
+    if (matrices == MAP_FAILED)
+	return FcFalse;
+
+    matrix_count = matrix_ptr = metadata.matrices_length;
+    return FcTrue;
+}
+
+FcBool
+FcMatrixWrite (int fd, FcCache *metadata)
+{
+    metadata->matrices_length = matrix_ptr;
+    metadata->matrices_offset = FcCacheNextOffset(fd);
+
+    if (matrix_ptr > 0)
+    {
+	lseek(fd, metadata->matrices_offset, SEEK_SET);
+	return write(fd, matrices, 
+		      metadata->matrices_length * sizeof(FcMatrix)) != -1;
+    }
+    return FcTrue;
+}

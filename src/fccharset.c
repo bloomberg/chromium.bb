@@ -23,6 +23,7 @@
  */
 
 #include <stdlib.h>
+#include <sys/mman.h>
 #include "fcint.h"
 
 /* #define CHECK */
@@ -380,6 +381,14 @@ FcCharSetCopy (FcCharSet *src)
 {
     if (src->ref != FC_REF_CONSTANT)
 	src->ref++;
+    return src;
+}
+
+FcCharSetPtr
+FcCharSetCopyPtr (FcCharSetPtr src)
+{
+    if (FcCharSetPtrU(src)->ref != FC_REF_CONSTANT)
+	FcCharSetPtrU(src)->ref++;
     return src;
 }
 
@@ -1369,10 +1378,11 @@ FcCharSetSerialize(FcCharSet *c)
 	if (!leaf_idx) goto bail3;
     }
 
-    new.ref = c->ref;
+    new.ref = FC_REF_CONSTANT;
     new.storage = FcStorageStatic;
-    new.u.stat.leafidx_offset = charset_leaf_ptr;
+    new.u.stat.leafidx_offset = charset_leaf_idx_ptr;
     new.u.stat.numbers_offset = charset_numbers_ptr;
+    new.num = c->num;
 
     newp.storage = FcStorageStatic;
     newp.u.stat = charset_ptr;
@@ -1396,6 +1406,95 @@ FcCharSetSerialize(FcCharSet *c)
     free (charsets);
  bail:
     return FcCharSetPtrCreateDynamic(0);
+}
+
+FcBool
+FcCharSetRead (int fd, FcCache metadata)
+{
+    charsets = mmap(NULL, 
+		    metadata.charsets_length * sizeof (FcCharSet),
+		    PROT_READ,
+		    MAP_SHARED, fd, metadata.charsets_offset);
+    if (charsets == MAP_FAILED)
+        goto bail;
+    charset_count = charset_ptr = metadata.charsets_length;
+
+    leaves = mmap(NULL, 
+		  metadata.charset_num_sum * sizeof (FcCharLeaf),
+		  PROT_READ,
+		  MAP_SHARED, fd, metadata.charset_leaf_offset);
+    if (leaves == MAP_FAILED)
+        goto bail1;
+    charset_leaf_count = charset_leaf_ptr = metadata.charset_num_sum;
+
+    leaf_idx = mmap(NULL,
+		    metadata.charsets_length * sizeof (FcCharLeaf*),
+		    PROT_READ,
+		    MAP_SHARED, fd, metadata.charset_leafidx_offset);
+    if (leaf_idx == MAP_FAILED)
+	goto bail2;
+    charset_leaf_idx_count = charset_leaf_idx_ptr = metadata.charsets_length;
+
+    numbers = mmap(NULL, 
+		   metadata.charset_num_sum * sizeof (FcChar16),
+		   PROT_READ,
+		   MAP_SHARED, fd, metadata.charset_numbers_offset);
+    if (numbers == MAP_FAILED)
+        goto bail3;
+    charset_numbers_count = charset_numbers_ptr = metadata.charset_num_sum;
+
+    return FcTrue;
+
+ bail3:
+    munmap (leaf_idx, metadata.charsets_length * sizeof (FcCharLeaf*));
+ bail2:
+    munmap (leaves, metadata.charset_num_sum * sizeof (FcCharLeaf));
+ bail1:
+    munmap (charsets, metadata.charsets_length * sizeof (FcCharSet));
+ bail:
+    return FcFalse;
+}
+
+FcBool
+FcCharSetWrite (int fd, FcCache *metadata)
+{
+    metadata->charsets_length = charset_ptr;
+    metadata->charsets_offset = FcCacheNextOffset(fd);
+
+    if (charset_ptr > 0)
+    {
+	lseek (fd, metadata->charsets_offset, SEEK_SET);
+	if (write (fd, charsets, charset_ptr * sizeof(FcCharSet)) == -1)
+	    return FcFalse;
+    }
+
+    metadata->charset_leaf_offset = FcCacheNextOffset(fd);
+    metadata->charset_num_sum = charset_leaf_ptr;
+    if (charset_leaf_ptr > 0)
+    {
+	lseek (fd, metadata->charset_leaf_offset, SEEK_SET);
+	if (write (fd, leaves, charset_leaf_ptr * sizeof(FcCharLeaf)) == -1)
+	    return FcFalse;
+    }
+
+    metadata->charset_leafidx_offset = FcCacheNextOffset(fd);
+    if (charset_leaf_idx_ptr > 0)
+    {
+	lseek (fd, metadata->charset_leafidx_offset, SEEK_SET);
+	if (write (fd, leaf_idx, charset_leaf_idx_ptr * sizeof(FcCharLeaf*)) == -1)
+	    return FcFalse;
+    }
+
+
+    metadata->charset_numbers_offset = FcCacheNextOffset(fd);
+    if (charset_leaf_ptr > 0)
+    {
+	lseek (fd, metadata->charset_numbers_offset, SEEK_SET);
+	if (write (fd, numbers, charset_leaf_ptr * sizeof(FcChar16)) == -1)
+	    return FcFalse;
+    }
+
+    return FcTrue;
 }
 
 FcCharLeaf *

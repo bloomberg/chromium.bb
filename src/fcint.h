@@ -259,6 +259,25 @@ typedef struct _FcStrBuf {
     int	    size;
 } FcStrBuf;
 
+typedef struct _FcCache {
+    int	    magic;
+    off_t   fontsets_offset;
+    off_t   pattern_offset;     int pattern_length;
+    off_t   patternelt_offset;  int patternelt_length;
+    off_t   valuelist_offset;   int valuelist_length;
+    off_t   object_offset;	int object_length;
+    off_t   objectcontent_offset; int objectcontent_length;
+    off_t   langsets_offset;    int langsets_length;
+    off_t   charsets_offset;    int charsets_length;
+    off_t   charset_leaf_offset; int charset_num_sum;
+    off_t   charset_leafidx_offset; 
+    off_t   charset_numbers_offset;
+    off_t   matrices_offset;    int matrices_length;
+    off_t   strsets_offset;     int strsets_length;
+    off_t   strsets_idx_offset; int strsets_idx_length;
+    off_t   strset_buf_offset;  int strset_buf_length;
+} FcCache;
+
 /*
  * To map adobe glyph names to unicode values, a precomputed hash
  * table is used
@@ -312,6 +331,7 @@ typedef struct _FcCaseFold {
  * cache which is then rewritten to the users home directory
  */
 
+#define FC_CACHE_MAGIC 0x12345678
 #define FC_GLOBAL_CACHE_DIR_HASH_SIZE	    37
 #define FC_GLOBAL_CACHE_FILE_HASH_SIZE	    67
 
@@ -429,66 +449,27 @@ typedef struct _FcCharMap FcCharMap;
 
 /* fccache.c */
 
-FcGlobalCache *
-FcGlobalCacheCreate (void);
+int
+FcCacheNextOffset(int fd);
 
 void
-FcGlobalCacheDestroy (FcGlobalCache *cache);
-
-FcBool
-FcGlobalCacheCheckTime (const FcChar8*file, FcGlobalCacheInfo *info);
+FcCacheForce(FcBool force);
 
 void
-FcGlobalCacheReferenced (FcGlobalCache	    *cache,
-			 FcGlobalCacheInfo  *info);
-
-void
-FcGlobalCacheReferenceSubdir (FcGlobalCache *cache,
-			      const FcChar8 *dir);
-
-FcGlobalCacheDir *
-FcGlobalCacheDirGet (FcGlobalCache  *cache,
-		     const FcChar8  *dir,
-		     int	    len,
-		     FcBool	    create_missing);
+FcCacheClearStatic(void);
 
 FcBool
-FcGlobalCacheScanDir (FcFontSet		*set,
-		      FcStrSet		*dirs,
-		      FcGlobalCache	*cache,
-		      const FcChar8	*dir,
-		      FcConfig		*config);
-
-FcGlobalCacheFile *
-FcGlobalCacheFileGet (FcGlobalCache *cache,
-		      const FcChar8 *file,
-		      int	    id,
-		      int	    *count);
-
-
-void
-FcGlobalCacheLoad (FcGlobalCache    *cache,
-		   const FcChar8    *cache_file);
+FcCachePrepareSerialize(FcConfig * config);
 
 FcBool
-FcGlobalCacheUpdate (FcGlobalCache  *cache,
-		     const FcChar8  *file,
-		     int	    id,
-		     const FcChar8  *name);
+FcCacheSerialize (FcConfig * config);
 
 FcBool
-FcGlobalCacheSave (FcGlobalCache    *cache,
-		   const FcChar8    *cache_file);
+FcCacheRead (FcConfig *config);
 
 FcBool
-FcDirCacheReadDir (FcFontSet	    *set, 
-		   FcStrSet	    *dirs,
-		   const FcChar8    *dir,
-		   FcConfig	    *config);
-
-FcBool
-FcDirCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir);
-    
+FcCacheWrite (FcConfig * config);
+ 
 /* fccfg.c */
 
 FcBool
@@ -553,6 +534,9 @@ FcConfigAcceptFont (FcConfig	    *config,
 FcCharSet *
 FcCharSetFreeze (FcCharSet *cs);
 
+FcCharSetPtr
+FcCharSetCopyPtr (FcCharSetPtr src);
+
 void
 FcCharSetThawAll (void);
 
@@ -585,6 +569,12 @@ FcCharSetGetLeaf(const FcCharSet *c, int i);
 
 FcChar16 *
 FcCharSetGetNumbers(const FcCharSet *c);
+
+FcBool
+FcCharSetRead (int fd, FcCache metadata);
+
+FcBool
+FcCharSetWrite (int fd, FcCache *metadata);
 
 /* fcdbg.c */
 void
@@ -667,6 +657,12 @@ FcFontSetPrepareSerialize (FcFontSet * s);
 
 FcBool
 FcFontSetSerialize (FcFontSet * s);
+
+FcBool
+FcFontSetRead(int fd, FcConfig * config, FcCache metadata);
+
+FcBool
+FcFontSetWrite(int fd, FcConfig * config, FcCache * metadata);
 
 /* fcgram.y */
 int
@@ -766,6 +762,12 @@ FcLangSetPtrCreateDynamic (FcLangSet *l);
 void
 FcLangSetPtrDestroy (FcLangSetPtr li);
 
+FcBool
+FcLangSetRead (int fd, FcCache metadata);
+
+FcBool
+FcLangSetWrite (int fd, FcCache *metadata);
+
 /* fclist.c */
 
 FcBool
@@ -773,18 +775,6 @@ FcListPatternMatchAny (const FcPattern *p,
 		       const FcPattern *font);
 
 /* fcmatch.c */
-
-/* fcmmap.c */
-
-void
-FcCacheClearStatic(void);
-
-FcBool
-FcCachePrepareSerialize(FcConfig * config);
-
-FcBool
-FcCacheSerialize (FcConfig * config);
-
 
 /* fcname.c */
 
@@ -824,16 +814,16 @@ FcObjectPtr
 FcObjectStaticName (const char *name);
 
 FcBool
-FcObjectPrepareSerialize (FcObjectPtr si);
+FcObjectRead (int fd, FcCache metadata);
+
+FcBool
+FcObjectWrite (int fd, FcCache * metadata);
 
 const char *
 FcObjectPtrU (FcObjectPtr p);
 
 int
 FcObjectPtrCompare (FcObjectPtr a, FcObjectPtr b);
-
-FcObjectPtr
-FcObjectPtrCreateDynamic (const char * s);
 
 void
 FcObjectPtrDestroy (FcObjectPtr p);
@@ -865,6 +855,24 @@ FcValueListSerialize(FcValueList *pi);
 FcPattern *
 FcPatternSerialize (FcPattern * p);
 
+FcBool
+FcPatternRead (int fd, FcCache metadata);
+
+FcBool
+FcPatternWrite (int fd, FcCache *metadata);
+
+FcBool
+FcPatternEltRead (int fd, FcCache metadata);
+
+FcBool
+FcPatternEltWrite (int fd, FcCache *metadata);
+
+FcBool
+FcValueListRead (int fd, FcCache metadata);
+
+FcBool
+FcValueListWrite (int fd, FcCache *metadata);
+
 /* fcrender.c */
 
 /* fcmatrix.c */
@@ -891,6 +899,12 @@ FcMatrixPtrCreateDynamic (FcMatrix *m);
 
 void 
 FcMatrixClearStatic (void);
+
+FcBool
+FcMatrixWrite (int fd, FcCache *metadata);
+
+FcBool
+FcMatrixRead (int fd, FcCache metadata);
 
 /* fcstr.c */
 FcStrSet *
@@ -937,6 +951,12 @@ FcStrBufData (FcStrBuf *buf, const FcChar8 *s, int len);
 
 FcStrSetPtr
 FcStrSetSerialize (FcStrSet *set);
+
+FcBool
+FcStrSetRead (int fd, FcCache metadata);
+
+FcBool
+FcStrSetWrite (int fd, FcCache *metadata);
 
 int
 FcStrCmpIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2);

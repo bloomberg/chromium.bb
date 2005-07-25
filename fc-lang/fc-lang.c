@@ -47,6 +47,12 @@ FcMemFree (int kind, int size)
 {
 }
 
+int
+FcCacheNextOffset (int fd)
+{
+    return -1;
+}
+
 FcChar8 *
 FcConfigHome (void)
 {

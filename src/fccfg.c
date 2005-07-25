@@ -252,16 +252,22 @@ FcConfigBuildFonts (FcConfig *config)
     FcStrList	    *list;
     FcChar8	    *dir;
 
+#if 0
+    if (config->cache)
+	FcGlobalCacheLoad (cache, config->cache);
+#endif
+    if (config->fonts[FcSetSystem])
+	return FcTrue;
+
     fonts = FcFontSetCreate ();
     if (!fonts)
 	goto bail0;
-    
+
+#if 0
     cache = FcGlobalCacheCreate ();
     if (!cache)
 	goto bail1;
-
-    if (config->cache)
-	FcGlobalCacheLoad (cache, config->cache);
+#endif
 
     list = FcConfigGetFontDirs (config);
     if (!list)
@@ -280,9 +286,11 @@ FcConfigBuildFonts (FcConfig *config)
     if (FcDebug () & FC_DBG_FONTSET)
 	FcFontSetPrint (fonts);
 
+#if 0
     if (config->cache)
 	FcGlobalCacheSave (cache, config->cache);
     FcGlobalCacheDestroy (cache);
+#endif
 
     FcConfigSetFonts (config, fonts, FcSetSystem);
     

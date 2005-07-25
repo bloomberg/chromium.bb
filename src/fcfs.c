@@ -116,3 +116,98 @@ FcFontSetClearStatic (void)
 {
     FcPatternClearStatic();
 }
+
+FcBool
+FcFontSetRead(int fd, FcConfig * config, FcCache metadata)
+{
+    int i, mz, j;
+    FcPattern * buf;
+
+    lseek(fd, metadata.fontsets_offset, SEEK_SET);
+    for (i = FcSetSystem; i <= FcSetApplication; i++)
+    {
+        if (config->fonts[i])
+        {
+            if (config->fonts[i]->nfont > 0 && config->fonts[i]->fonts)
+                free (config->fonts[i]->fonts);
+            free (config->fonts[i]);
+        }
+    }
+
+    for (i = FcSetSystem; i <= FcSetApplication; i++)
+    {
+        read(fd, &mz, sizeof(int));
+        if (mz != FC_CACHE_MAGIC)
+            continue;
+
+        config->fonts[i] = malloc(sizeof(FcFontSet));
+        if (!config->fonts[i])
+            return FcFalse;
+        FcMemAlloc(FC_MEM_FONTSET, sizeof(FcFontSet));
+
+        if (read(fd, config->fonts[i], sizeof(FcFontSet)) == -1)
+            goto bail;
+        if (config->fonts[i]->sfont > 0)
+        {
+            config->fonts[i]->fonts = malloc
+                (config->fonts[i]->sfont*sizeof(FcPattern *));
+	    buf = malloc (config->fonts[i]->sfont * sizeof(FcPattern));
+	    if (!config->fonts[i]->fonts || !buf)
+		goto bail;
+	    for (j = 0; j < config->fonts[i]->nfont; j++)
+	    {
+		config->fonts[i]->fonts[j] = buf+j;
+		if (read(fd, buf+j, sizeof(FcPattern)) == -1)
+		    goto bail;
+	    }
+        }
+    }
+
+    return FcTrue;
+ bail:
+    for (i = FcSetSystem; i <= FcSetApplication; i++)
+    {
+        if (config->fonts[i])
+        {
+            if (config->fonts[i]->fonts)
+                free (config->fonts[i]->fonts);
+            free(config->fonts[i]);
+        }
+        config->fonts[i] = 0;
+    }
+    return FcFalse;
+}
+
+FcBool
+FcFontSetWrite(int fd, FcConfig * config, FcCache * metadata)
+{
+    int c, t, i, j;
+    int m = FC_CACHE_MAGIC, z = 0;
+
+    metadata->fontsets_offset = FcCacheNextOffset(fd);
+    lseek(fd, metadata->fontsets_offset, SEEK_SET);
+    for (i = FcSetSystem; i <= FcSetApplication; i++)
+    {
+        if (!config->fonts[i])
+        {
+            write(fd, &z, sizeof(int));
+            continue;
+        }
+        else
+            write(fd, &m, sizeof(int));
+
+        if ((c = write(fd, config->fonts[i], sizeof(FcFontSet))) == -1)
+            return FcFalse;
+        t = c;
+        if (config->fonts[i]->nfont > 0)
+        {
+	    for (j = 0; j < config->fonts[i]->nfont; j++)
+	    {
+		if ((c = write(fd, config->fonts[i]->fonts[j],
+			       sizeof(FcPattern))) == -1)
+		    return FcFalse;
+	    }
+        }
+    }
+    return FcTrue;
+}

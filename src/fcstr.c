@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <sys/mman.h>
 #include "fcint.h"
 
 FcChar8 *
@@ -1129,8 +1130,8 @@ FcStrSetSerialize (FcStrSet *set)
     if (strset_ptr > strset_count || strset_idx_ptr > strset_idx_count)
 	return FcStrSetPtrCreateDynamic(0);
 
-    // problem with multiple ptrs to the same LangSet.
-    // should hash LangSets or something.
+    // problem with multiple ptrs to the same StrSet.
+    // should hash StrSets or something.
     // FcStrSetDestroy (set);
 
     return newp;
@@ -1141,6 +1142,77 @@ FcStrSetSerialize (FcStrSet *set)
     free (strsets);
  bail1:
     return FcStrSetPtrCreateDynamic(0);
+}
+
+FcBool
+FcStrSetRead (int fd, FcCache metadata)
+{
+    strsets = mmap(NULL, 
+		   metadata.strsets_length * sizeof (FcStrSet),
+		   PROT_READ,
+		   MAP_SHARED, fd, metadata.strsets_offset);
+    if (strsets == MAP_FAILED)
+        goto bail;
+    strset_count = strset_ptr = metadata.strsets_length;
+
+    strset_idx = mmap(NULL, 
+		      metadata.strsets_idx_length * sizeof (int),
+		      PROT_READ,
+		      MAP_SHARED, fd, metadata.strsets_idx_offset);
+    if (strset_idx == MAP_FAILED)
+        goto bail1;
+    strset_idx_count = strset_idx_ptr = metadata.strsets_length;
+
+    strset_buf = mmap(NULL,
+		      metadata.strset_buf_length * sizeof (char),
+		      PROT_READ,
+		      MAP_SHARED, fd, metadata.strset_buf_offset);
+    if (strset_buf == MAP_FAILED)
+	goto bail2;
+    strset_buf_count = strset_buf_ptr = metadata.strset_buf_length;
+
+    return FcTrue;
+
+ bail2:
+    munmap (strset_idx, metadata.strsets_idx_length * sizeof (int));
+ bail1:
+    munmap (strsets, metadata.strsets_length * sizeof (FcStrSet));
+ bail:
+    return FcFalse;
+}
+
+FcBool
+FcStrSetWrite (int fd, FcCache *metadata)
+{
+    metadata->strsets_length = strset_ptr;
+    metadata->strsets_offset = FcCacheNextOffset(fd);
+    if (strset_ptr > 0)
+    {
+	lseek (fd, metadata->strsets_offset, SEEK_SET);
+	if (write (fd, strsets, strset_ptr * sizeof(FcStrSet)) == -1)
+	    return FcFalse;
+    }
+
+    metadata->strsets_idx_length = strset_idx_ptr;
+    metadata->strsets_idx_offset = FcCacheNextOffset(fd);
+    if (strset_idx_ptr > 0)
+    {
+	lseek (fd, metadata->strsets_idx_offset, SEEK_SET);
+	if (write (fd, strset_idx, strset_idx_ptr * sizeof (int)) == -1)
+	    return FcFalse;
+    }
+
+    metadata->strset_buf_offset = FcCacheNextOffset(fd);
+    metadata->strset_buf_length = strset_buf_ptr;
+    if (strset_buf_ptr > 0)
+    {
+	lseek (fd, metadata->strset_buf_offset, SEEK_SET);
+	if (write (fd, strset_buf, 
+		   metadata->strset_buf_length * sizeof (char)) == -1)
+	    return FcFalse;
+    }
+
+    return FcTrue;
 }
 
 FcStrList *

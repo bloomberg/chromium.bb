@@ -61,6 +61,9 @@ FcInitLoadConfig (void)
     if (!config)
 	return FcFalse;
     
+    if (!FcCacheRead(config))
+        FcCacheForce(FcTrue);
+
     if (!FcConfigParseAndLoad (config, 0, FcTrue))
     {
 	FcConfigDestroy (config);

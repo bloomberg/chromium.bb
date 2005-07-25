@@ -774,3 +774,31 @@ FcLangSetSerialize(FcLangSet *l)
     new.u.stat = p;
     return new;
 }
+
+FcBool
+FcLangSetWrite (int fd, FcCache *metadata)
+{
+    metadata->langsets_length = langset_ptr;
+    metadata->langsets_offset = FcCacheNextOffset(fd);
+
+    if (langset_ptr > 0)
+    {
+	lseek (fd, metadata->langsets_offset, SEEK_SET);
+	return write(fd, langsets, 
+		     metadata->langsets_length * sizeof(FcLangSet)) != -1;
+    }
+    return FcTrue;
+}
+
+FcBool
+FcLangSetRead (int fd, FcCache metadata)
+{
+    langsets = mmap(NULL, 
+		    metadata.langsets_length * sizeof (FcLangSet),
+		    PROT_READ,
+		    MAP_SHARED, fd, metadata.langsets_offset);
+    if (langsets == MAP_FAILED)
+	return FcFalse;
+    langset_count = langset_ptr = metadata.langsets_length;
+    return FcTrue;
+}

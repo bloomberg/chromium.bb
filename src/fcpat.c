@@ -94,8 +94,7 @@ FcValueSave (FcValue v)
 	    v.type = FcTypeVoid;
 	break;
     case FcTypeCharSet:
-	v.u.ci = FcCharSetPtrCreateDynamic
-	    (FcCharSetCopy (FcCharSetPtrU(v.u.ci)));
+	v.u.ci = FcCharSetCopyPtr (v.u.ci);
 	if (!FcCharSetPtrU(v.u.ci))
 	    v.type = FcTypeVoid;
 	break;
@@ -1270,7 +1269,6 @@ FcPatternEltU (FcPatternEltPtr pei)
     switch (pei.storage)
     {
     case FcStorageStatic:
-	if (pei.u.stat == 0) return 0;
         return &fcpatternelts[pei.u.stat];
     case FcStorageDynamic:
         return pei.u.dyn;
@@ -1324,6 +1322,8 @@ FcValueListClearStatic (void)
     fcvaluelist_count = 0;
 }
 
+static FcBool
+FcObjectPrepareSerialize (FcObjectPtr si);
 static FcObjectPtr
 FcObjectSerialize (FcObjectPtr si);
 
@@ -1408,13 +1408,14 @@ FcPatternSerialize (FcPattern *old)
 	fcpatternelt_ptr = 0;
     }
 
-    p = FcPatternCreate();
+    p = &fcpatterns[fcpattern_ptr++];
     elts = fcpatternelt_ptr;
     nep = &fcpatternelts[elts];
     if (!nep)
 	return FcFalse;
+
     fcpatternelt_ptr += old->num;
-    
+
     for (e = FcPatternEltU(old->elts), i=0; i < old->num; i++, e++) 
     {
         v = e->values;
@@ -1438,12 +1439,13 @@ FcPatternSerialize (FcPattern *old)
         }
 	
 	nep[i].values = nv_head;
-	nep[i].object = FcObjectSerialize
-	    (FcObjectStaticName(FcObjectPtrU(e->object)));
+	nep[i].object = FcObjectSerialize (e->object);
     }
-    
+
+    p->elts = old->elts;
     p->elts = FcPatternEltPtrCreateStatic(elts);
     p->size = old->num;
+    p->num = old->num;
     p->ref = FC_REF_CONSTANT;
     return p;
     
@@ -1453,7 +1455,69 @@ FcPatternSerialize (FcPattern *old)
     free (fcpatterns);
  bail:
     return 0;
- }
+}
+
+FcBool
+FcPatternRead (int fd, FcCache metadata)
+{
+    fcpatterns = mmap(NULL, 
+		      metadata.pattern_length * sizeof (FcPattern),
+		      PROT_READ,
+		      MAP_SHARED, fd, metadata.pattern_offset);
+    if (fcpatterns == MAP_FAILED)
+	return FcFalse;
+    fcpattern_count = fcpattern_ptr = metadata.pattern_length;
+
+    return FcTrue;
+}
+
+FcBool
+FcPatternWrite (int fd, FcCache *metadata)
+{
+    int c = fcpattern_ptr;
+    off_t w = FcCacheNextOffset(fd);
+
+    metadata->pattern_offset = w;
+    metadata->pattern_length = c;
+
+    if (c > 0)
+    {
+	lseek(fd, w, SEEK_SET);
+	return write(fd, fcpatterns, c*sizeof(FcPattern)) != -1;
+    }
+    return FcTrue;
+}
+
+FcBool
+FcPatternEltRead (int fd, FcCache metadata)
+{
+    fcpatternelts = mmap(NULL, 
+			 metadata.patternelt_length * sizeof (FcPatternElt),
+			 PROT_READ,
+			 MAP_SHARED, fd, metadata.patternelt_offset);
+    if (fcpatternelts == MAP_FAILED)
+	return FcFalse;
+    fcpatternelt_count = fcpatternelt_ptr = metadata.patternelt_length;
+
+    return FcTrue;
+}
+
+FcBool
+FcPatternEltWrite (int fd, FcCache *metadata)
+{
+    int c = fcpatternelt_ptr;
+    off_t w = FcCacheNextOffset(fd);
+
+    metadata->patternelt_offset = w;
+    metadata->patternelt_length = c;
+
+    if (c > 0)
+    {
+	lseek(fd, w, SEEK_SET);
+	return write(fd, fcpatternelts, c*sizeof(FcPatternElt)) != -1;
+    }
+    return FcTrue;
+}
 
 FcValueListPtr
 FcValueListSerialize(FcValueList *pi)
@@ -1480,13 +1544,18 @@ FcValueListSerialize(FcValueList *pi)
     switch (v->type)
     {
     case FcTypeString:
-	if (FcObjectPtrU(v->u.si))
+	/* this departs from the usual convention of dereferencing
+	 * foo before serialization; FcObjectSerialize does the
+	 * translation itself. */
+	/* also, v->u.si is 0 iff the string is null. */
+	/* also, have to update the old pi */
+	if (v->u.si)
 	{
-	    FcObjectPtr si = 
-		FcObjectSerialize(FcObjectStaticName(FcObjectPtrU(v->u.si)));
-	    if (!FcObjectPtrU(v->u.si))
+	    FcObjectPtr si = FcObjectSerialize(v->u.si);
+	    if (!FcObjectPtrU(si))
 		return FcValueListPtrCreateDynamic(pi);
 	    v->u.si = si;
+	    pi->value.u.si = si;
 	}
 	break;
     case FcTypeMatrix:
@@ -1503,7 +1572,7 @@ FcValueListSerialize(FcValueList *pi)
 	if (FcCharSetPtrU(v->u.ci))
 	{
 	    FcCharSetPtr ci = FcCharSetSerialize(FcCharSetPtrU(v->u.ci));
-	    if (!FcCharSetPtrU(v->u.ci))
+	    if (!FcCharSetPtrU(ci))
 		return FcValueListPtrCreateDynamic(pi);
 	    v->u.ci = ci;
 	}
@@ -1512,7 +1581,7 @@ FcValueListSerialize(FcValueList *pi)
 	if (FcLangSetPtrU(v->u.li))
 	{
 	    FcLangSetPtr li = FcLangSetSerialize(FcLangSetPtrU(v->u.li));
-	    if (!FcLangSetPtrU(v->u.li))
+	    if (!FcLangSetPtrU(li))
 		return FcValueListPtrCreateDynamic(pi);
 	    v->u.li = li;
 	}
@@ -1523,13 +1592,41 @@ FcValueListSerialize(FcValueList *pi)
     return new;
 }
 
+FcBool
+FcValueListRead (int fd, FcCache metadata)
+{
+    fcvaluelists = mmap(NULL, 
+			metadata.valuelist_length * sizeof (FcValueList),
+			PROT_READ,
+			MAP_SHARED, fd, metadata.valuelist_offset);
+    if (fcvaluelists == MAP_FAILED)
+	return FcFalse;
+    fcvaluelist_count = fcvaluelist_ptr = metadata.valuelist_length;
+
+    return FcTrue;
+}
+
+FcBool
+FcValueListWrite (int fd, FcCache *metadata)
+{
+    metadata->valuelist_offset = FcCacheNextOffset(fd);
+    metadata->valuelist_length = fcvaluelist_ptr;
+
+    if (fcvaluelist_ptr > 0)
+    {
+	lseek(fd, metadata->valuelist_offset, SEEK_SET);
+	return write(fd, fcvaluelists, 
+		     fcvaluelist_ptr * sizeof(FcValueList)) != -1;
+    }
+    return FcTrue;
+}
+
 FcValueList * 
 FcValueListPtrU (FcValueListPtr pi)
 {
     switch (pi.storage)
     {
     case FcStorageStatic:
-	if (pi.u.stat == 0) return 0;
         return &fcvaluelists[pi.u.stat];
     case FcStorageDynamic:
         return pi.u.dyn;
@@ -1642,7 +1739,7 @@ FcObjectStaticName (const char *name)
 	objectptr_alloc = s;
     }
 
-    size = sizeof (struct objectBucket) + strlen (name) + 1;
+    size = sizeof (struct objectBucket) + sizeof (char *);
     b = malloc (size);
     if (!b)
 	return 0;
@@ -1687,6 +1784,9 @@ FcObjectPtrDestroy (FcObjectPtr p)
 const char *
 FcObjectPtrU (FcObjectPtr si)
 {
+    if (si == 0)
+	return 0;
+
     if (objectptr_indices[si] > 0)
 	return &objectcontent_static_buf[objectptr_indices[si]];
     else
@@ -1750,7 +1850,7 @@ FcObjectRebuildStaticNameHashtable (void)
 /* Hmm.  This will have a terrible effect on the memory size,
  * because the mmapped strings now get reallocated on the heap. 
  * Is it all worth it? (Of course, the Serialization codepath is
- * not problematic.) */
+ * not problematic, because the program quits just afterwards.) */
 static FcBool
 FcObjectPtrConvertToStatic(FcBool renumber)
 {
@@ -1784,6 +1884,8 @@ FcObjectPtrConvertToStatic(FcBool renumber)
     new_indices = malloc (active_count * sizeof(int));
     if (!new_indices)
 	goto bail2;
+    new_indices[0] = 0;
+    new_static_buf[0] = 0;
     
     FcMemAlloc (FC_MEM_STATICSTR, new_static_bytes);
     FcMemFree (FC_MEM_STATICSTR, objectptr_count * sizeof (int));
@@ -1817,8 +1919,8 @@ FcObjectPtrConvertToStatic(FcBool renumber)
 	int n = FcObjectStaticName(fixed_length_buf+i*(longest_string+1));
 	if (renumber)
 	{
-	    object_old_id_to_new[n] = i;
-	    new_indices[i] = p-new_static_buf;
+	    object_old_id_to_new[n] = i+1;
+	    new_indices[i+1] = p-new_static_buf;
 	}
 	else
 	    new_indices[n] = p-new_static_buf;
@@ -1907,21 +2009,11 @@ FcObjectClearStatic(void)
     object_old_id_to_new = 0;
 }
 
-static FcObjectPtr
-FcObjectSerialize (FcObjectPtr si)
-{
-    if (objectptr_first_serialization)
-	if (!FcObjectPtrConvertToStatic(FcTrue))
-	    return 0;
-
-    return object_old_id_to_new[si];
-}
-
 /* In the pre-serialization phase, mark the used strings with
  * -1 in the mapping array. */
 /* The first call to the serialization phase assigns actual 
  * static indices to the strings (sweep). */
-FcBool
+static FcBool
 FcObjectPrepareSerialize (FcObjectPtr si)
 {
     if (object_old_id_to_new == 0)
@@ -1940,6 +2032,93 @@ FcObjectPrepareSerialize (FcObjectPtr si)
 
  bail:
     return FcFalse;
+}
+
+static FcObjectPtr
+FcObjectSerialize (FcObjectPtr si)
+{
+    if (objectptr_first_serialization)
+	if (!FcObjectPtrConvertToStatic(FcTrue))
+	    return 0;
+
+    return object_old_id_to_new[si];
+}
+
+FcBool
+FcObjectRead (int fd, FcCache metadata)
+{
+    /* do we have to merge strings? 
+     * it's possible to merge dynamic strings, as long as we only store
+     * static strings to disk and as long as all static strings have lower
+     * ids than any dynamic strings. */
+
+    objectcontent_dynamic_count = 1;
+    objectcontent_dynamic_alloc = 0;
+    objectcontent_dynamic = 0;
+    objectcontent_dynamic_refcount = 0;
+
+    /* well, we do need to allocate dynamic strings all the time,
+     * so this would just have to be converted.  It takes 1.4k on
+     * my system. - PL */
+/*     objectptr_indices = mmap(NULL,  */
+/* 			     metadata.object_length * sizeof (int), */
+/* 			     PROT_READ, */
+/* 			     MAP_SHARED, fd, metadata.object_offset); */
+/*     if (objectptr_indices == MAP_FAILED) */
+/*         goto bail; */
+
+    objectptr_count = metadata.object_length;
+    objectptr_alloc = metadata.object_length;
+    objectptr_indices = malloc (metadata.object_length * sizeof (int));
+    if (!objectptr_indices) 
+	goto bail;
+    FcMemAlloc (FC_MEM_STATICSTR, metadata.object_length * sizeof (int));
+    lseek (fd, metadata.object_offset, SEEK_SET);
+    read (fd, objectptr_indices, metadata.object_length * sizeof (int));
+
+    objectcontent_static_buf = 
+	mmap(NULL,
+	     metadata.objectcontent_length * sizeof (char),
+	     PROT_READ,
+	     MAP_SHARED, fd, metadata.objectcontent_offset);
+    if (objectptr_indices == MAP_FAILED)
+	goto bail1;
+    objectcontent_static_bytes = metadata.objectcontent_length;
+
+    FcObjectRebuildStaticNameHashtable ();
+
+    return FcTrue;
+
+ bail1:
+    /*munmap(objectptr_indices, metadata.object_length * sizeof(int));*/
+    free (objectptr_indices);
+ bail:
+    return FcFalse;
+}
+
+FcBool
+FcObjectWrite (int fd, FcCache * metadata)
+{
+    /* there should be no dynamic strings: 
+     * serialize ought to have zapped 'em. */
+    if (objectcontent_dynamic_alloc)
+	return FcFalse;
+
+    metadata->object_length = objectptr_count;
+    metadata->object_offset = FcCacheNextOffset(fd);    
+    lseek(fd, metadata->object_offset, SEEK_SET);
+    if (write (fd, objectptr_indices, 
+	       metadata->object_length * sizeof (int)) == -1)
+	return FcFalse;
+
+    metadata->objectcontent_length = objectcontent_static_bytes;
+    metadata->objectcontent_offset = FcCacheNextOffset(fd);
+    lseek(fd, metadata->objectcontent_offset, SEEK_SET);
+    if (write (fd, objectcontent_static_buf, 
+	       metadata->objectcontent_length * sizeof (char)) == -1)
+	return FcFalse;
+
+    return FcTrue;
 }
 
 static void
