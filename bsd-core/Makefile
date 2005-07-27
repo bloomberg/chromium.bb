@@ -31,6 +31,10 @@ SHAREDFILES=	drm.h \
 		radeon_state.c \
 		r300_cmdbuf.c \
 		r300_reg.h \
+		savage_bci.c \
+		savage_drm.h \
+		savage_drv.h \
+		savage_state.c \
 		sis_drm.h \
 		sis_drv.h \
 		sis_ds.c \
