@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20050311"
+#define DRIVER_DATE		"20050720"
 
 /* Interface history:
  *
@@ -82,10 +82,11 @@
  *     - Add support for r100 cube maps
  * 1.16- Add R200_EMIT_PP_TRI_PERF_CNTL packet to support brilinear
  *       texture filtering on r200
+ * 1.17- Add initial support for R300 (3D).
  */
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		16
+#define DRIVER_MINOR		17
 #define DRIVER_PATCHLEVEL	0
 
 enum radeon_family {
