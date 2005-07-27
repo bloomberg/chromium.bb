@@ -1,4 +1,4 @@
-/* drm_dma.c -- DMA IOCTL and function support
+/* drm_irq.c -- IRQ IOCTL and function support
  * Created: Fri Oct 18 2003 by anholt@FreeBSD.org
  */
 /*-
