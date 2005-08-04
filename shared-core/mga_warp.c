@@ -85,6 +85,7 @@ unsigned int mga_warp_microcode_size(const drm_mga_private_t * dev_priv)
 	case MGA_CARD_TYPE_G200:
 		return PAGE_ALIGN(mga_warp_g200_microcode_size);
 	default:
+		DRM_ERROR("Unknown chipset value: 0x%x\n", dev_priv->chipset);
 		return 0;
 	}
 }
