@@ -36,8 +36,10 @@
 
 int drm_debug_flag = 0;
 
-static int drm_init(device_t nbdev);
+static int drm_init(drm_device_t *dev);
 static void drm_cleanup(drm_device_t *dev);
+static drm_pci_id_list_t *drm_find_description(int vendor, int device,
+    drm_pci_id_list_t *idlist);
 
 #ifdef __FreeBSD__
 #define DRIVER_SOFTC(unit) \
@@ -116,8 +118,6 @@ static drm_ioctl_desc_t		  drm_ioctls[256] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_WAIT_VBLANK)]   = { drm_wait_vblank, 0, 0 },
 };
 
-const char *drm_find_description(int vendor, int device, drm_pci_id_list_t *idlist);
-
 #ifdef __FreeBSD__
 static struct cdevsw drm_cdevsw = {
 #if __FreeBSD_version >= 502103
@@ -143,23 +143,49 @@ static struct cdevsw drm_cdevsw = {
 
 int drm_probe(device_t dev, drm_pci_id_list_t *idlist)
 {
-	const char *s = NULL;
+	drm_pci_id_list_t *id_entry;
 	int vendor, device;
 
 	vendor = pci_get_vendor(dev);
 	device = pci_get_device(dev);
 
-	s = drm_find_description(vendor, device, idlist);
-	if (s != NULL) {
-		device_set_desc(dev, s);
+	id_entry = drm_find_description(vendor, device, idlist);
+	if (id_entry != NULL) {
+		device_set_desc(dev, id_entry->name);
 		return 0;
 	}
 
 	return ENXIO;
 }
 
-int drm_attach(device_t dev, drm_pci_id_list_t *idlist)
+int drm_attach(device_t nbdev, drm_pci_id_list_t *idlist)
 {
+	drm_device_t *dev;
+	drm_pci_id_list_t *id_entry;
+	int unit;
+
+	unit = device_get_unit(nbdev);
+	dev = device_get_softc(nbdev);
+
+	if (!strcmp(device_get_name(nbdev), "drmsub"))
+		dev->device = device_get_parent(nbdev);
+	else
+		dev->device = nbdev;
+
+	dev->devnode = make_dev(&drm_cdevsw,
+			unit,
+			DRM_DEV_UID,
+			DRM_DEV_GID,
+			DRM_DEV_MODE,
+			"dri/card%d", unit);
+#if __FreeBSD_version >= 500000
+	mtx_init(&dev->dev_lock, "drm device", NULL, MTX_DEF);
+#endif
+
+	id_entry = drm_find_description(pci_get_vendor(nbdev),
+	    pci_get_device(nbdev), idlist);
+	dev->id_entry = id_entry;
+
 	return drm_init(dev);
 }
 
@@ -254,10 +280,11 @@ int drm_modprobe(void)
 int drm_probe(struct pci_attach_args *pa, drm_pci_id_list_t idlist)
 {
 	const char *desc;
+	drm_pci_id_list_t *id_entry;
 
-	desc = drm_find_description(PCI_VENDOR(pa->pa_id),
+	id_entry = drm_find_description(PCI_VENDOR(pa->pa_id),
 	    PCI_PRODUCT(pa->pa_id), idlist);
-	if (desc != NULL) {
+	if (id_entry != NULL) {
 		return 1;
 	}
 
@@ -284,6 +311,10 @@ void drm_attach(struct pci_attach_args *pa, dev_t kdev,
 	dev->pci_func = pa->pa_function;
 	dev->dma_tag = pa->pa_dmat;
 
+	id_entry = drm_find_description(PCI_VENDOR(pa->pa_id),
+	    PCI_PRODUCT(pa->pa_id), idlist);
+	dev->driver.pci_id_entry = id_entry;
+
 	DRM_INFO("%s", drm_find_description(PCI_VENDOR(pa->pa_id), PCI_PRODUCT(pa->pa_id), idlist));
 	drm_init(dev);
 }
@@ -309,13 +340,15 @@ int drm_activate(struct device *self, enum devact act)
 }
 #endif /* __NetBSD__ || __OpenBSD__ */
 
-const char *drm_find_description(int vendor, int device, drm_pci_id_list_t *idlist) {
+drm_pci_id_list_t *drm_find_description(int vendor, int device,
+    drm_pci_id_list_t *idlist)
+{
 	int i = 0;
 	
 	for (i = 0; idlist[i].vendor != 0; i++) {
 		if ((idlist[i].vendor == vendor) &&
 		    (idlist[i].device == device)) {
-			return idlist[i].name;
+			return &idlist[i];
 		}
 	}
 	return NULL;
@@ -452,35 +485,10 @@ static int drm_takedown(drm_device_t *dev)
  *        linux/init/main.c (this is not currently supported).
  * bsd:   drm_init is called via the attach function per device.
  */
-static int drm_init(device_t nbdev)
+static int drm_init(drm_device_t *dev)
 {
-	int unit;
-	drm_device_t *dev;
 	int retcode;
 	DRM_DEBUG( "\n" );
-
-#ifdef __FreeBSD__
-	unit = device_get_unit(nbdev);
-	dev = device_get_softc(nbdev);
-
-	if (!strcmp(device_get_name(nbdev), "drmsub"))
-		dev->device = device_get_parent(nbdev);
-	else
-		dev->device = nbdev;
-
-	dev->devnode = make_dev(&drm_cdevsw,
-			unit,
-			DRM_DEV_UID,
-			DRM_DEV_GID,
-			DRM_DEV_MODE,
-			"dri/card%d", unit);
-#if __FreeBSD_version >= 500000
-	mtx_init(&dev->dev_lock, "drm device", NULL, MTX_DEF);
-#endif
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-	dev = nbdev;
-	unit = minor(dev->device.dv_unit);
-#endif
 
 	dev->irq = pci_get_irq(dev->device);
 	/* XXX Fix domain number (alpha hoses) */
@@ -498,7 +506,7 @@ static int drm_init(device_t nbdev)
 	TAILQ_INIT(&dev->files);
 
 	if (dev->preinit != NULL) {
-		retcode = dev->preinit(dev, 0);
+		retcode = dev->preinit(dev, dev->id_entry->driver_private);
 		if (retcode != 0)
 			goto error;
 	}
@@ -525,13 +533,12 @@ static int drm_init(device_t nbdev)
 		goto error;
 	}
 	
-	DRM_INFO( "Initialized %s %d.%d.%d %s on minor %d\n",
+	DRM_INFO("Initialized %s %d.%d.%d %s\n",
 	  	dev->driver_name,
 	  	dev->driver_major,
 	  	dev->driver_minor,
 	  	dev->driver_patchlevel,
-	  	dev->driver_date,
-	  	unit );
+	  	dev->driver_date);
 
 	if (dev->postinit != NULL)
 		dev->postinit(dev, 0);

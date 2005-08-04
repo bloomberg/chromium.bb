@@ -653,6 +653,8 @@ struct drm_device {
 	void	(*irq_handler)(DRM_IRQ_ARGS);
 	int	(*vblank_wait)(drm_device_t *dev, unsigned int *sequence);
 
+	drm_pci_id_list_t *id_entry;	/* PCI ID, name, and chipset private */
+
 	/**
 	 * Called by \c drm_device_is_agp.  Typically used to determine if a
 	 * card is really attached to AGP or not.

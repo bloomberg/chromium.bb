@@ -1130,10 +1130,7 @@ static int mga_set_fence(DRM_IOCTL_ARGS)
 		  MGA_SOFTRAP, 0x00000000);
 	ADVANCE_DMA();
 
-	if (DRM_COPY_TO_USER( (u32 __user *) data, & temp, sizeof(u32))) {
-		DRM_ERROR("copy_to_user\n");
-		return DRM_ERR(EFAULT);
-	}
+	DRM_COPY_TO_USER_IOCTL((u32 __user *)data, temp, sizeof(u32));
 
 	return 0;
 }
@@ -1155,10 +1152,7 @@ static int mga_wait_fence(DRM_IOCTL_ARGS)
 
 	mga_driver_fence_wait(dev, & fence);
 
-	if (DRM_COPY_TO_USER( (u32 __user *) data, & fence, sizeof(u32))) {
-		DRM_ERROR("copy_to_user\n");
-		return DRM_ERR(EFAULT);
-	}
+	DRM_COPY_TO_USER_IOCTL((u32 __user *)data, fence, sizeof(u32));
 
 	return 0;
 }

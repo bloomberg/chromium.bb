@@ -723,6 +723,9 @@ int mga_dma_bootstrap(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	drm_mga_dma_bootstrap_t bootstrap;
 	int err;
+	static const int modes[] = { 0, 1, 2, 2, 4, 4, 4, 4 };
+	const drm_mga_private_t * const dev_priv = 
+		(drm_mga_private_t *) dev->dev_private;
 
 
 	DRM_COPY_FROM_USER_IOCTL(bootstrap,
@@ -730,31 +733,26 @@ int mga_dma_bootstrap(DRM_IOCTL_ARGS)
 				 sizeof(bootstrap));
 
 	err = mga_do_dma_bootstrap(dev, & bootstrap);
-	if (! err) {
-		static const int modes[] = { 0, 1, 2, 2, 4, 4, 4, 4 };
-		const drm_mga_private_t * const dev_priv = 
-			(drm_mga_private_t *) dev->dev_private;
+	if (err) {
+		mga_do_cleanup_dma(dev);
+		return err;
+	}
 
-		if (dev_priv->agp_textures != NULL) {
-			bootstrap.texture_handle = dev_priv->agp_textures->offset;
-			bootstrap.texture_size = dev_priv->agp_textures->size;
-		}
-		else {
-			bootstrap.texture_handle = 0;
-			bootstrap.texture_size = 0;
-		}
-
-		bootstrap.agp_mode = modes[ bootstrap.agp_mode & 0x07 ];
-		if (DRM_COPY_TO_USER( (void __user *) data, & bootstrap,
-				     sizeof(bootstrap))) {
-			err = DRM_ERR(EFAULT);
-		}
+	if (dev_priv->agp_textures != NULL) {
+		bootstrap.texture_handle = dev_priv->agp_textures->offset;
+		bootstrap.texture_size = dev_priv->agp_textures->size;
 	}
 	else {
-		mga_do_cleanup_dma(dev);
+		bootstrap.texture_handle = 0;
+		bootstrap.texture_size = 0;
 	}
 
-	return err;
+	bootstrap.agp_mode = modes[bootstrap.agp_mode & 0x07];
+
+	DRM_COPY_TO_USER_IOCTL((drm_mga_dma_bootstrap_t __user *)data,
+			       bootstrap, sizeof(bootstrap));
+
+	return 0;
 }
 
 
