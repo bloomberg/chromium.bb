@@ -242,8 +242,6 @@ typedef struct drm_radeon_private {
 
 	drm_radeon_depth_clear_t depth_clear;
 
-	unsigned long fb_offset;
-	unsigned long mmio_offset;
 	unsigned long ring_offset;
 	unsigned long ring_rptr_offset;
 	unsigned long buffers_offset;

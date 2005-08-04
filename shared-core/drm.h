@@ -62,6 +62,12 @@
 #define __user
 #endif
 
+#ifdef __GNUC__
+# define DEPRECATED  __attribute__ ((deprecated))
+#else
+# define DEPRECATED
+#endif
+
 #if defined(__linux__)
 #if defined(__KERNEL__)
 #include <linux/config.h>

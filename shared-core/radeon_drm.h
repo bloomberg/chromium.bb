@@ -492,7 +492,7 @@ typedef struct drm_radeon_init {
 		RADEON_INIT_R300_CP = 0x04
 	} func;
 	unsigned long sarea_priv_offset;
-	int is_pci;		/* not used, driver asks hardware */
+	int is_pci DEPRECATED;			/* deprecated, driver asks hardware */
 	int cp_mode;
 	int gart_size;
 	int ring_size;
@@ -504,8 +504,8 @@ typedef struct drm_radeon_init {
 	unsigned int depth_bpp;
 	unsigned int depth_offset, depth_pitch;
 
-	unsigned long fb_offset;
-	unsigned long mmio_offset;
+	unsigned long fb_offset DEPRECATED;	/* deprecated, driver asks hardware */
+	unsigned long mmio_offset DEPRECATED;	/* deprecated, driver asks hardware */
 	unsigned long ring_offset;
 	unsigned long ring_rptr_offset;
 	unsigned long buffers_offset;

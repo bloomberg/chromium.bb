@@ -1245,7 +1245,7 @@ static void radeon_set_pciegart(drm_radeon_private_t * dev_priv, int on)
 	u32 tmp = RADEON_READ_PCIE(dev_priv, RADEON_PCIE_TX_GART_CNTL);
 	if (on) {
 
-		DRM_DEBUG("programming pcie %08X %08lX %08X\n", dev_priv->gart_vm_start, dev_priv->bus_pci_gart,dev_priv->gart_size);
+		DRM_DEBUG("programming pcie %08X %08X %08X\n", dev_priv->gart_vm_start, dev_priv->bus_pci_gart,dev_priv->gart_size);
 		RADEON_WRITE_PCIE(RADEON_PCIE_TX_DISCARD_RD_ADDR_LO, dev_priv->gart_vm_start);
 		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_BASE, dev_priv->bus_pci_gart);
 		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_START_LO, dev_priv->gart_vm_start);
@@ -1398,8 +1398,6 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 
 	DRM_GETSAREA();
 
-	dev_priv->fb_offset = init->fb_offset;
-	dev_priv->mmio_offset = init->mmio_offset;
 	dev_priv->ring_offset = init->ring_offset;
 	dev_priv->ring_rptr_offset = init->ring_rptr_offset;
 	dev_priv->buffers_offset = init->buffers_offset;
@@ -1411,12 +1409,6 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 		return DRM_ERR(EINVAL);
 	}
 
-	dev_priv->mmio = drm_core_findmap(dev, init->mmio_offset);
-	if (!dev_priv->mmio) {
-		DRM_ERROR("could not find mmio region!\n");
-		radeon_do_cleanup_cp(dev);
-		return DRM_ERR(EINVAL);
-	}
 	dev_priv->cp_ring = drm_core_findmap(dev, init->ring_offset);
 	if (!dev_priv->cp_ring) {
 		DRM_ERROR("could not find cp ring region!\n");

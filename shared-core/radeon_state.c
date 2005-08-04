@@ -2917,7 +2917,7 @@ static int radeon_cp_getparam(DRM_IOCTL_ARGS)
 		value = dev_priv->gart_vm_start;
 		break;
 	case RADEON_PARAM_REGISTER_HANDLE:
-		value = dev_priv->mmio_offset;
+		value = dev_priv->mmio->offset;
 		break;
 	case RADEON_PARAM_STATUS_HANDLE:
 		value = dev_priv->ring_rptr_offset;
