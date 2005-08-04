@@ -458,7 +458,6 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 		return err;
 	}
 
-
 	/* In addition to the usual AGP mode configuration, the G200 AGP cards
 	 * need to have the AGP mode "manually" set.
 	 */
@@ -466,8 +465,7 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 	if (dev_priv->chipset == MGA_CARD_TYPE_G200) {
 		if (mode.mode & 0x02) {
 			MGA_WRITE(MGA_AGP_PLL, MGA_AGP2XPLL_ENABLE);
-		}
-		else {
+		} else {
 			MGA_WRITE(MGA_AGP_PLL, MGA_AGP2XPLL_DISABLE);
 		}
 	}
@@ -741,8 +739,7 @@ int mga_dma_bootstrap(DRM_IOCTL_ARGS)
 	if (dev_priv->agp_textures != NULL) {
 		bootstrap.texture_handle = dev_priv->agp_textures->offset;
 		bootstrap.texture_size = dev_priv->agp_textures->size;
-	}
-	else {
+	} else {
 		bootstrap.texture_handle = 0;
 		bootstrap.texture_size = 0;
 	}
