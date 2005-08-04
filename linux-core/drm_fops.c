@@ -34,17 +34,25 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "drmP.h"
 #include <linux/poll.h>
+
+#include "drmP.h"
+#include "drm_sarea.h"
 
 static int drm_open_helper(struct inode *inode, struct file *filp, drm_device_t * dev);
 
 static int drm_setup(drm_device_t * dev)
 {
+	drm_local_map_t *map;
 	int i;
 
 	if (dev->driver->presetup)
 		dev->driver->presetup(dev);
+
+	/* prebuild the SAREA */
+	i = drm_addmap(dev, 0, SAREA_MAX, _DRM_SHM, _DRM_CONTAINS_LOCK, &map);
+	if (i != 0)
+		return i;
 
 	atomic_set(&dev->ioctl_count, 0);
 	atomic_set(&dev->vma_count, 0);
@@ -72,7 +80,7 @@ static int drm_setup(drm_device_t * dev)
 	INIT_LIST_HEAD(&dev->ctxlist->head);
 
 	dev->vmalist = NULL;
-	dev->sigdata.lock = dev->lock.hw_lock = NULL;
+	dev->sigdata.lock = NULL;
 	init_waitqueue_head(&dev->lock.lock_queue);
 	dev->queue_count = 0;
 	dev->queue_reserved = 0;

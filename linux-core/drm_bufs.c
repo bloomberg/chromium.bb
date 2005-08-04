@@ -56,7 +56,8 @@ static drm_local_map_t *drm_find_matching_map(drm_device_t *dev,
 	list_for_each(list, &dev->maplist->head) {
 		drm_map_list_t *entry = list_entry(list, drm_map_list_t, head);
 		if (entry->map && map->type == entry->map->type &&
-		    entry->map->offset == map->offset) {
+		    ((entry->map->offset == map->offset) ||
+		     (map->type == _DRM_SHM))) {
 			return entry->map;
 		}
 	}
@@ -163,6 +164,19 @@ int drm_addmap(drm_device_t * dev, unsigned int offset,
 			map->handle = drm_ioremap(map->offset, map->size, dev);
 		break;
 	case _DRM_SHM:
+		found_map = drm_find_matching_map(dev, map);
+		if (found_map != NULL) {
+			if (found_map->size != map->size) {
+				DRM_DEBUG("Matching maps of type %d with "
+				   "mismatched sizes, (%ld vs %ld)\n",
+				    map->type, map->size, found_map->size);
+				found_map->size = map->size;
+			}
+
+			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+			*map_ptr = found_map;
+			return 0;
+		}
 		map->handle = vmalloc_32(map->size);
 		DRM_DEBUG("%lu %d %p\n",
 			  map->size, drm_order(map->size), map->handle);
