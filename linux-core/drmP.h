@@ -280,6 +280,7 @@ typedef int drm_ioctl_compat_t(struct file *filp, unsigned int cmd,
 typedef struct drm_ioctl_desc {
 	drm_ioctl_t *func;
 	int auth_needed;
+	int master;
 	int root_only;
 } drm_ioctl_desc_t;
 
@@ -375,6 +376,7 @@ typedef struct drm_buf_entry {
 /** File private data */
 typedef struct drm_file {
 	int authenticated;
+	int master;
 	int minor;
 	pid_t pid;
 	uid_t uid;

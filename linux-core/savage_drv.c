@@ -62,10 +62,10 @@ static struct pci_device_id pciidlist[] = {
 };
 
 static drm_ioctl_desc_t ioctls[] = {
-	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_INIT)] = {savage_bci_init, 1, 1},
-	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_CMDBUF)] = {savage_bci_cmdbuf, 1, 0},
-	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_EVENT_EMIT)] = {savage_bci_event_emit, 1, 0},
-	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_EVENT_WAIT)] = {savage_bci_event_wait, 1, 0},
+	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_INIT)] = {savage_bci_init, 1, 1, 1},
+	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_CMDBUF)] = {savage_bci_cmdbuf, 1, 0, 0},
+	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_EVENT_EMIT)] = {savage_bci_event_emit, 1, 0, 0},
+	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_EVENT_WAIT)] = {savage_bci_event_wait, 1, 0, 0},
 };
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
