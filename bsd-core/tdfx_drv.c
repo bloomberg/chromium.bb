@@ -46,18 +46,18 @@ extern int tdfx_max_ioctl;
 
 static void tdfx_configure(drm_device_t *dev)
 {
-	dev->dev_priv_size = 1; /* No dev_priv */
+	dev->driver.buf_priv_size	= 1; /* No dev_priv */
 
-	dev->max_driver_ioctl = 0;
+	dev->driver.max_ioctl		= 0;
 
-	dev->driver_name = DRIVER_NAME;
-	dev->driver_desc = DRIVER_DESC;
-	dev->driver_date = DRIVER_DATE;
-	dev->driver_major = DRIVER_MAJOR;
-	dev->driver_minor = DRIVER_MINOR;
-	dev->driver_patchlevel = DRIVER_PATCHLEVEL;
+	dev->driver.name		= DRIVER_NAME;
+	dev->driver.desc		= DRIVER_DESC;
+	dev->driver.date		= DRIVER_DATE;
+	dev->driver.major		= DRIVER_MAJOR;
+	dev->driver.minor		= DRIVER_MINOR;
+	dev->driver.patchlevel		= DRIVER_PATCHLEVEL;
 
-	dev->use_mtrr = 1;
+	dev->driver.use_mtrr		= 1;
 }
 
 #ifdef __FreeBSD__

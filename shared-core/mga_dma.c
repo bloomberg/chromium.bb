@@ -391,7 +391,7 @@ int mga_freelist_put(drm_device_t * dev, drm_buf_t * buf)
  * DMA initialization, cleanup
  */
 
-int mga_driver_preinit(drm_device_t *dev, unsigned long flags)
+int mga_driver_load(drm_device_t *dev, unsigned long flags)
 {
 	drm_mga_private_t * dev_priv;
 
@@ -404,6 +404,14 @@ int mga_driver_preinit(drm_device_t *dev, unsigned long flags)
 
 	dev_priv->usec_timeout = MGA_DEFAULT_USEC_TIMEOUT;
 	dev_priv->chipset = flags;
+
+	dev_priv->mmio_base = drm_get_resource_start(dev, 1);
+	dev_priv->mmio_size = drm_get_resource_len(dev, 1);
+
+	dev->counters += 3;
+	dev->types[6] = _DRM_STAT_IRQ;
+	dev->types[7] = _DRM_STAT_PRIMARY;
+	dev->types[8] = _DRM_STAT_SECONDARY;
 
 	return 0;
 }
@@ -437,7 +445,6 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 	drm_agp_mode_t mode;
 	drm_agp_info_t info;
 
-	
 	/* Acquire AGP. */
 	err = drm_agp_acquire(dev);
 	if (err) {
@@ -1100,7 +1107,7 @@ int mga_dma_buffers(DRM_IOCTL_ARGS)
 /**
  * Called just before the module is unloaded.
  */
-int mga_driver_postcleanup(drm_device_t * dev)
+int mga_driver_unload(drm_device_t * dev)
 {
 	drm_free(dev->dev_private, sizeof(drm_mga_private_t), DRM_MEM_DRIVER);
 	dev->dev_private = NULL;
@@ -1111,7 +1118,7 @@ int mga_driver_postcleanup(drm_device_t * dev)
 /**
  * Called when the last opener of the device is closed.
  */
-void mga_driver_pretakedown(drm_device_t * dev)
+void mga_driver_lastclose(drm_device_t * dev)
 {
 	mga_do_cleanup_dma(dev);
 }

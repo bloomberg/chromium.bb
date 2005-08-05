@@ -44,8 +44,8 @@ drm_device_find_capability(drm_device_t *dev, int cap)
 {
 	int ret;
 
-	if (dev->device_is_agp != NULL) {
-		ret = (*dev->device_is_agp)(dev);
+	if (dev->driver.device_is_agp != NULL) {
+		ret = (*dev->driver.device_is_agp)(dev);
 		
 		if (ret != DRM_MIGHT_BE_AGP) {
 			return ret == 2;

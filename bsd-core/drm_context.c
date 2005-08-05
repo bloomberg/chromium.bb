@@ -265,9 +265,9 @@ int drm_addctx(DRM_IOCTL_ARGS)
 		return DRM_ERR(ENOMEM);
 	}
 
-	if (dev->context_ctor && ctx.handle != DRM_KERNEL_CONTEXT) {
+	if (dev->driver.context_ctor && ctx.handle != DRM_KERNEL_CONTEXT) {
 		DRM_LOCK();
-		dev->context_ctor(dev, ctx.handle);
+		dev->driver.context_ctor(dev, ctx.handle);
 		DRM_UNLOCK();
 	}
 
@@ -329,9 +329,9 @@ int drm_rmctx(DRM_IOCTL_ARGS)
 
 	DRM_DEBUG( "%d\n", ctx.handle );
 	if ( ctx.handle != DRM_KERNEL_CONTEXT ) {
-		if (dev->context_dtor) {
+		if (dev->driver.context_dtor) {
 			DRM_LOCK();
-			dev->context_dtor(dev, ctx.handle);
+			dev->driver.context_dtor(dev, ctx.handle);
 			DRM_UNLOCK();
 		}
 

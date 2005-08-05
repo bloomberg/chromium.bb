@@ -1519,7 +1519,7 @@ int mach64_dma_buffers(DRM_IOCTL_ARGS)
 	return ret;
 }
 
-void mach64_driver_pretakedown(drm_device_t * dev)
+void mach64_driver_lastclose(drm_device_t * dev)
 {
 	mach64_do_cleanup_dma(dev);
 }

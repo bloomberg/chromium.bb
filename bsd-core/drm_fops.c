@@ -90,8 +90,8 @@ int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		priv->ioctl_count 	= 0;
 		priv->authenticated	= !DRM_SUSER(p);
 
-		if (dev->open_helper) {
-			retcode = dev->open_helper(dev, priv);
+		if (dev->driver.open) {
+			retcode = dev->driver.open(dev, priv);
 			if (retcode != 0) {
 				free(priv, M_DRM);
 				DRM_UNLOCK();

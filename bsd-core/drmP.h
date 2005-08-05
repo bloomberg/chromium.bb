@@ -616,25 +616,15 @@ typedef struct drm_vbl_sig {
 	int		pid;
 } drm_vbl_sig_t;
 
-/** 
- * DRM device functions structure
- */
-struct drm_device {
-#if defined(__NetBSD__) || defined(__OpenBSD__)
-	struct device	  device; /* softc is an extension of struct device */
-#endif
-
-	/* Beginning of driver-config section */
-	int	(*preinit)(struct drm_device *, unsigned long flags);
-	int	(*postinit)(struct drm_device *, unsigned long flags);
-	void	(*prerelease)(struct drm_device *, void *filp);
-	void	(*pretakedown)(struct drm_device *);
-	int	(*postcleanup)(struct drm_device *);
-	int	(*presetup)(struct drm_device *);
-	int	(*postsetup)(struct drm_device *);
-	int	(*open_helper)(struct drm_device *, drm_file_t *);
-	void	(*free_filp_priv)(struct drm_device *, drm_file_t *);
-	void	(*release)(struct drm_device *, void *filp);
+struct drm_driver_info {
+	int	(*load)(struct drm_device *, unsigned long flags);
+	int	(*firstopen)(struct drm_device *);
+	int	(*open)(struct drm_device *, drm_file_t *);
+	void	(*preclose)(struct drm_device *, void *filp);
+	void	(*postclose)(struct drm_device *, drm_file_t *);
+	void	(*lastclose)(struct drm_device *);
+	int	(*unload)(struct drm_device *);
+	void	(*reclaim_buffers_locked)(struct drm_device *, void *filp);
 	int	(*dma_ioctl)(DRM_IOCTL_ARGS);
 	void	(*dma_ready)(struct drm_device *);
 	int	(*dma_quiescent)(struct drm_device *);
@@ -666,20 +656,19 @@ struct drm_device {
 	 * card is absolutely \b not AGP (return of 0), absolutely \b is AGP
 	 * (return of 1), or may or may not be AGP (return of 2).
 	 */
-	int (*device_is_agp) (struct drm_device * dev);
+	int	(*device_is_agp) (struct drm_device * dev);
 
+	drm_ioctl_desc_t *ioctls;
+	int	max_ioctl;
 
-	drm_ioctl_desc_t *driver_ioctls;
-	int	max_driver_ioctl;
+	int	buf_priv_size;
 
-	int	dev_priv_size;
-
-	int	driver_major;
-	int	driver_minor;
-	int	driver_patchlevel;
-	const char *driver_name;	/* Simple driver name		   */
-	const char *driver_desc;	/* Longer driver name		   */
-	const char *driver_date;	/* Date of last major changes.	   */
+	int	major;
+	int	minor;
+	int	patchlevel;
+	const char *name;		/* Simple driver name		   */
+	const char *desc;		/* Longer driver name		   */
+	const char *date;		/* Date of last major changes.	   */
 
 	unsigned use_agp :1;
 	unsigned require_agp :1;
@@ -690,7 +679,18 @@ struct drm_device {
 	unsigned use_irq :1;
 	unsigned use_vbl_irq :1;
 	unsigned use_mtrr :1;
-	/* End of driver-config section */
+};
+
+/** 
+ * DRM device functions structure
+ */
+struct drm_device {
+#if defined(__NetBSD__) || defined(__OpenBSD__)
+	struct device	  device; /* softc is an extension of struct device */
+#endif
+
+	struct drm_driver_info driver;
+	drm_pci_id_list_t *id_entry;	/* PCI ID, name, and chipset private */
 
 	char		  *unique;	/* Unique identifier: e.g., busid  */
 	int		  unique_len;	/* Length of unique field	   */

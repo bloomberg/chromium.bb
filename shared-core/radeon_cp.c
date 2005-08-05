@@ -1245,7 +1245,9 @@ static void radeon_set_pciegart(drm_radeon_private_t * dev_priv, int on)
 	u32 tmp = RADEON_READ_PCIE(dev_priv, RADEON_PCIE_TX_GART_CNTL);
 	if (on) {
 
-		DRM_DEBUG("programming pcie %08X %08X %08X\n", dev_priv->gart_vm_start, dev_priv->bus_pci_gart,dev_priv->gart_size);
+		DRM_DEBUG("programming pcie %08X %08lX %08X\n",
+			  dev_priv->gart_vm_start, (long)dev_priv->bus_pci_gart,
+			  dev_priv->gart_size);
 		RADEON_WRITE_PCIE(RADEON_PCIE_TX_DISCARD_RD_ADDR_LO, dev_priv->gart_vm_start);
 		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_BASE, dev_priv->bus_pci_gart);
 		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_START_LO, dev_priv->gart_vm_start);
@@ -2038,8 +2040,7 @@ int radeon_cp_buffers(DRM_IOCTL_ARGS)
 	return ret;
 }
 
-/* Always create a map record for MMIO and FB memory, done from DRIVER_POSTINIT */
-int radeon_preinit(struct drm_device *dev, unsigned long flags)
+int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 {
 	drm_radeon_private_t *dev_priv;
 	int ret = 0;
@@ -2077,7 +2078,10 @@ int radeon_preinit(struct drm_device *dev, unsigned long flags)
 	return ret;
 }
 
-int radeon_presetup(struct drm_device *dev)
+/* Create mappings for registers and framebuffer so userland doesn't necessarily
+ * have to find them.
+ */
+int radeon_driver_firstopen(struct drm_device *dev)
 {
 	int ret;
 	drm_local_map_t *map;
@@ -2098,7 +2102,7 @@ int radeon_presetup(struct drm_device *dev)
 	return 0;
 }
 
-int radeon_postcleanup(struct drm_device *dev)
+int radeon_driver_unload(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 

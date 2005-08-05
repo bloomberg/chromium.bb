@@ -61,7 +61,7 @@ drm_irq_handler_wrap(DRM_IRQ_ARGS)
 	drm_device_t *dev = (drm_device_t *)arg;
 
 	DRM_SPINLOCK(&dev->irq_lock);
-	dev->irq_handler(arg);
+	dev->driver.irq_handler(arg);
 	DRM_SPINUNLOCK(&dev->irq_lock);
 }
 #endif
@@ -90,7 +90,7 @@ int drm_irq_install(drm_device_t *dev)
 	DRM_SPININIT(dev->irq_lock, "DRM IRQ lock");
 
 				/* Before installing handler */
-	dev->irq_preinstall(dev);
+	dev->driver.irq_preinstall(dev);
 	DRM_UNLOCK();
 
 				/* Install handler */
@@ -126,7 +126,7 @@ int drm_irq_install(drm_device_t *dev)
 
 				/* After installing handler */
 	DRM_LOCK();
-	dev->irq_postinstall(dev);
+	dev->driver.irq_postinstall(dev);
 	DRM_UNLOCK();
 
 	return 0;
@@ -162,7 +162,7 @@ int drm_irq_uninstall(drm_device_t *dev)
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 
-	dev->irq_uninstall(dev);
+	dev->driver.irq_uninstall(dev);
 
 #ifdef __FreeBSD__
 	DRM_UNLOCK();
@@ -190,14 +190,14 @@ int drm_control(DRM_IOCTL_ARGS)
 		/* Handle drivers whose DRM used to require IRQ setup but the
 		 * no longer does.
 		 */
-		if (!dev->use_irq)
+		if (!dev->driver.use_irq)
 			return 0;
 		if (dev->if_version < DRM_IF_VERSION(1, 2) &&
 		    ctl.irq != dev->irq)
 			return DRM_ERR(EINVAL);
 		return drm_irq_install(dev);
 	case DRM_UNINST_HANDLER:
-		if (!dev->use_irq)
+		if (!dev->driver.use_irq)
 			return 0;
 		DRM_LOCK();
 		err = drm_irq_uninstall(dev);
@@ -248,7 +248,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 		ret = EINVAL;
 	} else {
 		DRM_LOCK();
-		ret = dev->vblank_wait(dev, &vblwait.request.sequence);
+		ret = dev->driver.vblank_wait(dev, &vblwait.request.sequence);
 		DRM_UNLOCK();
 
 		microtime(&now);

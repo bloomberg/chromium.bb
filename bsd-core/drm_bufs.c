@@ -402,7 +402,7 @@ static int drm_do_addbufs_agp(drm_device_t *dev, drm_buf_desc_t *request)
 		buf->pending = 0;
 		buf->filp    = NULL;
 
-		buf->dev_priv_size = dev->dev_priv_size;
+		buf->dev_priv_size = dev->driver.buf_priv_size;
 		buf->dev_private = malloc(buf->dev_priv_size, M_DRM,
 		    M_NOWAIT | M_ZERO);
 		if (buf->dev_private == NULL) {
@@ -543,7 +543,7 @@ static int drm_do_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request)
 			buf->pending = 0;
 			buf->filp    = NULL;
 
-			buf->dev_priv_size = dev->dev_priv_size;
+			buf->dev_priv_size = dev->driver.buf_priv_size;
 			buf->dev_private = malloc(buf->dev_priv_size, M_DRM,
 			    M_NOWAIT | M_ZERO);
 			if (buf->dev_private == NULL) {
@@ -657,7 +657,7 @@ static int drm_do_addbufs_sg(drm_device_t *dev, drm_buf_desc_t *request)
 		buf->pending = 0;
 		buf->filp    = NULL;
 
-		buf->dev_priv_size = dev->dev_priv_size;
+		buf->dev_priv_size = dev->driver.buf_priv_size;
 		buf->dev_private = malloc(buf->dev_priv_size, M_DRM,
 		    M_NOWAIT | M_ZERO);
 		if (buf->dev_private == NULL) {
@@ -988,8 +988,8 @@ int drm_mapbufs(DRM_IOCTL_ARGS)
 	if (request.count < dma->buf_count)
 		goto done;
 
-	if ((dev->use_agp && (dma->flags & _DRM_DMA_USE_AGP)) ||
-	    (dev->use_sg && (dma->flags & _DRM_DMA_USE_SG))) {
+	if ((dev->driver.use_agp && (dma->flags & _DRM_DMA_USE_AGP)) ||
+	    (dev->driver.use_sg && (dma->flags & _DRM_DMA_USE_SG))) {
 		drm_local_map_t *map = dev->agp_buffer_map;
 
 		if (map == NULL) {

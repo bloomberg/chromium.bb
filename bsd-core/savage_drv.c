@@ -42,26 +42,28 @@ extern int savage_max_ioctl;
 
 static void savage_configure(drm_device_t *dev)
 {
-	dev->dev_priv_size = sizeof(drm_savage_buf_priv_t);
-	dev->preinit = savage_preinit;
-	dev->postcleanup = savage_postcleanup;
-	dev->reclaim_buffers = savage_reclaim_buffers;
-	dev->dma_ioctl = savage_bci_buffers;
+	dev->driver.buf_priv_size	= sizeof(drm_savage_buf_priv_t);
+	dev->load			= savage_driver_load;
+	dev->firstopen			= savage_driver_firstopen;
+	dev->lastclose			= savage_driver_lastclose;
+	dev->unload			= savage_driver_unload;
+	dev->reclaim_buffers		= savage_reclaim_buffers;
+	dev->dma_ioctl			= savage_bci_buffers;
 
-	dev->driver_ioctls = savage_ioctls;
-	dev->max_driver_ioctl = savage_max_ioctl;
+	dev->ioctls			= savage_ioctls;
+	dev->max_ioctl			= savage_max_ioctl;
 
-	dev->driver_name = DRIVER_NAME;
-	dev->driver_desc = DRIVER_DESC;
-	dev->driver_date = DRIVER_DATE;
-	dev->driver_major = DRIVER_MAJOR;
-	dev->driver_minor = DRIVER_MINOR;
-	dev->driver_patchlevel = DRIVER_PATCHLEVEL;
+	dev->driver.name		= DRIVER_NAME;
+	dev->driver.desc		= DRIVER_DESC;
+	dev->driver.date		= DRIVER_DATE;
+	dev->driver.major		= DRIVER_MAJOR;
+	dev->driver.minor		= DRIVER_MINOR;
+	dev->driver.patchlevel		= DRIVER_PATCHLEVEL;
 
-	dev->use_agp = 1;
-	dev->use_mtrr = 1;
-	dev->use_pci_dma = 1;
-	dev->use_dma = 1;
+	dev->use_agp			= 1;
+	dev->use_mtrr			= 1;
+	dev->use_pci_dma		= 1;
+	dev->use_dma			= 1;
 }
 
 #ifdef __FreeBSD__

@@ -132,7 +132,7 @@ drm_ioctl_desc_t drm_ioctls[] = {
  *
  * \sa drm_device
  */
-int drm_takedown(drm_device_t * dev)
+int drm_lastclose(drm_device_t * dev)
 {
 	drm_magic_entry_t *pt, *next;
 	drm_map_list_t *r_list;
@@ -141,9 +141,9 @@ int drm_takedown(drm_device_t * dev)
 
 	DRM_DEBUG("\n");
 
-	if (dev->driver->pretakedown)
-		dev->driver->pretakedown(dev);
-	DRM_DEBUG("driver pretakedown completed\n");
+	if (dev->driver->lastclose)
+		dev->driver->lastclose(dev);
+	DRM_DEBUG("driver lastclose completed\n");
 
 	if (dev->unique) {
 		drm_free(dev->unique, strlen(dev->unique) + 1, DRM_MEM_DRIVER);
@@ -243,7 +243,7 @@ int drm_takedown(drm_device_t * dev)
 	}
 	up(&dev->struct_sem);
 
-	DRM_DEBUG("takedown completed\n");
+	DRM_DEBUG("lastclose completed\n");
 	return 0;
 }
 
@@ -331,7 +331,7 @@ EXPORT_SYMBOL(drm_init);
 /**
  * Called via cleanup_module() at module unload time.
  *
- * Cleans up all DRM device, calling takedown().
+ * Cleans up all DRM device, calling drm_lastclose().
  *
  * \sa drm_init
  */
@@ -344,7 +344,7 @@ static void __exit drm_cleanup(drm_device_t * dev)
 		return;
 	}
 
-	drm_takedown(dev);
+	drm_lastclose(dev);
 
 	if (dev->maplist) {
 		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
@@ -369,8 +369,8 @@ static void __exit drm_cleanup(drm_device_t * dev)
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
 		dev->agp = NULL;
 	}
-	if (dev->driver->postcleanup)
-		dev->driver->postcleanup(dev);
+	if (dev->driver->unload)
+		dev->driver->unload(dev);
 
 	drm_put_head(&dev->primary);
 	if (drm_put_dev(dev))
@@ -486,14 +486,17 @@ static int drm_version(struct inode *inode, struct file *filp,
 	drm_device_t *dev = priv->head->dev;
 	drm_version_t __user *argp = (void __user *)arg;
 	drm_version_t version;
-	int ret;
+	int len;
 
 	if (copy_from_user(&version, argp, sizeof(version)))
 		return -EFAULT;
 
-	/* version is a required function to return the personality module version */
-	if ((ret = dev->driver->version(&version)))
-		return ret;
+	version.version_major = dev->driver->major;
+	version.version_minor = dev->driver->minor;
+	version.version_patchlevel = dev->driver->patchlevel;
+	DRM_COPY(version.name, dev->driver->name);
+	DRM_COPY(version.date, dev->driver->date);
+	DRM_COPY(version.desc, dev->driver->desc);
 
 	if (copy_to_user(argp, &version, sizeof(version)))
 		return -EFAULT;

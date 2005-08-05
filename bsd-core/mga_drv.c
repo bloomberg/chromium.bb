@@ -69,36 +69,35 @@ static int mga_driver_device_is_agp(drm_device_t * dev)
 
 static void mga_configure(drm_device_t *dev)
 {
-	dev->dev_priv_size = sizeof(drm_mga_buf_priv_t);
-	/* XXX dev->prerelease = mga_driver_prerelease; */
-	dev->preinit = mga_driver_preinit;
-	dev->postcleanup = mga_driver_postcleanup;
-	dev->vblank_wait = mga_driver_vblank_wait;
-	dev->irq_preinstall = mga_driver_irq_preinstall;
-	dev->irq_postinstall = mga_driver_irq_postinstall;
-	dev->irq_uninstall = mga_driver_irq_uninstall;
-	dev->irq_handler = mga_driver_irq_handler;
-	dev->dma_ioctl = mga_dma_buffers;
-	dev->pretakedown = mga_driver_pretakedown;
-	dev->dma_quiescent = mga_driver_dma_quiescent;
-	dev->device_is_agp = mga_driver_device_is_agp;
+	dev->driver.buf_priv_size	= sizeof(drm_mga_buf_priv_t);
+	dev->driver.load		= mga_driver_load;
+	dev->driver.unload		= mga_driver_unload;
+	dev->driver.lastclose		= mga_driver_lastclose;
+	dev->driver.vblank_wait		= mga_driver_vblank_wait;
+	dev->driver.irq_preinstall	= mga_driver_irq_preinstall;
+	dev->driver.irq_postinstall	= mga_driver_irq_postinstall;
+	dev->driver.irq_uninstall	= mga_driver_irq_uninstall;
+	dev->driver.irq_handler		= mga_driver_irq_handler;
+	dev->driver.dma_ioctl		= mga_dma_buffers;
+	dev->driver.dma_quiescent	= mga_driver_dma_quiescent;
+	dev->driver.device_is_agp	= mga_driver_device_is_agp;
 
-	dev->driver_ioctls = mga_ioctls;
-	dev->max_driver_ioctl = mga_max_ioctl;
+	dev->driver.ioctls		= mga_ioctls;
+	dev->driver.max_ioctl		= mga_max_ioctl;
 
-	dev->driver_name = DRIVER_NAME;
-	dev->driver_desc = DRIVER_DESC;
-	dev->driver_date = DRIVER_DATE;
-	dev->driver_major = DRIVER_MAJOR;
-	dev->driver_minor = DRIVER_MINOR;
-	dev->driver_patchlevel = DRIVER_PATCHLEVEL;
+	dev->driver.name		= DRIVER_NAME;
+	dev->driver.desc		= DRIVER_DESC;
+	dev->driver.date		= DRIVER_DATE;
+	dev->driver.major		= DRIVER_MAJOR;
+	dev->driver.minor		= DRIVER_MINOR;
+	dev->driver.patchlevel		= DRIVER_PATCHLEVEL;
 
-	dev->use_agp = 1;
-	dev->require_agp = 1;
-	dev->use_mtrr = 1;
-	dev->use_dma = 1;
-	dev->use_irq = 1;
-	dev->use_vbl_irq = 1;
+	dev->driver.use_agp		= 1;
+	dev->driver.require_agp		= 1;
+	dev->driver.use_mtrr		= 1;
+	dev->driver.use_dma		= 1;
+	dev->driver.use_irq		= 1;
+	dev->driver.use_vbl_irq		= 1;
 }
 
 

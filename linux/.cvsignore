@@ -3,3 +3,4 @@
 *.o.cmd
 *.mod.c
 *.flags
+drm_pciids.h

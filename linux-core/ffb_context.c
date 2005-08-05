@@ -523,7 +523,7 @@ int ffb_rmctx(struct inode * inode, struct file * filp, unsigned int cmd,
 	return 0;
 }
 
-static void ffb_driver_release(drm_device_t * dev)
+static void ffb_driver_reclaim_buffers_locked(drm_device_t * dev)
 {
 	ffb_dev_priv_t *fpriv = (ffb_dev_priv_t *) dev->dev_private;
 	int context = _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock);
@@ -537,21 +537,13 @@ static void ffb_driver_release(drm_device_t * dev)
 	}
 }
 
-static int ffb_driver_presetup(drm_device_t * dev)
-{
-	int ret;
-	ret = ffb_presetup(dev);
-	if (_ret != 0)
-		return ret;
-}
-
-static void ffb_driver_pretakedown(drm_device_t * dev)
+static void ffb_driver_lastclose(drm_device_t * dev)
 {
 	if (dev->dev_private)
 		kfree(dev->dev_private);
 }
 
-static void ffb_driver_postcleanup(drm_device_t * dev)
+static void ffb_driver_unload(drm_device_t * dev)
 {
 	if (ffb_position != NULL)
 		kfree(ffb_position);

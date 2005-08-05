@@ -261,8 +261,8 @@ int drm_setversion(DRM_IOCTL_ARGS)
 
 	retv.drm_di_major = DRM_IF_MAJOR;
 	retv.drm_di_minor = DRM_IF_MINOR;
-	retv.drm_dd_major = dev->driver_major;
-	retv.drm_dd_minor = dev->driver_minor;
+	retv.drm_dd_major = dev->driver.major;
+	retv.drm_dd_minor = dev->driver.minor;
 
 	DRM_COPY_TO_USER_IOCTL((drm_set_version_t *)data, retv, sizeof(sv));
 
@@ -281,8 +281,8 @@ int drm_setversion(DRM_IOCTL_ARGS)
 	}
 
 	if (sv.drm_dd_major != -1) {
-		if (sv.drm_dd_major != dev->driver_major ||
-		    sv.drm_dd_minor < 0 || sv.drm_dd_minor > dev->driver_minor)
+		if (sv.drm_dd_major != dev->driver.major ||
+		    sv.drm_dd_minor < 0 || sv.drm_dd_minor > dev->driver.minor)
 			return EINVAL;
 	}
 	return 0;

@@ -45,29 +45,29 @@ extern int i915_max_ioctl;
 
 static void i915_configure(drm_device_t *dev)
 {
-	dev->dev_priv_size = 1;	/* No dev_priv */
-	dev->prerelease = i915_driver_prerelease;
-	dev->pretakedown = i915_driver_pretakedown;
-	dev->device_is_agp = i915_driver_device_is_agp,
-	dev->irq_preinstall = i915_driver_irq_preinstall;
-	dev->irq_postinstall = i915_driver_irq_postinstall;
-	dev->irq_uninstall = i915_driver_irq_uninstall;
-	dev->irq_handler = i915_driver_irq_handler;
+	dev->buf_priv_size		= 1;	/* No dev_priv */
+	dev->preclose			= i915_driver_preclose;
+	dev->lastclose			= i915_driver_lastclose;
+	dev->device_is_agp		= i915_driver_device_is_agp,
+	dev->irq_preinstall		= i915_driver_irq_preinstall;
+	dev->irq_postinstall		= i915_driver_irq_postinstall;
+	dev->irq_uninstall		= i915_driver_irq_uninstall;
+	dev->irq_handler		= i915_driver_irq_handler;
 
-	dev->driver_ioctls = i915_ioctls;
-	dev->max_driver_ioctl = i915_max_ioctl;
+	dev->ioctls			= i915_ioctls;
+	dev->max_ioctl			= i915_max_ioctl;
 
-	dev->driver_name = DRIVER_NAME;
-	dev->driver_desc = DRIVER_DESC;
-	dev->driver_date = DRIVER_DATE;
-	dev->driver_major = DRIVER_MAJOR;
-	dev->driver_minor = DRIVER_MINOR;
-	dev->driver_patchlevel = DRIVER_PATCHLEVEL;
+	dev->driver_name		= DRIVER_NAME;
+	dev->driver_desc		= DRIVER_DESC;
+	dev->driver_date		= DRIVER_DATE;
+	dev->driver_major		= DRIVER_MAJOR;
+	dev->driver_minor		= DRIVER_MINOR;
+	dev->driver_patchlevel		= DRIVER_PATCHLEVEL;
 
-	dev->use_agp = 1;
-	dev->require_agp = 1;
-	dev->use_mtrr = 1;
-	dev->use_irq = 1;
+	dev->use_agp			= 1;
+	dev->require_agp		= 1;
+	dev->use_mtrr			= 1;
+	dev->use_irq			= 1;
 }
 
 #ifdef __FreeBSD__
