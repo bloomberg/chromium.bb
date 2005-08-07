@@ -818,7 +818,6 @@ int drm_addbufs_pci(drm_device_t * dev, drm_buf_desc_t * request)
 			buf->used = 0;
 			buf->offset = (dma->byte_count + byte_count + offset);
 			buf->address = (void *)(page + offset);
-			buf->bus_address = virt_to_bus(buf->address);
 			buf->next = NULL;
 			buf->waiting = 0;
 			buf->pending = 0;
