@@ -194,10 +194,7 @@ typedef struct drm_savage_private {
 } drm_savage_private_t;
 
 /* ioctls */
-extern int savage_bci_init(DRM_IOCTL_ARGS);
 extern int savage_bci_cmdbuf(DRM_IOCTL_ARGS);
-extern int savage_bci_event_emit(DRM_IOCTL_ARGS);
-extern int savage_bci_event_wait(DRM_IOCTL_ARGS);
 extern int savage_bci_buffers(DRM_IOCTL_ARGS);
 
 /* BCI functions */

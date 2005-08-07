@@ -34,12 +34,8 @@ static struct pci_device_id pciidlist[] = {
 	savage_PCI_IDS
 };
 
-static drm_ioctl_desc_t ioctls[] = {
-	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_INIT)] = {savage_bci_init, 1, 1, 1},
-	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_CMDBUF)] = {savage_bci_cmdbuf, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_EVENT_EMIT)] = {savage_bci_event_emit, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_EVENT_WAIT)] = {savage_bci_event_wait, 1, 0, 0},
-};
+extern drm_ioctl_desc_t savage_ioctls[];
+extern int savage_max_ioctl;
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
@@ -54,8 +50,7 @@ static struct drm_driver driver = {
 	.reclaim_buffers = savage_reclaim_buffers,
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
-	.ioctls = ioctls,
-	.num_ioctls = DRM_ARRAY_SIZE(ioctls),
+	.ioctls = savage_ioctls,
 	.dma_ioctl = savage_bci_buffers,
 	.fops = {
 		.owner   = THIS_MODULE,
@@ -88,6 +83,7 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 static int __init savage_init(void)
 {
+	driver.num_ioctls = savage_max_ioctl;
 	return drm_init(&driver, pciidlist);
 }
 

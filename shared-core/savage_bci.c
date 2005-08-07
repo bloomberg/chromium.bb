@@ -926,7 +926,7 @@ int savage_do_cleanup_bci(drm_device_t *dev)
 	return 0;
 }
 
-int savage_bci_init(DRM_IOCTL_ARGS)
+static int savage_bci_init(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_savage_init_t init;
@@ -946,7 +946,7 @@ int savage_bci_init(DRM_IOCTL_ARGS)
 	return DRM_ERR(EINVAL);
 }
 
-int savage_bci_event_emit(DRM_IOCTL_ARGS)
+static int savage_bci_event_emit(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_savage_private_t *dev_priv = dev->dev_private;
@@ -966,7 +966,7 @@ int savage_bci_event_emit(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-int savage_bci_event_wait(DRM_IOCTL_ARGS)
+static int savage_bci_event_wait(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_savage_private_t *dev_priv = dev->dev_private;
@@ -1097,3 +1097,13 @@ void savage_reclaim_buffers(drm_device_t *dev, DRMFILE filp) {
 
 	drm_core_reclaim_buffers(dev, filp);
 }
+
+drm_ioctl_desc_t savage_ioctls[] = {
+	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_INIT)] = {savage_bci_init, 1, 1},
+	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_CMDBUF)] = {savage_bci_cmdbuf, 1, 0},
+	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_EVENT_EMIT)] = {savage_bci_event_emit, 1, 0},
+	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_EVENT_WAIT)] = {savage_bci_event_wait, 1, 0},
+};
+
+int savage_max_ioctl = DRM_ARRAY_SIZE(savage_ioctls);
+
