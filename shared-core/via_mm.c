@@ -192,10 +192,15 @@ int via_final_context(struct drm_device *dev, int context)
 
 int via_mem_alloc(DRM_IOCTL_ARGS)
 {
+	drm_file_t *priv = filp->private_data;
 	drm_via_mem_t mem;
 
 	DRM_COPY_FROM_USER_IOCTL(mem, (drm_via_mem_t __user *) data,
 				 sizeof(mem));
+
+	if (!drm_check_context(priv, mem.context)) {
+		return DRM_ERR(EINVAL);
+	}
 
 	switch (mem.type) {
 	case VIDEO:
@@ -289,10 +294,15 @@ static int via_agp_alloc(drm_via_mem_t * mem)
 
 int via_mem_free(DRM_IOCTL_ARGS)
 {
+	drm_file_t *priv = filp->private_data;
 	drm_via_mem_t mem;
 
 	DRM_COPY_FROM_USER_IOCTL(mem, (drm_via_mem_t __user *) data,
 				 sizeof(mem));
+
+	if (!drm_check_context(priv, mem.context)) {
+		return DRM_ERR(EINVAL);
+	}
 
 	switch (mem.type) {
 

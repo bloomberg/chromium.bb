@@ -838,6 +838,7 @@ extern int drm_context_switch_complete(drm_device_t * dev, int new);
 extern int drm_ctxbitmap_init(drm_device_t * dev);
 extern void drm_ctxbitmap_cleanup(drm_device_t * dev);
 extern void drm_ctxbitmap_free(drm_device_t * dev, int ctx_handle);
+extern int drm_check_context(drm_file_t *priv, drm_context_t handle);
 
 extern int drm_setsareactx(struct inode *inode, struct file *filp,
 			   unsigned int cmd, unsigned long arg);
