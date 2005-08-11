@@ -605,5 +605,5 @@ int drm_check_context(drm_file_t *priv, drm_context_t handle)
 	return ret;
 }
 	
-
+EXPORT_SYMBOL(drm_check_context);
 /*@}*/
