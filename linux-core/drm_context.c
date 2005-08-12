@@ -576,34 +576,4 @@ int drm_rmctx(struct inode *inode, struct file *filp,
 	return 0;
 }
 
-/**
- * Check that a context is registered for a caller.
- *
- * \param priv file pointer private structure.
- * \param handle context handle.
- * \param arg user argument pointing to a drm_ctx structure.
- * \return one if the context is registered with the file pointer. Zero otherwise.
- */
-
-int drm_check_context(drm_file_t *priv, drm_context_t handle)
-{
-	drm_device_t *dev = priv->head->dev;
-	int ret = 0;
-
-	down(&dev->ctxlist_sem);
-	if (dev->ctxlist && !list_empty(&dev->ctxlist->head)) {
-		drm_ctx_list_t *pos, *n;
-
-		list_for_each_entry_safe(pos, n, &dev->ctxlist->head, head) {
-			if (pos->handle == handle) {
-				ret = (pos->tag == priv);
-				break;
-			}
-		}
-	}
-	up(&dev->ctxlist_sem);
-	return ret;
-}
-	
-EXPORT_SYMBOL(drm_check_context);
 /*@}*/
