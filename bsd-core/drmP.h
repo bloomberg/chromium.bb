@@ -449,6 +449,7 @@ typedef struct drm_pci_id_list
 typedef struct drm_ioctl_desc {
 	int		     (*func)(DRM_IOCTL_ARGS);
 	int		     auth_needed;
+	int		     master;
 	int		     root_only;
 } drm_ioctl_desc_t;
 
