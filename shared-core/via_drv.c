@@ -39,12 +39,16 @@ static struct pci_device_id pciidlist[] = {
 	viadrv_PCI_IDS
 };
 
+/*
+ * {function, auth_needed, master, root_only}
+ */
+
 static drm_ioctl_desc_t ioctls[] = {
 	[DRM_IOCTL_NR(DRM_VIA_ALLOCMEM)] = {via_mem_alloc, 1, 0, 0},
 	[DRM_IOCTL_NR(DRM_VIA_FREEMEM)] = {via_mem_free, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_VIA_AGP_INIT)] = {via_agp_init, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_VIA_FB_INIT)] = {via_fb_init, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_VIA_MAP_INIT)] = {via_map_init, 1, 0, 0},
+	[DRM_IOCTL_NR(DRM_VIA_AGP_INIT)] = {via_agp_init, 1, 1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_FB_INIT)] = {via_fb_init, 1, 1, 0},
+	[DRM_IOCTL_NR(DRM_VIA_MAP_INIT)] = {via_map_init, 1, 1, 0},
 	[DRM_IOCTL_NR(DRM_VIA_DEC_FUTEX)] = {via_decoder_futex, 1, 0, 0},
 	[DRM_IOCTL_NR(DRM_VIA_DMA_INIT)] = {via_dma_init, 1, 0, 0},
 	[DRM_IOCTL_NR(DRM_VIA_CMDBUFFER)] = {via_cmdbuffer, 1, 0, 0},

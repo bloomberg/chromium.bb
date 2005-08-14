@@ -54,6 +54,9 @@ via_release_futex(drm_via_private_t *dev_priv, int context)
 	unsigned int i;
 	volatile int *lock;
 
+	if (!dev_priv->sarea_priv)
+		return;
+
 	for (i=0; i < VIA_NR_XVMC_LOCKS; ++i) {
 	        lock = (int *) XVMCLOCKPTR(dev_priv->sarea_priv, i);
 		if ( (_DRM_LOCKING_CONTEXT( *lock ) == context)) {
@@ -77,7 +80,8 @@ via_decoder_futex(DRM_IOCTL_ARGS)
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	DRM_COPY_FROM_USER_IOCTL(fx, (drm_via_futex_t *) data, sizeof(fx));
+	DRM_COPY_FROM_USER_IOCTL(fx, (drm_via_futex_t __user *) data,
+				 sizeof(fx));
 
 	if (fx.lock > VIA_NR_XVMC_LOCKS)
 		return -EFAULT;

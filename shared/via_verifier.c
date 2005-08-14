@@ -248,7 +248,7 @@ static hazard_t table3[256];
 static __inline__ int
 eat_words(const uint32_t **buf, const uint32_t *buf_end, unsigned num_words)
 {
-	if ((*buf - buf_end) >= num_words) {
+	if ((buf_end - *buf) >= num_words) {
 		*buf += num_words;
 		return 0;
 	} 
