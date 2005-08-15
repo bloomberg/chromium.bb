@@ -87,7 +87,11 @@ irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
 	if (status & VIA_IRQ_VBLANK_PENDING) {
 		atomic_inc(&dev->vbl_received);
                 if (!(atomic_read(&dev->vbl_received) & 0x0F)) {
+#ifdef __linux__
 			do_gettimeofday(&cur_vblank);
+#else
+			microtime(&cur_vblank);
+#endif
                         if (dev_priv->last_vblank_valid) {
 				dev_priv->usec_per_vblank = 
 					time_diff( &cur_vblank,&dev_priv->last_vblank) >> 4;
@@ -237,7 +241,7 @@ void via_driver_irq_preinstall(drm_device_t * dev)
 			
 	        dev_priv->last_vblank_valid = 0;
 
-		// Clear VSync interrupt regs
+		/* Clear VSync interrupt regs */
 		status = VIA_READ(VIA_REG_INTERRUPT);
 		VIA_WRITE(VIA_REG_INTERRUPT, status & 
 			  ~(dev_priv->irq_enable_mask));
@@ -287,8 +291,7 @@ void via_driver_irq_uninstall(drm_device_t * dev)
 
 int via_wait_irq(DRM_IOCTL_ARGS)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
+	DRM_DEVICE;
 	drm_via_irqwait_t __user *argp = (void __user *)data;
 	drm_via_irqwait_t irqwait;
 	struct timeval now;
@@ -329,7 +332,11 @@ int via_wait_irq(DRM_IOCTL_ARGS)
 
 	ret = via_driver_irq_wait(dev, irqwait.request.irq, force_sequence,
 				  &irqwait.request.sequence);
+#ifdef __linux__
 	do_gettimeofday(&now);
+#else
+	microtime(&now);
+#endif
 	irqwait.reply.tval_sec = now.tv_sec;
 	irqwait.reply.tval_usec = now.tv_usec;
 

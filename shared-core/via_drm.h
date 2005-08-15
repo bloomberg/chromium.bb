@@ -31,7 +31,7 @@
 #ifndef _VIA_DEFINES_
 #define _VIA_DEFINES_
 
-#ifndef __KERNEL__
+#if !defined(__KERNEL__) && !defined(_KERNEL)
 #include "via_drmclient.h"
 #endif
 
@@ -224,20 +224,4 @@ typedef union drm_via_irqwait {
 	struct drm_wait_vblank_reply reply;
 } drm_via_irqwait_t;
 
-#ifdef __KERNEL__
-
-int via_fb_init(DRM_IOCTL_ARGS);
-int via_mem_alloc(DRM_IOCTL_ARGS);
-int via_mem_free(DRM_IOCTL_ARGS);
-int via_agp_init(DRM_IOCTL_ARGS);
-int via_map_init(DRM_IOCTL_ARGS);
-int via_decoder_futex(DRM_IOCTL_ARGS);
-int via_dma_init(DRM_IOCTL_ARGS);
-int via_cmdbuffer(DRM_IOCTL_ARGS);
-int via_flush_ioctl(DRM_IOCTL_ARGS);
-int via_pci_cmdbuffer(DRM_IOCTL_ARGS);
-int via_cmdbuf_size(DRM_IOCTL_ARGS);
-int via_wait_irq(DRM_IOCTL_ARGS);
-
-#endif
 #endif				/* _VIA_DRM_H_ */

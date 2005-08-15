@@ -49,13 +49,15 @@ typedef struct{
 	int agp_texture;
 	int multitex;
 	drm_device_t *dev;
-	drm_map_t *map_cache;
+	drm_local_map_t *map_cache;
 	uint32_t vertex_count;
 	int agp;
 	const uint32_t *buf_start;
 } drm_via_state_t;
 
 extern int via_verify_command_stream(const uint32_t * buf, unsigned int size, 
-				     drm_device_t *dev, int agp);
+				    drm_device_t *dev, int agp);
+extern int via_parse_command_stream(drm_device_t *dev, const uint32_t * buf,
+                                   unsigned int size);
 
 #endif

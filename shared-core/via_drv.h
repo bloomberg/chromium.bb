@@ -43,7 +43,7 @@
 
 
 typedef struct drm_via_ring_buffer {
-	drm_map_t map;
+	drm_local_map_t map;
 	char *virtual_start;
 } drm_via_ring_buffer_t;
 
@@ -58,9 +58,9 @@ typedef struct drm_via_irq {
 	
 typedef struct drm_via_private {
 	drm_via_sarea_t *sarea_priv;
-	drm_map_t *sarea;
-	drm_map_t *fb;
-	drm_map_t *mmio;
+	drm_local_map_t *sarea;
+	drm_local_map_t *fb;
+	drm_local_map_t *mmio;
 	unsigned long agpAddr;
 	wait_queue_head_t decoder_queue[VIA_NR_XVMC_LOCKS];
 	char *dma_ptr;
@@ -86,6 +86,11 @@ typedef struct drm_via_private {
 	uint32_t irq_pending_mask;	
 } drm_via_private_t;
 
+enum via_family {
+	VIA_OTHER = 0,
+	VIA_PRO_GROUP_A,
+};
+
 /* VIA MMIO register access */
 #define VIA_BASE ((dev_priv->mmio))
 
@@ -94,12 +99,25 @@ typedef struct drm_via_private {
 #define VIA_READ8(reg)		DRM_READ8(VIA_BASE, reg)
 #define VIA_WRITE8(reg,val)	DRM_WRITE8(VIA_BASE, reg, val)
 
+extern int via_fb_init(DRM_IOCTL_ARGS);
+extern int via_mem_alloc(DRM_IOCTL_ARGS);
+extern int via_mem_free(DRM_IOCTL_ARGS);
+extern int via_agp_init(DRM_IOCTL_ARGS);
+extern int via_map_init(DRM_IOCTL_ARGS);
+extern int via_decoder_futex(DRM_IOCTL_ARGS);
+extern int via_dma_init(DRM_IOCTL_ARGS);
+extern int via_cmdbuffer(DRM_IOCTL_ARGS);
+extern int via_flush_ioctl(DRM_IOCTL_ARGS);
+extern int via_pci_cmdbuffer(DRM_IOCTL_ARGS);
+extern int via_cmdbuf_size(DRM_IOCTL_ARGS);
+extern int via_wait_irq(DRM_IOCTL_ARGS);
+
+extern int via_driver_load(drm_device_t *dev, unsigned long chipset);
+extern int via_driver_unload(drm_device_t *dev);
 extern int via_init_context(drm_device_t * dev, int context);
 extern int via_final_context(drm_device_t * dev, int context);
 
 extern int via_do_cleanup_map(drm_device_t * dev);
-extern int via_map_init(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg);
 extern int via_driver_vblank_wait(drm_device_t * dev, unsigned int *sequence);
 
 extern irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS);
@@ -113,6 +131,5 @@ extern int via_driver_dma_quiescent(drm_device_t * dev);
 extern void via_init_futex(drm_via_private_t *dev_priv);
 extern void via_cleanup_futex(drm_via_private_t *dev_priv);
 extern void via_release_futex(drm_via_private_t *dev_priv, int context);
-
 
 #endif

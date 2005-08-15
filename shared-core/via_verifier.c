@@ -259,23 +259,29 @@ eat_words(const uint32_t **buf, const uint32_t *buf_end, unsigned num_words)
  * Partially stolen from drm_memory.h
  */
 
-static __inline__ drm_map_t *
+static __inline__ drm_local_map_t *
 via_drm_lookup_agp_map (drm_via_state_t *seq, unsigned long offset, unsigned long size, 
 			drm_device_t *dev)
 {
+#ifdef __linux__
 	struct list_head *list;
 	drm_map_list_t *r_list;
-	drm_map_t *map = seq->map_cache;
+#endif
+	drm_local_map_t *map = seq->map_cache;
 
 	if (map && map->offset <= offset && (offset + size) <= (map->offset + map->size)) {
 		return map;
 	}
 		
+#ifdef __linux__
 	list_for_each(list, &dev->maplist->head) {
 		r_list = (drm_map_list_t *) list;
 		map = r_list->map;
 		if (!map)
 			continue;
+#else
+       TAILQ_FOREACH(map, &dev->maplist, link) {
+#endif
 		if (map->offset <= offset && (offset + size) <= (map->offset + map->size) && 
 		    !(map->flags & _DRM_RESTRICTED) && (map->type == _DRM_AGP)) {
 			seq->map_cache = map;
