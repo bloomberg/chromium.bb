@@ -217,6 +217,7 @@ int drm_getsareactx(struct inode *inode, struct file *filp,
 	drm_ctx_priv_map_t __user *argp = (void __user *)arg;
 	drm_ctx_priv_map_t request;
 	drm_map_t *map;
+	drm_map_list_t *_entry;
 
 	if (copy_from_user(&request, argp, sizeof(request)))
 		return -EFAULT;
@@ -231,7 +232,16 @@ int drm_getsareactx(struct inode *inode, struct file *filp,
 	map = dev->context_sareas[request.ctx_id];
 	up(&dev->struct_sem);
 
-	request.handle = map->handle;
+	request.handle = 0;
+	list_for_each_entry(_entry, &dev->maplist->head,head) {
+		if (_entry->map == map) {
+			request.handle = (void *)(unsigned long)_entry->user_token;
+			break;
+		}
+	}
+	if (request.handle == 0)
+		return -EINVAL;
+
 	if (copy_to_user(argp, &request, sizeof(request)))
 		return -EFAULT;
 	return 0;
@@ -266,7 +276,8 @@ int drm_setsareactx(struct inode *inode, struct file *filp,
 	down(&dev->struct_sem);
 	list_for_each(list, &dev->maplist->head) {
 		r_list = list_entry(list, drm_map_list_t, head);
-		if (r_list->map && r_list->map->handle == request.handle)
+		if (r_list->map
+		    && r_list->user_token == (unsigned long) request.handle)
 			goto found;
 	}
       bad:
