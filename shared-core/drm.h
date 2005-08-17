@@ -133,7 +133,11 @@
 #define _DRM_LOCK_IS_CONT(lock)	   ((lock) & _DRM_LOCK_CONT)
 #define _DRM_LOCKING_CONTEXT(lock) ((lock) & ~(_DRM_LOCK_HELD|_DRM_LOCK_CONT))
 
+#if defined(__linux__)
+typedef unsigned int drm_handle_t;
+#else
 typedef unsigned long drm_handle_t;	/**< To mapped regions */
+#endif
 typedef unsigned int drm_context_t;	/**< GLXContext handle */
 typedef unsigned int drm_drawable_t;
 typedef unsigned int drm_magic_t;	/**< Magic for authentication */
