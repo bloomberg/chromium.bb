@@ -767,6 +767,7 @@ struct drm_device {
 	drm_sg_mem_t      *sg;  /* Scatter gather memory */
 	atomic_t          *ctx_bitmap;
 	void		  *dev_private;
+	unsigned int	  agp_buffer_token;
 	drm_local_map_t   *agp_buffer_map;
 };
 
