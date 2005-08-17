@@ -56,7 +56,8 @@ static drm_local_map_t *drm_find_matching_map(drm_device_t *dev,
 	list_for_each(list, &dev->maplist->head) {
 		drm_map_list_t *entry = list_entry(list, drm_map_list_t, head);
 		if (entry->map && map->type == entry->map->type &&
-		    entry->map->offset == map->offset) {
+		    ((entry->map->offset == map->offset) ||
+			(map->type == _DRM_SHM))) {
 			return entry->map;
 		}
 	}
