@@ -42,6 +42,7 @@ klibdrminclude_HEADERS = \
                          ../shared-core/mga_ucode.h \
                          ../shared-core/r128_drm.h \
                          ../shared-core/r128_drv.h \
+                         ../shared-core/r300_reg.h \
                          ../shared-core/radeon_drm.h \
                          ../shared-core/radeon_drv.h \
                          ../shared-core/savage_drm.h \
