@@ -22,7 +22,7 @@
 # here too, but let's just do libdrm for now
 
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = libdrm
+SUBDIRS = libdrm shared-core
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm.pc

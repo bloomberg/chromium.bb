@@ -27,33 +27,3 @@ libdrm_la_SOURCES = xf86drm.c xf86drmHash.c xf86drmRandom.c xf86drmSL.c
 
 libdrmincludedir = ${includedir}
 libdrminclude_HEADERS = xf86drm.h
-
-klibdrmincludedir = ${includedir}/drm
-klibdrminclude_HEADERS = \
-                         ../shared-core/drm.h \
-                         ../shared-core/drm_sarea.h \
-                         ../shared-core/i915_drm.h \
-                         ../shared-core/i915_drv.h \
-                         ../shared-core/imagine_drv.h \
-                         ../shared-core/mach64_drm.h \
-                         ../shared-core/mach64_drv.h \
-                         ../shared-core/mga_drm.h \
-                         ../shared-core/mga_drv.h \
-                         ../shared-core/mga_ucode.h \
-                         ../shared-core/r128_drm.h \
-                         ../shared-core/r128_drv.h \
-                         ../shared-core/r300_reg.h \
-                         ../shared-core/radeon_drm.h \
-                         ../shared-core/radeon_drv.h \
-                         ../shared-core/savage_drm.h \
-                         ../shared-core/savage_drv.h \
-                         ../shared-core/sis_drm.h \
-                         ../shared-core/sis_drv.h \
-                         ../shared-core/sis_ds.h \
-                         ../shared-core/tdfx_drv.h \
-                         ../shared-core/via_3d_reg.h \
-                         ../shared-core/via_drm.h \
-                         ../shared-core/via_drv.h \
-                         ../shared-core/via_ds.h \
-                         ../shared-core/via_mm.h \
-                         ../shared-core/via_verifier.h

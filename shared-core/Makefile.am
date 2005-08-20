@@ -18,19 +18,32 @@
 #  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-AC_PREREQ(2.57)
-AC_INIT([libdrm], 1.0.3, [dri-devel@lists.sourceforge.net], libdrm)
-AC_CONFIG_SRCDIR([Makefile.am])
-AM_INIT_AUTOMAKE([dist-bzip2])
-
-AM_CONFIG_HEADER([libdrm/config.h])
-
-AC_PROG_LIBTOOL
-AC_PROG_CC
-
-AC_HEADER_STDC
-
-pkgconfigdir=${libdir}/pkgconfig
-AC_SUBST(pkgconfigdir)
-
-AC_OUTPUT([Makefile libdrm/Makefile shared-core/Makefile libdrm.pc])
+klibdrmincludedir = ${includedir}/drm
+klibdrminclude_HEADERS = \
+                         drm.h \
+                         drm_sarea.h \
+                         i915_drm.h \
+                         i915_drv.h \
+                         imagine_drv.h \
+                         mach64_drm.h \
+                         mach64_drv.h \
+                         mga_drm.h \
+                         mga_drv.h \
+                         mga_ucode.h \
+                         r128_drm.h \
+                         r128_drv.h \
+                         r300_reg.h \
+                         radeon_drm.h \
+                         radeon_drv.h \
+                         savage_drm.h \
+                         savage_drv.h \
+                         sis_drm.h \
+                         sis_drv.h \
+                         sis_ds.h \
+                         tdfx_drv.h \
+                         via_3d_reg.h \
+                         via_drm.h \
+                         via_drv.h \
+                         via_ds.h \
+                         via_mm.h \
+                         via_verifier.h
