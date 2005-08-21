@@ -59,7 +59,7 @@ static unsigned long drm_ati_alloc_pcigart_table(void)
 	int i;
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	address = __get_free_pages(GFP_KERNEL, ATI_PCIGART_TABLE_ORDER);
+	address = __get_free_pages(GFP_DMA, ATI_PCIGART_TABLE_ORDER);
 	if (address == 0UL) {
 		return 0;
 	}
@@ -153,7 +153,7 @@ int drm_ati_pcigart_init(drm_device_t * dev,
 			if (is_pcie)
 			{
 				*pci_gart = (cpu_to_le32(page_base)>>8) | 0xc;
-				DRM_DEBUG("PCIE: %d %08X %08X to %p\n", i, page_base, (cpu_to_le32(page_base)>>8)|0xc, pci_gart);
+//				DRM_DEBUG("PCIE: %d %08X %08X to %p\n", i, page_base, (cpu_to_le32(page_base)>>8)|0xc, pci_gart);
 			}
 			else
 				*pci_gart = cpu_to_le32(page_base);
