@@ -71,8 +71,6 @@ static struct drm_driver driver = {
 		.name = DRIVER_NAME,
 		.id_table = pciidlist,
 		.probe = probe,
-		/* .resume = i915_resume, - need BIOS to re-init */
-		.suspend = i915_suspend,
 		.remove = __devexit_p(drm_cleanup_pci),
 		},
 

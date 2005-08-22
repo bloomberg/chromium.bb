@@ -112,11 +112,6 @@ extern void i915_driver_irq_preinstall(drm_device_t * dev);
 extern void i915_driver_irq_postinstall(drm_device_t * dev);
 extern void i915_driver_irq_uninstall(drm_device_t * dev);
 
-/* i915_pm.c */
-extern int i915_suspend(struct pci_dev *pdev, u32 state);
-extern int i915_resume(struct pci_dev *pdev);
-extern int i915_power(drm_device_t *dev, unsigned int state);
-
 /* i915_mem.c */
 extern int i915_mem_alloc(DRM_IOCTL_ARGS);
 extern int i915_mem_free(DRM_IOCTL_ARGS);

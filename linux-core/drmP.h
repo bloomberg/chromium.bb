@@ -897,12 +897,6 @@ extern unsigned long drm_get_resource_start(drm_device_t *dev,
 extern unsigned long drm_get_resource_len(drm_device_t *dev,
 					  unsigned int resource);
 
-				/* Power Management (drm_pm.h) */
-extern int drm_pm_setup(drm_device_t *dev);
-extern void drm_pm_takedown(drm_device_t *dev);
-extern int drm_pm_init(void);
-extern void drm_pm_exit(void);
-
 				/* DMA support (drm_dma.h) */
 extern int drm_dma_setup(drm_device_t * dev);
 extern void drm_dma_takedown(drm_device_t * dev);
