@@ -40,24 +40,20 @@ FcValuePrint (const FcValue v)
 	printf (" %g(f)", v.u.d);
 	break;
     case FcTypeString:
-	printf (" \"%s\"", FcObjectPtrU(v.u.si));
+	printf (" \"%s\"", v.u.s);
 	break;
     case FcTypeBool:
 	printf (" %s", v.u.b ? "FcTrue" : "FcFalse");
 	break;
     case FcTypeMatrix:
-    {
-	FcMatrix *m = FcMatrixPtrU(v.u.mi);
-
-	printf (" (%f %f; %f %f)", m->xx, m->xy, m->yx, m->yy);
+	printf (" (%f %f; %f %f)", v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);
 	break;
-    }
     case FcTypeCharSet:	/* XXX */
 	printf (" set");
 	break;
     case FcTypeLangSet:
 	printf (" ");
-	FcLangSetPrint (FcLangSetPtrU(v.u.li));
+	FcLangSetPrint (v.u.l);
 	break;
     case FcTypeFTFace:
 	printf (" face");
@@ -70,7 +66,7 @@ FcValueListPrint (FcValueListPtr l)
 {
     for (; FcValueListPtrU(l); l = FcValueListPtrU(l)->next)
     {
-	FcValuePrint (FcValueListPtrU(l)->value);
+	FcValuePrint (FcValueCanonicalize(&FcValueListPtrU(l)->value));
 	switch (FcValueListPtrU(l)->binding) {
 	case FcValueBindingWeak:
 	    printf ("(w)");

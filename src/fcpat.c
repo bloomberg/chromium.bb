@@ -25,18 +25,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <sys/mman.h>
 #include "fcint.h"
 
-static FcPattern * fcpatterns = NULL;
-static int fcpattern_ptr, fcpattern_count;
-static FcPatternElt * fcpatternelts = NULL;
+static FcPattern ** fcpatterns = 0;
+static int fcpattern_bank_count = 0, fcpattern_ptr, fcpattern_count;
+static FcPatternElt ** fcpatternelts = 0;
 static int fcpatternelt_ptr, fcpatternelt_count;
-static FcValueList * fcvaluelists = NULL;
-static int fcvaluelist_ptr, fcvaluelist_count;
-
-static FcBool
-FcPatternEltIsDynamic (FcPatternEltPtr pei);
+static FcValueList ** fcvaluelists = 0;
+static int fcvaluelist_bank_count = 0, fcvaluelist_ptr, fcvaluelist_count;
 
 static FcPatternEltPtr
 FcPatternEltPtrCreateDynamic (FcPatternElt * e);
@@ -53,6 +49,7 @@ FcPatternCreate (void)
     p->num = 0;
     p->size = 0;
     p->elts = FcPatternEltPtrCreateDynamic(0);
+    p->bank = FC_BANK_DYNAMIC;
     p->ref = 1;
     return p;
 }
@@ -62,16 +59,16 @@ FcValueDestroy (FcValue v)
 {
     switch (v.type) {
     case FcTypeString:
-	FcObjectPtrDestroy (v.u.si);
+	FcStrFree ((FcChar8 *) v.u.s);
 	break;
     case FcTypeMatrix:
-	FcMatrixPtrDestroy (v.u.mi);
+	FcMatrixFree ((FcMatrix *) v.u.m);
 	break;
     case FcTypeCharSet:
-	FcCharSetPtrDestroy (v.u.ci);
+	FcCharSetDestroy ((FcCharSet *) v.u.c);
 	break;
     case FcTypeLangSet:
-	FcLangSetPtrDestroy (v.u.li);
+	FcLangSetDestroy ((FcLangSet *) v.u.l);
 	break;
     default:
 	break;
@@ -79,29 +76,54 @@ FcValueDestroy (FcValue v)
 }
 
 FcValue
+FcValueCanonicalize (const FcValue *v)
+{
+    if (v->type & FC_STORAGE_STATIC)
+    {
+	FcValue new = *v;
+
+	switch (v->type & ~FC_STORAGE_STATIC)
+	{
+	case FcTypeString:
+	    new.u.s = fc_value_string(v);
+	    new.type = FcTypeString;
+	    break;
+	case FcTypeCharSet:
+	    new.u.c = fc_value_charset(v);
+	    new.type = FcTypeCharSet;
+	    break;
+	case FcTypeLangSet:
+	    new.u.l = fc_value_langset(v);
+	    new.type = FcTypeLangSet;
+	    break;
+	}
+	return new;
+    }
+    return *v;
+}
+
+FcValue
 FcValueSave (FcValue v)
 {
     switch (v.type) {
     case FcTypeString:
-	v.u.si = FcObjectStaticName(FcObjectPtrU(v.u.si));
-	if (!FcObjectPtrU(v.u.si))
+	v.u.s = FcStrCopy (v.u.s);
+	if (!v.u.s)
 	    v.type = FcTypeVoid;
 	break;
     case FcTypeMatrix:
-	v.u.mi = FcMatrixPtrCreateDynamic
-	    (FcMatrixCopy (FcMatrixPtrU(v.u.mi)));
-	if (!FcMatrixPtrU(v.u.mi))
+	v.u.m = FcMatrixCopy (v.u.m);
+	if (!v.u.m)
 	    v.type = FcTypeVoid;
 	break;
     case FcTypeCharSet:
-	v.u.ci = FcCharSetCopyPtr (v.u.ci);
-	if (!FcCharSetPtrU(v.u.ci))
+	v.u.c = FcCharSetCopy ((FcCharSet *) v.u.c);
+	if (!v.u.c)
 	    v.type = FcTypeVoid;
 	break;
     case FcTypeLangSet:
-	v.u.li = FcLangSetPtrCreateDynamic
-	    (FcLangSetCopy (FcLangSetPtrU(v.u.li)));
-	if (!FcLangSetPtrU(v.u.li))
+	v.u.l = FcLangSetCopy (v.u.l);
+	if (!v.u.l)
 	    v.type = FcTypeVoid;
 	break;
     default:
@@ -118,26 +140,25 @@ FcValueListDestroy (FcValueListPtr l)
     {
 	switch (FcValueListPtrU(l)->value.type) {
 	case FcTypeString:
-	    FcObjectPtrDestroy (FcValueListPtrU(l)->value.u.si);
+	    FcStrFree ((FcChar8 *)FcValueListPtrU(l)->value.u.s);
 	    break;
 	case FcTypeMatrix:
-	    FcMatrixPtrDestroy (FcValueListPtrU(l)->value.u.mi);
+	    FcMatrixFree ((FcMatrix *)FcValueListPtrU(l)->value.u.m);
 	    break;
 	case FcTypeCharSet:
 	    FcCharSetDestroy 
-		(FcCharSetPtrU (FcValueListPtrU(l)->value.u.ci));
+		((FcCharSet *) (FcValueListPtrU(l)->value.u.c));
 	    break;
 	case FcTypeLangSet:
 	    FcLangSetDestroy 
-		(FcLangSetPtrU (FcValueListPtrU(l)->value.u.li));
+		((FcLangSet *) (FcValueListPtrU(l)->value.u.l));
 	    break;
 	default:
 	    break;
 	}
 	next = FcValueListPtrU(l)->next;
-
 	FcMemFree (FC_MEM_VALLIST, sizeof (FcValueList));
-	if (l.storage == FcStorageDynamic)
+	if (l.bank == FC_BANK_DYNAMIC)
 	    free(l.u.dyn);
     }
 }
@@ -168,21 +189,17 @@ FcValueEqual (FcValue va, FcValue vb)
     case FcTypeDouble:
 	return va.u.d == vb.u.d;
     case FcTypeString:
-	return FcStrCmpIgnoreCase (FcObjectPtrU(va.u.si), 
-				   FcObjectPtrU(vb.u.si)) == 0;
+	return FcStrCmpIgnoreCase (va.u.s, vb.u.s) == 0;
     case FcTypeBool:
 	return va.u.b == vb.u.b;
     case FcTypeMatrix:
-	return FcMatrixEqual (FcMatrixPtrU(va.u.mi), 
-			      FcMatrixPtrU(vb.u.mi));
+	return FcMatrixEqual (va.u.m, vb.u.m);
     case FcTypeCharSet:
-	return FcCharSetEqual (FcCharSetPtrU(va.u.ci), 
-			       FcCharSetPtrU(vb.u.ci));
+	return FcCharSetEqual (va.u.c, vb.u.c);
     case FcTypeFTFace:
 	return va.u.f == vb.u.f;
     case FcTypeLangSet:
-	return FcLangSetEqual (FcLangSetPtrU(va.u.li), 
-			       FcLangSetPtrU(vb.u.li));
+	return FcLangSetEqual (va.u.l, vb.u.l);
     }
     return FcFalse;
 }
@@ -210,8 +227,9 @@ FcStringHash (const FcChar8 *s)
 }
 
 static FcChar32
-FcValueHash (FcValue v)
+FcValueHash (const FcValue *v0)
 {
+    FcValue v = FcValueCanonicalize(v0);
     switch (v.type) {
     case FcTypeVoid:
 	return 0;
@@ -220,24 +238,21 @@ FcValueHash (FcValue v)
     case FcTypeDouble:
 	return FcDoubleHash (v.u.d);
     case FcTypeString:
-	return FcStringHash (FcObjectPtrU(v.u.si));
+	return FcStringHash (v.u.s);
     case FcTypeBool:
 	return (FcChar32) v.u.b;
     case FcTypeMatrix:
-    {
-	FcMatrix * m = FcMatrixPtrU(v.u.mi);
-	return (FcDoubleHash (m->xx) ^ 
-		FcDoubleHash (m->xy) ^ 
-		FcDoubleHash (m->yx) ^ 
-		FcDoubleHash (m->yy));
-    }
+	return (FcDoubleHash (v.u.m->xx) ^ 
+		FcDoubleHash (v.u.m->xy) ^ 
+		FcDoubleHash (v.u.m->yx) ^ 
+		FcDoubleHash (v.u.m->yy));
     case FcTypeCharSet:
-	return (FcChar32) (FcCharSetPtrU(v.u.ci))->num;
+	return (FcChar32) v.u.c->num;
     case FcTypeFTFace:
 	return FcStringHash ((const FcChar8 *) ((FT_Face) v.u.f)->family_name) ^
 	       FcStringHash ((const FcChar8 *) ((FT_Face) v.u.f)->style_name);
     case FcTypeLangSet:
-	return FcLangSetHash (FcLangSetPtrU(v.u.li));
+	return FcLangSetHash (v.u.l);
     }
     return FcFalse;
 }
@@ -269,7 +284,7 @@ FcValueListHash (FcValueListPtr l)
     while (FcValueListPtrU(l))
     {
 	hash = ((hash << 1) | (hash >> 31)) ^ 
-	    FcValueHash (FcValueListPtrU(l)->value);
+	    FcValueHash (&FcValueListPtrU(l)->value);
 	l = FcValueListPtrU(l)->next;
     }
     return hash;
@@ -287,7 +302,7 @@ FcPatternDestroy (FcPattern *p)
 	FcValueListDestroy ((FcPatternEltU(p->elts)+i)->values);
 
     p->num = 0;
-    if (FcPatternEltU(p->elts) && FcPatternEltIsDynamic(p->elts))
+    if (FcPatternEltU(p->elts) && p->elts.bank == FC_BANK_DYNAMIC)
     {
 	FcMemFree (FC_MEM_PATELT, p->size * sizeof (FcPatternElt));
 	free (FcPatternEltU(p->elts));
@@ -373,15 +388,16 @@ FcValueListEntCreate (FcValueListPtr h)
     for (l = h; FcValueListPtrU(l); 
 	 l = FcValueListPtrU(l)->next, new++)
     {
-	if (FcValueListPtrU(l)->value.type == FcTypeString)
+	if ((FcValueListPtrU(l)->value.type & ~FC_STORAGE_STATIC) == FcTypeString)
 	{
 	    new->value.type = FcTypeString;
-	    new->value.u.si = FcObjectStaticName
-		(FcObjectPtrU(FcValueListPtrU(l)->value.u.si));
+	    new->value.u.s = FcObjectStaticName
+		(fc_value_string(&FcValueListPtrU(l)->value));
 	}
 	else
 	{
-	    new->value = FcValueSave (FcValueListPtrU(l)->value);
+	    new->value = FcValueSave (FcValueCanonicalize
+				      (&FcValueListPtrU(l)->value));
 	}
 	new->binding = FcValueListPtrU(l)->binding;
 	if (FcValueListPtrU(FcValueListPtrU(l)->next))
@@ -656,7 +672,7 @@ FcPatternPosition (const FcPattern *p, const char *object)
     int	    low, high, mid, c;
     FcObjectPtr obj;
 
-    obj = FcObjectStaticName(object);
+    obj = FcObjectToPtr(object);
     low = 0;
     high = p->num - 1;
     c = 1;
@@ -738,7 +754,7 @@ FcPatternInsertElt (FcPattern *p, const char *object)
 	/* bump count */
 	p->num++;
 	
-	(FcPatternEltU(p->elts)+i)->object = FcObjectStaticName (object);
+	(FcPatternEltU(p->elts)+i)->object = FcObjectToPtr (object);
 	(FcPatternEltU(p->elts)+i)->values = FcValueListPtrCreateDynamic(0);
     }
     
@@ -776,7 +792,7 @@ FcPatternHash (const FcPattern *p)
     for (i = 0; i < p->num; i++)
     {
 	h = (((h << 1) | (h >> 31)) ^ 
-	     FcStringHash ((const FcChar8 *) FcObjectPtrU(((FcPatternEltU(p->elts)+i)->object))) ^
+	     FcStringHash ((const FcChar8 *) ((FcPatternEltU(p->elts)+i)->object)) ^
 	     FcValueListHash ((FcPatternEltU(p->elts)+i)->values));
     }
     return h;
@@ -790,8 +806,8 @@ FcPatternEqualSubset (const FcPattern *pai, const FcPattern *pbi, const FcObject
     
     for (i = 0; i < os->nobject; i++)
     {
-	ea = FcPatternFindElt (pai, FcObjectPtrU(os->objects[i]));
-	eb = FcPatternFindElt (pbi, FcObjectPtrU(os->objects[i]));
+	ea = FcPatternFindElt (pai, os->objects[i]);
+	eb = FcPatternFindElt (pbi, os->objects[i]);
 	if (ea)
 	{
 	    if (!eb)
@@ -859,16 +875,16 @@ FcPatternAddWithBinding  (FcPattern	    *p,
 bail2:    
     switch (value.type) {
     case FcTypeString:
-	FcStrFree ((FcChar8 *) FcObjectPtrU(value.u.si));
+	FcStrFree ((FcChar8 *) value.u.s);
 	break;
     case FcTypeMatrix:
-	FcMatrixFree (FcMatrixPtrU(value.u.mi));
+	FcMatrixFree ((FcMatrix *) value.u.m);
 	break;
     case FcTypeCharSet:
-	FcCharSetDestroy (FcCharSetPtrU(value.u.ci));
+	FcCharSetDestroy ((FcCharSet *) value.u.c);
 	break;
     case FcTypeLangSet:
-	FcLangSetDestroy (FcLangSetPtrU(value.u.li));
+	FcLangSetDestroy ((FcLangSet *) value.u.l);
 	break;
     default:
 	break;
@@ -968,7 +984,7 @@ FcPatternAddString (FcPattern *p, const char *object, const FcChar8 *s)
     FcValue	v;
 
     v.type = FcTypeString;
-    v.u.si = FcObjectStaticName(s);
+    v.u.s = FcObjectStaticName(s);
     return FcPatternAdd (p, object, v, FcTrue);
 }
 
@@ -978,7 +994,7 @@ FcPatternAddMatrix (FcPattern *p, const char *object, const FcMatrix *s)
     FcValue	v;
 
     v.type = FcTypeMatrix;
-    v.u.mi = FcMatrixPtrCreateDynamic((FcMatrix *) s);
+    v.u.m = s;
     return FcPatternAdd (p, object, v, FcTrue);
 }
 
@@ -999,7 +1015,7 @@ FcPatternAddCharSet (FcPattern *p, const char *object, const FcCharSet *c)
     FcValue	v;
 
     v.type = FcTypeCharSet;
-    v.u.ci = FcCharSetPtrCreateDynamic((FcCharSet *)c);
+    v.u.c = (FcCharSet *)c;
     return FcPatternAdd (p, object, v, FcTrue);
 }
 
@@ -1019,7 +1035,7 @@ FcPatternAddLangSet (FcPattern *p, const char *object, const FcLangSet *ls)
     FcValue	v;
 
     v.type = FcTypeLangSet;
-    v.u.li = FcLangSetPtrCreateDynamic((FcLangSet *)ls);
+    v.u.l = (FcLangSet *)ls;
     return FcPatternAdd (p, object, v, FcTrue);
 }
 
@@ -1036,7 +1052,7 @@ FcPatternGet (const FcPattern *p, const char *object, int id, FcValue *v)
     {
 	if (!id)
 	{
-	    *v = FcValueListPtrU(l)->value;
+	    *v = FcValueCanonicalize(&FcValueListPtrU(l)->value);
 	    return FcResultMatch;
 	}
 	id--;
@@ -1099,7 +1115,7 @@ FcPatternGetString (const FcPattern *p, const char *object, int id, FcChar8 ** s
 	return r;
     if (v.type != FcTypeString)
         return FcResultTypeMismatch;
-    *s = (FcChar8 *) FcObjectPtrU(v.u.si);
+    *s = (FcChar8 *) v.u.s;
     return FcResultMatch;
 }
 
@@ -1114,7 +1130,7 @@ FcPatternGetMatrix(const FcPattern *p, const char *object, int id, FcMatrix **m)
 	return r;
     if (v.type != FcTypeMatrix)
         return FcResultTypeMismatch;
-    *m = FcMatrixPtrU(v.u.mi);
+    *m = (FcMatrix *)v.u.m;
     return FcResultMatch;
 }
 
@@ -1145,7 +1161,7 @@ FcPatternGetCharSet(const FcPattern *p, const char *object, int id, FcCharSet **
 	return r;
     if (v.type != FcTypeCharSet)
         return FcResultTypeMismatch;
-    *c = FcCharSetPtrU(v.u.ci);
+    *c = (FcCharSet *)v.u.c;
     return FcResultMatch;
 }
 
@@ -1175,7 +1191,7 @@ FcPatternGetLangSet(const FcPattern *p, const char *object, int id, FcLangSet **
 	return r;
     if (v.type != FcTypeLangSet)
         return FcResultTypeMismatch;
-    *ls = FcLangSetPtrU(v.u.li);
+    *ls = (FcLangSet *)v.u.l;
     return FcResultMatch;
 }
 
@@ -1255,7 +1271,7 @@ FcPatternAppend (FcPattern *p, FcPattern *s)
 	     v = FcValueListPtrU(v)->next)
 	{
 	    if (!FcPatternAddWithBinding (p, FcObjectPtrU(e->object),
-					  FcValueListPtrU(v)->value, 
+					  FcValueCanonicalize(&FcValueListPtrU(v)->value), 
 					  FcValueListPtrU(v)->binding, FcTrue))
 		return FcFalse;
 	}
@@ -1263,862 +1279,35 @@ FcPatternAppend (FcPattern *p, FcPattern *s)
     return FcTrue;
 }
 
-FcPatternElt *
-FcPatternEltU (FcPatternEltPtr pei)
-{
-    switch (pei.storage)
-    {
-    case FcStorageStatic:
-        return &fcpatternelts[pei.u.stat];
-    case FcStorageDynamic:
-        return pei.u.dyn;
-    default:
-	return 0;
-    }
-}
-
-static FcPatternEltPtr
-FcPatternEltPtrCreateDynamic (FcPatternElt * e)
-{
-    FcPatternEltPtr new;
-    new.storage = FcStorageDynamic;
-    new.u.dyn = e;
-    return new;
-}
-
-static FcPatternEltPtr
-FcPatternEltPtrCreateStatic (int i)
-{
-    FcPatternEltPtr new;
-    new.storage = FcStorageStatic;
-    new.u.stat = i;
-    return new;
-}
-
-static FcBool
-FcPatternEltIsDynamic (FcPatternEltPtr pei)
-{
-    return pei.storage == FcStorageDynamic;
-}
-
-
-void
-FcPatternClearStatic (void)
-{
-    fcpatterns = 0;
-    fcpattern_ptr = 0;
-    fcpattern_count = 0;
-
-    fcpatternelts = 0;
-    fcpatternelt_ptr = 0;
-    fcpatternelt_count = 0;
-}
-
-void
-FcValueListClearStatic (void)
-{
-    fcvaluelists = 0;
-    fcvaluelist_ptr = 0;
-    fcvaluelist_count = 0;
-}
-
-static FcBool
-FcObjectPrepareSerialize (FcObjectPtr si);
-static FcObjectPtr
-FcObjectSerialize (FcObjectPtr si);
-
-FcBool
-FcPatternPrepareSerialize (FcPattern * p)
-{
-    int i;
-
-    fcpattern_count++;
-    fcpatternelt_count += p->num;
-
-    for (i = 0; i < p->num; i++)
-    {
-	FcObjectPrepareSerialize 
-	    ((FcPatternEltU(p->elts)+i)->object);
-	if (!FcValueListPrepareSerialize 
-	    (FcValueListPtrU(((FcPatternEltU(p->elts)+i)->values))))
-	    return FcFalse;
-    }
-
-    return FcTrue;
-}
-
-FcBool
-FcValueListPrepareSerialize (FcValueList *p)
-{
-    FcValueList *vl;
-
-    for (vl = p;
-	 vl; 
-	 vl = FcValueListPtrU(vl->next))
-    {
-	FcValue v = vl->value;
-
-	switch (v.type)
-	{
-	case FcTypeMatrix:
-	    FcMatrixPrepareSerialize(FcMatrixPtrU(v.u.mi));
-	    break;
-	case FcTypeCharSet:
-	    FcCharSetPrepareSerialize(FcCharSetPtrU(v.u.ci));
-	    break;
-	case FcTypeLangSet:
-	    FcLangSetPrepareSerialize(FcLangSetPtrU(v.u.li));
-	    break;
-	case FcTypeString:
-	    FcObjectPrepareSerialize(v.u.si);
-	default:
-	    break;
-	}
-	fcvaluelist_count++;
-    }
-    
-    return FcTrue;
-}
-
-FcPattern *
-FcPatternSerialize (FcPattern *old)
-{
-    FcPattern *p;
-    FcPatternElt *e, *nep;
-    FcValueList * nv;
-    FcValueListPtr v, nv_head, nvp;
-    int i, elts;
-
-    if (!fcpatterns)
-    {
-	p = malloc (sizeof (FcPattern) * fcpattern_count);
-	if (!p)
-	    goto bail;
-
-	FcMemAlloc (FC_MEM_PATTERN, sizeof (FcPattern) * fcpattern_count);
-	fcpatterns = p;
-	fcpattern_ptr = 0;
-
-	e = malloc (sizeof (FcPatternElt) * fcpatternelt_count);
-	if (!e)
-	    goto bail1;
-
-	FcMemAlloc (FC_MEM_PATELT, sizeof (FcPatternElt) * fcpatternelt_count);
-	fcpatternelts = e;
-	fcpatternelt_ptr = 0;
-    }
-
-    p = &fcpatterns[fcpattern_ptr++];
-    elts = fcpatternelt_ptr;
-    nep = &fcpatternelts[elts];
-    if (!nep)
-	return FcFalse;
-
-    fcpatternelt_ptr += old->num;
-
-    for (e = FcPatternEltU(old->elts), i=0; i < old->num; i++, e++) 
-    {
-        v = e->values;
-        nvp = nv_head = FcValueListSerialize(FcValueListPtrU(v));
-        if (!FcValueListPtrU(nv_head))
-            goto bail2;
-	nv = FcValueListPtrU(nvp);
-	
-        for (;
-             FcValueListPtrU(v);
-             v = FcValueListPtrU(v)->next, 
-		 nv = FcValueListPtrU(nv->next))
-        {
-	    
-	    if (FcValueListPtrU(FcValueListPtrU(v)->next))
-	    {
-                nvp = FcValueListSerialize
-		    (FcValueListPtrU(FcValueListPtrU(v)->next));
-                nv->next = nvp;
-	    }
-        }
-	
-	nep[i].values = nv_head;
-	nep[i].object = FcObjectSerialize (e->object);
-    }
-
-    p->elts = old->elts;
-    p->elts = FcPatternEltPtrCreateStatic(elts);
-    p->size = old->num;
-    p->num = old->num;
-    p->ref = FC_REF_CONSTANT;
-    return p;
-    
- bail2:
-    free (fcpatternelts);
- bail1:
-    free (fcpatterns);
- bail:
-    return 0;
-}
-
-FcBool
-FcPatternRead (int fd, FcCache metadata)
-{
-    fcpatterns = mmap(NULL, 
-		      metadata.pattern_length * sizeof (FcPattern),
-		      PROT_READ,
-		      MAP_SHARED, fd, metadata.pattern_offset);
-    if (fcpatterns == MAP_FAILED)
-	return FcFalse;
-    fcpattern_count = fcpattern_ptr = metadata.pattern_length;
-
-    return FcTrue;
-}
-
-FcBool
-FcPatternWrite (int fd, FcCache *metadata)
-{
-    int c = fcpattern_ptr;
-    off_t w = FcCacheNextOffset(fd);
-
-    metadata->pattern_offset = w;
-    metadata->pattern_length = c;
-
-    if (c > 0)
-    {
-	lseek(fd, w, SEEK_SET);
-	return write(fd, fcpatterns, c*sizeof(FcPattern)) != -1;
-    }
-    return FcTrue;
-}
-
-FcBool
-FcPatternEltRead (int fd, FcCache metadata)
-{
-    fcpatternelts = mmap(NULL, 
-			 metadata.patternelt_length * sizeof (FcPatternElt),
-			 PROT_READ,
-			 MAP_SHARED, fd, metadata.patternelt_offset);
-    if (fcpatternelts == MAP_FAILED)
-	return FcFalse;
-    fcpatternelt_count = fcpatternelt_ptr = metadata.patternelt_length;
-
-    return FcTrue;
-}
-
-FcBool
-FcPatternEltWrite (int fd, FcCache *metadata)
-{
-    int c = fcpatternelt_ptr;
-    off_t w = FcCacheNextOffset(fd);
-
-    metadata->patternelt_offset = w;
-    metadata->patternelt_length = c;
-
-    if (c > 0)
-    {
-	lseek(fd, w, SEEK_SET);
-	return write(fd, fcpatternelts, c*sizeof(FcPatternElt)) != -1;
-    }
-    return FcTrue;
-}
-
-FcValueListPtr
-FcValueListSerialize(FcValueList *pi)
-{
-    FcValueListPtr new; 
-    FcValue * v;
-    FcValueList * vl;
-
-    if (!fcvaluelists)
-    {
-	vl = malloc (sizeof (FcValueList) * fcvaluelist_count);
-	if (!vl)
-	    return FcValueListPtrCreateDynamic(0);
-
-	FcMemAlloc (FC_MEM_VALLIST, sizeof (FcValueList) * fcvaluelist_count);
-	fcvaluelists = vl;
-	fcvaluelist_ptr = 0;
-    }
-
-    fcvaluelists[fcvaluelist_ptr] = *pi;
-    new.storage = FcStorageStatic;
-    new.u.stat = fcvaluelist_ptr++;
-    v = &fcvaluelists[new.u.stat].value;
-    switch (v->type)
-    {
-    case FcTypeString:
-	/* this departs from the usual convention of dereferencing
-	 * foo before serialization; FcObjectSerialize does the
-	 * translation itself. */
-	/* also, v->u.si is 0 iff the string is null. */
-	/* also, have to update the old pi */
-	if (v->u.si)
-	{
-	    FcObjectPtr si = FcObjectSerialize(v->u.si);
-	    if (!FcObjectPtrU(si))
-		return FcValueListPtrCreateDynamic(pi);
-	    v->u.si = si;
-	    pi->value.u.si = si;
-	}
-	break;
-    case FcTypeMatrix:
-	if (FcMatrixPtrU(v->u.mi))
-	{
-	    FcMatrixPtr mi = FcMatrixSerialize(FcMatrixPtrU(v->u.mi));
-
-	    if (!FcMatrixPtrU(mi))
-		return FcValueListPtrCreateDynamic(pi);
-	    v->u.mi = mi;
-	}
-	break;
-    case FcTypeCharSet:
-	if (FcCharSetPtrU(v->u.ci))
-	{
-	    FcCharSetPtr ci = FcCharSetSerialize(FcCharSetPtrU(v->u.ci));
-	    if (!FcCharSetPtrU(ci))
-		return FcValueListPtrCreateDynamic(pi);
-	    v->u.ci = ci;
-	}
-	break;
-    case FcTypeLangSet:
-	if (FcLangSetPtrU(v->u.li))
-	{
-	    FcLangSetPtr li = FcLangSetSerialize(FcLangSetPtrU(v->u.li));
-	    if (!FcLangSetPtrU(li))
-		return FcValueListPtrCreateDynamic(pi);
-	    v->u.li = li;
-	}
-	break;
-    default:
-	break;
-    }
-    return new;
-}
-
-FcBool
-FcValueListRead (int fd, FcCache metadata)
-{
-    fcvaluelists = mmap(NULL, 
-			metadata.valuelist_length * sizeof (FcValueList),
-			PROT_READ,
-			MAP_SHARED, fd, metadata.valuelist_offset);
-    if (fcvaluelists == MAP_FAILED)
-	return FcFalse;
-    fcvaluelist_count = fcvaluelist_ptr = metadata.valuelist_length;
-
-    return FcTrue;
-}
-
-FcBool
-FcValueListWrite (int fd, FcCache *metadata)
-{
-    metadata->valuelist_offset = FcCacheNextOffset(fd);
-    metadata->valuelist_length = fcvaluelist_ptr;
-
-    if (fcvaluelist_ptr > 0)
-    {
-	lseek(fd, metadata->valuelist_offset, SEEK_SET);
-	return write(fd, fcvaluelists, 
-		     fcvaluelist_ptr * sizeof(FcValueList)) != -1;
-    }
-    return FcTrue;
-}
-
-FcValueList * 
-FcValueListPtrU (FcValueListPtr pi)
-{
-    switch (pi.storage)
-    {
-    case FcStorageStatic:
-        return &fcvaluelists[pi.u.stat];
-    case FcStorageDynamic:
-        return pi.u.dyn;
-    default:
-	return 0;
-    }
-}
-
-FcValueListPtr
-FcValueListPtrCreateDynamic(FcValueList * p)
-{
-    FcValueListPtr r; 
-
-    r.storage = FcStorageDynamic; 
-    r.u.dyn = p;
-    return r;
-}
-
-/* Indices allow us to convert dynamic strings into static
- * strings without having to reassign IDs.  We do reassign IDs
- * when serializing, which effectively performs mark-and-sweep 
- * garbage collection. */
-
-/* objectptr_count maps FcObjectPtr to:
-     + offsets in objectcontent_static_buf (if positive)
-     - entries in objectcontent_dynamic (if negative)
-*/
-static int objectptr_count = 1;
-static int objectptr_alloc = 0;
-static int * objectptr_indices = 0;
-
-/* invariant: objectcontent_static_buf must be sorted. */
-/* e.g. objectptr_static_buf = "name\0style\0weight\0" */
-static int objectcontent_static_bytes = 0;
-static char * objectcontent_static_buf;
-
-/* just a bunch of strings. */
-static int objectcontent_dynamic_count = 1;
-static int objectcontent_dynamic_alloc = 0;
-static const char ** objectcontent_dynamic = 0;
-static int * objectcontent_dynamic_refcount = 0;
-
 #define OBJECT_HASH_SIZE    31
 struct objectBucket {
     struct objectBucket	*next;
     FcChar32		hash;
 };
-static struct objectBucket **FcObjectBuckets = 0;
-
-FcObjectPtr
-FcObjectStaticName (const char *name)
-{
-    FcChar32		hash = FcStringHash ((const FcChar8 *) name);
-    struct objectBucket	**p;
-    struct objectBucket	*b;
-    const char *        nn;
-    int			size;
-    FcObjectPtr		new;
-
-    if (!FcObjectBuckets)
-    {
-        FcObjectBuckets = malloc(sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
-        memset (FcObjectBuckets, 0, sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
-    }
-
-    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
-    {
-	FcObjectPtr bp = *((FcObjectPtr *) (b + 1));
-	if (b->hash == hash && FcObjectPtrU(bp) && !strcmp (name, FcObjectPtrU(bp)))
-	{
-	    if (objectptr_indices[bp] < 0)
-		objectcontent_dynamic_refcount[-objectptr_indices[bp]]++;
-	    return bp;
-	}
-    }
-
-    /* didn't find it, so add a new dynamic string */
-    if (objectcontent_dynamic_count >= objectcontent_dynamic_alloc)
-    {
-	int s = objectcontent_dynamic_alloc + 4;
-
-	const char ** d = realloc (objectcontent_dynamic, 
-				   s*sizeof(char *));
-	if (!d)
-	    return 0;
-	FcMemFree(FC_MEM_STATICSTR, 
-		  objectcontent_dynamic_alloc * sizeof(char *));
-	FcMemAlloc(FC_MEM_STATICSTR, s*sizeof(char *));
-	objectcontent_dynamic = d;
-	objectcontent_dynamic_alloc = s;
-
-	int * rc = realloc (objectcontent_dynamic_refcount, s*sizeof(int));
-	if (!rc)
-	    return 0;
-	FcMemFree(FC_MEM_STATICSTR, 
-		  objectcontent_dynamic_alloc * sizeof(int));
-	FcMemAlloc(FC_MEM_STATICSTR, s * sizeof(int));
-	objectcontent_dynamic_refcount = rc;
-    }
-    if (objectptr_count >= objectptr_alloc)
-    {
-	int s = objectptr_alloc + 4;
-	int * d = realloc (objectptr_indices, s*sizeof(int));
-	if (!d)
-	    return 0;
-	FcMemFree(FC_MEM_STATICSTR, objectptr_alloc * sizeof(int));
-	FcMemAlloc(FC_MEM_STATICSTR, s);
-	objectptr_indices = d;
-	objectptr_indices[0] = 0;
-	objectptr_alloc = s;
-    }
-
-    size = sizeof (struct objectBucket) + sizeof (char *);
-    b = malloc (size);
-    if (!b)
-	return 0;
-    FcMemAlloc (FC_MEM_STATICSTR, size);
-    b->next = 0;
-    b->hash = hash;
-    nn = malloc(strlen(name)+1);
-    if (!nn)
-        goto bail;
-    strcpy ((char *)nn, name);
-    objectptr_indices[objectptr_count] = -objectcontent_dynamic_count;
-    objectcontent_dynamic_refcount[objectcontent_dynamic_count] = 1;
-    objectcontent_dynamic[objectcontent_dynamic_count++] = nn;
-    new = objectptr_count++;
-    *((FcObjectPtr *)(b+1)) = new;
-    *p = b;
-    return new;
-
- bail:
-    free(b);
-    return 0;
-}
-
-void
-FcObjectPtrDestroy (FcObjectPtr p)
-{
-    if (objectptr_indices[p] < 0)
-    {
-	objectcontent_dynamic_refcount[-objectptr_indices[p]]--;
-	if (objectcontent_dynamic_refcount[-objectptr_indices[p]] == 0)
-	{
-	    /* this code doesn't seem to be reached terribly often. */
-	    /* (note that objectcontent_dynamic overapproximates 
-	     * the use count, because not every result from
-	     * StaticName is stored. */
-	    FcStrFree((char *)objectcontent_dynamic[-objectptr_indices[p]]);
-	    objectcontent_dynamic[-objectptr_indices[p]] = 0;
-	}
-    }
-}
+static struct objectBucket *FcObjectBuckets[OBJECT_HASH_SIZE];
 
 const char *
-FcObjectPtrU (FcObjectPtr si)
+FcObjectStaticName (const char *name)
 {
-    if (si == 0)
-	return 0;
+    FcChar32            hash = FcStringHash ((const FcChar8 *) name);
+    struct objectBucket **p;
+    struct objectBucket *b;
+    int                 size;
 
-    if (objectptr_indices[si] > 0)
-	return &objectcontent_static_buf[objectptr_indices[si]];
-    else
-	return objectcontent_dynamic[-objectptr_indices[si]];
-}
-
-static FcBool objectptr_first_serialization = FcFalse;
-static int * object_old_id_to_new = 0;
-
-static void 
-FcObjectRebuildStaticNameHashtable (void)
-{
-    int i;
-    struct objectBucket	*b, *bn;
-
-    if (FcObjectBuckets)
-    {
-	for (i = 0; i < OBJECT_HASH_SIZE; i++)
-	{
-	    b = FcObjectBuckets[i];
-	    while (b)
-	    {
-		bn = b->next;
-		free(b);
-		FcMemFree (FC_MEM_STATICSTR,
-			   sizeof (struct objectBucket)+sizeof (FcObjectPtr));
-		b = bn;
-	    }
-	}
-	free (FcObjectBuckets);
-    }
-
-    FcObjectBuckets = malloc(sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
-    memset (FcObjectBuckets, 0, sizeof (struct objectBucket *)*OBJECT_HASH_SIZE);
-
-    for (i = 1; i < objectptr_count; i++)
-    {
-	if (FcObjectPtrU(i))
-	{
-	    const char * name = FcObjectPtrU(i);
-	    FcChar32	 hash = FcStringHash ((const FcChar8 *) name);
-	    struct objectBucket	**p;
-	    int size;
-
-	    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); 
-		 p = &(b->next))
-		;
-	    size = sizeof (struct objectBucket) + sizeof (FcObjectPtr);
-	    b = malloc (size);
-	    if (!b)
-		return;
-	    FcMemAlloc (FC_MEM_STATICSTR, size);
-	    b->next = 0;
-	    b->hash = hash;
-	    *((FcObjectPtr *)(b+1)) = i;
-	    *p = b;
-	}
-    }
-}
-
-/* Hmm.  This will have a terrible effect on the memory size,
- * because the mmapped strings now get reallocated on the heap. 
- * Is it all worth it? (Of course, the Serialization codepath is
- * not problematic, because the program quits just afterwards.) */
-static FcBool
-FcObjectPtrConvertToStatic(FcBool renumber)
-{
-    int active_count, i, j, longest_string = 0, 
-	new_static_bytes = 1;
-    char * fixed_length_buf, * new_static_buf, * p;
-    int * new_indices;
-
-    if (renumber)
-	objectptr_first_serialization = FcFalse;
-
-    /* collect statistics */
-    for (i = 1, active_count = 1; i < objectptr_count; i++)
-	if (!renumber || object_old_id_to_new[i] == -1)
-	{
-	    int sl = strlen(FcObjectPtrU(i));
-	    active_count++;
-	    if (sl > longest_string)
-		longest_string = sl;
-	    new_static_bytes += sl + 1;
-	} 
-
-    /* allocate storage */
-    fixed_length_buf = malloc 
-	((longest_string+1) * active_count * sizeof(char));
-    if (!fixed_length_buf)
-	goto bail;
-    new_static_buf = malloc (new_static_bytes * sizeof(char));
-    if (!new_static_buf)
-	goto bail1;
-    new_indices = malloc (active_count * sizeof(int));
-    if (!new_indices)
-	goto bail2;
-    new_indices[0] = 0;
-    new_static_buf[0] = 0;
-    
-    FcMemAlloc (FC_MEM_STATICSTR, new_static_bytes);
-    FcMemFree (FC_MEM_STATICSTR, objectptr_count * sizeof (int));
-    FcMemAlloc (FC_MEM_STATICSTR, active_count * sizeof (int));
-    
-    /* copy strings to temporary buffers */
-    for (j = 0, i = 1; i < objectptr_count; i++)
-	if (!renumber || object_old_id_to_new[i] == -1)
-	{
-	    strcpy (fixed_length_buf+(j*(longest_string+1)), FcObjectPtrU(i));
-	    j++;
-	}
-    
-    /* sort the new statics */
-    qsort (fixed_length_buf, active_count-1, longest_string+1, 
-	   (int (*)(const void *, const void *)) FcStrCmp);
-    
-    /* now we create the new static buffer in sorted order. */
-    p = new_static_buf+1;
-    for (i = 0; i < active_count-1; i++)
-    {
-	strcpy(p, fixed_length_buf + i * (longest_string+1));
-	p += strlen(p)+1;
-    }
-
-    /* create translation table by iterating over sorted strings
-     * and getting their old values */
-    p = new_static_buf+1;
-    for (i = 0; i < active_count-1; i++)
-    {
-	int n = FcObjectStaticName(fixed_length_buf+i*(longest_string+1));
-	if (renumber)
-	{
-	    object_old_id_to_new[n] = i+1;
-	    new_indices[i+1] = p-new_static_buf;
-	}
-	else
-	    new_indices[n] = p-new_static_buf;
-	p += strlen(p)+1;
-    }
-
-    free (objectptr_indices);
-    objectptr_indices = new_indices;
-    objectptr_count = active_count;
-    objectptr_alloc = active_count;
-
-    /* free old storage */
-    for (i = 1; i < objectcontent_dynamic_count; i++)
-    {
-	if (objectcontent_dynamic[i])
-	{
-	    FcMemFree (FC_MEM_STATICSTR, strlen(objectcontent_dynamic[i])+1);
-	    free ((char *)objectcontent_dynamic[i]);
-	}	
-    }
-    free (objectcontent_dynamic);
-    free (objectcontent_dynamic_refcount);
-    FcMemFree (FC_MEM_STATICSTR, objectcontent_dynamic_count*sizeof (int));
-    objectcontent_dynamic = 0;
-    objectcontent_dynamic_refcount = 0;
-    objectcontent_dynamic_count = 1;
-    objectcontent_dynamic_alloc = 0;
-    free (objectcontent_static_buf);
-    FcMemFree (FC_MEM_STATICSTR, objectcontent_static_bytes);
-    objectcontent_static_buf = new_static_buf;
-    objectcontent_static_bytes = new_static_bytes;
-
-    /* fix up hash table */
-    FcObjectRebuildStaticNameHashtable();
-
-    free (fixed_length_buf);
-    return FcTrue;
-
- bail2: 
-    free (new_static_buf);
- bail1: 
-    free (fixed_length_buf);
- bail:
-    return FcFalse;
-}
-
-#define OBJECT_PTR_CONVERSION_TRIGGER 100000
-
-int
-FcObjectPtrCompare (const FcObjectPtr a, const FcObjectPtr b)
-{
-    /* This is the dynamic count.  We could also use a static
-     * count, i.e. the number of slow strings being created.
-     * I think dyncount gives us a better estimate of inefficiency. -PL */
-    static int compare_count = OBJECT_PTR_CONVERSION_TRIGGER;
-
-    /* count on sortedness for fast objectptrs. */
-    if ((a == b) || (objectptr_indices[a] > 0 && objectptr_indices[b] > 0))
-	return objectptr_indices[a] - objectptr_indices[b];
-
-    compare_count--;
-    if (!compare_count)
-    {
-	FcObjectPtrConvertToStatic(FcFalse);
-	compare_count = OBJECT_PTR_CONVERSION_TRIGGER;
-    }
-
-    return strcmp (FcObjectPtrU(a), FcObjectPtrU(b));
-}
-
-void
-FcObjectClearStatic(void)
-{
-    objectptr_count = 1;
-    objectptr_alloc = 0;
-    objectptr_indices = 0;
-
-    objectcontent_static_bytes = 0;
-    objectcontent_static_buf = 0;
-
-    objectcontent_dynamic_count = 1;
-    objectcontent_dynamic_alloc = 0;
-    objectcontent_dynamic = 0;
-    objectcontent_dynamic_refcount = 0;
-
-    object_old_id_to_new = 0;
-}
-
-/* In the pre-serialization phase, mark the used strings with
- * -1 in the mapping array. */
-/* The first call to the serialization phase assigns actual 
- * static indices to the strings (sweep). */
-static FcBool
-FcObjectPrepareSerialize (FcObjectPtr si)
-{
-    if (object_old_id_to_new == 0)
-    {
-	object_old_id_to_new = malloc(objectptr_count * sizeof(int));
-	if (!object_old_id_to_new)
-	    goto bail;
-	memset (object_old_id_to_new, 0, 
-		objectptr_count * sizeof(int));
-    }
-
-    object_old_id_to_new[si] = -1;
-    objectptr_first_serialization = FcTrue;
-
-    return FcTrue;
-
- bail:
-    return FcFalse;
-}
-
-static FcObjectPtr
-FcObjectSerialize (FcObjectPtr si)
-{
-    if (objectptr_first_serialization)
-	if (!FcObjectPtrConvertToStatic(FcTrue))
-	    return 0;
-
-    return object_old_id_to_new[si];
-}
-
-FcBool
-FcObjectRead (int fd, FcCache metadata)
-{
-    /* do we have to merge strings? 
-     * it's possible to merge dynamic strings, as long as we only store
-     * static strings to disk and as long as all static strings have lower
-     * ids than any dynamic strings. */
-
-    objectcontent_dynamic_count = 1;
-    objectcontent_dynamic_alloc = 0;
-    objectcontent_dynamic = 0;
-    objectcontent_dynamic_refcount = 0;
-
-    /* well, we do need to allocate dynamic strings all the time,
-     * so this would just have to be converted.  It takes 1.4k on
-     * my system. - PL */
-/*     objectptr_indices = mmap(NULL,  */
-/* 			     metadata.object_length * sizeof (int), */
-/* 			     PROT_READ, */
-/* 			     MAP_SHARED, fd, metadata.object_offset); */
-/*     if (objectptr_indices == MAP_FAILED) */
-/*         goto bail; */
-
-    objectptr_count = metadata.object_length;
-    objectptr_alloc = metadata.object_length;
-    objectptr_indices = malloc (metadata.object_length * sizeof (int));
-    if (!objectptr_indices) 
-	goto bail;
-    FcMemAlloc (FC_MEM_STATICSTR, metadata.object_length * sizeof (int));
-    lseek (fd, metadata.object_offset, SEEK_SET);
-    read (fd, objectptr_indices, metadata.object_length * sizeof (int));
-
-    objectcontent_static_buf = 
-	mmap(NULL,
-	     metadata.objectcontent_length * sizeof (char),
-	     PROT_READ,
-	     MAP_SHARED, fd, metadata.objectcontent_offset);
-    if (objectptr_indices == MAP_FAILED)
-	goto bail1;
-    objectcontent_static_bytes = metadata.objectcontent_length;
-
-    FcObjectRebuildStaticNameHashtable ();
-
-    return FcTrue;
-
- bail1:
-    /*munmap(objectptr_indices, metadata.object_length * sizeof(int));*/
-    free (objectptr_indices);
- bail:
-    return FcFalse;
-}
-
-FcBool
-FcObjectWrite (int fd, FcCache * metadata)
-{
-    /* there should be no dynamic strings: 
-     * serialize ought to have zapped 'em. */
-    if (objectcontent_dynamic_alloc)
-	return FcFalse;
-
-    metadata->object_length = objectptr_count;
-    metadata->object_offset = FcCacheNextOffset(fd);    
-    lseek(fd, metadata->object_offset, SEEK_SET);
-    if (write (fd, objectptr_indices, 
-	       metadata->object_length * sizeof (int)) == -1)
-	return FcFalse;
-
-    metadata->objectcontent_length = objectcontent_static_bytes;
-    metadata->objectcontent_offset = FcCacheNextOffset(fd);
-    lseek(fd, metadata->objectcontent_offset, SEEK_SET);
-    if (write (fd, objectcontent_static_buf, 
-	       metadata->objectcontent_length * sizeof (char)) == -1)
-	return FcFalse;
-
-    return FcTrue;
+    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next)
+)
+        if (b->hash == hash && !strcmp (name, (char *) (b + 1)))
+            return (char *) (b + 1);
+    size = sizeof (struct objectBucket) + strlen (name) + 1;
+    b = malloc (size);
+    FcMemAlloc (FC_MEM_STATICSTR, size);
+    if (!b)
+        return NULL;
+    b->next = 0;
+    b->hash = hash;
+    strcpy ((char *) (b + 1), name);
+    *p = b;
+    return (char *) (b + 1);
 }
 
 static void
@@ -2149,3 +1338,540 @@ FcPatternFini (void)
     FcValueListThawAll ();
     FcObjectStaticNameFini ();
 }
+
+FcPatternElt *
+FcPatternEltU (FcPatternEltPtr pei)
+{
+    if (pei.bank == FC_BANK_DYNAMIC)
+	return pei.u.dyn;
+
+    return &fcpatternelts[FcCacheBankToIndex(pei.bank)][pei.u.stat];
+}
+
+static FcPatternEltPtr
+FcPatternEltPtrCreateDynamic (FcPatternElt * e)
+{
+    FcPatternEltPtr new;
+    new.bank = FC_BANK_DYNAMIC;
+    new.u.dyn = e;
+    return new;
+}
+
+static FcPatternEltPtr
+FcPatternEltPtrCreateStatic (int bank, int i)
+{
+    FcPatternEltPtr new;
+    new.bank = bank;
+    new.u.stat = i;
+    return new;
+}
+
+static void
+FcStrNewBank (void);
+static int
+FcStrNeededBytes (const char * s);
+static void *
+FcStrDistributeBytes (FcCache * metadata, void * block_ptr);
+static const char *
+FcStrSerialize (int bank, const char * s);
+static void *
+FcStrUnserialize (FcCache metadata, void *block_ptr);
+
+static void
+FcValueListNewBank (void);
+static int
+FcValueListNeededBytes (FcValueList * vl);
+static void *
+FcValueListDistributeBytes (FcCache * metadata, void *block_ptr);
+static FcValueListPtr
+FcValueListSerialize(int bank, FcValueList *pi);
+static void *
+FcValueListUnserialize (FcCache metadata, void *block_ptr);
+
+
+void
+FcPatternNewBank (void)
+{
+    fcpattern_count = 0;
+    fcpatternelt_count = 0;
+
+    FcStrNewBank();
+    FcValueListNewBank();
+}
+
+int
+FcPatternNeededBytes (FcPattern * p)
+{
+    int i, cum = 0, c;
+
+    fcpattern_count++;
+    fcpatternelt_count += p->num;
+
+    for (i = 0; i < p->num; i++)
+    {
+	cum += FcObjectNeededBytes 
+	    ((FcPatternEltU(p->elts)+i)->object);
+	c = FcValueListNeededBytes (FcValueListPtrU
+				    (((FcPatternEltU(p->elts)+i)->values)));
+	if (c < 0)
+	    return c;
+	cum += c;
+    }
+
+    return cum + sizeof (FcPattern) + sizeof(FcPatternElt)*p->num;
+}
+
+static FcBool
+FcPatternEnsureBank (int bi)
+{
+    FcPattern **pp;
+    FcPatternElt **ep;
+    int i;
+
+    if (!fcpatterns || fcpattern_bank_count <= bi)
+    {
+	int new_count = bi + 4;
+	pp = realloc (fcpatterns, sizeof (FcPattern *) * new_count);
+	if (!pp)
+	    return 0;
+
+	FcMemAlloc (FC_MEM_PATTERN, sizeof (FcPattern *) * new_count);
+	fcpatterns = pp;
+
+	ep = realloc (fcpatternelts, sizeof (FcPatternElt *) * new_count);
+	if (!ep)
+	    return 0;
+
+	FcMemAlloc (FC_MEM_PATELT, sizeof (FcPatternElt *) * new_count);
+	fcpatternelts = ep;
+
+	for (i = fcpattern_bank_count; i < new_count; i++)
+	{
+	    fcpatterns[i] = 0;
+	    fcpatternelts[i] = 0;
+	}
+
+	fcpattern_bank_count = new_count;
+    }
+
+    FcMemAlloc (FC_MEM_PATTERN, sizeof (FcPattern) * fcpattern_count);
+    return FcTrue;
+}
+
+void *
+FcPatternDistributeBytes (FcCache * metadata, void * block_ptr)
+{
+    int bi = FcCacheBankToIndex(metadata->bank);
+
+    if (!FcPatternEnsureBank(bi))
+	return 0;
+
+    fcpattern_ptr = 0;
+    fcpatterns[bi] = (FcPattern *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + 
+			 (sizeof (FcPattern) * fcpattern_count));
+    
+    FcMemAlloc (FC_MEM_PATELT, sizeof (FcPatternElt) * fcpatternelt_count);
+    fcpatternelt_ptr = 0;
+    fcpatternelts[bi] = (FcPatternElt *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + 
+			 (sizeof (FcPatternElt) * fcpatternelt_count));
+
+    metadata->pattern_count = fcpattern_count;
+    metadata->patternelt_count = fcpatternelt_count;
+
+    block_ptr = FcStrDistributeBytes (metadata, block_ptr);
+    block_ptr = FcValueListDistributeBytes (metadata, block_ptr);
+    return block_ptr;
+}
+
+FcPattern *
+FcPatternSerialize (int bank, FcPattern *old)
+{
+    FcPattern *p;
+    FcPatternElt *e, *nep;
+    FcValueList * nv;
+    FcValueListPtr v, nv_head, nvp;
+    int i, elts, bi = FcCacheBankToIndex(bank);
+
+    p = &fcpatterns[bi][fcpattern_ptr++];
+    p->bank = bank;
+    elts = fcpatternelt_ptr;
+    nep = &fcpatternelts[bi][elts];
+    if (!nep)
+	return FcFalse;
+
+    fcpatternelt_ptr += old->num;
+
+    for (e = FcPatternEltU(old->elts), i=0; i < old->num; i++, e++) 
+    {
+        v = e->values;
+        nvp = nv_head = FcValueListSerialize(bank, FcValueListPtrU(v));
+        if (!FcValueListPtrU(nv_head))
+            return 0;
+	nv = FcValueListPtrU(nvp);
+	
+        for (;
+             FcValueListPtrU(v);
+             v = FcValueListPtrU(v)->next, 
+		 nv = FcValueListPtrU(nv->next))
+        {
+	    
+	    if (FcValueListPtrU(FcValueListPtrU(v)->next))
+	    {
+                nvp = FcValueListSerialize
+		    (bank, FcValueListPtrU(FcValueListPtrU(v)->next));
+                nv->next = nvp;
+	    }
+        }
+	
+	nep[i].values = nv_head;
+	nep[i].object = FcObjectSerialize (e->object);
+    }
+
+    p->elts = old->elts;
+    p->elts = FcPatternEltPtrCreateStatic(bank, elts);
+    p->size = old->num;
+    p->num = old->num;
+    p->ref = FC_REF_CONSTANT;
+    return p;
+}
+
+FcPattern *
+FcPatternUnserialize (FcCache metadata, void *block_ptr)
+{
+    int bi = FcCacheBankToIndex(metadata.bank);
+    if (!FcPatternEnsureBank(bi))
+	return FcFalse;
+
+    FcMemAlloc (FC_MEM_PATTERN, sizeof (FcPattern) * metadata.pattern_count);
+    fcpatterns[bi] = (FcPattern *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + 
+			 (sizeof (FcPattern) * metadata.pattern_count));
+    
+    FcMemAlloc (FC_MEM_PATELT, 
+		sizeof (FcPatternElt) * metadata.patternelt_count);
+    fcpatternelts[bi] = (FcPatternElt *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + 
+			 (sizeof (FcPatternElt) * metadata.patternelt_count));
+	
+    block_ptr = FcStrUnserialize (metadata, block_ptr);
+    block_ptr = FcValueListUnserialize (metadata, block_ptr);
+
+    return fcpatterns[bi];
+}
+
+static void
+FcValueListNewBank (void)
+{
+    fcvaluelist_count = 0;
+
+    FcCharSetNewBank();
+    FcLangSetNewBank();
+}
+
+static int
+FcValueListNeededBytes (FcValueList *p)
+{
+    FcValueList *vl;
+    int cum = 0;
+
+    for (vl = p;
+	 vl; 
+	 vl = FcValueListPtrU(vl->next))
+    {
+	FcValue v = FcValueCanonicalize(&vl->value); // unserialize just in case
+
+	switch (v.type)
+	{
+	case FcTypeCharSet:
+	    cum += FcCharSetNeededBytes(v.u.c);
+	    break;
+	case FcTypeLangSet:
+	    cum += FcLangSetNeededBytes(v.u.l);
+	    break;
+	case FcTypeString:
+	    cum += FcStrNeededBytes(v.u.s);
+	default:
+	    break;
+	}
+	fcvaluelist_count++;
+	cum += sizeof (FcValueList);
+    }
+    
+    return cum;
+}
+
+static FcBool
+FcValueListEnsureBank (int bi)
+{
+    FcValueList **pvl;
+
+    if (!fcvaluelists || fcvaluelist_bank_count <= bi)
+    {
+	int new_count = bi + 2, i;
+
+	pvl = realloc (fcvaluelists, sizeof (FcValueList *) * new_count);
+	if (!pvl)
+	    return FcFalse;
+
+	FcMemAlloc (FC_MEM_VALLIST, sizeof (FcValueList *) * new_count);
+
+	fcvaluelists = pvl;
+	for (i = fcvaluelist_bank_count; i < new_count; i++)
+	    fcvaluelists[i] = 0;
+
+	fcvaluelist_bank_count = new_count;
+    }
+    return FcTrue;
+}
+
+static void *
+FcValueListDistributeBytes (FcCache * metadata, void *block_ptr)
+{
+    int bi = FcCacheBankToIndex(metadata->bank);
+
+    if (!FcValueListEnsureBank(bi))
+	return 0;
+
+    FcMemAlloc (FC_MEM_VALLIST, sizeof (FcValueList) * fcvaluelist_count);
+    fcvaluelist_ptr = 0;
+    fcvaluelists[bi] = (FcValueList *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + 
+			 (sizeof (FcValueList) * fcvaluelist_count));
+    metadata->valuelist_count = fcvaluelist_count;
+
+    block_ptr = FcCharSetDistributeBytes(metadata, block_ptr);
+    block_ptr = FcLangSetDistributeBytes(metadata, block_ptr);
+
+    return block_ptr;
+}
+
+static FcValueListPtr
+FcValueListSerialize(int bank, FcValueList *pi)
+{
+    FcValueListPtr new; 
+    FcValue * v;
+    int bi = FcCacheBankToIndex(bank);
+
+    if (!pi)
+    {
+	new.bank = FC_BANK_DYNAMIC;
+	new.u.dyn = 0;
+	return new;
+    }
+
+    fcvaluelists[bi][fcvaluelist_ptr] = *pi;
+    new.bank = bank;
+    new.u.stat = fcvaluelist_ptr++;
+    v = &fcvaluelists[bi][new.u.stat].value;
+    switch (v->type)
+    {
+    case FcTypeString:
+	if (v->u.s)
+	{
+	    const char * s = FcStrSerialize(bank, v->u.s);
+	    if (!s)
+		return FcValueListPtrCreateDynamic(pi);
+	    v->u.s_off = s - (const char *)v;
+	    v->type |= FC_STORAGE_STATIC;
+	}
+	break;
+    case FcTypeMatrix:
+	break;
+    case FcTypeCharSet:
+	if (v->u.c)
+	{
+	    FcCharSet * c = FcCharSetSerialize(bank, (FcCharSet *)v->u.c);
+	    if (!c)
+		return FcValueListPtrCreateDynamic(pi);
+	    v->u.c_off = (char *)c - (char *)v;
+	    v->type |= FC_STORAGE_STATIC;
+	}
+	break;
+    case FcTypeLangSet:
+	if (v->u.l)
+	{
+	    FcLangSet * l = FcLangSetSerialize(bank, (FcLangSet *)v->u.l);
+	    if (!l)
+		return FcValueListPtrCreateDynamic(pi);
+	    v->u.l_off = (char *)l - (char *)v;
+	    v->type |= FC_STORAGE_STATIC;
+	}
+	break;
+    default:
+	break;
+    }
+    return new;
+}
+
+static void *
+FcValueListUnserialize (FcCache metadata, void *block_ptr)
+{
+    int bi = FcCacheBankToIndex(metadata.bank);
+
+    if (!FcValueListEnsureBank(bi))
+	return 0;
+
+    FcMemAlloc (FC_MEM_VALLIST, 
+		sizeof (FcValueList) * metadata.valuelist_count);
+    fcvaluelists[bi] = (FcValueList *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + 
+			 (sizeof (FcValueList) * metadata.valuelist_count));
+
+    block_ptr = FcCharSetUnserialize(metadata, block_ptr);
+    block_ptr = FcLangSetUnserialize(metadata, block_ptr);
+
+    return block_ptr;
+}
+
+FcValueList * 
+FcValueListPtrU (FcValueListPtr pi)
+{
+    if (pi.bank == FC_BANK_DYNAMIC)
+        return pi.u.dyn;
+
+    return &fcvaluelists[FcCacheBankToIndex(pi.bank)][pi.u.stat];
+}
+
+FcValueListPtr
+FcValueListPtrCreateDynamic(FcValueList * p)
+{
+    FcValueListPtr r; 
+
+    r.bank = FC_BANK_DYNAMIC; 
+    r.u.dyn = p;
+    return r;
+}
+
+static char ** static_strs;
+static int static_str_bank_count = 0, fcstr_ptr, fcstr_count;
+
+static struct objectBucket *FcStrBuckets[OBJECT_HASH_SIZE];
+
+static void
+FcStrNewBank (void)
+{
+    int i, size;
+    struct objectBucket *b, *next;
+    char *name;
+
+    for (i = 0; i < OBJECT_HASH_SIZE; i++)
+    {
+	for (b = FcStrBuckets[i]; b; b = next)
+	{
+	    next = b->next;
+	    name = (char *) (b + 1);
+	    size = sizeof (struct objectBucket) + strlen (name) + 1;
+	    FcMemFree (FC_MEM_STATICSTR, size);
+	    free (b);
+	}
+	FcStrBuckets[i] = 0;
+    }
+
+    fcstr_count = 0;
+}
+
+static int
+FcStrNeededBytes (const char * s)
+{
+    FcChar32            hash = FcStringHash ((const FcChar8 *) s);
+    struct objectBucket **p;
+    struct objectBucket *b;
+    int                 size;
+
+    for (p = &FcStrBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
+        if (b->hash == hash && !strcmp (s, (char *) (b + 1)))
+            return 0;
+    size = sizeof (struct objectBucket) + strlen (s) + 1 + sizeof(char *);
+    b = malloc (size);
+    FcMemAlloc (FC_MEM_STATICSTR, size);
+    if (!b)
+        return -1;
+    b->next = 0;
+    b->hash = hash;
+    strcpy ((char *) (b + 1), s);
+    *(char **)((char *) (b + 1) + strlen(s) + 1) = 0;
+    *p = b;
+
+    fcstr_count += strlen(s) + 1;
+    return strlen(s) + 1;
+}
+
+static FcBool
+FcStrEnsureBank (int bi)
+{
+    char ** ss;
+
+    if (!static_strs || static_str_bank_count <= bi)
+    {
+	int new_count = bi + 4, i;
+	ss = realloc (static_strs, sizeof (const char *) * new_count);
+	if (!ss)
+	    return FcFalse;
+
+	FcMemAlloc (FC_MEM_STRING, sizeof (const char *) * (new_count-static_str_bank_count));
+	static_strs = ss;
+
+	for (i = static_str_bank_count; i < new_count; i++)
+	    static_strs[i] = 0;
+	static_str_bank_count = new_count;
+    }
+    return FcTrue;
+}
+
+static void *
+FcStrDistributeBytes (FcCache * metadata, void * block_ptr)
+{
+    int bi = FcCacheBankToIndex(metadata->bank);
+    if (!FcStrEnsureBank(bi)) 
+	return 0;
+
+    FcMemAlloc (FC_MEM_STRING, sizeof (char) * fcstr_count);
+    static_strs[bi] = (char *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + (sizeof (char) * fcstr_count));
+    metadata->str_count = fcstr_count;
+    fcstr_ptr = 0;
+
+    return block_ptr;
+}
+
+static const char *
+FcStrSerialize (int bank, const char * s)
+{
+    FcChar32            hash = FcStringHash ((const FcChar8 *) s);
+    struct objectBucket **p;
+    struct objectBucket *b;
+    int bi = FcCacheBankToIndex(bank);
+
+    for (p = &FcStrBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
+        if (b->hash == hash && !strcmp (s, (char *) (b + 1)))
+	{
+	    char * t = *(char **)(((char *)(b + 1)) + strlen (s) + 1);
+	    if (!t)
+	    {
+		strcpy(static_strs[bi] + fcstr_ptr, s);
+		*(char **)((char *) (b + 1) + strlen(s) + 1) = (static_strs[bi] + fcstr_ptr);
+		fcstr_ptr += strlen(s) + 1;
+		t = *(char **)(((char *)(b + 1)) + strlen (s) + 1);
+	    }
+	    return t;
+	}
+    return 0;
+}
+
+static void *
+FcStrUnserialize (FcCache metadata, void *block_ptr)
+{
+    int bi = FcCacheBankToIndex(metadata.bank);
+    if (!FcStrEnsureBank(bi))
+	return 0;
+
+    FcMemAlloc (FC_MEM_STRING, sizeof (char) * metadata.str_count);
+    static_strs[bi] = (char *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + 
+			 (sizeof (char) * metadata.str_count));
+
+    return block_ptr;
+}
+

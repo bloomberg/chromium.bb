@@ -93,7 +93,6 @@ usage (char *program)
     exit (1);
 }
 
-#if 0
 static int
 nsubdirs (FcStrSet *set)
 {
@@ -192,6 +191,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    ret++;
 	    continue;
 	}
+#if 0 // put this back later after fixing DirCacheValid
 	if (!force && FcDirCacheValid (dir))
 	{
 	    if (verbose)
@@ -199,11 +199,13 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 			set->nfont, nsubdirs(subdirs));
 	}
 	else
+#endif
 	{
 	    if (verbose)
 		printf ("caching, %d fonts, %d dirs\n", 
 			set->nfont, nsubdirs (subdirs));
-	    if (!FcDirSave (set, subdirs, dir))
+
+	    if (!FcDirSave (set, dir))
 	    {
 		fprintf (stderr, "Can't save cache in \"%s\"\n", dir);
 		ret++;
@@ -223,7 +225,6 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
     FcStrListDone (list);
     return ret;
 }
-#endif
 
 int
 main (int argc, char **argv)
@@ -280,10 +281,6 @@ main (int argc, char **argv)
 	return 1;
     }
 
-    /* We don't yet have per-directory caches. */
-    ret = (FcCacheWrite (config) == FcFalse);
-
-#if 0
     if (argv[i])
     {
 	dirs = FcStrSetCreate ();
@@ -308,7 +305,6 @@ main (int argc, char **argv)
     else
 	list = FcConfigGetConfigDirs (config);
     ret = scanDirs (list, config, argv[0], force, verbose);
-#endif
     /* 
      * Now we need to sleep a second  (or two, to be extra sure), to make
      * sure that timestamps for changes after this run of fc-cache are later

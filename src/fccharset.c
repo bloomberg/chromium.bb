@@ -23,33 +23,20 @@
  */
 
 #include <stdlib.h>
-#include <sys/mman.h>
 #include "fcint.h"
 
 /* #define CHECK */
 
 /* #define CHATTY */
 
-static FcCharSet * charsets = 0;
-static FcChar16 * numbers = 0;
-static int charset_ptr, charset_count;
+static FcCharSet ** charsets = 0;
+static FcChar16 ** numbers = 0;
+static int charset_bank_count = 0, charset_ptr, charset_count;
 static int charset_numbers_ptr, charset_numbers_count;
-static FcCharLeaf * leaves = 0;
+static FcCharLeaf ** leaves = 0;
 static int charset_leaf_ptr, charset_leaf_count;
-static int * leaf_idx = 0;
+static int ** leaf_idx = 0;
 static int charset_leaf_idx_ptr, charset_leaf_idx_count;
-
-void
-FcCharSetClearStatic()
-{
-    charsets = 0;
-    numbers = 0;
-    charset_ptr = 0; charset_count = 0;
-    leaves = 0;
-    charset_leaf_ptr = 0; charset_leaf_count = 0;
-    leaf_idx = 0;
-    charset_leaf_idx_ptr = 0; charset_leaf_idx_count = 0;
-}
 
 FcCharSet *
 FcCharSetCreate (void)
@@ -62,7 +49,7 @@ FcCharSetCreate (void)
     FcMemAlloc (FC_MEM_CHARSET, sizeof (FcCharSet));
     fcs->ref = 1;
     fcs->num = 0;
-    fcs->storage = FcStorageDynamic;
+    fcs->bank = FC_BANK_DYNAMIC;
     fcs->u.dyn.leaves = 0;
     fcs->u.dyn.numbers = 0;
     return fcs;
@@ -78,18 +65,6 @@ FcCharSetNew (void)
 }
 
 void
-FcCharSetPtrDestroy (FcCharSetPtr fcs)
-{
-    FcCharSetDestroy (FcCharSetPtrU(fcs));
-    if (fcs.storage == FcStorageDynamic && 
-	FcCharSetPtrU(fcs)->ref != FC_REF_CONSTANT)
-    {
-	free (fcs.u.dyn);
-	FcMemFree (FC_MEM_CHARSET, sizeof(FcCharSet));
-    }
-}
-
-void
 FcCharSetDestroy (FcCharSet *fcs)
 {
     int i;
@@ -97,7 +72,7 @@ FcCharSetDestroy (FcCharSet *fcs)
 	return;
     if (--fcs->ref > 0)
 	return;
-    if (fcs->storage == FcStorageDynamic)
+    if (fcs->bank == FC_BANK_DYNAMIC)
     {
 	for (i = 0; i < fcs->num; i++)
 	{
@@ -173,7 +148,7 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
     ucs4 >>= 8;
     if (ucs4 >= 0x10000)
 	return FcFalse;
-    if (fcs->storage == FcStorageStatic)
+    if (fcs->bank != FC_BANK_DYNAMIC)
     {
 	int i;
 
@@ -190,7 +165,6 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
 	    leaves[i] = FcCharSetGetLeaf(fcs, i);
 	memcpy (numbers, FcCharSetGetNumbers(fcs), 
 		fcs->num * sizeof (FcChar16));
-	fcs->storage = FcStorageDynamic;
     }
     else
     {
@@ -264,14 +238,14 @@ FcCharSetInsertLeaf (FcCharSet *fcs, FcChar32 ucs4, FcCharLeaf *leaf)
     if (pos >= 0)
     {
 	FcMemFree (FC_MEM_CHARLEAF, sizeof (FcCharLeaf));
-	if (fcs->storage == FcStorageDynamic)
+	if (fcs->bank == FC_BANK_DYNAMIC)
 	{
 	    free (fcs->u.dyn.leaves[pos]);
 	    fcs->u.dyn.leaves[pos] = leaf;
 	}
 	else
 	{
-	    leaves[leaf_idx[fcs->u.stat.leafidx_offset]+pos] = *leaf;
+	    leaves[fcs->bank][leaf_idx[fcs->bank][fcs->u.stat.leafidx_offset]+pos] = *leaf;
 	}
 	return FcTrue;
     }
@@ -381,14 +355,6 @@ FcCharSetCopy (FcCharSet *src)
 {
     if (src->ref != FC_REF_CONSTANT)
 	src->ref++;
-    return src;
-}
-
-FcCharSetPtr
-FcCharSetCopyPtr (FcCharSetPtr src)
-{
-    if (FcCharSetPtrU(src)->ref != FC_REF_CONSTANT)
-	FcCharSetPtrU(src)->ref++;
     return src;
 }
 
@@ -1081,8 +1047,8 @@ FcCharSetFreezeBase (FcCharSet *fcs)
     
     ent->set.ref = FC_REF_CONSTANT;
     ent->set.num = fcs->num;
-    ent->set.storage = fcs->storage;
-    if (fcs->storage == FcStorageDynamic)
+    ent->set.bank = fcs->bank;
+    if (fcs->bank == FC_BANK_DYNAMIC)
     {
 	if (fcs->num)
 	{
@@ -1154,7 +1120,7 @@ FcCharSetFreeze (FcCharSet *fcs)
     }
     n = FcCharSetFreezeBase (b);
 bail1:
-    if (b->storage == FcStorageDynamic)
+    if (b->bank == FC_BANK_DYNAMIC)
     {
 	if (b->u.dyn.leaves)
 	{
@@ -1231,7 +1197,7 @@ FcNameParseCharSet (FcChar8 *string)
 #endif
     n = FcCharSetFreezeBase (c);
 bail1:
-    if (c->storage == FcStorageDynamic)
+    if (c->bank == FC_BANK_DYNAMIC)
     {
 	if (c->u.dyn.leaves)
 	{
@@ -1323,205 +1289,160 @@ FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c)
     return FcTrue;
 }
 
-
-FcCharSet *
-FcCharSetPtrU (FcCharSetPtr ci)
+void
+FcCharSetNewBank(void)
 {
-    switch (ci.storage)
-    {
-    case FcStorageDynamic:
-	return ci.u.dyn;
-    case FcStorageStatic:
-	return &charsets[ci.u.stat];
-    default:
-	return 0;
-    }
+    charset_count = 0;
+    charset_numbers_count = 0;
+    charset_leaf_count = 0;
+    charset_leaf_idx_count = 0;
 }
 
-FcCharSetPtr
-FcCharSetPtrCreateDynamic(FcCharSet *c)
+int
+FcCharSetNeededBytes (const FcCharSet *c)
 {
-    FcCharSetPtr new;
-
-    new.storage = FcStorageDynamic;
-    new.u.dyn = c;
-    return new;
-}
-
-FcBool
-FcCharSetPrepareSerialize(FcCharSet *c)
-{
-    /* note the redundancy */
+    /* yes, there's redundancy */
     charset_count++;
     charset_leaf_idx_count++;
     charset_leaf_count += c->num;
     charset_numbers_count += c->num;
+    return sizeof (FcCharSet) + 
+	sizeof (int) + 			/* leaf_idx */
+	sizeof (FcCharLeaf) * c->num + 	/* leaf */
+	sizeof (FcChar16) * c->num; 	/* number */
+}
+
+static FcBool
+FcCharSetEnsureBank (int bi)
+{
+    if (!charsets || charset_bank_count <= bi)
+    {
+	int new_count = charset_bank_count + 2;
+	FcCharSet ** cs;
+	FcChar16 ** n;
+	FcCharLeaf ** lvs;
+	int ** lvi;
+	int i;
+	
+	cs = realloc(charsets, sizeof(FcCharSet*) * new_count);
+	if (!cs) return 0;
+	n = realloc(numbers, sizeof(FcChar16*) * new_count);
+	if (!n) return 0;
+	lvs = realloc(leaves, sizeof(FcCharLeaf*) * new_count);
+	if (!lvs) return 0;
+	lvi = realloc(leaf_idx, sizeof(int*) * new_count);
+	if (!lvi) return 0;
+
+	charsets = cs; numbers = n; leaves = lvs; leaf_idx = lvi;
+	for (i = charset_bank_count; i < new_count; i++)
+	{
+	    charsets[i] = 0;
+	    numbers[i] = 0;
+	    leaves[i] = 0;
+	    leaf_idx[i] = 0;
+	}
+	charset_bank_count = new_count;
+    }
     return FcTrue;
 }
 
-FcCharSetPtr
-FcCharSetSerialize(FcCharSet *c)
+void *
+FcCharSetDistributeBytes (FcCache * metadata, void * block_ptr)
+{
+    int bi = FcCacheBankToIndex(metadata->bank);
+    if (!FcCharSetEnsureBank(bi))
+	return 0;
+
+    charsets[bi] = (FcCharSet *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + 
+		     (sizeof (FcCharSet) * charset_count));
+    numbers[bi] = (FcChar16 *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + 
+		     (sizeof(FcChar16) * charset_numbers_count));
+    leaves[bi] = (FcCharLeaf *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr +
+		     (sizeof(FcCharLeaf) * charset_leaf_count));
+    leaf_idx[bi] = (int *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr +
+		     (sizeof(int) * charset_leaf_idx_count));
+
+    metadata->charset_count = charset_count;
+    metadata->charset_numbers_count = charset_numbers_count;
+    metadata->charset_leaf_count = charset_leaf_count;
+    metadata->charset_leaf_idx_count = charset_leaf_idx_count;
+    charset_ptr = 0; charset_leaf_ptr = 0;
+    charset_leaf_idx_ptr = 0; charset_numbers_ptr = 0;
+    return block_ptr;
+}
+
+FcCharSet *
+FcCharSetSerialize(int bank, FcCharSet *c)
 {
     int i;
-    FcCharSetPtr newp;
     FcCharSet new;
-
-    if (!charsets)
-    {
-	charsets = malloc(sizeof(FcCharSet) * charset_count);
-	if (!charsets) goto bail;
-	numbers = malloc(sizeof(FcChar16) * charset_numbers_count);
-	if (!numbers) goto bail1;
-	leaves = malloc(sizeof(FcCharLeaf) * charset_leaf_count);
-	if (!leaves) goto bail2;
-	leaf_idx = malloc(sizeof(int)*charset_leaf_idx_count);
-	if (!leaf_idx) goto bail3;
-    }
+    int bi = FcCacheBankToIndex(bank), cp = charset_ptr;
 
     new.ref = FC_REF_CONSTANT;
-    new.storage = FcStorageStatic;
+    new.bank = bank;
     new.u.stat.leafidx_offset = charset_leaf_idx_ptr;
     new.u.stat.numbers_offset = charset_numbers_ptr;
     new.num = c->num;
 
-    newp.storage = FcStorageStatic;
-    newp.u.stat = charset_ptr;
-    charsets[charset_ptr++] = new;
+    charsets[bi][charset_ptr++] = new;
 
-    leaf_idx[charset_leaf_idx_ptr++] = charset_leaf_ptr;
+    leaf_idx[bi][charset_leaf_idx_ptr++] = charset_leaf_ptr;
     for (i = 0; i < c->num; i++)
     {
-	memcpy (&leaves[charset_leaf_ptr++], 
+	memcpy (&leaves[bi][charset_leaf_ptr++], 
 		c->u.dyn.leaves[i], sizeof(FcCharLeaf));
-	numbers[charset_numbers_ptr++] = c->u.dyn.numbers[i];
+	numbers[bi][charset_numbers_ptr++] = c->u.dyn.numbers[i];
     }
 
-    return newp;
-
- bail3: 
-    free (leaves);
- bail2:
-    free (numbers);
- bail1:
-    free (charsets);
- bail:
-    return FcCharSetPtrCreateDynamic(0);
+    return &charsets[bi][cp];
 }
 
-FcBool
-FcCharSetRead (int fd, FcCache metadata)
+void *
+FcCharSetUnserialize (FcCache metadata, void *block_ptr)
 {
-    charsets = mmap(NULL, 
-		    metadata.charsets_length * sizeof (FcCharSet),
-		    PROT_READ,
-		    MAP_SHARED, fd, metadata.charsets_offset);
-    if (charsets == MAP_FAILED)
-        goto bail;
-    charset_count = charset_ptr = metadata.charsets_length;
+    int bi = FcCacheBankToIndex(metadata.bank);
+    if (!FcCharSetEnsureBank(bi))
+	return 0;
 
-    leaves = mmap(NULL, 
-		  metadata.charset_num_sum * sizeof (FcCharLeaf),
-		  PROT_READ,
-		  MAP_SHARED, fd, metadata.charset_leaf_offset);
-    if (leaves == MAP_FAILED)
-        goto bail1;
-    charset_leaf_count = charset_leaf_ptr = metadata.charset_num_sum;
+    charsets[bi] = (FcCharSet *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + 
+		     (sizeof (FcCharSet) * metadata.charset_count));
+    numbers[bi] = (FcChar16 *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr + 
+		     (sizeof(FcChar16) * metadata.charset_numbers_count));
+    leaves[bi] = (FcCharLeaf *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr +
+		     (sizeof(FcCharLeaf) * metadata.charset_leaf_count));
+    leaf_idx[bi] = (int *)block_ptr;
+    block_ptr = (void *)((char *)block_ptr +
+		     (sizeof(int) * metadata.charset_leaf_idx_count));
 
-    leaf_idx = mmap(NULL,
-		    metadata.charsets_length * sizeof (FcCharLeaf*),
-		    PROT_READ,
-		    MAP_SHARED, fd, metadata.charset_leafidx_offset);
-    if (leaf_idx == MAP_FAILED)
-	goto bail2;
-    charset_leaf_idx_count = charset_leaf_idx_ptr = metadata.charsets_length;
-
-    numbers = mmap(NULL, 
-		   metadata.charset_num_sum * sizeof (FcChar16),
-		   PROT_READ,
-		   MAP_SHARED, fd, metadata.charset_numbers_offset);
-    if (numbers == MAP_FAILED)
-        goto bail3;
-    charset_numbers_count = charset_numbers_ptr = metadata.charset_num_sum;
-
-    return FcTrue;
-
- bail3:
-    munmap (leaf_idx, metadata.charsets_length * sizeof (FcCharLeaf*));
- bail2:
-    munmap (leaves, metadata.charset_num_sum * sizeof (FcCharLeaf));
- bail1:
-    munmap (charsets, metadata.charsets_length * sizeof (FcCharSet));
- bail:
-    return FcFalse;
-}
-
-FcBool
-FcCharSetWrite (int fd, FcCache *metadata)
-{
-    metadata->charsets_length = charset_ptr;
-    metadata->charsets_offset = FcCacheNextOffset(fd);
-
-    if (charset_ptr > 0)
-    {
-	lseek (fd, metadata->charsets_offset, SEEK_SET);
-	if (write (fd, charsets, charset_ptr * sizeof(FcCharSet)) == -1)
-	    return FcFalse;
-    }
-
-    metadata->charset_leaf_offset = FcCacheNextOffset(fd);
-    metadata->charset_num_sum = charset_leaf_ptr;
-    if (charset_leaf_ptr > 0)
-    {
-	lseek (fd, metadata->charset_leaf_offset, SEEK_SET);
-	if (write (fd, leaves, charset_leaf_ptr * sizeof(FcCharLeaf)) == -1)
-	    return FcFalse;
-    }
-
-    metadata->charset_leafidx_offset = FcCacheNextOffset(fd);
-    if (charset_leaf_idx_ptr > 0)
-    {
-	lseek (fd, metadata->charset_leafidx_offset, SEEK_SET);
-	if (write (fd, leaf_idx, charset_leaf_idx_ptr * sizeof(FcCharLeaf*)) == -1)
-	    return FcFalse;
-    }
-
-
-    metadata->charset_numbers_offset = FcCacheNextOffset(fd);
-    if (charset_leaf_ptr > 0)
-    {
-	lseek (fd, metadata->charset_numbers_offset, SEEK_SET);
-	if (write (fd, numbers, charset_leaf_ptr * sizeof(FcChar16)) == -1)
-	    return FcFalse;
-    }
-
-    return FcTrue;
+    return block_ptr;
 }
 
 FcCharLeaf *
 FcCharSetGetLeaf(const FcCharSet *c, int i)
 {
-    switch (c->storage)
-    {
-    case FcStorageDynamic:
+    int bi;
+    if (c->bank == FC_BANK_DYNAMIC)
 	return c->u.dyn.leaves[i];
-    case FcStorageStatic:
-	return &leaves[leaf_idx[c->u.stat.leafidx_offset]+i];
-    default:
-	return 0;
-    }
+    bi = FcCacheBankToIndex(c->bank);
+
+    return &leaves[bi][leaf_idx[bi][c->u.stat.leafidx_offset]+i];
 }
 
 FcChar16 *
 FcCharSetGetNumbers(const FcCharSet *c)
 {
-    switch (c->storage)
-    {
-    case FcStorageDynamic:
+    int bi;
+    if (c->bank == FC_BANK_DYNAMIC)
 	return c->u.dyn.numbers;
-    case FcStorageStatic:
-	return &numbers[c->u.stat.numbers_offset];
-    default:
-	return 0;
-    }
+    bi = FcCacheBankToIndex(c->bank);
+
+    return &numbers[bi][c->u.stat.numbers_offset];
 }
 

@@ -109,16 +109,8 @@ typedef enum _FcValueBinding {
     FcValueBindingWeak, FcValueBindingStrong, FcValueBindingSame
 } FcValueBinding;
 
-typedef struct _FcStrSetPtr {
-    FcStorage               storage;
-    union {
-        int		    stat;
-        struct _FcStrSet    *dyn;
-    } u;
-} FcStrSetPtr;
-
 typedef struct _FcValueListPtr {
-    FcStorage               storage;
+    int		 	bank;
     union {
         int		    stat;
         struct _FcValueList *dyn;
@@ -132,8 +124,10 @@ typedef struct _FcValueList {
     FcValueBinding	    binding;
 } FcValueList;
 
+typedef int FcObjectPtr;
+
 typedef struct _FcPatternEltPtr {
-    FcStorage               storage;
+    int		 	bank;
     union {
         int		    stat;
         struct _FcPatternElt *dyn;
@@ -150,6 +144,7 @@ struct _FcPattern {
     int		    size;
     FcPatternEltPtr elts;
     int		    ref;
+    int		    bank;
 };
 
 typedef enum _FcOp {
@@ -222,7 +217,7 @@ typedef struct _FcCharLeaf {
 struct _FcCharSet {
     int		    ref;	/* reference count */
     int		    num;	/* size of leaves and numbers arrays */
-    FcStorage	    storage;
+    int		    bank;
     union {
 	struct {
 	    FcCharLeaf  **leaves;
@@ -239,11 +234,7 @@ struct _FcStrSet {
     int		    ref;	/* reference count */
     int		    num;
     int		    size;
-    FcStorage	    storage;
-    union {
-	FcChar8	    **strs;
-	int	    stridx_offset;
-    } u;
+    FcChar8	    **strs;
 };
 
 struct _FcStrList {
@@ -261,21 +252,17 @@ typedef struct _FcStrBuf {
 
 typedef struct _FcCache {
     int	    magic;
-    off_t   fontsets_offset;
-    off_t   pattern_offset;     int pattern_length;
-    off_t   patternelt_offset;  int patternelt_length;
-    off_t   valuelist_offset;   int valuelist_length;
-    off_t   object_offset;	int object_length;
-    off_t   objectcontent_offset; int objectcontent_length;
-    off_t   langsets_offset;    int langsets_length;
-    off_t   charsets_offset;    int charsets_length;
-    off_t   charset_leaf_offset; int charset_num_sum;
-    off_t   charset_leafidx_offset; 
-    off_t   charset_numbers_offset;
-    off_t   matrices_offset;    int matrices_length;
-    off_t   strsets_offset;     int strsets_length;
-    off_t   strsets_idx_offset; int strsets_idx_length;
-    off_t   strset_buf_offset;  int strset_buf_length;
+    int	    count;
+    int     bank;
+    int     pattern_count;
+    int     patternelt_count;
+    int     valuelist_count;
+    int     str_count;
+    int	    langset_count;
+    int     charset_count;
+    int     charset_numbers_count;
+    int     charset_leaf_count;
+    int     charset_leaf_idx_count;
 } FcCache;
 
 /*
@@ -320,6 +307,11 @@ typedef struct _FcCaseFold {
 } FcCaseFold;
 
 #define FC_MAX_FILE_LEN	    4096
+
+#define FC_STORAGE_STATIC 0x80
+#define fc_value_string(v)  (((v)->type & FC_STORAGE_STATIC) ? ((FcChar8 *) v) + (v)->u.s_off : (v) -> u.s)
+#define fc_value_charset(v)  (((v)->type & FC_STORAGE_STATIC) ? (const FcCharSet *)(((char *) v) + (v)->u.c_off) : (v) -> u.c)
+#define fc_value_langset(v)  (((v)->type & FC_STORAGE_STATIC) ? (const FcLangSet *)(((char *) v) + (v)->u.l_off) : (v) -> u.l)
 
 /*
  * The per-user ~/.fonts.cache-<version> file is loaded into
@@ -449,26 +441,29 @@ typedef struct _FcCharMap FcCharMap;
 
 /* fccache.c */
 
-int
-FcCacheNextOffset(int fd);
-
 void
 FcCacheForce(FcBool force);
 
-void
-FcCacheClearStatic(void);
-
 FcBool
-FcCachePrepareSerialize(FcConfig * config);
+FcCacheSerialize (int bank, FcConfig * config);
 
-FcBool
-FcCacheSerialize (FcConfig * config);
-
-FcBool
+FcFontSet *
 FcCacheRead (FcConfig *config);
 
 FcBool
-FcCacheWrite (FcConfig * config);
+FcDirCacheRead (FcFontSet * set, const FcChar8 *dir);
+
+FcBool
+FcDirCacheWrite (int bank, FcFontSet *set, const FcChar8 *dir);
+
+int
+FcCacheBankCount (void);
+
+FcBool
+FcCacheHaveBank (int bank);
+
+int
+FcCacheBankToIndex (int bank);
  
 /* fccfg.c */
 
@@ -508,9 +503,9 @@ FcConfigSetFonts (FcConfig	*config,
 		  FcSetName	set);
 
 FcBool
-FcConfigCompareValue (const FcValue m,
+FcConfigCompareValue (const FcValue *m,
 		      FcOp	    op,
-		      const FcValue v);
+		      const FcValue *v);
 
 FcBool
 FcConfigGlobAdd (FcConfig	*config,
@@ -534,9 +529,6 @@ FcConfigAcceptFont (FcConfig	    *config,
 FcCharSet *
 FcCharSetFreeze (FcCharSet *cs);
 
-FcCharSetPtr
-FcCharSetCopyPtr (FcCharSetPtr src);
-
 void
 FcCharSetThawAll (void);
 
@@ -550,31 +542,26 @@ FcCharLeaf *
 FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4);
 
 void
-FcCharSetPtrDestroy (FcCharSetPtr fcs);
+FcCharSetNewBank (void);
 
-void
-FcCharSetClearStatic(void);
+int
+FcCharSetNeededBytes (const FcCharSet *c);
 
-FcBool
-FcCharSetPrepareSerialize(FcCharSet *c);
+void *
+FcCharSetDistributeBytes (FcCache * metadata,
+			  void * block_ptr);
 
-FcCharSetPtr
-FcCharSetSerialize(FcCharSet *c);
+FcCharSet *
+FcCharSetSerialize(int bank, FcCharSet *c);
 
-FcCharSetPtr
-FcCharSetPtrCreateDynamic(FcCharSet *c);
+void *
+FcCharSetUnserialize (FcCache metadata, void *block_ptr);
 
 FcCharLeaf *
 FcCharSetGetLeaf(const FcCharSet *c, int i);
 
 FcChar16 *
 FcCharSetGetNumbers(const FcCharSet *c);
-
-FcBool
-FcCharSetRead (int fd, FcCache metadata);
-
-FcBool
-FcCharSetWrite (int fd, FcCache *metadata);
 
 /* fcdbg.c */
 void
@@ -600,9 +587,6 @@ FcSubstPrint (const FcSubst *subst);
 
 int
 FcDebug (void);
-
-FcCharSet *
-FcCharSetPtrU (FcCharSetPtr mi);
 
 /* fcdir.c */
 
@@ -650,19 +634,19 @@ FcFreeTypeGetPrivateMap (FT_Encoding encoding);
 /* fcfs.c */
 
 void
-FcFontSetClearStatic (void);
+FcFontSetNewBank (void);
+
+int
+FcFontSetNeededBytes (FcFontSet *s);
+
+void *
+FcFontSetDistributeBytes (FcCache * metadata, void * block_ptr);
 
 FcBool
-FcFontSetPrepareSerialize (FcFontSet * s);
+FcFontSetSerialize (int bank, FcFontSet * s);
 
 FcBool
-FcFontSetSerialize (FcFontSet * s);
-
-FcBool
-FcFontSetRead(int fd, FcConfig * config, FcCache metadata);
-
-FcBool
-FcFontSetWrite(int fd, FcConfig * config, FcCache * metadata);
+FcFontSetUnserialize(FcCache metadata, FcFontSet * s, void * block_ptr);
 
 /* fcgram.y */
 int
@@ -745,28 +729,20 @@ FcBool
 FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls);
 
 void
-FcLangSetClearStatic (void);
+FcLangSetNewBank (void);
 
-FcBool
-FcLangSetPrepareSerialize (FcLangSet *l);
+int
+FcLangSetNeededBytes (const FcLangSet *l);
 
-FcLangSetPtr
-FcLangSetSerialize (FcLangSet *l);
+void *
+FcLangSetDistributeBytes (FcCache * metadata,
+			  void * block_ptr);
 
 FcLangSet *
-FcLangSetPtrU (FcLangSetPtr li);
+FcLangSetSerialize (int bank, FcLangSet *l);
 
-FcLangSetPtr
-FcLangSetPtrCreateDynamic (FcLangSet *l);
-
-void
-FcLangSetPtrDestroy (FcLangSetPtr li);
-
-FcBool
-FcLangSetRead (int fd, FcCache metadata);
-
-FcBool
-FcLangSetWrite (int fd, FcCache *metadata);
+void *
+FcLangSetUnserialize (FcCache metadata, void *block_ptr);
 
 /* fclist.c */
 
@@ -781,7 +757,30 @@ FcListPatternMatchAny (const FcPattern *p,
 FcBool
 FcNameBool (const FcChar8 *v, FcBool *result);
 
+void
+FcObjectNewBank(void);
+
+void *
+FcObjectDistributeBytes (FcCache * metadata,
+			 void * block_ptr);
+
+FcObjectPtr
+FcObjectToPtr (const char * si);
+
+int
+FcObjectNeededBytes (FcObjectPtr p);
+
+void
+FcObjectUnserialize (FcCache metadata, FcConfig * config, void *block_ptr);
+
+FcObjectPtr
+FcObjectSerialize (FcObjectPtr s);
+
 /* fcpat.c */
+
+FcValue
+FcValueCanonicalize (const FcValue *v);
+
 void
 FcValueListDestroy (FcValueListPtr l);
 
@@ -807,17 +806,8 @@ FcPatternFini (void);
 FcBool
 FcPatternAppend (FcPattern *p, FcPattern *s);
 
-void
-FcObjectClearStatic(void);
-
-FcObjectPtr
+const char *
 FcObjectStaticName (const char *name);
-
-FcBool
-FcObjectRead (int fd, FcCache metadata);
-
-FcBool
-FcObjectWrite (int fd, FcCache * metadata);
 
 const char *
 FcObjectPtrU (FcObjectPtr p);
@@ -826,16 +816,13 @@ int
 FcObjectPtrCompare (FcObjectPtr a, FcObjectPtr b);
 
 void
-FcObjectPtrDestroy (FcObjectPtr p);
+FcPatternNewBank (void);
 
-FcBool
-FcPatternPrepareSerialize (FcPattern *p);
+int
+FcPatternNeededBytes (FcPattern *p);
 
-void
-FcValueListClearStatic (void);
-
-void
-FcPatternClearStatic (void);
+void *
+FcPatternDistributeBytes (FcCache * metadata, void * block_ptr);
 
 FcValueList * 
 FcValueListPtrU(FcValueListPtr p);
@@ -846,84 +833,24 @@ FcPatternEltU (FcPatternEltPtr pei);
 FcValueListPtr
 FcValueListPtrCreateDynamic(FcValueList * p);
 
-FcBool
-FcValueListPrepareSerialize (FcValueList *p);
-
-FcValueListPtr
-FcValueListSerialize(FcValueList *pi);
+FcPattern *
+FcPatternSerialize (int bank, FcPattern * p);
 
 FcPattern *
-FcPatternSerialize (FcPattern * p);
-
-FcBool
-FcPatternRead (int fd, FcCache metadata);
-
-FcBool
-FcPatternWrite (int fd, FcCache *metadata);
-
-FcBool
-FcPatternEltRead (int fd, FcCache metadata);
-
-FcBool
-FcPatternEltWrite (int fd, FcCache *metadata);
-
-FcBool
-FcValueListRead (int fd, FcCache metadata);
-
-FcBool
-FcValueListWrite (int fd, FcCache *metadata);
+FcPatternUnserialize (FcCache metadata, void *block_ptr);
 
 /* fcrender.c */
 
 /* fcmatrix.c */
 
-extern const FcMatrixPtr    FcIdentityMatrix;
+extern const FcMatrix    FcIdentityMatrix;
 
 void
 FcMatrixFree (FcMatrix *mat);
 
-void
-FcMatrixPtrDestroy (FcMatrixPtr mi);
-
-FcBool
-FcMatrixPrepareSerialize(FcMatrix *m);
-
-FcMatrixPtr
-FcMatrixSerialize(FcMatrix *m);
-
-FcMatrix *
-FcMatrixPtrU (FcMatrixPtr mi);
-
-FcMatrixPtr
-FcMatrixPtrCreateDynamic (FcMatrix *m);
-
-void 
-FcMatrixClearStatic (void);
-
-FcBool
-FcMatrixWrite (int fd, FcCache *metadata);
-
-FcBool
-FcMatrixRead (int fd, FcCache metadata);
-
 /* fcstr.c */
-FcStrSet *
-FcStrSetPtrU (const FcStrSetPtr set);
-
-FcStrSetPtr
-FcStrSetPtrCreateDynamic (const FcStrSet * set);
-
-void
-FcStrSetClearStatic (void);
-
-FcBool
-FcStrSetPrepareSerialize (const FcStrSet *set);
-
 void
 FcStrSetSort (FcStrSet * set);
-
-FcChar8 *
-FcStrSetGet (const FcStrSet *set, int i);
 
 FcChar8 *
 FcStrPlus (const FcChar8 *s1, const FcChar8 *s2);
@@ -948,15 +875,6 @@ FcStrBufString (FcStrBuf *buf, const FcChar8 *s);
 
 FcBool
 FcStrBufData (FcStrBuf *buf, const FcChar8 *s, int len);
-
-FcStrSetPtr
-FcStrSetSerialize (FcStrSet *set);
-
-FcBool
-FcStrSetRead (int fd, FcCache metadata);
-
-FcBool
-FcStrSetWrite (int fd, FcCache *metadata);
 
 int
 FcStrCmpIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2);

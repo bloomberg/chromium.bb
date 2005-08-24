@@ -274,10 +274,17 @@ FcDirScan (FcFontSet	    *set,
 }
 
 FcBool
-FcDirSave (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
+FcDirSave (FcFontSet *set, const FcChar8 *dir)
 {
-#if 0
-    return FcDirCacheWriteDir (set, dirs, dir);
-#endif
-    return FcTrue;
+    static int rand_state = 0;
+    int bank;
+
+    if (!rand_state) 
+	rand_state = time(0L);
+    bank = rand_r(&rand_state);
+
+    while (FcCacheHaveBank(bank))
+	bank = rand_r(&rand_state);
+
+    return FcDirCacheWrite (bank, set, dir);
 }

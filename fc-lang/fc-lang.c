@@ -48,7 +48,7 @@ FcMemFree (int kind, int size)
 }
 
 int
-FcCacheNextOffset (int fd)
+FcCacheBankToIndex (int bank)
 {
     return -1;
 }
@@ -404,7 +404,7 @@ main (int argc, char **argv)
 	if (j < 0)
 	    j = i;
 	printf ("    { (FcChar8 *) \"%s\",\n"
-		"      { FC_REF_CONSTANT, %d, FcStorageDynamic, "
+		"      { FC_REF_CONSTANT, %d, FC_BANK_DYNAMIC, "
 		"{ { (FcCharLeaf **) leaves_%s, "
 		"(FcChar16 *) numbers_%s } } } },\n",
 		langs[i],

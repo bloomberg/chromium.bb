@@ -247,7 +247,7 @@ FcConfigDestroy (FcConfig *config)
 FcBool
 FcConfigBuildFonts (FcConfig *config)
 {
-    FcFontSet	    *fonts;
+    FcFontSet	    *fonts, *cached_fonts;
     FcGlobalCache   *cache;
     FcStrList	    *list;
     FcChar8	    *dir;
@@ -269,19 +269,34 @@ FcConfigBuildFonts (FcConfig *config)
 	goto bail1;
 #endif
 
-    list = FcConfigGetFontDirs (config);
-    if (!list)
-	goto bail1;
-
-    while ((dir = FcStrListNext (list)))
+    cached_fonts = FcCacheRead(config);
+    if (!cached_fonts)
     {
-	if (FcDebug () & FC_DBG_FONTSET)
-	    printf ("scan dir %s\n", dir);
-	FcDirScanConfig (fonts, config->fontDirs, cache, 
-			 config->blanks, dir, FcFalse, config);
+	list = FcConfigGetFontDirs (config);
+	if (!list)
+	    goto bail1;
+	
+	while ((dir = FcStrListNext (list)))
+	{
+	    if (FcDebug () & FC_DBG_FONTSET)
+		printf ("scan dir %s\n", dir);
+	    FcDirScanConfig (fonts, config->fontDirs, cache, 
+			     config->blanks, dir, FcFalse, config);
+	}
+	
+	FcStrListDone (list);
     }
-    
-    FcStrListDone (list);
+    else
+    {
+	int i;
+
+	for (i = 0; i < cached_fonts->nfont; i++)
+	{
+	    if (FcConfigAcceptFont (config, cached_fonts->fonts[i]))
+		FcFontSetAdd (fonts, cached_fonts->fonts[i]);
+	}
+	FcFontSetDestroy (cached_fonts);
+    }
     
     if (FcDebug () & FC_DBG_FONTSET)
 	FcFontSetPrint (fonts);
@@ -558,25 +573,24 @@ FcConfigPromote (FcValue v, FcValue u)
     }
     else if (v.type == FcTypeVoid && u.type == FcTypeMatrix)
     {
-	v.u.mi = FcIdentityMatrix;
+	v.u.m = &FcIdentityMatrix;
 	v.type = FcTypeMatrix;
     }
     else if (v.type == FcTypeString && u.type == FcTypeLangSet)
     {
-	v.u.li = FcLangSetPtrCreateDynamic(FcLangSetPromote 
-					   (FcObjectPtrU(v.u.si)));
+	v.u.l = FcLangSetPromote (v.u.s);
 	v.type = FcTypeLangSet;
     }
     return v;
 }
 
 FcBool
-FcConfigCompareValue (const FcValue	left_o,
+FcConfigCompareValue (const FcValue	*left_o,
 		      FcOp		op,
-		      const FcValue	right_o)
+		      const FcValue	*right_o)
 {
-    FcValue	left = left_o;
-    FcValue	right = right_o;
+    FcValue	left = FcValueCanonicalize(left_o);
+    FcValue	right = FcValueCanonicalize(right_o);
     FcBool	ret = FcFalse;
     
     left = FcConfigPromote (left, right);
@@ -632,20 +646,16 @@ FcConfigCompareValue (const FcValue	left_o,
 	    switch (op) {
 	    case FcOpEqual:    
 	    case FcOpListing:
-		ret = FcStrCmpIgnoreCase (FcObjectPtrU(left.u.si), 
-					  FcObjectPtrU(right.u.si)) == 0;
+		ret = FcStrCmpIgnoreCase (left.u.s, right.u.s) == 0;
 		break;
 	    case FcOpContains:
-		ret = FcStrStrIgnoreCase (FcObjectPtrU(left.u.si), 
-					  FcObjectPtrU(right.u.si)) != 0;
+		ret = FcStrStrIgnoreCase (left.u.s, right.u.s) != 0;
 		break;
 	    case FcOpNotEqual:
-		ret = FcStrCmpIgnoreCase (FcObjectPtrU(left.u.si), 
-					  FcObjectPtrU(right.u.si)) != 0;
+		ret = FcStrCmpIgnoreCase (left.u.s, right.u.s) != 0;
 		break;
 	    case FcOpNotContains:
-		ret = FcStrCmpIgnoreCase (FcObjectPtrU(left.u.si), 
-					  FcObjectPtrU(right.u.si)) == 0;
+		ret = FcStrCmpIgnoreCase (left.u.s, right.u.s) == 0;
 		break;
 	    default:
 		break;
@@ -656,11 +666,11 @@ FcConfigCompareValue (const FcValue	left_o,
 	    case FcOpEqual:
 	    case FcOpContains:
 	    case FcOpListing:
-		ret = FcMatrixEqual (FcMatrixPtrU(left.u.mi), FcMatrixPtrU(right.u.mi));
+		ret = FcMatrixEqual (left.u.m, right.u.m);
 		break;
 	    case FcOpNotEqual:
 	    case FcOpNotContains:
-		ret = !FcMatrixEqual (FcMatrixPtrU(left.u.mi), FcMatrixPtrU(right.u.mi));
+		ret = !FcMatrixEqual (left.u.m, right.u.m);
 		break;
 	    default:
 		break;
@@ -671,17 +681,17 @@ FcConfigCompareValue (const FcValue	left_o,
 	    case FcOpContains:
 	    case FcOpListing:
 		/* left contains right if right is a subset of left */
-		ret = FcCharSetIsSubset (FcCharSetPtrU(right.u.ci), FcCharSetPtrU(left.u.ci));
+		ret = FcCharSetIsSubset (right.u.c, left.u.c);
 		break;
 	    case FcOpNotContains:
 		/* left contains right if right is a subset of left */
-		ret = !FcCharSetIsSubset (FcCharSetPtrU(right.u.ci), FcCharSetPtrU(left.u.ci));
+		ret = !FcCharSetIsSubset (right.u.c, left.u.c);
 		break;
 	    case FcOpEqual:
-		ret = FcCharSetEqual (FcCharSetPtrU(left.u.ci), FcCharSetPtrU(right.u.ci));
+		ret = FcCharSetEqual (left.u.c, right.u.c);
 		break;
 	    case FcOpNotEqual:
-		ret = !FcCharSetEqual (FcCharSetPtrU(left.u.ci), FcCharSetPtrU(right.u.ci));
+		ret = !FcCharSetEqual (left.u.c, right.u.c);
 		break;
 	    default:
 		break;
@@ -691,16 +701,16 @@ FcConfigCompareValue (const FcValue	left_o,
 	    switch (op) {
 	    case FcOpContains:
 	    case FcOpListing:
-		ret = FcLangSetContains (FcLangSetPtrU(left.u.li), FcLangSetPtrU(right.u.li));
+		ret = FcLangSetContains (left.u.l, right.u.l);
 		break;
 	    case FcOpNotContains:
-		ret = !FcLangSetContains (FcLangSetPtrU(left.u.li), FcLangSetPtrU(right.u.li));
+		ret = !FcLangSetContains (left.u.l, right.u.l);
 		break;
 	    case FcOpEqual:
-		ret = FcLangSetEqual (FcLangSetPtrU(left.u.li), FcLangSetPtrU(right.u.li));
+		ret = FcLangSetEqual (left.u.l, right.u.l);
 		break;
 	    case FcOpNotEqual:
-		ret = !FcLangSetEqual (FcLangSetPtrU(left.u.li), FcLangSetPtrU(right.u.li));
+		ret = !FcLangSetEqual (left.u.l, right.u.l);
 		break;
 	    default:
 		break;
@@ -768,17 +778,17 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	break;
     case FcOpString:
 	v.type = FcTypeString;
-	v.u.si = FcObjectStaticName(e->u.sval);
+	v.u.s = FcObjectStaticName(e->u.sval);
 	v = FcValueSave (v);
 	break;
     case FcOpMatrix:
 	v.type = FcTypeMatrix;
-	v.u.mi = FcMatrixPtrCreateDynamic(e->u.mval);
+	v.u.m = e->u.mval;
 	v = FcValueSave (v);
 	break;
     case FcOpCharSet:
 	v.type = FcTypeCharSet;
-	v.u.ci = FcCharSetPtrCreateDynamic(e->u.cval);
+	v.u.c = e->u.cval;
 	v = FcValueSave (v);
 	break;
     case FcOpBool:
@@ -821,7 +831,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	vl = FcConfigEvaluate (p, e->u.tree.left);
 	vr = FcConfigEvaluate (p, e->u.tree.right);
 	v.type = FcTypeBool;
-	v.u.b = FcConfigCompareValue (vl, e->op, vr);
+	v.u.b = FcConfigCompareValue (&vl, e->op, &vr);
 	FcValueDestroy (vl);
 	FcValueDestroy (vr);
 	break;	
@@ -886,11 +896,9 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		switch (e->op) {
 		case FcOpPlus:
 		    v.type = FcTypeString;
-		    v.u.si = FcObjectStaticName
-			(FcStrPlus (FcObjectPtrU(vl.u.si), 
-				    FcObjectPtrU(vr.u.si)));
+		    v.u.s = FcObjectStaticName (FcStrPlus (vl.u.s, vr.u.s));
 			 
-		    if (!FcObjectPtrU(v.u.si))
+		    if (!v.u.s)
 			v.type = FcTypeVoid;
 		    break;
 		default:
@@ -906,9 +914,8 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		    if (m)
 		    {
 			FcMemAlloc (FC_MEM_MATRIX, sizeof (FcMatrix));
-			FcMatrixMultiply (m, FcMatrixPtrU(vl.u.mi), 
-					  FcMatrixPtrU(vr.u.mi));
-			v.u.mi = FcMatrixPtrCreateDynamic(m);
+			FcMatrixMultiply (m, vl.u.m, vr.u.m);
+			v.u.m = m;
 		    }
 		    else
 		    {
@@ -1041,7 +1048,7 @@ FcConfigMatchValueList (FcPattern	*p,
 	for (v = values; v; v = FcValueListPtrU(v->next))
 	{
 	    /* Compare the pattern value to the match expression value */
-	    if (FcConfigCompareValue (v->value, t->op, value))
+	    if (FcConfigCompareValue (&v->value, t->op, &value))
 	    {
 		if (!ret)
 		    ret = v;
@@ -1088,7 +1095,7 @@ FcConfigValues (FcPattern *p, FcExpr *e, FcValueBinding binding)
     {
 	FcValueListPtr	next = FcValueListPtrU(lp)->next;
 
-	if (lp.storage == FcStorageDynamic)
+	if (lp.bank == FC_BANK_DYNAMIC)
 	{
 	    FcMemFree (FC_MEM_VALLIST, sizeof (FcValueList));
 	    free (l);
@@ -1866,7 +1873,7 @@ FcConfigGlobsMatch (const FcStrSet	*globs,
     int	i;
 
     for (i = 0; i < globs->num; i++)
-	if (FcConfigGlobMatch (FcStrSetGet(globs, i), string))
+	if (FcConfigGlobMatch (globs->strs[i], string))
 	    return FcTrue;
     return FcFalse;
 }

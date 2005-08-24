@@ -54,7 +54,7 @@ typedef int		FcBool;
  * it means multiple copies of the font information.
  */
 
-#define FC_CACHE_VERSION    "1"
+#define FC_CACHE_VERSION    "2"
 
 #define FcTrue		1
 #define FcFalse		0
@@ -196,52 +196,28 @@ typedef enum _FcResult {
     FcResultOutOfMemory
 } FcResult;
 
-typedef enum _FcStorage {
-    FcStorageStatic, FcStorageDynamic
-} FcStorage;
-
 typedef struct _FcPattern   FcPattern;
 
 typedef struct _FcLangSet   FcLangSet;
 
-typedef struct _FcMatrixPtr {
-    FcStorage               storage;
-    union {
-        int		    stat;
-        FcMatrix	    *dyn;
-    } u;
-} FcMatrixPtr;
-
-typedef struct _FcCharSetPtr {
-    FcStorage               storage;
-    union {
-        int		    stat;
-        FcCharSet	    *dyn;
-    } u;
-} FcCharSetPtr;
-
-typedef struct _FcLangSetPtr {
-    FcStorage               storage;
-    union {
-        int		    stat;
-        FcLangSet	    *dyn;
-    } u;
-} FcLangSetPtr;
-
-typedef int FcObjectPtr;
+#define FC_BANK_DYNAMIC 0
+#define FC_BANK_FIRST 1
 
 typedef struct _FcValue {
     FcType	type;
     union {
-	FcObjectPtr     si;
+	const FcChar8  *s;
+	int             s_off;
 	int		i;
 	FcBool		b;
 	double		d;
-	FcMatrixPtr     mi;
-	FcCharSetPtr    ci;
+	const FcMatrix  *m;
+	const FcCharSet *c;
+	int		c_off;
 	void		*f;
 	const FcPattern	*p;
-	FcLangSetPtr    li;
+	const FcLangSet *l;
+	int		l_off; // this is a difference of char *s
     } u;
 } FcValue;
 
@@ -254,7 +230,7 @@ typedef struct _FcFontSet {
 typedef struct _FcObjectSet {
     int		nobject;
     int		sobject;
-    FcObjectPtr	*objects;
+    const char	**objects;
 } FcObjectSet;
     
 typedef enum _FcMatchKind {
@@ -471,7 +447,7 @@ FcDirScan (FcFontSet	    *set,
 	   FcBool	    force);
 
 FcBool
-FcDirSave (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir);
+FcDirSave (FcFontSet *set, const FcChar8 *dir);
 
 /* fcfreetype.c */
 FcPattern *
@@ -647,9 +623,6 @@ FcMatrixScale (FcMatrix *m, double sx, double sy);
 
 void
 FcMatrixShear (FcMatrix *m, double sh, double sv);
-
-FcMatrix *
-FcMatrixPtrU (FcMatrixPtr mi);
 
 /* fcname.c */
 

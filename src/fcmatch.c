@@ -28,26 +28,26 @@
 #include <stdio.h>
 
 static double
-FcCompareNumber (char *object, FcValue value1, FcValue value2)
+FcCompareNumber (char *object, FcValue *value1, FcValue *value2)
 {
     double  v1, v2, v;
     
-    switch (value1.type) {
+    switch (value1->type) {
     case FcTypeInteger:
-	v1 = (double) value1.u.i;
+	v1 = (double) value1->u.i;
 	break;
     case FcTypeDouble:
-	v1 = value1.u.d;
+	v1 = value1->u.d;
 	break;
     default:
 	return -1.0;
     }
-    switch (value2.type) {
+    switch (value2->type) {
     case FcTypeInteger:
-	v2 = (double) value2.u.i;
+	v2 = (double) value2->u.i;
 	break;
     case FcTypeDouble:
-	v2 = value2.u.d;
+	v2 = value2->u.d;
 	break;
     default:
 	return -1.0;
@@ -59,38 +59,38 @@ FcCompareNumber (char *object, FcValue value1, FcValue value2)
 }
 
 static double
-FcCompareString (char *object, FcValue value1, FcValue value2)
+FcCompareString (char *object, FcValue *v1, FcValue *v2)
 {
+    FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
     if (value2.type != FcTypeString || value1.type != FcTypeString)
 	return -1.0;
-    return (double) FcStrCmpIgnoreCase 
-	(FcObjectPtrU(value1.u.si), FcObjectPtrU(value2.u.si)) != 0;
+    return (double) FcStrCmpIgnoreCase (value1.u.s, value2.u.s) != 0;
 }
 
 static double
-FcCompareFamily (char *object, FcValue value1, FcValue value2)
+FcCompareFamily (char *object, FcValue *v1, FcValue *v2)
 {
+    FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
     if (value2.type != FcTypeString || value1.type != FcTypeString)
 	return -1.0;
-    return (double) FcStrCmpIgnoreBlanksAndCase 
-	(FcObjectPtrU(value1.u.si), FcObjectPtrU(value2.u.si)) != 0;
+    return (double) FcStrCmpIgnoreBlanksAndCase (value1.u.s, value2.u.s) != 0;
 }
 
 static double
-FcCompareLang (char *object, FcValue value1, FcValue value2)
+FcCompareLang (char *object, FcValue *v1, FcValue *v2)
 {
     FcLangResult    result;
+    FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
     
     switch (value1.type) {
     case FcTypeLangSet:
 	switch (value2.type) {
 	case FcTypeLangSet:
-	    result = FcLangSetCompare (FcLangSetPtrU(value1.u.li), 
-				       FcLangSetPtrU(value2.u.li));
+	    result = FcLangSetCompare (value1.u.l, value2.u.l);
 	    break;
 	case FcTypeString:
-	    result = FcLangSetHasLang (FcLangSetPtrU(value1.u.li), 
-				       FcObjectPtrU(value2.u.si));
+	    result = FcLangSetHasLang (value1.u.l, 
+				       value2.u.s);
 	    break;
 	default:
 	    return -1.0;
@@ -99,12 +99,11 @@ FcCompareLang (char *object, FcValue value1, FcValue value2)
     case FcTypeString:
 	switch (value2.type) {
 	case FcTypeLangSet:
-	    result = FcLangSetHasLang (FcLangSetPtrU(value2.u.li), 
-				       FcObjectPtrU(value1.u.si));
+	    result = FcLangSetHasLang (value2.u.l, value1.u.s);
 	    break;
 	case FcTypeString:
-	    result = FcLangCompare (FcObjectPtrU(value1.u.si), 
-				    FcObjectPtrU(value2.u.si));
+	    result = FcLangCompare (value1.u.s, 
+				    value2.u.s);
 	    break;
 	default:
 	    return -1.0;
@@ -125,43 +124,44 @@ FcCompareLang (char *object, FcValue value1, FcValue value2)
 }
 
 static double
-FcCompareBool (char *object, FcValue value1, FcValue value2)
+FcCompareBool (char *object, FcValue *value1, FcValue *value2)
 {
-    if (value2.type != FcTypeBool || value1.type != FcTypeBool)
+    if (value2->type != FcTypeBool || value1->type != FcTypeBool)
 	return -1.0;
-    return (double) value2.u.b != value1.u.b;
+    return (double) value2->u.b != value1->u.b;
 }
 
 static double
-FcCompareCharSet (char *object, FcValue value1, FcValue value2)
+FcCompareCharSet (char *object, FcValue *v1, FcValue *v2)
 {
+    FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
+    
     if (value2.type != FcTypeCharSet || value1.type != FcTypeCharSet)
 	return -1.0;
-    return (double) FcCharSetSubtractCount (FcCharSetPtrU(value1.u.ci), 
-					    FcCharSetPtrU(value2.u.ci));
+    return (double) FcCharSetSubtractCount (value1.u.c, value2.u.c);
 }
 
 static double
-FcCompareSize (char *object, FcValue value1, FcValue value2)
+FcCompareSize (char *object, FcValue *value1, FcValue *value2)
 {
     double  v1, v2, v;
 
-    switch (value1.type) {
+    switch (value1->type) {
     case FcTypeInteger:
-	v1 = value1.u.i;
+	v1 = value1->u.i;
 	break;
     case FcTypeDouble:
-	v1 = value1.u.d;
+	v1 = value1->u.d;
 	break;
     default:
 	return -1;
     }
-    switch (value2.type) {
+    switch (value2->type) {
     case FcTypeInteger:
-	v2 = value2.u.i;
+	v2 = value2->u.i;
 	break;
     case FcTypeDouble:
-	v2 = value2.u.d;
+	v2 = value2->u.d;
 	break;
     default:
 	return -1;
@@ -176,7 +176,7 @@ FcCompareSize (char *object, FcValue value1, FcValue value2)
 
 typedef struct _FcMatcher {
     char	    *object;
-    double	    (*compare) (char *object, FcValue value1, FcValue value2);
+    double	    (*compare) (char *object, FcValue *value1, FcValue *value2);
     int		    strong, weak;
 } FcMatcher;
 
@@ -315,7 +315,7 @@ FcCompareValueList (const char  *object,
 			    (FcChar8 *) object) != 0)
     {
 	if (bestValue)
-	    *bestValue = FcValueListPtrU(v2orig)->value;
+	    *bestValue = FcValueCanonicalize(&FcValueListPtrU(v2orig)->value);
 	return FcTrue;
     }
 #if 0
@@ -343,8 +343,8 @@ FcCompareValueList (const char  *object,
 	     v2 = FcValueListPtrU(v2)->next)
 	{
 	    v = (*_FcMatchers[i].compare) (_FcMatchers[i].object,
-					    FcValueListPtrU(v1)->value,
-					    FcValueListPtrU(v2)->value);
+					    &FcValueListPtrU(v1)->value,
+					    &FcValueListPtrU(v2)->value);
 	    if (v < 0)
 	    {
 		*result = FcResultTypeMismatch;
@@ -356,7 +356,7 @@ FcCompareValueList (const char  *object,
 	    if (v < best)
 	    {
 		if (bestValue)
-		    *bestValue = FcValueListPtrU(v2)->value;
+		    *bestValue = FcValueCanonicalize(&FcValueListPtrU(v2)->value);
 		best = v;
 	    }
 	    if (FcValueListPtrU(v1)->binding == FcValueBindingStrong)
@@ -478,7 +478,7 @@ FcFontRenderPrepare (FcConfig	    *config,
 	    }
 	}
 	else
-	    v = FcValueListPtrU(fe->values)->value;
+	    v = FcValueCanonicalize(&FcValueListPtrU(fe->values)->value);
 	FcPatternAdd (new, FcObjectPtrU(fe->object), v, FcFalse);
     }
     for (i = 0; i < pat->num; i++)
@@ -487,7 +487,7 @@ FcFontRenderPrepare (FcConfig	    *config,
 	fe = FcPatternFindElt (font, FcObjectPtrU(pe->object));
 	if (!fe)
 	    FcPatternAdd (new, FcObjectPtrU(pe->object), 
-                          FcValueListPtrU(pe->values)->value, FcTrue);
+                          FcValueCanonicalize(&FcValueListPtrU(pe->values)->value), FcTrue);
     }
     FcConfigSubstituteWithPat (config, new, pat, FcMatchFont);
     return new;
@@ -780,8 +780,8 @@ FcFontSetSort (FcConfig	    *config,
 		    FcPatternGet (p, FC_LANG, i, &patternLang) == FcResultMatch &&
 		    FcPatternGet (nodeps[f]->pattern, FC_LANG, 0, &nodeLang) == FcResultMatch)
 		{
-		    double  compare = FcCompareLang (FC_LANG, patternLang, 
-						     nodeLang);
+		    double  compare = FcCompareLang (FC_LANG, &patternLang, 
+						     &nodeLang);
 		    if (compare >= 0 && compare < 2)
 		    {
 			if (FcDebug () & FC_DBG_MATCHV)
