@@ -441,6 +441,57 @@ typedef struct _FcCharMap FcCharMap;
 
 /* fccache.c */
 
+FcGlobalCache *
+FcGlobalCacheCreate (void);
+
+void
+FcGlobalCacheDestroy (FcGlobalCache *cache);
+
+FcBool
+FcGlobalCacheCheckTime (const FcChar8*file, FcGlobalCacheInfo *info);
+
+void
+FcGlobalCacheReferenced (FcGlobalCache	    *cache,
+			 FcGlobalCacheInfo  *info);
+
+void
+FcGlobalCacheReferenceSubdir (FcGlobalCache *cache,
+			      const FcChar8 *dir);
+
+FcGlobalCacheDir *
+FcGlobalCacheDirGet (FcGlobalCache  *cache,
+		     const FcChar8  *dir,
+		     int	    len,
+		     FcBool	    create_missing);
+
+FcBool
+FcGlobalCacheScanDir (FcFontSet		*set,
+		      FcStrSet		*dirs,
+		      FcGlobalCache	*cache,
+		      const FcChar8	*dir,
+		      FcConfig		*config);
+
+FcGlobalCacheFile *
+FcGlobalCacheFileGet (FcGlobalCache *cache,
+		      const FcChar8 *file,
+		      int	    id,
+		      int	    *count);
+
+
+void
+FcGlobalCacheLoad (FcGlobalCache    *cache,
+		   const FcChar8    *cache_file);
+
+FcBool
+FcGlobalCacheUpdate (FcGlobalCache  *cache,
+		     const FcChar8  *file,
+		     int	    id,
+		     const FcChar8  *name);
+
+FcBool
+FcGlobalCacheSave (FcGlobalCache    *cache,
+		   const FcChar8    *cache_file);
+
 void
 FcCacheForce(FcBool force);
 
@@ -448,7 +499,7 @@ FcBool
 FcCacheSerialize (int bank, FcConfig * config);
 
 FcFontSet *
-FcCacheRead (FcConfig *config);
+FcCacheRead (FcConfig *config, FcGlobalCache * cache);
 
 FcBool
 FcDirCacheRead (FcFontSet * set, const FcChar8 *dir);
