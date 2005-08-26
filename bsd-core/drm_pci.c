@@ -58,6 +58,13 @@ drm_pci_alloc(drm_device_t *dev, size_t size, size_t align, dma_addr_t maxaddr)
 	drm_dma_handle_t *dmah;
 	int ret;
 
+	/* Need power-of-two alignment, so fail the allocation if it isn't. */
+	if ((align & (align - 1)) != 0) {
+		DRM_ERROR("drm_pci_alloc with non-power-of-two alignment %d\n",
+		    (int)align);
+		return NULL;
+	}
+
 	dmah = malloc(sizeof(drm_dma_handle_t), M_DRM, M_ZERO | M_NOWAIT);
 	if (dmah == NULL)
 		return NULL;

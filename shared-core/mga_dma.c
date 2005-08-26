@@ -435,7 +435,7 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 				    drm_mga_dma_bootstrap_t * dma_bs)
 {
 	drm_mga_private_t * const dev_priv = (drm_mga_private_t *) dev->dev_private;
-	const unsigned int warp_size = mga_warp_microcode_size(dev_priv);
+	unsigned int warp_size = mga_warp_microcode_size(dev_priv);
 	int err;
 	unsigned  offset;
 	const unsigned secondary_size = dma_bs->secondary_bin_count
@@ -448,13 +448,13 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 	/* Acquire AGP. */
 	err = drm_agp_acquire(dev);
 	if (err) {
-		DRM_ERROR("Unable to acquire AGP\n");
+		DRM_ERROR("Unable to acquire AGP: %d\n", err);
 		return err;
 	}
 
 	err = drm_agp_info(dev, &info);
 	if (err) {
-		DRM_ERROR("Unable to get AGP info\n");
+		DRM_ERROR("Unable to get AGP info: %d\n", err);
 		return err;
 	}
 
@@ -490,15 +490,21 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 		
 	err = drm_bind_agp( dev_priv->agp_mem, 0 );
 	if (err) {
-		DRM_ERROR("Unable to bind AGP memory\n");
+		DRM_ERROR("Unable to bind AGP memory: %d\n", err);
 		return err;
 	}
+
+	/* Make drm_addbufs happy by not trying to create a mapping for less
+	 * than a page.
+	 */
+	if (warp_size < PAGE_SIZE)
+		warp_size = PAGE_SIZE;
 
 	offset = 0;
 	err = drm_addmap( dev, offset, warp_size,
 			  _DRM_AGP, _DRM_READ_ONLY, & dev_priv->warp );
 	if (err) {
-		DRM_ERROR("Unable to map WARP microcode\n");
+		DRM_ERROR("Unable to map WARP microcode: %d\n", err);
 		return err;
 	}
 
@@ -506,7 +512,7 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 	err = drm_addmap( dev, offset, dma_bs->primary_size,
 			  _DRM_AGP, _DRM_READ_ONLY, & dev_priv->primary );
 	if (err) {
-		DRM_ERROR("Unable to map primary DMA region\n");
+		DRM_ERROR("Unable to map primary DMA region: %d\n", err);
 		return err;
 	}
 
@@ -514,7 +520,7 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 	err = drm_addmap( dev, offset, secondary_size,
 			  _DRM_AGP, 0, & dev->agp_buffer_map );
 	if (err) {
-		DRM_ERROR("Unable to map secondary DMA region\n");
+		DRM_ERROR("Unable to map secondary DMA region: %d\n", err);
 		return err;
 	}
 
@@ -526,7 +532,7 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 
 	err = drm_addbufs_agp( dev, & req );
 	if (err) {
-		DRM_ERROR("Unable to add secondary DMA buffers\n");
+		DRM_ERROR("Unable to add secondary DMA buffers: %d\n", err);
 		return err;
 	}
 
@@ -534,7 +540,7 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 	err = drm_addmap( dev, offset, agp_size - offset,
 			  _DRM_AGP, 0, & dev_priv->agp_textures );
 	if (err) {
-		DRM_ERROR("Unable to map AGP texture region\n");
+		DRM_ERROR("Unable to map AGP texture region: %d\n", err);
 		return err;
 	}
 
@@ -575,7 +581,7 @@ static int mga_do_pci_dma_bootstrap(drm_device_t * dev,
 				    drm_mga_dma_bootstrap_t * dma_bs)
 {
 	drm_mga_private_t * const dev_priv = (drm_mga_private_t *) dev->dev_private;
-	const unsigned int warp_size = mga_warp_microcode_size(dev_priv);
+	unsigned int warp_size = mga_warp_microcode_size(dev_priv);
 	unsigned int primary_size;
 	unsigned int bin_count;
 	int err;
@@ -587,11 +593,18 @@ static int mga_do_pci_dma_bootstrap(drm_device_t * dev,
 		return DRM_ERR(EFAULT);
 	}
 
+	/* Make drm_addbufs happy by not trying to create a mapping for less
+	 * than a page.
+	 */
+	if (warp_size < PAGE_SIZE)
+		warp_size = PAGE_SIZE;
+
 	/* The proper alignment is 0x100 for this mapping */
 	err = drm_addmap(dev, 0, warp_size, _DRM_CONSISTENT,
 			 _DRM_READ_ONLY, &dev_priv->warp);
 	if (err != 0) {
-		DRM_ERROR("Unable to create mapping for WARP microcode\n");
+		DRM_ERROR("Unable to create mapping for WARP microcode: %d\n",
+			  err);
 		return err;
 	}
 
@@ -611,7 +624,7 @@ static int mga_do_pci_dma_bootstrap(drm_device_t * dev,
 	}
 
 	if (err != 0) {
-		DRM_ERROR("Unable to allocate primary DMA region\n");
+		DRM_ERROR("Unable to allocate primary DMA region: %d\n", err);
 		return DRM_ERR(ENOMEM);
 	}
 
@@ -636,7 +649,7 @@ static int mga_do_pci_dma_bootstrap(drm_device_t * dev,
 	}
 	
 	if (bin_count == 0) {
-		DRM_ERROR("Unable to add secondary DMA buffers\n");
+		DRM_ERROR("Unable to add secondary DMA buffers: %d\n", err);
 		return err;
 	}
 
@@ -674,7 +687,7 @@ static int mga_do_dma_bootstrap(drm_device_t * dev,
 	err = drm_addmap( dev, dev_priv->mmio_base, dev_priv->mmio_size,
 			  _DRM_REGISTERS, _DRM_READ_ONLY, & dev_priv->mmio );
 	if (err) {
-		DRM_ERROR("Unable to map MMIO region\n");
+		DRM_ERROR("Unable to map MMIO region: %d\n", err);
 		return err;
 	}
 
@@ -683,7 +696,7 @@ static int mga_do_dma_bootstrap(drm_device_t * dev,
 			  _DRM_READ_ONLY | _DRM_LOCKED | _DRM_KERNEL,
 			  & dev_priv->status );
 	if (err) {
-		DRM_ERROR("Unable to map status region\n");
+		DRM_ERROR("Unable to map status region: %d\n", err);
 		return err;
 	}
 
@@ -845,14 +858,14 @@ static int mga_do_init_dma(drm_device_t * dev, drm_mga_init_t * init)
 	}
 
 	ret = mga_warp_install_microcode(dev_priv);
-	if (ret < 0) {
-		DRM_ERROR("failed to install WARP ucode!\n");
+	if (ret != 0) {
+		DRM_ERROR("failed to install WARP ucode: %d!\n", ret);
 		return ret;
 	}
 
 	ret = mga_warp_init(dev_priv);
-	if (ret < 0) {
-		DRM_ERROR("failed to init WARP engine!\n");
+	if (ret != 0) {
+		DRM_ERROR("failed to init WARP engine: %d!\n", ret);
 		return ret;
 	}
 
