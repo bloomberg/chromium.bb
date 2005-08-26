@@ -65,7 +65,7 @@ int drm_ati_pcigart_init(drm_device_t *dev, unsigned long *addr,
 
 	bzero(pci_gart, ATI_PCIGART_TABLE_SIZE);
 
-	KASSERT(PAGE_SIZE >= ATI_PCIGART_PAGE_SIZE, "page size too small");
+	KASSERT(PAGE_SIZE >= ATI_PCIGART_PAGE_SIZE, ("page size too small"));
 
 	for ( i = 0 ; i < pages ; i++ ) {
 		page_base = (u32) dev->sg->busaddr[i];
