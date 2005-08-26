@@ -686,6 +686,9 @@ struct drm_driver_info {
 	unsigned use_mtrr :1;
 };
 
+/* Length for the array of resource pointers for drm_get_resource_*. */
+#define DRM_MAX_PCI_RESOURCE	3
+
 /** 
  * DRM device functions structure
  */
@@ -747,6 +750,10 @@ struct drm_device {
 	struct pci_attach_args  pa;
 #endif
 	void		  *irqh;	/* Handle from bus_setup_intr      */
+
+	/* Storage of resource pointers for drm_get_resource_* */
+	struct resource   *pcir[DRM_MAX_PCI_RESOURCE];
+	int		  pcirid[DRM_MAX_PCI_RESOURCE];
 
 	int		  pci_domain;
 	int		  pci_bus;

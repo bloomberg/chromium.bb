@@ -31,6 +31,8 @@
  *
  */
 
+#include "dev/pci/pcireg.h"
+
 #include "drmP.h"
 
 /*
@@ -49,46 +51,45 @@ int drm_order(unsigned long size)
 	return order;
 }
 
-unsigned long drm_get_resource_start(drm_device_t *dev, unsigned int resource)
+/* Allocation of PCI memory resources (framebuffer, registers, etc.) for
+ * drm_get_resource_*.  Note that they are not RF_ACTIVE, so there's no virtual
+ * address for accessing them.  Cleaned up at lastclose.
+ */
+static int drm_alloc_resource(drm_device_t *dev, int resource)
 {
-	struct resource *bsr;
-	unsigned long offset;
-
-	resource = resource * 4 + 0x10;
-
-	bsr = bus_alloc_resource_any(dev->device, SYS_RES_MEMORY, &resource,
-	    RF_ACTIVE | RF_SHAREABLE);
-	if (bsr == NULL) {
-		DRM_ERROR("Couldn't find resource 0x%x\n", resource);
+	if (resource >= DRM_MAX_PCI_RESOURCE) {
+		DRM_ERROR("Resource %d too large\n", resource);
+		return 1;
+	}
+	if (dev->pcir[resource] != NULL)
 		return 0;
+
+	dev->pcirid[resource] = PCIR_BAR(resource);
+	dev->pcir[resource] = bus_alloc_resource_any(dev->device,
+	    SYS_RES_MEMORY, &dev->pcirid[resource], RF_SHAREABLE);
+
+	if (dev->pcir[resource] == NULL) {
+		DRM_ERROR("Couldn't find resource 0x%x\n", resource);
+		return 1;
 	}
 
-	offset = rman_get_start(bsr);
+	return 0;
+}
 
-	bus_release_resource(dev->device, SYS_RES_MEMORY, resource, bsr);
+unsigned long drm_get_resource_start(drm_device_t *dev, unsigned int resource)
+{
+	if (drm_alloc_resource(dev, resource) != 0)
+		return 0;
 
-	return offset;
+	return rman_get_start(dev->pcir[resource]);
 }
 
 unsigned long drm_get_resource_len(drm_device_t *dev, unsigned int resource)
 {
-	struct resource *bsr;
-	unsigned long len;
+	if (drm_alloc_resource(dev, resource) != 0)
+		return 0;
 
-	resource = resource * 4 + 0x10;
-
-	bsr = bus_alloc_resource_any(dev->device, SYS_RES_MEMORY, &resource,
-	    RF_ACTIVE | RF_SHAREABLE);
-	if (bsr == NULL) {
-		DRM_ERROR("Couldn't find resource 0x%x\n", resource);
-		return ENOMEM;
-	}
-
-	len = rman_get_size(bsr);
-
-	bus_release_resource(dev->device, SYS_RES_MEMORY, resource, bsr);
-
-	return len;
+	return rman_get_size(dev->pcir[resource]);
 }
 
 int drm_addmap(drm_device_t * dev, unsigned long offset, unsigned long size,

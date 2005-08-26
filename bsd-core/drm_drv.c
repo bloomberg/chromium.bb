@@ -474,6 +474,13 @@ static int drm_lastclose(drm_device_t *dev)
 	TAILQ_FOREACH_SAFE(map, &dev->maplist, link, mapsave) {
 		drm_rmmap(dev, map);
 	}
+	for (i = 0; i < DRM_MAX_PCI_RESOURCE; i++) {
+		if (dev->pcir[i] == NULL)
+			continue;
+		bus_release_resource(dev->device, SYS_RES_MEMORY,
+		    dev->pcirid[i], dev->pcir[i]);
+		dev->pcir[i] = NULL;
+	}
 
 	drm_dma_takedown(dev);
 	if ( dev->lock.hw_lock ) {
