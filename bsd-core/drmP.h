@@ -229,7 +229,8 @@ enum {
 				int flags, DRM_STRUCTPROC *p, DRMFILE filp
 
 #define PAGE_ALIGN(addr) round_page(addr)
-#define DRM_SUSER(p)		suser(p)
+/* DRM_SUSER returns true if the user is superuser */
+#define DRM_SUSER(p)		(suser(p) == 0)
 #define DRM_AGP_FIND_DEVICE()	agp_find_device()
 #define DRM_MTRR_WC		MDF_WRITECOMBINE
 #define jiffies			ticks
@@ -249,7 +250,8 @@ enum {
 
 #define CDEV_MAJOR		34
 #define PAGE_ALIGN(addr)	(((addr) + PAGE_SIZE - 1) & PAGE_MASK)
-#define DRM_SUSER(p)		suser(p->p_ucred, &p->p_acflag)
+/* DRM_SUSER returns true if the user is superuser */
+#define DRM_SUSER(p)		(suser(p->p_ucred, &p->p_acflag) == 0)
 #define DRM_AGP_FIND_DEVICE()	agp_find_device(0)
 #define DRM_MTRR_WC		MTRR_TYPE_WC
 #define jiffies			hardclock_ticks
@@ -524,6 +526,7 @@ typedef TAILQ_HEAD(drm_file_list, drm_file) drm_file_list_t;
 struct drm_file {
 	TAILQ_ENTRY(drm_file) link;
 	int		  authenticated;
+	int		  master;
 	int		  minor;
 	pid_t		  pid;
 	uid_t		  uid;
@@ -585,6 +588,7 @@ typedef struct drm_agp_head {
 
 typedef struct drm_sg_mem {
 	unsigned long   handle;
+	void            *virtual;
 	int             pages;
 	dma_addr_t	*busaddr;
 	drm_dma_handle_t *dmah;	/* Handle to PCI memory for ATI PCIGART table */

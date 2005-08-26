@@ -33,6 +33,7 @@
 
 #include "drmP.h"
 #include "drm.h"
+#include "drm_sarea.h"
 
 int drm_debug_flag = 0;
 
@@ -357,9 +358,16 @@ drm_pci_id_list_t *drm_find_description(int vendor, int device,
 
 static int drm_firstopen(drm_device_t *dev)
 {
+	drm_local_map_t *map;
 	int i;
 
 	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
+
+	/* prebuild the SAREA */
+	i = drm_addmap(dev, 0, SAREA_MAX, _DRM_SHM,
+		       _DRM_CONTAINS_LOCK, &map);
+	if (i != 0)
+		return i;
 
 	if (dev->driver.firstopen)
 		dev->driver.firstopen(dev);
@@ -388,7 +396,6 @@ static int drm_firstopen(drm_device_t *dev)
 		dev->magiclist[i].tail = NULL;
 	}
 
-	dev->lock.hw_lock = NULL;
 	dev->lock.lock_queue = 0;
 	dev->irq_enabled = 0;
 	dev->context_flag = 0;
@@ -851,9 +858,9 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 	/* ioctl->master check should be against something in the filp set up
 	 * for the first opener, but it doesn't matter yet.
 	 */
-	if ((ioctl->root_only && DRM_SUSER(p)) ||
+	if ((ioctl->root_only && !DRM_SUSER(p)) ||
 	    (ioctl->auth_needed && !priv->authenticated) ||
-	    (ioctl->master && !DRM_SUSER(p)))
+	    (ioctl->master && !priv->master))
 		return EACCES;
 
 	if (is_driver_ioctl)

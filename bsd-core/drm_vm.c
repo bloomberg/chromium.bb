@@ -49,9 +49,10 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 	if (!priv->authenticated)
 		return DRM_ERR(EACCES);
 
-	DRM_SPINLOCK(&dev->dma_lock);
 	if (dev->dma && offset >= 0 && offset < ptoa(dev->dma->page_count)) {
 		drm_device_dma_t *dma = dev->dma;
+
+		DRM_SPINLOCK(&dev->dma_lock);
 
 		if (dma->pagelist != NULL) {
 			unsigned long page = offset >> PAGE_SHIFT;
@@ -68,8 +69,8 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 			DRM_SPINUNLOCK(&dev->dma_lock);
 			return -1;
 		}
+		DRM_SPINUNLOCK(&dev->dma_lock);
 	}
-	DRM_SPINUNLOCK(&dev->dma_lock);
 
 				/* A sequential search of a linked list is
 				   fine here because: 1) there will only be
@@ -89,7 +90,7 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 		DRM_DEBUG("can't find map\n");
 		return -1;
 	}
-	if (((map->flags&_DRM_RESTRICTED) && DRM_SUSER(DRM_CURPROC))) {
+	if (((map->flags&_DRM_RESTRICTED) && !DRM_SUSER(DRM_CURPROC))) {
 		DRM_UNLOCK();
 		DRM_DEBUG("restricted map\n");
 		return -1;

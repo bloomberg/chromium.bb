@@ -113,11 +113,12 @@ int drm_addmap(drm_device_t * dev, unsigned long offset, unsigned long size,
 	/* Check if this is just another version of a kernel-allocated map, and
 	 * just hand that back if so.
 	 */
-	if (type == _DRM_REGISTERS || type == _DRM_FRAME_BUFFER)
-	{
+	if (type == _DRM_REGISTERS || type == _DRM_FRAME_BUFFER ||
+	    type == _DRM_SHM) {
 		DRM_LOCK();
 		TAILQ_FOREACH(map, &dev->maplist, link) {
-			if (map->type == type && map->offset == offset) {
+			if (map->type == type &&
+			    (map->offset == offset || map->type == _DRM_SHM)) {
 				map->size = size;
 				DRM_DEBUG("Found kernel map %d\n", type);
 				goto done;
@@ -171,8 +172,25 @@ int drm_addmap(drm_device_t * dev, unsigned long offset, unsigned long size,
 		}
 		break;
 	case _DRM_AGP:
-		map->offset += dev->agp->base;
-		map->mtrr   = dev->agp->mtrr; /* for getmap */
+		{
+			drm_agp_mem_t *entry;
+			int valid = 0;
+
+			map->offset += dev->agp->base;
+			map->mtrr   = dev->agp->mtrr; /* for getmap */
+			for (entry = dev->agp->memory; entry;
+			    entry = entry->next)
+				if ((map->offset >= entry->bound) &&
+				    (map->offset + map->size <=
+				    entry->bound + entry->pages * PAGE_SIZE)) {
+					valid = 1;
+					break;
+				}
+			if (!valid) {
+				free(map, M_DRM);
+				return DRM_ERR(EACCES);
+			}
+		}
 		break;
 	case _DRM_SCATTER_GATHER:
 		if (!dev->sg) {
@@ -186,7 +204,7 @@ int drm_addmap(drm_device_t * dev, unsigned long offset, unsigned long size,
 		    0xfffffffful);
 		if (map->dmah == NULL) {
 			free(map, M_DRM);
-			return ENOMEM;
+			return DRM_ERR(ENOMEM);
 		}
 		map->handle = map->dmah->vaddr;
 		map->offset = map->dmah->busaddr;
@@ -222,6 +240,9 @@ int drm_addmap_ioctl(DRM_IOCTL_ARGS)
 		return DRM_ERR(EACCES); /* Require read/write */
 
 	DRM_COPY_FROM_USER_IOCTL(request, (drm_map_t *)data, sizeof(drm_map_t));
+
+	if (!DRM_SUSER(p) && request.type != _DRM_AGP)
+		return DRM_ERR(EACCES);
 
 	err = drm_addmap(dev, request.offset, request.size, request.type,
 	    request.flags, &map);
@@ -342,6 +363,7 @@ static int drm_do_addbufs_agp(drm_device_t *dev, drm_buf_desc_t *request)
 {
 	drm_device_dma_t *dma = dev->dma;
 	drm_buf_entry_t *entry;
+	drm_agp_mem_t *agp_entry;
 	drm_buf_t *buf;
 	unsigned long offset;
 	unsigned long agp_offset;
@@ -352,7 +374,7 @@ static int drm_do_addbufs_agp(drm_device_t *dev, drm_buf_desc_t *request)
 	int page_order;
 	int total;
 	int byte_count;
-	int i;
+	int i, valid;
 	drm_buf_t **temp_buflist;
 
 	count = request->count;
@@ -374,6 +396,22 @@ static int drm_do_addbufs_agp(drm_device_t *dev, drm_buf_desc_t *request)
 	DRM_DEBUG( "alignment:  %d\n",  alignment );
 	DRM_DEBUG( "page_order: %d\n",  page_order );
 	DRM_DEBUG( "total:      %d\n",  total );
+
+	/* Make sure buffers are located in AGP memory that we own */
+	valid = 0;
+	for (agp_entry = dev->agp->memory; agp_entry;
+	    agp_entry = agp_entry->next) {
+		if ((agp_offset >= agp_entry->bound) &&
+		    (agp_offset + total * count <=
+		    agp_entry->bound + agp_entry->pages * PAGE_SIZE)) {
+			valid = 1;
+			break;
+		}
+	}
+	if (!valid) {
+		DRM_DEBUG("zone invalid\n");
+		return DRM_ERR(EINVAL);
+	}
 
 	entry = &dma->bufs[order];
 
@@ -742,6 +780,9 @@ int drm_addbufs_sg(drm_device_t *dev, drm_buf_desc_t *request)
 
 	DRM_SPINLOCK(&dev->dma_lock);
 
+	if (!DRM_SUSER(DRM_CURPROC))
+		return DRM_ERR(EACCES);
+
 	if (request->count < 0 || request->count > 4096)
 		return DRM_ERR(EINVAL);
 	
@@ -772,6 +813,9 @@ int drm_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request)
 	int order, ret;
 
 	DRM_SPINLOCK(&dev->dma_lock);
+
+	if (!DRM_SUSER(DRM_CURPROC))
+		return DRM_ERR(EACCES);
 
 	if (request->count < 0 || request->count > 4096)
 		return DRM_ERR(EINVAL);
