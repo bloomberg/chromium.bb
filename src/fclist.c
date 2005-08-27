@@ -67,7 +67,7 @@ FcObjectSetAdd (FcObjectSet *os, const char *object)
     low = 0;
     mid = 0;
     c = 1;
-    object = FcObjectStaticName (object);
+    object = FcStrStaticName (object);
     while (low <= high)
     {
 	mid = (low + high) >> 1;

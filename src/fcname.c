@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include "fcint.h"
 
+/* Please do not revoke any of these bindings. */
 static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_FAMILY,	FcTypeString, },
     { FC_FAMILYLANG,	FcTypeString, },
@@ -106,8 +107,9 @@ FcNameRegisterObjectTypes (const FcObjectType *types, int ntypes)
     return FcTrue;
 }
 
-FcBool
-FcNameUnregisterObjectTypes (const FcObjectType *types, int ntypes)
+static FcBool
+FcNameUnregisterObjectTypesFree (const FcObjectType *types, int ntypes, 
+				 FcBool do_free)
 {
     const FcObjectTypeList	*l, **prev;
 
@@ -118,12 +120,20 @@ FcNameUnregisterObjectTypes (const FcObjectType *types, int ntypes)
 	if (l->types == types && l->ntypes == ntypes)
 	{
 	    *prev = l->next;
-	    FcMemFree (FC_MEM_OBJECTTYPE, sizeof (FcObjectTypeList));
-	    free ((void *) l);
+	    if (do_free) {
+		FcMemFree (FC_MEM_OBJECTTYPE, sizeof (FcObjectTypeList));
+		free ((void *) l);
+	    }
 	    return FcTrue;
 	}
     }
     return FcFalse;
+}
+
+FcBool
+FcNameUnregisterObjectTypes (const FcObjectType *types, int ntypes)
+{
+    return FcNameUnregisterObjectTypesFree (types, ntypes, FcTrue);
 }
 
 const FcObjectType *
@@ -145,26 +155,13 @@ FcNameGetObjectType (const char *object)
     return 0;
 }
 
-static int objectptr_count = 1;
-static int objectptr_alloc = 0;
-static int * objectptr_indices = 0;
-
-void
-FcObjectNewBank(void)
+static FcObjectPtr
+FcObjectToPtrLookup (const char * object)
 {
-    objectptr_count = 1;
-    objectptr_alloc = 0;
-    objectptr_indices = 0;
-}
-
-// XXX todo: introduce a hashtable for faster lookup
-FcObjectPtr
-FcObjectToPtr (const char * object)
-{
-    int			    i;
+    FcObjectPtr		    i;
     const FcObjectTypeList  *l;
     const FcObjectType	    *t;
-    
+
     for (l = _FcObjectTypes; l; l = l->next)
     {
 	for (i = 0; i < l->ntypes; i++)
@@ -174,37 +171,159 @@ FcObjectToPtr (const char * object)
 		return i;
 	}
     }
-    abort();
     return 0;
+}
+
+#define OBJECT_HASH_SIZE    31
+struct objectBucket {
+    struct objectBucket	*next;
+    FcChar32		hash;
+    int			id;
+};
+static struct objectBucket *FcObjectBuckets[OBJECT_HASH_SIZE];
+
+static const FcObjectType *biggest_known_types = _FcBaseObjectTypes; 
+static FcBool allocated_biggest_known_types;
+static int biggest_known_ntypes = NUM_OBJECT_TYPES;
+static int biggest_known_count = 0;
+static char * biggest_ptr;
+
+FcObjectPtr
+FcObjectToPtr (const char * name)
+{
+    FcChar32            hash = FcStringHash ((const FcChar8 *) name);
+    struct objectBucket **p;
+    struct objectBucket *b;
+    int                 size;
+
+    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next)
+)
+        if (b->hash == hash && !strcmp (name, (char *) (b + 1)))
+            return b->id;
+    size = sizeof (struct objectBucket) + strlen (name) + 1;
+    b = malloc (size);
+    FcMemAlloc (FC_MEM_STATICSTR, size);
+    if (!b)
+        return -1;
+    b->next = 0;
+    b->hash = hash;
+    b->id = FcObjectToPtrLookup (name);
+    strcpy ((char *) (b + 1), name);
+    *p = b;
+    return b->id;
+}
+
+void
+FcObjectStaticNameFini (void)
+{
+    int i, size;
+    struct objectBucket *b, *next;
+    char *name;
+
+    for (i = 0; i < OBJECT_HASH_SIZE; i++)
+    {
+	for (b = FcObjectBuckets[i]; b; b = next)
+	{
+	    next = b->next;
+	    name = (char *) (b + 1);
+	    size = sizeof (struct objectBucket) + strlen (name) + 1;
+	    FcMemFree (FC_MEM_STATICSTR, size);
+	    free (b);
+	}
+	FcObjectBuckets[i] = 0;
+    }
 }
 
 const char *
 FcObjectPtrU (FcObjectPtr si)
 {
-    return _FcObjectTypes->types[si].object;
+    return biggest_known_types[si].object;
 }
 
 int
-FcObjectNeededBytes (FcObjectPtr si)
+FcObjectNeededBytes ()
 {
-    return 0;
+    int num = 0, i;
+    for (i = 0; i < biggest_known_ntypes; i++)
+    {
+	const char * t = biggest_known_types[i].object;
+	num = num + strlen(t) + 1;
+    }
+    biggest_known_count = num;
+    return num + sizeof(int);
 }
 
 void *
 FcObjectDistributeBytes (FcCache * metadata, void * block_ptr)
 {
+    *(int *)block_ptr = biggest_known_ntypes;
+    block_ptr = (int *) block_ptr + 1;
+    biggest_ptr = block_ptr;
+    block_ptr = (char *) block_ptr + biggest_known_count;
     return block_ptr;
 }
 
-FcObjectPtr
-FcObjectSerialize (FcObjectPtr si)
+void
+FcObjectSerialize ()
 {
-    return si;
+    int i;
+    for (i = 0; i < biggest_known_ntypes; i++)
+    {
+	const char * t = biggest_known_types[i].object;
+	strcpy (biggest_ptr, t);
+	biggest_ptr = biggest_ptr + strlen(t) + 1;
+    }
 }
 
-void
-FcObjectUnserialize (FcCache metadata, FcConfig * config, void *block_ptr)
+void *
+FcObjectUnserialize (FcCache metadata, void *block_ptr)
 {
+    int new_biggest;
+    new_biggest = *(int *)block_ptr;
+    block_ptr = (int *) block_ptr + 1;
+    if (biggest_known_ntypes < new_biggest)
+    {
+	int i;
+	char * bp = (char *)block_ptr;
+	FcObjectType * bn;
+	FcObjectTypeList * bnl;
+
+	bn = malloc (sizeof (const FcObjectType) * (new_biggest + 1));
+	if (!bn)
+	    return 0;
+
+	bnl = malloc (sizeof (FcObjectTypeList));
+	if (!bnl)
+	{
+	    free (bn);
+	    return 0;
+	}
+
+	for (i = 0; i < new_biggest; i++)
+	{
+	    const FcObjectType * t = FcNameGetObjectType(bp);
+	    if (t)
+		bn[i].type = t->type;
+	    else
+		bn[i].type = FcTypeVoid;
+	    bn[i].object = bp;
+	    bp = bp + strlen(bp) + 1;
+	}
+
+	FcNameUnregisterObjectTypesFree (biggest_known_types, biggest_known_ntypes, FcFalse);
+	if (allocated_biggest_known_types)
+	{
+	    free ((FcObjectTypeList *)biggest_known_types);
+	}
+	else
+	    allocated_biggest_known_types = FcTrue;
+
+	FcNameRegisterObjectTypes (bn, new_biggest);
+	biggest_known_ntypes = new_biggest;
+	biggest_known_types = (const FcObjectType *)bn;
+    }
+    block_ptr = (char *) block_ptr + biggest_known_count;
+    return block_ptr;
 }
 
 int
@@ -389,7 +508,7 @@ FcNameConvert (FcType type, FcChar8 *string, FcMatrix *m)
 	    v.u.i = atoi ((char *) string);
 	break;
     case FcTypeString:
-	v.u.s = FcObjectStaticName(string);
+	v.u.s = FcStrStaticName(string);
 	break;
     case FcTypeBool:
 	if (!FcNameBool (string, &v.u.b))

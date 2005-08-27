@@ -87,7 +87,6 @@ void
 FcFontSetNewBank (void)
 {
     FcPatternNewBank();
-    FcObjectNewBank();
 }
 
 int
@@ -104,7 +103,7 @@ FcFontSetNeededBytes (FcFontSet *s)
     }
 
     if (cum > 0)
-	return cum + sizeof(int);
+	return cum + sizeof(int) + FcObjectNeededBytes();
     else
 	return 0;
 }
@@ -138,6 +137,7 @@ FcFontSetSerialize (int bank, FcFontSet * s)
 
 	s->fonts[i] = p;
     }
+    FcObjectSerialize();
 
     return FcTrue;
 }
@@ -166,10 +166,13 @@ FcFontSetUnserialize(FcCache metadata, FcFontSet * s, void * block_ptr)
 
     if (nfont > 0)
     {
-	FcPattern * p = FcPatternUnserialize (metadata, block_ptr);
+	FcPattern * p = (FcPattern *)block_ptr;
+	block_ptr = FcPatternUnserialize (metadata, block_ptr);
 	for (i = 0; i < nfont; i++)
 	    s->fonts[n + i] = p+i;
+
+	block_ptr = FcObjectUnserialize (metadata, block_ptr);
     }
 
-    return FcTrue;
+    return block_ptr != 0;
 }

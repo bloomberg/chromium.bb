@@ -773,7 +773,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	break;
     case FcOpString:
 	v.type = FcTypeString;
-	v.u.s = FcObjectStaticName(e->u.sval);
+	v.u.s = FcStrStaticName(e->u.sval);
 	v = FcValueSave (v);
 	break;
     case FcOpMatrix:
@@ -891,7 +891,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		switch (e->op) {
 		case FcOpPlus:
 		    v.type = FcTypeString;
-		    v.u.s = FcObjectStaticName (FcStrPlus (vl.u.s, vr.u.s));
+		    v.u.s = FcStrStaticName (FcStrPlus (vl.u.s, vr.u.s));
 			 
 		    if (!v.u.s)
 			v.type = FcTypeVoid;

@@ -214,7 +214,7 @@ FcDoubleHash (double d)
     return (FcChar32) d;
 }
 
-static FcChar32
+FcChar32
 FcStringHash (const FcChar8 *s)
 {
     FcChar8	c;
@@ -391,7 +391,7 @@ FcValueListEntCreate (FcValueListPtr h)
 	if ((FcValueListPtrU(l)->value.type & ~FC_STORAGE_STATIC) == FcTypeString)
 	{
 	    new->value.type = FcTypeString;
-	    new->value.u.s = FcObjectStaticName
+	    new->value.u.s = FcStrStaticName
 		(fc_value_string(&FcValueListPtrU(l)->value));
 	}
 	else
@@ -984,7 +984,7 @@ FcPatternAddString (FcPattern *p, const char *object, const FcChar8 *s)
     FcValue	v;
 
     v.type = FcTypeString;
-    v.u.s = FcObjectStaticName(s);
+    v.u.s = FcStrStaticName(s);
     return FcPatternAdd (p, object, v, FcTrue);
 }
 
@@ -1287,7 +1287,7 @@ struct objectBucket {
 static struct objectBucket *FcObjectBuckets[OBJECT_HASH_SIZE];
 
 const char *
-FcObjectStaticName (const char *name)
+FcStrStaticName (const char *name)
 {
     FcChar32            hash = FcStringHash ((const FcChar8 *) name);
     struct objectBucket **p;
@@ -1311,7 +1311,7 @@ FcObjectStaticName (const char *name)
 }
 
 static void
-FcObjectStaticNameFini (void)
+FcStrStaticNameFini (void)
 {
     int i, size;
     struct objectBucket *b, *next;
@@ -1336,6 +1336,7 @@ FcPatternFini (void)
 {
     FcPatternBaseThawAll ();
     FcValueListThawAll ();
+    FcStrStaticNameFini ();
     FcObjectStaticNameFini ();
 }
 
@@ -1409,8 +1410,6 @@ FcPatternNeededBytes (FcPattern * p)
 
     for (i = 0; i < p->num; i++)
     {
-	cum += FcObjectNeededBytes 
-	    ((FcPatternEltU(p->elts)+i)->object);
 	c = FcValueListNeededBytes (FcValueListPtrU
 				    (((FcPatternEltU(p->elts)+i)->values)));
 	if (c < 0)
@@ -1526,7 +1525,7 @@ FcPatternSerialize (int bank, FcPattern *old)
         }
 	
 	nep[i].values = nv_head;
-	nep[i].object = FcObjectSerialize (e->object);
+	nep[i].object = e->object;
     }
 
     p->elts = old->elts;
@@ -1537,7 +1536,7 @@ FcPatternSerialize (int bank, FcPattern *old)
     return p;
 }
 
-FcPattern *
+void *
 FcPatternUnserialize (FcCache metadata, void *block_ptr)
 {
     int bi = FcCacheBankToIndex(metadata.bank);
@@ -1558,7 +1557,7 @@ FcPatternUnserialize (FcCache metadata, void *block_ptr)
     block_ptr = FcStrUnserialize (metadata, block_ptr);
     block_ptr = FcValueListUnserialize (metadata, block_ptr);
 
-    return fcpatterns[bi];
+    return block_ptr;
 }
 
 static void

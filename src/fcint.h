@@ -808,9 +808,6 @@ FcListPatternMatchAny (const FcPattern *p,
 FcBool
 FcNameBool (const FcChar8 *v, FcBool *result);
 
-void
-FcObjectNewBank(void);
-
 void *
 FcObjectDistributeBytes (FcCache * metadata,
 			 void * block_ptr);
@@ -819,13 +816,22 @@ FcObjectPtr
 FcObjectToPtr (const char * si);
 
 int
-FcObjectNeededBytes (FcObjectPtr p);
+FcObjectNeededBytes (void);
+
+void *
+FcObjectUnserialize (FcCache metadata, void *block_ptr);
 
 void
-FcObjectUnserialize (FcCache metadata, FcConfig * config, void *block_ptr);
+FcObjectSerialize (void);
 
-FcObjectPtr
-FcObjectSerialize (FcObjectPtr s);
+const char *
+FcObjectPtrU (FcObjectPtr p);
+
+int
+FcObjectPtrCompare (FcObjectPtr a, FcObjectPtr b);
+
+void
+FcObjectStaticNameFini (void);
 
 /* fcpat.c */
 
@@ -858,13 +864,10 @@ FcBool
 FcPatternAppend (FcPattern *p, FcPattern *s);
 
 const char *
-FcObjectStaticName (const char *name);
+FcStrStaticName (const char *name);
 
-const char *
-FcObjectPtrU (FcObjectPtr p);
-
-int
-FcObjectPtrCompare (FcObjectPtr a, FcObjectPtr b);
+FcChar32
+FcStringHash (const FcChar8 *s);
 
 void
 FcPatternNewBank (void);
@@ -887,7 +890,7 @@ FcValueListPtrCreateDynamic(FcValueList * p);
 FcPattern *
 FcPatternSerialize (int bank, FcPattern * p);
 
-FcPattern *
+void *
 FcPatternUnserialize (FcCache metadata, void *block_ptr);
 
 /* fcrender.c */
