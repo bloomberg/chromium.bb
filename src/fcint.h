@@ -323,7 +323,7 @@ typedef struct _FcCaseFold {
  * cache which is then rewritten to the users home directory
  */
 
-#define FC_CACHE_MAGIC 0x12345678
+#define FC_CACHE_MAGIC 0xFC20FC20
 #define FC_GLOBAL_CACHE_DIR_HASH_SIZE	    37
 #define FC_GLOBAL_CACHE_FILE_HASH_SIZE	    67
 

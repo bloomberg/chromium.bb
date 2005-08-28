@@ -28,6 +28,12 @@
 #include <sys/utsname.h>
 #include "fcint.h"
 
+#define ENDIAN_TEST 0x12345678
+#define MACHINE_SIGNATURE_SIZE 9 + 5*19 + 1
+
+static char *
+FcCacheProduceMachineSignature (void);
+
 /*
  * POSIX has broken stdio so that getc must do thread-safe locking,
  * this is a serious performance problem for applications doing large
@@ -1025,28 +1031,13 @@ FcCacheNextOffset(off_t w)
 	return ((w / PAGESIZE)+1)*PAGESIZE;
 }
 
-/* get the current arch name */
-/* caller is responsible for freeing returned pointer */
-static char *
-FcCacheGetCurrentArch (void)
-{
-    struct utsname b;
-    char * current_arch_machine_name;
-
-    if (uname(&b) == -1)
-	return FcFalse;
-    current_arch_machine_name = strdup(b.machine);
-    /* if (getenv ("FAKE_ARCH")) // testing purposes
-       current_arch_machine_name = strdup(getenv("FAKE_ARCH")); */
-    return current_arch_machine_name;
-}
-
 /* return the address of the segment for the provided arch,
  * or -1 if arch not found */
 static off_t
 FcCacheSkipToArch (int fd, const char * arch)
 {
-    char candidate_arch_machine_name[64], bytes_to_skip[7];
+    char candidate_arch_machine_name_count[MACHINE_SIGNATURE_SIZE + 9];
+    char * candidate_arch;
     off_t current_arch_start = 0;
 
     /* skip arches that are not the current arch */
@@ -1055,21 +1046,20 @@ FcCacheSkipToArch (int fd, const char * arch)
 	long bs;
 
 	lseek (fd, current_arch_start, SEEK_SET);
-	if (FcCacheReadString2 (fd, candidate_arch_machine_name, 
-			       sizeof (candidate_arch_machine_name)) == 0)
+	if (FcCacheReadString2 (fd, candidate_arch_machine_name_count, 
+				sizeof (candidate_arch_machine_name_count)) == 0)
 	    break;
-	if (FcCacheReadString2 (fd, bytes_to_skip, 7) == 0)
-	    break;
-	bs = a64l(bytes_to_skip);
-	if (bs == 0)
-	    break;
+	if (!strlen(candidate_arch_machine_name_count))
+	    return -1;
+	bs = strtol(candidate_arch_machine_name_count, &candidate_arch, 16);
+	candidate_arch++; /* skip leading space */
 
-	if (strcmp (candidate_arch_machine_name, arch)==0)
+	if (strcmp (candidate_arch, arch)==0)
 	    break;
 	current_arch_start += bs;
     }
 
-    if (strcmp (candidate_arch_machine_name, arch)!=0)
+    if (strcmp (candidate_arch, arch)!=0)
 	return -1;
 
     return current_arch_start;
@@ -1084,7 +1074,7 @@ static FcBool
 FcCacheMoveDown (int fd, off_t start)
 {
     char * buf = malloc (BUF_SIZE);
-    char candidate_arch_machine_name[64], bytes_to_skip[7];
+    char candidate_arch_machine_name[MACHINE_SIGNATURE_SIZE + 9];
     long bs;
     int c, bytes_skipped;
 
@@ -1095,10 +1085,10 @@ FcCacheMoveDown (int fd, off_t start)
     if (FcCacheReadString2 (fd, candidate_arch_machine_name, 
 			   sizeof (candidate_arch_machine_name)) == 0)
 	goto done;
-    if (FcCacheReadString2 (fd, bytes_to_skip, 7) == 0)
+    if (!strlen(candidate_arch_machine_name))
 	goto done;
 
-    bs = a64l(bytes_to_skip);
+    bs = strtol(candidate_arch_machine_name, 0, 16);
     if (bs == 0)
 	goto done;
 
@@ -1237,11 +1227,7 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	    }
 	}
 	closedir (d);
-	if (FcDirCacheValid (dir))
-	{
-	    FcDirCacheRead (set, dir);
-	}
-	else
+	if (!FcDirCacheValid (dir) || !FcDirCacheRead (set, dir))
 	{
 	    if (FcDebug () & FC_DBG_FONTSET)
 		printf ("scan dir %s\n", dir);
@@ -1293,7 +1279,7 @@ FcDirCacheRead (FcFontSet * set, const FcChar8 *dir)
     FcCache metadata;
     void * current_dir_block;
     char * current_arch_machine_name;
-    char candidate_arch_machine_name[64], bytes_in_block[7];
+    char candidate_arch_machine_name[9+MACHINE_SIGNATURE_SIZE];
     off_t current_arch_start = 0;
 
     if (force)
@@ -1301,10 +1287,10 @@ FcDirCacheRead (FcFontSet * set, const FcChar8 *dir)
     if (!cache_file)
         goto bail;
 
-    current_arch_machine_name = FcCacheGetCurrentArch();
+    current_arch_machine_name = FcCacheProduceMachineSignature();
     fd = open(cache_file, O_RDONLY);
     if (fd == -1)
-        goto bail0;
+        goto bail;
 
     current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
     if (current_arch_start < 0)
@@ -1314,35 +1300,30 @@ FcDirCacheRead (FcFontSet * set, const FcChar8 *dir)
     if (FcCacheReadString2 (fd, candidate_arch_machine_name, 
 			   sizeof (candidate_arch_machine_name)) == 0)
 	goto bail1;
-    if (FcCacheReadString2 (fd, bytes_in_block, 7) == 0)
-	goto bail1;
 
     // sanity check for endianness issues
     read(fd, &metadata, sizeof(FcCache));
     if (metadata.magic != FC_CACHE_MAGIC)
         goto bail1;
 
-    if (metadata.count)
-    {
-	off_t pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
-	current_dir_block = mmap (0, metadata.count, 
-				  PROT_READ, MAP_SHARED, fd, pos);
-	if (current_dir_block == MAP_FAILED)
-	    perror("");
+    if (!metadata.count)
+	goto bail1;
 
-	if (!FcFontSetUnserialize (metadata, set, current_dir_block))
-	    goto bail1;
-    }
+    off_t pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
+    current_dir_block = mmap (0, metadata.count, 
+			      PROT_READ, MAP_SHARED, fd, pos);
+    if (current_dir_block == MAP_FAILED)
+	perror("");
+    
+    if (!FcFontSetUnserialize (metadata, set, current_dir_block))
+	goto bail1;
 	
     close(fd);
-    free (current_arch_machine_name);
     free (cache_file);
     return FcTrue;
 
  bail1:
     close(fd);
- bail0:
-    free (current_arch_machine_name);
  bail:
     free (cache_file);
     return FcFalse;
@@ -1356,7 +1337,7 @@ FcDirCacheWrite (int bank, FcFontSet *set, const FcChar8 *dir)
     int fd, bytes_to_write, metadata_bytes;
     FcCache metadata;
     off_t current_arch_start = 0, truncate_to;
-    char * current_arch_machine_name, bytes_written[7] = "dedbef";
+    char * current_arch_machine_name, * header;
     void * current_dir_block, *final_dir_block;
 
     if (!cache_file)
@@ -1380,18 +1361,21 @@ FcDirCacheWrite (int bank, FcFontSet *set, const FcChar8 *dir)
     if (!current_dir_block)
 	goto bail;
     final_dir_block = FcFontSetDistributeBytes (&metadata, current_dir_block);
+
+    if ((char *)current_dir_block + bytes_to_write != final_dir_block)
+	goto bail;
 			      
     if (!FcFontSetSerialize (bank, set))
-	return FcFalse;
+	goto bail;
 
     if (FcDebug () & FC_DBG_CACHE)
         printf ("FcDirCacheWriteDir cache_file \"%s\"\n", cache_file);
 
     fd = open(cache_file, O_RDWR | O_CREAT, 0666);
     if (fd == -1)
-        return FcFalse;
+        goto bail;
 
-    current_arch_machine_name = FcCacheGetCurrentArch();
+    current_arch_machine_name = FcCacheProduceMachineSignature ();
     current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
     if (current_arch_start < 0)
 	current_arch_start = FcCacheNextOffset (lseek(fd, 0, SEEK_END));
@@ -1403,15 +1387,13 @@ FcDirCacheWrite (int bank, FcFontSet *set, const FcChar8 *dir)
     if (ftruncate (fd, current_arch_start) == -1)
 	goto bail1;
 
-    /* reserve space for arch, count & metadata */
-    if (!FcCacheWriteString2 (fd, current_arch_machine_name))
-	goto bail1;
-
     /* now write the address of the next offset */
-    truncate_to = FcCacheNextOffset(current_arch_start + bytes_to_write + metadata_bytes) -
-	current_arch_start;
-    strcpy (bytes_written, l64a(truncate_to));
-    if (!FcCacheWriteString2 (fd, bytes_written))
+    truncate_to = FcCacheNextOffset (FcCacheNextOffset (current_arch_start + metadata_bytes) + bytes_to_write) - current_arch_start;
+
+    header = malloc (10 + strlen (current_arch_machine_name));
+    sprintf (header, "%8x ", (int)truncate_to);
+    strcat (header, current_arch_machine_name);
+    if (!FcCacheWriteString2 (fd, header))
 	goto bail1;
 
     metadata.magic = FC_CACHE_MAGIC;
@@ -1419,7 +1401,7 @@ FcDirCacheWrite (int bank, FcFontSet *set, const FcChar8 *dir)
     lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_END)), SEEK_SET);
     write (fd, current_dir_block, bytes_to_write);
 
-    /* this actually serves to pad out the cache file */
+    /* this actually serves to pad out the cache file, if needed */
     if (ftruncate (fd, current_arch_start + truncate_to) == -1)
 	goto bail1;
 
@@ -1433,6 +1415,40 @@ FcDirCacheWrite (int bank, FcFontSet *set, const FcChar8 *dir)
     unlink (cache_file);
     free (cache_file);
     return FcFalse;
+}
+
+static char *
+FcCacheProduceMachineSignature ()
+{
+    static char buf[MACHINE_SIGNATURE_SIZE];
+    int magic = ENDIAN_TEST;
+    char * m = (char *)&magic;
+
+    sprintf (buf, "%2x%2x%2x%2x "
+	     "%4x %4x %4x %4x %4x %4x %4x %4x %4x %4x %4x %4x "
+	     "%4x %4x %4x %4x %4x %4x %4x\n", 
+	     m[0], m[1], m[2], m[3],
+	     sizeof (char),
+	     sizeof (char *),
+	     sizeof (int),
+	     sizeof (FcPattern),
+	     sizeof (FcPatternEltPtr),
+	     sizeof (struct _FcPatternElt *),
+	     sizeof (FcPatternElt),
+	     sizeof (FcObjectPtr),
+	     sizeof (FcValueListPtr),
+	     sizeof (FcValue),
+	     sizeof (FcValueBinding),
+	     sizeof (struct _FcValueList *),
+	     sizeof (FcCharSet),
+	     sizeof (FcCharLeaf **),
+	     sizeof (FcChar16 *),
+	     sizeof (FcChar16),
+	     sizeof (FcCharLeaf),
+	     sizeof (FcChar32),
+	     sizeof (FcCache));
+
+    return buf;
 }
 
 /* if true, ignore the cache file */
@@ -1480,9 +1496,9 @@ FcCacheBankToIndex (int bank)
 	if (bankId[i] == bank)
 	    return i;
 
-    if (banks_ptr <= banks_alloc)
+    if (banks_ptr >= banks_alloc)
     {
-	b = realloc (bankId, banks_alloc + 4);
+	b = realloc (bankId, (banks_alloc + 4) * sizeof(int));
 	if (!b)
 	    return -1;
 
