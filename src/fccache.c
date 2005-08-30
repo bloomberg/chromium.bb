@@ -26,6 +26,8 @@
 #include <dirent.h>
 #include <sys/mman.h>
 #include <sys/utsname.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "fcint.h"
 
 #define ENDIAN_TEST 0x12345678
@@ -649,6 +651,7 @@ FcDirCacheConsume (int fd, FcFontSet *set)
 {
     FcCache metadata;
     void * current_dir_block;
+    off_t pos;
 
     read(fd, &metadata, sizeof(FcCache));
     if (metadata.magic != FC_CACHE_MAGIC)
@@ -657,7 +660,7 @@ FcDirCacheConsume (int fd, FcFontSet *set)
     if (!metadata.count)
 	return FcTrue;
 
-    off_t pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
+    pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
     current_dir_block = mmap (0, metadata.count, 
 			      PROT_READ, MAP_SHARED, fd, pos);
     if (current_dir_block == MAP_FAILED)
