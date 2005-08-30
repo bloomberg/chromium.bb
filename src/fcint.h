@@ -41,12 +41,6 @@
 #include <config.h>
 #endif
 
-/* unused */
-typedef struct _FcSymbolic {
-    const char	*name;
-    int		value;
-} FcSymbolic;
-
 #ifndef FC_CONFIG_PATH
 #define FC_CONFIG_PATH "fonts.conf"
 #endif
@@ -323,45 +317,22 @@ typedef struct _FcCaseFold {
  * cache which is then rewritten to the users home directory
  */
 
-#define FC_CACHE_MAGIC 0xFC20FC20
-#define FC_GLOBAL_CACHE_DIR_HASH_SIZE	    37
-#define FC_GLOBAL_CACHE_FILE_HASH_SIZE	    67
-
-typedef struct _FcGlobalCacheInfo {
-    unsigned int		hash;
-    FcChar8			*file;
-    time_t			time;
-    FcBool			referenced;
-} FcGlobalCacheInfo;
-
-typedef struct _FcGlobalCacheFile {
-    struct _FcGlobalCacheFile	*next;
-    FcGlobalCacheInfo		info;
-    int				id;
-    FcChar8			*name;
-} FcGlobalCacheFile;
+#define FC_CACHE_MAGIC 0xFC02FC02
 
 typedef struct _FcGlobalCacheDir FcGlobalCacheDir;
 
-typedef struct _FcGlobalCacheSubdir {
-    struct _FcGlobalCacheSubdir	*next;
-    FcGlobalCacheDir		*ent;
-} FcGlobalCacheSubdir;
-
 struct _FcGlobalCacheDir {
     struct _FcGlobalCacheDir	*next;
-    FcGlobalCacheInfo    	info;
-    int				len;
-    FcGlobalCacheFile		*ents[FC_GLOBAL_CACHE_FILE_HASH_SIZE];
-    FcGlobalCacheSubdir		*subdirs;
+    FcChar8			*name;
+    FcCache			metadata;
+    off_t			offset;
+    void			*ent;
 };
 
 typedef struct _FcGlobalCache {
-    FcGlobalCacheDir		*ents[FC_GLOBAL_CACHE_DIR_HASH_SIZE];
+    FcGlobalCacheDir		*dirs;
     FcBool			updated;
-    FcBool			broken;
-    int				entries;
-    int				referenced;
+    int				fd;
 } FcGlobalCache;
 
 struct _FcAtomic {
@@ -448,35 +419,11 @@ void
 FcGlobalCacheDestroy (FcGlobalCache *cache);
 
 FcBool
-FcGlobalCacheCheckTime (const FcChar8*file, FcGlobalCacheInfo *info);
-
-void
-FcGlobalCacheReferenced (FcGlobalCache	    *cache,
-			 FcGlobalCacheInfo  *info);
-
-void
-FcGlobalCacheReferenceSubdir (FcGlobalCache *cache,
-			      const FcChar8 *dir);
-
-FcGlobalCacheDir *
-FcGlobalCacheDirGet (FcGlobalCache  *cache,
-		     const FcChar8  *dir,
-		     int	    len,
-		     FcBool	    create_missing);
-
-FcBool
-FcGlobalCacheScanDir (FcFontSet		*set,
-		      FcStrSet		*dirs,
-		      FcGlobalCache	*cache,
-		      const FcChar8	*dir,
-		      FcConfig		*config);
-
-FcGlobalCacheFile *
-FcGlobalCacheFileGet (FcGlobalCache *cache,
-		      const FcChar8 *file,
-		      int	    id,
-		      int	    *count);
-
+FcGlobalCacheReadDir (FcFontSet     *set, 
+		      FcStrSet 	    *dirs, 
+		      FcGlobalCache *cache, 
+		      const FcChar8 *dir, 
+		      FcConfig 	    *config);
 
 void
 FcGlobalCacheLoad (FcGlobalCache    *cache,
@@ -485,33 +432,17 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 FcBool
 FcGlobalCacheUpdate (FcGlobalCache  *cache,
 		     const FcChar8  *file,
-		     int	    id,
-		     const FcChar8  *name);
+		     FcFontSet	    *set);
 
 FcBool
 FcGlobalCacheSave (FcGlobalCache    *cache,
 		   const FcChar8    *cache_file);
 
-void
-FcCacheForce(FcBool force);
-
-FcBool
-FcCacheSerialize (int bank, FcConfig * config);
-
 FcFontSet *
 FcCacheRead (FcConfig *config, FcGlobalCache * cache);
 
 FcBool
-FcDirCacheRead (FcFontSet * set, const FcChar8 *dir);
-
-FcBool
-FcDirCacheWrite (int bank, FcFontSet *set, const FcChar8 *dir);
-
-int
-FcCacheBankCount (void);
-
-FcBool
-FcCacheHaveBank (int bank);
+FcDirCacheWrite (FcFontSet *set, const FcChar8 *dir);
 
 int
 FcCacheBankToIndex (int bank);

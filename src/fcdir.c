@@ -45,16 +45,10 @@ FcFileScanConfig (FcFontSet	*set,
 		  FcConfig	*config)
 {
     int			id;
-#if 0
-    FcChar8		*name;
-    FcGlobalCacheFile	*cache_file;
-    FcGlobalCacheDir	*cache_dir;
-#endif
     FcPattern		*font;
     FcBool		ret = FcTrue;
     FcBool		isDir;
     int			count = 0;
-    FcBool		need_scan;
     
     if (config && !FcConfigAcceptFilename (config, file))
 	return FcTrue;
@@ -64,85 +58,23 @@ FcFileScanConfig (FcFontSet	*set,
     id = 0;
     do
     {
-	need_scan = FcTrue;
 	font = 0;
-#if 0
-	/*
-	 * Check the cache
-	 */
-	if (cache)
-	{
-	    if ((cache_file = FcGlobalCacheFileGet (cache, file, id, &count)))
-	    {
-		/*
-		 * Found a cache entry for the file
-		 */
-		if (FcGlobalCacheCheckTime (file, &cache_file->info))
-		{
-		    name = cache_file->name;
-		    need_scan = FcFalse;
-		    FcGlobalCacheReferenced (cache, &cache_file->info);
-		    /* "." means the file doesn't contain a font */
-		    if (FcStrCmp (name, FC_FONT_FILE_INVALID) != 0)
-		    {
-			font = FcNameParse (name);
-			if (font)
-			    if (!FcPatternAddString (font, FC_FILE, file))
-				ret = FcFalse;
-		    }
-		}
-	    }
-	    else if ((cache_dir = FcGlobalCacheDirGet (cache, file,
-						       strlen ((const char *) file),
-						       FcFalse)))
-	    {
-		if (FcGlobalCacheCheckTime (cache_dir->info.file, 
-					    &cache_dir->info))
-		{
-		    font = 0;
-		    need_scan = FcFalse;
-		    FcGlobalCacheReferenced (cache, &cache_dir->info);
-		    if (!FcStrSetAdd (dirs, file))
-			ret = FcFalse;
-		}
-	    }
-	}
-#endif
 	/*
 	 * Nothing in the cache, scan the file
 	 */
-	if (need_scan)
+	if (FcDebug () & FC_DBG_SCAN)
 	{
-	    if (FcDebug () & FC_DBG_SCAN)
-	    {
-		printf ("\tScanning file %s...", file);
-		fflush (stdout);
-	    }
-	    font = FcFreeTypeQuery (file, id, blanks, &count);
-	    if (FcDebug () & FC_DBG_SCAN)
-		printf ("done\n");
-	    isDir = FcFalse;
-	    if (!font && FcFileIsDir (file))
-	    {
-		isDir = FcTrue;
-		ret = FcStrSetAdd (dirs, file);
-	    }
-#if 0
-	    /*
-	     * Update the cache
-	     */
-	    if (cache && font)
-	    {
-		FcChar8	*unparse;
-
-		unparse = FcNameUnparse (font);
-		if (unparse)
-		{
-		    (void) FcGlobalCacheUpdate (cache, file, id, unparse);
-		    FcStrFree (unparse);
-		}
-	    }
-#endif
+	    printf ("\tScanning file %s...", file);
+	    fflush (stdout);
+	}
+	font = FcFreeTypeQuery (file, id, blanks, &count);
+	if (FcDebug () & FC_DBG_SCAN)
+	    printf ("done\n");
+	isDir = FcFalse;
+	if (!font && FcFileIsDir (file))
+	{
+	    isDir = FcTrue;
+	    ret = FcStrSetAdd (dirs, file);
 	}
 	/*
 	 * Add the font
@@ -193,29 +125,19 @@ FcDirScanConfig (FcFontSet	*set,
     FcChar8		*file;
     FcChar8		*base;
     FcBool		ret = FcTrue;
+    FcFontSet		*tmpSet;
+    int			i;
 
     if (config && !FcConfigAcceptFilename (config, dir))
 	return FcTrue;
 
     if (!force)
     {
-#if 0
-	/*
-	 * Check fonts.cache-<version> file
-	 */
-	if (FcDirCacheReadDir (set, dirs, dir, config))
-	{
-	    if (cache)
-		FcGlobalCacheReferenceSubdir (cache, dir);
-	    return FcTrue;
-	}
-    
 	/*
 	 * Check ~/.fonts.cache-<version> file
 	 */
-	if (cache && FcGlobalCacheScanDir (set, dirs, cache, dir, config))
+	if (cache && FcGlobalCacheReadDir (set, dirs, cache, dir, config))
 	    return FcTrue;
-#endif
     }
     
     /* freed below */
@@ -231,7 +153,6 @@ FcDirScanConfig (FcFontSet	*set,
 	printf ("\tScanning dir %s\n", dir);
 	
     d = opendir ((char *) dir);
-    
     if (!d)
     {
 	free (file);
@@ -240,12 +161,20 @@ FcDirScanConfig (FcFontSet	*set,
 	    return FcTrue;
 	return FcFalse;
     }
+
+    tmpSet = FcFontSetCreate();
+    if (!tmpSet)
+    {	
+	free (file);
+	return FcFalse;
+    }
+
     while (ret && (e = readdir (d)))
     {
 	if (e->d_name[0] != '.' && strlen (e->d_name) < FC_MAX_FILE_LEN)
 	{
 	    strcpy ((char *) base, (char *) e->d_name);
-	    ret = FcFileScanConfig (set, dirs, cache, blanks, file, force, config);
+	    ret = FcFileScanConfig (tmpSet, dirs, cache, blanks, file, force, config);
 	}
     }
     free (file);
@@ -254,10 +183,19 @@ FcDirScanConfig (FcFontSet	*set,
      * Now that the directory has been scanned,
      * add the cache entry 
      */
-#if 0
     if (ret && cache)
-	FcGlobalCacheUpdate (cache, dir, 0, 0);
-#endif
+	FcGlobalCacheUpdate (cache, dir, tmpSet);
+
+    for (i = 0; i < tmpSet->nfont; i++)
+	FcFontSetAdd (set, tmpSet->fonts[i]);
+
+    if (tmpSet->fonts)
+    {
+	FcMemFree (FC_MEM_FONTPTR, tmpSet->sfont * sizeof (FcPattern *));
+	free (tmpSet->fonts);
+    }
+    FcMemFree (FC_MEM_FONTSET, sizeof (FcFontSet));
+    free (tmpSet);
 	
     return ret;
 }
@@ -276,15 +214,5 @@ FcDirScan (FcFontSet	    *set,
 FcBool
 FcDirSave (FcFontSet *set, const FcChar8 *dir)
 {
-    static int rand_state = 0;
-    int bank;
-
-    if (!rand_state) 
-	rand_state = time(0L);
-    bank = rand_r(&rand_state);
-
-    while (FcCacheHaveBank(bank))
-	bank = rand_r(&rand_state);
-
-    return FcDirCacheWrite (bank, set, dir);
+    return FcDirCacheWrite (set, dir);
 }

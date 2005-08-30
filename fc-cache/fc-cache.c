@@ -191,7 +191,6 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    ret++;
 	    continue;
 	}
-#if 0 // put this back later after fixing DirCacheValid
 	if (!force && FcDirCacheValid (dir))
 	{
 	    if (verbose)
@@ -199,7 +198,6 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 			set->nfont, nsubdirs(subdirs));
 	}
 	else
-#endif
 	{
 	    if (verbose)
 		printf ("caching, %d fonts, %d dirs\n", 
@@ -271,7 +269,6 @@ main (int argc, char **argv)
 
     if (systemOnly)
 	FcConfigEnableHome (FcFalse);
-    FcCacheForce (FcTrue);
     /* need to use FcInitLoadConfig when we use dirs */
     FcInit ();
     config = FcConfigGetCurrent ();
