@@ -270,8 +270,7 @@ main (int argc, char **argv)
     if (systemOnly)
 	FcConfigEnableHome (FcFalse);
     /* need to use FcInitLoadConfig when we use dirs */
-    FcInit ();
-    config = FcConfigGetCurrent ();
+    config = FcInitLoadConfig ();
     if (!config)
     {
 	fprintf (stderr, "%s: Can't init font config library\n", argv[0]);

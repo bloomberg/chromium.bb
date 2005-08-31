@@ -110,16 +110,10 @@ FcCacheWriteString (int fd, const FcChar8 *chars)
 static void
 FcGlobalCacheDirDestroy (FcGlobalCacheDir *d)
 {
-    FcGlobalCacheDir	*dd, *next;
-
-    for (dd = d; dd; dd = next)
-    {
-	next = dd->next;
-	FcMemFree (FC_MEM_STRING, strlen (dd->name)+1);
-	free (dd->name);
-	FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheDir));
-	free (dd);
-    }
+    FcMemFree (FC_MEM_STRING, strlen (d->name)+1);
+    free (d->name);
+    FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheDir));
+    free (d);
 }
 
 FcGlobalCache *
@@ -328,10 +322,14 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 
     for (dir = cache->dirs; dir; dir = dir->next)
     {
-	FcCacheWriteString (fd, dir->name);
-	write (fd, &dir->metadata, sizeof(FcCache));
-	lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_END)), SEEK_SET);
-	write (fd, dir->ent, dir->metadata.count);
+        if (dir->ent)
+        {
+            FcCacheWriteString (fd, dir->name);
+            write (fd, &dir->metadata, sizeof(FcCache));
+            lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_END)), SEEK_SET);
+            write (fd, dir->ent, dir->metadata.count);
+            free (dir->ent);
+        }
     }
     FcCacheWriteString (fd, "");
 
@@ -388,21 +386,18 @@ FcCacheSkipToArch (int fd, const char * arch)
 	lseek (fd, current_arch_start, SEEK_SET);
 	if (FcCacheReadString (fd, candidate_arch_machine_name_count, 
 				sizeof (candidate_arch_machine_name_count)) == 0)
-	    break;
+            return -1;
 	if (!strlen(candidate_arch_machine_name_count))
 	    return -1;
 	bs = strtol(candidate_arch_machine_name_count, &candidate_arch, 16);
 	candidate_arch++; /* skip leading space */
 
 	if (strcmp (candidate_arch, arch)==0)
-	    break;
+	    return current_arch_start;
 	current_arch_start += bs;
     }
 
-    if (candidate_arch && strcmp (candidate_arch, arch)!=0)
-	return -1;
-
-    return current_arch_start;
+    return -1;
 }
 
 /* Cuts out the segment at the file pointer (moves everything else
@@ -771,6 +766,7 @@ FcDirCacheWrite (FcFontSet *set, const FcChar8 *dir)
     write (fd, &metadata, sizeof(FcCache));
     lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_END)), SEEK_SET);
     write (fd, current_dir_block, metadata.count);
+    free (current_dir_block);
 
     /* this actually serves to pad out the cache file, if needed */
     if (ftruncate (fd, current_arch_start + truncate_to) == -1)

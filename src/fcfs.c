@@ -133,9 +133,6 @@ FcFontSetSerialize (int bank, FcFontSet * s)
     {
 	p = FcPatternSerialize (bank, s->fonts[i]);
 	if (!p) return FcFalse;
-	FcPatternDestroy (s->fonts[i]);
-
-	s->fonts[i] = p;
     }
     FcObjectSerialize();
 
