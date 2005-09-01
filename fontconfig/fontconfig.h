@@ -447,7 +447,7 @@ FcDirScan (FcFontSet	    *set,
 	   FcBool	    force);
 
 FcBool
-FcDirSave (FcFontSet *set, const FcChar8 *dir);
+FcDirSave (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir);
 
 /* fcfreetype.c */
 FcPattern *

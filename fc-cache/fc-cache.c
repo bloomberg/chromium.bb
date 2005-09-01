@@ -203,7 +203,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 		printf ("caching, %d fonts, %d dirs\n", 
 			set->nfont, nsubdirs (subdirs));
 
-	    if (!FcDirSave (set, dir))
+	    if (!FcDirSave (set, subdirs, dir))
 	    {
 		fprintf (stderr, "Can't save cache in \"%s\"\n", dir);
 		ret++;

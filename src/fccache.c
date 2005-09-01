@@ -46,7 +46,7 @@ static FcBool
 FcDirCacheConsume (int fd, FcFontSet *set);
 
 static FcBool
-FcDirCacheRead (FcFontSet * set, const FcChar8 *dir);
+FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir);
 
 static int
 FcCacheNextOffset(off_t w);
@@ -543,27 +543,11 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	    free (file);
 	    continue;
 	}
-	d = opendir ((char *) dir);
-	if (!d)
-	{
-	    FcStrSetDestroy (subdirs);
-	    free (file);
-	    continue;
-	}
-	while ((e = readdir (d)))
-	{
-	    if (e->d_name[0] != '.' && strlen (e->d_name) < FC_MAX_FILE_LEN)
-	    {
-		strcpy ((char *) base, (char *) e->d_name);
-		if (FcFileIsDir (file) && !FcStrSetAdd (subdirs, file))
-		    ret++;
-	    }
-	}
-	closedir (d);
-	if (!FcDirCacheValid (dir) || !FcDirCacheRead (set, dir))
+	if (!FcDirCacheValid (dir) || !FcDirCacheRead (set, subdirs, dir))
 	{
 	    if (FcDebug () & FC_DBG_FONTSET)
 		printf ("scan dir %s\n", dir);
+
 	    FcDirScanConfig (set, subdirs, cache, 
 			     config->blanks, dir, FcFalse, config);
 	}
@@ -602,13 +586,14 @@ FcCacheRead (FcConfig *config, FcGlobalCache * cache)
 
 /* read serialized state from the cache file */
 static FcBool
-FcDirCacheRead (FcFontSet * set, const FcChar8 *dir)
+FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir)
 {
     FcChar8         *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
     int fd;
     char * current_arch_machine_name;
     char candidate_arch_machine_name[9+MACHINE_SIGNATURE_SIZE];
     off_t current_arch_start = 0;
+    FcChar8	    subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
 
     if (!cache_file)
         goto bail;
@@ -626,7 +611,10 @@ FcDirCacheRead (FcFontSet * set, const FcChar8 *dir)
     if (FcCacheReadString (fd, candidate_arch_machine_name, 
 			   sizeof (candidate_arch_machine_name)) == 0)
 	goto bail1;
-    
+
+    while (strlen(FcCacheReadString (fd, subdirName, sizeof (subdirName))) > 0)
+        FcStrSetAdd (dirs, subdirName);
+
     if (!FcDirCacheConsume (fd, set))
 	goto bail1;
 	
@@ -635,7 +623,7 @@ FcDirCacheRead (FcFontSet * set, const FcChar8 *dir)
     return FcTrue;
 
  bail1:
-    close(fd);
+    close (fd);
  bail:
     free (cache_file);
     return FcFalse;
@@ -710,10 +698,10 @@ FcDirCacheProduce (FcFontSet *set, FcCache *metadata)
 
 /* write serialized state to the cache file */
 FcBool
-FcDirCacheWrite (FcFontSet *set, const FcChar8 *dir)
+FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 {
     FcChar8         *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
-    int fd;
+    int fd, i;
     FcCache metadata;
     off_t current_arch_start = 0, truncate_to;
     char * current_arch_machine_name, * header;
@@ -762,6 +750,10 @@ FcDirCacheWrite (FcFontSet *set, const FcChar8 *dir)
     strcat (header, current_arch_machine_name);
     if (!FcCacheWriteString (fd, header))
 	goto bail1;
+
+    for (i = 0; i < dirs->size; i++)
+        FcCacheWriteString (fd, dirs->strs[i]);
+    FcCacheWriteString (fd, "");
 
     write (fd, &metadata, sizeof(FcCache));
     lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_END)), SEEK_SET);

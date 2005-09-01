@@ -442,7 +442,7 @@ FcFontSet *
 FcCacheRead (FcConfig *config, FcGlobalCache * cache);
 
 FcBool
-FcDirCacheWrite (FcFontSet *set, const FcChar8 *dir);
+FcDirCacheWrite (FcFontSet *set, FcStrSet * dirs, const FcChar8 *dir);
 
 int
 FcCacheBankToIndex (int bank);
