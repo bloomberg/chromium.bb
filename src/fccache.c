@@ -201,7 +201,6 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
     }
     cache->dirs = 0;
  bail0:
-    free (current_arch_machine_name);
     close (cache->fd);
     cache->fd = -1;
     return;
@@ -735,11 +734,11 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	current_arch_start = FcCacheNextOffset (lseek(fd, 0, SEEK_END));
 
     if (!FcCacheMoveDown(fd, current_arch_start))
-	goto bail2;
+	goto bail1;
 
     current_arch_start = lseek(fd, 0, SEEK_CUR);
     if (ftruncate (fd, current_arch_start) == -1)
-	goto bail2;
+	goto bail1;
 
     /* now write the address of the next offset */
     truncate_to = FcCacheNextOffset (FcCacheNextOffset (current_arch_start + sizeof (FcCache)) + metadata.count) - current_arch_start;
@@ -767,10 +766,8 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     close(fd);
     return FcTrue;
 
- bail2:
-    free (header);
  bail1:
-    free (current_arch_machine_name);
+    free (header);
  bail0:
     free (current_dir_block);
  bail:
