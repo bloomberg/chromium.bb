@@ -792,7 +792,7 @@ FcPatternHash (const FcPattern *p)
     for (i = 0; i < p->num; i++)
     {
 	h = (((h << 1) | (h >> 31)) ^ 
-	     FcStringHash ((const FcChar8 *) ((FcPatternEltU(p->elts)+i)->object)) ^
+	     FcStringHash (FcObjectPtrU ((FcPatternEltU(p->elts)+i)->object)) ^
 	     FcValueListHash ((FcPatternEltU(p->elts)+i)->values));
     }
     return h;
