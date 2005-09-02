@@ -189,7 +189,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	d->ent = 0;
 	d->offset = lseek (cache->fd, 0, SEEK_CUR);
 	read (cache->fd, &d->metadata, sizeof (FcCache));
-	lseek (cache->fd, d->metadata.count, SEEK_CUR);
+	lseek (cache->fd, FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + d->metadata.count, SEEK_SET);
     }
     return;
 
@@ -325,7 +325,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
         {
             FcCacheWriteString (fd, dir->name);
             write (fd, &dir->metadata, sizeof(FcCache));
-            lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_END)), SEEK_SET);
+            lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_CUR)), SEEK_SET);
             write (fd, dir->ent, dir->metadata.count);
             free (dir->ent);
         }
@@ -477,8 +477,6 @@ static int
 FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache, 
 		 FcStrList *list, FcFontSet * set)
 {
-    DIR			*d;
-    struct dirent	*e;
     int			ret = 0;
     FcChar8		*dir;
     FcChar8		*file, *base;
