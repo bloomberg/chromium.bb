@@ -2,6 +2,7 @@
  * $RCSId: xc/lib/fontconfig/src/fccache.c,v 1.12 2002/08/22 07:36:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
+ * Copyright © 2005 Patrick Lam
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -68,7 +69,7 @@ FcCacheReadString (int fd, FcChar8 *dest, int len)
     int		i;
 
     if (len == 0)
-	return FcFalse;
+	return 0;
     
     size = len;
     i = 0;
@@ -147,6 +148,7 @@ FcGlobalCacheDestroy (FcGlobalCache *cache)
 
 void
 FcGlobalCacheLoad (FcGlobalCache    *cache,
+                   FcStrSet	    *staleDirs,
 		   const FcChar8    *cache_file)
 {
     FcChar8		name_buf[8192];
@@ -154,6 +156,11 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
     char 		* current_arch_machine_name;
     char 		candidate_arch_machine_name[MACHINE_SIGNATURE_SIZE + 9];
     off_t		current_arch_start;
+
+    struct stat 	cache_stat, dir_stat;
+
+    if (stat ((char *) cache_file, &cache_stat) < 0)
+        return;
 
     cache->fd = open ((char *) cache_file, O_RDONLY);
     if (cache->fd == -1)
@@ -168,8 +175,9 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
         goto bail0;
 
     lseek (cache->fd, current_arch_start, SEEK_SET);
-    if (FcCacheReadString (cache->fd, candidate_arch_machine_name, 
-			   sizeof (candidate_arch_machine_name)) == 0)
+    FcCacheReadString (cache->fd, candidate_arch_machine_name, 
+                       sizeof (candidate_arch_machine_name));
+    if (strlen(candidate_arch_machine_name) == 0)
 	goto bail0;
 
     while (1) 
@@ -177,6 +185,17 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	FcCacheReadString (cache->fd, name_buf, sizeof (name_buf));
 	if (!strlen(name_buf))
 	    break;
+
+        if (stat ((char *) name_buf, &dir_stat) < 0 || 
+            dir_stat.st_mtime > cache_stat.st_mtime)
+        {
+            FcCache md;
+
+            FcStrSetAdd (staleDirs, FcStrCopy (name_buf));
+            read (cache->fd, &md, sizeof (FcCache));
+            lseek (cache->fd, FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + md.count, SEEK_SET);
+            continue;
+        }
 
 	d = malloc (sizeof (FcGlobalCacheDir));
 	if (!d)
@@ -210,22 +229,24 @@ FcBool
 FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, const FcChar8 *dir, FcConfig *config)
 {
     FcGlobalCacheDir *d;
+    FcBool ret = FcFalse;
 
     if (cache->fd == -1)
 	return FcFalse;
 
     for (d = cache->dirs; d; d = d->next)
     {
-	if (strcmp (d->name, dir) == 0)
+	if (strncmp (d->name, dir, strlen(dir)) == 0)
 	{
 	    lseek (cache->fd, d->offset, SEEK_SET);
 	    if (!FcDirCacheConsume (cache->fd, set))
 		return FcFalse;
-	    return FcTrue;
+            if (strcmp (d->name, dir) == 0)
+		ret = FcTrue;
 	}
     }
 
-    return FcFalse;
+    return ret;
 }
 
 FcBool
@@ -302,7 +323,15 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     if (ftruncate (fd, current_arch_start) == -1)
 	goto bail2;
 
-    truncate_to = current_arch_start;
+    header = malloc (10 + strlen (current_arch_machine_name));
+    if (!header)
+	goto bail1;
+    sprintf (header, "%8x ", (int)truncate_to);
+    strcat (header, current_arch_machine_name);
+    if (!FcCacheWriteString (fd, header))
+	goto bail1;
+
+    truncate_to = current_arch_start + strlen(header) + 1;
     for (dir = cache->dirs; dir; dir = dir->next)
     {
 	truncate_to += strlen(dir->name) + 1;
@@ -311,13 +340,6 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 	truncate_to += dir->metadata.count;
     }
     truncate_to -= current_arch_start;
-    header = malloc (10 + strlen (current_arch_machine_name));
-    if (!header)
-	goto bail1;
-    sprintf (header, "%8x ", (int)truncate_to);
-    strcat (header, current_arch_machine_name);
-    if (!FcCacheWriteString (fd, header))
-	goto bail1;
 
     for (dir = cache->dirs; dir; dir = dir->next)
     {
@@ -485,8 +507,7 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
     struct stat		statb;
 
     /*
-     * Now scan all of the directories into separate databases
-     * and write out the results
+     * Read in the results from 'list'.
      */
     while ((dir = FcStrListNext (list)))
     {
@@ -543,7 +564,7 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	if (!FcDirCacheValid (dir) || !FcDirCacheRead (set, subdirs, dir))
 	{
 	    if (FcDebug () & FC_DBG_FONTSET)
-		printf ("scan dir %s\n", dir);
+		printf ("cache scan dir %s\n", dir);
 
 	    FcDirScanConfig (set, subdirs, cache, 
 			     config->blanks, dir, FcFalse, config);

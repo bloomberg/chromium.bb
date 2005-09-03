@@ -427,6 +427,7 @@ FcGlobalCacheReadDir (FcFontSet     *set,
 
 void
 FcGlobalCacheLoad (FcGlobalCache    *cache,
+                   FcStrSet	    *staleDirs,
 		   const FcChar8    *cache_file);
 
 FcBool
