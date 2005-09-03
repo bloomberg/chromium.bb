@@ -57,7 +57,7 @@ static drm_local_map_t *drm_find_matching_map(drm_device_t *dev,
 		drm_map_list_t *entry = list_entry(list, drm_map_list_t, head);
 		if (entry->map && map->type == entry->map->type &&
 		    ((entry->map->offset == map->offset) ||
-			(map->type == _DRM_SHM))) {
+			(map->type == _DRM_SHM && map->flags==_DRM_CONTAINS_LOCK))) {
 			return entry->map;
 		}
 	}
