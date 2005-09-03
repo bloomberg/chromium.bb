@@ -40,15 +40,15 @@
  *
  */
 drm_ioctl_desc_t mach64_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_MACH64_INIT)] = {mach64_dma_init, 1, 1, 1},
-	[DRM_IOCTL_NR(DRM_MACH64_CLEAR)] = {mach64_dma_clear, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_SWAP)] = {mach64_dma_swap, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_IDLE)] = {mach64_dma_idle, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_RESET)] = {mach64_engine_reset, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_VERTEX)] = {mach64_dma_vertex, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_BLIT)] = {mach64_dma_blit, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_FLUSH)] = {mach64_dma_flush, 1, 0, 0},
-	[DRM_IOCTL_NR(DRM_MACH64_GETPARAM)] = {mach64_get_param, 1, 0, 0},
+	[DRM_IOCTL_NR(DRM_MACH64_INIT)] = {mach64_dma_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_MACH64_CLEAR)] = {mach64_dma_clear, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_MACH64_SWAP)] = {mach64_dma_swap, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_MACH64_IDLE)] = {mach64_dma_idle, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_MACH64_RESET)] = {mach64_engine_reset, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_MACH64_VERTEX)] = {mach64_dma_vertex, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_MACH64_BLIT)] = {mach64_dma_blit, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_MACH64_FLUSH)] = {mach64_dma_flush, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_MACH64_GETPARAM)] = {mach64_get_param, DRM_AUTH},
 };
 
 int mach64_max_ioctl = DRM_ARRAY_SIZE(mach64_ioctls);
