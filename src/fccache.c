@@ -182,6 +182,8 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 
     while (1) 
     {
+	off_t targ;
+
 	FcCacheReadString (cache->fd, name_buf, sizeof (name_buf));
 	if (!strlen(name_buf))
 	    break;
@@ -207,8 +209,11 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	d->name = FcStrCopy (name_buf);
 	d->ent = 0;
 	d->offset = lseek (cache->fd, 0, SEEK_CUR);
-	read (cache->fd, &d->metadata, sizeof (FcCache));
-	lseek (cache->fd, FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + d->metadata.count, SEEK_SET);
+	if (read (cache->fd, &d->metadata, sizeof (FcCache)) != sizeof (FcCache))
+	    goto bail1;
+	targ = FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + d->metadata.count;
+	if (lseek (cache->fd, targ, SEEK_SET) != targ)
+	    goto bail1;
     }
     return;
 
@@ -326,12 +331,8 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     header = malloc (10 + strlen (current_arch_machine_name));
     if (!header)
 	goto bail1;
-    sprintf (header, "%8x ", (int)truncate_to);
-    strcat (header, current_arch_machine_name);
-    if (!FcCacheWriteString (fd, header))
-	goto bail1;
 
-    truncate_to = current_arch_start + strlen(header) + 1;
+    truncate_to = current_arch_start + strlen(current_arch_machine_name) + 11;
     for (dir = cache->dirs; dir; dir = dir->next)
     {
 	truncate_to += strlen(dir->name) + 1;
@@ -340,6 +341,11 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 	truncate_to += dir->metadata.count;
     }
     truncate_to -= current_arch_start;
+
+    sprintf (header, "%8x ", (int)truncate_to);
+    strcat (header, current_arch_machine_name);
+    if (!FcCacheWriteString (fd, header))
+	goto bail1;
 
     for (dir = cache->dirs; dir; dir = dir->next)
     {
@@ -404,13 +410,19 @@ FcCacheSkipToArch (int fd, const char * arch)
     {
 	long bs;
 
-	lseek (fd, current_arch_start, SEEK_SET);
+	if (lseek (fd, current_arch_start, SEEK_SET) != current_arch_start)
+            return -1;
+
 	if (FcCacheReadString (fd, candidate_arch_machine_name_count, 
 				sizeof (candidate_arch_machine_name_count)) == 0)
             return -1;
 	if (!strlen(candidate_arch_machine_name_count))
 	    return -1;
 	bs = strtol(candidate_arch_machine_name_count, &candidate_arch, 16);
+
+	if (!bs || bs < strlen (candidate_arch_machine_name_count))
+	    return -1;
+
 	candidate_arch++; /* skip leading space */
 
 	if (strcmp (candidate_arch, arch)==0)
@@ -753,17 +765,17 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	current_arch_start = FcCacheNextOffset (lseek(fd, 0, SEEK_END));
 
     if (!FcCacheMoveDown(fd, current_arch_start))
-	goto bail1;
+	goto bail0;
 
     current_arch_start = lseek(fd, 0, SEEK_CUR);
     if (ftruncate (fd, current_arch_start) == -1)
-	goto bail1;
+	goto bail0;
 
     /* now write the address of the next offset */
     truncate_to = FcCacheNextOffset (FcCacheNextOffset (current_arch_start + sizeof (FcCache)) + metadata.count) - current_arch_start;
     header = malloc (10 + strlen (current_arch_machine_name));
     if (!header)
-	goto bail1;
+	goto bail0;
     sprintf (header, "%8x ", (int)truncate_to);
     strcat (header, current_arch_machine_name);
     if (!FcCacheWriteString (fd, header))
