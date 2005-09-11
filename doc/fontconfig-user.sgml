@@ -276,8 +276,8 @@ file version number (currently 1).
   </para></refsect2>
   <refsect2><title><sgmltag>include ignore_missing="no"</></title><para>
 This element contains the name of an additional configuration file or
-directory.  If a directory, every file within that directory starting with a
-number will be processed in sorted order.  When
+directory.  If a directory, every file within that directory starting with an
+ASCII digit (U+0030 - U+0039) and ending with the string ``.conf'' will be processed in sorted order.  When
 the XML datatype is traversed by FcConfigParse, the contents of the file(s)
 will also be incorporated into the configuration by passing the filename(s) to
 FcConfigLoadAndParse.  If 'ignore_missing' is set to "yes" instead of the

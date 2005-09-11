@@ -1,3 +1,22 @@
+2005-07-25  Keith Packard  <keithp@keithp.com>
+
+	* doc/fontconfig-user.sgml:
+	* fc-glyphname/fc-glyphname.c: (scan), (main):
+	* fc-lang/fc-lang.c: (FcConfigHome):
+	* fc-match/fc-match.c: (main):
+	* src/fccfg.c: (FcConfigHome):
+	* src/fcfreetype.c: (FcSfntNameTranscode), (FcSfntNameLanguage),
+	(FcVendorMatch), (FcFreeTypeQuery), (FcFreeTypeCharSetAndSpacing),
+	(addtag), (FcFontCapabilities):
+	* src/fcpat.c: (FcValueListEntCreate):
+	* src/fcstr.c: (FcStrCaseWalkerInit):
+	* src/fcxml.c: (FcParsePatelt), (FcConfigParseAndLoadDir):
+
+	Various GCC 4 cleanups for signed vs unsigned char
+
+	Match only [0-9]*.conf files in <include>{directory}</include>
+	elements to avoid loading *.rpmsave or .dpkg-old files. (otaylor)
+
 2005-07-15  Carl Worth  <cworth@cworth.org>
 
 	* src/fcint.h:

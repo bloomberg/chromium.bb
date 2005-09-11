@@ -56,7 +56,7 @@ FcCacheBankToIndex (int bank)
 FcChar8 *
 FcConfigHome (void)
 {
-    return getenv ("HOME");
+    return (FcChar8 *) getenv ("HOME");
 }
 
 static void 

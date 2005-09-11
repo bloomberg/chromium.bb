@@ -83,7 +83,7 @@ FcStrCaseWalkerInit (const FcChar8 *src, FcCaseWalker *w)
 {
     w->src = src;
     w->read = 0;
-    w->len = strlen (src);
+    w->len = strlen ((char *) src);
 }
 
 static FcChar8

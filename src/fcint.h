@@ -323,7 +323,7 @@ typedef struct _FcGlobalCacheDir FcGlobalCacheDir;
 
 struct _FcGlobalCacheDir {
     struct _FcGlobalCacheDir	*next;
-    FcChar8			*name;
+    char			*name;
     FcCache			metadata;
     off_t			offset;
     void			*ent;
@@ -422,7 +422,7 @@ FcBool
 FcGlobalCacheReadDir (FcFontSet     *set, 
 		      FcStrSet 	    *dirs, 
 		      FcGlobalCache *cache, 
-		      const FcChar8 *dir, 
+		      const char    *dir, 
 		      FcConfig 	    *config);
 
 void
@@ -432,7 +432,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 
 FcBool
 FcGlobalCacheUpdate (FcGlobalCache  *cache,
-		     const FcChar8  *file,
+		     const char     *file,
 		     FcFontSet	    *set);
 
 FcBool
@@ -795,8 +795,8 @@ FcPatternFini (void);
 FcBool
 FcPatternAppend (FcPattern *p, FcPattern *s);
 
-const char *
-FcStrStaticName (const char *name);
+const FcChar8 *
+FcStrStaticName (const FcChar8 *name);
 
 FcChar32
 FcStringHash (const FcChar8 *s);

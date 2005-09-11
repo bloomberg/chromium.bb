@@ -59,7 +59,7 @@
 	    __v__.u.d = va_arg (va, double);			    \
 	    break;						    \
 	case FcTypeString:					    \
-	    __v__.u.s = va_arg (va, const char *);		    \
+	    __v__.u.s = va_arg (va, const FcChar8 *);		    \
 	    break;						    \
 	case FcTypeBool:					    \
 	    __v__.u.b = va_arg (va, FcBool);			    \

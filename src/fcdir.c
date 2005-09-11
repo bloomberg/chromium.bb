@@ -136,7 +136,7 @@ FcDirScanConfig (FcFontSet	*set,
 	/*
 	 * Check ~/.fonts.cache-<version> file
 	 */
-	if (cache && FcGlobalCacheReadDir (set, dirs, cache, dir, config))
+	if (cache && FcGlobalCacheReadDir (set, dirs, cache, (char *)dir, config))
 	    return FcTrue;
     }
     
@@ -184,7 +184,7 @@ FcDirScanConfig (FcFontSet	*set,
      * add the cache entry 
      */
     if (ret && cache)
-	FcGlobalCacheUpdate (cache, dir, tmpSet);
+	FcGlobalCacheUpdate (cache, (char *)dir, tmpSet);
 
     for (i = 0; i < tmpSet->nfont; i++)
 	FcFontSetAdd (set, tmpSet->fonts[i]);

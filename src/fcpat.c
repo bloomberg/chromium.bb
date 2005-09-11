@@ -792,7 +792,7 @@ FcPatternHash (const FcPattern *p)
     for (i = 0; i < p->num; i++)
     {
 	h = (((h << 1) | (h >> 31)) ^ 
-	     FcStringHash (FcObjectPtrU ((FcPatternEltU(p->elts)+i)->object)) ^
+	     FcStringHash ((FcChar8 *)FcObjectPtrU ((FcPatternEltU(p->elts)+i)->object)) ^
 	     FcValueListHash ((FcPatternEltU(p->elts)+i)->values));
     }
     return h;
@@ -1280,34 +1280,32 @@ FcPatternAppend (FcPattern *p, FcPattern *s)
 }
 
 #define OBJECT_HASH_SIZE    31
-struct objectBucket {
+static struct objectBucket {
     struct objectBucket	*next;
     FcChar32		hash;
-};
-static struct objectBucket *FcObjectBuckets[OBJECT_HASH_SIZE];
+} *FcObjectBuckets[OBJECT_HASH_SIZE];
 
-const char *
-FcStrStaticName (const char *name)
+const FcChar8 *
+FcStrStaticName (const FcChar8 *name)
 {
-    FcChar32            hash = FcStringHash ((const FcChar8 *) name);
-    struct objectBucket **p;
-    struct objectBucket *b;
-    int                 size;
+    FcChar32		hash = FcStringHash (name);
+    struct objectBucket	**p;
+    struct objectBucket	*b;
+    int			size;
 
-    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next)
-)
-        if (b->hash == hash && !strcmp (name, (char *) (b + 1)))
-            return (char *) (b + 1);
-    size = sizeof (struct objectBucket) + strlen (name) + 1;
+    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
+	if (b->hash == hash && !strcmp ((char *)name, (char *) (b + 1)))
+	    return (FcChar8 *) (b + 1);
+    size = sizeof (struct objectBucket) + strlen ((char *)name) + 1;
     b = malloc (size);
     FcMemAlloc (FC_MEM_STATICSTR, size);
     if (!b)
         return NULL;
     b->next = 0;
     b->hash = hash;
-    strcpy ((char *) (b + 1), name);
+    strcpy ((char *) (b + 1), (char *)name);
     *p = b;
-    return (char *) (b + 1);
+    return (FcChar8 *) (b + 1);
 }
 
 static void
@@ -1370,11 +1368,11 @@ FcPatternEltPtrCreateStatic (int bank, int i)
 static void
 FcStrNewBank (void);
 static int
-FcStrNeededBytes (const char * s);
+FcStrNeededBytes (const FcChar8 * s);
 static void *
 FcStrDistributeBytes (FcCache * metadata, void * block_ptr);
-static const char *
-FcStrSerialize (int bank, const char * s);
+static const FcChar8 *
+FcStrSerialize (int bank, const FcChar8 * s);
 static void *
 FcStrUnserialize (FcCache metadata, void *block_ptr);
 
@@ -1669,10 +1667,10 @@ FcValueListSerialize(int bank, FcValueList *pi)
     case FcTypeString:
 	if (v->u.s)
 	{
-	    const char * s = FcStrSerialize(bank, v->u.s);
+	    const FcChar8 * s = FcStrSerialize(bank, v->u.s);
 	    if (!s)
 		return FcValueListPtrCreateDynamic(pi);
-	    v->u.s_off = s - (const char *)v;
+	    v->u.s_off = s - (const FcChar8 *)v;
 	    v->type |= FC_STORAGE_STATIC;
 	}
 	break;
@@ -1743,7 +1741,7 @@ FcValueListPtrCreateDynamic(FcValueList * p)
     return r;
 }
 
-static char ** static_strs;
+static FcChar8 ** static_strs;
 static int static_str_bank_count = 0, fcstr_ptr, fcstr_count;
 
 static struct objectBucket *FcStrBuckets[OBJECT_HASH_SIZE];
@@ -1772,7 +1770,7 @@ FcStrNewBank (void)
 }
 
 static int
-FcStrNeededBytes (const char * s)
+FcStrNeededBytes (const FcChar8 * s)
 {
     FcChar32            hash = FcStringHash ((const FcChar8 *) s);
     struct objectBucket **p;
@@ -1780,27 +1778,27 @@ FcStrNeededBytes (const char * s)
     int                 size;
 
     for (p = &FcStrBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
-        if (b->hash == hash && !strcmp (s, (char *) (b + 1)))
+        if (b->hash == hash && !strcmp ((char *)s, (char *) (b + 1)))
             return 0;
-    size = sizeof (struct objectBucket) + strlen (s) + 1 + sizeof(char *);
+    size = sizeof (struct objectBucket) + strlen ((char *)s) + 1 + sizeof(char *);
     b = malloc (size);
     FcMemAlloc (FC_MEM_STATICSTR, size);
     if (!b)
         return -1;
     b->next = 0;
     b->hash = hash;
-    strcpy ((char *) (b + 1), s);
-    *(char **)((char *) (b + 1) + strlen(s) + 1) = 0;
+    strcpy ((char *) (b + 1), (char *)s);
+    *(char **)((char *) (b + 1) + strlen((char *)s) + 1) = 0;
     *p = b;
 
-    fcstr_count += strlen(s) + 1;
-    return strlen(s) + 1;
+    fcstr_count += strlen((char *)s) + 1;
+    return strlen((char *)s) + 1;
 }
 
 static FcBool
 FcStrEnsureBank (int bi)
 {
-    char ** ss;
+    FcChar8 ** ss;
 
     if (!static_strs || static_str_bank_count <= bi)
     {
@@ -1827,7 +1825,7 @@ FcStrDistributeBytes (FcCache * metadata, void * block_ptr)
 	return 0;
 
     FcMemAlloc (FC_MEM_STRING, sizeof (char) * fcstr_count);
-    static_strs[bi] = (char *)block_ptr;
+    static_strs[bi] = (FcChar8 *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + (sizeof (char) * fcstr_count));
     metadata->str_count = fcstr_count;
     fcstr_ptr = 0;
@@ -1835,8 +1833,8 @@ FcStrDistributeBytes (FcCache * metadata, void * block_ptr)
     return block_ptr;
 }
 
-static const char *
-FcStrSerialize (int bank, const char * s)
+static const FcChar8 *
+FcStrSerialize (int bank, const FcChar8 * s)
 {
     FcChar32            hash = FcStringHash ((const FcChar8 *) s);
     struct objectBucket **p;
@@ -1844,15 +1842,15 @@ FcStrSerialize (int bank, const char * s)
     int bi = FcCacheBankToIndex(bank);
 
     for (p = &FcStrBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
-        if (b->hash == hash && !strcmp (s, (char *) (b + 1)))
+        if (b->hash == hash && !strcmp ((char *)s, (char *) (b + 1)))
 	{
-	    char * t = *(char **)(((char *)(b + 1)) + strlen (s) + 1);
+	    FcChar8 * t = *(FcChar8 **)(((FcChar8 *)(b + 1)) + strlen ((char *)s) + 1);
 	    if (!t)
 	    {
-		strcpy(static_strs[bi] + fcstr_ptr, s);
-		*(char **)((char *) (b + 1) + strlen(s) + 1) = (static_strs[bi] + fcstr_ptr);
-		fcstr_ptr += strlen(s) + 1;
-		t = *(char **)(((char *)(b + 1)) + strlen (s) + 1);
+		strcpy((char *)(static_strs[bi] + fcstr_ptr), (char *)s);
+		*(FcChar8 **)((FcChar8 *) (b + 1) + strlen((char *)s) + 1) = (static_strs[bi] + fcstr_ptr);
+		fcstr_ptr += strlen((char *)s) + 1;
+		t = *(FcChar8 **)(((FcChar8 *)(b + 1)) + strlen ((char *)s) + 1);
 	    }
 	    return t;
 	}
@@ -1867,7 +1865,7 @@ FcStrUnserialize (FcCache metadata, void *block_ptr)
 	return 0;
 
     FcMemAlloc (FC_MEM_STRING, sizeof (char) * metadata.str_count);
-    static_strs[bi] = (char *)block_ptr;
+    static_strs[bi] = (FcChar8 *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (char) * metadata.str_count));
 

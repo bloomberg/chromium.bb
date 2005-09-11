@@ -60,8 +60,8 @@ FcCacheHaveBank (int bank);
 
 #define FC_DBG_CACHE_REF    1024
 
-static FcChar8 *
-FcCacheReadString (int fd, FcChar8 *dest, int len)
+static char *
+FcCacheReadString (int fd, char *dest, int len)
 {
     FcChar8	c;
     FcBool	escape;
@@ -101,7 +101,7 @@ FcCacheReadString (int fd, FcChar8 *dest, int len)
 }
 
 static FcBool
-FcCacheWriteString (int fd, const FcChar8 *chars)
+FcCacheWriteString (int fd, const char *chars)
 {
     if (write (fd, chars, strlen(chars)+1) != strlen(chars)+1)
 	return FcFalse;
@@ -151,7 +151,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
                    FcStrSet	    *staleDirs,
 		   const FcChar8    *cache_file)
 {
-    FcChar8		name_buf[8192];
+    char		name_buf[8192];
     FcGlobalCacheDir	*d, *next;
     char 		* current_arch_machine_name;
     char 		candidate_arch_machine_name[MACHINE_SIGNATURE_SIZE + 9];
@@ -193,7 +193,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
         {
             FcCache md;
 
-            FcStrSetAdd (staleDirs, FcStrCopy (name_buf));
+            FcStrSetAdd (staleDirs, FcStrCopy ((FcChar8 *)name_buf));
             read (cache->fd, &md, sizeof (FcCache));
             lseek (cache->fd, FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + md.count, SEEK_SET);
             continue;
@@ -206,7 +206,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	d->next = cache->dirs;
 	cache->dirs = d;
 
-	d->name = FcStrCopy (name_buf);
+	d->name = (char *)FcStrCopy ((FcChar8 *)name_buf);
 	d->ent = 0;
 	d->offset = lseek (cache->fd, 0, SEEK_CUR);
 	if (read (cache->fd, &d->metadata, sizeof (FcCache)) != sizeof (FcCache))
@@ -231,7 +231,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 }
 
 FcBool
-FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, const FcChar8 *dir, FcConfig *config)
+FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, const char *dir, FcConfig *config)
 {
     FcGlobalCacheDir *d;
     FcBool ret = FcFalse;
@@ -256,7 +256,7 @@ FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, con
 
 FcBool
 FcGlobalCacheUpdate (FcGlobalCache  *cache,
-		     const FcChar8  *name,
+		     const char     *name,
 		     FcFontSet	    *set)
 {
     FcGlobalCacheDir * d;
@@ -281,7 +281,7 @@ FcGlobalCacheUpdate (FcGlobalCache  *cache,
 
     cache->updated = FcTrue;
 
-    d->name = FcStrCopy (name);
+    d->name = (char *)FcStrCopy ((FcChar8 *)name);
     d->ent = FcDirCacheProduce (set, &d->metadata);
     d->offset = 0;
     return FcTrue;
@@ -618,12 +618,12 @@ FcCacheRead (FcConfig *config, FcGlobalCache * cache)
 static FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir)
 {
-    FcChar8         *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
+    char *cache_file = (char *)FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
     int fd;
     char * current_arch_machine_name;
     char candidate_arch_machine_name[9+MACHINE_SIGNATURE_SIZE];
     off_t current_arch_start = 0;
-    FcChar8	    subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
+    char subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
 
     if (!cache_file)
         goto bail;
@@ -643,7 +643,7 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir)
 	goto bail1;
 
     while (strlen(FcCacheReadString (fd, subdirName, sizeof (subdirName))) > 0)
-        FcStrSetAdd (dirs, subdirName);
+        FcStrSetAdd (dirs, (FcChar8 *)subdirName);
 
     if (!FcDirCacheConsume (fd, set))
 	goto bail1;
@@ -689,7 +689,7 @@ static void *
 FcDirCacheProduce (FcFontSet *set, FcCache *metadata)
 {
     void * current_dir_block, * final_dir_block;
-    static int rand_state = 0;
+    static unsigned int rand_state = 0;
     int bank;
 
     if (!rand_state) 
@@ -734,6 +734,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     int fd, i;
     FcCache metadata;
     off_t current_arch_start = 0, truncate_to;
+
     char * current_arch_machine_name, * header;
     void * current_dir_block;
 
@@ -744,7 +745,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 
     if (!metadata.count)
     {
-	unlink (cache_file);
+	unlink ((char *)cache_file);
 	free (cache_file);
 	return FcTrue;
     }
@@ -755,7 +756,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     if (FcDebug () & FC_DBG_CACHE)
         printf ("FcDirCacheWriteDir cache_file \"%s\"\n", cache_file);
 
-    fd = open(cache_file, O_RDWR | O_CREAT, 0666);
+    fd = open((char *)cache_file, O_RDWR | O_CREAT, 0666);
     if (fd == -1)
         goto bail0;
 
@@ -782,7 +783,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	goto bail1;
 
     for (i = 0; i < dirs->size; i++)
-        FcCacheWriteString (fd, dirs->strs[i]);
+        FcCacheWriteString (fd, (char *)dirs->strs[i]);
     FcCacheWriteString (fd, "");
 
     write (fd, &metadata, sizeof(FcCache));
@@ -802,7 +803,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
  bail0:
     free (current_dir_block);
  bail:
-    unlink (cache_file);
+    unlink ((char *)cache_file);
     free (cache_file);
     return FcFalse;
 }
