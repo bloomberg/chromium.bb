@@ -91,9 +91,7 @@ static void drm_ati_free_pcigart_table(unsigned long address)
 	free_pages(address, ATI_PCIGART_TABLE_ORDER);
 }
 
-int drm_ati_pcigart_init(drm_device_t * dev,
-			 unsigned long *addr, dma_addr_t * bus_addr,
-			int is_pcie)
+int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
 {
 	drm_sg_mem_t *entry = dev->sg;
 	unsigned long address = 0;
@@ -106,25 +104,36 @@ int drm_ati_pcigart_init(drm_device_t * dev,
 		goto done;
 	}
 
-	address = drm_ati_alloc_pcigart_table();
-	if (!address) {
-		DRM_ERROR("cannot allocate PCI GART page!\n");
-		goto done;
+	if (gart_info->gart_table_location==DRM_ATI_GART_MAIN)
+	{
+		DRM_DEBUG("PCI: no table in VRAM: using normal RAM\n");
+		
+		address = drm_ati_alloc_pcigart_table();
+		if (!address) {
+			DRM_ERROR("cannot allocate PCI GART page!\n");
+			goto done;
+		}
+		
+		if (!dev->pdev) {
+			DRM_ERROR("PCI device unknown!\n");
+			goto done;
+		}
+		
+		bus_address = pci_map_single(dev->pdev, (void *)address,
+					     ATI_PCIGART_TABLE_PAGES * PAGE_SIZE,
+					     PCI_DMA_TODEVICE);
+		if (bus_address == 0) {
+			DRM_ERROR("unable to map PCIGART pages!\n");
+			drm_ati_free_pcigart_table(address);
+			address = 0;
+			goto done;
+		}
 	}
-
-	if (!dev->pdev) {
-		DRM_ERROR("PCI device unknown!\n");
-		goto done;
-	}
-
-	bus_address = pci_map_single(dev->pdev, (void *)address,
-				     ATI_PCIGART_TABLE_PAGES * PAGE_SIZE,
-				     PCI_DMA_TODEVICE);
-	if (bus_address == 0) {
-		DRM_ERROR("unable to map PCIGART pages!\n");
-		drm_ati_free_pcigart_table(address);
-		address = 0;
-		goto done;
+	else
+	{
+		address = gart_info->addr;
+		bus_address = gart_info->bus_addr;
+		DRM_DEBUG("PCI: Gart Table: VRAM %08X mapped at %08lX\n", bus_address, address);
 	}
 
 	pci_gart = (u32 *) address;
@@ -142,7 +151,7 @@ int drm_ati_pcigart_init(drm_device_t * dev,
 						   PAGE_SIZE, PCI_DMA_TODEVICE);
 		if (entry->busaddr[i] == 0) {
 			DRM_ERROR("unable to map PCIGART pages!\n");
-			drm_ati_pcigart_cleanup(dev, address, bus_address);
+			drm_ati_pcigart_cleanup(dev, gart_info);
 			address = 0;
 			bus_address = 0;
 			goto done;
@@ -150,11 +159,8 @@ int drm_ati_pcigart_init(drm_device_t * dev,
 		page_base = (u32) entry->busaddr[i];
 
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
-			if (is_pcie)
-			{
+			if (gart_info->is_pcie)
 				*pci_gart = (cpu_to_le32(page_base)>>8) | 0xc;
-//				DRM_DEBUG("PCIE: %d %08X %08X to %p\n", i, page_base, (cpu_to_le32(page_base)>>8)|0xc, pci_gart);
-			}
 			else
 				*pci_gart = cpu_to_le32(page_base);
 			pci_gart++;
@@ -171,14 +177,13 @@ int drm_ati_pcigart_init(drm_device_t * dev,
 #endif
 
       done:
-	*addr = address;
-	*bus_addr = bus_address;
+	gart_info->addr = address;
+	gart_info->bus_addr = bus_address;
 	return ret;
 }
 EXPORT_SYMBOL(drm_ati_pcigart_init);
 
-int drm_ati_pcigart_cleanup(drm_device_t * dev,
-			    unsigned long addr, dma_addr_t bus_addr)
+int drm_ati_pcigart_cleanup(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
 {
 	drm_sg_mem_t *entry = dev->sg;
 	unsigned long pages;
@@ -190,10 +195,12 @@ int drm_ati_pcigart_cleanup(drm_device_t * dev,
 		return 0;
 	}
 
-	if (bus_addr) {
-		pci_unmap_single(dev->pdev, bus_addr,
-				 ATI_PCIGART_TABLE_PAGES * PAGE_SIZE,
-				 PCI_DMA_TODEVICE);
+	if (gart_info->bus_addr) {
+		if (gart_info->gart_table_location==DRM_ATI_GART_MAIN) {
+			pci_unmap_single(dev->pdev, gart_info->bus_addr,
+					 ATI_PCIGART_TABLE_PAGES * PAGE_SIZE,
+					 PCI_DMA_TODEVICE);
+		}
 
 		pages = (entry->pages <= ATI_MAX_PCIGART_PAGES)
 		    ? entry->pages : ATI_MAX_PCIGART_PAGES;
@@ -204,10 +211,15 @@ int drm_ati_pcigart_cleanup(drm_device_t * dev,
 			pci_unmap_single(dev->pdev, entry->busaddr[i],
 					 PAGE_SIZE, PCI_DMA_TODEVICE);
 		}
+
+		if (gart_info->gart_table_location==DRM_ATI_GART_MAIN)
+			gart_info->bus_addr=0;
 	}
 
-	if (addr) {
-		drm_ati_free_pcigart_table(addr);
+
+	if (gart_info->gart_table_location==DRM_ATI_GART_MAIN && gart_info->addr) {
+		drm_ati_free_pcigart_table(gart_info->addr);
+		gart_info->addr=0;
 	}
 
 	return 1;

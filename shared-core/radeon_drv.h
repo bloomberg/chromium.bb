@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20050905"
+#define DRIVER_DATE		"20050911"
 
 /* Interface history:
  *
@@ -86,10 +86,11 @@
  * 1.18- Add support for GL_ATI_fragment_shader, new packets R200_EMIT_PP_AFS_0/1,
          R200_EMIT_PP_TXCTLALL_0-5 (replaces R200_EMIT_PP_TXFILTER_0-5, 2 more regs)
          and R200_EMIT_ATF_TFACTOR (replaces R200_EMIT_TFACTOR_0 (8 consts instead of 6)
+ * 1.19- Add support for gart table in FB memory and PCIE r300
  */
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		18
+#define DRIVER_MINOR		19
 #define DRIVER_PATCHLEVEL	0
 
 enum radeon_family {
@@ -211,9 +212,6 @@ typedef struct drm_radeon_private {
 
 	int microcode_version;
 
-	unsigned long phys_pci_gart;
-	dma_addr_t bus_pci_gart;
-
 	struct {
 		u32 boxes;
 		int freelist_timeouts;
@@ -265,7 +263,9 @@ typedef struct drm_radeon_private {
 
 	struct radeon_surface surfaces[RADEON_MAX_SURFACES];
 	struct radeon_virt_surface virt_surfaces[2*RADEON_MAX_SURFACES];
-	
+
+	unsigned long pcigart_offset;
+	drm_ati_pcigart_info gart_info;
 	/* starting from here on, data is preserved accross an open */
 	uint32_t flags;		/* see radeon_chip_flags */
 
@@ -919,6 +919,8 @@ extern int r300_do_cp_cmdbuf( drm_device_t* dev,
 #define RADEON_MAX_VB_VERTS		(0xffff)
 
 #define RADEON_RING_HIGH_MARK		128
+
+#define RADEON_PCIGART_TABLE_SIZE      (32*1024)
 
 #define RADEON_READ(reg)	DRM_READ32(  dev_priv->mmio, (reg) )
 #define RADEON_WRITE(reg,val)	DRM_WRITE32( dev_priv->mmio, (reg), (val) )
