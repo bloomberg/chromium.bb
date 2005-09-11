@@ -59,7 +59,7 @@ static unsigned long drm_ati_alloc_pcigart_table(void)
 	int i;
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	address = __get_free_pages(GFP_DMA, ATI_PCIGART_TABLE_ORDER);
+	address = __get_free_pages(GFP_KERNEL, ATI_PCIGART_TABLE_ORDER);
 	if (address == 0UL) {
 		return 0;
 	}
