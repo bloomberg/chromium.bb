@@ -60,7 +60,6 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_DPI,		FcTypeDouble },
     { FC_RGBA,		FcTypeInteger, },
     { FC_SCALE,		FcTypeDouble, },
-/*    { FC_RENDER,	FcTypeBool, },*/
     { FC_MINSPACE,	FcTypeBool, },
     { FC_CHAR_WIDTH,	FcTypeInteger },
     { FC_CHAR_HEIGHT,	FcTypeInteger },
@@ -71,6 +70,7 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_CAPABILITY,	FcTypeString },
     { FC_FONTFORMAT,	FcTypeString },
     { FC_EMBOLDEN,	FcTypeBool },
+    { FC_RENDER,	FcTypeBool, },
 };
 
 #define NUM_OBJECT_TYPES    (sizeof _FcBaseObjectTypes / sizeof _FcBaseObjectTypes[0])
