@@ -448,9 +448,9 @@ typedef struct drm_pci_id_list
 	char *name;
 } drm_pci_id_list_t;
 
-#define DRM_AUTH_NEEDED 0x1
-#define DRM_MASTER      0x2
-#define DRM_ROOT_ONLY   0x4
+#define DRM_AUTH	0x1
+#define DRM_MASTER	0x2
+#define DRM_ROOT_ONLY	0x4
 typedef struct drm_ioctl_desc {
 	int		     (*func)(DRM_IOCTL_ARGS);
 	int flags;
