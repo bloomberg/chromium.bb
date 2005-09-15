@@ -292,7 +292,7 @@ FcConfigBuildFonts (FcConfig *config)
         for (i = 0; i < oldDirs->num; i++)
         {
 	    if (FcDebug () & FC_DBG_FONTSET)
-		printf ("scan dir %s\n", dir);
+		printf ("scan dir %s\n", oldDirs->strs[i]);
 	    FcDirScanConfig (fonts, config->fontDirs, cache, 
 			     config->blanks, oldDirs->strs[i], 
                              FcFalse, config);

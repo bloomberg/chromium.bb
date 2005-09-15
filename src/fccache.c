@@ -420,6 +420,7 @@ FcCacheSkipToArch (int fd, const char * arch)
 	    return -1;
 	bs = strtol(candidate_arch_machine_name_count, &candidate_arch, 16);
 
+	// count = 0 should probably be distinguished from the !bs condition
 	if (!bs || bs < strlen (candidate_arch_machine_name_count))
 	    return -1;
 
