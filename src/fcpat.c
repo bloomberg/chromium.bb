@@ -1215,7 +1215,8 @@ FcPatternDuplicate (const FcPattern *orig)
 	     FcValueListPtrU(l); 
 	     l = FcValueListPtrU(l)->next)
 	    if (!FcPatternAdd (new, FcObjectPtrU((e + i)->object), 
-                               FcValueListPtrU(l)->value, FcTrue))
+                               FcValueCanonicalize(&FcValueListPtrU(l)->value),
+			       FcTrue))
 		goto bail1;
     }
 
