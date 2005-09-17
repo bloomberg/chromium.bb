@@ -196,4 +196,8 @@ static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from
 #define __x86_64__
 #endif
 
+#ifndef pci_pretty_name
+#define pci_pretty_name(dev) ""
+#endif
+
 #endif
