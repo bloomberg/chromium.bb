@@ -30,6 +30,7 @@
 
 /* Please do not revoke any of these bindings. */
 static const FcObjectType _FcBaseObjectTypes[] = {
+    { "__DUMMY__",      FcTypeVoid, },
     { FC_FAMILY,	FcTypeString, },
     { FC_FAMILYLANG,	FcTypeString, },
     { FC_STYLE,		FcTypeString, },
@@ -77,6 +78,7 @@ static const FcObjectType _FcBaseObjectTypes[] = {
 
 static FcObjectType * _FcUserObjectNames = 0;
 static int user_obj_alloc = 0;
+static int next_basic_offset = NUM_OBJECT_TYPES;
 
 typedef struct _FcObjectTypeList    FcObjectTypeList;
 
@@ -84,6 +86,7 @@ struct _FcObjectTypeList {
     const FcObjectTypeList  *next;
     const FcObjectType	    *types;
     int			    ntypes;
+    int			    basic_offset;
 };
 
 static const FcObjectTypeList _FcBaseObjectTypesList = {
@@ -106,6 +109,8 @@ FcNameRegisterObjectTypes (const FcObjectType *types, int ntypes)
     l->types = types;
     l->ntypes = ntypes;
     l->next = _FcObjectTypes;
+    l->basic_offset = next_basic_offset;
+    next_basic_offset += ntypes;
     _FcObjectTypes = l;
     return FcTrue;
 }
@@ -166,6 +171,8 @@ struct objectBucket {
 };
 static struct objectBucket *FcObjectBuckets[OBJECT_HASH_SIZE];
 
+/* Design constraint: biggest_known_ntypes must never change
+ * after any call to FcNameRegisterObjectTypes. */
 static const FcObjectType *biggest_known_types = _FcBaseObjectTypes; 
 static FcBool allocated_biggest_known_types;
 static int biggest_known_ntypes = NUM_OBJECT_TYPES;
@@ -188,9 +195,9 @@ FcObjectToPtrLookup (const char * object)
 	    if (!strcmp (object, t->object))
 	    {
 		if (l == (FcObjectTypeList*)_FcUserObjectNames)
-		    return i + biggest_known_ntypes;
+                    return -i;
 		else
-		    return i;
+		    return l->basic_offset + i;
 	    }
 	}
     }
@@ -210,7 +217,7 @@ FcObjectToPtrLookup (const char * object)
         FcObjectType * t = realloc (_FcUserObjectNames, 
 				    nt * sizeof (FcObjectType));
         if (!t)
-            return -1;
+            return 0;
 	_FcUserObjectNames = t;
 	user_obj_alloc = nt;
     }
@@ -240,7 +247,7 @@ FcObjectToPtrLookup (const char * object)
     t[n].object = object;
     t[n].type = FcTypeVoid;
 
-    return n+biggest_known_ntypes;
+    return -n;
 }
 
 FcObjectPtr
@@ -259,7 +266,7 @@ FcObjectToPtr (const char * name)
     b = malloc (size);
     FcMemAlloc (FC_MEM_STATICSTR, size);
     if (!b)
-        return -1;
+        return 0;
     b->next = 0;
     b->hash = hash;
     b->id = FcObjectToPtrLookup (name);
@@ -292,10 +299,22 @@ FcObjectStaticNameFini (void)
 const char *
 FcObjectPtrU (FcObjectPtr si)
 {
-    if (si < biggest_known_ntypes)
-	return biggest_known_types[si].object;
-    else
-	return _FcUserObjectNames[si-biggest_known_ntypes].object;
+    const FcObjectTypeList  *l;
+    int i, j;
+
+    if (si > 0)
+    {
+        if (si < biggest_known_ntypes)
+            return biggest_known_types[si].object;
+
+        j = 0;
+        for (l = _FcObjectTypes; l; l = l->next)
+            for (i = 0; i < l->ntypes; i++, j++)
+                if (j == si)
+                    return l->types[i].object;
+    }
+
+    return _FcUserObjectNames[-si].object;
 }
 
 int
