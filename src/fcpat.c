@@ -331,7 +331,7 @@ typedef union _FcValueListAlign {
 
 static int	    FcValueListFrozenCount[FcTypeLangSet + 1];
 static int	    FcValueListFrozenBytes[FcTypeLangSet + 1];
-static char	    *FcValueListFrozenName[] = {
+static char	    FcValueListFrozenName[][8] = {
     "Void", 
     "Integer", 
     "Double", 
@@ -1203,6 +1203,7 @@ FcPatternDuplicate (const FcPattern *orig)
     int		    i;
     FcValueListPtr  l;
 
+    printf("pattern duplicate %x\n", (int)orig); // XXX
     new = FcPatternCreate ();
     if (!new)
 	goto bail0;

@@ -161,7 +161,7 @@ FcInitBringUptoDate (void)
 }
 
 static struct {
-    char    *name;
+    char    name[16];
     int	    alloc_count;
     int	    alloc_mem;
     int	    free_count;

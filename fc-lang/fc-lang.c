@@ -60,9 +60,12 @@ FcConfigHome (void)
 }
 
 static void 
-fatal (char *file, int lineno, char *msg)
+fatal (const char *file, int lineno, const char *msg)
 {
-    fprintf (stderr, "%s:%d: %s\n", file, lineno, msg);
+    if (lineno)
+	fprintf (stderr, "%s:%d: %s\n", file, lineno, msg);
+    else
+	fprintf (stderr, "%s:%d: %s\n", file, lineno, msg);
     exit (1);
 }
 
@@ -226,6 +229,7 @@ main (int argc, char **argv)
     FILE	*f;
     int		ncountry = 0;
     int		i = 0;
+    int		argi;
     FcCharLeaf	**leaves;
     int		total_leaves = 0;
     int		l, sl, tl;
@@ -237,16 +241,18 @@ main (int argc, char **argv)
     int		setRangeEnd[26];
     FcChar8	setRangeChar;
     
-    while (*++argv)
+    argi = 1;
+    while (argv[argi])
     {
-	if (!strcmp (*argv, "-d"))
+	if (!strcmp (argv[argi], "-d"))
 	{
-	    dir = *++argv;
+	    argi++;
+	    dir = argv[argi++];
 	    continue;
 	}
 	if (i == MAX_LANG)
-	    fatal (*argv, 0, "Too many languages");
-	files[i++] = *argv;
+	    fatal (argv[0], 0, "Too many languages");
+	files[i++] = argv[argi++];
     }
     files[i] = 0;
     qsort (files, i, sizeof (char *), compare);

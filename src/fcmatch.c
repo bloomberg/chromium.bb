@@ -28,7 +28,7 @@
 #include <stdio.h>
 
 static double
-FcCompareNumber (char *object, FcValue *value1, FcValue *value2)
+FcCompareNumber (const char *object, FcValue *value1, FcValue *value2)
 {
     double  v1, v2, v;
     
@@ -59,7 +59,7 @@ FcCompareNumber (char *object, FcValue *value1, FcValue *value2)
 }
 
 static double
-FcCompareString (char *object, FcValue *v1, FcValue *v2)
+FcCompareString (const char *object, FcValue *v1, FcValue *v2)
 {
     FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
     if (value2.type != FcTypeString || value1.type != FcTypeString)
@@ -68,7 +68,7 @@ FcCompareString (char *object, FcValue *v1, FcValue *v2)
 }
 
 static double
-FcCompareFamily (char *object, FcValue *v1, FcValue *v2)
+FcCompareFamily (const char *object, FcValue *v1, FcValue *v2)
 {
     FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
     if (value2.type != FcTypeString || value1.type != FcTypeString)
@@ -77,7 +77,7 @@ FcCompareFamily (char *object, FcValue *v1, FcValue *v2)
 }
 
 static double
-FcCompareLang (char *object, FcValue *v1, FcValue *v2)
+FcCompareLang (const char *object, FcValue *v1, FcValue *v2)
 {
     FcLangResult    result;
     FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
@@ -124,7 +124,7 @@ FcCompareLang (char *object, FcValue *v1, FcValue *v2)
 }
 
 static double
-FcCompareBool (char *object, FcValue *value1, FcValue *value2)
+FcCompareBool (const char *object, FcValue *value1, FcValue *value2)
 {
     if (value2->type != FcTypeBool || value1->type != FcTypeBool)
 	return -1.0;
@@ -132,7 +132,7 @@ FcCompareBool (char *object, FcValue *value1, FcValue *value2)
 }
 
 static double
-FcCompareCharSet (char *object, FcValue *v1, FcValue *v2)
+FcCompareCharSet (const char *object, FcValue *v1, FcValue *v2)
 {
     FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
     
@@ -142,7 +142,7 @@ FcCompareCharSet (char *object, FcValue *v1, FcValue *v2)
 }
 
 static double
-FcCompareSize (char *object, FcValue *value1, FcValue *value2)
+FcCompareSize (const char *object, FcValue *value1, FcValue *value2)
 {
     double  v1, v2, v;
 
@@ -175,8 +175,8 @@ FcCompareSize (char *object, FcValue *value1, FcValue *value2)
 }
 
 typedef struct _FcMatcher {
-    char	    *object;
-    double	    (*compare) (char *object, FcValue *value1, FcValue *value2);
+    const char	    *object;
+    double	    (*compare) (const char *object, FcValue *value1, FcValue *value2);
     int		    strong, weak;
 } FcMatcher;
 

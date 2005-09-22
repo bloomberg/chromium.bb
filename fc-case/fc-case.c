@@ -31,11 +31,11 @@
 typedef enum _caseFoldClass { CaseFoldCommon, CaseFoldFull, CaseFoldSimple, CaseFoldTurkic } CaseFoldClass;
 
 typedef struct _caseFoldClassMap {
-    char	    *name;
+    const char	    *name;
     CaseFoldClass   class;
 } CaseFoldClassMap;
 
-static CaseFoldClassMap	caseFoldClassMap[] = {
+static const CaseFoldClassMap	caseFoldClassMap[] = {
     { "C", CaseFoldCommon },
     { "F", CaseFoldFull },
     { "S", CaseFoldSimple },
@@ -51,7 +51,7 @@ typedef struct _caseFoldRaw {
 } CaseFoldRaw;
 
 static void
-panic (char *reason)
+panic (const char *reason)
 {
     fprintf (stderr, "fc-case: panic %s\n", reason);
     exit (1);
@@ -148,7 +148,7 @@ foldExtends (FcCaseFold *fold, CaseFoldRaw *raw)
     return 0;
 }
 	    
-static char *
+static const char *
 case_fold_method_name (FcChar16 method)
 {
     switch (method) {

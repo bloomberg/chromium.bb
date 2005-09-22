@@ -25,7 +25,7 @@
 #include "fcint.h"
 
 static int
-rawindex (FcGlyphName *gn);
+rawindex (const FcGlyphName *gn);
 
 static void
 scan (FILE *f, char *filename);
@@ -43,7 +43,7 @@ static void
 insert (FcGlyphName *gn, FcGlyphName **table, FcChar32 h);
 
 static void
-dump (FcGlyphName **table, char *name);
+dump (FcGlyphName * const *table, const char *name);
 
 static FcGlyphName *
 FcAllocGlyphName (FcChar32 ucs, FcChar8 *name)
@@ -59,9 +59,13 @@ FcAllocGlyphName (FcChar32 ucs, FcChar8 *name)
 }
 
 static void 
-fatal (char *file, int lineno, char *msg)
+fatal (const char *file, int lineno, const char *msg)
 {
-    fprintf (stderr, "%s:%d: %s\n", file, lineno, msg);
+    if (lineno)
+        fprintf (stderr, "%s:%d: %s\n", file, lineno, msg);
+    else 
+	fprintf (stderr, "%s: %s\n", file, msg);
+
     exit (1);
 }
 
@@ -77,7 +81,7 @@ FcGlyphName *ucs_to_name[MAX_GLYPHNAME*2];
 int	    hash, rehash;
 
 static int
-rawindex (FcGlyphName *gn)
+rawindex (const FcGlyphName *gn)
 {
     int	i;
 
@@ -211,7 +215,7 @@ insert (FcGlyphName *gn, FcGlyphName **table, FcChar32 h)
 }
 
 static void
-dump (FcGlyphName **table, char *name)
+dump (FcGlyphName * const *table, const char *name)
 {
     int	i;
     
@@ -235,11 +239,12 @@ main (int argc, char **argv)
     int		i;
     
     i = 0;
-    while (*++argv)
+    while (argv[i+1])
     {
 	if (i == MAX_GLYPHFILE)
 	    fatal (*argv, 0, "Too many glyphname files");
-	files[i++] = *argv;
+	files[i] = argv[i+1];
+	i++;
     }
     files[i] = 0;
     qsort (files, i, sizeof (char *), compare_string);

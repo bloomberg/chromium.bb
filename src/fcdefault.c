@@ -26,7 +26,7 @@
 #include <locale.h>
 
 static struct {
-    char	*field;
+    const char	*field;
     FcBool	value;
 } FcBoolDefaults[] = {
     { FC_HINTING,	    FcTrue	},  /* !FT_LOAD_NO_HINTING */
@@ -35,7 +35,7 @@ static struct {
     { FC_GLOBAL_ADVANCE,    FcTrue	},  /* !FC_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH */
 };
 
-#define NUM_FC_BOOL_DEFAULTS	(sizeof FcBoolDefaults / sizeof FcBoolDefaults[0])
+#define NUM_FC_BOOL_DEFAULTS	(int) (sizeof FcBoolDefaults / sizeof FcBoolDefaults[0])
 
 void
 FcDefaultSubstitute (FcPattern *pattern)
@@ -127,7 +127,7 @@ FcDefaultSubstitute (FcPattern *pattern)
 			after = territory + strlen (territory);
 		}
 		territory_len = after - territory;
-		if (lang_len + 1 + territory_len + 1 <= sizeof (lang_local))
+		if (lang_len + 1 + territory_len + 1 <= (int) sizeof (lang_local))
 		{
 		    strncpy (lang_local, lang, lang_len);
 		    lang_local[lang_len] = '-';

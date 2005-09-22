@@ -347,6 +347,7 @@ FcCharSetIterStart (const FcCharSet *fcs, FcCharSetIter *iter)
     FcCharSetDump (fcs);
 #endif
     iter->ucs4 = 0;
+    iter->pos = 0;
     FcCharSetIterSet (fcs, iter);
 }
 
@@ -992,7 +993,7 @@ FcCharSetHash (FcCharSet *fcs)
     int		i;
 
     /* hash in leaves */
-    for (i = 0; i < fcs->num * sizeof (FcCharLeaf *) / sizeof (FcChar32); i++)
+    for (i = 0; i < fcs->num * (int) (sizeof (FcCharLeaf *) / sizeof (FcChar32)); i++)
 	hash = ((hash << 1) | (hash >> 31)) ^ (FcChar32)(FcCharSetGetLeaf(fcs, i)->map);
     /* hash in numbers */
     for (i = 0; i < fcs->num; i++)

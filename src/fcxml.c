@@ -323,72 +323,72 @@ typedef enum _FcElement {
     FcElementUnknown
 } FcElement;
 
+static struct {
+    const char  name[16];
+    FcElement   element;
+} fcElementMap[] = {
+    { "fontconfig",	FcElementFontconfig },
+    { "dir",		FcElementDir },
+    { "cache",		FcElementCache },
+    { "include",	FcElementInclude },
+    { "config",		FcElementConfig },
+    { "match",		FcElementMatch },
+    { "alias",		FcElementAlias },
+    
+    { "blank",		FcElementBlank },
+    { "rescan",		FcElementRescan },
+
+    { "prefer",		FcElementPrefer },
+    { "accept",		FcElementAccept },
+    { "default",	FcElementDefault },
+    { "family",		FcElementFamily },
+
+    { "selectfont",	FcElementSelectfont },
+    { "acceptfont",	FcElementAcceptfont },
+    { "rejectfont",	FcElementRejectfont },
+    { "glob",		FcElementGlob },
+    { "pattern",	FcElementPattern },
+    { "patelt",		FcElementPatelt },
+
+    { "test",		FcElementTest },
+    { "edit",		FcElementEdit },
+    { "int",		FcElementInt },
+    { "double",		FcElementDouble },
+    { "string",		FcElementString },
+    { "matrix",		FcElementMatrix },
+    { "bool",		FcElementBool },
+    { "charset",	FcElementCharset },
+    { "name",		FcElementName },
+    { "const",		FcElementConst },
+    { "or",		FcElementOr },
+    { "and",		FcElementAnd },
+    { "eq",		FcElementEq },
+    { "not_eq",		FcElementNotEq },
+    { "less",		FcElementLess },
+    { "less_eq",	FcElementLessEq },
+    { "more",		FcElementMore },
+    { "more_eq",	FcElementMoreEq },
+    { "contains",	FcElementContains },
+    { "not_contains",	FcElementNotContains },
+    { "plus",		FcElementPlus },
+    { "minus",		FcElementMinus },
+    { "times",		FcElementTimes },
+    { "divide",		FcElementDivide },
+    { "not",		FcElementNot },
+    { "if",		FcElementIf },
+    { "floor",		FcElementFloor },
+    { "ceil",		FcElementCeil },
+    { "round",		FcElementRound },
+    { "trunc",		FcElementTrunc },
+};
+#define NUM_ELEMENT_MAPS (int) (sizeof fcElementMap / sizeof fcElementMap[0])
+
 static FcElement
 FcElementMap (const XML_Char *name)
 {
-    static struct {
-	char	    *name;
-	FcElement   element;
-    } fcElementMap[] = {
-	{ "fontconfig",	FcElementFontconfig },
-	{ "dir",	FcElementDir },
-	{ "cache",	FcElementCache },
-	{ "include",	FcElementInclude },
-	{ "config",	FcElementConfig },
-	{ "match",	FcElementMatch },
-	{ "alias",	FcElementAlias },
-	
-	{ "blank",	FcElementBlank },
-	{ "rescan",	FcElementRescan },
-
-	{ "prefer",	FcElementPrefer },
-	{ "accept",	FcElementAccept },
-	{ "default",	FcElementDefault },
-	{ "family",	FcElementFamily },
-
-	{ "selectfont",	FcElementSelectfont },
-	{ "acceptfont",	FcElementAcceptfont },
-	{ "rejectfont",	FcElementRejectfont },
-	{ "glob",	FcElementGlob },
-	{ "pattern",	FcElementPattern },
-	{ "patelt",	FcElementPatelt },
-
-	{ "test",	FcElementTest },
-	{ "edit",	FcElementEdit },
-	{ "int",	FcElementInt },
-	{ "double",	FcElementDouble },
-	{ "string",	FcElementString },
-	{ "matrix",	FcElementMatrix },
-	{ "bool",	FcElementBool },
-	{ "charset",	FcElementCharset },
-	{ "name",	FcElementName },
-	{ "const",	FcElementConst },
-	{ "or",		FcElementOr },
-	{ "and",	FcElementAnd },
-	{ "eq",		FcElementEq },
-	{ "not_eq",	FcElementNotEq },
-	{ "less",	FcElementLess },
-	{ "less_eq",	FcElementLessEq },
-	{ "more",	FcElementMore },
-	{ "more_eq",	FcElementMoreEq },
-	{ "contains",	FcElementContains },
-	{ "not_contains",FcElementNotContains },
-	{ "plus",	FcElementPlus },
-	{ "minus",	FcElementMinus },
-	{ "times",	FcElementTimes },
-	{ "divide",	FcElementDivide },
-	{ "not",	FcElementNot },
-	{ "if",		FcElementIf },
-	{ "floor",	FcElementFloor },
-	{ "ceil",	FcElementCeil },
-	{ "round",	FcElementRound },
-	{ "trunc",	FcElementTrunc },
-	
-	{ 0,		0 }
-    };
 
     int	    i;
-    for (i = 0; fcElementMap[i].name; i++)
+    for (i = 0; i < NUM_ELEMENT_MAPS; i++)
 	if (!strcmp ((char *) name, fcElementMap[i].name))
 	    return fcElementMap[i].element;
     return FcElementUnknown;
@@ -461,9 +461,9 @@ typedef enum _FcConfigSeverity {
 } FcConfigSeverity;
 
 static void
-FcConfigMessage (FcConfigParse *parse, FcConfigSeverity severe, char *fmt, ...)
+FcConfigMessage (FcConfigParse *parse, FcConfigSeverity severe, const char *fmt, ...)
 {
-    char	*s = "unknown";
+    const char	*s = "unknown";
     va_list	args;
 
     va_start (args, fmt);
@@ -492,7 +492,7 @@ FcConfigMessage (FcConfigParse *parse, FcConfigSeverity severe, char *fmt, ...)
 }
 
 
-static char *
+static const char *
 FcTypeName (FcType type)
 {
     switch (type) {
@@ -998,7 +998,7 @@ FcConfigCleanup (FcConfigParse	*parse)
 }
 
 static const FcChar8 *
-FcConfigGetAttribute (FcConfigParse *parse, char *attr)
+FcConfigGetAttribute (FcConfigParse *parse, const char *attr)
 {
     FcChar8 **attrs;
     if (!parse->pstack)
@@ -1125,7 +1125,7 @@ FcStrtod (char *s, char **end)
 	int	slen = strlen (s);
 	int	dlen = strlen (locale_data->decimal_point);
 	
-	if (slen + dlen > sizeof (buf))
+	if (slen + dlen > (int) sizeof (buf))
 	{
 	    if (end)
 		*end = s;
@@ -1591,7 +1591,7 @@ FcParseInclude (FcConfigParse *parse)
 }
 
 typedef struct _FcOpMap {
-    char    *name;
+    char    name[16];
     FcOp    op;
 } FcOpMap;
 
@@ -1617,7 +1617,7 @@ static const FcOpMap fcCompareOps[] = {
     { "not_contains",	FcOpNotContains	    }
 };
 
-#define NUM_COMPARE_OPS (sizeof fcCompareOps / sizeof fcCompareOps[0])
+#define NUM_COMPARE_OPS	(int) (sizeof fcCompareOps / sizeof fcCompareOps[0])
 
 static FcOp
 FcConfigLexCompare (const FcChar8 *compare)
@@ -1717,7 +1717,7 @@ static const FcOpMap fcModeOps[] = {
     { "append_last",	FcOpAppendLast	    },
 };
 
-#define NUM_MODE_OPS (sizeof fcModeOps / sizeof fcModeOps[0])
+#define NUM_MODE_OPS (int) (sizeof fcModeOps / sizeof fcModeOps[0])
 
 static FcOp
 FcConfigLexMode (const FcChar8 *mode)

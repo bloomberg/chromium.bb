@@ -95,7 +95,7 @@ static const struct {
     { 20,	(const FcChar8 *) "zh-tw" },
 };
 
-#define NUM_CODE_PAGE_RANGE (sizeof FcCodePageRange / sizeof FcCodePageRange[0])
+#define NUM_CODE_PAGE_RANGE (int) (sizeof FcCodePageRange / sizeof FcCodePageRange[0])
 
 FcBool
 FcFreeTypeIsExclusiveLang (const FcChar8  *lang)
@@ -135,18 +135,18 @@ static const FcFtEncoding   fcFtEncoding[] = {
  {  TT_PLATFORM_ISO,		TT_ISO_ID_8859_1,	"ISO-8859-1" },
 };
 
-#define NUM_FC_FT_ENCODING  (sizeof (fcFtEncoding) / sizeof (fcFtEncoding[0]))
+#define NUM_FC_FT_ENCODING  (int) (sizeof (fcFtEncoding) / sizeof (fcFtEncoding[0]))
 
 typedef struct {
     FT_UShort	platform_id;
     FT_UShort	language_id;
-    char	*lang;
+    const char	lang[8];
 } FcFtLanguage;
 
 #define TT_LANGUAGE_DONT_CARE	0xffff
 
 static const FcFtLanguage   fcFtLanguage[] = {
- {  TT_PLATFORM_APPLE_UNICODE,	TT_LANGUAGE_DONT_CARE,		    0 },
+ {  TT_PLATFORM_APPLE_UNICODE,	TT_LANGUAGE_DONT_CARE,		    "" },
  {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ENGLISH,		    "en" },
  {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_FRENCH,		    "fr" },
  {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_GERMAN,		    "de" },
@@ -545,7 +545,7 @@ static const FcFtLanguage   fcFtLanguage[] = {
  {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_PAPIAMENTU_NETHERLANDS_ANTILLES,"pap" },
 };
 
-#define NUM_FC_FT_LANGUAGE  (sizeof (fcFtLanguage) / sizeof (fcFtLanguage[0]))
+#define NUM_FC_FT_LANGUAGE  (int) (sizeof (fcFtLanguage) / sizeof (fcFtLanguage[0]))
 
 typedef struct {
     FT_UShort	language_id;
@@ -560,7 +560,7 @@ static const FcMacRomanFake fcMacRomanFake[] = {
 static FcChar8 *
 FcFontCapabilities(FT_Face face);
 
-#define NUM_FC_MAC_ROMAN_FAKE	(sizeof (fcMacRomanFake) / sizeof (fcMacRomanFake[0]))
+#define NUM_FC_MAC_ROMAN_FAKE	(int) (sizeof (fcMacRomanFake) / sizeof (fcMacRomanFake[0]))
 
 #if HAVE_ICONV && HAVE_ICONV_H
 #define USE_ICONV 1
@@ -749,7 +749,12 @@ FcSfntNameLanguage (FT_SfntName *sname)
 	if (fcFtLanguage[i].platform_id == sname->platform_id &&
 	    (fcFtLanguage[i].language_id == TT_LANGUAGE_DONT_CARE ||
 	     fcFtLanguage[i].language_id == sname->language_id))
-	    return (FcChar8 *) fcFtLanguage[i].lang;
+	{
+	    if (fcFtLanguage[i].lang[0] == '\0')
+	      return NULL;
+	    else
+	      return (FcChar8 *) fcFtLanguage[i].lang;
+	}
     return 0;
 }
 
@@ -781,7 +786,7 @@ static const struct {
 					(const FcChar8 *) "hanyang" }
 };
 
-#define NUM_NOTICE_FOUNDRIES	(sizeof (FcNoticeFoundries) / sizeof (FcNoticeFoundries[0]))
+#define NUM_NOTICE_FOUNDRIES	(int) (sizeof (FcNoticeFoundries) / sizeof (FcNoticeFoundries[0]))
 
 static const FcChar8 *
 FcNoticeFoundry(const FT_String *notice)
@@ -850,7 +855,7 @@ static const struct {
     { (const FT_Char *) "Y&Y",  (const FcChar8 *) "y&y"}
 };
 
-#define NUM_VENDOR_FOUNDRIES	(sizeof (FcVendorFoundries) / sizeof (FcVendorFoundries[0]))
+#define NUM_VENDOR_FOUNDRIES	(int) (sizeof (FcVendorFoundries) / sizeof (FcVendorFoundries[0]))
 
 static const FcChar8 *
 FcVendorFoundry(const FT_Char vendor[4])
@@ -916,7 +921,7 @@ static const FcStringConst  weightConsts[] = {
     { (FC8) "heavy",		FC_WEIGHT_HEAVY },
 };
 
-#define NUM_WEIGHT_CONSTS  (sizeof (weightConsts) / sizeof (weightConsts[0]))
+#define NUM_WEIGHT_CONSTS  (int) (sizeof (weightConsts) / sizeof (weightConsts[0]))
 
 #define FcIsWeight(s)	    FcStringIsConst(s,weightConsts,NUM_WEIGHT_CONSTS)
 #define FcContainsWeight(s) FcStringContainsConst (s,weightConsts,NUM_WEIGHT_CONSTS)
@@ -933,7 +938,7 @@ static const FcStringConst  widthConsts[] = {
     { (FC8) "expanded",		FC_WIDTH_EXPANDED },	/* must be after *expanded */
 };
 
-#define NUM_WIDTH_CONSTS    (sizeof (widthConsts) / sizeof (widthConsts[0]))
+#define NUM_WIDTH_CONSTS    (int) (sizeof (widthConsts) / sizeof (widthConsts[0]))
 
 #define FcIsWidth(s)	    FcStringIsConst(s,widthConsts,NUM_WIDTH_CONSTS)
 #define FcContainsWidth(s)  FcStringContainsConst (s,widthConsts,NUM_WIDTH_CONSTS)
@@ -943,7 +948,7 @@ static const FcStringConst  slantConsts[] = {
     { (FC8) "oblique",		FC_SLANT_OBLIQUE },
 };
 
-#define NUM_SLANT_CONSTS    (sizeof (slantConsts) / sizeof (slantConsts[0]))
+#define NUM_SLANT_CONSTS    (int) (sizeof (slantConsts) / sizeof (slantConsts[0]))
 
 #define FcIsSlant(s)	    FcStringIsConst(s,slantConsts,NUM_SLANT_CONSTS)
 #define FcContainsSlant(s)  FcStringContainsConst (s,slantConsts,NUM_SLANT_CONSTS)
@@ -970,7 +975,7 @@ FcGetPixelSize (FT_Face face, int i)
 }
 
 static FcBool
-FcStringInPatternElement (FcPattern *pat, char *elt, FcChar8 *string)
+FcStringInPatternElement (FcPattern *pat, const char *elt, FcChar8 *string)
 {
     int	    e;
     FcChar8 *old;
@@ -1075,7 +1080,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     {
 	FcChar8		*utf8;
 	FcChar8		*lang;
-	char		*elt = 0, *eltlang = 0;
+	const char	*elt = 0, *eltlang = 0;
 	int		*np = 0, *nlangp = 0;
 
 	if (FT_Get_Sfnt_Name (face, snamei, &sname) != 0)
@@ -2125,13 +2130,13 @@ static const FcFontDecode fcFontDecoders[] = {
     { ft_encoding_apple_roman,	&AppleRoman,	(1 << 16) - 1 },
 };
 
-#define NUM_DECODE  (sizeof (fcFontDecoders) / sizeof (fcFontDecoders[0]))
+#define NUM_DECODE  (int) (sizeof (fcFontDecoders) / sizeof (fcFontDecoders[0]))
 
 static const FcChar32	prefer_unicode[] = {
     0x20ac,	/* EURO SIGN */
 };
 
-#define NUM_PREFER_UNICODE  (sizeof (prefer_unicode) / sizeof (prefer_unicode[0]))
+#define NUM_PREFER_UNICODE  (int) (sizeof (prefer_unicode) / sizeof (prefer_unicode[0]))
 
 FcChar32
 FcFreeTypeUcs4ToPrivate (FcChar32 ucs4, const FcCharMap *map)
@@ -2272,7 +2277,7 @@ FcFreeTypeGlyphNameIndex (FT_Face face, FcChar8 *name)
     FT_UInt gindex;
     FcChar8 name_buf[FC_GLYPHNAME_MAXLEN + 2];
 
-    for (gindex = 0; gindex < face->num_glyphs; gindex++)
+    for (gindex = 0; gindex < (FT_UInt) face->num_glyphs; gindex++)
     {
 	if (FT_Get_Glyph_Name (face, gindex, name_buf, FC_GLYPHNAME_MAXLEN+1) == 0)
 	    if (!strcmp ((char *) name, (char *) name_buf))
@@ -2326,7 +2331,7 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
 	if (fcFontDecoders[decode].map)
 	{
 	    charcode = FcFreeTypeUcs4ToPrivate (ucs4, fcFontDecoders[decode].map);
-	    if (charcode == ~0)
+	    if (charcode == ~0U)
 		continue;
 	}
 	else
@@ -2586,7 +2591,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
     {
 	FcChar8 name_buf[FC_GLYPHNAME_MAXLEN + 2];
 
-	for (glyph = 0; glyph < face->num_glyphs; glyph++)
+	for (glyph = 0; glyph < (FT_UInt) face->num_glyphs; glyph++)
 	{
 	    if (FT_Get_Glyph_Name (face, glyph, name_buf, FC_GLYPHNAME_MAXLEN+1) == 0)
 	    {
