@@ -19,7 +19,7 @@ important steps:
  3.	Commit those changes
  4. 	rebuild the configuration files with autogen.sh
  		sh autogen.sh --sysconfdir=/etc --prefix=/usr --mandir=/usr/share/man
- 5.	make distcheck
+ 5.	make distcheck (NB: won't work without docbook-utils -PL)
  6.	tag the tree
  		cvs tag fc-2_2_xx
  7.	Split out the ChangeLog into ChangeLog-2.2.xx with
