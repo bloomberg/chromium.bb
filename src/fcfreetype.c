@@ -113,7 +113,7 @@ FcFreeTypeIsExclusiveLang (const FcChar8  *lang)
 typedef struct {
     FT_UShort	platform_id;
     FT_UShort	encoding_id;
-    char	*fromcode;
+    const char	fromcode[12];
 } FcFtEncoding;
 
 #define TT_ENCODING_DONT_CARE	0xffff
@@ -549,7 +549,7 @@ static const FcFtLanguage   fcFtLanguage[] = {
 
 typedef struct {
     FT_UShort	language_id;
-    char	*fromcode;
+    char	fromcode[12];
 } FcMacRomanFake;
 
 static const FcMacRomanFake fcMacRomanFake[] = {
@@ -570,8 +570,8 @@ FcFontCapabilities(FT_Face face);
 static FcChar8 *
 FcSfntNameTranscode (FT_SfntName *sname)
 {
-    int	    i;
-    char    *fromcode;
+    int	       i;
+    const char *fromcode;
 #if USE_ICONV
     iconv_t cd;
 #endif
@@ -596,7 +596,7 @@ FcSfntNameTranscode (FT_SfntName *sname)
     {
 	int	f;
 
-	fromcode = 0;
+	fromcode = NULL;
 	for (f = 0; f < NUM_FC_MAC_ROMAN_FAKE; f++)
 	    if (fcMacRomanFake[f].language_id == sname->language_id)
 	    {
