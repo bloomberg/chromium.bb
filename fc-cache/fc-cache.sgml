@@ -88,6 +88,13 @@ manpage.1: manpage.sgml
         This cache is used to speed up application startup when using
         the fontconfig library.</para>
 
+      <para>Note that <command>&dhpackage;</command> must be executed
+        once per architecture to generate font information customized
+        for that architecture.  On a subsequent run,
+        <command>&dhpackage;</command> will augment the cache
+        information files with the information for the new
+        architecture. </para>
+
   </refsect1>
   <refsect1>
     <title>OPTIONS</title>

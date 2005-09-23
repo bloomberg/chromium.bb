@@ -251,10 +251,10 @@ typedef struct _FcCache {
     int     pattern_count;      /* number of FcPatterns */
     int     patternelt_count;   /* number of FcPatternElts */
     int     valuelist_count;    /* number of FcValueLists */
-    int     str_count;          /* number of FcStrs */
-    int	    langset_count;
-    int     charset_count;
-    int     charset_numbers_count;
+    int     str_count;          /* size of strings appearing as FcValues */
+    int	    langset_count;      /* number of FcLangSets */
+    int     charset_count;      /* number of FcCharSets */
+    int     charset_numbers_count; 
     int     charset_leaf_count;
     int     charset_leaf_idx_count;
 } FcCache;

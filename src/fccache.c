@@ -744,14 +744,14 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 
     current_dir_block = FcDirCacheProduce (set, &metadata);
 
-    if (!metadata.count)
+    if (!metadata.count && !dirs->size)
     {
 	unlink ((char *)cache_file);
 	free (cache_file);
 	return FcTrue;
     }
 
-    if (!current_dir_block)
+    if (metadata.count && !current_dir_block)
 	goto bail;
 
     if (FcDebug () & FC_DBG_CACHE)
@@ -788,9 +788,12 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     FcCacheWriteString (fd, "");
 
     write (fd, &metadata, sizeof(FcCache));
-    lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_END)), SEEK_SET);
-    write (fd, current_dir_block, metadata.count);
-    free (current_dir_block);
+    if (metadata.count)
+    {
+	lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_END)), SEEK_SET);
+	write (fd, current_dir_block, metadata.count);
+	free (current_dir_block);
+    }
 
     /* this actually serves to pad out the cache file, if needed */
     if (ftruncate (fd, current_arch_start + truncate_to) == -1)
