@@ -269,7 +269,6 @@ main (int argc, char **argv)
 
     if (systemOnly)
 	FcConfigEnableHome (FcFalse);
-    /* need to use FcInitLoadConfig when we use dirs */
     config = FcInitLoadConfig ();
     if (!config)
     {

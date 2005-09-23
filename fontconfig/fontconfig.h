@@ -40,7 +40,7 @@ typedef int		FcBool;
 
 #define FC_MAJOR	2
 #define FC_MINOR	3
-#define FC_REVISION	2
+#define FC_REVISION	90
 
 #define FC_VERSION	((FC_MAJOR * 10000) + (FC_MINOR * 100) + (FC_REVISION))
 

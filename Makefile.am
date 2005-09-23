@@ -23,7 +23,7 @@
 
 DOCSRC=@DOCSRC@
 SUBDIRS=fontconfig fc-case fc-lang fc-glyphname src \
-	fc-cache fc-list fc-match conf.d $(DOCSRC) test
+	fc-cache fc-cat fc-list fc-match conf.d $(DOCSRC) test
 
 DEBIAN = \
 	debian/changelog \

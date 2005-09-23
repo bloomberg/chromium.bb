@@ -33,7 +33,7 @@ dnl This is the package version number, not the shared library
 dnl version.  This same version number must appear in fontconfig/fontconfig.h
 dnl Yes, it is a pain to synchronize version numbers.  Unfortunately, it's
 dnl not possible to extract the version number here from fontconfig.h
-AM_INIT_AUTOMAKE(fontconfig, 2.3.2)
+AM_INIT_AUTOMAKE(fontconfig, 2.3.90)
 AM_MAINTAINER_MODE
 
 dnl libtool versioning
@@ -469,6 +469,7 @@ src/Makefile
 src/fontconfig.def
 conf.d/Makefile
 fc-cache/Makefile
+fc-cat/Makefile
 fc-list/Makefile
 fc-match/Makefile
 doc/Makefile
