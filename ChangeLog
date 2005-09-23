@@ -1,3 +1,36 @@
+2005-09-22  Patrick Lam    <plam@mit.edu>
+	* doc/edit-sgml.c:
+	* fc-cache/fc-cache.sgml:
+	* fc-case/fc-case.c:
+	* fc-glyphname/fc-glyphname.c:
+	* src/fcdefault.c:
+	* src/fcfreetype.c:
+	* src/fcinit.c:
+	* src/fcxml.c:
+
+	More GCC 4 cleanups, due to Behhad Esfahbod <behdad@beddad.org>.
+
+        * Makefile.am:
+	* configure.in:
+	* fc-lang/fc-lang.c:
+	* fontconfig/fcprivate.h:
+	* fontconfig/fontconfig.h:
+	* src/fccache.c:
+	* src/fccfg.c:
+	* src/fccharset.c:
+	* src/fcdbg.c:
+	* src/fcdir.c:
+	* src/fcfs.c:
+	* src/fcint.h:
+	* src/fclang.c:
+	* src/fclist.c:
+	* src/fcmatch.c:
+	* src/fcname.c:
+	* src/fcpat.c:
+
+	Implement new mmaped cache for font information.
+	Bump so revision to 2.3.90.
+
 2005-07-25  Keith Packard  <keithp@keithp.com>
 
 	* doc/fontconfig-user.sgml:
