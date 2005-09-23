@@ -1203,7 +1203,6 @@ FcPatternDuplicate (const FcPattern *orig)
     int		    i;
     FcValueListPtr  l;
 
-    printf("pattern duplicate %x\n", (int)orig); // XXX
     new = FcPatternCreate ();
     if (!new)
 	goto bail0;
