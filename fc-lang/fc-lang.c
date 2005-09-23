@@ -65,7 +65,7 @@ fatal (const char *file, int lineno, const char *msg)
     if (lineno)
 	fprintf (stderr, "%s:%d: %s\n", file, lineno, msg);
     else
-	fprintf (stderr, "%s:%d: %s\n", file, lineno, msg);
+	fprintf (stderr, "%s: %s\n", file, msg);
     exit (1);
 }
 

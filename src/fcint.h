@@ -245,13 +245,13 @@ typedef struct _FcStrBuf {
 } FcStrBuf;
 
 typedef struct _FcCache {
-    int	    magic;
-    int	    count;
-    int     bank;
-    int     pattern_count;
-    int     patternelt_count;
-    int     valuelist_count;
-    int     str_count;
+    int	    magic;              /* 0xFC02FC02 */
+    int	    count;              /* number of bytes of data in block */
+    int     bank;               /* bank ID */
+    int     pattern_count;      /* number of FcPatterns */
+    int     patternelt_count;   /* number of FcPatternElts */
+    int     valuelist_count;    /* number of FcValueLists */
+    int     str_count;          /* number of FcStrs */
     int	    langset_count;
     int     charset_count;
     int     charset_numbers_count;
