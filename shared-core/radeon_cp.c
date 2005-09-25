@@ -1258,20 +1258,22 @@ static void radeon_set_pciegart(drm_radeon_private_t * dev_priv, int on)
 
 		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL, RADEON_PCIE_TX_GART_EN);
 	} else {
-		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL, tmp & ~RADEON_PCIE_TX_GART_EN);
+		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL, (tmp & ~RADEON_PCIE_TX_GART_EN) | RADEON_PCIE_TX_GART_INVALIDATE_TLB);
 	}
 }
 
 /* Enable or disable PCI GART on the chip */
 static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 {
-	u32 tmp = RADEON_READ(RADEON_AIC_CNTL);
+	u32 tmp;
 
 	if (dev_priv->flags & CHIP_IS_PCIE)
 	{
 		radeon_set_pciegart(dev_priv, on);
 		return;
 	}
+
+ 	tmp = RADEON_READ(RADEON_AIC_CNTL);
 
 	if (on) {
 		RADEON_WRITE(RADEON_AIC_CNTL,
@@ -1596,9 +1598,13 @@ static int radeon_do_cleanup_cp(drm_device_t * dev)
 	} else
 #endif
 	{
-		if (dev_priv->gart_info.bus_addr)
+
+		if (dev_priv->gart_info.bus_addr) {
+			/* Turn off PCI GART */
+			radeon_set_pcigart(dev_priv, 0);
 			if (!drm_ati_pcigart_cleanup(dev, &dev_priv->gart_info))
 				DRM_ERROR("failed to cleanup PCI GART!\n");
+		}
 
 		if (dev_priv->gart_info.gart_table_location == DRM_ATI_GART_FB)
 		{
