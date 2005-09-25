@@ -24,23 +24,31 @@
 #ifndef _VIA_DRV_H_
 #define _VIA_DRV_H_
 
-#define DRIVER_AUTHOR	"VIA"
+#define DRIVER_AUTHOR	"Various"
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome / Pro"
-#define DRIVER_DATE		"20050814"
+#define DRIVER_DATE		"20050925"
 
 #define DRIVER_MAJOR		2
-#define DRIVER_MINOR		6
-#define DRIVER_PATCHLEVEL	7
+#define DRIVER_MINOR		7
+#define DRIVER_PATCHLEVEL	0
 
 #include "via_verifier.h"
 
+#if defined(__linux__)
+#include "via_dmablit.h"
+
+/*
+ * This define and all its references can be removed when
+ * the DMA blit code has been implemented for FreeBSD.
+ */
+#define VIA_HAVE_DMABLIT 1
+#endif
+
 #define VIA_PCI_BUF_SIZE 60000
 #define VIA_FIRE_BUF_SIZE  1024
-#define VIA_NUM_IRQS 2
-
-
+#define VIA_NUM_IRQS 4
 
 typedef struct drm_via_ring_buffer {
 	drm_local_map_t map;
@@ -84,6 +92,10 @@ typedef struct drm_via_private {
 	maskarray_t *irq_masks;
 	uint32_t irq_enable_mask; 
 	uint32_t irq_pending_mask;	
+	int *irq_map;
+#ifdef VIA_HAVE_DMABLIT
+	drm_via_blitq_t blit_queues[VIA_NUM_BLIT_ENGINES];
+#endif
 } drm_via_private_t;
 
 enum via_family {
@@ -111,6 +123,8 @@ extern int via_flush_ioctl(DRM_IOCTL_ARGS);
 extern int via_pci_cmdbuffer(DRM_IOCTL_ARGS);
 extern int via_cmdbuf_size(DRM_IOCTL_ARGS);
 extern int via_wait_irq(DRM_IOCTL_ARGS);
+extern int via_dma_blit_sync( DRM_IOCTL_ARGS );
+extern int via_dma_blit( DRM_IOCTL_ARGS );
 
 extern int via_driver_load(drm_device_t *dev, unsigned long chipset);
 extern int via_driver_unload(drm_device_t *dev);
@@ -131,5 +145,11 @@ extern int via_driver_dma_quiescent(drm_device_t * dev);
 extern void via_init_futex(drm_via_private_t *dev_priv);
 extern void via_cleanup_futex(drm_via_private_t *dev_priv);
 extern void via_release_futex(drm_via_private_t *dev_priv, int context);
+extern int via_driver_irq_wait(drm_device_t * dev, unsigned int irq, int force_sequence,
+			       unsigned int *sequence);
+#ifdef VIA_HAVE_DMABLIT
+extern void via_dmablit_handler(drm_device_t *dev, int engine, int from_irq);
+extern void via_init_dmablit(drm_device_t *dev);
+#endif
 
 #endif

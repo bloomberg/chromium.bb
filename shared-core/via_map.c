@@ -61,7 +61,9 @@ static int via_do_init_map(drm_device_t * dev, drm_via_init_t * init)
 	dev_priv->agpAddr = init->agpAddr;
 
 	via_init_futex( dev_priv );
-
+#ifdef VIA_HAVE_DMABLIT
+	via_init_dmablit( dev );
+#endif
 	dev->dev_private = (void *)dev_priv;
 	return 0;
 }

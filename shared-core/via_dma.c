@@ -740,6 +740,19 @@ via_cmdbuf_size(DRM_IOCTL_ARGS)
 	return ret;
 }
 
+#ifndef VIA_HAVE_DMABLIT
+int 
+via_dma_blit_sync( DRM_IOCTL_ARGS ) {
+	DRM_ERROR("PCI DMA BitBlt is not implemented for this system.\n");
+	return DRM_ERR(EINVAL);
+}
+int 
+via_dma_blit( DRM_IOCTL_ARGS ) {
+	DRM_ERROR("PCI DMA BitBlt is not implemented for this system.\n");
+	return DRM_ERR(EINVAL);
+}
+#endif
+
 drm_ioctl_desc_t via_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_VIA_ALLOCMEM)] = {via_mem_alloc, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_VIA_FREEMEM)] = {via_mem_free, DRM_AUTH},
@@ -752,7 +765,9 @@ drm_ioctl_desc_t via_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_VIA_FLUSH)] = {via_flush_ioctl, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_VIA_PCICMD)] = {via_pci_cmdbuffer, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_VIA_CMDBUF_SIZE)] = {via_cmdbuf_size, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_VIA_WAIT_IRQ)] = {via_wait_irq, DRM_AUTH}
+	[DRM_IOCTL_NR(DRM_VIA_WAIT_IRQ)] = {via_wait_irq, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_VIA_DMA_BLIT)] = {via_dma_blit, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_VIA_BLIT_SYNC)] = {via_dma_blit_sync, DRM_AUTH}
 };
 
 int via_max_ioctl = DRM_ARRAY_SIZE(via_ioctls);
