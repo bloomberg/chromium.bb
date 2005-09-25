@@ -200,4 +200,13 @@ static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from
 #define pci_pretty_name(dev) ""
 #endif
 
+/* sysfs __ATTR macro */
+#ifndef __ATTR
+#define __ATTR(_name,_mode,_show,_store) { \
+        .attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE },     \
+        .show   = _show,                                        \
+        .store  = _store,                                       \
+}
+#endif
+
 #endif
