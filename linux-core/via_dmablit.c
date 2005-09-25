@@ -780,7 +780,6 @@ via_dma_blit( DRM_IOCTL_ARGS )
 	DRM_COPY_FROM_USER_IOCTL(xfer, (drm_via_dmablit_t __user *)data, sizeof(xfer));
 
 	err = via_dmablit(dev, &xfer);
-	DRM_ERROR("Error is %d\n", err);
 
 	DRM_COPY_TO_USER_IOCTL((void __user *)data, xfer, sizeof(xfer));
 
