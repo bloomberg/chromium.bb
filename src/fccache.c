@@ -732,7 +732,7 @@ FcBool
 FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 {
     FcChar8         *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
-    int fd, i;
+    int fd, i, dirs_count;
     FcCache metadata;
     off_t current_arch_start = 0, truncate_to;
 
@@ -773,8 +773,14 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     if (ftruncate (fd, current_arch_start) == -1)
 	goto bail0;
 
+    /* allocate space for subdir names in this block */
+    dirs_count = 0;
+    for (i = 0; i < dirs->size; i++)
+        dirs_count += strlen((char *)dirs->strs[i]) + 1;
+    dirs_count ++;
+
     /* now write the address of the next offset */
-    truncate_to = FcCacheNextOffset (FcCacheNextOffset (current_arch_start + sizeof (FcCache)) + metadata.count) - current_arch_start;
+    truncate_to = FcCacheNextOffset (FcCacheNextOffset (current_arch_start + sizeof (FcCache) + dirs_count) + metadata.count) - current_arch_start;
     header = malloc (10 + strlen (current_arch_machine_name));
     if (!header)
 	goto bail0;
