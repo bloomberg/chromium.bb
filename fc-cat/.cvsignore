@@ -2,5 +2,5 @@
 .libs
 Makefile
 Makefile.in
-fc-cache
-fc-cache.1
+fc-cat
+fc-cat.1
