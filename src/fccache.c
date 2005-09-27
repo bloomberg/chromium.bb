@@ -744,13 +744,6 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 
     current_dir_block = FcDirCacheProduce (set, &metadata);
 
-    if (!metadata.count && !dirs->size)
-    {
-	unlink ((char *)cache_file);
-	free (cache_file);
-	return FcTrue;
-    }
-
     if (metadata.count && !current_dir_block)
 	goto bail;
 
