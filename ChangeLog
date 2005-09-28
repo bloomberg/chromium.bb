@@ -1,3 +1,37 @@
+2005-09-27  Patrick Lam    <plam@mit.edu>
+	* src/fccache.c (FcGlobalCacheSave, FcCacheCopyOld,
+                FcDirCacheWrite):
+
+        Use FcAtomic to rewrite cache files.
+
+2005-09-27  Patrick Lam  <plam@mit.edu>
+
+        * src/fccache.c (FcDirCacheWrite):
+
+        Don't unlink the fonts.cache-2 file even if there's no data
+        to write; just write an empty cache file.  (thanks Lubos Lunak)
+
+2005-09-27  Patrick Lam  <plam@mit.edu>
+
+        * src/fccache.c (FcDirCacheWrite):
+
+        Allocate room for the subdirectory names in each
+        directory cache.  Thanks to James Cloos for finding
+        and diagnosing this bug!
+
+2005-09-22  Patrick Lam  <plam@mit.edu>
+
+        * fc-cache/fc-cache.sgml:
+        * src/fccache.c (FcDirCacheWrite):
+        * src/fccache.h (struct FcCache):
+
+        Update documentation -- fc-cache's man page now says that you
+        need to run fc-cache once per cached architecture; add some
+        documentation to the FcCache structure.
+
+        Make fc-cache write out fonts.cache-2 files for directories with
+        no fonts (i.e. only subdirectories).
+	
 2005-09-22  Patrick Lam    <plam@mit.edu>
 	* doc/edit-sgml.c:
 	* fc-cache/fc-cache.sgml:
