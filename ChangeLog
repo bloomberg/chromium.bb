@@ -1,4 +1,10 @@
-2005-09-27  Patrick Lam    <plam@mit.edu>
+2005-09-28  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcCacheMachineSignature):
+
+        Cast results of sizeof() to unsigned int to get rid of
+        warnings on x86_64 (thanks Matthias Clasen).
+
+2005-09-27  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcGlobalCacheSave, FcCacheCopyOld,
                 FcDirCacheWrite):
 
