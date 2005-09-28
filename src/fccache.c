@@ -38,7 +38,7 @@ static off_t
 FcCacheSkipToArch (int fd, const char * arch);
 
 static FcBool 
-FcCacheMoveDown (int fd, off_t start);
+FcCacheCopyOld (int fd, int fd_orig, off_t start);
 
 static void *
 FcDirCacheProduce (FcFontSet *set, FcCache * metadata);
@@ -291,7 +291,7 @@ FcBool
 FcGlobalCacheSave (FcGlobalCache    *cache,
 		   const FcChar8    *cache_file)
 {
-    int			fd;
+    int			fd, fd_orig;
     FcGlobalCacheDir	*dir;
     FcAtomic		*atomic;
     off_t 		current_arch_start = 0, truncate_to;
@@ -308,7 +308,8 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     
     atomic = FcAtomicCreate (cache_file);
     if (!atomic)
-	goto bail0;
+	return FcFalse;
+
     if (!FcAtomicLock (atomic))
 	goto bail1;
     fd = open ((char *) FcAtomicNewFile(atomic), O_RDWR | O_CREAT, 
@@ -316,21 +317,31 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     if (fd == -1)
 	goto bail2;
 
+    fd_orig = open ((char *) FcAtomicOrigFile(atomic), O_RDONLY);
+
     current_arch_machine_name = FcCacheMachineSignature ();
-    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
+    if (fd_orig == -1)
+        current_arch_start = 0;
+    else
+        current_arch_start = FcCacheSkipToArch (fd_orig, 
+                                                current_arch_machine_name);
+
     if (current_arch_start < 0)
 	current_arch_start = FcCacheNextOffset (lseek(fd, 0, SEEK_END));
 
-    if (!FcCacheMoveDown(fd, current_arch_start))
-	goto bail2;
+    if (!FcCacheCopyOld(fd, fd_orig, current_arch_start))
+	goto bail3;
+
+    close (fd_orig);
+    fd_orig = -1;
 
     current_arch_start = lseek(fd, 0, SEEK_CUR);
     if (ftruncate (fd, current_arch_start) == -1)
-	goto bail2;
+	goto bail3;
 
     header = malloc (10 + strlen (current_arch_machine_name));
     if (!header)
-	goto bail1;
+	goto bail3;
 
     truncate_to = current_arch_start + strlen(current_arch_machine_name) + 11;
     for (dir = cache->dirs; dir; dir = dir->next)
@@ -345,7 +356,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     sprintf (header, "%8x ", (int)truncate_to);
     strcat (header, current_arch_machine_name);
     if (!FcCacheWriteString (fd, header))
-	goto bail1;
+	goto bail4;
 
     for (dir = cache->dirs; dir; dir = dir->next)
     {
@@ -361,10 +372,10 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     FcCacheWriteString (fd, "");
 
     if (close (fd) == -1)
-	goto bail3;
+	goto bail25;
     
     if (!FcAtomicReplaceOrig (atomic))
-	goto bail3;
+	goto bail25;
     
     FcAtomicUnlock (atomic);
     FcAtomicDestroy (atomic);
@@ -372,13 +383,19 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     cache->updated = FcFalse;
     return FcTrue;
 
-bail3:
+ bail4:
+    free (header);
+ bail3:
+    if (fd_orig != -1)
+        close (fd_orig);
+
+    close (fd);
+ bail25:
     FcAtomicDeleteNew (atomic);
-bail2:
+ bail2:
     FcAtomicUnlock (atomic);
-bail1:
+ bail1:
     FcAtomicDestroy (atomic);
-bail0:
     return FcFalse;
 }
 
@@ -438,15 +455,33 @@ FcCacheSkipToArch (int fd, const char * arch)
  * down to cover it), and leaves the file pointer at the end of the
  * file. */
 static FcBool 
-FcCacheMoveDown (int fd, off_t start)
+FcCacheCopyOld (int fd, int fd_orig, off_t start)
 {
     char * buf = malloc (8192);
     char candidate_arch_machine_name[MACHINE_SIGNATURE_SIZE + 9];
     long bs;
     int c, bytes_skipped;
+    off_t loc;
 
     if (!buf)
 	return FcFalse;
+
+    loc = 0;
+    lseek (fd, 0, SEEK_SET); lseek (fd_orig, 0, SEEK_SET);
+    do
+    {
+        int b = 8192;
+        if (loc + b > start)
+            b = start - loc;
+
+	if ((c = read (fd_orig, buf, b)) <= 0)
+	    break;
+	if (write (fd, buf, c) < 0)
+	    goto bail;
+
+        loc += c;
+    }
+    while (c > 0);
 
     lseek (fd, start, SEEK_SET);
     if (FcCacheReadString (fd, candidate_arch_machine_name, 
@@ -732,12 +767,13 @@ FcBool
 FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 {
     FcChar8         *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
-    int fd, i, dirs_count;
-    FcCache metadata;
-    off_t current_arch_start = 0, truncate_to;
+    int 	    fd, fd_orig, i, dirs_count;
+    FcAtomic 	    *atomic;
+    FcCache 	    metadata;
+    off_t 	    current_arch_start = 0, truncate_to;
 
-    char * current_arch_machine_name, * header;
-    void * current_dir_block;
+    char            *current_arch_machine_name, * header;
+    void 	    *current_dir_block;
 
     if (!cache_file)
         goto bail;
@@ -745,26 +781,43 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     current_dir_block = FcDirCacheProduce (set, &metadata);
 
     if (metadata.count && !current_dir_block)
-	goto bail;
+	goto bail0;
 
     if (FcDebug () & FC_DBG_CACHE)
         printf ("FcDirCacheWriteDir cache_file \"%s\"\n", cache_file);
 
-    fd = open((char *)cache_file, O_RDWR | O_CREAT, 0666);
-    if (fd == -1)
+    atomic = FcAtomicCreate (cache_file);
+    if (!atomic)
         goto bail0;
 
+    if (!FcAtomicLock (atomic))
+        goto bail1;
+
+    fd_orig = open((char *)FcAtomicOrigFile (atomic), O_RDONLY, 0666);
+
+    fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT, 0666);
+    if (fd == -1)
+        goto bail2;
+
     current_arch_machine_name = FcCacheMachineSignature ();
-    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
+    current_arch_start = 0;
+
+    if (fd_orig != -1)
+        current_arch_start = 
+            FcCacheSkipToArch(fd_orig, current_arch_machine_name);
+
     if (current_arch_start < 0)
 	current_arch_start = FcCacheNextOffset (lseek(fd, 0, SEEK_END));
 
-    if (!FcCacheMoveDown(fd, current_arch_start))
-	goto bail0;
+    if (fd_orig != -1 && !FcCacheCopyOld(fd, fd_orig, current_arch_start))
+	goto bail3;
+
+    if (fd_orig != -1)
+        close (fd_orig);
 
     current_arch_start = lseek(fd, 0, SEEK_CUR);
     if (ftruncate (fd, current_arch_start) == -1)
-	goto bail0;
+	goto bail3;
 
     /* allocate space for subdir names in this block */
     dirs_count = 0;
@@ -776,11 +829,11 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     truncate_to = FcCacheNextOffset (FcCacheNextOffset (current_arch_start + sizeof (FcCache) + dirs_count) + metadata.count) - current_arch_start;
     header = malloc (10 + strlen (current_arch_machine_name));
     if (!header)
-	goto bail0;
+	goto bail3;
     sprintf (header, "%8x ", (int)truncate_to);
     strcat (header, current_arch_machine_name);
     if (!FcCacheWriteString (fd, header))
-	goto bail1;
+	goto bail4;
 
     for (i = 0; i < dirs->size; i++)
         FcCacheWriteString (fd, (char *)dirs->strs[i]);
@@ -796,18 +849,29 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 
     /* this actually serves to pad out the cache file, if needed */
     if (ftruncate (fd, current_arch_start + truncate_to) == -1)
-	goto bail1;
+	goto bail4;
 
     close(fd);
+    if (!FcAtomicReplaceOrig(atomic))
+        goto bail4;
+    FcAtomicUnlock (atomic);
+    FcAtomicDestroy (atomic);
     return FcTrue;
 
- bail1:
+ bail4:
     free (header);
+ bail3:
+    close (fd);
+ bail2:
+    FcAtomicUnlock (atomic);
+ bail1:
+    FcAtomicDestroy (atomic);
  bail0:
-    free (current_dir_block);
- bail:
     unlink ((char *)cache_file);
     free (cache_file);
+    if (current_dir_block)
+        free (current_dir_block);
+ bail:
     return FcFalse;
 }
 
