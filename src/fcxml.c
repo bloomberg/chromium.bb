@@ -26,6 +26,19 @@
 #include "fcint.h"
 #include <dirent.h>
 
+#if ENABLE_LIBXML2
+
+#include <libxml/parser.h>
+
+#define XML_Char			xmlChar
+#define XML_Parser			xmlParserCtxtPtr
+#define XML_ParserFree			xmlFreeParserCtxt
+#define XML_GetCurrentLineNumber	xmlSAX2GetLineNumber
+#define XML_GetErrorCode		xmlCtxtGetLastError
+#define XML_ErrorString(Error)		(Error)->message
+
+#else /* ENABLE_LIBXML2 */
+
 #ifndef HAVE_XMLPARSE_H
 #define HAVE_XMLPARSE_H 0
 #endif
@@ -35,6 +48,8 @@
 #else
 #include <expat.h>
 #endif
+
+#endif /* ENABLE_LIBXML2 */
 
 #ifdef _WIN32
 #define STRICT
@@ -2213,10 +2228,34 @@ FcStartDoctypeDecl (void	    *userData,
 	FcConfigMessage (parse, FcSevereError, "invalid doctype \"%s\"", doctypeName);
 }
 
+#if ENABLE_LIBXML2
+
+static void
+FcInternalSubsetDecl (void            *userData,
+		      const XML_Char  *doctypeName,
+		      const XML_Char  *sysid,
+		      const XML_Char  *pubid)
+{
+    FcStartDoctypeDecl (userData, doctypeName, sysid, pubid, 1);
+}
+
+static void
+FcExternalSubsetDecl (void            *userData,
+		      const XML_Char  *doctypeName,
+		      const XML_Char  *sysid,
+		      const XML_Char  *pubid)
+{
+    FcStartDoctypeDecl (userData, doctypeName, sysid, pubid, 0);
+}
+
+#else /* ENABLE_LIBXML2 */
+
 static void
 FcEndDoctypeDecl (void *userData)
 {
 }
+
+#endif /* ENABLE_LIBXML2 */
 
 static FcBool
 FcConfigParseAndLoadDir (FcConfig	*config,
@@ -2311,9 +2350,15 @@ FcConfigParseAndLoad (FcConfig	    *config,
     FcChar8	    *filename;
     FILE	    *f;
     int		    len;
-    void	    *buf;
     FcConfigParse   parse;
     FcBool	    error = FcTrue;
+    
+#if ENABLE_LIBXML2
+    xmlSAXHandler   sax;
+    char            buf[BUFSIZ];
+#else
+    void	    *buf;
+#endif
     
     filename = FcConfigFilename (name);
     if (!filename)
@@ -2340,12 +2385,27 @@ FcConfigParseAndLoad (FcConfig	    *config,
     if (!f)
 	goto bail0;
     
+#if ENABLE_LIBXML2
+    memset(&sax, 0, sizeof(sax));
+
+    sax.internalSubset = FcInternalSubsetDecl;
+    sax.externalSubset = FcExternalSubsetDecl;
+    sax.startElement = FcStartElement;
+    sax.endElement = FcEndElement;
+    sax.characters = FcCharacterData;
+
+    p = xmlCreatePushParserCtxt (&sax, &parse, NULL, 0, filename);
+#else
     p = XML_ParserCreate ("UTF-8");
+#endif
+
     if (!p)
 	goto bail1;
 
     if (!FcConfigInit (&parse, name, config, p))
 	goto bail2;
+
+#if !ENABLE_LIBXML2
 
     XML_SetUserData (p, &parse);
     
@@ -2353,20 +2413,29 @@ FcConfigParseAndLoad (FcConfig	    *config,
     XML_SetElementHandler (p, FcStartElement, FcEndElement);
     XML_SetCharacterDataHandler (p, FcCharacterData);
 	
+#endif /* ENABLE_LIBXML2 */
+
     do {
+#if !ENABLE_LIBXML2
 	buf = XML_GetBuffer (p, BUFSIZ);
 	if (!buf)
 	{
 	    FcConfigMessage (&parse, FcSevereError, "cannot get parse buffer");
 	    goto bail3;
 	}
+#endif
 	len = fread (buf, 1, BUFSIZ, f);
 	if (len < 0)
 	{
 	    FcConfigMessage (&parse, FcSevereError, "failed reading config file");
 	    goto bail3;
 	}
+
+#if ENABLE_LIBXML2
+	if (xmlParseChunk (p, buf, len, len == 0))
+#else
 	if (!XML_ParseBuffer (p, len, len == 0))
+#endif
 	{
 	    FcConfigMessage (&parse, FcSevereError, "%s", 
 			   XML_ErrorString (XML_GetErrorCode (p)));

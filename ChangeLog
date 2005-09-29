@@ -1,3 +1,14 @@
+2005-09-29  Mathias Hasselmann  <mathias.hasselmann@gmx.de>
+
+        reviewed by: plam
+	
+	* configure.in:
+	* src/Makefile.am:
+	* src/fcxml.c:
+
+	Use libxml2 if requested (with --enable-libxml2) or if
+	expat is not available.
+
 2005-09-29  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcGlobalCacheSave, FcDirCacheWrite):
 
