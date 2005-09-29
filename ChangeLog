@@ -1,3 +1,9 @@
+2005-09-29  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcGlobalCacheSave, FcDirCacheWrite):
+
+	Fix multi-arch cache files: compute the position for the
+	block to be added using info from OrigFile, not NewFile.
+
 2005-09-28  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcCacheMachineSignature):
 

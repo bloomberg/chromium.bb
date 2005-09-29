@@ -327,7 +327,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
                                                 current_arch_machine_name);
 
     if (current_arch_start < 0)
-	current_arch_start = FcCacheNextOffset (lseek(fd, 0, SEEK_END));
+	current_arch_start = FcCacheNextOffset (lseek(fd_orig, 0, SEEK_END));
 
     if (!FcCacheCopyOld(fd, fd_orig, current_arch_start))
 	goto bail3;
@@ -807,7 +807,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
             FcCacheSkipToArch(fd_orig, current_arch_machine_name);
 
     if (current_arch_start < 0)
-	current_arch_start = FcCacheNextOffset (lseek(fd, 0, SEEK_END));
+	current_arch_start = FcCacheNextOffset (lseek(fd_orig, 0, SEEK_END));
 
     if (fd_orig != -1 && !FcCacheCopyOld(fd, fd_orig, current_arch_start))
 	goto bail3;
