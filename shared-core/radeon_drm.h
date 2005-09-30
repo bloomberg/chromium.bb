@@ -501,7 +501,7 @@ typedef struct drm_radeon_init {
 		RADEON_INIT_R300_CP = 0x04
 	} func;
 	unsigned long sarea_priv_offset;
-	int is_pci DEPRECATED;			/* deprecated, driver asks hardware */
+	int is_pci; /* for overriding only */
 	int cp_mode;
 	int gart_size;
 	int ring_size;

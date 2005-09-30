@@ -1304,6 +1304,12 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG("\n");
 
+	if (init->is_pci && (dev_priv->flags & CHIP_IS_AGP))
+	{
+		DRM_DEBUG("Forcing AGP card to PCI mode\n");
+		dev_priv->flags &= ~CHIP_IS_AGP;
+	}
+
 	if ((!(dev_priv->flags & CHIP_IS_AGP)) && !dev->sg) {
 		DRM_ERROR("PCI GART memory not allocated!\n");
 		radeon_do_cleanup_cp(dev);
