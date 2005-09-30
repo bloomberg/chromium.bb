@@ -35,6 +35,8 @@
 #include "radeon_drv.h"
 #include "drm_pciids.h"
 
+int radeon_no_wb;
+
 /* drv_PCI_IDs comes from drm_pciids.h, generated from drm_pciids.txt. */
 static drm_pci_id_list_t radeon_pciidlist[] = {
 	radeon_PCI_IDS
