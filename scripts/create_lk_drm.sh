@@ -21,9 +21,9 @@ echo "Copying kernel independent files"
 mkdir -p $OUTDIR
 
 ( cd linux/ ; make drm_pciids.h )
-cp shared/*.[ch] $OUTDIR
-cp linux/*.[ch] $OUTDIR
-cp linux/Makefile.kernel $OUTDIR/Makefile
+cp shared-core/*.[ch] $OUTDIR
+cp linux-core/*.[ch] $OUTDIR
+cp linux-core/Makefile.kernel $OUTDIR/Makefile
 
 if [ $VERS = 2.4 ] ;then
 	echo "Copying 2.4 Kernel files"
