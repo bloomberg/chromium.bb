@@ -48,7 +48,7 @@ unsigned long drm_get_resource_len(drm_device_t *dev, unsigned int resource)
 }
 EXPORT_SYMBOL(drm_get_resource_len);
 
-static drm_local_map_t *drm_find_matching_map(drm_device_t *dev,
+static drm_map_list_t *drm_find_matching_map(drm_device_t *dev,
 					      drm_local_map_t *map)
 {
 	struct list_head *list;
@@ -56,9 +56,8 @@ static drm_local_map_t *drm_find_matching_map(drm_device_t *dev,
 	list_for_each(list, &dev->maplist->head) {
 		drm_map_list_t *entry = list_entry(list, drm_map_list_t, head);
 		if (entry->map && map->type == entry->map->type &&
-		    ((entry->map->offset == map->offset) ||
-			(map->type == _DRM_SHM && map->flags==_DRM_CONTAINS_LOCK))) {
-			return entry->map;
+		    entry->map->offset == map->offset) {
+			return entry;
 		}
 	}
 
@@ -116,14 +115,13 @@ static __inline__ unsigned int HandleID(unsigned long lhandle, drm_device_t *dev
  * type.  Adds the map to the map list drm_device::maplist. Adds MTRR's where
  * applicable and if supported by the kernel.
  */
-int drm_addmap(drm_device_t * dev, unsigned int offset,
-	       unsigned int size, drm_map_type_t type,
-	       drm_map_flags_t flags, drm_local_map_t ** map_ptr)
+int drm_addmap_core(drm_device_t * dev, unsigned int offset,
+		    unsigned int size, drm_map_type_t type,
+		    drm_map_flags_t flags, drm_map_list_t ** maplist)
 {
 	drm_map_t *map;
 	drm_map_list_t *list;
 	drm_dma_handle_t *dmah;
-	drm_local_map_t *found_map;
 
 	map = drm_alloc(sizeof(*map), DRM_MEM_MAPS);
 	if (!map)
@@ -168,17 +166,18 @@ int drm_addmap(drm_device_t * dev, unsigned int offset,
 		 * needing to be aware of it.  Therefore, we just return success
 		 * when the server tries to create a duplicate map.
 		 */
-		found_map = drm_find_matching_map(dev, map);
-		if (found_map != NULL) {
-			if (found_map->size != map->size) {
+		list = drm_find_matching_map(dev, map);
+		if (list != NULL) {
+			if (list->map->size != map->size) {
 				DRM_DEBUG("Matching maps of type %d with "
-				   "mismatched sizes, (%ld vs %ld)\n",
-				    map->type, map->size, found_map->size);
-				found_map->size = map->size;
+					  "mismatched sizes, (%ld vs %ld)\n",
+					  map->type, map->size,
+					  list->map->size);
+				list->map->size = map->size;
 			}
 
 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-			*map_ptr = found_map;
+			*maplist = list;
 			return 0;
 		}
 
@@ -189,21 +188,21 @@ int drm_addmap(drm_device_t * dev, unsigned int offset,
 						      MTRR_TYPE_WRCOMB, 1);
 			}
 		}
-		if (map->type == _DRM_REGISTERS)
-			map->handle = drm_ioremap(map->offset, map->size, dev);
+		//if (map->type == _DRM_REGISTERS)
+		map->handle = drm_ioremap(map->offset, map->size, dev);
 		break;
 	case _DRM_SHM:
-		found_map = drm_find_matching_map(dev, map);
-		if (found_map != NULL) {
-			if (found_map->size != map->size) {
+		list = drm_find_matching_map(dev, map);
+		if (list != NULL) {
+			if(list->map->size != map->size) {
 				DRM_DEBUG("Matching maps of type %d with "
 				   "mismatched sizes, (%ld vs %ld)\n",
-				    map->type, map->size, found_map->size);
-				found_map->size = map->size;
+				    map->type, map->size, list->map->size);
+				list->map->size = map->size;
 			}
 
 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-			*map_ptr = found_map;
+			*maplist = list;
 			return 0;
 		}
 		map->handle = vmalloc_32(map->size);
@@ -296,9 +295,23 @@ int drm_addmap(drm_device_t * dev, unsigned int offset,
 				    : map->offset, dev);
 	up(&dev->struct_sem);
 
-	*map_ptr = map;
+	*maplist = list;
 	return 0;
 }
+
+int drm_addmap(drm_device_t * dev, unsigned int offset,
+	       unsigned int size, drm_map_type_t type,
+	       drm_map_flags_t flags, drm_local_map_t ** map_ptr)
+{
+	drm_map_list_t *list;
+	int rc;
+
+	rc = drm_addmap_core(dev, offset, size, type, flags, &list);
+	if (!rc)
+		*map_ptr = list->map;
+	return rc;
+}
+
 EXPORT_SYMBOL(drm_addmap);
 
 int drm_addmap_ioctl(struct inode *inode, struct file *filp,
@@ -307,10 +320,9 @@ int drm_addmap_ioctl(struct inode *inode, struct file *filp,
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
 	drm_map_t map;
-	drm_map_t *map_ptr;
+	drm_map_list_t *maplist;
 	drm_map_t __user *argp = (void __user *)arg;
 	int err;
-	unsigned long handle = 0;
 
 	if (!(filp->f_mode & 3))
 		return -EACCES;	/* Require read/write */
@@ -322,26 +334,15 @@ int drm_addmap_ioctl(struct inode *inode, struct file *filp,
 	if (!(capable(CAP_SYS_ADMIN) || map.type == _DRM_AGP))
 		return -EPERM;
 
-	err = drm_addmap( dev, map.offset, map.size, map.type, map.flags,
-			  & map_ptr );
+	err = drm_addmap_core( dev, map.offset, map.size, map.type, map.flags,
+			       &maplist);
 
-	if (err) {
+	if (err)
 		return err;
-	}
 
-	{
-		drm_map_list_t *_entry;
-		list_for_each_entry(_entry, &dev->maplist->head, head) {
-			if (_entry->map == map_ptr)
-				handle = _entry->user_token;
-		}
-		if (!handle)
-			return -EFAULT;
-	}
-
-	if (copy_to_user(argp, map_ptr, sizeof(*map_ptr)))
+	if (copy_to_user(argp, maplist->map, sizeof(drm_map_t)))
 		return -EFAULT;
-	if (put_user(handle, &argp->handle))
+	if (put_user((void *)maplist->user_token, &argp->handle))
 		return -EFAULT;
 	return 0;
 }
