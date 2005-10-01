@@ -1,10 +1,23 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.3.2
+		      Version 2.3.91
 		         2005-9-23
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.3.91
+
+Use libxml2 if requested or if expat not available. (Mathias Hasselmann)
+Fix multi-arch cache files: compute the position for the
+block to be added using info from OrigFile, not NewFile. (plam)
+Cast results of sizeof() to unsigned int to get rid of
+warnings on x86_64 (reported by Matthias Clasen).
+Use FcAtomic to rewrite cache files; don't unlink the fonts.cache-2
+file even if there's no data to write; just write an empty cache file.
+(Reported by Lubos Lunak)
+Allocate room for the subdirectory names in each directory cache. 
+(Reported by James Cloos)
 
 2.3.90
 
