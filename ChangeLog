@@ -1,3 +1,9 @@
+2005-10-03  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheValid):
+
+	Ensure that a directory cache has the appropriate section
+	before reporting that it is valid (reported by Matthias Clasen).
+
 2005-09-29  Mathias Hasselmann  <mathias.hasselmann@gmx.de>
 
         reviewed by: plam

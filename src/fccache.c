@@ -522,6 +522,9 @@ FcDirCacheValid (const FcChar8 *dir)
 {
     FcChar8     *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
     struct stat file_stat, dir_stat;
+    int 	fd;
+    off_t	current_arch_start;
+    char 	*current_arch_machine_name;
 
     if (stat ((char *) dir, &dir_stat) < 0)
     {
@@ -533,6 +536,18 @@ FcDirCacheValid (const FcChar8 *dir)
         FcStrFree (cache_file);
         return FcFalse;
     }
+
+    current_arch_machine_name = FcCacheMachineSignature();
+    fd = open(cache_file, O_RDONLY);
+    if (fd == -1)
+        return FcFalse;
+
+    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
+    close (fd);
+
+    if (current_arch_start < 0)
+        return FcFalse;
+
     FcStrFree (cache_file);
     /*
      * If the directory has been modified more recently than
