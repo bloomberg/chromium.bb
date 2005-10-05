@@ -100,7 +100,7 @@ libfontconfig_la_SOURCES = \
 lib_LTLIBRARIES = libfontconfig.la
 
 libfontconfig_la_LDFLAGS =			\
-	-version-info @LT_VERSION_INFO@ -no_undefined $(export_symbols)
+	-version-info @LT_VERSION_INFO@ -no-undefined $(export_symbols)
 
 libfontconfig_la_LIBADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS)
 
