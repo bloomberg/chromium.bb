@@ -1,3 +1,14 @@
+2005-10-04  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheValid, FcDirCacheUnlink, 
+	                 FcDirCacheHasCurrentArch):
+	* fc-cache/fc-cache.c (scanDirs):
+	* fontconfig/fontconfig.h:
+
+	Add new API which unlinks directory caches and checks dir caches
+	for existence of appropriate sections.  Fix fc-cache to unlink
+	stale cache files and save directory caches that lack relevant
+	sections.
+
 2005-10-03  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheValid):
 

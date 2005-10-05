@@ -273,6 +273,12 @@ _FCFUNCPROTOBEGIN
 FcBool
 FcDirCacheValid (const FcChar8 *cache_file);
 
+FcBool
+FcDirCacheHasCurrentArch (const FcChar8 *dir);
+
+FcBool
+FcDirCacheUnlink (const FcChar8 *dir);
+
 /* fcblanks.c */
 FcBlanks *
 FcBlanksCreate (void);

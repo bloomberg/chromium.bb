@@ -191,7 +191,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    ret++;
 	    continue;
 	}
-	if (!force && FcDirCacheValid (dir))
+	if (!force && FcDirCacheValid (dir) && FcDirCacheHasCurrentArch (dir))
 	{
 	    if (verbose)
 		printf ("skipping, %d fonts, %d dirs\n",
@@ -202,6 +202,10 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    if (verbose)
 		printf ("caching, %d fonts, %d dirs\n", 
 			set->nfont, nsubdirs (subdirs));
+
+            if (!FcDirCacheValid (dir))
+                if (!FcDirCacheUnlink (dir))
+                    ret++;
 
 	    if (!FcDirSave (set, subdirs, dir))
 	    {

@@ -517,14 +517,12 @@ FcCacheCopyOld (int fd, int fd_orig, off_t start)
     return FcFalse;
 }
 
+/* Does not check that the cache has the appropriate arch section. */
 FcBool
 FcDirCacheValid (const FcChar8 *dir)
 {
     FcChar8     *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
     struct stat file_stat, dir_stat;
-    int 	fd;
-    off_t	current_arch_start;
-    char 	*current_arch_machine_name;
 
     if (stat ((char *) dir, &dir_stat) < 0)
     {
@@ -537,8 +535,28 @@ FcDirCacheValid (const FcChar8 *dir)
         return FcFalse;
     }
 
+    FcStrFree (cache_file);
+    /*
+     * If the directory has been modified more recently than
+     * the cache file, the cache is not valid
+     */
+    if (dir_stat.st_mtime - file_stat.st_mtime > 0)
+        return FcFalse;
+    return FcTrue;
+}
+
+/* Assumes that the cache file in 'dir' exists.
+ * Checks that the cache has the appropriate arch section. */
+FcBool
+FcDirCacheHasCurrentArch (const FcChar8 *dir)
+{
+    FcChar8     *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
+    int 	fd;
+    off_t	current_arch_start;
+    char 	*current_arch_machine_name;
+
     current_arch_machine_name = FcCacheMachineSignature();
-    fd = open(cache_file, O_RDONLY);
+    fd = open ((char *)cache_file, O_RDONLY);
     if (fd == -1)
         return FcFalse;
 
@@ -547,14 +565,20 @@ FcDirCacheValid (const FcChar8 *dir)
 
     if (current_arch_start < 0)
         return FcFalse;
+    
+    return FcTrue;
+}
+
+FcBool
+FcDirCacheUnlink (const FcChar8 *dir)
+{
+    FcChar8     *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
+
+    if (!unlink ((char *)cache_file))
+        return FcFalse;
 
     FcStrFree (cache_file);
-    /*
-     * If the directory has been modified more recently than
-     * the cache file, the cache is not valid
-     */
-    if (dir_stat.st_mtime - file_stat.st_mtime > 0)
-        return FcFalse;
+
     return FcTrue;
 }
 
