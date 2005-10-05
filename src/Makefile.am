@@ -23,7 +23,6 @@
 
 if OS_WIN32
 
-no_undefined = -no-undefined
 export_symbols = -export-symbols fontconfig.def
 
 # gcc import library install/uninstall
@@ -100,7 +99,7 @@ libfontconfig_la_SOURCES = \
 lib_LTLIBRARIES = libfontconfig.la
 
 libfontconfig_la_LDFLAGS =			\
-	-version-info @LT_VERSION_INFO@ $(no_undefined) $(export_symbols)
+	-version-info @LT_VERSION_INFO@ -no-undefined $(export_symbols)
 
 libfontconfig_la_LIBADD = $(FREETYPE_LIBS) $(EXPAT_LIBS)
 

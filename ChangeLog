@@ -1,3 +1,10 @@
+2005-10-05  Christian Biesinger  <cbiesinger@web.de>
+        reviewed by: plam & keithp
+
+        * src/Makefile.am:
+
+        Use libtool -no-undefined flag on all platforms.
+
 2005-10-05  Simos Xenitellis  <simos74@gmx.net>
 	reviewed by: plam & keithp
 
