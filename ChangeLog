@@ -1,3 +1,11 @@
+2005-10-05  Simos Xenitellis  <simos74@gmx.net>
+	reviewed by: plam & keithp
+
+	* fonts.conf.in:
+
+	Modify config file to use Greek fonts before Asian fonts with
+	Greek glyphs.
+
 2005-07-25  Keith Packard  <keithp@keithp.com>
 
 	* doc/fontconfig-user.sgml:

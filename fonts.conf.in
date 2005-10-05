@@ -84,6 +84,7 @@
 		<family>ＭＳ 明朝</family>
 		<family>Baekmuk Batang</family>
 		<family>FreeSerif</family>
+		<family>MgOpen Canonica</family>
 		<default><family>serif</family></default>
 	</alias>
 <!--
@@ -104,6 +105,7 @@
 		<family>Baekmuk Dotum</family>
 		<family>SimSun</family>
 		<family>FreeSans</family>
+		<family>MgOpen Modata</family>
 		<default><family>sans-serif</family></default>
 	</alias>
 <!--
@@ -265,12 +267,13 @@
 			<family>Nimbus Roman No9 L</family>
 			<family>Times</family>
 			<family>Frank Ruehl</family>
+			<family>MgOpen Canonica</family>
+			<family>FreeSerif</family>
 			<family>Kochi Mincho</family>
 			<family>AR PL SungtiL GB</family>
 			<family>AR PL Mingti2L Big5</family>
 			<family>ＭＳ 明朝</family>
 			<family>Baekmuk Batang</family>
-			<family>FreeSerif</family>
 		</prefer>
 	</alias>
 	<alias>
@@ -284,13 +287,14 @@
 			<family>Nimbus Sans L</family>
 			<family>Helvetica</family>
 			<family>Nachlieli</family>
+			<family>MgOpen Modata</family>
+			<family>FreeSans</family>
 			<family>Kochi Gothic</family>
 			<family>AR PL KaitiM GB</family>
 			<family>AR PL KaitiM Big5</family>
 			<family>ＭＳ ゴシック</family>
 			<family>Baekmuk Dotum</family>
 			<family>SimSun</family>
-			<family>FreeSans</family>
 		</prefer>
 	</alias>
 	<alias>
@@ -304,10 +308,10 @@
 			<family>Nimbus Mono L</family>
 			<family>Courier</family>
 			<family>Miriam Mono</family>
+			<family>FreeMono</family>
 			<family>Kochi Gothic</family>
 			<family>AR PL KaitiM GB</family>
 			<family>Baekmuk Dotum</family>
-			<family>FreeMono</family>
 		</prefer>
 	</alias>
 
