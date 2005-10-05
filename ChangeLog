@@ -1,3 +1,9 @@
+2005-10-05  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcCacheHaveBank):
+
+	Implement move-to-front array for banks (perf regression
+	reported by Ronny V. Vindenes).
+
 2005-10-04  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheValid, FcDirCacheUnlink, 
 	                 FcDirCacheHasCurrentArch):

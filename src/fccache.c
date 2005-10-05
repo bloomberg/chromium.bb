@@ -949,7 +949,7 @@ FcCacheMachineSignature ()
 }
 
 static int banks_ptr = 0, banks_alloc = 0;
-static int * bankId = 0;
+static int * bankId = 0, * bankIdx = 0;
 
 static FcBool
 FcCacheHaveBank (int bank)
@@ -969,28 +969,37 @@ FcCacheHaveBank (int bank)
 int
 FcCacheBankToIndex (int bank)
 {
-    static int lastBank = FC_BANK_DYNAMIC, lastIndex = -1;
-    int i;
-    int * b;
-
-    if (bank == lastBank)
-	return lastIndex;
+    int i, j;
 
     for (i = 0; i < banks_ptr; i++)
-	if (bankId[i] == bank)
-	    return i;
+	if (bankId[bankIdx[i]] == bank)
+	{
+	    int t = bankIdx[i];
+
+	    for (j = i; j > 0; j--)
+		bankIdx[j] = bankIdx[j-1];
+	    bankIdx[0] = t;
+	    return t;
+	}
 
     if (banks_ptr >= banks_alloc)
     {
+	int * b, * bidx;
 	b = realloc (bankId, (banks_alloc + 4) * sizeof(int));
 	if (!b)
 	    return -1;
-
 	bankId = b;
+
+	bidx = realloc (bankIdx, (banks_alloc + 4) * sizeof(int));
+	if (!bidx)
+	    return -1;
+	bankIdx = bidx;
+
 	banks_alloc += 4;
     }
 
     i = banks_ptr++;
     bankId[i] = bank;
+    bankIdx[i] = i;
     return i;
 }
