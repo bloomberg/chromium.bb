@@ -263,8 +263,9 @@ FcObjectToPtr (const char * name)
         if (b->hash == hash && !strcmp (name, (char *) (b + 1)))
             return b->id;
     size = sizeof (struct objectBucket) + strlen (name) + 1;
-    b = malloc (size);
-    FcMemAlloc (FC_MEM_STATICSTR, size);
+    /* workaround glibc bug which reads strlen in groups of 4 */
+    b = malloc (size + sizeof (int));
+    FcMemAlloc (FC_MEM_STATICSTR, size + sizeof(int));
     if (!b)
         return 0;
     b->next = 0;

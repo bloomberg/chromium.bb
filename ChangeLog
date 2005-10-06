@@ -1,3 +1,11 @@
+2005-10-06  Patrick Lam  <plam@mit.edu>
+
+        * src/fcname.c (FcObjectToPtr):
+        * src/fcpat.c (FcStrStaticName):
+
+        Add padding to make valgrind and glibc not hate each other
+        when calling strlen().
+
 2005-10-05  Simos Xenitellis  <simos74@gmx.net>
 	reviewed by: plam & keithp
 

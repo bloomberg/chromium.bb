@@ -1298,8 +1298,9 @@ FcStrStaticName (const FcChar8 *name)
 	if (b->hash == hash && !strcmp ((char *)name, (char *) (b + 1)))
 	    return (FcChar8 *) (b + 1);
     size = sizeof (struct objectBucket) + strlen ((char *)name) + 1;
-    b = malloc (size);
-    FcMemAlloc (FC_MEM_STATICSTR, size);
+    b = malloc (size + sizeof (int));
+    /* workaround glibc bug which reads strlen in groups of 4 */
+    FcMemAlloc (FC_MEM_STATICSTR, size + sizeof (int));
     if (!b)
         return NULL;
     b->next = 0;
