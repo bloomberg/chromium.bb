@@ -583,7 +583,6 @@ struct drm_driver {
 	unsigned long (*get_map_ofs) (drm_map_t * map);
 	unsigned long (*get_reg_ofs) (struct drm_device * dev);
 	void (*set_version) (struct drm_device * dev, drm_set_version_t * sv);
-	int (*version) (drm_version_t * version);
 
 	int major;
 	int minor;
