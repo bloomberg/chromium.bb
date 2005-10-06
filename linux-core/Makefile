@@ -50,7 +50,8 @@ endif
 MACHINE := $(shell uname -m)
 
 # Modules for all architectures
-MODULE_LIST := drm.o tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o mach64.o
+MODULE_LIST := drm.o tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o \
+               mach64.o nv.o
 
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))
@@ -97,11 +98,13 @@ VIASHARED	= via_drm.h via_drv.h via_mm.h via_ds.h \
 MACH64HEADERS = mach64_drv.h mach64_drm.h $(DRMHEADERS)
 MACH64SHARED = 	mach64_drv.h mach64_drm.h mach64_dma.c \
 		mach64_irq.c mach64_state.c
+NVHEADERS =     nv_drv.h $(DRMHEADERS)
+NVSHARED  =     nv_drv.h
 FFBHEADERS = 	ffb_drv.h $(DRMHEADERS)
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
 	$(SISSHARED) $(TDFXSHARED) $(VIASHARED) $(MACH64SHARED) \
-	$(I915SHARED) $(SAVAGESHARED)
+	$(I915SHARED) $(SAVAGESHARED) $(NVSHARED)
 
 PROGS = dristat drmstat
 
@@ -330,6 +333,7 @@ CONFIG_DRM_FFB := n
 CONFIG_DRM_SAVAGE := n
 CONFIG_DRM_VIA := n
 CONFIG_DRM_MACH64 := n
+CONFIG_DRM_NV := n
 
 # Enable module builds for the modules requested/supported.
 
@@ -359,6 +363,9 @@ CONFIG_DRM_SAVAGE := m
 endif
 ifneq (,$(findstring mga,$(DRM_MODULES)))
 CONFIG_DRM_MGA := m
+endif
+ifneq (,$(findstring nv,$(DRM_MODULES)))
+CONFIG_DRM_NV := m
 endif
 
 # These require AGP support
@@ -391,6 +398,7 @@ $(ffb-objs):	$(FFBHEADERS)
 $(savage-objs): $(SAVAGEHEADERS)
 $(via-objs):	$(VIAHEADERS)
 $(mach64-objs): $(MACH64HEADERS)
+$(nv-objs):     $(NVHEADERS)
 
 endif
 
