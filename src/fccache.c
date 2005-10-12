@@ -46,7 +46,7 @@ FcDirCacheProduce (FcFontSet *set, FcCache * metadata);
 static FcBool
 FcDirCacheConsume (int fd, FcFontSet *set);
 
-static FcBool
+FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir);
 
 static int
@@ -690,7 +690,7 @@ FcCacheRead (FcConfig *config, FcGlobalCache * cache)
 }
 
 /* read serialized state from the cache file */
-static FcBool
+FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir)
 {
     char *cache_file = (char *)FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
