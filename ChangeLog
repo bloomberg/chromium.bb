@@ -1,3 +1,17 @@
+2005-10-13  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheUnlink):
+
+	Fix flipped return value on unlink.  (Reported by Mike Fabian)
+
+2005-10-12  Patrick Lam  <plam@mit.edu>
+
+        * src/fccache.c:
+        * src/fcdir.c (FcDirScanConfig):
+        * src/fcint.h:
+
+        When fc-cache is run without --force, use directory cache files
+        to speed up fc-cache run time.  (Reported by Mike Fabian)
+
 2005-10-06  Patrick Lam  <plam@mit.edu>
 
         * src/fcname.c (FcObjectToPtr):

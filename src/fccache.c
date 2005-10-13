@@ -574,11 +574,13 @@ FcDirCacheUnlink (const FcChar8 *dir)
 {
     FcChar8     *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
 
-    if (!unlink ((char *)cache_file))
+    if (unlink ((char *)cache_file) != 0)
+    {
+	FcStrFree (cache_file);
         return FcFalse;
+    }
 
     FcStrFree (cache_file);
-
     return FcTrue;
 }
 
