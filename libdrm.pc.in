@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: libdrm
 Description: Userspace interface to kernel DRM services
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir}
+Libs: -L${libdir} -ldrm
 Cflags: -I${includedir} -I${includedir}/drm
