@@ -925,8 +925,8 @@ static int mga_do_cleanup_dma(drm_device_t * dev)
 	if (dev->dev_private) {
 		drm_mga_private_t *dev_priv = dev->dev_private;
 
-		if ((dev_priv->warp != NULL) 
-		    && (dev_priv->mmio->type != _DRM_CONSISTENT))
+		if ((dev_priv->warp != NULL)
+		    && (dev_priv->warp->type != _DRM_CONSISTENT))
 			drm_core_ioremapfree(dev_priv->warp, dev);
 
 		if ((dev_priv->primary != NULL) 
