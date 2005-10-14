@@ -44,7 +44,9 @@
 #define MGA_DEFAULT_USEC_TIMEOUT	10000
 #define MGA_FREELIST_DEBUG		0
 
-static int mga_do_cleanup_dma(drm_device_t * dev);
+#define MINIMAL_CLEANUP    0
+#define FULL_CLEANUP       1
+static int mga_do_cleanup_dma(drm_device_t * dev, int full_cleanup);
 
 /* ================================================================
  * Engine control
@@ -716,7 +718,7 @@ static int mga_do_dma_bootstrap(drm_device_t * dev,
 	 */
 
 	if (err) {
-		mga_do_cleanup_dma(dev);
+		mga_do_cleanup_dma(dev, MINIMAL_CLEANUP);
 	}
 
 
@@ -752,7 +754,7 @@ int mga_dma_bootstrap(DRM_IOCTL_ARGS)
 
 	err = mga_do_dma_bootstrap(dev, & bootstrap);
 	if (err) {
-		mga_do_cleanup_dma(dev);
+		mga_do_cleanup_dma(dev, FULL_CLEANUP);
 		return err;
 	}
 
@@ -910,7 +912,7 @@ static int mga_do_init_dma(drm_device_t * dev, drm_mga_init_t * init)
 	return 0;
 }
 
-static int mga_do_cleanup_dma(drm_device_t * dev)
+static int mga_do_cleanup_dma(drm_device_t * dev, int full_cleanup)
 {
 	int err = 0;
 	DRM_DEBUG("\n");
@@ -949,17 +951,19 @@ static int mga_do_cleanup_dma(drm_device_t * dev)
 			if ((dev->agp != NULL) && dev->agp->acquired) {
 				err = drm_agp_release(dev);
 			}
-
-			dev_priv->used_new_dma_init = 0;
 		}
 
 		dev_priv->warp = NULL;
 		dev_priv->primary = NULL;
-		dev_priv->mmio = NULL;
-		dev_priv->status = NULL;
 		dev_priv->sarea = NULL;
 		dev_priv->sarea_priv = NULL;
 		dev->agp_buffer_map = NULL;
+
+		if (full_cleanup) {
+			dev_priv->mmio = NULL;
+			dev_priv->status = NULL;
+			dev_priv->used_new_dma_init = 0;
+		}
 
 		memset(&dev_priv->prim, 0, sizeof(dev_priv->prim));
 		dev_priv->warp_pipe = 0;
@@ -988,11 +992,11 @@ int mga_dma_init(DRM_IOCTL_ARGS)
 	case MGA_INIT_DMA:
 		err = mga_do_init_dma(dev, &init);
 		if (err) {
-			(void) mga_do_cleanup_dma(dev);
+			(void) mga_do_cleanup_dma(dev, FULL_CLEANUP);
 		}
 		return err;
 	case MGA_CLEANUP_DMA:
-		return mga_do_cleanup_dma(dev);
+		return mga_do_cleanup_dma(dev, FULL_CLEANUP);
 	}
 
 	return DRM_ERR(EINVAL);
@@ -1134,7 +1138,7 @@ int mga_driver_unload(drm_device_t * dev)
  */
 void mga_driver_lastclose(drm_device_t * dev)
 {
-	mga_do_cleanup_dma(dev);
+	mga_do_cleanup_dma(dev, FULL_CLEANUP);
 }
 
 int mga_driver_dma_quiescent(drm_device_t * dev)
