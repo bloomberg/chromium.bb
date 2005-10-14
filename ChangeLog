@@ -1,3 +1,10 @@
+2005-10-14  Mike Fabian  <mfabian@suse.de>
+        reviewed by: plam
+
+        * src/fccache.c (FcDirCacheUnlink):
+
+        Check existence of directory cache file before attempting to unlink.
+
 2005-10-13  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheUnlink):
 

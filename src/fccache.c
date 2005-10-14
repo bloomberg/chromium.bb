@@ -573,8 +573,10 @@ FcBool
 FcDirCacheUnlink (const FcChar8 *dir)
 {
     FcChar8     *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
+    struct stat	cache_stat;
 
-    if (unlink ((char *)cache_file) != 0)
+    if (stat ((char *) cache_file, &cache_stat) == 0 &&
+	unlink ((char *)cache_file) != 0)
     {
 	FcStrFree (cache_file);
         return FcFalse;
