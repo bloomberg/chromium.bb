@@ -1,3 +1,11 @@
+2005-10-14  Ross Burton <ross@burtonini.com>
+	reviewed by: plam
+
+	* fc-glyphname/fc-glyphname.c:
+	* src/fclang.c:
+
+	Add consts to variables so as to move arrays into .rodata.
+
 2005-10-14  Mike Fabian  <mfabian@suse.de>
         reviewed by: plam
 

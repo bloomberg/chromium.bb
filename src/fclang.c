@@ -25,8 +25,8 @@
 #include "fcint.h"
 
 typedef struct {
-    FcChar8	*lang;
-    FcCharSet	charset;
+    const FcChar8	*lang;
+    const FcCharSet	charset;
 } FcLangCharSet;
 
 typedef struct {

@@ -219,7 +219,7 @@ dump (FcGlyphName * const *table, const char *name)
 {
     int	i;
     
-    printf ("static FcGlyphName	*%s[%d] = {\n", name, hash);
+    printf ("static const FcGlyphName	*%s[%d] = {\n", name, hash);
 
     for (i = 0; i < hash; i++)
 	if (table[i])
@@ -289,7 +289,7 @@ main (int argc, char **argv)
      */
     
     for (i = 0; i < nraw; i++)
-	printf ("static struct { FcChar32 ucs; FcChar8 name[%d]; }"
+	printf ("static const struct { const FcChar32 ucs; const FcChar8 name[%d]; }"
 	        " glyph%d = { 0x%lx, \"%s\" };\n",
 	        (int) strlen ((char *) raw[i]->name) + 1,
 		i, (unsigned long) raw[i]->ucs, raw[i]->name);
