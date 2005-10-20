@@ -27,14 +27,10 @@ AM_CONFIG_HEADER([libdrm/config.h])
 
 AC_PROG_LIBTOOL
 AC_PROG_CC
-AC_PATH_X
 
 AC_HEADER_STDC
 
 pkgconfigdir=${libdir}/pkgconfig
 AC_SUBST(pkgconfigdir)
-
-X11_CFLAGS=-I${x_includes}
-AC_SUBST(X11_CFLAGS)
 
 AC_OUTPUT([Makefile libdrm/Makefile shared-core/Makefile libdrm.pc])

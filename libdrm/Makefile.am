@@ -22,7 +22,7 @@ libdrm_la_LTLIBRARIES = libdrm.la
 libdrm_ladir = $(libdir)
 libdrm_la_LDFLAGS = -version-number 1:0:0 -no-undefined
 
-AM_CFLAGS = -I$(top_srcdir)/shared-core $(X11_CFLAGS)
+AM_CFLAGS = -I$(top_srcdir)/shared-core
 libdrm_la_SOURCES = xf86drm.c xf86drmHash.c xf86drmRandom.c xf86drmSL.c
 
 libdrmincludedir = ${includedir}
