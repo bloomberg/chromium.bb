@@ -27,6 +27,12 @@
 
 #include <stdarg.h>
 
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+#define FC_ATTRIBUTE_SENTINEL(x) __attribute__((__sentinel__(0)))
+#else
+#define FC_ATTRIBUTE_SENTINEL(x)
+#endif
+
 typedef unsigned char	FcChar8;
 typedef unsigned short	FcChar16;
 typedef unsigned int	FcChar32;
@@ -534,7 +540,7 @@ FcObjectSet *
 FcObjectSetVaBuild (const char *first, va_list va);
 
 FcObjectSet *
-FcObjectSetBuild (const char *first, ...);
+FcObjectSetBuild (const char *first, ...) FC_ATTRIBUTE_SENTINEL(0);
 
 FcFontSet *
 FcFontSetList (FcConfig	    *config,
@@ -751,7 +757,7 @@ FcPattern *
 FcPatternVaBuild (FcPattern *orig, va_list va);
     
 FcPattern *
-FcPatternBuild (FcPattern *orig, ...);
+FcPatternBuild (FcPattern *orig, ...) FC_ATTRIBUTE_SENTINEL(0);
 
 /* fcstr.c */
 
@@ -852,5 +858,7 @@ FcBool
 FcConfigParseAndLoad (FcConfig *config, const FcChar8 *file, FcBool complain);
 
 _FCFUNCPROTOEND
+
+#undef FC_ATTRIBUTE_SENTINEL
 
 #endif /* _FONTCONFIG_H_ */

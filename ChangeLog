@@ -1,4 +1,11 @@
-2005-10-14  Ross Burton <ross@burtonini.com>
+2005-10-20  Marcus Meissner  <meissner@suse.de>
+	reviewed by: plam
+
+	* fontconfig/fontconfig.h:
+
+	Add valist sentinel markup for FcObjectSetBuild and FcPatternBuild.
+	
+2005-10-14  Ross Burton  <ross@burtonini.com>
 	reviewed by: plam
 
 	* fc-glyphname/fc-glyphname.c:
