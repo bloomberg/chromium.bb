@@ -18,6 +18,10 @@
 #  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+# XXX airlied says, nothing besides *_drm.h and drm*.h should be necessary.
+# however, r300 and via need their reg headers installed in order to build.
+# better solutions are welcome.
+
 klibdrmincludedir = ${includedir}/drm
 klibdrminclude_HEADERS = \
                          drm.h \
@@ -29,4 +33,6 @@ klibdrminclude_HEADERS = \
                          radeon_drm.h \
                          savage_drm.h \
                          sis_drm.h \
-                         via_drm.h 
+                         via_drm.h \
+                         r300_reg.h \
+                         via_3d_reg.h
