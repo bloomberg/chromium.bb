@@ -814,6 +814,9 @@ static int mga_do_init_dma(drm_device_t * dev, drm_mga_init_t * init)
 	}
 
 	if (! dev_priv->used_new_dma_init) {
+
+		dev_priv->wagp_enable = MGA_WAGP_ENABLE;
+
 		dev_priv->status = drm_core_findmap(dev, init->status_offset);
 		if (!dev_priv->status) {
 			DRM_ERROR("failed to find status page!\n");
