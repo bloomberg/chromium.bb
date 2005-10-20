@@ -74,7 +74,7 @@ via_unmap_blit_from_device(struct pci_dev *pdev, drm_via_sg_info_t *vsg)
 			desc_ptr = vsg->desc_pages[cur_descriptor_page] + 
 				descriptor_this_page;
 		}
-		dma_unmap_single(&pdev->dev, next, sizeof(*desc_ptr), DMA_FROM_DEVICE);
+		dma_unmap_single(&pdev->dev, next, sizeof(*desc_ptr), DMA_TO_DEVICE);
 		dma_unmap_page(&pdev->dev, desc_ptr->mem_addr, desc_ptr->size, vsg->direction);
 		next = (dma_addr_t) desc_ptr->next;
 		desc_ptr--;
@@ -595,10 +595,16 @@ via_build_sg_info(drm_device_t *dev, drm_via_sg_info_t *vsg, drm_via_dmablit_t *
 	 * (Not a big limitation anyway.)
 	 */
 
-	if ((xfer->mem_stride - xfer->line_length) >= PAGE_SIZE) {
+	if (((xfer->mem_stride - xfer->line_length) >= PAGE_SIZE) ||
+	    (xfer->mem_stride > 2048)) {
 		DRM_ERROR("Too large system memory stride.\n");
 		return DRM_ERR(EINVAL);
 	}
+
+	if (xfer->num_lines > 2048) {
+		DRM_ERROR("Too many PCI DMA bitblt lines.\n");
+		return DRM_ERR(EINVAL);
+	}		
 
 	/* 
 	 * we allow a negative fb stride to allow flipping of images in
@@ -617,11 +623,18 @@ via_build_sg_info(drm_device_t *dev, drm_via_sg_info_t *vsg, drm_via_dmablit_t *
 	 * about this. Meanwhile, impose the following restrictions:
 	 */
 
+#ifdef VIA_BUGFREE
 	if ((((unsigned long)xfer->mem_addr & 3) != ((unsigned long)xfer->fb_addr & 3)) ||
 	    ((xfer->mem_stride & 3) != (xfer->fb_stride & 3))) {
 		DRM_ERROR("Invalid DRM bitblt alignment.\n");
 	        return DRM_ERR(EINVAL);
 	}
+#else
+	if ((((unsigned long)xfer->mem_addr & 15) || ((unsigned long)xfer->fb_addr & 15))) {
+		DRM_ERROR("Invalid DRM bitblt alignment.\n");
+	        return DRM_ERR(EINVAL);
+	}	
+#endif
 
 	if (0 != (ret = via_lock_all_dma_pages(vsg, xfer))) {
 		DRM_ERROR("Could not lock DMA pages.\n");

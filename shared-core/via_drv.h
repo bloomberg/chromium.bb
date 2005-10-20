@@ -32,7 +32,7 @@
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		7
-#define DRIVER_PATCHLEVEL	0
+#define DRIVER_PATCHLEVEL	1
 
 #include "via_verifier.h"
 
