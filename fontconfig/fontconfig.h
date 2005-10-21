@@ -665,6 +665,9 @@ FcNameParse (const FcChar8 *name);
 FcChar8 *
 FcNameUnparse (FcPattern *pat);
 
+FcChar8 *
+FcNameUnparseEscaped (FcPattern *pat, FcBool escape);
+
 /* fcpat.c */
 FcPattern *
 FcPatternCreate (void);

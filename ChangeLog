@@ -1,3 +1,10 @@
+2005-10-21  Patrick Lam  <plam@mit.edu>
+	* fc-list/fc-list.c (main):
+	* src/fcname.c (FcNameUnparse, FcNameUnparseEscaped):
+	* fontconfig/fontconfig.h:
+
+	Prevent fc-list from escaping strings when printing them.
+
 2005-10-20  Marcus Meissner  <meissner@suse.de>
 	reviewed by: plam
 

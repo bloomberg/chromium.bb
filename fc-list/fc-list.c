@@ -150,7 +150,7 @@ main (int argc, char **argv)
 	    FcChar8 *font;
 	    FcChar8 *file;
 
-	    font = FcNameUnparse (fs->fonts[j]);
+	    font = FcNameUnparseEscaped (fs->fonts[j], FcFalse);
 	    if (FcPatternGetString (fs->fonts[j], FC_FILE, 0, &file) == FcResultMatch)
 		printf ("%s: ", file);
 	    printf ("%s\n", font);

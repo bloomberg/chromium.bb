@@ -824,6 +824,12 @@ FcNameUnparseValueList (FcStrBuf	*buf,
 FcChar8 *
 FcNameUnparse (FcPattern *pat)
 {
+    return FcNameUnparseEscaped (pat, FcTrue);
+}
+
+FcChar8 *
+FcNameUnparseEscaped (FcPattern *pat, FcBool escape)
+{
     FcStrBuf		    buf;
     FcChar8		    buf_static[8192];
     int			    i;
@@ -835,7 +841,7 @@ FcNameUnparse (FcPattern *pat)
     e = FcPatternFindElt (pat, FC_FAMILY);
     if (e)
     {
-	if (!FcNameUnparseValueList (&buf, e->values, (FcChar8 *) FC_ESCAPE_FIXED))
+        if (!FcNameUnparseValueList (&buf, e->values, escape ? (FcChar8 *) FC_ESCAPE_FIXED : 0))
 	    goto bail0;
     }
     e = FcPatternFindElt (pat, FC_SIZE);
@@ -843,7 +849,7 @@ FcNameUnparse (FcPattern *pat)
     {
 	if (!FcNameUnparseString (&buf, (FcChar8 *) "-", 0))
 	    goto bail0;
-	if (!FcNameUnparseValueList (&buf, e->values, (FcChar8 *) FC_ESCAPE_FIXED))
+	if (!FcNameUnparseValueList (&buf, e->values, escape ? (FcChar8 *) FC_ESCAPE_FIXED : 0))
 	    goto bail0;
     }
     for (l = _FcObjectTypes; l; l = l->next)
@@ -861,12 +867,12 @@ FcNameUnparse (FcPattern *pat)
 	    {
 		if (!FcNameUnparseString (&buf, (FcChar8 *) ":", 0))
 		    goto bail0;
-		if (!FcNameUnparseString (&buf, (FcChar8 *) o->object, (FcChar8 *) FC_ESCAPE_VARIABLE))
+		if (!FcNameUnparseString (&buf, (FcChar8 *) o->object, escape ? (FcChar8 *) FC_ESCAPE_VARIABLE : 0))
 		    goto bail0;
 		if (!FcNameUnparseString (&buf, (FcChar8 *) "=", 0))
 		    goto bail0;
-		if (!FcNameUnparseValueList (&buf, e->values, 
-					     (FcChar8 *) FC_ESCAPE_VARIABLE))
+		if (!FcNameUnparseValueList (&buf, e->values, escape ? 
+					     (FcChar8 *) FC_ESCAPE_VARIABLE : 0))
 		    goto bail0;
 	    }
 	}
