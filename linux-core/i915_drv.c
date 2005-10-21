@@ -43,8 +43,11 @@ extern int i915_max_ioctl;
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
+	/* don't use mtrr's here, the Xserver or user space app should
+	 * deal with them for intel hardware.
+	 */
 	.driver_features =
-	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | DRIVER_USE_MTRR |
+	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | /* DRIVER_USE_MTRR | */
 	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED,
 	.load = i915_driver_load,
 	.lastclose = i915_driver_lastclose,
