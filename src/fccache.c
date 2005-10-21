@@ -172,13 +172,13 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
     current_arch_start = FcCacheSkipToArch(cache->fd, 
 					   current_arch_machine_name);
     if (current_arch_start < 0)
-        goto bail0;
+        goto bail_and_destroy;
 
     lseek (cache->fd, current_arch_start, SEEK_SET);
     FcCacheReadString (cache->fd, candidate_arch_machine_name, 
                        sizeof (candidate_arch_machine_name));
     if (strlen(candidate_arch_machine_name) == 0)
-	goto bail0;
+	goto bail_and_destroy;
 
     while (1) 
     {
@@ -224,10 +224,20 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	free (d);
     }
     cache->dirs = 0;
- bail0:
+
     close (cache->fd);
     cache->fd = -1;
     return;
+
+ bail_and_destroy:
+    close (cache->fd);
+    cache->fd = -1;
+
+    if (stat ((char *) cache_file, &cache_stat) == 0)
+        unlink ((char *)cache_file);
+
+    return;
+
 }
 
 FcBool
