@@ -37,6 +37,67 @@ static struct {
 
 #define NUM_FC_BOOL_DEFAULTS	(int) (sizeof FcBoolDefaults / sizeof FcBoolDefaults[0])
 
+FcChar8 *
+FcGetDefaultLang (void)
+{
+    static char	lang_local [128] = {0};
+    char        *ctype;
+    char        *territory;
+    char        *after;
+    int         lang_len, territory_len;
+
+    if (lang_local [0])
+	return (FcChar8 *) lang_local;
+
+    ctype = setlocale (LC_CTYPE, NULL);
+
+    /*
+     * Check if setlocale (LC_ALL, "") has been called
+     */
+    if (!ctype || !strcmp (ctype, "C"))
+    {
+	ctype = getenv ("LC_ALL");
+	if (!ctype)
+	{
+	    ctype = getenv ("LC_CTYPE");
+	    if (!ctype)
+		ctype = getenv ("LANG");
+	}
+    }
+
+    /* ignore missing or empty ctype */
+    if (ctype && *ctype != '\0')
+    {
+	territory = strchr (ctype, '_');
+	if (territory)
+	{
+	    lang_len = territory - ctype;
+	    territory = territory + 1;
+	    after = strchr (territory, '.');
+	    if (!after)
+	    {
+		after = strchr (territory, '@');
+		if (!after)
+		    after = territory + strlen (territory);
+	    }
+	    territory_len = after - territory;
+	    if (lang_len + 1 + territory_len + 1 <= (int) sizeof (lang_local))
+	    {
+		strncpy (lang_local, ctype, lang_len);
+		lang_local[lang_len] = '-';
+		strncpy (lang_local + lang_len + 1, territory, territory_len);
+		lang_local[lang_len + 1 + territory_len] = '\0';
+	    }
+	}
+    }
+
+    /* set default lang to en */
+    if (!lang_local [0])
+	strcpy (lang_local, "en");
+
+    return (FcChar8 *) lang_local;
+}
+
 void
 FcDefaultSubstitute (FcPattern *pattern)
 {
@@ -91,54 +152,7 @@ FcDefaultSubstitute (FcPattern *pattern)
 
     if (FcPatternGet (pattern, FC_LANG, 0, &v) == FcResultNoMatch)
     {
-	char	*lang;
-	char	*territory;
-	char	*after;
-	int	lang_len, territory_len;
-	char	lang_local[128];
-	char	*ctype = setlocale (LC_CTYPE, NULL);
-
-	/*
-	 * Check if setlocale (LC_ALL, "") has been called
-	 */
-	if (!ctype || !strcmp (ctype, "C"))
-	{
-	    ctype = getenv ("LC_ALL");
-	    if (!ctype)
-	    {
-		ctype = getenv ("LC_CTYPE");
-		if (!ctype)
-		    ctype = getenv ("LANG");
-	    }
-	}
-	if (ctype)
-	{
-	    lang = ctype;
-	    territory = strchr (ctype, '_');
-	    if (territory)
-	    {
-		lang_len = territory - lang;
-		territory = territory + 1;
-		after = strchr (territory, '.');
-		if (!after)
-		{
-		    after = strchr (territory, '@');
-		    if (!after)
-			after = territory + strlen (territory);
-		}
-		territory_len = after - territory;
-		if (lang_len + 1 + territory_len + 1 <= (int) sizeof (lang_local))
-		{
-		    strncpy (lang_local, lang, lang_len);
-		    lang_local[lang_len] = '-';
-		    strncpy (lang_local + lang_len + 1, territory, territory_len);
-		    lang_local[lang_len + 1 + territory_len] = '\0';
-		    FcPatternAddString (pattern, FC_LANG, (FcChar8 *) lang_local);
-		}
-	    }
-	    else
-		FcPatternAddString (pattern, FC_LANG, (FcChar8 *) lang);
-	}
+ 	FcPatternAddString (pattern, FC_LANG, FcGetDefaultLang ());
     }
     if (FcPatternGet (pattern, FC_FONTVERSION, 0, &v) == FcResultNoMatch)
     {

@@ -337,6 +337,34 @@ FcListHashTableCleanup (FcListHashTable *table)
     table->entries = 0;
 }
 
+static int
+FcGetDefaultObjectLangIndex (FcPattern *font, const char *object)
+{
+    FcChar8	   *lang = FcGetDefaultLang ();
+    FcPatternElt   *e = FcPatternFindElt (font, object);
+    FcValueListPtr  v;
+    FcValue         value;
+    int             idx = -1;
+    int             i;
+
+    if (e)
+    {
+	for (v = e->values, i = 0; FcValueListPtrU(v); v = FcValueListPtrU(v)->next, ++i)
+	{
+	    value = FcValueCanonicalize (&FcValueListPtrU (v)->value);
+
+	    if (value.type == FcTypeString)
+	    {
+		FcLangResult res = FcLangCompare (value.u.s, lang);
+		if (res == FcLangEqual || (res == FcLangDifferentCountry && idx < 0))
+		    idx = i;
+	    }
+	}
+    }
+
+    return (idx > 0) ? idx : 0;
+}
+
 static FcBool
 FcListAppend (FcListHashTable	*table,
 	      FcPattern		*font,
@@ -347,6 +375,11 @@ FcListAppend (FcListHashTable	*table,
     FcValueListPtr  v;
     FcChar32	    hash;
     FcListBucket    **prev, *bucket;
+    int             familyidx = -1;
+    int             fullnameidx = -1;
+    int             styleidx = -1;
+    int             defidx = 0;
+    int             idx;
 
     hash = FcListPatternHash (font, os);
     for (prev = &table->buckets[hash % FC_LIST_HASH_SIZE];
@@ -368,15 +401,36 @@ FcListAppend (FcListHashTable	*table,
     
     for (o = 0; o < os->nobject; o++)
     {
+	if (!strcmp (os->objects[o], FC_FAMILY) || !strcmp (os->objects[o], FC_FAMILYLANG))
+	{
+	    if (familyidx < 0)
+		familyidx = FcGetDefaultObjectLangIndex (font, FC_FAMILYLANG);
+	    defidx = familyidx;
+	}
+	else if (!strcmp (os->objects[o], FC_FULLNAME) || !strcmp (os->objects[o], FC_FULLNAMELANG))
+	{
+	    if (fullnameidx < 0)
+		fullnameidx = FcGetDefaultObjectLangIndex (font, FC_FULLNAMELANG);
+	    defidx = fullnameidx;
+	}
+	else if (!strcmp (os->objects[o], FC_STYLE) || !strcmp (os->objects[o], FC_STYLELANG))
+	{
+	    if (styleidx < 0)
+		styleidx = FcGetDefaultObjectLangIndex (font, FC_STYLELANG);
+	    defidx = styleidx;
+	}
+	else
+	    defidx = 0;
+
 	e = FcPatternFindElt (font, os->objects[o]);
 	if (e)
 	{
-	    for (v = e->values; FcValueListPtrU(v); 
-		 v = FcValueListPtrU(v)->next)
+	    for (v = e->values, idx = 0; FcValueListPtrU(v); 
+		 v = FcValueListPtrU(v)->next, ++idx)
 	    {
 		if (!FcPatternAdd (bucket->pattern, 
 				   os->objects[o], 
-				   FcValueCanonicalize(&FcValueListPtrU(v)->value), FcTrue))
+				   FcValueCanonicalize(&FcValueListPtrU(v)->value), defidx != idx))
 		    goto bail2;
 	    }
 	}

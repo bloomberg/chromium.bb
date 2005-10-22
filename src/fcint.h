@@ -574,6 +574,10 @@ FcSubstPrint (const FcSubst *subst);
 int
 FcDebug (void);
 
+/* fcdefault.c */
+FcChar8 *
+FcGetDefaultLang (void);
+
 /* fcdir.c */
 
 FcBool

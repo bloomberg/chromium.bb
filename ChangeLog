@@ -1,3 +1,10 @@
+2005-10-22  Zhe Su  <zsu@novell.com>
+	reviewed by: plam
+
+	Support localized font family and style names.
+	This has been reported to break old apps like xfd, but modern
+	(gtk+/qt/mozilla) apps work fine.
+
 2005-10-21  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcGlobalCacheLoad):
 
