@@ -198,13 +198,13 @@ int via_mem_alloc(DRM_IOCTL_ARGS)
 				 sizeof(mem));
 
 	switch (mem.type) {
-	case VIDEO:
+	case VIA_MEM_VIDEO:
 		if (via_fb_alloc(&mem) < 0)
 			return -EFAULT;
 		DRM_COPY_TO_USER_IOCTL((drm_via_mem_t __user *) data, mem,
 				       sizeof(mem));
 		return 0;
-	case AGP:
+	case VIA_MEM_AGP:
 		if (via_agp_alloc(&mem) < 0)
 			return -EFAULT;
 		DRM_COPY_TO_USER_IOCTL((drm_via_mem_t __user *) data, mem,
@@ -231,7 +231,7 @@ static int via_fb_alloc(drm_via_mem_t * mem)
 	if (block) {
 		fb.offset = block->ofs;
 		fb.free = (unsigned long)block;
-		if (!add_alloc_set(fb.context, VIDEO, fb.free)) {
+		if (!add_alloc_set(fb.context, VIA_MEM_VIDEO, fb.free)) {
 			DRM_DEBUG("adding to allocation set fails\n");
 			via_mmFreeMem((PMemBlock) fb.free);
 			retval = -1;
@@ -268,7 +268,7 @@ static int via_agp_alloc(drm_via_mem_t * mem)
 	if (block) {
 		agp.offset = block->ofs;
 		agp.free = (unsigned long)block;
-		if (!add_alloc_set(agp.context, AGP, agp.free)) {
+		if (!add_alloc_set(agp.context, VIA_MEM_AGP, agp.free)) {
 			DRM_DEBUG("adding to allocation set fails\n");
 			via_mmFreeMem((PMemBlock) agp.free);
 			retval = -1;
@@ -296,11 +296,11 @@ int via_mem_free(DRM_IOCTL_ARGS)
 
 	switch (mem.type) {
 
-	case VIDEO:
+	case VIA_MEM_VIDEO:
 		if (via_fb_free(&mem) == 0)
 			return 0;
 		break;
-	case AGP:
+	case VIA_MEM_AGP:
 		if (via_agp_free(&mem) == 0)
 			return 0;
 		break;
@@ -328,7 +328,7 @@ static int via_fb_free(drm_via_mem_t * mem)
 
 	via_mmFreeMem((PMemBlock) fb.free);
 
-	if (!del_alloc_set(fb.context, VIDEO, fb.free)) {
+	if (!del_alloc_set(fb.context, VIA_MEM_VIDEO, fb.free)) {
 		retval = -1;
 	}
 
@@ -351,7 +351,7 @@ static int via_agp_free(drm_via_mem_t * mem)
 
 	via_mmFreeMem((PMemBlock) agp.free);
 
-	if (!del_alloc_set(agp.context, AGP, agp.free)) {
+	if (!del_alloc_set(agp.context, VIA_MEM_AGP, agp.free)) {
 		retval = -1;
 	}
 
