@@ -111,8 +111,8 @@ FcFreeTypeIsExclusiveLang (const FcChar8  *lang)
 }
 
 typedef struct {
-    FT_UShort	platform_id;
-    FT_UShort	encoding_id;
+    const FT_UShort	platform_id;
+    const FT_UShort	encoding_id;
     const char	fromcode[12];
 } FcFtEncoding;
 
@@ -138,8 +138,8 @@ static const FcFtEncoding   fcFtEncoding[] = {
 #define NUM_FC_FT_ENCODING  (int) (sizeof (fcFtEncoding) / sizeof (fcFtEncoding[0]))
 
 typedef struct {
-    FT_UShort	platform_id;
-    FT_UShort	language_id;
+    const FT_UShort	platform_id;
+    const FT_UShort	language_id;
     const char	lang[8];
 } FcFtLanguage;
 
@@ -741,7 +741,7 @@ done:
     return utf8;
 }
 
-static FcChar8 *
+static const FcChar8 *
 FcSfntNameLanguage (FT_SfntName *sname)
 {
     int i;
@@ -1079,7 +1079,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     for (snamei = 0; snamei < snamec; snamei++)
     {
 	FcChar8		*utf8;
-	FcChar8		*lang;
+	const FcChar8	*lang;
 	const char	*elt = 0, *eltlang = 0;
 	int		*np = 0, *nlangp = 0;
 
@@ -2217,12 +2217,12 @@ FcFreeTypeUseNames (FT_Face face)
     return FcFalse;
 }
 
-static FcChar8 *
+static const FcChar8 *
 FcUcs4ToGlyphName (FcChar32 ucs4)
 {
     int		i = (int) (ucs4 % FC_GLYPHNAME_HASH);
     int		r = 0;
-    FcGlyphName	*gn;
+    const FcGlyphName	*gn;
 
     while ((gn = ucs_to_name[i]))
     {
@@ -2247,7 +2247,7 @@ FcGlyphNameToUcs4 (FcChar8 *name)
     FcChar32	h = FcHashGlyphName (name);
     int		i = (int) (h % FC_GLYPHNAME_HASH);
     int		r = 0;
-    FcGlyphName	*gn;
+    const FcGlyphName	*gn;
 
     while ((gn = name_to_ucs[i]))
     {
@@ -2272,7 +2272,7 @@ FcGlyphNameToUcs4 (FcChar8 *name)
  * any defined order within the font
  */
 static FT_UInt
-FcFreeTypeGlyphNameIndex (FT_Face face, FcChar8 *name)
+FcFreeTypeGlyphNameIndex (FT_Face face, const FcChar8 *name)
 {
     FT_UInt gindex;
     FcChar8 name_buf[FC_GLYPHNAME_MAXLEN + 2];
@@ -2346,7 +2346,7 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
      */
     if (FcFreeTypeUseNames (face))
     {
-	FcChar8	*name = FcUcs4ToGlyphName (ucs4);
+	const FcChar8	*name = FcUcs4ToGlyphName (ucs4);
 	if (name)
 	{
 	    glyphindex = FcFreeTypeGlyphNameIndex (face, name);

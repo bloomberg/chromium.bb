@@ -1,3 +1,8 @@
+2005-10-22  Patrick Lam  <plam@mit.edu>
+	* src/fcfreetype.c:
+
+	Add some more consts, fixing more GCC4 warnings.
+
 2005-10-22  Zhe Su  <zsu@novell.com>
 	reviewed by: plam
 
