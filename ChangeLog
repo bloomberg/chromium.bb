@@ -1,3 +1,9 @@
+2005-10-25  Patrick Lam  <plam@mit.edu>
+	* src/fcfreetype.c (FcFreeTypeQuery):
+
+	Only add basename to patterns' FC_FILE element, not any part of
+	the dirname.
+
 2005-10-22  Patrick Lam  <plam@mit.edu>
 	* src/fcfreetype.c:
 
