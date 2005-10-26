@@ -341,6 +341,10 @@
 		<edit name="slant" mode="assign">
 			<const>oblique</const>
 		</edit>
+                <!-- and disable embedded bitmaps for artificial oblique -->
+                <edit name="embeddedbitmap" mode="assign">
+                        <bool>false</bool>
+                </edit>
 	</match>
 
 <!--

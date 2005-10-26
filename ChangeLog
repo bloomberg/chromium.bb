@@ -1,3 +1,14 @@
+2005-10-25  Jinghua Luo  <sunmoon1997@gmail.com>
+	reviewed by: plam
+
+	* fontconfig/fonts.conf.in:
+	* fontconfig/fontconfig.h:
+	* src/fcdefault.c:
+	* src/fcname.c:
+
+	Add FC_EMBEDDED_BITMAP object type to tell Xft/Cairo whether
+	to load embedded bitmaps or not.
+
 2005-10-25  Patrick Lam  <plam@mit.edu>
 	* src/fcfreetype.c (FcFreeTypeQuery):
 

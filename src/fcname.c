@@ -72,6 +72,7 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_CAPABILITY,	FcTypeString },
     { FC_FONTFORMAT,	FcTypeString },
     { FC_EMBOLDEN,	FcTypeBool },
+    { FC_EMBEDDED_BITMAP,   FcTypeBool },
 };
 
 #define NUM_OBJECT_TYPES    (sizeof _FcBaseObjectTypes / sizeof _FcBaseObjectTypes[0])

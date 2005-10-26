@@ -33,6 +33,7 @@ static struct {
     { FC_VERTICAL_LAYOUT,   FcFalse	},  /* FC_LOAD_VERTICAL_LAYOUT */
     { FC_AUTOHINT,	    FcFalse	},  /* FC_LOAD_FORCE_AUTOHINT */
     { FC_GLOBAL_ADVANCE,    FcTrue	},  /* !FC_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH */
+    { FC_EMBEDDED_BITMAP,   FcTrue 	},  /* !FC_LOAD_NO_BITMAP */
 };
 
 #define NUM_FC_BOOL_DEFAULTS	(int) (sizeof FcBoolDefaults / sizeof FcBoolDefaults[0])
