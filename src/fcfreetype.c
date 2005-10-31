@@ -47,7 +47,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <libgen.h>
 #include "fcint.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -1288,7 +1287,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 		printf ("Saving unique fullname %s\n", full);
     }
 
-    if (!FcPatternAddString (pat, FC_FILE, (FcChar8 *)basename((char *)file)))
+    if (!FcPatternAddString (pat, FC_FILE, file))
 	goto bail1;
 
     if (!FcPatternAddInteger (pat, FC_INDEX, id))
