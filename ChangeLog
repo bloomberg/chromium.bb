@@ -1,4 +1,14 @@
 2005-10-31  Patrick Lam  <plam@mit.edu>
+	* src/fcint.h:
+	* src/fclist.c (FcListAppend):
+	* src/fcmatch.c (FcFontRenderPrepare):
+	* src/fcpat.c (FcPatternTransferFullFname, FcPatternDuplicate,
+	               FcPatternFreeze, FcPatternBaseFreeze):
+
+	Copy the full pathname whenever duplicating an FcPattern; otherwise,
+	applications continue breaking.
+
+2005-10-31  Patrick Lam  <plam@mit.edu>
 	* fc-cat/fc-cat.c (FcCacheFileRead, main):
 	* src/fcfreetype.c (FcFreeTypeQuery):
 

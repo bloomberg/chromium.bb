@@ -34,6 +34,8 @@ static int fcpatternelt_ptr, fcpatternelt_count;
 static FcValueList ** fcvaluelists = 0;
 static int fcvaluelist_bank_count = 0, fcvaluelist_ptr, fcvaluelist_count;
 
+static const char *
+FcPatternFindFullFname (const FcPattern *p);
 static FcPatternEltPtr
 FcPatternEltPtrCreateDynamic (FcPatternElt * e);
 
@@ -580,6 +582,9 @@ FcPatternBaseFreeze (FcPattern *b)
 	    (FcPatternEltU(b->elts)+i)->object;
     }
 
+    if (FcPatternFindElt (b, FC_FILE))
+	FcPatternTransferFullFname (ep, b);
+
     ent->hash = hash;
     ent->next = *bucket;
     *bucket = ent;
@@ -647,6 +652,10 @@ FcPatternFreeze (FcPattern *p)
 	if (!FcValueListPtrU((FcPatternEltU(p->elts)+i)->values))
 	    goto bail;
     }
+
+    if (FcPatternFindElt (p, FC_FILE))
+	FcPatternTransferFullFname (b, p);
+
     /*
      * Freeze base
      */
@@ -1257,6 +1266,13 @@ FcPatternDuplicate (const FcPattern *orig)
                                FcValueCanonicalize(&FcValueListPtrU(l)->value),
 			       FcTrue))
 		goto bail1;
+
+	if (!strcmp ((char *)FcObjectPtrU((e + i)->object), FC_FILE))
+	{
+	    FcChar8 * s;
+	    FcPatternGetString (orig, FC_FILE, 0, &s);
+	    FcPatternAddFullFname (new, FcPatternFindFullFname(orig));
+	}
     }
 
     return new;
@@ -1957,7 +1973,7 @@ FcPatternAddFullFname (const FcPattern *p, const char *fname)
     pb->next->m.fname = fname;
 }
 
-const char *
+static const char *
 FcPatternFindFullFname (const FcPattern *p)
 {
     struct patternDirBucket	*pb;
@@ -1971,3 +1987,10 @@ FcPatternFindFullFname (const FcPattern *p)
     return 0;
 }
 
+void
+FcPatternTransferFullFname (const FcPattern *new, const FcPattern *orig)
+{
+    FcChar8 * s;
+    FcPatternGetString (orig, FC_FILE, 0, &s);
+    FcPatternAddFullFname (new, FcPatternFindFullFname(orig));
+}
