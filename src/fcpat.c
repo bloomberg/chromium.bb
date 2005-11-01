@@ -295,6 +295,9 @@ FcPatternDestroy (FcPattern *p)
 {
     int		    i;
     
+    if (FcPatternFindFullFname (p))
+	FcPatternAddFullFname (p, 0);
+
     if (p->ref == FC_REF_CONSTANT || --p->ref > 0)
 	return;
 
@@ -1115,6 +1118,42 @@ FcPatternGetString (const FcPattern *p, const char *object, int id, FcChar8 ** s
 	return r;
     if (v.type != FcTypeString)
         return FcResultTypeMismatch;
+
+    if (FcObjectToPtr(object) == FcObjectToPtr(FC_FILE))
+    {
+	const char *fn, *fpath;
+	FcChar8 *fname;
+	int size;
+
+	fn = FcPatternFindFullFname(p);
+	if (fn)
+	{
+	    *s = (FcChar8 *) fn;
+	    return FcResultMatch;
+	}
+
+	if (!p->bank)
+	{
+	    *s = (FcChar8 *) v.u.s;
+	    return FcResultMatch;
+	}
+
+	fpath = FcCacheFindBankDir (p->bank);
+	size = strlen((char*)fpath) + 1 + strlen ((char *)v.u.s) + 1;
+	fname = malloc (size);
+	if (!fname)
+	    return FcResultOutOfMemory;
+
+	FcMemAlloc (FC_MEM_STRING, size);
+	strcpy ((char *)fname, (char *)fpath);
+	strcat ((char *)fname, "/");
+	strcat ((char *)fname, (char *)v.u.s);
+	
+	FcPatternAddFullFname (p, (const char *)fname);
+	*s = (FcChar8 *)fname;
+	return FcResultMatch;
+    }
+
     *s = (FcChar8 *) v.u.s;
     return FcResultMatch;
 }
@@ -1872,5 +1911,63 @@ FcStrUnserialize (FcCache metadata, void *block_ptr)
 			 (sizeof (char) * metadata.str_count));
 
     return block_ptr;
+}
+
+/* we don't store these in the FcPattern itself because
+ * we don't want to serialize the directory names */
+
+/* I suppose this should be cleaned, too... */
+typedef struct _FcPatternDirMapping {
+    const FcPattern	*p;
+    const char *fname;
+} FcPatternDirMapping;
+
+#define PATTERNDIR_HASH_SIZE    31
+static struct patternDirBucket {
+    struct patternDirBucket	*next;
+    FcPatternDirMapping		m;
+} FcPatternDirBuckets[PATTERNDIR_HASH_SIZE];
+
+void
+FcPatternAddFullFname (const FcPattern *p, const char *fname)
+{
+    struct patternDirBucket	*pb;
+
+    /* N.B. FcPatternHash fails, since it's contents-based, not
+     * address-based, and we're in the process of mutating the FcPattern. */
+    for (pb = &FcPatternDirBuckets
+             [((int)p / sizeof (FcPattern *)) % PATTERNDIR_HASH_SIZE];
+         pb->m.p != p && pb->next; 
+         pb = pb->next)
+        ;
+
+    if (pb->m.p == p)
+    {
+        pb->m.fname = fname;
+        return;
+    }
+
+    pb->next = malloc (sizeof (struct patternDirBucket));
+    if (!pb->next)
+        return;
+    FcMemAlloc (FC_MEM_CACHE, sizeof (struct patternDirBucket));
+
+    pb->next->next = 0;
+    pb->next->m.p = p;
+    pb->next->m.fname = fname;
+}
+
+const char *
+FcPatternFindFullFname (const FcPattern *p)
+{
+    struct patternDirBucket	*pb;
+
+    for (pb = &FcPatternDirBuckets
+             [((int)p / sizeof (FcPattern *)) % PATTERNDIR_HASH_SIZE]; 
+         pb; pb = pb->next)
+	if (pb->m.p == p)
+	    return pb->m.fname;
+
+    return 0;
 }
 

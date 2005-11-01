@@ -450,6 +450,9 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir);
 
 int
 FcCacheBankToIndex (int bank);
+
+const char *
+FcCacheFindBankDir (int bank);
  
 /* fccfg.c */
 
@@ -801,6 +804,12 @@ FcPatternFini (void);
 
 FcBool
 FcPatternAppend (FcPattern *p, FcPattern *s);
+
+void
+FcPatternAddFullFname (const FcPattern *p, const char *fname);
+
+const char *
+FcPatternFindFullFname (const FcPattern *p);
 
 const FcChar8 *
 FcStrStaticName (const FcChar8 *name);

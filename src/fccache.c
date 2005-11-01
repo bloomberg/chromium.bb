@@ -44,7 +44,7 @@ static void *
 FcDirCacheProduce (FcFontSet *set, FcCache * metadata);
 
 static FcBool
-FcDirCacheConsume (int fd, FcFontSet *set);
+FcDirCacheConsume (int fd, const char * dir, FcFontSet *set);
 
 FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir);
@@ -57,6 +57,9 @@ FcCacheMachineSignature (void);
 
 static FcBool
 FcCacheHaveBank (int bank);
+
+static void
+FcCacheAddBankDir (int bank, const char * dir);
 
 #define FC_DBG_CACHE_REF    1024
 
@@ -254,7 +257,7 @@ FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, con
 	if (strncmp (d->name, dir, strlen(dir)) == 0)
 	{
 	    lseek (cache->fd, d->offset, SEEK_SET);
-	    if (!FcDirCacheConsume (cache->fd, set))
+	    if (!FcDirCacheConsume (cache->fd, dir, set))
 		return FcFalse;
             if (strcmp (d->name, dir) == 0)
 		ret = FcTrue;
@@ -734,7 +737,7 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir)
     while (strlen(FcCacheReadString (fd, subdirName, sizeof (subdirName))) > 0)
         FcStrSetAdd (dirs, (FcChar8 *)subdirName);
 
-    if (!FcDirCacheConsume (fd, set))
+    if (!FcDirCacheConsume (fd, (const char *)dir, set))
 	goto bail1;
 	
     close(fd);
@@ -749,7 +752,7 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir)
 }
 
 static FcBool
-FcDirCacheConsume (int fd, FcFontSet *set)
+FcDirCacheConsume (int fd, const char * dir, FcFontSet *set)
 {
     FcCache metadata;
     void * current_dir_block;
@@ -770,6 +773,8 @@ FcDirCacheConsume (int fd, FcFontSet *set)
     
     if (!FcFontSetUnserialize (metadata, set, current_dir_block))
 	return FcFalse;
+
+    FcCacheAddBankDir (metadata.bank, dir);
 
     return FcTrue;
 }
@@ -964,6 +969,7 @@ FcCacheMachineSignature ()
 
 static int banks_ptr = 0, banks_alloc = 0;
 static int * bankId = 0, * bankIdx = 0;
+static const char ** bankDirs = 0;
 
 static FcBool
 FcCacheHaveBank (int bank)
@@ -999,6 +1005,8 @@ FcCacheBankToIndex (int bank)
     if (banks_ptr >= banks_alloc)
     {
 	int * b, * bidx;
+	const char ** bds;
+
 	b = realloc (bankId, (banks_alloc + 4) * sizeof(int));
 	if (!b)
 	    return -1;
@@ -1009,6 +1017,11 @@ FcCacheBankToIndex (int bank)
 	    return -1;
 	bankIdx = bidx;
 
+	bds = realloc (bankDirs, (banks_alloc + 4) * sizeof (char *));
+	if (!bds)
+	    return -1;
+	bankDirs = bds;
+
 	banks_alloc += 4;
     }
 
@@ -1017,3 +1030,22 @@ FcCacheBankToIndex (int bank)
     bankIdx[i] = i;
     return i;
 }
+
+static void
+FcCacheAddBankDir (int bank, const char * dir)
+{
+    int bi = FcCacheBankToIndex (bank);
+
+    if (bi < 0)
+	return;
+
+    bankDirs[bi] = (const char *)FcStrCopy ((FcChar8 *)dir);
+}
+
+const char *
+FcCacheFindBankDir (int bank)
+{
+    int bi = FcCacheBankToIndex (bank);
+    return bankDirs[bi];
+}
+

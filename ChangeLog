@@ -1,3 +1,26 @@
+2005-10-31  Patrick Lam  <plam@mit.edu>
+	* fc-cat/fc-cat.c:
+	* src/fccache.c:
+	* src/fcfreetype.c:
+	* src/fcint.h:
+	* src/fclist.c:
+	* src/fcpat.c:
+
+	Reinstate basename patch, but keep a hash table linking FcPatterns
+	to their fully-qualified font names for clients' benefit.  Clients
+	only pay for the font names once they request the FC_FILE property
+	from an FcPattern, but the font name is malloc'd at that point (i.e.
+	not mmapped: that's impossible, since it may vary between machines.)
+	Clients do have to pay for a copy of the path name per cache file.
+
+	Note that FcPatternGetString now does some rewriting if you ask
+	for an FC_FILE, appending the pathname as appropriate.
+	
+2005-10-31  Patrick Lam  <plam@mit.edu>
+	* src/fcfreetype.c (FcFreeTypeQuery):
+
+	Revert basename patch, which breaks fontconfig clients on my system.
+
 2005-10-25  Jinghua Luo  <sunmoon1997@gmail.com>
 	reviewed by: plam
 

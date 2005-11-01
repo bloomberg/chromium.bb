@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <libgen.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -165,7 +166,7 @@ usage (char *program)
 
 /* read serialized state from the cache file */
 static FcBool
-FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char *cache_file)
+FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char * dir, char *cache_file)
 {
     int fd;
     char * current_arch_machine_name;
@@ -193,7 +194,7 @@ FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char *cache_file)
     while (strlen(FcCacheReadString (fd, subdirName, sizeof (subdirName))) > 0)
         FcStrSetAdd (dirs, (FcChar8 *)subdirName);
 
-    if (!FcDirCacheConsume (fd, set))
+    if (!FcDirCacheConsume (fd, dir, set))
 	goto bail1;
 	
     close(fd);
@@ -326,7 +327,7 @@ main (int argc, char **argv)
     i = 1;
 #endif
 
-    if (FcCacheFileRead (fs, dirs, argv[i]))
+    if (FcCacheFileRead (fs, dirs, dirname (argv[i]), argv[i]))
 	FcCachePrintSet (fs, dirs, argv[i]);
 
     FcStrSetDestroy (dirs);
