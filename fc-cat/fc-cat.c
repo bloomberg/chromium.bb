@@ -198,13 +198,11 @@ FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char * dir, char *cache_file)
 	goto bail1;
 	
     close(fd);
-    free (cache_file);
     return FcTrue;
 
  bail1:
     close (fd);
  bail:
-    free (cache_file);
     return FcFalse;
 }
 
@@ -327,7 +325,7 @@ main (int argc, char **argv)
     i = 1;
 #endif
 
-    if (FcCacheFileRead (fs, dirs, dirname (argv[i]), argv[i]))
+    if (FcCacheFileRead (fs, dirs, dirname (strdup(argv[i])), argv[i]))
 	FcCachePrintSet (fs, dirs, argv[i]);
 
     FcStrSetDestroy (dirs);

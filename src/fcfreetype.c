@@ -1288,7 +1288,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 		printf ("Saving unique fullname %s\n", full);
     }
 
-    if (!FcPatternAddString (pat, FC_FILE, (FcChar8 *)basename((char *)file)))
+    if (!FcPatternAddString (pat, FC_FILE, (FcChar8 *)basename((char *)FcStrCopy(file))))
 	goto bail1;
 
     FcPatternAddFullFname (pat, (const char *)file);

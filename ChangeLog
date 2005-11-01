@@ -1,4 +1,11 @@
 2005-10-31  Patrick Lam  <plam@mit.edu>
+	* fc-cat/fc-cat.c (FcCacheFileRead, main):
+	* src/fcfreetype.c (FcFreeTypeQuery):
+
+	Fix small memory error (tried to free argv); use basename and
+	dirname correctly (they can modify their arguments).
+
+2005-10-31  Patrick Lam  <plam@mit.edu>
 	* fc-cat/fc-cat.c:
 	* src/fccache.c:
 	* src/fcfreetype.c:
