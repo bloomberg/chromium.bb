@@ -1,4 +1,12 @@
 2005-11-02  Patrick Lam  <plam@mit.edu>
+	* fc-cache/fc-cache.c (scanDirs):
+
+	Forcibly rescan a directory before writing a fresh local
+	cache file for that directory, fixing the losing-fonts
+	problem reported by Mike Fabian and also apparently the 
+	font cache file corruption.
+
+2005-11-02  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcGlobalCacheLoad):
 
 	Fix thinko: actually, the whole global cache is stale 

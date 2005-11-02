@@ -207,6 +207,15 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
                 if (!FcDirCacheUnlink (dir))
                     ret++;
 
+	    if (!FcDirScan (set, subdirs, 0, FcConfigGetBlanks (config), dir, FcTrue))
+	    {
+		fprintf (stderr, "\"%s\": error scanning\n", dir);
+		FcFontSetDestroy (set);
+		FcStrSetDestroy (subdirs);
+		ret++;
+		continue;
+	    }
+
 	    if (!FcDirSave (set, subdirs, dir))
 	    {
 		fprintf (stderr, "Can't save cache in \"%s\"\n", dir);
