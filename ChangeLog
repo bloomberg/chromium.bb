@@ -1,5 +1,13 @@
 2005-11-02  Patrick Lam  <plam@mit.edu>
 	* fc-cache/fc-cache.c (scanDirs):
+	* src/fcpat.c (FcValueListSerialize):
+
+	Revert the previous patch and commit the correct patch:
+	I forgot a canonicalization in FcValueListSerialize, so
+	that it would choke on already-serialized input files.  Duh!
+
+2005-11-02  Patrick Lam  <plam@mit.edu>
+	* fc-cache/fc-cache.c (scanDirs):
 
 	Forcibly rescan a directory before writing a fresh local
 	cache file for that directory, fixing the losing-fonts

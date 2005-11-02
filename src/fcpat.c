@@ -1718,6 +1718,7 @@ FcValueListSerialize(int bank, FcValueList *pi)
     fcvaluelists[bi][fcvaluelist_ptr] = *pi;
     new.bank = bank;
     new.u.stat = fcvaluelist_ptr++;
+    fcvaluelists[bi][new.u.stat].value = FcValueCanonicalize (&pi->value);
     v = &fcvaluelists[bi][new.u.stat].value;
     switch (v->type)
     {
