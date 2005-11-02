@@ -354,15 +354,25 @@
 	<match target="font">
 		<!-- check to see if the font is just regular -->
 		<test name="weight" compare="less_eq">
-			<int>100</int>
+			<const>medium</const>
 		</test>
 		<!-- check to see if the pattern requests bold -->
-		<test target="pattern" name="weight" compare="more_eq">
-			<int>200</int>
+		<test target="pattern" name="weight" compare="more">
+			<const>medium</const>
 		</test>
-		<!-- set the embolden flag -->
+		<!--
+		  set the embolden flag
+		  needed for applications using cairo, e.g. gucharmap, gedit, ...
+		-->
 		<edit name="embolden" mode="assign">
 			<bool>true</bool>
+		</edit>
+		<!--
+		 set weight to bold
+		 needed for applications using Xft directly, e.g. Firefox, ...
+		-->
+		<edit name="weight" mode="assign">
+			<const>bold</const>
 		</edit>
 	</match>
 

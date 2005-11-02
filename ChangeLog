@@ -1,3 +1,11 @@
+2005-11-02  Zhe Su  <zsu@novell.com>
+	reviewed by: plam
+	
+	* fonts.conf.in:
+
+	Change the rule for artificial emboldening in fonts.conf.in.  This
+	enables the support for artificial emboldening included in cairo.
+
 2005-11-02  Patrick Lam  <plam@mit.edu>
 	* src/fcpat.c (FcPatternDestroy, FcPatternTransferFullName):
 
