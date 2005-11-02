@@ -193,11 +193,11 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	if (!strlen(name_buf))
 	    break;
 
-	/* Directory must be older than the global cache file, and
-	   also must be older than the config file. */
+	/* Directory must be older than the global cache file; also
+	   cache must be newer than the config file. */
         if (stat ((char *) name_buf, &dir_stat) < 0 || 
             dir_stat.st_mtime > cache_stat.st_mtime ||
-	    (config_time.set && dir_stat.st_mtime > config_time.time))
+	    (config_time.set && cache_stat.st_mtime < config_time.time))
         {
             FcCache md;
 

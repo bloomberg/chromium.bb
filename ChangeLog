@@ -1,5 +1,11 @@
 2005-11-02  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcGlobalCacheLoad):
+
+	Fix thinko: actually, the whole global cache is stale 
+	if the global cache is older than the (newest) config file.
+
+2005-11-02  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcGlobalCacheLoad):
 	* src/fccfg.c (FcConfigModifiedTime, FcConfigBuildFonts):
 	* src/fcint.h:
 
