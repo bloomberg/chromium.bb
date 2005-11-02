@@ -1,4 +1,12 @@
 2005-11-02  Patrick Lam  <plam@mit.edu>
+	* src/fcpat.c (FcPatternDestroy, FcPatternTransferFullName):
+
+	Don't zero out full names for FC_REF_CONSTANT fonts;
+	also, duplicate full names when transferring, and free
+	full names when freeing the associated font.
+	Reported by Jinghua Luo.
+
+2005-11-02  Patrick Lam  <plam@mit.edu>
 	* fc-cache/fc-cache.c (scanDirs):
 	* src/fcpat.c (FcValueListSerialize):
 

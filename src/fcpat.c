@@ -39,6 +39,13 @@ FcPatternFindFullFname (const FcPattern *p);
 static FcPatternEltPtr
 FcPatternEltPtrCreateDynamic (FcPatternElt * e);
 
+/* If you are trying to duplicate an FcPattern which will be used for
+ * rendering, be aware that (internally) you also have to use
+ * FcPatternTransferFullFname to transfer the associated filename.  If
+ * you are copying the font (externally) using FcPatternGetString,
+ * then everything's fine; this caveat only applies if you're copying
+ * the bits individually.  */
+
 FcPattern *
 FcPatternCreate (void)
 {
@@ -297,11 +304,14 @@ FcPatternDestroy (FcPattern *p)
 {
     int		    i;
     
-    if (FcPatternFindFullFname (p))
-	FcPatternAddFullFname (p, 0);
-
     if (p->ref == FC_REF_CONSTANT || --p->ref > 0)
 	return;
+
+    if (FcPatternFindFullFname (p))
+    {
+	FcStrFree (FcPatternFindFullFname (p));
+	FcPatternAddFullFname (p, 0);
+    }
 
     for (i = 0; i < p->num; i++)
 	FcValueListDestroy ((FcPatternEltU(p->elts)+i)->values);
@@ -1993,5 +2003,5 @@ FcPatternTransferFullFname (const FcPattern *new, const FcPattern *orig)
 {
     FcChar8 * s;
     FcPatternGetString (orig, FC_FILE, 0, &s);
-    FcPatternAddFullFname (new, FcPatternFindFullFname(orig));
+    FcPatternAddFullFname (new, FcStrCopy (FcPatternFindFullFname(orig)));
 }
