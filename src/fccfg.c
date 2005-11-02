@@ -139,11 +139,6 @@ bail0:
     return 0;
 }
 
-typedef struct _FcFileTime {
-    time_t  time;
-    FcBool  set;
-} FcFileTime;
-
 static FcFileTime
 FcConfigNewestFile (FcStrSet *files)
 {
@@ -164,6 +159,19 @@ FcConfigNewestFile (FcStrSet *files)
 	FcStrListDone (list);
     }
     return newest;
+}
+
+FcFileTime
+FcConfigModifiedTime (FcConfig *config)
+{
+    if (!config)
+    {
+	FcFileTime v = { 0, FcFalse };
+	config = FcConfigGetCurrent ();
+	if (!config)
+	    return v;
+    }
+    return FcConfigNewestFile (config->configFiles);
 }
 
 FcBool
@@ -266,7 +274,7 @@ FcConfigBuildFonts (FcConfig *config)
         goto bail2;
 
     if (config->cache)
-	FcGlobalCacheLoad (cache, oldDirs, config->cache);
+	FcGlobalCacheLoad (cache, oldDirs, config->cache, config);
 
     cached_fonts = FcCacheRead(config, cache);
     if (!cached_fonts)

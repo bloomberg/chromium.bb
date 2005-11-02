@@ -406,6 +406,11 @@ struct _FcConfig {
  
 extern FcConfig	*_fcConfig;
 
+typedef struct _FcFileTime {
+    time_t  time;
+    FcBool  set;
+} FcFileTime;
+
 typedef struct _FcCharMap FcCharMap;
 
 /* fcblanks.c */
@@ -428,7 +433,8 @@ FcGlobalCacheReadDir (FcFontSet     *set,
 void
 FcGlobalCacheLoad (FcGlobalCache    *cache,
                    FcStrSet	    *staleDirs,
-		   const FcChar8    *cache_file);
+		   const FcChar8    *cache_file,
+		   FcConfig	    *config);
 
 FcBool
 FcGlobalCacheUpdate (FcGlobalCache  *cache,
@@ -513,6 +519,9 @@ FcConfigPatternsAdd (FcConfig	*config,
 FcBool
 FcConfigAcceptFont (FcConfig	    *config,
 		    const FcPattern *font);
+
+FcFileTime
+FcConfigModifiedTime (FcConfig *config);
 
 /* fccharset.c */
 FcCharSet *

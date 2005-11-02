@@ -152,10 +152,12 @@ FcGlobalCacheDestroy (FcGlobalCache *cache)
 void
 FcGlobalCacheLoad (FcGlobalCache    *cache,
                    FcStrSet	    *staleDirs,
-		   const FcChar8    *cache_file)
+		   const FcChar8    *cache_file,
+		   FcConfig	    *config)
 {
     char		name_buf[8192];
     FcGlobalCacheDir	*d, *next;
+    FcFileTime		config_time = FcConfigModifiedTime (config);
     char 		* current_arch_machine_name;
     char 		candidate_arch_machine_name[MACHINE_SIGNATURE_SIZE + 9];
     off_t		current_arch_start;
@@ -191,8 +193,11 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	if (!strlen(name_buf))
 	    break;
 
+	/* Directory must be older than the global cache file, and
+	   also must be older than the config file. */
         if (stat ((char *) name_buf, &dir_stat) < 0 || 
-            dir_stat.st_mtime > cache_stat.st_mtime)
+            dir_stat.st_mtime > cache_stat.st_mtime ||
+	    (config_time.set && dir_stat.st_mtime > config_time.time))
         {
             FcCache md;
 
@@ -553,8 +558,9 @@ FcDirCacheValid (const FcChar8 *dir)
      * If the directory has been modified more recently than
      * the cache file, the cache is not valid
      */
-    if (dir_stat.st_mtime - file_stat.st_mtime > 0)
+    if (dir_stat.st_mtime > file_stat.st_mtime)
         return FcFalse;
+
     return FcTrue;
 }
 

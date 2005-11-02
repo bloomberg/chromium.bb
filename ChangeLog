@@ -1,3 +1,11 @@
+2005-11-02  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcGlobalCacheLoad):
+	* src/fccfg.c (FcConfigModifiedTime, FcConfigBuildFonts):
+	* src/fcint.h:
+
+	Declare the global cache of a directory's contents to be stale if
+	the directory is newer than the (newest) configuration file.
+
 2005-10-31  Patrick Lam  <plam@mit.edu>
 	* src/fcint.h:
 	* src/fclist.c (FcListAppend):
