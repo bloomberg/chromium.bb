@@ -1277,7 +1277,7 @@ FcPatternDuplicate (const FcPattern *orig)
 			       FcTrue))
 		goto bail1;
     }
-    FcPatternTransferFullFname (orig, new);
+    FcPatternTransferFullFname (new, orig);
 
     return new;
 
