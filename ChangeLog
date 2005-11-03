@@ -1,3 +1,10 @@
+2005-11-02  Patrick Lam  <plam@mit.edu>
+	* src/fcfreetype.c (FcFreetypeQuery):
+	* src/fcpat.c (FcPatternDestroy, FcPatternDuplicate, 
+	               FcPatternTransferFullFname):
+
+	Fix warnings and embarrassing double-free error.
+
 2005-11-02  Zhe Su  <zsu@novell.com>
 	reviewed by: plam
 	

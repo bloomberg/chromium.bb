@@ -1291,7 +1291,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!FcPatternAddString (pat, FC_FILE, (FcChar8 *)basename((char *)FcStrCopy(file))))
 	goto bail1;
 
-    FcPatternAddFullFname (pat, (const char *)file);
+    FcPatternAddFullFname (pat, (const char *)FcStrCopy (file));
 
     if (!FcPatternAddInteger (pat, FC_INDEX, id))
 	goto bail1;

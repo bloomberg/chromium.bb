@@ -309,7 +309,7 @@ FcPatternDestroy (FcPattern *p)
 
     if (FcPatternFindFullFname (p))
     {
-	FcStrFree (FcPatternFindFullFname (p));
+	FcStrFree ((FcChar8 *)FcPatternFindFullFname (p));
 	FcPatternAddFullFname (p, 0);
     }
 
@@ -1276,14 +1276,8 @@ FcPatternDuplicate (const FcPattern *orig)
                                FcValueCanonicalize(&FcValueListPtrU(l)->value),
 			       FcTrue))
 		goto bail1;
-
-	if (!strcmp ((char *)FcObjectPtrU((e + i)->object), FC_FILE))
-	{
-	    FcChar8 * s;
-	    FcPatternGetString (orig, FC_FILE, 0, &s);
-	    FcPatternAddFullFname (new, FcPatternFindFullFname(orig));
-	}
     }
+    FcPatternTransferFullFname (orig, new);
 
     return new;
 
@@ -2003,5 +1997,7 @@ FcPatternTransferFullFname (const FcPattern *new, const FcPattern *orig)
 {
     FcChar8 * s;
     FcPatternGetString (orig, FC_FILE, 0, &s);
-    FcPatternAddFullFname (new, FcStrCopy (FcPatternFindFullFname(orig)));
+    FcPatternAddFullFname (new, 
+			   (char *)FcStrCopy 
+			   ((FcChar8 *)FcPatternFindFullFname(orig)));
 }
