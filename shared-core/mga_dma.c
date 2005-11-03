@@ -446,6 +446,8 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 	drm_buf_desc_t req;
 	drm_agp_mode_t mode;
 	drm_agp_info_t info;
+	drm_agp_buffer_t agp_req;
+	drm_agp_binding_t bind_req;
 
 	/* Acquire AGP. */
 	err = drm_agp_acquire(dev);
@@ -481,16 +483,22 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 
 
 	/* Allocate and bind AGP memory. */
-	dev_priv->agp_pages = agp_size / PAGE_SIZE;
-	dev_priv->agp_mem = drm_alloc_agp( dev, dev_priv->agp_pages, 0 );
-	if (dev_priv->agp_mem == NULL) {
-		dev_priv->agp_pages = 0;
+	agp_req.size = agp_size;
+	agp_req.type = 0;
+	err = drm_agp_alloc( dev, & agp_req );
+	if (err) {
+		dev_priv->agp_size = 0;
 		DRM_ERROR("Unable to allocate %uMB AGP memory\n",
 			  dma_bs->agp_size);
-		return DRM_ERR(ENOMEM);
+		return err;
 	}
-		
-	err = drm_bind_agp( dev_priv->agp_mem, 0 );
+
+	dev_priv->agp_size = agp_size;
+	dev_priv->agp_handle = agp_req.handle;
+
+	bind_req.handle = agp_req.handle;
+	bind_req.offset = 0;
+	err = drm_agp_bind( dev, &bind_req );
 	if (err) {
 		DRM_ERROR("Unable to bind AGP memory: %d\n", err);
 		return err;
@@ -536,6 +544,20 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 	if (err) {
 		DRM_ERROR("Unable to add secondary DMA buffers: %d\n", err);
 		return err;
+	}
+
+	{
+		drm_map_list_t *_entry;
+		unsigned long agp_token = 0;
+
+		list_for_each_entry(_entry, &dev->maplist->head, head) {
+			if (_entry->map == dev->agp_buffer_map)
+				agp_token = _entry->user_token;
+		}
+		if (!agp_token)
+			return -EFAULT;
+
+		dev->agp_buffer_token = agp_token;
 	}
 
 	offset += secondary_size;
@@ -943,13 +965,19 @@ static int mga_do_cleanup_dma(drm_device_t * dev, int full_cleanup)
 			drm_core_ioremapfree(dev->agp_buffer_map, dev);
 
 		if (dev_priv->used_new_dma_init) {
-			if (dev_priv->agp_mem != NULL) {
-				dev_priv->agp_textures = NULL;
-				drm_unbind_agp(dev_priv->agp_mem);
+			if (dev_priv->agp_handle != 0) {
+				drm_agp_binding_t unbind_req;
+				drm_agp_buffer_t free_req;
 
-				drm_free_agp(dev_priv->agp_mem, dev_priv->agp_pages);
-				dev_priv->agp_pages = 0;
-				dev_priv->agp_mem = NULL;
+				unbind_req.handle = dev_priv->agp_handle;
+				drm_agp_unbind(dev, &unbind_req);
+
+				free_req.handle = dev_priv->agp_handle;
+				drm_agp_free(dev, &free_req);
+
+				dev_priv->agp_textures = NULL;
+				dev_priv->agp_size = 0;
+				dev_priv->agp_handle = 0;
 			}
 
 			if ((dev->agp != NULL) && dev->agp->acquired) {

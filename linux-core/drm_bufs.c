@@ -694,6 +694,8 @@ int drm_addbufs_agp(drm_device_t * dev, drm_buf_desc_t * request)
 	}
 
 	dma->buf_count += entry->buf_count;
+	dma->seg_count += entry->seg_count;
+	dma->page_count += byte_count >> PAGE_SHIFT;
 	dma->byte_count += byte_count;
 
 	DRM_DEBUG("dma->buf_count : %d\n", dma->buf_count);
@@ -1077,6 +1079,8 @@ static int drm_addbufs_sg(drm_device_t * dev, drm_buf_desc_t * request)
 	}
 
 	dma->buf_count += entry->buf_count;
+	dma->seg_count += entry->seg_count;
+	dma->page_count += byte_count >> PAGE_SHIFT;
 	dma->byte_count += byte_count;
 
 	DRM_DEBUG("dma->buf_count : %d\n", dma->buf_count);
@@ -1236,6 +1240,8 @@ int drm_addbufs_fb(drm_device_t * dev, drm_buf_desc_t * request)
 	}
 
 	dma->buf_count += entry->buf_count;
+	dma->seg_count += entry->seg_count;
+	dma->page_count += byte_count >> PAGE_SHIFT;
 	dma->byte_count += byte_count;
 
 	DRM_DEBUG("dma->buf_count : %d\n", dma->buf_count);

@@ -391,7 +391,6 @@ DRM_AGP_MEM *drm_alloc_agp(drm_device_t *dev, int pages, u32 type)
 	spin_unlock(&drm_mem_lock);
 	return NULL;
 }
-EXPORT_SYMBOL(drm_alloc_agp);
 
 int drm_free_agp(DRM_AGP_MEM * handle, int pages)
 {
@@ -421,7 +420,6 @@ int drm_free_agp(DRM_AGP_MEM * handle, int pages)
 	}
 	return retval;
 }
-EXPORT_SYMBOL(drm_free_agp);
 
 int drm_bind_agp(DRM_AGP_MEM * handle, unsigned int start)
 {
@@ -446,7 +444,6 @@ int drm_bind_agp(DRM_AGP_MEM * handle, unsigned int start)
 	spin_unlock(&drm_mem_lock);
 	return retcode;
 }
-EXPORT_SYMBOL(drm_bind_agp);
 
 int drm_unbind_agp(DRM_AGP_MEM * handle)
 {
@@ -475,7 +472,6 @@ int drm_unbind_agp(DRM_AGP_MEM * handle)
 	}
 	return retcode;
 }
-EXPORT_SYMBOL(drm_unbind_agp);
 
 #endif
 #endif
