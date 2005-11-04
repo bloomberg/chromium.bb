@@ -44,6 +44,8 @@ struct _FcLangSet {
 #define FcLangSetBitSet(ls, id)	((ls)->map[(id)>>5] |= ((FcChar32) 1 << ((id) & 0x1f)))
 #define FcLangSetBitGet(ls, id) (((ls)->map[(id)>>5] >> ((id) & 0x1f)) & 1)
 
+static FcBool langsets_populated = FcFalse;
+
 FcLangSet *
 FcFreeTypeLangSet (const FcCharSet  *charset, 
 		   const FcChar8    *exclusiveLang)
@@ -52,7 +54,12 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
     FcChar32	    missing;
     const FcCharSet *exclusiveCharset = 0;
     FcLangSet	    *ls;
-    
+
+    if (!langsets_populated)
+    {
+        FcLangCharSetPopulate ();
+        langsets_populated = FcTrue;
+    }
 
     if (exclusiveLang)
 	exclusiveCharset = FcCharSetForLang (exclusiveLang);
@@ -188,6 +195,13 @@ FcCharSetForLang (const FcChar8 *lang)
 {
     int		i;
     int		country = -1;
+
+    if (!langsets_populated)
+    {
+        FcLangCharSetPopulate ();
+        langsets_populated = FcTrue;
+    }
+
     for (i = 0; i < NUM_LANG_CHAR_SET; i++)
     {
 	switch (FcLangCompare (lang, fcLangCharSets[i].lang)) {

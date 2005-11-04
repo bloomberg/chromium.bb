@@ -1,4 +1,15 @@
 2005-11-04  Patrick Lam  <plam@mit.edu>
+	* fc-lang/fc-lang.c:
+	* src/fccharset.c:
+	* src/fcint.h:
+	* src/fclang.c:
+
+	Fix bug 2878 (excessive relocations at startup for charsets,
+	reported by Ross Burton): fc-lang/fc-lang now creates the
+	static form of the langset, not the dynamic form, so that
+	the charsets should now be in .rodata.
+
+2005-11-04  Patrick Lam  <plam@mit.edu>
 	* src/fcdir.c (FcDirScanConfig):
 
 	Add test for validity of directory caches that

@@ -37,6 +37,10 @@
  * functions are also needed in slightly modified form
  */
 
+const FcChar16 *langBankNumbers = 0;
+const FcCharLeaf	*langBankLeaves = 0;
+const int *langBankLeafIdx = 0;
+
 void
 FcMemAlloc (int kind, int size)
 {
@@ -232,6 +236,7 @@ main (int argc, char **argv)
     int		argi;
     FcCharLeaf	**leaves;
     int		total_leaves = 0;
+    int		leafidx_count = 0, numbers_count = 0, numbers_ptr = 0;
     int		l, sl, tl;
     int		c;
     char	line[1024];
@@ -306,7 +311,7 @@ main (int argc, char **argv)
     /*
      * Dump leaves
      */
-    printf ("static const FcCharLeaf	leaves[%d] = {\n", tl);
+    printf ("const FcCharLeaf	langBankLeaves[%d] = {\n", tl);
     for (l = 0; l < tl; l++)
     {
 	printf ("    { { /* %d */", l);
@@ -319,7 +324,6 @@ main (int argc, char **argv)
 	printf ("\n    } },\n");
     }
     printf ("};\n\n");
-    printf ("#define L(n) ((FcCharLeaf *) &leaves[n])\n\n");
 
     /*
      * Find duplicate charsets
@@ -362,8 +366,27 @@ main (int argc, char **argv)
 	
 	if (duplicate[i] >= 0)
 	    continue;
-	printf ("static const FcCharLeaf *leaves_%s[%d] = {\n",
-		names[i], sets[i]->num);
+
+	for (n = 0; n < sets[i]->num; n++)
+	{
+	    for (l = 0; l < tl; l++)
+		if (leaves[l] == FcCharSetGetLeaf(sets[i], n))
+		    break;
+	    if (l == tl)
+		fatal (names[i], 0, "can't find leaf");
+            leafidx_count++;
+            numbers_count += sets[i]->num;
+	}
+    }
+
+    printf ("const int langBankLeafIdx[%d] = {\n",
+	    leafidx_count);
+    for (i = 0; sets[i]; i++)
+    {
+	int n;
+	
+	if (duplicate[i] >= 0)
+	    continue;
 	for (n = 0; n < sets[i]->num; n++)
 	{
 	    if (n % 8 == 0)
@@ -373,17 +396,21 @@ main (int argc, char **argv)
 		    break;
 	    if (l == tl)
 		fatal (names[i], 0, "can't find leaf");
-	    printf (" L(%3d),", l);
+	    printf (" %3d,", l);
 	    if (n % 8 == 7)
 		printf ("\n");
 	}
 	if (n % 8 != 0)
 	    printf ("\n");
-	printf ("};\n\n");
-	
+    }
+    printf ("};\n\n");
 
-	printf ("static const FcChar16 numbers_%s[%d] = {\n",
-		names[i], sets[i]->num);
+    printf ("const FcChar16 langBankNumbers[%d] = {\n",
+	    numbers_count);
+
+    for (i = 0; sets[i]; i++)
+    {
+	int n;
 	for (n = 0; n < sets[i]->num; n++)
 	{
 	    if (n % 8 == 0)
@@ -394,27 +421,27 @@ main (int argc, char **argv)
 	}
 	if (n % 8 != 0)
 	    printf ("\n");
-	printf ("};\n\n");
     }
-    printf ("#undef L\n\n");
+    printf ("};\n\n");
     
     /*
      * Dump sets
      */
 
-    printf ("static const FcLangCharSet  fcLangCharSets[] = {\n");
+    printf ("const FcLangCharSet  fcLangCharSets[] = {\n");
     for (i = 0; sets[i]; i++)
     {
 	int	j = duplicate[i];
 
 	if (j < 0)
 	    j = i;
+
 	printf ("    { (FcChar8 *) \"%s\",\n"
-		"      { FC_REF_CONSTANT, %d, FC_BANK_DYNAMIC, "
-		"{ { (FcCharLeaf **) leaves_%s, "
-		"(FcChar16 *) numbers_%s } } } },\n",
+		"      { FC_REF_CONSTANT, %d, FC_BANK_LANGS, "
+		"{ .stat = { %d, %d } } } },\n",
 		langs[i],
-		sets[j]->num, names[j], names[j]);
+		sets[j]->num, j, numbers_ptr);
+        numbers_ptr += sets[i]->num;
     }
     printf ("};\n\n");
     printf ("#define NUM_LANG_CHAR_SET	%d\n", i);

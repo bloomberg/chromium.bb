@@ -38,6 +38,24 @@ static int charset_leaf_ptr, charset_leaf_count;
 static int ** leaf_idx = 0;
 static int charset_leaf_idx_ptr, charset_leaf_idx_count;
 
+extern const FcChar16 *langBankNumbers;
+extern const FcCharLeaf	*langBankLeaves;
+extern const int *langBankLeafIdx;
+
+static FcBool
+FcCharSetEnsureBank (int bi);
+
+void
+FcLangCharSetPopulate (void)
+{
+    int bi = FcCacheBankToIndex (FC_BANK_LANGS);
+    FcCharSetEnsureBank (bi);
+    charsets[bi] = 0;
+    numbers[bi] = (FcChar16 *)&langBankNumbers;
+    leaves[bi] = (FcCharLeaf *)&langBankLeaves;
+    leaf_idx[bi] = (int *)&langBankLeafIdx;
+}
+
 FcCharSet *
 FcCharSetCreate (void)
 {

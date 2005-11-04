@@ -99,6 +99,8 @@
 
 #define FC_MEM_NUM	    30
 
+#define FC_BANK_LANGS	    0xfcfcfcfc
+
 typedef enum _FcValueBinding {
     FcValueBindingWeak, FcValueBindingStrong, FcValueBindingSame
 } FcValueBinding;
@@ -524,6 +526,9 @@ FcFileTime
 FcConfigModifiedTime (FcConfig *config);
 
 /* fccharset.c */
+void
+FcLangCharSetPopulate (void);
+
 FcCharSet *
 FcCharSetFreeze (FcCharSet *cs);
 
