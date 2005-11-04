@@ -1,4 +1,10 @@
 2005-11-04  Patrick Lam  <plam@mit.edu>
+	* src/fcdir.c (FcDirScanConfig):
+
+	Add test for validity of directory caches that
+	somehow got lost (reported by make distcheck).
+
+2005-11-04  Patrick Lam  <plam@mit.edu>
 	* ChangeLog:
 	* README:
 	* configure.in:
