@@ -1,10 +1,35 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.3.91
-		         2005-9-23
+		      Version 2.3.92
+		         2005-11-04
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.3.92
+
+Fix corrupted caches bugs from 2.3.91 (reported by Mike Fabian).
+Store only basename in the cache, reconstitute on demand 
+(reported by James Cloos).
+Change the rule for artificial emboldening in fonts.conf.in.  This
+enables the support for artificial emboldening included in cairo
+(patch by Zhe Su).
+Add FC_EMBEDDED_BITMAP object type to tell Xft/Cairo whether
+to load embedded bitmaps or not (patch by Jinghua Luo).
+Fix GCC4 warnings (some by Behdad Esfahbod).
+Support localized font family and style names; this has been reported
+to break old apps like xfd, but modern (gtk+/qt/mozilla) apps work
+fine (patch by Zhe Su).
+Prevent fc-list from escaping strings when printing them (reported by
+Matthias Clasen).
+Add valist sentinel markup for FcObjectSetBuild and 
+FcPatternBuild (patch by Marcus Meissner).
+Add consts to variables so as to move arrays into .rodata (patch by
+Ross Burton).
+Modify config file to use Greek fonts before Asian fonts with
+Greek glyphs. (patch by Simos Xenitellis).
+Use libtool -no-undefined flag on all platforms (patch by Christian
+Biesinger).
 
 2.3.91
 

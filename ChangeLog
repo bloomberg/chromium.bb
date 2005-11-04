@@ -1,3 +1,11 @@
+2005-11-04  Patrick Lam  <plam@mit.edu>
+	* ChangeLog:
+	* README:
+	* configure.in:
+	* fontconfig/fontconfig.h:
+	
+        Bump version to 2.3.92.
+
 2005-11-02  Patrick Lam  <plam@mit.edu>
 	* src/fcpat.c (FcPatternDuplicate):
 
