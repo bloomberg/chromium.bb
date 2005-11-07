@@ -235,9 +235,19 @@ int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 #ifdef __alpha__
 		map->offset += dev->hose->mem_space->start;
 #endif
+		/* Note: dev->agp->base may actually be 0 when the DRM
+		 * is not in control of AGP space. But if user space is
+		 * it should already have added the AGP base itself.
+		 */
 		map->offset += dev->agp->base;
 		map->mtrr = dev->agp->agp_mtrr;	/* for getmap */
 
+		/* This assumes the DRM is in total control of AGP space.
+		 * It's not always the case as AGP can be in the control
+		 * of user space (i.e. i810 driver). So this loop will get
+		 * skipped and we double check that dev->agp->memory is
+		 * actually set as well as being invalid before EPERM'ing
+		 */
 		for (entry = dev->agp->memory; entry; entry = entry->next) {
 			if ((map->offset >= entry->bound) &&
 			    (map->offset + map->size <= entry->bound + entry->pages * PAGE_SIZE)) {
@@ -245,7 +255,7 @@ int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 				break;
 			}
 		}
-		if (!valid) {
+		if (dev->agp->memory && !valid) {
 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 			return -EPERM;
 		}
@@ -599,7 +609,7 @@ int drm_addbufs_agp(drm_device_t * dev, drm_buf_desc_t * request)
 			break;
 		}
 	}
-	if (!valid) {
+	if (dev->agp->memory && !valid) {
 		DRM_DEBUG("zone invalid\n");
 		return -EINVAL;
 	}
