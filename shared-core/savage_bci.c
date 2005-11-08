@@ -585,19 +585,19 @@ int savage_driver_firstopen(drm_device_t *dev)
 			 * MTRRs. */
 			dev_priv->mtrr[0].base = fb_base;
 			dev_priv->mtrr[0].size = 0x01000000;
-			dev_priv->mtrr[0].handle = mtrr_add(
+			dev_priv->mtrr[0].handle = drm_mtrr_add(
 				dev_priv->mtrr[0].base, dev_priv->mtrr[0].size,
-				MTRR_TYPE_WRCOMB, 1);
+				DRM_MTRR_WC);
 			dev_priv->mtrr[1].base = fb_base+0x02000000;
 			dev_priv->mtrr[1].size = 0x02000000;
-			dev_priv->mtrr[1].handle = mtrr_add(
+			dev_priv->mtrr[1].handle = drm_mtrr_add(
 				dev_priv->mtrr[1].base, dev_priv->mtrr[1].size,
-				MTRR_TYPE_WRCOMB, 1);
+				DRM_MTRR_WC);
 			dev_priv->mtrr[2].base = fb_base+0x04000000;
 			dev_priv->mtrr[2].size = 0x04000000;
-			dev_priv->mtrr[2].handle = mtrr_add(
+			dev_priv->mtrr[2].handle = drm_mtrr_add(
 				dev_priv->mtrr[2].base, dev_priv->mtrr[2].size,
-				MTRR_TYPE_WRCOMB, 1);
+				DRM_MTRR_WC);
 		} else {
 			DRM_ERROR("strange pci_resource_len %08lx\n",
 				  drm_get_resource_len(dev, 0));
@@ -616,9 +616,9 @@ int savage_driver_firstopen(drm_device_t *dev)
 			 * aperture. */
 			dev_priv->mtrr[0].base = fb_base;
 			dev_priv->mtrr[0].size = 0x08000000;
-			dev_priv->mtrr[0].handle = mtrr_add(
+			dev_priv->mtrr[0].handle = drm_mtrr_add(
 				dev_priv->mtrr[0].base, dev_priv->mtrr[0].size,
-				MTRR_TYPE_WRCOMB, 1);
+				DRM_MTRR_WC);
 		} else {
 			DRM_ERROR("strange pci_resource_len %08lx\n",
 				  drm_get_resource_len(dev, 1));
@@ -662,9 +662,10 @@ void savage_driver_lastclose(drm_device_t *dev)
 
 	for (i = 0; i < 3; ++i)
 		if (dev_priv->mtrr[i].handle >= 0)
-			mtrr_del(dev_priv->mtrr[i].handle,
-				 dev_priv->mtrr[i].base,
-				 dev_priv->mtrr[i].size);
+			drm_mtrr_del(dev_priv->mtrr[i].handle,
+				     dev_priv->mtrr[i].base,
+				     dev_priv->mtrr[i].size,
+				     DRM_MTRR_WC);
 }
 
 int savage_driver_unload(drm_device_t *dev)
@@ -961,8 +962,8 @@ static int savage_bci_event_emit(DRM_IOCTL_ARGS)
 
 	event.count = savage_bci_emit_event(dev_priv, event.flags);
 	event.count |= dev_priv->event_wrap << 16;
-	DRM_COPY_TO_USER_IOCTL(&((drm_savage_event_emit_t __user *)data)->count,
-			       event.count, sizeof(event.count));
+	DRM_COPY_TO_USER_IOCTL((drm_savage_event_emit_t __user *)data,
+			       event, sizeof(event));
 	return 0;
 }
 

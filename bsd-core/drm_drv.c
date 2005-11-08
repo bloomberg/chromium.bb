@@ -576,7 +576,7 @@ static void drm_unload(drm_device_t *dev)
 	if (dev->agp && dev->agp->mtrr) {
 		int __unused retcode;
 
-		retcode = drm_mtrr_del(dev->agp->info.ai_aperture_base,
+		retcode = drm_mtrr_del(0, dev->agp->info.ai_aperture_base,
 		    dev->agp->info.ai_aperture_size, DRM_MTRR_WC);
 		DRM_DEBUG("mtrr_del = %d", retcode);
 	}

@@ -55,7 +55,7 @@ SHAREDFILES=	drm.h \
 		via_verifier.h \
 		via_video.c
 
-SUBDIR = drm mach64 mga r128 radeon sis tdfx # via i915
+SUBDIR = drm mach64 mga r128 radeon savage sis tdfx # via i915
 
 CLEANFILES+= ${SHAREDFILES}
 

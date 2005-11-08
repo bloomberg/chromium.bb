@@ -843,7 +843,7 @@ void	drm_free(void *pt, size_t size, int area);
 void	*drm_ioremap(drm_device_t *dev, drm_local_map_t *map);
 void	drm_ioremapfree(drm_local_map_t *map);
 int	drm_mtrr_add(unsigned long offset, size_t size, int flags);
-int	drm_mtrr_del(unsigned long offset, size_t size, int flags);
+int	drm_mtrr_del(int handle, unsigned long offset, size_t size, int flags);
 
 int	drm_context_switch(drm_device_t *dev, int old, int new);
 int	drm_context_switch_complete(drm_device_t *dev, int new);
@@ -880,6 +880,7 @@ int	drm_dma_setup(drm_device_t *dev);
 void	drm_dma_takedown(drm_device_t *dev);
 void	drm_free_buffer(drm_device_t *dev, drm_buf_t *buf);
 void	drm_reclaim_buffers(drm_device_t *dev, DRMFILE filp);
+#define drm_core_reclaim_buffers drm_reclaim_buffers
 
 /* IRQ support (drm_irq.c) */
 int	drm_irq_install(drm_device_t *dev);

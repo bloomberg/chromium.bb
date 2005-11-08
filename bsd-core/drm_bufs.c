@@ -297,7 +297,7 @@ void drm_rmmap(drm_device_t *dev, drm_local_map_t *map)
 		if (map->mtrr) {
 			int __unused retcode;
 			
-			retcode = drm_mtrr_del(map->offset, map->size,
+			retcode = drm_mtrr_del(0, map->offset, map->size,
 			    DRM_MTRR_WC);
 			DRM_DEBUG("mtrr_del = %d\n", retcode);
 		}

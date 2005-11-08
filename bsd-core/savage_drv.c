@@ -43,15 +43,15 @@ extern int savage_max_ioctl;
 static void savage_configure(drm_device_t *dev)
 {
 	dev->driver.buf_priv_size	= sizeof(drm_savage_buf_priv_t);
-	dev->load			= savage_driver_load;
-	dev->firstopen			= savage_driver_firstopen;
-	dev->lastclose			= savage_driver_lastclose;
-	dev->unload			= savage_driver_unload;
-	dev->reclaim_buffers		= savage_reclaim_buffers;
-	dev->dma_ioctl			= savage_bci_buffers;
+	dev->driver.load		= savage_driver_load;
+	dev->driver.firstopen		= savage_driver_firstopen;
+	dev->driver.lastclose		= savage_driver_lastclose;
+	dev->driver.unload		= savage_driver_unload;
+	dev->driver.reclaim_buffers_locked = savage_reclaim_buffers;
+	dev->driver.dma_ioctl		= savage_bci_buffers;
 
-	dev->ioctls			= savage_ioctls;
-	dev->max_ioctl			= savage_max_ioctl;
+	dev->driver.ioctls		= savage_ioctls;
+	dev->driver.max_ioctl		= savage_max_ioctl;
 
 	dev->driver.name		= DRIVER_NAME;
 	dev->driver.desc		= DRIVER_DESC;
@@ -60,10 +60,10 @@ static void savage_configure(drm_device_t *dev)
 	dev->driver.minor		= DRIVER_MINOR;
 	dev->driver.patchlevel		= DRIVER_PATCHLEVEL;
 
-	dev->use_agp			= 1;
-	dev->use_mtrr			= 1;
-	dev->use_pci_dma		= 1;
-	dev->use_dma			= 1;
+	dev->driver.use_agp		= 1;
+	dev->driver.use_mtrr		= 1;
+	dev->driver.use_pci_dma		= 1;
+	dev->driver.use_dma		= 1;
 }
 
 #ifdef __FreeBSD__
