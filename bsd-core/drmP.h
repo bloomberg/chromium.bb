@@ -895,7 +895,6 @@ void	drm_vbl_send_signals(drm_device_t *dev);
 int	drm_device_is_agp(drm_device_t *dev);
 int	drm_device_is_pcie(drm_device_t *dev);
 drm_agp_head_t *drm_agp_init(void);
-void	drm_agp_uninit(void);
 int	drm_agp_acquire(drm_device_t *dev);
 int	drm_agp_release(drm_device_t *dev);
 int	drm_agp_info(drm_device_t * dev, drm_agp_info_t *info);
@@ -904,10 +903,10 @@ void	*drm_agp_allocate_memory(size_t pages, u32 type);
 int	drm_agp_free_memory(void *handle);
 int	drm_agp_bind_memory(void *handle, off_t start);
 int	drm_agp_unbind_memory(void *handle);
-#define drm_alloc_agp(dev, pages, type) drm_agp_allocate_memory(pages, type)
-#define drm_free_agp(handle, pages) drm_agp_free_memory(handle)
-#define drm_bind_agp(handle, start) drm_agp_bind_memory(handle, start)
-#define drm_unbind_agp(handle) drm_agp_unbind_memory(handle)
+int	drm_agp_alloc(drm_device_t *dev, drm_agp_buffer_t *request);
+int	drm_agp_free(drm_device_t *dev, drm_agp_buffer_t *request);
+int	drm_agp_bind(drm_device_t *dev, drm_agp_binding_t *request);
+int	drm_agp_unbind(drm_device_t *dev, drm_agp_binding_t *request);
 
 /* Scatter Gather Support (drm_scatter.c) */
 void	drm_sg_cleanup(drm_sg_mem_t *entry);
@@ -979,10 +978,10 @@ int	drm_agp_acquire_ioctl(DRM_IOCTL_ARGS);
 int	drm_agp_release_ioctl(DRM_IOCTL_ARGS);
 int	drm_agp_enable_ioctl(DRM_IOCTL_ARGS);
 int	drm_agp_info_ioctl(DRM_IOCTL_ARGS);
-int	drm_agp_alloc(DRM_IOCTL_ARGS);
-int	drm_agp_free(DRM_IOCTL_ARGS);
-int	drm_agp_unbind(DRM_IOCTL_ARGS);
-int	drm_agp_bind(DRM_IOCTL_ARGS);
+int	drm_agp_alloc_ioctl(DRM_IOCTL_ARGS);
+int	drm_agp_free_ioctl(DRM_IOCTL_ARGS);
+int	drm_agp_unbind_ioctl(DRM_IOCTL_ARGS);
+int	drm_agp_bind_ioctl(DRM_IOCTL_ARGS);
 
 /* Scatter Gather Support (drm_scatter.c) */
 int	drm_sg_alloc(DRM_IOCTL_ARGS);

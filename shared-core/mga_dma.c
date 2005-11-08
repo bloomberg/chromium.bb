@@ -546,6 +546,7 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 		return err;
 	}
 
+#ifdef __linux__
 	{
 		drm_map_list_t *_entry;
 		unsigned long agp_token = 0;
@@ -559,6 +560,7 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 
 		dev->agp_buffer_token = agp_token;
 	}
+#endif
 
 	offset += secondary_size;
 	err = drm_addmap( dev, offset, agp_size - offset,
