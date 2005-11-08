@@ -508,7 +508,9 @@ static int drm_load(drm_device_t *dev)
 	TAILQ_INIT(&dev->files);
 
 	if (dev->driver.load != NULL) {
+		DRM_LOCK();
 		retcode = dev->driver.load(dev, dev->id_entry->driver_private);
+		DRM_UNLOCK();
 		if (retcode != 0)
 			goto error;
 	}

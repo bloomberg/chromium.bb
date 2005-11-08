@@ -61,12 +61,17 @@ static int drm_alloc_resource(drm_device_t *dev, int resource)
 		DRM_ERROR("Resource %d too large\n", resource);
 		return 1;
 	}
-	if (dev->pcir[resource] != NULL)
+
+	DRM_UNLOCK();
+	if (dev->pcir[resource] != NULL) {
+		DRM_LOCK();
 		return 0;
+	}
 
 	dev->pcirid[resource] = PCIR_BAR(resource);
 	dev->pcir[resource] = bus_alloc_resource_any(dev->device,
 	    SYS_RES_MEMORY, &dev->pcirid[resource], RF_SHAREABLE);
+	DRM_LOCK();
 
 	if (dev->pcir[resource] == NULL) {
 		DRM_ERROR("Couldn't find resource 0x%x\n", resource);
