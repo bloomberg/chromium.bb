@@ -479,25 +479,29 @@ static int mach64_do_get_frames_queued(drm_mach64_private_t * dev_priv)
 /* Copy and verify a client submited buffer.
  * FIXME: Make an assembly optimized version
  */
-static __inline__ int copy_and_verify_from_user(u32 * to, const u32 * from,
+static __inline__ int copy_and_verify_from_user(u32 *to,
+						const u32 __user *ufrom,
 						unsigned long bytes)
 {
 	unsigned long n = bytes;	/* dwords remaining in buffer */
+	u32 *from, *orig_from;
 
-	if (DRM_VERIFYAREA_READ(from, n)) {
-		DRM_ERROR("%s: verify_area\n", __FUNCTION__);
+	from = drm_alloc(bytes, DRM_MEM_DRIVER);
+	if (from == NULL)
+		return ENOMEM;
+
+	if (DRM_COPY_FROM_USER(from, ufrom, bytes)) {
+		drm_free(from, bytes, DRM_MEM_DRIVER);
 		return DRM_ERR(EFAULT);
 	}
+	orig_from = from; /* we'll be modifying the "from" ptr, so save it */
 
 	n >>= 2;
 
 	while (n > 1) {
 		u32 data, reg, count;
 
-		if (DRM_GET_USER_UNCHECKED(data, from++)) {
-			DRM_ERROR("%s: get_user\n", __FUNCTION__);
-			return DRM_ERR(EFAULT);
-		}
+		data = *from++;
 
 		n--;
 
@@ -513,28 +517,25 @@ static __inline__ int copy_and_verify_from_user(u32 * to, const u32 * from,
 			if ((reg >= 0x0190 && reg < 0x01c1) ||
 			    (reg >= 0x01ca && reg <= 0x01cf)) {
 				*to++ = data;
-				if (DRM_COPY_FROM_USER_UNCHECKED
-				    (to, from, count << 2)) {
-					DRM_ERROR("%s: copy_from_user\n",
-						  __FUNCTION__);
-					return DRM_ERR(EFAULT);
-				}
+				memcpy(to, from, count << 2);
+				from += count;
 				to += count;
 			} else {
 				DRM_ERROR("%s: Got bad command: 0x%04x\n",
 					  __FUNCTION__, reg);
+				drm_free(orig_from, bytes, DRM_MEM_DRIVER);
 				return DRM_ERR(EACCES);
 			}
-
-			from += count;
 		} else {
 			DRM_ERROR
 			    ("%s: Got bad command count(=%u) dwords remaining=%lu\n",
 			     __FUNCTION__, count, n);
+			drm_free(orig_from, bytes, DRM_MEM_DRIVER);
 			return DRM_ERR(EINVAL);
 		}
 	}
 
+	drm_free(orig_from, bytes, DRM_MEM_DRIVER);
 	if (n == 0)
 		return 0;
 	else {
