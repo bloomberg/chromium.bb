@@ -127,17 +127,17 @@ int drm_addmap(drm_device_t * dev, unsigned long offset, unsigned long size,
 	 */
 	if (type == _DRM_REGISTERS || type == _DRM_FRAME_BUFFER ||
 	    type == _DRM_SHM) {
-		DRM_LOCK();
 		TAILQ_FOREACH(map, &dev->maplist, link) {
-			if (map->type == type &&
-			    (map->offset == offset || map->type == _DRM_SHM)) {
+			if (map->type == type && (map->offset == offset ||
+			    (map->type == _DRM_SHM &&
+			    map->flags == _DRM_CONTAINS_LOCK))) {
 				map->size = size;
 				DRM_DEBUG("Found kernel map %d\n", type);
 				goto done;
 			}
 		}
-		DRM_UNLOCK();
 	}
+	DRM_UNLOCK();
 
 	/* Allocate a new map structure, fill it in, and do any type-specific
 	 * initialization necessary.
@@ -236,7 +236,6 @@ int drm_addmap(drm_device_t * dev, unsigned long offset, unsigned long size,
 
 done:
 	/* Jumped to, with lock held, when a kernel map is found. */
-	DRM_UNLOCK();
 
 	DRM_DEBUG("Added map %d 0x%lx/0x%lx\n", map->type, map->offset,
 	    map->size);
@@ -261,8 +260,10 @@ int drm_addmap_ioctl(DRM_IOCTL_ARGS)
 	if (!DRM_SUSER(p) && request.type != _DRM_AGP)
 		return DRM_ERR(EACCES);
 
+	DRM_LOCK();
 	err = drm_addmap(dev, request.offset, request.size, request.type,
 	    request.flags, &map);
+	DRM_UNLOCK();
 	if (err != 0)
 		return err;
 
