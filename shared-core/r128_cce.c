@@ -559,7 +559,8 @@ static int r128_do_init_cce(drm_device_t * dev, drm_r128_init_t * init)
 	if (dev_priv->is_pci) {
 #endif
 		dev_priv->gart_info.gart_table_location = DRM_ATI_GART_MAIN;
-		dev_priv->gart_info.addr = dev_priv->gart_info.bus_addr = 0;
+		dev_priv->gart_info.addr = NULL;
+		dev_priv->gart_info.bus_addr = 0;
 		dev_priv->gart_info.is_pcie = 0;
 		if (!drm_ati_pcigart_init(dev, &dev_priv->gart_info)) {
 			DRM_ERROR("failed to init PCI GART!\n");

@@ -35,32 +35,34 @@
 #define ATI_MAX_PCIGART_PAGES		8192	/* 32 MB aperture, 4K pages */
 #define ATI_PCIGART_TABLE_SIZE		32768
 
-int drm_ati_pcigart_init(drm_device_t *dev, unsigned long *addr,
-			 dma_addr_t *bus_addr, int is_pcie)
+int drm_ati_pcigart_init(drm_device_t *dev, drm_ati_pcigart_info *gart_info)
 {
 	unsigned long pages;
-	u32 *pci_gart = 0, page_base;
+	u32 *pci_gart = NULL, page_base;
 	int i, j;
-
-	*addr = 0;
-	*bus_addr = 0;
 
 	if (dev->sg == NULL) {
 		DRM_ERROR( "no scatter/gather memory!\n" );
 		return 0;
 	}
 
-	dev->sg->dmah = drm_pci_alloc(dev, ATI_PCIGART_TABLE_SIZE, 0,
-	    0xfffffffful);
-	if (dev->sg->dmah == NULL) {
-		DRM_ERROR("cannot allocate PCI GART table!\n");
-		return 0;
+	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN) {
+		/* GART table in system memory */
+		dev->sg->dmah = drm_pci_alloc(dev, ATI_PCIGART_TABLE_SIZE, 0,
+		    0xfffffffful);
+		if (dev->sg->dmah == NULL) {
+			DRM_ERROR("cannot allocate PCI GART table!\n");
+			return 0;
+		}
+	
+		gart_info->addr = (void *)dev->sg->dmah->vaddr;
+		gart_info->bus_addr = dev->sg->dmah->busaddr;
+		pci_gart = (u32 *)dev->sg->dmah->vaddr;
+	} else {
+		/* GART table in framebuffer memory */
+		pci_gart = gart_info->addr;
 	}
-
-	*addr = (long)dev->sg->dmah->vaddr;
-	*bus_addr = dev->sg->dmah->busaddr;
-	pci_gart = (u32 *)dev->sg->dmah->vaddr;
-
+	
 	pages = DRM_MIN(dev->sg->pages, ATI_MAX_PCIGART_PAGES);
 
 	bzero(pci_gart, ATI_PCIGART_TABLE_SIZE);
@@ -71,12 +73,9 @@ int drm_ati_pcigart_init(drm_device_t *dev, unsigned long *addr,
 		page_base = (u32) dev->sg->busaddr[i];
 
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
-			if (is_pcie) {
-				*pci_gart = (cpu_to_le32(page_base)>>8) | 0xc;
-				DRM_DEBUG("PCIE: %d %08X %08X to %p\n", i,
-				    page_base, (cpu_to_le32(page_base)>>8)|0xc,
-				    pci_gart);
-			} else
+			if (gart_info->is_pcie)
+				*pci_gart = (cpu_to_le32(page_base) >> 8) | 0xc;
+			else
 				*pci_gart = cpu_to_le32(page_base);
 			pci_gart++;
 			page_base += ATI_PCIGART_PAGE_SIZE;
@@ -88,8 +87,7 @@ int drm_ati_pcigart_init(drm_device_t *dev, unsigned long *addr,
 	return 1;
 }
 
-int drm_ati_pcigart_cleanup(drm_device_t *dev, unsigned long addr,
-			    dma_addr_t bus_addr)
+int drm_ati_pcigart_cleanup(drm_device_t *dev, drm_ati_pcigart_info *gart_info)
 {
 	if (dev->sg == NULL) {
 		DRM_ERROR( "no scatter/gather memory!\n" );

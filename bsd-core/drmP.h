@@ -622,6 +622,18 @@ typedef struct drm_vbl_sig {
 	int		pid;
 } drm_vbl_sig_t;
 
+/* location of GART table */
+#define DRM_ATI_GART_MAIN 1
+#define DRM_ATI_GART_FB   2
+
+typedef struct ati_pcigart_info {
+	int gart_table_location;
+	int is_pcie;
+	void *addr;
+	dma_addr_t bus_addr;
+	drm_local_map_t mapping;
+} drm_ati_pcigart_info;
+
 struct drm_driver_info {
 	int	(*load)(struct drm_device *, unsigned long flags);
 	int	(*firstopen)(struct drm_device *);
@@ -907,10 +919,10 @@ extern int		drm_sysctl_cleanup(drm_device_t *dev);
 #endif /* __FreeBSD__ */
 
 /* ATI PCIGART support (ati_pcigart.c) */
-int	drm_ati_pcigart_init(drm_device_t *dev, unsigned long *addr,
-			     dma_addr_t *bus_addr, int is_pcie);
-int	drm_ati_pcigart_cleanup(drm_device_t *dev, unsigned long addr,
-				dma_addr_t bus_addr);
+int	drm_ati_pcigart_init(drm_device_t *dev,
+			     drm_ati_pcigart_info *gart_info);
+int	drm_ati_pcigart_cleanup(drm_device_t *dev,
+				drm_ati_pcigart_info *gart_info);
 
 /* Locking IOCTL support (drm_drv.c) */
 int	drm_lock(DRM_IOCTL_ARGS);
