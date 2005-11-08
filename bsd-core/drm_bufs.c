@@ -53,7 +53,7 @@ int drm_order(unsigned long size)
 
 /* Allocation of PCI memory resources (framebuffer, registers, etc.) for
  * drm_get_resource_*.  Note that they are not RF_ACTIVE, so there's no virtual
- * address for accessing them.  Cleaned up at lastclose.
+ * address for accessing them.  Cleaned up at unload.
  */
 static int drm_alloc_resource(drm_device_t *dev, int resource)
 {

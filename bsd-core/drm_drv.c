@@ -474,13 +474,7 @@ static int drm_lastclose(drm_device_t *dev)
 	TAILQ_FOREACH_SAFE(map, &dev->maplist, link, mapsave) {
 		drm_rmmap(dev, map);
 	}
-	for (i = 0; i < DRM_MAX_PCI_RESOURCE; i++) {
-		if (dev->pcir[i] == NULL)
-			continue;
-		bus_release_resource(dev->device, SYS_RES_MEMORY,
-		    dev->pcirid[i], dev->pcir[i]);
-		dev->pcir[i] = NULL;
-	}
+
 
 	drm_dma_takedown(dev);
 	if ( dev->lock.hw_lock ) {
@@ -568,6 +562,8 @@ error:
 
 static void drm_unload(drm_device_t *dev)
 {
+	int i;
+
 	DRM_DEBUG( "\n" );
 
 #ifdef __FreeBSD__
@@ -588,6 +584,19 @@ static void drm_unload(drm_device_t *dev)
 	DRM_LOCK();
 	drm_lastclose(dev);
 	DRM_UNLOCK();
+
+	/* Clean up PCI resources allocated by drm_bufs.c.  We're not really
+	 * worried about resource consumption while the DRM is inactive (between
+	 * lastclose and firstopen or unload) because these aren't actually
+	 * taking up KVA, just keeping the PCI resource allocated.
+	 */
+	for (i = 0; i < DRM_MAX_PCI_RESOURCE; i++) {
+		if (dev->pcir[i] == NULL)
+			continue;
+		bus_release_resource(dev->device, SYS_RES_MEMORY,
+		    dev->pcirid[i], dev->pcir[i]);
+		dev->pcir[i] = NULL;
+	}
 
 	if ( dev->agp ) {
 		free(dev->agp, M_DRM);
