@@ -91,6 +91,49 @@ static void drm_ati_free_pcigart_table(void *address)
 	free_pages((unsigned long)address, ATI_PCIGART_TABLE_ORDER);
 }
 
+int drm_ati_pcigart_cleanup(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
+{
+	drm_sg_mem_t *entry = dev->sg;
+	unsigned long pages;
+	int i;
+
+	/* we need to support large memory configurations */
+	if (!entry) {
+		DRM_ERROR("no scatter/gather memory!\n");
+		return 0;
+	}
+
+	if (gart_info->bus_addr) {
+		if (gart_info->gart_table_location == DRM_ATI_GART_MAIN) {
+			pci_unmap_single(dev->pdev, gart_info->bus_addr,
+					 ATI_PCIGART_TABLE_PAGES * PAGE_SIZE,
+					 PCI_DMA_TODEVICE);
+		}
+
+		pages = (entry->pages <= ATI_MAX_PCIGART_PAGES)
+		    ? entry->pages : ATI_MAX_PCIGART_PAGES;
+
+		for (i = 0; i < pages; i++) {
+			if (!entry->busaddr[i])
+				break;
+			pci_unmap_single(dev->pdev, entry->busaddr[i],
+					 PAGE_SIZE, PCI_DMA_TODEVICE);
+		}
+
+		if (gart_info->gart_table_location == DRM_ATI_GART_MAIN)
+			gart_info->bus_addr=0;
+	}
+
+
+	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN && gart_info->addr) {
+		drm_ati_free_pcigart_table(gart_info->addr);
+		gart_info->addr=0;
+	}
+
+	return 1;
+}
+EXPORT_SYMBOL(drm_ati_pcigart_cleanup);
+
 int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
 {
 	drm_sg_mem_t *entry = dev->sg;
@@ -104,7 +147,7 @@ int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
 		goto done;
 	}
 
-	if (gart_info->gart_table_location==DRM_ATI_GART_MAIN)
+	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN)
 	{
 		DRM_DEBUG("PCI: no table in VRAM: using normal RAM\n");
 		
@@ -120,20 +163,19 @@ int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
 		}
 		
 		bus_address = pci_map_single(dev->pdev, address,
-					     ATI_PCIGART_TABLE_PAGES * PAGE_SIZE,
-					     PCI_DMA_TODEVICE);
+					     ATI_PCIGART_TABLE_PAGES *
+					     PAGE_SIZE, PCI_DMA_TODEVICE);
 		if (bus_address == 0) {
 			DRM_ERROR("unable to map PCIGART pages!\n");
 			drm_ati_free_pcigart_table(address);
 			address = 0;
 			goto done;
 		}
-	}
-	else
-	{
+	} else {
 		address = gart_info->addr;
 		bus_address = gart_info->bus_addr;
-		DRM_DEBUG("PCI: Gart Table: VRAM %08X mapped at %08lX\n", bus_address, (unsigned long)address);
+		DRM_DEBUG("PCI: Gart Table: VRAM %08X mapped at %08lX\n",
+			  bus_address, (unsigned long)address);
 	}
 
 	pci_gart = (u32 *) address;
@@ -183,46 +225,4 @@ int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
 }
 EXPORT_SYMBOL(drm_ati_pcigart_init);
 
-int drm_ati_pcigart_cleanup(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
-{
-	drm_sg_mem_t *entry = dev->sg;
-	unsigned long pages;
-	int i;
-
-	/* we need to support large memory configurations */
-	if (!entry) {
-		DRM_ERROR("no scatter/gather memory!\n");
-		return 0;
-	}
-
-	if (gart_info->bus_addr) {
-		if (gart_info->gart_table_location==DRM_ATI_GART_MAIN) {
-			pci_unmap_single(dev->pdev, gart_info->bus_addr,
-					 ATI_PCIGART_TABLE_PAGES * PAGE_SIZE,
-					 PCI_DMA_TODEVICE);
-		}
-
-		pages = (entry->pages <= ATI_MAX_PCIGART_PAGES)
-		    ? entry->pages : ATI_MAX_PCIGART_PAGES;
-
-		for (i = 0; i < pages; i++) {
-			if (!entry->busaddr[i])
-				break;
-			pci_unmap_single(dev->pdev, entry->busaddr[i],
-					 PAGE_SIZE, PCI_DMA_TODEVICE);
-		}
-
-		if (gart_info->gart_table_location==DRM_ATI_GART_MAIN)
-			gart_info->bus_addr=0;
-	}
-
-
-	if (gart_info->gart_table_location==DRM_ATI_GART_MAIN && gart_info->addr) {
-		drm_ati_free_pcigart_table(gart_info->addr);
-		gart_info->addr=0;
-	}
-
-	return 1;
-}
-EXPORT_SYMBOL(drm_ati_pcigart_cleanup);
 
