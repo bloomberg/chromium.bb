@@ -30,6 +30,6 @@ if [ $VERS = 2.4 ] ;then
 	cp linux/Config.in $OUTDIR/
 elif [ $VERS = 2.6 ] ;then
 	echo "Copying 2.6 Kernel files"
-	cp linux/Kconfig $OUTDIR/
+	cp linux-core/Kconfig $OUTDIR/
 fi
 
