@@ -43,9 +43,6 @@ static struct pci_device_id pciidlist[] = {
 	mga_PCI_IDS
 };
 
-extern drm_ioctl_desc_t mga_ioctls[];
-extern int mga_max_ioctl;
-
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =

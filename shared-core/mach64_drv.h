@@ -108,6 +108,9 @@ typedef struct drm_mach64_private {
 	drm_local_map_t *agp_textures;
 } drm_mach64_private_t;
 
+extern drm_ioctl_desc_t mach64_ioctls[];
+extern int mach64_max_ioctl;
+
 				/* mach64_dma.c */
 extern int mach64_dma_init(DRM_IOCTL_ARGS);
 extern int mach64_dma_idle(DRM_IOCTL_ARGS);

@@ -39,9 +39,6 @@ static struct pci_device_id pciidlist[] = {
 	mach64_PCI_IDS
 };
 
-extern drm_ioctl_desc_t mach64_ioctls[];
-extern int mach64_max_ioctl;
-
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =

@@ -96,6 +96,9 @@ typedef struct drm_i915_private {
 	unsigned int sr01, adpa, ppcr, dvob, dvoc, lvds;
 } drm_i915_private_t;
 
+extern drm_ioctl_desc_t i915_ioctls[];
+extern int i915_max_ioctl;
+
 				/* i915_dma.c */
 extern void i915_kernel_lost_context(drm_device_t * dev);
 extern int i915_driver_load(struct drm_device *, unsigned long flags);

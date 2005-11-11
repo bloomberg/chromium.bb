@@ -38,9 +38,6 @@ static struct pci_device_id pciidlist[] = {
 	i915_PCI_IDS
 };
 
-extern drm_ioctl_desc_t i915_ioctls[];
-extern int i915_max_ioctl;
-
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	/* don't use mtrr's here, the Xserver or user space app should

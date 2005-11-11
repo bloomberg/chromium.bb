@@ -276,6 +276,9 @@ typedef struct drm_radeon_buf_priv {
 } drm_radeon_buf_priv_t;
 
 extern int radeon_no_wb;
+extern drm_ioctl_desc_t radeon_ioctls[];
+extern int radeon_max_ioctl;
+
 				/* radeon_cp.c */
 extern int radeon_cp_init(DRM_IOCTL_ARGS);
 extern int radeon_cp_start(DRM_IOCTL_ARGS);

@@ -111,6 +111,9 @@ enum via_family {
 #define VIA_READ8(reg)		DRM_READ8(VIA_BASE, reg)
 #define VIA_WRITE8(reg,val)	DRM_WRITE8(VIA_BASE, reg, val)
 
+extern drm_ioctl_desc_t via_ioctls[];
+extern int via_max_ioctl;
+
 extern int via_fb_init(DRM_IOCTL_ARGS);
 extern int via_mem_alloc(DRM_IOCTL_ARGS);
 extern int via_mem_free(DRM_IOCTL_ARGS);

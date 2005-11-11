@@ -46,9 +46,6 @@ static struct pci_device_id pciidlist[] = {
 	i830_PCI_IDS
 };
 
-extern drm_ioctl_desc_t i830_ioctls[];
-extern int i830_max_ioctl;
-
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =
