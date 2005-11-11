@@ -41,9 +41,6 @@ static drm_pci_id_list_t tdfx_pciidlist[] = {
 	tdfx_PCI_IDS
 };
 
-extern drm_ioctl_desc_t tdfx_ioctls[];
-extern int tdfx_max_ioctl;
-
 static void tdfx_configure(drm_device_t *dev)
 {
 	dev->driver.buf_priv_size	= 1; /* No dev_priv */

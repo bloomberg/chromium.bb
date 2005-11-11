@@ -36,9 +36,6 @@ static drm_pci_id_list_t sis_pciidlist[] = {
 	sis_PCI_IDS
 };
 
-extern drm_ioctl_desc_t sis_ioctls[];
-extern int sis_max_ioctl;
-
 static void sis_configure(drm_device_t *dev)
 {
 	dev->driver.buf_priv_size	= 1; /* No dev_priv */

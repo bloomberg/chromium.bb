@@ -42,9 +42,6 @@ static drm_pci_id_list_t mga_pciidlist[] = {
 	mga_PCI_IDS
 };
 
-extern drm_ioctl_desc_t mga_ioctls[];
-extern int mga_max_ioctl;
-
 /**
  * Determine if the device really is AGP or not.
  *

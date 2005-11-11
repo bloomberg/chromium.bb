@@ -37,9 +37,6 @@ static drm_pci_id_list_t savage_pciidlist[] = {
 	savage_PCI_IDS
 };
 
-extern drm_ioctl_desc_t savage_ioctls[];
-extern int savage_max_ioctl;
-
 static void savage_configure(drm_device_t *dev)
 {
 	dev->driver.buf_priv_size	= sizeof(drm_savage_buf_priv_t);

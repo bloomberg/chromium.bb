@@ -40,9 +40,6 @@ static drm_pci_id_list_t i915_pciidlist[] = {
 	i915_PCI_IDS
 };
 
-extern drm_ioctl_desc_t i915_ioctls[];
-extern int i915_max_ioctl;
-
 static void i915_configure(drm_device_t *dev)
 {
 	dev->buf_priv_size		= 1;	/* No dev_priv */

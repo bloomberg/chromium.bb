@@ -42,9 +42,6 @@ static drm_pci_id_list_t r128_pciidlist[] = {
 	r128_PCI_IDS
 };
 
-extern drm_ioctl_desc_t r128_ioctls[];
-extern int r128_max_ioctl;
-
 static void r128_configure(drm_device_t *dev)
 {
 	dev->driver.buf_priv_size	= sizeof(drm_r128_buf_priv_t);
