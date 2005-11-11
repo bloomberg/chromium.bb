@@ -38,11 +38,6 @@
 
 #include "drm_pciids.h"
 
-static int dri_library_name(struct drm_device * dev, char * buf)
-{
-	return snprintf(buf, PAGE_SIZE, "i830\n");
-}
-
 static struct pci_device_id pciidlist[] = {
 	i810_PCI_IDS
 };
@@ -61,7 +56,6 @@ static struct drm_driver driver = {
 	.dma_quiescent = i810_driver_dma_quiescent,
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
-	.dri_library_name = dri_library_name,
 	.ioctls = i810_ioctls,
 	.fops = {
 		.owner = THIS_MODULE,
