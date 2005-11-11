@@ -372,7 +372,7 @@ int drm_release(struct inode *inode, struct file *filp)
 
 		add_wait_queue(&dev->lock.lock_queue, &entry);
 		for (;;) {
-			current->state = TASK_INTERRUPTIBLE;
+			__set_current_state(TASK_INTERRUPTIBLE);
 			if (!dev->lock.hw_lock) {
 				/* Device has been unregistered */
 				retcode = -EINTR;
@@ -392,7 +392,7 @@ int drm_release(struct inode *inode, struct file *filp)
 				break;
 			}
 		}
-		current->state = TASK_RUNNING;
+		__set_current_state(TASK_RUNNING);
 		remove_wait_queue(&dev->lock.lock_queue, &entry);
 		if (!retcode) {
 			dev->driver->reclaim_buffers_locked(dev, filp);

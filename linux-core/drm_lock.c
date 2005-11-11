@@ -80,7 +80,7 @@ int drm_lock(struct inode *inode, struct file *filp,
 
 	add_wait_queue(&dev->lock.lock_queue, &entry);
 	for (;;) {
-		current->state = TASK_INTERRUPTIBLE;
+		__set_current_state(TASK_INTERRUPTIBLE);
 		if (!dev->lock.hw_lock) {
 			/* Device has been unregistered */
 			ret = -EINTR;
@@ -100,7 +100,7 @@ int drm_lock(struct inode *inode, struct file *filp,
 			break;
 		}
 	}
-	current->state = TASK_RUNNING;
+	__set_current_state(TASK_RUNNING);
 	remove_wait_queue(&dev->lock.lock_queue, &entry);
 
         DRM_DEBUG( "%d %s\n", lock.context, ret ? "interrupted" : "has lock" );
