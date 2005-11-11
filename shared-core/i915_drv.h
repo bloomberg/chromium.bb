@@ -105,6 +105,8 @@ extern int i915_driver_load(struct drm_device *, unsigned long flags);
 extern void i915_driver_lastclose(drm_device_t * dev);
 extern void i915_driver_preclose(drm_device_t * dev, DRMFILE filp);
 extern int i915_driver_device_is_agp(drm_device_t * dev);
+extern long i915_compat_ioctl(struct file *filp, unsigned int cmd,
+			      unsigned long arg);
 
 /* i915_irq.c */
 extern int i915_irq_emit(DRM_IOCTL_ARGS);
