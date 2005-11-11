@@ -35,7 +35,8 @@
 #include "radeon_drm.h"
 #include "radeon_drv.h"
 
-static __inline__ u32 radeon_acknowledge_irqs(drm_radeon_private_t * dev_priv, u32 mask)
+static __inline__ u32 radeon_acknowledge_irqs(drm_radeon_private_t * dev_priv,
+					      u32 mask)
 {
 	u32 irqs = RADEON_READ(RADEON_GEN_INT_STATUS) & mask;
 	if (irqs)
@@ -71,7 +72,7 @@ irqreturn_t radeon_driver_irq_handler(DRM_IRQ_ARGS)
 	/* Only consider the bits we're interested in - others could be used
 	 * outside the DRM
 	 */
-	stat = radeon_acknowledge_irqs(dev_priv, (RADEON_SW_INT_TEST_ACK | 
+	stat = radeon_acknowledge_irqs(dev_priv, (RADEON_SW_INT_TEST_ACK |
 						  RADEON_CRTC_VBLANK_STAT));
 	if (!stat)
 		return IRQ_NONE;
@@ -214,7 +215,7 @@ void radeon_driver_irq_preinstall(drm_device_t * dev)
 	RADEON_WRITE(RADEON_GEN_INT_CNTL, 0);
 
 	/* Clear bits if they're already high */
-	radeon_acknowledge_irqs(dev_priv, (RADEON_SW_INT_TEST_ACK | 
+	radeon_acknowledge_irqs(dev_priv, (RADEON_SW_INT_TEST_ACK |
 					   RADEON_CRTC_VBLANK_STAT));
 }
 
