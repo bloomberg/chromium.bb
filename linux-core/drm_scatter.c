@@ -33,7 +33,6 @@
 
 #include <linux/config.h>
 #include <linux/vmalloc.h>
-
 #include "drmP.h"
 
 #define DEBUG_SCATTER 0
@@ -137,7 +136,7 @@ int drm_sg_alloc(struct inode *inode, struct file *filp,
 	DRM_DEBUG("sg alloc virtual = %p\n", entry->virtual);
 
 	for (i = (unsigned long)entry->virtual, j = 0; j < pages; 
-		i += PAGE_SIZE, j++) {
+	     i += PAGE_SIZE, j++) {
 		entry->pagelist[j] = vmalloc_to_page((void *)i);
 		if (!entry->pagelist[j])
 			goto failed;

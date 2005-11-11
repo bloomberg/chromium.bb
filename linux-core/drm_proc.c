@@ -175,8 +175,8 @@ static int drm_name_info(char *buf, char **start, off_t offset, int request,
 
 	if (dev->unique) {
 		DRM_PROC_PRINT("%s %s %s\n",
-			       dev->driver->pci_driver.name, pci_name(dev->pdev),
-			       dev->unique);
+			       dev->driver->pci_driver.name,
+			       pci_name(dev->pdev), dev->unique);
 	} else {
 		DRM_PROC_PRINT("%s %s\n", dev->driver->pci_driver.name,
 			       pci_name(dev->pdev));
@@ -241,9 +241,7 @@ static int drm__vm_info(char *buf, char **start, off_t offset, int request,
 		DRM_PROC_PRINT("%4d 0x%08lx 0x%08lx %4.4s  0x%02x 0x%08x ",
 			       i,
 			       map->offset,
-			       map->size,
-			       type, map->flags,
-			       r_list->user_token);
+			       map->size, type, map->flags, r_list->user_token);
 
 		if (map->mtrr < 0) {
 			DRM_PROC_PRINT("none\n");
