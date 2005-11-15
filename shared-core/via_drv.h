@@ -28,11 +28,11 @@
 
 #define DRIVER_NAME		"via"
 #define DRIVER_DESC		"VIA Unichrome / Pro"
-#define DRIVER_DATE		"20051022"
+#define DRIVER_DATE		"20051115"
 
 #define DRIVER_MAJOR		2
 #define DRIVER_MINOR		7
-#define DRIVER_PATCHLEVEL	2
+#define DRIVER_PATCHLEVEL	3
 
 #include "via_verifier.h"
 

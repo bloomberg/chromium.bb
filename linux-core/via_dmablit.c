@@ -596,8 +596,9 @@ via_build_sg_info(drm_device_t *dev, drm_via_sg_info_t *vsg, drm_via_dmablit_t *
 	 */
 
 	if (((xfer->mem_stride - xfer->line_length) >= PAGE_SIZE) ||
-	    (xfer->mem_stride > 2048)) {
-		DRM_ERROR("Too large system memory stride.\n");
+	    (xfer->mem_stride > 2048*4)) {
+		DRM_ERROR("Too large system memory stride. Stride: %d, "
+			  "Length: %d\n", xfer->mem_stride, xfer->line_length);
 		return DRM_ERR(EINVAL);
 	}
 
@@ -630,7 +631,8 @@ via_build_sg_info(drm_device_t *dev, drm_via_sg_info_t *vsg, drm_via_dmablit_t *
 	        return DRM_ERR(EINVAL);
 	}
 #else
-	if ((((unsigned long)xfer->mem_addr & 15) || ((unsigned long)xfer->fb_addr & 15))) {
+	if ((((unsigned long)xfer->mem_addr & 15) || ((unsigned long)xfer->fb_addr & 3)) ||
+	    (xfer->mem_stride & 15) || (xfer->fb_stride & 3)) {
 		DRM_ERROR("Invalid DRM bitblt alignment.\n");
 	        return DRM_ERR(EINVAL);
 	}	
