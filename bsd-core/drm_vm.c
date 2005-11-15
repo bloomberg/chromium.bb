@@ -37,6 +37,11 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 	drm_local_map_t *map;
 	drm_file_t *priv;
 	drm_map_type_t type;
+#ifdef __FreeBSD__
+	vm_paddr_t phys;
+#else
+	paddr_t phys;
+#endif
 
 	DRM_LOCK();
 	priv = drm_find_file_by_proc(dev, DRM_CURPROC);
@@ -102,25 +107,25 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 	case _DRM_FRAME_BUFFER:
 	case _DRM_REGISTERS:
 	case _DRM_AGP:
-#if defined(__FreeBSD__) && __FreeBSD_version >= 500102
-		*paddr = offset;
-		return 0;
-#else
-		return atop(offset);
-#endif
+		phys = offset;
+		break;
+	case _DRM_CONSISTENT:
+		phys = vtophys((char *)map->handle + (offset - map->offset));
+		break;
 	case _DRM_SCATTER_GATHER:
 	case _DRM_SHM:
-#if defined(__FreeBSD__) && __FreeBSD_version >= 500102
-		*paddr = vtophys(offset);
-		return 0;
-#else
-		return atop(vtophys(offset));
-#endif
+		phys = vtophys(offset);
+		break;
 	default:
+		DRM_ERROR("bad map type %d\n", type);
 		return -1;	/* This should never happen. */
 	}
-	DRM_DEBUG("bailing out\n");
 
-	return -1;
+#if defined(__FreeBSD__) && __FreeBSD_version >= 500102
+	*paddr = phys;
+	return 0;
+#else
+	return atop(phys);
+#endif
 }
 
