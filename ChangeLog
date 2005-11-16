@@ -1,3 +1,26 @@
+2005-11-16  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheProduce):
+	* src/fccharset.c (FcCharSetDistributeBytes):
+	* src/fcfs.c (FcFontSetDistributeBytes):
+	* src/fcint.h:
+	* src/fclang.c (FcLangSetDistributeBytes):
+	* src/fcname.c (FcObjectDistributeBytes):
+	* src/fcpat.c (FcPatternNeededBytes, FcValueListNeededBytes,
+		FcStrNeededBytes):
+	
+	Add *NeededBytesAlign(), which overestimates the padding which is
+	later added by the new ALIGN macro.  Fix alignment problems on
+	ia64 and s390 by bumping up block_ptr appropriately.  (Earlier
+	version by Andreas Schwab).
+
+2005-11-16  Stephan Kulow  <coolo@kde.org>
+	reviewed by: plam
+	
+	* src/fccache.c:
+
+	Use sysconf to determine proper PAGESIZE value; this
+	appears to be POSIX-compliant. (reported by Andreas Schwab)
+
 2005-11-04  Patrick Lam  <plam@mit.edu>
 	* fc-lang/fc-lang.c:
 	* src/fccharset.c:

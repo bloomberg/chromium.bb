@@ -27,6 +27,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
@@ -415,6 +416,8 @@ typedef struct _FcFileTime {
 
 typedef struct _FcCharMap FcCharMap;
 
+#define ALIGN(v,type) ((__typeof__(v))(((uintptr_t)(v) + __alignof__(type) - 1) & ~(__alignof__(type) - 1)))
+
 /* fcblanks.c */
 
 /* fccache.c */
@@ -550,6 +553,9 @@ FcCharSetNewBank (void);
 int
 FcCharSetNeededBytes (const FcCharSet *c);
 
+int
+FcCharSetNeededBytesAlign (void);
+
 void *
 FcCharSetDistributeBytes (FcCache * metadata,
 			  void * block_ptr);
@@ -646,6 +652,9 @@ FcFontSetNewBank (void);
 int
 FcFontSetNeededBytes (FcFontSet *s);
 
+int
+FcFontSetNeededBytesAlign (void);
+
 void *
 FcFontSetDistributeBytes (FcCache * metadata, void * block_ptr);
 
@@ -741,6 +750,9 @@ FcLangSetNewBank (void);
 int
 FcLangSetNeededBytes (const FcLangSet *l);
 
+int
+FcLangSetNeededBytesAlign (void);
+
 void *
 FcLangSetDistributeBytes (FcCache * metadata,
 			  void * block_ptr);
@@ -773,6 +785,9 @@ FcObjectToPtr (const char * si);
 
 int
 FcObjectNeededBytes (void);
+
+int
+FcObjectNeededBytesAlign (void);
 
 void *
 FcObjectUnserialize (FcCache metadata, void *block_ptr);
@@ -836,6 +851,9 @@ FcPatternNewBank (void);
 
 int
 FcPatternNeededBytes (FcPattern *p);
+
+int
+FcPatternNeededBytesAlign (void);
 
 void *
 FcPatternDistributeBytes (FcCache * metadata, void * block_ptr);

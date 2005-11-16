@@ -332,12 +332,20 @@ FcObjectNeededBytes ()
     return num + sizeof(int);
 }
 
+int
+FcObjectNeededBytesAlign (void)
+{
+    return __alignof__ (int) + __alignof__ (char);
+}
+
 void *
 FcObjectDistributeBytes (FcCache * metadata, void * block_ptr)
 {
     *(int *)block_ptr = biggest_known_ntypes;
+    block_ptr = ALIGN (block_ptr, int);
     block_ptr = (int *) block_ptr + 1;
     biggest_ptr = block_ptr;
+    block_ptr = ALIGN (block_ptr, char);
     block_ptr = (char *) block_ptr + biggest_known_count;
     return block_ptr;
 }

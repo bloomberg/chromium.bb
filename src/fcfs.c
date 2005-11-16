@@ -108,9 +108,19 @@ FcFontSetNeededBytes (FcFontSet *s)
 	return 0;
 }
 
+/* Returns an overestimate of the number of bytes that
+ * might later get eaten up by padding in the ALIGN macro. */
+int
+FcFontSetNeededBytesAlign (void)
+{
+    return __alignof__(int) + 
+	FcPatternNeededBytesAlign () + FcObjectNeededBytesAlign ();
+}
+
 void *
 FcFontSetDistributeBytes (FcCache * metadata, void * block_ptr)
 {
+    block_ptr = ALIGN (block_ptr, int);
     fcfs_pat_count = (int *)block_ptr;
     block_ptr = (int *)block_ptr + 1;
     // we don't consume any bytes for the fontset itself,

@@ -1430,6 +1430,8 @@ static void
 FcStrNewBank (void);
 static int
 FcStrNeededBytes (const FcChar8 * s);
+static int
+FcStrNeededBytesAlign (void);
 static void *
 FcStrDistributeBytes (FcCache * metadata, void * block_ptr);
 static const FcChar8 *
@@ -1441,6 +1443,8 @@ static void
 FcValueListNewBank (void);
 static int
 FcValueListNeededBytes (FcValueList * vl);
+static int
+FcValueListNeededBytesAlign (void);
 static void *
 FcValueListDistributeBytes (FcCache * metadata, void *block_ptr);
 static FcValueListPtr
@@ -1477,6 +1481,13 @@ FcPatternNeededBytes (FcPattern * p)
     }
 
     return cum + sizeof (FcPattern) + sizeof(FcPatternElt)*p->num;
+}
+
+int
+FcPatternNeededBytesAlign (void)
+{
+    return __alignof__ (FcPattern) + __alignof__ (FcPatternElt) + 
+	FcValueListNeededBytesAlign ();
 }
 
 static FcBool
@@ -1525,12 +1536,14 @@ FcPatternDistributeBytes (FcCache * metadata, void * block_ptr)
 	return 0;
 
     fcpattern_ptr = 0;
+    block_ptr = ALIGN(block_ptr, FcPattern);
     fcpatterns[bi] = (FcPattern *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcPattern) * fcpattern_count));
     
     FcMemAlloc (FC_MEM_PATELT, sizeof (FcPatternElt) * fcpatternelt_count);
     fcpatternelt_ptr = 0;
+    block_ptr = ALIGN(block_ptr, FcPatternElt);
     fcpatternelts[bi] = (FcPatternElt *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcPatternElt) * fcpatternelt_count));
@@ -1603,12 +1616,14 @@ FcPatternUnserialize (FcCache metadata, void *block_ptr)
 	return FcFalse;
 
     FcMemAlloc (FC_MEM_PATTERN, sizeof (FcPattern) * metadata.pattern_count);
+    block_ptr = ALIGN(block_ptr, FcPattern);
     fcpatterns[bi] = (FcPattern *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcPattern) * metadata.pattern_count));
     
     FcMemAlloc (FC_MEM_PATELT, 
 		sizeof (FcPatternElt) * metadata.patternelt_count);
+    block_ptr = ALIGN(block_ptr, FcPatternElt);
     fcpatternelts[bi] = (FcPatternElt *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcPatternElt) * metadata.patternelt_count));
@@ -1660,6 +1675,13 @@ FcValueListNeededBytes (FcValueList *p)
     return cum;
 }
 
+static int
+FcValueListNeededBytesAlign (void)
+{
+    return FcCharSetNeededBytesAlign() + FcLangSetNeededBytesAlign() + 
+	FcStrNeededBytesAlign() + __alignof__ (FcValueList);
+}
+
 static FcBool
 FcValueListEnsureBank (int bi)
 {
@@ -1694,6 +1716,7 @@ FcValueListDistributeBytes (FcCache * metadata, void *block_ptr)
 
     FcMemAlloc (FC_MEM_VALLIST, sizeof (FcValueList) * fcvaluelist_count);
     fcvaluelist_ptr = 0;
+    block_ptr = ALIGN(block_ptr, FcValueList);
     fcvaluelists[bi] = (FcValueList *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcValueList) * fcvaluelist_count));
@@ -1774,6 +1797,7 @@ FcValueListUnserialize (FcCache metadata, void *block_ptr)
 
     FcMemAlloc (FC_MEM_VALLIST, 
 		sizeof (FcValueList) * metadata.valuelist_count);
+    block_ptr = ALIGN(block_ptr, FcValueList);
     fcvaluelists[bi] = (FcValueList *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcValueList) * metadata.valuelist_count));
@@ -1850,11 +1874,22 @@ FcStrNeededBytes (const FcChar8 * s)
     b->next = 0;
     b->hash = hash;
     strcpy ((char *) (b + 1), (char *)s);
+
+    /* Yes, the following line is convoluted.  However, it is
+     * incorrect to replace the with a memset, because the C
+     * specification doesn't guarantee that the null pointer is
+     * the same as the zero bit pattern. */
     *(char **)((char *) (b + 1) + strlen((char *)s) + 1) = 0;
     *p = b;
 
     fcstr_count += strlen((char *)s) + 1;
     return strlen((char *)s) + 1;
+}
+
+static int
+FcStrNeededBytesAlign (void)
+{
+    return __alignof__ (char);
 }
 
 static FcBool
@@ -1887,6 +1922,7 @@ FcStrDistributeBytes (FcCache * metadata, void * block_ptr)
 	return 0;
 
     FcMemAlloc (FC_MEM_STRING, sizeof (char) * fcstr_count);
+    block_ptr = ALIGN (block_ptr, FcChar8);
     static_strs[bi] = (FcChar8 *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + (sizeof (char) * fcstr_count));
     metadata->str_count = fcstr_count;

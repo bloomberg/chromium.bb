@@ -721,6 +721,12 @@ FcLangSetNeededBytes (const FcLangSet *l)
     return sizeof (FcLangSet);
 }
 
+int
+FcLangSetNeededBytesAlign (void)
+{
+    return __alignof__ (FcLangSet);
+}
+
 static FcBool
 FcLangSetEnsureBank (int bi)
 {
@@ -749,6 +755,7 @@ FcLangSetDistributeBytes (FcCache * metadata, void * block_ptr)
     if (!FcLangSetEnsureBank(bi))
 	return 0;
 
+    block_ptr = ALIGN(block_ptr, FcLangSet);
     langsets[bi] = block_ptr;
     block_ptr = (void *)((char *)block_ptr +
 			 langset_count * sizeof(FcLangSet));
@@ -778,6 +785,7 @@ FcLangSetUnserialize (FcCache metadata, void *block_ptr)
 	return 0;
 
     FcMemAlloc (FC_MEM_LANGSET, metadata.langset_count * sizeof(FcLangSet));
+    block_ptr = ALIGN(block_ptr, FcLangSet);
     langsets[bi] = (FcLangSet *)block_ptr;
     block_ptr = (void *)((char *)block_ptr +
 			 metadata.langset_count * sizeof(FcLangSet));

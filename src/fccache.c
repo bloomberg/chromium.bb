@@ -30,9 +30,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "fcint.h"
+#include <unistd.h>
 
 #define ENDIAN_TEST 0x12345678
-#define MACHINE_SIGNATURE_SIZE 9 + 5*19 + 1
+#define MACHINE_SIGNATURE_SIZE 9 + 5*20 + 1
 
 static off_t
 FcCacheSkipToArch (int fd, const char * arch);
@@ -417,7 +418,6 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     return FcFalse;
 }
 
-#define PAGESIZE 8192
 /* 
  * Find the next presumably-mmapable offset after the supplied file
  * position.
@@ -425,10 +425,13 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 static int
 FcCacheNextOffset(off_t w)
 {
-    if (w % PAGESIZE == 0) 
+    static long pagesize = -1;
+    if (pagesize == -1)
+	pagesize = sysconf(_SC_PAGESIZE);
+    if (w % pagesize == 0) 
 	return w;
     else
-	return ((w / PAGESIZE)+1)*PAGESIZE;
+	return ((w / pagesize)+1)*pagesize;
 }
 
 /* return the address of the segment for the provided arch,
@@ -801,7 +804,8 @@ FcDirCacheProduce (FcFontSet *set, FcCache *metadata)
 
     memset (metadata, 0, sizeof(FcCache));
     FcFontSetNewBank();
-    metadata->count = FcFontSetNeededBytes (set);
+    metadata->count = FcFontSetNeededBytes (set) + 
+	FcFontSetNeededBytesAlign ();
     metadata->magic = FC_CACHE_MAGIC;
     metadata->bank = bank;
 
@@ -943,12 +947,12 @@ static char *
 FcCacheMachineSignature ()
 {
     static char buf[MACHINE_SIGNATURE_SIZE];
-    int magic = ENDIAN_TEST;
+    int32_t magic = ENDIAN_TEST;
     char * m = (char *)&magic;
 
     sprintf (buf, "%2x%2x%2x%2x "
 	     "%4x %4x %4x %4x %4x %4x %4x %4x %4x %4x %4x %4x "
-	     "%4x %4x %4x %4x %4x %4x %4x\n", 
+	     "%4x %4x %4x %4x %4x %4x %4x %4x\n", 
 	     m[0], m[1], m[2], m[3],
 	     (unsigned int)sizeof (char),
 	     (unsigned int)sizeof (char *),
@@ -968,7 +972,8 @@ FcCacheMachineSignature ()
 	     (unsigned int)sizeof (FcChar16),
 	     (unsigned int)sizeof (FcCharLeaf),
 	     (unsigned int)sizeof (FcChar32),
-	     (unsigned int)sizeof (FcCache));
+	     (unsigned int)sizeof (FcCache),
+	     (unsigned int)sysconf(_SC_PAGESIZE));
 
     return buf;
 }

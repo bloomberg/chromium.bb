@@ -1331,6 +1331,13 @@ FcCharSetNeededBytes (const FcCharSet *c)
 	sizeof (FcChar16) * c->num; 	/* number */
 }
 
+int
+FcCharSetNeededBytesAlign (void)
+{
+    return __alignof__ (FcCharSet) + __alignof__ (int) + 
+	__alignof__ (FcCharLeaf) + __alignof__ (FcChar16);
+}
+
 static FcBool
 FcCharSetEnsureBank (int bi)
 {
@@ -1373,15 +1380,19 @@ FcCharSetDistributeBytes (FcCache * metadata, void * block_ptr)
 	return 0;
 
     charsets[bi] = (FcCharSet *)block_ptr;
+    block_ptr = ALIGN (block_ptr, FcCharSet);
     block_ptr = (void *)((char *)block_ptr + 
 		     (sizeof (FcCharSet) * charset_count));
     numbers[bi] = (FcChar16 *)block_ptr;
+    block_ptr = ALIGN (block_ptr, FcChar16);
     block_ptr = (void *)((char *)block_ptr + 
 		     (sizeof(FcChar16) * charset_numbers_count));
     leaves[bi] = (FcCharLeaf *)block_ptr;
+    block_ptr = ALIGN (block_ptr, FcCharLeaf);
     block_ptr = (void *)((char *)block_ptr +
 		     (sizeof(FcCharLeaf) * charset_leaf_count));
     leaf_idx[bi] = (int *)block_ptr;
+    block_ptr = ALIGN (block_ptr, int);
     block_ptr = (void *)((char *)block_ptr +
 		     (sizeof(int) * charset_leaf_idx_count));
 
