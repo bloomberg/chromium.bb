@@ -793,7 +793,7 @@ FcDirCacheProduce (FcFontSet *set, FcCache *metadata)
 {
     void * current_dir_block, * final_dir_block;
     static unsigned int rand_state = 0;
-    int bank;
+    int bank, needed_bytes_no_align;
 
     if (!rand_state) 
 	rand_state = time(0L);
@@ -804,20 +804,27 @@ FcDirCacheProduce (FcFontSet *set, FcCache *metadata)
 
     memset (metadata, 0, sizeof(FcCache));
     FcFontSetNewBank();
-    metadata->count = FcFontSetNeededBytes (set) + 
+    needed_bytes_no_align = FcFontSetNeededBytes (set);
+    metadata->count = needed_bytes_no_align + 
 	FcFontSetNeededBytesAlign ();
     metadata->magic = FC_CACHE_MAGIC;
     metadata->bank = bank;
 
-    if (!metadata->count) /* not a failure, no fonts to write */
+    if (!needed_bytes_no_align) /* not a failure, no fonts to write */
+    {
+	/* no, you don't really need to write any bytes at all. */
+	metadata->count = 0;
 	return 0;
+    }
 
     current_dir_block = malloc (metadata->count);
     if (!current_dir_block)
 	goto bail;
+    // shut up valgrind
+    memset (current_dir_block, 0, metadata->count);
     final_dir_block = FcFontSetDistributeBytes (metadata, current_dir_block);
 
-    if ((char *)current_dir_block + metadata->count != final_dir_block)
+    if ((void *)((char *)current_dir_block+metadata->count) < final_dir_block)
 	goto bail;
 			      
     if (!FcFontSetSerialize (bank, set))

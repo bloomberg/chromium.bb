@@ -1,4 +1,11 @@
 2005-11-16  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheProduce)
+	
+	Fix case where alignment bytes bumped up metadata->count
+	causing unwarranted failures to write cache files.  
+	(Reported by Stephan Kulow).
+
+2005-11-16  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheProduce):
 	* src/fccharset.c (FcCharSetDistributeBytes):
 	* src/fcfs.c (FcFontSetDistributeBytes):
