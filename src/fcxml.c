@@ -588,6 +588,10 @@ FcTypecheckExpr (FcConfigParse *parse, FcExpr *expr, FcType type)
 	    if (o)
 		FcTypecheckValue (parse, o->type, type);
 	}
+        else 
+            FcConfigMessage (parse, FcSevereWarning, 
+                             "invalid constant used : %s",
+                             expr->u.constant);
 	break;
     case FcOpQuest:
 	FcTypecheckExpr (parse, expr->u.tree.left, FcTypeBool);

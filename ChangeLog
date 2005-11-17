@@ -1,3 +1,10 @@
+2005-11-17  Frederic Crozat  <fcrozat@mandriva.com>
+	reviewed by: plam
+
+	* src/fcxml.c (FcTypecheckExpr):
+
+	Complain about invalid constants in config files.
+
 2005-11-17  Andreas Schwab  <schwab@suse.de>
 	reviewed by: plam
 	
