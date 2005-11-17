@@ -341,11 +341,11 @@ FcObjectNeededBytesAlign (void)
 void *
 FcObjectDistributeBytes (FcCache * metadata, void * block_ptr)
 {
-    *(int *)block_ptr = biggest_known_ntypes;
     block_ptr = ALIGN (block_ptr, int);
+    *(int *)block_ptr = biggest_known_ntypes;
     block_ptr = (int *) block_ptr + 1;
-    biggest_ptr = block_ptr;
     block_ptr = ALIGN (block_ptr, char);
+    biggest_ptr = block_ptr;
     block_ptr = (char *) block_ptr + biggest_known_count;
     return block_ptr;
 }
@@ -367,6 +367,7 @@ FcObjectUnserialize (FcCache metadata, void *block_ptr)
 {
     int new_biggest;
     new_biggest = *(int *)block_ptr;
+    block_ptr = ALIGN (block_ptr, int);
     block_ptr = (int *) block_ptr + 1;
     if (biggest_known_ntypes < new_biggest)
     {
@@ -409,6 +410,7 @@ FcObjectUnserialize (FcCache metadata, void *block_ptr)
 	biggest_known_ntypes = new_biggest;
 	biggest_known_types = (const FcObjectType *)bn;
     }
+    block_ptr = ALIGN (block_ptr, char);
     block_ptr = (char *) block_ptr + biggest_known_count;
     return block_ptr;
 }

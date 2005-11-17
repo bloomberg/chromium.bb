@@ -1,3 +1,19 @@
+2005-11-17  Andreas Schwab  <schwab@suse.de>
+	reviewed by: plam
+	
+	* src/fccache.c (FcGlobalCacheSave): 
+
+	Don't add current_arch_start more than once.
+
+2005-11-16  Patrick Lam  <plam@mit.edu>
+	* src/fccharset.c (FcCharSetDistributeBytes, FcCharSetUnserialize):
+	* src/fcfs.c (FcFontSetUnserialize):
+	* src/fcname.c (FcObjectDistributeBytes, FcObjectUnserialize):
+	* src/fcpat.c (FcStrUnserialize):
+
+	Fix ordering of ALIGN with respect to saving block_ptr; add
+	another ALIGN to fcfs.c.
+
 2005-11-16  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheProduce)
 	

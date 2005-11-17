@@ -367,7 +367,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     {
 	truncate_to += strlen(dir->name) + 1;
 	truncate_to += sizeof (FcCache);
-	truncate_to = FcCacheNextOffset (current_arch_start + truncate_to);
+	truncate_to = FcCacheNextOffset (truncate_to);
 	truncate_to += dir->metadata.count;
     }
     truncate_to -= current_arch_start;

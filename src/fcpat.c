@@ -1963,6 +1963,7 @@ FcStrUnserialize (FcCache metadata, void *block_ptr)
 	return 0;
 
     FcMemAlloc (FC_MEM_STRING, sizeof (char) * metadata.str_count);
+    block_ptr = ALIGN (block_ptr, FcChar8);
     static_strs[bi] = (FcChar8 *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (char) * metadata.str_count));

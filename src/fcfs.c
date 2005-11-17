@@ -155,6 +155,7 @@ FcFontSetUnserialize(FcCache metadata, FcFontSet * s, void * block_ptr)
     int nfont;
     int i, n;
 
+    block_ptr = ALIGN (block_ptr, int);
     nfont = *(int *)block_ptr;
     block_ptr = (int *)block_ptr + 1;
 
@@ -174,10 +175,17 @@ FcFontSetUnserialize(FcCache metadata, FcFontSet * s, void * block_ptr)
     if (nfont > 0)
     {
 	FcPattern * p = (FcPattern *)block_ptr;
-	block_ptr = FcPatternUnserialize (metadata, block_ptr);
+
+        /* The following line is a bit counterintuitive.  The usual
+         * convention is that FcPatternUnserialize is responsible for
+         * aligning the FcPattern.  However, the FontSet also stores
+         * the FcPatterns in its own array, so we need to align here
+         * too. */
+        p = ALIGN(p, FcPattern);
 	for (i = 0; i < nfont; i++)
 	    s->fonts[n + i] = p+i;
 
+	block_ptr = FcPatternUnserialize (metadata, block_ptr);
 	block_ptr = FcObjectUnserialize (metadata, block_ptr);
     }
 
