@@ -1121,6 +1121,7 @@ FcConfigValues (FcPattern *p, FcExpr *e, FcValueBinding binding)
 	    free (l);
 	}
 	lp = next;
+        l = FcValueListPtrU (lp);
     }
     return l;
 }
