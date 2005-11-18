@@ -1091,7 +1091,6 @@ static FcValueList *
 FcConfigValues (FcPattern *p, FcExpr *e, FcValueBinding binding)
 {
     FcValueList	*l;
-    FcValueListPtr lp;
     
     if (!e)
 	return 0;
@@ -1110,19 +1109,15 @@ FcConfigValues (FcPattern *p, FcExpr *e, FcValueBinding binding)
 	l->next  = FcValueListPtrCreateDynamic(0);
     }
     l->binding = binding;
-    lp = FcValueListPtrCreateDynamic(l);
-    while (FcValueListPtrU(lp) && FcValueListPtrU(lp)->value.type == FcTypeVoid)
+    if (l->value.type == FcTypeVoid)
     {
-	FcValueListPtr	next = FcValueListPtrU(lp)->next;
+	FcValueList  *next = FcValueListPtrU(l->next);
 
-	if (lp.bank == FC_BANK_DYNAMIC)
-	{
-	    FcMemFree (FC_MEM_VALLIST, sizeof (FcValueList));
-	    free (l);
-	}
-	lp = next;
-        l = FcValueListPtrU (lp);
+	FcMemFree (FC_MEM_VALLIST, sizeof (FcValueList));
+	free (l);
+	l = next;
     }
+
     return l;
 }
 

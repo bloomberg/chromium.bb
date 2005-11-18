@@ -1,3 +1,12 @@
+2005-10-25  Jinghua Luo  <sunmoon1997@gmail.com>
+	reviewed by: plam
+
+	* src/fccfg.c (FcConfigValues):
+
+	List iteration not needed in FcConfigValues, since it's building
+	up the list itself; we can just strip FcVoid elements during
+	construction.
+
 2005-11-17  Patrick Lam  <plam@mit.edu>
 	* src/fccfg.c (FcConfigValues):
 
