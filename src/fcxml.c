@@ -933,7 +933,7 @@ FcConfigSaveAttr (const XML_Char **attr)
 	return 0;
     slen = 0;
     for (i = 0; attr[i]; i++)
-	slen += strlen (attr[i]) + 1;
+	slen += strlen ((char *) attr[i]) + 1;
     n = i;
     new = malloc ((i + 1) * sizeof (FcChar8 *) + slen);
     if (!new)
@@ -2385,9 +2385,10 @@ FcConfigParseAndLoad (FcConfig	    *config,
 	printf ("\tLoading config file %s\n", filename);
 
     f = fopen ((char *) filename, "r");
-    FcStrFree (filename);
-    if (!f)
+    if (!f) { 
+	FcStrFree (filename);
 	goto bail0;
+    }
     
 #if ENABLE_LIBXML2
     memset(&sax, 0, sizeof(sax));
@@ -2398,10 +2399,11 @@ FcConfigParseAndLoad (FcConfig	    *config,
     sax.endElement = FcEndElement;
     sax.characters = FcCharacterData;
 
-    p = xmlCreatePushParserCtxt (&sax, &parse, NULL, 0, filename);
+    p = xmlCreatePushParserCtxt (&sax, &parse, NULL, 0, (const char *) filename);
 #else
     p = XML_ParserCreate ("UTF-8");
 #endif
+    FcStrFree (filename);
 
     if (!p)
 	goto bail1;

@@ -1,4 +1,19 @@
-2005-10-25  Jinghua Luo  <sunmoon1997@gmail.com>
+2005-11-18  Frederic Crozat  <fcrozat@mandriva.com>
+	reviewed by: plam
+
+	* fc-cat/fc-cat.c (main):
+
+	Don't crash when fc-cat invoked with no arguments.
+
+2005-11-18  Frederic Crozat  <fcrozat@mandriva.com>
+	reviewed by: plam
+
+	* src/fcxml.c (FcConfigSaveAttr, FcConfigParseAndLoad):
+
+	Fix invalid read access caused by premature free and
+	GCC4 warnings in libxml2 codepath.
+
+2005-11-17  Jinghua Luo  <sunmoon1997@gmail.com>
 	reviewed by: plam
 
 	* src/fccfg.c (FcConfigValues):

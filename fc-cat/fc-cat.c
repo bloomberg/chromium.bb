@@ -325,6 +325,9 @@ main (int argc, char **argv)
     i = 1;
 #endif
 
+    if (i >= argc)
+        usage (argv[0]);
+
     if (FcCacheFileRead (fs, dirs, dirname (strdup(argv[i])), argv[i]))
 	FcCachePrintSet (fs, dirs, argv[i]);
 
