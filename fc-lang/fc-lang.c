@@ -227,16 +227,18 @@ main (int argc, char **argv)
     char	*files[MAX_LANG];
     FcCharSet	*sets[MAX_LANG];
     int		duplicate[MAX_LANG];
+    int		offsets[MAX_LANG];
     int		country[MAX_LANG];
     char	*names[MAX_LANG];
     char	*langs[MAX_LANG];
     FILE	*f;
+    int         offset = 0;
     int		ncountry = 0;
     int		i = 0;
     int		argi;
     FcCharLeaf	**leaves;
     int		total_leaves = 0;
-    int		leafidx_count = 0, numbers_count = 0, numbers_ptr = 0;
+    int		offset_count = 0;
     int		l, sl, tl;
     int		c;
     char	line[1024];
@@ -374,13 +376,14 @@ main (int argc, char **argv)
 		    break;
 	    if (l == tl)
 		fatal (names[i], 0, "can't find leaf");
-            leafidx_count++;
-            numbers_count += sets[i]->num;
+	    offset_count++;
 	}
+	offsets[i] = offset;
+	offset += sets[i]->num;
     }
 
     printf ("const int langBankLeafIdx[%d] = {\n",
-	    leafidx_count);
+	    offset_count);
     for (i = 0; sets[i]; i++)
     {
 	int n;
@@ -406,11 +409,14 @@ main (int argc, char **argv)
     printf ("};\n\n");
 
     printf ("const FcChar16 langBankNumbers[%d] = {\n",
-	    numbers_count);
+	    offset_count);
 
     for (i = 0; sets[i]; i++)
     {
 	int n;
+
+	if (duplicate[i] >= 0)
+	    continue;
 	for (n = 0; n < sets[i]->num; n++)
 	{
 	    if (n % 8 == 0)
@@ -438,10 +444,9 @@ main (int argc, char **argv)
 
 	printf ("    { (FcChar8 *) \"%s\",\n"
 		"      { FC_REF_CONSTANT, %d, FC_BANK_LANGS, "
-		"{ .stat = { %d, %d } } } },\n",
+		"{ .stat = { %d, %d } } } }, /* %d */\n",
 		langs[i],
-		sets[j]->num, j, numbers_ptr);
-        numbers_ptr += sets[i]->num;
+		sets[j]->num, offsets[j], offsets[j], j);
     }
     printf ("};\n\n");
     printf ("#define NUM_LANG_CHAR_SET	%d\n", i);
