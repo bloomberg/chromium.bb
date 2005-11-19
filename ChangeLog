@@ -4,6 +4,8 @@
 	* src/Makefile.am:
 	* src/fcfreetype.c (FcGetPixelSize, FcFreeTypeQuery, GetScriptTags,
 	                    FcFontCapabilities):
+	* src/ftglue.c:
+	* src/ftglue.h:
 
 	Get rid of the use of freetype internal headers in fcfreetype.c,
 	since those headers will go away with freetype 2.2.  Replace with
