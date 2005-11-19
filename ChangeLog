@@ -1,3 +1,16 @@
+2005-11-19  Matthias Clasen  <mclasen@redhat.com>
+	reviewed by: plam
+
+	* src/Makefile.am:
+	* src/fcfreetype.c (FcGetPixelSize, FcFreeTypeQuery, GetScriptTags,
+	                    FcFontCapabilities):
+
+	Get rid of the use of freetype internal headers in fcfreetype.c,
+	since those headers will go away with freetype 2.2.  Replace with
+	public domain ftglue code from pango.  Note that the patch removes
+	some extra error checking in FT_Get_BDF_Property() and comments
+	out the skipping of empty pcf fonts.
+
 2005-11-19  Jinghua Luo  <sunmoon1997@gmail.com>
 	reviewed by: plam
 

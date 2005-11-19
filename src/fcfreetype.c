@@ -51,27 +51,19 @@
 #include "fcint.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include FT_INTERNAL_OBJECTS_H
 #include FT_TRUETYPE_TABLES_H
 #include FT_SFNT_NAMES_H
 #include FT_TRUETYPE_IDS_H
 #include FT_TYPE1_TABLES_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_INTERNAL_TRUETYPE_TYPES_H
 #if HAVE_FT_GET_X11_FONT_FORMAT
 #include FT_XFREE86_H
 #endif
-
 #if HAVE_FT_GET_BDF_PROPERTY
 #include FT_BDF_H
 #include FT_MODULE_H
-#define HAS_BDF_PROPERTY(f) ((f) && (f)->driver && \
-			     (f)->driver->root.clazz->get_interface)
-#define MY_Get_BDF_Property(f,n,p) (HAS_BDF_PROPERTY(f) ? \
-				    FT_Get_BDF_Property(f,n,p) : \
-				    FT_Err_Invalid_Argument)
 #endif
+
+#include "ftglue.h"
 
 #if !HAVE_FT_GET_BDF_PROPERTY
 #warning "No FT_Get_BDF_Property: Please install freetype 2.1.4 or later"
@@ -963,7 +955,7 @@ FcGetPixelSize (FT_Face face, int i)
 	BDF_PropertyRec	prop;
 	int		rc;
 
-	rc = MY_Get_BDF_Property (face, "PIXEL_SIZE", &prop);
+	rc = FT_Get_BDF_Property (face, "PIXEL_SIZE", &prop);
 	if (rc == 0 && prop.type == BDF_PROPERTY_TYPE_INTEGER)
 	    return (double) prop.u.integer;
     }
@@ -1442,14 +1434,14 @@ FcFreeTypeQuery (const FcChar8	*file,
     {
 	int             rc;
 	BDF_PropertyRec prop;
-	rc = MY_Get_BDF_Property(face, "FOUNDRY", &prop);
+	rc = FT_Get_BDF_Property(face, "FOUNDRY", &prop);
 	if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_ATOM)
 	    foundry = (FcChar8 *) prop.u.atom;
     }
 
     if (width == -1)
     {
-	if (MY_Get_BDF_Property(face, "RELATIVE_SETWIDTH", &prop) == 0 &&
+	if (FT_Get_BDF_Property(face, "RELATIVE_SETWIDTH", &prop) == 0 &&
 	    (prop.type == BDF_PROPERTY_TYPE_INTEGER ||
 	     prop.type == BDF_PROPERTY_TYPE_CARDINAL))
 	{
@@ -1472,7 +1464,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    }
 	}
 	if (width == -1 &&
-	    MY_Get_BDF_Property (face, "SETWIDTH_NAME", &prop) == 0 &&
+	    FT_Get_BDF_Property (face, "SETWIDTH_NAME", &prop) == 0 &&
 	    prop.type == BDF_PROPERTY_TYPE_ATOM)
 	{
 	    width = FcIsWidth ((FcChar8 *) prop.u.atom);
@@ -1552,7 +1544,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 #if HAVE_FT_GET_BDF_PROPERTY
     /* For PCF fonts, override the computed spacing with the one from
        the property */
-    if(MY_Get_BDF_Property(face, "SPACING", &prop) == 0 &&
+    if(FT_Get_BDF_Property(face, "SPACING", &prop) == 0 &&
        prop.type == BDF_PROPERTY_TYPE_ATOM) {
         if(!strcmp(prop.u.atom, "c") || !strcmp(prop.u.atom, "C"))
             spacing = FC_CHARCELL;
@@ -1563,6 +1555,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     }
 #endif
 
+#if 0
     /*
      * Skip over PCF fonts that have no encoded characters; they're
      * usually just Unicode fonts transcoded to some legacy encoding
@@ -1572,6 +1565,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 	if (!strcmp(FT_MODULE_CLASS(&face->driver->root)->module_name, "pcf"))
 	    goto bail2;
     }
+#endif
 
     if (!FcPatternAddCharSet (pat, FC_CHARSET, cs))
 	goto bail2;
@@ -1606,7 +1600,7 @@ FcFreeTypeQuery (const FcChar8	*file,
             int value;
             BDF_PropertyRec prop;
 
-            rc = MY_Get_BDF_Property(face, "POINT_SIZE", &prop);
+            rc = FT_Get_BDF_Property(face, "POINT_SIZE", &prop);
             if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_INTEGER)
                 value = prop.u.integer;
             else if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_CARDINAL)
@@ -1616,7 +1610,7 @@ FcFreeTypeQuery (const FcChar8	*file,
             if(!FcPatternAddDouble(pat, FC_SIZE, value / 10.0))
                 goto nevermind;
 
-            rc = MY_Get_BDF_Property(face, "RESOLUTION_Y", &prop);
+            rc = FT_Get_BDF_Property(face, "RESOLUTION_Y", &prop);
             if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_INTEGER)
                 value = prop.u.integer;
             else if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_CARDINAL)
@@ -2734,7 +2728,6 @@ static FT_Error
 GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *script_count)
 {
     FT_ULong         cur_offset, new_offset, base_offset;
-    TT_Face          tt_face = (TT_Face)face;
     FT_Stream  stream = face->stream;
     FT_Error   error;
     FT_UShort          n, p;
@@ -2743,51 +2736,53 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
     if ( !stream )
 	return TT_Err_Invalid_Face_Handle;
 
-    if (( error = tt_face->goto_table( tt_face, tabletag, stream, 0 ) ))
+    if (( error = ftglue_face_goto_table( face, tabletag, stream ) ))
 	return error;
 
-    base_offset = FT_STREAM_POS();
+    base_offset = ftglue_stream_pos ( stream );
 
     /* skip version */
 
-    if ( FT_STREAM_SEEK( base_offset + 4L ) || FT_FRAME_ENTER( 2L ) )
+    if ( ftglue_stream_seek ( stream, base_offset + 4L ) || ftglue_stream_frame_enter( stream, 2L ) )
 	return error;
 
-    new_offset = FT_GET_USHORT() + base_offset;
+    new_offset = ((FT_UShort)ftglue_stream_get_short ( stream )) + base_offset;
 
-    FT_FRAME_EXIT();
+    ftglue_stream_frame_exit( stream );
 
-    cur_offset = FT_STREAM_POS();
+    cur_offset = ftglue_stream_pos( stream );
 
-    if ( FT_STREAM_SEEK( new_offset ) != TT_Err_Ok )
+    if ( ftglue_stream_seek( stream, new_offset ) != TT_Err_Ok )
 	return error;
 
-    base_offset = FT_STREAM_POS();
+    base_offset = ftglue_stream_pos( stream );
 
-    if ( FT_FRAME_ENTER( 2L ) )
+    if ( ftglue_stream_frame_enter( stream, 2L ) )
 	return error;
 
-    *script_count = FT_GET_USHORT();
+    *script_count = ((FT_UShort)ftglue_stream_get_short ( stream ));
 
-    FT_FRAME_EXIT();
+    ftglue_stream_frame_exit( stream );
 
-    if ( FT_SET_ERROR (FT_MEM_ALLOC_ARRAY( *stags, *script_count, FT_ULong )) )
+    *stags = ftglue_alloc(memory, *script_count * sizeof( FT_ULong ), &error);
+
+    if (error)
 	return error;
 
     p = 0;
     for ( n = 0; n < *script_count; n++ )
     {
-	if ( FT_FRAME_ENTER( 6L ) )
+        if ( ftglue_stream_frame_enter( stream, 6L ) )
 	    goto Fail;
 
-	(*stags)[p] = FT_GET_ULONG();
-	new_offset = FT_GET_USHORT() + base_offset;
+	(*stags)[p] = ((FT_ULong)ftglue_stream_get_long ( stream ));
+	new_offset = ((FT_UShort)ftglue_stream_get_short ( stream )) + base_offset;
 
-	FT_FRAME_EXIT();
+        ftglue_stream_frame_exit( stream );
 
-	cur_offset = FT_STREAM_POS();
+	cur_offset = ftglue_stream_pos( stream );
 
-	if ( FT_STREAM_SEEK( new_offset ) )
+	if ( ftglue_stream_seek( stream, new_offset ) )
 	    goto Fail;
 
 	if ( error == TT_Err_Ok )
@@ -2795,7 +2790,7 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
 	else if ( error != TTO_Err_Empty_Script )
 	    goto Fail;
 
-	(void)FT_STREAM_SEEK( cur_offset );
+	(void)ftglue_stream_seek( stream, cur_offset );
     }
 
     if (!p)
@@ -2811,7 +2806,7 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
 
 Fail:
     *script_count = 0;
-    FT_FREE( *stags );
+    ftglue_free( memory, *stags );
     return error;
 }
 
@@ -2868,7 +2863,7 @@ FcFontCapabilities(FT_Face face)
     if (FcDebug () & FC_DBG_SCANV)
 	printf("complex features in this font: %s\n", complex);
 bail:
-    FT_FREE(gsubtags);
-    FT_FREE(gpostags);
+    ftglue_free(memory, gsubtags);
+    ftglue_free(memory, gpostags);
     return complex;
 }

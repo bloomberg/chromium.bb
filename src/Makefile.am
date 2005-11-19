@@ -95,7 +95,9 @@ libfontconfig_la_SOURCES = \
 	fcname.c \
 	fcpat.c \
 	fcstr.c \
-	fcxml.c
+	fcxml.c \
+	ftglue.h \
+	ftglue.c
 
 lib_LTLIBRARIES = libfontconfig.la
 
