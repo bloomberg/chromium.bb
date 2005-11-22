@@ -254,7 +254,8 @@ FcCompareValueList (const char  *object,
 		    double	*value,
 		    FcResult	*result)
 {
-    FcValueListPtr v1, v2;
+    FcValueListPtr  v1, v2;
+    FcValueList     *v1_ptrU, *v2_ptrU;
     double    	    v, best, bestStrong, bestWeak;
     int		    i;
     int		    j;
@@ -336,15 +337,15 @@ FcCompareValueList (const char  *object,
     bestStrong = 1e99;
     bestWeak = 1e99;
     j = 0;
-    for (v1 = v1orig; FcValueListPtrU(v1); 
-	 v1 = FcValueListPtrU(v1)->next)
+    for (v1 = v1orig, v1_ptrU = FcValueListPtrU(v1); v1_ptrU;
+	 v1 = FcValueListPtrU(v1)->next, v1_ptrU = FcValueListPtrU(v1))
     {
-	for (v2 = v2orig; FcValueListPtrU(v2); 
+	for (v2 = v2orig, v2_ptrU = FcValueListPtrU(v2); FcValueListPtrU(v2); 
 	     v2 = FcValueListPtrU(v2)->next)
 	{
 	    v = (*_FcMatchers[i].compare) (_FcMatchers[i].object,
-					    &FcValueListPtrU(v1)->value,
-					    &FcValueListPtrU(v2)->value);
+					   &v1_ptrU->value,
+					   &v2_ptrU->value);
 	    if (v < 0)
 	    {
 		*result = FcResultTypeMismatch;
@@ -356,10 +357,10 @@ FcCompareValueList (const char  *object,
 	    if (v < best)
 	    {
 		if (bestValue)
-		    *bestValue = FcValueCanonicalize(&FcValueListPtrU(v2)->value);
+		    *bestValue = FcValueCanonicalize(&v2_ptrU->value);
 		best = v;
 	    }
-	    if (FcValueListPtrU(v1)->binding == FcValueBindingStrong)
+	    if (v1_ptrU->binding == FcValueBindingStrong)
 	    {
 		if (v < bestStrong)
 		    bestStrong = v;

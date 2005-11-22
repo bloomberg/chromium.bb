@@ -74,7 +74,6 @@ FcStrFree (FcChar8 *s)
 typedef struct _FcCaseWalker {
     const FcChar8   *read;
     const FcChar8   *src;
-    int		    len;
     FcChar8	    utf8[FC_MAX_CASE_FOLD_CHARS + 1];
 } FcCaseWalker;
 
@@ -83,7 +82,6 @@ FcStrCaseWalkerInit (const FcChar8 *src, FcCaseWalker *w)
 {
     w->src = src;
     w->read = 0;
-    w->len = strlen ((char *) src);
 }
 
 static FcChar8
@@ -91,8 +89,9 @@ FcStrCaseWalkerLong (FcCaseWalker *w, FcChar8 r)
 {
     FcChar32	ucs4;
     int		slen;
+    int		len = strlen((char*)w->src);
 
-    slen = FcUtf8ToUcs4 (w->src - 1, &ucs4, w->len + 1);
+    slen = FcUtf8ToUcs4 (w->src - 1, &ucs4, len + 1);
     if (slen <= 0)
 	return r;
     if (FC_MIN_FOLD_CHAR <= ucs4 && ucs4 <= FC_MAX_FOLD_CHAR)
@@ -131,7 +130,6 @@ FcStrCaseWalkerLong (FcCaseWalker *w, FcChar8 r)
 		
 		/* consume rest of src utf-8 bytes */
 		w->src += slen - 1;
-		w->len -= slen - 1;
 		
 		/* read from temp buffer */
 		w->utf8[dlen] = '\0';
@@ -155,7 +153,6 @@ FcStrCaseWalkerNext (FcCaseWalker *w)
 	w->read = 0;
     }
     r = *w->src++;
-    --w->len;
     
     if ((r & 0xc0) == 0xc0)
 	return FcStrCaseWalkerLong (w, r);
@@ -178,7 +175,6 @@ FcStrCaseWalkerNextIgnoreBlanks (FcCaseWalker *w)
     do
     {
 	r = *w->src++;
-	--w->len;
     } while (r == ' ');
     
     if ((r & 0xc0) == 0xc0)
