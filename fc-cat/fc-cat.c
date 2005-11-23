@@ -228,6 +228,7 @@ FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *cache_file)
     FcPattern	    *font;
     FcChar8	    *name, *dir;
     const FcChar8   *file, *base;
+    int		    ret;
     int		    n;
     int		    id;
     FcStrList	    *list;
@@ -298,7 +299,6 @@ int
 main (int argc, char **argv)
 {
     int		i;
-    int		ret;
 #if HAVE_GETOPT_LONG || HAVE_GETOPT
     int		c;
     FcFontSet	*fs = FcFontSetCreate();
