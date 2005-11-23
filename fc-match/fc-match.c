@@ -99,7 +99,7 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "Vv?", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "sVv?", longopts, NULL)) != -1)
 #else
     while ((c = getopt (argc, argv, "sVv?")) != -1)
 #endif
