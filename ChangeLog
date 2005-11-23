@@ -1,3 +1,10 @@
+2005-11-23  Frederic Crozat  <fcrozat@mandriva.com>:
+	reviewed by: plam
+	
+	* fc-match/fc-match.c (main):
+
+	Make getopt_long accept -s parameter to fc-match as well.
+
 2005-10-05  Christian Biesinger  <cbiesinger@web.de>
         reviewed by: plam & keithp
 
