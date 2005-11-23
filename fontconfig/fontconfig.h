@@ -224,7 +224,7 @@ typedef struct _FcValue {
 	void		*f;
 	const FcPattern	*p;
 	const FcLangSet *l;
-	int		l_off; // this is a difference of char *s
+	int		l_off; /* this is a difference of char *s */
     } u;
 } FcValue;
 

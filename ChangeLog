@@ -1,6 +1,14 @@
 2005-11-23  Frederic Crozat  <fcrozat@mandriva.com>:
 	reviewed by: plam
 	
+	* fontconfig/fontconfig.h:
+	* fc-cat/fc-cat.c:
+
+	Minor code warning cleanups.
+
+2005-11-23  Frederic Crozat  <fcrozat@mandriva.com>:
+	reviewed by: plam
+	
 	* fc-match/fc-match.c (main):
 
 	Make getopt_long accept -s parameter to fc-match as well.

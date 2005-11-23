@@ -230,7 +230,6 @@ FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *cache_file)
     const FcChar8   *file, *base;
     int		    n;
     int		    id;
-    FcBool	    ret;
     FcStrList	    *list;
 
     list = FcStrListCreate (dirs);
