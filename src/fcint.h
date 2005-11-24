@@ -100,6 +100,8 @@
 
 #define FC_MEM_NUM	    30
 
+#define FC_BANK_DYNAMIC 0
+#define FC_BANK_FIRST 1
 #define FC_BANK_LANGS	    0xfcfcfcfc
 
 typedef enum _FcValueBinding {
@@ -309,6 +311,7 @@ typedef struct _FcCaseFold {
 #define fc_value_string(v)  (((v)->type & FC_STORAGE_STATIC) ? ((FcChar8 *) v) + (v)->u.s_off : (v) -> u.s)
 #define fc_value_charset(v)  (((v)->type & FC_STORAGE_STATIC) ? (const FcCharSet *)(((char *) v) + (v)->u.c_off) : (v) -> u.c)
 #define fc_value_langset(v)  (((v)->type & FC_STORAGE_STATIC) ? (const FcLangSet *)(((char *) v) + (v)->u.l_off) : (v) -> u.l)
+#define fc_storage_type(v) ((v)->type & ~FC_STORAGE_STATIC)
 
 /*
  * The per-user ~/.fonts.cache-<version> file is loaded into

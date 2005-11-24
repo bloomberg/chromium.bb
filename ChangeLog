@@ -1,3 +1,16 @@
+2005-11-24  Dirk Mueller <dmueller@suse.com>
+	reviewed by: plam
+	
+        * src/fcint.h, fontconfig/fontconfig.h: 
+        
+	Move FC_BANK_DYNAMIC, FC_BANK_FIRST to internal header.
+
+        * src/fcpat.c, src/fcint.h, src/fcname.c:
+          
+	Check for type validity during FcPatternAddWithBinding, don't
+	verify type in FcFontMatch, don't call FcCanonicalize here
+        (which always does a deep copy).
+
 2005-11-24  Dirk Mueller  <dmueller@suse.com>
 	reviewed by: plam
 

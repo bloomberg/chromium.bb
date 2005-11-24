@@ -855,7 +855,8 @@ FcPatternAddWithBinding  (FcPattern	    *p,
 {
     FcPatternElt   *e;
     FcValueListPtr new, *prev;
-    FcValueList *  newp;
+    FcValueList    *newp;
+    FcObjectPtr    objectPtr;
 
     if (p->ref == FC_REF_CONSTANT)
 	goto bail0;
@@ -872,11 +873,22 @@ FcPatternAddWithBinding  (FcPattern	    *p,
     if (value.type == FcTypeVoid)
 	goto bail1;
 
-    /* quick and dirty hack to enable FcCompareFamily speedup:
-     * only allow strings to be added under the FC_FAMILY key.
+    /* quick and dirty hack to enable FcCompareFamily/FcCompareString
+     * speedup: only allow strings to be added under the FC_FAMILY,
+     * FC_FOUNDRY, FC_STYLE, FC_RASTERIZER keys.  
+     * and charsets under FC_CHARSET key.
+     * This is slightly semantically different from the old behaviour,
+     * but fonts shouldn't be getting non-strings here anyway.
      * a better hack would use FcBaseObjectTypes to check all objects. */
-    if (FcObjectToPtr(object) == FcObjectToPtr(FC_FAMILY) &&
-        value.type != FcTypeString)
+    objectPtr = FcObjectToPtr(object);
+    if ((objectPtr == FcObjectToPtr(FC_FAMILY)
+         || objectPtr == FcObjectToPtr(FC_FOUNDRY)
+         || objectPtr == FcObjectToPtr(FC_STYLE)
+         || objectPtr == FcObjectToPtr(FC_RASTERIZER))
+        && value.type != FcTypeString)
+        goto bail1;
+    if (objectPtr == FcObjectToPtr(FC_CHARSET)
+        && value.type != FcTypeCharSet)
         goto bail1;
 
     FcValueListPtrU(new)->value = value;

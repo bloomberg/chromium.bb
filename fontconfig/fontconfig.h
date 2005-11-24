@@ -207,9 +207,6 @@ typedef struct _FcPattern   FcPattern;
 
 typedef struct _FcLangSet   FcLangSet;
 
-#define FC_BANK_DYNAMIC 0
-#define FC_BANK_FIRST 1
-
 typedef struct _FcValue {
     FcType	type;
     union {

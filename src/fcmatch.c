@@ -61,12 +61,7 @@ FcCompareNumber (const char *object, FcValue *value1, FcValue *value2)
 static double
 FcCompareString (const char *object, FcValue *v1, FcValue *v2)
 {
-    FcValue value1, value2;
-    if ((v2->type & ~FC_STORAGE_STATIC) != FcTypeString || 
-        (v1->type & ~FC_STORAGE_STATIC) != FcTypeString)
-	return -1.0;
-    value1 = FcValueCanonicalize(v1); value2 = FcValueCanonicalize(v2);
-    return (double) FcStrCmpIgnoreCase (value1.u.s, value2.u.s) != 0;
+    return (double) FcStrCmpIgnoreCase (fc_value_string(v1), fc_value_string(v2)) != 0;
 }
 
 static double
@@ -74,9 +69,6 @@ FcCompareFamily (const char *object, FcValue *v1, FcValue *v2)
 {
     /* rely on the guarantee in FcPatternAddWithBinding that
      * families are always FcTypeString. */
-
-    /* assert ((v2->type & ~FC_STORAGE_STATIC) == FcTypeString && 
-       (v1->type & ~FC_STORAGE_STATIC) == FcTypeString); */
     const FcChar8* v1_string = fc_value_string(v1);
     const FcChar8* v2_string = fc_value_string(v2);
 
@@ -134,21 +126,17 @@ FcCompareLang (const char *object, FcValue *v1, FcValue *v2)
 }
 
 static double
-FcCompareBool (const char *object, FcValue *value1, FcValue *value2)
+FcCompareBool (const char *object, FcValue *v1, FcValue *v2)
 {
-    if (value2->type != FcTypeBool || value1->type != FcTypeBool)
+    if (fc_storage_type(v2) != FcTypeBool || fc_storage_type(v1) != FcTypeBool)
 	return -1.0;
-    return (double) value2->u.b != value1->u.b;
+    return (double) v2->u.b != v1->u.b;
 }
 
 static double
 FcCompareCharSet (const char *object, FcValue *v1, FcValue *v2)
 {
-    FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
-    
-    if (value2.type != FcTypeCharSet || value1.type != FcTypeCharSet)
-	return -1.0;
-    return (double) FcCharSetSubtractCount (value1.u.c, value2.u.c);
+    return (double) FcCharSetSubtractCount (fc_value_charset(v1), fc_value_charset(v2));
 }
 
 static double
