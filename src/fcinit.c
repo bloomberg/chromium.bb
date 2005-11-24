@@ -57,6 +57,7 @@ FcInitLoadConfig (void)
 {
     FcConfig	*config;
     
+    FcInitDebug ();
     config = FcConfigCreate ();
     if (!config)
 	return FcFalse;
@@ -78,6 +79,7 @@ FcInitLoadConfigAndFonts (void)
 {
     FcConfig	*config = FcInitLoadConfig ();
 
+    FcInitDebug ();
     if (!config)
 	return 0;
     if (!FcConfigBuildFonts (config))

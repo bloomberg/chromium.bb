@@ -106,7 +106,7 @@ FcPatternPrint (const FcPattern *p)
 	printf ("Null pattern\n");
 	return;
     }
-    printf ("Pattern %d of %d\n", p->num, p->size);
+    printf ("Pattern has %d elts (size %d)\n", p->num, p->size);
     for (i = 0; i < p->num; i++)
     {
 	e = FcPatternEltU(p->elts) + i;
@@ -339,25 +339,19 @@ FcFontSetPrint (const FcFontSet *s)
     }
 }
 
-int
-FcDebug (void)
+int FcDebugVal;
+
+void
+FcInitDebug (void)
 {
-    static int  initialized;
-    static int  debug;
+    char    *e;
 
-    if (!initialized)
+    e = getenv ("FC_DEBUG");
+    if (e)
     {
-	char    *e;
-
-	initialized = 1;
-	e = getenv ("FC_DEBUG");
-	if (e)
-	{
-	    printf ("FC_DEBUG=%s\n", e);
-	    debug = atoi (e);
-	    if (debug < 0)
-		debug = 0;
-	}
+        printf ("FC_DEBUG=%s\n", e);
+        FcDebugVal = atoi (e);
+        if (FcDebugVal < 0)
+   	    FcDebugVal = 0;
     }
-    return debug;
 }

@@ -594,8 +594,13 @@ FcEditPrint (const FcEdit *edit);
 void
 FcSubstPrint (const FcSubst *subst);
 
-int
-FcDebug (void);
+extern int FcDebugVal;
+
+static __inline__ int
+FcDebug (void) { return FcDebugVal; }
+
+void
+FcInitDebug (void);
 
 /* fcdefault.c */
 FcChar8 *

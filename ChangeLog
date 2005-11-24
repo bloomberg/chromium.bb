@@ -1,3 +1,13 @@
+2005-11-24  Dirk Mueller <dmueller@suse.com>
+	reviewed by: plam
+	
+	* src/fcdbg.c (FcDebug, FcDebugInit, FcPatternPrint):
+	* src/fcinit.c (FcInitLoadConfig, FcInitLoadConfigAndFonts):
+	* src/fcint.h (FcDebug):
+	
+	Inline FcDebug invocations and only initialize once, in FcInit*.
+	Improve debug msg in FcPatternPrint.
+
 2005-11-23  Frederic Crozat  <fcrozat@mandriva.com>:
 	reviewed by: plam
 	
