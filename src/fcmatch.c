@@ -55,25 +55,35 @@ FcCompareNumber (const char *object, FcValue *value1, FcValue *value2)
     v = v2 - v1;
     if (v < 0)
 	v = -v;
-    return (double) v;
+    return v;
 }
 
 static double
 FcCompareString (const char *object, FcValue *v1, FcValue *v2)
 {
-    FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
-    if (value2.type != FcTypeString || value1.type != FcTypeString)
+    FcValue value1, value2;
+    if ((v2->type & ~FC_STORAGE_STATIC) != FcTypeString || 
+        (v1->type & ~FC_STORAGE_STATIC) != FcTypeString)
 	return -1.0;
+    value1 = FcValueCanonicalize(v1); value2 = FcValueCanonicalize(v2);
     return (double) FcStrCmpIgnoreCase (value1.u.s, value2.u.s) != 0;
 }
 
 static double
 FcCompareFamily (const char *object, FcValue *v1, FcValue *v2)
 {
-    FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
-    if (value2.type != FcTypeString || value1.type != FcTypeString)
-	return -1.0;
-    return (double) FcStrCmpIgnoreBlanksAndCase (value1.u.s, value2.u.s) != 0;
+    /* rely on the guarantee in FcPatternAddWithBinding that
+     * families are always FcTypeString. */
+
+    /* assert ((v2->type & ~FC_STORAGE_STATIC) == FcTypeString && 
+       (v1->type & ~FC_STORAGE_STATIC) == FcTypeString); */
+    const FcChar8* v1_string = fc_value_string(v1);
+    const FcChar8* v2_string = fc_value_string(v2);
+
+    if (FcToLower(*v1_string) != FcToLower(*v2_string))
+       return 1.0;
+
+    return (double) FcStrCmpIgnoreBlanksAndCase (v1_string, v2_string) != 0;
 }
 
 static double

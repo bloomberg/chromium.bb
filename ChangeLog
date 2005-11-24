@@ -1,4 +1,13 @@
-2005-11-24  Dirk Mueller <dmueller@suse.com>
+2005-11-24  Dirk Mueller  <dmueller@suse.com>
+	reviewed by: plam
+
+	* src/fcmatch.c (FcCompareNumber, FcCompareString, FcCompareFamily):
+	* src/fcpat.c (FcPatternAddWithBinding):
+
+	Make FcCompareString and FcCompareFamily less expensive.
+	Only add a value for FC_FAMILY if the proposed value is a string.
+
+2005-11-24  Dirk Mueller  <dmueller@suse.com>
 	reviewed by: plam
 	
 	* src/fcdbg.c (FcDebug, FcDebugInit, FcPatternPrint):

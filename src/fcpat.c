@@ -872,6 +872,13 @@ FcPatternAddWithBinding  (FcPattern	    *p,
     if (value.type == FcTypeVoid)
 	goto bail1;
 
+    /* quick and dirty hack to enable FcCompareFamily speedup:
+     * only allow strings to be added under the FC_FAMILY key.
+     * a better hack would use FcBaseObjectTypes to check all objects. */
+    if (FcObjectToPtr(object) == FcObjectToPtr(FC_FAMILY) &&
+        value.type != FcTypeString)
+        goto bail1;
+
     FcValueListPtrU(new)->value = value;
     FcValueListPtrU(new)->binding = binding;
     FcValueListPtrU(new)->next = FcValueListPtrCreateDynamic(0);
