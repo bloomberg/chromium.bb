@@ -29,9 +29,9 @@
 
 static FcPattern ** fcpatterns = 0;
 static int fcpattern_bank_count = 0, fcpattern_ptr, fcpattern_count;
-static FcPatternElt ** fcpatternelts = 0;
+FcPatternElt ** fcpatternelts = 0;
 static int fcpatternelt_ptr, fcpatternelt_count;
-static FcValueList ** fcvaluelists = 0;
+FcValueList ** fcvaluelists = 0;
 static int fcvaluelist_bank_count = 0, fcvaluelist_ptr, fcvaluelist_count;
 
 static const char *
@@ -1418,15 +1418,6 @@ FcPatternFini (void)
     FcObjectStaticNameFini ();
 }
 
-FcPatternElt *
-FcPatternEltU (FcPatternEltPtr pei)
-{
-    if (pei.bank == FC_BANK_DYNAMIC)
-	return pei.u.dyn;
-
-    return &fcpatternelts[FcCacheBankToIndex(pei.bank)][pei.u.stat];
-}
-
 static FcPatternEltPtr
 FcPatternEltPtrCreateDynamic (FcPatternElt * e)
 {
@@ -1825,15 +1816,6 @@ FcValueListUnserialize (FcCache metadata, void *block_ptr)
     block_ptr = FcLangSetUnserialize(metadata, block_ptr);
 
     return block_ptr;
-}
-
-FcValueList * 
-FcValueListPtrU (FcValueListPtr pi)
-{
-    if (pi.bank == FC_BANK_DYNAMIC)
-        return pi.u.dyn;
-
-    return &fcvaluelists[FcCacheBankToIndex(pi.bank)][pi.u.stat];
 }
 
 FcValueListPtr

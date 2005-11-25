@@ -28,7 +28,7 @@
 #include <stdio.h>
 
 static double
-FcCompareNumber (const char *object, FcValue *value1, FcValue *value2)
+FcCompareNumber (FcValue *value1, FcValue *value2)
 {
     double  v1, v2, v;
     
@@ -59,13 +59,13 @@ FcCompareNumber (const char *object, FcValue *value1, FcValue *value2)
 }
 
 static double
-FcCompareString (const char *object, FcValue *v1, FcValue *v2)
+FcCompareString (FcValue *v1, FcValue *v2)
 {
     return (double) FcStrCmpIgnoreCase (fc_value_string(v1), fc_value_string(v2)) != 0;
 }
 
 static double
-FcCompareFamily (const char *object, FcValue *v1, FcValue *v2)
+FcCompareFamily (FcValue *v1, FcValue *v2)
 {
     /* rely on the guarantee in FcPatternAddWithBinding that
      * families are always FcTypeString. */
@@ -79,7 +79,7 @@ FcCompareFamily (const char *object, FcValue *v1, FcValue *v2)
 }
 
 static double
-FcCompareLang (const char *object, FcValue *v1, FcValue *v2)
+FcCompareLang (FcValue *v1, FcValue *v2)
 {
     FcLangResult    result;
     FcValue value1 = FcValueCanonicalize(v1), value2 = FcValueCanonicalize(v2);
@@ -126,7 +126,7 @@ FcCompareLang (const char *object, FcValue *v1, FcValue *v2)
 }
 
 static double
-FcCompareBool (const char *object, FcValue *v1, FcValue *v2)
+FcCompareBool (FcValue *v1, FcValue *v2)
 {
     if (fc_storage_type(v2) != FcTypeBool || fc_storage_type(v1) != FcTypeBool)
 	return -1.0;
@@ -134,13 +134,13 @@ FcCompareBool (const char *object, FcValue *v1, FcValue *v2)
 }
 
 static double
-FcCompareCharSet (const char *object, FcValue *v1, FcValue *v2)
+FcCompareCharSet (FcValue *v1, FcValue *v2)
 {
     return (double) FcCharSetSubtractCount (fc_value_charset(v1), fc_value_charset(v2));
 }
 
 static double
-FcCompareSize (const char *object, FcValue *value1, FcValue *value2)
+FcCompareSize (FcValue *value1, FcValue *value2)
 {
     double  v1, v2, v;
 
@@ -174,7 +174,7 @@ FcCompareSize (const char *object, FcValue *value1, FcValue *value2)
 
 typedef struct _FcMatcher {
     const char	    *object;
-    double	    (*compare) (const char *object, FcValue *value1, FcValue *value2);
+    double	    (*compare) (FcValue *value1, FcValue *value2);
     int		    strong, weak;
 } FcMatcher;
 
@@ -341,8 +341,7 @@ FcCompareValueList (const char  *object,
 	for (v2 = v2orig, v2_ptrU = FcValueListPtrU(v2); FcValueListPtrU(v2); 
 	     v2 = FcValueListPtrU(v2)->next)
 	{
-	    v = (*_FcMatchers[i].compare) (_FcMatchers[i].object,
-					   &v1_ptrU->value,
+	    v = (*_FcMatchers[i].compare) (&v1_ptrU->value,
 					   &v2_ptrU->value);
 	    if (v < 0)
 	    {
@@ -414,39 +413,25 @@ FcCompare (FcPattern	*pat,
     i2 = 0;
     while (i1 < pat->num && i2 < fnt->num)
     {
-	i = FcObjectPtrCompare((FcPatternEltU(pat->elts)+i1)->object,
-			       (FcPatternEltU(fnt->elts)+i2)->object);
+	FcPatternElt *elt_i1 = FcPatternEltU(pat->elts)+i1;
+	FcPatternElt *elt_i2 = FcPatternEltU(fnt->elts)+i2;
+
+	i = FcObjectPtrCompare(elt_i1->object, elt_i2->object);
 	if (i > 0)
 	    i2++;
 	else if (i < 0)
 	    i1++;
 	else
 	{
-	    if (!FcCompareValueList (FcObjectPtrU((FcPatternEltU(pat->elts)+i1)->object),
-				     (FcPatternEltU(pat->elts)+i1)->values,
-				     (FcPatternEltU(fnt->elts)+i2)->values,
-				     0,
-				     value,
-				     result))
+	    if (!FcCompareValueList (FcObjectPtrU(elt_i1->object), 
+				     elt_i1->values, elt_i2->values,
+				     0, value, result))
 		return FcFalse;
 	    i1++;
 	    i2++;
 	}
     }
     return FcTrue;
-#if 0
-    for (i1 = 0; i1 < pat->num; i1++)
-    {
-	for (i2 = 0; i2 < fnt->num; i2++)
-	{
-	    if (!strcmp (pat->elts[i1].object, fnt->elts[i2].object))
-	    {
-		break;
-	    }
-	}
-    }
-    return FcTrue;
-#endif
 }
 
 FcPattern *
@@ -783,8 +768,7 @@ FcFontSetSort (FcConfig	    *config,
 		    FcPatternGet (p, FC_LANG, i, &patternLang) == FcResultMatch &&
 		    FcPatternGet (nodeps[f]->pattern, FC_LANG, 0, &nodeLang) == FcResultMatch)
 		{
-		    double  compare = FcCompareLang (FC_LANG, &patternLang, 
-						     &nodeLang);
+		    double  compare = FcCompareLang (&patternLang, &nodeLang);
 		    if (compare >= 0 && compare < 2)
 		    {
 			if (FcDebug () & FC_DBG_MATCHV)

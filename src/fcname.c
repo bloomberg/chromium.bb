@@ -93,7 +93,8 @@ struct _FcObjectTypeList {
 static const FcObjectTypeList _FcBaseObjectTypesList = {
     0,
     _FcBaseObjectTypes,
-    NUM_OBJECT_TYPES
+    NUM_OBJECT_TYPES,
+    0
 };
 
 static const FcObjectTypeList	*_FcObjectTypes = &_FcBaseObjectTypesList;
@@ -413,12 +414,6 @@ FcObjectUnserialize (FcCache metadata, void *block_ptr)
     block_ptr = ALIGN (block_ptr, char);
     block_ptr = (char *) block_ptr + biggest_known_count;
     return block_ptr;
-}
-
-int
-FcObjectPtrCompare (const FcObjectPtr a, const FcObjectPtr b)
-{
-    return a - b;
 }
 
 static const FcConstant _FcBaseConstants[] = {
@@ -779,7 +774,6 @@ FcNameUnparseString (FcStrBuf	    *buf,
 
 static FcBool
 FcNameUnparseValue (FcStrBuf	*buf,
-		    int		bank,
 		    FcValue	*v0,
 		    FcChar8	*escape)
 {
@@ -820,7 +814,7 @@ FcNameUnparseValueList (FcStrBuf	*buf,
 {
     while (FcValueListPtrU(v))
     {
-	if (!FcNameUnparseValue (buf, v.bank, &FcValueListPtrU(v)->value, escape))
+	if (!FcNameUnparseValue (buf, &FcValueListPtrU(v)->value, escape))
 	    return FcFalse;
 	if (FcValueListPtrU(v = FcValueListPtrU(v)->next))
 	    if (!FcNameUnparseString (buf, (FcChar8 *) ",", 0))

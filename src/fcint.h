@@ -806,8 +806,11 @@ FcObjectSerialize (void);
 const char *
 FcObjectPtrU (FcObjectPtr p);
 
-int
-FcObjectPtrCompare (FcObjectPtr a, FcObjectPtr b);
+static __inline__ int
+FcObjectPtrCompare (const FcObjectPtr a, const FcObjectPtr b)
+{
+    return a - b;
+}
 
 void
 FcObjectStaticNameFini (void);
@@ -866,8 +869,28 @@ FcPatternNeededBytesAlign (void);
 void *
 FcPatternDistributeBytes (FcCache * metadata, void * block_ptr);
 
-FcValueList * 
-FcValueListPtrU(FcValueListPtr p);
+/* please don't access these outside of fcpat.c! only visible so that
+ * *PtrU can be inlined. */
+extern FcValueList ** fcvaluelists;
+extern FcPatternElt ** fcpatternelts;
+
+static __inline__ FcValueList * 
+FcValueListPtrU (FcValueListPtr pi)
+{
+    if (pi.bank == FC_BANK_DYNAMIC)
+        return pi.u.dyn;
+
+    return &fcvaluelists[FcCacheBankToIndex(pi.bank)][pi.u.stat];
+}
+
+static __inline__ FcPatternElt *
+FcPatternEltU (FcPatternEltPtr pei)
+{
+    if (pei.bank == FC_BANK_DYNAMIC)
+	return pei.u.dyn;
+
+    return &fcpatternelts[FcCacheBankToIndex(pei.bank)][pei.u.stat];
+}
 
 FcPatternElt *
 FcPatternEltU (FcPatternEltPtr pei);

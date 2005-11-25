@@ -1,4 +1,14 @@
-2005-11-24  Dirk Mueller <dmueller@suse.com>
+2005-11-24  Dirk Mueller  <dmueller@suse.com>
+	reviewed by: plam
+
+	* src/fcint.h:
+	* src/fcmatch.c (FcCompare*, FcFontSetSort):
+	* src/fcname.c (FcNameUnparseValue):
+
+	Inline the *PtrU functions to gain perf.
+	Remove unneeded params for the FcCompare* functions.
+
+2005-11-24  Dirk Mueller  <dmueller@suse.com>
 	reviewed by: plam
 	
         * src/fcint.h, fontconfig/fontconfig.h: 
