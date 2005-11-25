@@ -1,3 +1,10 @@
+2005-11-25  Dirk Mueller  <dmueller@suse.com>
+	reviewed by: plam
+
+	* src/fcmatch.c:
+
+	Pass the FcObjectPtr to FcCompareValueList, not the char * (perf).
+
 2005-11-25  Patrick Lam  <plam@mit.edu>
 	* src/fcint.h:
 	* src/fccache.c (FcDirCacheConsume):

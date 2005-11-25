@@ -245,7 +245,7 @@ static FcMatcher _FcMatchers [] = {
 #define NUM_MATCH_VALUES    15
 
 static FcBool
-FcCompareValueList (const char  *object,
+FcCompareValueList (FcObjectPtr o,
 		    FcValueListPtr v1orig,	/* pattern */
 		    FcValueListPtr v2orig,	/* target */
 		    FcValue	*bestValue,
@@ -257,17 +257,18 @@ FcCompareValueList (const char  *object,
     double    	    v, best, bestStrong, bestWeak;
     int		    i;
     int		    j;
-    
+    const char* object = FcObjectPtrU(o);
+
     /*
      * Locate the possible matching entry by examining the
      * first few characters in object
      */
     i = -1;
-    switch (FcToLower (object[0])) {
+    switch (object[0]) {
     case 'f':
-	switch (FcToLower (object[1])) {
+	switch (object[1]) {
 	case 'o':
-	    switch (FcToLower (object[2])) {
+	    switch (object[2]) {
 	    case 'u':
 		i = MATCH_FOUNDRY; break;
 	    case 'n':
@@ -285,7 +286,7 @@ FcCompareValueList (const char  *object,
     case 'l':
 	i = MATCH_LANG; break;
     case 's':
-	switch (FcToLower (object[1])) {
+	switch (object[1]) {
 	case 'p':
 	    i = MATCH_SPACING; break;
 	case 't':
@@ -297,7 +298,7 @@ FcCompareValueList (const char  *object,
     case 'p':
 	i = MATCH_PIXEL_SIZE; break;
     case 'w':
-	switch (FcToLower (object[1])) {
+	switch (object[1]) {
 	case 'i':
 	    i = MATCH_WIDTH; break;
 	case 'e':
@@ -317,20 +318,6 @@ FcCompareValueList (const char  *object,
 	    *bestValue = FcValueCanonicalize(&FcValueListPtrU(v2orig)->value);
 	return FcTrue;
     }
-#if 0
-    for (i = 0; i < NUM_MATCHER; i++)
-    {
-	if (!FcStrCmpIgnoreCase ((FcChar8 *) _FcMatchers[i].object,
-				 (FcChar8 *) object))
-	    break;
-    }
-    if (i == NUM_MATCHER)
-    {
-	if (bestValue)
-	    *bestValue = v2orig->value;
-	return FcTrue;
-    }
-#endif
     best = 1e99;
     bestStrong = 1e99;
     bestWeak = 1e99;
@@ -348,8 +335,6 @@ FcCompareValueList (const char  *object,
 		*result = FcResultTypeMismatch;
 		return FcFalse;
 	    }
-	    if (FcDebug () & FC_DBG_MATCHV)
-		printf (" v %g j %d ", v, j);
 	    v = v * 100 + j;
 	    if (v < best)
 	    {
@@ -423,7 +408,7 @@ FcCompare (FcPattern	*pat,
 	    i1++;
 	else
 	{
-	    if (!FcCompareValueList (FcObjectPtrU(elt_i1->object), 
+	    if (!FcCompareValueList (elt_i1->object,
 				     elt_i1->values, elt_i2->values,
 				     0, value, result))
 		return FcFalse;
@@ -454,7 +439,7 @@ FcFontRenderPrepare (FcConfig	    *config,
 	pe = FcPatternFindElt (pat, FcObjectPtrU(fe->object));
 	if (pe)
 	{
-	    if (!FcCompareValueList (FcObjectPtrU(pe->object), pe->values, 
+	    if (!FcCompareValueList (pe->object, pe->values, 
 				     fe->values, &v, 0, &result))
 	    {
 		FcPatternDestroy (new);
