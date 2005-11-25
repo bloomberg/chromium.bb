@@ -1,4 +1,17 @@
+fontconfig (2.3.92-1) experimental; urgency=low
+  * New upstream release: mmapable cache files
   * Change section of fontconfig source package to libs (closes: #309864)
+  * Acknowledge NMU by Frans Pop.
+
+ -- Patrick Lam <plam@mit.edu>  Wed, 23 Nov 2005 11:06:24 -0500
+
+fontconfig (2.3.2-1.1) unstable; urgency=low
+
+  * NMU
+  * Add Provides: libfontconfig1 for the udeb to satisfy dependencies
+    from other udebs (closes: #331444).
+
+ -- Frans Pop <fjp@debian.org>  Tue, 18 Oct 2005 21:22:40 +0200
 
 fontconfig (2.3.2-1) unstable; urgency=low
   * Patch memory leaks (thanks to Chris Capoccia) (closes: #305680)

@@ -29,6 +29,7 @@ Package: fontconfig-udeb
 Section: debian-installer
 Architecture: any
 Depends: libexpat1-udeb, libfreetype6-udeb, zlib1g-udeb
+Provides: libfontconfig1
 Description: generic font configuration library (shared library)
  Fontconfig is a font configuration and customization library, which
  does not depend on the X Window System.  It is designed to locate
