@@ -780,7 +780,7 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set)
     if (current_dir_block == MAP_FAILED)
 	return FcFalse;
     
-    if (!FcFontSetUnserialize (metadata, set, current_dir_block))
+    if (!FcFontSetUnserialize (&metadata, set, current_dir_block))
 	return FcFalse;
 
     FcCacheAddBankDir (metadata.bank, dir);

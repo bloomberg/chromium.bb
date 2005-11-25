@@ -1,3 +1,16 @@
+2005-11-25  Patrick Lam  <plam@mit.edu>
+	* src/fcint.h:
+	* src/fccache.c (FcDirCacheConsume):
+	* src/fccharset.c (FcCharSetUnserialize):
+	* src/fcfs.c (FcFontSetUnserialize):
+	* src/fclang.c (FcLangSetUnserialize):
+	* src/fcname.c (FcObjectUnserialize):
+	* src/fcpat.c (FcStrUnserialize, FcValueListUnserialize, 
+			FcPatternUnserialize):
+
+	Pass around FcCache *s to the Unserialize functions for extra
+	consistency (and less overhead, for what that's worth).
+
 2005-11-24  Dirk Mueller  <dmueller@suse.com>
 	reviewed by: plam
 

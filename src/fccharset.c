@@ -1432,28 +1432,28 @@ FcCharSetSerialize(int bank, FcCharSet *c)
 }
 
 void *
-FcCharSetUnserialize (FcCache metadata, void *block_ptr)
+FcCharSetUnserialize (FcCache *metadata, void *block_ptr)
 {
-    int bi = FcCacheBankToIndex(metadata.bank);
+    int bi = FcCacheBankToIndex(metadata->bank);
     if (!FcCharSetEnsureBank(bi))
 	return 0;
 
     block_ptr = ALIGN (block_ptr, FcCharSet);
     charsets[bi] = (FcCharSet *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
-		     (sizeof (FcCharSet) * metadata.charset_count));
+		     (sizeof (FcCharSet) * metadata->charset_count));
     block_ptr = ALIGN (block_ptr, FcChar16);
     numbers[bi] = (FcChar16 *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
-		     (sizeof(FcChar16) * metadata.charset_numbers_count));
+		     (sizeof(FcChar16) * metadata->charset_numbers_count));
     block_ptr = ALIGN (block_ptr, FcCharLeaf);
     leaves[bi] = (FcCharLeaf *)block_ptr;
     block_ptr = (void *)((char *)block_ptr +
-		     (sizeof(FcCharLeaf) * metadata.charset_leaf_count));
+		     (sizeof(FcCharLeaf) * metadata->charset_leaf_count));
     block_ptr = ALIGN (block_ptr, int);
     leaf_idx[bi] = (int *)block_ptr;
     block_ptr = (void *)((char *)block_ptr +
-		     (sizeof(int) * metadata.charset_leaf_idx_count));
+		     (sizeof(int) * metadata->charset_leaf_idx_count));
 
     return block_ptr;
 }

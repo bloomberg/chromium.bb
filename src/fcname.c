@@ -364,7 +364,7 @@ FcObjectSerialize ()
 }
 
 void *
-FcObjectUnserialize (FcCache metadata, void *block_ptr)
+FcObjectUnserialize (FcCache * metadata, void *block_ptr)
 {
     int new_biggest;
     new_biggest = *(int *)block_ptr;

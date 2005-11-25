@@ -567,7 +567,7 @@ FcCharSet *
 FcCharSetSerialize(int bank, FcCharSet *c);
 
 void *
-FcCharSetUnserialize (FcCache metadata, void *block_ptr);
+FcCharSetUnserialize (FcCache * metadata, void *block_ptr);
 
 FcCharLeaf *
 FcCharSetGetLeaf(const FcCharSet *c, int i);
@@ -670,7 +670,7 @@ FcBool
 FcFontSetSerialize (int bank, FcFontSet * s);
 
 FcBool
-FcFontSetUnserialize(FcCache metadata, FcFontSet * s, void * block_ptr);
+FcFontSetUnserialize(FcCache * metadata, FcFontSet * s, void * block_ptr);
 
 /* fcgram.y */
 int
@@ -769,7 +769,7 @@ FcLangSet *
 FcLangSetSerialize (int bank, FcLangSet *l);
 
 void *
-FcLangSetUnserialize (FcCache metadata, void *block_ptr);
+FcLangSetUnserialize (FcCache * metadata, void *block_ptr);
 
 /* fclist.c */
 
@@ -798,7 +798,7 @@ int
 FcObjectNeededBytesAlign (void);
 
 void *
-FcObjectUnserialize (FcCache metadata, void *block_ptr);
+FcObjectUnserialize (FcCache * metadata, void *block_ptr);
 
 void
 FcObjectSerialize (void);
@@ -902,7 +902,7 @@ FcPattern *
 FcPatternSerialize (int bank, FcPattern * p);
 
 void *
-FcPatternUnserialize (FcCache metadata, void *block_ptr);
+FcPatternUnserialize (FcCache * metadata, void *block_ptr);
 
 /* fcrender.c */
 

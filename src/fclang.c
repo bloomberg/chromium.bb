@@ -778,16 +778,16 @@ FcLangSetSerialize(int bank, FcLangSet *l)
 }
 
 void *
-FcLangSetUnserialize (FcCache metadata, void *block_ptr)
+FcLangSetUnserialize (FcCache * metadata, void *block_ptr)
 {
-    int bi = FcCacheBankToIndex(metadata.bank);
+    int bi = FcCacheBankToIndex(metadata->bank);
     if (!FcLangSetEnsureBank(bi))
 	return 0;
 
-    FcMemAlloc (FC_MEM_LANGSET, metadata.langset_count * sizeof(FcLangSet));
+    FcMemAlloc (FC_MEM_LANGSET, metadata->langset_count * sizeof(FcLangSet));
     block_ptr = ALIGN(block_ptr, FcLangSet);
     langsets[bi] = (FcLangSet *)block_ptr;
     block_ptr = (void *)((char *)block_ptr +
-			 metadata.langset_count * sizeof(FcLangSet));
+			 metadata->langset_count * sizeof(FcLangSet));
     return block_ptr;
 }

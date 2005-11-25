@@ -150,7 +150,7 @@ FcFontSetSerialize (int bank, FcFontSet * s)
 }
 
 FcBool
-FcFontSetUnserialize(FcCache metadata, FcFontSet * s, void * block_ptr)
+FcFontSetUnserialize(FcCache * metadata, FcFontSet * s, void * block_ptr)
 {
     int nfont;
     int i, n;
