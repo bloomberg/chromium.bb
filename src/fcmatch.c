@@ -174,6 +174,7 @@ FcCompareSize (FcValue *value1, FcValue *value2)
 
 typedef struct _FcMatcher {
     const char	    *object;
+    FcObjectPtr	    objectPtr;
     double	    (*compare) (FcValue *value1, FcValue *value2);
     int		    strong, weak;
 } FcMatcher;
@@ -184,65 +185,87 @@ typedef struct _FcMatcher {
  * later values
  */
 static FcMatcher _FcMatchers [] = {
-    { FC_FOUNDRY,	FcCompareString,	0, 0 },
+    { FC_FOUNDRY,	0, FcCompareString,	0, 0 },
 #define MATCH_FOUNDRY	    0
 #define MATCH_FOUNDRY_INDEX 0
     
-    { FC_CHARSET,	FcCompareCharSet,	1, 1 },
+    { FC_CHARSET,	0, FcCompareCharSet,	1, 1 },
 #define MATCH_CHARSET	    1
 #define MATCH_CHARSET_INDEX 1
     
-    { FC_FAMILY,    	FcCompareFamily,	2, 4 },
+    { FC_FAMILY,    	0, FcCompareFamily,	2, 4 },
 #define MATCH_FAMILY	    2
 #define MATCH_FAMILY_STRONG_INDEX   2
 #define MATCH_FAMILY_WEAK_INDEX	    4
     
-    { FC_LANG,		FcCompareLang,		3, 3 },
+    { FC_LANG,		0, FcCompareLang,	3, 3 },
 #define MATCH_LANG	    3
 #define MATCH_LANG_INDEX    3
     
-    { FC_SPACING,	FcCompareNumber,	5, 5 },
+    { FC_SPACING,	0, FcCompareNumber,	5, 5 },
 #define MATCH_SPACING	    4
 #define MATCH_SPACING_INDEX 5
     
-    { FC_PIXEL_SIZE,	FcCompareSize,		6, 6 },
+    { FC_PIXEL_SIZE,	0, FcCompareSize,	6, 6 },
 #define MATCH_PIXEL_SIZE    5
 #define MATCH_PIXEL_SIZE_INDEX	6
     
-    { FC_STYLE,		FcCompareString,	7, 7 },
+    { FC_STYLE,		0, FcCompareString,	7, 7 },
 #define MATCH_STYLE	    6
 #define MATCH_STYLE_INDEX   7
     
-    { FC_SLANT,		FcCompareNumber,	8, 8 },
+    { FC_SLANT,		0, FcCompareNumber,	8, 8 },
 #define MATCH_SLANT	    7
 #define MATCH_SLANT_INDEX   8
     
-    { FC_WEIGHT,	FcCompareNumber,	9, 9 },
+    { FC_WEIGHT,	0, FcCompareNumber,	9, 9 },
 #define MATCH_WEIGHT	    8
 #define MATCH_WEIGHT_INDEX  9
     
-    { FC_WIDTH,		FcCompareNumber,	10, 10 },
+    { FC_WIDTH,		0, FcCompareNumber,	10, 10 },
 #define MATCH_WIDTH	    9
 #define MATCH_WIDTH_INDEX   10
     
-    { FC_ANTIALIAS,	FcCompareBool,		11, 11 },
+    { FC_ANTIALIAS,	0, FcCompareBool,	11, 11 },
 #define MATCH_ANTIALIAS	    10
 #define MATCH_ANTIALIAS_INDEX	    11
     
-    { FC_RASTERIZER,	FcCompareString,	12, 12 },
+    { FC_RASTERIZER,	0, FcCompareString,	12, 12 },
 #define MATCH_RASTERIZER    11
 #define MATCH_RASTERIZER_INDEX    12
 
-    { FC_OUTLINE,	FcCompareBool,		13, 13 },
+    { FC_OUTLINE,	0, FcCompareBool,	13, 13 },
 #define MATCH_OUTLINE	    12
 #define MATCH_OUTLINE_INDEX	    13
 
-    { FC_FONTVERSION,	FcCompareNumber,	14, 14 },
+    { FC_FONTVERSION,	0, FcCompareNumber,	14, 14 },
 #define MATCH_FONTVERSION   13
 #define MATCH_FONTVERSION_INDEX   14
 };
 
 #define NUM_MATCH_VALUES    15
+
+static FcBool matchObjectPtrsInit = FcFalse;
+
+static void
+FcMatchObjectPtrsInit (void)
+{
+    _FcMatchers[MATCH_FOUNDRY].objectPtr = FcObjectToPtr(FC_FOUNDRY);
+    _FcMatchers[MATCH_CHARSET].objectPtr = FcObjectToPtr(FC_CHARSET);
+    _FcMatchers[MATCH_FAMILY].objectPtr = FcObjectToPtr(FC_FAMILY);
+    _FcMatchers[MATCH_LANG].objectPtr = FcObjectToPtr(FC_LANG);
+    _FcMatchers[MATCH_SPACING].objectPtr = FcObjectToPtr(FC_SPACING);
+    _FcMatchers[MATCH_PIXEL_SIZE].objectPtr = FcObjectToPtr(FC_PIXEL_SIZE);
+    _FcMatchers[MATCH_STYLE].objectPtr = FcObjectToPtr(FC_STYLE);
+    _FcMatchers[MATCH_SLANT].objectPtr = FcObjectToPtr(FC_SLANT);
+    _FcMatchers[MATCH_WEIGHT].objectPtr = FcObjectToPtr(FC_WEIGHT);
+    _FcMatchers[MATCH_WIDTH].objectPtr = FcObjectToPtr(FC_WIDTH);
+    _FcMatchers[MATCH_ANTIALIAS].objectPtr = FcObjectToPtr(FC_ANTIALIAS);
+    _FcMatchers[MATCH_RASTERIZER].objectPtr = FcObjectToPtr(FC_RASTERIZER);
+    _FcMatchers[MATCH_OUTLINE].objectPtr = FcObjectToPtr(FC_OUTLINE);
+    _FcMatchers[MATCH_FONTVERSION].objectPtr = FcObjectToPtr(FC_FONTVERSION);
+    matchObjectPtrsInit = FcTrue;
+}
 
 static FcBool
 FcCompareValueList (FcObjectPtr o,
@@ -257,7 +280,7 @@ FcCompareValueList (FcObjectPtr o,
     double    	    v, best, bestStrong, bestWeak;
     int		    i;
     int		    j;
-    const char* object = FcObjectPtrU(o);
+    const char	    *object = FcObjectPtrU(o);
 
     /*
      * Locate the possible matching entry by examining the
@@ -310,6 +333,11 @@ FcCompareValueList (FcObjectPtr o,
     case 'o':
 	i = MATCH_OUTLINE; break;
     }
+
+    if (!matchObjectPtrsInit)
+        FcMatchObjectPtrsInit();
+    if (_FcMatchers[i].objectPtr != o) i = -1;
+
     if (i == -1 || 
 	FcStrCmpIgnoreCase ((FcChar8 *) _FcMatchers[i].object,
 			    (FcChar8 *) object) != 0)

@@ -1,4 +1,10 @@
 2005-11-25  Patrick Lam  <plam@mit.edu>
+	* src/fcmatch.c (FcMatchObjectPtrsInit, FcCompareValueList):
+
+	Don't do random matching when bad objects are passed into
+	FcCompareValueList.
+
+2005-11-25  Patrick Lam  <plam@mit.edu>
 	* src/fcint.h:
 	* src/fcpat.c (FcPatternEnsureBank, FcPatternDistributeBytes, 
 			FcPatternSerialize, FcPatternUnserialize, 
