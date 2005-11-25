@@ -1,3 +1,13 @@
+2005-11-25  Patrick Lam  <plam@mit.edu>
+	* src/fcint.h:
+	* src/fcpat.c (FcPatternEnsureBank, FcPatternDistributeBytes, 
+			FcPatternSerialize, FcPatternUnserialize, 
+			FcValueListEnsureBank, FcValueListDistributeBytes,
+			FcValueListUnserialize):
+
+	Rename fcpatterns, fcpatternelts, fcvaluelists to _fcPatterns,
+	_fcPatternElts, _fcValueLists for consistency.
+
 2005-11-25  Dirk Mueller  <dmueller@suse.com>
 	reviewed by: plam
 

@@ -27,11 +27,11 @@
 #include <assert.h>
 #include "fcint.h"
 
-static FcPattern ** fcpatterns = 0;
+static FcPattern ** _fcPatterns = 0;
 static int fcpattern_bank_count = 0, fcpattern_ptr, fcpattern_count;
-FcPatternElt ** fcpatternelts = 0;
+FcPatternElt ** _fcPatternElts = 0;
 static int fcpatternelt_ptr, fcpatternelt_count;
-FcValueList ** fcvaluelists = 0;
+FcValueList ** _fcValueLists = 0;
 static int fcvaluelist_bank_count = 0, fcvaluelist_ptr, fcvaluelist_count;
 
 static const char *
@@ -1507,27 +1507,27 @@ FcPatternEnsureBank (int bi)
     FcPatternElt **ep;
     int i;
 
-    if (!fcpatterns || fcpattern_bank_count <= bi)
+    if (!_fcPatterns || fcpattern_bank_count <= bi)
     {
 	int new_count = bi + 4;
-	pp = realloc (fcpatterns, sizeof (FcPattern *) * new_count);
+	pp = realloc (_fcPatterns, sizeof (FcPattern *) * new_count);
 	if (!pp)
 	    return 0;
 
 	FcMemAlloc (FC_MEM_PATTERN, sizeof (FcPattern *) * new_count);
-	fcpatterns = pp;
+	_fcPatterns = pp;
 
-	ep = realloc (fcpatternelts, sizeof (FcPatternElt *) * new_count);
+	ep = realloc (_fcPatternElts, sizeof (FcPatternElt *) * new_count);
 	if (!ep)
 	    return 0;
 
 	FcMemAlloc (FC_MEM_PATELT, sizeof (FcPatternElt *) * new_count);
-	fcpatternelts = ep;
+	_fcPatternElts = ep;
 
 	for (i = fcpattern_bank_count; i < new_count; i++)
 	{
-	    fcpatterns[i] = 0;
-	    fcpatternelts[i] = 0;
+	    _fcPatterns[i] = 0;
+	    _fcPatternElts[i] = 0;
 	}
 
 	fcpattern_bank_count = new_count;
@@ -1547,14 +1547,14 @@ FcPatternDistributeBytes (FcCache * metadata, void * block_ptr)
 
     fcpattern_ptr = 0;
     block_ptr = ALIGN(block_ptr, FcPattern);
-    fcpatterns[bi] = (FcPattern *)block_ptr;
+    _fcPatterns[bi] = (FcPattern *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcPattern) * fcpattern_count));
     
     FcMemAlloc (FC_MEM_PATELT, sizeof (FcPatternElt) * fcpatternelt_count);
     fcpatternelt_ptr = 0;
     block_ptr = ALIGN(block_ptr, FcPatternElt);
-    fcpatternelts[bi] = (FcPatternElt *)block_ptr;
+    _fcPatternElts[bi] = (FcPatternElt *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcPatternElt) * fcpatternelt_count));
 
@@ -1575,10 +1575,10 @@ FcPatternSerialize (int bank, FcPattern *old)
     FcValueListPtr v, nv_head, nvp;
     int i, elts, bi = FcCacheBankToIndex(bank);
 
-    p = &fcpatterns[bi][fcpattern_ptr++];
+    p = &_fcPatterns[bi][fcpattern_ptr++];
     p->bank = bank;
     elts = fcpatternelt_ptr;
-    nep = &fcpatternelts[bi][elts];
+    nep = &_fcPatternElts[bi][elts];
     if (!nep)
 	return FcFalse;
 
@@ -1627,14 +1627,14 @@ FcPatternUnserialize (FcCache * metadata, void *block_ptr)
 
     FcMemAlloc (FC_MEM_PATTERN, sizeof (FcPattern) * metadata->pattern_count);
     block_ptr = ALIGN(block_ptr, FcPattern);
-    fcpatterns[bi] = (FcPattern *)block_ptr;
+    _fcPatterns[bi] = (FcPattern *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcPattern) * metadata->pattern_count));
     
     FcMemAlloc (FC_MEM_PATELT, 
 		sizeof (FcPatternElt) * metadata->patternelt_count);
     block_ptr = ALIGN(block_ptr, FcPatternElt);
-    fcpatternelts[bi] = (FcPatternElt *)block_ptr;
+    _fcPatternElts[bi] = (FcPatternElt *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcPatternElt) * metadata->patternelt_count));
 	
@@ -1697,19 +1697,19 @@ FcValueListEnsureBank (int bi)
 {
     FcValueList **pvl;
 
-    if (!fcvaluelists || fcvaluelist_bank_count <= bi)
+    if (!_fcValueLists || fcvaluelist_bank_count <= bi)
     {
 	int new_count = bi + 2, i;
 
-	pvl = realloc (fcvaluelists, sizeof (FcValueList *) * new_count);
+	pvl = realloc (_fcValueLists, sizeof (FcValueList *) * new_count);
 	if (!pvl)
 	    return FcFalse;
 
 	FcMemAlloc (FC_MEM_VALLIST, sizeof (FcValueList *) * new_count);
 
-	fcvaluelists = pvl;
+	_fcValueLists = pvl;
 	for (i = fcvaluelist_bank_count; i < new_count; i++)
-	    fcvaluelists[i] = 0;
+	    _fcValueLists[i] = 0;
 
 	fcvaluelist_bank_count = new_count;
     }
@@ -1727,7 +1727,7 @@ FcValueListDistributeBytes (FcCache * metadata, void *block_ptr)
     FcMemAlloc (FC_MEM_VALLIST, sizeof (FcValueList) * fcvaluelist_count);
     fcvaluelist_ptr = 0;
     block_ptr = ALIGN(block_ptr, FcValueList);
-    fcvaluelists[bi] = (FcValueList *)block_ptr;
+    _fcValueLists[bi] = (FcValueList *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcValueList) * fcvaluelist_count));
     metadata->valuelist_count = fcvaluelist_count;
@@ -1752,11 +1752,11 @@ FcValueListSerialize(int bank, FcValueList *pi)
 	return new;
     }
 
-    fcvaluelists[bi][fcvaluelist_ptr] = *pi;
+    _fcValueLists[bi][fcvaluelist_ptr] = *pi;
     new.bank = bank;
     new.u.stat = fcvaluelist_ptr++;
-    fcvaluelists[bi][new.u.stat].value = FcValueCanonicalize (&pi->value);
-    v = &fcvaluelists[bi][new.u.stat].value;
+    _fcValueLists[bi][new.u.stat].value = FcValueCanonicalize (&pi->value);
+    v = &_fcValueLists[bi][new.u.stat].value;
     switch (v->type)
     {
     case FcTypeString:
@@ -1808,7 +1808,7 @@ FcValueListUnserialize (FcCache * metadata, void *block_ptr)
     FcMemAlloc (FC_MEM_VALLIST, 
 		sizeof (FcValueList) * metadata->valuelist_count);
     block_ptr = ALIGN(block_ptr, FcValueList);
-    fcvaluelists[bi] = (FcValueList *)block_ptr;
+    _fcValueLists[bi] = (FcValueList *)block_ptr;
     block_ptr = (void *)((char *)block_ptr + 
 			 (sizeof (FcValueList) * metadata->valuelist_count));
 
