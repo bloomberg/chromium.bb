@@ -351,10 +351,10 @@ FcCompareValueList (FcObjectPtr o,
     bestWeak = 1e99;
     j = 0;
     for (v1 = v1orig, v1_ptrU = FcValueListPtrU(v1); v1_ptrU;
-	 v1 = FcValueListPtrU(v1)->next, v1_ptrU = FcValueListPtrU(v1))
+	 v1 = v1_ptrU->next, v1_ptrU = FcValueListPtrU(v1))
     {
-	for (v2 = v2orig, v2_ptrU = FcValueListPtrU(v2); FcValueListPtrU(v2); 
-	     v2 = FcValueListPtrU(v2)->next)
+	for (v2 = v2orig, v2_ptrU = FcValueListPtrU(v2); v2_ptrU;
+	     v2 = v2_ptrU->next, v2_ptrU = FcValueListPtrU(v2))
 	{
 	    v = (*_FcMatchers[i].compare) (&v1_ptrU->value,
 					   &v2_ptrU->value);
