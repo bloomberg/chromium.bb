@@ -61,7 +61,20 @@ static drm_pci_id_list_t mga_pciidlist[] = {
  */
 static int mga_driver_device_is_agp(drm_device_t * dev)
 {
-	return 1;
+	/* There are PCI versions of the G450.  These cards have the
+	 * same PCI ID as the AGP G450, but have an additional PCI-to-PCI
+	 * bridge chip.  We detect these cards, which are not currently
+	 * supported by this driver, by looking at the device ID of the
+	 * bus the "card" is on.  If vendor is 0x3388 (Hint Corp) and the
+	 * device is 0x0021 (HB6 Universal PCI-PCI bridge), we reject the
+	 * device.
+	 */
+	if (pci_get_device(dev->device) == 0x0525 &&
+	    pci_get_vendor(device_get_parent(dev->device)) == 0x3388 &&
+	    pci_get_device(device_get_parent(dev->device)) == 0x0021)
+		return 0;
+	else
+		return 2;
 }
 
 static void mga_configure(drm_device_t *dev)

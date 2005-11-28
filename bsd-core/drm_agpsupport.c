@@ -89,6 +89,17 @@ drm_device_find_capability(drm_device_t *dev, int cap)
 
 int drm_device_is_agp(drm_device_t *dev)
 {
+	if (dev->driver.device_is_agp != NULL) {
+		int ret;
+
+		/* device_is_agp returns a tristate, 0 = not AGP, 1 = definitely
+		 * AGP, 2 = fall back to PCI capability
+		 */
+		ret = (*dev->driver.device_is_agp)(dev);
+		if (ret != 2)
+			return ret;
+	}
+
 	return (drm_device_find_capability(dev, PCIY_AGP));
 }
 
