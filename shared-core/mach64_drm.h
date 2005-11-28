@@ -1,6 +1,7 @@
 /* mach64_drm.h -- Public header for the mach64 driver -*- linux-c -*-
  * Created: Thu Nov 30 20:04:32 2000 by gareth@valinux.com
- *
+ */
+/*
  * Copyright 2000 Gareth Hughes
  * Copyright 2002 Frank C. Earl
  * Copyright 2002-2003 Leif Delgass

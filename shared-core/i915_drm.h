@@ -1,5 +1,4 @@
-/**************************************************************************
- * 
+/*
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
  * 
@@ -23,7 +22,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- **************************************************************************/
+ */
 
 #ifndef _I915_DRM_H_
 #define _I915_DRM_H_
