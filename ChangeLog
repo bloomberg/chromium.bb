@@ -1,3 +1,26 @@
+2005-11-28  Dirk Mueller  <dmueller@suse.com>
+	    Stephan Kulow  <coolo@suse.de>
+	reviewed by: plam
+
+	* src/fcmatch.c (FcFontSetMatch):
+
+	Don't kill all fonts during match (oops!)
+
+
+2005-11-25  Dirk Mueller  <dmueller@suse.com>
+            Stephan Kulow  <coolo@suse.de>
+            Michael Matz  <matz@suse.de>
+        reviewed by: plam
+
+        * src/fcmatch.c (FcObjectPtrToMatcher, FcCompareValueList,
+                FcFontSetMatch):
+
+        Rewrite FcFontSetMatch to a path-finding based algorithm, i.e.
+        inline FcCompare into FcFontSetMatch and reorder the
+        loops, adding a boolean array which blocks patterns from future
+        consideration if they're known to not be best on some past
+        criterion.
+
 2005-11-26  Dirk Mueller  <dmueller@suse.com>
 	reviewed by: plam
 	

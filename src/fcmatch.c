@@ -534,11 +534,15 @@ FcFontSetMatch (FcConfig    *config,
     }
     for (set = 0; set < nsets; set++)
     {
+	FcBool        *matchBlocked;
+	int           blockStart;
+
 	s = sets[set];
 	if (!s)
 	    continue;
 
-        char* matchBlocked = (char*)calloc(s->nfont, sizeof(FcBool));
+	matchBlocked = (FcBool*)calloc(s->nfont, sizeof(FcBool));
+	blockStart = 0;
 
 	/* The old algorithm checked if each font beat 'best', 
 	 * scanning all of the value lists for all of the pattern elts. */
@@ -575,18 +579,28 @@ FcFontSetMatch (FcConfig    *config,
 	    if (!match)
 		continue;
 
-            bestscore = 1e99;
-
-            
             for (v1 = pat_elts[pat_elt].values, v1_ptrU = FcValueListPtrU(v1); 
 		 v1_ptrU;
                  v1 = FcValueListPtrU(v1)->next, 
 		     v1_ptrU = FcValueListPtrU(v1), v1_offset++)
             {
-
-		if (v1_ptrU->binding == FcValueBindingWeak
+		if ((v1_ptrU->binding == FcValueBindingWeak
 	             && scoring_index != match->weak)
+                    || (v1_ptrU->binding == FcValueBindingStrong 
+                        && scoring_index != match->strong)
+                    )
                    continue;
+
+		bestscore = 1e99;
+
+		if (FcDebug () & FC_DBG_MATCHV)
+	        {
+			int blocked_fonts = 0;
+			for (f = 0; f < s->nfont; f++)
+				blocked_fonts += matchBlocked[f] ? 1 : 0;
+			printf("Scoring Index %d, Value %d: %d(%d) fonts left\n", 
+				scoring_index, v1_offset, s->nfont - blocked_fonts, s->nfont);	
+		}
 
 	        for (f = 0; f < s->nfont; f++)
 	        {
@@ -644,12 +658,13 @@ FcFontSetMatch (FcConfig    *config,
 			if (best) 
 			{
 			    int b;
-			    for (b = 0; b < f; ++b)
+			    for (b = blockStart; b < f; ++b)
 				matchBlocked[b] = FcTrue;
 			}
 
 			bestscore = score;
 			best = s->fonts[f];
+			blockStart = f;
 		    }
 
 		    /* If f loses, then it's out too. */
@@ -659,9 +674,19 @@ FcFontSetMatch (FcConfig    *config,
 		    /* Otherwise, f is equal to best on this element.
 		     * Carry on to next pattern element. */
 		}
+		if ((FcDebug () & FC_DBG_MATCHV) && best)
+		{
+		    printf ("Best match (scoring index %d) candidate ", scoring_index);
+		    FcPatternPrint (best);
+		}
            }
         }
 	free (matchBlocked);
+    }
+    if ((FcDebug () & FC_DBG_MATCH) && best)
+    {
+	printf ("Best match ");
+	FcPatternPrint (best);
     }
     if (!best)
     {
