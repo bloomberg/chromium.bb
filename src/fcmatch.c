@@ -267,25 +267,12 @@ FcMatchObjectPtrsInit (void)
     matchObjectPtrsInit = FcTrue;
 }
 
-static FcBool
-FcCompareValueList (FcObjectPtr o,
-		    FcValueListPtr v1orig,	/* pattern */
-		    FcValueListPtr v2orig,	/* target */
-		    FcValue	*bestValue,
-		    double	*value,
-		    FcResult	*result)
+static FcMatcher*
+FcObjectPtrToMatcher (FcObjectPtr o)
 {
-    FcValueListPtr  v1, v2;
-    FcValueList     *v1_ptrU, *v2_ptrU;
-    double    	    v, best, bestStrong, bestWeak;
-    int		    i;
-    int		    j;
-    const char	    *object = FcObjectPtrU(o);
+    int 	i;
+    const char  *object = FcObjectPtrU(o);
 
-    /*
-     * Locate the possible matching entry by examining the
-     * first few characters in object
-     */
     i = -1;
     switch (object[0]) {
     case 'f':
@@ -334,18 +321,40 @@ FcCompareValueList (FcObjectPtr o,
 	i = MATCH_OUTLINE; break;
     }
 
+    if (i < 0)
+	return 0;
+
     if (!matchObjectPtrsInit)
         FcMatchObjectPtrsInit();
-    if (_FcMatchers[i].objectPtr != o) i = -1;
 
-    if (i == -1 || 
-	FcStrCmpIgnoreCase ((FcChar8 *) _FcMatchers[i].object,
-			    (FcChar8 *) object) != 0)
+    if (o != _FcMatchers[i].objectPtr)
+	return 0;
+
+    return _FcMatchers+i;
+}
+
+static FcBool
+FcCompareValueList (FcObjectPtr o,
+		    FcValueListPtr v1orig,	/* pattern */
+		    FcValueListPtr v2orig,	/* target */
+		    FcValue	*bestValue,
+		    double	*value,
+		    FcResult	*result)
+{
+    FcValueListPtr  v1, v2;
+    FcValueList     *v1_ptrU, *v2_ptrU;
+    double    	    v, best, bestStrong, bestWeak;
+    int		    j;
+    const char	    *object = FcObjectPtrU(o);
+    FcMatcher       *match = FcObjectPtrToMatcher(o);
+
+    if (!match)
     {
 	if (bestValue)
 	    *bestValue = FcValueCanonicalize(&FcValueListPtrU(v2orig)->value);
 	return FcTrue;
     }
+
     best = 1e99;
     bestStrong = 1e99;
     bestWeak = 1e99;
@@ -356,8 +365,7 @@ FcCompareValueList (FcObjectPtr o,
 	for (v2 = v2orig, v2_ptrU = FcValueListPtrU(v2); v2_ptrU;
 	     v2 = v2_ptrU->next, v2_ptrU = FcValueListPtrU(v2))
 	{
-	    v = (*_FcMatchers[i].compare) (&v1_ptrU->value,
-					   &v2_ptrU->value);
+	    v = (match->compare) (&v1_ptrU->value, &v2_ptrU->value);
 	    if (v < 0)
 	    {
 		*result = FcResultTypeMismatch;
@@ -393,8 +401,8 @@ FcCompareValueList (FcObjectPtr o,
     }
     if (value)
     {
-	int weak    = _FcMatchers[i].weak;
-	int strong  = _FcMatchers[i].strong;
+	int weak    = match->weak;
+	int strong  = match->strong;
 	if (weak == strong)
 	    value[strong] += best;
 	else
@@ -501,15 +509,14 @@ FcFontSetMatch (FcConfig    *config,
 		FcPattern   *p,
 		FcResult    *result)
 {
-    double    	    score[NUM_MATCH_VALUES], bestscore[NUM_MATCH_VALUES];
+    double	    score;
+    double	    bestscore;
     int		    f;
     FcFontSet	    *s;
     FcPattern	    *best;
-    int		    i;
+    int		    scoring_index;
     int		    set;
 
-    for (i = 0; i < NUM_MATCH_VALUES; i++)
-	bestscore[i] = 0;
     best = 0;
     if (FcDebug () & FC_DBG_MATCH)
     {
@@ -530,44 +537,131 @@ FcFontSetMatch (FcConfig    *config,
 	s = sets[set];
 	if (!s)
 	    continue;
-	for (f = 0; f < s->nfont; f++)
-	{
-	    if (FcDebug () & FC_DBG_MATCHV)
-	    {
-		printf ("Font %d ", f);
-		FcPatternPrint (s->fonts[f]);
+
+        char* matchBlocked = (char*)calloc(s->nfont, sizeof(FcBool));
+
+	/* The old algorithm checked if each font beat 'best', 
+	 * scanning all of the value lists for all of the pattern elts. */
+	/* This algorithm checks each font on a element-by-element basis
+	 * and blocks fonts that have already lost on some element from
+	 * further consideration from being best.  Basically, we've
+	 * swapped the order of loops and short-circuited fonts that
+	 * are out of contention right away.
+	 * This saves a lot of time! */
+        for (scoring_index = 0; scoring_index < NUM_MATCH_VALUES; 
+	     scoring_index++)
+        {
+            int 	    pat_elt;
+            FcPatternElt    *pat_elts = FcPatternEltU(p->elts);
+	    FcMatcher	    *match = 0;
+	    FcValueListPtr  v1;
+            FcValueList     *v1_ptrU;
+            int 	    v1_offset = 0;
+
+
+            for (pat_elt = 0; pat_elt < p->num; pat_elt++) 
+            {
+                match = FcObjectPtrToMatcher
+		    ((FcPatternEltU(p->elts)+pat_elt)->object);
+
+		if (match && 
+                    (match->strong == scoring_index ||
+		     match->weak == scoring_index))
+	            break;
+		else
+		    match = 0;
 	    }
-	    if (!FcCompare (p, s->fonts[f], score, result))
-		return 0;
-	    if (FcDebug () & FC_DBG_MATCHV)
-	    {
-		printf ("Score");
-		for (i = 0; i < NUM_MATCH_VALUES; i++)
-		{
-		    printf (" %g", score[i]);
+
+	    if (!match)
+		continue;
+
+            bestscore = 1e99;
+
+            
+            for (v1 = pat_elts[pat_elt].values, v1_ptrU = FcValueListPtrU(v1); 
+		 v1_ptrU;
+                 v1 = FcValueListPtrU(v1)->next, 
+		     v1_ptrU = FcValueListPtrU(v1), v1_offset++)
+            {
+
+		if (v1_ptrU->binding == FcValueBindingWeak
+	             && scoring_index != match->weak)
+                   continue;
+
+	        for (f = 0; f < s->nfont; f++)
+	        {
+		    int 		cand_elt;
+		    FcPatternElt	*cand_elts;
+
+	            if (matchBlocked[f])
+		        continue;
+
+		    score = 0.0;
+		    cand_elts = FcPatternEltU(s->fonts[f]->elts);
+		    
+		    /* Look for the appropriate element in this candidate
+		     * pattern 'f' and evaluate its score wrt 'p'. */
+		    for (cand_elt = 0; cand_elt < s->fonts[f]->num; cand_elt++)
+		    {
+			if (cand_elts[cand_elt].object == 
+			    	pat_elts[pat_elt].object)
+                        {
+			    FcValueListPtr  v2;
+			    FcValueList     *v2_ptrU;
+			    double          v2_best_score = 1e99;
+
+			    for (v2 = cand_elts[cand_elt].values, 
+				     v2_ptrU = FcValueListPtrU(v2);
+				 FcValueListPtrU(v2);
+			         v2 = FcValueListPtrU(v2)->next)
+			    {
+				double v = (match->compare) 
+				    (&v1_ptrU->value, &v2_ptrU->value);
+
+				if (v < 0)
+				{
+				    *result = FcResultTypeMismatch;
+				    return 0;
+				}
+				/* I'm actually kind of surprised that
+				 * this isn't v + 100 * v1_offset. -PL */
+				v = v * 100 + v1_offset;
+				if (v < v2_best_score)
+				    v2_best_score = v;
+			    }
+			    score += v2_best_score;
+			}
+		    }
+
+		    /* If there's a previous champion, and current score
+		     * beats previous best score, on this element, then
+		     * knock out the previous champion and anything
+		     * else that we would have visited previous to f;
+		     * clearly anything previous to f would have been
+		     * less than f on this score. */
+		    if (!best || score < bestscore)
+		    {
+			if (best) 
+			{
+			    int b;
+			    for (b = 0; b < f; ++b)
+				matchBlocked[b] = FcTrue;
+			}
+
+			bestscore = score;
+			best = s->fonts[f];
+		    }
+
+		    /* If f loses, then it's out too. */
+		    if (best && score > bestscore)
+			matchBlocked[f] = FcTrue;
+
+		    /* Otherwise, f is equal to best on this element.
+		     * Carry on to next pattern element. */
 		}
-		printf ("\n");
-	    }
-	    for (i = 0; i < NUM_MATCH_VALUES; i++)
-	    {
-		if (best && bestscore[i] < score[i])
-		    break;
-		if (!best || score[i] < bestscore[i])
-		{
-		    for (i = 0; i < NUM_MATCH_VALUES; i++)
-			bestscore[i] = score[i];
-		    best = s->fonts[f];
-		    break;
-		}
-	    }
-	}
-    }
-    if (FcDebug () & FC_DBG_MATCH)
-    {
-	printf ("Best score");
-	for (i = 0; i < NUM_MATCH_VALUES; i++)
-	    printf (" %g", bestscore[i]);
-	FcPatternPrint (best);
+           }
+        }
+	free (matchBlocked);
     }
     if (!best)
     {
