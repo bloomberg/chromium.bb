@@ -102,12 +102,14 @@
 #define HASH_RANDOM_DECL
 #define HASH_RANDOM_INIT(seed)  srandom(seed)
 #define HASH_RANDOM             random()
+#define HASH_RANDOM_DESTROY
 #else
 #define HASH_ALLOC drmMalloc
 #define HASH_FREE  drmFree
 #define HASH_RANDOM_DECL        void *state
 #define HASH_RANDOM_INIT(seed)  state = drmRandomCreate(seed)
 #define HASH_RANDOM             drmRandom(state)
+#define HASH_RANDOM_DESTROY     drmRandomDestroy(state)
 
 #endif
 
@@ -148,6 +150,7 @@ static unsigned long HashHash(unsigned long key)
 	HASH_RANDOM_DECL;
 	HASH_RANDOM_INIT(37);
 	for (i = 0; i < 256; i++) scatter[i] = HASH_RANDOM;
+	HASH_RANDOM_DESTROY;
 	++init;
     }
 
