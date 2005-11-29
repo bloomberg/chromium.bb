@@ -34,8 +34,6 @@ static int fcpatternelt_ptr, fcpatternelt_count;
 FcValueList ** _fcValueLists = 0;
 static int fcvaluelist_bank_count = 0, fcvaluelist_ptr, fcvaluelist_count;
 
-static const char *
-FcPatternFindFullFname (const FcPattern *p);
 static FcPatternEltPtr
 FcPatternEltPtrCreateDynamic (FcPatternElt * e);
 
@@ -2016,7 +2014,7 @@ FcPatternAddFullFname (const FcPattern *p, const char *fname)
     pb->next->m.fname = fname;
 }
 
-static const char *
+const char *
 FcPatternFindFullFname (const FcPattern *p)
 {
     struct patternDirBucket	*pb;

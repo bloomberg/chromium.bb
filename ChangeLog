@@ -1,3 +1,16 @@
+2005-11-28  Patrick Lam  <plam@mit.edu>
+	* src/fcint.h:
+	* src/fcpat.c (FcPatternFindFullFname):
+	* src/fccfg.c (FcConfigBuildFonts):
+
+	Fix problem dating back at least to 2.3.2 where globs weren't
+	being applied to patterns loaded from a cache.
+
+2005-11-28  Patrick Lam  <plam@mit.edu>
+	* doc/fontconfig-user.sgml:
+
+	Fix some obvious spelling mistakes.
+	
 2005-11-28  Dirk Mueller  <dmueller@suse.com>
 	    Stephan Kulow  <coolo@suse.de>
 	reviewed by: plam

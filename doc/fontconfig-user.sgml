@@ -57,7 +57,7 @@ which accepts font patterns and returns the nearest matching font.
   <refsect2><title>Font Configuration</title>
     <para>
 The configuration module consists of the FcConfig datatype, libexpat and
-FcConfigParse which walks over an XML tree and ammends a configuration with
+FcConfigParse which walks over an XML tree and amends a configuration with
 data found within.  From an external perspective, configuration of the
 library consists of generating a valid XML tree and feeding that to
 FcConfigParse.  The only other mechanism provided to applications for
@@ -87,17 +87,17 @@ simplify and regularize font installation and customization.
 While font patterns may contain essentially any properties, there are some
 well known properties with associated types.  Fontconfig uses some of these
 properties for font matching and font completion.  Others are provided as a
-convenience for the applications rendering mechanism.
+convenience for the applications' rendering mechanism.
     </para>
     <programlisting>
   Property        Type    Description
   --------------------------------------------------------------
   family          String  Font family names
-  familylang      String  Languages cooresponding to each family
+  familylang      String  Languages corresponding to each family
   style           String  Font style. Overrides weight and slant
-  stylelang       String  Languages cooresponding to each style
+  stylelang       String  Languages corresponding to each style
   fullname        String  Font full names (often includes style)
-  fullnamelang    String  Languages cooresponding to each fullname
+  fullnamelang    String  Languages corresponding to each fullname
   slant           Int     Italic, oblique or roman
   weight          Int     Light, medium, demibold, bold or black
   size            Double  Point size
@@ -285,7 +285,7 @@ default "no", a missing file or directory will elicit no warning message from
 the library.
   </para></refsect2>
   <refsect2><title><sgmltag>config</></title><para>
-This element provides a place to consolodate additional configuration
+This element provides a place to consolidate additional configuration
 information.  <sgmltag>config</> can contain <sgmltag>blank</> and <sgmltag>rescan</> elements in any
 order.
   </para></refsect2>
@@ -324,7 +324,8 @@ Glob elements hold shell-style filename matching patterns (including ? and
 *) which match fonts based on their complete pathnames.  This can be used to
 exclude a set of directories (/usr/share/fonts/uglyfont*), or particular
 font file types (*.pcf.gz), but the latter mechanism relies rather heavily
-on filenaming conventions which can't be relied upon.
+on filenaming conventions which can't be relied upon.  Note that globs
+only apply to directories, not to individual fonts.
   </para></refsect2>
   <refsect2><title><sgmltag>pattern</></title><para>
 Pattern elements perform list-style matching on incoming fonts; that is,
@@ -470,7 +471,7 @@ operations needed to substitute one font family for another.  They contain a
 <sgmltag>family</> element followed by optional <sgmltag>prefer</>, <sgmltag>accept</> and <sgmltag>default</>
 elements.  Fonts matching the <sgmltag>family</> element are edited to prepend the
 list of <sgmltag>prefer</>ed families before the matching <sgmltag>family</>, append the
-<sgmltag>accept</>able familys after the matching <sgmltag>family</> and append the <sgmltag>default</>
+<sgmltag>accept</>able families after the matching <sgmltag>family</> and append the <sgmltag>default</>
 families to the end of the family list.
   </para></refsect2>
   <refsect2><title><sgmltag>family</></title><para>
