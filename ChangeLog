@@ -1,4 +1,9 @@
 2005-11-28  Patrick Lam  <plam@mit.edu>
+	* src/fccfg.c (FcConfigBuildFonts):
+
+	Fix segfault.
+
+2005-11-28  Patrick Lam  <plam@mit.edu>
 	* src/fcint.h:
 	* src/fcpat.c (FcPatternFindFullFname):
 	* src/fccfg.c (FcConfigBuildFonts):
