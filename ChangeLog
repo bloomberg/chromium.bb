@@ -1,3 +1,12 @@
+2005-11-29  Patrick Lam  <plam@mit.edu>
+	* src/fccfg.c (FcConfigBuildFonts):
+	* src/fcint.h:
+	* src/fcpat.c (FcPatternFindFullFname):
+
+	Don't make FcPatternFindFullFname available to fccfg, it's not
+	really safe.  Instead go through FcPatternGetString (sorry,
+	perf guys.)  Also, use globs for dirs as well.
+
 2005-11-28  Patrick Lam  <plam@mit.edu>
 	* src/fccfg.c (FcConfigBuildFonts):
 

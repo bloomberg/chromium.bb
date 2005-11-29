@@ -848,9 +848,6 @@ FcPatternAppend (FcPattern *p, FcPattern *s);
 void
 FcPatternAddFullFname (const FcPattern *p, const char *fname);
 
-const char *
-FcPatternFindFullFname (const FcPattern *p);
-
 void
 FcPatternTransferFullFname (const FcPattern *new, const FcPattern *orig);
 

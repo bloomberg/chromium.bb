@@ -37,6 +37,9 @@ static int fcvaluelist_bank_count = 0, fcvaluelist_ptr, fcvaluelist_count;
 static FcPatternEltPtr
 FcPatternEltPtrCreateDynamic (FcPatternElt * e);
 
+static const char *
+FcPatternFindFullFname (const FcPattern *p);
+
 /* If you are trying to duplicate an FcPattern which will be used for
  * rendering, be aware that (internally) you also have to use
  * FcPatternTransferFullFname to transfer the associated filename.  If
@@ -2014,7 +2017,7 @@ FcPatternAddFullFname (const FcPattern *p, const char *fname)
     pb->next->m.fname = fname;
 }
 
-const char *
+static const char *
 FcPatternFindFullFname (const FcPattern *p)
 {
     struct patternDirBucket	*pb;
