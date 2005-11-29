@@ -1,5 +1,13 @@
 2005-11-29  Patrick Lam  <plam@mit.edu>
 	* src/fccfg.c (FcConfigBuildFonts):
+	* src/fccache.c (FcCacheReadDirs):
+
+	Make the perf guys hate me a bit less: hoist the directory-name
+	FcConfigAcceptFont check for cached fonts up to directory cache
+	read time, rather than running it for each font.
+
+2005-11-29  Patrick Lam  <plam@mit.edu>
+	* src/fccfg.c (FcConfigBuildFonts):
 	* src/fcint.h:
 	* src/fcpat.c (FcPatternFindFullFname):
 

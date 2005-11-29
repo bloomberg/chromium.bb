@@ -308,13 +308,11 @@ FcConfigBuildFonts (FcConfig *config)
 
 	for (i = 0; i < cached_fonts->nfont; i++)
 	{
-	    FcChar8 	*cfn, *cfd; 
+	    FcChar8 	*cfn; 
 	    FcPatternGetString (cached_fonts->fonts[i], FC_FILE, 0, &cfn);
-	    cfd = (FcChar8 *)FcCacheFindBankDir (cached_fonts->fonts[i]->bank);
 
 	    if (FcConfigAcceptFont (config, cached_fonts->fonts[i]) &&
-                (cfn && FcConfigAcceptFilename (config, cfn)) &&
-		(cfd && FcConfigAcceptFilename (config, cfd)))
+                (cfn && FcConfigAcceptFilename (config, cfn)))
 		FcFontSetAdd (fonts, cached_fonts->fonts[i]);
 
 	    cached_fonts->fonts[i] = 0; /* prevent free in FcFontSetDestroy */

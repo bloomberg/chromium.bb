@@ -624,6 +624,9 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
      */
     while ((dir = FcStrListNext (list)))
     {
+	if (!FcConfigAcceptFilename (config, dir))
+	    continue;
+
 	/* freed below */
 	file = (FcChar8 *) malloc (strlen ((char *) dir) + 1 + FC_MAX_FILE_LEN + 1);
 	if (!file)
