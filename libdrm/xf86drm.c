@@ -59,13 +59,8 @@
 # include <sys/mman.h>
 # include <sys/time.h>
 # include <stdarg.h>
-# ifdef DRM_USE_MALLOC
-#  define _DRM_MALLOC malloc
-#  define _DRM_FREE   free
-# else
-#  define _DRM_MALLOC malloc
-#  define _DRM_FREE   free
-# endif
+# define _DRM_MALLOC malloc
+# define _DRM_FREE   free
 # include "drm.h"
 #endif
 
