@@ -1498,7 +1498,7 @@ int drmAgpEnable(int fd, unsigned long mode)
  * arguments in a drm_agp_buffer structure.
  */
 int drmAgpAlloc(int fd, unsigned long size, unsigned long type,
-		unsigned long *address, unsigned long *handle)
+		unsigned long *address, drm_handle_t *handle)
 {
     drm_agp_buffer_t b;
 
@@ -1525,7 +1525,7 @@ int drmAgpAlloc(int fd, unsigned long size, unsigned long type,
  * This function is a wrapper around the DRM_IOCTL_AGP_FREE ioctl, passing the
  * argument in a drm_agp_buffer structure.
  */
-int drmAgpFree(int fd, unsigned long handle)
+int drmAgpFree(int fd, drm_handle_t handle)
 {
     drm_agp_buffer_t b;
 
@@ -1549,7 +1549,7 @@ int drmAgpFree(int fd, unsigned long handle)
  * This function is a wrapper around the DRM_IOCTL_AGP_BIND ioctl, passing the
  * argument in a drm_agp_binding structure.
  */
-int drmAgpBind(int fd, unsigned long handle, unsigned long offset)
+int drmAgpBind(int fd, drm_handle_t handle, unsigned long offset)
 {
     drm_agp_binding_t b;
 
@@ -1572,7 +1572,7 @@ int drmAgpBind(int fd, unsigned long handle, unsigned long offset)
  * This function is a wrapper around the DRM_IOCTL_AGP_UNBIND ioctl, passing
  * the argument in a drm_agp_binding structure.
  */
-int drmAgpUnbind(int fd, unsigned long handle)
+int drmAgpUnbind(int fd, drm_handle_t handle)
 {
     drm_agp_binding_t b;
 
@@ -1762,7 +1762,7 @@ unsigned int drmAgpDeviceId(int fd)
     return i.id_device;
 }
 
-int drmScatterGatherAlloc(int fd, unsigned long size, unsigned long *handle)
+int drmScatterGatherAlloc(int fd, unsigned long size, drm_handle_t *handle)
 {
     drm_scatter_gather_t sg;
 
@@ -1774,7 +1774,7 @@ int drmScatterGatherAlloc(int fd, unsigned long size, unsigned long *handle)
     return 0;
 }
 
-int drmScatterGatherFree(int fd, unsigned long handle)
+int drmScatterGatherFree(int fd, drm_handle_t handle)
 {
     drm_scatter_gather_t sg;
 
