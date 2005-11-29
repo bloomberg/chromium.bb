@@ -164,12 +164,17 @@ void drmFree(void *pt)
 /* drmStrdup can't use strdup(3), since it doesn't call _DRM_MALLOC... */
 static char *drmStrdup(const char *s)
 {
-    char *retval = NULL;
+    char *retval;
 
-    if (s) {
-	retval = _DRM_MALLOC(strlen(s)+1);
-	strcpy(retval, s);
-    }
+    if (!s)
+        return NULL;
+
+    retval = _DRM_MALLOC(strlen(s)+1);
+    if (!retval)
+        return NULL;
+
+    strcpy(retval, s);
+
     return retval;
 }
 
