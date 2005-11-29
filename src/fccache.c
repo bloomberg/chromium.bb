@@ -782,11 +782,11 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set)
 			      PROT_READ, MAP_SHARED, fd, pos);
     if (current_dir_block == MAP_FAILED)
 	return FcFalse;
-    
-    if (!FcFontSetUnserialize (&metadata, set, current_dir_block))
-	return FcFalse;
 
     FcCacheAddBankDir (metadata.bank, dir);
+
+    if (!FcFontSetUnserialize (&metadata, set, current_dir_block))
+	return FcFalse;
 
     return FcTrue;
 }
@@ -989,7 +989,7 @@ FcCacheMachineSignature ()
 }
 
 static int banks_ptr = 0, banks_alloc = 0;
-static int * bankId = 0, * bankIdx = 0;
+int * _fcBankId = 0, * _fcBankIdx = 0;
 static const char ** bankDirs = 0;
 
 static FcBool
@@ -1001,25 +1001,25 @@ FcCacheHaveBank (int bank)
 	return FcTrue;
 
     for (i = 0; i < banks_ptr; i++)
-	if (bankId[i] == bank)
+	if (_fcBankId[i] == bank)
 	    return FcTrue;
 
     return FcFalse;
 }
 
 int
-FcCacheBankToIndex (int bank)
+FcCacheBankToIndexMTF (int bank)
 {
     int i, j;
 
     for (i = 0; i < banks_ptr; i++)
-	if (bankId[bankIdx[i]] == bank)
+	if (_fcBankId[_fcBankIdx[i]] == bank)
 	{
-	    int t = bankIdx[i];
+	    int t = _fcBankIdx[i];
 
 	    for (j = i; j > 0; j--)
-		bankIdx[j] = bankIdx[j-1];
-	    bankIdx[0] = t;
+		_fcBankIdx[j] = _fcBankIdx[j-1];
+	    _fcBankIdx[0] = t;
 	    return t;
 	}
 
@@ -1028,15 +1028,15 @@ FcCacheBankToIndex (int bank)
 	int * b, * bidx;
 	const char ** bds;
 
-	b = realloc (bankId, (banks_alloc + 4) * sizeof(int));
+	b = realloc (_fcBankId, (banks_alloc + 4) * sizeof(int));
 	if (!b)
 	    return -1;
-	bankId = b;
+	_fcBankId = b;
 
-	bidx = realloc (bankIdx, (banks_alloc + 4) * sizeof(int));
+	bidx = realloc (_fcBankIdx, (banks_alloc + 4) * sizeof(int));
 	if (!bidx)
 	    return -1;
-	bankIdx = bidx;
+	_fcBankIdx = bidx;
 
 	bds = realloc (bankDirs, (banks_alloc + 4) * sizeof (char *));
 	if (!bds)
@@ -1047,15 +1047,15 @@ FcCacheBankToIndex (int bank)
     }
 
     i = banks_ptr++;
-    bankId[i] = bank;
-    bankIdx[i] = i;
+    _fcBankId[i] = bank;
+    _fcBankIdx[i] = i;
     return i;
 }
 
 static void
 FcCacheAddBankDir (int bank, const char * dir)
 {
-    int bi = FcCacheBankToIndex (bank);
+    int bi = FcCacheBankToIndexMTF (bank);
 
     if (bi < 0)
 	return;

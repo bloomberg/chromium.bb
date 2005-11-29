@@ -1,3 +1,17 @@
+2005-11-29  Dirk Mueller  <dmueller@suse.de>
+	reviewed by: plam
+	
+	* fc-lang/fc-lang.c:
+	* src/fccache.c (FcDirCacheConsume, FcCacheHaveBank,
+			 FcCacheBankToIndex, FcCacheBankToIndexMTF,
+			 FcCacheAddBankDir):
+	* src/fcint.h:
+
+	Refactor FcCacheBankToIndex into an inlineable part
+	(in fcint.h) which checks the front of the list and a
+	non-inlineable part which finds and moves the appropriate element
+	to the front of the list.
+
 2005-11-29  Patrick Lam  <plam@mit.edu>
 	* src/fccfg.c (FcConfigBuildFonts):
 	* src/fccache.c (FcCacheReadDirs):

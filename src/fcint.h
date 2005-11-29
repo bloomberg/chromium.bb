@@ -462,8 +462,15 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet * dirs, const FcChar8 *dir);
 FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir);
 
+extern int *_fcBankId, *_fcBankIdx;
 int
-FcCacheBankToIndex (int bank);
+FcCacheBankToIndexMTF (int bank);
+
+static __inline__ int
+FcCacheBankToIndex (int bank)
+{
+    return _fcBankId[*_fcBankIdx] == bank ? *_fcBankIdx : FcCacheBankToIndexMTF(bank);
+}
 
 const char *
 FcCacheFindBankDir (int bank);

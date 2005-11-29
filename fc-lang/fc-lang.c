@@ -51,8 +51,11 @@ FcMemFree (int kind, int size)
 {
 }
 
+int* _fcBankId = 0;
+int* _fcBankIdx = 0;
+
 int
-FcCacheBankToIndex (int bank)
+FcCacheBankToIndexMTF (int bank)
 {
     return -1;
 }
