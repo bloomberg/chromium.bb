@@ -1,3 +1,10 @@
+2005-11-30  Behdad Befahbod  <behdad@cs.toronto.edu>
+	reviewed by: plam
+
+	* src/fcxml.c (FcConfigParseAndLoad):
+
+	Only add a config file to the set of config files once.
+
 2005-11-29  Patrick Lam  <plam@mit.edu>
 	* src/fcint.h (FcCacheBankToIndex);
 

@@ -2368,6 +2368,12 @@ FcConfigParseAndLoad (FcConfig	    *config,
     if (!filename)
 	goto bail0;
     
+    if (FcStrSetMember (config->configFiles, filename))
+    {
+        FcStrFree (filename);
+        return FcTrue;
+    }
+
     if (!FcStrSetAdd (config->configFiles, filename))
     {
 	FcStrFree (filename);
