@@ -78,7 +78,7 @@ extern unsigned long _bus_base(void);
 
 #include "xf86drm.h"
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #define DRM_MAJOR 145
 #endif
 
