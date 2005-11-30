@@ -33,6 +33,10 @@
 
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.36 2003/08/24 17:35:35 tsi Exp $ */
 
+#ifdef HAVE_XORG_CONFIG_H
+#include <xorg-config.h>
+#endif
+
 #ifdef XFree86Server
 # include "xf86.h"
 # include "xf86_OSproc.h"
