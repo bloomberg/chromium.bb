@@ -19,7 +19,7 @@
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 AC_PREREQ(2.57)
-AC_INIT([libdrm], 1.0.5, [dri-devel@lists.sourceforge.net], libdrm)
+AC_INIT([libdrm], 2.0, [dri-devel@lists.sourceforge.net], libdrm)
 AC_CONFIG_SRCDIR([Makefile.am])
 AM_INIT_AUTOMAKE([dist-bzip2])
 
