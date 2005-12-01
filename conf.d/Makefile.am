@@ -22,6 +22,7 @@
 #  PERFORMANCE OF THIS SOFTWARE.
 
 CONF_FILES = \
+	10-fonts-persian.conf \
 	autohint.conf \
 	no-bitmaps.conf \
 	no-sub-pixel.conf \

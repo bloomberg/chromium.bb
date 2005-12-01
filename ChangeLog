@@ -1,4 +1,12 @@
-2005-11-30  Behdad Befahbod  <behdad@cs.toronto.edu>
+2005-12-01  Behdad Esfahbod  <behdad@cs.toronto.edu>
+	reviewed by: plam
+
+	* conf.d/10-fonts.persian.conf:
+	* conf.d/Makefile.am:
+
+	Add config file for Persian fonts from Sharif FarsiWeb, Inc.
+
+2005-11-30  Behdad Esfahbod  <behdad@cs.toronto.edu>
 	reviewed by: plam
 
 	* src/fcxml.c (FcConfigParseAndLoad):
