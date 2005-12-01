@@ -1,3 +1,8 @@
+2005-12-01  Patrick Lam  <plam@mit.edu>
+	* fc-cat/fc-cat.c (FcCacheGlobalFileReadAndPrint, main):
+
+	Add codepath for reading global cache files as well.
+
 2005-12-01  Behdad Esfahbod  <behdad@cs.toronto.edu>
 	reviewed by: plam
 
