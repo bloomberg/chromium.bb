@@ -35,7 +35,11 @@
 #include "drm.h"
 #include "drm_sarea.h"
 
+#ifdef DRM_DEBUG_DEFAULT_ON
+int drm_debug_flag = 1;
+#else
 int drm_debug_flag = 0;
+#endif
 
 static int drm_load(drm_device_t *dev);
 static void drm_unload(drm_device_t *dev);
