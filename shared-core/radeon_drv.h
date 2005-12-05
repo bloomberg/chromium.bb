@@ -87,10 +87,11 @@
          R200_EMIT_PP_TXCTLALL_0-5 (replaces R200_EMIT_PP_TXFILTER_0-5, 2 more regs)
          and R200_EMIT_ATF_TFACTOR (replaces R200_EMIT_TFACTOR_0 (8 consts instead of 6)
  * 1.19- Add support for gart table in FB memory and PCIE r300
+ * 1.20- Add support for r300 texrect
  */
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		19
+#define DRIVER_MINOR		20
 #define DRIVER_PATCHLEVEL	0
 
 enum radeon_family {

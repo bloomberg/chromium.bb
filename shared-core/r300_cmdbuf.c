@@ -211,6 +211,7 @@ void r300_init_reg_flags(void)
 	ADD_RANGE(R300_TX_UNK1_0, 16);
 	ADD_RANGE(R300_TX_SIZE_0, 16);
 	ADD_RANGE(R300_TX_FORMAT_0, 16);
+	ADD_RANGE(R300_TX_PITCH_0, 16);
 		/* Texture offset is dangerous and needs more checking */
 	ADD_RANGE_MARK(R300_TX_OFFSET_0, 16, MARK_CHECK_OFFSET);
 	ADD_RANGE(R300_TX_UNK4_0, 16);
