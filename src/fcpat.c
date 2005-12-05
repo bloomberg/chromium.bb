@@ -36,6 +36,8 @@ static int fcvaluelist_bank_count = 0, fcvaluelist_ptr, fcvaluelist_count;
 
 static FcPatternEltPtr
 FcPatternEltPtrCreateDynamic (FcPatternElt * e);
+static FcBool
+FcStrHashed (const FcChar8 *name);
 
 static const char *
 FcPatternFindFullFname (const FcPattern *p);
@@ -69,7 +71,8 @@ FcValueDestroy (FcValue v)
 {
     switch (v.type) {
     case FcTypeString:
-	FcStrFree ((FcChar8 *) v.u.s);
+        if (!FcStrHashed (v.u.s))
+            FcStrFree ((FcChar8 *) v.u.s);
 	break;
     case FcTypeMatrix:
 	FcMatrixFree ((FcMatrix *) v.u.m);
@@ -150,7 +153,8 @@ FcValueListDestroy (FcValueListPtr l)
     {
 	switch (FcValueListPtrU(l)->value.type) {
 	case FcTypeString:
-	    FcStrFree ((FcChar8 *)FcValueListPtrU(l)->value.u.s);
+            if (!FcStrHashed ((FcChar8 *)FcValueListPtrU(l)->value.u.s))
+                FcStrFree ((FcChar8 *)FcValueListPtrU(l)->value.u.s);
 	    break;
 	case FcTypeMatrix:
 	    FcMatrixFree ((FcMatrix *)FcValueListPtrU(l)->value.u.m);
@@ -1364,6 +1368,19 @@ static struct objectBucket {
     struct objectBucket	*next;
     FcChar32		hash;
 } *FcObjectBuckets[OBJECT_HASH_SIZE];
+
+static FcBool
+FcStrHashed (const FcChar8 *name)
+{
+    FcChar32		hash = FcStringHash (name);
+    struct objectBucket	**p;
+    struct objectBucket	*b;
+
+    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
+	if (b->hash == hash && !strcmp ((char *)name, (char *) (b + 1)))
+            return FcTrue;
+    return FcFalse;
+}
 
 const FcChar8 *
 FcStrStaticName (const FcChar8 *name)
