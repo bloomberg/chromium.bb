@@ -155,6 +155,9 @@ FcNameGetObjectType (const char *object)
     
     for (l = _FcObjectTypes; l; l = l->next)
     {
+        if (l == (FcObjectTypeList*)_FcUserObjectNames)
+            continue;
+
 	for (i = 0; i < l->ntypes; i++)
 	{
 	    t = &l->types[i];

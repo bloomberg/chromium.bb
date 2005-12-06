@@ -1,4 +1,9 @@
 2005-12-05  Patrick Lam  <plam@mit.edu>
+	* src/fcname.c (FcNameGetObjectType):
+
+	Don't assign types to user object names.
+
+2005-12-05  Patrick Lam  <plam@mit.edu>
 	* src/fcpat.c (FcValueDestroy, FcValueListDestroy, FcStrHashed):
 
 	Don't free strings that have been returned from FcStrStaticName.
