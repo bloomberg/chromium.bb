@@ -1,3 +1,8 @@
+2005-12-06  Patrick Lam  <plam@mit.edu>
+	* fc-cat/fc-cat.c (FcCachePrintSet, FcCacheGlobalFileReadAndPrint):
+
+	Fix warnings.
+
 2005-12-05  Patrick Lam  <plam@mit.edu>
 	* src/fcname.c (FcNameGetObjectType):
 

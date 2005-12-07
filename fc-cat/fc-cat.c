@@ -78,6 +78,9 @@ extern int optind, opterr, optopt;
 #define PUTC(c,f) putc(c,f)
 #endif
 
+FcBool
+FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *cache_file);
+
 static FcBool
 FcCacheWriteChars (FILE *f, const FcChar8 *chars)
 {
@@ -169,11 +172,9 @@ FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char * dir, char
 {
     char		name_buf[8192];
     int fd;
-    FcGlobalCacheDir	*d, *next;
     char * current_arch_machine_name;
     char candidate_arch_machine_name[9+MACHINE_SIGNATURE_SIZE];
     off_t current_arch_start = 0;
-    char subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
 
     if (!cache_file)
 	goto bail;
@@ -194,8 +195,6 @@ FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char * dir, char
 
     while (1) 
     {
-	off_t targ;
-
 	FcCacheReadString (fd, name_buf, sizeof (name_buf));
 	if (!strlen(name_buf))
 	    break;
@@ -343,8 +342,6 @@ FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *cache_file)
 bail3:
     FcStrListDone (list);
 bail2:
-bail1:
-bail0:
     return FcFalse;
 }
 
