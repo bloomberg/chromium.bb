@@ -1,3 +1,9 @@
+2005-12-07  Patrick Lam  <plam@mit.edu>
+	* src/fcpat.c (FcPatternAddString):
+
+	Because we've changed FcPatternAddString to use FcStrStaticName
+	and not FcValueSave, explicitly handle the case of a null string.
+
 2005-12-06  Patrick Lam  <plam@mit.edu>
 	* fc-cat/fc-cat.c (FcCachePrintSet, FcCacheGlobalFileReadAndPrint):
 

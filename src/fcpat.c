@@ -1029,6 +1029,13 @@ FcPatternAddString (FcPattern *p, const char *object, const FcChar8 *s)
 {
     FcValue	v;
 
+    if (!s)
+    {
+	v.type = FcTypeVoid;
+	v.u.s = 0;
+	return FcPatternAdd (p, object, v, FcTrue);
+    }
+
     v.type = FcTypeString;
     v.u.s = FcStrStaticName(s);
     return FcPatternAdd (p, object, v, FcTrue);
