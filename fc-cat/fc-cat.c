@@ -184,7 +184,8 @@ FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char * dir, char
     if (fd == -1)
 	goto bail;
 
-    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
+    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name,
+					   FcTrue);
     if (current_arch_start < 0)
 	goto bail1;
 
@@ -225,6 +226,7 @@ FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char * dir, char *cache_file)
     char candidate_arch_machine_name[9+MACHINE_SIGNATURE_SIZE];
     off_t current_arch_start = 0;
     char subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
+    char name_buf[8192];
 
     if (!cache_file)
         goto bail;
@@ -234,7 +236,14 @@ FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char * dir, char *cache_file)
     if (fd == -1)
         goto bail;
 
-    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
+    FcCacheReadString (fd, name_buf, sizeof (name_buf));
+    if (!strlen (name_buf))
+	goto bail;
+    printf ("fc-cat: printing directory cache contents for dir %s\n", 
+	    name_buf);
+
+    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name,
+					   FcFalse);
     if (current_arch_start < 0)
         goto bail1;
 

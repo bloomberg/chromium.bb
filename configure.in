@@ -479,6 +479,13 @@ fi
 
 AC_SUBST(DOCDIR)
 
+#
+# Make /var/cache/fontconfig directory available to source code
+#
+
+pkgcachedir='${localstatedir}/cache/'${PACKAGE}
+AC_SUBST(pkgcachedir)
+
 AC_OUTPUT([
 Makefile 
 fontconfig/Makefile

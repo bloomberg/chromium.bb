@@ -27,6 +27,8 @@ FC_CAT_SRC=${top_srcdir}/fc-cat
 
 SGML = ${FC_CAT_SRC}/fc-cat.sgml
 
+AM_CPPFLAGS = -DPKGCACHEDIR='"${pkgcachedir}"'
+
 INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
 
 bin_PROGRAMS=fc-cat

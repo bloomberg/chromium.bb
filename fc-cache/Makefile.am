@@ -27,6 +27,8 @@ FC_CACHE_SRC=${top_srcdir}/fc-cache
 
 SGML = ${FC_CACHE_SRC}/fc-cache.sgml
 
+AM_CPPFLAGS = -DPKGCACHEDIR='"${pkgcachedir}"'
+
 INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
 
 bin_PROGRAMS=fc-cache

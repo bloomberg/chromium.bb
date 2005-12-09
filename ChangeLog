@@ -1,3 +1,23 @@
+2005-12-09  Patrick Lam  <plam@mit.edu>
+	* INSTALL:
+	* configure.in:
+	* fc-cache/Makefile.am:
+	* fc-cat/Makefile.am:
+	* src/Makefile.am:
+	* fc-cat/fc-cat.c (FcCacheGlobalFileReadAndPrint, FcCacheFileRead):
+	* fontconfig/fontconfig.h (FC_CACHE_SUFFIX):
+	* src/fccache.c (FcCacheSkipString, FcGlobalCacheLoad,
+			FcGlobalCacheSave, FcCacheNextOffset, FcDirCacheValid,
+			FcDirCacheHasCurrentArch, FcDirCacheHashName,
+			FcDirCacheOpen, FcDirCacheRead, FcDirCacheWrite):
+
+	Migrate cache files from fonts directories to
+	/var/cache/fontconfig.  This helps make fontconfig FHS-compliant,
+	but requires that all caches get rebuilt.
+
+	Also, autogen.sh now needs the additional parameter
+	--localstatedir=/var.
+	
 2005-12-07  Patrick Lam  <plam@mit.edu>
 	* src/fcpat.c (FcPatternAddString):
 

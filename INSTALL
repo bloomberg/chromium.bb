@@ -18,7 +18,7 @@ important steps:
 		Set the date
  3.	Commit those changes
  4. 	rebuild the configuration files with autogen.sh
- 		sh autogen.sh --sysconfdir=/etc --prefix=/usr --mandir=/usr/share/man
+ 		sh autogen.sh --sysconfdir=/etc --prefix=/usr --mandir=/usr/share/man --localstatedir=/var
  5.	make distcheck (NB: won't work without docbook-utils -PL)
  6.	tag the tree
  		cvs tag fc-2_2_xx

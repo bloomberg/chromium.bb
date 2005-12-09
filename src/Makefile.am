@@ -63,6 +63,8 @@ uninstall-ms-import-lib:
 
 endif
 
+AM_CPPFLAGS = -DPKGCACHEDIR='"${pkgcachedir}"'
+
 INCLUDES = 						\
 	$(FREETYPE_CFLAGS)				\
 	$(LIBXML2_CFLAGS)				\
