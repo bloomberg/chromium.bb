@@ -590,6 +590,9 @@ FcCacheCopyOld (int fd, int fd_orig, off_t start)
 }
 
 /* Does not check that the cache has the appropriate arch section. */
+/* Also, this can be fooled if the original location has a stale
+ * cache, and the hashed location has an up-to-date cache.  Oh well,
+ * sucks to be you in that case! */
 FcBool
 FcDirCacheValid (const FcChar8 *dir)
 {
@@ -840,6 +843,10 @@ FcDirCacheOpen (char *cache_file)
     char	*cache_hashed;
     char	name_buf[FC_MAX_FILE_LEN];
 
+    fd = open(cache_file, O_RDONLY);
+    if (fd != -1)
+	return fd;
+
     do
     {
 	cache_hashed = FcDirCacheHashName (cache_file, collisions++);
@@ -992,7 +999,7 @@ FcBool
 FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 {
     char	    *cache_file;
-    char 	    *cache_hashed;
+    char	    *cache_to_open;
     int 	    fd, fd_orig, i, dirs_count;
     FcAtomic 	    *atomic;
     FcCache 	    metadata;
@@ -1013,13 +1020,13 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     fd = -1; collisions = 0;
     do
     {
-	cache_hashed = FcDirCacheHashName (cache_file, collisions++);
-	if (!cache_hashed)
+	cache_to_open = FcDirCacheHashName (cache_file, collisions++);
+	if (!cache_to_open)
 	    goto bail0;
 
 	if (fd > 0)
 	    close (fd);
-	fd = open(cache_hashed, O_RDONLY);
+	fd = open(cache_to_open, O_RDONLY);
 	if (fd == -1)
 	    break;
 	FcCacheReadString (fd, name_buf, sizeof (name_buf));
@@ -1040,18 +1047,34 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     if (FcDebug () & FC_DBG_CACHE)
         printf ("FcDirCacheWriteDir cache_file \"%s\"\n", cache_file);
 
-    atomic = FcAtomicCreate ((FcChar8 *)cache_hashed);
+    atomic = FcAtomicCreate ((FcChar8 *)cache_to_open);
     if (!atomic)
 	goto bail1;
 
     if (!FcAtomicLock (atomic))
-        goto bail2;
+    {
+	/* Now try rewriting the original version of the file. */
+	FcAtomicDestroy (atomic);
 
-    fd_orig = open((char *)FcAtomicOrigFile (atomic), O_RDONLY, 0666);
+	atomic = FcAtomicCreate (cache_file);
+	fd_orig = open (cache_file, O_RDONLY);
+	if (fd_orig == -1)
+	    fd_orig = open((char *)FcAtomicOrigFile (atomic), O_RDONLY);
+
+	fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT, 0666);
+	if (fd == -1)
+	    goto bail2;
+    }
+
+    /* In all cases, try opening the real location of the cache file first. */
+    /* (even if that's not atomic.) */
+    fd_orig = open (cache_file, O_RDONLY);
+    if (fd_orig == -1)
+	fd_orig = open((char *)FcAtomicOrigFile (atomic), O_RDONLY);
 
     fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT, 0666);
     if (fd == -1)
-        goto bail3;
+	goto bail3;
 
     FcCacheWriteString (fd, cache_file);
 
@@ -1123,7 +1146,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
  bail2:
     FcAtomicDestroy (atomic);
  bail1:
-    free (cache_hashed);
+    free (cache_to_open);
  bail0:
     unlink ((char *)cache_file);
     free (cache_file);

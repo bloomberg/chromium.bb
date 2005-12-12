@@ -1,4 +1,11 @@
 2005-12-12  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheOpen, FcDirCacheWrite):
+
+	Read and write the original location as a fallback for the
+	hashed cache file locations.  This is mostly for users to be
+	able to have per-directory cache files.
+
+2005-12-12  Patrick Lam  <plam@mit.edu>
 	* fc-cache/fc-cache.c (scanDirs):
 	* fc-cache/Makefile.am:
 	* src/fccache.c (FcDirCacheHashName):
