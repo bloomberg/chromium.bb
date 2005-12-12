@@ -209,7 +209,9 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 
 	    if (!FcDirSave (set, subdirs, dir))
 	    {
-		fprintf (stderr, "Can't save cache in \"%s\"\n", dir);
+                if (!ret)
+                    fprintf (stderr, "Caches are currently saved to \"%s\"\n", PKGCACHEDIR);
+		fprintf (stderr, "Can't save cache for \"%s\"\n", dir);
 		ret++;
 	    }
 	}

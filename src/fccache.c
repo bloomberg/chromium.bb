@@ -824,7 +824,7 @@ FcDirCacheHashName (char * cache_file, int collisions)
     if (!tmp)
 	return 0;
 
-    cache_hashed = (char *)FcStrPlus ((FcChar8 *)PKGCACHEDIR, tmp);
+    cache_hashed = (char *)FcStrPlus ((FcChar8 *)PKGCACHEDIR"/", tmp);
     free (tmp);
 
     return cache_hashed;

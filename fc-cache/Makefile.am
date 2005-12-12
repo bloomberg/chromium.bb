@@ -29,6 +29,11 @@ SGML = ${FC_CACHE_SRC}/fc-cache.sgml
 
 AM_CPPFLAGS = -DPKGCACHEDIR='"${pkgcachedir}"'
 
+pkgcache_DATA=stamp
+
+stamp:
+	touch $@
+
 INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
 
 bin_PROGRAMS=fc-cache
