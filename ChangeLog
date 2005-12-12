@@ -1,3 +1,10 @@
+2005-12-12  Behdad Esfahbod  <behdad@cs.toronto.edu>
+	reviewed by: plam
+	
+	* src/fcxml.c (FcConfigGetAttribute):
+
+	Fix crash reported by Frederic Crozat when using libxml2.
+
 2005-12-09  Patrick Lam  <plam@mit.edu>
 	* INSTALL:
 	* configure.in:

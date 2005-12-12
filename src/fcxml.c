@@ -1024,6 +1024,9 @@ FcConfigGetAttribute (FcConfigParse *parse, const char *attr)
 	return 0;
 
     attrs = parse->pstack->attr;
+    if (!attrs)
+        return 0;
+
     while (*attrs)
     {
 	if (!strcmp ((char *) *attrs, attr))
