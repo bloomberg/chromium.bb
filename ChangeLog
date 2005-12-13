@@ -1,3 +1,11 @@
+2005-12-13  Carl Worth  <cworth@cworth.org>
+	reviewed by: keithp
+
+	* conf.d/Makefile.am:
+	* conf.d/10LohitGujarati.conf: Add a configuration file that
+	disables hinting for the Lohit Gujarati font (since the hinting
+	distort some glyphs quite badly).
+
 2005-11-23  Frederic Crozat  <fcrozat@mandriva.com>:
 	reviewed by: plam
 	

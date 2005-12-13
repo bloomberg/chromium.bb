@@ -22,6 +22,7 @@
 #  PERFORMANCE OF THIS SOFTWARE.
 
 CONF_FILES = \
+	10LohitGujarati.conf \
 	autohint.conf \
 	no-bitmaps.conf \
 	no-sub-pixel.conf \
