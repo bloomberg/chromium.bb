@@ -29,8 +29,7 @@
 #include "via_drm.h"
 #include "via_drv.h"
 
-void
-via_init_futex(drm_via_private_t *dev_priv)
+void via_init_futex(drm_via_private_t * dev_priv)
 {
 	unsigned int i;
 
@@ -42,13 +41,11 @@ via_init_futex(drm_via_private_t *dev_priv)
 	}
 }
 
-void
-via_cleanup_futex(drm_via_private_t *dev_priv)
+void via_cleanup_futex(drm_via_private_t * dev_priv)
 {
-}	
+}
 
-void
-via_release_futex(drm_via_private_t *dev_priv, int context)
+void via_release_futex(drm_via_private_t * dev_priv, int context)
 {
 	unsigned int i;
 	volatile int *lock;
@@ -56,19 +53,19 @@ via_release_futex(drm_via_private_t *dev_priv, int context)
 	if (!dev_priv->sarea_priv)
 		return;
 
-	for (i=0; i < VIA_NR_XVMC_LOCKS; ++i) {
-	        lock = (volatile int *) XVMCLOCKPTR(dev_priv->sarea_priv, i);
-		if ( (_DRM_LOCKING_CONTEXT( *lock ) == context)) {
-			if (_DRM_LOCK_IS_HELD( *lock ) && (*lock & _DRM_LOCK_CONT)) {
-				DRM_WAKEUP( &(dev_priv->decoder_queue[i]));
+	for (i = 0; i < VIA_NR_XVMC_LOCKS; ++i) {
+		lock = (volatile int *)XVMCLOCKPTR(dev_priv->sarea_priv, i);
+		if ((_DRM_LOCKING_CONTEXT(*lock) == context)) {
+			if (_DRM_LOCK_IS_HELD(*lock)
+			    && (*lock & _DRM_LOCK_CONT)) {
+				DRM_WAKEUP(&(dev_priv->decoder_queue[i]));
 			}
 			*lock = 0;
 		}
-	}	
-}	
+	}
+}
 
-int 
-via_decoder_futex(DRM_IOCTL_ARGS)
+int via_decoder_futex(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_via_futex_t fx;
@@ -98,4 +95,3 @@ via_decoder_futex(DRM_IOCTL_ARGS)
 	}
 	return 0;
 }
-
