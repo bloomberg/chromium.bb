@@ -1555,17 +1555,20 @@ FcFreeTypeQuery (const FcChar8	*file,
     }
 #endif
 
-#if 0
     /*
      * Skip over PCF fonts that have no encoded characters; they're
      * usually just Unicode fonts transcoded to some legacy encoding
+     * ftglue.c forces us to approximate whether a font is a PCF font
+     * or not by whether it has any BDF properties.  Try PIXEL_SIZE;
+     * I don't know how to get a list of BDF properties on the font. -PL
      */
     if (FcCharSetCount (cs) == 0)
     {
-	if (!strcmp(FT_MODULE_CLASS(&face->driver->root)->module_name, "pcf"))
+#if HAVE_FT_GET_BDF_PROPERTY
+	if(FT_Get_BDF_Property(face, "PIXEL_SIZE", &prop) == 0)
 	    goto bail2;
-    }
 #endif
+    }
 
     if (!FcPatternAddCharSet (pat, FC_CHARSET, cs))
 	goto bail2;

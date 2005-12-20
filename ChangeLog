@@ -1,3 +1,11 @@
+2005-12-20  Patrick Lam  <plam@mit.edu>
+	* src/fcfreetype.c (FcFreeTypeQuery):
+
+	Restore code to skip over PCF fonts that have no encoded
+	characters.
+	(We guess that a font is PCF by presence of the PIXEL_SIZE
+	BDF property.)
+
 2005-12-12  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheOpen, FcDirCacheWrite):
 
