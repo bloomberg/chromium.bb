@@ -469,7 +469,7 @@ FcCacheBankToIndexMTF (int bank);
 static __inline__ int
 FcCacheBankToIndex (int bank)
 {
-    return (_fcBankId && _fcBankId[*_fcBankIdx] == bank) ? *_fcBankIdx : FcCacheBankToIndexMTF(bank);
+    return (_fcBankId[*_fcBankIdx] == bank) ? *_fcBankIdx : FcCacheBankToIndexMTF(bank);
 }
 
 const char *

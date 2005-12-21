@@ -48,7 +48,7 @@ FcCharSetEnsureBank (int bi);
 void
 FcLangCharSetPopulate (void)
 {
-    int bi = FcCacheBankToIndex (FC_BANK_LANGS);
+    int bi = FcCacheBankToIndexMTF (FC_BANK_LANGS);
     FcCharSetEnsureBank (bi);
     charsets[bi] = 0;
     numbers[bi] = (FcChar16 *)&langBankNumbers;
