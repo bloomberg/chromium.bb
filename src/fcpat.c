@@ -2020,7 +2020,7 @@ FcPatternAddFullFname (const FcPattern *p, const char *fname)
     /* N.B. FcPatternHash fails, since it's contents-based, not
      * address-based, and we're in the process of mutating the FcPattern. */
     for (pb = &FcPatternDirBuckets
-             [((int)p / sizeof (FcPattern *)) % PATTERNDIR_HASH_SIZE];
+             [((unsigned long)p / sizeof (FcPattern *)) % PATTERNDIR_HASH_SIZE];
          pb->m.p != p && pb->next; 
          pb = pb->next)
         ;
@@ -2047,7 +2047,7 @@ FcPatternFindFullFname (const FcPattern *p)
     struct patternDirBucket	*pb;
 
     for (pb = &FcPatternDirBuckets
-             [((int)p / sizeof (FcPattern *)) % PATTERNDIR_HASH_SIZE]; 
+             [((unsigned long)p / sizeof (FcPattern *)) % PATTERNDIR_HASH_SIZE]; 
          pb; pb = pb->next)
 	if (pb->m.p == p)
 	    return pb->m.fname;
