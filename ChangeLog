@@ -1,4 +1,24 @@
+2005-12-20  Patrick Lam	 <plam@mit.edu>
+	* ChangeLog:
+	* README:
+	* configure.in:
+	* fontconfig/fontconfig.h:
+
+	Bump version to 2.3.93.
+
 2005-12-20  Patrick Lam  <plam@mit.edu>
+	* src/fcxml.c (FcConfigParseAndLoad):
+
+	Use open instead of fopen (requested by Phil Race for Sun).
+
+2005-12-20  Patrick Lam	 <plam@mit.edu>
+	* src/fccache.c (FcDirCacheWrite);
+	* fc-cache/Makefile.am:
+
+	Fix GCC4 warning and Makefile brokenness for /var/cache/fontconfig
+	dir.
+
+2005-12-20  Patrick Lam	 <plam@mit.edu>
 	* src/fcfreetype.c (FcFreeTypeQuery):
 
 	Restore code to skip over PCF fonts that have no encoded

@@ -31,6 +31,14 @@ AM_CPPFLAGS = -DPKGCACHEDIR='"${pkgcachedir}"'
 
 pkgcache_DATA=stamp
 
+uninstall-pkgcacheDATA:
+	@$(NORMAL_UNINSTALL)
+	echo " $(RM) -rf '$(DESTDIR)$(pkgcachedir)'"; \
+	$(RM) -rf "$(DESTDIR)$(pkgcachedir)"
+
+clean-generic:
+	$(RM) stamp
+
 stamp:
 	touch $@
 

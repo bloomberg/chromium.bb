@@ -669,18 +669,55 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
 FcBool
 FcDirCacheUnlink (const FcChar8 *dir)
 {
-    FcChar8     *cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
+    char	*cache_file = (char *)FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
+    char	*cache_hashed;
+    int		fd, collisions;
     struct stat	cache_stat;
+    char	name_buf[FC_MAX_FILE_LEN];
 
+    /* First remove normal cache file. */
     if (stat ((char *) cache_file, &cache_stat) == 0 &&
 	unlink ((char *)cache_file) != 0)
+	goto bail;
+
+    /* Next remove any applicable hashed files. */
+    fd = -1; collisions = 0;
+    do
     {
-	FcStrFree (cache_file);
-        return FcFalse;
+	cache_hashed = FcDirCacheHashName (cache_file, collisions++);
+	if (!cache_hashed)
+	    goto bail;
+
+	if (fd > 0)
+	    close (fd);
+	fd = open(cache_hashed, O_RDONLY);
+	if (fd == -1)
+	{
+	    FcStrFree ((FcChar8 *)cache_file);
+	    return FcTrue;
+	}
+
+	FcCacheReadString (fd, name_buf, sizeof (name_buf));
+	if (!strlen(name_buf))
+	    goto bail;
+    } while (strcmp (name_buf, cache_file) != 0);
+
+    FcStrFree ((FcChar8 *)cache_file);
+    close (fd);
+
+    if (stat ((char *) cache_hashed, &cache_stat) == 0 &&
+	unlink ((char *)cache_hashed) != 0)
+    {
+	FcStrFree ((FcChar8 *)cache_hashed);
+	goto bail;
     }
 
-    FcStrFree (cache_file);
+    FcStrFree ((FcChar8 *)cache_hashed);
     return FcTrue;
+
+ bail:
+    FcStrFree ((FcChar8 *)cache_file);
+    return FcFalse;
 }
 
 static int
@@ -856,6 +893,8 @@ FcDirCacheOpen (char *cache_file)
 	if (fd > 0)
 	    close (fd);
 	fd = open(cache_hashed, O_RDONLY);
+	FcStrFree ((FcChar8 *)cache_hashed);
+
 	if (fd == -1)
 	    return -1;
 	FcCacheReadString (fd, name_buf, sizeof (name_buf));
@@ -999,7 +1038,7 @@ FcBool
 FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 {
     char	    *cache_file;
-    char	    *cache_to_open;
+    char	    *cache_hashed;
     int 	    fd, fd_orig, i, dirs_count;
     FcAtomic 	    *atomic;
     FcCache 	    metadata;
@@ -1020,13 +1059,13 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     fd = -1; collisions = 0;
     do
     {
-	cache_to_open = FcDirCacheHashName (cache_file, collisions++);
-	if (!cache_to_open)
+	cache_hashed = FcDirCacheHashName (cache_file, collisions++);
+	if (!cache_hashed)
 	    goto bail0;
 
 	if (fd > 0)
 	    close (fd);
-	fd = open(cache_to_open, O_RDONLY);
+	fd = open(cache_hashed, O_RDONLY);
 	if (fd == -1)
 	    break;
 	FcCacheReadString (fd, name_buf, sizeof (name_buf));
@@ -1047,7 +1086,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     if (FcDebug () & FC_DBG_CACHE)
         printf ("FcDirCacheWriteDir cache_file \"%s\"\n", cache_file);
 
-    atomic = FcAtomicCreate ((FcChar8 *)cache_to_open);
+    atomic = FcAtomicCreate ((FcChar8 *)cache_hashed);
     if (!atomic)
 	goto bail1;
 
@@ -1056,7 +1095,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	/* Now try rewriting the original version of the file. */
 	FcAtomicDestroy (atomic);
 
-	atomic = FcAtomicCreate (cache_file);
+	atomic = FcAtomicCreate ((FcChar8 *)cache_file);
 	fd_orig = open (cache_file, O_RDONLY);
 	if (fd_orig == -1)
 	    fd_orig = open((char *)FcAtomicOrigFile (atomic), O_RDONLY);
@@ -1133,6 +1172,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     close(fd);
     if (!FcAtomicReplaceOrig(atomic))
         goto bail5;
+    FcStrFree ((FcChar8 *)cache_hashed);
     FcAtomicUnlock (atomic);
     FcAtomicDestroy (atomic);
     return FcTrue;
@@ -1146,7 +1186,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
  bail2:
     FcAtomicDestroy (atomic);
  bail1:
-    free (cache_to_open);
+    FcStrFree ((FcChar8 *)cache_hashed);
  bail0:
     unlink ((char *)cache_file);
     free (cache_file);

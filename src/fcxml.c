@@ -22,6 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <fcntl.h>
 #include <stdarg.h>
 #include "fcint.h"
 #include <dirent.h>
@@ -2355,7 +2356,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
 
     XML_Parser	    p;
     FcChar8	    *filename;
-    FILE	    *f;
+    int		    fd;
     int		    len;
     FcConfigParse   parse;
     FcBool	    error = FcTrue;
@@ -2393,8 +2394,8 @@ FcConfigParseAndLoad (FcConfig	    *config,
     if (FcDebug () & FC_DBG_CONFIG)
 	printf ("\tLoading config file %s\n", filename);
 
-    f = fopen ((char *) filename, "r");
-    if (!f) { 
+    fd = open ((char *) filename, O_RDONLY);
+    if (fd == -1) { 
 	FcStrFree (filename);
 	goto bail0;
     }
@@ -2439,7 +2440,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
 	    goto bail3;
 	}
 #endif
-	len = fread (buf, 1, BUFSIZ, f);
+	len = read (fd, buf, BUFSIZ);
 	if (len < 0)
 	{
 	    FcConfigMessage (&parse, FcSevereError, "failed reading config file");
@@ -2463,8 +2464,8 @@ bail3:
 bail2:
     XML_ParserFree (p);
 bail1:
-    fclose (f);
-    f = NULL;
+    close (fd);
+    fd = -1;
 bail0:
     if (error && complain)
     {
