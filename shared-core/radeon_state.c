@@ -2952,6 +2952,15 @@ static int radeon_cp_getparam(DRM_IOCTL_ARGS)
 	case RADEON_PARAM_GART_TEX_HANDLE:
 		value = dev_priv->gart_textures_offset;
 		break;
+	
+	case RADEON_PARAM_CARD_TYPE:
+		if (dev_priv->flags & CHIP_IS_PCIE)
+			value = RADEON_CARD_PCIE;
+		else if (dev_priv->flags & CHIP_IS_AGP)
+			value = RADEON_CARD_AGP;
+		else
+			value = RADEON_CARD_PCI;
+		break;
 	default:
 		return DRM_ERR(EINVAL);
 	}

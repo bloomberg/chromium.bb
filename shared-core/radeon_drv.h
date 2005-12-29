@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20050911"
+#define DRIVER_DATE		"20051229"
 
 /* Interface history:
  *
@@ -88,10 +88,11 @@
          and R200_EMIT_ATF_TFACTOR (replaces R200_EMIT_TFACTOR_0 (8 consts instead of 6)
  * 1.19- Add support for gart table in FB memory and PCIE r300
  * 1.20- Add support for r300 texrect
+ * 1.21- Add support for card type getparam
  */
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		20
+#define DRIVER_MINOR		21
 #define DRIVER_PATCHLEVEL	0
 
 enum radeon_family {
