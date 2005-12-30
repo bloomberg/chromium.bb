@@ -42,9 +42,11 @@
 static int
 drm_device_find_capability(drm_device_t *dev, int cap)
 {
-	int ret;
-
 #ifdef __FreeBSD__
+#if __FreeBSD_version >= 700010
+
+	return (pci_find_extcap(dev->device, cap, NULL) == 0);
+#else
 	/* Code taken from agp.c.  IWBNI that was a public interface. */
 	u_int32_t status;
 	u_int8_t ptr, next;
@@ -73,6 +75,7 @@ drm_device_find_capability(drm_device_t *dev, int cap)
 	}
 
 	return 0;
+#endif
 #else
 	/* XXX: fill me in for non-FreeBSD */
 	return 1;
