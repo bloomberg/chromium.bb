@@ -423,6 +423,7 @@ static int drmOpenByBusid(const char *busid)
 	    sv.drm_di_major = 1;
 	    sv.drm_di_minor = 1;
 	    sv.drm_dd_major = -1;	/* Don't care */
+	    sv.drm_dd_minor = -1;	/* Don't care */
 	    drmSetInterfaceVersion(fd, &sv);
 	    buf = drmGetBusid(fd);
 	    drmMsg("drmOpenByBusid: drmGetBusid reports %s\n", buf);
