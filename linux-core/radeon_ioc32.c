@@ -371,8 +371,7 @@ drm_ioctl_compat_t *radeon_compat_ioctls[] = {
  * \param arg user argument.
  * \return zero on success or negative number on failure.
  */
-long radeon_compat_ioctl(struct file *filp, unsigned int cmd,
-			 unsigned long arg)
+long radeon_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	unsigned int nr = DRM_IOCTL_NR(cmd);
 	drm_ioctl_compat_t *fn = NULL;
