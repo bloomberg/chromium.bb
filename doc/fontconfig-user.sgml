@@ -272,7 +272,7 @@ home directory.  This file is used to hold information about fonts that
 isn't present in the per-directory cache files.  It is automatically
 maintained by the fontconfig library.  The default for this file 
 is ``~/.fonts.cache-<sgmltag>version</>'', where <sgmltag>version</> is the font configuration
-file version number (currently 1).
+file version number (currently 2).
   </para></refsect2>
   <refsect2><title><sgmltag>include ignore_missing="no"</></title><para>
 This element contains the name of an additional configuration file or
