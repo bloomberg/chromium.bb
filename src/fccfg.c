@@ -823,6 +823,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	r = FcPatternGet (p, e->u.field, 0, &v);
 	if (r != FcResultMatch)
 	    v.type = FcTypeVoid;
+        v = FcValueSave (v);
 	break;
     case FcOpConst:
 	if (FcNameConstant (e->u.constant, &v.u.i))

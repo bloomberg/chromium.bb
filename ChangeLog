@@ -1,4 +1,13 @@
-2005-01-02  Patrick Lam  <plam@mit.edu>
+2006-01-02  Lubos Lunak  <l.lunak@suse.cz>
+	reviewed by: plam
+	
+	* src/fccfg.c (FcConfigEvaluate):
+
+	Fix double-free which occurs because FcValueCanonicalize doesn't
+	create an extra copy of the returned value, it only canonicalizes
+	it.
+
+2006-01-02  Patrick Lam  <plam@mit.edu>
 	* doc/fontconfig-user.sgml:
 
 	Fix version of .cache file (currently 1 -> currently 2).  Reported
