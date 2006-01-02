@@ -203,7 +203,6 @@ typedef struct _drm_via_sarea {
 
 	/* Used by the 3d driver only at this point, for pageflipping:
 	 */
-
         unsigned int pfCurrentOffset;
 } drm_via_sarea_t;
 
@@ -225,13 +224,15 @@ typedef enum {
 
 #define VIA_IRQ_FLAGS_MASK 0xF0000000
 
-enum drm_via_irqs{drm_via_irq_hqv0 = 0,
-		  drm_via_irq_hqv1,
-		  drm_via_irq_dma0_dd,
-		  drm_via_irq_dma0_td,
-		  drm_via_irq_dma1_dd,
-		  drm_via_irq_dma1_td,
-                  drm_via_irq_num};
+enum drm_via_irqs{
+	drm_via_irq_hqv0 = 0,
+	drm_via_irq_hqv1,
+	drm_via_irq_dma0_dd,
+	drm_via_irq_dma0_td,
+	drm_via_irq_dma1_dd,
+	drm_via_irq_dma1_td,
+	drm_via_irq_num
+};
 
 struct drm_via_wait_irq_request{
 	unsigned irq;

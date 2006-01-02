@@ -81,7 +81,8 @@ int via_agp_init(DRM_IOCTL_ARGS)
 
 	AgpHeap = via_mmInit(agp.offset, agp.size);
 
-	DRM_DEBUG("offset = %lu, size = %lu", (unsigned long)agp.offset, (unsigned long)agp.size);
+	DRM_DEBUG("offset = %lu, size = %lu", (unsigned long)agp.offset,
+		  (unsigned long)agp.size);
 
 	return 0;
 }
@@ -97,7 +98,8 @@ int via_fb_init(DRM_IOCTL_ARGS)
 
 	FBHeap = via_mmInit(fb.offset, fb.size);
 
-	DRM_DEBUG("offset = %lu, size = %lu", (unsigned long)fb.offset, (unsigned long)fb.size);
+	DRM_DEBUG("offset = %lu, size = %lu", (unsigned long)fb.offset,
+		  (unsigned long)fb.size);
 
 	return 0;
 }
@@ -173,7 +175,6 @@ int via_final_context(struct drm_device *dev, int context)
 	}
 	via_release_futex(dev_priv, context); 
 	
-			
 #if defined(__linux__)
 	/* Linux specific until context tracking code gets ported to BSD */
 	/* Last context, perform cleanup */

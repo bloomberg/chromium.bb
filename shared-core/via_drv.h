@@ -148,8 +148,8 @@ extern int via_driver_dma_quiescent(drm_device_t * dev);
 extern void via_init_futex(drm_via_private_t *dev_priv);
 extern void via_cleanup_futex(drm_via_private_t *dev_priv);
 extern void via_release_futex(drm_via_private_t *dev_priv, int context);
-extern int via_driver_irq_wait(drm_device_t * dev, unsigned int irq, int force_sequence,
-			       unsigned int *sequence);
+extern int via_driver_irq_wait(drm_device_t * dev, unsigned int irq,
+			       int force_sequence, unsigned int *sequence);
 #ifdef VIA_HAVE_DMABLIT
 extern void via_dmablit_handler(drm_device_t *dev, int engine, int from_irq);
 extern void via_init_dmablit(drm_device_t *dev);

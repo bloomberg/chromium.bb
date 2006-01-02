@@ -80,11 +80,9 @@ static void via_pad_cache(drm_via_private_t *dev_priv, int qwords);
  * Free space in command buffer.
  */
 
-static uint32_t
-via_cmdbuf_space(drm_via_private_t *dev_priv)
+static uint32_t via_cmdbuf_space(drm_via_private_t *dev_priv)
 {
-	uint32_t agp_base = dev_priv->dma_offset + 
-		(uint32_t) dev_priv->agpAddr;
+	uint32_t agp_base = dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr;
 	uint32_t hw_addr = *(dev_priv->hw_addr_ptr) - agp_base;
 	
 	return ((hw_addr <= dev_priv->dma_low) ? 
@@ -96,11 +94,9 @@ via_cmdbuf_space(drm_via_private_t *dev_priv)
  * How much does the command regulator lag behind?
  */
 
-static uint32_t
-via_cmdbuf_lag(drm_via_private_t *dev_priv)
+static uint32_t via_cmdbuf_lag(drm_via_private_t *dev_priv)
 {
-	uint32_t agp_base = dev_priv->dma_offset + 
-		(uint32_t) dev_priv->agpAddr;
+	uint32_t agp_base = dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr;
 	uint32_t hw_addr = *(dev_priv->hw_addr_ptr) - agp_base;
 	
 	return ((hw_addr <= dev_priv->dma_low) ? 
@@ -126,8 +122,9 @@ via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
 	do {
 	        hw_addr = *hw_addr_ptr - agp_base;
 		if (count-- == 0) {
-			DRM_ERROR("via_cmdbuf_wait timed out hw %x cur_addr %x next_addr %x\n",
-				  hw_addr, cur_addr, next_addr);
+			DRM_ERROR
+			    ("via_cmdbuf_wait timed out hw %x cur_addr %x next_addr %x\n",
+			    hw_addr, cur_addr, next_addr);
 			return -1;
 		}
 	} while ((cur_addr < hw_addr) && (next_addr >= hw_addr));
@@ -145,7 +142,8 @@ via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
 static inline uint32_t *via_check_dma(drm_via_private_t * dev_priv,
 				      unsigned int size)
 {
-	if ((dev_priv->dma_low + size + 4*CMDBUF_ALIGNMENT_SIZE) > dev_priv->dma_high) {
+	if ((dev_priv->dma_low + size + 4 * CMDBUF_ALIGNMENT_SIZE) >
+	    dev_priv->dma_high) {
 		via_cmdbuf_rewind(dev_priv);
 	}
 	if (via_cmdbuf_wait(dev_priv, size) != 0) {
@@ -291,12 +289,12 @@ static int via_dispatch_cmdbuffer(drm_device_t * dev, drm_via_cmdbuffer_t * cmd)
 	 * copy it to AGP memory when ready.
 	 */
 
-		
-	if ((ret = via_verify_command_stream((uint32_t *)dev_priv->pci_buf, cmd->size, dev, 1))) {
+	if ((ret =
+	     via_verify_command_stream((uint32_t *)dev_priv->pci_buf,
+				       cmd->size, dev, 1))) {
 		return ret;
 	}
        	
-	
 	vb = via_check_dma(dev_priv, (cmd->size < 0x100) ? 0x102 : cmd->size);
 	if (vb == NULL) {
 		return DRM_ERR(EAGAIN);
@@ -370,11 +368,15 @@ static int via_dispatch_pci_cmdbuffer(drm_device_t * dev,
 	if (DRM_COPY_FROM_USER(dev_priv->pci_buf, cmd->buf, cmd->size))
 		return DRM_ERR(EFAULT);
 	
-	if ((ret = via_verify_command_stream((uint32_t *)dev_priv->pci_buf, cmd->size, dev, 0))) {
+	if ((ret = 
+	     via_verify_command_stream((uint32_t *)dev_priv->pci_buf,
+				       cmd->size, dev, 0))) {
 		return ret;
 	}
 	
-	ret = via_parse_command_stream(dev, (const uint32_t *)dev_priv->pci_buf, cmd->size);
+	ret =
+	    via_parse_command_stream(dev, (const uint32_t *)dev_priv->pci_buf,
+				     cmd->size);
 	return ret;
 }
 
@@ -455,15 +457,16 @@ static int via_hook_segment(drm_via_private_t *dev_priv,
 	if ((count <= 8) && (count >= 0)) {
 		uint32_t rgtr, ptr;
 		rgtr = *(dev_priv->hw_addr_ptr);
-		ptr = ((volatile char *)dev_priv->last_pause_ptr - dev_priv->dma_ptr) + 
-			dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr + 4 - 
-			CMDBUF_ALIGNMENT_SIZE;
+		ptr = ((volatile char *)dev_priv->last_pause_ptr -
+		      dev_priv->dma_ptr) + dev_priv->dma_offset +
+		      (uint32_t) dev_priv->agpAddr + 4 - CMDBUF_ALIGNMENT_SIZE;
 		if (rgtr <= ptr) {
-			DRM_ERROR("Command regulator\npaused at count %d, address %x, "
-				  "while current pause address is %x.\n"
-				  "Please mail this message to "
-				  "<unichrome-devel@lists.sourceforge.net>\n",
-				  count, rgtr, ptr);
+			DRM_ERROR
+			   ("Command regulator\npaused at count %d, address %x, "
+			    "while current pause address is %x.\n"
+			    "Please mail this message to "
+			    "<unichrome-devel@lists.sourceforge.net>\n", count,
+			    rgtr, ptr);
 		}
 	}
 		
@@ -472,7 +475,8 @@ static int via_hook_segment(drm_via_private_t *dev_priv,
 		uint32_t ptr_low;
 
 		count = 1000000;
-		while ((VIA_READ(VIA_REG_STATUS) & VIA_CMD_RGTR_BUSY) && count--);
+		while ((VIA_READ(VIA_REG_STATUS) & VIA_CMD_RGTR_BUSY)
+		       && count--);
 		
 		rgtr = *(dev_priv->hw_addr_ptr);
 		ptr = ((volatile char *)paused_at - dev_priv->dma_ptr) + 
@@ -503,8 +507,7 @@ static int via_wait_idle(drm_via_private_t * dev_priv)
 
 static uint32_t *via_align_cmd(drm_via_private_t * dev_priv, uint32_t cmd_type,
 			       uint32_t addr, uint32_t *cmd_addr_hi, 
-			       uint32_t *cmd_addr_lo,
-			       int skip_wait)
+			       uint32_t *cmd_addr_lo, int skip_wait)
 {
 	uint32_t agp_base;
 	uint32_t cmd_addr, addr_lo, addr_hi;
@@ -521,7 +524,6 @@ static uint32_t *via_align_cmd(drm_via_private_t * dev_priv, uint32_t cmd_type,
 	qw_pad_count = (CMDBUF_ALIGNMENT_SIZE >> 3) -
 		((dev_priv->dma_low & CMDBUF_ALIGNMENT_MASK) >> 3);
 
-	
 	cmd_addr = (addr) ? addr : 
 		agp_base + dev_priv->dma_low - 8 + (qw_pad_count << 3);
 	addr_lo = ((HC_SubA_HAGPBpL << 24) | (cmd_type & HC_HAGPBpID_MASK) |
@@ -529,8 +531,7 @@ static uint32_t *via_align_cmd(drm_via_private_t * dev_priv, uint32_t cmd_type,
 	addr_hi = ((HC_SubA_HAGPBpH << 24) | (cmd_addr >> 24));
 
 	vb = via_align_buffer(dev_priv, vb, qw_pad_count - 1);
-	VIA_OUT_RING_QW(*cmd_addr_hi = addr_hi, 
-			*cmd_addr_lo = addr_lo);
+	VIA_OUT_RING_QW(*cmd_addr_hi = addr_hi, *cmd_addr_lo = addr_lo);
 	return vb;
 }
 
@@ -621,7 +622,8 @@ static void via_cmdbuf_jump(drm_via_private_t * dev_priv)
 	via_dummy_bitblt(dev_priv);
 	via_dummy_bitblt(dev_priv); 
 
-	last_pause_ptr = via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi, 
+	last_pause_ptr =
+	    via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi, 
 				       &pause_addr_lo, 0) -1;
 	via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi, 
 		      &pause_addr_lo, 0);
@@ -638,7 +640,8 @@ static void via_cmdbuf_jump(drm_via_private_t * dev_priv)
 	 * does not seem to get updated immediately when a jump occurs.
 	 */
 
-	last_pause_ptr = via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi, 
+	last_pause_ptr =
+	    via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi, 
 				       &pause_addr_lo, 0) -1;
 	via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi, 
 		      &pause_addr_lo, 0);
@@ -681,8 +684,7 @@ static void via_cmdbuf_reset(drm_via_private_t * dev_priv)
  * User interface to the space and lag functions.
  */
 
-int 
-via_cmdbuf_size(DRM_IOCTL_ARGS)
+int via_cmdbuf_size(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_via_cmdbuf_size_t d_siz;
@@ -709,7 +711,8 @@ via_cmdbuf_size(DRM_IOCTL_ARGS)
 	tmp_size = d_siz.size;
 	switch(d_siz.func) {
 	case VIA_CMDBUF_SPACE:
-		while (((tmp_size = via_cmdbuf_space(dev_priv)) < d_siz.size) && count--) {
+		while (((tmp_size = via_cmdbuf_space(dev_priv)) < d_siz.size)
+		       && count--) {
 			if (!d_siz.wait) {
 				break;
 			}
@@ -720,7 +723,8 @@ via_cmdbuf_size(DRM_IOCTL_ARGS)
 		}
 		break;
 	case VIA_CMDBUF_LAG:
-		while (((tmp_size = via_cmdbuf_lag(dev_priv)) > d_siz.size) && count--) {
+		while (((tmp_size = via_cmdbuf_lag(dev_priv)) > d_siz.size)
+		       && count--) {
 			if (!d_siz.wait) {
 				break;
 			}

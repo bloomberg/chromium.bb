@@ -66,16 +66,18 @@
  * Currently we activate the HQV interrupts of  Unichrome Pro group A. 
  */
 
-
 static maskarray_t via_pro_group_a_irqs[] = {
-	{VIA_IRQ_HQV0_ENABLE, VIA_IRQ_HQV0_PENDING, 0x000003D0, 0x00008010, 0x00000000 },
-	{VIA_IRQ_HQV1_ENABLE, VIA_IRQ_HQV1_PENDING, 0x000013D0, 0x00008010, 0x00000000 },
+	{VIA_IRQ_HQV0_ENABLE, VIA_IRQ_HQV0_PENDING, 0x000003D0, 0x00008010,
+	 0x00000000 },
+	{VIA_IRQ_HQV1_ENABLE, VIA_IRQ_HQV1_PENDING, 0x000013D0, 0x00008010,
+	 0x00000000 },
 	{VIA_IRQ_DMA0_TD_ENABLE, VIA_IRQ_DMA0_TD_PENDING, VIA_PCI_DMA_CSR0, 
 	 VIA_DMA_CSR_TA | VIA_DMA_CSR_TD, 0x00000008},
 	{VIA_IRQ_DMA1_TD_ENABLE, VIA_IRQ_DMA1_TD_PENDING, VIA_PCI_DMA_CSR1,
-	VIA_DMA_CSR_TA | VIA_DMA_CSR_TD, 0x00000008}
+	 VIA_DMA_CSR_TA | VIA_DMA_CSR_TD, 0x00000008},
 };
-static int via_num_pro_group_a = sizeof(via_pro_group_a_irqs)/sizeof(maskarray_t);
+static int via_num_pro_group_a =
+    sizeof(via_pro_group_a_irqs)/sizeof(maskarray_t);
 static int via_irqmap_pro_group_a[] = {0, 1, -1, 2, -1, 3};
 
 static maskarray_t via_unichrome_irqs[] = {
@@ -116,7 +118,8 @@ irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
 #endif
                         if (dev_priv->last_vblank_valid) {
 				dev_priv->usec_per_vblank = 
-					time_diff( &cur_vblank,&dev_priv->last_vblank) >> 4;
+					time_diff(&cur_vblank,
+						  &dev_priv->last_vblank) >> 4;
 			}
 			dev_priv->last_vblank = cur_vblank;
 			dev_priv->last_vblank_valid = 1;
@@ -130,10 +133,8 @@ irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
 		handled = 1;
 	}
 	
-
 	for (i=0; i<dev_priv->num_irqs; ++i) {
 		if (status & cur_irq->pending_mask) {
-			DRM_DEBUG("Received IRQ %d\n", i);
 			atomic_inc( &cur_irq->irq_received );
 			DRM_WAKEUP( &cur_irq->irq_queue );
 			handled = 1;
@@ -216,14 +217,16 @@ via_driver_irq_wait(drm_device_t * dev, unsigned int irq, int force_sequence,
 	}
 
 	if (irq >= drm_via_irq_num ) {
-		DRM_ERROR("%s Trying to wait on unknown irq %d\n", __FUNCTION__, irq);
+		DRM_ERROR("%s Trying to wait on unknown irq %d\n", __FUNCTION__,
+			  irq);
 		return DRM_ERR(EINVAL);
 	}
 		
 	real_irq = dev_priv->irq_map[irq];
 
 	if (real_irq < 0) {
-		DRM_ERROR("%s Video IRQ %d is not available on this hardware.\n", __FUNCTION__, irq);
+		DRM_ERROR("%s Video IRQ %d not available on this hardware.\n",
+			  __FUNCTION__, irq);
 		return DRM_ERR(EINVAL);
 	}
 
@@ -232,11 +235,13 @@ via_driver_irq_wait(drm_device_t * dev, unsigned int irq, int force_sequence,
 
 	if (masks[real_irq][2] && !force_sequence) {
 		DRM_WAIT_ON(ret, cur_irq->irq_queue, 3 * DRM_HZ,
-			    ((VIA_READ(masks[irq][2]) & masks[irq][3]) == masks[irq][4]));
+			    ((VIA_READ(masks[irq][2]) & masks[irq][3]) == 
+			     masks[irq][4]));
 		cur_irq_sequence = atomic_read(&cur_irq->irq_received);
 	} else {
 		DRM_WAIT_ON(ret, cur_irq->irq_queue, 3 * DRM_HZ,
-			    (((cur_irq_sequence = atomic_read(&cur_irq->irq_received)) -
+			    (((cur_irq_sequence =
+			       atomic_read(&cur_irq->irq_received)) -
 			      *sequence) <= (1 << 23)));		
 	}
 	*sequence = cur_irq_sequence;
