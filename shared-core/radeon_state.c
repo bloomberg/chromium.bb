@@ -67,7 +67,7 @@ static __inline__ int radeon_check_and_fixup_offset(drm_radeon_private_t *
 static __inline__ int radeon_check_and_fixup_packets(drm_radeon_private_t *
 						     dev_priv,
 						     drm_file_t * filp_priv,
-						     int id, u32 __user * data)
+						     int id, u32 *data)
 {
 	switch (id) {
 
@@ -232,8 +232,8 @@ static __inline__ int radeon_check_and_fixup_packets(drm_radeon_private_t *
 
 static __inline__ int radeon_check_and_fixup_packet3(drm_radeon_private_t *
 						     dev_priv,
-						     drm_file_t * filp_priv,
-						     drm_radeon_cmd_buffer_t *
+						     drm_file_t *filp_priv,
+						     drm_radeon_kcmd_buffer_t *
 						     cmdbuf,
 						     unsigned int *cmdsz)
 {
@@ -2512,7 +2512,7 @@ static int radeon_cp_vertex2(DRM_IOCTL_ARGS)
 static int radeon_emit_packets(drm_radeon_private_t * dev_priv,
 			       drm_file_t * filp_priv,
 			       drm_radeon_cmd_header_t header,
-			       drm_radeon_cmd_buffer_t * cmdbuf)
+			       drm_radeon_kcmd_buffer_t * cmdbuf)
 {
 	int id = (int)header.packet.packet_id;
 	int sz, reg;
@@ -2545,9 +2545,9 @@ static int radeon_emit_packets(drm_radeon_private_t * dev_priv,
 	return 0;
 }
 
-static __inline__ int radeon_emit_scalars(drm_radeon_private_t * dev_priv,
+static __inline__ int radeon_emit_scalars(drm_radeon_private_t *dev_priv,
 					  drm_radeon_cmd_header_t header,
-					  drm_radeon_cmd_buffer_t * cmdbuf)
+					  drm_radeon_kcmd_buffer_t *cmdbuf)
 {
 	int sz = header.scalars.count;
 	int start = header.scalars.offset;
@@ -2567,9 +2567,9 @@ static __inline__ int radeon_emit_scalars(drm_radeon_private_t * dev_priv,
 
 /* God this is ugly
  */
-static __inline__ int radeon_emit_scalars2(drm_radeon_private_t * dev_priv,
+static __inline__ int radeon_emit_scalars2(drm_radeon_private_t *dev_priv,
 					   drm_radeon_cmd_header_t header,
-					   drm_radeon_cmd_buffer_t * cmdbuf)
+					   drm_radeon_kcmd_buffer_t *cmdbuf)
 {
 	int sz = header.scalars.count;
 	int start = ((unsigned int)header.scalars.offset) + 0x100;
@@ -2587,9 +2587,9 @@ static __inline__ int radeon_emit_scalars2(drm_radeon_private_t * dev_priv,
 	return 0;
 }
 
-static __inline__ int radeon_emit_vectors(drm_radeon_private_t * dev_priv,
+static __inline__ int radeon_emit_vectors(drm_radeon_private_t *dev_priv,
 					  drm_radeon_cmd_header_t header,
-					  drm_radeon_cmd_buffer_t * cmdbuf)
+					  drm_radeon_kcmd_buffer_t *cmdbuf)
 {
 	int sz = header.vectors.count;
 	int start = header.vectors.offset;
@@ -2610,7 +2610,7 @@ static __inline__ int radeon_emit_vectors(drm_radeon_private_t * dev_priv,
 
 static int radeon_emit_packet3(drm_device_t * dev,
 			       drm_file_t * filp_priv,
-			       drm_radeon_cmd_buffer_t * cmdbuf)
+			       drm_radeon_kcmd_buffer_t * cmdbuf)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	unsigned int cmdsz;
@@ -2634,9 +2634,9 @@ static int radeon_emit_packet3(drm_device_t * dev,
 	return 0;
 }
 
-static int radeon_emit_packet3_cliprect(drm_device_t * dev,
-					drm_file_t * filp_priv,
-					drm_radeon_cmd_buffer_t * cmdbuf,
+static int radeon_emit_packet3_cliprect(drm_device_t *dev,
+					drm_file_t *filp_priv,
+					drm_radeon_kcmd_buffer_t *cmdbuf,
 					int orig_nbox)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
@@ -2733,7 +2733,7 @@ static int radeon_cp_cmdbuf(DRM_IOCTL_ARGS)
 	drm_device_dma_t *dma = dev->dma;
 	drm_buf_t *buf = NULL;
 	int idx;
-	drm_radeon_cmd_buffer_t cmdbuf;
+	drm_radeon_kcmd_buffer_t cmdbuf;
 	drm_radeon_cmd_header_t header;
 	int orig_nbox, orig_bufsz;
 	char *kbuf = NULL;
@@ -2767,7 +2767,8 @@ static int radeon_cp_cmdbuf(DRM_IOCTL_ARGS)
 		kbuf = drm_alloc(cmdbuf.bufsz, DRM_MEM_DRIVER);
 		if (kbuf == NULL)
 			return DRM_ERR(ENOMEM);
-		if (DRM_COPY_FROM_USER(kbuf, cmdbuf.buf, cmdbuf.bufsz)) {
+		if (DRM_COPY_FROM_USER(kbuf, (void __user *)cmdbuf.buf,
+				       cmdbuf.bufsz)) {
 			drm_free(kbuf, orig_bufsz, DRM_MEM_DRIVER);
 			return DRM_ERR(EFAULT);
 		}

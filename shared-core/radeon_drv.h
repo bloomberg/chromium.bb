@@ -277,6 +277,13 @@ typedef struct drm_radeon_buf_priv {
 	u32 age;
 } drm_radeon_buf_priv_t;
 
+typedef struct drm_radeon_kcmd_buffer {
+	int bufsz;
+	char *buf;
+	int nbox;
+	drm_clip_rect_t __user *boxes;
+} drm_radeon_kcmd_buffer_t;
+
 extern int radeon_no_wb;
 extern drm_ioctl_desc_t radeon_ioctls[];
 extern int radeon_max_ioctl;
@@ -330,10 +337,9 @@ extern long radeon_compat_ioctl(struct file *filp, unsigned int cmd,
 /* r300_cmdbuf.c */
 extern void r300_init_reg_flags(void);
 
-extern int r300_do_cp_cmdbuf( drm_device_t* dev,
-				  DRMFILE filp,
-			      drm_file_t* filp_priv,
-			      drm_radeon_cmd_buffer_t* cmdbuf );
+extern int r300_do_cp_cmdbuf(drm_device_t *dev, DRMFILE filp,
+			     drm_file_t* filp_priv,
+			     drm_radeon_kcmd_buffer_t* cmdbuf);
 
 /* Flags for stats.boxes
  */

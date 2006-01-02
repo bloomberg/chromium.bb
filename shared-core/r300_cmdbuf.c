@@ -55,7 +55,7 @@ static const int r300_cliprect_cntl[4] = {
  * buffer, starting with index n.
  */
 static int r300_emit_cliprects(drm_radeon_private_t* dev_priv,
-			       drm_radeon_cmd_buffer_t* cmdbuf,
+			       drm_radeon_kcmd_buffer_t* cmdbuf,
 			       int n)
 {
 	drm_clip_rect_t box;
@@ -125,7 +125,7 @@ static int r300_emit_cliprects(drm_radeon_private_t* dev_priv,
 	return 0;
 }
 
-u8  r300_reg_flags[0x10000>>2];
+static u8 r300_reg_flags[0x10000>>2];
 
 
 void r300_init_reg_flags(void)
@@ -249,8 +249,8 @@ static __inline__ int r300_check_offset(drm_radeon_private_t* dev_priv, u32 offs
 	return 1;
 }
 
-static __inline__ int r300_emit_carefully_checked_packet0(drm_radeon_private_t* dev_priv,
-						drm_radeon_cmd_buffer_t* cmdbuf,
+static __inline__ int r300_emit_carefully_checked_packet0(drm_radeon_private_t *dev_priv,
+						drm_radeon_kcmd_buffer_t *cmdbuf,
 						drm_r300_cmd_header_t header)
 {
 	int reg;
@@ -267,7 +267,7 @@ static __inline__ int r300_emit_carefully_checked_packet0(drm_radeon_private_t* 
 		return DRM_ERR(EINVAL);
 		}
 	for(i=0;i<sz;i++){
-		values[i]=((int __user*)cmdbuf->buf)[i];
+		values[i]=((int *)cmdbuf->buf)[i];
 		switch(r300_reg_flags[(reg>>2)+i]){
 		case MARK_SAFE:
 			break;
@@ -300,9 +300,9 @@ static __inline__ int r300_emit_carefully_checked_packet0(drm_radeon_private_t* 
  *
  * Note that checks are performed on contents and addresses of the registers
  */
-static __inline__ int r300_emit_packet0(drm_radeon_private_t* dev_priv,
-						drm_radeon_cmd_buffer_t* cmdbuf,
-						drm_r300_cmd_header_t header)
+static __inline__ int r300_emit_packet0(drm_radeon_private_t *dev_priv,
+					drm_radeon_kcmd_buffer_t *cmdbuf,
+					drm_r300_cmd_header_t header)
 {
 	int reg;
 	int sz;
@@ -330,7 +330,7 @@ static __inline__ int r300_emit_packet0(drm_radeon_private_t* dev_priv,
 
 	BEGIN_RING(1+sz);
 	OUT_RING( CP_PACKET0( reg, sz-1 ) );
-	OUT_RING_TABLE( (int __user*)cmdbuf->buf, sz );
+	OUT_RING_TABLE( (int *)cmdbuf->buf, sz );
 	ADVANCE_RING();
 
 	cmdbuf->buf += sz*4;
@@ -345,8 +345,8 @@ static __inline__ int r300_emit_packet0(drm_radeon_private_t* dev_priv,
  * the graphics card.
  * Called by r300_do_cp_cmdbuf.
  */
-static __inline__ int r300_emit_vpu(drm_radeon_private_t* dev_priv,
-				    drm_radeon_cmd_buffer_t* cmdbuf,
+static __inline__ int r300_emit_vpu(drm_radeon_private_t *dev_priv,
+				    drm_radeon_kcmd_buffer_t *cmdbuf,
 				    drm_r300_cmd_header_t header)
 {
 	int sz;
@@ -368,7 +368,7 @@ static __inline__ int r300_emit_vpu(drm_radeon_private_t* dev_priv,
 	OUT_RING_REG( R300_VAP_PVS_WAITIDLE, 0 );
 	OUT_RING_REG( R300_VAP_PVS_UPLOAD_ADDRESS, addr );
 	OUT_RING( CP_PACKET0_TABLE( R300_VAP_PVS_UPLOAD_DATA, sz*4 - 1 ) );
-	OUT_RING_TABLE( (int __user*)cmdbuf->buf, sz*4 );
+	OUT_RING_TABLE((int *)cmdbuf->buf, sz*4);
 
 	ADVANCE_RING();
 
@@ -383,8 +383,8 @@ static __inline__ int r300_emit_vpu(drm_radeon_private_t* dev_priv,
  * Emit a clear packet from userspace.
  * Called by r300_emit_packet3.
  */
-static __inline__ int r300_emit_clear(drm_radeon_private_t* dev_priv,
-				      drm_radeon_cmd_buffer_t* cmdbuf)
+static __inline__ int r300_emit_clear(drm_radeon_private_t *dev_priv,
+				      drm_radeon_kcmd_buffer_t *cmdbuf)
 {
 	RING_LOCALS;
 
@@ -395,7 +395,7 @@ static __inline__ int r300_emit_clear(drm_radeon_private_t* dev_priv,
 	OUT_RING( CP_PACKET3( R200_3D_DRAW_IMMD_2, 8 ) );
 	OUT_RING( R300_PRIM_TYPE_POINT|R300_PRIM_WALK_RING|
 	          (1<<R300_PRIM_NUM_VERTICES_SHIFT) );
-	OUT_RING_TABLE( (int __user*)cmdbuf->buf, 8 );
+	OUT_RING_TABLE((int *)cmdbuf->buf, 8);
 	ADVANCE_RING();
 
 	cmdbuf->buf += 8*4;
@@ -404,9 +404,9 @@ static __inline__ int r300_emit_clear(drm_radeon_private_t* dev_priv,
 	return 0;
 }
 
-static __inline__ int r300_emit_3d_load_vbpntr(drm_radeon_private_t* dev_priv,
-				      drm_radeon_cmd_buffer_t* cmdbuf,
-				      u32 header)
+static __inline__ int r300_emit_3d_load_vbpntr(drm_radeon_private_t *dev_priv,
+					       drm_radeon_kcmd_buffer_t *cmdbuf,
+					       u32 header)
 {
 	int count, i,k;
 	#define MAX_ARRAY_PACKET  64
@@ -464,8 +464,8 @@ static __inline__ int r300_emit_3d_load_vbpntr(drm_radeon_private_t* dev_priv,
 	return 0;
 }
 
-static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t* dev_priv,
-				      drm_radeon_cmd_buffer_t* cmdbuf)
+static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t *dev_priv,
+				      drm_radeon_kcmd_buffer_t *cmdbuf)
 {
 	u32 header;
 	int count;
@@ -478,7 +478,7 @@ static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t* dev_priv,
 	   We need to be smarter. */
 
 	/* obtain first word - actual packet3 header */
-	header = *(u32 __user*)cmdbuf->buf;
+	header = *(u32 *)cmdbuf->buf;
 
 	/* Is it packet 3 ? */
 	if( (header>>30)!=0x3 ) {
@@ -516,7 +516,7 @@ static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t* dev_priv,
 
 	BEGIN_RING(count+2);
 	OUT_RING(header);
-	OUT_RING_TABLE( (int __user*)(cmdbuf->buf+4), count+1);
+	OUT_RING_TABLE((int *)(cmdbuf->buf + 4), count + 1);
 	ADVANCE_RING();
 
 	cmdbuf->buf += (count+2)*4;
@@ -530,13 +530,13 @@ static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t* dev_priv,
  * Emit a rendering packet3 from userspace.
  * Called by r300_do_cp_cmdbuf.
  */
-static __inline__ int r300_emit_packet3(drm_radeon_private_t* dev_priv,
-					drm_radeon_cmd_buffer_t* cmdbuf,
+static __inline__ int r300_emit_packet3(drm_radeon_private_t *dev_priv,
+					drm_radeon_kcmd_buffer_t *cmdbuf,
 					drm_r300_cmd_header_t header)
 {
 	int n;
 	int ret;
-	char __user* orig_buf = cmdbuf->buf;
+	char *orig_buf = cmdbuf->buf;
 	int orig_bufsz = cmdbuf->bufsz;
 
 	/* This is a do-while-loop so that we run the interior at least once,
@@ -636,9 +636,9 @@ static void r300_discard_buffer(drm_device_t * dev, drm_buf_t * buf)
  * Called by the ioctl handler function radeon_cp_cmdbuf.
  */
 int r300_do_cp_cmdbuf(drm_device_t* dev,
-			  DRMFILE filp,
+		      DRMFILE filp,
 		      drm_file_t* filp_priv,
-		      drm_radeon_cmd_buffer_t* cmdbuf)
+		      drm_radeon_kcmd_buffer_t* cmdbuf)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
         drm_device_dma_t *dma = dev->dma;
