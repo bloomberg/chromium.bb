@@ -37,7 +37,7 @@
 #include "drmP.h"
 #include "drm_core.h"
 
-unsigned int cards_limit = 16;	/* Enough for one machine */
+unsigned int drm_cards_limit = 16;	/* Enough for one machine */
 unsigned int drm_debug = 0;		/* 1 to enable debug output */
 EXPORT_SYMBOL(drm_debug);
 
@@ -47,7 +47,7 @@ MODULE_LICENSE("GPL and additional rights");
 MODULE_PARM_DESC(cards_limit, "Maximum number of graphics cards");
 MODULE_PARM_DESC(debug, "Enable debug output");
 
-module_param(cards_limit, int, S_IRUGO);
+module_param_named(cards_limit, drm_cards_limit, int, S_IRUGO);
 module_param_named(debug, drm_debug, int, S_IRUGO|S_IWUGO);
 
 drm_head_t **drm_heads;
@@ -149,7 +149,7 @@ static int drm_get_head(drm_device_t * dev, drm_head_t * head)
 
 	DRM_DEBUG("\n");
 
-	for (minor = 0; minor < cards_limit; minor++, heads++) {
+	for (minor = 0; minor < drm_cards_limit; minor++, heads++) {
 		if (!*heads) {
 
 			*head = (drm_head_t) {

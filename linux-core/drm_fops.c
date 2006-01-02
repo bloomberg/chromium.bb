@@ -133,7 +133,7 @@ int drm_open(struct inode *inode, struct file *filp)
 	int minor = iminor(inode);
 	int retcode = 0;
 
-	if (!((minor >= 0) && (minor < cards_limit)))
+	if (!((minor >= 0) && (minor < drm_cards_limit)))
 		return -ENODEV;
 
 	if (!drm_heads[minor])
@@ -175,7 +175,7 @@ int drm_stub_open(struct inode *inode, struct file *filp)
 
 	DRM_DEBUG("\n");
 
-	if (!((minor >= 0) && (minor < cards_limit)))
+	if (!((minor >= 0) && (minor < drm_cards_limit)))
 		return -ENODEV;
 
 	if (!drm_heads[minor])

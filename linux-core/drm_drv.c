@@ -385,7 +385,7 @@ void __exit drm_exit(struct drm_driver *driver)
 
 	DRM_DEBUG("\n");
 	if (drm_fb_loaded) {
-		for (i = 0; i < cards_limit; i++) {
+		for (i = 0; i < drm_cards_limit; i++) {
 			head = drm_heads[i];
 			if (!head)
 				continue;
@@ -417,9 +417,9 @@ static int __init drm_core_init(void)
 {
 	int ret = -ENOMEM;
 
-	cards_limit =
-	    (cards_limit < DRM_MAX_MINOR + 1 ? cards_limit : DRM_MAX_MINOR + 1);
-	drm_heads = drm_calloc(cards_limit, sizeof(*drm_heads), DRM_MEM_STUB);
+	drm_cards_limit =
+	    (drm_cards_limit < DRM_MAX_MINOR + 1 ? drm_cards_limit : DRM_MAX_MINOR + 1);
+	drm_heads = drm_calloc(drm_cards_limit, sizeof(*drm_heads), DRM_MEM_STUB);
 	if (!drm_heads)
 		goto err_p1;
 
@@ -450,7 +450,7 @@ err_p3:
 	drm_sysfs_destroy(drm_class);
 err_p2:
 	unregister_chrdev(DRM_MAJOR, "drm");
-	drm_free(drm_heads, sizeof(*drm_heads) * cards_limit, DRM_MEM_STUB);
+	drm_free(drm_heads, sizeof(*drm_heads) * drm_cards_limit, DRM_MEM_STUB);
 err_p1:
 	return ret;
 }
@@ -462,7 +462,7 @@ static void __exit drm_core_exit(void)
 
 	unregister_chrdev(DRM_MAJOR, "drm");
 
-	drm_free(drm_heads, sizeof(*drm_heads) * cards_limit, DRM_MEM_STUB);
+	drm_free(drm_heads, sizeof(*drm_heads) * drm_cards_limit, DRM_MEM_STUB);
 }
 
 module_init(drm_core_init);

@@ -981,7 +981,7 @@ extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 extern int drm_put_dev(drm_device_t * dev);
 extern int drm_put_head(drm_head_t * head);
 extern unsigned int drm_debug; /* 1 to enable debug output */
-extern unsigned int cards_limit;
+extern unsigned int drm_cards_limit;
 extern drm_head_t **drm_heads;
 extern struct drm_sysfs_class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
