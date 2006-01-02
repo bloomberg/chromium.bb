@@ -1,3 +1,9 @@
+2005-01-02  Patrick Lam  <plam@mit.edu>
+	* doc/fontconfig-user.sgml:
+
+	Fix version of .cache file (currently 1 -> currently 2).  Reported
+	by Jim Osborn.
+
 2005-12-21  Jinghua Luo  <sunmoon1997@gmail.com>
 	reviewed by: plam
 
