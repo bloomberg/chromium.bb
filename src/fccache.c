@@ -43,7 +43,7 @@ static char *
 FcDirCacheHashName (char * cache_file, int collisions);
 
 static off_t
-FcCacheSkipToArch (int fd, const char * arch, FcBool global);
+FcCacheSkipToArch (int fd, const char * arch);
 
 static FcBool 
 FcCacheCopyOld (int fd, int fd_orig, off_t start);
@@ -219,9 +219,13 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 
     cache->updated = FcFalse;
 
+    FcCacheReadString (cache->fd, name_buf, sizeof (name_buf));
+    if (strcmp (name_buf, FC_GLOBAL_MAGIC_COOKIE) != 0)
+	return;
+
     current_arch_machine_name = FcCacheMachineSignature ();
     current_arch_start = FcCacheSkipToArch(cache->fd, 
-					   current_arch_machine_name, FcTrue);
+					   current_arch_machine_name);
     if (current_arch_start < 0)
         goto bail_and_destroy;
 
@@ -325,9 +329,6 @@ FcGlobalCacheUpdate (FcGlobalCache  *cache,
 {
     FcGlobalCacheDir * d;
 
-    if (!set->nfont)
-	return FcTrue;
-
     for (d = cache->dirs; d; d = d->next)
     {
 	if (strcmp(d->name, name) == 0)
@@ -388,8 +389,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
         current_arch_start = 0;
     else
         current_arch_start = FcCacheSkipToArch (fd_orig, 
-                                                current_arch_machine_name, 
-						FcTrue);
+                                                current_arch_machine_name);
 
     if (current_arch_start < 0)
 	current_arch_start = FcCacheNextOffset (lseek(fd_orig, 0, SEEK_END));
@@ -418,6 +418,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     }
     truncate_to -= current_arch_start;
 
+    FcCacheWriteString (fd, FC_GLOBAL_MAGIC_COOKIE);
     sprintf (header, "%8x ", (int)truncate_to);
     strcat (header, current_arch_machine_name);
     if (!FcCacheWriteString (fd, header))
@@ -425,7 +426,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 
     for (dir = cache->dirs; dir; dir = dir->next)
     {
-        if (dir->ent)
+        if (dir->name)
         {
             FcCacheWriteString (fd, dir->name);
             write (fd, &dir->metadata, sizeof(FcCache));
@@ -483,15 +484,14 @@ FcCacheNextOffset(off_t w)
 /* return the address of the segment for the provided arch,
  * or -1 if arch not found */
 static off_t
-FcCacheSkipToArch (int fd, const char * arch, FcBool global)
+FcCacheSkipToArch (int fd, const char * arch)
 {
     char candidate_arch_machine_name_count[MACHINE_SIGNATURE_SIZE + 9];
     char * candidate_arch;
     off_t current_arch_start = 0;
 
     lseek (fd, 0, SEEK_SET);
-    if (!global)
-	FcCacheSkipString (fd);
+    FcCacheSkipString (fd);
     current_arch_start = lseek (fd, 0, SEEK_CUR);
 
     /* skip arches that are not the current arch */
@@ -652,8 +652,7 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
 	goto bail;
 
     current_arch_machine_name = FcCacheMachineSignature();
-    current_arch_start = FcCacheSkipToArch(fd, 
-					   current_arch_machine_name, FcFalse);
+    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
     close (fd);
 
     if (current_arch_start < 0)
@@ -929,8 +928,7 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir)
 
     current_arch_machine_name = FcCacheMachineSignature();
     current_arch_start = FcCacheSkipToArch(fd, 
-					   current_arch_machine_name,
-					   FcFalse);
+					   current_arch_machine_name);
     if (current_arch_start < 0)
         goto bail1;
 
@@ -973,6 +971,7 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set)
     pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
     current_dir_block = mmap (0, metadata.count, 
 			      PROT_READ, MAP_SHARED, fd, pos);
+    lseek (fd, pos+metadata.count, SEEK_SET);
     if (current_dir_block == MAP_FAILED)
 	return FcFalse;
 
@@ -1122,7 +1121,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 
     if (fd_orig != -1)
         current_arch_start = 
-            FcCacheSkipToArch(fd_orig, current_arch_machine_name, FcFalse);
+            FcCacheSkipToArch(fd_orig, current_arch_machine_name);
 
     if (current_arch_start < 0)
 	current_arch_start = FcCacheNextOffset (lseek(fd_orig, 0, SEEK_END));

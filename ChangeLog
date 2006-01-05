@@ -1,3 +1,21 @@
+2006-01-05  Patrick Lam  <plam@mit.edu>
+	* AUTHORS:
+
+	Add self to AUTHORS list.
+
+	* fc-cat/fc-cat.c (FcCacheGlobalFileReadAndPrint, 
+	                   FcCacheFileRead, FcCachePrintSet, main): 
+	* src/fccache.c (FcGlobalCacheLoad, FcGlobalCacheUpdate, 
+			 FcGlobalCacheSave, FcCacheNextOffset, 
+			 FcDirCacheHasCurrentArch, FcDirCacheRead, 
+			 FcDirCacheConsume, FcDirCacheWrite): 
+	* src/fcint.h:
+	* src/fcpat.c (comment):
+
+	Minor change to global cache file format to fix fc-cat bug
+	reported by Frederic Crozat, and buglet with not globally caching
+	directories with zero fonts cached.
+
 2006-01-02  Lubos Lunak  <l.lunak@suse.cz>
 	reviewed by: plam
 	

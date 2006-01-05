@@ -2000,7 +2000,7 @@ FcStrUnserialize (FcCache * metadata, void *block_ptr)
 /* we don't store these in the FcPattern itself because
  * we don't want to serialize the directory names */
 
-/* I suppose this should be cleaned, too... */
+/* I suppose this should be cleaned upon termination, too... */
 typedef struct _FcPatternDirMapping {
     const FcPattern	*p;
     const char *fname;

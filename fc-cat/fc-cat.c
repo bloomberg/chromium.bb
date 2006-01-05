@@ -79,7 +79,7 @@ extern int optind, opterr, optopt;
 #endif
 
 FcBool
-FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *cache_file);
+FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name);
 
 static FcBool
 FcCacheWriteChars (FILE *f, const FcChar8 *chars)
@@ -168,7 +168,7 @@ usage (char *program)
 }
 
 static FcBool 
-FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char * dir, char *cache_file)
+FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char *cache_file)
 {
     char		name_buf[8192];
     int fd;
@@ -184,8 +184,7 @@ FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char * dir, char
     if (fd == -1)
 	goto bail;
 
-    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name,
-					   FcTrue);
+    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
     if (current_arch_start < 0)
 	goto bail1;
 
@@ -196,16 +195,21 @@ FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char * dir, char
 
     while (1) 
     {
+	char * dir, * ls;
 	FcCacheReadString (fd, name_buf, sizeof (name_buf));
 	if (!strlen(name_buf))
 	    break;
 	printf ("fc-cat: printing global cache contents for dir %s\n", 
 		name_buf);
 
-	if (!FcDirCacheConsume (fd, dir, set))
+	if (!FcDirCacheConsume (fd, name_buf, set))
 	    goto bail1;
 
-	FcCachePrintSet (set, dirs, name_buf);
+	dir = strdup(name_buf);
+	strcat (dir, "/");
+
+	FcCachePrintSet (set, dirs, dir);
+	free (dir);
 
 	FcFontSetDestroy (set);
 	set = FcFontSetCreate();
@@ -218,15 +222,16 @@ FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char * dir, char
 }
 
 /* read serialized state from the cache file */
-static FcBool
-FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char * dir, char *cache_file)
+static char *
+FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char *cache_file)
 {
     int fd;
     char * current_arch_machine_name;
     char candidate_arch_machine_name[9+MACHINE_SIGNATURE_SIZE];
     off_t current_arch_start = 0;
     char subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
-    char name_buf[8192];
+    static char name_buf[8192], *dir;
+    FcChar8 * ls;
 
     if (!cache_file)
         goto bail;
@@ -239,32 +244,37 @@ FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char * dir, char *cache_file)
     FcCacheReadString (fd, name_buf, sizeof (name_buf));
     if (!strlen (name_buf))
 	goto bail;
-    printf ("fc-cat: printing directory cache contents for dir %s\n", 
+    if (strcmp (name_buf, FC_GLOBAL_MAGIC_COOKIE) == 0)
+	goto bail;
+    printf ("fc-cat: printing directory cache for cache which would be named %s\n", 
 	    name_buf);
 
-    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name,
-					   FcFalse);
+    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
     if (current_arch_start < 0)
         goto bail1;
-
-    lseek (fd, current_arch_start, SEEK_SET);
-    if (FcCacheReadString (fd, candidate_arch_machine_name, 
-			   sizeof (candidate_arch_machine_name)) == 0)
-	goto bail1;
 
     while (strlen(FcCacheReadString (fd, subdirName, sizeof (subdirName))) > 0)
         FcStrSetAdd (dirs, (FcChar8 *)subdirName);
 
+    dir = strdup(name_buf);
+    ls = FcStrLastSlash ((FcChar8 *)dir);
+    if (ls)
+	*ls = 0;
+
     if (!FcDirCacheConsume (fd, dir, set))
-	goto bail1;
-	
+	goto bail2;
+    free (dir);
+
     close(fd);
-    return FcTrue;
+    return name_buf;
+
+ bail2:
+    free (dir);
 
  bail1:
     close (fd);
  bail:
-    return FcFalse;
+    return 0;
 }
 
 /*
@@ -284,7 +294,7 @@ FcFileBaseName (const char *cache, const FcChar8 *file)
 }
 
 FcBool
-FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *cache_file)
+FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name)
 {
     FcPattern	    *font;
     FcChar8	    *name, *dir;
@@ -300,7 +310,7 @@ FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *cache_file)
     
     while ((dir = FcStrListNext (list)))
     {
-	base = FcFileBaseName (cache_file, dir);
+	base = FcFileBaseName (base_name, dir);
 	if (!FcCacheWriteStringOld (stdout, base))
 	    goto bail3;
 	if (PUTC (' ', stdout) == EOF)
@@ -320,7 +330,7 @@ FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *cache_file)
 	font = set->fonts[n];
 	if (FcPatternGetString (font, FC_FILE, 0, (FcChar8 **) &file) != FcResultMatch)
 	    goto bail3;
-	base = FcFileBaseName (cache_file, file);
+	base = FcFileBaseName (base_name, file);
 	if (FcPatternGetInteger (font, FC_INDEX, 0, &id) != FcResultMatch)
 	    goto bail3;
 	if (FcDebug () & FC_DBG_CACHEV)
@@ -362,6 +372,7 @@ main (int argc, char **argv)
     int		c;
     FcFontSet	*fs = FcFontSetCreate();
     FcStrSet    *dirs = FcStrSetCreate();
+    char	*name_buf;
 
 #if HAVE_GETOPT_LONG
     while ((c = getopt_long (argc, argv, "fsVv?", longopts, NULL)) != -1)
@@ -386,14 +397,13 @@ main (int argc, char **argv)
     if (i >= argc)
         usage (argv[0]);
 
-    if (FcCacheFileRead (fs, dirs, dirname (strdup(argv[i])), argv[i]))
-	FcCachePrintSet (fs, dirs, argv[i]);
+    if (name_buf = FcCacheFileRead (fs, dirs, argv[i]))
+	FcCachePrintSet (fs, dirs, name_buf);
     else
     {
         FcStrSetDestroy (dirs);
         dirs = FcStrSetCreate ();
-        if (FcCacheGlobalFileReadAndPrint (fs, dirs, dirname (strdup (argv[i])),
-                                           argv[i]))
+        if (FcCacheGlobalFileReadAndPrint (fs, dirs, argv[i]))
             ;
     }
 

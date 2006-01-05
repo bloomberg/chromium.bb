@@ -48,6 +48,7 @@
 
 #define FC_FONT_FILE_INVALID	((FcChar8 *) ".")
 #define FC_FONT_FILE_DIR	((FcChar8 *) ".dir")
+#define FC_GLOBAL_MAGIC_COOKIE	"GLOBAL"
 
 #ifdef _WIN32
 #define FC_SEARCH_PATH_SEPARATOR ';'
