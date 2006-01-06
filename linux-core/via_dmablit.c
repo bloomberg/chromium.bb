@@ -160,7 +160,7 @@ via_map_blit_for_device(struct pci_dev *pdev,
 
 /*
  * Function that frees up all resources for a blit. It is usable even if the 
- * blit info has only be partially built as long as the status enum is consistent
+ * blit info has only been partially built as long as the status enum is consistent
  * with the actual status of the used resources.
  */
 
@@ -473,9 +473,14 @@ via_dmablit_timer(unsigned long data)
 	if (!timer_pending(&blitq->poll_timer)) {
 		blitq->poll_timer.expires = jiffies+1;
 		add_timer(&blitq->poll_timer);
-	}
-	via_dmablit_handler(dev, engine, 0);
 
+		/*
+		 * Rerun handler to delete timer if engines are off, and
+		 * to shorten abort latency. This is a little nasty.
+		 */
+
+		via_dmablit_handler(dev, engine, 0);
+	}
 }
 
 
@@ -595,15 +600,27 @@ via_build_sg_info(drm_device_t *dev, drm_via_sg_info_t *vsg, drm_via_dmablit_t *
 	 * (Not a big limitation anyway.)
 	 */
 
-	if (((xfer->mem_stride - xfer->line_length) >= PAGE_SIZE) ||
-	    (xfer->mem_stride > 2048*4)) {
+	if ((xfer->mem_stride - xfer->line_length) >= PAGE_SIZE) {
 		DRM_ERROR("Too large system memory stride. Stride: %d, "
 			  "Length: %d\n", xfer->mem_stride, xfer->line_length);
 		return DRM_ERR(EINVAL);
 	}
 
-	if (xfer->num_lines > 2048) {
-		DRM_ERROR("Too many PCI DMA bitblt lines.\n");
+	if ((xfer->mem_stride == xfer->line_length) &&
+	    (xfer->fb_stride == xfer->line_length)) {
+		xfer->mem_stride *= xfer->num_lines;
+		xfer->line_length = xfer->mem_stride;
+		xfer->fb_stride = xfer->mem_stride;
+		xfer->num_lines = 1;
+	}
+
+	/*
+	 * Don't lock an arbitrary large number of pages, since that causes a
+	 * DOS security hole.
+	 */
+
+	if (xfer->num_lines > 2048 || (xfer->num_lines*xfer->mem_stride > (2048*2048*4))) {
+		DRM_ERROR("Too large PCI DMA bitblt.\n");
 		return DRM_ERR(EINVAL);
 	}		
 
@@ -613,7 +630,7 @@ via_build_sg_info(drm_device_t *dev, drm_via_sg_info_t *vsg, drm_via_dmablit_t *
 	 */
 
 	if (xfer->mem_stride < xfer->line_length ||
-		abs(xfer->fb_stride) < xfer->line_length) {
+	    abs(xfer->fb_stride) < xfer->line_length) {
 		DRM_ERROR("Invalid frame-buffer / memory stride.\n");
 		return DRM_ERR(EINVAL);
 	}
@@ -626,14 +643,13 @@ via_build_sg_info(drm_device_t *dev, drm_via_sg_info_t *vsg, drm_via_dmablit_t *
 
 #ifdef VIA_BUGFREE
 	if ((((unsigned long)xfer->mem_addr & 3) != ((unsigned long)xfer->fb_addr & 3)) ||
-	    ((xfer->mem_stride & 3) != (xfer->fb_stride & 3))) {
+	    ((xfer->num_lines > 1) && ((xfer->mem_stride & 3) != (xfer->fb_stride & 3)))) {
 		DRM_ERROR("Invalid DRM bitblt alignment.\n");
 	        return DRM_ERR(EINVAL);
 	}
 #else
-	if ((((unsigned long)xfer->mem_addr & 15) ||
-	    ((unsigned long)xfer->fb_addr & 3)) || (xfer->mem_stride & 15) ||
-	    (xfer->fb_stride & 3)) {
+	if ((((unsigned long)xfer->mem_addr & 15) || ((unsigned long)xfer->fb_addr & 3)) ||
+	    ((xfer->num_lines > 1) && ((xfer->mem_stride & 15) || (xfer->fb_stride & 3)))) {
 		DRM_ERROR("Invalid DRM bitblt alignment.\n");
 	        return DRM_ERR(EINVAL);
 	}	
@@ -754,7 +770,7 @@ via_dmablit(drm_device_t *dev, drm_via_dmablit_t *xfer)
 
 /*
  * Sync on a previously submitted blit. Note that the X server use signals extensively, and
- * that there is a very big proability that this IOCTL will be interrupted by a signal. In that
+ * that there is a very big probability that this IOCTL will be interrupted by a signal. In that
  * case it returns with -EAGAIN for the signal to be delivered. 
  * The caller should then reissue the IOCTL. This is similar to what is being done for drmGetLock().
  */
