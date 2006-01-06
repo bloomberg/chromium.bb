@@ -31,8 +31,8 @@
 #define DRIVER_DATE		"20060106"
 
 #define DRIVER_MAJOR		2
-#define DRIVER_MINOR		7
-#define DRIVER_PATCHLEVEL	5
+#define DRIVER_MINOR		8
+#define DRIVER_PATCHLEVEL	0
 
 #include "via_verifier.h"
 
