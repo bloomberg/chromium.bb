@@ -29,8 +29,11 @@
 #include "fcint.h"
 
 /* Please do not revoke any of these bindings. */
+/* The __DUMMY__ object enables callers to distinguish the error return
+ * of FcObjectToPtrLookup from FC_FAMILY's FcObjectPtr, which would
+ * otherwise be 0. */
 static const FcObjectType _FcBaseObjectTypes[] = {
-    { "__DUMMY__",      FcTypeVoid, },
+    { "__DUMMY__",      FcTypeVoid, }, 
     { FC_FAMILY,	FcTypeString, },
     { FC_FAMILYLANG,	FcTypeString, },
     { FC_STYLE,		FcTypeString, },
@@ -207,8 +210,8 @@ FcObjectToPtrLookup (const char * object)
 	}
     }
 
-    /* We didn't match.  Look for the correct FcObjectTypeList
-     * to replace it in-place. */
+    /* We didn't match.  Look for the application's FcObjectTypeList
+     * and replace it in-place. */
     for (l = _FcObjectTypes; l; l = l->next)
     {
 	if (l->types == _FcUserObjectNames)
@@ -703,7 +706,7 @@ FcNameParse (const FcChar8 *name)
 		for (;;)
 		{
 		    name = FcNameFindNext (name, ":,", save, &delim);
-		    if (t)
+		    if (t && strcmp (t->object, _FcBaseObjectTypes[0].object))
 		    {
 			v = FcNameConvert (t->type, save, &m);
 			if (!FcPatternAdd (pat, t->object, v, FcTrue))

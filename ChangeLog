@@ -1,3 +1,21 @@
+2006-01-06  Patrick Lam  <plam@mit.edu>
+	* src/fcdbg.c (FcPatternPrint):
+
+	Print out full pathname in fc-match -v as well.  Reported by
+	Frederic Crozat.
+	
+2006-01-06  Mike Fabian  <mfabian@suse.de>
+	reviewed by: plam
+	
+	* src/fcname.c (FcNameParse):
+
+	Fix bug where fc-match crashes when given __DUMMY__ property to
+	match on.
+
+	(I added the __DUMMY__ string to enable callers of
+	FcObjectToPtrLookup to distinguish an error return from a
+	successful return. -PL)
+
 2006-01-05  Patrick Lam  <plam@mit.edu>
 	* AUTHORS:
 
