@@ -966,7 +966,11 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set)
         return FcFalse;
 
     if (!metadata.count)
+    {
+	pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
+	lseek (fd, pos, SEEK_SET);
 	return FcTrue;
+    }
 
     pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
     current_dir_block = mmap (0, metadata.count, 

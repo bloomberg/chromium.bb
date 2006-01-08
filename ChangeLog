@@ -1,3 +1,9 @@
+2006-01-08  Patrick Lam  <plam@mit.edu>
+        * src/fccache.c (FcDirCacheConsume):
+
+        Properly skip past dir caches that contain zero fonts (as occurs
+        in global caches.)  Reported by Mike Fabian.
+
 2006-01-06  Patrick Lam  <plam@mit.edu>
 	* src/fcdbg.c (FcPatternPrint):
 
