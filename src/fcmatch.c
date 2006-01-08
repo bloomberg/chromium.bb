@@ -515,9 +515,24 @@ FcFontSetMatch (FcConfig    *config,
     FcFontSet	    *s;
     FcPattern	    *best;
     int		    scoring_index;
+    int		    *sets_offset;
     int		    set;
+    int		    nfonts;
+    int		    fonts_left;
+    FcMatcher	    *matcher;
+    FcMatcher	    *strong_matchers[NUM_MATCH_VALUES];
+    FcMatcher	    *weak_matchers[NUM_MATCH_VALUES];
+    FcPatternElt    *pat_elts[NUM_MATCH_VALUES];
+    int		    pat_elt;
+    FcBool	    *match_blocked;
+    int		    block_start;
 
-    best = 0;
+    if (!nsets || !sets || !p)
+    {
+	*result = FcResultNoMatch;
+	return 0;
+    }
+
     if (FcDebug () & FC_DBG_MATCH)
     {
 	printf ("Match ");
@@ -532,118 +547,129 @@ FcFontSetMatch (FcConfig    *config,
 	    return 0;
 	}
     }
-    for (set = 0; set < nsets; set++)
-    {
-	FcBool        *matchBlocked;
-	int           blockStart;
 
-	s = sets[set];
-	if (!s)
+    sets_offset = (int *)calloc(nsets, sizeof (int));
+
+    nfonts = 0;
+    for (set = 0; set < nsets; ++set)
+    {
+	sets_offset[set] = nfonts;
+	if (sets[set]) 
+	    nfonts += sets[set]->nfont;
+    }
+
+    fonts_left = nfonts;
+
+    match_blocked = (FcBool*)calloc(nfonts, sizeof(FcBool));
+
+    /* Find out all necessary matchers first, so we don't need to find them
+     * in every loop.
+     */
+
+    memset(strong_matchers, 0, sizeof (FcMatcher*) * NUM_MATCH_VALUES);
+    memset(weak_matchers, 0, sizeof (FcMatcher*) * NUM_MATCH_VALUES);
+    memset(pat_elts, 0, sizeof (FcPatternElt*) * NUM_MATCH_VALUES);
+
+    for (pat_elt = 0; pat_elt < p->num; ++pat_elt)
+    {
+	matcher = FcObjectPtrToMatcher
+			((FcPatternEltU(p->elts)+pat_elt)->object);
+	if (matcher)
+	{
+	    strong_matchers[matcher->strong] = matcher;
+	    weak_matchers[matcher->weak] = matcher;
+	    pat_elts [matcher->strong] = pat_elts [matcher->weak] =
+		    (FcPatternEltU(p->elts)+pat_elt);
+	}
+    }
+
+    /* The old algorithm checked if each font beat 'best', 
+     * scanning all of the value lists for all of the pattern elts. */
+    /* This algorithm checks each font on a element-by-element basis
+     * and blocks fonts that have already lost on some element from
+     * further consideration from being best.  Basically, we've
+     * swapped the order of loops and short-circuited fonts that
+     * are out of contention right away.
+     * This saves a lot of time! */
+    best = 0;
+    block_start = 0;
+    for (scoring_index = 0; scoring_index < NUM_MATCH_VALUES; ++scoring_index)
+    {
+	FcValueListPtr	v1;
+	FcValueList	*v1_ptrU;
+	int		v1_offset = 0;
+
+	if (!strong_matchers [scoring_index] && !weak_matchers [scoring_index])
 	    continue;
 
-	matchBlocked = (FcBool*)calloc(s->nfont, sizeof(FcBool));
-	blockStart = 0;
+	for (v1 = pat_elts[scoring_index]->values, v1_ptrU = FcValueListPtrU(v1);
+	     v1_ptrU;
+	     v1 = v1_ptrU->next, v1_ptrU = FcValueListPtrU(v1), ++v1_offset)
+	{
+	    matcher = (v1_ptrU->binding == FcValueBindingWeak) ?
+		weak_matchers[scoring_index] : strong_matchers[scoring_index];
 
-	/* The old algorithm checked if each font beat 'best', 
-	 * scanning all of the value lists for all of the pattern elts. */
-	/* This algorithm checks each font on a element-by-element basis
-	 * and blocks fonts that have already lost on some element from
-	 * further consideration from being best.  Basically, we've
-	 * swapped the order of loops and short-circuited fonts that
-	 * are out of contention right away.
-	 * This saves a lot of time! */
-        for (scoring_index = 0; scoring_index < NUM_MATCH_VALUES; 
-	     scoring_index++)
-        {
-            int 	    pat_elt;
-            FcPatternElt    *pat_elts = FcPatternEltU(p->elts);
-	    FcMatcher	    *match = 0;
-	    FcValueListPtr  v1;
-            FcValueList     *v1_ptrU;
-            int 	    v1_offset = 0;
+	    if (!matcher) continue;
 
+	    bestscore = 1e99;
 
-            for (pat_elt = 0; pat_elt < p->num; pat_elt++) 
-            {
-                match = FcObjectPtrToMatcher
-		    ((FcPatternEltU(p->elts)+pat_elt)->object);
-
-		if (match && 
-                    (match->strong == scoring_index ||
-		     match->weak == scoring_index))
-	            break;
-		else
-		    match = 0;
+	    if (FcDebug () & FC_DBG_MATCHV)
+	    {
+		printf("Scoring Index %d, Value %d: %d(%d) fonts left\n",
+			scoring_index, v1_offset, fonts_left, nfonts);
 	    }
 
-	    if (!match)
-		continue;
+	    for (set = 0; set < nsets; ++set)
+	    {
+		s = sets[set];
+		if (!s) continue;
 
-            for (v1 = pat_elts[pat_elt].values, v1_ptrU = FcValueListPtrU(v1); 
-		 v1_ptrU;
-                 v1 = FcValueListPtrU(v1)->next, 
-		     v1_ptrU = FcValueListPtrU(v1), v1_offset++)
-            {
-		if ((v1_ptrU->binding == FcValueBindingWeak
-	             && scoring_index != match->weak)
-                    || (v1_ptrU->binding == FcValueBindingStrong 
-                        && scoring_index != match->strong)
-                    )
-                   continue;
+		/* All fonts before block_start should have been knocked out. */
+		for (f = (block_start > sets_offset[set]) ? (block_start - sets_offset[set]) : 0;
+		     f < s->nfont; ++f)
+		{
+		    int		    cand_elt;
+		    FcPatternElt    *cand_elts;
 
-		bestscore = 1e99;
+		    if (match_blocked[f + sets_offset[set]])
+			continue;
 
-		if (FcDebug () & FC_DBG_MATCHV)
-	        {
-			int blocked_fonts = 0;
-			for (f = 0; f < s->nfont; f++)
-				blocked_fonts += matchBlocked[f] ? 1 : 0;
-			printf("Scoring Index %d, Value %d: %d(%d) fonts left\n", 
-				scoring_index, v1_offset, s->nfont - blocked_fonts, s->nfont);	
-		}
-
-	        for (f = 0; f < s->nfont; f++)
-	        {
-		    int 		cand_elt;
-		    FcPatternElt	*cand_elts;
-
-	            if (matchBlocked[f])
-		        continue;
-
-		    score = 0.0;
+		    score = 1e99;
 		    cand_elts = FcPatternEltU(s->fonts[f]->elts);
-		    
+
 		    /* Look for the appropriate element in this candidate
 		     * pattern 'f' and evaluate its score wrt 'p'. */
-		    for (cand_elt = 0; cand_elt < s->fonts[f]->num; cand_elt++)
+		    for (cand_elt = 0; cand_elt < s->fonts[f]->num; ++cand_elt)
 		    {
-			if (cand_elts[cand_elt].object == 
-			    	pat_elts[pat_elt].object)
-                        {
+			if (cand_elts[cand_elt].object == pat_elts[scoring_index]->object)
+			{
 			    FcValueListPtr  v2;
-			    FcValueList     *v2_ptrU;
-			    double          v2_best_score = 1e99;
+			    FcValueList	    *v2_ptrU;
 
-			    for (v2 = cand_elts[cand_elt].values, 
-				     v2_ptrU = FcValueListPtrU(v2);
-				 FcValueListPtrU(v2);
-			         v2 = FcValueListPtrU(v2)->next)
+			    for (v2 = cand_elts[cand_elt].values, v2_ptrU = FcValueListPtrU(v2);
+				 v2_ptrU;
+				 v2 = v2_ptrU->next, v2_ptrU = FcValueListPtrU(v2))
 			    {
-				double v = (match->compare) 
-				    (&v1_ptrU->value, &v2_ptrU->value);
+				double v = (matcher->compare)(&v1_ptrU->value, &v2_ptrU->value);
 
 				if (v < 0)
 				{
 				    *result = FcResultTypeMismatch;
+				    free (match_blocked);
+				    free (sets_offset);
 				    return 0;
 				}
+
 				/* I'm actually kind of surprised that
 				 * this isn't v + 100 * v1_offset. -PL */
 				v = v * 100 + v1_offset;
-				if (v < v2_best_score)
-				    v2_best_score = v;
+				/* The old patch said score += v, which
+				 * seems to be wrong when you have
+				 * multiple matchers.  This takes the
+				 * best score it can find for that font. */
+				if (v < score)
+				    score = v;
 			    }
-			    score += v2_best_score;
 			}
 		    }
 
@@ -658,34 +684,51 @@ FcFontSetMatch (FcConfig    *config,
 			if (best) 
 			{
 			    int b;
-			    for (b = blockStart; b < f; ++b)
-				matchBlocked[b] = FcTrue;
+			    for (b = block_start; b < f + sets_offset[set]; ++b)
+				if (!match_blocked[b])
+				{
+				    match_blocked[b] = FcTrue;
+				    --fonts_left;
+				}
 			}
 
 			bestscore = score;
 			best = s->fonts[f];
-			blockStart = f;
+			block_start = f + sets_offset[set];
 		    }
 
 		    /* If f loses, then it's out too. */
 		    if (best && score > bestscore)
-			matchBlocked[f] = FcTrue;
+		    {
+			match_blocked[f + sets_offset[set]] = FcTrue;
+			--fonts_left;
+		    }
+
+		    /* If there is only 1 font left and the best is set,
+		     * then just return this font
+		     */
+		    if (fonts_left == 1 && best)
+			goto end;
 
 		    /* Otherwise, f is equal to best on this element.
 		     * Carry on to next pattern element. */
 		}
-		if ((FcDebug () & FC_DBG_MATCHV) && best)
-		{
-		    printf ("Best match (scoring index %d) candidate ", scoring_index);
-		    FcPatternPrint (best);
-		}
-           }
-        }
-	free (matchBlocked);
+	    }
+	    if ((FcDebug () & FC_DBG_MATCHV) && best)
+	    {
+		printf ("Best match (scoring index %d) candidate %d ", scoring_index, block_start);
+		FcPatternPrint (best);
+	    }
+	}
     }
+
+end:
+    free (match_blocked);
+    free (sets_offset);
+
     if ((FcDebug () & FC_DBG_MATCH) && best)
     {
-	printf ("Best match ");
+	printf ("Best match (scoring index %d) %d ", scoring_index, block_start);
 	FcPatternPrint (best);
     }
     if (!best)
