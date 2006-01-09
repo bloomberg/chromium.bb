@@ -183,7 +183,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    FcStrSetDestroy (subdirs);
 	    continue;
 	}
-	if (!FcDirScan (set, subdirs, 0, FcConfigGetBlanks (config), dir, force))
+	if (!FcDirScanConfig (set, subdirs, 0, FcConfigGetBlanks (config), dir, force, config))
 	{
 	    fprintf (stderr, "\"%s\": error scanning\n", dir);
 	    FcFontSetDestroy (set);

@@ -1,3 +1,17 @@
+2006-01-09  Patrick Lam  <plam@mit.edu>
+	* fc-cache/fc-cache.c (scanDirs):
+	* fc-cat/fc-cat.c (FcCacheGlobalFileReadAndPrint, FcCacheFileRead):
+	* src/fccache.c (FcGlobalCacheReadDir, FcCacheReadDirs, 
+			 FcDirCacheRead, FcDirCacheConsume, FcDirCacheWrite):
+	* src/fccfg.c (FcConfigNormalizeFontDir):
+	* src/fcdir.c (FcDirScanConfig):
+	* src/fcint.h:
+
+	Normalize font dirs by using the form, as given in fonts.conf, and
+	recorded in FcConfig's fontDirs string set, as canonical.
+	
+	Actually update config.fontDirs as font directories are scanned.
+
 2006-01-08  James Su  <james.su@gmail.com>
 	* src/fcmatch.c (FcFontSetMatch):
 

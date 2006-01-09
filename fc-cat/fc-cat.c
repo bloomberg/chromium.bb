@@ -202,7 +202,7 @@ FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char *cache_file
 	printf ("fc-cat: printing global cache contents for dir %s\n", 
 		name_buf);
 
-	if (!FcDirCacheConsume (fd, name_buf, set))
+	if (!FcDirCacheConsume (fd, name_buf, set, 0))
 	    goto bail1;
 
 	dir = strdup(name_buf);
@@ -261,7 +261,7 @@ FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char *cache_file)
     if (ls)
 	*ls = 0;
 
-    if (!FcDirCacheConsume (fd, dir, set))
+    if (!FcDirCacheConsume (fd, dir, set, 0))
 	goto bail2;
     free (dir);
 

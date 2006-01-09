@@ -52,10 +52,7 @@ static void *
 FcDirCacheProduce (FcFontSet *set, FcCache * metadata);
 
 static FcBool
-FcDirCacheConsume (int fd, const char * dir, FcFontSet *set);
-
-FcBool
-FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir);
+FcDirCacheConsume (int fd, const char * dir, FcFontSet *set, FcConfig *config);
 
 static int
 FcCacheNextOffset(off_t w);
@@ -312,7 +309,7 @@ FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, con
 	if (strncmp (d->name, dir, strlen(dir)) == 0)
 	{
 	    lseek (cache->fd, d->offset, SEEK_SET);
-	    if (!FcDirCacheConsume (cache->fd, dir, set))
+	    if (!FcDirCacheConsume (cache->fd, dir, set, config))
 		return FcFalse;
             if (strcmp (d->name, dir) == 0)
 		ret = FcTrue;
@@ -788,7 +785,7 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	    free (file);
 	    continue;
 	}
-	if (!FcDirCacheValid (dir) || !FcDirCacheRead (set, subdirs, dir))
+	if (!FcDirCacheValid (dir) || !FcDirCacheRead (set, subdirs, dir, config))
 	{
 	    if (FcDebug () & FC_DBG_FONTSET)
 		printf ("cache scan dir %s\n", dir);
@@ -909,7 +906,7 @@ FcDirCacheOpen (char *cache_file)
 
 /* read serialized state from the cache file */
 FcBool
-FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir)
+FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config)
 {
     char 	*cache_file;
     int 	fd;
@@ -940,7 +937,7 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir)
     while (strlen(FcCacheReadString (fd, subdirName, sizeof (subdirName))) > 0)
         FcStrSetAdd (dirs, (FcChar8 *)subdirName);
 
-    if (!FcDirCacheConsume (fd, (const char *)dir, set))
+    if (!FcDirCacheConsume (fd, (const char *)dir, set, config))
 	goto bail1;
 	
     close(fd);
@@ -955,7 +952,7 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir)
 }
 
 static FcBool
-FcDirCacheConsume (int fd, const char * dir, FcFontSet *set)
+FcDirCacheConsume (int fd, const char * dir, FcFontSet *set, FcConfig *config)
 {
     FcCache metadata;
     void * current_dir_block;
@@ -980,6 +977,8 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set)
 	return FcFalse;
 
     FcCacheAddBankDir (metadata.bank, dir);
+    if (config)
+	FcConfigAddFontDir (config, (FcChar8 *)dir);
 
     if (!FcFontSetUnserialize (&metadata, set, current_dir_block))
 	return FcFalse;
@@ -1051,6 +1050,10 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 
     char            *current_arch_machine_name, * header;
     void 	    *current_dir_block = 0;
+
+    dir = FcConfigNormalizeFontDir (FcConfigGetCurrent(), dir);
+    if (!dir)
+	return FcFalse;
 
     cache_file = (char *)FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
     if (!cache_file)

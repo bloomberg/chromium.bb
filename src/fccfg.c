@@ -388,6 +388,29 @@ FcConfigAddFontDir (FcConfig	    *config,
     return FcStrSetAddFilename (config->fontDirs, d);
 }
 
+const FcChar8 *
+FcConfigNormalizeFontDir (FcConfig  	*config, 
+			  const FcChar8 *d)
+{
+    /* If this is a bottleneck, we can cache the fontDir inodes. */
+    ino_t	di;
+    int		n;
+    struct stat s;
+
+    if (stat ((char *)d, &s) == -1)
+	return 0;
+    di = s.st_ino;
+
+    for (n = 0; n < config->fontDirs->num; n++)
+    {
+	if (stat ((char *)config->fontDirs->strs[n], &s) == -1)
+	    continue;
+	if (di == s.st_ino)
+	    return config->fontDirs->strs[n];
+    }
+    return 0;
+}
+
 FcBool
 FcConfigAddDir (FcConfig	    *config,
 		const FcChar8	    *d)
