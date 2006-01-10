@@ -1,3 +1,15 @@
+2006-01-10  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheConsume, FcDirCacheOpen,
+			 FcDirCacheValid, FcDirCacheHasCurrentArch,
+			 FcDirCacheUnlink, FcDirCacheRead, FcDirCacheConsume):
+	* fc-cache/fc-cache.c (main):
+
+	Explicitly add font dirs to config.fontDirs even if they're empty.
+	Set current config in fc-cache.c.
+	Fix treatment of cache directory as read from cache file; don't
+	use string equality to determine if we have the right file,
+	use inode equality.
+
 2006-01-09  Patrick Lam  <plam@mit.edu>
 	* fc-cache/fc-cache.c (scanDirs):
 	* fc-cat/fc-cat.c (FcCacheGlobalFileReadAndPrint, FcCacheFileRead):

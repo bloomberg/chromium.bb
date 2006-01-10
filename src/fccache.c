@@ -37,7 +37,7 @@
 #define MACHINE_SIGNATURE_SIZE 9 + 5*20 + 1
 
 static int
-FcDirCacheOpen (char * cache_file);
+FcDirCacheOpen (const FcChar8 * dir);
 
 static char *
 FcDirCacheHashName (char * cache_file, int collisions);
@@ -593,26 +593,20 @@ FcCacheCopyOld (int fd, int fd_orig, off_t start)
 FcBool
 FcDirCacheValid (const FcChar8 *dir)
 {
-    FcChar8	*cache_file;
     struct stat file_stat, dir_stat;
     int 	fd;
 
     if (stat ((char *) dir, &dir_stat) < 0)
         return FcFalse;
 
-    cache_file = FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
-    if (!cache_file)
-	return FcFalse;
-
-    fd = FcDirCacheOpen ((char *)cache_file);
+    fd = FcDirCacheOpen (dir);
 
     if (fd < 0)
 	goto bail;
     if (fstat (fd, &file_stat) < 0)
-	goto bail1;
+	goto bail;
 
     close (fd);
-    FcStrFree (cache_file);
 
     /*
      * If the directory has been modified more recently than
@@ -623,10 +617,8 @@ FcDirCacheValid (const FcChar8 *dir)
 
     return FcTrue;
 
- bail1:
-    close (fd);
  bail:
-    FcStrFree (cache_file);
+    close (fd);
     return FcFalse;
 }
 
@@ -635,16 +627,11 @@ FcDirCacheValid (const FcChar8 *dir)
 FcBool
 FcDirCacheHasCurrentArch (const FcChar8 *dir)
 {
-    char	*cache_file;
     int 	fd;
     off_t	current_arch_start;
     char 	*current_arch_machine_name;
 
-    cache_file = (char *)FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
-    if (!cache_file)
-	return FcFalse;
-
-    fd = FcDirCacheOpen (cache_file);
+    fd = FcDirCacheOpen (dir);
     if (fd < 0)
 	goto bail;
 
@@ -658,7 +645,6 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
     return FcTrue;
 
  bail:
-    free (cache_file);
     return FcFalse;
 }
 
@@ -670,6 +656,9 @@ FcDirCacheUnlink (const FcChar8 *dir)
     int		fd, collisions;
     struct stat	cache_stat;
     char	name_buf[FC_MAX_FILE_LEN];
+
+    if (!cache_file)
+	return FcFalse;
 
     /* First remove normal cache file. */
     if (stat ((char *) cache_file, &cache_stat) == 0 &&
@@ -870,18 +859,30 @@ FcDirCacheHashName (char * cache_file, int collisions)
  * This would fail in the unlikely event of a collision and subsequent
  * removal of the file which originally caused the collision. */
 static int
-FcDirCacheOpen (char *cache_file)
+FcDirCacheOpen (const FcChar8 *dir)
 {
+    FcBool	found;
     int		fd = -1, collisions = 0;
-    char	*cache_hashed;
+    char	*cache_file, *cache_hashed;
     char	name_buf[FC_MAX_FILE_LEN];
+    struct stat dir_stat;
+
+    cache_file = (char *)FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
+    if (!cache_file)
+	return -1;
 
     fd = open(cache_file, O_RDONLY);
     if (fd != -1)
 	return fd;
 
+    if (stat ((char *)dir, &dir_stat) == -1)
+	return -1;
+
     do
     {
+	struct stat c;
+	FcChar8 * name_buf_dir;
+
 	cache_hashed = FcDirCacheHashName (cache_file, collisions++);
 	if (!cache_hashed)
 	    return -1;
@@ -896,7 +897,16 @@ FcDirCacheOpen (char *cache_file)
 	FcCacheReadString (fd, name_buf, sizeof (name_buf));
 	if (!strlen(name_buf))
 	    goto bail;
-    } while (strcmp (name_buf, cache_file) != 0);
+
+	name_buf_dir = FcStrDirname ((FcChar8 *)name_buf);
+	if (stat ((char *)name_buf_dir, &c) == -1)
+	{
+	    FcStrFree (name_buf_dir);
+	    continue;
+	}
+	FcStrFree (name_buf_dir);
+	found = c.st_ino == dir_stat.st_ino;
+    } while (!found);
     return fd;
 
  bail:
@@ -908,18 +918,13 @@ FcDirCacheOpen (char *cache_file)
 FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config)
 {
-    char 	*cache_file;
     int 	fd;
     char 	*current_arch_machine_name;
     char 	candidate_arch_machine_name[9+MACHINE_SIGNATURE_SIZE];
     off_t 	current_arch_start = 0;
     char 	subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
 
-    cache_file = (char *)FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
-    if (!cache_file)
-	return FcFalse;
-
-    fd = FcDirCacheOpen (cache_file);
+    fd = FcDirCacheOpen (dir);
     if (fd < 0)
 	goto bail;
 
@@ -941,13 +946,11 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *
 	goto bail1;
 	
     close(fd);
-    free (cache_file);
     return FcTrue;
 
  bail1:
     close (fd);
  bail:
-    free (cache_file);
     return FcFalse;
 }
 
@@ -966,6 +969,7 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set, FcConfig *config)
     {
 	pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
 	lseek (fd, pos, SEEK_SET);
+	FcConfigAddFontDir (config, (FcChar8 *)dir);
 	return FcTrue;
     }
 

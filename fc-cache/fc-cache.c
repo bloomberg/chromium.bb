@@ -281,6 +281,7 @@ main (int argc, char **argv)
 	fprintf (stderr, "%s: Can't init font config library\n", argv[0]);
 	return 1;
     }
+    FcConfigSetCurrent (config);
 
     if (argv[i])
     {
