@@ -205,7 +205,11 @@ FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char *cache_file
 	if (!FcDirCacheConsume (fd, name_buf, set, 0))
 	    goto bail1;
 
-	dir = strdup(name_buf);
+	dir = malloc (strlen (name_buf) + 2);
+	if (!dir)
+	    goto bail1;
+
+	strcpy (dir, name_buf);
 	strcat (dir, "/");
 
 	FcCachePrintSet (set, dirs, dir);

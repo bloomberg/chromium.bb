@@ -204,7 +204,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 			set->nfont, nsubdirs (subdirs));
 
             if (!FcDirCacheValid (dir))
-                if (!FcDirCacheUnlink (dir))
+                if (!FcDirCacheUnlink (dir, config))
                     ret++;
 
 	    if (!FcDirSave (set, subdirs, dir))

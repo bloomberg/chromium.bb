@@ -1,3 +1,22 @@
+2006-01-14  Patrick Lam  <plam@mit.edu>
+	* fc-cache/fc-cache.c (scanDirs):
+	* fontconfig/fontconfig.h:
+	* src/fccache.c (FcGlobalCacheReadDir, FcGlobalCacheUpdate,
+			 FcGlobalCacheSave, FcDirCacheUnlink, FcDirCacheOpen):
+	* src/fccfg.c (FcConfigBuildFonts, FcConfigNormalizeFontDir):
+	* src/fcdir.c (FcDirScanConfig):
+	* src/fcint.h:
+	
+	Compare device numbers as well as inodes.
+	Always normalize directory names before comparing them.
+
+2006-01-11  Mike Fabian  <mfabian@suse.de>
+	reviewed by: plam
+	
+	* fc-cat/fc-cat.c (FcCacheGlobalFileReadAndPrint):
+
+	Allocate extra space for appended '/' in directory name.
+
 2006-01-10  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheConsume, FcDirCacheOpen,
 			 FcDirCacheValid, FcDirCacheHasCurrentArch,

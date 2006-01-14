@@ -282,7 +282,7 @@ FcBool
 FcDirCacheHasCurrentArch (const FcChar8 *dir);
 
 FcBool
-FcDirCacheUnlink (const FcChar8 *dir);
+FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config);
 
 /* fcblanks.c */
 FcBlanks *

@@ -325,7 +325,7 @@ FcConfigBuildFonts (FcConfig *config)
 	FcFontSetPrint (fonts);
 
     if (config->cache)
-	FcGlobalCacheSave (cache, config->cache);
+	FcGlobalCacheSave (cache, config->cache, config);
     FcGlobalCacheDestroy (cache);
     FcStrSetDestroy (oldDirs);
 
@@ -394,18 +394,19 @@ FcConfigNormalizeFontDir (FcConfig  	*config,
 {
     /* If this is a bottleneck, we can cache the fontDir inodes. */
     ino_t	di;
+    dev_t	dd;
     int		n;
     struct stat s;
 
     if (stat ((char *)d, &s) == -1)
 	return 0;
-    di = s.st_ino;
+    di = s.st_ino; dd = s.st_dev;
 
     for (n = 0; n < config->fontDirs->num; n++)
     {
 	if (stat ((char *)config->fontDirs->strs[n], &s) == -1)
 	    continue;
-	if (di == s.st_ino)
+	if (di == s.st_ino && dd == s.st_dev)
 	    return config->fontDirs->strs[n];
     }
     return 0;

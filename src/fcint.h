@@ -448,11 +448,13 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 FcBool
 FcGlobalCacheUpdate (FcGlobalCache  *cache,
 		     const char     *file,
-		     FcFontSet	    *set);
+		     FcFontSet	    *set,
+		     FcConfig	    *config);
 
 FcBool
 FcGlobalCacheSave (FcGlobalCache    *cache,
-		   const FcChar8    *cache_file);
+		   const FcChar8    *cache_file,
+		   FcConfig	    *config);
 
 FcFontSet *
 FcCacheRead (FcConfig *config, FcGlobalCache * cache);

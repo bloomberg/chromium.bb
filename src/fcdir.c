@@ -188,7 +188,7 @@ FcDirScanConfig (FcFontSet	*set,
      * add the cache entry 
      */
     if (ret && cache)
-	FcGlobalCacheUpdate (cache, (char *)dir, tmpSet);
+	FcGlobalCacheUpdate (cache, (char *)dir, tmpSet, config);
 
     for (i = 0; i < tmpSet->nfont; i++)
 	FcFontSetAdd (set, tmpSet->fonts[i]);

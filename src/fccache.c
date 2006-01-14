@@ -304,6 +304,7 @@ FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, con
     if (cache->fd == -1)
 	return FcFalse;
 
+    dir = (char *)FcConfigNormalizeFontDir (config, (FcChar8 *)dir);
     for (d = cache->dirs; d; d = d->next)
     {
 	if (strncmp (d->name, dir, strlen(dir)) == 0)
@@ -322,10 +323,12 @@ FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, con
 FcBool
 FcGlobalCacheUpdate (FcGlobalCache  *cache,
 		     const char     *name,
-		     FcFontSet	    *set)
+		     FcFontSet	    *set,
+		     FcConfig	    *config)
 {
     FcGlobalCacheDir * d;
 
+    name = (char *)FcConfigNormalizeFontDir (config, (FcChar8 *)name);
     for (d = cache->dirs; d; d = d->next)
     {
 	if (strcmp(d->name, name) == 0)
@@ -351,7 +354,8 @@ FcGlobalCacheUpdate (FcGlobalCache  *cache,
 
 FcBool
 FcGlobalCacheSave (FcGlobalCache    *cache,
-		   const FcChar8    *cache_file)
+		   const FcChar8    *cache_file,
+		   FcConfig	    *config)
 {
     int			fd, fd_orig;
     FcGlobalCacheDir	*dir;
@@ -425,7 +429,9 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     {
         if (dir->name)
         {
-            FcCacheWriteString (fd, dir->name);
+	    const char * d = (const char *)FcConfigNormalizeFontDir (config, (const FcChar8 *)dir->name);
+
+            FcCacheWriteString (fd, d);
             write (fd, &dir->metadata, sizeof(FcCache));
             lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_CUR)), SEEK_SET);
             write (fd, dir->ent, dir->metadata.count);
@@ -649,14 +655,16 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
 }
 
 FcBool
-FcDirCacheUnlink (const FcChar8 *dir)
+FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 {
-    char	*cache_file = (char *)FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
+    char	*cache_file;
     char	*cache_hashed;
     int		fd, collisions;
     struct stat	cache_stat;
     char	name_buf[FC_MAX_FILE_LEN];
 
+    dir = FcConfigNormalizeFontDir (config, dir);
+    cache_file = (char *)FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
     if (!cache_file)
 	return FcFalse;
 
@@ -878,6 +886,7 @@ FcDirCacheOpen (const FcChar8 *dir)
     if (stat ((char *)dir, &dir_stat) == -1)
 	return -1;
 
+    found = FcFalse;
     do
     {
 	struct stat c;
