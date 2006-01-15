@@ -1,3 +1,9 @@
+2006-01-14  Patirck Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheConsume):
+
+	Fix segfault when consuming zero-length caches in fc-cat
+	(which has no config, so FcConfigAddFontDir shouldn't be called.)
+
 2006-01-14  Patrick Lam  <plam@mit.edu>
 	* fc-cache/fc-cache.c (scanDirs):
 	* fontconfig/fontconfig.h:

@@ -978,7 +978,8 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set, FcConfig *config)
     {
 	pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
 	lseek (fd, pos, SEEK_SET);
-	FcConfigAddFontDir (config, (FcChar8 *)dir);
+	if (config)
+	    FcConfigAddFontDir (config, (FcChar8 *)dir);
 	return FcTrue;
     }
 
