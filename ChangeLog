@@ -1,3 +1,11 @@
+2006-01-18  Mike Fabian  <mfabian@suse.de>
+	reviewed by: plam
+	
+	* src/fcdir.c (FcDirScanConfig):
+
+	Properly order the FcConfigAddFontDir and FcConfigNormalizeFontDir
+	calls to avoid crashes.
+
 2006-01-14  Patirck Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheConsume):
 

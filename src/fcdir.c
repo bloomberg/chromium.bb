@@ -131,6 +131,9 @@ FcDirScanConfig (FcFontSet	*set,
     if (config && !FcConfigAcceptFilename (config, dir))
 	return FcTrue;
 
+    if (config)
+        FcConfigAddFontDir (config, dir);
+
     if (!force)
     {
 	/*
@@ -165,7 +168,6 @@ FcDirScanConfig (FcFontSet	*set,
 	return FcFalse;
     }
 
-    FcConfigAddFontDir (config, dir);
     tmpSet = FcFontSetCreate();
     if (!tmpSet)
     {	
