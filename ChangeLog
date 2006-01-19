@@ -1,3 +1,10 @@
+2006-01-19  Andreas Schwab  <schwab@suse.de>
+	reviewed by: plam
+
+	* src/fcpat.c (FcStrNeededBytes):
+
+	Fix for unaligned memory accesses.
+
 2006-01-18  Mike Fabian  <mfabian@suse.de>
 	reviewed by: plam
 	
@@ -6,7 +13,7 @@
 	Properly order the FcConfigAddFontDir and FcConfigNormalizeFontDir
 	calls to avoid crashes.
 
-2006-01-14  Patirck Lam  <plam@mit.edu>
+2006-01-14  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheConsume):
 
 	Fix segfault when consuming zero-length caches in fc-cat

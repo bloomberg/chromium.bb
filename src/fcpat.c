@@ -1888,6 +1888,7 @@ FcStrNeededBytes (const FcChar8 * s)
     struct objectBucket **p;
     struct objectBucket *b;
     int                 size;
+    FcChar8 *const null = 0;
 
     for (p = &FcStrBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
         if (b->hash == hash && !strcmp ((char *)s, (char *) (b + 1)))
@@ -1905,7 +1906,8 @@ FcStrNeededBytes (const FcChar8 * s)
      * incorrect to replace the with a memset, because the C
      * specification doesn't guarantee that the null pointer is
      * the same as the zero bit pattern. */
-    *(char **)((char *) (b + 1) + strlen((char *)s) + 1) = 0;
+    /* Misaligned pointers are not guaranteed to work, either! */
+    memcpy (((char *) (b + 1) + strlen((char *)s) + 1), &null, sizeof (null));
     *p = b;
 
     fcstr_count += strlen((char *)s) + 1;
@@ -1968,13 +1970,15 @@ FcStrSerialize (int bank, const FcChar8 * s)
     for (p = &FcStrBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
         if (b->hash == hash && !strcmp ((char *)s, (char *) (b + 1)))
 	{
-	    FcChar8 * t = *(FcChar8 **)(((FcChar8 *)(b + 1)) + strlen ((char *)s) + 1);
+	    FcChar8 * t;
+	    memcpy (&t, ((FcChar8 *)(b + 1)) + strlen ((char *)s) + 1, sizeof (FcChar8 *));
 	    if (!t)
 	    {
 		strcpy((char *)(static_strs[bi] + fcstr_ptr), (char *)s);
-		*(FcChar8 **)((FcChar8 *) (b + 1) + strlen((char *)s) + 1) = (static_strs[bi] + fcstr_ptr);
+		t = static_strs[bi] + fcstr_ptr;
+		memcpy ((FcChar8 *) (b + 1) + strlen((char *)s) + 1, &t, sizeof (FcChar8 *));
 		fcstr_ptr += strlen((char *)s) + 1;
-		t = *(FcChar8 **)(((FcChar8 *)(b + 1)) + strlen ((char *)s) + 1);
+		memcpy (&t, ((FcChar8 *)(b + 1)) + strlen ((char *)s) + 1, sizeof (FcChar8 *));
 	    }
 	    return t;
 	}
