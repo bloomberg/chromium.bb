@@ -679,6 +679,9 @@ static int i915_getparam(DRM_IOCTL_ARGS)
 	case I915_PARAM_ALLOW_BATCHBUFFER:
 		value = dev_priv->allow_batchbuffer ? 1 : 0;
 		break;
+	case I915_PARAM_LAST_DISPATCH:
+		value = READ_BREADCRUMB(dev_priv);
+		break;
 	default:
 		DRM_ERROR("Unkown parameter %d\n", param.param);
 		return DRM_ERR(EINVAL);
