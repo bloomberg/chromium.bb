@@ -683,7 +683,7 @@ static int i915_getparam(DRM_IOCTL_ARGS)
 		value = READ_BREADCRUMB(dev_priv);
 		break;
 	default:
-		DRM_ERROR("Unkown parameter %d\n", param.param);
+		DRM_ERROR("Unknown parameter %d\n", param.param);
 		return DRM_ERR(EINVAL);
 	}
 
