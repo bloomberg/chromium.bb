@@ -97,7 +97,7 @@ FcFreeTypeIsExclusiveLang (const FcChar8  *lang)
 
     for (i = 0; i < NUM_CODE_PAGE_RANGE; i++)
     {
-	if (FcLangCompare (lang, FcCodePageRange[i].lang) != FcLangDifferentLang)
+	if (FcLangCompare (lang, FcCodePageRange[i].lang) == FcLangEqual)
 	    return FcTrue;
     }
     return FcFalse;

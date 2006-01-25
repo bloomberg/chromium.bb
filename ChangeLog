@@ -1,3 +1,13 @@
+2006-01-24  James Su  <james.su@gmail.com>
+	reviewed by: plam
+	
+	* src/fcfreetype.c (FcFreeTypeIsExclusiveLang):
+	* fc-lang/zh_hk.orth:
+
+	Treat zh-hk fonts differently from zh-tw fonts.  This patch may
+	cause fontconfig to treat A-X fonts differently from A-Y fonts;
+	please mail the fontconfig list if this causes any problems.
+
 2006-01-24  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheUnlink, FcDirCacheWrite):
 	* src/fcfreetype.c (FcFreeTypeQuery):
