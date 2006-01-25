@@ -658,7 +658,7 @@ FcBool
 FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 {
     char	*cache_file;
-    char	*cache_hashed;
+    char	*cache_hashed = 0;
     int		fd, collisions;
     struct stat	cache_stat;
     char	name_buf[FC_MAX_FILE_LEN];
@@ -677,6 +677,9 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
     fd = -1; collisions = 0;
     do
     {
+	if (cache_hashed)
+	    FcStrFree ((FcChar8 *)cache_hashed);
+
 	cache_hashed = FcDirCacheHashName (cache_file, collisions++);
 	if (!cache_hashed)
 	    goto bail;
@@ -692,7 +695,10 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 
 	FcCacheReadString (fd, name_buf, sizeof (name_buf));
 	if (!strlen(name_buf))
+	{
+	    FcStrFree ((FcChar8 *)cache_hashed);
 	    goto bail;
+	}
     } while (strcmp (name_buf, cache_file) != 0);
 
     FcStrFree ((FcChar8 *)cache_file);
@@ -1189,6 +1195,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     if (ftruncate (fd, current_arch_start + truncate_to) == -1)
 	goto bail5;
 
+    free (header);
     close(fd);
     if (!FcAtomicReplaceOrig(atomic))
         goto bail5;

@@ -1,3 +1,9 @@
+2006-01-24  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheUnlink, FcDirCacheWrite):
+	* src/fcfreetype.c (FcFreeTypeQuery):
+
+	Fix memory leaks reported by Ronny V. Vindenes.
+
 2006-01-19  Andreas Schwab  <schwab@suse.de>
 	reviewed by: plam
 
