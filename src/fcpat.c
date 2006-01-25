@@ -874,7 +874,14 @@ FcPatternAddWithBinding  (FcPattern	    *p,
     new = FcValueListPtrCreateDynamic(newp);
     FcMemAlloc (FC_MEM_VALLIST, sizeof (FcValueList));
     /* dup string */
-    value = FcValueSave (value);
+    if (value.type == FcTypeString)
+    {
+	value.u.s = FcStrStaticName (value.u.s);
+	if (!value.u.s)
+	    value.type = FcTypeVoid;
+    }
+    else
+	value = FcValueSave (value);
     if (value.type == FcTypeVoid)
 	goto bail1;
 

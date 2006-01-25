@@ -827,7 +827,6 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
     case FcOpString:
 	v.type = FcTypeString;
 	v.u.s = FcStrStaticName(e->u.sval);
-	v = FcValueSave (v);
 	break;
     case FcOpMatrix:
 	v.type = FcTypeMatrix;
@@ -847,7 +846,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	r = FcPatternGet (p, e->u.field, 0, &v);
 	if (r != FcResultMatch)
 	    v.type = FcTypeVoid;
-        v = FcValueSave (v);
+	v = FcValueSave (v);
 	break;
     case FcOpConst:
 	if (FcNameConstant (e->u.constant, &v.u.i))

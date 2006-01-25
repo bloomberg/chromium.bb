@@ -900,7 +900,10 @@ FcDirCacheOpen (const FcChar8 *dir)
 
 	cache_hashed = FcDirCacheHashName (cache_file, collisions++);
 	if (!cache_hashed)
+	{
+	    FcStrFree ((FcChar8 *)cache_file);
 	    return -1;
+	}
 
 	if (fd > 0)
 	    close (fd);
@@ -908,7 +911,10 @@ FcDirCacheOpen (const FcChar8 *dir)
 	FcStrFree ((FcChar8 *)cache_hashed);
 
 	if (fd == -1)
+	{
+	    FcStrFree ((FcChar8 *)cache_file);
 	    return -1;
+	}
 	FcCacheReadString (fd, name_buf, sizeof (name_buf));
 	if (!strlen(name_buf))
 	    goto bail;
@@ -920,11 +926,13 @@ FcDirCacheOpen (const FcChar8 *dir)
 	    continue;
 	}
 	FcStrFree (name_buf_dir);
-	found = c.st_ino == dir_stat.st_ino;
+	found = (c.st_ino == dir_stat.st_ino) && (c.st_dev == dir_stat.st_dev);
     } while (!found);
+    FcStrFree ((FcChar8 *)cache_file);
     return fd;
 
  bail:
+    FcStrFree ((FcChar8 *)cache_file);
     close (fd);
     return -1;
 }
@@ -1200,6 +1208,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     if (!FcAtomicReplaceOrig(atomic))
         goto bail5;
     FcStrFree ((FcChar8 *)cache_hashed);
+    FcStrFree ((FcChar8 *)cache_file);
     FcAtomicUnlock (atomic);
     FcAtomicDestroy (atomic);
     return FcTrue;
@@ -1216,7 +1225,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     FcStrFree ((FcChar8 *)cache_hashed);
  bail0:
     unlink ((char *)cache_file);
-    free (cache_file);
+    FcStrFree ((FcChar8 *)cache_file);
     if (current_dir_block)
         free (current_dir_block);
  bail:

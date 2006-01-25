@@ -1,3 +1,14 @@
+2006-01-25  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheOpen, FcDirCacheWrite):
+	* src/fccfg.c (FcConfigEvaluate):
+	* src/fcfreetype.c (FcPatternAddWithBinding):
+
+	Fix additional memory leaks reported by Ronny V. Vindenes: don't
+	invoke FcValueSave on hashed static strings in
+	FcPatternAddWithBinding.  
+
+	Add another st_dev check in FcDirCacheOpen.
+
 2006-01-24  James Su  <james.su@gmail.com>
 	reviewed by: plam
 	
