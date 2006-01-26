@@ -1,3 +1,10 @@
+2006-01-26  Mike Fabian  <mfabian@suse.de>
+	reviewed by: plam
+	
+	* src/fcacache.c (FcGlobalCacheReadDir):
+
+	Don't crash on non-existant directories in global cache.
+
 2006-01-26  Patirck Lam  <plam@mit.edu>
 	* src/fccache.c (FcGlobalCacheSave, FcDirCacheWrite):
 	* src/fccfg.c (FcConfigAddFontDirSubdirs, FcConfigNormalizeFontDir):

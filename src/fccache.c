@@ -304,7 +304,9 @@ FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, con
     if (cache->fd == -1)
 	return FcFalse;
 
-    dir = (char *)FcConfigNormalizeFontDir (config, (FcChar8 *)dir);
+    if (!(dir = (char *)FcConfigNormalizeFontDir (config, (FcChar8 *)dir)))
+	return FcFalse; /* non-existing directory */
+
     for (d = cache->dirs; d; d = d->next)
     {
 	if (strncmp (d->name, dir, strlen(dir)) == 0)
