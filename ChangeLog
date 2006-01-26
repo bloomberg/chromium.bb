@@ -1,3 +1,14 @@
+2006-01-26  Patirck Lam  <plam@mit.edu>
+	* src/fccache.c (FcGlobalCacheSave, FcDirCacheWrite):
+	* src/fccfg.c (FcConfigAddFontDirSubdirs, FcConfigNormalizeFontDir):
+	* src/fcdir.c (FcDirScanConfig):
+	* src/fcxml.c (FcEndElement):
+
+	Stop trampling the directory name when writing out caches.
+	(with Mike Fabian:) Beef up FcConfigNormalizeFontDir to scan
+	subdirs when necessary.  Don't scan directories that can't be
+	normalized.
+
 2006-01-25  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheOpen, FcDirCacheWrite):
 	* src/fccfg.c (FcConfigEvaluate):

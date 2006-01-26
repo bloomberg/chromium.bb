@@ -2050,7 +2050,7 @@ FcEndElement(void *userData, const XML_Char *name)
 	if (!FcStrUsesHome (data) || FcConfigHome ())
 	{
 	    if (!FcConfigAddDir (parse->config, data))
-		FcConfigMessage (parse, FcSevereError, "out of memory");
+		FcConfigMessage (parse, FcSevereError, "out of memory; cannot add directory %s", data);
 	}
 	FcStrFree (data);
 	break;

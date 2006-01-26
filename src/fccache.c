@@ -382,6 +382,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 	       S_IRUSR | S_IWUSR);
     if (fd == -1)
 	goto bail2;
+    FcCacheWriteString (fd, FC_GLOBAL_MAGIC_COOKIE);
 
     fd_orig = open ((char *) FcAtomicOrigFile(atomic), O_RDONLY);
 
@@ -393,7 +394,12 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
                                                 current_arch_machine_name);
 
     if (current_arch_start < 0)
-	current_arch_start = FcCacheNextOffset (lseek(fd_orig, 0, SEEK_END));
+    {
+	off_t i = lseek(fd_orig, 0, SEEK_END);
+	if (i < strlen (FC_GLOBAL_MAGIC_COOKIE)+1)
+	    i = strlen (FC_GLOBAL_MAGIC_COOKIE)+1;
+	current_arch_start = FcCacheNextOffset (i);
+    }
 
     if (!FcCacheCopyOld(fd, fd_orig, current_arch_start))
 	goto bail3;
@@ -419,7 +425,6 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     }
     truncate_to -= current_arch_start;
 
-    FcCacheWriteString (fd, FC_GLOBAL_MAGIC_COOKIE);
     sprintf (header, "%8x ", (int)truncate_to);
     strcat (header, current_arch_machine_name);
     if (!FcCacheWriteString (fd, header))
@@ -1159,7 +1164,12 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
             FcCacheSkipToArch(fd_orig, current_arch_machine_name);
 
     if (current_arch_start < 0)
-	current_arch_start = FcCacheNextOffset (lseek(fd_orig, 0, SEEK_END));
+    {
+	off_t i = lseek(fd_orig, 0, SEEK_END);
+	if (i < strlen (FC_GLOBAL_MAGIC_COOKIE)+1)
+	    i = strlen (FC_GLOBAL_MAGIC_COOKIE)+1;
+	current_arch_start = FcCacheNextOffset (i);
+    }
 
     if (fd_orig != -1 && !FcCacheCopyOld(fd, fd_orig, current_arch_start))
 	goto bail4;

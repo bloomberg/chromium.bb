@@ -22,6 +22,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <dirent.h>
+#include <sys/types.h>
 #include "fcint.h"
 
 #if defined (_WIN32) && (defined (PIC) || defined (DLL_EXPORT))
@@ -388,6 +390,41 @@ FcConfigAddFontDir (FcConfig	    *config,
     return FcStrSetAddFilename (config->fontDirs, d);
 }
 
+static FcBool
+FcConfigAddFontDirSubdirs (FcConfig        *config,
+			   const FcChar8   *d)
+{
+    DIR *dir;
+    struct dirent *e;
+    FcChar8 *subdir;
+    
+    if (!(dir = opendir ((char *) d)))
+	return FcFalse;
+    if (!(subdir = (FcChar8 *) malloc (strlen ((char *) d) + FC_MAX_FILE_LEN + 2)))
+    {
+	fprintf (stderr, "out of memory");
+	return FcFalse;
+    }
+    while ((e = readdir (dir)))
+    {
+	if (strcmp (e->d_name, ".") && strcmp (e->d_name, "..") &&
+	    strlen (e->d_name) < FC_MAX_FILE_LEN)
+	{
+	    strcpy ((char *)subdir, (char *)d);
+	    strcat ((char *)subdir, "/");
+	    strcat ((char *)subdir, e->d_name);
+	    if (FcFileIsDir (subdir))
+	    {
+		FcConfigAddFontDir (config, subdir);
+		FcConfigAddFontDirSubdirs (config, subdir);
+	    }
+	}
+    }
+    free (subdir);
+    closedir (dir);
+    return FcTrue;
+}
+
 const FcChar8 *
 FcConfigNormalizeFontDir (FcConfig  	*config, 
 			  const FcChar8 *d)
@@ -409,6 +446,21 @@ FcConfigNormalizeFontDir (FcConfig  	*config,
 	if (di == s.st_ino && dd == s.st_dev)
 	    return config->fontDirs->strs[n];
     }
+
+    /* Ok, we didn't find it in fontDirs; let's add subdirs.... */
+    for (n = 0; n < config->fontDirs->num; n++)
+	FcConfigAddFontDirSubdirs (config, config->fontDirs->strs[n]);
+
+    /* ... and try again. */
+    for (n = 0; n < config->fontDirs->num; n++)
+    {
+	if (stat ((char *)config->fontDirs->strs[n], &s) == -1)
+	    continue;
+	if (di == s.st_ino && dd == s.st_dev)
+	    return config->fontDirs->strs[n];
+    }
+
+    /* if it fails, then really give up. */
     return 0;
 }
 

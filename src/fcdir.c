@@ -132,7 +132,11 @@ FcDirScanConfig (FcFontSet	*set,
 	return FcTrue;
 
     if (config)
-        FcConfigAddFontDir (config, dir);
+	dir = FcConfigNormalizeFontDir (config, dir);
+
+    /* refuse to scan a directory that can't be normalized. */
+    if (!dir)
+	return FcFalse;
 
     if (!force)
     {
