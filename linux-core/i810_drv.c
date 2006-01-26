@@ -45,7 +45,7 @@ static struct pci_device_id pciidlist[] = {
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =
-	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | DRIVER_USE_MTRR |
+	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | /* DRIVER_USE_MTRR | */
 	    DRIVER_HAVE_DMA | DRIVER_DMA_QUEUE,
 	.dev_priv_size = sizeof(drm_i810_buf_priv_t),
 	.load = i810_driver_load,
@@ -71,7 +71,14 @@ static struct drm_driver driver = {
 		.id_table = pciidlist,
 		.probe = probe,
 		.remove = __devexit_p(drm_cleanup_pci),
-		}
+		},
+
+	.name = DRIVER_NAME,
+	.desc = DRIVER_DESC,
+	.date = DRIVER_DATE,
+	.major = DRIVER_MAJOR,
+	.minor = DRIVER_MINOR,
+	.patchlevel = DRIVER_PATCHLEVEL,
 };
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
