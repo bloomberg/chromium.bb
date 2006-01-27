@@ -609,6 +609,10 @@ FcDirCacheValid (const FcChar8 *dir)
     struct stat file_stat, dir_stat;
     int 	fd;
 
+    dir = FcConfigNormalizeFontDir (FcConfigGetCurrent(), dir);
+    if (!dir)
+	return FcFalse;
+
     if (stat ((char *) dir, &dir_stat) < 0)
         return FcFalse;
 
@@ -643,6 +647,10 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
     int 	fd;
     off_t	current_arch_start;
     char 	*current_arch_machine_name;
+
+    dir = FcConfigNormalizeFontDir (FcConfigGetCurrent(), dir);
+    if (!dir)
+	return FcFalse;
 
     fd = FcDirCacheOpen (dir);
     if (fd < 0)

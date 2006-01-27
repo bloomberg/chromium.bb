@@ -432,7 +432,7 @@ FcConfigNormalizeFontDir (FcConfig  	*config,
     /* If this is a bottleneck, we can cache the fontDir inodes. */
     ino_t	di;
     dev_t	dd;
-    int		n;
+    int		n, n0;
     struct stat s;
 
     if (stat ((char *)d, &s) == -1)
@@ -448,7 +448,7 @@ FcConfigNormalizeFontDir (FcConfig  	*config,
     }
 
     /* Ok, we didn't find it in fontDirs; let's add subdirs.... */
-    for (n = 0; n < config->fontDirs->num; n++)
+    for (n = 0, n0 = config->fontDirs->num; n < n0; n++)
 	FcConfigAddFontDirSubdirs (config, config->fontDirs->strs[n]);
 
     /* ... and try again. */
