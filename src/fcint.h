@@ -496,10 +496,6 @@ FcBool
 FcConfigAddConfigFile (FcConfig		*config,
 		       const FcChar8	*f);
 
-const FcChar8 *
-FcConfigNormalizeFontDir (FcConfig  	*config, 
-			  const FcChar8 *d);
-
 FcBool
 FcConfigSetCache (FcConfig	*config,
 		  const FcChar8	*c);

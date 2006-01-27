@@ -112,7 +112,7 @@ static int
 scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool verbose)
 {
     int		ret = 0;
-    FcChar8	*dir;
+    const FcChar8 *dir;
     FcFontSet	*set;
     FcStrSet	*subdirs;
     FcStrList	*sublist;
@@ -124,6 +124,10 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
      */
     while ((dir = FcStrListNext (list)))
     {
+	dir = FcConfigNormalizeFontDir (config, dir);
+	if (!dir)
+	    return FcFalse;
+
 	if (verbose)
 	{
 	    printf ("%s: \"%s\": ", program, dir);

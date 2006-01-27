@@ -328,6 +328,10 @@ FcConfigBuildFonts (FcConfig *config);
 FcStrList *
 FcConfigGetFontDirs (FcConfig   *config);
 
+const FcChar8 *
+FcConfigNormalizeFontDir (FcConfig  	*config, 
+			  const FcChar8 *d);
+
 FcStrList *
 FcConfigGetConfigDirs (FcConfig   *config);
 

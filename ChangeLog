@@ -1,3 +1,12 @@
+2006-01-27  Patrick Lam  <plam@mit.edu>
+	* fc-cache/fc-cache.c (scanDirs):
+	* fontconfig/fontconfig.h:
+	* src/fcint.h:
+	* src/fccache.c (FcDirCacheValid, FcDirCacheHasCurrentArch):
+
+	Move FcConfigNormalizeFontDir call so that it doesn't result in
+	infinite recursion (reported by Ronny V. Vindenes).
+
 2006-01-26  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheValid, FcDirCacheHasCurrentArch):
 	* src/fccfg.c (FcConfigNormalizeFontDir):
