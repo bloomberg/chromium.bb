@@ -267,7 +267,6 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 
 	d->name = (char *)FcStrCopy ((FcChar8 *)name_buf);
 	d->ent = 0;
-	d->offset = lseek (cache->fd, 0, SEEK_CUR);
 
 	d->subdirs = FcStrSetCreate();
 	do
@@ -279,6 +278,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	    FcStrSetAdd (d->subdirs, (FcChar8 *)subdirName);
 	} while (1);
 
+	d->offset = lseek (cache->fd, 0, SEEK_CUR);
 	if (read (cache->fd, &d->metadata, sizeof (FcCache)) != sizeof (FcCache))
 	    goto bail1;
 	targ = FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + d->metadata.count;

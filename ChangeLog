@@ -1,4 +1,10 @@
 2006-01-30  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcGlobalCacheLoad):
+
+	Make global cache work again after putting dir names into global
+	cache (I misplaced the recording of a file offset).
+
+2006-01-30  Patrick Lam  <plam@mit.edu>
 	* fc-cat/fc-cat.c (FcCacheGlobalFileReadAndPrint):
 	
 	Update fc-cat to handle subdir lists in global cache file.
