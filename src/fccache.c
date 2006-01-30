@@ -218,7 +218,8 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 
     cache->updated = FcFalse;
 
-    FcCacheReadString (cache->fd, name_buf, sizeof (name_buf));
+    if (!FcCacheReadString (cache->fd, name_buf, sizeof (name_buf)))
+	return;
     if (strcmp (name_buf, FC_GLOBAL_MAGIC_COOKIE) != 0)
 	return;
 
@@ -229,8 +230,9 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
         goto bail_and_destroy;
 
     lseek (cache->fd, current_arch_start, SEEK_SET);
-    FcCacheReadString (cache->fd, candidate_arch_machine_name, 
-                       sizeof (candidate_arch_machine_name));
+    if (!FcCacheReadString (cache->fd, candidate_arch_machine_name, 
+			    sizeof (candidate_arch_machine_name)))
+	goto bail_and_destroy;
     if (strlen(candidate_arch_machine_name) == 0)
 	goto bail_and_destroy;
 
@@ -238,8 +240,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
     {
 	off_t targ;
 
-	FcCacheReadString (cache->fd, name_buf, sizeof (name_buf));
-	if (!strlen(name_buf))
+	if (!FcCacheReadString (cache->fd, name_buf, sizeof (name_buf)) || !strlen(name_buf))
 	    break;
 
 	/* Directory must be older than the global cache file; also
@@ -721,8 +722,7 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 	    return FcTrue;
 	}
 
-	FcCacheReadString (fd, name_buf, sizeof (name_buf));
-	if (!strlen(name_buf))
+	if (!FcCacheReadString (fd, name_buf, sizeof (name_buf)) || !strlen(name_buf))
 	{
 	    FcStrFree ((FcChar8 *)cache_hashed);
 	    goto bail;
@@ -943,8 +943,7 @@ FcDirCacheOpen (const FcChar8 *dir)
 	    FcStrFree ((FcChar8 *)cache_file);
 	    return -1;
 	}
-	FcCacheReadString (fd, name_buf, sizeof (name_buf));
-	if (!strlen(name_buf))
+	if (!FcCacheReadString (fd, name_buf, sizeof (name_buf)) || !strlen(name_buf))
 	    goto bail;
 
 	name_buf_dir = FcStrDirname ((FcChar8 *)name_buf);
@@ -990,7 +989,7 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *
 			   sizeof (candidate_arch_machine_name)) == 0)
 	goto bail1;
 
-    while (strlen(FcCacheReadString (fd, subdirName, sizeof (subdirName))) > 0)
+    while (FcCacheReadString (fd, subdirName, sizeof (subdirName)) && strlen (subdirName) > 0)
         FcStrSetAdd (dirs, (FcChar8 *)subdirName);
 
     if (!FcDirCacheConsume (fd, (const char *)dir, set, config))
@@ -1130,11 +1129,12 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	fd = open(cache_hashed, O_RDONLY);
 	if (fd == -1)
 	    break;
-	FcCacheReadString (fd, name_buf, sizeof (name_buf));
-	close (fd);
-
-	if (!strlen(name_buf))
+	if(!FcCacheReadString (fd, name_buf, sizeof (name_buf)) || !strlen(name_buf))
+	{
+	    close (fd);
 	    break;
+	}
+	close (fd);
 
 	if (strcmp (name_buf, cache_file) != 0)
 	    continue;
