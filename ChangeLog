@@ -1,3 +1,10 @@
+2006-01-29  Mike Fabian  <mfabian@suse.de>
+	reviewed by: plam
+
+	* src/fccache.c (FcGlobalCacheReadDir):
+
+	Fix global cache reads of subdirectories.
+
 2006-01-29  Patrick Lam  <plam@mit.edu>
 	* doc/fcconfig.fncs:
 	Add documentation for FcConfigNormalizeFontDir.

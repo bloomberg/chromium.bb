@@ -319,7 +319,7 @@ FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, con
 	if (strncmp (d->name, dir, strlen(dir)) == 0)
 	{
 	    lseek (cache->fd, d->offset, SEEK_SET);
-	    if (!FcDirCacheConsume (cache->fd, dir, set, config))
+	    if (!FcDirCacheConsume (cache->fd, d->name, set, config))
 		return FcFalse;
             if (strcmp (d->name, dir) == 0)
 		ret = FcTrue;
