@@ -174,6 +174,7 @@ FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char *cache_file
     int fd;
     char * current_arch_machine_name;
     char candidate_arch_machine_name[9+MACHINE_SIGNATURE_SIZE];
+    char 		subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
     off_t current_arch_start = 0;
 
     if (!cache_file)
@@ -201,6 +202,15 @@ FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char *cache_file
 	    break;
 	printf ("fc-cat: printing global cache contents for dir %s\n", 
 		name_buf);
+
+	do
+	{
+	    if (!FcCacheReadString (fd, subdirName, 
+				    sizeof (subdirName)) ||
+		!strlen (subdirName))
+		break;
+	    /* then don't do anything with subdirName. */
+	} while (1);
 
 	if (!FcDirCacheConsume (fd, name_buf, set, 0))
 	    goto bail1;

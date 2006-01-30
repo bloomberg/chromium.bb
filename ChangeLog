@@ -1,3 +1,12 @@
+2006-01-30  Patrick Lam  <plam@mit.edu>
+	* fc-cat/fc-cat.c (FcCacheGlobalFileReadAndPrint):
+	
+	Update fc-cat to handle subdir lists in global cache file.
+	
+	* src/fccache.c (FcGlobalCacheLoad):
+	
+	Another FcCacheReadString return value check.
+
 2006-01-30  Mike Fabian  <mfabian@suse.de>
 	reviewed by: plam
 

@@ -240,7 +240,8 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
     {
 	off_t targ;
 
-	if (!FcCacheReadString (cache->fd, name_buf, sizeof (name_buf)) || !strlen(name_buf))
+	if (!FcCacheReadString (cache->fd, name_buf, sizeof (name_buf)) || 
+	    !strlen(name_buf))
 	    break;
 
 	/* Directory must be older than the global cache file; also
@@ -269,8 +270,14 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	d->offset = lseek (cache->fd, 0, SEEK_CUR);
 
 	d->subdirs = FcStrSetCreate();
-	while (strlen(FcCacheReadString (cache->fd, subdirName, sizeof (subdirName))) > 0)
+	do
+	{
+	    if (!FcCacheReadString (cache->fd, subdirName, 
+				    sizeof (subdirName)) ||
+		!strlen (subdirName))
+		break;
 	    FcStrSetAdd (d->subdirs, (FcChar8 *)subdirName);
+	} while (1);
 
 	if (read (cache->fd, &d->metadata, sizeof (FcCache)) != sizeof (FcCache))
 	    goto bail1;
