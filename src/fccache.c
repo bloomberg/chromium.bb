@@ -157,6 +157,7 @@ FcCacheWriteString (int fd, const char *chars)
 static void
 FcGlobalCacheDirDestroy (FcGlobalCacheDir *d)
 {
+    FcStrSetDestroy (d->subdirs);
     FcMemFree (FC_MEM_STRING, strlen (d->name)+1);
     free (d->name);
     FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheDir));
@@ -206,6 +207,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
     off_t		current_arch_start;
 
     struct stat 	cache_stat, dir_stat;
+    char 		subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
 
     if (stat ((char *) cache_file, &cache_stat) < 0)
         return;
@@ -264,6 +266,11 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	d->name = (char *)FcStrCopy ((FcChar8 *)name_buf);
 	d->ent = 0;
 	d->offset = lseek (cache->fd, 0, SEEK_CUR);
+
+	d->subdirs = FcStrSetCreate();
+	while (strlen(FcCacheReadString (cache->fd, subdirName, sizeof (subdirName))) > 0)
+	    FcStrSetAdd (d->subdirs, (FcChar8 *)subdirName);
+
 	if (read (cache->fd, &d->metadata, sizeof (FcCache)) != sizeof (FcCache))
 	    goto bail1;
 	targ = FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + d->metadata.count;
@@ -324,11 +331,13 @@ FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, con
 
 FcBool
 FcGlobalCacheUpdate (FcGlobalCache  *cache,
+		     FcStrSet	    *dirs,
 		     const char     *name,
 		     FcFontSet	    *set,
 		     FcConfig	    *config)
 {
-    FcGlobalCacheDir * d;
+    FcGlobalCacheDir    *d;
+    int		       	i;
 
     name = (char *)FcConfigNormalizeFontDir (config, (FcChar8 *)name);
     for (d = cache->dirs; d; d = d->next)
@@ -351,6 +360,9 @@ FcGlobalCacheUpdate (FcGlobalCache  *cache,
     d->name = (char *)FcStrCopy ((FcChar8 *)name);
     d->ent = FcDirCacheProduce (set, &d->metadata);
     d->offset = 0;
+    d->subdirs = FcStrSetCreate();
+    for (i = 0; i < dirs->num; i++)
+	FcStrSetAdd (d->subdirs, dirs->strs[i]);
     return FcTrue;
 }
 
@@ -359,7 +371,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 		   const FcChar8    *cache_file,
 		   FcConfig	    *config)
 {
-    int			fd, fd_orig;
+    int			fd, fd_orig, i;
     FcGlobalCacheDir	*dir;
     FcAtomic		*atomic;
     off_t 		current_arch_start = 0, truncate_to;
@@ -424,6 +436,10 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 	truncate_to += sizeof (FcCache);
 	truncate_to = FcCacheNextOffset (truncate_to);
 	truncate_to += dir->metadata.count;
+
+	for (i = 0; i < dir->subdirs->size; i++)
+	    truncate_to += strlen((char *)dir->subdirs->strs[i]) + 1;
+	truncate_to ++;
     }
     truncate_to -= current_arch_start;
 
@@ -439,6 +455,11 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 	    const char * d = (const char *)FcConfigNormalizeFontDir (config, (const FcChar8 *)dir->name);
 
             FcCacheWriteString (fd, d);
+
+	    for (i = 0; i < dir->subdirs->size; i++)
+		FcCacheWriteString (fd, (char *)dir->subdirs->strs[i]);
+	    FcCacheWriteString (fd, "");
+	    
             write (fd, &dir->metadata, sizeof(FcCache));
             lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_CUR)), SEEK_SET);
             write (fd, dir->ent, dir->metadata.count);

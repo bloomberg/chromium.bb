@@ -290,3 +290,14 @@ in 'config'.  Any include files referenced from within 'file' will be loaded
 with FcConfigLoad and also parsed.  If 'complain' is FcFalse, no warning
 will be displayed if 'file' does not exist.
 @@
+
+@RET@		const FcChar8 *
+@FUNC@		FcConfigNormalizeFontDir
+@TYPE1@		FcConfig *			@ARG1@		config
+@TYPE2@		const FcChar8 *			@ARG2@		dir
+@PURPOSE@	normalize a font directory
+@DESC@
+Converts the directory name given in 'dir' to a normal form, i.e. one 
+of the forms which are derived from the font directories specified
+in the config file.
+@@

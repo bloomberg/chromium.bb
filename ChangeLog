@@ -1,3 +1,16 @@
+2006-01-29  Patrick Lam  <plam@mit.edu>
+	* doc/fcconfig.fncs:
+	Add documentation for FcConfigNormalizeFontDir.
+
+	* src/fccache.c (FcGlobalCacheDirDestroy, FcGlobalCacheLoad,
+			 FcGlobalCacheUpdate, FcGlobalCacheSave):
+	* src/fcdir.c (FcDirScanConfig):
+	* src/fcint.h:
+
+	Write directory information to global caches to fix make check
+	(reported by Ronny V. Vindenes).  This changes the global cache
+	format again.
+	
 2006-01-27  Patrick Lam  <plam@mit.edu>
 	* fc-cache/fc-cache.c (scanDirs):
 	* fontconfig/fontconfig.h:

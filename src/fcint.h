@@ -333,6 +333,7 @@ struct _FcGlobalCacheDir {
     char			*name;
     FcCache			metadata;
     off_t			offset;
+    FcStrSet			*subdirs;
     void			*ent;
 };
 
@@ -447,6 +448,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 
 FcBool
 FcGlobalCacheUpdate (FcGlobalCache  *cache,
+		     FcStrSet	    *dirs,
 		     const char     *file,
 		     FcFontSet	    *set,
 		     FcConfig	    *config);
