@@ -1,3 +1,10 @@
+2006-01-29  Behdad Esfabod  <behdad@cs.utoronto.edu>
+	reviewed by: plam
+	
+	* doc/fcpattern.fncs:
+
+	Fix world's tiniest typo in code example.
+
 2006-01-29  Mike Fabian  <mfabian@suse.de>
 	reviewed by: plam
 

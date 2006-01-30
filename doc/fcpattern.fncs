@@ -246,7 +246,7 @@ value need be passed for this.  The values are added to `pattern', if
 returned. Example
 </para>
 <programlisting>
-pattern = FcPatternBuild (0, FC_FAMILY, FtTypeString, "Times", (char *) 0);
+pattern = FcPatternBuild (0, FC_FAMILY, FcTypeString, "Times", (char *) 0);
 </programlisting>
 <para>
 FcPatternVaBuild is used when the arguments are already in the form of a
