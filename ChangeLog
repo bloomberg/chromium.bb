@@ -1,3 +1,12 @@
+2006-01-30  Frederic Crozat  <fcrozat@mandriva.com>
+	reviewed by: plam
+
+	* fc-match/fc-match.1:
+	* fc-lang/fc-lang.man:
+
+	Remove references to dead fontconfig(3) manpages in
+	other fontconfig manpages.
+
 2006-01-29  Behdad Esfabod  <behdad@cs.utoronto.edu>
 	reviewed by: plam
 	
