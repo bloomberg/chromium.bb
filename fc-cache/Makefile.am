@@ -29,18 +29,11 @@ SGML = ${FC_CACHE_SRC}/fc-cache.sgml
 
 AM_CPPFLAGS = -DPKGCACHEDIR='"${pkgcachedir}"'
 
-pkgcache_DATA=stamp
+install-data-local:
+	$(mkinstalldirs) "$(DESTDIR)$(pkgcachedir)"
 
-uninstall-pkgcacheDATA:
-	@$(NORMAL_UNINSTALL)
-	echo " $(RM) -rf '$(DESTDIR)$(pkgcachedir)'"; \
+uninstall-local:
 	$(RM) -rf "$(DESTDIR)$(pkgcachedir)"
-
-clean-generic:
-	$(RM) stamp
-
-stamp:
-	touch $@
 
 INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
 

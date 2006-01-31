@@ -1,3 +1,11 @@
+2006-01-31  Behdad Esfabod  <behdad@cs.utoronto.edu>
+	    Stephan Kulow  <coolo@suse.de>
+	reviewed by: plam
+
+	* fc-cache/Makefile.am:
+
+	Replace 'stamp' target with mkinstalldirs.
+
 2006-01-31  Mike Fabian  <mfabian@suse.de>
 	reviewed by: plam
 
