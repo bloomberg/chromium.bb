@@ -1,3 +1,9 @@
+2006-01-30  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcGlobalCacheReadDir):
+
+	Actually use the directories that I added to the global cache.
+	Fixes 'make check'.
+
 2006-01-30  Mike Fabian  <mfabian@suse.de>
 	reviewed by: plam
 	

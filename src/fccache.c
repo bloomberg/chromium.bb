@@ -313,8 +313,9 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 FcBool
 FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, const char *dir, FcConfig *config)
 {
-    FcGlobalCacheDir *d;
-    FcBool ret = FcFalse;
+    FcGlobalCacheDir 	*d;
+    FcBool 		ret = FcFalse;
+    int			i;
 
     if (cache->fd == -1)
 	return FcFalse;
@@ -329,8 +330,14 @@ FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, con
 	    lseek (cache->fd, d->offset, SEEK_SET);
 	    if (!FcDirCacheConsume (cache->fd, d->name, set, config))
 		return FcFalse;
+
             if (strcmp (d->name, dir) == 0)
+            {
+		for (i = 0; i < d->subdirs->num; i++)
+		    FcStrSetAdd (dirs, (FcChar8 *)d->subdirs->strs[i]);
+
 		ret = FcTrue;
+            }
 	}
     }
 
