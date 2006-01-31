@@ -219,9 +219,9 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
     cache->updated = FcFalse;
 
     if (!FcCacheReadString (cache->fd, name_buf, sizeof (name_buf)))
-	return;
+        goto bail_and_destroy;
     if (strcmp (name_buf, FC_GLOBAL_MAGIC_COOKIE) != 0)
-	return;
+        goto bail_and_destroy;
 
     current_arch_machine_name = FcCacheMachineSignature ();
     current_arch_start = FcCacheSkipToArch(cache->fd, 
