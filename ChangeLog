@@ -1,3 +1,11 @@
+2006-01-30  Mike Fabian  <mfabian@suse.de>
+	reviewed by: plam
+	
+	* fc-cache/fc-cache.c (scanDirs):
+
+	Don't stop scanning if a directory in fonts.conf doesn't
+	exist, because subsequent directories might exist.
+	
 2006-01-30  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcGlobalCacheLoad):
 
