@@ -743,7 +743,6 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 	}
     } while (strcmp (name_buf, cache_file) != 0);
 
-    FcStrFree ((FcChar8 *)cache_file);
     close (fd);
 
     if (stat ((char *) cache_hashed, &cache_stat) == 0 &&
@@ -753,6 +752,7 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 	goto bail;
     }
 
+    FcStrFree ((FcChar8 *)cache_file);
     FcStrFree ((FcChar8 *)cache_hashed);
     return FcTrue;
 
