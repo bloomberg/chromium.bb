@@ -1849,6 +1849,7 @@ FcConfigAppFontAddFile (FcConfig    *config,
 	}
 	FcStrListDone (sublist);
     }
+    FcStrSetDestroy (subdirs);
     return FcTrue;
 }
 
@@ -1896,6 +1897,7 @@ FcConfigAppFontAddDir (FcConfig	    *config,
 	}
 	FcStrListDone (sublist);
     }
+    FcStrSetDestroy (subdirs);
     return FcTrue;
 }
 

@@ -1,3 +1,10 @@
+2006-02-03  Takashi Iwai  <tiwai@suse.de>
+	reviewed by: plam
+
+	* src/fccfg.c (FcConfigAppFontAddFile, FcConfigAppFontAddDir)
+
+	Fix memory leak.
+
 2006-02-03  Dirk Mueller  <dmueller@suse.de>
 	reviewed by: plam
 
