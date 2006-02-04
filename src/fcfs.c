@@ -159,22 +159,22 @@ FcFontSetUnserialize(FcCache * metadata, FcFontSet * s, void * block_ptr)
     nfont = *(int *)block_ptr;
     block_ptr = (int *)block_ptr + 1;
 
-    if (s->sfont < s->nfont + nfont)
-    {
-	int sfont = s->nfont + nfont;
-	FcPattern ** pp;
-	pp = realloc (s->fonts, sfont * sizeof (FcPattern));
-	if (!pp)
-	    return FcFalse;
-	s->fonts = pp;
-	s->sfont = sfont;
-    }
-    n = s->nfont;
-    s->nfont += nfont;
-
     if (nfont > 0)
     {
 	FcPattern * p = (FcPattern *)block_ptr;
+
+	if (s->sfont < s->nfont + nfont)
+	{
+	    int sfont = s->nfont + nfont;
+	    FcPattern ** pp;
+	    pp = realloc (s->fonts, sfont * sizeof (FcPattern));
+	    if (!pp)
+		return FcFalse;
+	    s->fonts = pp;
+	    s->sfont = sfont;
+	}
+	n = s->nfont;
+	s->nfont += nfont;
 
         /* The following line is a bit counterintuitive.  The usual
          * convention is that FcPatternUnserialize is responsible for
@@ -187,7 +187,8 @@ FcFontSetUnserialize(FcCache * metadata, FcFontSet * s, void * block_ptr)
 
 	block_ptr = FcPatternUnserialize (metadata, block_ptr);
 	block_ptr = FcObjectUnserialize (metadata, block_ptr);
+	return block_ptr != 0;
     }
 
-    return block_ptr != 0;
+    return FcFalse;
 }

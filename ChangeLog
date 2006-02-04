@@ -1,3 +1,11 @@
+2006-02-03  Dirk Mueller  <dmueller@suse.de>
+	reviewed by: plam
+
+	* src/fcfs.c (FcFontSetUnserialize):
+
+	Gracefully handle the case where a cache asserts that it
+	has a negative number of fonts, causing overflow.
+
 2006-02-03  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheUnlink):
 
