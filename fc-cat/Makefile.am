@@ -33,7 +33,7 @@ INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
 
 bin_PROGRAMS=fc-cat
 
-EXTRA_DIST=$(SGML)
+EXTRA_DIST=fc-cat.sgml
 
 fc_cat_LDADD = ${top_builddir}/src/libfontconfig.la
 
