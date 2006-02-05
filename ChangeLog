@@ -1,3 +1,16 @@
+2006-02-03  Takashi IWAI  <tiwai@suse.de>
+	reviewed by: plam
+
+	* fc-cat/fc-cat.c (FcCacheGlobalFileReadAndPrint, main,
+			   FcCacheFileRead):
+
+	* src/fccache.c (FcGlobalCacheLoad, FcGlobalCacheSave, 
+			 FcDirCacheConsume, FcDirCacheWrite)
+	* src/fcxml.c (FcConfigMessage):
+
+	Check I/O call return values and eliminate unused variable
+	warnings.
+
 2006-02-03  Takashi Iwai  <tiwai@suse.de>
 	reviewed by: plam
 

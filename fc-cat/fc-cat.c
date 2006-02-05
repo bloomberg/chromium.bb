@@ -196,7 +196,7 @@ FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char *cache_file
 
     while (1) 
     {
-	char * dir, * ls;
+	char * dir;
 	FcCacheReadString (fd, name_buf, sizeof (name_buf));
 	if (!strlen(name_buf))
 	    break;
@@ -241,7 +241,6 @@ FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char *cache_file)
 {
     int fd;
     char * current_arch_machine_name;
-    char candidate_arch_machine_name[9+MACHINE_SIGNATURE_SIZE];
     off_t current_arch_start = 0;
     char subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
     static char name_buf[8192], *dir;
@@ -411,7 +410,7 @@ main (int argc, char **argv)
     if (i >= argc)
         usage (argv[0]);
 
-    if (name_buf = FcCacheFileRead (fs, dirs, argv[i]))
+    if ((name_buf = FcCacheFileRead (fs, dirs, argv[i])) != 0)
 	FcCachePrintSet (fs, dirs, name_buf);
     else
     {

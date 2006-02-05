@@ -251,11 +251,20 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	    (config_time.set && cache_stat.st_mtime < config_time.time))
         {
             FcCache md;
+	    off_t off;
 
-            FcStrSetAdd (staleDirs, FcStrCopy ((FcChar8 *)name_buf));
-            read (cache->fd, &md, sizeof (FcCache));
-            lseek (cache->fd, FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + md.count, SEEK_SET);
-            continue;
+	    FcStrSetAdd (staleDirs, FcStrCopy ((FcChar8 *)name_buf));
+	    if (read (cache->fd, &md, sizeof (FcCache)) != sizeof(FcCache)) 
+	    {
+		perror ("read metadata");
+		goto bail1;
+	    }
+	    off = FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + md.count;
+	    if (lseek (cache->fd, off, SEEK_SET) != off) {
+		perror ("lseek");
+		goto bail1;
+	    }
+	    continue;
         }
 
 	d = malloc (sizeof (FcGlobalCacheDir));
@@ -465,21 +474,38 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 
     for (dir = cache->dirs; dir; dir = dir->next)
     {
-        if (dir->name)
-        {
+	if (dir->name)
+	{
 	    const char * d = (const char *)FcConfigNormalizeFontDir (config, (const FcChar8 *)dir->name);
+	    off_t off;
 
-            FcCacheWriteString (fd, d);
+	    FcCacheWriteString (fd, d);
 
 	    for (i = 0; i < dir->subdirs->size; i++)
 		FcCacheWriteString (fd, (char *)dir->subdirs->strs[i]);
 	    FcCacheWriteString (fd, "");
 	    
-            write (fd, &dir->metadata, sizeof(FcCache));
-            lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_CUR)), SEEK_SET);
-            write (fd, dir->ent, dir->metadata.count);
-            free (dir->ent);
-        }
+	    if (write (fd, &dir->metadata, sizeof(FcCache)) != sizeof(FcCache))
+	    {
+		perror ("write metadata");
+		free (dir->ent);
+		continue;
+	    }
+	    off = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
+	    if (lseek (fd, off, SEEK_SET) != off)
+	    {
+		perror ("lseek");
+		free (dir->ent);
+		continue;
+	    }
+	    if (write (fd, dir->ent, dir->metadata.count) != dir->metadata.count)
+	    {
+		perror ("write dirent");
+		free (dir->ent);
+		continue;
+	    }
+	   free (dir->ent);
+	}
     }
     FcCacheWriteString (fd, "");
 
@@ -1025,7 +1051,8 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set, FcConfig *config)
     void * current_dir_block;
     off_t pos;
 
-    read(fd, &metadata, sizeof(FcCache));
+    if (read(fd, &metadata, sizeof(FcCache)) != sizeof(FcCache))
+	return FcFalse;
     if (metadata.magic != FC_CACHE_MAGIC)
         return FcFalse;
 
@@ -1238,11 +1265,18 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
         FcCacheWriteString (fd, (char *)dirs->strs[i]);
     FcCacheWriteString (fd, "");
 
-    write (fd, &metadata, sizeof(FcCache));
+    if (write (fd, &metadata, sizeof(FcCache)) != sizeof(FcCache)) {
+	perror("write metadata");
+	goto bail5;
+    }
     if (metadata.count)
     {
-	lseek (fd, FcCacheNextOffset (lseek(fd, 0, SEEK_END)), SEEK_SET);
-	write (fd, current_dir_block, metadata.count);
+	off_t off = FcCacheNextOffset (lseek(fd, 0, SEEK_END));
+	if (lseek (fd, off, SEEK_SET) != off)
+	    perror("lseek");
+	else if (write (fd, current_dir_block, metadata.count) !=
+		 metadata.count)
+	    perror("write current_dir_block");
 	free (current_dir_block);
     }
 

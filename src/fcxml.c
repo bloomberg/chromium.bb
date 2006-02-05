@@ -493,10 +493,10 @@ FcConfigMessage (FcConfigParse *parse, FcConfigSeverity severe, const char *fmt,
     {
 	if (parse->name)
 	    fprintf (stderr, "Fontconfig %s: \"%s\", line %d: ", s,
-		     parse->name, XML_GetCurrentLineNumber (parse->parser));
+		     parse->name, (int)XML_GetCurrentLineNumber (parse->parser));
 	else
 	    fprintf (stderr, "Fontconfig %s: line %d: ", s,
-		     XML_GetCurrentLineNumber (parse->parser));
+		     (int)XML_GetCurrentLineNumber (parse->parser));
 	if (severe >= FcSevereError)
 	    parse->error = FcTrue;
     }
