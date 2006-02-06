@@ -3,6 +3,13 @@
 
 	* src/fcfs.c (FcFontSetUnserialize):
 
+	Explain apples/oranges comparison and fix compilation error.
+
+2006-02-06  Dirk Mueller  <dmueller@suse.de>
+	reviewed by: plam
+
+	* src/fcfs.c (FcFontSetUnserialize):
+
 	Insert check for integer overflow in # of fonts.
 
 2006-02-04  Behdad Esfahbod  <behdad@cs.toronto.edu>

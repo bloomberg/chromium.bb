@@ -159,7 +159,10 @@ FcFontSetUnserialize(FcCache * metadata, FcFontSet * s, void * block_ptr)
     nfont = *(int *)block_ptr;
     block_ptr = (int *)block_ptr + 1;
 
-    if (nfont > 0 && nfont < metadata.count)
+    /* comparing nfont and metadata.count is a bit like comparing
+       apples and oranges. Its just for rejecting totally insane
+       nfont values, and for that its good enough */
+    if (nfont > 0 && nfont < metadata->count / sizeof(void*))
     {
 	FcPattern * p = (FcPattern *)block_ptr;
 
