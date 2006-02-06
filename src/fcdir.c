@@ -47,14 +47,17 @@ FcFileScanConfig (FcFontSet	*set,
     int			id;
     FcPattern		*font;
     FcBool		ret = FcTrue;
-    FcBool		isDir;
     int			count = 0;
     
     if (config && !FcConfigAcceptFilename (config, file))
 	return FcTrue;
 
+    if (FcFileIsDir (file))
+	return FcStrSetAdd (dirs, file);
+
     if (force)
 	cache = 0;
+
     id = 0;
     do
     {
@@ -70,12 +73,6 @@ FcFileScanConfig (FcFontSet	*set,
 	font = FcFreeTypeQuery (file, id, blanks, &count);
 	if (FcDebug () & FC_DBG_SCAN)
 	    printf ("done\n");
-	isDir = FcFalse;
-	if (!font && FcFileIsDir (file))
-	{
-	    isDir = FcTrue;
-	    ret = FcStrSetAdd (dirs, file);
-	}
 	/*
 	 * Add the font
 	 */
