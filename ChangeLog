@@ -1,5 +1,17 @@
 2006-02-06  Takashi Iwai  <tiwai@suse.de>
 	reviewed by: plam
+	* src/fccache.c (FcGlobalCacheLoad, FcGlobalCacheReadDir,
+			 FcGlobalCacheDirFind, FcGlobalCacheUpdate,
+			 FcGlobalCacheSave, FcCacheReadDirs):
+	* src/fcint.h:
+
+	Skip subdirs when skipping over stale bits of global cache.
+	Introduce state machine into FcGlobalCacheDir to avoid
+	doing inappropriate operations on global dir entries, e.g.
+	writing out an out-of-date cache entry.
+	
+2006-02-06  Takashi Iwai  <tiwai@suse.de>
+	reviewed by: plam
 	* src/fcdir.c (FcFileScanConfig):
 
 	Hoist FcFileIsDir check out of FcFileScanConfig loop.

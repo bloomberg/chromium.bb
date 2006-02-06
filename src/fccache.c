@@ -254,13 +254,21 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 	    off_t off;
 
 	    FcStrSetAdd (staleDirs, FcStrCopy ((FcChar8 *)name_buf));
+
+	    /* skip subdirs */
+	    while (FcCacheReadString (cache->fd, subdirName, 
+				      sizeof (subdirName)) &&
+		   strlen (subdirName))
+		;
+
 	    if (read (cache->fd, &md, sizeof (FcCache)) != sizeof(FcCache)) 
 	    {
 		perror ("read metadata");
 		goto bail1;
 	    }
 	    off = FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + md.count;
-	    if (lseek (cache->fd, off, SEEK_SET) != off) {
+	    if (lseek (cache->fd, off, SEEK_SET) != off) 
+	    {
 		perror ("lseek");
 		goto bail1;
 	    }
@@ -276,6 +284,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
 
 	d->name = (char *)FcStrCopy ((FcChar8 *)name_buf);
 	d->ent = 0;
+	d->state = FcGCDirFileRead;
 
 	d->subdirs = FcStrSetCreate();
 	do
@@ -323,7 +332,6 @@ FcBool
 FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, const char *dir, FcConfig *config)
 {
     FcGlobalCacheDir 	*d;
-    FcBool 		ret = FcFalse;
     int			i;
 
     if (cache->fd == -1)
@@ -334,41 +342,63 @@ FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, con
 
     for (d = cache->dirs; d; d = d->next)
     {
-	if (strncmp (d->name, dir, strlen(dir)) == 0)
+	if (strcmp (d->name, dir) == 0)
 	{
-	    lseek (cache->fd, d->offset, SEEK_SET);
-	    if (!FcDirCacheConsume (cache->fd, d->name, set, config))
+	    if (d->state == FcGCDirDisabled)
 		return FcFalse;
 
-            if (strcmp (d->name, dir) == 0)
-            {
+	    if (d->state == FcGCDirFileRead) 
+	    {
+		lseek (cache->fd, d->offset, SEEK_SET);
+		if (!FcDirCacheConsume (cache->fd, d->name, set, config))
+		    return FcFalse;
+
 		for (i = 0; i < d->subdirs->num; i++)
 		    FcStrSetAdd (dirs, (FcChar8 *)d->subdirs->strs[i]);
 
-		ret = FcTrue;
-            }
+		d->state = FcGCDirConsumed;
+	    }
+	    return FcTrue;
 	}
     }
 
-    return ret;
+    return FcFalse;
 }
+
+static FcGlobalCacheDir *
+FcGlobalCacheDirFind (FcGlobalCache *cache, const char *name)
+{
+    FcGlobalCacheDir * d;
+
+    if (!cache || !name)
+	return NULL;
+
+    for (d = cache->dirs; d; d = d->next)
+	if (strcmp((const char *)d->name, (const char *)name) == 0)
+	    return d;
+
+    return NULL;
+ }
 
 FcBool
 FcGlobalCacheUpdate (FcGlobalCache  *cache,
 		     FcStrSet	    *dirs,
-		     const char     *name,
+		     const char     *orig_name,
 		     FcFontSet	    *set,
 		     FcConfig	    *config)
 {
     FcGlobalCacheDir    *d;
     int		       	i;
+    const char *name;
 
-    name = (char *)FcConfigNormalizeFontDir (config, (FcChar8 *)name);
-    for (d = cache->dirs; d; d = d->next)
+    name = (char *)FcConfigNormalizeFontDir (config, (FcChar8 *)orig_name);
+    if (!name) 
     {
-	if (strcmp(d->name, name) == 0)
-	    break;
+	fprintf(stderr, "Invalid directory name %s\n", orig_name);
+	return FcFalse;
     }
+
+    d = FcGlobalCacheDirFind (cache, name);
 
     if (!d)
     {
@@ -377,6 +407,11 @@ FcGlobalCacheUpdate (FcGlobalCache  *cache,
 	    return FcFalse;
 	d->next = cache->dirs;
 	cache->dirs = d;
+    } else {
+	/* free old resources */
+	FcStrFree ((FcChar8 *)d->name);
+	free (d->ent);
+	FcStrSetDestroy (d->subdirs);
     }
 
     cache->updated = FcTrue;
@@ -385,6 +420,7 @@ FcGlobalCacheUpdate (FcGlobalCache  *cache,
     d->ent = FcDirCacheProduce (set, &d->metadata);
     d->offset = 0;
     d->subdirs = FcStrSetCreate();
+    d->state = FcGCDirUpdated;
     for (i = 0; i < dirs->num; i++)
 	FcStrSetAdd (d->subdirs, dirs->strs[i]);
     return FcTrue;
@@ -442,9 +478,6 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     if (!FcCacheCopyOld(fd, fd_orig, current_arch_start))
 	goto bail3;
 
-    close (fd_orig);
-    fd_orig = -1;
-
     current_arch_start = lseek(fd, 0, SEEK_CUR);
     if (ftruncate (fd, current_arch_start) == -1)
 	goto bail3;
@@ -456,6 +489,8 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     truncate_to = current_arch_start + strlen(current_arch_machine_name) + 11;
     for (dir = cache->dirs; dir; dir = dir->next)
     {
+	if (dir->state == FcGCDirDisabled)
+	    continue;
 	truncate_to += strlen(dir->name) + 1;
 	truncate_to += sizeof (FcCache);
 	truncate_to = FcCacheNextOffset (truncate_to);
@@ -474,43 +509,82 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 
     for (dir = cache->dirs; dir; dir = dir->next)
     {
-	if (dir->name)
-	{
-	    const char * d = (const char *)FcConfigNormalizeFontDir (config, (const FcChar8 *)dir->name);
-	    off_t off;
+	const char * d;
+	off_t off;
 
-	    FcCacheWriteString (fd, d);
-
-	    for (i = 0; i < dir->subdirs->size; i++)
-		FcCacheWriteString (fd, (char *)dir->subdirs->strs[i]);
-	    FcCacheWriteString (fd, "");
+	if (!dir->name || dir->state == FcGCDirDisabled)
+	    continue;
+	d = (const char *)FcConfigNormalizeFontDir (config, (const FcChar8 *)dir->name);
+	if (!d) 
+	    continue;
 	    
-	    if (write (fd, &dir->metadata, sizeof(FcCache)) != sizeof(FcCache))
+	if (dir->metadata.count && !dir->ent) 
+	{
+	    if (dir->state == FcGCDirUpdated || fd_orig < 0) 
 	    {
-		perror ("write metadata");
-		free (dir->ent);
+		fprintf(stderr, "Invalid metadata entry for %s, skipping...\n", d);
 		continue;
 	    }
-	    off = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
-	    if (lseek (fd, off, SEEK_SET) != off)
+	    /* copy the old content */
+	    dir->ent = malloc (dir->metadata.count);
+	    if (!dir->ent) 
 	    {
-		perror ("lseek");
-		free (dir->ent);
+		perror("malloc error");
 		continue;
 	    }
+	    off = FcCacheNextOffset (dir->offset + sizeof(FcCache));
+	    if (lseek (fd_orig, off, SEEK_SET) != off) 
+	    {
+		perror("lseek");
+		free(dir->ent);
+		continue;
+	    }
+	    if (read (fd_orig, dir->ent, dir->metadata.count)
+		!= dir->metadata.count) 
+	    {
+		perror("read");
+		free(dir->ent);
+		continue;
+	    }
+	}
+	
+	FcCacheWriteString (fd, d);
+
+	for (i = 0; i < dir->subdirs->size; i++)
+	    FcCacheWriteString (fd, (char *)dir->subdirs->strs[i]);
+	FcCacheWriteString (fd, "");
+	
+	if (write (fd, &dir->metadata, sizeof(FcCache)) != sizeof(FcCache))
+	{
+	    perror ("write metadata");
+	    free (dir->ent);
+	    continue;
+	}
+	off = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
+	if (lseek (fd, off, SEEK_SET) != off)
+	{
+	    perror ("lseek");
+	    free (dir->ent);
+	    continue;
+	}
+	if (dir->metadata.count)
+	{
 	    if (write (fd, dir->ent, dir->metadata.count) != dir->metadata.count)
 	    {
 		perror ("write dirent");
 		free (dir->ent);
 		continue;
 	    }
-	   free (dir->ent);
 	}
+	free (dir->ent);
     }
     FcCacheWriteString (fd, "");
 
     if (close (fd) == -1)
 	goto bail25;
+
+    close (fd_orig);
+    fd_orig = -1;
     
     if (!FcAtomicReplaceOrig (atomic))
 	goto bail25;
@@ -793,10 +867,11 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 {
     int			ret = 0;
     FcChar8		*dir;
-    FcChar8		*file, *base;
+    const FcChar8	*name;
     FcStrSet		*subdirs;
     FcStrList		*sublist;
     struct stat		statb;
+    FcGlobalCacheDir   *d;
 
     /*
      * Read in the results from 'list'.
@@ -806,21 +881,22 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	if (!FcConfigAcceptFilename (config, dir))
 	    continue;
 
-	/* freed below */
-	file = (FcChar8 *) malloc (strlen ((char *) dir) + 1 + FC_MAX_FILE_LEN + 1);
-	if (!file)
-	    return FcFalse;
-
-	strcpy ((char *) file, (char *) dir);
-	strcat ((char *) file, "/");
-	base = file + strlen ((char *) file);
+	/* Skip this directory if already updated
+	 * to avoid the looped directories via symlinks
+	 */
+	name = FcConfigNormalizeFontDir (config, dir);
+	if (name) 
+	{
+	    if ((d = FcGlobalCacheDirFind (cache, (const char *)name)) != NULL &&
+		d->state == FcGCDirUpdated)
+		continue;
+	}
 
 	subdirs = FcStrSetCreate ();
 	if (!subdirs)
 	{
 	    fprintf (stderr, "Can't create directory set\n");
 	    ret++;
-	    free (file);
 	    continue;
 	}
 	
@@ -837,7 +913,6 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 		ret++;
 	    }
 	    FcStrSetDestroy (subdirs);
-	    free (file);
 	    continue;
 	}
 	if (stat ((char *) dir, &statb) == -1)
@@ -846,17 +921,25 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	    perror ("");
 	    FcStrSetDestroy (subdirs);
 	    ret++;
-	    free (file);
 	    continue;
 	}
 	if (!S_ISDIR (statb.st_mode))
 	{
 	    fprintf (stderr, "\"%s\": not a directory, skipping\n", dir);
 	    FcStrSetDestroy (subdirs);
-	    free (file);
 	    continue;
 	}
-	if (!FcDirCacheValid (dir) || !FcDirCacheRead (set, subdirs, dir, config))
+	if (FcDirCacheValid (dir) && FcDirCacheRead (set, subdirs, dir, config))
+	{
+	    /* if an old entry is found in the global cache, disable it */
+	    if ((d = FcGlobalCacheDirFind (cache, (const char *)name)) != NULL)
+	    {
+		d->state = FcGCDirDisabled;
+		/* save the updated config later without this entry */
+		cache->updated = FcTrue;
+	    }
+	}
+	else
 	{
 	    if (FcDebug () & FC_DBG_FONTSET)
 		printf ("cache scan dir %s\n", dir);
@@ -870,11 +953,9 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	{
 	    fprintf (stderr, "Can't create subdir list in \"%s\"\n", dir);
 	    ret++;
-	    free (file);
 	    continue;
 	}
 	ret += FcCacheReadDirs (config, cache, sublist, set);
-	free (file);
     }
     FcStrListDone (list);
     return ret;
@@ -1265,7 +1346,8 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
         FcCacheWriteString (fd, (char *)dirs->strs[i]);
     FcCacheWriteString (fd, "");
 
-    if (write (fd, &metadata, sizeof(FcCache)) != sizeof(FcCache)) {
+    if (write (fd, &metadata, sizeof(FcCache)) != sizeof(FcCache)) 
+    {
 	perror("write metadata");
 	goto bail5;
     }

@@ -328,6 +328,9 @@ typedef struct _FcCaseFold {
 
 typedef struct _FcGlobalCacheDir FcGlobalCacheDir;
 
+enum FcGCDirState {
+	FcGCDirDisabled, FcGCDirFileRead, FcGCDirConsumed, FcGCDirUpdated
+};
 struct _FcGlobalCacheDir {
     struct _FcGlobalCacheDir	*next;
     char			*name;
@@ -335,6 +338,7 @@ struct _FcGlobalCacheDir {
     off_t			offset;
     FcStrSet			*subdirs;
     void			*ent;
+    enum FcGCDirState		state;
 };
 
 typedef struct _FcGlobalCache {
