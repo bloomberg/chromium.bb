@@ -93,6 +93,8 @@ usage (char *program)
     exit (1);
 }
 
+static FcStrSet *processed_dirs;
+
 static int
 nsubdirs (FcStrSet *set)
 {
@@ -140,6 +142,12 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    continue;
 	}
 	
+	if (FcStrSetMember (processed_dirs, dir))
+	{
+	    if (verbose)
+		printf ("skipping, looped directory detected\n");
+	    continue;
+	}
 
 	set = FcFontSetCreate ();
 	if (!set)
@@ -236,6 +244,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    ret++;
 	    continue;
 	}
+	FcStrSetAdd (processed_dirs, dir);
 	ret += scanDirs (sublist, config, program, force, verbose);
     }
     FcStrListDone (list);
@@ -318,7 +327,16 @@ main (int argc, char **argv)
     }
     else
 	list = FcConfigGetConfigDirs (config);
+
+    if ((processed_dirs = FcStrSetCreate()) == NULL) {
+	fprintf(stderr, "Cannot malloc\n");
+	return 1;
+    }
+	
     ret = scanDirs (list, config, argv[0], force, verbose);
+
+    FcStrSetDestroy (processed_dirs);
+
     /* 
      * Now we need to sleep a second  (or two, to be extra sure), to make
      * sure that timestamps for changes after this run of fc-cache are later

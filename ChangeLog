@@ -1,5 +1,11 @@
 2006-02-06  Takashi Iwai  <tiwai@suse.de>
 	reviewed by: plam
+	* fc-cache/fc-cache.c (scanDirs, main):
+
+	Don't loop infinitely on recursive symlinks.
+
+2006-02-06  Takashi Iwai  <tiwai@suse.de>
+	reviewed by: plam
 	* src/fccache.c (FcGlobalCacheLoad, FcGlobalCacheReadDir,
 			 FcGlobalCacheDirFind, FcGlobalCacheUpdate,
 			 FcGlobalCacheSave, FcCacheReadDirs):
