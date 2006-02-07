@@ -82,68 +82,44 @@ static void MD5Transform(FcChar32 buf[4], FcChar32 in[16]);
 static char *
 FcCacheReadString (int fd, char *dest, int len)
 {
-    FcChar8	c;
-    FcBool	escape;
-    int		size;
-    int		i;
+    int    size;
+    int    slen;
 
     if (len == 0)
 	return 0;
-    
-    size = len;
-    i = 0;
-    escape = FcFalse;
-    while (read (fd, &c, 1) == 1)
+
+    size = read (fd, dest, len-1);
+
+    if (size > 0)
     {
-	if (!escape)
-	{
-	    switch (c) {
-	    case '"':
-		c = '\0';
-		break;
-	    case '\\':
-		escape = FcTrue;
-		continue;
-	    }
-	}
-	if (i == size)
-	{
-	    dest[i++] = 0;
-	    return dest;
-	}
-	dest[i++] = c;
-	if (c == '\0')
-	    return dest;
-	escape = FcFalse;
+	int slen;
+	dest[size] = '\0';
+	slen = strlen (dest);
+
+	lseek (fd, slen - size + 1, SEEK_CUR);
+	return slen < len ? dest : 0;
     }
+
     return 0;
 }
 
 static void
 FcCacheSkipString (int fd)
 {
-    FcChar8	c;
-    FcBool	escape;
+    char buf[256];
+    int  size;
+    int  slen;
 
-    escape = FcFalse;
-    while (read (fd, &c, 1) == 1)
+    while ( (size = read (fd, buf, sizeof (buf)-1)) > 0) 
     {
-	if (!escape)
-	{
-	    switch (c) {
-	    case '"':
-		c = '\0';
-		break;
-	    case '\\':
-		escape = FcTrue;
-		continue;
-	    }
-	}
-	if (c == '\0')
-	    return;
-	escape = FcFalse;
+        buf [size] = '\0';
+        slen = strlen (buf);
+        if (slen < size) 
+        {
+            lseek (fd, slen - size + 1, SEEK_CUR);
+            return;
+        }
     }
-    return;
 }
 
 static FcBool

@@ -1,3 +1,11 @@
+2006-02-07  Dirk Mueller  <dmueller@suse.com>
+
+        * src/fccache.c (FcCacheReadString, FcCacheSkipString):
+	
+        Remove de-escaping logic because FcCacheWriteString
+        doesn't escape anyway. Do blockwise reading instead
+        of byte-wise for performance.
+
 2006-02-06  Patrick Lam  <plam@mit.edu>
 	    Takashi Iwai  <tiwai@suse.de>
 
