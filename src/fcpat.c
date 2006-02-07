@@ -241,32 +241,31 @@ FcStringHash (const FcChar8 *s)
 }
 
 static FcChar32
-FcValueHash (const FcValue *v0)
+FcValueHash (const FcValue *v)
 {
-    FcValue v = FcValueCanonicalize(v0);
-    switch (v.type) {
+    switch (fc_storage_type(v)) {
     case FcTypeVoid:
 	return 0;
     case FcTypeInteger:
-	return (FcChar32) v.u.i;
+	return (FcChar32) v->u.i;
     case FcTypeDouble:
-	return FcDoubleHash (v.u.d);
+	return FcDoubleHash (v->u.d);
     case FcTypeString:
-	return FcStringHash (v.u.s);
+	return FcStringHash (fc_value_string(v));
     case FcTypeBool:
-	return (FcChar32) v.u.b;
+	return (FcChar32) v->u.b;
     case FcTypeMatrix:
-	return (FcDoubleHash (v.u.m->xx) ^ 
-		FcDoubleHash (v.u.m->xy) ^ 
-		FcDoubleHash (v.u.m->yx) ^ 
-		FcDoubleHash (v.u.m->yy));
+	return (FcDoubleHash (v->u.m->xx) ^ 
+		FcDoubleHash (v->u.m->xy) ^ 
+		FcDoubleHash (v->u.m->yx) ^ 
+		FcDoubleHash (v->u.m->yy));
     case FcTypeCharSet:
-	return (FcChar32) v.u.c->num;
+	return (FcChar32) fc_value_charset(v)->num;
     case FcTypeFTFace:
-	return FcStringHash ((const FcChar8 *) ((FT_Face) v.u.f)->family_name) ^
-	       FcStringHash ((const FcChar8 *) ((FT_Face) v.u.f)->style_name);
+	return FcStringHash ((const FcChar8 *) ((FT_Face) v->u.f)->family_name) ^
+	       FcStringHash ((const FcChar8 *) ((FT_Face) v->u.f)->style_name);
     case FcTypeLangSet:
-	return FcLangSetHash (v.u.l);
+	return FcLangSetHash (fc_value_langset(v));
     }
     return FcFalse;
 }
@@ -294,12 +293,12 @@ static FcChar32
 FcValueListHash (FcValueListPtr l)
 {
     FcChar32	hash = 0;
+    FcValueList *l_ptrU;
     
-    while (FcValueListPtrU(l))
+    for (l_ptrU = FcValueListPtrU(l); l_ptrU; 
+	 l_ptrU = FcValueListPtrU(l_ptrU->next))
     {
-	hash = ((hash << 1) | (hash >> 31)) ^ 
-	    FcValueHash (&FcValueListPtrU(l)->value);
-	l = FcValueListPtrU(l)->next;
+	hash = ((hash << 1) | (hash >> 31)) ^ FcValueHash (&l_ptrU->value);
     }
     return hash;
 }
@@ -404,7 +403,7 @@ FcValueListEntCreate (FcValueListPtr h)
     memset(new, 0, n * sizeof (FcValueList));
     FcMemAlloc (FC_MEM_VALLIST, size);
     e = &ea->ent;
-    e->list = (FcValueListPtr) FcValueListPtrCreateDynamic(new);
+    e->list = FcValueListPtrCreateDynamic(new);
     for (l = h; FcValueListPtrU(l); 
 	 l = FcValueListPtrU(l)->next, new++)
     {
