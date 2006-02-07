@@ -1,4 +1,10 @@
+2006-02-07  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcCacheReadString):
+
+	Fix hidden variable warning.
+
 2006-02-07  Dirk Mueller  <dmueller@suse.com>
+	reviewed by: plam
 
         * src/fccache.c (FcCacheReadString, FcCacheSkipString):
 	

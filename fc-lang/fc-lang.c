@@ -37,9 +37,9 @@
  * functions are also needed in slightly modified form
  */
 
-const FcChar16 *langBankNumbers = 0;
-const FcCharLeaf	*langBankLeaves = 0;
-const int *langBankLeafIdx = 0;
+const FcChar16 langBankNumbers[1]; /* place holders so that externs resolve */
+const FcCharLeaf	langBankLeaves[1];
+const int langBankLeafIdx[1];
 
 void
 FcMemAlloc (int kind, int size)

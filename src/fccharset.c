@@ -38,9 +38,9 @@ static int charset_leaf_ptr, charset_leaf_count;
 static int ** leaf_idx = 0;
 static int charset_leaf_idx_ptr, charset_leaf_idx_count;
 
-extern const FcChar16 *langBankNumbers;
-extern const FcCharLeaf	*langBankLeaves;
-extern const int *langBankLeafIdx;
+extern const FcChar16 langBankNumbers[];
+extern const FcCharLeaf	langBankLeaves[];
+extern const int langBankLeafIdx[];
 
 static FcBool
 FcCharSetEnsureBank (int bi);
@@ -263,7 +263,8 @@ FcCharSetInsertLeaf (FcCharSet *fcs, FcChar32 ucs4, FcCharLeaf *leaf)
 	}
 	else
 	{
-	    leaves[fcs->bank][leaf_idx[fcs->bank][fcs->u.stat.leafidx_offset]+pos] = *leaf;
+	    int bi = FcCacheBankToIndex(fcs->bank);
+	    leaves[bi][leaf_idx[fcs->bank][fcs->u.stat.leafidx_offset]+pos] = *leaf;
 	}
 	return FcTrue;
     }

@@ -92,7 +92,6 @@ FcCacheReadString (int fd, char *dest, int len)
 
     if (size > 0)
     {
-	int slen;
 	dest[size] = '\0';
 	slen = strlen (dest);
 
