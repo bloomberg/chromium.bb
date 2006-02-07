@@ -1,3 +1,16 @@
+2006-02-07  Patrick Lam  <plam@mit.edu>
+	* src/fcdir.c (FcDirScanConfig):
+
+	Don't reject dirs that can't be normalized (fixes lilypond, and
+	is correct in the context of application font directories.)
+
+2006-02-07  Takashi Iwai  <tiwai@suse.de>
+	reviewed by: plam
+
+	* src/fccache.c (FcCacheReadDirs):
+
+	Use normalized directory name exclusively in FcCacheReadDirs.
+
 2006-02-07  Dirk Mueller  <dmueller@suse.com>
 	reviewed by: plam
 

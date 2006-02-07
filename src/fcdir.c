@@ -120,6 +120,7 @@ FcDirScanConfig (FcFontSet	*set,
     DIR			*d;
     struct dirent	*e;
     FcChar8		*file;
+    const FcChar8	*d_can = 0;
     FcChar8		*base;
     FcBool		ret = FcTrue;
     FcFontSet		*tmpSet;
@@ -129,11 +130,9 @@ FcDirScanConfig (FcFontSet	*set,
 	return FcTrue;
 
     if (config)
-	dir = FcConfigNormalizeFontDir (config, dir);
-
-    /* refuse to scan a directory that can't be normalized. */
-    if (!dir)
-	return FcFalse;
+	d_can = FcConfigNormalizeFontDir (config, dir);
+    if (d_can)
+	dir = d_can;
 
     if (!force)
     {

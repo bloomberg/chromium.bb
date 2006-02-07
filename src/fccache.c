@@ -842,7 +842,6 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 {
     int			ret = 0;
     FcChar8		*dir;
-    const FcChar8	*name;
     FcStrSet		*subdirs;
     FcStrList		*sublist;
     struct stat		statb;
@@ -858,14 +857,16 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 
 	/* Skip this directory if already updated
 	 * to avoid the looped directories via symlinks
+	 * Clearly a dir not in fonts.conf shouldn't be globally cached.
 	 */
-	name = FcConfigNormalizeFontDir (config, dir);
-	if (name) 
-	{
-	    if (FcStrSetMember (processed_dirs, dir))
-		continue;
-	    FcStrSetAdd (processed_dirs, dir);
-	}
+	dir = FcConfigNormalizeFontDir (config, dir);
+	if (!dir)
+	    continue;
+
+	if (FcStrSetMember (processed_dirs, dir))
+	    continue;
+	if (!FcStrSetAdd (processed_dirs, dir))
+	    continue;
 
 	subdirs = FcStrSetCreate ();
 	if (!subdirs)
@@ -907,7 +908,7 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	if (FcDirCacheValid (dir) && FcDirCacheRead (set, subdirs, dir, config))
 	{
 	    /* if an old entry is found in the global cache, disable it */
-	    if ((d = FcGlobalCacheDirFind (cache, (const char *)name)) != NULL)
+	    if ((d = FcGlobalCacheDirFind (cache, (const char *)dir)) != NULL)
 	    {
 		d->state = FcGCDirDisabled;
 		/* save the updated config later without this entry */
