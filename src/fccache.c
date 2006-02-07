@@ -863,7 +863,7 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 
 static int
 FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache, 
-		 FcStrList *list, FcFontSet * set)
+		 FcStrList *list, FcFontSet * set, FcStrSet *processed_dirs)
 {
     int			ret = 0;
     FcChar8		*dir;
@@ -887,9 +887,9 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	name = FcConfigNormalizeFontDir (config, dir);
 	if (name) 
 	{
-	    if ((d = FcGlobalCacheDirFind (cache, (const char *)name)) != NULL &&
-		d->state == FcGCDirUpdated)
+	    if (FcStrSetMember (processed_dirs, dir))
 		continue;
+	    FcStrSetAdd (processed_dirs, dir);
 	}
 
 	subdirs = FcStrSetCreate ();
@@ -955,7 +955,7 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	    ret++;
 	    continue;
 	}
-	ret += FcCacheReadDirs (config, cache, sublist, set);
+	ret += FcCacheReadDirs (config, cache, sublist, set, processed_dirs);
     }
     FcStrListDone (list);
     return ret;
@@ -964,15 +964,24 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 FcFontSet *
 FcCacheRead (FcConfig *config, FcGlobalCache * cache)
 {
-    FcFontSet * s = FcFontSetCreate();
+    FcFontSet 	*s = FcFontSetCreate();
+    FcStrSet 	*processed_dirs;
+
     if (!s) 
 	return 0;
 
-    if (FcCacheReadDirs (config, cache, FcConfigGetConfigDirs (config), s))
+    processed_dirs = FcStrSetCreate();
+    if (!processed_dirs)
 	goto bail;
 
+    if (FcCacheReadDirs (config, cache, FcConfigGetConfigDirs (config), s, processed_dirs))
+	goto bail1;
+
+    FcStrSetDestroy (processed_dirs);
     return s;
 
+ bail1:
+    FcStrSetDestroy (processed_dirs);
  bail:
     FcFontSetDestroy (s);
     return 0;
