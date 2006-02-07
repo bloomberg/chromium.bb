@@ -51,9 +51,9 @@ FcLangCharSetPopulate (void)
     int bi = FcCacheBankToIndexMTF (FC_BANK_LANGS);
     FcCharSetEnsureBank (bi);
     charsets[bi] = 0;
-    numbers[bi] = (FcChar16 *)&langBankNumbers;
-    leaves[bi] = (FcCharLeaf *)&langBankLeaves;
-    leaf_idx[bi] = (int *)&langBankLeafIdx;
+    numbers[bi] = (FcChar16 *)langBankNumbers;
+    leaves[bi] = (FcCharLeaf *)langBankLeaves;
+    leaf_idx[bi] = (int *)langBankLeafIdx;
 }
 
 FcCharSet *

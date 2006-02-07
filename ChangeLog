@@ -1,3 +1,28 @@
+2006-02-07  Takashi Iwai  <tiwai@suse.de>
+	reviewed by: plam
+
+	* src/fccharset.c (FcLangCharSetPopulate, FcCharSetInsertLeaf)
+	* fc-lang/fc-lang.c:
+
+	Fix missing FcCacheBankToIndex in FcCharSetInsertLeaf.
+	Declare extern for static arrays as arrays, not pointers.
+	(Part of the fix for 'fonts don't have en' issue after Euro patch.)
+
+2006-02-07  Dirk Mueller  <dmueller@suse.com>
+	reviewed by: plam
+
+	* fc-lang/de.orth:
+	* fc-lang/el.orth:
+	* fc-lang/en.orth:
+	* fc-lang/es.orth:
+	* fc-lang/fi.orth:
+	* fc-lang/fr.orth:
+	* fc-lang/it.orth:
+	* fc-lang/nl.orth:
+	* fc-lang/pt.orth:
+
+	Add Euro sign to list of symbols required by European languages.
+
 2006-02-07  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcCacheReadString):
 
