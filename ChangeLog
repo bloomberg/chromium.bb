@@ -1,4 +1,9 @@
 2006-02-07  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcCacheReadDirs):
+
+	Fix warning.
+
+2006-02-07  Patrick Lam  <plam@mit.edu>
 	* src/fcdir.c (FcDirScanConfig):
 
 	Don't reject dirs that can't be normalized (fixes lilypond, and

@@ -859,7 +859,7 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	 * to avoid the looped directories via symlinks
 	 * Clearly a dir not in fonts.conf shouldn't be globally cached.
 	 */
-	dir = FcConfigNormalizeFontDir (config, dir);
+	dir = (FcChar8 *)FcConfigNormalizeFontDir (config, dir);
 	if (!dir)
 	    continue;
 
