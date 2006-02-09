@@ -1,4 +1,10 @@
 2006-02-09  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheValid, FcDirCacheWrite):
+
+	Fix attempt to close -1.
+	Don't unboundedly grow bad caches (reported by fcrozat).
+
+2006-02-09  Patrick Lam  <plam@mit.edu>
 	* src/fccharset.c (FcCharSetNeededBytes, FcCharSetSerialize, 
 			   FcCharSetGetLeaf):
 

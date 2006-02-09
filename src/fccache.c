@@ -726,7 +726,7 @@ FcDirCacheValid (const FcChar8 *dir)
     fd = FcDirCacheOpen (dir);
 
     if (fd < 0)
-	goto bail;
+	return FcFalse;
     if (fstat (fd, &file_stat) < 0)
 	goto bail;
 
@@ -1239,13 +1239,15 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	if(!FcCacheReadString (fd, name_buf, sizeof (name_buf)) || !strlen(name_buf))
 	{
 	    close (fd);
-	    break;
+	    continue;
 	}
 	close (fd);
 
 	if (strcmp (name_buf, cache_file) != 0)
 	    continue;
-    } while (0);
+
+	break;
+    } while (1);
 
     current_dir_block = FcDirCacheProduce (set, &metadata);
 
