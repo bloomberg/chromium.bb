@@ -36,6 +36,10 @@
 #define ENDIAN_TEST 0x12345678
 #define MACHINE_SIGNATURE_SIZE 9 + 5*20 + 1
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 static int
 FcDirCacheOpen (const FcChar8 * dir);
 
@@ -187,7 +191,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
     if (stat ((char *) cache_file, &cache_stat) < 0)
         return;
 
-    cache->fd = open ((char *) cache_file, O_RDONLY);
+    cache->fd = open ((char *) cache_file, O_RDONLY | O_BINARY);
     if (cache->fd == -1)
 	return;
 
@@ -427,13 +431,13 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 
     if (!FcAtomicLock (atomic))
 	goto bail1;
-    fd = open ((char *) FcAtomicNewFile(atomic), O_RDWR | O_CREAT, 
+    fd = open ((char *) FcAtomicNewFile(atomic), O_RDWR | O_CREAT | O_BINARY, 
 	       S_IRUSR | S_IWUSR);
     if (fd == -1)
 	goto bail2;
     FcCacheWriteString (fd, FC_GLOBAL_MAGIC_COOKIE);
 
-    fd_orig = open ((char *) FcAtomicOrigFile(atomic), O_RDONLY);
+    fd_orig = open ((char *) FcAtomicOrigFile(atomic), O_RDONLY | O_BINARY);
 
     current_arch_machine_name = FcCacheMachineSignature ();
     if (fd_orig == -1)
@@ -804,7 +808,7 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 
 	if (fd > 0)
 	    close (fd);
-	fd = open(cache_hashed, O_RDONLY);
+	fd = open(cache_hashed, O_RDONLY | O_BINARY);
 	if (fd == -1)
 	{
 	    FcStrFree ((FcChar8 *)cache_file);
@@ -1019,7 +1023,7 @@ FcDirCacheOpen (const FcChar8 *dir)
     if (!cache_file)
 	return -1;
 
-    fd = open(cache_file, O_RDONLY);
+    fd = open(cache_file, O_RDONLY | O_BINARY);
     if (fd != -1)
 	return fd;
 
@@ -1041,7 +1045,7 @@ FcDirCacheOpen (const FcChar8 *dir)
 
 	if (fd > 0)
 	    close (fd);
-	fd = open(cache_hashed, O_RDONLY);
+	fd = open(cache_hashed, O_RDONLY | O_BINARY);
 	FcStrFree ((FcChar8 *)cache_hashed);
 
 	if (fd == -1)
@@ -1233,7 +1237,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 
 	if (fd > 0)
 	    close (fd);
-	fd = open(cache_hashed, O_RDONLY);
+	fd = open(cache_hashed, O_RDONLY | O_BINARY);
 	if (fd == -1)
 	    break;
 	if(!FcCacheReadString (fd, name_buf, sizeof (name_buf)) || !strlen(name_buf))
@@ -1267,22 +1271,22 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	FcAtomicDestroy (atomic);
 
 	atomic = FcAtomicCreate ((FcChar8 *)cache_file);
-	fd_orig = open (cache_file, O_RDONLY);
+	fd_orig = open (cache_file, O_RDONLY | O_BINARY);
 	if (fd_orig == -1)
-	    fd_orig = open((char *)FcAtomicOrigFile (atomic), O_RDONLY);
+	    fd_orig = open((char *)FcAtomicOrigFile (atomic), O_RDONLY | O_BINARY);
 
-	fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT, 0666);
+	fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT | O_BINARY, 0666);
 	if (fd == -1)
 	    goto bail2;
     }
 
     /* In all cases, try opening the real location of the cache file first. */
     /* (even if that's not atomic.) */
-    fd_orig = open (cache_file, O_RDONLY);
+    fd_orig = open (cache_file, O_RDONLY | O_BINARY);
     if (fd_orig == -1)
-	fd_orig = open((char *)FcAtomicOrigFile (atomic), O_RDONLY);
+	fd_orig = open((char *)FcAtomicOrigFile (atomic), O_RDONLY | O_BINARY);
 
-    fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT, 0666);
+    fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT | O_BINARY, 0666);
     if (fd == -1)
 	goto bail3;
 

@@ -1,8 +1,9 @@
 2006-02-09  Patrick Lam  <plam@mit.edu>
-	* src/fccache.c (FcDirCacheValid, FcDirCacheWrite):
+	* src/fccache.c (FcGlobalCacheLoad, FcGlobalCacheSave,
+			 FcDirCacheUnlink, FcDirCacheOpen, FcDirCacheWrite):
 
-	Fix attempt to close -1.
-	Don't unboundedly grow bad caches (reported by fcrozat).
+	Define and pass O_BINARY to open if appropriate, for those
+	platforms that need it.  Reported by Doodle.
 
 2006-02-09  Patrick Lam  <plam@mit.edu>
 	* src/fccharset.c (FcCharSetNeededBytes, FcCharSetSerialize, 
