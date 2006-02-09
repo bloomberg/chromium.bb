@@ -1323,11 +1323,11 @@ FcCharSetNeededBytes (const FcCharSet *c)
 {
     /* yes, there's redundancy */
     charset_count++;
-    charset_leaf_idx_count++;
+    charset_leaf_idx_count += c->num;
     charset_leaf_count += c->num;
     charset_numbers_count += c->num;
     return sizeof (FcCharSet) + 
-	sizeof (int) + 			/* leaf_idx */
+	sizeof (int) * c->num + 	/* leaf_idx */
 	sizeof (FcCharLeaf) * c->num + 	/* leaf */
 	sizeof (FcChar16) * c->num; 	/* number */
 }
@@ -1421,9 +1421,9 @@ FcCharSetSerialize(int bank, FcCharSet *c)
 
     charsets[bi][charset_ptr++] = new;
 
-    leaf_idx[bi][charset_leaf_idx_ptr++] = charset_leaf_ptr;
     for (i = 0; i < c->num; i++)
     {
+	leaf_idx[bi][charset_leaf_idx_ptr++] = charset_leaf_ptr;
 	memcpy (&leaves[bi][charset_leaf_ptr++], 
 		c->u.dyn.leaves[i], sizeof(FcCharLeaf));
 	numbers[bi][charset_numbers_ptr++] = c->u.dyn.numbers[i];
@@ -1467,7 +1467,7 @@ FcCharSetGetLeaf(const FcCharSet *c, int i)
 	return c->u.dyn.leaves[i];
     bi = FcCacheBankToIndex(c->bank);
 
-    return &leaves[bi][leaf_idx[bi][c->u.stat.leafidx_offset]+i];
+    return &leaves[bi][leaf_idx[bi][c->u.stat.leafidx_offset+i]];
 }
 
 FcChar16 *

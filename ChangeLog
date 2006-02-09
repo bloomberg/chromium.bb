@@ -1,3 +1,11 @@
+2006-02-09  Patrick Lam  <plam@mit.edu>
+	* src/fccharset.c (FcCharSetNeededBytes, FcCharSetSerialize, 
+			   FcCharSetGetLeaf):
+
+	Fix problem with missing 'en' due to euro.patch: change
+	cache file format slightly to coincide with that generated
+	by fc-lang.
+
 2006-02-07  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcCacheReadDirs):
 
