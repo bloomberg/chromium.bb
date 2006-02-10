@@ -1,3 +1,10 @@
+2006-02-10  Takashi Iwai  <tiwai@suse.de>
+	reviewed by: plam
+	* src/fcmatch.c (FcFontSetMatch):
+
+	Don't kill fonts because they don't declare an element that's
+	being matched on.
+
 2006-02-09  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcGlobalCacheLoad, FcGlobalCacheSave,
 			 FcDirCacheUnlink, FcDirCacheOpen, FcDirCacheWrite):

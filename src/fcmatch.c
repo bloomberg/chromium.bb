@@ -673,6 +673,10 @@ FcFontSetMatch (FcConfig    *config,
 			}
 		    }
 
+		    /* We had no matching, just try the next one */
+		    if (score == 1e99)
+			continue;
+
 		    /* If there's a previous champion, and current score
 		     * beats previous best score, on this element, then
 		     * knock out the previous champion and anything
