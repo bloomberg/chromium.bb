@@ -1019,22 +1019,21 @@ FcDirCacheOpen (const FcChar8 *dir)
     char	name_buf[FC_MAX_FILE_LEN];
     struct stat dir_stat;
 
-    cache_file = (char *)FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
-    if (!cache_file)
+    if (stat ((char *)dir, &dir_stat) == -1)
 	return -1;
 
-    fd = open(cache_file, O_RDONLY | O_BINARY);
-    if (fd != -1)
-	return fd;
-
-    if (stat ((char *)dir, &dir_stat) == -1)
+    cache_file = (char *)FcStrPlus (dir, (FcChar8 *) "/" FC_DIR_CACHE_FILE);
+    if (!cache_file)
 	return -1;
 
     found = FcFalse;
     do
     {
-	struct stat c;
-	FcChar8 * name_buf_dir;
+	struct stat 	c;
+	FcChar8 	*name_buf_dir;
+
+	if (fd >= 0)
+	    close (fd);
 
 	cache_hashed = FcDirCacheHashName (cache_file, collisions++);
 	if (!cache_hashed)
@@ -1043,18 +1042,14 @@ FcDirCacheOpen (const FcChar8 *dir)
 	    return -1;
 	}
 
-	if (fd > 0)
-	    close (fd);
 	fd = open(cache_hashed, O_RDONLY | O_BINARY);
 	FcStrFree ((FcChar8 *)cache_hashed);
 
 	if (fd == -1)
-	{
-	    FcStrFree ((FcChar8 *)cache_file);
-	    return -1;
-	}
-	if (!FcCacheReadString (fd, name_buf, sizeof (name_buf)) || !strlen(name_buf))
-	    goto bail;
+	    break;
+	if (!FcCacheReadString (fd, name_buf, sizeof (name_buf)) || 
+	    !strlen(name_buf))
+	    break;
 
 	name_buf_dir = FcStrDirname ((FcChar8 *)name_buf);
 	if (stat ((char *)name_buf_dir, &c) == -1)
@@ -1065,13 +1060,16 @@ FcDirCacheOpen (const FcChar8 *dir)
 	FcStrFree (name_buf_dir);
 	found = (c.st_ino == dir_stat.st_ino) && (c.st_dev == dir_stat.st_dev);
     } while (!found);
+
+    if (!found || fd < 0) 
+    {
+	if (fd >= 0)
+	    close (fd);
+	fd = open(cache_file, O_RDONLY | O_BINARY);
+    }
+
     FcStrFree ((FcChar8 *)cache_file);
     return fd;
-
- bail:
-    FcStrFree ((FcChar8 *)cache_file);
-    close (fd);
-    return -1;
 }
 
 /* read serialized state from the cache file */

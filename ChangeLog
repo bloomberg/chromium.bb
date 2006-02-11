@@ -1,5 +1,14 @@
 2006-02-10  Takashi Iwai  <tiwai@suse.de>
 	reviewed by: plam
+	* src/fccache.c (FcDirCacheOpen):
+
+	Try to open /var/cache/fontconfig/[hashed name] before
+	fonts.cache-2 in a directory, because /var/cache/fontconfig
+	failures ought to be fixable, unlike fonts.cache-2 failures,
+	which may leave you screwed.
+
+2006-02-10  Takashi Iwai  <tiwai@suse.de>
+	reviewed by: plam
 	* src/fcmatch.c (FcFontSetMatch):
 
 	Use a tri-state to mark the fonts which didn't get blocked but
