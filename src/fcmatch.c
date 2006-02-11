@@ -524,7 +524,7 @@ FcFontSetMatch (FcConfig    *config,
     FcMatcher	    *weak_matchers[NUM_MATCH_VALUES];
     FcPatternElt    *pat_elts[NUM_MATCH_VALUES];
     int		    pat_elt;
-    FcBool	    *match_blocked;
+    int		    *match_blocked;
     int		    block_start;
 
     if (!nsets || !sets || !p)
@@ -560,7 +560,7 @@ FcFontSetMatch (FcConfig    *config,
 
     fonts_left = nfonts;
 
-    match_blocked = (FcBool*)calloc(nfonts, sizeof(FcBool));
+    match_blocked = (int*)calloc(nfonts, sizeof(int));
 
     /* Find out all necessary matchers first, so we don't need to find them
      * in every loop.
@@ -631,7 +631,7 @@ FcFontSetMatch (FcConfig    *config,
 		    int		    cand_elt;
 		    FcPatternElt    *cand_elts;
 
-		    if (match_blocked[f + sets_offset[set]])
+		    if (match_blocked[f + sets_offset[set]] == 1)
 			continue;
 
 		    score = 1e99;
@@ -675,8 +675,11 @@ FcFontSetMatch (FcConfig    *config,
 
 		    /* We had no matching, just try the next one */
 		    if (score == 1e99)
+		    {
+			match_blocked[f + sets_offset[set]] = 2;
 			continue;
-
+		    }
+		    match_blocked[f + sets_offset[set]] = 0;
 		    /* If there's a previous champion, and current score
 		     * beats previous best score, on this element, then
 		     * knock out the previous champion and anything
@@ -691,20 +694,21 @@ FcFontSetMatch (FcConfig    *config,
 			    for (b = block_start; b < f + sets_offset[set]; ++b)
 				if (!match_blocked[b])
 				{
-				    match_blocked[b] = FcTrue;
+				    match_blocked[b] = 1;
 				    --fonts_left;
 				}
 			}
 
 			bestscore = score;
 			best = s->fonts[f];
-			block_start = f + sets_offset[set];
+			/* This kills too many fonts, unfortunately. */
+			/* block_start = f + sets_offset[set]; */
 		    }
 
 		    /* If f loses, then it's out too. */
 		    if (best && score > bestscore)
 		    {
-			match_blocked[f + sets_offset[set]] = FcTrue;
+			match_blocked[f + sets_offset[set]] = 1;
 			--fonts_left;
 		    }
 
