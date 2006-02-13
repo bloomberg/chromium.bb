@@ -1,3 +1,11 @@
+2006-02-13  Mike Fabian  <mfabian@suse.de>
+	reviewed by: plam
+	* src/fcfreetype.c (FcFreeTypeQuery):
+
+	Skip bitmap fonts which can't even get it together enough to
+	declare a family name; this appears to reproduce previous
+	fontconfig behaviour.
+
 2006-02-10  Takashi Iwai  <tiwai@suse.de>
 	reviewed by: plam
 	* src/fccache.c (FcDirCacheOpen):

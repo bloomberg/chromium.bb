@@ -1609,6 +1609,11 @@ FcFreeTypeQuery (const FcChar8	*file,
             int value;
             BDF_PropertyRec prop;
 
+	    /* skip bitmap fonts which do not even have a family name */
+	    rc =  FT_Get_BDF_Property(face, "FAMILY_NAME", &prop);
+	    if (rc != 0 || prop.type != BDF_PROPERTY_TYPE_ATOM)
+		goto bail2;
+
             rc = FT_Get_BDF_Property(face, "POINT_SIZE", &prop);
             if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_INTEGER)
                 value = prop.u.integer;
