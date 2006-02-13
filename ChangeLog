@@ -1,3 +1,8 @@
+2006-02-13  Patrick Lam  <plam@mit.edu>
+	* src/fcfreetype.c (FcFreeTypeQuery):
+
+	Fix memory leak in error condition code.
+
 2006-02-13  Mike Fabian  <mfabian@suse.de>
 	reviewed by: plam
 	* src/fcfreetype.c (FcFreeTypeQuery):

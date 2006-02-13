@@ -1600,9 +1600,9 @@ FcFreeTypeQuery (const FcChar8	*file,
 	for (i = 0; i < face->num_fixed_sizes; i++)
 	    if (!FcPatternAddDouble (pat, FC_PIXEL_SIZE,
 				     FcGetPixelSize (face, i)))
-		goto bail1;
+		goto bail2;
 	if (!FcPatternAddBool (pat, FC_ANTIALIAS, FcFalse))
-	    goto bail1;
+	    goto bail2;
 #if HAVE_FT_GET_BDF_PROPERTY
         if(face->num_fixed_sizes == 1) {
             int rc;
