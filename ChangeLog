@@ -1,4 +1,10 @@
 2006-02-16  Patrick Lam  <plam@mit.edu>
+	* fc-cache/fc-cache.c (usage, scanDirs, main):
+
+	Add -r --really-force option which blows away cache files and then
+	regenerates them.
+
+2006-02-16  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheUnlink, FcCacheCopyOld, FcDirCacheWrite):
 
 	Don't bail if fontconfig can't remove a dir cache file.

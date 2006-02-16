@@ -51,6 +51,7 @@
 #include <getopt.h>
 const struct option longopts[] = {
     {"force", 0, 0, 'f'},
+    {"really-force", 0, 0, 'r'},
     {"system-only", 0, 0, 's'},
     {"version", 0, 0, 'V'},
     {"verbose", 0, 0, 'v'},
@@ -68,10 +69,10 @@ static void
 usage (char *program)
 {
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "usage: %s [-fsvV?] [--force] [--system-only] [--verbose] [--version] [--help] [dirs]\n",
+    fprintf (stderr, "usage: %s [-frsvV?] [--force|--really-force] [--system-only] [--verbose] [--version] [--help] [dirs]\n",
 	     program);
 #else
-    fprintf (stderr, "usage: %s [-fsvV?] [dirs]\n",
+    fprintf (stderr, "usage: %s [-frsvV?] [dirs]\n",
 	     program);
 #endif
     fprintf (stderr, "Build font information caches in [dirs]\n"
@@ -79,12 +80,14 @@ usage (char *program)
     fprintf (stderr, "\n");
 #if HAVE_GETOPT_LONG
     fprintf (stderr, "  -f, --force          scan directories with apparently valid caches\n");
+    fprintf (stderr, "  -r, --really-force   erase all existing caches, then rescan\n");
     fprintf (stderr, "  -s, --system-only    scan system-wide directories only\n");
     fprintf (stderr, "  -v, --verbose        display status information while busy\n");
     fprintf (stderr, "  -V, --version        display font config version and exit\n");
     fprintf (stderr, "  -?, --help           display this help and exit\n");
 #else
     fprintf (stderr, "  -f         (force)   scan directories with apparently valid caches\n");
+    fprintf (stderr, "  -r,   (really force) erase all existing caches, then rescan\n");
     fprintf (stderr, "  -s         (system)  scan system-wide directories only\n");
     fprintf (stderr, "  -v         (verbose) display status information while busy\n");
     fprintf (stderr, "  -V         (version) display font config version and exit\n");
@@ -111,7 +114,7 @@ nsubdirs (FcStrSet *set)
 }
 
 static int
-scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool verbose)
+scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool really_force, FcBool verbose)
 {
     int		ret = 0;
     const FcChar8 *dir;
@@ -207,6 +210,10 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    FcStrSetDestroy (subdirs);
 	    continue;
 	}
+
+	if (really_force)
+	    FcDirCacheUnlink (dir, config);
+
 	if (!FcDirScanConfig (set, subdirs, 0, FcConfigGetBlanks (config), dir, force, config))
 	{
 	    fprintf (stderr, "\"%s\": error scanning\n", dir);
@@ -249,7 +256,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    continue;
 	}
 	FcStrSetAdd (processed_dirs, dir);
-	ret += scanDirs (sublist, config, program, force, verbose);
+	ret += scanDirs (sublist, config, program, force, really_force, verbose);
     }
     FcStrListDone (list);
     return ret;
@@ -262,6 +269,7 @@ main (int argc, char **argv)
     FcStrList	*list;
     FcBool    	verbose = FcFalse;
     FcBool	force = FcFalse;
+    FcBool	really_force = FcFalse;
     FcBool	systemOnly = FcFalse;
     FcConfig	*config;
     int		i;
@@ -270,12 +278,15 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "fsVv?", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "frsVv?", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "fsVv?")) != -1)
+    while ((c = getopt (argc, argv, "frsVv?")) != -1)
 #endif
     {
 	switch (c) {
+	case 'r':
+	    really_force = FcTrue;
+	    /* fall through */
 	case 'f':
 	    force = FcTrue;
 	    break;
@@ -337,7 +348,7 @@ main (int argc, char **argv)
 	return 1;
     }
 	
-    ret = scanDirs (list, config, argv[0], force, verbose);
+    ret = scanDirs (list, config, argv[0], force, really_force, verbose);
 
     FcStrSetDestroy (processed_dirs);
 
