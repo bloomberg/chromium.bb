@@ -172,20 +172,24 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    case ENOTDIR:
 		if (verbose)
 		    printf ("skipping, no such directory\n");
-		break;
+		FcFontSetDestroy (set);
+		FcStrSetDestroy (subdirs);
+		continue;
 	    case EACCES:
 	    case EROFS:
-		if (verbose)
-		    printf ("skipping, no write access\n");
+		/* That's ok, caches go to /var anyway. */
+		/* Ideally we'd do an access on the hashed_name. */
+		/* But we hid that behind an abstraction barrier. */
 		break;
 	    default:
 		fprintf (stderr, "\"%s\": ", dir);
 		perror ("");
 		ret++;
+
+		FcFontSetDestroy (set);
+		FcStrSetDestroy (subdirs);
+		continue;
 	    }
-	    FcFontSetDestroy (set);
-	    FcStrSetDestroy (subdirs);
-	    continue;
 	}
 	if (stat ((char *) dir, &statb) == -1)
 	{

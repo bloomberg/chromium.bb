@@ -665,6 +665,7 @@ FcCacheCopyOld (int fd, int fd_orig, off_t start)
 
     loc = 0;
     lseek (fd, 0, SEEK_SET); lseek (fd_orig, 0, SEEK_SET);
+    FcCacheSkipString (fd); FcCacheSkipString (fd_orig);
     do
     {
         int b = 8192;
@@ -791,9 +792,8 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 	return FcFalse;
 
     /* First remove normal cache file. */
-    if (stat ((char *) cache_file, &cache_stat) == 0 &&
-	unlink ((char *)cache_file) != 0)
-	goto bail;
+    if (stat ((char *) cache_file, &cache_stat) == 0)
+        unlink ((char *)cache_file);
 
     /* Next remove any applicable hashed files. */
     fd = -1; collisions = 0;
@@ -1300,8 +1300,6 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     if (current_arch_start < 0)
     {
 	off_t i = lseek(fd_orig, 0, SEEK_END);
-	if (i < strlen (FC_GLOBAL_MAGIC_COOKIE)+1)
-	    i = strlen (FC_GLOBAL_MAGIC_COOKIE)+1;
 	current_arch_start = FcCacheNextOffset (i);
     }
 

@@ -1,3 +1,10 @@
+2006-02-16  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheUnlink, FcCacheCopyOld, FcDirCacheWrite):
+
+	Don't bail if fontconfig can't remove a dir cache file.
+	Skip the ID of a cache file when copying.
+	Eliminate 'source file too small' bug in FcDirCacheWrite.
+
 2006-02-13  Patrick Lam  <plam@mit.edu>
 	* src/fcfreetype.c (FcFreeTypeQuery):
 
@@ -324,7 +331,7 @@
 
 	Don't crash on non-existant directories in global cache.
 
-2006-01-26  Patirck Lam  <plam@mit.edu>
+2006-01-26  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcGlobalCacheSave, FcDirCacheWrite):
 	* src/fccfg.c (FcConfigAddFontDirSubdirs, FcConfigNormalizeFontDir):
 	* src/fcdir.c (FcDirScanConfig):
