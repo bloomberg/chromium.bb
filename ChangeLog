@@ -1,4 +1,9 @@
 2006-02-16  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheHasCurrentArch):
+
+	Deal correctly with changing FC_CACHE_MAGIC.
+
+2006-02-16  Patrick Lam  <plam@mit.edu>
 	* fc-cache/fc-cache.c (usage, scanDirs, main):
 
 	Add -r --really-force option which blows away cache files and then

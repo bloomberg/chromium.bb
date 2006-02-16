@@ -759,6 +759,7 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
     int 	fd;
     off_t	current_arch_start;
     char 	*current_arch_machine_name;
+    FcCache	metadata;
 
     fd = FcDirCacheOpen (dir);
     if (fd < 0)
@@ -766,6 +767,22 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
 
     current_arch_machine_name = FcCacheMachineSignature();
     current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
+
+    if (current_arch_start >= 0)
+    {
+        if (read(fd, &metadata, sizeof(FcCache)) != sizeof(FcCache))
+        {
+            close (fd);
+            return FcFalse;
+        }
+
+        if (metadata.magic != FC_CACHE_MAGIC)
+        {
+            close (fd);
+            return FcFalse;
+        }
+    }
+
     close (fd);
 
     if (current_arch_start < 0)
