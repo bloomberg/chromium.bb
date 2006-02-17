@@ -31,6 +31,7 @@
 #ifndef _VIA_DEFINES_
 #define _VIA_DEFINES_
 
+
 #if !defined(__KERNEL__) && !defined(_KERNEL)
 #include "via_drmclient.h"
 #endif
@@ -39,12 +40,14 @@
  * With the arrival of libdrm there is a need to version this file.
  * As usual, bump MINOR for new features, MAJOR for changes that create
  * backwards incompatibilities, (which should be avoided whenever possible).
- * Note that the actual driver version is different, and defined in via_drv.h.
  */
 
-#define VIA_DRMH_MAJOR 1
-#define VIA_DRMH_MINOR 0
-#define VIA_DRMH_PATCHLEVEL 0
+#define VIA_DRM_DRIVER_DATE		"20060111"
+
+#define VIA_DRM_DRIVER_MAJOR		2
+#define VIA_DRM_DRIVER_MINOR		9
+#define VIA_DRM_DRIVER_PATCHLEVEL	1
+#define VIA_DRM_DRIVER_VERSION          (((VIA_DRM_DRIVER_MAJOR) << 16) | (VIA_DRM_DRIVER_MINOR))
 
 #define VIA_NR_SAREA_CLIPRECTS 		8
 #define VIA_NR_XVMC_PORTS               10

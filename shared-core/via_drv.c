@@ -77,10 +77,10 @@ static struct drm_driver driver = {
 
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
-	.date = DRIVER_DATE,
-	.major = DRIVER_MAJOR,
-	.minor = DRIVER_MINOR,
-	.patchlevel = DRIVER_PATCHLEVEL,
+	.date = VIA_DRM_DRIVER_DATE,
+	.major = VIA_DRM_DRIVER_MAJOR,
+	.minor = VIA_DRM_DRIVER_MINOR,
+	.patchlevel = VIA_DRM_DRIVER_PATCHLEVEL
 };
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
