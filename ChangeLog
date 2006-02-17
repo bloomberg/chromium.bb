@@ -1,3 +1,9 @@
+2006-02-17  Patrick Lam  <plam@mit.edu>
+	* fc-cat/fc-cat.c (main):
+
+	Enable fc-cat to print out old-style cache info when given a
+	directory name.
+
 2006-02-16  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheHasCurrentArch):
 

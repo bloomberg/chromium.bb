@@ -377,6 +377,16 @@ bail2:
     return FcFalse;
 }
 
+FcBool
+FcFileIsDir (const FcChar8 *file)
+{
+    struct stat	    statb;
+
+    if (stat ((const char *) file, &statb) != 0)
+	return FcFalse;
+    return S_ISDIR(statb.st_mode);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -410,7 +420,21 @@ main (int argc, char **argv)
     if (i >= argc)
         usage (argv[0]);
 
-    if ((name_buf = FcCacheFileRead (fs, dirs, argv[i])) != 0)
+    if (FcFileIsDir ((const FcChar8 *)argv[i]))
+    {
+        char * dummy_name = (char *)FcStrPlus ((FcChar8 *)argv[i], 
+                                               (FcChar8 *)"/dummy");
+        if (!FcDirScanConfig (fs, dirs, 0, 0, 
+                              (const FcChar8 *)argv[i], FcFalse, 0))
+            fprintf (stderr, "couldn't load font dir %s\n", argv[i]);
+        else
+        {
+            /* sorry, we can't tell you where the cache file is. */
+            FcCachePrintSet (fs, dirs, dummy_name);
+            FcStrFree ((FcChar8 *)dummy_name);
+        }
+    }
+    else if ((name_buf = FcCacheFileRead (fs, dirs, argv[i])) != 0)
 	FcCachePrintSet (fs, dirs, name_buf);
     else
     {
