@@ -251,7 +251,7 @@ typedef struct _FcStrBuf {
 } FcStrBuf;
 
 typedef struct _FcCache {
-    int	    magic;              /* 0xFC02FC02 */
+    int	    magic;              /* FC_CACHE_MAGIC */
     int	    count;              /* number of bytes of data in block */
     int     bank;               /* bank ID */
     int     pattern_count;      /* number of FcPatterns */
@@ -324,7 +324,7 @@ typedef struct _FcCaseFold {
  * cache which is then rewritten to the users home directory
  */
 
-#define FC_CACHE_MAGIC 0xFC02FC02
+#define FC_CACHE_MAGIC 0xFC02FC03
 
 typedef struct _FcGlobalCacheDir FcGlobalCacheDir;
 

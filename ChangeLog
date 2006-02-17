@@ -1,4 +1,9 @@
 2006-02-17  Patrick Lam  <plam@mit.edu>
+	* src/fcint.h  (FC_CACHE_MAGIC):
+
+	Bump up magic version; we changed the binary format.
+
+2006-02-17  Patrick Lam  <plam@mit.edu>
 	* fc-cat/fc-cat.c (main):
 
 	Enable fc-cat to print out old-style cache info when given a
