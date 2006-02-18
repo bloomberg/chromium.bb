@@ -555,7 +555,7 @@ struct drm_driver {
 	int (*context_dtor) (struct drm_device * dev, int context);
 	int (*kernel_context_switch) (struct drm_device * dev, int old,
 				      int new);
-	int (*kernel_context_switch_unlock) (struct drm_device * dev);
+	void (*kernel_context_switch_unlock) (struct drm_device * dev);
 	int (*vblank_wait) (struct drm_device * dev, unsigned int *sequence);
 	int (*dri_library_name) (struct drm_device * dev, char * buf);
 
@@ -858,8 +858,6 @@ extern int drm_newctx(struct inode *inode, struct file *filp,
 		      unsigned int cmd, unsigned long arg);
 extern int drm_rmctx(struct inode *inode, struct file *filp,
 		     unsigned int cmd, unsigned long arg);
-
-extern int drm_context_switch_complete(drm_device_t * dev, int new);
 
 extern int drm_ctxbitmap_init(drm_device_t * dev);
 extern void drm_ctxbitmap_cleanup(drm_device_t * dev);

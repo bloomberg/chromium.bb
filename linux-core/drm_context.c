@@ -235,7 +235,8 @@ int drm_getsareactx(struct inode *inode, struct file *filp,
 	request.handle = NULL;
 	list_for_each_entry(_entry, &dev->maplist->head,head) {
 		if (_entry->map == map) {
-			request.handle = (void *)(unsigned long)_entry->user_token;
+			request.handle = 
+			    (void *)(unsigned long)_entry->user_token;
 			break;
 		}
 	}
@@ -341,7 +342,7 @@ static int drm_context_switch(drm_device_t * dev, int old, int new)
  * hardware lock is held, clears the drm_device::context_flag and wakes up
  * drm_device::context_wait.
  */
-int drm_context_switch_complete(drm_device_t * dev, int new)
+static int drm_context_switch_complete(drm_device_t * dev, int new)
 {
 	dev->last_context = new;	/* PRE/POST: This is the _only_ writer. */
 	dev->last_switch = jiffies;

@@ -54,7 +54,7 @@ drm_head_t **drm_heads;
 struct drm_sysfs_class *drm_class;
 struct proc_dir_entry *drm_proc_root;
 
-static int fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
+static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 		       const struct pci_device_id *ent,
 		       struct drm_driver *driver)
 {
@@ -216,7 +216,8 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		pci_request_regions(pdev, driver->pci_driver.name);
 		pci_enable_device(pdev);
 	}
-	if ((ret = fill_in_dev(dev, pdev, ent, driver))) {
+	if ((ret = drm_fill_in_dev(dev, pdev, ent, driver))) {
+		printk(KERN_ERR "DRM: fill_in_dev failed\n");
 		goto err_g1;
 	}
 	if ((ret = drm_get_head(dev, &dev->primary)))

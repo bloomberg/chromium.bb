@@ -34,20 +34,24 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <linux/poll.h>
-
 #include "drmP.h"
 #include "drm_sarea.h"
+#include <linux/poll.h>
 
-static int drm_open_helper(struct inode *inode, struct file *filp, drm_device_t * dev);
+static int drm_open_helper(struct inode *inode, struct file *filp,
+			   drm_device_t * dev);
 
 static int drm_setup(drm_device_t * dev)
 {
 	drm_local_map_t *map;
 	int i;
+	int ret;
 
-	if (dev->driver->firstopen)
-		dev->driver->firstopen(dev);
+	if (dev->driver->firstopen) {
+		ret = dev->driver->firstopen(dev);
+		if (ret != 0)
+			return ret;
+	}
 
 	/* prebuild the SAREA */
 	i = drm_addmap(dev, 0, SAREA_MAX, _DRM_SHM, _DRM_CONTAINS_LOCK, &map);
@@ -223,7 +227,8 @@ static int drm_cpu_valid(void)
  * Creates and initializes a drm_file structure for the file private data in \p
  * filp and add it into the double linked list in \p dev.
  */
-static int drm_open_helper(struct inode *inode, struct file *filp, drm_device_t * dev)
+static int drm_open_helper(struct inode *inode, struct file *filp,
+			   drm_device_t * dev)
 {
 	int minor = iminor(inode);
 	drm_file_t *priv;
@@ -325,7 +330,7 @@ EXPORT_SYMBOL(drm_fasync);
  * If the hardware lock is held then free it, and take it again for the kernel
  * context since it's necessary to reclaim buffers. Unlink the file private
  * data from its list and free it. Decreases the open count and if it reaches
- * zero calls takedown().
+ * zero calls drm_lastclose().
  */
 int drm_release(struct inode *inode, struct file *filp)
 {

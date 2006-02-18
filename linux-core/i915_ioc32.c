@@ -51,7 +51,8 @@ static int compat_i915_batchbuffer(struct file *file, unsigned int cmd,
 	drm_i915_batchbuffer32_t batchbuffer32;
 	drm_i915_batchbuffer_t __user *batchbuffer;
 	
-	if (copy_from_user(&batchbuffer32, (void __user *)arg, sizeof(batchbuffer32)))
+	if (copy_from_user
+	    (&batchbuffer32, (void __user *)arg, sizeof(batchbuffer32)))
 		return -EFAULT;
 	
 	batchbuffer = compat_alloc_user_space(sizeof(*batchbuffer));
@@ -60,13 +61,15 @@ static int compat_i915_batchbuffer(struct file *file, unsigned int cmd,
 	    || __put_user(batchbuffer32.used, &batchbuffer->used)
 	    || __put_user(batchbuffer32.DR1, &batchbuffer->DR1)
 	    || __put_user(batchbuffer32.DR4, &batchbuffer->DR4)
-	    || __put_user(batchbuffer32.num_cliprects, &batchbuffer->num_cliprects)
+	    || __put_user(batchbuffer32.num_cliprects,
+			  &batchbuffer->num_cliprects)
 	    || __put_user((int __user *)(unsigned long)batchbuffer32.cliprects,
 			  &batchbuffer->cliprects))
 		return -EFAULT;
 	
 	return drm_ioctl(file->f_dentry->d_inode, file,
-			 DRM_IOCTL_I915_BATCHBUFFER, (unsigned long) batchbuffer);
+			 DRM_IOCTL_I915_BATCHBUFFER,
+			 (unsigned long) batchbuffer);
 }
 
 typedef struct _drm_i915_cmdbuffer32 {
@@ -84,7 +87,8 @@ static int compat_i915_cmdbuffer(struct file *file, unsigned int cmd,
 	drm_i915_cmdbuffer32_t cmdbuffer32;
 	drm_i915_cmdbuffer_t __user *cmdbuffer;
 	
-	if (copy_from_user(&cmdbuffer32, (void __user *)arg, sizeof(cmdbuffer32)))
+	if (copy_from_user
+	    (&cmdbuffer32, (void __user *)arg, sizeof(cmdbuffer32)))
 		return -EFAULT;
 	
 	cmdbuffer = compat_alloc_user_space(sizeof(*cmdbuffer));
@@ -197,8 +201,7 @@ drm_ioctl_compat_t *i915_compat_ioctls[] = {
  * \param arg user argument.
  * \return zero on success or negative number on failure.
  */
-long i915_compat_ioctl(struct file *filp, unsigned int cmd,
-			 unsigned long arg)
+long i915_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	unsigned int nr = DRM_IOCTL_NR(cmd);
 	drm_ioctl_compat_t *fn = NULL;

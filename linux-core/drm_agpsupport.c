@@ -88,7 +88,7 @@ int drm_agp_info_ioctl(struct inode *inode, struct file *filp,
 }
 
 /**
- * Acquire the AGP device
+ * Acquire the AGP device.
  *
  * \param dev DRM device that is to acquire AGP.
  * \return zero on success or a negative number on failure.
@@ -144,7 +144,7 @@ int drm_agp_acquire_ioctl(struct inode *inode, struct file *filp,
 }
 
 /**
- * Release the AGP device
+ * Release the AGP device.
  *
  * \param dev DRM device that is to release AGP.
  * \return zero on success or a negative number on failure.
@@ -519,7 +519,8 @@ DRM_AGP_MEM *drm_agp_allocate_memory(size_t pages, u32 type)
 	return agp_allocate_memory(pages, type);
 }
 #else
-DRM_AGP_MEM *drm_agp_allocate_memory(struct agp_bridge_data *bridge, size_t pages, u32 type)
+DRM_AGP_MEM *drm_agp_allocate_memory(struct agp_bridge_data *bridge,
+				     size_t pages, u32 type)
 {
 	return agp_allocate_memory(bridge, pages, type);
 }

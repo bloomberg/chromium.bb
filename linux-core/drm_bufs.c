@@ -65,7 +65,6 @@ static drm_map_list_t *drm_find_matching_map(drm_device_t *dev,
 	return NULL;
 }
 
-
 /*
  * Used to allocate 32-bit handles for mappings.
  */
@@ -73,7 +72,8 @@ static drm_map_list_t *drm_find_matching_map(drm_device_t *dev,
 #define END_RANGE 0x40000000
 
 #ifdef _LP64
-static __inline__ unsigned int HandleID(unsigned long lhandle, drm_device_t *dev) 
+static __inline__ unsigned int HandleID(unsigned long lhandle,
+					drm_device_t *dev) 
 {
 	static unsigned int map32_handle = START_RANGE;
 	unsigned int hash;
@@ -83,12 +83,12 @@ static __inline__ unsigned int HandleID(unsigned long lhandle, drm_device_t *dev
 		map32_handle += PAGE_SIZE;
 		if (map32_handle > END_RANGE)
 			map32_handle = START_RANGE;
-	} else 
+	} else
 		hash = lhandle;
 
 	while (1) {
 		drm_map_list_t *_entry;
-		list_for_each_entry(_entry, &dev->maplist->head,head) {
+		list_for_each_entry(_entry, &dev->maplist->head, head) {
 			if (_entry->user_token == hash)
 				break;
 		}
@@ -116,7 +116,7 @@ static __inline__ unsigned int HandleID(unsigned long lhandle, drm_device_t *dev
  * type.  Adds the map to the map list drm_device::maplist. Adds MTRR's where
  * applicable and if supported by the kernel.
  */
-int drm_addmap_core(drm_device_t * dev, unsigned int offset,
+static int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 		    unsigned int size, drm_map_type_t type,
 		    drm_map_flags_t flags, drm_map_list_t ** maplist)
 {
@@ -269,8 +269,8 @@ int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 		}
 		map->offset += (unsigned long)dev->sg->virtual;
 		break;
-	case _DRM_CONSISTENT: {
-		/* dma_addr_t is 64bit on i386 with CONFIG_HIGHMEM64G.
+	case _DRM_CONSISTENT:
+		/* dma_addr_t is 64bit on i386 with CONFIG_HIGHMEM64G,
 		 * As we're limiting the address to 2^32-1 (or less),
 		 * casting it down to 32 bits is no problem, but we
 		 * need to point to a 64bit variable first. */
@@ -283,7 +283,6 @@ int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 		map->offset = (unsigned long)dmah->busaddr;
 		kfree(dmah);
 		break;
-	}
 	default:
 		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 		return -EINVAL;
@@ -301,7 +300,7 @@ int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 	list_add(&list->head, &dev->maplist->head);
 	/* Assign a 32-bit handle */
 	/* We do it here so that dev->struct_sem protects the increment */
-	list->user_token = HandleID(map->type==_DRM_SHM
+	list->user_token = HandleID(map->type == _DRM_SHM
 				    ? (unsigned long)map->handle
 				    : map->offset, dev);
 	up(&dev->struct_sem);
@@ -338,22 +337,24 @@ int drm_addmap_ioctl(struct inode *inode, struct file *filp,
 	if (!(filp->f_mode & 3))
 		return -EACCES;	/* Require read/write */
 
-	if (copy_from_user(& map, argp, sizeof(map))) {
+	if (copy_from_user(&map, argp, sizeof(map))) {
 		return -EFAULT;
 	}
 
 	if (!(capable(CAP_SYS_ADMIN) || map.type == _DRM_AGP))
 		return -EPERM;
 
-	err = drm_addmap_core( dev, map.offset, map.size, map.type, map.flags,
-			       &maplist);
+	err = drm_addmap_core(dev, map.offset, map.size, map.type, map.flags,
+			      &maplist);
 
 	if (err)
 		return err;
 
 	if (copy_to_user(argp, maplist->map, sizeof(drm_map_t)))
 		return -EFAULT;
-	if (put_user((void *)maplist->user_token, &argp->handle))
+
+	/* avoid a warning on 64-bit, this casting isn't very nice, but the API is set so too late */
+	if (put_user((void *)(unsigned long)maplist->user_token, &argp->handle))
 		return -EFAULT;
 	return 0;
 }
@@ -405,9 +406,8 @@ int drm_rmmap_locked(drm_device_t *dev, drm_local_map_t *map)
 	case _DRM_FRAME_BUFFER:
 		if (drm_core_has_MTRR(dev) && map->mtrr >= 0) {
 			int retcode;
-			retcode = mtrr_del(map->mtrr, map->offset,
-					   map->size);
-			DRM_DEBUG ("mtrr_del=%d\n", retcode);
+			retcode = mtrr_del(map->mtrr, map->offset, map->size);
+			DRM_DEBUG("mtrr_del=%d\n", retcode);
 		}
 		break;
 	case _DRM_SHM:
@@ -469,7 +469,7 @@ int drm_rmmap_ioctl(struct inode *inode, struct file *filp,
 		drm_map_list_t *r_list = list_entry(list, drm_map_list_t, head);
 
 		if (r_list->map &&
-		    r_list->user_token == (unsigned long) request.handle &&
+		    r_list->user_token == (unsigned long)request.handle &&
 		    r_list->map->flags & _DRM_REMOVABLE) {
 			map = r_list->map;
 			break;
@@ -874,7 +874,7 @@ int drm_addbufs_pci(drm_device_t * dev, drm_buf_desc_t * request)
 			buf->filp = NULL;
 
 			buf->dev_priv_size = dev->driver->dev_priv_size;
-			buf->dev_private = drm_alloc(dev->driver->dev_priv_size,
+			buf->dev_private = drm_alloc(buf->dev_priv_size,
 						     DRM_MEM_BUFS);
 			if (!buf->dev_private) {
 				/* Set count correctly so we free the proper amount. */
@@ -1040,7 +1040,7 @@ static int drm_addbufs_sg(drm_device_t * dev, drm_buf_desc_t * request)
 
 		buf->offset = (dma->byte_count + offset);
 		buf->bus_address = agp_offset + offset;
-		buf->address = (void *)(agp_offset + offset 
+		buf->address = (void *)(agp_offset + offset
 					+ (unsigned long)dev->sg->virtual);
 		buf->next = NULL;
 		buf->waiting = 0;
@@ -1049,8 +1049,7 @@ static int drm_addbufs_sg(drm_device_t * dev, drm_buf_desc_t * request)
 		buf->filp = NULL;
 
 		buf->dev_priv_size = dev->driver->dev_priv_size;
-		buf->dev_private = drm_alloc(dev->driver->dev_priv_size,
-					     DRM_MEM_BUFS);
+		buf->dev_private = drm_alloc(buf->dev_priv_size, DRM_MEM_BUFS);
 		if (!buf->dev_private) {
 			/* Set count correctly so we free the proper amount. */
 			entry->buf_count = count;
@@ -1107,7 +1106,6 @@ static int drm_addbufs_sg(drm_device_t * dev, drm_buf_desc_t * request)
 	return 0;
 }
 
-
 int drm_addbufs_fb(drm_device_t * dev, drm_buf_desc_t * request)
 {
 	drm_device_dma_t *dma = dev->dma;
@@ -1127,7 +1125,7 @@ int drm_addbufs_fb(drm_device_t * dev, drm_buf_desc_t * request)
 
 	if (!drm_core_check_feature(dev, DRIVER_FB_DMA))
 		return -EINVAL;
-    
+
 	if (!dma)
 		return -EINVAL;
 
@@ -1292,7 +1290,6 @@ int drm_addbufs(struct inode *inode, struct file *filp,
 	drm_device_t *dev = priv->head->dev;
 	int ret;
 
-
 	if (!drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 		return -EINVAL;
 
@@ -1301,25 +1298,23 @@ int drm_addbufs(struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 #if __OS_HAS_AGP
-	if (request.flags & _DRM_AGP_BUFFER) {
-		ret = drm_addbufs_agp(dev, & request);
-	}
+	if (request.flags & _DRM_AGP_BUFFER)
+		ret = drm_addbufs_agp(dev, &request);
 	else
 #endif
 	if (request.flags & _DRM_SG_BUFFER)
-		ret = drm_addbufs_sg(dev, & request);
-        else if (request.flags & _DRM_FB_BUFFER)
-                ret = drm_addbufs_fb(dev, & request);
-        else
-		ret = drm_addbufs_pci(dev, & request);
+		ret = drm_addbufs_sg(dev, &request);
+	else if (request.flags & _DRM_FB_BUFFER)
+		ret = drm_addbufs_fb(dev, &request);
+	else
+		ret = drm_addbufs_pci(dev, &request);
 
 	if (ret == 0) {
-		if (copy_to_user( (void __user *) arg, &request, 
+		if (copy_to_user((void __user *) arg, &request,
 				  sizeof(request))) {
 			ret = -EFAULT;
 		}
 	}
-
 	return ret;
 }
 
@@ -1566,10 +1561,10 @@ int drm_mapbufs(struct inode *inode, struct file *filp,
 
 	if (request.count >= dma->buf_count) {
 		if ((drm_core_has_AGP(dev) && (dma->flags & _DRM_DMA_USE_AGP))
-                    || (drm_core_check_feature(dev, DRIVER_SG)
-                    && (dma->flags & _DRM_DMA_USE_SG))
-                    || (drm_core_check_feature(dev, DRIVER_FB_DMA)
-                    && (dma->flags & _DRM_DMA_USE_FB))) {
+		    || (drm_core_check_feature(dev, DRIVER_SG)
+			&& (dma->flags & _DRM_DMA_USE_SG))
+		    || (drm_core_check_feature(dev, DRIVER_FB_DMA)
+			&& (dma->flags & _DRM_DMA_USE_FB))) {
 			drm_map_t *map = dev->agp_buffer_map;
 			unsigned long token = dev->agp_buffer_token;
 
@@ -1658,13 +1653,12 @@ int drm_mapbufs(struct inode *inode, struct file *filp,
  *
  * \todo Can be made faster.
  */
-int drm_order( unsigned long size )
+int drm_order(unsigned long size)
 {
 	int order;
 	unsigned long tmp;
 
-	for (order = 0, tmp = size >> 1; tmp; tmp >>= 1, order++)
-		;
+	for (order = 0, tmp = size >> 1; tmp; tmp >>= 1, order++) ;
 
 	if (size & (size - 1))
 		++order;

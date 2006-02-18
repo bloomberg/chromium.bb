@@ -91,7 +91,7 @@ static void drm_ati_free_pcigart_table(void *address)
 	free_pages((unsigned long)address, ATI_PCIGART_TABLE_ORDER);
 }
 
-int drm_ati_pcigart_cleanup(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
+int drm_ati_pcigart_cleanup(drm_device_t *dev, drm_ati_pcigart_info *gart_info)
 {
 	drm_sg_mem_t *entry = dev->sg;
 	unsigned long pages;
@@ -125,7 +125,8 @@ int drm_ati_pcigart_cleanup(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
 	}
 
 
-	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN && gart_info->addr) {
+	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN
+	    && gart_info->addr) {
 		drm_ati_free_pcigart_table(gart_info->addr);
 		gart_info->addr=0;
 	}
@@ -147,8 +148,7 @@ int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
 		goto done;
 	}
 
-	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN)
-	{
+	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN) {
 		DRM_DEBUG("PCI: no table in VRAM: using normal RAM\n");
 		
 		address = drm_ati_alloc_pcigart_table();
@@ -224,5 +224,3 @@ int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
 	return ret;
 }
 EXPORT_SYMBOL(drm_ati_pcigart_init);
-
-

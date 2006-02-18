@@ -144,8 +144,8 @@ static struct class_device_attribute class_device_attrs[] = {
  * Note: the struct drm_sysfs_class passed to this function must have previously been
  * created with a call to drm_sysfs_create().
  */
-struct class_device *drm_sysfs_device_add(
-			struct drm_sysfs_class *cs, drm_head_t * head)
+struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs,
+					  drm_head_t * head)
 {
 	struct simple_dev *s_dev = NULL;
 	int i, retval;

@@ -57,7 +57,7 @@ static int drm_version(struct inode *inode, struct file *filp,
 		unsigned int cmd, unsigned long arg);
 
 /** Ioctl table */
-drm_ioctl_desc_t drm_ioctls[] = {
+static drm_ioctl_desc_t drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)] = {drm_version, 0},
 	[DRM_IOCTL_NR(DRM_IOCTL_GET_UNIQUE)] = {drm_getunique, 0},
 	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAGIC)] = {drm_getmagic, 0},

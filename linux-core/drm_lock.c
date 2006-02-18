@@ -36,7 +36,8 @@
 #include "drmP.h"
 
 static int drm_lock_transfer(drm_device_t * dev,
-		      __volatile__ unsigned int *lock, unsigned int context);
+			     __volatile__ unsigned int *lock,
+			     unsigned int context);
 static int drm_notifier(void *priv);
 
 /**
@@ -125,8 +126,8 @@ int drm_lock(struct inode *inode, struct file *filp,
 		}
 	}
 
-	if (dev->driver->kernel_context_switch
-	    && dev->last_context != lock.context) {
+	if (dev->driver->kernel_context_switch &&
+	    dev->last_context != lock.context) {
 		dev->driver->kernel_context_switch(dev, dev->last_context,
 						   lock.context);
 	}
@@ -163,8 +164,11 @@ int drm_unlock(struct inode *inode, struct file *filp,
 
 	atomic_inc(&dev->counts[_DRM_STAT_UNLOCKS]);
 
+	/* kernel_context_switch isn't used by any of the x86 drm
+	 * modules but is required by the Sparc driver.
+	 */
 	if (dev->driver->kernel_context_switch_unlock)
-		dev->driver->kernel_context_switch_unlock(dev);
+		dev->driver->kernel_context_switch_unlock(dev, &lock);
 	else {
 		drm_lock_transfer(dev, &dev->lock.hw_lock->lock,
 				  DRM_KERNEL_CONTEXT);
@@ -229,7 +233,8 @@ int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
  * Marks the lock as held by the given context, via the \p cmpxchg instruction.
  */
 static int drm_lock_transfer(drm_device_t * dev,
-		      __volatile__ unsigned int *lock, unsigned int context)
+			     __volatile__ unsigned int *lock,
+			     unsigned int context)
 {
 	unsigned int old, new, prev;
 

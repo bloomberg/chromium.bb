@@ -944,7 +944,7 @@ static void radeon_cp_load_microcode(drm_radeon_private_t * dev_priv)
 
 	RADEON_WRITE(RADEON_CP_ME_RAM_ADDR, 0);
 
-	if (dev_priv->microcode_version==UCODE_R200) {
+	if (dev_priv->microcode_version == UCODE_R200) {
 		DRM_INFO("Loading R200 Microcode\n");
 		for (i = 0; i < 256; i++) {
 			RADEON_WRITE(RADEON_CP_ME_RAM_DATAH,
@@ -952,13 +952,13 @@ static void radeon_cp_load_microcode(drm_radeon_private_t * dev_priv)
 			RADEON_WRITE(RADEON_CP_ME_RAM_DATAL,
 				     R200_cp_microcode[i][0]);
 		}
-	} else if (dev_priv->microcode_version==UCODE_R300) {
+	} else if (dev_priv->microcode_version == UCODE_R300) {
 		DRM_INFO("Loading R300 Microcode\n");
-		for ( i = 0 ; i < 256 ; i++ ) {
-			RADEON_WRITE( RADEON_CP_ME_RAM_DATAH,
-				      R300_cp_microcode[i][1] );
-			RADEON_WRITE( RADEON_CP_ME_RAM_DATAL,
-				      R300_cp_microcode[i][0] );
+		for (i = 0; i < 256; i++) {
+			RADEON_WRITE(RADEON_CP_ME_RAM_DATAH,
+				     R300_cp_microcode[i][1]);
+			RADEON_WRITE(RADEON_CP_ME_RAM_DATAL,
+				     R300_cp_microcode[i][0]);
 		}
 	} else {
 		for (i = 0; i < 256; i++) {
@@ -1132,12 +1132,13 @@ static void radeon_cp_init_ring_buffer(drm_device_t * dev,
 			      (dev_priv->gart_vm_start >> 16)));
 
 		ring_start = (dev_priv->cp_ring->offset
-			      - dev->agp->base + dev_priv->gart_vm_start);
+			      - dev->agp->base
+			      + dev_priv->gart_vm_start);
 	} else
 #endif
 		ring_start = (dev_priv->cp_ring->offset
-			      - (unsigned long)dev->sg->virtual + dev_priv->gart_vm_start);
-
+			      - (unsigned long)dev->sg->virtual
+			      + dev_priv->gart_vm_start);
 
 	RADEON_WRITE(RADEON_CP_RB_BASE, ring_start);
 
@@ -1163,7 +1164,8 @@ static void radeon_cp_init_ring_buffer(drm_device_t * dev,
 		drm_sg_mem_t *entry = dev->sg;
 		unsigned long tmp_ofs, page_ofs;
 
-		tmp_ofs = dev_priv->ring_rptr->offset - (unsigned long)dev->sg->virtual;
+		tmp_ofs = dev_priv->ring_rptr->offset -
+				(unsigned long)dev->sg->virtual;
 		page_ofs = tmp_ofs >> PAGE_SHIFT;
 
 		RADEON_WRITE(RADEON_CP_RB_RPTR_ADDR, entry->busaddr[page_ofs]);
@@ -1250,19 +1252,26 @@ static void radeon_set_pciegart(drm_radeon_private_t * dev_priv, int on)
 	if (on) {
 
 		DRM_DEBUG("programming pcie %08X %08lX %08X\n",
-			  dev_priv->gart_vm_start, (long)dev_priv->gart_info.bus_addr,
+			  dev_priv->gart_vm_start,
+			  (long)dev_priv->gart_info.bus_addr,
 			  dev_priv->gart_size);
-		RADEON_WRITE_PCIE(RADEON_PCIE_TX_DISCARD_RD_ADDR_LO, dev_priv->gart_vm_start);
-		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_BASE, dev_priv->gart_info.bus_addr);
-		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_START_LO, dev_priv->gart_vm_start);
-		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_END_LO, dev_priv->gart_vm_start
-			     + dev_priv->gart_size - 1);
+		RADEON_WRITE_PCIE(RADEON_PCIE_TX_DISCARD_RD_ADDR_LO,
+				  dev_priv->gart_vm_start);
+		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_BASE,
+				  dev_priv->gart_info.bus_addr);
+		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_START_LO,
+				  dev_priv->gart_vm_start);
+		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_END_LO,
+				  dev_priv->gart_vm_start +
+				  dev_priv->gart_size - 1);
 
 		RADEON_WRITE(RADEON_MC_AGP_LOCATION, 0xffffffc0);	/* ?? */
 
-		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL, RADEON_PCIE_TX_GART_EN);
+		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL,
+				  RADEON_PCIE_TX_GART_EN);
 	} else {
-		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL, (tmp & ~RADEON_PCIE_TX_GART_EN) | RADEON_PCIE_TX_GART_INVALIDATE_TLB);
+		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL,
+				  tmp & ~RADEON_PCIE_TX_GART_EN);
 	}
 }
 
@@ -1271,8 +1280,7 @@ static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 {
 	u32 tmp;
 
-	if (dev_priv->flags & CHIP_IS_PCIE)
-	{
+	if (dev_priv->flags & CHIP_IS_PCIE) {
 		radeon_set_pciegart(dev_priv, on);
 		return;
 	}
@@ -1331,14 +1339,13 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 
 	switch(init->func) {
 	case RADEON_INIT_R200_CP:
-		dev_priv->microcode_version=UCODE_R200;
+		dev_priv->microcode_version = UCODE_R200;
 		break;
 	case RADEON_INIT_R300_CP:
-		dev_priv->microcode_version=UCODE_R300;
+		dev_priv->microcode_version = UCODE_R300;
 		break;
 	default:
-		dev_priv->microcode_version=UCODE_R100;
-		break;
+		dev_priv->microcode_version = UCODE_R100;
 	}
 
 	dev_priv->do_boxes = 0;
@@ -1388,8 +1395,8 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 	 */
 	dev_priv->depth_clear.rb3d_cntl = (RADEON_PLANE_MASK_ENABLE |
 					   (dev_priv->color_fmt << 10) |
-					   (dev_priv->microcode_version == UCODE_R100 ?
-						RADEON_ZBLOCK16 : 0));
+					   (dev_priv->microcode_version ==
+					    UCODE_R100 ? RADEON_ZBLOCK16 : 0));
 
 	dev_priv->depth_clear.rb3d_zstencilcntl =
 	    (dev_priv->depth_fmt |
@@ -1503,8 +1510,8 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 					  + dev_priv->fb_location) >> 10));
 
 	dev_priv->gart_size = init->gart_size;
-
-	dev_priv->gart_vm_start = dev_priv->fb_location + RADEON_READ(RADEON_CONFIG_APER_SIZE);
+	dev_priv->gart_vm_start = dev_priv->fb_location
+	    + RADEON_READ(RADEON_CONFIG_APER_SIZE);
 
 #if __OS_HAS_AGP
 	if (dev_priv->flags & CHIP_IS_AGP)
@@ -1514,8 +1521,8 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 	else
 #endif
 		dev_priv->gart_buffers_offset = (dev->agp_buffer_map->offset
-						 - (unsigned long)dev->sg->virtual
-						 + dev_priv->gart_vm_start);
+					- (unsigned long)dev->sg->virtual
+					+ dev_priv->gart_vm_start);
 
 	DRM_DEBUG("dev_priv->gart_size %d\n", dev_priv->gart_size);
 	DRM_DEBUG("dev_priv->gart_vm_start 0x%x\n", dev_priv->gart_vm_start);
@@ -1541,24 +1548,33 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 	{
 		/* if we have an offset set from userspace */
 		if (dev_priv->pcigart_offset) {
-			dev_priv->gart_info.bus_addr = dev_priv->pcigart_offset + dev_priv->fb_location;
-			dev_priv->gart_info.mapping.offset = dev_priv->gart_info.bus_addr;
-			dev_priv->gart_info.mapping.size = RADEON_PCIGART_TABLE_SIZE;
-			drm_core_ioremap(&dev_priv->gart_info.mapping, dev);
-			dev_priv->gart_info.addr = dev_priv->gart_info.mapping.handle;
+			dev_priv->gart_info.bus_addr =
+			    dev_priv->pcigart_offset + dev_priv->fb_location;
+			dev_priv->gart_info.mapping.offset =
+			    dev_priv->gart_info.bus_addr;
+			dev_priv->gart_info.mapping.size =
+			    RADEON_PCIGART_TABLE_SIZE;
 
-			dev_priv->gart_info.is_pcie = !!(dev_priv->flags & CHIP_IS_PCIE);
-			dev_priv->gart_info.gart_table_location = DRM_ATI_GART_FB;
-			
-			DRM_DEBUG("Setting phys_pci_gart to %p %08lX\n", dev_priv->gart_info.addr, dev_priv->pcigart_offset);
-		}
-		else {
-			dev_priv->gart_info.gart_table_location = DRM_ATI_GART_MAIN;
+			drm_core_ioremap(&dev_priv->gart_info.mapping, dev);
+			dev_priv->gart_info.addr =
+			    dev_priv->gart_info.mapping.handle;
+
+			dev_priv->gart_info.is_pcie =
+			    !!(dev_priv->flags & CHIP_IS_PCIE);
+			dev_priv->gart_info.gart_table_location =
+			    DRM_ATI_GART_FB;
+
+			DRM_DEBUG("Setting phys_pci_gart to %p %08lX\n",
+				  dev_priv->gart_info.addr,
+				  dev_priv->pcigart_offset);
+		} else {
+			dev_priv->gart_info.gart_table_location =
+			    DRM_ATI_GART_MAIN;
 			dev_priv->gart_info.addr = NULL;
 			dev_priv->gart_info.bus_addr = 0;
-			if (dev_priv->flags & CHIP_IS_PCIE)
-			{
-				DRM_ERROR("Cannot use PCI Express without GART in FB memory\n");
+			if (dev_priv->flags & CHIP_IS_PCIE) {
+				DRM_ERROR
+				    ("Cannot use PCI Express without GART in FB memory\n");
 				radeon_do_cleanup_cp(dev);
 				return DRM_ERR(EINVAL);
 			}
@@ -1682,9 +1698,9 @@ int radeon_cp_init(DRM_IOCTL_ARGS)
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_radeon_init_t __user *) data,
 				 sizeof(init));
 
-	if(init.func == RADEON_INIT_R300_CP)
+	if (init.func == RADEON_INIT_R300_CP)
 		r300_init_reg_flags();
-	
+
 	switch (init.func) {
 	case RADEON_INIT_CP:
 	case RADEON_INIT_R200_CP:
@@ -1773,7 +1789,6 @@ void radeon_do_release(drm_device_t * dev)
 	int i, ret;
 
 	if (dev_priv) {
-
 		if (dev_priv->cp_running) {
 			/* Stop the cp */
 			while ((ret = radeon_do_cp_idle(dev_priv)) != 0) {
@@ -1797,11 +1812,13 @@ void radeon_do_release(drm_device_t * dev)
 		if (dev_priv->mmio)	/* remove this after permanent addmaps */
 			RADEON_WRITE(RADEON_GEN_INT_CNTL, 0);
 
-		if (dev_priv->mmio) {/* remove all surfaces */
+		if (dev_priv->mmio) {	/* remove all surfaces */
 			for (i = 0; i < RADEON_MAX_SURFACES; i++) {
-				RADEON_WRITE(RADEON_SURFACE0_INFO + 16*i, 0);
-				RADEON_WRITE(RADEON_SURFACE0_LOWER_BOUND + 16*i, 0);
-				RADEON_WRITE(RADEON_SURFACE0_UPPER_BOUND + 16*i, 0);
+				RADEON_WRITE(RADEON_SURFACE0_INFO + 16 * i, 0);
+				RADEON_WRITE(RADEON_SURFACE0_LOWER_BOUND +
+					     16 * i, 0);
+				RADEON_WRITE(RADEON_SURFACE0_UPPER_BOUND +
+					     16 * i, 0);
 			}
 		}
 
@@ -2109,7 +2126,7 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 		dev_priv->flags |= CHIP_HAS_HIERZ;
 		break;
 	default:
-	/* all other chips have no hierarchical z buffer */
+		/* all other chips have no hierarchical z buffer */
 		break;
 	}
 
@@ -2121,7 +2138,6 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 
 	DRM_DEBUG("%s card detected\n",
 		  ((dev_priv->flags & CHIP_IS_AGP) ? "AGP" : (((dev_priv->flags & CHIP_IS_PCIE) ? "PCIE" : "PCI"))));
-
 	return ret;
 }
 

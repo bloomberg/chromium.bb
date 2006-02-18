@@ -130,10 +130,9 @@ static int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
 	buf_priv->currently_mapped = I810_BUF_MAPPED;
 	unlock_kernel();
 
-	if (remap_pfn_range(vma, vma->vm_start,
+	if (io_remap_pfn_range(vma, vma->vm_start,
 			    VM_OFFSET(vma) >> PAGE_SHIFT,
-			    vma->vm_end - vma->vm_start,
-			    vma->vm_page_prot))
+			    vma->vm_end - vma->vm_start, vma->vm_page_prot))
 		return -EAGAIN;
 	return 0;
 }
@@ -1144,8 +1143,8 @@ static int i810_getbuf(struct inode *inode, struct file *filp, unsigned int cmd,
 	return retcode;
 }
 
-static int i810_copybuf(struct inode *inode, struct file *filp, 
-			unsigned int cmd, unsigned long arg)
+static int i810_copybuf(struct inode *inode,
+			struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	/* Never copy - 2.4.x doesn't need it */
 	return 0;

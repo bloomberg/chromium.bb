@@ -44,10 +44,17 @@ LINUXDIR := $(shell if [ -e /lib/modules/$(RUNNING_REL)/source ]; then \
 endif
 
 ifndef O
-O := $(LINUXDIR)
+O := $(shell if [ -e /lib/modules/$(RUNNING_REL)/build ]; then \
+		 echo /lib/modules/$(RUNNING_REL)/build; \
+		 else echo ""; fi)
+#O := $(LINUXDIR)
 endif
 
+ifdef ARCH
+MACHINE := $(ARCH)
+else
 MACHINE := $(shell uname -m)
+endif
 
 # Modules for all architectures
 MODULE_LIST := drm.o tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o \
@@ -61,7 +68,7 @@ endif
 
 ifneq (,$(findstring sparc64,$(MACHINE)))
 ARCHSPARC64 := 1
-MODULE_LIST += ffb.o
+#MODULE_LIST += ffb.o
 endif
 
 DRM_MODULES ?= $(MODULE_LIST)
@@ -370,7 +377,6 @@ endif
 
 # These require AGP support
 
-ifdef CONFIG_AGP
 ifneq (,$(findstring i810,$(DRM_MODULES)))
 CONFIG_DRM_I810 := m
 endif
@@ -379,7 +385,6 @@ CONFIG_DRM_I830 := m
 endif
 ifneq (,$(findstring i915,$(DRM_MODULES)))
 CONFIG_DRM_I915 := m
-endif
 endif
 
 include $(DRMSRCDIR)/Makefile.kernel

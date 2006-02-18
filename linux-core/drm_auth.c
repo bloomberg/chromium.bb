@@ -87,7 +87,8 @@ static drm_file_t *drm_find_file(drm_device_t * dev, drm_magic_t magic)
  * associated the magic number hash key in drm_device::magiclist, while holding
  * the drm_device::struct_sem lock.
  */
-static int drm_add_magic(drm_device_t * dev, drm_file_t * priv, drm_magic_t magic)
+static int drm_add_magic(drm_device_t *dev, drm_file_t *priv,
+			 drm_magic_t magic)
 {
 	int hash;
 	drm_magic_entry_t *entry;
@@ -174,7 +175,7 @@ int drm_getmagic(struct inode *inode, struct file *filp,
 		 unsigned int cmd, unsigned long arg)
 {
 	static drm_magic_t sequence = 0;
-	static spinlock_t lock = SPIN_LOCK_UNLOCKED;
+	static DEFINE_SPINLOCK(lock);
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
 	drm_auth_t auth;

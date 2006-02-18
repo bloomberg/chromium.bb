@@ -39,6 +39,8 @@
 #include "via_drv.h"
 #include "via_dmablit.h"
 
+#include <linux/pagemap.h>
+
 #define VIA_PGDN(x)             (((unsigned long)(x)) & PAGE_MASK)
 #define VIA_PGOFF(x)            (((unsigned long)(x)) & ~PAGE_MASK)
 #define VIA_PFN(x)              ((unsigned long)(x) >> PAGE_SHIFT)
@@ -106,7 +108,7 @@ via_map_blit_for_device(struct pci_dev *pdev,
 	int num_desc = 0;
 	int cur_line;
 	dma_addr_t next = 0 | VIA_DMA_DPR_EC;
-	drm_via_descriptor_t *desc_ptr = 0;
+	drm_via_descriptor_t *desc_ptr = NULL;
 
 	if (mode == 1) 
 		desc_ptr = vsg->desc_pages[cur_descriptor_page];
@@ -585,7 +587,7 @@ via_build_sg_info(drm_device_t *dev, drm_via_sg_info_t *vsg, drm_via_dmablit_t *
 	int ret = 0;
 	
 	vsg->direction = (draw) ? DMA_TO_DEVICE : DMA_FROM_DEVICE;
-	vsg->bounce_buffer = 0;
+	vsg->bounce_buffer = NULL;
 
 	vsg->state = dr_via_sg_init;
 

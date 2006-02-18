@@ -54,7 +54,7 @@ drm_dma_handle_t *drm_pci_alloc(drm_device_t * dev, size_t size, size_t align,
 	unsigned long addr;
 	size_t sz;
 #endif
-#if DRM_DEBUG_MEMORY
+#ifdef DRM_DEBUG_MEMORY
 	int area = DRM_MEM_DMA;
 
 	spin_lock(&drm_mem_lock);
@@ -85,7 +85,7 @@ drm_dma_handle_t *drm_pci_alloc(drm_device_t * dev, size_t size, size_t align,
 	dmah->size = size;
 	dmah->vaddr = pci_alloc_consistent(dev->pdev, size, &dmah->busaddr);
 
-#if DRM_DEBUG_MEMORY
+#ifdef DRM_DEBUG_MEMORY
 	if (dmah->vaddr == NULL) {
 		spin_lock(&drm_mem_lock);
 		++drm_mem_stats[area].fail_count;
@@ -126,21 +126,20 @@ EXPORT_SYMBOL(drm_pci_alloc);
  *
  * This function is for internal use in the Linux-specific DRM core code.
  */
-void
-__drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
+void __drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
 {
 #if 0
 	unsigned long addr;
 	size_t sz;
 #endif
-#if DRM_DEBUG_MEMORY
+#ifdef DRM_DEBUG_MEMORY
 	int area = DRM_MEM_DMA;
 	int alloc_count;
 	int free_count;
 #endif
 
 	if (!dmah->vaddr) {
-#if DRM_DEBUG_MEMORY
+#ifdef DRM_DEBUG_MEMORY
 		DRM_MEM_ERROR(area, "Attempt to free address 0\n");
 #endif
 	} else {
@@ -156,7 +155,7 @@ __drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
 				    dmah->busaddr);
 	}
 
-#if DRM_DEBUG_MEMORY
+#ifdef DRM_DEBUG_MEMORY
 	spin_lock(&drm_mem_lock);
 	free_count = ++drm_mem_stats[area].free_count;
 	alloc_count = drm_mem_stats[area].succeed_count;
@@ -175,8 +174,7 @@ __drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
 /**
  * \brief Free a PCI consistent memory block.
  */
-void
-drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
+void drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
 {
 	__drm_pci_free(dev, dmah);
 	kfree(dmah);

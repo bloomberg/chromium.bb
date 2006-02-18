@@ -211,10 +211,10 @@ typedef union {
  * The interface has not been stabilized, so some of these may be removed
  * and eventually reordered before stabilization.
  */
-#define R300_CMD_PACKET0		1 
-#define R300_CMD_VPU			2 /* emit vertex program upload */
-#define R300_CMD_PACKET3		3 /* emit a packet3 */
-#define R300_CMD_END3D			4 /* emit sequence ending 3d rendering */
+#define R300_CMD_PACKET0		1
+#define R300_CMD_VPU			2	/* emit vertex program upload */
+#define R300_CMD_PACKET3		3	/* emit a packet3 */
+#define R300_CMD_END3D			4	/* emit sequence ending 3d rendering */
 #define R300_CMD_CP_DELAY		5
 #define R300_CMD_DMA_DISCARD		6
 #define R300_CMD_WAIT			7
@@ -239,20 +239,20 @@ typedef union {
 	} packet3;
 	struct {
 		unsigned char cmd_type, packet;
-		unsigned short count; /* amount of packet2 to emit */
+		unsigned short count;	/* amount of packet2 to emit */
 	} delay;
 	struct {
 		unsigned char cmd_type, buf_idx, pad0, pad1;
 	} dma;
 	struct {
-		unsigned char cmd_type, flags, pad0, pad1;	
+		unsigned char cmd_type, flags, pad0, pad1;
 	} wait;
 } drm_r300_cmd_header_t;
 
 #define RADEON_FRONT			0x1
 #define RADEON_BACK			0x2
 #define RADEON_DEPTH			0x4
-#define RADEON_STENCIL                  0x8
+#define RADEON_STENCIL			0x8
 #define RADEON_CLEAR_FASTZ		0x80000000
 #define RADEON_USE_HIERZ		0x40000000
 #define RADEON_USE_COMP_ZBUF		0x20000000
@@ -696,7 +696,7 @@ typedef struct drm_radeon_setparam {
 
 #define RADEON_SETPARAM_FB_LOCATION    1	/* determined framebuffer location */
 #define RADEON_SETPARAM_SWITCH_TILING  2	/* enable/disable color tiling */
-#define RADEON_SETPARAM_PCIGART_LOCATION 3      /* PCI Gart Location */
+#define RADEON_SETPARAM_PCIGART_LOCATION 3	/* PCI Gart Location */
 
 /* 1.14: Clients can allocate/free a surface
  */
