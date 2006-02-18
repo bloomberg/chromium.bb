@@ -1,3 +1,9 @@
+2006-02-18  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcDirCacheHasCurrentArch):
+
+	Fix segfault (reported by fcrozat) caused by incorrect
+	input on cache files.
+
 2006-02-17  Patrick Lam  <plam@mit.edu>
 	* src/fcint.h  (FC_CACHE_MAGIC):
 

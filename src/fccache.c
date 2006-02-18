@@ -760,6 +760,7 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
     off_t	current_arch_start;
     char 	*current_arch_machine_name;
     FcCache	metadata;
+    char 	subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
 
     fd = FcDirCacheOpen (dir);
     if (fd < 0)
@@ -770,17 +771,19 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
 
     if (current_arch_start >= 0)
     {
+	if (lseek (fd, current_arch_start, SEEK_SET) != current_arch_start)
+	    goto bail1;
+
+	FcCacheSkipString (fd);
+
+	while (FcCacheReadString (fd, subdirName, sizeof (subdirName)) && strlen (subdirName) > 0)
+	    ;
+
         if (read(fd, &metadata, sizeof(FcCache)) != sizeof(FcCache))
-        {
-            close (fd);
-            return FcFalse;
-        }
+	    goto bail1;
 
         if (metadata.magic != FC_CACHE_MAGIC)
-        {
-            close (fd);
-            return FcFalse;
-        }
+	    goto bail1;
     }
 
     close (fd);
@@ -790,6 +793,8 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
     
     return FcTrue;
 
+ bail1:
+    close (fd);
  bail:
     return FcFalse;
 }
