@@ -931,7 +931,9 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	    FcStrSetDestroy (subdirs);
 	    continue;
 	}
-	if (FcDirCacheValid (dir) && FcDirCacheRead (set, subdirs, dir, config))
+	if (FcDirCacheValid (dir) && 
+	    FcDirCacheHasCurrentArch (dir) && 
+	    FcDirCacheRead (set, subdirs, dir, config))
 	{
 	    /* if an old entry is found in the global cache, disable it */
 	    if ((d = FcGlobalCacheDirFind (cache, (const char *)dir)) != NULL)

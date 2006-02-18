@@ -142,7 +142,9 @@ FcDirScanConfig (FcFontSet	*set,
 	if (cache && FcGlobalCacheReadDir (set, dirs, cache, (char *)dir, config))
 	    return FcTrue;
 
-	if (FcDirCacheValid (dir) && FcDirCacheRead (set, dirs, dir, config))
+	if (FcDirCacheValid (dir) && 
+	    FcDirCacheHasCurrentArch (dir) &&
+	    FcDirCacheRead (set, dirs, dir, config))
 	    return FcTrue;
     }
     

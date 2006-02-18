@@ -1,8 +1,16 @@
 2006-02-18  Patrick Lam  <plam@mit.edu>
+	* fc-cache/fc-cache.c (scanDirs):
+	* src/fccache.c (FcCacheReadDirs):
+	* src/fcdir.c (FcDirScanConfig):
+
+	Fix the underlying cause of the below segfault (must usually
+	call FcDirCacheHasCurrentArch after FcDirCacheValid).
+	
+2006-02-18  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcDirCacheHasCurrentArch):
 
-	Fix segfault (reported by fcrozat) caused by incorrect
-	input on cache files.
+	Fix triggering of segfault caused by misreading cache files
+	(reported by fcrozat).
 
 2006-02-17  Patrick Lam  <plam@mit.edu>
 	* src/fcint.h  (FC_CACHE_MAGIC):

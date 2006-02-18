@@ -234,6 +234,8 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 		printf ("caching, %d fonts, %d dirs\n", 
 			set->nfont, nsubdirs (subdirs));
 
+	    /* This is the only reason we can't combine 
+	     * Valid w/HasCurrentArch... */
             if (!FcDirCacheValid (dir))
                 if (!FcDirCacheUnlink (dir, config))
                     ret++;
