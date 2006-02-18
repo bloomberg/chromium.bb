@@ -214,8 +214,11 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 	if (!drm_fb_loaded) {
 		pci_set_drvdata(pdev, dev);
 		pci_request_regions(pdev, driver->pci_driver.name);
-		pci_enable_device(pdev);
 	}
+
+	pci_enable_device(pdev);
+	pci_set_master(pdev);
+
 	if ((ret = drm_fill_in_dev(dev, pdev, ent, driver))) {
 		printk(KERN_ERR "DRM: fill_in_dev failed\n");
 		goto err_g1;
