@@ -94,8 +94,6 @@
 # endif
 #endif
 
-#define N(x)  drm##x
-
 #define RANDOM_MAGIC 0xfeedbeef
 #define RANDOM_DEBUG 0
 
@@ -118,13 +116,13 @@ typedef struct RandomState {
 } RandomState;
 
 #if RANDOM_MAIN
-extern void          *N(RandomCreate)(unsigned long seed);
-extern int           N(RandomDestroy)(void *state);
-extern unsigned long N(Random)(void *state);
-extern double        N(RandomDouble)(void *state);
+extern void          *drmRandomCreate(unsigned long seed);
+extern int           drmRandomDestroy(void *state);
+extern unsigned long drmRandom(void *state);
+extern double        drmRandomDouble(void *state);
 #endif
 
-void *N(RandomCreate)(unsigned long seed)
+void *drmRandomCreate(unsigned long seed)
 {
     RandomState  *state;
 
@@ -154,13 +152,13 @@ void *N(RandomCreate)(unsigned long seed)
     return state;
 }
 
-int N(RandomDestroy)(void *state)
+int drmRandomDestroy(void *state)
 {
     RANDOM_FREE(state);
     return 0;
 }
 
-unsigned long N(Random)(void *state)
+unsigned long drmRandom(void *state)
 {
     RandomState   *s = (RandomState *)state;
     long          hi;
@@ -174,11 +172,11 @@ unsigned long N(Random)(void *state)
     return s->seed;
 }
 
-double N(RandomDouble)(void *state)
+double drmRandomDouble(void *state)
 {
     RandomState *s = (RandomState *)state;
     
-    return (double)N(Random)(state)/(double)s->m;
+    return (double)drmRandom(state)/(double)s->m;
 }
 
 #if RANDOM_MAIN
@@ -188,15 +186,15 @@ static void check_period(long seed)
     unsigned long initial;
     void          *state;
     
-    state = N(RandomCreate)(seed);
-    initial = N(Random)(state);
+    state = drmRandomCreate(seed);
+    initial = drmRandom(state);
     ++count;
-    while (initial != N(Random)(state)) {
+    while (initial != drmRandom(state)) {
 	if (!++count) break;
     }
     printf("With seed of %10ld, period = %10lu (0x%08lx)\n",
 	   seed, count, count);
-    N(RandomDestroy)(state);
+    drmRandomDestroy(state);
 }
 
 int main(void)
@@ -205,14 +203,14 @@ int main(void)
     int           i;
     unsigned long rand;
 
-    state = N(RandomCreate)(1);
+    state = drmRandomCreate(1);
     for (i = 0; i < 10000; i++) {
-	rand = N(Random)(state);
+	rand = drmRandom(state);
     }
     printf("After 10000 iterations: %lu (%lu expected): %s\n",
 	   rand, state->check,
 	   rand - state->check ? "*INCORRECT*" : "CORRECT");
-    N(RandomDestroy)(state);
+    drmRandomDestroy(state);
 
     printf("Checking periods...\n");
     check_period(1);

@@ -31,8 +31,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.36 2003/08/24 17:35:35 tsi Exp $ */
-
 #ifdef HAVE_XORG_CONFIG_H
 #include <xorg-config.h>
 #endif
@@ -68,13 +66,6 @@
 # include "drm.h"
 #endif
 
-/* No longer needed with CVS kernel modules on alpha 
-#if defined(__alpha__) && defined(__linux__)
-extern unsigned long _bus_base(void);
-#define BUS_BASE _bus_base()
-#endif
-*/
-
 /* Not all systems have MAP_FAILED defined */
 #ifndef MAP_FAILED
 #define MAP_FAILED ((void *)-1)
@@ -102,11 +93,11 @@ extern unsigned long _bus_base(void);
 #define DRM_MAX_MINOR 16
 #endif
 
+/*
+ * This definition needs to be changed on some systems if dev_t is a structure.
+ * If there is a header file we can get it from, there would be best.
+ */
 #ifndef makedev
-				/* This definition needs to be changed on
-                                   some systems if dev_t is a structure.
-                                   If there is a header file we can get it
-                                   from, there would be best. */
 #define makedev(x,y)    ((dev_t)(((x) << 8) | (y)))
 #endif
 
@@ -379,7 +370,7 @@ int drmAvailable(void)
 
     if ((fd = drmOpenMinor(0, 1)) < 0) {
 #ifdef __linux__
-				/* Try proc for backward Linux compatibility */
+	/* Try proc for backward Linux compatibility */
 	if (!access("/proc/dri/0", R_OK)) return 1;
 #endif
 	return 0;
@@ -485,9 +476,8 @@ static int drmOpenByName(const char *name)
 		    id = drmGetBusid(fd);
 		    drmMsg("drmGetBusid returned '%s'\n", id ? id : "NULL");
 		    if (!id || !*id) {
-			if (id) {
+			if (id)
 			    drmFreeBusid(id);
-			}
 			return fd;
 		    } else {
 			drmFreeBusid(id);
@@ -501,7 +491,7 @@ static int drmOpenByName(const char *name)
     }
 
 #ifdef __linux__
-				/* Backward-compatibility /proc support */
+    /* Backward-compatibility /proc support */
     for (i = 0; i < 8; i++) {
 	char proc_name[64], buf[512];
 	char *driver, *pt, *devstring;
@@ -515,14 +505,14 @@ static int drmOpenByName(const char *name)
 		buf[retcode-1] = '\0';
 		for (driver = pt = buf; *pt && *pt != ' '; ++pt)
 		    ;
-		if (*pt) {	/* Device is next */
+		if (*pt) { /* Device is next */
 		    *pt = '\0';
 		    if (!strcmp(driver, name)) { /* Match */
 			for (devstring = ++pt; *pt && *pt != ' '; ++pt)
 			    ;
 			if (*pt) { /* Found busid */
 			    return drmOpenByBusid(++pt);
-			} else {	/* No busid */
+			} else { /* No busid */
 			    return drmOpenDevice(strtol(devstring, NULL, 0),i);
 			}
 		    }
@@ -571,8 +561,10 @@ int drmOpen(const char *name, const char *busid)
 	if (fd >= 0)
 	    return fd;
     }
+    
     if (name)
 	return drmOpenByName(name);
+
     return -1;
 }
 
@@ -659,7 +651,6 @@ drmVersionPtr drmGetVersion(int fd)
     drmVersionPtr retval;
     drm_version_t *version = drmMalloc(sizeof(*version));
 
-				/* First, get the lengths */
     version->name_len    = 0;
     version->name        = NULL;
     version->date_len    = 0;
@@ -672,7 +663,6 @@ drmVersionPtr drmGetVersion(int fd)
 	return NULL;
     }
 
-				/* Now, allocate space and get the data */
     if (version->name_len)
 	version->name    = drmMalloc(version->name_len + 1);
     if (version->date_len)
@@ -686,15 +676,11 @@ drmVersionPtr drmGetVersion(int fd)
 	return NULL;
     }
 
-				/* The results might not be null-terminated
-                                   strings, so terminate them. */
-
+    /* The results might not be null-terminated strings, so terminate them. */
     if (version->name_len) version->name[version->name_len] = '\0';
     if (version->date_len) version->date[version->date_len] = '\0';
     if (version->desc_len) version->desc[version->desc_len] = '\0';
 
-				/* Now, copy it all back into the
-                                   client-visible data structure... */
     retval = drmMalloc(sizeof(*retval));
     drmCopyVersion(retval, version);
     drmFreeKernelVersion(version);
@@ -871,22 +857,12 @@ int drmAuthMagic(int fd, drm_magic_t magic)
  * This function is a wrapper around the DRM_IOCTL_ADD_MAP ioctl, passing
  * the arguments in a drm_map structure.
  */
-int drmAddMap(int fd,
-	      drm_handle_t offset,
-	      drmSize size,
-	      drmMapType type,
-	      drmMapFlags flags,
-	      drm_handle_t * handle)
+int drmAddMap(int fd, drm_handle_t offset, drmSize size, drmMapType type,
+	      drmMapFlags flags, drm_handle_t *handle)
 {
     drm_map_t map;
 
     map.offset  = offset;
-/* No longer needed with CVS kernel modules on alpha
-#ifdef __alpha__
-    if (type != DRM_SHM)
-	map.offset += BUS_BASE;
-#endif
-*/
     map.size    = size;
     map.handle  = 0;
     map.type    = type;
@@ -1038,10 +1014,7 @@ int drmClose(int fd)
  * \internal
  * This function is a wrapper for mmap().
  */
-int drmMap(int fd,
-	   drm_handle_t handle,
-	   drmSize size,
-	   drmAddressPtr address)
+int drmMap(int fd, drm_handle_t handle, drmSize size, drmAddressPtr address)
 {
     static unsigned long pagesize_mask = 0;
 
@@ -1067,7 +1040,7 @@ int drmMap(int fd,
  * \return zero on success, or a negative value on failure.
  *
  * \internal
- * This function is a wrapper for unmap().
+ * This function is a wrapper for munmap().
  */
 int drmUnmap(drmAddress address, drmSize size)
 {
@@ -1093,8 +1066,7 @@ drmBufInfoPtr drmGetBufInfo(int fd)
 	    drmFree(info.list);
 	    return NULL;
 	}
-				/* Now, copy it all back into the
-                                   client-visible data structure... */
+
 	retval = drmMalloc(sizeof(*retval));
 	retval->count = info.count;
 	retval->list  = drmMalloc(info.count * sizeof(*retval->list));
@@ -1145,8 +1117,7 @@ drmBufMapPtr drmMapBufs(int fd)
 	    drmFree(bufs.list);
 	    return NULL;
 	}
-				/* Now, copy it all back into the
-                                   client-visible data structure... */
+
 	retval = drmMalloc(sizeof(*retval));
 	retval->count = bufs.count;
 	retval->list  = drmMalloc(bufs.count * sizeof(*retval->list));
@@ -1206,7 +1177,6 @@ int drmDMA(int fd, drmDMAReqPtr request)
     drm_dma_t dma;
     int ret, i = 0;
 
-				/* Copy to hidden structure */
     dma.context         = request->context;
     dma.send_count      = request->send_count;
     dma.send_indices    = request->send_list;
@@ -1284,7 +1254,7 @@ int drmUnlock(int fd, drm_context_t context)
     return ioctl(fd, DRM_IOCTL_UNLOCK, &lock);
 }
 
-drm_context_t * drmGetReservedContextList(int fd, int *count)
+drm_context_t *drmGetReservedContextList(int fd, int *count)
 {
     drm_ctx_res_t res;
     drm_ctx_t     *list;
@@ -1313,7 +1283,7 @@ drm_context_t * drmGetReservedContextList(int fd, int *count)
     return retval;
 }
 
-void drmFreeReservedContextList(drm_context_t * pt)
+void drmFreeReservedContextList(drm_context_t *pt)
 {
     drmFree(pt);
 }
@@ -1336,7 +1306,7 @@ void drmFreeReservedContextList(drm_context_t * pt)
  * This function is a wrapper around the DRM_IOCTL_ADD_CTX ioctl, passing the
  * argument in a drm_ctx structure.
  */
-int drmCreateContext(int fd, drm_context_t * handle)
+int drmCreateContext(int fd, drm_context_t *handle)
 {
     drm_ctx_t ctx;
 
@@ -1359,14 +1329,12 @@ int drmSetContextFlags(int fd, drm_context_t context, drm_context_tFlags flags)
 {
     drm_ctx_t ctx;
 
-				/* Context preserving means that no context
-                                   switched are done between DMA buffers
-                                   from one context and the next.  This is
-                                   suitable for use in the X server (which
-                                   promises to maintain hardware context,
-                                   or in the client-side library when
-                                   buffers are swapped on behalf of two
-                                   threads. */
+    /*
+     * Context preserving means that no context switches are done between DMA
+     * buffers from one context and the next.  This is suitable for use in the
+     * X server (which promises to maintain hardware context), or in the
+     * client-side library when buffers are swapped on behalf of two threads.
+     */
     ctx.handle = context;
     ctx.flags  = 0;
     if (flags & DRM_CONTEXT_PRESERVED) ctx.flags |= _DRM_CONTEXT_PRESERVED;
@@ -1375,7 +1343,8 @@ int drmSetContextFlags(int fd, drm_context_t context, drm_context_tFlags flags)
     return 0;
 }
 
-int drmGetContextFlags(int fd, drm_context_t context, drm_context_tFlagsPtr flags)
+int drmGetContextFlags(int fd, drm_context_t context,
+                       drm_context_tFlagsPtr flags)
 {
     drm_ctx_t ctx;
 
@@ -1412,7 +1381,7 @@ int drmDestroyContext(int fd, drm_context_t handle)
     return 0;
 }
 
-int drmCreateDrawable(int fd, drm_drawable_t * handle)
+int drmCreateDrawable(int fd, drm_drawable_t *handle)
 {
     drm_draw_t draw;
     if (ioctl(fd, DRM_IOCTL_ADD_DRAW, &draw)) return -errno;
@@ -1941,7 +1910,8 @@ void *drmGetContextTag(int fd, drm_context_t context)
     return value;
 }
 
-int drmAddContextPrivateMapping(int fd, drm_context_t ctx_id, drm_handle_t handle)
+int drmAddContextPrivateMapping(int fd, drm_context_t ctx_id,
+                                drm_handle_t handle)
 {
     drm_ctx_priv_map_t map;
 
@@ -1952,7 +1922,8 @@ int drmAddContextPrivateMapping(int fd, drm_context_t ctx_id, drm_handle_t handl
     return 0;
 }
 
-int drmGetContextPrivateMapping(int fd, drm_context_t ctx_id, drm_handle_t * handle)
+int drmGetContextPrivateMapping(int fd, drm_context_t ctx_id,
+                                drm_handle_t *handle)
 {
     drm_ctx_priv_map_t map;
 
@@ -2132,7 +2103,7 @@ int drmGetStats(int fd, drmStatsT *stats)
  * It issues a read-write ioctl given by 
  * \code DRM_COMMAND_BASE + drmCommandIndex \endcode.
  */
-int drmSetInterfaceVersion(int fd, drmSetVersion *version )
+int drmSetInterfaceVersion(int fd, drmSetVersion *version)
 {
     int retcode = 0;
     drm_set_version_t sv;
@@ -2194,8 +2165,8 @@ int drmCommandNone(int fd, unsigned long drmCommandIndex)
  * It issues a read ioctl given by 
  * \code DRM_COMMAND_BASE + drmCommandIndex \endcode.
  */
-int drmCommandRead(int fd, unsigned long drmCommandIndex,
-                   void *data, unsigned long size )
+int drmCommandRead(int fd, unsigned long drmCommandIndex, void *data,
+                   unsigned long size)
 {
     unsigned long request;
 
@@ -2223,8 +2194,8 @@ int drmCommandRead(int fd, unsigned long drmCommandIndex,
  * It issues a write ioctl given by 
  * \code DRM_COMMAND_BASE + drmCommandIndex \endcode.
  */
-int drmCommandWrite(int fd, unsigned long drmCommandIndex,
-                   void *data, unsigned long size )
+int drmCommandWrite(int fd, unsigned long drmCommandIndex, void *data,
+                    unsigned long size)
 {
     unsigned long request;
 
@@ -2252,8 +2223,8 @@ int drmCommandWrite(int fd, unsigned long drmCommandIndex,
  * It issues a read-write ioctl given by 
  * \code DRM_COMMAND_BASE + drmCommandIndex \endcode.
  */
-int drmCommandWriteRead(int fd, unsigned long drmCommandIndex,
-                   void *data, unsigned long size )
+int drmCommandWriteRead(int fd, unsigned long drmCommandIndex, void *data,
+                        unsigned long size)
 {
     unsigned long request;
 
@@ -2265,69 +2236,3 @@ int drmCommandWriteRead(int fd, unsigned long drmCommandIndex,
     }
     return 0;
 }
-
-#if defined(XFree86Server) 
-static void drmSIGIOHandler(int interrupt, void *closure)
-{
-    unsigned long key;
-    void          *value;
-    ssize_t       count;
-    drm_ctx_t     ctx;
-    typedef void  (*_drmCallback)(int, void *, void *);
-    char          buf[256];
-    drm_context_t    old;
-    drm_context_t    new;
-    void          *oldctx;
-    void          *newctx;
-    char          *pt;
-    drmHashEntry  *entry;
-
-    if (!drmHashTable) return;
-    if (drmHashFirst(drmHashTable, &key, &value)) {
-	entry = value;
-	do {
-#if 0
-	    fprintf(stderr, "Trying %d\n", entry->fd);
-#endif
-	    if ((count = read(entry->fd, buf, sizeof(buf))) > 0) {
-		buf[count] = '\0';
-#if 0
-		fprintf(stderr, "Got %s\n", buf);
-#endif
-
-		for (pt = buf; *pt != ' '; ++pt); /* Find first space */
-		++pt;
-		old    = strtol(pt, &pt, 0);
-		new    = strtol(pt, NULL, 0);
-		oldctx = drmGetContextTag(entry->fd, old);
-		newctx = drmGetContextTag(entry->fd, new);
-#if 0
-		fprintf(stderr, "%d %d %p %p\n", old, new, oldctx, newctx);
-#endif
-		((_drmCallback)entry->f)(entry->fd, oldctx, newctx);
-		ctx.handle = new;
-		ioctl(entry->fd, DRM_IOCTL_NEW_CTX, &ctx);
-	    }
-	} while (drmHashNext(drmHashTable, &key, &value));
-    }
-}
-
-int drmInstallSIGIOHandler(int fd, void (*f)(int, void *, void *))
-{
-    drmHashEntry     *entry;
-
-    entry     = drmGetEntry(fd);
-    entry->f  = f;
-
-    return xf86InstallSIGIOHandler(fd, drmSIGIOHandler, 0);
-}
-
-int drmRemoveSIGIOHandler(int fd)
-{
-    drmHashEntry     *entry = drmGetEntry(fd);
-
-    entry->f = NULL;
-
-    return xf86RemoveSIGIOHandler(fd);
-}
-#endif

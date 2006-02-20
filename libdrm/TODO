@@ -7,5 +7,4 @@
   - drmMsg, xf86DrvMsgVerb versus vfprintf
   - drmOpenDevice tries chmod/chown if in server
   - drmOpen{,ByName} tries to load kernel module if in server
-  - drm*SIGIOHandler only exists in server
-  All but the last three should probably be factored out into libdri.
+  All but the last two should probably be factored out into libdri.

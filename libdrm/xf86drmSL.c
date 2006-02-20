@@ -62,8 +62,6 @@
 # endif
 #endif
 
-#define N(x)  drm##x
-
 #define SL_LIST_MAGIC  0xfacade00LU
 #define SL_ENTRY_MAGIC 0x00fab1edLU
 #define SL_FREED_MAGIC 0xdecea5edLU
@@ -103,15 +101,15 @@ typedef struct SkipList {
 } SkipList, *SkipListPtr;
 
 #if SL_MAIN
-extern void *N(SLCreate)(void);
-extern int  N(SLDestroy)(void *l);
-extern int  N(SLLookup)(void *l, unsigned long key, void **value);
-extern int  N(SLInsert)(void *l, unsigned long key, void *value);
-extern int  N(SLDelete)(void *l, unsigned long key);
-extern int  N(SLNext)(void *l, unsigned long *key, void **value);
-extern int  N(SLFirst)(void *l, unsigned long *key, void **value);
-extern void N(SLDump)(void *l);
-extern int  N(SLLookupNeighbors)(void *l, unsigned long key,
+extern void *drmSLCreate(void);
+extern int  drmSLDestroy(void *l);
+extern int  drmSLLookup(void *l, unsigned long key, void **value);
+extern int  drmSLInsert(void *l, unsigned long key, void *value);
+extern int  drmSLDelete(void *l, unsigned long key);
+extern int  drmSLNext(void *l, unsigned long *key, void **value);
+extern int  drmSLFirst(void *l, unsigned long *key, void **value);
+extern void drmSLDump(void *l);
+extern int  drmSLLookupNeighbors(void *l, unsigned long key,
 				 unsigned long *prev_key, void **prev_value,
 				 unsigned long *next_key, void **next_value);
 #endif
@@ -144,7 +142,7 @@ static int SLRandomLevel(void)
     return level;
 }
 
-void *N(SLCreate)(void)
+void *drmSLCreate(void)
 {
     SkipListPtr  list;
     int          i;
@@ -161,7 +159,7 @@ void *N(SLCreate)(void)
     return list;
 }
 
-int N(SLDestroy)(void *l)
+int drmSLDestroy(void *l)
 {
     SkipListPtr   list  = (SkipListPtr)l;
     SLEntryPtr    entry;
@@ -198,7 +196,7 @@ static SLEntryPtr SLLocate(void *l, unsigned long key, SLEntryPtr *update)
     return entry->forward[0];
 }
 
-int N(SLInsert)(void *l, unsigned long key, void *value)
+int drmSLInsert(void *l, unsigned long key, void *value)
 {
     SkipListPtr   list  = (SkipListPtr)l;
     SLEntryPtr    entry;
@@ -231,7 +229,7 @@ int N(SLInsert)(void *l, unsigned long key, void *value)
     return 0;			/* Added to table */
 }
 
-int N(SLDelete)(void *l, unsigned long key)
+int drmSLDelete(void *l, unsigned long key)
 {
     SkipListPtr   list = (SkipListPtr)l;
     SLEntryPtr    update[SL_MAX_LEVEL + 1];
@@ -258,7 +256,7 @@ int N(SLDelete)(void *l, unsigned long key)
     return 0;
 }
 
-int N(SLLookup)(void *l, unsigned long key, void **value)
+int drmSLLookup(void *l, unsigned long key, void **value)
 {
     SkipListPtr   list = (SkipListPtr)l;
     SLEntryPtr    update[SL_MAX_LEVEL + 1];
@@ -274,7 +272,7 @@ int N(SLLookup)(void *l, unsigned long key, void **value)
     return -1;
 }
 
-int N(SLLookupNeighbors)(void *l, unsigned long key,
+int drmSLLookupNeighbors(void *l, unsigned long key,
 			 unsigned long *prev_key, void **prev_value,
 			 unsigned long *next_key, void **next_value)
 {
@@ -301,7 +299,7 @@ int N(SLLookupNeighbors)(void *l, unsigned long key,
     return retcode;
 }
 
-int N(SLNext)(void *l, unsigned long *key, void **value)
+int drmSLNext(void *l, unsigned long *key, void **value)
 {
     SkipListPtr   list = (SkipListPtr)l;
     SLEntryPtr    entry;
@@ -320,18 +318,18 @@ int N(SLNext)(void *l, unsigned long *key, void **value)
     return 0;
 }
 
-int N(SLFirst)(void *l, unsigned long *key, void **value)
+int drmSLFirst(void *l, unsigned long *key, void **value)
 {
     SkipListPtr   list = (SkipListPtr)l;
     
     if (list->magic != SL_LIST_MAGIC) return -1; /* Bad magic */
     
     list->p0 = list->head->forward[0];
-    return N(SLNext)(list, key, value);
+    return drmSLNext(list, key, value);
 }
 
 /* Dump internal data structures for debugging. */
-void N(SLDump)(void *l)
+void drmSLDump(void *l)
 {
     SkipListPtr   list = (SkipListPtr)l;
     SLEntryPtr    entry;
@@ -371,10 +369,10 @@ static void print(SkipListPtr list)
     unsigned long key;
     void          *value;
     
-    if (N(SLFirst)(list, &key, &value)) {
+    if (drmSLFirst(list, &key, &value)) {
 	do {
 	    printf("key = %5lu, value = %p\n", key, value);
-	} while (N(SLNext)(list, &key, &value));
+	} while (drmSLNext(list, &key, &value));
     }
 }
 
@@ -392,27 +390,27 @@ static double do_time(int size, int iter)
 
     SL_RANDOM_INIT(12345);
     
-    list = N(SLCreate)();
+    list = drmSLCreate();
 
     for (i = 0; i < size; i++) {
 	keys[i] = SL_RANDOM;
-	N(SLInsert)(list, keys[i], NULL);
+	drmSLInsert(list, keys[i], NULL);
     }
 
     previous = 0;
-    if (N(SLFirst)(list, &key, &value)) {
+    if (drmSLFirst(list, &key, &value)) {
 	do {
 	    if (key <= previous) {
 		printf( "%lu !< %lu\n", previous, key);
 	    }
 	    previous = key;
-	} while (N(SLNext)(list, &key, &value));
+	} while (drmSLNext(list, &key, &value));
     }
     
     gettimeofday(&start, NULL);
     for (j = 0; j < iter; j++) {
 	for (i = 0; i < size; i++) {
-	    if (N(SLLookup)(list, keys[i], &value))
+	    if (drmSLLookup(list, keys[i], &value))
 		printf("Error %lu %d\n", keys[i], i);
 	}
     }
@@ -423,7 +421,7 @@ static double do_time(int size, int iter)
     
     printf("%0.2f microseconds for list length %d\n", usec, size);
 
-    N(SLDestroy)(list);
+    drmSLDestroy(list);
     
     return usec;
 }
@@ -448,15 +446,15 @@ int main(void)
     SkipListPtr    list;
     double         usec, usec2, usec3, usec4;
 
-    list = N(SLCreate)();
+    list = drmSLCreate();
     printf( "list at %p\n", list);
 
     print(list);
     printf("\n==============================\n\n");
 
-    N(SLInsert)(list, 123, NULL);
-    N(SLInsert)(list, 213, NULL);
-    N(SLInsert)(list, 50, NULL);
+    drmSLInsert(list, 123, NULL);
+    drmSLInsert(list, 213, NULL);
+    drmSLInsert(list, 50, NULL);
     print(list);
     printf("\n==============================\n\n");
     
@@ -469,12 +467,12 @@ int main(void)
     print_neighbors(list, 256);
     printf("\n==============================\n\n");    
     
-    N(SLDelete)(list, 50);
+    drmSLDelete(list, 50);
     print(list);
     printf("\n==============================\n\n");
 
-    N(SLDump)(list);
-    N(SLDestroy)(list);
+    drmSLDump(list);
+    drmSLDestroy(list);
     printf("\n==============================\n\n");
 
     usec  = do_time(100, 10000);

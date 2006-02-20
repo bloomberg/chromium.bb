@@ -546,11 +546,6 @@ extern int           drmCreateDrawable(int fd, drm_drawable_t * handle);
 extern int           drmDestroyDrawable(int fd, drm_drawable_t handle);
 extern int           drmCtlInstHandler(int fd, int irq);
 extern int           drmCtlUninstHandler(int fd);
-extern int           drmInstallSIGIOHandler(int fd,
-					    void (*f)(int fd,
-						      void *oldctx,
-						      void *newctx));
-extern int           drmRemoveSIGIOHandler(int fd);
 
 /* General user-level programmer's API: authenticated client and/or X */
 extern int           drmMap(int fd,
