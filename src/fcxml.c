@@ -924,7 +924,6 @@ FcVStackElements (FcConfigParse *parse)
 static FcChar8 **
 FcConfigSaveAttr (const XML_Char **attr)
 {
-    int		n;
     int		slen;
     int		i;
     FcChar8	**new;
@@ -935,7 +934,6 @@ FcConfigSaveAttr (const XML_Char **attr)
     slen = 0;
     for (i = 0; attr[i]; i++)
 	slen += strlen ((char *) attr[i]) + 1;
-    n = i;
     new = malloc ((i + 1) * sizeof (FcChar8 *) + slen);
     if (!new)
 	return 0;

@@ -2433,7 +2433,7 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
 FcCharSet *
 FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 {
-    FcChar32	    page, off, max, ucs4;
+    FcChar32	    page, off, ucs4;
 #ifdef CHECK
     FcChar32	    font_max = 0;
 #endif
@@ -2514,7 +2514,6 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 	{
 	    FT_UInt gindex;
 	  
-	    max = fcFontDecoders[o].max;
 	    /*
 	     * Find the first encoded character in the font
 	     */

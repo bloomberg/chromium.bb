@@ -1,3 +1,13 @@
+2006-02-21  Kjartan Maraas  <kmaraas@gnome.org>
+	reviewed by: plam
+
+	* fc-list/fc-list.c (main):
+	* src/fcfreetype.c (FcFreeTypeCharSetAndSpacing):
+	* src/fcstr.c (FcStrStr):
+	* src/fcxml.c (FcConfigSaveAttr):
+
+	Eliminate unused vars reported by Intel's compiler.
+
 2006-02-21  Aiet Kolkhi  <aietkolkhi@gmail.com>
 	reviewed by: plam
 
