@@ -1,3 +1,14 @@
+2006-02-21  Paul Cornett  <paulcor1@bullseye.com>
+	reviewed by: plam
+
+	* src/fccache.c (FcDirCacheWrite):
+	* src/fcdir.c (FcFileScanConfig):
+	* src/fcfreetype.c (FcStringInPatternElement):
+	* src/fcxml.c (FcParseFamilies):
+	* src/ftglue.c (ftglue_face_goto_table):
+
+	Eliminate redundancies.
+
 2006-02-21  Kjartan Maraas  <kmaraas@gnome.org>
 	reviewed by: plam
 

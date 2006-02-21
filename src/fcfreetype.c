@@ -976,7 +976,6 @@ FcStringInPatternElement (FcPattern *pat, const char *elt, FcChar8 *string)
 	if (!FcStrCmpIgnoreBlanksAndCase (old, string))
 	{
 	    return FcTrue;
-	    break;
 	}
     return FcFalse;
 }

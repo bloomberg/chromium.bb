@@ -1320,8 +1320,7 @@ FcParseFamilies (FcConfigParse *parse, FcVStackTag tag)
 	if (!FcVStackPushExpr (parse, tag, expr))
 	{
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
-	    if (expr)
-		FcExprDestroy (expr);
+            FcExprDestroy (expr);
 	}
     }
 }

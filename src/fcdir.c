@@ -55,9 +55,6 @@ FcFileScanConfig (FcFontSet	*set,
     if (FcFileIsDir (file))
 	return FcStrSetAdd (dirs, file);
 
-    if (force)
-	cache = 0;
-
     id = 0;
     do
     {

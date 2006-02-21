@@ -34,7 +34,7 @@
 #include <unistd.h>
 
 #define ENDIAN_TEST 0x12345678
-#define MACHINE_SIGNATURE_SIZE 9 + 5*20 + 1
+#define MACHINE_SIGNATURE_SIZE (9 + 5*20 + 1)
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -1371,6 +1371,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 		 metadata.count)
 	    perror("write current_dir_block");
 	free (current_dir_block);
+        current_dir_block = 0;
     }
 
     /* this actually serves to pad out the cache file, if needed */
