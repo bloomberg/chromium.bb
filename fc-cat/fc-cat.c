@@ -396,6 +396,7 @@ main (int argc, char **argv)
     FcFontSet	*fs = FcFontSetCreate();
     FcStrSet    *dirs = FcStrSetCreate();
     char	*name_buf;
+    FcConfig	*config;
 
 #if HAVE_GETOPT_LONG
     while ((c = getopt_long (argc, argv, "fsVv?", longopts, NULL)) != -1)
@@ -417,6 +418,14 @@ main (int argc, char **argv)
     i = 1;
 #endif
 
+    config = FcInitLoadConfig ();
+    if (!config)
+    {
+	fprintf (stderr, "%s: Can't init font config library\n", argv[0]);
+	return 1;
+    }
+    FcConfigSetCurrent (config);
+    
     if (i >= argc)
         usage (argv[0]);
 
@@ -425,7 +434,7 @@ main (int argc, char **argv)
         char * dummy_name = (char *)FcStrPlus ((FcChar8 *)argv[i], 
                                                (FcChar8 *)"/dummy");
         if (!FcDirScanConfig (fs, dirs, 0, 0, 
-                              (const FcChar8 *)argv[i], FcFalse, 0))
+                              (const FcChar8 *)argv[i], FcFalse, config))
             fprintf (stderr, "couldn't load font dir %s\n", argv[i]);
         else
         {

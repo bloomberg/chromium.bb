@@ -1,3 +1,10 @@
+2006-02-21  Mike Fabian  <mfabian@suse.de>
+	reviewed by: plam
+	
+	* fc-cat/fc-cat.c (main):
+
+	Initialize fontconfig library in fc-cat to avoid segfault.
+
 2006-02-18  Patrick Lam  <plam@mit.edu>
 	* fc-cache/fc-cache.c (scanDirs):
 	* src/fccache.c (FcCacheReadDirs):
