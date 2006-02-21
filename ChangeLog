@@ -1,3 +1,11 @@
+2006-02-21  Ross Burton  <ross@burtonini.com>
+	reviewed by: plam, keithp
+
+	* src/fcxml.c (FcParsePatelt):
+
+	Freeze patterns created by configuration file for tiny 
+	memory savings (every little bit helps).
+
 2006-02-21  Mike Fabian  <mfabian@suse.de>
 	reviewed by: plam
 	

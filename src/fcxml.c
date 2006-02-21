@@ -1968,7 +1968,8 @@ FcParsePatelt (FcConfigParse *parse)
 	}
     }
 
-    FcVStackPushPattern (parse, pattern);
+    FcVStackPushPattern (parse, FcPatternFreeze(pattern));
+    FcPatternDestroy (pattern);
 }
 
 static void
