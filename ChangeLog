@@ -1,3 +1,8 @@
+2006-02-21  Patrick Lam  <plam@mit.edu>
+	* conf.d/10-fonts-persian.conf:
+
+	Use embeddedbitmap rather than rh_prefer_bitmap.
+
 2006-02-21  Paul Cornett  <paulcor1@bullseye.com>
 	reviewed by: plam
 
