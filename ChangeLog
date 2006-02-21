@@ -1,3 +1,8 @@
+2006-02-21  Diego Petten  <flameeyes@gentoo.org>
+	* src/fcfreetype.c (FcFreeTypeCharIndex):
+
+	Pass the buck; make fontconfig not crash on pango badness.
+
 2006-02-21  Patrick Lam  <plam@mit.edu>
 	* conf.d/10-fonts-persian.conf:
 

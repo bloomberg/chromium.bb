@@ -2312,6 +2312,10 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
     int		    p;
 
     initial = 0;
+
+    if (!face)
+        return 0;
+
     /*
      * Find the current encoding
      */
