@@ -50,7 +50,7 @@ drm_dma_handle_t *drm_pci_alloc(drm_device_t * dev, size_t size, size_t align,
 				dma_addr_t maxaddr)
 {
 	drm_dma_handle_t *dmah;
-#if 0
+#if 1
 	unsigned long addr;
 	size_t sz;
 #endif
@@ -112,7 +112,7 @@ drm_dma_handle_t *drm_pci_alloc(drm_device_t * dev, size_t size, size_t align,
 
 	memset(dmah->vaddr, 0, size);
 
-#if 0
+#if 1
 	/* XXX - Is virt_to_page() legal for consistent mem? */
 	/* Reserve */
 	for (addr = (unsigned long)dmah->vaddr, sz = size;
@@ -132,7 +132,7 @@ EXPORT_SYMBOL(drm_pci_alloc);
  */
 void __drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
 {
-#if 0
+#if 1
 	unsigned long addr;
 	size_t sz;
 #endif
@@ -147,10 +147,10 @@ void __drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
 		DRM_MEM_ERROR(area, "Attempt to free address 0\n");
 #endif
 	} else {
-#if 0
+#if 1
 		/* XXX - Is virt_to_page() legal for consistent mem? */
 		/* Unreserve */
-		for (addr = (unsigned long)dmah->vaddr, sz = size;
+		for (addr = (unsigned long)dmah->vaddr, sz = dmah->size;
 		     sz > 0; addr += PAGE_SIZE, sz -= PAGE_SIZE) {
 			ClearPageReserved(virt_to_page(addr));
 		}
