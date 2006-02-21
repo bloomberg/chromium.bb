@@ -83,7 +83,11 @@ drm_dma_handle_t *drm_pci_alloc(drm_device_t * dev, size_t size, size_t align,
 		return NULL;
 
 	dmah->size = size;
+#if 0
 	dmah->vaddr = pci_alloc_consistent(dev->pdev, size, &dmah->busaddr);
+#else
+	dmah->vaddr = dma_alloc_coherent(&dev->pdev->dev, size, &dmah->busaddr, GFP_KERNEL | __GFP_COMP);
+#endif
 
 #ifdef DRM_DEBUG_MEMORY
 	if (dmah->vaddr == NULL) {
@@ -151,8 +155,13 @@ void __drm_pci_free(drm_device_t * dev, drm_dma_handle_t *dmah)
 			ClearPageReserved(virt_to_page(addr));
 		}
 #endif
+#if 0
 		pci_free_consistent(dev->pdev, dmah->size, dmah->vaddr,
 				    dmah->busaddr);
+#else
+		dma_free_coherent(&dev->pdev->dev, dmah->size, dmah->vaddr,
+				  dmah->busaddr);
+#endif
 	}
 
 #ifdef DRM_DEBUG_MEMORY
