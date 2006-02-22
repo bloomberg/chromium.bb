@@ -1,5 +1,10 @@
 2006-02-21  Patrick Lam  <plam@mit.edu>
-	* fc-lang/fc-lang.c:
+	* fc-lang/fc-lang.c (scan):
+
+	Strip \r and whitespace from input; fixes bug 3454.
+
+2006-02-21  Patrick Lam  <plam@mit.edu>
+	* fc-lang/fc-lang.c (main):
 
 	Allocate large arrays statically in fc-lang to fix crashes under
 	MinGW/MSYS.

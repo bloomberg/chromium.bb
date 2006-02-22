@@ -80,12 +80,18 @@ static char *
 get_line (FILE *f, char *line, int *lineno)
 {
     char    *hash;
+    int	    end;
     if (!fgets (line, 1024, f))
 	return 0;
     ++(*lineno);
     hash = strchr (line, '#');
     if (hash)
 	*hash = '\0';
+
+    end = strlen (line);
+    while (end > 0 && isspace (line[end-1]))
+      line[--end] = '\0';
+
     if (line[0] == '\0' || line[0] == '\n' || line[0] == '\032' || line[0] == '\r')
 	return get_line (f, line, lineno);
     return line;
@@ -134,11 +140,8 @@ scan (FILE *f, char *file)
 	if (!strncmp (line, "include", 7))
 	{
 	    file = strchr (line, ' ');
-	    while (*file == ' ')
+	    while (isspace(*file))
 		file++;
-	    end = strlen (file);
-	    if (file[end-1] == '\n')
-		file[end-1] = '\0';
 	    f = scanopen (file);
 	    if (!f)
 		fatal (file, 0, "can't open");
