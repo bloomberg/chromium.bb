@@ -1,3 +1,9 @@
+2006-02-21  Patrick Lam  <plam@mit.edu>
+	* fc-lang/fc-lang.c:
+
+	Allocate large arrays statically in fc-lang to fix crashes under
+	MinGW/MSYS.
+
 2006-02-21  Diego Petten  <flameeyes@gentoo.org>
 	* src/fcfreetype.c (FcFreeTypeCharIndex):
 

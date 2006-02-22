@@ -227,13 +227,13 @@ static int compare (const void *a, const void *b)
 int
 main (int argc, char **argv)
 {
-    char	*files[MAX_LANG];
-    FcCharSet	*sets[MAX_LANG];
-    int		duplicate[MAX_LANG];
-    int		offsets[MAX_LANG];
-    int		country[MAX_LANG];
-    char	*names[MAX_LANG];
-    char	*langs[MAX_LANG];
+    static char		*files[MAX_LANG];
+    static FcCharSet	*sets[MAX_LANG];
+    static int		duplicate[MAX_LANG];
+    static int		offsets[MAX_LANG];
+    static int		country[MAX_LANG];
+    static char		*names[MAX_LANG];
+    static char		*langs[MAX_LANG];
     FILE	*f;
     int         offset = 0;
     int		ncountry = 0;
@@ -244,8 +244,8 @@ main (int argc, char **argv)
     int		offset_count = 0;
     int		l, sl, tl;
     int		c;
-    char	line[1024];
-    FcChar32	map[MAX_LANG_SET_MAP];
+    static char		line[1024];
+    static FcChar32	map[MAX_LANG_SET_MAP];
     int		num_lang_set_map;
     int		setRangeStart[26];
     int		setRangeEnd[26];
