@@ -1,4 +1,12 @@
 2006-02-24  Patrick Lam	 <plam@mit.edu>
+	* ChangeLog:
+	* README:
+	* configure.in:
+	* fontconfig/fontconfig.h:
+
+	Bump version to 2.3.94.
+
+2006-02-24  Patrick Lam	 <plam@mit.edu>
 	* conf.d/10-fonts-persian.conf:
 
 	Remove unconditional emboldening (per Behdad's instructions).

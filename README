@@ -1,10 +1,53 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.3.93
-		         2005-12-12
+		      Version 2.3.94
+		         2006-02-24
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.3.94
+
+fc-cat can take directories as input and creates old-style fonts.cache
+listings.
+fc-cache takes -r --really-force which blows away all old caches and
+regenerates.
+Robustness fixes, integer overflow fixes (notably to cache handling
+code), toast broken global cache files.
+Change binary format to make it compatible with static langset
+information (thanks to Takashi Iwai).
+Open hashed caches before fonts.cache-2 (Takashi Iwai).
+Fix FcFontSetMatch's algorithm, which used to unjustly kill fonts for
+not declaring certain elements (Takashi Iwai).
+Fix matching bug when multiple elements match; don't use
+the sum of all scores, but the best score (James Su).
+Make fc-lang more friendly to Windows systems.
+Remove archaic chars from Georgian charset; add Euro character to
+charsets for European languages.
+Fix treatment of broken PCF fonts that don't declare family names.
+Pass O_BINARY to open if appropriate (reported by Doodle).
+Normalize font directories to the form in which they appear in 
+config files.  
+Add a record of the cached directory to the cache file.
+Perf optimizations (Dirk Mueller; some reported by Michael Meeks.)
+Don't loop infinitely on recursive symlinks.
+Make 'make distcheck' work with automake 1.6.3.
+Replace 'stamp' target with mkinstalldirs.
+Don't stop scanning if a directory in fonts.conf doesn't exist,
+because subsequent directories might exist.
+Put directory names into global cache (reported by Ronny V. Vindenes).
+Treat zh-hk fonts differently from zh-tw fonts.  This patch may cause
+fontconfig to treat A-X fonts differently from A-Y fonts; please mail
+the fontconfig list if this causes any problems.
+Fix for unaligned memory accesses (Andreas Schwab).
+Fix treatment of cache directory as read from cache file; don't use
+string equality to determine if we have the right file, use inode
+equality.
+Properly skip past dir caches that contain zero fonts, as occurs
+in global caches (reported by Mike Fabian).
+Print out full pathname in fc-match -v (reported by Frederic Crozat).
+Fix bug where fc-match crashes when given __DUMMY__ property to
+match on.
 
 2.3.93
 
