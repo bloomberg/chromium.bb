@@ -2823,6 +2823,7 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
 Fail:
     *script_count = 0;
     ftglue_free( memory, *stags );
+    *stags = NULL;
     return error;
 }
 

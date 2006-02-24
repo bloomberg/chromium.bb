@@ -1,3 +1,11 @@
+2006-02-24  Mike Fabian  <mfabian@suse.de>
+	    Takashi Iwai  <tiwai@suse.de>
+	reviewed by: plam
+	
+	* src/fcfreetype.c (GetScriptTags):
+
+	Fix double-free on error case.
+
 2006-02-21  Patrick Lam  <plam@mit.edu>
 	* fc-lang/fc-lang.c (scan):
 
