@@ -95,11 +95,11 @@ install-data-local:
 	    echo " fc-cache/fc-cache -f -v"; \
 	    fc-cache/fc-cache -f -v; \
 	else \
-	    echo "***"; \
-	    echo "*** Warning: fonts.cache not built"; \
-	    echo "***"; \
-	    echo "*** Generate this file manually on host system using fc-cache"; \
-	    echo "***"; \
+	    @echo "***"; \
+	    @echo "*** Warning: fonts.cache not built"; \
+	    @echo "***"; \
+	    @echo "*** Generate this file manually on host system using fc-cache"; \
+	    @echo "***"; \
 	fi
 
 uninstall-local:
