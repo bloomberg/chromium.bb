@@ -91,16 +91,16 @@ install-data-local:
 	  echo " $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf"; \
 	  $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf; \
 	fi; fi
-	if $(RUN_FC_CACHE_TEST); then \
+	@(if $(RUN_FC_CACHE_TEST); then \
 	    echo " fc-cache/fc-cache -f -v"; \
 	    fc-cache/fc-cache -f -v; \
 	else \
-	    @echo "***"; \
-	    @echo "*** Warning: fonts.cache not built"; \
-	    @echo "***"; \
-	    @echo "*** Generate this file manually on host system using fc-cache"; \
-	    @echo "***"; \
-	fi
+	    echo "***"; \
+	    echo "*** Warning: fonts.cache not built"; \
+	    echo "***"; \
+	    echo "*** Generate this file manually on host system using fc-cache"; \
+	    echo "***"; \
+	fi)
 
 uninstall-local:
 	if [ -f $(srcdir)/fonts.conf ]; then \
