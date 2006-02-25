@@ -2179,7 +2179,9 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 	case CHIP_RV200:
 	case CHIP_R200:
 	case CHIP_R300:
+	case CHIP_R350:
 	case CHIP_R420:
+	case CHIP_RV410:
 		dev_priv->flags |= CHIP_HAS_HIERZ;
 		break;
 	default:

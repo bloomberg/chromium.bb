@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20060120"
+#define DRIVER_DATE		"20060225"
 
 /* Interface history:
  *
@@ -99,20 +99,21 @@
 
 enum radeon_family {
 	CHIP_R100,
-	CHIP_RS100,
 	CHIP_RV100,
+	CHIP_RS100,
 	CHIP_RV200,
-	CHIP_R200,
 	CHIP_RS200,
-	CHIP_R250,
-	CHIP_RS250,
+	CHIP_R200,
 	CHIP_RV250,
+	CHIP_RS300,
 	CHIP_RV280,
 	CHIP_R300,
-	CHIP_RS300,
 	CHIP_R350,
 	CHIP_RV350,
+	CHIP_RV380,
 	CHIP_R420,
+	CHIP_RV410,
+	CHIP_RS400,
 	CHIP_LAST,
 };
 
