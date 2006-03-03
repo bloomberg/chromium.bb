@@ -1,3 +1,11 @@
+2006-03-02  Egmont Koblinger  <egmont@uhulinux.hu>
+	reviewed by: plam
+	
+	* src/fclang.c (FcCharSetForLang):
+
+	Fix suspicious return expression which causes junk 
+	to be returned.
+
 2006-02-24  Patrick Lam	 <plam@mit.edu>
 	* ChangeLog:
 	* README:

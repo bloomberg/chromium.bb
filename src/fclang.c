@@ -216,7 +216,7 @@ FcCharSetForLang (const FcChar8 *lang)
     }
     if (country == -1)
 	return 0;
-    return &fcLangCharSets[i].charset;
+    return &fcLangCharSets[country].charset;
 }
 
 FcLangSet *
