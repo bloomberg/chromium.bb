@@ -1,4 +1,9 @@
 2006-03-03  Patrick Lam  <plam@mit.edu>
+	* src/fcint.h:
+
+	Include inttypes.h instead of stdint.h if appropriate.
+
+2006-03-03  Patrick Lam  <plam@mit.edu>
 	* fc-cat/fc-cat.c (FcFileIsDir):
 	* fc-glyphname/fc-flyphname.c:
 

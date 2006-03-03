@@ -27,7 +27,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#else
 #include <stdint.h>
+#endif
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
