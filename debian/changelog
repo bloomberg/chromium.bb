@@ -1,3 +1,8 @@
+fontconfig (2.3.94-1) experimental; urgency=low
+  * New upstream release
+
+ -- Patrick Lam <plam@mit.edu>  Sat, 25 Feb 2006 10:21:28 -0500
+
 fontconfig (2.3.92-1) experimental; urgency=low
   * New upstream release: mmapable cache files
   * Change section of fontconfig source package to libs (closes: #309864)
