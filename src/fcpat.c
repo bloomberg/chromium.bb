@@ -393,7 +393,7 @@ FcValueListEntCreate (FcValueListPtr h)
     size = sizeof (FcValueListAlign) + n * sizeof (FcValueList);
     FcValueListFrozenCount[FcValueListPtrU(h)->value.type]++;
     FcValueListFrozenBytes[FcValueListPtrU(h)->value.type] += size;
-    // this leaks for some reason
+    /* this leaks for some reason */
     ea = malloc (sizeof (FcValueListAlign));
     if (!ea)
 	return 0;
@@ -1694,7 +1694,8 @@ FcValueListNeededBytes (FcValueList *p)
 	 vl; 
 	 vl = FcValueListPtrU(vl->next))
     {
-	FcValue v = FcValueCanonicalize(&vl->value); // unserialize just in case
+        /* unserialize just in case */
+        FcValue v = FcValueCanonicalize(&vl->value); 
 
 	switch (v.type)
 	{

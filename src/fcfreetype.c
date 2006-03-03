@@ -2815,7 +2815,7 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
 	goto Fail;
     }
 
-    // sort the tag list before returning it
+    /* sort the tag list before returning it */
     qsort(*stags, *script_count, sizeof(FT_ULong), compareulong);
 
     return TT_Err_Ok;

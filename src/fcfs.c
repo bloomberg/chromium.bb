@@ -123,12 +123,12 @@ FcFontSetDistributeBytes (FcCache * metadata, void * block_ptr)
     block_ptr = ALIGN (block_ptr, int);
     fcfs_pat_count = (int *)block_ptr;
     block_ptr = (int *)block_ptr + 1;
-    // we don't consume any bytes for the fontset itself,
-    // since we don't allocate it statically.
+    /* we don't consume any bytes for the fontset itself, */
+    /* since we don't allocate it statically. */
     block_ptr = FcPatternDistributeBytes (metadata, block_ptr);
 
-    // for good measure, write out the object ids used for
-    // this bank to the file.
+    /* for good measure, write out the object ids used for */
+    /* this bank to the file. */
     return FcObjectDistributeBytes (metadata, block_ptr);
 }
 

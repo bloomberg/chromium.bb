@@ -1,4 +1,12 @@
 2006-03-03  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcCacheSkipToArch, FcDirCacheProduce):
+	* src/fcfreetype.c (GetScriptTags):
+	* src/fcfs.c (FcFontSetDistributeBytes):
+	* src/fcpat.c (FcValueListEntCreate, FcValueListNeededBytes):
+
+	Get rid of C++-style comments.
+
+2006-03-03  Patrick Lam  <plam@mit.edu>
 	* debian/changelog
 
 	Enable creation of 2.3.94 Debian packages.
