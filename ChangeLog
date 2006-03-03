@@ -1,4 +1,9 @@
 2006-03-03  Patrick Lam  <plam@mit.edu>
+	* fc-case/fc-case.c:
+
+	Fix compilation on AIX with stub definitions (bug 6097).
+
+2006-03-03  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcCacheSkipToArch, FcDirCacheProduce):
 	* src/fcfreetype.c (GetScriptTags):
 	* src/fcfs.c (FcFontSetDistributeBytes):

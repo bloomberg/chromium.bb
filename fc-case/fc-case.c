@@ -28,6 +28,16 @@
 #define MAX_OUT	    32
 #define MAX_LINE    8192
 
+/* stub definitions for declarations from fcint.h.. */
+int * _fcBankId = 0, * _fcBankIdx = 0;
+
+int
+FcCacheBankToIndexMTF (int bank)
+{
+    return 0;
+}
+/* end stub definitions */
+
 typedef enum _caseFoldClass { CaseFoldCommon, CaseFoldFull, CaseFoldSimple, CaseFoldTurkic } CaseFoldClass;
 
 typedef struct _caseFoldClassMap {
