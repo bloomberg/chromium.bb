@@ -24,6 +24,16 @@
 
 #include "fcint.h"
 
+/* stub definitions for declarations from fcint.h.. */
+int * _fcBankId = 0, * _fcBankIdx = 0;
+
+int
+FcCacheBankToIndexMTF (int bank)
+{
+    return 0;
+}
+/* end stub definitions */
+
 static int
 rawindex (const FcGlyphName *gn);
 

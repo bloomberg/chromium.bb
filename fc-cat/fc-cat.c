@@ -377,16 +377,6 @@ bail2:
     return FcFalse;
 }
 
-FcBool
-FcFileIsDir (const FcChar8 *file)
-{
-    struct stat	    statb;
-
-    if (stat ((const char *) file, &statb) != 0)
-	return FcFalse;
-    return S_ISDIR(statb.st_mode);
-}
-
 int
 main (int argc, char **argv)
 {

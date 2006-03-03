@@ -1,4 +1,10 @@
 2006-03-03  Patrick Lam  <plam@mit.edu>
+	* fc-cat/fc-cat.c (FcFileIsDir):
+	* fc-glyphname/fc-flyphname.c:
+
+	More stub definitions and remove FcFileIsDir from fc-cat.
+
+2006-03-03  Patrick Lam  <plam@mit.edu>
 	* fc-case/fc-case.c:
 
 	Fix compilation on AIX with stub definitions (bug 6097).
