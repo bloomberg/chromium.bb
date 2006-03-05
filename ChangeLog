@@ -1,4 +1,10 @@
 2006-03-05  Patrick Lam  <plam@mit.edu>
+	* src/fcpat.c (FcPatternGetString):
+
+	Because we hacked FcPatternGet, we don't really need to expand the
+	filename again in FcPatternGetString.
+
+2006-03-05  Patrick Lam  <plam@mit.edu>
 	* src/fcpat.c (FcPatternGetString, FcPatternGet):
 
 	Ok, so some people (wine!) use FcPatternGet to fetch FC_FILE.

@@ -1214,9 +1214,6 @@ FcPatternGetString (const FcPattern *p, const char *object, int id, FcChar8 ** s
     if (v.type != FcTypeString)
         return FcResultTypeMismatch;
 
-    if (FcObjectToPtr(object) == FcObjectToPtr(FC_FILE))
-        return FcPatternGetFile (p, object, id, s);
-
     *s = (FcChar8 *) v.u.s;
     return FcResultMatch;
 }
