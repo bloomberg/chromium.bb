@@ -1,3 +1,9 @@
+2006-03-05  Patrick Lam  <plam@mit.edu>
+	* src/fcpat.c (FcPatternGetString, FcPatternGet):
+
+	Ok, so some people (wine!) use FcPatternGet to fetch FC_FILE.
+	Make that work.  Reported by Bernhard Rosenkraenzer.
+
 2006-03-03  Patrick Lam  <plam@mit.edu>
 	* src/fcint.h:
 

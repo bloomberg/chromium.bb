@@ -1098,6 +1098,39 @@ FcPatternAddLangSet (FcPattern *p, const char *object, const FcLangSet *ls)
     return FcPatternAdd (p, object, v, FcTrue);
 }
 
+static FcResult
+FcPatternGetFile (const FcPattern *p, const char *object, int id, FcChar8 ** s)
+{
+    const char *fn, *fpath;
+    FcChar8 *fname;
+    int size;
+    
+    fn = FcPatternFindFullFname(p);
+    if (fn)
+    {
+        *s = (FcChar8 *) fn;
+        return FcResultMatch;
+    }
+
+    if (!p->bank)
+        return FcResultMatch;
+
+    fpath = FcCacheFindBankDir (p->bank);
+    size = strlen((char *)fpath) + 1 + strlen ((char *)*s) + 1;
+    fname = malloc (size);
+    if (!fname)
+        return FcResultOutOfMemory;
+    
+    FcMemAlloc (FC_MEM_STRING, size);
+    strcpy ((char *)fname, (char *)fpath);
+    strcat ((char *)fname, "/");
+    strcat ((char *)fname, (char *)*s);
+    
+    FcPatternAddFullFname (p, (const char *)fname);
+    *s = (FcChar8 *)fname;
+    return FcResultMatch;
+}
+
 FcResult
 FcPatternGet (const FcPattern *p, const char *object, int id, FcValue *v)
 {
@@ -1112,6 +1145,12 @@ FcPatternGet (const FcPattern *p, const char *object, int id, FcValue *v)
 	if (!id)
 	{
 	    *v = FcValueCanonicalize(&FcValueListPtrU(l)->value);
+
+            /* Pull the FC_FILE trick here too. */
+            if (v->type == FcTypeString &&
+                FcObjectToPtr(object) == FcObjectToPtr(FC_FILE))
+                return FcPatternGetFile (p, object, id, (FcChar8 **)&(v->u.s));
+
 	    return FcResultMatch;
 	}
 	id--;
@@ -1176,39 +1215,7 @@ FcPatternGetString (const FcPattern *p, const char *object, int id, FcChar8 ** s
         return FcResultTypeMismatch;
 
     if (FcObjectToPtr(object) == FcObjectToPtr(FC_FILE))
-    {
-	const char *fn, *fpath;
-	FcChar8 *fname;
-	int size;
-
-	fn = FcPatternFindFullFname(p);
-	if (fn)
-	{
-	    *s = (FcChar8 *) fn;
-	    return FcResultMatch;
-	}
-
-	if (!p->bank)
-	{
-	    *s = (FcChar8 *) v.u.s;
-	    return FcResultMatch;
-	}
-
-	fpath = FcCacheFindBankDir (p->bank);
-	size = strlen((char*)fpath) + 1 + strlen ((char *)v.u.s) + 1;
-	fname = malloc (size);
-	if (!fname)
-	    return FcResultOutOfMemory;
-
-	FcMemAlloc (FC_MEM_STRING, size);
-	strcpy ((char *)fname, (char *)fpath);
-	strcat ((char *)fname, "/");
-	strcat ((char *)fname, (char *)v.u.s);
-	
-	FcPatternAddFullFname (p, (const char *)fname);
-	*s = (FcChar8 *)fname;
-	return FcResultMatch;
-    }
+        return FcPatternGetFile (p, object, id, s);
 
     *s = (FcChar8 *) v.u.s;
     return FcResultMatch;
