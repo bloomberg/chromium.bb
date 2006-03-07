@@ -710,7 +710,7 @@ static __inline__ int r300_scratch(drm_radeon_private_t *dev_priv,
 	u32 i, buf_idx, h_pending;
 	RING_LOCALS;
 	
-	if (cmdbuf->bufsz < sizeof(u32 *) + header.scratch.n_bufs * sizeof(buf_idx) ) {
+	if (cmdbuf->bufsz < sizeof(u64) + header.scratch.n_bufs * sizeof(buf_idx) ) {
 		return DRM_ERR(EINVAL);
 	}
 	
@@ -720,13 +720,13 @@ static __inline__ int r300_scratch(drm_radeon_private_t *dev_priv,
 	
 	dev_priv->scratch_ages[header.scratch.reg] ++;
 	
-	ref_age_base = *((u32 **)cmdbuf->buf);
+	ref_age_base = *(u32 **)cmdbuf->buf;
 	
-	cmdbuf->buf += sizeof(u32 *);
-	cmdbuf->bufsz -= sizeof(u32 *);
+	cmdbuf->buf += sizeof(u64);
+	cmdbuf->bufsz -= sizeof(u64);
 	
 	for (i=0; i < header.scratch.n_bufs; i++) {
-		buf_idx = *((u32 *)cmdbuf->buf);
+		buf_idx = *(u32 *)cmdbuf->buf;
 		buf_idx *= 2; /* 8 bytes per buf */
 		
 		if (DRM_COPY_TO_USER(ref_age_base + buf_idx, &dev_priv->scratch_ages[header.scratch.reg], sizeof(u32))) {
