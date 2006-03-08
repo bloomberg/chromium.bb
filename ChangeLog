@@ -1,3 +1,11 @@
+2006-03-08  Denis Jacquerye  <moyogo@gmail.com>
+	reviewed by: plam
+
+	* fc-lang/ln.orth:
+	* fc-lang/iso639-1, fc-lang/iso639-2:
+
+	Add orthography for Lingala.
+	
 2006-03-08  Carl Worth  <cworth@cworth.org>
 	reviewed by: keithp
 
