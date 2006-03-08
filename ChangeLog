@@ -1,4 +1,11 @@
 2006-03-08  Patrick Lam  <plam@mit.edu>
+	* Makefile.am:
+	* config/config.guess:
+	* config/config.sub:
+
+	Fix Makefile.am for removal of debian/ directory.
+
+2006-03-08  Patrick Lam  <plam@mit.edu>
 	* .cvsignore
 
 	Ignore debian/ directory for CVS.
