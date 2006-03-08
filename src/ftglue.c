@@ -50,6 +50,14 @@ ftglue_qalloc( FT_Memory  memory,
 
 #undef   QALLOC  /* just in case */
 #define  QALLOC(ptr,size)    ( (ptr) = ftglue_qalloc( memory, (size), &error ), error != 0 )
+#define  FREE(_ptr)                    \
+  do {                                 \
+    if ( (_ptr) )                      \
+    {                                  \
+      ftglue_free( memory, _ptr );     \
+      _ptr = NULL;                     \
+    }                                  \
+  } while (0)
 
 
 FTGLUE_APIDEF( FT_Pointer )
@@ -209,53 +217,6 @@ ftglue_stream_frame_exit( FT_Stream  stream )
   stream->limit  = 0;
 
   LOG(( "ftglue:stream:frame_exit()\n" ));
-}
-
-
-FTGLUE_APIDEF( FT_Byte )
-ftglue_stream_get_byte( FT_Stream  stream )
-{
-  FT_Byte  result = 0;
-
-  if ( stream->cursor < stream->limit )
-    result = *stream->cursor++;
-
-  return result;
-}
-
-
-FTGLUE_APIDEF( FT_Short )
-ftglue_stream_get_short( FT_Stream  stream )
-{
-  FT_Byte*  p;
-  FT_Short  result = 0;
-
-  p = stream->cursor;
-  if ( p + 2 <= stream->limit )
-  {
-    result         = (FT_Short)((p[0] << 8) | p[1]);
-    stream->cursor = p+2;
-  }
-  return result;
-}
-
-
-FTGLUE_APIDEF( FT_Long )
-ftglue_stream_get_long( FT_Stream   stream )
-{
-  FT_Byte*  p;
-  FT_Long   result = 0;
-
-  p = stream->cursor;
-  if ( p + 4 <= stream->limit )
-  {
-    result         = (FT_Long)(((FT_Long)p[0] << 24) |
-                               ((FT_Long)p[1] << 16) |
-                               ((FT_Long)p[2] << 8)  |
-                                         p[3]        );
-    stream->cursor = p+4;
-  }
-  return result;
 }
 
 

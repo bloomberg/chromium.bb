@@ -71,9 +71,17 @@ FT_BEGIN_HEADER
 #define  ACCESS_Frame(size)  SET_ERR( ftglue_stream_frame_enter( stream, size ) )
 #define  FORGET_Frame()      ftglue_stream_frame_exit( stream )
 
-#define  GET_Byte()      ftglue_stream_get_byte( stream )
-#define  GET_Short()     ftglue_stream_get_short( stream )
-#define  GET_Long()      ftglue_stream_get_long( stream )
+#define  GET_Byte()      (*stream->cursor++)
+#define  GET_Short()     (stream->cursor += 2, (FT_Short)( \
+				(*(((FT_Byte*)stream->cursor)-2) << 8) | \
+				 *(((FT_Byte*)stream->cursor)-1) \
+			 ))
+#define  GET_Long()      (stream->cursor += 4, (FT_Long)( \
+				(*(((FT_Byte*)stream->cursor)-4) << 24) | \
+				(*(((FT_Byte*)stream->cursor)-3) << 16) | \
+				(*(((FT_Byte*)stream->cursor)-2) << 8) | \
+				 *(((FT_Byte*)stream->cursor)-1) \
+			 ))
 
 #define  GET_Char()      ((FT_Char)GET_Byte())
 #define  GET_UShort()    ((FT_UShort)GET_Short())
@@ -110,31 +118,6 @@ FTGLUE_API( FT_Error )
 ftglue_face_goto_table( FT_Face    face,
                         FT_ULong   tag,
                         FT_Stream  stream );
-
-/* memory macros used by the OpenType parser */
-#define  ALLOC(_ptr,_size)   \
-           ( (_ptr) = ftglue_alloc( memory, _size, &error ), error != 0 )
-
-#define  REALLOC(_ptr,_oldsz,_newsz)  \
-           ( (_ptr) = ftglue_realloc( memory, (_ptr), (_oldsz), (_newsz), &error ), error != 0 )
-
-#define  FREE(_ptr)                    \
-  do {                                 \
-    if ( (_ptr) )                      \
-    {                                  \
-      ftglue_free( memory, _ptr );     \
-      _ptr = NULL;                     \
-    }                                  \
-  } while (0)
-
-#define  ALLOC_ARRAY(_ptr,_count,_type)   \
-           ALLOC(_ptr,(_count)*sizeof(_type))
-
-#define  REALLOC_ARRAY(_ptr,_oldcnt,_newcnt,_type) \
-           REALLOC(_ptr,(_oldcnt)*sizeof(_type),(_newcnt)*sizeof(_type))
-
-#define  MEM_Copy(dest,source,count)   memcpy( (char*)(dest), (const char*)(source), (size_t)(count) )
-
 
 FTGLUE_API( FT_Pointer )
 ftglue_alloc( FT_Memory  memory,

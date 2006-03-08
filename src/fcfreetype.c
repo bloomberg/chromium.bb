@@ -2762,7 +2762,7 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
     if ( ftglue_stream_seek ( stream, base_offset + 4L ) || ftglue_stream_frame_enter( stream, 2L ) )
 	return error;
 
-    new_offset = ((FT_UShort)ftglue_stream_get_short ( stream )) + base_offset;
+    new_offset = GET_UShort() + base_offset;
 
     ftglue_stream_frame_exit( stream );
 
@@ -2776,7 +2776,7 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
     if ( ftglue_stream_frame_enter( stream, 2L ) )
 	return error;
 
-    *script_count = ((FT_UShort)ftglue_stream_get_short ( stream ));
+    *script_count = GET_UShort ();
 
     ftglue_stream_frame_exit( stream );
 
@@ -2791,8 +2791,8 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
         if ( ftglue_stream_frame_enter( stream, 6L ) )
 	    goto Fail;
 
-	(*stags)[p] = ((FT_ULong)ftglue_stream_get_long ( stream ));
-	new_offset = ((FT_UShort)ftglue_stream_get_short ( stream )) + base_offset;
+	(*stags)[p] = GET_ULong ();
+	new_offset = GET_UShort () + base_offset;
 
         ftglue_stream_frame_exit( stream );
 

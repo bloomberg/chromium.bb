@@ -1,3 +1,17 @@
+2006-03-07  Behdad Esfahbod  <behdad@cs.toronto.edu>
+	reviewed by: plam
+
+	* src/fcfreetype.c (GetScriptTags):
+	* src/ftglue.c, src/ftglue.h:
+
+	Remove stuff we don't use, make get_{char,short,long} functions
+	of ftglue macros to be inlined.
+	
+	* src/fcint.h:
+	* src/fcname.c (FcObjectSerialize):
+
+	Code cleanups (excess prototype, old-style function definition).
+
 2006-03-05  Patrick Lam  <plam@mit.edu>
 	* src/fcpat.c (FcPatternGetString):
 

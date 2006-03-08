@@ -912,9 +912,6 @@ FcPatternEltU (FcPatternEltPtr pei)
     return &_fcPatternElts[FcCacheBankToIndex(pei.bank)][pei.u.stat];
 }
 
-FcPatternElt *
-FcPatternEltU (FcPatternEltPtr pei);
-
 FcValueListPtr
 FcValueListPtrCreateDynamic(FcValueList * p);
 

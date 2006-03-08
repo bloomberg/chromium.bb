@@ -358,7 +358,7 @@ FcObjectDistributeBytes (FcCache * metadata, void * block_ptr)
 }
 
 void
-FcObjectSerialize ()
+FcObjectSerialize (void)
 {
     int i;
     for (i = 0; i < biggest_known_ntypes; i++)
