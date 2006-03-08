@@ -1,3 +1,11 @@
+2006-03-08  Egmont Koblinger  <egmont@uhulinux.hu>
+	reviewed by: plam
+
+	* src/fcdir.c (FcDirScanConfig):
+
+	Sort directory entries while scanning them from disk;
+	prevents Heisenbugs due to file ordering in a directory.
+
 2005-12-13  Carl Worth  <cworth@cworth.org>
 	reviewed by: keithp
 
