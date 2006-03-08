@@ -1,3 +1,11 @@
+2006-03-08  Patrick Lam  <plam@mit.edu>
+	* debian/po/*
+	* .cvsignore
+
+	Remove debian/ directory from sources.  See Debian's subversion
+	server at svn://svn.debian.org/pkg-freedesktop/trunk/fontconfig
+	instead.
+
 2006-03-08  Denis Jacquerye  <moyogo@gmail.com>
 	reviewed by: plam
 
