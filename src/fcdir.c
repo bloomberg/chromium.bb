@@ -101,6 +101,16 @@ FcFileScan (FcFontSet	    *set,
 }
 
 /*
+ * Strcmp helper that takes pointers to pointers, copied from qsort(3) manpage
+ */
+
+static int
+cmpstringp(const void *p1, const void *p2)
+{
+    return strcmp(* (char **) p1, * (char **) p2);
+}
+
+/*
  * Scan 'dir', adding font files to 'set' and
  * subdirectories to 'dirs'
  */
@@ -116,6 +126,8 @@ FcDirScanConfig (FcFontSet	*set,
 {
     DIR			*d;
     struct dirent	*e;
+    FcChar8		**dirlist;
+    int			dirlistlen, dirlistalloc;
     FcChar8		*file;
     const FcChar8	*d_can = 0;
     FcChar8		*base;
@@ -174,14 +186,40 @@ FcDirScanConfig (FcFontSet	*set,
 	return FcFalse;
     }
 
-    while (ret && (e = readdir (d)))
+    dirlistlen = 0;
+    dirlistalloc = 8;
+    dirlist = malloc(dirlistalloc * sizeof(FcChar8 *));
+    if (!dirlist)
+       return FcFalse;
+    while ((e = readdir (d)))
     {
 	if (e->d_name[0] != '.' && strlen (e->d_name) < FC_MAX_FILE_LEN)
 	{
-	    strcpy ((char *) base, (char *) e->d_name);
-	    ret = FcFileScanConfig (tmpSet, dirs, cache, blanks, file, force, config);
+	    if (dirlistlen == dirlistalloc)
+	    {
+		dirlistalloc *= 2;
+		dirlist = realloc(dirlist, dirlistalloc * sizeof(FcChar8 *));
+		if (!dirlist)
+		    return FcFalse;
+	    }
+	    dirlist[dirlistlen] = malloc(strlen (e->d_name) + 1);
+	    if (!dirlist[dirlistlen])
+		return FcFalse;
+	    strcpy(dirlist[dirlistlen], e->d_name);
+	    dirlistlen++;
 	}
     }
+    qsort(dirlist, dirlistlen, sizeof(FcChar8 *), cmpstringp);
+    i = 0;
+    while (ret && i < dirlistlen)
+    {
+	strcpy ((char *) base, (char *) dirlist[i]);
+	ret = FcFileScanConfig (tmpSet, dirs, cache, blanks, file, force, config);
+	i++;
+    }
+    for (i = 0; i < dirlistlen; i++)
+	free(dirlist[i]);
+    free (dirlist);
     free (file);
     closedir (d);
     /*
