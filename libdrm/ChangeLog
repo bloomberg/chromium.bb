@@ -1,3 +1,8 @@
+2006-03-14  Adam Jackson  <ajax@freedesktop.org>
+
+	* xf86drmHash.c:
+	Avoid walking off the end of the hash table.  (Coverity report #465)
+
 2006-02-20  Adam Jackson  <ajax@freedesktop.org>
 
 	* ChangeLog:

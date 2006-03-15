@@ -292,14 +292,15 @@ int drmHashNext(void *t, unsigned long *key, void **value)
 {
     HashTablePtr  table = (HashTablePtr)t;
 
-    for (; table->p0 < HASH_SIZE;
-	 ++table->p0, table->p1 = table->buckets[table->p0]) {
+    while (table->p0 < HASH_SIZE) {
 	if (table->p1) {
 	    *key       = table->p1->key;
 	    *value     = table->p1->value;
 	    table->p1  = table->p1->next;
 	    return 1;
 	}
+	table->p1 = table->buckets[table->p0];
+	++table->p0;
     }
     return 0;
 }
