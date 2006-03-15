@@ -1,3 +1,9 @@
+2006-03-15  Patrick Lam  <plam@mit.edu>
+	* fc-lang/ab.orth:
+	* fc-lang/ibo.orth:
+
+	Fix typos in orth files.  Reported by Denis Jacquerye.
+
 2006-03-08  Patrick Lam  <plam@mit.edu>
 	* Makefile.am:
 	* config/config.guess:
