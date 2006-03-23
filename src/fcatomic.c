@@ -177,6 +177,9 @@ FcAtomicOrigFile (FcAtomic *atomic)
 FcBool
 FcAtomicReplaceOrig (FcAtomic *atomic)
 {
+#ifdef _WIN32
+    unlink (atomic->file);
+#endif
     if (rename ((char *) atomic->new, (char *) atomic->file) < 0)
 	return FcFalse;
     return FcTrue;
