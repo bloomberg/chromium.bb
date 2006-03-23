@@ -1,3 +1,8 @@
+2006-03-22  Patrick Lam  <plam@mit.edu>
+	* src/fcatomic.c:
+
+	On Windows, unlink before rename.  Reported by Tim Evans.
+
 2006-03-15  Patrick Lam  <plam@mit.edu>
 	* fc-lang/ab.orth:
 	* fc-lang/ibo.orth:
