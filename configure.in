@@ -306,6 +306,8 @@ fi
 
 AC_ARG_ENABLE(libxml2,         [  --enable-libxml2              Use libxml2 instead of Expat])
 
+PKG_PROG_PKG_CONFIG
+
 if test "$enable_libxml2" = "yes" -o "$expat" = "no"; then
     PKG_CHECK_MODULES([LIBXML2], [libxml-2.0 >= 2.6])
     AC_DEFINE_UNQUOTED(ENABLE_LIBXML2,1,[Use libxml2 instead of Expat])

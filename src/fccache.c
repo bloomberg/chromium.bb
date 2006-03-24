@@ -206,7 +206,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
     current_arch_start = FcCacheSkipToArch(cache->fd, 
 					   current_arch_machine_name);
     if (current_arch_start < 0)
-        goto bail_and_destroy;
+        goto bail1;
 
     lseek (cache->fd, current_arch_start, SEEK_SET);
     if (!FcCacheReadString (cache->fd, candidate_arch_machine_name, 
@@ -643,6 +643,7 @@ FcCacheSkipToArch (int fd, const char * arch)
 	if (strcmp (candidate_arch, arch)==0)
 	    return current_arch_start;
 	current_arch_start += bs;
+	current_arch_start = FcCacheNextOffset (current_arch_start);
     }
 
     return -1;

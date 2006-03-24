@@ -1,3 +1,15 @@
+2006-03-24  Mike Fabian  <mfabian@suse.de>
+	reviewed by: plam
+	* src/fccache.c (FcGlobalCacheLoad, FcCacheSkipToArch):
+
+	Fix multiarch support (don't destroy multiarch files!)
+
+2006-03-24  Patrick Lam  <plam@mit.edu>
+	* configure.in:
+
+	Require pkg-config.  (Thanks Behdad; 
+	better solution wanted for libxml2 detection!)
+
 2006-03-22  Patrick Lam  <plam@mit.edu>
 	* src/fcatomic.c:
 
