@@ -242,8 +242,10 @@ static __inline__ int r300_check_range(unsigned reg, int count)
 	return 0;
 }
 
-  /* we expect offsets passed to the framebuffer to be either within video memory or
-     within AGP space */
+/*
+ * we expect offsets passed to the framebuffer to be either within video 
+ * memory or within AGP space 
+ */
 static __inline__ int r300_check_offset(drm_radeon_private_t *dev_priv,
 					u32 offset)
 {
@@ -573,7 +575,7 @@ static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t *dev_priv,
 	case RADEON_3D_LOAD_VBPNTR:	/* load vertex array pointers */
 		return r300_emit_3d_load_vbpntr(dev_priv, cmdbuf, header);
 
-	case RADEON_CNTL_BITBLT_MULTI: 
+	case RADEON_CNTL_BITBLT_MULTI:
 		return r300_emit_bitblt_multi(dev_priv, cmdbuf);
 
 	case RADEON_CP_3D_DRAW_IMMD_2:	/* triggers drawing using in-packet vertex data */
@@ -702,9 +704,9 @@ static void r300_discard_buffer(drm_device_t * dev, drm_buf_t * buf)
 	buf->used = 0;
 }
 
-static __inline__ int r300_scratch(drm_radeon_private_t *dev_priv,
-				   drm_radeon_kcmd_buffer_t *cmdbuf,
-				   drm_r300_cmd_header_t header)
+static int r300_scratch(drm_radeon_private_t *dev_priv,
+			drm_radeon_kcmd_buffer_t *cmdbuf,
+			drm_r300_cmd_header_t header)
 {
 	u32 *ref_age_base;
 	u32 i, buf_idx, h_pending;
@@ -938,4 +940,3 @@ int r300_do_cp_cmdbuf(drm_device_t *dev,
 
 	return ret;
 }
-

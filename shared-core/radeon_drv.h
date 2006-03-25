@@ -83,9 +83,10 @@
  * 1.16- Add R200_EMIT_PP_TRI_PERF_CNTL packet to support brilinear
  *       texture filtering on r200
  * 1.17- Add initial support for R300 (3D).
- * 1.18- Add support for GL_ATI_fragment_shader, new packets R200_EMIT_PP_AFS_0/1,
-         R200_EMIT_PP_TXCTLALL_0-5 (replaces R200_EMIT_PP_TXFILTER_0-5, 2 more regs)
-         and R200_EMIT_ATF_TFACTOR (replaces R200_EMIT_TFACTOR_0 (8 consts instead of 6)
+ * 1.18- Add support for GL_ATI_fragment_shader, new packets
+ *       R200_EMIT_PP_AFS_0/1, R200_EMIT_PP_TXCTLALL_0-5 (replaces
+ *       R200_EMIT_PP_TXFILTER_0-5, 2 more regs) and R200_EMIT_ATF_TFACTOR
+ *       (replaces R200_EMIT_TFACTOR_0 (8 consts instead of 6)
  * 1.19- Add support for gart table in FB memory and PCIE r300
  * 1.20- Add support for r300 texrect
  * 1.21- Add support for card type getparam
@@ -98,6 +99,9 @@
 #define DRIVER_MINOR		24
 #define DRIVER_PATCHLEVEL	0
 
+/*
+ * Radeon chip families
+ */
 enum radeon_family {
 	CHIP_R100,
 	CHIP_RV100,
@@ -134,8 +138,9 @@ enum radeon_chip_flags {
 	CHIP_IS_IGP = 0x00020000UL,
 	CHIP_SINGLE_CRTC = 0x00040000UL,
 	CHIP_IS_AGP = 0x00080000UL,
-	CHIP_HAS_HIERZ = 0x00100000UL, 
+	CHIP_HAS_HIERZ = 0x00100000UL,
 	CHIP_IS_PCIE = 0x00200000UL,
+	CHIP_NEW_MEMMAP = 0x00400000UL,
 };
 
 #define GET_RING_HEAD(dev_priv)	(dev_priv->writeback_works ? \
@@ -275,10 +280,11 @@ typedef struct drm_radeon_private {
 
 	unsigned long pcigart_offset;
 	drm_ati_pcigart_info gart_info;
-	/* starting from here on, data is preserved accross an open */
-	uint32_t flags;		/* see radeon_chip_flags */
 
 	u32 scratch_ages[5];
+
+	/* starting from here on, data is preserved accross an open */
+	uint32_t flags;		/* see radeon_chip_flags */
 
 } drm_radeon_private_t;
 
@@ -364,7 +370,6 @@ extern int r300_do_cp_cmdbuf(drm_device_t *dev, DRMFILE filp,
 #define RADEON_AGP_COMMAND		0x0f60
 #define RADEON_AGP_COMMAND_PCI_CONFIG	0x0060	/* offset in PCI config */
 #       define RADEON_AGP_ENABLE            (1<<8)
-
 #define RADEON_AUX_SCISSOR_CNTL		0x26f0
 #	define RADEON_EXCLUSIVE_SCISSOR_0	(1 << 24)
 #	define RADEON_EXCLUSIVE_SCISSOR_1	(1 << 25)
