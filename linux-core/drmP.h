@@ -787,10 +787,10 @@ static inline int drm_mtrr_del(int handle, unsigned long offset,
 
 				/* Driver support (drm_drv.h) */
 extern int drm_fb_loaded;
-extern int __devinit drm_init(struct drm_driver *driver,
+extern int drm_init(struct drm_driver *driver,
 			      struct pci_device_id *pciidlist);
-extern void __exit drm_exit(struct drm_driver *driver);
-extern void __exit drm_cleanup_pci(struct pci_dev *pdev);
+extern void drm_exit(struct drm_driver *driver);
+extern void drm_cleanup_pci(struct pci_dev *pdev);
 extern int drm_ioctl(struct inode *inode, struct file *filp,
 		     unsigned int cmd, unsigned long arg);
 extern long drm_compat_ioctl(struct file *filp,
