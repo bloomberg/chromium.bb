@@ -1,3 +1,11 @@
+2006-04-06  Patrick Lam  <plam@mit.edu>
+	* fc-match/.cvsignore:
+	* fc-match/Makefile.am:
+	* fc-match/fc-match.sgml:
+
+	Update documentation for fc-match (SGML-ize it).
+	(reported by Ilya Konstantinov)
+
 2006-04-06  Diego Pettenò  <flameeyes@gentoo.org>
 	reviewed by: plam
 	* src/fcdefault.c:

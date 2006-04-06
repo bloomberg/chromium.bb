@@ -3,3 +3,4 @@
 Makefile
 Makefile.in
 fc-match
+fc-match.1
