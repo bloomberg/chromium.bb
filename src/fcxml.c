@@ -339,7 +339,7 @@ typedef enum _FcElement {
     FcElementUnknown
 } FcElement;
 
-static struct {
+static const struct {
     const char  name[16];
     FcElement   element;
 } fcElementMap[] = {

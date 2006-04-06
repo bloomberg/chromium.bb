@@ -25,7 +25,7 @@
 #include "fcint.h"
 #include <locale.h>
 
-static struct {
+static const struct {
     const char	*field;
     FcBool	value;
 } FcBoolDefaults[] = {

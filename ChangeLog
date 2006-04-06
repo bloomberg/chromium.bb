@@ -1,3 +1,18 @@
+2006-04-06  Diego Pettenò  <flameeyes@gentoo.org>
+	reviewed by: plam
+	* src/fcdefault.c:
+	* src/fcpat.c:
+	* src/fcxml.c:
+
+	Reduce amount of dirty rss by const'ing some data structures.
+
+2006-04-06  Patrick Lam  <plam@mit.edu>
+	* fc-cache/Makefile.am:
+
+	Don't fail if we can't create or remove 
+	$(pkgcachedir) i.e. /var/cache/fontconfig.
+	(reported by Quanah Gibson-Mount).
+
 2006-04-06  Kjartan Maraas  <kmaraas@gnome.org>
 	reviewed by: plam
 	* fc-case/fc-case.c:

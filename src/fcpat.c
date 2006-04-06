@@ -350,7 +350,7 @@ typedef union _FcValueListAlign {
 
 static int	    FcValueListFrozenCount[FcTypeLangSet + 1];
 static int	    FcValueListFrozenBytes[FcTypeLangSet + 1];
-static char	    FcValueListFrozenName[][8] = {
+static const char   FcValueListFrozenName[][8] = {
     "Void", 
     "Integer", 
     "Double", 

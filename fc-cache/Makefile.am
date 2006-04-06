@@ -30,10 +30,10 @@ SGML = ${FC_CACHE_SRC}/fc-cache.sgml
 AM_CPPFLAGS = -DPKGCACHEDIR='"${pkgcachedir}"'
 
 install-data-local:
-	$(mkinstalldirs) "$(DESTDIR)$(pkgcachedir)"
+	-$(mkinstalldirs) "$(DESTDIR)$(pkgcachedir)"
 
 uninstall-local:
-	$(RM) -rf "$(DESTDIR)$(pkgcachedir)"
+	-$(RM) -rf "$(DESTDIR)$(pkgcachedir)"
 
 INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
 
