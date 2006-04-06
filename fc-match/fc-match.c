@@ -47,7 +47,7 @@
 #undef  _GNU_SOURCE
 #define _GNU_SOURCE
 #include <getopt.h>
-const struct option longopts[] = {
+static const struct option longopts[] = {
     {"sort", 0, 0, 's'},
     {"version", 0, 0, 'V'},
     {"verbose", 0, 0, 'v'},

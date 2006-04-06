@@ -410,7 +410,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 		   const FcChar8    *cache_file,
 		   FcConfig	    *config)
 {
-    int			fd, fd_orig, i;
+    int			fd, fd_orig;
     FcGlobalCacheDir	*dir;
     FcAtomic		*atomic;
     off_t 		current_arch_start = 0, truncate_to;
@@ -468,6 +468,8 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     truncate_to = current_arch_start + strlen(current_arch_machine_name) + 11;
     for (dir = cache->dirs; dir; dir = dir->next)
     {
+	int i;
+
 	if (dir->state == FcGCDirDisabled)
 	    continue;
 	truncate_to += strlen(dir->name) + 1;
@@ -488,6 +490,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 
     for (dir = cache->dirs; dir; dir = dir->next)
     {
+	int i;
 	const char * d;
 	off_t off;
 
@@ -645,8 +648,6 @@ FcCacheSkipToArch (int fd, const char * arch)
 	current_arch_start += bs;
 	current_arch_start = FcCacheNextOffset (current_arch_start);
     }
-
-    return -1;
 }
 
 /* Cuts out the segment at the file pointer (moves everything else
@@ -1324,8 +1325,8 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 
     if (current_arch_start < 0)
     {
-	off_t i = lseek(fd_orig, 0, SEEK_END);
-	current_arch_start = FcCacheNextOffset (i);
+	off_t offset = lseek(fd_orig, 0, SEEK_END);
+	current_arch_start = FcCacheNextOffset (offset);
     }
 
     if (fd_orig != -1 && !FcCacheCopyOld(fd, fd_orig, current_arch_start))

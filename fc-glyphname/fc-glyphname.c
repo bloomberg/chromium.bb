@@ -83,12 +83,12 @@ fatal (const char *file, int lineno, const char *msg)
 #define MAX_GLYPHNAME	    10240
 #define MAX_NAMELEN	    1024
 
-FcGlyphName *raw[MAX_GLYPHNAME];
-int	    nraw;
-int	    max_name_len;
-FcGlyphName *name_to_ucs[MAX_GLYPHNAME*2];
-FcGlyphName *ucs_to_name[MAX_GLYPHNAME*2];
-int	    hash, rehash;
+static FcGlyphName *raw[MAX_GLYPHNAME];
+static int	    nraw;
+static int	    max_name_len;
+static FcGlyphName *name_to_ucs[MAX_GLYPHNAME*2];
+static FcGlyphName *ucs_to_name[MAX_GLYPHNAME*2];
+static unsigned int hash, rehash;
 
 static int
 rawindex (const FcGlyphName *gn)

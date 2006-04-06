@@ -1,3 +1,19 @@
+2006-04-06  Kjartan Maraas  <kmaraas@gnome.org>
+	reviewed by: plam
+	* fc-case/fc-case.c:
+	* fc-glyphname/fc-glyphname.c:
+	* fc-lang/fc-lang.c (main):
+	* fc-match/fc-match.c:
+	* src/fccache.c (FcGlobalCacheSave, FcCacheSkipToArch, 
+			 FcDirCacheWrite):
+	* src/fcfreetype.c (FcFreeTypeQuery):
+	* src/fclang.c (FcFreeTypeLangSet):
+	* src/fcxml.c:
+
+	Fix intel compiler warnings: make many variables static,
+	eliminate duplicate names, reduce variable scopes, unsigned/signed
+	printf formatting.
+
 2006-03-24  Mike Fabian  <mfabian@suse.de>
 	reviewed by: plam
 	* src/fccache.c (FcGlobalCacheLoad, FcCacheSkipToArch):

@@ -95,7 +95,7 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
 		FcChar32    map[FC_CHARSET_MAP_SIZE];
 		FcChar32    next;
 
-		printf ("\n%s(%d) ", fcLangCharSets[i].lang, missing);
+		printf ("\n%s(%u) ", fcLangCharSets[i].lang, missing);
 		printf ("{");
 		for (ucs4 = FcCharSetFirstPage (missed, map, &next);
 		     ucs4 != FC_CHARSET_DONE;
@@ -114,7 +114,7 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
 		FcCharSetDestroy (missed);
 	    }
 	    else
-		printf ("%s(%d) ", fcLangCharSets[i].lang, missing);
+		printf ("%s(%u) ", fcLangCharSets[i].lang, missing);
 	}
 	if (!missing)
 	    FcLangSetBitSet (ls, i);
@@ -388,7 +388,6 @@ FcLangSetHasLang (const FcLangSet *ls, const FcChar8 *lang)
     {
 	FcStrList	*list = FcStrListCreate (ls->extra);
 	FcChar8		*extra;
-	FcLangResult	r;
 	
 	if (list)
 	{

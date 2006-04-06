@@ -97,7 +97,7 @@ get_line (FILE *f, char *line, int *lineno)
     return line;
 }
 
-char	*dir = 0;
+static char	*dir = 0;
 
 static FILE *
 scanopen (char *file)
@@ -246,7 +246,6 @@ main (int argc, char **argv)
     int		total_leaves = 0;
     int		offset_count = 0;
     int		l, sl, tl;
-    int		c;
     static char		line[1024];
     static FcChar32	map[MAX_LANG_SET_MAP];
     int		num_lang_set_map;
@@ -463,6 +462,7 @@ main (int argc, char **argv)
      */
     if (ncountry)
     {
+	int	c;
 	int	ncountry_ent = 0;
 	printf ("\n");
 	printf ("static const FcChar32 fcLangCountrySets[][NUM_LANG_SET_MAP] = {\n");
@@ -471,7 +471,7 @@ main (int argc, char **argv)
 	    i = country[c];
 	    if (i >= 0)
 	    {
-		int l = strchr (langs[i], '-') - langs[i];
+		int lang = strchr (langs[i], '-') - langs[i];
 		int d, k;
 
 		for (k = 0; k < num_lang_set_map; k++)
@@ -491,7 +491,7 @@ main (int argc, char **argv)
 		for (k = 0; k < num_lang_set_map; k++)
 		    printf (" 0x%08x,", map[k]);
 		printf (" }, /* %*.*s */\n",
-			l, l, langs[i]);
+			lang, lang, langs[i]);
 		++ncountry_ent;
 	    }
 	}

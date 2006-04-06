@@ -27,7 +27,7 @@
 #include "fcint.h"
 #include <dirent.h>
 
-#if ENABLE_LIBXML2
+#ifdef ENABLE_LIBXML2
 
 #include <libxml/parser.h>
 
@@ -2234,7 +2234,7 @@ FcStartDoctypeDecl (void	    *userData,
 	FcConfigMessage (parse, FcSevereError, "invalid doctype \"%s\"", doctypeName);
 }
 
-#if ENABLE_LIBXML2
+#ifdef ENABLE_LIBXML2
 
 static void
 FcInternalSubsetDecl (void            *userData,
@@ -2359,7 +2359,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
     FcConfigParse   parse;
     FcBool	    error = FcTrue;
     
-#if ENABLE_LIBXML2
+#ifdef ENABLE_LIBXML2
     xmlSAXHandler   sax;
     char            buf[BUFSIZ];
 #else
@@ -2398,7 +2398,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
 	goto bail0;
     }
     
-#if ENABLE_LIBXML2
+#ifdef ENABLE_LIBXML2
     memset(&sax, 0, sizeof(sax));
 
     sax.internalSubset = FcInternalSubsetDecl;
@@ -2419,7 +2419,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
     if (!FcConfigInit (&parse, name, config, p))
 	goto bail2;
 
-#if !ENABLE_LIBXML2
+#ifndef ENABLE_LIBXML2
 
     XML_SetUserData (p, &parse);
     
@@ -2430,7 +2430,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
 #endif /* ENABLE_LIBXML2 */
 
     do {
-#if !ENABLE_LIBXML2
+#ifndef ENABLE_LIBXML2
 	buf = XML_GetBuffer (p, BUFSIZ);
 	if (!buf)
 	{
@@ -2445,7 +2445,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
 	    goto bail3;
 	}
 
-#if ENABLE_LIBXML2
+#ifdef ENABLE_LIBXML2
 	if (xmlParseChunk (p, buf, len, len == 0))
 #else
 	if (!XML_ParseBuffer (p, len, len == 0))

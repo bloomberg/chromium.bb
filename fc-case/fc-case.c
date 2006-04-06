@@ -112,10 +112,10 @@ utf8_size (FcChar32 ucs4)
 }
 
 static FcChar8	*foldChars;
-int		nfoldChars;
-int		maxFoldChars;
-FcChar32	minFoldChar;
-FcChar32	maxFoldChar;
+static int	nfoldChars;
+static int	maxFoldChars;
+static FcChar32	minFoldChar;
+static FcChar32	maxFoldChar;
 
 static void
 addChar (FcChar32 c)
