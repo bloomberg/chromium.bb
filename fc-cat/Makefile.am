@@ -35,7 +35,7 @@ bin_PROGRAMS=fc-cat
 
 EXTRA_DIST=fc-cat.sgml
 
-fc_cat_LDADD = ${top_builddir}/src/libfontconfig.la
+fc_cat_LDADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS) ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
 

@@ -41,7 +41,7 @@ bin_PROGRAMS=fc-cache
 
 EXTRA_DIST=fc-cache.sgml
 
-fc_cache_LDADD = ${top_builddir}/src/libfontconfig.la
+fc_cache_LDADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS) ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
 

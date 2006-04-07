@@ -33,8 +33,7 @@ INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
 EXTRA_DIST=fc-list.sgml
 
-fc_list_LDADD = ${top_builddir}/src/libfontconfig.la
-
+fc_list_LDADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS) ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
 

@@ -1,3 +1,13 @@
+2006-04-07  Dominic Lachowicz  <cinamod@hotmail.com>
+	reviewed by: plam
+	* fc-cache/Makefile.am:
+	* fc-cat/Makefile.am:
+	* fc-list/Makefile.am:
+	* fc-match/Makefile.am:
+
+	LD_ADD missing dependencies for binaries.  Reported by
+	Edson Alves Pereira.
+
 2006-04-07  Patrick Lam  <plam@mit.edu>
 	* src/fcint.h:
 	* fc-lang/fc-lang.c (main):
