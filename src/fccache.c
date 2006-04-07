@@ -26,15 +26,19 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include <string.h>
-#include <sys/mman.h>
-#include <sys/utsname.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "fcint.h"
 #include <unistd.h>
+#if defined(HAVE_MMAP) || defined(__CYGWIN__)
+#  include <sys/mman.h>
+#  include <sys/utsname.h>
+#endif
 
 #define ENDIAN_TEST 0x12345678
 #define MACHINE_SIGNATURE_SIZE (9 + 5*20 + 1)
+/* for when we don't have sysconf: */
+#define FC_HARDCODED_PAGESIZE 8192 
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -458,8 +462,17 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 	goto bail3;
 
     current_arch_start = lseek(fd, 0, SEEK_CUR);
+#if defined (HAVE_FTRUNCATE)
     if (ftruncate (fd, current_arch_start) == -1)
 	goto bail3;
+#else
+#if defined (HAVE_CHSIZE)
+    if (chsize (fd, current_arch_start) == -1)
+	goto bail3;
+#else
+    goto bail3;
+#endif
+#endif
 
     header = malloc (10 + strlen (current_arch_machine_name));
     if (!header)
@@ -602,7 +615,11 @@ FcCacheNextOffset(off_t w)
 {
     static long pagesize = -1;
     if (pagesize == -1)
+#if defined (HAVE_SYSCONF)
 	pagesize = sysconf(_SC_PAGESIZE);
+#else
+	pagesize = FC_HARDCODED_PAGESIZE;
+#endif
     if (w % pagesize == 0) 
 	return w;
     else
@@ -1160,20 +1177,35 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set, FcConfig *config)
     }
 
     pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
+#if defined(HAVE_MMAP) || defined(__CYGWIN__)
     current_dir_block = mmap (0, metadata.count, 
 			      PROT_READ, MAP_SHARED, fd, pos);
-    lseek (fd, pos+metadata.count, SEEK_SET);
     if (current_dir_block == MAP_FAILED)
 	return FcFalse;
+#else
+    current_dir_block = malloc (metadata.count);
+    if (!current_dir_block)
+	return FcFalse;
+
+    /* could also use CreateMappedViewOfFile under MinGW... */
+    if (read (fd, current_dir_block, metadata.count) != metadata.count)
+	goto bail;
+#endif
+    lseek (fd, pos+metadata.count, SEEK_SET);
 
     FcCacheAddBankDir (metadata.bank, dir);
     if (config)
 	FcConfigAddFontDir (config, (FcChar8 *)dir);
 
     if (!FcFontSetUnserialize (&metadata, set, current_dir_block))
-	return FcFalse;
+	goto bail;
 
     return FcTrue;
+ bail:
+#if !(defined(HAVE_MMAP) || defined(__CYGWIN__))
+    free (current_dir_block);
+#endif
+    return FcFalse;
 }
 
 static void *
@@ -1183,12 +1215,24 @@ FcDirCacheProduce (FcFontSet *set, FcCache *metadata)
     static unsigned int rand_state = 0;
     int bank, needed_bytes_no_align;
 
+#if defined (HAVE_RAND_R)
     if (!rand_state) 
 	rand_state = time(0L);
     bank = rand_r(&rand_state);
 
     while (FcCacheHaveBank(bank))
 	bank = rand_r(&rand_state);
+#else
+    if (!rand_state)
+    {
+        rand_state = 1;
+        srand (time (0L));
+    }
+    bank = rand();
+
+    while (FcCacheHaveBank(bank))
+        bank = rand();
+#endif
 
     memset (metadata, 0, sizeof(FcCache));
     FcFontSetNewBank();
@@ -1336,8 +1380,17 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
         close (fd_orig);
 
     current_arch_start = lseek(fd, 0, SEEK_CUR);
+#if defined (HAVE_FTRUNCATE)
     if (ftruncate (fd, current_arch_start) == -1)
 	goto bail4;
+#else
+#if defined (HAVE_CHSIZE)
+    if (chsize (fd, current_arch_start) == -1)
+	goto bail4;
+#else
+    goto bail4;
+#endif
+#endif
 
     /* allocate space for subdir names in this block */
     dirs_count = 0;
@@ -1377,8 +1430,17 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     }
 
     /* this actually serves to pad out the cache file, if needed */
+#if defined (HAVE_FTRUNCATE)
     if (ftruncate (fd, current_arch_start + truncate_to) == -1)
 	goto bail5;
+#else
+#if defined (HAVE_CHSIZE)
+    if (chsize (fd, current_arch_start + truncate_to) == -1)
+	goto bail5;
+#else
+    goto bail5;
+#endif
+#endif
 
     free (header);
     close(fd);
@@ -1439,7 +1501,11 @@ FcCacheMachineSignature ()
 	     (unsigned int)sizeof (FcCharLeaf),
 	     (unsigned int)sizeof (FcChar32),
 	     (unsigned int)sizeof (FcCache),
+#if defined (HAVE_SYSCONF)
 	     (unsigned int)sysconf(_SC_PAGESIZE));
+#else
+	     (unsigned int)FC_HARDCODED_PAGESIZE);
+#endif
 
     return buf;
 }

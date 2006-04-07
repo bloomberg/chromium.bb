@@ -143,7 +143,8 @@ AC_TYPE_PID_T
 
 # Checks for library functions.
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([geteuid getuid link memmove memset mkstemp strchr strrchr strtol getopt getopt_long iconv])
+AC_FUNC_MMAP
+AC_CHECK_FUNCS([geteuid getuid link memmove memset mkstemp strchr strrchr strtol getopt getopt_long iconv sysconf ftruncate chsize rand_r])
 
 #
 # Checks for FreeType

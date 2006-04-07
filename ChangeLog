@@ -1,3 +1,21 @@
+2006-04-07  Dominic Lachowicz  <cinamod@hotmail.com>
+	    Patrick Lam  <plam@mit.edu>
+	* configure.in:
+	* fc-cache/fc-cache.c:
+	* fc-cat/fc-cat.c:
+	* src/fccache.c (FcGlobalCacheSave, FcCacheNextOffset, 
+			 FcDirCacheConsume, FcDirCacheProduce, 
+			 FcDirCacheWrite, FcCacheMachineSignature):
+	* src/fcfreetype.c (FcFreeTypeQuery):
+	* src/fontconfig.def.in:
+
+	Make fontconfig compile under MinGW: 
+	1) remove unneeded #includes;
+	2) make use of mmap and sysconf conditional;
+	3) replace rand_r by srand/rand if needed;
+	4) use chsize instead of ftruncate; and
+	5) update libtool exports file
+
 2006-04-07  Patrick Lam  <plam@mit.edu>
 	* src/fcdir.c (FcDirScanConfig):
 

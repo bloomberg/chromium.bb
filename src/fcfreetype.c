@@ -47,7 +47,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <libgen.h>
 #include "fcint.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -1281,7 +1280,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     }
 
     file2 = FcStrCopy (file);
-    if (!FcPatternAddString (pat, FC_FILE, (FcChar8 *)basename((char *)file2)))
+    if (!FcPatternAddString (pat, FC_FILE, FcStrBasename(file2)))
     {
 	FcStrFree (file2);
 	goto bail1;

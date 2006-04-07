@@ -38,6 +38,13 @@
 #define HAVE_GETOPT 1
 #endif
 
+#if defined (_WIN32)
+#define STRICT
+#include <windows.h>
+#define sleep(x) Sleep((x) * 1000)
+#undef STRICT
+#endif
+
 #ifndef HAVE_GETOPT
 #define HAVE_GETOPT 0
 #endif
