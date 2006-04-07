@@ -1,3 +1,8 @@
+2006-04-07  Patrick Lam  <plam@mit.edu>
+	* src/fcdir.c (FcDirScanConfig):
+
+	Eliminate warning.
+
 2006-04-06  Patrick Lam  <plam@mit.edu>
 	* fc-match/.cvsignore:
 	* fc-match/Makefile.am:

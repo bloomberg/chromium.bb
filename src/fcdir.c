@@ -205,7 +205,7 @@ FcDirScanConfig (FcFontSet	*set,
 	    dirlist[dirlistlen] = malloc(strlen (e->d_name) + 1);
 	    if (!dirlist[dirlistlen])
 		return FcFalse;
-	    strcpy(dirlist[dirlistlen], e->d_name);
+	    strcpy((char *)dirlist[dirlistlen], e->d_name);
 	    dirlistlen++;
 	}
     }
