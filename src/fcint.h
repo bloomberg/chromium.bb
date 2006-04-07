@@ -25,12 +25,18 @@
 #ifndef _FCINT_H_
 #define _FCINT_H_
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
-#else
+#elif defined(HAVE_STDINT_H)
 #include <stdint.h>
+#else
+#error missing C99 integer data types
 #endif
 #include <string.h>
 #include <ctype.h>
@@ -42,9 +48,6 @@
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcprivate.h>
 #include <fontconfig/fcfreetype.h>
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 #ifndef FC_CONFIG_PATH
 #define FC_CONFIG_PATH "fonts.conf"

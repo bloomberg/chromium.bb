@@ -1,4 +1,12 @@
 2006-04-07  Dominic Lachowicz  <cinamod@hotmail.com>
+	reviewed by: plam
+	* src/fcint.h:
+
+	Move up #include of config.h.
+	Fail if neither inttypes.h nor stdint.h is available.
+	Fixes bug 6171.
+
+2006-04-07  Dominic Lachowicz  <cinamod@hotmail.com>
 	    Patrick Lam  <plam@mit.edu>
 	* configure.in:
 	* fc-cache/fc-cache.c:
