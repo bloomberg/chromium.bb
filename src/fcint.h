@@ -321,6 +321,8 @@ typedef struct _FcCaseFold {
 #define fc_value_langset(v)  (((v)->type & FC_STORAGE_STATIC) ? (const FcLangSet *)(((char *) v) + (v)->u.l_off) : (v) -> u.l)
 #define fc_storage_type(v) ((v)->type & ~FC_STORAGE_STATIC)
 
+#define fc_alignof(type) offsetof (struct { char c; type member; }, member)
+
 /*
  * The per-user ~/.fonts.cache-<version> file is loaded into
  * this data structure.  Each directory gets a substructure
@@ -432,7 +434,8 @@ typedef struct _FcFileTime {
 
 typedef struct _FcCharMap FcCharMap;
 
-#define ALIGN(v,type) ((__typeof__(v))(((uintptr_t)(v) + __alignof__(type) - 1) & ~(__alignof__(type) - 1)))
+/* watch out; assumes that v is void * -PL */
+#define ALIGN(v,type) ((void *)(((uintptr_t)(v) + fc_alignof(type) - 1) & ~(fc_alignof(type) - 1)))
 
 /* fcblanks.c */
 
@@ -482,7 +485,7 @@ extern int *_fcBankId, *_fcBankIdx;
 int
 FcCacheBankToIndexMTF (int bank);
 
-static __inline__ int
+static inline int
 FcCacheBankToIndex (int bank)
 {
     return (_fcBankId[*_fcBankIdx] == bank) ? *_fcBankIdx : FcCacheBankToIndexMTF(bank);
@@ -622,7 +625,7 @@ FcSubstPrint (const FcSubst *subst);
 
 extern int FcDebugVal;
 
-static __inline__ int
+static inline int
 FcDebug (void) { return FcDebugVal; }
 
 void
@@ -829,7 +832,7 @@ FcObjectSerialize (void);
 const char *
 FcObjectPtrU (FcObjectPtr p);
 
-static __inline__ int
+static inline int
 FcObjectPtrCompare (const FcObjectPtr a, const FcObjectPtr b)
 {
     return a - b;
@@ -897,7 +900,7 @@ FcPatternDistributeBytes (FcCache * metadata, void * block_ptr);
 extern FcValueList ** _fcValueLists;
 extern FcPatternElt ** _fcPatternElts;
 
-static __inline__ FcValueList * 
+static inline FcValueList * 
 FcValueListPtrU (FcValueListPtr pi)
 {
     if (pi.bank == FC_BANK_DYNAMIC)
@@ -906,7 +909,7 @@ FcValueListPtrU (FcValueListPtr pi)
     return &_fcValueLists[FcCacheBankToIndex(pi.bank)][pi.u.stat];
 }
 
-static __inline__ FcPatternElt *
+static inline FcPatternElt *
 FcPatternEltU (FcPatternEltPtr pei)
 {
     if (pei.bank == FC_BANK_DYNAMIC)

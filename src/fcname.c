@@ -342,7 +342,7 @@ FcObjectNeededBytes ()
 int
 FcObjectNeededBytesAlign (void)
 {
-    return __alignof__ (int) + __alignof__ (char);
+    return fc_alignof (int) + fc_alignof (char);
 }
 
 void *

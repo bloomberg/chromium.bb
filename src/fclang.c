@@ -723,7 +723,7 @@ FcLangSetNeededBytes (const FcLangSet *l)
 int
 FcLangSetNeededBytesAlign (void)
 {
-    return __alignof__ (FcLangSet);
+    return fc_alignof (FcLangSet);
 }
 
 static FcBool

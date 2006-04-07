@@ -1,5 +1,20 @@
 2006-04-07  Dominic Lachowicz  <cinamod@hotmail.com>
 	reviewed by: plam
+	* configure.in:
+	* src/fccharset.c (FcCharSetNeededBytes):
+	* src/fcfs.c (FcFontSetNeededBytes):
+	* src/fcint.h:
+	* src/fclang.c (FcLangSetNeededBytesAlign):
+	* src/fcname.c (FcObjectNeededBytesAlign):
+	* src/fcpat.c (FcPatternNeededBytesAlign, 
+		       FcValueListNeededBytesAlign, FcStrNeededBytesAlign):
+
+	Portability fixes for HP-UX (reported by Christoph Bauer).
+	Replace '__inline__' by AC_C_INLINE and 'inline'.
+	Replace '__alignof__' by 'fc_alignof'.
+
+2006-04-07  Dominic Lachowicz  <cinamod@hotmail.com>
+	reviewed by: plam
 	* src/fcint.h:
 
 	Move up #include of config.h.

@@ -1531,7 +1531,7 @@ FcPatternNeededBytes (FcPattern * p)
 int
 FcPatternNeededBytesAlign (void)
 {
-    return __alignof__ (FcPattern) + __alignof__ (FcPatternElt) + 
+    return fc_alignof (FcPattern) + fc_alignof (FcPatternElt) + 
 	FcValueListNeededBytesAlign ();
 }
 
@@ -1725,7 +1725,7 @@ static int
 FcValueListNeededBytesAlign (void)
 {
     return FcCharSetNeededBytesAlign() + FcLangSetNeededBytesAlign() + 
-	FcStrNeededBytesAlign() + __alignof__ (FcValueList);
+	FcStrNeededBytesAlign() + fc_alignof (FcValueList);
 }
 
 static FcBool
@@ -1928,7 +1928,7 @@ FcStrNeededBytes (const FcChar8 * s)
 static int
 FcStrNeededBytesAlign (void)
 {
-    return __alignof__ (char);
+    return fc_alignof (char);
 }
 
 static FcBool

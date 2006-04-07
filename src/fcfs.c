@@ -113,7 +113,7 @@ FcFontSetNeededBytes (FcFontSet *s)
 int
 FcFontSetNeededBytesAlign (void)
 {
-    return __alignof__(int) + 
+    return fc_alignof (int) + 
 	FcPatternNeededBytesAlign () + FcObjectNeededBytesAlign ();
 }
 

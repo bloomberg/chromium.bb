@@ -1335,8 +1335,8 @@ FcCharSetNeededBytes (const FcCharSet *c)
 int
 FcCharSetNeededBytesAlign (void)
 {
-    return __alignof__ (FcCharSet) + __alignof__ (int) + 
-	__alignof__ (FcCharLeaf) + __alignof__ (FcChar16);
+    return fc_alignof (FcCharSet) + fc_alignof (int) + 
+	fc_alignof (FcCharLeaf) + fc_alignof (FcChar16);
 }
 
 static FcBool
