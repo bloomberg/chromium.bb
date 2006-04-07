@@ -227,13 +227,13 @@ struct _FcCharSet {
     int		    bank;
     union {
 	struct {
-	    FcCharLeaf  **leaves;
-	    FcChar16    *numbers;
-	} dyn;
-	struct {
 	    int	    	leafidx_offset;
 	    int	      	numbers_offset;
 	} stat;
+	struct {
+	    FcCharLeaf  **leaves;
+	    FcChar16    *numbers;
+	} dyn;
     } u;
 };
 

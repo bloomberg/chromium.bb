@@ -1,3 +1,11 @@
+2006-04-07  Patrick Lam  <plam@mit.edu>
+	* src/fcint.h:
+	* fc-lang/fc-lang.c (main):
+
+	SGI compilation fixes (reported by Christoph Bauer):
+	1) reorder union definition of _FcChar;
+	2) omit .stats =.
+
 2006-04-07  Dominic Lachowicz  <cinamod@hotmail.com>
 	reviewed by: plam
 	* configure.in:

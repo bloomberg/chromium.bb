@@ -449,7 +449,7 @@ main (int argc, char **argv)
 
 	printf ("    { (FcChar8 *) \"%s\",\n"
 		"      { FC_REF_CONSTANT, %d, FC_BANK_LANGS, "
-		"{ .stat = { %d, %d } } } }, /* %d */\n",
+		"{ { %d, %d } } } }, /* %d */\n",
 		langs[i],
 		sets[j]->num, offsets[j], offsets[j], j);
     }
