@@ -2782,7 +2782,7 @@ static int radeon_cp_cmdbuf(DRM_IOCTL_ARGS)
 	DRM_GET_PRIV_WITH_RETURN(filp_priv, filp);
 
 	DRM_COPY_FROM_USER_IOCTL(cmdbuf,
-				 (drm_radeon_cmd_buffer_t __user *) data,
+				 (drm_radeon_kcmd_buffer_t __user *) data,
 				 sizeof(cmdbuf));
 
 	RING_SPACE_TEST_WITH_RETURN(dev_priv);

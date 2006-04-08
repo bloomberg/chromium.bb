@@ -712,7 +712,7 @@ static int r300_scratch(drm_radeon_private_t *dev_priv,
 	u32 i, buf_idx, h_pending;
 	RING_LOCALS;
 	
-	if (cmdbuf->bufsz < sizeof(u64) + header.scratch.n_bufs * sizeof(buf_idx) ) {
+	if (cmdbuf->bufsz < sizeof(uint64_t) + header.scratch.n_bufs * sizeof(buf_idx) ) {
 		return DRM_ERR(EINVAL);
 	}
 	
@@ -724,8 +724,8 @@ static int r300_scratch(drm_radeon_private_t *dev_priv,
 	
 	ref_age_base = *(u32 **)cmdbuf->buf;
 	
-	cmdbuf->buf += sizeof(u64);
-	cmdbuf->bufsz -= sizeof(u64);
+	cmdbuf->buf += sizeof(uint64_t);
+	cmdbuf->bufsz -= sizeof(uint64_t);
 	
 	for (i=0; i < header.scratch.n_bufs; i++) {
 		buf_idx = *(u32 *)cmdbuf->buf;
