@@ -1,5 +1,11 @@
 2006-04-10  Frederic Crozat  <fcrozat@mandriva.com>
 	reviewed by: plam
+	
+	* src/fccache.c: (FcGlobalCacheSave):
+	Don't leak header in non-error case (Coverity defect #1825).
+
+2006-04-10  Frederic Crozat  <fcrozat@mandriva.com>
+	reviewed by: plam
 
 	* src/fcdir.c (FcDirScanConfig)
 	Don't leak in error cases (Coverity defects #777, #1826)

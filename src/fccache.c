@@ -501,6 +501,8 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
     if (!FcCacheWriteString (fd, header))
 	goto bail4;
 
+    free (header);
+
     for (dir = cache->dirs; dir; dir = dir->next)
     {
 	int i;
