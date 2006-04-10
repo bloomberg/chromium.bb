@@ -180,31 +180,44 @@ FcDirScanConfig (FcFontSet	*set,
     }
 
     tmpSet = FcFontSetCreate();
-    if (!tmpSet)
-    {	
-	free (file);
-	return FcFalse;
+    if (!tmpSet) 
+    {
+	ret = FcFalse;
+	goto bail0;
     }
 
     dirlistlen = 0;
     dirlistalloc = 8;
     dirlist = malloc(dirlistalloc * sizeof(FcChar8 *));
-    if (!dirlist)
-       return FcFalse;
+    if (!dirlist) 
+    {
+	ret = FcFalse;
+	goto bail1;
+    }
     while ((e = readdir (d)))
     {
 	if (e->d_name[0] != '.' && strlen (e->d_name) < FC_MAX_FILE_LEN)
 	{
 	    if (dirlistlen == dirlistalloc)
 	    {
+                FcChar8	**tmp_dirlist;
+
 		dirlistalloc *= 2;
-		dirlist = realloc(dirlist, dirlistalloc * sizeof(FcChar8 *));
-		if (!dirlist)
-		    return FcFalse;
+		tmp_dirlist = realloc(dirlist, 
+                                      dirlistalloc * sizeof(FcChar8 *));
+		if (!tmp_dirlist) 
+                {
+		    ret = FcFalse;
+		    goto bail2;
+		}
+                dirlist = tmp_dirlist;
 	    }
 	    dirlist[dirlistlen] = malloc(strlen (e->d_name) + 1);
-	    if (!dirlist[dirlistlen])
-		return FcFalse;
+	    if (!dirlist[dirlistlen]) 
+            {
+		ret = FcFalse;
+		goto bail2;
+	    }
 	    strcpy((char *)dirlist[dirlistlen], e->d_name);
 	    dirlistlen++;
 	}
@@ -217,11 +230,6 @@ FcDirScanConfig (FcFontSet	*set,
 	ret = FcFileScanConfig (tmpSet, dirs, cache, blanks, file, force, config);
 	i++;
     }
-    for (i = 0; i < dirlistlen; i++)
-	free(dirlist[i]);
-    free (dirlist);
-    free (file);
-    closedir (d);
     /*
      * Now that the directory has been scanned,
      * add the cache entry 
@@ -238,8 +246,20 @@ FcDirScanConfig (FcFontSet	*set,
 	free (tmpSet->fonts);
     }
     FcMemFree (FC_MEM_FONTSET, sizeof (FcFontSet));
+
+ bail2:
+    for (i = 0; i < dirlistlen; i++)
+	free(dirlist[i]);
+
+    free (dirlist);
+
+ bail1:
     free (tmpSet);
-	
+    
+ bail0:
+    closedir (d);
+    
+    free (file);
     return ret;
 }
 

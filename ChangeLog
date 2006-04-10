@@ -1,6 +1,12 @@
 2006-04-10  Frederic Crozat  <fcrozat@mandriva.com>
 	reviewed by: plam
 
+	* src/fcdir.c (FcDirScanConfig)
+	Don't leak in error cases (Coverity defects #777, #1826)
+
+2006-04-10  Frederic Crozat  <fcrozat@mandriva.com>
+	reviewed by: plam
+
 	* src/fccache.c: (FcDirCacheWrite):
 	Fix double free (spotted by Coverity, CID #1965).
 
