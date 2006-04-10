@@ -893,6 +893,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
     FcValue	v, vl, vr;
     FcResult	r;
     FcMatrix	*m;
+    FcChar8     *str;
     
     switch (e->op) {
     case FcOpInteger:
@@ -1023,7 +1024,9 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		switch (e->op) {
 		case FcOpPlus:
 		    v.type = FcTypeString;
-		    v.u.s = FcStrStaticName (FcStrPlus (vl.u.s, vr.u.s));
+		    str = FcStrPlus (vl.u.s, vr.u.s);
+		    v.u.s = FcStrStaticName (str);
+		    FcStrFree (str);
 			 
 		    if (!v.u.s)
 			v.type = FcTypeVoid;

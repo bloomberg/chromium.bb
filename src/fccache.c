@@ -854,6 +854,7 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 	fd = open(cache_hashed, O_RDONLY | O_BINARY);
 	if (fd == -1)
 	{
+	    FcStrFree ((FcChar8 *)cache_hashed);
 	    FcStrFree ((FcChar8 *)cache_file);
 	    return FcTrue;
 	}

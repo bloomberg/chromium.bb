@@ -1,6 +1,15 @@
 2006-04-10  Frederic Crozat  <fcrozat@mandriva.com>
 	reviewed by: plam
 	
+	* src/fccfg.c: (FcConfigEvaluate):
+	Fix string memory leak (Coverity defect #1823).
+	
+	* src/fccache.c: (FcDirCacheUnlink):
+	Fix memory leak with hash collision (Coverity defect #1824).
+
+2006-04-10  Frederic Crozat  <fcrozat@mandriva.com>
+	reviewed by: plam
+	
 	* src/fccache.c: (FcGlobalCacheSave):
 	Don't leak header in non-error case (Coverity defect #1825).
 
