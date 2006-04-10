@@ -373,8 +373,8 @@ void *
 FcObjectUnserialize (FcCache * metadata, void *block_ptr)
 {
     int new_biggest;
-    new_biggest = *(int *)block_ptr;
     block_ptr = ALIGN (block_ptr, int);
+    new_biggest = *(int *)block_ptr;
     block_ptr = (int *) block_ptr + 1;
     if (biggest_known_ntypes < new_biggest)
     {

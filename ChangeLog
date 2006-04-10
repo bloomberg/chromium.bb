@@ -1,3 +1,8 @@
+2006-04-07  Patrick Lam  <plam@mit.edu>
+	* src/fcname.c (FcObjectUnserialize):
+
+	Swap typo in order of ALIGN and dereferencing, fixing bug 6529.
+
 2006-04-10  Frederic Crozat  <fcrozat@mandriva.com>
 	reviewed by: plam
 	
