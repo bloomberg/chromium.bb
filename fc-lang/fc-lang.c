@@ -53,6 +53,9 @@ FcMemFree (int kind, int size)
 
 int* _fcBankId = 0;
 int* _fcBankIdx = 0;
+FcValueList ** _fcValueLists = 0;
+FcPatternElt ** _fcPatternElts = 0;
+int FcDebugVal = 0;
 
 int
 FcCacheBankToIndexMTF (int bank)

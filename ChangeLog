@@ -1,4 +1,11 @@
 2006-04-07  Patrick Lam  <plam@mit.edu>
+	* fc-case/fc-case.c:
+	* fc-glyphname/fc-glyphname.c:
+	* fc-lang/fc-lang.c:
+
+	Include more stub definitions to make HP-UX's C compiler happy.
+
+2006-04-07  Patrick Lam  <plam@mit.edu>
 	* src/fcname.c (FcObjectUnserialize):
 
 	Swap typo in order of ALIGN and dereferencing, fixing bug 6529.
