@@ -1,3 +1,21 @@
+2006-04-10  Frederic Crozat  <fcrozat@mandriva.com>
+	reviewed by: plam
+
+	* src/fccache.c: (FcDirCacheWrite):
+	Fix double free (spotted by Coverity, CID #1965).
+
+	* fc-match/fc-match.c: (main):
+	Check if pattern is not null before using it (Coverity defect #1883).
+
+	* src/fccache.c: (FcDirCacheWrite):
+	Fix memory leak with hash collision (Coverity defect #1829).
+
+	* src/fccfg.c: (FcConfigBuildFonts):
+	Fix memory leak when bail cases (Coverity defect #1828).
+
+	* src/fccache.c: (FcGlobalCacheLoad):
+	Don't leak directory name (Coverity defect #1827).
+
 2006-04-07  Dominic Lachowicz  <cinamod@hotmail.com>
 	reviewed by: plam
 	* fc-cache/Makefile.am:

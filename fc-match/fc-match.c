@@ -134,6 +134,9 @@ main (int argc, char **argv)
     else
 	pat = FcPatternCreate ();
 
+    if (!pat)
+	return 1;
+
     FcConfigSubstitute (0, pat, FcMatchPattern);
     FcDefaultSubstitute (pat);
     
@@ -147,8 +150,7 @@ main (int argc, char **argv)
 	if (match)
 	    FcFontSetAdd (fs, match);
     }
-    if (pat)
-	FcPatternDestroy (pat);
+    FcPatternDestroy (pat);
 
     if (fs)
     {

@@ -335,6 +335,7 @@ FcConfigBuildFonts (FcConfig *config)
     
     return FcTrue;
 bail2:
+    FcGlobalCacheDestroy (cache);
     FcStrSetDestroy (oldDirs);
 bail1:
     FcFontSetDestroy (fonts);

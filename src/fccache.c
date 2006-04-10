@@ -236,7 +236,7 @@ FcGlobalCacheLoad (FcGlobalCache    *cache,
             FcCache md;
 	    off_t off;
 
-	    FcStrSetAdd (staleDirs, FcStrCopy ((FcChar8 *)name_buf));
+	    FcStrSetAdd (staleDirs, (FcChar8 *)name_buf);
 
 	    /* skip subdirs */
 	    while (FcCacheReadString (cache->fd, subdirName, 
@@ -1311,12 +1311,16 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 	if(!FcCacheReadString (fd, name_buf, sizeof (name_buf)) || !strlen(name_buf))
 	{
 	    close (fd);
+            FcStrFree ((FcChar8 *)cache_hashed);
 	    continue;
 	}
 	close (fd);
 
-	if (strcmp (name_buf, cache_file) != 0)
+	if (strcmp (name_buf, cache_file) != 0) 
+        {
+            FcStrFree ((FcChar8 *)cache_hashed);
 	    continue;
+        }
 
 	break;
     } while (1);
@@ -1445,7 +1449,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     free (header);
     close(fd);
     if (!FcAtomicReplaceOrig(atomic))
-        goto bail5;
+        goto bail3;
     FcStrFree ((FcChar8 *)cache_hashed);
     FcStrFree ((FcChar8 *)cache_file);
     FcAtomicUnlock (atomic);
