@@ -578,6 +578,7 @@ FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls)
                 }
 	    first = FcFalse;
 	}
+        FcStrListDone (list);
     }
     return FcTrue;
 }

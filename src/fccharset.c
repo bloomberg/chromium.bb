@@ -177,7 +177,10 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
 	FcMemAlloc (FC_MEM_CHARSET, (fcs->num + 1) * sizeof (FcCharLeaf *));
 	numbers = malloc ((fcs->num + 1) * sizeof (FcChar16));
 	if (!numbers)
+        {
+	    free (leaves);
 	    return FcFalse;
+        }
 	FcMemAlloc (FC_MEM_CHARSET, (fcs->num + 1) * sizeof (FcChar16));
 
 	for (i = 0; i < fcs->num; i++)
@@ -625,7 +628,7 @@ FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b)
 	    int		i = 256/32;
 	    if (ai.ucs4 == bi.ucs4)
 	    {
-		FcChar32	*bm = bi.leaf->map;;
+		FcChar32	*bm = bi.leaf->map;
 		while (i--)
 		    count += FcCharSetPopCount (*am++ & ~*bm++);
 	    }

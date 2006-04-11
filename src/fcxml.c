@@ -1541,7 +1541,7 @@ FcPopBinary (FcConfigParse *parse, FcOp op)
 		FcConfigMessage (parse, FcSevereError, "out of memory");
 		FcExprDestroy (left);
 		FcExprDestroy (expr);
-		break;
+		return 0;
 	    }
 	    expr = new;
 	}
@@ -1950,6 +1950,7 @@ FcParsePatelt (FcConfigParse *parse)
     if (!name)
     {
 	FcConfigMessage (parse, FcSevereWarning, "missing pattern element name");
+	FcPatternDestroy (pattern);
 	return;
     }
     
@@ -1988,6 +1989,7 @@ FcParsePattern (FcConfigParse *parse)
 	    if (!FcPatternAppend (pattern, vstack->u.pattern))
 	    {
 		FcConfigMessage (parse, FcSevereError, "out of memory");
+		FcPatternDestroy (pattern);
 		return;
 	    }
 	    break;

@@ -283,7 +283,7 @@ FcConfigBuildFonts (FcConfig *config)
     {
 	list = FcConfigGetFontDirs (config);
 	if (!list)
-	    goto bail2;
+	    goto bail3;
 	
 	while ((dir = FcStrListNext (list)))
 	{
@@ -334,9 +334,10 @@ FcConfigBuildFonts (FcConfig *config)
     FcConfigSetFonts (config, fonts, FcSetSystem);
     
     return FcTrue;
+bail3:
+    FcStrSetDestroy (oldDirs);
 bail2:
     FcGlobalCacheDestroy (cache);
-    FcStrSetDestroy (oldDirs);
 bail1:
     FcFontSetDestroy (fonts);
 bail0:
@@ -605,17 +606,21 @@ FcBool
 FcConfigAddBlank (FcConfig	*config,
 		  FcChar32    	blank)
 {
-    FcBlanks	*b;
+    FcBlanks	*b, *freeme = 0;
     
     b = config->blanks;
     if (!b)
     {
-	b = FcBlanksCreate ();
+	freeme = b = FcBlanksCreate ();
 	if (!b)
 	    return FcFalse;
     }
     if (!FcBlanksAdd (b, blank))
+    {
+        if (freeme)
+            FcBlanksDestroy (freeme);
 	return FcFalse;
+    }
     config->blanks = b;
     return FcTrue;
 }
