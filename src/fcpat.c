@@ -399,7 +399,10 @@ FcValueListEntCreate (FcValueListPtr h)
 	return 0;
     new = malloc (n * sizeof (FcValueList));
     if (!new)
+    {
+        free (ea);
         return 0;
+    }
     memset(new, 0, n * sizeof (FcValueList));
     FcMemAlloc (FC_MEM_VALLIST, size);
     e = &ea->ent;
@@ -575,11 +578,14 @@ FcPatternBaseFreeze (FcPattern *b)
 
     ep = FcPatternCreate();
     if (!ep)
-        return 0;
+        goto bail;
     ent->pattern = ep;
     epp = malloc(b->num * sizeof (FcPatternElt));
     if (!epp)
+    {
+        FcPatternDestroy (ep);
         goto bail;
+    }
     ep->elts = FcPatternEltPtrCreateDynamic(epp);
 
     FcMemAlloc (FC_MEM_PATELT, sizeof (FcPatternElt)*(b->num));
@@ -650,7 +656,10 @@ FcPatternFreeze (FcPattern *p)
 
     e = malloc(b->num * sizeof (FcPatternElt));
     if (!e)
+    {
+        FcPatternDestroy (b);
         return 0;
+    }
     b->elts = FcPatternEltPtrCreateDynamic(e);
     FcMemAlloc (FC_MEM_PATELT, sizeof (FcPatternElt)*(b->num));
 

@@ -244,6 +244,7 @@ FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char *cache_file)
     char subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
     static char name_buf[8192], *dir;
     FcChar8 * ls;
+    char * buf;
 
     if (!cache_file)
         goto bail;
@@ -265,7 +266,8 @@ FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char *cache_file)
     if (current_arch_start < 0)
         goto bail1;
 
-    while (strlen(FcCacheReadString (fd, subdirName, sizeof (subdirName))) > 0)
+    while ((buf = FcCacheReadString (fd, subdirName, sizeof (subdirName))) 
+	   && *buf)
         FcStrSetAdd (dirs, (FcChar8 *)subdirName);
 
     dir = strdup(name_buf);

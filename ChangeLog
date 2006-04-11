@@ -1,3 +1,32 @@
+2006-04-11  Patrick Lam  <plam@mit.edu>
+	* src/fccharset.c (FcCharSetPutLeaf):
+
+	Properly convert static charsets to dynamic charsets.
+
+2006-04-11  Frederic Crozat  <fcrozat@mandriva.com>
+	reviewed by: plam
+	
+	* src/fcpat.c: (FcValueListEntCreate, FcPatternBaseFreeze,
+	FcPatternFreeze):
+	Fix memory leak in error case (Coverity defects #1820, #1821, #1822).
+
+	* src/fclang.c: (FcNameUnparseLangSet):
+	Fix memory leak (Coverity defect #1819).
+
+	* fc-lang/fc-lang.c: (scan):
+	prevent crash when invalid include line is parsed (Coverity defect
+	#763).
+
+	* fc-cat/fc-cat.c: (FcCacheFileRead):
+	Fix potential null pointer access (Coverity defect #1804).
+
+	* src/fcname.c: (FcObjectUnserialize):
+	Remove dead code (Coverity defect #1194).
+
+	* src/fcfreetype.c: (GetScriptTags):
+	Prevent potential null pointer access (Coverity defect #767),
+	ensure error value is read (Coverity defect #1195).
+
 2006-04-11  Behdad Esfahbod  <behdad@cs.toronto.edu>
 	reviewed by: plam
 

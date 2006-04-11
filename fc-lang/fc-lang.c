@@ -143,6 +143,9 @@ scan (FILE *f, char *file)
 	if (!strncmp (line, "include", 7))
 	{
 	    file = strchr (line, ' ');
+            if (!file)
+                fatal (line, lineno, 
+                       "invalid syntax, expected: include filename");
 	    while (isspace(*file))
 		file++;
 	    f = scanopen (file);

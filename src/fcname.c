@@ -381,18 +381,10 @@ FcObjectUnserialize (FcCache * metadata, void *block_ptr)
 	int i;
 	char * bp = (char *)block_ptr;
 	FcObjectType * bn;
-	FcObjectTypeList * bnl;
 
 	bn = malloc (sizeof (const FcObjectType) * (new_biggest + 1));
 	if (!bn)
 	    return 0;
-
-	bnl = malloc (sizeof (FcObjectTypeList));
-	if (!bnl)
-	{
-	    free (bn);
-	    return 0;
-	}
 
 	for (i = 0; i < new_biggest; i++)
 	{

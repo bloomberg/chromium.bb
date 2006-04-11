@@ -567,9 +567,15 @@ FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls)
 	{
 	    if (!first)
 		if (!FcStrBufChar (buf, '|'))
+                {
+                    FcStrListDone (list);
 		    return FcFalse;
+                }
 	    if (!FcStrBufString (buf, extra))
-		return FcFalse;
+                {
+                    FcStrListDone (list);
+                    return FcFalse;
+                }
 	    first = FcFalse;
 	}
     }

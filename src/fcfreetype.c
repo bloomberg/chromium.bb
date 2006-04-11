@@ -2744,10 +2744,12 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
     FT_Stream  stream = face->stream;
     FT_Error   error;
     FT_UShort          n, p;
-    FT_Memory  memory = stream->memory;
+    FT_Memory  memory;
 
     if ( !stream )
 	return TT_Err_Invalid_Face_Handle;
+
+    memory = stream->memory;
 
     if (( error = ftglue_face_goto_table( face, tabletag, stream ) ))
 	return error;
@@ -2795,7 +2797,7 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
 
 	cur_offset = ftglue_stream_pos( stream );
 
-	if ( ftglue_stream_seek( stream, new_offset ) )
+	if (( error = ftglue_stream_seek( stream, new_offset ) ))
 	    goto Fail;
 
 	if ( error == TT_Err_Ok )

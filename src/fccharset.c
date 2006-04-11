@@ -168,6 +168,7 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
 	return FcFalse;
     if (fcs->bank != FC_BANK_DYNAMIC)
     {
+        /* convert to dynamic */
 	int i;
 
 	leaves = malloc ((fcs->num + 1) * sizeof (FcCharLeaf *));
@@ -183,6 +184,10 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
 	    leaves[i] = FcCharSetGetLeaf(fcs, i);
 	memcpy (numbers, FcCharSetGetNumbers(fcs), 
 		fcs->num * sizeof (FcChar16));
+
+	fcs->bank = FC_BANK_DYNAMIC;
+	fcs->u.dyn.leaves = leaves;
+	fcs->u.dyn.numbers = numbers;
     }
     else
     {
