@@ -1,11 +1,18 @@
-2006-04-07  Patrick Lam  <plam@mit.edu>
+2006-04-11  Behdad Esfahbod  <behdad@cs.toronto.edu>
+	reviewed by: plam
+
+	* doc/Makefile.am:
+
+	Survive missing docbook2pdf.
+
+2006-04-10  Patrick Lam  <plam@mit.edu>
 	* fc-case/fc-case.c:
 	* fc-glyphname/fc-glyphname.c:
 	* fc-lang/fc-lang.c:
 
 	Include more stub definitions to make HP-UX's C compiler happy.
 
-2006-04-07  Patrick Lam  <plam@mit.edu>
+2006-04-10  Patrick Lam  <plam@mit.edu>
 	* src/fcname.c (FcObjectUnserialize):
 
 	Swap typo in order of ALIGN and dereferencing, fixing bug 6529.

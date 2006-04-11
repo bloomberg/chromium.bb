@@ -142,8 +142,9 @@ fontconfig-devel.txt: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml
 
 fontconfig-devel.pdf: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) $@
-	$(DOC2PDF) local-fontconfig-devel.sgml
-	mv local-fontconfig-devel.pdf $@
+	../missing --run $(DOC2PDF) $< && mv local-$@ $@ \
+	|| echo Failed to generate $@ >&2; \
+	(test -f $@ || echo $(DOC2PDF) is required to generate this file >> $@)
 
 fontconfig-user.html: local-fontconfig-user.sgml version.sgml confdir.sgml
 	$(RM) $@ local-$@ $@.tmp
@@ -159,8 +160,9 @@ fontconfig-user.txt: local-fontconfig-user.sgml version.sgml confdir.sgml
 
 fontconfig-user.pdf: local-fontconfig-user.sgml version.sgml confdir.sgml
 	$(RM) $@
-	$(DOC2PDF) local-fontconfig-user.sgml
-	mv local-fontconfig-user.pdf $@
+	../missing --run $(DOC2PDF) $< && mv local-$@ $@ \
+	|| echo Failed to generate $@ >&2; \
+	(test -f $@ || echo $(DOC2PDF) is required to generate this file >> $@)
 
 STRIPNL=awk '{ if (NR > 1) printf ("\n"); printf ("%s", $$0); }'
 confdir.sgml: ${DOC_SRC}/confdir.sgml.in
