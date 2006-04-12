@@ -639,7 +639,7 @@ FcPatternBaseThawAll (void)
 FcPattern *
 FcPatternFreeze (FcPattern *p)
 {
-    FcPattern	*b, *n = 0;
+    FcPattern	*b, *n = 0, *freeme = 0;
     FcPatternElt *e;
     int		i;
     
@@ -673,7 +673,10 @@ FcPatternFreeze (FcPattern *p)
 	(FcPatternEltU(b->elts)+i)->values = 
 	    FcValueListFreeze((FcPatternEltU(p->elts)+i)->values);
 	if (!FcValueListPtrU((FcPatternEltU(p->elts)+i)->values))
+        {
+	    freeme = b;
 	    goto bail;
+        }
     }
 
     if (FcPatternFindElt (p, FC_FILE))
@@ -695,6 +698,8 @@ FcPatternFreeze (FcPattern *p)
     b->elts = FcPatternEltPtrCreateDynamic(0);
     FcMemFree (FC_MEM_PATELT, sizeof (FcPatternElt)*(b->num));
     b->num = -1;
+    if (freeme)
+	FcPatternDestroy (freeme);
 #ifdef DEBUG
     assert (FcPatternEqual (n, p));
 #endif

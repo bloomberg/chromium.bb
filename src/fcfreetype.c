@@ -2797,13 +2797,10 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
 
 	cur_offset = ftglue_stream_pos( stream );
 
-	if (( error = ftglue_stream_seek( stream, new_offset ) ))
-	    goto Fail;
+	error = ftglue_stream_seek( stream, new_offset );
 
 	if ( error == TT_Err_Ok )
 	    p++;
-	else if ( error != TTO_Err_Empty_Script )
-	    goto Fail;
 
 	(void)ftglue_stream_seek( stream, cur_offset );
     }

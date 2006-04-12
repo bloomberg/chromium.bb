@@ -1,3 +1,24 @@
+2006-04-12  Frederic Crozat  <fcrozat@mandriva.com>
+	reviewed by: plam
+	
+	* src/fcpat.c: (FcPatternFreeze):
+	Fix memory leak (Coverity defect #2089).
+
+	* src/fcfreetype.c: (GetScriptTags):
+	Ignore script if subtable is missing (Coverity defect #2088).
+
+2006-04-12  Patrick Lam  <plam@mit.edu>
+	* src/fccfg.c (FcConfigSubstituteWithPat):
+
+	Fix possible null pointer dereference (Coverity defect #784)
+	and memory leak (Coverity defects #785, #786).
+
+2006-04-12  Patrick Lam  <plam@mit.edu>
+	* src/fcmatch.c (FcSortWalk, FcFontSetSort):
+
+	Don't copy FcCharSet if we're going to throw it away anyway.
+	(Reported by Kenichi Handa).
+
 2006-04-11  Ming Zhao  <ming@gentoo.org>
 	reviewed by: plam
 	

@@ -791,7 +791,7 @@ FcSortCompare (const void *aa, const void *ab)
 }
 
 static FcBool
-FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool trim)
+FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool trim, FcBool build_cs)
 {
     FcCharSet	*ncs;
     FcSortNode	*node;
@@ -808,16 +808,20 @@ FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool tri
 	     */
 	    if (!trim || !*cs || !FcCharSetIsSubset (ncs, *cs))
 	    {
-		if (*cs)
-		{
-		    ncs = FcCharSetUnion (ncs, *cs);
-		    if (!ncs)
-			return FcFalse;
-		    FcCharSetDestroy (*cs);
-		}
-		else
-		    ncs = FcCharSetCopy (ncs);
-		*cs = ncs;
+                if (!trim && build_cs)
+                {
+                    if (*cs)
+                    {
+                        ncs = FcCharSetUnion (ncs, *cs);
+                        if (!ncs)
+                            return FcFalse;
+                        FcCharSetDestroy (*cs);
+                    }
+                    else
+                        ncs = FcCharSetCopy (ncs);
+                    *cs = ncs;
+                }
+
 		FcPatternReference (node->pattern);
 		if (FcDebug () & FC_DBG_MATCH)
 		{
@@ -986,13 +990,16 @@ FcFontSetSort (FcConfig	    *config,
 
     cs = 0;
 
-    if (!FcSortWalk (nodeps, nnodes, ret, &cs, trim))
+    if (!FcSortWalk (nodeps, nnodes, ret, &cs, trim, (csp!=0)))
 	goto bail2;
 
     if (csp)
 	*csp = cs;
     else
-	FcCharSetDestroy (cs);
+    {
+        if (cs)
+            FcCharSetDestroy (cs);
+    }
 
     free (nodes);
 

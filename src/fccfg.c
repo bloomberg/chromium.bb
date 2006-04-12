@@ -1512,7 +1512,8 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		    /*
 		     * Delete the marked value
 		     */
-		    FcConfigDel (&st[i].elt->values, thisValue);
+                    if (thisValue)
+			FcConfigDel (&st[i].elt->values, thisValue);
 		    /*
 		     * Adjust any pointers into the value list to ensure
 		     * future edits occur at the same place
@@ -1567,6 +1568,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		FcConfigPatternAdd (p, e->field, l, FcTrue);
 		break;
 	    default:
+                FcValueListDestroy (FcValueListPtrCreateDynamic(l));
 		break;
 	    }
 	}
