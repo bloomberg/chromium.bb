@@ -1,18 +1,23 @@
+2006-04-11  Patrick Lam  <plam@mit.edu>
+	* src/fccache.c (FcGlobalCacheReadDir):
+
+	Don't crash if config is null (Coverity defect #984).
+
 2006-04-11  Frederic Crozat  <fcrozat@mandriva.com>
 	reviewed by: plam
 
-	* src/fccharset.c: (FcCharSetPutLeaf):
-	* src/fclang.c: (FcNameUnparseLangSet):
+	* src/fccharset.c (FcCharSetPutLeaf):
+	* src/fclang.c (FcNameUnparseLangSet):
 
 	Missing bits from previous patches.
 
 	* src/fccharset.c (FcCharSetSubtractCount):
 	Remove extra semi-colon.
 
-	* src/fccfg.c: (FcConfigBuildFonts):
+	* src/fccfg.c (FcConfigBuildFonts):
 	Fix memory leak in error case (Coverity defects #776, #985).
 
-	* src/fcxml.c: (FcPopBinary, FcParsePatelt, FcParsePattern):
+	* src/fcxml.c (FcPopBinary, FcParsePatelt, FcParsePattern):
 	Fix memory leaks (Coverity defects #779, #781) 
 	and memory use after free (Coverity defect #780).
 
