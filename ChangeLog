@@ -1,3 +1,10 @@
+2006-04-11  Ming Zhao  <ming@gentoo.org>
+	reviewed by: plam
+	
+	* src/fcname.c (FcObjectToPtrLookup):
+
+	Fix bad behaviour on realloc resulting in crash.
+
 2006-04-11  Patrick Lam  <plam@mit.edu>
 	* src/fccache.c (FcGlobalCacheReadDir):
 
