@@ -144,24 +144,48 @@
 	</match>
 
 <!--
-  URW provides metric and shape compatible fonts for these 4 Adobe families.
+  URW provides metric and shape compatible fonts for these 10 Adobe families.
   -->
         <alias>
-	  <family>Times</family>
-	  <accept><family>Nimbus Roman No9 L</family></accept>
+          <family>Avant Garde</family>
+          <accept><family>URW Gothic L</family></accept>
+        </alias>
+        <alias>
+          <family>Bookman</family>
+          <accept><family>URW Bookman L</family></accept>
+        </alias>
+        <alias>
+	  <family>Courier</family>
+	  <accept><family>Nimbus Mono L</family></accept>
 	</alias>
         <alias>
 	  <family>Helvetica</family>
 	  <accept><family>Nimbus Sans L</family></accept>
 	</alias>
         <alias>
-	  <family>Courier</family>
-	  <accept><family>Nimbus Mono L</family></accept>
-	</alias>
+          <family>New Century Schoolbook</family>
+          <accept><family>Century Schoolbook L</family></accept>
+        </alias>
+        <alias>
+          <family>Palatino</family>
+          <accept><family>URW Palladio L</family></accept>
+        </alias>
         <alias>
           <family>Symbol</family>
           <accept><family>Standard Symbols L</family></accept>
         </alias>
+        <alias>
+	  <family>Times</family>
+	  <accept><family>Nimbus Roman No9 L</family></accept>
+	</alias>
+        <alias>
+	  <family>Zapf Chancery</family>
+	  <accept><family>URW Chancery L</family></accept>
+	</alias>
+        <alias>
+	  <family>Zapf Dingbats</family>
+	  <accept><family>Dingbats</family></accept>
+	</alias>
 
 <!--
  AMT provides metric and shape compatible fonts for these three web font

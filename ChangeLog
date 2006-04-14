@@ -1,3 +1,9 @@
+2006-04-14  Patrick Lam  <plam@mit.edu>
+	* fonts.conf.in:
+
+	Actually, just add URW fonts as aliases for all of the PostScript
+	fonts.  (reported by Miguel Rodriguez).	
+
 2006-04-13  Patrick Lam  <plam@mit.edu>
 	* fonts.conf.in:
 
