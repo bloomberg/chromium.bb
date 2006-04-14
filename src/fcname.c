@@ -193,7 +193,7 @@ FcObjectToPtrLookup (const char * object)
 {
     FcObjectPtr		    i = 0, n;
     const FcObjectTypeList  *l;
-    FcObjectType	    *t = _FcUserObjectNames, *origNames;
+    FcObjectType	    *t = _FcUserObjectNames;
     FcBool		    replace;
 
     for (l = _FcObjectTypes; l; l = l->next)
@@ -203,7 +203,7 @@ FcObjectToPtrLookup (const char * object)
 	    t = (FcObjectType *)&l->types[i];
 	    if (!strcmp (object, t->object))
 	    {
-		if (l == (FcObjectTypeList*)_FcUserObjectNames)
+		if (l->types == _FcUserObjectNames)
                     return -i;
 		else
 		    return l->basic_offset + i;
@@ -213,7 +213,6 @@ FcObjectToPtrLookup (const char * object)
 
     /* We didn't match.  Look for the application's FcObjectTypeList
      * and replace it in-place. */
-    origNames = _FcUserObjectNames;
     for (l = _FcObjectTypes; l; l = l->next)
     {
 	if (l->types == _FcUserObjectNames)
@@ -243,20 +242,11 @@ FcObjectToPtrLookup (const char * object)
 
     FcNameRegisterObjectTypes (_FcUserObjectNames, n+1);
 
-    for (l = _FcObjectTypes; l; l = l->next)
-    {
-	if (l->types == origNames)
-	{
-	    t = (FcObjectType *)l->types;
-	    break;
-	}
-    }
-
-    if (!t)
+    if (!_FcUserObjectNames)
 	return 0;
 
-    t[n].object = object;
-    t[n].type = FcTypeVoid;
+    _FcUserObjectNames[n].object = object;
+    _FcUserObjectNames[n].type = FcTypeVoid;
 
     return -n;
 }

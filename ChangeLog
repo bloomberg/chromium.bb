@@ -1,4 +1,10 @@
 2006-04-14  Patrick Lam  <plam@mit.edu>
+	* src/fcname.c (FcObjectToPtrLookup):
+
+	Fix Gecko-exposed segfault from my last hack to
+	FcObjectToPtrLookup.  Simplify code and get things straight.
+
+2006-04-14  Patrick Lam  <plam@mit.edu>
 	* fonts.conf.in:
 
 	Actually, just add URW fonts as aliases for all of the PostScript
