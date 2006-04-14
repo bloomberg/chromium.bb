@@ -144,7 +144,7 @@
 	</match>
 
 <!--
-  URW provides metric and shape compatible fonts for these 3 Adobe families.
+  URW provides metric and shape compatible fonts for these 4 Adobe families.
   -->
         <alias>
 	  <family>Times</family>
@@ -158,6 +158,10 @@
 	  <family>Courier</family>
 	  <accept><family>Nimbus Mono L</family></accept>
 	</alias>
+        <alias>
+          <family>Symbol</family>
+          <accept><family>Standard Symbols L</family></accept>
+        </alias>
 
 <!--
  AMT provides metric and shape compatible fonts for these three web font

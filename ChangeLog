@@ -1,3 +1,8 @@
+2006-04-13  Patrick Lam  <plam@mit.edu>
+	* fonts.conf.in:
+
+	Add an alias 'Standard Symbols L' for 'Symbol'.
+
 2006-04-12  Frederic Crozat  <fcrozat@mandriva.com>
 	reviewed by: plam
 	
