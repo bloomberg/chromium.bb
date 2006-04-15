@@ -1,4 +1,9 @@
 2006-04-14  Patrick Lam  <plam@mit.edu>
+	* fonts.conf.in:
+
+	Give the 'Standard Symbols L' match a strong (vs. weak) binding.
+
+2006-04-14  Patrick Lam  <plam@mit.edu>
 	* src/fcname.c (FcObjectToPtrLookup):
 
 	Fix Gecko-exposed segfault from my last hack to

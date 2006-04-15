@@ -171,10 +171,6 @@
           <accept><family>URW Palladio L</family></accept>
         </alias>
         <alias>
-          <family>Symbol</family>
-          <accept><family>Standard Symbols L</family></accept>
-        </alias>
-        <alias>
 	  <family>Times</family>
 	  <accept><family>Nimbus Roman No9 L</family></accept>
 	</alias>
@@ -186,7 +182,14 @@
 	  <family>Zapf Dingbats</family>
 	  <accept><family>Dingbats</family></accept>
 	</alias>
-
+	<match target="pattern">
+	  <test name="family">
+	    <string>Symbol</string>
+	  </test>
+	  <edit name="family" mode="append" binding="strong">
+	    <string>Standard Symbols L</string>
+	  </edit>
+	</match>
 <!--
  AMT provides metric and shape compatible fonts for these three web font
  families.
