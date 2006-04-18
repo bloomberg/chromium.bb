@@ -2970,7 +2970,7 @@ static int radeon_cp_getparam(DRM_IOCTL_ARGS)
 	case RADEON_PARAM_STATUS_HANDLE:
 		value = dev_priv->ring_rptr_offset;
 		break;
-#if !__LP64__
+#ifndef __LP64__
 		/*
 		 * This ioctl() doesn't work on 64-bit platforms because hw_lock is a
 		 * pointer which can't fit into an int-sized variable.  According to
