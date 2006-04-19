@@ -7,6 +7,13 @@
 	Bump version to 2.3.95.
 
 2006-04-19  Patrick Lam	 <plam@mit.edu>
+	    Dominic Lachowicz  <cinamod@hotmail.com>
+
+	* src/fccache.c (FcDirCacheConsume):
+
+	Implement mmap-like code for Windows using MapViewOfFile.
+	
+2006-04-19  Patrick Lam	 <plam@mit.edu>
 	* src/fccache.c (FcDirCacheConsume, FcCacheNextOffset):
 
 	Bail gracefully if the cache file does not contain enough data.

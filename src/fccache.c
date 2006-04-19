@@ -27,12 +27,12 @@
 #include <dirent.h>
 #include <string.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include "fcint.h"
-#include <unistd.h>
 #if defined(HAVE_MMAP) || defined(__CYGWIN__)
+#  include <unistd.h>
 #  include <sys/mman.h>
-#  include <sys/utsname.h>
+#elif defined(_WIN32)
+#  include <windows.h>
 #endif
 
 #define ENDIAN_TEST 0x12345678
@@ -1203,6 +1203,23 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set, FcConfig *config)
 			      PROT_READ, MAP_SHARED, fd, pos);
     if (current_dir_block == MAP_FAILED)
 	return FcFalse;
+#elif defined(_WIN32)
+	{
+		HANDLE hFileMap;
+
+		hFileMap = CreateFileMapping((HANDLE) _get_osfhandle(fd), NULL, PAGE_READONLY, 0, 0, NULL);
+		if (hFileMap == NULL)
+			return FcFalse;
+
+		current_dir_block = MapViewOfFile (hFileMap, FILE_MAP_READ, 0, 0, metadata.count + pos);
+		if (current_dir_block == NULL)
+		{
+			CloseHandle (hFileMap);
+			return FcFalse;
+		}
+
+		current_dir_block = (void *)((char *)current_dir_block + pos);
+	}
 #else
     current_dir_block = malloc (metadata.count);
     if (!current_dir_block)
