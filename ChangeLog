@@ -1,4 +1,12 @@
 2006-04-19  Patrick Lam	 <plam@mit.edu>
+	* ChangeLog:
+	* README:
+	* configure.in:
+	* fontconfig/fontconfig.h:
+
+	Bump version to 2.3.95.
+
+2006-04-19  Patrick Lam	 <plam@mit.edu>
 	* src/fccache.c (FcDirCacheConsume, FcCacheNextOffset):
 
 	Bail gracefully if the cache file does not contain enough data.
