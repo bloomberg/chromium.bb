@@ -617,6 +617,10 @@ static int
 FcCacheNextOffset(off_t w)
 {
     static long pagesize = -1;
+
+    if (w == -1)
+        return w;
+
     if (pagesize == -1)
 #if defined (HAVE_SYSCONF)
 	pagesize = sysconf(_SC_PAGESIZE);
@@ -1164,7 +1168,7 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set, FcConfig *config)
 {
     FcCache metadata;
     void * current_dir_block;
-    off_t pos;
+    off_t pos, endpos;
 
     if (read(fd, &metadata, sizeof(FcCache)) != sizeof(FcCache))
 	return FcFalse;
@@ -1181,6 +1185,19 @@ FcDirCacheConsume (int fd, const char * dir, FcFontSet *set, FcConfig *config)
     }
 
     pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
+
+    /* This is not failsafe (multi-arches can break it),
+     * but fd has got to have at least as many bytes as
+     * metadata.count, or something's going to go horribly wrong. */
+    if (pos == (off_t)-1)
+        return FcFalse;
+
+    endpos = lseek (fd, 0, SEEK_END);
+    if (endpos == (off_t)-1 || endpos - pos < metadata.count)
+        return FcFalse;
+    if (lseek (fd, pos, SEEK_SET) == -1)
+        return FcFalse;
+
 #if defined(HAVE_MMAP) || defined(__CYGWIN__)
     current_dir_block = mmap (0, metadata.count, 
 			      PROT_READ, MAP_SHARED, fd, pos);

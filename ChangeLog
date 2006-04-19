@@ -1,3 +1,8 @@
+2006-04-19  Patrick Lam	 <plam@mit.edu>
+	* src/fccache.c (FcDirCacheConsume, FcCacheNextOffset):
+
+	Bail gracefully if the cache file does not contain enough data.
+
 2006-04-14  Patrick Lam  <plam@mit.edu>
 	* fonts.conf.in:
 

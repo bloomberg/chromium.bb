@@ -1,10 +1,29 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.3.94
-		         2006-02-24
+		      Version 2.3.95
+		         2006-04-18
+
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.3.95
+
+Match 'Standard Symbols L' for 'Symbol'.  Add URW fonts as aliases for
+all of the PostScript fonts.  (reported by Miguel Rodriguez).  Fix a
+number of Coverity defects (Frederic Crozat).  Speed up FcFontSort
+(fix suggested by Kenichi Handa).  Fix error with charsets.  Survive
+missing docbook2pdf.  Compile on HP-UX, AIX, SGI and Windows (Cygwin,
+MinGW).  Fix intel compiler warnings.  Fix multiarch support (don't
+destroy multiarch files!)  Require pkg-config.  (Thanks Behdad; better
+solution wanted for libxml2 detection!)  Fix typos in orth files and
+add orth for Lingala (reported by Denis Jacquerye).  Remove debian/
+directory.  Add a configuration file that disables hinting for the
+Lohit Gujarati font (since the hinting distorts some glyphs quite
+badly).  Sort directory entries while scanning them from disk;
+prevents Heisenbugs due to file ordering in a directory (due to Egmont
+Koblinger).  Fix Wine's problem with finding fonts.  (Reported by
+Bernhard Rosenkraenzer.)
 
 2.3.94
 
