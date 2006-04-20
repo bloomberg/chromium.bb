@@ -808,7 +808,7 @@ FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool tri
 	     */
 	    if (!trim || !*cs || !FcCharSetIsSubset (ncs, *cs))
 	    {
-                if (!trim && build_cs)
+                if (trim || build_cs)
                 {
                     if (*cs)
                     {

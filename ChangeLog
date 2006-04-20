@@ -1,10 +1,16 @@
-2006-04-19  Patrick Lam	 <plam@mit.edu>
+2006-04-20  Patrick Lam	 <plam@mit.edu>
 	* ChangeLog:
 	* README:
 	* configure.in:
 	* fontconfig/fontconfig.h:
 
 	Bump version to 2.3.95.
+
+2006-04-20  Patrick Lam  <plam@mit.edu>
+	* src/fcmatch.c (FcSortWalk):
+
+	Prevent terrible perf regression by getting the if-condition
+	right (reported by Wouter Bolsterlee).
 
 2006-04-19  Patrick Lam	 <plam@mit.edu>
 	    Dominic Lachowicz  <cinamod@hotmail.com>
