@@ -169,8 +169,12 @@ static inline void radeon_delete_i2c_busses(struct drm_device *dev)
 #define __user
 #endif
 
-#ifndef __put_page
+#if !defined(__put_page) 
 #define __put_page(p)           atomic_dec(&(p)->count)
+#endif
+
+#if !defined(__GFP_COMP)
+#define __GFP_COMP 0
 #endif
 
 #ifndef REMAP_PAGE_RANGE_5_ARGS
