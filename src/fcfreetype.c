@@ -554,8 +554,7 @@ FcFontCapabilities(FT_Face face);
 
 #define NUM_FC_MAC_ROMAN_FAKE	(int) (sizeof (fcMacRomanFake) / sizeof (fcMacRomanFake[0]))
 
-#if HAVE_ICONV && HAVE_ICONV_H
-#define USE_ICONV 1
+#if USE_ICONV
 #include <iconv.h>
 #endif
 

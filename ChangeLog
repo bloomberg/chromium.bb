@@ -1,4 +1,4 @@
-2006-04-24  Patrick Lam	 <plam@mit.edu>
+2006-04-25  Patrick Lam	 <plam@mit.edu>
 	* ChangeLog:
 	* README:
 	* configure.in:
@@ -6,6 +6,16 @@
 
 	Bump version to 2.3.95.
 
+2006-04-25  Behdad Esfahbod  <behdad@cs.toronto.edu>
+	reviewed by: plam
+
+	* configure.in:
+	* src/Makefile.am:
+	* src/fcfreetype.c:
+
+	Fix the issues with GNU libiconv vs. libc iconv (which especially
+	appear on Solarii).  Approach suggested by Tim Mooney.
+	
 2006-04-24  Dominic Lachowicz  <cinamod@hotmail.com>
 	reviewed by: plam
 	
