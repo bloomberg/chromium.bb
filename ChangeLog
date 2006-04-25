@@ -1,4 +1,4 @@
-2006-04-20  Patrick Lam	 <plam@mit.edu>
+2006-04-24  Patrick Lam	 <plam@mit.edu>
 	* ChangeLog:
 	* README:
 	* configure.in:
@@ -6,6 +6,21 @@
 
 	Bump version to 2.3.95.
 
+2006-04-24  Dominic Lachowicz  <cinamod@hotmail.com>
+	reviewed by: plam
+	
+	* src/Makefile.am:
+
+	Include $(top_srcdir), $(top_srcdir)/src before anything else.
+
+	* fc-cache/fc-cache.c, fc-cat/fc-cat.c, fc-match/fc-match.c:
+	* src/fccache.c, src/fccfg.c, src/fccharset.c, src/fcdbg.c:
+	* src/fcfreetype.c, src/fcfs.c, src/fcinit.c, src/fclist.c:
+	* src/fcmatch.c, src/fcmatrix.c, src/fcname.c, src/fcpat.c:
+	* src/fcstr.c, src/fcxml.c:
+
+	Shuffle order of includes for building out of srcdir on win32.
+	
 2006-04-20  Patrick Lam  <plam@mit.edu>
 	* src/fcmatch.c (FcSortWalk):
 
