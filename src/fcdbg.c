@@ -22,9 +22,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "fcint.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "fcint.h"
 
 void
 FcValuePrint (const FcValue v)

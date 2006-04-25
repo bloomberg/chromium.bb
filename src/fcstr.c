@@ -22,10 +22,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "fcint.h"
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include "fcint.h"
 
 FcChar8 *
 FcStrCopy (const FcChar8 *s)

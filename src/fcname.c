@@ -22,11 +22,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "fcint.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "fcint.h"
 
 /* Please do not revoke any of these bindings. */
 /* The __DUMMY__ object enables callers to distinguish the error return

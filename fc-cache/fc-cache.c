@@ -22,13 +22,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <fontconfig/fontconfig.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #else
@@ -37,6 +30,14 @@
 #endif
 #define HAVE_GETOPT 1
 #endif
+
+#include <fontconfig/fontconfig.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 #if defined (_WIN32)
 #define STRICT

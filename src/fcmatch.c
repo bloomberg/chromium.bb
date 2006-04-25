@@ -22,9 +22,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "fcint.h"
 #include <string.h>
 #include <ctype.h>
-#include "fcint.h"
 #include <stdio.h>
 
 static double

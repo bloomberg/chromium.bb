@@ -44,10 +44,10 @@
   THE SOFTWARE.
 */
 
+#include "fcint.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "fcint.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_TRUETYPE_TABLES_H

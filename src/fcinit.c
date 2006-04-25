@@ -22,8 +22,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
 #include "fcint.h"
+#include <stdlib.h>
 
 static FcConfig *
 FcInitFallbackConfig (void)

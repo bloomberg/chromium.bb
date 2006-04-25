@@ -22,9 +22,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "fcint.h"
 #include <dirent.h>
 #include <sys/types.h>
-#include "fcint.h"
 
 #if defined (_WIN32) && (defined (PIC) || defined (DLL_EXPORT))
 #define STRICT

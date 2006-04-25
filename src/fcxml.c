@@ -22,9 +22,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "fcint.h"
 #include <fcntl.h>
 #include <stdarg.h>
-#include "fcint.h"
 #include <dirent.h>
 
 #ifdef ENABLE_LIBXML2

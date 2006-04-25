@@ -22,10 +22,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "fcint.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "fcint.h"
 
 static FcPattern ** _fcPatterns = 0;
 static int fcpattern_bank_count = 0, fcpattern_ptr, fcpattern_count;

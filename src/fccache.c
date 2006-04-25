@@ -23,11 +23,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "fcint.h"
 #include <fcntl.h>
 #include <dirent.h>
 #include <string.h>
 #include <sys/types.h>
-#include "fcint.h"
 #if defined(HAVE_MMAP) || defined(__CYGWIN__)
 #  include <unistd.h>
 #  include <sys/mman.h>

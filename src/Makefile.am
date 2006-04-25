@@ -66,13 +66,13 @@ endif
 AM_CPPFLAGS = -DPKGCACHEDIR='"${pkgcachedir}"'
 
 INCLUDES = 						\
+	-I$(top_srcdir)					\
+	-I$(top_srcdir)/src				\
 	$(FREETYPE_CFLAGS)				\
 	$(LIBXML2_CFLAGS)				\
 	$(EXPAT_CFLAGS)					\
 	$(WARN_CFLAGS)					\
-	-DFONTCONFIG_PATH='"$(CONFDIR)"'		\
-	-I$(top_srcdir)					\
-	-I$(top_srcdir)/src
+	-DFONTCONFIG_PATH='"$(CONFDIR)"'
 
 EXTRA_DIST = fontconfig.def.in
 
