@@ -1,7 +1,7 @@
 			Fontconfig
 	Font configuration and customization library
 		      Version 2.3.95
-		         2006-04-18
+		         2006-04-26
 
 
 Check INSTALL for compilation and installation instructions.
@@ -23,7 +23,9 @@ Lohit Gujarati font (since the hinting distorts some glyphs quite
 badly).  Sort directory entries while scanning them from disk;
 prevents Heisenbugs due to file ordering in a directory (due to Egmont
 Koblinger).  Fix Wine's problem with finding fonts.  (Reported by
-Bernhard Rosenkraenzer.)
+Bernhard Rosenkraenzer.)  Fix the issues with GNU libiconv vs. libc
+iconv (which especially appear on Solarii); patch by Behdad Esfahbod,
+approach suggested by Tim Mooney.
 
 2.3.94
 
