@@ -706,7 +706,7 @@ FcStrBufChar (FcStrBuf *buf, FcChar8 c)
 	}
 	else
 	{
-	    size = buf->size + 1024;
+	    size = buf->size + 64;
 	    new = malloc (size);
 	    if (new)
 	    {

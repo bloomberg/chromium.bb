@@ -1,3 +1,10 @@
+2006-04-27  Patrick Lam	 <plam@mit.edu>
+	    Keith Packard  <keithp@keithp.com>
+	* src/fcstr.c (FcStrBufChar):
+
+	Reduce transient memory usage during config file parsing
+	by allocating smaller buffers (64 seems to be a magic number).
+	
 2006-04-27  Keith Packard  <keithp@keithp.com>
 
 	* src/fcinit.c: (FcMemReport):
@@ -7,7 +14,6 @@
 	Eliminate pattern freezing
 
 2006-04-27  Keith Packard  <keithp@keithp.com>
-
 	reviewed by: Patrick Lam <plam@mit.edu>
 
 	* src/fccache.c: (FcDirCacheUnlink), (FcDirCacheHashName),
@@ -23,18 +29,6 @@
 	Stop permitting cache files to be stored in font dirs.
 	Bump cache magic.
 	Don't include /fonts.cache-2 in cache hash construction.
-
-2006-04-26  Keith Packard  <keithp@keithp.com>
-
-	* src/fccache.c: (FcDirCacheUnlink), (FcDirCacheOpen),
-	(FcDirCacheWrite):
-	* src/fcfreetype.c: (FcFreeTypeQuery):
-	* src/fcint.h:
-	* src/fclist.c: (FcListAppend):
-	* src/fcmatch.c: (FcFontRenderPrepare):
-	* src/fcpat.c: (FcPatternDestroy), (FcPatternBaseFreeze),
-	(FcPatternFreeze), (FcPatternGet), (FcPatternDuplicate),
-	(FcStrUnserialize):
 
 2006-04-25  Patrick Lam	 <plam@mit.edu>
 	* ChangeLog:
