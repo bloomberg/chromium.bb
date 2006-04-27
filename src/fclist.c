@@ -422,10 +422,6 @@ FcListAppend (FcListHashTable	*table,
 	else
 	    defidx = 0;
 
-        /* Also, copy over the full path info. */
-	if (!strcmp (os->objects[o], FC_FILE))
-	    FcPatternTransferFullFname (bucket->pattern, font);
-
 	e = FcPatternFindElt (font, os->objects[o]);
 	if (e)
 	{

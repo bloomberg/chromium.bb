@@ -997,7 +997,6 @@ FcFreeTypeQuery (const FcChar8	*file,
     FcChar8	    *family = 0;
 #endif
     FcChar8	    *complex;
-    FcChar8	    *file2;
     const FcChar8   *foundry = 0;
     int		    spacing;
     TT_OS2	    *os2;
@@ -1278,15 +1277,8 @@ FcFreeTypeQuery (const FcChar8	*file,
 		printf ("Saving unique fullname %s\n", full);
     }
 
-    file2 = FcStrCopy (file);
-    if (!FcPatternAddString (pat, FC_FILE, FcStrBasename(file2)))
-    {
-	FcStrFree (file2);
+    if (!FcPatternAddString (pat, FC_FILE, file))
 	goto bail1;
-    }
-    FcStrFree (file2);
-
-    FcPatternAddFullFname (pat, (const char *)FcStrCopy (file));
 
     if (!FcPatternAddInteger (pat, FC_INDEX, id))
 	goto bail1;

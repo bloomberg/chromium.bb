@@ -333,7 +333,7 @@ typedef struct _FcCaseFold {
  * cache which is then rewritten to the users home directory
  */
 
-#define FC_CACHE_MAGIC 0xFC02FC03
+#define FC_CACHE_MAGIC 0xFC02FC04
 
 typedef struct _FcGlobalCacheDir FcGlobalCacheDir;
 
@@ -870,12 +870,6 @@ FcPatternFini (void);
 
 FcBool
 FcPatternAppend (FcPattern *p, FcPattern *s);
-
-void
-FcPatternAddFullFname (const FcPattern *p, const char *fname);
-
-void
-FcPatternTransferFullFname (const FcPattern *new, const FcPattern *orig);
 
 const FcChar8 *
 FcStrStaticName (const FcChar8 *name);

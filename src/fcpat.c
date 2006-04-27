@@ -39,16 +39,6 @@ FcPatternEltPtrCreateDynamic (FcPatternElt * e);
 static FcBool
 FcStrHashed (const FcChar8 *name);
 
-static const char *
-FcPatternFindFullFname (const FcPattern *p);
-
-/* If you are trying to duplicate an FcPattern which will be used for
- * rendering, be aware that (internally) you also have to use
- * FcPatternTransferFullFname to transfer the associated filename.  If
- * you are copying the font (externally) using FcPatternGetString,
- * then everything's fine; this caveat only applies if you're copying
- * the bits individually.  */
-
 FcPattern *
 FcPatternCreate (void)
 {
@@ -310,12 +300,6 @@ FcPatternDestroy (FcPattern *p)
     
     if (p->ref == FC_REF_CONSTANT || --p->ref > 0)
 	return;
-
-    if (FcPatternFindFullFname (p))
-    {
-	FcStrFree ((FcChar8 *)FcPatternFindFullFname (p));
-	FcPatternAddFullFname (p, 0);
-    }
 
     for (i = 0; i < p->num; i++)
 	FcValueListDestroy ((FcPatternEltU(p->elts)+i)->values);
@@ -602,9 +586,6 @@ FcPatternBaseFreeze (FcPattern *b)
 	    (FcPatternEltU(b->elts)+i)->object;
     }
 
-    if (FcPatternFindElt (b, FC_FILE))
-	FcPatternTransferFullFname (ep, b);
-
     ent->hash = hash;
     ent->next = *bucket;
     *bucket = ent;
@@ -678,9 +659,6 @@ FcPatternFreeze (FcPattern *p)
 	    goto bail;
         }
     }
-
-    if (FcPatternFindElt (p, FC_FILE))
-	FcPatternTransferFullFname (b, p);
 
     /*
      * Freeze base
@@ -1112,39 +1090,6 @@ FcPatternAddLangSet (FcPattern *p, const char *object, const FcLangSet *ls)
     return FcPatternAdd (p, object, v, FcTrue);
 }
 
-static FcResult
-FcPatternGetFile (const FcPattern *p, const char *object, int id, FcChar8 ** s)
-{
-    const char *fn, *fpath;
-    FcChar8 *fname;
-    int size;
-    
-    fn = FcPatternFindFullFname(p);
-    if (fn)
-    {
-        *s = (FcChar8 *) fn;
-        return FcResultMatch;
-    }
-
-    if (!p->bank)
-        return FcResultMatch;
-
-    fpath = FcCacheFindBankDir (p->bank);
-    size = strlen((char *)fpath) + 1 + strlen ((char *)*s) + 1;
-    fname = malloc (size);
-    if (!fname)
-        return FcResultOutOfMemory;
-    
-    FcMemAlloc (FC_MEM_STRING, size);
-    strcpy ((char *)fname, (char *)fpath);
-    strcat ((char *)fname, "/");
-    strcat ((char *)fname, (char *)*s);
-    
-    FcPatternAddFullFname (p, (const char *)fname);
-    *s = (FcChar8 *)fname;
-    return FcResultMatch;
-}
-
 FcResult
 FcPatternGet (const FcPattern *p, const char *object, int id, FcValue *v)
 {
@@ -1159,12 +1104,6 @@ FcPatternGet (const FcPattern *p, const char *object, int id, FcValue *v)
 	if (!id)
 	{
 	    *v = FcValueCanonicalize(&FcValueListPtrU(l)->value);
-
-            /* Pull the FC_FILE trick here too. */
-            if (v->type == FcTypeString &&
-                FcObjectToPtr(object) == FcObjectToPtr(FC_FILE))
-                return FcPatternGetFile (p, object, id, (FcChar8 **)&(v->u.s));
-
 	    return FcResultMatch;
 	}
 	id--;
@@ -1332,7 +1271,6 @@ FcPatternDuplicate (const FcPattern *orig)
 			       FcTrue))
 		goto bail1;
     }
-    FcPatternTransferFullFname (new, orig);
 
     return new;
 
@@ -2024,72 +1962,4 @@ FcStrUnserialize (FcCache * metadata, void *block_ptr)
 			 (sizeof (char) * metadata->str_count));
 
     return block_ptr;
-}
-
-/* we don't store these in the FcPattern itself because
- * we don't want to serialize the directory names */
-
-/* I suppose this should be cleaned upon termination, too... */
-typedef struct _FcPatternDirMapping {
-    const FcPattern	*p;
-    const char *fname;
-} FcPatternDirMapping;
-
-#define PATTERNDIR_HASH_SIZE    31
-static struct patternDirBucket {
-    struct patternDirBucket	*next;
-    FcPatternDirMapping		m;
-} FcPatternDirBuckets[PATTERNDIR_HASH_SIZE];
-
-void
-FcPatternAddFullFname (const FcPattern *p, const char *fname)
-{
-    struct patternDirBucket	*pb;
-
-    /* N.B. FcPatternHash fails, since it's contents-based, not
-     * address-based, and we're in the process of mutating the FcPattern. */
-    for (pb = &FcPatternDirBuckets
-             [((unsigned long)p / sizeof (FcPattern *)) % PATTERNDIR_HASH_SIZE];
-         pb->m.p != p && pb->next; 
-         pb = pb->next)
-        ;
-
-    if (pb->m.p == p)
-    {
-        pb->m.fname = fname;
-        return;
-    }
-
-    pb->next = malloc (sizeof (struct patternDirBucket));
-    if (!pb->next)
-        return;
-    FcMemAlloc (FC_MEM_CACHE, sizeof (struct patternDirBucket));
-
-    pb->next->next = 0;
-    pb->next->m.p = p;
-    pb->next->m.fname = fname;
-}
-
-static const char *
-FcPatternFindFullFname (const FcPattern *p)
-{
-    struct patternDirBucket	*pb;
-
-    for (pb = &FcPatternDirBuckets
-             [((unsigned long)p / sizeof (FcPattern *)) % PATTERNDIR_HASH_SIZE]; 
-         pb; pb = pb->next)
-	if (pb->m.p == p)
-	    return pb->m.fname;
-
-    return 0;
-}
-
-void
-FcPatternTransferFullFname (const FcPattern *new, const FcPattern *orig)
-{
-    FcChar8 * s;
-    FcPatternGetString (orig, FC_FILE, 0, &s);
-    FcPatternAddFullFname (new, 
-			   (char *)FcStrCopy 
-			   ((FcChar8 *)FcPatternFindFullFname(orig)));
 }

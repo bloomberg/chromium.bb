@@ -495,9 +495,6 @@ FcFontRenderPrepare (FcConfig	    *config,
                           FcValueCanonicalize(&FcValueListPtrU(pe->values)->value), FcTrue);
     }
 
-    if (FcPatternFindElt (font, FC_FILE))
-	FcPatternTransferFullFname (new, font);
-
     FcConfigSubstituteWithPat (config, new, pat, FcMatchFont);
     return new;
 }
