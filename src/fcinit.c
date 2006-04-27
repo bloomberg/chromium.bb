@@ -209,9 +209,6 @@ static int  FcMemNotice = 1*1024*1024;
 static int  FcAllocNotify, FcFreeNotify;
 
 void
-FcValueListReport (void);
-
-void
 FcMemReport (void)
 {
     int	i;
@@ -233,7 +230,6 @@ FcMemReport (void)
 	    FcAllocMem - FcFreeMem);
     FcAllocNotify = 0;
     FcFreeNotify = 0;
-    FcValueListReport ();
 }
 
 void

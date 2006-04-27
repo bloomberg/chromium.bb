@@ -862,9 +862,6 @@ FcPatternAddWithBinding  (FcPattern	    *p,
 			  FcValueBinding    binding,
 			  FcBool	    append);
 
-FcPattern *
-FcPatternFreeze (FcPattern *p);
-
 void
 FcPatternFini (void);
 
