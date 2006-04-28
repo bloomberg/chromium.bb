@@ -30,15 +30,17 @@
 FcChar8 *
 FcStrCopy (const FcChar8 *s)
 {
-    FcChar8	*r;
+    int     len;
+    FcChar8 *r;
 
     if (!s)
 	return 0;
-    r = (FcChar8 *) malloc (strlen ((char *) s) + 1);
+    len = strlen ((char *) s) + 1;
+    r = (FcChar8 *) malloc (len);
     if (!r)
 	return 0;
-    FcMemAlloc (FC_MEM_STRING, strlen ((char *) s) + 1);
-    strcpy ((char *) r, (char *) s);
+    FcMemAlloc (FC_MEM_STRING, len);
+    memcpy (r, s, len);
     return r;
 }
 
@@ -780,7 +782,7 @@ FcStrCopyFilename (const FcChar8 *s)
 	if (!new)
 	    return 0;
 	FcMemAlloc (FC_MEM_STRING, size);
-	strcpy ((char *) new, (const char *) s);
+	memcpy (new, s, size);
     }
     return new;
 }

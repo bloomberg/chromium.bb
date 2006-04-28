@@ -1,3 +1,10 @@
+2006-04-27  Paolo Borelli  (pborelli@katamail.com)
+	reviewed by: plam
+	
+	* src/fcstr.c (FcStrCopy):
+
+	Make FcStrCopy slightly more efficient.
+
 2006-04-27  Patrick Lam	 <plam@mit.edu>
 	    Keith Packard  <keithp@keithp.com>
 	* src/fcstr.c (FcStrBufChar):
