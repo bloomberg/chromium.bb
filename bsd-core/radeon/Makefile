@@ -8,6 +8,10 @@ SRCS    = r300_cmdbuf.c radeon_cp.c radeon_drv.c radeon_state.c radeon_irq.c \
 SRCS   += device_if.h bus_if.h pci_if.h opt_drm.h
 CFLAGS += ${DEBUG_FLAGS} -I. -I..
 
+.if ${CC} != "icc"
+CFLAGS += --param large-function-growth=1000
+.endif
+
 .if defined(DRM_DEBUG)
 DRM_DEBUG_OPT= "\#define DRM_DEBUG 1"
 .endif
