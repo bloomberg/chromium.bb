@@ -290,7 +290,7 @@ ftglue_face_goto_table( FT_Face    face,
       if ( tag == the_tag )
       {
         LOG(( "TrueType table (start: %ld) (size: %ld)\n", start, size ));
-        error = ftglue_stream_seek( stream, offset+start );
+        error = ftglue_stream_seek( stream, start );
         goto FoundIt;
       }
     }

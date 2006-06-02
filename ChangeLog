@@ -1,3 +1,10 @@
+2006-05-31  Yong Li  (rigel863@gmail.com)
+	reviewed by: plam, Bedhad Esfahbod
+
+        * src/ftglue.c (_hb_ftglue_face_goto_table): 
+
+	TrueType Collection table offsets are absolute, not relative.
+
 2006-04-27  Paolo Borelli  (pborelli@katamail.com)
 	reviewed by: plam
 	
