@@ -53,7 +53,7 @@ static drm_file_t *drm_find_file(drm_device_t * dev, drm_magic_t magic)
 
 	down(&dev->struct_sem);        
         if (!drm_ht_find_item(&dev->magiclist, (unsigned long) magic, &hash)) {
-                pt = list_entry(hash, drm_magic_entry_t, hash_item);
+                pt = drm_hash_entry(hash, drm_magic_entry_t, hash_item);
                 retval = pt->priv;
         }
 	up(&dev->struct_sem);
@@ -113,7 +113,7 @@ static int drm_remove_magic(drm_device_t * dev, drm_magic_t magic)
                 up(&dev->struct_sem);
                 return -EINVAL;
         }
-        pt = list_entry(hash, drm_magic_entry_t, hash_item);
+        pt = drm_hash_entry(hash, drm_magic_entry_t, hash_item);
         drm_ht_remove_item(&dev->magiclist, hash);
         list_del(&pt->head);
         up(&dev->struct_sem);

@@ -172,8 +172,8 @@ static drm_owner_item_t
 
 	ret = drm_ht_find_item(&sman->owner_hash_tab, owner, &owner_hash_item);
 	if (!ret) {
-		return list_entry(owner_hash_item, drm_owner_item_t,
-				  owner_hash);
+		return drm_hash_entry(owner_hash_item, drm_owner_item_t,
+                                      owner_hash);
 	}
 
 	owner_item = drm_calloc(1, sizeof(*owner_item), DRM_MEM_MM);
@@ -264,7 +264,7 @@ int drm_sman_free_key(drm_sman_t * sman, unsigned int key)
 	if (drm_ht_find_item(&sman->user_hash_tab, key, &hash_item))
 		return -EINVAL;
 
-	memblock_item = list_entry(hash_item, drm_memblock_item_t, user_hash);
+	memblock_item = drm_hash_entry(hash_item, drm_memblock_item_t, user_hash);
 	drm_sman_free(memblock_item);
 	return 0;
 }
@@ -289,7 +289,7 @@ int drm_sman_owner_clean(drm_sman_t * sman, unsigned long owner)
 		return -1;
 	}
 
-	owner_item = list_entry(hash_item, drm_owner_item_t, owner_hash);
+	owner_item = drm_hash_entry(hash_item, drm_owner_item_t, owner_hash);
 	if (owner_item->mem_blocks.next == &owner_item->mem_blocks) {
 		drm_sman_remove_owner(sman, owner_item);
 		return -1;
@@ -323,7 +323,7 @@ void drm_sman_owner_cleanup(drm_sman_t * sman, unsigned long owner)
 		return;
 	}
 
-	owner_item = list_entry(hash_item, drm_owner_item_t, owner_hash);
+	owner_item = drm_hash_entry(hash_item, drm_owner_item_t, owner_hash);
 	drm_sman_do_owner_cleanup(sman, owner_item);
 }
 
