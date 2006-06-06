@@ -86,6 +86,7 @@
 #define __OS_HAS_MTRR (defined(CONFIG_MTRR))
 
 #include "drm_os_linux.h"
+#include "drm_hashtab.h"
 
 /* If you want the memory alloc debug functionality, change define below */
 /* #define DEBUG_MEMORY */
@@ -117,7 +118,7 @@
 #define DRM_DEBUG_CODE 2	  /**< Include debugging code if > 1, then
 				     also include looping detection. */
 
-#define DRM_HASH_SIZE	      16 /**< Size of key hash table. Must be power of 2. */
+#define DRM_MAGIC_HASH_ORDER  4 /**< Size of key hash table. Must be power of 2. */
 #define DRM_KERNEL_CONTEXT    0	 /**< Change drm_resctx if changed */
 #define DRM_RESERVED_CONTEXTS 1	 /**< Change drm_resctx if changed */
 #define DRM_LOOPING_LIMIT     5000000
@@ -293,9 +294,9 @@ typedef struct drm_devstate {
 } drm_devstate_t;
 
 typedef struct drm_magic_entry {
-	drm_magic_t magic;
+        drm_hash_item_t hash_item;
+        struct list_head head;
 	struct drm_file *priv;
-	struct drm_magic_entry *next;
 } drm_magic_entry_t;
 
 typedef struct drm_magic_head {
@@ -670,7 +671,8 @@ typedef struct drm_device {
 	/*@{ */
 	drm_file_t *file_first;		/**< file list head */
 	drm_file_t *file_last;		/**< file list tail */
-	drm_magic_head_t magiclist[DRM_HASH_SIZE]; /**< magic hash table */
+        drm_open_hash_t magiclist;
+        struct list_head magicfree;
 	/*@} */
 
 	/** \name Memory management */

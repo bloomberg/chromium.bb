@@ -163,14 +163,12 @@ int drm_lastclose(drm_device_t * dev)
 		dev->unique_len = 0;
 	}
 
-	/* Clear pid list */
-	for (i = 0; i < DRM_HASH_SIZE; i++) {
-		for (pt = dev->magiclist[i].head; pt; pt = next) {
-			next = pt->next;
-			drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
-		}
-		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
-	}
+        list_for_each_entry_safe(pt, next, &dev->magicfree, head) {
+                list_del(&pt->head);
+                drm_ht_remove_item(&dev->magiclist, &pt->hash_item);
+                drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
+        }
+
 
 	/* Clear AGP information */
 	if (drm_core_has_AGP(dev) && dev->agp) {
