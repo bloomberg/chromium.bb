@@ -1,0 +1,286 @@
+/**************************************************************************
+ * 
+ * Copyright 2006 Tungsten Graphics, Inc., Bismarck, ND., USA.
+ * All Rights Reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sub license, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, 
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * 
+ **************************************************************************/
+
+/*
+ * Authors:
+ *    Thomas Hellström <thomas-at-tungstengraphics-dot-com>
+ */
+
+#include "drmP.h"
+#include "sis_drm.h"
+#include "sis_drv.h"
+
+#if defined(__linux__)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+#include <video/sisfb.h>
+#else
+#include <linux/sisfb.h>
+#endif
+#endif
+
+#define VIDEO_TYPE 0
+#define AGP_TYPE 1
+
+#define SIS_MM_ALIGN_SHIFT 4
+#define SIS_MM_ALIGN_MASK ( (1 << SIS_MM_ALIGN_SHIFT) - 1)
+
+#if defined(__linux__) && defined(CONFIG_FB_SIS)
+/* fb management via fb device */
+
+#define SIS_MM_ALIGN_SHIFT 0
+#define SIS_MM_ALIGN_MASK 0
+
+static void *sis_sman_mm_allocate(void *private, unsigned long size,
+				  unsigned alignment)
+{
+	struct sis_memreq req;
+
+	req.size = size;
+	sis_malloc(&req);
+	if (req.size == 0)
+		return NULL;
+	else
+		return (void *)~req.offset;
+}
+
+static void sis_sman_mm_free(void *private, void *ref)
+{
+	sis_free(~((unsigned long)ref));
+}
+
+static void sis_sman_mm_destroy(void *private)
+{
+	;
+}
+
+unsigned long sis_sman_mm_offset(void *private, void *ref)
+{
+	return ~((unsigned long)ref);
+}
+
+#endif
+
+static int sis_fb_init(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_sis_private_t *dev_priv = dev->dev_private;
+	drm_sis_fb_t fb;
+	int ret;
+
+	DRM_COPY_FROM_USER_IOCTL(fb, (drm_sis_fb_t __user *) data, sizeof(fb));
+
+	down(&dev->struct_sem);
+#if defined(__linux__) && defined(CONFIG_FB_SIS)
+	{
+		drm_sman_mm_t sman_mm;
+		sman_mm.private = (void *)0xFFFFFFFF;
+		sman_mm.allocate = sis_sman_mm_allocate;
+		sman_mm.free = sis_sman_mm_free;
+		sman_mm.destroy = sis_sman_mm_destroy;
+		sman_mm.offset = sis_sman_mm_offset;
+		ret =
+		    drm_sman_set_manager(&dev_priv->sman, VIDEO_TYPE, &sman_mm);
+	}
+#else
+	ret = drm_sman_set_range(&dev_priv->sman, VIDEO_TYPE, 0,
+				 fb.size >> SIS_MM_ALIGN_SHIFT);
+#endif
+
+	if (ret) {
+		DRM_ERROR("VRAM memory manager initialisation error\n");
+		up(&dev->struct_sem);
+		return ret;
+	}
+
+	dev_priv->vram_initialized = TRUE;
+	dev_priv->vram_offset = fb.offset;
+
+	up(&dev->struct_sem);
+	DRM_DEBUG("offset = %u, size = %u", fb.offset, fb.size);
+
+	return 0;
+}
+
+static int sis_drm_alloc(drm_device_t * dev, drm_file_t * priv,
+			 unsigned long data, int pool)
+{
+	drm_sis_private_t *dev_priv = dev->dev_private;
+	drm_sis_mem_t __user *argp = (drm_sis_mem_t __user *) data;
+	drm_sis_mem_t mem;
+	int retval = 0;
+	drm_memblock_item_t *item;
+
+	DRM_COPY_FROM_USER_IOCTL(mem, argp, sizeof(mem));
+
+	down(&dev->struct_sem);
+
+	if (FALSE == ((pool == 0) ? dev_priv->vram_initialized :
+		      dev_priv->agp_initialized)) {
+		DRM_ERROR
+		    ("Attempt to allocate from uninitialized memory manager.\n");
+		return DRM_ERR(EINVAL);
+	}
+
+	mem.size = (mem.size + SIS_MM_ALIGN_MASK) >> SIS_MM_ALIGN_SHIFT;
+	item = drm_sman_alloc(&dev_priv->sman, pool, mem.size, 0,
+			      (unsigned long)priv);
+
+	up(&dev->struct_sem);
+	if (item) {
+		mem.offset = ((pool == 0) ?
+			      dev_priv->vram_offset : dev_priv->agp_offset) +
+		    (item->mm->
+		     offset(item->mm, item->mm_info) << SIS_MM_ALIGN_SHIFT);
+		mem.free = item->user_hash.key;
+		mem.size = mem.size << SIS_MM_ALIGN_SHIFT;
+	} else {
+		mem.offset = 0;
+		mem.size = 0;
+		mem.free = 0;
+		retval = DRM_ERR(ENOMEM);
+	}
+
+	DRM_COPY_TO_USER_IOCTL(argp, mem, sizeof(mem));
+
+	DRM_DEBUG("alloc %d, size = %d, offset = %d\n", pool, mem.size,
+		  mem.offset);
+
+	return retval;
+}
+
+static int sis_drm_free(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_sis_private_t *dev_priv = dev->dev_private;
+	drm_sis_mem_t mem;
+	int ret;
+
+	DRM_COPY_FROM_USER_IOCTL(mem, (drm_sis_mem_t __user *) data,
+				 sizeof(mem));
+
+	down(&dev->struct_sem);
+	ret = drm_sman_free_key(&dev_priv->sman, mem.free);
+	up(&dev->struct_sem);
+	DRM_DEBUG("free = 0x%lx\n", mem.free);
+
+	return ret;
+}
+
+static int sis_fb_alloc(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	return sis_drm_alloc(dev, priv, data, VIDEO_TYPE);
+}
+
+static int sis_ioctl_agp_init(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_sis_private_t *dev_priv = dev->dev_private;
+	drm_sis_agp_t agp;
+	int ret;
+	dev_priv = dev->dev_private;
+
+	DRM_COPY_FROM_USER_IOCTL(agp, (drm_sis_agp_t __user *) data,
+				 sizeof(agp));
+	down(&dev->struct_sem);
+	ret = drm_sman_set_range(&dev_priv->sman, AGP_TYPE, 0,
+				 agp.size >> SIS_MM_ALIGN_SHIFT);
+
+	if (ret) {
+		DRM_ERROR("AGP memory manager initialisation error\n");
+		up(&dev->struct_sem);
+		return ret;
+	}
+
+	dev_priv->agp_initialized = TRUE;
+	dev_priv->agp_offset = agp.offset;
+	up(&dev->struct_sem);
+
+	DRM_DEBUG("offset = %u, size = %u", agp.offset, agp.size);
+	return 0;
+}
+
+static int sis_ioctl_agp_alloc(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+
+	return sis_drm_alloc(dev, priv, data, AGP_TYPE);
+}
+
+int sis_final_context(struct drm_device *dev, int context)
+{
+	if (dev->ctx_count == 1 && dev->dev_private) {
+		drm_sis_private_t *dev_priv = dev->dev_private;
+
+		DRM_DEBUG("Last Context\n");
+		down(&dev->struct_sem);
+		drm_sman_cleanup(&dev_priv->sman);
+		dev_priv->vram_initialized = FALSE;
+		dev_priv->agp_initialized = FALSE;
+		up(&dev->struct_sem);
+	}
+	return 1;
+}
+
+void sis_reclaim_buffers_locked(drm_device_t * dev, struct file *filp)
+{
+	drm_sis_private_t *dev_priv = dev->dev_private;
+	drm_file_t *priv = filp->private_data;
+
+	down(&dev->struct_sem);
+	if (drm_sman_owner_clean(&dev_priv->sman, (unsigned long)priv)) {
+		up(&dev->struct_sem);
+		return;
+	}
+
+	if (dev->driver->dma_quiescent) {
+		dev->driver->dma_quiescent(dev);
+	}
+
+	drm_sman_owner_cleanup(&dev_priv->sman, (unsigned long)priv);
+	up(&dev->struct_sem);
+	return;
+}
+
+drm_ioctl_desc_t sis_ioctls[] = {
+	[DRM_IOCTL_NR(DRM_SIS_FB_ALLOC)] = {sis_fb_alloc, DRM_AUTH}
+	,
+	[DRM_IOCTL_NR(DRM_SIS_FB_FREE)] = {sis_drm_free, DRM_AUTH}
+	,
+	[DRM_IOCTL_NR(DRM_SIS_AGP_INIT)] =
+	    {sis_ioctl_agp_init, DRM_AUTH | DRM_MASTER | DRM_ROOT_ONLY}
+	,
+	[DRM_IOCTL_NR(DRM_SIS_AGP_ALLOC)] = {sis_ioctl_agp_alloc, DRM_AUTH}
+	,
+	[DRM_IOCTL_NR(DRM_SIS_AGP_FREE)] = {sis_drm_free, DRM_AUTH}
+	,
+	[DRM_IOCTL_NR(DRM_SIS_FB_INIT)] =
+	    {sis_fb_init, DRM_AUTH | DRM_MASTER | DRM_ROOT_ONLY}
+};
+
+int sis_max_ioctl = DRM_ARRAY_SIZE(sis_ioctls);

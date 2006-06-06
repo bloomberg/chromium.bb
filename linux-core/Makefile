@@ -77,7 +77,7 @@ DRM_MODULES ?= $(MODULE_LIST)
 
 DRMSHARED =     drm.h drm_sarea.h
 DRMHEADERS =    drmP.h drm_compat.h drm_os_linux.h $(DRMSHARED)
-COREHEADERS =   drm_core.h 
+COREHEADERS =   drm_core.h drm_sman.h drm_hashtab.h 
 
 TDFXHEADERS =   tdfx_drv.h $(DRMHEADERS)
 TDFXSHARED =    tdfx_drv.h
@@ -93,15 +93,13 @@ I810HEADERS =   i810_drv.h i810_drm.h $(DRMHEADERS)
 I830HEADERS =   i830_drv.h i830_drm.h $(DRMHEADERS)
 I915HEADERS =   i915_drv.h i915_drm.h $(DRMHEADERS)
 I915SHARED  =   i915_drv.h i915_drm.h i915_irq.c i915_mem.c i915_dma.c
-SISHEADERS=     sis_drv.h sis_drm.h $(DRMHEADERS)
-SISSHARED=      sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
+SISHEADERS=     sis_drv.h sis_drm.h drm_hashtab.h drm_sman.h $(DRMHEADERS)
+SISSHARED=      sis_drv.h sis_drm.h
 SAVAGEHEADERS=  savage_drv.h savage_drm.h $(DRMHEADERS)
 SAVAGESHARED=	savage_drv.h savage_drm.h savage_bci.c savage_state.c
-VIAHEADERS =	via_drm.h via_drv.h via_mm.h via_ds.h \
-		via_3d_reg.h via_verifier.h $(DRMHEADERS)
-VIASHARED	= via_drm.h via_drv.h via_mm.h via_ds.h \
-		via_3d_reg.h via_drv.c via_ds.c via_irq.c via_map.c \
-		via_mm.c via_dma.c via_verifier.c via_verifier.h via_video.c
+VIAHEADERS =	via_drm.h via_drv.h via_3d_reg.h via_verifier.h $(DRMHEADERS)
+VIASHARED	= via_drm.h via_drv.h via_3d_reg.h via_drv.c via_irq.c via_map.c \
+		via_dma.c via_verifier.c via_verifier.h via_video.c
 MACH64HEADERS = mach64_drv.h mach64_drm.h $(DRMHEADERS)
 MACH64SHARED = 	mach64_drv.h mach64_drm.h mach64_dma.c \
 		mach64_irq.c mach64_state.c

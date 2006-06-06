@@ -99,6 +99,7 @@ int via_map_init(DRM_IOCTL_ARGS)
 int via_driver_load(drm_device_t *dev, unsigned long chipset)
 {
 	drm_via_private_t *dev_priv;
+	int ret = 0;
 
 	dev_priv = drm_calloc(1, sizeof(drm_via_private_t), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
@@ -109,13 +110,22 @@ int via_driver_load(drm_device_t *dev, unsigned long chipset)
 	if (chipset == VIA_PRO_GROUP_A)
 		dev_priv->pro_group_a = 1;
 
-	return 0;
+#ifdef VIA_HAVE_CORE_MM
+	ret = drm_sman_init(&dev_priv->sman, 2, 12, 8);
+	if (ret) {
+		drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
+	}
+#endif
+	return ret;
 }
 
 int via_driver_unload(drm_device_t *dev)
 {
 	drm_via_private_t *dev_priv = dev->dev_private;
 
+#ifdef VIA_HAVE_CORE_MM
+	drm_sman_takedown(&dev_priv->sman);
+#endif
 	drm_free(dev_priv, sizeof(drm_via_private_t), DRM_MEM_DRIVER);
 
 	return 0;

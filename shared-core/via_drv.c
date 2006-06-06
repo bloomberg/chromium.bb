@@ -46,7 +46,9 @@ static struct drm_driver driver = {
 	    DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL,
 	.load = via_driver_load,
 	.unload = via_driver_unload,
+#ifndef VIA_HAVE_CORE_MM
 	.context_ctor = via_init_context,
+#endif
 	.context_dtor = via_final_context,
 	.vblank_wait = via_driver_vblank_wait,
 	.irq_preinstall = via_driver_irq_preinstall,
@@ -56,6 +58,9 @@ static struct drm_driver driver = {
 	.dma_quiescent = via_driver_dma_quiescent,
 	.dri_library_name = dri_library_name,
 	.reclaim_buffers = drm_core_reclaim_buffers,
+#ifdef VIA_HAVE_CORE_MM
+	.reclaim_buffers_locked = via_reclaim_buffers_locked,
+#endif
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
 	.ioctls = via_ioctls,

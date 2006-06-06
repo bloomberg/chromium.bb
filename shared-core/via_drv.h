@@ -24,6 +24,7 @@
 #ifndef _VIA_DRV_H_
 #define _VIA_DRV_H_
 
+#include "drm_sman.h"
 #define DRIVER_AUTHOR	"Various"
 
 #define DRIVER_NAME		"via"
@@ -39,6 +40,7 @@
  * the DMA blit code has been implemented for FreeBSD.
  */
 #define VIA_HAVE_DMABLIT 1
+#define VIA_HAVE_CORE_MM 1
 #endif
 
 #define VIA_PCI_BUF_SIZE 60000
@@ -88,6 +90,15 @@ typedef struct drm_via_private {
 	uint32_t irq_enable_mask; 
 	uint32_t irq_pending_mask;	
 	int *irq_map;
+        /* Memory manager stuff */
+#ifdef VIA_HAVE_CORE_MM
+	unsigned idle_fault;
+	drm_sman_t sman;
+	int vram_initialized;
+	int agp_initialized;
+        unsigned long vram_offset;
+        unsigned long agp_offset;
+#endif
 #ifdef VIA_HAVE_DMABLIT
 	drm_via_blitq_t blit_queues[VIA_NUM_BLIT_ENGINES];
 #endif
@@ -121,7 +132,6 @@ extern int via_dma_blit( DRM_IOCTL_ARGS );
 
 extern int via_driver_load(drm_device_t *dev, unsigned long chipset);
 extern int via_driver_unload(drm_device_t *dev);
-extern int via_init_context(drm_device_t * dev, int context);
 extern int via_final_context(drm_device_t * dev, int context);
 
 extern int via_do_cleanup_map(drm_device_t * dev);
@@ -140,6 +150,13 @@ extern void via_cleanup_futex(drm_via_private_t *dev_priv);
 extern void via_release_futex(drm_via_private_t *dev_priv, int context);
 extern int via_driver_irq_wait(drm_device_t * dev, unsigned int irq,
 			       int force_sequence, unsigned int *sequence);
+
+#ifdef VIA_HAVE_CORE_MM
+extern void via_reclaim_buffers_locked(drm_device_t *dev, struct file *filp);
+#else
+extern int via_init_context(drm_device_t * dev, int context);
+#endif
+
 #ifdef VIA_HAVE_DMABLIT
 extern void via_dmablit_handler(drm_device_t *dev, int engine, int from_irq);
 extern void via_init_dmablit(drm_device_t *dev);

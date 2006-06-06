@@ -36,12 +36,44 @@ static struct pci_device_id pciidlist[] = {
 	sis_PCI_IDS
 };
 
+
+static int sis_driver_load(drm_device_t *dev, unsigned long chipset)
+{
+	drm_sis_private_t *dev_priv;
+        int ret;
+
+	dev_priv = drm_calloc(1, sizeof(drm_sis_private_t), DRM_MEM_DRIVER);
+	if (dev_priv == NULL)
+		return DRM_ERR(ENOMEM);
+
+	dev->dev_private = (void *)dev_priv;
+        dev_priv->chipset = chipset;
+        ret = drm_sman_init(&dev_priv->sman, 2, 12, 8);
+	if (ret) {
+		drm_free(dev_priv, sizeof(dev_priv), DRM_MEM_DRIVER);
+	}
+
+	return ret;
+}
+
+static int sis_driver_unload(drm_device_t *dev)
+{
+	drm_sis_private_t *dev_priv = dev->dev_private;
+
+        drm_sman_takedown(&dev_priv->sman);
+	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
+
+	return 0;
+}
+
+
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features = DRIVER_USE_AGP | DRIVER_USE_MTRR,
-	.context_ctor = sis_init_context,
+        .load = sis_driver_load,
+        .unload = sis_driver_unload,
 	.context_dtor = sis_final_context,
-	.reclaim_buffers = drm_core_reclaim_buffers,
+	.reclaim_buffers = NULL,
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
 	.ioctls = sis_ioctls,

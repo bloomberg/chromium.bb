@@ -42,11 +42,11 @@
  * backwards incompatibilities, (which should be avoided whenever possible).
  */
 
-#define VIA_DRM_DRIVER_DATE		"20060111"
+#define VIA_DRM_DRIVER_DATE		"20060528"
 
 #define VIA_DRM_DRIVER_MAJOR		2
-#define VIA_DRM_DRIVER_MINOR		9
-#define VIA_DRM_DRIVER_PATCHLEVEL	1
+#define VIA_DRM_DRIVER_MINOR		10
+#define VIA_DRM_DRIVER_PATCHLEVEL	0
 #define VIA_DRM_DRIVER_VERSION          (((VIA_DRM_DRIVER_MAJOR) << 16) | (VIA_DRM_DRIVER_MINOR))
 
 #define VIA_NR_SAREA_CLIPRECTS 		8
