@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,41 +23,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#include "config.h"
-#include "AppendNodeCommand.h"
+#ifndef InsertListCommand_h
+#define InsertListCommand_h
+
+#include "CompositeEditCommand.h"
 
 namespace WebCore {
 
-AppendNodeCommand::AppendNodeCommand(Document *document, Node *appendChild, Node *parentNode)
-    : EditCommand(document), m_appendChild(appendChild), m_parentNode(parentNode)
+class InsertListCommand : public CompositeEditCommand
 {
-    ASSERT(m_appendChild);
-    ASSERT(m_parentNode);
-}
-
-void AppendNodeCommand::doApply()
-{
-    ASSERT(m_appendChild);
-    ASSERT(m_parentNode);
-    // If the child to append is already in a tree, appending it will remove it from it's old location
-    // in an non-undoable way.  We might eventually find it useful to do an undoable remove in this case.
-    ASSERT(!m_appendChild->parent());
-    ASSERT(m_parentNode->isContentEditable() || !m_parentNode->attached());
-
-    ExceptionCode ec = 0;
-    m_parentNode->appendChild(m_appendChild.get(), ec);
-    ASSERT(ec == 0);
-}
-
-void AppendNodeCommand::doUnapply()
-{
-    ASSERT(m_appendChild);
-    ASSERT(m_parentNode);
-    ASSERT(state() == Applied);
-
-    ExceptionCode ec = 0;
-    m_parentNode->removeChild(m_appendChild.get(), ec);
-    ASSERT(ec == 0);
-}
+public:
+    enum EListType { OrderedListType, UnorderedListType };
+    InsertListCommand(WebCore::Document*, EListType, const String&);
+    virtual void doApply();
+private:
+    Node* fixOrphanedListChild(Node*);
+    bool modifyRange();
+    EListType m_type;
+    String m_id;
+    bool m_forceCreateList;
+};
 
 } // namespace WebCore
+
+#endif // InsertListCommand_h
