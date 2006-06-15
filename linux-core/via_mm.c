@@ -104,17 +104,25 @@ int via_final_context(struct drm_device *dev, int context)
 			drm_irq_uninstall(dev);
 		via_cleanup_futex(dev_priv);
 		via_do_cleanup_map(dev);
-
-		down(&dev->struct_sem);
-		drm_sman_cleanup(&dev_priv->sman);
-		dev_priv->vram_initialized = FALSE;
-		dev_priv->agp_initialized = FALSE;
-		up(&dev->struct_sem);
 	}
 #endif
-
 	return 1;
 }
+
+void via_lastclose(struct drm_device *dev)
+{
+	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
+
+	if (!dev_priv)
+		return;
+
+	down(&dev->struct_sem);
+	drm_sman_cleanup(&dev_priv->sman);
+	dev_priv->vram_initialized = FALSE;
+	dev_priv->agp_initialized = FALSE;
+	up(&dev->struct_sem);
+}	
+
 
 int via_mem_alloc(DRM_IOCTL_ARGS)
 {
@@ -156,7 +164,7 @@ int via_mem_alloc(DRM_IOCTL_ARGS)
 		mem.offset = 0;
 		mem.size = 0;
 		mem.index = 0;
-		DRM_ERROR("Video memory allocation failed\n");
+		DRM_DEBUG("Video memory allocation failed\n");
 		retval = DRM_ERR(ENOMEM);
 	}
 	DRM_COPY_TO_USER_IOCTL((drm_via_mem_t __user *) data, mem, sizeof(mem));
@@ -181,6 +189,9 @@ int via_mem_free(DRM_IOCTL_ARGS)
 
 	return ret;
 }
+
+  
+
 
 void via_reclaim_buffers_locked(drm_device_t * dev, struct file *filp)
 {

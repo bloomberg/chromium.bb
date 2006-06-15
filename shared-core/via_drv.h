@@ -153,6 +153,7 @@ extern int via_driver_irq_wait(drm_device_t * dev, unsigned int irq,
 
 #ifdef VIA_HAVE_CORE_MM
 extern void via_reclaim_buffers_locked(drm_device_t *dev, struct file *filp);
+extern void via_lastclose(drm_device_t *dev);
 #else
 extern int via_init_context(drm_device_t * dev, int context);
 #endif

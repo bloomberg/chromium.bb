@@ -60,6 +60,7 @@ static struct drm_driver driver = {
 	.reclaim_buffers = drm_core_reclaim_buffers,
 #ifdef VIA_HAVE_CORE_MM
 	.reclaim_buffers_locked = via_reclaim_buffers_locked,
+	.lastclose = via_lastclose,
 #endif
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
