@@ -132,6 +132,7 @@ int via_mem_alloc(DRM_IOCTL_ARGS)
 	int retval = 0;
 	drm_memblock_item_t *item;
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
+	unsigned long tmpSize;
 
 	DRM_COPY_FROM_USER_IOCTL(mem, (drm_via_mem_t __user *) data,
 				 sizeof(mem));
@@ -149,8 +150,8 @@ int via_mem_alloc(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 	}
 
-	mem.size = (mem.size + VIA_MM_ALIGN_MASK) >> VIA_MM_ALIGN_SHIFT;
-	item = drm_sman_alloc(&dev_priv->sman, mem.type, mem.size, 0,
+	tmpSize = (mem.size + VIA_MM_ALIGN_MASK) >> VIA_MM_ALIGN_SHIFT;
+	item = drm_sman_alloc(&dev_priv->sman, mem.type, tmpSize, 0,
 			      (unsigned long)priv);
 	up(&dev->struct_sem);
 	if (item) {
@@ -159,7 +160,6 @@ int via_mem_alloc(DRM_IOCTL_ARGS)
 		    (item->mm->
 		     offset(item->mm, item->mm_info) << VIA_MM_ALIGN_SHIFT);
 		mem.index = item->user_hash.key;
-		mem.size = mem.size << VIA_MM_ALIGN_SHIFT;
 	} else {
 		mem.offset = 0;
 		mem.size = 0;
