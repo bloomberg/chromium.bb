@@ -232,19 +232,18 @@ static int sis_ioctl_agp_alloc(DRM_IOCTL_ARGS)
 	return sis_drm_alloc(dev, priv, data, AGP_TYPE);
 }
 
-int sis_final_context(struct drm_device *dev, int context)
+void sis_lastclose(struct drm_device *dev)
 {
-	if (dev->ctx_count == 1 && dev->dev_private) {
-		drm_sis_private_t *dev_priv = dev->dev_private;
+	drm_sis_private_t *dev_priv = dev->dev_private;
 
-		DRM_DEBUG("Last Context\n");
-		down(&dev->struct_sem);
-		drm_sman_cleanup(&dev_priv->sman);
-		dev_priv->vram_initialized = FALSE;
-		dev_priv->agp_initialized = FALSE;
-		up(&dev->struct_sem);
-	}
-	return 1;
+	if (!dev_priv)
+		return;
+
+	down(&dev->struct_sem);
+	drm_sman_cleanup(&dev_priv->sman);
+	dev_priv->vram_initialized = FALSE;
+	dev_priv->agp_initialized = FALSE;
+	up(&dev->struct_sem);
 }
 
 void sis_reclaim_buffers_locked(drm_device_t * dev, struct file *filp)
