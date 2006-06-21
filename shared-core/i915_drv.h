@@ -97,6 +97,7 @@ typedef struct drm_i915_private {
 	int allow_batchbuffer;
 	struct mem_block *agp_heap;
 	unsigned int sr01, adpa, ppcr, dvob, dvoc, lvds;
+	int vblank_pipe;
 } drm_i915_private_t;
 
 extern drm_ioctl_desc_t i915_ioctls[];
