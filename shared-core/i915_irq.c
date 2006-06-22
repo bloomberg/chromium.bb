@@ -187,9 +187,6 @@ static int i915_enable_interrupt (drm_device_t *dev)
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	u16 flag;
 	
-	DRM_INFO ("Setting vblank pipe to %s %s\n", 
-		  (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_A) ? "A" : "",
-		  (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_B) ? "B" : "");
 	flag = 0;
 	if (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_A)
 		flag |= VSYNC_PIPEA_FLAG;
@@ -212,7 +209,6 @@ int i915_vblank_pipe_set(DRM_IOCTL_ARGS)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	drm_i915_vblank_pipe_t pipe;
 
-	DRM_INFO ("%s\n", __FUNCTION__);
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
 		return DRM_ERR(EINVAL);
@@ -263,7 +259,6 @@ void i915_driver_irq_postinstall(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	DRM_INFO ("%s\n", __FUNCTION__);
 	i915_enable_interrupt(dev);
 	DRM_INIT_WAITQUEUE(&dev_priv->irq_queue);
 }
