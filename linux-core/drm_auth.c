@@ -140,6 +140,9 @@ int drm_getmagic(struct inode *inode, struct file *filp,
 		 unsigned int cmd, unsigned long arg)
 {
 	static drm_magic_t sequence = 0;
+#ifndef DEFINE_SPINLOCK
+#define DEFINE_SPINLOCK(x) spinlock_t x = SPIN_LOCK_UNLOCKED
+#endif
 	static DEFINE_SPINLOCK(lock);
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
