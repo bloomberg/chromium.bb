@@ -65,44 +65,6 @@ static drm_map_list_t *drm_find_matching_map(drm_device_t *dev,
 	return NULL;
 }
 
-/*
- * Used to allocate 32-bit handles for mappings.
- */
-#define START_RANGE 0x10000000
-#define END_RANGE 0x40000000
-
-#ifdef _LP64
-static __inline__ unsigned int HandleID(unsigned long lhandle,
-					drm_device_t *dev) 
-{
-	static unsigned int map32_handle = START_RANGE;
-	unsigned int hash;
-
-	if (lhandle & 0xffffffff00000000) {
-		hash = map32_handle;
-		map32_handle += PAGE_SIZE;
-		if (map32_handle > END_RANGE)
-			map32_handle = START_RANGE;
-	} else
-		hash = lhandle;
-
-	while (1) {
-		drm_map_list_t *_entry;
-		list_for_each_entry(_entry, &dev->maplist->head, head) {
-			if (_entry->user_token == hash)
-				break;
-		}
-		if (&_entry->head == &dev->maplist->head)
-			return hash;
-
-		hash += PAGE_SIZE;
-		map32_handle += PAGE_SIZE;
-	}
-}
-#else
-# define HandleID(x,dev) (unsigned int)(x)
-#endif
-
 /**
  * Ioctl to specify a range of memory that is available for mapping by a non-root process.
  *
@@ -300,9 +262,18 @@ static int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 	list_add(&list->head, &dev->maplist->head);
 	/* Assign a 32-bit handle */
 	/* We do it here so that dev->struct_sem protects the increment */
-	list->user_token = HandleID(map->type == _DRM_SHM
-				    ? (unsigned long)map->handle
-				    : map->offset, dev);
+
+        if (drm_ht_just_insert_please(&dev->map_hash, &list->hash, 
+				      ((map->type == _DRM_SHM) ? (unsigned long)map->handle : 
+                                       map->offset) >> PAGE_SHIFT,
+				      32 - PAGE_SHIFT - 1)) {
+                drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+                drm_free(list, sizeof(*list), DRM_MEM_MAPS);
+                up(&dev->struct_sem);
+                return -ENOMEM;
+	}
+
+	list->user_token = (list->hash.key << PAGE_SHIFT) + DRM_MAP_HASH_OFFSET;
 	up(&dev->struct_sem);
 
 	*maplist = list;
@@ -387,6 +358,8 @@ int drm_rmmap_locked(drm_device_t *dev, drm_local_map_t *map)
 
 		if (r_list->map == map) {
 			list_del(list);
+                        drm_ht_remove_key(&dev->map_hash, 
+                                          (r_list->user_token - DRM_MAP_HASH_OFFSET) >> PAGE_SHIFT);
 			drm_free(list, sizeof(*list), DRM_MEM_MAPS);
 			break;
 		}
