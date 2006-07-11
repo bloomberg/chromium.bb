@@ -53,7 +53,8 @@ typedef struct drm_open_hash{
 extern int drm_ht_create(drm_open_hash_t *ht, unsigned int order);
 extern int drm_ht_insert_item(drm_open_hash_t *ht, drm_hash_item_t *item);
 extern int drm_ht_just_insert_please(drm_open_hash_t *ht, drm_hash_item_t *item,
-                              unsigned long seed, int bits);
+				     unsigned long seed, int bits, int shift, 
+				     unsigned long add);
 extern int drm_ht_find_item(drm_open_hash_t *ht, unsigned long key, drm_hash_item_t **item);
 
 extern void drm_ht_verbose_list(drm_open_hash_t *ht, unsigned long key);

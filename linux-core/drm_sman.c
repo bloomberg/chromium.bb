@@ -223,7 +223,7 @@ drm_memblock_item_t *drm_sman_alloc(drm_sman_t * sman, unsigned int manager,
 
 	if (drm_ht_just_insert_please
 	    (&sman->user_hash_tab, &memblock->user_hash,
-	     (unsigned long)memblock, 32))
+	     (unsigned long)memblock, 32, 0, 0))
 		goto out1;
 
 	owner_item = drm_sman_get_owner_item(sman, owner);

@@ -65,6 +65,29 @@ static drm_map_list_t *drm_find_matching_map(drm_device_t *dev,
 	return NULL;
 }
 
+int drm_map_handle(drm_device_t *dev, drm_hash_item_t *hash, 
+		   unsigned long user_token, int hashed_handle)
+{
+	int use_hashed_handle;
+
+#if (BITS_PER_LONG == 64)
+	use_hashed_handle = ((user_token & 0xFFFFFFFF00000000UL) || hashed_handle);
+#elif (BITS_PER_LONG == 32)
+	use_hashed_handle = hashed_handle;
+#else
+#error Unsupported long size. Neither 64 nor 32 bits.
+#endif
+
+	if (use_hashed_handle) {
+		return drm_ht_just_insert_please(&dev->map_hash, hash, 
+						 user_token, 32 - PAGE_SHIFT - 3,
+						 PAGE_SHIFT, DRM_MAP_HASH_OFFSET);
+	} else {
+		hash->key = user_token;
+		return drm_ht_insert_item(&dev->map_hash, hash);
+	}
+}
+
 /**
  * Ioctl to specify a range of memory that is available for mapping by a non-root process.
  *
@@ -85,6 +108,8 @@ static int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 	drm_map_t *map;
 	drm_map_list_t *list;
 	drm_dma_handle_t *dmah;
+	unsigned long user_token;
+	int ret;
 
 	map = drm_alloc(sizeof(*map), DRM_MEM_MAPS);
 	if (!map)
@@ -260,20 +285,21 @@ static int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 
 	down(&dev->struct_sem);
 	list_add(&list->head, &dev->maplist->head);
-	/* Assign a 32-bit handle */
-	/* We do it here so that dev->struct_sem protects the increment */
 
-        if (drm_ht_just_insert_please(&dev->map_hash, &list->hash, 
-				      ((map->type == _DRM_SHM) ? (unsigned long)map->handle : 
-                                       map->offset) >> PAGE_SHIFT,
-				      32 - PAGE_SHIFT - 1)) {
+	/* Assign a 32-bit handle */
+
+	user_token = (map->type == _DRM_SHM) ? (unsigned long) map->handle : 
+		map->offset;
+        ret = drm_map_handle(dev, &list->hash, user_token, FALSE); 
+
+	if (ret) {
                 drm_free(map, sizeof(*map), DRM_MEM_MAPS);
                 drm_free(list, sizeof(*list), DRM_MEM_MAPS);
                 up(&dev->struct_sem);
-                return -ENOMEM;
+                return ret;
 	}
 
-	list->user_token = (list->hash.key << PAGE_SHIFT) + DRM_MAP_HASH_OFFSET;
+	list->user_token = list->hash.key;
 	up(&dev->struct_sem);
 
 	*maplist = list;
@@ -358,8 +384,7 @@ int drm_rmmap_locked(drm_device_t *dev, drm_local_map_t *map)
 
 		if (r_list->map == map) {
 			list_del(list);
-                        drm_ht_remove_key(&dev->map_hash, 
-                                          (r_list->user_token - DRM_MAP_HASH_OFFSET) >> PAGE_SHIFT);
+                        drm_ht_remove_key(&dev->map_hash, r_list->user_token);
 			drm_free(list, sizeof(*list), DRM_MEM_MAPS);
 			break;
 		}

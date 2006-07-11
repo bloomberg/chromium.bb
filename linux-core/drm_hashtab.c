@@ -128,19 +128,21 @@ drm_ht_insert_item(drm_open_hash_t *ht, drm_hash_item_t *item)
 
 int
 drm_ht_just_insert_please(drm_open_hash_t *ht, drm_hash_item_t *item,
-                          unsigned long seed, int bits)
+                          unsigned long seed, int bits, int shift, 
+			  unsigned long add)
 {
         int ret;
         unsigned long mask = (1 << bits) - 1;
-        unsigned long first;
+        unsigned long first, unshifted_key;
 
-        item->key = hash_long(seed, bits);
-        first = item->key;
+        unshifted_key = hash_long(seed, bits);
+        first = unshifted_key;
         do{
+	        item->key = (unshifted_key << shift) + add;
                 ret = drm_ht_insert_item(ht, item);
                 if (ret)
-                        item->key = (item->key + 1) & mask; 
-        } while(ret && (item->key != first));
+                        unshifted_key = (unshifted_key + 1) & mask; 
+        } while(ret && (unshifted_key != first));
 
         if (ret) {
                 DRM_ERROR("Available key bit space exhausted\n");
