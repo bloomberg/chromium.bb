@@ -834,6 +834,7 @@ static int mach64_do_dma_init(drm_device_t * dev, drm_mach64_init_t * init)
 			mach64_do_cleanup_dma(dev);
 			return DRM_ERR(ENOMEM);
 		}
+		dev->agp_buffer_token = init->buffers_offset;
 		dev->agp_buffer_map =
 		    drm_core_findmap(dev, init->buffers_offset);
 		if (!dev->agp_buffer_map) {
