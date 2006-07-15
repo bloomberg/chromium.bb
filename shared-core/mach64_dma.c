@@ -1329,17 +1329,88 @@ int mach64_do_release_used_buffers(drm_mach64_private_t * dev_priv)
 	return 0;
 }
 
+static int mach64_do_reclaim_completed(drm_mach64_private_t * dev_priv)
+{
+	drm_mach64_descriptor_ring_t *ring = &dev_priv->ring;
+	struct list_head *ptr;
+	struct list_head *tmp;
+	drm_mach64_freelist_t *entry;
+	u32 head, tail, ofs;
+
+	mach64_ring_tick(dev_priv, ring);
+	head = ring->head;
+	tail = ring->tail;
+
+	if (head == tail) {
+#if MACH64_EXTRA_CHECKING
+		if (MACH64_READ(MACH64_GUI_STAT) & MACH64_GUI_ACTIVE) {
+			DRM_ERROR("Empty ring with non-idle engine!\n");
+			mach64_dump_ring_info(dev_priv);
+			return -1;
+		}
+#endif
+		/* last pass is complete, so release everything */
+		mach64_do_release_used_buffers(dev_priv);
+		DRM_DEBUG("%s: idle engine, freed all buffers.\n",
+		     __FUNCTION__);
+		if (list_empty(&dev_priv->free_list)) {
+			DRM_ERROR("Freelist empty with idle engine\n");
+			return -1;
+		}
+		return 0;
+	}
+	/* Look for a completed buffer and bail out of the loop
+	 * as soon as we find one -- don't waste time trying
+	 * to free extra bufs here, leave that to do_release_used_buffers
+	 */
+	list_for_each_safe(ptr, tmp, &dev_priv->pending) {
+		entry = list_entry(ptr, drm_mach64_freelist_t, list);
+		ofs = entry->ring_ofs;
+		if (entry->discard &&
+		    ((head < tail && (ofs < head || ofs >= tail)) ||
+		     (head > tail && (ofs < head && ofs >= tail)))) {
+#if MACH64_EXTRA_CHECKING
+			int i;
+
+			for (i = head; i != tail; i = (i + 4) & ring->tail_mask)
+			{
+				u32 o1 = le32_to_cpu(((u32 *) ring->
+						 start)[i + 1]);
+				u32 o2 = GETBUFADDR(entry->buf);
+
+				if (o1 == o2) {
+					DRM_ERROR
+					    ("Attempting to free used buffer: "
+					     "i=%d  buf=0x%08x\n",
+					     i, o1);
+					mach64_dump_ring_info(dev_priv);
+					return -1;
+				}
+			}
+#endif
+			/* found a processed buffer */
+			entry->buf->pending = 0;
+			list_del(ptr);
+			list_add_tail(ptr, &dev_priv->free_list);
+			DRM_DEBUG
+			    ("%s: freed processed buffer (head=%d tail=%d "
+			     "buf ring ofs=%d).\n",
+			     __FUNCTION__, head, tail, ofs);
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
 drm_buf_t *mach64_freelist_get(drm_mach64_private_t * dev_priv)
 {
 	drm_mach64_descriptor_ring_t *ring = &dev_priv->ring;
 	drm_mach64_freelist_t *entry;
 	struct list_head *ptr;
-	struct list_head *tmp;
 	int t;
 
 	if (list_empty(&dev_priv->free_list)) {
-		u32 head, tail, ofs;
-
 		if (list_empty(&dev_priv->pending)) {
 			DRM_ERROR
 			    ("Couldn't get buffer - pending and free lists empty\n");
@@ -1351,81 +1422,15 @@ drm_buf_t *mach64_freelist_get(drm_mach64_private_t * dev_priv)
 			return NULL;
 		}
 
-		tail = ring->tail;
 		for (t = 0; t < dev_priv->usec_timeout; t++) {
-			mach64_ring_tick(dev_priv, ring);
-			head = ring->head;
+			int ret;
 
-			if (head == tail) {
-#if MACH64_EXTRA_CHECKING
-				if (MACH64_READ(MACH64_GUI_STAT) &
-				    MACH64_GUI_ACTIVE) {
-					DRM_ERROR
-					    ("Empty ring with non-idle engine!\n");
-					mach64_dump_ring_info(dev_priv);
-					return NULL;
-				}
-#endif
-				/* last pass is complete, so release everything */
-				mach64_do_release_used_buffers(dev_priv);
-				DRM_DEBUG
-				    ("%s: idle engine, freed all buffers.\n",
-				     __FUNCTION__);
-				if (list_empty(&dev_priv->free_list)) {
-					DRM_ERROR
-					    ("Freelist empty with idle engine\n");
-					return NULL;
-				}
+			ret = mach64_do_reclaim_completed(dev_priv);
+			if (ret == 0)
 				goto _freelist_entry_found;
-			}
-			/* Look for a completed buffer and bail out of the loop
-			 * as soon as we find one -- don't waste time trying
-			 * to free extra bufs here, leave that to do_release_used_buffers
-			 */
-			list_for_each_safe(ptr, tmp, &dev_priv->pending) {
-				entry =
-				    list_entry(ptr, drm_mach64_freelist_t,
-					       list);
-				ofs = entry->ring_ofs;
-				if (entry->discard &&
-				    ((head < tail
-				      && (ofs < head || ofs >= tail))
-				     || (head > tail
-					 && (ofs < head && ofs >= tail)))) {
-#if MACH64_EXTRA_CHECKING
-					int i;
+			if (ret < 0)
+				return NULL;
 
-					for (i = head; i != tail;
-					     i = (i + 4) & ring->tail_mask) {
-						u32 o1 =
-						    le32_to_cpu(((u32 *) ring->
-								 start)[i + 1]);
-						u32 o2 = GETBUFADDR(entry->buf);
-
-						if (o1 == o2) {
-							DRM_ERROR
-							    ("Attempting to free used buffer: "
-							     "i=%d  buf=0x%08x\n",
-							     i, o1);
-							mach64_dump_ring_info
-							    (dev_priv);
-							return NULL;
-						}
-					}
-#endif
-					/* found a processed buffer */
-					entry->buf->pending = 0;
-					list_del(ptr);
-					entry->buf->used = 0;
-					list_add_tail(ptr,
-						      &dev_priv->placeholders);
-					DRM_DEBUG
-					    ("%s: freed processed buffer (head=%d tail=%d "
-					     "buf ring ofs=%d).\n",
-					     __FUNCTION__, head, tail, ofs);
-					return entry->buf;
-				}
-			}
 			DRM_UDELAY(1);
 		}
 		mach64_dump_ring_info(dev_priv);
