@@ -173,6 +173,8 @@ FcGlobalCacheDestroy (FcGlobalCache *cache)
 	FcGlobalCacheDirDestroy (d);
     }
     FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCache));
+    if (cache->fd != -1)
+	close (cache->fd);
     free (cache);
 }
 
