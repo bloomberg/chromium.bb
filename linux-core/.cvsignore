@@ -1,6 +1,0 @@
-*.ko
-*.mod.c
-*.o.cmd
-*.ko.cmd
-.tmp_versions
-drm_pciids.h
