@@ -266,9 +266,9 @@ static int drm_vm_info(char *buf, char **start, off_t offset, int request,
 	drm_device_t *dev = (drm_device_t *) data;
 	int ret;
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	ret = drm__vm_info(buf, start, offset, request, eof, data);
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
 
@@ -339,9 +339,9 @@ static int drm_queues_info(char *buf, char **start, off_t offset, int request,
 	drm_device_t *dev = (drm_device_t *) data;
 	int ret;
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	ret = drm__queues_info(buf, start, offset, request, eof, data);
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
 
@@ -411,9 +411,9 @@ static int drm_bufs_info(char *buf, char **start, off_t offset, int request,
 	drm_device_t *dev = (drm_device_t *) data;
 	int ret;
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	ret = drm__bufs_info(buf, start, offset, request, eof, data);
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
 
@@ -467,9 +467,9 @@ static int drm_clients_info(char *buf, char **start, off_t offset,
 	drm_device_t *dev = (drm_device_t *) data;
 	int ret;
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	ret = drm__clients_info(buf, start, offset, request, eof, data);
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
 
@@ -540,9 +540,9 @@ static int drm_vma_info(char *buf, char **start, off_t offset, int request,
 	drm_device_t *dev = (drm_device_t *) data;
 	int ret;
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	ret = drm__vma_info(buf, start, offset, request, eof, data);
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
 #endif

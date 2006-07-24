@@ -94,7 +94,7 @@ static int sis_fb_init(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(fb, (drm_sis_fb_t __user *) data, sizeof(fb));
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 #if defined(__linux__) && defined(CONFIG_FB_SIS)
 	{
 		drm_sman_mm_t sman_mm;
@@ -113,14 +113,14 @@ static int sis_fb_init(DRM_IOCTL_ARGS)
 
 	if (ret) {
 		DRM_ERROR("VRAM memory manager initialisation error\n");
-		up(&dev->struct_sem);
+		mutex_unlock(&dev->struct_mutex);
 		return ret;
 	}
 
 	dev_priv->vram_initialized = TRUE;
 	dev_priv->vram_offset = fb.offset;
 
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 	DRM_DEBUG("offset = %u, size = %u", fb.offset, fb.size);
 
 	return 0;
@@ -137,7 +137,7 @@ static int sis_drm_alloc(drm_device_t * dev, drm_file_t * priv,
 
 	DRM_COPY_FROM_USER_IOCTL(mem, argp, sizeof(mem));
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 
 	if (FALSE == ((pool == 0) ? dev_priv->vram_initialized :
 		      dev_priv->agp_initialized)) {
@@ -150,7 +150,7 @@ static int sis_drm_alloc(drm_device_t * dev, drm_file_t * priv,
 	item = drm_sman_alloc(&dev_priv->sman, pool, mem.size, 0,
 			      (unsigned long)priv);
 
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 	if (item) {
 		mem.offset = ((pool == 0) ?
 			      dev_priv->vram_offset : dev_priv->agp_offset) +
@@ -183,9 +183,9 @@ static int sis_drm_free(DRM_IOCTL_ARGS)
 	DRM_COPY_FROM_USER_IOCTL(mem, (drm_sis_mem_t __user *) data,
 				 sizeof(mem));
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	ret = drm_sman_free_key(&dev_priv->sman, mem.free);
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 	DRM_DEBUG("free = 0x%lx\n", mem.free);
 
 	return ret;
@@ -207,19 +207,19 @@ static int sis_ioctl_agp_init(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(agp, (drm_sis_agp_t __user *) data,
 				 sizeof(agp));
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	ret = drm_sman_set_range(&dev_priv->sman, AGP_TYPE, 0,
 				 agp.size >> SIS_MM_ALIGN_SHIFT);
 
 	if (ret) {
 		DRM_ERROR("AGP memory manager initialisation error\n");
-		up(&dev->struct_sem);
+		mutex_unlock(&dev->struct_mutex);
 		return ret;
 	}
 
 	dev_priv->agp_initialized = TRUE;
 	dev_priv->agp_offset = agp.offset;
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 
 	DRM_DEBUG("offset = %u, size = %u", agp.offset, agp.size);
 	return 0;
@@ -310,12 +310,12 @@ void sis_lastclose(struct drm_device *dev)
 	if (!dev_priv)
 		return;
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	drm_sman_cleanup(&dev_priv->sman);
 	dev_priv->vram_initialized = FALSE;
 	dev_priv->agp_initialized = FALSE;
         dev_priv->mmio = NULL;
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 }
 
 void sis_reclaim_buffers_locked(drm_device_t * dev, struct file *filp)
@@ -323,9 +323,9 @@ void sis_reclaim_buffers_locked(drm_device_t * dev, struct file *filp)
 	drm_sis_private_t *dev_priv = dev->dev_private;
 	drm_file_t *priv = filp->private_data;
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	if (drm_sman_owner_clean(&dev_priv->sman, (unsigned long)priv)) {
-		up(&dev->struct_sem);
+		mutex_unlock(&dev->struct_mutex);
 		return;
 	}
 
@@ -334,7 +334,7 @@ void sis_reclaim_buffers_locked(drm_device_t * dev, struct file *filp)
 	}
 
 	drm_sman_owner_cleanup(&dev_priv->sman, (unsigned long)priv);
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 	return;
 }
 

@@ -154,7 +154,7 @@ int drm_lastclose(drm_device_t * dev)
 	if (dev->irq_enabled)
 		drm_irq_uninstall(dev);
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	del_timer(&dev->timer);
 
 	if (dev->unique) {
@@ -239,7 +239,7 @@ int drm_lastclose(drm_device_t * dev)
 		dev->lock.filp = NULL;
 		wake_up_interruptible(&dev->lock.lock_queue);
 	}
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 
 	DRM_DEBUG("lastclose completed\n");
 	return 0;

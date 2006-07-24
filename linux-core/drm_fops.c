@@ -260,7 +260,7 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 			goto out_free;
 	}
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	if (!dev->file_last) {
 		priv->next = NULL;
 		priv->prev = NULL;
@@ -274,7 +274,7 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 		dev->file_last->next = priv;
 		dev->file_last = priv;
 	}
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 
 #ifdef __alpha__
 	/*
@@ -411,7 +411,7 @@ int drm_release(struct inode *inode, struct file *filp)
 
 	drm_fasync(-1, filp, 0);
 
-	down(&dev->ctxlist_sem);
+	mutex_lock(&dev->ctxlist_mutex);
 	if (dev->ctxlist && (!list_empty(&dev->ctxlist->head))) {
 		drm_ctx_list_t *pos, *n;
 
@@ -430,9 +430,9 @@ int drm_release(struct inode *inode, struct file *filp)
 			}
 		}
 	}
-	up(&dev->ctxlist_sem);
+	mutex_unlock(&dev->ctxlist_mutex);
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
 	if (priv->remove_auth_on_close == 1) {
 		drm_file_t *temp = dev->file_first;
 		while (temp) {
@@ -450,7 +450,7 @@ int drm_release(struct inode *inode, struct file *filp)
 	} else {
 		dev->file_last = priv->prev;
 	}
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 
 	if (dev->driver->postclose)
 		dev->driver->postclose(dev, priv);

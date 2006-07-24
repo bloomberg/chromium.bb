@@ -51,12 +51,12 @@ static drm_file_t *drm_find_file(drm_device_t * dev, drm_magic_t magic)
 	drm_magic_entry_t *pt;
         drm_hash_item_t *hash;
 
-	down(&dev->struct_sem);        
+	mutex_lock(&dev->struct_mutex);        
         if (!drm_ht_find_item(&dev->magiclist, (unsigned long) magic, &hash)) {
                 pt = drm_hash_entry(hash, drm_magic_entry_t, hash_item);
                 retval = pt->priv;
         }
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 	return retval;
 }
 
@@ -84,10 +84,10 @@ static int drm_add_magic(drm_device_t *dev, drm_file_t *priv,
 	memset(entry, 0, sizeof(*entry));
 	entry->priv = priv;
         entry->hash_item.key = (unsigned long) magic;
-        down(&dev->struct_sem);
+        mutex_lock(&dev->struct_mutex);
         drm_ht_insert_item(&dev->magiclist, &entry->hash_item);
         list_add_tail(&entry->head, &dev->magicfree);
-	up(&dev->struct_sem);
+	mutex_unlock(&dev->struct_mutex);
 
 	return 0;
 }
@@ -108,15 +108,15 @@ static int drm_remove_magic(drm_device_t * dev, drm_magic_t magic)
 
 	DRM_DEBUG("%d\n", magic);
 
-	down(&dev->struct_sem);
+	mutex_lock(&dev->struct_mutex);
         if (drm_ht_find_item(&dev->magiclist, (unsigned long) magic, &hash)) {
-                up(&dev->struct_sem);
+                mutex_unlock(&dev->struct_mutex);
                 return -EINVAL;
         }
         pt = drm_hash_entry(hash, drm_magic_entry_t, hash_item);
         drm_ht_remove_item(&dev->magiclist, hash);
         list_del(&pt->head);
-        up(&dev->struct_sem);
+        mutex_unlock(&dev->struct_mutex);
 
 	drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
 

@@ -195,6 +195,16 @@ static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from
 }
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,16)
+#define mutex_lock down
+#define mutex_unlock up
+
+#define mutex semaphore
+
+#define mutex_init(a) sema_init((a), 1)
+
+#endif
+
 /* old architectures */
 #ifdef __AMD64__
 #define __x86_64__
