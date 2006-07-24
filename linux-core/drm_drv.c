@@ -245,7 +245,7 @@ int drm_lastclose(drm_device_t * dev)
 	return 0;
 }
 
-void __exit drm_cleanup_pci(struct pci_dev *pdev)
+void drm_cleanup_pci(struct pci_dev *pdev)
 {
 	drm_device_t *dev = pci_get_drvdata(pdev);
 
