@@ -1720,11 +1720,6 @@ static int radeon_do_cleanup_cp(drm_device_t * dev)
 			dev_priv->gart_info.addr = 0;
 		}
 	}
-
-	/* Disable busmastering */
-	RADEON_WRITE(RADEON_BUS_CNTL, RADEON_READ(RADEON_BUS_CNTL) |
-		RADEON_BUS_MASTER_DIS);
-
 	/* only clear to the start of flags */
 	memset(dev_priv, 0, offsetof(drm_radeon_private_t, flags));
 
