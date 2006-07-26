@@ -1351,7 +1351,8 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 		DRM_DEBUG("Forcing AGP card to PCI mode\n");
 		dev_priv->flags &= ~CHIP_IS_AGP;
 	}
-	else if (!(dev_priv->flags & CHIP_IS_AGP))
+	else if (!(dev_priv->flags & (CHIP_IS_AGP | CHIP_IS_PCI | CHIP_IS_PCIE))
+		 && !init->is_pci)
 	{
 		DRM_DEBUG("Restoring AGP flag\n");
 		dev_priv->flags |= CHIP_IS_AGP;
@@ -2215,9 +2216,10 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 
 	if (drm_device_is_agp(dev))
 		dev_priv->flags |= CHIP_IS_AGP;
-
-	if (drm_device_is_pcie(dev))
+	else if (drm_device_is_pcie(dev))
 		dev_priv->flags |= CHIP_IS_PCIE;
+	else
+		dev_priv->flags |= CHIP_IS_PCI;
 
 	DRM_DEBUG("%s card detected\n",
 		  ((dev_priv->flags & CHIP_IS_AGP) ? "AGP" : (((dev_priv->flags & CHIP_IS_PCIE) ? "PCIE" : "PCI"))));
