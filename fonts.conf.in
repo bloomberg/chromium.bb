@@ -27,6 +27,11 @@
 	@FC_FONTPATH@
 	<dir>~/.fonts</dir>
 
+<!-- Font cache directory list -->
+
+	<cachedir>@FC_CACHEDIR@</cachedir>
+	<cachedir>~/.fonts/fontconfig</cachedir>
+
 <!--
   Accept deprecated 'mono' alias, replacing it with 'monospace'
 -->

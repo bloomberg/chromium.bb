@@ -45,10 +45,7 @@
 #endif
 
 static int
-FcDirCacheOpen (const FcChar8 * dir);
-
-static char *
-FcDirCacheHashName (const FcChar8 * dir, int collisions);
+FcDirCacheOpen (FcConfig *config, const FcChar8 *dir, FcChar8 **cache_path);
 
 static off_t
 FcCacheSkipToArch (int fd, const char * arch);
@@ -748,7 +745,7 @@ FcCacheCopyOld (int fd, int fd_orig, off_t start)
  * cache, and the hashed location has an up-to-date cache.  Oh well,
  * sucks to be you in that case! */
 FcBool
-FcDirCacheValid (const FcChar8 *dir)
+FcDirCacheValid (const FcChar8 *dir, FcConfig *config)
 {
     struct stat file_stat, dir_stat;
     int 	fd;
@@ -756,7 +753,7 @@ FcDirCacheValid (const FcChar8 *dir)
     if (stat ((char *) dir, &dir_stat) < 0)
         return FcFalse;
 
-    fd = FcDirCacheOpen (dir);
+    fd = FcDirCacheOpen (config, dir, NULL);
 
     if (fd < 0)
 	return FcFalse;
@@ -782,7 +779,7 @@ FcDirCacheValid (const FcChar8 *dir)
 /* Assumes that the cache file in 'dir' exists.
  * Checks that the cache has the appropriate arch section. */
 FcBool
-FcDirCacheHasCurrentArch (const FcChar8 *dir)
+FcDirCacheHasCurrentArch (const FcChar8 *dir, FcConfig *config)
 {
     int 	fd;
     off_t	current_arch_start;
@@ -790,7 +787,7 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
     FcCache	metadata;
     char 	subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
 
-    fd = FcDirCacheOpen (dir);
+    fd = FcDirCacheOpen (config, dir, NULL);
     if (fd < 0)
 	goto bail;
 
@@ -827,57 +824,81 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir)
     return FcFalse;
 }
 
+#define CACHEBASE_LEN (1 + 32 + sizeof (FC_CACHE_SUFFIX))
+
+static const char bin2hex[] = { '0', '1', '2', '3',
+				'4', '5', '6', '7',
+				'8', '9', 'a', 'b',
+				'c', 'd', 'e', 'f' };
+
+static FcChar8 *
+FcDirCacheBasename (const FcChar8 * dir, FcChar8 cache_base[CACHEBASE_LEN])
+{
+    unsigned char 	hash[16];
+    FcChar8		*hex_hash;
+    int			cnt;
+    struct MD5Context 	ctx;
+
+    MD5Init (&ctx);
+    MD5Update (&ctx, (unsigned char *)dir, strlen ((char *) dir));
+
+    MD5Final (hash, &ctx);
+
+    cache_base[0] = '/';
+    hex_hash = cache_base + 1;
+    for (cnt = 0; cnt < 16; ++cnt)
+    {
+	hex_hash[2*cnt  ] = bin2hex[hash[cnt] >> 4];
+	hex_hash[2*cnt+1] = bin2hex[hash[cnt] & 0xf];
+    }
+    hex_hash[2*cnt] = 0;
+    strcat ((char *) cache_base, FC_CACHE_SUFFIX);
+
+    return cache_base;
+}
+
 FcBool
 FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 {
-    char	*cache_hashed = 0;
-    int		fd, collisions;
-    struct stat	cache_stat;
+    int		fd = -1;
+    FcChar8	*cache_hashed = NULL;
+    FcChar8	cache_base[CACHEBASE_LEN];
+    FcStrList	*list;
+    FcChar8	*cache_dir;
     char	dir_buf[FC_MAX_FILE_LEN];
 
     dir = FcConfigNormalizeFontDir (config, dir);
 
-    /* Remove any applicable hashed files. */
-    fd = -1; collisions = 0;
-    do
+    FcDirCacheBasename (dir, cache_base);
+
+    list = FcStrListCreate (config->cacheDirs);
+    if (!list)
+        return FcFalse;
+	
+    while ((cache_dir = FcStrListNext (list)))
     {
-	if (cache_hashed)
-	    FcStrFree ((FcChar8 *)cache_hashed);
-
-	cache_hashed = FcDirCacheHashName (dir, collisions++);
-	if (!cache_hashed)
-	    goto bail;
-
-	if (fd > 0)
-	    close (fd);
-	fd = open(cache_hashed, O_RDONLY | O_BINARY);
-	if (fd == -1)
+        cache_hashed = FcStrPlus (cache_dir, cache_base);
+        if (!cache_hashed)
+	    break;
+        fd = open((char *) cache_hashed, O_RDONLY | O_BINARY);
+    	FcStrFree (cache_hashed);
+        if (fd >= 0) 
 	{
-	    FcStrFree ((FcChar8 *)cache_hashed);
-	    return FcTrue;
+	    if (FcCacheReadString (fd, dir_buf, sizeof (dir_buf)) &&
+		strcmp (dir_buf, (char *) dir) == 0)
+	    {
+		close (fd);
+		if (unlink ((char *) cache_hashed) < 0)
+		    break;
+	    } else
+		close (fd);
 	}
-
-	if (!FcCacheReadString (fd, dir_buf, sizeof (dir_buf)) || !strlen(dir_buf))
-	{
-	    FcStrFree ((FcChar8 *)cache_hashed);
-	    goto bail;
-	}
-    } while (strcmp ((char *) dir_buf, (char *) dir) != 0);
-
-    close (fd);
-
-    if (stat ((char *) cache_hashed, &cache_stat) == 0 &&
-	unlink ((char *)cache_hashed) != 0)
-    {
-	FcStrFree ((FcChar8 *)cache_hashed);
-	goto bail;
     }
-
-    FcStrFree ((FcChar8 *)cache_hashed);
+    FcStrListDone (list);
+    /* return FcFalse if something went wrong */
+    if (cache_dir)
+	return FcFalse;
     return FcTrue;
-
- bail:
-    return FcFalse;
 }
 
 static int
@@ -949,8 +970,8 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	    FcStrSetDestroy (subdirs);
 	    continue;
 	}
-	if (FcDirCacheValid (dir) && 
-	    FcDirCacheHasCurrentArch (dir) && 
+	if (FcDirCacheValid (dir, config) && 
+	    FcDirCacheHasCurrentArch (dir, config) && 
 	    FcDirCacheRead (set, subdirs, dir, config))
 	{
 	    /* if an old entry is found in the global cache, disable it */
@@ -1009,87 +1030,53 @@ FcCacheRead (FcConfig *config, FcGlobalCache * cache)
     return 0;
 }
 
-static const char bin2hex[] = { '0', '1', '2', '3',
-				'4', '5', '6', '7',
-				'8', '9', 'a', 'b',
-				'c', 'd', 'e', 'f' };
-
-static char *
-FcDirCacheHashName (const FcChar8 * dir, int collisions)
-{
-    unsigned char 	hash[16], hex_hash[33];
-    char 		*cache_hashed;
-    unsigned char	uscore = '_';
-    int			cnt, i;
-    FcChar8 		*tmp;
-    struct MD5Context 	ctx;
-
-    MD5Init (&ctx);
-    MD5Update (&ctx, (unsigned char *)dir, strlen ((char *) dir));
-
-    for (i = 0; i < collisions; i++)
-	MD5Update (&ctx, &uscore, 1);
-
-    MD5Final (hash, &ctx);
-
-    for (cnt = 0; cnt < 16; ++cnt)
-    {
-	hex_hash[2*cnt] = bin2hex[hash[cnt] >> 4];
-	hex_hash[2*cnt+1] = bin2hex[hash[cnt] & 0xf];
-    }
-    hex_hash[32] = 0;
-
-    tmp = FcStrPlus ((FcChar8 *)hex_hash, (FcChar8 *)FC_CACHE_SUFFIX);
-    if (!tmp)
-	return 0;
-
-    cache_hashed = (char *)FcStrPlus ((FcChar8 *)PKGCACHEDIR"/", tmp);
-    free (tmp);
-
-    return cache_hashed;
-}
-
-/* Opens the hashed name for cache_file.
- * This would fail in the unlikely event of a collision and subsequent
- * removal of the file which originally caused the collision. */
+/* Opens the cache file for 'dir' for reading.
+ * This searches the list of cache dirs for the relevant cache file,
+ * returning the first one found.
+ */
 static int
-FcDirCacheOpen (const FcChar8 *dir)
+FcDirCacheOpen (FcConfig *config, const FcChar8 *dir, FcChar8 **cache_path)
 {
-    FcBool	found;
-    int		fd = -1, collisions = 0;
-    char	*cache_hashed;
+    int		fd = -1;
+    FcChar8	*cache_hashed = NULL;
+    FcChar8	cache_base[CACHEBASE_LEN];
+    FcStrList	*list;
+    FcChar8	*cache_dir;
     char	dir_buf[FC_MAX_FILE_LEN];
-    struct stat dir_stat;
 
-    if (stat ((char *)dir, &dir_stat) == -1)
-	return -1;
+    FcDirCacheBasename (dir, cache_base);
 
-    found = FcFalse;
-    do
+    list = FcStrListCreate (config->cacheDirs);
+    if (!list)
+        return -1;
+	
+    while ((cache_dir = FcStrListNext (list)))
     {
-	struct stat 	c;
-
-	if (fd >= 0)
-	    close (fd);
-
-	cache_hashed = FcDirCacheHashName (dir, collisions++);
-	if (!cache_hashed)
-	    return -1;
-
-	fd = open(cache_hashed, O_RDONLY | O_BINARY);
-	FcStrFree ((FcChar8 *)cache_hashed);
-
-	if (fd == -1)
+        cache_hashed = FcStrPlus (cache_dir, cache_base);
+        if (!cache_hashed)
 	    break;
-	if (!FcCacheReadString (fd, dir_buf, sizeof (dir_buf)) || 
-	    !strlen(dir_buf))
+        fd = open((char *) cache_hashed, O_RDONLY | O_BINARY);
+        if (fd >= 0)
 	    break;
+	FcStrFree (cache_hashed);
+    }
+    FcStrListDone (list);
 
-	if (stat ((char *)dir_buf, &c) == -1)
-	    continue;
-
-	found = (c.st_ino == dir_stat.st_ino) && (c.st_dev == dir_stat.st_dev);
-    } while (!found);
+    if (fd < 0)
+	return -1;
+    
+    if (!FcCacheReadString (fd, dir_buf, sizeof (dir_buf)) ||
+	strcmp (dir_buf, (char *) dir) != 0)
+    {
+    	close (fd);
+        FcStrFree (cache_hashed);
+        return -1;
+    }
+    
+    if (cache_path)
+	*cache_path = cache_hashed;
+    else
+	FcStrFree (cache_hashed);
 
     return fd;
 }
@@ -1104,7 +1091,7 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *
     off_t 	current_arch_start = 0;
     char 	subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
 
-    fd = FcDirCacheOpen (dir);
+    fd = FcDirCacheOpen (config, dir, NULL);
     if (fd < 0)
 	goto bail;
 
@@ -1278,56 +1265,77 @@ FcDirCacheProduce (FcFontSet *set, FcCache *metadata)
     return 0;
 }
 
+static FcBool
+FcMakeDirectory (const FcChar8 *dir)
+{
+    FcChar8 *parent;
+    FcBool  ret;
+    
+    if (strlen ((char *) dir) == 0)
+	return FcFalse;
+    
+    parent = FcStrDirname (dir);
+    if (!parent)
+	return FcFalse;
+    if (access ((char *) parent, W_OK|X_OK) == 0)
+	ret = mkdir ((char *) dir, 0777) == 0;
+    else if (access ((char *) parent, F_OK) == -1)
+	ret = FcMakeDirectory (parent) && (mkdir ((char *) dir, 0777) == 0);
+    else
+	ret = FcFalse;
+    FcStrFree (parent);
+    return ret;
+}
+
 /* write serialized state to the cache file */
 FcBool
-FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
+FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir, FcConfig *config)
 {
-    char	    *cache_hashed;
+    FcChar8	    cache_base[CACHEBASE_LEN];
+    FcChar8	    *cache_hashed;
     int 	    fd, fd_orig, i, dirs_count;
     FcAtomic 	    *atomic;
     FcCache 	    metadata;
     off_t 	    current_arch_start = 0, truncate_to;
-    char	    dir_buf[FC_MAX_FILE_LEN];
-    int		    collisions;
-
+    FcStrList	    *list;
     char            *current_arch_machine_name, * header;
     void 	    *current_dir_block = 0;
+    FcChar8	    *cache_dir;
 
     dir = FcConfigNormalizeFontDir (FcConfigGetCurrent(), dir);
     if (!dir)
 	return FcFalse;
 
-    /* Ensure that we're not trampling a cache for some other dir. */
-    /* This is slightly different from FcDirCacheOpen, since it 
-     * needs the filename, not the file descriptor. */
-    fd = -1; collisions = 0;
-    do
-    {
-	cache_hashed = FcDirCacheHashName (dir, collisions++);
-	if (!cache_hashed)
-	    goto bail0;
+    /*
+     * Check for an existing cache file and dump stuff in the same place
+     */
+    fd = FcDirCacheOpen (config, dir, &cache_hashed);
 
-	if (fd > 0)
-	    close (fd);
-	fd = open(cache_hashed, O_RDONLY | O_BINARY);
-	if (fd == -1)
-	    break;
-	if(!FcCacheReadString (fd, dir_buf, sizeof (dir_buf)) || !strlen(dir_buf))
-	{
-	    close (fd);
-            FcStrFree ((FcChar8 *)cache_hashed);
-	    continue;
-	}
+    if (fd >= 0)
 	close (fd);
-
-	if (strcmp (dir_buf, (char *) dir) != 0) 
-        {
-            FcStrFree ((FcChar8 *)cache_hashed);
-	    continue;
-        }
-
-	break;
-    } while (1);
+    else {
+	list = FcStrListCreate (config->cacheDirs);
+	if (!list)
+	    return FcFalse;
+	while ((cache_dir = FcStrListNext (list))) {
+	    if (access ((char *) cache_dir, W_OK|X_OK) == 0)
+		break;
+	    /*
+	     * If the directory doesn't exist, try to create it
+	     */
+	    if (access ((char *) cache_dir, F_OK) == -1) {
+		if (FcMakeDirectory (cache_dir))
+		    break;
+	    }
+	}
+	FcStrListDone (list);
+	if (!cache_dir)
+	    return FcFalse;
+	FcDirCacheBasename (dir, cache_base);
+        cache_hashed = FcStrPlus (cache_dir, cache_base);
+        if (!cache_hashed)
+	    return FcFalse;
+    }
 
     current_dir_block = FcDirCacheProduce (set, &metadata);
 
@@ -1455,7 +1463,6 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
     FcAtomicDestroy (atomic);
  bail1:
     FcStrFree ((FcChar8 *)cache_hashed);
- bail0:
     if (current_dir_block)
         free (current_dir_block);
     return FcFalse;

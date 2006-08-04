@@ -100,13 +100,17 @@ FcConfigCreate (void)
 	    if (!FcConfigSetCache (config, cache_dir))
 	    {
 		FcStrFree (cache_dir);
-		goto bail6;
+		goto bail8;
 	    }
 	    FcStrFree (cache_dir);
 	}
     }
 #endif
 
+    config->cacheDirs = FcStrSetCreate ();
+    if (!config->cacheDirs)
+	goto bail9;
+    
     config->blanks = 0;
 
     config->substPattern = 0;
@@ -120,6 +124,8 @@ FcConfigCreate (void)
     
     return config;
 
+bail9:
+    FcStrFree (config->cache);
 bail8:
     FcFontSetDestroy (config->rejectPatterns);
 bail7:
@@ -226,6 +232,7 @@ FcConfigDestroy (FcConfig *config)
 
     FcStrSetDestroy (config->configDirs);
     FcStrSetDestroy (config->fontDirs);
+    FcStrSetDestroy (config->cacheDirs);
     FcStrSetDestroy (config->configFiles);
     FcStrSetDestroy (config->acceptGlobs);
     FcStrSetDestroy (config->rejectGlobs);
@@ -512,6 +519,25 @@ FcConfigGetFontDirs (FcConfig	*config)
     return FcStrListCreate (config->fontDirs);
 }
 
+FcBool
+FcConfigAddCacheDir (FcConfig	    *config,
+		     const FcChar8  *d)
+{
+    return FcStrSetAddFilename (config->cacheDirs, d);
+}
+
+FcStrList *
+FcConfigGetCacheDirs (FcConfig	*config)
+{
+    if (!config)
+    {
+	config = FcConfigGetCurrent ();
+	if (!config)
+	    return 0;
+    }
+    return FcStrListCreate (config->cacheDirs);
+}
+    
 FcBool
 FcConfigAddConfigFile (FcConfig	    *config,
 		       const FcChar8   *f)

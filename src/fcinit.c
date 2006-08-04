@@ -35,6 +35,8 @@ FcInitFallbackConfig (void)
 	goto bail0;
     if (!FcConfigAddDir (config, (FcChar8 *) FC_DEFAULT_FONTS))
 	goto bail1;
+    if (!FcConfigAddCacheDir (config, (FcChar8 *) FC_CACHEDIR))
+	goto bail1;
     return config;
 
 bail1:

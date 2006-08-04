@@ -276,10 +276,10 @@ typedef struct _FcStrSet    FcStrSet;
 _FCFUNCPROTOBEGIN
 
 FcBool
-FcDirCacheValid (const FcChar8 *cache_file);
+FcDirCacheValid (const FcChar8 *cache_file, FcConfig *config);
 
 FcBool
-FcDirCacheHasCurrentArch (const FcChar8 *dir);
+FcDirCacheHasCurrentArch (const FcChar8 *dir, FcConfig *config);
 
 FcBool
 FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config);

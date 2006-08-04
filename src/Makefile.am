@@ -63,8 +63,6 @@ uninstall-ms-import-lib:
 
 endif
 
-AM_CPPFLAGS = -DPKGCACHEDIR='"${pkgcachedir}"'
-
 INCLUDES = 						\
 	-I$(top_srcdir)					\
 	-I$(top_srcdir)/src				\
@@ -72,6 +70,7 @@ INCLUDES = 						\
 	$(LIBXML2_CFLAGS)				\
 	$(EXPAT_CFLAGS)					\
 	$(WARN_CFLAGS)					\
+	-DFC_CACHEDIR='"$(FC_CACHEDIR)"'                \
 	-DFONTCONFIG_PATH='"$(CONFDIR)"'
 
 EXTRA_DIST = fontconfig.def.in

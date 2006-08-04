@@ -230,7 +230,8 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    ret++;
 	    continue;
 	}
-	if (!force && FcDirCacheValid (dir) && FcDirCacheHasCurrentArch (dir))
+	if (!force && FcDirCacheValid (dir, config) && 
+	    FcDirCacheHasCurrentArch (dir, config))
 	{
 	    if (verbose)
 		printf ("skipping, %d fonts, %d dirs\n",
@@ -244,14 +245,12 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 
 	    /* This is the only reason we can't combine 
 	     * Valid w/HasCurrentArch... */
-            if (!FcDirCacheValid (dir))
+            if (!FcDirCacheValid (dir, config))
                 if (!FcDirCacheUnlink (dir, config))
                     ret++;
 
 	    if (!FcDirSave (set, subdirs, dir))
 	    {
-                if (!ret)
-                    fprintf (stderr, "Caches are currently saved to \"%s\"\n", PKGCACHEDIR);
 		fprintf (stderr, "Can't save cache for \"%s\"\n", dir);
 		ret++;
 	    }

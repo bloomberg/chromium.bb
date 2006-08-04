@@ -3,6 +3,7 @@ TESTDIR=${srcdir-`pwd`}
 
 FONTDIR=`pwd`/fonts
 CACHEFILE=`pwd`/fonts.cache
+CACHEDIR=`pwd`/cache.dir
 
 ECHO=true
 
@@ -39,7 +40,8 @@ dotest () {
 }
 
 sed "s!@FONTDIR@!$FONTDIR!
-s!@CACHEFILE@!$CACHEFILE!" < $TESTDIR/fonts.conf.in > fonts.conf
+s!@CACHEFILE@!$CACHEFILE!
+s!@CACHEDIR@!$CACHEDIR!" < $TESTDIR/fonts.conf.in > fonts.conf
 
 FONTCONFIG_FILE=`pwd`/fonts.conf
 export FONTCONFIG_FILE
@@ -89,4 +91,4 @@ mkdir $FONTDIR/a
 cp $FONT2 $FONTDIR/a
 check
 
-rm -rf $FONTDIR $CACHEFILE $FONTCONFIG_FILE out
+rm -rf $FONTDIR $CACHEFILE $CACHEDIR $FONTCONFIG_FILE out

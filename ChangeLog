@@ -1,3 +1,27 @@
+2006-08-04  Keith Packard  (keithp@keithp.com)
+	reviewed by: plam
+
+	* configure.in:
+	* fonts.conf.in:
+	* fonts.dtd:
+	* fc-cache/fc-cache.c (scanDirs):
+	* fontconfig/fontconfig.h:
+	* src/Makefile.am:
+	* src/fcint.h:
+	* src/fccache.c (FcDirCacheValid, FcDirHasCurrentArch, 
+	                 FcDirCacheUnlink, FcDirCacheBasename,
+			 FcCacheReadDirs, FcDirCacheOpen, FcDirCacheRead,
+			 FcMakeDirectory, FcDirCacheWrite):
+	* src/fccfg.c (FcConfigCreate, FcConfigDestroy, FcConfigAddCacheDir,
+	               FcConfigGetCacheDirs):
+	* src/fcdir.c (FcDirScanConfig, FcDirSave):
+	* src/fcinit.c (FcInitFallbackConfig):
+	* src/fcxml.c (fcElementMap, FcEndElement):
+	* test/fonts.conf.in, test/run-test.sh:
+
+	Make cache directories configurable.  Simplify and correct
+	some code which deals with per-directory caches.
+
 2006-07-19  Jon Burgess  (jburgess@uklinux.net)
         reviewed by: plam
 

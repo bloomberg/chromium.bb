@@ -285,6 +285,7 @@ typedef enum _FcElement {
     FcElementNone,
     FcElementFontconfig,
     FcElementDir,
+    FcElementCacheDir,
     FcElementCache,
     FcElementInclude,
     FcElementConfig,
@@ -345,6 +346,7 @@ static const struct {
 } fcElementMap[] = {
     { "fontconfig",	FcElementFontconfig },
     { "dir",		FcElementDir },
+    { "cachedir",	FcElementCacheDir },
     { "cache",		FcElementCache },
     { "include",	FcElementInclude },
     { "config",		FcElementConfig },
@@ -2053,6 +2055,21 @@ FcEndElement(void *userData, const XML_Char *name)
 	}
 	FcStrFree (data);
 	break;
+    case FcElementCacheDir:
+	data = FcStrBufDone (&parse->pstack->str);
+	if (!data)
+	{
+	    FcConfigMessage (parse, FcSevereError, "out of memory");
+	    break;
+	}
+	if (!FcStrUsesHome (data) || FcConfigHome ())
+	{
+	    if (!FcConfigAddCacheDir (parse->config, data))
+		FcConfigMessage (parse, FcSevereError, "out of memory; cannot add cache directory %s", data);
+	}
+	FcStrFree (data);
+	break;
+	
     case FcElementCache:
 	data = FcStrBufDone (&parse->pstack->str);
 	if (!data)

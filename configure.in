@@ -431,6 +431,22 @@ esac
 
 AC_SUBST(FC_FONTPATH)
 
+#
+# Set default cache directory path
+#
+AC_ARG_WITH(cache-dir,         [ --with-cache-dir=DIR           Use DIR to store cache files (default /var/cache/fontconfig)], fc_cachedir="$withval", fc_cachedir=yes)
+
+case $fc_cachedir in
+no|yes)
+	fc_cachedir=`eval echo "${localstatedir}/cache/"${PACKAGE}`
+	;;
+*)
+	;;
+esac
+AC_SUBST(fc_cachedir)
+FC_CACHEDIR=${fc_cachedir}
+AC_SUBST(FC_CACHEDIR)
+
 FC_FONTDATE=`LC_ALL=C date`
 
 AC_SUBST(FC_FONTDATE)
@@ -516,12 +532,6 @@ fi
 
 AC_SUBST(DOCDIR)
 
-#
-# Make /var/cache/fontconfig directory available to source code
-#
-
-pkgcachedir='${localstatedir}/cache/'${PACKAGE}
-AC_SUBST(pkgcachedir)
 
 AC_OUTPUT([
 Makefile 

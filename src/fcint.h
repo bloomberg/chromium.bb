@@ -389,6 +389,10 @@ struct _FcConfig {
      */
     FcStrSet	*fontDirs;
     /*
+     * List of directories containing cache files.
+     */
+    FcStrSet	*cacheDirs;
+    /*
      * Names of all of the configuration files used
      * to create this configuration
      */
@@ -476,7 +480,7 @@ FcFontSet *
 FcCacheRead (FcConfig *config, FcGlobalCache * cache);
 
 FcBool
-FcDirCacheWrite (FcFontSet *set, FcStrSet * dirs, const FcChar8 *dir);
+FcDirCacheWrite (FcFontSet *set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config);
 
 FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config);
@@ -507,6 +511,13 @@ FcConfigAddFontDir (FcConfig	    *config,
 FcBool
 FcConfigAddDir (FcConfig	*config,
 		const FcChar8	*d);
+
+FcBool
+FcConfigAddCacheDir (FcConfig	    *config,
+		     const FcChar8  *d);
+
+FcStrList *
+FcConfigGetCacheDirs (FcConfig	*config);
 
 FcBool
 FcConfigAddConfigFile (FcConfig		*config,
