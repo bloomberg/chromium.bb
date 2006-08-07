@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright 2006 Tungsten Graphics, Inc., Bismarck., ND., USA.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,25 +10,25 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, 
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
- * 
+ *
+ *
  **************************************************************************/
 /*
  * Simple memory manager interface that keeps track on allocate regions on a
  * per "owner" basis. All regions associated with an "owner" can be released
- * with a simple call. Typically if the "owner" exists. The owner is any 
+ * with a simple call. Typically if the "owner" exists. The owner is any
  * "unsigned long" identifier. Can typically be a pointer to a file private
  * struct or a context identifier.
  *
@@ -77,9 +77,9 @@ drm_sman_init(drm_sman_t * sman, unsigned int num_managers,
 		goto out;
 
 	drm_ht_remove(&sman->owner_hash_tab);
-      out1:
+out1:
 	drm_free(sman->mm, num_managers * sizeof(*sman->mm), DRM_MEM_MM);
-      out:
+out:
 	return ret;
 }
 
@@ -163,8 +163,8 @@ drm_sman_set_manager(drm_sman_t * sman, unsigned int manager,
 	return 0;
 }
 
-static drm_owner_item_t
-    * drm_sman_get_owner_item(drm_sman_t * sman, unsigned long owner)
+static drm_owner_item_t *drm_sman_get_owner_item(drm_sman_t * sman,
+						 unsigned long owner)
 {
 	int ret;
 	drm_hash_item_t *owner_hash_item;
@@ -173,7 +173,7 @@ static drm_owner_item_t
 	ret = drm_ht_find_item(&sman->owner_hash_tab, owner, &owner_hash_item);
 	if (!ret) {
 		return drm_hash_entry(owner_hash_item, drm_owner_item_t,
-                                      owner_hash);
+				      owner_hash);
 	}
 
 	owner_item = drm_calloc(1, sizeof(*owner_item), DRM_MEM_MM);
@@ -188,13 +188,13 @@ static drm_owner_item_t
 	list_add_tail(&owner_item->sman_list, &sman->owner_items);
 	return owner_item;
 
-      out1:
+out1:
 	drm_free(owner_item, sizeof(*owner_item), DRM_MEM_MM);
-      out:
+out:
 	return NULL;
 }
 
-drm_memblock_item_t *drm_sman_alloc(drm_sman_t * sman, unsigned int manager,
+drm_memblock_item_t *drm_sman_alloc(drm_sman_t *sman, unsigned int manager,
 				    unsigned long size, unsigned alignment,
 				    unsigned long owner)
 {
@@ -234,11 +234,11 @@ drm_memblock_item_t *drm_sman_alloc(drm_sman_t * sman, unsigned int manager,
 
 	return memblock;
 
-      out2:
+out2:
 	drm_ht_remove_item(&sman->user_hash_tab, &memblock->user_hash);
-      out1:
+out1:
 	drm_free(memblock, sizeof(*memblock), DRM_MEM_MM);
-      out:
+out:
 	sman_mm->free(sman_mm->private, tmp);
 
 	return NULL;
@@ -246,7 +246,7 @@ drm_memblock_item_t *drm_sman_alloc(drm_sman_t * sman, unsigned int manager,
 
 EXPORT_SYMBOL(drm_sman_alloc);
 
-static void drm_sman_free(drm_memblock_item_t * item)
+static void drm_sman_free(drm_memblock_item_t *item)
 {
 	drm_sman_t *sman = item->sman;
 
@@ -256,7 +256,7 @@ static void drm_sman_free(drm_memblock_item_t * item)
 	drm_free(item, sizeof(*item), DRM_MEM_MM);
 }
 
-int drm_sman_free_key(drm_sman_t * sman, unsigned int key)
+int drm_sman_free_key(drm_sman_t *sman, unsigned int key)
 {
 	drm_hash_item_t *hash_item;
 	drm_memblock_item_t *memblock_item;
@@ -271,15 +271,15 @@ int drm_sman_free_key(drm_sman_t * sman, unsigned int key)
 
 EXPORT_SYMBOL(drm_sman_free_key);
 
-static void
-drm_sman_remove_owner(drm_sman_t * sman, drm_owner_item_t * owner_item)
+static void drm_sman_remove_owner(drm_sman_t *sman,
+				  drm_owner_item_t *owner_item)
 {
 	list_del(&owner_item->sman_list);
 	drm_ht_remove_item(&sman->owner_hash_tab, &owner_item->owner_hash);
 	drm_free(owner_item, sizeof(*owner_item), DRM_MEM_MM);
 }
 
-int drm_sman_owner_clean(drm_sman_t * sman, unsigned long owner)
+int drm_sman_owner_clean(drm_sman_t *sman, unsigned long owner)
 {
 
 	drm_hash_item_t *hash_item;
@@ -300,8 +300,8 @@ int drm_sman_owner_clean(drm_sman_t * sman, unsigned long owner)
 
 EXPORT_SYMBOL(drm_sman_owner_clean);
 
-static void
-drm_sman_do_owner_cleanup(drm_sman_t * sman, drm_owner_item_t * owner_item)
+static void drm_sman_do_owner_cleanup(drm_sman_t *sman,
+				      drm_owner_item_t *owner_item)
 {
 	drm_memblock_item_t *entry, *next;
 
@@ -312,7 +312,7 @@ drm_sman_do_owner_cleanup(drm_sman_t * sman, drm_owner_item_t * owner_item)
 	drm_sman_remove_owner(sman, owner_item);
 }
 
-void drm_sman_owner_cleanup(drm_sman_t * sman, unsigned long owner)
+void drm_sman_owner_cleanup(drm_sman_t *sman, unsigned long owner)
 {
 
 	drm_hash_item_t *hash_item;
@@ -329,7 +329,7 @@ void drm_sman_owner_cleanup(drm_sman_t * sman, unsigned long owner)
 
 EXPORT_SYMBOL(drm_sman_owner_cleanup);
 
-void drm_sman_cleanup(drm_sman_t * sman)
+void drm_sman_cleanup(drm_sman_t *sman)
 {
 	drm_owner_item_t *entry, *next;
 	unsigned int i;

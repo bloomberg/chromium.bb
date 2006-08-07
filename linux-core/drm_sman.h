@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright 2006 Tungsten Graphics, Inc., Bismarck, ND., USA.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,25 +10,25 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, 
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * 
+ *
  **************************************************************************/
 /*
  * Simple memory MANager interface that keeps track on allocate regions on a
  * per "owner" basis. All regions associated with an "owner" can be released
- * with a simple call. Typically if the "owner" exists. The owner is any 
+ * with a simple call. Typically if the "owner" exists. The owner is any
  * "unsigned long" identifier. Can typically be a pointer to a file private
  * struct or a context identifier.
  *
@@ -44,18 +44,18 @@
 
 /*
  * A class that is an abstration of a simple memory allocator.
- * The sman implementation provides a default such allocator 
+ * The sman implementation provides a default such allocator
  * using the drm_mm.c implementation. But the user can replace it.
  * See the SiS implementation, which may use the SiS FB kernel module
  * for memory management.
  */
 
 typedef struct drm_sman_mm {
-	/* private info. If allocated, needs to be destroyed by the destroy 
+	/* private info. If allocated, needs to be destroyed by the destroy
 	   function */
 	void *private;
 
-	/* Allocate a memory block with given size and alignment. 
+	/* Allocate a memory block with given size and alignment.
 	   Return an opaque reference to the memory block */
 
 	void *(*allocate) (void *private, unsigned long size,
@@ -100,15 +100,15 @@ typedef struct drm_sman {
 extern void drm_sman_takedown(drm_sman_t * sman);
 
 /*
- * Allocate structures for a manager. 
- * num_managers are the number of memory pools to manage. (VRAM, AGP, ....) 
+ * Allocate structures for a manager.
+ * num_managers are the number of memory pools to manage. (VRAM, AGP, ....)
  * user_order is the log2 of the number of buckets in the user hash table.
- *            set this to approximately log2 of the max number of memory regions 
- *            that will be allocated for _all_ pools together.
+ *	    set this to approximately log2 of the max number of memory regions
+ *	    that will be allocated for _all_ pools together.
  * owner_order is the log2 of the number of buckets in the owner hash table.
- *            set this to approximately log2 of 
- *            the number of client file connections that will
- *            be using the manager.
+ *	    set this to approximately log2 of
+ *	    the number of client file connections that will
+ *	    be using the manager.
  *
  */
 
@@ -150,16 +150,16 @@ extern int drm_sman_free_key(drm_sman_t * sman, unsigned int key);
 /*
  * returns TRUE iff there are no stale memory blocks associated with this owner.
  * Typically called to determine if we need to idle the hardware and call
- * drm_sman_owner_cleanup. If there are no stale memory blocks, it removes all 
+ * drm_sman_owner_cleanup. If there are no stale memory blocks, it removes all
  * resources associated with owner.
  */
 
 extern int drm_sman_owner_clean(drm_sman_t * sman, unsigned long owner);
 
 /*
- * Frees all stale memory blocks associated with this owner. Note that this 
+ * Frees all stale memory blocks associated with this owner. Note that this
  * requires that the hardware is finished with all blocks, so the graphics engine
- * should be idled before this call is made. This function also frees 
+ * should be idled before this call is made. This function also frees
  * any resources associated with "owner" and should be called when owner
  * is not going to be referenced anymore.
  */
