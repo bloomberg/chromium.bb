@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright 2006 Tungsten Graphics, Inc., Bismarck, ND., USA.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,20 +10,20 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, 
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * 
+ *
  **************************************************************************/
 
 /*
@@ -252,54 +252,54 @@ int
 sis_idle(drm_device_t *dev)
 {
 	drm_sis_private_t *dev_priv = dev->dev_private;
-        uint32_t idle_reg;
-        unsigned long end;
-        int i;
+	uint32_t idle_reg;
+	unsigned long end;
+	int i;
 
-        if (dev_priv->idle_fault) 
-                return 0;
+	if (dev_priv->idle_fault)
+		return 0;
 
-        if (dev_priv->mmio == NULL) {
-                dev_priv->mmio = sis_reg_init(dev);
-                if (dev_priv->mmio == NULL) {
-                        DRM_ERROR("Could not find register map.\n");
-                        return 0;
-                }
-        }
-        
-        /*
-         * Implement a device switch here if needed
-         */
+	if (dev_priv->mmio == NULL) {
+		dev_priv->mmio = sis_reg_init(dev);
+		if (dev_priv->mmio == NULL) {
+			DRM_ERROR("Could not find register map.\n");
+			return 0;
+		}
+	}
+	
+	/*
+	 * Implement a device switch here if needed
+	 */
 
-        if (dev_priv->chipset != SIS_CHIP_315)
-                return 0;
+	if (dev_priv->chipset != SIS_CHIP_315)
+		return 0;
 
-        /*
-         * Timeout after 3 seconds. We cannot use DRM_WAIT_ON here
-         * because its polling frequency is too low.
-         */ 
+	/*
+	 * Timeout after 3 seconds. We cannot use DRM_WAIT_ON here
+	 * because its polling frequency is too low.
+	 */
 
-        end = jiffies + (DRM_HZ * 3); 
+	end = jiffies + (DRM_HZ * 3);
 
-        for (i=0; i<4; ++i) {
-                do {
-                        idle_reg = SIS_READ(0x85cc);
-                } while ( !time_after_eq(jiffies, end) &&
-                          ((idle_reg & 0x80000000) != 0x80000000));
-        }
+	for (i=0; i<4; ++i) {
+		do {
+			idle_reg = SIS_READ(0x85cc);
+		} while ( !time_after_eq(jiffies, end) &&
+			  ((idle_reg & 0x80000000) != 0x80000000));
+	}
 
-        if (time_after_eq(jiffies, end)) {
-                DRM_ERROR("Graphics engine idle timeout. "
-                          "Disabling idle check\n");
-                dev_priv->idle_fault = TRUE;
-        }
+	if (time_after_eq(jiffies, end)) {
+		DRM_ERROR("Graphics engine idle timeout. "
+			  "Disabling idle check\n");
+		dev_priv->idle_fault = TRUE;
+	}
 
-        /*
-         * The caller never sees an error code. It gets trapped
-         * in libdrm.
-         */
+	/*
+	 * The caller never sees an error code. It gets trapped
+	 * in libdrm.
+	 */
 
-        return 0;
+	return 0;
 }
 
 
@@ -314,7 +314,7 @@ void sis_lastclose(struct drm_device *dev)
 	drm_sman_cleanup(&dev_priv->sman);
 	dev_priv->vram_initialized = FALSE;
 	dev_priv->agp_initialized = FALSE;
-        dev_priv->mmio = NULL;
+	dev_priv->mmio = NULL;
 	mutex_unlock(&dev->struct_mutex);
 }
 
@@ -339,17 +339,12 @@ void sis_reclaim_buffers_locked(drm_device_t * dev, struct file *filp)
 }
 
 drm_ioctl_desc_t sis_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_SIS_FB_ALLOC)] = {sis_fb_alloc, DRM_AUTH}
-	,
-	[DRM_IOCTL_NR(DRM_SIS_FB_FREE)] = {sis_drm_free, DRM_AUTH}
-	,
+	[DRM_IOCTL_NR(DRM_SIS_FB_ALLOC)] = {sis_fb_alloc, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_SIS_FB_FREE)] = {sis_drm_free, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_SIS_AGP_INIT)] =
-	    {sis_ioctl_agp_init, DRM_AUTH | DRM_MASTER | DRM_ROOT_ONLY}
-	,
-	[DRM_IOCTL_NR(DRM_SIS_AGP_ALLOC)] = {sis_ioctl_agp_alloc, DRM_AUTH}
-	,
-	[DRM_IOCTL_NR(DRM_SIS_AGP_FREE)] = {sis_drm_free, DRM_AUTH}
-	,
+	    {sis_ioctl_agp_init, DRM_AUTH | DRM_MASTER | DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_SIS_AGP_ALLOC)] = {sis_ioctl_agp_alloc, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_SIS_AGP_FREE)] = {sis_drm_free, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_SIS_FB_INIT)] =
 	    {sis_fb_init, DRM_AUTH | DRM_MASTER | DRM_ROOT_ONLY}
 };
