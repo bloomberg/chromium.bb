@@ -62,7 +62,7 @@ static void *drm_ati_alloc_pcigart_table(void)
 	address = __get_free_pages(GFP_KERNEL | __GFP_COMP,
 				   ATI_PCIGART_TABLE_ORDER);
 	if (address == 0UL) {
-		return 0;
+		return NULL;
 	}
 
 	page = virt_to_page(address);
@@ -126,21 +126,21 @@ int drm_ati_pcigart_cleanup(drm_device_t *dev, drm_ati_pcigart_info *gart_info)
 		}
 
 		if (gart_info->gart_table_location == DRM_ATI_GART_MAIN)
-			gart_info->bus_addr=0;
+			gart_info->bus_addr = 0;
 	}
 
 
 	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN
 	    && gart_info->addr) {
 		drm_ati_free_pcigart_table(gart_info->addr);
-		gart_info->addr=0;
+		gart_info->addr = NULL;
 	}
 
 	return 1;
 }
 EXPORT_SYMBOL(drm_ati_pcigart_cleanup);
 
-int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
+int drm_ati_pcigart_init(drm_device_t *dev, drm_ati_pcigart_info *gart_info)
 {
 	drm_sg_mem_t *entry = dev->sg;
 	void *address = NULL;
@@ -155,25 +155,25 @@ int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
 
 	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN) {
 		DRM_DEBUG("PCI: no table in VRAM: using normal RAM\n");
-		
+
 		address = drm_ati_alloc_pcigart_table();
 		if (!address) {
 			DRM_ERROR("cannot allocate PCI GART page!\n");
 			goto done;
 		}
-		
+
 		if (!dev->pdev) {
 			DRM_ERROR("PCI device unknown!\n");
 			goto done;
 		}
-		
+
 		bus_address = pci_map_single(dev->pdev, address,
 					     ATI_PCIGART_TABLE_PAGES *
 					     PAGE_SIZE, PCI_DMA_TODEVICE);
 		if (bus_address == 0) {
 			DRM_ERROR("unable to map PCIGART pages!\n");
 			drm_ati_free_pcigart_table(address);
-			address = 0;
+			address = NULL;
 			goto done;
 		}
 	} else {
@@ -207,7 +207,7 @@ int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info)
 
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
 			if (gart_info->is_pcie)
-				*pci_gart = cpu_to_le32((page_base>>8) | 0xc);
+				*pci_gart = cpu_to_le32((page_base >> 8) | 0xc);
 			else
 				*pci_gart = cpu_to_le32(page_base);
 			pci_gart++;
