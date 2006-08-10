@@ -205,6 +205,10 @@ static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from
 
 #endif
 
+#ifndef DEFINE_SPINLOCK
+#define DEFINE_SPINLOCK(x) spinlock_t x = SPIN_LOCK_UNLOCKED
+#endif
+
 /* old architectures */
 #ifdef __AMD64__
 #define __x86_64__
