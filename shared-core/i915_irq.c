@@ -71,29 +71,29 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 static int i915_emit_irq(drm_device_t * dev)
 {
 	
-       drm_i915_private_t *dev_priv = dev->dev_private;
-       RING_LOCALS;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	RING_LOCALS;
 
-       i915_kernel_lost_context(dev);
+	i915_kernel_lost_context(dev);
 
-       DRM_DEBUG("%s\n", __FUNCTION__);
+	DRM_DEBUG("%s\n", __FUNCTION__);
 
-       dev_priv->sarea_priv->last_enqueue = ++dev_priv->counter;
+	dev_priv->sarea_priv->last_enqueue = ++dev_priv->counter;
 
-       if (dev_priv->counter > 0x7FFFFFFFUL)
-               dev_priv->sarea_priv->last_enqueue = dev_priv->counter = 1;
+	if (dev_priv->counter > 0x7FFFFFFFUL)
+		 dev_priv->sarea_priv->last_enqueue = dev_priv->counter = 1;
 
-       BEGIN_LP_RING(6);
-       OUT_RING(CMD_STORE_DWORD_IDX);
-       OUT_RING(20);
-       OUT_RING(dev_priv->counter);
+	BEGIN_LP_RING(6);
+	OUT_RING(CMD_STORE_DWORD_IDX);
+	OUT_RING(20);
+	OUT_RING(dev_priv->counter);
 
-       OUT_RING(0);
-       OUT_RING(0);
-       OUT_RING(GFX_OP_USER_INTERRUPT);
-       ADVANCE_LP_RING();
+	OUT_RING(0);
+	OUT_RING(0);
+	OUT_RING(GFX_OP_USER_INTERRUPT);
+	ADVANCE_LP_RING();
 
-       return dev_priv->counter;
+	return dev_priv->counter;
 
 
 }

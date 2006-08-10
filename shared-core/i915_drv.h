@@ -141,14 +141,14 @@ extern void i915_mem_release(drm_device_t * dev,
 #define I915_VERBOSE 0
 
 #define RING_LOCALS	unsigned int outring, ringmask, outcount; \
-                        volatile char *virt;
+			volatile char *virt;
 
 #define BEGIN_LP_RING(n) do {				\
 	if (I915_VERBOSE)				\
 		DRM_DEBUG("BEGIN_LP_RING(%d) in %s\n",	\
 	                         (n), __FUNCTION__);           \
-       if (dev_priv->ring.space < (n)*4)                       \
-               i915_wait_ring(dev, (n)*4, __FUNCTION__);               \
+	if (dev_priv->ring.space < (n)*4)                      \
+		i915_wait_ring(dev, (n)*4, __FUNCTION__);      \
 	outcount = 0;					\
 	outring = dev_priv->ring.tail;			\
 	ringmask = dev_priv->ring.tail_mask;		\
@@ -158,7 +158,7 @@ extern void i915_mem_release(drm_device_t * dev,
 #define OUT_RING(n) do {					\
 	if (I915_VERBOSE) DRM_DEBUG("   OUT_RING %x\n", (int)(n));	\
 	*(volatile unsigned int *)(virt + outring) = (n);		\
-        outcount++;						\
+	outcount++;						\
 	outring += 4;						\
 	outring &= ringmask;					\
 } while (0)

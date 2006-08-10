@@ -32,9 +32,9 @@
 #include "i915_drv.h"
 
 #define IS_I965G(dev)  (dev->pdev->device == 0x2972 || \
-                        dev->pdev->device == 0x2982 || \
-                        dev->pdev->device == 0x2992 || \
-                        dev->pdev->device == 0x29A2)
+			dev->pdev->device == 0x2982 || \
+			dev->pdev->device == 0x2992 || \
+			dev->pdev->device == 0x29A2)
 
 
 /* Really want an OS-independent resettable timer.  Would like to have
@@ -402,23 +402,23 @@ static int i915_emit_box(drm_device_t * dev,
 		return DRM_ERR(EINVAL);
 	}
 
-       if (IS_I965G(dev)) {
-               BEGIN_LP_RING(4);
-               OUT_RING(GFX_OP_DRAWRECT_INFO_I965);
-               OUT_RING((box.x1 & 0xffff) | (box.y1 << 16));
-               OUT_RING(((box.x2 - 1) & 0xffff) | ((box.y2 - 1) << 16));
-               OUT_RING(DR4);
-               ADVANCE_LP_RING();
-       } else {
-               BEGIN_LP_RING(6);
-               OUT_RING(GFX_OP_DRAWRECT_INFO);
-               OUT_RING(DR1);
-               OUT_RING((box.x1 & 0xffff) | (box.y1 << 16));
-               OUT_RING(((box.x2 - 1) & 0xffff) | ((box.y2 - 1) << 16));
-               OUT_RING(DR4);
-               OUT_RING(0);
-               ADVANCE_LP_RING();
-       }
+	if (IS_I965G(dev)) {
+		BEGIN_LP_RING(4);
+		OUT_RING(GFX_OP_DRAWRECT_INFO_I965);
+		OUT_RING((box.x1 & 0xffff) | (box.y1 << 16));
+		OUT_RING(((box.x2 - 1) & 0xffff) | ((box.y2 - 1) << 16));
+		OUT_RING(DR4);
+		ADVANCE_LP_RING();
+	} else {
+		BEGIN_LP_RING(6);
+		OUT_RING(GFX_OP_DRAWRECT_INFO);
+		OUT_RING(DR1);
+		OUT_RING((box.x1 & 0xffff) | (box.y1 << 16));
+		OUT_RING(((box.x2 - 1) & 0xffff) | ((box.y2 - 1) << 16));
+		OUT_RING(DR4);
+		OUT_RING(0);
+		ADVANCE_LP_RING();
+	}
 
 	return 0;
 }
@@ -432,10 +432,10 @@ static void i915_emit_breadcrumb(drm_device_t *dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
 
-       dev_priv->sarea_priv->last_enqueue = ++dev_priv->counter;
+	dev_priv->sarea_priv->last_enqueue = ++dev_priv->counter;
 
-       if (dev_priv->counter > 0x7FFFFFFFUL)
-               dev_priv->sarea_priv->last_enqueue = dev_priv->counter = 1;
+	if (dev_priv->counter > 0x7FFFFFFFUL)
+		dev_priv->sarea_priv->last_enqueue = dev_priv->counter = 1;
 
 	BEGIN_LP_RING(4);
 	OUT_RING(CMD_STORE_DWORD_IDX);

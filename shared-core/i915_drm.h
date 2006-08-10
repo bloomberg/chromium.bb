@@ -97,13 +97,13 @@ typedef struct _drm_i915_sarea {
 	int rotated_offset;
 	int rotated_size;
 	int rotated_pitch;
-        int virtualX, virtualY;
+	int virtualX, virtualY;
 
-        unsigned int front_tiled;
-        unsigned int back_tiled;
-        unsigned int depth_tiled;
-        unsigned int rotated_tiled;
-        unsigned int rotated2_tiled;
+	unsigned int front_tiled;
+	unsigned int back_tiled;
+	unsigned int depth_tiled;
+	unsigned int rotated_tiled;
+	unsigned int rotated2_tiled;
 } drm_i915_sarea_t;
 
 /* Flags for perf_boxes
