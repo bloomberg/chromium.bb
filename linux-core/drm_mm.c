@@ -54,7 +54,7 @@ drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 
 	if (parent->size == size) {
 		list_del_init(&parent->fl_entry);
-		parent->free = FALSE;
+		parent->free = 0;
 		return parent;
 	} else {
 		child = (drm_mm_node_t *) drm_alloc(sizeof(*child), DRM_MEM_MM);
@@ -64,7 +64,7 @@ drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 		INIT_LIST_HEAD(&child->ml_entry);
 		INIT_LIST_HEAD(&child->fl_entry);
 
-		child->free = FALSE;
+		child->free = 0;
 		child->size = size;
 		child->start = parent->start;
 
@@ -89,7 +89,7 @@ void drm_mm_put_block(drm_mm_t * mm, drm_mm_node_t * cur)
 	drm_mm_node_t *prev_node = NULL;
 	drm_mm_node_t *next_node;
 
-	int merged = FALSE;
+	int merged = 0;
 
 	if (cur_head->prev != root_head) {
 		prev_node = list_entry(cur_head->prev, drm_mm_node_t, ml_entry);

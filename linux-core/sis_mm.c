@@ -139,7 +139,7 @@ static int sis_drm_alloc(drm_device_t * dev, drm_file_t * priv,
 
 	mutex_lock(&dev->struct_mutex);
 
-	if (FALSE == ((pool == 0) ? dev_priv->vram_initialized :
+	if (0 == ((pool == 0) ? dev_priv->vram_initialized :
 		      dev_priv->agp_initialized)) {
 		DRM_ERROR
 		    ("Attempt to allocate from uninitialized memory manager.\n");
@@ -312,8 +312,8 @@ void sis_lastclose(struct drm_device *dev)
 
 	mutex_lock(&dev->struct_mutex);
 	drm_sman_cleanup(&dev_priv->sman);
-	dev_priv->vram_initialized = FALSE;
-	dev_priv->agp_initialized = FALSE;
+	dev_priv->vram_initialized = 0;
+	dev_priv->agp_initialized = 0;
 	dev_priv->mmio = NULL;
 	mutex_unlock(&dev->struct_mutex);
 }

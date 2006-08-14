@@ -290,7 +290,7 @@ static int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 
 	user_token = (map->type == _DRM_SHM) ? (unsigned long) map->handle : 
 		map->offset;
-        ret = drm_map_handle(dev, &list->hash, user_token, FALSE); 
+        ret = drm_map_handle(dev, &list->hash, user_token, 0); 
 
 	if (ret) {
                 drm_free(map, sizeof(*map), DRM_MEM_MAPS);
