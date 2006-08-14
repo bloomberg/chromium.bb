@@ -95,7 +95,7 @@ void drm_mm_put_block(drm_mm_t * mm, drm_mm_node_t * cur)
 		prev_node = list_entry(cur_head->prev, drm_mm_node_t, ml_entry);
 		if (prev_node->free) {
 			prev_node->size += cur->size;
-			merged = TRUE;
+			merged = 1;
 		}
 	}
 	if (cur_head->next != root_head) {
@@ -110,12 +110,12 @@ void drm_mm_put_block(drm_mm_t * mm, drm_mm_node_t * cur)
 			} else {
 				next_node->size += cur->size;
 				next_node->start = cur->start;
-				merged = TRUE;
+				merged = 1;
 			}
 		}
 	}
 	if (!merged) {
-		cur->free = TRUE;
+		cur->free = 1;
 		list_add(&cur->fl_entry, &list_root->fl_entry);
 	} else {
 		list_del(&cur->ml_entry);
@@ -169,7 +169,7 @@ int drm_mm_init(drm_mm_t * mm, unsigned long start, unsigned long size)
 
 	child->start = start;
 	child->size = size;
-	child->free = TRUE;
+	child->free = 1;
 
 	list_add(&child->fl_entry, &mm->root_node.fl_entry);
 	list_add(&child->ml_entry, &mm->root_node.ml_entry);

@@ -117,7 +117,7 @@ static int sis_fb_init(DRM_IOCTL_ARGS)
 		return ret;
 	}
 
-	dev_priv->vram_initialized = TRUE;
+	dev_priv->vram_initialized = 1;
 	dev_priv->vram_offset = fb.offset;
 
 	mutex_unlock(&dev->struct_mutex);
@@ -217,7 +217,7 @@ static int sis_ioctl_agp_init(DRM_IOCTL_ARGS)
 		return ret;
 	}
 
-	dev_priv->agp_initialized = TRUE;
+	dev_priv->agp_initialized = 1;
 	dev_priv->agp_offset = agp.offset;
 	mutex_unlock(&dev->struct_mutex);
 
@@ -291,7 +291,7 @@ sis_idle(drm_device_t *dev)
 	if (time_after_eq(jiffies, end)) {
 		DRM_ERROR("Graphics engine idle timeout. "
 			  "Disabling idle check\n");
-		dev_priv->idle_fault = TRUE;
+		dev_priv->idle_fault = 1;
 	}
 
 	/*
