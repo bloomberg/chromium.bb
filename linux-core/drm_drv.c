@@ -169,6 +169,7 @@ int drm_lastclose(drm_device_t * dev)
 			drm_ht_remove_item(&dev->magiclist, &pt->hash_item);
 			drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
 		}
+		drm_ht_remove(&dev->magiclist);
 	}
 
 
@@ -349,6 +350,7 @@ static void __exit drm_cleanup(drm_device_t * dev)
 	if (dev->maplist) {
 		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		dev->maplist = NULL;
+		drm_ht_remove(&dev->map_hash);
 	}
 
 	if (!drm_fb_loaded)
