@@ -104,7 +104,7 @@ int drm_lock(struct inode *inode, struct file *filp,
 	__set_current_state(TASK_RUNNING);
 	remove_wait_queue(&dev->lock.lock_queue, &entry);
 
-        DRM_DEBUG( "%d %s\n", lock.context, ret ? "interrupted" : "has lock" );
+	DRM_DEBUG( "%d %s\n", lock.context, ret ? "interrupted" : "has lock" );
 	if (ret) return ret;
 
 	sigemptyset(&dev->sigmask);

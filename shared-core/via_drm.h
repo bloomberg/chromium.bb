@@ -47,12 +47,12 @@
 #define VIA_DRM_DRIVER_MAJOR		2
 #define VIA_DRM_DRIVER_MINOR		10
 #define VIA_DRM_DRIVER_PATCHLEVEL	2
-#define VIA_DRM_DRIVER_VERSION          (((VIA_DRM_DRIVER_MAJOR) << 16) | (VIA_DRM_DRIVER_MINOR))
+#define VIA_DRM_DRIVER_VERSION	  (((VIA_DRM_DRIVER_MAJOR) << 16) | (VIA_DRM_DRIVER_MINOR))
 
 #define VIA_NR_SAREA_CLIPRECTS 		8
-#define VIA_NR_XVMC_PORTS               10
-#define VIA_NR_XVMC_LOCKS               5
-#define VIA_MAX_CACHELINE_SIZE          64
+#define VIA_NR_XVMC_PORTS	       10
+#define VIA_NR_XVMC_LOCKS	       5
+#define VIA_MAX_CACHELINE_SIZE	  64
 #define XVMCLOCKPTR(saPriv,lockNo)					\
 	((volatile drm_hw_lock_t *)(((((unsigned long) (saPriv)->XvMCLockArea) + \
 				      (VIA_MAX_CACHELINE_SIZE - 1)) &	\
@@ -67,29 +67,29 @@
 
 #define VIA_UPLOAD_TEX0IMAGE  0x1	/* handled clientside */
 #define VIA_UPLOAD_TEX1IMAGE  0x2	/* handled clientside */
-#define VIA_UPLOAD_CTX        0x4
+#define VIA_UPLOAD_CTX	0x4
 #define VIA_UPLOAD_BUFFERS    0x8
 #define VIA_UPLOAD_TEX0       0x10
 #define VIA_UPLOAD_TEX1       0x20
 #define VIA_UPLOAD_CLIPRECTS  0x40
-#define VIA_UPLOAD_ALL        0xff
+#define VIA_UPLOAD_ALL	0xff
 
 /* VIA specific ioctls */
 #define DRM_VIA_ALLOCMEM	0x00
-#define DRM_VIA_FREEMEM	        0x01
+#define DRM_VIA_FREEMEM		0x01
 #define DRM_VIA_AGP_INIT	0x02
-#define DRM_VIA_FB_INIT	        0x03
+#define DRM_VIA_FB_INIT		0x03
 #define DRM_VIA_MAP_INIT	0x04
 #define DRM_VIA_DEC_FUTEX       0x05
 #define NOT_USED
 #define DRM_VIA_DMA_INIT	0x07
 #define DRM_VIA_CMDBUFFER	0x08
-#define DRM_VIA_FLUSH	        0x09
-#define DRM_VIA_PCICMD	        0x0a
+#define DRM_VIA_FLUSH		0x09
+#define DRM_VIA_PCICMD		0x0a
 #define DRM_VIA_CMDBUF_SIZE	0x0b
 #define NOT_USED
-#define DRM_VIA_WAIT_IRQ        0x0d
-#define DRM_VIA_DMA_BLIT        0x0e
+#define DRM_VIA_WAIT_IRQ	0x0d
+#define DRM_VIA_DMA_BLIT	0x0e
 #define DRM_VIA_BLIT_SYNC       0x0f
 
 #define DRM_IOCTL_VIA_ALLOCMEM	  DRM_IOWR(DRM_COMMAND_BASE + DRM_VIA_ALLOCMEM, drm_via_mem_t)
@@ -172,7 +172,7 @@ typedef struct _drm_via_dma_init {
 	enum {
 		VIA_INIT_DMA = 0x01,
 		VIA_CLEANUP_DMA = 0x02,
-                VIA_DMA_INITIALIZED = 0x03
+		VIA_DMA_INITIALIZED = 0x03
 	} func;
 
 	unsigned long offset;
@@ -217,7 +217,7 @@ typedef struct _drm_via_sarea {
 
 	/* Used by the 3d driver only at this point, for pageflipping:
 	 */
-        unsigned int pfCurrentOffset;
+	unsigned int pfCurrentOffset;
 } drm_via_sarea_t;
 
 typedef struct _drm_via_cmdbuf_size {
@@ -273,17 +273,17 @@ typedef struct drm_via_blitsync {
  */
 
 typedef struct drm_via_dmablit {
-	uint32_t num_lines;          
-	uint32_t line_length;        
+	uint32_t num_lines;	  
+	uint32_t line_length;	
 
-        uint32_t fb_addr;                
-	uint32_t fb_stride;              
+	uint32_t fb_addr;		
+	uint32_t fb_stride;	      
 
-        unsigned char *mem_addr;        
-	uint32_t  mem_stride;        
+	unsigned char *mem_addr;	
+	uint32_t  mem_stride;	
        
 	uint32_t  flags;
-        int to_fb;
+	int to_fb;
 
 	drm_via_blitsync_t sync;   
 } drm_via_dmablit_t;

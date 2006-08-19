@@ -59,7 +59,7 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 	drm_device_t *dev = priv->head->dev;
 	drm_map_t *map = NULL;
 	drm_map_list_t *r_list;
-        drm_hash_item_t *hash;
+	drm_hash_item_t *hash;
 
 	/*
 	 * Find the right map
@@ -70,10 +70,10 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 	if (!dev->agp || !dev->agp->cant_use_aperture)
 		goto vm_nopage_error;
 
-        if (drm_ht_find_item(&dev->map_hash, VM_OFFSET(vma), &hash)) 
-                goto vm_nopage_error;
+	if (drm_ht_find_item(&dev->map_hash, VM_OFFSET(vma), &hash)) 
+		goto vm_nopage_error;
 
-        r_list = drm_hash_entry(hash, drm_map_list_t, hash);
+	r_list = drm_hash_entry(hash, drm_map_list_t, hash);
 	map = r_list->map;
 
 	if (map && map->type == _DRM_AGP) {
@@ -554,7 +554,7 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	drm_device_t *dev = priv->head->dev;
 	drm_map_t *map = NULL;
 	unsigned long offset = 0;
-        drm_hash_item_t *hash;
+	drm_hash_item_t *hash;
 
 	DRM_DEBUG("start = 0x%lx, end = 0x%lx, offset = 0x%lx\n",
 		  vma->vm_start, vma->vm_end, VM_OFFSET(vma));
@@ -574,11 +574,11 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	    )
 		return drm_mmap_dma(filp, vma);
 
-        if (drm_ht_find_item(&dev->map_hash, VM_OFFSET(vma), &hash)) {
-                DRM_ERROR("Could not find map\n");
+	if (drm_ht_find_item(&dev->map_hash, VM_OFFSET(vma), &hash)) {
+		DRM_ERROR("Could not find map\n");
 		return -EINVAL;
-        }
-        
+	}
+
 	map = drm_hash_entry(hash,drm_map_list_t, hash)->map;
 
 	if (!map || ((map->flags & _DRM_RESTRICTED) && !capable(CAP_SYS_ADMIN)))
