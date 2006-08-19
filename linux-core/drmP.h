@@ -747,10 +747,6 @@ typedef struct drm_device {
 	drm_agp_head_t *agp;		/**< AGP data */
 
 	struct pci_dev *pdev;		/**< PCI device structure */
-	int pci_domain;			/**< PCI bus domain number */
-	int pci_bus;			/**< PCI bus number */
-	int pci_slot;			/**< PCI slot number */
-	int pci_func;			/**< PCI function number */
 #ifdef __alpha__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,3)
 	struct pci_controler *hose;
@@ -775,6 +771,12 @@ static __inline__ int drm_core_check_feature(struct drm_device *dev,
 {
 	return ((dev->driver->driver_features & feature) ? 1 : 0);
 }
+
+#ifdef __alpha__
+#define drm_get_pci_domain(dev) dev->hose->bus->number
+#else
+#define drm_get_pci_domain(dev) pci_domain_nr(dev->pdev->bus)
+#endif
 
 #if __OS_HAS_AGP
 static inline int drm_core_has_AGP(struct drm_device *dev)

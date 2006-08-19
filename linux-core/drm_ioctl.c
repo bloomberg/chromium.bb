@@ -125,9 +125,10 @@ int drm_setunique(struct inode *inode, struct file *filp,
 	domain = bus >> 8;
 	bus &= 0xff;
 
-	if ((domain != dev->pci_domain) ||
-	    (bus != dev->pci_bus) ||
-	    (slot != dev->pci_slot) || (func != dev->pci_func))
+	if ((domain != drm_get_pci_domain(dev)) ||
+	    (bus != dev->pdev->bus->number) ||
+	    (slot != PCI_SLOT(dev->pdev->devfn)) ||
+	    (func != PCI_FUNC(dev->pdev->devfn)))
 		return -EINVAL;
 
 	return 0;
@@ -145,7 +146,10 @@ static int drm_set_busid(drm_device_t * dev)
 		return ENOMEM;
 
 	len = snprintf(dev->unique, dev->unique_len, "pci:%04x:%02x:%02x.%d",
-		 dev->pci_domain, dev->pci_bus, dev->pci_slot, dev->pci_func);
+		       drm_get_pci_domain(dev),
+		       dev->pdev->bus->number,
+		       PCI_SLOT(dev->pdev->devfn),
+		       PCI_FUNC(dev->pdev->devfn));
 	if (len > dev->unique_len)
 		DRM_ERROR("buffer overflow");
 
