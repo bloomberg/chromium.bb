@@ -50,7 +50,7 @@
 #include "drmP.h"
 #include "drm_core.h"
 
-static void __exit drm_cleanup(drm_device_t * dev);
+static void drm_cleanup(drm_device_t * dev);
 int drm_fb_loaded = 0;
 
 static int drm_version(struct inode *inode, struct file *filp,
@@ -336,7 +336,7 @@ EXPORT_SYMBOL(drm_init);
  *
  * \sa drm_init
  */
-static void __exit drm_cleanup(drm_device_t * dev)
+static void drm_cleanup(drm_device_t * dev)
 {
 
 	DRM_DEBUG("\n");
@@ -379,7 +379,7 @@ static void __exit drm_cleanup(drm_device_t * dev)
 		DRM_ERROR("Cannot unload module\n");
 }
 
-void __exit drm_exit(struct drm_driver *driver)
+void drm_exit(struct drm_driver *driver)
 {
 	int i;
 	drm_device_t *dev = NULL;
