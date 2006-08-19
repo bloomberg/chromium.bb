@@ -298,8 +298,8 @@ typedef struct drm_devstate {
 } drm_devstate_t;
 
 typedef struct drm_magic_entry {
-        drm_hash_item_t hash_item;
-        struct list_head head;
+	drm_hash_item_t hash_item;
+	struct list_head head;
 	struct drm_file *priv;
 } drm_magic_entry_t;
 
@@ -506,7 +506,7 @@ typedef struct drm_sigdata {
  */
 typedef struct drm_map_list {
 	struct list_head head;		/**< list head */
-        drm_hash_item_t hash;
+	drm_hash_item_t hash;
 	drm_map_t *map;			/**< mapping */
 	unsigned int user_token;
 } drm_map_list_t;
@@ -676,15 +676,15 @@ typedef struct drm_device {
 	/*@{ */
 	drm_file_t *file_first;		/**< file list head */
 	drm_file_t *file_last;		/**< file list tail */
-        drm_open_hash_t magiclist;
-        struct list_head magicfree;
+	drm_open_hash_t magiclist;
+	struct list_head magicfree;
 	/*@} */
 
 	/** \name Memory management */
 	/*@{ */
 	drm_map_list_t *maplist;	/**< Linked list of regions */
 	int map_count;			/**< Number of mappable regions */
-        drm_open_hash_t map_hash;       /**< User token hash table for maps */
+	drm_open_hash_t map_hash;       /**< User token hash table for maps */
 
 	/** \name Context handle management */
 	/*@{ */

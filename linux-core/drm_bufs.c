@@ -292,13 +292,13 @@ static int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 
 	user_token = (map->type == _DRM_SHM) ? (unsigned long) map->handle : 
 		map->offset;
-        ret = drm_map_handle(dev, &list->hash, user_token, 0); 
+	ret = drm_map_handle(dev, &list->hash, user_token, 0);
 
 	if (ret) {
-                drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-                drm_free(list, sizeof(*list), DRM_MEM_MAPS);
-                mutex_unlock(&dev->struct_mutex);
-                return ret;
+		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+		drm_free(list, sizeof(*list), DRM_MEM_MAPS);
+		mutex_unlock(&dev->struct_mutex);
+		return ret;
 	}
 
 	list->user_token = list->hash.key;
@@ -386,7 +386,7 @@ int drm_rmmap_locked(drm_device_t *dev, drm_local_map_t *map)
 
 		if (r_list->map == map) {
 			list_del(list);
-                        drm_ht_remove_key(&dev->map_hash, r_list->user_token);
+			drm_ht_remove_key(&dev->map_hash, r_list->user_token);
 			drm_free(list, sizeof(*list), DRM_MEM_MAPS);
 			break;
 		}

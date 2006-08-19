@@ -242,7 +242,7 @@ int drm_getclient(struct inode *inode, struct file *filp,
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
-	drm_client_t __user *argp = (void __user *)arg;
+	drm_client_t __user *argp = (drm_client_t __user *)arg;
 	drm_client_t client;
 	drm_file_t *pt;
 	int idx;
@@ -329,21 +329,23 @@ int drm_setversion(DRM_IOCTL_ARGS)
 	int if_version;
 	drm_set_version_t __user *argp = (void __user *)data;
  
-	DRM_COPY_FROM_USER_IOCTL(sv, argp, sizeof(sv));
+	if (copy_from_user(&sv, argp, sizeof(sv)))
+		return -EFAULT;
 
 	retv.drm_di_major = DRM_IF_MAJOR;
 	retv.drm_di_minor = DRM_IF_MINOR;
 	retv.drm_dd_major = dev->driver->major;
 	retv.drm_dd_minor = dev->driver->minor;
 
-	DRM_COPY_TO_USER_IOCTL(argp, retv, sizeof(sv));
+	if (copy_to_user(argp, &retv, sizeof(sv)))
+		return -EFAULT;
 
 	if (sv.drm_di_major != -1) {
 		if (sv.drm_di_major != DRM_IF_MAJOR ||
 		    sv.drm_di_minor < 0 || sv.drm_di_minor > DRM_IF_MINOR)
 			return EINVAL;
 		if_version = DRM_IF_VERSION(sv.drm_di_major, sv.drm_di_minor);
-		dev->if_version = DRM_MAX(if_version, dev->if_version);
+		dev->if_version = max(if_version, dev->if_version);
 		if (sv.drm_di_minor >= 1) {
 			/*
 			 * Version 1.1 includes tying of DRM to specific device

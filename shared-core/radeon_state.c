@@ -2652,10 +2652,10 @@ static __inline__ int radeon_emit_veclinear(drm_radeon_private_t *dev_priv,
 	int start = header.veclinear.addr_lo | (header.veclinear.addr_hi << 8);
 	RING_LOCALS;
 
-        if (!sz)
-                return 0;
-        if (sz * 4 > cmdbuf->bufsz)
-                return DRM_ERR(EINVAL);
+	if (!sz)
+		return 0;
+	if (sz * 4 > cmdbuf->bufsz)
+		return DRM_ERR(EINVAL);
 
 	BEGIN_RING(5 + sz);
 	OUT_RING_REG(RADEON_SE_TCL_STATE_FLUSH, 0);

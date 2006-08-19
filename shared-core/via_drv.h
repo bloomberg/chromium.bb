@@ -76,9 +76,9 @@ typedef struct drm_via_private {
 	volatile uint32_t *last_pause_ptr;
 	volatile uint32_t *hw_addr_ptr;
 	drm_via_ring_buffer_t ring;
-        struct timeval last_vblank;
-        int last_vblank_valid;
-        unsigned usec_per_vblank;
+	struct timeval last_vblank;
+	int last_vblank_valid;
+	unsigned usec_per_vblank;
 	drm_via_state_t hc_state;
 	char pci_buf[VIA_PCI_BUF_SIZE];
 	const uint32_t *fire_offsets[VIA_FIRE_BUF_SIZE];
@@ -90,14 +90,14 @@ typedef struct drm_via_private {
 	uint32_t irq_enable_mask; 
 	uint32_t irq_pending_mask;	
 	int *irq_map;
-        /* Memory manager stuff */
+	/* Memory manager stuff */
 #ifdef VIA_HAVE_CORE_MM
-	unsigned idle_fault;
+	unsigned int idle_fault;
 	drm_sman_t sman;
 	int vram_initialized;
 	int agp_initialized;
-        unsigned long vram_offset;
-        unsigned long agp_offset;
+	unsigned long vram_offset;
+	unsigned long agp_offset;
 #endif
 #ifdef VIA_HAVE_DMABLIT
 	drm_via_blitq_t blit_queues[VIA_NUM_BLIT_ENGINES];
@@ -148,8 +148,6 @@ extern int via_driver_dma_quiescent(drm_device_t * dev);
 extern void via_init_futex(drm_via_private_t *dev_priv);
 extern void via_cleanup_futex(drm_via_private_t *dev_priv);
 extern void via_release_futex(drm_via_private_t *dev_priv, int context);
-extern int via_driver_irq_wait(drm_device_t * dev, unsigned int irq,
-			       int force_sequence, unsigned int *sequence);
 
 #ifdef VIA_HAVE_CORE_MM
 extern void via_reclaim_buffers_locked(drm_device_t *dev, struct file *filp);

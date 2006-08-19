@@ -30,6 +30,8 @@
 #ifndef _VIA_DMABLIT_H
 #define _VIA_DMABLIT_H
 
+#include <linux/dma-mapping.h>
+
 #define VIA_NUM_BLIT_ENGINES 2
 #define VIA_NUM_BLIT_SLOTS 8
 
@@ -43,12 +45,12 @@ typedef struct _drm_via_sg_info {
 	int num_desc;
 	enum dma_data_direction direction;
 	unsigned char *bounce_buffer;
-        dma_addr_t chain_start;
+	dma_addr_t chain_start;
 	uint32_t free_on_sequence;
-        unsigned int descriptors_per_page;
+	unsigned int descriptors_per_page;
 	int aborted;
 	enum {
-	        dr_via_device_mapped,
+		dr_via_device_mapped,
 		dr_via_desc_pages_alloc,
 		dr_via_pages_locked,
 		dr_via_pages_alloc,
@@ -66,7 +68,7 @@ typedef struct _drm_via_blitq {
 	unsigned num_free;
 	unsigned num_outstanding;
 	unsigned long end;  
-        int aborting;
+	int aborting;
 	int is_active;
 	drm_via_sg_info_t *blits[VIA_NUM_BLIT_SLOTS];
 	spinlock_t blit_lock;

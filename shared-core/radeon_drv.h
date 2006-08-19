@@ -1095,7 +1095,7 @@ do {									\
 			   n, __FUNCTION__ );				\
 	}								\
 	if ( dev_priv->ring.space <= (n) * sizeof(u32) ) {		\
-                COMMIT_RING();						\
+		COMMIT_RING();						\
 		radeon_wait_ring( dev_priv, (n) * sizeof(u32) );	\
 	}								\
 	_nr = n; dev_priv->ring.space -= (n) * sizeof(u32);		\

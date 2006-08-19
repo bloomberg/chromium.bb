@@ -141,8 +141,8 @@ extern int i810_max_ioctl;
                         volatile char *virt;
 
 #define BEGIN_LP_RING(n) do {						\
-	if (I810_VERBOSE)                                               \
-           DRM_DEBUG("BEGIN_LP_RING(%d) in %s\n", n, __FUNCTION__);	\
+	if (I810_VERBOSE)						\
+		DRM_DEBUG("BEGIN_LP_RING(%d) in %s\n", n, __FUNCTION__);\
 	if (dev_priv->ring.space < n*4)					\
 		i810_wait_ring(dev, n*4);				\
 	dev_priv->ring.space -= n*4;					\
@@ -151,17 +151,17 @@ extern int i810_max_ioctl;
 	virt = dev_priv->ring.virtual_start;				\
 } while (0)
 
-#define ADVANCE_LP_RING() do {				        \
+#define ADVANCE_LP_RING() do {					\
 	if (I810_VERBOSE) DRM_DEBUG("ADVANCE_LP_RING\n");    	\
-	dev_priv->ring.tail = outring;		        	\
-	I810_WRITE(LP_RING + RING_TAIL, outring);	        \
+	dev_priv->ring.tail = outring;				\
+	I810_WRITE(LP_RING + RING_TAIL, outring);		\
 } while(0)
 
-#define OUT_RING(n) do {  				                \
+#define OUT_RING(n) do {  						\
 	if (I810_VERBOSE) DRM_DEBUG("   OUT_RING %x\n", (int)(n));	\
-	*(volatile unsigned int *)(virt + outring) = n;	                \
-	outring += 4;					                \
-	outring &= ringmask;			                        \
+	*(volatile unsigned int *)(virt + outring) = n;			\
+	outring += 4;							\
+	outring &= ringmask;						\
 } while (0)
 
 #define GFX_OP_USER_INTERRUPT 		((0<<29)|(2<<23))
@@ -193,7 +193,7 @@ extern int i810_max_ioctl;
 #define HEAD_WRAP_ONE       	0x00200000
 #define HEAD_ADDR           	0x001FFFFC
 #define RING_START     		0x08
-#define START_ADDR          	0x00FFFFF8
+#define START_ADDR        	0x00FFFFF8
 #define RING_LEN       		0x0C
 #define RING_NR_PAGES       	0x000FF000
 #define RING_REPORT_MASK    	0x00000006
