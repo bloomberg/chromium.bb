@@ -308,3 +308,60 @@ static int drm_notifier(void *priv)
 	} while (prev != old);
 	return 0;
 }
+
+/*
+ * Can be used by drivers to take the hardware lock if necessary.
+ * (Waiting for idle before reclaiming buffers etc.)
+ */
+
+int drm_i_have_hw_lock(struct file *filp)
+{
+	DRM_DEVICE;
+
+	return (priv->lock_count && dev->lock.hw_lock &&
+		_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) &&
+		dev->lock.filp == filp);
+}
+
+EXPORT_SYMBOL(drm_i_have_hw_lock);
+
+int drm_kernel_take_hw_lock(struct file *filp)
+{
+	DRM_DEVICE;
+
+	int ret = 0; 
+	
+	if (!drm_i_have_hw_lock(filp)) {
+	
+		DECLARE_WAITQUEUE(entry, current);
+
+		add_wait_queue(&dev->lock.lock_queue, &entry);
+		for (;;) {
+			__set_current_state(TASK_INTERRUPTIBLE);
+			if (!dev->lock.hw_lock) {
+				/* Device has been unregistered */
+				ret = -EINTR;
+				break;
+			}
+			if (drm_lock_take(&dev->lock.hw_lock->lock,
+					  DRM_KERNEL_CONTEXT)) {
+				dev->lock.filp = filp;
+				dev->lock.lock_time = jiffies;
+				atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
+				break;	/* Got lock */
+			}
+			/* Contention */
+			schedule();
+			if (signal_pending(current)) {
+				ret = -ERESTARTSYS;
+				break;
+			}
+		}
+		__set_current_state(TASK_RUNNING);
+		remove_wait_queue(&dev->lock.lock_queue, &entry);
+	}
+	return ret;
+}
+
+EXPORT_SYMBOL(drm_kernel_take_hw_lock);
+

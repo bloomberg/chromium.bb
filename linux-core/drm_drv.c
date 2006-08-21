@@ -351,6 +351,7 @@ static void __exit drm_cleanup(drm_device_t * dev)
 		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		dev->maplist = NULL;
 		drm_ht_remove(&dev->map_hash);
+		drm_ht_remove(&dev->object_hash);
 	}
 
 	if (!drm_fb_loaded)

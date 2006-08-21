@@ -154,6 +154,8 @@
 #define DRM_MEM_CTXLIST   21
 #define DRM_MEM_MM        22
 #define DRM_MEM_HASHTAB   23
+#define DRM_MEM_OBJECTS   24
+
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 #define DRM_MAP_HASH_OFFSET 0x10000000
@@ -387,6 +389,19 @@ typedef struct drm_buf_entry {
 	drm_freelist_t freelist;
 } drm_buf_entry_t;
 
+/*
+ * This should be small enough to allow the use of kmalloc for hash tables
+ * instead of vmalloc.
+ */
+
+#define DRM_FILE_HASH_ORDER 8
+typedef enum{
+	_DRM_REF_USE=0,
+	_DRM_REF_TYPE1,
+	_DRM_NO_REF_TYPES
+} drm_ref_t;
+
+
 /** File private data */
 typedef struct drm_file {
 	int authenticated;
@@ -401,6 +416,18 @@ typedef struct drm_file {
 	struct drm_head *head;
 	int remove_auth_on_close;
 	unsigned long lock_count;
+	
+	/*
+	 * The user object hash table is global and resides in the
+	 * drm_device structure. We protect the lists and hash tables with the
+	 * device struct_mutex. A bit coarse-grained but probably the best 
+	 * option.
+	 */
+
+        struct list_head refd_objects;
+	struct list_head user_objects;
+
+        drm_open_hash_t refd_object_hash[_DRM_NO_REF_TYPES];
 	void *driver_priv;
 } drm_file_t;
 
@@ -564,6 +591,7 @@ typedef struct drm_mm {
  * a family of cards. There will one drm_device for each card present
  * in this family
  */
+
 struct drm_device;
 struct drm_driver {
 	int (*load) (struct drm_device *, unsigned long flags);
@@ -638,6 +666,7 @@ typedef struct drm_head {
 	struct class_device *dev_class;
 } drm_head_t;
 
+
 /**
  * DRM device structure. This structure represent a complete card that
  * may contain multiple heads.
@@ -685,6 +714,7 @@ typedef struct drm_device {
 	drm_map_list_t *maplist;	/**< Linked list of regions */
 	int map_count;			/**< Number of mappable regions */
         drm_open_hash_t map_hash;       /**< User token hash table for maps */
+        drm_open_hash_t object_hash;    /**< User token hash table for objects */
 
 	/** \name Context handle management */
 	/*@{ */
@@ -809,6 +839,63 @@ static inline int drm_mtrr_del(int handle, unsigned long offset,
 #define drm_core_has_MTRR(dev) (0)
 #endif
 
+/*
+ * User space objects and their references.
+ */
+
+#define drm_user_object_entry(_ptr, _type, _member) container_of(_ptr, _type, _member)
+
+typedef enum {
+		drm_fence_type,
+		drm_buffer_type
+
+		/*
+		 * Add other user space object types here. 
+		 */
+
+} drm_object_type_t;
+
+
+
+
+/*
+ * A user object is a structure that helps the drm give out user handles
+ * to kernel internal objects and to keep track of these objects so that 
+ * they can be destroyed, for example when the user space process exits.
+ * Designed to be accessible using a user space 32-bit handle. 
+ */
+
+typedef struct drm_user_object{
+	drm_hash_item_t hash;
+	struct list_head list;
+	drm_object_type_t type;
+        atomic_t refcount;
+        int shareable;
+        drm_file_t *owner;
+	void (*ref_struct_locked) (drm_file_t *priv, struct drm_user_object *obj, 
+				   drm_ref_t ref_action); 
+	void (*unref)(drm_file_t *priv, struct drm_user_object *obj, 
+		      drm_ref_t unref_action);
+	void (*remove)(drm_file_t *priv, struct drm_user_object *obj);
+} drm_user_object_t;
+
+/*
+ * A ref object is a structure which is used to
+ * keep track of references to user objects and to keep track of these
+ * references so that they can be destroyed for example when the user space
+ * process exits. Designed to be accessible using a pointer to the _user_ object.
+ */
+
+
+typedef struct drm_ref_object {
+	drm_hash_item_t hash;
+	struct list_head list;
+	atomic_t refcount;
+	drm_ref_t unref_action;
+} drm_ref_object_t;
+
+
+
 /******************************************************************/
 /** \name Internal function definitions */
 /*@{*/
@@ -837,6 +924,7 @@ unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait);
 extern int drm_mmap(struct file *filp, struct vm_area_struct *vma);
 extern unsigned long drm_core_get_map_ofs(drm_map_t * map);
 extern unsigned long drm_core_get_reg_ofs(struct drm_device *dev);
+extern pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma);
 
 				/* Memory management support (drm_memory.h) */
 #include "drm_memory.h"
@@ -915,6 +1003,13 @@ extern int drm_unlock(struct inode *inode, struct file *filp,
 extern int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context);
 extern int drm_lock_free(drm_device_t * dev,
 			 __volatile__ unsigned int *lock, unsigned int context);
+/*
+ * These are exported to drivers so that they can implement fencing using
+ * DMA quiscent + idle. DMA quiescent usually requires the hardware lock. 
+ */
+
+extern int drm_i_have_hw_lock(struct file *filp);
+extern int drm_kernel_take_hw_lock(struct file *filp);
 
 				/* Buffer management support (drm_bufs.h) */
 extern int drm_addbufs_agp(drm_device_t * dev, drm_buf_desc_t * request);
@@ -1056,6 +1151,58 @@ extern drm_mm_node_t *drm_mm_search_free(const drm_mm_t *mm, unsigned long size,
 						unsigned alignment, int best_match);
 extern int drm_mm_init(drm_mm_t *mm, unsigned long start, unsigned long size);
 extern void drm_mm_takedown(drm_mm_t *mm);
+
+
+/*
+ * User space object bookkeeping (drm_object.c)
+ */
+
+/*
+ * Must be called with the struct_mutex held.
+ */
+
+extern int drm_add_user_object(drm_file_t *priv, drm_user_object_t *item, 
+
+/*
+ * Must be called with the struct_mutex held.
+ */
+			       int shareable);
+extern drm_user_object_t *drm_lookup_user_object(drm_file_t *priv, uint32_t key);
+
+/*
+ * Must be called with the struct_mutex held.
+ * If "item" has been obtained by a call to drm_lookup_user_object. You may not
+ * release the struct_mutex before calling drm_remove_ref_object.
+ * This function may temporarily release the struct_mutex.
+ */
+
+extern int drm_remove_user_object(drm_file_t *priv, drm_user_object_t *item);
+
+/*
+ * Must be called with the struct_mutex held. May temporarily release it.
+ */
+
+extern int drm_add_ref_object(drm_file_t *priv, drm_user_object_t *referenced_object,
+			      drm_ref_t ref_action);
+
+/*
+ * Must be called with the struct_mutex held.
+ */
+
+drm_ref_object_t *drm_lookup_ref_object(drm_file_t *priv, 
+					drm_user_object_t *referenced_object,
+					drm_ref_t ref_action);
+/*
+ * Must be called with the struct_mutex held.
+ * If "item" has been obtained by a call to drm_lookup_ref_object. You may not
+ * release the struct_mutex before calling drm_remove_ref_object.
+ * This function may temporarily release the struct_mutex.
+ */
+
+extern void drm_remove_ref_object(drm_file_t *priv, drm_ref_object_t *item);
+extern int drm_user_object_ref(drm_file_t *priv, uint32_t user_token, drm_object_type_t type,
+			       drm_user_object_t **object);
+extern int drm_user_object_unref(drm_file_t *priv, uint32_t user_token, drm_object_type_t type);
 
 
 /* Inline replacements for DRM_IOREMAP macros */
