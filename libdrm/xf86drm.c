@@ -2236,3 +2236,122 @@ int drmCommandWriteRead(int fd, unsigned long drmCommandIndex, void *data,
     }
     return 0;
 }
+
+int drmFenceCreate(int fd, int shareable, unsigned type, int emit, 
+		   drmFence *fence)
+{
+    drm_fence_arg_t arg;
+    
+    arg.type = type;
+    arg.flags = (shareable) ? DRM_FENCE_FLAG_SHAREABLE : 0;
+    arg.flags |= (emit) ? DRM_FENCE_FLAG_EMIT : 0;
+    arg.op = drm_fence_create;
+    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+	return -errno;
+    fence->handle = arg.handle;
+    fence->type = arg.type;
+    fence->signaled = 0;
+    return 0;
+}
+    
+int drmFenceDestroy(int fd, const drmFence *fence)
+{
+    drm_fence_arg_t arg;
+   
+    arg.handle = fence->handle;
+    arg.op = drm_fence_destroy;
+    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+	return -errno;
+    return 0;
+}
+
+int drmFenceReference(int fd, unsigned handle, drmFence *fence)
+{
+    drm_fence_arg_t arg;
+   
+    arg.handle = handle;
+    arg.op = drm_fence_reference;
+    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+	return -errno;
+    fence->handle = arg.handle;
+    fence->type = arg.type;
+    fence->signaled = arg.signaled;
+    return 0;
+}
+
+int drmFenceUnreference(int fd, const drmFence *fence)
+{
+    drm_fence_arg_t arg;
+   
+    arg.handle = fence->handle;
+    arg.op = drm_fence_unreference;
+    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+	return -errno;
+    return 0;
+}
+
+int drmFenceFlush(int fd, drmFence *fence, unsigned flush_type)
+{
+    drm_fence_arg_t arg;
+   
+    arg.handle = fence->handle;
+    arg.type = flush_type;
+    arg.op = drm_fence_flush;
+    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+	return -errno;
+    fence->type = arg.type;
+    fence->signaled = arg.signaled;
+    return 0;
+}
+
+int drmFenceSignaled(int fd, drmFence *fence)
+{
+    drm_fence_arg_t arg;
+   
+    arg.handle = fence->handle;
+    arg.op = drm_fence_signaled;
+    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+	return -errno;
+    fence->type = arg.type;
+    fence->signaled = arg.signaled;
+    return 0;
+}
+
+int drmFenceEmit(int fd, drmFence *fence, unsigned emit_type)
+{
+    drm_fence_arg_t arg;
+   
+    arg.handle = fence->handle;
+    arg.type = emit_type;
+    arg.op = drm_fence_emit;
+    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+	return -errno;
+    fence->type = arg.type;
+    fence->signaled = arg.signaled;
+    return 0;
+}
+    
+int drmFenceWait(int fd, drmFence *fence, unsigned flush_type, 
+		 int lazy, int ignore_signals)
+{
+    drm_fence_arg_t arg;
+    int ret;
+
+    arg.handle = fence->handle;
+    arg.type = flush_type;
+    arg.flags = (lazy) ? DRM_FENCE_FLAG_WAIT_LAZY : 0;
+    arg.flags |= (ignore_signals) ? DRM_FENCE_FLAG_WAIT_IGNORE_SIGNALS : 0;
+    arg.op = drm_fence_wait;
+    do {
+	ret = ioctl(fd, DRM_IOCTL_FENCE, &arg);
+    } while (ret != 0 && errno == EAGAIN);
+
+    if (ret)
+	return -errno;
+
+    fence->type = arg.type;
+    fence->signaled = arg.signaled;
+    return 0;
+}    
+
+

@@ -133,6 +133,7 @@ static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 		goto error_out_unreg;
 	}
 
+	drm_fence_manager_init(dev);
 	return 0;
 
 error_out_unreg:

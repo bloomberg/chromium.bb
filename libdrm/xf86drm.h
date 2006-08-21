@@ -280,6 +280,11 @@ typedef struct _drmSetVersion {
 	int drm_dd_minor;
 } drmSetVersion, *drmSetVersionPtr;
 
+typedef struct _drmFence{
+        unsigned handle;
+        unsigned type; 
+        unsigned signaled;
+} drmFence;
 
 #define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)
 
@@ -595,6 +600,21 @@ extern int           drmScatterGatherAlloc(int fd, unsigned long size,
 extern int           drmScatterGatherFree(int fd, drm_handle_t handle);
 
 extern int           drmWaitVBlank(int fd, drmVBlankPtr vbl);
+
+/* Fencing */
+
+extern int           drmFenceCreate(int fd, int shareable, unsigned type, int emit, 
+				    drmFence *fence);
+extern int           drmFenceDestroy(int fd, const drmFence *fence);
+extern int           drmFenceReference(int fd, unsigned handle, drmFence *fence);
+extern int           drmFenceUnreference(int fd, const drmFence *fence);
+extern int           drmFenceFlush(int fd, drmFence *fence, unsigned flush_type);
+extern int           drmFenceSignaled(int fd, drmFence *fence);
+extern int           drmFenceWait(int fd, drmFence *fence, unsigned flush_type, 
+				  int lazy, int ignore_signals);
+extern int           drmFenceEmit(int fd, drmFence *fence, unsigned emit_type);
+
+
 
 /* Support routines */
 extern int           drmError(int err, const char *label);

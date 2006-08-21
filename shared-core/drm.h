@@ -259,7 +259,7 @@ typedef enum drm_map_type {
 	_DRM_SHM = 2,		  /**< shared, cached */
 	_DRM_AGP = 3,		  /**< AGP/GART */
 	_DRM_SCATTER_GATHER = 4,  /**< Scatter/gather memory for PCI DMA */
-	_DRM_CONSISTENT = 5	  /**< Consistent memory for PCI DMA */
+	_DRM_CONSISTENT = 5,	  /**< Consistent memory for PCI DMA */
 } drm_map_type_t;
 
 /**
@@ -629,6 +629,31 @@ typedef struct drm_set_version {
 	int drm_dd_minor;
 } drm_set_version_t;
 
+#define DRM_FENCE_FLAG_EMIT                0x00000001
+#define DRM_FENCE_FLAG_SHAREABLE           0x00000002
+#define DRM_FENCE_FLAG_WAIT_LAZY           0x00000004
+#define DRM_FENCE_FLAG_WAIT_IGNORE_SIGNALS 0x00000008
+
+#define DRM_FENCE_EXE                      0x00000001
+
+typedef struct drm_fence_arg {
+	unsigned handle;
+	unsigned type;
+	unsigned flags;
+	unsigned signaled;
+	enum {
+		drm_fence_create,
+		drm_fence_destroy,
+		drm_fence_reference,
+		drm_fence_unreference,
+		drm_fence_signaled,
+		drm_fence_flush,
+		drm_fence_wait,
+		drm_fence_emit
+	} op;
+} drm_fence_arg_t;
+
+
 /**
  * \name Ioctls Definitions
  */
@@ -693,6 +718,9 @@ typedef struct drm_set_version {
 #define DRM_IOCTL_SG_FREE		DRM_IOW( 0x39, drm_scatter_gather_t)
 
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, drm_wait_vblank_t)
+
+#define DRM_IOCTL_FENCE                 DRM_IOWR(0x3b, drm_fence_arg_t)
+
 
 /*@}*/
 

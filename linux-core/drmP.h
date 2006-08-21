@@ -155,6 +155,7 @@
 #define DRM_MEM_MM        22
 #define DRM_MEM_HASHTAB   23
 #define DRM_MEM_OBJECTS   24
+#define DRM_MEM_FENCE     25
 
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
@@ -637,6 +638,8 @@ struct drm_driver {
 	unsigned long (*get_reg_ofs) (struct drm_device * dev);
 	void (*set_version) (struct drm_device * dev, drm_set_version_t * sv);
 
+        struct drm_fence_driver *fence_driver;
+        
 	int major;
 	int minor;
 	int patchlevel;
@@ -665,6 +668,36 @@ typedef struct drm_head {
 	dev_t device;			/**< Device number for mknod */
 	struct class_device *dev_class;
 } drm_head_t;
+
+
+typedef struct drm_fence_driver{
+	int no_types;
+	uint32_t wrap_diff;
+	uint32_t flush_diff;
+        uint32_t sequence_mask;
+        int lazy_capable;
+	int (*emit) (struct drm_device *dev, uint32_t *breadcrumb);
+	void (*poke_flush) (struct drm_device *dev);
+} drm_fence_driver_t;
+
+
+typedef struct drm_fence_manager{
+        int initialized;
+	rwlock_t lock;
+
+	/*
+	 * The list below should be maintained in sequence order and 
+	 * access is protected by the above spinlock.
+	 */
+
+	struct list_head ring;
+	struct list_head *fence_types[32];
+	volatile uint32_t pending_flush;
+	wait_queue_head_t fence_queue;
+	int pending_exe_flush;
+	uint32_t last_exe_flush;
+	uint32_t exe_flush_sequence;
+} drm_fence_manager_t;
 
 
 /**
@@ -798,7 +831,19 @@ typedef struct drm_device {
 	drm_local_map_t *agp_buffer_map;
 	unsigned int agp_buffer_token;
 	drm_head_t primary;		/**< primary screen head */
+
+	drm_fence_manager_t fm;
+
 } drm_device_t;
+
+#if __OS_HAS_AGP
+typedef struct drm_agp_ttm_priv {
+	DRM_AGP_MEM *mem;
+	struct agp_bridge_data *bridge;
+	unsigned mem_type;
+	int populated;
+} drm_agp_ttm_priv;
+#endif
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,
 					     int feature)
@@ -894,6 +939,24 @@ typedef struct drm_ref_object {
 	drm_ref_t unref_action;
 } drm_ref_object_t;
 
+typedef struct drm_fence_object{
+	drm_user_object_t base;
+        atomic_t usage;
+
+	/*
+	 * The below three fields are protected by the fence manager spinlock.
+	 */
+
+	struct list_head ring;
+	volatile uint32_t type;
+	volatile uint32_t signaled;
+	uint32_t sequence;
+	volatile uint32_t flush_mask;
+	volatile uint32_t submitted_flush;
+} drm_fence_object_t;
+
+
+
 
 
 /******************************************************************/
@@ -924,7 +987,6 @@ unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait);
 extern int drm_mmap(struct file *filp, struct vm_area_struct *vma);
 extern unsigned long drm_core_get_map_ofs(drm_map_t * map);
 extern unsigned long drm_core_get_reg_ofs(struct drm_device *dev);
-extern pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma);
 
 				/* Memory management support (drm_memory.h) */
 #include "drm_memory.h"
@@ -1203,6 +1265,18 @@ extern void drm_remove_ref_object(drm_file_t *priv, drm_ref_object_t *item);
 extern int drm_user_object_ref(drm_file_t *priv, uint32_t user_token, drm_object_type_t type,
 			       drm_user_object_t **object);
 extern int drm_user_object_unref(drm_file_t *priv, uint32_t user_token, drm_object_type_t type);
+
+
+
+/*
+ * fence objects (drm_fence.c)
+ */
+
+extern void drm_fence_handler(drm_device_t *dev, uint32_t breadcrumb, uint32_t type);
+extern void drm_fence_manager_init(drm_device_t *dev);
+extern void drm_fence_manager_takedown(drm_device_t *dev);
+extern void drm_fence_flush_old(drm_device_t *dev, uint32_t sequence);
+extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 
 
 /* Inline replacements for DRM_IOREMAP macros */
