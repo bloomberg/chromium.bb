@@ -227,4 +227,22 @@ static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from
 }
 #endif
 
+#include <linux/mm.h>
+#include <asm/page.h>
+
+/*
+ * Flush relevant caches and clear a VMA structure so that page references 
+ * will cause a page fault. Don't flush tlbs.
+ */
+
+extern void drm_clear_vma(struct vm_area_struct *vma,
+			  unsigned long addr, unsigned long end);
+
+/*
+ * Return the PTE protection map entries for the VMA flags given by 
+ * flags. This is a functional interface to the kernel's protection map.
+ */
+
+extern pgprot_t drm_prot_map(uint32_t flags);
+
 #endif
