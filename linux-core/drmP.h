@@ -680,6 +680,7 @@ typedef struct drm_fence_driver{
 	void (*poke_flush) (struct drm_device *dev);
 } drm_fence_driver_t;
 
+#define _DRM_FENCE_TYPE_EXE 0x00
 
 typedef struct drm_fence_manager{
         int initialized;
