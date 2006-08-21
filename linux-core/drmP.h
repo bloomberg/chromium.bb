@@ -837,15 +837,6 @@ typedef struct drm_device {
 
 } drm_device_t;
 
-#if __OS_HAS_AGP
-typedef struct drm_agp_ttm_priv {
-	DRM_AGP_MEM *mem;
-	struct agp_bridge_data *bridge;
-	unsigned mem_type;
-	int populated;
-} drm_agp_ttm_priv;
-#endif
-
 static __inline__ int drm_core_check_feature(struct drm_device *dev,
 					     int feature)
 {
