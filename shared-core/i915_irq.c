@@ -56,8 +56,12 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 
 	dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
-	if (temp & USER_INT_FLAG)
+	if (temp & USER_INT_FLAG) {
 		DRM_WAKEUP(&dev_priv->irq_queue);
+#ifdef I915_HAVE_FENCE
+		i915_fence_handler(dev);
+#endif
+	}
 
 	if (temp & (VSYNC_PIPEA_FLAG | VSYNC_PIPEB_FLAG)) {
 		atomic_inc(&dev->vbl_received);
@@ -68,7 +72,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	return IRQ_HANDLED;
 }
 
-static int i915_emit_irq(drm_device_t * dev)
+int i915_emit_irq(drm_device_t * dev)
 {
 	
 	drm_i915_private_t *dev_priv = dev->dev_private;
@@ -260,7 +264,7 @@ void i915_driver_irq_preinstall(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	I915_WRITE16(I915REG_HWSTAM, 0xfffe);
+	I915_WRITE16(I915REG_HWSTAM, 0xeffe);
 	I915_WRITE16(I915REG_INT_MASK_R, 0x0);
 	I915_WRITE16(I915REG_INT_ENABLE_R, 0x0);
 }

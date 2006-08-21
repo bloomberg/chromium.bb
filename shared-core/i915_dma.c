@@ -434,15 +434,15 @@ static void i915_emit_breadcrumb(drm_device_t *dev)
 
 	dev_priv->sarea_priv->last_enqueue = ++dev_priv->counter;
 
-	if (dev_priv->counter > 0x7FFFFFFFUL)
-		dev_priv->sarea_priv->last_enqueue = dev_priv->counter = 1;
-
 	BEGIN_LP_RING(4);
 	OUT_RING(CMD_STORE_DWORD_IDX);
 	OUT_RING(20);
 	OUT_RING(dev_priv->counter);
 	OUT_RING(0);
 	ADVANCE_LP_RING();
+#ifdef I915_HAVE_FENCE
+	drm_fence_flush_old(dev, dev_priv->counter);
+#endif
 }
 
 static int i915_dispatch_cmdbuffer(drm_device_t * dev,
@@ -565,7 +565,9 @@ static int i915_dispatch_flip(drm_device_t * dev)
 	OUT_RING(dev_priv->counter);
 	OUT_RING(0);
 	ADVANCE_LP_RING();
-
+#ifdef I915_HAVE_FENCE
+	drm_fence_flush_old(dev, dev_priv->counter);
+#endif
 	dev_priv->sarea_priv->pf_current_page = dev_priv->current_page;
 	return 0;
 }

@@ -51,6 +51,10 @@
 #define DRIVER_MINOR		5
 #define DRIVER_PATCHLEVEL	0
 
+#if defined(__linux__)
+#define I915_HAVE_FENCE
+#endif
+
 typedef struct _drm_i915_ring_buffer {
 	int tail_mask;
 	unsigned long Start;
@@ -81,7 +85,7 @@ typedef struct drm_i915_private {
 	drm_dma_handle_t *status_page_dmah;
 	void *hw_status_page;
 	dma_addr_t dma_status_page;
-	unsigned long counter;
+	uint32_t counter;
 
 	int back_offset;
 	int front_offset;
@@ -98,6 +102,14 @@ typedef struct drm_i915_private {
 	struct mem_block *agp_heap;
 	unsigned int sr01, adpa, ppcr, dvob, dvoc, lvds;
 	int vblank_pipe;
+
+#ifdef I915_HAVE_FENCE
+        uint32_t flush_sequence;
+	uint32_t flush_flags;
+	uint32_t flush_pending;
+	uint32_t saved_flush_status;
+#endif
+
 } drm_i915_private_t;
 
 extern drm_ioctl_desc_t i915_ioctls[];
@@ -123,6 +135,7 @@ extern void i915_driver_irq_postinstall(drm_device_t * dev);
 extern void i915_driver_irq_uninstall(drm_device_t * dev);
 extern int i915_vblank_pipe_set(DRM_IOCTL_ARGS);
 extern int i915_vblank_pipe_get(DRM_IOCTL_ARGS);
+extern int i915_emit_irq(drm_device_t * dev);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(DRM_IOCTL_ARGS);
@@ -132,6 +145,13 @@ extern int i915_mem_destroy_heap(DRM_IOCTL_ARGS);
 extern void i915_mem_takedown(struct mem_block **heap);
 extern void i915_mem_release(drm_device_t * dev,
 			     DRMFILE filp, struct mem_block *heap);
+#ifdef I915_HAVE_FENCE
+/* i915_fence.c */
+extern void i915_fence_handler(drm_device_t *dev);
+extern int i915_fence_emit_sequence(drm_device_t *dev, uint32_t *sequence);
+extern void i915_poke_flush(drm_device_t *dev);
+extern void i915_sync_flush(drm_device_t *dev);
+#endif
 
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
 #define I915_WRITE(reg,val)     DRM_WRITE32(dev_priv->mmio_map, (reg), (val))
@@ -191,6 +211,7 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define I915REG_INT_IDENTITY_R	0x020a4
 #define I915REG_INT_MASK_R 	0x020a8
 #define I915REG_INT_ENABLE_R	0x020a0
+#define I915REG_INSTPM	        0x020c0
 
 #define SRX_INDEX		0x3c4
 #define SRX_DATA		0x3c5
@@ -272,6 +293,6 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 #define CMD_OP_DESTBUFFER_INFO	 ((0x3<<29)|(0x1d<<24)|(0x8e<<16)|1)
 
-#define READ_BREADCRUMB(dev_priv)  (((u32*)(dev_priv->hw_status_page))[5])
-
+#define READ_BREADCRUMB(dev_priv)  (((volatile u32*)(dev_priv->hw_status_page))[5])
+#define READ_HWSP(dev_priv, reg)  (((volatile u32*)(dev_priv->hw_status_page))[reg])
 #endif
