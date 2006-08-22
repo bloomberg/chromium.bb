@@ -682,7 +682,7 @@ drm_ttm_backend_t *drm_agp_init_ttm_uncached(struct drm_device *dev) {
 	agp_be->destroy = drm_agp_destroy_ttm;
 	return agp_be;
 }
-
+EXPORT_SYMBOL(drm_agp_init_ttm_uncached);
 
 drm_ttm_backend_t *drm_agp_init_ttm_cached(struct drm_device *dev) {
 
@@ -715,6 +715,6 @@ drm_ttm_backend_t *drm_agp_init_ttm_cached(struct drm_device *dev) {
 	agp_be->destroy = drm_agp_destroy_ttm;
 	return agp_be;
 }
-
+EXPORT_SYMBOL(drm_agp_init_ttm_cached);
 
 #endif				/* __OS_HAS_AGP */

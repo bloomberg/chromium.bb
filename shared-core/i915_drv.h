@@ -53,6 +53,7 @@
 
 #if defined(__linux__)
 #define I915_HAVE_FENCE
+#define I915_HAVE_BUFFER
 #endif
 
 typedef struct _drm_i915_ring_buffer {
@@ -151,6 +152,12 @@ extern void i915_fence_handler(drm_device_t *dev);
 extern int i915_fence_emit_sequence(drm_device_t *dev, uint32_t *sequence);
 extern void i915_poke_flush(drm_device_t *dev);
 extern void i915_sync_flush(drm_device_t *dev);
+#endif
+
+#ifdef I915_HAVE_BUFFER
+/* i915_buffer.c */
+extern drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev, 
+	int cached);
 #endif
 
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))

@@ -48,6 +48,12 @@ static drm_fence_driver_t i915_fence_driver = {
 	.poke_flush = i915_poke_flush,
 };
 
+static drm_bo_driver_t i915_bo_driver = {
+	.cached_pages = 1,
+	.create_ttm_backend_entry = i915_create_ttm_backend_entry
+};
+
+
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	/* don't use mtrr's here, the Xserver or user space app should
@@ -89,6 +95,8 @@ static struct drm_driver driver = {
 		},
 
 	.fence_driver = &i915_fence_driver,
+	.bo_driver = &i915_bo_driver,
+
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
 	.date = DRIVER_DATE,
