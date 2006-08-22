@@ -850,6 +850,16 @@ typedef struct drm_device {
 
 } drm_device_t;
 
+#if __OS_HAS_AGP
+typedef struct drm_agp_ttm_priv {
+	DRM_AGP_MEM *mem;
+	struct agp_bridge_data *bridge;
+	unsigned mem_type;
+	int populated;
+} drm_agp_ttm_priv;
+#endif
+
+
 static __inline__ int drm_core_check_feature(struct drm_device *dev,
 					     int feature)
 {
@@ -1162,6 +1172,8 @@ extern DRM_AGP_MEM *drm_agp_allocate_memory(struct agp_bridge_data *bridge, size
 extern int drm_agp_free_memory(DRM_AGP_MEM * handle);
 extern int drm_agp_bind_memory(DRM_AGP_MEM * handle, off_t start);
 extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
+extern drm_ttm_backend_t *drm_agp_init_ttm_cached(struct drm_device *dev);
+extern drm_ttm_backend_t *drm_agp_init_ttm_uncached(struct drm_device *dev);
 
 				/* Stub support (drm_stub.h) */
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
