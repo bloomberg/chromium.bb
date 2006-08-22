@@ -90,7 +90,7 @@ void drm_ttm_delete_mm(drm_ttm_t * ttm, struct mm_struct *mm)
 			return;
 		}
 	}
-	BUG_ON(TRUE);
+	BUG_ON(1);
 }
 
 static void drm_ttm_lock_mm(drm_ttm_t * ttm, int mm_sem, int page_table)
@@ -200,6 +200,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 		return 0;
 
 	if (atomic_read(&ttm->vma_count) > 0) {
+		ttm->destroy = 1;
 		DRM_DEBUG("VMAs are still alive. Skipping destruction.\n");
 		return -EBUSY;
 	} 
@@ -260,7 +261,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
  * FIXME: Avoid using vmalloc for the page- and page_flags tables?
  */
 
-drm_ttm_t *drm_init_ttm(struct drm_device * dev, unsigned long size)
+static drm_ttm_t *drm_init_ttm(struct drm_device * dev, unsigned long size)
 {
 
 	drm_ttm_t *ttm;
@@ -274,6 +275,7 @@ drm_ttm_t *drm_init_ttm(struct drm_device * dev, unsigned long size)
 
 	ttm->lhandle = 0;
 	atomic_set(&ttm->vma_count, 0);
+	ttm->destroy = 0;
 	ttm->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 
 	ttm->page_flags = vmalloc(ttm->num_pages * sizeof(*ttm->page_flags));
@@ -315,6 +317,7 @@ drm_ttm_t *drm_init_ttm(struct drm_device * dev, unsigned long size)
 
 	ttm->lhandle = (unsigned long)ttm;
 	ttm->dev = dev;
+
 	return ttm;
 }
 
@@ -395,9 +398,9 @@ static int drm_set_caching(drm_ttm_t * ttm, unsigned long page_offset,
 	struct page **cur_page;
 	pgprot_t attr = (noncached) ? PAGE_KERNEL_NOCACHE : PAGE_KERNEL;
 
-	drm_ttm_lock_mm(ttm, FALSE, TRUE);
+	drm_ttm_lock_mm(ttm, 0, 1);
 	unmap_vma_pages(ttm, page_offset, num_pages);
-	drm_ttm_unlock_mm(ttm, FALSE, TRUE);
+	drm_ttm_unlock_mm(ttm, 0, 1);
 
 	for (i = 0; i < num_pages; ++i) {
 		cur = page_offset + i;
@@ -440,17 +443,17 @@ int drm_evict_ttm_region(drm_ttm_backend_list_t * entry)
 				ret = drm_ttm_lock_mmap_sem(ttm);
 				if (ret)
 					return ret;
-				drm_ttm_lock_mm(ttm, FALSE, TRUE);
+				drm_ttm_lock_mm(ttm, 0, 1);
 				unmap_vma_pages(ttm, entry->page_offset,
 						entry->num_pages);
 				global_flush_tlb();
-				drm_ttm_unlock_mm(ttm, FALSE, TRUE);
+				drm_ttm_unlock_mm(ttm, 0, 1);
 			}
 			be->unbind(entry->be);
 			if (ttm && be->needs_cache_adjust(be)) {
 				drm_set_caching(ttm, entry->page_offset,
 						entry->num_pages, 0, 1);
-				drm_ttm_unlock_mm(ttm, TRUE, FALSE);
+				drm_ttm_unlock_mm(ttm, 1, 0);
 			}
 			break;
 		default:
@@ -489,7 +492,7 @@ void drm_destroy_ttm_region(drm_ttm_backend_list_t * entry)
 			drm_set_caching(ttm, entry->page_offset,
 					entry->num_pages, 0, 1);
 			if (!ret)
-				drm_ttm_unlock_mm(ttm, TRUE, FALSE);
+				drm_ttm_unlock_mm(ttm, 1, 0);
 		}
 		be->destroy(be);
 	}
@@ -600,14 +603,14 @@ int drm_bind_ttm_region(drm_ttm_backend_list_t * region,
 		if (ret)
 			return ret;
 		drm_set_caching(ttm, region->page_offset, region->num_pages,
-				DRM_TTM_PAGE_UNCACHED, TRUE);
+				DRM_TTM_PAGE_UNCACHED, 1);
 	} else {
 		DRM_DEBUG("Binding cached\n");
 	}
 
 	if ((ret = be->bind(be, aper_offset))) {
 		if (ttm && be->needs_cache_adjust(be))
-			drm_ttm_unlock_mm(ttm, TRUE, FALSE);
+			drm_ttm_unlock_mm(ttm, 1, 0);
 		drm_unbind_ttm_region(region);
 		DRM_ERROR("Couldn't bind backend.\n");
 		return ret;
@@ -623,7 +626,7 @@ int drm_bind_ttm_region(drm_ttm_backend_list_t * region,
 	if (ttm && be->needs_cache_adjust(be)) {
 		ioremap_vmas(ttm, region->page_offset, region->num_pages,
 			     aper_offset);
-		drm_ttm_unlock_mm(ttm, TRUE, FALSE);
+		drm_ttm_unlock_mm(ttm, 1, 0);
 	}
 
 	region->state = ttm_bound;

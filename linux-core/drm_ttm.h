@@ -98,15 +98,10 @@ typedef struct drm_ttm {
 	drm_ttm_backend_list_t *be_list;
 	atomic_t vma_count;
 	int mmap_sem_locked;
+        int destroy;
 } drm_ttm_t;
 
-/*
- * Initialize a ttm. Currently the size is fixed. Currently drmAddMap calls this function
- * and creates a DRM map of type _DRM_TTM, and returns a reference to that map to the 
- * caller.
- */
-
-drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size);
+int drm_add_ttm(struct drm_device * dev, unsigned size, drm_map_list_t ** maplist);
 
 /*
  * Bind a part of the ttm starting at page_offset size n_pages into the GTT, at

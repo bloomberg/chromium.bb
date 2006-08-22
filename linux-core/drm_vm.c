@@ -640,7 +640,7 @@ static int drm_vm_ttm_open(struct vm_area_struct *vma) {
 	        *entry = *tmp_vma;
 		map = (drm_map_t *) entry->map;
 		ttm = (drm_ttm_t *) map->offset;
-		/*		ret = drm_ttm_add_mm_to_list(ttm, vma->vm_mm); */
+		ret = drm_ttm_add_mm_to_list(ttm, vma->vm_mm);
 		if (!ret) {
 			atomic_inc(&ttm->vma_count);
 			INIT_LIST_HEAD(&entry->head);
@@ -706,6 +706,7 @@ static void drm_vm_ttm_close(struct vm_area_struct *vma)
 	int found_maps;
 	struct list_head *list;
         drm_device_t *dev;
+	int ret;
 
 	drm_vm_close(vma); 
 	if (ttm_vma) {
@@ -713,24 +714,15 @@ static void drm_vm_ttm_close(struct vm_area_struct *vma)
 		ttm = (drm_ttm_t *) map->offset;
 		dev = ttm->dev;
 		mutex_lock(&dev->struct_mutex);
-		list_del(&ttm_vma->head);
-		/* drm_ttm_delete_mm(ttm, vma->vm_mm); */
+		drm_ttm_delete_mm(ttm, vma->vm_mm);
 		drm_free(ttm_vma, sizeof(*ttm_vma), DRM_MEM_VMAS);
-		atomic_dec(&ttm->vma_count);
-		found_maps = 0;
-		list = NULL;
-#if 0 /* Reimplement with vma_count */
-		list_for_each(list, &ttm->owner->ttms) {
-			r_list = list_entry(list, drm_map_list_t, head);
-			if (r_list->map == map)
-				found_maps++;
-		}
-		if (!found_maps) {
-			if (drm_destroy_ttm(ttm) != -EBUSY) {
-				drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+		if (atomic_dec_and_test(&ttm->vma_count)) {
+			if (ttm->destroy) {
+				ret = drm_destroy_ttm(ttm);
+				BUG_ON(ret);
+				drm_free(map, sizeof(*map), DRM_MEM_TTM);
 			}
 		}
-#endif
 		mutex_unlock(&dev->struct_mutex);
 	}
 	return;
