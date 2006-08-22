@@ -282,6 +282,7 @@ typedef struct _drmSetVersion {
 
 typedef struct _drmFence{
         unsigned handle;
+        int class;
         unsigned type; 
         unsigned signaled;
 } drmFence;
@@ -603,7 +604,8 @@ extern int           drmWaitVBlank(int fd, drmVBlankPtr vbl);
 
 /* Fencing */
 
-extern int           drmFenceCreate(int fd, int shareable, unsigned type, int emit, 
+extern int           drmFenceCreate(int fd, int shareable, int class,
+				    unsigned type, int emit, 
 				    drmFence *fence);
 extern int           drmFenceDestroy(int fd, const drmFence *fence);
 extern int           drmFenceReference(int fd, unsigned handle, drmFence *fence);

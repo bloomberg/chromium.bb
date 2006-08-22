@@ -2237,18 +2237,21 @@ int drmCommandWriteRead(int fd, unsigned long drmCommandIndex, void *data,
     return 0;
 }
 
-int drmFenceCreate(int fd, int shareable, unsigned type, int emit, 
+int drmFenceCreate(int fd, int shareable, int class,unsigned type, 
+		   int emit, 
 		   drmFence *fence)
 {
     drm_fence_arg_t arg;
     
     arg.type = type;
+    arg.class = class;
     arg.flags = (shareable) ? DRM_FENCE_FLAG_SHAREABLE : 0;
     arg.flags |= (emit) ? DRM_FENCE_FLAG_EMIT : 0;
     arg.op = drm_fence_create;
     if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
 	return -errno;
     fence->handle = arg.handle;
+    fence->class = arg.class;
     fence->type = arg.type;
     fence->signaled = 0;
     return 0;
@@ -2274,6 +2277,7 @@ int drmFenceReference(int fd, unsigned handle, drmFence *fence)
     if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
 	return -errno;
     fence->handle = arg.handle;
+    fence->class = arg.class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
     return 0;
@@ -2299,6 +2303,7 @@ int drmFenceFlush(int fd, drmFence *fence, unsigned flush_type)
     arg.op = drm_fence_flush;
     if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
 	return -errno;
+    fence->class = arg.class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
     return 0;
@@ -2312,6 +2317,7 @@ int drmFenceSignaled(int fd, drmFence *fence)
     arg.op = drm_fence_signaled;
     if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
 	return -errno;
+    fence->class = arg.class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
     return 0;
@@ -2326,6 +2332,7 @@ int drmFenceEmit(int fd, drmFence *fence, unsigned emit_type)
     arg.op = drm_fence_emit;
     if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
 	return -errno;
+    fence->class = arg.class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
     return 0;
@@ -2349,6 +2356,7 @@ int drmFenceWait(int fd, drmFence *fence, unsigned flush_type,
     if (ret)
 	return -errno;
 
+    fence->class = arg.class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
     return 0;

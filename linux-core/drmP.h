@@ -963,6 +963,7 @@ typedef struct drm_fence_object{
 	 */
 
 	struct list_head ring;
+        int class;
 	volatile uint32_t type;
 	volatile uint32_t signaled;
 	uint32_t sequence;

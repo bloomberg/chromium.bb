@@ -397,6 +397,7 @@ int drm_fence_object_init(drm_device_t * dev, uint32_t type, int emit,
 
 	write_lock_irqsave(&fm->lock, flags);
 	INIT_LIST_HEAD(&fence->ring);
+        fence->class = 0;
 	fence->type = type;
 	fence->flush_mask = 0;
 	fence->submitted_flush = 0;
@@ -577,6 +578,7 @@ int drm_fence_ioctl(DRM_IOCTL_ARGS)
 		return -EINVAL;
 	}
 	read_lock_irqsave(&fm->lock, flags);
+	arg.class = fence->class;
 	arg.type = fence->type;
 	arg.signaled = fence->signaled;
 	read_unlock_irqrestore(&fm->lock, flags);

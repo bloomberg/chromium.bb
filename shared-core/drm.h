@@ -639,6 +639,7 @@ typedef struct drm_set_version {
 
 typedef struct drm_fence_arg {
 	unsigned handle;
+        int class;
 	unsigned type;
 	unsigned flags;
 	unsigned signaled;
