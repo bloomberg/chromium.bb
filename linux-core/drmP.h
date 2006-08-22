@@ -954,6 +954,14 @@ typedef struct drm_device {
 	drm_fence_manager_t fm;
 	drm_buffer_manager_t bm;
   
+	/** \name Drawable information */
+	/*@{ */
+	spinlock_t drw_lock;
+	unsigned int drw_bitfield_length;
+	u32 *drw_bitfield;
+	unsigned int drw_info_length;
+	drm_drawable_info_t **drw_info;
+	/*@} */
 } drm_device_t;
 
 #if __OS_HAS_AGP
@@ -1161,6 +1169,8 @@ extern int drm_adddraw(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 extern int drm_rmdraw(struct inode *inode, struct file *filp,
 		      unsigned int cmd, unsigned long arg);
+extern drm_drawable_info_t *drm_get_drawable_info(drm_device_t *dev,
+						  drm_drawable_t id);
 
 				/* Authentication IOCTL support (drm_auth.h) */
 extern int drm_getmagic(struct inode *inode, struct file *filp,

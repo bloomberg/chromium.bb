@@ -165,6 +165,14 @@ typedef struct drm_clip_rect {
 } drm_clip_rect_t;
 
 /**
+ * Drawable information.
+ */
+typedef struct drm_drawable_info {
+	unsigned int num_rects;
+	drm_clip_rect_t *rects;
+} drm_drawable_info_t;
+
+/**
  * Texture region,
  */
 typedef struct drm_tex_region {
@@ -513,6 +521,20 @@ typedef struct drm_ctx_res {
 typedef struct drm_draw {
 	drm_drawable_t handle;
 } drm_draw_t;
+
+/**
+ * DRM_IOCTL_UPDATE_DRAW ioctl argument type.
+ */
+typedef enum {
+	DRM_DRAWABLE_CLIPRECTS,
+} drm_drawable_info_type_t;
+
+typedef struct drm_update_draw {
+	drm_drawable_t handle;
+	unsigned int type;
+	unsigned int num;
+	unsigned long long data;
+} drm_update_draw_t;
 
 /**
  * DRM_IOCTL_GET_MAGIC and DRM_IOCTL_AUTH_MAGIC ioctl argument type.
@@ -900,6 +922,8 @@ typedef union drm_mm_init_arg{
 #define DRM_IOCTL_BUFOBJ                DRM_IOWR(0x3d, drm_bo_arg_t)
 #define DRM_IOCTL_MM_INIT               DRM_IOWR(0x3e, drm_mm_init_arg_t)
 #endif
+
+#define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, drm_update_draw_t)
 
 /*@}*/
 
