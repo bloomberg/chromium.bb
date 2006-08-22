@@ -586,6 +586,18 @@ typedef struct drm_mm {
 	drm_mm_node_t root_node;
 } drm_mm_t;
 
+#include "drm_ttm.h"
+
+/*
+ * buffer object driver
+ */
+
+typedef struct drm_bo_driver{
+	int cached_pages;
+	drm_ttm_backend_t *(*create_ttm_backend_entry) 
+		(struct drm_device *dev, int cached);
+} drm_bo_driver_t;
+
 
 /**
  * DRM driver structure. This structure represent the common code for
@@ -639,6 +651,7 @@ struct drm_driver {
 	void (*set_version) (struct drm_device * dev, drm_set_version_t * sv);
 
         struct drm_fence_driver *fence_driver;
+	struct drm_bo_driver *bo_driver;
         
 	int major;
 	int minor;
@@ -979,6 +992,7 @@ unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait);
 extern int drm_mmap(struct file *filp, struct vm_area_struct *vma);
 extern unsigned long drm_core_get_map_ofs(drm_map_t * map);
 extern unsigned long drm_core_get_reg_ofs(struct drm_device *dev);
+extern pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma);
 
 				/* Memory management support (drm_memory.h) */
 #include "drm_memory.h"
