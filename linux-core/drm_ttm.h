@@ -1,3 +1,34 @@
+/**************************************************************************
+ * 
+ * Copyright 2006 Tungsten Graphics, Inc., Bismarck, ND., USA
+ * All Rights Reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sub license, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ * 
+ * 
+ **************************************************************************/
+/*
+ * Authors: Thomas Hellström <thomas-at-tungstengraphics-dot-com>
+ */
+
 #ifndef _DRM_TTM_H
 #define _DRM_TTM_H
 #define DRM_HAS_TTM
@@ -30,9 +61,7 @@ typedef struct drm_ttm_backend {
 #define DRM_FLUSH_EXE   (0x04)
 
 typedef struct drm_ttm_backend_list {
-        drm_hash_item_t hash;
 	uint32_t flags;
-	atomic_t refcount;
 	struct list_head head;
 	drm_ttm_backend_t *be;
 	unsigned page_offset;
@@ -68,9 +97,6 @@ typedef struct drm_ttm {
 	struct drm_device *dev;
 	drm_ttm_backend_list_t *be_list;
 	atomic_t vma_count;
-	atomic_t unfinished_regions;
-	drm_file_t *owner;
-	int destroy;
 	int mmap_sem_locked;
 } drm_ttm_t;
 
@@ -127,12 +153,6 @@ extern int drm_destroy_ttm(drm_ttm_t * ttm);
 extern void drm_user_destroy_region(drm_ttm_backend_list_t * entry);
 extern int drm_ttm_add_mm_to_list(drm_ttm_t * ttm, struct mm_struct *mm);
 extern void drm_ttm_delete_mm(drm_ttm_t * ttm, struct mm_struct *mm);
-extern void drm_ttm_fence_before_destroy(drm_ttm_t * ttm);
-extern void drm_fence_unfenced_region(drm_ttm_backend_list_t * entry);
-
-extern int drm_ttm_ioctl(DRM_IOCTL_ARGS);
-extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
-extern int drm_mm_fence_ioctl(DRM_IOCTL_ARGS);
 
 #define DRM_MASK_VAL(dest, mask, val)			\
   (dest) = ((dest) & ~(mask)) | ((val) & (mask));

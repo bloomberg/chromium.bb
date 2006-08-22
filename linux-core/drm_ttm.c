@@ -1,6 +1,6 @@
 /**************************************************************************
  * 
- * Copyright 2006 Tungsten Graphics, Inc., Steamboat Springs, CO.
+ * Copyright 2006 Tungsten Graphics, Inc., Bismarck, ND., USA
  * All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -60,7 +60,7 @@ int drm_ttm_add_mm_to_list(drm_ttm_t * ttm, struct mm_struct *mm)
 		} else if ((unsigned long)mm < (unsigned long)entry->mm) ;
 	}
 
-	n_entry = drm_alloc(sizeof(*n_entry), DRM_MEM_MM);
+	n_entry = drm_alloc(sizeof(*n_entry), DRM_MEM_TTM);
 	if (!entry) {
 		DRM_ERROR("Allocation of process mm pointer entry failed\n");
 		return -ENOMEM;
@@ -83,7 +83,7 @@ void drm_ttm_delete_mm(drm_ttm_t * ttm, struct mm_struct *mm)
 		if (mm == entry->mm) {
 			if (atomic_add_negative(-1, &entry->refcount)) {
 				list_del(&entry->head);
-				drm_free(entry, sizeof(*entry), DRM_MEM_MM);
+				drm_free(entry, sizeof(*entry), DRM_MEM_TTM);
 				atomic_dec(&ttm->shared_count);
 				ttm->mm_list_seq++;
 			}
@@ -155,7 +155,9 @@ static int unmap_vma_pages(drm_ttm_t * ttm, unsigned long page_offset,
 	struct page **first_page = ttm->pages + page_offset;
 	struct page **last_page = ttm->pages + (page_offset + num_pages);
 	struct page **cur_page;
-
+#if !defined(flush_tlb_mm) && defined(MODULE)
+	int flush_tlb = 0;
+#endif
 	list_for_each(list, &ttm->vma_list->head) {
 		drm_ttm_vma_list_t *entry =
 		    list_entry(list, drm_ttm_vma_list_t, head);
@@ -164,7 +166,14 @@ static int unmap_vma_pages(drm_ttm_t * ttm, unsigned long page_offset,
 			      (page_offset << PAGE_SHIFT),
 			      entry->vma->vm_start +
 			      ((page_offset + num_pages) << PAGE_SHIFT));
+#if !defined(flush_tlb_mm) && defined(MODULE)
+		flush_tlb = 1;
+#endif
 	}
+#if !defined(flush_tlb_mm) && defined(MODULE)
+	if (flush_tlb)
+		global_flush_tlb();
+#endif
 
 	for (cur_page = first_page; cur_page != last_page; ++cur_page) {
 		if (page_mapcount(*cur_page) != 0) {
@@ -193,31 +202,17 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 	if (atomic_read(&ttm->vma_count) > 0) {
 		DRM_DEBUG("VMAs are still alive. Skipping destruction.\n");
 		return -EBUSY;
-	} else {
-		DRM_DEBUG("Checking for busy regions.\n");
-	}
+	} 
 
 	if (ttm->be_list) {
 		list_for_each_safe(list, next, &ttm->be_list->head) {
 			drm_ttm_backend_list_t *entry =
 			    list_entry(list, drm_ttm_backend_list_t, head);
-#ifdef REMOVED
-			drm_ht_remove_item(&ttm->dev->ttmreghash, 
-					   &entry->hash);
-#endif
 			drm_destroy_ttm_region(entry);
 		}
 
-		drm_free(ttm->be_list, sizeof(*ttm->be_list), DRM_MEM_MAPS);
+		drm_free(ttm->be_list, sizeof(*ttm->be_list), DRM_MEM_TTM);
 		ttm->be_list = NULL;
-	}
-
-	if (atomic_read(&ttm->unfinished_regions) > 0) {
-		DRM_DEBUG("Regions are still busy. Skipping destruction.\n");
-		ttm->destroy = TRUE;
-		return -EAGAIN;
-	} else {
-		DRM_DEBUG("About to really destroy ttm.\n");
 	}
 
 	if (ttm->pages) {
@@ -237,6 +232,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 		vfree(ttm->pages);
 		ttm->pages = NULL;
 	}
+
 	if (ttm->page_flags) {
 		vfree(ttm->page_flags);
 		ttm->page_flags = NULL;
@@ -248,12 +244,13 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 			    list_entry(list, drm_ttm_vma_list_t, head);
 			list_del(list);
 			entry->vma->vm_private_data = NULL;
-			drm_free(entry, sizeof(*entry), DRM_MEM_MAPS);
+			drm_free(entry, sizeof(*entry), DRM_MEM_TTM);
 		}
-		drm_free(ttm->vma_list, sizeof(*ttm->vma_list), DRM_MEM_MAPS);
+		drm_free(ttm->vma_list, sizeof(*ttm->vma_list), DRM_MEM_TTM);
 		ttm->vma_list = NULL;
 	}
-	drm_free(ttm, sizeof(*ttm), DRM_MEM_MAPS);
+
+	drm_free(ttm, sizeof(*ttm), DRM_MEM_TTM);
 
 	return 0;
 }
@@ -271,14 +268,12 @@ drm_ttm_t *drm_init_ttm(struct drm_device * dev, unsigned long size)
 	if (!dev->driver->bo_driver)
 		return NULL;
 
-	ttm = drm_calloc(1, sizeof(*ttm), DRM_MEM_MAPS);
+	ttm = drm_calloc(1, sizeof(*ttm), DRM_MEM_TTM);
 	if (!ttm)
 		return NULL;
 
 	ttm->lhandle = 0;
 	atomic_set(&ttm->vma_count, 0);
-	atomic_set(&ttm->unfinished_regions, 0);
-	ttm->destroy = FALSE;
 	ttm->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 
 	ttm->page_flags = vmalloc(ttm->num_pages * sizeof(*ttm->page_flags));
@@ -297,7 +292,7 @@ drm_ttm_t *drm_init_ttm(struct drm_device * dev, unsigned long size)
 	}
 	memset(ttm->pages, 0, ttm->num_pages * sizeof(*ttm->pages));
 
-	ttm->be_list = drm_calloc(1, sizeof(*ttm->be_list), DRM_MEM_MAPS);
+	ttm->be_list = drm_calloc(1, sizeof(*ttm->be_list), DRM_MEM_TTM);
 	if (!ttm->be_list) {
 		DRM_ERROR("Alloc be regions failed\n");
 		drm_destroy_ttm(ttm);
@@ -309,7 +304,7 @@ drm_ttm_t *drm_init_ttm(struct drm_device * dev, unsigned long size)
 	atomic_set(&ttm->shared_count, 0);
 	ttm->mm_list_seq = 0;
 
-	ttm->vma_list = drm_calloc(1, sizeof(*ttm->vma_list), DRM_MEM_MAPS);
+	ttm->vma_list = drm_calloc(1, sizeof(*ttm->vma_list), DRM_MEM_TTM);
 	if (!ttm->vma_list) {
 		DRM_ERROR("Alloc vma list failed\n");
 		drm_destroy_ttm(ttm);
@@ -350,10 +345,10 @@ static int drm_ttm_lock_mmap_sem(drm_ttm_t * ttm)
 		if (shared_count > cur_count) {
 			if (mm_list)
 				drm_free(mm_list, sizeof(*mm_list) * cur_count,
-					 DRM_MEM_MM);
+					 DRM_MEM_TTM);
 			cur_count = shared_count + 10;
 			mm_list =
-			    drm_alloc(sizeof(*mm_list) * cur_count, DRM_MEM_MM);
+			    drm_alloc(sizeof(*mm_list) * cur_count, DRM_MEM_TTM);
 			if (!mm_list)
 				return -ENOMEM;
 		}
@@ -383,9 +378,8 @@ static int drm_ttm_lock_mmap_sem(drm_ttm_t * ttm)
 	} while (list_seq != ttm->mm_list_seq);
 
 	if (mm_list)
-		drm_free(mm_list, sizeof(*mm_list) * cur_count, DRM_MEM_MM);
+		drm_free(mm_list, sizeof(*mm_list) * cur_count, DRM_MEM_TTM);
 
-	ttm->mmap_sem_locked = TRUE;
 	return 0;
 }
 
@@ -403,6 +397,7 @@ static int drm_set_caching(drm_ttm_t * ttm, unsigned long page_offset,
 
 	drm_ttm_lock_mm(ttm, FALSE, TRUE);
 	unmap_vma_pages(ttm, page_offset, num_pages);
+	drm_ttm_unlock_mm(ttm, FALSE, TRUE);
 
 	for (i = 0; i < num_pages; ++i) {
 		cur = page_offset + i;
@@ -413,7 +408,6 @@ static int drm_set_caching(drm_ttm_t * ttm, unsigned long page_offset,
 				    && page_address(*cur_page) != NULL) {
 					DRM_ERROR
 					    ("Illegal mapped HighMem Page\n");
-					drm_ttm_unlock_mm(ttm, FALSE, TRUE);
 					return -EINVAL;
 				}
 			} else if ((ttm->page_flags[cur] &
@@ -426,11 +420,8 @@ static int drm_set_caching(drm_ttm_t * ttm, unsigned long page_offset,
 	}
 	if (do_tlbflush)
 		global_flush_tlb();
-
-	drm_ttm_unlock_mm(ttm, FALSE, TRUE);
 	return 0;
 }
-
 
 /*
  * Unbind a ttm region from the aperture.
@@ -508,7 +499,7 @@ void drm_destroy_ttm_region(drm_ttm_backend_list_t * entry)
 		cur_page_flags++;
 	}
 
-	drm_free(entry, sizeof(*entry), DRM_MEM_MAPS);
+	drm_free(entry, sizeof(*entry), DRM_MEM_TTM);
 }
 
 /*
@@ -541,13 +532,13 @@ int drm_create_ttm_region(drm_ttm_t * ttm, unsigned long page_offset,
 		}
 	}
 
-	entry = drm_calloc(1, sizeof(*entry), DRM_MEM_MAPS);
+	entry = drm_calloc(1, sizeof(*entry), DRM_MEM_TTM);
 	if (!entry)
 		return -ENOMEM;
 
 	be = ttm->dev->driver->bo_driver->create_ttm_backend_entry(ttm->dev, cached);
 	if (!be) {
-		drm_free(entry, sizeof(*entry), DRM_MEM_MAPS);
+		drm_free(entry, sizeof(*entry), DRM_MEM_TTM);
 		DRM_ERROR("Couldn't create backend.\n");
 		return -EINVAL;
 	}
@@ -661,7 +652,7 @@ void drm_user_destroy_region(drm_ttm_backend_list_t * entry)
 
 	be = entry->be;
 	if (!be) {
-		drm_free(entry, sizeof(*entry), DRM_MEM_MAPS);
+		drm_free(entry, sizeof(*entry), DRM_MEM_TTM);
 		return;
 	}
 
@@ -679,7 +670,7 @@ void drm_user_destroy_region(drm_ttm_backend_list_t * entry)
 	}
 
 	be->destroy(be);
-	drm_free(entry, sizeof(*entry), DRM_MEM_MAPS);
+	drm_free(entry, sizeof(*entry), DRM_MEM_TTM);
 	return;
 }
 
@@ -703,7 +694,7 @@ int drm_user_create_region(drm_device_t * dev, unsigned long start, int len,
 	if (!dev->driver->bo_driver->create_ttm_backend_entry)
 		return -EFAULT;
 
-	tmp = drm_calloc(1, sizeof(*tmp), DRM_MEM_MAPS);
+	tmp = drm_calloc(1, sizeof(*tmp), DRM_MEM_TTM);
 
 	if (!tmp)
 		return -ENOMEM;
@@ -748,9 +739,6 @@ int drm_user_create_region(drm_device_t * dev, unsigned long start, int len,
 	}
 
 	tmp->state = ttm_unbound;
-#ifdef REMOVED
-	tmp->mm = &dev->driver->bo_driver->ttm_mm;
-#endif
 	*entry = tmp;
 
 	return 0;
@@ -766,7 +754,7 @@ int drm_add_ttm(drm_device_t * dev, unsigned size, drm_map_list_t ** maplist)
 	drm_map_t *map;
 	drm_ttm_t *ttm;
 
-	map = drm_alloc(sizeof(*map), DRM_MEM_MAPS);
+	map = drm_alloc(sizeof(*map), DRM_MEM_TTM);
 	if (!map)
 		return -ENOMEM;
 
@@ -774,7 +762,7 @@ int drm_add_ttm(drm_device_t * dev, unsigned size, drm_map_list_t ** maplist)
 
 	if (!ttm) {
 		DRM_ERROR("Could not create ttm\n");
-		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+		drm_free(map, sizeof(*map), DRM_MEM_TTM);
 		return -ENOMEM;
 	}
 
@@ -783,25 +771,23 @@ int drm_add_ttm(drm_device_t * dev, unsigned size, drm_map_list_t ** maplist)
 	map->flags = _DRM_REMOVABLE;
 	map->size = size;
 
-	list = drm_calloc(1, sizeof(*list), DRM_MEM_MAPS);
+	list = drm_calloc(1, sizeof(*list), DRM_MEM_TTM);
 	if (!list) {
 		drm_destroy_ttm(ttm);
-		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+		drm_free(map, sizeof(*map), DRM_MEM_TTM);
 		return -ENOMEM;
 	}
 	map->handle = (void *)list;
 
-
-#ifdef REMOVED
-	if (drm_ht_just_insert_please(&dev->maphash, &list->hash, 
+	if (drm_ht_just_insert_please(&dev->map_hash, &list->hash, 
 				      (unsigned long) map->handle, 
-				      32 - PAGE_SHIFT)) {
+				      32 - PAGE_SHIFT - 3, PAGE_SHIFT,
+				      DRM_MAP_HASH_OFFSET)) {
 		drm_destroy_ttm(ttm);
-		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-		drm_free(list, sizeof(*list), DRM_MEM_MAPS);
+		drm_free(map, sizeof(*map), DRM_MEM_TTM);
+		drm_free(list, sizeof(*list), DRM_MEM_TTM);
 		return -ENOMEM;
 	}
-#endif
 
 	list->user_token =
 	    (list->hash.key << PAGE_SHIFT) + DRM_MAP_HASH_OFFSET;

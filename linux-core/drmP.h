@@ -156,7 +156,8 @@
 #define DRM_MEM_HASHTAB   23
 #define DRM_MEM_OBJECTS   24
 #define DRM_MEM_FENCE     25
-
+#define DRM_MEM_TTM       26
+#define DRM_MEM_BUFOBJ    27
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 #define DRM_MAP_HASH_OFFSET 0x10000000
