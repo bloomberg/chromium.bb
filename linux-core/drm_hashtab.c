@@ -115,7 +115,7 @@ int drm_ht_insert_item(drm_open_hash_t *ht, drm_hash_item_t *item)
 	hlist_for_each(list, h_list) {
 		entry = hlist_entry(list, drm_hash_item_t, head);
 		if (entry->key == key)
-			return -1;
+			return -EINVAL;
 		if (entry->key > key)
 			break;
 		parent = list;
@@ -163,7 +163,7 @@ int drm_ht_find_item(drm_open_hash_t *ht, unsigned long key,
 
 	list = drm_ht_find_key(ht, key);
 	if (!list)
-		return -1;
+		return -EINVAL;
 
 	*item = hlist_entry(list, drm_hash_item_t, head);
 	return 0;
@@ -179,7 +179,7 @@ int drm_ht_remove_key(drm_open_hash_t *ht, unsigned long key)
 		ht->fill--;
 		return 0;
 	}
-	return -1;
+	return -EINVAL;
 }
 
 int drm_ht_remove_item(drm_open_hash_t *ht, drm_hash_item_t *item)
