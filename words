@@ -1,0 +1,8 @@
+#!/bin/sh
+# Copyright 2006 Google Inc.  All rights reserved!  Proprietary software!
+# No guarantees or warranties!  Not to be combined with any other offer!
+
+words="bogus heinous obnoxious"
+for word in $words ; do
+  echo $word
+done
