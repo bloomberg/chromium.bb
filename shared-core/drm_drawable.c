@@ -267,3 +267,4 @@ drm_drawable_info_t *drm_get_drawable_info(drm_device_t *dev, drm_drawable_t id)
 
 	return dev->drw_info[id];
 }
+EXPORT_SYMBOL(drm_get_drawable_info);
