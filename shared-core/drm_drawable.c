@@ -166,6 +166,7 @@ int drm_rmdraw(DRM_IOCTL_ARGS)
 
 	spin_unlock_irqrestore(&dev->drw_lock, irqflags);
 
+	DRM_DEBUG("%d\n", draw.handle);
 	return 0;
 }
 
@@ -209,30 +210,42 @@ int drm_update_drawable_info(DRM_IOCTL_ARGS) {
 
 	switch (update.type) {
 	case DRM_DRAWABLE_CLIPRECTS:
-		new_data = drm_alloc(update.num * sizeof(drm_clip_rect_t),
-				     DRM_MEM_BUFS);
+		if (update.num != info->num_rects) {
+			new_data = drm_alloc(update.num *
+					     sizeof(drm_clip_rect_t),
+					     DRM_MEM_BUFS);
 
-		if (!new_data) {
-			DRM_ERROR("Failed to allocate cliprect memory\n");
-			spin_unlock_irqrestore(&dev->drw_lock, irqflags);
-			return DRM_ERR(ENOMEM);
+			if (!new_data) {
+				DRM_ERROR("Can't allocate cliprect memory\n");
+				spin_unlock_irqrestore(&dev->drw_lock, irqflags);
+				return DRM_ERR(ENOMEM);
+			}
+
+			info->rects = new_data;
 		}
 
-		if (DRM_COPY_FROM_USER(new_data,
+		if (DRM_COPY_FROM_USER(info->rects,
 				       (drm_clip_rect_t __user *) 
 				       (unsigned long)update.data,
 				       update.num * sizeof(drm_clip_rect_t))) {
-			DRM_ERROR("Failed to copy cliprects from userspace\n");
+			DRM_ERROR("Can't copy cliprects from userspace\n");
 			spin_unlock_irqrestore(&dev->drw_lock, irqflags);
 			return DRM_ERR(EFAULT);
 		}
 
-		drm_free(info->rects, info->num_rects * sizeof(drm_clip_rect_t),
-			 DRM_MEM_BUFS);
+		if (update.num != info->num_rects) {
+			drm_free(info->rects, info->num_rects *
+				 sizeof(drm_clip_rect_t), DRM_MEM_BUFS);
+			info->num_rects = update.num;
+		}
 
-		info->rects = new_data;
-		info->num_rects = update.num;
+		DRM_DEBUG("Updated %d cliprects for drawable %d\n",
+			  info->num_rects, id);
 		break;
+	default:
+		DRM_ERROR("Invalid update type %d\n", update.type);
+		spin_unlock_irqrestore(&dev->drw_lock, irqflags);
+		return DRM_ERR(EINVAL);
 	}
 
 	spin_unlock_irqrestore(&dev->drw_lock, irqflags);
