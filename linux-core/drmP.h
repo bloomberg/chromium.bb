@@ -1169,6 +1169,8 @@ extern int drm_adddraw(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 extern int drm_rmdraw(struct inode *inode, struct file *filp,
 		      unsigned int cmd, unsigned long arg);
+extern int drm_update_drawable_info(struct inode *inode, struct file *filp,
+		       unsigned int cmd, unsigned long arg);
 extern drm_drawable_info_t *drm_get_drawable_info(drm_device_t *dev,
 						  drm_drawable_t id);
 
