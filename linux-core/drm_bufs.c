@@ -82,8 +82,8 @@ int drm_map_handle(drm_device_t *dev, drm_hash_item_t *hash,
 		int ret;
 		hash->key = user_token;
 		ret = drm_ht_insert_item(&dev->map_hash, hash);
-		if (!ret) 
-			return 0;
+		if (ret != -EINVAL) 
+			return ret;
 	}
 	return drm_ht_just_insert_please(&dev->map_hash, hash, 
 					 user_token, 32 - PAGE_SHIFT - 3,
