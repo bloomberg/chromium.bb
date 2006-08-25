@@ -655,6 +655,23 @@ typedef struct drm_fence_arg {
 	} op;
 } drm_fence_arg_t;
 
+#define DRM_BO_FLAG_READ        0x00000001
+#define DRM_BO_FLAG_WRITE       0x00000002
+#define DRM_BO_FLAG_EXE         0x00000004
+#define DRM_BO_FLAG_NO_MOVE     0x00000008
+#define DRM_BO_FLAG_NO_EVICT    0x00000010
+#define DRM_BO_FLAG_SHADOW_VRAM 0x00000020
+#define DRM_BO_FLAG_READ_LOCAL  0x00000040
+#define DRM_BO_FLAG_UNCACHED    0x00000080
+
+
+#define DRM_BO_FLAG_MEM_TT      0x01000000
+#define DRM_BO_FLAG_MEM_VRAM    0x02000000
+#define DRM_BO_FLAG_MEM_LOCAL   0x04000000
+#define DRM_BO_MASK_MEM         0xFFFFFFFF
+
+#define DRM_BO_HINT_PREFER_VRAM 0x00000001
+#define DRM_BO_HINT_AVOID_LOCAL  0x00000002
 
 /**
  * \name Ioctls Definitions

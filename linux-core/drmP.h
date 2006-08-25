@@ -714,6 +714,18 @@ typedef struct drm_fence_manager{
 	uint32_t exe_flush_sequence;
 } drm_fence_manager_t;
 
+typedef struct drm_buffer_manager{
+	int initialized;
+	struct mutex bm_mutex;
+	drm_mm_t tt_manager;
+	struct list_head tt_lru;
+	drm_mm_t vram_manager;
+	struct list_head vram_lru;
+	struct list_head unfenced;
+	struct list_head ddestroy;
+} drm_buffer_manager_t;
+
+
 
 /**
  * DRM device structure. This structure represent a complete card that
@@ -848,6 +860,7 @@ typedef struct drm_device {
 	drm_head_t primary;		/**< primary screen head */
 
 	drm_fence_manager_t fm;
+	drm_buffer_manager_t bm;
 
 } drm_device_t;
 
@@ -973,6 +986,29 @@ typedef struct drm_fence_object{
 } drm_fence_object_t;
 
 
+typedef struct drm_buffer_object{
+	drm_device_t *dev;
+	drm_user_object_t base;
+	atomic_t usage;
+	drm_map_list_t *ttm_maplist;
+	drm_ttm_backend_list_t *ttm_region;
+
+	atomic_t mapped;
+
+	uint32_t flags;
+	uint32_t mask;
+	uint32_t mask_hint;
+
+	drm_mm_node_t *vram;
+	drm_mm_node_t *tt;
+	struct list_head head;
+	struct list_head ddestroy;
+
+	uint32_t fence_flags;
+	drm_fence_object_t *fence;
+	int unfenced;
+	wait_queue_head_t validate_queue;
+} drm_buffer_object_t;
 
 
 
@@ -1296,6 +1332,19 @@ extern void drm_fence_handler(drm_device_t *dev, uint32_t breadcrumb, uint32_t t
 extern void drm_fence_manager_init(drm_device_t *dev);
 extern void drm_fence_manager_takedown(drm_device_t *dev);
 extern void drm_fence_flush_old(drm_device_t *dev, uint32_t sequence);
+extern int drm_fence_object_flush(drm_device_t * dev,
+				  drm_fence_object_t * fence, uint32_t type);
+extern int drm_fence_object_signaled(drm_fence_object_t * fence, uint32_t type);
+extern void drm_fence_usage_deref_locked(drm_device_t * dev,
+					 drm_fence_object_t * fence);
+extern void drm_fence_usage_deref_unlocked(drm_device_t * dev,
+					 drm_fence_object_t * fence);
+extern int drm_fence_object_init(drm_device_t * dev, uint32_t type, int emit,
+				 drm_fence_object_t * fence);
+extern int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
+				 int lazy, int ignore_signals, uint32_t mask);
+
+
 extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 
 

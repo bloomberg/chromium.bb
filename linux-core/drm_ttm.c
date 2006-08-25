@@ -398,10 +398,6 @@ static int drm_set_caching(drm_ttm_t * ttm, unsigned long page_offset,
 	struct page **cur_page;
 	pgprot_t attr = (noncached) ? PAGE_KERNEL_NOCACHE : PAGE_KERNEL;
 
-	drm_ttm_lock_mm(ttm, 0, 1);
-	unmap_vma_pages(ttm, page_offset, num_pages);
-	drm_ttm_unlock_mm(ttm, 0, 1);
-
 	for (i = 0; i < num_pages; ++i) {
 		cur = page_offset + i;
 		cur_page = ttm->pages + cur;
@@ -446,7 +442,6 @@ int drm_evict_ttm_region(drm_ttm_backend_list_t * entry)
 				drm_ttm_lock_mm(ttm, 0, 1);
 				unmap_vma_pages(ttm, entry->page_offset,
 						entry->num_pages);
-				global_flush_tlb();
 				drm_ttm_unlock_mm(ttm, 0, 1);
 			}
 			be->unbind(entry->be);
@@ -489,6 +484,10 @@ void drm_destroy_ttm_region(drm_ttm_backend_list_t * entry)
 		be->clear(entry->be);
 		if (be->needs_cache_adjust(be)) {
 			int ret = drm_ttm_lock_mmap_sem(ttm);
+			drm_ttm_lock_mm(ttm, 0, 1);
+			unmap_vma_pages(ttm, entry->page_offset, 
+					entry->num_pages);
+			drm_ttm_unlock_mm(ttm, 0, 1);
 			drm_set_caching(ttm, entry->page_offset,
 					entry->num_pages, 0, 1);
 			if (!ret)
@@ -792,8 +791,7 @@ int drm_add_ttm(drm_device_t * dev, unsigned size, drm_map_list_t ** maplist)
 		return -ENOMEM;
 	}
 
-	list->user_token =
-	    (list->hash.key << PAGE_SHIFT) + DRM_MAP_HASH_OFFSET;
+	list->user_token = list->hash.key;
 	list->map = map;
 
 	*maplist = list;

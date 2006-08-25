@@ -703,8 +703,6 @@ static void drm_vm_ttm_close(struct vm_area_struct *vma)
 		(drm_ttm_vma_list_t *) vma->vm_private_data;
 	drm_map_t *map; 
 	drm_ttm_t *ttm; 
-	int found_maps;
-	struct list_head *list;
         drm_device_t *dev;
 	int ret;
 

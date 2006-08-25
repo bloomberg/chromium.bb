@@ -252,12 +252,17 @@ static void drm_fence_flush_exe(drm_fence_manager_t * fm,
 	}
 }
 
+int drm_fence_object_signaled(drm_fence_object_t * fence, uint32_t type)
+{
+	return ((fence->signaled & type) == type);
+}
+
 /*
  * Make sure old fence objects are signaled before their fence sequences are
  * wrapped around and reused.
  */
 
-static int drm_fence_object_flush(drm_device_t * dev,
+int drm_fence_object_flush(drm_device_t * dev,
 				  drm_fence_object_t * fence, uint32_t type)
 {
 	drm_fence_manager_t *fm = &dev->fm;
@@ -317,8 +322,8 @@ void drm_fence_flush_old(drm_device_t * dev, uint32_t sequence)
 
 EXPORT_SYMBOL(drm_fence_flush_old);
 
-static int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
-				 int lazy, int ignore_signals, uint32_t mask)
+int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
+			  int lazy, int ignore_signals, uint32_t mask)
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
