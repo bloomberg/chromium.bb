@@ -243,6 +243,6 @@ extern void drm_clear_vma(struct vm_area_struct *vma,
  * flags. This is a functional interface to the kernel's protection map.
  */
 
-extern pgprot_t drm_prot_map(uint32_t flags);
+extern pgprot_t vm_get_page_prot(unsigned long vm_flags);
 
 #endif

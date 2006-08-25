@@ -48,7 +48,7 @@ static void drm_vm_ttm_open_wrapper(struct vm_area_struct *vma);
 
 pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
 {
-	pgprot_t tmp = drm_prot_map(vma->vm_flags);
+	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
 
 #if defined(__i386__) || defined(__x86_64__)
 	if (boot_cpu_data.x86 > 3 && map_type != _DRM_AGP) {
@@ -276,7 +276,7 @@ static __inline__ struct page *drm_do_vm_ttm_nopage(struct vm_area_struct *vma,
 
 	get_page(page);
 
-	default_prot = drm_prot_map(vma->vm_flags);
+	default_prot = vm_get_page_prot(vma->vm_flags);
 
 	BUG_ON(page_flags & DRM_TTM_PAGE_UNCACHED);
 	vma->vm_page_prot = default_prot;

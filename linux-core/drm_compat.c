@@ -124,7 +124,7 @@ void drm_clear_vma(struct vm_area_struct *vma,
 #endif
 }
 
-pgprot_t drm_prot_map(uint32_t flags)
+pgprot_t vm_get_page_prot(unsigned long vm_flags)
 {
 #ifdef MODULE
 	static pgprot_t drm_protection_map[16] = {
@@ -132,9 +132,9 @@ pgprot_t drm_prot_map(uint32_t flags)
 		__S000, __S001, __S010, __S011, __S100, __S101, __S110, __S111
 	};
 
-	return drm_protection_map[flags & 0x0F];
+	return drm_protection_map[vm_flags & 0x0F];
 #else
 	extern pgprot_t protection_map[];
-	return protection_map[flags & 0x0F];
+	return protection_map[vm_flags & 0x0F];
 #endif
 };
