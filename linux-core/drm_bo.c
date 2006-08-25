@@ -31,6 +31,30 @@
 
 #include "drmP.h"
 
+/*
+ * Buffer object locking policy:
+ * Lock dev->struct_mutex;
+ * Increase usage
+ * Unlock dev->struct_mutex;
+ * Lock buffer->mutex;
+ * Do whatever you want;
+ * Unlock buffer->mutex;
+ * Decrease usage. Call destruction if zero.
+ *
+ * User object visibility ups usage just once, since it has its own 
+ * refcounting.
+ *
+ * Destruction:
+ * lock dev->struct_mutex;
+ * Verify that usage is zero. Otherwise unlock and continue.
+ * Destroy object.
+ * unlock dev->struct_mutex;
+ *
+ * Mutex and spinlock locking orders:
+ * 1.) Buffer mutex
+ * 2.) Refer to ttm locking orders.
+ */
+
 int drm_fence_buffer_objects(drm_file_t *priv)
 {
 	drm_device_t *dev = priv->head->dev;
@@ -277,10 +301,34 @@ int drm_bo_alloc_space(drm_device_t *dev, int tt, drm_buffer_object_t *buf)
 }
 #endif
 	
-static int drm_do_bo_ioctl(drm_file_t *priv, int num_requests, void __user *data)
+static int drm_do_bo_ioctl(drm_file_t *priv, int num_requests, 
+			   drm_bo_arg_data_t __user *data)
 {
-	return 0;
+	drm_bo_arg_data_t arg;
+	drm_bo_arg_request_t *req = &arg.req;
+	drm_bo_arg_reply_t rep;
+	int i, ret;
+	
+	for (i=0; i<num_requests; ++i) {
+		rep.ret = 0;
+		ret = copy_from_user(&arg, (void __user *) data, sizeof(arg));
+		if (ret) {
+			rep.ret = -EFAULT;
+			goto out_loop;
+		}
+
+		arg.rep = rep;
+		data++;
+	out_loop:
+		arg.rep = rep;
+		ret = copy_to_user((void __user *) data, &arg, sizeof(arg));
+		if (!ret)
+			++i;
+		break;
+	}
+	return i;
 }
+
 
 int drm_bo_ioctl(DRM_IOCTL_ARGS)
 {
@@ -299,13 +347,16 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 
 	switch(arg.op) {
 	case drm_op_bo:
-		return drm_do_bo_ioctl(priv, arg.num_requests, 
-				       (void __user *) data_ptr);
+		arg.num_requests = drm_do_bo_ioctl(priv, arg.num_requests, 
+						   (drm_bo_arg_data_t __user *) 
+						   data_ptr);
+		break;
 	case drm_op_ttm:
-		return drm_ttm_ioctl(priv, arg.num_requests, 
-				     (drm_ttm_arg_t __user *) data_ptr);
+		return drm_ttm_ioctl(priv, (drm_ttm_arg_t __user *) 
+				     data_ptr);
 	}
 
+	DRM_COPY_TO_USER_IOCTL((void __user *) data, arg, sizeof(arg));
 	return 0;
 }
 	

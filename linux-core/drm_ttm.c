@@ -799,7 +799,7 @@ int drm_add_ttm(drm_device_t * dev, unsigned size, drm_map_list_t ** maplist)
 	return 0;
 }
 
-int drm_ttm_ioctl(drm_file_t *priv, int num_requests, drm_ttm_arg_t __user *data)
+int drm_ttm_ioctl(drm_file_t *priv, drm_ttm_arg_t __user *data)
 {
 	return 0;
 }

@@ -740,10 +740,10 @@ typedef struct drm_bo_arg_reply {
 }drm_bo_arg_reply_t;
 	
 
-typedef union {
-	drm_bo_arg_request_t bo_req;
-	drm_bo_arg_reply_t bo_rep;
-}drm_bo_arg_data;
+typedef union drm_bo_arg_data {
+	drm_bo_arg_request_t req;
+	drm_bo_arg_reply_t rep;
+} drm_bo_arg_data_t;
 
 
 /**
