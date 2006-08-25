@@ -176,6 +176,8 @@ int drm_irq_uninstall(drm_device_t * dev)
 
 	free_irq(dev->irq, dev);
 
+	dev->locked_tasklet_func = NULL;
+
 	return 0;
 }
 EXPORT_SYMBOL(drm_irq_uninstall);
