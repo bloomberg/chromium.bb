@@ -1347,6 +1347,12 @@ extern int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
 
 extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 
+/*
+ * buffer objects (drm_bo.c)
+ */
+
+extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
+
 
 /* Inline replacements for DRM_IOREMAP macros */
 static __inline__ void drm_core_ioremap(struct drm_map *map,

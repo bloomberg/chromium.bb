@@ -671,7 +671,80 @@ typedef struct drm_fence_arg {
 #define DRM_BO_MASK_MEM         0xFFFFFFFF
 
 #define DRM_BO_HINT_PREFER_VRAM 0x00000001
-#define DRM_BO_HINT_AVOID_LOCAL  0x00000002
+#define DRM_BO_HINT_AVOID_LOCAL 0x00000002
+#define DRM_BO_HINT_DONT_BLOCK  0x00000004
+
+/*
+ * Multiplexing ioctl argument.
+ */
+
+typedef struct drm_bo_arg {
+	unsigned num_requests;
+	enum {
+		drm_op_bo,
+		drm_op_ttm
+	} op;
+	unsigned data_lo;
+	unsigned data_hi;
+} drm_bo_arg_t;
+
+typedef struct drm_ttm_arg {
+	enum {
+		drm_ttm_create,
+		drm_ttm_destroy,
+		drm_ttm_reference,
+		drm_ttm_unreference
+	} op;
+	unsigned handle;
+	unsigned size_lo;
+	unsigned size_hi;
+}drm_ttm_arg_t;
+
+
+typedef struct drm_bo_arg_request {
+	unsigned handle; /* User space handle */
+	unsigned mask;
+	unsigned hint;
+	unsigned size_lo;
+	unsigned size_hi;
+
+	enum {
+		drm_bo_type_ttm,
+		drm_bo_type_dc,
+		drm_bo_type_user
+	}type;
+	unsigned arg_handle;
+	unsigned user_pointer_lo;
+	unsigned user_pointer_hi;
+	enum {
+		drm_bo_create,
+		drm_bo_validate,
+		drm_bo_map,
+		drm_bo_fence,
+		drm_bo_destroy,
+		drm_bo_reference,
+		drm_bo_unreference
+	} op;
+} drm_bo_arg_request_t;
+
+typedef struct drm_bo_arg_reply {
+	int ret;
+	unsigned handle;
+	unsigned flags;
+	unsigned size_lo;
+	unsigned size_hi;
+	unsigned offset_lo;
+	unsigned offset_hi;
+	unsigned arg_handle;
+	unsigned map_flags;
+}drm_bo_arg_reply_t;
+	
+
+typedef union {
+	drm_bo_arg_request_t bo_req;
+	drm_bo_arg_reply_t bo_rep;
+}drm_bo_arg_data;
+
 
 /**
  * \name Ioctls Definitions
@@ -739,7 +812,7 @@ typedef struct drm_fence_arg {
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, drm_wait_vblank_t)
 
 #define DRM_IOCTL_FENCE                 DRM_IOWR(0x3b, drm_fence_arg_t)
-
+#define DRM_IOCTL_BUFFER_OBJECT         DRM_IOWR(0x3c, drm_buffer_arg_t)
 
 /*@}*/
 

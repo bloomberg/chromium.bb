@@ -277,6 +277,38 @@ int drm_bo_alloc_space(drm_device_t *dev, int tt, drm_buffer_object_t *buf)
 }
 #endif
 	
+static int drm_do_bo_ioctl(drm_file_t *priv, int num_requests, void __user *data)
+{
+	return 0;
+}
+
+int drm_bo_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_bo_arg_t arg;
+	unsigned long data_ptr;
+	(void) dev;
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+	data_ptr = arg.data_lo;
+
+	if (sizeof(data_ptr) > 4) {
+		int shift = 32;
+		data_ptr |= arg.data_hi << shift;
+	}
+
+	switch(arg.op) {
+	case drm_op_bo:
+		return drm_do_bo_ioctl(priv, arg.num_requests, 
+				       (void __user *) data_ptr);
+	case drm_op_ttm:
+		return drm_ttm_ioctl(priv, arg.num_requests, 
+				     (drm_ttm_arg_t __user *) data_ptr);
+	}
+
+	return 0;
+}
+	
 	
 	
 		
