@@ -76,6 +76,13 @@ struct mem_block {
 	DRMFILE filp;		/* 0: free, -1: heap, other: real files */
 };
 
+typedef struct _drm_i915_vbl_swap {
+	struct list_head head;
+	drm_drawable_t drw_id;
+	unsigned int pipe;
+	unsigned int sequence;
+} drm_i915_vbl_swap_t;
+
 typedef struct drm_i915_private {
 	drm_local_map_t *sarea;
 	drm_local_map_t *mmio_map;
@@ -88,6 +95,7 @@ typedef struct drm_i915_private {
 	dma_addr_t dma_status_page;
 	uint32_t counter;
 
+	unsigned int cpp;
 	int back_offset;
 	int front_offset;
 	int current_page;
@@ -116,6 +124,9 @@ typedef struct drm_i915_private {
 	uint32_t saved_flush_status;
 #endif
 
+	spinlock_t swaps_lock;
+	drm_i915_vbl_swap_t vbl_swaps;
+	unsigned int swaps_pending;
 } drm_i915_private_t;
 
 extern drm_ioctl_desc_t i915_ioctls[];
@@ -147,6 +158,7 @@ extern int i915_vblank_pipe_get(DRM_IOCTL_ARGS);
 extern int i915_emit_irq(drm_device_t * dev);
 extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
 extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
+extern int i915_vblank_swap(DRM_IOCTL_ARGS);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(DRM_IOCTL_ARGS);
@@ -303,6 +315,10 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define GFX_OP_DRAWRECT_INFO     ((0x3<<29)|(0x1d<<24)|(0x80<<16)|(0x3))
 
 #define GFX_OP_DRAWRECT_INFO_I965  ((0x7900<<16)|0x2)
+
+#define XY_SRC_COPY_BLT_CMD		((2<<29)|(0x53<<22)|6)
+#define XY_SRC_COPY_BLT_WRITE_ALPHA	(1<<21)
+#define XY_SRC_COPY_BLT_WRITE_RGB	(1<<20)
 
 #define MI_BATCH_BUFFER 	((0x30<<23)|1)
 #define MI_BATCH_BUFFER_START 	(0x31<<23)
