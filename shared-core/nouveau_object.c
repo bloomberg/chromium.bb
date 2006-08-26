@@ -1,0 +1,565 @@
+#include "drmP.h"
+#include "drm.h"
+#include "nouveau_drv.h"
+#include "nouveau_drm.h"
+
+/* TODO
+ *  - Check object class, deny unsafe objects (add card-specific versioning?)
+ *  - Get rid of DMA object creation, this should be wrapped by MM routines.
+ */
+
+static void nouveau_object_link(drm_device_t *dev, int fifo_num,
+				struct nouveau_object *obj)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct nouveau_fifo *fifo = &dev_priv->fifos[fifo_num];
+
+	if (!fifo->objs) {
+		fifo->objs = obj;
+		return;
+	}
+
+	obj->prev = NULL;
+	obj->next = fifo->objs;
+
+	fifo->objs->prev = obj;
+	fifo->objs = obj;
+}
+
+static void nouveau_object_unlink(drm_device_t *dev, int fifo_num,
+				  struct nouveau_object *obj)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct nouveau_fifo *fifo = &dev_priv->fifos[fifo_num];
+
+	if (obj->prev == NULL) {	
+		if (obj->next)
+			obj->next->prev = NULL;
+		fifo->objs = obj->next;
+	} else if (obj->next == NULL) {
+		if (obj->prev)
+			obj->prev->next = NULL;
+	} else {
+		obj->prev->next = obj->next;
+		obj->next->prev = obj->prev;
+	}
+}
+
+static struct nouveau_object *
+nouveau_object_handle_find(drm_device_t *dev, int fifo_num, uint32_t handle)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct nouveau_fifo *fifo = &dev_priv->fifos[fifo_num];
+	struct nouveau_object *obj = fifo->objs;
+
+	if (!handle)
+		return NULL;
+
+	DRM_DEBUG("Looking for handle 0x%08x\n", handle);
+	while (obj) {
+		if (obj->handle == handle)
+			return obj;
+		obj = obj->next;
+	}
+
+	DRM_DEBUG("...couldn't find handle\n");
+	return NULL;
+}
+
+/* NVidia uses context objects to drive drawing operations.
+
+   Context objects can be selected into 8 subchannels in the FIFO,
+   and then used via DMA command buffers.
+
+   A context object is referenced by a user defined handle (CARD32). The HW
+   looks up graphics objects in a hash table in the instance RAM.
+
+   An entry in the hash table consists of 2 CARD32. The first CARD32 contains
+   the handle, the second one a bitfield, that contains the address of the
+   object in instance RAM.
+
+   The format of the second CARD32 seems to be:
+
+   NV4 to NV30:
+
+   15: 0  instance_addr >> 4
+   17:16  engine (here uses 1 = graphics)
+   28:24  channel id (here uses 0)
+   31	  valid (use 1)
+
+   NV40:
+
+   15: 0  instance_addr >> 4   (maybe 19-0)
+   21:20  engine (here uses 1 = graphics)
+   I'm unsure about the other bits, but using 0 seems to work.
+
+   The key into the hash table depends on the object handle and channel id and
+   is given as:
+*/
+static uint32_t nouveau_handle_hash(drm_device_t* dev, uint32_t handle,
+				    int fifo)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct nouveau_object_store *objs=&dev_priv->objs;
+	uint32_t hash = 0;
+	int i;
+
+	for (i=32;i>0;i-=objs->ht_bits) {
+		hash ^= (handle & ((1 << objs->ht_bits) - 1));
+		handle >>= objs->ht_bits;
+	}
+	hash ^= fifo << (objs->ht_bits - 4);
+	return hash << 3;
+}
+
+static int nouveau_hash_table_insert(drm_device_t* dev, int fifo,
+				     struct nouveau_object *obj)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct nouveau_object_store *objs=&dev_priv->objs;
+	int ht_base = NV_RAMIN + objs->ht_base;
+	int ht_end  = ht_base + objs->ht_size;
+	int o_ofs, ofs;
+
+	o_ofs = ofs = nouveau_handle_hash(dev, obj->handle, fifo);
+
+	while (NV_READ(ht_base + ofs)) {
+		ofs += 8;
+		if (ofs == ht_end) ofs = ht_base;
+		if (ofs == o_ofs) {
+			DRM_ERROR("no free hash table entries\n");
+			return 1;
+		}
+	}
+	ofs += ht_base;
+
+	DRM_DEBUG("Channel %d - Handle 0x%08x at 0x%08x\n",
+		fifo, obj->handle, ofs);
+
+	NV_WRITE(NV_RAMHT_HANDLE_OFFSET + ofs, obj->handle);
+	if (dev_priv->card_type >= NV_40)
+		NV_WRITE(NV_RAMHT_CONTEXT_OFFSET + ofs,
+			(fifo << NV40_RAMHT_CONTEXT_CHANNEL_SHIFT) |
+			(obj->engine << NV40_RAMHT_CONTEXT_ENGINE_SHIFT) |
+			(obj->instance>>4)
+			);	    
+	else
+		NV_WRITE(NV_RAMHT_CONTEXT_OFFSET + ofs,
+			NV_RAMHT_CONTEXT_VALID |
+			(fifo << NV_RAMHT_CONTEXT_CHANNEL_SHIFT) |
+			(obj->engine << NV_RAMHT_CONTEXT_ENGINE_SHIFT) |
+			(obj->instance>>4)
+			);
+
+	obj->ht_loc = ofs;
+	return 0;
+}
+
+static void nouveau_hash_table_remove(drm_device_t* dev,
+				      struct nouveau_object *obj)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+
+	DRM_DEBUG("Remove handle 0x%08x at 0x%08x from HT\n",
+			obj->handle, obj->ht_loc);
+	if (obj->ht_loc) {
+		DRM_DEBUG("... HT entry was: 0x%08x/0x%08x\n",
+				NV_READ(obj->ht_loc), NV_READ(obj->ht_loc+4));
+		NV_WRITE(obj->ht_loc  , 0x00000000);
+		NV_WRITE(obj->ht_loc+4, 0x00000000);
+	}
+}
+
+static struct nouveau_object *nouveau_instance_alloc(drm_device_t* dev)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct nouveau_object_store *objs=&dev_priv->objs;
+	struct nouveau_object       *obj;
+	int instance = -1;
+	int i = 0, j = 0;
+
+	/* Allocate a block of instance RAM */
+	if (!objs->free_instance) {
+		DRM_ERROR("no free instance ram\n");
+		return NULL;
+	}
+	for (i=0;i<(objs->num_instance>>5);i++) {
+		if (objs->inst_bmap[i] == ~0) continue;
+		for (j=0;j<32;j++) {
+			if (!(objs->inst_bmap[i] & (1<<j))) {
+				instance = (i<<5) + j;
+				break;
+			}
+		}
+		if (instance != -1) break;
+	}
+	DRM_DEBUG("alloced instance %d (slot %d/%d)\n", instance, i, j);
+
+	/* Create object struct */
+	obj = drm_calloc(1, sizeof(struct nouveau_object), DRM_MEM_DRIVER);
+	if (!obj) {
+		DRM_ERROR("couldn't alloc memory for object\n");
+		return NULL;
+	}
+	obj->instance  = objs->first_instance;
+	obj->instance += (instance << (dev_priv->card_type >= NV_40 ? 5 : 4));
+	DRM_DEBUG("instance address is 0x%08x\n", instance);
+
+	/* Mark instance slot as used */
+	objs->inst_bmap[i] |= (1 << j);
+	objs->free_instance--;
+
+	return obj;
+}
+
+static void nouveau_object_instance_free(drm_device_t *dev,
+					 struct nouveau_object *obj)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct nouveau_object_store *objs=&dev_priv->objs;
+	int count, i;
+	uint32_t be, bb;
+
+	if (dev_priv->card_type >= NV_40)
+		count = 8;
+	else
+		count = 4;
+
+	DRM_DEBUG("Instance entry for 0x%08x"
+		"(engine %d, class 0x%x) before destroy:\n",
+		obj->handle, obj->engine, obj->class);
+	for (i=0;i<count;i++)
+		DRM_DEBUG("  +0x%02x: 0x%08x\n", (i*4),
+			NV_READ(NV_RAMIN + obj->instance + (i*4)));
+
+	/* Clean RAMIN entry */
+	for (i=0;i<count;i++)
+		NV_WRITE(NV_RAMIN + obj->instance + (i*4), 0x00000000);
+
+	/* Mark instance as free */
+	obj->instance -= objs->first_instance;
+	obj->instance >>= (dev_priv->card_type >=NV_40 ? 5 : 4);
+	be = obj->instance / 32;
+	bb = obj->instance % 32;
+	objs->inst_bmap[be] &= ~bb;	
+	objs->free_instance++;
+}
+
+/* Where is the hash table located:
+
+   Base address and size can be calculated from this register:
+
+   ht_base = 0x1000 *  GetBitField (pNv->PFIFO[0x0210/4],8:4);
+   ht_size = 0x1000 << GetBitField (pNv->PFIFO[0x0210/4],17:16);
+
+   and the hash table will be located between address PRAMIN + ht_base and
+   PRAMIN + ht_base + ht_size.	Each hash table entry has two longwords.
+*/
+void nouveau_hash_table_init(drm_device_t* dev)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	int ht_start, ht_end;
+	int i;
+
+	dev_priv->objs.ht_bits = 9;
+	dev_priv->objs.ht_base = 0x10000;
+	dev_priv->objs.ht_size = (1 << dev_priv->objs.ht_bits);
+
+	NV_WRITE(NV_PFIFO_RAMHT,
+			(0x03 << 24) /* search 128 */ | 
+			((dev_priv->objs.ht_bits - 9) << 16) |
+			((dev_priv->objs.ht_base >> 16) << 4)
+			);
+	NV_WRITE(NV_PFIFO_RAMFC, 0x00000110); /* RAMIN+0x11000 0.5k */
+	NV_WRITE(NV_PFIFO_RAMRO, 0x00000112); /* RAMIN+0x11200 0.5k */
+
+	dev_priv->objs.first_instance = 0x12000;
+	dev_priv->objs.free_instance  = 1024; /*FIXME*/
+	dev_priv->objs.num_instance   = 1024; /*FIXME*/
+	dev_priv->objs.inst_bmap = drm_calloc
+	    (1, dev_priv->objs.num_instance/32, DRM_MEM_DRIVER);
+
+	/* clear the hash table */
+	ht_start = NV_RAMIN+dev_priv->objs.ht_base;
+	ht_end   = ht_start + dev_priv->objs.ht_size;
+	for (i=ht_start; i<ht_end; i+=4)
+		NV_WRITE(i, 0x00000000);
+}
+
+/*
+   DMA objects are used to reference a piece of memory in the
+   framebuffer, PCI or AGP address space. Each object is 16 bytes big
+   and looks as follows:
+   
+   entry[0]
+   11:0  class (seems like I can always use 0 here)
+   12    page table present?
+   13    page entry linear?
+   15:14 access: 0 rw, 1 ro, 2 wo
+   17:16 target: 0 NV memory, 1 NV memory tiled, 2 PCI, 3 AGP
+   31:20 dma adjust (bits 0-11 of the address)
+   entry[1]
+   dma limit
+   entry[2]
+   1     0 readonly, 1 readwrite
+   31:12 dma frame address (bits 12-31 of the address)
+
+   Non linear page tables seem to need a list of frame addresses afterwards,
+   the rivatv project has some info on this.   
+
+   The method below creates a DMA object in instance RAM and returns a handle
+   to it that can be used to set up context objects.
+*/
+struct nouveau_object *nouveau_dma_object_create(drm_device_t* dev,
+						 uint32_t offset, uint32_t size,
+						 int access, uint32_t target)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct   nouveau_object *obj;
+	uint32_t frame, adjust;
+
+	DRM_DEBUG("offset:0x%08x, size:0x%08x, target:%d, access:%d\n",
+			offset, size, target, access);
+
+	frame  = offset & ~0x00000FFF;
+	adjust = offset &  0x00000FFF;
+
+	obj = nouveau_instance_alloc(dev);
+	if (!obj) {
+		DRM_ERROR("couldn't allocate DMA object\n");
+		return obj;
+	}
+
+	obj->engine = 0;
+	obj->class  = 0;
+
+	NV_WRITE(NV_RAMIN + obj->instance +  0, ((1<<12)
+			| (1<<13)
+			| (adjust<<20)
+			| (access<<14)
+			| (target<<16)
+			| 2)
+		);
+	NV_WRITE(NV_RAMIN + obj->instance +  4,
+			size - 1);
+	NV_WRITE(NV_RAMIN + obj->instance +  8,
+			frame | ((access != NV_DMA_ACCESS_RO) ? (1<<1) : 0));
+	NV_WRITE(NV_RAMIN + obj->instance + 12,
+			0xFFFFFFFF);
+
+	return obj;
+}
+
+
+/* Context objects in the instance RAM have the following structure.
+ * On NV40 they are 32 byte long, on NV30 and smaller 16 bytes.
+
+   NV4 - NV30:
+
+   entry[0]
+   11:0 class
+   12   chroma key enable
+   13   user clip enable
+   14   swizzle enable
+   17:15 patch config:
+       scrcopy_and, rop_and, blend_and, scrcopy, srccopy_pre, blend_pre
+   18   synchronize enable
+   19   endian: 1 big, 0 little
+   21:20 dither mode
+   23    single step enable
+   24    patch status: 0 invalid, 1 valid
+   25    context_surface 0: 1 valid
+   26    context surface 1: 1 valid
+   27    context pattern: 1 valid
+   28    context rop: 1 valid
+   29,30 context beta, beta4
+   entry[1]
+   7:0   mono format
+   15:8  color format
+   31:16 notify instance address
+   entry[2]
+   15:0  dma 0 instance address
+   31:16 dma 1 instance address
+   entry[3]
+   dma method traps
+
+   NV40:
+   No idea what the exact format is. Here's what can be deducted:
+
+   entry[0]:
+   11:0  class  (maybe uses more bits here?)
+   17    user clip enable
+   21:19 patch config 
+   25    patch status valid ?
+   entry[1]:
+   15:0  DMA notifier  (maybe 20:0)
+   entry[2]:
+   15:0  DMA 0 instance (maybe 20:0)
+   24    big endian
+   entry[3]:
+   15:0  DMA 1 instance (maybe 20:0)
+   entry[4]:
+   entry[5]:
+   set to 0?
+*/
+static struct nouveau_object *nouveau_context_object_create(drm_device_t* dev,
+		int class, uint32_t flags0, uint32_t flags1, uint32_t flags2,
+		struct nouveau_object *dma0,
+		struct nouveau_object *dma1,
+		struct nouveau_object *dma_notifier)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct   nouveau_object *obj;
+	uint32_t d0, d1, dn;
+
+	DRM_DEBUG("class=%x, dma0=%08x, dma1=%08x, dman=%08x\n",
+			class,
+			dma0 ? dma0->handle : 0,
+			dma1 ? dma1->handle : 0,
+			dma_notifier ? dma_notifier->handle : 0);
+
+	obj = nouveau_instance_alloc(dev);
+	if (!obj) {
+		DRM_ERROR("couldn't allocate context object\n");
+		return obj;
+	}
+
+	obj->engine = 1;
+	obj->class  = class;
+
+	d0 = dma0 ? (dma0->instance >> 4) : 0;
+	d1 = dma1 ? (dma1->instance >> 4) : 0;
+	dn = dma_notifier ? (dma_notifier->instance >> 4) : 0;
+
+	if (dev_priv->card_type >= NV_40) {
+		NV_WRITE(NV_RAMIN + obj->instance +  0, class | flags0);
+		NV_WRITE(NV_RAMIN + obj->instance +  4, dn | flags1);
+		NV_WRITE(NV_RAMIN + obj->instance +  8, d0 | flags2);
+		NV_WRITE(NV_RAMIN + obj->instance + 12, d1);
+		NV_WRITE(NV_RAMIN + obj->instance + 16, 0x00000000);
+		NV_WRITE(NV_RAMIN + obj->instance + 20, 0x00000000);
+		NV_WRITE(NV_RAMIN + obj->instance + 24, 0x00000000);
+		NV_WRITE(NV_RAMIN + obj->instance + 28, 0x00000000);
+	} else {
+		NV_WRITE(NV_RAMIN + obj->instance +  0, class | flags0);
+		NV_WRITE(NV_RAMIN + obj->instance +  4, (dn << 16) | flags1);
+		NV_WRITE(NV_RAMIN + obj->instance +  8, d0 | (d1 << 16));
+		NV_WRITE(NV_RAMIN + obj->instance + 12, 0);
+	}
+
+	return obj;
+}
+
+static void
+nouveau_object_free(drm_device_t *dev, int fifo_num, struct nouveau_object *obj)
+{
+	nouveau_object_unlink(dev, fifo_num, obj);
+
+	nouveau_object_instance_free(dev, obj);
+	nouveau_hash_table_remove(dev, obj);
+
+	drm_free(obj, sizeof(struct nouveau_object), DRM_MEM_DRIVER);
+	return;
+}
+
+void nouveau_object_cleanup(drm_device_t *dev, DRMFILE filp)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	int fifo;
+
+	fifo = nouveau_fifo_id_get(dev, filp);
+	if (fifo == -1)
+		return;
+
+	while (dev_priv->fifos[fifo].objs)
+		nouveau_object_free(dev, fifo, dev_priv->fifos[fifo].objs);
+}
+
+int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_nouveau_object_init_t init;
+	struct nouveau_object *obj, *dma0, *dma1, *dman;
+	int fifo;
+
+	fifo = nouveau_fifo_id_get(dev, filp);
+
+	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_object_init_t __user *)
+		data, sizeof(init));
+
+	//FIXME: check args, only allow trusted objects to be created
+
+	if (nouveau_object_handle_find(dev, fifo, init.handle)) {
+		DRM_ERROR("Channel %d: handle 0x%08x already exists\n",
+			fifo, init.handle);
+		return DRM_ERR(EINVAL);
+	}
+
+	dma0 = nouveau_object_handle_find(dev, fifo, init.dma0);
+	if (init.dma0 && !dma0) {
+		DRM_ERROR("context dma0 - invalid handle 0x%08x\n", init.dma0);
+		return DRM_ERR(EINVAL);
+	}
+	dma1 = nouveau_object_handle_find(dev, fifo, init.dma1);
+	if (init.dma1 && !dma1) {
+		DRM_ERROR("context dma1 - invalid handle 0x%08x\n", init.dma0);
+		return DRM_ERR(EINVAL);
+	}
+	dman = nouveau_object_handle_find(dev, fifo, init.dma_notifier);
+	if (init.dma_notifier && !dman) {
+		DRM_ERROR("context dman - invalid handle 0x%08x\n",
+			init.dma_notifier);
+		return DRM_ERR(EINVAL);
+	}
+
+	obj = nouveau_context_object_create(dev, init.class, init.flags0,
+		init.flags1, init.flags2, dma0, dma1, dman);
+	if (!obj)
+		return DRM_ERR(ENOMEM);
+
+	obj->handle = init.handle;
+
+	if (nouveau_hash_table_insert(dev, fifo, obj)) {
+		nouveau_object_free(dev, fifo, obj);
+		return DRM_ERR(ENOMEM);
+	}
+
+	nouveau_object_link(dev, fifo, obj);
+
+	return 0;
+}
+
+int nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_nouveau_dma_object_init_t init;
+	struct nouveau_object *obj;
+	int fifo;
+
+	fifo = nouveau_fifo_id_get(dev, filp);
+
+	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_dma_object_init_t __user *)
+		data, sizeof(init));
+
+	if (nouveau_object_handle_find(dev, fifo, init.handle)) {
+		DRM_ERROR("Channel %d: handle 0x%08x already exists\n",
+			fifo, init.handle);
+		return DRM_ERR(EINVAL);
+	}
+
+	obj = nouveau_dma_object_create(dev, init.offset, init.size,
+		init.access, init.target);
+	if (!obj)
+		return DRM_ERR(ENOMEM);
+
+	obj->handle = init.handle;
+	if (nouveau_hash_table_insert(dev, fifo, obj)) {
+		nouveau_object_free(dev, fifo, obj);
+		return DRM_ERR(ENOMEM);
+	}
+
+	nouveau_object_link(dev, fifo, obj);
+
+	return 0;
+}
+

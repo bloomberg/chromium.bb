@@ -1,0 +1,103 @@
+
+
+#define NV03_BOOT_0                                        0x00100000
+#    define NV03_BOOT_0_RAM_AMOUNT                         0x00000003
+#    define NV03_BOOT_0_RAM_AMOUNT_8MB                     0x00000000
+#    define NV03_BOOT_0_RAM_AMOUNT_2MB                     0x00000001
+#    define NV03_BOOT_0_RAM_AMOUNT_4MB                     0x00000002
+#    define NV03_BOOT_0_RAM_AMOUNT_8MB_SDRAM               0x00000003
+#    define NV04_BOOT_0_RAM_AMOUNT_32MB                    0x00000000
+#    define NV04_BOOT_0_RAM_AMOUNT_4MB                     0x00000001
+#    define NV04_BOOT_0_RAM_AMOUNT_8MB                     0x00000002
+#    define NV04_BOOT_0_RAM_AMOUNT_16MB                    0x00000003
+
+#define NV04_FIFO_DATA                                     0x0010020c
+#    define NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK              0xfff00000
+#    define NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT             20
+
+#define NV03_STATUS                                        0x004006b0
+#define NV04_STATUS                                        0x00400700
+
+#define NV_RAMIN                                           0x00700000
+
+#define NV_RAMHT_HANDLE_OFFSET                             0
+#define NV_RAMHT_CONTEXT_OFFSET                            4
+#    define NV_RAMHT_CONTEXT_VALID                         (1<<31)
+#    define NV_RAMHT_CONTEXT_CHANNEL_SHIFT                 24
+#    define NV_RAMHT_CONTEXT_ENGINE_SHIFT                  16
+#        define NV_RAMHT_CONTEXT_ENGINE_SOFTWARE           0
+#        define NV_RAMHT_CONTEXT_ENGINE_GRAPHICS           1
+#    define NV_RAMHT_CONTEXT_INSTANCE_SHIFT                0
+#    define NV40_RAMHT_CONTEXT_CHANNEL_SHIFT               23
+#    define NV40_RAMHT_CONTEXT_ENGINE_SHIFT                20
+#    define NV40_RAMHT_CONTEXT_INSTANCE_SHIFT              0
+
+#define NV_DMA_ACCESS_RW 0
+#define NV_DMA_ACCESS_RO 1
+#define NV_DMA_ACCESS_WO 2
+#define NV_DMA_TARGET_VIDMEM 0
+#define NV_DMA_TARGET_AGP    3
+
+#define NV03_FIFO_SIZE                                     0x8000
+#define NV_MAX_FIFO_NUMBER                                 32
+#define NV03_FIFO_REGS_SIZE                                0x10000
+#define NV03_FIFO_REGS(i)                                  (0x00800000+i*NV03_FIFO_REGS_SIZE)
+#    define NV03_FIFO_REGS_DMAPUT(i)                       (NV03_FIFO_REGS(i)+0x40)
+#    define NV03_FIFO_REGS_DMAGET(i)                       (NV03_FIFO_REGS(i)+0x44)
+
+#define NV_PMC_INTSTAT                                     0x00000100
+#    define NV_PMC_INTSTAT_PFIFO_PENDING                      (1<< 8)
+#    define NV_PMC_INTSTAT_PGRAPH_PENDING                     (1<<12)
+#    define NV_PMC_INTSTAT_CRTC0_PENDING                      (1<<24)
+#    define NV_PMC_INTSTAT_CRTC1_PENDING                      (1<<25)
+#    define NV_PMC_INTSTAT_CRTCn_PENDING                      (3<<24)
+#define NV_PMC_INTEN                                       0x00000140
+#    define NV_PMC_INTEN_MASTER_ENABLE                        (1<< 0)
+
+#define NV_PGRAPH_INTSTAT                                  0x00400100
+#define NV_PGRAPH_INTEN                                    0x00400140
+#    define NV_PGRAPH_INTR_NOTIFY                             (1<< 0)
+#    define NV_PGRAPH_INTR_MISSING_HW                         (1<< 4)
+#    define NV_PGRAPH_INTR_BUFFER_NOTIFY                      (1<<16)
+#    define NV_PGRAPH_INTR_ERROR                              (1<<20)
+#define NV_PGRAPH_NV40_UNK220                              0x00400220
+#    define NV_PGRAPH_NV40_UNK220_FB_INSTANCE
+
+/* It's a guess that this works on NV03. Confirmed on NV04, though */
+#define NV03_FIFO_ENABLE                                   0x00002504
+#define NV_PFIFO_INTSTAT                                   0x00002100
+#define NV_PFIFO_INTEN                                     0x00002140
+#    define NV_PFIFO_INTR_ERROR                                (1<<0)
+#define NV_PFIFO_RAMHT                                     0x00002210
+#define NV_PFIFO_RAMFC                                     0x00002214
+#define NV_PFIFO_RAMRO                                     0x00002218
+#define NV_PFIFO_CACHES                                    0x00002500
+#define NV_PFIFO_MODE                                      0x00002504
+#define NV_PFIFO_SIZE                                      0x0000250c
+#define NV_PFIFO_CACH0_PSH0                                0x00003000
+#define NV_PFIFO_CACH0_PUL0                                0x00003050
+#define NV_PFIFO_CACH0_PUL1                                0x00003054
+#define NV_PFIFO_CACH1_PSH0                                0x00003200
+#define NV_PFIFO_CACH1_PSH1                                0x00003204
+#define NV_PFIFO_CACH1_DMAS                                0x00003220
+#define NV_PFIFO_CACH1_DMAF                                0x00003224
+#define NV_PFIFO_CACH1_DMAI                                0x0000322c
+#define NV_PFIFO_CACH1_DMAC                                0x00003230
+#define NV_PFIFO_CACH1_DMAP                                0x00003240
+#define NV_PFIFO_CACH1_DMAG                                0x00003244
+#define NV_PFIFO_CACH1_PUL0                                0x00003250
+#define NV_PFIFO_CACH1_PUL1                                0x00003254
+#define NV_PFIFO_CACH1_HASH                                0x00003258
+#define NV_PFIFO_CACH1_ENG                                 0x00003280
+
+#define NV_CRTC0_INTSTAT                                   0x00600100
+#define NV_CRTC0_INTEN                                     0x00600140
+#define NV_CRTC1_INTSTAT                                   0x00602100
+#define NV_CRTC1_INTEN                                     0x00602140
+#    define NV_CRTC_INTR_VBLANK                                (1<<0)
+
+/* Fifo commands. These are not regs, neither masks */
+#define NV03_FIFO_CMD_JUMP                                 0x20000000
+#define NV03_FIFO_CMD_JUMP_OFFSET_MASK                     0x1ffffffc
+#define NV03_FIFO_CMD_REWIND                               (NV03_FIFO_CMD_JUMP | (0 & NV03_FIFO_CMD_JUMP_OFFSET_MASK))
+

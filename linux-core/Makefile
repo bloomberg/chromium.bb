@@ -58,7 +58,7 @@ endif
 
 # Modules for all architectures
 MODULE_LIST := drm.o tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o \
-               mach64.o nv.o
+               mach64.o nv.o nouveau.o
 
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))
@@ -106,10 +106,12 @@ MACH64SHARED = 	mach64_drv.h mach64_drm.h mach64_dma.c \
 NVHEADERS =     nv_drv.h $(DRMHEADERS)
 NVSHARED  =     nv_drv.h
 FFBHEADERS = 	ffb_drv.h $(DRMHEADERS)
+NOUVEAUHEADERS = nouveau_drv.h nouveau_drm.h nouveau_reg.h $(DRMHEADERS)
+NOUVEAUSHARED =  nouveau_drv.h nouveau_drm.h nouveau_reg.h nouveau_state.c nouveau_fifo.c nouveau_mem.c nouveau_object.c nouveau_irq.c
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
 	$(SISSHARED) $(TDFXSHARED) $(VIASHARED) $(MACH64SHARED) \
-	$(I915SHARED) $(SAVAGESHARED) $(NVSHARED)
+	$(I915SHARED) $(SAVAGESHARED) $(NVSHARED) $(NOUVEAUSHARED)
 
 PROGS = dristat drmstat
 
@@ -372,6 +374,9 @@ endif
 ifneq (,$(findstring nv,$(DRM_MODULES)))
 CONFIG_DRM_NV := m
 endif
+ifneq (,$(findstring nouveau,$(DRM_MODULES)))
+CONFIG_DRM_NOUVEAU := m
+endif
 
 # These require AGP support
 
@@ -402,6 +407,7 @@ $(savage-objs): $(SAVAGEHEADERS)
 $(via-objs):	$(VIAHEADERS)
 $(mach64-objs): $(MACH64HEADERS)
 $(nv-objs):     $(NVHEADERS)
+$(nouveau-objs): $(NOUVEAUHEADERS)
 
 endif
 
