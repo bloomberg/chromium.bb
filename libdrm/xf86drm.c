@@ -2385,37 +2385,28 @@ static void split32(unsigned long val, unsigned *lo, unsigned *hi)
 
 int drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, unsigned flags)
 {
-    drm_ttm_arg_t argTTM;
-    drm_bo_arg_t arg;
+    drm_ttm_arg_t arg;
 
-    arg.num_requests = 1;
-    arg.op = drm_op_ttm;
-    split32((unsigned long) &argTTM, &arg.data_lo, &arg.data_hi);
-
-    argTTM.op = drm_ttm_create;
-    argTTM.flags = flags;
-    split32((unsigned long) &size, &argTTM.size_lo, &argTTM.size_hi);
+    arg.op = drm_ttm_create;
+    arg.flags = flags;
+    split32((unsigned long) size, &arg.size_lo, &arg.size_hi);
 
     if (ioctl(fd, DRM_IOCTL_TTM, &arg))
 	return -errno;
     
-    ttm->handle = argTTM.handle;
-    ttm->user_token = (drm_handle_t) argTTM.user_token;
-    ttm->flags = argTTM.flags;
-    ttm->size = combine64(argTTM.size_lo, argTTM.size_hi);
+    ttm->handle = arg.handle;
+    ttm->user_token = (drm_handle_t) arg.user_token;
+    ttm->flags = arg.flags;
+    ttm->size = combine64(arg.size_lo, arg.size_hi);
     return 0;
 }
 
 int drmTTMDestroy(int fd, const drmTTM *ttm)
 {
-    drm_ttm_arg_t argTTM;
-    drm_bo_arg_t arg;
+  drm_ttm_arg_t arg;
 
-    arg.num_requests = 1;
-    arg.op = drm_op_ttm;
-    split32((unsigned long) &argTTM, &arg.data_lo, &arg.data_hi);
-    argTTM.op = drm_ttm_destroy;
-    argTTM.handle = ttm->handle;
+    arg.op = drm_ttm_destroy;
+    arg.handle = ttm->handle;
     if (ioctl(fd, DRM_IOCTL_TTM, &arg))
 	return -errno;
     return 0;
@@ -2424,31 +2415,25 @@ int drmTTMDestroy(int fd, const drmTTM *ttm)
 
 int drmTTMReference(int fd, unsigned handle, drmTTM *ttm)
 {
-    drm_ttm_arg_t argTTM;
-    drm_bo_arg_t arg;
+    drm_ttm_arg_t arg;
 
-    arg.num_requests = 1;
-    arg.op = drm_op_ttm;
-    split32((unsigned long) &argTTM, &arg.data_lo, &arg.data_hi);
-
-    argTTM.handle = handle;
-    argTTM.op = drm_ttm_reference;
+    arg.handle = handle;
+    arg.op = drm_ttm_reference;
     if (ioctl(fd, DRM_IOCTL_TTM, &arg))
 	return -errno;
-    ttm->handle = argTTM.handle;
-    ttm->user_token = (drm_handle_t) argTTM.user_token;
-    ttm->flags = argTTM.flags;
-    ttm->size = combine64(argTTM.size_lo, argTTM.size_hi);
+    ttm->handle = arg.handle;
+    ttm->user_token = (drm_handle_t) arg.user_token;
+    ttm->flags = arg.flags;
+    ttm->size = combine64(arg.size_lo, arg.size_hi);
     return 0;
 }
 
 int drmTTMUnreference(int fd, const drmTTM *ttm)
 {
-    drm_ttm_arg_t argTTM;
-    drm_bo_arg_t arg;
+    drm_ttm_arg_t arg;
 
-    argTTM.op = drm_ttm_destroy;
-    argTTM.handle = ttm->handle;
+    arg.op = drm_ttm_destroy;
+    arg.handle = ttm->handle;
     if (ioctl(fd, DRM_IOCTL_TTM, &arg))
 	return -errno;
     return 0;

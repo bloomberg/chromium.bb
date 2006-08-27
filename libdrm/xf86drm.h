@@ -623,6 +623,13 @@ extern int           drmFenceWait(int fd, drmFence *fence, unsigned flush_type,
 				  int lazy, int ignore_signals);
 extern int           drmFenceEmit(int fd, drmFence *fence, unsigned emit_type);
 
+/* TTMS */
+extern int           drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, 
+				  unsigned flags);
+extern int           drmTTMDestroy(int fd, const drmTTM *ttm);
+extern int           drmTTMReference(int fd, unsigned handle, drmTTM *ttm);
+extern int           drmTTMUnreference(int fd, const drmTTM *ttm);
+extern drm_handle_t  drmTTMMapHandle(int fd, const drmTTM *ttm);
 
 
 /* Support routines */

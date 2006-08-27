@@ -846,6 +846,7 @@ int drm_ttm_object_create(drm_device_t *dev, unsigned long size,
 	object->base.unref = NULL;
 
 	atomic_set(&object->usage, 1);
+	*ttm_object = object;
 	return 0;
 }
 
