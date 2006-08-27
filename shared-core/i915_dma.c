@@ -195,7 +195,9 @@ static int i915_initialize(drm_device_t * dev,
 
 	I915_WRITE(0x02080, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
-
+#ifdef I915_HAVE_FENCE	
+	dev_priv->saved_flush_status = READ_HWSP(dev_priv, 0);
+#endif
 	dev->dev_private = (void *)dev_priv;
 
 	return 0;
