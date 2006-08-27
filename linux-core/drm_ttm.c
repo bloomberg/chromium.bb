@@ -850,10 +850,10 @@ int drm_ttm_object_create(drm_device_t *dev, unsigned long size,
 }
 
 
-int drm_ttm_ioctl(drm_file_t *priv, drm_ttm_arg_t __user *data)
+int drm_ttm_ioctl(DRM_IOCTL_ARGS)
 {
+        DRM_DEVICE;
 	drm_ttm_arg_t arg;
-	drm_device_t *dev = priv->head->dev;
 	drm_ttm_object_t *entry;
 	drm_user_object_t *uo;
 	unsigned long size;

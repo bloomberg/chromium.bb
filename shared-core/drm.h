@@ -816,7 +816,7 @@ typedef union drm_bo_arg_data {
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, drm_wait_vblank_t)
 
 #define DRM_IOCTL_FENCE                 DRM_IOWR(0x3b, drm_fence_arg_t)
-#define DRM_IOCTL_BUFFER_OBJECT         DRM_IOWR(0x3c, drm_buffer_arg_t)
+#define DRM_IOCTL_TTM                   DRM_IOWR(0x3c, drm_ttm_arg_t)
 
 /*@}*/
 
@@ -828,5 +828,6 @@ typedef union drm_bo_arg_data {
  * drmCommandReadWrite().
  */
 #define DRM_COMMAND_BASE                0x40
+#define DRM_COMMAND_END                 0x80
 
 #endif

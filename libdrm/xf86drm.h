@@ -287,6 +287,13 @@ typedef struct _drmFence{
         unsigned signaled;
 } drmFence;
 
+typedef struct _drmTTM{
+        unsigned handle;
+        drm_handle_t user_token;
+        unsigned flags;
+        unsigned long size;
+} drmTTM;
+
 #define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)
 
 #define DRM_LOCK_HELD  0x80000000U /**< Hardware lock is held */

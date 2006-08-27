@@ -301,34 +301,6 @@ int drm_bo_alloc_space(drm_device_t *dev, int tt, drm_buffer_object_t *buf)
 }
 #endif
 	
-static int drm_do_bo_ioctl(drm_file_t *priv, int num_requests, 
-			   drm_bo_arg_data_t __user *data)
-{
-	drm_bo_arg_data_t arg;
-	drm_bo_arg_request_t *req = &arg.req;
-	drm_bo_arg_reply_t rep;
-	int i, ret;
-	
-	for (i=0; i<num_requests; ++i) {
-		rep.ret = 0;
-		ret = copy_from_user(&arg, (void __user *) data, sizeof(arg));
-		if (ret) {
-			rep.ret = -EFAULT;
-			goto out_loop;
-		}
-
-		arg.rep = rep;
-		data++;
-	out_loop:
-		arg.rep = rep;
-		ret = copy_to_user((void __user *) data, &arg, sizeof(arg));
-		if (!ret)
-			++i;
-		break;
-	}
-	return i;
-}
-
 
 int drm_bo_ioctl(DRM_IOCTL_ARGS)
 {
@@ -336,21 +308,6 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 	drm_bo_arg_t arg;
 	unsigned long data_ptr;
 	(void) dev;
-
-	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
-	data_ptr = combine_64(arg.data_lo, arg.data_hi);
-	switch(arg.op) {
-	case drm_op_bo:
-		arg.num_requests = drm_do_bo_ioctl(priv, arg.num_requests, 
-						   (drm_bo_arg_data_t __user *) 
-						   data_ptr);
-		break;
-	case drm_op_ttm:
-		return drm_ttm_ioctl(priv, (drm_ttm_arg_t __user *) 
-				     data_ptr);
-	}
-
-	DRM_COPY_TO_USER_IOCTL((void __user *) data, arg, sizeof(arg));
 	return 0;
 }
 	
