@@ -132,6 +132,22 @@ AC_SUBST(EXEEXT_FOR_BUILD)
 
 dnl ==========================================================================
 
+AC_ARG_WITH(arch,      [  --with-arch=ARCH      Force architecture to ARCH], arch="$withval", arch=auto)
+
+if test $cross_compiling = yes; then
+	case "$arch" in
+	auto)
+		AC_MSG_ERROR([Cannot autodetect architecture in cross compile environment]
+			     [Use --with-arch=ARCH to specify architecture])
+		;;
+	esac
+fi
+
+ARCHITECTURE=$arch
+AC_SUBST(ARCHITECTURE)
+
+dnl ==========================================================================
+
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
@@ -539,6 +555,7 @@ fontconfig/Makefile
 fc-lang/Makefile
 fc-glyphname/Makefile
 fc-case/Makefile
+fc-arch/Makefile
 src/Makefile
 src/fontconfig.def
 conf.d/Makefile
