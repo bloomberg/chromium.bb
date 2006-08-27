@@ -882,7 +882,15 @@ int drm_ttm_ioctl(drm_file_t *priv, drm_ttm_arg_t __user *data)
 		mutex_unlock(&dev->struct_mutex);
 		break;
 	case drm_ttm_reference:
-		return drm_user_object_ref(priv, arg.handle, drm_ttm_type, &uo);
+		ret = drm_user_object_ref(priv, arg.handle, drm_ttm_type, &uo);
+		if (ret)
+			return ret;
+		mutex_lock(&dev->struct_mutex);
+		uo = drm_lookup_user_object(priv, arg.handle);
+		entry = drm_user_object_entry(uo, drm_ttm_object_t, base);
+		arg.user_token = entry->map_list.user_token;
+		mutex_unlock(&dev->struct_mutex);
+		break;
 	case drm_ttm_unreference:
 		return drm_user_object_unref(priv, arg.handle, drm_ttm_type);
 	case drm_ttm_destroy:
