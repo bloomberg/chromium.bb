@@ -42,6 +42,7 @@ typedef struct drm_val_action {
 	int validated;
 } drm_val_action_t;
 
+
 /*
  * We may be manipulating other processes page tables, so for each TTM, keep track of 
  * which mm_structs are currently mapping the ttm so that we can take the appropriate
@@ -275,6 +276,7 @@ static drm_ttm_t *drm_init_ttm(struct drm_device * dev, unsigned long size)
 
 	ttm->lhandle = 0;
 	atomic_set(&ttm->vma_count, 0);
+
 	ttm->destroy = 0;
 	ttm->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 
@@ -746,25 +748,80 @@ int drm_user_create_region(drm_device_t * dev, unsigned long start, int len,
 	return 0;
 }
 
+
 /*
- * Create a ttm and add it to the drm book-keeping.
+ * dev->struct_mutex locked.
  */
 
-int drm_add_ttm(drm_device_t * dev, unsigned size, drm_map_list_t ** maplist)
+static void drm_ttm_object_remove(drm_device_t *dev, drm_ttm_object_t *object)
 {
+	drm_map_list_t *list = &object->map_list;
+	drm_local_map_t *map;
+
+	if (list->user_token)
+		drm_ht_remove_item(&dev->map_hash, &list->hash);
+
+	map = list->map;
+
+	if (map) {
+		drm_ttm_t *ttm = (drm_ttm_t *)map->offset;
+		if (ttm) {
+			if (drm_destroy_ttm(ttm) != -EBUSY) {
+				drm_free(map, sizeof(*map), DRM_MEM_TTM);
+			}
+		} else {
+			drm_free(map, sizeof(*map), DRM_MEM_TTM);
+		}
+	}
+
+	drm_free(object, sizeof(*object), DRM_MEM_TTM);
+}
+
+/*
+ * dev->struct_mutex locked.
+ */
+static void drm_ttm_user_object_remove(drm_file_t *priv, drm_user_object_t *base)
+{
+	drm_ttm_object_t *object;
+	drm_device_t *dev = priv->head->dev;
+
+	object = drm_user_object_entry(base, drm_ttm_object_t, base);
+	if (atomic_dec_and_test(&object->usage)) 
+		drm_ttm_object_remove(dev, object);
+}
+
+	
+
+/*
+ * Create a ttm and add it to the drm book-keeping. 
+ * dev->struct_mutex locked.
+ */
+
+int drm_ttm_object_create(drm_device_t *dev, unsigned long size, 
+			  uint32_t flags, drm_ttm_object_t **ttm_object)
+{
+	drm_ttm_object_t *object;
 	drm_map_list_t *list;
 	drm_map_t *map;
 	drm_ttm_t *ttm;
 
-	map = drm_alloc(sizeof(*map), DRM_MEM_TTM);
-	if (!map)
+	object = drm_calloc(1, sizeof(*object), DRM_MEM_TTM);
+	if (!object) 
 		return -ENOMEM;
+	object->flags = flags;
+	list = &object->map_list;
+	
+	list->map = drm_calloc(1, sizeof(*map), DRM_MEM_TTM);
+	if (!list->map) {
+		drm_ttm_object_remove(dev, object);
+		return -ENOMEM;
+	}
+	map = list->map;
 
 	ttm = drm_init_ttm(dev, size);
-
 	if (!ttm) {
 		DRM_ERROR("Could not create ttm\n");
-		drm_free(map, sizeof(*map), DRM_MEM_TTM);
+		drm_ttm_object_remove(dev, object);
 		return -ENOMEM;
 	}
 
@@ -772,34 +829,73 @@ int drm_add_ttm(drm_device_t * dev, unsigned size, drm_map_list_t ** maplist)
 	map->type = _DRM_TTM;
 	map->flags = _DRM_REMOVABLE;
 	map->size = size;
-
-	list = drm_calloc(1, sizeof(*list), DRM_MEM_TTM);
-	if (!list) {
-		drm_destroy_ttm(ttm);
-		drm_free(map, sizeof(*map), DRM_MEM_TTM);
-		return -ENOMEM;
-	}
-	map->handle = (void *)list;
-
+	map->handle = (void *)object;
+		
 	if (drm_ht_just_insert_please(&dev->map_hash, &list->hash, 
 				      (unsigned long) map->handle, 
 				      32 - PAGE_SHIFT - 3, PAGE_SHIFT,
 				      DRM_MAP_HASH_OFFSET)) {
-		drm_destroy_ttm(ttm);
-		drm_free(map, sizeof(*map), DRM_MEM_TTM);
-		drm_free(list, sizeof(*list), DRM_MEM_TTM);
+		drm_ttm_object_remove(dev, object);
 		return -ENOMEM;
 	}
 
 	list->user_token = list->hash.key;
-	list->map = map;
+	object->base.remove = drm_ttm_user_object_remove;
+	object->base.type = drm_ttm_type;
+	object->base.ref_struct_locked = NULL;
+	object->base.unref = NULL;
 
-	*maplist = list;
-
+	atomic_set(&object->usage, 1);
 	return 0;
 }
 
+
 int drm_ttm_ioctl(drm_file_t *priv, drm_ttm_arg_t __user *data)
 {
+	drm_ttm_arg_t arg;
+	drm_device_t *dev = priv->head->dev;
+	drm_ttm_object_t *entry;
+	drm_user_object_t *uo;
+	unsigned long size;
+	int ret;
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+	
+	switch(arg.op) {
+	case drm_ttm_create:
+		mutex_lock(&dev->struct_mutex);
+		size = combine_64(arg.size_lo, arg.size_hi);
+		ret = drm_ttm_object_create(dev, size, arg.flags, &entry);
+		if (ret) {
+			mutex_unlock(&dev->struct_mutex);
+			return ret;
+		}
+		ret = drm_add_user_object(priv, &entry->base, 
+					  arg.flags & DRM_TTM_FLAG_SHAREABLE);
+		if (ret) {
+			drm_ttm_object_remove(dev, entry);
+			mutex_unlock(&dev->struct_mutex);
+			return ret;
+		}
+		arg.handle = entry->base.hash.key;
+		arg.user_token = entry->map_list.user_token;
+		mutex_unlock(&dev->struct_mutex);
+		break;
+	case drm_ttm_reference:
+		return drm_user_object_ref(priv, arg.handle, drm_ttm_type, &uo);
+	case drm_ttm_unreference:
+		return drm_user_object_unref(priv, arg.handle, drm_ttm_type);
+	case drm_ttm_destroy:
+		mutex_lock(&dev->struct_mutex);
+		uo = drm_lookup_user_object(priv, arg.handle);
+		if (!uo || (uo->type != drm_ttm_type) || uo->owner != priv) {
+			mutex_unlock(&dev->struct_mutex);
+			return -EINVAL;
+		}
+		ret = drm_remove_user_object(priv, uo);
+		mutex_unlock(&dev->struct_mutex);
+		return ret;
+	}
+	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
 	return 0;
 }

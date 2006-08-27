@@ -688,6 +688,8 @@ typedef struct drm_bo_arg {
 	unsigned data_hi;
 } drm_bo_arg_t;
 
+#define DRM_TTM_FLAG_SHAREABLE           0x00000001
+
 typedef struct drm_ttm_arg {
 	enum {
 		drm_ttm_create,
@@ -696,8 +698,10 @@ typedef struct drm_ttm_arg {
 		drm_ttm_unreference
 	} op;
 	unsigned handle;
+        unsigned user_token;
 	unsigned size_lo;
 	unsigned size_hi;
+        unsigned flags;
 }drm_ttm_arg_t;
 
 

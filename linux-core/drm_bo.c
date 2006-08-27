@@ -338,13 +338,7 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 	(void) dev;
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
-	data_ptr = arg.data_lo;
-
-	if (sizeof(data_ptr) > 4) {
-		int shift = 32;
-		data_ptr |= arg.data_hi << shift;
-	}
-
+	data_ptr = combine_64(arg.data_lo, arg.data_hi);
 	switch(arg.op) {
 	case drm_op_bo:
 		arg.num_requests = drm_do_bo_ioctl(priv, arg.num_requests, 

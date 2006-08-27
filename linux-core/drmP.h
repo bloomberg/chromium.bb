@@ -587,6 +587,64 @@ typedef struct drm_mm {
 	drm_mm_node_t root_node;
 } drm_mm_t;
 
+
+/*
+ * User space objects and their references.
+ */
+
+#define drm_user_object_entry(_ptr, _type, _member) container_of(_ptr, _type, _member)
+
+typedef enum {
+		drm_fence_type,
+		drm_buffer_type,
+		drm_ttm_type
+
+		/*
+		 * Add other user space object types here. 
+		 */
+
+} drm_object_type_t;
+
+
+
+
+/*
+ * A user object is a structure that helps the drm give out user handles
+ * to kernel internal objects and to keep track of these objects so that 
+ * they can be destroyed, for example when the user space process exits.
+ * Designed to be accessible using a user space 32-bit handle. 
+ */
+
+typedef struct drm_user_object{
+	drm_hash_item_t hash;
+	struct list_head list;
+	drm_object_type_t type;
+        atomic_t refcount;
+        int shareable;
+        drm_file_t *owner;
+	void (*ref_struct_locked) (drm_file_t *priv, struct drm_user_object *obj, 
+				   drm_ref_t ref_action); 
+	void (*unref)(drm_file_t *priv, struct drm_user_object *obj, 
+		      drm_ref_t unref_action);
+	void (*remove)(drm_file_t *priv, struct drm_user_object *obj);
+} drm_user_object_t;
+
+/*
+ * A ref object is a structure which is used to
+ * keep track of references to user objects and to keep track of these
+ * references so that they can be destroyed for example when the user space
+ * process exits. Designed to be accessible using a pointer to the _user_ object.
+ */
+
+
+typedef struct drm_ref_object {
+	drm_hash_item_t hash;
+	struct list_head list;
+	atomic_t refcount;
+	drm_ref_t unref_action;
+} drm_ref_object_t;
+
+
 #include "drm_ttm.h"
 
 /*
@@ -873,101 +931,6 @@ typedef struct drm_agp_ttm_priv {
 } drm_agp_ttm_priv;
 #endif
 
-
-static __inline__ int drm_core_check_feature(struct drm_device *dev,
-					     int feature)
-{
-	return ((dev->driver->driver_features & feature) ? 1 : 0);
-}
-
-#if __OS_HAS_AGP
-static inline int drm_core_has_AGP(struct drm_device *dev)
-{
-	return drm_core_check_feature(dev, DRIVER_USE_AGP);
-}
-#else
-#define drm_core_has_AGP(dev) (0)
-#endif
-
-#if __OS_HAS_MTRR
-static inline int drm_core_has_MTRR(struct drm_device *dev)
-{
-	return drm_core_check_feature(dev, DRIVER_USE_MTRR);
-}
-
-#define DRM_MTRR_WC		MTRR_TYPE_WRCOMB
-
-static inline int drm_mtrr_add(unsigned long offset, unsigned long size,
-			       unsigned int flags)
-{
-	return mtrr_add(offset, size, flags, 1);
-}
-
-static inline int drm_mtrr_del(int handle, unsigned long offset,
-			       unsigned long size, unsigned int flags)
-{
-	return mtrr_del(handle, offset, size);
-}
-
-#else
-#define drm_core_has_MTRR(dev) (0)
-#endif
-
-/*
- * User space objects and their references.
- */
-
-#define drm_user_object_entry(_ptr, _type, _member) container_of(_ptr, _type, _member)
-
-typedef enum {
-		drm_fence_type,
-		drm_buffer_type
-
-		/*
-		 * Add other user space object types here. 
-		 */
-
-} drm_object_type_t;
-
-
-
-
-/*
- * A user object is a structure that helps the drm give out user handles
- * to kernel internal objects and to keep track of these objects so that 
- * they can be destroyed, for example when the user space process exits.
- * Designed to be accessible using a user space 32-bit handle. 
- */
-
-typedef struct drm_user_object{
-	drm_hash_item_t hash;
-	struct list_head list;
-	drm_object_type_t type;
-        atomic_t refcount;
-        int shareable;
-        drm_file_t *owner;
-	void (*ref_struct_locked) (drm_file_t *priv, struct drm_user_object *obj, 
-				   drm_ref_t ref_action); 
-	void (*unref)(drm_file_t *priv, struct drm_user_object *obj, 
-		      drm_ref_t unref_action);
-	void (*remove)(drm_file_t *priv, struct drm_user_object *obj);
-} drm_user_object_t;
-
-/*
- * A ref object is a structure which is used to
- * keep track of references to user objects and to keep track of these
- * references so that they can be destroyed for example when the user space
- * process exits. Designed to be accessible using a pointer to the _user_ object.
- */
-
-
-typedef struct drm_ref_object {
-	drm_hash_item_t hash;
-	struct list_head list;
-	atomic_t refcount;
-	drm_ref_t unref_action;
-} drm_ref_object_t;
-
 typedef struct drm_fence_object{
 	drm_user_object_t base;
         atomic_t usage;
@@ -1010,6 +973,46 @@ typedef struct drm_buffer_object{
 	wait_queue_head_t validate_queue;
 } drm_buffer_object_t;
 
+
+
+static __inline__ int drm_core_check_feature(struct drm_device *dev,
+					     int feature)
+{
+	return ((dev->driver->driver_features & feature) ? 1 : 0);
+}
+
+#if __OS_HAS_AGP
+static inline int drm_core_has_AGP(struct drm_device *dev)
+{
+	return drm_core_check_feature(dev, DRIVER_USE_AGP);
+}
+#else
+#define drm_core_has_AGP(dev) (0)
+#endif
+
+#if __OS_HAS_MTRR
+static inline int drm_core_has_MTRR(struct drm_device *dev)
+{
+	return drm_core_check_feature(dev, DRIVER_USE_MTRR);
+}
+
+#define DRM_MTRR_WC		MTRR_TYPE_WRCOMB
+
+static inline int drm_mtrr_add(unsigned long offset, unsigned long size,
+			       unsigned int flags)
+{
+	return mtrr_add(offset, size, flags, 1);
+}
+
+static inline int drm_mtrr_del(int handle, unsigned long offset,
+			       unsigned long size, unsigned int flags)
+{
+	return mtrr_del(handle, offset, size);
+}
+
+#else
+#define drm_core_has_MTRR(dev) (0)
+#endif
 
 
 /******************************************************************/
@@ -1353,6 +1356,20 @@ extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 
 extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
 
+/*
+ * Convenience 2*32-bit to 64-bit function
+ */
+
+static __inline__ unsigned long combine_64(uint32_t lo, uint32_t hi)
+{
+	unsigned long ret = lo;
+	
+	if (sizeof(ret) > 4) {
+		int shift = 32;
+		lo |= (hi << shift);
+	}
+	return ret;
+}
 
 /* Inline replacements for DRM_IOREMAP macros */
 static __inline__ void drm_core_ioremap(struct drm_map *map,

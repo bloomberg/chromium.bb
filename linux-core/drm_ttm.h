@@ -101,7 +101,15 @@ typedef struct drm_ttm {
         int destroy;
 } drm_ttm_t;
 
-int drm_add_ttm(struct drm_device * dev, unsigned size, drm_map_list_t ** maplist);
+typedef struct drm_ttm_object {
+	drm_user_object_t base;
+	atomic_t usage;
+	uint32_t flags;
+	drm_map_list_t map_list;
+} drm_ttm_object_t;
+	
+	
+
 
 /*
  * Bind a part of the ttm starting at page_offset size n_pages into the GTT, at
