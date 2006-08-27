@@ -828,7 +828,7 @@ int drm_ttm_object_create(drm_device_t *dev, unsigned long size,
 	map->offset = ttm->lhandle;
 	map->type = _DRM_TTM;
 	map->flags = _DRM_REMOVABLE;
-	map->size = size;
+	map->size = ttm->num_pages * PAGE_SIZE;
 	map->handle = (void *)object;
 		
 	if (drm_ht_just_insert_please(&dev->map_hash, &list->hash, 
@@ -877,9 +877,7 @@ int drm_ttm_ioctl(drm_file_t *priv, drm_ttm_arg_t __user *data)
 			mutex_unlock(&dev->struct_mutex);
 			return ret;
 		}
-		arg.handle = entry->base.hash.key;
-		arg.user_token = entry->map_list.user_token;
-		mutex_unlock(&dev->struct_mutex);
+		atomic_inc(&entry->usage);
 		break;
 	case drm_ttm_reference:
 		ret = drm_user_object_ref(priv, arg.handle, drm_ttm_type, &uo);
@@ -888,8 +886,6 @@ int drm_ttm_ioctl(drm_file_t *priv, drm_ttm_arg_t __user *data)
 		mutex_lock(&dev->struct_mutex);
 		uo = drm_lookup_user_object(priv, arg.handle);
 		entry = drm_user_object_entry(uo, drm_ttm_object_t, base);
-		arg.user_token = entry->map_list.user_token;
-		mutex_unlock(&dev->struct_mutex);
 		break;
 	case drm_ttm_unreference:
 		return drm_user_object_unref(priv, arg.handle, drm_ttm_type);
@@ -904,6 +900,12 @@ int drm_ttm_ioctl(drm_file_t *priv, drm_ttm_arg_t __user *data)
 		mutex_unlock(&dev->struct_mutex);
 		return ret;
 	}
+	arg.handle = entry->base.hash.key;
+	arg.user_token = entry->map_list.user_token;
+	split_32(entry->map_list.map->size, &arg.size_lo, &arg.size_hi);
+	atomic_dec(&entry->usage);
+	mutex_unlock(&dev->struct_mutex);
+
 	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
 	return 0;
 }

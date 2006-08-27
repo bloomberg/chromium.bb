@@ -1363,13 +1363,22 @@ extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
 static __inline__ unsigned long combine_64(uint32_t lo, uint32_t hi)
 {
 	unsigned long ret = lo;
-	
-	if (sizeof(ret) > 4) {
-		int shift = 32;
-		lo |= (hi << shift);
-	}
+#if (BITS_PER_LONG == 64)
+		ret |= (hi << 32);
+#endif
 	return ret;
 }
+
+static __inline__ void split_32(unsigned long val, uint32_t *lo, uint32_t *hi)
+{
+	*lo = val & 0xFFFFFFFFUL;
+#if (BITS_PER_LONG == 64)
+	*hi = val >> 32;
+#else 
+	*hi = 0;
+#endif
+}
+
 
 /* Inline replacements for DRM_IOREMAP macros */
 static __inline__ void drm_core_ioremap(struct drm_map *map,
