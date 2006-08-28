@@ -497,6 +497,8 @@ do {	register unsigned int __old __asm("o0");		\
             }                                                          \
 	} while(0)
 
+
+
 /* General user-level programmer's API: unprivileged */
 extern int           drmAvailable(void);
 extern int           drmOpen(const char *name, const char *busid);

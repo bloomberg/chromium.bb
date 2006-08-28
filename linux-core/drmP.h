@@ -1359,26 +1359,29 @@ extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
 
 /*
- * Convenience 2*32-bit to 64-bit function
+ * Convenience drm_u64_t functions
  */
 
-static __inline__ unsigned long combine_64(uint32_t lo, uint32_t hi)
+static __inline__ unsigned long drm_ul(drm_u64_t val)
 {
-	unsigned long ret = lo;
+	unsigned long ret = val.lo;
 #if (BITS_PER_LONG == 64)
-		ret |= (hi << 32);
+		ret |= (val.hi << 32);
 #endif
 	return ret;
 }
 
-static __inline__ void split_32(unsigned long val, uint32_t *lo, uint32_t *hi)
+static __inline__ drm_u64_t drm_u64(unsigned long val)
 {
-	*lo = val & 0xFFFFFFFFUL;
+	drm_u64_t ret;
+
+	ret.lo = val & 0xFFFFFFFFUL;
 #if (BITS_PER_LONG == 64)
-	*hi = val >> 32;
+	ret.hi = val >> 32;
 #else 
-	*hi = 0;
+	ret.hi = 0;
 #endif
+	return ret;
 }
 
 

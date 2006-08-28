@@ -630,6 +630,11 @@ typedef struct drm_set_version {
 	int drm_dd_minor;
 } drm_set_version_t;
 
+typedef struct drm_u64{
+	unsigned lo;
+	unsigned hi;
+}drm_u64_t;
+
 #define DRM_FENCE_FLAG_EMIT                0x00000001
 #define DRM_FENCE_FLAG_SHAREABLE           0x00000002
 #define DRM_FENCE_FLAG_WAIT_LAZY           0x00000004
@@ -655,6 +660,22 @@ typedef struct drm_fence_arg {
 	} op;
 } drm_fence_arg_t;
 
+#define DRM_TTM_FLAG_SHAREABLE           0x00000001
+
+typedef struct drm_ttm_arg {
+	enum {
+		drm_ttm_create,
+		drm_ttm_destroy,
+		drm_ttm_reference,
+		drm_ttm_unreference
+	} op;
+	unsigned handle;
+        unsigned user_token;
+	drm_u64_t size;
+        unsigned flags;
+}drm_ttm_arg_t;
+
+
 #define DRM_BO_FLAG_READ        0x00000001
 #define DRM_BO_FLAG_WRITE       0x00000002
 #define DRM_BO_FLAG_EXE         0x00000004
@@ -674,43 +695,12 @@ typedef struct drm_fence_arg {
 #define DRM_BO_HINT_AVOID_LOCAL 0x00000002
 #define DRM_BO_HINT_DONT_BLOCK  0x00000004
 
-/*
- * Multiplexing ioctl argument.
- */
-
-typedef struct drm_bo_arg {
-	unsigned num_requests;
-	enum {
-		drm_op_bo,
-		drm_op_ttm
-	} op;
-	unsigned data_lo;
-	unsigned data_hi;
-} drm_bo_arg_t;
-
-#define DRM_TTM_FLAG_SHAREABLE           0x00000001
-
-typedef struct drm_ttm_arg {
-	enum {
-		drm_ttm_create,
-		drm_ttm_destroy,
-		drm_ttm_reference,
-		drm_ttm_unreference
-	} op;
-	unsigned handle;
-        unsigned user_token;
-	unsigned size_lo;
-	unsigned size_hi;
-        unsigned flags;
-}drm_ttm_arg_t;
-
 
 typedef struct drm_bo_arg_request {
 	unsigned handle; /* User space handle */
 	unsigned mask;
 	unsigned hint;
-	unsigned size_lo;
-	unsigned size_hi;
+	drm_u64_t size;
 
 	enum {
 		drm_bo_type_ttm,
@@ -718,8 +708,8 @@ typedef struct drm_bo_arg_request {
 		drm_bo_type_user
 	}type;
 	unsigned arg_handle;
-	unsigned user_pointer_lo;
-	unsigned user_pointer_hi;
+	drm_u64_t user_pointer;
+	drm_u64_t next;
 	enum {
 		drm_bo_create,
 		drm_bo_validate,
@@ -733,21 +723,20 @@ typedef struct drm_bo_arg_request {
 
 typedef struct drm_bo_arg_reply {
 	int ret;
+	int handled;
 	unsigned handle;
 	unsigned flags;
-	unsigned size_lo;
-	unsigned size_hi;
-	unsigned offset_lo;
-	unsigned offset_hi;
+	drm_u64_t size;
+	drm_u64_t offset;
 	unsigned arg_handle;
 	unsigned map_flags;
 }drm_bo_arg_reply_t;
 	
 
-typedef union drm_bo_arg_data {
+typedef union drm_bo_arg{
 	drm_bo_arg_request_t req;
 	drm_bo_arg_reply_t rep;
-} drm_bo_arg_data_t;
+} drm_bo_arg_t;
 
 
 /**

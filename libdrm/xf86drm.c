@@ -2362,25 +2362,27 @@ int drmFenceWait(int fd, drmFence *fence, unsigned flush_type,
     return 0;
 }    
 
-static unsigned long combine64(unsigned lo, unsigned hi)
+static unsigned long drmUL(drm_u64_t val)
 {
-    unsigned long ret = lo;
+    unsigned long ret = val.lo;
     if (sizeof(ret) == 8) {
 	int shift = 32;
-	ret |= (hi << shift);
+	ret |= (val.hi << shift);
     }
     return ret;
 }
 
-static void split32(unsigned long val, unsigned *lo, unsigned *hi)
+static drm_u64_t drmU64(unsigned long val)
 {
-    *lo = val & 0xFFFFFFFFUL;
+    drm_u64_t ret;
+    ret.lo = val & 0xFFFFFFFFUL;
     if (sizeof(val) == 8) {
 	int shift = 32;
-	*hi = val >> shift;
+	ret.hi = val >> shift;
     } else {
-	*hi = 0;
+	ret.hi = 0;
     }
+    return ret;
 }
 
 int drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, unsigned flags)
@@ -2389,7 +2391,7 @@ int drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, unsigned flags)
 
     arg.op = drm_ttm_create;
     arg.flags = flags;
-    split32((unsigned long) size, &arg.size_lo, &arg.size_hi);
+    arg.size = drmU64(size);
 
     if (ioctl(fd, DRM_IOCTL_TTM, &arg))
 	return -errno;
@@ -2397,7 +2399,7 @@ int drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, unsigned flags)
     ttm->handle = arg.handle;
     ttm->user_token = (drm_handle_t) arg.user_token;
     ttm->flags = arg.flags;
-    ttm->size = combine64(arg.size_lo, arg.size_hi);
+    ttm->size = drmUL(arg.size);
     return 0;
 }
 
@@ -2424,7 +2426,7 @@ int drmTTMReference(int fd, unsigned handle, drmTTM *ttm)
     ttm->handle = arg.handle;
     ttm->user_token = (drm_handle_t) arg.user_token;
     ttm->flags = arg.flags;
-    ttm->size = combine64(arg.size_lo, arg.size_hi);
+    ttm->size = drmUL(arg.size);
     return 0;
 }
 
