@@ -25,6 +25,7 @@
 
 #include "fcint.h"
 #include "../fc-arch/fcarch.h"
+#include <stdio.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <string.h>
@@ -45,26 +46,14 @@
 #define O_BINARY 0
 #endif
 
-static int
+static FILE *
 FcDirCacheOpen (FcConfig *config, const FcChar8 *dir, FcChar8 **cache_path);
-
-static off_t
-FcCacheSkipToArch (int fd, const char * arch);
-
-static FcBool 
-FcCacheCopyOld (int fd, int fd_orig, off_t start);
 
 static void *
 FcDirCacheProduce (FcFontSet *set, FcCache * metadata);
 
-static FcBool
-FcDirCacheConsume (int fd, const char * dir, FcFontSet *set, FcConfig *config);
-
-static int
+static off_t
 FcCacheNextOffset(off_t w);
-
-static char *
-FcCacheMachineSignature (void);
 
 static FcBool
 FcCacheHaveBank (int bank);
@@ -86,45 +75,21 @@ static void MD5Transform(FcChar32 buf[4], FcChar32 in[16]);
 #define FC_DBG_CACHE_REF    1024
 
 static char *
-FcCacheReadString (int fd, char *dest, int len)
+FcCacheReadString (FILE *file, char *dest, int len)
 {
-    int    size;
-    int    slen;
+    int	    c;
+    char    *d = dest;
 
     if (len == 0)
 	return 0;
 
-    size = read (fd, dest, len-1);
-
-    if (size > 0)
-    {
-	dest[size] = '\0';
-	slen = strlen (dest);
-
-	lseek (fd, slen - size + 1, SEEK_CUR);
-	return slen < len ? dest : 0;
+    while ((c = getc (file)) != EOF && len > 0) {
+	*d++ = c;
+	if (c == '\0')
+	    return dest;
+	len--;
     }
-
     return 0;
-}
-
-static void
-FcCacheSkipString (int fd)
-{
-    char buf[256];
-    int  size;
-    int  slen;
-
-    while ( (size = read (fd, buf, sizeof (buf)-1)) > 0) 
-    {
-        buf [size] = '\0';
-        slen = strlen (buf);
-        if (slen < size) 
-        {
-            lseek (fd, slen - size + 1, SEEK_CUR);
-            return;
-        }
-    }
 }
 
 static FcBool
@@ -135,473 +100,11 @@ FcCacheWriteString (int fd, const char *chars)
     return FcTrue;
 }
 
-static void
-FcGlobalCacheDirDestroy (FcGlobalCacheDir *d)
-{
-    FcStrSetDestroy (d->subdirs);
-    FcMemFree (FC_MEM_STRING, strlen (d->name)+1);
-    free (d->name);
-    FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCacheDir));
-    free (d);
-}
-
-FcGlobalCache *
-FcGlobalCacheCreate (void)
-{
-    FcGlobalCache   *cache;
-
-    cache = malloc (sizeof (FcGlobalCache));
-    if (!cache)
-	return 0;
-    FcMemAlloc (FC_MEM_CACHE, sizeof (FcGlobalCache));
-    cache->dirs = 0;
-    cache->updated = FcFalse;
-    cache->fd = -1;
-    return cache;
-}
-
-void
-FcGlobalCacheDestroy (FcGlobalCache *cache)
-{
-    FcGlobalCacheDir	*d, *next;
-
-    for (d = cache->dirs; d; d = next)
-    {
-	next = d->next;
-	FcGlobalCacheDirDestroy (d);
-    }
-    FcMemFree (FC_MEM_CACHE, sizeof (FcGlobalCache));
-    if (cache->fd != -1)
-	close (cache->fd);
-    free (cache);
-}
-
-void
-FcGlobalCacheLoad (FcGlobalCache    *cache,
-                   FcStrSet	    *staleDirs,
-		   const FcChar8    *cache_file,
-		   FcConfig	    *config)
-{
-    char		name_buf[FC_MAX_FILE_LEN];
-    FcGlobalCacheDir	*d, *next;
-    FcFileTime		config_time = FcConfigModifiedTime (config);
-    char 		* current_arch_machine_name;
-    char 		candidate_arch_machine_name[MACHINE_SIGNATURE_SIZE + 9];
-    off_t		current_arch_start;
-
-    struct stat 	cache_stat, dir_stat;
-    char 		subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
-
-    if (stat ((char *) cache_file, &cache_stat) < 0)
-        return;
-
-    cache->fd = open ((char *) cache_file, O_RDONLY | O_BINARY);
-    if (cache->fd == -1)
-	return;
-
-    cache->updated = FcFalse;
-
-    if (!FcCacheReadString (cache->fd, name_buf, sizeof (name_buf)))
-        goto bail_and_destroy;
-    if (strcmp (name_buf, FC_GLOBAL_MAGIC_COOKIE) != 0)
-        goto bail_and_destroy;
-
-    current_arch_machine_name = FcCacheMachineSignature ();
-    current_arch_start = FcCacheSkipToArch(cache->fd, 
-					   current_arch_machine_name);
-    if (current_arch_start < 0)
-        goto bail1;
-
-    lseek (cache->fd, current_arch_start, SEEK_SET);
-    if (!FcCacheReadString (cache->fd, candidate_arch_machine_name, 
-			    sizeof (candidate_arch_machine_name)))
-	goto bail_and_destroy;
-    if (strlen(candidate_arch_machine_name) == 0)
-	goto bail_and_destroy;
-
-    while (1) 
-    {
-	off_t targ;
-
-	if (!FcCacheReadString (cache->fd, name_buf, sizeof (name_buf)) || 
-	    !strlen(name_buf))
-	    break;
-
-	/* Directory must be older than the global cache file; also
-	   cache must be newer than the config file. */
-        if (stat ((char *) name_buf, &dir_stat) < 0 || 
-            dir_stat.st_mtime > cache_stat.st_mtime ||
-	    (config_time.set && cache_stat.st_mtime < config_time.time))
-        {
-            FcCache md;
-	    off_t off;
-
-	    FcStrSetAdd (staleDirs, (FcChar8 *)name_buf);
-
-	    /* skip subdirs */
-	    while (FcCacheReadString (cache->fd, subdirName, 
-				      sizeof (subdirName)) &&
-		   strlen (subdirName))
-		;
-
-	    if (read (cache->fd, &md, sizeof (FcCache)) != sizeof(FcCache)) 
-	    {
-		perror ("read metadata");
-		goto bail1;
-	    }
-	    off = FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + md.count;
-	    if (lseek (cache->fd, off, SEEK_SET) != off) 
-	    {
-		perror ("lseek");
-		goto bail1;
-	    }
-	    continue;
-        }
-
-	d = malloc (sizeof (FcGlobalCacheDir));
-	if (!d)
-	    goto bail1;
-
-	d->next = cache->dirs;
-	cache->dirs = d;
-
-	d->name = (char *)FcStrCopy ((FcChar8 *)name_buf);
-	d->ent = 0;
-	d->state = FcGCDirFileRead;
-
-	d->subdirs = FcStrSetCreate();
-	do
-	{
-	    if (!FcCacheReadString (cache->fd, subdirName, 
-				    sizeof (subdirName)) ||
-		!strlen (subdirName))
-		break;
-	    FcStrSetAdd (d->subdirs, (FcChar8 *)subdirName);
-	} while (1);
-
-	d->offset = lseek (cache->fd, 0, SEEK_CUR);
-	if (read (cache->fd, &d->metadata, sizeof (FcCache)) != sizeof (FcCache))
-	    goto bail1;
-	targ = FcCacheNextOffset (lseek(cache->fd, 0, SEEK_CUR)) + d->metadata.count;
-	if (lseek (cache->fd, targ, SEEK_SET) != targ)
-	    goto bail1;
-    }
-    return;
-
- bail1:
-    for (d = cache->dirs; d; d = next)
-    {
-	next = d->next;
-	free (d);
-    }
-    cache->dirs = 0;
-
-    close (cache->fd);
-    cache->fd = -1;
-    return;
-
- bail_and_destroy:
-    close (cache->fd);
-    cache->fd = -1;
-
-    if (stat ((char *) cache_file, &cache_stat) == 0)
-        unlink ((char *)cache_file);
-
-    return;
-
-}
-
-FcBool
-FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, const char *dir, FcConfig *config)
-{
-    FcGlobalCacheDir 	*d;
-    int			i;
-
-    if (cache->fd == -1)
-	return FcFalse;
-
-    for (d = cache->dirs; d; d = d->next)
-    {
-	if (strcmp (d->name, dir) == 0)
-	{
-	    if (d->state == FcGCDirDisabled)
-		return FcFalse;
-
-	    if (d->state == FcGCDirFileRead) 
-	    {
-		lseek (cache->fd, d->offset, SEEK_SET);
-		if (!FcDirCacheConsume (cache->fd, d->name, set, config))
-		    return FcFalse;
-
-		for (i = 0; i < d->subdirs->num; i++)
-		    FcStrSetAdd (dirs, (FcChar8 *)d->subdirs->strs[i]);
-
-		d->state = FcGCDirConsumed;
-	    }
-	    return FcTrue;
-	}
-    }
-
-    return FcFalse;
-}
-
-static FcGlobalCacheDir *
-FcGlobalCacheDirFind (FcGlobalCache *cache, const char *name)
-{
-    FcGlobalCacheDir * d;
-
-    if (!cache || !name)
-	return NULL;
-
-    for (d = cache->dirs; d; d = d->next)
-	if (strcmp((const char *)d->name, (const char *)name) == 0)
-	    return d;
-
-    return NULL;
- }
-
-FcBool
-FcGlobalCacheUpdate (FcGlobalCache  *cache,
-		     FcStrSet	    *dirs,
-		     const char     *name,
-		     FcFontSet	    *set,
-		     FcConfig	    *config)
-{
-    FcGlobalCacheDir    *d;
-    int		       	i;
-
-    d = FcGlobalCacheDirFind (cache, name);
-
-    if (!d)
-    {
-	d = malloc (sizeof (FcGlobalCacheDir));
-	if (!d)
-	    return FcFalse;
-	d->next = cache->dirs;
-	cache->dirs = d;
-    } else {
-	/* free old resources */
-	FcStrFree ((FcChar8 *)d->name);
-	free (d->ent);
-	FcStrSetDestroy (d->subdirs);
-    }
-
-    cache->updated = FcTrue;
-
-    d->name = (char *)FcStrCopy ((FcChar8 *)name);
-    d->ent = FcDirCacheProduce (set, &d->metadata);
-    d->offset = 0;
-    d->subdirs = FcStrSetCreate();
-    d->state = FcGCDirUpdated;
-    for (i = 0; i < dirs->num; i++)
-	FcStrSetAdd (d->subdirs, dirs->strs[i]);
-    return FcTrue;
-}
-
-FcBool
-FcGlobalCacheSave (FcGlobalCache    *cache,
-		   const FcChar8    *cache_file,
-		   FcConfig	    *config)
-{
-    int			fd, fd_orig;
-    FcGlobalCacheDir	*dir;
-    FcAtomic		*atomic;
-    off_t 		current_arch_start = 0, truncate_to;
-    char 		* current_arch_machine_name, * header;
-
-    if (!cache->updated)
-	return FcTrue;
-    
-#if defined (HAVE_GETUID) && defined (HAVE_GETEUID)
-    /* Set-UID programs can't safely update the cache */
-    if (getuid () != geteuid ())
-	return FcFalse;
-#endif
-    
-    atomic = FcAtomicCreate (cache_file);
-    if (!atomic)
-	return FcFalse;
-
-    if (!FcAtomicLock (atomic))
-	goto bail1;
-    fd = open ((char *) FcAtomicNewFile(atomic), O_RDWR | O_CREAT | O_BINARY, 
-	       S_IRUSR | S_IWUSR);
-    if (fd == -1)
-	goto bail2;
-    FcCacheWriteString (fd, FC_GLOBAL_MAGIC_COOKIE);
-
-    fd_orig = open ((char *) FcAtomicOrigFile(atomic), O_RDONLY | O_BINARY);
-
-    current_arch_machine_name = FcCacheMachineSignature ();
-    if (fd_orig == -1)
-        current_arch_start = 0;
-    else
-        current_arch_start = FcCacheSkipToArch (fd_orig, 
-                                                current_arch_machine_name);
-
-    if (current_arch_start < 0)
-    {
-	off_t i = lseek(fd_orig, 0, SEEK_END);
-	if (i < strlen (FC_GLOBAL_MAGIC_COOKIE)+1)
-	    i = strlen (FC_GLOBAL_MAGIC_COOKIE)+1;
-	current_arch_start = FcCacheNextOffset (i);
-    }
-
-    if (!FcCacheCopyOld(fd, fd_orig, current_arch_start))
-	goto bail3;
-
-    current_arch_start = lseek(fd, 0, SEEK_CUR);
-#if defined (HAVE_FTRUNCATE)
-    if (ftruncate (fd, current_arch_start) == -1)
-	goto bail3;
-#else
-#if defined (HAVE_CHSIZE)
-    if (chsize (fd, current_arch_start) == -1)
-	goto bail3;
-#else
-    goto bail3;
-#endif
-#endif
-
-    header = malloc (10 + strlen (current_arch_machine_name));
-    if (!header)
-	goto bail3;
-
-    truncate_to = current_arch_start + strlen(current_arch_machine_name) + 11;
-    for (dir = cache->dirs; dir; dir = dir->next)
-    {
-	int i;
-
-	if (dir->state == FcGCDirDisabled)
-	    continue;
-	truncate_to += strlen(dir->name) + 1;
-	truncate_to += sizeof (FcCache);
-	truncate_to = FcCacheNextOffset (truncate_to);
-	truncate_to += dir->metadata.count;
-
-	for (i = 0; i < dir->subdirs->size; i++)
-	    truncate_to += strlen((char *)dir->subdirs->strs[i]) + 1;
-	truncate_to ++;
-    }
-    truncate_to -= current_arch_start;
-
-    sprintf (header, "%8x ", (int)truncate_to);
-    strcat (header, current_arch_machine_name);
-    if (!FcCacheWriteString (fd, header))
-	goto bail4;
-
-    free (header);
-
-    for (dir = cache->dirs; dir; dir = dir->next)
-    {
-	int i;
-	const char * d;
-	off_t off;
-
-	if (!dir->name || dir->state == FcGCDirDisabled)
-	    continue;
-	d = dir->name;
-	if (!d) 
-	    continue;
-	    
-	if (dir->metadata.count && !dir->ent) 
-	{
-	    if (dir->state == FcGCDirUpdated || fd_orig < 0) 
-	    {
-		fprintf(stderr, "Invalid metadata entry for %s, skipping...\n", d);
-		continue;
-	    }
-	    /* copy the old content */
-	    dir->ent = malloc (dir->metadata.count);
-	    if (!dir->ent) 
-	    {
-		perror("malloc error");
-		continue;
-	    }
-	    off = FcCacheNextOffset (dir->offset + sizeof(FcCache));
-	    if (lseek (fd_orig, off, SEEK_SET) != off) 
-	    {
-		perror("lseek");
-		free(dir->ent);
-		continue;
-	    }
-	    if (read (fd_orig, dir->ent, dir->metadata.count)
-		!= dir->metadata.count) 
-	    {
-		perror("read");
-		free(dir->ent);
-		continue;
-	    }
-	}
-	
-	FcCacheWriteString (fd, d);
-
-	for (i = 0; i < dir->subdirs->size; i++)
-	    FcCacheWriteString (fd, (char *)dir->subdirs->strs[i]);
-	FcCacheWriteString (fd, "");
-	
-	if (write (fd, &dir->metadata, sizeof(FcCache)) != sizeof(FcCache))
-	{
-	    perror ("write metadata");
-	    free (dir->ent);
-	    continue;
-	}
-	off = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
-	if (lseek (fd, off, SEEK_SET) != off)
-	{
-	    perror ("lseek");
-	    free (dir->ent);
-	    continue;
-	}
-	if (dir->metadata.count)
-	{
-	    if (write (fd, dir->ent, dir->metadata.count) != dir->metadata.count)
-	    {
-		perror ("write dirent");
-		free (dir->ent);
-		continue;
-	    }
-	}
-	free (dir->ent);
-    }
-    FcCacheWriteString (fd, "");
-
-    if (close (fd) == -1)
-	goto bail25;
-
-    close (fd_orig);
-    fd_orig = -1;
-    
-    if (!FcAtomicReplaceOrig (atomic))
-	goto bail25;
-    
-    FcAtomicUnlock (atomic);
-    FcAtomicDestroy (atomic);
-
-    cache->updated = FcFalse;
-    return FcTrue;
-
- bail4:
-    free (header);
- bail3:
-    if (fd_orig != -1)
-        close (fd_orig);
-
-    close (fd);
- bail25:
-    FcAtomicDeleteNew (atomic);
- bail2:
-    FcAtomicUnlock (atomic);
- bail1:
-    FcAtomicDestroy (atomic);
-    return FcFalse;
-}
-
 /* 
  * Find the next presumably-mmapable offset after the supplied file
  * position.
  */
-static int
+static off_t
 FcCacheNextOffset(off_t w)
 {
     static long pagesize = -1;
@@ -621,175 +124,19 @@ FcCacheNextOffset(off_t w)
 	return ((w / pagesize)+1)*pagesize;
 }
 
-/* return the address of the segment for the provided arch,
- * or -1 if arch not found */
-static off_t
-FcCacheSkipToArch (int fd, const char * arch)
-{
-    char candidate_arch_machine_name_count[MACHINE_SIGNATURE_SIZE + 9];
-    char * candidate_arch;
-    off_t current_arch_start = 0;
-
-    lseek (fd, 0, SEEK_SET);
-    FcCacheSkipString (fd);
-    current_arch_start = lseek (fd, 0, SEEK_CUR);
-
-    /* skip arches that are not the current arch */
-    while (1)
-    {
-	long bs;
-
-	if (lseek (fd, current_arch_start, SEEK_SET) != current_arch_start)
-            return -1;
-
-	if (FcCacheReadString (fd, candidate_arch_machine_name_count, 
-				sizeof (candidate_arch_machine_name_count)) == 0)
-            return -1;
-	if (!strlen(candidate_arch_machine_name_count))
-	    return -1;
-	bs = strtol(candidate_arch_machine_name_count, &candidate_arch, 16);
-
-	/* count = 0 should probably be distinguished from the !bs condition */
-	if (!bs || bs < strlen (candidate_arch_machine_name_count))
-	    return -1;
-
-	candidate_arch++; /* skip leading space */
-
-	if (strcmp (candidate_arch, arch)==0)
-	    return current_arch_start;
-	current_arch_start += bs;
-	current_arch_start = FcCacheNextOffset (current_arch_start);
-    }
-}
-
-/* Cuts out the segment at the file pointer (moves everything else
- * down to cover it), and leaves the file pointer at the end of the
- * file. */
-static FcBool 
-FcCacheCopyOld (int fd, int fd_orig, off_t start)
-{
-    char * buf = malloc (8192);
-    char candidate_arch_machine_name[MACHINE_SIGNATURE_SIZE + 9];
-    long bs;
-    int c, bytes_skipped;
-    off_t loc;
-
-    if (!buf)
-	return FcFalse;
-
-    loc = 0;
-    lseek (fd, 0, SEEK_SET); lseek (fd_orig, 0, SEEK_SET);
-    FcCacheSkipString (fd); FcCacheSkipString (fd_orig);
-    do
-    {
-        int b = 8192;
-        if (loc + b > start)
-            b = start - loc;
-
-	if ((c = read (fd_orig, buf, b)) <= 0)
-	    break;
-	if (write (fd, buf, c) < 0)
-	    goto bail;
-
-        loc += c;
-    }
-    while (c > 0);
-
-    lseek (fd, start, SEEK_SET);
-    if (FcCacheReadString (fd, candidate_arch_machine_name, 
-			   sizeof (candidate_arch_machine_name)) == 0)
-	goto done;
-    if (!strlen(candidate_arch_machine_name))
-	goto done;
-
-    bs = strtol(candidate_arch_machine_name, 0, 16);
-    if (bs == 0)
-	goto done;
-
-    bytes_skipped = 0;
-    do
-    {
-	lseek (fd, start+bs+bytes_skipped, SEEK_SET);
-	if ((c = read (fd, buf, 8192)) <= 0)
-	    break;
-	lseek (fd, start+bytes_skipped, SEEK_SET);
-	if (write (fd, buf, c) < 0)
-	    goto bail;
-	bytes_skipped += c;
-    }
-    while (c > 0);
-    lseek (fd, start+bytes_skipped, SEEK_SET);
-
- done:
-    free (buf);
-    return FcTrue;
-
- bail:
-    free (buf);
-    return FcFalse;
-}
-
 /* Does not check that the cache has the appropriate arch section. */
 FcBool
 FcDirCacheValid (const FcChar8 *dir, FcConfig *config)
 {
-    int 	fd;
+    FILE *file;
 
-    fd = FcDirCacheOpen (config, dir, NULL);
+    file = FcDirCacheOpen (config, dir, NULL);
 
-    if (fd < 0)
+    if (file != NULL)
 	return FcFalse;
-    close (fd);
+    fclose (file);
 
     return FcTrue;
-}
-
-/* Assumes that the cache file in 'dir' exists.
- * Checks that the cache has the appropriate arch section. */
-FcBool
-FcDirCacheHasCurrentArch (const FcChar8 *dir, FcConfig *config)
-{
-    int 	fd;
-    off_t	current_arch_start;
-    char 	*current_arch_machine_name;
-    FcCache	metadata;
-    char 	subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
-
-    fd = FcDirCacheOpen (config, dir, NULL);
-    if (fd < 0)
-	goto bail;
-
-    current_arch_machine_name = FcCacheMachineSignature();
-    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
-
-    if (current_arch_start >= 0)
-    {
-	if (lseek (fd, current_arch_start, SEEK_SET) != current_arch_start)
-	    goto bail1;
-
-	FcCacheSkipString (fd);
-
-	while (FcCacheReadString (fd, subdirName, sizeof (subdirName)) && strlen (subdirName) > 0)
-	    ;
-
-        if (read(fd, &metadata, sizeof(FcCache)) != sizeof(FcCache))
-	    goto bail1;
-
-        if (metadata.magic != FC_CACHE_MAGIC)
-	    goto bail1;
-    }
-
-    close (fd);
-
-    if (current_arch_start < 0)
-        return FcFalse;
-    
-    return FcTrue;
-
- bail1:
-    close (fd);
- bail:
-    return FcFalse;
 }
 
 #define CACHEBASE_LEN (1 + 32 + 1 + sizeof (FC_ARCHITECTURE) + sizeof (FC_CACHE_SUFFIX))
@@ -828,12 +175,10 @@ FcDirCacheBasename (const FcChar8 * dir, FcChar8 cache_base[CACHEBASE_LEN])
 FcBool
 FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 {
-    int		fd = -1;
     FcChar8	*cache_hashed = NULL;
     FcChar8	cache_base[CACHEBASE_LEN];
     FcStrList	*list;
     FcChar8	*cache_dir;
-    char	dir_buf[FC_MAX_FILE_LEN];
 
     FcDirCacheBasename (dir, cache_base);
 
@@ -846,19 +191,7 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
         cache_hashed = FcStrPlus (cache_dir, cache_base);
         if (!cache_hashed)
 	    break;
-        fd = open((char *) cache_hashed, O_RDONLY | O_BINARY);
-    	FcStrFree (cache_hashed);
-        if (fd >= 0) 
-	{
-	    if (FcCacheReadString (fd, dir_buf, sizeof (dir_buf)) &&
-		strcmp (dir_buf, (char *) dir) == 0)
-	    {
-		close (fd);
-		if (unlink ((char *) cache_hashed) < 0)
-		    break;
-	    } else
-		close (fd);
-	}
+	(void) unlink ((char *) cache_hashed);
     }
     FcStrListDone (list);
     /* return FcFalse if something went wrong */
@@ -868,14 +201,13 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 }
 
 static int
-FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache, 
+FcCacheReadDirs (FcConfig * config,
 		 FcStrList *list, FcFontSet * set, FcStrSet *processed_dirs)
 {
     int			ret = 0;
     FcChar8		*dir;
     FcStrSet		*subdirs;
     FcStrList		*sublist;
-    FcGlobalCacheDir   *d;
 
     /*
      * Read in the results from 'list'.
@@ -903,24 +235,9 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	    continue;
 	}
 	
-	if (FcDirCacheRead (set, subdirs, dir, config))
-	{
-	    /* if an old entry is found in the global cache, disable it */
-	    if ((d = FcGlobalCacheDirFind (cache, (const char *)dir)) != NULL)
-	    {
-		d->state = FcGCDirDisabled;
-		/* save the updated config later without this entry */
-		cache->updated = FcTrue;
-	    }
-	}
-	else
-	{
-	    if (FcDebug () & FC_DBG_FONTSET)
-		printf ("cache scan dir %s\n", dir);
-
-	    FcDirScanConfig (set, subdirs, cache, 
-			     config->blanks, dir, FcFalse, config);
-	}
+	FcDirScanConfig (set, subdirs,
+			 config->blanks, dir, FcFalse, config);
+	
 	sublist = FcStrListCreate (subdirs);
 	FcStrSetDestroy (subdirs);
 	if (!sublist)
@@ -929,14 +246,14 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	    ret++;
 	    continue;
 	}
-	ret += FcCacheReadDirs (config, cache, sublist, set, processed_dirs);
+	ret += FcCacheReadDirs (config, sublist, set, processed_dirs);
     }
     FcStrListDone (list);
     return ret;
 }
 
 FcFontSet *
-FcCacheRead (FcConfig *config, FcGlobalCache * cache)
+FcCacheRead (FcConfig *config)
 {
     FcFontSet 	*s = FcFontSetCreate();
     FcStrSet 	*processed_dirs;
@@ -948,7 +265,7 @@ FcCacheRead (FcConfig *config, FcGlobalCache * cache)
     if (!processed_dirs)
 	goto bail;
 
-    if (FcCacheReadDirs (config, cache, FcConfigGetConfigDirs (config), s, processed_dirs))
+    if (FcCacheReadDirs (config, FcConfigGetConfigDirs (config), s, processed_dirs))
 	goto bail1;
 
     FcStrSetDestroy (processed_dirs);
@@ -965,185 +282,130 @@ FcCacheRead (FcConfig *config, FcGlobalCache * cache)
  * This searches the list of cache dirs for the relevant cache file,
  * returning the first one found.
  */
-static int
+static FILE *
 FcDirCacheOpen (FcConfig *config, const FcChar8 *dir, FcChar8 **cache_path)
 {
-    int		fd = -1;
+    FILE	*file = NULL;
     FcChar8	*cache_hashed = NULL;
     FcChar8	cache_base[CACHEBASE_LEN];
     FcStrList	*list;
     FcChar8	*cache_dir;
-    char	dir_buf[FC_MAX_FILE_LEN];
     struct stat file_stat, dir_stat;
 
     if (stat ((char *) dir, &dir_stat) < 0)
-        return -1;
+        return NULL;
 
     FcDirCacheBasename (dir, cache_base);
 
     list = FcStrListCreate (config->cacheDirs);
     if (!list)
-        return -1;
+        return NULL;
 	
     while ((cache_dir = FcStrListNext (list)))
     {
         cache_hashed = FcStrPlus (cache_dir, cache_base);
         if (!cache_hashed)
 	    break;
-        fd = open((char *) cache_hashed, O_RDONLY | O_BINARY);
-        if (fd >= 0) {
-	    if (fstat (fd, &file_stat) >= 0 &&
+        file = fopen((char *) cache_hashed, "rb");
+        if (file != NULL) {
+	    if (fstat (fileno (file), &file_stat) >= 0 &&
 		dir_stat.st_mtime <= file_stat.st_mtime)
 	    {
 		break;
 	    }
-	    close (fd);
-	    fd = -1;
+	    fclose (file);
+	    file = NULL;
 	}
 	FcStrFree (cache_hashed);
 	cache_hashed = NULL;
     }
     FcStrListDone (list);
 
-    if (fd < 0)
-	return -1;
-    
-    if (!FcCacheReadString (fd, dir_buf, sizeof (dir_buf)) ||
-	strcmp (dir_buf, (char *) dir) != 0)
-    {
-    	close (fd);
-        FcStrFree (cache_hashed);
-        return -1;
-    }
+    if (file == NULL)
+	return NULL;
     
     if (cache_path)
 	*cache_path = cache_hashed;
     else
 	FcStrFree (cache_hashed);
 
-    return fd;
+    return file;
 }
 
 /* read serialized state from the cache file */
 FcBool
-FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config)
+FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, 
+		const FcChar8 *dir, FcConfig *config)
 {
-    int 	fd;
-    char 	*current_arch_machine_name;
-    char 	candidate_arch_machine_name[9+MACHINE_SIGNATURE_SIZE];
-    off_t 	current_arch_start = 0;
-    char 	subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
+    FILE	*file;
+    FcCache	metadata;
+    void	*current_dir_block;
+    char	subdir_name[FC_MAX_FILE_LEN + 1 + 12 + 1];
 
-    fd = FcDirCacheOpen (config, dir, NULL);
-    if (fd < 0)
+    file = FcDirCacheOpen (config, dir, NULL);
+    if (file == NULL)
 	goto bail;
 
-    current_arch_machine_name = FcCacheMachineSignature();
-    current_arch_start = FcCacheSkipToArch(fd, 
-					   current_arch_machine_name);
-    if (current_arch_start < 0)
+    if (fread(&metadata, sizeof(FcCache), 1, file) != 1)
+	goto bail1;
+    if (metadata.magic != FC_CACHE_MAGIC)
         goto bail1;
 
-    lseek (fd, current_arch_start, SEEK_SET);
-    if (FcCacheReadString (fd, candidate_arch_machine_name, 
-			   sizeof (candidate_arch_machine_name)) == 0)
-	goto bail1;
+    while (FcCacheReadString (file, subdir_name, sizeof (subdir_name)) && 
+	   strlen (subdir_name) > 0)
+        FcStrSetAdd (dirs, (FcChar8 *)subdir_name);
 
-    while (FcCacheReadString (fd, subdirName, sizeof (subdirName)) && strlen (subdirName) > 0)
-        FcStrSetAdd (dirs, (FcChar8 *)subdirName);
-
-    if (!FcDirCacheConsume (fd, (const char *)dir, set, config))
-	goto bail1;
-	
-    close(fd);
-    return FcTrue;
-
- bail1:
-    close (fd);
- bail:
-    return FcFalse;
-}
-
-static FcBool
-FcDirCacheConsume (int fd, const char * dir, FcFontSet *set, FcConfig *config)
-{
-    FcCache metadata;
-    void * current_dir_block;
-    off_t pos, endpos;
-
-    if (read(fd, &metadata, sizeof(FcCache)) != sizeof(FcCache))
-	return FcFalse;
-    if (metadata.magic != FC_CACHE_MAGIC)
-        return FcFalse;
-
-    if (!metadata.count)
+    if (metadata.count)
     {
-	pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
-	lseek (fd, pos, SEEK_SET);
-	if (config)
-	    FcConfigAddFontDir (config, (FcChar8 *)dir);
-	return FcTrue;
-    }
-
-    pos = FcCacheNextOffset (lseek(fd, 0, SEEK_CUR));
-
-    /* This is not failsafe (multi-arches can break it),
-     * but fd has got to have at least as many bytes as
-     * metadata.count, or something's going to go horribly wrong. */
-    if (pos == (off_t)-1)
-        return FcFalse;
-
-    endpos = lseek (fd, 0, SEEK_END);
-    if (endpos == (off_t)-1 || endpos - pos < metadata.count)
-        return FcFalse;
-    if (lseek (fd, pos, SEEK_SET) == -1)
-        return FcFalse;
-
+	int	fd = fileno (file);
 #if defined(HAVE_MMAP) || defined(__CYGWIN__)
-    current_dir_block = mmap (0, metadata.count, 
-			      PROT_READ, MAP_SHARED, fd, pos);
-    if (current_dir_block == MAP_FAILED)
-	return FcFalse;
+	current_dir_block = mmap (0, metadata.count, 
+				  PROT_READ, MAP_SHARED, fd, metadata.pos);
+	if (current_dir_block == MAP_FAILED)
+	    goto bail1;
 #elif defined(_WIN32)
 	{
-		HANDLE hFileMap;
+	    HANDLE hFileMap;
 
-		hFileMap = CreateFileMapping((HANDLE) _get_osfhandle(fd), NULL, PAGE_READONLY, 0, 0, NULL);
-		if (hFileMap == NULL)
-			return FcFalse;
+	    hFileMap = CreateFileMapping((HANDLE) _get_osfhandle(fd), NULL, PAGE_READONLY, 0, 0, NULL);
+	    if (hFileMap == NULL)
+		goto bail1;
 
-		current_dir_block = MapViewOfFile (hFileMap, FILE_MAP_READ, 0, 0, metadata.count + pos);
-		if (current_dir_block == NULL)
-		{
-			CloseHandle (hFileMap);
-			return FcFalse;
-		}
-
-		current_dir_block = (void *)((char *)current_dir_block + pos);
+	    current_dir_block = MapViewOfFile (hFileMap, FILE_MAP_READ, 0, metadata.pos, metadata.count);
+	    if (current_dir_block == NULL)
+	    {
+		CloseHandle (hFileMap);
+		goto bail1;
+	    }
 	}
 #else
-    current_dir_block = malloc (metadata.count);
-    if (!current_dir_block)
-	return FcFalse;
+	if (lseek (fd, metatdata.pos, SEEK_SET) == -1)
+	    goto bail1;
 
-    /* could also use CreateMappedViewOfFile under MinGW... */
-    if (read (fd, current_dir_block, metadata.count) != metadata.count)
-	goto bail;
+	current_dir_block = malloc (metadata.count);
+	if (!current_dir_block)
+	    goto bail1;
+
+	/* could also use CreateMappedViewOfFile under MinGW... */
+	if (read (fd, current_dir_block, metadata.count) != metadata.count)
+	{
+	    free (current_dir_block);
+	    goto bail1;
+	}
 #endif
-    lseek (fd, pos+metadata.count, SEEK_SET);
-
-    FcCacheAddBankDir (metadata.bank, dir);
+	FcCacheAddBankDir (metadata.bank, (char *) dir);
+	if (!FcFontSetUnserialize (&metadata, set, current_dir_block))
+	    goto bail1;
+    }
     if (config)
 	FcConfigAddFontDir (config, (FcChar8 *)dir);
 
-    if (!FcFontSetUnserialize (&metadata, set, current_dir_block))
-	goto bail;
-
+    fclose(file);
     return FcTrue;
+
+ bail1:
+    fclose (file);
  bail:
-#if !(defined(HAVE_MMAP) || defined(__CYGWIN__))
-    free (current_dir_block);
-#endif
     return FcFalse;
 }
 
@@ -1236,15 +498,14 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir, FcConfig *c
 {
     FcChar8	    cache_base[CACHEBASE_LEN];
     FcChar8	    *cache_hashed;
-    int 	    fd, fd_orig, i, dirs_count;
+    int 	    fd, i;
     FcAtomic 	    *atomic;
     FcCache 	    metadata;
-    off_t 	    current_arch_start = 0, truncate_to;
-    FcStrList	    *list;
-    char            *current_arch_machine_name, * header;
     void 	    *current_dir_block = 0;
+    FcStrList	    *list;
     FcChar8	    *cache_dir = NULL;
     FcChar8	    *test_dir;
+    off_t	    header_len;
 
     /*
      * Write it to the first directory in the list which is writable
@@ -1297,76 +558,35 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir, FcConfig *c
     if (!FcAtomicLock (atomic))
 	goto bail2;
 
-    /* open the original file to save relevant portions */
-    fd_orig = open((char *)FcAtomicOrigFile (atomic), O_RDONLY | O_BINARY);
-
     fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT | O_BINARY, 0666);
     if (fd == -1)
 	goto bail3;
-
-    FcCacheWriteString (fd, (char *) dir);
-
-    current_arch_machine_name = FcCacheMachineSignature ();
-    current_arch_start = 0;
-
-    if (fd_orig != -1)
-        current_arch_start = 
-            FcCacheSkipToArch(fd_orig, current_arch_machine_name);
-
-    if (current_arch_start < 0)
-    {
-	off_t offset = lseek(fd_orig, 0, SEEK_END);
-	current_arch_start = FcCacheNextOffset (offset);
-    }
-
-    if (fd_orig != -1 && !FcCacheCopyOld(fd, fd_orig, current_arch_start))
-	goto bail4;
-
-    if (fd_orig != -1)
-        close (fd_orig);
-
-    current_arch_start = lseek(fd, 0, SEEK_CUR);
-#if defined (HAVE_FTRUNCATE)
-    if (ftruncate (fd, current_arch_start) == -1)
-	goto bail4;
-#else
-#if defined (HAVE_CHSIZE)
-    if (chsize (fd, current_arch_start) == -1)
-	goto bail4;
-#else
-    goto bail4;
-#endif
-#endif
-
-    /* allocate space for subdir names in this block */
-    dirs_count = 0;
+    
+    /*
+     * Compute file header length -- the FcCache followed by the subdir names
+     */
+    header_len = sizeof (FcCache);
     for (i = 0; i < dirs->size; i++)
-        dirs_count += strlen((char *)dirs->strs[i]) + 1;
-    dirs_count ++;
-
-    /* now write the address of the next offset */
-    truncate_to = FcCacheNextOffset (FcCacheNextOffset (current_arch_start + sizeof (FcCache) + dirs_count) + metadata.count) - current_arch_start;
-    header = malloc (10 + strlen (current_arch_machine_name));
-    if (!header)
-	goto bail4;
-    sprintf (header, "%8x ", (int)truncate_to);
-    strcat (header, current_arch_machine_name);
-    if (!FcCacheWriteString (fd, header))
-	goto bail5;
-
-    for (i = 0; i < dirs->size; i++)
-        FcCacheWriteString (fd, (char *)dirs->strs[i]);
-    FcCacheWriteString (fd, "");
-
+	header_len += strlen ((char *)dirs->strs[i]) + 1;
+    
+    metadata.pos = FcCacheNextOffset (lseek (fd, 0, SEEK_CUR) + header_len);
+    metadata.subdirs = dirs->size;
+    
+    /*
+     * Write out the header
+     */
     if (write (fd, &metadata, sizeof(FcCache)) != sizeof(FcCache)) 
     {
 	perror("write metadata");
 	goto bail5;
     }
+    
+    for (i = 0; i < dirs->size; i++)
+        FcCacheWriteString (fd, (char *)dirs->strs[i]);
+
     if (metadata.count)
     {
-	off_t off = FcCacheNextOffset (lseek(fd, 0, SEEK_END));
-	if (lseek (fd, off, SEEK_SET) != off)
+	if (lseek (fd, metadata.pos, SEEK_SET) != metadata.pos)
 	    perror("lseek");
 	else if (write (fd, current_dir_block, metadata.count) !=
 		 metadata.count)
@@ -1375,20 +595,6 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir, FcConfig *c
         current_dir_block = 0;
     }
 
-    /* this actually serves to pad out the cache file, if needed */
-#if defined (HAVE_FTRUNCATE)
-    if (ftruncate (fd, current_arch_start + truncate_to) == -1)
-	goto bail5;
-#else
-#if defined (HAVE_CHSIZE)
-    if (chsize (fd, current_arch_start + truncate_to) == -1)
-	goto bail5;
-#else
-    goto bail5;
-#endif
-#endif
-
-    free (header);
     close(fd);
     if (!FcAtomicReplaceOrig(atomic))
         goto bail3;
@@ -1398,8 +604,6 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir, FcConfig *c
     return FcTrue;
 
  bail5:
-    free (header);
- bail4:
     close (fd);
  bail3:
     FcAtomicUnlock (atomic);
@@ -1410,45 +614,6 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir, FcConfig *c
     if (current_dir_block)
         free (current_dir_block);
     return FcFalse;
-}
-
-static char *
-FcCacheMachineSignature ()
-{
-    static char buf[MACHINE_SIGNATURE_SIZE];
-    int32_t magic = ENDIAN_TEST;
-    char * m = (char *)&magic;
-
-    sprintf (buf, "%2x%2x%2x%2x "
-	     "%4x %4x %4x %4x %4x %4x %4x %4x %4x %4x %4x %4x "
-	     "%4x %4x %4x %4x %4x %4x %4x %4x\n", 
-	     m[0], m[1], m[2], m[3],
-	     (unsigned int)sizeof (char),
-	     (unsigned int)sizeof (char *),
-	     (unsigned int)sizeof (int),
-	     (unsigned int)sizeof (FcPattern),
-	     (unsigned int)sizeof (FcPatternEltPtr),
-	     (unsigned int)sizeof (struct _FcPatternElt *),
-	     (unsigned int)sizeof (FcPatternElt),
-	     (unsigned int)sizeof (FcObjectPtr),
-	     (unsigned int)sizeof (FcValueListPtr),
-	     (unsigned int)sizeof (FcValue),
-	     (unsigned int)sizeof (FcValueBinding),
-	     (unsigned int)sizeof (struct _FcValueList *),
-	     (unsigned int)sizeof (FcCharSet),
-	     (unsigned int)sizeof (FcCharLeaf **),
-	     (unsigned int)sizeof (FcChar16 *),
-	     (unsigned int)sizeof (FcChar16),
-	     (unsigned int)sizeof (FcCharLeaf),
-	     (unsigned int)sizeof (FcChar32),
-	     (unsigned int)sizeof (FcCache),
-#if defined (HAVE_SYSCONF)
-	     (unsigned int)sysconf(_SC_PAGESIZE));
-#else
-	     (unsigned int)FC_HARDCODED_PAGESIZE);
-#endif
-
-    return buf;
 }
 
 static int banks_ptr = 0, banks_alloc = 0;

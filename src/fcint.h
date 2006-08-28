@@ -259,7 +259,9 @@ typedef struct _FcStrBuf {
 
 typedef struct _FcCache {
     int	    magic;              /* FC_CACHE_MAGIC */
-    int	    count;              /* number of bytes of data in block */
+    int	    subdirs;		/* number of subdir strings */
+    off_t   pos;		/* position of data block in file */
+    off_t   count;              /* number of bytes of data in block */
     int     bank;               /* bank ID */
     int     pattern_count;      /* number of FcPatterns */
     int     patternelt_count;   /* number of FcPatternElts */
@@ -323,38 +325,7 @@ typedef struct _FcCaseFold {
 
 #define fc_alignof(type) offsetof (struct { char c; type member; }, member)
 
-/*
- * The per-user ~/.fonts.cache-<version> file is loaded into
- * this data structure.  Each directory gets a substructure
- * which is validated by comparing the directory timestamp with
- * that saved in the cache.  When valid, the entire directory cache
- * can be immediately loaded without reading the directory.  Otherwise,
- * the files are checked individually; updated files are loaded into the
- * cache which is then rewritten to the users home directory
- */
-
 #define FC_CACHE_MAGIC 0xFC02FC04
-
-typedef struct _FcGlobalCacheDir FcGlobalCacheDir;
-
-enum FcGCDirState {
-	FcGCDirDisabled, FcGCDirFileRead, FcGCDirConsumed, FcGCDirUpdated
-};
-struct _FcGlobalCacheDir {
-    struct _FcGlobalCacheDir	*next;
-    char			*name;
-    FcCache			metadata;
-    off_t			offset;
-    FcStrSet			*subdirs;
-    void			*ent;
-    enum FcGCDirState		state;
-};
-
-typedef struct _FcGlobalCache {
-    FcGlobalCacheDir		*dirs;
-    FcBool			updated;
-    int				fd;
-} FcGlobalCache;
 
 struct _FcAtomic {
     FcChar8	*file;		/* original file name */
@@ -445,39 +416,8 @@ typedef struct _FcCharMap FcCharMap;
 
 /* fccache.c */
 
-FcGlobalCache *
-FcGlobalCacheCreate (void);
-
-void
-FcGlobalCacheDestroy (FcGlobalCache *cache);
-
-FcBool
-FcGlobalCacheReadDir (FcFontSet     *set, 
-		      FcStrSet 	    *dirs, 
-		      FcGlobalCache *cache, 
-		      const char    *dir, 
-		      FcConfig 	    *config);
-
-void
-FcGlobalCacheLoad (FcGlobalCache    *cache,
-                   FcStrSet	    *staleDirs,
-		   const FcChar8    *cache_file,
-		   FcConfig	    *config);
-
-FcBool
-FcGlobalCacheUpdate (FcGlobalCache  *cache,
-		     FcStrSet	    *dirs,
-		     const char     *file,
-		     FcFontSet	    *set,
-		     FcConfig	    *config);
-
-FcBool
-FcGlobalCacheSave (FcGlobalCache    *cache,
-		   const FcChar8    *cache_file,
-		   FcConfig	    *config);
-
 FcFontSet *
-FcCacheRead (FcConfig *config, FcGlobalCache * cache);
+FcCacheRead (FcConfig *config);
 
 FcBool
 FcDirCacheWrite (FcFontSet *set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config);
@@ -654,7 +594,6 @@ FcFileIsDir (const FcChar8 *file);
 FcBool
 FcFileScanConfig (FcFontSet	*set,
 		  FcStrSet	*dirs,
-		  FcFileCache	*cache,
 		  FcBlanks	*blanks,
 		  const FcChar8 *file,
 		  FcBool	force,
@@ -663,7 +602,6 @@ FcFileScanConfig (FcFontSet	*set,
 FcBool
 FcDirScanConfig (FcFontSet	*set,
 		 FcStrSet	*dirs,
-		 FcFileCache	*cache,
 		 FcBlanks	*blanks,
 		 const FcChar8  *dir,
 		 FcBool		force,

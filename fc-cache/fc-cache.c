@@ -227,8 +227,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    ret++;
 	    continue;
 	}
-	if (!force && FcDirCacheValid (dir, config) && 
-	    FcDirCacheHasCurrentArch (dir, config))
+	if (!force && FcDirCacheValid (dir, config))
 	{
 	    if (verbose)
 		printf ("skipping, %d fonts, %d dirs\n",

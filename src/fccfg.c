@@ -265,7 +265,6 @@ FcBool
 FcConfigBuildFonts (FcConfig *config)
 {
     FcFontSet	    *fonts, *cached_fonts;
-    FcGlobalCache   *cache;
     FcStrList	    *list;
     FcStrSet	    *oldDirs;
     FcChar8	    *dir;
@@ -274,18 +273,11 @@ FcConfigBuildFonts (FcConfig *config)
     if (!fonts)
 	goto bail0;
     
-    cache = FcGlobalCacheCreate ();
-    if (!cache)
-	goto bail1;
-
     oldDirs = FcStrSetCreate ();
     if (!oldDirs)
         goto bail2;
 
-    if (config->cache)
-	FcGlobalCacheLoad (cache, oldDirs, config->cache, config);
-
-    cached_fonts = FcCacheRead(config, cache);
+    cached_fonts = FcCacheRead(config);
     if (!cached_fonts)
     {
 	list = FcConfigGetFontDirs (config);
@@ -296,7 +288,7 @@ FcConfigBuildFonts (FcConfig *config)
 	{
 	    if (FcDebug () & FC_DBG_FONTSET)
 		printf ("build scan dir %s\n", dir);
-	    FcDirScanConfig (fonts, config->fontDirs, cache, 
+	    FcDirScanConfig (fonts, config->fontDirs,
 			     config->blanks, dir, FcFalse, config);
 	}
 	
@@ -310,7 +302,7 @@ FcConfigBuildFonts (FcConfig *config)
         {
 	    if (FcDebug () & FC_DBG_FONTSET)
 		printf ("scan dir %s\n", oldDirs->strs[i]);
-	    FcDirScanConfig (fonts, config->fontDirs, cache, 
+	    FcDirScanConfig (fonts, config->fontDirs,
 			     config->blanks, oldDirs->strs[i], 
                              FcFalse, config);
 	}
@@ -333,9 +325,6 @@ FcConfigBuildFonts (FcConfig *config)
     if (FcDebug () & FC_DBG_FONTSET)
 	FcFontSetPrint (fonts);
 
-    if (config->cache)
-	FcGlobalCacheSave (cache, config->cache, config);
-    FcGlobalCacheDestroy (cache);
     FcStrSetDestroy (oldDirs);
 
     FcConfigSetFonts (config, fonts, FcSetSystem);
@@ -344,8 +333,6 @@ FcConfigBuildFonts (FcConfig *config)
 bail3:
     FcStrSetDestroy (oldDirs);
 bail2:
-    FcGlobalCacheDestroy (cache);
-bail1:
     FcFontSetDestroy (fonts);
 bail0:
     return FcFalse;
@@ -1799,7 +1786,7 @@ FcConfigAppFontAddFile (FcConfig    *config,
 	FcConfigSetFonts (config, set, FcSetApplication);
     }
 	
-    if (!FcFileScanConfig (set, subdirs, 0, config->blanks, file, FcFalse, config))
+    if (!FcFileScanConfig (set, subdirs, config->blanks, file, FcFalse, config))
     {
 	FcStrSetDestroy (subdirs);
 	return FcFalse;
@@ -1847,7 +1834,7 @@ FcConfigAppFontAddDir (FcConfig	    *config,
 	FcConfigSetFonts (config, set, FcSetApplication);
     }
     
-    if (!FcDirScanConfig (set, subdirs, 0, config->blanks, dir, FcFalse, config))
+    if (!FcDirScanConfig (set, subdirs, config->blanks, dir, FcFalse, config))
     {
 	FcStrSetDestroy (subdirs);
 	return FcFalse;
