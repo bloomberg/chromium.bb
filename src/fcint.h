@@ -423,6 +423,10 @@ FcBool
 FcDirCacheWrite (FcFontSet *set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config);
 
 FcBool
+FcDirCacheConsume (FILE *file, FcFontSet *set, FcStrSet *dirs,
+		   const FcChar8 *dir, char *dirname);
+    
+FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config);
 
 extern int *_fcBankId, *_fcBankIdx;

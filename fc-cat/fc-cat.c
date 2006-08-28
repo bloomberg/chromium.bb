@@ -167,127 +167,37 @@ usage (char *program)
     exit (1);
 }
 
-static FcBool 
-FcCacheGlobalFileReadAndPrint (FcFontSet * set, FcStrSet *dirs, char *cache_file)
-{
-    char		name_buf[8192];
-    int fd;
-    char * current_arch_machine_name;
-    char candidate_arch_machine_name[9+MACHINE_SIGNATURE_SIZE];
-    char 		subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
-    off_t current_arch_start = 0;
-
-    if (!cache_file)
-	goto bail;
-
-    current_arch_machine_name = FcCacheMachineSignature();
-    fd = open(cache_file, O_RDONLY);
-    if (fd == -1)
-	goto bail;
-
-    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
-    if (current_arch_start < 0)
-	goto bail1;
-
-    lseek (fd, current_arch_start, SEEK_SET);
-    if (FcCacheReadString (fd, candidate_arch_machine_name, 
-			   sizeof (candidate_arch_machine_name)) == 0)
-	goto bail1;
-
-    while (1) 
-    {
-	char * dir;
-	FcCacheReadString (fd, name_buf, sizeof (name_buf));
-	if (!strlen(name_buf))
-	    break;
-	printf ("fc-cat: printing global cache contents for dir %s\n", 
-		name_buf);
-
-	do
-	{
-	    if (!FcCacheReadString (fd, subdirName, 
-				    sizeof (subdirName)) ||
-		!strlen (subdirName))
-		break;
-	    /* then don't do anything with subdirName. */
-	} while (1);
-
-	if (!FcDirCacheConsume (fd, name_buf, set, 0))
-	    goto bail1;
-
-	dir = malloc (strlen (name_buf) + 2);
-	if (!dir)
-	    goto bail1;
-
-	strcpy (dir, name_buf);
-	strcat (dir, "/");
-
-	FcCachePrintSet (set, dirs, dir);
-	free (dir);
-
-	FcFontSetDestroy (set);
-	set = FcFontSetCreate();
-    }
-
- bail1:
-    close (fd);
- bail:
-    return FcFalse;
-}
-
 /* read serialized state from the cache file */
 static char *
 FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char *cache_file)
 {
+    FILE *file;
     int fd;
-    char * current_arch_machine_name;
-    off_t current_arch_start = 0;
     char subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
-    static char name_buf[8192], *dir;
+    static char name_buf[8192];
     FcChar8 * ls;
     char * buf;
+    int i;
 
     if (!cache_file)
         goto bail;
 
-    current_arch_machine_name = FcCacheMachineSignature();
-    fd = open(cache_file, O_RDONLY);
-    if (fd == -1)
+    file = fopen(cache_file, "rb");
+    if (file == NULL)
         goto bail;
 
-    FcCacheReadString (fd, name_buf, sizeof (name_buf));
-    if (!strlen (name_buf))
-	goto bail;
-    if (strcmp (name_buf, FC_GLOBAL_MAGIC_COOKIE) == 0)
-	goto bail;
+    if (!FcDirCacheConsume (file, set, dirs, NULL, name_buf))
+	goto bail1;
+    
+    fclose (file);
+    
     printf ("fc-cat: printing directory cache for cache which would be named %s\n", 
 	    name_buf);
 
-    current_arch_start = FcCacheSkipToArch(fd, current_arch_machine_name);
-    if (current_arch_start < 0)
-        goto bail1;
-
-    while ((buf = FcCacheReadString (fd, subdirName, sizeof (subdirName))) 
-	   && *buf)
-        FcStrSetAdd (dirs, (FcChar8 *)subdirName);
-
-    dir = strdup(name_buf);
-    ls = FcStrLastSlash ((FcChar8 *)dir);
-    if (ls)
-	*ls = 0;
-
-    if (!FcDirCacheConsume (fd, dir, set, 0))
-	goto bail2;
-    free (dir);
-
-    close(fd);
     return name_buf;
 
- bail2:
-    free (dir);
-
  bail1:
-    close (fd);
+    fclose (file);
  bail:
     return 0;
 }
@@ -425,7 +335,7 @@ main (int argc, char **argv)
     {
         char * dummy_name = (char *)FcStrPlus ((FcChar8 *)argv[i], 
                                                (FcChar8 *)"/dummy");
-        if (!FcDirScanConfig (fs, dirs, 0, 0, 
+        if (!FcDirScanConfig (fs, dirs, 0, 
                               (const FcChar8 *)argv[i], FcFalse, config))
             fprintf (stderr, "couldn't load font dir %s\n", argv[i]);
         else
@@ -439,10 +349,7 @@ main (int argc, char **argv)
 	FcCachePrintSet (fs, dirs, name_buf);
     else
     {
-        FcStrSetDestroy (dirs);
-        dirs = FcStrSetCreate ();
-        if (FcCacheGlobalFileReadAndPrint (fs, dirs, argv[i]))
-            ;
+	printf ("nothing to do\n");
     }
 
     FcStrSetDestroy (dirs);

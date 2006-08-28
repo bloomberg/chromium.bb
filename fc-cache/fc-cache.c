@@ -219,7 +219,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	if (really_force)
 	    FcDirCacheUnlink (dir, config);
 
-	if (!FcDirScanConfig (set, subdirs, 0, FcConfigGetBlanks (config), dir, force, config))
+	if (!FcDirScanConfig (set, subdirs, FcConfigGetBlanks (config), dir, force, config))
 	{
 	    fprintf (stderr, "\"%s\": error scanning\n", dir);
 	    FcFontSetDestroy (set);

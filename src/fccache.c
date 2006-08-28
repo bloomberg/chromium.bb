@@ -132,7 +132,7 @@ FcDirCacheValid (const FcChar8 *dir, FcConfig *config)
 
     file = FcDirCacheOpen (config, dir, NULL);
 
-    if (file != NULL)
+    if (file == NULL)
 	return FcFalse;
     fclose (file);
 
@@ -334,26 +334,31 @@ FcDirCacheOpen (FcConfig *config, const FcChar8 *dir, FcChar8 **cache_path)
 
 /* read serialized state from the cache file */
 FcBool
-FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, 
-		const FcChar8 *dir, FcConfig *config)
+FcDirCacheConsume (FILE *file, FcFontSet *set, FcStrSet *dirs,
+		   const FcChar8 *dir, char *dirname)
 {
-    FILE	*file;
     FcCache	metadata;
     void	*current_dir_block;
     char	subdir_name[FC_MAX_FILE_LEN + 1 + 12 + 1];
-
-    file = FcDirCacheOpen (config, dir, NULL);
-    if (file == NULL)
-	goto bail;
+    int		i;
 
     if (fread(&metadata, sizeof(FcCache), 1, file) != 1)
-	goto bail1;
+	goto bail;
     if (metadata.magic != FC_CACHE_MAGIC)
-        goto bail1;
+        goto bail;
 
-    while (FcCacheReadString (file, subdir_name, sizeof (subdir_name)) && 
-	   strlen (subdir_name) > 0)
-        FcStrSetAdd (dirs, (FcChar8 *)subdir_name);
+    /* skip directory name; it's just for fc-cat */
+    if (!FcCacheReadString (file, subdir_name, sizeof (subdir_name)))
+	goto bail;
+    
+    if (dirname)
+	strcpy (dirname, subdir_name);
+
+    for (i = 0; i < metadata.subdirs; i++) {
+	if (!FcCacheReadString (file, subdir_name, sizeof (subdir_name)))
+	    goto bail;
+	FcStrSetAdd (dirs, (FcChar8 *)subdir_name);
+    }
 
     if (metadata.count)
     {
@@ -362,52 +367,73 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs,
 	current_dir_block = mmap (0, metadata.count, 
 				  PROT_READ, MAP_SHARED, fd, metadata.pos);
 	if (current_dir_block == MAP_FAILED)
-	    goto bail1;
+	    goto bail;
 #elif defined(_WIN32)
 	{
 	    HANDLE hFileMap;
 
 	    hFileMap = CreateFileMapping((HANDLE) _get_osfhandle(fd), NULL, PAGE_READONLY, 0, 0, NULL);
 	    if (hFileMap == NULL)
-		goto bail1;
+		goto bail;
 
 	    current_dir_block = MapViewOfFile (hFileMap, FILE_MAP_READ, 0, metadata.pos, metadata.count);
 	    if (current_dir_block == NULL)
 	    {
 		CloseHandle (hFileMap);
-		goto bail1;
+		goto bail;
 	    }
 	}
 #else
 	if (lseek (fd, metatdata.pos, SEEK_SET) == -1)
-	    goto bail1;
+	    goto bail;
 
 	current_dir_block = malloc (metadata.count);
 	if (!current_dir_block)
-	    goto bail1;
+	    goto bail;
 
 	/* could also use CreateMappedViewOfFile under MinGW... */
 	if (read (fd, current_dir_block, metadata.count) != metadata.count)
 	{
 	    free (current_dir_block);
-	    goto bail1;
+	    goto bail;
 	}
 #endif
 	FcCacheAddBankDir (metadata.bank, (char *) dir);
 	if (!FcFontSetUnserialize (&metadata, set, current_dir_block))
-	    goto bail1;
+	    goto bail;
     }
-    if (config)
-	FcConfigAddFontDir (config, (FcChar8 *)dir);
 
-    fclose(file);
     return FcTrue;
 
- bail1:
-    fclose (file);
  bail:
     return FcFalse;
 }
+
+FcBool
+FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, 
+		const FcChar8 *dir, FcConfig *config)
+{
+    FILE    *file;
+
+    file = FcDirCacheOpen (config, dir, NULL);
+    if (file == NULL)
+	goto bail;
+
+    if (!FcDirCacheConsume (file, set, dirs, dir, NULL))
+	goto bail1;
+
+    if (config)
+	FcConfigAddFontDir (config, (FcChar8 *)dir);
+    
+    fclose (file);
+    return FcTrue;
+
+bail1:
+    fclose (file);
+bail:
+    return FcFalse;
+}
+    
 
 static void *
 FcDirCacheProduce (FcFontSet *set, FcCache *metadata)
@@ -566,6 +592,7 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir, FcConfig *c
      * Compute file header length -- the FcCache followed by the subdir names
      */
     header_len = sizeof (FcCache);
+    header_len += strlen ((char *) dir) + 1;
     for (i = 0; i < dirs->size; i++)
 	header_len += strlen ((char *)dirs->strs[i]) + 1;
     
@@ -580,6 +607,8 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir, FcConfig *c
 	perror("write metadata");
 	goto bail5;
     }
+    
+    FcCacheWriteString (fd, (char *) dir);
     
     for (i = 0; i < dirs->size; i++)
         FcCacheWriteString (fd, (char *)dirs->strs[i]);

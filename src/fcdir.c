@@ -220,14 +220,11 @@ FcDirScanConfig (FcFontSet	*set,
     for (i = 0; i < filelist->num; i++)
 	FcFileScanFontConfig (tmpSet, blanks, filelist->strs[i], config);
     
-    if (FcShouldWriteFiles ())
-    {
-	/*
-	 * Now that the directory has been scanned,
-	 * write out the cache file
-	 */
-	FcDirCacheWrite (tmpSet, dirlist, dir, config);
-    }
+    /*
+     * Now that the directory has been scanned,
+     * write out the cache file
+     */
+    FcDirCacheWrite (tmpSet, dirlist, dir, config);
 
     /*
      * Add the discovered fonts to our internal non-cache list
