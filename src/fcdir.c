@@ -143,7 +143,6 @@ FcDirScanConfig (FcFontSet	*set,
 
     canon_dir = FcStrCanonFilename (dir);
     if (!canon_dir) canon_dir = (FcChar8 *) dir;
-    printf ("dir %s canon %s\n", dir, canon_dir);
     
     if (config && !FcConfigAcceptFilename (config, canon_dir)) {
 	ret = FcTrue;
