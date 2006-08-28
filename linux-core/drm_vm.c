@@ -70,7 +70,7 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 	if (!dev->agp || !dev->agp->cant_use_aperture)
 		goto vm_nopage_error;
 
-	if (drm_ht_find_item(&dev->map_hash, VM_OFFSET(vma), &hash)) 
+	if (drm_ht_find_item(&dev->map_hash, VM_OFFSET(vma), &hash))
 		goto vm_nopage_error;
 
 	r_list = drm_hash_entry(hash, drm_map_list_t, hash);

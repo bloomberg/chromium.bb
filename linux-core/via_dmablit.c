@@ -125,10 +125,10 @@ via_map_blit_for_device(struct pci_dev *pdev,
 			line_len -= remaining_len;
 
 			if (mode == 1) {
-				desc_ptr->mem_addr = dma_map_page(&pdev->dev, 
-					vsg->pages[VIA_PFN(cur_mem) - 
+				desc_ptr->mem_addr = dma_map_page(&pdev->dev,
+					vsg->pages[VIA_PFN(cur_mem) -
 					VIA_PFN(first_addr)],
-					VIA_PGOFF(cur_mem), remaining_len, 
+					VIA_PGOFF(cur_mem), remaining_len,
 					vsg->direction);
 				desc_ptr->dev_addr = cur_fb;
 				

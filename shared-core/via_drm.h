@@ -273,14 +273,14 @@ typedef struct drm_via_blitsync {
  */
 
 typedef struct drm_via_dmablit {
-	uint32_t num_lines;	  
-	uint32_t line_length;	
+	uint32_t num_lines;
+	uint32_t line_length;
 
-	uint32_t fb_addr;		
-	uint32_t fb_stride;	      
+	uint32_t fb_addr;
+	uint32_t fb_stride;
 
-	unsigned char *mem_addr;	
-	uint32_t  mem_stride;	
+	unsigned char *mem_addr;
+	uint32_t  mem_stride;
        
 	uint32_t  flags;
 	int to_fb;
