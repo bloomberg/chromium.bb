@@ -967,6 +967,7 @@ typedef struct drm_buffer_object{
 	drm_fence_object_t *fence;
 	int unfenced;
 	wait_queue_head_t validate_queue;
+        struct mutex mutex;
 } drm_buffer_object_t;
 
 

@@ -302,6 +302,148 @@ int drm_bo_alloc_space(drm_device_t *dev, int tt, drm_buffer_object_t *buf)
 #endif
 	
 
+/*
+ * Call dev->struct_mutex locked.
+ */
+
+
+drm_buffer_object_t *drm_lookup_buffer_object(drm_file_t *priv, uint32_t handle, 
+					      int check_owner)
+{
+	drm_user_object_t *uo;
+	drm_buffer_object_t *bo;
+
+	uo = drm_lookup_user_object(priv, handle);
+
+	if (!uo || (uo->type != drm_buffer_type)) 
+		return NULL;
+
+	if (check_owner && priv != uo->owner) {
+		if (!drm_lookup_ref_object(priv, uo, _DRM_REF_USE))
+			return NULL;
+	}
+
+	bo = drm_user_object_entry(uo, drm_buffer_object_t, base);
+	atomic_inc(&bo->usage);
+	return bo;
+}
+	
+/*
+ * Call bo->mutex locked.
+ * Wait until the buffer is idle.
+ */
+
+static int drm_bo_wait(drm_device_t *dev, drm_buffer_object_t *bo, int lazy)
+{
+	
+	drm_fence_object_t *fence = bo->fence;
+	int ret;
+
+	if (fence) {
+		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
+			drm_fence_usage_deref_unlocked(dev, fence);
+			bo->fence = NULL;
+			return 0;
+		}
+
+		/*
+		 * Make sure another process doesn't destroy the fence 
+		 * object when we release the buffer object mutex.
+		 * We don't need to take the dev->struct_mutex lock here,
+		 * since the fence usage count is at least 1 already.
+		 */
+
+		atomic_inc(&fence->usage);
+		mutex_unlock(&bo->mutex);
+		ret = drm_fence_object_wait(dev, fence, lazy, !lazy, bo->fence_flags);
+		mutex_lock(&bo->mutex);
+		if (ret)
+			return ret;
+		mutex_lock(&dev->struct_mutex);
+		drm_fence_usage_deref_locked(dev, fence);
+		if (bo->fence == fence) {
+			drm_fence_usage_deref_locked(dev, fence);
+			bo->fence = NULL;
+		}
+		mutex_unlock(&dev->struct_mutex);
+	} 
+	return 0;
+}
+
+/*
+ * Call bo->mutex locked.
+ * Returns 1 if the buffer is currently rendered to or from. 0 otherwise.
+ */
+
+static int drm_bo_busy(drm_device_t *dev, drm_buffer_object_t *bo)
+{
+	drm_fence_object_t *fence = bo->fence;
+
+	if (fence) {
+		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
+			drm_fence_usage_deref_unlocked(dev, fence);
+			bo->fence = NULL;
+			return 0;
+		}
+		drm_fence_object_flush(dev, fence, DRM_FENCE_EXE);
+		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
+			drm_fence_usage_deref_unlocked(dev, fence);
+			bo->fence = NULL;
+			return 0;
+		}
+		return 1;
+	}
+	return 0;
+}
+	
+
+/*
+ * Wait for buffer idle and register that we've mapped the buffer.
+ */
+
+
+static int drm_buffer_object_map(drm_file_t *priv, uint32_t handle, int wait)
+{
+	drm_buffer_object_t *bo;
+	drm_device_t *dev = priv->head->dev;
+	int ret;
+	
+	mutex_lock(&dev->struct_mutex);
+	bo = drm_lookup_buffer_object(priv, handle, 1);
+	mutex_unlock(&dev->struct_mutex);
+
+	if (!bo)
+		return -EINVAL;
+
+	mutex_lock(&bo->mutex);
+
+	if (!wait) {
+		if ((atomic_read(&bo->mapped) == 0) && 
+		    drm_bo_busy(dev, bo)) {
+			mutex_unlock(&bo->mutex);
+			return -EBUSY;
+		}
+	} else {
+		ret = drm_bo_wait(dev, bo, 0);
+		if (ret) {
+			mutex_unlock(&bo->mutex);
+			return -EBUSY;
+		}
+	}
+	mutex_lock(&dev->struct_mutex);
+	ret = drm_add_ref_object(priv, &bo->base, _DRM_REF_TYPE1);
+	mutex_unlock(&dev->struct_mutex);
+	if (!ret) {
+		atomic_inc(&bo->mapped);
+	}
+	mutex_unlock(&bo->mutex);
+	
+	return ret;
+}
+
+
+
+
 int drm_bo_ioctl(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
@@ -317,6 +459,11 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 		rep.ret = 0;
 		rep.handled = 0;
 		switch (req->op) {
+		case drm_bo_map:
+			rep.ret = drm_buffer_object_map(priv, req->handle, 
+							!(req->hint & 
+							  DRM_BO_HINT_DONT_BLOCK));
+			break;
 		case drm_bo_destroy:
 			mutex_lock(&dev->struct_mutex);
 			uo = drm_lookup_user_object(priv, req->handle);
