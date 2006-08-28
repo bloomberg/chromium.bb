@@ -129,7 +129,6 @@ FcDirScanConfig (FcFontSet	*set,
     FcChar8		**dirlist;
     int			dirlistlen, dirlistalloc;
     FcChar8		*file;
-    const FcChar8	*d_can = 0;
     FcChar8		*base;
     FcBool		ret = FcTrue;
     FcFontSet		*tmpSet;
@@ -137,11 +136,6 @@ FcDirScanConfig (FcFontSet	*set,
 
     if (config && !FcConfigAcceptFilename (config, dir))
 	return FcTrue;
-
-    if (config)
-	d_can = FcConfigNormalizeFontDir (config, dir);
-    if (d_can)
-	dir = d_can;
 
     if (!force)
     {

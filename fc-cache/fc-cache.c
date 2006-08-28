@@ -126,7 +126,6 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 {
     int		ret = 0;
     const FcChar8 *dir;
-    const FcChar8 *dir_orig;
     FcFontSet	*set;
     FcStrSet	*subdirs;
     FcStrList	*sublist;
@@ -136,13 +135,11 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
      * Now scan all of the directories into separate databases
      * and write out the results
      */
-    while ((dir_orig = FcStrListNext (list)))
+    while ((dir = FcStrListNext (list)))
     {
-	dir = FcConfigNormalizeFontDir (config, dir_orig);
-	
 	if (verbose)
 	{
-	    printf ("%s: \"%s\": ", program, dir ? dir : dir_orig);
+	    printf ("%s: \"%s\": ", program, dir);
 	    fflush (stdout);
 	}
 	

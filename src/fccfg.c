@@ -392,111 +392,11 @@ FcConfigGetConfigDirs (FcConfig   *config)
     return FcStrListCreate (config->configDirs);
 }
 
-static FcChar8 *
-FcConfigInodeMatchFontDir (FcConfig *config, const FcChar8 *d)
-{
-    int		n;
-    ino_t	di;
-    dev_t	dd;
-    struct stat s;
-
-    /* first we do string matches rather than file accesses */
-    /* FcStrSetMember doesn't tell us the index so that we can return
-     * the config-owned copy. */
-    for (n = 0; n < config->fontDirs->num; n++)
-    {
-	if (!FcStrCmp (config->fontDirs->strs[n], d))
-	    return config->fontDirs->strs[n];
-    }
-
-    /* If this is a bottleneck, we can cache the fontDir inodes. */
-    if (stat ((char *)d, &s) == -1)
-	return 0;
-    di = s.st_ino; dd = s.st_dev;
-
-    for (n = 0; n < config->fontDirs->num; n++)
-    {
-	if (stat ((char *)config->fontDirs->strs[n], &s) == -1)
-	    continue;
-	if (di == s.st_ino && dd == s.st_dev)
-	    return config->fontDirs->strs[n];
-    }
-    return 0;
-}
-
 FcBool
 FcConfigAddFontDir (FcConfig	    *config,
 		    const FcChar8   *d)
 {
-    /* Avoid adding d if it's an alias of something else, too. */
-    if (FcConfigInodeMatchFontDir(config, d))
-	return FcTrue;
     return FcStrSetAddFilename (config->fontDirs, d);
-}
-
-static FcBool
-FcConfigAddFontDirSubdirs (FcConfig        *config,
-			   const FcChar8   *d)
-{
-    DIR *dir;
-    struct dirent *e;
-    FcChar8 *subdir;
-    FcBool added = FcFalse;
-    
-    if (!(dir = opendir ((char *) d)))
-	return FcFalse;
-    if (!(subdir = (FcChar8 *) malloc (strlen ((char *) d) + FC_MAX_FILE_LEN + 2)))
-    {
-	fprintf (stderr, "out of memory");
-	return FcFalse;
-    }
-    while ((e = readdir (dir)))
-    {
-	if (strcmp (e->d_name, ".") && strcmp (e->d_name, "..") &&
-	    strlen (e->d_name) < FC_MAX_FILE_LEN)
-	{
-	    strcpy ((char *)subdir, (char *)d);
-	    strcat ((char *)subdir, "/");
-	    strcat ((char *)subdir, e->d_name);
-	    if (FcFileIsDir (subdir))
-	    {
-		if (FcConfigInodeMatchFontDir(config, subdir))
-		    continue; /* already added */
-		FcStrSetAddFilename (config->fontDirs, subdir);
-		FcConfigAddFontDirSubdirs (config, subdir);
-		added = FcTrue;
-	    }
-	}
-    }
-    free (subdir);
-    closedir (dir);
-    return added;
-}
-
-const FcChar8 *
-FcConfigNormalizeFontDir (FcConfig  	*config, 
-			  const FcChar8 *d)
-{
-    FcChar8 	*d0;
-    int		n, n0;
-    FcBool 	added = FcFalse;
-
-    d0 = FcConfigInodeMatchFontDir(config, d);
-    if (d0)
-	return d0;
-
-    /* Ok, we didn't find it in fontDirs; let's add subdirs.... */
-    for (n = 0, n0 = config->fontDirs->num; n < n0; n++) 
-    {
-	if (FcConfigAddFontDirSubdirs (config, config->fontDirs->strs[n]))
-	    added = FcTrue;
-    }
-
-    /* ... and try again. */
-    if (added)
-	return FcConfigInodeMatchFontDir(config, d);
-
-    return 0;
 }
 
 FcBool

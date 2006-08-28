@@ -319,10 +319,6 @@ FcGlobalCacheReadDir (FcFontSet *set, FcStrSet *dirs, FcGlobalCache * cache, con
     if (cache->fd == -1)
 	return FcFalse;
 
-    if (config)
-	if (!(dir = (char *)FcConfigNormalizeFontDir (config, (FcChar8 *)dir)))
-	    return FcFalse; /* non-existing directory */
-
     for (d = cache->dirs; d; d = d->next)
     {
 	if (strcmp (d->name, dir) == 0)
@@ -366,20 +362,12 @@ FcGlobalCacheDirFind (FcGlobalCache *cache, const char *name)
 FcBool
 FcGlobalCacheUpdate (FcGlobalCache  *cache,
 		     FcStrSet	    *dirs,
-		     const char     *orig_name,
+		     const char     *name,
 		     FcFontSet	    *set,
 		     FcConfig	    *config)
 {
     FcGlobalCacheDir    *d;
     int		       	i;
-    const char *name;
-
-    name = (char *)FcConfigNormalizeFontDir (config, (FcChar8 *)orig_name);
-    if (!name) 
-    {
-	fprintf(stderr, "Invalid directory name %s\n", orig_name);
-	return FcFalse;
-    }
 
     d = FcGlobalCacheDirFind (cache, name);
 
@@ -511,7 +499,7 @@ FcGlobalCacheSave (FcGlobalCache    *cache,
 
 	if (!dir->name || dir->state == FcGCDirDisabled)
 	    continue;
-	d = (const char *)FcConfigNormalizeFontDir (config, (const FcChar8 *)dir->name);
+	d = dir->name;
 	if (!d) 
 	    continue;
 	    
@@ -846,8 +834,6 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
     FcChar8	*cache_dir;
     char	dir_buf[FC_MAX_FILE_LEN];
 
-    dir = FcConfigNormalizeFontDir (config, dir);
-
     FcDirCacheBasename (dir, cache_base);
 
     list = FcStrListCreate (config->cacheDirs);
@@ -888,7 +874,6 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
     FcChar8		*dir;
     FcStrSet		*subdirs;
     FcStrList		*sublist;
-    struct stat		statb;
     FcGlobalCacheDir   *d;
 
     /*
@@ -903,9 +888,6 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	 * to avoid the looped directories via symlinks
 	 * Clearly a dir not in fonts.conf shouldn't be globally cached.
 	 */
-	dir = (FcChar8 *)FcConfigNormalizeFontDir (config, dir);
-	if (!dir)
-	    continue;
 
 	if (FcStrSetMember (processed_dirs, dir))
 	    continue;
@@ -920,35 +902,6 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	    continue;
 	}
 	
-	if (access ((char *) dir, X_OK) < 0)
-	{
-	    switch (errno) {
-	    case ENOENT:
-	    case ENOTDIR:
-	    case EACCES:
-		break;
-	    default:
-		fprintf (stderr, "\"%s\": ", dir);
-		perror ("");
-		ret++;
-	    }
-	    FcStrSetDestroy (subdirs);
-	    continue;
-	}
-	if (stat ((char *) dir, &statb) == -1)
-	{
-	    fprintf (stderr, "\"%s\": ", dir);
-	    perror ("");
-	    FcStrSetDestroy (subdirs);
-	    ret++;
-	    continue;
-	}
-	if (!S_ISDIR (statb.st_mode))
-	{
-	    fprintf (stderr, "\"%s\": not a directory, skipping\n", dir);
-	    FcStrSetDestroy (subdirs);
-	    continue;
-	}
 	if (FcDirCacheRead (set, subdirs, dir, config))
 	{
 	    /* if an old entry is found in the global cache, disable it */
@@ -1291,10 +1244,6 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir, FcConfig *c
     void 	    *current_dir_block = 0;
     FcChar8	    *cache_dir = NULL;
     FcChar8	    *test_dir;
-
-    dir = FcConfigNormalizeFontDir (FcConfigGetCurrent(), dir);
-    if (!dir)
-	return FcFalse;
 
     /*
      * Write it to the first directory in the list which is writable
