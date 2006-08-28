@@ -949,8 +949,9 @@ typedef struct drm_buffer_object{
 	drm_device_t *dev;
 	drm_user_object_t base;
 	atomic_t usage;
-	drm_map_list_t *ttm_maplist;
+	drm_ttm_object_t *ttm_object;
 	drm_ttm_backend_list_t *ttm_region;
+        void __user *user_pages;
 
 	atomic_t mapped;
 

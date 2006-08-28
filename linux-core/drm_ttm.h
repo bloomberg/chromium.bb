@@ -108,6 +108,13 @@ typedef struct drm_ttm_object {
 	drm_map_list_t map_list;
 } drm_ttm_object_t;
 	
+extern int drm_ttm_object_create(struct drm_device *dev, unsigned long size, 
+				 uint32_t flags, drm_ttm_object_t **ttm_object);
+extern void drm_ttm_object_deref_locked(struct drm_device *dev, drm_ttm_object_t *to);
+extern drm_ttm_object_t *drm_lookup_ttm_object(drm_file_t *priv, uint32_t handle, 
+					       int check_owner);
+
+
 	
 
 

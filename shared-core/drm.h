@@ -695,18 +695,19 @@ typedef struct drm_ttm_arg {
 #define DRM_BO_HINT_AVOID_LOCAL 0x00000002
 #define DRM_BO_HINT_DONT_BLOCK  0x00000004
 
+typedef enum {
+	drm_bo_type_ttm,
+	drm_bo_type_dc,
+	drm_bo_type_user
+}drm_bo_type_t;
+	
 
 typedef struct drm_bo_arg_request {
 	unsigned handle; /* User space handle */
 	unsigned mask;
 	unsigned hint;
 	drm_u64_t size;
-
-	enum {
-		drm_bo_type_ttm,
-		drm_bo_type_dc,
-		drm_bo_type_user
-	}type;
+	drm_bo_type_t type;
 	unsigned arg_handle;
 	drm_u64_t user_pointer;
 	drm_u64_t next;
@@ -714,6 +715,7 @@ typedef struct drm_bo_arg_request {
 		drm_bo_create,
 		drm_bo_validate,
 		drm_bo_map,
+		drm_bo_unmap,
 		drm_bo_fence,
 		drm_bo_destroy,
 		drm_bo_reference,
