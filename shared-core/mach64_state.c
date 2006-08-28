@@ -546,12 +546,15 @@ static __inline__ int copy_and_verify_from_user(u32 *to,
 }
 
 static int mach64_dma_dispatch_vertex(DRMFILE filp, drm_device_t * dev,
-				      int prim, void *buf, unsigned long used,
-				      int discard)
+				      drm_mach64_vertex_t * vertex)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_buf_t *copy_buf;
+	void *buf = vertex->buf;
+	unsigned long used = vertex->used;
+	int ret = 0;
+	int i = 0;
 	int done = 0;
 	int verify_ret = 0;
 	DMALOCALS;
@@ -559,87 +562,65 @@ static int mach64_dma_dispatch_vertex(DRMFILE filp, drm_device_t * dev,
 	DRM_DEBUG("%s: buf=%p used=%lu nbox=%d\n",
 		  __FUNCTION__, buf, used, sarea_priv->nbox);
 
-	if (used) {
-		int ret = 0;
-		int i = 0;
+	if (!used)
+		goto _vertex_done;
 
-		copy_buf = mach64_freelist_get(dev_priv);
-		if (copy_buf == NULL) {
-			DRM_ERROR("%s: couldn't get buffer in DMAGETPTR\n",
-				  __FUNCTION__);
-			return DRM_ERR(EAGAIN);
-		}
+	copy_buf = mach64_freelist_get(dev_priv);
+	if (copy_buf == NULL) {
+		DRM_ERROR("%s: couldn't get buffer\n", __FUNCTION__);
+		return DRM_ERR(EAGAIN);
+	}
 
-		if ((verify_ret =
-		     copy_and_verify_from_user(GETBUFPTR(copy_buf), buf,
-					       used)) == 0) {
+	verify_ret = copy_and_verify_from_user(GETBUFPTR(copy_buf), buf, used);
 
-			copy_buf->used = used;
+	if (verify_ret != 0) {
+		mach64_freelist_put(dev_priv, copy_buf);
+		goto _vertex_done;
+	}
 
-			DMASETPTR(copy_buf);
+	copy_buf->used = used;
 
-			if (sarea_priv->dirty & ~MACH64_UPLOAD_CLIPRECTS) {
-				ret = mach64_emit_state(filp, dev_priv);
-				if (ret < 0)
-					return ret;
+	DMASETPTR(copy_buf);
+
+	if (sarea_priv->dirty & ~MACH64_UPLOAD_CLIPRECTS) {
+		ret = mach64_emit_state(filp, dev_priv);
+		if (ret < 0)
+			return ret;
+	}
+
+	do {
+		/* Emit the next cliprect */
+		if (i < sarea_priv->nbox) {
+			ret = mach64_emit_cliprect(filp, dev_priv,
+						   &sarea_priv->boxes[i]);
+			if (ret < 0) {
+				/* failed to get buffer */
+				return ret;
+			} else if (ret != 0) {
+				/* null intersection with scissor */
+				continue;
 			}
-
-			do {
-				/* Emit the next cliprect */
-				if (i < sarea_priv->nbox) {
-					ret =
-					    mach64_emit_cliprect(filp, dev_priv,
-								 &sarea_priv->
-								 boxes[i]);
-					if (ret < 0) {
-						/* failed to get buffer */
-						return ret;
-					} else if (ret != 0) {
-						/* null intersection with scissor */
-						continue;
-					}
-				}
-				if ((i >= sarea_priv->nbox - 1))
-					done = 1;
-
-				/* Add the buffer to the DMA queue */
-				DMAADVANCE(dev_priv, done);
-
-			} while (++i < sarea_priv->nbox);
 		}
+		if ((i >= sarea_priv->nbox - 1))
+			done = 1;
 
-		if (copy_buf->pending && !done) {
+		/* Add the buffer to the DMA queue */
+		DMAADVANCE(dev_priv, done);
+
+	} while (++i < sarea_priv->nbox);
+
+	if (!done) {
+		if (copy_buf->pending) {
 			DMADISCARDBUF();
-		} else if (!done) {
-			/* This buffer wasn't used (no cliprects or verify failed), so place it back
-			 * on the free list
+		} else {
+			/* This buffer wasn't used (no cliprects), so place it
+			 * back on the free list
 			 */
-			struct list_head *ptr;
-			drm_mach64_freelist_t *entry;
-#if MACH64_EXTRA_CHECKING
-			list_for_each(ptr, &dev_priv->pending) {
-				entry =
-				    list_entry(ptr, drm_mach64_freelist_t,
-					       list);
-				if (copy_buf == entry->buf) {
-					DRM_ERROR
-					    ("%s: Trying to release a pending buf\n",
-					     __FUNCTION__);
-					return DRM_ERR(EFAULT);
-				}
-			}
-#endif
-			ptr = dev_priv->placeholders.next;
-			entry = list_entry(ptr, drm_mach64_freelist_t, list);
-			copy_buf->pending = 0;
-			copy_buf->used = 0;
-			entry->buf = copy_buf;
-			entry->discard = 1;
-			list_del(ptr);
-			list_add_tail(ptr, &dev_priv->free_list);
+			mach64_freelist_put(dev_priv, copy_buf);
 		}
 	}
 
+_vertex_done:
 	sarea_priv->dirty &= ~MACH64_UPLOAD_CLIPRECTS;
 	sarea_priv->nbox = 0;
 
@@ -842,8 +823,7 @@ int mach64_dma_vertex(DRM_IOCTL_ARGS)
 	if (sarea_priv->nbox > MACH64_NR_SAREA_CLIPRECTS)
 		sarea_priv->nbox = MACH64_NR_SAREA_CLIPRECTS;
 
-	return mach64_dma_dispatch_vertex(filp, dev, vertex.prim, vertex.buf,
-					  vertex.used, vertex.discard);
+	return mach64_dma_dispatch_vertex(filp, dev, &vertex);
 }
 
 int mach64_dma_blit(DRM_IOCTL_ARGS)

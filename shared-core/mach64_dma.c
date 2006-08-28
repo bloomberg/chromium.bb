@@ -1449,6 +1449,33 @@ drm_buf_t *mach64_freelist_get(drm_mach64_private_t * dev_priv)
 	return entry->buf;
 }
 
+int mach64_freelist_put(drm_mach64_private_t * dev_priv, drm_buf_t * copy_buf)
+{
+	struct list_head *ptr;
+	drm_mach64_freelist_t *entry;
+
+#if MACH64_EXTRA_CHECKING
+	list_for_each(ptr, &dev_priv->pending) {
+		entry = list_entry(ptr, drm_mach64_freelist_t, list);
+		if (copy_buf == entry->buf) {
+			DRM_ERROR("%s: Trying to release a pending buf\n",
+			     __FUNCTION__);
+			return DRM_ERR(EFAULT);
+		}
+	}
+#endif
+	ptr = dev_priv->placeholders.next;
+	entry = list_entry(ptr, drm_mach64_freelist_t, list);
+	copy_buf->pending = 0;
+	copy_buf->used = 0;
+	entry->buf = copy_buf;
+	entry->discard = 1;
+	list_del(ptr);
+	list_add_tail(ptr, &dev_priv->free_list);
+
+	return 0;
+}
+
 /*@}*/
 
 

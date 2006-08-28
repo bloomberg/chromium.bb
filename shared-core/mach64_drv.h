@@ -123,6 +123,8 @@ extern void mach64_driver_lastclose(drm_device_t * dev);
 extern int mach64_init_freelist(drm_device_t * dev);
 extern void mach64_destroy_freelist(drm_device_t * dev);
 extern drm_buf_t *mach64_freelist_get(drm_mach64_private_t * dev_priv);
+extern int mach64_freelist_put(drm_mach64_private_t * dev_priv,
+			       drm_buf_t * copy_buf);
 
 extern int mach64_do_wait_for_fifo(drm_mach64_private_t * dev_priv,
 				   int entries);
