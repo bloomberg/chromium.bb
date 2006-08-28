@@ -926,4 +926,7 @@ FcStrLastSlash (const FcChar8  *path);
 FcChar32
 FcStrHashIgnoreCase (const FcChar8 *s);
 
+FcChar8 *
+FcStrCanonFilename (const FcChar8 *s);
+
 #endif /* _FC_INT_H_ */

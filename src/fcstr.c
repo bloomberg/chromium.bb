@@ -835,6 +835,63 @@ FcStrBasename (const FcChar8 *file)
     return FcStrCopy (slash + 1);
 }
 
+FcChar8 *
+FcStrCanonFilename (const FcChar8 *s)
+{
+    FcChar8 *file;
+    FcChar8 *f;
+    const FcChar8 *slash;
+    
+    if (*s != '/')
+    {
+	FcChar8	*full;
+	
+	FcChar8	cwd[FC_MAX_FILE_LEN + 2];
+	if (getcwd ((char *) cwd, FC_MAX_FILE_LEN) == NULL)
+	    return NULL;
+	strcat ((char *) cwd, "/");
+	full = FcStrPlus (cwd, s);
+	file = FcStrCanonFilename (full);
+	FcStrFree (full);
+	return file;
+    }
+    file = malloc (strlen ((char *) s) + 1);
+    if (!file)
+	return NULL;
+    slash = NULL;
+    f = file;
+    for (;;) {
+	if (*s == '/' || *s == '\0')
+	{
+	    if (slash)
+	    {
+		switch (s - slash) {
+		case 2:
+		    if (!strncmp ((char *) slash, "/.", 2))
+		    {
+			f -= 2;	/* trim /. from file */
+		    }
+		    break;
+		case 3:
+		    if (!strncmp ((char *) slash, "/..", 3))
+		    {
+			f -= 3;	/* trim /.. from file */
+			while (f > file) {
+			    if (*--f == '/')
+				break;
+			}
+		    }
+		    break;
+		}
+	    }
+	    slash = s;
+	}
+	if (!(*f++ = *s++))
+	    break;
+    }
+    return file;
+}
+
 FcStrSet *
 FcStrSetCreate (void)
 {

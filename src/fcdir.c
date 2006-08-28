@@ -132,6 +132,7 @@ FcDirScanConfig (FcFontSet	*set,
 		 FcConfig	*config)
 {
     DIR			*d;
+    FcChar8		*canon_dir;
     struct dirent	*e;
     FcStrSet		*dirlist, *filelist;
     FcChar8		*file;
@@ -140,38 +141,49 @@ FcDirScanConfig (FcFontSet	*set,
     FcFontSet		*tmpSet;
     int			i;
 
-    if (config && !FcConfigAcceptFilename (config, dir))
-	return FcTrue;
+    canon_dir = FcStrCanonFilename (dir);
+    if (!canon_dir) canon_dir = (FcChar8 *) dir;
+    printf ("dir %s canon %s\n", dir, canon_dir);
+    
+    if (config && !FcConfigAcceptFilename (config, canon_dir)) {
+	ret = FcTrue;
+	goto bail;
+    }
 
     if (!force)
     {
-	if (FcDirCacheRead (set, dirs, dir, config))
-	    return FcTrue;
+	if (FcDirCacheRead (set, dirs, canon_dir, config)) {
+	    ret = FcTrue;
+	    goto bail;
+	}
     }
     
     if (FcDebug () & FC_DBG_FONTSET)
-    	printf ("cache scan dir %s\n", dir);
+    	printf ("cache scan dir %s\n", canon_dir);
 
     /* freed below */
-    file = (FcChar8 *) malloc (strlen ((char *) dir) + 1 + FC_MAX_FILE_LEN + 1);
-    if (!file)
-	return FcFalse;
+    file = (FcChar8 *) malloc (strlen ((char *) canon_dir) + 1 + FC_MAX_FILE_LEN + 1);
+    if (!file) {
+	ret = FcFalse;
+	goto bail;
+    }
 
-    strcpy ((char *) file, (char *) dir);
+    strcpy ((char *) file, (char *) canon_dir);
     strcat ((char *) file, "/");
     base = file + strlen ((char *) file);
     
     if (FcDebug () & FC_DBG_SCAN)
-	printf ("\tScanning dir %s\n", dir);
+	printf ("\tScanning dir %s\n", canon_dir);
 	
-    d = opendir ((char *) dir);
+    d = opendir ((char *) canon_dir);
     if (!d)
     {
-	free (file);
 	/* Don't complain about missing directories */
 	if (errno == ENOENT)
-	    return FcTrue;
-	return FcFalse;
+	    ret = FcTrue;
+	else
+	    ret = FcFalse;
+	goto bail_1;
     }
 
     tmpSet = FcFontSetCreate();
@@ -224,7 +236,7 @@ FcDirScanConfig (FcFontSet	*set,
      * Now that the directory has been scanned,
      * write out the cache file
      */
-    FcDirCacheWrite (tmpSet, dirlist, dir, config);
+    FcDirCacheWrite (tmpSet, dirlist, canon_dir, config);
 
     /*
      * Add the discovered fonts to our internal non-cache list
@@ -256,7 +268,10 @@ FcDirScanConfig (FcFontSet	*set,
  bail0:
     closedir (d);
     
+ bail_1:
     free (file);
+ bail:
+    if (canon_dir != dir) free (canon_dir);
     return ret;
 }
 
