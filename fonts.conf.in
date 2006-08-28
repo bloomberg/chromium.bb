@@ -30,7 +30,7 @@
 <!-- Font cache directory list -->
 
 	<cachedir>@FC_CACHEDIR@</cachedir>
-	<cachedir>~/.fonts/fontconfig</cachedir>
+	<cachedir>~/.fontconfig</cachedir>
 
 <!--
   Accept deprecated 'mono' alias, replacing it with 'monospace'

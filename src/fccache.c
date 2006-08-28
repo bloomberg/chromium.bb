@@ -741,39 +741,18 @@ FcCacheCopyOld (int fd, int fd_orig, off_t start)
 }
 
 /* Does not check that the cache has the appropriate arch section. */
-/* Also, this can be fooled if the original location has a stale
- * cache, and the hashed location has an up-to-date cache.  Oh well,
- * sucks to be you in that case! */
 FcBool
 FcDirCacheValid (const FcChar8 *dir, FcConfig *config)
 {
-    struct stat file_stat, dir_stat;
     int 	fd;
-
-    if (stat ((char *) dir, &dir_stat) < 0)
-        return FcFalse;
 
     fd = FcDirCacheOpen (config, dir, NULL);
 
     if (fd < 0)
 	return FcFalse;
-    if (fstat (fd, &file_stat) < 0)
-	goto bail;
-
     close (fd);
-
-    /*
-     * If the directory has been modified more recently than
-     * the cache file, the cache is not valid
-     */
-    if (dir_stat.st_mtime > file_stat.st_mtime)
-        return FcFalse;
 
     return FcTrue;
-
- bail:
-    close (fd);
-    return FcFalse;
 }
 
 /* Assumes that the cache file in 'dir' exists.
@@ -970,9 +949,7 @@ FcCacheReadDirs (FcConfig * config, FcGlobalCache * cache,
 	    FcStrSetDestroy (subdirs);
 	    continue;
 	}
-	if (FcDirCacheValid (dir, config) && 
-	    FcDirCacheHasCurrentArch (dir, config) && 
-	    FcDirCacheRead (set, subdirs, dir, config))
+	if (FcDirCacheRead (set, subdirs, dir, config))
 	{
 	    /* if an old entry is found in the global cache, disable it */
 	    if ((d = FcGlobalCacheDirFind (cache, (const char *)dir)) != NULL)
@@ -1043,6 +1020,10 @@ FcDirCacheOpen (FcConfig *config, const FcChar8 *dir, FcChar8 **cache_path)
     FcStrList	*list;
     FcChar8	*cache_dir;
     char	dir_buf[FC_MAX_FILE_LEN];
+    struct stat file_stat, dir_stat;
+
+    if (stat ((char *) dir, &dir_stat) < 0)
+        return -1;
 
     FcDirCacheBasename (dir, cache_base);
 
@@ -1056,9 +1037,17 @@ FcDirCacheOpen (FcConfig *config, const FcChar8 *dir, FcChar8 **cache_path)
         if (!cache_hashed)
 	    break;
         fd = open((char *) cache_hashed, O_RDONLY | O_BINARY);
-        if (fd >= 0)
-	    break;
+        if (fd >= 0) {
+	    if (fstat (fd, &file_stat) >= 0 &&
+		dir_stat.st_mtime <= file_stat.st_mtime)
+	    {
+		break;
+	    }
+	    close (fd);
+	    fd = -1;
+	}
 	FcStrFree (cache_hashed);
+	cache_hashed = NULL;
     }
     FcStrListDone (list);
 
@@ -1300,42 +1289,47 @@ FcDirCacheWrite (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir, FcConfig *c
     FcStrList	    *list;
     char            *current_arch_machine_name, * header;
     void 	    *current_dir_block = 0;
-    FcChar8	    *cache_dir;
+    FcChar8	    *cache_dir = NULL;
+    FcChar8	    *test_dir;
 
     dir = FcConfigNormalizeFontDir (FcConfigGetCurrent(), dir);
     if (!dir)
 	return FcFalse;
 
     /*
-     * Check for an existing cache file and dump stuff in the same place
+     * Write it to the first directory in the list which is writable
      */
-    fd = FcDirCacheOpen (config, dir, &cache_hashed);
-
-    if (fd >= 0)
-	close (fd);
-    else {
-	list = FcStrListCreate (config->cacheDirs);
-	if (!list)
-	    return FcFalse;
-	while ((cache_dir = FcStrListNext (list))) {
-	    if (access ((char *) cache_dir, W_OK|X_OK) == 0)
-		break;
+    
+    list = FcStrListCreate (config->cacheDirs);
+    if (!list)
+	return FcFalse;
+    while ((test_dir = FcStrListNext (list))) {
+	if (access ((char *) test_dir, W_OK|X_OK) == 0)
+	{
+	    cache_dir = test_dir;
+	    break;
+	}
+	else
+	{
 	    /*
 	     * If the directory doesn't exist, try to create it
 	     */
-	    if (access ((char *) cache_dir, F_OK) == -1) {
-		if (FcMakeDirectory (cache_dir))
+	    if (access ((char *) test_dir, F_OK) == -1) {
+		if (FcMakeDirectory (test_dir))
+		{
+		    cache_dir = test_dir;
 		    break;
+		}
 	    }
 	}
-	FcStrListDone (list);
-	if (!cache_dir)
-	    return FcFalse;
-	FcDirCacheBasename (dir, cache_base);
-        cache_hashed = FcStrPlus (cache_dir, cache_base);
-        if (!cache_hashed)
-	    return FcFalse;
     }
+    FcStrListDone (list);
+    if (!cache_dir)
+	return FcFalse;
+    FcDirCacheBasename (dir, cache_base);
+    cache_hashed = FcStrPlus (cache_dir, cache_base);
+    if (!cache_hashed)
+        return FcFalse;
 
     current_dir_block = FcDirCacheProduce (set, &metadata);
 
