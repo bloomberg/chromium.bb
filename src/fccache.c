@@ -24,6 +24,7 @@
  */
 
 #include "fcint.h"
+#include "../fc-arch/fcarch.h"
 #include <fcntl.h>
 #include <dirent.h>
 #include <string.h>
@@ -791,7 +792,7 @@ FcDirCacheHasCurrentArch (const FcChar8 *dir, FcConfig *config)
     return FcFalse;
 }
 
-#define CACHEBASE_LEN (1 + 32 + sizeof (FC_CACHE_SUFFIX))
+#define CACHEBASE_LEN (1 + 32 + 1 + sizeof (FC_ARCHITECTURE) + sizeof (FC_CACHE_SUFFIX))
 
 static const char bin2hex[] = { '0', '1', '2', '3',
 				'4', '5', '6', '7',
@@ -819,7 +820,7 @@ FcDirCacheBasename (const FcChar8 * dir, FcChar8 cache_base[CACHEBASE_LEN])
 	hex_hash[2*cnt+1] = bin2hex[hash[cnt] & 0xf];
     }
     hex_hash[2*cnt] = 0;
-    strcat ((char *) cache_base, FC_CACHE_SUFFIX);
+    strcat ((char *) cache_base, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX);
 
     return cache_base;
 }
