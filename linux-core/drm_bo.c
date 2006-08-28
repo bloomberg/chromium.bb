@@ -306,9 +306,55 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_bo_arg_t arg;
-	unsigned long data_ptr;
-	(void) dev;
+	drm_bo_arg_request_t *req = &arg.req;
+	drm_bo_arg_reply_t rep;
+	unsigned long next;
+	drm_user_object_t *uo;
+	drm_buffer_object_t *entry;
+
+	do {
+		DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+		rep.ret = 0;
+		rep.handled = 0;
+		switch (req->op) {
+		case drm_bo_destroy:
+			mutex_lock(&dev->struct_mutex);
+			uo = drm_lookup_user_object(priv, req->handle);
+			if (!uo || (uo->type != drm_buffer_type) || uo->owner != priv) {
+				mutex_unlock(&dev->struct_mutex);
+				rep.ret = -EINVAL;
+				break;
+			}
+			rep.ret = drm_remove_user_object(priv, uo);
+			mutex_unlock(&dev->struct_mutex);
+			break;
+		case drm_bo_reference: 
+			rep.ret = drm_user_object_ref(priv, req->handle, 
+						      drm_buffer_type, &uo);
+			if (rep.ret)
+				break;
+			mutex_lock(&dev->struct_mutex);
+			uo = drm_lookup_user_object(priv, req->handle);
+			entry = drm_user_object_entry(uo, drm_buffer_object_t, base);
+			atomic_dec(&entry->usage);
+			mutex_unlock(&dev->struct_mutex);
+			break;
+		case drm_bo_unreference:
+			rep.ret = drm_user_object_unref(priv, req->handle, 
+							drm_buffer_type);
+			break;
+		default:
+			rep.ret = -EINVAL;
+		}
+		next = drm_ul(req->next);
+		rep.handled = 1;
+		arg.rep = rep;
+		DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
+		data = next;
+
+	} while (data);
 	return 0;
+
 }
 	
 	
