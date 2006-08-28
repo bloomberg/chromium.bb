@@ -507,10 +507,13 @@ static int drm_buffer_object_unmap(drm_file_t *priv, uint32_t handle)
  * Call struct-sem locked.
  */
 
-static void drm_buffer_user_object_unmap(drm_file_t *priv, drm_user_object_t *uo)
+static void drm_buffer_user_object_unmap(drm_file_t *priv, drm_user_object_t *uo,
+					 drm_ref_t action)
 {
 	drm_device_t *dev = priv->head->dev;
 	drm_buffer_object_t *bo = drm_user_object_entry(uo, drm_buffer_object_t, base);
+
+	BUG_ON(action != _DRM_REF_TYPE1);
 
 	if (atomic_dec_and_test(&bo->mapped)) {
 		mutex_unlock(&dev->struct_mutex);
@@ -534,7 +537,7 @@ int drm_buffer_object_create(drm_file_t *priv,
 			     uint32_t ttm_handle,
 			     uint32_t mask,
 			     uint32_t hint,
-			     void __user *user_pages,
+			     unsigned long buffer_start,
 			     drm_buffer_object_t **buf_obj)
 {
 	drm_device_t *dev = priv->head->dev;
@@ -569,7 +572,7 @@ int drm_buffer_object_create(drm_file_t *priv,
 			goto out_err;
 		break;
 	case drm_bo_type_user:
-		bo->user_pages = user_pages;
+		bo->user_pages = (void __user *)buffer_start;
 		break;
 	default:
 		ret = -EINVAL;
@@ -592,6 +595,27 @@ int drm_buffer_object_create(drm_file_t *priv,
 	drm_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
 	return  ret;
 }
+
+static int drm_bo_add_user_object(drm_file_t *priv, drm_buffer_object_t *bo, 
+				  int shareable)
+{
+	drm_device_t *dev = priv->head->dev;
+	int ret;
+
+	mutex_lock(&dev->struct_mutex);
+	ret = drm_add_user_object(priv, &bo->base, shareable);
+	if (ret)
+		goto out;
+
+	bo->base.remove = drm_bo_base_deref_locked;
+	bo->base.type = drm_buffer_type;
+	bo->base.ref_struct_locked = NULL;
+	bo->base.unref = drm_buffer_user_object_unmap;
+	
+ out:
+	mutex_unlock(&dev->struct_mutex);
+	return ret;
+}
 	
 	
 
@@ -610,6 +634,22 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 		rep.ret = 0;
 		rep.handled = 0;
 		switch (req->op) {
+		case drm_bo_create: {
+			unsigned long buffer_start = drm_ul(req->buffer_start);
+			rep.ret = drm_buffer_object_create(priv, drm_ul(req->size),
+							   req->type, req->arg_handle,
+							   req->mask, req->hint,
+							   buffer_start,
+							   &entry);
+			if (rep.ret)
+				break;
+			
+			rep.ret = drm_bo_add_user_object(priv, entry, req->mask &
+							 DRM_BO_FLAG_SHAREABLE);
+			if (rep.ret) 
+				drm_bo_usage_deref_unlocked(dev, entry);
+			break;
+		}
 		case drm_bo_unmap:
 			rep.ret = drm_buffer_object_unmap(priv, req->handle);
 			break;

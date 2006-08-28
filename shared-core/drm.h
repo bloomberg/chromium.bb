@@ -684,7 +684,7 @@ typedef struct drm_ttm_arg {
 #define DRM_BO_FLAG_SHADOW_VRAM 0x00000020
 #define DRM_BO_FLAG_READ_LOCAL  0x00000040
 #define DRM_BO_FLAG_UNCACHED    0x00000080
-
+#define DRM_BO_FLAG_SHAREABLE   0x00000100
 
 #define DRM_BO_FLAG_MEM_TT      0x01000000
 #define DRM_BO_FLAG_MEM_VRAM    0x02000000
@@ -709,7 +709,7 @@ typedef struct drm_bo_arg_request {
 	drm_u64_t size;
 	drm_bo_type_t type;
 	unsigned arg_handle;
-	drm_u64_t user_pointer;
+	drm_u64_t buffer_start;
 	drm_u64_t next;
 	enum {
 		drm_bo_create,
