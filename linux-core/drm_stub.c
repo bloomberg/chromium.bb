@@ -69,23 +69,17 @@ static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 
 #ifdef __alpha__
 	dev->hose = pdev->sysdata;
-	dev->pci_domain = dev->hose->bus->number;
-#else
-	dev->pci_domain = 0;
 #endif
-	dev->pci_bus = pdev->bus->number;
-	dev->pci_slot = PCI_SLOT(pdev->devfn);
-	dev->pci_func = PCI_FUNC(pdev->devfn);
 	dev->irq = pdev->irq;
 
 	dev->maplist = drm_calloc(1, sizeof(*dev->maplist), DRM_MEM_MAPS);
 	if (dev->maplist == NULL)
 		return -ENOMEM;
 	INIT_LIST_HEAD(&dev->maplist->head);
-        if (drm_ht_create(&dev->map_hash, 12)) {
-                drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
-                return -ENOMEM;
-        }
+	if (drm_ht_create(&dev->map_hash, 12)) {
+		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
+		return -ENOMEM;
+	}
 
 	if (drm_ht_create(&dev->object_hash, 12)) {
                 drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);

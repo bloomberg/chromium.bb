@@ -50,7 +50,7 @@
 #include "drmP.h"
 #include "drm_core.h"
 
-static void __exit drm_cleanup(drm_device_t * dev);
+static void drm_cleanup(drm_device_t * dev);
 int drm_fb_loaded = 0;
 
 static int drm_version(struct inode *inode, struct file *filp,
@@ -123,7 +123,7 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_TTM)] = {drm_ttm_ioctl, DRM_AUTH},
 };
 
-#define DRIVER_IOCTL_COUNT	DRM_ARRAY_SIZE( drm_ioctls )
+#define DRIVER_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )
 
 /**
  * Take down the DRM device.
@@ -338,7 +338,7 @@ EXPORT_SYMBOL(drm_init);
  *
  * \sa drm_init
  */
-static void __exit drm_cleanup(drm_device_t * dev)
+static void drm_cleanup(drm_device_t * dev)
 {
 
 	DRM_DEBUG("\n");
@@ -384,7 +384,7 @@ static void __exit drm_cleanup(drm_device_t * dev)
 		DRM_ERROR("Cannot unload module\n");
 }
 
-void __exit drm_exit(struct drm_driver *driver)
+void drm_exit(struct drm_driver *driver)
 {
 	int i;
 	drm_device_t *dev = NULL;

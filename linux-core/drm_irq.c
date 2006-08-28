@@ -64,9 +64,9 @@ int drm_irq_by_busid(struct inode *inode, struct file *filp,
 	if (copy_from_user(&p, argp, sizeof(p)))
 		return -EFAULT;
 
-	if ((p.busnum >> 8) != dev->pci_domain ||
-	    (p.busnum & 0xff) != dev->pci_bus ||
-	    p.devnum != dev->pci_slot || p.funcnum != dev->pci_func)
+	if ((p.busnum >> 8) != drm_get_pci_domain(dev) ||
+	    (p.busnum & 0xff) != dev->pdev->bus->number ||
+	    p.devnum != PCI_SLOT(dev->pdev->devfn) || p.funcnum != PCI_FUNC(dev->pdev->devfn))
 		return -EINVAL;
 
 	p.irq = dev->irq;
@@ -222,12 +222,12 @@ int drm_control(struct inode *inode, struct file *filp,
  * Wait for VBLANK.
  *
  * \param inode device inode.
- * \param filp file pointer.rm.
+ * \param filp file pointer.
  * \param cmd command.
  * \param data user argument, pointing to a drm_wait_vblank structure.
  * \return zero on success or a negative number on failure.
  *
- * Verifies the IRQ is installed
+ * Verifies the IRQ is installed.
  *
  * If a signal is requested checks if this task has already scheduled the same signal
  * for the same vblank sequence number - nothing to be done in
@@ -253,7 +253,8 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 	if ((!dev->irq) || (!dev->irq_enabled))
 		return -EINVAL;
 
-	DRM_COPY_FROM_USER_IOCTL(vblwait, argp, sizeof(vblwait));
+	if (copy_from_user(&vblwait, argp, sizeof(vblwait)))
+		return -EFAULT;
 
 	switch (vblwait.request.type & ~_DRM_VBLANK_FLAGS_MASK) {
 	case _DRM_VBLANK_RELATIVE:
@@ -327,7 +328,8 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 	}
 
       done:
-	DRM_COPY_TO_USER_IOCTL(argp, vblwait, sizeof(vblwait));
+	if (copy_to_user(argp, &vblwait, sizeof(vblwait)))
+		return -EFAULT;
 
 	return ret;
 }

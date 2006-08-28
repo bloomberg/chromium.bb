@@ -65,8 +65,8 @@ static drm_map_list_t *drm_find_matching_map(drm_device_t *dev,
 	return NULL;
 }
 
-int drm_map_handle(drm_device_t *dev, drm_hash_item_t *hash, 
-		   unsigned long user_token, int hashed_handle)
+static int drm_map_handle(drm_device_t *dev, drm_hash_item_t *hash,
+			  unsigned long user_token, int hashed_handle)
 {
 	int use_hashed_handle;
 
@@ -82,8 +82,8 @@ int drm_map_handle(drm_device_t *dev, drm_hash_item_t *hash,
 		int ret;
 		hash->key = user_token;
 		ret = drm_ht_insert_item(&dev->map_hash, hash);
-		if (!ret) 
-			return 0;
+		if (ret != -EINVAL) 
+			return ret;
 	}
 	return drm_ht_just_insert_please(&dev->map_hash, hash, 
 					 user_token, 32 - PAGE_SHIFT - 3,
@@ -292,13 +292,13 @@ static int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 
 	user_token = (map->type == _DRM_SHM) ? (unsigned long) map->handle : 
 		map->offset;
-        ret = drm_map_handle(dev, &list->hash, user_token, 0); 
+	ret = drm_map_handle(dev, &list->hash, user_token, 0);
 
 	if (ret) {
-                drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-                drm_free(list, sizeof(*list), DRM_MEM_MAPS);
-                mutex_unlock(&dev->struct_mutex);
-                return ret;
+		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+		drm_free(list, sizeof(*list), DRM_MEM_MAPS);
+		mutex_unlock(&dev->struct_mutex);
+		return ret;
 	}
 
 	list->user_token = list->hash.key;
@@ -386,7 +386,7 @@ int drm_rmmap_locked(drm_device_t *dev, drm_local_map_t *map)
 
 		if (r_list->map == map) {
 			list_del(list);
-                        drm_ht_remove_key(&dev->map_hash, r_list->user_token);
+			drm_ht_remove_key(&dev->map_hash, r_list->user_token);
 			drm_free(list, sizeof(*list), DRM_MEM_MAPS);
 			break;
 		}

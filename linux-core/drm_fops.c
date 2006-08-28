@@ -73,11 +73,11 @@ static int drm_setup(drm_device_t * dev)
 			return i;
 	}
 
-	for (i = 0; i < DRM_ARRAY_SIZE(dev->counts); i++)
+	for (i = 0; i < ARRAY_SIZE(dev->counts); i++)
 		atomic_set(&dev->counts[i], 0);
 
-        drm_ht_create(&dev->magiclist, DRM_MAGIC_HASH_ORDER);
-        INIT_LIST_HEAD(&dev->magicfree);
+	drm_ht_create(&dev->magiclist, DRM_MAGIC_HASH_ORDER);
+	INIT_LIST_HEAD(&dev->magicfree);
 
 	dev->ctxlist = drm_alloc(sizeof(*dev->ctxlist), DRM_MEM_CTXLIST);
 	if (dev->ctxlist == NULL)
@@ -177,7 +177,7 @@ int drm_stub_open(struct inode *inode, struct file *filp)
 	drm_device_t *dev = NULL;
 	int minor = iminor(inode);
 	int err = -ENODEV;
-	struct file_operations *old_fops;
+	const struct file_operations *old_fops;
 
 	DRM_DEBUG("\n");
 
