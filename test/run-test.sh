@@ -2,7 +2,6 @@
 TESTDIR=${srcdir-`pwd`}
 
 FONTDIR=`pwd`/fonts
-CACHEFILE=`pwd`/fonts.cache
 CACHEDIR=`pwd`/cache.dir
 
 ECHO=true
@@ -29,7 +28,7 @@ check () {
 }
 
 prep() {
-  rm -rf $CACHEFILE
+  rm -rf $CACHEDIR
   rm -rf $FONTDIR
   mkdir $FONTDIR
 }
@@ -40,7 +39,6 @@ dotest () {
 }
 
 sed "s!@FONTDIR@!$FONTDIR!
-s!@CACHEFILE@!$CACHEFILE!
 s!@CACHEDIR@!$CACHEDIR!" < $TESTDIR/fonts.conf.in > fonts.conf
 
 FONTCONFIG_FILE=`pwd`/fonts.conf
