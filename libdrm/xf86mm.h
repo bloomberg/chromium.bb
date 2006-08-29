@@ -29,7 +29,7 @@
 #ifndef _XF86MM_H_
 #define _XF86MM_H_
 #include <stddef.h>
-
+#include "xf86drm.h"
 
 /*
  * List macros heavily inspired by the Linux kernel
@@ -40,7 +40,7 @@ typedef struct _drmMMListHead
 {
     struct _drmMMListHead *prev;
     struct _drmMMListHead *next;
-} DrmMMListHead;
+} drmMMListHead;
 
 #define DRMINITLISTHEAD(__item)		       \
   do{					       \
@@ -82,24 +82,37 @@ typedef struct _drmMMListHead
     ((__type *)(((char *) (__item)) - offsetof(__type, __field)))
 
 
-typedef struct _DrmBuf{
+typedef struct _drmBO{
+    drm_bo_type_t type;
     unsigned handle;
-} DrmBuf;
+    drm_handle_t map_handle;
+    unsigned flags;
+    unsigned mask;
+    unsigned hint;
+    unsigned map_flags;
+    unsigned long size;
+    unsigned long offset;
+    unsigned long start;
+    void *virtual;
+    void *map_virtual;
+    int map_count;
+    drmTTM *ttm;
+} drmBO;
 
 
-typedef struct _DrmBufNode {
-    DrmMMListHead head;
-    DrmBuf *buf;
+typedef struct _drmBONode {
+    drmMMListHead head;
+    drmBO *buf;
     drm_bo_arg_t bo_arg;
-} DrmBufNode;
+} drmBONode;
 
-typedef struct _DrmMMBufList {
+typedef struct _drmBOList {
     unsigned numTarget;
     unsigned numCurrent;
     unsigned numOnList;
-    DrmMMListHead list;
-    DrmMMListHead free;
-} DrmBufList;
+    drmMMListHead list;
+    drmMMListHead free;
+} drmBOList;
 
 
 #endif

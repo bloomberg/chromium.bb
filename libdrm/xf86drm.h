@@ -292,6 +292,8 @@ typedef struct _drmTTM{
         drm_handle_t user_token;
         unsigned flags;
         unsigned long size;
+        void *virtual;
+        int mapCount;
 } drmTTM;
 
 #define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)

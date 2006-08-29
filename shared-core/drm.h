@@ -736,6 +736,9 @@ typedef struct drm_bo_arg_reply {
 	drm_u64_t offset;
 	unsigned arg_handle;
 	unsigned map_flags;
+        unsigned mask;
+        unsigned hint;
+        drm_u64_t buffer_start;
 }drm_bo_arg_reply_t;
 	
 
@@ -813,6 +816,7 @@ typedef union drm_bo_arg{
 #ifdef __linux__
 #define DRM_IOCTL_FENCE                 DRM_IOWR(0x3b, drm_fence_arg_t)
 #define DRM_IOCTL_TTM                   DRM_IOWR(0x3c, drm_ttm_arg_t)
+#define DRM_IOCTL_BUFOBJ                DRM_IOWR(0x3d, drm_bo_arg_t)
 #endif
 
 /*@}*/
