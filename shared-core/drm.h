@@ -134,6 +134,12 @@
 #define _DRM_LOCKING_CONTEXT(lock) ((lock) & ~(_DRM_LOCK_HELD|_DRM_LOCK_CONT))
 
 #if defined(__linux__)
+#if defined(__KERNEL__)
+typedef __u64 drm_u64_t;
+#else
+typedef unsigned long long drm_u64_t;
+#endif
+
 typedef unsigned int drm_handle_t;
 #else
 typedef unsigned long drm_handle_t;	/**< To mapped regions */
@@ -630,10 +636,7 @@ typedef struct drm_set_version {
 	int drm_dd_minor;
 } drm_set_version_t;
 
-typedef struct drm_u64{
-	unsigned lo;
-	unsigned hi;
-}drm_u64_t;
+#ifdef __linux__
 
 #define DRM_FENCE_FLAG_EMIT                0x00000001
 #define DRM_FENCE_FLAG_SHAREABLE           0x00000002
@@ -739,7 +742,7 @@ typedef union drm_bo_arg{
 	drm_bo_arg_request_t req;
 	drm_bo_arg_reply_t rep;
 } drm_bo_arg_t;
-
+#endif
 
 /**
  * \name Ioctls Definitions
@@ -806,8 +809,10 @@ typedef union drm_bo_arg{
 
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, drm_wait_vblank_t)
 
+#ifdef __linux__
 #define DRM_IOCTL_FENCE                 DRM_IOWR(0x3b, drm_fence_arg_t)
 #define DRM_IOCTL_TTM                   DRM_IOWR(0x3c, drm_ttm_arg_t)
+#endif
 
 /*@}*/
 

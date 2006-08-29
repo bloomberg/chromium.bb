@@ -165,6 +165,11 @@ extern int drm_ttm_add_mm_to_list(drm_ttm_t * ttm, struct mm_struct *mm);
 extern void drm_ttm_delete_mm(drm_ttm_t * ttm, struct mm_struct *mm);
 extern int drm_ttm_ioctl(DRM_IOCTL_ARGS);
 
+static __inline__ drm_ttm_t *drm_ttm_from_object(drm_ttm_object_t *to)
+{
+	return (drm_ttm_t *) to->map_list.map->offset;
+}
+
 #define DRM_MASK_VAL(dest, mask, val)			\
   (dest) = ((dest) & ~(mask)) | ((val) & (mask));
 

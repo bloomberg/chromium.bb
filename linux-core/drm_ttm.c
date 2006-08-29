@@ -888,7 +888,7 @@ int drm_ttm_ioctl(DRM_IOCTL_ARGS)
 	switch(arg.op) {
 	case drm_ttm_create:
 		mutex_lock(&dev->struct_mutex);
-		size = drm_ul(arg.size);
+		size = arg.size;
 		ret = drm_ttm_object_create(dev, size, arg.flags, &entry);
 		if (ret) {
 			mutex_unlock(&dev->struct_mutex);
@@ -929,7 +929,7 @@ int drm_ttm_ioctl(DRM_IOCTL_ARGS)
 	}
 	arg.handle = entry->base.hash.key;
 	arg.user_token = entry->map_list.user_token;
-	arg.size = drm_u64(entry->map_list.map->size);
+	arg.size = entry->map_list.map->size;
 	drm_ttm_object_deref_locked(dev, entry);
 	mutex_unlock(&dev->struct_mutex);
 

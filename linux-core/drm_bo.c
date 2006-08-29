@@ -531,6 +531,7 @@ static int drm_buffer_object_validate(drm_device_t *dev, drm_buffer_object_t *bo
 	return 0;
 }
 
+
 int drm_buffer_object_create(drm_file_t *priv,
 			     int size,
 			     drm_bo_type_t type,
@@ -544,6 +545,7 @@ int drm_buffer_object_create(drm_file_t *priv,
 	drm_buffer_object_t *bo;
 	int ret = 0;
 	uint32_t ttm_flags = 0;
+	drm_ttm_t *ttm;
 
 	bo = drm_calloc(1, sizeof(*bo), DRM_MEM_BUFOBJ);
 
@@ -567,11 +569,35 @@ int drm_buffer_object_create(drm_file_t *priv,
 			goto out_err;
 		break;
 	case drm_bo_type_ttm:
+		if (buffer_start & ~PAGE_MASK) {
+			DRM_ERROR("Illegal buffer object start\n");
+			ret = -EINVAL;
+		}
+		bo->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+		if (!bo->num_pages) {
+			DRM_ERROR("Illegal buffer object size\n");
+			ret = -EINVAL;
+			goto out_err;
+		}			
 		bo->ttm_object = drm_lookup_ttm_object(priv, ttm_handle, 1);
+		if (!bo->ttm_object) {
+			DRM_ERROR("Could not find buffer object TTM\n");
+			ret = -EINVAL;
+			goto out_err;
+		}
+		ttm = drm_ttm_from_object(bo->ttm_object);
+		ret = drm_create_ttm_region(ttm, buffer_start >> PAGE_SHIFT,
+					    bo->num_pages, 0, &bo->ttm_region);
 		if (ret) 
 			goto out_err;
 		break;
 	case drm_bo_type_user:
+		if (buffer_start & ~PAGE_MASK) {
+			DRM_ERROR("Illegal buffer object start\n");
+			ret = -EINVAL;
+			goto out_err;
+		}
+		bo->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT; 
 		bo->user_pages = (void __user *)buffer_start;
 		break;
 	default:
@@ -635,8 +661,8 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 		rep.handled = 0;
 		switch (req->op) {
 		case drm_bo_create: {
-			unsigned long buffer_start = drm_ul(req->buffer_start);
-			rep.ret = drm_buffer_object_create(priv, drm_ul(req->size),
+			unsigned long buffer_start = req->buffer_start;
+			rep.ret = drm_buffer_object_create(priv, req->size,
 							   req->type, req->arg_handle,
 							   req->mask, req->hint,
 							   buffer_start,
@@ -687,7 +713,7 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 		default:
 			rep.ret = -EINVAL;
 		}
-		next = drm_ul(req->next);
+		next = req->next;
 		rep.handled = 1;
 		arg.rep = rep;
 		DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));

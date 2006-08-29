@@ -952,9 +952,9 @@ typedef struct drm_buffer_object{
 	drm_ttm_object_t *ttm_object;
 	drm_ttm_backend_list_t *ttm_region;
         void __user *user_pages;
+	unsigned long num_pages;
 
 	atomic_t mapped;
-
 	uint32_t flags;
 	uint32_t mask;
 	uint32_t mask_hint;
@@ -1359,32 +1359,6 @@ extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
  */
 
 extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
-
-/*
- * Convenience drm_u64_t functions
- */
-
-static __inline__ unsigned long drm_ul(drm_u64_t val)
-{
-	unsigned long ret = val.lo;
-#if (BITS_PER_LONG == 64)
-		ret |= (val.hi << 32);
-#endif
-	return ret;
-}
-
-static __inline__ drm_u64_t drm_u64(unsigned long val)
-{
-	drm_u64_t ret;
-
-	ret.lo = val & 0xFFFFFFFFUL;
-#if (BITS_PER_LONG == 64)
-	ret.hi = val >> 32;
-#else 
-	ret.hi = 0;
-#endif
-	return ret;
-}
 
 
 /* Inline replacements for DRM_IOREMAP macros */

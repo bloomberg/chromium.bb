@@ -2237,6 +2237,8 @@ int drmCommandWriteRead(int fd, unsigned long drmCommandIndex, void *data,
     return 0;
 }
 
+#ifdef __linux__
+
 int drmFenceCreate(int fd, int shareable, int class,unsigned type, 
 		   int emit, 
 		   drmFence *fence)
@@ -2362,36 +2364,13 @@ int drmFenceWait(int fd, drmFence *fence, unsigned flush_type,
     return 0;
 }    
 
-static unsigned long drmUL(drm_u64_t val)
-{
-    unsigned long ret = val.lo;
-    if (sizeof(ret) == 8) {
-	int shift = 32;
-	ret |= (val.hi << shift);
-    }
-    return ret;
-}
-
-static drm_u64_t drmU64(unsigned long val)
-{
-    drm_u64_t ret;
-    ret.lo = val & 0xFFFFFFFFUL;
-    if (sizeof(val) == 8) {
-	int shift = 32;
-	ret.hi = val >> shift;
-    } else {
-	ret.hi = 0;
-    }
-    return ret;
-}
-
 int drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, unsigned flags)
 {
     drm_ttm_arg_t arg;
 
     arg.op = drm_ttm_create;
     arg.flags = flags;
-    arg.size = drmU64(size);
+    arg.size = size;
 
     if (ioctl(fd, DRM_IOCTL_TTM, &arg))
 	return -errno;
@@ -2399,7 +2378,7 @@ int drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, unsigned flags)
     ttm->handle = arg.handle;
     ttm->user_token = (drm_handle_t) arg.user_token;
     ttm->flags = arg.flags;
-    ttm->size = drmUL(arg.size);
+    ttm->size = arg.size;
     return 0;
 }
 
@@ -2426,7 +2405,7 @@ int drmTTMReference(int fd, unsigned handle, drmTTM *ttm)
     ttm->handle = arg.handle;
     ttm->user_token = (drm_handle_t) arg.user_token;
     ttm->flags = arg.flags;
-    ttm->size = drmUL(arg.size);
+    ttm->size = arg.size;
     return 0;
 }
 
@@ -2446,3 +2425,4 @@ drm_handle_t drmTTMMapHandle(int fd, const drmTTM *ttm)
     (void) fd;
     return ttm->user_token;
 }
+#endif
