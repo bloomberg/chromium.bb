@@ -141,8 +141,8 @@ static int drm_move_tt_to_local(drm_buffer_object_t *buf, int lazy)
 	drm_unbind_ttm_region(buf->ttm_region);
 	drm_mm_put_block(&bm->tt_manager, buf->tt);
 	buf->tt = NULL;
-	buf->flags &= ~(DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_UNCACHED);
-	buf->flags |= DRM_BO_FLAG_MEM_LOCAL;
+	buf->flags &= ~(DRM_BO_FLAG_MEM_TT);
+	buf->flags |= DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
 
 	return 0;
 }
@@ -531,9 +531,65 @@ static int drm_buffer_object_validate(drm_device_t *dev, drm_buffer_object_t *bo
 	return 0;
 }
 
+/*
+ * Call bo->mutex locked.
+ */
+
+static int drm_bo_add_ttm(drm_file_t *priv, drm_buffer_object_t *bo, uint32_t new_flags, 
+			  uint32_t ttm_handle)
+
+{
+	drm_device_t *dev = bo->dev;
+	drm_ttm_object_t *to = NULL;
+	drm_ttm_t *ttm;
+	int ret=0;
+	uint32_t ttm_flags = 0;
+
+	bo->ttm_object = NULL;
+	bo->ttm_region = NULL;
+
+	switch(bo->type) {
+	case drm_bo_type_dc:
+		mutex_lock(&dev->struct_mutex);
+		ret = drm_ttm_object_create(dev, bo->num_pages*PAGE_SIZE, 
+					    ttm_flags, &to);
+		mutex_unlock(&dev->struct_mutex);
+		break;
+	case drm_bo_type_ttm:
+		mutex_lock(&dev->struct_mutex);
+		to = drm_lookup_ttm_object(priv, ttm_handle, 1);
+		mutex_unlock(&dev->struct_mutex);
+		if (!to) 
+			ret = -EINVAL;
+		break;
+	case drm_bo_type_user:
+
+		break;
+	default:
+		ret = -EINVAL;
+	}
+
+	if (ret) {
+		return ret;
+	}
+
+	if (to) {
+		bo->ttm_object = to;
+		ttm = drm_ttm_from_object(to);
+		ret = drm_create_ttm_region(ttm, bo->buffer_start >> PAGE_SHIFT,
+					    bo->num_pages, 
+					    new_flags & DRM_BO_FLAG_CACHED, 
+					    &bo->ttm_region);
+		if (ret) {
+			drm_ttm_object_deref_unlocked(dev, to);
+		}
+	}
+	return ret;
+}
+		       
 
 int drm_buffer_object_create(drm_file_t *priv,
-			     int size,
+			     unsigned long size,
 			     drm_bo_type_t type,
 			     uint32_t ttm_handle,
 			     uint32_t mask,
@@ -544,8 +600,18 @@ int drm_buffer_object_create(drm_file_t *priv,
 	drm_device_t *dev = priv->head->dev;
 	drm_buffer_object_t *bo;
 	int ret = 0;
-	uint32_t ttm_flags = 0;
-	drm_ttm_t *ttm;
+	uint32_t new_flags;
+	unsigned long num_pages;
+	
+	if (buffer_start & ~PAGE_MASK) {
+		DRM_ERROR("Invalid buffer object start.\n");
+		return -EINVAL;
+	}
+	num_pages = (size + PAGE_SIZE -1) >> PAGE_SHIFT;
+	if (num_pages == 0) {
+		DRM_ERROR("Illegal buffer object size.\n");
+		return -EINVAL;
+	}
 
 	bo = drm_calloc(1, sizeof(*bo), DRM_MEM_BUFOBJ);
 
@@ -561,50 +627,14 @@ int drm_buffer_object_create(drm_file_t *priv,
 	INIT_LIST_HEAD(&bo->head);
 	INIT_LIST_HEAD(&bo->ddestroy);
 	bo->dev = dev;
+	bo->type = type;
+	bo->num_pages = num_pages;
+	bo->buffer_start = buffer_start;
 
-	switch(type) {
-	case drm_bo_type_dc:
-		ret = drm_ttm_object_create(dev, size, ttm_flags, &bo->ttm_object);
-		if (ret) 
-			goto out_err;
-		break;
-	case drm_bo_type_ttm:
-		if (buffer_start & ~PAGE_MASK) {
-			DRM_ERROR("Illegal buffer object start\n");
-			ret = -EINVAL;
-		}
-		bo->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
-		if (!bo->num_pages) {
-			DRM_ERROR("Illegal buffer object size\n");
-			ret = -EINVAL;
-			goto out_err;
-		}			
-		bo->ttm_object = drm_lookup_ttm_object(priv, ttm_handle, 1);
-		if (!bo->ttm_object) {
-			DRM_ERROR("Could not find buffer object TTM\n");
-			ret = -EINVAL;
-			goto out_err;
-		}
-		ttm = drm_ttm_from_object(bo->ttm_object);
-		ret = drm_create_ttm_region(ttm, buffer_start >> PAGE_SHIFT,
-					    bo->num_pages, 0, &bo->ttm_region);
-		if (ret) 
-			goto out_err;
-		break;
-	case drm_bo_type_user:
-		if (buffer_start & ~PAGE_MASK) {
-			DRM_ERROR("Illegal buffer object start\n");
-			ret = -EINVAL;
-			goto out_err;
-		}
-		bo->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT; 
-		bo->user_pages = (void __user *)buffer_start;
-		break;
-	default:
-		ret = -EINVAL;
+	ret = drm_bo_add_ttm(priv, bo, new_flags, ttm_handle);
+	if (ret) 
 		goto out_err;
-	}
-				
+
 	bo->mask = mask;
 	bo->mask_hint = hint;
 

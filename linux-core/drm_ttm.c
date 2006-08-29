@@ -784,6 +784,16 @@ void drm_ttm_object_deref_locked(drm_device_t *dev, drm_ttm_object_t *to)
 	}
 }
 
+void drm_ttm_object_deref_unlocked(drm_device_t *dev, drm_ttm_object_t *to)
+{
+	if (atomic_dec_and_test(&to->usage)) {
+		mutex_lock(&dev->struct_mutex);
+		if (atomic_read(&to->usage) == 0)
+			drm_ttm_object_remove(dev, to);
+		mutex_unlock(&dev->struct_mutex);
+	}
+}
+
 
 /*
  * dev->struct_mutex locked.

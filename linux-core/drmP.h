@@ -951,8 +951,9 @@ typedef struct drm_buffer_object{
 	atomic_t usage;
 	drm_ttm_object_t *ttm_object;
 	drm_ttm_backend_list_t *ttm_region;
-        void __user *user_pages;
 	unsigned long num_pages;
+        unsigned long buffer_start;
+        drm_bo_type_t type;
 
 	atomic_t mapped;
 	uint32_t flags;
