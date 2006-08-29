@@ -65,6 +65,8 @@
 # define _DRM_FREE   free
 # include "drm.h"
 #endif
+#include "xf86mm.h"
+
 
 /* Not all systems have MAP_FAILED defined */
 #ifndef MAP_FAILED
@@ -2384,7 +2386,7 @@ int drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, unsigned flags)
 
 int drmTTMDestroy(int fd, const drmTTM *ttm)
 {
-  drm_ttm_arg_t arg;
+    drm_ttm_arg_t arg;
 
     arg.op = drm_ttm_destroy;
     arg.handle = ttm->handle;
@@ -2425,4 +2427,135 @@ drm_handle_t drmTTMMapHandle(int fd, const drmTTM *ttm)
     (void) fd;
     return ttm->user_token;
 }
+
+static int drmAdjustListNodes(DrmBufList *list)
+{
+    DrmBufNode *node;
+    DrmMMListHead *l;
+    int ret = 0;
+
+    while(list->numCurrent < list->numTarget) {
+	node = (DrmBufNode *) malloc(sizeof(*node));
+	if (!node) {
+	    ret = -ENOMEM;
+	    break;
+	}
+	list->numCurrent++;
+	DRMLISTADD(&node->head, &list->free);
+    }
+
+    while(list->numCurrent > list->numTarget) {
+	l = list->free.next;
+	if (l == &list->free)
+	    break;
+	DRMLISTDEL(l);
+	node = DRMLISTENTRY(DrmBufNode, l, head);
+	free(node);
+	list->numCurrent--;
+    }
+    return ret;
+}
+
+static void drmFreeList(DrmBufList *list)
+{
+    DrmBufNode *node;
+    DrmMMListHead *l;
+    int ret = 0;
+
+    l = list->list.next;
+    while(l != &list->list) {
+	DRMLISTDEL(l);
+	node = DRMLISTENTRY(DrmBufNode, l, head);
+	free(node);
+	l = list->free.next;
+	list->numCurrent--;
+	list->numOnList--;
+    }
+
+    l = list->free.next;
+    while(l != &list->free) {
+	DRMLISTDEL(l);
+	node = DRMLISTENTRY(DrmBufNode, l, head);
+	free(node);
+	l = list->free.next;
+	list->numCurrent--;
+    }
+}
+	
+int drmResetList(DrmBufList *list) {
+
+    DrmMMListHead *l;
+    int ret;
+
+    ret = drmAdjustListNodes(list);
+    if (ret)
+	return ret;
+
+    l = list->list.next;
+    while(l != &list->list) {
+	DRMLISTDEL(l);
+	DRMLISTADD(l, &list->free);
+	list->numOnList--;
+    }
+    return drmAdjustListNodes(list);
+}
+	
+static int drmAddListItem(DrmBufList *list, DrmBuf *item, drm_bo_arg_t *arg)
+{
+    DrmBufNode *node;
+    DrmMMListHead *l;
+
+    l = list->free.next;
+    if (l == &list->free) {
+	node = (DrmBufNode *) malloc(sizeof(*node));
+	if (!node) {
+	    return -ENOMEM;
+	}
+	list->numCurrent++;
+    } else {
+	DRMLISTDEL(l);
+	node = DRMLISTENTRY(DrmBufNode, l, head);
+    }
+    node->buf = item;
+    DRMLISTADD(&node->head, &list->list);
+    list->numOnList++;
+    return 0;
+}
+     	
+int drmCreateBufList(int numTarget, DrmBufList *list)
+{
+    DRMINITLISTHEAD(&list->list);
+    DRMINITLISTHEAD(&list->free);
+    list->numTarget = numTarget;
+    list->numCurrent = 0;
+    list->numOnList = 0;
+    return drmAdjustListNodes(list);
+}
+
+/*
+ * Prepare list for IOCTL submission.
+ */
+
+static drm_bo_arg_t *drmPrepareList(DrmBufList *list)
+{
+    DrmMMListHead *cur, *next;
+    DrmBufNode *first, *curNode, *nextNode;
+
+    cur = list->list.next;
+    if (cur == &list->list)
+	return NULL;
+
+    first = DRMLISTENTRY(DrmBufNode, cur, head);
+    curNode = DRMLISTENTRY(DrmBufNode, cur, head);
+
+    for (next = cur->next; next != &list->list; 
+	 cur = next, next = cur->next) {
+	nextNode = DRMLISTENTRY(DrmBufNode, next, head);
+	curNode->bo_arg.req.next = ((unsigned long) &nextNode->bo_arg.req);
+	curNode = nextNode;
+    }
+    curNode->bo_arg.req.next = 0;
+    return &first->bo_arg;
+}
+
 #endif

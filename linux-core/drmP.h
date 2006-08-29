@@ -652,7 +652,8 @@ typedef struct drm_ref_object {
  */
 
 typedef struct drm_bo_driver{
-	int cached_pages;
+	int cached_tt;
+        int cached_vram;
 	drm_ttm_backend_t *(*create_ttm_backend_entry) 
 		(struct drm_device *dev, int cached);
 } drm_bo_driver_t;

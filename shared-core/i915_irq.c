@@ -275,6 +275,12 @@ void i915_driver_irq_postinstall(drm_device_t * dev)
 
 	i915_enable_interrupt(dev);
 	DRM_INIT_WAITQUEUE(&dev_priv->irq_queue);
+
+	/*
+	 * Initialize the hardware status page IRQ location.
+	 */
+
+	I915_WRITE(I915REG_INSTPM, ( 1 << 5) | ( 1 << 21));
 }
 
 void i915_driver_irq_uninstall(drm_device_t * dev)

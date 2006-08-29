@@ -214,7 +214,8 @@ static void drm_bo_base_deref_locked(drm_file_t *priv, drm_user_object_t *uo)
 }
 				  
 
-static int drm_bo_new_flags(uint32_t flags, uint32_t new_mask, uint32_t hint,
+static int drm_bo_new_flags(drm_bo_driver_t *driver,
+			    uint32_t flags, uint32_t new_mask, uint32_t hint,
 			    int init, uint32_t *n_flags)
 {
 	uint32_t new_flags;
@@ -263,6 +264,24 @@ static int drm_bo_new_flags(uint32_t flags, uint32_t new_mask, uint32_t hint,
 	}
 
 	new_flags |= new_mask & ~DRM_BO_MASK_MEM;
+
+	if (hint & DRM_BO_HINT_BIND_CACHED) {
+		new_flags |= DRM_BO_FLAG_CACHED;
+		if (((new_flags & DRM_BO_FLAG_MEM_TT) && !driver->cached_tt) ||
+		    ((new_flags & DRM_BO_FLAG_MEM_VRAM) && !driver->cached_vram))
+			new_flags &= ~DRM_BO_FLAG_CACHED;
+	}
+ 	
+	if ((new_flags & DRM_BO_FLAG_NO_EVICT) &&
+	    ((flags ^ new_flags) & DRM_BO_FLAG_CACHED)) {
+		if (flags & DRM_BO_FLAG_CACHED) {
+			DRM_ERROR("Cannot change caching policy of pinned buffer\n");
+			return -EINVAL;
+		} else {
+			new_flags &= ~DRM_BO_FLAG_CACHED;
+		}
+	}
+
 	*n_flags = new_flags;
 	return 0;
 }
@@ -531,11 +550,12 @@ static int drm_buffer_object_validate(drm_device_t *dev, drm_buffer_object_t *bo
 	return 0;
 }
 
+
 /*
  * Call bo->mutex locked.
  */
 
-static int drm_bo_add_ttm(drm_file_t *priv, drm_buffer_object_t *bo, uint32_t new_flags, 
+static int drm_bo_add_ttm(drm_file_t *priv, drm_buffer_object_t *bo, uint32_t hint, 
 			  uint32_t ttm_handle)
 
 {
@@ -578,7 +598,7 @@ static int drm_bo_add_ttm(drm_file_t *priv, drm_buffer_object_t *bo, uint32_t ne
 		ttm = drm_ttm_from_object(to);
 		ret = drm_create_ttm_region(ttm, bo->buffer_start >> PAGE_SHIFT,
 					    bo->num_pages, 
-					    new_flags & DRM_BO_FLAG_CACHED, 
+					    hint & DRM_BO_HINT_BIND_CACHED, 
 					    &bo->ttm_region);
 		if (ret) {
 			drm_ttm_object_deref_unlocked(dev, to);
@@ -631,6 +651,10 @@ int drm_buffer_object_create(drm_file_t *priv,
 	bo->num_pages = num_pages;
 	bo->buffer_start = buffer_start;
 
+	ret = drm_bo_new_flags(dev->driver->bo_driver, bo->flags, mask, hint,
+			       1, &new_flags);
+	if (ret) 
+		goto out_err;
 	ret = drm_bo_add_ttm(priv, bo, new_flags, ttm_handle);
 	if (ret) 
 		goto out_err;

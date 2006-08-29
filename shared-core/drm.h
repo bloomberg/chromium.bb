@@ -685,7 +685,7 @@ typedef struct drm_ttm_arg {
 #define DRM_BO_FLAG_NO_MOVE     0x00000008
 #define DRM_BO_FLAG_NO_EVICT    0x00000010
 #define DRM_BO_FLAG_SHADOW_VRAM 0x00000020
-#define DRM_BO_FLAG_READ_LOCAL  0x00000040
+#define DRM_BO_FLAG_READ_CACHED 0x00000040
 #define DRM_BO_FLAG_CACHED      0x00000080
 #define DRM_BO_FLAG_SHAREABLE   0x00000100
 
@@ -697,6 +697,7 @@ typedef struct drm_ttm_arg {
 #define DRM_BO_HINT_PREFER_VRAM 0x00000001
 #define DRM_BO_HINT_AVOID_LOCAL 0x00000002
 #define DRM_BO_HINT_DONT_BLOCK  0x00000004
+#define DRM_BO_HINT_BIND_CACHED 0x00000008
 
 typedef enum {
 	drm_bo_type_ttm,

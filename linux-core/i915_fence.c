@@ -86,6 +86,8 @@ static void i915_perform_flush(drm_device_t * dev)
 		dev_priv->flush_sequence = (uint32_t) READ_BREADCRUMB(dev_priv);
 		dev_priv->flush_flags = fm->pending_flush;
 		dev_priv->saved_flush_status = READ_HWSP(dev_priv, 0);
+		DRM_ERROR("Saved flush status is 0x%08x\n",
+			  dev_priv->saved_flush_status);
 		I915_WRITE(I915REG_INSTPM, (1 << 5) | (1 << 21));
 		dev_priv->flush_pending = 1;
 		fm->pending_flush = 0;

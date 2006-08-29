@@ -202,10 +202,11 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 
 	if (atomic_read(&ttm->vma_count) > 0) {
 		ttm->destroy = 1;
-		DRM_DEBUG("VMAs are still alive. Skipping destruction.\n");
+		DRM_ERROR("VMAs are still alive. Skipping destruction.\n");
 		return -EBUSY;
 	} 
 
+	DRM_ERROR("Destroying a ttm\n");
 	if (ttm->be_list) {
 		list_for_each_safe(list, next, &ttm->be_list->head) {
 			drm_ttm_backend_list_t *entry =
@@ -479,6 +480,7 @@ void drm_destroy_ttm_region(drm_ttm_backend_list_t * entry)
 	uint32_t *cur_page_flags;
 	int i;
 
+	DRM_ERROR("Destroying a TTM region\n");
 	list_del_init(&entry->head);
 
 	drm_unbind_ttm_region(entry);
@@ -800,7 +802,6 @@ void drm_ttm_object_deref_unlocked(drm_device_t *dev, drm_ttm_object_t *to)
  */
 static void drm_ttm_user_deref_locked(drm_file_t *priv, drm_user_object_t *base)
 {
-	DRM_ERROR("User deref ttm\n");
 	drm_ttm_object_deref_locked(priv->head->dev,
 				    drm_user_object_entry(base, drm_ttm_object_t, 
 							  base));
