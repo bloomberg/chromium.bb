@@ -679,25 +679,45 @@ typedef struct drm_ttm_arg {
 }drm_ttm_arg_t;
 
 
+/* Buffer permissions, referring to how the GPU uses the buffers.
+   these translate to fence types used for the buffers. 
+   Typically a texture buffer is read, A destination buffer is write and
+   a command (batch-) buffer is exe. Can be or-ed together. */
+
 #define DRM_BO_FLAG_READ        0x00000001
 #define DRM_BO_FLAG_WRITE       0x00000002
 #define DRM_BO_FLAG_EXE         0x00000004
-#define DRM_BO_FLAG_NO_MOVE     0x00000008
+
+/* Pinned buffer. */
 #define DRM_BO_FLAG_NO_EVICT    0x00000010
+/* Always keep a system memory shadow to a vram buffer */
 #define DRM_BO_FLAG_SHADOW_VRAM 0x00000020
+/* When mapped for reading, make sure the buffer is cached even
+   if it means moving the buffer to system memory */
 #define DRM_BO_FLAG_READ_CACHED 0x00000040
+/* The buffer is currently cached */
 #define DRM_BO_FLAG_CACHED      0x00000080
+/* The buffer is shareable with other processes */
 #define DRM_BO_FLAG_SHAREABLE   0x00000100
+/* When there is a choice between VRAM and TT, prefer VRAM. 
+   The default behaviour is to prefer TT. */
+#define DRM_BO_FLAG_PREFER_VRAM 0x00000200
+/* Bind this buffer cached if the hardware supports it. */
+#define DRM_BO_FLAG_BIND_CACHED 0x00000400
 
+/* Translation table aperture */
 #define DRM_BO_FLAG_MEM_TT      0x01000000
+/* On-card VRAM */
 #define DRM_BO_FLAG_MEM_VRAM    0x02000000
+/* System memory */
 #define DRM_BO_FLAG_MEM_LOCAL   0x04000000
-#define DRM_BO_MASK_MEM         0xFFFFFFFF
+/* Memory flag mask */
+#define DRM_BO_MASK_MEM         0xFF000000
 
-#define DRM_BO_HINT_PREFER_VRAM 0x00000001
-#define DRM_BO_HINT_AVOID_LOCAL 0x00000002
-#define DRM_BO_HINT_DONT_BLOCK  0x00000004
-#define DRM_BO_HINT_BIND_CACHED 0x00000008
+/* When creating a buffer, Avoid system storage even if allowed */
+#define DRM_BO_HINT_AVOID_LOCAL 0x00000001
+/* Don't block on validate and map */
+#define DRM_BO_HINT_DONT_BLOCK  0x00000002  
 
 typedef enum {
 	drm_bo_type_ttm,
@@ -738,7 +758,6 @@ typedef struct drm_bo_arg_reply {
 	unsigned arg_handle;
 	unsigned map_flags;
         unsigned mask;
-        unsigned hint;
         drm_u64_t buffer_start;
 }drm_bo_arg_reply_t;
 	

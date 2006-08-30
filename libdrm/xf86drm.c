@@ -2612,7 +2612,6 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
     buf->mapCount = 0;
     buf->virtual = NULL;
     buf->mask = rep->mask;
-    buf->hint = rep->hint;
     buf->start = rep->buffer_start;
 
     return 0;
@@ -2672,7 +2671,6 @@ int drmBOReference(int fd, unsigned handle, drmBO *buf)
     buf->mapCount = 0;
     buf->virtual = NULL;
     buf->mask = rep->mask;
-    buf->hint = rep->hint;
     buf->start = rep->buffer_start;
     return 0;
 }

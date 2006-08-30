@@ -88,7 +88,6 @@ typedef struct _drmBO{
     drm_handle_t mapHandle;
     unsigned flags;
     unsigned mask;
-    unsigned hint;
     unsigned mapFlags;
     unsigned long size;
     unsigned long offset;

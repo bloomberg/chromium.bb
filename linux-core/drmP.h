@@ -963,7 +963,6 @@ typedef struct drm_buffer_object{
         uint32_t map_flags;
 	uint32_t flags;
 	uint32_t mask;
-	uint32_t hint;
 
 	drm_mm_node_t *vram;
 	drm_mm_node_t *tt;

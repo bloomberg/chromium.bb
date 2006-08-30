@@ -55,6 +55,17 @@
  * 2.) Refer to ttm locking orders.
  */
 
+
+#define DRM_FLAG_MASKED(_old, _new, _mask) {\
+(_old) ^= (((_old) ^ (_new)) & (_mask)); \
+}
+
+static inline uint32_t drm_flag_masked(uint32_t old, uint32_t new, 
+				       uint32_t mask)
+{
+	return old ^ ((old ^ new) & mask);
+}
+
 int drm_fence_buffer_objects(drm_file_t * priv)
 {
 	drm_device_t *dev = priv->head->dev;
@@ -243,7 +254,7 @@ static int drm_bo_new_flags(drm_bo_driver_t * driver,
 			}
 		}
 		if (new_flags & DRM_BO_FLAG_MEM_TT) {
-			if ((hint & DRM_BO_HINT_PREFER_VRAM) &&
+			if ((new_mask & DRM_BO_FLAG_PREFER_VRAM) &&
 			    new_flags & DRM_BO_FLAG_MEM_VRAM) {
 				new_flags = DRM_BO_FLAG_MEM_VRAM;
 			} else {
@@ -264,7 +275,7 @@ static int drm_bo_new_flags(drm_bo_driver_t * driver,
 
 	new_flags |= new_mask & ~DRM_BO_MASK_MEM;
 
-	if (hint & DRM_BO_HINT_BIND_CACHED) {
+	if (new_mask & DRM_BO_FLAG_BIND_CACHED) {
 		new_flags |= DRM_BO_FLAG_CACHED;
 		if (((new_flags & DRM_BO_FLAG_MEM_TT) && !driver->cached_tt) ||
 		    ((new_flags & DRM_BO_FLAG_MEM_VRAM)
@@ -513,11 +524,8 @@ static int drm_buffer_object_unmap(drm_file_t * priv, uint32_t handle)
 		goto out;
 	}
 
-	DRM_ERROR("Removing ref object\n");
 	drm_remove_ref_object(priv, ro);
-	DRM_ERROR("Deregistering usage\n");
 	drm_bo_usage_deref_locked(dev, bo);
-	DRM_ERROR("Done\n");
       out:
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
@@ -548,19 +556,91 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
 	}
 }
 
-static int drm_buffer_object_validate(drm_device_t * dev, uint32_t new_flags,
-				      drm_buffer_object_t * bo)
+static int drm_bo_move_buffer(drm_buffer_object_t *bo, uint32_t new_flags,
+			      int no_wait)
 {
-        bo->flags = new_flags;
 	return 0;
 }
 
+
+/*
+ * bo locked.
+ */
+
+
+static int drm_buffer_object_validate(drm_buffer_object_t * bo,
+				      uint32_t new_flags,
+				      int move_unfenced,
+				      int no_wait)
+{
+	drm_device_t *dev = bo->dev;
+	drm_buffer_manager_t *bm = &dev->bm;
+	uint32_t flag_diff = (new_flags ^ bo->flags);
+
+	int ret;
+
+	if (new_flags & DRM_BO_FLAG_MEM_VRAM) {
+		DRM_ERROR("Vram support not implemented yet\n");
+		return -EINVAL;
+	}
+	if ((new_flags & (DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_MEM_VRAM)) &&
+	    (new_flags & DRM_BO_FLAG_CACHED)) {
+		DRM_ERROR("Cached binding not implemented yet\n");
+		return -EINVAL;
+	}
+
+	/*
+	 * Check whether we need to move buffer.
+	 */
+
+	if (flag_diff & DRM_BO_MASK_MEM) {
+		mutex_lock(&bm->mutex);
+		ret = drm_bo_move_buffer(bo, new_flags, no_wait);
+		mutex_unlock(&bm->mutex);
+		if (ret) 
+			return ret;
+	}
+	
+	if (flag_diff & DRM_BO_FLAG_NO_EVICT) {
+		mutex_lock(&bm->mutex);
+		list_del_init(&bo->head);
+		if (!(new_flags & DRM_BO_FLAG_NO_EVICT)) {
+			if (new_flags & DRM_BO_FLAG_MEM_TT) {
+				list_add_tail(&bo->head, &bm->tt_lru);
+			} else {
+				list_add_tail(&bo->head, &bm->vram_lru);
+			}
+		}
+		mutex_unlock(&bm->mutex);
+		DRM_FLAG_MASKED(bo->flags, new_flags, DRM_BO_FLAG_NO_EVICT);
+	}
+
+	if (move_unfenced) {
+
+		/*
+		 * Place on unfenced list.
+		 */
+	
+		mutex_lock(&bm->mutex);
+		list_del_init(&bo->head);
+		list_add_tail(&bo->head, &bm->unfenced);
+		mutex_unlock(&bm->mutex);
+	}
+
+	/*
+	 * FIXME: Remove below.
+	 */
+
+	bo->flags = new_flags;
+	return 0;
+}
+	
 /*
  * Call bo->mutex locked.
  */
 
 static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
-			  uint32_t hint, uint32_t ttm_handle)
+			  uint32_t mask, uint32_t ttm_handle)
 {
 	drm_device_t *dev = bo->dev;
 	drm_ttm_object_t *to = NULL;
@@ -605,7 +685,7 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
 		ttm = drm_ttm_from_object(to);
 		ret = drm_create_ttm_region(ttm, bo->buffer_start >> PAGE_SHIFT,
 					    bo->num_pages,
-					    hint & DRM_BO_HINT_BIND_CACHED,
+					    mask & DRM_BO_FLAG_BIND_CACHED,
 					    &bo->ttm_region);
 		if (ret) {
 			drm_ttm_object_deref_unlocked(dev, to);
@@ -661,14 +741,14 @@ int drm_buffer_object_create(drm_file_t * priv,
 			       1, &new_flags);
 	if (ret)
 		goto out_err;
-	ret = drm_bo_add_ttm(priv, bo, new_flags, ttm_handle);
+	ret = drm_bo_add_ttm(priv, bo, mask, ttm_handle);
 	if (ret)
 		goto out_err;
 
 	bo->mask = mask;
-	bo->hint = hint;
 
-	ret = drm_buffer_object_validate(dev, new_flags, bo);
+	ret = drm_buffer_object_validate(bo, new_flags, 0, 
+					 hint & DRM_BO_HINT_DONT_BLOCK);
 	if (ret)
 		goto out_err;
 
@@ -719,7 +799,6 @@ static void drm_bo_fill_rep_arg(const drm_buffer_object_t * bo,
 
 	rep->map_flags = bo->map_flags;
 	rep->mask = bo->mask;
-	rep->hint = bo->hint;
 	rep->buffer_start = bo->buffer_start;
 }
 
