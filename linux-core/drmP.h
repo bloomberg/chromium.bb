@@ -955,11 +955,13 @@ typedef struct drm_buffer_object{
 	unsigned long num_pages;
         unsigned long buffer_start;
         drm_bo_type_t type;
+        unsigned long offset;
 
 	atomic_t mapped;
+        uint32_t map_flags;
 	uint32_t flags;
 	uint32_t mask;
-	uint32_t mask_hint;
+	uint32_t hint;
 
 	drm_mm_node_t *vram;
 	drm_mm_node_t *tt;

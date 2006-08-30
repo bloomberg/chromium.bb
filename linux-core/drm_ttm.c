@@ -42,7 +42,6 @@ typedef struct drm_val_action {
 	int validated;
 } drm_val_action_t;
 
-
 /*
  * We may be manipulating other processes page tables, so for each TTM, keep track of 
  * which mm_structs are currently mapping the ttm so that we can take the appropriate
@@ -204,7 +203,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 		ttm->destroy = 1;
 		DRM_ERROR("VMAs are still alive. Skipping destruction.\n");
 		return -EBUSY;
-	} 
+	}
 
 	DRM_ERROR("Destroying a ttm\n");
 	if (ttm->be_list) {
@@ -263,7 +262,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
  * FIXME: Avoid using vmalloc for the page- and page_flags tables?
  */
 
-static drm_ttm_t *drm_init_ttm(struct drm_device * dev, unsigned long size)
+static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 {
 
 	drm_ttm_t *ttm;
@@ -354,7 +353,8 @@ static int drm_ttm_lock_mmap_sem(drm_ttm_t * ttm)
 					 DRM_MEM_TTM);
 			cur_count = shared_count + 10;
 			mm_list =
-			    drm_alloc(sizeof(*mm_list) * cur_count, DRM_MEM_TTM);
+			    drm_alloc(sizeof(*mm_list) * cur_count,
+				      DRM_MEM_TTM);
 			if (!mm_list)
 				return -ENOMEM;
 		}
@@ -489,7 +489,7 @@ void drm_destroy_ttm_region(drm_ttm_backend_list_t * entry)
 		if (be->needs_cache_adjust(be)) {
 			int ret = drm_ttm_lock_mmap_sem(ttm);
 			drm_ttm_lock_mm(ttm, 0, 1);
-			unmap_vma_pages(ttm, entry->page_offset, 
+			unmap_vma_pages(ttm, entry->page_offset,
 					entry->num_pages);
 			drm_ttm_unlock_mm(ttm, 0, 1);
 			drm_set_caching(ttm, entry->page_offset,
@@ -542,7 +542,8 @@ int drm_create_ttm_region(drm_ttm_t * ttm, unsigned long page_offset,
 	if (!entry)
 		return -ENOMEM;
 
-	be = ttm->dev->driver->bo_driver->create_ttm_backend_entry(ttm->dev, cached);
+	be = ttm->dev->driver->bo_driver->create_ttm_backend_entry(ttm->dev,
+								   cached);
 	if (!be) {
 		drm_free(entry, sizeof(*entry), DRM_MEM_TTM);
 		DRM_ERROR("Couldn't create backend.\n");
@@ -750,11 +751,10 @@ int drm_user_create_region(drm_device_t * dev, unsigned long start, int len,
 	return 0;
 }
 
-
 /*
  * dev->struct_mutex locked.
  */
-static void drm_ttm_object_remove(drm_device_t *dev, drm_ttm_object_t *object)
+static void drm_ttm_object_remove(drm_device_t * dev, drm_ttm_object_t * object)
 {
 	drm_map_list_t *list = &object->map_list;
 	drm_local_map_t *map;
@@ -765,7 +765,7 @@ static void drm_ttm_object_remove(drm_device_t *dev, drm_ttm_object_t *object)
 	map = list->map;
 
 	if (map) {
-		drm_ttm_t *ttm = (drm_ttm_t *)map->offset;
+		drm_ttm_t *ttm = (drm_ttm_t *) map->offset;
 		if (ttm) {
 			if (drm_destroy_ttm(ttm) != -EBUSY) {
 				drm_free(map, sizeof(*map), DRM_MEM_TTM);
@@ -778,15 +778,14 @@ static void drm_ttm_object_remove(drm_device_t *dev, drm_ttm_object_t *object)
 	drm_free(object, sizeof(*object), DRM_MEM_TTM);
 }
 
-
-void drm_ttm_object_deref_locked(drm_device_t *dev, drm_ttm_object_t *to)
+void drm_ttm_object_deref_locked(drm_device_t * dev, drm_ttm_object_t * to)
 {
 	if (atomic_dec_and_test(&to->usage)) {
 		drm_ttm_object_remove(dev, to);
 	}
 }
 
-void drm_ttm_object_deref_unlocked(drm_device_t *dev, drm_ttm_object_t *to)
+void drm_ttm_object_deref_unlocked(drm_device_t * dev, drm_ttm_object_t * to)
 {
 	if (atomic_dec_and_test(&to->usage)) {
 		mutex_lock(&dev->struct_mutex);
@@ -796,26 +795,25 @@ void drm_ttm_object_deref_unlocked(drm_device_t *dev, drm_ttm_object_t *to)
 	}
 }
 
-
 /*
  * dev->struct_mutex locked.
  */
-static void drm_ttm_user_deref_locked(drm_file_t *priv, drm_user_object_t *base)
+static void drm_ttm_user_deref_locked(drm_file_t * priv,
+				      drm_user_object_t * base)
 {
 	drm_ttm_object_deref_locked(priv->head->dev,
-				    drm_user_object_entry(base, drm_ttm_object_t, 
+				    drm_user_object_entry(base,
+							  drm_ttm_object_t,
 							  base));
 }
-
-	
 
 /*
  * Create a ttm and add it to the drm book-keeping. 
  * dev->struct_mutex locked.
  */
 
-int drm_ttm_object_create(drm_device_t *dev, unsigned long size, 
-			  uint32_t flags, drm_ttm_object_t **ttm_object)
+int drm_ttm_object_create(drm_device_t * dev, unsigned long size,
+			  uint32_t flags, drm_ttm_object_t ** ttm_object)
 {
 	drm_ttm_object_t *object;
 	drm_map_list_t *list;
@@ -823,11 +821,11 @@ int drm_ttm_object_create(drm_device_t *dev, unsigned long size,
 	drm_ttm_t *ttm;
 
 	object = drm_calloc(1, sizeof(*object), DRM_MEM_TTM);
-	if (!object) 
+	if (!object)
 		return -ENOMEM;
 	object->flags = flags;
 	list = &object->map_list;
-	
+
 	list->map = drm_calloc(1, sizeof(*map), DRM_MEM_TTM);
 	if (!list->map) {
 		drm_ttm_object_remove(dev, object);
@@ -847,9 +845,9 @@ int drm_ttm_object_create(drm_device_t *dev, unsigned long size,
 	map->flags = _DRM_REMOVABLE;
 	map->size = ttm->num_pages * PAGE_SIZE;
 	map->handle = (void *)object;
-		
-	if (drm_ht_just_insert_please(&dev->map_hash, &list->hash, 
-				      (unsigned long) map->handle, 
+
+	if (drm_ht_just_insert_please(&dev->map_hash, &list->hash,
+				      (unsigned long)map->handle,
 				      32 - PAGE_SHIFT - 3, PAGE_SHIFT,
 				      DRM_MAP_HASH_OFFSET)) {
 		drm_ttm_object_remove(dev, object);
@@ -863,7 +861,7 @@ int drm_ttm_object_create(drm_device_t *dev, unsigned long size,
 	return 0;
 }
 
-drm_ttm_object_t *drm_lookup_ttm_object(drm_file_t *priv, uint32_t handle, 
+drm_ttm_object_t *drm_lookup_ttm_object(drm_file_t * priv, uint32_t handle,
 					int check_owner)
 {
 	drm_user_object_t *uo;
@@ -871,7 +869,7 @@ drm_ttm_object_t *drm_lookup_ttm_object(drm_file_t *priv, uint32_t handle,
 
 	uo = drm_lookup_user_object(priv, handle);
 
-	if (!uo || (uo->type != drm_ttm_type)) 
+	if (!uo || (uo->type != drm_ttm_type))
 		return NULL;
 
 	if (check_owner && priv != uo->owner) {
@@ -884,10 +882,9 @@ drm_ttm_object_t *drm_lookup_ttm_object(drm_file_t *priv, uint32_t handle,
 	return to;
 }
 
-
 int drm_ttm_ioctl(DRM_IOCTL_ARGS)
 {
-        DRM_DEVICE;
+	DRM_DEVICE;
 	drm_ttm_arg_t arg;
 	drm_ttm_object_t *entry;
 	drm_user_object_t *uo;
@@ -895,8 +892,8 @@ int drm_ttm_ioctl(DRM_IOCTL_ARGS)
 	int ret;
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
-	
-	switch(arg.op) {
+
+	switch (arg.op) {
 	case drm_ttm_create:
 		mutex_lock(&dev->struct_mutex);
 		size = arg.size;
@@ -905,7 +902,7 @@ int drm_ttm_ioctl(DRM_IOCTL_ARGS)
 			mutex_unlock(&dev->struct_mutex);
 			return ret;
 		}
-		ret = drm_add_user_object(priv, &entry->base, 
+		ret = drm_add_user_object(priv, &entry->base,
 					  arg.flags & DRM_TTM_FLAG_SHAREABLE);
 		if (ret) {
 			drm_ttm_object_remove(dev, entry);
@@ -923,7 +920,7 @@ int drm_ttm_ioctl(DRM_IOCTL_ARGS)
 		if (ret)
 			return ret;
 		mutex_lock(&dev->struct_mutex);
-		entry = drm_lookup_ttm_object(priv, arg.handle , 0);
+		entry = drm_lookup_ttm_object(priv, arg.handle, 0);
 		break;
 	case drm_ttm_unreference:
 		return drm_user_object_unref(priv, arg.handle, drm_ttm_type);
