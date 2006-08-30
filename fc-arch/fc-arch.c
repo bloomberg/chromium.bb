@@ -26,9 +26,6 @@
 
 #define ENDIAN_TEST 0x12345678
 #define MACHINE_SIGNATURE_SIZE (9*21 + 1)
-#define MACHINE_ARCH_SIZE   32
-/* for when we don't have sysconf: */
-#define FC_HARDCODED_PAGESIZE 8192 
 
 static char *
 FcCacheMachineSignature (void)
@@ -44,11 +41,12 @@ FcCacheMachineSignature (void)
 	     (unsigned int)sizeof (char),
 	     (unsigned int)sizeof (char *),
 	     (unsigned int)sizeof (int),
+	     (unsigned int)sizeof (intptr_t),
 	     (unsigned int)sizeof (FcPattern),
 	     (unsigned int)sizeof (FcPatternEltPtr),
 	     (unsigned int)sizeof (struct  FcPatternElt *),
 	     (unsigned int)sizeof (FcPatternElt),
-	     (unsigned int)sizeof (FcObjectPtr),
+	     (unsigned int)sizeof (FcObject),
 	     (unsigned int)sizeof (FcValueListPtr),
 	     (unsigned int)sizeof (FcValue),
 	     (unsigned int)sizeof (FcValueBinding),
@@ -59,13 +57,7 @@ FcCacheMachineSignature (void)
 	     (unsigned int)sizeof (FcChar16),
 	     (unsigned int)sizeof (FcCharLeaf),
 	     (unsigned int)sizeof (FcChar32),
-	     (unsigned int)sizeof (FcCache),
-#if defined (HAVE_SYSCONF)
-	     (unsigned int)sysconf(_SC_PAGESIZE)
-#else
-	     (unsigned int)FC_HARDCODED_PAGESIZE
-#endif
-	     );
+	     (unsigned int)sizeof (FcCache));
 
     return buf;
 }

@@ -25,6 +25,7 @@
 #include "fcint.h"
 #include "fccharset.c"
 #include "fcstr.c"
+#include "fcserialize.c"
 
 /*
  * fc-lang
