@@ -2704,7 +2704,7 @@ int drmBOUnReference(int fd, drmBO *buf)
  *
  */
 
-int drmBOMap(int fd, drmBO *buf, unsigned map_flags, void **address)
+int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, void **address)
 {
 
     drm_bo_arg_t arg;
@@ -2731,7 +2731,7 @@ int drmBOMap(int fd, drmBO *buf, unsigned map_flags, void **address)
     }
 
     req->handle = buf->handle;
-    req->mask = map_flags;
+    req->hint = mapFlags;
     req->op = drm_bo_map;
     req->next = 0;
 
@@ -2756,6 +2756,7 @@ int drmBOMap(int fd, drmBO *buf, unsigned map_flags, void **address)
     if (rep->ret)
 	return rep->ret;
 	
+    buf->mapFlags = mapFlags;
     *address = buf->virtual;
 
     return 0;
