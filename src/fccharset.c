@@ -1320,7 +1320,8 @@ FcCharSetSerialize(FcSerialize *serialize, const FcCharSet *cs)
 	if (!leaf_serialized)
 	    return NULL;
 	*leaf_serialized = *leaf;
-	leaves_serialized[i] = FcPtrToOffset (leaves_serialized, leaf);
+	leaves_serialized[i] = FcPtrToOffset (leaves_serialized, 
+					      leaf_serialized);
 	numbers_serialized[i] = numbers[i];
     }
     

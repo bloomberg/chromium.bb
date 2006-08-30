@@ -100,12 +100,26 @@ void
 FcCharSetPrint (const FcCharSet *c)
 {
     int	i, j;
-
+    intptr_t	*leaves = FcCharSetLeaves (c);
+    FcChar16	*numbers = FcCharSetNumbers (c);
+    
+    printf ("CharSet  0x%x\n", (intptr_t) c);
+    printf ("Leaves:  +%d = 0x%x\n", c->leaves_offset, (intptr_t) leaves);
+    printf ("Numbers: +%d = 0x%x\n", c->numbers_offset, (intptr_t) numbers);
+    
     for (i = 0; i < c->num; i++)
     {
-	FcCharLeaf	*leaf = FcCharSetLeaf(c, i);
+	printf ("Page %d: %04x +%d = 0x%x\n", 
+		i, numbers[i], leaves[i], 
+		(intptr_t) FcOffsetToPtr (leaves, leaves[i], FcCharLeaf));
+    }
+		
+    for (i = 0; i < c->num; i++)
+    {
+	intptr_t	leaf_offset = leaves[i];
+	FcCharLeaf	*leaf = FcOffsetToPtr (leaves, leaf_offset, FcCharLeaf);
 	
-	printf ("%04x:", FcCharSetNumbers(c)[i]);
+	printf ("%04x:", numbers[i]);
 	for (j = 0; j < 256/32; j++)
 	    printf (" %08x", leaf->map[j]);
 	printf ("\n");

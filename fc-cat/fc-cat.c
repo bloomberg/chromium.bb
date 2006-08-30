@@ -53,6 +53,7 @@
 #include <getopt.h>
 const struct option longopts[] = {
     {"version", 0, 0, 'V'},
+    {"verbose", 0, 0, 'v'},
     {"help", 0, 0, '?'},
     {NULL,0,0,0},
 };
@@ -167,39 +168,22 @@ usage (char *program)
     exit (1);
 }
 
-/* read serialized state from the cache file */
-static char *
-FcCacheFileRead (FcFontSet * set, FcStrSet *dirs, char *cache_file)
+static int
+FcCacheFileOpen (char *cache_file, off_t *size)
 {
-    FILE *file;
     int fd;
-    char subdirName[FC_MAX_FILE_LEN + 1 + 12 + 1];
-    static char name_buf[8192];
-    FcChar8 * ls;
-    char * buf;
-    int i;
+    struct stat file_stat;
 
-    if (!cache_file)
-        goto bail;
+    fd = open(cache_file, O_RDONLY | O_BINARY);
+    if (fd < 0)
+        return -1;
 
-    file = fopen(cache_file, "rb");
-    if (file == NULL)
-        goto bail;
-
-    if (!FcDirCacheConsume (file, set, dirs, NULL, name_buf))
-	goto bail1;
-    
-    fclose (file);
-    
-    printf ("fc-cat: printing directory cache for cache which would be named %s\n", 
-	    name_buf);
-
-    return name_buf;
-
- bail1:
-    fclose (file);
- bail:
-    return 0;
+    if (fstat (fd, &file_stat) < 0) {
+	close (fd); 
+	return -1;
+    }
+    *size = file_stat.st_size;
+    return fd;
 }
 
 /*
@@ -210,11 +194,10 @@ static const FcChar8 *
 FcFileBaseName (const char *cache, const FcChar8 *file)
 {
     const FcChar8   *cache_slash;
+    int		    cache_len = strlen (cache);
 
-    cache_slash = FcStrLastSlash ((const FcChar8 *)cache);
-    if (cache_slash && !strncmp ((const char *) cache, (const char *) file,
-				 (cache_slash + 1) - (const FcChar8 *)cache))
-	return file + ((cache_slash + 1) - (const FcChar8 *)cache);
+    if (!strncmp (cache, file, cache_len) && file[cache_len] == '/')
+	return file + cache_len + 1;
     return file;
 }
 
@@ -252,14 +235,15 @@ FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name)
     
     for (n = 0; n < set->nfont; n++)
     {
-	font = set->fonts[n];
+	FcPattern   **fonts = FcFontSetFonts (set);
+	FcPattern   *encoded_font = fonts[n];
+	FcPattern   *font = FcEncodedOffsetToPtr (set, encoded_font, FcPattern);
+
 	if (FcPatternGetString (font, FC_FILE, 0, (FcChar8 **) &file) != FcResultMatch)
 	    goto bail3;
 	base = FcFileBaseName (base_name, file);
 	if (FcPatternGetInteger (font, FC_INDEX, 0, &id) != FcResultMatch)
 	    goto bail3;
-	if (FcDebug () & FC_DBG_CACHEV)
-	    printf (" write file \"%s\"\n", base);
 	if (!FcCacheWriteStringOld (stdout, base))
 	    goto bail3;
 	if (PUTC (' ', stdout) == EOF)
@@ -293,17 +277,19 @@ int
 main (int argc, char **argv)
 {
     int		i;
+    int		ret = 0;
+    FcFontSet	*fs;
+    FcStrSet    *dirs;
+    FcCache	*cache;
+    FcConfig	*config;
+    int		verbose = 0;
 #if HAVE_GETOPT_LONG || HAVE_GETOPT
     int		c;
-    FcFontSet	*fs = FcFontSetCreate();
-    FcStrSet    *dirs = FcStrSetCreate();
-    char	*name_buf;
-    FcConfig	*config;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "fsVv?", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "Vv?", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "fsVv?")) != -1)
+    while ((c = getopt (argc, argv, "Vv?")) != -1)
 #endif
     {
 	switch (c) {
@@ -311,6 +297,9 @@ main (int argc, char **argv)
 	    fprintf (stderr, "fontconfig version %d.%d.%d\n", 
 		     FC_MAJOR, FC_MINOR, FC_REVISION);
 	    exit (0);
+	case 'v':
+	    verbose++;
+	    break;
 	default:
 	    usage (argv[0]);
 	}
@@ -331,29 +320,48 @@ main (int argc, char **argv)
     if (i >= argc)
         usage (argv[0]);
 
-    if (FcFileIsDir ((const FcChar8 *)argv[i]))
+    for (; i < argc; i++)
     {
-        char * dummy_name = (char *)FcStrPlus ((FcChar8 *)argv[i], 
-                                               (FcChar8 *)"/dummy");
-        if (!FcDirScanConfig (fs, dirs, 0, 
-                              (const FcChar8 *)argv[i], FcFalse, config))
-            fprintf (stderr, "couldn't load font dir %s\n", argv[i]);
-        else
-        {
-            /* sorry, we can't tell you where the cache file is. */
-            FcCachePrintSet (fs, dirs, dummy_name);
-            FcStrFree ((FcChar8 *)dummy_name);
-        }
-    }
-    else if ((name_buf = FcCacheFileRead (fs, dirs, argv[i])) != 0)
-	FcCachePrintSet (fs, dirs, name_buf);
-    else
-    {
-	printf ("nothing to do\n");
-    }
+	int	fd;
+	int	j;
+	off_t	size;
+	intptr_t	*cache_dirs;
+	
+	if (FcFileIsDir ((const FcChar8 *)argv[i]))
+	    fd = FcDirCacheOpen (config, (const FcChar8 *) argv[i], &size);
+	else
+	    fd = FcCacheFileOpen (argv[i], &size);
+	if (fd < 0)
+	{
+	    perror (argv[i]);
+	    ret++;
+	    continue;
+	}
+	
+	cache = FcDirCacheMap (fd, size);
+	close (fd);
+	if (!cache)
+	{
+	    fprintf (stderr, "%s: cannot map cache\n", argv[i]);
+	    ret++;
+	    continue;
+	}
+	dirs = FcStrSetCreate ();
+	fs = FcCacheSet (cache);
+	cache_dirs = FcCacheDirs (cache);
+	for (j = 0; j < cache->dirs_count; j++) 
+	    FcStrSetAdd (dirs, FcOffsetToPtr (cache_dirs,
+					      cache_dirs[j],
+					      FcChar8));
 
-    FcStrSetDestroy (dirs);
-    FcFontSetDestroy (fs);
+	if (verbose)
+	    printf ("Name: %s\nDirectory: %s\n", argv[i], FcCacheDir(cache));
+        FcCachePrintSet (fs, dirs, FcCacheDir (cache));
+
+	FcStrSetDestroy (dirs);
+
+	FcDirCacheUnmap (cache);
+    }
 
     return 0;
 }

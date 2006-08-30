@@ -255,8 +255,7 @@ FcDirCacheOpen (FcConfig *config, const FcChar8 *dir, off_t *size)
     return fd;
 }
 
-#if 0
-static void
+void
 FcDirCacheUnmap (FcCache *cache)
 {
     if (cache->magic == FC_CACHE_MAGIC_COPY)
@@ -270,10 +269,9 @@ FcDirCacheUnmap (FcCache *cache)
     UnmapViewOfFile (cache);
 #endif
 }
-#endif
 
 /* read serialized state from the cache file */
-static FcCache *
+FcCache *
 FcDirCacheMap (int fd, off_t size)
 {
     FcCache	*cache;

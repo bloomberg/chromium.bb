@@ -199,11 +199,12 @@ struct _FcPattern {
 #define FcPatternElts(p)	FcOffsetMember(p,elts_offset,FcPatternElt)
 
 #define FcFontSetFonts(fs)	FcPointerMember(fs,fonts,FcPattern *)
-/*
+
 #define FcFontSetFont(fs,i)	(FcIsEncodedOffset((fs)->fonts) ? \
-				 FcOffsetToPtr(FcFontSetFonts(fs), \
-					       FcFontSetFonts(fs)[i]) : \
-				 fs->fonts[i])*/
+				 FcEncodedOffsetToPtr(FcFontSetFonts(fs), \
+						      FcFontSetFonts(fs)[i], \
+						      FcPattern) : \
+				 fs->fonts[i])
 						
 typedef enum _FcOp {
     FcOpInteger, FcOpDouble, FcOpString, FcOpMatrix, FcOpBool, FcOpCharSet, 
@@ -490,6 +491,12 @@ FcBool
 FcDirCacheConsume (FILE *file, FcFontSet *set, FcStrSet *dirs,
 		   const FcChar8 *dir, char *dirname);
     
+FcCache *
+FcDirCacheMap (int fd, off_t size);
+
+void
+FcDirCacheUnmap (FcCache *cache);
+
 FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config);
  

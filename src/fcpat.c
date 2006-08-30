@@ -1096,6 +1096,13 @@ FcPatternSerialize (FcSerialize *serialize, const FcPattern *pat)
 							  values_serialized,
 							  FcValueList);
     }
+    if (FcDebug() & FC_DBG_CACHEV) {
+	printf ("Raw pattern:\n");
+	FcPatternPrint (pat);
+	printf ("Serialized pattern:\n");
+	FcPatternPrint (pat_serialized);
+	printf ("\n");
+    }
     return pat_serialized;
 }
 
