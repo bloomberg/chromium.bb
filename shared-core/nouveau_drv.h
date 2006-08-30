@@ -131,6 +131,8 @@ extern void nouveau_preclose(drm_device_t * dev, DRMFILE filp);
 extern int nouveau_load(struct drm_device *dev, unsigned long flags);
 extern int nouveau_firstopen(struct drm_device *dev);
 extern int nouveau_unload(struct drm_device *dev);
+extern int nouveau_ioctl_getparam(DRM_IOCTL_ARGS);
+extern int nouveau_ioctl_setparam(DRM_IOCTL_ARGS);
 
 /* nouveau_mem.c */
 extern uint64_t          nouveau_mem_fb_amount(struct drm_device *dev);

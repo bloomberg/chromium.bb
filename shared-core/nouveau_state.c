@@ -132,3 +132,39 @@ int nouveau_unload(struct drm_device *dev)
 	return 0;
 }
 
+int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_nouveau_getparam_t getparam;
+
+	DRM_COPY_FROM_USER_IOCTL(getparam, (drm_nouveau_getparam_t __user *)data,
+			sizeof(getparam));
+
+	switch (getparam.param) {
+	default:
+		DRM_ERROR("unknown parameter %d\n", getparam.param);
+		return DRM_ERR(EINVAL);
+	}
+
+	DRM_COPY_TO_USER_IOCTL((drm_nouveau_getparam_t __user *)data, getparam,
+			sizeof(getparam));
+	return 0;
+}
+
+int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_nouveau_setparam_t setparam;
+
+	DRM_COPY_FROM_USER_IOCTL(setparam, (drm_nouveau_setparam_t __user *)data,
+			sizeof(setparam));
+
+	switch (setparam.param) {
+	default:
+		DRM_ERROR("unknown parameter %d\n", setparam.param);
+		return DRM_ERR(EINVAL);
+	}
+
+	return 0;
+}
+

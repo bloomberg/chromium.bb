@@ -79,6 +79,18 @@ typedef struct drm_nouveau_mem_free {
 }
 drm_nouveau_mem_free_t;
 
+typedef struct drm_nouveau_getparam {
+	unsigned int param;
+	unsigned int value;
+}
+drm_nouveau_getparam_t;
+
+typedef struct drm_nouveau_setparam {
+	unsigned int param;
+	unsigned int value;
+}
+drm_nouveau_setparam_t;
+
 enum nouveau_card_type {
 	NV_UNKNOWN =0,
 	NV_01      =1,
@@ -114,6 +126,8 @@ drm_nouveau_sarea_t;
 #define DRM_NOUVEAU_DMA_OBJECT_INIT 0x03 // We don't want this eventually..
 #define DRM_NOUVEAU_MEM_ALLOC       0x04
 #define DRM_NOUVEAU_MEM_FREE        0x05
+#define DRM_NOUVEAU_GETPARAM        0x06
+#define DRM_NOUVEAU_SETPARAM        0x07
 
 #endif /* __NOUVEAU_DRM_H__ */
 
