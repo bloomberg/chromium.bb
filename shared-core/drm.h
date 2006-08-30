@@ -747,7 +747,25 @@ typedef union drm_bo_arg{
 	drm_bo_arg_request_t req;
 	drm_bo_arg_reply_t rep;
 } drm_bo_arg_t;
+
+typedef union drm_mm_init_arg{
+	struct {
+		enum {
+			mm_init,
+			mm_takedown,
+			mm_query
+		} op;
+		drm_u64_t vr_p_offset;
+		drm_u64_t vr_p_size;
+		drm_u64_t tt_p_offset;
+		drm_u64_t tt_p_size;
+	} req;
+	struct {
+		drm_handle_t mm_sarea;
+	} rep;
+} drm_mm_init_arg_t;
 #endif
+
 
 /**
  * \name Ioctls Definitions
@@ -818,6 +836,7 @@ typedef union drm_bo_arg{
 #define DRM_IOCTL_FENCE                 DRM_IOWR(0x3b, drm_fence_arg_t)
 #define DRM_IOCTL_TTM                   DRM_IOWR(0x3c, drm_ttm_arg_t)
 #define DRM_IOCTL_BUFOBJ                DRM_IOWR(0x3d, drm_bo_arg_t)
+#define DRM_IOCTL_MM_INIT               DRM_IOWR(0x3e, drm_mm_init_arg_t)
 #endif
 
 /*@}*/

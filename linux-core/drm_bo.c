@@ -66,7 +66,7 @@ int drm_fence_buffer_objects(drm_file_t * priv)
 	drm_fence_object_t *fence;
 	int ret;
 
-	mutex_lock(&bm->bm_mutex);
+	mutex_lock(&bm->mutex);
 
 	list_for_each_entry(entry, &bm->unfenced, head) {
 		BUG_ON(!entry->unfenced);
@@ -75,21 +75,21 @@ int drm_fence_buffer_objects(drm_file_t * priv)
 	}
 
 	if (!count) {
-		mutex_unlock(&bm->bm_mutex);
+		mutex_unlock(&bm->mutex);
 		return 0;
 	}
 
 	fence = drm_calloc(1, sizeof(*fence), DRM_MEM_FENCE);
 
 	if (!fence) {
-		mutex_unlock(&bm->bm_mutex);
+		mutex_unlock(&bm->mutex);
 		return -ENOMEM;
 	}
 
 	ret = drm_fence_object_init(dev, fence_flags, 1, fence);
 	if (ret) {
 		drm_free(fence, sizeof(*fence), DRM_MEM_FENCE);
-		mutex_unlock(&bm->bm_mutex);
+		mutex_unlock(&bm->mutex);
 		return ret;
 	}
 
@@ -111,7 +111,7 @@ int drm_fence_buffer_objects(drm_file_t * priv)
 	mutex_lock(&dev->struct_mutex);
 	atomic_add(count - 1, &fence->usage);
 	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&bm->bm_mutex);
+	mutex_unlock(&bm->mutex);
 	return 0;
 }
 
@@ -179,11 +179,12 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 		drm_mm_put_block(&bm->vram_manager, bo->vram);
 		bo->vram = NULL;
 	}
-
-	/*
-	 * FIXME: Destroy ttm.
-	 */
-
+	if (bo->ttm_region) {
+		drm_destroy_ttm_region(bo->ttm_region);
+	}
+	if (bo->ttm_object) {
+		drm_ttm_object_deref_locked(dev, bo->ttm_object);
+	}
 	drm_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
 }
 
@@ -356,8 +357,11 @@ drm_buffer_object_t *drm_lookup_buffer_object(drm_file_t * priv,
 
 	uo = drm_lookup_user_object(priv, handle);
 
-	if (!uo || (uo->type != drm_buffer_type))
+	if (!uo || (uo->type != drm_buffer_type)) {
+		DRM_ERROR("Could not find buffer object 0x%08x\n",
+			  handle);
 		return NULL;
+	}
 
 	if (check_owner && priv != uo->owner) {
 		if (!drm_lookup_ref_object(priv, uo, _DRM_REF_USE))
@@ -541,9 +545,10 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
 	}
 }
 
-static int drm_buffer_object_validate(drm_device_t * dev,
+static int drm_buffer_object_validate(drm_device_t * dev, uint32_t new_flags,
 				      drm_buffer_object_t * bo)
 {
+        bo->flags = new_flags;
 	return 0;
 }
 
@@ -574,14 +579,18 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
 		mutex_lock(&dev->struct_mutex);
 		to = drm_lookup_ttm_object(priv, ttm_handle, 1);
 		mutex_unlock(&dev->struct_mutex);
-		if (!to)
+		if (!to) {
+			DRM_ERROR("Could not find TTM object\n");
 			ret = -EINVAL;
+		}
 		break;
 	case drm_bo_type_user:
 	case drm_bo_type_fake:
 		break;
 	default:
+		DRM_ERROR("Illegal buffer object type\n");
 		ret = -EINVAL;
+		break;
 	}
 
 	if (ret) {
@@ -656,7 +665,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 	bo->mask = mask;
 	bo->hint = hint;
 
-	ret = drm_buffer_object_validate(dev, bo);
+	ret = drm_buffer_object_validate(dev, new_flags, bo);
 	if (ret)
 		goto out_err;
 
@@ -804,4 +813,90 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 	} while (data);
 	return 0;
 
+}
+
+static void drm_bo_clean_mm(drm_file_t *priv)
+{
+}
+
+
+int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	
+	int ret = 0;
+	drm_mm_init_arg_t arg;
+	drm_buffer_manager_t *bm = &dev->bm;
+	drm_bo_driver_t *driver = dev->driver->bo_driver;
+
+	if (!driver) {
+		DRM_ERROR("Buffer objects is not supported by this driver\n");
+		return -EINVAL;
+	}
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+
+	switch(arg.req.op) {
+	case mm_init:
+		if (bm->initialized) {
+			DRM_ERROR("Memory manager already initialized\n");
+			return -EINVAL;
+		}
+		mutex_init(&bm->mutex);
+		mutex_lock(&bm->mutex);
+		bm->has_vram = 0;
+		bm->has_tt = 0;
+
+		if (arg.req.vr_p_size) {
+			ret = drm_mm_init(&bm->vram_manager, 
+					  arg.req.vr_p_offset, 
+					  arg.req.vr_p_size);
+			bm->has_vram = 1;
+			if (ret)
+				break;
+		}
+
+		if (arg.req.tt_p_size) {
+			ret = drm_mm_init(&bm->tt_manager, 
+					  arg.req.tt_p_offset, 
+					  arg.req.tt_p_size);
+			bm->has_tt = 1;
+			if (ret) {
+				if (bm->has_vram)
+					drm_mm_takedown(&bm->vram_manager);
+				break;
+			}
+		}
+		arg.rep.mm_sarea = 0;
+
+		INIT_LIST_HEAD(&bm->vram_lru);
+		INIT_LIST_HEAD(&bm->tt_lru);
+		INIT_LIST_HEAD(&bm->unfenced);
+		INIT_LIST_HEAD(&bm->ddestroy);
+
+		bm->initialized = 1;
+		break;
+	case mm_takedown:
+		if (!bm->initialized) {
+			DRM_ERROR("Memory manager was not initialized\n");
+			return -EINVAL;
+		}
+		mutex_lock(&bm->mutex);
+		drm_bo_clean_mm(priv);
+		if (bm->has_vram)
+			drm_mm_takedown(&bm->vram_manager);
+		if (bm->has_tt)
+			drm_mm_takedown(&bm->tt_manager);
+		bm->initialized = 0;
+		break;
+	default:
+		return -EINVAL;
+	}
+		
+	mutex_unlock(&bm->mutex);
+	if (ret)
+		return ret;
+	
+	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
+	return 0;
 }

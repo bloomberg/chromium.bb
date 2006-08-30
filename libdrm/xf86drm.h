@@ -670,4 +670,6 @@ extern int  drmSLLookupNeighbors(void *l, unsigned long key,
 				 unsigned long *prev_key, void **prev_value,
 				 unsigned long *next_key, void **next_value);
 
+#include "xf86mm.h"
+
 #endif

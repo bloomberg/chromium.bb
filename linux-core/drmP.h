@@ -775,7 +775,9 @@ typedef struct drm_fence_manager{
 
 typedef struct drm_buffer_manager{
 	int initialized;
-	struct mutex bm_mutex;
+	int has_vram;
+	int has_tt;
+	struct mutex mutex;
 	drm_mm_t tt_manager;
 	struct list_head tt_lru;
 	drm_mm_t vram_manager;
@@ -1363,6 +1365,7 @@ extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
  */
 
 extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
+extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
 
 
 /* Inline replacements for DRM_IOREMAP macros */

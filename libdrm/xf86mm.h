@@ -29,7 +29,7 @@
 #ifndef _XF86MM_H_
 #define _XF86MM_H_
 #include <stddef.h>
-#include "xf86drm.h"
+#include "drm.h"
 
 /*
  * List macros heavily inspired by the Linux kernel
@@ -113,6 +113,13 @@ typedef struct _drmBOList {
     drmMMListHead list;
     drmMMListHead free;
 } drmBOList;
+
+extern int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
+			      void *user_buffer, drm_bo_type_t type, unsigned mask,
+		unsigned hint, drmBO *buf);
+extern int drmBODestroy(int fd, drmBO *buf);
+extern int drmBOReference(int fd, unsigned handle, drmBO *buf);
+extern int drmBOUnReference(int fd, drmBO *buf);
 
 
 #endif

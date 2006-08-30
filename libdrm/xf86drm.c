@@ -65,7 +65,6 @@
 # define _DRM_FREE   free
 # include "drm.h"
 #endif
-#include "xf86mm.h"
 
 
 /* Not all systems have MAP_FAILED defined */
@@ -2582,6 +2581,7 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
 	buf->ttm = ttm;
 	break;
     case drm_bo_type_dc:
+        req->buffer_start = start;
 	break;
     case drm_bo_type_user:
 	req->buffer_start = (unsigned long) user_buffer;
@@ -2698,5 +2698,33 @@ int drmBOUnReference(int fd, drmBO *buf)
     buf->handle = 0;
     return 0;
 }   
+
+int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
+	      unsigned long ttPOffset, unsigned long ttPSize)
+{
+    drm_mm_init_arg_t arg;
+
+    arg.req.op = mm_init;
+    arg.req.vr_p_offset = vramPOffset;
+    arg.req.vr_p_size = vramPSize;
+    arg.req.tt_p_offset = vramPOffset;
+    arg.req.tt_p_size = vramPSize;
+    
+    if (ioctl(fd, DRM_IOCTL_MM_INIT, &arg))
+	return -errno;
+    
+    return 0;	
+}
+
+int drmMMTakedown(int fd)
+{
+    drm_mm_init_arg_t arg;
+    arg.req.op = mm_takedown;
+
+    if (ioctl(fd, DRM_IOCTL_MM_INIT, &arg))
+	return -errno;
+    
+    return 0;	
+}
 
 #endif
