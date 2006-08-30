@@ -159,6 +159,7 @@ typedef struct _drm_i915_sarea {
 #define DRM_IOCTL_I915_DESTROY_HEAP	DRM_IOW( DRM_COMMAND_BASE + DRM_I915_DESTROY_HEAP, drm_i915_mem_destroy_heap_t)
 #define DRM_IOCTL_I915_SET_VBLANK_PIPE	DRM_IOW( DRM_COMMAND_BASE + DRM_I915_SET_VBLANK_PIPE, drm_i915_vblank_pipe_t)
 #define DRM_IOCTL_I915_GET_VBLANK_PIPE	DRM_IOR( DRM_COMMAND_BASE + DRM_I915_GET_VBLANK_PIPE, drm_i915_vblank_pipe_t)
+#define DRM_IOCTL_I915_VBLANK_SWAP	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_VBLANK_SWAP, drm_i915_vblank_swap_t)
 
 
 /* Allow drivers to submit batchbuffers directly to hardware, relying
@@ -259,7 +260,7 @@ typedef struct drm_i915_vblank_pipe {
  */
 typedef struct drm_i915_vblank_swap {
 	drm_drawable_t drawable;
-	unsigned int pipe;
+	drm_vblank_seq_type_t seqtype;
 	unsigned int sequence;
 } drm_i915_vblank_swap_t;
 
