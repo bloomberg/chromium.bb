@@ -23,9 +23,9 @@
 #include <string>
 #include <ext/hash_map>
 
-_START_GOOGLE_NAMESPACE_
+namespace google_airbag {
 
-using STL_NAMESPACE::string;
+using std::string;
 using __gnu_cxx::hash_map;
 
 class SourceLineResolver {
@@ -83,6 +83,6 @@ class SourceLineResolver {
   void operator=(const SourceLineResolver&);
 };
 
-_END_GOOGLE_NAMESPACE_
+} // namespace google_airbag
 
 #endif  // _SOLURCE_LINE_RESOLVER_H__

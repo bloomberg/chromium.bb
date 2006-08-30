@@ -19,12 +19,12 @@
 #include <utility>
 #include "source_line_resolver.h"
 
-using STL_NAMESPACE::map;
-using STL_NAMESPACE::vector;
-using STL_NAMESPACE::make_pair;
+using std::map;
+using std::vector;
+using std::make_pair;
 using __gnu_cxx::hash;
 
-_START_GOOGLE_NAMESPACE_
+namespace google_airbag {
 
 void SourceLineResolver::SourceLineInfo::Reset() {
   function_name.clear();
@@ -272,4 +272,4 @@ size_t SourceLineResolver::HashString::operator()(const string &s) const {
   return hash<const char*>()(s.c_str());
 }
 
-_END_GOOGLE_NAMESPACE_
+} // namespace google_airbag

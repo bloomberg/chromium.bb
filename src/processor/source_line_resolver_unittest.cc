@@ -16,8 +16,8 @@
 #include <string>
 #include "source_line_resolver.h"
 
-using STL_NAMESPACE::string;
-using GOOGLE_NAMESPACE::SourceLineResolver;
+using std::string;
+using google_airbag::SourceLineResolver;
 
 #define ASSERT_TRUE(cond) \
   if (!(cond)) {                                                        \

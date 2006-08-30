@@ -1,64 +1,64 @@
 ## Process this file with automake to produce Makefile.in
 
-# Make sure that when we re-make ./configure, we get the macros we need
-ACLOCAL_AMFLAGS = -I `pwd`/../autoconf
+# Copyright (C) 2006 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# This is so we can #include <google/foo>
-AM_CPPFLAGS = -I$(top_srcdir)/src
 
-googleincludedir = $(includedir)/google
-## The .h files you want to install (that is, .h files that people
-## who install this package can include in their own applications.)
-googleinclude_HEADERS =
-
+## Documentation
 docdir = $(prefix)/share/doc/$(PACKAGE)-$(VERSION)
-## This is for HTML and other documentation you want to install.
-## Add your documentation files (in doc/) in addition to these
-## top-level boilerplate files.  Also add a TODO file if you have one.
-dist_doc_DATA = AUTHORS COPYING ChangeLog INSTALL NEWS README
 
-## The libraries (.so's) you want to install
-lib_LTLIBRARIES = libairbag.la
+dist_doc_DATA = \
+	AUTHORS \
+	COPYING \
+	ChangeLog \
+	INSTALL \
+	NEWS \
+	README
 
-## unittests you want to run when people type 'make check'.
-## TESTS is for binary unittests, check_SCRIPTS for script-based unittests.
-## TESTS_ENVIRONMENT sets environment variables for when you run unittest,
-## but it only seems to take effect for *binary* unittests (argh!)
-TESTS = source_line_resolver_unittest
+
+## Libraries
+lib_LTLIBRARIES = src/libairbag.la
+
+src_libairbag_la_SOURCES = \
+	src/processor/source_line_resolver.cc \
+	src/processor/source_line_resolver.h
+
+
+## Tests
+TESTS = src/processor/source_line_resolver_unittest
 TESTS_ENVIRONMENT =
 check_SCRIPTS =
-# Every time you add a unittest to check_SCRIPTS, add it here too
-noinst_SCRIPTS =
 
-## vvvv RULES TO MAKE THE LIBRARIES, BINARIES, AND UNITTESTS
-
-libairbag_la_SOURCES = 				\
-	src/processor/source_line_resolver.cc	\
-	src/processor/source_line_resolver.h
-
-source_line_resolver_unittest_SOURCES =		\
-	src/processor/source_line_resolver_unittest.cc \
-	src/processor/source_line_resolver.h
-source_line_resolver_unittest_LDADD = source_line_resolver.lo
-
-## ^^^^ END OF RULES TO MAKE THE LIBRARIES, BINARIES, AND UNITTESTS
+src_processor_source_line_resolver_unittest_SOURCES = \
+	src/processor/source_line_resolver_unittest.cc
+src_processor_source_line_resolver_unittest_LDADD = \
+	src/processor/source_line_resolver.lo
 
 
-## This should always include $(TESTS), but may also include other
-## binaries that you compile but don't want automatically installed.
+## Non-installables
 noinst_PROGRAMS = $(TESTS)
+noinst_SCRIPTS = $(check_SCRIPTS)
 
-rpm: dist-gzip packages/rpm.sh packages/rpm/rpm.spec
-	@cd packages && ./rpm.sh ${PACKAGE} ${VERSION}
 
-deb: dist-gzip packages/deb.sh packages/deb/*
-	@cd packages && ./deb.sh ${PACKAGE} ${VERSION}
+## Additional files to be included in a source distribution
+EXTRA_DIST = \
+	$(SCRIPTS) \
+	src/processor/testdata/module1.out \
+	src/processor/testdata/module2.out \
+	src/processor/testdata/module3_bad.out
 
+
+## Additional rules
 libtool: $(LIBTOOL_DEPS)
 	$(SHELL) ./config.status --recheck
-EXTRA_DIST = packages/rpm.sh packages/rpm/rpm.spec packages/deb.sh packages/deb \
-	$(SCRIPTS) libtool
-
-## If you create hash_map.h, hash_set.h, and/or hash_fun.h via the
-## ACC_CXX_MAKE_*_H configure.ac macros, add those files here.
-DISTCLEANFILES =
