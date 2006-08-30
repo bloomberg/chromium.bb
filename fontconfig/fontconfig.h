@@ -212,17 +212,14 @@ typedef struct _FcValue {
     FcType	type;
     union {
 	const FcChar8  *s;
-	int             s_off;
 	int		i;
 	FcBool		b;
 	double		d;
 	const FcMatrix  *m;
 	const FcCharSet *c;
-	int		c_off;
 	void		*f;
 	const FcPattern	*p;
 	const FcLangSet *l;
-	int		l_off; /* this is a difference of char *s */
     } u;
 } FcValue;
 

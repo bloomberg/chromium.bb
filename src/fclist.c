@@ -130,23 +130,21 @@ FcListValueListMatchAny (FcValueListPtr patOrig,	    /* pattern */
 {
     FcValueListPtr	 pat, fnt;
 
-    for (pat = patOrig; FcValueListPtrU(pat); 
-	 pat = FcValueListPtrU(pat)->next)
+    for (pat = patOrig; pat != NULL; pat = FcValueListNext(pat))
     {
-	for (fnt = fntOrig; FcValueListPtrU(fnt); 
-	     fnt = FcValueListPtrU(fnt)->next)
+	for (fnt = fntOrig; fnt != NULL; fnt = FcValueListNext(fnt))
 	{
 	    /*
 	     * make sure the font 'contains' the pattern.
 	     * (OpListing is OpContains except for strings
 	     *  where it requires an exact match)
 	     */
-	    if (FcConfigCompareValue (&FcValueListPtrU(fnt)->value,
+	    if (FcConfigCompareValue (&fnt->value,
 				      FcOpListing, 
-				      &FcValueListPtrU(pat)->value)) 
+				      &pat->value)) 
 		break;
 	}
-	if (!FcValueListPtrU(fnt))
+	if (fnt == NULL)
 	    return FcFalse;
     }
     return FcTrue;
@@ -158,26 +156,22 @@ FcListValueListEqual (FcValueListPtr v1orig,
 {
     FcValueListPtr	    v1, v2;
 
-    for (v1 = v1orig; FcValueListPtrU(v1); 
-	 v1 = FcValueListPtrU(v1)->next)
+    for (v1 = v1orig; v1 != NULL; v1 = FcValueListNext(v1))
     {
-	for (v2 = v2orig; FcValueListPtrU(v2); 
-	     v2 = FcValueListPtrU(v2)->next)
-	    if (FcValueEqual (FcValueCanonicalize(&FcValueListPtrU(v1)->value),
-			      FcValueCanonicalize(&FcValueListPtrU(v2)->value)))
+	for (v2 = v2orig; v2 != NULL; v2 = FcValueListNext(v2))
+	    if (FcValueEqual (FcValueCanonicalize(&(v1)->value),
+			      FcValueCanonicalize(&(v2)->value)))
 		break;
-	if (!FcValueListPtrU(v2))
+	if (v2 == NULL)
 	    return FcFalse;
     }
-    for (v2 = v2orig; FcValueListPtrU(v2); 
-	 v2 = FcValueListPtrU(v2)->next)
+    for (v2 = v2orig; v2 != NULL; v2 = FcValueListNext(v2))
     {
-	for (v1 = v1orig; FcValueListPtrU(v1); 
-	     v1 = FcValueListPtrU(v1)->next)
-	    if (FcValueEqual (FcValueCanonicalize(&FcValueListPtrU(v1)->value),
-			      FcValueCanonicalize(&FcValueListPtrU(v2)->value)))
+	for (v1 = v1orig; v1 != NULL; v1 = FcValueListNext(v1))
+	    if (FcValueEqual (FcValueCanonicalize(&v1->value),
+			      FcValueCanonicalize(&v2->value)))
 		break;
-	if (!FcValueListPtrU(v1))
+	if (v1 == NULL)
 	    return FcFalse;
     }
     return FcTrue;
@@ -193,13 +187,14 @@ FcListPatternEqual (FcPattern	*p1,
 
     for (i = 0; i < os->nobject; i++)
     {
-	e1 = FcPatternFindElt (p1, os->objects[i]);
-	e2 = FcPatternFindElt (p2, os->objects[i]);
+	e1 = FcPatternObjectFindElt (p1, FcObjectFromName (os->objects[i]));
+	e2 = FcPatternObjectFindElt (p2, FcObjectFromName (os->objects[i]));
 	if (!e1 && !e2)
 	    continue;
 	if (!e1 || !e2)
 	    return FcFalse;
-	if (!FcListValueListEqual (e1->values, e2->values))
+	if (!FcListValueListEqual (FcPatternEltValues(e1),
+				   FcPatternEltValues(e2)))
 	    return FcFalse;
     }
     return FcTrue;
@@ -214,16 +209,15 @@ FcListPatternMatchAny (const FcPattern *p,
 		       const FcPattern *font)
 {
     int		    i;
-    FcPatternElt   *e;
 
     for (i = 0; i < p->num; i++)
     {
-	e = FcPatternFindElt (font, 
-			      FcObjectPtrU((FcPatternEltU(p->elts)+i)->object));
-	if (!e)
+	FcPatternElt	*pe = &FcPatternElts(p)[i];
+	FcPatternElt	*fe = FcPatternObjectFindElt (font, pe->object);
+	if (!fe)
 	    return FcFalse;
-	if (!FcListValueListMatchAny ((FcPatternEltU(p->elts)+i)->values,    /* pat elts */
-				      e->values))	    /* font elts */
+	if (!FcListValueListMatchAny (FcPatternEltValues(pe),    /* pat elts */
+				      FcPatternEltValues(fe)))   /* font elts */
 	    return FcFalse;
     }
     return FcTrue;
@@ -272,10 +266,10 @@ FcListValueListHash (FcValueListPtr list)
 {
     FcChar32	h = 0;
     
-    while (FcValueListPtrU(list))
+    while (list != NULL)
     {
-	h = h ^ FcListValueHash (&FcValueListPtrU(list)->value);
-	list = FcValueListPtrU(list)->next;
+	h = h ^ FcListValueHash (&list->value);
+	list = FcValueListNext(list);
     }
     return h;
 }
@@ -290,9 +284,9 @@ FcListPatternHash (FcPattern	*font,
 
     for (n = 0; n < os->nobject; n++)
     {
-	e = FcPatternFindElt (font, os->objects[n]);
+	e = FcPatternObjectFindElt (font, FcObjectFromName (os->objects[n]));
 	if (e)
-	    h = h ^ FcListValueListHash (e->values);
+	    h = h ^ FcListValueListHash (FcPatternEltValues(e));
     }
     return h;
 }
@@ -338,10 +332,10 @@ FcListHashTableCleanup (FcListHashTable *table)
 }
 
 static int
-FcGetDefaultObjectLangIndex (FcPattern *font, const char *object)
+FcGetDefaultObjectLangIndex (FcPattern *font, FcObject object)
 {
     FcChar8	   *lang = FcGetDefaultLang ();
-    FcPatternElt   *e = FcPatternFindElt (font, object);
+    FcPatternElt   *e = FcPatternObjectFindElt (font, object);
     FcValueListPtr  v;
     FcValue         value;
     int             idx = -1;
@@ -349,9 +343,9 @@ FcGetDefaultObjectLangIndex (FcPattern *font, const char *object)
 
     if (e)
     {
-	for (v = e->values, i = 0; FcValueListPtrU(v); v = FcValueListPtrU(v)->next, ++i)
+	for (v = FcPatternEltValues(e), i = 0; v; v = FcValueListNext(v), ++i)
 	{
-	    value = FcValueCanonicalize (&FcValueListPtrU (v)->value);
+	    value = FcValueCanonicalize (&v->value);
 
 	    if (value.type == FcTypeString)
 	    {
@@ -404,33 +398,33 @@ FcListAppend (FcListHashTable	*table,
 	if (!strcmp (os->objects[o], FC_FAMILY) || !strcmp (os->objects[o], FC_FAMILYLANG))
 	{
 	    if (familyidx < 0)
-		familyidx = FcGetDefaultObjectLangIndex (font, FC_FAMILYLANG);
+		familyidx = FcGetDefaultObjectLangIndex (font, FC_FAMILYLANG_OBJECT);
 	    defidx = familyidx;
 	}
 	else if (!strcmp (os->objects[o], FC_FULLNAME) || !strcmp (os->objects[o], FC_FULLNAMELANG))
 	{
 	    if (fullnameidx < 0)
-		fullnameidx = FcGetDefaultObjectLangIndex (font, FC_FULLNAMELANG);
+		fullnameidx = FcGetDefaultObjectLangIndex (font, FC_FULLNAMELANG_OBJECT);
 	    defidx = fullnameidx;
 	}
 	else if (!strcmp (os->objects[o], FC_STYLE) || !strcmp (os->objects[o], FC_STYLELANG))
 	{
 	    if (styleidx < 0)
-		styleidx = FcGetDefaultObjectLangIndex (font, FC_STYLELANG);
+		styleidx = FcGetDefaultObjectLangIndex (font, FC_STYLELANG_OBJECT);
 	    defidx = styleidx;
 	}
 	else
 	    defidx = 0;
 
-	e = FcPatternFindElt (font, os->objects[o]);
+	e = FcPatternObjectFindElt (font, FcObjectFromName (os->objects[o]));
 	if (e)
 	{
-	    for (v = e->values, idx = 0; FcValueListPtrU(v); 
-		 v = FcValueListPtrU(v)->next, ++idx)
+	    for (v = FcPatternEltValues(e), idx = 0; v;
+		 v = FcValueListNext(v), ++idx)
 	    {
 		if (!FcPatternAdd (bucket->pattern, 
 				   os->objects[o], 
-				   FcValueCanonicalize(&FcValueListPtrU(v)->value), defidx != idx))
+				   FcValueCanonicalize(&v->value), defidx != idx))
 		    goto bail2;
 	    }
 	}

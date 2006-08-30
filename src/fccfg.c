@@ -310,11 +310,12 @@ FcConfigBuildFonts (FcConfig *config)
 	for (i = 0; i < cached_fonts->nfont; i++)
 	{
 	    FcChar8 	*cfn; 
-	    FcPatternGetString (cached_fonts->fonts[i], FC_FILE, 0, &cfn);
+	    FcPattern	*font = cached_fonts->fonts[i];
+	    FcPatternObjectGetString (font, FC_FILE_OBJECT, 0, &cfn);
 
-	    if (FcConfigAcceptFont (config, cached_fonts->fonts[i]) &&
+	    if (FcConfigAcceptFont (config, font) &&
                 (cfn && FcConfigAcceptFilename (config, cfn)))
-		FcFontSetAdd (fonts, cached_fonts->fonts[i]);
+		FcFontSetAdd (fonts, font);
 
 	    cached_fonts->fonts[i] = 0; /* prevent free in FcFontSetDestroy */
 	}
@@ -841,7 +842,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	v.u.b = e->u.bval;
 	break;
     case FcOpField:
-	r = FcPatternGet (p, e->u.field, 0, &v);
+	r = FcPatternObjectGet (p, e->u.object, 0, &v);
 	if (r != FcResultMatch)
 	    v.type = FcTypeVoid;
 	v = FcValueSave (v);
@@ -1093,7 +1094,7 @@ FcConfigMatchValueList (FcPattern	*p,
 	    e = 0;
 	}
 
-	for (v = values; v; v = FcValueListPtrU(v->next))
+	for (v = values; v; v = FcValueListNext(v))
 	{
 	    /* Compare the pattern value to the match expression value */
 	    if (FcConfigCompareValue (&v->value, t->op, &value))
@@ -1129,17 +1130,17 @@ FcConfigValues (FcPattern *p, FcExpr *e, FcValueBinding binding)
     if (e->op == FcOpComma)
     {
 	l->value = FcConfigEvaluate (p, e->u.tree.left);
-	l->next  = FcValueListPtrCreateDynamic(FcConfigValues (p, e->u.tree.right, binding));
+	l->next = FcConfigValues (p, e->u.tree.right, binding);
     }
     else
     {
 	l->value = FcConfigEvaluate (p, e);
-	l->next  = FcValueListPtrCreateDynamic(0);
+	l->next = NULL;
     }
     l->binding = binding;
     if (l->value.type == FcTypeVoid)
     {
-	FcValueList  *next = FcValueListPtrU(l->next);
+	FcValueList  *next = FcValueListNext(l);
 
 	FcMemFree (FC_MEM_VALLIST, sizeof (FcValueList));
 	free (l);
@@ -1162,27 +1163,26 @@ FcConfigAdd (FcValueListPtr *head,
 	sameBinding = position->binding;
     else
 	sameBinding = FcValueBindingWeak;
-    for (v = FcValueListPtrCreateDynamic(new); FcValueListPtrU(v); 
-	 v = FcValueListPtrU(v)->next)
-	if (FcValueListPtrU(v)->binding == FcValueBindingSame)
-	    FcValueListPtrU(v)->binding = sameBinding;
+    for (v = new; v != NULL; v = FcValueListNext(v))
+	if (v->binding == FcValueBindingSame)
+	    v->binding = sameBinding;
     if (append)
     {
 	if (position)
 	    prev = &position->next;
 	else
-	    for (prev = head; FcValueListPtrU(*prev); 
-		 prev = &(FcValueListPtrU(*prev)->next))
+	    for (prev = head; *prev != NULL; 
+		 prev = &(*prev)->next)
 		;
     }
     else
     {
 	if (position)
 	{
-	    for (prev = head; FcValueListPtrU(*prev); 
-		 prev = &(FcValueListPtrU(*prev)->next))
+	    for (prev = head; *prev != NULL; 
+		 prev = &(*prev)->next)
 	    {
-		if (FcValueListPtrU(*prev) == position)
+		if (*prev == position)
 		    break;
 	    }
 	}
@@ -1191,7 +1191,7 @@ FcConfigAdd (FcValueListPtr *head,
 
 	if (FcDebug () & FC_DBG_EDIT)
 	{
-	    if (!FcValueListPtrU(*prev))
+	    if (*prev == NULL)
 		printf ("position not on list\n");
 	}
     }
@@ -1205,12 +1205,12 @@ FcConfigAdd (FcValueListPtr *head,
     
     if (new)
     {
-	last = FcValueListPtrCreateDynamic(new);
-	while (FcValueListPtrU(FcValueListPtrU(last)->next))
-	    last = FcValueListPtrU(last)->next;
+	last = new;
+	while (last->next != NULL)
+	    last = last->next;
     
-	FcValueListPtrU(last)->next = *prev;
-	*prev = FcValueListPtrCreateDynamic(new);
+	last->next = *prev;
+	*prev = new;
     }
     
     if (FcDebug () & FC_DBG_EDIT)
@@ -1229,14 +1229,13 @@ FcConfigDel (FcValueListPtr *head,
 {
     FcValueListPtr *prev;
 
-    for (prev = head; FcValueListPtrU(*prev); 
-	 prev = &(FcValueListPtrU(*prev)->next))
+    for (prev = head; *prev != NULL; prev = &(*prev)->next)
     {
-	if (FcValueListPtrU(*prev) == position)
+	if (*prev == position)
 	{
 	    *prev = position->next;
-	    position->next = FcValueListPtrCreateDynamic(0);
-	    FcValueListDestroy (FcValueListPtrCreateDynamic(position));
+	    position->next = NULL;
+	    FcValueListDestroy (position);
 	    break;
 	}
     }
@@ -1244,13 +1243,13 @@ FcConfigDel (FcValueListPtr *head,
 
 static void
 FcConfigPatternAdd (FcPattern	*p,
-		    const char	*object,
+		    FcObject	object,
 		    FcValueList	*list,
 		    FcBool	append)
 {
     if (list)
     {
-	FcPatternElt    *e = FcPatternInsertElt (p, object);
+	FcPatternElt    *e = FcPatternObjectInsertElt (p, object);
     
 	if (!e)
 	    return;
@@ -1263,24 +1262,24 @@ FcConfigPatternAdd (FcPattern	*p,
  */
 static void
 FcConfigPatternDel (FcPattern	*p,
-		    const char	*object)
+		    FcObject	object)
 {
-    FcPatternElt    *e = FcPatternFindElt (p, object);
+    FcPatternElt    *e = FcPatternObjectFindElt (p, object);
     if (!e)
 	return;
-    while (FcValueListPtrU(e->values))
-	FcConfigDel (&e->values, FcValueListPtrU(e->values));
+    while (e->values != NULL)
+	FcConfigDel (&e->values, e->values);
 }
 
 static void
 FcConfigPatternCanon (FcPattern	    *p,
-		      const char    *object)
+		      FcObject	    object)
 {
-    FcPatternElt    *e = FcPatternFindElt (p, object);
+    FcPatternElt    *e = FcPatternObjectFindElt (p, object);
     if (!e)
 	return;
-    if (!FcValueListPtrU(e->values))
-	FcPatternDel (p, object);
+    if (e->values == NULL)
+	FcPatternObjectDel (p, object);
 }
 
 FcBool
@@ -1337,7 +1336,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 	    else
 		m = p;
 	    if (m)
-		st[i].elt = FcPatternFindElt (m, t->field);
+		st[i].elt = FcPatternObjectFindElt (m, t->object);
 	    else
 		st[i].elt = 0;
 	    /*
@@ -1358,12 +1357,12 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 	     * Check to see if there is a match, mark the location
 	     * to apply match-relative edits
 	     */
-	    st[i].value = FcConfigMatchValueList (m, t, FcValueListPtrU(st[i].elt->values));
+	    st[i].value = FcConfigMatchValueList (m, t, st[i].elt->values);
 	    if (!st[i].value)
 		break;
-	    if (t->qual == FcQualFirst && st[i].value != FcValueListPtrU(st[i].elt->values))
+	    if (t->qual == FcQualFirst && st[i].value != st[i].elt->values)
 		break;
-	    if (t->qual == FcQualNotFirst && st[i].value == FcValueListPtrU(st[i].elt->values))
+	    if (t->qual == FcQualNotFirst && st[i].value == st[i].elt->values)
 		break;
 	}
 	if (t)
@@ -1391,8 +1390,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 	    for (t = s->test, i = 0; t; t = t->next, i++)
 	    {
 		if ((t->kind == FcMatchFont || kind == FcMatchPattern) &&
-		    !FcStrCmpIgnoreCase ((FcChar8 *) t->field, 
-					 (FcChar8 *) e->field))
+		    t->object == e->object)
 		{
 		    /* 
 		     * KLUDGE - the pattern may have been reallocated or
@@ -1401,7 +1399,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		     * the element again
 		     */
 		    if (e != s->edit && st[i].elt)
-			st[i].elt = FcPatternFindElt (p, t->field);
+			st[i].elt = FcPatternObjectFindElt (p, t->object);
 		    if (!st[i].elt)
 			t = 0;
 		    break;
@@ -1416,7 +1414,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		if (t)
 		{
 		    FcValueList	*thisValue = st[i].value;
-		    FcValueList	*nextValue = thisValue ? FcValueListPtrU(thisValue->next) : 0;
+		    FcValueList	*nextValue = thisValue;
 		    
 		    /*
 		     * Append the new list of values after the current value
@@ -1444,8 +1442,8 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		 * Delete all of the values and insert
 		 * the new set
 		 */
-		FcConfigPatternDel (p, e->field);
-		FcConfigPatternAdd (p, e->field, l, FcTrue);
+		FcConfigPatternDel (p, e->object);
+		FcConfigPatternAdd (p, e->object, l, FcTrue);
 		/*
 		 * Adjust any pointers into the value list as they no
 		 * longer point to anything valid
@@ -1468,7 +1466,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		}
 		/* fall through ... */
 	    case FcOpPrependFirst:
-		FcConfigPatternAdd (p, e->field, l, FcFalse);
+		FcConfigPatternAdd (p, e->object, l, FcFalse);
 		break;
 	    case FcOpAppend:
 		if (t)
@@ -1478,10 +1476,10 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		}
 		/* fall through ... */
 	    case FcOpAppendLast:
-		FcConfigPatternAdd (p, e->field, l, FcTrue);
+		FcConfigPatternAdd (p, e->object, l, FcTrue);
 		break;
 	    default:
-                FcValueListDestroy (FcValueListPtrCreateDynamic(l));
+                FcValueListDestroy (l);
 		break;
 	    }
 	}
@@ -1490,7 +1488,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 	 * any properties without data
 	 */
 	for (e = s->edit; e; e = e->next)
-	    FcConfigPatternCanon (p, e->field);
+	    FcConfigPatternCanon (p, e->object);
 
 	if (FcDebug () & FC_DBG_EDIT)
 	{

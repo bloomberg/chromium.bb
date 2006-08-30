@@ -81,117 +81,52 @@ FcFontSetAdd (FcFontSet *s, FcPattern *font)
     return FcTrue;
 }
 
-static int * fcfs_pat_count;
-
-void
-FcFontSetNewBank (void)
-{
-    FcPatternNewBank();
-}
-
-int
-FcFontSetNeededBytes (FcFontSet *s)
-{
-    int i, c, cum = 0;
-
-    for (i = 0; i < s->nfont; i++)
-    {
-	c = FcPatternNeededBytes(s->fonts[i]);
-	if (c < 0)
-	    return c;
-	cum += c;
-    }
-
-    if (cum > 0)
-	return cum + sizeof(int) + FcObjectNeededBytes();
-    else
-	return 0;
-}
-
-/* Returns an overestimate of the number of bytes that
- * might later get eaten up by padding in the ALIGN macro. */
-int
-FcFontSetNeededBytesAlign (void)
-{
-    return fc_alignof (int) + 
-	FcPatternNeededBytesAlign () + FcObjectNeededBytesAlign ();
-}
-
-void *
-FcFontSetDistributeBytes (FcCache * metadata, void * block_ptr)
-{
-    block_ptr = ALIGN (block_ptr, int);
-    fcfs_pat_count = (int *)block_ptr;
-    block_ptr = (int *)block_ptr + 1;
-    /* we don't consume any bytes for the fontset itself, */
-    /* since we don't allocate it statically. */
-    block_ptr = FcPatternDistributeBytes (metadata, block_ptr);
-
-    /* for good measure, write out the object ids used for */
-    /* this bank to the file. */
-    return FcObjectDistributeBytes (metadata, block_ptr);
-}
-
 FcBool
-FcFontSetSerialize (int bank, FcFontSet * s)
+FcFontSetSerializeAlloc (FcSerialize *serialize, const FcFontSet *s)
 {
     int i;
-    FcPattern * p;
-    *fcfs_pat_count = s->nfont;
-
+    
+    if (!FcSerializeAlloc (serialize, s, sizeof (FcFontSet)))
+	return FcFalse;
+    if (!FcSerializeAlloc (serialize, s->fonts, s->nfont * sizeof (FcPattern *)))
+	return FcFalse;
     for (i = 0; i < s->nfont; i++)
     {
-	p = FcPatternSerialize (bank, s->fonts[i]);
-	if (!p) return FcFalse;
+	if (!FcPatternSerializeAlloc (serialize, s->fonts[i]))
+	    return FcFalse;
     }
-    FcObjectSerialize();
-
     return FcTrue;
 }
 
-FcBool
-FcFontSetUnserialize(FcCache * metadata, FcFontSet * s, void * block_ptr)
+FcFontSet *
+FcFontSetSerialize (FcSerialize *serialize, const FcFontSet * s)
 {
-    int nfont;
-    int i, n;
+    int		i;
+    FcFontSet	*s_serialize;
+    FcPattern	**fonts_serialize;
+    FcPattern	*p_serialize;
 
-    block_ptr = ALIGN (block_ptr, int);
-    nfont = *(int *)block_ptr;
-    block_ptr = (int *)block_ptr + 1;
+    s_serialize = FcSerializePtr (serialize, s);
+    if (!s_serialize)
+	return NULL;
+    *s_serialize = *s;
+    s_serialize->sfont = s_serialize->nfont;
+    
+    fonts_serialize = FcSerializePtr (serialize, s->fonts);
+    if (!fonts_serialize)
+	return NULL;
+    s_serialize->fonts = FcPtrToEncodedOffset (s_serialize,
+					       fonts_serialize, FcPattern *);
 
-    /* comparing nfont and metadata.count is a bit like comparing
-       apples and oranges. Its just for rejecting totally insane
-       nfont values, and for that its good enough */
-    if (nfont > 0 && nfont < metadata->count / sizeof(void*))
+    for (i = 0; i < s->nfont; i++)
     {
-	FcPattern * p = (FcPattern *)block_ptr;
-
-	if (s->sfont < s->nfont + nfont)
-	{
-	    int sfont = s->nfont + nfont;
-	    FcPattern ** pp;
-	    pp = realloc (s->fonts, sfont * sizeof (FcPattern));
-	    if (!pp)
-		return FcFalse;
-	    s->fonts = pp;
-	    s->sfont = sfont;
-	}
-	n = s->nfont;
-	s->nfont += nfont;
-
-        /* The following line is a bit counterintuitive.  The usual
-         * convention is that FcPatternUnserialize is responsible for
-         * aligning the FcPattern.  However, the FontSet also stores
-         * the FcPatterns in its own array, so we need to align here
-         * too. */
-        p = ALIGN(p, FcPattern);
-	for (i = 0; i < nfont; i++)
-	    s->fonts[n + i] = p+i;
-
-	block_ptr = FcPatternUnserialize (metadata, block_ptr);
-	block_ptr = FcObjectUnserialize (metadata, block_ptr);
-	return block_ptr != 0;
+	p_serialize = FcPatternSerialize (serialize, s->fonts[i]);
+	if (!p_serialize)
+	    return NULL;
+	fonts_serialize[i] = FcPtrToEncodedOffset (s_serialize,
+						   p_serialize,
+						   FcPattern);
     }
 
-    return FcFalse;
+    return s_serialize;
 }

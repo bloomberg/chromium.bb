@@ -30,7 +30,7 @@
 
 /* Please do not revoke any of these bindings. */
 /* The __DUMMY__ object enables callers to distinguish the error return
- * of FcObjectToPtrLookup from FC_FAMILY's FcObjectPtr, which would
+ * of FcObjectToPtrLookup from FC_FAMILY's FcObject, which would
  * otherwise be 0. */
 static const FcObjectType _FcBaseObjectTypes[] = {
     { "__DUMMY__",      FcTypeVoid, }, 
@@ -48,14 +48,12 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_PIXEL_SIZE,	FcTypeDouble, },
     { FC_SPACING,	FcTypeInteger, },
     { FC_FOUNDRY,	FcTypeString, },
-/*    { FC_CORE,		FcTypeBool, }, */
     { FC_ANTIALIAS,	FcTypeBool, },
     { FC_HINT_STYLE,    FcTypeInteger, },
     { FC_HINTING,	FcTypeBool, },
     { FC_VERTICAL_LAYOUT,   FcTypeBool, },
     { FC_AUTOHINT,	FcTypeBool, },
     { FC_GLOBAL_ADVANCE,    FcTypeBool, },
-/*    { FC_XLFD,		FcTypeString, }, */
     { FC_FILE,		FcTypeString, },
     { FC_INDEX,		FcTypeInteger, },
     { FC_RASTERIZER,	FcTypeString, },
@@ -65,7 +63,6 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_RGBA,		FcTypeInteger, },
     { FC_SCALE,		FcTypeDouble, },
     { FC_MINSPACE,	FcTypeBool, },
-/*    { FC_RENDER,	FcTypeBool, },*/
     { FC_CHAR_WIDTH,	FcTypeInteger },
     { FC_CHAR_HEIGHT,	FcTypeInteger },
     { FC_MATRIX,	FcTypeMatrix },
@@ -182,16 +179,13 @@ static struct objectBucket *FcObjectBuckets[OBJECT_HASH_SIZE];
 /* Design constraint: biggest_known_ntypes must never change
  * after any call to FcNameRegisterObjectTypes. */
 static const FcObjectType *biggest_known_types = _FcBaseObjectTypes; 
-static FcBool allocated_biggest_known_types;
 static int biggest_known_ntypes = NUM_OBJECT_TYPES;
-static int biggest_known_count = 0;
-static char * biggest_ptr;
 
 
-static FcObjectPtr
+static FcObject
 FcObjectToPtrLookup (const char * object)
 {
-    FcObjectPtr		    i = 0, n;
+    FcObject		    i = 0, n;
     const FcObjectTypeList  *l;
     FcObjectType	    *t = _FcUserObjectNames;
     FcBool		    replace;
@@ -251,8 +245,16 @@ FcObjectToPtrLookup (const char * object)
     return -n;
 }
 
-FcObjectPtr
-FcObjectToPtr (const char * name)
+FcBool
+FcObjectValidType (FcObject object, FcType type)
+{
+    if (object < NUM_OBJECT_TYPES && _FcBaseObjectTypes[object].type != type)
+	return FcFalse;
+    return FcTrue;
+}
+
+FcObject
+FcObjectFromName (const char * name)
 {
     FcChar32            hash = FcStringHash ((const FcChar8 *) name);
     struct objectBucket **p;
@@ -299,112 +301,24 @@ FcObjectStaticNameFini (void)
 }
 
 const char *
-FcObjectPtrU (FcObjectPtr si)
+FcObjectName (FcObject object)
 {
     const FcObjectTypeList  *l;
     int i, j;
 
-    if (si > 0)
+    if (object > 0)
     {
-        if (si < biggest_known_ntypes)
-            return biggest_known_types[si].object;
+        if (object < biggest_known_ntypes)
+            return biggest_known_types[object].object;
 
         j = 0;
         for (l = _FcObjectTypes; l; l = l->next)
             for (i = 0; i < l->ntypes; i++, j++)
-                if (j == si)
+                if (j == object)
                     return l->types[i].object;
     }
 
-    return _FcUserObjectNames[-si].object;
-}
-
-int
-FcObjectNeededBytes ()
-{
-    int num = 0, i;
-    for (i = 0; i < biggest_known_ntypes; i++)
-    {
-	const char * t = biggest_known_types[i].object;
-	num = num + strlen(t) + 1;
-    }
-    biggest_known_count = num;
-    return num + sizeof(int);
-}
-
-int
-FcObjectNeededBytesAlign (void)
-{
-    return fc_alignof (int) + fc_alignof (char);
-}
-
-void *
-FcObjectDistributeBytes (FcCache * metadata, void * block_ptr)
-{
-    block_ptr = ALIGN (block_ptr, int);
-    *(int *)block_ptr = biggest_known_ntypes;
-    block_ptr = (int *) block_ptr + 1;
-    block_ptr = ALIGN (block_ptr, char);
-    biggest_ptr = block_ptr;
-    block_ptr = (char *) block_ptr + biggest_known_count;
-    return block_ptr;
-}
-
-void
-FcObjectSerialize (void)
-{
-    int i;
-    for (i = 0; i < biggest_known_ntypes; i++)
-    {
-	const char * t = biggest_known_types[i].object;
-	strcpy (biggest_ptr, t);
-	biggest_ptr = biggest_ptr + strlen(t) + 1;
-    }
-}
-
-void *
-FcObjectUnserialize (FcCache * metadata, void *block_ptr)
-{
-    int new_biggest;
-    block_ptr = ALIGN (block_ptr, int);
-    new_biggest = *(int *)block_ptr;
-    block_ptr = (int *) block_ptr + 1;
-    if (biggest_known_ntypes < new_biggest)
-    {
-	int i;
-	char * bp = (char *)block_ptr;
-	FcObjectType * bn;
-
-	bn = malloc (sizeof (const FcObjectType) * (new_biggest + 1));
-	if (!bn)
-	    return 0;
-
-	for (i = 0; i < new_biggest; i++)
-	{
-	    const FcObjectType * t = FcNameGetObjectType(bp);
-	    if (t)
-		bn[i].type = t->type;
-	    else
-		bn[i].type = FcTypeVoid;
-	    bn[i].object = bp;
-	    bp = bp + strlen(bp) + 1;
-	}
-
-	FcNameUnregisterObjectTypesFree (biggest_known_types, biggest_known_ntypes, FcFalse);
-	if (allocated_biggest_known_types)
-	{
-	    free ((FcObjectTypeList *)biggest_known_types);
-	}
-	else
-	    allocated_biggest_known_types = FcTrue;
-
-	FcNameRegisterObjectTypes (bn, new_biggest);
-	biggest_known_ntypes = new_biggest;
-	biggest_known_types = (const FcObjectType *)bn;
-    }
-    block_ptr = ALIGN (block_ptr, char);
-    block_ptr = (char *) block_ptr + biggest_known_count;
-    return block_ptr;
+    return _FcUserObjectNames[-object].object;
 }
 
 static const FcConstant _FcBaseConstants[] = {
@@ -803,11 +717,11 @@ FcNameUnparseValueList (FcStrBuf	*buf,
 			FcValueListPtr	v,
 			FcChar8		*escape)
 {
-    while (FcValueListPtrU(v))
+    while (v)
     {
-	if (!FcNameUnparseValue (buf, &FcValueListPtrU(v)->value, escape))
+	if (!FcNameUnparseValue (buf, &v->value, escape))
 	    return FcFalse;
-	if (FcValueListPtrU(v = FcValueListPtrU(v)->next))
+	if ((v = FcValueListNext(v)) != NULL)
 	    if (!FcNameUnparseString (buf, (FcChar8 *) ",", 0))
 		return FcFalse;
     }
@@ -834,18 +748,18 @@ FcNameUnparseEscaped (FcPattern *pat, FcBool escape)
     const FcObjectType	    *o;
 
     FcStrBufInit (&buf, buf_static, sizeof (buf_static));
-    e = FcPatternFindElt (pat, FC_FAMILY);
+    e = FcPatternObjectFindElt (pat, FC_FAMILY_OBJECT);
     if (e)
     {
-        if (!FcNameUnparseValueList (&buf, e->values, escape ? (FcChar8 *) FC_ESCAPE_FIXED : 0))
+        if (!FcNameUnparseValueList (&buf, FcPatternEltValues(e), escape ? (FcChar8 *) FC_ESCAPE_FIXED : 0))
 	    goto bail0;
     }
-    e = FcPatternFindElt (pat, FC_SIZE);
+    e = FcPatternObjectFindElt (pat, FC_SIZE_OBJECT);
     if (e)
     {
 	if (!FcNameUnparseString (&buf, (FcChar8 *) "-", 0))
 	    goto bail0;
-	if (!FcNameUnparseValueList (&buf, e->values, escape ? (FcChar8 *) FC_ESCAPE_FIXED : 0))
+	if (!FcNameUnparseValueList (&buf, FcPatternEltValues(e), escape ? (FcChar8 *) FC_ESCAPE_FIXED : 0))
 	    goto bail0;
     }
     for (l = _FcObjectTypes; l; l = l->next)
@@ -858,7 +772,7 @@ FcNameUnparseEscaped (FcPattern *pat, FcBool escape)
 		!strcmp (o->object, FC_FILE))
 		continue;
 	    
-	    e = FcPatternFindElt (pat, o->object);
+	    e = FcPatternObjectFindElt (pat, FcObjectFromName (o->object));
 	    if (e)
 	    {
 		if (!FcNameUnparseString (&buf, (FcChar8 *) ":", 0))
@@ -867,7 +781,7 @@ FcNameUnparseEscaped (FcPattern *pat, FcBool escape)
 		    goto bail0;
 		if (!FcNameUnparseString (&buf, (FcChar8 *) "=", 0))
 		    goto bail0;
-		if (!FcNameUnparseValueList (&buf, e->values, escape ? 
+		if (!FcNameUnparseValueList (&buf, FcPatternEltValues(e), escape ? 
 					     (FcChar8 *) FC_ESCAPE_VARIABLE : 0))
 		    goto bail0;
 	    }

@@ -95,6 +95,7 @@ libfontconfig_la_SOURCES = \
 	fcmatrix.c \
 	fcname.c \
 	fcpat.c \
+	fcserialize.c \
 	fcstr.c \
 	fcxml.c \
 	ftglue.h \

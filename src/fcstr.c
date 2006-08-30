@@ -1052,3 +1052,4 @@ FcStrListDone (FcStrList *list)
     FcMemFree (FC_MEM_STRLIST, sizeof (FcStrList));
     free (list);
 }
+

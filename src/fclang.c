@@ -44,8 +44,6 @@ struct _FcLangSet {
 #define FcLangSetBitSet(ls, id)	((ls)->map[(id)>>5] |= ((FcChar32) 1 << ((id) & 0x1f)))
 #define FcLangSetBitGet(ls, id) (((ls)->map[(id)>>5] >> ((id) & 0x1f)) & 1)
 
-static FcBool langsets_populated = FcFalse;
-
 FcLangSet *
 FcFreeTypeLangSet (const FcCharSet  *charset, 
 		   const FcChar8    *exclusiveLang)
@@ -55,19 +53,26 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
     const FcCharSet *exclusiveCharset = 0;
     FcLangSet	    *ls;
 
-    if (!langsets_populated)
-    {
-        FcLangCharSetPopulate ();
-        langsets_populated = FcTrue;
-    }
-
     if (exclusiveLang)
 	exclusiveCharset = FcCharSetForLang (exclusiveLang);
     ls = FcLangSetCreate ();
     if (!ls)
 	return 0;
+    if (FcDebug() & FC_DBG_LANGSET) 
+    {
+	printf ("font charset\n");
+	FcCharSetPrint (charset);
+	printf ("\n");
+    }
     for (i = 0; i < NUM_LANG_CHAR_SET; i++)
     {
+	if (FcDebug() & FC_DBG_LANGSET) 
+	{
+	    printf ("%s charset\n", fcLangCharSets[i].lang);
+	    FcCharSetPrint (&fcLangCharSets[i].charset);
+	    printf ("\n");
+	}
+	
 	/*
 	 * Check for Han charsets to make fonts
 	 * which advertise support for a single language
@@ -80,8 +85,8 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
 		continue;
 
 	    for (j = 0; j < fcLangCharSets[i].charset.num; j++)
-		if (FcCharSetGetLeaf(&fcLangCharSets[i].charset, j) != 
-		    FcCharSetGetLeaf(exclusiveCharset, j))
+		if (FcCharSetLeaf(&fcLangCharSets[i].charset, j) != 
+		    FcCharSetLeaf(exclusiveCharset, j))
 		    continue;
 	}
 	missing = FcCharSetSubtractCount (&fcLangCharSets[i].charset, charset);
@@ -195,12 +200,6 @@ FcCharSetForLang (const FcChar8 *lang)
 {
     int		i;
     int		country = -1;
-
-    if (!langsets_populated)
-    {
-        FcLangCharSetPopulate ();
-        langsets_populated = FcTrue;
-    }
 
     for (i = 0; i < NUM_LANG_CHAR_SET; i++)
     {
@@ -710,90 +709,21 @@ FcLangSetContains (const FcLangSet *lsa, const FcLangSet *lsb)
     return FcTrue;
 }
 
-static FcLangSet ** langsets = 0;
-static int langset_bank_count = 0, langset_ptr = 0, langset_count = 0;
-
-void
-FcLangSetNewBank (void)
+FcBool
+FcLangSetSerializeAlloc (FcSerialize *serialize, const FcLangSet *l)
 {
-    langset_count = 0;
-}
-
-/* ideally, should only write one copy of any particular FcLangSet */
-int
-FcLangSetNeededBytes (const FcLangSet *l)
-{
-    langset_count++;
-    return sizeof (FcLangSet);
-}
-
-int
-FcLangSetNeededBytesAlign (void)
-{
-    return fc_alignof (FcLangSet);
-}
-
-static FcBool
-FcLangSetEnsureBank (int bi)
-{
-    if (!langsets || bi >= langset_bank_count)
-    {
-	int new_count = langset_bank_count + 2;
-	int i;
-	FcLangSet** tt;
-	tt = realloc(langsets, new_count * sizeof(FcLangSet *));
-	if (!tt)
-	    return FcFalse;
-
-	langsets = tt;
-	for (i = langset_bank_count; i < new_count; i++)
-	    langsets[i] = 0; 
-	langset_bank_count = new_count;
-    }
-
+    if (!FcSerializeAlloc (serialize, l, sizeof (FcLangSet)))
+	return FcFalse;
     return FcTrue;
 }
 
-void *
-FcLangSetDistributeBytes (FcCache * metadata, void * block_ptr)
-{
-    int bi = FcCacheBankToIndex(metadata->bank);
-    if (!FcLangSetEnsureBank(bi))
-	return 0;
-
-    block_ptr = ALIGN(block_ptr, FcLangSet);
-    langsets[bi] = block_ptr;
-    block_ptr = (void *)((char *)block_ptr +
-			 langset_count * sizeof(FcLangSet));
-    langset_ptr = 0;
-    metadata->langset_count = langset_count;
-    return block_ptr;
-}
-
 FcLangSet *
-FcLangSetSerialize(int bank, FcLangSet *l)
+FcLangSetSerialize(FcSerialize *serialize, const FcLangSet *l)
 {
-    int p = langset_ptr, bi = FcCacheBankToIndex(bank);
+    FcLangSet	*l_serialize = FcSerializePtr (serialize, l);
 
-    if (!l) return 0;
-
-    langsets[bi][langset_ptr] = *l;
-    langsets[bi][langset_ptr].extra = 0;
-    langset_ptr++;
-    return &langsets[bi][p];
-}
-
-void *
-FcLangSetUnserialize (FcCache * metadata, void *block_ptr)
-{
-    int bi = FcCacheBankToIndex(metadata->bank);
-    if (!FcLangSetEnsureBank(bi))
-	return 0;
-
-    FcMemAlloc (FC_MEM_LANGSET, metadata->langset_count * sizeof(FcLangSet));
-    block_ptr = ALIGN(block_ptr, FcLangSet);
-    langsets[bi] = (FcLangSet *)block_ptr;
-    block_ptr = (void *)((char *)block_ptr +
-			 metadata->langset_count * sizeof(FcLangSet));
-    return block_ptr;
+    if (!l_serialize)
+	return NULL;
+    *l_serialize = *l;
+    return l_serialize;
 }

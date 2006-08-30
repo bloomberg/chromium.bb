@@ -49,7 +49,8 @@ FcValuePrint (const FcValue v)
 	printf (" (%f %f; %f %f)", v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);
 	break;
     case FcTypeCharSet:	/* XXX */
-	printf (" set");
+	printf (" ");
+	FcCharSetPrint (v.u.c);
 	break;
     case FcTypeLangSet:
 	printf (" ");
@@ -64,10 +65,10 @@ FcValuePrint (const FcValue v)
 void
 FcValueListPrint (FcValueListPtr l)
 {
-    for (; FcValueListPtrU(l); l = FcValueListPtrU(l)->next)
+    for (; l != NULL; l = FcValueListNext(l))
     {
-	FcValuePrint (FcValueCanonicalize(&FcValueListPtrU(l)->value));
-	switch (FcValueListPtrU(l)->binding) {
+	FcValuePrint (FcValueCanonicalize(&l->value));
+	switch (l->binding) {
 	case FcValueBindingWeak:
 	    printf ("(w)");
 	    break;
@@ -96,6 +97,22 @@ FcLangSetPrint (const FcLangSet *ls)
 }
 
 void
+FcCharSetPrint (const FcCharSet *c)
+{
+    int	i, j;
+
+    for (i = 0; i < c->num; i++)
+    {
+	FcCharLeaf	*leaf = FcCharSetLeaf(c, i);
+	
+	printf ("%04x:", FcCharSetNumbers(c)[i]);
+	for (j = 0; j < 256/32; j++)
+	    printf (" %08x", leaf->map[j]);
+	printf ("\n");
+    }
+}
+
+void
 FcPatternPrint (const FcPattern *p)
 {
     int		    i;
@@ -109,15 +126,15 @@ FcPatternPrint (const FcPattern *p)
     printf ("Pattern has %d elts (size %d)\n", p->num, p->size);
     for (i = 0; i < p->num; i++)
     {
-	e = FcPatternEltU(p->elts) + i;
-	printf ("\t%s:", FcObjectPtrU(e->object));
+	e = &FcPatternElts(p)[i];
+	printf ("\t%s:", FcObjectName(e->object));
 	/* so that fc-match properly displays file: foo... */
-	if (e->object == FcObjectToPtr(FC_FILE))
+	if (e->object == FC_FILE_OBJECT)
 	{
 	    FcChar8 * s;
-	    FcPatternGetString (p, FC_FILE, 0, &s);
+	    FcPatternObjectGetString (p, FC_FILE_OBJECT, 0, &s);
 	    printf (" \"%s\"", s);
-	    switch (FcValueListPtrU(e->values)->binding) {
+	    switch (FcPatternEltValues(e)->binding) {
 	    case FcValueBindingWeak:
 	        printf ("(w)");
 	        break;
@@ -130,7 +147,7 @@ FcPatternPrint (const FcPattern *p)
 	    }
 	}
 	else
-	    FcValueListPrint (e->values);
+	    FcValueListPrint (FcPatternEltValues(e));
 	printf ("\n");
     }
     printf ("\n");
@@ -197,7 +214,7 @@ FcExprPrint (const FcExpr *expr)
     case FcOpBool: printf ("%s", expr->u.bval ? "true" : "false"); break;
     case FcOpCharSet: printf ("charset\n"); break;
     case FcOpNil: printf ("nil\n"); break;
-    case FcOpField: printf ("%s", expr->u.field); break;
+    case FcOpField: printf ("%s", FcObjectName(expr->u.object)); break;
     case FcOpConst: printf ("%s", expr->u.constant); break;
     case FcOpQuest:
 	FcExprPrint (expr->u.tree.left);
@@ -307,7 +324,7 @@ FcTestPrint (const FcTest *test)
 	printf ("not_first ");
 	break;
     }
-    printf ("%s ", test->field);
+    printf ("%s ", FcObjectName (test->object));
     FcOpPrint (test->op);
     printf (" ");
     FcExprPrint (test->expr);
@@ -317,7 +334,7 @@ FcTestPrint (const FcTest *test)
 void
 FcEditPrint (const FcEdit *edit)
 {
-    printf ("Edit %s ", edit->field);
+    printf ("Edit %s ", FcObjectName (edit->object));
     FcOpPrint (edit->op);
     printf (" ");
     FcExprPrint (edit->expr);

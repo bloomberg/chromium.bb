@@ -65,7 +65,6 @@ FcTestDestroy (FcTest *test)
     if (test->next)
 	FcTestDestroy (test->next);
     FcExprDestroy (test->expr);
-    FcStrFree ((FcChar8 *) test->field);
     FcMemFree (FC_MEM_TEST, sizeof (FcTest));
     free (test);
 }
@@ -162,7 +161,7 @@ FcExprCreateField (const char *field)
     {
 	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpField;
-	e->u.field = (char *) FcStrCopy ((FcChar8 *) field);
+	e->u.object = FcObjectFromName (field);
     }
     return e;
 }
@@ -218,7 +217,6 @@ FcExprDestroy (FcExpr *e)
     case FcOpBool:
 	break;
     case FcOpField:
-	FcStrFree ((FcChar8 *) e->u.field);
 	break;
     case FcOpConst:
 	FcStrFree (e->u.constant);
@@ -269,7 +267,6 @@ FcEditDestroy (FcEdit *e)
 {
     if (e->next)
 	FcEditDestroy (e->next);
-    FcStrFree ((FcChar8 *) e->field);
     if (e->expr)
 	FcExprDestroy (e->expr);
     free (e);
@@ -579,7 +576,7 @@ FcTypecheckExpr (FcConfigParse *parse, FcExpr *expr, FcType type)
     case FcOpNil:
 	break;
     case FcOpField:
-	o = FcNameGetObjectType (expr->u.field);
+	o = FcNameGetObjectType (FcObjectName (expr->u.object));
 	if (o)
 	    FcTypecheckValue (parse, o->type, type);
 	break;
@@ -659,10 +656,10 @@ FcTestCreate (FcConfigParse *parse,
 	test->next = 0;
 	test->kind = kind;
 	test->qual = qual;
-	test->field = (char *) FcStrCopy (field);
+	test->object = FcObjectFromName ((const char *) field);
 	test->op = compare;
 	test->expr = expr;
-	o = FcNameGetObjectType (test->field);
+	o = FcNameGetObjectType (FcObjectName (test->object));
 	if (o)
 	    FcTypecheckExpr (parse, expr, o->type);
     }
@@ -683,11 +680,11 @@ FcEditCreate (FcConfigParse	*parse,
 	const FcObjectType	*o;
 
 	e->next = 0;
-	e->field = field;   /* already saved in grammar */
+	e->object = FcObjectFromName (field);
 	e->op = op;
 	e->expr = expr;
 	e->binding = binding;
-	o = FcNameGetObjectType (e->field);
+	o = FcNameGetObjectType (FcObjectName (e->object));
 	if (o)
 	    FcTypecheckExpr (parse, expr, o->type);
     }
