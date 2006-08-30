@@ -951,6 +951,12 @@ typedef struct drm_fence_object{
 typedef struct drm_buffer_object{
 	drm_device_t *dev;
 	drm_user_object_t base;
+
+    /*
+     * If there is a possibility that the usage variable is zero,
+     * then dev->struct_mutext should be locked before incrementing it.
+     */
+
 	atomic_t usage;
 	drm_ttm_object_t *ttm_object;
 	drm_ttm_backend_list_t *ttm_region;

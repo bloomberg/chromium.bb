@@ -126,6 +126,7 @@ int drm_fence_buffer_objects(drm_file_t * priv)
 	return 0;
 }
 
+
 /*
  * bo locked.
  */
@@ -147,6 +148,8 @@ static int drm_move_tt_to_local(drm_buffer_object_t * buf)
 
 	return 0;
 }
+
+
 
 static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 {
@@ -197,6 +200,13 @@ void drm_bo_usage_deref_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 	}
 }
 
+static void drm_bo_base_deref_locked(drm_file_t * priv, drm_user_object_t * uo)
+{
+	drm_bo_usage_deref_locked(priv->head->dev,
+				  drm_user_object_entry(uo, drm_buffer_object_t,
+							base));
+}
+
 void drm_bo_usage_deref_unlocked(drm_device_t * dev, drm_buffer_object_t * bo)
 {
 	if (atomic_dec_and_test(&bo->usage)) {
@@ -207,12 +217,166 @@ void drm_bo_usage_deref_unlocked(drm_device_t * dev, drm_buffer_object_t * bo)
 	}
 }
 
-static void drm_bo_base_deref_locked(drm_file_t * priv, drm_user_object_t * uo)
+
+/*
+ * Call bo->mutex locked.
+ * Wait until the buffer is idle.
+ */
+
+static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int no_wait)
 {
-	drm_bo_usage_deref_locked(priv->head->dev,
-				  drm_user_object_entry(uo, drm_buffer_object_t,
-							base));
+
+	drm_fence_object_t *fence = bo->fence;
+	int ret;
+
+	if (fence) {
+		drm_device_t *dev = bo->dev;
+		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
+			drm_fence_usage_deref_unlocked(dev, fence);
+			bo->fence = NULL;
+			return 0;
+		} 
+		if (no_wait)
+			return -EBUSY;
+
+		ret =
+		    drm_fence_object_wait(dev, fence, lazy, !lazy,
+					  bo->fence_flags);
+		if (ret)
+			return ret;
+		
+		drm_fence_usage_deref_unlocked(dev, fence);
+		bo->fence = NULL;
+
+	}
+	return 0;
 }
+
+/*
+ * No locking required.
+ */
+
+static int drm_bo_evict(drm_buffer_object_t * bo, int tt, int no_wait)
+{
+	int ret = 0;
+	
+	/*
+	 * Someone might have taken out the buffer before we took the buffer mutex.
+	 */
+	
+	mutex_lock(&bo->mutex);
+	if (bo->unfenced)
+		goto out;
+	if (tt && !bo->tt) 
+		goto out;
+	if (!tt && !bo->vram)
+		goto out;
+
+	ret = drm_bo_wait(bo, 0, no_wait);
+	if (ret)
+		goto out;
+
+	if (tt) {
+		ret = drm_move_tt_to_local(bo);
+	}
+#if 0
+	else {
+		ret = drm_move_vram_to_local(bo);
+	}
+#endif
+out:
+	mutex_unlock(&bo->mutex);
+	return ret;
+}
+
+/*
+ * buf->mutex locked.
+ */
+
+int drm_bo_alloc_space(drm_buffer_object_t * buf, int tt, int no_wait)
+{
+	drm_device_t *dev = buf->dev;
+	drm_mm_node_t *node;
+	drm_buffer_manager_t *bm = &dev->bm;
+	drm_buffer_object_t *bo;
+	drm_mm_t *mm = (tt) ? &bm->tt_manager : &bm->vram_manager;
+	struct list_head *lru;
+	unsigned long size = buf->num_pages;
+	int ret;
+
+	mutex_lock(&bm->mutex);
+	do {
+		node = drm_mm_search_free(mm, size, 0, 1);
+		if (node)
+			break;
+
+		lru = (tt) ? &bm->tt_lru : &bm->vram_lru;
+		if (lru->next == lru)
+			break;
+
+		bo = list_entry(lru->next, drm_buffer_object_t, head);
+			
+		/*
+		 * No need to take dev->struct_mutex here, because bo->usage is at least 1 already,
+		 * since it's on the lru list, and the bm->mutex is held.
+		 */
+
+		atomic_inc(&bo->usage);
+		mutex_unlock(&bm->mutex);
+		ret = drm_bo_evict(bo, tt, no_wait);
+		drm_bo_usage_deref_unlocked(dev, bo);
+		if (ret)
+			return ret;
+		mutex_lock(&bm->mutex);
+	} while (1);
+
+	if (!node) {
+		DRM_ERROR("Out of aperture space\n");
+		mutex_lock(&bm->mutex);
+		return -ENOMEM;
+	}
+
+	node = drm_mm_get_block(node, size, 0);
+	mutex_unlock(&bm->mutex);
+	BUG_ON(!node);
+	node->private = (void *)buf;
+
+	if (tt) {
+		buf->tt = node;
+	} else {
+		buf->vram = node;
+	}
+	return 0;
+}
+
+
+static int drm_move_local_to_tt(drm_buffer_object_t *bo, int no_wait)
+{
+	drm_device_t *dev = bo->dev;
+	drm_buffer_manager_t *bm = &dev->bm;
+	int ret;
+
+
+	BUG_ON(bo->tt);
+	ret = drm_bo_alloc_space(bo, 1, no_wait);
+
+	if (ret)
+		return ret;
+
+	mutex_lock(&dev->struct_mutex);
+	ret = drm_bind_ttm_region(bo->ttm_region, bo->tt->start);
+	mutex_unlock(&dev->struct_mutex);
+
+	if (ret) {
+		mutex_lock(&bm->mutex);
+		drm_mm_put_block(&bm->tt_manager, bo->tt);
+		mutex_unlock(&bm->mutex);
+	}
+
+	return ret;
+}
+
+
 
 static int drm_bo_new_flags(drm_bo_driver_t * driver,
 			    uint32_t flags, uint32_t new_mask, uint32_t hint,
@@ -289,64 +453,6 @@ static int drm_bo_new_flags(drm_bo_driver_t * driver,
 	return 0;
 }
 
-#if 0
-
-static int drm_bo_evict(drm_device_t * dev, drm_buffer_object_t * buf, int tt);
-{
-	int ret;
-	if (tt) {
-		ret = drm_move_tt_to_local(buf);
-	} else {
-		ret = drm_move_vram_to_local(buf);
-	}
-	return ret;
-}
-
-int drm_bo_alloc_space(drm_device_t * dev, int tt, drm_buffer_object_t * buf)
-{
-	drm_mm_node_t *node;
-	drm_buffer_manager_t *bm = &dev->bm;
-	drm_buffer_object_t *bo;
-	drm_mm_t *mm = (tt) ? &bm->tt_manager : &bm->vram_manager;
-
-	lru = (tt) ? &bm->tt_lru : &bm->vram_lru;
-
-	do {
-		node = drm_mm_search_free(mm, size, 0, 1);
-		if (node)
-			break;
-
-		if (lru->next == lru)
-			break;
-
-		if (tt) {
-			bo = list_entry(lru->next, drm_buffer_object_t, tt_lru);
-		} else {
-			bo = list_entry(lru->next, drm_buffer_object_t,
-					vram_lru);
-		}
-
-		drm_bo_evict(dev, bo, tt);
-	} while (1);
-
-	if (!node) {
-		DRM_ERROR("Out of aperture space\n");
-		return -ENOMEM;
-	}
-
-	node = drm_mm_get_block(node, size, 0);
-	BUG_ON(!node);
-	node->private = (void *)buf;
-
-	if (tt) {
-		buf->tt = node;
-	} else {
-		buf->vram = node;
-	}
-	return 0;
-}
-#endif
-
 /*
  * Call dev->struct_mutex locked.
  */
@@ -373,40 +479,6 @@ drm_buffer_object_t *drm_lookup_buffer_object(drm_file_t * priv,
 	bo = drm_user_object_entry(uo, drm_buffer_object_t, base);
 	atomic_inc(&bo->usage);
 	return bo;
-}
-
-/*
- * Call bo->mutex locked.
- * Wait until the buffer is idle.
- */
-
-static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int no_wait)
-{
-
-	drm_fence_object_t *fence = bo->fence;
-	int ret;
-
-	if (fence) {
-		drm_device_t *dev = bo->dev;
-		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
-			drm_fence_usage_deref_unlocked(dev, fence);
-			bo->fence = NULL;
-			return 0;
-		} 
-		if (no_wait)
-			return -EBUSY;
-
-		ret =
-		    drm_fence_object_wait(dev, fence, lazy, !lazy,
-					  bo->fence_flags);
-		if (ret)
-			return ret;
-		
-		drm_fence_usage_deref_unlocked(dev, fence);
-		bo->fence = NULL;
-
-	}
-	return 0;
 }
 
 /*
@@ -581,7 +653,9 @@ static int drm_bo_move_buffer(drm_buffer_object_t *bo, uint32_t new_flags,
 		return ret;
 
 	if (new_flags & DRM_BO_FLAG_MEM_TT) {
-		drm_move_local_to_tt(bo);
+		ret = drm_move_local_to_tt(bo, no_wait);
+		if (ret)
+			return ret;
 	} else {
 		drm_move_tt_to_local(bo);
 	}
