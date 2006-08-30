@@ -55,12 +55,11 @@
  * 2.) Refer to ttm locking orders.
  */
 
-
 #define DRM_FLAG_MASKED(_old, _new, _mask) {\
 (_old) ^= (((_old) ^ (_new)) & (_mask)); \
 }
 
-static inline uint32_t drm_flag_masked(uint32_t old, uint32_t new, 
+static inline uint32_t drm_flag_masked(uint32_t old, uint32_t new,
 				       uint32_t mask)
 {
 	return old ^ ((old ^ new) & mask);
@@ -126,7 +125,6 @@ int drm_fence_buffer_objects(drm_file_t * priv)
 	return 0;
 }
 
-
 /*
  * bo locked.
  */
@@ -148,8 +146,6 @@ static int drm_move_tt_to_local(drm_buffer_object_t * buf)
 
 	return 0;
 }
-
-
 
 static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 {
@@ -217,7 +213,6 @@ void drm_bo_usage_deref_unlocked(drm_device_t * dev, drm_buffer_object_t * bo)
 	}
 }
 
-
 /*
  * Call bo->mutex locked.
  * Wait until the buffer is idle.
@@ -235,7 +230,7 @@ static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int no_wait)
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
 			return 0;
-		} 
+		}
 		if (no_wait)
 			return -EBUSY;
 
@@ -244,7 +239,7 @@ static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int no_wait)
 					  bo->fence_flags);
 		if (ret)
 			return ret;
-		
+
 		drm_fence_usage_deref_unlocked(dev, fence);
 		bo->fence = NULL;
 
@@ -259,15 +254,15 @@ static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int no_wait)
 static int drm_bo_evict(drm_buffer_object_t * bo, int tt, int no_wait)
 {
 	int ret = 0;
-	
+
 	/*
 	 * Someone might have taken out the buffer before we took the buffer mutex.
 	 */
-	
+
 	mutex_lock(&bo->mutex);
 	if (bo->unfenced)
 		goto out;
-	if (tt && !bo->tt) 
+	if (tt && !bo->tt)
 		goto out;
 	if (!tt && !bo->vram)
 		goto out;
@@ -284,7 +279,7 @@ static int drm_bo_evict(drm_buffer_object_t * bo, int tt, int no_wait)
 		ret = drm_move_vram_to_local(bo);
 	}
 #endif
-out:
+      out:
 	mutex_unlock(&bo->mutex);
 	return ret;
 }
@@ -315,7 +310,7 @@ int drm_bo_alloc_space(drm_buffer_object_t * buf, int tt, int no_wait)
 			break;
 
 		bo = list_entry(lru->next, drm_buffer_object_t, head);
-			
+
 		/*
 		 * No need to take dev->struct_mutex here, because bo->usage is at least 1 already,
 		 * since it's on the lru list, and the bm->mutex is held.
@@ -349,13 +344,11 @@ int drm_bo_alloc_space(drm_buffer_object_t * buf, int tt, int no_wait)
 	return 0;
 }
 
-
-static int drm_move_local_to_tt(drm_buffer_object_t *bo, int no_wait)
+static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 {
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
 	int ret;
-
 
 	BUG_ON(bo->tt);
 	ret = drm_bo_alloc_space(bo, 1, no_wait);
@@ -375,8 +368,6 @@ static int drm_move_local_to_tt(drm_buffer_object_t *bo, int no_wait)
 
 	return ret;
 }
-
-
 
 static int drm_bo_new_flags(drm_bo_driver_t * driver,
 			    uint32_t flags, uint32_t new_mask, uint32_t hint,
@@ -466,8 +457,7 @@ drm_buffer_object_t *drm_lookup_buffer_object(drm_file_t * priv,
 	uo = drm_lookup_user_object(priv, handle);
 
 	if (!uo || (uo->type != drm_buffer_type)) {
-		DRM_ERROR("Could not find buffer object 0x%08x\n",
-			  handle);
+		DRM_ERROR("Could not find buffer object 0x%08x\n", handle);
 		return NULL;
 	}
 
@@ -595,7 +585,7 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
 					 drm_ref_t action)
 {
 	drm_buffer_object_t *bo =
-		drm_user_object_entry(uo, drm_buffer_object_t, base);
+	    drm_user_object_entry(uo, drm_buffer_object_t, base);
 
 	/*
 	 * We DON'T want to take the bo->lock here, because we want to
@@ -605,15 +595,14 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
 	BUG_ON(action != _DRM_REF_TYPE1);
 
 	if (atomic_add_negative(-1, &bo->mapped))
-			DRM_WAKEUP(&bo->validate_queue);
+		DRM_WAKEUP(&bo->validate_queue);
 }
 
 /*
  * bo->mutex locked.
  */
 
-
-static int drm_bo_move_buffer(drm_buffer_object_t *bo, uint32_t new_flags,
+static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
 			      int no_wait)
 {
 	int ret = 0;
@@ -627,16 +616,16 @@ static int drm_bo_move_buffer(drm_buffer_object_t *bo, uint32_t new_flags,
 	/*
 	 * Make sure we're not mapped.
 	 */
-	 
+
 	if (atomic_read(&bo->mapped) >= 0) {
-		if (no_wait) 
+		if (no_wait)
 			return -EBUSY;
 		else {
-			DRM_WAIT_ON(ret, bo->validate_queue, 3*DRM_HZ,
+			DRM_WAIT_ON(ret, bo->validate_queue, 3 * DRM_HZ,
 				    atomic_read(&bo->mapped) == -1);
-			if (ret == -EINTR) 
+			if (ret == -EINTR)
 				return -EAGAIN;
-			if (ret) 
+			if (ret)
 				return ret;
 		}
 	}
@@ -659,22 +648,19 @@ static int drm_bo_move_buffer(drm_buffer_object_t *bo, uint32_t new_flags,
 	} else {
 		drm_move_tt_to_local(bo);
 	}
-	
+
 	DRM_FLAG_MASKED(bo->flags, new_flags, DRM_BO_FLAG_MEM_TT);
-	
+
 	return 0;
 }
-
 
 /*
  * bo locked.
  */
 
-
 static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 				      uint32_t new_flags,
-				      int move_unfenced,
-				      int no_wait)
+				      int move_unfenced, int no_wait)
 {
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
@@ -700,10 +686,10 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		mutex_lock(&bm->mutex);
 		ret = drm_bo_move_buffer(bo, new_flags, no_wait);
 		mutex_unlock(&bm->mutex);
-		if (ret) 
+		if (ret)
 			return ret;
 	}
-	
+
 	if (flag_diff & DRM_BO_FLAG_NO_EVICT) {
 		mutex_lock(&bm->mutex);
 		list_del_init(&bo->head);
@@ -723,7 +709,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		/*
 		 * Place on unfenced list.
 		 */
-	
+
 		mutex_lock(&bm->mutex);
 		list_del_init(&bo->head);
 		list_add_tail(&bo->head, &bm->unfenced);
@@ -737,7 +723,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	bo->flags = new_flags;
 	return 0;
 }
-	
+
 /*
  * Call bo->mutex locked.
  */
@@ -850,7 +836,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 
 	bo->mask = mask;
 
-	ret = drm_buffer_object_validate(bo, new_flags, 0, 
+	ret = drm_buffer_object_validate(bo, new_flags, 0,
 					 hint & DRM_BO_HINT_DONT_BLOCK);
 	if (ret)
 		goto out_err;
@@ -1000,15 +986,14 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 
 }
 
-static void drm_bo_clean_mm(drm_file_t *priv)
+static void drm_bo_clean_mm(drm_file_t * priv)
 {
 }
-
 
 int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	
+
 	int ret = 0;
 	drm_mm_init_arg_t arg;
 	drm_buffer_manager_t *bm = &dev->bm;
@@ -1021,7 +1006,7 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	switch(arg.req.op) {
+	switch (arg.req.op) {
 	case mm_init:
 		if (bm->initialized) {
 			DRM_ERROR("Memory manager already initialized\n");
@@ -1033,8 +1018,8 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		bm->has_tt = 0;
 
 		if (arg.req.vr_p_size) {
-			ret = drm_mm_init(&bm->vram_manager, 
-					  arg.req.vr_p_offset, 
+			ret = drm_mm_init(&bm->vram_manager,
+					  arg.req.vr_p_offset,
 					  arg.req.vr_p_size);
 			bm->has_vram = 1;
 			if (ret)
@@ -1042,8 +1027,8 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		}
 
 		if (arg.req.tt_p_size) {
-			ret = drm_mm_init(&bm->tt_manager, 
-					  arg.req.tt_p_offset, 
+			ret = drm_mm_init(&bm->tt_manager,
+					  arg.req.tt_p_offset,
 					  arg.req.tt_p_size);
 			bm->has_tt = 1;
 			if (ret) {
@@ -1077,11 +1062,11 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 	default:
 		return -EINVAL;
 	}
-		
+
 	mutex_unlock(&bm->mutex);
 	if (ret)
 		return ret;
-	
+
 	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
 	return 0;
 }
