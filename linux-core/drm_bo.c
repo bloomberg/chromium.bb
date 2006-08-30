@@ -127,32 +127,23 @@ int drm_fence_buffer_objects(drm_file_t * priv)
 }
 
 /*
- * bm locked,
- * dev locked.
+ * bo locked.
  */
 
-static int drm_move_tt_to_local(drm_buffer_object_t * buf, int lazy)
+static int drm_move_tt_to_local(drm_buffer_object_t * buf)
 {
 	drm_device_t *dev = buf->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
-	int ret = 0;
 
 	BUG_ON(!buf->tt);
 
-	if (buf->fence) {
-		ret = drm_fence_object_wait(dev, buf->fence, lazy, !lazy,
-					    buf->fence_flags);
-		if (ret)
-			return ret;
-		drm_fence_usage_deref_unlocked(dev, buf->fence);
-		buf->fence = NULL;
-	}
-
+	mutex_lock(&bm->mutex);
+	mutex_lock(&dev->struct_mutex);
 	drm_unbind_ttm_region(buf->ttm_region);
 	drm_mm_put_block(&bm->tt_manager, buf->tt);
 	buf->tt = NULL;
-	buf->flags &= ~(DRM_BO_FLAG_MEM_TT);
-	buf->flags |= DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
+	mutex_unlock(&dev->struct_mutex);
+	mutex_unlock(&bm->mutex);
 
 	return 0;
 }
@@ -183,7 +174,7 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 
 	if (bo->tt) {
 		int ret;
-		ret = drm_move_tt_to_local(bo, 0);
+		ret = drm_move_tt_to_local(bo);
 		BUG_ON(ret);
 	}
 	if (bo->vram) {
@@ -389,41 +380,31 @@ drm_buffer_object_t *drm_lookup_buffer_object(drm_file_t * priv,
  * Wait until the buffer is idle.
  */
 
-static int drm_bo_wait(drm_device_t * dev, drm_buffer_object_t * bo, int lazy)
+static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int no_wait)
 {
 
 	drm_fence_object_t *fence = bo->fence;
 	int ret;
 
 	if (fence) {
+		drm_device_t *dev = bo->dev;
 		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
 			return 0;
-		}
+		} 
+		if (no_wait)
+			return -EBUSY;
 
-		/*
-		 * Make sure another process doesn't destroy the fence 
-		 * object when we release the buffer object mutex.
-		 * We don't need to take the dev->struct_mutex lock here,
-		 * since the fence usage count is at least 1 already.
-		 */
-
-		atomic_inc(&fence->usage);
-		mutex_unlock(&bo->mutex);
 		ret =
 		    drm_fence_object_wait(dev, fence, lazy, !lazy,
 					  bo->fence_flags);
-		mutex_lock(&bo->mutex);
 		if (ret)
 			return ret;
-		mutex_lock(&dev->struct_mutex);
-		drm_fence_usage_deref_locked(dev, fence);
-		if (bo->fence == fence) {
-			drm_fence_usage_deref_locked(dev, fence);
-			bo->fence = NULL;
-		}
-		mutex_unlock(&dev->struct_mutex);
+		
+		drm_fence_usage_deref_unlocked(dev, fence);
+		bo->fence = NULL;
+
 	}
 	return 0;
 }
@@ -433,11 +414,12 @@ static int drm_bo_wait(drm_device_t * dev, drm_buffer_object_t * bo, int lazy)
  * Returns 1 if the buffer is currently rendered to or from. 0 otherwise.
  */
 
-static int drm_bo_busy(drm_device_t * dev, drm_buffer_object_t * bo)
+static int drm_bo_busy(drm_buffer_object_t * bo)
 {
 	drm_fence_object_t *fence = bo->fence;
 
 	if (fence) {
+		drm_device_t *dev = bo->dev;
 		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
@@ -476,29 +458,30 @@ static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle, int wait)
 
 	mutex_lock(&bo->mutex);
 
-	if (!wait) {
-		if ((atomic_read(&bo->mapped) == 0) && drm_bo_busy(dev, bo)) {
-			mutex_unlock(&bo->mutex);
-			ret = -EBUSY;
-			goto out;
-		}
-	} else {
-		ret = drm_bo_wait(dev, bo, 0);
+	/*
+	 * If this returns true, we are currently unmapped.
+	 * We need to do this test, because unmapping can
+	 * be done without the bo->mutex held.
+	 */
+
+	if (atomic_inc_and_test(&bo->mapped)) {
+		ret = drm_bo_wait(bo, 0, !wait);
 		if (ret) {
-			mutex_unlock(&bo->mutex);
-			ret = -EBUSY;
+			atomic_dec(&bo->mapped);
 			goto out;
 		}
 	}
+
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_add_ref_object(priv, &bo->base, _DRM_REF_TYPE1);
 	mutex_unlock(&dev->struct_mutex);
-	if (!ret) {
-		atomic_inc(&bo->mapped);
-	}
-	mutex_unlock(&bo->mutex);
+	if (ret) {
+		if (atomic_add_negative(-1, &bo->mapped))
+			DRM_WAKEUP(&bo->validate_queue);
 
+	}
       out:
+	mutex_unlock(&bo->mutex);
 	drm_bo_usage_deref_unlocked(dev, bo);
 	return ret;
 }
@@ -539,26 +522,72 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
 					 drm_user_object_t * uo,
 					 drm_ref_t action)
 {
-	drm_device_t *dev = priv->head->dev;
 	drm_buffer_object_t *bo =
-	    drm_user_object_entry(uo, drm_buffer_object_t, base);
+		drm_user_object_entry(uo, drm_buffer_object_t, base);
+
+	/*
+	 * We DON'T want to take the bo->lock here, because we want to
+	 * hold it when we wait for unmapped buffer.
+	 */
 
 	BUG_ON(action != _DRM_REF_TYPE1);
 
-	if (atomic_dec_and_test(&bo->mapped)) {
-		mutex_unlock(&dev->struct_mutex);
-		mutex_lock(&bo->mutex);
-		if (atomic_read(&bo->mapped) == 0) {
+	if (atomic_add_negative(-1, &bo->mapped))
 			DRM_WAKEUP(&bo->validate_queue);
-		}
-		mutex_unlock(&bo->mutex);
-		mutex_lock(&dev->struct_mutex);
-	}
 }
+
+/*
+ * bo->mutex locked.
+ */
+
 
 static int drm_bo_move_buffer(drm_buffer_object_t *bo, uint32_t new_flags,
 			      int no_wait)
 {
+	int ret = 0;
+
+	/*
+	 * Flush outstanding fences.
+	 */
+
+	drm_bo_busy(bo);
+
+	/*
+	 * Make sure we're not mapped.
+	 */
+	 
+	if (atomic_read(&bo->mapped) >= 0) {
+		if (no_wait) 
+			return -EBUSY;
+		else {
+			DRM_WAIT_ON(ret, bo->validate_queue, 3*DRM_HZ,
+				    atomic_read(&bo->mapped) == -1);
+			if (ret == -EINTR) 
+				return -EAGAIN;
+			if (ret) 
+				return ret;
+		}
+	}
+
+	/*
+	 * Wait for outstanding fences.
+	 */
+
+	ret = drm_bo_wait(bo, 0, no_wait);
+
+	if (ret == -EINTR)
+		return -EAGAIN;
+	if (ret)
+		return ret;
+
+	if (new_flags & DRM_BO_FLAG_MEM_TT) {
+		drm_move_local_to_tt(bo);
+	} else {
+		drm_move_tt_to_local(bo);
+	}
+	
+	DRM_FLAG_MASKED(bo->flags, new_flags, DRM_BO_FLAG_MEM_TT);
+	
 	return 0;
 }
 
@@ -728,7 +757,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 	mutex_lock(&bo->mutex);
 
 	atomic_set(&bo->usage, 1);
-	atomic_set(&bo->mapped, 0);
+	atomic_set(&bo->mapped, -1);
 	DRM_INIT_WAITQUEUE(&bo->validate_queue);
 	INIT_LIST_HEAD(&bo->head);
 	INIT_LIST_HEAD(&bo->ddestroy);
