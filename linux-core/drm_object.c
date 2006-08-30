@@ -108,9 +108,6 @@ static int drm_object_ref_action(drm_file_t * priv, drm_user_object_t * ro,
 		break;
 	default:
 		if (!ro->ref_struct_locked) {
-			DRM_ERROR("Register object called without register"
-				  " capabilities\n");
-			ret = -EINVAL;
 			break;
 		} else {
 			ro->ref_struct_locked(priv, ro, action);
@@ -164,6 +161,7 @@ int drm_add_ref_object(drm_file_t * priv, drm_user_object_t * referenced_object,
 	atomic_set(&item->refcount, 1);
 	item->hash.key = (unsigned long)referenced_object;
 	ret = drm_ht_insert_item(ht, &item->hash);
+	item->unref_action = ref_action;
 
 	if (ret)
 		goto out;

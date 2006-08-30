@@ -713,6 +713,7 @@ static void drm_vm_ttm_close(struct vm_area_struct *vma)
 		dev = ttm->dev;
 		mutex_lock(&dev->struct_mutex);
 		drm_ttm_delete_mm(ttm, vma->vm_mm);
+		list_del(&ttm_vma->head);
 		drm_free(ttm_vma, sizeof(*ttm_vma), DRM_MEM_VMAS);
 		if (atomic_dec_and_test(&ttm->vma_count)) {
 			if (ttm->destroy) {

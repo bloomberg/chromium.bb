@@ -513,8 +513,11 @@ static int drm_buffer_object_unmap(drm_file_t * priv, uint32_t handle)
 		goto out;
 	}
 
+	DRM_ERROR("Removing ref object\n");
 	drm_remove_ref_object(priv, ro);
+	DRM_ERROR("Deregistering usage\n");
 	drm_bo_usage_deref_locked(dev, bo);
+	DRM_ERROR("Done\n");
       out:
 	mutex_unlock(&dev->struct_mutex);
 	return ret;

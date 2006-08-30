@@ -85,17 +85,17 @@ typedef struct _drmMMListHead
 typedef struct _drmBO{
     drm_bo_type_t type;
     unsigned handle;
-    drm_handle_t map_handle;
+    drm_handle_t mapHandle;
     unsigned flags;
     unsigned mask;
     unsigned hint;
-    unsigned map_flags;
+    unsigned mapFlags;
     unsigned long size;
     unsigned long offset;
     unsigned long start;
     void *virtual;
-    void *map_virtual;
-    int map_count;
+    void *mapVirtual;
+    int mapCount;
     drmTTM *ttm;
 } drmBO;
 

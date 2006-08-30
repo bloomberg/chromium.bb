@@ -2606,10 +2606,10 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
     buf->flags = rep->flags;
     buf->size = rep->size;
     buf->offset = rep->offset;
-    buf->map_handle = rep->arg_handle;
-    buf->map_flags = rep->map_flags;
-    buf->map_virtual = NULL;
-    buf->map_count = 0;
+    buf->mapHandle = rep->arg_handle;
+    buf->mapFlags = rep->map_flags;
+    buf->mapVirtual = NULL;
+    buf->mapCount = 0;
     buf->virtual = NULL;
     buf->mask = rep->mask;
     buf->hint = rep->hint;
@@ -2666,13 +2666,14 @@ int drmBOReference(int fd, unsigned handle, drmBO *buf)
     buf->flags = rep->flags;
     buf->size = rep->size;
     buf->offset = rep->offset;
-    buf->map_handle = rep->arg_handle;
-    buf->map_flags = rep->map_flags;
-    buf->map_virtual = NULL;
-    buf->map_count = 0;
+    buf->mapHandle = rep->arg_handle;
+    buf->mapFlags = rep->map_flags;
+    buf->mapVirtual = NULL;
+    buf->mapCount = 0;
     buf->virtual = NULL;
     buf->mask = rep->mask;
     buf->hint = rep->hint;
+    buf->start = rep->buffer_start;
     return 0;
 }
 
@@ -2698,6 +2699,92 @@ int drmBOUnReference(int fd, drmBO *buf)
     buf->handle = 0;
     return 0;
 }   
+
+/*
+ *
+ */
+
+int drmBOMap(int fd, drmBO *buf, unsigned map_flags, void **address)
+{
+
+    drm_bo_arg_t arg;
+    drm_bo_arg_request_t *req = &arg.req;
+    drm_bo_arg_reply_t *rep = &arg.rep;
+    int ret = 0;
+
+    /*
+     * Make sure we have a virtual address of the buffer.
+     */
+
+    if (!buf->mapVirtual) {
+	if (buf->mapCount == 0) {
+	    drmAddress virtual;
+	    ret = drmMap(fd, buf->mapHandle, buf->size + buf->start, &virtual);
+	    if (ret)
+		return ret;
+	    ++buf->mapCount;
+	    buf->mapVirtual = virtual;
+	    buf->virtual = ((char *) virtual) + buf->start;
+	    fprintf(stderr,"Mapvirtual, virtual: 0x%08x 0x%08x\n", 
+		    buf->mapVirtual, buf->virtual);
+	}
+    }
+
+    req->handle = buf->handle;
+    req->mask = map_flags;
+    req->op = drm_bo_map;
+    req->next = 0;
+
+    /*
+     * May hang if the buffer object is busy.
+     * This IOCTL synchronizes the buffer.
+     */
+    
+    do {
+	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+    } while (ret != 0 && errno == EAGAIN);
+
+    if (ret || !rep->handled || rep->ret) {
+	if (--buf->mapCount == 0) {
+	    (void )drmUnmap(buf->mapVirtual, buf->start + buf->size);
+	}
+    }	
+    if (ret) 
+	return ret;
+    if (!rep->handled) 
+	return -EFAULT;
+    if (rep->ret)
+	return rep->ret;
+	
+    *address = buf->virtual;
+
+    return 0;
+}
+
+int drmBOUnmap(int fd, drmBO *buf)
+{
+    drm_bo_arg_t arg;
+    drm_bo_arg_request_t *req = &arg.req;
+
+    if (buf->mapCount == 0) {
+	return -EINVAL;
+    }
+    
+    if (--buf->mapCount == 0) {
+	(void) drmUnmap(buf->mapVirtual, buf->start + buf->size);
+    }
+	
+    req->handle = buf->handle;
+    req->op = drm_bo_unmap;
+    req->next = 0;
+
+    if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg)) {
+	return -errno;
+    }
+
+    return 0;
+}
+    
 
 int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
 	      unsigned long ttPOffset, unsigned long ttPSize)
