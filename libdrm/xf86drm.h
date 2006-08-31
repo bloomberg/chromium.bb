@@ -252,6 +252,7 @@ typedef struct _drmTextureRegion {
 typedef enum {
     DRM_VBLANK_ABSOLUTE = 0x0,	/**< Wait for specific vblank sequence number */
     DRM_VBLANK_RELATIVE = 0x1,	/**< Wait for given number of vblanks */
+    DRM_VBLANK_SECONDARY = 0x20000000,	/**< Secondary display controller */
     DRM_VBLANK_SIGNAL   = 0x40000000	/* Send signal instead of blocking */
 } drmVBlankSeqType;
 
