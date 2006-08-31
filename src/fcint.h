@@ -308,7 +308,7 @@ typedef struct _FcStrBuf {
 
 typedef struct _FcCache {
     int		magic;              /* FC_CACHE_MAGIC */
-    off_t	size;		    /* size of file */
+    intptr_t	size;		    /* size of file */
     intptr_t	dir;		    /* offset to dir name */
     intptr_t	dirs;		    /* offset to subdirs */
     int		dirs_count;	    /* number of subdir strings */

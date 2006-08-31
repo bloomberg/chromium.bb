@@ -26,7 +26,6 @@ typedef union _FcAlign {
     double	d;
     int		i;
     intptr_t	ip;
-    off_t	o;
     FcBool	b;
     void	*p;
 } FcAlign;
