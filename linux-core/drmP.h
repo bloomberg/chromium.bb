@@ -656,6 +656,8 @@ typedef struct drm_bo_driver{
         int cached_vram;
 	drm_ttm_backend_t *(*create_ttm_backend_entry) 
 		(struct drm_device *dev, int cached);
+	int (*fence_type)(uint32_t flags, uint32_t *class, uint32_t *type);
+	int (*invalidate_caches)(struct drm_device *dev, uint32_t flags);
 } drm_bo_driver_t;
 
 
@@ -783,7 +785,9 @@ typedef struct drm_buffer_manager{
 	struct list_head vram_lru;
 	struct list_head unfenced;
 	struct list_head ddestroy;
+        struct list_head other;
         struct timer_list timer;
+        uint32_t fence_flags;
 } drm_buffer_manager_t;
 
 
@@ -975,12 +979,15 @@ typedef struct drm_buffer_object{
 	struct list_head ddestroy;
 
 	uint32_t fence_flags;
+        uint32_t fence_class;
 	drm_fence_object_t *fence;
-	int unfenced;
-	wait_queue_head_t validate_queue;
+        uint32_t priv_flags;
+	wait_queue_head_t event_queue;
         struct mutex mutex;
 } drm_buffer_object_t;
 
+#define _DRM_BO_FLAG_UNFENCED 0x00000001
+#define _DRM_BO_FLAG_EVICTED  0x00000002
 
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,

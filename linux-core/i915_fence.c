@@ -121,3 +121,4 @@ void i915_fence_handler(drm_device_t * dev)
 	i915_perform_flush(dev);
 	write_unlock(&fm->lock);
 }
+

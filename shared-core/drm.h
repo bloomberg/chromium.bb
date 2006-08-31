@@ -723,7 +723,15 @@ typedef struct drm_ttm_arg {
 /* When creating a buffer, Avoid system storage even if allowed */
 #define DRM_BO_HINT_AVOID_LOCAL 0x00000001
 /* Don't block on validate and map */
-#define DRM_BO_HINT_DONT_BLOCK  0x00000002  
+#define DRM_BO_HINT_DONT_BLOCK  0x00000002
+/* Don't place this buffer on the unfenced list.*/
+#define DRM_BO_HINT_DONT_FENCE  0x00000004
+
+
+
+
+/* Driver specific flags. Could be for example rendering engine */  
+#define DRM_BO_MASK_DRIVER      0x00F00000
 
 typedef enum {
 	drm_bo_type_ttm,
@@ -779,7 +787,9 @@ typedef union drm_mm_init_arg{
 		enum {
 			mm_init,
 			mm_takedown,
-			mm_query
+			mm_query,
+			mm_lock,
+			mm_unlock
 		} op;
 		drm_u64_t vr_p_offset;
 		drm_u64_t vr_p_size;

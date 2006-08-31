@@ -444,6 +444,28 @@ static void i915_emit_breadcrumb(drm_device_t *dev)
 #endif
 }
 
+
+int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	uint32_t flush_cmd = CMD_MI_FLUSH;
+	RING_LOCALS;
+
+	flush_cmd |= flush;
+
+	i915_kernel_lost_context(dev);
+
+	BEGIN_LP_RING(4);
+	OUT_RING(flush_cmd);
+	OUT_RING(0);
+	OUT_RING(0);
+	OUT_RING(0);
+	ADVANCE_LP_RING();
+
+	return 0;
+}
+
+
 static int i915_dispatch_cmdbuffer(drm_device_t * dev,
 				   drm_i915_cmdbuffer_t * cmd)
 {
@@ -679,6 +701,7 @@ static int i915_flip_bufs(DRM_IOCTL_ARGS)
 
 	return i915_dispatch_flip(dev);
 }
+
 
 static int i915_getparam(DRM_IOCTL_ARGS)
 {

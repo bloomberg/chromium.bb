@@ -30,6 +30,8 @@
  */
 
 #include "drmP.h"
+#include "i915_drm.h"
+#include "i915_drv.h"
 
 drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev, int cached)
 {
@@ -37,4 +39,26 @@ drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev, int cached)
 		return drm_agp_init_ttm_cached(dev);
 	else
 		return drm_agp_init_ttm_uncached(dev);
+}
+
+int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *type)
+{
+	*class = 0;
+	if (buffer_flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE)) 
+		*type = 1;
+	else
+		*type = 3;
+	return 0;
+}
+
+int i915_invalidate_caches(drm_device_t *dev, uint32_t flags)
+{
+	uint32_t flush_cmd = MI_NO_WRITE_FLUSH;
+
+	if (flags & DRM_BO_FLAG_READ)
+		flush_cmd |= MI_READ_FLUSH;
+	if (flags & DRM_BO_FLAG_EXE)
+		flush_cmd |= MI_EXE_FLUSH;
+
+	return i915_emit_mi_flush(dev, flush_cmd);
 }

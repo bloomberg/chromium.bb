@@ -51,7 +51,9 @@ static drm_fence_driver_t i915_fence_driver = {
 static drm_bo_driver_t i915_bo_driver = {
 	.cached_vram = 0,
 	.cached_tt = 1,
-	.create_ttm_backend_entry = i915_create_ttm_backend_entry
+	.create_ttm_backend_entry = i915_create_ttm_backend_entry,
+	.fence_type = i915_fence_types,
+	.invalidate_caches = i915_invalidate_caches
 };
 
 

@@ -124,6 +124,8 @@ extern void i915_driver_preclose(drm_device_t * dev, DRMFILE filp);
 extern int i915_driver_device_is_agp(drm_device_t * dev);
 extern long i915_compat_ioctl(struct file *filp, unsigned int cmd,
 			      unsigned long arg);
+extern int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush);
+
 
 /* i915_irq.c */
 extern int i915_irq_emit(DRM_IOCTL_ARGS);
@@ -158,6 +160,8 @@ extern void i915_sync_flush(drm_device_t *dev);
 /* i915_buffer.c */
 extern drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev, 
 	int cached);
+extern int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *type);
+extern int i915_invalidate_caches(drm_device_t *dev, uint32_t buffer_flags);
 #endif
 
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
@@ -208,6 +212,11 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define INST_PARSER_CLIENT   0x00000000
 #define INST_OP_FLUSH        0x02000000
 #define INST_FLUSH_MAP_CACHE 0x00000001
+
+#define CMD_MI_FLUSH         (0x04 << 23)
+#define MI_NO_WRITE_FLUSH    (1 << 2)
+#define MI_READ_FLUSH        (1 << 0)
+#define MI_EXE_FLUSH         (1 << 1)
 
 #define BB1_START_ADDR_MASK   (~0x7)
 #define BB1_PROTECTED         (1<<0)
