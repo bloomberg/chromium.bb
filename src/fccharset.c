@@ -1297,32 +1297,40 @@ FcCharSetSerialize(FcSerialize *serialize, const FcCharSet *cs)
     cs_serialized->ref = FC_REF_CONSTANT;
     cs_serialized->num = cs->num;
 
-    leaves = FcCharSetLeaves (cs);
-    leaves_serialized = FcSerializePtr (serialize, leaves);
-    if (!leaves_serialized)
-	return NULL;
-
-    cs_serialized->leaves_offset = FcPtrToOffset (cs_serialized,
-						  leaves_serialized);
-    
-    numbers = FcCharSetNumbers (cs);
-    numbers_serialized = FcSerializePtr (serialize, numbers);
-    if (!numbers)
-	return NULL;
-
-    cs_serialized->numbers_offset = FcPtrToOffset (cs_serialized,
-						   numbers_serialized);
-
-    for (i = 0; i < cs->num; i++)
+    if (cs->num)
     {
-	leaf = FcCharSetLeaf (cs, i);
-	leaf_serialized = FcSerializePtr (serialize, leaf);
-	if (!leaf_serialized)
+	leaves = FcCharSetLeaves (cs);
+	leaves_serialized = FcSerializePtr (serialize, leaves);
+	if (!leaves_serialized)
 	    return NULL;
-	*leaf_serialized = *leaf;
-	leaves_serialized[i] = FcPtrToOffset (leaves_serialized, 
-					      leaf_serialized);
-	numbers_serialized[i] = numbers[i];
+    
+	cs_serialized->leaves_offset = FcPtrToOffset (cs_serialized,
+						      leaves_serialized);
+	
+	numbers = FcCharSetNumbers (cs);
+	numbers_serialized = FcSerializePtr (serialize, numbers);
+	if (!numbers)
+	    return NULL;
+    
+	cs_serialized->numbers_offset = FcPtrToOffset (cs_serialized,
+						       numbers_serialized);
+    
+	for (i = 0; i < cs->num; i++)
+	{
+	    leaf = FcCharSetLeaf (cs, i);
+	    leaf_serialized = FcSerializePtr (serialize, leaf);
+	    if (!leaf_serialized)
+		return NULL;
+	    *leaf_serialized = *leaf;
+	    leaves_serialized[i] = FcPtrToOffset (leaves_serialized, 
+						  leaf_serialized);
+	    numbers_serialized[i] = numbers[i];
+	}
+    }
+    else
+    {
+	cs_serialized->leaves_offset = 0;
+	cs_serialized->numbers_offset = 0;
     }
     
     return cs_serialized;

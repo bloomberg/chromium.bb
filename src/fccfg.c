@@ -77,39 +77,9 @@ FcConfigCreate (void)
     if (!config->rejectPatterns)
 	goto bail7;
 
-    config->cache = 0;
-    if (FcConfigHome())
-	if (!FcConfigSetCache (config, (FcChar8 *) ("~/" FC_USER_CACHE_FILE)))
-	    goto bail8;
-
-#ifdef _WIN32
-    if (config->cache == 0)
-    {
-	/* If no home, use the temp folder. */
-	FcChar8	    dummy[1];
-	int	    templen = GetTempPath (1, dummy);
-	FcChar8     *temp = malloc (templen + 1);
-
-	if (temp)
-	{
-	    FcChar8 *cache_dir;
-
-	    GetTempPath (templen + 1, temp);
-	    cache_dir = FcStrPlus (temp, FC_USER_CACHE_FILE);
-	    free (temp);
-	    if (!FcConfigSetCache (config, cache_dir))
-	    {
-		FcStrFree (cache_dir);
-		goto bail8;
-	    }
-	    FcStrFree (cache_dir);
-	}
-    }
-#endif
-
     config->cacheDirs = FcStrSetCreate ();
     if (!config->cacheDirs)
-	goto bail9;
+	goto bail8;
     
     config->blanks = 0;
 
@@ -119,13 +89,13 @@ FcConfigCreate (void)
     for (set = FcSetSystem; set <= FcSetApplication; set++)
 	config->fonts[set] = 0;
 
+    config->caches = NULL;
+
     config->rescanTime = time(0);
     config->rescanInterval = 30;    
     
     return config;
 
-bail9:
-    FcStrFree (config->cache);
 bail8:
     FcFontSetDestroy (config->rejectPatterns);
 bail7:
@@ -226,6 +196,7 @@ void
 FcConfigDestroy (FcConfig *config)
 {
     FcSetName	set;
+    FcCacheList	*cl, *cl_next;
 
     if (config == _fcConfig)
 	_fcConfig = 0;
@@ -242,14 +213,18 @@ FcConfigDestroy (FcConfig *config)
     if (config->blanks)
 	FcBlanksDestroy (config->blanks);
 
-    if (config->cache)
-	FcStrFree (config->cache);
-
     FcSubstDestroy (config->substPattern);
     FcSubstDestroy (config->substFont);
     for (set = FcSetSystem; set <= FcSetApplication; set++)
 	if (config->fonts[set])
 	    FcFontSetDestroy (config->fonts[set]);
+
+    for (cl = config->caches; cl; cl = cl_next)
+    {
+	cl_next = cl->next;
+	FcDirCacheUnmap (cl->cache);
+	free (cl);
+    }
 
     free (config);
     FcMemFree (FC_MEM_CONFIG, sizeof (FcConfig));
@@ -453,30 +428,10 @@ FcConfigGetConfigFiles (FcConfig    *config)
     return FcStrListCreate (config->configFiles);
 }
 
-FcBool
-FcConfigSetCache (FcConfig	*config,
-		  const FcChar8	*c)
-{
-    FcChar8    *new = FcStrCopyFilename (c);
-    
-    if (!new)
-	return FcFalse;
-    if (config->cache)
-	FcStrFree (config->cache);
-    config->cache = new;
-    return FcTrue;
-}
-
 FcChar8 *
 FcConfigGetCache (FcConfig  *config)
 {
-    if (!config)
-    {
-	config = FcConfigGetCurrent ();
-	if (!config)
-	    return 0;
-    }
-    return config->cache;
+    return NULL;
 }
 
 FcFontSet *
@@ -502,7 +457,18 @@ FcConfigSetFonts (FcConfig	*config,
     config->fonts[set] = fonts;
 }
 
+FcBool
+FcConfigAddCache (FcConfig *config, FcCache *cache)
+{
+    FcCacheList	*cl = malloc (sizeof (FcCacheList));
 
+    if (!cl)
+	return FcFalse;
+    cl->cache = cache;
+    cl->next = config->caches;
+    config->caches = cl;
+    return FcTrue;
+}
 
 FcBlanks *
 FcConfigGetBlanks (FcConfig	*config)

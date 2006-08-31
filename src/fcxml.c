@@ -668,7 +668,7 @@ FcTestCreate (FcConfigParse *parse,
 
 static FcEdit *
 FcEditCreate (FcConfigParse	*parse,
-	      const char	*field,
+	      FcObject		object,
 	      FcOp		op,
 	      FcExpr		*expr,
 	      FcValueBinding	binding)
@@ -680,7 +680,7 @@ FcEditCreate (FcConfigParse	*parse,
 	const FcObjectType	*o;
 
 	e->next = 0;
-	e->object = FcObjectFromName (field);
+	e->object = object;
 	e->op = op;
 	e->expr = expr;
 	e->binding = binding;
@@ -1410,7 +1410,7 @@ FcParseAlias (FcConfigParse *parse)
     if (prefer)
     {
 	edit = FcEditCreate (parse, 
-			     FcConfigSaveField ("family"),
+			     FC_FAMILY_OBJECT,
 			     FcOpPrepend,
 			     prefer,
 			     FcValueBindingWeak);
@@ -1423,7 +1423,7 @@ FcParseAlias (FcConfigParse *parse)
     {
 	next = edit;
 	edit = FcEditCreate (parse,
-			     FcConfigSaveField ("family"),
+			     FC_FAMILY_OBJECT,
 			     FcOpAppend,
 			     accept,
 			     FcValueBindingWeak);
@@ -1436,7 +1436,7 @@ FcParseAlias (FcConfigParse *parse)
     {
 	next = edit;
 	edit = FcEditCreate (parse,
-			     FcConfigSaveField ("family"),
+			     FC_FAMILY_OBJECT,
 			     FcOpAppendLast,
 			     def,
 			     FcValueBindingWeak);
@@ -1791,7 +1791,8 @@ FcParseEdit (FcConfigParse *parse)
 	}
     }
     expr = FcPopBinary (parse, FcOpComma);
-    edit = FcEditCreate (parse, (char *) FcStrCopy (name), mode, expr, binding);
+    edit = FcEditCreate (parse, FcObjectFromName ((char *) name),
+			 mode, expr, binding);
     if (!edit)
     {
 	FcConfigMessage (parse, FcSevereError, "out of memory");
@@ -2074,11 +2075,7 @@ FcEndElement(void *userData, const XML_Char *name)
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	    break;
 	}
-	if (!FcStrUsesHome (data) || FcConfigHome ())
-	{
-	    if (!FcConfigSetCache (parse->config, data))
-		FcConfigMessage (parse, FcSevereError, "out of memory");
-	}
+	/* discard this data; no longer used */
 	FcStrFree (data);
 	break;
     case FcElementInclude:

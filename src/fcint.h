@@ -405,6 +405,11 @@ struct _FcBlanks {
     FcChar32	*blanks;
 };
 
+typedef struct _FcCacheList {
+    struct _FcCacheList *next;
+    FcCache		*cache;
+} FcCacheList;
+
 struct _FcConfig {
     /*
      * File names loaded from the configuration -- saved here as the
@@ -412,7 +417,6 @@ struct _FcConfig {
      * and those directives may occur in any order
      */
     FcStrSet	*configDirs;	    /* directories to scan for fonts */
-    FcChar8	*cache;		    /* name of per-user cache file */
     /*
      * Set of allowed blank chars -- used to
      * trim fonts of bogus glyphs
@@ -455,6 +459,11 @@ struct _FcConfig {
      * match preferrentially
      */
     FcFontSet	*fonts[FcSetApplication + 1];
+    /*
+     * Font cache information is mapped from cache files
+     * the configuration is destroyed, the files need to be unmapped
+     */
+    FcCacheList	*caches;
     /*
      * Fontconfig can periodically rescan the system configuration
      * and font directories.  This rescanning occurs when font
@@ -526,10 +535,6 @@ FcConfigAddConfigFile (FcConfig		*config,
 		       const FcChar8	*f);
 
 FcBool
-FcConfigSetCache (FcConfig	*config,
-		  const FcChar8	*c);
-
-FcBool
 FcConfigAddBlank (FcConfig	*config,
 		  FcChar32    	blank);
 
@@ -570,6 +575,10 @@ FcConfigAcceptFont (FcConfig	    *config,
 FcFileTime
 FcConfigModifiedTime (FcConfig *config);
 
+FcBool
+FcConfigAddCache (FcConfig *config, FcCache *cache);
+
+/* fcserialize.c */
 intptr_t
 FcAlignSize (intptr_t size);
     

@@ -187,5 +187,6 @@ main (int argc, char **argv)
 	}
 	FcFontSetDestroy (fs);
     }
+    FcFini ();
     return 0;
 }

@@ -130,6 +130,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
     FcStrSet	*subdirs;
     FcStrList	*sublist;
     struct stat	statb;
+    FcBool	was_valid;
     
     /*
      * Now scan all of the directories into separate databases
@@ -160,14 +161,14 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	set = FcFontSetCreate ();
 	if (!set)
 	{
-	    fprintf (stderr, "Can't create font set\n");
+	    fprintf (stderr, "%s: Can't create font set\n", dir);
 	    ret++;
 	    continue;
 	}
 	subdirs = FcStrSetCreate ();
 	if (!subdirs)
 	{
-	    fprintf (stderr, "Can't create directory set\n");
+	    fprintf (stderr, "%s: Can't create directory set\n", dir);
 	    ret++;
 	    FcFontSetDestroy (set);
 	    continue;
@@ -219,15 +220,18 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	if (really_force)
 	    FcDirCacheUnlink (dir, config);
 
+	if (!force)
+	    was_valid = FcDirCacheValid (dir, config);
+	
 	if (!FcDirScanConfig (set, subdirs, FcConfigGetBlanks (config), dir, force, config))
 	{
-	    fprintf (stderr, "\"%s\": error scanning\n", dir);
+	    fprintf (stderr, "%s: error scanning\n", dir);
 	    FcFontSetDestroy (set);
 	    FcStrSetDestroy (subdirs);
 	    ret++;
 	    continue;
 	}
-	if (!force && FcDirCacheValid (dir, config))
+	if (!force && was_valid)
 	{
 	    if (verbose)
 		printf ("skipping, %d fonts, %d dirs\n",
@@ -239,15 +243,10 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 		printf ("caching, %d fonts, %d dirs\n", 
 			set->nfont, nsubdirs (subdirs));
 
-	    /* This is the only reason we can't combine 
-	     * Valid w/HasCurrentArch... */
-            if (!FcDirCacheValid (dir, config))
-                if (!FcDirCacheUnlink (dir, config))
-                    ret++;
-
-	    if (!FcDirSave (set, subdirs, dir))
+	    if (!FcDirCacheValid (dir, config))
 	    {
-		fprintf (stderr, "Can't save cache for \"%s\"\n", dir);
+		fprintf (stderr, "%s: failed to write cache\n", dir);
+		(void) FcDirCacheUnlink (dir, config);
 		ret++;
 	    }
 	}
@@ -256,7 +255,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	FcStrSetDestroy (subdirs);
 	if (!sublist)
 	{
-	    fprintf (stderr, "Can't create subdir list in \"%s\"\n", dir);
+	    fprintf (stderr, "%s: Can't create subdir list\n", dir);
 	    ret++;
 	    continue;
 	}

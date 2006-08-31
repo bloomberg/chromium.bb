@@ -39,9 +39,6 @@
 #define O_BINARY 0
 #endif
 
-static int
-FcDirCacheOpen (FcConfig *config, const FcChar8 *dir, off_t *size);
-
 struct MD5Context {
         FcChar32 buf[4];
         FcChar32 bits[2];
@@ -52,23 +49,6 @@ static void MD5Init(struct MD5Context *ctx);
 static void MD5Update(struct MD5Context *ctx, unsigned char *buf, unsigned len);
 static void MD5Final(unsigned char digest[16], struct MD5Context *ctx);
 static void MD5Transform(FcChar32 buf[4], FcChar32 in[16]);
-
-#define FC_DBG_CACHE_REF    1024
-
-/* Does not check that the cache has the appropriate arch section. */
-FcBool
-FcDirCacheValid (const FcChar8 *dir, FcConfig *config)
-{
-    int fd;
-
-    fd = FcDirCacheOpen (config, dir, NULL);
-
-    if (fd < 0)
-	return FcFalse;
-    close (fd);
-
-    return FcTrue;
-}
 
 #define CACHEBASE_LEN (1 + 32 + 1 + sizeof (FC_ARCHITECTURE) + sizeof (FC_CACHE_SUFFIX))
 
@@ -209,27 +189,31 @@ FcCacheRead (FcConfig *config)
     return 0;
 }
 
-/* Opens the cache file for 'dir' for reading.
- * This searches the list of cache dirs for the relevant cache file,
- * returning the first one found.
+/* 
+ * Look for a cache file for the specified dir. Attempt
+ * to use each one we find, stopping when the callback
+ * indicates success
  */
-static int
-FcDirCacheOpen (FcConfig *config, const FcChar8 *dir, off_t *size)
+static FcBool
+FcDirCacheProcess (FcConfig *config, const FcChar8 *dir, 
+		   FcBool (*callback) (int fd, off_t size, void *closure),
+		   void *closure)
 {
     int		fd = -1;
     FcChar8	cache_base[CACHEBASE_LEN];
     FcStrList	*list;
     FcChar8	*cache_dir;
     struct stat file_stat, dir_stat;
+    FcBool	ret = FcFalse;
 
     if (stat ((char *) dir, &dir_stat) < 0)
-        return -1;
+        return FcFalse;
 
     FcDirCacheBasename (dir, cache_base);
 
     list = FcStrListCreate (config->cacheDirs);
     if (!list)
-        return -1;
+        return FcFalse;
 	
     while ((cache_dir = FcStrListNext (list)))
     {
@@ -242,43 +226,29 @@ FcDirCacheOpen (FcConfig *config, const FcChar8 *dir, off_t *size)
 	    if (fstat (fd, &file_stat) >= 0 &&
 		dir_stat.st_mtime <= file_stat.st_mtime)
 	    {
-		if (size)
-		    *size = file_stat.st_size;
-		break;
+		ret = (*callback) (fd, file_stat.st_size, closure);
+		if (ret)
+		{
+		    close (fd);
+		    break;
+		}
 	    }
 	    close (fd);
-	    fd = -1;
 	}
     }
     FcStrListDone (list);
     
-    return fd;
+    return ret;
 }
 
-void
-FcDirCacheUnmap (FcCache *cache)
-{
-    if (cache->magic == FC_CACHE_MAGIC_COPY)
-    {
-	free (cache);
-	return;
-    }
-#if defined(HAVE_MMAP) || defined(__CYGWIN__)
-    munmap (cache, cache->size);
-#elif defined(_WIN32)
-    UnmapViewOfFile (cache);
-#endif
-}
-
-/* read serialized state from the cache file */
-FcCache *
-FcDirCacheMap (int fd, off_t size)
+static FcBool
+FcDirCacheLoad (int fd, off_t size, void *closure)
 {
     FcCache	*cache;
     FcBool	allocated = FcFalse;
 
     if (size < sizeof (FcCache))
-	return NULL;
+	return FcFalse;
 #if defined(HAVE_MMAP) || defined(__CYGWIN__)
     cache = mmap (0, size, PROT_READ, MAP_SHARED, fd, 0);
 #elif defined(_WIN32)
@@ -299,12 +269,12 @@ FcDirCacheMap (int fd, off_t size)
     {
 	cache = malloc (size);
 	if (!cache)
-	    return NULL;
+	    return FcFalse;
 
 	if (read (fd, cache, size) != size)
 	{
 	    free (cache);
-	    return NULL;
+	    return FcFalse;
 	}
 	allocated = FcTrue;
     } 
@@ -321,41 +291,41 @@ FcDirCacheMap (int fd, off_t size)
 	    UnmapViewOfFile (cache);
 #endif
 	}
-	return NULL;
+	return FcFalse;
     }
 
     /* Mark allocated caches so they're freed rather than unmapped */
     if (allocated)
 	cache->magic = FC_CACHE_MAGIC_COPY;
 	
-    return cache;
+    *((FcCache **) closure) = cache;
+    return FcTrue;
+}
+
+FcCache *
+FcDirCacheMap (int fd, off_t size)
+{
+    FcCache *cache;
+
+    if (FcDirCacheLoad (fd, size, &cache))
+	return cache;
+    return NULL;
 }
 
 FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, 
 		const FcChar8 *dir, FcConfig *config)
 {
-    int		fd;
     FcCache	*cache;
-    off_t	size;
     int		i;
     FcFontSet	*cache_set;
     intptr_t	*cache_dirs;
     FcPattern   **cache_fonts;
 
-    fd = FcDirCacheOpen (config, dir, &size);
-    if (fd < 0)
+    if (!FcDirCacheProcess (config, dir, 
+			    FcDirCacheLoad,
+			    &cache))
 	return FcFalse;
-
-    cache = FcDirCacheMap (fd, size);
-    
-    if (!cache)
-    {
-	if (FcDebug() & FC_DBG_CACHE)
-	    printf ("FcDirCacheRead failed to map cache for %s\n", dir);
-	close (fd);
-	return FcFalse;
-    }
     
     cache_set = FcCacheSet (cache);
     cache_fonts = FcFontSetFonts(cache_set);
@@ -383,10 +353,48 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs,
     if (config)
 	FcConfigAddFontDir (config, (FcChar8 *)dir);
     
-    close (fd);
     return FcTrue;
 }
     
+static FcBool
+FcDirCacheValidate (int fd, off_t size, void *closure)
+{
+    FcBool  ret = FcTrue;
+    FcCache	c;
+    struct stat	file_stat;
+    
+    if (read (fd, &c, sizeof (FcCache)) != sizeof (FcCache))
+	ret = FcFalse;
+    else if (fstat (fd, &file_stat) < 0)
+	ret = FcFalse;
+    else if (c.magic != FC_CACHE_MAGIC)
+	ret = FcFalse;
+    else if (file_stat.st_size != c.size)
+	ret = FcFalse;
+    return ret;
+}
+
+FcBool
+FcDirCacheValid (const FcChar8 *dir, FcConfig *config)
+{
+    return FcDirCacheProcess (config, dir, FcDirCacheValidate, NULL);
+}
+
+void
+FcDirCacheUnmap (FcCache *cache)
+{
+    if (cache->magic == FC_CACHE_MAGIC_COPY)
+    {
+	free (cache);
+	return;
+    }
+#if defined(HAVE_MMAP) || defined(__CYGWIN__)
+    munmap (cache, cache->size);
+#elif defined(_WIN32)
+    UnmapViewOfFile (cache);
+#endif
+}
+
 /*
  * Cache file is:
  *

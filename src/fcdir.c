@@ -288,5 +288,5 @@ FcDirScan (FcFontSet	    *set,
 FcBool
 FcDirSave (FcFontSet *set, FcStrSet * dirs, const FcChar8 *dir)
 {
-    return FcDirCacheWrite (set, dirs, dir, FcConfigGetCurrent ());
+    return FcFalse;
 }
