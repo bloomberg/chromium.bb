@@ -1044,7 +1044,7 @@ void
 FcPatternFini (void)
 {
     FcStrStaticNameFini ();
-    FcObjectStaticNameFini ();
+    FcObjectFini ();
 }
 
 FcBool

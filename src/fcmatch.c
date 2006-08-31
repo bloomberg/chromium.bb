@@ -313,7 +313,7 @@ FcCompareValueList (FcObject	 object,
     j = 0;
     for (v1 = v1orig; v1; v1 = FcValueListNext(v1))
     {
-	for (v2 = v1orig; v2; v2 = FcValueListNext(v2))
+	for (v2 = v2orig; v2; v2 = FcValueListNext(v2))
 	{
 	    v = (match->compare) (&v1->value, &v2->value);
 	    if (v < 0)
@@ -608,7 +608,7 @@ FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool tri
                 }
 
 		FcPatternReference (node->pattern);
-		if (FcDebug () & FC_DBG_MATCH)
+		if (FcDebug () & FC_DBG_MATCHV)
 		{
 		    printf ("Add ");
 		    FcPatternPrint (node->pattern);
@@ -788,6 +788,11 @@ FcFontSetSort (FcConfig	    *config,
 
     free (nodes);
 
+    if (FcDebug() & FC_DBG_MATCH)
+    {
+	printf ("First font ");
+	FcPatternPrint (ret->fonts[0]);
+    }
     return ret;
 
 bail2:

@@ -28,13 +28,14 @@
 #include <string.h>
 #include <stdio.h>
 
-/* Please do not revoke any of these bindings. */
-/* The __DUMMY__ object enables callers to distinguish the error return
- * of FcObjectToPtrLookup from FC_FAMILY's FcObject, which would
- * otherwise be 0. */
+/* 
+ * Please do not change this list, it is used to initialize the object
+ * list in this order to match the FC_foo_OBJECT constants. Those 
+ * constants are written into cache files.
+ */
+
 static const FcObjectType _FcBaseObjectTypes[] = {
-    { "__DUMMY__",      FcTypeVoid, }, 
-    { FC_FAMILY,	FcTypeString, },
+    { FC_FAMILY,	FcTypeString, },    /* 1 */
     { FC_FAMILYLANG,	FcTypeString, },
     { FC_STYLE,		FcTypeString, },
     { FC_STYLELANG,	FcTypeString, },
@@ -72,14 +73,10 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_CAPABILITY,	FcTypeString },
     { FC_FONTFORMAT,	FcTypeString },
     { FC_EMBOLDEN,	FcTypeBool },
-    { FC_EMBEDDED_BITMAP,   FcTypeBool },
+    { FC_EMBEDDED_BITMAP,   FcTypeBool }, /* 39 */
 };
 
 #define NUM_OBJECT_TYPES    (sizeof _FcBaseObjectTypes / sizeof _FcBaseObjectTypes[0])
-
-static FcObjectType * _FcUserObjectNames = 0;
-static int user_obj_alloc = 0;
-static int next_basic_offset = NUM_OBJECT_TYPES;
 
 typedef struct _FcObjectTypeList    FcObjectTypeList;
 
@@ -87,238 +84,292 @@ struct _FcObjectTypeList {
     const FcObjectTypeList  *next;
     const FcObjectType	    *types;
     int			    ntypes;
-    int			    basic_offset;
 };
 
 static const FcObjectTypeList _FcBaseObjectTypesList = {
     0,
     _FcBaseObjectTypes,
     NUM_OBJECT_TYPES,
-    0
 };
 
 static const FcObjectTypeList	*_FcObjectTypes = &_FcBaseObjectTypesList;
 
-FcBool
-FcNameRegisterObjectTypes (const FcObjectType *types, int ntypes)
-{
-    FcObjectTypeList	*l;
+#define OBJECT_HASH_SIZE    31
 
-    l = (FcObjectTypeList *) malloc (sizeof (FcObjectTypeList));
-    if (!l)
-	return FcFalse;
-    FcMemAlloc (FC_MEM_OBJECTTYPE, sizeof (FcObjectTypeList));
-    l->types = types;
-    l->ntypes = ntypes;
-    l->next = _FcObjectTypes;
-    l->basic_offset = next_basic_offset;
-    next_basic_offset += ntypes;
-    _FcObjectTypes = l;
-    return FcTrue;
+typedef struct _FcObjectBucket {
+    struct _FcObjectBucket  *next;
+    FcChar32		    hash;
+    FcObject		    id;
+} FcObjectBucket;
+
+static FcObjectBucket	*FcObjectBuckets[OBJECT_HASH_SIZE];
+
+static FcObjectType	*FcObjects = (FcObjectType *) _FcBaseObjectTypes;
+static int		FcObjectsNumber = NUM_OBJECT_TYPES;
+static int		FcObjectsSize = 0;
+static FcBool		FcObjectsInited;
+
+static FcObjectType *
+FcObjectInsert (const char *name, FcType type)
+{
+    FcObjectType    *o;
+    if (FcObjectsNumber >= FcObjectsSize)
+    {
+	int		newsize = FcObjectsNumber * 2;
+	FcObjectType	*newobjects;
+	
+	if (FcObjectsSize)
+	    newobjects = realloc (FcObjects, newsize * sizeof (FcObjectType));
+	else
+	{
+	    newobjects = malloc (newsize * sizeof (FcObjectType));
+	    if (newobjects)
+		memcpy (newobjects, FcObjects,
+			FcObjectsNumber * sizeof (FcObjectType));
+	}
+	if (!newobjects)
+	    return NULL;
+	FcObjects = newobjects;
+	FcObjectsSize = newsize;
+    }
+    o = &FcObjects[FcObjectsNumber];
+    o->object = name;
+    o->type = type;
+    ++FcObjectsNumber;
+    return o;
+}
+
+static FcObject
+FcObjectId (FcObjectType *o)
+{
+    return o - FcObjects + 1;
+}
+
+static FcObjectType *
+FcObjectFindByName (const char *object, FcBool insert)
+{
+    FcChar32	    hash = FcStringHash ((const FcChar8 *) object);
+    FcObjectBucket  **p;
+    FcObjectBucket  *b;
+    FcObjectType    *o;
+
+    if (!FcObjectsInited)
+	FcObjectInit ();
+    for (p = &FcObjectBuckets[hash%OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
+    {
+	o = FcObjects + b->id - 1;
+        if (b->hash == hash && !strcmp (object, (o->object)))
+            return o;
+    }
+    if (!insert)
+	return NULL;
+    /*
+     * Hook it into the hash chain
+     */
+    b = malloc (sizeof(FcObjectBucket));
+    if (!b) 
+	return NULL;
+    object = (const char *) FcStrCopy ((FcChar8 *) object);
+    if (!object) {
+	free (b);
+	return NULL;
+    }
+    o = FcObjectInsert (object, -1);
+    b->next = NULL;
+    b->hash = hash;
+    b->id = FcObjectId (o);
+    *p = b;
+    return o;
+}
+
+static FcObjectType *
+FcObjectFindById (FcObject object)
+{
+    if (1 <= object && object <= FcObjectsNumber)
+	return FcObjects + object - 1;
+    return NULL;
 }
 
 static FcBool
-FcNameUnregisterObjectTypesFree (const FcObjectType *types, int ntypes, 
-				 FcBool do_free)
+FcObjectHashInsert (const FcObjectType *object, FcBool copy)
 {
-    const FcObjectTypeList	*l, **prev;
+    FcChar32	    hash = FcStringHash ((const FcChar8 *) object->object);
+    FcObjectBucket  **p;
+    FcObjectBucket  *b;
+    FcObjectType    *o;
 
-    for (prev = &_FcObjectTypes; 
-	 (l = *prev); 
-	 prev = (const FcObjectTypeList **) &(l->next))
+    if (!FcObjectsInited)
+	FcObjectInit ();
+    for (p = &FcObjectBuckets[hash%OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
     {
-	if (l->types == types && l->ntypes == ntypes)
+	o = FcObjects + b->id - 1;
+        if (b->hash == hash && !strcmp (object->object, o->object))
+            return FcFalse;
+    }
+    /*
+     * Hook it into the hash chain
+     */
+    b = malloc (sizeof(FcObjectBucket));
+    if (!b) 
+	return FcFalse;
+    if (copy)
+    {
+	o = FcObjectInsert (object->object, object->type);
+	if (!o)
 	{
-	    *prev = l->next;
-	    if (do_free) {
-		FcMemFree (FC_MEM_OBJECTTYPE, sizeof (FcObjectTypeList));
-		free ((void *) l);
-	    }
-	    return FcTrue;
+	    free (b);
+	    return FcFalse;
 	}
     }
-    return FcFalse;
+    else
+	o = (FcObjectType *) object;
+    b->next = NULL;
+    b->hash = hash;
+    b->id = FcObjectId (o);
+    *p = b;
+    return FcTrue;
+}
+
+static void
+FcObjectHashRemove (const FcObjectType *object, FcBool cleanobj)
+{
+    FcChar32	    hash = FcStringHash ((const FcChar8 *) object->object);
+    FcObjectBucket  **p;
+    FcObjectBucket  *b;
+    FcObjectType    *o;
+
+    if (!FcObjectsInited)
+	FcObjectInit ();
+    for (p = &FcObjectBuckets[hash%OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
+    {
+	o = FcObjects + b->id - 1;
+        if (b->hash == hash && !strcmp (object->object, o->object))
+	{
+	    *p = b->next;
+	    free (b);
+	    if (cleanobj)
+	    {
+		/* Clean up object array */
+		o->object = NULL;
+		o->type = -1;
+		while (FcObjects[FcObjectsNumber-1].object == NULL)
+		    --FcObjectsNumber;
+	    }
+            break;
+	}
+    }
+}
+
+FcBool
+FcNameRegisterObjectTypes (const FcObjectType *types, int ntypes)
+{
+    int	i;
+
+    for (i = 0; i < ntypes; i++)
+	if (!FcObjectHashInsert (&types[i], FcTrue))
+	    return FcFalse;
+    return FcTrue;
 }
 
 FcBool
 FcNameUnregisterObjectTypes (const FcObjectType *types, int ntypes)
 {
-    return FcNameUnregisterObjectTypesFree (types, ntypes, FcTrue);
+    int	i;
+
+    for (i = 0; i < ntypes; i++)
+	FcObjectHashRemove (&types[i], FcTrue);
+    return FcTrue;
 }
 
 const FcObjectType *
 FcNameGetObjectType (const char *object)
 {
-    int			    i;
-    const FcObjectTypeList  *l;
-    const FcObjectType	    *t;
-    
-    for (l = _FcObjectTypes; l; l = l->next)
-    {
-        if (l == (FcObjectTypeList*)_FcUserObjectNames)
-            continue;
-
-	for (i = 0; i < l->ntypes; i++)
-	{
-	    t = &l->types[i];
-	    if (!strcmp (object, t->object))
-		return t;
-	}
-    }
-    return 0;
-}
-
-#define OBJECT_HASH_SIZE    31
-struct objectBucket {
-    struct objectBucket	*next;
-    FcChar32		hash;
-    int			id;
-};
-static struct objectBucket *FcObjectBuckets[OBJECT_HASH_SIZE];
-
-/* Design constraint: biggest_known_ntypes must never change
- * after any call to FcNameRegisterObjectTypes. */
-static const FcObjectType *biggest_known_types = _FcBaseObjectTypes; 
-static int biggest_known_ntypes = NUM_OBJECT_TYPES;
-
-
-static FcObject
-FcObjectToPtrLookup (const char * object)
-{
-    FcObject		    i = 0, n;
-    const FcObjectTypeList  *l;
-    FcObjectType	    *t = _FcUserObjectNames;
-    FcBool		    replace;
-
-    for (l = _FcObjectTypes; l; l = l->next)
-    {
-	for (i = 0; i < l->ntypes; i++)
-	{
-	    t = (FcObjectType *)&l->types[i];
-	    if (!strcmp (object, t->object))
-	    {
-		if (l->types == _FcUserObjectNames)
-                    return -i;
-		else
-		    return l->basic_offset + i;
-	    }
-	}
-    }
-
-    /* We didn't match.  Look for the application's FcObjectTypeList
-     * and replace it in-place. */
-    for (l = _FcObjectTypes; l; l = l->next)
-    {
-	if (l->types == _FcUserObjectNames)
-	    break;
-    }
-
-    replace = l && l->types == _FcUserObjectNames;
-    if (!_FcUserObjectNames || 
-        (replace && user_obj_alloc <= l->ntypes))
-    {
-	int nt = user_obj_alloc + 4;
-        FcObjectType * tt = realloc (_FcUserObjectNames, 
-				    nt * sizeof (FcObjectType));
-        if (!tt)
-            return 0;
-	_FcUserObjectNames = tt;
-	user_obj_alloc = nt;
-    }
-
-    if (replace)
-    {
-	n = l->ntypes;
-	FcNameUnregisterObjectTypesFree (l->types, l->ntypes, FcFalse);
-    }
-    else
-	n = 0;
-
-    FcNameRegisterObjectTypes (_FcUserObjectNames, n+1);
-
-    if (!_FcUserObjectNames)
-	return 0;
-
-    _FcUserObjectNames[n].object = object;
-    _FcUserObjectNames[n].type = FcTypeVoid;
-
-    return -n;
+    return FcObjectFindByName (object, FcFalse);
 }
 
 FcBool
 FcObjectValidType (FcObject object, FcType type)
 {
-    if (object < NUM_OBJECT_TYPES && _FcBaseObjectTypes[object].type != type)
+    FcObjectType    *t = FcObjectFindById (object);
+
+    if (t) {
+	switch (t->type) {
+	case -1:
+	    return FcTrue;
+	case FcTypeDouble:
+	case FcTypeInteger:
+	    if (type == FcTypeDouble || type == FcTypeInteger)
+		return FcTrue;
+	    break;
+	default:
+	    if (type == t->type)
+		return FcTrue;
+	    break;
+	}
 	return FcFalse;
+    }
     return FcTrue;
 }
 
 FcObject
 FcObjectFromName (const char * name)
 {
-    FcChar32            hash = FcStringHash ((const FcChar8 *) name);
-    struct objectBucket **p;
-    struct objectBucket *b;
-    int                 size;
+    FcObjectType    *o = FcObjectFindByName (name, FcTrue);
 
-    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next)
-)
-        if (b->hash == hash && !strcmp (name, (char *) (b + 1)))
-            return b->id;
-    size = sizeof (struct objectBucket) + strlen (name) + 1;
-    /* workaround glibc bug which reads strlen in groups of 4 */
-    b = malloc (size + sizeof (int));
-    FcMemAlloc (FC_MEM_STATICSTR, size + sizeof(int));
-    if (!b)
-        return 0;
-    b->next = 0;
-    b->hash = hash;
-    b->id = FcObjectToPtrLookup (name);
-    strcpy ((char *) (b + 1), name);
-    *p = b;
-    return b->id;
+    if (o)
+	return FcObjectId (o);
+    return 0;
+}
+
+FcBool
+FcObjectInit (void)
+{
+    int	i;
+
+    if (FcObjectsInited)
+	return FcTrue;
+
+    FcObjectsInited = FcTrue;
+    for (i = 0; i < NUM_OBJECT_TYPES; i++)
+	if (!FcObjectHashInsert (&_FcBaseObjectTypes[i], FcFalse))
+	    return FcFalse;
+    return FcTrue;
 }
 
 void
-FcObjectStaticNameFini (void)
+FcObjectFini (void)
 {
-    int i, size;
-    struct objectBucket *b, *next;
-    char *name;
+    int		    i;
+    FcObjectBucket  *b, *next;
 
     for (i = 0; i < OBJECT_HASH_SIZE; i++)
     {
 	for (b = FcObjectBuckets[i]; b; b = next)
 	{
 	    next = b->next;
-	    name = (char *) (b + 1);
-	    size = sizeof (struct objectBucket) + strlen (name) + 1;
-	    FcMemFree (FC_MEM_STATICSTR, size);
 	    free (b);
 	}
 	FcObjectBuckets[i] = 0;
     }
+    for (i = 0; i < FcObjectsNumber; i++)
+	if (FcObjects[i].type == -1)
+	    free ((void*) FcObjects[i].object);
+    if (FcObjects != _FcBaseObjectTypes)
+	free (FcObjects);
+    FcObjects = (FcObjectType *) _FcBaseObjectTypes;
+    FcObjectsNumber = NUM_OBJECT_TYPES;
+    FcObjectsSize = 0;
+    FcObjectsInited = FcFalse;
 }
 
 const char *
 FcObjectName (FcObject object)
 {
-    const FcObjectTypeList  *l;
-    int i, j;
+    FcObjectType    *o = FcObjectFindById (object);
 
-    if (object > 0)
-    {
-        if (object < biggest_known_ntypes)
-            return biggest_known_types[object].object;
-
-        j = 0;
-        for (l = _FcObjectTypes; l; l = l->next)
-            for (i = 0; i < l->ntypes; i++, j++)
-                if (j == object)
-                    return l->types[i].object;
-    }
-
-    return _FcUserObjectNames[-object].object;
+    if (o)
+	return o->object;
+    return NULL;
 }
 
 static const FcConstant _FcBaseConstants[] = {

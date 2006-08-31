@@ -858,10 +858,13 @@ FcObjectFromName (const char * name);
 const char *
 FcObjectName (FcObject object);
 
-#define FcObjectCompare(a, b)	((int) a - (int) b)
+FcBool
+FcObjectInit (void);
 
 void
-FcObjectStaticNameFini (void);
+FcObjectFini (void);
+
+#define FcObjectCompare(a, b)	((int) a - (int) b)
 
 /* fcpat.c */
 
