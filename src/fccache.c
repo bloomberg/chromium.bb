@@ -242,7 +242,7 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
 }
 
 static FcBool
-FcDirCacheLoad (int fd, off_t size, void *closure)
+FcCacheLoad (int fd, off_t size, void *closure)
 {
     FcCache	*cache;
     FcBool	allocated = FcFalse;
@@ -303,13 +303,15 @@ FcDirCacheLoad (int fd, off_t size, void *closure)
 }
 
 FcCache *
-FcDirCacheMap (int fd, off_t size)
+FcDirCacheMap (const FcChar8 *dir, FcConfig *config)
 {
-    FcCache *cache;
+    FcCache *cache = NULL;
 
-    if (FcDirCacheLoad (fd, size, &cache))
-	return cache;
-    return NULL;
+    if (!FcDirCacheProcess (config, dir,
+			    FcCacheLoad,
+			    &cache))
+	return NULL;
+    return cache;
 }
 
 FcBool
@@ -322,9 +324,8 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs,
     intptr_t	*cache_dirs;
     FcPattern   **cache_fonts;
 
-    if (!FcDirCacheProcess (config, dir, 
-			    FcDirCacheLoad,
-			    &cache))
+    cache = FcDirCacheMap (dir, config);
+    if (!cache)
 	return FcFalse;
     
     cache_set = FcCacheSet (cache);

@@ -273,6 +273,28 @@ bail2:
     return FcFalse;
 }
 
+FcCache *
+FcCacheFileMap (const FcChar8 *file)
+{
+    FcCache *cache;
+    int	    fd;
+    struct stat file_stat;
+
+    fd = open (file, O_RDONLY | O_BINARY);
+    if (fd < 0)
+	return NULL;
+    if (fstat (fd, &file_stat) < 0) {
+	close (fd);
+	return NULL;
+    }
+    if (FcCacheLoad (fd, file_stat.st_size, &cache)) {
+	close (fd);
+	return cache;
+    }
+    close (fd);
+    return NULL;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -322,30 +344,21 @@ main (int argc, char **argv)
 
     for (; i < argc; i++)
     {
-	int	fd;
 	int	j;
 	off_t	size;
 	intptr_t	*cache_dirs;
 	
 	if (FcFileIsDir ((const FcChar8 *)argv[i]))
-	    fd = FcDirCacheOpen (config, (const FcChar8 *) argv[i], &size);
+	    cache = FcDirCacheMap ((const FcChar8 *) argv[i], config);
 	else
-	    fd = FcCacheFileOpen (argv[i], &size);
-	if (fd < 0)
+	    cache = FcCacheFileMap (argv[i]);
+	if (!cache)
 	{
 	    perror (argv[i]);
 	    ret++;
 	    continue;
 	}
 	
-	cache = FcDirCacheMap (fd, size);
-	close (fd);
-	if (!cache)
-	{
-	    fprintf (stderr, "%s: cannot map cache\n", argv[i]);
-	    ret++;
-	    continue;
-	}
 	dirs = FcStrSetCreate ();
 	fs = FcCacheSet (cache);
 	cache_dirs = FcCacheDirs (cache);

@@ -500,15 +500,18 @@ FcBool
 FcDirCacheConsume (FILE *file, FcFontSet *set, FcStrSet *dirs,
 		   const FcChar8 *dir, char *dirname);
     
-FcCache *
-FcDirCacheMap (int fd, off_t size);
-
 void
 FcDirCacheUnmap (FcCache *cache);
 
 FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config);
  
+FcCache *
+FcDirCacheMap (const FcChar8 *dir, FcConfig *config);
+    
+FcBool
+FcDirCacheLoad (int fd, off_t size, void *closure);
+
 /* fccfg.c */
 
 FcBool
