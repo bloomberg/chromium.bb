@@ -31,19 +31,25 @@
 #define HAVE_GETOPT 1
 #endif
 
-#include <fontconfig/fontconfig.h>
+#include "fcint.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <dirent.h>
 
 #if defined (_WIN32)
 #define STRICT
 #include <windows.h>
 #define sleep(x) Sleep((x) * 1000)
 #undef STRICT
+#endif
+
+#ifndef O_BINARY
+#define O_BINARY 0
 #endif
 
 #ifndef HAVE_GETOPT
@@ -266,6 +272,126 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
     return ret;
 }
 
+FcCache *
+FcCacheFileMap (const FcChar8 *file, struct stat *file_stat)
+{
+    FcCache *cache;
+    int	    fd;
+
+    fd = open (file, O_RDONLY | O_BINARY);
+    if (fd < 0)
+	return NULL;
+    if (fstat (fd, file_stat) < 0) {
+	close (fd);
+	return NULL;
+    }
+    if (FcDirCacheLoad (fd, file_stat->st_size, &cache)) {
+	close (fd);
+	return cache;
+    }
+    close (fd);
+    return NULL;
+}
+
+static FcBool
+cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
+{
+    DIR		*d;
+    struct dirent *ent;
+    char	*dir_base;
+    FcBool	ret = FcTrue;
+    FcBool	remove;
+    FcCache	*cache;
+    struct stat	file_stat;
+    struct stat	target_stat;
+
+    dir_base = FcStrPlus (dir, "/");
+    if (access ((char *) dir, W_OK|X_OK) != 0)
+    {
+	if (verbose)
+	    printf ("%s: skipping unwritable cache directory\n", dir);
+	return FcTrue;
+    }
+    d = opendir (dir);
+    if (!d)
+    {
+	perror (dir);
+	return FcFalse;
+    }
+    while ((ent = readdir (d)))
+    {
+	FcChar8	*file_name;
+	FcChar8	*target_dir;
+
+	if (ent->d_name[0] == '.')
+	    continue;
+	file_name = FcStrPlus (dir_base, ent->d_name);
+	if (!file_name)
+	{
+	    fprintf (stderr, "%s: allocation failure\n", dir);
+	    ret = FcFalse;
+	    break;
+	}
+	cache = FcCacheFileMap (file_name, &file_stat);
+	if (!cache)
+	{
+	    fprintf (stderr, "%s: invalid cache file: %s\n", dir, ent->d_name);
+	    FcStrFree (file_name);
+	    ret = FcFalse;
+	    continue;
+	}
+	target_dir = FcCacheDir (cache);
+	remove = FcFalse;
+	if (stat (target_dir, &target_stat) < 0)
+	{
+	    if (verbose)
+		printf ("%s: %s: missing directory: %s \n",
+			dir, ent->d_name, target_dir);
+	    remove = FcTrue;
+	}
+	else if (target_stat.st_mtime > file_stat.st_mtime)
+	{
+	    if (verbose)
+		printf ("%s: %s: cache outdated: %s\n",
+			dir, ent->d_name, target_dir);
+	    remove = FcTrue;
+	}
+	if (remove)
+	{
+	    if (unlink (file_name) < 0)
+	    {
+		perror (file_name);
+		ret = FcFalse;
+	    }
+	}
+        FcStrFree (file_name);
+    }
+    
+    closedir (d);
+    return ret;
+}
+
+static FcBool
+cleanCacheDirectories (FcConfig *config, FcBool verbose)
+{
+    FcStrList	*cache_dirs = FcConfigGetCacheDirs (config);
+    FcChar8	*cache_dir;
+    FcBool	ret = FcTrue;
+
+    if (!cache_dirs)
+	return FcFalse;
+    while ((cache_dir = FcStrListNext (cache_dirs)))
+    {
+	if (!cleanCacheDirectory (config, cache_dir, verbose))
+	{
+	    ret = FcFalse;
+	    break;
+	}
+    }
+    FcStrListDone (cache_dirs);
+    return ret;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -355,6 +481,8 @@ main (int argc, char **argv)
     ret = scanDirs (list, config, argv[0], force, really_force, verbose);
 
     FcStrSetDestroy (processed_dirs);
+
+    cleanCacheDirectories (config, verbose);
 
     /* 
      * Now we need to sleep a second  (or two, to be extra sure), to make

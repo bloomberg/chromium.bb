@@ -241,8 +241,8 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
     return ret;
 }
 
-static FcBool
-FcCacheLoad (int fd, off_t size, void *closure)
+FcBool
+FcDirCacheLoad (int fd, off_t size, void *closure)
 {
     FcCache	*cache;
     FcBool	allocated = FcFalse;
@@ -308,7 +308,7 @@ FcDirCacheMap (const FcChar8 *dir, FcConfig *config)
     FcCache *cache = NULL;
 
     if (!FcDirCacheProcess (config, dir,
-			    FcCacheLoad,
+			    FcDirCacheLoad,
 			    &cache))
 	return NULL;
     return cache;

@@ -31,8 +31,7 @@
 #define HAVE_GETOPT 1
 #endif
 
-#include <fontconfig/fontconfig.h>
-#include <../src/fccache.c>
+#include "../src/fccache.c"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

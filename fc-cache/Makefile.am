@@ -35,7 +35,7 @@ install-data-local:
 uninstall-local:
 	-$(RM) -rf "$(DESTDIR)$(pkgcachedir)"
 
-INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
+INCLUDES=-I${top_srcdir} -I${top_srcdir}/src $(FREETYPE_CFLAGS)
 
 bin_PROGRAMS=fc-cache
 

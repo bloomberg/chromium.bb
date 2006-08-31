@@ -511,7 +511,7 @@ FcDirCacheMap (const FcChar8 *dir, FcConfig *config);
     
 FcBool
 FcDirCacheLoad (int fd, off_t size, void *closure);
-
+    
 /* fccfg.c */
 
 FcBool
