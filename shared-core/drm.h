@@ -688,22 +688,28 @@ typedef struct drm_ttm_arg {
 #define DRM_BO_FLAG_WRITE       0x00000002
 #define DRM_BO_FLAG_EXE         0x00000004
 
+/*
+ * Status flags. Can be read to determine the actual state of a buffer.
+ */
+
 /* Pinned buffer. */
-#define DRM_BO_FLAG_NO_EVICT    0x00000010
+#define DRM_BO_FLAG_NO_EVICT    0x00000001
 /* Always keep a system memory shadow to a vram buffer */
-#define DRM_BO_FLAG_SHADOW_VRAM 0x00000020
+#define DRM_BO_FLAG_SHADOW_VRAM 0x00000002
 /* When mapped for reading, make sure the buffer is cached even
    if it means moving the buffer to system memory */
-#define DRM_BO_FLAG_READ_CACHED 0x00000040
-/* The buffer is currently cached */
-#define DRM_BO_FLAG_CACHED      0x00000080
-/* The buffer is shareable with other processes */
-#define DRM_BO_FLAG_SHAREABLE   0x00000100
+#define DRM_BO_FLAG_SHAREABLE   0x00000004
 /* When there is a choice between VRAM and TT, prefer VRAM. 
    The default behaviour is to prefer TT. */
-#define DRM_BO_FLAG_PREFER_VRAM 0x00000200
+#define DRM_BO_FLAG_CACHED      0x00000008
+/* The buffer is shareable with other processes */
+
+
+#define DRM_BO_FLAG_READ_CACHED 0x00001000
+/* The buffer is currently cached */
+#define DRM_BO_FLAG_PREFER_VRAM 0x00002000
 /* Bind this buffer cached if the hardware supports it. */
-#define DRM_BO_FLAG_BIND_CACHED 0x00000400
+#define DRM_BO_FLAG_BIND_CACHED 0x00004000
 
 /* Translation table aperture */
 #define DRM_BO_FLAG_MEM_TT      0x01000000
@@ -750,21 +756,22 @@ typedef struct drm_bo_arg_request {
 
 typedef struct drm_bo_arg_reply {
 	int ret;
-	int handled;
 	unsigned handle;
 	unsigned flags;
 	drm_u64_t size;
 	drm_u64_t offset;
 	unsigned arg_handle;
-	unsigned map_flags;
         unsigned mask;
         drm_u64_t buffer_start;
 }drm_bo_arg_reply_t;
 	
 
-typedef union drm_bo_arg{
-	drm_bo_arg_request_t req;
-	drm_bo_arg_reply_t rep;
+typedef struct drm_bo_arg{
+        int handled;
+	union {
+		drm_bo_arg_request_t req;
+		drm_bo_arg_reply_t rep;
+	};
 } drm_bo_arg_t;
 
 typedef union drm_mm_init_arg{

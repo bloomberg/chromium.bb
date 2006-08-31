@@ -2501,7 +2501,9 @@ int drmResetList(drmBOList *list) {
     return drmAdjustListNodes(list);
 }
 	
-static int drmAddListItem(drmBOList *list, drmBO *item, drm_bo_arg_t *arg)
+static drmBONode *drmAddListItem(drmBOList *list, drmBO *item, 
+				 unsigned long arg0,
+				 unsigned long arg1)
 {
     drmBONode *node;
     drmMMListHead *l;
@@ -2510,7 +2512,7 @@ static int drmAddListItem(drmBOList *list, drmBO *item, drm_bo_arg_t *arg)
     if (l == &list->free) {
 	node = (drmBONode *) malloc(sizeof(*node));
 	if (!node) {
-	    return -ENOMEM;
+	    return NULL;
 	}
 	list->numCurrent++;
     } else {
@@ -2518,11 +2520,43 @@ static int drmAddListItem(drmBOList *list, drmBO *item, drm_bo_arg_t *arg)
 	node = DRMLISTENTRY(drmBONode, l, head);
     }
     node->buf = item;
+    node->arg0 = arg0;
+    node->arg1 = arg1;
     DRMLISTADD(&node->head, &list->list);
     list->numOnList++;
-    return 0;
+    return node;
 }
      	
+void *drmBOListIterator(drmBOList *list)
+{
+    void *ret = list->list.next;
+
+    if (ret == &list->list)
+	return NULL;
+    return ret;
+}
+
+void *drmBOListNext(drmBOList *list, void *iterator)
+{
+    void *ret;
+
+    drmMMListHead *l = (drmMMListHead *) iterator;
+    ret = l->next;
+    if (ret == &list->list)
+	return NULL;
+    return ret;
+}
+
+void drmBOListBuf(void *iterator, drmBO **buf)
+{
+    drmBONode *node;
+    drmMMListHead *l = (drmMMListHead *) iterator;
+    node = DRMLISTENTRY(drmBONode, l, head);
+    
+    *buf = node->buf;
+}
+
+
 int drmCreateBufList(int numTarget, drmBOList *list)
 {
     DRMINITLISTHEAD(&list->list);
@@ -2533,32 +2567,6 @@ int drmCreateBufList(int numTarget, drmBOList *list)
     return drmAdjustListNodes(list);
 }
 
-/*
- * Prepare list for IOCTL submission.
- */
-
-static drm_bo_arg_t *drmPrepareList(drmBOList *list)
-{
-    drmMMListHead *cur, *next;
-    drmBONode *first, *curNode, *nextNode;
-
-    cur = list->list.next;
-    if (cur == &list->list)
-	return NULL;
-
-    first = DRMLISTENTRY(drmBONode, cur, head);
-    curNode = DRMLISTENTRY(drmBONode, cur, head);
-
-    for (next = cur->next; next != &list->list; 
-	 cur = next, next = cur->next) {
-	nextNode = DRMLISTENTRY(drmBONode, next, head);
-	curNode->bo_arg.req.next = ((unsigned long) &nextNode->bo_arg.req);
-	curNode = nextNode;
-    }
-    curNode->bo_arg.req.next = 0;
-    return &first->bo_arg;
-}
-
 int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
 		void *user_buffer, drm_bo_type_t type, unsigned mask,
 		unsigned hint, drmBO *buf)
@@ -2567,6 +2575,7 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
     drm_bo_arg_request_t *req = &arg.req;
     drm_bo_arg_reply_t *rep = &arg.rep;
 
+    arg.handled = 0;
     req->mask = mask;
     req->hint = hint;
     req->size = size;
@@ -2595,7 +2604,8 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
 
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
-    if (!rep->handled) {
+    if (!arg.handled) {
+      fprintf(stderr, "Not handled\n");
 	return -EFAULT;
     }
     if (rep->ret) {
@@ -2607,7 +2617,6 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
     buf->size = rep->size;
     buf->offset = rep->offset;
     buf->mapHandle = rep->arg_handle;
-    buf->mapFlags = rep->map_flags;
     buf->mapVirtual = NULL;
     buf->mapCount = 0;
     buf->virtual = NULL;
@@ -2623,13 +2632,14 @@ int drmBODestroy(int fd, drmBO *buf)
     drm_bo_arg_request_t *req = &arg.req;
     drm_bo_arg_reply_t *rep = &arg.rep;
     
+    arg.handled = 0;
     req->handle = buf->handle;
     req->op = drm_bo_destroy;
     req->next = 0;
 
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
-    if (!rep->handled) {
+    if (!arg.handled) {
 	return -EFAULT;
     }
     if (rep->ret) {
@@ -2647,13 +2657,14 @@ int drmBOReference(int fd, unsigned handle, drmBO *buf)
     drm_bo_arg_request_t *req = &arg.req;
     drm_bo_arg_reply_t *rep = &arg.rep;
     
+    arg.handled = 0;
     req->handle = handle;
     req->op = drm_bo_reference;
     req->next = 0;
     
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
-    if (!rep->handled) {
+    if (!arg.handled) {
 	return -EFAULT;
     }
     if (rep->ret) {
@@ -2666,7 +2677,6 @@ int drmBOReference(int fd, unsigned handle, drmBO *buf)
     buf->size = rep->size;
     buf->offset = rep->offset;
     buf->mapHandle = rep->arg_handle;
-    buf->mapFlags = rep->map_flags;
     buf->mapVirtual = NULL;
     buf->mapCount = 0;
     buf->virtual = NULL;
@@ -2681,13 +2691,14 @@ int drmBOUnReference(int fd, drmBO *buf)
     drm_bo_arg_request_t *req = &arg.req;
     drm_bo_arg_reply_t *rep = &arg.rep;
     
+    arg.handled = 0;
     req->handle = buf->handle;
     req->op = drm_bo_unreference;
     req->next = 0;
 
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
-    if (!rep->handled) {
+    if (!arg.handled) {
 	return -EFAULT;
     }
     if (rep->ret) {
@@ -2699,10 +2710,13 @@ int drmBOUnReference(int fd, drmBO *buf)
 }   
 
 /*
- *
+ * Flags can be  DRM_BO_FLAG_READ, DRM_BO_FLAG_WRITE or'ed together
+ * Hint currently be DRM_BO_HINT_DONT_BLOCK, which makes the
+ * call return an -EBUSY if it can' immediately honor the mapping request.
  */
 
-int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, void **address)
+int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
+	     void **address)
 {
 
     drm_bo_arg_t arg;
@@ -2714,6 +2728,7 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, void **address)
      * Make sure we have a virtual address of the buffer.
      */
 
+    fprintf(stderr, "Address is 0x%08x\n", address);
     if (!buf->mapVirtual) {
 	if (buf->mapCount == 0) {
 	    drmAddress virtual;
@@ -2728,8 +2743,11 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, void **address)
 	}
     }
 
+    fprintf(stderr, "Address is 0x%08x\n", address);
+    arg.handled = 0;
     req->handle = buf->handle;
-    req->hint = mapFlags;
+    req->mask = mapFlags;
+    req->hint = mapHint;
     req->op = drm_bo_map;
     req->next = 0;
 
@@ -2738,23 +2756,26 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, void **address)
      * This IOCTL synchronizes the buffer.
      */
     
+    fprintf(stderr, "Address is 0x%08x\n", address);
     do {
 	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     } while (ret != 0 && errno == EAGAIN);
 
-    if (ret || !rep->handled || rep->ret) {
+    fprintf(stderr, "Address is 0x%08x\n", address);
+    if (ret || !arg.handled || rep->ret) {
 	if (--buf->mapCount == 0) {
 	    (void )drmUnmap(buf->mapVirtual, buf->start + buf->size);
 	}
     }	
     if (ret) 
 	return ret;
-    if (!rep->handled) 
+    if (!arg.handled) 
 	return -EFAULT;
     if (rep->ret)
 	return rep->ret;
 	
     buf->mapFlags = mapFlags;
+    fprintf(stderr, "Address is 0x%08x\n", address);
     *address = buf->virtual;
 
     return 0;
@@ -2764,6 +2785,7 @@ int drmBOUnmap(int fd, drmBO *buf)
 {
     drm_bo_arg_t arg;
     drm_bo_arg_request_t *req = &arg.req;
+    drm_bo_arg_reply_t *rep = &arg.rep;
 
     if (buf->mapCount == 0) {
 	return -EINVAL;
@@ -2773,6 +2795,7 @@ int drmBOUnmap(int fd, drmBO *buf)
 	(void) drmUnmap(buf->mapVirtual, buf->start + buf->size);
     }
 	
+    arg.handled = 0;
     req->handle = buf->handle;
     req->op = drm_bo_unmap;
     req->next = 0;
@@ -2780,10 +2803,247 @@ int drmBOUnmap(int fd, drmBO *buf)
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg)) {
 	return -errno;
     }
+    if (!arg.handled) 
+        return -EFAULT;
+    if (rep->ret)
+	return rep->ret;
 
     return 0;
 }
     
+int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask, 
+		  unsigned hint)
+{
+    drm_bo_arg_t arg;
+    drm_bo_arg_request_t *req = &arg.req;
+    drm_bo_arg_reply_t *rep = &arg.rep;
+    int ret = 0;
+
+    arg.handled = 0;
+    req->handle = buf->handle;
+    req->mask = flags;
+    req->hint = hint;
+    req->arg_handle = mask; /* Encode mask in the arg_handle field :/ */
+    req->op = drm_bo_validate;
+    req->next = 0;
+
+    do{
+	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+    } while (ret && errno == -EAGAIN);
+    
+    if (ret) 
+	return ret;
+    if (!arg.handled)
+	return -EFAULT;
+    if (rep->ret)
+	return rep->ret;
+
+    buf->offset = rep->offset;
+    buf->flags = rep->flags;
+    buf->mask = rep->mask;
+    return 0;
+}
+	    
+
+int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
+{
+    drm_bo_arg_t arg;
+    drm_bo_arg_request_t *req = &arg.req;
+    drm_bo_arg_reply_t *rep = &arg.rep;
+    int ret = 0;
+
+    arg.handled = 0;
+    req->handle = buf->handle;
+    req->mask = flags;
+    req->arg_handle = fenceHandle;
+    req->op = drm_bo_validate;
+    req->next = 0;
+
+    ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+    
+    if (ret) 
+	return ret;
+    if (!arg.handled)
+	return -EFAULT;
+    if (rep->ret)
+	return rep->ret;
+    return 0;
+}
+	
+
+    
+int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags, 
+		       unsigned mask,
+		       int *newItem)
+{
+    drmBONode *node, *cur;
+    unsigned oldFlags, newFlags;
+    drmMMListHead *l;
+
+    *newItem = 0;
+    cur = NULL;
+
+    mask &= ~DRM_BO_MASK_MEM;
+ 
+    for (l = list->list.next; l != &list->list; l = l->next) {
+	node = DRMLISTENTRY(drmBONode, l, head);
+	if (node->buf == buf) {
+	    cur = node;
+	    break;
+	}
+    }
+    if (!cur) {
+	cur = drmAddListItem(list, buf, flags, mask);
+	if (!cur) {
+	    drmMsg("Out of memory creating validate list node.\n");
+	    return -ENOMEM;
+	}
+	*newItem = 1;
+	cur->arg0 = flags;
+	cur->arg1 = mask;
+    } else {
+	unsigned memFlags = cur->arg0 & DRM_BO_MASK_MEM;
+	
+	if (!(memFlags & flags)) {
+	    drmMsg("Incompatible memory location requests "
+		   "on validate list.\n");
+	    return -EINVAL;
+	}
+	if ((cur->arg1 | mask) & (cur->arg0 ^ flags)) {
+	    drmMsg("Incompatible buffer flag requests "
+		   " on validate list.\n");
+	    return -EINVAL;
+	}
+	cur->arg1 |= mask;
+	cur->arg0 = (memFlags & flags) | ((cur->arg0 | flags) & cur->arg1);	
+    }
+}
+
+
+int drmBOValidateList(int fd, drmBOList *list)
+{
+   
+  drmBONode *node;
+  drmMMListHead *l;
+  drm_bo_arg_t *arg, *first;
+  drm_bo_arg_request_t *req;
+  drm_bo_arg_reply_t *rep;
+  drm_u64_t *prevNext = NULL;
+  drmBO *buf;
+  int ret;
+
+  first = NULL;
+
+  for (l = list->list.next; l != &list->list; l = l->next) {
+      node = DRMLISTENTRY(drmBONode, l, head);
+
+      arg = &node->bo_arg;
+      req = &arg->req;
+
+      if (!first)
+	  first = arg;
+
+      if (prevNext)
+	  *prevNext = (unsigned long) arg;
+
+      req->next = 0;
+      prevNext = &req->next;
+      arg->handled = 0;
+      req->handle = node->buf->handle;
+      req->op = drm_bo_validate;
+      req->mask = node->arg0;
+      req->hint = 0;
+      req->arg_handle = node->arg1;
+  }
+  
+  if (!first) 
+      return 0;
+
+  do{
+      ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+  } while (ret && errno == -EAGAIN);
+
+  if (ret)
+      return -errno;
+  
+  for (l = list->list.next; l != &list->list; l = l->next) {
+      node = DRMLISTENTRY(drmBONode, l, head);
+
+      arg = &node->bo_arg;
+      rep = &arg->rep;
+      
+      if (!arg->handled)
+	  return -EFAULT;
+      if (rep->ret)
+	  return rep->ret;
+
+      buf = node->buf;
+      buf->offset = rep->offset;
+      buf->flags = rep->flags;
+      buf->mask = rep->mask;
+  }
+
+  return 0;
+}
+	  
+
+int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
+{
+   
+  drmBONode *node;
+  drmMMListHead *l;
+  drm_bo_arg_t *arg, *first;
+  drm_bo_arg_request_t *req;
+  drm_bo_arg_reply_t *rep;
+  drm_u64_t *prevNext = NULL;
+  drmBO *buf;
+  int ret;
+
+  first = NULL;
+
+  for (l = list->list.next; l != &list->list; l = l->next) {
+      node = DRMLISTENTRY(drmBONode, l, head);
+
+      arg = &node->bo_arg;
+      req = &arg->req;
+
+      if (!first)
+	  first = arg;
+
+      if (prevNext)
+	  *prevNext = (unsigned long) arg;
+
+      req->next = 0;
+      prevNext = &req->next;
+      arg->handled = 0;
+      req->handle = node->buf->handle;
+      req->op = drm_bo_fence;
+      req->mask = node->arg0;
+      req->arg_handle = fenceHandle;
+  }
+  
+  if (!first) 
+      return 0;
+
+  ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+
+  if (ret)
+      return -errno;
+  
+  for (l = list->list.next; l != &list->list; l = l->next) {
+      node = DRMLISTENTRY(drmBONode, l, head);
+
+      arg = &node->bo_arg;
+      rep = &arg->rep;
+      
+      if (!arg->handled)
+	  return -EFAULT;
+      if (rep->ret)
+	  return rep->ret;
+  }
+
+  return 0;
+}
 
 int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
 	      unsigned long ttPOffset, unsigned long ttPSize)

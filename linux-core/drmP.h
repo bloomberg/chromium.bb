@@ -966,7 +966,6 @@ typedef struct drm_buffer_object{
         unsigned long offset;
 
 	atomic_t mapped;
-        uint32_t map_flags;
 	uint32_t flags;
 	uint32_t mask;
 

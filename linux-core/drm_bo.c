@@ -256,11 +256,11 @@ static int drm_bo_evict(drm_buffer_object_t * bo, int tt, int no_wait)
 	int ret = 0;
 
 	/*
-	 * Someone might have taken out the buffer before we took the buffer mutex.
+	 * Someone might have modified the buffer before we took the buffer mutex.
 	 */
 
 	mutex_lock(&bo->mutex);
-	if (bo->unfenced)
+	if (bo->unfenced || (bo->flags & DRM_BO_FLAG_NO_EVICT))
 		goto out;
 	if (tt && !bo->tt)
 		goto out;
@@ -371,17 +371,46 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 
 static int drm_bo_new_flags(drm_bo_driver_t * driver,
 			    uint32_t flags, uint32_t new_mask, uint32_t hint,
-			    int init, uint32_t * n_flags)
+			    int init, uint32_t * n_flags, 
+			    uint32_t *n_mask)
 {
-	uint32_t new_flags;
+	uint32_t new_flags = 0;
 	uint32_t new_props;
 
-	if (!(flags & new_mask & DRM_BO_MASK_MEM) || init) {
+	/*
+	 * First adjust the mask. Vram is not supported yet.
+	 */
 
-		/*
-		 * We need to move memory. Default preferences are hard-coded
-		 * here.
-		 */
+	new_mask &= ~DRM_BO_FLAG_MEM_VRAM;
+
+	if (new_mask & DRM_BO_FLAG_BIND_CACHED) {
+		if (((new_mask & DRM_BO_FLAG_MEM_TT) && !driver->cached_tt) &&
+		    ((new_mask & DRM_BO_FLAG_MEM_VRAM) && !driver->cached_vram)) {
+			new_mask &= ~DRM_BO_FLAG_BIND_CACHED;
+		} else {
+			if (!driver->cached_tt) 
+				new_flags &= DRM_BO_FLAG_MEM_TT;
+			if (!driver->cached_vram) 
+				new_flags &= DRM_BO_FLAG_MEM_VRAM;
+		}
+	}
+										   
+	if ((new_mask & DRM_BO_FLAG_READ_CACHED) && 
+	    !(new_mask & DRM_BO_FLAG_BIND_CACHED)) {
+		if ((new_mask & DRM_BO_FLAG_NO_EVICT) && 
+		    !(new_mask & DRM_BO_FLAG_MEM_LOCAL)) {
+			DRM_ERROR("Cannot read cached from a pinned VRAM / TT buffer\n");
+			return -EINVAL;
+		}
+		new_mask &= ~(DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_MEM_VRAM);
+	}
+
+	/*
+	 * Determine new memory location:
+	 */
+	
+
+	if (!(flags & new_mask & DRM_BO_MASK_MEM) || init) {
 
 		new_flags = new_mask & DRM_BO_MASK_MEM;
 
@@ -421,17 +450,10 @@ static int drm_bo_new_flags(drm_bo_driver_t * driver,
 
 	new_flags |= new_mask & ~DRM_BO_MASK_MEM;
 
-	if (new_mask & DRM_BO_FLAG_BIND_CACHED) {
-		new_flags |= DRM_BO_FLAG_CACHED;
-		if (((new_flags & DRM_BO_FLAG_MEM_TT) && !driver->cached_tt) ||
-		    ((new_flags & DRM_BO_FLAG_MEM_VRAM)
-		     && !driver->cached_vram))
-			new_flags &= ~DRM_BO_FLAG_CACHED;
-	}
-
-	if ((new_flags & DRM_BO_FLAG_NO_EVICT) &&
-	    ((flags ^ new_flags) & DRM_BO_FLAG_CACHED)) {
-		if (flags & DRM_BO_FLAG_CACHED) {
+	if (((flags ^ new_flags) & DRM_BO_FLAG_BIND_CACHED) &&
+	    (new_flags & DRM_BO_FLAG_NO_EVICT) &&
+	    (flags & (DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_MEM_VRAM))) {
+		if (!(flags & DRM_BO_FLAG_CACHED)) {
 			DRM_ERROR
 			    ("Cannot change caching policy of pinned buffer\n");
 			return -EINVAL;
@@ -441,6 +463,7 @@ static int drm_bo_new_flags(drm_bo_driver_t * driver,
 	}
 
 	*n_flags = new_flags;
+	*n_mask = new_mask;
 	return 0;
 }
 
@@ -498,6 +521,12 @@ static int drm_bo_busy(drm_buffer_object_t * bo)
 	return 0;
 }
 
+
+static int drm_bo_read_cached(drm_buffer_object_t *bo) {
+	return 0;
+}
+
+
 /*
  * Wait for buffer idle and register that we've mapped the buffer.
  * Mapping is registered as a drm_ref_object with type _DRM_REF_TYPE1, 
@@ -505,11 +534,12 @@ static int drm_bo_busy(drm_buffer_object_t * bo)
  * unregistered.
  */
 
-static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle, int wait)
+static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle, 
+				 uint32_t map_flags, int no_wait)
 {
 	drm_buffer_object_t *bo;
 	drm_device_t *dev = priv->head->dev;
-	int ret;
+	int ret = 0;
 
 	mutex_lock(&dev->struct_mutex);
 	bo = drm_lookup_buffer_object(priv, handle, 1);
@@ -526,14 +556,46 @@ static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle, int wait)
 	 * be done without the bo->mutex held.
 	 */
 
-	if (atomic_inc_and_test(&bo->mapped)) {
-		ret = drm_bo_wait(bo, 0, !wait);
-		if (ret) {
-			atomic_dec(&bo->mapped);
-			goto out;
+	while(1) {
+		if (atomic_inc_and_test(&bo->mapped)) {
+			ret = drm_bo_wait(bo, 0, no_wait);
+			if (ret) {
+				atomic_dec(&bo->mapped);
+				goto out;
+			}
+
+			if ((map_flags & DRM_BO_FLAG_READ) &&
+			    (bo->flags & DRM_BO_FLAG_READ_CACHED) &&
+			    (!(bo->flags & DRM_BO_FLAG_CACHED))) {
+				
+				drm_bo_read_cached(bo);
+			}
+			break;
+		} else {
+			if ((map_flags & DRM_BO_FLAG_READ) &&
+			    (bo->flags & DRM_BO_FLAG_READ_CACHED) &&
+			    (!(bo->flags & DRM_BO_FLAG_CACHED))) {
+
+				/*
+				 * We are already mapped with different flags.
+				 * need to wait for unmap.
+				 */
+				
+				if (no_wait) {
+					ret = -EBUSY;
+					goto out;
+				}
+				DRM_WAIT_ON(ret, bo->validate_queue, 3 * DRM_HZ,
+					    atomic_read(&bo->mapped) == -1);
+				if (ret == -EINTR)
+					ret = -EAGAIN;
+				if (ret) 
+					goto out;
+				continue;
+			} 
 		}
 	}
-
+	
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_add_ref_object(priv, &bo->base, _DRM_REF_TYPE1);
 	mutex_unlock(&dev->struct_mutex);
@@ -729,7 +791,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
  */
 
 static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
-			  uint32_t mask, uint32_t ttm_handle)
+			  uint32_t ttm_handle)
 {
 	drm_device_t *dev = bo->dev;
 	drm_ttm_object_t *to = NULL;
@@ -774,7 +836,7 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
 		ttm = drm_ttm_from_object(to);
 		ret = drm_create_ttm_region(ttm, bo->buffer_start >> PAGE_SHIFT,
 					    bo->num_pages,
-					    mask & DRM_BO_FLAG_BIND_CACHED,
+					    bo->mask & DRM_BO_FLAG_BIND_CACHED,
 					    &bo->ttm_region);
 		if (ret) {
 			drm_ttm_object_deref_unlocked(dev, to);
@@ -827,17 +889,19 @@ int drm_buffer_object_create(drm_file_t * priv,
 	bo->buffer_start = buffer_start;
 
 	ret = drm_bo_new_flags(dev->driver->bo_driver, bo->flags, mask, hint,
-			       1, &new_flags);
+			       1, &new_flags, &bo->mask);
 	if (ret)
 		goto out_err;
-	ret = drm_bo_add_ttm(priv, bo, mask, ttm_handle);
+	ret = drm_bo_add_ttm(priv, bo, ttm_handle);
 	if (ret)
 		goto out_err;
 
-	bo->mask = mask;
-
+#if 0
 	ret = drm_buffer_object_validate(bo, new_flags, 0,
 					 hint & DRM_BO_HINT_DONT_BLOCK);
+#else
+	bo->flags = new_flags;
+#endif 
 	if (ret)
 		goto out_err;
 
@@ -886,7 +950,6 @@ static void drm_bo_fill_rep_arg(const drm_buffer_object_t * bo,
 		rep->arg_handle = 0;
 	}
 
-	rep->map_flags = bo->map_flags;
 	rep->mask = bo->mask;
 	rep->buffer_start = bo->buffer_start;
 }
@@ -902,9 +965,15 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 	drm_buffer_object_t *entry;
 
 	do {
-		DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+		DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, 
+					 sizeof(arg));
+		
+		if (arg.handled) {
+		    data = req->next;
+		    continue;
+		}
+
 		rep.ret = 0;
-		rep.handled = 0;
 		switch (req->op) {
 		case drm_bo_create:{
 				unsigned long buffer_start = req->buffer_start;
@@ -937,8 +1006,9 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 			break;
 		case drm_bo_map:
 			rep.ret = drm_buffer_object_map(priv, req->handle,
-							!(req->hint &
-							  DRM_BO_HINT_DONT_BLOCK));
+							req->mask,
+							req->hint &
+							DRM_BO_HINT_DONT_BLOCK);
 			break;
 		case drm_bo_destroy:
 			mutex_lock(&dev->struct_mutex);
@@ -976,15 +1046,24 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 			rep.ret = -EINVAL;
 		}
 		next = req->next;
-		rep.handled = 1;
+
+		/*
+		 * A signal interrupted us. Make sure the ioctl is restartable.
+		 */
+
+		if (rep.ret == -EAGAIN)
+			return -EAGAIN;
+
+		arg.handled = 1;
 		arg.rep = rep;
 		DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
 		data = next;
 
 	} while (data);
 	return 0;
-
 }
+
+
 
 static void drm_bo_clean_mm(drm_file_t * priv)
 {
@@ -1008,10 +1087,12 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 
 	switch (arg.req.op) {
 	case mm_init:
+#if 0
 		if (bm->initialized) {
 			DRM_ERROR("Memory manager already initialized\n");
 			return -EINVAL;
 		}
+#endif
 		mutex_init(&bm->mutex);
 		mutex_lock(&bm->mutex);
 		bm->has_vram = 0;
