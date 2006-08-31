@@ -777,13 +777,13 @@ typedef struct drm_buffer_manager{
 	int initialized;
 	int has_vram;
 	int has_tt;
-	struct mutex mutex;
 	drm_mm_t tt_manager;
 	struct list_head tt_lru;
 	drm_mm_t vram_manager;
 	struct list_head vram_lru;
 	struct list_head unfenced;
 	struct list_head ddestroy;
+        struct timer_list timer;
 } drm_buffer_manager_t;
 
 
