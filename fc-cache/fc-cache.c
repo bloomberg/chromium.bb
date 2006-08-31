@@ -227,7 +227,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    FcDirCacheUnlink (dir, config);
 
 	if (!force)
-	    was_valid = FcDirCacheValid (dir, config);
+	    was_valid = FcDirCacheValid (dir);
 	
 	if (!FcDirScanConfig (set, subdirs, FcConfigGetBlanks (config), dir, force, config))
 	{
@@ -249,7 +249,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 		printf ("caching, %d fonts, %d dirs\n", 
 			set->nfont, nsubdirs (subdirs));
 
-	    if (!FcDirCacheValid (dir, config))
+	    if (!FcDirCacheValid (dir))
 	    {
 		fprintf (stderr, "%s: failed to write cache\n", dir);
 		(void) FcDirCacheUnlink (dir, config);

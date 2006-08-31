@@ -379,10 +379,22 @@ FcDirCacheValidate (int fd, off_t size, void *closure)
     return ret;
 }
 
-FcBool
-FcDirCacheValid (const FcChar8 *dir, FcConfig *config)
+static FcBool
+FcDirCacheValidConfig (const FcChar8 *dir, FcConfig *config)
 {
     return FcDirCacheProcess (config, dir, FcDirCacheValidate, NULL, NULL);
+}
+
+FcBool
+FcDirCacheValid (const FcChar8 *dir)
+{
+    FcConfig	*config;
+    
+    config = FcConfigGetCurrent ();
+    if (!config)
+        return FcFalse;
+
+    return FcDirCacheValidConfig (dir, config);
 }
 
 void

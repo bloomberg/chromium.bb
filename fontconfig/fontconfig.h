@@ -211,15 +211,15 @@ typedef struct _FcLangSet   FcLangSet;
 typedef struct _FcValue {
     FcType	type;
     union {
-	const FcChar8  *s;
+	const FcChar8	*s;
 	int		i;
 	FcBool		b;
 	double		d;
-	const FcMatrix  *m;
-	const FcCharSet *c;
+	const FcMatrix	*m;
+	const FcCharSet	*c;
 	void		*f;
 	const FcPattern	*p;
-	const FcLangSet *l;
+	const FcLangSet	*l;
     } u;
 } FcValue;
 
@@ -273,13 +273,7 @@ typedef struct _FcStrSet    FcStrSet;
 _FCFUNCPROTOBEGIN
 
 FcBool
-FcDirCacheValid (const FcChar8 *cache_file, FcConfig *config);
-
-FcBool
-FcDirCacheHasCurrentArch (const FcChar8 *dir, FcConfig *config);
-
-FcBool
-FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config);
+FcDirCacheValid (const FcChar8 *cache_file);
 
 /* fcblanks.c */
 FcBlanks *
@@ -324,10 +318,6 @@ FcConfigBuildFonts (FcConfig *config);
 
 FcStrList *
 FcConfigGetFontDirs (FcConfig   *config);
-
-const FcChar8 *
-FcConfigNormalizeFontDir (FcConfig  	*config, 
-			  const FcChar8 *d);
 
 FcStrList *
 FcConfigGetConfigDirs (FcConfig   *config);
@@ -664,9 +654,6 @@ FcNameParse (const FcChar8 *name);
 
 FcChar8 *
 FcNameUnparse (FcPattern *pat);
-
-FcChar8 *
-FcNameUnparseEscaped (FcPattern *pat, FcBool escape);
 
 /* fcpat.c */
 FcPattern *

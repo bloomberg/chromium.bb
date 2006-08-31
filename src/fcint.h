@@ -512,6 +512,9 @@ FcDirCacheMap (const FcChar8 *dir, FcConfig *config, FcChar8 **cache_file);
 FcBool
 FcDirCacheLoad (int fd, off_t size, void *closure);
     
+FcBool
+FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config);
+
 /* fccfg.c */
 
 FcBool
@@ -802,6 +805,9 @@ FcNameParseLangSet (const FcChar8 *string);
 
 FcBool
 FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls);
+
+FcChar8 *
+FcNameUnparseEscaped (FcPattern *pat, FcBool escape);
 
 /* fclist.c */
 
