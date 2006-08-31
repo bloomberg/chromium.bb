@@ -507,7 +507,7 @@ FcBool
 FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config);
  
 FcCache *
-FcDirCacheMap (const FcChar8 *dir, FcConfig *config);
+FcDirCacheMap (const FcChar8 *dir, FcConfig *config, FcChar8 **cache_file);
     
 FcBool
 FcDirCacheLoad (int fd, off_t size, void *closure);

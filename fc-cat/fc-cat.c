@@ -32,6 +32,7 @@
 #endif
 
 #include "../src/fccache.c"
+#include "../fc-arch/fcarch.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -53,6 +54,7 @@
 const struct option longopts[] = {
     {"version", 0, 0, 'V'},
     {"verbose", 0, 0, 'v'},
+    {"recurse", 0, 0, 'r'},
     {"help", 0, 0, '?'},
     {NULL,0,0,0},
 };
@@ -77,9 +79,6 @@ extern int optind, opterr, optopt;
 #define GETC(f) getc(f)
 #define PUTC(c,f) putc(c,f)
 #endif
-
-FcBool
-FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name);
 
 static FcBool
 FcCacheWriteChars (FILE *f, const FcChar8 *chars)
@@ -149,13 +148,15 @@ static void
 usage (char *program)
 {
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "usage: %s [-V?] [--version] [--help] <fonts.cache-2>\n",
-	     program);
+    fprintf (stderr, "usage: %s [-V?] [--version] [--help] {*-%s.cache-2|directory}...\n",
+	     program, FC_ARCHITECTURE);
 #else
-    fprintf (stderr, "usage: %s [-fsvV?] <fonts.cache-2>\n",
-	     program);
+    fprintf (stderr, "usage: %s [-fsvV?] {*-%s.cache-2|directory}...\n",
+	     program, FC_ARCHITECTURE);
 #endif
-    fprintf (stderr, "Reads font information caches in <fonts.cache-2>\n");
+    fprintf (stderr, "Reads font information cache from:\n"); 
+    fprintf (stderr, " 1) specified fontconfig cache file\n");
+    fprintf (stderr, " 2) related to a particular font directory\n");
     fprintf (stderr, "\n");
 #if HAVE_GETOPT_LONG
     fprintf (stderr, "  -V, --version        display font config version and exit\n");
@@ -201,7 +202,7 @@ FcFileBaseName (const char *cache, const FcChar8 *file)
 }
 
 FcBool
-FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name)
+FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name, FcBool verbose)
 {
     FcPattern	    *font;
     FcChar8	    *name, *dir;
@@ -209,6 +210,7 @@ FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name)
     int		    ret;
     int		    n;
     int		    id;
+    int		    ndir = 0;
     FcStrList	    *list;
 
     list = FcStrListCreate (dirs);
@@ -230,6 +232,7 @@ FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name)
 	    goto bail3;
 	if (PUTC ('\n', stdout) == EOF)
 	    goto bail3;
+	ndir++;
     }
     
     for (n = 0; n < set->nfont; n++)
@@ -261,6 +264,8 @@ FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name)
 	if (PUTC ('\n', stdout) == EOF)
 	    goto bail3;
     }
+    if (verbose && !set->nfont && !ndir)
+	printf ("<empty>\n");
     
     FcStrListDone (list);
 
@@ -286,12 +291,12 @@ FcCacheFileMap (const FcChar8 *file)
 	close (fd);
 	return NULL;
     }
-    if (FcCacheLoad (fd, file_stat.st_size, &cache)) {
+    if (!FcDirCacheLoad (fd, file_stat.st_size, &cache)) {
 	close (fd);
-	return cache;
+	return NULL;
     }
     close (fd);
-    return NULL;
+    return cache;
 }
 
 int
@@ -301,16 +306,21 @@ main (int argc, char **argv)
     int		ret = 0;
     FcFontSet	*fs;
     FcStrSet    *dirs;
+    FcStrSet	*args = NULL;
+    FcStrList	*arglist;
     FcCache	*cache;
     FcConfig	*config;
+    FcChar8	*arg;
     int		verbose = 0;
+    int		recurse = 0;
+    FcBool	first = FcTrue;
 #if HAVE_GETOPT_LONG || HAVE_GETOPT
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "Vv?", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "Vvr?", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "Vv?")) != -1)
+    while ((c = getopt (argc, argv, "Vvr?")) != -1)
 #endif
     {
 	switch (c) {
@@ -320,6 +330,9 @@ main (int argc, char **argv)
 	    exit (0);
 	case 'v':
 	    verbose++;
+	    break;
+	case 'r':
+	    recurse++;
 	    break;
 	default:
 	    usage (argv[0]);
@@ -338,22 +351,62 @@ main (int argc, char **argv)
     }
     FcConfigSetCurrent (config);
     
-    if (i >= argc)
-        usage (argv[0]);
-
-    for (; i < argc; i++)
+    args = FcStrSetCreate ();
+    if (!args)
     {
-	int	j;
-	off_t	size;
-	intptr_t	*cache_dirs;
+	fprintf (stderr, "%s: malloc failure\n", argv[0]);
+	return 1;
+    }
+    if (i < argc)
+    {
+	for (; i < argc; i++)
+	{
+	    if (!FcStrSetAdd (args, argv[i]))
+	    {
+		fprintf (stderr, "%s: malloc failure\n", argv[0]);
+		return 1;
+	    }
+	}
+	arglist = FcStrListCreate (args);
+	if (!arglist)
+	{
+	    fprintf (stderr, "%s: malloc failure\n", argv[0]);
+	    return 1;
+	}
+    }
+    else
+    {
+	recurse++;
+	arglist = FcConfigGetFontDirs (config);
+	while ((arg = FcStrListNext (arglist)))
+	    if (!FcStrSetAdd (args, arg))
+	    {
+		fprintf (stderr, "%s: malloc failure\n", argv[0]);
+		return 1;
+	    }
+	FcStrListDone (arglist);
+    }
+    arglist = FcStrListCreate (args);
+    if (!arglist)
+    {
+	fprintf (stderr, "%s: malloc failure\n", argv[0]);
+	return 1;
+    }
+
+    while ((arg = FcStrListNext (arglist)))
+    {
+	int	    j;
+	off_t	    size;
+	intptr_t    *cache_dirs;
+	FcChar8	    *cache_file = NULL;
 	
-	if (FcFileIsDir ((const FcChar8 *)argv[i]))
-	    cache = FcDirCacheMap ((const FcChar8 *) argv[i], config);
+	if (FcFileIsDir (arg))
+	    cache = FcDirCacheMap (arg, config, &cache_file);
 	else
-	    cache = FcCacheFileMap (argv[i]);
+	    cache = FcCacheFileMap (arg);
 	if (!cache)
 	{
-	    perror (argv[i]);
+	    perror ((char *) arg);
 	    ret++;
 	    continue;
 	}
@@ -362,17 +415,31 @@ main (int argc, char **argv)
 	fs = FcCacheSet (cache);
 	cache_dirs = FcCacheDirs (cache);
 	for (j = 0; j < cache->dirs_count; j++) 
+	{
 	    FcStrSetAdd (dirs, FcOffsetToPtr (cache_dirs,
 					      cache_dirs[j],
 					      FcChar8));
+	    if (recurse)
+		FcStrSetAdd (args, FcOffsetToPtr (cache_dirs,
+					      cache_dirs[j],
+					      FcChar8));
+	}
 
 	if (verbose)
-	    printf ("Name: %s\nDirectory: %s\n", argv[i], FcCacheDir(cache));
-        FcCachePrintSet (fs, dirs, FcCacheDir (cache));
+	{
+	    if (!first)
+		printf ("\n");
+	    printf ("Directory: %s\nCache: %s\n--------\n",
+		    FcCacheDir(cache), cache_file ? cache_file : arg);
+	    first = FcFalse;
+	}
+        FcCachePrintSet (fs, dirs, FcCacheDir (cache), verbose);
 
 	FcStrSetDestroy (dirs);
 
 	FcDirCacheUnmap (cache);
+	if (cache_file)
+	    FcStrFree (cache_file);
     }
 
     return 0;

@@ -197,7 +197,7 @@ FcCacheRead (FcConfig *config)
 static FcBool
 FcDirCacheProcess (FcConfig *config, const FcChar8 *dir, 
 		   FcBool (*callback) (int fd, off_t size, void *closure),
-		   void *closure)
+		   void *closure, FcChar8 **cache_file_ret)
 {
     int		fd = -1;
     FcChar8	cache_base[CACHEBASE_LEN];
@@ -221,7 +221,6 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
         if (!cache_hashed)
 	    break;
         fd = open((char *) cache_hashed, O_RDONLY | O_BINARY);
-	FcStrFree (cache_hashed);
         if (fd >= 0) {
 	    if (fstat (fd, &file_stat) >= 0 &&
 		dir_stat.st_mtime <= file_stat.st_mtime)
@@ -229,12 +228,17 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
 		ret = (*callback) (fd, file_stat.st_size, closure);
 		if (ret)
 		{
+		    if (cache_file_ret)
+			*cache_file_ret = cache_hashed;
+		    else
+			FcStrFree (cache_hashed);
 		    close (fd);
 		    break;
 		}
 	    }
 	    close (fd);
 	}
+    	FcStrFree (cache_hashed);
     }
     FcStrListDone (list);
     
@@ -303,13 +307,13 @@ FcDirCacheLoad (int fd, off_t size, void *closure)
 }
 
 FcCache *
-FcDirCacheMap (const FcChar8 *dir, FcConfig *config)
+FcDirCacheMap (const FcChar8 *dir, FcConfig *config, FcChar8 **cache_file)
 {
     FcCache *cache = NULL;
 
     if (!FcDirCacheProcess (config, dir,
 			    FcDirCacheLoad,
-			    &cache))
+			    &cache, cache_file))
 	return NULL;
     return cache;
 }
@@ -324,7 +328,7 @@ FcDirCacheRead (FcFontSet * set, FcStrSet * dirs,
     intptr_t	*cache_dirs;
     FcPattern   **cache_fonts;
 
-    cache = FcDirCacheMap (dir, config);
+    cache = FcDirCacheMap (dir, config, NULL);
     if (!cache)
 	return FcFalse;
     
@@ -378,7 +382,7 @@ FcDirCacheValidate (int fd, off_t size, void *closure)
 FcBool
 FcDirCacheValid (const FcChar8 *dir, FcConfig *config)
 {
-    return FcDirCacheProcess (config, dir, FcDirCacheValidate, NULL);
+    return FcDirCacheProcess (config, dir, FcDirCacheValidate, NULL, NULL);
 }
 
 void
