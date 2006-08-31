@@ -1187,6 +1187,7 @@ FcValueListSerialize (FcSerialize *serialize, const FcValueList *vl)
 	default:
 	    break;
 	}
+	prev_serialized = vl_serialized;
 	vl = vl->next;
     }
     return head_serialized;
