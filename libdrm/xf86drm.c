@@ -2598,6 +2598,7 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
     req->type = type;
 
     buf->ttm = NULL;
+    buf->virtual = NULL;
 
     switch(type) {
     case drm_bo_type_ttm:
@@ -2631,7 +2632,6 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
     drmBOCopyReply(rep, buf);
     buf->mapVirtual = NULL;
     buf->mapCount = 0;
-    buf->virtual = NULL;
 
     return 0;
 }
@@ -2642,6 +2642,12 @@ int drmBODestroy(int fd, drmBO *buf)
     drm_bo_arg_request_t *req = &arg.req;
     drm_bo_arg_reply_t *rep = &arg.rep;
     
+    if (buf->mapVirtual) {
+	(void) drmUnmap(buf->mapVirtual, buf->start + buf->size);
+	buf->mapVirtual = NULL;
+	buf->virtual = NULL;
+    }
+
     arg.handled = 0;
     req->handle = buf->handle;
     req->op = drm_bo_destroy;
@@ -2730,25 +2736,31 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
     int ret = 0;
 
     /*
+     * At the moment, we don't allow recursive mapping of a buffer, since
+     * the first mapping may have to be unmapped before this one to succeed.
+     * This might result in a deadlock. We need a DRM mutex mechanism!!
+     */
+
+    if (buf->mapCount) {
+	drmMsg("Recursive mapping is currently not allowed.\n");
+	return -EAGAIN;
+    }
+
+    /*
      * Make sure we have a virtual address of the buffer.
      */
 
-    fprintf(stderr, "Address is 0x%08x\n", address);
-    if (!buf->mapVirtual) {
-	if (buf->mapCount == 0) {
-	    drmAddress virtual;
-	    ret = drmMap(fd, buf->mapHandle, buf->size + buf->start, &virtual);
-	    if (ret)
-		return ret;
-	    ++buf->mapCount;
-	    buf->mapVirtual = virtual;
-	    buf->virtual = ((char *) virtual) + buf->start;
-	    fprintf(stderr,"Mapvirtual, virtual: 0x%08x 0x%08x\n", 
-		    buf->mapVirtual, buf->virtual);
-	}
+    if (!buf->virtual) {
+	drmAddress virtual;
+	ret = drmMap(fd, buf->mapHandle, buf->size + buf->start, &virtual);
+	if (ret)
+	    return ret;
+	buf->mapVirtual = virtual;
+	buf->virtual = ((char *) virtual) + buf->start;
+	fprintf(stderr,"Mapvirtual, virtual: 0x%08x 0x%08x\n", 
+		buf->mapVirtual, buf->virtual);
     }
 
-    fprintf(stderr, "Address is 0x%08x\n", address);
     arg.handled = 0;
     req->handle = buf->handle;
     req->mask = mapFlags;
@@ -2761,28 +2773,21 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
      * This IOCTL synchronizes the buffer.
      */
     
-    fprintf(stderr, "Address is 0x%08x\n", address);
     do {
 	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     } while (ret != 0 && errno == EAGAIN);
 
-    fprintf(stderr, "Address is 0x%08x\n", address);
-    if (ret || !arg.handled || rep->ret) {
-	if (--buf->mapCount == 0) {
-	    (void )drmUnmap(buf->mapVirtual, buf->start + buf->size);
-	}
-    }	
     if (ret) 
 	return ret;
     if (!arg.handled) 
 	return -EFAULT;
     if (rep->ret)
 	return rep->ret;
-	
+
+    drmBOCopyReply(rep, buf);	
     buf->mapFlags = mapFlags;
-    fprintf(stderr, "Address is 0x%08x\n", address);
+    ++buf->mapCount;
     *address = buf->virtual;
-    drmBOCopyReply(rep, buf);
 
     return 0;
 }
@@ -2793,13 +2798,6 @@ int drmBOUnmap(int fd, drmBO *buf)
     drm_bo_arg_request_t *req = &arg.req;
     drm_bo_arg_reply_t *rep = &arg.rep;
 
-    if (buf->mapCount == 0) {
-	return -EINVAL;
-    }
-    
-    if (--buf->mapCount == 0) {
-	(void) drmUnmap(buf->mapVirtual, buf->start + buf->size);
-    }
 	
     arg.handled = 0;
     req->handle = buf->handle;
@@ -2814,6 +2812,8 @@ int drmBOUnmap(int fd, drmBO *buf)
     if (rep->ret)
 	return rep->ret;
 
+    --buf->mapCount;
+
     return 0;
 }
     
@@ -2824,6 +2824,11 @@ int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask,
     drm_bo_arg_request_t *req = &arg.req;
     drm_bo_arg_reply_t *rep = &arg.rep;
     int ret = 0;
+
+    if (buf->mapCount) {
+	drmMsg("Cannot validate while buffer is mapped.\n");
+	return -EAGAIN;
+    }
 
     arg.handled = 0;
     req->handle = buf->handle;
@@ -2987,6 +2992,11 @@ int drmBOValidateList(int fd, drmBOList *list)
 
       if (prevNext)
 	  *prevNext = (unsigned long) arg;
+
+      if (node->buf->mapCount) {
+	  drmMsg("Cannot validate while buffer is mapped.\n");
+	  return -EAGAIN;
+      }
 
       req->next = 0;
       prevNext = &req->next;

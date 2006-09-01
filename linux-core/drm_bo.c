@@ -70,7 +70,6 @@ static int drm_move_tt_to_local(drm_buffer_object_t * buf)
 
 	BUG_ON(!buf->tt);
 
-	DRM_ERROR("Flipping out of AGP\n");
 	mutex_lock(&dev->struct_mutex);
 	drm_unbind_ttm_region(buf->ttm_region);
 	drm_mm_put_block(&bm->tt_manager, buf->tt);
@@ -442,8 +441,9 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 
 	if (ret)
 		return ret;
-
+#ifdef BODEBUG
 	DRM_ERROR("Flipping in to AGP 0x%08lx\n", bo->tt->start);
+#endif
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_bind_ttm_region(bo->ttm_region, bo->tt->start);
 	if (ret) {
@@ -459,9 +459,9 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	bo->flags |= DRM_BO_FLAG_MEM_TT;
 
 	if (bo->priv_flags & _DRM_BO_FLAG_EVICTED) {
-	        DRM_ERROR("Flush read caches\n");
 		ret = dev->driver->bo_driver->invalidate_caches(dev, bo->flags);
-		DRM_ERROR("Warning: Could not flush read caches\n");
+		if (ret)
+			DRM_ERROR("Warning: Could not flush read caches\n");
 	}
 	DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_EVICTED);
 
@@ -919,14 +919,12 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
 	/*
 	 * Flush outstanding fences.
 	 */
-	DRM_ERROR("Flushing fences\n");
 	drm_bo_busy(bo);
 
 	/*
 	 * Make sure we're not mapped.
 	 */
 
-	DRM_ERROR("Wait unmapped\n");
 	ret = drm_bo_wait_unmapped(bo, no_wait);
 	if (ret)
 		return ret;
@@ -935,7 +933,6 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
 	 * Wait for outstanding fences.
 	 */
 
-	DRM_ERROR("Wait fences\n");
 	ret = drm_bo_wait(bo, 0, no_wait);
 
 	if (ret == -EINTR)
@@ -979,19 +976,21 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		return -EINVAL;
 	}
 
-	/*
-	 * Check whether we need to move buffer.
-	 */
-
+#ifdef BODEBUG
+	DRM_ERROR("New flags 0x%08x, Old flags 0x%08x\n",
+		  new_flags, bo->flags);
+#endif
 	ret = driver->fence_type(new_flags, &bo->fence_class, &bo->fence_flags);
-	DRM_ERROR("Fence type = 0x%08x\n", bo->fence_flags);
 	if (ret) {
 		DRM_ERROR("Driver did not support given buffer permissions\n");
 		return ret;
 	}
 
+	/*
+	 * Check whether we need to move buffer.
+	 */
+
 	if (flag_diff & DRM_BO_MASK_MEM) {
-	  DRM_ERROR("Calling move buffer\n");
 		ret = drm_bo_move_buffer(bo, new_flags, no_wait);
 		if (ret)
 			return ret;
@@ -1050,7 +1049,7 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 		goto out;
 
 	ret = drm_bo_new_flags(dev, bo->flags, 
-			       (flags & mask) | (bo->flags & ~mask), hint,
+			       (flags & mask) | (bo->mask & ~mask), hint,
 			       0, &new_flags, &bo->mask);
 
 	if (ret)
