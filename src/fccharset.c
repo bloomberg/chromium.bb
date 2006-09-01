@@ -1169,7 +1169,7 @@ FcCharSetFindFrozen (FcCharSetFreezer *freezer, const FcCharSet *orig)
     return NULL;
 }
 
-static const FcCharSet *
+const FcCharSet *
 FcCharSetFreeze (FcCharSetFreezer *freezer, const FcCharSet *fcs)
 {
     FcCharSet	    *b;
@@ -1177,10 +1177,6 @@ FcCharSetFreeze (FcCharSetFreezer *freezer, const FcCharSet *fcs)
     FcCharLeaf	    *l;
     int		    i;
 
-    n = FcCharSetFindFrozen (freezer, fcs);
-    if (n)
-	return n;
-    
     b = FcCharSetCreate ();
     if (!b)
 	goto bail0;
@@ -1217,7 +1213,7 @@ bail0:
     return n;
 }
 
-static FcCharSetFreezer *
+FcCharSetFreezer *
 FcCharSetFreezerCreate (void)
 {
     FcCharSetFreezer	*freezer;
@@ -1279,6 +1275,9 @@ FcCharSetSerializeAlloc (FcSerialize *serialize, const FcCharSet *cs)
 	    if (!serialize->cs_freezer)
 		return FcFalse;
 	}
+	if (FcCharSetFindFrozen (serialize->cs_freezer, cs))
+	    return FcTrue;
+    
         cs = FcCharSetFreeze (serialize->cs_freezer, cs);
     }
     

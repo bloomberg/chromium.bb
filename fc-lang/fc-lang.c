@@ -48,6 +48,8 @@ FcMemFree (int kind, int size)
 {
 }
 
+int FcDebugVal;
+
 FcChar8 *
 FcConfigHome (void)
 {
@@ -114,14 +116,14 @@ scanopen (char *file)
  * Comments begin with '#'
  */
 
-static FcCharSet *
-scan (FILE *f, char *file)
+static const FcCharSet *
+scan (FILE *f, char *file, FcCharSetFreezer *freezer)
 {
-    FcCharSet	*c = 0;
-    FcCharSet	*n;
-    int		start, end, ucs4;
-    char	line[1024];
-    int		lineno = 0;
+    FcCharSet	    *c = 0;
+    const FcCharSet *n;
+    int		    start, end, ucs4;
+    char	    line[1024];
+    int		    lineno = 0;
 
     while (get_line (f, line, &lineno))
     {
@@ -136,9 +138,9 @@ scan (FILE *f, char *file)
 	    f = scanopen (file);
 	    if (!f)
 		fatal (file, 0, "can't open");
-	    c = scan (f, file);
+	    n = scan (f, file, freezer);
 	    fclose (f);
-	    return c;
+	    return n;
 	}
 	if (strchr (line, '-'))
 	{
@@ -159,7 +161,7 @@ scan (FILE *f, char *file)
 		fatal (file, lineno, "out of memory");
 	}
     }
-    n = FcCharSetFreeze (c);
+    n = FcCharSetFreeze (freezer, c);
     FcCharSetDestroy (c);
     return n;
 }
@@ -222,7 +224,7 @@ int
 main (int argc, char **argv)
 {
     static char		*files[MAX_LANG];
-    static FcCharSet	*sets[MAX_LANG];
+    static const FcCharSet	*sets[MAX_LANG];
     static int		duplicate[MAX_LANG];
     static int		country[MAX_LANG];
     static char		*names[MAX_LANG];
@@ -242,7 +244,11 @@ main (int argc, char **argv)
     int		setRangeStart[26];
     int		setRangeEnd[26];
     FcChar8	setRangeChar;
+    FcCharSetFreezer	*freezer;
     
+    freezer = FcCharSetFreezerCreate ();
+    if (!freezer)
+	fatal (argv[0], 0, "out of memory");
     argi = 1;
     while (argv[argi])
     {
@@ -264,7 +270,7 @@ main (int argc, char **argv)
 	f = scanopen (files[i]);
 	if (!f)
 	    fatal (files[i], 0, strerror (errno));
-	sets[i] = scan (f, files[i]);
+	sets[i] = scan (f, files[i], freezer);
 	names[i] = get_name (files[i]);
 	langs[i] = get_lang(names[i]);
 	if (strchr (langs[i], '-'))

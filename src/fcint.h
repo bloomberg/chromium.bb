@@ -623,6 +623,12 @@ FcLangSetSerialize(FcSerialize *serialize, const FcLangSet *l);
 void
 FcLangCharSetPopulate (void);
 
+FcCharSetFreezer *
+FcCharSetFreezerCreate (void);
+
+const FcCharSet *
+FcCharSetFreeze (FcCharSetFreezer *freezer, const FcCharSet *fcs);
+
 void
 FcCharSetFreezerDestroy (FcCharSetFreezer *freezer);
 
