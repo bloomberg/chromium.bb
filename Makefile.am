@@ -60,7 +60,7 @@ install-data-local:
 	fi; fi
 	@(if $(RUN_FC_CACHE_TEST); then \
 	    echo " fc-cache/fc-cache -s -f -v"; \
-	    fc-cache/fc-cache -f -v; \
+	    fc-cache/fc-cache -s -f -v; \
 	else \
 	    echo "***"; \
 	    echo "*** Warning: fonts.cache not built"; \
