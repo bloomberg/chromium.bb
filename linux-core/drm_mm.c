@@ -42,6 +42,9 @@
  */
 
 #include "drmP.h"
+#include <linux/slab.h>
+
+static kmem_cache_t *mm_cache = NULL;
 
 drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 				unsigned long size, unsigned alignment)
@@ -57,7 +60,9 @@ drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 		parent->free = 0;
 		return parent;
 	} else {
-		child = (drm_mm_node_t *) drm_alloc(sizeof(*child), DRM_MEM_MM);
+
+		child = (drm_mm_node_t *) kmem_cache_alloc(mm_cache, 
+							   GFP_KERNEL);
 		if (!child)
 			return NULL;
 
@@ -105,8 +110,8 @@ void drm_mm_put_block(drm_mm_t * mm, drm_mm_node_t * cur)
 				prev_node->size += next_node->size;
 				list_del(&next_node->ml_entry);
 				list_del(&next_node->fl_entry);
-				drm_free(next_node, sizeof(*next_node),
-					 DRM_MEM_MM);
+				kmem_cache_free(mm_cache, next_node);
+
 			} else {
 				next_node->size += cur->size;
 				next_node->start = cur->start;
@@ -119,7 +124,7 @@ void drm_mm_put_block(drm_mm_t * mm, drm_mm_node_t * cur)
 		list_add(&cur->fl_entry, &list_root->fl_entry);
 	} else {
 		list_del(&cur->ml_entry);
-		drm_free(cur, sizeof(*cur), DRM_MEM_MM);
+		kmem_cache_free(mm_cache, cur);
 	}
 }
 
@@ -154,13 +159,34 @@ drm_mm_node_t *drm_mm_search_free(const drm_mm_t * mm,
 	return best;
 }
 
+void drm_mm_set_cache(kmem_cache_t *cache)
+{
+	mm_cache = cache;
+}
+
+int drm_mm_clean(drm_mm_t *mm) 
+{
+        struct list_head *head = &mm->root_node.ml_entry;
+
+	return (head->next->next == head);
+}
+
 int drm_mm_init(drm_mm_t * mm, unsigned long start, unsigned long size)
 {
 	drm_mm_node_t *child;
 
+	if (!mm_cache) {
+		DRM_ERROR("Memory manager memory cache "
+			  "is not initialized.\n");
+		return -EINVAL;
+	}
+
 	INIT_LIST_HEAD(&mm->root_node.ml_entry);
 	INIT_LIST_HEAD(&mm->root_node.fl_entry);
-	child = (drm_mm_node_t *) drm_alloc(sizeof(*child), DRM_MEM_MM);
+
+
+	child = (drm_mm_node_t *) kmem_cache_alloc(mm_cache, GFP_KERNEL);
+
 	if (!child)
 		return -ENOMEM;
 
@@ -194,8 +220,7 @@ void drm_mm_takedown(drm_mm_t * mm)
 
 	list_del(&entry->fl_entry);
 	list_del(&entry->ml_entry);
-
-	drm_free(entry, sizeof(*entry), DRM_MEM_MM);
+	kmem_cache_free(mm_cache, entry);
 }
 
 EXPORT_SYMBOL(drm_mm_takedown);

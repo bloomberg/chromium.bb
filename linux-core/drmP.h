@@ -84,6 +84,7 @@
 #include <linux/poll.h>
 #include <asm/pgalloc.h>
 #include "drm.h"
+#include <linux/slab.h>
 
 #define __OS_HAS_AGP (defined(CONFIG_AGP) || (defined(CONFIG_AGP_MODULE) && defined(MODULE)))
 #define __OS_HAS_MTRR (defined(CONFIG_MTRR))
@@ -779,6 +780,8 @@ typedef struct drm_buffer_manager{
 	int initialized;
 	int has_vram;
 	int has_tt;
+        int use_vram;
+        int use_tt;
 	drm_mm_t tt_manager;
 	struct list_head tt_lru;
 	drm_mm_t vram_manager;
@@ -922,6 +925,12 @@ typedef struct drm_device {
 
 	drm_fence_manager_t fm;
 	drm_buffer_manager_t bm;
+  
+  /*
+   * Memory caches
+   */
+	kmem_cache_t *mm_cache;
+	kmem_cache_t *fence_object_cache;
 
 } drm_device_t;
 
@@ -1293,7 +1302,8 @@ extern drm_mm_node_t *drm_mm_search_free(const drm_mm_t *mm, unsigned long size,
 						unsigned alignment, int best_match);
 extern int drm_mm_init(drm_mm_t *mm, unsigned long start, unsigned long size);
 extern void drm_mm_takedown(drm_mm_t *mm);
-
+extern void drm_mm_set_cache(kmem_cache_t *cache);
+extern int drm_mm_clean(drm_mm_t *mm);
 
 /*
  * User space object bookkeeping (drm_object.c)
@@ -1377,6 +1387,7 @@ extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 
 extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
 extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_clean_mm(drm_device_t *dev);
 
 
 /* Inline replacements for DRM_IOREMAP macros */

@@ -172,7 +172,7 @@ void drm_fence_usage_deref_locked(drm_device_t * dev,
 {
 	if (atomic_dec_and_test(&fence->usage)) {
 		drm_fence_unring(dev, &fence->ring);
-		drm_free(fence, sizeof(*fence), DRM_MEM_FENCE);
+		kmem_cache_free(dev->fence_object_cache, fence);
 	}
 }
 
@@ -183,7 +183,7 @@ void drm_fence_usage_deref_unlocked(drm_device_t * dev,
 		mutex_lock(&dev->struct_mutex);
 		if (atomic_read(&fence->usage) == 0) {
 			drm_fence_unring(dev, &fence->ring);
-			drm_free(fence, sizeof(*fence), DRM_MEM_FENCE);
+			kmem_cache_free(dev->fence_object_cache, fence);
 		}
 		mutex_unlock(&dev->struct_mutex);
 	}
@@ -426,7 +426,7 @@ static int drm_fence_object_create(drm_file_t * priv, uint32_t type,
 	int ret;
 	drm_fence_object_t *fence;
 
-	fence = drm_calloc(1, sizeof(*fence), DRM_MEM_FENCE);
+	fence = kmem_cache_alloc(dev->fence_object_cache, GFP_KERNEL);
 	if (!fence)
 		return -ENOMEM;
 	ret = drm_fence_object_init(dev, type, emit, fence);

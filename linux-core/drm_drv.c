@@ -128,6 +128,29 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 
 #define DRIVER_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )
 
+
+static void drm_free_mem_cache(kmem_cache_t *cache, 
+			       const char *name)
+{
+	if (!cache)
+		return;
+	if (kmem_cache_destroy(cache)) {
+		DRM_ERROR("Warning! DRM is leaking %s memory.\n",
+			  name);
+	}
+}
+
+static void drm_free_memory_caches(drm_device_t *dev)
+{
+	
+	drm_free_mem_cache(dev->fence_object_cache, "fence object");
+	dev->fence_object_cache = NULL;
+	drm_mm_set_cache(NULL);
+	drm_free_mem_cache(dev->mm_cache, "memory manager block");
+	dev->mm_cache = NULL;
+}
+
+
 /**
  * Take down the DRM device.
  *
@@ -249,6 +272,10 @@ int drm_lastclose(drm_device_t * dev)
 	}
 	mutex_unlock(&dev->struct_mutex);
 
+	if (drm_bo_clean_mm(dev)) {
+		DRM_ERROR("DRM memory manager still busy. "
+			  "System is unstable. Please reboot.\n");
+	}
 	DRM_DEBUG("lastclose completed\n");
 	return 0;
 }
@@ -351,7 +378,7 @@ static void drm_cleanup(drm_device_t * dev)
 	}
 
 	drm_lastclose(dev);
-
+	drm_free_memory_caches(dev);
 	drm_fence_manager_takedown(dev);
 
 	if (dev->maplist) {

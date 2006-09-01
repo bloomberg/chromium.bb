@@ -231,7 +231,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 			goto out;
 		}
 	} else {
-		fence = drm_calloc(1, sizeof(*fence), DRM_MEM_FENCE);
+		fence = kmem_cache_alloc(dev->fence_object_cache, GFP_KERNEL);
 
 		if (!fence) {
 			ret = -ENOMEM;
@@ -241,7 +241,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 		ret = drm_fence_object_init(dev, fence_flags, 1, fence);
 
 		if (ret) {
-			drm_free(fence, sizeof(*fence), DRM_MEM_FENCE);
+			kmem_cache_free(dev->fence_object_cache, fence);
 			goto out;
 		}
 	}
@@ -468,18 +468,24 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	return 0;
 }
 
-static int drm_bo_new_flags(drm_bo_driver_t * driver,
+static int drm_bo_new_flags(drm_device_t *dev,
 			    uint32_t flags, uint32_t new_mask, uint32_t hint,
 			    int init, uint32_t * n_flags, uint32_t * n_mask)
 {
 	uint32_t new_flags = 0;
 	uint32_t new_props;
+	drm_bo_driver_t *driver = dev->driver->bo_driver;
+	drm_buffer_manager_t *bm = &dev->bm;
 
 	/*
-	 * First adjust the mask. Vram is not supported yet.
+	 * First adjust the mask. 
 	 */
 
-	new_mask &= ~DRM_BO_FLAG_MEM_VRAM;
+	if (!bm->use_vram)
+		new_mask &= ~DRM_BO_FLAG_MEM_VRAM;
+	if (!bm->use_tt)
+		new_mask &= ~DRM_BO_FLAG_MEM_TT;
+
 
 	if (new_mask & DRM_BO_FLAG_BIND_CACHED) {
 		if (((new_mask & DRM_BO_FLAG_MEM_TT) && !driver->cached_tt) &&
@@ -986,7 +992,7 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 	if (ret)
 		goto out;
 
-	ret = drm_bo_new_flags(dev->driver->bo_driver, bo->flags, 
+	ret = drm_bo_new_flags(dev, bo->flags, 
 			       (flags & mask) | (bo->flags & ~mask), hint,
 			       0, &new_flags, &bo->mask);
 
@@ -1112,7 +1118,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 	bo->buffer_start = buffer_start;
 	bo->priv_flags = 0;
 	bo->flags = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
-	ret = drm_bo_new_flags(dev->driver->bo_driver, bo->flags, mask, hint,
+	ret = drm_bo_new_flags(dev, bo->flags, mask, hint,
 			       1, &new_flags, &bo->mask);
 	DRM_ERROR("New flags: 0x%08x\n", new_flags);
 	if (ret)
@@ -1194,7 +1200,12 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 	unsigned long next;
 	drm_user_object_t *uo;
 	drm_buffer_object_t *entry;
-	
+
+	if (!dev->bm.initialized) {
+		DRM_ERROR("Buffer object manager is not initialized.\n");
+		return -EINVAL;
+	}
+
 	do {
 		DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
@@ -1307,9 +1318,87 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-int drm_bo_clean_mm(drm_file_t *priv)
+
+/*
+ * dev->struct_sem locked.
+ */
+
+
+static void drm_bo_force_clean(drm_device_t * dev)
 {
-	return 0;
+	drm_buffer_manager_t *bm = &dev->bm;
+
+	drm_buffer_object_t *entry, *next;
+	int nice_mode = 1;
+	int ret = 0;
+
+	list_for_each_entry_safe(entry, next, &bm->ddestroy, ddestroy) {
+		if (entry->fence) {
+			if (nice_mode) {
+				unsigned long _end = jiffies + 3*DRM_HZ;
+				do {
+					ret = drm_bo_wait(entry, 0, 0);
+				} while ((ret == -EINTR) && 
+					 !time_after_eq(jiffies, _end));	
+			} else {
+				drm_fence_usage_deref_locked(dev, entry->fence);
+				entry->fence = NULL;
+			}
+			if (entry->fence) {
+				DRM_ERROR("Detected GPU hang. "
+					  "Removing waiting buffers.\n");
+				nice_mode = 0;
+				drm_fence_usage_deref_locked(dev, entry->fence);
+				entry->fence = NULL;
+			}
+
+		}
+		DRM_DEBUG("Destroying delayed buffer object\n");
+		list_del(&entry->ddestroy);
+		drm_bo_destroy_locked(dev, entry);
+	}
+}
+
+
+int drm_bo_clean_mm(drm_device_t *dev)
+{
+	drm_buffer_manager_t *bm = &dev->bm;
+	int ret = 0;
+
+	
+	mutex_lock(&dev->struct_mutex);
+
+	if (!bm->initialized)
+		goto out;
+		
+
+	drm_bo_force_clean(dev);
+	bm->use_vram = 0;
+	bm->use_tt = 0;
+	
+	if (bm->has_vram) {
+		if (drm_mm_clean(&bm->vram_manager)) {
+			drm_mm_takedown(&bm->vram_manager);
+			bm->has_vram = 0;
+		} else
+			ret = -EBUSY;
+	}
+
+	if (bm->has_tt) {
+		if (drm_mm_clean(&bm->tt_manager)) {
+			drm_mm_takedown(&bm->tt_manager);
+			bm->has_tt = 0;
+		} else 
+			ret = -EBUSY;
+		
+		if (!ret)
+			bm->initialized = 0;
+	}
+
+ out:
+	mutex_unlock(&dev->struct_mutex);
+
+	return ret;
 }
 
 
@@ -1331,33 +1420,38 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 
 	switch (arg.req.op) {
 	case mm_init:
-#if 0
 		if (bm->initialized) {
 			DRM_ERROR("Memory manager already initialized\n");
 			return -EINVAL;
 		}
-#endif
 		mutex_lock(&dev->struct_mutex);
 		bm->has_vram = 0;
 		bm->has_tt = 0;
-
+		
 		if (arg.req.vr_p_size) {
 			ret = drm_mm_init(&bm->vram_manager,
 					  arg.req.vr_p_offset,
 					  arg.req.vr_p_size);
 			bm->has_vram = 1;
+			/*
+			 * VRAM not supported yet.
+			 */
+			
+			bm->use_vram = 0;
 			if (ret)
 				break;
 		}
 
 		if (arg.req.tt_p_size) {
-		  DRM_ERROR("Initializing TT 0x%08x 0x%08x\n",
+			DRM_ERROR("Initializing TT 0x%08x 0x%08x\n",
 			    arg.req.tt_p_offset,
 			    arg.req.tt_p_size);
 			ret = drm_mm_init(&bm->tt_manager,
 					  arg.req.tt_p_offset,
 					  arg.req.tt_p_size);
 			bm->has_tt = 1;
+			bm->use_tt = 1;
+
 			if (ret) {
 				if (bm->has_vram)
 					drm_mm_takedown(&bm->vram_manager);
@@ -1379,17 +1473,10 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		bm->initialized = 1;
 		break;
 	case mm_takedown:
-		if (!bm->initialized) {
-			DRM_ERROR("Memory manager was not initialized\n");
-			return -EINVAL;
+		if (drm_bo_clean_mm(dev)) {
+			DRM_ERROR("Memory manager not clean. "
+				  "Delaying takedown\n");
 		}
-		mutex_lock(&dev->struct_mutex);
-		drm_bo_clean_mm(priv);
-		if (bm->has_vram)
-			drm_mm_takedown(&bm->vram_manager);
-		if (bm->has_tt)
-			drm_mm_takedown(&bm->tt_manager);
-		bm->initialized = 0;
 		break;
 	default:
 		DRM_ERROR("Function not implemented yet\n");
