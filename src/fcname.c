@@ -301,6 +301,10 @@ FcObjectValidType (FcObject object, FcType type)
 	    if (type == FcTypeDouble || type == FcTypeInteger)
 		return FcTrue;
 	    break;
+	case FcTypeLangSet:
+	    if (type == FcTypeLangSet || type == FcTypeString)
+		return FcTrue;
+	    break;
 	default:
 	    if (type == t->type)
 		return FcTrue;
