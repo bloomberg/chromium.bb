@@ -78,13 +78,15 @@ fi
 AM_CONDITIONAL(MS_LIB_AVAILABLE, test x$ms_librarian = xyes)
 
 WARN_CFLAGS=""
-
 if test "x$GCC" = "xyes"; then
 	WARN_CFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes \
 	-Wmissing-prototypes -Wmissing-declarations \
 	-Wnested-externs -fno-strict-aliasing"
+	AC_DEFINE_UNQUOTED(HAVE_WARNING_CPP_DIRECTIVE,1,
+	[Can use #warning in C files])
 fi
 AC_SUBST(WARN_CFLAGS)
+
 
 dnl ==========================================================================
 

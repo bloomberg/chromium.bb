@@ -64,12 +64,14 @@
 
 #include "ftglue.h"
 
+#if HAVE_WARNING_CPP_DIRECTIVE
 #if !HAVE_FT_GET_BDF_PROPERTY
 #warning "No FT_Get_BDF_Property: Please install freetype 2.1.4 or later"
 #endif
 
 #if !HAVE_FT_GET_PS_FONT_INFO
 #warning "No FT_Get_PS_Font_Info: Please install freetype 2.1.1 or later"
+#endif
 #endif
 
 /*
