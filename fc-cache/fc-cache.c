@@ -287,10 +287,16 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
     struct stat	target_stat;
 
     dir_base = FcStrPlus (dir, "/");
+    if (!dir_base)
+    {
+	fprintf (stderr, "%s: out of memory\n", dir);
+	return FcFalse;
+    }
     if (access ((char *) dir, W_OK|X_OK) != 0)
     {
 	if (verbose)
 	    printf ("%s: not cleaning unwritable cache directory\n", dir);
+	FcStrFree (dir_base);
 	return FcTrue;
     }
     if (verbose)
@@ -299,6 +305,7 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
     if (!d)
     {
 	perror (dir);
+	FcStrFree (dir_base);
 	return FcFalse;
     }
     while ((ent = readdir (d)))
@@ -347,10 +354,12 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
 		ret = FcFalse;
 	    }
 	}
+	FcDirCacheUnload (cache);
         FcStrFree (file_name);
     }
     
     closedir (d);
+    FcStrFree (dir_base);
     return ret;
 }
 
