@@ -758,9 +758,17 @@ typedef struct drm_bo_arg_request {
 		drm_bo_fence,
 		drm_bo_destroy,
 		drm_bo_reference,
-		drm_bo_unreference
+		drm_bo_unreference,
+		drm_bo_info
 	} op;
 } drm_bo_arg_request_t;
+
+
+/*
+ * Reply flags
+ */
+
+#define DRM_BO_REP_BUSY 0x00000001
 
 typedef struct drm_bo_arg_reply {
 	int ret;
@@ -771,6 +779,8 @@ typedef struct drm_bo_arg_reply {
 	unsigned arg_handle;
         unsigned mask;
         drm_u64_t buffer_start;
+        unsigned fence_flags;
+        unsigned rep_flags;
 }drm_bo_arg_reply_t;
 	
 

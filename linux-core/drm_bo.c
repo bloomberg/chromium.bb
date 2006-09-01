@@ -601,6 +601,32 @@ drm_buffer_object_t *drm_lookup_buffer_object(drm_file_t * priv,
 /*
  * Call bo->mutex locked.
  * Returns 1 if the buffer is currently rendered to or from. 0 otherwise.
+ * Doesn't do any fence flushing as opposed to the drm_bo_busy function.
+ */
+
+
+static int drm_bo_quick_busy(drm_buffer_object_t *bo)
+{
+	drm_fence_object_t *fence = bo->fence;
+
+
+	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
+	if (fence) {
+		drm_device_t *dev = bo->dev;
+		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
+			drm_fence_usage_deref_unlocked(dev, fence);
+			bo->fence = NULL;
+			return 0;
+		}
+		return 1;
+	}
+	return 0;
+}
+	
+
+/*
+ * Call bo->mutex locked.
+ * Returns 1 if the buffer is currently rendered to or from. 0 otherwise.
  */
 
 static int drm_bo_busy(drm_buffer_object_t * bo)
@@ -719,8 +745,36 @@ static int drm_bo_wait_unfenced(drm_buffer_object_t *bo, int no_wait,
 	return 0;
 }
 
+/*
+ * Fill in the ioctl reply argument with buffer info.
+ * Bo locked. 
+ */
 
 
+static void drm_bo_fill_rep_arg(drm_buffer_object_t * bo,
+				drm_bo_arg_reply_t * rep)
+{
+	rep->handle = bo->base.hash.key;
+	rep->flags = bo->flags;
+	rep->size = bo->num_pages * PAGE_SIZE;
+	rep->offset = bo->offset;
+
+	if (bo->ttm_object) {
+		rep->arg_handle = bo->ttm_object->map_list.user_token;
+	} else {
+		rep->arg_handle = 0;
+	}
+
+	rep->mask = bo->mask;
+	rep->buffer_start = bo->buffer_start;
+	rep->fence_flags = bo->fence_flags;
+	rep->rep_flags = 0;
+
+	if ((bo->priv_flags & _DRM_BO_FLAG_UNFENCED) || 
+	    drm_bo_quick_busy(bo)) {
+		DRM_FLAG_MASKED(rep->rep_flags, DRM_BO_REP_BUSY, DRM_BO_REP_BUSY);
+	}
+}
 
 
 /*
@@ -731,7 +785,8 @@ static int drm_bo_wait_unfenced(drm_buffer_object_t *bo, int no_wait,
  */
 
 static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle,
-				 uint32_t map_flags, int no_wait)
+				 uint32_t map_flags, int no_wait,
+				 drm_bo_arg_reply_t *rep)
 {
 	drm_buffer_object_t *bo;
 	drm_device_t *dev = priv->head->dev;
@@ -794,7 +849,8 @@ static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle,
 		if (atomic_add_negative(-1, &bo->mapped))
 			DRM_WAKEUP(&bo->event_queue);
 
-	}
+	} else 
+		drm_bo_fill_rep_arg(bo, rep);
       out:
 	mutex_unlock(&bo->mutex);
 	drm_bo_usage_deref_unlocked(dev, bo);
@@ -973,7 +1029,8 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 }
 
 static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
-				  uint32_t flags, uint32_t mask, uint32_t hint)
+				  uint32_t flags, uint32_t mask, uint32_t hint,
+				  drm_bo_arg_reply_t *rep)
 {
 	drm_buffer_object_t *bo;
 	drm_device_t *dev = priv->head->dev;
@@ -1001,12 +1058,32 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 
 	ret = drm_buffer_object_validate(bo, new_flags, !(hint & DRM_BO_HINT_DONT_FENCE), 
 					 no_wait);
+	drm_bo_fill_rep_arg(bo, rep);
 	
-out:			    
+out:			
+    
 	mutex_unlock(&bo->mutex);
 	drm_bo_usage_deref_unlocked(dev, bo);
 	return ret;
 }
+
+static int drm_bo_handle_info(drm_file_t * priv, uint32_t handle,
+			      drm_bo_arg_reply_t *rep)
+{
+	drm_buffer_object_t *bo;
+
+	bo = drm_lookup_buffer_object(priv, handle, 1);
+	if (!bo) {
+		return -EINVAL;
+	}    
+	mutex_lock(&bo->mutex);
+	if (!(bo->priv_flags & _DRM_BO_FLAG_UNFENCED)) 
+		(void) drm_bo_busy(bo);
+	drm_bo_fill_rep_arg(bo, rep);
+	mutex_unlock(&bo->mutex);
+	return 0;
+}
+
 
 /*
  * Call bo->mutex locked.
@@ -1167,24 +1244,6 @@ static int drm_bo_add_user_object(drm_file_t * priv, drm_buffer_object_t * bo,
 	return ret;
 }
 
-static void drm_bo_fill_rep_arg(const drm_buffer_object_t * bo,
-				drm_bo_arg_reply_t * rep)
-{
-	rep->handle = bo->base.hash.key;
-	rep->flags = bo->flags;
-	rep->size = bo->num_pages * PAGE_SIZE;
-	rep->offset = bo->offset;
-
-	if (bo->ttm_object) {
-		rep->arg_handle = bo->ttm_object->map_list.user_token;
-	} else {
-		rep->arg_handle = 0;
-	}
-
-	rep->mask = bo->mask;
-	rep->buffer_start = bo->buffer_start;
-}
-
 static int drm_bo_lock_test(drm_device_t * dev, struct file *filp)
 {
 	LOCK_TEST_WITH_RETURN(dev, filp);
@@ -1249,7 +1308,8 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 			rep.ret = drm_buffer_object_map(priv, req->handle,
 							req->mask,
 							req->hint &
-							DRM_BO_HINT_DONT_BLOCK);
+							DRM_BO_HINT_DONT_BLOCK,
+							&rep);
 			break;
 		case drm_bo_destroy:
 			mutex_lock(&dev->struct_mutex);
@@ -1289,13 +1349,17 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 				break;
 			rep.ret =
 			    drm_bo_handle_validate(priv, req->handle, req->mask,
-						   req->arg_handle, req->hint);
+						   req->arg_handle, req->hint,
+						   &rep);
 			break;
 		case drm_bo_fence:
 			rep.ret = drm_bo_lock_test(dev, filp);
 			if (rep.ret)
 				break;
 			/**/
+			break;
+		case drm_bo_info:
+			rep.ret = drm_bo_handle_info(priv, req->handle, &rep);
 			break;
 		default:
 			rep.ret = -EINVAL;
@@ -1443,9 +1507,6 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		}
 
 		if (arg.req.tt_p_size) {
-			DRM_ERROR("Initializing TT 0x%08x 0x%08x\n",
-			    arg.req.tt_p_offset,
-			    arg.req.tt_p_size);
 			ret = drm_mm_init(&bm->tt_manager,
 					  arg.req.tt_p_offset,
 					  arg.req.tt_p_size);

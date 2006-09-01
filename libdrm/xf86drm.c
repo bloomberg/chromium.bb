@@ -2567,6 +2567,22 @@ int drmCreateBufList(int numTarget, drmBOList *list)
     return drmAdjustListNodes(list);
 }
 
+static void drmBOCopyReply(const drm_bo_arg_reply_t *rep, 
+			   drmBO *buf)
+{
+    buf->handle = rep->handle;
+    buf->flags = rep->flags;
+    buf->size = rep->size;
+    buf->offset = rep->offset;
+    buf->mapHandle = rep->arg_handle;
+    buf->mask = rep->mask;
+    buf->start = rep->buffer_start;
+    buf->fenceFlags = rep->fence_flags;
+    buf->replyFlags = rep->rep_flags;
+}
+    
+    
+
 int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
 		void *user_buffer, drm_bo_type_t type, unsigned mask,
 		unsigned hint, drmBO *buf)
@@ -2612,16 +2628,10 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
 	return rep->ret;
     }
     
-    buf->handle = rep->handle;
-    buf->flags = rep->flags;
-    buf->size = rep->size;
-    buf->offset = rep->offset;
-    buf->mapHandle = rep->arg_handle;
+    drmBOCopyReply(rep, buf);
     buf->mapVirtual = NULL;
     buf->mapCount = 0;
     buf->virtual = NULL;
-    buf->mask = rep->mask;
-    buf->start = rep->buffer_start;
 
     return 0;
 }
@@ -2671,17 +2681,12 @@ int drmBOReference(int fd, unsigned handle, drmBO *buf)
 	return rep->ret;
     }
 
-    buf->handle = rep->handle;
+    drmBOCopyReply(rep, buf);
     buf->type = drm_bo_type_dc;
-    buf->flags = rep->flags;
-    buf->size = rep->size;
-    buf->offset = rep->offset;
-    buf->mapHandle = rep->arg_handle;
     buf->mapVirtual = NULL;
     buf->mapCount = 0;
     buf->virtual = NULL;
-    buf->mask = rep->mask;
-    buf->start = rep->buffer_start;
+
     return 0;
 }
 
@@ -2777,6 +2782,7 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
     buf->mapFlags = mapFlags;
     fprintf(stderr, "Address is 0x%08x\n", address);
     *address = buf->virtual;
+    drmBOCopyReply(rep, buf);
 
     return 0;
 }
@@ -2838,9 +2844,7 @@ int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask,
     if (rep->ret)
 	return rep->ret;
 
-    buf->offset = rep->offset;
-    buf->flags = rep->flags;
-    buf->mask = rep->mask;
+    drmBOCopyReply(rep, buf);
     return 0;
 }
 	    
@@ -2869,8 +2873,46 @@ int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
 	return rep->ret;
     return 0;
 }
-	
 
+int drmBOInfo(int fd, drmBO *buf)
+{
+    drm_bo_arg_t arg;
+    drm_bo_arg_request_t *req = &arg.req;
+    drm_bo_arg_reply_t *rep = &arg.rep;
+    int ret = 0;
+
+    arg.handled = 0;
+    req->handle = buf->handle;
+    req->op = drm_bo_info;
+    req->next = 0;
+
+    ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+    
+    if (ret) 
+	return ret;
+    if (!arg.handled)
+	return -EFAULT;
+    if (rep->ret)
+	return rep->ret;
+    drmBOCopyReply(rep, buf);
+    return 0;
+}
+	
+int drmBufBusy(int fd, drmBO *buf, int *busy)
+{
+    if (!(buf->flags & DRM_BO_FLAG_SHAREABLE) &&
+	!(buf->replyFlags & DRM_BO_REP_BUSY)) {
+	*busy = 0;
+	return 0;
+    } else {
+	int ret = drmBOInfo(fd, buf);
+	if (ret)
+	    return ret;
+	*busy = (buf->replyFlags & DRM_BO_REP_BUSY);
+	return 0;
+    }
+}
+    
     
 int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags, 
 		       unsigned mask,
@@ -2978,9 +3020,7 @@ int drmBOValidateList(int fd, drmBOList *list)
 	  return rep->ret;
 
       buf = node->buf;
-      buf->offset = rep->offset;
-      buf->flags = rep->flags;
-      buf->mask = rep->mask;
+      drmBOCopyReply(rep, buf);
   }
 
   return 0;
@@ -2997,6 +3037,7 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
   drm_bo_arg_reply_t *rep;
   drm_u64_t *prevNext = NULL;
   drmBO *buf;
+  unsigned fence_flags;
   int ret;
 
   first = NULL;
@@ -3040,6 +3081,7 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
 	  return -EFAULT;
       if (rep->ret)
 	  return rep->ret;
+      drmBOCopyReply(rep, buf);
   }
 
   return 0;

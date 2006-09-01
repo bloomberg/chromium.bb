@@ -92,6 +92,8 @@ typedef struct _drmBO{
     unsigned long size;
     unsigned long offset;
     unsigned long start;
+    unsigned replyFlags;
+    unsigned fenceFlags;
     void *virtual;
     void *mapVirtual;
     int mapCount;
