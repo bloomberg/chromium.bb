@@ -201,7 +201,7 @@ struct _FcPattern {
 #define FcFontSetFonts(fs)	FcPointerMember(fs,fonts,FcPattern *)
 
 #define FcFontSetFont(fs,i)	(FcIsEncodedOffset((fs)->fonts) ? \
-				 FcEncodedOffsetToPtr(FcFontSetFonts(fs), \
+				 FcEncodedOffsetToPtr(fs, \
 						      FcFontSetFonts(fs)[i], \
 						      FcPattern) : \
 				 fs->fonts[i])
