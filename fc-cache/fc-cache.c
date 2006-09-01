@@ -128,15 +128,17 @@ nsubdirs (FcStrSet *set)
 }
 
 static int
-scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool really_force, FcBool verbose)
+scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, FcBool verbose)
 {
     int		ret = 0;
     const FcChar8 *dir;
     FcFontSet	*set;
     FcStrSet	*subdirs;
     FcStrList	*sublist;
+    FcCache	*cache;
     struct stat	statb;
     FcBool	was_valid;
+    int		i;
     
     /*
      * Now scan all of the directories into separate databases
@@ -146,7 +148,7 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
     {
 	if (verbose)
 	{
-	    printf ("%s: \"%s\": ", program, dir);
+	    printf ("%s: ", dir);
 	    fflush (stdout);
 	}
 	
@@ -164,22 +166,6 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    continue;
 	}
 
-	set = FcFontSetCreate ();
-	if (!set)
-	{
-	    fprintf (stderr, "%s: Can't create font set\n", dir);
-	    ret++;
-	    continue;
-	}
-	subdirs = FcStrSetCreate ();
-	if (!subdirs)
-	{
-	    fprintf (stderr, "%s: Can't create directory set\n", dir);
-	    ret++;
-	    FcFontSetDestroy (set);
-	    continue;
-	}
-	
 	if (access ((char *) dir, W_OK) < 0)
 	{
 	    switch (errno) {
@@ -187,8 +173,6 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	    case ENOTDIR:
 		if (verbose)
 		    printf ("skipping, no such directory\n");
-		FcFontSetDestroy (set);
-		FcStrSetDestroy (subdirs);
 		continue;
 	    case EACCES:
 	    case EROFS:
@@ -201,8 +185,6 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 		perror ("");
 		ret++;
 
-		FcFontSetDestroy (set);
-		FcStrSetDestroy (subdirs);
 		continue;
 	    }
 	}
@@ -210,44 +192,50 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 	{
 	    fprintf (stderr, "\"%s\": ", dir);
 	    perror ("");
-	    FcFontSetDestroy (set);
-	    FcStrSetDestroy (subdirs);
 	    ret++;
 	    continue;
 	}
 	if (!S_ISDIR (statb.st_mode))
 	{
 	    fprintf (stderr, "\"%s\": not a directory, skipping\n", dir);
-	    FcFontSetDestroy (set);
-	    FcStrSetDestroy (subdirs);
 	    continue;
 	}
 
 	if (really_force)
 	    FcDirCacheUnlink (dir, config);
 
-	if (!force)
-	    was_valid = FcDirCacheValid (dir);
-	
-	if (!FcDirScanConfig (set, subdirs, FcConfigGetBlanks (config), dir, force, config))
-	{
-	    fprintf (stderr, "%s: error scanning\n", dir);
-	    FcFontSetDestroy (set);
-	    FcStrSetDestroy (subdirs);
-	    ret++;
-	    continue;
+	cache = NULL;
+	was_valid = FcFalse;
+	if (!force) {
+	    cache = FcDirCacheLoad (dir, config, NULL);
+	    if (cache)
+		was_valid = FcTrue;
 	}
-	if (!force && was_valid)
+	
+	if (!cache)
+	{
+	    cache = FcDirCacheRead (dir, FcTrue, config);
+	    if (!cache)
+	    {
+		fprintf (stderr, "%s: error scanning\n", dir);
+		ret++;
+		continue;
+	    }
+	}
+
+	set = FcCacheSet (cache);
+
+	if (was_valid)
 	{
 	    if (verbose)
 		printf ("skipping, %d fonts, %d dirs\n",
-			set->nfont, nsubdirs(subdirs));
+			set->nfont, cache->dirs_count);
 	}
 	else
 	{
 	    if (verbose)
 		printf ("caching, %d fonts, %d dirs\n", 
-			set->nfont, nsubdirs (subdirs));
+			set->nfont, cache->dirs_count);
 
 	    if (!FcDirCacheValid (dir))
 	    {
@@ -256,41 +244,34 @@ scanDirs (FcStrList *list, FcConfig *config, char *program, FcBool force, FcBool
 		ret++;
 	    }
 	}
-	FcFontSetDestroy (set);
+	
+	subdirs = FcStrSetCreate ();
+	if (!subdirs)
+	{
+	    fprintf (stderr, "%s: Can't create subdir set\n", dir);
+	    ret++;
+	    FcDirCacheUnload (cache);
+	    continue;
+	}
+	for (i = 0; i < cache->dirs_count; i++)
+	    FcStrSetAdd (subdirs, FcCacheSubdir (cache, i));
+	
+	FcDirCacheUnload (cache);
+	
 	sublist = FcStrListCreate (subdirs);
 	FcStrSetDestroy (subdirs);
 	if (!sublist)
 	{
 	    fprintf (stderr, "%s: Can't create subdir list\n", dir);
 	    ret++;
+	    FcDirCacheUnload (cache);
 	    continue;
 	}
 	FcStrSetAdd (processed_dirs, dir);
-	ret += scanDirs (sublist, config, program, force, really_force, verbose);
+	ret += scanDirs (sublist, config, force, really_force, verbose);
     }
     FcStrListDone (list);
     return ret;
-}
-
-FcCache *
-FcCacheFileMap (const FcChar8 *file, struct stat *file_stat)
-{
-    FcCache *cache;
-    int	    fd;
-
-    fd = open (file, O_RDONLY | O_BINARY);
-    if (fd < 0)
-	return NULL;
-    if (fstat (fd, file_stat) < 0) {
-	close (fd);
-	return NULL;
-    }
-    if (FcDirCacheLoad (fd, file_stat->st_size, &cache)) {
-	close (fd);
-	return cache;
-    }
-    close (fd);
-    return NULL;
 }
 
 static FcBool
@@ -309,9 +290,11 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
     if (access ((char *) dir, W_OK|X_OK) != 0)
     {
 	if (verbose)
-	    printf ("%s: skipping unwritable cache directory\n", dir);
+	    printf ("%s: not cleaning unwritable cache directory\n", dir);
 	return FcTrue;
     }
+    if (verbose)
+	printf ("%s: cleaning cache directory\n", dir);
     d = opendir (dir);
     if (!d)
     {
@@ -332,7 +315,7 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
 	    ret = FcFalse;
 	    break;
 	}
-	cache = FcCacheFileMap (file_name, &file_stat);
+	cache = FcDirCacheLoadFile (file_name, &file_stat);
 	if (!cache)
 	{
 	    fprintf (stderr, "%s: invalid cache file: %s\n", dir, ent->d_name);
@@ -478,7 +461,7 @@ main (int argc, char **argv)
 	return 1;
     }
 	
-    ret = scanDirs (list, config, argv[0], force, really_force, verbose);
+    ret = scanDirs (list, config, force, really_force, verbose);
 
     FcStrSetDestroy (processed_dirs);
 

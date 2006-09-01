@@ -222,7 +222,7 @@ FcConfigDestroy (FcConfig *config)
     for (cl = config->caches; cl; cl = cl_next)
     {
 	cl_next = cl->next;
-	FcDirCacheUnmap (cl->cache);
+	FcDirCacheUnload (cl->cache);
 	free (cl);
     }
 
@@ -231,86 +231,120 @@ FcConfigDestroy (FcConfig *config)
 }
 
 /*
+ * Add cache to configuration, adding fonts and directories
+ */
+
+FcBool
+FcConfigAddCache (FcConfig *config, FcCache *cache)
+{
+    FcCacheList	*cl = malloc (sizeof (FcCacheList));
+    FcFontSet	*fs;
+    intptr_t	*dirs;
+    int		i;
+
+    /*
+     * Add to cache list
+     */
+    if (!cl)
+	return FcFalse;
+    cl->cache = cache;
+    cl->next = config->caches;
+    config->caches = cl;
+
+    /*
+     * Add fonts
+     */
+    fs = FcCacheSet (cache);
+    if (fs)
+    {
+	for (i = 0; i < fs->nfont; i++)
+	{
+	    FcPattern	*font = FcFontSetFont (fs, i);
+	    FcChar8	*font_file;
+
+	    /*
+	     * Check to see if font is banned by filename
+	     */
+	    if (FcPatternObjectGetString (font, FC_FILE_OBJECT,
+					  0, &font_file) == FcResultMatch &&
+		!FcConfigAcceptFilename (config, font_file))
+	    {
+		continue;
+	    }
+		
+	    /*
+	     * Check to see if font is banned by pattern
+	     */
+	    if (!FcConfigAcceptFont (config, font))
+		continue;
+		
+	    FcFontSetAdd (config->fonts[FcSetSystem], font);
+	}
+    }
+
+    /*
+     * Add directories
+     */
+    dirs = FcCacheDirs (cache);
+    if (dirs)
+    {
+	for (i = 0; i < cache->dirs_count; i++)
+	{
+	    FcChar8	*dir = FcOffsetToPtr (dirs, dirs[i], FcChar8);
+	    if (FcConfigAcceptFilename (config, dir))
+		FcConfigAddFontDir (config, dir);
+	}
+    }
+    return FcTrue;
+}
+
+/*
  * Scan the current list of directories in the configuration
- * and build the set of available fonts. Update the
- * per-user cache file to reflect the new configuration
+ * and build the set of available fonts.
  */
 
 FcBool
 FcConfigBuildFonts (FcConfig *config)
 {
-    FcFontSet	    *fonts, *cached_fonts;
-    FcStrList	    *list;
-    FcStrSet	    *oldDirs;
+    FcFontSet	    *fonts;
+    FcStrList	    *dirlist;
     FcChar8	    *dir;
+    FcCache	    *cache;
 
+    if (!config)
+    {
+	config = FcConfigGetCurrent ();
+	if (!config)
+	    return FcFalse;
+    }
+	
     fonts = FcFontSetCreate ();
     if (!fonts)
-	goto bail0;
+	goto bail;
     
-    oldDirs = FcStrSetCreate ();
-    if (!oldDirs)
-        goto bail2;
-
-    cached_fonts = FcCacheRead(config);
-    if (!cached_fonts)
-    {
-	list = FcConfigGetFontDirs (config);
-	if (!list)
-	    goto bail3;
+    FcConfigSetFonts (config, fonts, FcSetSystem);
+    
+    dirlist = FcStrListCreate (config->fontDirs);
+    if (!dirlist)
+        goto bail;
 	
-	while ((dir = FcStrListNext (list)))
-	{
-	    if (FcDebug () & FC_DBG_FONTSET)
-		printf ("build scan dir %s\n", dir);
-	    FcDirScanConfig (fonts, config->fontDirs,
-			     config->blanks, dir, FcFalse, config);
-	}
-	
-	FcStrListDone (list);
-    }
-    else
+    while ((dir = FcStrListNext (dirlist)))
     {
-	int i;
-
-        for (i = 0; i < oldDirs->num; i++)
-        {
-	    if (FcDebug () & FC_DBG_FONTSET)
-		printf ("scan dir %s\n", oldDirs->strs[i]);
-	    FcDirScanConfig (fonts, config->fontDirs,
-			     config->blanks, oldDirs->strs[i], 
-                             FcFalse, config);
-	}
-
-	for (i = 0; i < cached_fonts->nfont; i++)
-	{
-	    FcChar8 	*cfn; 
-	    FcPattern	*font = cached_fonts->fonts[i];
-	    FcPatternObjectGetString (font, FC_FILE_OBJECT, 0, &cfn);
-
-	    if (FcConfigAcceptFont (config, font) &&
-                (cfn && FcConfigAcceptFilename (config, cfn)))
-		FcFontSetAdd (fonts, font);
-
-	    cached_fonts->fonts[i] = 0; /* prevent free in FcFontSetDestroy */
-	}
-	cached_fonts->nfont = 0;
-	FcFontSetDestroy (cached_fonts);
+	if (FcDebug () & FC_DBG_FONTSET)
+	    printf ("adding fonts from%s\n", dir);
+	cache = FcDirCacheRead (dir, FcFalse, config);
+	if (!cache)
+	    continue;
+	FcConfigAddCache (config, cache);
     }
+    
+    FcStrListDone (dirlist);
     
     if (FcDebug () & FC_DBG_FONTSET)
 	FcFontSetPrint (fonts);
 
-    FcStrSetDestroy (oldDirs);
-
-    FcConfigSetFonts (config, fonts, FcSetSystem);
-    
     return FcTrue;
-bail3:
-    FcStrSetDestroy (oldDirs);
-bail2:
-    FcFontSetDestroy (fonts);
-bail0:
+bail:
     return FcFalse;
 }
 
@@ -455,19 +489,6 @@ FcConfigSetFonts (FcConfig	*config,
     if (config->fonts[set])
 	FcFontSetDestroy (config->fonts[set]);
     config->fonts[set] = fonts;
-}
-
-FcBool
-FcConfigAddCache (FcConfig *config, FcCache *cache)
-{
-    FcCacheList	*cl = malloc (sizeof (FcCacheList));
-
-    if (!cl)
-	return FcFalse;
-    cl->cache = cache;
-    cl->next = config->caches;
-    config->caches = cl;
-    return FcTrue;
 }
 
 FcBlanks *
@@ -1750,7 +1771,7 @@ FcConfigAppFontAddFile (FcConfig    *config,
 	FcConfigSetFonts (config, set, FcSetApplication);
     }
 	
-    if (!FcFileScanConfig (set, subdirs, config->blanks, file, FcFalse, config))
+    if (!FcFileScanConfig (set, subdirs, config->blanks, file, config))
     {
 	FcStrSetDestroy (subdirs);
 	return FcFalse;

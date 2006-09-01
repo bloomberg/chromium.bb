@@ -54,6 +54,7 @@ FcSerializeCreate (void)
 	return NULL;
     serialize->size = 0;
     serialize->linear = NULL;
+    serialize->cs_freezer = NULL;
     memset (serialize->buckets, '\0', sizeof (serialize->buckets));
     return serialize;
 }
@@ -72,6 +73,8 @@ FcSerializeDestroy (FcSerialize *serialize)
 	    free (buck);
 	}
     }
+    if (serialize->cs_freezer)
+	FcCharSetFreezerDestroy (serialize->cs_freezer);
     free (serialize);
 }
 

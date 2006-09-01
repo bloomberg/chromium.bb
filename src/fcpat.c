@@ -491,7 +491,15 @@ FcPatternObjectAddWithBinding  (FcPattern	*p,
      * Make sure the stored type is valid for built-in objects
      */
     if (!FcObjectValidType (object, value.type))
+    {
+	if (FcDebug() & FC_DBG_OBJTYPES)
+	{
+	    printf ("FcPattern object %s does not accept value ",
+		    FcObjectName (object));
+	    FcValuePrint (value);
+	}
 	goto bail1;
+    }
 
     new->value = value;
     new->binding = binding;

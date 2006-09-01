@@ -55,7 +55,6 @@
 
 #define FC_FONT_FILE_INVALID	((FcChar8 *) ".")
 #define FC_FONT_FILE_DIR	((FcChar8 *) ".dir")
-#define FC_GLOBAL_MAGIC_COOKIE	"GLOBAL"
 
 #ifdef _WIN32
 #define FC_SEARCH_PATH_SEPARATOR ';'
@@ -75,6 +74,7 @@
 #define FC_DBG_MEMORY	512
 #define FC_DBG_CONFIG	1024
 #define FC_DBG_LANGSET	2048
+#define FC_DBG_OBJTYPES	4096
 
 #define FC_MEM_CHARSET	    0
 #define FC_MEM_CHARLEAF	    1
@@ -307,7 +307,8 @@ typedef struct _FcStrBuf {
 } FcStrBuf;
 
 typedef struct _FcCache {
-    int		magic;              /* FC_CACHE_MAGIC */
+    int		magic;              /* FC_CACHE_MAGIC_MMAP or FC_CACHE_ALLOC */
+    int		version;	    /* FC_CACHE_CONTENT_VERSION */
     intptr_t	size;		    /* size of file */
     intptr_t	dir;		    /* offset to dir name */
     intptr_t	dirs;		    /* offset to subdirs */
@@ -318,6 +319,9 @@ typedef struct _FcCache {
 #define FcCacheDir(c)	FcOffsetMember(c,dir,FcChar8)
 #define FcCacheDirs(c)	FcOffsetMember(c,dirs,intptr_t)
 #define FcCacheSet(c)	FcOffsetMember(c,set,FcFontSet)
+#define FcCacheSubdir(c,i)  FcOffsetToPtr (FcCacheDirs(cache),\
+					   FcCacheDirs(cache)[i], \
+					   FcChar8)
 
 /*
  * Used while constructing a directory cache object
@@ -331,8 +335,11 @@ typedef struct _FcSerializeBucket {
     intptr_t	offset;
 } FcSerializeBucket;
 
+typedef struct _FcCharSetFreezer FcCharSetFreezer;
+
 typedef struct _FcSerialize {
     intptr_t		size;
+    FcCharSetFreezer	*cs_freezer;
     void		*linear;
     FcSerializeBucket	*buckets[FC_SERIALIZE_HASH_SIZE];
 } FcSerialize;
@@ -389,8 +396,9 @@ typedef struct _FcCaseFold {
 
 #define fc_alignof(type) offsetof (struct { char c; type member; }, member)
 
-#define FC_CACHE_MAGIC	    0xFC02FC04
-#define FC_CACHE_MAGIC_COPY 0xFC02FC05
+#define FC_CACHE_MAGIC_MMAP	    0xFC02FC04
+#define FC_CACHE_MAGIC_ALLOC	    0xFC02FC05
+#define FC_CACHE_CONTENT_VERSION    1
 
 struct _FcAtomic {
     FcChar8	*file;		/* original file name */
@@ -490,31 +498,30 @@ typedef struct _FcCharMap FcCharMap;
 
 /* fccache.c */
 
-FcFontSet *
-FcCacheRead (FcConfig *config);
-
-FcBool
-FcDirCacheWrite (FcFontSet *set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config);
-
-FcBool
-FcDirCacheConsume (FILE *file, FcFontSet *set, FcStrSet *dirs,
-		   const FcChar8 *dir, char *dirname);
-    
-void
-FcDirCacheUnmap (FcCache *cache);
-
-FcBool
-FcDirCacheRead (FcFontSet * set, FcStrSet * dirs, const FcChar8 *dir, FcConfig *config);
- 
-FcCache *
-FcDirCacheMap (const FcChar8 *dir, FcConfig *config, FcChar8 **cache_file);
-    
-FcBool
-FcDirCacheLoad (int fd, off_t size, void *closure);
-    
 FcBool
 FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config);
 
+void
+FcDirCacheUnload (FcCache *cache);
+
+FcCache *
+FcDirCacheScan (const FcChar8 *dir, FcConfig *config);
+
+FcCache *
+FcDirCacheLoad (const FcChar8 *dir, FcConfig *config, FcChar8 **cache_file);
+    
+FcCache *
+FcDirCacheLoadFile (const FcChar8 *cache_file, struct stat *file_stat);
+
+FcBool
+FcDirCacheValid (const FcChar8 *dir);
+
+FcCache *
+FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, FcStrSet *dirs);
+
+FcBool
+FcDirCacheWrite (FcCache *cache, FcConfig *config);
+    
 /* fccfg.c */
 
 FcBool
@@ -616,11 +623,8 @@ FcLangSetSerialize(FcSerialize *serialize, const FcLangSet *l);
 void
 FcLangCharSetPopulate (void);
 
-FcCharSet *
-FcCharSetFreeze (FcCharSet *cs);
-
 void
-FcCharSetThawAll (void);
+FcCharSetFreezerDestroy (FcCharSetFreezer *freezer);
 
 FcBool
 FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c);
@@ -687,16 +691,18 @@ FcFileScanConfig (FcFontSet	*set,
 		  FcStrSet	*dirs,
 		  FcBlanks	*blanks,
 		  const FcChar8 *file,
-		  FcBool	force,
 		  FcConfig	*config);
 
 FcBool
 FcDirScanConfig (FcFontSet	*set,
 		 FcStrSet	*dirs,
 		 FcBlanks	*blanks,
-		 const FcChar8  *dir,
+		 const FcChar8	*dir,
 		 FcBool		force,
 		 FcConfig	*config);
+
+FcCache *
+FcDirCacheRead (const FcChar8 *dir, FcBool force, FcConfig *config);
 
 /* fcfont.c */
 int

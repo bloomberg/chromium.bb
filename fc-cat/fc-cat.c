@@ -81,7 +81,7 @@ extern int optind, opterr, optopt;
 #endif
 
 static FcBool
-FcCacheWriteChars (FILE *f, const FcChar8 *chars)
+write_chars (FILE *f, const FcChar8 *chars)
 {
     FcChar8    c;
     while ((c = *chars++))
@@ -101,7 +101,7 @@ FcCacheWriteChars (FILE *f, const FcChar8 *chars)
 }
 
 static FcBool
-FcCacheWriteUlong (FILE *f, unsigned long t)
+write_ulong (FILE *f, unsigned long t)
 {
     int	    pow;
     unsigned long   temp, digit;
@@ -126,18 +126,18 @@ FcCacheWriteUlong (FILE *f, unsigned long t)
 }
 
 static FcBool
-FcCacheWriteInt (FILE *f, int i)
+write_int (FILE *f, int i)
 {
-    return FcCacheWriteUlong (f, (unsigned long) i);
+    return write_ulong (f, (unsigned long) i);
 }
 
 static FcBool
-FcCacheWriteStringOld (FILE *f, const FcChar8 *string)
+write_string (FILE *f, const FcChar8 *string)
 {
 
     if (PUTC ('"', f) == EOF)
 	return FcFalse;
-    if (!FcCacheWriteChars (f, string))
+    if (!write_chars (f, string))
 	return FcFalse;
     if (PUTC ('"', f) == EOF)
 	return FcFalse;
@@ -168,30 +168,12 @@ usage (char *program)
     exit (1);
 }
 
-static int
-FcCacheFileOpen (char *cache_file, off_t *size)
-{
-    int fd;
-    struct stat file_stat;
-
-    fd = open(cache_file, O_RDONLY | O_BINARY);
-    if (fd < 0)
-        return -1;
-
-    if (fstat (fd, &file_stat) < 0) {
-	close (fd); 
-	return -1;
-    }
-    *size = file_stat.st_size;
-    return fd;
-}
-
 /*
  * return the path from the directory containing 'cache' to 'file'
  */
 
 static const FcChar8 *
-FcFileBaseName (const char *cache, const FcChar8 *file)
+file_base_name (const char *cache, const FcChar8 *file)
 {
     const FcChar8   *cache_slash;
     int		    cache_len = strlen (cache);
@@ -201,8 +183,8 @@ FcFileBaseName (const char *cache, const FcChar8 *file)
     return file;
 }
 
-FcBool
-FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name, FcBool verbose)
+static FcBool
+cache_print_set (FcFontSet *set, FcStrSet *dirs, char *base_name, FcBool verbose)
 {
     FcPattern	    *font;
     FcChar8	    *name, *dir;
@@ -219,16 +201,16 @@ FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name, FcBool verbose
     
     while ((dir = FcStrListNext (list)))
     {
-	base = FcFileBaseName (base_name, dir);
-	if (!FcCacheWriteStringOld (stdout, base))
+	base = file_base_name (base_name, dir);
+	if (!write_string (stdout, base))
 	    goto bail3;
 	if (PUTC (' ', stdout) == EOF)
 	    goto bail3;
-	if (!FcCacheWriteInt (stdout, 0))
+	if (!write_int (stdout, 0))
 	    goto bail3;
         if (PUTC (' ', stdout) == EOF)
 	    goto bail3;
-	if (!FcCacheWriteStringOld (stdout, FC_FONT_FILE_DIR))
+	if (!write_string (stdout, FC_FONT_FILE_DIR))
 	    goto bail3;
 	if (PUTC ('\n', stdout) == EOF)
 	    goto bail3;
@@ -243,21 +225,21 @@ FcCachePrintSet (FcFontSet *set, FcStrSet *dirs, char *base_name, FcBool verbose
 
 	if (FcPatternGetString (font, FC_FILE, 0, (FcChar8 **) &file) != FcResultMatch)
 	    goto bail3;
-	base = FcFileBaseName (base_name, file);
+	base = file_base_name (base_name, file);
 	if (FcPatternGetInteger (font, FC_INDEX, 0, &id) != FcResultMatch)
 	    goto bail3;
-	if (!FcCacheWriteStringOld (stdout, base))
+	if (!write_string (stdout, base))
 	    goto bail3;
 	if (PUTC (' ', stdout) == EOF)
 	    goto bail3;
-	if (!FcCacheWriteInt (stdout, id))
+	if (!write_int (stdout, id))
 	    goto bail3;
         if (PUTC (' ', stdout) == EOF)
 	    goto bail3;
 	name = FcNameUnparse (font);
 	if (!name)
 	    goto bail3;
-	ret = FcCacheWriteStringOld (stdout, name);
+	ret = write_string (stdout, name);
 	FcStrFree (name);
 	if (!ret)
 	    goto bail3;
@@ -275,28 +257,6 @@ bail3:
     FcStrListDone (list);
 bail2:
     return FcFalse;
-}
-
-FcCache *
-FcCacheFileMap (const FcChar8 *file)
-{
-    FcCache *cache;
-    int	    fd;
-    struct stat file_stat;
-
-    fd = open (file, O_RDONLY | O_BINARY);
-    if (fd < 0)
-	return NULL;
-    if (fstat (fd, &file_stat) < 0) {
-	close (fd);
-	return NULL;
-    }
-    if (!FcDirCacheLoad (fd, file_stat.st_size, &cache)) {
-	close (fd);
-	return NULL;
-    }
-    close (fd);
-    return cache;
 }
 
 int
@@ -399,11 +359,12 @@ main (int argc, char **argv)
 	off_t	    size;
 	intptr_t    *cache_dirs;
 	FcChar8	    *cache_file = NULL;
+	struct stat file_stat;
 	
 	if (FcFileIsDir (arg))
-	    cache = FcDirCacheMap (arg, config, &cache_file);
+	    cache = FcDirCacheLoad (arg, config, &cache_file);
 	else
-	    cache = FcCacheFileMap (arg);
+	    cache = FcDirCacheLoadFile (arg, &file_stat);
 	if (!cache)
 	{
 	    perror ((char *) arg);
@@ -433,11 +394,11 @@ main (int argc, char **argv)
 		    FcCacheDir(cache), cache_file ? cache_file : arg);
 	    first = FcFalse;
 	}
-        FcCachePrintSet (fs, dirs, FcCacheDir (cache), verbose);
+        cache_print_set (fs, dirs, FcCacheDir (cache), verbose);
 
 	FcStrSetDestroy (dirs);
 
-	FcDirCacheUnmap (cache);
+	FcDirCacheUnload (cache);
 	if (cache_file)
 	    FcStrFree (cache_file);
     }
