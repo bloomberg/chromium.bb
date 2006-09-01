@@ -198,9 +198,8 @@ void drm_bo_usage_deref_unlocked(drm_device_t * dev, drm_buffer_object_t * bo)
 	}
 }
 
-int drm_fence_buffer_objects(drm_file_t * priv, 
-			     struct list_head *list, 
-			     drm_fence_object_t *fence)
+int drm_fence_buffer_objects(drm_file_t * priv,
+			     struct list_head *list, drm_fence_object_t * fence)
 {
 	drm_device_t *dev = priv->head->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
@@ -212,7 +211,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 	struct list_head f_list, *l;
 
 	mutex_lock(&dev->struct_mutex);
-	
+
 	list_for_each_entry(entry, list, head) {
 		BUG_ON(!(entry->priv_flags & _DRM_BO_FLAG_UNFENCED));
 		fence_flags |= entry->fence_flags;
@@ -256,7 +255,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 
 	count = 0;
 	l = f_list.next;
-	while(l != &f_list) {
+	while (l != &f_list) {
 		entry = list_entry(l, drm_buffer_object_t, head);
 		atomic_inc(&entry->usage);
 		mutex_unlock(&dev->struct_mutex);
@@ -265,10 +264,10 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 
 		if (entry->priv_flags & _DRM_BO_FLAG_UNFENCED) {
 			count++;
-			if (entry->fence) 
+			if (entry->fence)
 				drm_fence_usage_deref_locked(dev, entry->fence);
 			entry->fence = fence;
-			DRM_FLAG_MASKED(entry->priv_flags, 0, 
+			DRM_FLAG_MASKED(entry->priv_flags, 0,
 					_DRM_BO_FLAG_UNFENCED);
 			DRM_WAKEUP(&entry->event_queue);
 			list_del_init(&entry->head);
@@ -293,7 +292,6 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
-
 
 /*
  * Call bo->mutex locked.
@@ -468,7 +466,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	return 0;
 }
 
-static int drm_bo_new_flags(drm_device_t *dev,
+static int drm_bo_new_flags(drm_device_t * dev,
 			    uint32_t flags, uint32_t new_mask, uint32_t hint,
 			    int init, uint32_t * n_flags, uint32_t * n_mask)
 {
@@ -485,7 +483,6 @@ static int drm_bo_new_flags(drm_device_t *dev,
 		new_mask &= ~DRM_BO_FLAG_MEM_VRAM;
 	if (!bm->use_tt)
 		new_mask &= ~DRM_BO_FLAG_MEM_TT;
-
 
 	if (new_mask & DRM_BO_FLAG_BIND_CACHED) {
 		if (((new_mask & DRM_BO_FLAG_MEM_TT) && !driver->cached_tt) &&
@@ -604,11 +601,9 @@ drm_buffer_object_t *drm_lookup_buffer_object(drm_file_t * priv,
  * Doesn't do any fence flushing as opposed to the drm_bo_busy function.
  */
 
-
-static int drm_bo_quick_busy(drm_buffer_object_t *bo)
+static int drm_bo_quick_busy(drm_buffer_object_t * bo)
 {
 	drm_fence_object_t *fence = bo->fence;
-
 
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (fence) {
@@ -622,7 +617,6 @@ static int drm_bo_quick_busy(drm_buffer_object_t *bo)
 	}
 	return 0;
 }
-	
 
 /*
  * Call bo->mutex locked.
@@ -656,7 +650,6 @@ static int drm_bo_read_cached(drm_buffer_object_t * bo)
 {
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
-		
 
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_EVICTED,
@@ -673,9 +666,9 @@ static int drm_bo_read_cached(drm_buffer_object_t * bo)
  * Wait until a buffer is unmapped.
  */
 
-static int drm_bo_wait_unmapped(drm_buffer_object_t *bo, int no_wait)
+static int drm_bo_wait_unmapped(drm_buffer_object_t * bo, int no_wait)
 {
-	int ret = 0; 
+	int ret = 0;
 
 	if ((atomic_read(&bo->mapped) >= 0) && no_wait)
 		return -EBUSY;
@@ -685,11 +678,11 @@ static int drm_bo_wait_unmapped(drm_buffer_object_t *bo, int no_wait)
 
 	if (ret == -EINTR)
 		ret = -EAGAIN;
-	
+
 	return ret;
 }
 
-static int drm_bo_check_unfenced(drm_buffer_object_t *bo)
+static int drm_bo_check_unfenced(drm_buffer_object_t * bo)
 {
 	int ret;
 
@@ -711,17 +704,17 @@ static int drm_bo_check_unfenced(drm_buffer_object_t *bo)
  * the buffer "unfenced" after validating, but before fencing.
  */
 
-static int drm_bo_wait_unfenced(drm_buffer_object_t *bo, int no_wait, 
+static int drm_bo_wait_unfenced(drm_buffer_object_t * bo, int no_wait,
 				int eagain_if_wait)
 {
 	int ret = (bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
-	unsigned long _end = jiffies + 3*DRM_HZ;
+	unsigned long _end = jiffies + 3 * DRM_HZ;
 
 	if (ret && no_wait)
 		return -EBUSY;
 	else if (!ret)
 		return 0;
-	     
+
 	do {
 		mutex_unlock(&bo->mutex);
 		DRM_WAIT_ON(ret, bo->event_queue, 3 * DRM_HZ,
@@ -730,7 +723,8 @@ static int drm_bo_wait_unfenced(drm_buffer_object_t *bo, int no_wait,
 		if (ret == -EINTR)
 			return -EAGAIN;
 		if (ret) {
-			DRM_ERROR("Error waiting for buffer to become fenced\n");
+			DRM_ERROR
+			    ("Error waiting for buffer to become fenced\n");
 			return ret;
 		}
 		ret = (bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
@@ -749,7 +743,6 @@ static int drm_bo_wait_unfenced(drm_buffer_object_t *bo, int no_wait,
  * Fill in the ioctl reply argument with buffer info.
  * Bo locked. 
  */
-
 
 static void drm_bo_fill_rep_arg(drm_buffer_object_t * bo,
 				drm_bo_arg_reply_t * rep)
@@ -770,12 +763,11 @@ static void drm_bo_fill_rep_arg(drm_buffer_object_t * bo,
 	rep->fence_flags = bo->fence_flags;
 	rep->rep_flags = 0;
 
-	if ((bo->priv_flags & _DRM_BO_FLAG_UNFENCED) || 
-	    drm_bo_quick_busy(bo)) {
-		DRM_FLAG_MASKED(rep->rep_flags, DRM_BO_REP_BUSY, DRM_BO_REP_BUSY);
+	if ((bo->priv_flags & _DRM_BO_FLAG_UNFENCED) || drm_bo_quick_busy(bo)) {
+		DRM_FLAG_MASKED(rep->rep_flags, DRM_BO_REP_BUSY,
+				DRM_BO_REP_BUSY);
 	}
 }
-
 
 /*
  * Wait for buffer idle and register that we've mapped the buffer.
@@ -786,7 +778,7 @@ static void drm_bo_fill_rep_arg(drm_buffer_object_t * bo,
 
 static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle,
 				 uint32_t map_flags, int no_wait,
-				 drm_bo_arg_reply_t *rep)
+				 drm_bo_arg_reply_t * rep)
 {
 	drm_buffer_object_t *bo;
 	drm_device_t *dev = priv->head->dev;
@@ -827,12 +819,12 @@ static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle,
 		} else if ((map_flags & DRM_BO_FLAG_READ) &&
 			   (bo->flags & DRM_BO_FLAG_READ_CACHED) &&
 			   (!(bo->flags & DRM_BO_FLAG_CACHED))) {
-			
+
 			/*
 			 * We are already mapped with different flags.
 			 * need to wait for unmap.
 			 */
-			
+
 			ret = drm_bo_wait_unmapped(bo, no_wait);
 			if (ret)
 				goto out;
@@ -849,7 +841,7 @@ static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle,
 		if (atomic_add_negative(-1, &bo->mapped))
 			DRM_WAKEUP(&bo->event_queue);
 
-	} else 
+	} else
 		drm_bo_fill_rep_arg(bo, rep);
       out:
 	mutex_unlock(&bo->mutex);
@@ -975,10 +967,8 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		DRM_ERROR("Cached binding not implemented yet\n");
 		return -EINVAL;
 	}
-
 #ifdef BODEBUG
-	DRM_ERROR("New flags 0x%08x, Old flags 0x%08x\n",
-		  new_flags, bo->flags);
+	DRM_ERROR("New flags 0x%08x, Old flags 0x%08x\n", new_flags, bo->flags);
 #endif
 	ret = driver->fence_type(new_flags, &bo->fence_class, &bo->fence_flags);
 	if (ret) {
@@ -1029,7 +1019,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 
 static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 				  uint32_t flags, uint32_t mask, uint32_t hint,
-				  drm_bo_arg_reply_t *rep)
+				  drm_bo_arg_reply_t * rep)
 {
 	drm_buffer_object_t *bo;
 	drm_device_t *dev = priv->head->dev;
@@ -1048,41 +1038,42 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 	if (ret)
 		goto out;
 
-	ret = drm_bo_new_flags(dev, bo->flags, 
+	ret = drm_bo_new_flags(dev, bo->flags,
 			       (flags & mask) | (bo->mask & ~mask), hint,
 			       0, &new_flags, &bo->mask);
 
 	if (ret)
 		goto out;
 
-	ret = drm_buffer_object_validate(bo, new_flags, !(hint & DRM_BO_HINT_DONT_FENCE), 
-					 no_wait);
+	ret =
+	    drm_buffer_object_validate(bo, new_flags,
+				       !(hint & DRM_BO_HINT_DONT_FENCE),
+				       no_wait);
 	drm_bo_fill_rep_arg(bo, rep);
-	
-out:			
-    
+
+      out:
+
 	mutex_unlock(&bo->mutex);
 	drm_bo_usage_deref_unlocked(dev, bo);
 	return ret;
 }
 
 static int drm_bo_handle_info(drm_file_t * priv, uint32_t handle,
-			      drm_bo_arg_reply_t *rep)
+			      drm_bo_arg_reply_t * rep)
 {
 	drm_buffer_object_t *bo;
 
 	bo = drm_lookup_buffer_object(priv, handle, 1);
 	if (!bo) {
 		return -EINVAL;
-	}    
+	}
 	mutex_lock(&bo->mutex);
-	if (!(bo->priv_flags & _DRM_BO_FLAG_UNFENCED)) 
-		(void) drm_bo_busy(bo);
+	if (!(bo->priv_flags & _DRM_BO_FLAG_UNFENCED))
+		(void)drm_bo_busy(bo);
 	drm_bo_fill_rep_arg(bo, rep);
 	mutex_unlock(&bo->mutex);
 	return 0;
 }
-
 
 /*
  * Call bo->mutex locked.
@@ -1142,10 +1133,6 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
 	}
 	return ret;
 }
-
-
-
-
 
 int drm_buffer_object_create(drm_file_t * priv,
 			     unsigned long size,
@@ -1355,8 +1342,7 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 			rep.ret = drm_bo_lock_test(dev, filp);
 			if (rep.ret)
 				break;
-			/**/
-			break;
+			 /**/ break;
 		case drm_bo_info:
 			rep.ret = drm_bo_handle_info(priv, req->handle, &rep);
 			break;
@@ -1381,11 +1367,9 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-
 /*
  * dev->struct_sem locked.
  */
-
 
 static void drm_bo_force_clean(drm_device_t * dev)
 {
@@ -1398,11 +1382,11 @@ static void drm_bo_force_clean(drm_device_t * dev)
 	list_for_each_entry_safe(entry, next, &bm->ddestroy, ddestroy) {
 		if (entry->fence) {
 			if (nice_mode) {
-				unsigned long _end = jiffies + 3*DRM_HZ;
+				unsigned long _end = jiffies + 3 * DRM_HZ;
 				do {
 					ret = drm_bo_wait(entry, 0, 0);
-				} while ((ret == -EINTR) && 
-					 !time_after_eq(jiffies, _end));	
+				} while ((ret == -EINTR) &&
+					 !time_after_eq(jiffies, _end));
 			} else {
 				drm_fence_usage_deref_locked(dev, entry->fence);
 				entry->fence = NULL;
@@ -1422,23 +1406,20 @@ static void drm_bo_force_clean(drm_device_t * dev)
 	}
 }
 
-
-int drm_bo_clean_mm(drm_device_t *dev)
+int drm_bo_clean_mm(drm_device_t * dev)
 {
 	drm_buffer_manager_t *bm = &dev->bm;
 	int ret = 0;
 
-	
 	mutex_lock(&dev->struct_mutex);
 
 	if (!bm->initialized)
 		goto out;
-		
 
 	drm_bo_force_clean(dev);
 	bm->use_vram = 0;
 	bm->use_tt = 0;
-	
+
 	if (bm->has_vram) {
 		if (drm_mm_clean(&bm->vram_manager)) {
 			drm_mm_takedown(&bm->vram_manager);
@@ -1451,19 +1432,18 @@ int drm_bo_clean_mm(drm_device_t *dev)
 		if (drm_mm_clean(&bm->tt_manager)) {
 			drm_mm_takedown(&bm->tt_manager);
 			bm->has_tt = 0;
-		} else 
+		} else
 			ret = -EBUSY;
-		
+
 		if (!ret)
 			bm->initialized = 0;
 	}
 
- out:
+      out:
 	mutex_unlock(&dev->struct_mutex);
 
 	return ret;
 }
-
 
 int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 {
@@ -1490,7 +1470,7 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		mutex_lock(&dev->struct_mutex);
 		bm->has_vram = 0;
 		bm->has_tt = 0;
-		
+
 		if (arg.req.vr_p_size) {
 			ret = drm_mm_init(&bm->vram_manager,
 					  arg.req.vr_p_offset,
@@ -1499,7 +1479,7 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 			/*
 			 * VRAM not supported yet.
 			 */
-			
+
 			bm->use_vram = 0;
 			if (ret)
 				break;
