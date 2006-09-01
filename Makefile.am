@@ -59,7 +59,7 @@ install-data-local:
 	  $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf; \
 	fi; fi
 	@(if $(RUN_FC_CACHE_TEST); then \
-	    echo " fc-cache/fc-cache -f -v"; \
+	    echo " fc-cache/fc-cache -s -f -v"; \
 	    fc-cache/fc-cache -f -v; \
 	else \
 	    echo "***"; \
