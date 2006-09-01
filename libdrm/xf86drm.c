@@ -3053,8 +3053,8 @@ int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
     arg.req.op = mm_init;
     arg.req.vr_p_offset = vramPOffset;
     arg.req.vr_p_size = vramPSize;
-    arg.req.tt_p_offset = vramPOffset;
-    arg.req.tt_p_size = vramPSize;
+    arg.req.tt_p_offset = ttPOffset;
+    arg.req.tt_p_size = ttPSize;
     
     if (ioctl(fd, DRM_IOCTL_MM_INIT, &arg))
 	return -errno;

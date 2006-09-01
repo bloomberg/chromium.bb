@@ -45,9 +45,9 @@ int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *type)
 {
 	*class = 0;
 	if (buffer_flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE)) 
-		*type = 1;
-	else
 		*type = 3;
+	else
+		*type = 1;
 	return 0;
 }
 

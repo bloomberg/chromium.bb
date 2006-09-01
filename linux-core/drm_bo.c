@@ -70,14 +70,15 @@ static int drm_move_tt_to_local(drm_buffer_object_t * buf)
 
 	BUG_ON(!buf->tt);
 
+	DRM_ERROR("Flipping out of AGP\n");
 	mutex_lock(&dev->struct_mutex);
 	drm_unbind_ttm_region(buf->ttm_region);
 	drm_mm_put_block(&bm->tt_manager, buf->tt);
 	buf->tt = NULL;
-	mutex_unlock(&dev->struct_mutex);
 
 	buf->flags &= ~DRM_BO_MASK_MEM;
 	buf->flags |= DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
+	mutex_unlock(&dev->struct_mutex);
 
 	return 0;
 }
@@ -114,12 +115,11 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 	 */
 
 	list_del(&bo->head);
-	list_add_tail(&bo->head, &bm->other);
 
 	if (bo->tt) {
-		int ret;
-		ret = drm_move_tt_to_local(bo);
-		BUG_ON(ret);
+		drm_unbind_ttm_region(bo->ttm_region);
+		drm_mm_put_block(&bm->tt_manager, bo->tt);
+		bo->tt = NULL;
 	}
 	if (bo->vram) {
 		drm_mm_put_block(&bm->vram_manager, bo->vram);
@@ -443,6 +443,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	if (ret)
 		return ret;
 
+	DRM_ERROR("Flipping in to AGP 0x%08lx\n", bo->tt->start);
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_bind_ttm_region(bo->ttm_region, bo->tt->start);
 	if (ret) {
@@ -458,10 +459,11 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	bo->flags |= DRM_BO_FLAG_MEM_TT;
 
 	if (bo->priv_flags & _DRM_BO_FLAG_EVICTED) {
+	        DRM_ERROR("Flush read caches\n");
 		ret = dev->driver->bo_driver->invalidate_caches(dev, bo->flags);
-		DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_EVICTED);
 		DRM_ERROR("Warning: Could not flush read caches\n");
 	}
+	DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_EVICTED);
 
 	return 0;
 }
@@ -500,7 +502,6 @@ static int drm_bo_new_flags(drm_bo_driver_t * driver,
 			    ("Cannot read cached from a pinned VRAM / TT buffer\n");
 			return -EINVAL;
 		}
-		new_mask &= ~(DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_MEM_VRAM);
 	}
 
 	/*
@@ -621,10 +622,19 @@ static int drm_bo_busy(drm_buffer_object_t * bo)
 
 static int drm_bo_read_cached(drm_buffer_object_t * bo)
 {
+	drm_device_t *dev = bo->dev;
+	drm_buffer_manager_t *bm = &dev->bm;
+		
+
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_EVICTED,
 			_DRM_BO_FLAG_EVICTED);
-	return 0;
+
+	mutex_lock(&dev->struct_mutex);
+	list_del(&bo->head);
+	list_add_tail(&bo->head, &bm->other);
+	mutex_unlock(&dev->struct_mutex);
+	return drm_move_tt_to_local(bo);
 }
 
 /*
@@ -836,7 +846,7 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
 }
 
 /*
- * bo->mutex locked.
+ * bo->mutex locked. 
  */
 
 static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
@@ -847,13 +857,14 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
 	/*
 	 * Flush outstanding fences.
 	 */
-
+	DRM_ERROR("Flushing fences\n");
 	drm_bo_busy(bo);
 
 	/*
 	 * Make sure we're not mapped.
 	 */
 
+	DRM_ERROR("Wait unmapped\n");
 	ret = drm_bo_wait_unmapped(bo, no_wait);
 	if (ret)
 		return ret;
@@ -862,6 +873,7 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
 	 * Wait for outstanding fences.
 	 */
 
+	DRM_ERROR("Wait fences\n");
 	ret = drm_bo_wait(bo, 0, no_wait);
 
 	if (ret == -EINTR)
@@ -909,16 +921,16 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	 * Check whether we need to move buffer.
 	 */
 
-	ret = driver->fence_type(new_flags, &bo->fence_flags, &bo->fence_class);
+	ret = driver->fence_type(new_flags, &bo->fence_class, &bo->fence_flags);
+	DRM_ERROR("Fence type = 0x%08x\n", bo->fence_flags);
 	if (ret) {
 		DRM_ERROR("Driver did not support given buffer permissions\n");
 		return ret;
 	}
 
 	if (flag_diff & DRM_BO_MASK_MEM) {
-		mutex_lock(&dev->struct_mutex);
+	  DRM_ERROR("Calling move buffer\n");
 		ret = drm_bo_move_buffer(bo, new_flags, no_wait);
-		mutex_unlock(&dev->struct_mutex);
 		if (ret)
 			return ret;
 	}
@@ -946,6 +958,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 			list_add_tail(&bo->head, &bm->vram_lru);
 		else
 			list_add_tail(&bo->head, &bm->other);
+		mutex_unlock(&dev->struct_mutex);
 		DRM_FLAG_MASKED(bo->flags, new_flags, DRM_BO_FLAG_NO_EVICT);
 	}
 
@@ -1098,9 +1111,10 @@ int drm_buffer_object_create(drm_file_t * priv,
 	bo->num_pages = num_pages;
 	bo->buffer_start = buffer_start;
 	bo->priv_flags = 0;
-
+	bo->flags = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
 	ret = drm_bo_new_flags(dev->driver->bo_driver, bo->flags, mask, hint,
 			       1, &new_flags, &bo->mask);
+	DRM_ERROR("New flags: 0x%08x\n", new_flags);
 	if (ret)
 		goto out_err;
 	ret = drm_bo_add_ttm(priv, bo, ttm_handle);
@@ -1309,7 +1323,7 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 	drm_bo_driver_t *driver = dev->driver->bo_driver;
 
 	if (!driver) {
-		DRM_ERROR("Buffer objects are not su<pported by this driver\n");
+		DRM_ERROR("Buffer objects are not supported by this driver\n");
 		return -EINVAL;
 	}
 
@@ -1337,6 +1351,9 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		}
 
 		if (arg.req.tt_p_size) {
+		  DRM_ERROR("Initializing TT 0x%08x 0x%08x\n",
+			    arg.req.tt_p_offset,
+			    arg.req.tt_p_size);
 			ret = drm_mm_init(&bm->tt_manager,
 					  arg.req.tt_p_offset,
 					  arg.req.tt_p_size);
