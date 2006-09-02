@@ -560,6 +560,28 @@ FcFontCapabilities(FT_Face face);
 #include <iconv.h>
 #endif
 
+/*
+ * A shift-JIS will have many high bits turned on
+ */
+static FcBool
+FcLooksLikeSJIS (FcChar8 *string, int len)
+{
+    int	    nhigh = 0, nlow = 0;
+
+    while (len-- > 0)
+    {
+	if (*string++ & 0x80) nhigh++;
+	else nlow++;
+    }
+    /*
+     * Heuristic -- if more than 1/3 of the bytes have the high-bit set,
+     * this is likely to be SJIS and not ROMAN
+     */
+    if (nhigh * 2 > nlow)
+	return FcTrue;
+    return FcFalse;
+}
+
 static FcChar8 *
 FcSfntNameTranscode (FT_SfntName *sname)
 {
@@ -580,24 +602,35 @@ FcSfntNameTranscode (FT_SfntName *sname)
     fromcode = fcFtEncoding[i].fromcode;
 
     /*
-     * "real" Mac language IDs are all less than 150.
-     * Names using one of the MS language IDs are assumed
-     * to use an associated encoding (Yes, this is a kludge)
+     * Many names encoded for TT_PLATFORM_MACINTOSH are broken
+     * in various ways. Kludge around them.
      */
-    if (!strcmp (fromcode, FC_ENCODING_MAC_ROMAN) &&
-	sname->language_id >= 0x100)
+    if (!strcmp (fromcode, FC_ENCODING_MAC_ROMAN))
     {
-	int	f;
+	if (sname->language_id == TT_MAC_LANGID_ENGLISH &&
+	    FcLooksLikeSJIS (sname->string, sname->string_len))
+	{
+	    fromcode = "SJIS";
+	}
+	else if (sname->language_id >= 0x100)
+	{
+	    /*
+	     * "real" Mac language IDs are all less than 150.
+	     * Names using one of the MS language IDs are assumed
+	     * to use an associated encoding (Yes, this is a kludge)
+	     */
+	    int	f;
 
-	fromcode = NULL;
-	for (f = 0; f < NUM_FC_MAC_ROMAN_FAKE; f++)
-	    if (fcMacRomanFake[f].language_id == sname->language_id)
-	    {
-		fromcode = fcMacRomanFake[f].fromcode;
-		break;
-	    }
-	if (!fromcode)
-	    return 0;
+	    fromcode = NULL;
+	    for (f = 0; f < NUM_FC_MAC_ROMAN_FAKE; f++)
+		if (fcMacRomanFake[f].language_id == sname->language_id)
+		{
+		    fromcode = fcMacRomanFake[f].fromcode;
+		    break;
+		}
+	    if (!fromcode)
+		return 0;
+	}
     }
     if (!strcmp (fromcode, "UCS-2BE") || !strcmp (fromcode, "UTF-16BE"))
     {
@@ -738,10 +771,24 @@ static const FcChar8 *
 FcSfntNameLanguage (FT_SfntName *sname)
 {
     int i;
+    FT_UShort	platform_id = sname->platform_id;
+    FT_UShort	language_id = sname->language_id;
+
+    /*
+     * Many names encoded for TT_PLATFORM_MACINTOSH are broken
+     * in various ways. Kludge around them.
+     */
+    if (platform_id == TT_PLATFORM_MACINTOSH &&
+	sname->encoding_id == TT_MAC_ID_ROMAN &&
+	FcLooksLikeSJIS (sname->string, sname->string_len))
+    {
+	language_id = TT_MAC_LANGID_JAPANESE;
+    }
+    
     for (i = 0; i < NUM_FC_FT_LANGUAGE; i++)
-	if (fcFtLanguage[i].platform_id == sname->platform_id &&
+	if (fcFtLanguage[i].platform_id == platform_id &&
 	    (fcFtLanguage[i].language_id == TT_LANGUAGE_DONT_CARE ||
-	     fcFtLanguage[i].language_id == sname->language_id))
+	     fcFtLanguage[i].language_id == language_id))
 	{
 	    if (fcFtLanguage[i].lang[0] == '\0')
 	      return NULL;
