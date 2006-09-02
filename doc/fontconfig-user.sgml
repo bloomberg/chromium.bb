@@ -3,8 +3,6 @@
 <!ENTITY confdir SYSTEM "confdir.sgml">
 ]>
 <!--
-    $Id$
-   
     Copyright © 2003 Keith Packard
    
     Permission to use, copy, modify, distribute, and sell this software and its
@@ -215,7 +213,45 @@ Here are some examples:
   Monospace:matrix=1 .1 0 1       The users preferred monospace font
                                   with artificial obliquing
     </programlisting>
+    <para>
+The '\', '-', ':' and ',' characters in family names must be preceeded by a
+'\' character to avoid having them misinterpreted. Similarly, values
+containing '\', '=', '_', ':' and ',' must also have them preceeded by a
+'\' character. The '\' characters are stripped out of the family name and
+values as the font name is read.
+    </para>
   </refsect2>
+</refsect1>
+<refsect1><title>Debugging Applications</title>
+  <para>
+To help diagnose font and applications problems, fontconfig is built with a
+large amount of internal debugging left enabled. It is controlled by means
+of the FC_DEBUG environment variable. The value of this variable is
+interpreted as a number, and each bit within that value controls different
+debugging messages.
+  </para>
+  <programlisting>
+  Name         Value    Meaning
+  ---------------------------------------------------------
+  MATCH            1    Brief information about font matching
+  MATCHV           2    Extensive font matching information
+  EDIT             4    Monitor match/test/edit execution
+  FONTSET          8    Track loading of font information at startup
+  CACHE           16    Watch cache files being written
+  CACHEV          32    Extensive cache file writing information
+  PARSE           64    (no longer in use)
+  SCAN           128    Watch font files being scanned to build caches
+  SCANV          256    Verbose font file scanning information
+  MEMORY         512    Monitor fontconfig memory usage
+  CONFIG        1024    Monitor which config files are loaded
+  LANGSET       2048    Dump char sets used to construct lang values
+  OBJTYPES      4096    Display message when value typechecks fail
+  </programlisting>
+  <para>
+Add the value of the desired debug levels together and assign that (in
+base 10) to the FC_DEBUG environment variable before running the
+application. Output from these statements is sent to stdout.
+  </para>
 </refsect1>
 <refsect1><title>Lang Tags</title>
   <para>
