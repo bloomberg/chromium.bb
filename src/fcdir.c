@@ -234,26 +234,17 @@ FcCache *
 FcDirCacheRead (const FcChar8 *dir, FcBool force, FcConfig *config)
 {
     FcCache		*cache = NULL;
-    FcChar8		*canon_dir;
 
-    canon_dir = FcStrCanonFilename (dir);
-    if (!canon_dir) canon_dir = (FcChar8 *) dir;
-    
-    if (config && !FcConfigAcceptFilename (config, canon_dir)) {
-	goto bail;
-    }
+    if (config && !FcConfigAcceptFilename (config, dir))
+	return NULL;
 
     /* Try to use existing cache file */
     if (!force)
-	cache = FcDirCacheLoad (canon_dir, config, NULL);
+	cache = FcDirCacheLoad (dir, config, NULL);
     
     /* Not using existing cache file, construct new cache */
     if (!cache)
-	cache = FcDirCacheScan (canon_dir, config);
-    
-bail:
-    if (canon_dir != dir) 
-	free (canon_dir);
+	cache = FcDirCacheScan (dir, config);
     
     return cache;
 }

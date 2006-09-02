@@ -764,26 +764,21 @@ FcStrCopyFilename (const FcChar8 *s)
     if (*s == '~')
     {
 	FcChar8	*home = FcConfigHome ();
+	FcChar8	*full;
 	int	size;
 	if (!home)
 	    return 0;
 	size = strlen ((char *) home) + strlen ((char *) s);
-	new = (FcChar8 *) malloc (size);
+	full = (FcChar8 *) malloc (size);
 	if (!new)
 	    return 0;
-	FcMemAlloc (FC_MEM_STRING, size);
-	strcpy ((char *) new, (char *) home);
-	strcat ((char *) new, (char *) s + 1);
+	strcpy ((char *) full, (char *) home);
+	strcat ((char *) full, (char *) s + 1);
+	new = FcStrCanonFilename (full);
+	free (full);
     }
     else
-    {
-	int	size = strlen ((char *) s) + 1;
-	new = (FcChar8 *) malloc (size);
-	if (!new)
-	    return 0;
-	FcMemAlloc (FC_MEM_STRING, size);
-	memcpy (new, s, size);
-    }
+	new = FcStrCanonFilename (s);
     return new;
 }
 
@@ -841,6 +836,7 @@ FcStrCanonFilename (const FcChar8 *s)
     FcChar8 *file;
     FcChar8 *f;
     const FcChar8 *slash;
+    int size;
     
     if (*s != '/')
     {
@@ -855,9 +851,11 @@ FcStrCanonFilename (const FcChar8 *s)
 	FcStrFree (full);
 	return file;
     }
-    file = malloc (strlen ((char *) s) + 1);
+    size = strlen ((char *) s) + 1;
+    file = malloc (size);
     if (!file)
 	return NULL;
+    FcMemAlloc (FC_MEM_STRING, size);
     slash = NULL;
     f = file;
     for (;;) {

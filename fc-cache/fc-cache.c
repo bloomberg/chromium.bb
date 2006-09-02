@@ -452,7 +452,7 @@ main (int argc, char **argv)
 	}
 	while (argv[i])
 	{
-	    if (!FcStrSetAdd (dirs, (FcChar8 *) argv[i]))
+	    if (!FcStrSetAddFilename (dirs, (FcChar8 *) argv[i]))
 	    {
 		fprintf (stderr, "%s: Can't add directory\n", argv[0]);
 		return 1;

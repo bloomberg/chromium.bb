@@ -321,7 +321,7 @@ main (int argc, char **argv)
     {
 	for (; i < argc; i++)
 	{
-	    if (!FcStrSetAdd (args, argv[i]))
+	    if (!FcStrSetAddFilename (args, argv[i]))
 	    {
 		fprintf (stderr, "%s: malloc failure\n", argv[0]);
 		return 1;
