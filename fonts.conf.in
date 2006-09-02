@@ -77,8 +77,8 @@
   Serif faces
  -->
 	<alias>
-		<family>DejaVu Serif</family>
 		<family>Bitstream Vera Serif</family>
+		<family>DejaVu Serif</family>
 		<family>Times New Roman</family>
 		<family>Thorndale AMT</family>
 		<family>Times</family>
@@ -97,8 +97,8 @@
   Sans-serif faces
  -->
 	<alias>
-		<family>DejaVu Sans</family>
 		<family>Bitstream Vera Sans</family>
+		<family>DejaVu Sans</family>
 		<family>Helvetica</family>
 		<family>Arial</family>
 		<family>Verdana</family>
@@ -119,6 +119,7 @@
   Monospace faces
  -->
  	<alias>
+		<family>Bitstream Vera Sans Mono</family>
 		<family>DejaVu Sans Mono</family>
 		<family>Courier</family>
 		<family>Courier New</family>
@@ -298,8 +299,8 @@
 	<alias>
 		<family>serif</family>
 		<prefer>
-			<family>DejaVu Serif</family>
 			<family>Bitstream Vera Serif</family>
+			<family>DejaVu Serif</family>
 			<family>Times New Roman</family>
 			<family>Thorndale AMT</family>
 			<family>Luxi Serif</family>
@@ -318,8 +319,8 @@
 	<alias>
 		<family>sans-serif</family>
 		<prefer>
-			<family>DejaVu Sans</family>
 			<family>Bitstream Vera Sans</family>
+			<family>DejaVu Sans</family>
 			<family>Verdana</family>
 			<family>Arial</family>
 			<family>Albany AMT</family>
@@ -340,8 +341,8 @@
 	<alias>
 		<family>monospace</family>
 		<prefer>
-			<family>DejaVu Sans Mono</family>
 			<family>Bitstream Vera Sans Mono</family>
+			<family>DejaVu Sans Mono</family>
 			<family>Andale Mono</family>
 			<family>Courier New</family>
 			<family>Cumberland AMT</family>
