@@ -77,6 +77,15 @@ static int nouveau_fifo_init(drm_device_t* dev,drm_nouveau_fifo_init_t* init, DR
 	int ret;
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 
+	/* Init cmdbuf on first FIFO init, this is delayed until now to
+	 * give the ddx a chance to configure the cmdbuf with SETPARAM
+	 */
+	if (!dev_priv->cmdbuf_alloc) {
+		ret = nouveau_dma_init(dev);
+		if (ret)
+			return ret;
+	}
+
 	/*
 	 * Alright, here is the full story
 	 * Nvidia cards have multiple hw fifo contexts (praise them for that, 
@@ -120,7 +129,7 @@ static int nouveau_fifo_init(drm_device_t* dev,drm_nouveau_fifo_init_t* init, DR
 		return ret;
 
 	/* then, the fifo itself */
-	init->cmdbuf       = dev_priv->cmdbuf_base;
+	init->cmdbuf       = dev_priv->cmdbuf_alloc->start;
 	init->cmdbuf      += init->channel * dev_priv->cmdbuf_ch_size;
 	init->cmdbuf_size  = dev_priv->cmdbuf_ch_size;
 	ret = drm_addmap(dev, init->cmdbuf, init->cmdbuf_size, _DRM_REGISTERS,
@@ -157,8 +166,9 @@ void nouveau_fifo_cleanup(drm_device_t * dev, DRMFILE filp)
 		DRM_DEBUG("%s: new cur_fifo is %d\n", __func__, i);
 		dev_priv->cur_fifo = i;
 	}
-	
-	nouveau_pfifo_init(dev);
+
+	if (dev_priv->cmdbuf_alloc)
+		nouveau_pfifo_init(dev);
 //	nouveau_fifo_enable(dev);
 }
 

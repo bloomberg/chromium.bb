@@ -76,32 +76,6 @@ int nouveau_firstopen(struct drm_device *dev)
 				0, nouveau_mem_fb_amount(dev),
 				NV_DMA_ACCESS_RW, NV_DMA_TARGET_VIDMEM);
 
-	/* allocate one buffer for all the fifos */
-	dev_priv->cmdbuf_alloc = nouveau_mem_alloc(dev, 0, 1024*1024, NOUVEAU_MEM_FB, (DRMFILE)-2);
-
-	if (dev_priv->cmdbuf_alloc->flags&NOUVEAU_MEM_AGP) {
-		dev_priv->cmdbuf_location = NV_DMA_TARGET_AGP;
-		dev_priv->cmdbuf_ch_size  = NV03_FIFO_SIZE;
-		dev_priv->cmdbuf_base     = dev_priv->cmdbuf_alloc->start;
-		dev_priv->cmdbuf_obj = nouveau_dma_object_create(dev,
-				dev_priv->cmdbuf_base, nouveau_fifo_number(dev)*NV03_FIFO_SIZE,
-				NV_DMA_ACCESS_RO, dev_priv->cmdbuf_location);
-	} else { /* NOUVEAU_MEM_FB */
-		dev_priv->cmdbuf_location = NV_DMA_TARGET_VIDMEM;
-		dev_priv->cmdbuf_ch_size  = NV03_FIFO_SIZE;
-		dev_priv->cmdbuf_base     = dev_priv->cmdbuf_alloc->start;
-		dev_priv->cmdbuf_obj = nouveau_dma_object_create(dev,
-				dev_priv->cmdbuf_base - drm_get_resource_start(dev, 1),
-				nouveau_fifo_number(dev)*NV03_FIFO_SIZE,
-				NV_DMA_ACCESS_RO, dev_priv->cmdbuf_location);
-	}
-
-	DRM_INFO("DMA command buffer is %dKiB at 0x%08x(%s)\n",
-			(nouveau_fifo_number(dev)*dev_priv->cmdbuf_ch_size)/1024,
-			dev_priv->cmdbuf_base,
-			dev_priv->cmdbuf_location == NV_DMA_TARGET_AGP ? "AGP" : "VRAM"
-			);
-
 	return 0;
 }
 
@@ -154,16 +128,79 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	drm_nouveau_setparam_t setparam;
 
 	DRM_COPY_FROM_USER_IOCTL(setparam, (drm_nouveau_setparam_t __user *)data,
 			sizeof(setparam));
 
 	switch (setparam.param) {
+	case NOUVEAU_SETPARAM_CMDBUF_LOCATION:
+		switch (setparam.value) {
+		case NOUVEAU_MEM_AGP:
+		case NOUVEAU_MEM_FB:
+			break;
+		default:
+			DRM_ERROR("invalid CMDBUF_LOCATION value=%d\n", setparam.value);
+			return DRM_ERR(EINVAL);
+		}
+		dev_priv->config.cmdbuf.location = setparam.value;
+		break;
+	case NOUVEAU_SETPARAM_CMDBUF_SIZE:
+		dev_priv->config.cmdbuf.size = setparam.value;
+		break;
 	default:
 		DRM_ERROR("unknown parameter %d\n", setparam.param);
 		return DRM_ERR(EINVAL);
 	}
+
+	return 0;
+}
+
+int nouveau_dma_init(struct drm_device *dev)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_config *config = &dev_priv->config;
+	struct mem_block *cb;
+	int cb_min_size = nouveau_fifo_number(dev) * NV03_FIFO_SIZE;
+
+	/* allocate one buffer for all the fifos */
+	dev_priv->cmdbuf_alloc = nouveau_mem_alloc(dev, 0, 1024*1024, NOUVEAU_MEM_FB, (DRMFILE)-2);
+
+	/* Defaults for unconfigured values */
+	if (!config->cmdbuf.location)
+		config->cmdbuf.location = NOUVEAU_MEM_FB;
+	if (!config->cmdbuf.size || config->cmdbuf.size < cb_min_size)
+		config->cmdbuf.size = cb_min_size;
+
+	cb = nouveau_mem_alloc(dev, 0, config->cmdbuf.size,
+			config->cmdbuf.location, (DRMFILE)-2);
+	/* Try defaults if that didn't succeed */
+	if (!cb) {
+		config->cmdbuf.location = NOUVEAU_MEM_FB;
+		config->cmdbuf.size = cb_min_size;
+		cb = nouveau_mem_alloc(dev, 0, config->cmdbuf.size,
+				config->cmdbuf.location, (DRMFILE)-2);
+	}
+	if (!cb) {
+		DRM_ERROR("Couldn't allocate DMA command buffer.\n");
+		return DRM_ERR(ENOMEM);
+	}
+
+	if (config->cmdbuf.location == NOUVEAU_MEM_AGP)
+		dev_priv->cmdbuf_obj = nouveau_dma_object_create(dev,
+				cb->start, cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP);
+	else
+		dev_priv->cmdbuf_obj = nouveau_dma_object_create(dev,
+				cb->start - drm_get_resource_start(dev, 1),
+				cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM);
+	dev_priv->cmdbuf_ch_size = cb->size / nouveau_fifo_number(dev);
+	dev_priv->cmdbuf_alloc = cb;
+
+	DRM_INFO("DMA command buffer is %dKiB at 0x%08x(%s)\n",
+			(uint32_t)cb->size>>10, (uint32_t)cb->start,
+			config->cmdbuf.location == NOUVEAU_MEM_FB ? "VRAM" : "AGP");
+	DRM_INFO("FIFO size is %dKiB\n", dev_priv->cmdbuf_ch_size>>10);
 
 	return 0;
 }

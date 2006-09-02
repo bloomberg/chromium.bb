@@ -85,6 +85,8 @@ typedef struct drm_nouveau_getparam {
 }
 drm_nouveau_getparam_t;
 
+#define NOUVEAU_SETPARAM_CMDBUF_LOCATION 1
+#define NOUVEAU_SETPARAM_CMDBUF_SIZE     2
 typedef struct drm_nouveau_setparam {
 	unsigned int param;
 	unsigned int value;

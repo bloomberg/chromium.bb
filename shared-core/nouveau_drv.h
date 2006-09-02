@@ -97,6 +97,13 @@ struct mem_block {
 	drm_local_map_t *map;
 };
 
+struct nouveau_config {
+	struct {
+		int location;
+		int size;
+	} cmdbuf;
+};
+
 typedef struct drm_nouveau_private {
 	/* the card type, takes NV_* as values */
 	int card_type;
@@ -111,9 +118,7 @@ typedef struct drm_nouveau_private {
 
 	struct nouveau_object *fb_obj;
 	struct nouveau_object *cmdbuf_obj;
-	int      cmdbuf_location;
-	int      cmdbuf_base;
-	int      cmdbuf_ch_size;
+	int               cmdbuf_ch_size;
 	struct mem_block* cmdbuf_alloc;
 
 	struct nouveau_fifo fifos[NV_MAX_FIFO_NUMBER];
@@ -123,6 +128,7 @@ typedef struct drm_nouveau_private {
 	struct mem_block *fb_heap;
 	struct mem_block *fb_nomap_heap;
 
+	struct nouveau_config config;
 }
 drm_nouveau_private_t;
 
@@ -133,6 +139,7 @@ extern int nouveau_firstopen(struct drm_device *dev);
 extern int nouveau_unload(struct drm_device *dev);
 extern int nouveau_ioctl_getparam(DRM_IOCTL_ARGS);
 extern int nouveau_ioctl_setparam(DRM_IOCTL_ARGS);
+extern int nouveau_dma_init(struct drm_device *dev);
 
 /* nouveau_mem.c */
 extern uint64_t          nouveau_mem_fb_amount(struct drm_device *dev);
