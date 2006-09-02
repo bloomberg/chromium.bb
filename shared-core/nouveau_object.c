@@ -338,14 +338,17 @@ struct nouveau_object *nouveau_dma_object_create(drm_device_t* dev,
 			| (adjust<<20)
 			| (access<<14)
 			| (target<<16)
-			| 2)
+			| 0x3D /* DMA_IN_MEMORY */)
 		);
 	NV_WRITE(NV_RAMIN + obj->instance +  4,
 			size - 1);
 	NV_WRITE(NV_RAMIN + obj->instance +  8,
 			frame | ((access != NV_DMA_ACCESS_RO) ? (1<<1) : 0));
+	/* I don't actually know what this is, the DMA objects I see
+	 * in renouveau dumps usually have this as the same as +8
+	 */
 	NV_WRITE(NV_RAMIN + obj->instance + 12,
-			0xFFFFFFFF);
+			frame | ((access != NV_DMA_ACCESS_RO) ? (1<<1) : 0));
 
 	return obj;
 }
