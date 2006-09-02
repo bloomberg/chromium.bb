@@ -231,7 +231,7 @@ FcDirCacheMapFd (int fd, off_t size)
 	allocated = FcTrue;
     } 
     if (cache->magic != FC_CACHE_MAGIC_MMAP || 
-	cache->version != FC_CACHE_CONTENT_VERSION ||
+	cache->version < FC_CACHE_CONTENT_VERSION ||
 	cache->size != size)
     {
 	if (allocated)
@@ -323,7 +323,7 @@ FcDirCacheValidateHelper (int fd, off_t size, void *closure)
 	ret = FcFalse;
     else if (c.magic != FC_CACHE_MAGIC_MMAP)
 	ret = FcFalse;
-    else if (c.version != FC_CACHE_CONTENT_VERSION)
+    else if (c.version < FC_CACHE_CONTENT_VERSION)
 	ret = FcFalse;
     else if (fstat (fd, &file_stat) < 0)
 	ret = FcFalse;
