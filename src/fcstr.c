@@ -323,6 +323,26 @@ FcStrContainsIgnoreBlanksAndCase (const FcChar8 *s1, const FcChar8 *s2)
     return 0;
 }
 
+static FcBool
+FcCharIsPunct (const FcChar8 c)
+{
+    if (c < '0')
+	return FcTrue;
+    if (c <= '9')
+	return FcFalse;
+    if (c < 'A')
+	return FcTrue;
+    if (c <= 'Z')
+	return FcFalse;
+    if (c < 'a')
+	return FcTrue;
+    if (c <= 'z')
+	return FcFalse;
+    if (c <= '~')
+	return FcTrue;
+    return FcFalse;
+}
+
 /*
  * Is the head of s1 equal to s2?
  */
@@ -347,7 +367,7 @@ FcStrIsAtIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
 }
 
 /*
- * Does s1 contain an instance of s2 (ignoring blanks and case)?
+ * Does s1 contain an instance of s2 (ignoring case)?
  */
 
 const FcChar8 *
@@ -358,6 +378,34 @@ FcStrContainsIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
 	if (FcStrIsAtIgnoreCase (s1, s2))
 	    return s1;
 	s1++;
+    }
+    return 0;
+}
+
+/*
+ * Does s1 contain an instance of s2 on a word boundary (ignoring case)?
+ */
+
+const FcChar8 *
+FcStrContainsWord (const FcChar8 *s1, const FcChar8 *s2)
+{
+    FcBool  wordStart = FcTrue;
+    int	    s1len = strlen ((char *) s1);
+    int	    s2len = strlen ((char *) s2);
+	
+    while (s1len >= s2len)
+    {
+	if (wordStart && 
+	    FcStrIsAtIgnoreCase (s1, s2) &&
+	    (s1len == s2len || FcCharIsPunct (s1[s2len])))
+	{
+	    return s1;
+	}
+	wordStart = FcFalse;
+	if (FcCharIsPunct (*s1))
+	    wordStart = FcTrue;
+	s1++;
+	s1len--;
     }
     return 0;
 }

@@ -959,8 +959,18 @@ FcStringContainsConst (const FcChar8	    *string,
     int	i;
 
     for (i = 0; i < nc; i++)
-	if (FcStrContainsIgnoreBlanksAndCase (string, c[i].name))
-	    return c[i].value;
+    {
+	if (c[i].name[0] == '<')
+	{
+	    if (FcStrContainsWord (string, c[i].name + 1))
+		return c[i].value;
+	}
+	else
+	{
+	    if (FcStrContainsIgnoreBlanksAndCase (string, c[i].name))
+		return c[i].value;
+	}
+    }
     return -1;
 }
 
@@ -985,6 +995,7 @@ static const FcStringConst  weightConsts[] = {
     { (FC8) "ultrablack",	FC_WEIGHT_ULTRABLACK },
     { (FC8) "superblack",	FC_WEIGHT_EXTRABLACK },
     { (FC8) "extrablack",	FC_WEIGHT_EXTRABLACK },
+    { (FC8) "<ultra",		FC_WEIGHT_ULTRABOLD }, /* only if a word */
     { (FC8) "black",		FC_WEIGHT_BLACK },
     { (FC8) "heavy",		FC_WEIGHT_HEAVY },
 };
