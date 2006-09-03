@@ -1,11 +1,74 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.3.95
-		         2006-04-26
+		      Version 2.3.96
+		         2006-09-03
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.3.96
+
+Keith Packard:
+      Make path names in cache files absolute (NB, cache format change) Stop
+      Eliminate pattern freezing
+      Add .gitignore
+      Construct short architecture name from architecture signature.
+      Write caches to first directory with permission. Valid cache in FcDirCacheOpen.
+      Eliminate NormalizeDir. Eliminate gratuitous stat/access calls per dir.
+      Add architecture to cache filename.
+      Eliminate global cache. Eliminate multi-arch cache code.
+      Fix up fc-cache and fc-cat for no global cache changes.
+      Eliminate ./ and ../ elements from font directory names when scanning.
+      Regenerate x86 line in fcarch.tmpl.h to match change in cache data.
+      Add x86-64 architecture and signature.
+      During test run, remove cache directory to avoid stale cache usage.
+      Add ppc architecture
+      Revert to original FcFontSetMatch algorithm to avoid losing fonts.
+      Rework cache files to use offsets for all data structures.
+      Fix build problems caused by cache rework.
+      FcCharSetSerialize was using wrong offset for leaves. Make fc-cat work.
+      Rework Object name database to unify typechecking and object lookup.
+      Skip broken caches. Cache files are auto-written, don't rewrite in fc-cache.
+      Fix fc-cat again. Sigh.
+      Use intptr_t instead of off_t inside FcCache structure.
+      Serialized value lists were only including one value.
+      Automatically remove invalid cache files.
+      With no args, fc-cat now dumps all directories.
+      Revert ABI changes from version 2.3
+      Change $(pkgcachedir) to $(fc_cachedir) in fc-cat and fc-cache Makefile.am
+      Allow FcTypeLangSet to match either FcTypeLangSet or FcTypeString.
+      Remove stale architecture signatures.
+      Pass directory information around in FcCache structure. Freeze charsets.
+      Fix fc-lang to use new charset freezer API.
+      Fontset pattern references are relative to fontset, not array.
+      Add some ignores
+      Only rebuild caches for system fonts at make install time.
+      Fix memory leaks in fc-cache directory cleaning code.
+      Add @EXPAT_LIBS@ to Libs.private in fontconfig.pc (bug 7683)
+      Avoid #warning directives on non-GCC compilers. (bug 7683)
+      Chinese/Macau needs the Hong Kong orthography instead of Taiwan (bug 7884)
+      Add Assamese orthography (as.orth). Bug #8050
+      Really only rebuild caches for system fonts at make install time.
+      Fonts matching lang not territory should satisfy sort pattern lang.
+      Prefer Bitstream Vera to DejaVu families.
+      Guess that mac roman names with lots of high bits are actually SJIS.
+      Document FC_DEBUG values (bug 6393). Document name \ escape syntax.
+      Move Free family names to bottom of respective aliases. (bug 7429)
+      Unify directory canonicalization into FcStrAddFilename.
+      Allow font caches to contain newer version numbers
+      Add FcMatchScan to resolve Delicious font matching issues (bug #6769)
+      Fix missing initialization/destruction of new 'scan' target subst list.
+      Don't segfault when string values can't be parsed as charsets or langsets.
+      Using uninitialized (and wrong) variable in FcStrCopyFilename.
+      Oops; missed the 60-delicious.conf file.
+
+Patrick Lam:
+      Keith Packard <keithp@keithp.com>
+      2006-04-27 Paolo Borelli (pborelli@katamail.com) reviewed by: plam
+      2006-05-31 Yong Li (rigel863@gmail.com) reviewed by: plam, Bedhad Esfahbod
+      2006-07-19 Jon Burgess (jburgess@uklinux.net) reviewed by: plam
+      2006-08-04 Keith Packard (keithp@keithp.com) reviewed by: plam
 
 2.3.95
 
