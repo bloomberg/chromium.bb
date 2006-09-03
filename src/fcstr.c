@@ -770,7 +770,7 @@ FcStrCopyFilename (const FcChar8 *s)
 	    return 0;
 	size = strlen ((char *) home) + strlen ((char *) s);
 	full = (FcChar8 *) malloc (size);
-	if (!new)
+	if (!full)
 	    return 0;
 	strcpy ((char *) full, (char *) home);
 	strcat ((char *) full, (char *) s + 1);
