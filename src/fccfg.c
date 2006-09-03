@@ -85,6 +85,7 @@ FcConfigCreate (void)
 
     config->substPattern = 0;
     config->substFont = 0;
+    config->substScan = 0;
     config->maxObjects = 0;
     for (set = FcSetSystem; set <= FcSetApplication; set++)
 	config->fonts[set] = 0;
@@ -215,6 +216,7 @@ FcConfigDestroy (FcConfig *config)
 
     FcSubstDestroy (config->substPattern);
     FcSubstDestroy (config->substFont);
+    FcSubstDestroy (config->substScan);
     for (set = FcSetSystem; set <= FcSetApplication; set++)
 	if (config->fonts[set])
 	    FcFontSetDestroy (config->fonts[set]);
