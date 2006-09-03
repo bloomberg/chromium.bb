@@ -31,7 +31,7 @@ important steps:
  7.	make Changelog-2.3.xx
  		git-log 2.3.(xx-1).. > ChangeLog-2.3.xx
 		
- 8.	Copy ChangeLog-2.3.xx and fontconfig-2.2.xx.tar.gz to
+ 8.	Copy ChangeLog-2.3.xx and fontconfig-2.3.xx.tar.gz to
  
  	freedesktop.org:/srv/fontconfig.freedesktop.org/www/release
 	

@@ -5,6 +5,7 @@ tags
 *.o
 *.lo
 *.la
+ChangeLog
 Makefile
 Makefile.in
 aclocal.m4
