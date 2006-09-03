@@ -567,6 +567,8 @@ FcNameConvert (FcType type, FcChar8 *string, FcMatrix *m)
 	break;
     case FcTypeString:
 	v.u.s = FcStrStaticName(string);
+	if (!v.u.s)
+	    v.type = FcTypeVoid;
 	break;
     case FcTypeBool:
 	if (!FcNameBool (string, &v.u.b))
@@ -581,9 +583,13 @@ FcNameConvert (FcType type, FcChar8 *string, FcMatrix *m)
 	break;
     case FcTypeCharSet:
 	v.u.c = FcNameParseCharSet (string);
+	if (!v.u.c)
+	    v.type = FcTypeVoid;
 	break;
     case FcTypeLangSet:
 	v.u.l = FcNameParseLangSet (string);
+	if (!v.u.l)
+	    v.type = FcTypeVoid;
 	break;
     default:
 	break;
