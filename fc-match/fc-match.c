@@ -22,11 +22,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <fontconfig/fontconfig.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #else
@@ -35,6 +30,12 @@
 #endif
 #define HAVE_GETOPT 1
 #endif
+
+#include <fontconfig/fontconfig.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifndef HAVE_GETOPT
 #define HAVE_GETOPT 0
@@ -47,7 +48,7 @@
 #undef  _GNU_SOURCE
 #define _GNU_SOURCE
 #include <getopt.h>
-const struct option longopts[] = {
+static const struct option longopts[] = {
     {"sort", 0, 0, 's'},
     {"version", 0, 0, 'V'},
     {"verbose", 0, 0, 'v'},
@@ -134,6 +135,9 @@ main (int argc, char **argv)
     else
 	pat = FcPatternCreate ();
 
+    if (!pat)
+	return 1;
+
     FcConfigSubstitute (0, pat, FcMatchPattern);
     FcDefaultSubstitute (pat);
     
@@ -147,8 +151,7 @@ main (int argc, char **argv)
 	if (match)
 	    FcFontSetAdd (fs, match);
     }
-    if (pat)
-	FcPatternDestroy (pat);
+    FcPatternDestroy (pat);
 
     if (fs)
     {
@@ -184,5 +187,6 @@ main (int argc, char **argv)
 	}
 	FcFontSetDestroy (fs);
     }
+    FcFini ();
     return 0;
 }

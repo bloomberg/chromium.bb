@@ -22,40 +22,8 @@
 #  PERFORMANCE OF THIS SOFTWARE.
 
 DOCSRC=@DOCSRC@
-SUBDIRS=fontconfig fc-case fc-lang fc-glyphname src \
-	fc-cache fc-list fc-match conf.d $(DOCSRC) test
-
-DEBIAN = \
-	debian/changelog \
-	debian/compat \
-	debian/control \
-	debian/copyright \
-	debian/fontconfig.config \
-	debian/fontconfig.defoma \
-	debian/fontconfig.dirs \
-	debian/fontconfig.install \
-	debian/fontconfig.postinst \
-	debian/fontconfig.postrm \
-	debian/fontconfig.templates \
-	debian/fontconfig-udeb.install \
-	debian/libfontconfig1-dev.install \
-	debian/libfontconfig1.install \
-	debian/local.conf.md5sum \
-	debian/README.Debian \
-	debian/rules \
-	debian/po/POTFILES.in \
-	debian/po/templates.pot \
-	debian/po/cs.po \
-	debian/po/da.po \
-	debian/po/de.po \
-	debian/po/es.po \
-	debian/po/fr.po \
-	debian/po/ja.po \
-	debian/po/nl.po \
-	debian/po/pt_BR.po \
-	debian/po/pt.po \
-	debian/po/tr.po \
-	debian/po/zh_CN.po
+SUBDIRS=fontconfig fc-case fc-lang fc-glyphname fc-arch src \
+	fc-cache fc-cat fc-list fc-match conf.d $(DOCSRC) test
 	 
 EXTRA_DIST = \
         fontconfig.pc.in \
@@ -63,8 +31,22 @@ EXTRA_DIST = \
 	fonts.dtd \
         fontconfig.spec.in \
         fontconfig.spec \
-	fontconfig-zip.in \
-	$(DEBIAN)
+	fontconfig-zip.in
+DISTCLEANFILES = config.cache
+MAINTAINERCLEANFILES = \
+	$(srcdir)/aclocal.m4 \
+	$(srcdir)/autoscan.log \
+	$(srcdir)/compile \
+	$(srcdir)/config.guess \
+	$(srcdir)/config.h.in \
+	$(srcdir)/config.sub \
+	$(srcdir)/configure.scan \
+	$(srcdir)/depcomp \
+	$(srcdir)/install-sh \
+	$(srcdir)/ltmain.sh \
+	$(srcdir)/missing \
+	$(srcdir)/mkinstalldirs \
+	`find "$(srcdir)" -type f -name Makefile.in -print`
 
 pkgconfigdir=$(libdir)/pkgconfig
 pkgconfig_DATA = fontconfig.pc
@@ -77,6 +59,30 @@ if CROSS_COMPILING
 else
   RUN_FC_CACHE_TEST=test -z "$(DESTDIR)"
 endif
+
+# Creating ChangeLog from git log:
+
+MAINTAINERCLEANFILES += ChangeLog
+
+EXTRA_DIST += ChangeLog
+
+ChangeLog: $(srcdir)/ChangeLog
+
+$(srcdir)/ChangeLog:
+	@if test -d "$(srcdir)/.git"; then \
+	  (cd "$(srcdir)" && \
+	  ./missing --run git-log --stat) | fmt --split-only > $@.tmp \
+	  && mv -f $@.tmp $@ \
+	  || ($(RM) $@.tmp; \
+	      echo Failed to generate ChangeLog, your ChangeLog may be outdated >&2; \
+	      (test -f $@ || echo git-log is required to generate this file >> $@)); \
+	else \
+	  test -f $@ || \
+	  (echo A git checkout and git-log is required to generate ChangeLog >&2 && \
+	  echo A git checkout and git-log is required to generate this file >> $@); \
+	fi
+
+.PHONY: ChangeLog $(srcdir)/ChangeLog
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(configdir)
@@ -91,16 +97,16 @@ install-data-local:
 	  echo " $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf"; \
 	  $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf; \
 	fi; fi
-	if $(RUN_FC_CACHE_TEST); then \
-	    echo " fc-cache/fc-cache -f -v"; \
-	    fc-cache/fc-cache -f -v; \
+	@(if $(RUN_FC_CACHE_TEST); then \
+	    echo " fc-cache/fc-cache -s -f -v"; \
+	    fc-cache/fc-cache -s -f -v; \
 	else \
 	    echo "***"; \
 	    echo "*** Warning: fonts.cache not built"; \
 	    echo "***"; \
 	    echo "*** Generate this file manually on host system using fc-cache"; \
 	    echo "***"; \
-	fi
+	fi)
 
 uninstall-local:
 	if [ -f $(srcdir)/fonts.conf ]; then \

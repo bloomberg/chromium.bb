@@ -23,10 +23,33 @@
 
 bin_PROGRAMS=fc-match
 
-man_MANS=fc-match.1
+DOC2MAN = docbook2man
+
+FC_MATCH_SRC=${top_srcdir}/fc-match
+
+SGML = ${FC_MATCH_SRC}/fc-match.sgml
 
 INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
-EXTRA_DIST=$(man_MANS)
+EXTRA_DIST=fc-match.sgml
 
-fc_match_LDADD = ${top_builddir}/src/libfontconfig.la
+fc_match_LDADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS) ${top_builddir}/src/libfontconfig.la
+
+if USEDOCBOOK
+
+man_MANS=fc-match.1
+
+${man_MANS}: ${SGML}
+	$(RM) $@
+	$(DOC2MAN) ${SGML}
+	$(RM) manpage.refs manpage.links
+
+all-local: $(man_MANS)
+
+clean-local:
+	$(RM) $(man_MANS)
+
+else
+all-local:
+clean-local:
+endif

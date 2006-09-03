@@ -27,13 +27,19 @@ FC_CACHE_SRC=${top_srcdir}/fc-cache
 
 SGML = ${FC_CACHE_SRC}/fc-cache.sgml
 
-INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS)
+install-data-local:
+	-$(mkinstalldirs) "$(DESTDIR)$(fc_cachedir)"
+
+uninstall-local:
+	-$(RM) -rf "$(DESTDIR)$(fc_cachedir)"
+
+INCLUDES=-I${top_srcdir} -I${top_srcdir}/src $(FREETYPE_CFLAGS)
 
 bin_PROGRAMS=fc-cache
 
-EXTRA_DIST=$(SGML)
+EXTRA_DIST=fc-cache.sgml
 
-fc_cache_LDADD = ${top_builddir}/src/libfontconfig.la
+fc_cache_LDADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS) ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
 

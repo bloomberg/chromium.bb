@@ -22,9 +22,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "fcint.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "fcint.h"
 
 void
 FcValuePrint (const FcValue v)
@@ -49,7 +49,8 @@ FcValuePrint (const FcValue v)
 	printf (" (%f %f; %f %f)", v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);
 	break;
     case FcTypeCharSet:	/* XXX */
-	printf (" set");
+	printf (" ");
+	FcCharSetPrint (v.u.c);
 	break;
     case FcTypeLangSet:
 	printf (" ");
@@ -62,11 +63,11 @@ FcValuePrint (const FcValue v)
 }
 
 void
-FcValueListPrint (const FcValueList *l)
+FcValueListPrint (FcValueListPtr l)
 {
-    for (; l; l = l->next)
+    for (; l != NULL; l = FcValueListNext(l))
     {
-	FcValuePrint (l->value);
+	FcValuePrint (FcValueCanonicalize(&l->value));
 	switch (l->binding) {
 	case FcValueBindingWeak:
 	    printf ("(w)");
@@ -89,10 +90,44 @@ FcLangSetPrint (const FcLangSet *ls)
     
     FcStrBufInit (&buf, init_buf, sizeof (init_buf));
     if (FcNameUnparseLangSet (&buf, ls) && FcStrBufChar (&buf,'\0'))
-	printf ("%s", buf.buf);
+       printf ("%s", buf.buf);
     else
-	printf ("langset (alloc error)");
+       printf ("langset (alloc error)");
     FcStrBufDestroy (&buf);
+}
+
+void
+FcCharSetPrint (const FcCharSet *c)
+{
+    int	i, j;
+    intptr_t	*leaves = FcCharSetLeaves (c);
+    FcChar16	*numbers = FcCharSetNumbers (c);
+    
+#if 0
+    printf ("CharSet  0x%x\n", (intptr_t) c);
+    printf ("Leaves:  +%d = 0x%x\n", c->leaves_offset, (intptr_t) leaves);
+    printf ("Numbers: +%d = 0x%x\n", c->numbers_offset, (intptr_t) numbers);
+    
+    for (i = 0; i < c->num; i++)
+    {
+	printf ("Page %d: %04x +%d = 0x%x\n", 
+		i, numbers[i], leaves[i], 
+		(intptr_t) FcOffsetToPtr (leaves, leaves[i], FcCharLeaf));
+    }
+#endif
+		
+    for (i = 0; i < c->num; i++)
+    {
+	intptr_t	leaf_offset = leaves[i];
+	FcCharLeaf	*leaf = FcOffsetToPtr (leaves, leaf_offset, FcCharLeaf);
+	
+	if (i)
+	    printf ("\t");
+	printf ("%04x:", numbers[i]);
+	for (j = 0; j < 256/32; j++)
+	    printf (" %08x", leaf->map[j]);
+	printf ("\n");
+    }
 }
 
 void
@@ -106,12 +141,31 @@ FcPatternPrint (const FcPattern *p)
 	printf ("Null pattern\n");
 	return;
     }
-    printf ("Pattern %d of %d\n", p->num, p->size);
+    printf ("Pattern has %d elts (size %d)\n", p->num, p->size);
     for (i = 0; i < p->num; i++)
     {
-	e = &p->elts[i];
-	printf ("\t%s:", e->object);
-	FcValueListPrint (e->values);
+	e = &FcPatternElts(p)[i];
+	printf ("\t%s:", FcObjectName(e->object));
+	/* so that fc-match properly displays file: foo... */
+	if (e->object == FC_FILE_OBJECT)
+	{
+	    FcChar8 * s;
+	    FcPatternObjectGetString (p, FC_FILE_OBJECT, 0, &s);
+	    printf (" \"%s\"", s);
+	    switch (FcPatternEltValues(e)->binding) {
+	    case FcValueBindingWeak:
+	        printf ("(w)");
+	        break;
+	    case FcValueBindingStrong:
+	        printf ("(s)");
+	        break;
+	    case FcValueBindingSame:
+	        printf ("(=)");
+	        break;
+	    }
+	}
+	else
+	    FcValueListPrint (FcPatternEltValues(e));
 	printf ("\n");
     }
     printf ("\n");
@@ -178,7 +232,7 @@ FcExprPrint (const FcExpr *expr)
     case FcOpBool: printf ("%s", expr->u.bval ? "true" : "false"); break;
     case FcOpCharSet: printf ("charset\n"); break;
     case FcOpNil: printf ("nil\n"); break;
-    case FcOpField: printf ("%s", expr->u.field); break;
+    case FcOpField: printf ("%s", FcObjectName(expr->u.object)); break;
     case FcOpConst: printf ("%s", expr->u.constant); break;
     case FcOpQuest:
 	FcExprPrint (expr->u.tree.left);
@@ -273,6 +327,9 @@ FcTestPrint (const FcTest *test)
     case FcMatchFont:
 	printf ("font ");
 	break;
+    case FcMatchScan:
+	printf ("scan ");
+	break;
     }
     switch (test->qual) {
     case FcQualAny:
@@ -288,7 +345,7 @@ FcTestPrint (const FcTest *test)
 	printf ("not_first ");
 	break;
     }
-    printf ("%s ", test->field);
+    printf ("%s ", FcObjectName (test->object));
     FcOpPrint (test->op);
     printf (" ");
     FcExprPrint (test->expr);
@@ -298,7 +355,7 @@ FcTestPrint (const FcTest *test)
 void
 FcEditPrint (const FcEdit *edit)
 {
-    printf ("Edit %s ", edit->field);
+    printf ("Edit %s ", FcObjectName (edit->object));
     FcOpPrint (edit->op);
     printf (" ");
     FcExprPrint (edit->expr);
@@ -339,25 +396,19 @@ FcFontSetPrint (const FcFontSet *s)
     }
 }
 
-int
-FcDebug (void)
+int FcDebugVal;
+
+void
+FcInitDebug (void)
 {
-    static int  initialized;
-    static int  debug;
+    char    *e;
 
-    if (!initialized)
+    e = getenv ("FC_DEBUG");
+    if (e)
     {
-	char    *e;
-
-	initialized = 1;
-	e = getenv ("FC_DEBUG");
-	if (e)
-	{
-	    printf ("FC_DEBUG=%s\n", e);
-	    debug = atoi (e);
-	    if (debug < 0)
-		debug = 0;
-	}
+        printf ("FC_DEBUG=%s\n", e);
+        FcDebugVal = atoi (e);
+        if (FcDebugVal < 0)
+   	    FcDebugVal = 0;
     }
-    return debug;
 }

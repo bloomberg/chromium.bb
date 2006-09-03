@@ -13,22 +13,33 @@ important steps:
  1.	Update the version numbers
  		configure.in
 		fontconfig/fontconfig.h
+
  2.	Fix the README
  		Change version number
 		Set the date
+		
  3.	Commit those changes
+ 
  4. 	rebuild the configuration files with autogen.sh
- 		sh autogen.sh --sysconfdir=/etc --prefix=/usr --mandir=/usr/share/man
- 5.	make distcheck
+ 		sh autogen.sh --sysconfdir=/etc --prefix=/usr --mandir=/usr/share/man --localstatedir=/var
+		
+ 5.	make distcheck (NB: won't work without docbook-utils -PL)
+ 
  6.	tag the tree
- 		cvs tag fc-2_2_xx
- 7.	Split out the ChangeLog into ChangeLog-2.2.xx with
- 	the changes since the previous release
- 8.	Copy ChangeLog-2.2.xx and fontconfig-2.2.xx.tar.gz to
+ 		git-tag -u 096c4dd3 -m'Version 2.3.xx' 2.3.xx
+		
+ 7.	make Changelog-2.3.xx
+ 		git-log 2.3.(xx-1).. > ChangeLog-2.3.xx
+		
+ 8.	Copy ChangeLog-2.3.xx and fontconfig-2.3.xx.tar.gz to
+ 
  	freedesktop.org:/srv/fontconfig.freedesktop.org/www/release
+	
  9.	Update the Fontconfig Devel wiki page
  	http://fontconfig.org/wiki/Devel
+	
 10.	Compute md5sums for release files:
-		md5sum fontconfig-2.2.xx.tar.gz ChangeLog-2.2.xx
+		md5sum fontconfig-2.3.xx.tar.gz ChangeLog-2.3.xx
+		
 11.	Post a note to fontconfig@fontconfig.org.  Include the md5sums.
 	gpg sign the message.

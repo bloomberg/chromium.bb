@@ -22,23 +22,25 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "fcint.h"
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include "fcint.h"
 
 FcChar8 *
 FcStrCopy (const FcChar8 *s)
 {
-    FcChar8	*r;
+    int     len;
+    FcChar8 *r;
 
     if (!s)
 	return 0;
-    r = (FcChar8 *) malloc (strlen ((char *) s) + 1);
+    len = strlen ((char *) s) + 1;
+    r = (FcChar8 *) malloc (len);
     if (!r)
 	return 0;
-    FcMemAlloc (FC_MEM_STRING, strlen ((char *) s) + 1);
-    strcpy ((char *) r, (char *) s);
+    FcMemAlloc (FC_MEM_STRING, len);
+    memcpy (r, s, len);
     return r;
 }
 
@@ -74,7 +76,6 @@ FcStrFree (FcChar8 *s)
 typedef struct _FcCaseWalker {
     const FcChar8   *read;
     const FcChar8   *src;
-    int		    len;
     FcChar8	    utf8[FC_MAX_CASE_FOLD_CHARS + 1];
 } FcCaseWalker;
 
@@ -83,7 +84,6 @@ FcStrCaseWalkerInit (const FcChar8 *src, FcCaseWalker *w)
 {
     w->src = src;
     w->read = 0;
-    w->len = strlen ((char *) src);
 }
 
 static FcChar8
@@ -91,8 +91,9 @@ FcStrCaseWalkerLong (FcCaseWalker *w, FcChar8 r)
 {
     FcChar32	ucs4;
     int		slen;
+    int		len = strlen((char*)w->src);
 
-    slen = FcUtf8ToUcs4 (w->src - 1, &ucs4, w->len + 1);
+    slen = FcUtf8ToUcs4 (w->src - 1, &ucs4, len + 1);
     if (slen <= 0)
 	return r;
     if (FC_MIN_FOLD_CHAR <= ucs4 && ucs4 <= FC_MAX_FOLD_CHAR)
@@ -131,7 +132,6 @@ FcStrCaseWalkerLong (FcCaseWalker *w, FcChar8 r)
 		
 		/* consume rest of src utf-8 bytes */
 		w->src += slen - 1;
-		w->len -= slen - 1;
 		
 		/* read from temp buffer */
 		w->utf8[dlen] = '\0';
@@ -155,7 +155,6 @@ FcStrCaseWalkerNext (FcCaseWalker *w)
 	w->read = 0;
     }
     r = *w->src++;
-    --w->len;
     
     if ((r & 0xc0) == 0xc0)
 	return FcStrCaseWalkerLong (w, r);
@@ -178,7 +177,6 @@ FcStrCaseWalkerNextIgnoreBlanks (FcCaseWalker *w)
     do
     {
 	r = *w->src++;
-	--w->len;
     } while (r == ' ');
     
     if ((r & 0xc0) == 0xc0)
@@ -453,8 +451,7 @@ again:
 	++ s1;
 	++ s2;
     }
-
-    return 0;
+    /* never reached. */
 }
 
 int
@@ -711,7 +708,7 @@ FcStrBufChar (FcStrBuf *buf, FcChar8 c)
 	}
 	else
 	{
-	    size = buf->size + 1024;
+	    size = buf->size + 64;
 	    new = malloc (size);
 	    if (new)
 	    {
@@ -767,26 +764,21 @@ FcStrCopyFilename (const FcChar8 *s)
     if (*s == '~')
     {
 	FcChar8	*home = FcConfigHome ();
+	FcChar8	*full;
 	int	size;
 	if (!home)
 	    return 0;
 	size = strlen ((char *) home) + strlen ((char *) s);
-	new = (FcChar8 *) malloc (size);
-	if (!new)
+	full = (FcChar8 *) malloc (size);
+	if (!full)
 	    return 0;
-	FcMemAlloc (FC_MEM_STRING, size);
-	strcpy ((char *) new, (char *) home);
-	strcat ((char *) new, (char *) s + 1);
+	strcpy ((char *) full, (char *) home);
+	strcat ((char *) full, (char *) s + 1);
+	new = FcStrCanonFilename (full);
+	free (full);
     }
     else
-    {
-	int	size = strlen ((char *) s) + 1;
-	new = (FcChar8 *) malloc (size);
-	if (!new)
-	    return 0;
-	FcMemAlloc (FC_MEM_STRING, size);
-	strcpy ((char *) new, (const char *) s);
-    }
+	new = FcStrCanonFilename (s);
     return new;
 }
 
@@ -836,6 +828,66 @@ FcStrBasename (const FcChar8 *file)
     if (!slash)
 	return FcStrCopy (file);
     return FcStrCopy (slash + 1);
+}
+
+FcChar8 *
+FcStrCanonFilename (const FcChar8 *s)
+{
+    FcChar8 *file;
+    FcChar8 *f;
+    const FcChar8 *slash;
+    int size;
+    
+    if (*s != '/')
+    {
+	FcChar8	*full;
+	
+	FcChar8	cwd[FC_MAX_FILE_LEN + 2];
+	if (getcwd ((char *) cwd, FC_MAX_FILE_LEN) == NULL)
+	    return NULL;
+	strcat ((char *) cwd, "/");
+	full = FcStrPlus (cwd, s);
+	file = FcStrCanonFilename (full);
+	FcStrFree (full);
+	return file;
+    }
+    size = strlen ((char *) s) + 1;
+    file = malloc (size);
+    if (!file)
+	return NULL;
+    FcMemAlloc (FC_MEM_STRING, size);
+    slash = NULL;
+    f = file;
+    for (;;) {
+	if (*s == '/' || *s == '\0')
+	{
+	    if (slash)
+	    {
+		switch (s - slash) {
+		case 2:
+		    if (!strncmp ((char *) slash, "/.", 2))
+		    {
+			f -= 2;	/* trim /. from file */
+		    }
+		    break;
+		case 3:
+		    if (!strncmp ((char *) slash, "/..", 3))
+		    {
+			f -= 3;	/* trim /.. from file */
+			while (f > file) {
+			    if (*--f == '/')
+				break;
+			}
+		    }
+		    break;
+		}
+	    }
+	    slash = s;
+	}
+	if (!(*f++ = *s++))
+	    break;
+    }
+    return file;
 }
 
 FcStrSet *
@@ -998,3 +1050,4 @@ FcStrListDone (FcStrList *list)
     FcMemFree (FC_MEM_STRLIST, sizeof (FcStrList));
     free (list);
 }
+

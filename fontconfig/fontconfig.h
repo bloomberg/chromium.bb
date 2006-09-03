@@ -27,6 +27,12 @@
 
 #include <stdarg.h>
 
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+#define FC_ATTRIBUTE_SENTINEL(x) __attribute__((__sentinel__(0)))
+#else
+#define FC_ATTRIBUTE_SENTINEL(x)
+#endif
+
 typedef unsigned char	FcChar8;
 typedef unsigned short	FcChar16;
 typedef unsigned int	FcChar32;
@@ -40,7 +46,7 @@ typedef int		FcBool;
 
 #define FC_MAJOR	2
 #define FC_MINOR	3
-#define FC_REVISION	2
+#define FC_REVISION	96
 
 #define FC_VERSION	((FC_MAJOR * 10000) + (FC_MINOR * 100) + (FC_REVISION))
 
@@ -54,7 +60,7 @@ typedef int		FcBool;
  * it means multiple copies of the font information.
  */
 
-#define FC_CACHE_VERSION    "1"
+#define FC_CACHE_VERSION    "2"
 
 #define FcTrue		1
 #define FcFalse		0
@@ -96,7 +102,10 @@ typedef int		FcBool;
 #define FC_CAPABILITY       "capability"	/* String */
 #define FC_FONTFORMAT	    "fontformat"	/* String */
 #define FC_EMBOLDEN	    "embolden"		/* Bool - true if emboldening needed*/
+#define FC_EMBEDDED_BITMAP  "embeddedbitmap"	/* Bool - true to enable embedded bitmaps */
+#define FC_DECORATIVE	    "decorative"	/* Bool - true if style is a decorative variant */
 
+#define FC_CACHE_SUFFIX		    ".cache-"FC_CACHE_VERSION
 #define FC_DIR_CACHE_FILE	    "fonts.cache-"FC_CACHE_VERSION
 #define FC_USER_CACHE_FILE	    ".fonts.cache-"FC_CACHE_VERSION
 
@@ -228,7 +237,7 @@ typedef struct _FcObjectSet {
 } FcObjectSet;
     
 typedef enum _FcMatchKind {
-    FcMatchPattern, FcMatchFont
+    FcMatchPattern, FcMatchFont, FcMatchScan
 } FcMatchKind;
 
 typedef enum _FcLangResult {
@@ -522,7 +531,7 @@ FcObjectSet *
 FcObjectSetVaBuild (const char *first, va_list va);
 
 FcObjectSet *
-FcObjectSetBuild (const char *first, ...);
+FcObjectSetBuild (const char *first, ...) FC_ATTRIBUTE_SENTINEL(0);
 
 FcFontSet *
 FcFontSetList (FcConfig	    *config,
@@ -739,7 +748,7 @@ FcPattern *
 FcPatternVaBuild (FcPattern *orig, va_list va);
     
 FcPattern *
-FcPatternBuild (FcPattern *orig, ...);
+FcPatternBuild (FcPattern *orig, ...) FC_ATTRIBUTE_SENTINEL(0);
 
 /* fcstr.c */
 
@@ -840,5 +849,7 @@ FcBool
 FcConfigParseAndLoad (FcConfig *config, const FcChar8 *file, FcBool complain);
 
 _FCFUNCPROTOEND
+
+#undef FC_ATTRIBUTE_SENTINEL
 
 #endif /* _FONTCONFIG_H_ */

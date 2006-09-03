@@ -1,4 +1,4 @@
 <fontconfig>
 <dir>@FONTDIR@</dir>
-<cache>@CACHEFILE@</cache>
+<cachedir>@CACHEDIR@</cachedir>
 </fontconfig>

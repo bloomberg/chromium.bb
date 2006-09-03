@@ -25,8 +25,19 @@
 #ifndef _FCINT_H_
 #define _FCINT_H_
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#elif defined(HAVE_STDINT_H)
+#include <stdint.h>
+#else
+#error missing C99 integer data types
+#endif
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
@@ -37,14 +48,6 @@
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcprivate.h>
 #include <fontconfig/fcfreetype.h>
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-typedef struct _FcSymbolic {
-    const char	*name;
-    int		value;
-} FcSymbolic;
 
 #ifndef FC_CONFIG_PATH
 #define FC_CONFIG_PATH "fonts.conf"
@@ -70,6 +73,8 @@ typedef struct _FcSymbolic {
 #define FC_DBG_SCANV	256
 #define FC_DBG_MEMORY	512
 #define FC_DBG_CONFIG	1024
+#define FC_DBG_LANGSET	2048
+#define FC_DBG_OBJTYPES	4096
 
 #define FC_MEM_CHARSET	    0
 #define FC_MEM_CHARLEAF	    1
@@ -104,29 +109,103 @@ typedef struct _FcSymbolic {
 
 #define FC_MEM_NUM	    30
 
+#define FC_BANK_DYNAMIC 0
+#define FC_BANK_FIRST 1
+#define FC_BANK_LANGS	    0xfcfcfcfc
+
 typedef enum _FcValueBinding {
     FcValueBindingWeak, FcValueBindingStrong, FcValueBindingSame
 } FcValueBinding;
 
+/*
+ * Serialized data structures use only offsets instead of pointers
+ * A low bit of 1 indicates an offset.
+ */
+ 
+/* Is the provided pointer actually an offset? */
+#define FcIsEncodedOffset(p)	((((intptr_t) (p)) & 1) != 0)
+
+/* Encode offset in a pointer of type t */
+#define FcOffsetEncode(o,t)	((t *) ((o) | 1))
+
+/* Decode a pointer into an offset */
+#define FcOffsetDecode(p)	(((intptr_t) (p)) & ~1)
+
+/* Compute pointer offset */
+#define FcPtrToOffset(b,p)	((intptr_t) (p) - (intptr_t) (b))
+
+/* Given base address, offset and type, return a pointer */
+#define FcOffsetToPtr(b,o,t)	((t *) ((intptr_t) (b) + (o)))
+
+/* Given base address, encoded offset and type, return a pointer */
+#define FcEncodedOffsetToPtr(b,p,t) FcOffsetToPtr(b,FcOffsetDecode(p),t)
+
+/* Given base address, pointer and type, return an encoded offset */
+#define FcPtrToEncodedOffset(b,p,t) FcOffsetEncode(FcPtrToOffset(b,p),t)
+
+/* Given a structure, offset member and type, return pointer */
+#define FcOffsetMember(s,m,t)	    FcOffsetToPtr(s,(s)->m,t)
+
+/* Given a structure, encoded offset member and type, return pointer to member */
+#define FcEncodedOffsetMember(s,m,t) FcOffsetToPtr(s,FcOffsetDecode((s)->m), t)
+
+/* Given a structure, member and type, convert the member to a pointer */
+#define FcPointerMember(s,m,t)	(FcIsEncodedOffset((s)->m) ? \
+				 FcEncodedOffsetMember (s,m,t) : \
+				 (s)->m)
+
+/*
+ * Serialized values may hold strings, charsets and langsets as pointers,
+ * unfortunately FcValue is an exposed type so we can't just always use
+ * offsets
+ */
+#define FcValueString(v)	FcPointerMember(v,u.s,FcChar8)
+#define FcValueCharSet(v)	FcPointerMember(v,u.c,const FcCharSet)
+#define FcValueLangSet(v)	FcPointerMember(v,u.l,const FcLangSet)
+
+typedef struct _FcValueList *FcValueListPtr;
+
 typedef struct _FcValueList {
-    struct _FcValueList    *next;
-    FcValue		    value;
-    FcValueBinding	    binding;
+    struct _FcValueList	*next;
+    FcValue		value;
+    FcValueBinding	binding;
 } FcValueList;
 
+#define FcValueListNext(vl)	FcPointerMember(vl,next,FcValueList)
+			     
+typedef int FcObject;
+
+typedef struct _FcPatternElt *FcPatternEltPtr;
+
+/*
+ * Pattern elts are stuck in a structure connected to the pattern, 
+ * so they get moved around when the pattern is resized. Hence, the
+ * values field must be a pointer/offset instead of just an offset
+ */
 typedef struct _FcPatternElt {
-    const char	    *object;
-    FcValueList	    *values;
+    FcObject		object;
+    FcValueList		*values;
 } FcPatternElt;
 
+#define FcPatternEltValues(pe)	FcPointerMember(pe,values,FcValueList)
 
 struct _FcPattern {
     int		    num;
     int		    size;
-    FcPatternElt    *elts;
+    intptr_t	    elts_offset;
     int		    ref;
 };
 
+#define FcPatternElts(p)	FcOffsetMember(p,elts_offset,FcPatternElt)
+
+#define FcFontSetFonts(fs)	FcPointerMember(fs,fonts,FcPattern *)
+
+#define FcFontSetFont(fs,i)	(FcIsEncodedOffset((fs)->fonts) ? \
+				 FcEncodedOffsetToPtr(fs, \
+						      FcFontSetFonts(fs)[i], \
+						      FcPattern) : \
+				 fs->fonts[i])
+						
 typedef enum _FcOp {
     FcOpInteger, FcOpDouble, FcOpString, FcOpMatrix, FcOpBool, FcOpCharSet, 
     FcOpNil,
@@ -151,7 +230,7 @@ typedef struct _FcExpr {
 	FcMatrix    *mval;
 	FcBool	    bval;
 	FcCharSet   *cval;
-	char	    *field;
+	FcObject    object;
 	FcChar8	    *constant;
 	struct {
 	    struct _FcExpr *left, *right;
@@ -169,14 +248,14 @@ typedef struct _FcTest {
     struct _FcTest	*next;
     FcMatchKind		kind;
     FcQual		qual;
-    const char		*field;
+    FcObject		object;
     FcOp		op;
     FcExpr		*expr;
 } FcTest;
 
 typedef struct _FcEdit {
     struct _FcEdit *next;
-    const char	    *field;
+    FcObject	    object;
     FcOp	    op;
     FcExpr	    *expr;
     FcValueBinding  binding;
@@ -197,9 +276,15 @@ typedef struct _FcCharLeaf {
 struct _FcCharSet {
     int		    ref;	/* reference count */
     int		    num;	/* size of leaves and numbers arrays */
-    FcCharLeaf	    **leaves;
-    FcChar16	    *numbers;
+    intptr_t	    leaves_offset;
+    intptr_t	    numbers_offset;
 };
+
+#define FcCharSetLeaves(c)	FcOffsetMember(c,leaves_offset,intptr_t)
+#define FcCharSetLeaf(c,i)	(FcOffsetToPtr(FcCharSetLeaves(c), \
+					       FcCharSetLeaves(c)[i], \
+					       FcCharLeaf))
+#define FcCharSetNumbers(c)	FcOffsetMember(c,numbers_offset,FcChar16)
 
 struct _FcStrSet {
     int		    ref;	/* reference count */
@@ -221,6 +306,44 @@ typedef struct _FcStrBuf {
     int	    size;
 } FcStrBuf;
 
+typedef struct _FcCache {
+    int		magic;              /* FC_CACHE_MAGIC_MMAP or FC_CACHE_ALLOC */
+    int		version;	    /* FC_CACHE_CONTENT_VERSION */
+    intptr_t	size;		    /* size of file */
+    intptr_t	dir;		    /* offset to dir name */
+    intptr_t	dirs;		    /* offset to subdirs */
+    int		dirs_count;	    /* number of subdir strings */
+    intptr_t	set;		    /* offset to font set */
+} FcCache;
+
+#define FcCacheDir(c)	FcOffsetMember(c,dir,FcChar8)
+#define FcCacheDirs(c)	FcOffsetMember(c,dirs,intptr_t)
+#define FcCacheSet(c)	FcOffsetMember(c,set,FcFontSet)
+#define FcCacheSubdir(c,i)  FcOffsetToPtr (FcCacheDirs(cache),\
+					   FcCacheDirs(cache)[i], \
+					   FcChar8)
+
+/*
+ * Used while constructing a directory cache object
+ */
+
+#define FC_SERIALIZE_HASH_SIZE	8191
+
+typedef struct _FcSerializeBucket {
+    struct _FcSerializeBucket *next;
+    const void	*object;
+    intptr_t	offset;
+} FcSerializeBucket;
+
+typedef struct _FcCharSetFreezer FcCharSetFreezer;
+
+typedef struct _FcSerialize {
+    intptr_t		size;
+    FcCharSetFreezer	*cs_freezer;
+    void		*linear;
+    FcSerializeBucket	*buckets[FC_SERIALIZE_HASH_SIZE];
+} FcSerialize;
+    
 /*
  * To map adobe glyph names to unicode values, a precomputed hash
  * table is used
@@ -264,55 +387,18 @@ typedef struct _FcCaseFold {
 
 #define FC_MAX_FILE_LEN	    4096
 
-/*
- * The per-user ~/.fonts.cache-<version> file is loaded into
- * this data structure.  Each directory gets a substructure
- * which is validated by comparing the directory timestamp with
- * that saved in the cache.  When valid, the entire directory cache
- * can be immediately loaded without reading the directory.  Otherwise,
- * the files are checked individually; updated files are loaded into the
- * cache which is then rewritten to the users home directory
- */
+/* XXX remove these when we're ready */
 
-#define FC_GLOBAL_CACHE_DIR_HASH_SIZE	    37
-#define FC_GLOBAL_CACHE_FILE_HASH_SIZE	    67
+#define fc_value_string(v)	FcValueString(v)
+#define fc_value_charset(v)	FcValueCharSet(v)
+#define fc_value_langset(v)	FcValueLangSet(v)
+#define fc_storage_type(v)	((v)->type)
 
-typedef struct _FcGlobalCacheInfo {
-    unsigned int		hash;
-    FcChar8			*file;
-    time_t			time;
-    FcBool			referenced;
-} FcGlobalCacheInfo;
+#define fc_alignof(type) offsetof (struct { char c; type member; }, member)
 
-typedef struct _FcGlobalCacheFile {
-    struct _FcGlobalCacheFile	*next;
-    FcGlobalCacheInfo		info;
-    int				id;
-    FcChar8			*name;
-} FcGlobalCacheFile;
-
-typedef struct _FcGlobalCacheDir FcGlobalCacheDir;
-
-typedef struct _FcGlobalCacheSubdir {
-    struct _FcGlobalCacheSubdir	*next;
-    FcGlobalCacheDir		*ent;
-} FcGlobalCacheSubdir;
-
-struct _FcGlobalCacheDir {
-    struct _FcGlobalCacheDir	*next;
-    FcGlobalCacheInfo    	info;
-    int				len;
-    FcGlobalCacheFile		*ents[FC_GLOBAL_CACHE_FILE_HASH_SIZE];
-    FcGlobalCacheSubdir		*subdirs;
-};
-
-typedef struct _FcGlobalCache {
-    FcGlobalCacheDir		*ents[FC_GLOBAL_CACHE_DIR_HASH_SIZE];
-    FcBool			updated;
-    FcBool			broken;
-    int				entries;
-    int				referenced;
-} FcGlobalCache;
+#define FC_CACHE_MAGIC_MMAP	    0xFC02FC04
+#define FC_CACHE_MAGIC_ALLOC	    0xFC02FC05
+#define FC_CACHE_CONTENT_VERSION    1
 
 struct _FcAtomic {
     FcChar8	*file;		/* original file name */
@@ -327,6 +413,11 @@ struct _FcBlanks {
     FcChar32	*blanks;
 };
 
+typedef struct _FcCacheList {
+    struct _FcCacheList *next;
+    FcCache		*cache;
+} FcCacheList;
+
 struct _FcConfig {
     /*
      * File names loaded from the configuration -- saved here as the
@@ -334,7 +425,6 @@ struct _FcConfig {
      * and those directives may occur in any order
      */
     FcStrSet	*configDirs;	    /* directories to scan for fonts */
-    FcChar8	*cache;		    /* name of per-user cache file */
     /*
      * Set of allowed blank chars -- used to
      * trim fonts of bogus glyphs
@@ -347,6 +437,10 @@ struct _FcConfig {
      */
     FcStrSet	*fontDirs;
     /*
+     * List of directories containing cache files.
+     */
+    FcStrSet	*cacheDirs;
+    /*
      * Names of all of the configuration files used
      * to create this configuration
      */
@@ -358,6 +452,7 @@ struct _FcConfig {
      */
     FcSubst	*substPattern;	    /* substitutions for patterns */
     FcSubst	*substFont;	    /* substitutions for fonts */
+    FcSubst	*substScan;	    /* substitutions for scanned fonts */
     int		maxObjects;	    /* maximum number of tests in all substs */
     /*
      * List of patterns used to control font file selection
@@ -374,6 +469,11 @@ struct _FcConfig {
      */
     FcFontSet	*fonts[FcSetApplication + 1];
     /*
+     * Font cache information is mapped from cache files
+     * the configuration is destroyed, the files need to be unmapped
+     */
+    FcCacheList	*caches;
+    /*
      * Fontconfig can periodically rescan the system configuration
      * and font directories.  This rescanning occurs when font
      * listing requests are made, but no more often than rescanInterval
@@ -385,71 +485,43 @@ struct _FcConfig {
  
 extern FcConfig	*_fcConfig;
 
+typedef struct _FcFileTime {
+    time_t  time;
+    FcBool  set;
+} FcFileTime;
+
 typedef struct _FcCharMap FcCharMap;
+
+/* watch out; assumes that v is void * -PL */
+#define ALIGN(v,type) ((void *)(((uintptr_t)(v) + fc_alignof(type) - 1) & ~(fc_alignof(type) - 1)))
 
 /* fcblanks.c */
 
 /* fccache.c */
 
-FcGlobalCache *
-FcGlobalCacheCreate (void);
+FcBool
+FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config);
 
 void
-FcGlobalCacheDestroy (FcGlobalCache *cache);
+FcDirCacheUnload (FcCache *cache);
+
+FcCache *
+FcDirCacheScan (const FcChar8 *dir, FcConfig *config);
+
+FcCache *
+FcDirCacheLoad (const FcChar8 *dir, FcConfig *config, FcChar8 **cache_file);
+    
+FcCache *
+FcDirCacheLoadFile (const FcChar8 *cache_file, struct stat *file_stat);
 
 FcBool
-FcGlobalCacheCheckTime (const FcChar8*file, FcGlobalCacheInfo *info);
+FcDirCacheValid (const FcChar8 *dir);
 
-void
-FcGlobalCacheReferenced (FcGlobalCache	    *cache,
-			 FcGlobalCacheInfo  *info);
-
-void
-FcGlobalCacheReferenceSubdir (FcGlobalCache *cache,
-			      const FcChar8 *dir);
-
-FcGlobalCacheDir *
-FcGlobalCacheDirGet (FcGlobalCache  *cache,
-		     const FcChar8  *dir,
-		     int	    len,
-		     FcBool	    create_missing);
+FcCache *
+FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, FcStrSet *dirs);
 
 FcBool
-FcGlobalCacheScanDir (FcFontSet		*set,
-		      FcStrSet		*dirs,
-		      FcGlobalCache	*cache,
-		      const FcChar8	*dir,
-		      FcConfig		*config);
-
-FcGlobalCacheFile *
-FcGlobalCacheFileGet (FcGlobalCache *cache,
-		      const FcChar8 *file,
-		      int	    id,
-		      int	    *count);
-
-
-void
-FcGlobalCacheLoad (FcGlobalCache    *cache,
-		   const FcChar8    *cache_file);
-
-FcBool
-FcGlobalCacheUpdate (FcGlobalCache  *cache,
-		     const FcChar8  *file,
-		     int	    id,
-		     const FcChar8  *name);
-
-FcBool
-FcGlobalCacheSave (FcGlobalCache    *cache,
-		   const FcChar8    *cache_file);
-
-FcBool
-FcDirCacheReadDir (FcFontSet	    *set, 
-		   FcStrSet	    *dirs,
-		   const FcChar8    *dir,
-		   FcConfig	    *config);
-
-FcBool
-FcDirCacheWriteDir (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir);
+FcDirCacheWrite (FcCache *cache, FcConfig *config);
     
 /* fccfg.c */
 
@@ -466,12 +538,15 @@ FcConfigAddDir (FcConfig	*config,
 		const FcChar8	*d);
 
 FcBool
-FcConfigAddConfigFile (FcConfig		*config,
-		       const FcChar8	*f);
+FcConfigAddCacheDir (FcConfig	    *config,
+		     const FcChar8  *d);
+
+FcStrList *
+FcConfigGetCacheDirs (FcConfig	*config);
 
 FcBool
-FcConfigSetCache (FcConfig	*config,
-		  const FcChar8	*c);
+FcConfigAddConfigFile (FcConfig		*config,
+		       const FcChar8	*f);
 
 FcBool
 FcConfigAddBlank (FcConfig	*config,
@@ -489,9 +564,9 @@ FcConfigSetFonts (FcConfig	*config,
 		  FcSetName	set);
 
 FcBool
-FcConfigCompareValue (const FcValue m,
+FcConfigCompareValue (const FcValue *m,
 		      FcOp	    op,
-		      const FcValue v);
+		      const FcValue *v);
 
 FcBool
 FcConfigGlobAdd (FcConfig	*config,
@@ -511,12 +586,52 @@ FcBool
 FcConfigAcceptFont (FcConfig	    *config,
 		    const FcPattern *font);
 
-/* fccharset.c */
-FcCharSet *
-FcCharSetFreeze (FcCharSet *cs);
+FcFileTime
+FcConfigModifiedTime (FcConfig *config);
+
+FcBool
+FcConfigAddCache (FcConfig *config, FcCache *cache);
+
+/* fcserialize.c */
+intptr_t
+FcAlignSize (intptr_t size);
+    
+FcSerialize *
+FcSerializeCreate (void);
 
 void
-FcCharSetThawAll (void);
+FcSerializeDestroy (FcSerialize *serialize);
+
+FcBool
+FcSerializeAlloc (FcSerialize *serialize, const void *object, int size);
+
+intptr_t
+FcSerializeReserve (FcSerialize *serialize, int size);
+
+intptr_t
+FcSerializeOffset (FcSerialize *serialize, const void *object);
+
+void *
+FcSerializePtr (FcSerialize *serialize, const void *object);
+
+FcBool
+FcLangSetSerializeAlloc (FcSerialize *serialize, const FcLangSet *l);
+
+FcLangSet *
+FcLangSetSerialize(FcSerialize *serialize, const FcLangSet *l);
+
+/* fccharset.c */
+void
+FcLangCharSetPopulate (void);
+
+FcCharSetFreezer *
+FcCharSetFreezerCreate (void);
+
+const FcCharSet *
+FcCharSetFreeze (FcCharSetFreezer *freezer, const FcCharSet *fcs);
+
+void
+FcCharSetFreezerDestroy (FcCharSetFreezer *freezer);
 
 FcBool
 FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c);
@@ -527,9 +642,18 @@ FcNameParseCharSet (FcChar8 *string);
 FcCharLeaf *
 FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4);
 
+FcBool
+FcCharSetSerializeAlloc(FcSerialize *serialize, const FcCharSet *cs);
+
+FcCharSet *
+FcCharSetSerialize(FcSerialize *serialize, const FcCharSet *cs);
+
+FcChar16 *
+FcCharSetGetNumbers(const FcCharSet *c);
+
 /* fcdbg.c */
 void
-FcValueListPrint (const FcValueList *l);
+FcValueListPrint (const FcValueListPtr l);
 
 void
 FcLangSetPrint (const FcLangSet *ls);
@@ -549,8 +673,20 @@ FcEditPrint (const FcEdit *edit);
 void
 FcSubstPrint (const FcSubst *subst);
 
-int
-FcDebug (void);
+void
+FcCharSetPrint (const FcCharSet *c);
+    
+extern int FcDebugVal;
+
+static inline int
+FcDebug (void) { return FcDebugVal; }
+
+void
+FcInitDebug (void);
+
+/* fcdefault.c */
+FcChar8 *
+FcGetDefaultLang (void);
 
 /* fcdir.c */
 
@@ -560,20 +696,20 @@ FcFileIsDir (const FcChar8 *file);
 FcBool
 FcFileScanConfig (FcFontSet	*set,
 		  FcStrSet	*dirs,
-		  FcFileCache	*cache,
 		  FcBlanks	*blanks,
 		  const FcChar8 *file,
-		  FcBool	force,
 		  FcConfig	*config);
 
 FcBool
 FcDirScanConfig (FcFontSet	*set,
 		 FcStrSet	*dirs,
-		 FcFileCache	*cache,
 		 FcBlanks	*blanks,
-		 const FcChar8  *dir,
+		 const FcChar8	*dir,
 		 FcBool		force,
 		 FcConfig	*config);
+
+FcCache *
+FcDirCacheRead (const FcChar8 *dir, FcBool force, FcConfig *config);
 
 /* fcfont.c */
 int
@@ -596,6 +732,13 @@ const FcCharMap *
 FcFreeTypeGetPrivateMap (FT_Encoding encoding);
     
 /* fcfs.c */
+
+FcBool
+FcFontSetSerializeAlloc (FcSerialize *serialize, const FcFontSet *s);
+
+FcFontSet *
+FcFontSetSerialize (FcSerialize *serialize, const FcFontSet * s);
+    
 /* fcgram.y */
 int
 FcConfigparse (void);
@@ -676,6 +819,9 @@ FcNameParseLangSet (const FcChar8 *string);
 FcBool
 FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls);
 
+FcChar8 *
+FcNameUnparseEscaped (FcPattern *pat, FcBool escape);
+
 /* fclist.c */
 
 FcBool
@@ -686,28 +832,149 @@ FcListPatternMatchAny (const FcPattern *p,
 
 /* fcname.c */
 
+/*
+ * NOTE -- this ordering is part of the cache file format.
+ * It must also match the ordering in fcname.c
+ */
+
+#define FC_FAMILY_OBJECT	1
+#define FC_FAMILYLANG_OBJECT	2
+#define FC_STYLE_OBJECT		3
+#define FC_STYLELANG_OBJECT	4
+#define FC_FULLNAME_OBJECT	5
+#define FC_FULLNAMELANG_OBJECT	6
+#define FC_SLANT_OBJECT		7
+#define FC_WEIGHT_OBJECT	8
+#define FC_WIDTH_OBJECT		9
+#define FC_SIZE_OBJECT		10
+#define FC_ASPECT_OBJECT	11
+#define FC_PIXEL_SIZE_OBJECT	12
+#define FC_SPACING_OBJECT	13
+#define FC_FOUNDRY_OBJECT	14
+#define FC_ANTIALIAS_OBJECT	15
+#define FC_HINT_STYLE_OBJECT	16
+#define FC_HINTING_OBJECT	17
+#define FC_VERTICAL_LAYOUT_OBJECT	18
+#define FC_AUTOHINT_OBJECT	19
+#define FC_GLOBAL_ADVANCE_OBJECT	20
+#define FC_FILE_OBJECT		21
+#define FC_INDEX_OBJECT		22
+#define FC_RASTERIZER_OBJECT	23
+#define FC_OUTLINE_OBJECT	24
+#define FC_SCALABLE_OBJECT	25
+#define FC_DPI_OBJECT		26
+#define FC_RGBA_OBJECT		27
+#define FC_SCALE_OBJECT		28
+#define FC_MINSPACE_OBJECT	29
+#define FC_CHAR_WIDTH_OBJECT	30
+#define FC_CHAR_HEIGHT_OBJECT	31
+#define FC_MATRIX_OBJECT	32
+#define FC_CHARSET_OBJECT	33
+#define FC_LANG_OBJECT		34
+#define FC_FONTVERSION_OBJECT	35
+#define FC_CAPABILITY_OBJECT	36
+#define FC_FONTFORMAT_OBJECT	37
+#define FC_EMBOLDEN_OBJECT	38
+#define FC_EMBEDDED_BITMAP_OBJECT	39
+#define FC_DECORATIVE_OBJECT	40
+
 FcBool
 FcNameBool (const FcChar8 *v, FcBool *result);
 
-/* fcpat.c */
-void
-FcValueListDestroy (FcValueList *l);
-    
-FcPatternElt *
-FcPatternFindElt (const FcPattern *p, const char *object);
+FcBool
+FcObjectValidType (FcObject object, FcType type);
 
-FcPatternElt *
-FcPatternInsertElt (FcPattern *p, const char *object);
+FcObject
+FcObjectFromName (const char * name);
+
+const char *
+FcObjectName (FcObject object);
 
 FcBool
-FcPatternAddWithBinding  (FcPattern	    *p,
-			  const char	    *object,
-			  FcValue	    value,
-			  FcValueBinding    binding,
-			  FcBool	    append);
+FcObjectInit (void);
 
-FcPattern *
-FcPatternFreeze (FcPattern *p);
+void
+FcObjectFini (void);
+
+#define FcObjectCompare(a, b)	((int) a - (int) b)
+
+/* fcpat.c */
+
+FcValue
+FcValueCanonicalize (const FcValue *v);
+
+void
+FcValueListDestroy (FcValueListPtr l);
+
+FcPatternElt *
+FcPatternObjectFindElt (const FcPattern *p, FcObject object);
+
+FcPatternElt *
+FcPatternObjectInsertElt (FcPattern *p, FcObject object);
+
+FcBool
+FcPatternObjectAddWithBinding  (FcPattern	*p,
+				FcObject	object,
+				FcValue		value,
+				FcValueBinding  binding,
+				FcBool		append);
+
+FcBool
+FcPatternObjectAdd (FcPattern *p, FcObject object, FcValue value, FcBool append);
+    
+FcBool
+FcPatternObjectAddWeak (FcPattern *p, FcObject object, FcValue value, FcBool append);
+    
+FcResult
+FcPatternObjectGet (const FcPattern *p, FcObject object, int id, FcValue *v);
+    
+FcBool
+FcPatternObjectDel (FcPattern *p, FcObject object);
+
+FcBool
+FcPatternObjectRemove (FcPattern *p, FcObject object, int id);
+
+FcBool
+FcPatternObjectAddInteger (FcPattern *p, FcObject object, int i);
+
+FcBool
+FcPatternObjectAddDouble (FcPattern *p, FcObject object, double d);
+
+FcBool
+FcPatternObjectAddString (FcPattern *p, FcObject object, const FcChar8 *s);
+
+FcBool
+FcPatternObjectAddMatrix (FcPattern *p, FcObject object, const FcMatrix *s);
+
+FcBool
+FcPatternObjectAddCharSet (FcPattern *p, FcObject object, const FcCharSet *c);
+
+FcBool
+FcPatternObjectAddBool (FcPattern *p, FcObject object, FcBool b);
+
+FcBool
+FcPatternObjectAddLangSet (FcPattern *p, FcObject object, const FcLangSet *ls);
+
+FcResult
+FcPatternObjectGetInteger (const FcPattern *p, FcObject object, int n, int *i);
+
+FcResult
+FcPatternObjectGetDouble (const FcPattern *p, FcObject object, int n, double *d);
+
+FcResult
+FcPatternObjectGetString (const FcPattern *p, FcObject object, int n, FcChar8 ** s);
+
+FcResult
+FcPatternObjectGetMatrix (const FcPattern *p, FcObject object, int n, FcMatrix **s);
+
+FcResult
+FcPatternObjectGetCharSet (const FcPattern *p, FcObject object, int n, FcCharSet **c);
+
+FcResult
+FcPatternObjectGetBool (const FcPattern *p, FcObject object, int n, FcBool *b);
+
+FcResult
+FcPatternObjectGetLangSet (const FcPattern *p, FcObject object, int n, FcLangSet **ls);
 
 void
 FcPatternFini (void);
@@ -715,8 +982,23 @@ FcPatternFini (void);
 FcBool
 FcPatternAppend (FcPattern *p, FcPattern *s);
 
-const char *
-FcObjectStaticName (const char *name);
+const FcChar8 *
+FcStrStaticName (const FcChar8 *name);
+
+FcChar32
+FcStringHash (const FcChar8 *s);
+
+FcBool
+FcPatternSerializeAlloc (FcSerialize *serialize, const FcPattern *pat);
+
+FcPattern *
+FcPatternSerialize (FcSerialize *serialize, const FcPattern *pat);
+
+FcBool
+FcValueListSerializeAlloc (FcSerialize *serialize, const FcValueList *pat);
+
+FcValueList *
+FcValueListSerialize (FcSerialize *serialize, const FcValueList *pat);
 
 /* fcrender.c */
 
@@ -728,6 +1010,9 @@ void
 FcMatrixFree (FcMatrix *mat);
 
 /* fcstr.c */
+void
+FcStrSetSort (FcStrSet * set);
+
 FcChar8 *
 FcStrPlus (const FcChar8 *s1, const FcChar8 *s2);
     
@@ -769,5 +1054,14 @@ FcStrLastSlash (const FcChar8  *path);
 
 FcChar32
 FcStrHashIgnoreCase (const FcChar8 *s);
+
+FcChar8 *
+FcStrCanonFilename (const FcChar8 *s);
+
+FcBool
+FcStrSerializeAlloc (FcSerialize *serialize, const FcChar8 *str);
+
+FcChar8 *
+FcStrSerialize (FcSerialize *serialize, const FcChar8 *str);
 
 #endif /* _FC_INT_H_ */

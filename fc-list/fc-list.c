@@ -85,7 +85,7 @@ static void usage (char *program)
 int
 main (int argc, char **argv)
 {
-    int		verbose = 0;
+    /*int		verbose = 0;*/
     int		i;
     FcObjectSet *os = 0;
     FcFontSet	*fs;
@@ -105,7 +105,7 @@ main (int argc, char **argv)
 		     FC_MAJOR, FC_MINOR, FC_REVISION);
 	    exit (0);
 	case 'v':
-	    verbose = 1;
+	    /* verbose = 1; */
 	    break;
 	default:
 	    usage (argv[0]);

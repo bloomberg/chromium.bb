@@ -1,10 +1,193 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.3.2
-		         2005-4-27
+		      Version 2.3.96
+		         2006-09-03
+
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.3.96
+
+Keith Packard:
+      Make path names in cache files absolute (NB, cache format change) Stop
+      Eliminate pattern freezing
+      Add .gitignore
+      Construct short architecture name from architecture signature.
+      Write caches to first directory with permission. Valid cache in FcDirCacheOpen.
+      Eliminate NormalizeDir. Eliminate gratuitous stat/access calls per dir.
+      Add architecture to cache filename.
+      Eliminate global cache. Eliminate multi-arch cache code.
+      Fix up fc-cache and fc-cat for no global cache changes.
+      Eliminate ./ and ../ elements from font directory names when scanning.
+      Regenerate x86 line in fcarch.tmpl.h to match change in cache data.
+      Add x86-64 architecture and signature.
+      During test run, remove cache directory to avoid stale cache usage.
+      Add ppc architecture
+      Revert to original FcFontSetMatch algorithm to avoid losing fonts.
+      Rework cache files to use offsets for all data structures.
+      Fix build problems caused by cache rework.
+      FcCharSetSerialize was using wrong offset for leaves. Make fc-cat work.
+      Rework Object name database to unify typechecking and object lookup.
+      Skip broken caches. Cache files are auto-written, don't rewrite in fc-cache.
+      Fix fc-cat again. Sigh.
+      Use intptr_t instead of off_t inside FcCache structure.
+      Serialized value lists were only including one value.
+      Automatically remove invalid cache files.
+      With no args, fc-cat now dumps all directories.
+      Revert ABI changes from version 2.3
+      Change $(pkgcachedir) to $(fc_cachedir) in fc-cat and fc-cache Makefile.am
+      Allow FcTypeLangSet to match either FcTypeLangSet or FcTypeString.
+      Remove stale architecture signatures.
+      Pass directory information around in FcCache structure. Freeze charsets.
+      Fix fc-lang to use new charset freezer API.
+      Fontset pattern references are relative to fontset, not array.
+      Add some ignores
+      Only rebuild caches for system fonts at make install time.
+      Fix memory leaks in fc-cache directory cleaning code.
+      Add @EXPAT_LIBS@ to Libs.private in fontconfig.pc (bug 7683)
+      Avoid #warning directives on non-GCC compilers. (bug 7683)
+      Chinese/Macau needs the Hong Kong orthography instead of Taiwan (bug 7884)
+      Add Assamese orthography (as.orth). Bug #8050
+      Really only rebuild caches for system fonts at make install time.
+      Fonts matching lang not territory should satisfy sort pattern lang.
+      Prefer Bitstream Vera to DejaVu families.
+      Guess that mac roman names with lots of high bits are actually SJIS.
+      Document FC_DEBUG values (bug 6393). Document name \ escape syntax.
+      Move Free family names to bottom of respective aliases. (bug 7429)
+      Unify directory canonicalization into FcStrAddFilename.
+      Allow font caches to contain newer version numbers
+      Add FcMatchScan to resolve Delicious font matching issues (bug #6769)
+      Fix missing initialization/destruction of new 'scan' target subst list.
+      Don't segfault when string values can't be parsed as charsets or langsets.
+      Using uninitialized (and wrong) variable in FcStrCopyFilename.
+      Oops; missed the 60-delicious.conf file.
+
+Patrick Lam:
+      Keith Packard <keithp@keithp.com>
+      2006-04-27 Paolo Borelli (pborelli@katamail.com) reviewed by: plam
+      2006-05-31 Yong Li (rigel863@gmail.com) reviewed by: plam, Bedhad Esfahbod
+      2006-07-19 Jon Burgess (jburgess@uklinux.net) reviewed by: plam
+      2006-08-04 Keith Packard (keithp@keithp.com) reviewed by: plam
+
+2.3.95
+
+Match 'Standard Symbols L' for 'Symbol'.  Add URW fonts as aliases for
+all of the PostScript fonts.  (reported by Miguel Rodriguez).  Fix a
+number of Coverity defects (Frederic Crozat).  Speed up FcFontSort
+(fix suggested by Kenichi Handa).  Fix error with charsets.  Survive
+missing docbook2pdf.  Compile on HP-UX, AIX, SGI and Windows (Cygwin,
+MinGW).  Fix intel compiler warnings.  Fix multiarch support (don't
+destroy multiarch files!)  Require pkg-config.  (Thanks Behdad; better
+solution wanted for libxml2 detection!)  Fix typos in orth files and
+add orth for Lingala (reported by Denis Jacquerye).  Remove debian/
+directory.  Add a configuration file that disables hinting for the
+Lohit Gujarati font (since the hinting distorts some glyphs quite
+badly).  Sort directory entries while scanning them from disk;
+prevents Heisenbugs due to file ordering in a directory (due to Egmont
+Koblinger).  Fix Wine's problem with finding fonts.  (Reported by
+Bernhard Rosenkraenzer.)  Fix the issues with GNU libiconv vs. libc
+iconv (which especially appear on Solarii); patch by Behdad Esfahbod,
+approach suggested by Tim Mooney.
+
+2.3.94
+
+fc-cat can take directories as input and creates old-style fonts.cache
+listings.
+fc-cache takes -r --really-force which blows away all old caches and
+regenerates.
+Robustness fixes, integer overflow fixes (notably to cache handling
+code), toast broken global cache files.
+Change binary format to make it compatible with static langset
+information (thanks to Takashi Iwai).
+Open hashed caches before fonts.cache-2 (Takashi Iwai).
+Fix FcFontSetMatch's algorithm, which used to unjustly kill fonts for
+not declaring certain elements (Takashi Iwai).
+Fix matching bug when multiple elements match; don't use
+the sum of all scores, but the best score (James Su).
+Make fc-lang more friendly to Windows systems.
+Remove archaic chars from Georgian charset; add Euro character to
+charsets for European languages.
+Fix treatment of broken PCF fonts that don't declare family names.
+Pass O_BINARY to open if appropriate (reported by Doodle).
+Normalize font directories to the form in which they appear in 
+config files.  
+Add a record of the cached directory to the cache file.
+Perf optimizations (Dirk Mueller; some reported by Michael Meeks.)
+Don't loop infinitely on recursive symlinks.
+Make 'make distcheck' work with automake 1.6.3.
+Replace 'stamp' target with mkinstalldirs.
+Don't stop scanning if a directory in fonts.conf doesn't exist,
+because subsequent directories might exist.
+Put directory names into global cache (reported by Ronny V. Vindenes).
+Treat zh-hk fonts differently from zh-tw fonts.  This patch may cause
+fontconfig to treat A-X fonts differently from A-Y fonts; please mail
+the fontconfig list if this causes any problems.
+Fix for unaligned memory accesses (Andreas Schwab).
+Fix treatment of cache directory as read from cache file; don't use
+string equality to determine if we have the right file, use inode
+equality.
+Properly skip past dir caches that contain zero fonts, as occurs
+in global caches (reported by Mike Fabian).
+Print out full pathname in fc-match -v (reported by Frederic Crozat).
+Fix bug where fc-match crashes when given __DUMMY__ property to
+match on.
+
+2.3.93
+
+Create cache files in /var/cache/fontconfig with hashed filenames, if
+possible, for added FHS compliance.  
+Make fc-cat read both per-directory and global cache files.  
+Add config file for Persian fonts from Sharif FarsiWeb, Inc.  
+Major performance improvements by Dirk Mueller, Stephen Kulow, and Michael Matz at SuSE: in particular, speed up FcFontSetMatch, and inline many functions.
+Fix treatment of globs in config files, broken since 2.3.2 and discovered by Mathias Clasen.
+Don't use freetype internal headers (patch by Matthias Clasen).  
+Further space improvements: create langsets statically, so that they can live in .rodata.
+Properly align mmapped data structures to make e.g. ia64 happy.  
+Bug fixes.
+
+2.3.92
+
+Fix corrupted caches bugs from 2.3.91 (reported by Mike Fabian).
+Store only basename in the cache, reconstitute on demand 
+(reported by James Cloos).
+Change the rule for artificial emboldening in fonts.conf.in.  This
+enables the support for artificial emboldening included in cairo
+(patch by Zhe Su).
+Add FC_EMBEDDED_BITMAP object type to tell Xft/Cairo whether
+to load embedded bitmaps or not (patch by Jinghua Luo).
+Fix GCC4 warnings (some by Behdad Esfahbod).
+Support localized font family and style names; this has been reported
+to break old apps like xfd, but modern (gtk+/qt/mozilla) apps work
+fine (patch by Zhe Su).
+Prevent fc-list from escaping strings when printing them (reported by
+Matthias Clasen).
+Add valist sentinel markup for FcObjectSetBuild and 
+FcPatternBuild (patch by Marcus Meissner).
+Add consts to variables so as to move arrays into .rodata (patch by
+Ross Burton).
+Modify config file to use Greek fonts before Asian fonts with
+Greek glyphs. (patch by Simos Xenitellis).
+Use libtool -no-undefined flag on all platforms (patch by Christian
+Biesinger).
+
+2.3.91
+
+Use libxml2 if requested or if expat not available. (Mathias Hasselmann)
+Fix multi-arch cache files: compute the position for the
+block to be added using info from OrigFile, not NewFile. (plam)
+Cast results of sizeof() to unsigned int to get rid of
+warnings on x86_64 (reported by Matthias Clasen).
+Use FcAtomic to rewrite cache files; don't unlink the fonts.cache-2
+file even if there's no data to write; just write an empty cache file.
+(Reported by Lubos Lunak)
+Allocate room for the subdirectory names in each directory cache. 
+(Reported by James Cloos)
+
+2.3.90
+
+Development release of mmap patch: load pattern information
+directly from cache files.  (Patrick Lam)
 
 2.3.2
 

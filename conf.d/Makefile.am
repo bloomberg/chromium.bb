@@ -23,6 +23,8 @@
 
 CONF_FILES = \
 	10LohitGujarati.conf \
+	10-fonts-persian.conf \
+	60-delicious.conf \
 	autohint.conf \
 	no-bitmaps.conf \
 	no-sub-pixel.conf \

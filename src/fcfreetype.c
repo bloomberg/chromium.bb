@@ -44,40 +44,34 @@
   THE SOFTWARE.
 */
 
+#include "fcint.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "fcint.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include FT_INTERNAL_OBJECTS_H
 #include FT_TRUETYPE_TABLES_H
 #include FT_SFNT_NAMES_H
 #include FT_TRUETYPE_IDS_H
 #include FT_TYPE1_TABLES_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_INTERNAL_TRUETYPE_TYPES_H
 #if HAVE_FT_GET_X11_FONT_FORMAT
 #include FT_XFREE86_H
 #endif
-
 #if HAVE_FT_GET_BDF_PROPERTY
 #include FT_BDF_H
 #include FT_MODULE_H
-#define HAS_BDF_PROPERTY(f) ((f) && (f)->driver && \
-			     (f)->driver->root.clazz->get_interface)
-#define MY_Get_BDF_Property(f,n,p) (HAS_BDF_PROPERTY(f) ? \
-				    FT_Get_BDF_Property(f,n,p) : \
-				    FT_Err_Invalid_Argument)
 #endif
 
+#include "ftglue.h"
+
+#if HAVE_WARNING_CPP_DIRECTIVE
 #if !HAVE_FT_GET_BDF_PROPERTY
 #warning "No FT_Get_BDF_Property: Please install freetype 2.1.4 or later"
 #endif
 
 #if !HAVE_FT_GET_PS_FONT_INFO
 #warning "No FT_Get_PS_Font_Info: Please install freetype 2.1.1 or later"
+#endif
 #endif
 
 /*
@@ -95,7 +89,7 @@ static const struct {
     { 20,	(const FcChar8 *) "zh-tw" },
 };
 
-#define NUM_CODE_PAGE_RANGE (sizeof FcCodePageRange / sizeof FcCodePageRange[0])
+#define NUM_CODE_PAGE_RANGE (int) (sizeof FcCodePageRange / sizeof FcCodePageRange[0])
 
 FcBool
 FcFreeTypeIsExclusiveLang (const FcChar8  *lang)
@@ -104,16 +98,16 @@ FcFreeTypeIsExclusiveLang (const FcChar8  *lang)
 
     for (i = 0; i < NUM_CODE_PAGE_RANGE; i++)
     {
-	if (FcLangCompare (lang, FcCodePageRange[i].lang) != FcLangDifferentLang)
+	if (FcLangCompare (lang, FcCodePageRange[i].lang) == FcLangEqual)
 	    return FcTrue;
     }
     return FcFalse;
 }
 
 typedef struct {
-    FT_UShort	platform_id;
-    FT_UShort	encoding_id;
-    char	*fromcode;
+    const FT_UShort	platform_id;
+    const FT_UShort	encoding_id;
+    const char	fromcode[12];
 } FcFtEncoding;
 
 #define TT_ENCODING_DONT_CARE	0xffff
@@ -135,18 +129,18 @@ static const FcFtEncoding   fcFtEncoding[] = {
  {  TT_PLATFORM_ISO,		TT_ISO_ID_8859_1,	"ISO-8859-1" },
 };
 
-#define NUM_FC_FT_ENCODING  (sizeof (fcFtEncoding) / sizeof (fcFtEncoding[0]))
+#define NUM_FC_FT_ENCODING  (int) (sizeof (fcFtEncoding) / sizeof (fcFtEncoding[0]))
 
 typedef struct {
-    FT_UShort	platform_id;
-    FT_UShort	language_id;
-    char	*lang;
+    const FT_UShort	platform_id;
+    const FT_UShort	language_id;
+    const char	lang[8];
 } FcFtLanguage;
 
 #define TT_LANGUAGE_DONT_CARE	0xffff
 
 static const FcFtLanguage   fcFtLanguage[] = {
- {  TT_PLATFORM_APPLE_UNICODE,	TT_LANGUAGE_DONT_CARE,		    0 },
+ {  TT_PLATFORM_APPLE_UNICODE,	TT_LANGUAGE_DONT_CARE,		    "" },
  {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_ENGLISH,		    "en" },
  {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_FRENCH,		    "fr" },
  {  TT_PLATFORM_MACINTOSH,	TT_MAC_LANGID_GERMAN,		    "de" },
@@ -545,11 +539,11 @@ static const FcFtLanguage   fcFtLanguage[] = {
  {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_PAPIAMENTU_NETHERLANDS_ANTILLES,"pap" },
 };
 
-#define NUM_FC_FT_LANGUAGE  (sizeof (fcFtLanguage) / sizeof (fcFtLanguage[0]))
+#define NUM_FC_FT_LANGUAGE  (int) (sizeof (fcFtLanguage) / sizeof (fcFtLanguage[0]))
 
 typedef struct {
     FT_UShort	language_id;
-    char	*fromcode;
+    char	fromcode[12];
 } FcMacRomanFake;
 
 static const FcMacRomanFake fcMacRomanFake[] = {
@@ -560,18 +554,39 @@ static const FcMacRomanFake fcMacRomanFake[] = {
 static FcChar8 *
 FcFontCapabilities(FT_Face face);
 
-#define NUM_FC_MAC_ROMAN_FAKE	(sizeof (fcMacRomanFake) / sizeof (fcMacRomanFake[0]))
+#define NUM_FC_MAC_ROMAN_FAKE	(int) (sizeof (fcMacRomanFake) / sizeof (fcMacRomanFake[0]))
 
-#if HAVE_ICONV && HAVE_ICONV_H
-#define USE_ICONV 1
+#if USE_ICONV
 #include <iconv.h>
 #endif
+
+/*
+ * A shift-JIS will have many high bits turned on
+ */
+static FcBool
+FcLooksLikeSJIS (FcChar8 *string, int len)
+{
+    int	    nhigh = 0, nlow = 0;
+
+    while (len-- > 0)
+    {
+	if (*string++ & 0x80) nhigh++;
+	else nlow++;
+    }
+    /*
+     * Heuristic -- if more than 1/3 of the bytes have the high-bit set,
+     * this is likely to be SJIS and not ROMAN
+     */
+    if (nhigh * 2 > nlow)
+	return FcTrue;
+    return FcFalse;
+}
 
 static FcChar8 *
 FcSfntNameTranscode (FT_SfntName *sname)
 {
-    int	    i;
-    char    *fromcode;
+    int	       i;
+    const char *fromcode;
 #if USE_ICONV
     iconv_t cd;
 #endif
@@ -587,24 +602,35 @@ FcSfntNameTranscode (FT_SfntName *sname)
     fromcode = fcFtEncoding[i].fromcode;
 
     /*
-     * "real" Mac language IDs are all less than 150.
-     * Names using one of the MS language IDs are assumed
-     * to use an associated encoding (Yes, this is a kludge)
+     * Many names encoded for TT_PLATFORM_MACINTOSH are broken
+     * in various ways. Kludge around them.
      */
-    if (!strcmp (fromcode, FC_ENCODING_MAC_ROMAN) &&
-	sname->language_id >= 0x100)
+    if (!strcmp (fromcode, FC_ENCODING_MAC_ROMAN))
     {
-	int	f;
+	if (sname->language_id == TT_MAC_LANGID_ENGLISH &&
+	    FcLooksLikeSJIS (sname->string, sname->string_len))
+	{
+	    fromcode = "SJIS";
+	}
+	else if (sname->language_id >= 0x100)
+	{
+	    /*
+	     * "real" Mac language IDs are all less than 150.
+	     * Names using one of the MS language IDs are assumed
+	     * to use an associated encoding (Yes, this is a kludge)
+	     */
+	    int	f;
 
-	fromcode = 0;
-	for (f = 0; f < NUM_FC_MAC_ROMAN_FAKE; f++)
-	    if (fcMacRomanFake[f].language_id == sname->language_id)
-	    {
-		fromcode = fcMacRomanFake[f].fromcode;
-		break;
-	    }
-	if (!fromcode)
-	    return 0;
+	    fromcode = NULL;
+	    for (f = 0; f < NUM_FC_MAC_ROMAN_FAKE; f++)
+		if (fcMacRomanFake[f].language_id == sname->language_id)
+		{
+		    fromcode = fcMacRomanFake[f].fromcode;
+		    break;
+		}
+	    if (!fromcode)
+		return 0;
+	}
     }
     if (!strcmp (fromcode, "UCS-2BE") || !strcmp (fromcode, "UTF-16BE"))
     {
@@ -741,15 +767,34 @@ done:
     return utf8;
 }
 
-static FcChar8 *
+static const FcChar8 *
 FcSfntNameLanguage (FT_SfntName *sname)
 {
     int i;
+    FT_UShort	platform_id = sname->platform_id;
+    FT_UShort	language_id = sname->language_id;
+
+    /*
+     * Many names encoded for TT_PLATFORM_MACINTOSH are broken
+     * in various ways. Kludge around them.
+     */
+    if (platform_id == TT_PLATFORM_MACINTOSH &&
+	sname->encoding_id == TT_MAC_ID_ROMAN &&
+	FcLooksLikeSJIS (sname->string, sname->string_len))
+    {
+	language_id = TT_MAC_LANGID_JAPANESE;
+    }
+    
     for (i = 0; i < NUM_FC_FT_LANGUAGE; i++)
-	if (fcFtLanguage[i].platform_id == sname->platform_id &&
+	if (fcFtLanguage[i].platform_id == platform_id &&
 	    (fcFtLanguage[i].language_id == TT_LANGUAGE_DONT_CARE ||
-	     fcFtLanguage[i].language_id == sname->language_id))
-	    return (FcChar8 *) fcFtLanguage[i].lang;
+	     fcFtLanguage[i].language_id == language_id))
+	{
+	    if (fcFtLanguage[i].lang[0] == '\0')
+	      return NULL;
+	    else
+	      return (FcChar8 *) fcFtLanguage[i].lang;
+	}
     return 0;
 }
 
@@ -781,7 +826,7 @@ static const struct {
 					(const FcChar8 *) "hanyang" }
 };
 
-#define NUM_NOTICE_FOUNDRIES	(sizeof (FcNoticeFoundries) / sizeof (FcNoticeFoundries[0]))
+#define NUM_NOTICE_FOUNDRIES	(int) (sizeof (FcNoticeFoundries) / sizeof (FcNoticeFoundries[0]))
 
 static const FcChar8 *
 FcNoticeFoundry(const FT_String *notice)
@@ -850,7 +895,7 @@ static const struct {
     { (const FT_Char *) "Y&Y",  (const FcChar8 *) "y&y"}
 };
 
-#define NUM_VENDOR_FOUNDRIES	(sizeof (FcVendorFoundries) / sizeof (FcVendorFoundries[0]))
+#define NUM_VENDOR_FOUNDRIES	(int) (sizeof (FcVendorFoundries) / sizeof (FcVendorFoundries[0]))
 
 static const FcChar8 *
 FcVendorFoundry(const FT_Char vendor[4])
@@ -909,14 +954,15 @@ static const FcStringConst  weightConsts[] = {
     { (FC8) "demibold",		FC_WEIGHT_DEMIBOLD },
     { (FC8) "demi",		FC_WEIGHT_DEMIBOLD },
     { (FC8) "semibold",		FC_WEIGHT_SEMIBOLD },
-    { (FC8) "bold",		FC_WEIGHT_BOLD },
     { (FC8) "extrabold",	FC_WEIGHT_EXTRABOLD },
+    { (FC8) "superbold",	FC_WEIGHT_EXTRABOLD },
     { (FC8) "ultrabold",	FC_WEIGHT_ULTRABOLD },
+    { (FC8) "bold",		FC_WEIGHT_BOLD },
     { (FC8) "black",		FC_WEIGHT_BLACK },
     { (FC8) "heavy",		FC_WEIGHT_HEAVY },
 };
 
-#define NUM_WEIGHT_CONSTS  (sizeof (weightConsts) / sizeof (weightConsts[0]))
+#define NUM_WEIGHT_CONSTS  (int) (sizeof (weightConsts) / sizeof (weightConsts[0]))
 
 #define FcIsWeight(s)	    FcStringIsConst(s,weightConsts,NUM_WEIGHT_CONSTS)
 #define FcContainsWeight(s) FcStringContainsConst (s,weightConsts,NUM_WEIGHT_CONSTS)
@@ -933,20 +979,35 @@ static const FcStringConst  widthConsts[] = {
     { (FC8) "expanded",		FC_WIDTH_EXPANDED },	/* must be after *expanded */
 };
 
-#define NUM_WIDTH_CONSTS    (sizeof (widthConsts) / sizeof (widthConsts[0]))
+#define NUM_WIDTH_CONSTS    (int) (sizeof (widthConsts) / sizeof (widthConsts[0]))
 
 #define FcIsWidth(s)	    FcStringIsConst(s,widthConsts,NUM_WIDTH_CONSTS)
 #define FcContainsWidth(s)  FcStringContainsConst (s,widthConsts,NUM_WIDTH_CONSTS)
 
 static const FcStringConst  slantConsts[] = {
     { (FC8) "italic",		FC_SLANT_ITALIC },
+    { (FC8) "kursiv",		FC_SLANT_ITALIC },
     { (FC8) "oblique",		FC_SLANT_OBLIQUE },
 };
 
-#define NUM_SLANT_CONSTS    (sizeof (slantConsts) / sizeof (slantConsts[0]))
+#define NUM_SLANT_CONSTS    (int) (sizeof (slantConsts) / sizeof (slantConsts[0]))
 
 #define FcIsSlant(s)	    FcStringIsConst(s,slantConsts,NUM_SLANT_CONSTS)
 #define FcContainsSlant(s)  FcStringContainsConst (s,slantConsts,NUM_SLANT_CONSTS)
+
+static const FcStringConst  decorativeConsts[] = {
+    { (FC8) "shadow",		FcTrue },
+    { (FC8) "smallcaps",    	FcTrue },
+    { (FC8) "antiqua",		FcTrue },
+    { (FC8) "romansc",		FcTrue },
+    { (FC8) "embosed",		FcTrue },
+    { (FC8) "romansmallcaps",	FcTrue },
+};
+
+#define NUM_DECORATIVE_CONSTS	(int) (sizeof (decorativeConsts) / sizeof (decorativeConsts[0]))
+
+#define FcIsDecorative(s)   FcStringIsConst(s,decorativeConsts,NUM_DECORATIVE_CONSTS)
+#define FcContainsDecorative(s)	FcStringContainsConst (s,decorativeConsts,NUM_DECORATIVE_CONSTS)
 
 static double
 FcGetPixelSize (FT_Face face, int i)
@@ -957,7 +1018,7 @@ FcGetPixelSize (FT_Face face, int i)
 	BDF_PropertyRec	prop;
 	int		rc;
 
-	rc = MY_Get_BDF_Property (face, "PIXEL_SIZE", &prop);
+	rc = FT_Get_BDF_Property (face, "PIXEL_SIZE", &prop);
 	if (rc == 0 && prop.type == BDF_PROPERTY_TYPE_INTEGER)
 	    return (double) prop.u.integer;
     }
@@ -970,7 +1031,7 @@ FcGetPixelSize (FT_Face face, int i)
 }
 
 static FcBool
-FcStringInPatternElement (FcPattern *pat, char *elt, FcChar8 *string)
+FcStringInPatternElement (FcPattern *pat, const char *elt, FcChar8 *string)
 {
     int	    e;
     FcChar8 *old;
@@ -978,7 +1039,6 @@ FcStringInPatternElement (FcPattern *pat, char *elt, FcChar8 *string)
 	if (!FcStrCmpIgnoreBlanksAndCase (old, string))
 	{
 	    return FcTrue;
-	    break;
 	}
     return FcFalse;
 }
@@ -994,6 +1054,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     int		    slant = -1;
     int		    weight = -1;
     int		    width = -1;
+    FcBool	    decorative = FcFalse;
     int		    i;
     FcCharSet	    *cs;
     FcLangSet	    *ls;
@@ -1074,8 +1135,8 @@ FcFreeTypeQuery (const FcChar8	*file,
     for (snamei = 0; snamei < snamec; snamei++)
     {
 	FcChar8		*utf8;
-	FcChar8		*lang;
-	char		*elt = 0, *eltlang = 0;
+	const FcChar8	*lang;
+	const char	*elt = 0, *eltlang = 0;
 	int		*np = 0, *nlangp = 0;
 
 	if (FT_Get_Sfnt_Name (face, snamei, &sname) != 0)
@@ -1223,7 +1284,7 @@ FcFreeTypeQuery (const FcChar8	*file,
      * or which are simply a FC_FAMILY and FC_STYLE glued together
      */
     {
-	int	fn, fa, st;
+	int	fn, fa;
 	FcChar8	*full;
 	FcChar8	*fam;
 	FcChar8	*style;
@@ -1369,6 +1430,9 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    weight = FC_WEIGHT_EXTRABOLD;
 	else if (os2->usWeightClass < 950)
 	    weight = FC_WEIGHT_BLACK;
+	if ((FcDebug() & FC_DBG_SCANV) && weight != -1)
+	    printf ("\tos2 weight class %d maps to weight %d\n",
+		    os2->usWeightClass, weight);
 
 	switch (os2->usWidthClass) {
 	case 1:	width = FC_WIDTH_ULTRACONDENSED; break;
@@ -1381,6 +1445,9 @@ FcFreeTypeQuery (const FcChar8	*file,
 	case 8:	width = FC_WIDTH_EXTRAEXPANDED; break;
 	case 9:	width = FC_WIDTH_ULTRAEXPANDED; break;
 	}
+	if ((FcDebug() & FC_DBG_SCANV) && width != -1)
+	    printf ("\tos2 width class %d maps to width %d\n",
+		    os2->usWidthClass, width);
     }
     if (os2 && (complex = FcFontCapabilities(face)))
     {
@@ -1433,15 +1500,14 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!foundry)
     {
 	int             rc;
-	BDF_PropertyRec prop;
-	rc = MY_Get_BDF_Property(face, "FOUNDRY", &prop);
+	rc = FT_Get_BDF_Property(face, "FOUNDRY", &prop);
 	if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_ATOM)
 	    foundry = (FcChar8 *) prop.u.atom;
     }
 
     if (width == -1)
     {
-	if (MY_Get_BDF_Property(face, "RELATIVE_SETWIDTH", &prop) == 0 &&
+	if (FT_Get_BDF_Property(face, "RELATIVE_SETWIDTH", &prop) == 0 &&
 	    (prop.type == BDF_PROPERTY_TYPE_INTEGER ||
 	     prop.type == BDF_PROPERTY_TYPE_CARDINAL))
 	{
@@ -1464,7 +1530,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    }
 	}
 	if (width == -1 &&
-	    MY_Get_BDF_Property (face, "SETWIDTH_NAME", &prop) == 0 &&
+	    FT_Get_BDF_Property (face, "SETWIDTH_NAME", &prop) == 0 &&
 	    prop.type == BDF_PROPERTY_TYPE_ATOM)
 	{
 	    width = FcIsWidth ((FcChar8 *) prop.u.atom);
@@ -1496,6 +1562,12 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    slant = FcContainsSlant (style);
 	    if (FcDebug() & FC_DBG_SCANV)
 		printf ("\tStyle %s maps to slant %d\n", style, slant);
+	}
+	if (decorative == FcFalse)
+	{
+	    decorative = FcContainsDecorative (style) > 0;
+	    if (FcDebug() & FC_DBG_SCANV)
+		printf ("\tStyle %s maps to decorative %d\n", style, decorative);
 	}
     }
     /*
@@ -1534,6 +1606,9 @@ FcFreeTypeQuery (const FcChar8	*file,
     if (!FcPatternAddString (pat, FC_FOUNDRY, foundry))
 	goto bail1;
 
+    if (!FcPatternAddBool (pat, FC_DECORATIVE, decorative))
+	goto bail1;
+
     /*
      * Compute the unicode coverage for the font
      */
@@ -1544,7 +1619,7 @@ FcFreeTypeQuery (const FcChar8	*file,
 #if HAVE_FT_GET_BDF_PROPERTY
     /* For PCF fonts, override the computed spacing with the one from
        the property */
-    if(MY_Get_BDF_Property(face, "SPACING", &prop) == 0 &&
+    if(FT_Get_BDF_Property(face, "SPACING", &prop) == 0 &&
        prop.type == BDF_PROPERTY_TYPE_ATOM) {
         if(!strcmp(prop.u.atom, "c") || !strcmp(prop.u.atom, "C"))
             spacing = FC_CHARCELL;
@@ -1558,11 +1633,16 @@ FcFreeTypeQuery (const FcChar8	*file,
     /*
      * Skip over PCF fonts that have no encoded characters; they're
      * usually just Unicode fonts transcoded to some legacy encoding
+     * ftglue.c forces us to approximate whether a font is a PCF font
+     * or not by whether it has any BDF properties.  Try PIXEL_SIZE;
+     * I don't know how to get a list of BDF properties on the font. -PL
      */
     if (FcCharSetCount (cs) == 0)
     {
-	if (!strcmp(FT_MODULE_CLASS(&face->driver->root)->module_name, "pcf"))
+#if HAVE_FT_GET_BDF_PROPERTY
+	if(FT_Get_BDF_Property(face, "PIXEL_SIZE", &prop) == 0)
 	    goto bail2;
+#endif
     }
 
     if (!FcPatternAddCharSet (pat, FC_CHARSET, cs))
@@ -1589,16 +1669,20 @@ FcFreeTypeQuery (const FcChar8	*file,
 	for (i = 0; i < face->num_fixed_sizes; i++)
 	    if (!FcPatternAddDouble (pat, FC_PIXEL_SIZE,
 				     FcGetPixelSize (face, i)))
-		goto bail1;
+		goto bail2;
 	if (!FcPatternAddBool (pat, FC_ANTIALIAS, FcFalse))
-	    goto bail1;
+	    goto bail2;
 #if HAVE_FT_GET_BDF_PROPERTY
         if(face->num_fixed_sizes == 1) {
             int rc;
             int value;
-            BDF_PropertyRec prop;
 
-            rc = MY_Get_BDF_Property(face, "POINT_SIZE", &prop);
+	    /* skip bitmap fonts which do not even have a family name */
+	    rc =  FT_Get_BDF_Property(face, "FAMILY_NAME", &prop);
+	    if (rc != 0 || prop.type != BDF_PROPERTY_TYPE_ATOM)
+		goto bail2;
+
+            rc = FT_Get_BDF_Property(face, "POINT_SIZE", &prop);
             if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_INTEGER)
                 value = prop.u.integer;
             else if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_CARDINAL)
@@ -1608,7 +1692,7 @@ FcFreeTypeQuery (const FcChar8	*file,
             if(!FcPatternAddDouble(pat, FC_SIZE, value / 10.0))
                 goto nevermind;
 
-            rc = MY_Get_BDF_Property(face, "RESOLUTION_Y", &prop);
+            rc = FT_Get_BDF_Property(face, "RESOLUTION_Y", &prop);
             if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_INTEGER)
                 value = prop.u.integer;
             else if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_CARDINAL)
@@ -2125,13 +2209,13 @@ static const FcFontDecode fcFontDecoders[] = {
     { ft_encoding_apple_roman,	&AppleRoman,	(1 << 16) - 1 },
 };
 
-#define NUM_DECODE  (sizeof (fcFontDecoders) / sizeof (fcFontDecoders[0]))
+#define NUM_DECODE  (int) (sizeof (fcFontDecoders) / sizeof (fcFontDecoders[0]))
 
 static const FcChar32	prefer_unicode[] = {
     0x20ac,	/* EURO SIGN */
 };
 
-#define NUM_PREFER_UNICODE  (sizeof (prefer_unicode) / sizeof (prefer_unicode[0]))
+#define NUM_PREFER_UNICODE  (int) (sizeof (prefer_unicode) / sizeof (prefer_unicode[0]))
 
 FcChar32
 FcFreeTypeUcs4ToPrivate (FcChar32 ucs4, const FcCharMap *map)
@@ -2212,12 +2296,12 @@ FcFreeTypeUseNames (FT_Face face)
     return FcFalse;
 }
 
-static FcChar8 *
+static const FcChar8 *
 FcUcs4ToGlyphName (FcChar32 ucs4)
 {
     int		i = (int) (ucs4 % FC_GLYPHNAME_HASH);
     int		r = 0;
-    FcGlyphName	*gn;
+    const FcGlyphName	*gn;
 
     while ((gn = ucs_to_name[i]))
     {
@@ -2242,7 +2326,7 @@ FcGlyphNameToUcs4 (FcChar8 *name)
     FcChar32	h = FcHashGlyphName (name);
     int		i = (int) (h % FC_GLYPHNAME_HASH);
     int		r = 0;
-    FcGlyphName	*gn;
+    const FcGlyphName	*gn;
 
     while ((gn = name_to_ucs[i]))
     {
@@ -2267,12 +2351,12 @@ FcGlyphNameToUcs4 (FcChar8 *name)
  * any defined order within the font
  */
 static FT_UInt
-FcFreeTypeGlyphNameIndex (FT_Face face, FcChar8 *name)
+FcFreeTypeGlyphNameIndex (FT_Face face, const FcChar8 *name)
 {
     FT_UInt gindex;
     FcChar8 name_buf[FC_GLYPHNAME_MAXLEN + 2];
 
-    for (gindex = 0; gindex < face->num_glyphs; gindex++)
+    for (gindex = 0; gindex < (FT_UInt) face->num_glyphs; gindex++)
     {
 	if (FT_Get_Glyph_Name (face, gindex, name_buf, FC_GLYPHNAME_MAXLEN+1) == 0)
 	    if (!strcmp ((char *) name, (char *) name_buf))
@@ -2297,6 +2381,10 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
     int		    p;
 
     initial = 0;
+
+    if (!face)
+        return 0;
+
     /*
      * Find the current encoding
      */
@@ -2326,7 +2414,7 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
 	if (fcFontDecoders[decode].map)
 	{
 	    charcode = FcFreeTypeUcs4ToPrivate (ucs4, fcFontDecoders[decode].map);
-	    if (charcode == ~0)
+	    if (charcode == ~0U)
 		continue;
 	}
 	else
@@ -2341,7 +2429,7 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
      */
     if (FcFreeTypeUseNames (face))
     {
-	FcChar8	*name = FcUcs4ToGlyphName (ucs4);
+	const FcChar8	*name = FcUcs4ToGlyphName (ucs4);
 	if (name)
 	{
 	    glyphindex = FcFreeTypeGlyphNameIndex (face, name);
@@ -2417,7 +2505,7 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
 FcCharSet *
 FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 {
-    FcChar32	    page, off, max, ucs4;
+    FcChar32	    page, off, ucs4;
 #ifdef CHECK
     FcChar32	    font_max = 0;
 #endif
@@ -2498,7 +2586,6 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 	{
 	    FT_UInt gindex;
 	  
-	    max = fcFontDecoders[o].max;
 	    /*
 	     * Find the first encoded character in the font
 	     */
@@ -2586,7 +2673,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
     {
 	FcChar8 name_buf[FC_GLYPHNAME_MAXLEN + 2];
 
-	for (glyph = 0; glyph < face->num_glyphs; glyph++)
+	for (glyph = 0; glyph < (FT_UInt) face->num_glyphs; glyph++)
 	{
 	    if (FT_Get_Glyph_Name (face, glyph, name_buf, FC_GLYPHNAME_MAXLEN+1) == 0)
 	    {
@@ -2726,68 +2813,68 @@ static FT_Error
 GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *script_count)
 {
     FT_ULong         cur_offset, new_offset, base_offset;
-    TT_Face          tt_face = (TT_Face)face;
     FT_Stream  stream = face->stream;
     FT_Error   error;
     FT_UShort          n, p;
-    FT_Memory  memory = stream->memory;
+    FT_Memory  memory;
 
     if ( !stream )
 	return TT_Err_Invalid_Face_Handle;
 
-    if (( error = tt_face->goto_table( tt_face, tabletag, stream, 0 ) ))
+    memory = stream->memory;
+
+    if (( error = ftglue_face_goto_table( face, tabletag, stream ) ))
 	return error;
 
-    base_offset = FT_STREAM_POS();
+    base_offset = ftglue_stream_pos ( stream );
 
     /* skip version */
 
-    if ( FT_STREAM_SEEK( base_offset + 4L ) || FT_FRAME_ENTER( 2L ) )
+    if ( ftglue_stream_seek ( stream, base_offset + 4L ) || ftglue_stream_frame_enter( stream, 2L ) )
 	return error;
 
-    new_offset = FT_GET_USHORT() + base_offset;
+    new_offset = GET_UShort() + base_offset;
 
-    FT_FRAME_EXIT();
+    ftglue_stream_frame_exit( stream );
 
-    cur_offset = FT_STREAM_POS();
+    cur_offset = ftglue_stream_pos( stream );
 
-    if ( FT_STREAM_SEEK( new_offset ) != TT_Err_Ok )
+    if ( ftglue_stream_seek( stream, new_offset ) != TT_Err_Ok )
 	return error;
 
-    base_offset = FT_STREAM_POS();
+    base_offset = ftglue_stream_pos( stream );
 
-    if ( FT_FRAME_ENTER( 2L ) )
+    if ( ftglue_stream_frame_enter( stream, 2L ) )
 	return error;
 
-    *script_count = FT_GET_USHORT();
+    *script_count = GET_UShort ();
 
-    FT_FRAME_EXIT();
+    ftglue_stream_frame_exit( stream );
 
-    if ( FT_SET_ERROR (FT_MEM_ALLOC_ARRAY( *stags, *script_count, FT_ULong )) )
+    *stags = ftglue_alloc(memory, *script_count * sizeof( FT_ULong ), &error);
+
+    if (error)
 	return error;
 
     p = 0;
     for ( n = 0; n < *script_count; n++ )
     {
-	if ( FT_FRAME_ENTER( 6L ) )
+        if ( ftglue_stream_frame_enter( stream, 6L ) )
 	    goto Fail;
 
-	(*stags)[p] = FT_GET_ULONG();
-	new_offset = FT_GET_USHORT() + base_offset;
+	(*stags)[p] = GET_ULong ();
+	new_offset = GET_UShort () + base_offset;
 
-	FT_FRAME_EXIT();
+        ftglue_stream_frame_exit( stream );
 
-	cur_offset = FT_STREAM_POS();
+	cur_offset = ftglue_stream_pos( stream );
 
-	if ( FT_STREAM_SEEK( new_offset ) )
-	    goto Fail;
+	error = ftglue_stream_seek( stream, new_offset );
 
 	if ( error == TT_Err_Ok )
 	    p++;
-	else if ( error != TTO_Err_Empty_Script )
-	    goto Fail;
 
-	(void)FT_STREAM_SEEK( cur_offset );
+	(void)ftglue_stream_seek( stream, cur_offset );
     }
 
     if (!p)
@@ -2796,14 +2883,15 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
 	goto Fail;
     }
 
-    // sort the tag list before returning it
+    /* sort the tag list before returning it */
     qsort(*stags, *script_count, sizeof(FT_ULong), compareulong);
 
     return TT_Err_Ok;
 
 Fail:
     *script_count = 0;
-    FT_FREE( *stags );
+    ftglue_free( memory, *stags );
+    *stags = NULL;
     return error;
 }
 
@@ -2860,7 +2948,7 @@ FcFontCapabilities(FT_Face face)
     if (FcDebug () & FC_DBG_SCANV)
 	printf("complex features in this font: %s\n", complex);
 bail:
-    FT_FREE(gsubtags);
-    FT_FREE(gpostags);
+    ftglue_free(memory, gsubtags);
+    ftglue_free(memory, gpostags);
     return complex;
 }

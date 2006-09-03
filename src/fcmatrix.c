@@ -22,10 +22,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "fcint.h"
 #include <math.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "fcint.h"
 
 const FcMatrix    FcIdentityMatrix = { 1, 0, 0, 1 };
 

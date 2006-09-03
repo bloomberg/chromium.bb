@@ -37,5 +37,3 @@ determine language coverage for fonts which don't contain this information.
 .TP 15
 .B fclang.tmpl.h
 The template file in which the tables are inserted
-.SH "SEE ALSO"
-fontconfig(3)

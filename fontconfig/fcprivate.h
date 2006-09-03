@@ -59,22 +59,22 @@
 	    __v__.u.d = va_arg (va, double);			    \
 	    break;						    \
 	case FcTypeString:					    \
-	    __v__.u.s = va_arg (va, FcChar8 *);			    \
+	    __v__.u.s = va_arg (va, const FcChar8 *);		    \
 	    break;						    \
 	case FcTypeBool:					    \
 	    __v__.u.b = va_arg (va, FcBool);			    \
 	    break;						    \
 	case FcTypeMatrix:					    \
-	    __v__.u.m = va_arg (va, FcMatrix *);		    \
+	    __v__.u.m = va_arg (va, const FcMatrix *);		    \
 	    break;						    \
 	case FcTypeCharSet:					    \
-	    __v__.u.c = va_arg (va, FcCharSet *);		    \
+	    __v__.u.c = va_arg (va, const FcCharSet *); 	    \
 	    break;						    \
 	case FcTypeFTFace:					    \
 	    __v__.u.f = va_arg (va, FT_Face);			    \
 	    break;						    \
 	case FcTypeLangSet:					    \
-	    __v__.u.l = va_arg (va, FcLangSet *);		    \
+	    __v__.u.l = va_arg (va, const FcLangSet *);		    \
 	    break;						    \
 	}							    \
 	if (!FcPatternAdd (__p__, __o__, __v__, FcTrue))	    \

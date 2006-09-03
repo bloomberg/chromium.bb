@@ -1,0 +1,6 @@
+.deps
+.libs
+Makefile
+Makefile.in
+fc-cat
+fc-cat.1

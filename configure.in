@@ -33,7 +33,7 @@ dnl This is the package version number, not the shared library
 dnl version.  This same version number must appear in fontconfig/fontconfig.h
 dnl Yes, it is a pain to synchronize version numbers.  Unfortunately, it's
 dnl not possible to extract the version number here from fontconfig.h
-AM_INIT_AUTOMAKE(fontconfig, 2.3.2)
+AM_INIT_AUTOMAKE(fontconfig, 2.3.96)
 AM_MAINTAINER_MODE
 
 dnl libtool versioning
@@ -78,13 +78,15 @@ fi
 AM_CONDITIONAL(MS_LIB_AVAILABLE, test x$ms_librarian = xyes)
 
 WARN_CFLAGS=""
-
 if test "x$GCC" = "xyes"; then
 	WARN_CFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes \
 	-Wmissing-prototypes -Wmissing-declarations \
 	-Wnested-externs -fno-strict-aliasing"
+	AC_DEFINE_UNQUOTED(HAVE_WARNING_CPP_DIRECTIVE,1,
+	[Can use #warning in C files])
 fi
 AC_SUBST(WARN_CFLAGS)
+
 
 dnl ==========================================================================
 
@@ -132,18 +134,69 @@ AC_SUBST(EXEEXT_FOR_BUILD)
 
 dnl ==========================================================================
 
+AC_ARG_WITH(arch,      [  --with-arch=ARCH      Force architecture to ARCH], arch="$withval", arch=auto)
+
+if test $cross_compiling = yes; then
+	case "$arch" in
+	auto)
+		AC_MSG_ERROR([Cannot autodetect architecture in cross compile environment]
+			     [Use --with-arch=ARCH to specify architecture])
+		;;
+	esac
+fi
+
+ARCHITECTURE=$arch
+AC_SUBST(ARCHITECTURE)
+
+dnl ==========================================================================
+
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
-AC_CHECK_HEADERS([fcntl.h stdlib.h string.h unistd.h iconv.h])
+AC_CHECK_HEADERS([fcntl.h stdlib.h string.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
+AC_C_INLINE
 AC_TYPE_PID_T
 
 # Checks for library functions.
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([geteuid getuid link memmove memset mkstemp strchr strrchr strtol getopt getopt_long iconv])
+AC_FUNC_MMAP
+AC_CHECK_FUNCS([geteuid getuid link memmove memset mkstemp strchr strrchr strtol getopt getopt_long sysconf ftruncate chsize rand_r])
+
+#
+# Checks for iconv
+#
+AC_MSG_CHECKING([for a usable iconv])
+ICONV_LIBS=""
+AC_TRY_LINK([#include <iconv.h>],
+	    [iconv_open ("from", "to");],
+	    [use_iconv=1],
+	    [use_iconv=0])
+if test x$use_iconv = x1; then
+	AC_MSG_RESULT([libc])
+else
+	# try using libiconv
+	fontconfig_save_libs="$LIBS"
+	LIBS="$LIBS -liconv"
+
+	AC_TRY_LINK([#include <iconv.h>],
+		    [iconv_open ("from", "to");],
+		    [use_iconv=true],
+		    [use_iconv=false])
+	
+	if test x$use_iconv = x1; then
+		ICONV_LIBS="-liconv"
+		AC_MSG_RESULT([libiconv])
+	else
+		AC_MSG_RESULT([no])
+	fi
+
+	LIBS="$fontconfig_save_libs"
+fi
+AC_SUBST(ICONV_LIBS)
+AC_DEFINE_UNQUOTED(USE_ICONV,$use_iconv,[Use iconv.])
 
 #
 # Checks for FreeType
@@ -197,102 +250,124 @@ AC_ARG_WITH(expat,             [  --with-expat=DIR              Use Expat in DIR
 AC_ARG_WITH(expat-includes,    [  --with-expat-includes=DIR     Use Expat includes in DIR], expat_includes=$withval, expat_includes=yes)
 AC_ARG_WITH(expat-lib,         [  --with-expat-lib=DIR          Use Expat library in DIR], expat_lib=$withval, expat_lib=yes)
 
-case "$expat" in
-no)
+if test "$enable_libxml2" != "yes"; then
+	case "$expat" in
+	no)
 	;;
-*)
-	case "$expat_includes" in
-	yes)
-		case "$expat" in
-		yes)
-			;;
-		*)
-			EXPAT_CFLAGS="-I$expat/include"
-			;;
-		esac
-		;;
-	no)
-		EXPAT_CFLAGS=""
-		;;
 	*)
-		EXPAT_CFLAGS="-I$expat_includes"
-		;;
-	esac
-	case "$expat_lib" in
-	yes)
-		case "$expat" in
+		case "$expat_includes" in
 		yes)
-			EXPAT_LIBS="-lexpat"
+			case "$expat" in
+			yes)
+				;;
+			*)
+				EXPAT_CFLAGS="-I$expat/include"
+				;;
+			esac
 			;;
-		*)
-			EXPAT_LIBS="-L$expat/lib -lexpat"
-			;;
-		esac
-		;;
-	no)
-		;;
-	*)
-		EXPAT_LIBS="-L$expat_lib -lexpat"
-		;;
-	esac
-
-	expatsaved_CPPFLAGS="$CPPFLAGS"
-	CPPFLAGS="$CPPFLAGS $EXPAT_CFLAGS"
-	expatsaved_LIBS="$LIBS"
-	LIBS="$LIBS $EXPAT_LIBS"
-
-	AC_CHECK_HEADER(expat.h)
-	case "$ac_cv_header_expat_h" in
-	no)
-		AC_CHECK_HEADER(xmlparse.h)
-		case "$ac_cv_header_xmlparse_h" in
 		no)
-			have_expat_header=no;
+			EXPAT_CFLAGS=""
+			;;
+		*)
+			EXPAT_CFLAGS="-I$expat_includes"
+			;;
+		esac
+		case "$expat_lib" in
+		yes)
+			case "$expat" in
+			yes)
+				EXPAT_LIBS="-lexpat"
+				;;
+			*)
+				EXPAT_LIBS="-L$expat/lib -lexpat"
+				;;
+			esac
+			;;
+		no)
+			;;
+		*)
+			EXPAT_LIBS="-L$expat_lib -lexpat"
+			;;
+		esac
+
+		expatsaved_CPPFLAGS="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $EXPAT_CFLAGS"
+		expatsaved_LIBS="$LIBS"
+		LIBS="$LIBS $EXPAT_LIBS"
+
+		AC_CHECK_HEADER(expat.h)
+		case "$ac_cv_header_expat_h" in
+		no)
+			AC_CHECK_HEADER(xmlparse.h)
+			case "$ac_cv_header_xmlparse_h" in
+			no)
+				have_expat_header=no;
+				;;
+			yes)
+				HAVE_XMLPARSE_H=1
+				AC_SUBST(HAVE_XMLPARSE_H)
+				AC_DEFINE_UNQUOTED(HAVE_XMLPARSE_H,$HAVE_XMLPARSE_H,
+				[Use xmlparse.h instead of expat.h])
+				have_expat_header=yes
+				;;
+			esac
 			;;
 		yes)
-			HAVE_XMLPARSE_H=1
-			AC_SUBST(HAVE_XMLPARSE_H)
-			AC_DEFINE_UNQUOTED(HAVE_XMLPARSE_H,$HAVE_XMLPARSE_H,
-			[Use xmlparse.h instead of expat.h])
 			have_expat_header=yes
 			;;
 		esac
-		;;
-	yes)
-		have_expat_header=yes
-		;;
-	esac
-	case "$have_expat_header" in
-	no)
-		expat=no
-		;;
-	yes)
-		AC_CHECK_FUNCS(XML_SetDoctypeDeclHandler)
-		case "$ac_cv_func_XML_SetDoctypeDeclHandler" in
-		yes)
-			HAVE_EXPAT=1
-			AC_SUBST(HAVE_EXPAT)
-			AC_DEFINE_UNQUOTED(HAVE_EXPAT,$HAVE_EXPAT,
-			[Found a useable expat library])
-			;;
-		*)
+		case "$have_expat_header" in
+		no)
 			expat=no
 			;;
+		yes)
+			AC_CHECK_FUNCS(XML_SetDoctypeDeclHandler)
+			case "$ac_cv_func_XML_SetDoctypeDeclHandler" in
+			yes)
+				HAVE_EXPAT=1
+				AC_SUBST(HAVE_EXPAT)
+				AC_DEFINE_UNQUOTED(HAVE_EXPAT,$HAVE_EXPAT,
+				[Found a useable expat library])
+				;;
+			*)
+				expat=no
+				;;
+			esac
+			;;
 		esac
+		CPPFLAGS="$expatsaved_CPPFLAGS"
+		LIBS="$expatsaved_LIBS"
 		;;
 	esac
-	CPPFLAGS="$expatsaved_CPPFLAGS"
-	LIBS="$expatsaved_LIBS"
-	;;
-esac
-AC_SUBST(EXPAT_LIBS)
-AC_SUBST(EXPAT_CFLAGS)
 	
-case "$expat" in
-no)
-	AC_MSG_ERROR([Cannot find usable expat library. This could mean that your version is too old.])
-	;;
-esac
+	AC_SUBST(EXPAT_CFLAGS)
+	AC_SUBST(EXPAT_LIBS)
+
+	case "$expat" in
+	no)
+		EXPAT_CFLAGS=""
+		EXPAT_LIBS=""
+
+		AC_MSG_WARN([Cannot find usable expat library. Trying to use libxml2 as fallback.])
+		;;
+	esac
+fi
+
+#
+# Check libxml2 configuration
+#
+
+AC_ARG_ENABLE(libxml2,         [  --enable-libxml2              Use libxml2 instead of Expat])
+
+PKG_PROG_PKG_CONFIG
+
+if test "$enable_libxml2" = "yes" -o "$expat" = "no"; then
+    PKG_CHECK_MODULES([LIBXML2], [libxml-2.0 >= 2.6])
+    AC_DEFINE_UNQUOTED(ENABLE_LIBXML2,1,[Use libxml2 instead of Expat])
+
+    AC_SUBST(LIBXML2_CFLAGS)
+    AC_SUBST(LIBXML2_LIBS)
+fi
 
 #
 # Set default font directory
@@ -373,6 +448,22 @@ case "$FC_ADD_FONTS" in
 esac
 
 AC_SUBST(FC_FONTPATH)
+
+#
+# Set default cache directory path
+#
+AC_ARG_WITH(cache-dir,         [ --with-cache-dir=DIR           Use DIR to store cache files (default /var/cache/fontconfig)], fc_cachedir="$withval", fc_cachedir=yes)
+
+case $fc_cachedir in
+no|yes)
+	fc_cachedir=`eval echo "${localstatedir}/cache/"${PACKAGE}`
+	;;
+*)
+	;;
+esac
+AC_SUBST(fc_cachedir)
+FC_CACHEDIR=${fc_cachedir}
+AC_SUBST(FC_CACHEDIR)
 
 FC_FONTDATE=`LC_ALL=C date`
 
@@ -459,16 +550,19 @@ fi
 
 AC_SUBST(DOCDIR)
 
+
 AC_OUTPUT([
 Makefile 
 fontconfig/Makefile
 fc-lang/Makefile
 fc-glyphname/Makefile
 fc-case/Makefile
+fc-arch/Makefile
 src/Makefile
 src/fontconfig.def
 conf.d/Makefile
 fc-cache/Makefile
+fc-cat/Makefile
 fc-list/Makefile
 fc-match/Makefile
 doc/Makefile

@@ -27,7 +27,7 @@
 10d0-10f0
 #10f1-10f6	# Archaic letters not included in modern fonts
 #10f7-10f8	# additional letters for Mingrelian and Svan
-10fb
+#10fb		# Ancient Georgian paragraph separator
 #2018	# single quote
 #201a	# single quote
 #201c	# double quote

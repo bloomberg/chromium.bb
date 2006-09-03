@@ -1,7 +1,0 @@
-debian/tmp/usr/bin/fc-*
-debian/tmp/etc/fonts/fonts.*
-debian/tmp/etc/fonts/conf.d/*
-debian/tmp/usr/share/doc/fontconfig/fontconfig-user.*
-debian/tmp/usr/share/man/man5
-debian/tmp/usr/share/man/man1
-debian/local.conf.md5sum /usr/share/fontconfig

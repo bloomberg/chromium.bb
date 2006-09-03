@@ -23,5 +23,10 @@
 #
 # Chinese in Macau (ZH-MO)
 #
-# Just use Big5 as for ZH-TW
-include zh_tw.orth
+# from Abel Cheung: 
+#
+# a majority of Macau people speak Cantonese too, and also uses additional
+# traditional Chinese chars from Hong Kong (there are already some place names
+# that can't be represented in just chars used in Taiwan).
+#
+include zh_hk.orth

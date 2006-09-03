@@ -22,8 +22,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
 #include "fcint.h"
+#include <stdlib.h>
 
 static FcConfig *
 FcInitFallbackConfig (void)
@@ -34,6 +34,8 @@ FcInitFallbackConfig (void)
     if (!config)
 	goto bail0;
     if (!FcConfigAddDir (config, (FcChar8 *) FC_DEFAULT_FONTS))
+	goto bail1;
+    if (!FcConfigAddCacheDir (config, (FcChar8 *) FC_CACHEDIR))
 	goto bail1;
     return config;
 
@@ -57,6 +59,7 @@ FcInitLoadConfig (void)
 {
     FcConfig	*config;
     
+    FcInitDebug ();
     config = FcConfigCreate ();
     if (!config)
 	return FcFalse;
@@ -78,6 +81,7 @@ FcInitLoadConfigAndFonts (void)
 {
     FcConfig	*config = FcInitLoadConfig ();
 
+    FcInitDebug ();
     if (!config)
 	return 0;
     if (!FcConfigBuildFonts (config))
@@ -117,7 +121,6 @@ FcFini (void)
 	FcConfigDestroy (_fcConfig);
 
     FcPatternFini ();
-    FcCharSetThawAll ();
 }
 
 /*
@@ -161,7 +164,7 @@ FcInitBringUptoDate (void)
 }
 
 static struct {
-    char    *name;
+    char    name[16];
     int	    alloc_count;
     int	    alloc_mem;
     int	    free_count;
@@ -207,9 +210,6 @@ static int  FcMemNotice = 1*1024*1024;
 static int  FcAllocNotify, FcFreeNotify;
 
 void
-FcValueListReport (void);
-
-void
 FcMemReport (void)
 {
     int	i;
@@ -231,7 +231,6 @@ FcMemReport (void)
 	    FcAllocMem - FcFreeMem);
     FcAllocNotify = 0;
     FcFreeNotify = 0;
-    FcValueListReport ();
 }
 
 void

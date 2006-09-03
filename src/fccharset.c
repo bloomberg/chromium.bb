@@ -22,12 +22,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
 #include "fcint.h"
+#include <stdlib.h>
 
 /* #define CHECK */
-
-/* #define CHATTY */
 
 FcCharSet *
 FcCharSetCreate (void)
@@ -40,8 +38,8 @@ FcCharSetCreate (void)
     FcMemAlloc (FC_MEM_CHARSET, sizeof (FcCharSet));
     fcs->ref = 1;
     fcs->num = 0;
-    fcs->leaves = 0;
-    fcs->numbers = 0;
+    fcs->leaves_offset = 0;
+    fcs->numbers_offset = 0;
     return fcs;
 }
 
@@ -54,11 +52,11 @@ FcCharSetNew (void)
     return FcCharSetCreate ();
 }
 
-
 void
 FcCharSetDestroy (FcCharSet *fcs)
 {
     int i;
+    
     if (fcs->ref == FC_REF_CONSTANT)
 	return;
     if (--fcs->ref > 0)
@@ -66,17 +64,17 @@ FcCharSetDestroy (FcCharSet *fcs)
     for (i = 0; i < fcs->num; i++)
     {
 	FcMemFree (FC_MEM_CHARLEAF, sizeof (FcCharLeaf));
-	free (fcs->leaves[i]);
+	free (FcCharSetLeaf (fcs, i));
     }
-    if (fcs->leaves)
+    if (fcs->num)
     {
-	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcCharLeaf *));
-	free (fcs->leaves);
+	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (intptr_t));
+	free (FcCharSetLeaves (fcs));
     }
-    if (fcs->numbers)
+    if (fcs->num)
     {
 	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcChar16));
-	free (fcs->numbers);
+	free (FcCharSetNumbers (fcs));
     }
     FcMemFree (FC_MEM_CHARSET, sizeof (FcCharSet));
     free (fcs);
@@ -91,7 +89,7 @@ FcCharSetDestroy (FcCharSet *fcs)
 static int
 FcCharSetFindLeafPos (const FcCharSet *fcs, FcChar32 ucs4)
 {
-    FcChar16		*numbers = fcs->numbers;
+    FcChar16		*numbers = FcCharSetNumbers(fcs);
     FcChar16		page;
     int			low = 0;
     int			high = fcs->num - 1;
@@ -120,7 +118,7 @@ FcCharSetFindLeaf (const FcCharSet *fcs, FcChar32 ucs4)
 {
     int	pos = FcCharSetFindLeafPos (fcs, ucs4);
     if (pos >= 0)
-	return fcs->leaves[pos];
+	return FcCharSetLeaf(fcs, pos);
     return 0;
 }
 
@@ -130,39 +128,55 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
 		  FcCharLeaf	*leaf, 
 		  int		pos)
 {
-    FcCharLeaf	**leaves;
-    FcChar16	*numbers;
+    intptr_t	*leaves = FcCharSetLeaves (fcs);
+    FcChar16	*numbers = FcCharSetNumbers (fcs);
 
     ucs4 >>= 8;
     if (ucs4 >= 0x10000)
 	return FcFalse;
-    if (!fcs->leaves)
-	leaves = malloc (sizeof (FcCharLeaf *));
+    if (!fcs->num)
+	leaves = malloc (sizeof (*leaves));
     else
-	leaves = realloc (fcs->leaves, (fcs->num + 1) * sizeof (FcCharLeaf *));
+    {
+	intptr_t    *new_leaves = realloc (leaves, (fcs->num + 1) * 
+					   sizeof (*leaves));
+	intptr_t    distance = (intptr_t) new_leaves - (intptr_t) leaves;
+	
+	if (new_leaves && distance)
+	{
+	    int i;
+
+	    for (i = 0; i < fcs->num; i++)
+		new_leaves[i] -= distance;
+	}
+	leaves = new_leaves;
+    }
     if (!leaves)
 	return FcFalse;
+    
     if (fcs->num)
-	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcCharLeaf *));
-    FcMemAlloc (FC_MEM_CHARSET, (fcs->num + 1) * sizeof (FcCharLeaf *));
-    fcs->leaves = leaves;
-    if (!fcs->numbers)
+	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (intptr_t));
+    FcMemAlloc (FC_MEM_CHARSET, (fcs->num + 1) * sizeof (intptr_t));
+    fcs->leaves_offset = FcPtrToOffset (fcs, leaves);
+    
+    if (!fcs->num)
 	numbers = malloc (sizeof (FcChar16));
     else
-	numbers = realloc (fcs->numbers, (fcs->num + 1) * sizeof (FcChar16));
+	numbers = realloc (numbers, (fcs->num + 1) * sizeof (FcChar16));
     if (!numbers)
 	return FcFalse;
+    
     if (fcs->num)
 	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcChar16));
     FcMemAlloc (FC_MEM_CHARSET, (fcs->num + 1) * sizeof (FcChar16));
-    fcs->numbers = numbers;
+    fcs->numbers_offset = FcPtrToOffset (fcs, numbers);
     
-    memmove (fcs->leaves + pos + 1, fcs->leaves + pos, 
-	     (fcs->num - pos) * sizeof (FcCharLeaf *));
-    memmove (fcs->numbers + pos + 1, fcs->numbers + pos,
-	     (fcs->num - pos) * sizeof (FcChar16));
-    fcs->numbers[pos] = (FcChar16) ucs4;
-    fcs->leaves[pos] = leaf;
+    memmove (leaves + pos + 1, leaves + pos, 
+	     (fcs->num - pos) * sizeof (*leaves));
+    memmove (numbers + pos + 1, numbers + pos,
+	     (fcs->num - pos) * sizeof (*numbers));
+    numbers[pos] = (FcChar16) ucs4;
+    leaves[pos] = FcPtrToOffset (leaves, leaf);
     fcs->num++;
     return FcTrue;
 }
@@ -180,7 +194,7 @@ FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4)
 
     pos = FcCharSetFindLeafPos (fcs, ucs4);
     if (pos >= 0)
-	return fcs->leaves[pos];
+	return FcCharSetLeaf(fcs, pos);
     
     leaf = calloc (1, sizeof (FcCharLeaf));
     if (!leaf)
@@ -205,8 +219,9 @@ FcCharSetInsertLeaf (FcCharSet *fcs, FcChar32 ucs4, FcCharLeaf *leaf)
     if (pos >= 0)
     {
 	FcMemFree (FC_MEM_CHARLEAF, sizeof (FcCharLeaf));
-	free (fcs->leaves[pos]);
-	fcs->leaves[pos] = leaf;
+	free (FcCharSetLeaf (fcs, pos));
+	FcCharSetLeaves(fcs)[pos] = FcPtrToOffset (FcCharSetLeaves(fcs),
+						   leaf);
 	return FcTrue;
     }
     pos = -pos - 1;
@@ -257,13 +272,10 @@ FcCharSetIterSet (const FcCharSet *fcs, FcCharSetIter *iter)
 	    iter->leaf = 0;
 	    return;
 	}
-        iter->ucs4 = (FcChar32) fcs->numbers[pos] << 8;
+        iter->ucs4 = (FcChar32) FcCharSetNumbers(fcs)[pos] << 8;
     }
-    iter->leaf = fcs->leaves[pos];
+    iter->leaf = FcCharSetLeaf(fcs, pos);
     iter->pos = pos;
-#ifdef CHATTY
-    printf ("set %08x: %08x\n", iter->ucs4, (FcChar32) iter->leaf);
-#endif
 }
 
 static void
@@ -277,36 +289,18 @@ FcCharSetIterNext (const FcCharSet *fcs, FcCharSetIter *iter)
     }
     else
     {
-	iter->ucs4 = (FcChar32) fcs->numbers[pos] << 8;
-	iter->leaf = fcs->leaves[pos];
+	iter->ucs4 = (FcChar32) FcCharSetNumbers(fcs)[pos] << 8;
+	iter->leaf = FcCharSetLeaf(fcs, pos);
 	iter->pos = pos;
     }
 }
 
-#ifdef CHATTY
-static void
-FcCharSetDump (const FcCharSet *fcs)
-{
-    int		pos;
-
-    printf ("fcs %08x:\n", (FcChar32) fcs);
-    for (pos = 0; pos < fcs->num; pos++)
-    {
-	FcCharLeaf	*leaf = fcs->leaves[pos];
-	FcChar32	ucs4 = (FcChar32) fcs->numbers[pos] << 8;
-	
-	printf ("    %08x: %08x\n", ucs4, (FcChar32) leaf);
-    }
-}
-#endif
 
 static void
 FcCharSetIterStart (const FcCharSet *fcs, FcCharSetIter *iter)
 {
-#ifdef CHATTY
-    FcCharSetDump (fcs);
-#endif
     iter->ucs4 = 0;
+    iter->pos = 0;
     FcCharSetIterSet (fcs, iter);
 }
 
@@ -560,7 +554,7 @@ FcCharSetSubtractCount (const FcCharSet *a, const FcCharSet *b)
 	    int		i = 256/32;
 	    if (ai.ucs4 == bi.ucs4)
 	    {
-		FcChar32	*bm = bi.leaf->map;;
+		FcChar32	*bm = bi.leaf->map;
 		while (i--)
 		    count += FcCharSetPopCount (*am++ & ~*bm++);
 	    }
@@ -594,15 +588,15 @@ FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
     ai = 0;
     while (ai < a->num && bi < b->num)
     {
-	an = a->numbers[ai];
-	bn = b->numbers[bi];
+	an = FcCharSetNumbers(a)[ai];
+	bn = FcCharSetNumbers(b)[bi];
 	/*
 	 * Check matching pages
 	 */
 	if (an == bn)
 	{
-	    FcChar32	*am = a->leaves[ai]->map;
-	    FcChar32	*bm = b->leaves[bi]->map;
+	    FcChar32	*am = FcCharSetLeaf(a, ai)->map;
+	    FcChar32	*bm = FcCharSetLeaf(b, bi)->map;
 	    
 	    if (am != bm)
 	    {
@@ -633,7 +627,7 @@ FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
 	    while (low <= high)
 	    {
 		int mid = (low + high) >> 1;
-		bn = b->numbers[mid];
+		bn = FcCharSetNumbers(b)[mid];
 		if (bn == an)
 		{
 		    high = mid;
@@ -645,7 +639,7 @@ FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
 		    high = mid - 1;
 	    }
 	    bi = high;
-	    while (bi < b->num && b->numbers[bi] < an)
+	    while (bi < b->num && FcCharSetNumbers(b)[bi] < an)
 		bi++;
 	}
     }
@@ -836,257 +830,10 @@ FcCharSetUnparseValue (FcStrBuf *buf, FcChar32 value)
     return FcTrue;
 }
 
-typedef struct _FcCharLeafEnt FcCharLeafEnt;
-
-struct _FcCharLeafEnt {
-    FcCharLeafEnt   *next;
-    FcChar32	    hash;
-    FcCharLeaf	    leaf;
-};
-
-#define FC_CHAR_LEAF_BLOCK	(4096 / sizeof (FcCharLeafEnt))
-static FcCharLeafEnt **FcCharLeafBlocks;
-static int FcCharLeafBlockCount;
-
-static FcCharLeafEnt *
-FcCharLeafEntCreate (void)
-{
-    static FcCharLeafEnt    *block;
-    static int		    remain;
-
-    if (!remain)
-    {
-	FcCharLeafEnt **newBlocks;
-
-	FcCharLeafBlockCount++;
-	newBlocks = realloc (FcCharLeafBlocks, FcCharLeafBlockCount * sizeof (FcCharLeafEnt *));
-	if (!newBlocks)
-	    return 0;
-	FcCharLeafBlocks = newBlocks;
-	block = FcCharLeafBlocks[FcCharLeafBlockCount-1] = malloc (FC_CHAR_LEAF_BLOCK * sizeof (FcCharLeafEnt));
-	if (!block)
-	    return 0;
-	FcMemAlloc (FC_MEM_CHARLEAF, FC_CHAR_LEAF_BLOCK * sizeof (FcCharLeafEnt));
-	remain = FC_CHAR_LEAF_BLOCK;
-    }
-    remain--;
-    return block++;
-}
-
-#define FC_CHAR_LEAF_HASH_SIZE	257
-
-static FcChar32
-FcCharLeafHash (FcCharLeaf *leaf)
-{
-    FcChar32	hash = 0;
-    int		i;
-
-    for (i = 0; i < 256/32; i++)
-	hash = ((hash << 1) | (hash >> 31)) ^ leaf->map[i];
-    return hash;
-}
-
-static int	FcCharLeafTotal;
-static int	FcCharLeafUsed;
-
-static FcCharLeafEnt	*FcCharLeafHashTable[FC_CHAR_LEAF_HASH_SIZE];
-
-static FcCharLeaf *
-FcCharSetFreezeLeaf (FcCharLeaf *leaf)
-{
-    FcChar32			hash = FcCharLeafHash (leaf);
-    FcCharLeafEnt		**bucket = &FcCharLeafHashTable[hash % FC_CHAR_LEAF_HASH_SIZE];
-    FcCharLeafEnt		*ent;
-    
-    FcCharLeafTotal++;
-    for (ent = *bucket; ent; ent = ent->next)
-    {
-	if (ent->hash == hash && !memcmp (&ent->leaf, leaf, sizeof (FcCharLeaf)))
-	    return &ent->leaf;
-    }
-
-    ent = FcCharLeafEntCreate();
-    if (!ent)
-	return 0;
-    FcCharLeafUsed++;
-    ent->leaf = *leaf;
-    ent->hash = hash;
-    ent->next = *bucket;
-    *bucket = ent;
-    return &ent->leaf;
-}
-
-static void
-FcCharSetThawAllLeaf (void)
-{
-    int i;
-
-    for (i = 0; i < FC_CHAR_LEAF_HASH_SIZE; i++)
-	FcCharLeafHashTable[i] = 0;
-
-    FcCharLeafTotal = 0;
-    FcCharLeafUsed = 0;
-
-    for (i = 0; i < FcCharLeafBlockCount; i++)
-	free (FcCharLeafBlocks[i]);
-
-    free (FcCharLeafBlocks);
-    FcCharLeafBlocks = 0;
-    FcCharLeafBlockCount = 0;
-}
-
-typedef struct _FcCharSetEnt FcCharSetEnt;
-
-struct _FcCharSetEnt {
-    FcCharSetEnt	*next;
-    FcChar32		hash;
-    FcCharSet		set;
-};
-
-#define FC_CHAR_SET_HASH_SIZE    67
-
-static FcChar32
-FcCharSetHash (FcCharSet *fcs)
-{
-    FcChar32	hash = 0;
-    FcChar32	*p;
-    int		i;
-
-    /* hash in leaves */
-    p = (FcChar32 *) fcs->leaves;
-    for (i = 0; i < fcs->num * sizeof (FcCharLeaf *) / sizeof (FcChar32); i++)
-	hash = ((hash << 1) | (hash >> 31)) ^ *p++;
-    /* hash in numbers */
-    for (i = 0; i < fcs->num; i++)
-	hash = ((hash << 1) | (hash >> 31)) ^ fcs->numbers[i];
-    return hash;
-}
-
-static int	FcCharSetTotal;
-static int	FcCharSetUsed;
-static int	FcCharSetTotalEnts, FcCharSetUsedEnts;
-
-static FcCharSetEnt	*FcCharSetHashTable[FC_CHAR_SET_HASH_SIZE];
-
-static FcCharSet *
-FcCharSetFreezeBase (FcCharSet *fcs)
-{
-    FcChar32		hash = FcCharSetHash (fcs);
-    FcCharSetEnt	**bucket = &FcCharSetHashTable[hash % FC_CHAR_SET_HASH_SIZE];
-    FcCharSetEnt	*ent;
-    int			size;
-
-    FcCharSetTotal++;
-    FcCharSetTotalEnts += fcs->num;
-    for (ent = *bucket; ent; ent = ent->next)
-    {
-	if (ent->hash == hash &&
-	    ent->set.num == fcs->num &&
-	    !memcmp (ent->set.leaves, fcs->leaves,
-		     fcs->num * sizeof (FcCharLeaf *)) &&
-	    !memcmp (ent->set.numbers, fcs->numbers,
-		     fcs->num * sizeof (FcChar16)))
-	{
-	    return &ent->set;
-	}
-    }
-
-    size = (sizeof (FcCharSetEnt) +
-	    fcs->num * sizeof (FcCharLeaf *) +
-	    fcs->num * sizeof (FcChar16));
-    ent = malloc (size);
-    if (!ent)
-	return 0;
-    FcMemAlloc (FC_MEM_CHARSET, size);
-    FcCharSetUsed++;
-    FcCharSetUsedEnts += fcs->num;
-    
-    ent->set.ref = FC_REF_CONSTANT;
-    ent->set.num = fcs->num;
-    if (fcs->num)
-    {
-	ent->set.leaves = (FcCharLeaf **) (ent + 1);
-	ent->set.numbers = (FcChar16 *) (ent->set.leaves + fcs->num);
-	memcpy (ent->set.leaves, fcs->leaves, fcs->num * sizeof (FcCharLeaf *));
-	memcpy (ent->set.numbers, fcs->numbers, fcs->num * sizeof (FcChar16));
-    }
-    else
-    {
-	ent->set.leaves = 0;
-	ent->set.numbers = 0;
-    }
-
-    ent->hash = hash;
-    ent->next = *bucket;
-    *bucket = ent;
-    return &ent->set;
-}
-
-void
-FcCharSetThawAll (void)
-{
-    int i;
-    FcCharSetEnt	*ent, *next;
-
-    for (i = 0; i < FC_CHAR_SET_HASH_SIZE; i++)
-    {
-	for (ent = FcCharSetHashTable[i]; ent; ent = next)
-	{
-	    next = ent->next;
-	    free (ent);
-	}
-	FcCharSetHashTable[i] = 0;
-    }
-
-    FcCharSetTotal = 0;
-    FcCharSetTotalEnts = 0;
-    FcCharSetUsed = 0;
-    FcCharSetUsedEnts = 0;
-
-    FcCharSetThawAllLeaf ();
-}
-
-FcCharSet *
-FcCharSetFreeze (FcCharSet *fcs)
-{
-    FcCharSet	*b;
-    FcCharSet	*n = 0;
-    FcCharLeaf	*l;
-    int		i;
-
-    b = FcCharSetCreate ();
-    if (!b)
-	goto bail0;
-    for (i = 0; i < fcs->num; i++)
-    {
-	l = FcCharSetFreezeLeaf (fcs->leaves[i]);
-	if (!l)
-	    goto bail1;
-	if (!FcCharSetInsertLeaf (b, fcs->numbers[i] << 8, l))
-	    goto bail1;
-    }
-    n = FcCharSetFreezeBase (b);
-bail1:
-    if (b->leaves)
-    {
-	FcMemFree (FC_MEM_CHARSET, b->num * sizeof (FcCharLeaf *));
-	free (b->leaves);
-    }
-    if (b->numbers)
-    {
-	FcMemFree (FC_MEM_CHARSET, b->num * sizeof (FcChar16));
-	free (b->numbers);
-    }
-    FcMemFree (FC_MEM_CHARSET, sizeof (FcCharSet));
-    free (b);
-bail0:
-    return n;
-}
-
 FcCharSet *
 FcNameParseCharSet (FcChar8 *string)
 {
-    FcCharSet	*c, *n = 0;
+    FcCharSet	*c;
     FcChar32	ucs4;
     FcCharLeaf	*leaf;
     FcCharLeaf	temp;
@@ -1111,50 +858,30 @@ FcNameParseCharSet (FcChar8 *string)
 	}
 	if (bits)
 	{
-	    leaf = FcCharSetFreezeLeaf (&temp);
+	    leaf = malloc (sizeof (FcCharLeaf));
 	    if (!leaf)
 		goto bail1;
+	    *leaf = temp;
 	    if (!FcCharSetInsertLeaf (c, ucs4, leaf))
 		goto bail1;
 	}
     }
-#ifdef CHATTY
-    printf ("          %8s %8s %8s %8s\n", "total", "totalmem", "new", "newmem");
-    printf ("Leaves:   %8d %8d %8d %8d\n",
-	    FcCharLeafTotal, sizeof (FcCharLeaf) * FcCharLeafTotal,
-	    FcCharLeafUsed, sizeof (FcCharLeaf) * FcCharLeafUsed);
-    printf ("Charsets: %8d %8d %8d %8d\n",
-	    FcCharSetTotal, sizeof (FcCharSet) * FcCharSetTotal,
-	    FcCharSetUsed, sizeof (FcCharSet) * FcCharSetUsed);
-    printf ("Tables:   %8d %8d %8d %8d\n",
-	    FcCharSetTotalEnts, FcCharSetTotalEnts * (sizeof (FcCharLeaf *) + sizeof (FcChar16)),
-	    FcCharSetUsedEnts, FcCharSetUsedEnts * (sizeof (FcCharLeaf *) + sizeof (FcChar16)));
-    printf ("Total:    %8s %8d %8s %8d\n", 
-	    "", 
-	    sizeof (FcCharLeaf) * FcCharLeafTotal +
-	    sizeof (FcCharSet) * FcCharSetTotal +
-	    FcCharSetTotalEnts * (sizeof (FcCharLeaf *) + sizeof (FcChar16)),
-	    "",
-	    sizeof (FcCharLeaf) * FcCharLeafUsed +
-	    sizeof (FcCharSet) * FcCharSetUsed +
-	    FcCharSetUsedEnts * (sizeof (FcCharLeaf *) + sizeof (FcChar16)));
-#endif
-    n = FcCharSetFreezeBase (c);
+    return c;
 bail1:
-    if (c->leaves)
+    if (c->num)
     {
 	FcMemFree (FC_MEM_CHARSET, c->num * sizeof (FcCharLeaf *));
-	free (c->leaves);
+	free (FcCharSetLeaves (c));
     }
-    if (c->numbers)
+    if (c->num)
     {
 	FcMemFree (FC_MEM_CHARSET, c->num * sizeof (FcChar16));
-	free (c->numbers);
+	free (FcCharSetNumbers (c));
     }
     FcMemFree (FC_MEM_CHARSET, sizeof (FcCharSet));
     free (c);
 bail0:
-    return n;
+    return NULL;
 }
 
 FcBool
@@ -1228,4 +955,406 @@ FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c)
 #endif
     
     return FcTrue;
+}
+
+typedef struct _FcCharLeafEnt FcCharLeafEnt;
+
+struct _FcCharLeafEnt {
+    FcCharLeafEnt   *next;
+    FcChar32	    hash;
+    FcCharLeaf	    leaf;
+};
+
+#define FC_CHAR_LEAF_BLOCK	(4096 / sizeof (FcCharLeafEnt))
+#define FC_CHAR_LEAF_HASH_SIZE	257
+
+typedef struct _FcCharSetEnt FcCharSetEnt;
+
+struct _FcCharSetEnt {
+    FcCharSetEnt	*next;
+    FcChar32		hash;
+    FcCharSet		set;
+};
+
+typedef struct _FcCharSetOrigEnt FcCharSetOrigEnt;
+
+struct _FcCharSetOrigEnt {
+    FcCharSetOrigEnt	*next;
+    const FcCharSet    	*orig;
+    const FcCharSet    	*frozen;
+};
+
+#define FC_CHAR_SET_HASH_SIZE    67
+
+struct _FcCharSetFreezer {
+    FcCharLeafEnt   *leaf_hash_table[FC_CHAR_LEAF_HASH_SIZE];
+    FcCharLeafEnt   **leaf_blocks;
+    int		    leaf_block_count;
+    FcCharSetEnt    *set_hash_table[FC_CHAR_SET_HASH_SIZE];
+    FcCharSetOrigEnt	*orig_hash_table[FC_CHAR_SET_HASH_SIZE];
+    FcCharLeafEnt   *current_block;
+    int		    leaf_remain;
+    int		    leaves_seen;
+    int		    charsets_seen;
+    int		    leaves_allocated;
+    int		    charsets_allocated;
+};
+
+static FcCharLeafEnt *
+FcCharLeafEntCreate (FcCharSetFreezer *freezer)
+{
+    if (!freezer->leaf_remain)
+    {
+	FcCharLeafEnt **newBlocks;
+
+	freezer->leaf_block_count++;
+	newBlocks = realloc (freezer->leaf_blocks, freezer->leaf_block_count * sizeof (FcCharLeafEnt *));
+	if (!newBlocks)
+	    return 0;
+	freezer->leaf_blocks = newBlocks;
+	freezer->current_block = freezer->leaf_blocks[freezer->leaf_block_count-1] = malloc (FC_CHAR_LEAF_BLOCK * sizeof (FcCharLeafEnt));
+	if (!freezer->current_block)
+	    return 0;
+	FcMemAlloc (FC_MEM_CHARLEAF, FC_CHAR_LEAF_BLOCK * sizeof (FcCharLeafEnt));
+	freezer->leaf_remain = FC_CHAR_LEAF_BLOCK;
+    }
+    freezer->leaf_remain--;
+    freezer->leaves_allocated++;
+    return freezer->current_block++;
+}
+
+static FcChar32
+FcCharLeafHash (FcCharLeaf *leaf)
+{
+    FcChar32	hash = 0;
+    int		i;
+
+    for (i = 0; i < 256/32; i++)
+	hash = ((hash << 1) | (hash >> 31)) ^ leaf->map[i];
+    return hash;
+}
+
+static FcCharLeaf *
+FcCharSetFreezeLeaf (FcCharSetFreezer *freezer, FcCharLeaf *leaf)
+{
+    FcChar32			hash = FcCharLeafHash (leaf);
+    FcCharLeafEnt		**bucket = &freezer->leaf_hash_table[hash % FC_CHAR_LEAF_HASH_SIZE];
+    FcCharLeafEnt		*ent;
+    
+    for (ent = *bucket; ent; ent = ent->next)
+    {
+	if (ent->hash == hash && !memcmp (&ent->leaf, leaf, sizeof (FcCharLeaf)))
+	    return &ent->leaf;
+    }
+
+    ent = FcCharLeafEntCreate(freezer);
+    if (!ent)
+	return 0;
+    ent->leaf = *leaf;
+    ent->hash = hash;
+    ent->next = *bucket;
+    *bucket = ent;
+    return &ent->leaf;
+}
+
+static FcChar32
+FcCharSetHash (FcCharSet *fcs)
+{
+    FcChar32	hash = 0;
+    int		i;
+
+    /* hash in leaves */
+    for (i = 0; i < fcs->num * (int) (sizeof (FcCharLeaf *) / sizeof (FcChar32)); i++)
+	hash = ((hash << 1) | (hash >> 31)) ^ (FcChar32)(FcCharSetLeaf(fcs, i)->map);
+    /* hash in numbers */
+    for (i = 0; i < fcs->num; i++)
+	hash = ((hash << 1) | (hash >> 31)) ^ *FcCharSetNumbers(fcs);
+    return hash;
+}
+
+static FcBool
+FcCharSetFreezeOrig (FcCharSetFreezer *freezer, const FcCharSet *orig, const FcCharSet *frozen)
+{
+    FcCharSetOrigEnt	**bucket = &freezer->orig_hash_table[((uintptr_t) orig) & FC_CHAR_SET_HASH_SIZE];
+    FcCharSetOrigEnt	*ent;
+    
+    ent = malloc (sizeof (FcCharSetOrigEnt));
+    if (!ent)
+	return FcFalse;
+    ent->orig = orig;
+    ent->frozen = frozen;
+    ent->next = *bucket;
+    *bucket = ent;
+    return FcTrue;
+}
+
+static FcCharSet *
+FcCharSetFreezeBase (FcCharSetFreezer *freezer, FcCharSet *fcs, const FcCharSet *orig)
+{
+    FcChar32		hash = FcCharSetHash (fcs);
+    FcCharSetEnt	**bucket = &freezer->set_hash_table[hash % FC_CHAR_SET_HASH_SIZE];
+    FcCharSetEnt	*ent;
+    int			size;
+    int			i;
+
+    for (ent = *bucket; ent; ent = ent->next)
+    {
+	if (ent->hash == hash &&
+	    ent->set.num == fcs->num &&
+	    !memcmp (FcCharSetNumbers(&ent->set), 
+		     FcCharSetNumbers(fcs),
+		     fcs->num * sizeof (FcChar16)))
+	{
+	    FcBool ok = FcTrue;
+	    int i;
+
+	    for (i = 0; i < fcs->num; i++)
+		if (FcCharSetLeaf(&ent->set, i) != FcCharSetLeaf(fcs, i))
+		    ok = FcFalse;
+	    if (ok)
+		return &ent->set;
+	}
+    }
+
+    size = (sizeof (FcCharSetEnt) +
+	    fcs->num * sizeof (FcCharLeaf *) +
+	    fcs->num * sizeof (FcChar16));
+    ent = malloc (size);
+    if (!ent)
+	return 0;
+    FcMemAlloc (FC_MEM_CHARSET, size);
+    
+    freezer->charsets_allocated++;
+    
+    ent->set.ref = FC_REF_CONSTANT;
+    ent->set.num = fcs->num;
+    if (fcs->num)
+    {
+	intptr_t    *ent_leaves;
+
+	ent->set.leaves_offset = sizeof (ent->set);
+	ent->set.numbers_offset = (ent->set.leaves_offset +
+				   fcs->num * sizeof (intptr_t));
+    
+	ent_leaves = FcCharSetLeaves (&ent->set);
+	for (i = 0; i < fcs->num; i++)
+	    ent_leaves[i] = FcPtrToOffset (ent_leaves,
+					   FcCharSetLeaf (fcs, i));
+	memcpy (FcCharSetNumbers (&ent->set), 
+		FcCharSetNumbers (fcs), 
+		fcs->num * sizeof (FcChar16));
+    }
+    else
+    {
+	ent->set.leaves_offset = 0;
+	ent->set.numbers_offset = 0;
+    }
+
+    ent->hash = hash;
+    ent->next = *bucket;
+    *bucket = ent;
+
+    return &ent->set;
+}
+
+static const FcCharSet *
+FcCharSetFindFrozen (FcCharSetFreezer *freezer, const FcCharSet *orig)
+{
+    FcCharSetOrigEnt    **bucket = &freezer->orig_hash_table[((uintptr_t) orig) & FC_CHAR_SET_HASH_SIZE];
+    FcCharSetOrigEnt	*ent;
+    
+    for (ent = *bucket; ent; ent = ent->next)
+	if (ent->orig == orig)
+	    return ent->frozen;
+    return NULL;
+}
+
+const FcCharSet *
+FcCharSetFreeze (FcCharSetFreezer *freezer, const FcCharSet *fcs)
+{
+    FcCharSet	    *b;
+    const FcCharSet *n = 0;
+    FcCharLeaf	    *l;
+    int		    i;
+
+    b = FcCharSetCreate ();
+    if (!b)
+	goto bail0;
+    for (i = 0; i < fcs->num; i++)
+    {
+	l = FcCharSetFreezeLeaf (freezer, FcCharSetLeaf(fcs, i));
+	if (!l)
+	    goto bail1;
+	if (!FcCharSetInsertLeaf (b, FcCharSetNumbers(fcs)[i] << 8, l))
+	    goto bail1;
+    }
+    n = FcCharSetFreezeBase (freezer, b, fcs);
+    if (!FcCharSetFreezeOrig (freezer, fcs, n))
+    {
+	n = NULL;
+	goto bail1;
+    }
+    freezer->charsets_seen++;
+    freezer->leaves_seen += fcs->num;
+bail1:
+    if (b->num)
+    {
+	FcMemFree (FC_MEM_CHARSET, b->num * sizeof (FcCharLeaf *));
+	free (FcCharSetLeaves (b));
+    }
+    if (b->num)
+    {
+	FcMemFree (FC_MEM_CHARSET, b->num * sizeof (FcChar16));
+	free (FcCharSetNumbers (b));
+    }
+    FcMemFree (FC_MEM_CHARSET, sizeof (FcCharSet));
+    free (b);
+bail0:
+    return n;
+}
+
+FcCharSetFreezer *
+FcCharSetFreezerCreate (void)
+{
+    FcCharSetFreezer	*freezer;
+
+    freezer = calloc (1, sizeof (FcCharSetFreezer));
+    return freezer;
+}
+
+void
+FcCharSetFreezerDestroy (FcCharSetFreezer *freezer)
+{
+    int i;
+
+    if (FcDebug() & FC_DBG_CACHE)
+    {
+	printf ("\ncharsets %d -> %d leaves %d -> %d\n",
+		freezer->charsets_seen, freezer->charsets_allocated,
+		freezer->leaves_seen, freezer->leaves_allocated);
+    }
+    for (i = 0; i < FC_CHAR_SET_HASH_SIZE; i++)
+    {
+	FcCharSetEnt	*ent, *next;
+	for (ent = freezer->set_hash_table[i]; ent; ent = next)
+	{
+	    next = ent->next;
+	    free (ent);
+	}
+    }
+
+    for (i = 0; i < FC_CHAR_SET_HASH_SIZE; i++)
+    {
+	FcCharSetOrigEnt	*ent, *next;
+	for (ent = freezer->orig_hash_table[i]; ent; ent = next)
+	{
+	    next = ent->next;
+	    free (ent);
+	}
+    }
+
+    for (i = 0; i < freezer->leaf_block_count; i++)
+	free (freezer->leaf_blocks[i]);
+
+    free (freezer->leaf_blocks);
+    free (freezer);
+}
+
+FcBool
+FcCharSetSerializeAlloc (FcSerialize *serialize, const FcCharSet *cs)
+{
+    intptr_t	    *leaves;
+    FcChar16	    *numbers;
+    int		    i;
+    
+    if (cs->ref != FC_REF_CONSTANT)
+    {
+	if (!serialize->cs_freezer)
+	{
+	    serialize->cs_freezer = FcCharSetFreezerCreate ();
+	    if (!serialize->cs_freezer)
+		return FcFalse;
+	}
+	if (FcCharSetFindFrozen (serialize->cs_freezer, cs))
+	    return FcTrue;
+    
+        cs = FcCharSetFreeze (serialize->cs_freezer, cs);
+    }
+    
+    leaves = FcCharSetLeaves (cs);
+    numbers = FcCharSetNumbers (cs);
+    
+    if (!FcSerializeAlloc (serialize, cs, sizeof (FcCharSet)))
+	return FcFalse;
+    if (!FcSerializeAlloc (serialize, leaves, cs->num * sizeof (intptr_t)))
+	return FcFalse;
+    if (!FcSerializeAlloc (serialize, numbers, cs->num * sizeof (FcChar16)))
+	return FcFalse;
+    for (i = 0; i < cs->num; i++)
+	if (!FcSerializeAlloc (serialize, FcCharSetLeaf(cs, i),
+			       sizeof (FcCharLeaf)))
+	    return FcFalse;
+    return FcTrue;
+}
+    
+FcCharSet *
+FcCharSetSerialize(FcSerialize *serialize, const FcCharSet *cs)
+{
+    FcCharSet	*cs_serialized;
+    intptr_t	*leaves, *leaves_serialized;
+    FcChar16	*numbers, *numbers_serialized;
+    FcCharLeaf	*leaf, *leaf_serialized;
+    int		i;
+
+    if (cs->ref != FC_REF_CONSTANT && serialize->cs_freezer)
+    {
+	cs = FcCharSetFindFrozen (serialize->cs_freezer, cs);
+	if (!cs)
+	    return NULL;
+    }
+		    
+    cs_serialized = FcSerializePtr (serialize, cs);
+    if (!cs_serialized)
+	return NULL;
+    
+    cs_serialized->ref = FC_REF_CONSTANT;
+    cs_serialized->num = cs->num;
+
+    if (cs->num)
+    {
+	leaves = FcCharSetLeaves (cs);
+	leaves_serialized = FcSerializePtr (serialize, leaves);
+	if (!leaves_serialized)
+	    return NULL;
+    
+	cs_serialized->leaves_offset = FcPtrToOffset (cs_serialized,
+						      leaves_serialized);
+	
+	numbers = FcCharSetNumbers (cs);
+	numbers_serialized = FcSerializePtr (serialize, numbers);
+	if (!numbers)
+	    return NULL;
+    
+	cs_serialized->numbers_offset = FcPtrToOffset (cs_serialized,
+						       numbers_serialized);
+    
+	for (i = 0; i < cs->num; i++)
+	{
+	    leaf = FcCharSetLeaf (cs, i);
+	    leaf_serialized = FcSerializePtr (serialize, leaf);
+	    if (!leaf_serialized)
+		return NULL;
+	    *leaf_serialized = *leaf;
+	    leaves_serialized[i] = FcPtrToOffset (leaves_serialized, 
+						  leaf_serialized);
+	    numbers_serialized[i] = numbers[i];
+	}
+    }
+    else
+    {
+	cs_serialized->leaves_offset = 0;
+	cs_serialized->numbers_offset = 0;
+    }
+    
+    return cs_serialized;
 }

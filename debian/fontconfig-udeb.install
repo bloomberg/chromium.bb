@@ -1,3 +1,0 @@
-debian/tmp/usr/lib/libfontconfig*.so.*
-debian/tmp/etc/*
-debian/tmp/usr/bin/*

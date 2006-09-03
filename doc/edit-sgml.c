@@ -77,7 +77,7 @@ static void
 ReplaceDispose (Replace *r);
 
 static void
-Bail (char *format, char *arg);
+Bail (const char *format, const char *arg);
 
 static Replace *
 ReplaceRead (FILE *f);
@@ -249,7 +249,7 @@ ReplaceDispose (Replace *r)
 }
 
 static void
-Bail (char *format, char *arg)
+Bail (const char *format, const char *arg)
 {
     fprintf (stderr, "fatal: ");
     fprintf (stderr, format, arg);

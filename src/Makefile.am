@@ -64,12 +64,14 @@ uninstall-ms-import-lib:
 endif
 
 INCLUDES = 						\
+	-I$(top_srcdir)					\
+	-I$(top_srcdir)/src				\
 	$(FREETYPE_CFLAGS)				\
+	$(LIBXML2_CFLAGS)				\
 	$(EXPAT_CFLAGS)					\
 	$(WARN_CFLAGS)					\
-	-DFONTCONFIG_PATH='"$(CONFDIR)"'		\
-	-I$(top_srcdir)					\
-	-I$(top_srcdir)/src
+	-DFC_CACHEDIR='"$(FC_CACHEDIR)"'                \
+	-DFONTCONFIG_PATH='"$(CONFDIR)"'
 
 EXTRA_DIST = fontconfig.def.in
 
@@ -93,15 +95,18 @@ libfontconfig_la_SOURCES = \
 	fcmatrix.c \
 	fcname.c \
 	fcpat.c \
+	fcserialize.c \
 	fcstr.c \
-	fcxml.c
+	fcxml.c \
+	ftglue.h \
+	ftglue.c
 
 lib_LTLIBRARIES = libfontconfig.la
 
 libfontconfig_la_LDFLAGS =			\
 	-version-info @LT_VERSION_INFO@ -no-undefined $(export_symbols)
 
-libfontconfig_la_LIBADD = $(FREETYPE_LIBS) $(EXPAT_LIBS)
+libfontconfig_la_LIBADD = $(ICONV_LIBS) $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS)
 
 install-data-local: install-ms-import-lib install-libtool-import-lib
 
