@@ -73,7 +73,8 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_CAPABILITY,	FcTypeString },
     { FC_FONTFORMAT,	FcTypeString },
     { FC_EMBOLDEN,	FcTypeBool },
-    { FC_EMBEDDED_BITMAP,   FcTypeBool }, /* 39 */
+    { FC_EMBEDDED_BITMAP,   FcTypeBool },
+    { FC_DECORATIVE,	FcTypeBool }, /* 40 */
 };
 
 #define NUM_OBJECT_TYPES    (sizeof _FcBaseObjectTypes / sizeof _FcBaseObjectTypes[0])
@@ -390,6 +391,7 @@ static const FcConstant _FcBaseConstants[] = {
     { (FcChar8 *) "extrabold",	    "weight",   FC_WEIGHT_EXTRABOLD, },
     { (FcChar8 *) "ultrabold",	    "weight",   FC_WEIGHT_EXTRABOLD, },
     { (FcChar8 *) "black",	    "weight",   FC_WEIGHT_BLACK, },
+    { (FcChar8 *) "heavy",	    "weight",	FC_WEIGHT_HEAVY, },
 
     { (FcChar8 *) "roman",	    "slant",    FC_SLANT_ROMAN, },
     { (FcChar8 *) "italic",	    "slant",    FC_SLANT_ITALIC, },
@@ -421,6 +423,18 @@ static const FcConstant _FcBaseConstants[] = {
     { (FcChar8 *) "hintslight",	    "hintstyle",   FC_HINT_SLIGHT },
     { (FcChar8 *) "hintmedium",	    "hintstyle",   FC_HINT_MEDIUM },
     { (FcChar8 *) "hintfull",	    "hintstyle",   FC_HINT_FULL },
+
+    { (FcChar8 *) "antialias",	    "antialias",    FcTrue },
+    { (FcChar8 *) "hinting",	    "hinting",	    FcTrue },
+    { (FcChar8 *) "verticallayout", "verticallayout",	FcTrue },
+    { (FcChar8 *) "autohint",	    "autohint",	    FcTrue },
+    { (FcChar8 *) "globaladvance",  "globaladvance",	FcTrue },
+    { (FcChar8 *) "outline",	    "outline",	    FcTrue },
+    { (FcChar8 *) "scalable",	    "scalable",	    FcTrue },
+    { (FcChar8 *) "minspace",	    "minspace",	    FcTrue },
+    { (FcChar8 *) "embolden",	    "embolden",	    FcTrue },
+    { (FcChar8 *) "embeddedbitmap", "embeddedbitmap",	FcTrue },
+    { (FcChar8 *) "decorative",	    "decorative",   FcTrue },
 };
 
 #define NUM_FC_CONSTANTS   (sizeof _FcBaseConstants/sizeof _FcBaseConstants[0])
@@ -660,7 +674,7 @@ FcNameParse (const FcChar8 *name)
 		for (;;)
 		{
 		    name = FcNameFindNext (name, ":,", save, &delim);
-		    if (t && strcmp (t->object, _FcBaseObjectTypes[0].object))
+		    if (t)
 		    {
 			v = FcNameConvert (t->type, save, &m);
 			if (!FcPatternAdd (pat, t->object, v, FcTrue))
@@ -696,8 +710,20 @@ FcNameParse (const FcChar8 *name)
 	    {
 		if ((c = FcNameGetConstant (save)))
 		{
-		    if (!FcPatternAddInteger (pat, c->object, c->value))
-			goto bail2;
+		    t = FcNameGetObjectType ((char *) c->object);
+		    switch (t->type) {
+		    case FcTypeInteger:
+		    case FcTypeDouble:
+			if (!FcPatternAddInteger (pat, c->object, c->value))
+			    goto bail2;
+			break;
+		    case FcTypeBool:
+			if (!FcPatternAddBool (pat, c->object, c->value))
+			    goto bail2;
+			break;
+		    default:
+			break;
+		    }
 		}
 	    }
 	}

@@ -133,7 +133,7 @@
 -->
 <!ELEMENT match (test*, edit*)>
 <!ATTLIST match
-	  target (pattern|font)	"pattern">
+	  target (pattern|font|scan) "pattern">
 
 <!--
     Match a field in a pattern
@@ -146,6 +146,10 @@
     For match elements with target=font, if test 'target' is 'pattern',
     then the test is applied to the pattern used in matching rather than
     to the resulting font.
+
+    Match elements with target=scan are applied as fonts are scanned.
+    They edit the pattern generated from the scanned font and affect
+    what the fontconfig database contains.
 -->
 <!ELEMENT test (%expr;)*>
 <!ATTLIST test 

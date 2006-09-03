@@ -452,6 +452,7 @@ struct _FcConfig {
      */
     FcSubst	*substPattern;	    /* substitutions for patterns */
     FcSubst	*substFont;	    /* substitutions for fonts */
+    FcSubst	*substScan;	    /* substitutions for scanned fonts */
     int		maxObjects;	    /* maximum number of tests in all substs */
     /*
      * List of patterns used to control font file selection
@@ -875,6 +876,7 @@ FcListPatternMatchAny (const FcPattern *p,
 #define FC_FONTFORMAT_OBJECT	37
 #define FC_EMBOLDEN_OBJECT	38
 #define FC_EMBEDDED_BITMAP_OBJECT	39
+#define FC_DECORATIVE_OBJECT	40
 
 FcBool
 FcNameBool (const FcChar8 *v, FcBool *result);

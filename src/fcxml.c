@@ -1667,6 +1667,8 @@ FcParseTest (FcConfigParse *parse)
 	    kind = FcMatchPattern;
 	else if (!strcmp ((char *) kind_string, "font"))
 	    kind = FcMatchFont;
+	else if (!strcmp ((char *) kind_string, "scan"))
+	    kind = FcMatchScan;
 	else if (!strcmp ((char *) kind_string, "default"))
 	    kind = FcMatchDefault;
 	else
@@ -1821,6 +1823,8 @@ FcParseMatch (FcConfigParse *parse)
 	    kind = FcMatchPattern;
 	else if (!strcmp ((char *) kind_name, "font"))
 	    kind = FcMatchFont;
+	else if (!strcmp ((char *) kind_name, "scan"))
+	    kind = FcMatchScan;
 	else
 	{
 	    FcConfigMessage (parse, FcSevereWarning, "invalid match target \"%s\"", kind_name);

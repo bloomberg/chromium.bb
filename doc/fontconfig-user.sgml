@@ -382,11 +382,13 @@ This element holds first a (possibly empty) list of <sgmltag>test</> elements an
 a (possibly empty) list of <sgmltag>edit</> elements.  Patterns which match all of the
 tests are subjected to all the edits.  If 'target' is set to "font" instead
 of the default "pattern", then this element applies to the font name
-resulting from a match rather than a font pattern to be matched.
+resulting from a match rather than a font pattern to be matched. If 'target'
+is set to "scan", then this element applies when the font is scanned to
+build the fontconfig database.
   </para></refsect2>
   <refsect2><title><sgmltag>test qual="any" name="property" target="default" compare="eq"</></title><para>
 This element contains a single value which is compared with the target
-('pattern', 'font' or 'default') property "property" (substitute any of the property names seen 
+('pattern', 'font', 'scan' or 'default') property "property" (substitute any of the property names seen 
 above). 'compare' can be one of "eq", "not_eq", "less", "less_eq", "more", or
 "more_eq".  'qual' may either be the default, "any", in which case the match
 succeeds if any value associated with the property matches the test value, or

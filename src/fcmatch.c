@@ -225,24 +225,29 @@ static FcMatcher _FcMatchers [] = {
 #define MATCH_WIDTH	    9
 #define MATCH_WIDTH_INDEX   10
     
-    { FC_ANTIALIAS_OBJECT,	FcCompareBool,	11, 11 },
-#define MATCH_ANTIALIAS	    10
-#define MATCH_ANTIALIAS_INDEX	    11
+    { FC_DECORATIVE_OBJECT,	FcCompareBool,		11, 11 },
+#define MATCH_DECORATIVE	11
+#define MATCH_DECORATIVE_INDEX	12
+
+    { FC_ANTIALIAS_OBJECT,	FcCompareBool,		12, 12 },
     
-    { FC_RASTERIZER_OBJECT,	FcCompareString,	12, 12 },
-#define MATCH_RASTERIZER    11
-#define MATCH_RASTERIZER_INDEX    12
+#define MATCH_ANTIALIAS		    11
+#define MATCH_ANTIALIAS_INDEX	    12
+    
+    { FC_RASTERIZER_OBJECT,	FcCompareString,	13, 13 },
+#define MATCH_RASTERIZER	    12
+#define MATCH_RASTERIZER_INDEX	    12
 
-    { FC_OUTLINE_OBJECT,	FcCompareBool,	13, 13 },
-#define MATCH_OUTLINE	    12
-#define MATCH_OUTLINE_INDEX	    13
+    { FC_OUTLINE_OBJECT,	FcCompareBool,		14, 14 },
+#define MATCH_OUTLINE		    13
+#define MATCH_OUTLINE_INDEX	    14
 
-    { FC_FONTVERSION_OBJECT,	FcCompareNumber,	14, 14 },
-#define MATCH_FONTVERSION   13
-#define MATCH_FONTVERSION_INDEX   14
+    { FC_FONTVERSION_OBJECT,	FcCompareNumber,	15, 15 },
+#define MATCH_FONTVERSION	    14
+#define MATCH_FONTVERSION_INDEX	    15
 };
 
-#define NUM_MATCH_VALUES    15
+#define NUM_MATCH_VALUES    16
 
 static FcMatcher*
 FcObjectToMatcher (FcObject object)
@@ -279,6 +284,8 @@ FcObjectToMatcher (FcObject object)
 	i = MATCH_RASTERIZER; break;
     case FC_OUTLINE_OBJECT:
 	i = MATCH_OUTLINE; break;
+    case FC_DECORATIVE_OBJECT:
+	i = MATCH_DECORATIVE; break;
     }
 
     if (i < 0)

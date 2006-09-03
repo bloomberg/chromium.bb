@@ -954,9 +954,10 @@ static const FcStringConst  weightConsts[] = {
     { (FC8) "demibold",		FC_WEIGHT_DEMIBOLD },
     { (FC8) "demi",		FC_WEIGHT_DEMIBOLD },
     { (FC8) "semibold",		FC_WEIGHT_SEMIBOLD },
-    { (FC8) "bold",		FC_WEIGHT_BOLD },
     { (FC8) "extrabold",	FC_WEIGHT_EXTRABOLD },
+    { (FC8) "superbold",	FC_WEIGHT_EXTRABOLD },
     { (FC8) "ultrabold",	FC_WEIGHT_ULTRABOLD },
+    { (FC8) "bold",		FC_WEIGHT_BOLD },
     { (FC8) "black",		FC_WEIGHT_BLACK },
     { (FC8) "heavy",		FC_WEIGHT_HEAVY },
 };
@@ -985,6 +986,7 @@ static const FcStringConst  widthConsts[] = {
 
 static const FcStringConst  slantConsts[] = {
     { (FC8) "italic",		FC_SLANT_ITALIC },
+    { (FC8) "kursiv",		FC_SLANT_ITALIC },
     { (FC8) "oblique",		FC_SLANT_OBLIQUE },
 };
 
@@ -992,6 +994,20 @@ static const FcStringConst  slantConsts[] = {
 
 #define FcIsSlant(s)	    FcStringIsConst(s,slantConsts,NUM_SLANT_CONSTS)
 #define FcContainsSlant(s)  FcStringContainsConst (s,slantConsts,NUM_SLANT_CONSTS)
+
+static const FcStringConst  decorativeConsts[] = {
+    { (FC8) "shadow",		FcTrue },
+    { (FC8) "smallcaps",    	FcTrue },
+    { (FC8) "antiqua",		FcTrue },
+    { (FC8) "romansc",		FcTrue },
+    { (FC8) "embosed",		FcTrue },
+    { (FC8) "romansmallcaps",	FcTrue },
+};
+
+#define NUM_DECORATIVE_CONSTS	(int) (sizeof (decorativeConsts) / sizeof (decorativeConsts[0]))
+
+#define FcIsDecorative(s)   FcStringIsConst(s,decorativeConsts,NUM_DECORATIVE_CONSTS)
+#define FcContainsDecorative(s)	FcStringContainsConst (s,decorativeConsts,NUM_DECORATIVE_CONSTS)
 
 static double
 FcGetPixelSize (FT_Face face, int i)
@@ -1038,6 +1054,7 @@ FcFreeTypeQuery (const FcChar8	*file,
     int		    slant = -1;
     int		    weight = -1;
     int		    width = -1;
+    FcBool	    decorative = FcFalse;
     int		    i;
     FcCharSet	    *cs;
     FcLangSet	    *ls;
@@ -1413,6 +1430,9 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    weight = FC_WEIGHT_EXTRABOLD;
 	else if (os2->usWeightClass < 950)
 	    weight = FC_WEIGHT_BLACK;
+	if ((FcDebug() & FC_DBG_SCANV) && weight != -1)
+	    printf ("\tos2 weight class %d maps to weight %d\n",
+		    os2->usWeightClass, weight);
 
 	switch (os2->usWidthClass) {
 	case 1:	width = FC_WIDTH_ULTRACONDENSED; break;
@@ -1425,6 +1445,9 @@ FcFreeTypeQuery (const FcChar8	*file,
 	case 8:	width = FC_WIDTH_EXTRAEXPANDED; break;
 	case 9:	width = FC_WIDTH_ULTRAEXPANDED; break;
 	}
+	if ((FcDebug() & FC_DBG_SCANV) && width != -1)
+	    printf ("\tos2 width class %d maps to width %d\n",
+		    os2->usWidthClass, width);
     }
     if (os2 && (complex = FcFontCapabilities(face)))
     {
@@ -1540,6 +1563,12 @@ FcFreeTypeQuery (const FcChar8	*file,
 	    if (FcDebug() & FC_DBG_SCANV)
 		printf ("\tStyle %s maps to slant %d\n", style, slant);
 	}
+	if (decorative == FcFalse)
+	{
+	    decorative = FcContainsDecorative (style) > 0;
+	    if (FcDebug() & FC_DBG_SCANV)
+		printf ("\tStyle %s maps to decorative %d\n", style, decorative);
+	}
     }
     /*
      * Pull default values from the FreeType flags if more
@@ -1575,6 +1604,9 @@ FcFreeTypeQuery (const FcChar8	*file,
 	goto bail1;
 
     if (!FcPatternAddString (pat, FC_FOUNDRY, foundry))
+	goto bail1;
+
+    if (!FcPatternAddBool (pat, FC_DECORATIVE, decorative))
 	goto bail1;
 
     /*

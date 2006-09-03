@@ -103,6 +103,7 @@ typedef int		FcBool;
 #define FC_FONTFORMAT	    "fontformat"	/* String */
 #define FC_EMBOLDEN	    "embolden"		/* Bool - true if emboldening needed*/
 #define FC_EMBEDDED_BITMAP  "embeddedbitmap"	/* Bool - true to enable embedded bitmaps */
+#define FC_DECORATIVE	    "decorative"	/* Bool - true if style is a decorative variant */
 
 #define FC_CACHE_SUFFIX		    ".cache-"FC_CACHE_VERSION
 #define FC_DIR_CACHE_FILE	    "fonts.cache-"FC_CACHE_VERSION
@@ -236,7 +237,7 @@ typedef struct _FcObjectSet {
 } FcObjectSet;
     
 typedef enum _FcMatchKind {
-    FcMatchPattern, FcMatchFont
+    FcMatchPattern, FcMatchFont, FcMatchScan
 } FcMatchKind;
 
 typedef enum _FcLangResult {

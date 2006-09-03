@@ -61,15 +61,31 @@ FcFileScanFontConfig (FcFontSet		*set,
 	font = FcFreeTypeQuery (file, id, blanks, &count);
 	if (FcDebug () & FC_DBG_SCAN)
 	    printf ("done\n");
+
+	/*
+	 * Edit pattern with user-defined rules
+	 */
+	if (config && !FcConfigSubstituteWithPat (config, font, NULL, FcMatchScan))
+	{
+	    FcPatternDestroy (font);
+	    font = NULL;
+	    ret = FcFalse;
+	}
+
 	/*
 	 * Add the font
 	 */
 	if (font && (!config || FcConfigAcceptFont (config, font)))
 	{
+	    if (FcDebug() & FC_DBG_SCANV)
+	    {
+		printf ("Final font pattern:\n");
+		FcPatternPrint (font);
+	    }
 	    if (!FcFontSetAdd (set, font))
 	    {
 		FcPatternDestroy (font);
-		font = 0;
+		font = NULL;
 		ret = FcFalse;
 	    }
 	}

@@ -103,6 +103,7 @@ FcCharSetPrint (const FcCharSet *c)
     intptr_t	*leaves = FcCharSetLeaves (c);
     FcChar16	*numbers = FcCharSetNumbers (c);
     
+#if 0
     printf ("CharSet  0x%x\n", (intptr_t) c);
     printf ("Leaves:  +%d = 0x%x\n", c->leaves_offset, (intptr_t) leaves);
     printf ("Numbers: +%d = 0x%x\n", c->numbers_offset, (intptr_t) numbers);
@@ -113,12 +114,15 @@ FcCharSetPrint (const FcCharSet *c)
 		i, numbers[i], leaves[i], 
 		(intptr_t) FcOffsetToPtr (leaves, leaves[i], FcCharLeaf));
     }
+#endif
 		
     for (i = 0; i < c->num; i++)
     {
 	intptr_t	leaf_offset = leaves[i];
 	FcCharLeaf	*leaf = FcOffsetToPtr (leaves, leaf_offset, FcCharLeaf);
 	
+	if (i)
+	    printf ("\t");
 	printf ("%04x:", numbers[i]);
 	for (j = 0; j < 256/32; j++)
 	    printf (" %08x", leaf->map[j]);
@@ -322,6 +326,9 @@ FcTestPrint (const FcTest *test)
 	break;
     case FcMatchFont:
 	printf ("font ");
+	break;
+    case FcMatchScan:
+	printf ("scan ");
 	break;
     }
     switch (test->qual) {

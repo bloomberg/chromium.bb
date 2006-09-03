@@ -561,14 +561,23 @@ FcConfigAddEdit (FcConfig	*config,
     FcTest	*t;
     int		num;
 
+    switch (kind) {
+    case FcMatchPattern:
+	prev = &config->substPattern;
+	break;
+    case FcMatchFont:
+	prev = &config->substFont;
+	break;
+    case FcMatchScan:
+	prev = &config->substScan;
+	break;
+    default:
+	return FcFalse;
+    }
     subst = (FcSubst *) malloc (sizeof (FcSubst));
     if (!subst)
 	return FcFalse;
     FcMemAlloc (FC_MEM_SUBST, sizeof (FcSubst));
-    if (kind == FcMatchPattern)
-	prev = &config->substPattern;
-    else
-	prev = &config->substFont;
     for (; *prev; prev = &(*prev)->next);
     *prev = subst;
     subst->next = 0;
@@ -1290,6 +1299,20 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 	    return FcFalse;
     }
 
+    switch (kind) {
+    case FcMatchPattern:
+	s = config->substPattern;
+	break;
+    case FcMatchFont:
+	s = config->substFont;
+	break;
+    case FcMatchScan:
+	s = config->substScan;
+	break;
+    default:
+	return FcFalse;
+    }
+
     st = (FcSubState *) malloc (config->maxObjects * sizeof (FcSubState));
     if (!st && config->maxObjects)
 	return FcFalse;
@@ -1300,10 +1323,6 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 	printf ("FcConfigSubstitute ");
 	FcPatternPrint (p);
     }
-    if (kind == FcMatchPattern)
-	s = config->substPattern;
-    else
-	s = config->substFont;
     for (; s; s = s->next)
     {
 	/*
