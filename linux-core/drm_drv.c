@@ -129,27 +129,6 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 #define DRIVER_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )
 
 
-static void drm_free_mem_cache(kmem_cache_t *cache, 
-			       const char *name)
-{
-	if (!cache)
-		return;
-	if (kmem_cache_destroy(cache)) {
-		DRM_ERROR("Warning! DRM is leaking %s memory.\n",
-			  name);
-	}
-}
-
-static void drm_free_memory_caches(drm_device_t *dev)
-{
-	
-	drm_free_mem_cache(dev->fence_object_cache, "fence object");
-	dev->fence_object_cache = NULL;
-	drm_mm_set_cache(NULL);
-	drm_free_mem_cache(dev->mm_cache, "memory manager block");
-	dev->mm_cache = NULL;
-}
-
 
 /**
  * Take down the DRM device.
@@ -378,7 +357,6 @@ static void drm_cleanup(drm_device_t * dev)
 	}
 
 	drm_lastclose(dev);
-	drm_free_memory_caches(dev);
 	drm_fence_manager_takedown(dev);
 
 	if (dev->maplist) {
@@ -450,10 +428,67 @@ static struct file_operations drm_stub_fops = {
 	.open = drm_stub_open
 };
 
+static int drm_create_memory_caches(void)
+{
+	drm_cache.mm = kmem_cache_create("drm_mm_node_t", 
+					 sizeof(drm_mm_node_t),
+					 0,
+					 SLAB_HWCACHE_ALIGN,
+					 NULL,NULL);
+	if (!drm_cache.mm)
+		return -ENOMEM;
+
+	drm_cache.fence_object= kmem_cache_create("drm_fence_object_t", 
+						  sizeof(drm_fence_object_t),
+						  0,
+						  SLAB_HWCACHE_ALIGN,
+						  NULL,NULL);
+	if (!drm_cache.ref_object)
+		return -ENOMEM;
+
+	drm_cache.ref_object= kmem_cache_create("drm_ref_object_t", 
+						sizeof(drm_ref_object_t),
+						0,
+						SLAB_HWCACHE_ALIGN,
+						NULL,NULL);
+	if (!drm_cache.ref_object)
+		return -ENOMEM;
+	
+	return 0;
+}
+
+static void drm_free_mem_cache(kmem_cache_t *cache, 
+			       const char *name)
+{
+	if (!cache)
+		return;
+	if (kmem_cache_destroy(cache)) {
+		DRM_ERROR("Warning! DRM is leaking %s memory.\n",
+			  name);
+	}
+}
+
+static void drm_free_memory_caches(void )
+{
+	
+	drm_free_mem_cache(drm_cache.ref_object, "ref object");
+	drm_cache.ref_object = NULL;
+	drm_free_mem_cache(drm_cache.fence_object, "fence object");
+	drm_cache.fence_object = NULL;
+	drm_free_mem_cache(drm_cache.mm, "memory manager block");
+	drm_cache.mm = NULL;
+}
+
+
 static int __init drm_core_init(void)
 {
-	int ret = -ENOMEM;
+	int ret;
+	
+	ret = drm_create_memory_caches();
+	if (ret)
+		goto err_p1;
 
+	ret = -ENOMEM;
 	drm_cards_limit =
 	    (drm_cards_limit < DRM_MAX_MINOR + 1 ? drm_cards_limit : DRM_MAX_MINOR + 1);
 	drm_heads = drm_calloc(drm_cards_limit, sizeof(*drm_heads), DRM_MEM_STUB);
@@ -494,6 +529,7 @@ err_p1:
 
 static void __exit drm_core_exit(void)
 {
+	drm_free_memory_caches();
 	remove_proc_entry("dri", NULL);
 	drm_sysfs_destroy(drm_class);
 

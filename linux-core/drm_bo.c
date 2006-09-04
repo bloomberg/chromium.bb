@@ -91,7 +91,8 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 
 	drm_buffer_manager_t *bm = &dev->bm;
 
-	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
+	DRM_FLAG_MASKED(bo->priv_flags, 0,  _DRM_BO_FLAG_UNFENCED);
+
 	if (bo->fence) {
 		if (!drm_fence_object_signaled(bo->fence, bo->fence_flags)) {
 			drm_fence_object_flush(dev, bo->fence, bo->fence_flags);
@@ -229,7 +230,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 			goto out;
 		}
 	} else {
-		fence = kmem_cache_alloc(dev->fence_object_cache, GFP_KERNEL);
+		fence = kmem_cache_alloc(drm_cache.fence_object, GFP_KERNEL);
 
 		if (!fence) {
 			ret = -ENOMEM;
@@ -239,7 +240,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 		ret = drm_fence_object_init(dev, fence_flags, 1, fence);
 
 		if (ret) {
-			kmem_cache_free(dev->fence_object_cache, fence);
+			kmem_cache_free(drm_cache.fence_object, fence);
 			goto out;
 		}
 	}
@@ -1124,8 +1125,9 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
 		bo->ttm_object = to;
 		ttm = drm_ttm_from_object(to);
 		ret = drm_create_ttm_region(ttm, bo->buffer_start >> PAGE_SHIFT,
-					    bo->num_pages,
-					    bo->mask & DRM_BO_FLAG_BIND_CACHED,
+					    bo->num_pages,1,
+					    
+					    /*					    bo->mask & DRM_BO_FLAG_BIND_CACHED,*/
 					    &bo->ttm_region);
 		if (ret) {
 			drm_ttm_object_deref_unlocked(dev, to);

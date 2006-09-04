@@ -54,29 +54,11 @@ drm_head_t **drm_heads;
 struct drm_sysfs_class *drm_class;
 struct proc_dir_entry *drm_proc_root;
 
-
-static int drm_create_memory_caches(drm_device_t *dev)
-{
-	dev->mm_cache = kmem_cache_create("drm_mm_node_t", 
-					  sizeof(drm_mm_node_t),
-					  0,
-					  SLAB_HWCACHE_ALIGN,
-					  NULL,NULL);
-	if (!dev->mm_cache)
-		return -ENOMEM;
-
-	drm_mm_set_cache(dev->mm_cache);	
-	dev->fence_object_cache = kmem_cache_create("drm_fence_object_t", 
-						    sizeof(drm_fence_object_t),
-						    0,
-						    SLAB_HWCACHE_ALIGN,
-						    NULL,NULL);
-	if (!dev->fence_object_cache)
-		return -ENOMEM;
-	
-	return 0;
-}
-
+drm_cache_t drm_cache =
+{ .mm = NULL,
+  .fence_object = NULL,
+  .ref_object = NULL
+};
 
 static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 		       const struct pci_device_id *ent,
@@ -148,12 +130,6 @@ static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 	retcode = drm_ctxbitmap_init(dev);
 	if (retcode) {
 		DRM_ERROR("Cannot allocate memory for context bitmap.\n");
-		goto error_out_unreg;
-	}
-
-	retcode = drm_create_memory_caches(dev);
-	if (retcode) {
-		DRM_ERROR("Failed creating memory caches\n");
 		goto error_out_unreg;
 	}
 

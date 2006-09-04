@@ -745,6 +745,18 @@ typedef struct drm_head {
 	struct class_device *dev_class;
 } drm_head_t;
 
+typedef struct drm_cache {
+
+	/*
+	 * Memory caches
+	 */
+
+	kmem_cache_t *mm;
+	kmem_cache_t *fence_object;
+	kmem_cache_t *ref_object;
+} drm_cache_t;
+
+
 
 typedef struct drm_fence_driver{
 	int no_types;
@@ -926,12 +938,6 @@ typedef struct drm_device {
 	drm_fence_manager_t fm;
 	drm_buffer_manager_t bm;
   
-  /*
-   * Memory caches
-   */
-	kmem_cache_t *mm_cache;
-	kmem_cache_t *fence_object_cache;
-
 } drm_device_t;
 
 #if __OS_HAS_AGP
@@ -1254,6 +1260,7 @@ extern int drm_put_head(drm_head_t * head);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 extern unsigned int drm_cards_limit;
 extern drm_head_t **drm_heads;
+extern drm_cache_t drm_cache;
 extern struct drm_sysfs_class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
 
@@ -1302,7 +1309,6 @@ extern drm_mm_node_t *drm_mm_search_free(const drm_mm_t *mm, unsigned long size,
 						unsigned alignment, int best_match);
 extern int drm_mm_init(drm_mm_t *mm, unsigned long start, unsigned long size);
 extern void drm_mm_takedown(drm_mm_t *mm);
-extern void drm_mm_set_cache(kmem_cache_t *cache);
 extern int drm_mm_clean(drm_mm_t *mm);
 
 /*
