@@ -117,12 +117,63 @@ typedef struct _drmBOList {
     drmMMListHead free;
 } drmBOList;
 
+
+/*
+ * TTM functions.
+ */
+
+extern int drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, 
+			unsigned flags);
+extern int drmTTMDestroy(int fd, const drmTTM *ttm);
+extern int drmTTMReference(int fd, unsigned handle, drmTTM *ttm);
+extern int drmTTMUnreference(int fd, const drmTTM *ttm);
+extern drm_handle_t drmTTMMapHandle(int fd, const drmTTM *ttm);
+
+/*
+ * Buffer object list functions.
+ */
+
+extern void drmBOFreeList(drmBOList *list);
+extern int drmBOResetList(drmBOList *list);
+extern void *drmBOListIterator(drmBOList *list);
+extern void *drmBOListNext(drmBOList *list, void *iterator);
+extern drmBO *drmBOListBuf(void *iterator);
+extern int drmBOCreateList(int numTarget, drmBOList *list);
+
+/*
+ * Buffer object functions.
+ */
+
 extern int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
 			      void *user_buffer, drm_bo_type_t type, unsigned mask,
 		unsigned hint, drmBO *buf);
 extern int drmBODestroy(int fd, drmBO *buf);
 extern int drmBOReference(int fd, unsigned handle, drmBO *buf);
 extern int drmBOUnReference(int fd, drmBO *buf);
+extern int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
+		    void **address);
+extern int drmBOUnmap(int fd, drmBO *buf);
+extern int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask, 
+			 unsigned hint);
+extern int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle);
+extern int drmBOInfo(int fd, drmBO *buf);
+extern int drmBufBusy(int fd, drmBO *buf, int *busy);
+
+
+extern int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags, 
+		       unsigned mask,
+		       int *newItem);
+extern int drmBOValidateList(int fd, drmBOList *list);
+extern int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle);
+
+
+/*
+ * Initialization functions.
+ */
+
+extern int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
+		     unsigned long ttPOffset, unsigned long ttPSize);
+extern int drmMMTakedown(int fd);
 
 
 #endif

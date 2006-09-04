@@ -2457,7 +2457,7 @@ static int drmAdjustListNodes(drmBOList *list)
     return ret;
 }
 
-static void drmFreeList(drmBOList *list)
+void drmBOFreeList(drmBOList *list)
 {
     drmBONode *node;
     drmMMListHead *l;
@@ -2483,7 +2483,7 @@ static void drmFreeList(drmBOList *list)
     }
 }
 	
-int drmResetList(drmBOList *list) {
+int drmBOResetList(drmBOList *list) {
 
     drmMMListHead *l;
     int ret;
@@ -2547,17 +2547,17 @@ void *drmBOListNext(drmBOList *list, void *iterator)
     return ret;
 }
 
-void drmBOListBuf(void *iterator, drmBO **buf)
+drmBO *drmBOListBuf(void *iterator)
 {
     drmBONode *node;
     drmMMListHead *l = (drmMMListHead *) iterator;
     node = DRMLISTENTRY(drmBONode, l, head);
     
-    *buf = node->buf;
+    return node->buf;
 }
 
 
-int drmCreateBufList(int numTarget, drmBOList *list)
+int drmBOCreateList(int numTarget, drmBOList *list)
 {
     DRMINITLISTHEAD(&list->list);
     DRMINITLISTHEAD(&list->free);
