@@ -22,19 +22,22 @@
 #  PERFORMANCE OF THIS SOFTWARE.
 
 CONF_FILES = \
-	10LohitGujarati.conf \
+	10-LohitGujarati.conf \
 	10-fonts-persian.conf \
-	60-delicious.conf \
-	autohint.conf \
-	no-bitmaps.conf \
-	no-sub-pixel.conf \
-	sub-pixel.conf \
-	unhinted.conf \
-	yes-bitmaps.conf
+	33-autohint.conf \
+	33-unhinted.conf \
+	30-no-sub-pixel.conf \
+	30-sub-pixel-rgb.conf \
+	30-sub-pixel-bgr.conf \
+	30-sub-pixel-vrgb.conf \
+	30-sub-pixel-vbgr.conf \
+	36-no-bitmaps.conf \
+	36-yes-bitmaps.conf \
+	60-delicious.conf
 
 EXTRA_DIST = $(CONF_FILES)
 
 configdir=$(CONFDIR)
-confddir=$(configdir)/conf.d
+confddir=$(configdir)/conf.avail
 
 confd_DATA=$(CONF_FILES)
