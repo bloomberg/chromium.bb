@@ -27,21 +27,25 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#ifndef FcPublic
+#define FcPublic
+#endif
+
 _FCFUNCPROTOBEGIN
 
-FT_UInt
+FcPublic FT_UInt
 FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4);
 
-FcCharSet *
+FcPublic FcCharSet *
 FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing);
     
-FcCharSet *
+FcPublic FcCharSet *
 FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks);
 
-FcResult
+FcPublic FcResult
 FcPatternGetFTFace (const FcPattern *p, const char *object, int n, FT_Face *f);
 
-FcBool
+FcPublic FcBool
 FcPatternAddFTFace (FcPattern *p, const char *object, const FT_Face f);
 
 _FCFUNCPROTOEND

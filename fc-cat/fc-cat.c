@@ -31,10 +31,11 @@
 #define HAVE_GETOPT 1
 #endif
 
-#include "../src/fccache.c"
+#include <fontconfig/fontconfig.h>
 #include "../fc-arch/fcarch.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -173,20 +174,20 @@ usage (char *program)
  */
 
 static const FcChar8 *
-file_base_name (const char *cache, const FcChar8 *file)
+file_base_name (const FcChar8 *cache, const FcChar8 *file)
 {
-    const FcChar8   *cache_slash;
-    int		    cache_len = strlen (cache);
+    int		    cache_len = strlen ((char *) cache);
 
-    if (!strncmp (cache, file, cache_len) && file[cache_len] == '/')
+    if (!strncmp ((char *) cache, (char *) file, cache_len) && file[cache_len] == '/')
 	return file + cache_len + 1;
     return file;
 }
 
+#define FC_FONT_FILE_DIR	((FcChar8 *) ".dir")
+
 static FcBool
-cache_print_set (FcFontSet *set, FcStrSet *dirs, char *base_name, FcBool verbose)
+cache_print_set (FcFontSet *set, FcStrSet *dirs, const FcChar8 *base_name, FcBool verbose)
 {
-    FcPattern	    *font;
     FcChar8	    *name, *dir;
     const FcChar8   *file, *base;
     int		    ret;
@@ -219,9 +220,7 @@ cache_print_set (FcFontSet *set, FcStrSet *dirs, char *base_name, FcBool verbose
     
     for (n = 0; n < set->nfont; n++)
     {
-	FcPattern   **fonts = FcFontSetFonts (set);
-	FcPattern   *encoded_font = fonts[n];
-	FcPattern   *font = FcEncodedOffsetToPtr (set, encoded_font, FcPattern);
+	FcPattern   *font = set->fonts[n];
 
 	if (FcPatternGetString (font, FC_FILE, 0, (FcChar8 **) &file) != FcResultMatch)
 	    goto bail3;
@@ -321,7 +320,7 @@ main (int argc, char **argv)
     {
 	for (; i < argc; i++)
 	{
-	    if (!FcStrSetAddFilename (args, argv[i]))
+	    if (!FcStrSetAddFilename (args, (const FcChar8 *) argv[i]))
 	    {
 		fprintf (stderr, "%s: malloc failure\n", argv[0]);
 		return 1;
@@ -356,8 +355,6 @@ main (int argc, char **argv)
     while ((arg = FcStrListNext (arglist)))
     {
 	int	    j;
-	off_t	    size;
-	intptr_t    *cache_dirs;
 	FcChar8	    *cache_file = NULL;
 	struct stat file_stat;
 	
@@ -373,17 +370,12 @@ main (int argc, char **argv)
 	}
 	
 	dirs = FcStrSetCreate ();
-	fs = FcCacheSet (cache);
-	cache_dirs = FcCacheDirs (cache);
-	for (j = 0; j < cache->dirs_count; j++) 
+	fs = FcCacheCopySet (cache);
+	for (j = 0; j < FcCacheNumSubdir (cache); j++) 
 	{
-	    FcStrSetAdd (dirs, FcOffsetToPtr (cache_dirs,
-					      cache_dirs[j],
-					      FcChar8));
+	    FcStrSetAdd (dirs, FcCacheSubdir (cache, j));
 	    if (recurse)
-		FcStrSetAdd (args, FcOffsetToPtr (cache_dirs,
-					      cache_dirs[j],
-					      FcChar8));
+		FcStrSetAdd (args, FcCacheSubdir (cache, j));
 	}
 
 	if (verbose)
@@ -398,6 +390,7 @@ main (int argc, char **argv)
 
 	FcStrSetDestroy (dirs);
 
+	FcFontSetDestroy (fs);
 	FcDirCacheUnload (cache);
 	if (cache_file)
 	    FcStrFree (cache_file);

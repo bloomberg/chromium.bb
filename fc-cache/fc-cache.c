@@ -31,7 +31,7 @@
 #define HAVE_GETOPT 1
 #endif
 
-#include "fcint.h"
+#include <fontconfig/fontconfig.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -130,15 +130,14 @@ nsubdirs (FcStrSet *set)
 static int
 scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, FcBool verbose)
 {
-    int		ret = 0;
-    const FcChar8 *dir;
-    FcFontSet	*set;
-    FcStrSet	*subdirs;
-    FcStrList	*sublist;
-    FcCache	*cache;
-    struct stat	statb;
-    FcBool	was_valid;
-    int		i;
+    int		    ret = 0;
+    const FcChar8   *dir;
+    FcStrSet	    *subdirs;
+    FcStrList	    *sublist;
+    FcCache	    *cache;
+    struct stat	    statb;
+    FcBool	    was_valid;
+    int		    i;
     
     /*
      * Now scan all of the directories into separate databases
@@ -223,19 +222,17 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	    }
 	}
 
-	set = FcCacheSet (cache);
-
 	if (was_valid)
 	{
 	    if (verbose)
 		printf ("skipping, %d fonts, %d dirs\n",
-			set->nfont, cache->dirs_count);
+			FcCacheNumFont (cache), FcCacheNumSubdir (cache));
 	}
 	else
 	{
 	    if (verbose)
 		printf ("caching, %d fonts, %d dirs\n", 
-			set->nfont, cache->dirs_count);
+			FcCacheNumFont (cache), FcCacheNumSubdir (cache));
 
 	    if (!FcDirCacheValid (dir))
 	    {
@@ -253,7 +250,7 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	    FcDirCacheUnload (cache);
 	    continue;
 	}
-	for (i = 0; i < cache->dirs_count; i++)
+	for (i = 0; i < FcCacheNumSubdir (cache); i++)
 	    FcStrSetAdd (subdirs, FcCacheSubdir (cache, i));
 	
 	FcDirCacheUnload (cache);
@@ -264,7 +261,6 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	{
 	    fprintf (stderr, "%s: Can't create subdir list\n", dir);
 	    ret++;
-	    FcDirCacheUnload (cache);
 	    continue;
 	}
 	FcStrSetAdd (processed_dirs, dir);
@@ -311,7 +307,7 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
     while ((ent = readdir (d)))
     {
 	FcChar8	*file_name;
-	FcChar8	*target_dir;
+	const FcChar8	*target_dir;
 
 	if (ent->d_name[0] == '.')
 	    continue;

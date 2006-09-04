@@ -576,6 +576,54 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
 }
 
 /*
+ * Hokey little macro trick to permit the definitions of C functions
+ * with the same name as CPP macros
+ */
+#define args(x...)	    (x)
+
+const FcChar8 *
+FcCacheDir args(const FcCache *c)
+{
+    return FcCacheDir (c);
+}
+
+FcFontSet *
+FcCacheCopySet args(const FcCache *c)
+{
+    FcFontSet	*old = FcCacheSet (c);
+    FcFontSet	*new = FcFontSetCreate ();
+    int		i;
+    
+    if (!new)
+	return NULL;
+    for (i = 0; i < old->nfont; i++)
+	if (!FcFontSetAdd (new, FcFontSetFont (old, i)))
+	{
+	    FcFontSetDestroy (new);
+	    return NULL;
+	}
+    return new;
+}
+
+const FcChar8 *
+FcCacheSubdir args(const FcCache *c, int i)
+{
+    return FcCacheSubdir (c, i);
+}
+
+int
+FcCacheNumSubdir args(const FcCache *c)
+{
+    return c->dirs_count;
+}
+
+int
+FcCacheNumFont args(const FcCache *c)
+{
+    return FcCacheSet(c)->nfont;
+}
+
+/*
  * This code implements the MD5 message-digest algorithm.
  * The algorithm is due to Ron Rivest.	This code was
  * written by Colin Plumb in 1993, no copyright is claimed.

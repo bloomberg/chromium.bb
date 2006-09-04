@@ -38,11 +38,14 @@ AM_MAINTAINER_MODE
 
 dnl libtool versioning
 
-LT_CURRENT=1
-LT_REVISION=4
+dnl bump revision when fixing bugs
+dnl bump current and age, reset revision to zero when adding APIs
+dnl bump current, leave age, reset revision to zero when changing/removing APIS
+LT_CURRENT=2
+LT_REVISION=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
-LT_AGE=0
+LT_AGE=1
 
 LT_VERSION_INFO="$LT_CURRENT:$LT_REVISION:$LT_AGE"
 AC_SUBST(LT_VERSION_INFO)

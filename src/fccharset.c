@@ -44,9 +44,6 @@ FcCharSetCreate (void)
 }
 
 FcCharSet *
-FcCharSetNew (void);
-    
-FcCharSet *
 FcCharSetNew (void)
 {
     return FcCharSetCreate ();
@@ -693,8 +690,6 @@ FcCharSetFirstPage (const FcCharSet *a,
 /*
  * old coverage API, rather hard to use correctly
  */
-FcChar32
-FcCharSetCoverage (const FcCharSet *a, FcChar32 page, FcChar32 *result);
     
 FcChar32
 FcCharSetCoverage (const FcCharSet *a, FcChar32 page, FcChar32 *result)
