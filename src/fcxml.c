@@ -545,6 +545,8 @@ FcTypecheckValue (FcConfigParse *parse, FcType value, FcType type)
 	if ((value == FcTypeLangSet && type == FcTypeString) ||
 	    (value == FcTypeString && type == FcTypeLangSet))
 	    return;
+	if (type == (FcType) -1)
+	    return;
 	FcConfigMessage (parse, FcSevereWarning, "saw %s, expected %s",
 			 FcTypeName (value), FcTypeName (type));
     }
