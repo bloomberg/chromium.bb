@@ -43,6 +43,8 @@
 #ifndef __OPENTYPE_FTGLUE_H__
 #define __OPENTYPE_FTGLUE_H__
 
+#include "fcint.h"
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -58,7 +60,7 @@ FT_BEGIN_HEADER
 #define  SET_ERR(c)   ( (error = (c)) != 0 )
 
 #ifndef FTGLUE_API
-#define FTGLUE_API(x)  extern x
+#define FTGLUE_API(x)  extern FcPrivate x
 #endif
 
 #ifndef FTGLUE_APIDEF
