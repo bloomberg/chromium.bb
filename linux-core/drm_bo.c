@@ -299,7 +299,8 @@ int drm_fence_buffer_objects(drm_file_t * priv,
  * Wait until the buffer is idle.
  */
 
-static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int no_wait)
+static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
+		       int no_wait)
 {
 
 	drm_fence_object_t *fence = bo->fence;
@@ -317,7 +318,7 @@ static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int no_wait)
 			return -EBUSY;
 
 		ret =
-		    drm_fence_object_wait(dev, fence, lazy, !lazy,
+		    drm_fence_object_wait(dev, fence, lazy, ignore_signals,
 					  bo->fence_flags);
 		if (ret)
 			return ret;
@@ -351,7 +352,7 @@ static int drm_bo_evict(drm_buffer_object_t * bo, int tt, int no_wait)
 	if (!tt && !bo->vram)
 		goto out;
 
-	ret = drm_bo_wait(bo, 0, no_wait);
+	ret = drm_bo_wait(bo, 0, 0, no_wait);
 	if (ret)
 		goto out;
 
@@ -805,7 +806,7 @@ static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle,
 
 	while (1) {
 		if (atomic_inc_and_test(&bo->mapped)) {
-			ret = drm_bo_wait(bo, 0, no_wait);
+			ret = drm_bo_wait(bo, 0, 0, no_wait);
 			if (ret) {
 				atomic_dec(&bo->mapped);
 				goto out;
@@ -926,7 +927,7 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
 	 * Wait for outstanding fences.
 	 */
 
-	ret = drm_bo_wait(bo, 0, no_wait);
+	ret = drm_bo_wait(bo, 0, 0, no_wait);
 
 	if (ret == -EINTR)
 		return -EAGAIN;
@@ -1073,6 +1074,34 @@ static int drm_bo_handle_info(drm_file_t * priv, uint32_t handle,
 		(void)drm_bo_busy(bo);
 	drm_bo_fill_rep_arg(bo, rep);
 	mutex_unlock(&bo->mutex);
+	drm_bo_usage_deref_unlocked(bo->dev, bo);
+	return 0;
+}
+
+static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
+			      uint32_t hint, drm_bo_arg_reply_t * rep)
+{
+	drm_buffer_object_t *bo;
+	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
+	int ret;
+	
+	bo = drm_lookup_buffer_object(priv, handle, 1);
+	if (!bo) {
+		return -EINVAL;
+	}
+	mutex_lock(&bo->mutex);
+	ret = drm_bo_wait_unfenced(bo, no_wait, 0);
+	if (ret)
+		goto out;
+	ret = drm_bo_wait(bo, hint & DRM_BO_HINT_WAIT_LAZY, 
+			  0, no_wait);
+	if (ret)
+		goto out;
+
+	drm_bo_fill_rep_arg(bo, rep);
+out:
+	mutex_unlock(&bo->mutex);
+	drm_bo_usage_deref_unlocked(bo->dev, bo);
 	return 0;
 }
 
@@ -1348,6 +1377,13 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 		case drm_bo_info:
 			rep.ret = drm_bo_handle_info(priv, req->handle, &rep);
 			break;
+		case drm_bo_wait_idle:
+			rep.ret = drm_bo_handle_wait(priv, req->handle, 
+						     req->hint, &rep);
+			break;
+		case drm_bo_ref_fence:
+			rep.ret = -EINVAL;
+			DRM_ERROR("Function is not implemented yet.\n");
 		default:
 			rep.ret = -EINVAL;
 		}
@@ -1386,7 +1422,7 @@ static void drm_bo_force_clean(drm_device_t * dev)
 			if (nice_mode) {
 				unsigned long _end = jiffies + 3 * DRM_HZ;
 				do {
-					ret = drm_bo_wait(entry, 0, 0);
+					ret = drm_bo_wait(entry, 0, 1, 0);
 				} while ((ret == -EINTR) &&
 					 !time_after_eq(jiffies, _end));
 			} else {

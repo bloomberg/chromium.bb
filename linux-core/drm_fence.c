@@ -567,9 +567,7 @@ int drm_fence_ioctl(DRM_IOCTL_ARGS)
 		ret =
 		    drm_fence_object_wait(dev, fence,
 					  arg.flags & DRM_FENCE_FLAG_WAIT_LAZY,
-					  arg.
-					  flags &
-					  DRM_FENCE_FLAG_WAIT_IGNORE_SIGNALS,
+					  0,
 					  arg.type);
 		break;
 	case drm_fence_emit:

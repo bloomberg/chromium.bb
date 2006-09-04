@@ -726,7 +726,7 @@ typedef struct drm_ttm_arg {
 #define DRM_BO_HINT_DONT_BLOCK  0x00000002
 /* Don't place this buffer on the unfenced list.*/
 #define DRM_BO_HINT_DONT_FENCE  0x00000004
-
+#define DRM_BO_HINT_WAIT_LAZY   0x00000008
 
 
 
@@ -759,7 +759,9 @@ typedef struct drm_bo_arg_request {
 		drm_bo_destroy,
 		drm_bo_reference,
 		drm_bo_unreference,
-		drm_bo_info
+		drm_bo_info,
+		drm_bo_wait_idle,
+		drm_bo_ref_fence
 	} op;
 } drm_bo_arg_request_t;
 
