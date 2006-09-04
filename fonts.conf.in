@@ -283,17 +283,6 @@
 	</match>
 
 <!--
-  Load per-user customization file
--->
-	<include ignore_missing="yes">~/.fonts.conf</include>
-
-<!--
-  Load local system customization file
--->
-	<include ignore_missing="yes">conf.d</include>
-	<include ignore_missing="yes">local.conf</include>
-
-<!--
   Provide required aliases for standard names
 -->
 	<alias>
