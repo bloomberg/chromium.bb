@@ -514,6 +514,9 @@ FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, FcStrSet *dirs);
 FcPrivate FcBool
 FcDirCacheWrite (FcCache *cache, FcConfig *config);
     
+FcPrivate void
+FcCacheFini (void);
+    
 /* fccfg.c */
 
 FcPrivate FcBool

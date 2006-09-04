@@ -134,7 +134,7 @@ FcDirCacheOpenFile (const FcChar8 *cache_file, struct stat *file_stat)
  */
 static FcBool
 FcDirCacheProcess (FcConfig *config, const FcChar8 *dir, 
-		   FcBool (*callback) (int fd, off_t size, void *closure),
+		   FcBool (*callback) (int fd, struct stat *stat, void *closure),
 		   void *closure, FcChar8 **cache_file_ret)
 {
     int		fd = -1;
@@ -162,7 +162,7 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
         if (fd >= 0) {
 	    if (dir_stat.st_mtime <= file_stat.st_mtime)
 	    {
-		ret = (*callback) (fd, file_stat.st_size, closure);
+		ret = (*callback) (fd, &file_stat, closure);
 		if (ret)
 		{
 		    if (cache_file_ret)
@@ -182,26 +182,120 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
     return ret;
 }
 
+static void
+FcDirCacheDispose (FcCache *cache)
+{
+    switch (cache->magic) {
+    case FC_CACHE_MAGIC_ALLOC:
+	free (cache);
+	break;
+    case FC_CACHE_MAGIC_MMAP:
+#if defined(HAVE_MMAP) || defined(__CYGWIN__)
+	munmap (cache, cache->size);
+#elif defined(_WIN32)
+	UnmapViewOfFile (cache);
+#endif
+	break;
+    }
+}
+
 #define FC_CACHE_MIN_MMAP   1024
+
+#define FC_CACHE_HASH_SIZE  67
+
+typedef struct _FcCacheBucket FcCacheBucket;
+
+struct _FcCacheBucket {
+    FcCacheBucket   *next;
+    FcCache	    *cache;
+    dev_t	    cache_dev;
+    ino_t	    cache_ino;
+    time_t	    cache_mtime;
+};
+
+static FcCacheBucket	*FcCacheBuckets[FC_CACHE_HASH_SIZE];
+
+static uint32_t
+FcCacheStatHash (struct stat *cache_stat)
+{
+    return ((uint32_t) cache_stat->st_dev ^
+	    (uint32_t) cache_stat->st_ino ^
+	    (uint32_t) cache_stat->st_mtime);
+}
+
+static FcCache *
+FcCacheLookup (struct stat *cache_stat)
+{
+    uint32_t	    hash = FcCacheStatHash(cache_stat);
+    FcCacheBucket   **bucket = &FcCacheBuckets[hash % FC_CACHE_HASH_SIZE];
+    FcCacheBucket   *b;
+
+    for (b = *bucket; b; b = b->next)
+	if (b->cache_dev == cache_stat->st_dev &&
+	    b->cache_ino == cache_stat->st_ino &&
+	    b->cache_mtime == cache_stat->st_mtime)
+	    return b->cache;
+    return NULL;
+}
+
+static FcBool
+FcCacheRecord (FcCache *cache, struct stat *cache_stat)
+{
+    uint32_t	    hash = FcCacheStatHash(cache_stat);
+    FcCacheBucket   **bucket = &FcCacheBuckets[hash % FC_CACHE_HASH_SIZE];
+    FcCacheBucket   *b;
+
+    b = malloc (sizeof (FcCacheBucket));
+    if (!b)
+	return FcFalse;
+    b->next = *bucket;
+    b->cache = cache;
+    b->cache_dev = cache_stat->st_dev;
+    b->cache_ino = cache_stat->st_ino;
+    b->cache_mtime = cache_stat->st_mtime;
+    *bucket = b;
+    return FcTrue;
+}
+
+void
+FcCacheFini (void)
+{
+    int		    i;
+    FcCacheBucket   *b, *next;
+
+    for (i = 0; i < FC_CACHE_HASH_SIZE; i++)
+    {
+	for (b = FcCacheBuckets[i]; b; b = next)
+	{
+	    next = b->next;
+	    FcDirCacheDispose (b->cache);
+	    free (b);
+	}
+	FcCacheBuckets[i] = NULL;
+    }
+}
 
 /*
  * Map a cache file into memory
  */
 static FcCache *
-FcDirCacheMapFd (int fd, off_t size)
+FcDirCacheMapFd (int fd, struct stat *fd_stat)
 {
-    FcCache	*cache = NULL;
+    FcCache	*cache;
     FcBool	allocated = FcFalse;
 
-    if (size < sizeof (FcCache))
+    if (fd_stat->st_size < sizeof (FcCache))
 	return NULL;
+    cache = FcCacheLookup (fd_stat);
+    if (cache)
+	return cache;
     /*
      * For small cache files, just read them into memory
      */
-    if (size >= FC_CACHE_MIN_MMAP)
+    if (fd_stat->st_size >= FC_CACHE_MIN_MMAP)
     {
 #if defined(HAVE_MMAP) || defined(__CYGWIN__)
-	cache = mmap (0, size, PROT_READ, MAP_SHARED, fd, 0);
+	cache = mmap (0, fd_stat->st_size, PROT_READ, MAP_SHARED, fd, 0);
 #elif defined(_WIN32)
 	{
 	    HANDLE hFileMap;
@@ -219,11 +313,11 @@ FcDirCacheMapFd (int fd, off_t size)
     }
     if (!cache)
     {
-	cache = malloc (size);
+	cache = malloc (fd_stat->st_size);
 	if (!cache)
 	    return NULL;
 
-	if (read (fd, cache, size) != size)
+	if (read (fd, cache, fd_stat->st_size) != fd_stat->st_size)
 	{
 	    free (cache);
 	    return NULL;
@@ -232,14 +326,15 @@ FcDirCacheMapFd (int fd, off_t size)
     } 
     if (cache->magic != FC_CACHE_MAGIC_MMAP || 
 	cache->version < FC_CACHE_CONTENT_VERSION ||
-	cache->size != size)
+	cache->size != fd_stat->st_size ||
+	!FcCacheRecord (cache, fd_stat))
     {
 	if (allocated)
 	    free (cache);
 	else
 	{
 #if defined(HAVE_MMAP) || defined(__CYGWIN__)
-	    munmap (cache, size);
+	    munmap (cache, fd_stat->st_size);
 #elif defined(_WIN32)
 	    UnmapViewOfFile (cache);
 #endif
@@ -257,24 +352,13 @@ FcDirCacheMapFd (int fd, off_t size)
 void
 FcDirCacheUnload (FcCache *cache)
 {
-    switch (cache->magic) {
-    case FC_CACHE_MAGIC_ALLOC:
-	free (cache);
-	break;
-    case FC_CACHE_MAGIC_MMAP:
-#if defined(HAVE_MMAP) || defined(__CYGWIN__)
-	munmap (cache, cache->size);
-#elif defined(_WIN32)
-	UnmapViewOfFile (cache);
-#endif
-	break;
-    }
+    /* Can't free or unmap the cache as apps may point into it */
 }
 
 static FcBool
-FcDirCacheMapHelper (int fd, off_t size, void *closure)
+FcDirCacheMapHelper (int fd, struct stat *fd_stat, void *closure)
 {
-    FcCache *cache = FcDirCacheMapFd (fd, size);
+    FcCache *cache = FcDirCacheMapFd (fd, fd_stat);
 
     if (!cache)
 	return FcFalse;
@@ -303,7 +387,7 @@ FcDirCacheLoadFile (const FcChar8 *cache_file, struct stat *file_stat)
     fd = FcDirCacheOpenFile (cache_file, file_stat);
     if (fd < 0)
 	return NULL;
-    cache = FcDirCacheMapFd (fd, file_stat->st_size);
+    cache = FcDirCacheMapFd (fd, file_stat);
     close (fd);
     return cache;
 }
@@ -313,11 +397,10 @@ FcDirCacheLoadFile (const FcChar8 *cache_file, struct stat *file_stat)
  * the magic number and the size field
  */
 static FcBool
-FcDirCacheValidateHelper (int fd, off_t size, void *closure)
+FcDirCacheValidateHelper (int fd, struct stat *fd_stat, void *closure)
 {
     FcBool  ret = FcTrue;
     FcCache	c;
-    struct stat	file_stat;
     
     if (read (fd, &c, sizeof (FcCache)) != sizeof (FcCache))
 	ret = FcFalse;
@@ -325,9 +408,7 @@ FcDirCacheValidateHelper (int fd, off_t size, void *closure)
 	ret = FcFalse;
     else if (c.version < FC_CACHE_CONTENT_VERSION)
 	ret = FcFalse;
-    else if (fstat (fd, &file_stat) < 0)
-	ret = FcFalse;
-    else if (file_stat.st_size != c.size)
+    else if (fd_stat->st_size != c.size)
 	ret = FcFalse;
     return ret;
 }

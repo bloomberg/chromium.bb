@@ -121,6 +121,7 @@ FcFini (void)
 	FcConfigDestroy (_fcConfig);
 
     FcPatternFini ();
+    FcCacheFini ();
 }
 
 /*
