@@ -283,6 +283,11 @@
 	</match>
 
 <!--
+  Load local system customization file
+-->
+	<include ignore_missing="yes">conf.d</include>
+
+<!--
   Provide required aliases for standard names
 -->
 	<alias>
