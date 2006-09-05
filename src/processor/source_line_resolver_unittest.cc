@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 #include <string>
-#include "source_line_resolver.h"
+#include "processor/source_line_resolver.h"
 
 using std::string;
 using google_airbag::SourceLineResolver;

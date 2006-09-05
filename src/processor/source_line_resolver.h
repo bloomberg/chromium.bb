@@ -16,8 +16,8 @@
 // It uses address map files produced by a compatible writer, e.g.
 // PDBSourceLineWriter.
 
-#ifndef _SOURCE_LINE_RESOLVER_H__
-#define _SOURCE_LINE_RESOLVER_H__
+#ifndef PROCESSOR_SOURCE_LINE_RESOLVER_H__
+#define PROCESSOR_SOURCE_LINE_RESOLVER_H__
 
 #include "config.h"
 #include <string>
@@ -85,4 +85,4 @@ class SourceLineResolver {
 
 } // namespace google_airbag
 
-#endif  // _SOLURCE_LINE_RESOLVER_H__
+#endif  // PROCESSOR_SOURCE_LINE_RESOLVER_H__

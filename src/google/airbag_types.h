@@ -22,8 +22,8 @@
  *
  * Author: Mark Mentovai */
 
-#ifndef _AIRBAG_TYPES_H__
-#define _AIRBAG_TYPES_H__
+#ifndef GOOGLE_AIRBAG_TYPES_H__
+#define GOOGLE_AIRBAG_TYPES_H__
 
 
 #ifndef _WIN32
@@ -43,4 +43,4 @@ typedef unsigned __int64 u_int64_t;
 
 typedef u_int64_t airbag_time_t;
 
-#endif /* _AIRBAG_TYPES_H__ */
+#endif /* GOOGLE_AIRBAG_TYPES_H__ */

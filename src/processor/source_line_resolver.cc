@@ -17,7 +17,7 @@
 #include <string.h>
 #include <vector>
 #include <utility>
-#include "source_line_resolver.h"
+#include "processor/source_line_resolver.h"
 
 using std::map;
 using std::vector;

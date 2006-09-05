@@ -16,13 +16,13 @@
 // including data sent with the report and data derived by the minidump
 // processor (stack trace, etc.).
 
-#ifndef _CRASH_REPORT_H__
-#define _CRASH_REPORT_H__
+#ifndef GOOGLE_CRASH_REPORT_H__
+#define GOOGLE_CRASH_REPORT_H__
 
 #include <vector>
 #include <string>
-#include "airbag_types.h"
-#include "stack_frame.h"
+#include "google/airbag_types.h"
+#include "google/stack_frame.h"
 
 namespace google_airbag {
 
@@ -83,4 +83,4 @@ struct CrashReport {
 
 }  // namespace google_airbag
 
-#endif  // _CRASH_REPORT_H__
+#endif  // GOOGLE_CRASH_REPORT_H__

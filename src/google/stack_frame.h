@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _STACK_FRAME_H__
-#define _STACK_FRAME_H__
+#ifndef GOOGLE_STACK_FRAME_H__
+#define GOOGLE_STACK_FRAME_H__
 
 #include <vector>
-#include "airbag_types.h"
+#include "google/airbag_types.h"
 
 namespace google_airbag {
 
@@ -55,4 +55,4 @@ typedef std::vector<StackFrame> StackFrames;
 
 }  // namespace google_airbag
 
-#endif  // _STACK_FRAME_H__
+#endif  // GOOGLE_STACK_FRAME_H__

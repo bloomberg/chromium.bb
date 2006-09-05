@@ -15,6 +15,9 @@
 # limitations under the License.
 
 
+# This allows #includes to be relative to src/
+AM_CPPFLAGS = -I$(top_srcdir)/src
+
 ## Documentation
 docdir = $(prefix)/share/doc/$(PACKAGE)-$(VERSION)
 
