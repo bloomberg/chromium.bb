@@ -331,7 +331,6 @@ FcCacheRemove (FcCache *cache)
         update[i] = &next[i];
     }
     s = next[0];
-    assert (s->cache == cache);
     for (i = 0; i < fcCacheMaxLevel && *update[i] == s; i++)
 	*update[i] = s->next[i];
     while (fcCacheMaxLevel > 0 && fcCacheChains[fcCacheMaxLevel - 1] == NULL)
@@ -348,7 +347,10 @@ FcCacheFindByStat (struct stat *cache_stat)
 	if (s->cache_dev == cache_stat->st_dev &&
 	    s->cache_ino == cache_stat->st_ino &&
 	    s->cache_mtime == cache_stat->st_mtime)
+	{
+	    s->ref++;
 	    return s->cache;
+	}
     return NULL;
 }
 
