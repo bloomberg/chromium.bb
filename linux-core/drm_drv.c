@@ -443,7 +443,7 @@ static int drm_create_memory_caches(void)
 						  0,
 						  SLAB_HWCACHE_ALIGN,
 						  NULL,NULL);
-	if (!drm_cache.ref_object)
+	if (!drm_cache.fence_object)
 		return -ENOMEM;
 
 	drm_cache.ref_object= kmem_cache_create("drm_ref_object_t", 
@@ -524,6 +524,7 @@ err_p2:
 	unregister_chrdev(DRM_MAJOR, "drm");
 	drm_free(drm_heads, sizeof(*drm_heads) * drm_cards_limit, DRM_MEM_STUB);
 err_p1:
+	drm_free_memory_caches();
 	return ret;
 }
 
