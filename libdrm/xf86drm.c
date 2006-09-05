@@ -2751,17 +2751,6 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
     int ret = 0;
 
     /*
-     * At the moment, we don't allow recursive mapping of a buffer, since
-     * the first mapping may have to be unmapped before this one to succeed.
-     * This might result in a deadlock. We need a DRM mutex mechanism!!
-     */
-
-    if (buf->mapCount) {
-	drmMsg("Recursive mapping is currently not allowed.\n");
-	return -EAGAIN;
-    }
-
-    /*
      * Make sure we have a virtual address of the buffer.
      */
 
@@ -2827,8 +2816,6 @@ int drmBOUnmap(int fd, drmBO *buf)
     if (rep->ret)
 	return rep->ret;
 
-    --buf->mapCount;
-
     return 0;
 }
     
@@ -2840,11 +2827,6 @@ int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask,
     drm_bo_arg_reply_t *rep = &arg.rep;
     int ret = 0;
 
-    if (buf->mapCount) {
-	drmMsg("Cannot validate while buffer is mapped.\n");
-	return -EAGAIN;
-    }
-
     arg.handled = 0;
     req->handle = buf->handle;
     req->mask = flags;
@@ -2853,10 +2835,12 @@ int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask,
     req->op = drm_bo_validate;
     req->next = 0;
 
+
     do{
 	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     } while (ret && errno == -EAGAIN);
     
+
     if (ret) 
 	return ret;
     if (!arg.handled)
@@ -3008,11 +2992,6 @@ int drmBOValidateList(int fd, drmBOList *list)
       if (prevNext)
 	  *prevNext = (unsigned long) arg;
 
-      if (node->buf->mapCount) {
-	  drmMsg("Cannot validate while buffer is mapped.\n");
-	  return -EAGAIN;
-      }
-
       req->next = 0;
       prevNext = &req->next;
       arg->handled = 0;
@@ -3029,6 +3008,7 @@ int drmBOValidateList(int fd, drmBOList *list)
   do{
       ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
   } while (ret && errno == -EAGAIN);
+
 
   if (ret)
       return -errno;

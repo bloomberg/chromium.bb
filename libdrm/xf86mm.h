@@ -32,6 +32,18 @@
 #include "drm.h"
 
 /*
+ * Note on multithreaded applications using this interface.
+ * Libdrm is not threadsafe, so common buffer, TTM, and fence objects need to
+ * be protected using an external mutex.
+ *
+ * Note: Don't protect the following functions, as it may lead to deadlocks:
+ * drmBOUnmap(), drmFenceBuffers().
+ * The kernel is synchronizing and refcounting buffer maps. 
+ * User space only needs to refcount object usage within the same application.
+ */
+
+
+/*
  * List macros heavily inspired by the Linux kernel
  * list handling. No list looping yet.
  */
@@ -80,6 +92,7 @@ typedef struct _drmMMListHead
 
 #define DRMLISTENTRY(__type, __item, __field)   \
     ((__type *)(((char *) (__item)) - offsetof(__type, __field)))
+
 
 
 typedef struct _drmBO{
