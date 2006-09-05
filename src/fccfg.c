@@ -90,8 +90,6 @@ FcConfigCreate (void)
     for (set = FcSetSystem; set <= FcSetApplication; set++)
 	config->fonts[set] = 0;
 
-    config->caches = NULL;
-
     config->rescanTime = time(0);
     config->rescanInterval = 30;    
     
@@ -197,7 +195,6 @@ void
 FcConfigDestroy (FcConfig *config)
 {
     FcSetName	set;
-    FcCacheList	*cl, *cl_next;
 
     if (config == _fcConfig)
 	_fcConfig = 0;
@@ -221,13 +218,6 @@ FcConfigDestroy (FcConfig *config)
 	if (config->fonts[set])
 	    FcFontSetDestroy (config->fonts[set]);
 
-    for (cl = config->caches; cl; cl = cl_next)
-    {
-	cl_next = cl->next;
-	FcDirCacheUnload (cl->cache);
-	free (cl);
-    }
-
     free (config);
     FcMemFree (FC_MEM_CONFIG, sizeof (FcConfig));
 }
@@ -239,19 +229,9 @@ FcConfigDestroy (FcConfig *config)
 FcBool
 FcConfigAddCache (FcConfig *config, FcCache *cache)
 {
-    FcCacheList	*cl = malloc (sizeof (FcCacheList));
     FcFontSet	*fs;
     intptr_t	*dirs;
     int		i;
-
-    /*
-     * Add to cache list
-     */
-    if (!cl)
-	return FcFalse;
-    cl->cache = cache;
-    cl->next = config->caches;
-    config->caches = cl;
 
     /*
      * Add fonts
@@ -280,6 +260,7 @@ FcConfigAddCache (FcConfig *config, FcCache *cache)
 	    if (!FcConfigAcceptFont (config, font))
 		continue;
 		
+	    FcPatternReference (font);
 	    FcFontSetAdd (config->fonts[FcSetSystem], font);
 	}
     }
@@ -338,6 +319,7 @@ FcConfigBuildFonts (FcConfig *config)
 	if (!cache)
 	    continue;
 	FcConfigAddCache (config, cache);
+	FcDirCacheUnload (cache);
     }
     
     FcStrListDone (dirlist);

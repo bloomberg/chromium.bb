@@ -55,7 +55,10 @@ FcCharSetDestroy (FcCharSet *fcs)
     int i;
     
     if (fcs->ref == FC_REF_CONSTANT)
+    {
+	FcCacheObjectDereference (fcs);
 	return;
+    }
     if (--fcs->ref > 0)
 	return;
     for (i = 0; i < fcs->num; i++)
@@ -306,6 +309,8 @@ FcCharSetCopy (FcCharSet *src)
 {
     if (src->ref != FC_REF_CONSTANT)
 	src->ref++;
+    else
+	FcCacheObjectReference (src);
     return src;
 }
 

@@ -28,6 +28,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <sys/types.h>
+#include <assert.h>
 #if defined(HAVE_MMAP) || defined(__CYGWIN__)
 #  include <unistd.h>
 #  include <sys/mman.h>
@@ -182,6 +183,175 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
     return ret;
 }
 
+#define FC_CACHE_MIN_MMAP   1024
+
+/*
+ * Skip list element, make sure the 'next' pointer is the last thing
+ * in the structure, it will be allocated large enough to hold all
+ * of the necessary pointers
+ */
+
+typedef struct _FcCacheSkip FcCacheSkip;
+
+struct _FcCacheSkip {
+    FcCache	    *cache;
+    int		    ref;
+    intptr_t	    size;
+    dev_t	    cache_dev;
+    ino_t	    cache_ino;
+    time_t	    cache_mtime;
+    FcCacheSkip	    *next[1];
+};
+
+/*
+ * The head of the skip list; pointers for every possible level
+ * in the skip list, plus the largest level in the list
+ */
+
+#define FC_CACHE_MAX_LEVEL  16
+
+static FcCacheSkip	*fcCacheChains[FC_CACHE_MAX_LEVEL];
+static int		fcCacheMaxLevel;
+
+/*
+ * Generate a random level number, distributed
+ * so that each level is 1/4 as likely as the one before
+ *
+ * Note that level numbers run 1 <= level <= MAX_LEVEL
+ */
+static int
+random_level (void)
+{
+    /* tricky bit -- each bit is '1' 75% of the time */
+    long int	bits = random () | random ();
+    int	level = 0;
+
+    while (++level < FC_CACHE_MAX_LEVEL)
+    {
+	if (bits & 1)
+	    break;
+	bits >>= 1;
+    }
+    return level;
+}
+
+/*
+ * Insert cache into the list
+ */
+static FcBool
+FcCacheInsert (FcCache *cache, struct stat *cache_stat)
+{
+    FcCacheSkip    **update[FC_CACHE_MAX_LEVEL];
+    FcCacheSkip    *s, **next;
+    int		    i, level;
+
+    /*
+     * Find links along each chain
+     */
+    next = fcCacheChains;
+    for (i = fcCacheMaxLevel; --i >= 0; )
+    {
+	for (; (s = next[i]); next = s->next)
+	    if (s->cache > cache)
+		break;
+        update[i] = &next[i];
+    }
+
+    /*
+     * Create new list element
+     */
+    level = random_level ();
+    if (level > fcCacheMaxLevel)
+    {
+	level = fcCacheMaxLevel + 1;
+	update[fcCacheMaxLevel] = &fcCacheChains[fcCacheMaxLevel];
+	fcCacheMaxLevel = level;
+    }
+    
+    s = malloc (sizeof (FcCacheSkip) + (level - 1) * sizeof (FcCacheSkip *));
+    if (!s)
+	return FcFalse;
+
+    s->cache = cache;
+    s->size = cache->size;
+    s->ref = 1;
+    s->cache_dev = cache_stat->st_dev;
+    s->cache_ino = cache_stat->st_ino;
+    s->cache_mtime = cache_stat->st_mtime;
+    
+    /*
+     * Insert into all fcCacheChains
+     */
+    for (i = 0; i < level; i++)
+    {
+	s->next[i] = *update[i];
+	*update[i] = s;
+    }
+    return FcTrue;
+}
+
+static FcCacheSkip *
+FcCacheFindByAddr (void *object)
+{
+    int	    i;
+    FcCacheSkip    **next = fcCacheChains;
+    FcCacheSkip    *s;
+
+    /*
+     * Walk chain pointers one level at a time
+     */
+    for (i = fcCacheMaxLevel; --i >= 0;)
+	while (next[i] && (char *) object >= ((char *) next[i]->cache + next[i]->size))
+	    next = next[i]->next;
+    /*
+     * Here we are
+     */
+    s = next[0];
+    if (s && (char *) object < ((char *) s->cache + s->size))
+	return s;
+    return NULL;
+}
+
+static void
+FcCacheRemove (FcCache *cache)
+{
+    FcCacheSkip	    **update[FC_CACHE_MAX_LEVEL];
+    FcCacheSkip	    *s, **next;
+    int		    i;
+
+    /*
+     * Find links along each chain
+     */
+    next = fcCacheChains;
+    for (i = fcCacheMaxLevel; --i >= 0; )
+    {
+	for (; (s = next[i]); next = s->next)
+	    if (s->cache >= cache)
+		break;
+        update[i] = &next[i];
+    }
+    s = next[0];
+    assert (s->cache == cache);
+    for (i = 0; i < fcCacheMaxLevel && *update[i] == s; i++)
+	*update[i] = s->next[i];
+    while (fcCacheMaxLevel > 0 && fcCacheChains[fcCacheMaxLevel - 1] == NULL)
+	fcCacheMaxLevel--;
+    free (s);
+}
+
+static FcCache *
+FcCacheFindByStat (struct stat *cache_stat)
+{
+    FcCacheSkip	    *s;
+
+    for (s = fcCacheChains[0]; s; s = s->next[0])
+	if (s->cache_dev == cache_stat->st_dev &&
+	    s->cache_ino == cache_stat->st_ino &&
+	    s->cache_mtime == cache_stat->st_mtime)
+	    return s->cache;
+    return NULL;
+}
+
 static void
 FcDirCacheDispose (FcCache *cache)
 {
@@ -197,82 +367,39 @@ FcDirCacheDispose (FcCache *cache)
 #endif
 	break;
     }
+    FcCacheRemove (cache);
 }
 
-#define FC_CACHE_MIN_MMAP   1024
-
-#define FC_CACHE_HASH_SIZE  67
-
-typedef struct _FcCacheBucket FcCacheBucket;
-
-struct _FcCacheBucket {
-    FcCacheBucket   *next;
-    FcCache	    *cache;
-    dev_t	    cache_dev;
-    ino_t	    cache_ino;
-    time_t	    cache_mtime;
-};
-
-static FcCacheBucket	*FcCacheBuckets[FC_CACHE_HASH_SIZE];
-
-static uint32_t
-FcCacheStatHash (struct stat *cache_stat)
+void
+FcCacheObjectReference (void *object)
 {
-    return ((uint32_t) cache_stat->st_dev ^
-	    (uint32_t) cache_stat->st_ino ^
-	    (uint32_t) cache_stat->st_mtime);
+    FcCacheSkip *skip = FcCacheFindByAddr (object);
+
+    if (skip)
+	skip->ref++;
 }
 
-static FcCache *
-FcCacheLookup (struct stat *cache_stat)
+void
+FcCacheObjectDereference (void *object)
 {
-    uint32_t	    hash = FcCacheStatHash(cache_stat);
-    FcCacheBucket   **bucket = &FcCacheBuckets[hash % FC_CACHE_HASH_SIZE];
-    FcCacheBucket   *b;
+    FcCacheSkip	*skip = FcCacheFindByAddr (object);
 
-    for (b = *bucket; b; b = b->next)
-	if (b->cache_dev == cache_stat->st_dev &&
-	    b->cache_ino == cache_stat->st_ino &&
-	    b->cache_mtime == cache_stat->st_mtime)
-	    return b->cache;
-    return NULL;
-}
-
-static FcBool
-FcCacheRecord (FcCache *cache, struct stat *cache_stat)
-{
-    uint32_t	    hash = FcCacheStatHash(cache_stat);
-    FcCacheBucket   **bucket = &FcCacheBuckets[hash % FC_CACHE_HASH_SIZE];
-    FcCacheBucket   *b;
-
-    b = malloc (sizeof (FcCacheBucket));
-    if (!b)
-	return FcFalse;
-    b->next = *bucket;
-    b->cache = cache;
-    b->cache_dev = cache_stat->st_dev;
-    b->cache_ino = cache_stat->st_ino;
-    b->cache_mtime = cache_stat->st_mtime;
-    *bucket = b;
-    return FcTrue;
+    if (skip)
+    {
+	skip->ref--;
+	if (skip->ref <= 0)
+	    FcDirCacheDispose (skip->cache);
+    }
 }
 
 void
 FcCacheFini (void)
 {
     int		    i;
-    FcCacheBucket   *b, *next;
 
-    for (i = 0; i < FC_CACHE_HASH_SIZE; i++)
-    {
-	for (b = FcCacheBuckets[i]; b; b = next)
-	{
-	    next = b->next;
-	    FcDirCacheDispose (b->cache);
-	    free (b);
-	}
-	FcCacheBuckets[i] = NULL;
-    }
+    for (i = 0; i < FC_CACHE_MAX_LEVEL; i++)
+	assert (fcCacheChains[i] == NULL);
+    assert (fcCacheMaxLevel == 0);
 }
 
 /*
@@ -286,7 +413,7 @@ FcDirCacheMapFd (int fd, struct stat *fd_stat)
 
     if (fd_stat->st_size < sizeof (FcCache))
 	return NULL;
-    cache = FcCacheLookup (fd_stat);
+    cache = FcCacheFindByStat (fd_stat);
     if (cache)
 	return cache;
     /*
@@ -327,7 +454,7 @@ FcDirCacheMapFd (int fd, struct stat *fd_stat)
     if (cache->magic != FC_CACHE_MAGIC_MMAP || 
 	cache->version < FC_CACHE_CONTENT_VERSION ||
 	cache->size != fd_stat->st_size ||
-	!FcCacheRecord (cache, fd_stat))
+	!FcCacheInsert (cache, fd_stat))
     {
 	if (allocated)
 	    free (cache);
@@ -352,7 +479,7 @@ FcDirCacheMapFd (int fd, struct stat *fd_stat)
 void
 FcDirCacheUnload (FcCache *cache)
 {
-    /* Can't free or unmap the cache as apps may point into it */
+    FcCacheObjectDereference (cache);
 }
 
 static FcBool

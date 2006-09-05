@@ -282,7 +282,13 @@ FcPatternDestroy (FcPattern *p)
     int		    i;
     FcPatternElt    *elts;
     
-    if (p->ref == FC_REF_CONSTANT || --p->ref > 0)
+    if (p->ref == FC_REF_CONSTANT)
+    {
+	FcCacheObjectDereference (p);
+	return;
+    }
+	
+    if (--p->ref > 0)
 	return;
 
     elts = FcPatternElts (p);
@@ -938,6 +944,8 @@ FcPatternReference (FcPattern *p)
 {
     if (p->ref != FC_REF_CONSTANT)
 	p->ref++;
+    else
+	FcCacheObjectReference (p);
 }
 
 FcPattern *

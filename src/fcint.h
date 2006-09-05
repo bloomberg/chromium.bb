@@ -419,11 +419,6 @@ struct _FcBlanks {
     FcChar32	*blanks;
 };
 
-typedef struct _FcCacheList {
-    struct _FcCacheList *next;
-    FcCache		*cache;
-} FcCacheList;
-
 struct _FcConfig {
     /*
      * File names loaded from the configuration -- saved here as the
@@ -475,11 +470,6 @@ struct _FcConfig {
      */
     FcFontSet	*fonts[FcSetApplication + 1];
     /*
-     * Font cache information is mapped from cache files
-     * the configuration is destroyed, the files need to be unmapped
-     */
-    FcCacheList	*caches;
-    /*
      * Fontconfig can periodically rescan the system configuration
      * and font directories.  This rescanning occurs when font
      * listing requests are made, but no more often than rescanInterval
@@ -514,6 +504,12 @@ FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, FcStrSet *dirs);
 FcPrivate FcBool
 FcDirCacheWrite (FcCache *cache, FcConfig *config);
     
+FcPrivate void
+FcCacheObjectReference (void *object);
+
+FcPrivate void
+FcCacheObjectDereference (void *object);
+
 FcPrivate void
 FcCacheFini (void);
     
