@@ -1379,10 +1379,16 @@ extern void drm_fence_usage_deref_locked(drm_device_t * dev,
 					 drm_fence_object_t * fence);
 extern void drm_fence_usage_deref_unlocked(drm_device_t * dev,
 					 drm_fence_object_t * fence);
-extern int drm_fence_object_init(drm_device_t * dev, uint32_t type, int emit,
-				 drm_fence_object_t * fence);
 extern int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
 				 int lazy, int ignore_signals, uint32_t mask);
+extern int drm_fence_object_create(drm_device_t *dev, uint32_t type,
+				   int emit, drm_fence_object_t **c_fence);
+extern int drm_fence_add_user_object(drm_file_t *priv, 
+				     drm_fence_object_t *fence,
+				     int shareable);
+
+
+
 
 
 extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
@@ -1394,6 +1400,10 @@ extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
 extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
 extern int drm_bo_clean_mm(drm_device_t *dev);
+extern int drm_fence_buffer_objects(drm_file_t * priv,
+				    struct list_head *list, 
+				    drm_fence_object_t *fence,
+				    drm_fence_object_t **used_fence);
 
 
 /* Inline replacements for DRM_IOREMAP macros */

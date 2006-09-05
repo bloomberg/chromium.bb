@@ -417,14 +417,28 @@ int drm_fence_object_init(drm_device_t * dev, uint32_t type, int emit,
 
 EXPORT_SYMBOL(drm_fence_object_init);
 
-static int drm_fence_object_create(drm_file_t * priv, uint32_t type,
-				   int emit, int shareable,
-				   uint32_t * user_handle,
-				   drm_fence_object_t ** c_fence)
+int drm_fence_add_user_object(drm_file_t *priv, drm_fence_object_t *fence,
+			      int shareable)
 {
 	drm_device_t *dev = priv->head->dev;
 	int ret;
+
+	mutex_lock(&dev->struct_mutex);
+	ret = drm_add_user_object(priv, &fence->base, shareable);
+	mutex_unlock(&dev->struct_mutex);
+	if (ret)
+		return ret;
+	fence->base.type = drm_fence_type;
+	fence->base.remove = &drm_fence_object_destroy;
+	return 0;
+}
+EXPORT_SYMBOL(drm_fence_add_user_object);
+
+int drm_fence_object_create(drm_device_t *dev, uint32_t type,
+			    int emit, drm_fence_object_t **c_fence)
+{
 	drm_fence_object_t *fence;
+	int ret;
 
 	fence = kmem_cache_alloc(drm_cache.fence_object, GFP_KERNEL);
 	if (!fence)
@@ -434,23 +448,11 @@ static int drm_fence_object_create(drm_file_t * priv, uint32_t type,
 		drm_fence_usage_deref_unlocked(dev, fence);
 		return ret;
 	}
-
-	mutex_lock(&dev->struct_mutex);
-	ret = drm_add_user_object(priv, &fence->base, shareable);
-	mutex_unlock(&dev->struct_mutex);
-	if (ret) {
-		drm_fence_usage_deref_unlocked(dev, fence);
-		*c_fence = NULL;
-		*user_handle = 0;
-		return ret;
-	}
-	fence->base.type = drm_fence_type;
-	fence->base.remove = &drm_fence_object_destroy;
-	*user_handle = fence->base.hash.key;
-	*c_fence = fence;
-
+	*c_fence = fence; 
 	return 0;
 }
+EXPORT_SYMBOL(drm_fence_object_create);
+
 
 void drm_fence_manager_init(drm_device_t * dev)
 {
@@ -511,24 +513,29 @@ int drm_fence_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 	switch (arg.op) {
-	case drm_fence_create:{
-			int emit = arg.flags & DRM_FENCE_FLAG_EMIT;
-			if (emit)
-				LOCK_TEST_WITH_RETURN(dev, filp);
-			ret =
-			    drm_fence_object_create(priv, arg.type,
-						    emit,
-						    arg.
-						    flags &
-						    DRM_FENCE_FLAG_SHAREABLE,
-						    &arg.handle, &fence);
-			if (ret)
-				return ret;
-			mutex_lock(&dev->struct_mutex);
-			atomic_inc(&fence->usage);
-			mutex_unlock(&dev->struct_mutex);
-			break;
+	case drm_fence_create:
+		if (arg.flags & DRM_FENCE_FLAG_EMIT)
+			LOCK_TEST_WITH_RETURN(dev, filp);
+		ret = drm_fence_object_create(dev, arg.type,
+					      arg.flags & DRM_FENCE_FLAG_EMIT,
+					      &fence);
+		if (ret)
+			return ret;
+		ret = drm_fence_add_user_object(priv, fence, 
+						arg.flags & 
+						DRM_FENCE_FLAG_SHAREABLE);
+		if (ret) {
+			drm_fence_usage_deref_unlocked(dev, fence);
+			return ret;
 		}
+
+		/*
+		 * usage > 0. No need to lock dev->struct_mutex;
+		 */
+
+		atomic_inc(&fence->usage);
+		arg.handle = fence->base.hash.key;
+		break;
 	case drm_fence_destroy:
 		mutex_lock(&dev->struct_mutex);
 		uo = drm_lookup_user_object(priv, arg.handle);
@@ -577,6 +584,23 @@ int drm_fence_ioctl(DRM_IOCTL_ARGS)
 			return -EINVAL;
 		ret = drm_fence_object_emit(dev, fence, arg.type);
 		break;
+	case drm_fence_buffers:
+		if (!dev->bm.initialized) {
+			DRM_ERROR("Buffer object manager is not initialized\n");
+			return -EINVAL;
+		}
+		LOCK_TEST_WITH_RETURN(dev, filp);
+		ret = drm_fence_buffer_objects(priv, NULL, NULL, &fence);
+		if (ret) 
+			return ret;
+		ret = drm_fence_add_user_object(priv, fence, 
+						arg.flags & 
+						DRM_FENCE_FLAG_SHAREABLE);
+		if (ret)
+			return ret;
+		atomic_inc(&fence->usage);
+		arg.handle = fence->base.hash.key;
+		break;			
 	default:
 		return -EINVAL;
 	}

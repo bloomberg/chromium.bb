@@ -199,8 +199,15 @@ void drm_bo_usage_deref_unlocked(drm_device_t * dev, drm_buffer_object_t * bo)
 	}
 }
 
+/*
+ * Note. The caller has to register (if applicable) 
+ * and deregister fence object usage.
+ */
+
 int drm_fence_buffer_objects(drm_file_t * priv,
-			     struct list_head *list, drm_fence_object_t * fence)
+			     struct list_head *list, 
+			     drm_fence_object_t *fence,
+			     drm_fence_object_t **used_fence)
 {
 	drm_device_t *dev = priv->head->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
@@ -230,19 +237,9 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 			goto out;
 		}
 	} else {
-		fence = kmem_cache_alloc(drm_cache.fence_object, GFP_KERNEL);
-
-		if (!fence) {
-			ret = -ENOMEM;
-			goto out;
-		}
-
-		ret = drm_fence_object_init(dev, fence_flags, 1, fence);
-
-		if (ret) {
-			kmem_cache_free(drm_cache.fence_object, fence);
-			goto out;
-		}
+		ret = drm_fence_object_create(dev, fence_flags, 1, &fence);
+		if (ret)
+			goto out;		
 	}
 
 	/*
@@ -285,14 +282,14 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 		drm_bo_usage_deref_locked(dev, entry);
 		l = f_list.next;
 	}
-	if (!count)
-		drm_fence_usage_deref_locked(dev, fence);
-	else if (count > 1)
-		atomic_add(count - 1, &fence->usage);
+	atomic_add(count, &fence->usage);
       out:
 	mutex_unlock(&dev->struct_mutex);
+	*used_fence = fence;
 	return ret;
 }
+EXPORT_SYMBOL(drm_fence_buffer_objects);
+
 
 /*
  * Call bo->mutex locked.

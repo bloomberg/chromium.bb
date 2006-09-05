@@ -626,6 +626,7 @@ extern int           drmFenceSignaled(int fd, drmFence *fence);
 extern int           drmFenceWait(int fd, drmFence *fence, unsigned flush_type, 
 				  int lazy, int ignore_signals);
 extern int           drmFenceEmit(int fd, drmFence *fence, unsigned emit_type);
+extern int           drmFenceBuffers(int fd, int shareable, drmFence *fence);
 
 /* TTMS */
 extern int           drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, 

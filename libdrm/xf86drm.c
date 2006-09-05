@@ -2259,6 +2259,21 @@ int drmFenceCreate(int fd, int shareable, int class,unsigned type,
     fence->signaled = 0;
     return 0;
 }
+
+int drmFenceBuffers(int fd, int shareable, drmFence *fence)
+{
+    drm_fence_arg_t arg;
+    
+    arg.flags = (shareable) ? DRM_FENCE_FLAG_SHAREABLE : 0;
+    arg.op = drm_fence_buffers;
+    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+	return -errno;
+    fence->handle = arg.handle;
+    fence->class = arg.class;
+    fence->type = arg.type;
+    fence->signaled = 0;
+    return 0;
+}
     
 int drmFenceDestroy(int fd, const drmFence *fence)
 {

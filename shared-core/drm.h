@@ -659,7 +659,8 @@ typedef struct drm_fence_arg {
 		drm_fence_signaled,
 		drm_fence_flush,
 		drm_fence_wait,
-		drm_fence_emit
+		drm_fence_emit,
+		drm_fence_buffers
 	} op;
 } drm_fence_arg_t;
 
