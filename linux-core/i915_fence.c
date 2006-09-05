@@ -58,13 +58,9 @@ static void i915_perform_flush(drm_device_t * dev)
 			diff = sequence - fm->exe_flush_sequence;
 			if (diff < driver->wrap_diff) {
 				fm->pending_exe_flush = 0;
-				/*
-				 * Turn off user IRQs
-				 */
+				i915_user_irq_off(dev_priv);
 			} else {
-				/*
-				 * Turn on user IRQs
-				 */
+			        i915_user_irq_on(dev_priv);
 			}
 		}
 	}

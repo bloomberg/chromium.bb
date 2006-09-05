@@ -103,6 +103,10 @@ typedef struct drm_i915_private {
 	struct mem_block *agp_heap;
 	unsigned int sr01, adpa, ppcr, dvob, dvoc, lvds;
 	int vblank_pipe;
+        spinlock_t user_irq_lock;
+        int user_irq_refcount;
+        uint32_t irq_enable_reg;
+        int irq_enabled;
 
 #ifdef I915_HAVE_FENCE
         uint32_t flush_sequence;
@@ -139,6 +143,8 @@ extern void i915_driver_irq_uninstall(drm_device_t * dev);
 extern int i915_vblank_pipe_set(DRM_IOCTL_ARGS);
 extern int i915_vblank_pipe_get(DRM_IOCTL_ARGS);
 extern int i915_emit_irq(drm_device_t * dev);
+extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
+extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(DRM_IOCTL_ARGS);
