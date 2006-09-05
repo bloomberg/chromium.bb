@@ -48,6 +48,16 @@ FcMemFree (int kind, int size)
 {
 }
 
+FcPrivate void
+FcCacheObjectReference (void *object)
+{
+}
+
+FcPrivate void
+FcCacheObjectDereference (void *object)
+{
+}
+
 int FcDebugVal;
 
 FcChar8 *
