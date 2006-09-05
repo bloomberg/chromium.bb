@@ -47,4 +47,11 @@ $(TARG):fc-arch${EXEEXT} $(STMPL) ${top_srcdir}/src/fcint.h ../config.h
 	rm -f $(TARG)
 	./fc-arch${EXEEXT} $(ARCHITECTURE) < $(STMPL) > $(TARG)
 
-CLEANFILES=$(TARG)
+ALIAS_FILES = fcalias.h fcaliastail.h
+
+BUILT_SOURCES = $(ALIAS_FILES)
+
+$(ALIAS_FILES): 
+	touch $(ALIAS_FILES)
+
+CLEANFILES=$(TARG) $(ALIAS_FILES)

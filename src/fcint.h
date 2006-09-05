@@ -48,6 +48,7 @@
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcprivate.h>
 #include <fontconfig/fcfreetype.h>
+#include "fcalias.h"
 
 #ifndef FC_CONFIG_PATH
 #define FC_CONFIG_PATH "fonts.conf"
@@ -322,6 +323,8 @@ struct _FcCache {
     intptr_t	set;		    /* offset to font set */
 };
 
+#undef FcCacheDir
+#undef FcCacheSubdir
 #define FcCacheDir(c)	FcOffsetMember(c,dir,FcChar8)
 #define FcCacheDirs(c)	FcOffsetMember(c,dirs,intptr_t)
 #define FcCacheSet(c)	FcOffsetMember(c,set,FcFontSet)
@@ -513,7 +516,7 @@ FcCacheObjectDereference (void *object);
 FcPrivate void
 FcCacheFini (void);
     
-void
+FcPrivate void
 FcDirCacheReference (FcCache *cache, int nref);
 
 /* fccfg.c */

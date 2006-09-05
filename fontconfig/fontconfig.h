@@ -355,10 +355,10 @@ FcConfigGetConfigDirs (FcConfig   *config);
 FcPublic FcStrList *
 FcConfigGetConfigFiles (FcConfig    *config);
 
-FcChar8 *
+FcPublic FcChar8 *
 FcConfigGetCache (FcConfig  *config);
 
-FcBlanks *
+FcPublic FcBlanks *
 FcConfigGetBlanks (FcConfig *config);
 
 FcPublic FcStrList *
@@ -899,13 +899,13 @@ FcPublic void
 FcStrSetDestroy (FcPublic FcStrSet *set);
 
 FcPublic FcStrList *
-FcPublic FcStrListCreate (FcPublic FcStrSet *set);
+FcStrListCreate (FcPublic FcStrSet *set);
 
 FcPublic FcChar8 *
-FcPublic FcStrListNext (FcStrList *list);
+FcStrListNext (FcStrList *list);
 
 FcPublic void
-FcPublic FcStrListDone (FcStrList *list);
+FcStrListDone (FcStrList *list);
 
 /* fcxml.c */
 FcPublic FcBool

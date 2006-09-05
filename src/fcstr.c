@@ -1051,3 +1051,6 @@ FcStrListDone (FcStrList *list)
     free (list);
 }
 
+#define __fcstr__
+#include "fcaliastail.h"
+#undef __fcstr__

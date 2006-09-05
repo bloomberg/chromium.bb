@@ -166,3 +166,6 @@ FcDefaultSubstitute (FcPattern *pattern)
 	FcPatternObjectAddInteger (pattern, FC_HINT_STYLE_OBJECT, FC_HINT_FULL);
     }
 }
+#define __fcdefault__
+#include "fcaliastail.h"
+#undef __fcdefault__

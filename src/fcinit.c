@@ -263,3 +263,6 @@ FcMemFree (int kind, int size)
 	    FcMemReport ();
     }
 }
+#define __fcinit__
+#include "fcaliastail.h"
+#undef __fcinit__

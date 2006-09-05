@@ -47,5 +47,12 @@ $(TARG): $(STMPL) fc-glyphname$(EXEEXT) $(SGLYPHNAME)
 	rm -f $(TARG)
 	./fc-glyphname$(EXEEXT) $(SGLYPHNAME) < $(STMPL) > $(TARG)
 
-CLEANFILES=$(TARG)
+ALIAS_FILES = fcalias.h fcaliastail.h
+
+BUILT_SOURCES = $(ALIAS_FILES)
+
+$(ALIAS_FILES): 
+	touch $(ALIAS_FILES)
+
+CLEANFILES=$(TARG) $(ALIAS_FILES)
 

@@ -292,3 +292,6 @@ FcDirSave (FcFontSet *set, FcStrSet * dirs, const FcChar8 *dir)
 {
     return FcFalse; /* XXX deprecated */
 }
+#define __fcdir__
+#include "fcaliastail.h"
+#undef __fcdir__

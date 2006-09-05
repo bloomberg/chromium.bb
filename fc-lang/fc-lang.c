@@ -22,7 +22,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "fcint.h"
 #include "fccharset.c"
 #include "fcstr.c"
 #include "fcserialize.c"

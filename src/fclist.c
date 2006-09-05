@@ -556,3 +556,6 @@ FcFontList (FcConfig	*config,
 	sets[nsets++] = config->fonts[FcSetApplication];
     return FcFontSetList (config, sets, nsets, p, os);
 }
+#define __fclist__
+#include "fcaliastail.h"
+#undef __fclist__

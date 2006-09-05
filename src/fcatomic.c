@@ -211,3 +211,6 @@ FcAtomicDestroy (FcAtomic *atomic)
 
     free (atomic);
 }
+#define __fcatomic__
+#include "fcaliastail.h"
+#undef __fcatomic__

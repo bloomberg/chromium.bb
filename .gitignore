@@ -1,3 +1,5 @@
+fcalias.h
+fcaliastail.h
 tags
 *.tar.gz
 .libs

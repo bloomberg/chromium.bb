@@ -73,9 +73,13 @@ INCLUDES = 						\
 	-DFC_CACHEDIR='"$(FC_CACHEDIR)"'                \
 	-DFONTCONFIG_PATH='"$(CONFDIR)"'
 
-EXTRA_DIST = fontconfig.def.in
+EXTRA_DIST = fontconfig.def.in makealias
 
 noinst_HEADERS=fcint.h
+
+ALIAS_FILES = fcalias.h fcaliastail.h
+
+BUILT_SOURCES = $(ALIAS_FILES)
 
 libfontconfig_la_SOURCES = \
 	fcatomic.c \
@@ -112,3 +116,12 @@ install-data-local: install-ms-import-lib install-libtool-import-lib
 
 uninstall-local: uninstall-ms-import-lib uninstall-libtool-import-lib
 
+PUBLIC_FILES = \
+	$(top_srcdir)/fontconfig/fontconfig.h \
+	$(top_srcdir)/fontconfig/fcfreetype.h \
+	$(top_srcdir)/fontconfig/fcprivate.h
+	
+$(ALIAS_FILES): $(top_srcdir)/src/makealias $(PUBLIC_FILES)
+	sh $(top_srcdir)/src/makealias "$(top_srcdir)/src" $(PUBLIC_FILES)
+
+CLEANFILES := $(ALIAS_FILES)

@@ -52,5 +52,12 @@ $(TARG): $(STMPL) fc-case$(EXEEXT) $(SCASEFOLDING)
 	rm -f $(TARG)
 	./fc-case$(EXEEXT) $(SCASEFOLDING) < $(STMPL) > $(TARG)
 
-CLEANFILES=$(TARG)
+ALIAS_FILES = fcalias.h fcaliastail.h
+
+BUILT_SOURCES = $(ALIAS_FILES)
+
+$(ALIAS_FILES): 
+	touch $(ALIAS_FILES)
+
+CLEANFILES=$(TARG) $(ALIAS_FILES)
 

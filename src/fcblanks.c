@@ -90,3 +90,6 @@ FcBlanksIsMember (FcBlanks *b, FcChar32 ucs4)
 	    return FcTrue;
     return FcFalse;
 }
+#define __fcblanks__
+#include "fcaliastail.h"
+#undef __fcblanks__

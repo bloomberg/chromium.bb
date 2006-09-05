@@ -727,3 +727,6 @@ FcLangSetSerialize(FcSerialize *serialize, const FcLangSet *l)
     *l_serialize = *l;
     return l_serialize;
 }
+#define __fclang__
+#include "fcaliastail.h"
+#undef __fclang__

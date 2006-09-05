@@ -879,3 +879,6 @@ bail0:
     FcStrBufDestroy (&buf);
     return 0;
 }
+#define __fcname__
+#include "fcaliastail.h"
+#undef __fcname__

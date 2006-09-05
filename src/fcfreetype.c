@@ -2952,3 +2952,7 @@ bail:
     ftglue_free(memory, gpostags);
     return complex;
 }
+
+#define __fcfreetype__
+#include "fcaliastail.h"
+#undef __fcfreetype__

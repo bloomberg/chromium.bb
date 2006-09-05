@@ -1085,3 +1085,6 @@ static void MD5Transform(FcChar32 buf[4], FcChar32 in[16])
     buf[2] += c;
     buf[3] += d;
 }
+#define __fccache__
+#include "fcaliastail.h"
+#undef __fccache__

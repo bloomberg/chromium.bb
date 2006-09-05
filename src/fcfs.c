@@ -130,3 +130,6 @@ FcFontSetSerialize (FcSerialize *serialize, const FcFontSet * s)
 
     return s_serialize;
 }
+#define __fcfs__
+#include "fcaliastail.h"
+#undef __fcfs__
