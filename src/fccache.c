@@ -477,6 +477,15 @@ FcDirCacheMapFd (int fd, struct stat *fd_stat)
 }
 
 void
+FcDirCacheReference (FcCache *cache, int nref)
+{
+    FcCacheSkip *skip = FcCacheFindByAddr (cache);
+
+    if (skip)
+	skip->ref += nref;
+}
+
+void
 FcDirCacheUnload (FcCache *cache)
 {
     FcCacheObjectDereference (cache);

@@ -513,6 +513,9 @@ FcCacheObjectDereference (void *object);
 FcPrivate void
 FcCacheFini (void);
     
+void
+FcDirCacheReference (FcCache *cache, int nref);
+
 /* fccfg.c */
 
 FcPrivate FcBool

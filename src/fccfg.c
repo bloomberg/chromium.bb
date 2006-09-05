@@ -239,6 +239,8 @@ FcConfigAddCache (FcConfig *config, FcCache *cache)
     fs = FcCacheSet (cache);
     if (fs)
     {
+	int	nref = 0;
+	
 	for (i = 0; i < fs->nfont; i++)
 	{
 	    FcPattern	*font = FcFontSetFont (fs, i);
@@ -260,9 +262,10 @@ FcConfigAddCache (FcConfig *config, FcCache *cache)
 	    if (!FcConfigAcceptFont (config, font))
 		continue;
 		
-	    FcPatternReference (font);
+	    nref++;
 	    FcFontSetAdd (config->fonts[FcSetSystem], font);
 	}
+	FcDirCacheReference (cache, nref);
     }
 
     /*
