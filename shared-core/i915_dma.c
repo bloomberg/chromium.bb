@@ -34,7 +34,8 @@
 #define IS_I965G(dev)  (dev->pdev->device == 0x2972 || \
 			dev->pdev->device == 0x2982 || \
 			dev->pdev->device == 0x2992 || \
-			dev->pdev->device == 0x29A2)
+			dev->pdev->device == 0x29A2 || \
+			dev->pdev->device == 0x2A02)
 
 
 /* Really want an OS-independent resettable timer.  Would like to have
