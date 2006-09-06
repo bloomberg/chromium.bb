@@ -15,14 +15,28 @@
 #ifndef GOOGLE_STACK_FRAME_H__
 #define GOOGLE_STACK_FRAME_H__
 
+#include <string>
 #include <vector>
 #include "google/airbag_types.h"
 
 namespace google_airbag {
 
 using std::string;
+using std::vector;
 
 struct StackFrame {
+  // Initialize sensible defaults, or this will be instantiated with
+  // primitive members in an undetermined state.
+  StackFrame()
+      : instruction()
+      , frame_pointer()
+      , module_base()
+      , module_name()
+      , function_base()
+      , function_name()
+      , source_file_name()
+      , source_line() {}
+
   // The program counter location relative to the module base
   u_int64_t instruction;
 
@@ -51,7 +65,7 @@ struct StackFrame {
   // TODO(bryner): saved registers
 };
 
-typedef std::vector<StackFrame> StackFrames;
+typedef vector<StackFrame> StackFrames;
 
 }  // namespace google_airbag
 
