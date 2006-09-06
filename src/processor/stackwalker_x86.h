@@ -49,8 +49,8 @@ class StackwalkerX86 : public Stackwalker {
   private:
     // Implementation of Stackwalker, using x86 context (%ebp, %eip) and
     // stack conventions (saved %ebp at [%ebp], saved %eip at 4[%ebp]).
-    bool GetContextFrame(StackFrame* frame);
-    bool GetCallerFrame(StackFrame* frame);
+    virtual bool GetContextFrame(StackFrame* frame);
+    virtual bool GetCallerFrame(StackFrame* frame);
 
     // Stores the CPU context corresponding to the innermost stack frame to
     // be returned by GetContextFrame.
