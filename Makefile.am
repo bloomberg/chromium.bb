@@ -18,6 +18,7 @@
 # This allows #includes to be relative to src/
 AM_CPPFLAGS = -I$(top_srcdir)/src
 
+
 ## Documentation
 docdir = $(prefix)/share/doc/$(PACKAGE)-$(VERSION)
 
@@ -34,14 +35,34 @@ dist_doc_DATA = \
 lib_LTLIBRARIES = src/libairbag.la
 
 src_libairbag_la_SOURCES = \
+	src/google/airbag_types.h \
+	src/google/crash_report.h \
+	src/google/stack_frame.h \
+	src/processor/memory_region.h \
+	src/processor/minidump.cc \
+	src/processor/minidump.h \
+	src/processor/minidump_format.h \
+	src/processor/range_map.h \
 	src/processor/source_line_resolver.cc \
 	src/processor/source_line_resolver.h
 
 
+## Programs
+bin_PROGRAMS = \
+	src/processor/minidump_dump
+
+
 ## Tests
-TESTS = src/processor/source_line_resolver_unittest
+check_PROGRAMS = \
+	src/processor/range_map_unittest \
+	src/processor/source_line_resolver_unittest
+check_SCRIPTS = \
+	src/processor/minidump_dump_test
+TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT =
-check_SCRIPTS =
+
+src_processor_range_map_unittest_SOURCES = \
+	src/processor/range_map_unittest.cc
 
 src_processor_source_line_resolver_unittest_SOURCES = \
 	src/processor/source_line_resolver_unittest.cc
@@ -50,13 +71,20 @@ src_processor_source_line_resolver_unittest_LDADD = \
 
 
 ## Non-installables
-noinst_PROGRAMS = $(TESTS)
+noinst_PROGRAMS =
 noinst_SCRIPTS = $(check_SCRIPTS)
+
+src_processor_minidump_dump_SOURCES = \
+	src/processor/minidump_dump.cc
+src_processor_minidump_dump_LDADD = \
+	src/processor/minidump.lo
 
 
 ## Additional files to be included in a source distribution
 EXTRA_DIST = \
 	$(SCRIPTS) \
+	src/processor/testdata/minidump1.dmp \
+	src/processor/testdata/minidump1.out \
 	src/processor/testdata/module1.out \
 	src/processor/testdata/module2.out \
 	src/processor/testdata/module3_bad.out
