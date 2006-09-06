@@ -194,7 +194,7 @@ int nouveau_dma_init(struct drm_device *dev)
 		dev_priv->cmdbuf_obj = nouveau_dma_object_create(dev,
 				cb->start - drm_get_resource_start(dev, 1),
 				cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM);
-	dev_priv->cmdbuf_ch_size = cb->size / nouveau_fifo_number(dev);
+	dev_priv->cmdbuf_ch_size = (uint32_t)cb->size / nouveau_fifo_number(dev);
 	dev_priv->cmdbuf_alloc = cb;
 
 	DRM_INFO("DMA command buffer is %dKiB at 0x%08x(%s)\n",
