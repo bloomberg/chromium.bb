@@ -44,12 +44,17 @@ src_libairbag_la_SOURCES = \
 	src/processor/minidump_format.h \
 	src/processor/range_map.h \
 	src/processor/source_line_resolver.cc \
-	src/processor/source_line_resolver.h
+	src/processor/source_line_resolver.h \
+	src/processor/stackwalker.cc \
+	src/processor/stackwalker.h \
+	src/processor/stackwalker_x86.cc \
+	src/processor/stackwalker_x86.h
 
 
 ## Programs
 bin_PROGRAMS = \
-	src/processor/minidump_dump
+	src/processor/minidump_dump \
+	src/processor/minidump_stackwalk
 
 
 ## Tests
@@ -57,7 +62,8 @@ check_PROGRAMS = \
 	src/processor/range_map_unittest \
 	src/processor/source_line_resolver_unittest
 check_SCRIPTS = \
-	src/processor/minidump_dump_test
+	src/processor/minidump_dump_test \
+	src/processor/minidump_stackwalk_test
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT =
 
@@ -79,12 +85,20 @@ src_processor_minidump_dump_SOURCES = \
 src_processor_minidump_dump_LDADD = \
 	src/processor/minidump.lo
 
+src_processor_minidump_stackwalk_SOURCES = \
+	src/processor/minidump_stackwalk.cc
+src_processor_minidump_stackwalk_LDADD = \
+	src/processor/minidump.lo \
+	src/processor/stackwalker.lo \
+	src/processor/stackwalker_x86.lo
+
 
 ## Additional files to be included in a source distribution
 EXTRA_DIST = \
 	$(SCRIPTS) \
 	src/processor/testdata/minidump1.dmp \
 	src/processor/testdata/minidump1.out \
+	src/processor/testdata/minidump1.stack.out \
 	src/processor/testdata/module1.out \
 	src/processor/testdata/module2.out \
 	src/processor/testdata/module3_bad.out

@@ -53,7 +53,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = src/processor/minidump_dump$(EXEEXT)
+bin_PROGRAMS = src/processor/minidump_dump$(EXEEXT) \
+	src/processor/minidump_stackwalk$(EXEEXT)
 check_PROGRAMS = src/processor/range_map_unittest$(EXEEXT) \
 	src/processor/source_line_resolver_unittest$(EXEEXT)
 noinst_PROGRAMS =
@@ -86,7 +87,8 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 src_libairbag_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
 am_src_libairbag_la_OBJECTS = src/processor/minidump.lo \
-	src/processor/source_line_resolver.lo
+	src/processor/source_line_resolver.lo \
+	src/processor/stackwalker.lo src/processor/stackwalker_x86.lo
 src_libairbag_la_OBJECTS = $(am_src_libairbag_la_OBJECTS)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
@@ -95,6 +97,13 @@ am_src_processor_minidump_dump_OBJECTS =  \
 src_processor_minidump_dump_OBJECTS =  \
 	$(am_src_processor_minidump_dump_OBJECTS)
 src_processor_minidump_dump_DEPENDENCIES = src/processor/minidump.lo
+am_src_processor_minidump_stackwalk_OBJECTS =  \
+	src/processor/minidump_stackwalk.$(OBJEXT)
+src_processor_minidump_stackwalk_OBJECTS =  \
+	$(am_src_processor_minidump_stackwalk_OBJECTS)
+src_processor_minidump_stackwalk_DEPENDENCIES =  \
+	src/processor/minidump.lo src/processor/stackwalker.lo \
+	src/processor/stackwalker_x86.lo
 am_src_processor_range_map_unittest_OBJECTS =  \
 	src/processor/range_map_unittest.$(OBJEXT)
 src_processor_range_map_unittest_OBJECTS =  \
@@ -128,10 +137,12 @@ LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
+	$(src_processor_minidump_stackwalk_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
 	$(src_processor_source_line_resolver_unittest_SOURCES)
 DIST_SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
+	$(src_processor_minidump_stackwalk_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
 	$(src_processor_source_line_resolver_unittest_SOURCES)
 dist_docDATA_INSTALL = $(INSTALL_DATA)
@@ -269,10 +280,15 @@ src_libairbag_la_SOURCES = \
 	src/processor/minidump_format.h \
 	src/processor/range_map.h \
 	src/processor/source_line_resolver.cc \
-	src/processor/source_line_resolver.h
+	src/processor/source_line_resolver.h \
+	src/processor/stackwalker.cc \
+	src/processor/stackwalker.h \
+	src/processor/stackwalker_x86.cc \
+	src/processor/stackwalker_x86.h
 
 check_SCRIPTS = \
-	src/processor/minidump_dump_test
+	src/processor/minidump_dump_test \
+	src/processor/minidump_stackwalk_test
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT = 
@@ -292,10 +308,19 @@ src_processor_minidump_dump_SOURCES = \
 src_processor_minidump_dump_LDADD = \
 	src/processor/minidump.lo
 
+src_processor_minidump_stackwalk_SOURCES = \
+	src/processor/minidump_stackwalk.cc
+
+src_processor_minidump_stackwalk_LDADD = \
+	src/processor/minidump.lo \
+	src/processor/stackwalker.lo \
+	src/processor/stackwalker_x86.lo
+
 EXTRA_DIST = \
 	$(SCRIPTS) \
 	src/processor/testdata/minidump1.dmp \
 	src/processor/testdata/minidump1.out \
+	src/processor/testdata/minidump1.stack.out \
 	src/processor/testdata/module1.out \
 	src/processor/testdata/module2.out \
 	src/processor/testdata/module3_bad.out
@@ -391,6 +416,10 @@ src/processor/minidump.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/source_line_resolver.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/stackwalker.lo: src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/stackwalker_x86.lo: src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/$(am__dirstamp):
 	@$(mkdir_p) src
 	@: > src/$(am__dirstamp)
@@ -443,6 +472,12 @@ src/processor/minidump_dump.$(OBJEXT): src/processor/$(am__dirstamp) \
 src/processor/minidump_dump$(EXEEXT): $(src_processor_minidump_dump_OBJECTS) $(src_processor_minidump_dump_DEPENDENCIES) src/processor/$(am__dirstamp)
 	@rm -f src/processor/minidump_dump$(EXEEXT)
 	$(CXXLINK) $(src_processor_minidump_dump_LDFLAGS) $(src_processor_minidump_dump_OBJECTS) $(src_processor_minidump_dump_LDADD) $(LIBS)
+src/processor/minidump_stackwalk.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/minidump_stackwalk$(EXEEXT): $(src_processor_minidump_stackwalk_OBJECTS) $(src_processor_minidump_stackwalk_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/minidump_stackwalk$(EXEEXT)
+	$(CXXLINK) $(src_processor_minidump_stackwalk_LDFLAGS) $(src_processor_minidump_stackwalk_OBJECTS) $(src_processor_minidump_stackwalk_LDADD) $(LIBS)
 src/processor/range_map_unittest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -461,19 +496,27 @@ mostlyclean-compile:
 	-rm -f src/processor/minidump.$(OBJEXT)
 	-rm -f src/processor/minidump.lo
 	-rm -f src/processor/minidump_dump.$(OBJEXT)
+	-rm -f src/processor/minidump_stackwalk.$(OBJEXT)
 	-rm -f src/processor/range_map_unittest.$(OBJEXT)
 	-rm -f src/processor/source_line_resolver.$(OBJEXT)
 	-rm -f src/processor/source_line_resolver.lo
 	-rm -f src/processor/source_line_resolver_unittest.$(OBJEXT)
+	-rm -f src/processor/stackwalker.$(OBJEXT)
+	-rm -f src/processor/stackwalker.lo
+	-rm -f src/processor/stackwalker_x86.$(OBJEXT)
+	-rm -f src/processor/stackwalker_x86.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_dump.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_stackwalk.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_line_resolver.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_line_resolver_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_x86.Plo@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`; \

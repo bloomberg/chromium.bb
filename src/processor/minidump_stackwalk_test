@@ -1,0 +1,6 @@
+#!/bin/sh
+testdata_dir=$srcdir/src/processor/testdata
+./src/processor/minidump_stackwalk $testdata_dir/minidump1.dmp | \
+ tr -s '\015' '\012' | \
+ diff -u $testdata_dir/minidump1.stack.out -
+exit $?
