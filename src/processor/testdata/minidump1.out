@@ -4,7 +4,7 @@ MDRawHeader
   stream_count         = 8
   stream_directory_rva = 0x20
   checksum             = 0x0
-  time_date_stamp      = 0x44172f15 2006-03-14 16:01:09
+  time_date_stamp      = 0x44172f15 2006-03-14 21:01:09
   flags                = 0x0
 mDirectory[0]
 MDRawDirectory

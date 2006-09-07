@@ -1860,7 +1860,7 @@ void Minidump::Print() {
   printf("  stream_count         = %d\n",      header_.stream_count);
   printf("  stream_directory_rva = 0x%x\n",    header_.stream_directory_rva);
   printf("  checksum             = 0x%x\n",    header_.checksum);
-  struct tm* timestruct = localtime((time_t*)&header_.time_date_stamp);
+  struct tm* timestruct = gmtime((time_t*)&header_.time_date_stamp);
   char timestr[20];
   strftime(timestr, 20, "%Y-%m-%d %H:%M:%S", timestruct);
   printf("  time_date_stamp      = 0x%x %s\n", header_.time_date_stamp,
