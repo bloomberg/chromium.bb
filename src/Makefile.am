@@ -121,7 +121,9 @@ PUBLIC_FILES = \
 	$(top_srcdir)/fontconfig/fcfreetype.h \
 	$(top_srcdir)/fontconfig/fcprivate.h
 	
-$(ALIAS_FILES): $(top_srcdir)/src/makealias $(PUBLIC_FILES)
+fcaliastail.h: fcalias.h
+
+fcalias.h: $(top_srcdir)/src/makealias $(PUBLIC_FILES)
 	sh $(top_srcdir)/src/makealias "$(top_srcdir)/src" $(PUBLIC_FILES)
 
 CLEANFILES := $(ALIAS_FILES)
