@@ -85,7 +85,7 @@ $(srcdir)/ChangeLog:
 .PHONY: ChangeLog $(srcdir)/ChangeLog
 
 install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(configdir)
+	$(mkinstalldirs) $(DESTDIR)$(configdir) $(DESTDIR)$(fc_cachedir)
 	if [ -f $(DESTDIR)$(configdir)/fonts.conf ]; then \
 	  echo "backing up existing $(DESTDIR)$(configdir)/fonts.conf"; \
 	  mv $(DESTDIR)$(configdir)/fonts.conf $(DESTDIR)$(configdir)/fonts.conf.bak; \
