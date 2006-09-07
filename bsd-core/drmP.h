@@ -170,7 +170,7 @@ MALLOC_DECLARE(M_DRM);
 #define wait_queue_head_t	atomic_t
 #define DRM_WAKEUP(w)		wakeup((void *)w)
 #define DRM_WAKEUP_INT(w)	wakeup(w)
-#define DRM_INIT_WAITQUEUE(queue) do {} while (0)
+#define DRM_INIT_WAITQUEUE(queue) do {(void)(queue);} while (0)
 
 #if defined(__FreeBSD__) && __FreeBSD_version < 502109
 #define bus_alloc_resource_any(dev, type, rid, flags) \
