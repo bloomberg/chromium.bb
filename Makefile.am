@@ -97,7 +97,7 @@ install-data-local:
 	  echo " $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf"; \
 	  $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf; \
 	fi; fi
-	@(if $(RUN_FC_CACHE_TEST); then \
+	(if $(RUN_FC_CACHE_TEST); then \
 	    echo " fc-cache/fc-cache -s -f -v"; \
 	    fc-cache/fc-cache -s -f -v; \
 	else \

@@ -1,11 +1,48 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.3.96
-		         2006-09-03
+		      Version 2.3.97
+		         2006-09-06
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.3.97
+
+Carl Worth:
+      Rename FcPatternThawAll to FcPatternFini.
+      Add a configuration file that disables hinting for the Lohit Gujarati font
+
+Keith Packard:
+      Various GCC 4 cleanups for signed vs unsigned char
+      Finish INSTALL changes. .gitignore ChangeLog
+      Merge branch 'fc-2_4_branch' to master
+      Remove all .cvsignore files
+      Hide private functions in shared library. Export functionality for utilities.
+      Hide FreeType glue code from library ABI.
+      Can't typecheck values for objects with no known type.
+      Leave cache files mapped permanently.
+      Reference count cache objects.
+      Make cache reference counting more efficient.
+      Oops, fc-lang broke when I added cache referencing.
+      Correct reference count when sharing cache file objects.
+      Eliminate .so PLT entries for local symbols. (thanks to Arjan van de Ven)
+      Update architecture signatures for x86-64 and ppc.
+      Parallel build fix for fcalias.h and fcaliastail.h
+      Charset hashing depended on uniqueness of leaves.
+
+Patrick Lam:
+      file Makefile.am was initially added on branch fc-2_4_branch.
+      Modify config file to use Greek fonts before Asian fonts with Greek glyphs.
+      Use libtool -no-undefined flag on all platforms.
+      file ftglue.c was initially added on branch fc-2_4_branch.
+      2005-11-23 Frederic Crozat <fcrozat@mandriva.com>: reviewed by: plam
+      file 10-fonts-persian.conf was initially added on branch fc-2_4_branch.
+      Sort directory entries while scanning them from disk; prevents Heisenbugs
+      file ln.orth was initially added on branch fc-2_4_branch.
+      Fix typos in orth files. Reported by Denis Jacquerye.
+      On Windows, unlink before rename. Reported by Tim Evans.
+      file fc-match.sgml was initially added on branch fc-2_4_branch.
 
 2.3.96
 
