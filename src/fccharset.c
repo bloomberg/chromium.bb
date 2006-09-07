@@ -1064,8 +1064,8 @@ FcCharSetHash (FcCharSet *fcs)
     int		i;
 
     /* hash in leaves */
-    for (i = 0; i < fcs->num * (int) (sizeof (FcCharLeaf *) / sizeof (FcChar32)); i++)
-	hash = ((hash << 1) | (hash >> 31)) ^ (FcChar32)(FcCharSetLeaf(fcs, i)->map);
+    for (i = 0; i < fcs->num; i++)
+	hash = ((hash << 1) | (hash >> 31)) ^ FcCharLeafHash (FcCharSetLeaf(fcs,i));
     /* hash in numbers */
     for (i = 0; i < fcs->num; i++)
 	hash = ((hash << 1) | (hash >> 31)) ^ *FcCharSetNumbers(fcs);
