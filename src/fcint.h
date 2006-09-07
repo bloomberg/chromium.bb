@@ -48,7 +48,6 @@
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcprivate.h>
 #include <fontconfig/fcfreetype.h>
-#include "fcalias.h"
 
 #ifndef FC_CONFIG_PATH
 #define FC_CONFIG_PATH "fonts.conf"
@@ -114,6 +113,8 @@
 /* slim_internal.h */
 #if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) && defined(__ELF__)
 #define FcPrivate		__attribute__((__visibility__("hidden")))
+#define HAVE_GNUC_ATTRIBUTE 1
+#include "fcalias.h"
 #elif defined(__SUNPRO_C) && (__SUNPRO_C >= 0x550)
 #define FcPrivate		__hidden
 #else /* not gcc >= 3.3 and not Sun Studio >= 8 */

@@ -4,6 +4,7 @@ shift
 HEAD=fcalias.h
 TAIL=fcaliastail.h
 rm -f $HEAD $TAIL
+echo "#if HAVE_GNUC_ATTRIBUTE" >> $TAIL
 cat "$@" | grep '^Fc[^ ]* *(' | sed -e 's/ *(.*$//' |
 while read name; do
 	case $name in
@@ -22,3 +23,4 @@ while read name; do
 		;;
 	esac
 done
+echo "#endif" >> $TAIL
