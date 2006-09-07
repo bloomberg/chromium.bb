@@ -2584,71 +2584,48 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 	}
 	else
 	{
-	    FT_UInt gindex;
-	  
-	    /*
-	     * Find the first encoded character in the font
-	     */
-	    if (FT_Get_Char_Index (face, 0))
+            page = ~0;
+            leaf = NULL;
+            ucs4 = FT_Get_First_Char (face, &glyph);
+            while (glyph != 0)
 	    {
-		ucs4 = 0;
-		gindex = 1;
-	    }
-	    else
-	    {
-		ucs4 = FT_Get_Next_Char (face, 0, &gindex);
-		if (!ucs4)
-		    gindex = 0;
-	    }
-
-	    while (gindex)
-	    {
-		page = ucs4 >> 8;
-		leaf = 0;
-		while ((ucs4 >> 8) == page)
+		if (FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance))
 		{
-		    glyph = FT_Get_Char_Index (face, ucs4);
-		    if (glyph && FcFreeTypeCheckGlyph (face, ucs4, 
-						       glyph, blanks, &advance))
+		    if (advance)
 		    {
-			if (advance)
+			if (!has_advance)
 			{
-			    if (!has_advance)
-			    {
-				has_advance = FcTrue;
-				advance_one = advance;
-			    }
-			    else if (!APPROXIMATELY_EQUAL (advance, advance_one))
-			    {
-				if (fixed_advance)
-				{
-				    dual_advance = FcTrue;
-				    fixed_advance = FcFalse;
-				    advance_two = advance;
-				}
-				else if (!APPROXIMATELY_EQUAL (advance, advance_two))
-				    dual_advance = FcFalse;
-			    }
+			    has_advance = FcTrue;
+			    advance_one = advance;
 			}
-
-			if (!leaf)
+			else if (!APPROXIMATELY_EQUAL (advance, advance_one))
 			{
-			    leaf = FcCharSetFindLeafCreate (fcs, ucs4);
-			    if (!leaf)
-				goto bail1;
+			    if (fixed_advance)
+			    {
+				dual_advance = FcTrue;
+				fixed_advance = FcFalse;
+				advance_two = advance;
+			    }
+			    else if (!APPROXIMATELY_EQUAL (advance, advance_two))
+				dual_advance = FcFalse;
 			}
-			off = ucs4 & 0xff;
-			leaf->map[off >> 5] |= (1 << (off & 0x1f));
-#ifdef CHECK
-			if (ucs4 > font_max)
-			    font_max = ucs4;
-#endif
 		    }
-		    ucs4++;
+
+		    if ((ucs4 >> 8) != page)
+		    {
+			page = (ucs4 >> 8);
+			leaf = FcCharSetFindLeafCreate (fcs, ucs4);
+			if (!leaf)
+			    goto bail1;
+		    }
+		    off = ucs4 & 0xff;
+		    leaf->map[off >> 5] |= (1 << (off & 0x1f));
+#ifdef CHECK
+		    if (ucs4 > font_max)
+			font_max = ucs4;
+#endif
 		}
-		ucs4 = FT_Get_Next_Char (face, ucs4 - 1, &gindex);
-		if (!ucs4)
-		    gindex = 0;
+		ucs4 = FT_Get_Next_Char (face, ucs4, &glyph);
 	    }
 #ifdef CHECK
 	    for (ucs4 = 0; ucs4 < 0x10000; ucs4++)
