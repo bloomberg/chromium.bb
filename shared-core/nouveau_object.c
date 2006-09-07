@@ -241,7 +241,7 @@ static void nouveau_object_instance_free(drm_device_t *dev,
 	obj->instance >>= (dev_priv->card_type >=NV_40 ? 5 : 4);
 	be = obj->instance / 32;
 	bb = obj->instance % 32;
-	objs->inst_bmap[be] &= ~bb;	
+	objs->inst_bmap[be] &= ~(1<<bb);	
 	objs->free_instance++;
 }
 
@@ -264,14 +264,6 @@ void nouveau_hash_table_init(drm_device_t* dev)
 	dev_priv->objs.ht_bits = 9;
 	dev_priv->objs.ht_base = 0x10000;
 	dev_priv->objs.ht_size = (1 << dev_priv->objs.ht_bits);
-
-	NV_WRITE(NV_PFIFO_RAMHT,
-			(0x03 << 24) /* search 128 */ | 
-			((dev_priv->objs.ht_bits - 9) << 16) |
-			((dev_priv->objs.ht_base >> 16) << 4)
-			);
-	NV_WRITE(NV_PFIFO_RAMFC, 0x00000110); /* RAMIN+0x11000 0.5k */
-	NV_WRITE(NV_PFIFO_RAMRO, 0x00000112); /* RAMIN+0x11200 0.5k */
 
 	dev_priv->objs.first_instance = 0x12000;
 	dev_priv->objs.free_instance  = 1024; /*FIXME*/

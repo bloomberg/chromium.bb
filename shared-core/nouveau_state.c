@@ -69,13 +69,6 @@ int nouveau_firstopen(struct drm_device *dev)
 	else
 		dev_priv->fb_usable_size=nouveau_mem_fb_amount(dev)-256*1024;
 
-	nouveau_hash_table_init(dev);
-
-	if (dev_priv->card_type >= NV_40)
-		dev_priv->fb_obj = nouveau_dma_object_create(dev,
-				0, nouveau_mem_fb_amount(dev),
-				NV_DMA_ACCESS_RW, NV_DMA_TARGET_VIDMEM);
-
 	return 0;
 }
 
@@ -164,8 +157,12 @@ int nouveau_dma_init(struct drm_device *dev)
 	struct mem_block *cb;
 	int cb_min_size = nouveau_fifo_number(dev) * NV03_FIFO_SIZE;
 
-	/* allocate one buffer for all the fifos */
-	dev_priv->cmdbuf_alloc = nouveau_mem_alloc(dev, 0, 1024*1024, NOUVEAU_MEM_FB, (DRMFILE)-2);
+	nouveau_hash_table_init(dev);
+
+	if (dev_priv->card_type >= NV_40)
+		dev_priv->fb_obj = nouveau_dma_object_create(dev,
+				0, nouveau_mem_fb_amount(dev),
+				NV_DMA_ACCESS_RW, NV_DMA_TARGET_VIDMEM);
 
 	/* Defaults for unconfigured values */
 	if (!config->cmdbuf.location)
