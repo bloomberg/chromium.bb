@@ -312,7 +312,7 @@ FcCacheNumSubdir (const FcCache *c);
 FcPublic int
 FcCacheNumFont (const FcCache *c);
 
-FcBool
+FcPublic FcBool
 FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config);
 
 FcPublic FcBool

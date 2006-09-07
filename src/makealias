@@ -4,7 +4,7 @@ shift
 HEAD=fcalias.h
 TAIL=fcaliastail.h
 rm -f $HEAD $TAIL
-sed -n -e '/^FcPublic /,+1p' "$@" | sed -e '/^FcPublic /d' -e 's/ *(.*$//' |
+cat "$@" | grep '^Fc[^ ]* *(' | sed -e 's/ *(.*$//' |
 while read name; do
 	case $name in
 	FcCacheDir|FcCacheSubdir)
