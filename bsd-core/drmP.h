@@ -714,6 +714,9 @@ struct drm_device {
 	struct drm_driver_info driver;
 	drm_pci_id_list_t *id_entry;	/* PCI ID, name, and chipset private */
 
+	u_int16_t pci_device;		/* PCI device id */
+	u_int16_t pci_vendor;		/* PCI vendor id */
+
 	char		  *unique;	/* Unique identifier: e.g., busid  */
 	int		  unique_len;	/* Length of unique field	   */
 #ifdef __FreeBSD__
