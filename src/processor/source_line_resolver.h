@@ -19,7 +19,6 @@
 #ifndef PROCESSOR_SOURCE_LINE_RESOLVER_H__
 #define PROCESSOR_SOURCE_LINE_RESOLVER_H__
 
-#include "config.h"
 #include <string>
 #include <ext/hash_map>
 
@@ -28,24 +27,11 @@ namespace google_airbag {
 using std::string;
 using __gnu_cxx::hash_map;
 
+class StackFrame;
+
 class SourceLineResolver {
  public:
   typedef unsigned long long MemAddr;
-
-  // A struct that gives source file information for a memory address.
-  struct SourceLineInfo {
-    // Resets all fields to their default empty values
-    void Reset();
-
-    // The function name, for example Foo::Foo()
-    string function_name;
-
-    // The source file, for example C:\foo\bar.cc
-    string source_file;
-
-    // The line number within the source file (1-based)
-    int source_line;
-  };
 
   SourceLineResolver();
   ~SourceLineResolver();
@@ -58,11 +44,10 @@ class SourceLineResolver {
   // map_file should contain line/address mappings for this module.
   bool LoadModule(const string &module_name, const string &map_file);
 
-  // Determines the source line for the given address, and fills info
-  // with the result.  module_name must match a module name that was
-  // passed to LoadModule().  The address should be module-relative.
-  void LookupAddress(MemAddr address, const string &module_name,
-                     SourceLineInfo *info) const;
+  // Fills in the function_base, function_name, source_file_name,
+  // and source_line fields of the StackFrame.  The instruction and
+  // module_name fields must already be filled in.
+  void FillSourceLineInfo(StackFrame *frame) const;
 
  private:
   template<class T> class MemAddrMap;

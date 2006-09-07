@@ -59,7 +59,8 @@ struct StackFrame {
   // The source file name, may be omitted if debug symbols are not available
   string source_file_name;
 
-  // The source line number, may be omitted if debug symbols are not available
+  // The (1-based) source line number,
+  // may be omitted if debug symbols are not available
   int source_line;
 
   // TODO(bryner): saved registers

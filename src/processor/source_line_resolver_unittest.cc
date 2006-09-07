@@ -15,9 +15,11 @@
 #include <stdio.h>
 #include <string>
 #include "processor/source_line_resolver.h"
+#include "google/stack_frame.h"
 
 using std::string;
 using google_airbag::SourceLineResolver;
+using google_airbag::StackFrame;
 
 #define ASSERT_TRUE(cond) \
   if (!(cond)) {                                                        \
@@ -29,11 +31,17 @@ using google_airbag::SourceLineResolver;
 
 #define ASSERT_EQ(e1, e2) ASSERT_TRUE((e1) == (e2))
 
-static bool VerifyEmpty(const SourceLineResolver::SourceLineInfo &info) {
-  ASSERT_TRUE(info.function_name.empty());
-  ASSERT_TRUE(info.source_file.empty());
-  ASSERT_EQ(info.source_line, 0);
+static bool VerifyEmpty(const StackFrame &frame) {
+  ASSERT_TRUE(frame.function_name.empty());
+  ASSERT_TRUE(frame.source_file_name.empty());
+  ASSERT_EQ(frame.source_line, 0);
   return true;
+}
+
+static void ClearSourceLineInfo(StackFrame *frame) {
+  frame->function_name.clear();
+  frame->source_file_name.clear();
+  frame->source_line = 0;
 }
 
 static bool RunTests() {
@@ -44,32 +52,37 @@ static bool RunTests() {
   ASSERT_TRUE(resolver.LoadModule("module1", testdata_dir + "/module1.out"));
   ASSERT_TRUE(resolver.LoadModule("module2", testdata_dir + "/module2.out"));
 
-  SourceLineResolver::SourceLineInfo info;
-  resolver.LookupAddress(0x1000, "module1", &info);
-  ASSERT_EQ(info.function_name, "Function1_1");
-  ASSERT_EQ(info.source_file, "file1_1.cc");
-  ASSERT_EQ(info.source_line, 44);
+  StackFrame frame;
+  frame.instruction = 0x1000;
+  frame.module_name = "module1";
+  resolver.FillSourceLineInfo(&frame);
+  ASSERT_EQ(frame.function_name, "Function1_1");
+  ASSERT_EQ(frame.source_file_name, "file1_1.cc");
+  ASSERT_EQ(frame.source_line, 44);
 
-  info.Reset();
-  ASSERT_TRUE(VerifyEmpty(info));
+  ClearSourceLineInfo(&frame);
+  frame.instruction = 0x800;
+  resolver.FillSourceLineInfo(&frame);
+  ASSERT_TRUE(VerifyEmpty(frame));
 
-  resolver.LookupAddress(0x800, "module1", &info);
-  ASSERT_TRUE(VerifyEmpty(info));
+  frame.instruction = 0x1280;
+  resolver.FillSourceLineInfo(&frame);
+  ASSERT_EQ(frame.function_name, "Function1_3");
+  ASSERT_TRUE(frame.source_file_name.empty());
+  ASSERT_EQ(frame.source_line, 0);
 
-  resolver.LookupAddress(0x1280, "module1", &info);
-  ASSERT_EQ(info.function_name, "Function1_3");
-  ASSERT_TRUE(info.source_file.empty());
-  ASSERT_EQ(info.source_line, 0);
+  frame.instruction = 0x1380;
+  resolver.FillSourceLineInfo(&frame);
+  ASSERT_EQ(frame.function_name, "Function1_4");
+  ASSERT_TRUE(frame.source_file_name.empty());
+  ASSERT_EQ(frame.source_line, 0);
 
-  resolver.LookupAddress(0x1380, "module1", &info);
-  ASSERT_EQ(info.function_name, "Function1_4");
-  ASSERT_TRUE(info.source_file.empty());
-  ASSERT_EQ(info.source_line, 0);
-
-  resolver.LookupAddress(0x2180, "module2", &info);
-  ASSERT_EQ(info.function_name, "Function2_2");
-  ASSERT_EQ(info.source_file, "file2_2.cc");
-  ASSERT_EQ(info.source_line, 21);
+  frame.instruction = 0x2180;
+  frame.module_name = "module2";
+  resolver.FillSourceLineInfo(&frame);
+  ASSERT_EQ(frame.function_name, "Function2_2");
+  ASSERT_EQ(frame.source_file_name, "file2_2.cc");
+  ASSERT_EQ(frame.source_line, 21);
 
   ASSERT_FALSE(resolver.LoadModule("module3",
                                    testdata_dir + "/module3_bad.out"));

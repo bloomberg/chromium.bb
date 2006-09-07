@@ -18,6 +18,7 @@
 #include <vector>
 #include <utility>
 #include "processor/source_line_resolver.h"
+#include "google/stack_frame.h"
 
 using std::map;
 using std::vector;
@@ -25,12 +26,6 @@ using std::make_pair;
 using __gnu_cxx::hash;
 
 namespace google_airbag {
-
-void SourceLineResolver::SourceLineInfo::Reset() {
-  function_name.clear();
-  source_file.clear();
-  source_line = 0;
-}
 
 // MemAddrMap is a map subclass which has the following properties:
 //  - stores pointers to an "entry" type, which are deleted on destruction
@@ -97,9 +92,9 @@ class SourceLineResolver::Module {
   // Loads the given map file, returning true on success.
   bool LoadMap(const string &map_file);
 
-  // Looks up the given relative address, and fills the SourceLineInfo struct
+  // Looks up the given relative address, and fills the StackFrame struct
   // with the result.
-  void LookupAddress(MemAddr address, SourceLineInfo *info) const;
+  void LookupAddress(MemAddr address, StackFrame *frame) const;
 
  private:
   friend class SourceLineResolver;
@@ -147,13 +142,10 @@ bool SourceLineResolver::LoadModule(const string &module_name,
   return true;
 }
 
-void SourceLineResolver::LookupAddress(MemAddr address,
-                                       const string &module_name,
-                                       SourceLineInfo *info) const {
-  info->Reset();
-  ModuleMap::const_iterator it = modules_->find(module_name);
+void SourceLineResolver::FillSourceLineInfo(StackFrame *frame) const {
+  ModuleMap::const_iterator it = modules_->find(frame->module_name);
   if (it != modules_->end()) {
-    it->second->LookupAddress(address, info);
+    it->second->LookupAddress(frame->instruction, frame);
   }
 }
 
@@ -192,13 +184,13 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
 }
 
 void SourceLineResolver::Module::LookupAddress(MemAddr address,
-                                               SourceLineInfo *info) const {
+                                               StackFrame *frame) const {
   Function *func = functions_.FindContainingEntry(address);
   if (!func) {
     return;
   }
 
-  info->function_name = func->name;
+  frame->function_name = func->name;
   Line *line = func->lines.FindContainingEntry(address);
   if (!line) {
     return;
@@ -206,9 +198,9 @@ void SourceLineResolver::Module::LookupAddress(MemAddr address,
 
   FileMap::const_iterator it = files_.find(line->source_file_id);
   if (it != files_.end()) {
-    info->source_file = files_.find(line->source_file_id)->second;
+    frame->source_file_name = files_.find(line->source_file_id)->second;
   }
-  info->source_line = line->line;
+  frame->source_line = line->line;
 }
 
 void SourceLineResolver::Module::ParseFile(char *file_line) {
