@@ -31,31 +31,27 @@ namespace google_airbag {
 
 
 class MemoryRegion {
-  public:
-    virtual ~MemoryRegion() {}
+ public:
+  virtual ~MemoryRegion() {}
 
-    // The base address of this memory region.
-    virtual u_int64_t GetBase() = 0;
+  // The base address of this memory region.
+  virtual u_int64_t GetBase() = 0;
 
-    // The size of this memory region.
-    virtual u_int32_t GetSize() = 0;
+  // The size of this memory region.
+  virtual u_int32_t GetSize() = 0;
 
-    // Access to data of various sizes within the memory region.  address
-    // is a pointer to read, and it must lie within the memory region as
-    // defined by its base address and size.  The location pointed to by
-    // value is set to the value at address.  Byte-swapping is performed
-    // if necessary so that the value is appropriate for the running
-    // program.  Returns true on success.  Fails and returns false if address
-    // is out of the region's bounds (after considering the width of value),
-    // or for other types of errors.
-    virtual bool GetMemoryAtAddress(u_int64_t  address,
-                                    u_int8_t*  value) = 0;
-    virtual bool GetMemoryAtAddress(u_int64_t  address,
-                                    u_int16_t* value) = 0;
-    virtual bool GetMemoryAtAddress(u_int64_t  address,
-                                    u_int32_t* value) = 0;
-    virtual bool GetMemoryAtAddress(u_int64_t  address,
-                                    u_int64_t* value) = 0;
+  // Access to data of various sizes within the memory region.  address
+  // is a pointer to read, and it must lie within the memory region as
+  // defined by its base address and size.  The location pointed to by
+  // value is set to the value at address.  Byte-swapping is performed
+  // if necessary so that the value is appropriate for the running
+  // program.  Returns true on success.  Fails and returns false if address
+  // is out of the region's bounds (after considering the width of value),
+  // or for other types of errors.
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int8_t*  value) = 0;
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int16_t* value) = 0;
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int32_t* value) = 0;
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int64_t* value) = 0;
 };
 
 

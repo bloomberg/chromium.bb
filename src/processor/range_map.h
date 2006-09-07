@@ -37,50 +37,50 @@ using std::map;
 
 template<typename AddressType, typename EntryType>
 class RangeMap {
-  public:
-    RangeMap() : map_() {}
+ public:
+  RangeMap() : map_() {}
 
-    // Inserts a range into the map.  Returns false for a parameter error,
-    // or if the location of the range would conflict with a range already
-    // stored in the map.
-    bool StoreRange(const AddressType& base,
-                    const AddressType& size,
-                    const EntryType&   entry);
+  // Inserts a range into the map.  Returns false for a parameter error,
+  // or if the location of the range would conflict with a range already
+  // stored in the map.
+  bool StoreRange(const AddressType& base,
+                  const AddressType& size,
+                  const EntryType&   entry);
 
-    // Locates the range encompassing the supplied address.  If there is
-    // no such range, or if there is a parameter error, returns false.
-    bool RetrieveRange(const AddressType& address, EntryType* entry);
+  // Locates the range encompassing the supplied address.  If there is
+  // no such range, or if there is a parameter error, returns false.
+  bool RetrieveRange(const AddressType& address, EntryType* entry);
 
-    // Empties the range map, restoring it to the state it was when it was
-    // initially created.
-    void Clear();
+  // Empties the range map, restoring it to the state it was when it was
+  // initially created.
+  void Clear();
 
-  private:
-    class Range {
-      public:
-        Range(const AddressType& base, const EntryType& entry)
-            : base_(base), entry_(entry) {}
+ private:
+  class Range {
+   public:
+    Range(const AddressType& base, const EntryType& entry)
+        : base_(base), entry_(entry) {}
 
-        AddressType base() const { return base_; }
-        EntryType entry() const { return entry_; }
+    AddressType base() const { return base_; }
+    EntryType entry() const { return entry_; }
 
-      private:
-        // The base address of the range.  The high address does not need to
-        // be stored, because RangeMap uses it as the key to the map.
-        const AddressType base_;
+   private:
+    // The base address of the range.  The high address does not need to
+    // be stored, because RangeMap uses it as the key to the map.
+    const AddressType base_;
 
-        // The entry, owned by the Range object.
-        const EntryType   entry_;
-    };
+    // The entry, owned by the Range object.
+    const EntryType   entry_;
+  };
 
-    typedef map<AddressType, Range> AddressToRangeMap;
+  typedef map<AddressType, Range> AddressToRangeMap;
 
-    // Can't depend on implicit typenames in a template
-    typedef typename AddressToRangeMap::const_iterator const_iterator;
-    typedef typename AddressToRangeMap::value_type value_type;
+  // Can't depend on implicit typenames in a template
+  typedef typename AddressToRangeMap::const_iterator const_iterator;
+  typedef typename AddressToRangeMap::value_type value_type;
 
-    // Maps the high address of each range to a EntryType.
-    AddressToRangeMap map_;
+  // Maps the high address of each range to a EntryType.
+  AddressToRangeMap map_;
 };
 
 

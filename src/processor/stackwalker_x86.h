@@ -37,28 +37,28 @@ class MinidumpModuleList;
 
 
 class StackwalkerX86 : public Stackwalker {
-  public:
-    // context is a MinidumpContext object that gives access to x86-specific
-    // register state corresponding to the innermost called frame to be
-    // included in the stack.  memory and modules are passed directly through
-    // to the base Stackwalker constructor.
-    StackwalkerX86(MinidumpContext*    context,
-                   MemoryRegion*       memory,
-                   MinidumpModuleList* modules);
+ public:
+  // context is a MinidumpContext object that gives access to x86-specific
+  // register state corresponding to the innermost called frame to be
+  // included in the stack.  memory and modules are passed directly through
+  // to the base Stackwalker constructor.
+  StackwalkerX86(MinidumpContext*    context,
+                 MemoryRegion*       memory,
+                 MinidumpModuleList* modules);
 
-  private:
-    // Implementation of Stackwalker, using x86 context (%ebp, %eip) and
-    // stack conventions (saved %ebp at [%ebp], saved %eip at 4[%ebp]).
-    virtual bool GetContextFrame(StackFrame* frame);
-    virtual bool GetCallerFrame(StackFrame* frame);
+ private:
+  // Implementation of Stackwalker, using x86 context (%ebp, %eip) and
+  // stack conventions (saved %ebp at [%ebp], saved %eip at 4[%ebp]).
+  virtual bool GetContextFrame(StackFrame* frame);
+  virtual bool GetCallerFrame(StackFrame* frame);
 
-    // Stores the CPU context corresponding to the innermost stack frame to
-    // be returned by GetContextFrame.
-    const MDRawContextX86* context_;
+  // Stores the CPU context corresponding to the innermost stack frame to
+  // be returned by GetContextFrame.
+  const MDRawContextX86* context_;
 
-    // Stores the frame pointer returned in the last stack frame returned by
-    // GetContextFrame or GetCallerFrame.
-    u_int32_t              last_frame_pointer_;
+  // Stores the frame pointer returned in the last stack frame returned by
+  // GetContextFrame or GetCallerFrame.
+  u_int32_t              last_frame_pointer_;
 };
 
 

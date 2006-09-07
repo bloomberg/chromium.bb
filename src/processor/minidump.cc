@@ -199,8 +199,8 @@ static string* UTF16ToUTF8(const vector<u_int16_t>& in,
 
 
 MinidumpObject::MinidumpObject(Minidump* minidump)
-    : minidump_(minidump)
-    , valid_(false) {
+    : minidump_(minidump),
+      valid_(false) {
 }
 
 
@@ -220,8 +220,8 @@ MinidumpStream::MinidumpStream(Minidump* minidump)
 
 
 MinidumpContext::MinidumpContext(Minidump* minidump)
-    : MinidumpStream(minidump)
-    , context_() {
+    : MinidumpStream(minidump),
+      context_() {
 }
 
 
@@ -346,9 +346,9 @@ void MinidumpContext::Print() {
 
 
 MinidumpMemoryRegion::MinidumpMemoryRegion(Minidump* minidump)
-    : MinidumpObject(minidump)
-    , descriptor_(NULL)
-    , memory_(NULL) {
+    : MinidumpObject(minidump),
+      descriptor_(NULL),
+      memory_(NULL) {
 }
 
 
@@ -481,10 +481,10 @@ void MinidumpMemoryRegion::Print() {
 
 
 MinidumpThread::MinidumpThread(Minidump* minidump)
-    : MinidumpObject(minidump)
-    , thread_()
-    , memory_(NULL)
-    , context_(NULL) {
+    : MinidumpObject(minidump),
+      thread_(),
+      memory_(NULL),
+      context_(NULL) {
 }
 
 
@@ -608,10 +608,10 @@ void MinidumpThread::Print() {
 
 
 MinidumpThreadList::MinidumpThreadList(Minidump* minidump)
-    : MinidumpStream(minidump)
-    , id_to_thread_map_()
-    , threads_(NULL)
-    , thread_count_(0) {
+    : MinidumpStream(minidump),
+      id_to_thread_map_(),
+      threads_(NULL),
+      thread_count_(0) {
 }
 
 
@@ -712,12 +712,12 @@ void MinidumpThreadList::Print() {
 
 
 MinidumpModule::MinidumpModule(Minidump* minidump)
-    : MinidumpObject(minidump)
-    , module_()
-    , name_(NULL)
-    , cv_record_(NULL)
-    , misc_record_(NULL)
-    , debug_filename_(NULL) {
+    : MinidumpObject(minidump),
+      module_(),
+      name_(NULL),
+      cv_record_(NULL),
+      misc_record_(NULL),
+      debug_filename_(NULL) {
 }
 
 
@@ -1135,10 +1135,10 @@ void MinidumpModule::Print() {
 
 
 MinidumpModuleList::MinidumpModuleList(Minidump* minidump)
-    : MinidumpStream(minidump)
-    , range_map_()
-    , modules_(NULL)
-    , module_count_(0) {
+    : MinidumpStream(minidump),
+      range_map_(),
+      modules_(NULL),
+      module_count_(0) {
 }
 
 
@@ -1245,11 +1245,11 @@ void MinidumpModuleList::Print() {
 
 
 MinidumpMemoryList::MinidumpMemoryList(Minidump* minidump)
-    : MinidumpStream(minidump)
-    , range_map_()
-    , descriptors_(NULL)
-    , regions_(NULL)
-    , region_count_(0) {
+    : MinidumpStream(minidump),
+      range_map_(),
+      descriptors_(NULL),
+      regions_(NULL),
+      region_count_(0) {
 }
 
 
@@ -1387,9 +1387,9 @@ void MinidumpMemoryList::Print() {
 
 
 MinidumpException::MinidumpException(Minidump* minidump)
-    : MinidumpStream(minidump)
-    , exception_()
-    , context_(NULL) {
+    : MinidumpStream(minidump),
+      exception_(),
+      context_(NULL) {
 }
 
 
@@ -1505,9 +1505,9 @@ void MinidumpException::Print() {
 
 
 MinidumpSystemInfo::MinidumpSystemInfo(Minidump* minidump)
-    : MinidumpStream(minidump)
-    , system_info_()
-    , csd_version_(NULL) {
+    : MinidumpStream(minidump),
+      system_info_(),
+      csd_version_(NULL) {
 }
 
 
@@ -1619,8 +1619,8 @@ void MinidumpSystemInfo::Print() {
 
 
 MinidumpMiscInfo::MinidumpMiscInfo(Minidump* minidump)
-    : MinidumpStream(minidump)
-    , misc_info_() {
+    : MinidumpStream(minidump),
+      misc_info_() {
 }
 
 
@@ -1694,12 +1694,12 @@ void MinidumpMiscInfo::Print() {
 
 
 Minidump::Minidump(int fd)
-    : header_()
-    , directory_(NULL)
-    , stream_map_(NULL)
-    , fd_(fd)
-    , swap_(false)
-    , valid_(false) {
+    : header_(),
+      directory_(NULL),
+      stream_map_(NULL),
+      fd_(fd),
+      swap_(false),
+      valid_(false) {
 }
 
 

@@ -32,17 +32,17 @@ using google_airbag::RangeMap;
 // A CountedObject holds an int.  A global (not thread safe!) count of
 // allocated CountedObjects is maintained to help test memory management.
 class CountedObject {
-  public:
-    CountedObject(int id) : id_(id) { ++count_; }
-    CountedObject(const CountedObject& that) : id_(that.id_) { ++count_; }
-    ~CountedObject() { --count_; }
+ public:
+  CountedObject(int id) : id_(id) { ++count_; }
+  CountedObject(const CountedObject& that) : id_(that.id_) { ++count_; }
+  ~CountedObject() { --count_; }
 
-    static int count() { return count_; }
-    int id() const { return id_; }
+  static int count() { return count_; }
+  int id() const { return id_; }
 
-  private:
-    static int count_;
-    int        id_;
+ private:
+  static int count_;
+  int        id_;
 };
 
 int CountedObject::count_;
@@ -210,7 +210,7 @@ bool RunTests() {
     { 20000,       20000,   34, true },   // > 8-bit
     { 0x10001,     0x10001, 35, true },   // > 16-bit
 
-    { 27,          -1,      36, false }    // tests high < base
+    { 27,          -1,      36, false }   // tests high < base
   };
 
   // Attempt to fill the entire space.  The entire space must be filled with
@@ -254,7 +254,7 @@ bool RunTests() {
     { range_tests_1, sizeof(range_tests_1) / sizeof(RangeTest) },
     { range_tests_2, sizeof(range_tests_2) / sizeof(RangeTest) },
     { range_tests_3, sizeof(range_tests_3) / sizeof(RangeTest) },
-    { range_tests_0, sizeof(range_tests_0) / sizeof(RangeTest) }  // Run again
+    { range_tests_0, sizeof(range_tests_0) / sizeof(RangeTest) }   // Run again
   };
 
   // Maintain the range map in a pointer so that deletion can be meaningfully

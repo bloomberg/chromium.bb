@@ -29,8 +29,8 @@ namespace google_airbag {
 StackwalkerX86::StackwalkerX86(MinidumpContext*    context,
                                MemoryRegion*       memory,
                                MinidumpModuleList* modules)
-    : Stackwalker(memory, modules)
-    , last_frame_pointer_(0) {
+    : Stackwalker(memory, modules),
+      last_frame_pointer_(0) {
   if (memory_->GetBase() + memory_->GetSize() - 1 > 0xffffffff) {
     // The x86 is a 32-bit CPU, the limits of the supplied stack are invalid.
     // Mark memory_ = NULL, which will cause stackwalking to fail.

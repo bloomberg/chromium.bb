@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// stackwalker.cc: Generic stackwalker.
+// stackwalker.h: Generic stackwalker.
 //
 // The Stackwalker class is an abstract base class providing common generic
 // methods that apply to stacks from all systems.  Specific implementations
@@ -39,41 +39,41 @@ class MinidumpModuleList;
 
 
 class Stackwalker {
-  public:
-    virtual ~Stackwalker() {}
+ public:
+  virtual ~Stackwalker() {}
 
-    // Produces a vector of StackFrames by calling GetContextFrame and
-    // GetCallerFrame, and populating the returned frames with module
-    // offset and name information if possible.  The caller takes ownership
-    // of the StackFrames object and is responsible for freeing it.
-    StackFrames* Walk();
+  // Produces a vector of StackFrames by calling GetContextFrame and
+  // GetCallerFrame, and populating the returned frames with module
+  // offset and name information if possible.  The caller takes ownership
+  // of the StackFrames object and is responsible for freeing it.
+  StackFrames* Walk();
 
-  protected:
-    // memory identifies a MemoryRegion that provides the stack memory
-    // for the stack to walk.  modules, if non-NULL, is a MinidumpModuleList
-    // that is used to look up which code module each stack frame is
-    // associated with.
-    Stackwalker(MemoryRegion* memory, MinidumpModuleList* modules);
+ protected:
+  // memory identifies a MemoryRegion that provides the stack memory
+  // for the stack to walk.  modules, if non-NULL, is a MinidumpModuleList
+  // that is used to look up which code module each stack frame is
+  // associated with.
+  Stackwalker(MemoryRegion* memory, MinidumpModuleList* modules);
 
-    // The stack memory to walk.  Subclasses will require this region to
-    // get information from the stack.
-    MemoryRegion*       memory_;
+  // The stack memory to walk.  Subclasses will require this region to
+  // get information from the stack.
+  MemoryRegion* memory_;
 
-  private:
-    // Obtains the context frame, the innermost called procedure in a stack
-    // trace.  Returns false on failure.
-    virtual bool GetContextFrame(StackFrame* frame) = 0;
+ private:
+  // Obtains the context frame, the innermost called procedure in a stack
+  // trace.  Returns false on failure.
+  virtual bool GetContextFrame(StackFrame* frame) = 0;
 
-    // Obtains a caller frame.  Each call to GetCallerFrame should return the
-    // frame that called the last frame returned by GetContextFrame or
-    // GetCallerFrame.  GetCallerFrame should return false on failure or
-    // when there are no more caller frames (when the end of the stack has
-    // been reached).
-    virtual bool GetCallerFrame(StackFrame* frame) = 0;
+  // Obtains a caller frame.  Each call to GetCallerFrame should return the
+  // frame that called the last frame returned by GetContextFrame or
+  // GetCallerFrame.  GetCallerFrame should return false on failure or
+  // when there are no more caller frames (when the end of the stack has
+  // been reached).
+  virtual bool GetCallerFrame(StackFrame* frame) = 0;
 
-    // A list of modules, for populating each StackFrame's module information.
-    // This field is optional and may be NULL.
-    MinidumpModuleList* modules_;
+  // A list of modules, for populating each StackFrame's module information.
+  // This field is optional and may be NULL.
+  MinidumpModuleList* modules_;
 };
 
 
