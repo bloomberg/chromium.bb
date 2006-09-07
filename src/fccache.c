@@ -816,11 +816,16 @@ FcCacheCopySet args(const FcCache *c)
     if (!new)
 	return NULL;
     for (i = 0; i < old->nfont; i++)
-	if (!FcFontSetAdd (new, FcFontSetFont (old, i)))
+    {
+	FcPattern   *font = FcFontSetFont (old, i);
+	
+	FcPatternReference (font);
+	if (!FcFontSetAdd (new, font))
 	{
 	    FcFontSetDestroy (new);
 	    return NULL;
 	}
+    }
     return new;
 }
 
