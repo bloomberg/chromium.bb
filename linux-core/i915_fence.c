@@ -55,13 +55,18 @@ static void i915_perform_flush(drm_device_t * dev)
 		diff = sequence - fm->last_exe_flush;
 		if (diff < driver->wrap_diff && diff != 0) {
 			drm_fence_handler(dev, sequence, DRM_FENCE_EXE);
-			diff = sequence - fm->exe_flush_sequence;
-			if (diff < driver->wrap_diff) {
-				fm->pending_exe_flush = 0;
+		} 
+
+		diff = sequence - fm->exe_flush_sequence;
+		if (diff < driver->wrap_diff) {
+			fm->pending_exe_flush = 0;
+			if (dev_priv->fence_irq_on) {
 				i915_user_irq_off(dev_priv);
-			} else {
-			        i915_user_irq_on(dev_priv);
+				dev_priv->fence_irq_on = 0;
 			}
+		} else if (!dev_priv->fence_irq_on) {
+			i915_user_irq_on(dev_priv);
+			dev_priv->fence_irq_on = 1;
 		}
 	}
 	if (dev_priv->flush_pending) {
@@ -82,8 +87,6 @@ static void i915_perform_flush(drm_device_t * dev)
 		dev_priv->flush_sequence = (uint32_t) READ_BREADCRUMB(dev_priv);
 		dev_priv->flush_flags = fm->pending_flush;
 		dev_priv->saved_flush_status = READ_HWSP(dev_priv, 0);
-		DRM_ERROR("Saved flush status is 0x%08x\n",
-			  dev_priv->saved_flush_status);
 		I915_WRITE(I915REG_INSTPM, (1 << 5) | (1 << 21));
 		dev_priv->flush_pending = 1;
 		fm->pending_flush = 0;

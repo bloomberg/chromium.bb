@@ -106,7 +106,7 @@ void i915_user_irq_on(drm_i915_private_t *dev_priv)
 {
 
 	spin_lock(&dev_priv->user_irq_lock);
-	if (dev_priv->irq_enabled && (++dev_priv->user_irq_refcount > 0)){
+	if (dev_priv->irq_enabled && (++dev_priv->user_irq_refcount == 1)){
 		dev_priv->irq_enable_reg |= USER_INT_FLAG;
 		I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
 	}

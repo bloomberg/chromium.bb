@@ -43,6 +43,38 @@ typedef struct drm_val_action {
 } drm_val_action_t;
 
 /*
+ * Use kmalloc if possible. Otherwise fall back to vmalloc.
+ */
+
+
+static void *ttm_alloc(unsigned long size, int type, int *do_vmalloc)
+{
+	void *ret = NULL;
+
+	*do_vmalloc = 0;
+	if (size <= 4*PAGE_SIZE) {
+		ret = drm_alloc(size, type);
+	}
+	if (!ret) {
+		*do_vmalloc = 1;
+		ret = vmalloc(size);
+	}
+	return ret;
+}
+		
+static void ttm_free(void *pointer, unsigned long size, int type, 
+		     int do_vfree)
+{
+	if (!do_vfree) {
+		drm_free(pointer, size, type);
+	}else {
+		vfree(pointer);
+	}
+}
+
+
+
+/*
  * We may be manipulating other processes page tables, so for each TTM, keep track of 
  * which mm_structs are currently mapping the ttm so that we can take the appropriate
  * locks when we modify their page tables. A typical application is when we evict another
@@ -161,6 +193,7 @@ static int unmap_vma_pages(drm_ttm_t * ttm, unsigned long page_offset,
 	list_for_each(list, &ttm->vma_list->head) {
 		drm_ttm_vma_list_t *entry =
 		    list_entry(list, drm_ttm_vma_list_t, head);
+
 		drm_clear_vma(entry->vma,
 			      entry->vma->vm_start +
 			      (page_offset << PAGE_SHIFT),
@@ -205,7 +238,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 		return -EBUSY;
 	}
 
-	DRM_ERROR("Destroying a ttm\n");
+	DRM_DEBUG("Destroying a ttm\n");
 	if (ttm->be_list) {
 		list_for_each_safe(list, next, &ttm->be_list->head) {
 			drm_ttm_backend_list_t *entry =
@@ -231,12 +264,13 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 			}
 		}
 		global_flush_tlb();
-		vfree(ttm->pages);
+		ttm_free(ttm->pages, ttm->num_pages*sizeof(*ttm->pages),
+			 DRM_MEM_TTM, ttm->pages_vmalloc);
 		ttm->pages = NULL;
 	}
 
 	if (ttm->page_flags) {
-		vfree(ttm->page_flags);
+		ttm_free(ttm->page_flags, ttm->num_pages*sizeof(*ttm->page_flags), DRM_MEM_TTM, ttm->pf_vmalloc);
 		ttm->page_flags = NULL;
 	}
 
@@ -280,7 +314,8 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 	ttm->destroy = 0;
 	ttm->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 
-	ttm->page_flags = vmalloc(ttm->num_pages * sizeof(*ttm->page_flags));
+	ttm->page_flags = ttm_alloc(ttm->num_pages * sizeof(*ttm->page_flags),
+				    DRM_MEM_TTM, &ttm->pf_vmalloc);
 	if (!ttm->page_flags) {
 		drm_destroy_ttm(ttm);
 		DRM_ERROR("Failed allocating page_flags table\n");
@@ -288,7 +323,8 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 	}
 	memset(ttm->page_flags, 0, ttm->num_pages * sizeof(*ttm->page_flags));
 
-	ttm->pages = vmalloc(ttm->num_pages * sizeof(*ttm->pages));
+	ttm->pages = ttm_alloc(ttm->num_pages * sizeof(*ttm->pages), 
+			       DRM_MEM_TTM, &ttm->pages_vmalloc);
 	if (!ttm->pages) {
 		drm_destroy_ttm(ttm);
 		DRM_ERROR("Failed allocating page table\n");
@@ -483,12 +519,13 @@ void drm_destroy_ttm_region(drm_ttm_backend_list_t * entry)
 	uint32_t *cur_page_flags;
 	int i;
 
-	DRM_ERROR("Destroying a TTM region\n");
+	DRM_DEBUG("Destroying a TTM region\n");
 	list_del_init(&entry->head);
 
 	drm_unbind_ttm_region(entry);
 	if (be) {
 		be->clear(entry->be);
+#if 0 /* Hmm, Isn't this done in unbind? */
 		if (be->needs_cache_adjust(be)) {
 			int ret = drm_ttm_lock_mmap_sem(ttm);
 			drm_ttm_lock_mm(ttm, 0, 1);
@@ -500,6 +537,7 @@ void drm_destroy_ttm_region(drm_ttm_backend_list_t * entry)
 			if (!ret)
 				drm_ttm_unlock_mm(ttm, 1, 0);
 		}
+#endif
 		be->destroy(be);
 	}
 	cur_page_flags = ttm->page_flags + entry->page_offset;
@@ -609,6 +647,12 @@ int drm_bind_ttm_region(drm_ttm_backend_list_t * region,
 		ret = drm_ttm_lock_mmap_sem(ttm);
 		if (ret)
 			return ret;
+
+		drm_ttm_lock_mm(ttm, 0, 1);
+		unmap_vma_pages(ttm, region->page_offset,
+				region->num_pages);
+		drm_ttm_unlock_mm(ttm, 0, 1);
+
 		drm_set_caching(ttm, region->page_offset, region->num_pages,
 				DRM_TTM_PAGE_UNCACHED, 1);
 	} else {
@@ -676,7 +720,9 @@ void drm_user_destroy_region(drm_ttm_backend_list_t * entry)
 			page_cache_release(*cur_page);
 			cur_page++;
 		}
-		vfree(entry->anon_pages);
+		ttm_free(entry->anon_pages, 
+			 sizeof(*entry->anon_pages)*entry->anon_locked,
+			 DRM_MEM_TTM, entry->pages_vmalloc);
 	}
 
 	be->destroy(be);
@@ -721,7 +767,8 @@ int drm_user_create_region(drm_device_t * dev, unsigned long start, int len,
 		return -EFAULT;
 	}
 
-	tmp->anon_pages = vmalloc(sizeof(*(tmp->anon_pages)) * len);
+	tmp->anon_pages = ttm_alloc(sizeof(*(tmp->anon_pages)) * len,
+				    DRM_MEM_TTM, &tmp->pages_vmalloc);
 
 	if (!tmp->anon_pages) {
 		drm_user_destroy_region(tmp);

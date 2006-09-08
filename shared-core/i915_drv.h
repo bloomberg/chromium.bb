@@ -105,6 +105,7 @@ typedef struct drm_i915_private {
 	int vblank_pipe;
         spinlock_t user_irq_lock;
         int user_irq_refcount;
+        int fence_irq_on;
         uint32_t irq_enable_reg;
         int irq_enabled;
 

@@ -728,7 +728,7 @@ typedef struct drm_ttm_arg {
 /* Don't place this buffer on the unfenced list.*/
 #define DRM_BO_HINT_DONT_FENCE  0x00000004
 #define DRM_BO_HINT_WAIT_LAZY   0x00000008
-
+#define DRM_BO_HINT_ALLOW_UNFENCED_MAP 0x00000010
 
 
 /* Driver specific flags. Could be for example rendering engine */  
@@ -792,7 +792,7 @@ typedef struct drm_bo_arg{
 	union {
 		drm_bo_arg_request_t req;
 		drm_bo_arg_reply_t rep;
-	};
+	} d;
 } drm_bo_arg_t;
 
 typedef union drm_mm_init_arg{

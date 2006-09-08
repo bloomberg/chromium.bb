@@ -630,6 +630,7 @@ static void drm_agp_clear_ttm(drm_ttm_backend_t *backend) {
 		}
 		agp_free_memory(mem);
 	}
+
 	agp_priv->mem = NULL;
 }
 

@@ -98,10 +98,7 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 			drm_fence_object_flush(dev, bo->fence, bo->fence_flags);
 			list_add_tail(&bo->ddestroy, &bm->ddestroy);
 
-			if (!timer_pending(&bm->timer)) {
-				bm->timer.expires = jiffies + 1;
-				add_timer(&bm->timer);
-			}
+			schedule_delayed_work(&bm->wq, 2);
 
 			return;
 		} else {
@@ -109,15 +106,14 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 			bo->fence = NULL;
 		}
 	}
-
 	/*
 	 * Take away from lru lists.
 	 */
 
-	list_del(&bo->head);
+	list_del_init(&bo->head);
 
 	if (bo->tt) {
-		drm_unbind_ttm_region(bo->ttm_region);
+	        drm_unbind_ttm_region(bo->ttm_region);
 		drm_mm_put_block(&bm->tt_manager, bo->tt);
 		bo->tt = NULL;
 	}
@@ -152,7 +148,9 @@ static void drm_bo_delayed_delete(drm_device_t * dev)
 			entry->fence = NULL;
 		}
 		if (!entry->fence) {
-			DRM_DEBUG("Destroying delayed buffer object\n");
+#ifdef BODEBUG
+			DRM_ERROR("Destroying delayed buffer object\n");
+#endif
 			list_del(&entry->ddestroy);
 			drm_bo_destroy_locked(dev, entry);
 		}
@@ -161,16 +159,18 @@ static void drm_bo_delayed_delete(drm_device_t * dev)
 	mutex_unlock(&dev->struct_mutex);
 }
 
-static void drm_bo_delayed_timer(unsigned long data)
+static void drm_bo_delayed_workqueue(void *data)
 {
 	drm_device_t *dev = (drm_device_t *) data;
 	drm_buffer_manager_t *bm = &dev->bm;
 
+#ifdef BODEBUG
+	DRM_ERROR("Delayed delete Worker\n");
+#endif
 	drm_bo_delayed_delete(dev);
-	mutex_lock(&dev->struct_mutex);
-	if (!list_empty(&bm->ddestroy) && !timer_pending(&bm->timer)) {
-		bm->timer.expires = jiffies + 1;
-		add_timer(&bm->timer);
+	mutex_lock(&dev->struct_mutex); 
+	if (!list_empty(&bm->ddestroy)) {
+		schedule_delayed_work(&bm->wq, 2);
 	}
 	mutex_unlock(&dev->struct_mutex);
 }
@@ -220,14 +220,29 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 
 	mutex_lock(&dev->struct_mutex);
 
+	if (!list)
+		list = &bm->unfenced;
+
 	list_for_each_entry(entry, list, head) {
 		BUG_ON(!(entry->priv_flags & _DRM_BO_FLAG_UNFENCED));
 		fence_flags |= entry->fence_flags;
 		count++;
 	}
 
-	if (!count)
+	if (!count) {
+		DRM_ERROR("No buffers to fence\n");
+		ret = -EINVAL;
 		goto out;
+	}
+
+	/*
+	 * Transfer to a local list before we release the dev->struct_mutex;
+	 * This is so we don't get any new unfenced objects while fencing 
+	 * these.
+	 */
+
+	list_add_tail(&f_list, list);
+	list_del_init(list);
 
 	if (fence) {
 		if ((fence_flags & fence->type) != fence_flags) {
@@ -237,19 +252,12 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 			goto out;
 		}
 	} else {
+		mutex_unlock(&dev->struct_mutex);
 		ret = drm_fence_object_create(dev, fence_flags, 1, &fence);
+		mutex_lock(&dev->struct_mutex);
 		if (ret)
 			goto out;		
 	}
-
-	/*
-	 * Transfer to a private list before we release the dev->struct_mutex;
-	 * This is so we don't get any new unfenced objects while fencing 
-	 * these.
-	 */
-
-	f_list = *list;
-	INIT_LIST_HEAD(list);
 
 	count = 0;
 	l = f_list.next;
@@ -259,7 +267,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 		mutex_unlock(&dev->struct_mutex);
 		mutex_lock(&entry->mutex);
 		mutex_lock(&dev->struct_mutex);
-
+		list_del_init(l);
 		if (entry->priv_flags & _DRM_BO_FLAG_UNFENCED) {
 			count++;
 			if (entry->fence)
@@ -268,7 +276,6 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 			DRM_FLAG_MASKED(entry->priv_flags, 0,
 					_DRM_BO_FLAG_UNFENCED);
 			DRM_WAKEUP(&entry->event_queue);
-			list_del_init(&entry->head);
 			if (entry->flags & DRM_BO_FLAG_NO_EVICT)
 				list_add_tail(&entry->head, &bm->other);
 			else if (entry->flags & DRM_BO_FLAG_MEM_TT)
@@ -277,12 +284,19 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 				list_add_tail(&entry->head, &bm->vram_lru);
 			else
 				list_add_tail(&entry->head, &bm->other);
+		} else {
+#ifdef BODEBUG
+		    DRM_ERROR("Huh? Fenced object on unfenced list\n");
+#endif
 		}
 		mutex_unlock(&entry->mutex);
 		drm_bo_usage_deref_locked(dev, entry);
 		l = f_list.next;
 	}
 	atomic_add(count, &fence->usage);
+#ifdef BODEBUG
+	DRM_ERROR("Fenced %d buffers\n", count);
+#endif
       out:
 	mutex_unlock(&dev->struct_mutex);
 	*used_fence = fence;
@@ -303,7 +317,6 @@ static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
 	drm_fence_object_t *fence = bo->fence;
 	int ret;
 
-	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (fence) {
 		drm_device_t *dev = bo->dev;
 		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
@@ -424,6 +437,7 @@ int drm_bo_alloc_space(drm_buffer_object_t * buf, int tt, int no_wait)
 	} else {
 		buf->vram = node;
 	}
+	buf->offset = node->start * PAGE_SIZE;
 	return 0;
 }
 
@@ -431,6 +445,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 {
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
+	drm_ttm_backend_t *be;
 	int ret;
 
 	BUG_ON(bo->tt);
@@ -450,7 +465,8 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	if (ret)
 		return ret;
 
-	if (bo->ttm_region->be->needs_cache_adjust(bo->ttm_region->be))
+	be = bo->ttm_region->be;
+	if (be->needs_cache_adjust(be))
 		bo->flags &= ~DRM_BO_FLAG_CACHED;
 	bo->flags &= ~DRM_BO_MASK_MEM;
 	bo->flags |= DRM_BO_FLAG_MEM_TT;
@@ -458,7 +474,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	if (bo->priv_flags & _DRM_BO_FLAG_EVICTED) {
 		ret = dev->driver->bo_driver->invalidate_caches(dev, bo->flags);
 		if (ret)
-			DRM_ERROR("Warning: Could not flush read caches\n");
+			DRM_ERROR("Could not flush read caches\n");
 	}
 	DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_EVICTED);
 
@@ -776,12 +792,13 @@ static void drm_bo_fill_rep_arg(drm_buffer_object_t * bo,
  */
 
 static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle,
-				 uint32_t map_flags, int no_wait,
+				 uint32_t map_flags, unsigned hint,
 				 drm_bo_arg_reply_t * rep)
 {
 	drm_buffer_object_t *bo;
 	drm_device_t *dev = priv->head->dev;
 	int ret = 0;
+	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
 
 	mutex_lock(&dev->struct_mutex);
 	bo = drm_lookup_buffer_object(priv, handle, 1);
@@ -791,9 +808,11 @@ static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle,
 		return -EINVAL;
 
 	mutex_lock(&bo->mutex);
-	ret = drm_bo_wait_unfenced(bo, no_wait, 0);
-	if (ret)
-		goto out;
+	if (!(hint & DRM_BO_HINT_ALLOW_UNFENCED_MAP)) {
+		ret = drm_bo_wait_unfenced(bo, no_wait, 0);
+		if (ret)
+			goto out;
+	}
 
 	/*
 	 * If this returns true, we are currently unmapped.
@@ -979,7 +998,11 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	 * Check whether we need to move buffer.
 	 */
 
-	if (flag_diff & DRM_BO_MASK_MEM) {
+	if ((bo->type != drm_bo_type_fake) && (flag_diff & DRM_BO_MASK_MEM)) {
+		if (bo->type == drm_bo_type_user) {
+			DRM_ERROR("User buffers are not implemented yet.\n");
+			return -EINVAL;
+		}
 		ret = drm_bo_move_buffer(bo, new_flags, no_wait);
 		if (ret)
 			return ret;
@@ -1151,7 +1174,7 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
 		bo->ttm_object = to;
 		ttm = drm_ttm_from_object(to);
 		ret = drm_create_ttm_region(ttm, bo->buffer_start >> PAGE_SHIFT,
-					    bo->num_pages,1,
+					    bo->num_pages, 0,
 					    
 					    /*					    bo->mask & DRM_BO_FLAG_BIND_CACHED,*/
 					    &bo->ttm_region);
@@ -1177,9 +1200,11 @@ int drm_buffer_object_create(drm_file_t * priv,
 	int ret = 0;
 	uint32_t new_flags;
 	unsigned long num_pages;
-
+	
 	drm_bo_delayed_delete(dev);
-	if (buffer_start & ~PAGE_MASK) {
+
+	if ((buffer_start & ~PAGE_MASK) &&
+	    (type != drm_bo_type_fake)) {
 		DRM_ERROR("Invalid buffer object start.\n");
 		return -EINVAL;
 	}
@@ -1206,24 +1231,24 @@ int drm_buffer_object_create(drm_file_t * priv,
 	bo->dev = dev;
 	bo->type = type;
 	bo->num_pages = num_pages;
-	bo->buffer_start = buffer_start;
+	if (bo->type == drm_bo_type_fake) {
+		bo->offset = buffer_start;
+		bo->buffer_start = 0;
+	} else {
+		bo->buffer_start = buffer_start;
+	}
 	bo->priv_flags = 0;
 	bo->flags = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
 	ret = drm_bo_new_flags(dev, bo->flags, mask, hint,
 			       1, &new_flags, &bo->mask);
-	DRM_ERROR("New flags: 0x%08x\n", new_flags);
 	if (ret)
 		goto out_err;
 	ret = drm_bo_add_ttm(priv, bo, ttm_handle);
 	if (ret)
 		goto out_err;
 
-#if 1
 	ret = drm_buffer_object_validate(bo, new_flags, 0,
 					 hint & DRM_BO_HINT_DONT_BLOCK);
-#else
-	bo->flags = new_flags;
-#endif
 	if (ret)
 		goto out_err;
 
@@ -1268,7 +1293,7 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_bo_arg_t arg;
-	drm_bo_arg_request_t *req = &arg.req;
+	drm_bo_arg_request_t *req = &arg.d.req;
 	drm_bo_arg_reply_t rep;
 	unsigned long next;
 	drm_user_object_t *uo;
@@ -1321,8 +1346,7 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 		case drm_bo_map:
 			rep.ret = drm_buffer_object_map(priv, req->handle,
 							req->mask,
-							req->hint &
-							DRM_BO_HINT_DONT_BLOCK,
+							req->hint,
 							&rep);
 			break;
 		case drm_bo_destroy:
@@ -1394,10 +1418,9 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 			return -EAGAIN;
 
 		arg.handled = 1;
-		arg.rep = rep;
+		arg.d.rep = rep;
 		DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
 		data = next;
-
 	} while (data);
 	return 0;
 }
@@ -1409,17 +1432,22 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 static void drm_bo_force_clean(drm_device_t * dev)
 {
 	drm_buffer_manager_t *bm = &dev->bm;
-
-	drm_buffer_object_t *entry, *next;
+	struct list_head *l;
+	drm_buffer_object_t *entry;
 	int nice_mode = 1;
 	int ret = 0;
 
-	list_for_each_entry_safe(entry, next, &bm->ddestroy, ddestroy) {
+	l = bm->ddestroy.next;
+	while(l != &bm->ddestroy) {
+		entry = list_entry(l, drm_buffer_object_t, ddestroy);
+		list_del(l);
 		if (entry->fence) {
 			if (nice_mode) {
 				unsigned long _end = jiffies + 3 * DRM_HZ;
 				do {
+					mutex_unlock(&dev->struct_mutex);
 					ret = drm_bo_wait(entry, 0, 1, 0);
+					mutex_lock(&dev->struct_mutex);
 				} while ((ret == -EINTR) &&
 					 !time_after_eq(jiffies, _end));
 			} else {
@@ -1436,8 +1464,8 @@ static void drm_bo_force_clean(drm_device_t * dev)
 
 		}
 		DRM_DEBUG("Destroying delayed buffer object\n");
-		list_del(&entry->ddestroy);
 		drm_bo_destroy_locked(dev, entry);
+		l = bm->ddestroy.next;
 	}
 }
 
@@ -1541,11 +1569,9 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		INIT_LIST_HEAD(&bm->ddestroy);
 		INIT_LIST_HEAD(&bm->other);
 
-		init_timer(&bm->timer);
-		bm->timer.function = &drm_bo_delayed_timer;
-		bm->timer.data = (unsigned long)dev;
-
+		INIT_WORK(&bm->wq, &drm_bo_delayed_workqueue, dev);
 		bm->initialized = 1;
+
 		break;
 	case mm_takedown:
 		if (drm_bo_clean_mm(dev)) {

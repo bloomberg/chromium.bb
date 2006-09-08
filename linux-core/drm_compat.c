@@ -59,9 +59,14 @@ static inline void change_pte_range(struct mm_struct *mm, pmd_t * pmd,
 	do {
 		if (pte_present(*pte)) {
 			pte_t ptent;
-			ptent = *pte;
 			ptep_get_and_clear(mm, addr, pte);
+			ptent = *pte;
 			lazy_mmu_prot_update(ptent);
+		} else {
+			ptep_get_and_clear(mm, addr, pte);
+		}
+		if (!pte_none(*pte)) {
+		  DRM_ERROR("Ugh. Pte was presen\n");
 		}
 	} while (pte++, addr += PAGE_SIZE, addr != end);
 	pte_unmap(pte - 1);

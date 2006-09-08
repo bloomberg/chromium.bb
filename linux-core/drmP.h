@@ -801,7 +801,7 @@ typedef struct drm_buffer_manager{
 	struct list_head unfenced;
 	struct list_head ddestroy;
         struct list_head other;
-        struct timer_list timer;
+        struct work_struct wq;
         uint32_t fence_flags;
 } drm_buffer_manager_t;
 
