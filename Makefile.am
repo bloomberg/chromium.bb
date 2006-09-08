@@ -41,6 +41,7 @@ src_libairbag_la_SOURCES = \
 	src/google/stack_frame.h \
 	src/google/symbol_supplier.h \
 	src/processor/crash_report_processor.cc \
+	src/processor/linked_ptr.h \
 	src/processor/memory_region.h \
 	src/processor/minidump.cc \
 	src/processor/minidump.h \

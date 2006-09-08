@@ -49,7 +49,7 @@ class RangeMap {
 
   // Locates the range encompassing the supplied address.  If there is
   // no such range, or if there is a parameter error, returns false.
-  bool RetrieveRange(const AddressType& address, EntryType* entry);
+  bool RetrieveRange(const AddressType& address, EntryType* entry) const;
 
   // Empties the range map, restoring it to the state it was when it was
   // initially created.
@@ -125,7 +125,7 @@ bool RangeMap<AddressType, EntryType>::StoreRange(const AddressType& base,
 template<typename AddressType, typename EntryType>
 bool RangeMap<AddressType, EntryType>::RetrieveRange(
     const AddressType& address,
-    EntryType*         entry) {
+    EntryType*         entry) const {
   if (!entry)
     return false;
 

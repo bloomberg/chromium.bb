@@ -19,6 +19,8 @@
 #include <utility>
 #include "processor/source_line_resolver.h"
 #include "google/stack_frame.h"
+#include "processor/linked_ptr.h"
+#include "processor/range_map.h"
 
 using std::map;
 using std::vector;
@@ -27,62 +29,29 @@ using __gnu_cxx::hash;
 
 namespace google_airbag {
 
-// MemAddrMap is a map subclass which has the following properties:
-//  - stores pointers to an "entry" type, which are deleted on destruction
-//  - suitable for address lookup via FindContainingEntry
-
-template<class T>
-class SourceLineResolver::MemAddrMap : public map<MemAddr, T*> {
- public:
-  ~MemAddrMap();
-
-  // Find the entry which "contains" a given relative address, that is,
-  // the entry with the highest address not greater than the given address.
-  // Returns NULL if there is no such entry.
-  T* FindContainingEntry(MemAddr address) const;
-
- private:
-  typedef map<MemAddr, T*> MapType;
-};
-
-template<class T>
-SourceLineResolver::MemAddrMap<T>::~MemAddrMap() {
-  typename MapType::iterator it;
-  for (it = MapType::begin(); it != MapType::end(); ++it) {
-    delete it->second;
-  }
-}
-
-template<class T>
-T* SourceLineResolver::MemAddrMap<T>::FindContainingEntry(
-    MemAddr address) const {
-  typename MapType::const_iterator it = MapType::lower_bound(address);
-  if (it->first != address) {
-    if (it == MapType::begin()) {
-      // Nowhere to go, so no entry contains the address
-      return NULL;
-    }
-    --it;  // back up to the entry before address
-  }
-  return it->second;
-}
-
 struct SourceLineResolver::Line {
-  Line(MemAddr addr, int file_id, int source_line)
-      : address(addr), source_file_id(file_id), line(source_line) { }
+  Line(MemAddr addr, MemAddr code_size, int file_id, int source_line)
+      : address(addr)
+      , size(code_size)
+      , source_file_id(file_id)
+      , line(source_line) { }
 
   MemAddr address;
+  MemAddr size;
   int source_file_id;
   int line;
 };
 
 struct SourceLineResolver::Function {
-  Function(const string &function_name, MemAddr function_address)
-      : name(function_name), address(function_address) { }
+  Function(const string &function_name,
+           MemAddr function_address,
+           MemAddr code_size)
+      : name(function_name), address(function_address), size(code_size) { }
 
   string name;
   MemAddr address;
-  MemAddrMap<Line> lines;
+  MemAddr size;
+  RangeMap<MemAddr, linked_ptr<Line> > lines;
 };
 
 class SourceLineResolver::Module {
@@ -111,7 +80,7 @@ class SourceLineResolver::Module {
 
   string name_;
   FileMap files_;
-  MemAddrMap<Function> functions_;
+  RangeMap<MemAddr, linked_ptr<Function> > functions_;
 };
 
 SourceLineResolver::SourceLineResolver() : modules_(new ModuleMap) {
@@ -166,7 +135,8 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
       if (!cur_func) {
         return false;
       }
-      functions_.insert(make_pair(cur_func->address, cur_func));
+      functions_.StoreRange(cur_func->address, cur_func->size,
+                            linked_ptr<Function>(cur_func));
     } else {
       if (!cur_func) {
         return false;
@@ -175,7 +145,8 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
       if (!line) {
         return false;
       }
-      cur_func->lines.insert(make_pair(line->address, line));
+      cur_func->lines.StoreRange(line->address, line->size,
+                                 linked_ptr<Line>(line));
     }
   }
 
@@ -185,14 +156,14 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
 
 void SourceLineResolver::Module::LookupAddress(MemAddr address,
                                                StackFrame *frame) const {
-  Function *func = functions_.FindContainingEntry(address);
-  if (!func) {
+  linked_ptr<Function> func;
+  if (!functions_.RetrieveRange(address, &func)) {
     return;
   }
 
   frame->function_name = func->name;
-  Line *line = func->lines.FindContainingEntry(address);
-  if (!line) {
+  linked_ptr<Line> line;
+  if (!func->lines.RetrieveRange(address, &line)) {
     return;
   }
 
@@ -231,12 +202,17 @@ SourceLineResolver::Function* SourceLineResolver::Module::ParseFunction(
     return NULL;
   }
 
+  char *size = strtok(NULL, " ");
+  if (!size) {
+    return NULL;
+  }
+
   char *name = strtok(NULL, "\r\n");
   if (!name) {
     return NULL;
   }
 
-  return new Function(name, strtoull(addr, NULL, 16));
+  return new Function(name, strtoull(addr, NULL, 16), strtoull(size, NULL, 16));
 }
 
 SourceLineResolver::Line* SourceLineResolver::Module::ParseLine(
@@ -244,6 +220,11 @@ SourceLineResolver::Line* SourceLineResolver::Module::ParseLine(
   // <address> <line number> <source file id>
   char *addr = strtok(line_line, " ");
   if (!addr) {
+    return NULL;
+  }
+
+  char *size = strtok(NULL, " ");
+  if (!size) {
     return NULL;
   }
 
@@ -257,7 +238,10 @@ SourceLineResolver::Line* SourceLineResolver::Module::ParseLine(
     return NULL;
   }
 
-  return new Line(strtoull(addr, NULL, 16), source_file, line_number);
+  return new Line(strtoull(addr, NULL, 16),
+                  strtoull(size, NULL, 16),
+                  source_file,
+                  line_number);
 }
 
 size_t SourceLineResolver::HashString::operator()(const string &s) const {

@@ -65,6 +65,12 @@ bool PDBSourceLineWriter::PrintLines(IDiaEnumLineNumbers *lines) {
       return false;
     }
 
+    DWORD length;
+    if (FAILED(line->get_length(&length))) {
+      fprintf(stderr, "failed to get line code length\n");
+      return false;
+    }
+
     DWORD source_id;
     if (FAILED(line->get_sourceFileId(&source_id))) {
       fprintf(stderr, "failed to get line source file id\n");
@@ -77,7 +83,7 @@ bool PDBSourceLineWriter::PrintLines(IDiaEnumLineNumbers *lines) {
       return false;
     }
 
-    fprintf(output_, "%x %d %d\n", rva, line_num, source_id);
+    fprintf(output_, "%x %x %d %d\n", rva, length, line_num, source_id);
     line.Release();
   }
   return true;
@@ -113,7 +119,7 @@ bool PDBSourceLineWriter::PrintFunction(IDiaSymbol *function) {
     return false;
   }
 
-  fwprintf(output_, L"FUNC %x %s\n", rva, name);
+  fwprintf(output_, L"FUNC %x %llx %s\n", rva, length, name);
   if (!PrintLines(lines)) {
     return false;
   }

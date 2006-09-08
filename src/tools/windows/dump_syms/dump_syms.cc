@@ -23,7 +23,7 @@ using std::wstring;
 
 int main(int argc, char **argv) {
   if (argc < 2) {
-    fprintf(stderr, "Usage: %s <pdb file>", argv[0]);
+    fprintf(stderr, "Usage: %s <pdb file>\n", argv[0]);
     return 1;
   }
 
