@@ -561,10 +561,8 @@ class MinidumpMiscInfo : public MinidumpStream {
 // and provides access to the minidump's top-level stream directory.
 class Minidump {
  public:
-  // fd is a randomly seekable file descriptor that is open and is
-  // positioned at the beginning of the MDRawHeader structure (byte offset
-  // 0).
-  Minidump(int fd);
+  // path is the pathname of a file containing the minidump.
+  Minidump(const string& path);
 
   ~Minidump();
 
@@ -652,6 +650,9 @@ class Minidump {
 
   template<typename T> T* GetStream(T** stream);
 
+  // Opens the minidump file, or if already open, seeks to the beginning.
+  bool Open();
+
   MDRawHeader               header_;
 
   // The list of streams.
@@ -660,7 +661,11 @@ class Minidump {
   // Access to streams using the stream type as the key.
   MinidumpStreamMap*        stream_map_;
 
+  // The pathname of the minidump file to process, set in the constructor.
+  const string              path_;
+
   // The file descriptor for all file I/O.  Used by ReadBytes and SeekSet.
+  // Set based on the |path_| member by Open, which is called by Read.
   int                       fd_;
 
   // swap_ is true if the minidump file should be byte-swapped.  If the

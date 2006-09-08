@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include "google/crash_report.h"
 #include "google/crash_report_processor.h"
 #include "processor/minidump.h"
@@ -31,12 +28,7 @@ CrashReportProcessor::~CrashReportProcessor() {
 
 bool CrashReportProcessor::ProcessReport(CrashReport *report,
                                          const string &minidump_file) {
-  int fd = open(minidump_file.c_str(), O_RDONLY);
-  if (fd == -1) {
-    return false;
-  }
-
-  Minidump dump(fd);
+  Minidump dump(minidump_file);
   if (!dump.Read()) {
     return false;
   }

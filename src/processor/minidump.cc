@@ -19,14 +19,18 @@
 // Author: Mark Mentovai
 
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
 #ifdef _WIN32
 #include <io.h>
 typedef SSIZE_T ssize_t;
+#define open _open
 #define read _read
 #define lseek _lseek
+#else // _WIN32
+#define O_BINARY 0
 #endif // _WIN32
 
 #include <map>
@@ -1693,11 +1697,12 @@ void MinidumpMiscInfo::Print() {
 //
 
 
-Minidump::Minidump(int fd)
+Minidump::Minidump(const string& path)
     : header_(),
       directory_(NULL),
       stream_map_(NULL),
-      fd_(fd),
+      path_(path),
+      fd_(-1),
       swap_(false),
       valid_(false) {
 }
@@ -1706,6 +1711,25 @@ Minidump::Minidump(int fd)
 Minidump::~Minidump() {
   delete directory_;
   delete stream_map_;
+  if (fd_ != -1)
+    close(fd_);
+}
+
+
+bool Minidump::Open() {
+  if (fd_ != -1) {
+    // The file is already open.  Seek to the beginning, which is the position
+    // the file would be at if it were opened anew.
+    return SeekSet(0);
+  }
+
+  // O_BINARY is useful (and defined) on Windows.  On other platforms, it's
+  // useless, and because it's defined as 0 above, harmless.
+  fd_ = open(path_.c_str(), O_RDONLY | O_BINARY);
+  if (fd_ == -1)
+    return false;
+
+  return true;
 }
 
 
@@ -1717,6 +1741,9 @@ bool Minidump::Read() {
   stream_map_ = NULL;
 
   valid_ = false;
+
+  if (!Open())
+    return false;
 
   if (!ReadBytes(&header_, sizeof(MDRawHeader)))
     return false;

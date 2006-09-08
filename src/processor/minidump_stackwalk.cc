@@ -17,23 +17,16 @@
 //
 // Author: Mark Mentovai
 
-#include <errno.h>
-#include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#ifndef _WIN32
-#include <unistd.h>
-#define O_BINARY 0
-#else // !_WIN32
-#include <io.h>
-#define open _open
-#endif // !_WIN32
+
+#include <string>
 
 #include "processor/minidump.h"
 #include "processor/stackwalker_x86.h"
 
 
+using std::string;
 using namespace google_airbag;
 
 
@@ -43,13 +36,7 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
-  int fd = open(argv[1], O_RDONLY | O_BINARY);
-  if (fd == -1) {
-    fprintf(stderr, "open failed\n");
-    exit(1);
-  }
-
-  Minidump minidump(fd);
+  Minidump minidump(argv[1]);
   if (!minidump.Read()) {
     fprintf(stderr, "minidump.Read() failed\n");
     exit(1);
