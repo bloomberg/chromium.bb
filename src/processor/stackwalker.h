@@ -45,8 +45,8 @@ class Stackwalker {
   virtual ~Stackwalker() {}
 
   // Fills the given vector of StackFrames by calling GetContextFrame and
-  // GetCallerFrame, and populating the returned frames with module
-  // offset and name information if possible.
+  // GetCallerFrame, and populating the returned frames with all available
+  // data.
   void Walk(StackFrames *frames);
 
  protected:

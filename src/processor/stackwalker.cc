@@ -44,7 +44,6 @@ Stackwalker::Stackwalker(MemoryRegion* memory, MinidumpModuleList* modules,
 
 void Stackwalker::Walk(StackFrames *frames) {
   frames->clear();
-  bool resolve_symbols = (modules_ && supplier_);
   SourceLineResolver resolver;
 
   // Begin with the context frame, and keep getting callers until there are
@@ -64,12 +63,12 @@ void Stackwalker::Walk(StackFrames *frames) {
       if (module) {
         frame->module_name = *(module->GetName());
         frame->module_base = module->base_address();
-        if (resolve_symbols) {
+        if (modules_ && supplier_) {
           string symbol_file = supplier_->GetSymbolFile(module, report_);
           if (!symbol_file.empty()) {
             resolver.LoadModule(*(module->GetName()), symbol_file);
+            resolver.FillSourceLineInfo(frame.get());
           }
-          resolver.FillSourceLineInfo(frame.get());
         }
       }
     }
