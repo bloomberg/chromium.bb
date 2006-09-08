@@ -23,6 +23,8 @@
 
 #include "processor/stackwalker.h"
 #include "processor/minidump.h"
+#include "processor/source_line_resolver.h"
+#include "google/symbol_supplier.h"
 
 
 namespace google_airbag {
@@ -31,13 +33,19 @@ namespace google_airbag {
 using std::auto_ptr;
 
 
-Stackwalker::Stackwalker(MemoryRegion* memory, MinidumpModuleList* modules)
-    : memory_(memory), modules_(modules) {
+Stackwalker::Stackwalker(MemoryRegion* memory, MinidumpModuleList* modules,
+                         SymbolSupplier *supplier, const CrashReport *report)
+    : memory_(memory),
+      modules_(modules),
+      supplier_(supplier),
+      report_(report) {
 }
 
 
-StackFrames* Stackwalker::Walk() {
-  auto_ptr<StackFrames> frames(new StackFrames());
+void Stackwalker::Walk(StackFrames *frames) {
+  frames->clear();
+  bool resolve_symbols = (modules_ && supplier_);
+  SourceLineResolver resolver;
 
   // Begin with the context frame, and keep getting callers until there are
   // no more.
@@ -56,6 +64,13 @@ StackFrames* Stackwalker::Walk() {
       if (module) {
         frame->module_name = *(module->GetName());
         frame->module_base = module->base_address();
+        if (resolve_symbols) {
+          string symbol_file = supplier_->GetSymbolFile(module, report_);
+          if (!symbol_file.empty()) {
+            resolver.LoadModule(*(module->GetName()), symbol_file);
+          }
+          resolver.FillSourceLineInfo(frame.get());
+        }
       }
     }
 
@@ -70,8 +85,6 @@ StackFrames* Stackwalker::Walk() {
     // Get the next frame.
     valid = GetCallerFrame(frame.get());
   }
-
-  return frames.release();
 }
 
 

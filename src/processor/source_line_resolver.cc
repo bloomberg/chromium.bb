@@ -145,7 +145,7 @@ bool SourceLineResolver::LoadModule(const string &module_name,
 void SourceLineResolver::FillSourceLineInfo(StackFrame *frame) const {
   ModuleMap::const_iterator it = modules_->find(frame->module_name);
   if (it != modules_->end()) {
-    it->second->LookupAddress(frame->instruction, frame);
+    it->second->LookupAddress(frame->instruction - frame->module_base, frame);
   }
 }
 

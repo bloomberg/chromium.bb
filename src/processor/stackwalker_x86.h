@@ -40,11 +40,13 @@ class StackwalkerX86 : public Stackwalker {
  public:
   // context is a MinidumpContext object that gives access to x86-specific
   // register state corresponding to the innermost called frame to be
-  // included in the stack.  memory and modules are passed directly through
+  // included in the stack.  The other arguments are passed directly through
   // to the base Stackwalker constructor.
   StackwalkerX86(MinidumpContext*    context,
                  MemoryRegion*       memory,
-                 MinidumpModuleList* modules);
+                 MinidumpModuleList* modules,
+                 SymbolSupplier*     supplier,
+                 const CrashReport*  report);
 
  private:
   // Implementation of Stackwalker, using x86 context (%ebp, %eip) and

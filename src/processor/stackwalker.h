@@ -36,24 +36,31 @@ namespace google_airbag {
 
 
 class MinidumpModuleList;
+class SymbolSupplier;
+struct CrashReport;
 
 
 class Stackwalker {
  public:
   virtual ~Stackwalker() {}
 
-  // Produces a vector of StackFrames by calling GetContextFrame and
+  // Fills the given vector of StackFrames by calling GetContextFrame and
   // GetCallerFrame, and populating the returned frames with module
-  // offset and name information if possible.  The caller takes ownership
-  // of the StackFrames object and is responsible for freeing it.
-  StackFrames* Walk();
+  // offset and name information if possible.
+  void Walk(StackFrames *frames);
 
  protected:
   // memory identifies a MemoryRegion that provides the stack memory
   // for the stack to walk.  modules, if non-NULL, is a MinidumpModuleList
   // that is used to look up which code module each stack frame is
-  // associated with.
-  Stackwalker(MemoryRegion* memory, MinidumpModuleList* modules);
+  // associated with.  supplier is an optional caller-supplied SymbolSupplier
+  // implementation.  If supplier is NULL, source line info will not be
+  // resolved.  The CrashReport object will be passed to the SymbolSupplier's
+  // GetSymbolFile method.
+  Stackwalker(MemoryRegion* memory,
+              MinidumpModuleList* modules,
+              SymbolSupplier* supplier,
+              const CrashReport* report);
 
   // The stack memory to walk.  Subclasses will require this region to
   // get information from the stack.
@@ -74,6 +81,12 @@ class Stackwalker {
   // A list of modules, for populating each StackFrame's module information.
   // This field is optional and may be NULL.
   MinidumpModuleList* modules_;
+
+  // The optional SymbolSupplier for resolving source line info.
+  SymbolSupplier* supplier_;
+
+  // The CrashReport object which is passed to the SymbolSupplier. May be null.
+  const CrashReport* report_;
 };
 
 

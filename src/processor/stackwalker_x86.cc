@@ -28,8 +28,10 @@ namespace google_airbag {
 
 StackwalkerX86::StackwalkerX86(MinidumpContext*    context,
                                MemoryRegion*       memory,
-                               MinidumpModuleList* modules)
-    : Stackwalker(memory, modules),
+                               MinidumpModuleList* modules,
+                               SymbolSupplier*     supplier,
+                               const CrashReport*  report)
+    : Stackwalker(memory, modules, supplier, report),
       last_frame_pointer_(0) {
   if (memory_->GetBase() + memory_->GetSize() - 1 > 0xffffffff) {
     // The x86 is a 32-bit CPU, the limits of the supplied stack are invalid.

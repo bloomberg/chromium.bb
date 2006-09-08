@@ -30,13 +30,10 @@
 #define open _open
 #endif // !_WIN32
 
-#include <memory>
-
 #include "processor/minidump.h"
 #include "processor/stackwalker_x86.h"
 
 
-using std::auto_ptr;
 using namespace google_airbag;
 
 
@@ -95,17 +92,15 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
-  StackwalkerX86 stackwalker = StackwalkerX86(context, stack_memory, modules);
+  StackwalkerX86 stackwalker = StackwalkerX86(context, stack_memory,
+                                              modules, NULL, NULL);
 
-  auto_ptr<StackFrames> stack(stackwalker.Walk());
-  if (!stack.get()) {
-     fprintf(stderr, "stackwalker->Walk() failed\n");
-     exit(1);
-  }
+  StackFrames stack;
+  stackwalker.Walk(&stack);
 
   unsigned int index;
-  for (index = 0 ; index < stack->size() ; index++) {
-    StackFrame frame = stack->at(index);
+  for (index = 0 ; index < stack.size() ; index++) {
+    StackFrame frame = stack.at(index);
     printf("[%2d]  ebp = 0x%08llx  eip = 0x%08llx  \"%s\" + 0x%08llx\n",
            index,
            frame.frame_pointer,
