@@ -275,9 +275,18 @@ FcCacheInsert (FcCache *cache, struct stat *cache_stat)
     s->cache = cache;
     s->size = cache->size;
     s->ref = 1;
-    s->cache_dev = cache_stat->st_dev;
-    s->cache_ino = cache_stat->st_ino;
-    s->cache_mtime = cache_stat->st_mtime;
+    if (cache_stat)
+    {
+	s->cache_dev = cache_stat->st_dev;
+	s->cache_ino = cache_stat->st_ino;
+	s->cache_mtime = cache_stat->st_mtime;
+    }
+    else
+    {
+	s->cache_dev = 0;
+	s->cache_ino = 0;
+	s->cache_mtime = 0;
+    }
     
     /*
      * Insert into all fcCacheChains
@@ -658,6 +667,8 @@ FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, FcStrSet *dirs)
 
     FcSerializeDestroy (serialize);
     
+    FcCacheInsert (cache, NULL);
+
     return cache;
 
 bail2:
