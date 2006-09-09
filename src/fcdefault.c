@@ -91,6 +91,22 @@ FcGetDefaultLang (void)
 		lang_local[lang_len + 1 + territory_len] = '\0';
 	    }
 	}
+	else
+	{
+	    after = strchr (ctype, '.');
+	    if (!after)
+	    {
+		after = strchr (ctype, '@');
+		if (!after)
+		    after = ctype + strlen (ctype);
+	    }
+	    lang_len = after - ctype;
+	    if (lang_len + 1 <= (int) sizeof (lang_local))
+	    {
+		strncpy (lang_local, ctype, lang_len);
+		lang_local[lang_len] = '\0';
+	    }
+	}
     }
 
     /* set default lang to en */
