@@ -41,9 +41,31 @@ CONF_FILES = \
 	76-no-bitmaps.conf \
 	76-yes-bitmaps.conf
 
+CONF_LINKS = \
+	10-urw-aliases.conf \
+	15-amt-aliases.conf \
+	20-fix-globaladvance.conf \
+	30-unhint-small-vera.conf \
+	50-user.conf \
+	51-local.conf \
+	60-LohitGujarati.conf \
+	60-delicious.conf \
+	60-fonts-persian.conf
+
 EXTRA_DIST = $(CONF_FILES)
 
 configdir=$(CONFDIR)
 confavaildir=$(configdir)/conf.avail
+confddir=$(configdir)/conf.d
 
 confavail_DATA=$(CONF_FILES)
+
+install-data-local:
+	mkdir -p ${DESTDIR}${confddir}
+	@(echo cd ${DESTDIR}${confddir}; \
+	 cd ${DESTDIR}${confddir}; \
+	 for i in ${CONF_LINKS}; do \
+	 	rm -f $$i; \
+		echo rm -f $$i";" ln -s ../conf.avail/$$i .; \
+		ln -s ../conf.avail/$$i .; \
+	 done)
