@@ -21,7 +21,7 @@
 #  TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 #  PERFORMANCE OF THIS SOFTWARE.
 
-CONF_LINKS = \
+CONF_FILES = \
 	10-urw-aliases.conf \
 	15-amt-aliases.conf \
 	20-fix-globaladvance.conf \
@@ -30,23 +30,20 @@ CONF_LINKS = \
 	51-local.conf \
 	60-LohitGujarati.conf \
 	60-delicious.conf \
-	60-fonts-persian.conf
+	60-fonts-persian.conf \
+	70-no-sub-pixel.conf \
+	70-sub-pixel-bgr.conf \
+	70-sub-pixel-rgb.conf \
+	70-sub-pixel-vbgr.conf \
+	70-sub-pixel-vrgb.conf \
+	73-autohint.conf \
+	73-unhinted.conf \
+	76-no-bitmaps.conf \
+	76-yes-bitmaps.conf
 
-EXTRA_DIST = $(CONF_LINKS)
+EXTRA_DIST = $(CONF_FILES)
 
 configdir=$(CONFDIR)
-confddir=$(configdir)/conf.d
+confavaildir=$(configdir)/conf.avail
 
-install:
-	mkdir -p ${DESTDIR}/${confddir}
-	ln -s ../conf.avail/10-urw-aliases.conf ${DESTDIR}/${confddir}
-	ln -s ../conf.avail/15-amt-aliases.conf ${DESTDIR}/${confddir}
-	ln -s ../conf.avail/20-fix-globaladvance.conf ${DESTDIR}/${confddir}
-	ln -s ../conf.avail/30-unhint-small-vera.conf ${DESTDIR}/${confddir}
-	ln -s ../conf.avail/50-user.conf ${DESTDIR}/${confddir}
-	ln -s ../conf.avail/51-local.conf ${DESTDIR}/${confddir}
-	ln -s ../conf.avail/60-LohitGujarati.conf ${DESTDIR}/${confddir}
-	ln -s ../conf.avail/60-delicious.conf ${DESTDIR}/${confddir}
-	ln -s ../conf.avail/60-fonts-persian.conf ${DESTDIR}/${confddir}
-
-
+confavail_DATA=$(CONF_FILES)
