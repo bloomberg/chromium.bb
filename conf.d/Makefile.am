@@ -22,35 +22,48 @@
 #  PERFORMANCE OF THIS SOFTWARE.
 
 CONF_FILES = \
-	10-urw-aliases.conf \
-	15-amt-aliases.conf \
+	README \
+	10-autohint.conf \
+	10-no-sub-pixel.conf \
+	10-sub-pixel-bgr.conf \
+	10-sub-pixel-rgb.conf \
+	10-sub-pixel-vbgr.conf \
+	10-sub-pixel-vrgb.conf \
+	10-unhinted.conf \
 	20-fix-globaladvance.conf \
-	30-unhint-small-vera.conf \
+	20-lohit-gujarati.conf \
+	20-unhint-small-vera.conf \
+	30-amt-aliases.conf \
+	30-urw-aliases.conf \
+	40-generic.conf \
+	49-sansserif.conf \
 	50-user.conf \
 	51-local.conf \
-	60-LohitGujarati.conf \
-	60-delicious.conf \
-	60-fonts-persian.conf \
-	70-no-sub-pixel.conf \
-	70-sub-pixel-bgr.conf \
-	70-sub-pixel-rgb.conf \
-	70-sub-pixel-vbgr.conf \
-	70-sub-pixel-vrgb.conf \
-	73-autohint.conf \
-	73-unhinted.conf \
-	76-no-bitmaps.conf \
-	76-yes-bitmaps.conf
+	60-latin.conf \
+	65-fonts-persian.conf \
+	65-nonlatin.conf \
+	69-unifont.conf \
+	70-no-bitmaps.conf \
+	70-yes-bitmaps.conf \
+	80-delicious.conf \
+	90-synthetic.conf
 
 CONF_LINKS = \
-	10-urw-aliases.conf \
-	15-amt-aliases.conf \
 	20-fix-globaladvance.conf \
-	30-unhint-small-vera.conf \
+	20-lohit-gujarati.conf \
+	20-unhint-small-vera.conf \
+	30-amt-aliases.conf \
+	30-urw-aliases.conf \
+	40-generic.conf \
+	49-sansserif.conf \
 	50-user.conf \
 	51-local.conf \
-	60-LohitGujarati.conf \
-	60-delicious.conf \
-	60-fonts-persian.conf
+	60-latin.conf \
+	65-fonts-persian.conf \
+	65-nonlatin.conf \
+	69-unifont.conf \
+	80-delicious.conf \
+	90-synthetic.conf
 
 EXTRA_DIST = $(CONF_FILES)
 
