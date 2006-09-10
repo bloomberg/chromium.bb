@@ -1,6 +1,7 @@
 <!-- This is the Document Type Definition for font configuration files -->
 <!ELEMENT fontconfig (dir | 
 		      cache | 
+		      cachedir |
 		      include | 
 		      config |
 		      selectfont |
@@ -106,11 +107,11 @@
 
 <!ELEMENT pattern (patelt)*>
 
-<!ELEMENT patelt (constant)*>
+<!ENTITY % constant 'int|double|string|matrix|bool|charset|const'>
+
+<!ELEMENT patelt (%constant;)*>
 <!ATTLIST patelt
 	  name CDATA	#REQUIRED>
-
-<!ELEMENT constant (int|double|string|matrix|bool|charset|const)>
 
 <!ELEMENT alias (family*, prefer?, accept?, default?)>
 <!ELEMENT prefer (family)*>
