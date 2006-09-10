@@ -2281,6 +2281,14 @@ FcEndDoctypeDecl (void *userData)
 
 #endif /* ENABLE_LIBXML2 */
 
+static int
+FcSortCmpStr (const void *a, const void *b)
+{
+    const FcChar8    *as = *((FcChar8 **) a);
+    const FcChar8    *bs = *((FcChar8 **) b);
+    return FcStrCmp (as, bs);
+}
+
 static FcBool
 FcConfigParseAndLoadDir (FcConfig	*config,
 			 const FcChar8	*name,
@@ -2350,7 +2358,7 @@ FcConfigParseAndLoadDir (FcConfig	*config,
     {
 	int i;
 	qsort (files->strs, files->num, sizeof (FcChar8 *), 
-	       (int (*)(const void *, const void *)) FcStrCmp);
+	       (int (*)(const void *, const void *)) FcSortCmpStr);
 	for (i = 0; ret && i < files->num; i++)
 	    ret = FcConfigParseAndLoad (config, files->strs[i], complain);
     }
