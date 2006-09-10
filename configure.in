@@ -563,7 +563,6 @@ fc-case/Makefile
 fc-arch/Makefile
 src/Makefile
 src/fontconfig.def
-conf.avail/Makefile
 conf.d/Makefile
 fc-cache/Makefile
 fc-cat/Makefile
