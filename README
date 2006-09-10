@@ -1,11 +1,45 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.3.97
-		         2006-09-06
+		      Version 2.4.0
+		        2006-09-09
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.4.0
+
+David Turner:
+      Replace character discovery loop with simpler, faster version.
+
+James Cloos:
+      Move files from conf.d to conf.avail
+      Standardize conf.avail number prefixing convention
+      Support all five possibilities for sub-pixel
+      Move user and local conf file loading into conf.avail files
+      Number the remaining conf.avail files
+      Update Makefile.am to match conf.avail changes
+      Replace load of conf.d in fonts.conf.in
+      Make room for chunks from fonts.conf in conf.avail
+      Re-order old conf.d files
+      Move some section from fonts.conf into conf.avail files
+      Update Makefile.am files
+      Make conf.avail and conf.d work
+
+Keith Packard:
+      Create fc_cachedir at install time. Bug 8157.
+      Reference patterns in FcCacheCopySet.
+      Replace gnu-specific sed command with simple grep.
+      Attempt to fix makealias usage for build on Mac OS X.
+      Accept locale environment variables that do not contain territory.
+      Merge branch 'jhcloos'
+      Insert newly created caches into reference data structure.
+      Add XML headers to new conf files. Move link make commands to conf.avail dir
+      Rename conf.avail to conf.d
+      Fix conf.d directory sorting.
+      Include cachedir in fonts.dtd.
+      Don't display tests for DESTDIR on make install.
+      Split much of the configuration into separate files. Renumber files
 
 2.3.97
 
