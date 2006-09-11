@@ -29,20 +29,25 @@ important steps:
  5.	make distcheck (NB: won't work without docbook-utils -PL)
  
  6.	tag the tree
- 		git-tag -u 096c4dd3 -m'Version 2.3.xx' 2.3.xx
+ 		git-tag -u 096c4dd3 -m 'Version 2.4.x' 2.4.x
 		
- 7.	make Changelog-2.3.xx
- 		git-log 2.3.(xx-1).. > ChangeLog-2.3.xx
+ 7.	make Changelog-2.4.x
+ 		git-log --stat 2.4.(x-1).. > ChangeLog-2.4.x
 		
- 8.	Copy ChangeLog-2.3.xx and fontconfig-2.3.xx.tar.gz to
+ 8.	Copy ChangeLog-2.4.x and fontconfig-2.4.x.tar.gz to
  
  	freedesktop.org:/srv/fontconfig.freedesktop.org/www/release
 	
  9.	Update the Fontconfig Devel wiki page
  	http://fontconfig.org/wiki/Devel
 	
-10.	Compute md5sums for release files:
-		md5sum fontconfig-2.3.xx.tar.gz ChangeLog-2.3.xx
+10.	Update the fontconfig documentation
+
+		scp -rp doc/fontconfig-user.html doc/fontconfig-devel fontconfig.org:/srv/fontconfig.freedesktop.org/www
+
+11.	Compute md5sums for release files:
+		md5sum fontconfig-2.4.x.tar.gz ChangeLog-2.4.x
 		
-11.	Post a note to fontconfig@fontconfig.org.  Include the md5sums.
+12.	Post a note to fontconfig@fontconfig.org.  Include the md5sums.
 	gpg sign the message.
+
