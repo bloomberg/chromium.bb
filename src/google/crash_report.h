@@ -32,7 +32,7 @@ using std::string;
 struct CrashReport {
   // An optional id for the report.  This is supplied by the caller
   // and is not used by airbag.
-  u_int64_t report_id;
+  string report_id;
 
   // The time that the report was uploaded (milliseconds since the epoch)
   airbag_time_t report_time;
