@@ -34,6 +34,9 @@ struct CrashReport {
   // and is not used by airbag.
   string report_id;
 
+  // An optional id which identifies the client that generated the report.
+  string client_id;
+
   // The time that the report was uploaded (milliseconds since the epoch)
   airbag_time_t report_time;
 
