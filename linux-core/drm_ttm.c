@@ -488,9 +488,6 @@ int drm_evict_ttm_region(drm_ttm_backend_list_t * entry)
 						entry->num_pages);
 				drm_ttm_unlock_mm(ttm, 0, 1);
 			}
-#ifdef BODEBUG
-			DRM_ERROR("Unbinding\n");
-#endif
 			be->unbind(entry->be);
 			if (ttm && be->needs_cache_adjust(be)) {
 				drm_set_caching(ttm, entry->page_offset,

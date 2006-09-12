@@ -149,9 +149,7 @@ static void drm_bo_delayed_delete(drm_device_t * dev)
 			entry->fence = NULL;
 		}
 		if (!entry->fence) {
-#ifdef BODEBUG
-			DRM_ERROR("Destroying delayed buffer object\n");
-#endif
+			DRM_DEBUG("Destroying delayed buffer object\n");
 			list_del(&entry->ddestroy);
 			drm_bo_destroy_locked(dev, entry);
 		}
@@ -165,9 +163,8 @@ static void drm_bo_delayed_workqueue(void *data)
 	drm_device_t *dev = (drm_device_t *) data;
 	drm_buffer_manager_t *bm = &dev->bm;
 
-#ifdef BODEBUG
-	DRM_ERROR("Delayed delete Worker\n");
-#endif
+	DRM_DEBUG("Delayed delete Worker\n");
+
 	drm_bo_delayed_delete(dev);
 	mutex_lock(&dev->struct_mutex);
 	if (!list_empty(&bm->ddestroy)) {
@@ -292,19 +289,12 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 				list_add_tail(&entry->head, &bm->vram_lru);
 			else
 				list_add_tail(&entry->head, &bm->other);
-		} else {
-#ifdef BODEBUG
-			DRM_ERROR("Huh? Fenced object on unfenced list\n");
-#endif
-		}
-		mutex_unlock(&entry->mutex);
+		} 		mutex_unlock(&entry->mutex);
 		drm_bo_usage_deref_locked(dev, entry);
 		l = f_list.next;
 	}
 	atomic_add(count, &fence->usage);
-#ifdef BODEBUG
-	DRM_ERROR("Fenced %d buffers\n", count);
-#endif
+	DRM_DEBUG("Fenced %d buffers\n", count);
       out:
 	mutex_unlock(&dev->struct_mutex);
 	*used_fence = fence;
@@ -461,9 +451,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 
 	if (ret)
 		return ret;
-#ifdef BODEBUG
-	DRM_ERROR("Flipping in to AGP 0x%08lx\n", bo->tt->start);
-#endif
+	DRM_DEBUG("Flipping in to AGP 0x%08lx\n", bo->tt->start);
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_bind_ttm_region(bo->ttm_region, bo->tt->start);
 	if (ret) {
@@ -998,9 +986,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		DRM_ERROR("Cached binding not implemented yet\n");
 		return -EINVAL;
 	}
-#ifdef BODEBUG
-	DRM_ERROR("New flags 0x%08x, Old flags 0x%08x\n", new_flags, bo->flags);
-#endif
+	DRM_DEBUG("New flags 0x%08x, Old flags 0x%08x\n", new_flags, bo->flags);
 	ret = driver->fence_type(new_flags, &bo->fence_class, &bo->fence_flags);
 	if (ret) {
 		DRM_ERROR("Driver did not support given buffer permissions\n");

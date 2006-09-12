@@ -111,10 +111,8 @@ void drm_fence_handler(drm_device_t * dev, uint32_t sequence, uint32_t type)
 		relevant = type & fence->type;
 		if ((fence->signaled | relevant) != fence->signaled) {
 			fence->signaled |= relevant;
-#ifdef BODEBUG
-			DRM_ERROR("Fence 0x%08lx signaled 0x%08x\n",
+			DRM_DEBUG("Fence 0x%08lx signaled 0x%08x\n",
 				  fence->base.hash.key, fence->signaled);
-#endif
 			fence->submitted_flush |= relevant;
 			wake = 1;
 		}
@@ -134,10 +132,8 @@ void drm_fence_handler(drm_device_t * dev, uint32_t sequence, uint32_t type)
 		 */
 
 		if (!(fence->type & ~fence->signaled)) {
-#ifdef BODEBUG
-			DRM_ERROR("Fence completely signaled 0x%08lx\n",
+			DRM_DEBUG("Fence completely signaled 0x%08lx\n",
 				  fence->base.hash.key);
-#endif
 			fence_list = &fence->ring;
 			for (i = 0; i < driver->no_types; ++i) {
 				if (fm->fence_types[i] == fence_list)
@@ -180,10 +176,8 @@ void drm_fence_usage_deref_locked(drm_device_t * dev,
 {
 	if (atomic_dec_and_test(&fence->usage)) {
 		drm_fence_unring(dev, &fence->ring);
-#ifdef BODEBUG
-		DRM_ERROR("Destroyed a fence object 0x%08lx\n",
+		DRM_DEBUG("Destroyed a fence object 0x%08lx\n",
 			  fence->base.hash.key);
-#endif
 		kmem_cache_free(drm_cache.fence_object, fence);
 	}
 }
@@ -468,9 +462,7 @@ int drm_fence_add_user_object(drm_file_t * priv, drm_fence_object_t * fence,
 		return ret;
 	fence->base.type = drm_fence_type;
 	fence->base.remove = &drm_fence_object_destroy;
-#ifdef BODEBUG
-	DRM_ERROR("Fence 0x%08lx created\n", fence->base.hash.key);
-#endif
+	DRM_DEBUG("Fence 0x%08lx created\n", fence->base.hash.key);
 	return 0;
 }
 
