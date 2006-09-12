@@ -808,6 +808,7 @@ typedef union drm_mm_init_arg{
 		drm_u64_t vr_p_size;
 		drm_u64_t tt_p_offset;
 		drm_u64_t tt_p_size;
+	        drm_u64_t max_locked_pages;
 	} req;
 	struct {
 		drm_handle_t mm_sarea;

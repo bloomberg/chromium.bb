@@ -2256,6 +2256,7 @@ int drmFenceCreate(int fd, int shareable, int class,unsigned type,
     fence->handle = arg.handle;
     fence->class = arg.class;
     fence->type = arg.type;
+    fence->flags = arg.flags;
     fence->signaled = 0;
     return 0;
 }
@@ -2271,6 +2272,7 @@ int drmFenceBuffers(int fd, int shareable, drmFence *fence)
     fence->handle = arg.handle;
     fence->class = arg.class;
     fence->type = arg.type;
+    fence->flags = arg.flags;
     fence->signaled = 0;
     return 0;
 }
@@ -2297,6 +2299,7 @@ int drmFenceReference(int fd, unsigned handle, drmFence *fence)
     fence->handle = arg.handle;
     fence->class = arg.class;
     fence->type = arg.type;
+    fence->flags = 0;
     fence->signaled = arg.signaled;
     return 0;
 }
@@ -2327,19 +2330,40 @@ int drmFenceFlush(int fd, drmFence *fence, unsigned flush_type)
     return 0;
 }
 
-int drmFenceSignaled(int fd, drmFence *fence)
+int drmFenceUpdate(int fd, drmFence *fence)
 {
-    drm_fence_arg_t arg;
-   
-    arg.handle = fence->handle;
-    arg.op = drm_fence_signaled;
-    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
-	return -errno;
-    fence->class = arg.class;
-    fence->type = arg.type;
-    fence->signaled = arg.signaled;
+	drm_fence_arg_t arg;
+	
+	arg.handle = fence->handle;
+	arg.op = drm_fence_signaled;
+	if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+	    return -errno;
+	fence->class = arg.class;
+	fence->type = arg.type;
+	fence->signaled = arg.signaled;
+	return 0;
+}
+
+int drmFenceSignaled(int fd, drmFence *fence, unsigned fenceType, 
+		     int *signaled)
+{
+    int 
+	ret;
+
+    if ((fence->flags & DRM_FENCE_FLAG_SHAREABLE) ||
+	((fenceType & fence->signaled) != fenceType)) {
+
+	ret = drmFenceFlush(fd, fence, fenceType);
+	if (ret)
+	    return ret;
+    }
+
+    *signaled = ((fenceType & fence->signaled) == fenceType);
+
     return 0;
 }
+
+
 
 int drmFenceEmit(int fd, drmFence *fence, unsigned emit_type)
 {
@@ -2361,6 +2385,12 @@ int drmFenceWait(int fd, drmFence *fence, unsigned flush_type,
 {
     drm_fence_arg_t arg;
     int ret;
+
+    if (!(fence->flags & DRM_FENCE_FLAG_SHAREABLE)) {
+	if (flush_type & fence->signaled == flush_type) {
+	    return 0;
+	}
+    }
 
     arg.handle = fence->handle;
     arg.type = flush_type;
@@ -2942,8 +2972,6 @@ int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags,
     *newItem = 0;
     cur = NULL;
 
-    mask &= ~DRM_BO_MASK_MEM;
- 
     for (l = list->list.next; l != &list->list; l = l->next) {
 	node = DRMLISTENTRY(drmBONode, l, head);
 	if (node->buf == buf) {
@@ -2961,20 +2989,22 @@ int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags,
 	cur->arg0 = flags;
 	cur->arg1 = mask;
     } else {
-	unsigned memFlags = cur->arg0 & DRM_BO_MASK_MEM;
+	unsigned memMask = (cur->arg1 | mask) & DRM_BO_MASK_MEM;
+	unsigned memFlags = cur->arg0 & flags & memMask;
 	
-	if (!(memFlags & flags)) {
+	if (!memFlags) {
 	    drmMsg("Incompatible memory location requests "
 		   "on validate list.\n");
 	    return -EINVAL;
 	}
-	if ((cur->arg1 | mask) & (cur->arg0 ^ flags)) {
+	if ((cur->arg1 | mask) & ~DRM_BO_MASK_MEM  & (cur->arg0 ^ flags)) {
 	    drmMsg("Incompatible buffer flag requests "
 		   " on validate list.\n");
 	    return -EINVAL;
 	}
 	cur->arg1 |= mask;
-	cur->arg0 = (memFlags & flags) | ((cur->arg0 | flags) & cur->arg1);	
+	cur->arg0 = memFlags | ((cur->arg0 | flags) & 
+				cur->arg1 & ~DRM_BO_MASK_MEM);	
     }
     return 0;
 }
@@ -3116,16 +3146,18 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
 }
 
 int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
-	      unsigned long ttPOffset, unsigned long ttPSize)
+	      unsigned long ttPOffset, unsigned long ttPSize,
+	      unsigned long max_locked_size)
 {
     drm_mm_init_arg_t arg;
-
+    
     arg.req.op = mm_init;
     arg.req.vr_p_offset = vramPOffset;
     arg.req.vr_p_size = vramPSize;
     arg.req.tt_p_offset = ttPOffset;
     arg.req.tt_p_size = ttPSize;
-    
+    arg.req.max_locked_pages = max_locked_size / getpagesize();
+
     if (ioctl(fd, DRM_IOCTL_MM_INIT, &arg))
 	return -errno;
     

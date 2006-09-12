@@ -359,12 +359,11 @@ int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
 				    fence_signaled(dev, fence, mask, 1));
 			if (time_after_eq(jiffies, _end))
 				break;
-		} while (ret == -EINTR && ignore_signals);
-
+		} while (ret == -EINTR && ignore_signals);		
 		if (time_after_eq(jiffies, _end) && (ret != 0))
 			ret = -EBUSY;
-		return ret;
-
+		if (ret) 
+			return ((ret == -EINTR) ? -EAGAIN : ret);
 	} else {
 		int signaled;
 		do {

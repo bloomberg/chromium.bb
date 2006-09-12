@@ -284,6 +284,7 @@ typedef struct _drmFence{
         unsigned handle;
         int class;
         unsigned type; 
+        unsigned flags;
         unsigned signaled;
 } drmFence;
 
@@ -622,7 +623,8 @@ extern int           drmFenceDestroy(int fd, const drmFence *fence);
 extern int           drmFenceReference(int fd, unsigned handle, drmFence *fence);
 extern int           drmFenceUnreference(int fd, const drmFence *fence);
 extern int           drmFenceFlush(int fd, drmFence *fence, unsigned flush_type);
-extern int           drmFenceSignaled(int fd, drmFence *fence);
+extern int           drmFenceSignaled(int fd, drmFence *fence, 
+				      unsigned fenceType, int *signaled);
 extern int           drmFenceWait(int fd, drmFence *fence, unsigned flush_type, 
 				  int lazy, int ignore_signals);
 extern int           drmFenceEmit(int fd, drmFence *fence, unsigned emit_type);

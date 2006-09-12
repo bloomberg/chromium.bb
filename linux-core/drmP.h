@@ -790,6 +790,7 @@ typedef struct drm_fence_manager{
 
 typedef struct drm_buffer_manager{
 	int initialized;
+        drm_file_t *last_to_validate;
 	int has_vram;
 	int has_tt;
         int use_vram;
@@ -803,6 +804,8 @@ typedef struct drm_buffer_manager{
         struct list_head other;
         struct work_struct wq;
         uint32_t fence_flags;
+        unsigned long max_pages;
+        unsigned long cur_pages;
 } drm_buffer_manager_t;
 
 

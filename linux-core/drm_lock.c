@@ -270,7 +270,7 @@ int drm_lock_free(drm_device_t * dev,
 		prev = cmpxchg(lock, old, new);
 	} while (prev != old);
 	if (_DRM_LOCK_IS_HELD(old) && _DRM_LOCKING_CONTEXT(old) != context) {
-		DRM_ERROR("%d freed heavyweight lock held by %d\n",
+		DRM_DEBUG("%d freed heavyweight lock held by %d\n",
 			  context, _DRM_LOCKING_CONTEXT(old));
 		return 1;
 	}

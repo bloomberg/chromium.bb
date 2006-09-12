@@ -106,6 +106,14 @@ typedef struct _drm_i915_sarea {
 	unsigned int rotated2_tiled;
 } drm_i915_sarea_t;
 
+/* Driver specific fence types and classes.
+ */
+
+/* The only fence class we support */
+#define DRM_I915_FENCE_CLASS_ACCEL 0
+/* Fence type that guarantees read-write flush */
+#define DRM_I915_FENCE_TYPE_RW 2
+
 /* Flags for perf_boxes
  */
 #define I915_BOX_RING_EMPTY    0x1

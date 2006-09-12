@@ -95,11 +95,11 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 
 	if (bo->fence) {
 		if (!drm_fence_object_signaled(bo->fence, bo->fence_flags)) {
+
 			drm_fence_object_flush(dev, bo->fence, bo->fence_flags);
 			list_add_tail(&bo->ddestroy, &bm->ddestroy);
-
-			schedule_delayed_work(&bm->wq, 2);
-
+			schedule_delayed_work(&bm->wq, 
+					      ((DRM_HZ/100) < 1) ? 1 : DRM_HZ/100);
 			return;
 		} else {
 			drm_fence_usage_deref_locked(dev, bo->fence);
@@ -113,7 +113,7 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 	list_del_init(&bo->head);
 
 	if (bo->tt) {
-	        drm_unbind_ttm_region(bo->ttm_region);
+		drm_unbind_ttm_region(bo->ttm_region);
 		drm_mm_put_block(&bm->tt_manager, bo->tt);
 		bo->tt = NULL;
 	}
@@ -170,7 +170,7 @@ static void drm_bo_delayed_workqueue(void *data)
 	drm_bo_delayed_delete(dev);
 	mutex_lock(&dev->struct_mutex); 
 	if (!list_empty(&bm->ddestroy)) {
-		schedule_delayed_work(&bm->wq, 2);
+		schedule_delayed_work(&bm->wq, ((DRM_HZ/100) < 1) ? 1 : DRM_HZ/100);
 	}
 	mutex_unlock(&dev->struct_mutex);
 }
@@ -822,6 +822,11 @@ static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle,
 
 	while (1) {
 		if (atomic_inc_and_test(&bo->mapped)) {
+		        if (no_wait && drm_bo_busy(bo)) {
+				atomic_dec(&bo->mapped);
+				ret = -EBUSY;
+				goto out;
+			}
 			ret = drm_bo_wait(bo, 0, 0, no_wait);
 			if (ret) {
 				atomic_dec(&bo->mapped);
@@ -1174,9 +1179,8 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
 		bo->ttm_object = to;
 		ttm = drm_ttm_from_object(to);
 		ret = drm_create_ttm_region(ttm, bo->buffer_start >> PAGE_SHIFT,
-					    bo->num_pages, 0,
-					    
-					    /*					    bo->mask & DRM_BO_FLAG_BIND_CACHED,*/
+					    bo->num_pages,
+					    bo->mask & DRM_BO_FLAG_BIND_CACHED,
 					    &bo->ttm_region);
 		if (ret) {
 			drm_ttm_object_deref_unlocked(dev, to);
@@ -1383,6 +1387,7 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 			break;
 		case drm_bo_validate:
 			rep.ret = drm_bo_lock_test(dev, filp);
+
 			if (rep.ret)
 				break;
 			rep.ret =
@@ -1571,13 +1576,16 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 
 		INIT_WORK(&bm->wq, &drm_bo_delayed_workqueue, dev);
 		bm->initialized = 1;
-
+		bm->cur_pages = 0;
+		bm->max_pages = arg.req.max_locked_pages;
 		break;
 	case mm_takedown:
 		if (drm_bo_clean_mm(dev)) {
 			DRM_ERROR("Memory manager not clean. "
 				  "Delaying takedown\n");
 		}
+		DRM_DEBUG("We have %ld still locked pages\n",
+			  bm->cur_pages);
 		break;
 	default:
 		DRM_ERROR("Function not implemented yet\n");

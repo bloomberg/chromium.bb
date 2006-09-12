@@ -185,7 +185,8 @@ extern int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle);
  */
 
 extern int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
-		     unsigned long ttPOffset, unsigned long ttPSize);
+		     unsigned long ttPOffset, unsigned long ttPSize,
+		     unsigned long max_locked_size);
 extern int drmMMTakedown(int fd);
 
 

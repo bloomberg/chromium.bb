@@ -253,6 +253,7 @@ static __inline__ struct page *drm_do_vm_ttm_nopage(struct vm_area_struct *vma,
 	drm_ttm_t *ttm; 
 	pgprot_t default_prot;
 	uint32_t page_flags;
+	drm_buffer_manager_t *bm;
 
 	if (address > vma->vm_end)
 		return NOPAGE_SIGBUS;	/* Disallow mremap */
@@ -261,20 +262,24 @@ static __inline__ struct page *drm_do_vm_ttm_nopage(struct vm_area_struct *vma,
 
 	map = (drm_map_t *) entry->map;
 	ttm = (drm_ttm_t *) map->offset;
+	bm = &ttm->dev->bm;
 	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
 	page = ttm->pages[page_offset];
 
 	page_flags = ttm->page_flags[page_offset];
 
 	if (!page) {
+		if (bm->cur_pages >= bm->max_pages) {
+	 		DRM_ERROR("Maximum locked page count exceeded\n");
+			return NOPAGE_OOM;
+		}
+		++bm->cur_pages;
 		page = ttm->pages[page_offset] = 
 			alloc_page(GFP_KERNEL);
 		SetPageReserved(page);
 	}
 	if (!page) 
 		return NOPAGE_OOM;
-
-	get_page(page);
 
 	default_prot = vm_get_page_prot(vma->vm_flags);
 

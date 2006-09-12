@@ -251,19 +251,24 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 	}
 
 	if (ttm->pages) {
+		drm_buffer_manager_t *bm = &ttm->dev->bm;
+		int do_tlbflush = 0;
 		for (i = 0; i < ttm->num_pages; ++i) {
 			cur_page = ttm->pages + i;
 			if (ttm->page_flags &&
 			    (ttm->page_flags[i] & DRM_TTM_PAGE_UNCACHED) &&
 			    *cur_page && !PageHighMem(*cur_page)) {
 				change_page_attr(*cur_page, 1, PAGE_KERNEL);
+				do_tlbflush = 1;
 			}
 			if (*cur_page) {
 				ClearPageReserved(*cur_page);
 				__free_page(*cur_page);
+				--bm->cur_pages;
 			}
 		}
-		global_flush_tlb();
+		if (do_tlbflush)
+			global_flush_tlb();
 		ttm_free(ttm->pages, ttm->num_pages*sizeof(*ttm->pages),
 			 DRM_MEM_TTM, ttm->pages_vmalloc);
 		ttm->pages = NULL;
@@ -308,6 +313,7 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 	if (!ttm)
 		return NULL;
 
+	ttm->dev = dev;
 	ttm->lhandle = 0;
 	atomic_set(&ttm->vma_count, 0);
 
@@ -354,7 +360,6 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 	INIT_LIST_HEAD(&ttm->vma_list->head);
 
 	ttm->lhandle = (unsigned long)ttm;
-	ttm->dev = dev;
 
 	return ttm;
 }
@@ -562,6 +567,7 @@ int drm_create_ttm_region(drm_ttm_t * ttm, unsigned long page_offset,
 	drm_ttm_backend_list_t *entry;
 	drm_ttm_backend_t *be;
 	int ret, i;
+	drm_buffer_manager_t *bm = &ttm->dev->bm;
 
 	if ((page_offset + n_pages) > ttm->num_pages || n_pages == 0) {
 		DRM_ERROR("Region Doesn't fit ttm\n");
@@ -602,6 +608,11 @@ int drm_create_ttm_region(drm_ttm_t * ttm, unsigned long page_offset,
 	for (i = 0; i < entry->num_pages; ++i) {
 		cur_page = ttm->pages + (page_offset + i);
 		if (!*cur_page) {
+			if (bm->cur_pages >= bm->max_pages) {
+				DRM_ERROR("Maximum locked page count exceeded\n");
+				drm_destroy_ttm_region(entry);
+				return -ENOMEM;
+			}
 			*cur_page = alloc_page(GFP_KERNEL);
 			if (!*cur_page) {
 				DRM_ERROR("Page allocation failed\n");
@@ -609,6 +620,7 @@ int drm_create_ttm_region(drm_ttm_t * ttm, unsigned long page_offset,
 				return -ENOMEM;
 			}
 			SetPageReserved(*cur_page);
+			++bm->cur_pages;
 		}
 	}
 
