@@ -2995,11 +2995,19 @@ int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags,
 	if (!memFlags) {
 	    drmMsg("Incompatible memory location requests "
 		   "on validate list.\n");
+	    drmMsg("Previous flag: 0x%08lx, mask: 0x%08lx\n",
+		   cur->arg0, cur->arg1);
+	    drmMsg("Current flag: 0x%08lx, mask: 0x%08lx\n",
+		   flags, mask);
 	    return -EINVAL;
 	}
-	if ((cur->arg1 | mask) & ~DRM_BO_MASK_MEM  & (cur->arg0 ^ flags)) {
+	if (mask & cur->arg1 & ~DRM_BO_MASK_MEM  & (cur->arg0 ^ flags)) {
 	    drmMsg("Incompatible buffer flag requests "
-		   " on validate list.\n");
+		   "on validate list.\n");
+	    drmMsg("Previous flag: 0x%08lx, mask: 0x%08lx\n",
+		   cur->arg0, cur->arg1);
+	    drmMsg("Current flag: 0x%08lx, mask: 0x%08lx\n",
+		   flags, mask);
 	    return -EINVAL;
 	}
 	cur->arg1 |= mask;

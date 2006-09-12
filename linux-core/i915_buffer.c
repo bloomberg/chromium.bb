@@ -53,6 +53,10 @@ int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *type)
 
 int i915_invalidate_caches(drm_device_t *dev, uint32_t flags)
 {
+  /*
+   * FIXME: Only emit once per batchbuffer submission.
+   */
+
 	uint32_t flush_cmd = MI_NO_WRITE_FLUSH;
 
 	if (flags & DRM_BO_FLAG_READ)
@@ -60,5 +64,6 @@ int i915_invalidate_caches(drm_device_t *dev, uint32_t flags)
 	if (flags & DRM_BO_FLAG_EXE)
 		flush_cmd |= MI_EXE_FLUSH;
 
+	
 	return i915_emit_mi_flush(dev, flush_cmd);
 }
