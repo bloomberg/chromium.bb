@@ -32,9 +32,6 @@
 namespace google_airbag {
 
 
-using std::map;
-
-
 template<typename AddressType, typename EntryType>
 class RangeMap {
  public:
@@ -43,13 +40,13 @@ class RangeMap {
   // Inserts a range into the map.  Returns false for a parameter error,
   // or if the location of the range would conflict with a range already
   // stored in the map.
-  bool StoreRange(const AddressType& base,
-                  const AddressType& size,
-                  const EntryType&   entry);
+  bool StoreRange(const AddressType &base,
+                  const AddressType &size,
+                  const EntryType &entry);
 
   // Locates the range encompassing the supplied address.  If there is
   // no such range, or if there is a parameter error, returns false.
-  bool RetrieveRange(const AddressType& address, EntryType* entry) const;
+  bool RetrieveRange(const AddressType &address, EntryType *entry) const;
 
   // Empties the range map, restoring it to the state it was when it was
   // initially created.
@@ -58,7 +55,7 @@ class RangeMap {
  private:
   class Range {
    public:
-    Range(const AddressType& base, const EntryType& entry)
+    Range(const AddressType &base, const EntryType &entry)
         : base_(base), entry_(entry) {}
 
     AddressType base() const { return base_; }
@@ -69,13 +66,12 @@ class RangeMap {
     // be stored, because RangeMap uses it as the key to the map.
     const AddressType base_;
 
-    // The entry, owned by the Range object.
-    const EntryType   entry_;
+    // The entry corresponding to a range.
+    const EntryType entry_;
   };
 
-  typedef map<AddressType, Range> AddressToRangeMap;
-
-  // Can't depend on implicit typenames in a template
+  // Convenience types.
+  typedef std::map<AddressType, Range> AddressToRangeMap;
   typedef typename AddressToRangeMap::const_iterator const_iterator;
   typedef typename AddressToRangeMap::value_type value_type;
 
@@ -85,9 +81,9 @@ class RangeMap {
 
 
 template<typename AddressType, typename EntryType>
-bool RangeMap<AddressType, EntryType>::StoreRange(const AddressType& base,
-                                                  const AddressType& size,
-                                                  const EntryType&   entry) {
+bool RangeMap<AddressType, EntryType>::StoreRange(const AddressType &base,
+                                                  const AddressType &size,
+                                                  const EntryType &entry) {
   AddressType high = base + size - 1;
 
   // Check for undersize or overflow.
@@ -124,8 +120,7 @@ bool RangeMap<AddressType, EntryType>::StoreRange(const AddressType& base,
 
 template<typename AddressType, typename EntryType>
 bool RangeMap<AddressType, EntryType>::RetrieveRange(
-    const AddressType& address,
-    EntryType*         entry) const {
+    const AddressType &address, EntryType *entry) const {
   if (!entry)
     return false;
 
@@ -152,7 +147,7 @@ void RangeMap<AddressType, EntryType>::Clear() {
 }
 
 
-} // namespace google_airbag
+}  // namespace google_airbag
 
 
-#endif // PROCESSOR_RANGE_MAP_H__
+#endif  // PROCESSOR_RANGE_MAP_H__

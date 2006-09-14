@@ -17,9 +17,8 @@
 // Author: Mark Mentovai
 
 
-#include <stdio.h>
-
 #include <climits>
+#include <cstdio>
 #include <memory>
 
 #include "processor/range_map.h"
@@ -33,8 +32,8 @@ using google_airbag::RangeMap;
 // allocated CountedObjects is maintained to help test memory management.
 class CountedObject {
  public:
-  CountedObject(int id) : id_(id) { ++count_; }
-  CountedObject(const CountedObject& that) : id_(that.id_) { ++count_; }
+  explicit CountedObject(int id) : id_(id) { ++count_; }
+  CountedObject(const CountedObject &that) : id_(that.id_) { ++count_; }
   ~CountedObject() { --count_; }
 
   static int count() { return count_; }
@@ -42,7 +41,7 @@ class CountedObject {
 
  private:
   static int count_;
-  int        id_;
+  int id_;
 };
 
 int CountedObject::count_;
@@ -62,10 +61,10 @@ struct RangeTest {
   AddressType size;
 
   // Unique ID of range - unstorable ranges must have unique IDs too
-  int         id;
+  int id;
 
   // Whether this range is expected to be stored successfully or not
-  bool        expect_storable;
+  bool expect_storable;
 };
 
 
@@ -73,17 +72,17 @@ struct RangeTest {
 // sequence on the same RangeMap.
 struct RangeTestSet {
   // An array of RangeTests
-  const RangeTest* range_tests;
+  const RangeTest *range_tests;
 
   // The number of tests in the set
-  unsigned int     range_test_count;
+  unsigned int range_test_count;
 };
 
 
 // StoreTest uses the data in a RangeTest and calls StoreRange on the
 // test RangeMap.  It returns true if the expected result occurred, and
 // false if something else happened.
-bool StoreTest(TestMap* range_map, const RangeTest* range_test) {
+bool StoreTest(TestMap *range_map, const RangeTest *range_test) {
   CountedObject object(range_test->id);
   bool stored = range_map->StoreRange(range_test->address,
                                       range_test->size,
@@ -107,7 +106,7 @@ bool StoreTest(TestMap* range_map, const RangeTest* range_test) {
 // map entry at the specified range,) it returns true, otherwise, it returns
 // false.  RetrieveTest will check the values around the base address and
 // the high address of a range to guard against off-by-one errors.
-bool RetrieveTest(TestMap* range_map, const RangeTest* range_test) {
+bool RetrieveTest(TestMap *range_map, const RangeTest *range_test) {
   for (unsigned int side = 0; side <= 1; ++side) {
     // When side == 0, check the low side (base address) of each range.
     // When side == 1, check the high side (base + size) of each range.
@@ -122,10 +121,10 @@ bool RetrieveTest(TestMap* range_map, const RangeTest* range_test) {
     AddressType low_offset = -1;
     AddressType high_offset = 1;
     if (range_test->size == 1) {
-      if (!side)          // when checking the low side,
-        high_offset = 0;  // don't check one over the target
-      else                // when checking the high side,
-        low_offset = 0;   // don't check one under the target
+      if (!side)          // When checking the low side,
+        high_offset = 0;  // don't check one over the target.
+      else                // When checking the high side,
+        low_offset = 0;   // don't check one under the target.
     }
 
     for (AddressType offset = low_offset; offset <= high_offset; ++offset) {
@@ -134,14 +133,14 @@ bool RetrieveTest(TestMap* range_map, const RangeTest* range_test) {
           (!side ? range_test->address :
                    range_test->address + range_test->size - 1);
 
-      bool expected_result = false;  // correct for tests not stored
+      bool expected_result = false;  // This is correct for tests not stored.
       if (range_test->expect_storable) {
-        if (offset == 0)             // when checking target,
-          expected_result = true;    // should always succeed
-        else if (offset == -1)       // when checking one below target,
-          expected_result = side;    // should fail low and succeed high
-        else                         // when checking one above target,
-          expected_result = !side;   // should succeed low and fail high
+        if (offset == 0)             // When checking the target address,
+          expected_result = true;    // test should always succeed.
+        else if (offset == -1)       // When checking one below the target,
+          expected_result = side;    // should fail low and succeed high.
+        else                         // When checking one above the target,
+          expected_result = !side;   // should succeed low and fail high.
       }
 
       CountedObject object(-1);
@@ -149,7 +148,7 @@ bool RetrieveTest(TestMap* range_map, const RangeTest* range_test) {
 
       bool observed_result = retrieved && object.id() == range_test->id;
 
-       if (observed_result != expected_result) {
+      if (observed_result != expected_result) {
         fprintf(stderr, "FAILED: "
                         "RetrieveRange id %d, side %d, offset %d, "
                         "expected %s, observed %s\n",
@@ -267,7 +266,7 @@ bool RunTests() {
   for (unsigned int range_test_set_index = 0;
        range_test_set_index < range_test_set_count;
        ++range_test_set_index) {
-    const RangeTest* range_tests =
+    const RangeTest *range_tests =
         range_test_sets[range_test_set_index].range_tests;
     unsigned int range_test_count =
         range_test_sets[range_test_set_index].range_test_count;
@@ -278,7 +277,7 @@ bool RunTests() {
     for (unsigned int range_test_index = 0;
          range_test_index < range_test_count;
          ++range_test_index) {
-      const RangeTest* range_test = &range_tests[range_test_index];
+      const RangeTest *range_test = &range_tests[range_test_index];
       if (!StoreTest(range_map.get(), range_test))
         return false;
 
@@ -301,7 +300,7 @@ bool RunTests() {
     for (unsigned int range_test_index = 0;
          range_test_index < range_test_count;
          ++range_test_index) {
-      const RangeTest* range_test = &range_tests[range_test_index];
+      const RangeTest *range_test = &range_tests[range_test_index];
       if (!RetrieveTest(range_map.get(), range_test))
         return false;
     }
@@ -329,6 +328,6 @@ bool RunTests() {
   return true;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   return RunTests() ? 0 : 1;
 }
