@@ -21,7 +21,7 @@
  * produced on win32/x86.  These files may be read on any platform provided
  * that the alignments of these structures on the processing system are
  * identical to the alignments of these structures on the producing system.
- * For this reason, precise-sized types are used.  The structures defined by
+ * For this reason, precise-sized types are used.  The structures defined
  * by this file have been laid out to minimize alignment problems by ensuring
  * ensuring that all members are aligned on their natural boundaries.  In
  * In some cases, tail-padding may be significant when different ABIs specify
@@ -43,7 +43,7 @@
  * collisions with the types and values defined and used by DbgHelp in the
  * event that this implementation is used on Windows, each type and value
  * defined here is given a new name, beginning with "MD".  Names of the
- * equivlaent types and values in the Windows Platform SDK are given in
+ * equivalent types and values in the Windows Platform SDK are given in
  * comments.
  *
  * Author: Mark Mentovai */
