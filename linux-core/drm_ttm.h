@@ -70,7 +70,6 @@ typedef struct drm_ttm_backend_list {
 	drm_file_t *anon_owner;
 	struct page **anon_pages;
 	int anon_locked;
-        int pages_vmalloc;
 	enum {
 		ttm_bound,
 		ttm_evicted,
@@ -100,8 +99,6 @@ typedef struct drm_ttm {
 	atomic_t vma_count;
 	int mmap_sem_locked;
 	int destroy;
-        int pages_vmalloc;
-        int pf_vmalloc;
 } drm_ttm_t;
 
 typedef struct drm_ttm_object {

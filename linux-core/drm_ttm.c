@@ -47,31 +47,29 @@ typedef struct drm_val_action {
  */
 
 
-static void *ttm_alloc(unsigned long size, int type, int *do_vmalloc)
+static void *ttm_alloc(unsigned long size, int type)
 {
 	void *ret = NULL;
 
-	*do_vmalloc = 0;
 	if (size <= 4*PAGE_SIZE) {
 		ret = drm_alloc(size, type);
 	}
 	if (!ret) {
-		*do_vmalloc = 1;
 		ret = vmalloc(size);
 	}
 	return ret;
 }
-		
-static void ttm_free(void *pointer, unsigned long size, int type, 
-		     int do_vfree)
-{
-	if (!do_vfree) {
-		drm_free(pointer, size, type);
-	}else {
-		vfree(pointer);
-	}
-}
 
+static void ttm_free(void *pointer, unsigned long size, int type)
+{
+  
+	if ((unsigned long) pointer >= VMALLOC_START &&
+	    (unsigned long) pointer <= VMALLOC_END) {
+		vfree(pointer);
+	} else {
+		drm_free(pointer, size, type);
+	}
+}		
 
 
 /*
@@ -287,12 +285,12 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 		if (do_tlbflush)
 			global_flush_tlb();
 		ttm_free(ttm->pages, ttm->num_pages*sizeof(*ttm->pages),
-			 DRM_MEM_TTM, ttm->pages_vmalloc);
+			 DRM_MEM_TTM);
 		ttm->pages = NULL;
 	}
 
 	if (ttm->page_flags) {
-		ttm_free(ttm->page_flags, ttm->num_pages*sizeof(*ttm->page_flags), DRM_MEM_TTM, ttm->pf_vmalloc);
+		ttm_free(ttm->page_flags, ttm->num_pages*sizeof(*ttm->page_flags), DRM_MEM_TTM);
 		ttm->page_flags = NULL;
 	}
 
@@ -338,7 +336,7 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 	ttm->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 
 	ttm->page_flags = ttm_alloc(ttm->num_pages * sizeof(*ttm->page_flags),
-				    DRM_MEM_TTM, &ttm->pf_vmalloc);
+				    DRM_MEM_TTM);
 	if (!ttm->page_flags) {
 		drm_destroy_ttm(ttm);
 		DRM_ERROR("Failed allocating page_flags table\n");
@@ -347,7 +345,7 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 	memset(ttm->page_flags, 0, ttm->num_pages * sizeof(*ttm->page_flags));
 
 	ttm->pages = ttm_alloc(ttm->num_pages * sizeof(*ttm->pages), 
-			       DRM_MEM_TTM, &ttm->pages_vmalloc);
+			       DRM_MEM_TTM);
 	if (!ttm->pages) {
 		drm_destroy_ttm(ttm);
 		DRM_ERROR("Failed allocating page table\n");
@@ -735,7 +733,7 @@ void drm_user_destroy_region(drm_ttm_backend_list_t * entry)
 		}
 		ttm_free(entry->anon_pages, 
 			 sizeof(*entry->anon_pages)*entry->anon_locked,
-			 DRM_MEM_TTM, entry->pages_vmalloc);
+			 DRM_MEM_TTM);
 	}
 
 	be->destroy(be);
@@ -781,7 +779,7 @@ int drm_user_create_region(drm_device_t * dev, unsigned long start, int len,
 	}
 
 	tmp->anon_pages = ttm_alloc(sizeof(*(tmp->anon_pages)) * len,
-				    DRM_MEM_TTM, &tmp->pages_vmalloc);
+				    DRM_MEM_TTM);
 
 	if (!tmp->anon_pages) {
 		drm_user_destroy_region(tmp);
