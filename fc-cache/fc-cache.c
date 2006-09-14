@@ -113,21 +113,6 @@ usage (char *program)
 static FcStrSet *processed_dirs;
 
 static int
-nsubdirs (FcStrSet *set)
-{
-    FcStrList	*list;
-    int		n = 0;
-
-    list = FcStrListCreate (set);
-    if (!list)
-	return 0;
-    while (FcStrListNext (list))
-	n++;
-    FcStrListDone (list);
-    return n;
-}
-
-static int
 scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, FcBool verbose)
 {
     int		    ret = 0;
@@ -275,14 +260,14 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
 {
     DIR		*d;
     struct dirent *ent;
-    char	*dir_base;
+    FcChar8	*dir_base;
     FcBool	ret = FcTrue;
     FcBool	remove;
     FcCache	*cache;
     struct stat	file_stat;
     struct stat	target_stat;
 
-    dir_base = FcStrPlus (dir, "/");
+    dir_base = FcStrPlus (dir, (FcChar8 *) "/");
     if (!dir_base)
     {
 	fprintf (stderr, "%s: out of memory\n", dir);
@@ -297,10 +282,10 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
     }
     if (verbose)
 	printf ("%s: cleaning cache directory\n", dir);
-    d = opendir (dir);
+    d = opendir ((char *) dir);
     if (!d)
     {
-	perror (dir);
+	perror ((char *) dir);
 	FcStrFree (dir_base);
 	return FcFalse;
     }
@@ -311,7 +296,7 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
 
 	if (ent->d_name[0] == '.')
 	    continue;
-	file_name = FcStrPlus (dir_base, ent->d_name);
+	file_name = FcStrPlus (dir_base, (FcChar8 *) ent->d_name);
 	if (!file_name)
 	{
 	    fprintf (stderr, "%s: allocation failure\n", dir);
@@ -328,7 +313,7 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
 	}
 	target_dir = FcCacheDir (cache);
 	remove = FcFalse;
-	if (stat (target_dir, &target_stat) < 0)
+	if (stat ((char *) target_dir, &target_stat) < 0)
 	{
 	    if (verbose)
 		printf ("%s: %s: missing directory: %s \n",
@@ -344,9 +329,9 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
 	}
 	if (remove)
 	{
-	    if (unlink (file_name) < 0)
+	    if (unlink ((char *) file_name) < 0)
 	    {
-		perror (file_name);
+		perror ((char *) file_name);
 		ret = FcFalse;
 	    }
 	}
