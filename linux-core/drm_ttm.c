@@ -199,6 +199,7 @@ static int unmap_vma_pages(drm_ttm_t * ttm, unsigned long page_offset,
 			      (page_offset << PAGE_SHIFT),
 			      entry->vma->vm_start +
 			      ((page_offset + num_pages) << PAGE_SHIFT));
+
 #if !defined(flush_tlb_mm) && defined(MODULE)
 		flush_tlb = 1;
 #endif
@@ -209,7 +210,7 @@ static int unmap_vma_pages(drm_ttm_t * ttm, unsigned long page_offset,
 #endif
 
 	for (cur_page = first_page; cur_page != last_page; ++cur_page) {
-		if (page_mapcount(*cur_page) != 0) {
+		if (page_mapped(*cur_page)) {
 			DRM_ERROR("Mapped page detected. Map count is %d\n",
 				  page_mapcount(*cur_page));
 			return -1;
@@ -239,6 +240,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 	}
 
 	DRM_DEBUG("Destroying a ttm\n");
+
 	if (ttm->be_list) {
 		list_for_each_safe(list, next, &ttm->be_list->head) {
 			drm_ttm_backend_list_t *entry =
@@ -262,7 +264,22 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 				do_tlbflush = 1;
 			}
 			if (*cur_page) {
-				ClearPageReserved(*cur_page);
+				ClearPageLocked(*cur_page);
+
+				/*
+				 * Debugging code. Remove if the error message never
+				 * shows up.
+				 */
+
+				if (page_count(*cur_page) != 1) {
+					DRM_ERROR("Erroneous page count. "
+						  "Leaking pages.\n");
+				}
+
+				/*
+				 * End debugging.
+				 */
+
 				__free_page(*cur_page);
 				--bm->cur_pages;
 			}
@@ -526,20 +543,7 @@ void drm_destroy_ttm_region(drm_ttm_backend_list_t * entry)
 
 	drm_unbind_ttm_region(entry);
 	if (be) {
-		be->clear(entry->be);
-#if 0 /* Hmm, Isn't this done in unbind? */
-		if (be->needs_cache_adjust(be)) {
-			int ret = drm_ttm_lock_mmap_sem(ttm);
-			drm_ttm_lock_mm(ttm, 0, 1);
-			unmap_vma_pages(ttm, entry->page_offset,
-					entry->num_pages);
-			drm_ttm_unlock_mm(ttm, 0, 1);
-			drm_set_caching(ttm, entry->page_offset,
-					entry->num_pages, 0, 1);
-			if (!ret)
-				drm_ttm_unlock_mm(ttm, 1, 0);
-		}
-#endif
+		be->clear(be);
 		be->destroy(be);
 	}
 	cur_page_flags = ttm->page_flags + entry->page_offset;
@@ -616,7 +620,7 @@ int drm_create_ttm_region(drm_ttm_t * ttm, unsigned long page_offset,
 				drm_destroy_ttm_region(entry);
 				return -ENOMEM;
 			}
-			SetPageReserved(*cur_page);
+			SetPageLocked(*cur_page);
 			++bm->cur_pages;
 		}
 	}

@@ -276,16 +276,17 @@ static __inline__ struct page *drm_do_vm_ttm_nopage(struct vm_area_struct *vma,
 		++bm->cur_pages;
 		page = ttm->pages[page_offset] = 
 			alloc_page(GFP_KERNEL);
-		SetPageReserved(page);
 	}
 	if (!page) 
 		return NOPAGE_OOM;
+
+	SetPageLocked(page);
+	get_page(page);
 
 	default_prot = vm_get_page_prot(vma->vm_flags);
 
 	BUG_ON(page_flags & DRM_TTM_PAGE_UNCACHED);
 	vma->vm_page_prot = default_prot;
-
 	return page;
 }
 

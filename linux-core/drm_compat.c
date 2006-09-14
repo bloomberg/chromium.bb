@@ -54,19 +54,37 @@ static inline void change_pte_range(struct mm_struct *mm, pmd_t * pmd,
 				    unsigned long addr, unsigned long end)
 {
 	pte_t *pte;
+	struct page *page;
+	unsigned long pfn;
 
 	pte = pte_offset_map(pmd, addr);
 	do {
 		if (pte_present(*pte)) {
 			pte_t ptent;
-			ptep_get_and_clear(mm, addr, pte);
+			pfn = pte_pfn(*pte);
 			ptent = *pte;
-			lazy_mmu_prot_update(ptent);
-		} else {
 			ptep_get_and_clear(mm, addr, pte);
-		}
-		if (!pte_none(*pte)) {
-		  DRM_ERROR("Ugh. Pte was presen\n");
+			if (pfn_valid(pfn)) {
+				page = pfn_to_page(pfn);
+				if (atomic_add_negative(-1, &page->_mapcount)) {
+					if (page_test_and_clear_dirty(page))
+						set_page_dirty(page);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,18)
+					dec_zone_page_state(page, NR_FILE_MAPPED);
+#else
+					dec_page_state(nr_mapped);
+#endif			
+				}
+
+				put_page(page);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)
+				dec_mm_counter(mm, file_rss);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12)
+				dec_mm_counter(mm, rss);
+#else
+				--mm->rss;
+#endif
+			}
 		}
 	} while (pte++, addr += PAGE_SIZE, addr != end);
 	pte_unmap(pte - 1);
