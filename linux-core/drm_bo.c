@@ -322,15 +322,15 @@ static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
 			bo->fence = NULL;
 			return 0;
 		}
-		if (no_wait)
+		if (no_wait) {
 			return -EBUSY;
-
+		}
 		ret =
 		    drm_fence_object_wait(dev, fence, lazy, ignore_signals,
 					  bo->fence_flags);
-		if (ret)
-			return ret;
-
+		if (ret) 
+		    return ret;
+		
 		drm_fence_usage_deref_unlocked(dev, fence);
 		bo->fence = NULL;
 
@@ -360,9 +360,14 @@ static int drm_bo_evict(drm_buffer_object_t * bo, int tt, int no_wait)
 	if (!tt && !bo->vram)
 		goto out;
 
+       
 	ret = drm_bo_wait(bo, 0, 0, no_wait);
-	if (ret)
+	if (ret) {
+		if (ret != -EAGAIN)
+			DRM_ERROR("Failed to expire fence before "
+				  "buffer eviction.\n");
 		goto out;
+	}
 
 	if (tt) {
 		ret = drm_move_tt_to_local(bo);
@@ -420,7 +425,7 @@ int drm_bo_alloc_space(drm_buffer_object_t * buf, int tt, int no_wait)
 	} while (1);
 
 	if (!node) {
-		DRM_ERROR("Out of aperture space\n");
+		DRM_ERROR("Out of videoram / aperture space\n");
 		mutex_unlock(&dev->struct_mutex);
 		return -ENOMEM;
 	}
@@ -646,7 +651,7 @@ static int drm_bo_busy(drm_buffer_object_t * bo)
 			bo->fence = NULL;
 			return 0;
 		}
-		drm_fence_object_flush(dev, fence, DRM_FENCE_EXE);
+		drm_fence_object_flush(dev, fence, DRM_FENCE_TYPE_EXE);
 		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
@@ -981,11 +986,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		DRM_ERROR("Vram support not implemented yet\n");
 		return -EINVAL;
 	}
-	if ((new_flags & (DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_MEM_VRAM)) &&
-	    (new_flags & DRM_BO_FLAG_CACHED)) {
-		DRM_ERROR("Cached binding not implemented yet\n");
-		return -EINVAL;
-	}
+
 	DRM_DEBUG("New flags 0x%08x, Old flags 0x%08x\n", new_flags, bo->flags);
 	ret = driver->fence_type(new_flags, &bo->fence_class, &bo->fence_flags);
 	if (ret) {
@@ -1003,8 +1004,11 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 			return -EINVAL;
 		}
 		ret = drm_bo_move_buffer(bo, new_flags, no_wait);
-		if (ret)
+		if (ret) {
+			if (ret != -EAGAIN)
+				DRM_ERROR("Failed moving buffer.\n");
 			return ret;
+		}
 	}
 
 	if (move_unfenced) {
@@ -1304,7 +1308,7 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 		DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
 		if (arg.handled) {
-			data = req->next;
+			data = arg.next;
 			continue;
 		}
 
@@ -1404,7 +1408,7 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 		default:
 			rep.ret = -EINVAL;
 		}
-		next = req->next;
+		next = arg.next;
 
 		/*
 		 * A signal interrupted us. Make sure the ioctl is restartable.

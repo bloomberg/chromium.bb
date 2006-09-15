@@ -280,23 +280,6 @@ typedef struct _drmSetVersion {
 	int drm_dd_minor;
 } drmSetVersion, *drmSetVersionPtr;
 
-typedef struct _drmFence{
-        unsigned handle;
-        int class;
-        unsigned type; 
-        unsigned flags;
-        unsigned signaled;
-} drmFence;
-
-typedef struct _drmTTM{
-        unsigned handle;
-        drm_handle_t user_token;
-        unsigned flags;
-        unsigned long size;
-        void *virtual;
-        int mapCount;
-} drmTTM;
-
 #define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)
 
 #define DRM_LOCK_HELD  0x80000000U /**< Hardware lock is held */
@@ -613,31 +596,6 @@ extern int           drmScatterGatherAlloc(int fd, unsigned long size,
 extern int           drmScatterGatherFree(int fd, drm_handle_t handle);
 
 extern int           drmWaitVBlank(int fd, drmVBlankPtr vbl);
-
-/* Fencing */
-
-extern int           drmFenceCreate(int fd, int shareable, int class,
-				    unsigned type, int emit, 
-				    drmFence *fence);
-extern int           drmFenceDestroy(int fd, const drmFence *fence);
-extern int           drmFenceReference(int fd, unsigned handle, drmFence *fence);
-extern int           drmFenceUnreference(int fd, const drmFence *fence);
-extern int           drmFenceFlush(int fd, drmFence *fence, unsigned flush_type);
-extern int           drmFenceSignaled(int fd, drmFence *fence, 
-				      unsigned fenceType, int *signaled);
-extern int           drmFenceWait(int fd, drmFence *fence, unsigned flush_type, 
-				  int lazy, int ignore_signals);
-extern int           drmFenceEmit(int fd, drmFence *fence, unsigned emit_type);
-extern int           drmFenceBuffers(int fd, int shareable, drmFence *fence);
-
-/* TTMS */
-extern int           drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, 
-				  unsigned flags);
-extern int           drmTTMDestroy(int fd, const drmTTM *ttm);
-extern int           drmTTMReference(int fd, unsigned handle, drmTTM *ttm);
-extern int           drmTTMUnreference(int fd, const drmTTM *ttm);
-extern drm_handle_t  drmTTMMapHandle(int fd, const drmTTM *ttm);
-
 
 /* Support routines */
 extern int           drmError(int err, const char *label);

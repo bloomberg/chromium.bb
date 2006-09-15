@@ -43,7 +43,6 @@ static void i915_perform_flush(drm_device_t * dev)
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
-	int flush_completed = 0;
 	uint32_t flush_flags = 0;
 	uint32_t flush_sequence = 0;
 	uint32_t i_status;
@@ -52,9 +51,14 @@ static void i915_perform_flush(drm_device_t * dev)
 
 	if (fm->pending_exe_flush) {
 		sequence = READ_BREADCRUMB(dev_priv);
+
+		/*
+		 * First update fences with the current breadcrumb.
+		 */
+
 		diff = sequence - fm->last_exe_flush;
 		if (diff < driver->wrap_diff && diff != 0) {
-			drm_fence_handler(dev, sequence, DRM_FENCE_EXE);
+			drm_fence_handler(dev, sequence, DRM_FENCE_TYPE_EXE);
 		} 
 
 		diff = sequence - fm->exe_flush_sequence;
@@ -69,20 +73,18 @@ static void i915_perform_flush(drm_device_t * dev)
 			dev_priv->fence_irq_on = 1;
 		}
 	}
+
 	if (dev_priv->flush_pending) {
 		i_status = READ_HWSP(dev_priv, 0);
 		if ((i_status & (1 << 12)) !=
 		    (dev_priv->saved_flush_status & (1 << 12))) {
-			flush_completed = 1;
 			flush_flags = dev_priv->flush_flags;
 			flush_sequence = dev_priv->flush_sequence;
 			dev_priv->flush_pending = 0;
-		} else {
-		}
+			drm_fence_handler(dev, flush_sequence, flush_flags);
+		} 
 	}
-	if (flush_completed) {
-		drm_fence_handler(dev, flush_sequence, flush_flags);
-	}
+
 	if (fm->pending_flush && !dev_priv->flush_pending) {
 		dev_priv->flush_sequence = (uint32_t) READ_BREADCRUMB(dev_priv);
 		dev_priv->flush_flags = fm->pending_flush;
@@ -91,6 +93,18 @@ static void i915_perform_flush(drm_device_t * dev)
 		dev_priv->flush_pending = 1;
 		fm->pending_flush = 0;
 	}
+
+	if (dev_priv->flush_pending) {
+		i_status = READ_HWSP(dev_priv, 0);
+		if ((i_status & (1 << 12)) !=
+		    (dev_priv->saved_flush_status & (1 << 12))) {
+			flush_flags = dev_priv->flush_flags;
+			flush_sequence = dev_priv->flush_sequence;
+			dev_priv->flush_pending = 0;
+			drm_fence_handler(dev, flush_sequence, flush_flags);
+		} 
+	}
+
 }
 
 void i915_poke_flush(drm_device_t * dev)
@@ -116,7 +130,6 @@ void i915_fence_handler(drm_device_t * dev)
 	drm_fence_manager_t *fm = &dev->fm;
 
 	write_lock(&fm->lock);
-	i915_perform_flush(dev);
 	i915_perform_flush(dev);
 	write_unlock(&fm->lock);
 }

@@ -93,7 +93,22 @@ typedef struct _drmMMListHead
 #define DRMLISTENTRY(__type, __item, __field)   \
     ((__type *)(((char *) (__item)) - offsetof(__type, __field)))
 
+typedef struct _drmFence{
+        unsigned handle;
+        int class;
+        unsigned type; 
+        unsigned flags;
+        unsigned signaled;
+} drmFence;
 
+typedef struct _drmTTM{
+        unsigned handle;
+        drm_handle_t user_token;
+        unsigned flags;
+        unsigned long size;
+        void *virtual;
+        int mapCount;
+} drmTTM;
 
 typedef struct _drmBO{
     drm_bo_type_t type;
@@ -129,6 +144,23 @@ typedef struct _drmBOList {
     drmMMListHead list;
     drmMMListHead free;
 } drmBOList;
+
+/* Fencing */
+
+extern int           drmFenceCreate(int fd, unsigned flags, int class,
+				    unsigned type, 
+				    drmFence *fence);
+extern int           drmFenceDestroy(int fd, const drmFence *fence);
+extern int           drmFenceReference(int fd, unsigned handle, drmFence *fence);
+extern int           drmFenceUnreference(int fd, const drmFence *fence);
+extern int           drmFenceFlush(int fd, drmFence *fence, unsigned flush_type);
+extern int           drmFenceSignaled(int fd, drmFence *fence, 
+				      unsigned fenceType, int *signaled);
+extern int           drmFenceWait(int fd, unsigned flags, drmFence *fence, 
+				  unsigned flush_type);
+extern int           drmFenceEmit(int fd, unsigned flags, drmFence *fence, 
+				  unsigned emit_type);
+extern int           drmFenceBuffers(int fd, unsigned flags, drmFence *fence);
 
 
 /*

@@ -283,10 +283,10 @@ int drm_fence_object_flush(drm_device_t * dev,
 	write_lock_irqsave(&fm->lock, flags);
 	fence->flush_mask |= type;
 	if (fence->submitted_flush == fence->signaled) {
-		if ((fence->type & DRM_FENCE_EXE) &&
-		    !(fence->submitted_flush & DRM_FENCE_EXE)) {
+		if ((fence->type & DRM_FENCE_TYPE_EXE) &&
+		    !(fence->submitted_flush & DRM_FENCE_TYPE_EXE)) {
 			drm_fence_flush_exe(fm, driver, fence->sequence);
-			fence->submitted_flush |= DRM_FENCE_EXE;
+			fence->submitted_flush |= DRM_FENCE_TYPE_EXE;
 		} else {
 			fm->pending_flush |= (fence->flush_mask &
 					      ~fence->submitted_flush);
@@ -362,7 +362,7 @@ int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
 		if (ret)
 			return ((ret == -EINTR) ? -EAGAIN : ret);
 
-	} else if ((fence->class == 0) && (mask & DRM_FENCE_EXE) &&
+	} else if ((fence->class == 0) && (mask & DRM_FENCE_TYPE_EXE) &&
 		   driver->lazy_capable) {
 
 		/*
@@ -372,7 +372,7 @@ int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
 
 		do {
 			DRM_WAIT_ON(ret, fm->fence_queue, 3 * DRM_HZ,
-				    fence_signaled(dev, fence, DRM_FENCE_EXE,
+				    fence_signaled(dev, fence, DRM_FENCE_TYPE_EXE,
 						   1));
 			if (time_after_eq(jiffies, _end))
 				break;
@@ -386,7 +386,15 @@ int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
 	if (fence_signaled(dev, fence, mask, 0))
 		return 0;
 
-	do {
+	/*
+	 * Avoid kernel-space busy-waits.
+	 */
+#if 1
+	if (!ignore_signals)
+	        return -EAGAIN;
+#endif
+	do { 
+		schedule();
 		signaled = fence_signaled(dev, fence, mask, 1);
 	} while (!signaled && !time_after_eq(jiffies, _end));
 

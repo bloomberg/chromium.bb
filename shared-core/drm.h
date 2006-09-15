@@ -643,7 +643,10 @@ typedef struct drm_set_version {
 #define DRM_FENCE_FLAG_WAIT_LAZY           0x00000004
 #define DRM_FENCE_FLAG_WAIT_IGNORE_SIGNALS 0x00000008
 
-#define DRM_FENCE_EXE                      0x00000001
+/* Reserved for driver use */
+#define DRM_FENCE_MASK_DRIVER              0xFF000000
+
+#define DRM_FENCE_TYPE_EXE                 0x00000001
 
 typedef struct drm_fence_arg {
 	unsigned handle;
@@ -750,7 +753,6 @@ typedef struct drm_bo_arg_request {
 	drm_bo_type_t type;
 	unsigned arg_handle;
 	drm_u64_t buffer_start;
-	drm_u64_t next;
 	enum {
 		drm_bo_create,
 		drm_bo_validate,
@@ -789,6 +791,7 @@ typedef struct drm_bo_arg_reply {
 
 typedef struct drm_bo_arg{
         int handled;
+	drm_u64_t next;
 	union {
 		drm_bo_arg_request_t req;
 		drm_bo_arg_reply_t rep;

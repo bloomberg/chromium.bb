@@ -655,6 +655,7 @@ typedef struct drm_ref_object {
 typedef struct drm_bo_driver{
 	int cached_tt;
         int cached_vram;
+        drm_local_map_t *vram_map;
 	drm_ttm_backend_t *(*create_ttm_backend_entry) 
 		(struct drm_device *dev, int cached);
 	int (*fence_type)(uint32_t flags, uint32_t *class, uint32_t *type);

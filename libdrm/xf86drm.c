@@ -2240,16 +2240,20 @@ int drmCommandWriteRead(int fd, unsigned long drmCommandIndex, void *data,
 
 #ifdef __linux__
 
-int drmFenceCreate(int fd, int shareable, int class,unsigned type, 
-		   int emit, 
+/*
+ * Valid flags are 
+ * DRM_FENCE_FLAG_EMIT
+ * DRM_FENCE_FLAG_SHAREABLE
+ * DRM_FENCE_MASK_DRIVER
+ */
+
+int drmFenceCreate(int fd, unsigned flags, int class,unsigned type, 
 		   drmFence *fence)
 {
     drm_fence_arg_t arg;
     
     arg.type = type;
     arg.class = class;
-    arg.flags = (shareable) ? DRM_FENCE_FLAG_SHAREABLE : 0;
-    arg.flags |= (emit) ? DRM_FENCE_FLAG_EMIT : 0;
     arg.op = drm_fence_create;
     if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
 	return -errno;
@@ -2261,11 +2265,17 @@ int drmFenceCreate(int fd, int shareable, int class,unsigned type,
     return 0;
 }
 
-int drmFenceBuffers(int fd, int shareable, drmFence *fence)
+/*
+ * Valid flags are 
+ * DRM_FENCE_FLAG_SHAREABLE
+ * DRM_FENCE_MASK_DRIVER
+ */
+
+int drmFenceBuffers(int fd, unsigned flags, drmFence *fence)
 {
     drm_fence_arg_t arg;
     
-    arg.flags = (shareable) ? DRM_FENCE_FLAG_SHAREABLE : 0;
+    arg.flags = flags;
     arg.op = drm_fence_buffers;
     if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
 	return -errno;
@@ -2299,7 +2309,7 @@ int drmFenceReference(int fd, unsigned handle, drmFence *fence)
     fence->handle = arg.handle;
     fence->class = arg.class;
     fence->type = arg.type;
-    fence->flags = 0;
+    fence->flags = arg.flags;
     fence->signaled = arg.signaled;
     return 0;
 }
@@ -2363,12 +2373,18 @@ int drmFenceSignaled(int fd, drmFence *fence, unsigned fenceType,
     return 0;
 }
 
+/*
+ * Valid flags are 
+ * DRM_FENCE_FLAG_SHAREABLE
+ * DRM_FENCE_MASK_DRIVER
+ */
 
 
-int drmFenceEmit(int fd, drmFence *fence, unsigned emit_type)
+int drmFenceEmit(int fd, unsigned flags, drmFence *fence, unsigned emit_type)
 {
     drm_fence_arg_t arg;
    
+    arg.flags = flags;
     arg.handle = fence->handle;
     arg.type = emit_type;
     arg.op = drm_fence_emit;
@@ -2379,23 +2395,27 @@ int drmFenceEmit(int fd, drmFence *fence, unsigned emit_type)
     fence->signaled = arg.signaled;
     return 0;
 }
+
+/*
+ * Valid flags are 
+ * DRM_FENCE_FLAG_WAIT_LAZY
+ * DRM_FENCE_FLAG_WAIT_IGNORE_SIGNALS
+ */
     
-int drmFenceWait(int fd, drmFence *fence, unsigned flush_type, 
-		 int lazy, int ignore_signals)
+int drmFenceWait(int fd, unsigned flags, drmFence *fence, unsigned flush_type)
 {
     drm_fence_arg_t arg;
     int ret;
 
     if (!(fence->flags & DRM_FENCE_FLAG_SHAREABLE)) {
-	if (flush_type & fence->signaled == flush_type) {
+	if ((flush_type & fence->signaled) == flush_type) {
 	    return 0;
 	}
     }
 
     arg.handle = fence->handle;
     arg.type = flush_type;
-    arg.flags = (lazy) ? DRM_FENCE_FLAG_WAIT_LAZY : 0;
-    arg.flags |= (ignore_signals) ? DRM_FENCE_FLAG_WAIT_IGNORE_SIGNALS : 0;
+    arg.flags = flags;
     arg.op = drm_fence_wait;
     do {
 	ret = ioctl(fd, DRM_IOCTL_FENCE, &arg);
@@ -2666,7 +2686,7 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
 	return -EINVAL;
     }
     req->op = drm_bo_create;
-    req->next = 0;
+    arg.next = 0;
 
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
@@ -2700,7 +2720,7 @@ int drmBODestroy(int fd, drmBO *buf)
     arg.handled = 0;
     req->handle = buf->handle;
     req->op = drm_bo_destroy;
-    req->next = 0;
+    arg.next = 0;
 
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
@@ -2725,7 +2745,7 @@ int drmBOReference(int fd, unsigned handle, drmBO *buf)
     arg.handled = 0;
     req->handle = handle;
     req->op = drm_bo_reference;
-    req->next = 0;
+    arg.next = 0;
     
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
@@ -2761,7 +2781,7 @@ int drmBOUnReference(int fd, drmBO *buf)
     arg.handled = 0;
     req->handle = buf->handle;
     req->op = drm_bo_unreference;
-    req->next = 0;
+    arg.next = 0;
 
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
@@ -2813,7 +2833,7 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
     req->mask = mapFlags;
     req->hint = mapHint;
     req->op = drm_bo_map;
-    req->next = 0;
+    arg.next = 0;
 
     /*
      * May hang if the buffer object is busy.
@@ -2849,7 +2869,7 @@ int drmBOUnmap(int fd, drmBO *buf)
     arg.handled = 0;
     req->handle = buf->handle;
     req->op = drm_bo_unmap;
-    req->next = 0;
+    arg.next = 0;
 
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg)) {
 	return -errno;
@@ -2876,12 +2896,12 @@ int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask,
     req->hint = hint;
     req->arg_handle = mask; /* Encode mask in the arg_handle field :/ */
     req->op = drm_bo_validate;
-    req->next = 0;
+    arg.next = 0;
 
 
     do{
 	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
-    } while (ret && errno == -EAGAIN);
+    } while (ret && errno == EAGAIN);
     
 
     if (ret) 
@@ -2908,7 +2928,7 @@ int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
     req->mask = flags;
     req->arg_handle = fenceHandle;
     req->op = drm_bo_validate;
-    req->next = 0;
+    arg.next = 0;
 
     ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     
@@ -2931,7 +2951,7 @@ int drmBOInfo(int fd, drmBO *buf)
     arg.handled = 0;
     req->handle = buf->handle;
     req->op = drm_bo_info;
-    req->next = 0;
+    arg.next = 0;
 
     ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     
@@ -3044,20 +3064,14 @@ int drmBOValidateList(int fd, drmBOList *list)
       if (prevNext)
 	  *prevNext = (unsigned long) arg;
 
-      req->next = 0;
-      prevNext = &req->next;
+      arg->next = 0;
+      prevNext = &arg->next;
       arg->handled = 0;
       req->handle = node->buf->handle;
       req->op = drm_bo_validate;
       req->mask = node->arg0;
       req->hint = 0;
-      req->arg_handle = node->arg1 | DRM_BO_MASK_MEM;
-#ifdef BODEBUG
-      fprintf(stderr, "Offset 0x%08x, Handle 0x%08x, " 
-                      "mask 0x%08x flags 0x%08x\n",
-	               node->buf->offset, 
-	               req->handle, req->arg_handle, req->mask);
-#endif
+      req->arg_handle = node->arg1;
   }
   
   if (!first) 
@@ -3065,7 +3079,7 @@ int drmBOValidateList(int fd, drmBOList *list)
 
   do{
       ret = ioctl(fd, DRM_IOCTL_BUFOBJ, first);
-  } while (ret && errno == -EAGAIN);
+  } while (ret && errno == EAGAIN);
 
 
   if (ret)
@@ -3076,17 +3090,15 @@ int drmBOValidateList(int fd, drmBOList *list)
       arg = &node->bo_arg;
       rep = &arg->d.rep;
       
-      if (!arg->handled)
+      if (!arg->handled) {
+	  drmMsg("Unhandled request\n");
 	  return -EFAULT;
+      }
       if (rep->ret)
 	  return rep->ret;
 
       buf = node->buf;
       drmBOCopyReply(rep, buf);
-#ifdef BODEBUG
-      fprintf(stderr,"Offset 0x%08x, Flags 0x%08x\n", 
-	      buf->offset, buf->flags);      
-#endif
   }
 
   return 0;
@@ -3120,8 +3132,8 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
       if (prevNext)
 	  *prevNext = (unsigned long) arg;
 
-      req->next = 0;
-      prevNext = &req->next;
+      arg->next = 0;
+      prevNext = &arg->next;
       arg->handled = 0;
       req->handle = node->buf->handle;
       req->op = drm_bo_fence;
