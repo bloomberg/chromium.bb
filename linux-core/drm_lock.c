@@ -201,7 +201,7 @@ int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
 		if (old & _DRM_LOCK_HELD)
 			new = old | _DRM_LOCK_CONT;
 		else
-			new = context | _DRM_LOCK_HELD;
+			new = context | _DRM_LOCK_HELD | _DRM_LOCK_CONT;
 		prev = cmpxchg(lock, old, new);
 	} while (prev != old);
 	if (_DRM_LOCKING_CONTEXT(old) == context) {
@@ -213,7 +213,7 @@ int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
 			return 0;
 		}
 	}
-	if (new == (context | _DRM_LOCK_HELD)) {
+	if (new == (context | _DRM_LOCK_HELD | _DRM_LOCK_CONT)) {
 		/* Have lock */
 		return 1;
 	}

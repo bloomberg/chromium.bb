@@ -157,8 +157,12 @@ extern void i915_mem_release(drm_device_t * dev,
 			     DRMFILE filp, struct mem_block *heap);
 #ifdef I915_HAVE_FENCE
 /* i915_fence.c */
+
+
 extern void i915_fence_handler(drm_device_t *dev);
-extern int i915_fence_emit_sequence(drm_device_t *dev, uint32_t *sequence);
+extern int i915_fence_emit_sequence(drm_device_t *dev, uint32_t flags,
+				    uint32_t *sequence, 
+				    uint32_t *native_type);
 extern void i915_poke_flush(drm_device_t *dev);
 extern void i915_sync_flush(drm_device_t *dev);
 #endif

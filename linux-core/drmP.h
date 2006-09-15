@@ -765,7 +765,9 @@ typedef struct drm_fence_driver{
 	uint32_t flush_diff;
         uint32_t sequence_mask;
         int lazy_capable;
-	int (*emit) (struct drm_device *dev, uint32_t *breadcrumb);
+	int (*emit) (struct drm_device *dev, uint32_t flags,
+		     uint32_t *breadcrumb,
+		     uint32_t *native_type);
 	void (*poke_flush) (struct drm_device *dev);
 } drm_fence_driver_t;
 
@@ -804,7 +806,7 @@ typedef struct drm_buffer_manager{
 	struct list_head ddestroy;
         struct list_head other;
         struct work_struct wq;
-        uint32_t fence_flags;
+        uint32_t fence_type;
         unsigned long max_pages;
         unsigned long cur_pages;
 } drm_buffer_manager_t;
@@ -963,6 +965,7 @@ typedef struct drm_fence_object{
 
 	struct list_head ring;
         int class;
+        uint32_t native_type;
 	volatile uint32_t type;
 	volatile uint32_t signaled;
 	uint32_t sequence;
@@ -997,7 +1000,7 @@ typedef struct drm_buffer_object{
 	struct list_head head;
 	struct list_head ddestroy;
 
-	uint32_t fence_flags;
+	uint32_t fence_type;
         uint32_t fence_class;
 	drm_fence_object_t *fence;
         uint32_t priv_flags;
@@ -1386,7 +1389,8 @@ extern void drm_fence_usage_deref_unlocked(drm_device_t * dev,
 extern int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
 				 int lazy, int ignore_signals, uint32_t mask);
 extern int drm_fence_object_create(drm_device_t *dev, uint32_t type,
-				   int emit, drm_fence_object_t **c_fence);
+				   uint32_t fence_flags, 
+				   drm_fence_object_t **c_fence);
 extern int drm_fence_add_user_object(drm_file_t *priv, 
 				     drm_fence_object_t *fence,
 				     int shareable);
@@ -1406,6 +1410,7 @@ extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
 extern int drm_bo_clean_mm(drm_device_t *dev);
 extern int drm_fence_buffer_objects(drm_file_t * priv,
 				    struct list_head *list, 
+				    uint32_t fence_flags,
 				    drm_fence_object_t *fence,
 				    drm_fence_object_t **used_fence);
 

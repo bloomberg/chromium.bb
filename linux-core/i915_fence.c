@@ -86,6 +86,7 @@ static void i915_perform_flush(drm_device_t * dev)
 	}
 
 	if (fm->pending_flush && !dev_priv->flush_pending) {
+	  DRM_ERROR("Sync flush");
 		dev_priv->flush_sequence = (uint32_t) READ_BREADCRUMB(dev_priv);
 		dev_priv->flush_flags = fm->pending_flush;
 		dev_priv->saved_flush_status = READ_HWSP(dev_priv, 0);
@@ -117,11 +118,16 @@ void i915_poke_flush(drm_device_t * dev)
 	write_unlock_irqrestore(&fm->lock, flags);
 }
 
-int i915_fence_emit_sequence(drm_device_t * dev, uint32_t * sequence)
+int i915_fence_emit_sequence(drm_device_t * dev, uint32_t flags,
+			     uint32_t * sequence, uint32_t *native_type)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	i915_emit_irq(dev);
 	*sequence = (uint32_t) dev_priv->counter;
+	*native_type = DRM_FENCE_TYPE_EXE;  
+	if (flags & DRM_I915_FENCE_FLAG_FLUSHED) 
+		*native_type |= DRM_I915_FENCE_TYPE_RW;
+	       
 	return 0;
 }
 

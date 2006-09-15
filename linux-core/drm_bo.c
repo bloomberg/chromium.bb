@@ -94,9 +94,9 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 	DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
 
 	if (bo->fence) {
-		if (!drm_fence_object_signaled(bo->fence, bo->fence_flags)) {
+		if (!drm_fence_object_signaled(bo->fence, bo->fence_type)) {
 
-			drm_fence_object_flush(dev, bo->fence, bo->fence_flags);
+			drm_fence_object_flush(dev, bo->fence, bo->fence_type);
 			list_add_tail(&bo->ddestroy, &bm->ddestroy);
 			schedule_delayed_work(&bm->wq,
 					      ((DRM_HZ / 100) <
@@ -144,7 +144,7 @@ static void drm_bo_delayed_delete(drm_device_t * dev)
 		fence = entry->fence;
 
 		if (fence && drm_fence_object_signaled(fence,
-						       entry->fence_flags)) {
+						       entry->fence_type)) {
 			drm_fence_usage_deref_locked(dev, fence);
 			entry->fence = NULL;
 		}
@@ -205,6 +205,7 @@ void drm_bo_usage_deref_unlocked(drm_device_t * dev, drm_buffer_object_t * bo)
 
 int drm_fence_buffer_objects(drm_file_t * priv,
 			     struct list_head *list,
+			     uint32_t fence_flags,
 			     drm_fence_object_t * fence,
 			     drm_fence_object_t ** used_fence)
 {
@@ -212,7 +213,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 	drm_buffer_manager_t *bm = &dev->bm;
 
 	drm_buffer_object_t *entry;
-	uint32_t fence_flags = 0;
+	uint32_t fence_type = 0;
 	int count = 0;
 	int ret = 0;
 	struct list_head f_list, *l;
@@ -224,7 +225,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 
 	list_for_each_entry(entry, list, head) {
 		BUG_ON(!(entry->priv_flags & _DRM_BO_FLAG_UNFENCED));
-		fence_flags |= entry->fence_flags;
+		fence_type |= entry->fence_type;
 		if (entry->fence_class != 0) {
 			DRM_ERROR("Fence class %d is not implemented yet.\n",
 				  entry->fence_class);
@@ -250,7 +251,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 	list_del_init(list);
 
 	if (fence) {
-		if ((fence_flags & fence->type) != fence_flags) {
+		if ((fence_type & fence->type) != fence_type) {
 			DRM_ERROR("Given fence doesn't match buffers "
 				  "on unfenced list.\n");
 			ret = -EINVAL;
@@ -258,7 +259,9 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 		}
 	} else {
 		mutex_unlock(&dev->struct_mutex);
-		ret = drm_fence_object_create(dev, fence_flags, 1, &fence);
+		ret = drm_fence_object_create(dev, fence_type, 
+					      fence_flags | DRM_FENCE_FLAG_EMIT, 
+					      &fence);
 		mutex_lock(&dev->struct_mutex);
 		if (ret)
 			goto out;
@@ -317,7 +320,7 @@ static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
 
 	if (fence) {
 		drm_device_t *dev = bo->dev;
-		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
+		if (drm_fence_object_signaled(fence, bo->fence_type)) {
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
 			return 0;
@@ -327,7 +330,7 @@ static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
 		}
 		ret =
 		    drm_fence_object_wait(dev, fence, lazy, ignore_signals,
-					  bo->fence_flags);
+					  bo->fence_type);
 		if (ret) 
 		    return ret;
 		
@@ -624,7 +627,7 @@ static int drm_bo_quick_busy(drm_buffer_object_t * bo)
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (fence) {
 		drm_device_t *dev = bo->dev;
-		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
+		if (drm_fence_object_signaled(fence, bo->fence_type)) {
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
 			return 0;
@@ -646,13 +649,13 @@ static int drm_bo_busy(drm_buffer_object_t * bo)
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (fence) {
 		drm_device_t *dev = bo->dev;
-		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
+		if (drm_fence_object_signaled(fence, bo->fence_type)) {
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
 			return 0;
 		}
 		drm_fence_object_flush(dev, fence, DRM_FENCE_TYPE_EXE);
-		if (drm_fence_object_signaled(fence, bo->fence_flags)) {
+		if (drm_fence_object_signaled(fence, bo->fence_type)) {
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
 			return 0;
@@ -776,7 +779,7 @@ static void drm_bo_fill_rep_arg(drm_buffer_object_t * bo,
 
 	rep->mask = bo->mask;
 	rep->buffer_start = bo->buffer_start;
-	rep->fence_flags = bo->fence_flags;
+	rep->fence_flags = bo->fence_type;
 	rep->rep_flags = 0;
 
 	if ((bo->priv_flags & _DRM_BO_FLAG_UNFENCED) || drm_bo_quick_busy(bo)) {
@@ -988,7 +991,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	}
 
 	DRM_DEBUG("New flags 0x%08x, Old flags 0x%08x\n", new_flags, bo->flags);
-	ret = driver->fence_type(new_flags, &bo->fence_class, &bo->fence_flags);
+	ret = driver->fence_type(new_flags, &bo->fence_class, &bo->fence_type);
 	if (ret) {
 		DRM_ERROR("Driver did not support given buffer permissions\n");
 		return ret;
