@@ -1,11 +1,20 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.4.0
-		        2006-09-09
+		      Version 2.4.1
+		        2006-09-15
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.4.1
+
+Keith Packard:
+      Update installation notes for 2.4 base.
+      Add ppc64 signature. Bug 8227
+      Add signatures for m68k and mipsel (thanks debian buildd)
+      Add warning flags to fc-cache build. Clean up warnings in fc-cache.
+      Reimplement FcConfigAppFontAddDir; function was lost in 2.4.0.
 
 2.4.0
 
