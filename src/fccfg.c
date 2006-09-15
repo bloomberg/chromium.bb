@@ -227,7 +227,8 @@ FcConfigDestroy (FcConfig *config)
  */
 
 FcBool
-FcConfigAddCache (FcConfig *config, FcCache *cache)
+FcConfigAddCache (FcConfig *config, FcCache *cache, 
+		  FcSetName set, FcStrSet *dirSet)
 {
     FcFontSet	*fs;
     intptr_t	*dirs;
@@ -263,7 +264,7 @@ FcConfigAddCache (FcConfig *config, FcCache *cache)
 		continue;
 		
 	    nref++;
-	    FcFontSetAdd (config->fonts[FcSetSystem], font);
+	    FcFontSetAdd (config->fonts[set], font);
 	}
 	FcDirCacheReference (cache, nref);
     }
@@ -278,9 +279,34 @@ FcConfigAddCache (FcConfig *config, FcCache *cache)
 	{
 	    FcChar8	*dir = FcOffsetToPtr (dirs, dirs[i], FcChar8);
 	    if (FcConfigAcceptFilename (config, dir))
-		FcConfigAddFontDir (config, dir);
+		FcStrSetAddFilename (dirSet, dir);
 	}
     }
+    return FcTrue;
+}
+
+static FcBool
+FcConfigAddDirList (FcConfig *config, FcSetName set, FcStrSet *dirSet)
+{
+    FcStrList	    *dirlist;
+    FcChar8	    *dir;
+    FcCache	    *cache;
+    
+    dirlist = FcStrListCreate (dirSet);
+    if (!dirlist)
+        return FcFalse;
+	
+    while ((dir = FcStrListNext (dirlist)))
+    {
+	if (FcDebug () & FC_DBG_FONTSET)
+	    printf ("adding fonts from%s\n", dir);
+	cache = FcDirCacheRead (dir, FcFalse, config);
+	if (!cache)
+	    continue;
+	FcConfigAddCache (config, cache, set, dirSet);
+	FcDirCacheUnload (cache);
+    }
+    FcStrListDone (dirlist);
     return FcTrue;
 }
 
@@ -293,9 +319,6 @@ FcBool
 FcConfigBuildFonts (FcConfig *config)
 {
     FcFontSet	    *fonts;
-    FcStrList	    *dirlist;
-    FcChar8	    *dir;
-    FcCache	    *cache;
 
     if (!config)
     {
@@ -306,33 +329,15 @@ FcConfigBuildFonts (FcConfig *config)
 	
     fonts = FcFontSetCreate ();
     if (!fonts)
-	goto bail;
+	return FcFalse;
     
     FcConfigSetFonts (config, fonts, FcSetSystem);
     
-    dirlist = FcStrListCreate (config->fontDirs);
-    if (!dirlist)
-        goto bail;
-	
-    while ((dir = FcStrListNext (dirlist)))
-    {
-	if (FcDebug () & FC_DBG_FONTSET)
-	    printf ("adding fonts from%s\n", dir);
-	cache = FcDirCacheRead (dir, FcFalse, config);
-	if (!cache)
-	    continue;
-	FcConfigAddCache (config, cache);
-	FcDirCacheUnload (cache);
-    }
-    
-    FcStrListDone (dirlist);
-    
+    if (!FcConfigAddDirList (config, FcSetSystem, config->fontDirs))
+	return FcFalse;
     if (FcDebug () & FC_DBG_FONTSET)
 	FcFontSetPrint (fonts);
-
     return FcTrue;
-bail:
-    return FcFalse;
 }
 
 FcBool
@@ -1799,9 +1804,7 @@ FcConfigAppFontAddDir (FcConfig	    *config,
 		       const FcChar8   *dir)
 {
     FcFontSet	*set;
-    FcStrSet	*subdirs;
-    FcStrList	*sublist;
-    FcChar8	*subdir;
+    FcStrSet	*dirs;
     
     if (!config)
     {
@@ -1809,8 +1812,9 @@ FcConfigAppFontAddDir (FcConfig	    *config,
 	if (!config)
 	    return FcFalse;
     }
-    subdirs = FcStrSetCreate ();
-    if (!subdirs)
+
+    dirs = FcStrSetCreate ();
+    if (!dirs)
 	return FcFalse;
     
     set = FcConfigGetFonts (config, FcSetApplication);
@@ -1819,26 +1823,20 @@ FcConfigAppFontAddDir (FcConfig	    *config,
 	set = FcFontSetCreate ();
 	if (!set)
 	{
-	    FcStrSetDestroy (subdirs);
+	    FcStrSetDestroy (dirs);
 	    return FcFalse;
 	}
 	FcConfigSetFonts (config, set, FcSetApplication);
     }
     
-    if (!FcDirScanConfig (set, subdirs, config->blanks, dir, FcFalse, config))
+    FcStrSetAddFilename (dirs, dir);
+    
+    if (!FcConfigAddDirList (config, FcSetApplication, dirs))
     {
-	FcStrSetDestroy (subdirs);
+	FcStrSetDestroy (dirs);
 	return FcFalse;
     }
-    if ((sublist = FcStrListCreate (subdirs)))
-    {
-	while ((subdir = FcStrListNext (sublist)))
-	{
-	    FcConfigAppFontAddDir (config, subdir);
-	}
-	FcStrListDone (sublist);
-    }
-    FcStrSetDestroy (subdirs);
+    FcStrSetDestroy (dirs);
     return FcTrue;
 }
 

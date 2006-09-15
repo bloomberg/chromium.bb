@@ -273,7 +273,7 @@ FcDirScanConfig (FcFontSet	*set,
 		 FcBool		force,
 		 FcConfig	*config)
 {
-    return FcFalse; /* XXX fixme */
+    return FcFalse; /* XXX deprecated */
 }
 
 FcBool
@@ -284,7 +284,7 @@ FcDirScan (FcFontSet	    *set,
 	   const FcChar8    *dir,
 	   FcBool	    force)
 {
-    return FcDirScanConfig (set, dirs, blanks, dir, force, NULL);
+    return FcFalse; /* XXX deprecated */
 }
 
 FcBool

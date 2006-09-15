@@ -584,7 +584,8 @@ FcPrivate FcFileTime
 FcConfigModifiedTime (FcConfig *config);
 
 FcPrivate FcBool
-FcConfigAddCache (FcConfig *config, FcCache *cache);
+FcConfigAddCache (FcConfig *config, FcCache *cache, 
+		  FcSetName set, FcStrSet *dirSet);
 
 /* fcserialize.c */
 FcPrivate intptr_t
