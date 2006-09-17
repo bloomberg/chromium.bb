@@ -26,6 +26,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 FcChar8 *
 FcStrCopy (const FcChar8 *s)
@@ -831,26 +834,13 @@ FcStrBasename (const FcChar8 *file)
 }
 
 FcChar8 *
-FcStrCanonFilename (const FcChar8 *s)
+FcStrCanonAbsoluteFilename (const FcChar8 *s)
 {
     FcChar8 *file;
     FcChar8 *f;
     const FcChar8 *slash;
     int size;
-    
-    if (*s != '/')
-    {
-	FcChar8	*full;
-	
-	FcChar8	cwd[FC_MAX_FILE_LEN + 2];
-	if (getcwd ((char *) cwd, FC_MAX_FILE_LEN) == NULL)
-	    return NULL;
-	strcat ((char *) cwd, "/");
-	full = FcStrPlus (cwd, s);
-	file = FcStrCanonFilename (full);
-	FcStrFree (full);
-	return file;
-    }
+
     size = strlen ((char *) s) + 1;
     file = malloc (size);
     if (!file)
@@ -889,6 +879,74 @@ FcStrCanonFilename (const FcChar8 *s)
     }
     return file;
 }
+ 
+#ifdef _WIN32
+/*
+ * Convert '\\' to '/' , remove double '/' 
+ */
+static void
+FcConvertDosPath (char *str)
+{
+  size_t len = strlen (str);
+  char *p = str;
+  char *dest = str;
+  char *end = str + len;
+  char last = 0;
+  
+  while (p < end)
+    {
+      if (*p == '\\')
+	*p = '/';
+
+      if (*p != '/'
+	  || last != '/')
+	{
+	  *dest++ = *p;
+	}
+
+      last = *p;
+      p++;
+    }
+
+  *dest = 0;
+}
+#endif
+
+FcChar8 *
+FcStrCanonFilename (const FcChar8 *s)
+{
+#ifdef _WIN32
+    FcChar8 full[FC_MAX_FILE_LEN + 2];
+    FcChar8 basename[FC_MAX_FILE_LEN + 2];
+    int size = GetFullPathName (s, sizeof (full) -1,
+				full,
+				basename);
+
+    if (size == 0)
+	perror ("GetFullPathName");
+
+    FcConvertDosPath (full);
+    return FcStrCanonAbsoluteFilename (full);
+#else
+    if (s[0] == '/')
+	return FcStrCanonAbsoluteFilename (s);
+    else
+    {
+	FcChar8	*full;
+	FcChar8 *file;
+
+	FcChar8	cwd[FC_MAX_FILE_LEN + 2];
+	if (getcwd ((char *) cwd, FC_MAX_FILE_LEN) == NULL)
+	    return NULL;
+	strcat ((char *) cwd, "/");
+	full = FcStrPlus (cwd, s);
+	file = FcStrCanonAbsoluteFilename (full);
+	FcStrFree (full);
+	return file;
+    }
+#endif
+}
+
 
 FcStrSet *
 FcStrSetCreate (void)

@@ -689,6 +689,11 @@ bail1:
     return NULL;
 }
 
+
+#ifdef _WIN32
+#define mkdir(path,mode) _mkdir(path)
+#endif
+
 static FcBool
 FcMakeDirectory (const FcChar8 *dir)
 {
