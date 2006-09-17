@@ -213,6 +213,17 @@ struct _FcCacheSkip {
 static FcCacheSkip	*fcCacheChains[FC_CACHE_MAX_LEVEL];
 static int		fcCacheMaxLevel;
 
+#if HAVE_RANDOM
+# define FcRandom()  random()
+#else
+# if HAVE_LRAND48
+#  define FcRandom()  lrand48()
+# else
+#  if HAVE_RAND
+#   define FcRandom()  rand()
+#  endif
+# endif
+#endif
 /*
  * Generate a random level number, distributed
  * so that each level is 1/4 as likely as the one before
@@ -223,7 +234,7 @@ static int
 random_level (void)
 {
     /* tricky bit -- each bit is '1' 75% of the time */
-    long int	bits = random () | random ();
+    long int	bits = FcRandom () | FcRandom ();
     int	level = 0;
 
     while (++level < FC_CACHE_MAX_LEVEL)
