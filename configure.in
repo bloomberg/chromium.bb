@@ -562,7 +562,6 @@ fc-glyphname/Makefile
 fc-case/Makefile
 fc-arch/Makefile
 src/Makefile
-src/fontconfig.def
 conf.d/Makefile
 fc-cache/Makefile
 fc-cat/Makefile

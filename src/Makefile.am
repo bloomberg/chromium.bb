@@ -25,6 +25,8 @@ if OS_WIN32
 
 export_symbols = -export-symbols fontconfig.def
 
+fontconfig_def_dependency = fontconfig.def
+
 # gcc import library install/uninstall
 
 install-libtool-import-lib: 
@@ -38,6 +40,8 @@ else
 
 install-libtool-import-lib:
 uninstall-libtool-import-lib:
+
+fontconfig_def_dependency = 
 
 endif
 
@@ -73,7 +77,7 @@ INCLUDES = 						\
 	-DFC_CACHEDIR='"$(FC_CACHEDIR)"'                \
 	-DFONTCONFIG_PATH='"$(CONFDIR)"'
 
-EXTRA_DIST = fontconfig.def.in makealias
+EXTRA_DIST = makealias
 
 noinst_HEADERS=fcint.h
 
@@ -112,6 +116,8 @@ libfontconfig_la_LDFLAGS =			\
 
 libfontconfig_la_LIBADD = $(ICONV_LIBS) $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS)
 
+libfontconfig_la_DEPENDENCIES = $(fontconfig_def_dependency)
+
 install-data-local: install-ms-import-lib install-libtool-import-lib
 
 uninstall-local: uninstall-ms-import-lib uninstall-libtool-import-lib
@@ -127,3 +133,13 @@ fcalias.h: $(top_srcdir)/src/makealias $(PUBLIC_FILES)
 	sh $(top_srcdir)/src/makealias "$(top_srcdir)/src" $(PUBLIC_FILES)
 
 CLEANFILES := $(ALIAS_FILES)
+
+fontconfig.def: $(PUBLIC_FILES)
+	echo Generating $@
+	(echo EXPORTS; \
+	(cat $(PUBLIC_FILES) || echo 'FcERROR ()' ) | \
+ 	grep '^Fc[^ ]* *(' | sed -e 's/ *(.*$$//' -e 's/^/	/' | \
+	sort; \
+	echo LIBRARY libfontconfig-@LT_CURRENT_MINUS_AGE@.dll; \
+	echo VERSION @LT_CURRENT@.@LT_REVISION@) >$@
+	@ ! grep -q FcERROR $@ || ($(RM) $@; false)
