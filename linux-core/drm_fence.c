@@ -31,6 +31,7 @@
 
 #include "drmP.h"
 
+
 /*
  * Typically called by the IRQ handler.
  */
@@ -44,14 +45,20 @@ void drm_fence_handler(drm_device_t * dev, uint32_t sequence, uint32_t type)
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
 	struct list_head *list, *prev;
 	drm_fence_object_t *fence;
+	int found = 0;
+
+	if (list_empty(&fm->ring))
+		return;
 
 	list_for_each_entry(fence, &fm->ring, ring) {
 		diff = (sequence - fence->sequence) & driver->sequence_mask;
-		if (diff > driver->wrap_diff)
+		if (diff > driver->wrap_diff) {
+			found = 1;
 			break;
+		}
 	}
 
-	list = fence->ring.prev;
+	list = (found) ? fence->ring.prev : fm->ring.prev;
 	prev = list->prev;
 
 	for (; list != &fm->ring; list = prev, prev = list->prev) {
