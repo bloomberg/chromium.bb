@@ -6,6 +6,13 @@ set -e
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
+case "$1" in
+--noconf*) 
+    	AUTOGEN_SUBDIR_MODE="true"
+	shift
+	;;
+esac
+
 ORIGDIR=`pwd`
 cd $srcdir
 PROJECT=Fontconfig

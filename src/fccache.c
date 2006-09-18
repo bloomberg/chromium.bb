@@ -454,7 +454,8 @@ FcDirCacheMapFd (int fd, struct stat *fd_stat)
 					 PAGE_READONLY, 0, 0, NULL);
 	    if (hFileMap != NULL)
 	    {
-		cache = MapViewOfFile (hFileMap, FILE_MAP_READ, 0, 0, size);
+		cache = MapViewOfFile (hFileMap, FILE_MAP_READ, 0, 0, 
+				       fd_stat->st_size);
 		CloseHandle (hFileMap);
 	    }
 	}
