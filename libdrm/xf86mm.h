@@ -202,7 +202,7 @@ extern int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask,
 			 unsigned hint);
 extern int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle);
 extern int drmBOInfo(int fd, drmBO *buf);
-extern int drmBufBusy(int fd, drmBO *buf, int *busy);
+extern int drmBOBusy(int fd, drmBO *buf, int *busy);
 
 
 extern int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags, 
@@ -210,7 +210,7 @@ extern int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags,
 		       int *newItem);
 extern int drmBOValidateList(int fd, drmBOList *list);
 extern int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle);
-
+extern int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint);
 
 /*
  * Initialization functions.

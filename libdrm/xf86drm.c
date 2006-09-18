@@ -2407,6 +2407,10 @@ int drmFenceWait(int fd, unsigned flags, drmFence *fence, unsigned flush_type)
     drm_fence_arg_t arg;
     int ret;
 
+    if (flush_type == 0) {
+	flush_type = fence->type;
+    }
+
     if (!(fence->flags & DRM_FENCE_FLAG_SHAREABLE)) {
 	if ((flush_type & fence->signaled) == flush_type) {
 	    return 0;
@@ -2964,8 +2968,36 @@ int drmBOInfo(int fd, drmBO *buf)
     drmBOCopyReply(rep, buf);
     return 0;
 }
+
+int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint)
+{
+    drm_bo_arg_t arg;
+    drm_bo_arg_request_t *req = &arg.d.req;
+    drm_bo_arg_reply_t *rep = &arg.d.rep;
+    int ret = 0;
+
+    if ((buf->flags & DRM_BO_FLAG_SHAREABLE) ||
+	(buf->replyFlags & DRM_BO_REP_BUSY)) {
+	arg.handled = 0;
+	req->handle = buf->handle;
+	req->op = drm_bo_wait_idle;
+	req->hint = hint;
+	arg.next = 0;
+
+	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+    
+	if (ret) 
+	    return ret;
+	if (!arg.handled)
+	    return -EFAULT;
+	if (rep->ret)
+	    return rep->ret;
+	drmBOCopyReply(rep, buf);
+    }
+    return 0;
+}
 	
-int drmBufBusy(int fd, drmBO *buf, int *busy)
+int drmBOBusy(int fd, drmBO *buf, int *busy)
 {
     if (!(buf->flags & DRM_BO_FLAG_SHAREABLE) &&
 	!(buf->replyFlags & DRM_BO_REP_BUSY)) {

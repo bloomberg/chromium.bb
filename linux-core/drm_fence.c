@@ -207,7 +207,8 @@ int drm_fence_object_flush(drm_device_t * dev,
 	unsigned long flags;
 
 	if (type & ~fence->type) {
-		DRM_ERROR("Flush trying to extend fence type\n");
+		DRM_ERROR("Flush trying to extend fence type, "
+                          "0x%x, 0x%x\n", type, fence->type);
 		return -EINVAL;
 	}
 
@@ -269,7 +270,8 @@ int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
 	int signaled;
 
 	if (mask & ~fence->type) {
-		DRM_ERROR("Wait trying to extend fence type\n");
+		DRM_ERROR("Wait trying to extend fence type"
+			  " 0x%08x 0x%08x\n", mask, fence->type);
 		return -EINVAL;
 	}
 
