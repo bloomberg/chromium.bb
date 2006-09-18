@@ -86,7 +86,6 @@ static void i915_perform_flush(drm_device_t * dev)
 	}
 
 	if (fm->pending_flush && !dev_priv->flush_pending) {
-	  DRM_ERROR("Sync flush");
 		dev_priv->flush_sequence = (uint32_t) READ_BREADCRUMB(dev_priv);
 		dev_priv->flush_flags = fm->pending_flush;
 		dev_priv->saved_flush_status = READ_HWSP(dev_priv, 0);

@@ -124,6 +124,7 @@ static inline void change_pud_range(struct mm_struct *mm, pgd_t * pgd,
  * This function should be called with all relevant spinlocks held.
  */
 
+#if 1
 void drm_clear_vma(struct vm_area_struct *vma,
 		   unsigned long addr, unsigned long end)
 {
@@ -146,6 +147,19 @@ void drm_clear_vma(struct vm_area_struct *vma,
 	flush_tlb_range(vma, addr, end);
 #endif
 }
+#else
+
+void drm_clear_vma(struct vm_area_struct *vma,
+		   unsigned long addr, unsigned long end)
+{
+	struct mm_struct *mm = vma->vm_mm;
+
+	spin_unlock(&mm->page_table_lock);
+	(void) zap_page_range(vma, addr, end - addr, NULL);
+	spin_lock(&mm->page_table_lock);
+}
+#endif
+
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags)
 {

@@ -2984,8 +2984,10 @@ int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint)
 	req->hint = hint;
 	arg.next = 0;
 
-	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
-    
+	do {
+	    ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+	} while (ret && errno == EAGAIN);
+
 	if (ret) 
 	    return ret;
 	if (!arg.handled)

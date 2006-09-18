@@ -1115,6 +1115,7 @@ static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
 	if (!bo) {
 		return -EINVAL;
 	}
+
 	mutex_lock(&bo->mutex);
 	ret = drm_bo_wait_unfenced(bo, no_wait, 0);
 	if (ret)
@@ -1124,10 +1125,11 @@ static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
 		goto out;
 
 	drm_bo_fill_rep_arg(bo, rep);
+
       out:
 	mutex_unlock(&bo->mutex);
 	drm_bo_usage_deref_unlocked(bo->dev, bo);
-	return 0;
+	return ret;
 }
 
 /*
