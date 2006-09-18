@@ -46,6 +46,8 @@
  * 1.3: Add vblank support
  * 1.4: Fix cmdbuffer path, add heap destroy
  * 1.5: Add vblank pipe configuration
+ * 1.6: - New ioctl for scheduling buffer swaps on vertical blank
+ *      - Support vertical blank on secondary display pipe
  */
 #define DRIVER_MAJOR		1
 #define DRIVER_MINOR		6
