@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "google/crash_report.h"
-#include "google/crash_report_processor.h"
+#include "google/minidump_processor.h"
 #include "processor/minidump.h"
 #include "processor/stackwalker_x86.h"
 
 namespace google_airbag {
 
-CrashReportProcessor::CrashReportProcessor(SymbolSupplier *supplier)
+MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier)
     : supplier_(supplier) {
 }
 
-CrashReportProcessor::~CrashReportProcessor() {
+MinidumpProcessor::~MinidumpProcessor() {
 }
 
-bool CrashReportProcessor::ProcessReport(CrashReport *report,
-                                         const string &minidump_file) {
+bool MinidumpProcessor::Process(const string &minidump_file,
+                                void *supplier_data,
+                                StackFrames *stack_frames) {
   Minidump dump(minidump_file);
   if (!dump.Read()) {
     return false;
@@ -56,8 +56,8 @@ bool CrashReportProcessor::ProcessReport(CrashReport *report,
 
   // TODO(bryner): figure out which StackWalker we want
   StackwalkerX86 walker(exception->GetContext(), thread_memory,
-                        dump.GetModuleList(), supplier_, report);
-  walker.Walk(&report->stack_frames);
+                        dump.GetModuleList(), supplier_, supplier_data);
+  walker.Walk(stack_frames);
   return true;
 }
 

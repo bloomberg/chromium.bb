@@ -12,28 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef GOOGLE_CRASH_REPORT_PROCESSOR_H__
-#define GOOGLE_CRASH_REPORT_PROCESSOR_H__
+#ifndef GOOGLE_MINIDUMP_PROCESSOR_H__
+#define GOOGLE_MINIDUMP_PROCESSOR_H__
 
 #include <string>
+#include "google/stack_frame.h"
 
 namespace google_airbag {
 
 using std::string;
 
-struct CrashReport;
 class SymbolSupplier;
 
-class CrashReportProcessor {
+class MinidumpProcessor {
  public:
-  // Initializes this CrashReportProcessor.  supplier should be an
+  // Initializes this MinidumpProcessor.  supplier should be an
   // implementation of the SymbolSupplier abstract base class.
-  CrashReportProcessor(SymbolSupplier *supplier);
-  ~CrashReportProcessor();
+  MinidumpProcessor(SymbolSupplier *supplier);
+  ~MinidumpProcessor();
 
-  // Fills in the stack and other derived data for the CrashReport,
-  // using the supplied minidump file.  Returns true on success.
-  bool ProcessReport(CrashReport *report, const string &minidump_file);
+  // Fills in the given StackFrames vector by processing the minidump file.
+  // supplier_data is an opaque pointer which is passed to
+  // SymbolSupplier::GetSymbolFile().  Returns true on success.
+  bool Process(const string &minidump_file, void *supplier_data,
+               StackFrames *stack_frames);
 
  private:
   SymbolSupplier *supplier_;
@@ -41,4 +43,4 @@ class CrashReportProcessor {
 
 }  // namespace google_airbag
 
-#endif  // GOOGLE_CRASH_REPORT_PROCESSOR_H__
+#endif  // GOOGLE_MINIDUMP_PROCESSOR_H__

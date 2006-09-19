@@ -34,11 +34,11 @@ using std::auto_ptr;
 
 
 Stackwalker::Stackwalker(MemoryRegion* memory, MinidumpModuleList* modules,
-                         SymbolSupplier *supplier, const CrashReport *report)
+                         SymbolSupplier* supplier, void* supplier_data)
     : memory_(memory),
       modules_(modules),
       supplier_(supplier),
-      report_(report) {
+      supplier_data_(supplier_data) {
 }
 
 
@@ -64,7 +64,8 @@ void Stackwalker::Walk(StackFrames *frames) {
         frame->module_name = *(module->GetName());
         frame->module_base = module->base_address();
         if (modules_ && supplier_) {
-          string symbol_file = supplier_->GetSymbolFile(module, report_);
+          string symbol_file =
+            supplier_->GetSymbolFile(module, supplier_data_);
           if (!symbol_file.empty()) {
             resolver.LoadModule(*(module->GetName()), symbol_file);
             resolver.FillSourceLineInfo(frame.get());

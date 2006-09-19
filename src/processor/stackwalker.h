@@ -37,7 +37,6 @@ namespace google_airbag {
 
 class MinidumpModuleList;
 class SymbolSupplier;
-struct CrashReport;
 
 
 class Stackwalker {
@@ -55,12 +54,12 @@ class Stackwalker {
   // that is used to look up which code module each stack frame is
   // associated with.  supplier is an optional caller-supplied SymbolSupplier
   // implementation.  If supplier is NULL, source line info will not be
-  // resolved.  The CrashReport object will be passed to the SymbolSupplier's
+  // resolved.  supplier_data will be passed to the SymbolSupplier's
   // GetSymbolFile method.
   Stackwalker(MemoryRegion* memory,
               MinidumpModuleList* modules,
               SymbolSupplier* supplier,
-              const CrashReport* report);
+              void* supplier_data);
 
   // The stack memory to walk.  Subclasses will require this region to
   // get information from the stack.
@@ -85,8 +84,8 @@ class Stackwalker {
   // The optional SymbolSupplier for resolving source line info.
   SymbolSupplier* supplier_;
 
-  // The CrashReport object which is passed to the SymbolSupplier. May be null.
-  const CrashReport* report_;
+  // Caller-supplied data to be passed to the symbol supplier
+  void* supplier_data_;
 };
 
 

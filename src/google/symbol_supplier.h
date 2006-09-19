@@ -24,16 +24,15 @@ namespace google_airbag {
 
 using std::string;
 class MinidumpModule;
-struct CrashReport;
 
 class SymbolSupplier {
  public:
   virtual ~SymbolSupplier() {}
 
   // Returns the path to the symbol file for the given module.
-  // report will be the pointer supplied to ProcessReport().
+  // supplier_data is passed through from MinidumpProcessor::Process().
   virtual string GetSymbolFile(MinidumpModule *module,
-                               const CrashReport *report) = 0;
+                               void *supplier_data) = 0;
 };
 
 }  // namespace google_airbag
