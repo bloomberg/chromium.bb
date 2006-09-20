@@ -39,6 +39,8 @@ src_libairbag_la_SOURCES = \
 	src/google/minidump_processor.h \
 	src/google/stack_frame.h \
 	src/google/symbol_supplier.h \
+	src/processor/contained_range_map.h \
+	src/processor/contained_range_map-inl.h \
 	src/processor/linked_ptr.h \
 	src/processor/memory_region.h \
 	src/processor/minidump.cc \
@@ -46,6 +48,7 @@ src_libairbag_la_SOURCES = \
 	src/processor/minidump_format.h \
 	src/processor/minidump_processor.cc \
 	src/processor/range_map.h \
+	src/processor/range_map-inl.h \
 	src/processor/source_line_resolver.cc \
 	src/processor/source_line_resolver.h \
 	src/processor/stackwalker.cc \
@@ -62,6 +65,7 @@ bin_PROGRAMS = \
 
 ## Tests
 check_PROGRAMS = \
+	src/processor/contained_range_map_unittest \
 	src/processor/minidump_processor_unittest \
 	src/processor/range_map_unittest \
 	src/processor/source_line_resolver_unittest
@@ -70,6 +74,9 @@ check_SCRIPTS = \
 	src/processor/minidump_stackwalk_test
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT =
+
+src_processor_contained_range_map_unittest_SOURCES = \
+	src/processor/contained_range_map_unittest.cc
 
 src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc

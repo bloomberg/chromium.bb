@@ -21,7 +21,7 @@
 #include <cstdio>
 #include <memory>
 
-#include "processor/range_map.h"
+#include "processor/range_map-inl.h"
 
 
 using std::auto_ptr;

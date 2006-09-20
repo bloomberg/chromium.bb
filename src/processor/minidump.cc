@@ -38,6 +38,7 @@ typedef SSIZE_T ssize_t;
 #include <vector>
 
 #include "processor/minidump.h"
+#include "processor/range_map-inl.h"
 
 
 namespace google_airbag {

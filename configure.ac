@@ -27,9 +27,6 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
 
-dnl Prevent AC_PROG_LIBTOOL from looking for Fortran support.  We don't use
-dnl any Fortran here.
-define(AC_PROG_F77)
 AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 

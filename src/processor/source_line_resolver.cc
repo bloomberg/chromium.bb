@@ -20,7 +20,7 @@
 #include "processor/source_line_resolver.h"
 #include "google/stack_frame.h"
 #include "processor/linked_ptr.h"
-#include "processor/range_map.h"
+#include "processor/range_map-inl.h"
 
 using std::map;
 using std::vector;
