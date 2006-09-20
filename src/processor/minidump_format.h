@@ -66,7 +66,7 @@ typedef struct {
   u_int16_t data2;
   u_int16_t data3;
   u_int8_t  data4[8];
-} MDGUID; /* GUID */
+} MDGUID;  /* GUID */
 
 
 /*
@@ -85,6 +85,9 @@ typedef struct {
   u_int32_t error_selector;
   u_int32_t data_offset;
   u_int32_t data_selector;
+
+  /* register_area contains eight 80-bit (x87 "long double") quantities for
+   * floating-point registers %st0 (%mm0) through %st7 (%mm7). */
   u_int8_t  register_area[MD_FLOATINGSAVEAREA_X86_REGISTERAREA_SIZE];
   u_int32_t cr0_npx_state;
 } MDFloatingSaveAreaX86;  /* FLOATING_SAVE_AREA */
@@ -131,7 +134,10 @@ typedef struct {
   u_int32_t             ss;
 
   /* The next field is included with MD_CONTEXT_X86_EXTENDED_REGISTERS.
-   * It contains vector (MMX/SSE) registers. */
+   * It contains vector (MMX/SSE) registers.  It it laid out in the
+   * format used by the fxsave and fsrstor instructions, so it includes
+   * a copy of the x87 floating-point registers as well.  See FXSAVE in
+   * "Intel Architecture Software Developer's Manual, Volume 2." */
   u_int8_t              extended_registers[
                          MD_CONTEXT_X86_EXTENDED_REGISTERS_SIZE];
 } MDRawContextX86;  /* CONTEXT */
@@ -271,7 +277,7 @@ typedef struct {
   u_int32_t file_subtype;
   u_int32_t file_date_hi;
   u_int32_t file_date_lo;
-} MDVSFixedFileInfo; /* VS_FIXEDFILEINFO */
+} MDVSFixedFileInfo;  /* VS_FIXEDFILEINFO */
 
 /* For (MDVSFixedFileInfo).signature */
 #define MD_VSFIXEDFILEINFO_SIGNATURE 0xfeef04bd
@@ -297,27 +303,27 @@ typedef struct {
      /* VS_FF_SPECIALBUILD */
 
 /* For (MDVSFixedFileInfo).file_os: high 16 bits */
-#define MD_VSFIXEDFILEINFO_FILE_OS_UNKNOWN    0         /* VOS_UNKNOWN */
-#define MD_VSFIXEDFILEINFO_FILE_OS_DOS        (1 << 16) /* VOS_DOS */
-#define MD_VSFIXEDFILEINFO_FILE_OS_OS216      (2 << 16) /* VOS_OS216 */
-#define MD_VSFIXEDFILEINFO_FILE_OS_OS232      (3 << 16) /* VOS_OS232 */
-#define MD_VSFIXEDFILEINFO_FILE_OS_NT         (4 << 16) /* VOS_NT */
-#define MD_VSFIXEDFILEINFO_FILE_OS_WINCE      (5 << 16) /* VOS_WINCE */
+#define MD_VSFIXEDFILEINFO_FILE_OS_UNKNOWN    0          /* VOS_UNKNOWN */
+#define MD_VSFIXEDFILEINFO_FILE_OS_DOS        (1 << 16)  /* VOS_DOS */
+#define MD_VSFIXEDFILEINFO_FILE_OS_OS216      (2 << 16)  /* VOS_OS216 */
+#define MD_VSFIXEDFILEINFO_FILE_OS_OS232      (3 << 16)  /* VOS_OS232 */
+#define MD_VSFIXEDFILEINFO_FILE_OS_NT         (4 << 16)  /* VOS_NT */
+#define MD_VSFIXEDFILEINFO_FILE_OS_WINCE      (5 << 16)  /* VOS_WINCE */
 /* Low 16 bits */
-#define MD_VSFIXEDFILEINFO_FILE_OS__BASE      0         /* VOS__BASE */
-#define MD_VSFIXEDFILEINFO_FILE_OS__WINDOWS16 1         /* VOS__WINDOWS16 */
-#define MD_VSFIXEDFILEINFO_FILE_OS__PM16      2         /* VOS__PM16 */
-#define MD_VSFIXEDFILEINFO_FILE_OS__PM32      3         /* VOS__PM32 */
-#define MD_VSFIXEDFILEINFO_FILE_OS__WINDOWS32 4         /* VOS__WINDOWS32 */
+#define MD_VSFIXEDFILEINFO_FILE_OS__BASE      0          /* VOS__BASE */
+#define MD_VSFIXEDFILEINFO_FILE_OS__WINDOWS16 1          /* VOS__WINDOWS16 */
+#define MD_VSFIXEDFILEINFO_FILE_OS__PM16      2          /* VOS__PM16 */
+#define MD_VSFIXEDFILEINFO_FILE_OS__PM32      3          /* VOS__PM32 */
+#define MD_VSFIXEDFILEINFO_FILE_OS__WINDOWS32 4          /* VOS__WINDOWS32 */
 
 /* For (MDVSFixedFileInfo).file_type */
-#define MD_VSFIXEDFILEINFO_FILE_TYPE_UNKNOWN    0 /* VFT_UNKNOWN */
-#define MD_VSFIXEDFILEINFO_FILE_TYPE_APP        1 /* VFT_APP */
-#define MD_VSFIXEDFILEINFO_FILE_TYPE_DLL        2 /* VFT_DLL */
-#define MD_VSFIXEDFILEINFO_FILE_TYPE_DRV        3 /* VFT_DLL */
-#define MD_VSFIXEDFILEINFO_FILE_TYPE_FONT       4 /* VFT_FONT */
-#define MD_VSFIXEDFILEINFO_FILE_TYPE_VXD        5 /* VFT_VXD */
-#define MD_VSFIXEDFILEINFO_FILE_TYPE_STATIC_LIB 7 /* VFT_STATIC_LIB */
+#define MD_VSFIXEDFILEINFO_FILE_TYPE_UNKNOWN    0  /* VFT_UNKNOWN */
+#define MD_VSFIXEDFILEINFO_FILE_TYPE_APP        1  /* VFT_APP */
+#define MD_VSFIXEDFILEINFO_FILE_TYPE_DLL        2  /* VFT_DLL */
+#define MD_VSFIXEDFILEINFO_FILE_TYPE_DRV        3  /* VFT_DLL */
+#define MD_VSFIXEDFILEINFO_FILE_TYPE_FONT       4  /* VFT_FONT */
+#define MD_VSFIXEDFILEINFO_FILE_TYPE_VXD        5  /* VFT_VXD */
+#define MD_VSFIXEDFILEINFO_FILE_TYPE_STATIC_LIB 7  /* VFT_STATIC_LIB */
 
 /* For (MDVSFixedFileInfo).file_subtype */
 #define MD_VSFIXEDFILEINFO_FILE_SUBTYPE_UNKNOWN                0
@@ -361,30 +367,37 @@ typedef struct {
  */
 
 
-typedef u_int32_t MDRVA; /* RVA */
+/* An MDRVA is an offset into the minidump file.  The beginning of the
+ * MDRawHeader is at offset 0. */
+typedef u_int32_t MDRVA;  /* RVA */
 
 
 typedef struct {
   u_int32_t data_size;
   MDRVA     rva;
-} MDLocationDescriptor; /* MINIDUMP_LOCATION_DESCRIPTOR */
+} MDLocationDescriptor;  /* MINIDUMP_LOCATION_DESCRIPTOR */
 
 
 typedef struct {
+  /* The base address of the memory range on the host that produced the
+   * minidump. */
   u_int64_t            start_of_memory_range;
+
   MDLocationDescriptor memory;
-} MDMemoryDescriptor; /* MINIDUMP_MEMORY_DESCRIPTOR */
+} MDMemoryDescriptor;  /* MINIDUMP_MEMORY_DESCRIPTOR */
 
 
 typedef struct {
   u_int32_t signature;
   u_int32_t version;
   u_int32_t stream_count;
-  MDRVA     stream_directory_rva;
-  u_int32_t checksum;
-  u_int32_t time_date_stamp;      /* time_t */
+  MDRVA     stream_directory_rva;  /* A |stream_count|-sized array of
+                                    * MDRawDirectory structures. */
+  u_int32_t checksum;              /* Can be 0.  In fact, that's all that's
+                                    * been found in minidump files. */
+  u_int32_t time_date_stamp;       /* time_t */
   u_int64_t flags;
-} MDRawHeader; /* MINIDUMP_HEADER */
+} MDRawHeader;  /* MINIDUMP_HEADER */
 
 /* For (MDRawHeader).signature and (MDRawHeader).version.  Note that only the
  * low 16 bits of (MDRawHeader).version are MD_HEADER_VERSION.  Per the
@@ -394,8 +407,16 @@ typedef struct {
 #define MD_HEADER_VERSION   0x0000a793 /* 42899 */
      /* MINIDUMP_VERSION */
 
-/* For (MDRawHeader).flags */
+/* For (MDRawHeader).flags: */
 typedef enum {
+  /* MINIDUMP_NORMAL is the standard type of minidump.  It includes full
+   * streams for the thread list, module list, exception, system info,
+   * and miscellaneous info.  A memory list stream is also present,
+   * pointing to the same stack memory contained in the thread list,
+   * as well as a 256-byte region around the instruction address that
+   * was executing when the exception occurred.  Stack memory is from
+   * 4 bytes below a thread's stack pointer up to the top of the
+   * memory region encompassing the stack. */
   MINIDUMP_NORMAL                            = 0x00000000,
   MINIDUMP_WITH_DATA_SEGS                    = 0x00000001,
   MINIDUMP_WITH_FULL_MEMORY                  = 0x00000002,
@@ -411,24 +432,24 @@ typedef enum {
   MINIDUMP_WITH_FULL_MEMORY_INFO             = 0x00000800,
   MINIDUMP_WITH_THREAD_INFO                  = 0x00001000,
   MINIDUMP_WITH_CODE_SEGS                    = 0x00002000
-} MDType; /* MINIDUMP_TYPE */
+} MDType;  /* MINIDUMP_TYPE */
 
 
 typedef struct {
   u_int32_t            stream_type;
   MDLocationDescriptor location;
-} MDRawDirectory; /* MINIDUMP_DIRECTORY */
+} MDRawDirectory;  /* MINIDUMP_DIRECTORY */
 
 /* For (MDRawDirectory).stream_type */
 typedef enum {
   UNUSED_STREAM               =  0,
   RESERVED_STREAM_0           =  1,
   RESERVED_STREAM_1           =  2,
-  THREAD_LIST_STREAM          =  3,
-  MODULE_LIST_STREAM          =  4,
-  MEMORY_LIST_STREAM          =  5,
-  EXCEPTION_STREAM            =  6,
-  SYSTEM_INFO_STREAM          =  7,
+  THREAD_LIST_STREAM          =  3,  /* MDRawThreadList */
+  MODULE_LIST_STREAM          =  4,  /* MDRawModuleList */
+  MEMORY_LIST_STREAM          =  5,  /* MDRawMemoryList */
+  EXCEPTION_STREAM            =  6,  /* MDRawExceptionStream */
+  SYSTEM_INFO_STREAM          =  7,  /* MDRawSystemInfo */
   THREAD_EX_LIST_STREAM       =  8,
   MEMORY_64_LIST_STREAM       =  9,
   COMMENT_STREAM_A            = 10,
@@ -436,9 +457,9 @@ typedef enum {
   HANDLE_DATA_STREAM          = 12,
   FUNCTION_TABLE_STREAM       = 13,
   UNLOADED_MODULE_LIST_STREAM = 14,
-  MISC_INFO_STREAM            = 15,
+  MISC_INFO_STREAM            = 15,  /* MDRawMiscInfo */
   LAST_RESERVED_STREAM        = 0x0000FFFF
-} MDStreamType; /* MINIDUMP_STREAM_TYPE */
+} MDStreamType;  /* MINIDUMP_STREAM_TYPE */
 
 
 typedef struct {
@@ -446,24 +467,24 @@ typedef struct {
   u_int32_t            suspend_count;
   u_int32_t            priority_class;
   u_int32_t            priority;
-  u_int64_t            teb;           /* Thread environment block */
+  u_int64_t            teb;             /* Thread environment block */
   MDMemoryDescriptor   stack;
-  MDLocationDescriptor thread_context;
-} MDRawThread; /* MINIDUMP_THREAD */
+  MDLocationDescriptor thread_context;  /* MDRawContext[CPU] */
+} MDRawThread;  /* MINIDUMP_THREAD */
 
 
 typedef struct {
-  u_int32_t number_of_threads;
-  MDRawThread  threads[0];
-} MDRawThreadList; /* MINIDUMP_THREAD_LIST */
+  u_int32_t   number_of_threads;
+  MDRawThread threads[0];
+} MDRawThreadList;  /* MINIDUMP_THREAD_LIST */
 
 
 typedef struct {
   u_int64_t            base_of_image;
   u_int32_t            size_of_image;
-  u_int32_t            checksum;
-  u_int32_t            time_date_stamp;
-  MDRVA                module_name_rva;
+  u_int32_t            checksum;         /* 0 if unknown */
+  u_int32_t            time_date_stamp;  /* time_t */
+  MDRVA                module_name_rva;  /* Pathname or filename, UTF-16 */
   MDVSFixedFileInfo    version_info;
 
   /* The next field stores a CodeView record and is populated when a module's
@@ -488,7 +509,7 @@ typedef struct {
    * currently no known uses for these fields. */
   u_int32_t            reserved0[2];
   u_int32_t            reserved1[2];
-} MDRawModule; /* MINIDUMP_MODULE */
+} MDRawModule;  /* MINIDUMP_MODULE */
 
 /* The inclusion of a 64-bit type in MINIDUMP_MODULE forces the struct to
  * be tail-padded out to a multiple of 64 bits under some ABIs (such as PPC).
@@ -504,71 +525,283 @@ typedef struct {
 
 typedef struct {
   u_int32_t signature;
-  u_int32_t offset;    /* Offset to debug data (expect 0 in minidump) */
+  u_int32_t offset;     /* Offset to debug data (expect 0 in minidump) */
 } MDCVHeader;
 
 typedef struct {
   MDCVHeader cv_header;
-  u_int32_t  signature;        /* time_t debug information created */
-  u_int32_t  age;              /* revision of PDB file */
-  u_int8_t   pdb_file_name[0];
+  u_int32_t  signature;         /* time_t debug information created */
+  u_int32_t  age;               /* revision of PDB file */
+  u_int8_t   pdb_file_name[0];  /* Pathname or filename of PDB file */
 } MDCVInfoPDB20;
 
-#define MD_CVINFOPDB20_SIGNATURE 0x3031424e /* cvHeader.signature = '01BN' */
+#define MD_CVINFOPDB20_SIGNATURE 0x3031424e  /* cvHeader.signature = '01BN' */
 
 typedef struct {
   u_int32_t cv_signature;
-  MDGUID    signature;        /* GUID, identifies PDB file */
-  u_int32_t age;              /* Identifies incremental changes to PDB file */
-  u_int8_t  pdb_file_name[0]; /* 0-terminated 8-bit character data (UTF-8?) */
+  MDGUID    signature;         /* GUID, identifies PDB file */
+  u_int32_t age;               /* Identifies incremental changes to PDB file */
+  u_int8_t  pdb_file_name[0];  /* Pathname or filename of PDB file,
+                                * 0-terminated 8-bit character data (UTF-8?) */
 } MDCVInfoPDB70;
 
-#define MD_CVINFOPDB70_SIGNATURE 0x53445352 /* cvSignature = 'SDSR' */
+#define MD_CVINFOPDB70_SIGNATURE 0x53445352  /* cvSignature = 'SDSR' */
 
 /* (MDRawModule).miscRecord can reference MDImageDebugMisc.  The Windows
  * structure is actually defined in WinNT.h.  This structure is effectively
  * obsolete with modules built by recent toolchains. */
 
 typedef struct {
-  u_int32_t data_type;
-  u_int32_t length;
-  u_int8_t  unicode;
+  u_int32_t data_type;    /* IMAGE_DEBUG_TYPE_*, not defined here because
+                           * this debug record type is mostly obsolete. */
+  u_int32_t length;       /* Length of entire MDImageDebugMisc structure */
+  u_int8_t  unicode;      /* True if data is multibyte */
   u_int8_t  reserved[3];
   u_int8_t  data[0];
-} MDImageDebugMisc; /* IMAGE_DEBUG_MISC */
+} MDImageDebugMisc;  /* IMAGE_DEBUG_MISC */
 
 
 typedef struct {
-  u_int32_t number_of_modules;
-  MDRawModule  modules[0];
-} MDRawModuleList; /* MINIDUMP_MODULE_LIST */
+  u_int32_t   number_of_modules;
+  MDRawModule modules[0];
+} MDRawModuleList;  /* MINIDUMP_MODULE_LIST */
 
 
 typedef struct {
   u_int32_t          number_of_memory_ranges;
   MDMemoryDescriptor memory_ranges[0];
-} MDRawMemoryList; /* MINIDUMP_MEMORY_LIST */
+} MDRawMemoryList;  /* MINIDUMP_MEMORY_LIST */
 
 
 #define MD_EXCEPTION_MAXIMUM_PARAMETERS 15
 
 typedef struct {
-  u_int32_t exception_code;
-  u_int32_t exception_flags;
-  u_int64_t exception_record;
-  u_int64_t exception_address;
-  u_int32_t number_parameters;
+  u_int32_t exception_code;     /* Windows: MDExceptionCodeWin,
+                                 * Mac OS X: MDExceptionMac. */
+  u_int32_t exception_flags;    /* Windows: 1 if noncontinuable,
+                                   Mac OS X: MDExceptionCodeMac. */
+  u_int64_t exception_record;   /* Address (in the minidump-producing host's
+                                 * memory) of another MDException, for
+                                 * nested exceptions. */
+  u_int64_t exception_address;  /* The address that caused the exception.
+                                 * Mac OS X: exception subcode (which is
+                                 *           typically the address). */
+  u_int32_t number_parameters;  /* Number of valid elements in
+                                 * exception_information. */
   u_int32_t __align;
   u_int64_t exception_information[MD_EXCEPTION_MAXIMUM_PARAMETERS];
-} MDException; /* MINIDUMP_EXCEPTION */
+} MDException;  /* MINIDUMP_EXCEPTION */
+
+/* For (MDException).exception_code.  These values come from WinBase.h
+ * and WinNT.h (names beginning with EXCEPTION_ are in WinBase.h,
+ * they are STATUS_ in WinNT.h). */
+typedef enum {
+  MD_EXCEPTION_CODE_WIN_CONTROL_C                = 0x40010005,
+      /* DBG_CONTROL_C */
+  MD_EXCEPTION_CODE_WIN_GUARD_PAGE_VIOLATION     = 0x80000001,
+      /* EXCEPTION_GUARD_PAGE */
+  MD_EXCEPTION_CODE_WIN_DATATYPE_MISALIGNMENT    = 0x80000002,
+      /* EXCEPTION_DATATYPE_MISALIGNMENT */
+  MD_EXCEPTION_CODE_WIN_BREAKPOINT               = 0x80000003,
+      /* EXCEPTION_BREAKPOINT */
+  MD_EXCEPTION_CODE_WIN_SINGLE_STEP              = 0x80000004,
+      /* EXCEPTION_SINGLE_STEP */
+  MD_EXCEPTION_CODE_WIN_ACCESS_VIOLATION         = 0xc0000005,
+      /* EXCEPTION_ACCESS_VIOLATION */
+  MD_EXCEPTION_CODE_WIN_IN_PAGE_ERROR            = 0xc0000006,
+      /* EXCEPTION_IN_PAGE_ERROR */
+  MD_EXCEPTION_CODE_WIN_INVALID_HANDLE           = 0xc0000008,
+      /* EXCEPTION_INVALID_HANDLE */
+  MD_EXCEPTION_CODE_WIN_ILLEGAL_INSTRUCTION      = 0xc000001d,
+      /* EXCEPTION_ILLEGAL_INSTRUCTION */
+  MD_EXCEPTION_CODE_WIN_NONCONTINUABLE_EXCEPTION = 0xc0000025,
+      /* EXCEPTION_NONCONTINUABLE_EXCEPTION */
+  MD_EXCEPTION_CODE_WIN_INVALID_DISPOSITION      = 0xc0000026,
+      /* EXCEPTION_INVALID_DISPOSITION */
+  MD_EXCEPTION_CODE_WIN_ARRAY_BOUNDS_EXCEEDED    = 0xc000008c,
+      /* EXCEPTION_BOUNDS_EXCEEDED */
+  MD_EXCEPTION_CODE_WIN_FLOAT_DENORMAL_OPERAND   = 0xc000008d,
+      /* EXCEPTION_FLT_DENORMAL_OPERAND */
+  MD_EXCEPTION_CODE_WIN_FLOAT_DIVIDE_BY_ZERO     = 0xc000008e,
+      /* EXCEPTION_FLT_DIVIDE_BY_ZERO */
+  MD_EXCEPTION_CODE_WIN_FLOAT_INEXACT_RESULT     = 0xc000008f,
+      /* EXCEPTION_FLT_INEXACT_RESULT */
+  MD_EXCEPTION_CODE_WIN_FLOAT_INVALID_OPERATION  = 0xc0000090,
+      /* EXCEPTION_FLT_INVALID_OPERATION */
+  MD_EXCEPTION_CODE_WIN_FLOAT_OVERFLOW           = 0xc0000091,
+      /* EXCEPTION_FLT_OVERFLOW */
+  MD_EXCEPTION_CODE_WIN_FLOAT_STACK_CHECK        = 0xc0000092,
+      /* EXCEPTION_FLT_STACK_CHECK */
+  MD_EXCEPTION_CODE_WIN_FLOAT_UNDERFLOW          = 0xc0000093,
+      /* EXCEPTION_FLT_UNDERFLOW */
+  MD_EXCEPTION_CODE_WIN_INTEGER_DIVIDE_BY_ZERO   = 0xc0000094,
+      /* EXCEPTION_INT_DIVIDE_BY_ZERO */
+  MD_EXCEPTION_CODE_WIN_INTEGER_OVERFLOW         = 0xc0000095,
+      /* EXCEPTION_INT_OVERFLOW */
+  MD_EXCEPTION_CODE_WIN_PRIVILEGED_INSTRUCTION   = 0xc0000096,
+      /* EXCEPTION_PRIV_INSTRUCTION */
+  MD_EXCEPTION_CODE_WIN_STACK_OVERFLOW           = 0xc00000fd,
+      /* EXCEPTION_STACK_OVERFLOW */
+  MD_EXCEPTION_CODE_WIN_POSSIBLE_DEADLOCK        = 0xc0000194
+      /* EXCEPTION_POSSIBLE_DEADLOCK */
+} MDExceptionCodeWin;
+
+/* For (MDException).exception_code.  Airbag minidump extension for Mac OS X
+ * support.  Based on Darwin/Mac OS X' mach/exception_types.h.  This is
+ * what Mac OS X calls an "exception", not a "code". */
+typedef enum {
+  /* Exception code.  The high 16 bits of exception_code contains one of
+   * these values. */
+  MD_EXCEPTION_MAC_BAD_ACCESS      = 1,  /* code can be a kern_return_t */
+      /* EXC_BAD_ACCESS */
+  MD_EXCEPTION_MAC_BAD_INSTRUCTION = 2,  /* code is CPU-specific */
+      /* EXC_BAD_INSTRUCTION */
+  MD_EXCEPTION_MAC_ARITHMETIC      = 3,  /* code is CPU-specific */
+      /* EXC_ARITHMETIC */
+  MD_EXCEPTION_MAC_EMULATION       = 4,  /* code is CPU-specific */
+      /* EXC_EMULATION */
+  MD_EXCEPTION_MAC_SOFTWARE        = 5,
+      /* EXC_SOFTWARE */
+  MD_EXCEPTION_MAC_BREAKPOINT      = 6,  /* code is CPU-specific */
+      /* EXC_BREAKPOINT */
+  MD_EXCEPTION_MAC_SYSCALL         = 7,
+      /* EXC_SYSCALL */
+  MD_EXCEPTION_MAC_MACH_SYSCALL    = 8,
+      /* EXC_MACH_SYSCALL */
+  MD_EXCEPTION_MAC_RPC_ALERT       = 9
+      /* EXC_RPC_ALERT */
+} MDExceptionMac;
+
+/* For (MDException).exception_flags.  Airbag minidump extension for Mac OS X
+ * support.  Based on Darwin/Mac OS X' mach/ppc/exception.h and
+ * mach/i386/exception.h.  This is what Mac OS X calls a "code". */
+typedef enum {
+  /* With MD_EXCEPTION_BAD_ACCESS.  These are relevant kern_return_t values
+   * from mach/kern_return.h. */
+  MD_EXCEPTION_CODE_MAC_INVALID_ADDRESS    =  1,
+      /* KERN_INVALID_ADDRESS */
+  MD_EXCEPTION_CODE_MAC_PROTECTION_FAILURE =  2,
+      /* KERN_PROTECTION_FAILURE */
+  MD_EXCEPTION_CODE_MAC_NO_ACCESS          =  8,
+      /* KERN_NO_ACCESS */
+  MD_EXCEPTION_CODE_MAC_MEMORY_FAILURE     =  9,
+      /* KERN_MEMORY_FAILURE */
+  MD_EXCEPTION_CODE_MAC_MEMORY_ERROR       = 10,
+      /* KERN_MEMORY_ERROR */
+
+  /* With MD_EXCEPTION_SOFTWARE */
+  MD_EXCEPTION_CODE_MAC_BAD_SYSCALL = 0x00010000,  /* Mach SIGSYS */
+  MD_EXCEPTION_CODE_MAC_BAD_PIPE    = 0x00010001,  /* Mach SIGPIPE */
+  MD_EXCEPTION_CODE_MAC_ABORT       = 0x00010002,  /* Mach SIGABRT */
+
+  /* With MD_EXCEPTION_MAC_BAD_ACCESS on ppc */
+  MD_EXCEPTION_CODE_MAC_PPC_VM_PROT_READ = 0x0101,
+      /* EXC_PPC_VM_PROT_READ */
+  MD_EXCEPTION_CODE_MAC_PPC_BADSPACE     = 0x0102,
+      /* EXC_PPC_BADSPACE */
+  MD_EXCEPTION_CODE_MAC_PPC_UNALIGNED    = 0x0103,
+      /* EXC_PPC_UNALIGNED */
+
+  /* With MD_EXCEPTION_MAC_BAD_INSTRUCTION on ppc */
+  MD_EXCEPTION_CODE_MAC_PPC_INVALID_SYSCALL           = 1,
+      /* EXC_PPC_INVALID_SYSCALL */
+  MD_EXCEPTION_CODE_MAC_PPC_UNIMPLEMENTED_INSTRUCTION = 2,
+      /* EXC_PPC_UNIPL_INST */
+  MD_EXCEPTION_CODE_MAC_PPC_PRIVILEGED_INSTRUCTION    = 3,
+      /* EXC_PPC_PRIVINST */
+  MD_EXCEPTION_CODE_MAC_PPC_PRIVILEGED_REGISTER       = 4,
+      /* EXC_PPC_PRIVREG */
+  MD_EXCEPTION_CODE_MAC_PPC_TRACE                     = 5,
+      /* EXC_PPC_TRACE */
+  MD_EXCEPTION_CODE_MAC_PPC_PERFORMANCE_MONITOR       = 6,
+      /* EXC_PPC_PERFMON */
+
+  /* With MD_EXCEPTION_MAC_ARITHMETIC on ppc */
+  MD_EXCEPTION_CODE_MAC_PPC_OVERFLOW           = 1,
+      /* EXC_PPC_OVERFLOW */
+  MD_EXCEPTION_CODE_MAC_PPC_ZERO_DIVIDE        = 2,
+      /* EXC_PPC_ZERO_DIVIDE */
+  MD_EXCEPTION_CODE_MAC_PPC_FLOAT_INEXACT      = 3,
+      /* EXC_FLT_INEXACT */
+  MD_EXCEPTION_CODE_MAC_PPC_FLOAT_ZERO_DIVIDE  = 4,
+      /* EXC_PPC_FLT_ZERO_DIVIDE */
+  MD_EXCEPTION_CODE_MAC_PPC_FLOAT_UNDERFLOW    = 5,
+      /* EXC_PPC_FLT_UNDERFLOW */
+  MD_EXCEPTION_CODE_MAC_PPC_FLOAT_OVERFLOW     = 6,
+      /* EXC_PPC_FLT_OVERFLOW */
+  MD_EXCEPTION_CODE_MAC_PPC_FLOAT_NOT_A_NUMBER = 7,
+      /* EXC_PPC_FLT_NOT_A_NUMBER */
+
+  /* With MD_EXCEPTION_MAC_EMULATION on ppc */
+  MD_EXCEPTION_CODE_MAC_PPC_NO_EMULATION   = 8,
+      /* EXC_PPC_NOEMULATION */
+  MD_EXCEPTION_CODE_MAC_PPC_ALTIVEC_ASSIST = 9,
+      /* EXC_PPC_ALTIVECASSIST */
+
+  /* With MD_EXCEPTION_MAC_SOFTWARE on ppc */
+  MD_EXCEPTION_CODE_MAC_PPC_TRAP    = 0x00000001,  /* EXC_PPC_TRAP */
+  MD_EXCEPTION_CODE_MAC_PPC_MIGRATE = 0x00010100,  /* EXC_PPC_MIGRATE */
+
+  /* With MD_EXCEPTION_MAC_BREAKPOINT on ppc */
+  MD_EXCEPTION_CODE_MAC_PPC_BREAKPOINT = 1,  /* EXC_PPC_BREAKPOINT */
+
+  /* With MD_EXCEPTION_MAC_BAD_INSTRUCTION on x86, see also x86 interrupt
+   * values below. */
+  MD_EXCEPTION_CODE_MAC_X86_INVALID_OPERATION = 1,  /* EXC_I386_INVOP */
+
+  /* With MD_EXCEPTION_MAC_ARITHMETIC on x86 */
+  MD_EXCEPTION_CODE_MAC_X86_DIV       = 1,  /* EXC_I386_DIV */
+  MD_EXCEPTION_CODE_MAC_X86_INTO      = 2,  /* EXC_I386_INTO */
+  MD_EXCEPTION_CODE_MAC_X86_NOEXT     = 3,  /* EXC_I386_NOEXT */
+  MD_EXCEPTION_CODE_MAC_X86_EXTOVR    = 4,  /* EXC_I386_EXTOVR */
+  MD_EXCEPTION_CODE_MAC_X86_EXTERR    = 5,  /* EXC_I386_EXTERR */
+  MD_EXCEPTION_CODE_MAC_X86_EMERR     = 6,  /* EXC_I386_EMERR */
+  MD_EXCEPTION_CODE_MAC_X86_BOUND     = 7,  /* EXC_I386_BOUND */
+  MD_EXCEPTION_CODE_MAC_X86_SSEEXTERR = 8,  /* EXC_I386_SSEEXTERR */
+
+  /* With MD_EXCEPTION_MAC_BREAKPOINT on x86 */
+  MD_EXCEPTION_CODE_MAC_X86_SGL = 1,  /* EXC_I386_SGL */
+  MD_EXCEPTION_CODE_MAC_X86_BPT = 2,  /* EXC_I386_BPT */
+
+  /* With MD_EXCEPTION_MAC_BAD_INSTRUCTION on x86.  These are the raw
+   * x86 interrupt codes.  Most of these are mapped to other Mach
+   * exceptions and codes, are handled, or should not occur in user space.
+   * A few of these will do occur with MD_EXCEPTION_MAC_BAD_INSTRUCTION. */
+  /* EXC_I386_DIVERR    =  0: mapped to EXC_ARITHMETIC/EXC_I386_DIV */
+  /* EXC_I386_SGLSTP    =  1: mapped to EXC_BREAKPOINT/EXC_I386_SGL */
+  /* EXC_I386_NMIFLT    =  2: should not occur in user space */
+  /* EXC_I386_BPTFLT    =  3: mapped to EXC_BREAKPOINT/EXC_I386_BPT */
+  /* EXC_I386_INTOFLT   =  4: mapped to EXC_ARITHMETIC/EXC_I386_INTO */
+  /* EXC_I386_BOUNDFLT  =  5: mapped to EXC_ARITHMETIC/EXC_I386_BOUND */
+  /* EXC_I386_INVOPFLT  =  6: mapped to EXC_BAD_INSTRUCTION/EXC_I386_INVOP */
+  /* EXC_I386_NOEXTFLT  =  7: should be handled by the kernel */
+  /* EXC_I386_DBLFLT    =  8: should be handled (if possible) by the kernel */
+  /* EXC_I386_EXTOVRFLT =  9: mapped to EXC_BAD_ACCESS/(PROT_READ|PROT_EXEC) */
+  MD_EXCEPTION_CODE_MAC_X86_INVALID_TASK_STATE_SEGMENT = 10,
+      /* EXC_INVTSSFLT */
+  MD_EXCEPTION_CODE_MAC_X86_SEGMENT_NOT_PRESENT        = 11,
+      /* EXC_SEGNPFLT */
+  MD_EXCEPTION_CODE_MAC_X86_STACK_FAULT                = 12,
+      /* EXC_STKFLT */
+  MD_EXCEPTION_CODE_MAC_X86_GENERAL_PROTECTION_FAULT   = 13,
+      /* EXC_GPFLT */
+  /* EXC_I386_PGFLT     = 14: should not occur in user space */
+  /* EXC_I386_EXTERRFLT = 16: mapped to EXC_ARITHMETIC/EXC_I386_EXTERR */
+  MD_EXCEPTION_CODE_MAC_X86_ALIGNMENT_FAULT            = 17,
+      /* EXC_ALIGNFLT (for vector operations) */
+  /* EXC_I386_ENOEXTFLT = 32: should be handled by the kernel */
+  /* EXC_I386_ENDPERR   = 33: should not occur */
+} MDExceptionCodeMac;
 
 
 typedef struct {
-  u_int32_t            thread_id;
+  u_int32_t            thread_id;         /* Thread in which the exception
+                                           * occurred.  Corresponds to
+                                           * (MDRawThread).thread_id. */
   u_int32_t            __align;
   MDException          exception_record;
-  MDLocationDescriptor thread_context;
-} MDRawExceptionStream; /* MINIDUMP_EXCEPTION_STREAM */
+  MDLocationDescriptor thread_context;    /* MDRawContext[CPU] */
+} MDRawExceptionStream;  /* MINIDUMP_EXCEPTION_STREAM */
 
 
 typedef union {
@@ -589,12 +822,13 @@ typedef struct {
    * structure as returned by GetSystemInfo */
   u_int16_t        processor_architecture;
   u_int16_t        processor_level;         /* x86: 5 = 586, 6 = 686, ... */
-  u_int16_t        processor_revision;
+  u_int16_t        processor_revision;      /* x86: 0xMMSS, where MM=model,
+                                             *      SS=stepping */
   union {
     u_int16_t      reserved0;
     struct {
       u_int8_t     number_of_processors;
-      u_int8_t     product_type;
+      u_int8_t     product_type;          /* Windows: VER_NT_* from WinNT.h */
     };
   };
 
@@ -604,7 +838,9 @@ typedef struct {
   u_int32_t        minor_version;
   u_int32_t        build_number;
   u_int32_t        platform_id;
-  MDRVA            csd_version_rva;  /* Windows: name of the installed OS
+  MDRVA            csd_version_rva;  /* UTF-16 string further identifying the
+                                      * host OS.
+                                      * Windows: name of the installed OS
                                       *          service pack.
                                       * Mac OS X: the Apple OS build number
                                       *           (sw_vers -buildVersion).
@@ -613,7 +849,7 @@ typedef struct {
   union {
     u_int32_t      reserved1;
     struct {
-      u_int16_t    suite_mask;
+      u_int16_t    suite_mask;  /* Windows: VER_SUITE_* from WinNT.h */
       u_int16_t    reserved2;
     };
   };
@@ -655,7 +891,7 @@ typedef enum {
 
 
 typedef struct {
-  u_int32_t size_of_info;
+  u_int32_t size_of_info;  /* Length of entire MDRawMiscInfo structure. */
   u_int32_t flags1;
 
   /* The next field is only valid if flags1 contains
@@ -680,6 +916,9 @@ typedef struct {
   u_int32_t processor_current_idle_state;
 } MDRawMiscInfo;  /* MINIDUMP_MISC_INFO, MINIDUMP_MISC_INFO2 */
 
+#define MD_MISCINFO_SIZE 24
+#define MD_MISCINFO2_SIZE 44
+
 /* For (MDRawMiscInfo).flags1.  These values indicate which fields in the
  * MDRawMiscInfoStructure are valid. */
 typedef enum {
@@ -691,8 +930,5 @@ typedef enum {
       /* MINIDUMP_MISC1_PROCESSOR_POWER_INFO */
 } MDMiscInfoFlags1;
 
-#define MD_MISCINFO_SIZE 24
-#define MD_MISCINFO2_SIZE 44
 
-
-#endif /* PROCESSOR_MINIDUMP_FORMAT_H__ */
+#endif  /* PROCESSOR_MINIDUMP_FORMAT_H__ */
