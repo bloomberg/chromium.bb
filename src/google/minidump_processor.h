@@ -32,10 +32,8 @@ class MinidumpProcessor {
   ~MinidumpProcessor();
 
   // Fills in the given StackFrames vector by processing the minidump file.
-  // supplier_data is an opaque pointer which is passed to
-  // SymbolSupplier::GetSymbolFile().  Returns true on success.
-  bool Process(const string &minidump_file, void *supplier_data,
-               StackFrames *stack_frames);
+  // Returns true on success.
+  bool Process(const string &minidump_file, StackFrames *stack_frames);
 
  private:
   SymbolSupplier *supplier_;

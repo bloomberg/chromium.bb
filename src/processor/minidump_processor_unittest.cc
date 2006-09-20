@@ -36,22 +36,10 @@ namespace google_airbag {
 
 class TestSymbolSupplier : public SymbolSupplier {
  public:
-  TestSymbolSupplier() : has_supplier_data_(false) {}
-  virtual ~TestSymbolSupplier() {}
-
-  virtual string GetSymbolFile(MinidumpModule *module, void *supplier_data);
-
-  // This member is used to test the data argument to GetSymbolFile.
-  // If the argument is correct, it's set to true.
-  bool has_supplier_data_;
+  virtual string GetSymbolFile(MinidumpModule *module);
 };
 
-string TestSymbolSupplier::GetSymbolFile(MinidumpModule *module,
-                                         void *supplier_data) {
-  if (supplier_data == &has_supplier_data_) {
-    has_supplier_data_ = true;
-  }
-
+string TestSymbolSupplier::GetSymbolFile(MinidumpModule *module) {
   if (*(module->GetName()) == "c:\\test_app.exe") {
     return string(getenv("srcdir") ? getenv("srcdir") : ".") +
       "/src/processor/testdata/minidump2.sym";
@@ -73,9 +61,7 @@ static bool RunTests() {
   string minidump_file = string(getenv("srcdir") ? getenv("srcdir") : ".") +
                          "/src/processor/testdata/minidump2.dmp";
 
-  ASSERT_TRUE(processor.Process(minidump_file,
-                                &supplier.has_supplier_data_, &stack_frames));
-  ASSERT_TRUE(supplier.has_supplier_data_);
+  ASSERT_TRUE(processor.Process(minidump_file, &stack_frames));
   ASSERT_EQ(stack_frames.size(), 4);
 
   ASSERT_EQ(stack_frames[0].module_base, 0x400000);

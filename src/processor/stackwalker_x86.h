@@ -45,8 +45,7 @@ class StackwalkerX86 : public Stackwalker {
   StackwalkerX86(MinidumpContext*    context,
                  MemoryRegion*       memory,
                  MinidumpModuleList* modules,
-                 SymbolSupplier*     supplier,
-                 void*               supplier_data);
+                 SymbolSupplier*     supplier);
 
  private:
   // Implementation of Stackwalker, using x86 context (%ebp, %eip) and

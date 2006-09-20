@@ -30,9 +30,7 @@ class SymbolSupplier {
   virtual ~SymbolSupplier() {}
 
   // Returns the path to the symbol file for the given module.
-  // supplier_data is passed through from MinidumpProcessor::Process().
-  virtual string GetSymbolFile(MinidumpModule *module,
-                               void *supplier_data) = 0;
+  virtual string GetSymbolFile(MinidumpModule *module) = 0;
 };
 
 }  // namespace google_airbag

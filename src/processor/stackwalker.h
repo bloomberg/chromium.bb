@@ -54,12 +54,10 @@ class Stackwalker {
   // that is used to look up which code module each stack frame is
   // associated with.  supplier is an optional caller-supplied SymbolSupplier
   // implementation.  If supplier is NULL, source line info will not be
-  // resolved.  supplier_data will be passed to the SymbolSupplier's
-  // GetSymbolFile method.
+  // resolved.
   Stackwalker(MemoryRegion* memory,
               MinidumpModuleList* modules,
-              SymbolSupplier* supplier,
-              void* supplier_data);
+              SymbolSupplier* supplier);
 
   // The stack memory to walk.  Subclasses will require this region to
   // get information from the stack.
@@ -83,9 +81,6 @@ class Stackwalker {
 
   // The optional SymbolSupplier for resolving source line info.
   SymbolSupplier* supplier_;
-
-  // Caller-supplied data to be passed to the symbol supplier
-  void* supplier_data_;
 };
 
 

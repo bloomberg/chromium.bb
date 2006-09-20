@@ -26,7 +26,6 @@ MinidumpProcessor::~MinidumpProcessor() {
 }
 
 bool MinidumpProcessor::Process(const string &minidump_file,
-                                void *supplier_data,
                                 StackFrames *stack_frames) {
   Minidump dump(minidump_file);
   if (!dump.Read()) {
@@ -56,7 +55,7 @@ bool MinidumpProcessor::Process(const string &minidump_file,
 
   // TODO(bryner): figure out which StackWalker we want
   StackwalkerX86 walker(exception->GetContext(), thread_memory,
-                        dump.GetModuleList(), supplier_, supplier_data);
+                        dump.GetModuleList(), supplier_);
   walker.Walk(stack_frames);
   return true;
 }

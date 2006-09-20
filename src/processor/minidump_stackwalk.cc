@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
   }
 
   StackwalkerX86 stackwalker = StackwalkerX86(context, stack_memory,
-                                              modules, NULL, NULL);
+                                              modules, NULL);
 
   StackFrames stack;
   stackwalker.Walk(&stack);
