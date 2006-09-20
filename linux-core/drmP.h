@@ -538,7 +538,7 @@ typedef struct drm_map_list {
 	struct list_head head;		/**< list head */
 	drm_hash_item_t hash;
 	drm_map_t *map;			/**< mapping */
-	unsigned int user_token;
+	drm_u64_t user_token;
 } drm_map_list_t;
 
 typedef drm_map_t drm_local_map_t;

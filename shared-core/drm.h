@@ -677,7 +677,7 @@ typedef struct drm_ttm_arg {
 		drm_ttm_unreference
 	} op;
 	unsigned handle;
-        unsigned user_token;
+        drm_u64_t user_token;
 	drm_u64_t size;
         unsigned flags;
 }drm_ttm_arg_t;
@@ -781,7 +781,7 @@ typedef struct drm_bo_arg_reply {
 	unsigned flags;
 	drm_u64_t size;
 	drm_u64_t offset;
-	unsigned arg_handle;
+	drm_u64_t arg_handle;
         unsigned mask;
         drm_u64_t buffer_start;
         unsigned fence_flags;

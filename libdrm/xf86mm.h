@@ -103,7 +103,7 @@ typedef struct _drmFence{
 
 typedef struct _drmTTM{
         unsigned handle;
-        drm_handle_t user_token;
+        drm_u64_t user_token;
         unsigned flags;
         unsigned long size;
         void *virtual;
@@ -113,7 +113,7 @@ typedef struct _drmTTM{
 typedef struct _drmBO{
     drm_bo_type_t type;
     unsigned handle;
-    drm_handle_t mapHandle;
+    drm_u64_t mapHandle;
     unsigned flags;
     unsigned mask;
     unsigned mapFlags;
