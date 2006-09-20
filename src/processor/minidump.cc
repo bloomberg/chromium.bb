@@ -308,9 +308,9 @@ void MinidumpContext::Print() {
   printf("  float_save.data_selector     = 0x%x\n",
          context_.float_save.data_selector);
   printf("  float_save.register_area[%2d] = 0x",
-         MD_FLOATINGSAVEAREA_SIZEOF_REGISTERAREA_X86);
+         MD_FLOATINGSAVEAREA_X86_REGISTERAREA_SIZE);
   for (unsigned int register_index = 0;
-       register_index < MD_FLOATINGSAVEAREA_SIZEOF_REGISTERAREA_X86;
+       register_index < MD_FLOATINGSAVEAREA_X86_REGISTERAREA_SIZE;
        ++register_index) {
     printf("%02x", context_.float_save.register_area[register_index]);
   }
@@ -334,9 +334,9 @@ void MinidumpContext::Print() {
   printf("  esp                          = 0x%x\n", context_.esp);
   printf("  ss                           = 0x%x\n", context_.ss);
   printf("  extended_registers[%3d]      = 0x",
-         MD_CONTEXT_SIZEOF_EXTENDED_REGISTERS_X86);
+         MD_CONTEXT_X86_EXTENDED_REGISTERS_SIZE);
   for (unsigned int register_index = 0;
-       register_index < MD_CONTEXT_SIZEOF_EXTENDED_REGISTERS_X86;
+       register_index < MD_CONTEXT_X86_EXTENDED_REGISTERS_SIZE;
        ++register_index) {
     printf("%02x", context_.extended_registers[register_index]);
   }

@@ -74,7 +74,7 @@ typedef struct {
  */
 
 
-#define MD_FLOATINGSAVEAREA_SIZEOF_REGISTERAREA_X86 80
+#define MD_FLOATINGSAVEAREA_X86_REGISTERAREA_SIZE 80
      /* SIZE_OF_80387_REGISTERS */
 
 typedef struct {
@@ -85,16 +85,16 @@ typedef struct {
   u_int32_t error_selector;
   u_int32_t data_offset;
   u_int32_t data_selector;
-  u_int8_t  register_area[MD_FLOATINGSAVEAREA_SIZEOF_REGISTERAREA_X86];
+  u_int8_t  register_area[MD_FLOATINGSAVEAREA_X86_REGISTERAREA_SIZE];
   u_int32_t cr0_npx_state;
-} MDFloatingSaveAreaX86; /* FLOATING_SAVE_AREA */
+} MDFloatingSaveAreaX86;  /* FLOATING_SAVE_AREA */
 
 
-#define MD_CONTEXT_SIZEOF_EXTENDED_REGISTERS_X86 512
+#define MD_CONTEXT_X86_EXTENDED_REGISTERS_SIZE 512
      /* MAXIMUM_SUPPORTED_EXTENSION */
 
 typedef struct {
-  /* The next field determines the layout of the structure, and what parts
+  /* The next field determines the layout of the structure, and which parts
    * of it are populated */
   u_int32_t             context_flags;
 
@@ -125,31 +125,33 @@ typedef struct {
   /* The next 6 registers are included with MD_CONTEXT_X86_CONTROL */
   u_int32_t             ebp;
   u_int32_t             eip;
-  u_int32_t             cs;     /* WinNT.h says "must be sanitized" */
-  u_int32_t             eflags; /* WinNT.h says "must be sanitized" */
+  u_int32_t             cs;      /* WinNT.h says "must be sanitized" */
+  u_int32_t             eflags;  /* WinNT.h says "must be sanitized" */
   u_int32_t             esp;
   u_int32_t             ss;
 
-  /* The next field is included with MD_CONTEXT_X86_EXTENDED_REGISTERS */
+  /* The next field is included with MD_CONTEXT_X86_EXTENDED_REGISTERS.
+   * It contains vector (MMX/SSE) registers. */
   u_int8_t              extended_registers[
-                         MD_CONTEXT_SIZEOF_EXTENDED_REGISTERS_X86];
-} MDRawContextX86; /* CONTEXT */
+                         MD_CONTEXT_X86_EXTENDED_REGISTERS_SIZE];
+} MDRawContextX86;  /* CONTEXT */
 
 /* For (MDRawContextX86).context_flags.  These values indicate the type of
- * context stored in the structure. */
-#define MD_CONTEXT_X86_X86               0x00010000
+ * context stored in the structure.  The high 26 bits identify the CPU, the
+ * low 6 bits identify the type of context saved. */
+#define MD_CONTEXT_X86                    0x00010000
      /* CONTEXT_i386, CONTEXT_i486: identifies CPU */
-#define MD_CONTEXT_X86_CONTROL           (MD_CONTEXT_X86_X86 | 0x00000001)
+#define MD_CONTEXT_X86_CONTROL            (MD_CONTEXT_X86 | 0x00000001)
      /* CONTEXT_CONTROL */
-#define MD_CONTEXT_X86_INTEGER           (MD_CONTEXT_X86_X86 | 0x00000002)
+#define MD_CONTEXT_X86_INTEGER            (MD_CONTEXT_X86 | 0x00000002)
      /* CONTEXT_INTEGER */
-#define MD_CONTEXT_X86_SEGMENTS          (MD_CONTEXT_X86_X86 | 0x00000004)
+#define MD_CONTEXT_X86_SEGMENTS           (MD_CONTEXT_X86 | 0x00000004)
      /* CONTEXT_SEGMENTS */
-#define MD_CONTEXT_X86_FLOATING_POINT    (MD_CONTEXT_X86_X86 | 0x00000008)
+#define MD_CONTEXT_X86_FLOATING_POINT     (MD_CONTEXT_X86 | 0x00000008)
      /* CONTEXT_FLOATING_POINT */
-#define MD_CONTEXT_X86_DEBUG_REGISTERS   (MD_CONTEXT_X86_X86 | 0x00000010)
+#define MD_CONTEXT_X86_DEBUG_REGISTERS    (MD_CONTEXT_X86 | 0x00000010)
      /* CONTEXT_DEBUG_REGISTERS */
-#define MD_CONTEXT_X86_EXTENED_REGISTERS (MD_CONTEXT_X86_X86 | 0x00000020)
+#define MD_CONTEXT_X86_EXTENDED_REGISTERS (MD_CONTEXT_X86 | 0x00000020)
      /* CONTEXT_EXTENDED_REGISTERS */
 
 #define MD_CONTEXT_X86_FULL              (MD_CONTEXT_X86_CONTROL | \
@@ -162,6 +164,92 @@ typedef struct {
                                           MD_CONTEXT_X86_DEBUG_REGISTERS | \
                                           MD_CONTEXT_X86_EXTENDED_REGISTERS)
      /* CONTEXT_ALL */
+
+/* Non-x86 CPU identifiers found in the high 26 bits of
+ * (MDRawContext*).context_flags.  These aren't used by Airbag, but are
+ * defined here for reference, to avoid assigning values that conflict
+ * (although some values already conflict). */
+#define MD_CONTEXT_IA64  0x00080000  /* CONTEXT_IA64 */
+#define MD_CONTEXT_AMD64 0x00100000  /* CONTEXT_AMD64 */
+/* Additional values from winnt.h in the Windows CE 5.0 SDK: */
+#define MD_CONTEXT_SHX   0x000000c0  /* CONTEXT_SH4 (Super-H, includes SH3) */
+#define MD_CONTEXT_ARM   0x00000040  /* CONTEXT_ARM (0x40 bit set in SHx?) */
+#define MD_CONTEXT_MIPS  0x00010000  /* CONTEXT_R4000 (same value as x86?) */
+#define MD_CONTEXT_ALPHA 0x00020000  /* CONTEXT_ALPHA */
+
+
+/*
+ * Airbag minidump extension for PowerPC support.  Based on Darwin/Mac OS X'
+ * mach/ppc/_types.h
+ */
+
+
+#define MD_FLOATINGSAVEAREA_PPC_FPR_COUNT 32
+
+typedef struct {
+  /* fpregs is a double[32] in mach/ppc/_types.h, but a u_int64_t is used
+   * here for precise sizing. */
+  u_int64_t fpregs[MD_FLOATINGSAVEAREA_PPC_FPR_COUNT];
+  u_int32_t fpscr_pad;
+  u_int32_t fpscr;      /* Status/control */
+} MDFloatingSaveAreaPPC;  /* Based on ppc_float_state */
+
+
+#define MD_VECTORSAVEAREA_PPC_VR_COUNT 32
+
+typedef struct {
+  /* Vector registers are 128 bits, but mach/ppc/_types.h exposes them as
+   * four 32-bit quantities. */
+  u_int32_t save_vr[MD_VECTORSAVEAREA_PPC_VR_COUNT][4];
+  u_int32_t save_vscr[4];  /* Status/control */
+  u_int32_t save_pad5[4];
+  u_int32_t save_vrvalid;  /* Identifies which vector registers are saved */
+  u_int32_t save_pad6[7];
+} MDVectorSaveAreaPPC;  /* ppc_vector_state */
+
+
+#define MD_CONTEXT_PPC_GPR_COUNT 32
+
+typedef struct {
+  /* context_flags is not present in ppc_thread_state, but it aids
+   * identification of MDRawContextPPC among other raw context types,
+   * and it guarantees alignment when we get to float_save. */
+  u_int32_t             context_flags;
+
+  u_int32_t             srr0;    /* Machine status save/restore: stores pc
+                                  * (instruction) */
+  u_int32_t             srr1;    /* Machine status save/restore: stores msr
+                                  * (ps, program/machine state) */
+  /* ppc_thread_state contains 32 fields, r0 .. r31.  Here, an array is
+   * used for brevity. */
+  u_int32_t             gpr[MD_CONTEXT_PPC_GPR_COUNT];
+  u_int32_t             cr;      /* Condition */
+  u_int32_t             xer;     /* Integer (fiXed-point) exception */
+  u_int32_t             lr;      /* Link */
+  u_int32_t             ctr;     /* Count */
+  u_int32_t             mq;      /* Multiply/Quotient (PPC 601, POWER only) */
+  u_int32_t             vrsave;  /* Vector save */
+
+  /* float_save and vector_save aren't present in ppc_thread_state, but
+   * are represented in separate structures that still define a thread's
+   * context. */
+  MDFloatingSaveAreaPPC float_save;
+  MDVectorSaveAreaPPC   vector_save;
+} MDRawContextPPC;  /* Based on ppc_thread_state */
+
+/* For (MDRawContextPPC).context_flags.  These values indicate the type of
+ * context stored in the structure.  MD_CONTEXT_PPC is Airbag-defined.  Its
+ * value was chosen to avoid likely conflicts with MD_CONTEXT_* for other
+ * CPUs. */
+#define MD_CONTEXT_PPC                0x20000000
+#define MD_CONTEXT_PPC_BASE           (MD_CONTEXT_PPC | 0x00000001)
+#define MD_CONTEXT_PPC_FLOATING_POINT (MD_CONTEXT_PPC | 0x00000008)
+#define MD_CONTEXT_PPC_VECTOR         (MD_CONTEXT_PPC | 0x00000020)
+
+#define MD_CONTEXT_PPC_FULL           MD_CONTEXT_PPC_BASE
+#define MD_CONTEXT_PPC_ALL            (MD_CONTEXT_PPC_FULL | \
+                                       MD_CONTEXT_PPC_FLOATING_POINT | \
+                                       MD_CONTEXT_PPC_VECTOR)
 
 
 /*
@@ -485,22 +573,22 @@ typedef struct {
 
 typedef union {
   struct {
-    u_int32_t vendor_id[3];              /* cpuid 0: eax, ebx, ecx */
-    u_int32_t version_information;       /* cpuid 1: eax */
-    u_int32_t feature_information;       /* cpuid 1: edx */
-    u_int32_t amd_extended_cpu_features; /* cpuid 0x80000001, ebx */
+    u_int32_t vendor_id[3];               /* cpuid 0: eax, ebx, ecx */
+    u_int32_t version_information;        /* cpuid 1: eax */
+    u_int32_t feature_information;        /* cpuid 1: edx */
+    u_int32_t amd_extended_cpu_features;  /* cpuid 0x80000001, ebx */
   } x86_cpu_info;
   struct {
     u_int64_t processor_features[2];
   } other_cpu_info;
-} MDCPUInformation; /* CPU_INFORMATION */
+} MDCPUInformation;  /* CPU_INFORMATION */
 
 
 typedef struct {
   /* The next 3 fields and numberOfProcessors are from the SYSTEM_INFO
    * structure as returned by GetSystemInfo */
   u_int16_t        processor_architecture;
-  u_int16_t        processor_level;
+  u_int16_t        processor_level;         /* x86: 5 = 586, 6 = 686, ... */
   u_int16_t        processor_revision;
   union {
     u_int16_t      reserved0;
@@ -516,7 +604,11 @@ typedef struct {
   u_int32_t        minor_version;
   u_int32_t        build_number;
   u_int32_t        platform_id;
-  MDRVA            csd_version_rva; /* Name of the installed OS service pack */
+  MDRVA            csd_version_rva;  /* Windows: name of the installed OS
+                                      *          service pack.
+                                      * Mac OS X: the Apple OS build number
+                                      *           (sw_vers -buildVersion).
+                                      * Linux: uname -srvmo */
 
   union {
     u_int32_t      reserved1;
@@ -526,27 +618,78 @@ typedef struct {
     };
   };
   MDCPUInformation cpu;
-} MDRawSystemInfo; /* MINIDUMP_SYSTEM_INFO */
+} MDRawSystemInfo;  /* MINIDUMP_SYSTEM_INFO */
+
+/* For (MDRawSystemInfo).processor_architecture: */
+typedef enum {
+  MD_CPU_ARCHITECTURE_X86       =  0,  /* PROCESSOR_ARCHITECTURE_INTEL */
+  MD_CPU_ARCHITECTURE_MIPS      =  1,  /* PROCESSOR_ARCHITECTURE_MIPS */
+  MD_CPU_ARCHITECTURE_ALPHA     =  2,  /* PROCESSOR_ARCHITECTURE_ALPHA */
+  MD_CPU_ARCHITECTURE_PPC       =  3,  /* PROCESSOR_ARCHITECTURE_PPC */
+  MD_CPU_ARCHITECTURE_SHX       =  4,  /* PROCESSOR_ARCHITECTURE_SHX
+                                        * (Super-H) */
+  MD_CPU_ARCHITECTURE_ARM       =  5,  /* PROCESSOR_ARCHITECTURE_ARM */
+  MD_CPU_ARCHITECTURE_IA64      =  6,  /* PROCESSOR_ARCHITECTURE_IA64 */
+  MD_CPU_ARCHITECTURE_ALPHA64   =  7,  /* PROCESSOR_ARCHITECTURE_ALPHA64 */
+  MD_CPU_ARCHITECTURE_MSIL      =  8,  /* PROCESSOR_ARCHITECTURE_MSIL
+                                        * (Microsoft Intermediate Language) */
+  MD_CPU_ARCHITECTURE_AMD64     =  9,  /* PROCESSOR_ARCHITECTURE_AMD64 */
+  MD_CPU_ARCHITECTURE_X86_WIN64 = 10,
+      /* PROCESSOR_ARCHITECTURE_IA32_ON_WIN64 (WoW64) */
+  MD_CPU_ARCHITECTURE_UNKNOWN   = 0xffff  /* PROCESSOR_ARCHITECTURE_UNKNOWN */
+} MDCPUArchitecture;
+
+/* For (MDRawSystemInfo).platform_id: */
+typedef enum {
+  MD_OS_WIN32S        = 0,  /* VER_PLATFORM_WIN32s (Windows 3.1) */
+  MD_OS_WIN32_WINDOWS = 1,  /* VER_PLATFORM_WIN32_WINDOWS (Windows 95-98-Me) */
+  MD_OS_WIN32_NT      = 2,  /* VER_PLATFORM_WIN32_NT (Windows NT, 2000+) */
+  MD_OS_WIN32_CE      = 3,  /* VER_PLATFORM_WIN32_CE, VER_PLATFORM_WIN32_HH
+                             * (Windows CE, Windows Mobile, "Handheld") */
+
+  /* The following values are Airbag-defined. */
+  MD_OS_UNIX          = 0x8000,  /* Generic Unix-ish */
+  MD_OS_MAC_OS_X      = 0x8101,  /* Mac OS X/Darwin */
+  MD_OS_LINUX         = 0x8201,  /* Linux */
+} MDOSPlatform;
 
 
 typedef struct {
   u_int32_t size_of_info;
   u_int32_t flags1;
+
+  /* The next field is only valid if flags1 contains
+   * MD_MISCINFO_FLAGS1_PROCESS_ID. */
   u_int32_t process_id;
-  u_int32_t process_create_time;
-  u_int32_t process_user_time;
-  u_int32_t process_kernel_time;
+
+  /* The next 3 fields are only valid if flags1 contains
+   * MD_MISCINFO_FLAGS1_PROCESS_TIMES. */
+  u_int32_t process_create_time;  /* time_t process started */
+  u_int32_t process_user_time;    /* seconds of user CPU time */
+  u_int32_t process_kernel_time;  /* seconds of kernel CPU time */
 
   /* The following fields are not present in MINIDUMP_MISC_INFO but are
    * in MINIDUMP_MISC_INFO_2.  When this struct is populated, these values
    * may not be set.  Use flags1 or sizeOfInfo to determine whether these
-   * values are present. */
+   * values are present.  These are only valid when flags1 contains
+   * MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO. */
   u_int32_t processor_max_mhz;
   u_int32_t processor_current_mhz;
   u_int32_t processor_mhz_limit;
   u_int32_t processor_max_idle_state;
   u_int32_t processor_current_idle_state;
-} MDRawMiscInfo; /* MINIDUMP_MISC_INFO, MINIDUMP_MISC_INFO2 */
+} MDRawMiscInfo;  /* MINIDUMP_MISC_INFO, MINIDUMP_MISC_INFO2 */
+
+/* For (MDRawMiscInfo).flags1.  These values indicate which fields in the
+ * MDRawMiscInfoStructure are valid. */
+typedef enum {
+  MD_MISCINFO_FLAGS1_PROCESS_ID           = 0x00000001,
+      /* MINIDUMP_MISC1_PROCESS_ID */
+  MD_MISCINFO_FLAGS1_PROCESS_TIMES        = 0x00000002,
+      /* MINIDUMP_MISC1_PROCESS_TIMES */
+  MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO = 0x00000004
+      /* MINIDUMP_MISC1_PROCESSOR_POWER_INFO */
+} MDMiscInfoFlags1;
 
 #define MD_MISCINFO_SIZE 24
 #define MD_MISCINFO2_SIZE 44
