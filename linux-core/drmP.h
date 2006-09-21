@@ -810,6 +810,18 @@ static inline int drm_mtrr_del(int handle, unsigned long offset,
 }
 
 #else
+static inline int drm_mtrr_add(unsigned long offset, unsigned long size,
+			       unsigned int flags)
+{
+	return -ENODEV;
+}
+
+static inline int drm_mtrr_del(int handle, unsigned long offset,
+			       unsigned long size, unsigned int flags)
+{
+	return -ENODEV;
+}
+
 #define drm_core_has_MTRR(dev) (0)
 #endif
 
