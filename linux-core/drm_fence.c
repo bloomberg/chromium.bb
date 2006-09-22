@@ -299,9 +299,12 @@ int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
 		} while (ret == -EINTR && ignore_signals);
 		if (time_after_eq(jiffies, _end) && (ret != 0))
 			ret = -EBUSY;
-		if (ret)
+		if (ret) {
+			if (ret == -EBUSY) {
+				DRM_ERROR("Fence timout. GPU lockup.\n");
+			}
 			return ((ret == -EINTR) ? -EAGAIN : ret);
-
+		}
 	} else if ((fence->class == 0) && (mask & DRM_FENCE_TYPE_EXE) &&
 		   driver->lazy_capable) {
 
