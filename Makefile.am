@@ -62,6 +62,8 @@ src_libairbag_la_SOURCES = \
 	src/processor/minidump.h \
 	src/processor/minidump_format.h \
 	src/processor/minidump_processor.cc \
+	src/processor/postfix_evaluator.h \
+	src/processor/postfix_evaluator-inl.h \
 	src/processor/range_map.h \
 	src/processor/range_map-inl.h \
 	src/processor/source_line_resolver.cc \
@@ -82,6 +84,7 @@ bin_PROGRAMS = \
 check_PROGRAMS = \
 	src/processor/contained_range_map_unittest \
 	src/processor/minidump_processor_unittest \
+	src/processor/postfix_evaluator_unittest \
 	src/processor/range_map_unittest \
 	src/processor/source_line_resolver_unittest
 check_SCRIPTS = \
@@ -101,6 +104,9 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/source_line_resolver.lo
+
+src_processor_postfix_evaluator_unittest_SOURCES = \
+	src/processor/postfix_evaluator_unittest.cc
 
 src_processor_range_map_unittest_SOURCES = \
 	src/processor/range_map_unittest.cc

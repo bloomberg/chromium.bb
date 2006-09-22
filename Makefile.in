@@ -72,6 +72,7 @@ bin_PROGRAMS = src/processor/minidump_dump$(EXEEXT) \
 	src/processor/minidump_stackwalk$(EXEEXT)
 check_PROGRAMS = src/processor/contained_range_map_unittest$(EXEEXT) \
 	src/processor/minidump_processor_unittest$(EXEEXT) \
+	src/processor/postfix_evaluator_unittest$(EXEEXT) \
 	src/processor/range_map_unittest$(EXEEXT) \
 	src/processor/source_line_resolver_unittest$(EXEEXT)
 noinst_PROGRAMS =
@@ -136,6 +137,11 @@ src_processor_minidump_stackwalk_DEPENDENCIES =  \
 	src/processor/minidump.lo src/processor/stackwalker.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/source_line_resolver.lo
+am_src_processor_postfix_evaluator_unittest_OBJECTS =  \
+	src/processor/postfix_evaluator_unittest.$(OBJEXT)
+src_processor_postfix_evaluator_unittest_OBJECTS =  \
+	$(am_src_processor_postfix_evaluator_unittest_OBJECTS)
+src_processor_postfix_evaluator_unittest_LDADD = $(LDADD)
 am_src_processor_range_map_unittest_OBJECTS =  \
 	src/processor/range_map_unittest.$(OBJEXT)
 src_processor_range_map_unittest_OBJECTS =  \
@@ -172,6 +178,7 @@ SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
 	$(src_processor_minidump_processor_unittest_SOURCES) \
 	$(src_processor_minidump_stackwalk_SOURCES) \
+	$(src_processor_postfix_evaluator_unittest_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
 	$(src_processor_source_line_resolver_unittest_SOURCES)
 DIST_SOURCES = $(src_libairbag_la_SOURCES) \
@@ -179,6 +186,7 @@ DIST_SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
 	$(src_processor_minidump_processor_unittest_SOURCES) \
 	$(src_processor_minidump_stackwalk_SOURCES) \
+	$(src_processor_postfix_evaluator_unittest_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
 	$(src_processor_source_line_resolver_unittest_SOURCES)
 dist_docDATA_INSTALL = $(INSTALL_DATA)
@@ -323,6 +331,8 @@ src_libairbag_la_SOURCES = \
 	src/processor/minidump.h \
 	src/processor/minidump_format.h \
 	src/processor/minidump_processor.cc \
+	src/processor/postfix_evaluator.h \
+	src/processor/postfix_evaluator-inl.h \
 	src/processor/range_map.h \
 	src/processor/range_map-inl.h \
 	src/processor/source_line_resolver.cc \
@@ -350,6 +360,9 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/source_line_resolver.lo
+
+src_processor_postfix_evaluator_unittest_SOURCES = \
+	src/processor/postfix_evaluator_unittest.cc
 
 src_processor_range_map_unittest_SOURCES = \
 	src/processor/range_map_unittest.cc
@@ -554,6 +567,12 @@ src/processor/minidump_stackwalk.$(OBJEXT):  \
 src/processor/minidump_stackwalk$(EXEEXT): $(src_processor_minidump_stackwalk_OBJECTS) $(src_processor_minidump_stackwalk_DEPENDENCIES) src/processor/$(am__dirstamp)
 	@rm -f src/processor/minidump_stackwalk$(EXEEXT)
 	$(CXXLINK) $(src_processor_minidump_stackwalk_LDFLAGS) $(src_processor_minidump_stackwalk_OBJECTS) $(src_processor_minidump_stackwalk_LDADD) $(LIBS)
+src/processor/postfix_evaluator_unittest.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/postfix_evaluator_unittest$(EXEEXT): $(src_processor_postfix_evaluator_unittest_OBJECTS) $(src_processor_postfix_evaluator_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/postfix_evaluator_unittest$(EXEEXT)
+	$(CXXLINK) $(src_processor_postfix_evaluator_unittest_LDFLAGS) $(src_processor_postfix_evaluator_unittest_OBJECTS) $(src_processor_postfix_evaluator_unittest_LDADD) $(LIBS)
 src/processor/range_map_unittest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -577,6 +596,7 @@ mostlyclean-compile:
 	-rm -f src/processor/minidump_processor.lo
 	-rm -f src/processor/minidump_processor_unittest.$(OBJEXT)
 	-rm -f src/processor/minidump_stackwalk.$(OBJEXT)
+	-rm -f src/processor/postfix_evaluator_unittest.$(OBJEXT)
 	-rm -f src/processor/range_map_unittest.$(OBJEXT)
 	-rm -f src/processor/source_line_resolver.$(OBJEXT)
 	-rm -f src/processor/source_line_resolver.lo
@@ -595,6 +615,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_processor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_processor_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_stackwalk.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/postfix_evaluator_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_line_resolver.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_line_resolver_unittest.Po@am__quote@
