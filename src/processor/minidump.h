@@ -163,7 +163,19 @@ class MinidumpStream : public MinidumpObject {
 // user wants).
 class MinidumpContext : public MinidumpStream {
  public:
-  const MDRawContextX86* context() const { return valid_ ? &context_ : NULL; }
+  ~MinidumpContext();
+
+  // Returns an MD_CONTEXT_* value such as MD_CONTEXT_X86 or MD_CONTEXT_PPC
+  // identifying the CPU type that the context was collected from.  The
+  // returned value will identify the CPU only, and will have any other
+  // MD_CONTEXT_* bits masked out.  Returns 0 on failure.
+  u_int32_t GetContextCPU() const;
+
+  // Returns raw CPU-specific context data for the named CPU type.  If the
+  // context data does not match the CPU type or does not exist, returns
+  // NULL.
+  const MDRawContextX86* GetContextX86() const;
+  const MDRawContextPPC* GetContextPPC() const;
 
   // Print a human-readable representation of the object to stdout.
   void Print();
@@ -176,10 +188,22 @@ class MinidumpContext : public MinidumpStream {
 
   bool Read(u_int32_t expected_size);
 
-  // TODO(mmentovai): This is x86-only for now.  When other CPUs are
-  // supported, this class can move to MinidumpContext_x86 and derive from
-  // a new abstract MinidumpContext.
-  MDRawContextX86 context_;
+  // Free the CPU-specific context structure.
+  void FreeContext();
+
+  // If the minidump contains a SYSTEM_INFO_STREAM, makes sure that the
+  // system info stream gives an appropriate CPU type matching the context
+  // CPU type in context_cpu_type.  Returns false if the CPU type does not
+  // match.  Returns true if the CPU type matches or if the minidump does
+  // not contain a system info stream.
+  bool CheckAgainstSystemInfo(u_int32_t context_cpu_type);
+
+  // The CPU-specific context structure.
+  union {
+    MDRawContextBase* base;
+    MDRawContextX86*  x86;
+    MDRawContextPPC*  ppc;
+  } context_;
 };
 
 

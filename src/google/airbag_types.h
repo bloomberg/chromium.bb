@@ -56,6 +56,10 @@ typedef unsigned __int64 u_int64_t;
 
 #endif /* !_WIN32 */
 
+typedef struct {
+  u_int64_t half[2];
+} u_int128_t;
+
 typedef u_int64_t airbag_time_t;
 
 #endif /* GOOGLE_AIRBAG_TYPES_H__ */

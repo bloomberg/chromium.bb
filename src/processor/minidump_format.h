@@ -198,11 +198,21 @@ typedef struct {
 #define MD_CONTEXT_MIPS  0x00010000  /* CONTEXT_R4000 (same value as x86?) */
 #define MD_CONTEXT_ALPHA 0x00020000  /* CONTEXT_ALPHA */
 
+#define MD_CONTEXT_CPU_MASK 0xffffffc0
+
 
 /*
  * Airbag minidump extension for PowerPC support.  Based on Darwin/Mac OS X'
  * mach/ppc/_types.h
  */
+
+
+/* This is a base type for MDRawContextX86 and MDRawContextPPC.  This
+ * structure should never be allocated directly.  The actual structure type
+ * can be determined by examining the context_flags field. */
+typedef struct {
+  u_int32_t context_flags;
+} MDRawContextBase;
 
 
 #define MD_FLOATINGSAVEAREA_PPC_FPR_COUNT 32
@@ -219,13 +229,13 @@ typedef struct {
 #define MD_VECTORSAVEAREA_PPC_VR_COUNT 32
 
 typedef struct {
-  /* Vector registers are 128 bits, but mach/ppc/_types.h exposes them as
-   * four 32-bit quantities. */
-  u_int32_t save_vr[MD_VECTORSAVEAREA_PPC_VR_COUNT][4];
-  u_int32_t save_vscr[4];  /* Status/control */
-  u_int32_t save_pad5[4];
-  u_int32_t save_vrvalid;  /* Identifies which vector registers are saved */
-  u_int32_t save_pad6[7];
+  /* Vector registers (including vscr) are 128 bits, but mach/ppc/_types.h
+   * exposes them as four 32-bit quantities. */
+  u_int128_t save_vr[MD_VECTORSAVEAREA_PPC_VR_COUNT];
+  u_int128_t save_vscr;  /* Status/control */
+  u_int32_t  save_pad5[4];
+  u_int32_t  save_vrvalid;  /* Identifies which vector registers are saved */
+  u_int32_t  save_pad6[7];
 } MDVectorSaveAreaPPC;  /* ppc_vector_state */
 
 

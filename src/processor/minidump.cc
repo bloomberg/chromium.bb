@@ -112,6 +112,21 @@ static inline void Swap(u_int64_t* value) {
 }
 
 
+// Nontrivial, not often used, not inline.  This will put *value into
+// native endianness even on machines where there is no native 128-bit type.
+// half[0] will be the most significant half on big-endian CPUs and half[1]
+// will be the most significant half on little-endian CPUs.
+static void Swap(u_int128_t* value) {
+  Swap(&value->half[0]);
+  Swap(&value->half[1]);
+
+  // Swap the two sections with one another.
+  u_int64_t temp = value->half[0];
+  value->half[0] = value->half[1];
+  value->half[1] = temp;
+}
+
+
 static inline void Swap(MDLocationDescriptor* location_descriptor) {
   Swap(&location_descriptor->data_size);
   Swap(&location_descriptor->rva);
@@ -245,51 +260,164 @@ MinidumpContext::MinidumpContext(Minidump* minidump)
 }
 
 
+MinidumpContext::~MinidumpContext() {
+  FreeContext();
+}
+
+
 bool MinidumpContext::Read(u_int32_t expected_size) {
   valid_ = false;
 
-  if (expected_size != sizeof(context_))
-    return false;
+  FreeContext();
 
-  if (!minidump_->ReadBytes(&context_, sizeof(context_)))
+  // First, figure out what type of CPU this context structure is for.
+  u_int32_t context_flags;
+  if (!minidump_->ReadBytes(&context_flags, sizeof(context_flags)))
     return false;
+  if (minidump_->swap())
+    Swap(&context_flags);
 
-  if (minidump_->swap()) {
-    Swap(&context_.context_flags);
-    Swap(&context_.dr0);
-    Swap(&context_.dr1);
-    Swap(&context_.dr2);
-    Swap(&context_.dr3);
-    Swap(&context_.dr6);
-    Swap(&context_.dr7);
-    Swap(&context_.float_save.control_word);
-    Swap(&context_.float_save.status_word);
-    Swap(&context_.float_save.tag_word);
-    Swap(&context_.float_save.error_offset);
-    Swap(&context_.float_save.error_selector);
-    Swap(&context_.float_save.data_offset);
-    Swap(&context_.float_save.data_selector);
-    // context_.float_save.register_area[] contains 8-bit quantities and does
-    // not need to be swapped.
-    Swap(&context_.float_save.cr0_npx_state);
-    Swap(&context_.gs);
-    Swap(&context_.fs);
-    Swap(&context_.es);
-    Swap(&context_.ds);
-    Swap(&context_.edi);
-    Swap(&context_.esi);
-    Swap(&context_.ebx);
-    Swap(&context_.edx);
-    Swap(&context_.ecx);
-    Swap(&context_.eax);
-    Swap(&context_.ebp);
-    Swap(&context_.eip);
-    Swap(&context_.cs);
-    Swap(&context_.eflags);
-    Swap(&context_.esp);
-    Swap(&context_.ss);
-    // context_.extended_registers[] contains 8-bit quantities and does not
-    // need to be swapped.
+  u_int32_t cpu_type = context_flags & MD_CONTEXT_CPU_MASK;
+
+  // Allocate the context structure for the correct CPU and fill it.  The
+  // casts are slightly unorthodox, but it seems better to do that than to
+  // maintain a separate pointer for each type of CPU context structure
+  // when only one of them will be used.
+  switch (cpu_type) {
+    case MD_CONTEXT_X86: {
+      if (expected_size != sizeof(MDRawContextX86))
+        return false;
+
+      auto_ptr<MDRawContextX86> context_x86(new MDRawContextX86());
+
+      // Set the context_flags member, which has already been read, and
+      // read the rest of the structure beginning with the first member
+      // after context_flags.
+      context_x86->context_flags = context_flags;
+
+      size_t flags_size = sizeof(context_x86->context_flags);
+      u_int8_t* context_after_flags =
+          reinterpret_cast<u_int8_t*>(context_x86.get()) + flags_size;
+      if (!minidump_->ReadBytes(context_after_flags,
+                                sizeof(MDRawContextX86) - flags_size)) {
+        return false;
+      }
+
+      // Do this after reading the entire MDRawContext structure because
+      // GetSystemInfo may seek minidump to a new position.
+      if (!CheckAgainstSystemInfo(cpu_type))
+        return false;
+
+      if (minidump_->swap()) {
+        // context_x86->context_flags was already swapped.
+        Swap(&context_x86->dr0);
+        Swap(&context_x86->dr1);
+        Swap(&context_x86->dr2);
+        Swap(&context_x86->dr3);
+        Swap(&context_x86->dr6);
+        Swap(&context_x86->dr7);
+        Swap(&context_x86->float_save.control_word);
+        Swap(&context_x86->float_save.status_word);
+        Swap(&context_x86->float_save.tag_word);
+        Swap(&context_x86->float_save.error_offset);
+        Swap(&context_x86->float_save.error_selector);
+        Swap(&context_x86->float_save.data_offset);
+        Swap(&context_x86->float_save.data_selector);
+        // context_x86->float_save.register_area[] contains 8-bit quantities
+        // and does not need to be swapped.
+        Swap(&context_x86->float_save.cr0_npx_state);
+        Swap(&context_x86->gs);
+        Swap(&context_x86->fs);
+        Swap(&context_x86->es);
+        Swap(&context_x86->ds);
+        Swap(&context_x86->edi);
+        Swap(&context_x86->esi);
+        Swap(&context_x86->ebx);
+        Swap(&context_x86->edx);
+        Swap(&context_x86->ecx);
+        Swap(&context_x86->eax);
+        Swap(&context_x86->ebp);
+        Swap(&context_x86->eip);
+        Swap(&context_x86->cs);
+        Swap(&context_x86->eflags);
+        Swap(&context_x86->esp);
+        Swap(&context_x86->ss);
+        // context_x86->extended_registers[] contains 8-bit quantities and
+        // does not need to be swapped.
+      }
+
+      context_.x86 = context_x86.release();
+
+      break;
+    }
+
+    case MD_CONTEXT_PPC: {
+      if (expected_size != sizeof(MDRawContextPPC))
+        return false;
+
+      auto_ptr<MDRawContextPPC> context_ppc(new MDRawContextPPC());
+
+      // Set the context_flags member, which has already been read, and
+      // read the rest of the structure beginning with the first member
+      // after context_flags.
+      context_ppc->context_flags = context_flags;
+
+      size_t flags_size = sizeof(context_ppc->context_flags);
+      u_int8_t* context_after_flags =
+          reinterpret_cast<u_int8_t*>(context_ppc.get()) + flags_size;
+      if (!minidump_->ReadBytes(context_after_flags,
+                                sizeof(MDRawContextPPC) - flags_size)) {
+        return false;
+      }
+
+      // Do this after reading the entire MDRawContext structure because
+      // GetSystemInfo may seek minidump to a new position.
+      if (!CheckAgainstSystemInfo(cpu_type))
+        return false;
+
+      if (minidump_->swap()) {
+        // context_ppc->context_flags was already swapped.
+        Swap(&context_ppc->srr0);
+        Swap(&context_ppc->srr1);
+        for (unsigned int gpr_index = 0;
+             gpr_index < MD_CONTEXT_PPC_GPR_COUNT;
+             ++gpr_index) {
+          Swap(&context_ppc->gpr[gpr_index]);
+        }
+        Swap(&context_ppc->cr);
+        Swap(&context_ppc->xer);
+        Swap(&context_ppc->lr);
+        Swap(&context_ppc->ctr);
+        Swap(&context_ppc->mq);
+        Swap(&context_ppc->vrsave);
+        for (unsigned int fpr_index = 0;
+             fpr_index < MD_FLOATINGSAVEAREA_PPC_FPR_COUNT;
+             ++fpr_index) {
+          Swap(&context_ppc->float_save.fpregs[fpr_index]);
+        }
+        // Don't swap context_ppc->float_save.fpscr_pad because it is only
+        // used for padding.
+        Swap(&context_ppc->float_save.fpscr);
+        for (unsigned int vr_index = 0;
+             vr_index < MD_VECTORSAVEAREA_PPC_VR_COUNT;
+             ++vr_index) {
+          Swap(&context_ppc->vector_save.save_vr[vr_index]);
+        }
+        Swap(&context_ppc->vector_save.save_vscr);
+        // Don't swap the padding fields in vector_save.
+        Swap(&context_ppc->vector_save.save_vrvalid);
+      }
+
+      context_.ppc = context_ppc.release();
+
+      break;
+    }
+
+    default: {
+      // Unknown context type
+      return false;
+      break;
+    }
   }
 
   valid_ = true;
@@ -297,66 +425,190 @@ bool MinidumpContext::Read(u_int32_t expected_size) {
 }
 
 
-void MinidumpContext::Print() {
-  if (!valid_)
-    return;
+u_int32_t MinidumpContext::GetContextCPU() const {
+  return valid_ ? context_.base->context_flags & MD_CONTEXT_CPU_MASK : 0;
+}
 
-  printf("MDRawContextX86\n");
-  printf("  context_flags                = 0x%x\n", context_.context_flags);
-  printf("  dr0                          = 0x%x\n", context_.dr0);
-  printf("  dr1                          = 0x%x\n", context_.dr1);
-  printf("  dr2                          = 0x%x\n", context_.dr2);
-  printf("  dr3                          = 0x%x\n", context_.dr3);
-  printf("  dr6                          = 0x%x\n", context_.dr6);
-  printf("  dr7                          = 0x%x\n", context_.dr7);
-  printf("  float_save.control_word      = 0x%x\n",
-         context_.float_save.control_word);
-  printf("  float_save.status_word       = 0x%x\n",
-         context_.float_save.status_word);
-  printf("  float_save.tag_word          = 0x%x\n",
-         context_.float_save.tag_word);
-  printf("  float_save.error_offset      = 0x%x\n",
-         context_.float_save.error_offset);
-  printf("  float_save.error_selector    = 0x%x\n",
-         context_.float_save.error_selector);
-  printf("  float_save.data_offset       = 0x%x\n",
-         context_.float_save.data_offset);
-  printf("  float_save.data_selector     = 0x%x\n",
-         context_.float_save.data_selector);
-  printf("  float_save.register_area[%2d] = 0x",
-         MD_FLOATINGSAVEAREA_X86_REGISTERAREA_SIZE);
-  for (unsigned int register_index = 0;
-       register_index < MD_FLOATINGSAVEAREA_X86_REGISTERAREA_SIZE;
-       ++register_index) {
-    printf("%02x", context_.float_save.register_area[register_index]);
+
+const MDRawContextX86* MinidumpContext::GetContextX86() const {
+  return GetContextCPU() == MD_CONTEXT_X86 ? context_.x86 : NULL;
+}
+
+
+const MDRawContextPPC* MinidumpContext::GetContextPPC() const {
+  return GetContextCPU() == MD_CONTEXT_PPC ? context_.ppc : NULL;
+}
+
+
+void MinidumpContext::FreeContext() {
+  switch (GetContextCPU()) {
+    case MD_CONTEXT_X86:
+      delete context_.x86;
+      break;
+
+    case MD_CONTEXT_PPC:
+      delete context_.ppc;
+      break;
+
+    default:
+      // There is no context record (valid_ is false) or there's a
+      // context record for an unknown CPU (shouldn't happen, only known
+      // records are stored by Read).
+      break;
   }
-  printf("\n");
-  printf("  float_save.cr0_npx_state     = 0x%x\n",
-         context_.float_save.cr0_npx_state);
-  printf("  gs                           = 0x%x\n", context_.gs);
-  printf("  fs                           = 0x%x\n", context_.fs);
-  printf("  es                           = 0x%x\n", context_.es);
-  printf("  ds                           = 0x%x\n", context_.ds);
-  printf("  edi                          = 0x%x\n", context_.edi);
-  printf("  esi                          = 0x%x\n", context_.esi);
-  printf("  ebx                          = 0x%x\n", context_.ebx);
-  printf("  edx                          = 0x%x\n", context_.edx);
-  printf("  ecx                          = 0x%x\n", context_.ecx);
-  printf("  eax                          = 0x%x\n", context_.eax);
-  printf("  ebp                          = 0x%x\n", context_.ebp);
-  printf("  eip                          = 0x%x\n", context_.eip);
-  printf("  cs                           = 0x%x\n", context_.cs);
-  printf("  eflags                       = 0x%x\n", context_.eflags);
-  printf("  esp                          = 0x%x\n", context_.esp);
-  printf("  ss                           = 0x%x\n", context_.ss);
-  printf("  extended_registers[%3d]      = 0x",
-         MD_CONTEXT_X86_EXTENDED_REGISTERS_SIZE);
-  for (unsigned int register_index = 0;
-       register_index < MD_CONTEXT_X86_EXTENDED_REGISTERS_SIZE;
-       ++register_index) {
-    printf("%02x", context_.extended_registers[register_index]);
+
+  context_.base = NULL;
+}
+
+
+bool MinidumpContext::CheckAgainstSystemInfo(u_int32_t context_cpu_type) {
+  // It's OK if the minidump doesn't contain a SYSTEM_INFO_STREAM,
+  // as this function just implements a sanity check.
+  MinidumpSystemInfo* system_info = minidump_->GetSystemInfo();
+  if (!system_info)
+    return true;
+
+  // If there is a SYSTEM_INFO_STREAM, it should contain valid system info.
+  const MDRawSystemInfo* raw_system_info = system_info->system_info();
+  if (!raw_system_info)
+    return false;
+
+  MDCPUArchitecture system_info_cpu_type = static_cast<MDCPUArchitecture>(
+      raw_system_info->processor_architecture);
+
+  // Compare the CPU type of the context record to the CPU type in the
+  // minidump's system info stream.
+  switch (context_cpu_type) {
+    case MD_CONTEXT_X86:
+      if (system_info_cpu_type != MD_CPU_ARCHITECTURE_X86 &&
+          system_info_cpu_type != MD_CPU_ARCHITECTURE_X86_WIN64) {
+        return false;
+      }
+      break;
+
+    case MD_CONTEXT_PPC:
+      if (system_info_cpu_type != MD_CPU_ARCHITECTURE_PPC)
+        return false;
+      break;
+
+    default:
+      // Unknown context_cpu_type, this should not happen.
+      return false;
+      break;
   }
-  printf("\n\n");
+
+  return true;
+}
+
+
+void MinidumpContext::Print() {
+  switch (GetContextCPU()) {
+    case MD_CONTEXT_X86: {
+      const MDRawContextX86* context_x86 = GetContextX86();
+      printf("MDRawContextX86\n");
+      printf("  context_flags                = 0x%x\n",
+             context_x86->context_flags);
+      printf("  dr0                          = 0x%x\n", context_x86->dr0);
+      printf("  dr1                          = 0x%x\n", context_x86->dr1);
+      printf("  dr2                          = 0x%x\n", context_x86->dr2);
+      printf("  dr3                          = 0x%x\n", context_x86->dr3);
+      printf("  dr6                          = 0x%x\n", context_x86->dr6);
+      printf("  dr7                          = 0x%x\n", context_x86->dr7);
+      printf("  float_save.control_word      = 0x%x\n",
+             context_x86->float_save.control_word);
+      printf("  float_save.status_word       = 0x%x\n",
+             context_x86->float_save.status_word);
+      printf("  float_save.tag_word          = 0x%x\n",
+             context_x86->float_save.tag_word);
+      printf("  float_save.error_offset      = 0x%x\n",
+             context_x86->float_save.error_offset);
+      printf("  float_save.error_selector    = 0x%x\n",
+             context_x86->float_save.error_selector);
+      printf("  float_save.data_offset       = 0x%x\n",
+             context_x86->float_save.data_offset);
+      printf("  float_save.data_selector     = 0x%x\n",
+             context_x86->float_save.data_selector);
+      printf("  float_save.register_area[%2d] = 0x",
+             MD_FLOATINGSAVEAREA_X86_REGISTERAREA_SIZE);
+      for (unsigned int register_index = 0;
+           register_index < MD_FLOATINGSAVEAREA_X86_REGISTERAREA_SIZE;
+           ++register_index) {
+        printf("%02x", context_x86->float_save.register_area[register_index]);
+      }
+      printf("\n");
+      printf("  float_save.cr0_npx_state     = 0x%x\n",
+             context_x86->float_save.cr0_npx_state);
+      printf("  gs                           = 0x%x\n", context_x86->gs);
+      printf("  fs                           = 0x%x\n", context_x86->fs);
+      printf("  es                           = 0x%x\n", context_x86->es);
+      printf("  ds                           = 0x%x\n", context_x86->ds);
+      printf("  edi                          = 0x%x\n", context_x86->edi);
+      printf("  esi                          = 0x%x\n", context_x86->esi);
+      printf("  ebx                          = 0x%x\n", context_x86->ebx);
+      printf("  edx                          = 0x%x\n", context_x86->edx);
+      printf("  ecx                          = 0x%x\n", context_x86->ecx);
+      printf("  eax                          = 0x%x\n", context_x86->eax);
+      printf("  ebp                          = 0x%x\n", context_x86->ebp);
+      printf("  eip                          = 0x%x\n", context_x86->eip);
+      printf("  cs                           = 0x%x\n", context_x86->cs);
+      printf("  eflags                       = 0x%x\n", context_x86->eflags);
+      printf("  esp                          = 0x%x\n", context_x86->esp);
+      printf("  ss                           = 0x%x\n", context_x86->ss);
+      printf("  extended_registers[%3d]      = 0x",
+             MD_CONTEXT_X86_EXTENDED_REGISTERS_SIZE);
+      for (unsigned int register_index = 0;
+           register_index < MD_CONTEXT_X86_EXTENDED_REGISTERS_SIZE;
+           ++register_index) {
+        printf("%02x", context_x86->extended_registers[register_index]);
+      }
+      printf("\n\n");
+
+      break;
+    }
+
+    case MD_CONTEXT_PPC: {
+      const MDRawContextPPC* context_ppc = GetContextPPC();
+      printf("MDRawContextPPC\n");
+      printf("  context_flags            = 0x%x\n",
+             context_ppc->context_flags);
+      printf("  srr0                     = 0x%x\n", context_ppc->srr0);
+      printf("  srr1                     = 0x%x\n", context_ppc->srr1);
+      for (unsigned int gpr_index = 0;
+           gpr_index < MD_CONTEXT_PPC_GPR_COUNT;
+           ++gpr_index) {
+        printf("  gpr[%2d]                  = 0x%x\n",
+               gpr_index, context_ppc->gpr[gpr_index]);
+      }
+      printf("  cr                       = 0x%x\n", context_ppc->cr);
+      printf("  xer                      = 0x%x\n", context_ppc->xer);
+      printf("  lr                       = 0x%x\n", context_ppc->lr);
+      printf("  ctr                      = 0x%x\n", context_ppc->ctr);
+      printf("  mq                       = 0x%x\n", context_ppc->mq);
+      printf("  vrsave                   = 0x%x\n", context_ppc->vrsave);
+      for (unsigned int fpr_index = 0;
+           fpr_index < MD_FLOATINGSAVEAREA_PPC_FPR_COUNT;
+           ++fpr_index) {
+        printf("  float_save.fpregs[%2d]    = 0x%x\n",
+               fpr_index, context_ppc->float_save.fpregs[fpr_index]);
+      }
+      printf("  float_save.fpscr         = 0x%x\n",
+             context_ppc->float_save.fpscr);
+      // TODO(mmentovai): print the 128-bit quantities in
+      // context_ppc->vector_save.  This isn't done yet because printf
+      // doesn't support 128-bit quantities, and printing them using
+      // %llx as two 64-bit quantities requires knowledge of the CPU's
+      // byte ordering.
+      printf("  vector_save.save_vrvalid = 0x%x\n",
+             context_ppc->vector_save.save_vrvalid);
+      printf("\n");
+
+      break;
+    }
+
+    default: {
+      break;
+    }
+  }
 }
 
 
@@ -1561,13 +1813,19 @@ bool MinidumpSystemInfo::Read(u_int32_t expected_size) {
     Swap(&system_info_.platform_id);
     Swap(&system_info_.csd_version_rva);
     Swap(&system_info_.suite_mask);
-    Swap(&system_info_.reserved2);
-    // TODO(mmentovai): This obviously only supports x86 for the time being.
-    for (unsigned int i = 0; i < 3; ++i)
-      Swap(&system_info_.cpu.x86_cpu_info.vendor_id[i]);
-    Swap(&system_info_.cpu.x86_cpu_info.version_information);
-    Swap(&system_info_.cpu.x86_cpu_info.feature_information);
-    Swap(&system_info_.cpu.x86_cpu_info.amd_extended_cpu_features);
+    // Don't swap the reserved2 field because its contents are unknown.
+
+    if (system_info_.processor_architecture == MD_CPU_ARCHITECTURE_X86 ||
+        system_info_.processor_architecture == MD_CPU_ARCHITECTURE_X86_WIN64) {
+      for (unsigned int i = 0; i < 3; ++i)
+        Swap(&system_info_.cpu.x86_cpu_info.vendor_id[i]);
+      Swap(&system_info_.cpu.x86_cpu_info.version_information);
+      Swap(&system_info_.cpu.x86_cpu_info.feature_information);
+      Swap(&system_info_.cpu.x86_cpu_info.amd_extended_cpu_features);
+    } else {
+      for (unsigned int i = 0; i < 2; ++i)
+        Swap(&system_info_.cpu.other_cpu_info.processor_features[i]);
+    }
   }
 
   valid_ = true;

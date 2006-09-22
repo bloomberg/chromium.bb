@@ -53,9 +53,10 @@ StackwalkerX86::StackwalkerX86(MinidumpContext*    context,
     memory_ = NULL;
   }
 
-  // TODO(mmentovai): verify that |context| is x86 when Minidump supports
-  // other CPU types.
-  context_ = context->context();
+  // If |context| is not an x86 context, context_ will be set to NULL,
+  // which will cause GetContextFrame to fail when called by Walk.
+  // For StackwalkerX86, |context| should only ever be an x86 context.
+  context_ = context->GetContextX86();
 }
 
 
