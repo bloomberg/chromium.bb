@@ -74,7 +74,11 @@ check_PROGRAMS = src/processor/contained_range_map_unittest$(EXEEXT) \
 	src/processor/minidump_processor_unittest$(EXEEXT) \
 	src/processor/postfix_evaluator_unittest$(EXEEXT) \
 	src/processor/range_map_unittest$(EXEEXT) \
-	src/processor/source_line_resolver_unittest$(EXEEXT)
+	src/processor/source_line_resolver_unittest$(EXEEXT) \
+	$(am__EXEEXT_1)
+@SELFTEST_TRUE@am__append_1 = \
+@SELFTEST_TRUE@	src/processor/stackwalker_selftest
+
 noinst_PROGRAMS =
 DIST_COMMON = README $(am__configure_deps) $(dist_doc_DATA) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
@@ -111,6 +115,8 @@ am_src_libairbag_la_OBJECTS = src/processor/minidump.lo \
 	src/processor/stackwalker_x86.lo
 src_libairbag_la_OBJECTS = $(am_src_libairbag_la_OBJECTS)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
+@SELFTEST_TRUE@am__EXEEXT_1 =  \
+@SELFTEST_TRUE@	src/processor/stackwalker_selftest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am_src_processor_contained_range_map_unittest_OBJECTS =  \
 	src/processor/contained_range_map_unittest.$(OBJEXT)
@@ -156,6 +162,15 @@ src_processor_source_line_resolver_unittest_OBJECTS =  \
 	$(am_src_processor_source_line_resolver_unittest_OBJECTS)
 src_processor_source_line_resolver_unittest_DEPENDENCIES =  \
 	src/processor/source_line_resolver.lo
+am_src_processor_stackwalker_selftest_OBJECTS =  \
+	src/processor/stackwalker_selftest.$(OBJEXT)
+src_processor_stackwalker_selftest_OBJECTS =  \
+	$(am_src_processor_stackwalker_selftest_OBJECTS)
+src_processor_stackwalker_selftest_DEPENDENCIES =  \
+	src/processor/minidump.lo \
+	src/processor/source_line_resolver.lo \
+	src/processor/stackwalker.lo src/processor/stackwalker_ppc.lo \
+	src/processor/stackwalker_x86.lo
 SCRIPTS = $(noinst_SCRIPTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/src
 depcomp = $(SHELL) $(top_srcdir)/autotools/depcomp
@@ -183,7 +198,8 @@ SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_minidump_stackwalk_SOURCES) \
 	$(src_processor_postfix_evaluator_unittest_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
-	$(src_processor_source_line_resolver_unittest_SOURCES)
+	$(src_processor_source_line_resolver_unittest_SOURCES) \
+	$(src_processor_stackwalker_selftest_SOURCES)
 DIST_SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_contained_range_map_unittest_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
@@ -191,7 +207,8 @@ DIST_SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_minidump_stackwalk_SOURCES) \
 	$(src_processor_postfix_evaluator_unittest_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
-	$(src_processor_source_line_resolver_unittest_SOURCES)
+	$(src_processor_source_line_resolver_unittest_SOURCES) \
+	$(src_processor_stackwalker_selftest_SOURCES)
 dist_docDATA_INSTALL = $(INSTALL_DATA)
 DATA = $(dist_doc_DATA)
 ETAGS = etags
@@ -258,6 +275,8 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
+SELFTEST_FALSE = @SELFTEST_FALSE@
+SELFTEST_TRUE = @SELFTEST_TRUE@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -378,6 +397,16 @@ src_processor_source_line_resolver_unittest_SOURCES = \
 
 src_processor_source_line_resolver_unittest_LDADD = \
 	src/processor/source_line_resolver.lo
+
+src_processor_stackwalker_selftest_SOURCES = \
+	src/processor/stackwalker_selftest.cc
+
+src_processor_stackwalker_selftest_LDADD = \
+	src/processor/minidump.lo \
+	src/processor/source_line_resolver.lo \
+	src/processor/stackwalker.lo \
+	src/processor/stackwalker_ppc.lo \
+	src/processor/stackwalker_x86.lo
 
 noinst_SCRIPTS = $(check_SCRIPTS)
 src_processor_minidump_dump_SOURCES = \
@@ -594,6 +623,12 @@ src/processor/source_line_resolver_unittest.$(OBJEXT):  \
 src/processor/source_line_resolver_unittest$(EXEEXT): $(src_processor_source_line_resolver_unittest_OBJECTS) $(src_processor_source_line_resolver_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
 	@rm -f src/processor/source_line_resolver_unittest$(EXEEXT)
 	$(CXXLINK) $(src_processor_source_line_resolver_unittest_LDFLAGS) $(src_processor_source_line_resolver_unittest_OBJECTS) $(src_processor_source_line_resolver_unittest_LDADD) $(LIBS)
+src/processor/stackwalker_selftest.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/stackwalker_selftest$(EXEEXT): $(src_processor_stackwalker_selftest_OBJECTS) $(src_processor_stackwalker_selftest_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/stackwalker_selftest$(EXEEXT)
+	$(CXXLINK) $(src_processor_stackwalker_selftest_LDFLAGS) $(src_processor_stackwalker_selftest_OBJECTS) $(src_processor_stackwalker_selftest_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -614,6 +649,7 @@ mostlyclean-compile:
 	-rm -f src/processor/stackwalker.lo
 	-rm -f src/processor/stackwalker_ppc.$(OBJEXT)
 	-rm -f src/processor/stackwalker_ppc.lo
+	-rm -f src/processor/stackwalker_selftest.$(OBJEXT)
 	-rm -f src/processor/stackwalker_x86.$(OBJEXT)
 	-rm -f src/processor/stackwalker_x86.lo
 
@@ -632,6 +668,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_line_resolver_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_ppc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_selftest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_x86.Plo@am__quote@
 
 .cc.o:

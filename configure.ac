@@ -47,5 +47,24 @@ AC_SUBST(LIBTOOL_DEPS)
 
 AC_HEADER_STDC
 
+AC_ARG_ENABLE(selftest,
+              AS_HELP_STRING([--enable-selftest],
+                             [Run extra tests with "make check" ]
+                             [(may conflict with optimizations) ]
+                             [(default is no)]),
+              [case "${enableval}" in
+                 yes)
+                   selftest=true
+                   ;;
+                 no)
+                   selftest=false
+                   ;;
+                 *)
+                   AC_MSG_ERROR(bad value ${enableval} for --enable-selftest)
+                   ;;
+               esac],
+              [selftest=false])
+AM_CONDITIONAL(SELFTEST, test x$selftest = xtrue)
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

@@ -89,9 +89,16 @@ check_PROGRAMS = \
 	src/processor/postfix_evaluator_unittest \
 	src/processor/range_map_unittest \
 	src/processor/source_line_resolver_unittest
+
+if SELFTEST
+check_PROGRAMS += \
+	src/processor/stackwalker_selftest
+endif SELFTEST
+
 check_SCRIPTS = \
 	src/processor/minidump_dump_test \
 	src/processor/minidump_stackwalk_test
+
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT =
 
@@ -118,6 +125,15 @@ src_processor_source_line_resolver_unittest_SOURCES = \
 	src/processor/source_line_resolver_unittest.cc
 src_processor_source_line_resolver_unittest_LDADD = \
 	src/processor/source_line_resolver.lo
+
+src_processor_stackwalker_selftest_SOURCES = \
+	src/processor/stackwalker_selftest.cc
+src_processor_stackwalker_selftest_LDADD = \
+	src/processor/minidump.lo \
+	src/processor/source_line_resolver.lo \
+	src/processor/stackwalker.lo \
+	src/processor/stackwalker_ppc.lo \
+	src/processor/stackwalker_x86.lo
 
 ## Non-installables
 noinst_PROGRAMS =
