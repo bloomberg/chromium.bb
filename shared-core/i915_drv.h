@@ -164,7 +164,6 @@ extern int i915_fence_emit_sequence(drm_device_t *dev, uint32_t flags,
 				    uint32_t *sequence, 
 				    uint32_t *native_type);
 extern void i915_poke_flush(drm_device_t *dev);
-extern void i915_sync_flush(drm_device_t *dev);
 #endif
 
 #ifdef I915_HAVE_BUFFER

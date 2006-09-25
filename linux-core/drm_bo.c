@@ -128,6 +128,7 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 	if (bo->ttm_object) {
 		drm_ttm_object_deref_locked(dev, bo->ttm_object);
 	}
+	atomic_dec(&bm->count);
 	drm_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
 }
 
@@ -139,6 +140,10 @@ static void drm_bo_delayed_delete(drm_device_t * dev)
 	drm_fence_object_t *fence;
 
 	mutex_lock(&dev->struct_mutex);
+
+	/*
+	 * FIXME: Lock buffer object mutex.
+	 */
 
 	list_for_each_entry_safe(entry, next, &bm->ddestroy, ddestroy) {
 		fence = entry->fence;
@@ -1207,7 +1212,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 	uint32_t new_flags;
 	unsigned long num_pages;
 
-	drm_bo_delayed_delete(dev);
+	//	drm_bo_delayed_delete(dev);
 
 	if ((buffer_start & ~PAGE_MASK) && (type != drm_bo_type_fake)) {
 		DRM_ERROR("Invalid buffer object start.\n");
@@ -1259,6 +1264,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 
 	mutex_unlock(&bo->mutex);
 	*buf_obj = bo;
+	atomic_inc(&bm->count);
 	return 0;
 
       out_err:
@@ -1576,6 +1582,7 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 
 		INIT_WORK(&bm->wq, &drm_bo_delayed_workqueue, dev);
 		bm->initialized = 1;
+		atomic_set(&bm->count, 0);
 		bm->cur_pages = 0;
 		bm->max_pages = arg.req.max_locked_pages;
 		break;

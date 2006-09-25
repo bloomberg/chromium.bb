@@ -49,6 +49,9 @@ static void i915_perform_flush(drm_device_t * dev)
 	uint32_t diff;
 	uint32_t sequence;
 
+	if (!dev_priv)
+		return;
+
 	if (fm->pending_exe_flush) {
 		sequence = READ_BREADCRUMB(dev_priv);
 

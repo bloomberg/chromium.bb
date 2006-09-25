@@ -789,6 +789,7 @@ typedef struct drm_fence_manager{
 	int pending_exe_flush;
 	uint32_t last_exe_flush;
 	uint32_t exe_flush_sequence;
+        atomic_t count;
 } drm_fence_manager_t;
 
 typedef struct drm_buffer_manager{
@@ -809,6 +810,7 @@ typedef struct drm_buffer_manager{
         uint32_t fence_type;
         unsigned long max_pages;
         unsigned long cur_pages;
+        atomic_t count;
 } drm_buffer_manager_t;
 
 
@@ -966,11 +968,11 @@ typedef struct drm_fence_object{
 	struct list_head ring;
         int class;
         uint32_t native_type;
-	volatile uint32_t type;
-	volatile uint32_t signaled;
+	uint32_t type;
+	uint32_t signaled;
 	uint32_t sequence;
-	volatile uint32_t flush_mask;
-	volatile uint32_t submitted_flush;
+	uint32_t flush_mask;
+	uint32_t submitted_flush;
 } drm_fence_object_t;
 
 
@@ -1380,13 +1382,16 @@ extern void drm_fence_manager_init(drm_device_t *dev);
 extern void drm_fence_manager_takedown(drm_device_t *dev);
 extern void drm_fence_flush_old(drm_device_t *dev, uint32_t sequence);
 extern int drm_fence_object_flush(drm_device_t * dev,
-				  drm_fence_object_t * fence, uint32_t type);
-extern int drm_fence_object_signaled(drm_fence_object_t * fence, uint32_t type);
+				  volatile drm_fence_object_t * fence, 
+				  uint32_t type);
+extern int drm_fence_object_signaled(volatile drm_fence_object_t * fence, 
+				     uint32_t type);
 extern void drm_fence_usage_deref_locked(drm_device_t * dev,
 					 drm_fence_object_t * fence);
 extern void drm_fence_usage_deref_unlocked(drm_device_t * dev,
 					 drm_fence_object_t * fence);
-extern int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
+extern int drm_fence_object_wait(drm_device_t * dev, 
+				 volatile drm_fence_object_t * fence,
 				 int lazy, int ignore_signals, uint32_t mask);
 extern int drm_fence_object_create(drm_device_t *dev, uint32_t type,
 				   uint32_t fence_flags, 

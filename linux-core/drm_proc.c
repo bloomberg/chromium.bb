@@ -49,6 +49,8 @@ static int drm_queues_info(char *buf, char **start, off_t offset,
 			   int request, int *eof, void *data);
 static int drm_bufs_info(char *buf, char **start, off_t offset,
 			 int request, int *eof, void *data);
+static int drm_objects_info(char *buf, char **start, off_t offset,
+			 int request, int *eof, void *data);
 #if DRM_DEBUG_CODE
 static int drm_vma_info(char *buf, char **start, off_t offset,
 			int request, int *eof, void *data);
@@ -67,6 +69,7 @@ static struct drm_proc_list {
 	{"clients", drm_clients_info},
 	{"queues", drm_queues_info},
 	{"bufs", drm_bufs_info},
+	{"objects", drm_objects_info},
 #if DRM_DEBUG_CODE
 	{"vma", drm_vma_info},
 #endif
@@ -414,6 +417,74 @@ static int drm_bufs_info(char *buf, char **start, off_t offset, int request,
 
 	mutex_lock(&dev->struct_mutex);
 	ret = drm__bufs_info(buf, start, offset, request, eof, data);
+	mutex_unlock(&dev->struct_mutex);
+	return ret;
+}
+
+/**
+ * Called when "/proc/dri/.../objects" is read.
+ *
+ * \param buf output buffer.
+ * \param start start of output data.
+ * \param offset requested start offset.
+ * \param request requested number of bytes.
+ * \param eof whether there is no more data to return.
+ * \param data private data.
+ * \return number of written bytes.
+ */
+static int drm__objects_info(char *buf, char **start, off_t offset, int request,
+			  int *eof, void *data)
+{
+	drm_device_t *dev = (drm_device_t *) data;
+	int len = 0;
+	drm_buffer_manager_t *bm = &dev->bm;
+	drm_fence_manager_t *fm = &dev->fm; 
+
+	if (offset > DRM_PROC_LIMIT) {
+		*eof = 1;
+		return 0;
+	}
+
+	*start = &buf[offset];
+	*eof = 0;
+	
+	if (fm->initialized) {
+		DRM_PROC_PRINT("Number of active fence objects: %d.\n\n", 
+			       atomic_read(&fm->count));
+	} else {
+		DRM_PROC_PRINT("Fence objects are not supported by this driver\n\n");
+	}
+
+	if (bm->initialized) {
+		DRM_PROC_PRINT("Number of active buffer objects: %d.\n\n", 
+			       atomic_read(&bm->count));
+		DRM_PROC_PRINT("Number of locked GATT pages: %lu.\n", bm->cur_pages);
+		DRM_PROC_PRINT("Max allowed number of locked GATT pages %lu\n", 
+			       bm->max_pages);
+	} else {
+		DRM_PROC_PRINT("Buffer objects are not supported by this driver.\n\n");
+	}
+
+
+	DRM_PROC_PRINT("\n");
+
+	if (len > request + offset)
+		return request;
+	*eof = 1;
+	return len - offset;
+}
+
+/**
+ * Simply calls _objects_info() while holding the drm_device::struct_mutex lock.
+ */
+static int drm_objects_info(char *buf, char **start, off_t offset, int request,
+			 int *eof, void *data)
+{
+	drm_device_t *dev = (drm_device_t *) data;
+	int ret;
+
+	mutex_lock(&dev->struct_mutex);
+	ret = drm__objects_info(buf, start, offset, request, eof, data);
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }

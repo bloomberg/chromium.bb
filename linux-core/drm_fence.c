@@ -111,10 +111,13 @@ static void drm_fence_unring(drm_device_t * dev, struct list_head *ring)
 void drm_fence_usage_deref_locked(drm_device_t * dev,
 				  drm_fence_object_t * fence)
 {
+	drm_fence_manager_t *fm = &dev->fm;
+
 	if (atomic_dec_and_test(&fence->usage)) {
 		drm_fence_unring(dev, &fence->ring);
 		DRM_DEBUG("Destroyed a fence object 0x%08lx\n",
 			  fence->base.hash.key);
+		atomic_dec(&fm->count);
 		kmem_cache_free(drm_cache.fence_object, fence);
 	}
 }
@@ -122,10 +125,13 @@ void drm_fence_usage_deref_locked(drm_device_t * dev,
 void drm_fence_usage_deref_unlocked(drm_device_t * dev,
 				    drm_fence_object_t * fence)
 {
+	drm_fence_manager_t *fm = &dev->fm;
+
 	if (atomic_dec_and_test(&fence->usage)) {
 		mutex_lock(&dev->struct_mutex);
 		if (atomic_read(&fence->usage) == 0) {
 			drm_fence_unring(dev, &fence->ring);
+		        atomic_dec(&fm->count);
 			kmem_cache_free(drm_cache.fence_object, fence);
 		}
 		mutex_unlock(&dev->struct_mutex);
@@ -142,7 +148,8 @@ static void drm_fence_object_destroy(drm_file_t * priv,
 	drm_fence_usage_deref_locked(dev, fence);
 }
 
-static int fence_signaled(drm_device_t * dev, drm_fence_object_t * fence,
+static int fence_signaled(drm_device_t * dev, volatile 
+			  drm_fence_object_t * fence,
 			  uint32_t mask, int poke_flush)
 {
 	unsigned long flags;
@@ -166,7 +173,7 @@ static void drm_fence_flush_exe(drm_fence_manager_t * fm,
 	uint32_t diff;
 
 	if (!fm->pending_exe_flush) {
-		struct list_head *list;
+		volatile struct list_head *list;
 
 		/*
 		 * Last_exe_flush is invalid. Find oldest sequence.
@@ -196,18 +203,15 @@ static void drm_fence_flush_exe(drm_fence_manager_t * fm,
 	}
 }
 
-int drm_fence_object_signaled(drm_fence_object_t * fence, uint32_t type)
+int drm_fence_object_signaled(volatile drm_fence_object_t * fence, 
+			      uint32_t type)
 {
 	return ((fence->signaled & type) == type);
 }
 
-/*
- * Make sure old fence objects are signaled before their fence sequences are
- * wrapped around and reused.
- */
-
 int drm_fence_object_flush(drm_device_t * dev,
-			   drm_fence_object_t * fence, uint32_t type)
+			   volatile drm_fence_object_t * fence, 
+			   uint32_t type)
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
@@ -236,6 +240,12 @@ int drm_fence_object_flush(drm_device_t * dev,
 	driver->poke_flush(dev);
 	return 0;
 }
+
+/*
+ * Make sure old fence objects are signaled before their fence sequences are
+ * wrapped around and reused.
+ */
+
 
 void drm_fence_flush_old(drm_device_t * dev, uint32_t sequence)
 {
@@ -267,7 +277,8 @@ void drm_fence_flush_old(drm_device_t * dev, uint32_t sequence)
 
 EXPORT_SYMBOL(drm_fence_flush_old);
 
-int drm_fence_object_wait(drm_device_t * dev, drm_fence_object_t * fence,
+int drm_fence_object_wait(drm_device_t * dev, 
+			  volatile drm_fence_object_t * fence,
 			  int lazy, int ignore_signals, uint32_t mask)
 {
 	drm_fence_manager_t *fm = &dev->fm;
@@ -426,6 +437,8 @@ int drm_fence_object_create(drm_device_t * dev, uint32_t type,
 {
 	drm_fence_object_t *fence;
 	int ret;
+	drm_fence_manager_t *fm = &dev->fm;
+	unsigned long fl;
 
 	fence = kmem_cache_alloc(drm_cache.fence_object, GFP_KERNEL);
 	if (!fence)
@@ -436,6 +449,8 @@ int drm_fence_object_create(drm_device_t * dev, uint32_t type,
 		return ret;
 	}
 	*c_fence = fence;
+	atomic_inc(&fm->count);
+
 	return 0;
 }
 
@@ -448,16 +463,19 @@ void drm_fence_manager_init(drm_device_t * dev)
 	int i;
 
 	fm->lock = RW_LOCK_UNLOCKED;
+	write_lock(&fm->lock);
 	INIT_LIST_HEAD(&fm->ring);
 	fm->pending_flush = 0;
 	DRM_INIT_WAITQUEUE(&fm->fence_queue);
 	fm->initialized = 0;
 	if (fed) {
 		fm->initialized = 1;
+		atomic_set(&fm->count,0);
 		for (i = 0; i < fed->no_types; ++i) {
 			fm->fence_types[i] = &fm->ring;
 		}
 	}
+	write_unlock(&fm->lock);
 }
 
 void drm_fence_manager_takedown(drm_device_t * dev)
