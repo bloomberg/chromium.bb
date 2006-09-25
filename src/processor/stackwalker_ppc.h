@@ -27,16 +27,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// stackwalker_x86.h: x86-specific stackwalker.
+// stackwalker_ppc.h: ppc-specific stackwalker.
 //
-// Provides stack frames given x86 register context and a memory region
-// corresponding to an x86 stack.
+// Provides stack frames given ppc register context and a memory region
+// corresponding to a ppc stack.
 //
 // Author: Mark Mentovai
 
 
-#ifndef PROCESSOR_STACKWALKER_X86_H__
-#define PROCESSOR_STACKWALKER_X86_H__
+#ifndef PROCESSOR_STACKWALKER_PPC_H__
+#define PROCESSOR_STACKWALKER_PPC_H__
 
 
 #include "google/airbag_types.h"
@@ -49,31 +49,32 @@ class MinidumpContext;
 class MinidumpModuleList;
 
 
-class StackwalkerX86 : public Stackwalker {
+class StackwalkerPPC : public Stackwalker {
  public:
-  // context is a MinidumpContext object that gives access to x86-specific
+  // context is a MinidumpContext object that gives access to ppc-specific
   // register state corresponding to the innermost called frame to be
   // included in the stack.  The other arguments are passed directly through
   // to the base Stackwalker constructor.
-  StackwalkerX86(const MDRawContextX86 *context,
+  StackwalkerPPC(const MDRawContextPPC *context,
                  MemoryRegion *memory,
                  MinidumpModuleList *modules,
                  SymbolSupplier *supplier);
 
  private:
-  // Implementation of Stackwalker, using x86 context (%ebp, %eip) and
-  // stack conventions (saved %ebp at [%ebp], saved %eip at 4[%ebp]).
+  // Implementation of Stackwalker, using ppc context (stack pointer in %r1,
+  // saved program counter in %srr0) and stack conventions (saved stack
+  // pointer at 0(%r1), return address at 8(0(%r1)).
   virtual bool GetContextFrame(StackFrame *frame);
   virtual bool GetCallerFrame(StackFrame *frame,
                               const StackFrames *walked_frames);
 
   // Stores the CPU context corresponding to the innermost stack frame to
   // be returned by GetContextFrame.
-  const MDRawContextX86 *context_;
+  const MDRawContextPPC *context_;
 };
 
 
 } // namespace google_airbag
 
 
-#endif // PROCESSOR_STACKWALKER_X86_H__
+#endif // PROCESSOR_STACKWALKER_PPC_H__

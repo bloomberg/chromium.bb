@@ -37,22 +37,20 @@
 #include <memory>
 
 #include "processor/stackwalker.h"
+#include "google/symbol_supplier.h"
 #include "processor/minidump.h"
 #include "processor/source_line_resolver.h"
-#include "google/symbol_supplier.h"
-
+#include "processor/stackwalker_ppc.h"
+#include "processor/stackwalker_x86.h"
 
 namespace google_airbag {
-
 
 using std::auto_ptr;
 
 
-Stackwalker::Stackwalker(MemoryRegion* memory, MinidumpModuleList* modules,
-                         SymbolSupplier* supplier)
-    : memory_(memory),
-      modules_(modules),
-      supplier_(supplier) {
+Stackwalker::Stackwalker(MemoryRegion *memory, MinidumpModuleList *modules,
+                         SymbolSupplier *supplier)
+    : memory_(memory), modules_(modules), supplier_(supplier) {
 }
 
 
@@ -72,7 +70,7 @@ void Stackwalker::Walk(StackFrames *frames) {
 
     // Resolve the module information, if a module map was provided.
     if (modules_) {
-      MinidumpModule* module =
+      MinidumpModule *module =
           modules_->GetModuleForAddress(frame->instruction);
       if (module) {
         frame->module_name = *(module->GetName());
@@ -97,8 +95,32 @@ void Stackwalker::Walk(StackFrames *frames) {
     frame.reset(new StackFrame());
 
     // Get the next frame.
-    valid = GetCallerFrame(frame.get());
+    valid = GetCallerFrame(frame.get(), frames);
   }
+}
+
+
+// static
+Stackwalker* Stackwalker::StackwalkerForCPU(MinidumpContext *context,
+                                            MemoryRegion *memory,
+                                            MinidumpModuleList *modules,
+                                            SymbolSupplier *supplier) {
+  Stackwalker *cpu_stackwalker = NULL;
+
+  u_int32_t cpu = context->GetContextCPU();
+  switch (cpu) {
+    case MD_CONTEXT_X86:
+      cpu_stackwalker = new StackwalkerX86(context->GetContextX86(),
+                                           memory, modules, supplier);
+      break;
+
+    case MD_CONTEXT_PPC:
+      cpu_stackwalker = new StackwalkerPPC(context->GetContextPPC(),
+                                           memory, modules, supplier);
+      break;
+  }
+
+  return cpu_stackwalker;
 }
 
 

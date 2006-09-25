@@ -46,10 +46,9 @@
 #include "google/stack_frame.h"
 #include "processor/memory_region.h"
 
-
 namespace google_airbag {
 
-
+class MinidumpContext;
 class MinidumpModuleList;
 class SymbolSupplier;
 
@@ -63,6 +62,14 @@ class Stackwalker {
   // data.
   void Walk(StackFrames *frames);
 
+  // Returns a new concrete subclass suitable for the CPU that a stack was
+  // generated on, according to the CPU type indicated by the context
+  // argument.  If no suitable concrete subclass exists, returns NULL.
+  static Stackwalker* StackwalkerForCPU(MinidumpContext *context,
+                                        MemoryRegion *memory,
+                                        MinidumpModuleList *modules,
+                                        SymbolSupplier *supplier);
+
  protected:
   // memory identifies a MemoryRegion that provides the stack memory
   // for the stack to walk.  modules, if non-NULL, is a MinidumpModuleList
@@ -70,32 +77,34 @@ class Stackwalker {
   // associated with.  supplier is an optional caller-supplied SymbolSupplier
   // implementation.  If supplier is NULL, source line info will not be
   // resolved.
-  Stackwalker(MemoryRegion* memory,
-              MinidumpModuleList* modules,
-              SymbolSupplier* supplier);
+  Stackwalker(MemoryRegion *memory,
+              MinidumpModuleList *modules,
+              SymbolSupplier *supplier);
 
   // The stack memory to walk.  Subclasses will require this region to
   // get information from the stack.
-  MemoryRegion* memory_;
+  MemoryRegion *memory_;
 
  private:
   // Obtains the context frame, the innermost called procedure in a stack
   // trace.  Returns false on failure.
-  virtual bool GetContextFrame(StackFrame* frame) = 0;
+  virtual bool GetContextFrame(StackFrame *frame) = 0;
 
   // Obtains a caller frame.  Each call to GetCallerFrame should return the
   // frame that called the last frame returned by GetContextFrame or
-  // GetCallerFrame.  GetCallerFrame should return false on failure or
-  // when there are no more caller frames (when the end of the stack has
-  // been reached).
-  virtual bool GetCallerFrame(StackFrame* frame) = 0;
+  // GetCallerFrame.  To aid this purpose, walked_frames contains the
+  // StackFrames vector of frames that have already been walked.
+  // GetCallerFrame should return false on failure or when there are no more
+  // caller frames (when the end of the stack has been reached).
+  virtual bool GetCallerFrame(StackFrame *frame,
+                              const StackFrames *walked_frames) = 0;
 
   // A list of modules, for populating each StackFrame's module information.
   // This field is optional and may be NULL.
-  MinidumpModuleList* modules_;
+  MinidumpModuleList *modules_;
 
   // The optional SymbolSupplier for resolving source line info.
-  SymbolSupplier* supplier_;
+  SymbolSupplier *supplier_;
 };
 
 

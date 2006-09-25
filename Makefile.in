@@ -107,7 +107,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 am_src_libairbag_la_OBJECTS = src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/source_line_resolver.lo \
-	src/processor/stackwalker.lo src/processor/stackwalker_x86.lo
+	src/processor/stackwalker.lo src/processor/stackwalker_ppc.lo \
+	src/processor/stackwalker_x86.lo
 src_libairbag_la_OBJECTS = $(am_src_libairbag_la_OBJECTS)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
@@ -127,7 +128,8 @@ src_processor_minidump_processor_unittest_OBJECTS =  \
 	$(am_src_processor_minidump_processor_unittest_OBJECTS)
 src_processor_minidump_processor_unittest_DEPENDENCIES =  \
 	src/processor/minidump_processor.lo src/processor/minidump.lo \
-	src/processor/stackwalker.lo src/processor/stackwalker_x86.lo \
+	src/processor/stackwalker.lo src/processor/stackwalker_ppc.lo \
+	src/processor/stackwalker_x86.lo \
 	src/processor/source_line_resolver.lo
 am_src_processor_minidump_stackwalk_OBJECTS =  \
 	src/processor/minidump_stackwalk.$(OBJEXT)
@@ -135,6 +137,7 @@ src_processor_minidump_stackwalk_OBJECTS =  \
 	$(am_src_processor_minidump_stackwalk_OBJECTS)
 src_processor_minidump_stackwalk_DEPENDENCIES =  \
 	src/processor/minidump.lo src/processor/stackwalker.lo \
+	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/source_line_resolver.lo
 am_src_processor_postfix_evaluator_unittest_OBJECTS =  \
@@ -339,6 +342,8 @@ src_libairbag_la_SOURCES = \
 	src/processor/source_line_resolver.h \
 	src/processor/stackwalker.cc \
 	src/processor/stackwalker.h \
+	src/processor/stackwalker_ppc.cc \
+	src/processor/stackwalker_ppc.h \
 	src/processor/stackwalker_x86.cc \
 	src/processor/stackwalker_x86.h
 
@@ -358,6 +363,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
 	src/processor/stackwalker.lo \
+	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/source_line_resolver.lo
 
@@ -386,6 +392,7 @@ src_processor_minidump_stackwalk_SOURCES = \
 src_processor_minidump_stackwalk_LDADD = \
 	src/processor/minidump.lo \
 	src/processor/stackwalker.lo \
+	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/source_line_resolver.lo
 
@@ -495,6 +502,8 @@ src/processor/source_line_resolver.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/stackwalker.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/stackwalker_ppc.lo: src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/stackwalker_x86.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/$(am__dirstamp):
@@ -603,6 +612,8 @@ mostlyclean-compile:
 	-rm -f src/processor/source_line_resolver_unittest.$(OBJEXT)
 	-rm -f src/processor/stackwalker.$(OBJEXT)
 	-rm -f src/processor/stackwalker.lo
+	-rm -f src/processor/stackwalker_ppc.$(OBJEXT)
+	-rm -f src/processor/stackwalker_ppc.lo
 	-rm -f src/processor/stackwalker_x86.$(OBJEXT)
 	-rm -f src/processor/stackwalker_x86.lo
 
@@ -620,6 +631,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_line_resolver.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_line_resolver_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_ppc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_x86.Plo@am__quote@
 
 .cc.o:

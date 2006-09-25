@@ -588,7 +588,7 @@ void MinidumpContext::Print() {
       for (unsigned int fpr_index = 0;
            fpr_index < MD_FLOATINGSAVEAREA_PPC_FPR_COUNT;
            ++fpr_index) {
-        printf("  float_save.fpregs[%2d]    = 0x%x\n",
+        printf("  float_save.fpregs[%2d]    = 0x%llx\n",
                fpr_index, context_ppc->float_save.fpregs[fpr_index]);
       }
       printf("  float_save.fpscr         = 0x%x\n",

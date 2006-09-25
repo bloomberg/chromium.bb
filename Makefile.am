@@ -70,6 +70,8 @@ src_libairbag_la_SOURCES = \
 	src/processor/source_line_resolver.h \
 	src/processor/stackwalker.cc \
 	src/processor/stackwalker.h \
+	src/processor/stackwalker_ppc.cc \
+	src/processor/stackwalker_ppc.h \
 	src/processor/stackwalker_x86.cc \
 	src/processor/stackwalker_x86.h
 
@@ -102,6 +104,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
 	src/processor/stackwalker.lo \
+	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/source_line_resolver.lo
 
@@ -130,6 +133,7 @@ src_processor_minidump_stackwalk_SOURCES = \
 src_processor_minidump_stackwalk_LDADD = \
 	src/processor/minidump.lo \
 	src/processor/stackwalker.lo \
+	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/source_line_resolver.lo
 
