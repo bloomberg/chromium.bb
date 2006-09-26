@@ -2252,6 +2252,7 @@ int drmFenceCreate(int fd, unsigned flags, int class,unsigned type,
 {
     drm_fence_arg_t arg;
     
+    memset(&arg, 0, sizeof(arg));
     arg.type = type;
     arg.class = class;
     arg.op = drm_fence_create;
@@ -2275,6 +2276,7 @@ int drmFenceBuffers(int fd, unsigned flags, drmFence *fence)
 {
     drm_fence_arg_t arg;
     
+    memset(&arg, 0, sizeof(arg));
     arg.flags = flags;
     arg.op = drm_fence_buffers;
     if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
@@ -2291,6 +2293,7 @@ int drmFenceDestroy(int fd, const drmFence *fence)
 {
     drm_fence_arg_t arg;
    
+    memset(&arg, 0, sizeof(arg));
     arg.handle = fence->handle;
     arg.op = drm_fence_destroy;
     if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
@@ -2302,6 +2305,7 @@ int drmFenceReference(int fd, unsigned handle, drmFence *fence)
 {
     drm_fence_arg_t arg;
    
+    memset(&arg, 0, sizeof(arg));
     arg.handle = handle;
     arg.op = drm_fence_reference;
     if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
@@ -2318,6 +2322,7 @@ int drmFenceUnreference(int fd, const drmFence *fence)
 {
     drm_fence_arg_t arg;
    
+    memset(&arg, 0, sizeof(arg));
     arg.handle = fence->handle;
     arg.op = drm_fence_unreference;
     if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
@@ -2329,6 +2334,7 @@ int drmFenceFlush(int fd, drmFence *fence, unsigned flush_type)
 {
     drm_fence_arg_t arg;
    
+    memset(&arg, 0, sizeof(arg));
     arg.handle = fence->handle;
     arg.type = flush_type;
     arg.op = drm_fence_flush;
@@ -2344,6 +2350,7 @@ int drmFenceUpdate(int fd, drmFence *fence)
 {
 	drm_fence_arg_t arg;
 	
+    memset(&arg, 0, sizeof(arg));
 	arg.handle = fence->handle;
 	arg.op = drm_fence_signaled;
 	if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
@@ -2384,6 +2391,7 @@ int drmFenceEmit(int fd, unsigned flags, drmFence *fence, unsigned emit_type)
 {
     drm_fence_arg_t arg;
    
+    memset(&arg, 0, sizeof(arg));
     arg.flags = flags;
     arg.handle = fence->handle;
     arg.type = emit_type;
@@ -2417,6 +2425,7 @@ int drmFenceWait(int fd, unsigned flags, drmFence *fence, unsigned flush_type)
 	}
     }
 
+    memset(&arg, 0, sizeof(arg));
     arg.handle = fence->handle;
     arg.type = flush_type;
     arg.flags = flags;
@@ -2438,6 +2447,7 @@ int drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, unsigned flags)
 {
     drm_ttm_arg_t arg;
 
+    memset(&arg, 0, sizeof(arg));
     arg.op = drm_ttm_create;
     arg.flags = flags;
     arg.size = size;
@@ -2458,6 +2468,7 @@ int drmTTMDestroy(int fd, const drmTTM *ttm)
 {
     drm_ttm_arg_t arg;
 
+    memset(&arg, 0, sizeof(arg));
     arg.op = drm_ttm_destroy;
     arg.handle = ttm->handle;
     if (ioctl(fd, DRM_IOCTL_TTM, &arg))
@@ -2470,6 +2481,7 @@ int drmTTMReference(int fd, unsigned handle, drmTTM *ttm)
 {
     drm_ttm_arg_t arg;
 
+    memset(&arg, 0, sizeof(arg));
     arg.handle = handle;
     arg.op = drm_ttm_reference;
     if (ioctl(fd, DRM_IOCTL_TTM, &arg))
@@ -2485,6 +2497,7 @@ int drmTTMUnreference(int fd, const drmTTM *ttm)
 {
     drm_ttm_arg_t arg;
 
+    memset(&arg, 0, sizeof(arg));
     arg.op = drm_ttm_destroy;
     arg.handle = ttm->handle;
     if (ioctl(fd, DRM_IOCTL_TTM, &arg))
@@ -2660,8 +2673,9 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
     drm_bo_arg_t arg;
     drm_bo_arg_request_t *req = &arg.d.req;
     drm_bo_arg_reply_t *rep = &arg.d.rep;
-
-    arg.handled = 0;
+    
+    memset(buf, 0, sizeof(*buf));
+    memset(&arg, 0, sizeof(arg));
     req->mask = mask;
     req->hint = hint;
     req->size = size;
@@ -2690,7 +2704,6 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
 	return -EINVAL;
     }
     req->op = drm_bo_create;
-    arg.next = 0;
 
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
@@ -2721,10 +2734,9 @@ int drmBODestroy(int fd, drmBO *buf)
 	buf->virtual = NULL;
     }
 
-    arg.handled = 0;
+    memset(&arg, 0, sizeof(arg));
     req->handle = buf->handle;
     req->op = drm_bo_destroy;
-    arg.next = 0;
 
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
@@ -2746,10 +2758,9 @@ int drmBOReference(int fd, unsigned handle, drmBO *buf)
     drm_bo_arg_request_t *req = &arg.d.req;
     drm_bo_arg_reply_t *rep = &arg.d.rep;
     
-    arg.handled = 0;
+    memset(&arg, 0, sizeof(arg));
     req->handle = handle;
     req->op = drm_bo_reference;
-    arg.next = 0;
     
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
@@ -2782,10 +2793,9 @@ int drmBOUnReference(int fd, drmBO *buf)
 	buf->virtual = NULL;
     }
 
-    arg.handled = 0;
+    memset(&arg, 0, sizeof(arg));
     req->handle = buf->handle;
     req->op = drm_bo_unreference;
-    arg.next = 0;
 
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
@@ -2832,12 +2842,11 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
 #endif
     }
 
-    arg.handled = 0;
+    memset(&arg, 0, sizeof(arg));
     req->handle = buf->handle;
     req->mask = mapFlags;
     req->hint = mapHint;
     req->op = drm_bo_map;
-    arg.next = 0;
 
     /*
      * May hang if the buffer object is busy.
@@ -2870,10 +2879,9 @@ int drmBOUnmap(int fd, drmBO *buf)
     drm_bo_arg_reply_t *rep = &arg.d.rep;
 
 	
-    arg.handled = 0;
+    memset(&arg, 0, sizeof(arg));
     req->handle = buf->handle;
     req->op = drm_bo_unmap;
-    arg.next = 0;
 
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg)) {
 	return -errno;
@@ -2894,20 +2902,17 @@ int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask,
     drm_bo_arg_reply_t *rep = &arg.d.rep;
     int ret = 0;
 
-    arg.handled = 0;
+    memset(&arg, 0, sizeof(arg));
     req->handle = buf->handle;
     req->mask = flags;
     req->hint = hint;
     req->arg_handle = mask; /* Encode mask in the arg_handle field :/ */
     req->op = drm_bo_validate;
-    arg.next = 0;
-
 
     do{
 	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     } while (ret && errno == EAGAIN);
     
-
     if (ret) 
 	return ret;
     if (!arg.handled)
@@ -2927,12 +2932,11 @@ int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
     drm_bo_arg_reply_t *rep = &arg.d.rep;
     int ret = 0;
 
-    arg.handled = 0;
+    memset(&arg, 0, sizeof(arg));
     req->handle = buf->handle;
     req->mask = flags;
     req->arg_handle = fenceHandle;
     req->op = drm_bo_validate;
-    arg.next = 0;
 
     ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     
@@ -2952,10 +2956,9 @@ int drmBOInfo(int fd, drmBO *buf)
     drm_bo_arg_reply_t *rep = &arg.d.rep;
     int ret = 0;
 
-    arg.handled = 0;
+    memset(&arg, 0, sizeof(arg));
     req->handle = buf->handle;
     req->op = drm_bo_info;
-    arg.next = 0;
 
     ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     
@@ -2978,11 +2981,10 @@ int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint)
 
     if ((buf->flags & DRM_BO_FLAG_SHAREABLE) ||
 	(buf->replyFlags & DRM_BO_REP_BUSY)) {
-	arg.handled = 0;
+        memset(&arg, 0, sizeof(arg));
 	req->handle = buf->handle;
 	req->op = drm_bo_wait_idle;
 	req->hint = hint;
-	arg.next = 0;
 
 	do {
 	    ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
@@ -3098,9 +3100,8 @@ int drmBOValidateList(int fd, drmBOList *list)
       if (prevNext)
 	  *prevNext = (unsigned long) arg;
 
-      arg->next = 0;
+      memset(arg, 0, sizeof(*arg));
       prevNext = &arg->next;
-      arg->handled = 0;
       req->handle = node->buf->handle;
       req->op = drm_bo_validate;
       req->mask = node->arg0;
@@ -3166,9 +3167,8 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
       if (prevNext)
 	  *prevNext = (unsigned long) arg;
 
-      arg->next = 0;
+      memset(arg, 0, sizeof(*arg));
       prevNext = &arg->next;
-      arg->handled = 0;
       req->handle = node->buf->handle;
       req->op = drm_bo_fence;
       req->mask = node->arg0;
@@ -3205,6 +3205,7 @@ int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
 {
     drm_mm_init_arg_t arg;
     
+    memset(&arg, 0, sizeof(arg));
     arg.req.op = mm_init;
     arg.req.vr_p_offset = vramPOffset;
     arg.req.vr_p_size = vramPSize;
@@ -3221,6 +3222,9 @@ int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
 int drmMMTakedown(int fd)
 {
     drm_mm_init_arg_t arg;
+
+
+    memset(&arg, 0, sizeof(arg));
     arg.req.op = mm_takedown;
 
     if (ioctl(fd, DRM_IOCTL_MM_INIT, &arg))
