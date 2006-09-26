@@ -438,7 +438,6 @@ int drm_fence_object_create(drm_device_t * dev, uint32_t type,
 	drm_fence_object_t *fence;
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
-	unsigned long fl;
 
 	fence = kmem_cache_alloc(drm_cache.fence_object, GFP_KERNEL);
 	if (!fence)

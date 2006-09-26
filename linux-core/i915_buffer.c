@@ -36,9 +36,9 @@
 drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev, int cached)
 {
 	if (cached) 
-		return drm_agp_init_ttm_cached(dev);
+		return drm_agp_init_ttm_cached(dev, NULL);
 	else
-		return drm_agp_init_ttm_uncached(dev);
+		return drm_agp_init_ttm_uncached(dev, NULL);
 }
 
 int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *type)

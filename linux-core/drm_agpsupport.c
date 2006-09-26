@@ -625,9 +625,7 @@ static void drm_agp_clear_ttm(drm_ttm_backend_t *backend) {
 
 	DRM_DEBUG("drm_agp_clear_ttm\n");
 	if (mem) {
-		if (mem->is_bound) {
-			drm_agp_unbind_memory(mem);
-		}
+		backend->unbind(backend);
 		agp_free_memory(mem);
 	}
 
@@ -639,25 +637,28 @@ static void drm_agp_destroy_ttm(drm_ttm_backend_t *backend) {
 	drm_agp_ttm_priv *agp_priv; 
 	
 	if (backend) {
-	  DRM_DEBUG("drm_agp_destroy_ttm\n");
-	  agp_priv = (drm_agp_ttm_priv *) backend->private;
+		DRM_DEBUG("drm_agp_destroy_ttm\n");
+		agp_priv = (drm_agp_ttm_priv *) backend->private;
 		if (agp_priv) {
 			if (agp_priv->mem) {
-				drm_agp_clear_ttm(backend);
+				backend->clear(backend);
 			}
 			drm_free(agp_priv, sizeof(*agp_priv), DRM_MEM_MAPPINGS);
 		}
-		drm_free(backend, sizeof(*backend), DRM_MEM_MAPPINGS);
+		if (backend->needs_free)
+			drm_free(backend, sizeof(*backend), DRM_MEM_MAPPINGS);
 	}
 }
 	
 
-drm_ttm_backend_t *drm_agp_init_ttm_uncached(struct drm_device *dev) {
+drm_ttm_backend_t *drm_agp_init_ttm_uncached(struct drm_device *dev,
+					     drm_ttm_backend_t *backend) {
 
         drm_ttm_backend_t *agp_be;
 	drm_agp_ttm_priv *agp_priv;
 
-	agp_be = drm_calloc(1, sizeof(*agp_be), DRM_MEM_MAPPINGS);
+	agp_be = (backend != NULL) ? backend:
+		drm_calloc(1, sizeof(*agp_be), DRM_MEM_MAPPINGS);
 
 	if (!agp_be)
 		return NULL;
@@ -681,16 +682,20 @@ drm_ttm_backend_t *drm_agp_init_ttm_uncached(struct drm_device *dev) {
 	agp_be->bind = drm_agp_bind_ttm;
 	agp_be->unbind = drm_agp_unbind_ttm;
 	agp_be->destroy = drm_agp_destroy_ttm;
+	agp_be->needs_free = (backend == NULL);
 	return agp_be;
 }
 EXPORT_SYMBOL(drm_agp_init_ttm_uncached);
 
-drm_ttm_backend_t *drm_agp_init_ttm_cached(struct drm_device *dev) {
+drm_ttm_backend_t *drm_agp_init_ttm_cached(struct drm_device *dev, 
+					   drm_ttm_backend_t *backend) {
 
         drm_ttm_backend_t *agp_be;
 	drm_agp_ttm_priv *agp_priv;
 
-	agp_be = drm_calloc(1, sizeof(*agp_be), DRM_MEM_MAPPINGS);
+	
+	agp_be = (backend != NULL) ? backend:
+		drm_calloc(1, sizeof(*agp_be), DRM_MEM_MAPPINGS);
 
 	if (!agp_be)
 		return NULL;
@@ -714,6 +719,7 @@ drm_ttm_backend_t *drm_agp_init_ttm_cached(struct drm_device *dev) {
 	agp_be->bind = drm_agp_bind_ttm;
 	agp_be->unbind = drm_agp_unbind_ttm;
 	agp_be->destroy = drm_agp_destroy_ttm;
+	agp_be->needs_free = (backend == NULL);
 	return agp_be;
 }
 EXPORT_SYMBOL(drm_agp_init_ttm_cached);

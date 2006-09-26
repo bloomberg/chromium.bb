@@ -47,6 +47,7 @@
 typedef struct drm_ttm_backend {
 	unsigned long aperture_base;
 	void *private;
+	int needs_free;
 	int (*needs_cache_adjust) (struct drm_ttm_backend * backend);
 	int (*populate) (struct drm_ttm_backend * backend,
 			 unsigned long num_pages, struct page ** pages);
