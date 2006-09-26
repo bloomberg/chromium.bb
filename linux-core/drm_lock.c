@@ -170,11 +170,8 @@ int drm_unlock(struct inode *inode, struct file *filp,
 	if (dev->driver->kernel_context_switch_unlock)
 		dev->driver->kernel_context_switch_unlock(dev);
 	else {
-		drm_lock_transfer(dev, &dev->lock.hw_lock->lock,
-				  DRM_KERNEL_CONTEXT);
-
 		if (drm_lock_free(dev, &dev->lock.hw_lock->lock,
-				  DRM_KERNEL_CONTEXT)) {
+				  lock.context)) {
 			DRM_ERROR("\n");
 		}
 	}
@@ -263,12 +260,12 @@ int drm_lock_free(drm_device_t * dev,
 {
 	unsigned int old, new, prev;
 
-	dev->lock.filp = NULL;
 	do {
 		old = *lock;
-		new = 0;
+		new = _DRM_LOCKING_CONTEXT(old);
 		prev = cmpxchg(lock, old, new);
 	} while (prev != old);
+
 	if (_DRM_LOCK_IS_HELD(old) && _DRM_LOCKING_CONTEXT(old) != context) {
 		DRM_DEBUG("%d freed heavyweight lock held by %d\n",
 			  context, _DRM_LOCKING_CONTEXT(old));
