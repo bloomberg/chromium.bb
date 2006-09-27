@@ -153,14 +153,19 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		DRM_WAKEUP(&dev_priv->irq_queue);
 
 	if (temp & (VSYNC_PIPEA_FLAG | VSYNC_PIPEB_FLAG)) {
-		if ((dev_priv->vblank_pipe &
+		int vblank_pipe = dev_priv->vblank_pipe;
+
+		if ((vblank_pipe &
 		     (DRM_I915_VBLANK_PIPE_A | DRM_I915_VBLANK_PIPE_B))
 		    == (DRM_I915_VBLANK_PIPE_A | DRM_I915_VBLANK_PIPE_B)) {
 			if (temp & VSYNC_PIPEA_FLAG)
 				atomic_inc(&dev->vbl_received);
 			if (temp & VSYNC_PIPEB_FLAG)
 				atomic_inc(&dev->vbl_received2);
-		} else
+		} else if (((temp & VSYNC_PIPEA_FLAG) &&
+			    (vblank_pipe & DRM_I915_VBLANK_PIPE_A)) ||
+			   ((temp & VSYNC_PIPEB_FLAG) &&
+			    (vblank_pipe & DRM_I915_VBLANK_PIPE_B)))
 			atomic_inc(&dev->vbl_received);
 
 		DRM_WAKEUP(&dev->vbl_queue);
