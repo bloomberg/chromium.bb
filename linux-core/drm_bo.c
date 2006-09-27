@@ -93,6 +93,15 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 
 	DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
 
+	/*
+	 * Somone might try to access us through the still active BM lists.
+	 */
+
+	if (atomic_read(&bo->usage) != 0) 
+		return;
+	if (!list_empty(&bo->ddestroy))
+		return;
+
 	if (bo->fence) {
 		if (!drm_fence_object_signaled(bo->fence, bo->fence_type)) {
 
@@ -114,6 +123,11 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 	list_del_init(&bo->head);
 
 	if (bo->tt) {
+
+		/*
+		 * This temporarily unlocks struct_mutex. 
+		 */
+
 		drm_unbind_ttm_region(bo->ttm_region);
 		drm_mm_put_block(&bm->tt_manager, bo->tt);
 		bo->tt = NULL;
@@ -136,32 +150,60 @@ static void drm_bo_delayed_delete(drm_device_t * dev)
 {
 	drm_buffer_manager_t *bm = &dev->bm;
 
-	drm_buffer_object_t *entry, *next;
+	drm_buffer_object_t *entry, *nentry;
+	struct list_head *list, *next;
 	drm_fence_object_t *fence;
 
 	mutex_lock(&dev->struct_mutex);
+	list = bm->ddestroy.next;
+	list_for_each_safe(list, next, &bm->ddestroy) {
+		entry = list_entry(list, drm_buffer_object_t, ddestroy);
+		nentry = NULL;
 
-	/*
-	 * FIXME: Lock buffer object mutex.
-	 */
+		/*
+		 * Another process may claim access to this entry through the
+		 * lru lists. In that case, just skip it.
+		 */
 
-	list_for_each_entry_safe(entry, next, &bm->ddestroy, ddestroy) {
+		if (atomic_read(&entry->usage) != 0)
+			continue;
+			
+		/*
+		 * Since we're the only users, No need to take the 
+		 * bo->mutex to watch the fence.
+		 */
+
 		fence = entry->fence;
-
 		if (fence && drm_fence_object_signaled(fence,
 						       entry->fence_type)) {
 			drm_fence_usage_deref_locked(dev, fence);
 			entry->fence = NULL;
 		}
-		if (!entry->fence) {
-			DRM_DEBUG("Destroying delayed buffer object\n");
-			list_del(&entry->ddestroy);
-			drm_bo_destroy_locked(dev, entry);
-		}
-	}
 
+		if (!entry->fence) {
+
+			/*
+			 * Protect the "next" entry against destruction in case
+			 * drm_bo_destroy_locked temporarily releases the
+			 * struct_mutex;
+			 */
+			
+			nentry = NULL;		
+			if (next != &bm->ddestroy) {
+				nentry = list_entry(next, drm_buffer_object_t, 
+						    ddestroy);
+				atomic_inc(&nentry->usage);
+			}
+			DRM_DEBUG("Destroying delayed buffer object\n");
+			list_del_init(&entry->ddestroy);
+			drm_bo_destroy_locked(dev, entry);
+			if (next != &bm->ddestroy)
+				atomic_dec(&nentry->usage);
+		} 
+	}
 	mutex_unlock(&dev->struct_mutex);
 }
+
 
 static void drm_bo_delayed_workqueue(void *data)
 {
@@ -1212,7 +1254,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 	uint32_t new_flags;
 	unsigned long num_pages;
 
-	//	drm_bo_delayed_delete(dev);
+	drm_bo_delayed_delete(dev);
 
 	if ((buffer_start & ~PAGE_MASK) && (type != drm_bo_type_fake)) {
 		DRM_ERROR("Invalid buffer object start.\n");
@@ -1241,6 +1283,8 @@ int drm_buffer_object_create(drm_file_t * priv,
 	bo->dev = dev;
 	bo->type = type;
 	bo->num_pages = num_pages;
+	bo->vram = NULL;
+	bo->tt = NULL;
 	if (bo->type == drm_bo_type_fake) {
 		bo->offset = buffer_start;
 		bo->buffer_start = 0;
