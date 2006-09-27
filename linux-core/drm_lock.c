@@ -35,9 +35,12 @@
 
 #include "drmP.h"
 
+#if 0
 static int drm_lock_transfer(drm_device_t * dev,
 			     __volatile__ unsigned int *lock,
 			     unsigned int context);
+#endif
+
 static int drm_notifier(void *priv);
 
 /**
@@ -172,7 +175,7 @@ int drm_unlock(struct inode *inode, struct file *filp,
 	else {
 		if (drm_lock_free(dev, &dev->lock.hw_lock->lock,
 				  lock.context)) {
-			DRM_ERROR("\n");
+			/* FIXME: Should really bail out here. */
 		}
 	}
 
@@ -217,6 +220,7 @@ int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
 	return 0;
 }
 
+#if 0
 /**
  * This takes a lock forcibly and hands it to context.	Should ONLY be used
  * inside *_unlock to give lock to kernel before calling *_dma_schedule.
@@ -243,6 +247,7 @@ static int drm_lock_transfer(drm_device_t * dev,
 	} while (prev != old);
 	return 1;
 }
+#endif
 
 /**
  * Free lock.
@@ -267,7 +272,7 @@ int drm_lock_free(drm_device_t * dev,
 	} while (prev != old);
 
 	if (_DRM_LOCK_IS_HELD(old) && _DRM_LOCKING_CONTEXT(old) != context) {
-		DRM_DEBUG("%d freed heavyweight lock held by %d\n",
+		DRM_ERROR("%d freed heavyweight lock held by %d\n",
 			  context, _DRM_LOCKING_CONTEXT(old));
 		return 1;
 	}
