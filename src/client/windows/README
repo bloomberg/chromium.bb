@@ -1,0 +1,22 @@
+This directory contains client code for collecting and sending minidumps.
+You can use them in your project as follows:
+
+exception_handler.lib:
+
+This library should be linked into the application from which you want
+to collect crash reports.  See the comments in exception_handler.h for
+instructions on setting up the handler to write minidumps on crash.
+You can also use ExceptionHandler to write non-crash minidumps.
+
+When linking with this static library, you will need to also link with
+rpcrt4.lib and ole32.lib.
+
+crash_report_sender.lib:
+
+Typically, after catching a crash, you will launch an external application
+to collect any additional information from the user, and upload the report to
+the server.  CrashReportSender is a utility class that can be used when the
+data is ready to upload.
+
+When linking with this static library, you will need to also link with
+wininet.lib.
