@@ -31,6 +31,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <asm/agp.h>
 #ifndef _DRM_COMPAT_H_
 #define _DRM_COMPAT_H_
 
@@ -244,5 +245,27 @@ extern void drm_clear_vma(struct vm_area_struct *vma,
  */
 
 extern pgprot_t vm_get_page_prot(unsigned long vm_flags);
+
+/*
+ * These are similar to the current kernel gatt pages allocator, only that we
+ * want a struct page pointer instead of a virtual address. This allows for pages
+ * that are not in the kernel linear map.
+ */
+
+#define drm_alloc_gatt_pages(order) virt_to_page(alloc_gatt_pages(order))
+#define drm_free_gatt_pages(pages, order) free_gatt_pages(page_address(pages), order) 
+
+#if defined(CONFIG_X86) && (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+
+/*
+ * These are too slow in earlier kernels.
+ */
+
+extern int drm_unmap_page_from_agp(struct page *page);
+extern int drm_map_page_into_agp(struct page *page);
+
+#define map_page_into_agp drm_map_page_into_agp
+#define unmap_page_from_agp drm_unmap_page_from_agp
+#endif
 
 #endif

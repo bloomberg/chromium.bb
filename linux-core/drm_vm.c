@@ -274,8 +274,7 @@ static __inline__ struct page *drm_do_vm_ttm_nopage(struct vm_area_struct *vma,
 			return NOPAGE_OOM;
 		}
 		++bm->cur_pages;
-		page = ttm->pages[page_offset] = 
-			alloc_page(GFP_KERNEL);
+		page = ttm->pages[page_offset] = drm_alloc_gatt_pages(0);
 	}
 	if (!page) 
 		return NOPAGE_OOM;

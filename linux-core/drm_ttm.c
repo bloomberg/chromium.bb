@@ -170,7 +170,6 @@ static int ioremap_vmas(drm_ttm_t * ttm, unsigned long page_offset,
 		if (ret)
 			break;
 	}
-	global_flush_tlb();
 	return ret;
 }
 
@@ -182,9 +181,7 @@ static int unmap_vma_pages(drm_ttm_t * ttm, unsigned long page_offset,
 			   unsigned long num_pages)
 {
 	struct list_head *list;
-	struct page **first_page = ttm->pages + page_offset;
-	struct page **last_page = ttm->pages + (page_offset + num_pages);
-	struct page **cur_page;
+
 #if !defined(flush_tlb_mm) && defined(MODULE)
 	int flush_tlb = 0;
 #endif
@@ -207,13 +204,6 @@ static int unmap_vma_pages(drm_ttm_t * ttm, unsigned long page_offset,
 		global_flush_tlb();
 #endif
 
-	for (cur_page = first_page; cur_page != last_page; ++cur_page) {
-		if (page_mapped(*cur_page)) {
-			DRM_ERROR("Mapped page detected. Map count is %d\n",
-				  page_mapcount(*cur_page));
-			return -1;
-		}
-	}
 	return 0;
 }
 
@@ -258,7 +248,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 			if (ttm->page_flags &&
 			    (ttm->page_flags[i] & DRM_TTM_PAGE_UNCACHED) &&
 			    *cur_page && !PageHighMem(*cur_page)) {
-				change_page_attr(*cur_page, 1, PAGE_KERNEL);
+				unmap_page_from_agp(*cur_page);
 				do_tlbflush = 1;
 			}
 			if (*cur_page) {
@@ -278,19 +268,20 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 				 * End debugging.
 				 */
 
-				__free_page(*cur_page);
+				drm_free_gatt_pages(*cur_page, 0);
 				--bm->cur_pages;
 			}
 		}
 		if (do_tlbflush)
-			global_flush_tlb();
+			flush_agp_mappings();
 		ttm_free(ttm->pages, ttm->num_pages*sizeof(*ttm->pages),
 			 DRM_MEM_TTM);
 		ttm->pages = NULL;
 	}
 
 	if (ttm->page_flags) {
-		ttm_free(ttm->page_flags, ttm->num_pages*sizeof(*ttm->page_flags), DRM_MEM_TTM);
+		ttm_free(ttm->page_flags, ttm->num_pages*sizeof(*ttm->page_flags), 
+			 DRM_MEM_TTM);
 		ttm->page_flags = NULL;
 	}
 
@@ -455,7 +446,6 @@ static int drm_set_caching(drm_ttm_t * ttm, unsigned long page_offset,
 {
 	int i, cur;
 	struct page **cur_page;
-	pgprot_t attr = (noncached) ? PAGE_KERNEL_NOCACHE : PAGE_KERNEL;
 
 	for (i = 0; i < num_pages; ++i) {
 		cur = page_offset + i;
@@ -472,12 +462,16 @@ static int drm_set_caching(drm_ttm_t * ttm, unsigned long page_offset,
 				    DRM_TTM_PAGE_UNCACHED) != noncached) {
 				DRM_MASK_VAL(ttm->page_flags[cur],
 					     DRM_TTM_PAGE_UNCACHED, noncached);
-				change_page_attr(*cur_page, 1, attr);
+				if (noncached) {
+					map_page_into_agp(*cur_page);
+				} else {
+					unmap_page_from_agp(*cur_page);
+				}
 			}
 		}
 	}
 	if (do_tlbflush)
-		global_flush_tlb();
+		flush_agp_mappings();
 	return 0;
 }
 
@@ -612,7 +606,7 @@ int drm_create_ttm_region(drm_ttm_t * ttm, unsigned long page_offset,
 				drm_destroy_ttm_region(entry);
 				return -ENOMEM;
 			}
-			*cur_page = alloc_page(GFP_KERNEL);
+			*cur_page = drm_alloc_gatt_pages(0);
 			if (!*cur_page) {
 				DRM_ERROR("Page allocation failed\n");
 				drm_destroy_ttm_region(entry);

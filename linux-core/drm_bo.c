@@ -1562,7 +1562,7 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		if (arg.req.tt_p_size) {
 			ret = drm_mm_init(&bm->tt_manager,
 					  arg.req.tt_p_offset,
-					  arg.req.tt_p_size);
+					  3000 /*arg.req.tt_p_size*/);
 			bm->has_tt = 1;
 			bm->use_tt = 1;
 

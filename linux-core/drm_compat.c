@@ -160,6 +160,26 @@ void drm_clear_vma(struct vm_area_struct *vma,
 }
 #endif
 
+#if defined(CONFIG_X86) && (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+int drm_map_page_into_agp(struct page *page)
+{
+        int i;
+        i = change_page_attr(page, 1, PAGE_KERNEL_NOCACHE);
+        /* Caller's responsibility to call global_flush_tlb() for
+         * performance reasons */
+        return i;
+}
+
+int drm_unmap_page_from_agp(struct page *page)
+{
+        int i;
+        i = change_page_attr(page, 1, PAGE_KERNEL);
+        /* Caller's responsibility to call global_flush_tlb() for
+         * performance reasons */
+        return i;
+}
+#endif
+
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags)
 {
