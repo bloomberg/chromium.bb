@@ -35,9 +35,9 @@
 
 #define DRIVER_AUTHOR		"Tungsten Graphics, Inc."
 
-#define DRIVER_NAME		"i915"
+#define DRIVER_NAME		"i915-mm"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20060119"
+#define DRIVER_DATE		"20060923"
 
 /* Interface history:
  *
@@ -48,7 +48,7 @@
  * 1.5: Add vblank pipe configuration
  */
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		5
+#define DRIVER_MINOR		6
 #define DRIVER_PATCHLEVEL	0
 
 #if defined(__linux__)
