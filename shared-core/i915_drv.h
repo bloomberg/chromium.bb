@@ -50,7 +50,7 @@
  *      - Support vertical blank on secondary display pipe
  */
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		6
+#define DRIVER_MINOR		7
 #define DRIVER_PATCHLEVEL	0
 
 #if defined(__linux__)
