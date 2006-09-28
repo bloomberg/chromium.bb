@@ -10,3 +10,5 @@ FUNC 2170 14 Function2_2
 2176 4 12 2
 217a 6 13 2
 2180 4 21 2
+STACK WIN 4 2000 c 1 0 0 0 0 0 $eip 4 + ^ = $esp $ebp 8 + = $ebp $ebp ^ =
+STACK WIN 4 2170 14 1 0 0 0 0 0 $eip 4 + ^ = $esp $ebp 8 + = $ebp $ebp ^ =

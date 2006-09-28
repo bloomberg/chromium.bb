@@ -31,10 +31,12 @@
 #include <string>
 #include "processor/source_line_resolver.h"
 #include "google/stack_frame.h"
+#include "processor/stack_frame_info.h"
 
 using std::string;
 using google_airbag::SourceLineResolver;
 using google_airbag::StackFrame;
+using google_airbag::StackFrameInfo;
 
 #define ASSERT_TRUE(cond) \
   if (!(cond)) {                                                        \
@@ -53,10 +55,12 @@ static bool VerifyEmpty(const StackFrame &frame) {
   return true;
 }
 
-static void ClearSourceLineInfo(StackFrame *frame) {
+static void ClearSourceLineInfo(StackFrame *frame,
+                                StackFrameInfo *frame_info) {
   frame->function_name.clear();
   frame->source_file_name.clear();
   frame->source_line = 0;
+  frame_info->program_string.clear();
 }
 
 static bool RunTests() {
@@ -68,36 +72,43 @@ static bool RunTests() {
   ASSERT_TRUE(resolver.LoadModule("module2", testdata_dir + "/module2.out"));
 
   StackFrame frame;
+  StackFrameInfo frame_info;
   frame.instruction = 0x1000;
   frame.module_name = "module1";
-  resolver.FillSourceLineInfo(&frame);
+  resolver.FillSourceLineInfo(&frame, &frame_info);
   ASSERT_EQ(frame.function_name, "Function1_1");
   ASSERT_EQ(frame.source_file_name, "file1_1.cc");
   ASSERT_EQ(frame.source_line, 44);
+  ASSERT_EQ(frame_info.program_string,
+            "$eip 4 + ^ = $esp $ebp 8 + = $ebp $ebp ^ =");
 
-  ClearSourceLineInfo(&frame);
+  ClearSourceLineInfo(&frame, &frame_info);
   frame.instruction = 0x800;
-  resolver.FillSourceLineInfo(&frame);
+  resolver.FillSourceLineInfo(&frame, &frame_info);
   ASSERT_TRUE(VerifyEmpty(frame));
+  ASSERT_TRUE(frame_info.program_string.empty());
 
   frame.instruction = 0x1280;
-  resolver.FillSourceLineInfo(&frame);
+  resolver.FillSourceLineInfo(&frame, &frame_info);
   ASSERT_EQ(frame.function_name, "Function1_3");
   ASSERT_TRUE(frame.source_file_name.empty());
   ASSERT_EQ(frame.source_line, 0);
+  ASSERT_TRUE(frame_info.program_string.empty());
 
   frame.instruction = 0x1380;
-  resolver.FillSourceLineInfo(&frame);
+  resolver.FillSourceLineInfo(&frame, &frame_info);
   ASSERT_EQ(frame.function_name, "Function1_4");
   ASSERT_TRUE(frame.source_file_name.empty());
   ASSERT_EQ(frame.source_line, 0);
+  ASSERT_FALSE(frame_info.program_string.empty());
 
   frame.instruction = 0x2180;
   frame.module_name = "module2";
-  resolver.FillSourceLineInfo(&frame);
+  resolver.FillSourceLineInfo(&frame, &frame_info);
   ASSERT_EQ(frame.function_name, "Function2_2");
   ASSERT_EQ(frame.source_file_name, "file2_2.cc");
   ASSERT_EQ(frame.source_line, 21);
+  ASSERT_EQ(frame_info.prolog_size, 1);
 
   ASSERT_FALSE(resolver.LoadModule("module3",
                                    testdata_dir + "/module3_bad.out"));

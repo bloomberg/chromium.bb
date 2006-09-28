@@ -76,6 +76,10 @@ class PDBSourceLineWriter {
   // Returns true on success.
   bool PrintSourceFiles();
 
+  // Outputs all of the frame information necessary to construct stack
+  // backtraces in the absence of frame pointers.  Returns true on success.
+  bool PrintFrameData();
+
   // The session for the currently-open pdb file.
   CComPtr<IDiaSession> session_;
 

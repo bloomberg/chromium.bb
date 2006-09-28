@@ -42,9 +42,11 @@
 #ifndef PROCESSOR_STACKWALKER_H__
 #define PROCESSOR_STACKWALKER_H__
 
+#include <vector>
 
 #include "google/stack_frame.h"
 #include "processor/memory_region.h"
+#include "processor/stack_frame_info.h"
 
 namespace google_airbag {
 
@@ -84,6 +86,11 @@ class Stackwalker {
   // The stack memory to walk.  Subclasses will require this region to
   // get information from the stack.
   MemoryRegion *memory_;
+
+  // Additional debugging information for each stack frame.  This vector
+  // parallels the StackFrames vector.  Subclasses may use this information
+  // to walk the stack.
+  std::vector<StackFrameInfo> stack_frame_info_;
 
  private:
   // Obtains the context frame, the innermost called procedure in a stack

@@ -219,10 +219,86 @@ bool PDBSourceLineWriter::PrintFunctions() {
   return true;
 }
 
+bool PDBSourceLineWriter::PrintFrameData() {
+  // It would be nice if it were possible to output frame data alongside the
+  // associated function, as is done with line numbers, but the DIA API
+  // doesn't make it possible to get the frame data in that way.
+
+  CComPtr<IDiaEnumTables> tables;
+  if (FAILED(session_->getEnumTables(&tables)))
+    return false;
+
+  // Pick up the first table that supports IDiaEnumFrameData.
+  CComPtr<IDiaEnumFrameData> frame_data_enum;
+  CComPtr<IDiaTable> table;
+  ULONG count;
+  while (!frame_data_enum &&
+         SUCCEEDED(tables->Next(1, &table, &count)) &&
+	 count == 1) {
+    table->QueryInterface(_uuidof(IDiaEnumFrameData),
+                          reinterpret_cast<void**>(&frame_data_enum));
+    table.Release();
+  }
+  if (!frame_data_enum)
+    return false;
+
+  CComPtr<IDiaFrameData> frame_data;
+  while (SUCCEEDED(frame_data_enum->Next(1, &frame_data, &count)) &&
+         count == 1) {
+    DWORD type;
+    if (FAILED(frame_data->get_type(&type)))
+      return false;
+
+    DWORD rva;
+    if (FAILED(frame_data->get_relativeVirtualAddress(&rva)))
+      return false;
+
+    DWORD code_size;
+    if (FAILED(frame_data->get_lengthBlock(&code_size)))
+      return false;
+
+    DWORD prolog_size;
+    if (FAILED(frame_data->get_lengthProlog(&prolog_size)))
+      return false;
+
+    // epliog_size is always 0.
+    DWORD epilog_size = 0;
+
+    DWORD parameter_size;
+    if (FAILED(frame_data->get_lengthParams(&parameter_size)))
+      return false;
+
+    DWORD saved_register_size;
+    if (FAILED(frame_data->get_lengthSavedRegisters(&saved_register_size)))
+      return false;
+
+    DWORD local_size;
+    if (FAILED(frame_data->get_lengthLocals(&local_size)))
+      return false;
+
+    DWORD max_stack_size;
+    if (FAILED(frame_data->get_maxStack(&max_stack_size)))
+      return false;
+
+    BSTR program_string;
+    if (FAILED(frame_data->get_program(&program_string)))
+      return false;
+
+    fprintf(output_, "STACK WIN %x %x %x %x %x %x %x %x %x %ws\n",
+            type, rva, code_size, prolog_size, epilog_size,
+            parameter_size, saved_register_size, local_size, max_stack_size,
+            program_string);
+
+    frame_data.Release();
+  }
+
+  return true;
+}
+
 bool PDBSourceLineWriter::WriteMap(FILE *map_file) {
   bool ret = false;
   output_ = map_file;
-  if (PrintSourceFiles() && PrintFunctions()) {
+  if (PrintSourceFiles() && PrintFunctions() && PrintFrameData()) {
     ret = true;
   }
 

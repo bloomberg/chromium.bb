@@ -50,18 +50,21 @@ using std::auto_ptr;
 
 Stackwalker::Stackwalker(MemoryRegion *memory, MinidumpModuleList *modules,
                          SymbolSupplier *supplier)
-    : memory_(memory), modules_(modules), supplier_(supplier) {
+    : memory_(memory), stack_frame_info_(), modules_(modules),
+      supplier_(supplier) {
 }
 
 
 void Stackwalker::Walk(StackFrames *frames) {
   frames->clear();
+  stack_frame_info_.clear();
   SourceLineResolver resolver;
 
   // Begin with the context frame, and keep getting callers until there are
   // no more.
 
   auto_ptr<StackFrame> frame(new StackFrame());
+  auto_ptr<StackFrameInfo> frame_info(new StackFrameInfo());
   bool valid = GetContextFrame(frame.get());
   while (valid) {
     // frame already contains a good frame with properly set instruction and
@@ -80,7 +83,7 @@ void Stackwalker::Walk(StackFrames *frames) {
             supplier_->GetSymbolFile(module);
           if (!symbol_file.empty()) {
             resolver.LoadModule(*(module->GetName()), symbol_file);
-            resolver.FillSourceLineInfo(frame.get());
+            resolver.FillSourceLineInfo(frame.get(), frame_info.get());
           }
         }
       }
@@ -88,11 +91,13 @@ void Stackwalker::Walk(StackFrames *frames) {
 
     // Copy the frame into the frames vector.
     frames->push_back(*frame);
+    stack_frame_info_.push_back(*frame_info);
 
     // Use a new object for the next frame, even though the old object was
     // copied.  If StackFrame provided some sort of Clear() method, then
     // the same frame could be reused.
     frame.reset(new StackFrame());
+    frame_info.reset(new StackFrameInfo());
 
     // Get the next frame.
     valid = GetCallerFrame(frame.get(), frames);

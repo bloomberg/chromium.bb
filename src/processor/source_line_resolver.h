@@ -42,7 +42,8 @@ namespace google_airbag {
 using std::string;
 using __gnu_cxx::hash_map;
 
-class StackFrame;
+struct StackFrame;
+struct StackFrameInfo;
 
 class SourceLineResolver {
  public:
@@ -61,8 +62,9 @@ class SourceLineResolver {
 
   // Fills in the function_base, function_name, source_file_name,
   // and source_line fields of the StackFrame.  The instruction and
-  // module_name fields must already be filled in.
-  void FillSourceLineInfo(StackFrame *frame) const;
+  // module_name fields must already be filled in.  Additional debugging
+  // information, if available, is placed in frame_info.
+  void FillSourceLineInfo(StackFrame *frame, StackFrameInfo *frame_info) const;
 
  private:
   template<class T> class MemAddrMap;

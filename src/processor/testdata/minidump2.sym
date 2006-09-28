@@ -10684,3 +10684,861 @@ FUNC 117c0 be strchr
 1187b 1 186 670
 1187c 1 187 670
 1187d 1 188 670
+STACK WIN 4 1020 18 4 0 0 0 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 1040 73 33 0 8 c 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 105a 59 19 0 8 10 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 1088 d 0 0 8 c 18 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 10c0 70 6 0 4 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 1180 24 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 11b0 196 14 0 10 0 14 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 11b4 d3 10 0 10 4 14 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 24 - ^ =
+STACK WIN 4 11b9 cd b 0 10 8 14 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 28 - ^ = $ebx $T0 24 - ^ =
+STACK WIN 4 11ba cb a 0 10 c 14 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 28 - ^ = $ebx $T0 24 - ^ =
+STACK WIN 4 11c4 c0 0 0 10 10 14 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 28 - ^ = $ebx $T0 24 - ^ =
+STACK WIN 4 1346 a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1350 a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 135a a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1364 a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 136e a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1378 24 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 139c 41 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 13dd 1b6 c 0 0 c 2c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 1555 14 0 0 0 c 2c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 1593 a 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 159d f 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1700 29 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1730 42 18 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 173e 33 a 0 8 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 173f 31 9 0 8 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 1748 27 0 0 8 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 1772 6c c 0 4 c 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 17b8 14 0 0 4 c 18 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 17de 24 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1802 26 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1828 15 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 183d 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1846 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 184f 18 3 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1850 16 2 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1867 20 1 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1868 1e 0 0 8 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1887 37 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 188c 31 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 18be 3c 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 18c3 36 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 18fa 3c 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 18ff 36 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1936 3c 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 193b 36 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1972 3c 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1977 36 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 19ae 37 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 19b3 31 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 19e5 37 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 19ea 31 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1a1c 92 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1a5a 34 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1a5b 32 0 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1aae ce c 0 c c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 1b64 11 0 0 c c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 1b7c 11 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1b8d 11 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1b9e f 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1bad f 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1bbc 4c 1 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1bbd 4a 0 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1c08 22 3 0 18 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 1c2a 1a0 8 0 4 0 4 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1c2c 19c 6 0 4 4 4 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 8 - ^ =
+STACK WIN 4 1c31 196 1 0 4 8 4 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 8 - ^ =
+STACK WIN 4 1c32 194 0 0 4 c 4 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 8 - ^ =
+STACK WIN 4 1c4f 176 0 0 4 10 4 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 20 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 1dca 20 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1dea 39 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1e23 1 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1e24 32 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1e2f 1c 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1e56 16f 6 0 8 0 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 1e5c 167 0 0 8 4 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 1e7e 144 0 0 8 8 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 1e84 13d 0 0 8 c 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 1fc5 1b 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1fe0 db b 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1fe1 c3 a 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 1fea b9 1 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 1feb b7 0 0 0 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 203a 67 0 0 0 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 16 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 20bb a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 20c5 198 e 0 c 0 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 20cd 187 6 0 c 4 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 20d3 180 0 0 c 8 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 225d b9 11 0 0 0 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 2264 b0 a 0 0 4 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 16 - ^ =
+STACK WIN 4 226d a6 1 0 0 8 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 16 - ^ =
+STACK WIN 4 226e a4 0 0 0 c c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 16 - ^ =
+STACK WIN 4 2316 135 b 0 0 0 8 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 231e 12a 3 0 0 4 8 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 12 - ^ =
+STACK WIN 4 231f 128 2 0 0 8 8 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 16 - ^ = $ebx $T0 12 - ^ =
+STACK WIN 4 2320 126 1 0 0 c 8 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 16 - ^ = $ebx $T0 12 - ^ =
+STACK WIN 4 2321 124 0 0 0 10 8 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 16 - ^ = $ebx $T0 12 - ^ =
+STACK WIN 4 244b 240 c 0 0 c 64 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 2674 4 0 0 0 c 64 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 268b 4c 2 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 268c 4a 1 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 268d 48 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 26d7 24 2 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 26d8 22 1 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 26d9 20 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 26fb 24 2 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 26fc 22 1 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 26fd 20 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 271f 63 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2720 61 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2782 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 278b 63 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 278c 61 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 27ee 9 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 27f7 15 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 280c 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2812 2a 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 283c 19 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2855 3d 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2892 b4 c 0 8 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 293d 8 0 0 8 c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 2946 83 2 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2947 81 1 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2948 7d 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 29c9 18 1 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 29ca 16 0 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 29e1 121 c 0 4 c 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 2aea b 0 0 4 c 18 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 2af6 b 0 0 4 c 18 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 2b02 69 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2b0c 4b 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2b15 25 0 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2b6b 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2b71 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2b77 184 1 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2b78 182 0 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2b93 166 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2cfb 5b 6 0 0 0 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 2d01 43 0 0 0 4 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 2d56 5a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2db0 74 1 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2db1 72 0 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ =
+STACK WIN 4 2dbd 53 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 2dc4 4b 0 0 0 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 2dcf 30 0 0 0 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 2e24 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 2e85 94 15 0 0 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 2e99 7e 1 0 0 4 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 2e9a 7c 0 0 0 8 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 2eb6 5f 0 0 0 c 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 2f19 104 9 0 0 0 328 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3157 49 2 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3158 3b 1 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3159 39 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 31a0 55 8 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 31a1 53 7 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 31a8 4b 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 31ae 2a 0 0 0 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 31f5 15 3 0 4 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 320a 18 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3222 c3 c 0 4 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 32dc 8 0 0 4 c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 32e5 31 7 0 4 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 32ec 28 0 0 4 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3316 a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3320 fc 1c 0 14 4 328 0 $T0 $ebp 680 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 341c 22 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 341d 20 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 343e d 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 344b 9 3 0 14 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3454 24 3 0 14 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3478 10 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3488 9 3 0 14 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3491 3b 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 34cc 13 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 34df 13 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 34f2 1e 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 34f3 1c 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3510 1b 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 352b 2a 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 352c 28 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3555 1b 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3570 2a 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3571 28 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 359a ad 5 0 4 0 4 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 359c a9 3 0 4 4 4 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 8 - ^ =
+STACK WIN 4 359d a7 2 0 4 8 4 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 12 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 359e a5 1 0 4 c 4 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 12 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 359f a3 0 0 4 10 4 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 12 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 3647 2f 1 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3648 2d 0 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3676 3c c 0 4 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 36ac 5 0 0 4 c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 36b2 12 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 36c4 1f 2 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 36c5 1d 1 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 36c6 1b 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 36e3 39 c 0 0 c 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3703 4 0 0 0 c 18 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 371c 13 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 372f 37 c 0 0 c 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3753 4 0 0 0 c 18 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 3766 11 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3777 19 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3790 9b c 0 4 c 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3809 9 0 0 4 c 20 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 382b 34 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3836 1d 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 385f d 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 386c 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3875 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 387e 23d c 0 8 c 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3a73 b 0 0 8 c 20 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 3abb 1b0 c 0 4 c 30 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3c29 14 0 0 4 c 30 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 3c6b a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3c75 104 3 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3c76 102 2 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ =
+STACK WIN 4 3c77 100 1 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ =
+STACK WIN 4 3c78 fe 0 0 4 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ =
+STACK WIN 4 3cb1 c4 0 0 4 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ = $ebx $T0 16 - ^ =
+STACK WIN 4 3d79 15a 24 0 14 0 94 0 $T0 $ebp 100 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3d92 bc b 0 14 4 94 0 $T0 $ebp 100 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 152 - ^ =
+STACK WIN 4 3d93 b8 a 0 14 8 94 0 $T0 $ebp 100 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 152 - ^ =
+STACK WIN 4 3d9d ad 0 0 14 c 94 0 $T0 $ebp 100 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 152 - ^ =
+STACK WIN 4 3ed3 a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3edd a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3ee7 10 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3ef7 c5 c 0 8 c 24 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 3f7d 17 0 0 8 c 24 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 3fbc a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3fc6 31 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3fc7 2f 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 3ff7 9 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4000 d 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 400d 22 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 402f 19e 9 0 c 0 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 4036 195 2 0 c 4 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 36 - ^ =
+STACK WIN 4 4037 193 1 0 c 8 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 36 - ^ =
+STACK WIN 4 4038 191 0 0 c c 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 36 - ^ =
+STACK WIN 4 41cd 71 b 0 c 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 41d2 6b 6 0 c 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 41d7 65 1 0 c 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 41d8 63 0 0 c c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 423e b3 e 0 10 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 4242 1a a 0 10 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 4243 2e 9 0 10 8 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 424c e 0 0 10 c 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 438b 65 b 0 c 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4390 5f 6 0 c 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 4395 59 1 0 c 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 4396 57 0 0 c c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 43f0 46 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 43f5 40 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4436 a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4440 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4446 8e c 0 4 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 449c 8 0 0 4 c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 44d4 21 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 44d5 1f 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 44f5 10 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4505 40 2 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4506 3e 1 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4507 3c 0 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4545 48 2 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4546 46 1 0 8 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4547 44 0 0 8 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 458d 4b 2 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 458e 49 1 0 8 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 458f 47 0 0 8 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 45d8 50 2 0 c 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 45d9 4e 1 0 c 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 45da 4c 0 0 c 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4628 8 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4630 a 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 463a a 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4644 e 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4652 3 2 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4655 2f 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4684 55 b 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4685 53 a 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 4686 51 9 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 4687 4f 8 0 0 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 4688 4d 7 0 0 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 46d9 18a 1d 0 0 0 51c 0 $T0 $ebp 1180 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 46f5 161 1 0 0 4 51c 0 $T0 $ebp 1180 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 1312 - ^ =
+STACK WIN 4 46f6 15d 0 0 0 8 51c 0 $T0 $ebp 1180 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 1312 - ^ =
+STACK WIN 4 4863 a4 c 0 0 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 48fb b 0 0 0 c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 4907 82 9 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 490e 78 2 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4989 7a 7 0 0 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 4990 71 0 0 0 4 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 4a03 1ab 19 0 8 0 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 4a14 193 8 0 8 4 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 36 - ^ =
+STACK WIN 4 4a18 18c 4 0 8 8 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 36 - ^ =
+STACK WIN 4 4a1c 187 0 0 8 c 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 36 - ^ =
+STACK WIN 4 4bae 3c 6 0 0 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 4bea 19a c 0 4 c 24 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 4d4b 8 0 0 4 c 24 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 4d84 1e 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4da2 51 6 0 10 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 4df3 15 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4e08 13 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4e1b 15 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4e30 13 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4e43 15 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4e58 13 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4e6b 18 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4e83 16 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4e99 18 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4eb1 16 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4ec7 18 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4edf 16 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4ef5 18 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4f0d 16 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4f23 15 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4f38 13 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4f4b 15 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4f60 13 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4f73 15 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4f88 13 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 4f9b 53 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 4fee e 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 5365 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 536b 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 5371 140 12 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 5372 13e 11 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 5373 13c 10 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 5374 13a f 0 4 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 5383 12a 0 0 4 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 54b1 86 8 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 54b2 84 7 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 54b3 82 6 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 54b4 80 5 0 4 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 54b9 7a 0 0 4 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 5537 8c 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 5538 8a 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 5541 7e 0 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 8 - ^ =
+STACK WIN 4 5542 7c 0 0 4 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 12 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 5543 7a 0 0 4 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 12 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 55c3 24 3 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 55c4 22 2 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 55d3 12 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 55e7 3e 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 55f0 31 0 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 5625 76 c 0 0 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 568f 8 0 0 0 c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 569b 66 2 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 569c 64 1 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 569d 62 0 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 5701 53 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 5754 96 c 0 4 c 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 57de b 0 0 4 c 18 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 57ea 5 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 57ef 88 c 0 0 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 586b b 0 0 0 c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 5877 5 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 587c 3 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 587f 3e 2 0 c 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 5880 3c 1 0 c 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 5881 3a 0 0 c 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 588c 2e 0 0 c c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 58bd 129 6 0 8 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 58c1 123 2 0 8 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 58c2 121 1 0 8 8 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 58c3 11f 0 0 8 c 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 59e6 6b 5 0 c 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 59ea 4d 1 0 c 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 59eb 4b 0 0 c 8 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 5a51 171 4 0 0 0 10 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 5a55 169 0 0 0 4 10 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 20 - ^ =
+STACK WIN 4 5a74 149 0 0 0 8 10 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 24 - ^ = $ebx $T0 20 - ^ =
+STACK WIN 4 5a75 141 0 0 0 c 10 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 24 - ^ = $ebx $T0 20 - ^ =
+STACK WIN 4 5bc2 1d4 1e 0 18 0 b4 0 $T0 $ebp 96 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 5bdb 1b1 5 0 18 4 b4 0 $T0 $ebp 96 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 184 - ^ =
+STACK WIN 4 5bdc 1ad 4 0 18 8 b4 0 $T0 $ebp 96 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 184 - ^ =
+STACK WIN 4 5be0 1a8 0 0 18 c b4 0 $T0 $ebp 96 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 184 - ^ =
+STACK WIN 4 5d96 2f6 17 0 4 0 1c4 0 $T0 $ebp 116 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 5dac 2d6 1 0 4 4 1c4 0 $T0 $ebp 116 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 456 - ^ =
+STACK WIN 4 5dad 2d2 0 0 4 8 1c4 0 $T0 $ebp 116 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 456 - ^ =
+STACK WIN 4 608c 1ce 18 0 4 0 98 0 $T0 $ebp 116 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 60a5 1ab 0 0 4 4 98 0 $T0 $ebp 116 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 156 - ^ =
+STACK WIN 4 60a6 1a7 0 0 4 8 98 0 $T0 $ebp 116 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 156 - ^ =
+STACK WIN 4 60ad 19f 0 0 4 c 98 0 $T0 $ebp 116 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 156 - ^ =
+STACK WIN 4 625a f3 7 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 6260 2c 1 0 8 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 6261 2a 0 0 8 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 634d 5 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 6352 170 c 0 8 c 24 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 6478 10 0 0 8 c 24 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 6489 b 0 0 8 c 24 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 64ba 7 0 0 8 c 24 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 64c2 21 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 64e3 46 b 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 64ee 3a 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 6529 3c 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 652e 36 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 6565 48 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 65ad 2b 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 65d8 314 11 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 65e5 305 4 0 8 4 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 65e9 300 0 0 8 8 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 6616 2d2 0 0 8 c 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 68ec b0 d 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 68f2 a9 7 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 68f9 a1 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 699c 106 11 0 4 0 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 69a8 f8 5 0 4 4 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 12 - ^ =
+STACK WIN 4 69a9 f6 4 0 4 8 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 12 - ^ =
+STACK WIN 4 69ad f1 0 0 4 c 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 12 - ^ =
+STACK WIN 4 6aa2 2df 12 0 c 0 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 6aaf 2d0 5 0 c 4 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 16 - ^ =
+STACK WIN 4 6ab0 2ce 4 0 c 8 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 16 - ^ =
+STACK WIN 4 6ab4 2c9 0 0 c c c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 16 - ^ =
+STACK WIN 4 6d81 cd 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 6e4e 2e2 f 0 0 0 138 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 6e5d 294 0 0 0 4 138 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 316 - ^ =
+STACK WIN 4 6e72 27e 0 0 0 8 138 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 316 - ^ =
+STACK WIN 4 6e75 27a 0 0 0 c 138 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 316 - ^ =
+STACK WIN 4 7130 a8 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7131 a6 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7179 5d 0 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 71d8 2e3 2a 0 4 0 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 71fc 2bd 6 0 4 4 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 24 - ^ =
+STACK WIN 4 7201 2b7 1 0 4 8 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 24 - ^ =
+STACK WIN 4 7202 2b5 0 0 4 c 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 24 - ^ =
+STACK WIN 4 74bb 8 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 754a a3 c 0 4 c 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 75dc 10 0 0 4 c 20 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 75ed 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 75f6 f3 23 0 0 4 328 0 $T0 $ebp 680 + = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 76e9 1e 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7707 54 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 775b 2b 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7786 4f 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 77d5 29 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 77fe 4f 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 784d 29 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7876 4f 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 78c5 29 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 78ee 54 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 7942 2b 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 796d 4f 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 79bc 29 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 79e5 4f 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 7a34 29 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7a5d 54 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 7ab1 2b 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7adc 54 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 7b30 2b 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7b5b 54 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 7baf 2b 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7bda 4f 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 7c29 29 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7c52 d 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7c5f 8 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7c67 1f 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7c86 1a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7ca0 1f 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7cbf 1c 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7cdb 12 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7ced 1b 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 7d08 13b 1d 0 18 8 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 7d1d 126 8 0 18 c 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 12 - ^ =
+STACK WIN 4 7e43 3b 6 0 18 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 7e7e 13d 1d 0 18 8 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 7e93 128 8 0 18 c 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 12 - ^ =
+STACK WIN 4 7fbb 3b 6 0 18 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 7ff6 4f c 0 4 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 803c 8 0 0 4 c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 8045 75 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 808d 2c 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 80ba c3 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 80bb c1 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ =
+STACK WIN 4 80c9 9c 0 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 80d0 94 0 0 4 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 80d1 90 0 0 4 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 4 - ^ = $ebx $T0 8 - ^ =
+STACK WIN 4 817d 11e c 0 c c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 8274 d 0 0 c c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 829b 3f 9 0 8 0 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 82a4 34 0 0 8 4 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 82bd 18 0 0 8 8 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 82da 21b c 0 8 c 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 8418 e 0 0 8 c 20 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 84f5 47 5 0 c 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 84fa 41 0 0 c 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 853c 1a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 8556 3a2 1d 0 20 8 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 8567 391 c 0 20 c 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 24 - ^ =
+STACK WIN 4 88f8 43 6 0 24 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 893b 1b8 1d 0 1c 8 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 8950 1a3 8 0 1c c 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 12 - ^ =
+STACK WIN 4 8af3 40 6 0 20 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 8b33 87 0 0 c 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 8bba e3 0 0 c 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 8c9d 14 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 8cb1 14 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 8cc5 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 8ccb 29 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 8cf4 419 6 0 0 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 8d16 3f5 0 0 0 4 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 8d17 3ed 0 0 0 8 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 910d 190 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 910e 18e 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 929d 73 4 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 929e 71 3 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 929f 6f 2 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 92a0 6d 1 0 4 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 92a1 6b 0 0 4 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 9310 33 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9317 16 0 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 9318 14 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 9343 40 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9344 3e 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9383 1c8 11 0 4 0 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 938a 1bf a 0 4 4 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 938e 1ba 6 0 4 8 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 9394 1b3 0 0 4 c 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 954b 33 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9552 16 0 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 9553 14 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 957e 89 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 957f 87 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9607 2c4 c 0 4 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 960e 2bb 5 0 4 4 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 960f 2b9 4 0 4 8 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 9613 2b4 0 0 4 c 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 98cb 395 1b 0 4 0 48 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 98dc 37d a 0 4 4 48 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 76 - ^ =
+STACK WIN 4 98df 377 7 0 4 8 48 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 76 - ^ =
+STACK WIN 4 98e6 36f 0 0 4 c 48 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 76 - ^ =
+STACK WIN 4 9c60 29 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9c89 16 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9c9f 26 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9cc5 26 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9ceb 26 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9d11 3 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9d14 fe 9 0 4 0 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 9d1b e9 2 0 4 4 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 9d1c e7 1 0 4 8 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 9d1d e5 0 0 4 c 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 9e12 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9e1b fe 9 0 4 0 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 9e22 e9 2 0 4 4 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 32 - ^ =
+STACK WIN 4 9e23 e7 1 0 4 8 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 32 - ^ =
+STACK WIN 4 9e24 e5 0 0 4 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 32 - ^ =
+STACK WIN 4 9f19 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 9f22 355 9 0 4 0 24 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 9f29 34c 2 0 4 4 24 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 40 - ^ =
+STACK WIN 4 9f2a 348 1 0 4 8 24 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 40 - ^ =
+STACK WIN 4 9f2b 346 0 0 4 c 24 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 40 - ^ =
+STACK WIN 4 a277 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 a280 20 6 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 a284 1b 2 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 a289 15 0 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 a2a0 36 6 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 a2a6 2f 0 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 a2d6 79 8 0 4 0 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 a2db 72 3 0 4 4 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 a2dc 70 2 0 4 8 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 a34f 3db 11 0 10 0 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 a354 3d4 c 0 10 4 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 a35b 3cc 5 0 10 8 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 a35c 3ca 4 0 10 c 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 a72a 51d 1d 0 18 8 24 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 a73e 509 9 0 18 c 24 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 40 - ^ =
+STACK WIN 4 ac47 1af a 0 18 0 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 ac51 1a3 0 0 18 4 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 36 - ^ =
+STACK WIN 4 ac97 15c 0 0 18 8 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 36 - ^ =
+STACK WIN 4 acca 128 0 0 18 c 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 36 - ^ =
+STACK WIN 4 adf6 1e 3 0 14 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 ae14 1d 0 0 10 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ae31 1e 3 0 14 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 ae4f 26 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 af58 60 6 0 c 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 af5e 56 0 0 c 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 af67 45 0 0 c 8 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 af68 43 0 0 c c 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 afb8 14 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 afcc 77 11 0 0 0 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 afdd 5f 0 0 0 4 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 b043 1e 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b061 32 1 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b062 30 0 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b093 1b 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b0ae 96 12 0 4 0 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 b0bf 7c 1 0 4 4 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 b0c0 78 0 0 4 8 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 b144 72 11 0 8 0 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 b155 5a 0 0 8 4 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 b191 13 0 0 8 8 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 b1b6 1d0 13 0 4 0 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 b1c7 1b6 2 0 4 4 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 128 - ^ =
+STACK WIN 4 b1c8 1b2 1 0 4 8 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 128 - ^ =
+STACK WIN 4 b1c9 1b0 0 0 4 c 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 128 - ^ =
+STACK WIN 4 b386 bf 12 0 4 0 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 b397 a5 1 0 4 4 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 b398 a1 0 0 4 8 7c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 b445 2c 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b471 65 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b4d6 3c 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b512 1e3 4 0 c 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b513 1e1 3 0 c 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 b514 1df 2 0 c 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 b515 1dd 1 0 c c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 b516 1db 0 0 c 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 b6f5 12 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b707 18 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b71f 40 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b75f 78 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b7d7 1490 4 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b7d8 83f 3 0 0 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 b7d9 83d 2 0 0 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 cc67 1680 5 0 c 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 cc6b 15f8 1 0 c 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 cc6c 15f6 0 0 c 8 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 cc9d 86c 0 0 c c 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 12 - ^ =
+STACK WIN 4 e2e7 be 9 0 c 0 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 e2f0 a9 0 0 c 4 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 e302 96 0 0 c 8 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 e755 57 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 e7ac 8f 0 0 c 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 e83b b6 7 0 c 0 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 e842 ad 0 0 c 4 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 e8f1 2f 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 e94c 47 10 0 4 0 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 e993 1b2 2a 0 18 8 34 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 e9b0 195 d 0 18 c 34 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 56 - ^ =
+STACK WIN 4 eb45 50 c 0 0 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 eb62 1c 0 0 0 c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 eb95 60 9 0 0 0 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 eb9e 57 0 0 0 4 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 ebf5 d 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ec02 34 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ec07 2e 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ec36 34 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ec3b 2e 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ec6a 34 5 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ec6f 2e 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ec9e a2 c 0 10 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 eca5 99 5 0 10 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 ecaa 93 0 0 10 8 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 ecb8 84 0 0 10 c 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 ed40 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ed46 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ed4c 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ed52 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ed58 c 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ed64 c 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ed70 c 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 ed7c 33f c 0 0 c 3c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f026 d 0 0 0 c 3c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 f0bb 1f5 14 0 24 0 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f0ca 1e4 5 0 24 4 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 16 - ^ =
+STACK WIN 4 f0cb 1e2 4 0 24 8 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 16 - ^ =
+STACK WIN 4 f0cc 1e0 3 0 24 c c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 16 - ^ =
+STACK WIN 4 f2b0 1ae 5 0 0 0 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f2b5 15f 0 0 0 4 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f2e5 12e 0 0 0 8 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 12 - ^ =
+STACK WIN 4 f45e 4f c 0 0 c 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f4a4 8 0 0 0 c 18 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 f4ad 38 c 0 0 c 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f4dc 8 0 0 0 c 18 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 f4e5 41 c 0 4 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f51d 8 0 0 4 c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 f526 35 a 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f52b 2f 5 0 8 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f530 27 0 0 8 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f55b d3 7 0 c 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f562 ca 0 0 c 4 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 f5a3 88 0 0 c 8 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 f5eb 33 0 0 c c 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 f62e 50 4 0 8 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f632 4a 0 0 8 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f67e 36 6 0 8 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f6b4 e 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f6c2 16 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f6d8 11 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f6e9 13 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f6fc e 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f70a 13 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f71d e 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f72b 13 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f73e e 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f74c 16 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f762 11 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f773 13 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f786 e 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f794 13 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f7a7 e 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f7b5 16 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f7cb 11 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f7dc 16 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f7f2 11 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f803 16 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f819 11 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f82a 13 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f83d e 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f84b c 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f857 26 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f87d 21 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f89e 26 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f8c4 21 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f8e5 11 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f8f6 15 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f90b 5 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f910 5 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f915 11 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f926 15 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 f93b f0 e 0 10 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 f942 e7 7 0 10 4 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 f948 e0 1 0 10 8 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 f949 de 0 0 10 c 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 fa2b 5c 4 0 c 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fa2f 56 0 0 c 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fa87 db 8 0 c 0 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fa8c d2 3 0 c 4 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 fa8d d0 2 0 c 8 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 fab7 a5 0 0 c c 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 fb62 28 3 0 10 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fb8a 25 3 0 10 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fbaf 18 0 0 10 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 fbc7 f6 c 0 14 0 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fbce eb 5 0 14 4 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 16 - ^ =
+STACK WIN 4 fbd3 e5 0 0 14 8 c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 16 - ^ =
+STACK WIN 4 fcbd 33 3 0 14 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fcd8 16 0 0 14 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fcf0 1d 4 0 14 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fcf4 17 0 0 14 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fd3b 81 8 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 fd43 70 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 fd52 60 0 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 8 - ^ =
+STACK WIN 4 fd53 5e 0 0 4 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 8 - ^ =
+STACK WIN 4 fdbc 93 7 0 c 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fdc0 8d 3 0 c 4 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 fdc1 8b 2 0 c 8 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 fe00 4b 0 0 c c 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 4 - ^ =
+STACK WIN 4 fe4f a2 6 0 8 0 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fe54 9b 1 0 8 4 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fe55 99 0 0 8 8 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 fef1 83 c 0 4 c 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 ff6b 8 0 0 4 c 20 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 ff74 d8 c 0 10 c 1c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10043 8 0 0 10 c 1c 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 1004c e6 c 0 c c 20 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10129 8 0 0 c c 20 0 $T0 $ebp = $T2 $esp = $T1 .raSearchStart = $eip $T1 ^ = $ebp $T0 = $esp $T1 4 + = $L $T0 .cbSavedRegs - = $P $T1 4 + .cbParams + =
+STACK WIN 4 10132 8 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1013a 117 8 0 8 0 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10141 10e 1 0 8 4 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 10142 10c 0 0 8 8 18 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 28 - ^ =
+STACK WIN 4 10251 27 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 10278 82 6 0 c 0 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 102fa 6e 4 0 8 0 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10368 5 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 1036d 22b 8 0 14 0 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10374 222 1 0 14 4 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10375 220 0 0 14 8 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 103d3 1c1 0 0 14 c 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 32 - ^ =
+STACK WIN 4 10598 29 3 0 c 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 105c1 1b 0 0 10 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 105dc 2a 3 0 c 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10606 1b 0 0 10 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 10621 294 8 0 14 0 38 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10628 28b 1 0 14 4 38 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 60 - ^ =
+STACK WIN 4 10629 289 0 0 14 8 38 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 60 - ^ =
+STACK WIN 4 10685 1f9 0 0 14 c 38 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 60 - ^ =
+STACK WIN 4 108b5 29 3 0 c 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 108de 1b 0 0 10 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 108f9 2a 3 0 c 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10923 1b 0 0 10 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 10a45 ec 7 0 10 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10a4c e3 0 0 10 4 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 10aac 82 0 0 10 8 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 10b31 17 0 0 c 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 10b48 95 a 0 0 0 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10b4e 7d 4 0 0 4 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 12 - ^ =
+STACK WIN 4 10b4f 7b 3 0 0 8 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 12 - ^ =
+STACK WIN 4 10b52 77 0 0 0 c 8 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 12 - ^ =
+STACK WIN 4 10bdd 1a 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 10bf7 224 17 0 1c 8 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10c0c 20f 2 0 1c c 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 10e1b 3e 6 0 1c 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10e94 1a 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 10eae 389 16 0 18 8 2c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 10ec2 375 2 0 18 c 2c 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 48 - ^ =
+STACK WIN 4 11237 40 6 0 20 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 11277 f8 7 0 10 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 1127e ef 0 0 10 4 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 112de 8e 0 0 10 8 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 1136f 27 3 0 c 0 0 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 11396 4d 1 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 11397 48 0 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 113e3 5d 4 0 0 0 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 113ff 3f 0 0 0 4 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 11400 3d 0 0 0 8 4 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 8 - ^ =
+STACK WIN 4 11440 247 f 0 8 0 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 1144a 95 5 0 8 4 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 24 - ^ =
+STACK WIN 4 1144f 8f 0 0 8 8 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 24 - ^ =
+STACK WIN 4 11472 6b 0 0 8 c 14 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 24 - ^ =
+STACK WIN 4 11687 50 6 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 4 11688 4e 5 0 4 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 4 - ^ =
+STACK WIN 4 1168d 48 0 0 4 8 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 11698 3c 0 0 4 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 11699 3a 0 0 4 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebp $T0 8 - ^ = $ebx $T0 4 - ^ =
+STACK WIN 4 116d7 ba 7 0 c 0 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
+STACK WIN 4 116de b1 0 0 c 4 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 1171b 73 0 0 c 8 10 0 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
+STACK WIN 4 11791 13 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 1088 d 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 1555 14 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 15ac 90 3 0 c c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 163c 46 0 0 10 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 169e 17 4 0 0 10 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 16b5 19 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 16e8 17 1 0 8 4 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 17b8 14 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 1b64 12 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 2674 4 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 293d 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 2aea c 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 2af6 c 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 3085 84 3 0 8 c 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 3109 23 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 3154 3 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 32dc 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 36ac 6 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 3703 4 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 3753 4 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 3809 a 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 3a73 c 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 3c29 15 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 3f7d 17 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 4300 8b 0 0 4 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 449c 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 48fb c 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 4d4b 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 568f 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 57de c 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 586b c 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 6478 11 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 6489 c 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 64ba 8 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 74d0 7a 0 0 c 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 75dc 11 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 803c 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 8274 e 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 8418 f 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 aed0 88 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 eb62 1c 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 f026 e 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 f4a4 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 f4dc 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 f51d 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 ff6b 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 10043 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 10129 9 0 0 0 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
+STACK WIN 0 117c0 be 0 0 8 0 0 0 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =

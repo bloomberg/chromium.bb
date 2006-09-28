@@ -10,3 +10,7 @@ FUNC 1100 8 Function1_2
 1104 4 66 2
 FUNC 1200 100 Function1_3
 FUNC 1300 100 Function1_4
+STACK WIN 4 1000 c 1 0 0 0 0 0 $eip 4 + ^ = $esp $ebp 8 + = $ebp $ebp ^ =
+STACK WIN 4 1100 8 1 0 0 0 0 0 $eip 4 + ^ = $esp $ebp 8 + = $ebp $ebp ^ =
+STACK WIN 4 1100 100 1 0 0 0 0 0 $eip 4 + ^ = $esp $ebp 8 + = $ebp $ebp ^ =
+STACK WIN 4 1300 100 1 0 0 0 0 0 $eip 4 + ^ = $esp $ebp 8 + = $ebp $ebp ^ =
