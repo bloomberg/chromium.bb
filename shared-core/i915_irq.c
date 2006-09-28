@@ -227,7 +227,7 @@ void i915_user_irq_off(drm_i915_private_t *dev_priv)
 {
 	spin_lock(&dev_priv->user_irq_lock);
 	if (dev_priv->irq_enabled && (--dev_priv->user_irq_refcount == 0)) {
-		dev_priv->irq_enable_reg &= ~USER_INT_FLAG;
+		//		dev_priv->irq_enable_reg &= ~USER_INT_FLAG;
 		//		I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
 	}
 	spin_unlock(&dev_priv->user_irq_lock);
@@ -344,17 +344,14 @@ int i915_irq_wait(DRM_IOCTL_ARGS)
 static void i915_enable_interrupt (drm_device_t *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	u16 flag;
 	
-	flag = 0;
+	dev_priv->irq_enable_reg = USER_INT_FLAG; //&= ~(VSYNC_PIPEA_FLAG | VSYNC_PIPEB_FLAG);
 	if (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_A)
-		flag |= VSYNC_PIPEA_FLAG;
+		dev_priv->irq_enable_reg |= VSYNC_PIPEA_FLAG;
 	if (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_B)
-		flag |= VSYNC_PIPEB_FLAG;
-	dev_priv->user_irq_lock = SPIN_LOCK_UNLOCKED;
-	dev_priv->user_irq_refcount = 0;
-	dev_priv->irq_enable_reg = flag;
-	I915_WRITE16(I915REG_INT_ENABLE_R, flag);
+		dev_priv->irq_enable_reg |= VSYNC_PIPEB_FLAG;
+
+	I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
 	dev_priv->irq_enabled = 1;
 }
 
@@ -539,6 +536,9 @@ void i915_driver_irq_postinstall(drm_device_t * dev)
 	dev_priv->swaps_lock = SPIN_LOCK_UNLOCKED;
 	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending = 0;
+
+	dev_priv->user_irq_lock = SPIN_LOCK_UNLOCKED;
+	dev_priv->user_irq_refcount = 0;
 
 	if (!dev_priv->vblank_pipe)
 		dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
