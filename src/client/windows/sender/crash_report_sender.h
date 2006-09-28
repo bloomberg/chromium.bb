@@ -34,6 +34,9 @@
 // crash reports via HTTP.  A crash report is formatted as a multipart POST
 // request, which contains a set of caller-supplied string key/value pairs,
 // and a minidump file to upload.
+//
+// To use this library in your project, you will need to link against
+// wininet.lib.
 
 #include <string>
 #include <map>

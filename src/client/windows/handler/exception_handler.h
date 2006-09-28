@@ -52,6 +52,9 @@
 //   ExceptionHandler *f = new ExceptionHandler(...);
 //   delete e;
 // This will put the exception filter stack into an inconsistent state.
+//
+// To use this library in your project, you will need to link against
+// rpcrt4.lib and ole32.lib.
 
 #ifndef CLIENT_WINDOWS_HANDLER_EXCEPTION_HANDLER_H__
 #define CLIENT_WINDOWS_HANDLER_EXCEPTION_HANDLER_H__
