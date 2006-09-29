@@ -696,21 +696,28 @@ typedef struct drm_ttm_arg {
  * Status flags. Can be read to determine the actual state of a buffer.
  */
 
-/* Pinned buffer. */
+/* 
+ * Cannot evict this buffer. Not even with force. This type of buffer should
+ * only be available for root, and must be manually removed before buffer
+ * manager shutdown or swapout.
+ */
 #define DRM_BO_FLAG_NO_EVICT    0x00000010
 /* Always keep a system memory shadow to a vram buffer */
 #define DRM_BO_FLAG_SHADOW_VRAM 0x00000020
-/* When mapped for reading, make sure the buffer is cached even
-   if it means moving the buffer to system memory */
+/* The buffer is shareable with other processes */
 #define DRM_BO_FLAG_SHAREABLE   0x00000040
+/* The buffer is currently cached */
+#define DRM_BO_FLAG_CACHED      0x00000080
+/* Make sure that every time this buffer is validated, it ends up on the same
+ * location. The buffer will also not be evicted when claiming space for
+ * other buffers. Basically a pinned buffer but it may be thrown out as
+ * part of buffer manager shutdown or swapout. Not supported yet.*/
+#define DRM_BO_FLAG_NO_MOVE     0x00000100
+
+/* Make sure the buffer is in cached memory when mapped for reading */
+#define DRM_BO_FLAG_READ_CACHED 0x00080000
 /* When there is a choice between VRAM and TT, prefer VRAM. 
    The default behaviour is to prefer TT. */
-#define DRM_BO_FLAG_CACHED      0x00000080
-/* The buffer is shareable with other processes */
-
-
-#define DRM_BO_FLAG_READ_CACHED 0x00080000
-/* The buffer is currently cached */
 #define DRM_BO_FLAG_PREFER_VRAM 0x00040000
 /* Bind this buffer cached if the hardware supports it. */
 #define DRM_BO_FLAG_BIND_CACHED 0x0002000
