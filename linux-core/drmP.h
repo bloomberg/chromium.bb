@@ -800,9 +800,11 @@ typedef struct drm_buffer_manager{
         int use_vram;
         int use_tt;
 	drm_mm_t tt_manager;
-	struct list_head tt_lru;
 	drm_mm_t vram_manager;
+	struct list_head tt_lru;
 	struct list_head vram_lru;
+        struct list_head tt_pinned;
+        struct list_head vram_pinned;
 	struct list_head unfenced;
 	struct list_head ddestroy;
         struct list_head other;
@@ -999,7 +1001,8 @@ typedef struct drm_buffer_object{
 
 	drm_mm_node_t *vram;
 	drm_mm_node_t *tt;
-	struct list_head head;
+	struct list_head tt_lru;
+        struct list_head vram_lru;
 	struct list_head ddestroy;
 
 	uint32_t fence_type;
