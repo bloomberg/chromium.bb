@@ -37,7 +37,7 @@
 
 #define DRIVER_NAME		"i915-mm"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20060923"
+#define DRIVER_DATE		"20060929"
 
 /* Interface history:
  *
