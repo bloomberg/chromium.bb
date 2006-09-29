@@ -176,7 +176,8 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		DRM_WAKEUP(&dev->vbl_queue);
 		drm_vbl_send_signals(dev);
 
-		drm_locked_tasklet(dev, i915_vblank_tasklet);
+		if (dev_priv->swaps_pending > 0)
+			drm_locked_tasklet(dev, i915_vblank_tasklet);
 	}
 
 	return IRQ_HANDLED;
