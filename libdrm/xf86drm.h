@@ -149,7 +149,8 @@ typedef enum {
     DRM_PAGE_ALIGN       = 0x01,
     DRM_AGP_BUFFER       = 0x02,
     DRM_SG_BUFFER        = 0x04,
-    DRM_FB_BUFFER        = 0x08
+    DRM_FB_BUFFER        = 0x08,
+    DRM_PCI_BUFFER_RO    = 0x10
 } drmBufDescFlags;
 
 typedef enum {
