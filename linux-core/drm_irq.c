@@ -416,7 +416,7 @@ EXPORT_SYMBOL(drm_vbl_send_signals);
 static void drm_locked_tasklet_func(unsigned long data)
 {
 	drm_device_t *dev = (drm_device_t*)data;
-	unsigned int irqflags;
+	unsigned long irqflags;
 
 	spin_lock_irqsave(&dev->tasklet_lock, irqflags);
 
@@ -454,7 +454,7 @@ static void drm_locked_tasklet_func(unsigned long data)
  */
 void drm_locked_tasklet(drm_device_t *dev, void (*func)(drm_device_t*))
 {
-	unsigned int irqflags;
+	unsigned long irqflags;
 	static DECLARE_TASKLET(drm_tasklet, drm_locked_tasklet_func, 0);
 
 	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ) ||
