@@ -237,7 +237,7 @@ typedef struct drm_mach64_vertex {
 } drm_mach64_vertex_t;
 
 typedef struct drm_mach64_blit {
-	int idx;
+	void *buf;
 	int pitch;
 	int offset;
 	int format;

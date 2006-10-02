@@ -480,16 +480,16 @@ static int mach64_do_get_frames_queued(drm_mach64_private_t * dev_priv)
 /* Copy and verify a client submited buffer.
  * FIXME: Make an assembly optimized version
  */
-static __inline__ int copy_and_verify_from_user(u32 *to,
-						const u32 __user *ufrom,
-						unsigned long bytes)
+static __inline__ int copy_from_user_vertex(u32 *to,
+					    const u32 __user *ufrom,
+					    unsigned long bytes)
 {
 	unsigned long n = bytes;	/* dwords remaining in buffer */
 	u32 *from, *orig_from;
 
 	from = drm_alloc(bytes, DRM_MEM_DRIVER);
 	if (from == NULL)
-		return ENOMEM;
+		return DRM_ERR(ENOMEM);
 
 	if (DRM_COPY_FROM_USER(from, ufrom, bytes)) {
 		drm_free(from, bytes, DRM_MEM_DRIVER);
@@ -571,7 +571,7 @@ static int mach64_dma_dispatch_vertex(DRMFILE filp, drm_device_t * dev,
 		return DRM_ERR(EAGAIN);
 	}
 
-	verify_ret = copy_and_verify_from_user(GETBUFPTR(copy_buf), buf, used);
+	verify_ret = copy_from_user_vertex(GETBUFPTR(copy_buf), buf, used);
 
 	if (verify_ret != 0) {
 		mach64_freelist_put(dev_priv, copy_buf);
@@ -627,13 +627,27 @@ _vertex_done:
 	return verify_ret;
 }
 
+static __inline__ int copy_from_user_blit(u32 *to,
+					  const u32 __user *ufrom,
+					  unsigned long bytes)
+{
+	to = (u32 *)((char *)to + MACH64_HOSTDATA_BLIT_OFFSET);
+
+	if (DRM_COPY_FROM_USER(to, ufrom, bytes)) {
+		return DRM_ERR(EFAULT);
+	}
+
+	return 0;
+}
+
 static int mach64_dma_dispatch_blit(DRMFILE filp, drm_device_t * dev,
 				    drm_mach64_blit_t * blit)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
-	drm_device_dma_t *dma = dev->dma;
 	int dword_shift, dwords;
-	drm_buf_t *buf;
+	unsigned long used;
+	drm_buf_t *copy_buf;
+	int verify_ret = 0;
 	DMALOCALS;
 
 	/* The compiler won't optimize away a division by a variable,
@@ -660,33 +674,33 @@ static int mach64_dma_dispatch_blit(DRMFILE filp, drm_device_t * dev,
 		return DRM_ERR(EINVAL);
 	}
 
-	/* Dispatch the blit buffer.
-	 */
-	buf = dma->buflist[blit->idx];
-
-	if (buf->filp != filp) {
-		DRM_ERROR("process %d (filp %p) using buffer with filp %p\n",
-			  DRM_CURRENTPID, filp, buf->filp);
-		return DRM_ERR(EINVAL);
-	}
-
-	if (buf->pending) {
-		DRM_ERROR("sending pending buffer %d\n", blit->idx);
-		return DRM_ERR(EINVAL);
-	}
-
 	/* Set buf->used to the bytes of blit data based on the blit dimensions
 	 * and verify the size.  When the setup is emitted to the buffer with
 	 * the DMA* macros below, buf->used is incremented to include the bytes
 	 * used for setup as well as the blit data.
 	 */
 	dwords = (blit->width * blit->height) >> dword_shift;
-	buf->used = dwords << 2;
-	if (buf->used <= 0 ||
-	    buf->used > MACH64_BUFFER_SIZE - MACH64_HOSTDATA_BLIT_OFFSET) {
-		DRM_ERROR("Invalid blit size: %d bytes\n", buf->used);
+	used = dwords << 2;
+	if (used <= 0 ||
+	    used > MACH64_BUFFER_SIZE - MACH64_HOSTDATA_BLIT_OFFSET) {
+		DRM_ERROR("Invalid blit size: %lu bytes\n", used);
 		return DRM_ERR(EINVAL);
 	}
+
+	copy_buf = mach64_freelist_get(dev_priv);
+	if (copy_buf == NULL) {
+		DRM_ERROR("%s: couldn't get buffer\n", __FUNCTION__);
+		return DRM_ERR(EAGAIN);
+	}
+
+	verify_ret = copy_from_user_blit(GETBUFPTR(copy_buf), blit->buf, used);
+
+	if (verify_ret != 0) {
+		mach64_freelist_put(dev_priv, copy_buf);
+		goto _blit_done;
+	}
+
+	copy_buf->used = used;
 
 	/* FIXME: Use a last buffer flag and reduce the state emitted for subsequent,
 	 * continuation buffers?
@@ -696,7 +710,7 @@ static int mach64_dma_dispatch_blit(DRMFILE filp, drm_device_t * dev,
 	 * a register command every 16 dwords.  State setup is added at the start of the
 	 * buffer -- the client leaves space for this based on MACH64_HOSTDATA_BLIT_OFFSET
 	 */
-	DMASETPTR(buf);
+	DMASETPTR(copy_buf);
 
 	DMAOUTREG(MACH64_Z_CNTL, 0);
 	DMAOUTREG(MACH64_SCALE_3D_CNTL, 0);
@@ -726,12 +740,13 @@ static int mach64_dma_dispatch_blit(DRMFILE filp, drm_device_t * dev,
 	DMAOUTREG(MACH64_DST_X_Y, (blit->y << 16) | blit->x);
 	DMAOUTREG(MACH64_DST_WIDTH_HEIGHT, (blit->height << 16) | blit->width);
 
-	DRM_DEBUG("%s: %d bytes\n", __FUNCTION__, buf->used);
+	DRM_DEBUG("%s: %lu bytes\n", __FUNCTION__, used);
 
 	/* Add the buffer to the queue */
 	DMAADVANCEHOSTDATA(dev_priv);
 
-	return 0;
+_blit_done:
+	return verify_ret;
 }
 
 /* ================================================================
@@ -829,7 +844,6 @@ int mach64_dma_vertex(DRM_IOCTL_ARGS)
 int mach64_dma_blit(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_device_dma_t *dma = dev->dma;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mach64_blit_t blit;
@@ -839,15 +853,6 @@ int mach64_dma_blit(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(blit, (drm_mach64_blit_t *) data,
 				 sizeof(blit));
-
-	DRM_DEBUG("%s: pid=%d index=%d\n",
-		  __FUNCTION__, DRM_CURRENTPID, blit.idx);
-
-	if (blit.idx < 0 || blit.idx >= dma->buf_count) {
-		DRM_ERROR("buffer index %d (of %d max)\n",
-			  blit.idx, dma->buf_count - 1);
-		return DRM_ERR(EINVAL);
-	}
 
 	ret = mach64_dma_dispatch_blit(filp, dev, &blit);
 

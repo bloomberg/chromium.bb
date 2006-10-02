@@ -815,17 +815,18 @@ static int mach64_do_dma_init(drm_device_t * dev, drm_mach64_init_t * init)
 		return DRM_ERR(EINVAL);
 	}
 
+	dev_priv->ring_map = drm_core_findmap(dev, init->ring_offset);
+	if (!dev_priv->ring_map) {
+		DRM_ERROR("can not find ring map!\n");
+		dev->dev_private = (void *)dev_priv;
+		mach64_do_cleanup_dma(dev);
+		return DRM_ERR(EINVAL);
+	}
+
 	dev_priv->sarea_priv = (drm_mach64_sarea_t *)
 	    ((u8 *) dev_priv->sarea->handle + init->sarea_priv_offset);
 
 	if (!dev_priv->is_pci) {
-		dev_priv->ring_map = drm_core_findmap(dev, init->ring_offset);
-		if (!dev_priv->ring_map) {
-			DRM_ERROR("can not find ring map!\n");
-			dev->dev_private = (void *)dev_priv;
-			mach64_do_cleanup_dma(dev);
-			return DRM_ERR(EINVAL);
-		}
 		drm_core_ioremap(dev_priv->ring_map, dev);
 		if (!dev_priv->ring_map->handle) {
 			DRM_ERROR("can not ioremap virtual address for"
@@ -891,27 +892,9 @@ static int mach64_do_dma_init(drm_device_t * dev, drm_mach64_init_t * init)
 		}
 	}
 
-	/* allocate descriptor memory from pci pool */
-	DRM_DEBUG("Allocating dma descriptor ring\n");
 	dev_priv->ring.size = 0x4000;	/* 16KB */
-
-	if (dev_priv->is_pci) {
-		dev_priv->ring.dmah = drm_pci_alloc(dev, dev_priv->ring.size,
-						     dev_priv->ring.size,
-						     0xfffffffful);
-
-		if (!dev_priv->ring.dmah) {
-			DRM_ERROR("Allocating dma descriptor ring failed\n");
-			return DRM_ERR(ENOMEM);
-		} else {
-			dev_priv->ring.start = dev_priv->ring.dmah->vaddr;
-			dev_priv->ring.start_addr =
-			    (u32) dev_priv->ring.dmah->busaddr;
-		}
-	} else {
-		dev_priv->ring.start = dev_priv->ring_map->handle;
-		dev_priv->ring.start_addr = (u32) dev_priv->ring_map->offset;
-	}
+	dev_priv->ring.start = dev_priv->ring_map->handle;
+	dev_priv->ring.start_addr = (u32) dev_priv->ring_map->offset;
 
 	memset(dev_priv->ring.start, 0, dev_priv->ring.size);
 	DRM_INFO("descriptor ring: cpu addr %p, bus addr: 0x%08x\n",
@@ -1149,18 +1132,14 @@ int mach64_do_cleanup_dma(drm_device_t * dev)
 	if (dev->dev_private) {
 		drm_mach64_private_t *dev_priv = dev->dev_private;
 
-		if (dev_priv->is_pci) {
-			if (dev_priv->ring.dmah) {
-				drm_pci_free(dev, dev_priv->ring.dmah);
-			}
-		} else {
+		if (!dev_priv->is_pci) {
 			if (dev_priv->ring_map)
 				drm_core_ioremapfree(dev_priv->ring_map, dev);
-		}
 
-		if (dev->agp_buffer_map) {
-			drm_core_ioremapfree(dev->agp_buffer_map, dev);
-			dev->agp_buffer_map = NULL;
+			if (dev->agp_buffer_map) {
+				drm_core_ioremapfree(dev->agp_buffer_map, dev);
+				dev->agp_buffer_map = NULL;
+			}
 		}
 
 		mach64_destroy_freelist(dev);
