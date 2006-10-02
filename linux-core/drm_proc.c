@@ -572,7 +572,7 @@ static int drm__vma_info(char *buf, char **start, off_t offset, int request,
 	for (pt = dev->vmalist; pt; pt = pt->next) {
 		if (!(vma = pt->vma))
 			continue;
-		DRM_PROC_PRINT("\n%5d 0x%08lx-0x%08lx %c%c%c%c%c%c 0x%08lx",
+		DRM_PROC_PRINT("\n%5d 0x%08lx-0x%08lx %c%c%c%c%c%c 0x%08lx000",
 			       pt->pid,
 			       vma->vm_start,
 			       vma->vm_end,
@@ -582,7 +582,7 @@ static int drm__vma_info(char *buf, char **start, off_t offset, int request,
 			       vma->vm_flags & VM_MAYSHARE ? 's' : 'p',
 			       vma->vm_flags & VM_LOCKED ? 'l' : '-',
 			       vma->vm_flags & VM_IO ? 'i' : '-',
-			       VM_OFFSET(vma));
+			       vma->vm_pgoff);
 
 #if defined(__i386__)
 		pgprot = pgprot_val(vma->vm_page_prot);

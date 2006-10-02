@@ -903,13 +903,13 @@ int drm_ttm_object_create(drm_device_t * dev, unsigned long size,
 
 	if (drm_ht_just_insert_please(&dev->map_hash, &list->hash,
 				      (unsigned long)map->handle,
-				      32 - PAGE_SHIFT - 3, PAGE_SHIFT,
-				      DRM_MAP_HASH_OFFSET)) {
+				      32 - PAGE_SHIFT - 3, 0,
+				      DRM_MAP_HASH_OFFSET >> PAGE_SHIFT)) {
 		drm_ttm_object_remove(dev, object);
 		return -ENOMEM;
 	}
 
-	list->user_token = list->hash.key;
+	list->user_token = list->hash.key << PAGE_SHIFT;
 
 	atomic_set(&object->usage, 1);
 	*ttm_object = object;
