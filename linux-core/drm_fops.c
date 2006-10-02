@@ -421,14 +421,26 @@ int drm_release(struct inode *inode, struct file *filp)
 		  dev->open_count);
 
 	if (dev->driver->reclaim_buffers_locked) {
-		retcode = drm_kernel_take_hw_lock(filp);
+	        unsigned long _end = jiffies + DRM_HZ*3;
+
+		do {
+			retcode = drm_kernel_take_hw_lock(filp);
+		} while(retcode && !time_after_eq(jiffies,_end));
+
 		if (!retcode) {
 			dev->driver->reclaim_buffers_locked(dev, filp);
 
 			drm_lock_free(dev, &dev->lock.hw_lock->lock,
 				      _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
+		} else {
+			DRM_ERROR("Reclaim buffers locked deadlock.\n");
+			DRM_ERROR("This is probably a single thread having multiple\n");
+			DRM_ERROR("DRM file descriptors open either dying or "
+				  "closing file descriptors\n");
+			DRM_ERROR("while having the lock. I will not reclaim buffers.\n");
+			DRM_ERROR("Locking context is 0x%08x\n",
+				  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
 		}
-
 	} else if (drm_i_have_hw_lock(filp)) {
 		DRM_DEBUG("File %p released, freeing lock for context %d\n",
 			  filp, _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));

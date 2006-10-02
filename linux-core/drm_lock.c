@@ -343,6 +343,7 @@ int drm_kernel_take_hw_lock(struct file *filp)
 	DRM_DEVICE;
 
 	int ret = 0; 
+	unsigned long _end = jiffies + 3*DRM_HZ;
 	
 	if (!drm_i_have_hw_lock(filp)) {
 	
@@ -364,7 +365,12 @@ int drm_kernel_take_hw_lock(struct file *filp)
 				break;	/* Got lock */
 			}
 			/* Contention */
-			schedule();
+			if (time_after_eq(jiffies,_end)) {
+			        ret = -EBUSY;
+				break;
+			}
+
+			schedule_timeout(1);
 			if (signal_pending(current)) {
 				ret = -ERESTARTSYS;
 				break;
