@@ -46,6 +46,9 @@
 #  include <sys/mman.h>
 # endif
 #else
+# ifdef HAVE_CONFIG_H
+#  include <config.h>
+# endif
 # include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
@@ -2804,7 +2807,7 @@ int drmBOUnReference(int fd, drmBO *buf)
     
 
     if (buf->mapVirtual && (buf->type != drm_bo_type_fake)) {
-	(void) drmUnmap(buf->mapVirtual, buf->start + buf->size);
+	(void) munmap(buf->mapVirtual, buf->start + buf->size);
 	buf->mapVirtual = NULL;
 	buf->virtual = NULL;
     }
@@ -2847,8 +2850,12 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
 
     if (!buf->virtual && buf->type != drm_bo_type_fake) {
 	drmAddress virtual;
-	ret = drmMap(fd, buf->mapHandle, buf->size + buf->start, &virtual);
-	if (ret)
+	virtual = mmap(0, buf->size + buf->start, 
+		       PROT_READ | PROT_WRITE, MAP_SHARED,
+		       fd, buf->mapHandle);
+	if (virtual == MAP_FAILED)
+	    ret = -errno;
+	if (ret) 
 	    return ret;
 	buf->mapVirtual = virtual;
 	buf->virtual = ((char *) virtual) + buf->start;

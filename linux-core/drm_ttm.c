@@ -817,6 +817,11 @@ static void drm_ttm_object_remove(drm_device_t * dev, drm_ttm_object_t * object)
 	if (list->user_token)
 		drm_ht_remove_item(&dev->map_hash, &list->hash);
 
+	if (list->file_offset_node) {
+		drm_mm_put_block(&dev->offset_manager, list->file_offset_node);
+		list->file_offset_node = NULL;
+	}
+
 	map = list->map;
 
 	if (map) {
@@ -901,15 +906,24 @@ int drm_ttm_object_create(drm_device_t * dev, unsigned long size,
 	map->size = ttm->num_pages * PAGE_SIZE;
 	map->handle = (void *)object;
 
-	if (drm_ht_just_insert_please(&dev->map_hash, &list->hash,
-				      (unsigned long)map->handle,
-				      32 - PAGE_SHIFT - 3, 0,
-				      DRM_MAP_HASH_OFFSET >> PAGE_SHIFT)) {
+	list->file_offset_node = drm_mm_search_free(&dev->offset_manager,
+						    ttm->num_pages,
+						    0,0);
+	if (!list->file_offset_node) {
+		drm_ttm_object_remove(dev, object);
+		return -ENOMEM;
+	}
+	list->file_offset_node = drm_mm_get_block(list->file_offset_node,
+						  ttm->num_pages,0);
+
+	list->hash.key = list->file_offset_node->start;
+
+	if (drm_ht_insert_item(&dev->map_hash, &list->hash)) {
 		drm_ttm_object_remove(dev, object);
 		return -ENOMEM;
 	}
 
-	list->user_token = list->hash.key << PAGE_SHIFT;
+	list->user_token = ((drm_u64_t) list->hash.key) << PAGE_SHIFT;
 
 	atomic_set(&object->usage, 1);
 	*ttm_object = object;

@@ -30,6 +30,7 @@ AC_PROG_LIBTOOL
 AC_PROG_CC
 
 AC_HEADER_STDC
+AC_SYS_LARGEFILE
 
 pkgconfigdir=${libdir}/pkgconfig
 AC_SUBST(pkgconfigdir)
