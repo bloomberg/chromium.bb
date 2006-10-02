@@ -433,6 +433,13 @@ int drm_release(struct inode *inode, struct file *filp)
 			drm_lock_free(dev, &dev->lock.hw_lock->lock,
 				      _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
 		} else {
+
+			/*
+			 * FIXME: This is not a good solution. We should perhaps associate the
+			 * DRM lock with a process context, and check whether the current process
+			 * holds the lock. Then we can run reclaim buffers locked anyway.
+			 */
+
 			DRM_ERROR("Reclaim buffers locked deadlock.\n");
 			DRM_ERROR("This is probably a single thread having multiple\n");
 			DRM_ERROR("DRM file descriptors open either dying or "
