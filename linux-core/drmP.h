@@ -163,6 +163,10 @@
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 #define DRM_MAP_HASH_OFFSET 0x10000000
+#define DRM_MAP_HASH_ORDER 12
+#define DRM_OBJECT_HASH_ORDER 12
+#define DRM_FILE_PAGE_OFFSET_START ((0xFFFFFFFFUL >> PAGE_SHIFT) + 1)
+#define DRM_FILE_PAGE_OFFSET_SIZE ((0xFFFFFFFFUL >> PAGE_SHIFT) * 16)
 
 /*@}*/
 
@@ -532,6 +536,25 @@ typedef struct drm_sigdata {
 	drm_hw_lock_t *lock;
 } drm_sigdata_t;
 
+
+/* 
+ * Generic memory manager structs
+ */
+
+typedef struct drm_mm_node {
+	struct list_head fl_entry;
+	struct list_head ml_entry;
+	int free;
+	unsigned long start;
+	unsigned long size;
+	void *private;
+} drm_mm_node_t;
+
+typedef struct drm_mm {
+	drm_mm_node_t root_node;
+} drm_mm_t;
+
+
 /**
  * Mappings list
  */
@@ -540,6 +563,7 @@ typedef struct drm_map_list {
 	drm_hash_item_t hash;
 	drm_map_t *map;			/**< mapping */
 	drm_u64_t user_token;
+        drm_mm_node_t *file_offset_node;
 } drm_map_list_t;
 
 typedef drm_map_t drm_local_map_t;
@@ -571,24 +595,6 @@ typedef struct ati_pcigart_info {
 	dma_addr_t bus_addr;
 	drm_local_map_t mapping;
 } drm_ati_pcigart_info;
-
-/* 
- * Generic memory manager structs
- */
-
-typedef struct drm_mm_node {
-	struct list_head fl_entry;
-	struct list_head ml_entry;
-	int free;
-	unsigned long start;
-	unsigned long size;
-	void *private;
-} drm_mm_node_t;
-
-typedef struct drm_mm {
-	drm_mm_node_t root_node;
-} drm_mm_t;
-
 
 /*
  * User space objects and their references.
@@ -866,6 +872,7 @@ typedef struct drm_device {
 	drm_map_list_t *maplist;	/**< Linked list of regions */
 	int map_count;			/**< Number of mappable regions */
         drm_open_hash_t map_hash;       /**< User token hash table for maps */
+        drm_mm_t offset_manager;        /**< User token manager */
         drm_open_hash_t object_hash;    /**< User token hash table for objects */
 
 	/** \name Context handle management */

@@ -377,6 +377,7 @@ static void drm_cleanup(drm_device_t * dev)
 		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		dev->maplist = NULL;
 		drm_ht_remove(&dev->map_hash);
+		drm_mm_takedown(&dev->offset_manager);
 		drm_ht_remove(&dev->object_hash);
 	}
 
