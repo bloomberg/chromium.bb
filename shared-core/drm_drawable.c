@@ -43,7 +43,7 @@
 int drm_adddraw(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	unsigned int irqflags;
+	unsigned long irqflags;
 	int i, j;
 	u32 *bitfield = dev->drw_bitfield;
 	unsigned int bitfield_length = dev->drw_bitfield_length;
@@ -134,7 +134,7 @@ int drm_rmdraw(DRM_IOCTL_ARGS)
 	drm_draw_t draw;
 	int id, idx;
 	unsigned int shift;
-	unsigned int irqflags;
+	unsigned long irqflags;
 	u32 *bitfield = dev->drw_bitfield;
 	unsigned int bitfield_length = dev->drw_bitfield_length;
 	drm_drawable_info_t **info = dev->drw_info;
@@ -220,9 +220,9 @@ int drm_rmdraw(DRM_IOCTL_ARGS)
 int drm_update_drawable_info(DRM_IOCTL_ARGS) {
 	DRM_DEVICE;
 	drm_update_draw_t update;
-	unsigned int id, idx, shift;
+	unsigned int id, idx, shift, bitfield_length = dev->drw_bitfield_length;
 	u32 *bitfield = dev->drw_bitfield;
-	unsigned int irqflags, bitfield_length = dev->drw_bitfield_length;
+	unsigned long irqflags;
 	drm_drawable_info_t *info;
 	drm_clip_rect_t *rects;
 	int err;
