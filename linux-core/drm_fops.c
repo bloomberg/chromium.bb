@@ -158,6 +158,12 @@ int drm_open(struct inode *inode, struct file *filp)
 		}
 		spin_unlock(&dev->count_lock);
 	}
+	mutex_lock(&dev->struct_mutex);
+	BUG_ON((dev->dev_mapping != NULL) && 
+	       (dev->dev_mapping != inode->i_mapping));
+	if (dev->dev_mapping == NULL)
+		dev->dev_mapping = inode->i_mapping;
+	mutex_unlock(&dev->struct_mutex);
 
 	return retcode;
 }
@@ -465,6 +471,7 @@ int drm_release(struct inode *inode, struct file *filp)
 	drm_fasync(-1, filp, 0);
 
 	mutex_lock(&dev->ctxlist_mutex);
+
 	if (dev->ctxlist && (!list_empty(&dev->ctxlist->head))) {
 		drm_ctx_list_t *pos, *n;
 

@@ -263,6 +263,7 @@ int drm_lastclose(drm_device_t * dev)
 		dev->lock.filp = NULL;
 		wake_up_interruptible(&dev->lock.lock_queue);
 	}
+	dev->dev_mapping = NULL;
 	mutex_unlock(&dev->struct_mutex);
 
 	if (drm_bo_clean_mm(dev)) {

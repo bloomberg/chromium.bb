@@ -100,6 +100,7 @@ typedef struct drm_ttm {
 	atomic_t vma_count;
 	int mmap_sem_locked;
 	int destroy;
+        uint32_t mapping_offset;
 } drm_ttm_t;
 
 typedef struct drm_ttm_object {

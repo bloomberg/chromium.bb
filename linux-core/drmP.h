@@ -874,6 +874,7 @@ typedef struct drm_device {
         drm_open_hash_t map_hash;       /**< User token hash table for maps */
         drm_mm_t offset_manager;        /**< User token manager */
         drm_open_hash_t object_hash;    /**< User token hash table for objects */
+        struct address_space *dev_mapping;  /**< For unmap_mapping_range() */
 
 	/** \name Context handle management */
 	/*@{ */

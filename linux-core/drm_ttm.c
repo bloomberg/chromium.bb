@@ -123,31 +123,12 @@ void drm_ttm_delete_mm(drm_ttm_t * ttm, struct mm_struct *mm)
 	BUG_ON(1);
 }
 
-static void drm_ttm_lock_mm(drm_ttm_t * ttm, int mm_sem, int page_table)
+static void drm_ttm_unlock_mm(drm_ttm_t * ttm)
 {
 	p_mm_entry_t *entry;
 
 	list_for_each_entry(entry, &ttm->p_mm_list, head) {
-		if (mm_sem) {
-			down_write(&entry->mm->mmap_sem);
-		}
-		if (page_table) {
-			spin_lock(&entry->mm->page_table_lock);
-		}
-	}
-}
-
-static void drm_ttm_unlock_mm(drm_ttm_t * ttm, int mm_sem, int page_table)
-{
-	p_mm_entry_t *entry;
-
-	list_for_each_entry(entry, &ttm->p_mm_list, head) {
-		if (page_table) {
-			spin_unlock(&entry->mm->page_table_lock);
-		}
-		if (mm_sem) {
-			up_write(&entry->mm->mmap_sem);
-		}
+		up_write(&entry->mm->mmap_sem);
 	}
 }
 
@@ -180,30 +161,13 @@ static int ioremap_vmas(drm_ttm_t * ttm, unsigned long page_offset,
 static int unmap_vma_pages(drm_ttm_t * ttm, unsigned long page_offset,
 			   unsigned long num_pages)
 {
-	struct list_head *list;
+	drm_device_t *dev = ttm->dev;
+	loff_t offset = ((loff_t) ttm->mapping_offset + page_offset) 
+		<< PAGE_SHIFT;
+	loff_t holelen = num_pages << PAGE_SHIFT;
+	
 
-#if !defined(flush_tlb_mm) && defined(MODULE)
-	int flush_tlb = 0;
-#endif
-	list_for_each(list, &ttm->vma_list->head) {
-		drm_ttm_vma_list_t *entry =
-		    list_entry(list, drm_ttm_vma_list_t, head);
-
-		drm_clear_vma(entry->vma,
-			      entry->vma->vm_start +
-			      (page_offset << PAGE_SHIFT),
-			      entry->vma->vm_start +
-			      ((page_offset + num_pages) << PAGE_SHIFT));
-
-#if !defined(flush_tlb_mm) && defined(MODULE)
-		flush_tlb = 1;
-#endif
-	}
-#if !defined(flush_tlb_mm) && defined(MODULE)
-	if (flush_tlb)
-		global_flush_tlb();
-#endif
-
+	unmap_mapping_range(dev->dev_mapping, offset, holelen, 1);
 	return 0;
 }
 
@@ -437,15 +401,16 @@ static int drm_ttm_lock_mmap_sem(drm_ttm_t * ttm)
 }
 
 /*
- * Change caching policy for range of pages in a ttm.
+ * Change caching policy for the linear kernel map 
+ * for range of pages in a ttm.
  */
 
 static int drm_set_caching(drm_ttm_t * ttm, unsigned long page_offset,
-			   unsigned long num_pages, int noncached,
-			   int do_tlbflush)
+			   unsigned long num_pages, int noncached)
 {
 	int i, cur;
 	struct page **cur_page;
+	int do_tlbflush = 0;
 
 	for (i = 0; i < num_pages; ++i) {
 		cur = page_offset + i;
@@ -467,6 +432,7 @@ static int drm_set_caching(drm_ttm_t * ttm, unsigned long page_offset,
 				} else {
 					unmap_page_from_agp(*cur_page);
 				}
+				do_tlbflush = 1;
 			}
 		}
 	}
@@ -492,16 +458,14 @@ int drm_evict_ttm_region(drm_ttm_backend_list_t * entry)
 				ret = drm_ttm_lock_mmap_sem(ttm);
 				if (ret)
 					return ret;
-				drm_ttm_lock_mm(ttm, 0, 1);
 				unmap_vma_pages(ttm, entry->page_offset,
 						entry->num_pages);
-				drm_ttm_unlock_mm(ttm, 0, 1);
 			}
 			be->unbind(entry->be);
 			if (ttm && be->needs_cache_adjust(be)) {
 				drm_set_caching(ttm, entry->page_offset,
-						entry->num_pages, 0, 1);
-				drm_ttm_unlock_mm(ttm, 1, 0);
+						entry->num_pages, 0);
+				drm_ttm_unlock_mm(ttm);
 			}
 			break;
 		default:
@@ -653,20 +617,17 @@ int drm_bind_ttm_region(drm_ttm_backend_list_t * region,
 		if (ret)
 			return ret;
 
-		drm_ttm_lock_mm(ttm, 0, 1);
 		unmap_vma_pages(ttm, region->page_offset,
 				region->num_pages);
-		drm_ttm_unlock_mm(ttm, 0, 1);
-
 		drm_set_caching(ttm, region->page_offset, region->num_pages,
-				DRM_TTM_PAGE_UNCACHED, 1);
+				DRM_TTM_PAGE_UNCACHED);
 	} else {
 		DRM_DEBUG("Binding cached\n");
 	}
 
 	if ((ret = be->bind(be, aper_offset))) {
 		if (ttm && be->needs_cache_adjust(be))
-			drm_ttm_unlock_mm(ttm, 1, 0);
+			drm_ttm_unlock_mm(ttm);
 		drm_unbind_ttm_region(region);
 		DRM_ERROR("Couldn't bind backend.\n");
 		return ret;
@@ -682,7 +643,7 @@ int drm_bind_ttm_region(drm_ttm_backend_list_t * region,
 	if (ttm && be->needs_cache_adjust(be)) {
 		ioremap_vmas(ttm, region->page_offset, region->num_pages,
 			     aper_offset);
-		drm_ttm_unlock_mm(ttm, 1, 0);
+		drm_ttm_unlock_mm(ttm);
 	}
 
 	region->state = ttm_bound;
@@ -924,7 +885,7 @@ int drm_ttm_object_create(drm_device_t * dev, unsigned long size,
 	}
 
 	list->user_token = ((drm_u64_t) list->hash.key) << PAGE_SHIFT;
-
+	ttm->mapping_offset = list->hash.key;
 	atomic_set(&object->usage, 1);
 	*ttm_object = object;
 	return 0;
