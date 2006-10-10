@@ -150,55 +150,18 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-int nouveau_dma_init(struct drm_device *dev)
+/* waits for idle */
+void nouveau_wait_for_idle(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_config *config = &dev_priv->config;
-	struct mem_block *cb;
-	int cb_min_size = nouveau_fifo_number(dev) * NV03_FIFO_SIZE;
-
-	nouveau_hash_table_init(dev);
-
-	if (dev_priv->card_type >= NV_40)
-		dev_priv->fb_obj = nouveau_dma_object_create(dev,
-				0, nouveau_mem_fb_amount(dev),
-				NV_DMA_ACCESS_RW, NV_DMA_TARGET_VIDMEM);
-
-	/* Defaults for unconfigured values */
-	if (!config->cmdbuf.location)
-		config->cmdbuf.location = NOUVEAU_MEM_FB;
-	if (!config->cmdbuf.size || config->cmdbuf.size < cb_min_size)
-		config->cmdbuf.size = cb_min_size;
-
-	cb = nouveau_mem_alloc(dev, 0, config->cmdbuf.size,
-			config->cmdbuf.location, (DRMFILE)-2);
-	/* Try defaults if that didn't succeed */
-	if (!cb) {
-		config->cmdbuf.location = NOUVEAU_MEM_FB;
-		config->cmdbuf.size = cb_min_size;
-		cb = nouveau_mem_alloc(dev, 0, config->cmdbuf.size,
-				config->cmdbuf.location, (DRMFILE)-2);
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	switch(dev_priv->card_type)
+	{
+		case NV_03:
+			while(NV_READ(NV03_PGRAPH_STATUS));
+			break;
+		default:
+			while(NV_READ(NV04_PGRAPH_STATUS));
+			break;
 	}
-	if (!cb) {
-		DRM_ERROR("Couldn't allocate DMA command buffer.\n");
-		return DRM_ERR(ENOMEM);
-	}
-
-	if (config->cmdbuf.location == NOUVEAU_MEM_AGP)
-		dev_priv->cmdbuf_obj = nouveau_dma_object_create(dev,
-				cb->start, cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP);
-	else
-		dev_priv->cmdbuf_obj = nouveau_dma_object_create(dev,
-				cb->start - drm_get_resource_start(dev, 1),
-				cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM);
-	dev_priv->cmdbuf_ch_size = (uint32_t)cb->size / nouveau_fifo_number(dev);
-	dev_priv->cmdbuf_alloc = cb;
-
-	DRM_INFO("DMA command buffer is %dKiB at 0x%08x(%s)\n",
-			(uint32_t)cb->size>>10, (uint32_t)cb->start,
-			config->cmdbuf.location == NOUVEAU_MEM_FB ? "VRAM" : "AGP");
-	DRM_INFO("FIFO size is %dKiB\n", dev_priv->cmdbuf_ch_size>>10);
-
-	return 0;
 }
 

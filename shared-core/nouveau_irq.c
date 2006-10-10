@@ -46,7 +46,10 @@ void nouveau_irq_preinstall(drm_device_t *dev)
 	NV_WRITE(NV_PFIFO_INTEN, 0);
 	NV_WRITE(NV_PFIFO_INTSTAT, 0xFFFFFFFF);
 	/* Disable/Clear PGRAPH interrupts */
-	NV_WRITE(NV_PGRAPH_INTEN, 0);
+	if (dev_priv->card_type<NV_40)
+		NV_WRITE(NV04_PGRAPH_INTEN, 0);
+	else
+		NV_WRITE(NV40_PGRAPH_INTEN, 0);
 	NV_WRITE(NV_PGRAPH_INTSTAT, 0xFFFFFFFF);
 #if 0
 	/* Disable/Clear CRTC0/1 interrupts */
@@ -70,9 +73,19 @@ void nouveau_irq_postinstall(drm_device_t *dev)
 	NV_WRITE(NV_PFIFO_INTSTAT, 0xFFFFFFFF);
 
 	/* Enable PGRAPH interrupts */
-	NV_WRITE(NV_PGRAPH_INTEN,
+	if (dev_priv->card_type<NV_40)
+		NV_WRITE(NV04_PGRAPH_INTEN,
 				NV_PGRAPH_INTR_NOTIFY |
 				NV_PGRAPH_INTR_MISSING_HW |
+				NV_PGRAPH_INTR_CONTEXT_SWITCH |
+				NV_PGRAPH_INTR_BUFFER_NOTIFY |
+				NV_PGRAPH_INTR_ERROR
+				);
+	else
+		NV_WRITE(NV40_PGRAPH_INTEN,
+				NV_PGRAPH_INTR_NOTIFY |
+				NV_PGRAPH_INTR_MISSING_HW |
+				NV_PGRAPH_INTR_CONTEXT_SWITCH |
 				NV_PGRAPH_INTR_BUFFER_NOTIFY |
 				NV_PGRAPH_INTR_ERROR
 				);
@@ -97,7 +110,10 @@ void nouveau_irq_uninstall(drm_device_t *dev)
 	/* Disable PFIFO interrupts */
 	NV_WRITE(NV_PFIFO_INTEN, 0);
 	/* Disable PGRAPH interrupts */
-	NV_WRITE(NV_PGRAPH_INTEN, 0);
+	if (dev_priv->card_type<NV_40)
+		NV_WRITE(NV04_PGRAPH_INTEN, 0);
+	else
+		NV_WRITE(NV40_PGRAPH_INTEN, 0);
 #if 0
 	/* Disable CRTC0/1 interrupts */
 	NV_WRITE(NV_CRTC0_INTEN, 0);
@@ -107,15 +123,16 @@ void nouveau_irq_uninstall(drm_device_t *dev)
 	NV_WRITE(NV_PMC_INTEN, 0);
 }
 
-void nouveau_fifo_irq_handler(drm_nouveau_private_t *dev_priv)
+static void nouveau_fifo_irq_handler(drm_device_t *dev)
 {
 	uint32_t status, chmode, chstat;
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
 
 	status = NV_READ(NV_PFIFO_INTSTAT);
 	if (!status)
 		return;
 	chmode = NV_READ(NV_PFIFO_MODE);
-	chstat = NV_READ(0x2508);
+	chstat = NV_READ(NV_PFIFO_DMA);
 
 	DRM_DEBUG("NV: PFIFO interrupt! INTSTAT=0x%08x/MODE=0x%08x/PEND=0x%08x\n",
 			status, chmode, chstat);
@@ -136,9 +153,73 @@ void nouveau_fifo_irq_handler(drm_nouveau_private_t *dev_priv)
 	NV_WRITE(NV_PMC_INTSTAT, NV_PMC_INTSTAT_PFIFO_PENDING);
 }
 
-void nouveau_pgraph_irq_handler(drm_nouveau_private_t *dev_priv)
+static void nouveau_nv04_context_switch(drm_device_t *dev)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	uint32_t channel,i;
+	uint32_t max=0;
+	NV_WRITE(NV_PGRAPH_FIFO,0x0);
+	channel=NV_READ(NV_PFIFO_CACH1_PSH1)&(nouveau_fifo_number(dev)-1);
+	//DRM_INFO("raw PFIFO_CACH1_PHS1 reg is %x\n",NV_READ(NV_PFIFO_CACH1_PSH1));
+	//DRM_INFO("currently on channel %d\n",channel);
+	for (i=0;i<nouveau_fifo_number(dev);i++)
+		if ((dev_priv->fifos[i].used)&&(i!=channel)) {
+			uint32_t put,get,pending;
+			//put=NV_READ(dev_priv->ramfc_offset+i*32);
+			//get=NV_READ(dev_priv->ramfc_offset+4+i*32);
+			put=NV_READ(NV03_FIFO_REGS_DMAPUT(i));
+			get=NV_READ(NV03_FIFO_REGS_DMAGET(i));
+			pending=NV_READ(NV_PFIFO_DMA);
+			//DRM_INFO("Channel %d (put/get %x/%x)\n",i,put,get);
+			/* mark all pending channels as such */
+			if ((put!=get)&!(pending&(1<<i)))
+			{
+				pending|=(1<<i);
+				NV_WRITE(NV_PFIFO_DMA,pending);
+			}
+			max++;
+		}
+	nouveau_wait_for_idle(dev);
+
+#if 1
+	/* 2-channel commute */
+	//		NV_WRITE(NV_PFIFO_CACH1_PSH1,channel|0x100);
+	if (channel==0)
+		channel=1;
+	else
+		channel=0;
+	//		dev_priv->cur_fifo=channel;
+	NV_WRITE(0x2050,channel|0x100);
+#endif
+	//NV_WRITE(NV_PFIFO_CACH1_PSH1,max|0x100);
+	//NV_WRITE(0x2050,max|0x100);
+
+	NV_WRITE(NV_PGRAPH_FIFO,0x1);
+	
+}
+
+static void nouveau_nv10_context_switch(drm_device_t *dev)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	int channel;
+
+	channel=NV_READ(NV_PFIFO_CACH1_PSH1)&(nouveau_fifo_number(dev)-1);
+	/* 2-channel commute */
+	if (channel==0)
+		channel=1;
+	else
+		channel=0;
+	dev_priv->cur_fifo=channel;
+
+	NV_WRITE(NV_PGRAPH_CTX_USER, (NV_READ(NV_PGRAPH_CTX_USER)&0xE0FFFFFF)|(dev_priv->cur_fifo<<24));
+	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV_PGRAPH_FFINTFC_ST2, NV_READ(NV_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
+}
+
+static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 {
 	uint32_t status;
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
 
 	status = NV_READ(NV_PGRAPH_INTSTAT);
 	if (!status)
@@ -190,6 +271,26 @@ void nouveau_pgraph_irq_handler(drm_nouveau_private_t *dev_priv)
 		NV_WRITE(NV_PGRAPH_INTSTAT, NV_PGRAPH_INTR_ERROR);
 	}
 
+	if (status & NV_PGRAPH_INTR_CONTEXT_SWITCH) {
+		uint32_t channel=NV_READ(NV_PFIFO_CACH1_PSH1)&(nouveau_fifo_number(dev)-1);
+		DRM_INFO("NV: PGRAPH context switch interrupt channel %x\n",channel);
+		switch(dev_priv->card_type)
+		{
+			case NV_04:
+				nouveau_nv04_context_switch(dev);
+				break;
+			case NV_10:
+				nouveau_nv10_context_switch(dev);
+				break;
+			default:
+				DRM_INFO("NV: Context switch not implemented\n");
+				break;
+		}
+
+		status &= ~NV_PGRAPH_INTR_CONTEXT_SWITCH;
+		NV_WRITE(NV_PGRAPH_INTSTAT, NV_PGRAPH_INTR_CONTEXT_SWITCH);
+	}
+
 	if (status) {
 		DRM_INFO("NV: Unknown PGRAPH interrupt! STAT=0x%08x\n", status);
 		NV_WRITE(NV_PGRAPH_INTSTAT, status);
@@ -198,8 +299,9 @@ void nouveau_pgraph_irq_handler(drm_nouveau_private_t *dev_priv)
 	NV_WRITE(NV_PMC_INTSTAT, NV_PMC_INTSTAT_PGRAPH_PENDING);
 }
 
-void nouveau_crtc_irq_handler(drm_nouveau_private_t *dev_priv, int crtc)
+static void nouveau_crtc_irq_handler(drm_device_t *dev, int crtc)
 {
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	if (crtc&1) {
 		NV_WRITE(NV_CRTC0_INTSTAT, NV_CRTC_INTR_VBLANK);
 	}
@@ -220,15 +322,15 @@ irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS)
 	DRM_DEBUG("PMC INTSTAT: 0x%08x\n", status);
 
 	if (status & NV_PMC_INTSTAT_PFIFO_PENDING) {
-		nouveau_fifo_irq_handler(dev_priv);
+		nouveau_fifo_irq_handler(dev);
 		status &= ~NV_PMC_INTSTAT_PFIFO_PENDING;
 	}
 	if (status & NV_PMC_INTSTAT_PGRAPH_PENDING) {
-		nouveau_pgraph_irq_handler(dev_priv);
+		nouveau_pgraph_irq_handler(dev);
 		status &= ~NV_PMC_INTSTAT_PGRAPH_PENDING;
 	}
 	if (status & NV_PMC_INTSTAT_CRTCn_PENDING) {
-		nouveau_crtc_irq_handler(dev_priv, (status>>24)&3);
+		nouveau_crtc_irq_handler(dev, (status>>24)&3);
 		status &= ~NV_PMC_INTSTAT_CRTCn_PENDING;
 	}
 

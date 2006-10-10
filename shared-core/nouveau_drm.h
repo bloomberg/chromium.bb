@@ -25,7 +25,7 @@
 #ifndef __NOUVEAU_DRM_H__
 #define __NOUVEAU_DRM_H__
 
-typedef struct drm_nouveau_fifo_init {
+typedef struct drm_nouveau_fifo_alloc {
 	int          channel;
 	uint32_t     put_base;
 	/* FIFO control regs */
@@ -35,7 +35,7 @@ typedef struct drm_nouveau_fifo_init {
 	drm_handle_t cmdbuf;
 	int          cmdbuf_size;
 }
-drm_nouveau_fifo_init_t;
+drm_nouveau_fifo_alloc_t;
 
 typedef struct drm_nouveau_object_init {
 	uint32_t handle;
@@ -122,14 +122,13 @@ typedef struct drm_nouveau_sarea {
 }
 drm_nouveau_sarea_t;
 
-#define DRM_NOUVEAU_FIFO_INIT       0x00
-#define DRM_NOUVEAU_PFIFO_REINIT    0x01
-#define DRM_NOUVEAU_OBJECT_INIT     0x02
-#define DRM_NOUVEAU_DMA_OBJECT_INIT 0x03 // We don't want this eventually..
-#define DRM_NOUVEAU_MEM_ALLOC       0x04
-#define DRM_NOUVEAU_MEM_FREE        0x05
-#define DRM_NOUVEAU_GETPARAM        0x06
-#define DRM_NOUVEAU_SETPARAM        0x07
+#define DRM_NOUVEAU_FIFO_ALLOC      0x00
+#define DRM_NOUVEAU_OBJECT_INIT     0x01
+#define DRM_NOUVEAU_DMA_OBJECT_INIT 0x02 // We don't want this eventually..
+#define DRM_NOUVEAU_MEM_ALLOC       0x03
+#define DRM_NOUVEAU_MEM_FREE        0x04
+#define DRM_NOUVEAU_GETPARAM        0x05
+#define DRM_NOUVEAU_SETPARAM        0x06
 
 #endif /* __NOUVEAU_DRM_H__ */
 

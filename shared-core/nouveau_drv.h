@@ -123,6 +123,9 @@ typedef struct drm_nouveau_private {
 
 	struct nouveau_fifo fifos[NV_MAX_FIFO_NUMBER];
 	struct nouveau_object_store objs;
+	/* RAMFC and RAMRO offsets */
+	uint32_t ramfc_offset;
+	uint32_t ramro_offset;
 
 	struct mem_block *agp_heap;
 	struct mem_block *fb_heap;
@@ -139,7 +142,7 @@ extern int nouveau_firstopen(struct drm_device *dev);
 extern int nouveau_unload(struct drm_device *dev);
 extern int nouveau_ioctl_getparam(DRM_IOCTL_ARGS);
 extern int nouveau_ioctl_setparam(DRM_IOCTL_ARGS);
-extern int nouveau_dma_init(struct drm_device *dev);
+extern void nouveau_wait_for_idle(struct drm_device *dev);
 
 /* nouveau_mem.c */
 extern uint64_t          nouveau_mem_fb_amount(struct drm_device *dev);
