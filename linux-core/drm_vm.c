@@ -237,7 +237,7 @@ static int drm_ttm_remap_bound_pfn(struct vm_area_struct *vma,
 	}
 
 	if (ret) {
-	  DRM_ERROR("Map returned %c\n", ret);
+		DRM_ERROR("Map returned %c\n", ret);
 	}
 	return ret;
 }
@@ -254,6 +254,7 @@ static __inline__ struct page *drm_do_vm_ttm_nopage(struct vm_area_struct *vma,
 	pgprot_t default_prot;
 	uint32_t page_flags;
 	drm_buffer_manager_t *bm;
+	drm_device_t *dev;
 
 	if (address > vma->vm_end)
 		return NOPAGE_SIGBUS;	/* Disallow mremap */
@@ -262,7 +263,11 @@ static __inline__ struct page *drm_do_vm_ttm_nopage(struct vm_area_struct *vma,
 
 	map = (drm_map_t *) entry->map;
 	ttm = (drm_ttm_t *) map->offset;
-	bm = &ttm->dev->bm;
+	
+	dev = ttm->dev;
+	mutex_lock(&dev->struct_mutex);
+
+	bm = &dev->bm;
 	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
 	page = ttm->pages[page_offset];
 
@@ -270,22 +275,43 @@ static __inline__ struct page *drm_do_vm_ttm_nopage(struct vm_area_struct *vma,
 
 	if (!page) {
 		if (bm->cur_pages >= bm->max_pages) {
-	 		DRM_ERROR("Maximum locked page count exceeded\n");
-			return NOPAGE_OOM;
+	 		DRM_ERROR("Maximum locked page count exceeded\n"); 
+			page = NOPAGE_OOM;
+			goto out;
 		}
 		++bm->cur_pages;
 		page = ttm->pages[page_offset] = drm_alloc_gatt_pages(0);
+		if (page) {
+			SetPageLocked(page);
+		} else {
+			page = NOPAGE_OOM;
+		}
 	}
-	if (!page) 
-		return NOPAGE_OOM;
 
-	SetPageLocked(page);
+	if (page_flags & DRM_TTM_PAGE_UNCACHED) {
+
+		/*
+		 * This makes sure we don't race with another 
+		 * drm_ttm_remap_bound_pfn();
+		 */
+
+		if (!drm_pte_is_clear(vma, address)) {
+			page = NOPAGE_RETRY;
+			goto out1;
+		}
+		       		
+		drm_ttm_remap_bound_pfn(vma, address, PAGE_SIZE);
+		page = NOPAGE_RETRY;
+		goto out1;
+	}
 	get_page(page);
-
-	default_prot = vm_get_page_prot(vma->vm_flags);
-
-	BUG_ON(page_flags & DRM_TTM_PAGE_UNCACHED);
+	
+ out1:
+	default_prot = vm_get_page_prot(vma->vm_flags);	    
 	vma->vm_page_prot = default_prot;
+
+ out:
+	mutex_unlock(&dev->struct_mutex);
 	return page;
 }
 
@@ -645,7 +671,6 @@ static int drm_vm_ttm_open(struct vm_area_struct *vma) {
 	        *entry = *tmp_vma;
 		map = (drm_map_t *) entry->map;
 		ttm = (drm_ttm_t *) map->offset;
-		ret = drm_ttm_add_mm_to_list(ttm, vma->vm_mm);
 		if (!ret) {
 			atomic_inc(&ttm->vma_count);
 			INIT_LIST_HEAD(&entry->head);
@@ -717,7 +742,6 @@ static void drm_vm_ttm_close(struct vm_area_struct *vma)
 		ttm = (drm_ttm_t *) map->offset;
 		dev = ttm->dev;
 		mutex_lock(&dev->struct_mutex);
-		drm_ttm_delete_mm(ttm, vma->vm_mm);
 		list_del(&ttm_vma->head);
 		drm_free(ttm_vma, sizeof(*ttm_vma), DRM_MEM_VMAS);
 		if (atomic_dec_and_test(&ttm->vma_count)) {

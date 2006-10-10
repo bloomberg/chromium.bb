@@ -62,3 +62,82 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags)
 	return protection_map[vm_flags & 0x0F];
 #endif
 };
+
+int drm_pte_is_clear(struct vm_area_struct *vma,
+		     unsigned long addr)
+{
+	struct mm_struct *mm = vma->vm_mm;
+	int ret = 1;
+	pte_t *pte;
+	pmd_t *pmd;
+	pud_t *pud;
+	pgd_t *pgd;
+	
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+	spin_lock(&mm->page_table_lock);
+#else
+	spinlock_t ptl;
+#endif
+	
+	pgd = pgd_offset(mm, addr);
+	if (pgd_none(*pgd))
+		goto unlock;
+	pud = pud_offset(pgd, addr);
+        if (pud_none(*pud))
+		goto unlock;
+	pmd = pmd_offset(pud, addr);
+	if (pmd_none(*pmd))
+		goto unlock;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+	pte = pte_offset_map(pmd, addr);
+#else 
+	pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
+#endif
+	if (!pte)
+		goto unlock;
+	ret = pte_none(*pte);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+	pte_unmap(pte);
+ unlock:	
+	spin_unlock(&mm->page_table_lock);
+#else
+	pte_unmap_unlock(pte, ptl);
+ unlock:
+#endif
+	return ret;
+}
+	
+
+static struct {
+	spinlock_t lock;
+	struct page *dummy_page;
+	atomic_t present;
+} drm_np_retry = 
+{SPIN_LOCK_UNLOCKED, NOPAGE_OOM, ATOMIC_INIT(0)};
+
+struct page * get_nopage_retry(void)
+{
+	if (atomic_read(&drm_np_retry.present) == 0) {
+		struct page *page = alloc_page(GFP_KERNEL);
+		if (!page)
+			return NOPAGE_OOM;
+		spin_lock(&drm_np_retry.lock);
+		drm_np_retry.dummy_page = page;
+		atomic_set(&drm_np_retry.present,1);
+		spin_unlock(&drm_np_retry.lock);
+	}
+	get_page(drm_np_retry.dummy_page);
+	return drm_np_retry.dummy_page;
+}
+
+void free_nopage_retry(void)
+{
+	if (atomic_read(&drm_np_retry.present) == 1) {
+		spin_lock(&drm_np_retry.lock);
+		__free_page(drm_np_retry.dummy_page);
+		drm_np_retry.dummy_page = NULL;
+		atomic_set(&drm_np_retry.present, 0);
+		spin_unlock(&drm_np_retry.lock);
+	}
+}

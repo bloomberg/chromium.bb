@@ -252,7 +252,9 @@ extern pgprot_t vm_get_page_prot(unsigned long vm_flags);
  * that are not in the kernel linear map.
  */
 
-#define drm_alloc_gatt_pages(order) virt_to_page(alloc_gatt_pages(order))
+#define drm_alloc_gatt_pages(order) ({					\
+			void *_virt = alloc_gatt_pages(order);		\
+			((_virt) ? virt_to_page(_virt) : NULL);})
 #define drm_free_gatt_pages(pages, order) free_gatt_pages(page_address(pages), order) 
 
 #if defined(CONFIG_X86) && (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
@@ -267,5 +269,28 @@ extern int drm_map_page_into_agp(struct page *page);
 #define map_page_into_agp drm_map_page_into_agp
 #define unmap_page_from_agp drm_unmap_page_from_agp
 #endif
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+
+/*
+ * Hopefully, real NOPAGE_RETRY functionality will be in 2.6.19. 
+ * For now, just return a dummy page that we've allocated out of 
+ * static space. The page will be put by do_nopage() since we've already
+ * filled out the pte.
+ */
+extern struct page * get_nopage_retry(void);
+extern void free_nopage_retry(void);
+
+#define NOPAGE_RETRY get_nopage_retry()
+
+#endif
+
+/*
+ * Is the PTE for this address really clear so that we can use 
+ * io_remap_pfn_range?
+ */
+
+int drm_pte_is_clear(struct vm_area_struct *vma,
+		     unsigned long addr);
 
 #endif

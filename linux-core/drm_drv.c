@@ -434,6 +434,9 @@ void drm_exit(struct drm_driver *driver)
 		}
 	} else
 		pci_unregister_driver(&driver->pci_driver);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+	free_nopage_retry();
+#endif
 	DRM_INFO("Module unloaded\n");
 }
 EXPORT_SYMBOL(drm_exit);
