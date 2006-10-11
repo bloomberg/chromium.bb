@@ -48,6 +48,7 @@ typedef struct drm_ttm_backend {
 	unsigned long aperture_base;
 	void *private;
 	int needs_free;
+        uint32_t drm_map_type;
 	int (*needs_cache_adjust) (struct drm_ttm_backend * backend);
 	int (*populate) (struct drm_ttm_backend * backend,
 			 unsigned long num_pages, struct page ** pages);
@@ -57,61 +58,32 @@ typedef struct drm_ttm_backend {
 	void (*destroy) (struct drm_ttm_backend * backend);
 } drm_ttm_backend_t;
 
-#define DRM_FLUSH_READ  (0x01)
-#define DRM_FLUSH_WRITE (0x02)
-#define DRM_FLUSH_EXE   (0x04)
-
-typedef struct drm_ttm_backend_list {
-	uint32_t flags;
-	struct list_head head;
-	drm_ttm_backend_t *be;
-	unsigned page_offset;
-	unsigned num_pages;
-	struct drm_ttm *owner;
-	drm_file_t *anon_owner;
-	struct page **anon_pages;
-	int anon_locked;
+typedef struct drm_ttm {
+	struct page **pages;
+	uint32_t page_flags;
+	unsigned long num_pages;
+	unsigned long aper_offset;
+        atomic_t vma_count;
+	struct drm_device *dev;
+	int destroy;
+        uint32_t mapping_offset;
+        drm_ttm_backend_t *be;
 	enum {
 		ttm_bound,
 		ttm_evicted,
-		ttm_unbound
+		ttm_unbound,
+		ttm_unpopulated,
 	} state;
-} drm_ttm_backend_list_t;
-
-typedef struct drm_ttm_vma_list {
-	struct list_head head;
-	pgprot_t orig_protection;
-	struct vm_area_struct *vma;
-	drm_map_t *map;
-} drm_ttm_vma_list_t;
-
-typedef struct drm_ttm {
-	struct list_head p_mm_list;
-	atomic_t shared_count;
-	uint32_t mm_list_seq;
-	unsigned long aperture_base;
-	struct page **pages;
-	uint32_t *page_flags;
-	unsigned long lhandle;
-	unsigned long num_pages;
-	drm_ttm_vma_list_t *vma_list;
-	struct drm_device *dev;
-	drm_ttm_backend_list_t *be_list;
-	atomic_t vma_count;
-	int mmap_sem_locked;
-	int destroy;
-        uint32_t mapping_offset;
 } drm_ttm_t;
 
 typedef struct drm_ttm_object {
-	drm_user_object_t base;
 	atomic_t usage;
 	uint32_t flags;
 	drm_map_list_t map_list;
 } drm_ttm_object_t;
 
 extern int drm_ttm_object_create(struct drm_device *dev, unsigned long size,
-				 uint32_t flags,
+				 uint32_t flags, int cached,
 				 drm_ttm_object_t ** ttm_object);
 extern void drm_ttm_object_deref_locked(struct drm_device *dev,
 					drm_ttm_object_t * to);
@@ -120,41 +92,18 @@ extern void drm_ttm_object_deref_unlocked(struct drm_device *dev,
 extern drm_ttm_object_t *drm_lookup_ttm_object(drm_file_t * priv,
 					       uint32_t handle,
 					       int check_owner);
-
-/*
- * Bind a part of the ttm starting at page_offset size n_pages into the GTT, at
- * aperture offset aper_offset. The region handle will be used to reference this
- * bound region in the future. Note that the region may be the whole ttm. 
- * Regions should not overlap.
- * This function sets all affected pages as noncacheable and flushes cashes and TLB.
- */
-
-int drm_create_ttm_region(drm_ttm_t * ttm, unsigned long page_offset,
-			  unsigned long n_pages, int cached,
-			  drm_ttm_backend_list_t ** region);
-
-int drm_bind_ttm_region(drm_ttm_backend_list_t * region,
+extern int drm_bind_ttm(drm_ttm_t * ttm,
 			unsigned long aper_offset);
 
-/*
- * Unbind a ttm region. Restores caching policy. Flushes caches and TLB.
- */
-
-void drm_unbind_ttm_region(drm_ttm_backend_list_t * entry);
-void drm_destroy_ttm_region(drm_ttm_backend_list_t * entry);
+extern void drm_unbind_ttm(drm_ttm_t * ttm);
 
 /*
  * Evict a ttm region. Keeps Aperture caching policy.
  */
 
-int drm_evict_ttm_region(drm_ttm_backend_list_t * entry);
+extern int drm_evict_ttm(drm_ttm_t * ttm);
+extern void drm_fixup_ttm_caching(drm_ttm_t *ttm);
 
-/*
- * Rebind an already evicted region into a possibly new location in the aperture.
- */
-
-int drm_rebind_ttm_region(drm_ttm_backend_list_t * entry,
-			  unsigned long aper_offset);
 
 /*
  * Destroy a ttm. The user normally calls drmRmMap or a similar IOCTL to do this, 
@@ -163,7 +112,6 @@ int drm_rebind_ttm_region(drm_ttm_backend_list_t * entry,
  */
 
 extern int drm_destroy_ttm(drm_ttm_t * ttm);
-extern void drm_user_destroy_region(drm_ttm_backend_list_t * entry);
 extern int drm_ttm_ioctl(DRM_IOCTL_ARGS);
 
 static __inline__ drm_ttm_t *drm_ttm_from_object(drm_ttm_object_t * to)

@@ -693,22 +693,6 @@ typedef struct drm_fence_arg {
 	} op;
 } drm_fence_arg_t;
 
-#define DRM_TTM_FLAG_SHAREABLE           0x00000001
-
-typedef struct drm_ttm_arg {
-	enum {
-		drm_ttm_create,
-		drm_ttm_destroy,
-		drm_ttm_reference,
-		drm_ttm_unreference
-	} op;
-	unsigned handle;
-        drm_u64_t user_token;
-	drm_u64_t size;
-        unsigned flags;
-}drm_ttm_arg_t;
-
-
 /* Buffer permissions, referring to how the GPU uses the buffers.
    these translate to fence types used for the buffers. 
    Typically a texture buffer is read, A destination buffer is write and
@@ -771,7 +755,6 @@ typedef struct drm_ttm_arg {
 #define DRM_BO_MASK_DRIVER      0x00F00000
 
 typedef enum {
-	drm_bo_type_ttm,
 	drm_bo_type_dc,
 	drm_bo_type_user,
 	drm_bo_type_fake
@@ -920,7 +903,6 @@ typedef union drm_mm_init_arg{
 
 #ifdef __linux__
 #define DRM_IOCTL_FENCE                 DRM_IOWR(0x3b, drm_fence_arg_t)
-#define DRM_IOCTL_TTM                   DRM_IOWR(0x3c, drm_ttm_arg_t)
 #define DRM_IOCTL_BUFOBJ                DRM_IOWR(0x3d, drm_bo_arg_t)
 #define DRM_IOCTL_MM_INIT               DRM_IOWR(0x3e, drm_mm_init_arg_t)
 #endif

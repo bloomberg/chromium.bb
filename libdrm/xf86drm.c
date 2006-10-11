@@ -2462,74 +2462,6 @@ int drmFenceWait(int fd, unsigned flags, drmFence *fence, unsigned flush_type)
     return 0;
 }    
 
-int drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, unsigned flags)
-{
-    drm_ttm_arg_t arg;
-
-    memset(&arg, 0, sizeof(arg));
-    arg.op = drm_ttm_create;
-    arg.flags = flags;
-    arg.size = size;
-
-    if (ioctl(fd, DRM_IOCTL_TTM, &arg))
-	return -errno;
-    
-    ttm->handle = arg.handle;
-    ttm->user_token = (drm_handle_t) arg.user_token;
-    ttm->flags = arg.flags;
-    ttm->size = arg.size;
-    ttm->virtual = NULL;
-    ttm->mapCount = 0;
-    return 0;
-}
-
-int drmTTMDestroy(int fd, const drmTTM *ttm)
-{
-    drm_ttm_arg_t arg;
-
-    memset(&arg, 0, sizeof(arg));
-    arg.op = drm_ttm_destroy;
-    arg.handle = ttm->handle;
-    if (ioctl(fd, DRM_IOCTL_TTM, &arg))
-	return -errno;
-    return 0;
-}
-
-
-int drmTTMReference(int fd, unsigned handle, drmTTM *ttm)
-{
-    drm_ttm_arg_t arg;
-
-    memset(&arg, 0, sizeof(arg));
-    arg.handle = handle;
-    arg.op = drm_ttm_reference;
-    if (ioctl(fd, DRM_IOCTL_TTM, &arg))
-	return -errno;
-    ttm->handle = arg.handle;
-    ttm->user_token = (drm_handle_t) arg.user_token;
-    ttm->flags = arg.flags;
-    ttm->size = arg.size;
-    return 0;
-}
-
-int drmTTMUnreference(int fd, const drmTTM *ttm)
-{
-    drm_ttm_arg_t arg;
-
-    memset(&arg, 0, sizeof(arg));
-    arg.op = drm_ttm_destroy;
-    arg.handle = ttm->handle;
-    if (ioctl(fd, DRM_IOCTL_TTM, &arg))
-	return -errno;
-    return 0;
-}
-
-drm_handle_t drmTTMMapHandle(int fd, const drmTTM *ttm)
-{
-    (void) fd;
-    return ttm->user_token;
-}
-
 static int drmAdjustListNodes(drmBOList *list)
 {
     drmBONode *node;
@@ -2685,7 +2617,7 @@ static void drmBOCopyReply(const drm_bo_arg_reply_t *rep,
     
     
 
-int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
+int drmBOCreate(int fd, void *ttm, unsigned long start, unsigned long size,
 		void *user_buffer, drm_bo_type_t type, unsigned mask,
 		unsigned hint, drmBO *buf)
 {
@@ -2700,15 +2632,9 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
     req->size = size;
     req->type = type;
 
-    buf->ttm = NULL;
     buf->virtual = NULL;
 
     switch(type) {
-    case drm_bo_type_ttm:
-	req->arg_handle = ttm->handle;
-	req->buffer_start = start;
-	buf->ttm = ttm;
-	break;
     case drm_bo_type_dc:
         req->buffer_start = start;
 	break;
@@ -2727,10 +2653,10 @@ int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
     if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
 	return -errno;
     if (!arg.handled) {
-      fprintf(stderr, "Not handled\n");
 	return -EFAULT;
     }
     if (rep->ret) {
+        fprintf(stderr, "Error %d\n", rep->ret);
 	return rep->ret;
     }
     
@@ -2853,8 +2779,10 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
 	virtual = mmap(0, buf->size + buf->start, 
 		       PROT_READ | PROT_WRITE, MAP_SHARED,
 		       fd, buf->mapHandle);
-	if (virtual == MAP_FAILED)
+	if (virtual == MAP_FAILED) {
 	    ret = -errno;
+	    fprintf(stderr, "Map error 0x%016llx\n", buf->mapHandle);
+	}
 	if (ret) 
 	    return ret;
 	buf->mapVirtual = virtual;

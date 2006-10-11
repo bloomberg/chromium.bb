@@ -278,19 +278,30 @@ extern int drm_map_page_into_agp(struct page *page);
  * static space. The page will be put by do_nopage() since we've already
  * filled out the pte.
  */
-extern struct page * get_nopage_retry(void);
+
+struct fault_data {
+	struct vm_area_struct *vma;
+	unsigned long address;
+	pgoff_t pgoff;
+	unsigned int flags;
+	
+	int type;
+};
+
+extern struct page *get_nopage_retry(void);
 extern void free_nopage_retry(void);
 
-#define NOPAGE_RETRY get_nopage_retry()
+#define NOPAGE_REFAULT get_nopage_retry()
+
+extern int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr, 
+			 unsigned long pfn, pgprot_t pgprot);
+
+extern struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
+				      unsigned long address, 
+				      int *type);
+
+extern struct page *drm_vm_ttm_fault(struct vm_area_struct *vma, 
+				     struct fault_data *data);
 
 #endif
-
-/*
- * Is the PTE for this address really clear so that we can use 
- * io_remap_pfn_range?
- */
-
-int drm_pte_is_clear(struct vm_area_struct *vma,
-		     unsigned long addr);
-
 #endif

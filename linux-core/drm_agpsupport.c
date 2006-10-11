@@ -683,6 +683,7 @@ drm_ttm_backend_t *drm_agp_init_ttm_uncached(struct drm_device *dev,
 	agp_be->unbind = drm_agp_unbind_ttm;
 	agp_be->destroy = drm_agp_destroy_ttm;
 	agp_be->needs_free = (backend == NULL);
+	agp_be->drm_map_type = _DRM_AGP;
 	return agp_be;
 }
 EXPORT_SYMBOL(drm_agp_init_ttm_uncached);
@@ -720,6 +721,7 @@ drm_ttm_backend_t *drm_agp_init_ttm_cached(struct drm_device *dev,
 	agp_be->unbind = drm_agp_unbind_ttm;
 	agp_be->destroy = drm_agp_destroy_ttm;
 	agp_be->needs_free = (backend == NULL);
+	agp_be->drm_map_type = _DRM_AGP;
 	return agp_be;
 }
 EXPORT_SYMBOL(drm_agp_init_ttm_cached);

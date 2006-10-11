@@ -63,7 +63,7 @@
  * bo locked.
  */
 
-static int drm_move_tt_to_local(drm_buffer_object_t * buf)
+static int drm_move_tt_to_local(drm_buffer_object_t * buf, int evict)
 {
 	drm_device_t *dev = buf->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
@@ -71,7 +71,10 @@ static int drm_move_tt_to_local(drm_buffer_object_t * buf)
 	BUG_ON(!buf->tt);
 
 	mutex_lock(&dev->struct_mutex);
-	drm_unbind_ttm_region(buf->ttm_region);
+	if (evict)
+		drm_evict_ttm(buf->ttm);
+	else
+		drm_unbind_ttm(buf->ttm);
 	drm_mm_put_block(&bm->tt_manager, buf->tt);
 	buf->tt = NULL;
 
@@ -129,16 +132,13 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 		 * This temporarily unlocks struct_mutex. 
 		 */
 
-		drm_unbind_ttm_region(bo->ttm_region);
+		drm_unbind_ttm(bo->ttm);
 		drm_mm_put_block(&bm->tt_manager, bo->tt);
 		bo->tt = NULL;
 	}
 	if (bo->vram) {
 		drm_mm_put_block(&bm->vram_manager, bo->vram);
 		bo->vram = NULL;
-	}
-	if (bo->ttm_region) {
-		drm_destroy_ttm_region(bo->ttm_region);
 	}
 	if (bo->ttm_object) {
 		drm_ttm_object_deref_locked(dev, bo->ttm_object);
@@ -428,7 +428,7 @@ static int drm_bo_evict(drm_buffer_object_t * bo, int tt, int no_wait)
 	}
 
 	if (tt) {
-		ret = drm_move_tt_to_local(bo);
+		ret = drm_move_tt_to_local(bo, 1);
 	}
 #if 0
 	else {
@@ -522,7 +522,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 		return ret;
 	DRM_DEBUG("Flipping in to AGP 0x%08lx\n", bo->tt->start);
 	mutex_lock(&dev->struct_mutex);
-	ret = drm_bind_ttm_region(bo->ttm_region, bo->tt->start);
+	ret = drm_bind_ttm(bo->ttm, bo->tt->start);
 	if (ret) {
 		drm_mm_put_block(&bm->tt_manager, bo->tt);
 	}
@@ -530,7 +530,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	if (ret)
 		return ret;
 
-	be = bo->ttm_region->be;
+	be = bo->ttm->be;
 	if (be->needs_cache_adjust(be))
 		bo->flags &= ~DRM_BO_FLAG_CACHED;
 	bo->flags &= ~DRM_BO_MASK_MEM;
@@ -1023,7 +1023,7 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
 		if (ret)
 			return ret;
 	} else {
-		drm_move_tt_to_local(bo);
+		drm_move_tt_to_local(bo, 0);
 	}
 
 	return 0;
@@ -1203,33 +1203,23 @@ static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
  * Call bo->mutex locked.
  */
 
-static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
-			  uint32_t ttm_handle)
+static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo)
 {
 	drm_device_t *dev = bo->dev;
 	drm_ttm_object_t *to = NULL;
-	drm_ttm_t *ttm;
 	int ret = 0;
 	uint32_t ttm_flags = 0;
 
 	bo->ttm_object = NULL;
-	bo->ttm_region = NULL;
+	bo->ttm = NULL;
 
 	switch (bo->type) {
 	case drm_bo_type_dc:
 		mutex_lock(&dev->struct_mutex);
 		ret = drm_ttm_object_create(dev, bo->num_pages * PAGE_SIZE,
+					    bo->mask & DRM_BO_FLAG_BIND_CACHED,
 					    ttm_flags, &to);
 		mutex_unlock(&dev->struct_mutex);
-		break;
-	case drm_bo_type_ttm:
-		mutex_lock(&dev->struct_mutex);
-		to = drm_lookup_ttm_object(priv, ttm_handle, 1);
-		mutex_unlock(&dev->struct_mutex);
-		if (!to) {
-			DRM_ERROR("Could not find TTM object\n");
-			ret = -EINVAL;
-		}
 		break;
 	case drm_bo_type_user:
 	case drm_bo_type_fake:
@@ -1246,14 +1236,7 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
 
 	if (to) {
 		bo->ttm_object = to;
-		ttm = drm_ttm_from_object(to);
-		ret = drm_create_ttm_region(ttm, bo->buffer_start >> PAGE_SHIFT,
-					    bo->num_pages,
-					    bo->mask & DRM_BO_FLAG_BIND_CACHED,
-					    &bo->ttm_region);
-		if (ret) {
-			drm_ttm_object_deref_unlocked(dev, to);
-		}
+		bo->ttm = drm_ttm_from_object(to);
 	}
 	return ret;
 }
@@ -1261,7 +1244,6 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo,
 int drm_buffer_object_create(drm_file_t * priv,
 			     unsigned long size,
 			     drm_bo_type_t type,
-			     uint32_t ttm_handle,
 			     uint32_t mask,
 			     uint32_t hint,
 			     unsigned long buffer_start,
@@ -1318,7 +1300,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 			       1, &new_flags, &bo->mask);
 	if (ret)
 		goto out_err;
-	ret = drm_bo_add_ttm(priv, bo, ttm_handle);
+	ret = drm_bo_add_ttm(priv, bo);
 	if (ret)
 		goto out_err;
 
@@ -1394,7 +1376,6 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 			rep.ret =
 			    drm_buffer_object_create(priv, req->size,
 						     req->type,
-						     req->arg_handle,
 						     req->mask,
 						     req->hint,
 						     req->buffer_start, &entry);
@@ -1659,7 +1640,7 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		if (arg.req.tt_p_size) {
 			ret = drm_mm_init(&bm->tt_manager,
 					  arg.req.tt_p_offset,
-					  arg.req.tt_p_size);
+					  3000 /* arg.req.tt_p_size */);
 			bm->has_tt = 1;
 			bm->use_tt = 1;
 

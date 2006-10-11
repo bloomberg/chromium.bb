@@ -63,8 +63,10 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags)
 #endif
 };
 
-int drm_pte_is_clear(struct vm_area_struct *vma,
-		     unsigned long addr)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+
+static int drm_pte_is_clear(struct vm_area_struct *vma,
+			    unsigned long addr)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	int ret = 1;
@@ -77,7 +79,7 @@ int drm_pte_is_clear(struct vm_area_struct *vma,
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 	spin_lock(&mm->page_table_lock);
 #else
-	spinlock_t ptl;
+	spinlock_t *ptl;
 #endif
 	
 	pgd = pgd_offset(mm, addr);
@@ -92,7 +94,7 @@ int drm_pte_is_clear(struct vm_area_struct *vma,
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 	pte = pte_offset_map(pmd, addr);
 #else 
-	pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
+	pte = pte_offset_map_lock(mm, pmd, addr, &ptl); 
 #endif
 	if (!pte)
 		goto unlock;
@@ -108,6 +110,17 @@ int drm_pte_is_clear(struct vm_area_struct *vma,
 	return ret;
 }
 	
+int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr, 
+		  unsigned long pfn, pgprot_t pgprot)
+{
+	int ret;
+	if (!drm_pte_is_clear(vma, addr))
+		return -EBUSY;
+
+	ret = io_remap_pfn_range(vma, addr, pfn, PAGE_SIZE, pgprot);
+	return ret;
+}
+
 
 static struct {
 	spinlock_t lock;
@@ -141,3 +154,32 @@ void free_nopage_retry(void)
 		spin_unlock(&drm_np_retry.lock);
 	}
 }
+#endif
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+
+struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
+			       unsigned long address, 
+			       int *type)
+{
+	struct fault_data data;
+
+	if (type)
+		*type = VM_FAULT_MINOR;
+
+	data.address = address;
+	data.vma = vma;
+	drm_vm_ttm_fault(vma, &data);
+	switch (data.type) {
+	case VM_FAULT_OOM:
+		return NOPAGE_OOM;
+	case VM_FAULT_SIGBUS:
+		return NOPAGE_SIGBUS;
+	default:
+		break;
+	}
+
+	return NOPAGE_REFAULT;
+}
+
+#endif

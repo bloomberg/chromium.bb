@@ -101,15 +101,6 @@ typedef struct _drmFence{
         unsigned signaled;
 } drmFence;
 
-typedef struct _drmTTM{
-        unsigned handle;
-        drm_u64_t user_token;
-        unsigned flags;
-        unsigned long size;
-        void *virtual;
-        int mapCount;
-} drmTTM;
-
 typedef struct _drmBO{
     drm_bo_type_t type;
     unsigned handle;
@@ -125,7 +116,6 @@ typedef struct _drmBO{
     void *virtual;
     void *mapVirtual;
     int mapCount;
-    drmTTM *ttm;
 } drmBO;
 
 
@@ -164,17 +154,6 @@ extern int           drmFenceBuffers(int fd, unsigned flags, drmFence *fence);
 
 
 /*
- * TTM functions.
- */
-
-extern int drmTTMCreate(int fd, drmTTM *ttm, unsigned long size, 
-			unsigned flags);
-extern int drmTTMDestroy(int fd, const drmTTM *ttm);
-extern int drmTTMReference(int fd, unsigned handle, drmTTM *ttm);
-extern int drmTTMUnreference(int fd, const drmTTM *ttm);
-extern drm_handle_t drmTTMMapHandle(int fd, const drmTTM *ttm);
-
-/*
  * Buffer object list functions.
  */
 
@@ -189,7 +168,7 @@ extern int drmBOCreateList(int numTarget, drmBOList *list);
  * Buffer object functions.
  */
 
-extern int drmBOCreate(int fd, drmTTM *ttm, unsigned long start, unsigned long size,
+extern int drmBOCreate(int fd, void *ttm, unsigned long start, unsigned long size,
 			      void *user_buffer, drm_bo_type_t type, unsigned mask,
 		unsigned hint, drmBO *buf);
 extern int drmBODestroy(int fd, drmBO *buf);
