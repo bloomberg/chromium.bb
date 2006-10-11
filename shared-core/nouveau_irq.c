@@ -211,9 +211,11 @@ static void nouveau_nv10_context_switch(drm_device_t *dev)
 		channel=0;
 	dev_priv->cur_fifo=channel;
 
+	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10000100);
 	NV_WRITE(NV_PGRAPH_CTX_USER, (NV_READ(NV_PGRAPH_CTX_USER)&0xE0FFFFFF)|(dev_priv->cur_fifo<<24));
-	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10010100);
 	NV_WRITE(NV_PGRAPH_FFINTFC_ST2, NV_READ(NV_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
+	/* touch PGRAPH_CTX_SWITCH* here ? */
+	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10010100);
 }
 
 static void nouveau_pgraph_irq_handler(drm_device_t *dev)

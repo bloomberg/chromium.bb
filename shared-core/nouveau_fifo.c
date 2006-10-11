@@ -110,7 +110,6 @@ static void nouveau_fifo_init(drm_device_t* dev)
 	NV_WRITE(NV_PFIFO_CACH1_PUL1, 0x00000001);
 
 	NV_WRITE(NV_PGRAPH_CTX_USER, 0x0);
-	NV_WRITE(NV_PGRAPH_CTX_SWITCH1, 0x19);
 	NV_WRITE(NV_PFIFO_DELAY_0, 0xff /* retrycount*/ );
 	if (dev_priv->card_type >= NV_40)
 		NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x00002001);
@@ -187,7 +186,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	int i;
 	int ret;
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint32_t ctx_addr;
+	uint32_t ctx_addr,ctx_size;
 
 	/* Init cmdbuf on first FIFO init, this is delayed until now to
 	 * give the ddx a chance to configure the cmdbuf with SETPARAM
@@ -219,54 +218,71 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	dev_priv->fifos[i].used=1;
 	dev_priv->fifos[i].filp=filp;
 
+	init->channel  = i;
+	init->put_base = i*dev_priv->cmdbuf_ch_size;
+	dev_priv->cur_fifo = init->channel;
+
 	nouveau_wait_for_idle(dev);
 
 	/* disable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
 
-	// FIXME i*32 is true on nv04, what is it on >=nv10 ?
-	ctx_addr=NV_RAMIN+dev_priv->ramfc_offset+i*32;
+	if (dev_priv->card_type <= NV_04)
+		ctx_size=32;
+	else
+		ctx_size=128;
 
-	// clear the first 2 RAMFC entries
-	// FIXME try to fill GET/PUT and see what that changes
-	NV_WRITE(ctx_addr,0x0);
-	NV_WRITE(ctx_addr+4,0x0);
+	ctx_addr=NV_RAMIN+dev_priv->ramfc_offset+init->channel*ctx_size;
+	// clear the fifo context
+	for(i=0;i<ctx_size/4;i++)
+		NV_WRITE(ctx_addr+4*i,0x0);
 
-	// FIXME that's what is done in nvosdk, but that part of the code is buggy so...
-	// RAMFC + 8 = instoffset
-	NV_WRITE(ctx_addr+8,dev_priv->cmdbuf_obj->instance >> 4);
-
-	// RAMFC + 16 = defaultFetch
-	NV_WRITE(ctx_addr+16,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
+	NV_WRITE(ctx_addr,init->put_base);
+	NV_WRITE(ctx_addr+4,init->put_base);
+	if (dev_priv->card_type <= NV_04)
+	{
+		// that's what is done in nvosdk, but that part of the code is buggy so...
+		NV_WRITE(ctx_addr+8,dev_priv->cmdbuf_obj->instance >> 4);
+#ifdef __BIG_ENDIAN
+		NV_WRITE(ctx_addr+16,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
+#else
+		NV_WRITE(ctx_addr+16,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
+#endif
+	}
+	else
+	{
+		NV_WRITE(ctx_addr+12,dev_priv->cmdbuf_obj->instance >> 4/*DMA INST/DMA COUNT*/);
+#ifdef __BIG_ENDIAN
+		NV_WRITE(ctx_addr+20,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
+#else
+		NV_WRITE(ctx_addr+20,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
+#endif
+	}
 
 	/* enable the fifo dma operation */
-	NV_WRITE(NV_PFIFO_MODE,NV_READ(NV_PFIFO_MODE)|(1<<i));
+	NV_WRITE(NV_PFIFO_MODE,NV_READ(NV_PFIFO_MODE)|(1<<init->channel));
 
 	// FIXME check if we need to refill the time quota with something like NV_WRITE(0x204C, 0x0003FFFF);
 
-	dev_priv->cur_fifo=i;
 	if (dev_priv->card_type >= NV_40)
 		NV_WRITE(NV_PFIFO_CACH1_PSH1, 0x00010000|dev_priv->cur_fifo);
 	else
 		NV_WRITE(NV_PFIFO_CACH1_PSH1, 0x00000100|dev_priv->cur_fifo);
 
-	init->channel  = i;
-	init->put_base = i*dev_priv->cmdbuf_ch_size;
-
-	NV_WRITE(NV03_FIFO_REGS_DMAPUT(i), init->put_base);
-	NV_WRITE(NV03_FIFO_REGS_DMAGET(i), init->put_base);
 	NV_WRITE(NV_PFIFO_CACH1_DMAP, init->put_base);
 	NV_WRITE(NV_PFIFO_CACH1_DMAG, init->put_base);
+	NV_WRITE(NV03_FIFO_REGS_DMAPUT(init->channel), init->put_base);
+	NV_WRITE(NV03_FIFO_REGS_DMAGET(init->channel), init->put_base);
 
 	/* reenable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);
 
 	/* make the fifo available to user space */
 	/* first, the fifo control regs */
-	init->ctrl      = dev_priv->mmio->offset + NV03_FIFO_REGS(i);
+	init->ctrl      = dev_priv->mmio->offset + NV03_FIFO_REGS(init->channel);
 	init->ctrl_size = NV03_FIFO_REGS_SIZE;
 	ret = drm_addmap(dev, init->ctrl, init->ctrl_size, _DRM_REGISTERS,
-			 0, &dev_priv->fifos[i].regs);
+			 0, &dev_priv->fifos[init->channel].regs);
 	if (ret != 0)
 		return ret;
 
@@ -275,14 +291,14 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	init->cmdbuf      += init->channel * dev_priv->cmdbuf_ch_size;
 	init->cmdbuf_size  = dev_priv->cmdbuf_ch_size;
 	ret = drm_addmap(dev, init->cmdbuf, init->cmdbuf_size, _DRM_REGISTERS,
-			 0, &dev_priv->fifos[i].map);
+			 0, &dev_priv->fifos[init->channel].map);
 	if (ret != 0)
 		return ret;
 
 	/* FIFO has no objects yet */
-	dev_priv->fifos[i].objs = NULL;
+	dev_priv->fifos[init->channel].objs = NULL;
 
-	DRM_INFO("%s: initialised FIFO %d\n", __func__, i);
+	DRM_INFO("%s: initialised FIFO %d\n", __func__, init->channel);
 	return 0;
 }
 
@@ -291,7 +307,7 @@ void nouveau_fifo_free(drm_device_t* dev,int n)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	dev_priv->fifos[n].used=0;
-	DRM_DEBUG("%s: freeing fifo %d\n", __func__, n);
+	DRM_INFO("%s: freeing fifo %d\n", __func__, n);
 
 	/* disable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
