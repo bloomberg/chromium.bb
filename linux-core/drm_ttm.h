@@ -74,6 +74,11 @@ typedef struct drm_ttm {
 		ttm_unbound,
 		ttm_unpopulated,
 	} state;
+#ifdef DRM_ODD_MM_COMPAT
+       struct list_head vma_list;
+       struct list_head p_mm_list;
+#endif
+
 } drm_ttm_t;
 
 typedef struct drm_ttm_object {
@@ -95,7 +100,7 @@ extern drm_ttm_object_t *drm_lookup_ttm_object(drm_file_t * priv,
 extern int drm_bind_ttm(drm_ttm_t * ttm,
 			unsigned long aper_offset);
 
-extern void drm_unbind_ttm(drm_ttm_t * ttm);
+extern int drm_unbind_ttm(drm_ttm_t * ttm);
 
 /*
  * Evict a ttm region. Keeps Aperture caching policy.

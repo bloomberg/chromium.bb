@@ -66,8 +66,17 @@ static int unmap_vma_pages(drm_ttm_t * ttm)
 	drm_device_t *dev = ttm->dev;
 	loff_t offset = ((loff_t) ttm->mapping_offset) << PAGE_SHIFT;
 	loff_t holelen = ((loff_t) ttm->num_pages) << PAGE_SHIFT;
-	
+
+#ifdef DRM_ODD_MM_COMPAT
+	int ret;
+	ret = drm_ttm_lock_mm(ttm);
+	if (ret)
+		return ret;
+#endif
 	unmap_mapping_range(dev->dev_mapping, offset, holelen, 1);
+#ifdef DRM_ODD_MM_COMPAT
+	drm_ttm_finish_unmap(ttm);
+#endif
 	return 0;
 }
 
@@ -128,8 +137,11 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 
 	DRM_DEBUG("Destroying a ttm\n");
 
+#ifdef DRM_TTM_ODD_COMPAT
+	BUG_ON(!list_empty(&ttm->vma_list));
+	BUG_ON(!list_empty(&ttm->p_mm_list));
+#endif
 	be = ttm->be;
-
 	if (be) {
 		be->destroy(be);
 		ttm->be = NULL;
@@ -231,6 +243,11 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size,
 	if (!ttm)
 		return NULL;
 
+#ifdef DRM_ODD_MM_COMPAT
+	INIT_LIST_HEAD(&ttm->p_mm_list);
+	INIT_LIST_HEAD(&ttm->vma_list);
+#endif
+
 	ttm->dev = dev;
 	atomic_set(&ttm->vma_count, 0);
 
@@ -263,11 +280,15 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size,
 int drm_evict_ttm(drm_ttm_t * ttm)
 {
 	drm_ttm_backend_t *be = ttm->be;
+	int ret;
 
 	switch (ttm->state) {
 	case ttm_bound:
 		if (be->needs_cache_adjust(be)) {
-			unmap_vma_pages(ttm);
+			ret = unmap_vma_pages(ttm);
+			if (ret) {
+				return ret;
+			}
 		}
 		be->unbind(be);
 		break;
@@ -291,12 +312,18 @@ void drm_fixup_ttm_caching(drm_ttm_t * ttm)
 }
 		
 
-void drm_unbind_ttm(drm_ttm_t * ttm)
+int drm_unbind_ttm(drm_ttm_t * ttm)
 {
+	int ret = 0;
+
 	if (ttm->state == ttm_bound) 
-		drm_evict_ttm(ttm);
+		ret = drm_evict_ttm(ttm);
+
+	if (ret)
+		return ret;
 
 	drm_fixup_ttm_caching(ttm);
+	return 0;
 }
 
 int drm_bind_ttm(drm_ttm_t * ttm,
@@ -313,20 +340,45 @@ int drm_bind_ttm(drm_ttm_t * ttm,
 
 	be = ttm->be;
 	
-	drm_ttm_populate(ttm);
+	ret = drm_ttm_populate(ttm);
+	if (ret)
+		return ret;
 	if (ttm->state == ttm_unbound && be->needs_cache_adjust(be)) {
-		unmap_vma_pages(ttm);
+		ret = unmap_vma_pages(ttm);
+		if (ret)
+			return ret;
+
 		drm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
-	} 
+	}
+#ifdef DRM_ODD_MM_COMPAT 
+	else if (ttm->state == ttm_evicted && be->needs_cache_adjust(be)) {
+		ret = drm_ttm_lock_mm(ttm);
+		if (ret)
+			return ret;
+	}
+#endif
 	if ((ret = be->bind(be, aper_offset))) {
-		drm_unbind_ttm(ttm);
+		ttm->state = ttm_evicted;
+#ifdef DRM_ODD_MM_COMPAT
+		if (be->needs_cache_adjust(be))
+			drm_ttm_unlock_mm(ttm);
+#endif
 		DRM_ERROR("Couldn't bind backend.\n");
 		return ret;
 	}
 
+			
 	ttm->aper_offset = aper_offset;
 	ttm->state = ttm_bound;
 
+#ifdef DRM_ODD_MM_COMPAT
+	if (be->needs_cache_adjust(be)) {
+		ret = drm_ttm_remap_bound(ttm);
+		if (ret) 
+			return ret;
+	}
+#endif
+			
 	return 0;
 }
 

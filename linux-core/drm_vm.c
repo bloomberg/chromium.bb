@@ -204,15 +204,15 @@ struct page *drm_vm_ttm_fault(struct vm_area_struct *vma,
 	if (!page) {
 		if (bm->cur_pages >= bm->max_pages) {
 	 		DRM_ERROR("Maximum locked page count exceeded\n"); 
-			page = NOPAGE_OOM;
+			data->type = VM_FAULT_OOM;
 			goto out;
 		}
-		++bm->cur_pages;
 		page = ttm->pages[page_offset] = drm_alloc_gatt_pages(0);
 		if (!page) {
 			data->type = VM_FAULT_OOM;
 			goto out;
 		}
+		++bm->cur_pages;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
 		SetPageLocked(page);
 #else
@@ -235,28 +235,6 @@ struct page *drm_vm_ttm_fault(struct vm_area_struct *vma,
 	}
 	
 	err = vm_insert_pfn(vma, address, pfn, pgprot);
-
-	if (!err && (ttm->page_flags & DRM_TTM_PAGE_UNCACHED) && 
-	    ttm->num_pages > 1) {
-
-		/*
-		 * FIXME: Check can't map aperture flag.
-		 */
-
-		/*
-		 * Since we're not racing with anybody else, 
-		 * we might as well populate the whole object space.
-		 * Note that we're touching vma->vm_flags with this
-		 * operation, but we are not changing them, so we should be 
-		 * OK.
-		 */
-
-		BUG_ON(ttm->state == ttm_unpopulated);
-		err = io_remap_pfn_range(vma, address + PAGE_SIZE, pfn+1,
-					 (ttm->num_pages - 1) * PAGE_SIZE,
-					 pgprot);
-	}
-		
 
 	if (!err || err == -EBUSY) 
 		data->type = VM_FAULT_MINOR; 
@@ -611,6 +589,9 @@ static int drm_vm_ttm_open(struct vm_area_struct *vma) {
 	mutex_lock(&dev->struct_mutex);
 	ttm = (drm_ttm_t *) map->offset;
 	atomic_inc(&ttm->vma_count);
+#ifdef DRM_ODD_MM_COMPAT
+	drm_ttm_add_vma(ttm, vma);
+#endif
 	mutex_unlock(&dev->struct_mutex);
 	return 0;
 }
@@ -666,6 +647,9 @@ static void drm_vm_ttm_close(struct vm_area_struct *vma)
 		ttm = (drm_ttm_t *) map->offset;
 		dev = ttm->dev;
 		mutex_lock(&dev->struct_mutex);
+#ifdef DRM_ODD_MM_COMPAT
+		drm_ttm_delete_vma(ttm, vma);
+#endif
 		if (atomic_dec_and_test(&ttm->vma_count)) {
 			if (ttm->destroy) {
 				ret = drm_destroy_ttm(ttm);
@@ -877,6 +861,11 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 		vma->vm_private_data = (void *) map;
 		vma->vm_file = filp;
 		vma->vm_flags |= VM_RESERVED | VM_IO;
+#ifdef DRM_ODD_MM_COMPAT
+		mutex_lock(&dev->struct_mutex);
+		drm_ttm_map_bound(vma);
+		mutex_unlock(&dev->struct_mutex);
+#endif		
 		if (drm_vm_ttm_open(vma))
 		        return -EAGAIN;
 		return 0;

@@ -2624,7 +2624,8 @@ int drmBOCreate(int fd, void *ttm, unsigned long start, unsigned long size,
     drm_bo_arg_t arg;
     drm_bo_arg_request_t *req = &arg.d.req;
     drm_bo_arg_reply_t *rep = &arg.d.rep;
-    
+    int ret;
+
     memset(buf, 0, sizeof(*buf));
     memset(&arg, 0, sizeof(arg));
     req->mask = mask;
@@ -2650,7 +2651,11 @@ int drmBOCreate(int fd, void *ttm, unsigned long start, unsigned long size,
     }
     req->op = drm_bo_create;
 
-    if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
+    do {
+	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+    } while (ret != 0 && errno == EAGAIN);
+
+    if (ret)
 	return -errno;
     if (!arg.handled) {
 	return -EFAULT;

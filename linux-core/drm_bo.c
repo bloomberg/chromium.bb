@@ -67,14 +67,23 @@ static int drm_move_tt_to_local(drm_buffer_object_t * buf, int evict)
 {
 	drm_device_t *dev = buf->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
+	int ret;
 
 	BUG_ON(!buf->tt);
 
 	mutex_lock(&dev->struct_mutex);
 	if (evict)
-		drm_evict_ttm(buf->ttm);
+		ret = drm_evict_ttm(buf->ttm);
 	else
-		drm_unbind_ttm(buf->ttm);
+		ret = drm_unbind_ttm(buf->ttm);
+
+	if (ret) {
+		mutex_unlock(&dev->struct_mutex);
+		if (ret == -EAGAIN)
+			schedule();
+		return ret;
+	}
+	
 	drm_mm_put_block(&bm->tt_manager, buf->tt);
 	buf->tt = NULL;
 
@@ -126,13 +135,31 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 	list_del_init(&bo->tt_lru);
 	list_del_init(&bo->vram_lru);
 
-	if (bo->tt) {
+	if (bo->ttm) {
+		unsigned long _end = jiffies + DRM_HZ;
+		int ret;
 
 		/*
 		 * This temporarily unlocks struct_mutex. 
 		 */
+		
+		do {
+			ret = drm_unbind_ttm(bo->ttm);
+			if (ret == -EAGAIN) {
+				mutex_unlock(&dev->struct_mutex);
+				schedule();
+				mutex_lock(&dev->struct_mutex);
+			}
+		} while (ret == -EAGAIN && !time_after_eq(jiffies, _end));
 
-		drm_unbind_ttm(bo->ttm);
+		if (ret) {
+			DRM_ERROR("Couldn't unbind buffer. "
+				  "Bad. Continuing anyway\n");
+		}
+	}
+		
+	if (bo->tt) {
+
 		drm_mm_put_block(&bm->tt_manager, bo->tt);
 		bo->tt = NULL;
 	}
@@ -435,6 +462,9 @@ static int drm_bo_evict(drm_buffer_object_t * bo, int tt, int no_wait)
 		ret = drm_move_vram_to_local(bo);
 	}
 #endif
+	if (ret)
+		goto out;
+
 	mutex_lock(&dev->struct_mutex);
 	list_del_init((tt) ? &bo->tt_lru : &bo->vram_lru);
 	if (list_empty((tt) ? &bo->vram_lru : &bo->tt_lru))
@@ -442,7 +472,7 @@ static int drm_bo_evict(drm_buffer_object_t * bo, int tt, int no_wait)
 	mutex_unlock(&dev->struct_mutex);
 	DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_EVICTED,
 			_DRM_BO_FLAG_EVICTED);
-      out:
+ out:
 	return ret;
 }
 
@@ -521,14 +551,18 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	if (ret)
 		return ret;
 	DRM_DEBUG("Flipping in to AGP 0x%08lx\n", bo->tt->start);
+
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_bind_ttm(bo->ttm, bo->tt->start);
 	if (ret) {
 		drm_mm_put_block(&bm->tt_manager, bo->tt);
+		bo->tt = NULL;
 	}
 	mutex_unlock(&dev->struct_mutex);
-	if (ret)
+
+	if (ret) {
 		return ret;
+	}
 
 	be = bo->ttm->be;
 	if (be->needs_cache_adjust(be))
@@ -1296,6 +1330,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 	}
 	bo->priv_flags = 0;
 	bo->flags = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
+	atomic_inc(&bm->count);
 	ret = drm_bo_new_flags(dev, bo->flags, mask, hint,
 			       1, &new_flags, &bo->mask);
 	if (ret)
@@ -1311,12 +1346,11 @@ int drm_buffer_object_create(drm_file_t * priv,
 
 	mutex_unlock(&bo->mutex);
 	*buf_obj = bo;
-	atomic_inc(&bm->count);
 	return 0;
-
-      out_err:
+	
+ out_err:
 	mutex_unlock(&bo->mutex);
-	drm_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
+	drm_bo_usage_deref_unlocked(dev, bo);	
 	return ret;
 }
 
