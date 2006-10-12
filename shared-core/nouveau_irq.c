@@ -145,11 +145,11 @@ static void nouveau_fifo_irq_handler(drm_device_t *dev)
 	DRM_DEBUG("NV: PFIFO interrupt! INTSTAT=0x%08x/MODE=0x%08x/PEND=0x%08x\n",
 			status, chmode, chstat);
 
-	if (status & NV_PFIFO_INTR_ERROR) {
+	if (status & NV_PFIFO_INTR_CACHE_ERROR) {
 		DRM_ERROR("NV: PFIFO error interrupt\n");
 
-		status &= ~NV_PFIFO_INTR_ERROR;
-		NV_WRITE(NV_PFIFO_INTSTAT, NV_PFIFO_INTR_ERROR);
+		status &= ~NV_PFIFO_INTR_CACHE_ERROR;
+		NV_WRITE(NV_PFIFO_INTSTAT, NV_PFIFO_INTR_CACHE_ERROR);
 	}
 
 	if (status) {
