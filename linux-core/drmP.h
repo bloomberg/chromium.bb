@@ -664,7 +664,7 @@ typedef struct drm_bo_driver{
         int cached_vram;
         drm_local_map_t *vram_map;
 	drm_ttm_backend_t *(*create_ttm_backend_entry) 
-		(struct drm_device *dev, int cached);
+		(struct drm_device *dev);
 	int (*fence_type)(uint32_t flags, uint32_t *class, uint32_t *type);
 	int (*invalidate_caches)(struct drm_device *dev, uint32_t flags);
 } drm_bo_driver_t;
@@ -977,7 +977,9 @@ typedef struct drm_device {
 typedef struct drm_agp_ttm_priv {
 	DRM_AGP_MEM *mem;
 	struct agp_bridge_data *bridge;
-	unsigned mem_type;
+	unsigned alloc_type;
+	unsigned cached_type;
+	unsigned uncached_type;
 	int populated;
 } drm_agp_ttm_priv;
 #endif
@@ -1289,11 +1291,11 @@ extern DRM_AGP_MEM *drm_agp_allocate_memory(struct agp_bridge_data *bridge, size
 extern int drm_agp_free_memory(DRM_AGP_MEM * handle);
 extern int drm_agp_bind_memory(DRM_AGP_MEM * handle, off_t start);
 extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
-extern drm_ttm_backend_t *drm_agp_init_ttm_cached(struct drm_device *dev,
-						  drm_ttm_backend_t *backend);
-extern drm_ttm_backend_t *drm_agp_init_ttm_uncached(struct drm_device *dev,
-						    drm_ttm_backend_t *backend);
-
+extern drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
+					   drm_ttm_backend_t *backend,
+					   unsigned alloc_type,
+					   unsigned cached_type,
+					   unsigned uncached_type);
 				/* Stub support (drm_stub.h) */
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);

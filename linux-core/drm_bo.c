@@ -553,7 +553,8 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	DRM_DEBUG("Flipping in to AGP 0x%08lx\n", bo->tt->start);
 
 	mutex_lock(&dev->struct_mutex);
-	ret = drm_bind_ttm(bo->ttm, bo->tt->start);
+	ret = drm_bind_ttm(bo->ttm, bo->flags & DRM_BO_FLAG_BIND_CACHED,
+			   bo->tt->start);
 	if (ret) {
 		drm_mm_put_block(&bm->tt_manager, bo->tt);
 		bo->tt = NULL;
@@ -565,7 +566,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	}
 
 	be = bo->ttm->be;
-	if (be->needs_cache_adjust(be))
+	if (be->needs_ub_cache_adjust(be))
 		bo->flags &= ~DRM_BO_FLAG_CACHED;
 	bo->flags &= ~DRM_BO_MASK_MEM;
 	bo->flags |= DRM_BO_FLAG_MEM_TT;
@@ -1089,16 +1090,35 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		DRM_ERROR("Driver did not support given buffer permissions\n");
 		return ret;
 	}
+	
+	/*
+	 * Move out if we need to change caching policy.
+	 * FIXME: Failing is strictly not needed for NO_MOVE buffers.
+	 * We just have to implement NO_MOVE buffers.
+	 */
+
+	if ((flag_diff & DRM_BO_FLAG_BIND_CACHED) && 
+	    !(bo->flags & DRM_BO_FLAG_MEM_LOCAL)) {
+		if (bo->flags & (DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE)) {
+			DRM_ERROR("Cannot change caching policy of "
+				  "pinned buffer.\n");
+			return -EINVAL;
+		}			
+		ret = drm_bo_move_buffer(bo, DRM_BO_FLAG_MEM_LOCAL, no_wait);
+		if (ret) {
+			if (ret != -EAGAIN)
+				DRM_ERROR("Failed moving buffer.\n");
+			return ret;
+		}
+	}
+	DRM_MASK_VAL(bo->flags, DRM_BO_FLAG_BIND_CACHED, new_flags);
+	flag_diff = (new_flags ^ bo->flags);
 
 	/*
 	 * Check whether we need to move buffer.
 	 */
 
 	if ((bo->type != drm_bo_type_fake) && (flag_diff & DRM_BO_MASK_MEM)) {
-		if (bo->type == drm_bo_type_user) {
-			DRM_ERROR("User buffers are not implemented yet.\n");
-			return -EINVAL;
-		}
 		ret = drm_bo_move_buffer(bo, new_flags, no_wait);
 		if (ret) {
 			if (ret != -EAGAIN)
@@ -1251,7 +1271,6 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo)
 	case drm_bo_type_dc:
 		mutex_lock(&dev->struct_mutex);
 		ret = drm_ttm_object_create(dev, bo->num_pages * PAGE_SIZE,
-					    bo->mask & DRM_BO_FLAG_BIND_CACHED,
 					    ttm_flags, &to);
 		mutex_unlock(&dev->struct_mutex);
 		break;
@@ -1674,7 +1693,7 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		if (arg.req.tt_p_size) {
 			ret = drm_mm_init(&bm->tt_manager,
 					  arg.req.tt_p_offset,
-					  3000 /* arg.req.tt_p_size */);
+					  arg.req.tt_p_size);
 			bm->has_tt = 1;
 			bm->use_tt = 1;
 

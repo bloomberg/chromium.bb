@@ -44,16 +44,21 @@
  * Most device drivers will let this point to the standard AGP implementation.
  */
 
+#define DRM_BE_FLAG_NEEDS_FREE     0x00000001
+#define DRM_BE_FLAG_BOUND_CACHED   0x00000002
+#define DRM_BE_FLAG_CBA            0x00000004
+
 typedef struct drm_ttm_backend {
 	unsigned long aperture_base;
 	void *private;
-	int needs_free;
+	uint32_t flags;
         uint32_t drm_map_type;
-	int (*needs_cache_adjust) (struct drm_ttm_backend * backend);
+	int (*needs_ub_cache_adjust) (struct drm_ttm_backend * backend);
 	int (*populate) (struct drm_ttm_backend * backend,
 			 unsigned long num_pages, struct page ** pages);
 	void (*clear) (struct drm_ttm_backend * backend);
-	int (*bind) (struct drm_ttm_backend * backend, unsigned long offset);
+	int (*bind) (struct drm_ttm_backend * backend, 
+		     unsigned long offset, int cached);
 	int (*unbind) (struct drm_ttm_backend * backend);
 	void (*destroy) (struct drm_ttm_backend * backend);
 } drm_ttm_backend_t;
@@ -88,7 +93,7 @@ typedef struct drm_ttm_object {
 } drm_ttm_object_t;
 
 extern int drm_ttm_object_create(struct drm_device *dev, unsigned long size,
-				 uint32_t flags, int cached,
+				 uint32_t flags, 
 				 drm_ttm_object_t ** ttm_object);
 extern void drm_ttm_object_deref_locked(struct drm_device *dev,
 					drm_ttm_object_t * to);
@@ -97,7 +102,7 @@ extern void drm_ttm_object_deref_unlocked(struct drm_device *dev,
 extern drm_ttm_object_t *drm_lookup_ttm_object(drm_file_t * priv,
 					       uint32_t handle,
 					       int check_owner);
-extern int drm_bind_ttm(drm_ttm_t * ttm,
+extern int drm_bind_ttm(drm_ttm_t * ttm, int cached,
 			unsigned long aper_offset);
 
 extern int drm_unbind_ttm(drm_ttm_t * ttm);

@@ -33,12 +33,13 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev, int cached)
+#define INTEL_AGP_MEM_USER (1 << 16)
+#define INTEL_AGP_MEM_UCACHED (2 << 16)
+
+drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev)
 {
-	if (cached) 
-		return drm_agp_init_ttm_cached(dev, NULL);
-	else
-		return drm_agp_init_ttm_uncached(dev, NULL);
+	return drm_agp_init_ttm(dev, NULL, INTEL_AGP_MEM_USER, INTEL_AGP_MEM_UCACHED,
+				INTEL_AGP_MEM_USER);
 }
 
 int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *type)
@@ -53,9 +54,9 @@ int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *type)
 
 int i915_invalidate_caches(drm_device_t *dev, uint32_t flags)
 {
-  /*
-   * FIXME: Only emit once per batchbuffer submission.
-   */
+	/*
+	 * FIXME: Only emit once per batchbuffer submission.
+	 */
 
 	uint32_t flush_cmd = MI_NO_WRITE_FLUSH;
 

@@ -230,8 +230,7 @@ static int drm_ttm_populate(drm_ttm_t *ttm)
  * Initialize a ttm.
  */
 
-static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size,
-			       int cached)
+static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 {
 	drm_bo_driver_t *bo_driver = dev->driver->bo_driver;
 	drm_ttm_t *ttm;
@@ -263,7 +262,7 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size,
 		return NULL;
 	}
 	memset(ttm->pages, 0, ttm->num_pages * sizeof(*ttm->pages));
-	ttm->be = bo_driver->create_ttm_backend_entry(dev, cached);
+	ttm->be = bo_driver->create_ttm_backend_entry(dev);
 	if (!ttm->be) {
 		drm_destroy_ttm(ttm);
 		DRM_ERROR("Failed creating ttm backend entry\n");
@@ -284,7 +283,7 @@ int drm_evict_ttm(drm_ttm_t * ttm)
 
 	switch (ttm->state) {
 	case ttm_bound:
-		if (be->needs_cache_adjust(be)) {
+		if (be->needs_ub_cache_adjust(be)) {
 			ret = unmap_vma_pages(ttm);
 			if (ret) {
 				return ret;
@@ -304,7 +303,7 @@ void drm_fixup_ttm_caching(drm_ttm_t * ttm)
 
 	if (ttm->state == ttm_evicted) {
 		drm_ttm_backend_t *be = ttm->be;
-		if (be->needs_cache_adjust(be)) {
+		if (be->needs_ub_cache_adjust(be)) {
 			drm_set_caching(ttm, 0);
 		}
 		ttm->state = ttm_unbound;
@@ -326,7 +325,7 @@ int drm_unbind_ttm(drm_ttm_t * ttm)
 	return 0;
 }
 
-int drm_bind_ttm(drm_ttm_t * ttm,
+int drm_bind_ttm(drm_ttm_t * ttm, int cached,
 		 unsigned long aper_offset)
 {
 
@@ -343,7 +342,7 @@ int drm_bind_ttm(drm_ttm_t * ttm,
 	ret = drm_ttm_populate(ttm);
 	if (ret)
 		return ret;
-	if (ttm->state == ttm_unbound && be->needs_cache_adjust(be)) {
+	if (ttm->state == ttm_unbound && !cached) {
 		ret = unmap_vma_pages(ttm);
 		if (ret)
 			return ret;
@@ -351,16 +350,16 @@ int drm_bind_ttm(drm_ttm_t * ttm,
 		drm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
 	}
 #ifdef DRM_ODD_MM_COMPAT 
-	else if (ttm->state == ttm_evicted && be->needs_cache_adjust(be)) {
+	else if (ttm->state == ttm_evicted && !cached) {
 		ret = drm_ttm_lock_mm(ttm);
 		if (ret)
 			return ret;
 	}
 #endif
-	if ((ret = be->bind(be, aper_offset))) {
+	if ((ret = be->bind(be, aper_offset, cached))) {
 		ttm->state = ttm_evicted;
 #ifdef DRM_ODD_MM_COMPAT
-		if (be->needs_cache_adjust(be))
+		if (be->needs_ub_cache_adjust(be))
 			drm_ttm_unlock_mm(ttm);
 #endif
 		DRM_ERROR("Couldn't bind backend.\n");
@@ -372,7 +371,7 @@ int drm_bind_ttm(drm_ttm_t * ttm,
 	ttm->state = ttm_bound;
 
 #ifdef DRM_ODD_MM_COMPAT
-	if (be->needs_cache_adjust(be)) {
+	if (be->needs_ub_cache_adjust(be)) {
 		ret = drm_ttm_remap_bound(ttm);
 		if (ret) 
 			return ret;
@@ -437,7 +436,7 @@ void drm_ttm_object_deref_unlocked(drm_device_t * dev, drm_ttm_object_t * to)
  */
 
 int drm_ttm_object_create(drm_device_t * dev, unsigned long size,
-			  uint32_t flags, int cached,
+			  uint32_t flags, 
 			  drm_ttm_object_t ** ttm_object)
 {
 	drm_ttm_object_t *object;
@@ -458,7 +457,7 @@ int drm_ttm_object_create(drm_device_t * dev, unsigned long size,
 	}
 	map = list->map;
 
-	ttm = drm_init_ttm(dev, size, cached);
+	ttm = drm_init_ttm(dev, size);
 	if (!ttm) {
 		DRM_ERROR("Could not create ttm\n");
 		drm_ttm_object_remove(dev, object);
