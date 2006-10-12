@@ -69,7 +69,15 @@ void nouveau_irq_postinstall(drm_device_t *dev)
 	DRM_DEBUG("IRQ: postinst\n");
 
 	/* Enable PFIFO error reporting */
-	NV_WRITE(NV_PFIFO_INTEN , NV_PFIFO_INTR_ERROR);
+	NV_WRITE(NV_PFIFO_INTEN , 
+			NV_PFIFO_INTR_CACHE_ERROR |
+			NV_PFIFO_INTR_RUNOUT |
+			NV_PFIFO_INTR_RUNOUT_OVERFLOW |
+			NV_PFIFO_INTR_DMA_PUSHER |
+			NV_PFIFO_INTR_DMA_PT |
+			NV_PFIFO_INTR_SEMAPHORE |
+			NV_PFIFO_INTR_ACQUIRE_TIMEOUT
+			);
 	NV_WRITE(NV_PFIFO_INTSTAT, 0xFFFFFFFF);
 
 	/* Enable PGRAPH interrupts */
@@ -279,6 +287,7 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 		switch(dev_priv->card_type)
 		{
 			case NV_04:
+			case NV_05:
 				nouveau_nv04_context_switch(dev);
 				break;
 			case NV_10:

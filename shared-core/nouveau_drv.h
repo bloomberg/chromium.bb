@@ -112,8 +112,6 @@ typedef struct drm_nouveau_private {
 	drm_local_map_t *mmio;
 	drm_local_map_t *fb;
 
-	int64_t fb_usable_size;
-
 	int      cur_fifo;
 
 	struct nouveau_object *fb_obj;

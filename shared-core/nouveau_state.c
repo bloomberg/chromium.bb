@@ -64,11 +64,6 @@ int nouveau_firstopen(struct drm_device *dev)
 
 	DRM_INFO("%lld MB of video ram detected\n",nouveau_mem_fb_amount(dev)>>20);
 
-	if (dev_priv->card_type>=NV_40)
-		dev_priv->fb_usable_size=nouveau_mem_fb_amount(dev)-560*1024;
-	else
-		dev_priv->fb_usable_size=nouveau_mem_fb_amount(dev)-256*1024;
-
 	return 0;
 }
 

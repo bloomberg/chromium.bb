@@ -227,7 +227,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	/* disable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
 
-	if (dev_priv->card_type <= NV_04)
+	if (dev_priv->card_type <= NV_05)
 		ctx_size=32;
 	else
 		ctx_size=128;
@@ -239,7 +239,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 
 	NV_WRITE(ctx_addr,init->put_base);
 	NV_WRITE(ctx_addr+4,init->put_base);
-	if (dev_priv->card_type <= NV_04)
+	if (dev_priv->card_type <= NV_05)
 	{
 		// that's what is done in nvosdk, but that part of the code is buggy so...
 		NV_WRITE(ctx_addr+8,dev_priv->cmdbuf_obj->instance >> 4);

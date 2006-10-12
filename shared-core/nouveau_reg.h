@@ -75,7 +75,13 @@
 #define NV_PFIFO_DMA_TIMESLICE                             0x00002044
 #define NV_PFIFO_INTSTAT                                   0x00002100
 #define NV_PFIFO_INTEN                                     0x00002140
-#    define NV_PFIFO_INTR_ERROR                                (1<<0)
+#    define NV_PFIFO_INTR_CACHE_ERROR                         (1<< 0)
+#    define NV_PFIFO_INTR_RUNOUT                              (1<< 4)
+#    define NV_PFIFO_INTR_RUNOUT_OVERFLOW                     (1<< 8)
+#    define NV_PFIFO_INTR_DMA_PUSHER                          (1<<12)
+#    define NV_PFIFO_INTR_DMA_PT                              (1<<16)
+#    define NV_PFIFO_INTR_SEMAPHORE                           (1<<20)
+#    define NV_PFIFO_INTR_ACQUIRE_TIMEOUT                     (1<<24)
 #define NV_PFIFO_RAMHT                                     0x00002210
 #define NV_PFIFO_RAMFC                                     0x00002214
 #define NV_PFIFO_RAMRO                                     0x00002218
@@ -90,7 +96,6 @@
 #define NV_PFIFO_CACH1_PSH1                                0x00003204
 #define NV_PFIFO_CACH1_DMAPSH                              0x00003220
 #define NV_PFIFO_CACH1_DMAF                                0x00003224
-#    define NV_PFIFO_CACH1_DMAF_TRIG_8_BYTES               0x00000000
 #    define NV_PFIFO_CACH1_DMAF_TRIG_8_BYTES               0x00000000
 #    define NV_PFIFO_CACH1_DMAF_TRIG_16_BYTES              0x00000008
 #    define NV_PFIFO_CACH1_DMAF_TRIG_24_BYTES              0x00000010
