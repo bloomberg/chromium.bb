@@ -1718,6 +1718,7 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		atomic_set(&bm->count, 0);
 		bm->cur_pages = 0;
 		bm->max_pages = arg.req.max_locked_pages;
+		mutex_unlock(&dev->struct_mutex);
 		break;
 	case mm_takedown:
 	        LOCK_TEST_WITH_RETURN(dev, filp);
@@ -1732,7 +1733,6 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		return -EINVAL;
 	}
 
-	mutex_unlock(&dev->struct_mutex);
 	if (ret)
 		return ret;
 

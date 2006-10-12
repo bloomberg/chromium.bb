@@ -559,7 +559,7 @@ int drm_agp_unbind_memory(DRM_AGP_MEM * handle)
  */
 
 static int drm_agp_needs_unbind_cache_adjust(drm_ttm_backend_t *backend) {
-	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 1 : 0);
+	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
 }
 
 
