@@ -227,10 +227,22 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	/* disable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
 
-	if (dev_priv->card_type <= NV_05)
-		ctx_size=32;
-	else
-		ctx_size=128;
+	switch(dev_priv->card_type)
+	{
+		case NV_03:
+		case NV_04:
+		case NV_05:
+			ctx_size=32;
+			break;
+		case NV_10:
+		case NV_20:
+		case NV_30:
+			ctx_size=64;
+		case NV_40:
+		case G_70:
+		default:
+			ctx_size=128;
+	}
 
 	ctx_addr=NV_RAMIN+dev_priv->ramfc_offset+init->channel*ctx_size;
 	// clear the fifo context
