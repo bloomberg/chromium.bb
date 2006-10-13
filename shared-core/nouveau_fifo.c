@@ -259,6 +259,10 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 #endif
 	}
 
+	/* disable the pusher ? */
+	NV_WRITE(NV_PFIFO_CACH1_DMAPSH, 0);
+	NV_WRITE(NV_PFIFO_CACH1_PSH0, 0);
+
 	/* enable the fifo dma operation */
 	NV_WRITE(NV_PFIFO_MODE,NV_READ(NV_PFIFO_MODE)|(1<<init->channel));
 
@@ -273,6 +277,10 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	NV_WRITE(NV_PFIFO_CACH1_DMAG, init->put_base);
 	NV_WRITE(NV03_FIFO_REGS_DMAPUT(init->channel), init->put_base);
 	NV_WRITE(NV03_FIFO_REGS_DMAGET(init->channel), init->put_base);
+
+	/* reenable the pusher ? */
+	NV_WRITE(NV_PFIFO_CACH1_PSH0, 1);
+	NV_WRITE(NV_PFIFO_CACH1_DMAPSH, 1);
 
 	/* reenable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);
