@@ -238,10 +238,12 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 		case NV_20:
 		case NV_30:
 			ctx_size=64;
+			break;
 		case NV_40:
 		case G_70:
 		default:
 			ctx_size=128;
+			break;
 	}
 
 	ctx_addr=NV_RAMIN+dev_priv->ramfc_offset+init->channel*ctx_size;
