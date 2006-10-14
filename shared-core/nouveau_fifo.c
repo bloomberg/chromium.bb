@@ -70,6 +70,7 @@ static void nouveau_fifo_init(drm_device_t* dev)
 
 	DRM_DEBUG("%s: setting FIFO %d active\n", __func__, dev_priv->cur_fifo);
 
+	// FIXME remove all the stuff that's done in nouveau_fifo_alloc
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
 	NV_WRITE(NV_PFIFO_MODE, 0x00000000);
 
@@ -226,6 +227,9 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 
 	/* disable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
+	NV_WRITE(NV_PFIFO_CACH1_DMAPSH, NV_READ(NV_PFIFO_CACH1_DMAPSH)&(~0x1));
+	NV_WRITE(NV_PFIFO_CACH1_PSH0, 0x00000000);
+	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000000);
 
 	switch(dev_priv->card_type)
 	{
@@ -273,10 +277,6 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 #endif
 	}
 
-	/* disable the pusher ? */
-	NV_WRITE(NV_PFIFO_CACH1_DMAPSH, 0);
-	NV_WRITE(NV_PFIFO_CACH1_PSH0, 0);
-
 	/* enable the fifo dma operation */
 	NV_WRITE(NV_PFIFO_MODE,NV_READ(NV_PFIFO_MODE)|(1<<init->channel));
 
@@ -291,10 +291,23 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	NV_WRITE(NV_PFIFO_CACH1_DMAG, init->put_base);
 	NV_WRITE(NV03_FIFO_REGS_DMAPUT(init->channel), init->put_base);
 	NV_WRITE(NV03_FIFO_REGS_DMAGET(init->channel), init->put_base);
+	NV_WRITE(NV_PFIFO_CACH1_DMAI, dev_priv->cmdbuf_obj->instance >> 4);
+	NV_WRITE(NV_PFIFO_SIZE , 0x0000FFFF);
+	NV_WRITE(NV_PFIFO_CACH1_HASH, 0x0000FFFF);
 
-	/* reenable the pusher ? */
-	NV_WRITE(NV_PFIFO_CACH1_PSH0, 1);
-	NV_WRITE(NV_PFIFO_CACH1_DMAPSH, 1);
+	NV_WRITE(NV_PFIFO_CACH0_PUL1, 0x00000001);
+	NV_WRITE(NV_PFIFO_CACH1_DMAC, 0x00000000);
+	NV_WRITE(NV_PFIFO_CACH1_DMAS, 0x00000000);
+	NV_WRITE(NV_PFIFO_CACH1_ENG, 0x00000000);
+#ifdef __BIG_ENDIAN
+		NV_WRITE(NV_PFIFO_CACH1_DMAF, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
+#else
+		NV_WRITE(NV_PFIFO_CACH1_DMAF, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
+#endif
+	NV_WRITE(NV_PFIFO_CACH1_DMAPSH, 0x00000001);
+	NV_WRITE(NV_PFIFO_CACH1_PSH0, 0x00000001);
+	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000001);
+	NV_WRITE(NV_PFIFO_CACH1_PUL1, 0x00000001);
 
 	/* reenable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);

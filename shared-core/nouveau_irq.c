@@ -152,6 +152,20 @@ static void nouveau_fifo_irq_handler(drm_device_t *dev)
 		NV_WRITE(NV_PFIFO_INTSTAT, NV_PFIFO_INTR_CACHE_ERROR);
 	}
 
+	if (status & NV_PFIFO_INTR_DMA_PUSHER) {
+		DRM_INFO("NV: PFIFO DMA pusher interrupt\n");
+
+		status &= ~NV_PFIFO_INTR_DMA_PUSHER;
+		NV_WRITE(NV_PFIFO_INTSTAT, NV_PFIFO_INTR_DMA_PUSHER);
+
+		NV_WRITE(NV_PFIFO_CACH1_DMAS, 0x00000000);
+		if (NV_READ(NV_PFIFO_CACH1_DMAP)!=NV_READ(NV_PFIFO_CACH1_DMAG))
+		{
+			uint32_t getval=NV_READ(NV_PFIFO_CACH1_DMAG)+4;
+			NV_WRITE(NV_PFIFO_CACH1_DMAG,getval);
+		}
+	}
+
 	if (status) {
 		DRM_INFO("NV: unknown PFIFO interrupt. status=0x%08x\n", status);
 
@@ -213,17 +227,17 @@ static void nouveau_nv10_context_switch(drm_device_t *dev)
 
 	channel=NV_READ(NV_PFIFO_CACH1_PSH1)&(nouveau_fifo_number(dev)-1);
 	/* 2-channel commute */
-	if (channel==0)
-		channel=1;
-	else
-		channel=0;
-	dev_priv->cur_fifo=channel;
+//	if (channel==0)
+//		channel=1;
+//	else
+//		channel=0;
+//	dev_priv->cur_fifo=channel;
 
-	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10000100);
-	NV_WRITE(NV_PGRAPH_CTX_USER, (NV_READ(NV_PGRAPH_CTX_USER)&0xE0FFFFFF)|(dev_priv->cur_fifo<<24));
-	NV_WRITE(NV_PGRAPH_FFINTFC_ST2, NV_READ(NV_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
+//	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10000100);
+	NV_WRITE(NV_PGRAPH_CTX_USER, NV_READ(NV_PGRAPH_CTX_USER)|0x1F000000);
+//	NV_WRITE(NV_PGRAPH_FFINTFC_ST2, NV_READ(NV_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
 	/* touch PGRAPH_CTX_SWITCH* here ? */
-	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10000100);
 }
 
 static void nouveau_pgraph_irq_handler(drm_device_t *dev)
