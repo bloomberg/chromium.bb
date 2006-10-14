@@ -31,7 +31,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <linux/config.h>
 #include "drmP.h"
 
 #ifdef DEBUG_MEMORY

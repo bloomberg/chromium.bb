@@ -22,7 +22,6 @@
 
 /* derived from tdfx_drv.c */
 
-#include <linux/config.h>
 #include "drmP.h"
 #include "imagine_drv.h"
 
