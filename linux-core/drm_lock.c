@@ -152,6 +152,7 @@ int drm_unlock(struct inode *inode, struct file *filp,
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
 	drm_lock_t lock;
+	unsigned long irqflags;
 
 	if (copy_from_user(&lock, (drm_lock_t __user *) arg, sizeof(lock)))
 		return -EFAULT;
@@ -161,6 +162,16 @@ int drm_unlock(struct inode *inode, struct file *filp,
 			  current->pid, lock.context);
 		return -EINVAL;
 	}
+
+	spin_lock_irqsave(&dev->tasklet_lock, irqflags);
+
+	if (dev->locked_tasklet_func) {
+		dev->locked_tasklet_func(dev);
+
+		dev->locked_tasklet_func = NULL;
+	}
+
+	spin_unlock_irqrestore(&dev->tasklet_lock, irqflags);
 
 	atomic_inc(&dev->counts[_DRM_STAT_UNLOCKS]);
 

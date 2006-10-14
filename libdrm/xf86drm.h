@@ -149,7 +149,8 @@ typedef enum {
     DRM_PAGE_ALIGN       = 0x01,
     DRM_AGP_BUFFER       = 0x02,
     DRM_SG_BUFFER        = 0x04,
-    DRM_FB_BUFFER        = 0x08
+    DRM_FB_BUFFER        = 0x08,
+    DRM_PCI_BUFFER_RO    = 0x10
 } drmBufDescFlags;
 
 typedef enum {
@@ -252,6 +253,8 @@ typedef struct _drmTextureRegion {
 typedef enum {
     DRM_VBLANK_ABSOLUTE = 0x0,	/**< Wait for specific vblank sequence number */
     DRM_VBLANK_RELATIVE = 0x1,	/**< Wait for given number of vblanks */
+    DRM_VBLANK_NEXTONMISS = 0x10000000,	/**< If missed, wait for next vblank */
+    DRM_VBLANK_SECONDARY = 0x20000000,	/**< Secondary display controller */
     DRM_VBLANK_SIGNAL   = 0x40000000	/* Send signal instead of blocking */
 } drmVBlankSeqType;
 
@@ -544,6 +547,9 @@ extern int           drmSwitchToContext(int fd, drm_context_t context);
 extern int           drmDestroyContext(int fd, drm_context_t handle);
 extern int           drmCreateDrawable(int fd, drm_drawable_t * handle);
 extern int           drmDestroyDrawable(int fd, drm_drawable_t handle);
+extern int           drmUpdateDrawableInfo(int fd, drm_drawable_t handle,
+					   drm_drawable_info_type_t type,
+					   unsigned int num, void *data);
 extern int           drmCtlInstHandler(int fd, int irq);
 extern int           drmCtlUninstHandler(int fd);
 

@@ -159,6 +159,14 @@ typedef struct drm_clip_rect {
 } drm_clip_rect_t;
 
 /**
+ * Drawable information.
+ */
+typedef struct drm_drawable_info {
+	unsigned int num_rects;
+	drm_clip_rect_t *rects;
+} drm_drawable_info_t;
+
+/**
  * Texture region,
  */
 typedef struct drm_tex_region {
@@ -408,7 +416,8 @@ typedef struct drm_buf_desc {
 		_DRM_PAGE_ALIGN = 0x01,	/**< Align on page boundaries for DMA */
 		_DRM_AGP_BUFFER = 0x02,	/**< Buffer is in AGP space */
 		_DRM_SG_BUFFER  = 0x04,	/**< Scatter/gather memory buffer */
-		_DRM_FB_BUFFER  = 0x08  /**< Buffer is in frame buffer */
+		_DRM_FB_BUFFER  = 0x08, /**< Buffer is in frame buffer */
+		_DRM_PCI_BUFFER_RO = 0x10 /**< Map PCI DMA buffer read-only */
 	} flags;
 	unsigned long agp_start; /**<
 				  * Start address of where the AGP buffers are
@@ -508,6 +517,20 @@ typedef struct drm_draw {
 } drm_draw_t;
 
 /**
+ * DRM_IOCTL_UPDATE_DRAW ioctl argument type.
+ */
+typedef enum {
+	DRM_DRAWABLE_CLIPRECTS,
+} drm_drawable_info_type_t;
+
+typedef struct drm_update_draw {
+	drm_drawable_t handle;
+	unsigned int type;
+	unsigned int num;
+	unsigned long long data;
+} drm_update_draw_t;
+
+/**
  * DRM_IOCTL_GET_MAGIC and DRM_IOCTL_AUTH_MAGIC ioctl argument type.
  */
 typedef struct drm_auth {
@@ -529,10 +552,14 @@ typedef struct drm_irq_busid {
 typedef enum {
 	_DRM_VBLANK_ABSOLUTE = 0x0,	/**< Wait for specific vblank sequence number */
 	_DRM_VBLANK_RELATIVE = 0x1,	/**< Wait for given number of vblanks */
+	_DRM_VBLANK_NEXTONMISS = 0x10000000,	/**< If missed, wait for next vblank */
+	_DRM_VBLANK_SECONDARY = 0x20000000,	/**< Secondary display controller */
 	_DRM_VBLANK_SIGNAL = 0x40000000	/**< Send signal instead of blocking */
 } drm_vblank_seq_type_t;
 
-#define _DRM_VBLANK_FLAGS_MASK _DRM_VBLANK_SIGNAL
+#define _DRM_VBLANK_TYPES_MASK (_DRM_VBLANK_ABSOLUTE | _DRM_VBLANK_RELATIVE)
+#define _DRM_VBLANK_FLAGS_MASK (_DRM_VBLANK_SIGNAL | _DRM_VBLANK_SECONDARY | \
+				_DRM_VBLANK_NEXTONMISS)
 
 struct drm_wait_vblank_request {
 	drm_vblank_seq_type_t type;
@@ -693,6 +720,8 @@ typedef struct drm_set_version {
 #define DRM_IOCTL_SG_FREE		DRM_IOW( 0x39, drm_scatter_gather_t)
 
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, drm_wait_vblank_t)
+
+#define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, drm_update_draw_t)
 
 /*@}*/
 
