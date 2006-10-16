@@ -193,7 +193,7 @@
 #define NV40_RAMFC_ACQUIRE_TIMEOUT                               0x2C
 #define NV40_RAMFC_SEMAPHORE                                     0x30
 #define NV40_RAMFC_DMA_SUBROUTINE                                0x34
-#define NV40_RAMFC_GRCTX_INSTANCE_32E0 /* guess */               0x38
+#define NV40_RAMFC_GRCTX_INSTANCE /* guess */                    0x38
 #define NV40_RAMFC_DMA_TIMESLICE                                 0x3C
 #define NV40_RAMFC_UNK_40                                        0x40
 #define NV40_RAMFC_UNK_44                                        0x44

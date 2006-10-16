@@ -181,13 +181,88 @@ static int nouveau_dma_init(struct drm_device *dev)
 	return 0;
 }
 
+static void nouveau_context_init(drm_device_t *dev,
+				 drm_nouveau_fifo_alloc_t *init)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	uint32_t ctx_addr,ctx_size;
+	int i;
+
+	switch(dev_priv->card_type)
+	{
+		case NV_03:
+		case NV_04:
+		case NV_05:
+			ctx_size=32;
+			break;
+		case NV_10:
+		case NV_20:
+		case NV_30:
+		default:
+			ctx_size=64;
+			break;
+	}
+
+	ctx_addr=NV_RAMIN+dev_priv->ramfc_offset+init->channel*ctx_size;
+	// clear the fifo context
+	for(i=0;i<ctx_size/4;i++)
+		NV_WRITE(ctx_addr+4*i,0x0);
+
+	NV_WRITE(ctx_addr,init->put_base);
+	NV_WRITE(ctx_addr+4,init->put_base);
+	if (dev_priv->card_type <= NV_05)
+	{
+		// that's what is done in nvosdk, but that part of the code is buggy so...
+		NV_WRITE(ctx_addr+8,dev_priv->cmdbuf_obj->instance >> 4);
+#ifdef __BIG_ENDIAN
+		NV_WRITE(ctx_addr+16,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
+#else
+		NV_WRITE(ctx_addr+16,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
+#endif
+	}
+	else
+	{
+		NV_WRITE(ctx_addr+12,dev_priv->cmdbuf_obj->instance >> 4/*DMA INST/DMA COUNT*/);
+#ifdef __BIG_ENDIAN
+		NV_WRITE(ctx_addr+20,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
+#else
+		NV_WRITE(ctx_addr+20,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
+#endif
+	}
+
+}
+
+static void nouveau_nv40_context_init(drm_device_t *dev,
+				      drm_nouveau_fifo_alloc_t *init)
+{
+#define RAMFC_WR(offset, val) NV_WRITE(fifoctx + NV40_RAMFC_##offset, (val))
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	uint32_t fifoctx;
+	int i;
+
+	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + init->channel*128;
+	for (i=0;i<128;i+=4)
+		NV_WRITE(fifoctx + i, 0);
+
+	/* Fill entries that are seen filled in dumps of nvidia driver just
+	 * after channel's is put into DMA mode
+	 */
+	RAMFC_WR(DMA_PUT       , init->put_base);
+	RAMFC_WR(DMA_GET       , init->put_base);
+	RAMFC_WR(DMA_INSTANCE  , dev_priv->cmdbuf_obj->instance >> 4);
+	RAMFC_WR(DMA_FETCH     , 0x30086078);
+	RAMFC_WR(DMA_SUBROUTINE, init->put_base);
+	RAMFC_WR(GRCTX_INSTANCE, 0); /* XXX */
+	RAMFC_WR(DMA_TIMESLICE , 0x0001FFFF);
+#undef RAMFC_WR
+}
+
 /* allocates and initializes a fifo for user space consumption */
 static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, DRMFILE filp)
 {
 	int i;
 	int ret;
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint32_t ctx_addr,ctx_size;
 
 	/* Init cmdbuf on first FIFO init, this is delayed until now to
 	 * give the ddx a chance to configure the cmdbuf with SETPARAM
@@ -231,51 +306,10 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	NV_WRITE(NV_PFIFO_CACH1_PSH0, 0x00000000);
 	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000000);
 
-	switch(dev_priv->card_type)
-	{
-		case NV_03:
-		case NV_04:
-		case NV_05:
-			ctx_size=32;
-			break;
-		case NV_10:
-		case NV_20:
-		case NV_30:
-			ctx_size=64;
-			break;
-		case NV_40:
-		case G_70:
-		default:
-			ctx_size=128;
-			break;
-	}
-
-	ctx_addr=NV_RAMIN+dev_priv->ramfc_offset+init->channel*ctx_size;
-	// clear the fifo context
-	for(i=0;i<ctx_size/4;i++)
-		NV_WRITE(ctx_addr+4*i,0x0);
-
-	NV_WRITE(ctx_addr,init->put_base);
-	NV_WRITE(ctx_addr+4,init->put_base);
-	if (dev_priv->card_type <= NV_05)
-	{
-		// that's what is done in nvosdk, but that part of the code is buggy so...
-		NV_WRITE(ctx_addr+8,dev_priv->cmdbuf_obj->instance >> 4);
-#ifdef __BIG_ENDIAN
-		NV_WRITE(ctx_addr+16,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
-#else
-		NV_WRITE(ctx_addr+16,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
-#endif
-	}
+	if (dev_priv->card_type < NV_40)
+		nouveau_context_init(dev, init);
 	else
-	{
-		NV_WRITE(ctx_addr+12,dev_priv->cmdbuf_obj->instance >> 4/*DMA INST/DMA COUNT*/);
-#ifdef __BIG_ENDIAN
-		NV_WRITE(ctx_addr+20,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
-#else
-		NV_WRITE(ctx_addr+20,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
-#endif
-	}
+		nouveau_nv40_context_init(dev, init);
 
 	/* enable the fifo dma operation */
 	NV_WRITE(NV_PFIFO_MODE,NV_READ(NV_PFIFO_MODE)|(1<<init->channel));
