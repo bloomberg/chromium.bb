@@ -2,9 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="dump_syms"
-	ProjectGUID="{792E1530-E2C5-4289-992E-317BA30E9D9F}"
-	RootNamespace="dumpsyms"
+	Name="symupload"
+	ProjectGUID="{E156ED87-9DE9-47C8-94EC-A5A9CDD65E18}"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -20,6 +19,7 @@
 			OutputDirectory="Debug"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -60,7 +60,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;$(VSInstallDir)\DIA SDK\lib\diaguids.lib&quot;"
+				AdditionalDependencies="&quot;$(VSInstallDir)\DIA SDK\lib\diaguids.lib&quot; wininet.lib version.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -96,6 +96,7 @@
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
 			ConfigurationType="1"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -133,7 +134,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;$(VSInstallDir)\DIA SDK\lib\diaguids.lib&quot;"
+				AdditionalDependencies="&quot;$(VSInstallDir)\DIA SDK\lib\diaguids.lib&quot; wininet.lib version.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -176,6 +177,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\..\common\windows\http_upload.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\common\windows\pdb_source_line_writer.h"
 				>
 			</File>
@@ -192,11 +197,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\dump_syms.cc"
+				RelativePath="..\..\..\common\windows\http_upload.cc"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\common\windows\pdb_source_line_writer.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\symupload.cc"
 				>
 			</File>
 		</Filter>

@@ -276,6 +276,10 @@
 				RelativePath=".\crash_report_sender.cc"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\common\windows\http_upload.cc"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -284,6 +288,10 @@
 			>
 			<File
 				RelativePath=".\crash_report_sender.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\common\windows\http_upload.h"
 				>
 			</File>
 		</Filter>

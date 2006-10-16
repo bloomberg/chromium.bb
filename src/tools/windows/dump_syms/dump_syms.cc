@@ -32,9 +32,10 @@
 
 #include <stdio.h>
 #include <string>
-#include "pdb_source_line_writer.h"
+#include "common/windows/pdb_source_line_writer.h"
 
 using std::wstring;
+using google_airbag::PDBSourceLineWriter;
 
 int main(int argc, char **argv) {
   if (argc < 2) {
@@ -48,8 +49,8 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  google_airbag::PDBSourceLineWriter writer;
-  if (!writer.Open(wstring(filename))) {
+  PDBSourceLineWriter writer;
+  if (!writer.Open(wstring(filename), PDBSourceLineWriter::PDB_FILE)) {
     fprintf(stderr, "Open failed\n");
     return 1;
   }

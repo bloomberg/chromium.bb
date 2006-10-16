@@ -46,12 +46,24 @@ using std::wstring;
 
 class PDBSourceLineWriter {
  public:
+  enum FileFormat {
+    PDB_FILE,  // a .pdb file containing debug symbols
+    EXE_FILE,  // a .exe or .dll file
+  };
+
   explicit PDBSourceLineWriter();
   ~PDBSourceLineWriter();
 
-  // Opens the given pdb file.  If there is already a pdb file open,
-  // it is automatically closed.  Returns true on success.
-  bool Open(const wstring &pdb_file);
+  // Opens the given file.  For executable files, the corresponding pdb
+  // file must be available; Open will be if it is not.
+  // If there is already a pdb file open, it is automatically closed.
+  // Returns true on success.
+  bool Open(const wstring &file, FileFormat format);
+
+  // Locates the pdb file for the given executable (exe or dll) file,
+  // and opens it.  If there is already a pdb file open, it is automatically
+  // closed.  Returns true on success.
+  bool OpenExecutable(const wstring &exe_file);
 
   // Writes a map file from the current pdb file to the given file stream.
   // Returns true on success.
@@ -59,6 +71,10 @@ class PDBSourceLineWriter {
 
   // Closes the current pdb file and its associated resources.
   void Close();
+
+  // Returns the GUID for the module, as a string,
+  // e.g. "11111111-2222-3333-4444-555555555555".
+  wstring GetModuleGUID();
 
  private:
   // Outputs the line/address pairs for each line in the enumerator.

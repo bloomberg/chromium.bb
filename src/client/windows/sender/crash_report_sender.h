@@ -40,14 +40,11 @@
 
 #include <string>
 #include <map>
-#include <vector>
 
 namespace google_airbag {
 
-using std::string;
 using std::wstring;
 using std::map;
-using std::vector;
 
 class CrashReportSender {
  public:
@@ -62,33 +59,6 @@ class CrashReportSender {
                               const wstring &dump_file_name);
 
  private:
-  class AutoInternetHandle;
-
-  // Generates a new multipart boundary for a POST request
-  static wstring GenerateMultipartBoundary();
-
-  // Generates a HTTP request header for a multipart form submit.
-  static wstring GenerateRequestHeader(const wstring &boundary);
-
-  // Given a set of parameters and a minidump file name,
-  // generates a multipart request body string with these parameters
-  // and minidump contents.  Returns true on success.
-  static bool GenerateRequestBody(const map<wstring, wstring> &parameters,
-                                  const wstring &minidump_filename,
-                                  const wstring &boundary,
-                                  string *request_body);
-
-  // Fills the supplied vector with the contents of filename.
-  static void GetFileContents(const wstring &filename, vector<char> *contents);
-
-  // Converts a UTF16 string to UTF8.
-  static string WideToUTF8(const wstring &wide);
-
-  // Checks that the given list of parameters has only printable
-  // ASCII characters in the parameter name, and does not contain
-  // any quote (") characters.  Returns true if so.
-  static bool CheckParameters(const map<wstring, wstring> &parameters);
-
   // No instances of this class should be created.
   // Disallow all constructors, destructors, and operator=.
   CrashReportSender();

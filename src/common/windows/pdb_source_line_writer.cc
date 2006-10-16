@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <atlbase.h>
 #include <dia2.h>
-#include "pdb_source_line_writer.h"
+#include "common/windows/pdb_source_line_writer.h"
 
 namespace google_airbag {
 
@@ -40,7 +40,7 @@ PDBSourceLineWriter::PDBSourceLineWriter() : output_(NULL) {
 PDBSourceLineWriter::~PDBSourceLineWriter() {
 }
 
-bool PDBSourceLineWriter::Open(const wstring &pdb_file) {
+bool PDBSourceLineWriter::Open(const wstring &file, FileFormat format) {
   Close();
 
   if (FAILED(CoInitialize(NULL))) {
@@ -55,9 +55,22 @@ bool PDBSourceLineWriter::Open(const wstring &pdb_file) {
     return false;
   }
 
-  if (FAILED(data_source->loadDataFromPdb(pdb_file.c_str()))) {
-    fprintf(stderr, "loadDataFromPdb failed\n");
-    return false;
+  switch (format) {
+    case PDB_FILE:
+      if (FAILED(data_source->loadDataFromPdb(file.c_str()))) {
+        fprintf(stderr, "loadDataFromPdb failed\n");
+        return false;
+      }
+      break;
+    case EXE_FILE:
+      if (FAILED(data_source->loadDataForExe(file.c_str(), NULL, NULL))) {
+        fprintf(stderr, "loadDataForExe failed\n");
+        return false;
+      }
+      break;
+    default:
+      fprintf(stderr, "Unknown file format\n");
+      return false;
   }
 
   if (FAILED(data_source->openSession(&session_))) {
@@ -308,6 +321,27 @@ bool PDBSourceLineWriter::WriteMap(FILE *map_file) {
 
 void PDBSourceLineWriter::Close() {
   session_.Release();
+}
+
+wstring PDBSourceLineWriter::GetModuleGUID() {
+  CComPtr<IDiaSymbol> global;
+  if (FAILED(session_->get_globalScope(&global))) {
+    return L"";
+  }
+
+  GUID guid;
+  if (FAILED(global->get_guid(&guid))) {
+    return L"";
+  }
+
+  wchar_t guid_buf[37];
+  _snwprintf_s(guid_buf, sizeof(guid_buf)/sizeof(wchar_t), _TRUNCATE,
+               L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x\n",
+               guid.Data1, guid.Data2, guid.Data3,
+               guid.Data4[0], guid.Data4[1], guid.Data4[2],
+               guid.Data4[3], guid.Data4[4], guid.Data4[5],
+               guid.Data4[6], guid.Data4[7]);
+  return guid_buf;
 }
 
 }  // namespace google_airbag
