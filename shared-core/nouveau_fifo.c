@@ -92,9 +92,12 @@ static void nouveau_fifo_init(drm_device_t* dev)
 			((dev_priv->objs.ht_bits - 9) << 16) |
 			(dev_priv->objs.ht_base >> 8)
 			);
-	dev_priv->ramfc_offset=0x11000;
+	dev_priv->ramfc_offset=0x12000;
 	dev_priv->ramro_offset=0x11200;
-	NV_WRITE(NV_PFIFO_RAMFC, dev_priv->ramfc_offset>>8); /* RAMIN+0x11000 0.5k */
+	if (dev_priv->card_type < NV_40)
+		NV_WRITE(NV_PFIFO_RAMFC, dev_priv->ramfc_offset>>8); /* RAMIN+0x11000 0.5k */
+	else
+		NV_WRITE(0x2220, 0x30002);
 	NV_WRITE(NV_PFIFO_RAMRO, dev_priv->ramro_offset>>8); /* RAMIN+0x11200 0.5k */
 	NV_WRITE(NV_PFIFO_CACH0_PUL1, 0x00000001);
 	NV_WRITE(NV_PFIFO_CACH1_DMAC, 0x00000000);
@@ -314,6 +317,10 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	/* enable the fifo dma operation */
 	NV_WRITE(NV_PFIFO_MODE,NV_READ(NV_PFIFO_MODE)|(1<<init->channel));
 
+	NV_WRITE(NV03_FIFO_REGS_DMAPUT(init->channel), init->put_base);
+	NV_WRITE(NV03_FIFO_REGS_DMAGET(init->channel), init->put_base);
+
+if (init->channel == 0) {
 	// FIXME check if we need to refill the time quota with something like NV_WRITE(0x204C, 0x0003FFFF);
 
 	if (dev_priv->card_type >= NV_40)
@@ -323,8 +330,6 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 
 	NV_WRITE(NV_PFIFO_CACH1_DMAP, init->put_base);
 	NV_WRITE(NV_PFIFO_CACH1_DMAG, init->put_base);
-	NV_WRITE(NV03_FIFO_REGS_DMAPUT(init->channel), init->put_base);
-	NV_WRITE(NV03_FIFO_REGS_DMAGET(init->channel), init->put_base);
 	NV_WRITE(NV_PFIFO_CACH1_DMAI, dev_priv->cmdbuf_obj->instance >> 4);
 	NV_WRITE(NV_PFIFO_SIZE , 0x0000FFFF);
 	NV_WRITE(NV_PFIFO_CACH1_HASH, 0x0000FFFF);
@@ -338,6 +343,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 #else
 		NV_WRITE(NV_PFIFO_CACH1_DMAF, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
 #endif
+}
 	NV_WRITE(NV_PFIFO_CACH1_DMAPSH, 0x00000001);
 	NV_WRITE(NV_PFIFO_CACH1_PSH0, 0x00000001);
 	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000001);
@@ -375,6 +381,8 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 void nouveau_fifo_free(drm_device_t* dev,int n)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	int i;
+
 	dev_priv->fifos[n].used=0;
 	DRM_INFO("%s: freeing fifo %d\n", __func__, n);
 
@@ -382,7 +390,14 @@ void nouveau_fifo_free(drm_device_t* dev,int n)
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
 
 	NV_WRITE(NV_PFIFO_MODE,NV_READ(NV_PFIFO_MODE)&~(1<<n));
-	// FIXME XXX needs more code 
+	// FIXME XXX needs more code
+	
+	/* Clean RAMFC */
+	for (i=0;i<128;i+=4) {
+		DRM_DEBUG("RAMFC +%02x: 0x%08x\n", i, NV_READ(NV_RAMIN +
+					dev_priv->ramfc_offset + n*128 + i));
+		NV_WRITE(NV_RAMIN + dev_priv->ramfc_offset + n*128 + i, 0);
+	}
 
 	/* reenable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);

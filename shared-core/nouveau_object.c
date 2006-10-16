@@ -297,7 +297,7 @@ void nouveau_hash_table_init(drm_device_t* dev)
 	dev_priv->objs.ht_base = 0x10000;
 	dev_priv->objs.ht_size = (1 << dev_priv->objs.ht_bits);
 
-	dev_priv->objs.first_instance = 0x12000;
+	dev_priv->objs.first_instance = 0x13000;
 	dev_priv->objs.free_instance  = 1024; /*FIXME*/
 	dev_priv->objs.num_instance   = 1024; /*FIXME*/
 	dev_priv->objs.inst_bmap = drm_calloc

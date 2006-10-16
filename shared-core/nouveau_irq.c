@@ -133,7 +133,7 @@ void nouveau_irq_uninstall(drm_device_t *dev)
 
 static void nouveau_fifo_irq_handler(drm_device_t *dev)
 {
-	uint32_t status, chmode, chstat;
+	uint32_t status, chmode, chstat, channel;
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 
 	status = NV_READ(NV_PFIFO_INTSTAT);
@@ -141,9 +141,9 @@ static void nouveau_fifo_irq_handler(drm_device_t *dev)
 		return;
 	chmode = NV_READ(NV_PFIFO_MODE);
 	chstat = NV_READ(NV_PFIFO_DMA);
+	channel=NV_READ(NV_PFIFO_CACH1_PSH1)&(nouveau_fifo_number(dev)-1);
 
-	DRM_DEBUG("NV: PFIFO interrupt! INTSTAT=0x%08x/MODE=0x%08x/PEND=0x%08x\n",
-			status, chmode, chstat);
+	DRM_DEBUG("NV: PFIFO interrupt! Channel=%d, INTSTAT=0x%08x/MODE=0x%08x/PEND=0x%08x\n", channel, status, chmode, chstat);
 
 	if (status & NV_PFIFO_INTR_CACHE_ERROR) {
 		DRM_ERROR("NV: PFIFO error interrupt\n");
