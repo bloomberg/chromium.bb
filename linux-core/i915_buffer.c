@@ -33,8 +33,8 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-#define INTEL_AGP_MEM_USER (1 << 16)
-#define INTEL_AGP_MEM_UCACHED (2 << 16)
+#define INTEL_AGP_MEM_USER 3
+#define INTEL_AGP_MEM_UCACHED 4
 
 drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev)
 {
