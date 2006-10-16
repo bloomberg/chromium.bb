@@ -69,7 +69,9 @@ static bool RunTests() {
 
   SourceLineResolver resolver;
   ASSERT_TRUE(resolver.LoadModule("module1", testdata_dir + "/module1.out"));
+  ASSERT_TRUE(resolver.HasModule("module1"));
   ASSERT_TRUE(resolver.LoadModule("module2", testdata_dir + "/module2.out"));
+  ASSERT_TRUE(resolver.HasModule("module2"));
 
   StackFrame frame;
   StackFrameInfo frame_info;
@@ -112,8 +114,11 @@ static bool RunTests() {
 
   ASSERT_FALSE(resolver.LoadModule("module3",
                                    testdata_dir + "/module3_bad.out"));
+  ASSERT_FALSE(resolver.HasModule("module3"));
   ASSERT_FALSE(resolver.LoadModule("module4",
                                    testdata_dir + "/invalid-filename"));
+  ASSERT_FALSE(resolver.HasModule("module4"));
+  ASSERT_FALSE(resolver.HasModule("invalid-module"));
   return true;
 }
 

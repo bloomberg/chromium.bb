@@ -60,6 +60,9 @@ class SourceLineResolver {
   // map_file should contain line/address mappings for this module.
   bool LoadModule(const string &module_name, const string &map_file);
 
+  // Returns true if a module with the given name has been loaded.
+  bool HasModule(const string &module_name) const;
+
   // Fills in the function_base, function_name, source_file_name,
   // and source_line fields of the StackFrame.  The instruction and
   // module_name fields must already be filled in.  Additional debugging

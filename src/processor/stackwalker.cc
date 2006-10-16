@@ -78,14 +78,13 @@ void Stackwalker::Walk(StackFrames *frames) {
       if (module) {
         frame->module_name = *(module->GetName());
         frame->module_base = module->base_address();
-        if (modules_ && supplier_) {
-          string symbol_file =
-            supplier_->GetSymbolFile(module);
+        if (!resolver.HasModule(frame->module_name) && supplier_) {
+          string symbol_file = supplier_->GetSymbolFile(module);
           if (!symbol_file.empty()) {
-            resolver.LoadModule(*(module->GetName()), symbol_file);
-            resolver.FillSourceLineInfo(frame.get(), frame_info.get());
+            resolver.LoadModule(frame->module_name, symbol_file);
           }
         }
+        resolver.FillSourceLineInfo(frame.get(), frame_info.get());
       }
     }
 

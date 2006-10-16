@@ -165,6 +165,10 @@ bool SourceLineResolver::LoadModule(const string &module_name,
   return true;
 }
 
+bool SourceLineResolver::HasModule(const string &module_name) const {
+  return modules_->find(module_name) != modules_->end();
+}
+
 void SourceLineResolver::FillSourceLineInfo(StackFrame *frame,
                                             StackFrameInfo *frame_info) const {
   ModuleMap::const_iterator it = modules_->find(frame->module_name);
