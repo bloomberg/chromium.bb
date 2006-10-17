@@ -161,7 +161,7 @@ static void nouveau_fifo_irq_handler(drm_device_t *dev)
 		}
 
 		DRM_ERROR("NV: Channel %d/%d - Method 0x%04x, Data 0x%08x\n",
-				channel, (c1method >> 13) & 3,
+				channel, (c1method >> 13) & 7,
 				c1method & 0x1ffc, c1data
 			 );
 
