@@ -570,14 +570,19 @@ static int drm_agp_populate(drm_ttm_backend_t *backend, unsigned long num_pages,
 	struct page **cur_page, **last_page = pages + num_pages;
 	DRM_AGP_MEM *mem;
 
+	if (drm_alloc_memctl(num_pages * sizeof(void *)))
+		return -1;
+
 	DRM_DEBUG("drm_agp_populate_ttm\n");
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 	mem = drm_agp_allocate_memory(num_pages, agp_priv->alloc_type);
 #else
 	mem = drm_agp_allocate_memory(agp_priv->bridge, num_pages, agp_priv->alloc_type);
 #endif
-	if (!mem) 
+	if (!mem) {
+		drm_free_memctl(num_pages *sizeof(void *));
 		return -1;
+	}
 
 	DRM_DEBUG("Current page count is %ld\n", (long) mem->page_count);
 	mem->page_count = 0;
@@ -626,8 +631,10 @@ static void drm_agp_clear_ttm(drm_ttm_backend_t *backend) {
 
 	DRM_DEBUG("drm_agp_clear_ttm\n");
 	if (mem) {
+		unsigned long num_pages = mem->page_count;
 		backend->unbind(backend);
 		agp_free_memory(mem);
+		drm_free_memctl(num_pages *sizeof(void *));
 	}
 
 	agp_priv->mem = NULL;
@@ -644,10 +651,12 @@ static void drm_agp_destroy_ttm(drm_ttm_backend_t *backend) {
 			if (agp_priv->mem) {
 				backend->clear(backend);
 			}
-			drm_free(agp_priv, sizeof(*agp_priv), DRM_MEM_MAPPINGS);
+			drm_ctl_free(agp_priv, sizeof(*agp_priv), DRM_MEM_MAPPINGS);
+			backend->private = NULL;
 		}
-		if (backend->flags & DRM_BE_FLAG_NEEDS_FREE)
-			drm_free(backend, sizeof(*backend), DRM_MEM_MAPPINGS);
+		if (backend->flags & DRM_BE_FLAG_NEEDS_FREE) {
+			drm_ctl_free(backend, sizeof(*backend), DRM_MEM_MAPPINGS);                     
+		}
 	}
 }
 	
@@ -662,15 +671,15 @@ drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 	drm_agp_ttm_priv *agp_priv;
 
 	agp_be = (backend != NULL) ? backend:
-		drm_calloc(1, sizeof(*agp_be), DRM_MEM_MAPPINGS);
+		drm_ctl_calloc(1, sizeof(*agp_be), DRM_MEM_MAPPINGS);
 
 	if (!agp_be)
 		return NULL;
 	
-	agp_priv = drm_calloc(1, sizeof(agp_priv), DRM_MEM_MAPPINGS);
+	agp_priv = drm_ctl_calloc(1, sizeof(*agp_priv), DRM_MEM_MAPPINGS);
 	
 	if (!agp_priv) {
-		drm_free(agp_be, sizeof(*agp_be), DRM_MEM_MAPPINGS);
+		drm_ctl_free(agp_be, sizeof(*agp_be), DRM_MEM_MAPPINGS);
 		return NULL;
 	}
 	

@@ -439,6 +439,10 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 	int len = 0;
 	drm_buffer_manager_t *bm = &dev->bm;
 	drm_fence_manager_t *fm = &dev->fm; 
+	drm_u64_t used_mem;
+	drm_u64_t low_mem;
+	drm_u64_t high_mem;
+
 
 	if (offset > DRM_PROC_LIMIT) {
 		*eof = 1;
@@ -459,12 +463,18 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 		DRM_PROC_PRINT("Number of active buffer objects: %d.\n\n", 
 			       atomic_read(&bm->count));
 		DRM_PROC_PRINT("Number of locked GATT pages: %lu.\n", bm->cur_pages);
-		DRM_PROC_PRINT("Max allowed number of locked GATT pages %lu\n", 
-			       bm->max_pages);
 	} else {
 		DRM_PROC_PRINT("Buffer objects are not supported by this driver.\n\n");
 	}
 
+	drm_query_memctl(&used_mem, &low_mem, &high_mem);
+
+	DRM_PROC_PRINT("Used object memory is %lu pages.\n", 
+		       (unsigned long) (used_mem >> PAGE_SHIFT));
+	DRM_PROC_PRINT("Soft object memory usage threshold is %lu pages.\n", 
+		       (unsigned long) (low_mem >> PAGE_SHIFT));
+	DRM_PROC_PRINT("Hard object memory usage threshold is %lu pages.\n", 
+		       (unsigned long) (high_mem >> PAGE_SHIFT));
 
 	DRM_PROC_PRINT("\n");
 

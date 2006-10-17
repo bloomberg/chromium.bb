@@ -1129,6 +1129,14 @@ extern int drm_free_agp(DRM_AGP_MEM * handle, int pages);
 extern int drm_bind_agp(DRM_AGP_MEM * handle, unsigned int start);
 extern int drm_unbind_agp(DRM_AGP_MEM * handle);
 
+extern void drm_free_memctl(size_t size);
+extern int drm_alloc_memctl(size_t size);
+extern void drm_query_memctl(drm_u64_t *cur_used,
+			     drm_u64_t *low_threshold,
+			     drm_u64_t *high_threshold); 
+extern void drm_init_memctl(size_t low_threshold,
+			    size_t high_threshold);
+
 				/* Misc. IOCTL support (drm_ioctl.h) */
 extern int drm_irq_by_busid(struct inode *inode, struct file *filp,
 			    unsigned int cmd, unsigned long arg);
@@ -1526,6 +1534,58 @@ static __inline__ void drm_free(void *pt, size_t size, int area)
 extern void *drm_alloc(size_t size, int area);
 extern void drm_free(void *pt, size_t size, int area);
 #endif
+
+/*
+ * Accounting variants of standard calls.
+ */
+
+static inline void *drm_ctl_alloc(size_t size, int area)
+{
+	void *ret;
+	if (drm_alloc_memctl(size))
+		return NULL;
+	ret = drm_alloc(size, area);
+	if (!ret)
+		drm_free_memctl(size);
+	return ret;
+}
+
+static inline void *drm_ctl_calloc(size_t nmemb, size_t size, int area)
+{
+	void *ret;
+
+	if (drm_alloc_memctl(nmemb*size))
+		return NULL;
+	ret = drm_calloc(nmemb, size, area);
+	if (!ret)
+		drm_free_memctl(nmemb*size);
+	return ret;
+}
+
+static inline void drm_ctl_free(void *pt, size_t size, int area)
+{
+	drm_free(pt, size, area);
+	drm_free_memctl(size);
+}
+
+static inline void *drm_ctl_cache_alloc(kmem_cache_t *cache, size_t size, 
+					int flags)
+{
+	void *ret;
+	if (drm_alloc_memctl(size))
+		return NULL;
+	ret = kmem_cache_alloc(cache, flags);
+	if (!ret)
+		drm_free_memctl(size);
+	return ret;
+}
+
+static inline void drm_ctl_cache_free(kmem_cache_t *cache, size_t size,
+				      void *obj)
+{
+	kmem_cache_free(cache, obj);
+	drm_free_memctl(size);
+}
 
 /*@}*/
 

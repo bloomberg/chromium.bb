@@ -37,11 +37,16 @@ static void *ttm_alloc(unsigned long size, int type)
 {
 	void *ret = NULL;
 
-	if (size <= 4*PAGE_SIZE) {
+	if (drm_alloc_memctl(size))
+		return NULL;
+	if (size <= PAGE_SIZE) {
 		ret = drm_alloc(size, type);
 	}
 	if (!ret) {
 		ret = vmalloc(size);
+	}
+	if (!ret) {
+		drm_free_memctl(size);
 	}
 	return ret;
 }
@@ -55,6 +60,7 @@ static void ttm_free(void *pointer, unsigned long size, int type)
 	} else {
 		drm_free(pointer, size, type);
 	}
+	drm_free_memctl(size);
 }		
 
 /*
@@ -174,6 +180,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 				 */
 
 				drm_free_gatt_pages(*cur_page, 0);
+				drm_free_memctl(PAGE_SIZE);
 				--bm->cur_pages;
 			}
 		}
@@ -182,8 +189,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 		ttm->pages = NULL;
 	}
 
-	drm_free(ttm, sizeof(*ttm), DRM_MEM_TTM);
-
+	drm_ctl_free(ttm, sizeof(*ttm), DRM_MEM_TTM);
 	return 0;
 }
 
@@ -203,13 +209,14 @@ static int drm_ttm_populate(drm_ttm_t *ttm)
 	for (i=0; i<ttm->num_pages; ++i) {
 		page = ttm->pages[i];
 		if (!page) {
-			if (bm->cur_pages >= bm->max_pages) {
-				DRM_ERROR("Maximum locked page count exceeded\n");
+			if (drm_alloc_memctl(PAGE_SIZE)) {
 				return -ENOMEM;
 			}
 			page = drm_alloc_gatt_pages(0);
-			if (!page) 
+			if (!page) {
+				drm_free_memctl(PAGE_SIZE);
 				return -ENOMEM;
+			}
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
 			SetPageLocked(page);
 #else
@@ -238,7 +245,7 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 	if (!bo_driver)
 		return NULL;
 
-	ttm = drm_calloc(1, sizeof(*ttm), DRM_MEM_TTM);
+	ttm = drm_ctl_calloc(1, sizeof(*ttm), DRM_MEM_TTM);
 	if (!ttm)
 		return NULL;
 
@@ -254,6 +261,11 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 	ttm->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 
 	ttm->page_flags = 0;
+
+	/*
+	 * Account also for AGP module memory usage.
+	 */
+
 	ttm->pages = ttm_alloc(ttm->num_pages * sizeof(*ttm->pages), 
 			       DRM_MEM_TTM);
 	if (!ttm->pages) {
@@ -403,14 +415,14 @@ static void drm_ttm_object_remove(drm_device_t * dev, drm_ttm_object_t * object)
 		drm_ttm_t *ttm = (drm_ttm_t *) map->offset;
 		if (ttm) {
 			if (drm_destroy_ttm(ttm) != -EBUSY) {
-				drm_free(map, sizeof(*map), DRM_MEM_TTM);
+				drm_ctl_free(map, sizeof(*map), DRM_MEM_TTM);
 			}
 		} else {
-			drm_free(map, sizeof(*map), DRM_MEM_TTM);
+			drm_ctl_free(map, sizeof(*map), DRM_MEM_TTM);
 		}
 	}
 
-	drm_free(object, sizeof(*object), DRM_MEM_TTM);
+	drm_ctl_free(object, sizeof(*object), DRM_MEM_TTM);
 }
 
 void drm_ttm_object_deref_locked(drm_device_t * dev, drm_ttm_object_t * to)
@@ -444,13 +456,13 @@ int drm_ttm_object_create(drm_device_t * dev, unsigned long size,
 	drm_local_map_t *map;
 	drm_ttm_t *ttm;
 
-	object = drm_calloc(1, sizeof(*object), DRM_MEM_TTM);
+	object = drm_ctl_calloc(1, sizeof(*object), DRM_MEM_TTM);
 	if (!object)
 		return -ENOMEM;
 	object->flags = flags;
 	list = &object->map_list;
 
-	list->map = drm_calloc(1, sizeof(*map), DRM_MEM_TTM);
+	list->map = drm_ctl_calloc(1, sizeof(*map), DRM_MEM_TTM);
 	if (!list->map) {
 		drm_ttm_object_remove(dev, object);
 		return -ENOMEM;

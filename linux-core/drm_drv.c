@@ -130,7 +130,6 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 #define DRIVER_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )
 
 
-
 /**
  * Take down the DRM device.
  *
@@ -502,7 +501,10 @@ static void drm_free_memory_caches(void )
 static int __init drm_core_init(void)
 {
 	int ret;
+	struct sysinfo si;
 	
+	si_meminfo(&si);
+	drm_init_memctl(si.totalram/2, si.totalram*3/4);
 	ret = drm_create_memory_caches();
 	if (ret)
 		goto err_p1;

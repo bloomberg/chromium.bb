@@ -118,7 +118,8 @@ void drm_fence_usage_deref_locked(drm_device_t * dev,
 		DRM_DEBUG("Destroyed a fence object 0x%08lx\n",
 			  fence->base.hash.key);
 		atomic_dec(&fm->count);
-		kmem_cache_free(drm_cache.fence_object, fence);
+		drm_ctl_cache_free(drm_cache.fence_object, sizeof(*fence),
+				   fence);
 	}
 }
 
@@ -132,7 +133,8 @@ void drm_fence_usage_deref_unlocked(drm_device_t * dev,
 		if (atomic_read(&fence->usage) == 0) {
 			drm_fence_unring(dev, &fence->ring);
 		        atomic_dec(&fm->count);
-			kmem_cache_free(drm_cache.fence_object, fence);
+			drm_ctl_cache_free(drm_cache.fence_object, 
+					   sizeof(*fence), fence);
 		}
 		mutex_unlock(&dev->struct_mutex);
 	}
@@ -439,7 +441,8 @@ int drm_fence_object_create(drm_device_t * dev, uint32_t type,
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
 
-	fence = kmem_cache_alloc(drm_cache.fence_object, GFP_KERNEL);
+	fence = drm_ctl_cache_alloc(drm_cache.fence_object, 
+				    sizeof(*fence), GFP_KERNEL);
 	if (!fence)
 		return -ENOMEM;
 	ret = drm_fence_object_init(dev, type, flags, fence);

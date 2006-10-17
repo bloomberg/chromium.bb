@@ -237,7 +237,7 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 		drm_ttm_object_deref_locked(dev, bo->ttm_object);
 	}
 	atomic_dec(&bm->count);
-	drm_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
+	drm_ctl_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
 }
 
 static void drm_bo_delayed_delete(drm_device_t * dev)
@@ -1390,7 +1390,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 		return -EINVAL;
 	}
 
-	bo = drm_calloc(1, sizeof(*bo), DRM_MEM_BUFOBJ);
+	bo = drm_ctl_calloc(1, sizeof(*bo), DRM_MEM_BUFOBJ);
 
 	if (!bo)
 		return -ENOMEM;
@@ -1752,6 +1752,12 @@ static int drm_bo_lock_mm(drm_device_t *dev, unsigned mem_type)
 {
 	int ret;
 	drm_buffer_manager_t *bm = &dev->bm;
+
+	if (mem_type == 0 || mem_type >= DRM_BO_MEM_TYPES) {
+		DRM_ERROR("Illegal memory manager memory type %u,\n", 
+			  mem_type);
+		return -EINVAL;
+	}
 	
 	ret = drm_bo_force_list_clean(dev, &bm->unfenced, mem_type, 0, 1);  
  	if (ret)

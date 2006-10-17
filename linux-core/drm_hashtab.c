@@ -44,7 +44,7 @@ int drm_ht_create(drm_open_hash_t *ht, unsigned int order)
 	ht->order = order;
 	ht->fill = 0;
 	ht->table = NULL;
-	ht->use_vmalloc = ((ht->size * sizeof(*ht->table)) > 4*PAGE_SIZE);
+	ht->use_vmalloc = ((ht->size * sizeof(*ht->table)) > PAGE_SIZE);
 	if (!ht->use_vmalloc) {
 		ht->table = drm_calloc(ht->size, sizeof(*ht->table), 
 				       DRM_MEM_HASHTAB);

@@ -202,13 +202,13 @@ struct page *drm_vm_ttm_fault(struct vm_area_struct *vma,
 	page = ttm->pages[page_offset];
 
 	if (!page) {
-		if (bm->cur_pages >= bm->max_pages) {
-	 		DRM_ERROR("Maximum locked page count exceeded\n"); 
+		if (drm_alloc_memctl(PAGE_SIZE)) {
 			data->type = VM_FAULT_OOM;
 			goto out;
 		}
 		page = ttm->pages[page_offset] = drm_alloc_gatt_pages(0);
 		if (!page) {
+			drm_free_memctl(PAGE_SIZE);
 			data->type = VM_FAULT_OOM;
 			goto out;
 		}
@@ -654,7 +654,7 @@ static void drm_vm_ttm_close(struct vm_area_struct *vma)
 			if (ttm->destroy) {
 				ret = drm_destroy_ttm(ttm);
 				BUG_ON(ret);
-				drm_free(map, sizeof(*map), DRM_MEM_TTM);
+				drm_ctl_free(map, sizeof(*map), DRM_MEM_TTM);
 			}
 		}
 		mutex_unlock(&dev->struct_mutex);

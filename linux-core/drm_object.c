@@ -152,7 +152,7 @@ int drm_add_ref_object(drm_file_t * priv, drm_user_object_t * referenced_object,
 					     ref_action);
 	}
 
-	item = drm_calloc(1, sizeof(*item), DRM_MEM_OBJECTS);
+	item = drm_ctl_calloc(1, sizeof(*item), DRM_MEM_OBJECTS);
 	if (item == NULL) {
 		DRM_ERROR("Could not allocate reference object\n");
 		return -ENOMEM;
@@ -218,7 +218,7 @@ void drm_remove_ref_object(drm_file_t * priv, drm_ref_object_t * item)
 		list_del_init(&item->list);
 		if (unref_action == _DRM_REF_USE)
 			drm_remove_other_references(priv, user_object);
-		drm_free(item, sizeof(*item), DRM_MEM_OBJECTS);
+		drm_ctl_free(item, sizeof(*item), DRM_MEM_OBJECTS);
 	}
 
 	switch (unref_action) {

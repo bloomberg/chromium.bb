@@ -239,8 +239,13 @@ struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
 			page = NOPAGE_OOM;
 			goto out;
 		}
+		if (drm_alloc_memctl(PAGE_SIZE)) {
+			page = NOPAGE_OOM;
+			goto out;
+		}
 		page = ttm->pages[page_offset] = drm_alloc_gatt_pages(0);
 		if (!page) {
+		        drm_free_memctl(PAGE_SIZE);
 			page = NOPAGE_OOM;
 			goto out;
 		}
@@ -284,7 +289,7 @@ int drm_ttm_add_vma(drm_ttm_t * ttm, struct vm_area_struct *vma)
 		vma->vm_private_data;
 	struct mm_struct *mm = vma->vm_mm;
 
-	v_entry = drm_alloc(sizeof(*v_entry), DRM_MEM_TTM);
+	v_entry = drm_ctl_alloc(sizeof(*v_entry), DRM_MEM_TTM);
 	if (!v_entry) {
 		DRM_ERROR("Allocation of vma pointer entry failed\n");
 		return -ENOMEM;
@@ -300,7 +305,7 @@ int drm_ttm_add_vma(drm_ttm_t * ttm, struct vm_area_struct *vma)
 		} else if ((unsigned long)mm < (unsigned long)entry->mm) ;
 	}
 
-	n_entry = drm_alloc(sizeof(*n_entry), DRM_MEM_TTM);
+	n_entry = drm_ctl_alloc(sizeof(*n_entry), DRM_MEM_TTM);
 	if (!n_entry) {
 		DRM_ERROR("Allocation of process mm pointer entry failed\n");
 		return -ENOMEM;
@@ -325,7 +330,7 @@ void drm_ttm_delete_vma(drm_ttm_t * ttm, struct vm_area_struct *vma)
 		if (v_entry->vma == vma) {
 			found = 1;
 			list_del(&v_entry->head);
-			drm_free(v_entry, sizeof(*v_entry), DRM_MEM_TTM);
+			drm_ctl_free(v_entry, sizeof(*v_entry), DRM_MEM_TTM);
 			break;
 		}
 	}
@@ -336,7 +341,7 @@ void drm_ttm_delete_vma(drm_ttm_t * ttm, struct vm_area_struct *vma)
 			if (atomic_add_negative(-1, &entry->refcount)) {
 				list_del(&entry->head);
 				BUG_ON(entry->locked);
-				drm_free(entry, sizeof(*entry), DRM_MEM_TTM);
+				drm_ctl_free(entry, sizeof(*entry), DRM_MEM_TTM);
 			}
 			return;
 		}
