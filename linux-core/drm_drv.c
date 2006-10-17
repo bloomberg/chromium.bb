@@ -228,7 +228,7 @@ int drm_lastclose(drm_device_t * dev)
 	if (dev->vmalist) {
 		for (vma = dev->vmalist; vma; vma = vma_next) {
 			vma_next = vma->next;
-			drm_free(vma, sizeof(*vma), DRM_MEM_VMAS);
+			drm_ctl_free(vma, sizeof(*vma), DRM_MEM_VMAS);
 		}
 		dev->vmalist = NULL;
 	}
@@ -464,14 +464,6 @@ static int drm_create_memory_caches(void)
 	if (!drm_cache.fence_object)
 		return -ENOMEM;
 
-	drm_cache.ref_object= kmem_cache_create("drm_ref_object_t", 
-						sizeof(drm_ref_object_t),
-						0,
-						SLAB_HWCACHE_ALIGN,
-						NULL,NULL);
-	if (!drm_cache.ref_object)
-		return -ENOMEM;
-	
 	return 0;
 }
 
@@ -489,8 +481,6 @@ static void drm_free_mem_cache(kmem_cache_t *cache,
 static void drm_free_memory_caches(void )
 {
 	
-	drm_free_mem_cache(drm_cache.ref_object, "ref object");
-	drm_cache.ref_object = NULL;
 	drm_free_mem_cache(drm_cache.fence_object, "fence object");
 	drm_cache.fence_object = NULL;
 	drm_free_mem_cache(drm_cache.mm, "memory manager block");

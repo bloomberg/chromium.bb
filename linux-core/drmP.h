@@ -763,7 +763,6 @@ typedef struct drm_cache {
 
 	kmem_cache_t *mm;
 	kmem_cache_t *fence_object;
-	kmem_cache_t *ref_object;
 } drm_cache_t;
 
 

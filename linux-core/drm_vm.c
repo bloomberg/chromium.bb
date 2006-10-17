@@ -315,7 +315,7 @@ static void drm_vm_shm_close(struct vm_area_struct *vma)
 			} else {
 				dev->vmalist = pt->next;
 			}
-			drm_free(pt, sizeof(*pt), DRM_MEM_VMAS);
+			drm_ctl_free(pt, sizeof(*pt), DRM_MEM_VMAS);
 		} else {
 			prev = pt;
 		}
@@ -567,7 +567,7 @@ static void drm_vm_open(struct vm_area_struct *vma)
 		  vma->vm_start, vma->vm_end - vma->vm_start);
 	atomic_inc(&dev->vma_count);
 
-	vma_entry = drm_alloc(sizeof(*vma_entry), DRM_MEM_VMAS);
+	vma_entry = drm_ctl_alloc(sizeof(*vma_entry), DRM_MEM_VMAS);
 	if (vma_entry) {
 		mutex_lock(&dev->struct_mutex);
 		vma_entry->vma = vma;
@@ -627,7 +627,7 @@ static void drm_vm_close(struct vm_area_struct *vma)
 			} else {
 				dev->vmalist = pt->next;
 			}
-			drm_free(pt, sizeof(*pt), DRM_MEM_VMAS);
+			drm_ctl_free(pt, sizeof(*pt), DRM_MEM_VMAS);
 			break;
 		}
 	}

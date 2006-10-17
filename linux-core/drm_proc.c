@@ -469,8 +469,13 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 
 	drm_query_memctl(&used_mem, &low_mem, &high_mem);
 
-	DRM_PROC_PRINT("Used object memory is %lu pages.\n", 
-		       (unsigned long) (used_mem >> PAGE_SHIFT));
+	if (used_mem > 16*PAGE_SIZE) { 
+		DRM_PROC_PRINT("Used object memory is %lu pages.\n", 
+			       (unsigned long) (used_mem >> PAGE_SHIFT));
+	} else {
+		DRM_PROC_PRINT("Used object memory is %lu bytes.\n", 
+			       (unsigned long) used_mem);
+	}
 	DRM_PROC_PRINT("Soft object memory usage threshold is %lu pages.\n", 
 		       (unsigned long) (low_mem >> PAGE_SHIFT));
 	DRM_PROC_PRINT("Hard object memory usage threshold is %lu pages.\n", 

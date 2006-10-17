@@ -56,8 +56,7 @@ struct proc_dir_entry *drm_proc_root;
 
 drm_cache_t drm_cache =
 { .mm = NULL,
-  .fence_object = NULL,
-  .ref_object = NULL
+  .fence_object = NULL
 };
 
 static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
