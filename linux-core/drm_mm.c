@@ -70,6 +70,7 @@ drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 		child->free = 0;
 		child->size = size;
 		child->start = parent->start;
+		child->mm = parent->mm;
 
 		list_add_tail(&child->ml_entry, &parent->ml_entry);
 		parent->size -= size;
@@ -83,9 +84,10 @@ drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
  * Otherwise add to the free stack.
  */
 
-void drm_mm_put_block(drm_mm_t * mm, drm_mm_node_t * cur)
+void drm_mm_put_block(drm_mm_node_t * cur)
 {
 
+	drm_mm_t *mm = cur->mm;
 	drm_mm_node_t *list_root = &mm->root_node;
 	struct list_head *cur_head = &cur->ml_entry;
 	struct list_head *root_head = &list_root->ml_entry;
@@ -183,6 +185,7 @@ int drm_mm_init(drm_mm_t * mm, unsigned long start, unsigned long size)
 	child->start = start;
 	child->size = size;
 	child->free = 1;
+	child->mm = mm;
 
 	list_add(&child->fl_entry, &mm->root_node.fl_entry);
 	list_add(&child->ml_entry, &mm->root_node.ml_entry);

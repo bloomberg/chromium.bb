@@ -393,7 +393,7 @@ static void drm_ttm_object_remove(drm_device_t * dev, drm_ttm_object_t * object)
 		drm_ht_remove_item(&dev->map_hash, &list->hash);
 
 	if (list->file_offset_node) {
-		drm_mm_put_block(&dev->offset_manager, list->file_offset_node);
+		drm_mm_put_block(list->file_offset_node);
 		list->file_offset_node = NULL;
 	}
 

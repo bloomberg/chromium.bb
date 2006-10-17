@@ -126,10 +126,10 @@ static void drm_bo_add_to_lru(drm_buffer_object_t *buf,
  * bo locked.
  */
 
-static int drm_move_tt_to_local(drm_buffer_object_t * buf, int evict)
+static int drm_move_tt_to_local(drm_buffer_object_t * buf, int evict,
+				int force_no_move)
 {
 	drm_device_t *dev = buf->dev;
-	drm_buffer_manager_t *bm = &dev->bm;
 	int ret;
 
 	if (buf->node_ttm) {
@@ -146,8 +146,11 @@ static int drm_move_tt_to_local(drm_buffer_object_t * buf, int evict)
 			return ret;
 		}
 	
-		drm_mm_put_block(&bm->manager[DRM_BO_MEM_TT], buf->node_ttm);
-		buf->node_ttm = NULL;
+		if (!(buf->flags & DRM_BO_FLAG_NO_MOVE) ||
+		    force_no_move) {
+			drm_mm_put_block(buf->node_ttm);
+			buf->node_ttm = NULL;
+		}
 		mutex_unlock(&dev->struct_mutex);
 	}
 
@@ -223,13 +226,11 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 	}
 		
 	if (bo->node_ttm) {
-		drm_mm_put_block(&bm->manager[DRM_BO_MEM_TT], 
-				 bo->node_ttm);
+		drm_mm_put_block(bo->node_ttm);
 		bo->node_ttm = NULL;
 	}
 	if (bo->node_card) {
-		drm_mm_put_block(&bm->manager[DRM_BO_MEM_VRAM], 
-				 bo->node_card);
+		drm_mm_put_block(bo->node_card);
 		bo->node_card = NULL;
 	}
 	if (bo->ttm_object) {
@@ -484,7 +485,7 @@ static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
  */
 
 static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type, 
-			int no_wait)
+			int no_wait, int force_no_move)
 {
 	int ret = 0;
 	drm_device_t *dev = bo->dev;
@@ -509,7 +510,7 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 	}
 
 	if (mem_type == DRM_BO_MEM_TT) {
-		ret = drm_move_tt_to_local(bo, 1);
+		ret = drm_move_tt_to_local(bo, 1, force_no_move);
 		if (ret)
 			goto out;
 		mutex_lock(&dev->struct_mutex);
@@ -565,7 +566,8 @@ int drm_bo_alloc_space(drm_buffer_object_t * buf, unsigned mem_type,
 		atomic_inc(&bo->usage);
 		mutex_unlock(&dev->struct_mutex);
 		mutex_lock(&bo->mutex);
-		ret = drm_bo_evict(bo, mem_type, no_wait);
+		BUG_ON(bo->flags & DRM_BO_FLAG_NO_MOVE);
+		ret = drm_bo_evict(bo, mem_type, no_wait, 0);
 		mutex_unlock(&bo->mutex);
 		drm_bo_usage_deref_unlocked(dev, bo);
 		if (ret)
@@ -596,22 +598,23 @@ int drm_bo_alloc_space(drm_buffer_object_t * buf, unsigned mem_type,
 static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 {
 	drm_device_t *dev = bo->dev;
-	drm_buffer_manager_t *bm = &dev->bm;
 	drm_ttm_backend_t *be;
 	int ret;
 
-	BUG_ON(bo->node_ttm);
-	ret = drm_bo_alloc_space(bo, 1, no_wait);
+	if (!(bo->node_ttm && (bo->flags & DRM_BO_FLAG_NO_MOVE))) { 
+		BUG_ON(bo->node_ttm);
+		ret = drm_bo_alloc_space(bo, DRM_BO_MEM_TT, no_wait);
+		if (ret)
+			return ret;
+	}
 
-	if (ret)
-		return ret;
 	DRM_DEBUG("Flipping in to AGP 0x%08lx\n", bo->node_ttm->start);
 
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_bind_ttm(bo->ttm, bo->flags & DRM_BO_FLAG_BIND_CACHED,
 			   bo->node_ttm->start);
 	if (ret) {
-		drm_mm_put_block(&bm->manager[DRM_BO_MEM_TT], bo->node_ttm);
+		drm_mm_put_block(bo->node_ttm);
 		bo->node_ttm = NULL;
 	}
 	mutex_unlock(&dev->struct_mutex);
@@ -824,11 +827,11 @@ static int drm_bo_read_cached(drm_buffer_object_t * bo)
 
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (bo->node_card) 
-		ret = drm_bo_evict(bo, DRM_BO_MEM_VRAM, 1);
+		ret = drm_bo_evict(bo, DRM_BO_MEM_VRAM, 1, 0);
 	if (ret)
 		return ret;
 	if (bo->node_ttm)
-		ret = drm_bo_evict(bo, DRM_BO_MEM_TT, 1);	
+		ret = drm_bo_evict(bo, DRM_BO_MEM_TT, 1, 0);	
 	return ret;
 }
 
@@ -1115,7 +1118,7 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
 		if (ret)
 			return ret;
 	} else {
-		drm_move_tt_to_local(bo, 0);
+		drm_move_tt_to_local(bo, 0, 1);
 	}
 
 	return 0;
@@ -1625,7 +1628,7 @@ static void drm_bo_force_list_clean(drm_device_t *dev,
 				entry->fence = NULL;
 			}
 		}
-		ret = drm_bo_evict(entry, mem_type, 0);
+		ret = drm_bo_evict(entry, mem_type, 0, 1);
 		if (ret) {
 			DRM_ERROR("Aargh. Eviction failed.\n");
 		}

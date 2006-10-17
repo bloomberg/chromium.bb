@@ -548,6 +548,7 @@ typedef struct drm_mm_node {
 	int free;
 	unsigned long start;
 	unsigned long size;
+        struct drm_mm *mm;
 	void *private;
 } drm_mm_node_t;
 
@@ -1344,7 +1345,7 @@ extern void drm_sysfs_device_remove(struct class_device *class_dev);
 
 extern drm_mm_node_t * drm_mm_get_block(drm_mm_node_t * parent, unsigned long size,
 					       unsigned alignment);
-extern void drm_mm_put_block(drm_mm_t *mm, drm_mm_node_t *cur);
+extern void drm_mm_put_block(drm_mm_node_t *cur);
 extern drm_mm_node_t *drm_mm_search_free(const drm_mm_t *mm, unsigned long size, 
 						unsigned alignment, int best_match);
 extern int drm_mm_init(drm_mm_t *mm, unsigned long start, unsigned long size);
