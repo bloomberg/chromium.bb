@@ -2786,16 +2786,11 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
 		       fd, buf->mapHandle);
 	if (virtual == MAP_FAILED) {
 	    ret = -errno;
-	    fprintf(stderr, "Map error 0x%016llx\n", buf->mapHandle);
 	}
 	if (ret) 
 	    return ret;
 	buf->mapVirtual = virtual;
 	buf->virtual = ((char *) virtual) + buf->start;
-#ifdef BODEBUG
-	fprintf(stderr,"Mapvirtual, virtual: 0x%08x 0x%08x\n", 
-		buf->mapVirtual, buf->virtual);
-#endif
     }
 
     memset(&arg, 0, sizeof(arg));
