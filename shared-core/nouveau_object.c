@@ -303,10 +303,8 @@ void nouveau_hash_table_init(drm_device_t* dev)
 	dev_priv->objs.inst_bmap = drm_calloc
 	    (1, dev_priv->objs.num_instance/32, DRM_MEM_DRIVER);
 
-	/* clear the hash table */
-	ht_start = NV_RAMIN+dev_priv->objs.ht_base;
-	ht_end   = ht_start + dev_priv->objs.ht_size;
-	for (i=ht_start; i<ht_end; i+=4)
+	/* clear all of RAMIN  */
+	for (i=0x00700000; i<0x00800000; i+=4)
 		NV_WRITE(i, 0x00000000);
 }
 

@@ -92,12 +92,15 @@ static void nouveau_fifo_init(drm_device_t* dev)
 			((dev_priv->objs.ht_bits - 9) << 16) |
 			(dev_priv->objs.ht_base >> 8)
 			);
-	dev_priv->ramfc_offset=0x12000;
-	dev_priv->ramro_offset=0x11200;
+	/* RAMFC needs to be at RAMIN+0x20000 on NV40, I currently don't know
+	 * how to move it..
+	 */
+	dev_priv->ramfc_offset=0x20000;
 	if (dev_priv->card_type < NV_40)
 		NV_WRITE(NV_PFIFO_RAMFC, dev_priv->ramfc_offset>>8); /* RAMIN+0x11000 0.5k */
 	else
 		NV_WRITE(0x2220, 0x30002);
+	dev_priv->ramro_offset=0x11200;
 	NV_WRITE(NV_PFIFO_RAMRO, dev_priv->ramro_offset>>8); /* RAMIN+0x11200 0.5k */
 	NV_WRITE(NV_PFIFO_CACH0_PUL1, 0x00000001);
 	NV_WRITE(NV_PFIFO_CACH1_DMAC, 0x00000000);
