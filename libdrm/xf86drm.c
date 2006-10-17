@@ -3187,21 +3187,6 @@ int drmMMTakedown(int fd, unsigned memType)
     return 0;	
 }
 
-int drmMMMaxLockedSize(int fd, unsigned long maxLockedSize)
-{
-    drm_mm_init_arg_t arg;
-
-
-    memset(&arg, 0, sizeof(arg));
-    arg.req.op = mm_set_max_pages;
-    arg.req.p_size = maxLockedSize / getpagesize();
-
-    if (ioctl(fd, DRM_IOCTL_MM_INIT, &arg))
-	return -errno;
-    
-    return 0;	
-}
-
 int drmMMLock(int fd, unsigned memType)
 {
     drm_mm_init_arg_t arg;

@@ -1859,7 +1859,6 @@ int drm_bo_driver_init(drm_device_t * dev)
 	drm_bo_driver_t *driver = dev->driver->bo_driver;
 	drm_buffer_manager_t *bm = &dev->bm;
 	int ret = -EINVAL;
-	struct sysinfo si;
 
 	mutex_lock(&dev->bm.init_mutex);
 	mutex_lock(&dev->struct_mutex);
@@ -1880,8 +1879,6 @@ int drm_bo_driver_init(drm_device_t * dev)
 	bm->nice_mode = 1;
 	atomic_set(&bm->count, 0);
 	bm->cur_pages = 0;
-	si_meminfo(&si);
-	bm->max_pages = si.totalram >> 1;
 	INIT_LIST_HEAD(&bm->unfenced);
 	INIT_LIST_HEAD(&bm->ddestroy);
       out_unlock:
@@ -1944,30 +1941,6 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 				  "Delaying takedown\n", arg.req.mem_type);
 		}
 		break;
-	case mm_set_max_pages:{
-			struct sysinfo si;
-			mutex_lock(&dev->bm.init_mutex);
-			mutex_lock(&dev->struct_mutex);
-			if (arg.req.p_size < bm->cur_pages) {
-				DRM_ERROR
-				    ("Cannot currently decrease max number of "
-				     "locked pages below the number currently "
-				     "locked.\n");
-				ret = -EINVAL;
-				break;
-			}
-			si_meminfo(&si);
-			if (arg.req.p_size > si.totalram) {
-				DRM_ERROR
-				    ("Cannot set max number of locked pages "
-				     "to %lu since the total number of RAM pages "
-				     "is %lu.\n", (unsigned long)arg.req.p_size,
-				     (unsigned long)si.totalram);
-				ret = -EINVAL;
-				break;
-			}
-			bm->max_pages = arg.req.p_size;
-		}
 	case mm_lock:
 		LOCK_TEST_WITH_RETURN(dev, filp);
 		mutex_lock(&dev->bm.init_mutex);

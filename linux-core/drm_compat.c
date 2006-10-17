@@ -234,11 +234,6 @@ struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
 	page = ttm->pages[page_offset];
 
 	if (!page) {
-		if (bm->cur_pages >= bm->max_pages) {
-	 		DRM_ERROR("Maximum locked page count exceeded\n"); 
-			page = NOPAGE_OOM;
-			goto out;
-		}
 		if (drm_alloc_memctl(PAGE_SIZE)) {
 			page = NOPAGE_OOM;
 			goto out;

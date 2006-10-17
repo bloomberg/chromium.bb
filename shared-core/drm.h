@@ -829,7 +829,6 @@ typedef union drm_mm_init_arg{
 	struct {
 		enum {
 			mm_init,
-			mm_set_max_pages,
 			mm_takedown,
 			mm_query,
 			mm_lock,

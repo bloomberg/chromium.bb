@@ -814,7 +814,6 @@ typedef struct drm_buffer_manager{
 	struct list_head ddestroy;
         struct work_struct wq;
         uint32_t fence_type;
-        unsigned long max_pages;
         unsigned long cur_pages;
         atomic_t count;
 } drm_buffer_manager_t;
