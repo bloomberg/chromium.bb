@@ -146,7 +146,24 @@ static void nouveau_fifo_irq_handler(drm_device_t *dev)
 	DRM_DEBUG("NV: PFIFO interrupt! Channel=%d, INTSTAT=0x%08x/MODE=0x%08x/PEND=0x%08x\n", channel, status, chmode, chstat);
 
 	if (status & NV_PFIFO_INTR_CACHE_ERROR) {
+		uint32_t c1get, c1method, c1data;
+
 		DRM_ERROR("NV: PFIFO error interrupt\n");
+
+		c1get = NV_READ(NV_PFIFO_CACH1_GET) >> 2;
+		if (dev_priv->card_type < NV_40) {
+			/* Untested, so it may not work.. */
+			c1method = NV_READ(NV_PFIFO_CACH1_METHOD(c1get));
+			c1data   = NV_READ(NV_PFIFO_CACH1_DATA(c1get));
+		} else {
+			c1method = NV_READ(NV40_PFIFO_CACH1_METHOD(c1get));
+			c1data   = NV_READ(NV40_PFIFO_CACH1_DATA(c1get));
+		}
+
+		DRM_ERROR("NV: Channel %d/%d - Method 0x%04x, Data 0x%08x\n",
+				channel, (c1method >> 13) & 3,
+				c1method & 0x1ffc, c1data
+			 );
 
 		status &= ~NV_PFIFO_INTR_CACHE_ERROR;
 		NV_WRITE(NV_PFIFO_INTSTAT, NV_PFIFO_INTR_CACHE_ERROR);

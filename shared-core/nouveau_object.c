@@ -290,7 +290,6 @@ static void nouveau_object_instance_free(drm_device_t *dev,
 void nouveau_hash_table_init(drm_device_t* dev)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	int ht_start, ht_end;
 	int i;
 
 	dev_priv->objs.ht_bits = 9;

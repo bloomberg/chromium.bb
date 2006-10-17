@@ -165,7 +165,12 @@
 #define NV_PFIFO_CACH1_PUL0                                0x00003250
 #define NV_PFIFO_CACH1_PUL1                                0x00003254
 #define NV_PFIFO_CACH1_HASH                                0x00003258
+#define NV_PFIFO_CACH1_GET                                 0x00003270
 #define NV_PFIFO_CACH1_ENG                                 0x00003280
+#define NV_PFIFO_CACH1_METHOD(i)                   (0x00003800+(i*8))
+#define NV_PFIFO_CACH1_DATA(i)                     (0x00003804+(i*8))
+#define NV40_PFIFO_CACH1_METHOD(i)                 (0x00090000+(i*8))
+#define NV40_PFIFO_CACH1_DATA(i)                   (0x00090004+(i*8))
 
 #define NV_CRTC0_INTSTAT                                   0x00600100
 #define NV_CRTC0_INTEN                                     0x00600140
