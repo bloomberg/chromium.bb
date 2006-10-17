@@ -275,7 +275,7 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 
 		instance = NV_READ(0x00400158);
 		notify   = NV_READ(0x00400150) >> 16;
-		DRM_DEBUG("instance:0x%08x\tnotify:0x%08x\n", nsource, nstatus);
+		DRM_DEBUG("instance:0x%08x\tnotify:0x%08x\n", instance, notify);
 
 		status &= ~NV_PGRAPH_INTR_BUFFER_NOTIFY;
 		NV_WRITE(NV_PGRAPH_INTSTAT, NV_PGRAPH_INTR_BUFFER_NOTIFY);
