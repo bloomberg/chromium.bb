@@ -149,6 +149,11 @@ int drm_lastclose(drm_device_t * dev)
 
 	DRM_DEBUG("\n");
 
+	if (drm_bo_driver_finish(dev)) {
+		DRM_ERROR("DRM memory manager still busy. "
+			  "System is unstable. Please reboot.\n");
+	}
+
 	if (dev->driver->lastclose)
 		dev->driver->lastclose(dev);
 	DRM_DEBUG("driver lastclose completed\n");
@@ -265,10 +270,6 @@ int drm_lastclose(drm_device_t * dev)
 	dev->dev_mapping = NULL;
 	mutex_unlock(&dev->struct_mutex);
 
-	if (drm_bo_clean_mm(dev)) {
-		DRM_ERROR("DRM memory manager still busy. "
-			  "System is unstable. Please reboot.\n");
-	}
 	DRM_DEBUG("lastclose completed\n");
 	return 0;
 }

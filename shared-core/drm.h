@@ -680,6 +680,7 @@ typedef struct drm_fence_arg {
 	unsigned type;
 	unsigned flags;
 	unsigned signaled;
+	unsigned expand_pad[4]; /*Future expansion */
 	enum {
 		drm_fence_create,
 		drm_fence_destroy,
@@ -732,12 +733,14 @@ typedef struct drm_fence_arg {
 /* Bind this buffer cached if the hardware supports it. */
 #define DRM_BO_FLAG_BIND_CACHED 0x0002000
 
-/* Translation table aperture */
-#define DRM_BO_FLAG_MEM_TT      0x01000000
-/* On-card VRAM */
-#define DRM_BO_FLAG_MEM_VRAM    0x02000000
-/* System memory */
-#define DRM_BO_FLAG_MEM_LOCAL   0x04000000
+/* System Memory */
+#define DRM_BO_FLAG_MEM_LOCAL  0x01000000
+/* Translation table memory */
+#define DRM_BO_FLAG_MEM_TT     0x02000000
+/* Vram memory */
+#define DRM_BO_FLAG_MEM_VRAM   0x04000000
+/* Unmappable Vram memory */
+#define DRM_BO_FLAG_MEM_VRAM_NM   0x08000000
 /* Memory flag mask */
 #define DRM_BO_MASK_MEM         0xFF000000
 
@@ -769,6 +772,7 @@ typedef struct drm_bo_arg_request {
 	drm_bo_type_t type;
 	unsigned arg_handle;
 	drm_u64_t buffer_start;
+	unsigned expand_pad[4]; /*Future expansion */
 	enum {
 		drm_bo_create,
 		drm_bo_validate,
@@ -802,6 +806,7 @@ typedef struct drm_bo_arg_reply {
         drm_u64_t buffer_start;
         unsigned fence_flags;
         unsigned rep_flags;
+	unsigned expand_pad[4]; /*Future expansion */
 }drm_bo_arg_reply_t;
 	
 
@@ -814,23 +819,30 @@ typedef struct drm_bo_arg{
 	} d;
 } drm_bo_arg_t;
 
+#define DRM_BO_MEM_LOCAL 0
+#define DRM_BO_MEM_TT 1
+#define DRM_BO_MEM_VRAM 2
+#define DRM_BO_MEM_VRAM_NM 3
+#define DRM_BO_MEM_TYPES 2 /* For now. */
+
 typedef union drm_mm_init_arg{
 	struct {
 		enum {
 			mm_init,
+			mm_set_max_pages,
 			mm_takedown,
 			mm_query,
 			mm_lock,
 			mm_unlock
 		} op;
-		drm_u64_t vr_p_offset;
-		drm_u64_t vr_p_size;
-		drm_u64_t tt_p_offset;
-		drm_u64_t tt_p_size;
-	        drm_u64_t max_locked_pages;
+		drm_u64_t p_offset;
+		drm_u64_t p_size;
+		unsigned mem_type;
+		unsigned expand_pad[8]; /*Future expansion */
 	} req;
 	struct {
 		drm_handle_t mm_sarea;
+		unsigned expand_pad[8]; /*Future expansion */
 	} rep;
 } drm_mm_init_arg_t;
 #endif

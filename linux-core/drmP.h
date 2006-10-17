@@ -167,6 +167,7 @@
 #define DRM_OBJECT_HASH_ORDER 12
 #define DRM_FILE_PAGE_OFFSET_START ((0xFFFFFFFFUL >> PAGE_SHIFT) + 1)
 #define DRM_FILE_PAGE_OFFSET_SIZE ((0xFFFFFFFFUL >> PAGE_SHIFT) * 16)
+#define DRM_MM_INIT_MAX_PAGES 256
 
 /*@}*/
 
@@ -660,9 +661,8 @@ typedef struct drm_ref_object {
  */
 
 typedef struct drm_bo_driver{
-	int cached_tt;
-        int cached_vram;
-        drm_local_map_t *vram_map;
+	int cached[DRM_BO_MEM_TYPES];
+        drm_local_map_t *iomap[DRM_BO_MEM_TYPES];
 	drm_ttm_backend_t *(*create_ttm_backend_entry) 
 		(struct drm_device *dev);
 	int (*fence_type)(uint32_t flags, uint32_t *class, uint32_t *type);
@@ -801,21 +801,17 @@ typedef struct drm_fence_manager{
 } drm_fence_manager_t;
 
 typedef struct drm_buffer_manager{
+	struct mutex init_mutex;
+	int nice_mode;
 	int initialized;
         drm_file_t *last_to_validate;
-	int has_vram;
-	int has_tt;
-        int use_vram;
-        int use_tt;
-	drm_mm_t tt_manager;
-	drm_mm_t vram_manager;
-	struct list_head tt_lru;
-	struct list_head vram_lru;
-        struct list_head tt_pinned;
-        struct list_head vram_pinned;
+	int has_type[DRM_BO_MEM_TYPES];
+        int use_type[DRM_BO_MEM_TYPES];
+	drm_mm_t manager[DRM_BO_MEM_TYPES];
+	struct list_head lru[DRM_BO_MEM_TYPES];
+        struct list_head pinned[DRM_BO_MEM_TYPES];
 	struct list_head unfenced;
 	struct list_head ddestroy;
-        struct list_head other;
         struct work_struct wq;
         uint32_t fence_type;
         unsigned long max_pages;
@@ -1024,10 +1020,10 @@ typedef struct drm_buffer_object{
 	uint32_t flags;
 	uint32_t mask;
 
-	drm_mm_node_t *vram;
-	drm_mm_node_t *tt;
-	struct list_head tt_lru;
-        struct list_head vram_lru;
+	drm_mm_node_t *node_ttm;    /* MM node for on-card RAM */
+	drm_mm_node_t *node_card;   /* MM node for ttm*/
+	struct list_head lru_ttm;   /* LRU for the ttm pages*/
+        struct list_head lru_card;  /* For memory types with on-card RAM */
 	struct list_head ddestroy;
 
 	uint32_t fence_type;
@@ -1447,7 +1443,8 @@ extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 
 extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
 extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
-extern int drm_bo_clean_mm(drm_device_t *dev);
+extern int drm_bo_driver_finish(drm_device_t *dev);
+extern int drm_bo_driver_init(drm_device_t *dev);
 extern int drm_fence_buffer_objects(drm_file_t * priv,
 				    struct list_head *list, 
 				    uint32_t fence_flags,

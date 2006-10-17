@@ -195,10 +195,11 @@ extern int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint);
  * Initialization functions.
  */
 
-extern int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
-		     unsigned long ttPOffset, unsigned long ttPSize,
-		     unsigned long max_locked_size);
-extern int drmMMTakedown(int fd);
+extern int drmMMInit(int fd, unsigned long pOffset, unsigned long pSize,
+		     unsigned memType);
+extern int drmMMTakedown(int fd, unsigned memType);
+extern int drmMMMaxLockedSize(int fd, unsigned long maxLockedSize);
+
 
 
 #endif

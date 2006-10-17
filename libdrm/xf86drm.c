@@ -3155,19 +3155,16 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
   return 0;
 }
 
-int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
-	      unsigned long ttPOffset, unsigned long ttPSize,
-	      unsigned long max_locked_size)
+int drmMMInit(int fd, unsigned long pOffset, unsigned long pSize,
+	      unsigned memType)
 {
     drm_mm_init_arg_t arg;
     
     memset(&arg, 0, sizeof(arg));
     arg.req.op = mm_init;
-    arg.req.vr_p_offset = vramPOffset;
-    arg.req.vr_p_size = vramPSize;
-    arg.req.tt_p_offset = ttPOffset;
-    arg.req.tt_p_size = ttPSize;
-    arg.req.max_locked_pages = max_locked_size / getpagesize();
+    arg.req.p_offset = pOffset;
+    arg.req.p_size = pSize;
+    arg.req.mem_type = memType;
 
     if (ioctl(fd, DRM_IOCTL_MM_INIT, &arg))
 	return -errno;
@@ -3175,13 +3172,29 @@ int drmMMInit(int fd, unsigned long vramPOffset, unsigned long vramPSize,
     return 0;	
 }
 
-int drmMMTakedown(int fd)
+int drmMMTakedown(int fd, unsigned memType)
 {
     drm_mm_init_arg_t arg;
 
 
     memset(&arg, 0, sizeof(arg));
     arg.req.op = mm_takedown;
+    arg.req.mem_type = memType;
+
+    if (ioctl(fd, DRM_IOCTL_MM_INIT, &arg))
+	return -errno;
+    
+    return 0;	
+}
+
+int drmMMMaxLockedSize(int fd, unsigned long maxLockedSize)
+{
+    drm_mm_init_arg_t arg;
+
+
+    memset(&arg, 0, sizeof(arg));
+    arg.req.op = mm_set_max_pages;
+    arg.req.p_size = maxLockedSize / getpagesize();
 
     if (ioctl(fd, DRM_IOCTL_MM_INIT, &arg))
 	return -errno;
