@@ -31,7 +31,6 @@
 
 #include "drmP.h"
 
-
 /*
  * Typically called by the IRQ handler.
  */
@@ -90,7 +89,7 @@ void drm_fence_handler(drm_device_t * dev, uint32_t sequence, uint32_t type)
 		}
 
 	}
-		
+
 	if (wake) {
 		DRM_WAKEUP(&fm->fence_queue);
 	}
@@ -132,8 +131,8 @@ void drm_fence_usage_deref_unlocked(drm_device_t * dev,
 		mutex_lock(&dev->struct_mutex);
 		if (atomic_read(&fence->usage) == 0) {
 			drm_fence_unring(dev, &fence->ring);
-		        atomic_dec(&fm->count);
-			drm_ctl_cache_free(drm_cache.fence_object, 
+			atomic_dec(&fm->count);
+			drm_ctl_cache_free(drm_cache.fence_object,
 					   sizeof(*fence), fence);
 		}
 		mutex_unlock(&dev->struct_mutex);
@@ -150,7 +149,7 @@ static void drm_fence_object_destroy(drm_file_t * priv,
 	drm_fence_usage_deref_locked(dev, fence);
 }
 
-static int fence_signaled(drm_device_t * dev, volatile 
+static int fence_signaled(drm_device_t * dev, volatile
 			  drm_fence_object_t * fence,
 			  uint32_t mask, int poke_flush)
 {
@@ -205,15 +204,14 @@ static void drm_fence_flush_exe(drm_fence_manager_t * fm,
 	}
 }
 
-int drm_fence_object_signaled(volatile drm_fence_object_t * fence, 
+int drm_fence_object_signaled(volatile drm_fence_object_t * fence,
 			      uint32_t type)
 {
 	return ((fence->signaled & type) == type);
 }
 
 int drm_fence_object_flush(drm_device_t * dev,
-			   volatile drm_fence_object_t * fence, 
-			   uint32_t type)
+			   volatile drm_fence_object_t * fence, uint32_t type)
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
@@ -221,7 +219,7 @@ int drm_fence_object_flush(drm_device_t * dev,
 
 	if (type & ~fence->type) {
 		DRM_ERROR("Flush trying to extend fence type, "
-                          "0x%x, 0x%x\n", type, fence->type);
+			  "0x%x, 0x%x\n", type, fence->type);
 		return -EINVAL;
 	}
 
@@ -247,7 +245,6 @@ int drm_fence_object_flush(drm_device_t * dev,
  * Make sure old fence objects are signaled before their fence sequences are
  * wrapped around and reused.
  */
-
 
 void drm_fence_flush_old(drm_device_t * dev, uint32_t sequence)
 {
@@ -279,7 +276,7 @@ void drm_fence_flush_old(drm_device_t * dev, uint32_t sequence)
 
 EXPORT_SYMBOL(drm_fence_flush_old);
 
-int drm_fence_object_wait(drm_device_t * dev, 
+int drm_fence_object_wait(drm_device_t * dev,
 			  volatile drm_fence_object_t * fence,
 			  int lazy, int ignore_signals, uint32_t mask)
 {
@@ -328,8 +325,8 @@ int drm_fence_object_wait(drm_device_t * dev,
 
 		do {
 			DRM_WAIT_ON(ret, fm->fence_queue, 3 * DRM_HZ,
-				    fence_signaled(dev, fence, DRM_FENCE_TYPE_EXE,
-						   1));
+				    fence_signaled(dev, fence,
+						   DRM_FENCE_TYPE_EXE, 1));
 			if (time_after_eq(jiffies, _end))
 				break;
 		} while (ret == -EINTR && ignore_signals);
@@ -347,9 +344,9 @@ int drm_fence_object_wait(drm_device_t * dev,
 	 */
 #if 1
 	if (!ignore_signals)
-	        return -EAGAIN;
+		return -EAGAIN;
 #endif
-	do { 
+	do {
 		schedule();
 		signaled = fence_signaled(dev, fence, mask, 1);
 	} while (!signaled && !time_after_eq(jiffies, _end));
@@ -387,7 +384,7 @@ int drm_fence_object_emit(drm_device_t * dev, drm_fence_object_t * fence,
 	return 0;
 }
 
-static int drm_fence_object_init(drm_device_t * dev, uint32_t type, 
+static int drm_fence_object_init(drm_device_t * dev, uint32_t type,
 				 uint32_t fence_flags,
 				 drm_fence_object_t * fence)
 {
@@ -413,7 +410,6 @@ static int drm_fence_object_init(drm_device_t * dev, uint32_t type,
 	}
 	return ret;
 }
-
 
 int drm_fence_add_user_object(drm_file_t * priv, drm_fence_object_t * fence,
 			      int shareable)
@@ -441,7 +437,7 @@ int drm_fence_object_create(drm_device_t * dev, uint32_t type,
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
 
-	fence = drm_ctl_cache_alloc(drm_cache.fence_object, 
+	fence = drm_ctl_cache_alloc(drm_cache.fence_object,
 				    sizeof(*fence), GFP_KERNEL);
 	if (!fence)
 		return -ENOMEM;
@@ -472,7 +468,7 @@ void drm_fence_manager_init(drm_device_t * dev)
 	fm->initialized = 0;
 	if (fed) {
 		fm->initialized = 1;
-		atomic_set(&fm->count,0);
+		atomic_set(&fm->count, 0);
 		for (i = 0; i < fed->no_types; ++i) {
 			fm->fence_types[i] = &fm->ring;
 		}
@@ -523,9 +519,7 @@ int drm_fence_ioctl(DRM_IOCTL_ARGS)
 	case drm_fence_create:
 		if (arg.flags & DRM_FENCE_FLAG_EMIT)
 			LOCK_TEST_WITH_RETURN(dev, filp);
-		ret = drm_fence_object_create(dev, arg.type,
-					      arg.flags,
-					      &fence);
+		ret = drm_fence_object_create(dev, arg.type, arg.flags, &fence);
 		if (ret)
 			return ret;
 		ret = drm_fence_add_user_object(priv, fence,
@@ -596,7 +590,7 @@ int drm_fence_ioctl(DRM_IOCTL_ARGS)
 			return -EINVAL;
 		}
 		LOCK_TEST_WITH_RETURN(dev, filp);
-		ret = drm_fence_buffer_objects(priv, NULL, arg.flags, 
+		ret = drm_fence_buffer_objects(priv, NULL, arg.flags,
 					       NULL, &fence);
 		if (ret)
 			return ret;

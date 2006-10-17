@@ -52,12 +52,12 @@ typedef struct drm_ttm_backend {
 	unsigned long aperture_base;
 	void *private;
 	uint32_t flags;
-        uint32_t drm_map_type;
+	uint32_t drm_map_type;
 	int (*needs_ub_cache_adjust) (struct drm_ttm_backend * backend);
 	int (*populate) (struct drm_ttm_backend * backend,
 			 unsigned long num_pages, struct page ** pages);
 	void (*clear) (struct drm_ttm_backend * backend);
-	int (*bind) (struct drm_ttm_backend * backend, 
+	int (*bind) (struct drm_ttm_backend * backend,
 		     unsigned long offset, int cached);
 	int (*unbind) (struct drm_ttm_backend * backend);
 	void (*destroy) (struct drm_ttm_backend * backend);
@@ -68,11 +68,11 @@ typedef struct drm_ttm {
 	uint32_t page_flags;
 	unsigned long num_pages;
 	unsigned long aper_offset;
-        atomic_t vma_count;
+	atomic_t vma_count;
 	struct drm_device *dev;
 	int destroy;
-        uint32_t mapping_offset;
-        drm_ttm_backend_t *be;
+	uint32_t mapping_offset;
+	drm_ttm_backend_t *be;
 	enum {
 		ttm_bound,
 		ttm_evicted,
@@ -80,8 +80,8 @@ typedef struct drm_ttm {
 		ttm_unpopulated,
 	} state;
 #ifdef DRM_ODD_MM_COMPAT
-       struct list_head vma_list;
-       struct list_head p_mm_list;
+	struct list_head vma_list;
+	struct list_head p_mm_list;
 #endif
 
 } drm_ttm_t;
@@ -93,7 +93,7 @@ typedef struct drm_ttm_object {
 } drm_ttm_object_t;
 
 extern int drm_ttm_object_create(struct drm_device *dev, unsigned long size,
-				 uint32_t flags, 
+				 uint32_t flags,
 				 drm_ttm_object_t ** ttm_object);
 extern void drm_ttm_object_deref_locked(struct drm_device *dev,
 					drm_ttm_object_t * to);
@@ -102,8 +102,7 @@ extern void drm_ttm_object_deref_unlocked(struct drm_device *dev,
 extern drm_ttm_object_t *drm_lookup_ttm_object(drm_file_t * priv,
 					       uint32_t handle,
 					       int check_owner);
-extern int drm_bind_ttm(drm_ttm_t * ttm, int cached,
-			unsigned long aper_offset);
+extern int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset);
 
 extern int drm_unbind_ttm(drm_ttm_t * ttm);
 
@@ -112,8 +111,7 @@ extern int drm_unbind_ttm(drm_ttm_t * ttm);
  */
 
 extern int drm_evict_ttm(drm_ttm_t * ttm);
-extern void drm_fixup_ttm_caching(drm_ttm_t *ttm);
-
+extern void drm_fixup_ttm_caching(drm_ttm_t * ttm);
 
 /*
  * Destroy a ttm. The user normally calls drmRmMap or a similar IOCTL to do this, 

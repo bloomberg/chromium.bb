@@ -36,23 +36,23 @@
 #define INTEL_AGP_MEM_USER 3
 #define INTEL_AGP_MEM_UCACHED 4
 
-drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev)
+drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t * dev)
 {
-	return drm_agp_init_ttm(dev, NULL, INTEL_AGP_MEM_USER, INTEL_AGP_MEM_UCACHED,
-				INTEL_AGP_MEM_USER);
+	return drm_agp_init_ttm(dev, NULL, INTEL_AGP_MEM_USER,
+				INTEL_AGP_MEM_UCACHED, INTEL_AGP_MEM_USER);
 }
 
-int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *type)
+int i915_fence_types(uint32_t buffer_flags, uint32_t * class, uint32_t * type)
 {
 	*class = 0;
-	if (buffer_flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE)) 
+	if (buffer_flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
 		*type = 3;
 	else
 		*type = 1;
 	return 0;
 }
 
-int i915_invalidate_caches(drm_device_t *dev, uint32_t flags)
+int i915_invalidate_caches(drm_device_t * dev, uint32_t flags)
 {
 	/*
 	 * FIXME: Only emit once per batchbuffer submission.
@@ -65,6 +65,5 @@ int i915_invalidate_caches(drm_device_t *dev, uint32_t flags)
 	if (flags & DRM_BO_FLAG_EXE)
 		flush_cmd |= MI_EXE_FLUSH;
 
-	
 	return i915_emit_mi_flush(dev, flush_cmd);
 }

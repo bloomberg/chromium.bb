@@ -32,7 +32,6 @@
  * Use kmalloc if possible. Otherwise fall back to vmalloc.
  */
 
-
 static void *ttm_alloc(unsigned long size, int type)
 {
 	void *ret = NULL;
@@ -53,15 +52,15 @@ static void *ttm_alloc(unsigned long size, int type)
 
 static void ttm_free(void *pointer, unsigned long size, int type)
 {
-  
-	if ((unsigned long) pointer >= VMALLOC_START &&
-	    (unsigned long) pointer <= VMALLOC_END) {
+
+	if ((unsigned long)pointer >= VMALLOC_START &&
+	    (unsigned long)pointer <= VMALLOC_END) {
 		vfree(pointer);
 	} else {
 		drm_free(pointer, size, type);
 	}
 	drm_free_memctl(size);
-}		
+}
 
 /*
  * Unmap all vma pages from vmas mapping this ttm.
@@ -155,7 +154,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 
 	if (ttm->pages) {
 		drm_buffer_manager_t *bm = &ttm->dev->bm;
-		if (ttm->page_flags & DRM_TTM_PAGE_UNCACHED) 
+		if (ttm->page_flags & DRM_TTM_PAGE_UNCACHED)
 			drm_set_caching(ttm, 0);
 
 		for (i = 0; i < ttm->num_pages; ++i) {
@@ -184,7 +183,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 				--bm->cur_pages;
 			}
 		}
-		ttm_free(ttm->pages, ttm->num_pages*sizeof(*ttm->pages),
+		ttm_free(ttm->pages, ttm->num_pages * sizeof(*ttm->pages),
 			 DRM_MEM_TTM);
 		ttm->pages = NULL;
 	}
@@ -193,20 +192,19 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 	return 0;
 }
 
-static int drm_ttm_populate(drm_ttm_t *ttm)
+static int drm_ttm_populate(drm_ttm_t * ttm)
 {
 	struct page *page;
 	unsigned long i;
 	drm_buffer_manager_t *bm;
 	drm_ttm_backend_t *be;
 
-
-	if (ttm->state != ttm_unpopulated) 
+	if (ttm->state != ttm_unpopulated)
 		return 0;
-	
+
 	bm = &ttm->dev->bm;
 	be = ttm->be;
-	for (i=0; i<ttm->num_pages; ++i) {
+	for (i = 0; i < ttm->num_pages; ++i) {
 		page = ttm->pages[i];
 		if (!page) {
 			if (drm_alloc_memctl(PAGE_SIZE)) {
@@ -229,9 +227,7 @@ static int drm_ttm_populate(drm_ttm_t *ttm)
 	be->populate(be, ttm->num_pages, ttm->pages);
 	ttm->state = ttm_unbound;
 	return 0;
-}		
-	       
-
+}
 
 /*
  * Initialize a ttm.
@@ -266,7 +262,7 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 	 * Account also for AGP module memory usage.
 	 */
 
-	ttm->pages = ttm_alloc(ttm->num_pages * sizeof(*ttm->pages), 
+	ttm->pages = ttm_alloc(ttm->num_pages * sizeof(*ttm->pages),
 			       DRM_MEM_TTM);
 	if (!ttm->pages) {
 		drm_destroy_ttm(ttm);
@@ -321,13 +317,12 @@ void drm_fixup_ttm_caching(drm_ttm_t * ttm)
 		ttm->state = ttm_unbound;
 	}
 }
-		
 
 int drm_unbind_ttm(drm_ttm_t * ttm)
 {
 	int ret = 0;
 
-	if (ttm->state == ttm_bound) 
+	if (ttm->state == ttm_bound)
 		ret = drm_evict_ttm(ttm);
 
 	if (ret)
@@ -337,8 +332,7 @@ int drm_unbind_ttm(drm_ttm_t * ttm)
 	return 0;
 }
 
-int drm_bind_ttm(drm_ttm_t * ttm, int cached,
-		 unsigned long aper_offset)
+int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset)
 {
 
 	int ret = 0;
@@ -350,7 +344,7 @@ int drm_bind_ttm(drm_ttm_t * ttm, int cached,
 		return 0;
 
 	be = ttm->be;
-	
+
 	ret = drm_ttm_populate(ttm);
 	if (ret)
 		return ret;
@@ -361,7 +355,7 @@ int drm_bind_ttm(drm_ttm_t * ttm, int cached,
 
 		drm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
 	}
-#ifdef DRM_ODD_MM_COMPAT 
+#ifdef DRM_ODD_MM_COMPAT
 	else if (ttm->state == ttm_evicted && !cached) {
 		ret = drm_ttm_lock_mm(ttm);
 		if (ret)
@@ -378,18 +372,17 @@ int drm_bind_ttm(drm_ttm_t * ttm, int cached,
 		return ret;
 	}
 
-			
 	ttm->aper_offset = aper_offset;
 	ttm->state = ttm_bound;
 
 #ifdef DRM_ODD_MM_COMPAT
 	if (be->needs_ub_cache_adjust(be)) {
 		ret = drm_ttm_remap_bound(ttm);
-		if (ret) 
+		if (ret)
 			return ret;
 	}
 #endif
-			
+
 	return 0;
 }
 
@@ -448,8 +441,7 @@ void drm_ttm_object_deref_unlocked(drm_device_t * dev, drm_ttm_object_t * to)
  */
 
 int drm_ttm_object_create(drm_device_t * dev, unsigned long size,
-			  uint32_t flags, 
-			  drm_ttm_object_t ** ttm_object)
+			  uint32_t flags, drm_ttm_object_t ** ttm_object)
 {
 	drm_ttm_object_t *object;
 	drm_map_list_t *list;
@@ -476,21 +468,20 @@ int drm_ttm_object_create(drm_device_t * dev, unsigned long size,
 		return -ENOMEM;
 	}
 
-	map->offset = (unsigned long) ttm;
+	map->offset = (unsigned long)ttm;
 	map->type = _DRM_TTM;
 	map->flags = _DRM_REMOVABLE;
 	map->size = ttm->num_pages * PAGE_SIZE;
 	map->handle = (void *)object;
 
 	list->file_offset_node = drm_mm_search_free(&dev->offset_manager,
-						    ttm->num_pages,
-						    0,0);
+						    ttm->num_pages, 0, 0);
 	if (!list->file_offset_node) {
 		drm_ttm_object_remove(dev, object);
 		return -ENOMEM;
 	}
 	list->file_offset_node = drm_mm_get_block(list->file_offset_node,
-						  ttm->num_pages,0);
+						  ttm->num_pages, 0);
 
 	list->hash.key = list->file_offset_node->start;
 

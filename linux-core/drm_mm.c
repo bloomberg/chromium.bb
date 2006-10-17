@@ -59,9 +59,9 @@ drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 		return parent;
 	} else {
 
-		child = (drm_mm_node_t *) 
-			drm_ctl_cache_alloc(drm_cache.mm, sizeof(*child), 
-					    GFP_KERNEL);
+		child = (drm_mm_node_t *)
+		    drm_ctl_cache_alloc(drm_cache.mm, sizeof(*child),
+					GFP_KERNEL);
 		if (!child)
 			return NULL;
 
@@ -111,8 +111,8 @@ void drm_mm_put_block(drm_mm_node_t * cur)
 				prev_node->size += next_node->size;
 				list_del(&next_node->ml_entry);
 				list_del(&next_node->fl_entry);
-				drm_ctl_cache_free(drm_cache.mm, 
-						   sizeof(*next_node), 
+				drm_ctl_cache_free(drm_cache.mm,
+						   sizeof(*next_node),
 						   next_node);
 			} else {
 				next_node->size += cur->size;
@@ -161,9 +161,9 @@ drm_mm_node_t *drm_mm_search_free(const drm_mm_t * mm,
 	return best;
 }
 
-int drm_mm_clean(drm_mm_t *mm) 
+int drm_mm_clean(drm_mm_t * mm)
 {
-        struct list_head *head = &mm->root_node.ml_entry;
+	struct list_head *head = &mm->root_node.ml_entry;
 
 	return (head->next->next == head);
 }
@@ -175,9 +175,8 @@ int drm_mm_init(drm_mm_t * mm, unsigned long start, unsigned long size)
 	INIT_LIST_HEAD(&mm->root_node.ml_entry);
 	INIT_LIST_HEAD(&mm->root_node.fl_entry);
 
-
-	child = (drm_mm_node_t *) 
-		drm_ctl_cache_alloc(drm_cache.mm, sizeof(*child), GFP_KERNEL);
+	child = (drm_mm_node_t *)
+	    drm_ctl_cache_alloc(drm_cache.mm, sizeof(*child), GFP_KERNEL);
 
 	if (!child)
 		return -ENOMEM;

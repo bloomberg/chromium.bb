@@ -62,7 +62,7 @@ static void i915_perform_flush(drm_device_t * dev)
 		diff = sequence - fm->last_exe_flush;
 		if (diff < driver->wrap_diff && diff != 0) {
 			drm_fence_handler(dev, sequence, DRM_FENCE_TYPE_EXE);
-		} 
+		}
 
 		diff = sequence - fm->exe_flush_sequence;
 		if (diff < driver->wrap_diff) {
@@ -85,7 +85,7 @@ static void i915_perform_flush(drm_device_t * dev)
 			flush_sequence = dev_priv->flush_sequence;
 			dev_priv->flush_pending = 0;
 			drm_fence_handler(dev, flush_sequence, flush_flags);
-		} 
+		}
 	}
 
 	if (fm->pending_flush && !dev_priv->flush_pending) {
@@ -105,7 +105,7 @@ static void i915_perform_flush(drm_device_t * dev)
 			flush_sequence = dev_priv->flush_sequence;
 			dev_priv->flush_pending = 0;
 			drm_fence_handler(dev, flush_sequence, flush_flags);
-		} 
+		}
 	}
 
 }
@@ -121,15 +121,15 @@ void i915_poke_flush(drm_device_t * dev)
 }
 
 int i915_fence_emit_sequence(drm_device_t * dev, uint32_t flags,
-			     uint32_t * sequence, uint32_t *native_type)
+			     uint32_t * sequence, uint32_t * native_type)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	i915_emit_irq(dev);
 	*sequence = (uint32_t) dev_priv->counter;
-	*native_type = DRM_FENCE_TYPE_EXE;  
-	if (flags & DRM_I915_FENCE_FLAG_FLUSHED) 
+	*native_type = DRM_FENCE_TYPE_EXE;
+	if (flags & DRM_I915_FENCE_FLAG_FLUSHED)
 		*native_type |= DRM_I915_FENCE_TYPE_RW;
-	       
+
 	return 0;
 }
 
@@ -141,4 +141,3 @@ void i915_fence_handler(drm_device_t * dev)
 	i915_perform_flush(dev);
 	write_unlock(&fm->lock);
 }
-
