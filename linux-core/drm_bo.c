@@ -514,8 +514,8 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 		if (ret)
 			goto out;
 		mutex_lock(&dev->struct_mutex);
-		list_del(&bo->lru_ttm);
-		list_add_tail(&bo->lru_ttm, &bm->lru[DRM_BO_MEM_LOCAL]);
+		list_del_init(&bo->lru_ttm);
+		drm_bo_add_to_lru(bo, bm);
 		mutex_unlock(&dev->struct_mutex);
 	}
 #if 0
@@ -658,6 +658,11 @@ static int drm_bo_new_flags(drm_device_t * dev,
 			new_mask &= ~drm_bo_type_flags(i);
 	}
 
+	if ((new_mask & DRM_BO_FLAG_NO_EVICT ) && !DRM_SUSER(DRM_CURPROC)) {
+		DRM_ERROR("DRM_BO_FLAG_NO_EVICT is only available to priviliged "
+			  "processes\n");
+		return -EPERM;
+	}
 	if (new_mask & DRM_BO_FLAG_BIND_CACHED) {
 		if (((new_mask & DRM_BO_FLAG_MEM_TT) && 
 		     !driver->cached[DRM_BO_MEM_TT]) &&
@@ -1085,7 +1090,7 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
  */
 
 static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
-			      int no_wait)
+			      int no_wait, int force_no_move)
 {
 	int ret = 0;
 
@@ -1118,7 +1123,7 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
 		if (ret)
 			return ret;
 	} else {
-		drm_move_tt_to_local(bo, 0, 1);
+		drm_move_tt_to_local(bo, 0, force_no_move);
 	}
 
 	return 0;
@@ -1153,8 +1158,6 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	
 	/*
 	 * Move out if we need to change caching policy.
-	 * FIXME: Failing is strictly not needed for NO_MOVE buffers.
-	 * We just have to implement NO_MOVE buffers.
 	 */
 
 	if ((flag_diff & DRM_BO_FLAG_BIND_CACHED) && 
@@ -1164,7 +1167,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 				  "pinned buffer.\n");
 			return -EINVAL;
 		}			
-		ret = drm_bo_move_buffer(bo, DRM_BO_FLAG_MEM_LOCAL, no_wait);
+		ret = drm_bo_move_buffer(bo, DRM_BO_FLAG_MEM_LOCAL, no_wait, 0);
 		if (ret) {
 			if (ret != -EAGAIN)
 				DRM_ERROR("Failed moving buffer.\n");
@@ -1175,11 +1178,30 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	flag_diff = (new_flags ^ bo->flags);
 
 	/*
+	 * Check whether we dropped no_move policy, and in that case,
+	 * release reserved manager regions.
+	 */
+
+	if ((flag_diff & DRM_BO_FLAG_NO_MOVE) && 
+	    !(new_flags & DRM_BO_FLAG_NO_MOVE)) {
+		mutex_lock(&dev->struct_mutex);
+		if (bo->node_ttm) {
+			drm_mm_put_block(bo->node_ttm);
+			bo->node_ttm = NULL;
+		}
+		if (bo->node_card) {
+			drm_mm_put_block(bo->node_card);
+			bo->node_card = NULL;
+		}
+		mutex_unlock(&dev->struct_mutex);
+	}
+
+	/*
 	 * Check whether we need to move buffer.
 	 */
 
 	if ((bo->type != drm_bo_type_fake) && (flag_diff & DRM_BO_MASK_MEM)) {
-		ret = drm_bo_move_buffer(bo, new_flags, no_wait);
+		ret = drm_bo_move_buffer(bo, new_flags, no_wait, 1);
 		if (ret) {
 			if (ret != -EAGAIN)
 				DRM_ERROR("Failed moving buffer.\n");
@@ -1207,7 +1229,6 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		list_del_init(&bo->lru_card);
 		drm_bo_add_to_lru(bo, bm);
 		mutex_unlock(&dev->struct_mutex);
-		DRM_FLAG_MASKED(bo->flags, new_flags, DRM_BO_FLAG_NO_EVICT);
 	}
 
 	bo->flags = new_flags;
@@ -1586,34 +1607,51 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
  * dev->struct_sem locked.
  */
 
-static void drm_bo_force_list_clean(drm_device_t *dev,
-				    struct list_head *head, 
-				    unsigned mem_type)
+static int drm_bo_force_list_clean(drm_device_t *dev,
+				   struct list_head *head, 
+				   unsigned mem_type,
+				   int force_no_move,
+				   int allow_errors)
 {
 	drm_buffer_manager_t *bm = &dev->bm;
-	struct list_head *l;
+	struct list_head *list, *next, *prev;
 	drm_buffer_object_t *entry;
 	int ret;
+	int clean;
 
-	l = head->next;
-	while (l != head) {
-		entry = drm_bo_entry(l, mem_type);
-			
+ retry:
+	clean = 1;
+	list_for_each_safe(list, next, head) {
+		prev = list->prev;
+		entry = drm_bo_entry(list, mem_type);			
 		atomic_inc(&entry->usage);
 		mutex_unlock(&dev->struct_mutex);
 		mutex_lock(&entry->mutex);
+		mutex_lock(&dev->struct_mutex);
 
-		/*
-		 * Expire the fence.
-		 */
+		if (prev != list->prev || next != list->next) {
+			mutex_unlock(&entry->mutex);
+			goto retry;
+		}
+		if (drm_bo_mm_node(entry, mem_type)) {
+			clean = 0;
 
-		if (entry->fence) {
-			if (bm->nice_mode) {
+			/*
+			 * Expire the fence.
+			 */
+			
+			mutex_unlock(&dev->struct_mutex);
+			if (entry->fence && bm->nice_mode) {
 				unsigned long _end = jiffies + 3*DRM_HZ;
 				do {
 					ret = drm_bo_wait(entry, 0, 1, 0);
+					if (ret && allow_errors) {
+						if (ret == -EINTR)
+							ret = -EAGAIN;
+						goto out_err;
+					}
 				} while (ret && !time_after_eq(jiffies, _end));
-
+				
 				if (entry->fence) {
 					bm->nice_mode = 0;
 					DRM_ERROR("Detected GPU hang or "
@@ -1621,23 +1659,47 @@ static void drm_bo_force_list_clean(drm_device_t *dev,
 						  "Evicting waiting buffers\n");
 				}
 			}
-
 			if (entry->fence) {
-				drm_fence_usage_deref_unlocked(dev, 
-							       entry->fence);
+				drm_fence_usage_deref_unlocked(dev, entry->fence);
 				entry->fence = NULL;
 			}
-		}
-		ret = drm_bo_evict(entry, mem_type, 0, 1);
-		if (ret) {
-			DRM_ERROR("Aargh. Eviction failed.\n");
+
+			DRM_MASK_VAL(entry->priv_flags, _DRM_BO_FLAG_UNFENCED, 0);
+
+			if (force_no_move) {
+				DRM_MASK_VAL(entry->flags, DRM_BO_FLAG_NO_MOVE, 0);
+			}
+			if (entry->flags & DRM_BO_FLAG_NO_EVICT) {
+				DRM_ERROR("A DRM_BO_NO_EVICT buffer present at "
+					  "cleanup. Removing flag and evicting.\n");
+				entry->flags &= ~DRM_BO_FLAG_NO_EVICT;
+				entry->mask &= ~DRM_BO_FLAG_NO_EVICT;
+			}
+
+			ret = drm_bo_evict(entry, mem_type, 1, force_no_move);
+			if (ret) {
+				if (allow_errors) {
+					goto out_err;
+				} else {
+					DRM_ERROR("Aargh. Eviction failed.\n");
+				}
+			}
+			mutex_lock(&dev->struct_mutex);
 		}
 		mutex_unlock(&entry->mutex);
-		mutex_lock(&dev->struct_mutex);
-
 		drm_bo_usage_deref_locked(dev, entry);
-		l = head->next;
+		if (prev != list->prev || next != list->next) {
+			goto retry;
+		}		
 	}
+	if (!clean)
+		goto retry;
+	return 0;
+ out_err:
+	mutex_unlock(&entry->mutex);
+	drm_bo_usage_deref_unlocked(dev, entry);
+	mutex_lock(&dev->struct_mutex);
+	return ret;
 }
 
 int drm_bo_clean_mm(drm_device_t * dev, unsigned mem_type)
@@ -1660,8 +1722,21 @@ int drm_bo_clean_mm(drm_device_t * dev, unsigned mem_type)
 
 	ret = 0;
 	if (mem_type > 0) {
-		drm_bo_force_list_clean(dev, &bm->lru[mem_type], 1);
-		drm_bo_force_list_clean(dev, &bm->pinned[mem_type], 1);
+
+		/*
+		 * Throw out unfenced buffers.
+		 */
+
+		drm_bo_force_list_clean(dev, &bm->unfenced, mem_type, 1, 0);
+
+		/*
+		 * Throw out evicted no-move buffers.
+		 */
+
+		drm_bo_force_list_clean(dev, &bm->pinned[DRM_BO_MEM_LOCAL], 
+					mem_type, 1, 0);
+		drm_bo_force_list_clean(dev, &bm->lru[mem_type], mem_type, 1, 0);
+		drm_bo_force_list_clean(dev, &bm->pinned[mem_type], mem_type, 1, 0);
 
 		if (drm_mm_clean(&bm->manager[mem_type])) {
 			drm_mm_takedown(&bm->manager[mem_type]);
@@ -1672,6 +1747,22 @@ int drm_bo_clean_mm(drm_device_t * dev, unsigned mem_type)
 
 	return ret;
 }
+
+static int drm_bo_lock_mm(drm_device_t *dev, unsigned mem_type)
+{
+	int ret;
+	drm_buffer_manager_t *bm = &dev->bm;
+	
+	ret = drm_bo_force_list_clean(dev, &bm->unfenced, mem_type, 0, 1);  
+ 	if (ret)
+		return ret;
+	ret = drm_bo_force_list_clean(dev, &bm->lru[mem_type], mem_type, 0, 1);  	
+	if (ret)
+		return ret;
+	ret = drm_bo_force_list_clean(dev, &bm->pinned[mem_type], mem_type, 0, 1);  
+	return ret;
+}
+
 
 static int drm_bo_init_mm(drm_device_t *dev,
 			  unsigned type,
@@ -1711,20 +1802,6 @@ static int drm_bo_init_mm(drm_device_t *dev,
 }
 
 
-/*
- * call dev->struct_mutex locked;
- */
-
-static void drm_bo_release_unfenced(drm_buffer_manager_t *bm)
-{
-	struct list_head *list, *next;
-
-	list_for_each_safe(list, next, &bm->unfenced) {
-		list_del(list);
-		list_add_tail(list, &bm->lru[0]);
-	}
-}
-
 int drm_bo_driver_finish(drm_device_t *dev)
 {
 	drm_buffer_manager_t *bm = &dev->bm;
@@ -1736,7 +1813,6 @@ int drm_bo_driver_finish(drm_device_t *dev)
 
 	if (!bm->initialized) 
 		goto out;
-	drm_bo_release_unfenced(bm);
 
 	while(i--) {
 		if (bm->has_type[i]) {
@@ -1877,6 +1953,18 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		}
 		bm->max_pages = arg.req.p_size;
 	}
+	case mm_lock:
+	        LOCK_TEST_WITH_RETURN(dev, filp);
+		mutex_lock(&dev->bm.init_mutex);
+		mutex_lock(&dev->struct_mutex);
+		ret = drm_bo_lock_mm(dev, arg.req.mem_type);
+		break;
+	case mm_unlock:
+	        LOCK_TEST_WITH_RETURN(dev, filp);
+		mutex_lock(&dev->bm.init_mutex);
+		mutex_lock(&dev->struct_mutex);
+		ret = 0;
+		break;
 	default:
 		DRM_ERROR("Function not implemented yet\n");
 		return -EINVAL;

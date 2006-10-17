@@ -3202,4 +3202,37 @@ int drmMMMaxLockedSize(int fd, unsigned long maxLockedSize)
     return 0;	
 }
 
+int drmMMLock(int fd, unsigned memType)
+{
+    drm_mm_init_arg_t arg;
+    int ret;
+
+    memset(&arg, 0, sizeof(arg));
+    arg.req.op = mm_lock;
+    arg.req.mem_type = memType;
+
+    do{
+	ret = ioctl(fd, DRM_IOCTL_MM_INIT, &arg);
+    } while (ret && errno == EAGAIN);
+    
+    return ret;	
+}
+
+int drmMMUnlock(int fd, unsigned memType)
+{
+    drm_mm_init_arg_t arg;
+    int ret;
+
+    memset(&arg, 0, sizeof(arg));
+    arg.req.op = mm_unlock;
+    arg.req.mem_type = memType;
+
+    do{
+	ret = ioctl(fd, DRM_IOCTL_MM_INIT, &arg);
+    } while (ret && errno == EAGAIN);
+    
+    return ret;	
+}
+
+
 #endif

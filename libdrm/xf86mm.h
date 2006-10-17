@@ -199,7 +199,8 @@ extern int drmMMInit(int fd, unsigned long pOffset, unsigned long pSize,
 		     unsigned memType);
 extern int drmMMTakedown(int fd, unsigned memType);
 extern int drmMMMaxLockedSize(int fd, unsigned long maxLockedSize);
-
+extern int drmMMLock(int fd, unsigned memType);
+extern int drmMMUnlock(int fd, unsigned memType);
 
 
 #endif
