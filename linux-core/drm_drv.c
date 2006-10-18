@@ -119,11 +119,16 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_SG_FREE)] = {drm_sg_free, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 
 	[DRM_IOCTL_NR(DRM_IOCTL_WAIT_VBLANK)] = {drm_wait_vblank, 0},
+	[DRM_IOCTL_NR(DRM_IOCTL_FENCE)] = {drm_fence_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_IOCTL_BUFOBJ)] = {drm_bo_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_IOCTL_MM_INIT)] = {drm_mm_init_ioctl, 
+					     DRM_AUTH },
 
 	[DRM_IOCTL_NR(DRM_IOCTL_UPDATE_DRAW)] = {drm_update_drawable_info, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 };
 
 #define DRIVER_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )
+
 
 /**
  * Take down the DRM device.
@@ -142,6 +147,11 @@ int drm_lastclose(drm_device_t * dev)
 	int i;
 
 	DRM_DEBUG("\n");
+
+	if (drm_bo_driver_finish(dev)) {
+		DRM_ERROR("DRM memory manager still busy. "
+			  "System is unstable. Please reboot.\n");
+	}
 
 	if (dev->driver->lastclose)
 		dev->driver->lastclose(dev);
@@ -218,7 +228,7 @@ int drm_lastclose(drm_device_t * dev)
 	if (dev->vmalist) {
 		for (vma = dev->vmalist; vma; vma = vma_next) {
 			vma_next = vma->next;
-			drm_free(vma, sizeof(*vma), DRM_MEM_VMAS);
+			drm_ctl_free(vma, sizeof(*vma), DRM_MEM_VMAS);
 		}
 		dev->vmalist = NULL;
 	}
@@ -256,6 +266,7 @@ int drm_lastclose(drm_device_t * dev)
 		dev->lock.filp = NULL;
 		wake_up_interruptible(&dev->lock.lock_queue);
 	}
+	dev->dev_mapping = NULL;
 	mutex_unlock(&dev->struct_mutex);
 
 	DRM_DEBUG("lastclose completed\n");
@@ -360,11 +371,14 @@ static void drm_cleanup(drm_device_t * dev)
 	}
 
 	drm_lastclose(dev);
+	drm_fence_manager_takedown(dev);
 
 	if (dev->maplist) {
 		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		dev->maplist = NULL;
 		drm_ht_remove(&dev->map_hash);
+		drm_mm_takedown(&dev->offset_manager);
+		drm_ht_remove(&dev->object_hash);
 	}
 
 	if (!drm_fb_loaded)
@@ -419,6 +433,9 @@ void drm_exit(struct drm_driver *driver)
 		}
 	} else
 		pci_unregister_driver(&driver->pci_driver);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+	free_nopage_retry();
+#endif
 	DRM_INFO("Module unloaded\n");
 }
 EXPORT_SYMBOL(drm_exit);
@@ -429,10 +446,60 @@ static struct file_operations drm_stub_fops = {
 	.open = drm_stub_open
 };
 
+static int drm_create_memory_caches(void)
+{
+	drm_cache.mm = kmem_cache_create("drm_mm_node_t", 
+					 sizeof(drm_mm_node_t),
+					 0,
+					 SLAB_HWCACHE_ALIGN,
+					 NULL,NULL);
+	if (!drm_cache.mm)
+		return -ENOMEM;
+
+	drm_cache.fence_object= kmem_cache_create("drm_fence_object_t", 
+						  sizeof(drm_fence_object_t),
+						  0,
+						  SLAB_HWCACHE_ALIGN,
+						  NULL,NULL);
+	if (!drm_cache.fence_object)
+		return -ENOMEM;
+
+	return 0;
+}
+
+static void drm_free_mem_cache(kmem_cache_t *cache, 
+			       const char *name)
+{
+	if (!cache)
+		return;
+	if (kmem_cache_destroy(cache)) {
+		DRM_ERROR("Warning! DRM is leaking %s memory.\n",
+			  name);
+	}
+}
+
+static void drm_free_memory_caches(void )
+{
+	
+	drm_free_mem_cache(drm_cache.fence_object, "fence object");
+	drm_cache.fence_object = NULL;
+	drm_free_mem_cache(drm_cache.mm, "memory manager block");
+	drm_cache.mm = NULL;
+}
+
+
 static int __init drm_core_init(void)
 {
-	int ret = -ENOMEM;
+	int ret;
+	struct sysinfo si;
+	
+	si_meminfo(&si);
+	drm_init_memctl(si.totalram/2, si.totalram*3/4);
+	ret = drm_create_memory_caches();
+	if (ret)
+		goto err_p1;
 
+	ret = -ENOMEM;
 	drm_cards_limit =
 	    (drm_cards_limit < DRM_MAX_MINOR + 1 ? drm_cards_limit : DRM_MAX_MINOR + 1);
 	drm_heads = drm_calloc(drm_cards_limit, sizeof(*drm_heads), DRM_MEM_STUB);
@@ -468,11 +535,13 @@ err_p2:
 	unregister_chrdev(DRM_MAJOR, "drm");
 	drm_free(drm_heads, sizeof(*drm_heads) * drm_cards_limit, DRM_MEM_STUB);
 err_p1:
+	drm_free_memory_caches();
 	return ret;
 }
 
 static void __exit drm_core_exit(void)
 {
+	drm_free_memory_caches();
 	remove_proc_entry("dri", NULL);
 	drm_sysfs_destroy(drm_class);
 
@@ -549,13 +618,18 @@ int drm_ioctl(struct inode *inode, struct file *filp,
 		  current->pid, cmd, nr, (long)old_encode_dev(priv->head->device),
 		  priv->authenticated);
 
-	if (nr < DRIVER_IOCTL_COUNT)
-		ioctl = &drm_ioctls[nr];
-	else if ((nr >= DRM_COMMAND_BASE)
-		 && (nr < DRM_COMMAND_BASE + dev->driver->num_ioctls))
-		ioctl = &dev->driver->ioctls[nr - DRM_COMMAND_BASE];
-	else
+	if (nr >= DRIVER_IOCTL_COUNT && 
+	    (nr < DRM_COMMAND_BASE || nr >= DRM_COMMAND_END))
 		goto err_i1;
+	if ((nr >= DRM_COMMAND_BASE) && (nr < DRM_COMMAND_END)
+		&& (nr < DRM_COMMAND_BASE + dev->driver->num_ioctls))
+			ioctl = &dev->driver->ioctls[nr - DRM_COMMAND_BASE];
+	else if (nr >= DRM_COMMAND_END || nr < DRM_COMMAND_BASE)	
+		ioctl = &drm_ioctls[nr];
+	else 
+		goto err_i1;
+
+
 
 	func = ioctl->func;
 	if ((nr == DRM_IOCTL_NR(DRM_IOCTL_DMA)) && dev->driver->dma_ioctl)	/* Local override? */

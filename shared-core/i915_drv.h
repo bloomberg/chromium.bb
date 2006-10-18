@@ -35,9 +35,9 @@
 
 #define DRIVER_AUTHOR		"Tungsten Graphics, Inc."
 
-#define DRIVER_NAME		"i915"
+#define DRIVER_NAME		"i915-mm"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20060119"
+#define DRIVER_DATE		"20060929"
 
 /* Interface history:
  *
@@ -50,8 +50,13 @@
  *      - Support vertical blank on secondary display pipe
  */
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		6
+#define DRIVER_MINOR		7
 #define DRIVER_PATCHLEVEL	0
+
+#if defined(__linux__)
+#define I915_HAVE_FENCE
+#define I915_HAVE_BUFFER
+#endif
 
 typedef struct _drm_i915_ring_buffer {
 	int tail_mask;
@@ -90,7 +95,7 @@ typedef struct drm_i915_private {
 	drm_dma_handle_t *status_page_dmah;
 	void *hw_status_page;
 	dma_addr_t dma_status_page;
-	unsigned long counter;
+	uint32_t counter;
 
 	unsigned int cpp;
 	int back_offset;
@@ -108,6 +113,18 @@ typedef struct drm_i915_private {
 	struct mem_block *agp_heap;
 	unsigned int sr01, adpa, ppcr, dvob, dvoc, lvds;
 	int vblank_pipe;
+        spinlock_t user_irq_lock;
+        int user_irq_refcount;
+        int fence_irq_on;
+        uint32_t irq_enable_reg;
+        int irq_enabled;
+
+#ifdef I915_HAVE_FENCE
+        uint32_t flush_sequence;
+	uint32_t flush_flags;
+	uint32_t flush_pending;
+	uint32_t saved_flush_status;
+#endif
 
 	spinlock_t swaps_lock;
 	drm_i915_vbl_swap_t vbl_swaps;
@@ -125,6 +142,8 @@ extern void i915_driver_preclose(drm_device_t * dev, DRMFILE filp);
 extern int i915_driver_device_is_agp(drm_device_t * dev);
 extern long i915_compat_ioctl(struct file *filp, unsigned int cmd,
 			      unsigned long arg);
+extern int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush);
+
 
 /* i915_irq.c */
 extern int i915_irq_emit(DRM_IOCTL_ARGS);
@@ -138,6 +157,9 @@ extern void i915_driver_irq_postinstall(drm_device_t * dev);
 extern void i915_driver_irq_uninstall(drm_device_t * dev);
 extern int i915_vblank_pipe_set(DRM_IOCTL_ARGS);
 extern int i915_vblank_pipe_get(DRM_IOCTL_ARGS);
+extern int i915_emit_irq(drm_device_t * dev);
+extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
+extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
 extern int i915_vblank_swap(DRM_IOCTL_ARGS);
 
 /* i915_mem.c */
@@ -148,6 +170,23 @@ extern int i915_mem_destroy_heap(DRM_IOCTL_ARGS);
 extern void i915_mem_takedown(struct mem_block **heap);
 extern void i915_mem_release(drm_device_t * dev,
 			     DRMFILE filp, struct mem_block *heap);
+#ifdef I915_HAVE_FENCE
+/* i915_fence.c */
+
+
+extern void i915_fence_handler(drm_device_t *dev);
+extern int i915_fence_emit_sequence(drm_device_t *dev, uint32_t flags,
+				    uint32_t *sequence, 
+				    uint32_t *native_type);
+extern void i915_poke_flush(drm_device_t *dev);
+#endif
+
+#ifdef I915_HAVE_BUFFER
+/* i915_buffer.c */
+extern drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev);
+extern int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *type);
+extern int i915_invalidate_caches(drm_device_t *dev, uint32_t buffer_flags);
+#endif
 
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
 #define I915_WRITE(reg,val)     DRM_WRITE32(dev_priv->mmio_map, (reg), (val))
@@ -198,6 +237,11 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define INST_OP_FLUSH        0x02000000
 #define INST_FLUSH_MAP_CACHE 0x00000001
 
+#define CMD_MI_FLUSH         (0x04 << 23)
+#define MI_NO_WRITE_FLUSH    (1 << 2)
+#define MI_READ_FLUSH        (1 << 0)
+#define MI_EXE_FLUSH         (1 << 1)
+
 #define BB1_START_ADDR_MASK   (~0x7)
 #define BB1_PROTECTED         (1<<0)
 #define BB1_UNPROTECTED       (0<<0)
@@ -207,6 +251,7 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define I915REG_INT_IDENTITY_R	0x020a4
 #define I915REG_INT_MASK_R 	0x020a8
 #define I915REG_INT_ENABLE_R	0x020a0
+#define I915REG_INSTPM	        0x020c0
 
 #define SRX_INDEX		0x3c4
 #define SRX_DATA		0x3c5
@@ -292,6 +337,6 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 #define CMD_OP_DESTBUFFER_INFO	 ((0x3<<29)|(0x1d<<24)|(0x8e<<16)|1)
 
-#define READ_BREADCRUMB(dev_priv)  (((u32*)(dev_priv->hw_status_page))[5])
-
+#define READ_BREADCRUMB(dev_priv)  (((volatile u32*)(dev_priv->hw_status_page))[5])
+#define READ_HWSP(dev_priv, reg)  (((volatile u32*)(dev_priv->hw_status_page))[reg])
 #endif

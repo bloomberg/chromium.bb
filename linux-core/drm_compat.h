@@ -31,6 +31,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <asm/agp.h>
 #ifndef _DRM_COMPAT_H_
 #define _DRM_COMPAT_H_
 
@@ -227,4 +228,148 @@ static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from
 }
 #endif
 
+#include <linux/mm.h>
+#include <asm/page.h>
+
+#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)) && \
+     (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))) 
+#define DRM_ODD_MM_COMPAT
+#endif
+
+
+
+/*
+ * Flush relevant caches and clear a VMA structure so that page references 
+ * will cause a page fault. Don't flush tlbs.
+ */
+
+extern void drm_clear_vma(struct vm_area_struct *vma,
+			  unsigned long addr, unsigned long end);
+
+/*
+ * Return the PTE protection map entries for the VMA flags given by 
+ * flags. This is a functional interface to the kernel's protection map.
+ */
+
+extern pgprot_t vm_get_page_prot(unsigned long vm_flags);
+
+/*
+ * These are similar to the current kernel gatt pages allocator, only that we
+ * want a struct page pointer instead of a virtual address. This allows for pages
+ * that are not in the kernel linear map.
+ */
+
+#define drm_alloc_gatt_pages(order) ({					\
+			void *_virt = alloc_gatt_pages(order);		\
+			((_virt) ? virt_to_page(_virt) : NULL);})
+#define drm_free_gatt_pages(pages, order) free_gatt_pages(page_address(pages), order) 
+
+#if defined(CONFIG_X86) && (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+
+/*
+ * These are too slow in earlier kernels.
+ */
+
+extern int drm_unmap_page_from_agp(struct page *page);
+extern int drm_map_page_into_agp(struct page *page);
+
+#define map_page_into_agp drm_map_page_into_agp
+#define unmap_page_from_agp drm_unmap_page_from_agp
+#endif
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+
+/*
+ * Hopefully, real NOPAGE_RETRY functionality will be in 2.6.19. 
+ * For now, just return a dummy page that we've allocated out of 
+ * static space. The page will be put by do_nopage() since we've already
+ * filled out the pte.
+ */
+
+struct fault_data {
+	struct vm_area_struct *vma;
+	unsigned long address;
+	pgoff_t pgoff;
+	unsigned int flags;
+	
+	int type;
+};
+
+extern struct page *get_nopage_retry(void);
+extern void free_nopage_retry(void);
+
+#define NOPAGE_REFAULT get_nopage_retry()
+
+extern int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr, 
+			 unsigned long pfn, pgprot_t pgprot);
+
+extern struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
+				      unsigned long address, 
+				      int *type);
+
+extern struct page *drm_vm_ttm_fault(struct vm_area_struct *vma, 
+				     struct fault_data *data);
+
+#endif
+
+#ifdef DRM_ODD_MM_COMPAT
+
+struct drm_ttm;
+
+
+/*
+ * Add a vma to the ttm vma list, and the 
+ * process mm pointer to the ttm mm list. Needs the ttm mutex.
+ */
+
+extern int drm_ttm_add_vma(struct drm_ttm * ttm, 
+			   struct vm_area_struct *vma);
+/*
+ * Delete a vma and the corresponding mm pointer from the
+ * ttm lists. Needs the ttm mutex.
+ */
+extern void drm_ttm_delete_vma(struct drm_ttm * ttm, 
+			       struct vm_area_struct *vma);
+
+/*
+ * Attempts to lock all relevant mmap_sems for a ttm, while
+ * not releasing the ttm mutex. May return -EAGAIN to avoid 
+ * deadlocks. In that case the caller shall release the ttm mutex,
+ * schedule() and try again.
+ */
+
+extern int drm_ttm_lock_mm(struct drm_ttm * ttm);
+
+/*
+ * Unlock all relevant mmap_sems for a ttm.
+ */
+extern void drm_ttm_unlock_mm(struct drm_ttm * ttm);
+
+/*
+ * If the ttm was bound to the aperture, this function shall be called
+ * with all relevant mmap sems held. It deletes the flag VM_PFNMAP from all
+ * vmas mapping this ttm. This is needed just after unmapping the ptes of
+ * the vma, otherwise the do_nopage() function will bug :(. The function
+ * releases the mmap_sems for this ttm.
+ */
+
+extern void drm_ttm_finish_unmap(struct drm_ttm *ttm);
+
+/*
+ * Remap all vmas of this ttm using io_remap_pfn_range. We cannot 
+ * fault these pfns in, because the first one will set the vma VM_PFNMAP
+ * flag, which will make the next fault bug in do_nopage(). The function
+ * releases the mmap_sems for this ttm.
+ */
+
+extern int drm_ttm_remap_bound(struct drm_ttm *ttm);
+
+
+/*
+ * Remap a vma for a bound ttm. Call with the ttm mutex held and
+ * the relevant mmap_sem locked.
+ */
+extern int drm_ttm_map_bound(struct vm_area_struct *vma);
+
+#endif
 #endif

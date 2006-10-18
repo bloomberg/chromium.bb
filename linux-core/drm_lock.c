@@ -35,9 +35,12 @@
 
 #include "drmP.h"
 
+#if 0
 static int drm_lock_transfer(drm_device_t * dev,
 			     __volatile__ unsigned int *lock,
 			     unsigned int context);
+#endif
+
 static int drm_notifier(void *priv);
 
 /**
@@ -181,12 +184,9 @@ int drm_unlock(struct inode *inode, struct file *filp,
 	if (dev->driver->kernel_context_switch_unlock)
 		dev->driver->kernel_context_switch_unlock(dev);
 	else {
-		drm_lock_transfer(dev, &dev->lock.hw_lock->lock,
-				  DRM_KERNEL_CONTEXT);
-
 		if (drm_lock_free(dev, &dev->lock.hw_lock->lock,
-				  DRM_KERNEL_CONTEXT)) {
-			DRM_ERROR("\n");
+				  lock.context)) {
+			/* FIXME: Should really bail out here. */
 		}
 	}
 
@@ -212,7 +212,7 @@ int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
 		if (old & _DRM_LOCK_HELD)
 			new = old | _DRM_LOCK_CONT;
 		else
-			new = context | _DRM_LOCK_HELD;
+			new = context | _DRM_LOCK_HELD | _DRM_LOCK_CONT;
 		prev = cmpxchg(lock, old, new);
 	} while (prev != old);
 	if (_DRM_LOCKING_CONTEXT(old) == context) {
@@ -224,13 +224,14 @@ int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
 			return 0;
 		}
 	}
-	if (new == (context | _DRM_LOCK_HELD)) {
+	if (new == (context | _DRM_LOCK_HELD | _DRM_LOCK_CONT)) {
 		/* Have lock */
 		return 1;
 	}
 	return 0;
 }
 
+#if 0
 /**
  * This takes a lock forcibly and hands it to context.	Should ONLY be used
  * inside *_unlock to give lock to kernel before calling *_dma_schedule.
@@ -257,6 +258,7 @@ static int drm_lock_transfer(drm_device_t * dev,
 	} while (prev != old);
 	return 1;
 }
+#endif
 
 /**
  * Free lock.
@@ -274,12 +276,12 @@ int drm_lock_free(drm_device_t * dev,
 {
 	unsigned int old, new, prev;
 
-	dev->lock.filp = NULL;
 	do {
 		old = *lock;
-		new = 0;
+		new = _DRM_LOCKING_CONTEXT(old);
 		prev = cmpxchg(lock, old, new);
 	} while (prev != old);
+
 	if (_DRM_LOCK_IS_HELD(old) && _DRM_LOCKING_CONTEXT(old) != context) {
 		DRM_ERROR("%d freed heavyweight lock held by %d\n",
 			  context, _DRM_LOCKING_CONTEXT(old));
@@ -319,3 +321,66 @@ static int drm_notifier(void *priv)
 	} while (prev != old);
 	return 0;
 }
+
+/*
+ * Can be used by drivers to take the hardware lock if necessary.
+ * (Waiting for idle before reclaiming buffers etc.)
+ */
+
+int drm_i_have_hw_lock(struct file *filp)
+{
+	DRM_DEVICE;
+
+	return (priv->lock_count && dev->lock.hw_lock &&
+		_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) &&
+		dev->lock.filp == filp);
+}
+
+EXPORT_SYMBOL(drm_i_have_hw_lock);
+
+int drm_kernel_take_hw_lock(struct file *filp)
+{
+	DRM_DEVICE;
+
+	int ret = 0; 
+	unsigned long _end = jiffies + 3*DRM_HZ;
+	
+	if (!drm_i_have_hw_lock(filp)) {
+	
+		DECLARE_WAITQUEUE(entry, current);
+
+		add_wait_queue(&dev->lock.lock_queue, &entry);
+		for (;;) {
+			__set_current_state(TASK_INTERRUPTIBLE);
+			if (!dev->lock.hw_lock) {
+				/* Device has been unregistered */
+				ret = -EINTR;
+				break;
+			}
+			if (drm_lock_take(&dev->lock.hw_lock->lock,
+					  DRM_KERNEL_CONTEXT)) {
+				dev->lock.filp = filp;
+				dev->lock.lock_time = jiffies;
+				atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
+				break;	/* Got lock */
+			}
+			/* Contention */
+			if (time_after_eq(jiffies,_end)) {
+			        ret = -EBUSY;
+				break;
+			}
+
+			schedule_timeout(1);
+			if (signal_pending(current)) {
+				ret = -ERESTARTSYS;
+				break;
+			}
+		}
+		__set_current_state(TASK_RUNNING);
+		remove_wait_queue(&dev->lock.lock_queue, &entry);
+	}
+	return ret;
+}
+
+EXPORT_SYMBOL(drm_kernel_take_hw_lock);
+
