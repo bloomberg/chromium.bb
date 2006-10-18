@@ -1295,10 +1295,7 @@ extern int drm_agp_free_memory(DRM_AGP_MEM * handle);
 extern int drm_agp_bind_memory(DRM_AGP_MEM * handle, off_t start);
 extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
 extern drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
-					   drm_ttm_backend_t *backend,
-					   unsigned alloc_type,
-					   unsigned cached_type,
-					   unsigned uncached_type);
+					   drm_ttm_backend_t *backend);
 				/* Stub support (drm_stub.h) */
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);

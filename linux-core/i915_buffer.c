@@ -33,13 +33,10 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-#define INTEL_AGP_MEM_USER 3
-#define INTEL_AGP_MEM_UCACHED 4
 
 drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t * dev)
 {
-	return drm_agp_init_ttm(dev, NULL, INTEL_AGP_MEM_USER,
-				INTEL_AGP_MEM_UCACHED, INTEL_AGP_MEM_USER);
+	return drm_agp_init_ttm(dev, NULL);
 }
 
 int i915_fence_types(uint32_t buffer_flags, uint32_t * class, uint32_t * type)

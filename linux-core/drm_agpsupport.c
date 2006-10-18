@@ -558,6 +558,12 @@ int drm_agp_unbind_memory(DRM_AGP_MEM * handle)
  * AGP ttm backend interface.
  */
 
+#ifndef AGP_USER_TYPES
+#define AGP_USER_TYPES (1 << 16)
+#define AGP_USER_MEMORY (AGP_USER_TYPES)
+#define AGP_USER_CACHED_MEMORY (AGP_USER_TYPES + 1)
+#endif
+
 static int drm_agp_needs_unbind_cache_adjust(drm_ttm_backend_t *backend) {
 	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
 }
@@ -604,7 +610,7 @@ static int drm_agp_bind_ttm(drm_ttm_backend_t *backend,
 	DRM_DEBUG("drm_agp_bind_ttm\n");
 	DRM_MASK_VAL(backend->flags, DRM_BE_FLAG_BOUND_CACHED,
 		     (cached) ? DRM_BE_FLAG_BOUND_CACHED : 0);
-	mem->is_flushed = FALSE;
+	mem->is_flushed = TRUE;
 	mem->type = (cached) ? agp_priv->cached_type : agp_priv->uncached_type;
 	ret = drm_agp_bind_memory(mem, offset);
 	if (ret) {
@@ -662,10 +668,8 @@ static void drm_agp_destroy_ttm(drm_ttm_backend_t *backend) {
 	
 
 drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
-				    drm_ttm_backend_t *backend,
-				    unsigned alloc_type,
-				    unsigned cached_type,
-				    unsigned uncached_type) {
+				    drm_ttm_backend_t *backend)
+{
 
         drm_ttm_backend_t *agp_be;
 	drm_agp_ttm_priv *agp_priv;
@@ -684,9 +688,9 @@ drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 	}
 	
 	agp_priv->mem = NULL;
-	agp_priv->alloc_type = alloc_type;
-	agp_priv->cached_type = cached_type;
-	agp_priv->uncached_type = uncached_type;
+	agp_priv->alloc_type = AGP_USER_MEMORY;
+	agp_priv->cached_type = AGP_USER_CACHED_MEMORY;
+	agp_priv->uncached_type = AGP_USER_MEMORY;
 	agp_priv->bridge = dev->agp->bridge;
 	agp_priv->populated = FALSE;
 	agp_be->aperture_base = dev->agp->agp_info.aper_base;
