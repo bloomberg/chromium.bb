@@ -247,7 +247,46 @@ static void drm_bo_destroy_locked(drm_device_t * dev, drm_buffer_object_t * bo)
 	drm_ctl_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
 }
 
-static void drm_bo_delayed_delete(drm_device_t * dev)
+/*
+ * Call bo->mutex locked.
+ * Wait until the buffer is idle.
+ */
+
+static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
+		       int no_wait)
+{
+
+	drm_fence_object_t *fence = bo->fence;
+	int ret;
+
+	if (fence) {
+		drm_device_t *dev = bo->dev;
+		if (drm_fence_object_signaled(fence, bo->fence_type)) {
+			drm_fence_usage_deref_unlocked(dev, fence);
+			bo->fence = NULL;
+			return 0;
+		}
+		if (no_wait) {
+			return -EBUSY;
+		}
+		ret =
+		    drm_fence_object_wait(dev, fence, lazy, ignore_signals,
+					  bo->fence_type);
+		if (ret)
+			return ret;
+
+		drm_fence_usage_deref_unlocked(dev, fence);
+		bo->fence = NULL;
+
+	}
+	return 0;
+}
+
+/*
+ * Call dev->struct_mutex locked.
+ */
+
+static void drm_bo_delayed_delete(drm_device_t * dev, int remove_all)
 {
 	drm_buffer_manager_t *bm = &dev->bm;
 
@@ -255,28 +294,23 @@ static void drm_bo_delayed_delete(drm_device_t * dev)
 	struct list_head *list, *next;
 	drm_fence_object_t *fence;
 
-	mutex_lock(&dev->struct_mutex);
-	if (!bm->initialized)
-		goto out;
-
-	list = bm->ddestroy.next;
 	list_for_each_safe(list, next, &bm->ddestroy) {
 		entry = list_entry(list, drm_buffer_object_t, ddestroy);
-		nentry = NULL;
-
-		/*
-		 * Another process may claim access to this entry through the
-		 * lru lists. In that case, just skip it.
-		 */
-
-		if (atomic_read(&entry->usage) != 0)
+		atomic_inc(&entry->usage);
+		if (atomic_read(&entry->usage) != 1) {
+			atomic_dec(&entry->usage);
 			continue;
+		}
 
-		/*
-		 * Since we're the only users, No need to take the 
-		 * bo->mutex to watch the fence.
-		 */
+		nentry = NULL;
+		if (next != &bm->ddestroy) {
+			nentry = list_entry(next, drm_buffer_object_t,
+					    ddestroy);
+			atomic_inc(&nentry->usage);
+		}
 
+		mutex_unlock(&dev->struct_mutex);
+		mutex_lock(&entry->mutex);
 		fence = entry->fence;
 		if (fence && drm_fence_object_signaled(fence,
 						       entry->fence_type)) {
@@ -284,29 +318,38 @@ static void drm_bo_delayed_delete(drm_device_t * dev)
 			entry->fence = NULL;
 		}
 
-		if (!entry->fence) {
+		if (entry->fence && remove_all) {
+			if (bm->nice_mode) {
+				unsigned long _end = jiffies + 3 * DRM_HZ;
+				int ret;
+				do {
+					ret = drm_bo_wait(entry, 0, 1, 0);
+				} while (ret && !time_after_eq(jiffies, _end));
 
-			/*
-			 * Protect the "next" entry against destruction in case
-			 * drm_bo_destroy_locked temporarily releases the
-			 * struct_mutex;
-			 */
-
-			nentry = NULL;
-			if (next != &bm->ddestroy) {
-				nentry = list_entry(next, drm_buffer_object_t,
-						    ddestroy);
-				atomic_inc(&nentry->usage);
+				if (entry->fence) {
+					bm->nice_mode = 0;
+					DRM_ERROR("Detected GPU lockup or "
+						  "fence driver was taken down. "
+						  "Evicting waiting buffers.\n");
+				}
 			}
-			DRM_DEBUG("Destroying delayed buffer object\n");
+			if (entry->fence) {
+				drm_fence_usage_deref_unlocked(dev,
+							       entry->fence);
+				entry->fence = NULL;
+			}
+		}
+		mutex_lock(&dev->struct_mutex);
+		mutex_unlock(&entry->mutex);
+		if (atomic_dec_and_test(&entry->usage) && (!entry->fence)) {
 			list_del_init(&entry->ddestroy);
 			drm_bo_destroy_locked(dev, entry);
-			if (next != &bm->ddestroy)
-				atomic_dec(&nentry->usage);
+		}
+		if (nentry) {
+			atomic_dec(&nentry->usage);
 		}
 	}
-      out:
-	mutex_unlock(&dev->struct_mutex);
+
 }
 
 static void drm_bo_delayed_workqueue(void *data)
@@ -316,8 +359,12 @@ static void drm_bo_delayed_workqueue(void *data)
 
 	DRM_DEBUG("Delayed delete Worker\n");
 
-	drm_bo_delayed_delete(dev);
 	mutex_lock(&dev->struct_mutex);
+	if (!bm->initialized) {
+		mutex_unlock(&dev->struct_mutex);
+		return;
+	}
+	drm_bo_delayed_delete(dev, 0);
 	if (bm->initialized && !list_empty(&bm->ddestroy)) {
 		schedule_delayed_work(&bm->wq,
 				      ((DRM_HZ / 100) < 1) ? 1 : DRM_HZ / 100);
@@ -450,41 +497,6 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 }
 
 EXPORT_SYMBOL(drm_fence_buffer_objects);
-
-/*
- * Call bo->mutex locked.
- * Wait until the buffer is idle.
- */
-
-static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
-		       int no_wait)
-{
-
-	drm_fence_object_t *fence = bo->fence;
-	int ret;
-
-	if (fence) {
-		drm_device_t *dev = bo->dev;
-		if (drm_fence_object_signaled(fence, bo->fence_type)) {
-			drm_fence_usage_deref_unlocked(dev, fence);
-			bo->fence = NULL;
-			return 0;
-		}
-		if (no_wait) {
-			return -EBUSY;
-		}
-		ret =
-		    drm_fence_object_wait(dev, fence, lazy, ignore_signals,
-					  bo->fence_type);
-		if (ret)
-			return ret;
-
-		drm_fence_usage_deref_unlocked(dev, fence);
-		bo->fence = NULL;
-
-	}
-	return 0;
-}
 
 /*
  * bo->mutex locked 
@@ -1385,8 +1397,6 @@ int drm_buffer_object_create(drm_file_t * priv,
 	uint32_t new_flags;
 	unsigned long num_pages;
 
-	drm_bo_delayed_delete(dev);
-
 	if ((buffer_start & ~PAGE_MASK) && (type != drm_bo_type_fake)) {
 		DRM_ERROR("Invalid buffer object start.\n");
 		return -EINVAL;
@@ -1637,6 +1647,7 @@ static int drm_bo_force_list_clean(drm_device_t * dev,
 
 		if (prev != list->prev || next != list->next) {
 			mutex_unlock(&entry->mutex);
+			drm_bo_usage_deref_locked(dev, entry);
 			goto retry;
 		}
 		if (drm_bo_mm_node(entry, mem_type)) {
@@ -1816,6 +1827,11 @@ static int drm_bo_init_mm(drm_device_t * dev,
 	return 0;
 }
 
+/*
+ * This is called from lastclose, so we don't need to bother about
+ * any clients still running when we set the initialized flag to zero.
+ */
+
 int drm_bo_driver_finish(drm_device_t * dev)
 {
 	drm_buffer_manager_t *bm = &dev->bm;
@@ -1827,6 +1843,7 @@ int drm_bo_driver_finish(drm_device_t * dev)
 
 	if (!bm->initialized)
 		goto out;
+	bm->initialized = 0;
 
 	while (i--) {
 		if (bm->has_type[i]) {
@@ -1840,14 +1857,23 @@ int drm_bo_driver_finish(drm_device_t * dev)
 		}
 	}
 	mutex_unlock(&dev->struct_mutex);
-	drm_bo_delayed_delete(dev);
-	mutex_lock(&dev->struct_mutex);
-	bm->initialized = 0;
-	mutex_unlock(&dev->struct_mutex);
 	if (!cancel_delayed_work(&bm->wq)) {
 		flush_scheduled_work();
 	}
 	mutex_lock(&dev->struct_mutex);
+	drm_bo_delayed_delete(dev, 1);
+	if (list_empty(&bm->ddestroy)) {
+		DRM_DEBUG("Delayed destroy list was clean\n");
+	}
+	if (list_empty(&bm->lru[0])) {
+		DRM_DEBUG("Swap list was clean\n");
+	}
+	if (list_empty(&bm->pinned[0])) {
+		DRM_DEBUG("NO_MOVE list was clean\n");
+	}
+	if (list_empty(&bm->unfenced)) {
+		DRM_DEBUG("Unfenced list was clean\n");
+	}
       out:
 	mutex_unlock(&dev->struct_mutex);
 	mutex_unlock(&dev->bm.init_mutex);

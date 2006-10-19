@@ -124,6 +124,9 @@ int i915_fence_emit_sequence(drm_device_t * dev, uint32_t flags,
 			     uint32_t * sequence, uint32_t * native_type)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	if (!dev_priv)
+		return -EINVAL;
+
 	i915_emit_irq(dev);
 	*sequence = (uint32_t) dev_priv->counter;
 	*native_type = DRM_FENCE_TYPE_EXE;
