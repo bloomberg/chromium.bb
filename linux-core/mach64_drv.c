@@ -27,7 +27,6 @@
  *    Leif Delgass <ldelgass@retinalburn.net>
  */
 
-#include <linux/config.h>
 #include "drmP.h"
 #include "drm.h"
 #include "mach64_drm.h"
