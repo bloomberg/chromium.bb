@@ -311,7 +311,9 @@ int drm_fence_object_wait(drm_device_t * dev,
 			ret = -EBUSY;
 		if (ret) {
 			if (ret == -EBUSY) {
-				DRM_ERROR("Fence timout. GPU lockup.\n");
+				DRM_ERROR("Fence timeout. "
+					  "GPU lockup or fence driver was "
+					  "taken down.\n");
 			}
 			return ((ret == -EINTR) ? -EAGAIN : ret);
 		}
