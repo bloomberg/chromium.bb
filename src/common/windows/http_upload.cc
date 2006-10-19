@@ -83,12 +83,15 @@ bool HTTPUpload::SendRequest(const wstring &url,
                         0, &components)) {
     return false;
   }
-  if (wcscmp(scheme, L"http") != 0) {
+  bool secure = false;
+  if (wcscmp(scheme, L"https") == 0) {
+    secure = true;
+  } else if (wcscmp(scheme, L"http") != 0) {
     return false;
   }
 
   AutoInternetHandle internet(InternetOpen(kUserAgent,
-                                           INTERNET_OPEN_TYPE_DIRECT,
+                                           INTERNET_OPEN_TYPE_PRECONFIG,
                                            NULL,  // proxy name
                                            NULL,  // proxy bypass
                                            0));   // flags
@@ -108,13 +111,14 @@ bool HTTPUpload::SendRequest(const wstring &url,
     return false;
   }
 
+  DWORD http_open_flags = secure ? INTERNET_FLAG_SECURE : 0;
   AutoInternetHandle request(HttpOpenRequest(connection.get(),
                                              L"POST",
                                              path,
                                              NULL,    // version
                                              NULL,    // referer
                                              NULL,    // agent type
-                                             0,       // flags
+                                             http_open_flags,
                                              NULL));  // context
   if (!request.get()) {
     return false;
@@ -130,10 +134,22 @@ bool HTTPUpload::SendRequest(const wstring &url,
   GenerateRequestBody(parameters, upload_file,
                       file_part_name, boundary, &request_body);
 
-  // The explicit comparison to TRUE avoids a warning (C4800).
-  return (HttpSendRequest(request.get(), NULL, 0,
-                          const_cast<char *>(request_body.data()),
-                          static_cast<DWORD>(request_body.size())) == TRUE);
+  if (!HttpSendRequest(request.get(), NULL, 0,
+                       const_cast<char *>(request_body.data()),
+                       static_cast<DWORD>(request_body.size()))) {
+    return false;
+  }
+
+  // The server indicates a successful upload with HTTP status 200.
+  wchar_t http_status[4];
+  DWORD http_status_size = sizeof(http_status);
+  if (!HttpQueryInfo(request.get(), HTTP_QUERY_STATUS_CODE,
+                     static_cast<LPVOID>(&http_status), &http_status_size,
+                     0)) {
+    return false;
+  }
+
+  return (wcscmp(http_status, L"200") == 0);
 }
 
 // static

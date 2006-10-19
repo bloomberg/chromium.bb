@@ -148,12 +148,6 @@ int wmain(int argc, wchar_t *argv[]) {
   const wchar_t *module = argv[1], *url = argv[2];
   wstring module_basename = GetBaseName(module);
 
-  wstring file_version;
-  if (!GetFileVersionString(module, &file_version)) {
-    fwprintf(stderr, L"Could not get file version for %s\n", module);
-    return 1;
-  }
-
   wstring symbol_file, module_guid;
   if (!DumpSymbolsToTempFile(module, &symbol_file, &module_guid)) {
     fwprintf(stderr, L"Could not get symbol data from %s\n", module);
@@ -162,8 +156,16 @@ int wmain(int argc, wchar_t *argv[]) {
 
   map<wstring, wstring> parameters;
   parameters[L"module"] = module_basename;
-  parameters[L"version"] = file_version;
   parameters[L"guid"] = module_guid;
+
+  // Don't make a missing version a hard error.  Issue a warning, and let the
+  // server decide whether to reject files without versions.
+  wstring file_version;
+  if (GetFileVersionString(module, &file_version)) {
+    parameters[L"version"] = file_version;
+  } else {
+    fwprintf(stderr, L"Warning: Could not get file version for %s\n", module);
+  }
 
   bool success = HTTPUpload::SendRequest(url, parameters,
                                          symbol_file, L"symbol_file");
