@@ -610,7 +610,7 @@ static int drm_agp_bind_ttm(drm_ttm_backend_t *backend,
 	DRM_DEBUG("drm_agp_bind_ttm\n");
 	DRM_MASK_VAL(backend->flags, DRM_BE_FLAG_BOUND_CACHED,
 		     (cached) ? DRM_BE_FLAG_BOUND_CACHED : 0);
-	mem->is_flushed = TRUE;
+	mem->is_flushed = FALSE;
 	mem->type = (cached) ? agp_priv->cached_type : agp_priv->uncached_type;
 	ret = drm_agp_bind_memory(mem, offset);
 	if (ret) {
