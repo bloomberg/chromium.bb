@@ -647,7 +647,7 @@ const u_int8_t* MinidumpMemoryRegion::GetMemory() {
       return NULL;
 
     // TODO(mmentovai): verify rational size!
-    auto_ptr<vector<u_int8_t> > memory(
+    auto_ptr< vector<u_int8_t> > memory(
         new vector<u_int8_t>(descriptor_->memory.data_size));
 
     if (!minidump_->ReadBytes(&(*memory)[0], descriptor_->memory.data_size)) 
@@ -1086,7 +1086,7 @@ const u_int8_t* MinidumpModule::GetCVRecord() {
     // variable-sized due to their pdb_file_name fields; these structures
     // are not sizeof(MDCVInfoPDB70) or sizeof(MDCVInfoPDB20) and treating
     // them as such would result in incomplete structures or overruns.
-    auto_ptr<vector<u_int8_t> > cv_record(
+    auto_ptr< vector<u_int8_t> > cv_record(
         new vector<u_int8_t>(module_.cv_record.data_size));
 
     if (!minidump_->ReadBytes(&(*cv_record)[0], module_.cv_record.data_size))
@@ -1161,7 +1161,7 @@ const MDImageDebugMisc* MinidumpModule::GetMiscRecord() {
     // because the MDImageDebugMisc is variable-sized due to its data field;
     // this structure is not sizeof(MDImageDebugMisc) and treating it as such
     // would result in an incomplete structure or an overrun.
-    auto_ptr<vector<u_int8_t> > misc_record_mem(
+    auto_ptr< vector<u_int8_t> > misc_record_mem(
         new vector<u_int8_t>(module_.misc_record.data_size));
     MDImageDebugMisc* misc_record =
         reinterpret_cast<MDImageDebugMisc*>(&(*misc_record_mem)[0]);

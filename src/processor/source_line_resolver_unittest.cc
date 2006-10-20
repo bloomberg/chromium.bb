@@ -81,6 +81,7 @@ static bool RunTests() {
   ASSERT_EQ(frame.function_name, "Function1_1");
   ASSERT_EQ(frame.source_file_name, "file1_1.cc");
   ASSERT_EQ(frame.source_line, 44);
+  ASSERT_FALSE(frame_info.allocates_base_pointer);
   ASSERT_EQ(frame_info.program_string,
             "$eip 4 + ^ = $esp $ebp 8 + = $ebp $ebp ^ =");
 
@@ -88,6 +89,7 @@ static bool RunTests() {
   frame.instruction = 0x800;
   resolver.FillSourceLineInfo(&frame, &frame_info);
   ASSERT_TRUE(VerifyEmpty(frame));
+  ASSERT_FALSE(frame_info.allocates_base_pointer);
   ASSERT_TRUE(frame_info.program_string.empty());
 
   frame.instruction = 0x1280;
@@ -95,6 +97,7 @@ static bool RunTests() {
   ASSERT_EQ(frame.function_name, "Function1_3");
   ASSERT_TRUE(frame.source_file_name.empty());
   ASSERT_EQ(frame.source_line, 0);
+  ASSERT_FALSE(frame_info.allocates_base_pointer);
   ASSERT_TRUE(frame_info.program_string.empty());
 
   frame.instruction = 0x1380;
@@ -102,6 +105,7 @@ static bool RunTests() {
   ASSERT_EQ(frame.function_name, "Function1_4");
   ASSERT_TRUE(frame.source_file_name.empty());
   ASSERT_EQ(frame.source_line, 0);
+  ASSERT_FALSE(frame_info.allocates_base_pointer);
   ASSERT_FALSE(frame_info.program_string.empty());
 
   frame.instruction = 0x2180;

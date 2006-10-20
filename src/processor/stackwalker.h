@@ -33,8 +33,7 @@
 // methods that apply to stacks from all systems.  Specific implementations
 // will extend this class by providing GetContextFrame and GetCallerFrame
 // methods to fill in system-specific data in a StackFrame structure.
-// Stackwalker assembles these StackFrame strucutres into a vector of
-// StackFrames.
+// Stackwalker assembles these StackFrame strucutres into a CallStack.
 //
 // Author: Mark Mentovai
 
@@ -44,14 +43,15 @@
 
 #include <vector>
 
-#include "google/stack_frame.h"
-#include "processor/memory_region.h"
 #include "processor/stack_frame_info.h"
 
 namespace google_airbag {
 
+class CallStack;
+class MemoryRegion;
 class MinidumpContext;
 class MinidumpModuleList;
+struct StackFrame;
 class SymbolSupplier;
 
 
@@ -59,10 +59,9 @@ class Stackwalker {
  public:
   virtual ~Stackwalker() {}
 
-  // Fills the given vector of StackFrames by calling GetContextFrame and
-  // GetCallerFrame, and populating the returned frames with all available
-  // data.
-  void Walk(StackFrames *frames);
+  // Fills the given CallStack by calling GetContextFrame and GetCallerFrame,
+  // and populating the returned frames with all available data.
+  void Walk(CallStack* stack);
 
   // Returns a new concrete subclass suitable for the CPU that a stack was
   // generated on, according to the CPU type indicated by the context
@@ -88,23 +87,26 @@ class Stackwalker {
   MemoryRegion *memory_;
 
   // Additional debugging information for each stack frame.  This vector
-  // parallels the StackFrames vector.  Subclasses may use this information
-  // to walk the stack.
+  // parallels the CallStack.  Subclasses may use this information to help
+  // walk the stack.
   std::vector<StackFrameInfo> stack_frame_info_;
 
  private:
   // Obtains the context frame, the innermost called procedure in a stack
-  // trace.  Returns false on failure.
-  virtual bool GetContextFrame(StackFrame *frame) = 0;
+  // trace.  Returns NULL on failure.  GetContextFrame allocates a new
+  // StackFrame (or StackFrame subclass), ownership of which is taken by
+  // the caller.
+  virtual StackFrame* GetContextFrame() = 0;
 
   // Obtains a caller frame.  Each call to GetCallerFrame should return the
   // frame that called the last frame returned by GetContextFrame or
-  // GetCallerFrame.  To aid this purpose, walked_frames contains the
-  // StackFrames vector of frames that have already been walked.
-  // GetCallerFrame should return false on failure or when there are no more
-  // caller frames (when the end of the stack has been reached).
-  virtual bool GetCallerFrame(StackFrame *frame,
-                              const StackFrames *walked_frames) = 0;
+  // GetCallerFrame.  To aid this purpose, stack contains the CallStack
+  // made of frames that have already been walked.  GetCallerFrame should
+  // return NULL on failure or when there are no more caller frames (when
+  // the end of the stack has been reached).  GetCallerFrame allocates a new
+  // StackFrame (or StackFrame subclass), ownership of which is taken by
+  // the caller.
+  virtual StackFrame* GetCallerFrame(const CallStack *stack) = 0;
 
   // A list of modules, for populating each StackFrame's module information.
   // This field is optional and may be NULL.

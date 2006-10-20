@@ -61,11 +61,11 @@ class StackwalkerX86 : public Stackwalker {
                  SymbolSupplier *supplier);
 
  private:
-  // Implementation of Stackwalker, using x86 context (%ebp, %eip) and
-  // stack conventions (saved %ebp at [%ebp], saved %eip at 4[%ebp]).
-  virtual bool GetContextFrame(StackFrame *frame);
-  virtual bool GetCallerFrame(StackFrame *frame,
-                              const StackFrames *walked_frames);
+  // Implementation of Stackwalker, using x86 context (%ebp, %esp, %eip) and
+  // stack conventions (saved %ebp at [%ebp], saved %eip at 4[%ebp], or
+  // alternate conventions as guided by stack_frame_info_).
+  virtual StackFrame* GetContextFrame();
+  virtual StackFrame* GetCallerFrame(const CallStack *stack);
 
   // Stores the CPU context corresponding to the innermost stack frame to
   // be returned by GetContextFrame.

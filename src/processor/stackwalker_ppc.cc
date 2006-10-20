@@ -35,6 +35,8 @@
 
 
 #include "processor/stackwalker_ppc.h"
+#include "google/call_stack.h"
+#include "google/stack_frame_cpu.h"
 #include "processor/minidump.h"
 
 namespace google_airbag {
@@ -55,65 +57,77 @@ StackwalkerPPC::StackwalkerPPC(const MDRawContextPPC *context,
 }
 
 
-bool StackwalkerPPC::GetContextFrame(StackFrame *frame) {
-  if (!context_ || !memory_ || !frame)
-    return false;
+StackFrame* StackwalkerPPC::GetContextFrame() {
+  if (!context_ || !memory_)
+    return NULL;
 
-  // The stack frame and instruction pointers are stored directly in
-  // registers, so pull them straight out of the CPU context structure.
-  frame->frame_pointer = context_->gpr[1];
-  frame->instruction = context_->srr0;
+  StackFramePPC *frame = new StackFramePPC();
 
-  return true;
+  // The instruction pointer is stored directly in a register, so pull it
+  // straight out of the CPU context structure.
+  frame->context = *context_;
+  frame->context_validity = StackFramePPC::CONTEXT_VALID_ALL;
+  frame->instruction = frame->context.srr0;
+
+  return frame;
 }
 
 
-bool StackwalkerPPC::GetCallerFrame(StackFrame *frame,
-                                    const StackFrames *walked_frames) {
-  if (!memory_ || !frame || !walked_frames)
-    return false;
+StackFrame* StackwalkerPPC::GetCallerFrame(const CallStack *stack) {
+  if (!memory_ || !stack)
+    return NULL;
 
-  // The stack frame and instruction pointers for previous frames are saved
-  // on the stack.  The typical ppc calling convention is for the called
-  // procedure to store its return address in the calling procedure's stack
-  // frame at 8(%r1), and to allocate its own stack frame by decrementing %r1
-  // (the stack pointer) and saving the old value of %r1 at 0(%r1).  Because
-  // the ppc has no hardware stack, there is no distinction between the
-  // stack pointer and frame pointer, and what is typically thought of as
-  // the frame pointer on an x86 is usually referred to as the stack pointer
-  // on a ppc.
+  // The instruction pointers for previous frames are saved on the stack.
+  // The typical ppc calling convention is for the called procedure to store
+  // its return address in the calling procedure's stack frame at 8(%r1),
+  // and to allocate its own stack frame by decrementing %r1 (the stack
+  // pointer) and saving the old value of %r1 at 0(%r1).  Because the ppc has
+  // no hardware stack, there is no distinction between the stack pointer and
+  // frame pointer, and what is typically thought of as the frame pointer on
+  // an x86 is usually referred to as the stack pointer on a ppc.
 
-  u_int32_t last_stack_pointer = walked_frames->back().frame_pointer;
-
-  // Don't pass frame.frame_pointer or frame.instruction directly
-  // ReadMemory, because their types are too wide (64-bit), and we
-  // specifically want to read 32-bit quantities for both.
-  u_int32_t stack_pointer;
-  if (!memory_->GetMemoryAtAddress(last_stack_pointer, &stack_pointer))
-    return false;
+  StackFramePPC *last_frame = static_cast<StackFramePPC*>(
+      stack->frames()->back());
 
   // A caller frame must reside higher in memory than its callee frames.
   // Anything else is an error, or an indication that we've reached the
   // end of the stack.
-  if (stack_pointer <= last_stack_pointer)
-    return false;
-
-  u_int32_t instruction;
-  if (!memory_->GetMemoryAtAddress(stack_pointer + 8, &instruction))
-    return false;
+  u_int32_t stack_pointer;
+  if (!memory_->GetMemoryAtAddress(last_frame->context.gpr[1],
+                                   &stack_pointer) ||
+      stack_pointer <= last_frame->context.gpr[1]) {
+    return NULL;
+  }
 
   // Mac OS X/Darwin gives 1 as the return address from the bottom-most
   // frame in a stack (a thread's entry point).  I haven't found any
   // documentation on this, but 0 or 1 would be bogus return addresses,
   // so check for them here and return false (end of stack) when they're
   // hit to avoid having a phantom frame.
-  if (instruction <= 1)
-    return false;
+  u_int32_t instruction;
+  if (!memory_->GetMemoryAtAddress(stack_pointer + 8, &instruction) ||
+      instruction <= 1) {
+    return NULL;
+  }
 
-  frame->frame_pointer = stack_pointer;
-  frame->instruction = instruction;
+  StackFramePPC *frame = new StackFramePPC();
 
-  return true;
+  frame->context = last_frame->context;
+  frame->context.srr0 = instruction;
+  frame->context.gpr[1] = stack_pointer;
+  frame->context_validity = StackFramePPC::CONTEXT_VALID_SRR0 |
+                            StackFramePPC::CONTEXT_VALID_GPR1;
+
+  // frame->context.srr0 is the return address, which is one instruction
+  // past the branch that caused us to arrive at the callee.  Set
+  // frame_ppc->instruction to four less than that.  Since all ppc
+  // instructions are 4 bytes wide, this is the address of the branch
+  // instruction.  This allows source line information to match up with the
+  // line that contains a function call.  Callers that require the exact
+  // return address value may access the context.srr0 field of StackFramePPC.
+  frame->instruction = frame->context.srr0 - 4;
+
+  return frame;
 }
 
 

@@ -31,12 +31,12 @@
 #define GOOGLE_MINIDUMP_PROCESSOR_H__
 
 #include <string>
-#include "google/stack_frame.h"
 
 namespace google_airbag {
 
 using std::string;
 
+class CallStack;
 class SymbolSupplier;
 
 class MinidumpProcessor {
@@ -46,9 +46,9 @@ class MinidumpProcessor {
   MinidumpProcessor(SymbolSupplier *supplier);
   ~MinidumpProcessor();
 
-  // Fills in the given StackFrames vector by processing the minidump file.
-  // Returns true on success.
-  bool Process(const string &minidump_file, StackFrames *stack_frames);
+  // Fills in the given CallStack by processing the minidump file.  Returns
+  // true on success.
+  bool Process(const string &minidump_file, CallStack *stack);
 
  private:
   SymbolSupplier *supplier_;

@@ -51,9 +51,12 @@ lib_LTLIBRARIES = src/libairbag.la
 
 src_libairbag_la_SOURCES = \
 	src/google/airbag_types.h \
+	src/google/call_stack.h \
 	src/google/minidump_processor.h \
 	src/google/stack_frame.h \
+	src/google/stack_frame_cpu.h \
 	src/google/symbol_supplier.h \
+	src/processor/call_stack.cc \
 	src/processor/contained_range_map.h \
 	src/processor/contained_range_map-inl.h \
 	src/processor/linked_ptr.h \
@@ -109,6 +112,7 @@ src_processor_contained_range_map_unittest_SOURCES = \
 src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc
 src_processor_minidump_processor_unittest_LDADD = \
+	src/processor/call_stack.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
 	src/processor/stackwalker.lo \
@@ -130,6 +134,7 @@ src_processor_source_line_resolver_unittest_LDADD = \
 src_processor_stackwalker_selftest_SOURCES = \
 	src/processor/stackwalker_selftest.cc
 src_processor_stackwalker_selftest_LDADD = \
+	src/processor/call_stack.lo \
 	src/processor/minidump.lo \
 	src/processor/source_line_resolver.lo \
 	src/processor/stackwalker.lo \
@@ -148,6 +153,7 @@ src_processor_minidump_dump_LDADD = \
 src_processor_minidump_stackwalk_SOURCES = \
 	src/processor/minidump_stackwalk.cc
 src_processor_minidump_stackwalk_LDADD = \
+	src/processor/call_stack.lo \
 	src/processor/minidump.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \

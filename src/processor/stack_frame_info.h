@@ -46,13 +46,20 @@ namespace google_airbag {
 
 struct StackFrameInfo {
  public:
-  StackFrameInfo() : valid(false),
+  enum Validity {
+    VALID_NONE           = 0,
+    VALID_PARAMETER_SIZE = 1,
+    VALID_ALL            = -1
+  };
+
+  StackFrameInfo() : valid(VALID_NONE),
                      prolog_size(0),
                      epilog_size(0),
                      parameter_size(0),
                      saved_register_size(0),
                      local_size(0),
                      max_stack_size(0),
+                     allocates_base_pointer(0),
                      program_string() {}
 
   StackFrameInfo(u_int32_t set_prolog_size,
@@ -61,18 +68,27 @@ struct StackFrameInfo {
                  u_int32_t set_saved_register_size,
                  u_int32_t set_local_size,
                  u_int32_t set_max_stack_size,
+                 int set_allocates_base_pointer,
                  const std::string set_program_string)
-      : valid(true),
+      : valid(VALID_ALL),
         prolog_size(set_prolog_size),
         epilog_size(set_epilog_size),
         parameter_size(set_parameter_size),
         saved_register_size(set_saved_register_size),
         local_size(set_local_size),
         max_stack_size(set_max_stack_size),
+        allocates_base_pointer(set_allocates_base_pointer),
         program_string(set_program_string) {}
 
-  // True when the contents of the structure are valid.
-  bool valid;
+  // Clears the StackFrameInfo object so that users will see it as though
+  // it contains no information.
+  void Clear() { valid = VALID_NONE; program_string.erase(); }
+
+  // Identifies which fields in the structure are valid.  This is of
+  // type Validity, but it is defined as an int because it's not
+  // possible to OR values into an enumerated type.  Users must check
+  // this field before using any other.
+  int valid;
 
   // These values come from IDiaFrameData.
   u_int32_t prolog_size;
@@ -81,6 +97,10 @@ struct StackFrameInfo {
   u_int32_t saved_register_size;
   u_int32_t local_size;
   u_int32_t max_stack_size;
+
+  // Only one of allocates_base_pointer or program_string will be valid.
+  // If program_string is empty, use allocates_base_pointer.
+  bool allocates_base_pointer;
   std::string program_string;
 };
 

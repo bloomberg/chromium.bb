@@ -37,6 +37,8 @@
 #include <memory>
 
 #include "processor/stackwalker.h"
+#include "google/call_stack.h"
+#include "google/stack_frame.h"
 #include "google/symbol_supplier.h"
 #include "processor/minidump.h"
 #include "processor/source_line_resolver.h"
@@ -55,21 +57,22 @@ Stackwalker::Stackwalker(MemoryRegion *memory, MinidumpModuleList *modules,
 }
 
 
-void Stackwalker::Walk(StackFrames *frames) {
-  frames->clear();
+void Stackwalker::Walk(CallStack *stack) {
   stack_frame_info_.clear();
   SourceLineResolver resolver;
 
   // Begin with the context frame, and keep getting callers until there are
   // no more.
 
-  auto_ptr<StackFrame> frame(new StackFrame());
-  auto_ptr<StackFrameInfo> frame_info(new StackFrameInfo());
-  bool valid = GetContextFrame(frame.get());
-  while (valid) {
+  // Take ownership of the pointer returned by GetContextFrame.
+  auto_ptr<StackFrame> frame(GetContextFrame());
+
+  while (frame.get()) {
     // frame already contains a good frame with properly set instruction and
     // frame_pointer fields.  The frame structure comes from either the
     // context frame (above) or a caller frame (below).
+
+    StackFrameInfo frame_info;
 
     // Resolve the module information, if a module map was provided.
     if (modules_) {
@@ -84,22 +87,20 @@ void Stackwalker::Walk(StackFrames *frames) {
             resolver.LoadModule(frame->module_name, symbol_file);
           }
         }
-        resolver.FillSourceLineInfo(frame.get(), frame_info.get());
+        resolver.FillSourceLineInfo(frame.get(), &frame_info);
       }
     }
 
-    // Copy the frame into the frames vector.
-    frames->push_back(*frame);
-    stack_frame_info_.push_back(*frame_info);
+    // Add the frame to the call stack.  Relinquish the ownership claim
+    // over the frame, because the stack now owns it.
+    stack->frames_.push_back(frame.release());
 
-    // Use a new object for the next frame, even though the old object was
-    // copied.  If StackFrame provided some sort of Clear() method, then
-    // the same frame could be reused.
-    frame.reset(new StackFrame());
-    frame_info.reset(new StackFrameInfo());
+    // Copy the frame info.
+    stack_frame_info_.push_back(frame_info);
+    frame_info.Clear();
 
-    // Get the next frame.
-    valid = GetCallerFrame(frame.get(), frames);
+    // Get the next frame and take ownership.
+    frame.reset(GetCallerFrame(stack));
   }
 }
 

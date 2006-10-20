@@ -31,57 +31,50 @@
 #define GOOGLE_STACK_FRAME_H__
 
 #include <string>
-#include <vector>
 #include "google/airbag_types.h"
 
 namespace google_airbag {
 
 using std::string;
-using std::vector;
 
 struct StackFrame {
-  // Initialize sensible defaults, or this will be instantiated with
-  // primitive members in an undetermined state.
   StackFrame()
-      : instruction()
-      , frame_pointer()
-      , module_base()
-      , module_name()
-      , function_base()
-      , function_name()
-      , source_file_name()
-      , source_line() {}
+      : instruction(),
+        module_base(),
+        module_name(),
+        function_base(),
+        function_name(),
+        source_file_name(),
+        source_line() {}
+  virtual ~StackFrame() {}
 
-  // The program counter location relative to the module base
+  // The program counter location as an absolute virtual address.  For the
+  // innermost called frame in a stack, this will be an exact program counter
+  // or instruction pointer value.  For all other frames, this will be within
+  // the instruction that caused execution to branch to a called function,
+  // but may not necessarily point to the exact beginning of that instruction.
   u_int64_t instruction;
 
-  // The frame pointer to this stack frame
-  u_int64_t frame_pointer;
-
-  // The base address of the module
+  // The base address of the module.
   u_int64_t module_base;
 
-  // The module in which the pc resides
+  // The module in which the instruction resides.
   string module_name;
 
   // The start address of the function, may be omitted if debug symbols
   // are not available.
   u_int64_t function_base;
 
-  // The function name, may be omitted if debug symbols are not available
+  // The function name, may be omitted if debug symbols are not available.
   string function_name;
 
-  // The source file name, may be omitted if debug symbols are not available
+  // The source file name, may be omitted if debug symbols are not available.
   string source_file_name;
 
-  // The (1-based) source line number,
-  // may be omitted if debug symbols are not available
+  // The (1-based) source line number, may be omitted if debug symbols are
+  // not available.
   int source_line;
-
-  // TODO(bryner): saved registers
 };
-
-typedef vector<StackFrame> StackFrames;
 
 }  // namespace google_airbag
 

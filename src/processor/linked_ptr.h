@@ -53,6 +53,8 @@
 #ifndef PROCESSOR_LINKED_PTR_H__
 #define PROCESSOR_LINKED_PTR_H__
 
+namespace google_airbag {
+
 // This is used internally by all instances of linked_ptr<>.  It needs to be
 // a non-template class because different types of linked_ptr<> can refer to
 // the same object (linked_ptr<Superclass>(obj) vs linked_ptr<Subclass>(obj)).
@@ -186,4 +188,6 @@ linked_ptr<T> make_linked_ptr(T* ptr) {
   return linked_ptr<T>(ptr);
 }
 
-#endif // PROCESSOR_LINKED_PTR_H__
+}  // namespace google_airbag
+
+#endif  // PROCESSOR_LINKED_PTR_H__

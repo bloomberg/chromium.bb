@@ -40,13 +40,17 @@
 #include <cstdio>
 
 #include "google/airbag_types.h"
+#include "google/call_stack.h"
 #include "google/stack_frame.h"
+#include "google/stack_frame_cpu.h"
 #include "processor/memory_region.h"
 #include "processor/minidump_format.h"
 
+using google_airbag::CallStack;
 using google_airbag::MemoryRegion;
 using google_airbag::StackFrame;
-using google_airbag::StackFrames;
+using google_airbag::StackFramePPC;
+using google_airbag::StackFrameX86;
 
 #if defined(__i386__)
 #include "processor/stackwalker_x86.h"
@@ -78,6 +82,14 @@ class SelfMemoryRegion : public MemoryRegion {
  private:
   template<typename T> bool GetMemoryAtAddressInternal(u_int64_t address,
                                                        T*        value) {
+    // Without knowing what addresses are actually mapped, just assume that
+    // everything low is not mapped.  This helps the stackwalker catch the
+    // end of a stack when it tries to dereference a null or low pointer
+    // in an attempt to find the caller frame.  Other unmapped accesses will
+    // cause the program to crash, but that would properly be a test failure.
+    if (address < 0x100)
+      return false;
+
     u_int8_t* memory = 0;
     *value = *reinterpret_cast<const T*>(&memory[address]);
     return true;
@@ -102,6 +114,22 @@ static u_int32_t GetEBP() {
     : "=a" (ebp)
   );
   return ebp;
+}
+
+
+// The caller's %esp is 8 higher than the value of %ebp in this function,
+// assuming that it's not inlined and that the standard prolog is used.
+// The CALL instruction places a 4-byte return address on the stack above
+// the caller's %esp, and this function's prolog will save the caller's %ebp
+// on the stack as well, for another 4 bytes, before storing %esp in %ebp.
+static u_int32_t GetESP() __attribute__((noinline));
+static u_int32_t GetESP() {
+  u_int32_t ebp;
+  __asm__ __volatile__(
+    "movl %%ebp, %0"
+    : "=a" (ebp)
+  );
+  return ebp + 8;
 }
 
 
@@ -177,6 +205,7 @@ static unsigned int CountCallerFrames() {
   MDRawContextX86 context = MDRawContextX86();
   context.eip = GetEIP();
   context.ebp = GetEBP();
+  context.esp = GetESP();
 
   StackwalkerX86 stackwalker = StackwalkerX86(&context, &memory, NULL, NULL);
 #elif defined(__ppc__)
@@ -187,24 +216,32 @@ static unsigned int CountCallerFrames() {
   StackwalkerPPC stackwalker = StackwalkerPPC(&context, &memory, NULL, NULL);
 #endif  // __i386__ || __ppc__
 
-  StackFrames stack;
+  CallStack stack;
   stackwalker.Walk(&stack);
 
 #ifdef PRINT_STACKS
   printf("\n");
   for(unsigned int frame_index = 0;
-      frame_index < stack.size();
+      frame_index < stack.Count();
       ++frame_index) {
-    StackFrame *frame = &stack[frame_index];
-    printf("frame %-3d  instruction = 0x%08llx  frame_pointer = 0x%08llx\n",
-           frame_index, frame->instruction, frame->frame_pointer);
+    StackFrame *frame = stack.FrameAt(frame_index);
+    printf("frame %-3d  instruction = 0x%08llx",
+           frame_index, frame->instruction);
+#if defined(__i386__)
+    StackFrameX86 *frame_x86 = reinterpret_cast<StackFrameX86*>(frame.get());
+    printf("  esp = 0x%08x  ebp = 0x%08x\n",
+           frame_x86->context.esp, frame_x86->context.ebp);
+#elif defined(__ppc__)
+    StackFramePPC *frame_ppc = reinterpret_cast<StackFramePPC*>(frame.get());
+    printf("  gpr[1] = 0x%08x\n", frame_ppc->context.gpr[1]);
+#endif  // __i386__ || __ppc__
   }
 #endif  // PRINT_STACKS
 
   // Subtract 1 because the caller wants the number of frames beneath
   // itself.  Because the caller called us, subract two for our frame and its
   // frame, which are included in stack->size().
-  return stack.size() - 2;
+  return stack.frames()->size() - 2;
 }
 
 

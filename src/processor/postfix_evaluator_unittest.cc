@@ -61,7 +61,7 @@ struct EvaluateTest {
 
 struct EvaluateTestSet {
   // The dictionary used for all tests in the set.
-  map<string, unsigned int> *dictionary;
+  PostfixEvaluator<unsigned int>::DictionaryType *dictionary;
 
   // The list of tests.
   const EvaluateTest *evaluate_tests;
@@ -77,7 +77,7 @@ struct EvaluateTestSet {
 
 bool RunTests() {
   // The first test set checks the basic operations and failure modes.
-  map<string, unsigned int> dictionary_0;
+  PostfixEvaluator<unsigned int>::DictionaryType dictionary_0;
   const EvaluateTest evaluate_tests_0[] = {
     { "$rAdd 2 2 + =",     true },   // $rAdd = 2 + 2 = 4
     { "$rAdd $rAdd 2 + =", true },   // $rAdd = $rAdd + 2 = 6
@@ -122,7 +122,7 @@ bool RunTests() {
   // The data is fudged a little bit because the tests use FakeMemoryRegion
   // instead of a real stack snapshot, but the program strings are real and
   // the implementation doesn't know or care that the data is not real.
-  map<string, unsigned int> dictionary_1;
+  PostfixEvaluator<unsigned int>::DictionaryType dictionary_1;
   dictionary_1["$ebp"] = 0xbfff0010;
   dictionary_1["$eip"] = 0x10000000;
   dictionary_1["$esp"] = 0xbfff0000;
@@ -186,13 +186,17 @@ bool RunTests() {
     // tests can affect the state of the dictionary for later tests.
     postfix_evaluator.set_dictionary(evaluate_test_set->dictionary);
 
+    // Use a new validity dictionary for each test set.
+    PostfixEvaluator<unsigned int>::DictionaryValidityType assigned;
+
     for (unsigned int evaluate_test_index = 0;
          evaluate_test_index < evaluate_test_count;
          ++evaluate_test_index) {
       const EvaluateTest *evaluate_test = &evaluate_tests[evaluate_test_index];
 
       // Do the test.
-      bool result = postfix_evaluator.Evaluate(evaluate_test->expression);
+      bool result = postfix_evaluator.Evaluate(evaluate_test->expression, 
+                                               &assigned);
       if (result != evaluate_test->evaluable) {
         fprintf(stderr, "FAIL: evaluate set %d/%d, test %d/%d, "
                         "expression \"%s\", expected %s, observed %s\n",
@@ -234,6 +238,24 @@ bool RunTests() {
                         "expected %d, observed %d\n",
                 evaluate_test_set_index, evaluate_test_set_count,
                 identifier.c_str(), expected_value, observed_value);
+        return false;
+      }
+
+      // The value must be set in the "assigned" dictionary if it was a
+      // variable.  It must not have been assigned if it was a constant.
+      bool expected_assigned = identifier[0] == '$';
+      bool observed_assigned = false;
+      PostfixEvaluator<unsigned int>::DictionaryValidityType::const_iterator
+          iterator_assigned = assigned.find(identifier);
+      if (iterator_assigned != assigned.end()) {
+        observed_assigned = iterator_assigned->second;
+      }
+      if (expected_assigned != observed_assigned) {
+        fprintf(stderr, "FAIL: evaluate test set %d/%d, "
+                        "validate assignment of \"%s\", "
+                        "expected %d, observed %d\n",
+                evaluate_test_set_index, evaluate_test_set_count,
+                identifier.c_str(), expected_assigned, observed_assigned);
         return false;
       }
     }

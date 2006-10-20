@@ -96,6 +96,24 @@ class PDBSourceLineWriter {
   // backtraces in the absence of frame pointers.  Returns true on success.
   bool PrintFrameData();
 
+  // Outputs a single public symbol address and name, if the symbol corresponds
+  // to a code address.  Returns true on success.  If symbol is does not
+  // correspond to code, returns true without outputting anything.
+  bool PrintCodePublicSymbol(IDiaSymbol *symbol);
+
+  // Returns the function name for a symbol.  If possible, the name is
+  // undecorated.  If the symbol's decorated form indicates the size of
+  // parameters on the stack, this information is returned in stack_param_size.
+  // Returns true on success.  If the symbol doesn't encode parameter size
+  // information, stack_param_size is set to -1.
+  static bool GetSymbolFunctionName(IDiaSymbol *function, BSTR *name,
+                                    int *stack_param_size);
+
+  // Returns the number of bytes of stack space used for a function's
+  // parameters.  function must have the tag SymTagFunction.  In the event of
+  // a failure, returns 0, which is also a valid number of bytes.
+  static int GetFunctionStackParamSize(IDiaSymbol *function);
+
   // The session for the currently-open pdb file.
   CComPtr<IDiaSession> session_;
 

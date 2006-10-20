@@ -47,7 +47,8 @@ class AutoStackClearer {
 
 
 template<typename ValueType>
-bool PostfixEvaluator<ValueType>::Evaluate(const string &expression) {
+bool PostfixEvaluator<ValueType>::Evaluate(const string &expression,
+                                           DictionaryValidityType *assigned) {
   // Ensure that the stack is cleared before returning.
   AutoStackClearer clearer(&stack_);
 
@@ -142,6 +143,8 @@ bool PostfixEvaluator<ValueType>::Evaluate(const string &expression) {
         return false;
 
       (*dictionary_)[identifier] = value;
+      if (assigned)
+        (*assigned)[identifier] = true;
     } else {
       // The token is not an operator, it's a literal value or an identifier.
       // Push it onto the stack as-is.  Use push_back instead of PushValue

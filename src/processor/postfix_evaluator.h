@@ -69,6 +69,7 @@ template<typename ValueType>
 class PostfixEvaluator {
  public:
   typedef map<string, ValueType> DictionaryType;
+  typedef map<string, bool> DictionaryValidityType;
 
   // Create a PostfixEvaluator object that may be used (with Evaluate) on
   // one or more expressions.  PostfixEvaluator does not take ownership of
@@ -82,8 +83,11 @@ class PostfixEvaluator {
   // Evaluate the expression.  The results of execution will be stored
   // in one (or more) variables in the dictionary.  Returns false if any
   // failures occure during execution, leaving variables in the dictionary
-  // in an indeterminate state.
-  bool Evaluate(const string &expression);
+  // in an indeterminate state.  If assigned is non-NULL, any keys set in
+  // the dictionary as a result of evaluation will also be set to true in
+  // assigned, providing a way to determine if an expression modifies any
+  // of its input variables.
+  bool Evaluate(const string &expression, DictionaryValidityType *assigned);
 
   DictionaryType* dictionary() const { return dictionary_; }
 

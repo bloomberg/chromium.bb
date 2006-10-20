@@ -27,60 +27,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <memory>
+// call_stack.cc: A call stack comprised of stack frames.
+//
+// See call_stack.h for documentation.
+//
+// Author: Mark Mentovai
 
-#include "google/minidump_processor.h"
-#include "processor/minidump.h"
-#include "processor/stackwalker_x86.h"
-
-using std::auto_ptr;
+#include "google/call_stack.h"
+#include "google/stack_frame.h"
+#include "processor/linked_ptr.h"
 
 namespace google_airbag {
 
-MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier)
-    : supplier_(supplier) {
-}
-
-MinidumpProcessor::~MinidumpProcessor() {
-}
-
-bool MinidumpProcessor::Process(const string &minidump_file,
-                                CallStack *stack) {
-  Minidump dump(minidump_file);
-  if (!dump.Read()) {
-    return false;
+CallStack::~CallStack() {
+  for (vector<StackFrame *>::const_iterator iterator = frames_.begin();
+       iterator != frames_.end();
+       ++iterator) {
+    delete *iterator;
   }
-
-  MinidumpException *exception = dump.GetException();
-  if (!exception) {
-    return false;
-  }
-
-  MinidumpThreadList *threads = dump.GetThreadList();
-  if (!threads) {
-    return false;
-  }
-
-  // TODO(bryner): get all the threads
-  MinidumpThread *thread = threads->GetThreadByID(exception->GetThreadID());
-  if (!thread) {
-    return false;
-  }
-
-  MinidumpMemoryRegion *thread_memory = thread->GetMemory();
-  if (!thread_memory) {
-    return false;
-  }
-
-  auto_ptr<Stackwalker> walker(
-    Stackwalker::StackwalkerForCPU(exception->GetContext(), thread_memory,
-                                   dump.GetModuleList(), supplier_));
-  if (!walker.get()) {
-    return false;
-  }
-
-  walker->Walk(stack);
-  return true;
 }
 
 }  // namespace google_airbag

@@ -27,60 +27,47 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <memory>
+// call_stack.h: A call stack comprised of stack frames.
+//
+// This class manages a vector of stack frames.  It is used instead of
+// exposing the vector directly to allow the CallStack to own StackFrame
+// pointers without having to publicly export the linked_ptr class.  A
+// CallStack must be composed of pointers instead of objects to allow for
+// CPU-specific StackFrame subclasses.
+//
+// By convention, the stack frame at index 0 is the innermost callee frame,
+// and the frame at the highest index in a call stack is the outermost
+// caller.  CallStack only allows stacks to be built by pushing frames,
+// beginning with the innermost callee frame.
+//
+// Author: Mark Mentovai
 
-#include "google/minidump_processor.h"
-#include "processor/minidump.h"
-#include "processor/stackwalker_x86.h"
+#ifndef GOOGLE_CALL_STACK_H__
+#define GOOGLE_CALL_STACK_H__
 
-using std::auto_ptr;
+#include <vector>
 
 namespace google_airbag {
 
-MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier)
-    : supplier_(supplier) {
-}
+using std::vector;
 
-MinidumpProcessor::~MinidumpProcessor() {
-}
+struct StackFrame;
+template<typename T> class linked_ptr;
 
-bool MinidumpProcessor::Process(const string &minidump_file,
-                                CallStack *stack) {
-  Minidump dump(minidump_file);
-  if (!dump.Read()) {
-    return false;
-  }
+class CallStack {
+ public:
+  ~CallStack();
 
-  MinidumpException *exception = dump.GetException();
-  if (!exception) {
-    return false;
-  }
+  const vector<StackFrame*>* frames() const { return &frames_; }
 
-  MinidumpThreadList *threads = dump.GetThreadList();
-  if (!threads) {
-    return false;
-  }
+ private:
+  // Stackwalker is responsible for building the frames_ vector.
+  friend class Stackwalker;
 
-  // TODO(bryner): get all the threads
-  MinidumpThread *thread = threads->GetThreadByID(exception->GetThreadID());
-  if (!thread) {
-    return false;
-  }
-
-  MinidumpMemoryRegion *thread_memory = thread->GetMemory();
-  if (!thread_memory) {
-    return false;
-  }
-
-  auto_ptr<Stackwalker> walker(
-    Stackwalker::StackwalkerForCPU(exception->GetContext(), thread_memory,
-                                   dump.GetModuleList(), supplier_));
-  if (!walker.get()) {
-    return false;
-  }
-
-  walker->Walk(stack);
-  return true;
-}
+  // Storage for pushed frames.
+  vector<StackFrame*> frames_;
+};
 
 }  // namespace google_airbag
+
+#endif  // GOOGLE_CALL_STACK_H__

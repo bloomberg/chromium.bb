@@ -38,12 +38,15 @@
 #include <memory>
 #include <string>
 
+#include "google/call_stack.h"
+#include "google/stack_frame.h"
 #include "processor/minidump.h"
 #include "processor/stackwalker_x86.h"
 
 
 using std::auto_ptr;
 using std::string;
+using google_airbag::CallStack;
 using google_airbag::MemoryRegion;
 using google_airbag::Minidump;
 using google_airbag::MinidumpContext;
@@ -52,7 +55,6 @@ using google_airbag::MinidumpModuleList;
 using google_airbag::MinidumpThread;
 using google_airbag::MinidumpThreadList;
 using google_airbag::StackFrame;
-using google_airbag::StackFrames;
 using google_airbag::Stackwalker;
 
 
@@ -112,18 +114,17 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  StackFrames stack;
+  CallStack stack;
   stackwalker->Walk(&stack);
 
   unsigned int index;
-  for (index = 0 ; index < stack.size() ; index++) {
-    StackFrame frame = stack.at(index);
-    printf("[%2d]  ebp = 0x%08llx  eip = 0x%08llx  \"%s\" + 0x%08llx\n",
+  for (index = 0; index < stack.frames()->size(); ++index) {
+    StackFrame *frame = stack.frames()->at(index);
+    printf("[%2d]  instruction = 0x%08llx  \"%s\" + 0x%08llx\n",
            index,
-           frame.frame_pointer,
-           frame.instruction,
-           frame.module_base ? frame.module_name.c_str() : "0x0",
-           frame.instruction - frame.module_base);
+           frame->instruction,
+           frame->module_base ? frame->module_name.c_str() : "0x0",
+           frame->instruction - frame->module_base);
   }
 
   return 0;

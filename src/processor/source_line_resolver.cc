@@ -62,13 +62,19 @@ struct SourceLineResolver::Line {
 struct SourceLineResolver::Function {
   Function(const string &function_name,
            MemAddr function_address,
-           MemAddr code_size)
-      : name(function_name), address(function_address), size(code_size) { }
+           MemAddr code_size,
+           int set_parameter_size)
+      : name(function_name), address(function_address), size(code_size),
+        parameter_size(set_parameter_size) { }
 
   string name;
   MemAddr address;
   MemAddr size;
-  RangeMap<MemAddr, linked_ptr<Line> > lines;
+
+  // The size of parameters passed to this function on the stack.
+  int parameter_size;
+
+  RangeMap< MemAddr, linked_ptr<Line> > lines;
 };
 
 class SourceLineResolver::Module {
@@ -128,7 +134,7 @@ class SourceLineResolver::Module {
 
   string name_;
   FileMap files_;
-  RangeMap<MemAddr, linked_ptr<Function> > functions_;
+  RangeMap< MemAddr, linked_ptr<Function> > functions_;
 
   // Each element in the array is a ContainedRangeMap for a type listed in
   // StackInfoTypes.  These are split by type because there may be overlaps
@@ -184,7 +190,10 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
     return false;
   }
 
-  char buffer[1024];
+  // TODO(mmentovai): this might not be large enough to handle really long
+  // lines, which might be present for FUNC lines of highly-templatized
+  // code.
+  char buffer[8192];
   Function *cur_func = NULL;
 
   while (fgets(buffer, sizeof(buffer), f)) {
@@ -201,6 +210,8 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
       }
       functions_.StoreRange(cur_func->address, cur_func->size,
                             linked_ptr<Function>(cur_func));
+    } else if (strncmp(buffer, "PUBLIC ", 7) == 0) {
+      // TODO(mmentovai): add a public map
     } else {
       if (!cur_func) {
         return false;
@@ -221,18 +232,19 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
 void SourceLineResolver::Module::LookupAddress(
     MemAddr address, StackFrame *frame, StackFrameInfo *frame_info) const {
   if (frame_info) {
+    frame_info->valid = StackFrameInfo::VALID_NONE;
+
     // Check for debugging info first, before any possible early returns.
     // The caller will know that frame_info was filled in by checking its
     // valid field.
     //
-    // We only know about STACK_INFO_FRAME_DATA and STACK_INFO_FPO.
-    // STACK_INFO_STANDARD looks like it would do the right thing, too.
-    // Prefer them in this order.
+    // We only know about STACK_INFO_FRAME_DATA and STACK_INFO_FPO.  Prefer
+    // them in this order.  STACK_INFO_FRAME_DATA is the newer type that
+    // includes its own program string.  STACK_INFO_FPO is the older type
+    // corresponding to the FPO_DATA struct.  See stackwalker_x86.cc.
     if (!stack_info_[STACK_INFO_FRAME_DATA].RetrieveRange(address,
                                                           frame_info)) {
-      if (!stack_info_[STACK_INFO_FPO].RetrieveRange(address, frame_info)) {
-        stack_info_[STACK_INFO_STANDARD].RetrieveRange(address, frame_info);
-      }
+      stack_info_[STACK_INFO_FPO].RetrieveRange(address, frame_info);
     }
   }
 
@@ -252,6 +264,16 @@ void SourceLineResolver::Module::LookupAddress(
     frame->source_file_name = files_.find(line->source_file_id)->second;
   }
   frame->source_line = line->line;
+
+  if (frame_info &&
+      !(frame_info->valid & StackFrameInfo::VALID_PARAMETER_SIZE)) {
+    // Even without a relevant STACK line, many functions contain information
+    // about how much space their parameters consume on the stack.  Prefer
+    // the STACK stuff (above), but if it's not present, take the
+    // information from the FUNC line.
+    frame_info->parameter_size = func->parameter_size;
+    frame_info->valid |= StackFrameInfo::VALID_PARAMETER_SIZE;
+  }
 }
 
 // static
@@ -303,19 +325,20 @@ void SourceLineResolver::Module::ParseFile(char *file_line) {
 
 SourceLineResolver::Function* SourceLineResolver::Module::ParseFunction(
     char *function_line) {
-  // FUNC <address> <name>
+  // FUNC <address> <stack_param_size> <name>
   function_line += 5;  // skip prefix
 
   vector<char*> tokens;
-  if (!Tokenize(function_line, 3, &tokens)) {
+  if (!Tokenize(function_line, 4, &tokens)) {
     return NULL;
   }
 
-  u_int64_t address = strtoull(tokens[0], NULL, 16);
-  u_int64_t size    = strtoull(tokens[1], NULL, 16);
-  char *name        = tokens[2];
+  u_int64_t address    = strtoull(tokens[0], NULL, 16);
+  u_int64_t size       = strtoull(tokens[1], NULL, 16);
+  int stack_param_size = strtoull(tokens[2], NULL, 16);
+  char *name           = tokens[3];
 
-  return new Function(name, address, size);
+  return new Function(name, address, size, stack_param_size);
 }
 
 SourceLineResolver::Line* SourceLineResolver::Module::ParseLine(
@@ -340,17 +363,24 @@ SourceLineResolver::Line* SourceLineResolver::Module::ParseLine(
 bool SourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
   // STACK WIN <type> <rva> <code_size> <prolog_size> <epliog_size>
   // <parameter_size> <saved_register_size> <local_size> <max_stack_size>
-  // <program_string>
+  // <has_program_string> <program_string_OR_allocates_base_pointer>
+  //
+  // If has_program_string is 1, the rest of the line is a program string.
+  // Otherwise, the final token tells whether the stack info indicates that
+  // a base pointer has been allocated.
+  //
+  // Expect has_program_string to be 1 when type is STACK_INFO_FRAME_DATA and
+  // 0 when type is STACK_INFO_FPO, but don't enforce this.
 
   // Skip "STACK " prefix.
   stack_info_line += 6;
 
   vector<char*> tokens;
-  if (!Tokenize(stack_info_line, 11, &tokens))
+  if (!Tokenize(stack_info_line, 12, &tokens))
     return false;
 
   // Only MSVC stack frame info is understood for now.
-  char *platform = tokens[0];
+  const char *platform = tokens[0];
   if (strcmp(platform, "WIN") != 0)
     return false;
 
@@ -358,15 +388,23 @@ bool SourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
   if (type < 0 || type > STACK_INFO_LAST - 1)
     return false;
 
-  u_int64_t rva                 = strtoull(tokens[2], NULL, 16);
-  u_int64_t code_size           = strtoull(tokens[3], NULL, 16);
-  u_int32_t prolog_size         =  strtoul(tokens[4], NULL, 16);
-  u_int32_t epilog_size         =  strtoul(tokens[5], NULL, 16);
-  u_int32_t parameter_size      =  strtoul(tokens[6], NULL, 16);
-  u_int32_t saved_register_size =  strtoul(tokens[7], NULL, 16);
-  u_int32_t local_size          =  strtoul(tokens[8], NULL, 16);
-  u_int32_t max_stack_size      =  strtoul(tokens[9], NULL, 16);
-  char *program_string          = tokens[10];
+  u_int64_t rva                 = strtoull(tokens[2],  NULL, 16);
+  u_int64_t code_size           = strtoull(tokens[3],  NULL, 16);
+  u_int32_t prolog_size         =  strtoul(tokens[4],  NULL, 16);
+  u_int32_t epilog_size         =  strtoul(tokens[5],  NULL, 16);
+  u_int32_t parameter_size      =  strtoul(tokens[6],  NULL, 16);
+  u_int32_t saved_register_size =  strtoul(tokens[7],  NULL, 16);
+  u_int32_t local_size          =  strtoul(tokens[8],  NULL, 16);
+  u_int32_t max_stack_size      =  strtoul(tokens[9],  NULL, 16);
+  int has_program_string        =  strtoul(tokens[10], NULL, 16);
+
+  const char *program_string = "";
+  int allocates_base_pointer = 0;
+  if (has_program_string) {
+    program_string = tokens[11];
+  } else {
+    allocates_base_pointer = strtoul(tokens[11], NULL, 16);
+  }
 
   // TODO(mmentovai): I wanted to use StoreRange's return value as this
   // method's return value, but MSVC infrequently outputs stack info that
@@ -395,6 +433,7 @@ bool SourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
                                               saved_register_size,
                                               local_size,
                                               max_stack_size,
+                                              allocates_base_pointer,
                                               program_string));
 
   return true;
