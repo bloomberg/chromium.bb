@@ -1486,7 +1486,7 @@ MinidumpModule* MinidumpModuleList::GetModuleForAddress(u_int64_t address) {
     return NULL;
 
   unsigned int module_index;
-  if (!range_map_.RetrieveRange(address, &module_index))
+  if (!range_map_.RetrieveRange(address, &module_index, NULL, NULL))
     return NULL;
 
   return GetModuleAtIndex(module_index);
@@ -1616,7 +1616,7 @@ MinidumpMemoryRegion* MinidumpMemoryList::GetMemoryRegionForAddress(
     return NULL;
 
   unsigned int region_index;
-  if (!range_map_.RetrieveRange(address, &region_index))
+  if (!range_map_.RetrieveRange(address, &region_index, NULL, NULL))
     return NULL;
 
   return GetMemoryRegionAtIndex(region_index);

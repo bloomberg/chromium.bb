@@ -61,7 +61,19 @@ class RangeMap {
 
   // Locates the range encompassing the supplied address.  If there is
   // no such range, or if there is a parameter error, returns false.
-  bool RetrieveRange(const AddressType &address, EntryType *entry) const;
+  // entry_base and entry_size, if non-NULL, are set to the base and size
+  // of the entry's range.
+  bool RetrieveRange(const AddressType &address, EntryType *entry,
+                     AddressType *entry_base, AddressType *entry_size) const;
+
+  // Locates the range encompassing the supplied address, if one exists.
+  // If no range encompasses the supplied address, locates the nearest range
+  // to the supplied address that is lower than the address.  Returns false
+  // if no range meets these criteria.  entry_base and entry_size, if
+  // non-NULL, are set to the base and size of the entry's range.
+  bool RetrieveNearestRange(const AddressType &address, EntryType *entry,
+                            AddressType *entry_base, AddressType *entry_size)
+                            const;
 
   // Empties the range map, restoring it to the state it was when it was
   // initially created.

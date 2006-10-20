@@ -27,60 +27,60 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_STACK_FRAME_H__
-#define GOOGLE_STACK_FRAME_H__
+// address_map-inl.h: Address map implementation.
+//
+// See address_map.h for documentation.
+//
+// Author: Mark Mentovai
 
-#include <string>
-#include "google/airbag_types.h"
+#ifndef PROCESSOR_ADDRESS_MAP_INL_H__
+#define PROCESSOR_ADDRESS_MAP_INL_H__
+
+#include "processor/address_map.h"
 
 namespace google_airbag {
 
-using std::string;
+template<typename AddressType, typename EntryType>
+bool AddressMap<AddressType, EntryType>::Store(const AddressType &address,
+                                               const EntryType &entry) {
+  // Ensure that the specified address doesn't conflict with something already
+  // in the map.
+  if (map_.find(address) != map_.end())
+    return false;
 
-struct StackFrame {
-  StackFrame()
-      : instruction(),
-        module_base(),
-        module_name(),
-        function_base(),
-        function_name(),
-        source_file_name(),
-        source_line(),
-        source_line_base() {}
-  virtual ~StackFrame() {}
+  map_.insert(MapValue(address, entry));
+  return true;
+}
 
-  // The program counter location as an absolute virtual address.  For the
-  // innermost called frame in a stack, this will be an exact program counter
-  // or instruction pointer value.  For all other frames, this will be within
-  // the instruction that caused execution to branch to a called function,
-  // but may not necessarily point to the exact beginning of that instruction.
-  u_int64_t instruction;
+template<typename AddressType, typename EntryType>
+bool AddressMap<AddressType, EntryType>::Retrieve(
+    const AddressType &address,
+    EntryType *entry, AddressType *entry_address) const {
+  if (!entry)
+    return false;
 
-  // The base address of the module.
-  u_int64_t module_base;
+  // upper_bound gives the first element whose key is greater than address,
+  // but we want the first element whose key is less than or equal to address.
+  // Decrement the iterator to get there, but not if the upper_bound already
+  // points to the beginning of the map - in that case, address is lower than
+  // the lowest stored key, so return false.
+  MapConstIterator iterator = map_.upper_bound(address);
+  if (iterator == map_.begin())
+    return false;
+  --iterator;
 
-  // The module in which the instruction resides.
-  string module_name;
+  *entry = iterator->second;
+  if (entry_address)
+    *entry_address = iterator->first;
 
-  // The start address of the function, may be omitted if debug symbols
-  // are not available.
-  u_int64_t function_base;
+  return true;
+}
 
-  // The function name, may be omitted if debug symbols are not available.
-  string function_name;
-
-  // The source file name, may be omitted if debug symbols are not available.
-  string source_file_name;
-
-  // The (1-based) source line number, may be omitted if debug symbols are
-  // not available.
-  int source_line;
-
-  // The start address of the source line, may be omitted if debug symbols
-  // are not available.
-  u_int64_t source_line_base;
-};
+template<typename AddressType, typename EntryType>
+void AddressMap<AddressType, EntryType>::Clear() {
+  map_.clear();
+}
 
 }  // namespace google_airbag
 
-#endif  // GOOGLE_STACK_FRAME_H__
+#endif  // PROCESSOR_ADDRESS_MAP_INL_H__

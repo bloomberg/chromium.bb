@@ -36,10 +36,12 @@
 #include <cstdio>
 #include <memory>
 
+#include "processor/linked_ptr.h"
 #include "processor/range_map-inl.h"
 
 
 using std::auto_ptr;
+using google_airbag::linked_ptr;
 using google_airbag::RangeMap;
 
 
@@ -48,7 +50,6 @@ using google_airbag::RangeMap;
 class CountedObject {
  public:
   explicit CountedObject(int id) : id_(id) { ++count_; }
-  CountedObject(const CountedObject &that) : id_(that.id_) { ++count_; }
   ~CountedObject() { --count_; }
 
   static int count() { return count_; }
@@ -63,7 +64,7 @@ int CountedObject::count_;
 
 
 typedef int AddressType;
-typedef RangeMap<AddressType, CountedObject> TestMap;
+typedef RangeMap< AddressType, linked_ptr<CountedObject> > TestMap;
 
 
 // RangeTest contains data to use for store and retrieve tests.  See
@@ -98,7 +99,7 @@ struct RangeTestSet {
 // test RangeMap.  It returns true if the expected result occurred, and
 // false if something else happened.
 bool StoreTest(TestMap *range_map, const RangeTest *range_test) {
-  CountedObject object(range_test->id);
+  linked_ptr<CountedObject> object(new CountedObject(range_test->id));
   bool stored = range_map->StoreRange(range_test->address,
                                       range_test->size,
                                       object);
@@ -158,10 +159,14 @@ bool RetrieveTest(TestMap *range_map, const RangeTest *range_test) {
           expected_result = !side;   // should succeed low and fail high.
       }
 
-      CountedObject object(-1);
-      bool retrieved = range_map->RetrieveRange(address, &object);
+      linked_ptr<CountedObject> object;
+      AddressType retrieved_base;
+      AddressType retrieved_size;
+      bool retrieved = range_map->RetrieveRange(address, &object,
+                                                &retrieved_base,
+                                                &retrieved_size);
 
-      bool observed_result = retrieved && object.id() == range_test->id;
+      bool observed_result = retrieved && object->id() == range_test->id;
 
       if (observed_result != expected_result) {
         fprintf(stderr, "FAILED: "
@@ -172,6 +177,59 @@ bool RetrieveTest(TestMap *range_map, const RangeTest *range_test) {
                         offset,
                         expected_result ? "true" : "false",
                         observed_result ? "true" : "false");
+        return false;
+      }
+
+      // If a range was successfully retrieved, check that the returned
+      // bounds match the range as stored.
+      if (observed_result == true &&
+          (retrieved_base != range_test->address ||
+           retrieved_size != range_test->size)) {
+        fprintf(stderr, "FAILED: "
+                        "RetrieveRange id %d, side %d, offset %d, "
+                        "expected base/size %d/%d, observed %d/%d\n",
+                        range_test->id,
+                        side,
+                        offset,
+                        range_test->address, range_test->size,
+                        retrieved_base, retrieved_size);
+        return false;
+      }
+
+      // Now, check RetrieveNearestRange.  The nearest range is always
+      // expected to be different from the test range when checking one
+      // less than the low side.
+      bool expected_nearest = range_test->expect_storable;
+      if (!side && offset < 0)
+        expected_nearest = false;
+
+      linked_ptr<CountedObject> nearest_object;
+      AddressType nearest_base;
+      bool retrieved_nearest = range_map->RetrieveNearestRange(address,
+                                                               &nearest_object,
+                                                               &nearest_base,
+                                                               NULL);
+
+      // When checking one greater than the high side, RetrieveNearestRange
+      // should usually return the test range.  When a different range begins
+      // at that address, though, then RetrieveNearestRange should return the
+      // range at the address instead of the test range.
+      if (side && offset > 0 && nearest_base == address) {
+        expected_nearest = false;
+      }
+
+      bool observed_nearest = retrieved_nearest &&
+                              nearest_object->id() == range_test->id;
+
+      if (observed_nearest != expected_nearest) {
+        fprintf(stderr, "FAILED: "
+                        "RetrieveNearestRange id %d, side %d, offset %d, "
+                        "expected %s, observed %s\n",
+                        range_test->id,
+                        side,
+                        offset,
+                        expected_nearest ? "true" : "false",
+                        observed_nearest ? "true" : "false");
         return false;
       }
     }

@@ -73,6 +73,7 @@ class SourceLineResolver {
   template<class T> class MemAddrMap;
   struct Line;
   struct Function;
+  struct PublicSymbol;
   struct File;
   struct HashString {
     size_t operator()(const string &s) const;

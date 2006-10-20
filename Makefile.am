@@ -56,6 +56,8 @@ src_libairbag_la_SOURCES = \
 	src/google/stack_frame.h \
 	src/google/stack_frame_cpu.h \
 	src/google/symbol_supplier.h \
+	src/processor/address_map.h \
+	src/processor/address_map-inl.h \
 	src/processor/call_stack.cc \
 	src/processor/contained_range_map.h \
 	src/processor/contained_range_map-inl.h \
@@ -88,6 +90,7 @@ bin_PROGRAMS = \
 
 ## Tests
 check_PROGRAMS = \
+	src/processor/address_map_unittest \
 	src/processor/contained_range_map_unittest \
 	src/processor/minidump_processor_unittest \
 	src/processor/postfix_evaluator_unittest \
@@ -105,6 +108,9 @@ check_SCRIPTS = \
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT =
+
+src_processor_address_map_unittest_SOURCES = \
+	src/processor/address_map_unittest.cc
 
 src_processor_contained_range_map_unittest_SOURCES = \
 	src/processor/contained_range_map_unittest.cc

@@ -83,7 +83,8 @@ bool RangeMap<AddressType, EntryType>::StoreRange(const AddressType &base,
 
 template<typename AddressType, typename EntryType>
 bool RangeMap<AddressType, EntryType>::RetrieveRange(
-    const AddressType &address, EntryType *entry) const {
+    const AddressType &address, EntryType *entry,
+    AddressType *entry_base, AddressType *entry_size) const {
   if (!entry)
     return false;
 
@@ -100,6 +101,42 @@ bool RangeMap<AddressType, EntryType>::RetrieveRange(
     return false;
 
   *entry = iterator->second.entry();
+  if (entry_base)
+    *entry_base = iterator->second.base();
+  if (entry_size)
+    *entry_size = iterator->first - iterator->second.base() + 1;
+
+  return true;
+}
+
+
+template<typename AddressType, typename EntryType>
+bool RangeMap<AddressType, EntryType>::RetrieveNearestRange(
+    const AddressType &address, EntryType *entry,
+    AddressType *entry_base, AddressType *entry_size) const {
+  if (!entry)
+    return false;
+
+  // If address is within a range, RetrieveRange can handle it.
+  if (RetrieveRange(address, entry, entry_base, entry_size))
+    return true;
+
+  // upper_bound gives the first element whose key is greater than address,
+  // but we want the first element whose key is less than or equal to address.
+  // Decrement the iterator to get there, but not if the upper_bound already
+  // points to the beginning of the map - in that case, address is lower than
+  // the lowest stored key, so return false.
+  MapConstIterator iterator = map_.upper_bound(address);
+  if (iterator == map_.begin())
+    return false;
+  --iterator;
+
+  *entry = iterator->second.entry();
+  if (entry_base)
+    *entry_base = iterator->first;
+  if (entry_size)
+    *entry_size = iterator->first - iterator->second.base() + 1;
+
   return true;
 }
 

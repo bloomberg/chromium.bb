@@ -483,7 +483,7 @@ bool PDBSourceLineWriter::GetSymbolFunctionName(IDiaSymbol *function,
       } else if (*name[0] == '_') {
         // This symbol's name is encoded according to the cdecl rules.  The
         // name doesn't end in a '@' character followed by a decimal positive
-        // nteger, so it's not a stdcall name.  Strip off the leading
+        // integer, so it's not a stdcall name.  Strip off the leading
         // underscore.
         wcsncpy_s(*name, length, *name + 1, length - 1);
       }

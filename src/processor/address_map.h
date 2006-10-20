@@ -27,60 +27,54 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_STACK_FRAME_H__
-#define GOOGLE_STACK_FRAME_H__
+// address_map.h: Address maps.
+//
+// An address map contains a set of objects keyed by address.  Objects are
+// retrieved from the map by returning the object with the highest key less
+// than or equal to the lookup key.
+//
+// Author: Mark Mentovai
 
-#include <string>
-#include "google/airbag_types.h"
+#ifndef PROCESSOR_ADDRESS_MAP_H__
+#define PROCESSOR_ADDRESS_MAP_H__
+
+#include <map>
 
 namespace google_airbag {
 
-using std::string;
+template<typename AddressType, typename EntryType>
+class AddressMap {
+ public:
+  AddressMap() : map_() {}
 
-struct StackFrame {
-  StackFrame()
-      : instruction(),
-        module_base(),
-        module_name(),
-        function_base(),
-        function_name(),
-        source_file_name(),
-        source_line(),
-        source_line_base() {}
-  virtual ~StackFrame() {}
+  // Inserts an entry into the map.  Returns false without storing the entry
+  // if an entry is already stored in the map at the same address as specified
+  // by the address argument.
+  bool Store(const AddressType &address, const EntryType &entry);
 
-  // The program counter location as an absolute virtual address.  For the
-  // innermost called frame in a stack, this will be an exact program counter
-  // or instruction pointer value.  For all other frames, this will be within
-  // the instruction that caused execution to branch to a called function,
-  // but may not necessarily point to the exact beginning of that instruction.
-  u_int64_t instruction;
+  // Locates the entry stored at the highest address less than or equal to
+  // the address argument.  If there is no such range, or if there is a
+  // parameter error, returns false.  The entry is returned in entry.  If
+  // entry_address is not NULL, it will be set to the address that the entry
+  // was stored at.
+  bool Retrieve(const AddressType &address,
+                EntryType *entry, AddressType *entry_address) const;
 
-  // The base address of the module.
-  u_int64_t module_base;
+  // Empties the address map, restoring it to the same state as when it was
+  // initially created.
+  void Clear();
 
-  // The module in which the instruction resides.
-  string module_name;
+ private:
+  // Convenience types.
+  typedef std::map<AddressType, EntryType> AddressToEntryMap;
+  typedef typename AddressToEntryMap::const_iterator MapConstIterator;
+  typedef typename AddressToEntryMap::value_type MapValue;
 
-  // The start address of the function, may be omitted if debug symbols
-  // are not available.
-  u_int64_t function_base;
-
-  // The function name, may be omitted if debug symbols are not available.
-  string function_name;
-
-  // The source file name, may be omitted if debug symbols are not available.
-  string source_file_name;
-
-  // The (1-based) source line number, may be omitted if debug symbols are
-  // not available.
-  int source_line;
-
-  // The start address of the source line, may be omitted if debug symbols
-  // are not available.
-  u_int64_t source_line_base;
+  // Maps the address of each entry to an EntryType.
+  AddressToEntryMap map_;
 };
 
 }  // namespace google_airbag
 
-#endif  // GOOGLE_STACK_FRAME_H__
+#endif  // PROCESSOR_ADDRESS_MAP_H__
+

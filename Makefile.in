@@ -70,7 +70,8 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = src/processor/minidump_dump$(EXEEXT) \
 	src/processor/minidump_stackwalk$(EXEEXT)
-check_PROGRAMS = src/processor/contained_range_map_unittest$(EXEEXT) \
+check_PROGRAMS = src/processor/address_map_unittest$(EXEEXT) \
+	src/processor/contained_range_map_unittest$(EXEEXT) \
 	src/processor/minidump_processor_unittest$(EXEEXT) \
 	src/processor/postfix_evaluator_unittest$(EXEEXT) \
 	src/processor/range_map_unittest$(EXEEXT) \
@@ -118,6 +119,11 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 @SELFTEST_TRUE@am__EXEEXT_1 =  \
 @SELFTEST_TRUE@	src/processor/stackwalker_selftest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
+am_src_processor_address_map_unittest_OBJECTS =  \
+	src/processor/address_map_unittest.$(OBJEXT)
+src_processor_address_map_unittest_OBJECTS =  \
+	$(am_src_processor_address_map_unittest_OBJECTS)
+src_processor_address_map_unittest_LDADD = $(LDADD)
 am_src_processor_contained_range_map_unittest_OBJECTS =  \
 	src/processor/contained_range_map_unittest.$(OBJEXT)
 src_processor_contained_range_map_unittest_OBJECTS =  \
@@ -193,6 +199,7 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(src_libairbag_la_SOURCES) \
+	$(src_processor_address_map_unittest_SOURCES) \
 	$(src_processor_contained_range_map_unittest_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
 	$(src_processor_minidump_processor_unittest_SOURCES) \
@@ -202,6 +209,7 @@ SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_source_line_resolver_unittest_SOURCES) \
 	$(src_processor_stackwalker_selftest_SOURCES)
 DIST_SOURCES = $(src_libairbag_la_SOURCES) \
+	$(src_processor_address_map_unittest_SOURCES) \
 	$(src_processor_contained_range_map_unittest_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
 	$(src_processor_minidump_processor_unittest_SOURCES) \
@@ -348,6 +356,8 @@ src_libairbag_la_SOURCES = \
 	src/google/stack_frame.h \
 	src/google/stack_frame_cpu.h \
 	src/google/symbol_supplier.h \
+	src/processor/address_map.h \
+	src/processor/address_map-inl.h \
 	src/processor/call_stack.cc \
 	src/processor/contained_range_map.h \
 	src/processor/contained_range_map-inl.h \
@@ -377,6 +387,9 @@ check_SCRIPTS = \
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT = 
+src_processor_address_map_unittest_SOURCES = \
+	src/processor/address_map_unittest.cc
+
 src_processor_contained_range_map_unittest_SOURCES = \
 	src/processor/contained_range_map_unittest.cc
 
@@ -592,6 +605,12 @@ clean-noinstPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
+src/processor/address_map_unittest.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/address_map_unittest$(EXEEXT): $(src_processor_address_map_unittest_OBJECTS) $(src_processor_address_map_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/address_map_unittest$(EXEEXT)
+	$(CXXLINK) $(src_processor_address_map_unittest_LDFLAGS) $(src_processor_address_map_unittest_OBJECTS) $(src_processor_address_map_unittest_LDADD) $(LIBS)
 src/processor/contained_range_map_unittest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -642,6 +661,7 @@ src/processor/stackwalker_selftest$(EXEEXT): $(src_processor_stackwalker_selftes
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f src/processor/address_map_unittest.$(OBJEXT)
 	-rm -f src/processor/call_stack.$(OBJEXT)
 	-rm -f src/processor/call_stack.lo
 	-rm -f src/processor/contained_range_map_unittest.$(OBJEXT)
@@ -668,6 +688,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/address_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/call_stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/contained_range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump.Plo@am__quote@

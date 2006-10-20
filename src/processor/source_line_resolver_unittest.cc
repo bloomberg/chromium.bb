@@ -116,6 +116,22 @@ static bool RunTests() {
   ASSERT_EQ(frame.source_line, 21);
   ASSERT_EQ(frame_info.prolog_size, 1);
 
+  frame.instruction = 0x216f;
+  frame.module_name = "module2";
+  resolver.FillSourceLineInfo(&frame, &frame_info);
+  ASSERT_EQ(frame.function_name, "Public2_1");
+
+  ClearSourceLineInfo(&frame, &frame_info);
+  frame.instruction = 0x219f;
+  frame.module_name = "module2";
+  resolver.FillSourceLineInfo(&frame, &frame_info);
+  ASSERT_TRUE(frame.function_name.empty());
+
+  frame.instruction = 0x21a0;
+  frame.module_name = "module2";
+  resolver.FillSourceLineInfo(&frame, &frame_info);
+  ASSERT_EQ(frame.function_name, "Public2_2");
+
   ASSERT_FALSE(resolver.LoadModule("module3",
                                    testdata_dir + "/module3_bad.out"));
   ASSERT_FALSE(resolver.HasModule("module3"));

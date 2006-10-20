@@ -34,6 +34,7 @@
 #include <utility>
 #include "processor/source_line_resolver.h"
 #include "google/stack_frame.h"
+#include "processor/address_map-inl.h"
 #include "processor/contained_range_map-inl.h"
 #include "processor/linked_ptr.h"
 #include "processor/range_map-inl.h"
@@ -75,6 +76,23 @@ struct SourceLineResolver::Function {
   int parameter_size;
 
   RangeMap< MemAddr, linked_ptr<Line> > lines;
+};
+
+struct SourceLineResolver::PublicSymbol {
+  PublicSymbol(const string& set_name,
+               MemAddr set_address,
+               int set_parameter_size)
+      : name(set_name),
+        address(set_address),
+        parameter_size(set_parameter_size) {}
+
+  string name;
+  MemAddr address;
+
+  // If the public symbol is used as a function entry point, parameter_size
+  // is set to the size of the parameters passed to the funciton on the
+  // stack, if known.
+  int parameter_size;
 };
 
 class SourceLineResolver::Module {
@@ -129,12 +147,17 @@ class SourceLineResolver::Module {
   // Parses a line declaration, returning a new Line object.
   Line* ParseLine(char *line_line);
 
+  // Parses a PUBLIC symbol declaration, storing it in public_symbols_.
+  // Returns false if an error occurs.
+  bool ParsePublicSymbol(char *public_line);
+
   // Parses a stack frame info declaration, storing it in stack_info_.
   bool ParseStackInfo(char *stack_info_line);
 
   string name_;
   FileMap files_;
   RangeMap< MemAddr, linked_ptr<Function> > functions_;
+  AddressMap< MemAddr, linked_ptr<PublicSymbol> > public_symbols_;
 
   // Each element in the array is a ContainedRangeMap for a type listed in
   // StackInfoTypes.  These are split by type because there may be overlaps
@@ -208,10 +231,17 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
       if (!cur_func) {
         return false;
       }
-      functions_.StoreRange(cur_func->address, cur_func->size,
-                            linked_ptr<Function>(cur_func));
+      if (!functions_.StoreRange(cur_func->address, cur_func->size,
+                                 linked_ptr<Function>(cur_func))) {
+        return false;
+      }
     } else if (strncmp(buffer, "PUBLIC ", 7) == 0) {
-      // TODO(mmentovai): add a public map
+      // Clear cur_func: public symbols don't contain line number information.
+      cur_func = NULL;
+
+      if (!ParsePublicSymbol(buffer)) {
+        return false;
+      }
     } else {
       if (!cur_func) {
         return false;
@@ -248,30 +278,62 @@ void SourceLineResolver::Module::LookupAddress(
     }
   }
 
+  // First, look for a matching FUNC range.  Use RetrieveNearestRange instead
+  // of RetrieveRange so that the nearest function can be compared to the
+  // nearest PUBLIC symbol if the address does not lie within the function.
+  // Having access to the highest function below address, even when address
+  // is outside of the function, is useful: if the function is higher than
+  // the nearest PUBLIC symbol, then it means that the PUBLIC symbols is not
+  // valid for the address, and no function information should be filled in.
+  // Using RetrieveNearestRange instead of RetrieveRange means that we need
+  // to verify that address is within the range before using a FUNC.
+  //
+  // If no FUNC containing the address is found, look for the nearest PUBLIC
+  // symbol, being careful not to use a public symbol at a lower address than
+  // the nearest FUNC.
+  int parameter_size = 0;
   linked_ptr<Function> func;
-  if (!functions_.RetrieveRange(address, &func)) {
+  linked_ptr<PublicSymbol> public_symbol;
+  MemAddr function_base;
+  MemAddr function_size;
+  MemAddr public_address;
+  if (functions_.RetrieveNearestRange(address, &func,
+                                      &function_base, &function_size) &&
+      address >= function_base && address < function_base + function_size) {
+    parameter_size = func->parameter_size;
+
+    frame->function_name = func->name;
+    frame->function_base = frame->module_base + function_base;
+
+    linked_ptr<Line> line;
+    MemAddr line_base;
+    if (func->lines.RetrieveRange(address, &line, &line_base, NULL)) {
+      FileMap::const_iterator it = files_.find(line->source_file_id);
+      if (it != files_.end()) {
+        frame->source_file_name = files_.find(line->source_file_id)->second;
+      }
+      frame->source_line = line->line;
+      frame->source_line_base = frame->module_base + line_base;
+    }
+  } else if (public_symbols_.Retrieve(address,
+                                      &public_symbol, &public_address) &&
+             (!func.get() || public_address > function_base + function_size)) {
+    parameter_size = public_symbol->parameter_size;
+
+    frame->function_name = public_symbol->name;
+    frame->function_base = frame->module_base + public_address;
+  } else {
+    // No FUNC or PUBLIC data available.
     return;
   }
-
-  frame->function_name = func->name;
-  linked_ptr<Line> line;
-  if (!func->lines.RetrieveRange(address, &line)) {
-    return;
-  }
-
-  FileMap::const_iterator it = files_.find(line->source_file_id);
-  if (it != files_.end()) {
-    frame->source_file_name = files_.find(line->source_file_id)->second;
-  }
-  frame->source_line = line->line;
 
   if (frame_info &&
       !(frame_info->valid & StackFrameInfo::VALID_PARAMETER_SIZE)) {
     // Even without a relevant STACK line, many functions contain information
     // about how much space their parameters consume on the stack.  Prefer
     // the STACK stuff (above), but if it's not present, take the
-    // information from the FUNC line.
-    frame_info->parameter_size = func->parameter_size;
+    // information from the FUNC or PUBLIC line.
+    frame_info->parameter_size = parameter_size;
     frame_info->valid |= StackFrameInfo::VALID_PARAMETER_SIZE;
   }
 }
@@ -325,7 +387,7 @@ void SourceLineResolver::Module::ParseFile(char *file_line) {
 
 SourceLineResolver::Function* SourceLineResolver::Module::ParseFunction(
     char *function_line) {
-  // FUNC <address> <stack_param_size> <name>
+  // FUNC <address> <size> <stack_param_size> <name>
   function_line += 5;  // skip prefix
 
   vector<char*> tokens;
@@ -358,6 +420,36 @@ SourceLineResolver::Line* SourceLineResolver::Module::ParseLine(
   }
 
   return new Line(address, size, source_file, line_number);
+}
+
+bool SourceLineResolver::Module::ParsePublicSymbol(char *public_line) {
+  // PUBLIC <address> <stack_param_size> <name>
+
+  // Skip "PUBLIC " prefix.
+  public_line += 7;
+
+  vector<char*> tokens;
+  if (!Tokenize(public_line, 3, &tokens)) {
+    return false;
+  }
+
+  u_int64_t address    = strtoull(tokens[0], NULL, 16);
+  int stack_param_size = strtoull(tokens[1], NULL, 16);
+  char *name           = tokens[2];
+
+  // A few public symbols show up with an address of 0.  This has been seen
+  // in the dumped output of ntdll.pdb for symbols such as _CIlog, _CIpow,
+  // RtlDescribeChunkLZNT1, and RtlReserveChunkLZNT1.  They would conflict
+  // with one another if they were allowed into the public_symbols_ map,
+  // but since the address is obviously invalid, gracefully accept them
+  // as input without putting them into the map.
+  if (address == 0) {
+    return true;
+  }
+
+  linked_ptr<PublicSymbol> symbol(new PublicSymbol(name, address,
+                                                   stack_param_size));
+  return public_symbols_.Store(address, symbol);
 }
 
 bool SourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
