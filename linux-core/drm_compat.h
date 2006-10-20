@@ -231,7 +231,7 @@ static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from
 #include <linux/mm.h>
 #include <asm/page.h>
 
-#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)) && \
+#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)) && \
      (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))) 
 #define DRM_ODD_MM_COMPAT
 #endif
@@ -277,7 +277,18 @@ extern int drm_map_page_into_agp(struct page *page);
 #define unmap_page_from_agp drm_unmap_page_from_agp
 #endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+extern struct page *get_nopage_retry(void);
+extern void free_nopage_retry(void);
+struct fault_data;
+extern struct page *drm_vm_ttm_fault(struct vm_area_struct *vma, 
+				     struct fault_data *data);
+
+#define NOPAGE_REFAULT get_nopage_retry()
+#endif
+
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
 
 /*
  * Hopefully, real NOPAGE_RETRY functionality will be in 2.6.19. 
@@ -295,10 +306,6 @@ struct fault_data {
 	int type;
 };
 
-extern struct page *get_nopage_retry(void);
-extern void free_nopage_retry(void);
-
-#define NOPAGE_REFAULT get_nopage_retry()
 
 extern int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr, 
 			 unsigned long pfn, pgprot_t pgprot);
@@ -306,9 +313,6 @@ extern int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 extern struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
 				      unsigned long address, 
 				      int *type);
-
-extern struct page *drm_vm_ttm_fault(struct vm_area_struct *vma, 
-				     struct fault_data *data);
 
 #endif
 

@@ -28,6 +28,11 @@
 #include "drmP.h"
 
 #if defined(CONFIG_X86) && (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+
+/*
+ * These have bad performance in the AGP module for the indicated kernel versions.
+ */
+
 int drm_map_page_into_agp(struct page *page)
 {
         int i;
@@ -45,8 +50,14 @@ int drm_unmap_page_from_agp(struct page *page)
          * performance reasons */
         return i;
 }
-#endif
+#endif 
 
+
+#if  (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+
+/*
+ * The protection map was exported in 2.6.19
+ */
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags)
 {
@@ -62,8 +73,17 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags)
 	return protection_map[vm_flags & 0x0F];
 #endif
 };
+#endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+
+/*
+ * vm code for kernels below 2,6,15 in which version a major vm write
+ * occured. This implement a simple straightforward 
+ * version similar to what's going to be
+ * in kernel 2.6.20+?
+ */ 
 
 static int drm_pte_is_clear(struct vm_area_struct *vma,
 			    unsigned long addr)
@@ -76,12 +96,7 @@ static int drm_pte_is_clear(struct vm_area_struct *vma,
 	pgd_t *pgd;
 	
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 	spin_lock(&mm->page_table_lock);
-#else
-	spinlock_t *ptl;
-#endif
-	
 	pgd = pgd_offset(mm, addr);
 	if (pgd_none(*pgd))
 		goto unlock;
@@ -91,22 +106,13 @@ static int drm_pte_is_clear(struct vm_area_struct *vma,
 	pmd = pmd_offset(pud, addr);
 	if (pmd_none(*pmd))
 		goto unlock;
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 	pte = pte_offset_map(pmd, addr);
-#else 
-	pte = pte_offset_map_lock(mm, pmd, addr, &ptl); 
-#endif
 	if (!pte)
 		goto unlock;
 	ret = pte_none(*pte);
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 	pte_unmap(pte);
  unlock:	
 	spin_unlock(&mm->page_table_lock);
-#else
-	pte_unmap_unlock(pte, ptl);
- unlock:
-#endif
 	return ret;
 }
 	
@@ -120,7 +126,6 @@ int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 	ret = io_remap_pfn_range(vma, addr, pfn, PAGE_SIZE, pgprot);
 	return ret;
 }
-
 
 static struct {
 	spinlock_t lock;
@@ -154,9 +159,6 @@ void free_nopage_retry(void)
 		spin_unlock(&drm_np_retry.lock);
 	}
 }
-#endif
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 
 struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
 			       unsigned long address, 
@@ -185,6 +187,17 @@ struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
 #endif
 
 #ifdef DRM_ODD_MM_COMPAT
+
+/*
+ * VM compatibility code for 2.6.15-2.6.19(?). This code implements a complicated
+ * workaround for a single BUG statement in do_no_page in these versions. The
+ * tricky thing is that we need to take the mmap_sem in exclusive mode for _all_
+ * vmas mapping the ttm, before dev->struct_mutex is taken. The way we do this is to 
+ * check first take the dev->struct_mutex, and then trylock all mmap_sems. If this
+ * fails for a single mmap_sem, we have to release all sems and the dev->struct_mutex,
+ * release the cpu and retry. We also need to keep track of all vmas mapping the ttm.
+ * phew.
+ */
 
 typedef struct p_mm_entry {
 	struct list_head head;
