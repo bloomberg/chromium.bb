@@ -28,6 +28,18 @@
 
 #include "drmP.h"
 
+static void drm_ttm_ipi_handler(void *null)
+{
+	wbinvd();
+}
+
+static void drm_ttm_cache_flush(void) 
+{
+	if (on_each_cpu(drm_ttm_ipi_handler, NULL, 1, 1) != 0)
+		DRM_ERROR("Timed out waiting for drm cache flush.\n");
+}
+
+
 /*
  * Use kmalloc if possible. Otherwise fall back to vmalloc.
  */
@@ -98,6 +110,9 @@ static int drm_set_caching(drm_ttm_t * ttm, int noncached)
 
 	if ((ttm->page_flags & DRM_TTM_PAGE_UNCACHED) == noncached)
 		return 0;
+
+	if (noncached) 
+		drm_ttm_cache_flush();
 
 	for (i = 0; i < ttm->num_pages; ++i) {
 		cur_page = ttm->pages + i;
