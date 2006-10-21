@@ -75,45 +75,26 @@ DRM_MODULES ?= $(MODULE_LIST)
 
 # These definitions are for handling dependencies in the out of kernel build.
 
-DRMSHARED =     drm.h drm_sarea.h drm_drawable.c
 DRMHEADERS =    drmP.h drm_compat.h drm_os_linux.h drm.h drm_sarea.h
 COREHEADERS =   drm_core.h drm_sman.h drm_hashtab.h 
 
 TDFXHEADERS =   tdfx_drv.h $(DRMHEADERS)
-TDFXSHARED =    tdfx_drv.h
 R128HEADERS =   r128_drv.h r128_drm.h $(DRMHEADERS)
-R128SHARED =    r128_drv.h r128_drm.h r128_cce.c r128_state.c r128_irq.c
 RADEONHEADERS = radeon_drv.h radeon_drm.h r300_reg.h $(DRMHEADERS)
-RADEONSHARED =  radeon_drv.h radeon_drm.h radeon_cp.c radeon_irq.c \
-                radeon_mem.c radeon_state.c r300_cmdbuf.c r300_reg.h
 MGAHEADERS =    mga_drv.h mga_drm.h mga_ucode.h $(DRMHEADERS)
-MGASHARED =     mga_dma.c mga_drm.h mga_drv.h mga_irq.c mga_state.c \
-                mga_ucode.h mga_warp.c
 I810HEADERS =   i810_drv.h i810_drm.h $(DRMHEADERS)
 I830HEADERS =   i830_drv.h i830_drm.h $(DRMHEADERS)
 I915HEADERS =   i915_drv.h i915_drm.h $(DRMHEADERS)
-I915SHARED  =   i915_drv.h i915_drm.h i915_irq.c i915_mem.c i915_dma.c
 SISHEADERS=     sis_drv.h sis_drm.h drm_hashtab.h drm_sman.h $(DRMHEADERS)
-SISSHARED=      sis_drv.h sis_drm.h
 SAVAGEHEADERS=  savage_drv.h savage_drm.h $(DRMHEADERS)
-SAVAGESHARED=	savage_drv.h savage_drm.h savage_bci.c savage_state.c
 VIAHEADERS =	via_drm.h via_drv.h via_3d_reg.h via_verifier.h $(DRMHEADERS)
-VIASHARED	= via_drm.h via_drv.h via_3d_reg.h via_drv.c via_irq.c via_map.c \
-		via_dma.c via_verifier.c via_verifier.h via_video.c
 MACH64HEADERS = mach64_drv.h mach64_drm.h $(DRMHEADERS)
-MACH64SHARED = 	mach64_drv.h mach64_drm.h mach64_dma.c \
-		mach64_irq.c mach64_state.c
 NVHEADERS =     nv_drv.h $(DRMHEADERS)
-NVSHARED  =     nv_drv.h
 FFBHEADERS = 	ffb_drv.h $(DRMHEADERS)
-
-SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
-	$(SISSHARED) $(TDFXSHARED) $(VIASHARED) $(MACH64SHARED) \
-	$(I915SHARED) $(SAVAGESHARED) $(NVSHARED)
 
 PROGS = dristat drmstat
 
-CLEANFILES = *.o *.ko $(PROGS) .depend .*.flags .*.d .*.cmd *.mod.c linux drm_pciids.h .tmp_versions
+CLEANFILES = *.o *.ko $(PROGS) .depend .*.flags .*.d .*.cmd *.mod.c drm_pciids.h .tmp_versions
 
 # VERSION is not defined from the initial invocation.  It is defined when
 # this Makefile is invoked from the kernel's root Makefile.
@@ -226,26 +207,12 @@ endif
 
 SHAREDDIR := ../shared-core
 
-HASSHARED := $(shell if [ -d $(SHAREDDIR) ]; then echo y; fi)
-
-ifeq ($(HASSHARED),y)
-includes:: $(SHAREDSRC) drm_pciids.h
+ifeq ($(shell if [ -d $(SHAREDDIR) ]; then echo y; fi),y)
+includes::  drm_pciids.h
 
 drm_pciids.h: $(SHAREDDIR)/drm_pciids.txt
 	sh ../scripts/create_linux_pci_lists.sh < $(SHAREDDIR)/drm_pciids.txt
-
-$(SHAREDSRC):
-	@if [ -r $(SHAREDDIR)/$@ ]; then \
-		(rm -f $@; set -x; ln -s $(SHAREDDIR)/$@ $@); fi
-
-CLEANFILES += $(SHAREDSRC)
 endif
-
-includes:: linux
-
-linux:
-	rm -f linux
-	ln -s . linux
 
 clean cleandir:
 	rm -rf $(CLEANFILES)
