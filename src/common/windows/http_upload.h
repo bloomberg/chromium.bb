@@ -27,7 +27,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// HTTPUpload provides a "nice" API to send a multipart HTTP POST
+// HTTPUpload provides a "nice" API to send a multipart HTTP(S) POST
 // request using wininet.  It currently supports requests that contain
 // a set of string parameters (key/value pairs), and a file to upload.
 
@@ -52,7 +52,7 @@ class HTTPUpload {
   // (i.e. it corresponds to the name= attribute on an <input type="file">.
   // Parameter names must contain only printable ASCII characters,
   // and may not contain a quote (") character.
-  // Only HTTP URLs are currently supported.  Returns true on success.
+  // Only HTTP(S) URLs are currently supported.  Returns true on success.
   // TODO(bryner): we should expose the response to the caller.
   static bool SendRequest(const wstring &url,
                           const map<wstring, wstring> &parameters,

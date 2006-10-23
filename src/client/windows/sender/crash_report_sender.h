@@ -31,7 +31,7 @@
 #define CLIENT_WINDOWS_SENDER_CRASH_REPORT_SENDER_H__
 
 // CrashReportSender is a "static" class which provides an API to upload
-// crash reports via HTTP.  A crash report is formatted as a multipart POST
+// crash reports via HTTP(S).  A crash report is formatted as a multipart POST
 // request, which contains a set of caller-supplied string key/value pairs,
 // and a minidump file to upload.
 //
@@ -52,7 +52,7 @@ class CrashReportSender {
   // name value pairs, as a multipart POST request to the given URL.
   // Parameter names must contain only printable ASCII characters,
   // and may not contain a quote (") character.
-  // Only HTTP URLs are currently supported.  Returns true on success.
+  // Only HTTP(S) URLs are currently supported.  Returns true on success.
   // TODO(bryner): we should expose the response to the caller.
   static bool SendCrashReport(const wstring &url,
                               const map<wstring, wstring> &parameters,
