@@ -49,17 +49,16 @@ typedef SSIZE_T ssize_t;
 #endif // _WIN32
 
 #include <map>
-#include <memory>
 #include <vector>
 
 #include "processor/minidump.h"
 #include "processor/range_map-inl.h"
+#include "processor/scoped_ptr.h"
 
 
 namespace google_airbag {
 
 
-using std::auto_ptr;
 using std::vector;
 
 
@@ -163,7 +162,7 @@ static inline void Swap(MDGUID* guid) {
 // of making it a dependency when we don't care about anything but UTF-16.
 static string* UTF16ToUTF8(const vector<u_int16_t>& in,
                            bool                     swap) {
-  auto_ptr<string> out(new string());
+  scoped_ptr<string> out(new string());
 
   // Set the string's initial capacity to the number of UTF-16 characters,
   // because the UTF-8 representation will always be at least this long.
@@ -288,7 +287,7 @@ bool MinidumpContext::Read(u_int32_t expected_size) {
       if (expected_size != sizeof(MDRawContextX86))
         return false;
 
-      auto_ptr<MDRawContextX86> context_x86(new MDRawContextX86());
+      scoped_ptr<MDRawContextX86> context_x86(new MDRawContextX86());
 
       // Set the context_flags member, which has already been read, and
       // read the rest of the structure beginning with the first member
@@ -355,7 +354,7 @@ bool MinidumpContext::Read(u_int32_t expected_size) {
       if (expected_size != sizeof(MDRawContextPPC))
         return false;
 
-      auto_ptr<MDRawContextPPC> context_ppc(new MDRawContextPPC());
+      scoped_ptr<MDRawContextPPC> context_ppc(new MDRawContextPPC());
 
       // Set the context_flags member, which has already been read, and
       // read the rest of the structure beginning with the first member
@@ -647,7 +646,7 @@ const u_int8_t* MinidumpMemoryRegion::GetMemory() {
       return NULL;
 
     // TODO(mmentovai): verify rational size!
-    auto_ptr< vector<u_int8_t> > memory(
+    scoped_ptr< vector<u_int8_t> > memory(
         new vector<u_int8_t>(descriptor_->memory.data_size));
 
     if (!minidump_->ReadBytes(&(*memory)[0], descriptor_->memory.data_size)) 
@@ -817,7 +816,7 @@ MinidumpContext* MinidumpThread::GetContext() {
     if (!minidump_->SeekSet(thread_.thread_context.rva))
       return NULL;
 
-    auto_ptr<MinidumpContext> context(new MinidumpContext(minidump_));
+    scoped_ptr<MinidumpContext> context(new MinidumpContext(minidump_));
 
     if (!context->Read(thread_.thread_context.data_size))
       return NULL;
@@ -916,7 +915,7 @@ bool MinidumpThreadList::Read(u_int32_t expected_size) {
   }
 
   // TODO(mmentovai): verify rational size!
-  auto_ptr<MinidumpThreads> threads(
+  scoped_ptr<MinidumpThreads> threads(
       new MinidumpThreads(thread_count, MinidumpThread(minidump_)));
 
   for (unsigned int thread_index = 0;
@@ -1086,7 +1085,7 @@ const u_int8_t* MinidumpModule::GetCVRecord() {
     // variable-sized due to their pdb_file_name fields; these structures
     // are not sizeof(MDCVInfoPDB70) or sizeof(MDCVInfoPDB20) and treating
     // them as such would result in incomplete structures or overruns.
-    auto_ptr< vector<u_int8_t> > cv_record(
+    scoped_ptr< vector<u_int8_t> > cv_record(
         new vector<u_int8_t>(module_.cv_record.data_size));
 
     if (!minidump_->ReadBytes(&(*cv_record)[0], module_.cv_record.data_size))
@@ -1161,7 +1160,7 @@ const MDImageDebugMisc* MinidumpModule::GetMiscRecord() {
     // because the MDImageDebugMisc is variable-sized due to its data field;
     // this structure is not sizeof(MDImageDebugMisc) and treating it as such
     // would result in an incomplete structure or an overrun.
-    auto_ptr< vector<u_int8_t> > misc_record_mem(
+    scoped_ptr< vector<u_int8_t> > misc_record_mem(
         new vector<u_int8_t>(module_.misc_record.data_size));
     MDImageDebugMisc* misc_record =
         reinterpret_cast<MDImageDebugMisc*>(&(*misc_record_mem)[0]);
@@ -1443,7 +1442,7 @@ bool MinidumpModuleList::Read(u_int32_t expected_size) {
   }
 
   // TODO(mmentovai): verify rational size!
-  auto_ptr<MinidumpModules> modules(
+  scoped_ptr<MinidumpModules> modules(
       new MinidumpModules(module_count, MinidumpModule(minidump_)));
 
   for (unsigned int module_index = 0;
@@ -1557,7 +1556,8 @@ bool MinidumpMemoryList::Read(u_int32_t expected_size) {
   }
 
   // TODO(mmentovai): verify rational size!
-  auto_ptr<MemoryDescriptors> descriptors(new MemoryDescriptors(region_count));
+  scoped_ptr<MemoryDescriptors> descriptors(
+      new MemoryDescriptors(region_count));
 
   // Read the entire array in one fell swoop, instead of reading one entry
   // at a time in the loop.
@@ -1566,7 +1566,7 @@ bool MinidumpMemoryList::Read(u_int32_t expected_size) {
     return false;
   }
 
-  auto_ptr<MemoryRegions> regions(
+  scoped_ptr<MemoryRegions> regions(
       new MemoryRegions(region_count, MinidumpMemoryRegion(minidump_)));
 
   for (unsigned int region_index = 0;
@@ -1720,7 +1720,7 @@ MinidumpContext* MinidumpException::GetContext() {
     if (!minidump_->SeekSet(exception_.thread_context.rva))
       return NULL;
 
-    auto_ptr<MinidumpContext> context(new MinidumpContext(minidump_));
+    scoped_ptr<MinidumpContext> context(new MinidumpContext(minidump_));
 
     if (!context->Read(exception_.thread_context.data_size))
       return NULL;
@@ -2060,7 +2060,7 @@ bool Minidump::Read() {
     return false;
 
   // TODO(mmentovai): verify rational size!
-  auto_ptr<MinidumpDirectoryEntries> directory(
+  scoped_ptr<MinidumpDirectoryEntries> directory(
       new MinidumpDirectoryEntries(header_.stream_count));
 
   // Read the entire array in one fell swoop, instead of reading one entry
@@ -2069,7 +2069,7 @@ bool Minidump::Read() {
                  sizeof(MDRawDirectory) * header_.stream_count))
     return false;
 
-  auto_ptr<MinidumpStreamMap> stream_map(new MinidumpStreamMap());
+  scoped_ptr<MinidumpStreamMap> stream_map(new MinidumpStreamMap());
 
   for (unsigned int stream_index = 0;
        stream_index < header_.stream_count;
@@ -2312,7 +2312,7 @@ T* Minidump::GetStream(T** stream) {
   if (!SeekToStreamType(stream_type, &stream_length))
     return NULL;
 
-  auto_ptr<T> new_stream(new T(this));
+  scoped_ptr<T> new_stream(new T(this));
 
   if (!new_stream->Read(stream_length))
     return NULL;

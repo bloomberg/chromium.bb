@@ -34,14 +34,14 @@
 
 #include <climits>
 #include <cstdio>
-#include <memory>
 
 #include "processor/linked_ptr.h"
 #include "processor/range_map-inl.h"
+#include "processor/scoped_ptr.h"
 
 
-using std::auto_ptr;
 using google_airbag::linked_ptr;
+using google_airbag::scoped_ptr;
 using google_airbag::RangeMap;
 
 
@@ -331,7 +331,7 @@ bool RunTests() {
 
   // Maintain the range map in a pointer so that deletion can be meaningfully
   // tested.
-  auto_ptr<TestMap> range_map(new TestMap());
+  scoped_ptr<TestMap> range_map(new TestMap());
 
   // Run all of the test sets in sequence.
   unsigned int range_test_set_count = sizeof(range_test_sets) /

@@ -35,16 +35,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <memory>
 #include <string>
 
 #include "google/call_stack.h"
 #include "google/stack_frame.h"
 #include "processor/minidump.h"
+#include "processor/scoped_ptr.h"
 #include "processor/stackwalker_x86.h"
 
 
-using std::auto_ptr;
 using std::string;
 using google_airbag::CallStack;
 using google_airbag::MemoryRegion;
@@ -54,6 +53,7 @@ using google_airbag::MinidumpException;
 using google_airbag::MinidumpModuleList;
 using google_airbag::MinidumpThread;
 using google_airbag::MinidumpThreadList;
+using google_airbag::scoped_ptr;
 using google_airbag::StackFrame;
 using google_airbag::Stackwalker;
 
@@ -107,14 +107,14 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  auto_ptr<Stackwalker> stackwalker(
+  scoped_ptr<Stackwalker> stackwalker(
       Stackwalker::StackwalkerForCPU(context, stack_memory, modules, NULL));
   if (!stackwalker.get()) {
     fprintf(stderr, "Stackwalker::StackwalkerForCPU failed\n");
     exit(1);
   }
 
-  auto_ptr<CallStack> stack(stackwalker->Walk());
+  scoped_ptr<CallStack> stack(stackwalker->Walk());
 
   unsigned int index;
   for (index = 0; index < stack->frames()->size(); ++index) {

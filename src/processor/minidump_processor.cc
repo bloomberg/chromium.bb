@@ -27,13 +27,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <memory>
-
 #include "google/minidump_processor.h"
 #include "processor/minidump.h"
+#include "processor/scoped_ptr.h"
 #include "processor/stackwalker_x86.h"
-
-using std::auto_ptr;
 
 namespace google_airbag {
 
@@ -71,7 +68,7 @@ CallStack* MinidumpProcessor::Process(const string &minidump_file) {
     return NULL;
   }
 
-  auto_ptr<Stackwalker> walker(
+  scoped_ptr<Stackwalker> walker(
     Stackwalker::StackwalkerForCPU(exception->GetContext(), thread_memory,
                                    dump.GetModuleList(), supplier_));
   if (!walker.get()) {

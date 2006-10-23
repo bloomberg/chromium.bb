@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <map>
-#include <memory>
 #include <vector>
 #include <utility>
 #include "processor/source_line_resolver.h"
@@ -39,9 +38,9 @@
 #include "processor/address_map-inl.h"
 #include "processor/contained_range_map-inl.h"
 #include "processor/range_map-inl.h"
+#include "processor/scoped_ptr.h"
 #include "processor/stack_frame_info.h"
 
-using std::auto_ptr;
 using std::map;
 using std::vector;
 using std::make_pair;
@@ -278,7 +277,7 @@ StackFrameInfo* SourceLineResolver::Module::LookupAddress(
     stack_info_[STACK_INFO_FPO].RetrieveRange(address, &retrieved_info);
   }
 
-  auto_ptr<StackFrameInfo> frame_info;
+  scoped_ptr<StackFrameInfo> frame_info;
   if (retrieved_info.get()) {
     frame_info.reset(new StackFrameInfo());
     frame_info->CopyFrom(*retrieved_info.get());

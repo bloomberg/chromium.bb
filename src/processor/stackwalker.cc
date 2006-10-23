@@ -34,22 +34,19 @@
 // Author: Mark Mentovai
 
 
-#include <memory>
-
 #include "processor/stackwalker.h"
 #include "google/call_stack.h"
 #include "google/stack_frame.h"
 #include "google/symbol_supplier.h"
 #include "processor/linked_ptr.h"
 #include "processor/minidump.h"
+#include "processor/scoped_ptr.h"
 #include "processor/source_line_resolver.h"
 #include "processor/stack_frame_info.h"
 #include "processor/stackwalker_ppc.h"
 #include "processor/stackwalker_x86.h"
 
 namespace google_airbag {
-
-using std::auto_ptr;
 
 
 Stackwalker::Stackwalker(MemoryRegion *memory, MinidumpModuleList *modules,
@@ -61,7 +58,7 @@ Stackwalker::Stackwalker(MemoryRegion *memory, MinidumpModuleList *modules,
 CallStack* Stackwalker::Walk() {
   SourceLineResolver resolver;
 
-  auto_ptr<CallStack> stack(new CallStack());
+  scoped_ptr<CallStack> stack(new CallStack());
 
   // stack_frame_info parallels the CallStack.  The vector is passed to the
   // GetCallerFrame function.  It contains information that may be helpful
@@ -72,7 +69,7 @@ CallStack* Stackwalker::Walk() {
   // no more.
 
   // Take ownership of the pointer returned by GetContextFrame.
-  auto_ptr<StackFrame> frame(GetContextFrame());
+  scoped_ptr<StackFrame> frame(GetContextFrame());
 
   while (frame.get()) {
     // frame already contains a good frame with properly set instruction and

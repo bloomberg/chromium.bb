@@ -38,7 +38,6 @@
 
 
 #include <cstdio>
-#include <memory>
 
 #include "google/airbag_types.h"
 #include "google/call_stack.h"
@@ -46,10 +45,11 @@
 #include "google/stack_frame_cpu.h"
 #include "processor/memory_region.h"
 #include "processor/minidump_format.h"
+#include "processor/scoped_ptr.h"
 
-using std::auto_ptr;
 using google_airbag::CallStack;
 using google_airbag::MemoryRegion;
+using google_airbag::scoped_ptr;
 using google_airbag::StackFrame;
 using google_airbag::StackFramePPC;
 using google_airbag::StackFrameX86;
@@ -218,7 +218,7 @@ static unsigned int CountCallerFrames() {
   StackwalkerPPC stackwalker = StackwalkerPPC(&context, &memory, NULL, NULL);
 #endif  // __i386__ || __ppc__
 
-  auto_ptr<CallStack> stack(stackwalker.Walk());
+  scoped_ptr<CallStack> stack(stackwalker.Walk());
 
 #ifdef PRINT_STACKS
   printf("\n");

@@ -28,16 +28,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdio.h>
-#include <memory>
 #include <string>
 #include "processor/source_line_resolver.h"
 #include "google/stack_frame.h"
 #include "processor/linked_ptr.h"
+#include "processor/scoped_ptr.h"
 #include "processor/stack_frame_info.h"
 
-using std::auto_ptr;
 using std::string;
 using google_airbag::linked_ptr;
+using google_airbag::scoped_ptr;
 using google_airbag::SourceLineResolver;
 using google_airbag::StackFrame;
 using google_airbag::StackFrameInfo;
@@ -78,7 +78,7 @@ static bool RunTests() {
   StackFrame frame;
   frame.instruction = 0x1000;
   frame.module_name = "module1";
-  auto_ptr<StackFrameInfo> frame_info(resolver.FillSourceLineInfo(&frame));
+  scoped_ptr<StackFrameInfo> frame_info(resolver.FillSourceLineInfo(&frame));
   ASSERT_EQ(frame.function_name, "Function1_1");
   ASSERT_EQ(frame.source_file_name, "file1_1.cc");
   ASSERT_EQ(frame.source_line, 44);
