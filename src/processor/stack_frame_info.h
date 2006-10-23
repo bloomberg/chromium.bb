@@ -80,6 +80,19 @@ struct StackFrameInfo {
         allocates_base_pointer(set_allocates_base_pointer),
         program_string(set_program_string) {}
 
+  // CopyFrom makes "this" StackFrameInfo object identical to "that".
+  void CopyFrom(const StackFrameInfo &that) {
+    valid = that.valid;
+    prolog_size = that.prolog_size;
+    epilog_size = that.epilog_size;
+    parameter_size = that.parameter_size;
+    saved_register_size = that.saved_register_size;
+    local_size = that.local_size;
+    max_stack_size = that.max_stack_size;
+    allocates_base_pointer = that.allocates_base_pointer;
+    program_string = that.program_string;
+  }
+
   // Clears the StackFrameInfo object so that users will see it as though
   // it contains no information.
   void Clear() { valid = VALID_NONE; program_string.erase(); }

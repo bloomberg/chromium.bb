@@ -38,6 +38,7 @@
 
 
 #include <cstdio>
+#include <memory>
 
 #include "google/airbag_types.h"
 #include "google/call_stack.h"
@@ -46,6 +47,7 @@
 #include "processor/memory_region.h"
 #include "processor/minidump_format.h"
 
+using std::auto_ptr;
 using google_airbag::CallStack;
 using google_airbag::MemoryRegion;
 using google_airbag::StackFrame;
@@ -216,23 +218,22 @@ static unsigned int CountCallerFrames() {
   StackwalkerPPC stackwalker = StackwalkerPPC(&context, &memory, NULL, NULL);
 #endif  // __i386__ || __ppc__
 
-  CallStack stack;
-  stackwalker.Walk(&stack);
+  auto_ptr<CallStack> stack(stackwalker.Walk());
 
 #ifdef PRINT_STACKS
   printf("\n");
   for(unsigned int frame_index = 0;
-      frame_index < stack.Count();
+      frame_index < stack->frames()->size();
       ++frame_index) {
-    StackFrame *frame = stack.FrameAt(frame_index);
+    StackFrame *frame = stack->frames()->at(frame_index);
     printf("frame %-3d  instruction = 0x%08llx",
            frame_index, frame->instruction);
 #if defined(__i386__)
-    StackFrameX86 *frame_x86 = reinterpret_cast<StackFrameX86*>(frame.get());
+    StackFrameX86 *frame_x86 = reinterpret_cast<StackFrameX86*>(frame);
     printf("  esp = 0x%08x  ebp = 0x%08x\n",
            frame_x86->context.esp, frame_x86->context.ebp);
 #elif defined(__ppc__)
-    StackFramePPC *frame_ppc = reinterpret_cast<StackFramePPC*>(frame.get());
+    StackFramePPC *frame_ppc = reinterpret_cast<StackFramePPC*>(frame);
     printf("  gpr[1] = 0x%08x\n", frame_ppc->context.gpr[1]);
 #endif  // __i386__ || __ppc__
   }
@@ -241,7 +242,7 @@ static unsigned int CountCallerFrames() {
   // Subtract 1 because the caller wants the number of frames beneath
   // itself.  Because the caller called us, subract two for our frame and its
   // frame, which are included in stack->size().
-  return stack.frames()->size() - 2;
+  return stack->frames()->size() - 2;
 }
 
 

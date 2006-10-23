@@ -30,6 +30,7 @@
 // Unit test for MinidumpProcessor.  Uses a pre-generated minidump and
 // corresponding symbol file, and checks the stack frames for correctness.
 
+#include <memory>
 #include <string>
 #include "google/call_stack.h"
 #include "google/minidump_processor.h"
@@ -37,6 +38,7 @@
 #include "google/symbol_supplier.h"
 #include "processor/minidump.h"
 
+using std::auto_ptr;
 using std::string;
 using google_airbag::CallStack;
 using google_airbag::MinidumpProcessor;
@@ -74,40 +76,40 @@ static bool RunTests() {
   TestSymbolSupplier supplier;
   MinidumpProcessor processor(&supplier);
 
-  CallStack stack;
   string minidump_file = string(getenv("srcdir") ? getenv("srcdir") : ".") +
                          "/src/processor/testdata/minidump2.dmp";
 
-  ASSERT_TRUE(processor.Process(minidump_file, &stack));
-  ASSERT_EQ(stack.frames()->size(), 4);
+  auto_ptr<CallStack> stack(processor.Process(minidump_file));
+  ASSERT_TRUE(stack.get());
+  ASSERT_EQ(stack->frames()->size(), 4);
 
-  ASSERT_EQ(stack.frames()->at(0)->module_base, 0x400000);
-  ASSERT_EQ(stack.frames()->at(0)->module_name, "c:\\test_app.exe");
-  ASSERT_EQ(stack.frames()->at(0)->function_name, "CrashFunction()");
-  ASSERT_EQ(stack.frames()->at(0)->source_file_name, "c:\\test_app.cc");
-  ASSERT_EQ(stack.frames()->at(0)->source_line, 65);
+  ASSERT_EQ(stack->frames()->at(0)->module_base, 0x400000);
+  ASSERT_EQ(stack->frames()->at(0)->module_name, "c:\\test_app.exe");
+  ASSERT_EQ(stack->frames()->at(0)->function_name, "CrashFunction()");
+  ASSERT_EQ(stack->frames()->at(0)->source_file_name, "c:\\test_app.cc");
+  ASSERT_EQ(stack->frames()->at(0)->source_line, 65);
 
-  ASSERT_EQ(stack.frames()->at(1)->module_base, 0x400000);
-  ASSERT_EQ(stack.frames()->at(1)->module_name, "c:\\test_app.exe");
-  ASSERT_EQ(stack.frames()->at(1)->function_name, "main");
-  ASSERT_EQ(stack.frames()->at(1)->source_file_name, "c:\\test_app.cc");
-  ASSERT_EQ(stack.frames()->at(1)->source_line, 70);
+  ASSERT_EQ(stack->frames()->at(1)->module_base, 0x400000);
+  ASSERT_EQ(stack->frames()->at(1)->module_name, "c:\\test_app.exe");
+  ASSERT_EQ(stack->frames()->at(1)->function_name, "main");
+  ASSERT_EQ(stack->frames()->at(1)->source_file_name, "c:\\test_app.cc");
+  ASSERT_EQ(stack->frames()->at(1)->source_line, 70);
 
   // This comes from the CRT
-  ASSERT_EQ(stack.frames()->at(2)->module_base, 0x400000);
-  ASSERT_EQ(stack.frames()->at(2)->module_name, "c:\\test_app.exe");
-  ASSERT_EQ(stack.frames()->at(2)->function_name, "__tmainCRTStartup");
-  ASSERT_EQ(stack.frames()->at(2)->source_file_name,
+  ASSERT_EQ(stack->frames()->at(2)->module_base, 0x400000);
+  ASSERT_EQ(stack->frames()->at(2)->module_name, "c:\\test_app.exe");
+  ASSERT_EQ(stack->frames()->at(2)->function_name, "__tmainCRTStartup");
+  ASSERT_EQ(stack->frames()->at(2)->source_file_name,
             "f:\\rtm\\vctools\\crt_bld\\self_x86\\crt\\src\\crt0.c");
-  ASSERT_EQ(stack.frames()->at(2)->source_line, 318);
+  ASSERT_EQ(stack->frames()->at(2)->source_line, 318);
 
   // No debug info available for kernel32.dll
-  ASSERT_EQ(stack.frames()->at(3)->module_base, 0x7c800000);
-  ASSERT_EQ(stack.frames()->at(3)->module_name,
+  ASSERT_EQ(stack->frames()->at(3)->module_base, 0x7c800000);
+  ASSERT_EQ(stack->frames()->at(3)->module_name,
             "C:\\WINDOWS\\system32\\kernel32.dll");
-  ASSERT_TRUE(stack.frames()->at(3)->function_name.empty());
-  ASSERT_TRUE(stack.frames()->at(3)->source_file_name.empty());
-  ASSERT_EQ(stack.frames()->at(3)->source_line, 0);
+  ASSERT_TRUE(stack->frames()->at(3)->function_name.empty());
+  ASSERT_TRUE(stack->frames()->at(3)->source_file_name.empty());
+  ASSERT_EQ(stack->frames()->at(3)->source_line, 0);
 
   return true;
 }

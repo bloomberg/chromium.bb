@@ -66,8 +66,11 @@ class SourceLineResolver {
   // Fills in the function_base, function_name, source_file_name,
   // and source_line fields of the StackFrame.  The instruction and
   // module_name fields must already be filled in.  Additional debugging
-  // information, if available, is placed in frame_info.
-  void FillSourceLineInfo(StackFrame *frame, StackFrameInfo *frame_info) const;
+  // information, if available, is returned.  If the information is not
+  // available, returns NULL.  A NULL return value does not indicate an
+  // error.  The caller takes ownership of any returned StackFrameInfo
+  // object.
+  StackFrameInfo* FillSourceLineInfo(StackFrame *frame) const;
 
  private:
   template<class T> class MemAddrMap;

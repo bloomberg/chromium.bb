@@ -73,7 +73,9 @@ StackFrame* StackwalkerPPC::GetContextFrame() {
 }
 
 
-StackFrame* StackwalkerPPC::GetCallerFrame(const CallStack *stack) {
+StackFrame* StackwalkerPPC::GetCallerFrame(
+    const CallStack *stack,
+    const vector< linked_ptr<StackFrameInfo> > &stack_frame_info) {
   if (!memory_ || !stack)
     return NULL;
 

@@ -40,8 +40,10 @@
 #include "google/call_stack.h"
 #include "google/stack_frame.h"
 #include "google/symbol_supplier.h"
+#include "processor/linked_ptr.h"
 #include "processor/minidump.h"
 #include "processor/source_line_resolver.h"
+#include "processor/stack_frame_info.h"
 #include "processor/stackwalker_ppc.h"
 #include "processor/stackwalker_x86.h"
 
@@ -52,14 +54,19 @@ using std::auto_ptr;
 
 Stackwalker::Stackwalker(MemoryRegion *memory, MinidumpModuleList *modules,
                          SymbolSupplier *supplier)
-    : memory_(memory), stack_frame_info_(), modules_(modules),
-      supplier_(supplier) {
+    : memory_(memory), modules_(modules), supplier_(supplier) {
 }
 
 
-void Stackwalker::Walk(CallStack *stack) {
-  stack_frame_info_.clear();
+CallStack* Stackwalker::Walk() {
   SourceLineResolver resolver;
+
+  auto_ptr<CallStack> stack(new CallStack());
+
+  // stack_frame_info parallels the CallStack.  The vector is passed to the
+  // GetCallerFrame function.  It contains information that may be helpful
+  // for stackwalking.
+  vector< linked_ptr<StackFrameInfo> > stack_frame_info;
 
   // Begin with the context frame, and keep getting callers until there are
   // no more.
@@ -72,7 +79,7 @@ void Stackwalker::Walk(CallStack *stack) {
     // frame_pointer fields.  The frame structure comes from either the
     // context frame (above) or a caller frame (below).
 
-    StackFrameInfo frame_info;
+    linked_ptr<StackFrameInfo> frame_info;
 
     // Resolve the module information, if a module map was provided.
     if (modules_) {
@@ -87,7 +94,7 @@ void Stackwalker::Walk(CallStack *stack) {
             resolver.LoadModule(frame->module_name, symbol_file);
           }
         }
-        resolver.FillSourceLineInfo(frame.get(), &frame_info);
+        frame_info.reset(resolver.FillSourceLineInfo(frame.get()));
       }
     }
 
@@ -95,13 +102,15 @@ void Stackwalker::Walk(CallStack *stack) {
     // over the frame, because the stack now owns it.
     stack->frames_.push_back(frame.release());
 
-    // Copy the frame info.
-    stack_frame_info_.push_back(frame_info);
-    frame_info.Clear();
+    // Add the frame info to the parallel stack.
+    stack_frame_info.push_back(frame_info);
+    frame_info.reset(NULL);
 
     // Get the next frame and take ownership.
-    frame.reset(GetCallerFrame(stack));
+    frame.reset(GetCallerFrame(stack.get(), stack_frame_info));
   }
+
+  return stack.release();
 }
 
 

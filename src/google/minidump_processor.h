@@ -46,9 +46,9 @@ class MinidumpProcessor {
   MinidumpProcessor(SymbolSupplier *supplier);
   ~MinidumpProcessor();
 
-  // Fills in the given CallStack by processing the minidump file.  Returns
-  // true on success.
-  bool Process(const string &minidump_file, CallStack *stack);
+  // Returns a new CallStack produced by processing the minidump file.  The
+  // caller takes ownership of the CallStack.  Returns NULL on failure.
+  CallStack* Process(const string &minidump_file);
 
  private:
   SymbolSupplier *supplier_;

@@ -65,7 +65,9 @@ class StackwalkerX86 : public Stackwalker {
   // stack conventions (saved %ebp at [%ebp], saved %eip at 4[%ebp], or
   // alternate conventions as guided by stack_frame_info_).
   virtual StackFrame* GetContextFrame();
-  virtual StackFrame* GetCallerFrame(const CallStack *stack);
+  virtual StackFrame* GetCallerFrame(
+      const CallStack *stack,
+      const vector< linked_ptr<StackFrameInfo> > &stack_frame_info);
 
   // Stores the CPU context corresponding to the innermost stack frame to
   // be returned by GetContextFrame.

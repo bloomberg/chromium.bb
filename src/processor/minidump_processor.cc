@@ -44,43 +44,41 @@ MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier)
 MinidumpProcessor::~MinidumpProcessor() {
 }
 
-bool MinidumpProcessor::Process(const string &minidump_file,
-                                CallStack *stack) {
+CallStack* MinidumpProcessor::Process(const string &minidump_file) {
   Minidump dump(minidump_file);
   if (!dump.Read()) {
-    return false;
+    return NULL;
   }
 
   MinidumpException *exception = dump.GetException();
   if (!exception) {
-    return false;
+    return NULL;
   }
 
   MinidumpThreadList *threads = dump.GetThreadList();
   if (!threads) {
-    return false;
+    return NULL;
   }
 
   // TODO(bryner): get all the threads
   MinidumpThread *thread = threads->GetThreadByID(exception->GetThreadID());
   if (!thread) {
-    return false;
+    return NULL;
   }
 
   MinidumpMemoryRegion *thread_memory = thread->GetMemory();
   if (!thread_memory) {
-    return false;
+    return NULL;
   }
 
   auto_ptr<Stackwalker> walker(
     Stackwalker::StackwalkerForCPU(exception->GetContext(), thread_memory,
                                    dump.GetModuleList(), supplier_));
   if (!walker.get()) {
-    return false;
+    return NULL;
   }
 
-  walker->Walk(stack);
-  return true;
+  return walker->Walk();
 }
 
 }  // namespace google_airbag

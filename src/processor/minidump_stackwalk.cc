@@ -114,12 +114,11 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  CallStack stack;
-  stackwalker->Walk(&stack);
+  auto_ptr<CallStack> stack(stackwalker->Walk());
 
   unsigned int index;
-  for (index = 0; index < stack.frames()->size(); ++index) {
-    StackFrame *frame = stack.frames()->at(index);
+  for (index = 0; index < stack->frames()->size(); ++index) {
+    StackFrame *frame = stack->frames()->at(index);
     printf("[%2d]  instruction = 0x%08llx  \"%s\" + 0x%08llx\n",
            index,
            frame->instruction,

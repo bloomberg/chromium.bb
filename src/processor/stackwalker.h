@@ -43,25 +43,28 @@
 
 #include <vector>
 
-#include "processor/stack_frame_info.h"
-
 namespace google_airbag {
 
 class CallStack;
+template<typename T> class linked_ptr;
 class MemoryRegion;
 class MinidumpContext;
 class MinidumpModuleList;
 struct StackFrame;
+struct StackFrameInfo;
 class SymbolSupplier;
+
+using std::vector;
 
 
 class Stackwalker {
  public:
   virtual ~Stackwalker() {}
 
-  // Fills the given CallStack by calling GetContextFrame and GetCallerFrame,
-  // and populating the returned frames with all available data.
-  void Walk(CallStack* stack);
+  // Creates a new CallStack and populates it by calling GetContextFrame and
+  // GetCallerFrame.  The frames are further processed to fill all available
+  // data.  The caller takes ownership of the CallStack returned by Walk.
+  CallStack* Walk();
 
   // Returns a new concrete subclass suitable for the CPU that a stack was
   // generated on, according to the CPU type indicated by the context
@@ -86,11 +89,6 @@ class Stackwalker {
   // get information from the stack.
   MemoryRegion *memory_;
 
-  // Additional debugging information for each stack frame.  This vector
-  // parallels the CallStack.  Subclasses may use this information to help
-  // walk the stack.
-  std::vector<StackFrameInfo> stack_frame_info_;
-
  private:
   // Obtains the context frame, the innermost called procedure in a stack
   // trace.  Returns NULL on failure.  GetContextFrame allocates a new
@@ -106,7 +104,9 @@ class Stackwalker {
   // the end of the stack has been reached).  GetCallerFrame allocates a new
   // StackFrame (or StackFrame subclass), ownership of which is taken by
   // the caller.
-  virtual StackFrame* GetCallerFrame(const CallStack *stack) = 0;
+  virtual StackFrame* GetCallerFrame(
+      const CallStack *stack,
+      const vector< linked_ptr<StackFrameInfo> > &stack_frame_info) = 0;
 
   // A list of modules, for populating each StackFrame's module information.
   // This field is optional and may be NULL.

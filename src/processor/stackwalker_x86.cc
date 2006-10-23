@@ -37,8 +37,10 @@
 #include "processor/stackwalker_x86.h"
 #include "google/call_stack.h"
 #include "google/stack_frame_cpu.h"
+#include "processor/linked_ptr.h"
 #include "processor/minidump.h"
 #include "processor/postfix_evaluator-inl.h"
+#include "processor/stack_frame_info.h"
 
 namespace google_airbag {
 
@@ -73,13 +75,15 @@ StackFrame* StackwalkerX86::GetContextFrame() {
 }
 
 
-StackFrame* StackwalkerX86::GetCallerFrame(const CallStack *stack) {
+StackFrame* StackwalkerX86::GetCallerFrame(
+    const CallStack *stack,
+    const vector< linked_ptr<StackFrameInfo> > &stack_frame_info) {
   if (!memory_ || !stack)
     return NULL;
 
   StackFrameX86 *last_frame = static_cast<StackFrameX86*>(
       stack->frames()->back());
-  StackFrameInfo *last_frame_info = &stack_frame_info_.back();
+  StackFrameInfo *last_frame_info = stack_frame_info.back().get();
 
   // This stackwalker sets each frame's %esp to its value immediately prior
   // to the CALL into the callee.  This means that %esp points to the last
@@ -113,12 +117,13 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack *stack) {
   // are unknown, 0 is also used in that case.  When that happens, it should
   // be possible to walk to the next frame without reference to %esp.
 
-  int frames_already_walked = stack_frame_info_.size();
+  int frames_already_walked = stack_frame_info.size();
   u_int32_t last_frame_callee_parameter_size = 0;
   if (frames_already_walked >= 2) {
     StackFrameInfo *last_frame_callee_info =
-        &stack_frame_info_[frames_already_walked - 2];
-    if (last_frame_callee_info->valid & StackFrameInfo::VALID_PARAMETER_SIZE) {
+        stack_frame_info[frames_already_walked - 2].get();
+    if (last_frame_callee_info &&
+        last_frame_callee_info->valid & StackFrameInfo::VALID_PARAMETER_SIZE) {
       last_frame_callee_parameter_size =
           last_frame_callee_info->parameter_size;
     }
@@ -135,7 +140,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack *stack) {
   dictionary["$esp"] = last_frame->context.esp;
   dictionary[".cbCalleeParams"] = last_frame_callee_parameter_size;
 
-  if (last_frame_info->valid == StackFrameInfo::VALID_ALL) {
+  if (last_frame_info && last_frame_info->valid == StackFrameInfo::VALID_ALL) {
     // FPO debugging data is available.  Initialize constants.
     dictionary[".cbSavedRegs"] = last_frame_info->saved_register_size;
     dictionary[".cbLocals"] = last_frame_info->local_size;
@@ -144,7 +149,8 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack *stack) {
                                    last_frame_info->local_size +
                                    last_frame_info->saved_register_size;
   }
-  if (last_frame_info->valid & StackFrameInfo::VALID_PARAMETER_SIZE) {
+  if (last_frame_info &&
+      last_frame_info->valid & StackFrameInfo::VALID_PARAMETER_SIZE) {
     // This is treated separately because it can either come from FPO data or
     // from other debugging data.
     dictionary[".cbParams"] = last_frame_info->parameter_size;
@@ -156,7 +162,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack *stack) {
   // the return address and the values of other registers in the calling
   // function.
   string program_string;
-  if (last_frame_info->valid == StackFrameInfo::VALID_ALL) {
+  if (last_frame_info && last_frame_info->valid == StackFrameInfo::VALID_ALL) {
     // FPO data available.
     if (!last_frame_info->program_string.empty()) {
       // The FPO data has its own program string, which will tell us how to

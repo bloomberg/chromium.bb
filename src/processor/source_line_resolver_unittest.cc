@@ -28,12 +28,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdio.h>
+#include <memory>
 #include <string>
 #include "processor/source_line_resolver.h"
 #include "google/stack_frame.h"
+#include "processor/linked_ptr.h"
 #include "processor/stack_frame_info.h"
 
+using std::auto_ptr;
 using std::string;
+using google_airbag::linked_ptr;
 using google_airbag::SourceLineResolver;
 using google_airbag::StackFrame;
 using google_airbag::StackFrameInfo;
@@ -55,12 +59,10 @@ static bool VerifyEmpty(const StackFrame &frame) {
   return true;
 }
 
-static void ClearSourceLineInfo(StackFrame *frame,
-                                StackFrameInfo *frame_info) {
+static void ClearSourceLineInfo(StackFrame *frame) {
   frame->function_name.clear();
   frame->source_file_name.clear();
   frame->source_line = 0;
-  frame_info->program_string.clear();
 }
 
 static bool RunTests() {
@@ -74,62 +76,64 @@ static bool RunTests() {
   ASSERT_TRUE(resolver.HasModule("module2"));
 
   StackFrame frame;
-  StackFrameInfo frame_info;
   frame.instruction = 0x1000;
   frame.module_name = "module1";
-  resolver.FillSourceLineInfo(&frame, &frame_info);
+  auto_ptr<StackFrameInfo> frame_info(resolver.FillSourceLineInfo(&frame));
   ASSERT_EQ(frame.function_name, "Function1_1");
   ASSERT_EQ(frame.source_file_name, "file1_1.cc");
   ASSERT_EQ(frame.source_line, 44);
-  ASSERT_FALSE(frame_info.allocates_base_pointer);
-  ASSERT_EQ(frame_info.program_string,
+  ASSERT_TRUE(frame_info.get());
+  ASSERT_FALSE(frame_info->allocates_base_pointer);
+  ASSERT_EQ(frame_info->program_string,
             "$eip 4 + ^ = $esp $ebp 8 + = $ebp $ebp ^ =");
 
-  ClearSourceLineInfo(&frame, &frame_info);
+  ClearSourceLineInfo(&frame);
   frame.instruction = 0x800;
-  resolver.FillSourceLineInfo(&frame, &frame_info);
+  frame_info.reset(resolver.FillSourceLineInfo(&frame));
   ASSERT_TRUE(VerifyEmpty(frame));
-  ASSERT_FALSE(frame_info.allocates_base_pointer);
-  ASSERT_TRUE(frame_info.program_string.empty());
+  ASSERT_FALSE(frame_info.get());
 
   frame.instruction = 0x1280;
-  resolver.FillSourceLineInfo(&frame, &frame_info);
+  frame_info.reset(resolver.FillSourceLineInfo(&frame));
   ASSERT_EQ(frame.function_name, "Function1_3");
   ASSERT_TRUE(frame.source_file_name.empty());
   ASSERT_EQ(frame.source_line, 0);
-  ASSERT_FALSE(frame_info.allocates_base_pointer);
-  ASSERT_TRUE(frame_info.program_string.empty());
+  ASSERT_TRUE(frame_info.get());
+  ASSERT_FALSE(frame_info->allocates_base_pointer);
+  ASSERT_TRUE(frame_info->program_string.empty());
 
   frame.instruction = 0x1380;
-  resolver.FillSourceLineInfo(&frame, &frame_info);
+  frame_info.reset(resolver.FillSourceLineInfo(&frame));
   ASSERT_EQ(frame.function_name, "Function1_4");
   ASSERT_TRUE(frame.source_file_name.empty());
   ASSERT_EQ(frame.source_line, 0);
-  ASSERT_FALSE(frame_info.allocates_base_pointer);
-  ASSERT_FALSE(frame_info.program_string.empty());
+  ASSERT_TRUE(frame_info.get());
+  ASSERT_FALSE(frame_info->allocates_base_pointer);
+  ASSERT_FALSE(frame_info->program_string.empty());
 
   frame.instruction = 0x2180;
   frame.module_name = "module2";
-  resolver.FillSourceLineInfo(&frame, &frame_info);
+  frame_info.reset(resolver.FillSourceLineInfo(&frame));
   ASSERT_EQ(frame.function_name, "Function2_2");
   ASSERT_EQ(frame.source_file_name, "file2_2.cc");
   ASSERT_EQ(frame.source_line, 21);
-  ASSERT_EQ(frame_info.prolog_size, 1);
+  ASSERT_TRUE(frame_info.get());
+  ASSERT_EQ(frame_info->prolog_size, 1);
 
   frame.instruction = 0x216f;
   frame.module_name = "module2";
-  resolver.FillSourceLineInfo(&frame, &frame_info);
+  resolver.FillSourceLineInfo(&frame);
   ASSERT_EQ(frame.function_name, "Public2_1");
 
-  ClearSourceLineInfo(&frame, &frame_info);
+  ClearSourceLineInfo(&frame);
   frame.instruction = 0x219f;
   frame.module_name = "module2";
-  resolver.FillSourceLineInfo(&frame, &frame_info);
+  resolver.FillSourceLineInfo(&frame);
   ASSERT_TRUE(frame.function_name.empty());
 
   frame.instruction = 0x21a0;
   frame.module_name = "module2";
-  resolver.FillSourceLineInfo(&frame, &frame_info);
+  resolver.FillSourceLineInfo(&frame);
   ASSERT_EQ(frame.function_name, "Public2_2");
 
   ASSERT_FALSE(resolver.LoadModule("module3",

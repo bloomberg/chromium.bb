@@ -28,18 +28,20 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdio.h>
-#include <map>
 #include <string.h>
+#include <map>
+#include <memory>
 #include <vector>
 #include <utility>
 #include "processor/source_line_resolver.h"
 #include "google/stack_frame.h"
+#include "processor/linked_ptr.h"
 #include "processor/address_map-inl.h"
 #include "processor/contained_range_map-inl.h"
-#include "processor/linked_ptr.h"
 #include "processor/range_map-inl.h"
 #include "processor/stack_frame_info.h"
 
+using std::auto_ptr;
 using std::map;
 using std::vector;
 using std::make_pair;
@@ -104,9 +106,10 @@ class SourceLineResolver::Module {
 
   // Looks up the given relative address, and fills the StackFrame struct
   // with the result.  Additional debugging information, if available, is
-  // placed in frame_info.
-  void LookupAddress(MemAddr address,
-                     StackFrame *frame, StackFrameInfo *frame_info) const;
+  // returned.  If no additional information is available, returns NULL.
+  // A NULL return value is not an error.  The caller takes ownership of
+  // any returned StackFrameInfo object.
+  StackFrameInfo* LookupAddress(MemAddr address, StackFrame *frame) const;
 
  private:
   friend class SourceLineResolver;
@@ -163,7 +166,8 @@ class SourceLineResolver::Module {
   // StackInfoTypes.  These are split by type because there may be overlaps
   // between maps of different types, but some information is only available
   // as certain types.
-  ContainedRangeMap<MemAddr, StackFrameInfo> stack_info_[STACK_INFO_LAST];
+  ContainedRangeMap< MemAddr, linked_ptr<StackFrameInfo> >
+      stack_info_[STACK_INFO_LAST];
 };
 
 SourceLineResolver::SourceLineResolver() : modules_(new ModuleMap) {
@@ -198,13 +202,14 @@ bool SourceLineResolver::HasModule(const string &module_name) const {
   return modules_->find(module_name) != modules_->end();
 }
 
-void SourceLineResolver::FillSourceLineInfo(StackFrame *frame,
-                                            StackFrameInfo *frame_info) const {
+StackFrameInfo* SourceLineResolver::FillSourceLineInfo(
+    StackFrame *frame) const {
   ModuleMap::const_iterator it = modules_->find(frame->module_name);
   if (it != modules_->end()) {
-    it->second->LookupAddress(frame->instruction - frame->module_base,
-                              frame, frame_info);
+    return it->second->LookupAddress(frame->instruction - frame->module_base,
+                                     frame);
   }
+  return NULL;
 }
 
 bool SourceLineResolver::Module::LoadMap(const string &map_file) {
@@ -259,23 +264,24 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
   return true;
 }
 
-void SourceLineResolver::Module::LookupAddress(
-    MemAddr address, StackFrame *frame, StackFrameInfo *frame_info) const {
-  if (frame_info) {
-    frame_info->valid = StackFrameInfo::VALID_NONE;
+StackFrameInfo* SourceLineResolver::Module::LookupAddress(
+    MemAddr address, StackFrame *frame) const {
+  linked_ptr<StackFrameInfo> retrieved_info;
+  // Check for debugging info first, before any possible early returns.
+  //
+  // We only know about STACK_INFO_FRAME_DATA and STACK_INFO_FPO.  Prefer
+  // them in this order.  STACK_INFO_FRAME_DATA is the newer type that
+  // includes its own program string.  STACK_INFO_FPO is the older type
+  // corresponding to the FPO_DATA struct.  See stackwalker_x86.cc.
+  if (!stack_info_[STACK_INFO_FRAME_DATA].RetrieveRange(address,
+                                                        &retrieved_info)) {
+    stack_info_[STACK_INFO_FPO].RetrieveRange(address, &retrieved_info);
+  }
 
-    // Check for debugging info first, before any possible early returns.
-    // The caller will know that frame_info was filled in by checking its
-    // valid field.
-    //
-    // We only know about STACK_INFO_FRAME_DATA and STACK_INFO_FPO.  Prefer
-    // them in this order.  STACK_INFO_FRAME_DATA is the newer type that
-    // includes its own program string.  STACK_INFO_FPO is the older type
-    // corresponding to the FPO_DATA struct.  See stackwalker_x86.cc.
-    if (!stack_info_[STACK_INFO_FRAME_DATA].RetrieveRange(address,
-                                                          frame_info)) {
-      stack_info_[STACK_INFO_FPO].RetrieveRange(address, frame_info);
-    }
+  auto_ptr<StackFrameInfo> frame_info;
+  if (retrieved_info.get()) {
+    frame_info.reset(new StackFrameInfo());
+    frame_info->CopyFrom(*retrieved_info.get());
   }
 
   // First, look for a matching FUNC range.  Use RetrieveNearestRange instead
@@ -324,18 +330,20 @@ void SourceLineResolver::Module::LookupAddress(
     frame->function_base = frame->module_base + public_address;
   } else {
     // No FUNC or PUBLIC data available.
-    return;
+    return frame_info.release();
   }
 
-  if (frame_info &&
-      !(frame_info->valid & StackFrameInfo::VALID_PARAMETER_SIZE)) {
+  if (!frame_info.get()) {
     // Even without a relevant STACK line, many functions contain information
     // about how much space their parameters consume on the stack.  Prefer
     // the STACK stuff (above), but if it's not present, take the
     // information from the FUNC or PUBLIC line.
+    frame_info.reset(new StackFrameInfo());
     frame_info->parameter_size = parameter_size;
     frame_info->valid |= StackFrameInfo::VALID_PARAMETER_SIZE;
   }
+
+  return frame_info.release();
 }
 
 // static
@@ -518,15 +526,16 @@ bool SourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
   // if ContainedRangeMap were modified to allow replacement of
   // already-stored values.
 
-  stack_info_[type].StoreRange(rva, code_size,
-                               StackFrameInfo(prolog_size,
-                                              epilog_size,
-                                              parameter_size,
-                                              saved_register_size,
-                                              local_size,
-                                              max_stack_size,
-                                              allocates_base_pointer,
-                                              program_string));
+  linked_ptr<StackFrameInfo> stack_frame_info(
+      new StackFrameInfo(prolog_size,
+                         epilog_size,
+                         parameter_size,
+                         saved_register_size,
+                         local_size,
+                         max_stack_size,
+                         allocates_base_pointer,
+                         program_string));
+  stack_info_[type].StoreRange(rva, code_size, stack_frame_info);
 
   return true;
 }
