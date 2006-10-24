@@ -550,8 +550,15 @@ class MinidumpSystemInfo : public MinidumpStream {
       return valid_ ? &system_info_ : 0; }
 
   // I don't know what CSD stands for, but this field is documented as
-  // returning a textual representation of the OS service pack.
+  // returning a textual representation of the OS service pack.  On other
+  // platforms, this provides additional information about an OS version
+  // level beyond major.minor.micro.  Returns NULL if unknown.
   const string* GetCSDVersion();
+
+  // If a CPU vendor string can be determined, returns a pointer to it,
+  // otherwise, returns NULL.  CPU vendor strings can be determined from
+  // x86 CPUs with CPUID 0.
+  const string* GetCPUVendor();
 
   // Print a human-readable representation of the object to stdout.
   void Print();
@@ -569,7 +576,10 @@ class MinidumpSystemInfo : public MinidumpStream {
 
   // Textual representation of the OS service pack, for minidumps produced
   // by MiniDumpWriteDump on Windows.
-  const string*   csd_version_;
+  const string* csd_version_;
+
+  // A string identifying the CPU vendor, if known.
+  const string* cpu_vendor_;
 };
 
 

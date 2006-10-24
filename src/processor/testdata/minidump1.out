@@ -3725,6 +3725,7 @@ MDRawSystemInfo
   cpu.x86_cpu_info.feature_information       = 0xafe9fbff
   cpu.x86_cpu_info.amd_extended_cpu_features = 0xffffffff
   (csd_version)                              = "Service Pack 2"
+  (cpu_vendor)                               = "GenuineIntel"
 MDRawMiscInfo
   size_of_info                 = 24
   flags1                       = 0x3

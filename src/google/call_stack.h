@@ -64,6 +64,9 @@ class CallStack {
   // Stackwalker is responsible for building the frames_ vector.
   friend class Stackwalker;
 
+  // Disallow instantiation other than by friends.
+  CallStack() : frames_() {}
+
   // Storage for pushed frames.
   vector<StackFrame*> frames_;
 };

@@ -27,20 +27,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// call_stack.cc: A call stack comprised of stack frames.
+// process_state.cc: A snapshot of a process, in a fully-digested state.
 //
-// See call_stack.h for documentation.
+// See process_state.h for documentation.
 //
 // Author: Mark Mentovai
 
+#include "google/process_state.h"
 #include "google/call_stack.h"
-#include "google/stack_frame.h"
 
 namespace google_airbag {
 
-CallStack::~CallStack() {
-  for (vector<StackFrame *>::const_iterator iterator = frames_.begin();
-       iterator != frames_.end();
+ProcessState::~ProcessState() {
+  for (vector<CallStack *>::const_iterator iterator = threads_.begin();
+       iterator != threads_.end();
        ++iterator) {
     delete *iterator;
   }

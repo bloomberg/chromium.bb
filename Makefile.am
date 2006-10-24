@@ -53,6 +53,7 @@ src_libairbag_la_SOURCES = \
 	src/google/airbag_types.h \
 	src/google/call_stack.h \
 	src/google/minidump_processor.h \
+	src/google/process_state.h \
 	src/google/stack_frame.h \
 	src/google/stack_frame_cpu.h \
 	src/google/symbol_supplier.h \
@@ -69,6 +70,7 @@ src_libairbag_la_SOURCES = \
 	src/processor/minidump_processor.cc \
 	src/processor/postfix_evaluator.h \
 	src/processor/postfix_evaluator-inl.h \
+	src/processor/process_state.cc \
 	src/processor/range_map.h \
 	src/processor/range_map-inl.h \
 	src/processor/scoped_ptr.h \
@@ -122,6 +124,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/call_stack.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
+	src/processor/process_state.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_x86.lo \

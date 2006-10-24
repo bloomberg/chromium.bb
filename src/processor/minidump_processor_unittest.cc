@@ -33,6 +33,7 @@
 #include <string>
 #include "google/call_stack.h"
 #include "google/minidump_processor.h"
+#include "google/process_state.h"
 #include "google/stack_frame.h"
 #include "google/symbol_supplier.h"
 #include "processor/minidump.h"
@@ -41,6 +42,7 @@
 using std::string;
 using google_airbag::CallStack;
 using google_airbag::MinidumpProcessor;
+using google_airbag::ProcessState;
 using google_airbag::scoped_ptr;
 
 #define ASSERT_TRUE(cond) \
@@ -79,8 +81,19 @@ static bool RunTests() {
   string minidump_file = string(getenv("srcdir") ? getenv("srcdir") : ".") +
                          "/src/processor/testdata/minidump2.dmp";
 
-  scoped_ptr<CallStack> stack(processor.Process(minidump_file));
-  ASSERT_TRUE(stack.get());
+  scoped_ptr<ProcessState> state(processor.Process(minidump_file));
+  ASSERT_TRUE(state.get());
+  ASSERT_EQ(state->cpu(), "x86");
+  ASSERT_EQ(state->cpu_info(), "GenuineIntel family 6 model 13 stepping 8");
+  ASSERT_EQ(state->os(), "Windows NT");
+  ASSERT_EQ(state->os_version(), "5.1.2600 Service Pack 2");
+  ASSERT_TRUE(state->crashed());
+  ASSERT_EQ(state->crash_reason(), "EXCEPTION_ACCESS_VIOLATION");
+  ASSERT_EQ(state->crash_address(), 0);
+  ASSERT_EQ(state->threads()->size(), 1);
+  ASSERT_EQ(state->crash_thread(), 0);
+  CallStack *stack = state->threads()->at(0);
+  ASSERT_TRUE(stack);
   ASSERT_EQ(stack->frames()->size(), 4);
 
   ASSERT_EQ(stack->frames()->at(0)->module_base, 0x400000);

@@ -1779,12 +1779,14 @@ void MinidumpException::Print() {
 MinidumpSystemInfo::MinidumpSystemInfo(Minidump* minidump)
     : MinidumpStream(minidump),
       system_info_(),
-      csd_version_(NULL) {
+      csd_version_(NULL),
+      cpu_vendor_(NULL) {
 }
 
 
 MinidumpSystemInfo::~MinidumpSystemInfo() {
   delete csd_version_;
+  delete cpu_vendor_;
 }
 
 
@@ -1792,6 +1794,8 @@ bool MinidumpSystemInfo::Read(u_int32_t expected_size) {
   // Invalidate cached data.
   delete csd_version_;
   csd_version_ = NULL;
+  delete cpu_vendor_;
+  cpu_vendor_ = NULL;
 
   valid_ = false;
 
@@ -1844,6 +1848,36 @@ const string* MinidumpSystemInfo::GetCSDVersion() {
 }
 
 
+const string* MinidumpSystemInfo::GetCPUVendor() {
+  if (!valid_)
+    return NULL;
+
+  // CPU vendor information can only be determined from x86 minidumps.
+  if (!cpu_vendor_ &&
+      (system_info_.processor_architecture == MD_CPU_ARCHITECTURE_X86 ||
+       system_info_.processor_architecture == MD_CPU_ARCHITECTURE_X86_WIN64)) {
+    char cpu_vendor_string[13];
+    snprintf(cpu_vendor_string, sizeof(cpu_vendor_string),
+             "%c%c%c%c%c%c%c%c%c%c%c%c",
+              system_info_.cpu.x86_cpu_info.vendor_id[0] & 0xff,
+             (system_info_.cpu.x86_cpu_info.vendor_id[0] >> 8) & 0xff,
+             (system_info_.cpu.x86_cpu_info.vendor_id[0] >> 16) & 0xff,
+             (system_info_.cpu.x86_cpu_info.vendor_id[0] >> 24) & 0xff,
+              system_info_.cpu.x86_cpu_info.vendor_id[1] & 0xff,
+             (system_info_.cpu.x86_cpu_info.vendor_id[1] >> 8) & 0xff,
+             (system_info_.cpu.x86_cpu_info.vendor_id[1] >> 16) & 0xff,
+             (system_info_.cpu.x86_cpu_info.vendor_id[1] >> 24) & 0xff,
+              system_info_.cpu.x86_cpu_info.vendor_id[2] & 0xff,
+             (system_info_.cpu.x86_cpu_info.vendor_id[2] >> 8) & 0xff,
+             (system_info_.cpu.x86_cpu_info.vendor_id[2] >> 16) & 0xff,
+             (system_info_.cpu.x86_cpu_info.vendor_id[2] >> 24) & 0xff);
+    cpu_vendor_ = new string(cpu_vendor_string);
+  }
+
+  return cpu_vendor_;
+}
+
+
 void MinidumpSystemInfo::Print() {
   if (!valid_)
     return;
@@ -1881,12 +1915,20 @@ void MinidumpSystemInfo::Print() {
          system_info_.cpu.x86_cpu_info.feature_information);
   printf("  cpu.x86_cpu_info.amd_extended_cpu_features = 0x%x\n",
          system_info_.cpu.x86_cpu_info.amd_extended_cpu_features);
-  const char* csd_version = GetCSDVersion()->c_str();
-  if (csd_version)
+  const string* csd_version = GetCSDVersion();
+  if (csd_version) {
     printf("  (csd_version)                              = \"%s\"\n",
-           csd_version);
-  else
+           csd_version->c_str());
+  } else {
     printf("  (csd_version)                              = (null)\n");
+  }
+  const string* cpu_vendor = GetCPUVendor();
+  if (cpu_vendor) {
+    printf("  (cpu_vendor)                               = \"%s\"\n",
+           cpu_vendor->c_str());
+  } else {
+    printf("  (cpu_vendor)                               = (null)\n");
+  }
   printf("\n");
 }
 
