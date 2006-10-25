@@ -483,7 +483,7 @@ typedef enum {
   FUNCTION_TABLE_STREAM       = 13,
   UNLOADED_MODULE_LIST_STREAM = 14,
   MISC_INFO_STREAM            = 15,  /* MDRawMiscInfo */
-  LAST_RESERVED_STREAM        = 0x0000FFFF
+  LAST_RESERVED_STREAM        = 0x0000ffff
 } MDStreamType;  /* MINIDUMP_STREAM_TYPE */
 
 

@@ -117,7 +117,7 @@ class Stackwalker {
 };
 
 
-} // namespace google_airbag
+}  // namespace google_airbag
 
 
-#endif // PROCESSOR_STACKWALKER_H__
+#endif  // PROCESSOR_STACKWALKER_H__

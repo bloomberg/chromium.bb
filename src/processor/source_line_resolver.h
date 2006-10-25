@@ -36,6 +36,7 @@
 
 #include <string>
 #include <ext/hash_map>
+#include "google/airbag_types.h"
 
 namespace google_airbag {
 
@@ -47,7 +48,7 @@ struct StackFrameInfo;
 
 class SourceLineResolver {
  public:
-  typedef unsigned long long MemAddr;
+  typedef u_int64_t MemAddr;
 
   SourceLineResolver();
   ~SourceLineResolver();
@@ -92,6 +93,6 @@ class SourceLineResolver {
   void operator=(const SourceLineResolver&);
 };
 
-} // namespace google_airbag
+}  // namespace google_airbag
 
 #endif  // PROCESSOR_SOURCE_LINE_RESOLVER_H__

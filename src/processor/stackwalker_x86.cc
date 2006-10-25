@@ -34,12 +34,13 @@
 // Author: Mark Mentovai
 
 
+#include "processor/postfix_evaluator-inl.h"
+
 #include "processor/stackwalker_x86.h"
 #include "google/call_stack.h"
 #include "google/stack_frame_cpu.h"
 #include "processor/linked_ptr.h"
 #include "processor/minidump.h"
-#include "processor/postfix_evaluator-inl.h"
 #include "processor/stack_frame_info.h"
 
 namespace google_airbag {
@@ -309,4 +310,4 @@ StackFrame* StackwalkerX86::GetCallerFrame(
 }
 
 
-} // namespace google_airbag
+}  // namespace google_airbag

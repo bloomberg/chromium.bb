@@ -121,7 +121,7 @@ ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
 }
 
 // Returns the MDRawSystemInfo from a minidump, or NULL if system info is
-// not available from the minidump.  If system_info is non-NULL, it is used 
+// not available from the minidump.  If system_info is non-NULL, it is used
 // to pass back the MinidumpSystemInfo object.
 static const MDRawSystemInfo* GetSystemInfo(Minidump *dump,
                                             MinidumpSystemInfo **system_info) {
@@ -271,7 +271,7 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
   if (!raw_system_info)
     return reason;
 
-  switch(raw_system_info->platform_id) {
+  switch (raw_system_info->platform_id) {
     case MD_OS_WIN32_NT:
     case MD_OS_WIN32_WINDOWS: {
       switch (raw_exception->exception_record.exception_code) {

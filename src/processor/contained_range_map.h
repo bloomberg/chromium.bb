@@ -87,7 +87,7 @@ class ContainedRangeMap {
   bool StoreRange(const AddressType &base,
                   const AddressType &size,
                   const EntryType &entry);
-  
+
   // Retrieves the most specific (smallest) descendant range encompassing
   // the specified address.  This method will only return entries held by
   // child ranges, and not the entry contained by |this|.  This is necessary

@@ -108,7 +108,7 @@ class MinidumpObject {
   virtual ~MinidumpObject() {}
 
  protected:
-  MinidumpObject(Minidump* minidump);
+  explicit MinidumpObject(Minidump* minidump);
 
   // Refers to the Minidump object that is the ultimate parent of this
   // Some MinidumpObjects are owned by other MinidumpObjects, but at the
@@ -137,7 +137,7 @@ class MinidumpStream : public MinidumpObject {
   virtual ~MinidumpStream() {}
 
  protected:
-  MinidumpStream(Minidump* minidump);
+  explicit MinidumpStream(Minidump* minidump);
 
  private:
   // Populate (and validate) the MinidumpStream.  minidump_ is expected
@@ -184,7 +184,7 @@ class MinidumpContext : public MinidumpStream {
   friend class MinidumpThread;
   friend class MinidumpException;
 
-  MinidumpContext(Minidump* minidump);
+  explicit MinidumpContext(Minidump* minidump);
 
   bool Read(u_int32_t expected_size);
 
@@ -247,7 +247,7 @@ class MinidumpMemoryRegion : public MinidumpObject,
   friend class MinidumpThread;
   friend class MinidumpMemoryList;
 
-  MinidumpMemoryRegion(Minidump* minidump);
+  explicit MinidumpMemoryRegion(Minidump* minidump);
 
   // Identify the base address and size of the memory region, and the
   // location it may be found in the minidump file.
@@ -291,7 +291,7 @@ class MinidumpThread : public MinidumpObject {
   // These objects are managed by MinidumpThreadList.
   friend class MinidumpThreadList;
 
-  MinidumpThread(Minidump* minidump);
+  explicit MinidumpThread(Minidump* minidump);
 
   // This works like MinidumpStream::Read, but is driven by
   // MinidumpThreadList.  No size checking is done, because
@@ -329,7 +329,7 @@ class MinidumpThreadList : public MinidumpStream {
 
   static const u_int32_t kStreamType = THREAD_LIST_STREAM;
 
-  MinidumpThreadList(Minidump* aMinidump);
+  explicit MinidumpThreadList(Minidump* aMinidump);
 
   bool Read(u_int32_t aExpectedSize);
 
@@ -384,7 +384,7 @@ class MinidumpModule : public MinidumpObject {
   // These objects are managed by MinidumpModuleList.
   friend class MinidumpModuleList;
 
-  MinidumpModule(Minidump* minidump);
+  explicit MinidumpModule(Minidump* minidump);
 
   // This works like MinidumpStream::Read, but is driven by
   // MinidumpModuleList.  No size checking is done, because
@@ -439,7 +439,7 @@ class MinidumpModuleList : public MinidumpStream {
 
   static const u_int32_t kStreamType = MODULE_LIST_STREAM;
 
-  MinidumpModuleList(Minidump* minidump);
+  explicit MinidumpModuleList(Minidump* minidump);
 
   bool Read(u_int32_t expected_size);
 
@@ -484,7 +484,7 @@ class MinidumpMemoryList : public MinidumpStream {
 
   static const u_int32_t kStreamType = MEMORY_LIST_STREAM;
 
-  MinidumpMemoryList(Minidump* minidump);
+  explicit MinidumpMemoryList(Minidump* minidump);
 
   bool Read(u_int32_t expected_size);
 
@@ -531,7 +531,7 @@ class MinidumpException : public MinidumpStream {
 
   static const u_int32_t kStreamType = EXCEPTION_STREAM;
 
-  MinidumpException(Minidump* minidump);
+  explicit MinidumpException(Minidump* minidump);
 
   bool Read(u_int32_t expected_size);
 
@@ -568,7 +568,7 @@ class MinidumpSystemInfo : public MinidumpStream {
 
   static const u_int32_t kStreamType = SYSTEM_INFO_STREAM;
 
-  MinidumpSystemInfo(Minidump* minidump);
+  explicit MinidumpSystemInfo(Minidump* minidump);
 
   bool Read(u_int32_t expected_size);
 
@@ -598,7 +598,7 @@ class MinidumpMiscInfo : public MinidumpStream {
 
   static const u_int32_t kStreamType = MISC_INFO_STREAM;
 
-  MinidumpMiscInfo(Minidump* minidump_);
+  explicit MinidumpMiscInfo(Minidump* minidump_);
 
   bool Read(u_int32_t expected_size_);
 
@@ -611,7 +611,7 @@ class MinidumpMiscInfo : public MinidumpStream {
 class Minidump {
  public:
   // path is the pathname of a file containing the minidump.
-  Minidump(const string& path);
+  explicit Minidump(const string& path);
 
   ~Minidump();
 
@@ -730,7 +730,7 @@ class Minidump {
 };
 
 
-} // namespace google_airbag
+}  // namespace google_airbag
 
 
-#endif // PROCESSOR_MINIDUMP_H__
+#endif  // PROCESSOR_MINIDUMP_H__

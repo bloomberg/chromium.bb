@@ -33,8 +33,8 @@
 #ifndef _PDB_SOURCE_LINE_WRITER_H__
 #define _PDB_SOURCE_LINE_WRITER_H__
 
-#include <string>
 #include <atlcomcli.h>
+#include <string>
 
 struct IDiaEnumLineNumbers;
 struct IDiaSession;

@@ -135,4 +135,4 @@ Stackwalker* Stackwalker::StackwalkerForCPU(MinidumpContext *context,
 }
 
 
-} // namespace google_airbag
+}  // namespace google_airbag

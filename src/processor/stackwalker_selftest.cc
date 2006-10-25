@@ -161,7 +161,7 @@ static u_int32_t GetEIP() {
 
 // GetSP returns the current value of the %r1 register, which by convention,
 // is the stack pointer on ppc.  Because it's implemented as a function,
-// %r1 itself contains GetSP's own stack pointer and not the caller's stack 
+// %r1 itself contains GetSP's own stack pointer and not the caller's stack
 // pointer.  Dereference %r1 to obtain the caller's stack pointer, which the
 // compiler-generated prolog stored on the stack.  Because this function
 // depends on the compiler-generated prolog, inlining is disabled.
@@ -222,7 +222,7 @@ static unsigned int CountCallerFrames() {
 
 #ifdef PRINT_STACKS
   printf("\n");
-  for(unsigned int frame_index = 0;
+  for (unsigned int frame_index = 0;
       frame_index < stack->frames()->size();
       ++frame_index) {
     StackFrame *frame = stack->frames()->at(frame_index);

@@ -95,7 +95,10 @@ struct StackFrameInfo {
 
   // Clears the StackFrameInfo object so that users will see it as though
   // it contains no information.
-  void Clear() { valid = VALID_NONE; program_string.erase(); }
+  void Clear() {
+    valid = VALID_NONE;
+    program_string.erase();
+  }
 
   // Identifies which fields in the structure are valid.  This is of
   // type Validity, but it is defined as an int because it's not

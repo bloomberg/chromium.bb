@@ -75,7 +75,7 @@ class StackwalkerX86 : public Stackwalker {
 };
 
 
-} // namespace google_airbag
+}  // namespace google_airbag
 
 
-#endif // PROCESSOR_STACKWALKER_X86_H__
+#endif  // PROCESSOR_STACKWALKER_X86_H__

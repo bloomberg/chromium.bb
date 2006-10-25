@@ -44,15 +44,16 @@ typedef SSIZE_T ssize_t;
 #define open _open
 #define read _read
 #define lseek _lseek
-#else // _WIN32
+#else  // _WIN32
 #define O_BINARY 0
-#endif // _WIN32
+#endif  // _WIN32
 
 #include <map>
 #include <vector>
 
-#include "processor/minidump.h"
 #include "processor/range_map-inl.h"
+
+#include "processor/minidump.h"
 #include "processor/scoped_ptr.h"
 
 
@@ -649,7 +650,7 @@ const u_int8_t* MinidumpMemoryRegion::GetMemory() {
     scoped_ptr< vector<u_int8_t> > memory(
         new vector<u_int8_t>(descriptor_->memory.data_size));
 
-    if (!minidump_->ReadBytes(&(*memory)[0], descriptor_->memory.data_size)) 
+    if (!minidump_->ReadBytes(&(*memory)[0], descriptor_->memory.data_size))
       return NULL;
 
     memory_ = memory.release();
@@ -2126,7 +2127,7 @@ bool Minidump::Read() {
     // Initialize the stream_map map, which speeds locating a stream by
     // type.
     unsigned int stream_type = directory_entry->stream_type;
-    switch(stream_type) {
+    switch (stream_type) {
       case THREAD_LIST_STREAM:
       case MODULE_LIST_STREAM:
       case MEMORY_LIST_STREAM:
@@ -2203,7 +2204,8 @@ void Minidump::Print() {
   printf("  stream_count         = %d\n",      header_.stream_count);
   printf("  stream_directory_rva = 0x%x\n",    header_.stream_directory_rva);
   printf("  checksum             = 0x%x\n",    header_.checksum);
-  struct tm* timestruct = gmtime((time_t*)&header_.time_date_stamp);
+  struct tm* timestruct =
+      gmtime(reinterpret_cast<time_t*>(&header_.time_date_stamp));
   char timestr[20];
   strftime(timestr, 20, "%Y-%m-%d %H:%M:%S", timestruct);
   printf("  time_date_stamp      = 0x%x %s\n", header_.time_date_stamp,
@@ -2365,4 +2367,4 @@ T* Minidump::GetStream(T** stream) {
 }
 
 
-} // namespace google_airbag
+}  // namespace google_airbag

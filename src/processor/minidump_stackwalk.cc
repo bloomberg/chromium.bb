@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
   }
 
   MinidumpThread *exception_thread =
-   thread_list->GetThreadByID(exception->GetThreadID());
+      thread_list->GetThreadByID(exception->GetThreadID());
   if (!exception_thread) {
     fprintf(stderr, "thread_list->GetThreadByID() failed\n");
     exit(1);

@@ -74,7 +74,6 @@ string TestSymbolSupplier::GetSymbolFile(MinidumpModule *module) {
 using google_airbag::TestSymbolSupplier;
 
 static bool RunTests() {
-
   TestSymbolSupplier supplier;
   MinidumpProcessor processor(&supplier);
 

@@ -133,4 +133,4 @@ StackFrame* StackwalkerPPC::GetCallerFrame(
 }
 
 
-} // namespace google_airbag
+}  // namespace google_airbag

@@ -29,15 +29,18 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include <map>
-#include <vector>
 #include <utility>
-#include "processor/source_line_resolver.h"
-#include "google/stack_frame.h"
-#include "processor/linked_ptr.h"
+#include <vector>
+
 #include "processor/address_map-inl.h"
 #include "processor/contained_range_map-inl.h"
 #include "processor/range_map-inl.h"
+
+#include "processor/source_line_resolver.h"
+#include "google/stack_frame.h"
+#include "processor/linked_ptr.h"
 #include "processor/scoped_ptr.h"
 #include "processor/stack_frame_info.h"
 
@@ -543,4 +546,4 @@ size_t SourceLineResolver::HashString::operator()(const string &s) const {
   return hash<const char*>()(s.c_str());
 }
 
-} // namespace google_airbag
+}  // namespace google_airbag

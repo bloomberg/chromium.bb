@@ -44,7 +44,7 @@ class MinidumpProcessor {
  public:
   // Initializes this MinidumpProcessor.  supplier should be an
   // implementation of the SymbolSupplier abstract base class.
-  MinidumpProcessor(SymbolSupplier *supplier);
+  explicit MinidumpProcessor(SymbolSupplier *supplier);
   ~MinidumpProcessor();
 
   // Returns a new ProcessState object produced by processing the minidump

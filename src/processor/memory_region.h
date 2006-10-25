@@ -70,7 +70,7 @@ class MemoryRegion {
 };
 
 
-} // namespace google_airbag
+}  // namespace google_airbag
 
 
-#endif // PROCESSOR_MEMORY_REGION_H__
+#endif  // PROCESSOR_MEMORY_REGION_H__

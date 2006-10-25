@@ -20,9 +20,10 @@
 #include <map>
 #include <string>
 
+#include "processor/postfix_evaluator-inl.h"
+
 #include "google/airbag_types.h"
 #include "processor/memory_region.h"
-#include "processor/postfix_evaluator-inl.h"
 
 
 using std::map;
@@ -38,14 +39,22 @@ class FakeMemoryRegion : public MemoryRegion {
  public:
   virtual u_int64_t GetBase() { return 0; }
   virtual u_int32_t GetSize() { return 0; }
-  virtual bool GetMemoryAtAddress(u_int64_t address, u_int8_t  *value)
-      { *value = address + 1; return true; }
-  virtual bool GetMemoryAtAddress(u_int64_t address, u_int16_t *value)
-      { *value = address + 1; return true; }
-  virtual bool GetMemoryAtAddress(u_int64_t address, u_int32_t *value)
-      { *value = address + 1; return true; }
-  virtual bool GetMemoryAtAddress(u_int64_t address, u_int64_t *value)
-      { *value = address + 1; return true; }
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int8_t  *value) {
+    *value = address + 1;
+    return true;
+  }
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int16_t *value) {
+    *value = address + 1;
+    return true;
+  }
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int32_t *value) {
+    *value = address + 1;
+    return true;
+  }
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int64_t *value) {
+    *value = address + 1;
+    return true;
+  }
 };
 
 
@@ -195,7 +204,7 @@ bool RunTests() {
       const EvaluateTest *evaluate_test = &evaluate_tests[evaluate_test_index];
 
       // Do the test.
-      bool result = postfix_evaluator.Evaluate(evaluate_test->expression, 
+      bool result = postfix_evaluator.Evaluate(evaluate_test->expression,
                                                &assigned);
       if (result != evaluate_test->evaluable) {
         fprintf(stderr, "FAIL: evaluate set %d/%d, test %d/%d, "
@@ -210,7 +219,7 @@ bool RunTests() {
     }
 
     // Validate the results.
-    for(map<string, unsigned int>::const_iterator validate_iterator =
+    for (map<string, unsigned int>::const_iterator validate_iterator =
             evaluate_test_set->validate_data->begin();
         validate_iterator != evaluate_test_set->validate_data->end();
         ++validate_iterator) {

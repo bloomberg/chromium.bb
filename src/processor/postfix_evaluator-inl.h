@@ -38,7 +38,7 @@ using std::ostringstream;
 // before returning failure.
 class AutoStackClearer {
  public:
-  AutoStackClearer(vector<string> *stack) : stack_(stack) {}
+  explicit AutoStackClearer(vector<string> *stack) : stack_(stack) {}
   ~AutoStackClearer() { stack_->clear(); }
 
  private:

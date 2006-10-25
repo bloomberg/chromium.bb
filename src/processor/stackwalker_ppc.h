@@ -75,7 +75,7 @@ class StackwalkerPPC : public Stackwalker {
 };
 
 
-} // namespace google_airbag
+}  // namespace google_airbag
 
 
-#endif // PROCESSOR_STACKWALKER_PPC_H__
+#endif  // PROCESSOR_STACKWALKER_PPC_H__

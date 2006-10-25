@@ -45,7 +45,7 @@
 
 #include <sys/types.h>
 
-#else /* !_WIN32 */
+#else  /* !_WIN32 */
 
 #include <WTypes.h>
 
@@ -54,7 +54,7 @@ typedef unsigned __int16 u_int16_t;
 typedef unsigned __int32 u_int32_t;
 typedef unsigned __int64 u_int64_t;
 
-#endif /* !_WIN32 */
+#endif  /* !_WIN32 */
 
 typedef struct {
   u_int64_t half[2];
@@ -62,4 +62,4 @@ typedef struct {
 
 typedef u_int64_t airbag_time_t;
 
-#endif /* GOOGLE_AIRBAG_TYPES_H__ */
+#endif  /* GOOGLE_AIRBAG_TYPES_H__ */
