@@ -1887,6 +1887,8 @@ void MinidumpSystemInfo::Print() {
          system_info_.processor_architecture);
   printf("  processor_level                            = %d\n",
          system_info_.processor_level);
+  printf("  processor_revision                         = 0x%x\n",
+         system_info_.processor_revision);
   printf("  number_of_processors                       = %d\n",
          system_info_.number_of_processors);
   printf("  product_type                               = %d\n",
@@ -1903,8 +1905,6 @@ void MinidumpSystemInfo::Print() {
          system_info_.csd_version_rva);
   printf("  suite_mask                                 = 0x%x\n",
          system_info_.suite_mask);
-  printf("  reserved2                                  = 0x%x\n",
-         system_info_.reserved2);
   for (unsigned int i = 0; i < 3; ++i) {
     printf("  cpu.x86_cpu_info.vendor_id[%d]              = 0x%x\n",
            i, system_info_.cpu.x86_cpu_info.vendor_id[i]);

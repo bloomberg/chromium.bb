@@ -3709,6 +3709,7 @@ MDRawContextX86
 MDRawSystemInfo
   processor_architecture                     = 0
   processor_level                            = 6
+  processor_revision                         = 0xd08
   number_of_processors                       = 1
   product_type                               = 1
   major_version                              = 5
@@ -3717,7 +3718,6 @@ MDRawSystemInfo
   platform_id                                = 2
   csd_version_rva                            = 0x3204
   suite_mask                                 = 0x100
-  reserved2                                  = 0x0
   cpu.x86_cpu_info.vendor_id[0]              = 0x756e6547
   cpu.x86_cpu_info.vendor_id[1]              = 0x49656e69
   cpu.x86_cpu_info.vendor_id[2]              = 0x6c65746e
