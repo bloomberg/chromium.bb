@@ -488,6 +488,13 @@ typedef enum {
 
 
 typedef struct {
+  u_int32_t length;     /* Length of buffer in bytes (not characters),
+                         * excluding 0-terminator */
+  u_int16_t buffer[0];  /* UTF-16-encoded, 0-terminated */
+} MDString;  /* MINIDUMP_STRING */
+
+
+typedef struct {
   u_int32_t            thread_id;
   u_int32_t            suspend_count;
   u_int32_t            priority_class;
@@ -509,7 +516,7 @@ typedef struct {
   u_int32_t            size_of_image;
   u_int32_t            checksum;         /* 0 if unknown */
   u_int32_t            time_date_stamp;  /* time_t */
-  MDRVA                module_name_rva;  /* Pathname or filename, UTF-16 */
+  MDRVA                module_name_rva;  /* MDString, pathname or filename */
   MDVSFixedFileInfo    version_info;
 
   /* The next field stores a CodeView record and is populated when a module's
@@ -863,7 +870,7 @@ typedef struct {
   u_int32_t        minor_version;
   u_int32_t        build_number;
   u_int32_t        platform_id;
-  MDRVA            csd_version_rva;  /* UTF-16 string further identifying the
+  MDRVA            csd_version_rva;  /* MDString further identifying the
                                       * host OS.
                                       * Windows: name of the installed OS
                                       *          service pack.
