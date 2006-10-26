@@ -489,14 +489,20 @@ int drm_ttm_object_create(drm_device_t * dev, unsigned long size,
 	map->size = ttm->num_pages * PAGE_SIZE;
 	map->handle = (void *)object;
 
+	/*
+	 * Add a one-page "hole" to the block size to avoid the mm subsystem
+	 * merging vmas.
+	 * FIXME: Is this really needed?
+	 */
+
 	list->file_offset_node = drm_mm_search_free(&dev->offset_manager,
-						    ttm->num_pages, 0, 0);
+						    ttm->num_pages + 1, 0, 0);
 	if (!list->file_offset_node) {
 		drm_ttm_object_remove(dev, object);
 		return -ENOMEM;
 	}
 	list->file_offset_node = drm_mm_get_block(list->file_offset_node,
-						  ttm->num_pages, 0);
+						  ttm->num_pages + 1, 0);
 
 	list->hash.key = list->file_offset_node->start;
 
