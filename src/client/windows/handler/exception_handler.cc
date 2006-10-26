@@ -27,11 +27,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <assert.h>
+#include <ObjBase.h>
 
 #include <cstdio>
 
 #include "client/windows/handler/exception_handler.h"
+#include "common/windows/guid_string.h"
 
 namespace google_airbag {
 
@@ -42,9 +43,9 @@ ExceptionHandler::ExceptionHandler(const wstring &dump_path,
                                    void *callback_context,
                                    bool install_handler)
     : callback_(callback), callback_context_(callback_context),
-      dump_path_(dump_path), next_minidump_id_(NULL),
-      dbghelp_module_(NULL), minidump_write_dump_(NULL),
-      previous_handler_(current_handler_), previous_filter_(NULL) {
+      dump_path_(dump_path), dbghelp_module_(NULL),
+      minidump_write_dump_(NULL), previous_handler_(current_handler_),
+      previous_filter_(NULL) {
   UpdateNextID();
   dbghelp_module_ = LoadLibrary(L"dbghelp.dll");
   if (dbghelp_module_) {
@@ -60,9 +61,6 @@ ExceptionHandler::ExceptionHandler(const wstring &dump_path,
 ExceptionHandler::~ExceptionHandler() {
   if (dbghelp_module_) {
     FreeLibrary(dbghelp_module_);
-  }
-  if (next_minidump_id_) {
-    RpcStringFree(&next_minidump_id_);
   }
   if (current_handler_ == this) {
     SetUnhandledExceptionFilter(previous_filter_);
@@ -95,7 +93,7 @@ bool ExceptionHandler::WriteMinidump(const wstring &dump_path,
 bool ExceptionHandler::WriteMinidumpWithException(EXCEPTION_POINTERS *exinfo) {
   wchar_t dump_file_name[MAX_PATH];
   swprintf_s(dump_file_name, MAX_PATH, L"%s\\%s.dmp",
-             dump_path_.c_str(), next_minidump_id_);
+             dump_path_.c_str(), next_minidump_id_.c_str());
 
   bool success = false;
   if (minidump_write_dump_) {
@@ -126,10 +124,7 @@ bool ExceptionHandler::WriteMinidumpWithException(EXCEPTION_POINTERS *exinfo) {
   }
 
   if (callback_) {
-    // This looks nasty, but RPC_WSTR is really just a wide string,
-    // and there are no "supported" ways to convert them other than casting.
-    callback_(reinterpret_cast<wchar_t*>(next_minidump_id_),
-              callback_context_, success);
+    callback_(next_minidump_id_, callback_context_, success);
   }
   // TODO(bryner): log an error on failure
 
@@ -137,12 +132,9 @@ bool ExceptionHandler::WriteMinidumpWithException(EXCEPTION_POINTERS *exinfo) {
 }
 
 void ExceptionHandler::UpdateNextID() {
-  if (next_minidump_id_) {
-    RpcStringFree(&next_minidump_id_);
-  }
   GUID id;
   CoCreateGuid(&id);
-  UuidToString(&id, &next_minidump_id_);
+  next_minidump_id_ = GUIDString::GUIDToWString(&id);
 }
 
 }  // namespace google_airbag

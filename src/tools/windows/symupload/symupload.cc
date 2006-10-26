@@ -37,17 +37,17 @@
 //        e.g. 11111111-2222-3333-4444-555555555555
 //  symbol_file: the airbag-format symbol file
 
-#include <windows.h>
-#include <wininet.h>
-#include <dbghelp.h>
+#include <Windows.h>
+#include <DbgHelp.h>
+#include <WinInet.h>
 
 #include <cstdio>
-#include <vector>
-#include <string>
 #include <map>
+#include <string>
+#include <vector>
 
-#include "common/windows/pdb_source_line_writer.h"
 #include "common/windows/http_upload.h"
+#include "common/windows/pdb_source_line_writer.h"
 
 using std::string;
 using std::wstring;

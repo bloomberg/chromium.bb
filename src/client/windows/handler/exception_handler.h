@@ -54,13 +54,13 @@
 // This will put the exception filter stack into an inconsistent state.
 //
 // To use this library in your project, you will need to link against
-// rpcrt4.lib and ole32.lib.
+// ole32.lib.
 
 #ifndef CLIENT_WINDOWS_HANDLER_EXCEPTION_HANDLER_H__
 #define CLIENT_WINDOWS_HANDLER_EXCEPTION_HANDLER_H__
 
-#include <windows.h>
-#include <dbghelp.h>
+#include <Windows.h>
+#include <DbgHelp.h>
 
 #include <string>
 
@@ -121,7 +121,7 @@ class ExceptionHandler {
   void *callback_context_;
 
   wstring dump_path_;
-  RPC_WSTR next_minidump_id_;
+  wstring next_minidump_id_;
 
   HMODULE dbghelp_module_;
   MiniDumpWriteDump_type minidump_write_dump_;

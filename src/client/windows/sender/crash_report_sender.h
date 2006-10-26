@@ -38,8 +38,8 @@
 // To use this library in your project, you will need to link against
 // wininet.lib.
 
-#include <string>
 #include <map>
+#include <string>
 
 namespace google_airbag {
 

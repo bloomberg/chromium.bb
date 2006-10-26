@@ -28,8 +28,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
-#include <windows.h>
-#include <wininet.h>
+#include <Windows.h>
+#include <WinInet.h>
 
 #include <fstream>
 

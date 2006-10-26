@@ -34,9 +34,10 @@
 #ifndef COMMON_WINDOWS_HTTP_UPLOAD_H__
 #define COMMON_WINDOWS_HTTP_UPLOAD_H__
 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
+
 namespace google_airbag {
 
 using std::string;

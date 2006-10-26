@@ -34,6 +34,7 @@
 #define _PDB_SOURCE_LINE_WRITER_H__
 
 #include <atlcomcli.h>
+
 #include <string>
 
 struct IDiaEnumLineNumbers;

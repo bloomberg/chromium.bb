@@ -27,41 +27,26 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Windows utility to dump the line number data from a pdb file to
-// a text-based format that we can use from the minidump processor.
+// guid_string.cc: Convert GUIDs to strings.
 
-#include <stdio.h>
+#ifndef COMMON_WINDOWS_GUID_STRING_H__
+#define COMMON_WINDOWS_GUID_STRING_H__
+
+#include <Guiddef.h>
 
 #include <string>
 
-#include "common/windows/pdb_source_line_writer.h"
+namespace google_airbag {
 
 using std::wstring;
-using google_airbag::PDBSourceLineWriter;
 
-int main(int argc, char **argv) {
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s <pdb file>\n", argv[0]);
-    return 1;
-  }
+class GUIDString {
+ public:
+  // Converts guid to a string in the format recommended by RFC 4122 and
+  // returns the string.
+  static wstring GUIDToWString(GUID *guid);
+};
 
-  wchar_t filename[_MAX_PATH];
-  if (mbstowcs_s(NULL, filename, argv[1], _MAX_PATH) == -1) {
-    fprintf(stderr, "invalid multibyte character in %s\n", argv[1]);
-    return 1;
-  }
+}  // namespace google_airbag
 
-  PDBSourceLineWriter writer;
-  if (!writer.Open(wstring(filename), PDBSourceLineWriter::PDB_FILE)) {
-    fprintf(stderr, "Open failed\n");
-    return 1;
-  }
-
-  if (!writer.WriteMap(stdout)) {
-    fprintf(stderr, "WriteMap failed\n");
-    return 1;
-  }
-
-  writer.Close();
-  return 0;
-}
+#endif  // COMMON_WINDOWS_GUID_STRING_H__
