@@ -79,12 +79,21 @@ ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
       return NULL;
     }
 
+    MinidumpContext *context = thread->GetContext();
+
     if (process_state->crashed_ &&
         thread->GetThreadID() == exception_thread_id) {
       if (found_crash_thread) {
         // There can't be more than one crash thread.
         return NULL;
       }
+
+      // Use the exception record's context for the crashed thread, instead
+      // of the thread's own context.  For the crashed thread, the thread's
+      // own context is the state inside the exception handler.  Using it
+      // would not result in the expected stack trace from the time of the
+      // crash.
+      context = exception->GetContext();
 
       process_state->crash_thread_ = thread_index;
       found_crash_thread = true;
@@ -96,7 +105,7 @@ ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
     }
 
     scoped_ptr<Stackwalker> stackwalker(
-        Stackwalker::StackwalkerForCPU(exception->GetContext(),
+        Stackwalker::StackwalkerForCPU(context,
                                        thread_memory,
                                        dump.GetModuleList(),
                                        supplier_));
