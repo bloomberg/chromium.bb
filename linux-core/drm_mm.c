@@ -44,39 +44,132 @@
 #include "drmP.h"
 #include <linux/slab.h>
 
+unsigned long tail_space(drm_mm_t *mm)
+{
+	struct list_head *tail_node;
+	drm_mm_node_t *entry;
+
+	tail_node = mm->root_node.ml_entry.prev;
+	entry = list_entry(tail_node, drm_mm_node_t, ml_entry);
+	if (!entry->free)
+		return 0;
+	
+	return entry->size;
+}
+
+int remove_space_from_tail(drm_mm_t *mm, unsigned long size)
+{
+	struct list_head *tail_node;
+	drm_mm_node_t *entry;
+
+	tail_node = mm->root_node.ml_entry.prev;
+	entry = list_entry(tail_node, drm_mm_node_t, ml_entry);
+	if (!entry->free)
+		return -ENOMEM;
+	
+	if (entry->size <= size)
+		return -ENOMEM;
+
+	entry->size -= size;
+	return 0;
+}
+
+
+static int drm_mm_create_tail_node(drm_mm_t *mm,
+			    unsigned long start,
+			    unsigned long size)
+{
+	drm_mm_node_t *child;
+	
+	child = (drm_mm_node_t *)
+		drm_ctl_cache_alloc(drm_cache.mm, sizeof(*child),
+				    GFP_KERNEL);
+	if (!child)
+		return -ENOMEM;
+
+	child->free = 1;
+	child->size = size;
+	child->start = start;
+	child->mm = mm;
+
+	list_add_tail(&child->ml_entry, &mm->root_node.ml_entry);
+	list_add_tail(&child->fl_entry, &mm->root_node.fl_entry);
+
+	return 0;
+}
+	
+
+int add_space_to_tail(drm_mm_t *mm, unsigned long size)
+{
+	struct list_head *tail_node;
+	drm_mm_node_t *entry;
+
+	tail_node = mm->root_node.ml_entry.prev;
+	entry = list_entry(tail_node, drm_mm_node_t, ml_entry);
+	if (!entry->free) {
+		return drm_mm_create_tail_node(mm, entry->start + entry->size, size);
+	}
+	entry->size += size;
+	return 0;
+}
+	
+static drm_mm_node_t *drm_mm_split_at_start(drm_mm_node_t *parent,
+					    unsigned long size)
+{
+	drm_mm_node_t *child;
+	
+	child = (drm_mm_node_t *)
+		drm_ctl_cache_alloc(drm_cache.mm, sizeof(*child),
+				    GFP_KERNEL);
+	if (!child)
+		return NULL;
+
+	INIT_LIST_HEAD(&child->fl_entry);
+
+	child->free = 0;
+	child->size = size;
+	child->start = parent->start;
+	child->mm = parent->mm;
+
+	list_add_tail(&child->ml_entry, &parent->ml_entry);
+	INIT_LIST_HEAD(&child->fl_entry);
+
+	parent->size -= size;
+	parent->start += size;
+	return child;
+}
+	
+	
+
 drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 				unsigned long size, unsigned alignment)
 {
 
+	drm_mm_node_t *align_splitoff = NULL;
 	drm_mm_node_t *child;
-
-	if (alignment)
-		size += alignment - 1;
-
+	unsigned tmp = size % alignment;
+	
+	if (tmp) {
+		align_splitoff = drm_mm_split_at_start(parent, alignment - tmp);
+		if (!align_splitoff)
+			return NULL;
+	}
+		
 	if (parent->size == size) {
 		list_del_init(&parent->fl_entry);
 		parent->free = 0;
 		return parent;
 	} else {
-
-		child = (drm_mm_node_t *)
-		    drm_ctl_cache_alloc(drm_cache.mm, sizeof(*child),
-					GFP_KERNEL);
-		if (!child)
+		child = drm_mm_split_at_start(parent, size);
+		if (!child) {
+			if (align_splitoff) 
+				drm_mm_put_block(align_splitoff);
 			return NULL;
-
-		INIT_LIST_HEAD(&child->ml_entry);
-		INIT_LIST_HEAD(&child->fl_entry);
-
-		child->free = 0;
-		child->size = size;
-		child->start = parent->start;
-		child->mm = parent->mm;
-
-		list_add_tail(&child->ml_entry, &parent->ml_entry);
-		parent->size -= size;
-		parent->start += size;
+		}
 	}
+	if (align_splitoff)
+		drm_mm_put_block(align_splitoff);
+
 	return child;
 }
 
@@ -139,16 +232,23 @@ drm_mm_node_t *drm_mm_search_free(const drm_mm_t * mm,
 	drm_mm_node_t *entry;
 	drm_mm_node_t *best;
 	unsigned long best_size;
+	unsigned wasted;
 
 	best = NULL;
 	best_size = ~0UL;
 
-	if (alignment)
-		size += alignment - 1;
-
 	list_for_each(list, free_stack) {
 		entry = list_entry(list, drm_mm_node_t, fl_entry);
-		if (entry->size >= size) {
+		wasted = 0;
+
+		if (alignment) {
+			register unsigned tmp = size % alignment;
+			if (tmp) 
+				wasted += alignment - tmp;
+		}
+
+
+		if (entry->size >= size + wasted) {
 			if (!best_match)
 				return entry;
 			if (size < best_size) {
@@ -170,29 +270,10 @@ int drm_mm_clean(drm_mm_t * mm)
 
 int drm_mm_init(drm_mm_t * mm, unsigned long start, unsigned long size)
 {
-	drm_mm_node_t *child;
-
 	INIT_LIST_HEAD(&mm->root_node.ml_entry);
 	INIT_LIST_HEAD(&mm->root_node.fl_entry);
 
-	child = (drm_mm_node_t *)
-	    drm_ctl_cache_alloc(drm_cache.mm, sizeof(*child), GFP_KERNEL);
-
-	if (!child)
-		return -ENOMEM;
-
-	INIT_LIST_HEAD(&child->ml_entry);
-	INIT_LIST_HEAD(&child->fl_entry);
-
-	child->start = start;
-	child->size = size;
-	child->free = 1;
-	child->mm = mm;
-
-	list_add(&child->fl_entry, &mm->root_node.fl_entry);
-	list_add(&child->ml_entry, &mm->root_node.ml_entry);
-
-	return 0;
+	return drm_mm_create_tail_node(mm, start, size);
 }
 
 EXPORT_SYMBOL(drm_mm_init);
