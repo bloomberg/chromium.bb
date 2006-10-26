@@ -1368,7 +1368,11 @@ extern drm_mm_node_t *drm_mm_search_free(const drm_mm_t *mm, unsigned long size,
 extern int drm_mm_init(drm_mm_t *mm, unsigned long start, unsigned long size);
 extern void drm_mm_takedown(drm_mm_t *mm);
 extern int drm_mm_clean(drm_mm_t *mm);
-static inline drm_mm_t *drm_get_mm(drm_mm_node_t *block) 
+extern unsigned long drm_mm_tail_space(drm_mm_t *mm);
+extern int drm_mm_remove_space_from_tail(drm_mm_t *mm, unsigned long size);
+extern int drm_mm_add_space_to_tail(drm_mm_t *mm, unsigned long size);
+
+static inline drm_mm_t *drm_get_mm(drm_mm_node_t *block)
 {
 	return block->mm;
 }

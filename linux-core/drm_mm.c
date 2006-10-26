@@ -44,7 +44,7 @@
 #include "drmP.h"
 #include <linux/slab.h>
 
-unsigned long tail_space(drm_mm_t *mm)
+unsigned long drm_mm_tail_space(drm_mm_t *mm)
 {
 	struct list_head *tail_node;
 	drm_mm_node_t *entry;
@@ -57,7 +57,7 @@ unsigned long tail_space(drm_mm_t *mm)
 	return entry->size;
 }
 
-int remove_space_from_tail(drm_mm_t *mm, unsigned long size)
+int drm_mm_remove_space_from_tail(drm_mm_t *mm, unsigned long size)
 {
 	struct list_head *tail_node;
 	drm_mm_node_t *entry;
@@ -99,7 +99,7 @@ static int drm_mm_create_tail_node(drm_mm_t *mm,
 }
 	
 
-int add_space_to_tail(drm_mm_t *mm, unsigned long size)
+int drm_mm_add_space_to_tail(drm_mm_t *mm, unsigned long size)
 {
 	struct list_head *tail_node;
 	drm_mm_node_t *entry;
