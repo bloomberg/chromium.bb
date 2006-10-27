@@ -87,6 +87,10 @@ class ExceptionHandler {
                    void *callback_context, bool install_handler);
   ~ExceptionHandler();
 
+  // Get and set the minidump path.
+  wstring dump_path() const { return dump_path_; }
+  void set_dump_path(const wstring &dump_path) { dump_path_ = dump_path; }
+
   // Writes a minidump immediately.  This can be used to capture the
   // execution state independently of a crash.  Returns true on success.
   bool WriteMinidump();
