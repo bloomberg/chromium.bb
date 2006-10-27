@@ -62,6 +62,10 @@
 #include <Windows.h>
 #include <DbgHelp.h>
 
+#pragma warning( push )
+// Disable exception handler warnings.
+#pragma warning( disable : 4530 ) 
+
 #include <string>
 
 namespace google_airbag {
@@ -142,5 +146,7 @@ class ExceptionHandler {
 };
 
 }  // namespace google_airbag
+
+#pragma warning( pop )
 
 #endif  // CLIENT_WINDOWS_HANDLER_EXCEPTION_HANDLER_H__

@@ -31,6 +31,9 @@
 #include <Windows.h>
 #include <WinInet.h>
 
+// Disable exception handler warnings.
+#pragma warning( disable : 4530 ) 
+
 #include <fstream>
 
 #include "common/windows/http_upload.h"

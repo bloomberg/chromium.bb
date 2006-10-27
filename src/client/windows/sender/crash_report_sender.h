@@ -38,6 +38,10 @@
 // To use this library in your project, you will need to link against
 // wininet.lib.
 
+#pragma warning( push )
+// Disable exception handler warnings.
+#pragma warning( disable : 4530 ) 
+
 #include <map>
 #include <string>
 
@@ -68,5 +72,7 @@ class CrashReportSender {
 };
 
 }  // namespace google_airbag
+
+#pragma warning( pop )
 
 #endif  // CLIENT_WINDOWS_SENDER_CRASH_REPORT_SENDER_H__
