@@ -660,7 +660,6 @@ typedef struct drm_set_version {
 	int drm_dd_minor;
 } drm_set_version_t;
 
-#ifdef __linux__
 
 #define DRM_FENCE_FLAG_EMIT                0x00000001
 #define DRM_FENCE_FLAG_SHAREABLE           0x00000002
@@ -844,8 +843,6 @@ typedef union drm_mm_init_arg{
 		unsigned expand_pad[8]; /*Future expansion */
 	} rep;
 } drm_mm_init_arg_t;
-#endif
-
 
 /**
  * \name Ioctls Definitions
@@ -912,11 +909,9 @@ typedef union drm_mm_init_arg{
 
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, drm_wait_vblank_t)
 
-#ifdef __linux__
 #define DRM_IOCTL_FENCE                 DRM_IOWR(0x3b, drm_fence_arg_t)
 #define DRM_IOCTL_BUFOBJ                DRM_IOWR(0x3d, drm_bo_arg_t)
 #define DRM_IOCTL_MM_INIT               DRM_IOWR(0x3e, drm_mm_init_arg_t)
-#endif
 
 #define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, drm_update_draw_t)
 

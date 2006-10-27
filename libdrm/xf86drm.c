@@ -717,7 +717,7 @@ drmVersionPtr drmGetLibVersion(int fd)
      *   revision 1.2.x = added drmSetInterfaceVersion
      *                    modified drmOpen to handle both busid and name
      */
-    version->version_major      = 1;
+    version->version_major      = 2;
     version->version_minor      = 2;
     version->version_patchlevel = 0;
 
@@ -2257,7 +2257,6 @@ int drmCommandWriteRead(int fd, unsigned long drmCommandIndex, void *data,
     return 0;
 }
 
-#ifdef __linux__
 
 /*
  * Valid flags are 
@@ -3216,6 +3215,3 @@ int drmMMUnlock(int fd, unsigned memType)
     
     return ret;	
 }
-
-
-#endif
