@@ -62,8 +62,11 @@ class TestSymbolSupplier : public SymbolSupplier {
 
 string TestSymbolSupplier::GetSymbolFile(MinidumpModule *module) {
   if (*(module->GetName()) == "c:\\test_app.exe") {
+    // The funny-looking pathname is so that the symbol file can also be
+    // reached by a SimpleSymbolSupplier.
     return string(getenv("srcdir") ? getenv("srcdir") : ".") +
-      "/src/processor/testdata/minidump2.sym";
+      "/src/processor/testdata/symbols/"
+      "test_app.pdb/63FE4780728D49379B9D7BB6460CB42A1/test_app.sym";
   }
 
   return "";
