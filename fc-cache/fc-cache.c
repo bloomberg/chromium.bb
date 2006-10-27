@@ -22,6 +22,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "../fc-arch/fcarch.h"
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #else
@@ -40,6 +42,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <string.h>
 
 #if defined (_WIN32)
 #define STRICT
@@ -296,6 +299,12 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
 
 	if (ent->d_name[0] == '.')
 	    continue;
+	/* skip cache files for different architectures and */
+	/* files which are not cache files at all */
+	if (strlen(ent->d_name) != 32 + strlen ("-" FC_ARCHITECTURE FC_CACHE_SUFFIX) ||
+	    strcmp(ent->d_name + 32, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX))
+	    continue;
+	
 	file_name = FcStrPlus (dir_base, (FcChar8 *) ent->d_name);
 	if (!file_name)
 	{
