@@ -1016,7 +1016,7 @@ typedef struct drm_buffer_object{
         unsigned long buffer_start;
         drm_bo_type_t type;
         unsigned long offset;
-
+        uint32_t page_alignment;
 	atomic_t mapped;
 	uint32_t flags;
 	uint32_t mask;

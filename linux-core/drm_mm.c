@@ -147,7 +147,10 @@ drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 
 	drm_mm_node_t *align_splitoff = NULL;
 	drm_mm_node_t *child;
-	unsigned tmp = size % alignment;
+	unsigned tmp = 0;
+
+	if (alignment)
+		tmp = size % alignment;
 	
 	if (tmp) {
 		align_splitoff = drm_mm_split_at_start(parent, alignment - tmp);

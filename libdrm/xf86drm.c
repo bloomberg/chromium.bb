@@ -2613,12 +2613,14 @@ static void drmBOCopyReply(const drm_bo_arg_reply_t *rep,
     buf->start = rep->buffer_start;
     buf->fenceFlags = rep->fence_flags;
     buf->replyFlags = rep->rep_flags;
+    buf->pageAlignment = rep->page_alignment;
 }
     
     
 
-int drmBOCreate(int fd, void *ttm, unsigned long start, unsigned long size,
-		void *user_buffer, drm_bo_type_t type, unsigned mask,
+int drmBOCreate(int fd, unsigned long start, unsigned long size, 
+		unsigned pageAlignment, void *user_buffer, drm_bo_type_t type, 
+		unsigned mask,
 		unsigned hint, drmBO *buf)
 {
     drm_bo_arg_t arg;
@@ -2632,6 +2634,7 @@ int drmBOCreate(int fd, void *ttm, unsigned long start, unsigned long size,
     req->hint = hint;
     req->size = size;
     req->type = type;
+    req->page_alignment = pageAlignment;
 
     buf->virtual = NULL;
 

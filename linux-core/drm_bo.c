@@ -571,7 +571,7 @@ int drm_bo_alloc_space(drm_buffer_object_t * buf, unsigned mem_type,
 
 	mutex_lock(&dev->struct_mutex);
 	do {
-		node = drm_mm_search_free(mm, size, 0, 1);
+		node = drm_mm_search_free(mm, size, buf->page_alignment, 1);
 		if (node)
 			break;
 
@@ -599,7 +599,7 @@ int drm_bo_alloc_space(drm_buffer_object_t * buf, unsigned mem_type,
 		return -ENOMEM;
 	}
 
-	node = drm_mm_get_block(node, size, 0);
+	node = drm_mm_get_block(node, size, buf->page_alignment);
 	mutex_unlock(&dev->struct_mutex);
 	BUG_ON(!node);
 	node->private = (void *)buf;
@@ -959,6 +959,7 @@ static void drm_bo_fill_rep_arg(drm_buffer_object_t * bo,
 	rep->buffer_start = bo->buffer_start;
 	rep->fence_flags = bo->fence_type;
 	rep->rep_flags = 0;
+	rep->page_alignment = bo->page_alignment;
 
 	if ((bo->priv_flags & _DRM_BO_FLAG_UNFENCED) || drm_bo_quick_busy(bo)) {
 		DRM_FLAG_MASKED(rep->rep_flags, DRM_BO_REP_BUSY,
@@ -1387,6 +1388,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 			     drm_bo_type_t type,
 			     uint32_t mask,
 			     uint32_t hint,
+			     uint32_t page_alignment,
 			     unsigned long buffer_start,
 			     drm_buffer_object_t ** buf_obj)
 {
@@ -1426,6 +1428,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 	bo->num_pages = num_pages;
 	bo->node_card = NULL;
 	bo->node_ttm = NULL;
+	bo->page_alignment = page_alignment;
 	if (bo->type == drm_bo_type_fake) {
 		bo->offset = buffer_start;
 		bo->buffer_start = 0;
@@ -1516,6 +1519,7 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 						     req->type,
 						     req->mask,
 						     req->hint,
+						     req->page_alignment,
 						     req->buffer_start, &entry);
 			if (rep.ret)
 				break;

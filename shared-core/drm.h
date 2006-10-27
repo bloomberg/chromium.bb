@@ -770,6 +770,7 @@ typedef struct drm_bo_arg_request {
 	drm_bo_type_t type;
 	unsigned arg_handle;
 	drm_u64_t buffer_start;
+        unsigned page_alignment;
 	unsigned expand_pad[4]; /*Future expansion */
 	enum {
 		drm_bo_create,
@@ -804,6 +805,7 @@ typedef struct drm_bo_arg_reply {
         drm_u64_t buffer_start;
         unsigned fence_flags;
         unsigned rep_flags;
+        unsigned page_alignment;
 	unsigned expand_pad[4]; /*Future expansion */
 }drm_bo_arg_reply_t;
 	
