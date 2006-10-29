@@ -2369,14 +2369,14 @@ int drmFenceUpdate(int fd, drmFence *fence)
 	drm_fence_arg_t arg;
 	
     memset(&arg, 0, sizeof(arg));
-	arg.handle = fence->handle;
-	arg.op = drm_fence_signaled;
-	if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
-	    return -errno;
-	fence->class = arg.class;
-	fence->type = arg.type;
-	fence->signaled = arg.signaled;
-	return 0;
+    arg.handle = fence->handle;
+    arg.op = drm_fence_signaled;
+    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+	return -errno;
+    fence->class = arg.class;
+    fence->type = arg.type;
+    fence->signaled = arg.signaled;
+    return 0;
 }
 
 int drmFenceSignaled(int fd, drmFence *fence, unsigned fenceType, 
@@ -2493,7 +2493,6 @@ void drmBOFreeList(drmBOList *list)
 {
     drmBONode *node;
     drmMMListHead *l;
-    int ret = 0;
 
     l = list->list.next;
     while(l != &list->list) {
@@ -2975,7 +2974,6 @@ int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags,
 		       int *newItem)
 {
     drmBONode *node, *cur;
-    unsigned oldFlags, newFlags;
     drmMMListHead *l;
 
     *newItem = 0;
@@ -3146,7 +3144,7 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
 	  return -EFAULT;
       if (rep->ret)
 	  return rep->ret;
-      drmBOCopyReply(rep, buf);
+      drmBOCopyReply(rep, node->buf);
   }
 
   return 0;
