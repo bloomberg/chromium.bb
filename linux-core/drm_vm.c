@@ -57,7 +57,7 @@ pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
 	}
 #elif defined(__powerpc__)
 	pgprot_val(tmp) |= _PAGE_NO_CACHE;
-	if (map->type == _DRM_REGISTERS)
+	if (map_type == _DRM_REGISTERS)
 		pgprot_val(tmp) |= _PAGE_GUARDED;
 #endif
 #if defined(__ia64__)

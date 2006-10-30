@@ -30,7 +30,7 @@
 
 static void drm_ttm_ipi_handler(void *null)
 {
-	wbinvd();
+	flush_agp_cache();
 }
 
 static void drm_ttm_cache_flush(void) 
