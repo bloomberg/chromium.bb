@@ -327,7 +327,7 @@ class MinidumpThreadList : public MinidumpStream {
   typedef map<u_int32_t, MinidumpThread*> IDToThreadMap;
   typedef vector<MinidumpThread> MinidumpThreads;
 
-  static const u_int32_t kStreamType = THREAD_LIST_STREAM;
+  static const u_int32_t kStreamType = MD_THREAD_LIST_STREAM;
 
   explicit MinidumpThreadList(Minidump* aMinidump);
 
@@ -437,7 +437,7 @@ class MinidumpModuleList : public MinidumpStream {
 
   typedef vector<MinidumpModule> MinidumpModules;
 
-  static const u_int32_t kStreamType = MODULE_LIST_STREAM;
+  static const u_int32_t kStreamType = MD_MODULE_LIST_STREAM;
 
   explicit MinidumpModuleList(Minidump* minidump);
 
@@ -482,7 +482,7 @@ class MinidumpMemoryList : public MinidumpStream {
   typedef vector<MDMemoryDescriptor>   MemoryDescriptors;
   typedef vector<MinidumpMemoryRegion> MemoryRegions;
 
-  static const u_int32_t kStreamType = MEMORY_LIST_STREAM;
+  static const u_int32_t kStreamType = MD_MEMORY_LIST_STREAM;
 
   explicit MinidumpMemoryList(Minidump* minidump);
 
@@ -529,7 +529,7 @@ class MinidumpException : public MinidumpStream {
  private:
   friend class Minidump;
 
-  static const u_int32_t kStreamType = EXCEPTION_STREAM;
+  static const u_int32_t kStreamType = MD_EXCEPTION_STREAM;
 
   explicit MinidumpException(Minidump* minidump);
 
@@ -566,7 +566,7 @@ class MinidumpSystemInfo : public MinidumpStream {
  private:
   friend class Minidump;
 
-  static const u_int32_t kStreamType = SYSTEM_INFO_STREAM;
+  static const u_int32_t kStreamType = MD_SYSTEM_INFO_STREAM;
 
   explicit MinidumpSystemInfo(Minidump* minidump);
 
@@ -596,7 +596,7 @@ class MinidumpMiscInfo : public MinidumpStream {
  private:
   friend class Minidump;
 
-  static const u_int32_t kStreamType = MISC_INFO_STREAM;
+  static const u_int32_t kStreamType = MD_MISC_INFO_STREAM;
 
   explicit MinidumpMiscInfo(Minidump* minidump_);
 

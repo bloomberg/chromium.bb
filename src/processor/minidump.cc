@@ -462,13 +462,13 @@ void MinidumpContext::FreeContext() {
 
 
 bool MinidumpContext::CheckAgainstSystemInfo(u_int32_t context_cpu_type) {
-  // It's OK if the minidump doesn't contain a SYSTEM_INFO_STREAM,
+  // It's OK if the minidump doesn't contain an MD_SYSTEM_INFO_STREAM,
   // as this function just implements a sanity check.
   MinidumpSystemInfo* system_info = minidump_->GetSystemInfo();
   if (!system_info)
     return true;
 
-  // If there is a SYSTEM_INFO_STREAM, it should contain valid system info.
+  // If there is an MD_SYSTEM_INFO_STREAM, it should contain valid system info.
   const MDRawSystemInfo* raw_system_info = system_info->system_info();
   if (!raw_system_info)
     return false;
@@ -2128,12 +2128,12 @@ bool Minidump::Read() {
     // type.
     unsigned int stream_type = directory_entry->stream_type;
     switch (stream_type) {
-      case THREAD_LIST_STREAM:
-      case MODULE_LIST_STREAM:
-      case MEMORY_LIST_STREAM:
-      case EXCEPTION_STREAM:
-      case SYSTEM_INFO_STREAM:
-      case MISC_INFO_STREAM: {
+      case MD_THREAD_LIST_STREAM:
+      case MD_MODULE_LIST_STREAM:
+      case MD_MEMORY_LIST_STREAM:
+      case MD_EXCEPTION_STREAM:
+      case MD_SYSTEM_INFO_STREAM:
+      case MD_MISC_INFO_STREAM: {
         if (stream_map->find(stream_type) != stream_map->end()) {
           // Another stream with this type was already found.  A minidump
           // file should contain at most one of each of these stream types.
