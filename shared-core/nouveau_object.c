@@ -427,7 +427,7 @@ struct nouveau_object *nouveau_dma_object_create(drm_device_t* dev,
    set to 0?
 */
 static struct nouveau_object *nouveau_context_object_create(drm_device_t* dev,
-		int class, uint32_t flags0, uint32_t flags1, uint32_t flags2,
+		int class, uint32_t flags,
 		struct nouveau_object *dma0,
 		struct nouveau_object *dma1,
 		struct nouveau_object *dma_notifier)
@@ -435,6 +435,40 @@ static struct nouveau_object *nouveau_context_object_create(drm_device_t* dev,
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
 	struct   nouveau_object *obj;
 	uint32_t d0, d1, dn;
+	uint32_t flags0,flags1,flags2;
+	flags0=0;flags1=0;flags2=0;
+
+	if (dev_priv->card_type >= NV_40) {
+		if (flags & NV_DMA_CONTEXT_FLAGS_PATCH_ROP_AND)
+			flags0 |= 0x02080000;
+		else if (flags & NV_DMA_CONTEXT_FLAGS_PATCH_SRCCOPY)
+			flags0 |= 0x02080000;
+		if (flags & NV_DMA_CONTEXT_FLAGS_CLIP_ENABLE)
+			flags0 |= 0x00020000;
+#ifdef __BIG_ENDIAN
+		if (flags & NV_DMA_CONTEXT_FLAGS_MONO)
+			flags1 |= 0x01000000;
+		flags2 |= 0x01000000;
+#else
+		if (flags & NV_DMA_CONTEXT_FLAGS_MONO)
+			flags1 |= 0x02000000;
+#endif
+	} else {
+		if (flags & NV_DMA_CONTEXT_FLAGS_PATCH_ROP_AND)
+			flags0 |= 0x01008000;
+		else if (flags & NV_DMA_CONTEXT_FLAGS_PATCH_SRCCOPY)
+			flags0 |= 0x01018000;
+		if (flags & NV_DMA_CONTEXT_FLAGS_CLIP_ENABLE)
+			flags0 |= 0x00002000;
+#ifdef __BIG_ENDIAN
+		flags0 |= 0x00080000;
+		if (flags & NV_DMA_CONTEXT_FLAGS_MONO)
+			flags1 |= 0x00000001;
+#else
+		if (flags & NV_DMA_CONTEXT_FLAGS_MONO)
+			flags1 |= 0x00000002;
+#endif
+	}
 
 	DRM_DEBUG("class=%x, dma0=%08x, dma1=%08x, dman=%08x\n",
 			class,
@@ -536,8 +570,8 @@ int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 	}
 
-	obj = nouveau_context_object_create(dev, init.class, init.flags0,
-		init.flags1, init.flags2, dma0, dma1, dman);
+	obj = nouveau_context_object_create(dev, init.class, init.flags,
+		dma0, dma1, dman);
 	if (!obj)
 		return DRM_ERR(ENOMEM);
 

@@ -37,10 +37,15 @@ typedef struct drm_nouveau_fifo_alloc {
 }
 drm_nouveau_fifo_alloc_t;
 
+#define NV_DMA_CONTEXT_FLAGS_PATCH_ROP_AND 0x1
+#define NV_DMA_CONTEXT_FLAGS_PATCH_SRCCOPY 0x2
+#define NV_DMA_CONTEXT_FLAGS_CLIP_ENABLE 0x4
+#define NV_DMA_CONTEXT_FLAGS_MONO 0x8
+
 typedef struct drm_nouveau_object_init {
 	uint32_t handle;
 	int class;
-	uint32_t flags0, flags1, flags2;
+	uint32_t flags;
 	/* these are object handles */
 	uint32_t dma0;
 	uint32_t dma1;
