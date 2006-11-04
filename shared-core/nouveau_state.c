@@ -103,6 +103,20 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 			sizeof(getparam));
 
 	switch (getparam.param) {
+	case NOUVEAU_GETPARAM_PCI_VENDOR:
+		getparam.value=dev->pci_vendor;
+		break;
+	case NOUVEAU_GETPARAM_PCI_DEVICE:
+		getparam.value=dev->pci_device;
+		break;
+	case NOUVEAU_GETPARAM_BUS_TYPE:
+		if (drm_device_is_agp(dev))
+			getparam.value=NV_AGP;
+		else if (drm_device_is_pcie(dev))
+			getparam.value=NV_PCIE;
+		else
+			getparam.value=NV_PCI;
+		break;
 	default:
 		DRM_ERROR("unknown parameter %d\n", getparam.param);
 		return DRM_ERR(EINVAL);

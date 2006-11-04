@@ -84,6 +84,10 @@ typedef struct drm_nouveau_mem_free {
 }
 drm_nouveau_mem_free_t;
 
+/* FIXME : maybe unify {GET,SET}PARAMs */
+#define NOUVEAU_GETPARAM_PCI_VENDOR 3
+#define NOUVEAU_GETPARAM_PCI_DEVICE 4
+#define NOUVEAU_GETPARAM_BUS_TYPE   5
 typedef struct drm_nouveau_getparam {
 	unsigned int param;
 	unsigned int value;
