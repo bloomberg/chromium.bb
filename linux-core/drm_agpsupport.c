@@ -552,4 +552,162 @@ int drm_agp_unbind_memory(DRM_AGP_MEM * handle)
 	return agp_unbind_memory(handle);
 }
 
+
+
+/*
+ * AGP ttm backend interface.
+ */
+
+#ifndef AGP_USER_TYPES
+#define AGP_USER_TYPES (1 << 16)
+#define AGP_USER_MEMORY (AGP_USER_TYPES)
+#define AGP_USER_CACHED_MEMORY (AGP_USER_TYPES + 1)
+#endif
+
+static int drm_agp_needs_unbind_cache_adjust(drm_ttm_backend_t *backend) {
+	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
+}
+
+
+static int drm_agp_populate(drm_ttm_backend_t *backend, unsigned long num_pages, 
+			    struct page **pages) {
+
+	drm_agp_ttm_priv *agp_priv = (drm_agp_ttm_priv *) backend->private;
+	struct page **cur_page, **last_page = pages + num_pages;
+	DRM_AGP_MEM *mem;
+
+	if (drm_alloc_memctl(num_pages * sizeof(void *)))
+		return -1;
+
+	DRM_DEBUG("drm_agp_populate_ttm\n");
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
+	mem = drm_agp_allocate_memory(num_pages, agp_priv->alloc_type);
+#else
+	mem = drm_agp_allocate_memory(agp_priv->bridge, num_pages, agp_priv->alloc_type);
+#endif
+	if (!mem) {
+		drm_free_memctl(num_pages *sizeof(void *));
+		return -1;
+	}
+
+	DRM_DEBUG("Current page count is %ld\n", (long) mem->page_count);
+	mem->page_count = 0;
+	for (cur_page = pages; cur_page < last_page; ++cur_page) {
+		mem->memory[mem->page_count++] = phys_to_gart(page_to_phys(*cur_page));
+	}
+	agp_priv->mem = mem;
+	return 0;
+}
+
+static int drm_agp_bind_ttm(drm_ttm_backend_t *backend, 
+			    unsigned long offset,
+			    int cached) 
+{
+	drm_agp_ttm_priv *agp_priv = (drm_agp_ttm_priv *) backend->private;
+	DRM_AGP_MEM *mem = agp_priv->mem;
+	int ret;
+
+	DRM_DEBUG("drm_agp_bind_ttm\n");
+	DRM_MASK_VAL(backend->flags, DRM_BE_FLAG_BOUND_CACHED,
+		     (cached) ? DRM_BE_FLAG_BOUND_CACHED : 0);
+	mem->is_flushed = TRUE;
+	mem->type = (cached) ? agp_priv->cached_type : agp_priv->uncached_type;
+	ret = drm_agp_bind_memory(mem, offset);
+	if (ret) {
+		DRM_ERROR("AGP Bind memory failed\n");
+	}
+	return ret;
+}
+
+static int drm_agp_unbind_ttm(drm_ttm_backend_t *backend) {
+
+	drm_agp_ttm_priv *agp_priv = (drm_agp_ttm_priv *) backend->private;
+
+	DRM_DEBUG("drm_agp_unbind_ttm\n");
+	if (agp_priv->mem->is_bound)
+		return drm_agp_unbind_memory(agp_priv->mem);
+	else
+		return 0;
+}
+
+static void drm_agp_clear_ttm(drm_ttm_backend_t *backend) {
+
+	drm_agp_ttm_priv *agp_priv = (drm_agp_ttm_priv *) backend->private;
+	DRM_AGP_MEM *mem = agp_priv->mem;
+
+	DRM_DEBUG("drm_agp_clear_ttm\n");
+	if (mem) {
+		unsigned long num_pages = mem->page_count;
+		backend->unbind(backend);
+		agp_free_memory(mem);
+		drm_free_memctl(num_pages *sizeof(void *));
+	}
+
+	agp_priv->mem = NULL;
+}
+
+static void drm_agp_destroy_ttm(drm_ttm_backend_t *backend) {
+
+	drm_agp_ttm_priv *agp_priv; 
+	
+	if (backend) {
+		DRM_DEBUG("drm_agp_destroy_ttm\n");
+		agp_priv = (drm_agp_ttm_priv *) backend->private;
+		if (agp_priv) {
+			if (agp_priv->mem) {
+				backend->clear(backend);
+			}
+			drm_ctl_free(agp_priv, sizeof(*agp_priv), DRM_MEM_MAPPINGS);
+			backend->private = NULL;
+		}
+		if (backend->flags & DRM_BE_FLAG_NEEDS_FREE) {
+			drm_ctl_free(backend, sizeof(*backend), DRM_MEM_MAPPINGS);                     
+		}
+	}
+}
+	
+
+drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
+				    drm_ttm_backend_t *backend)
+{
+
+        drm_ttm_backend_t *agp_be;
+	drm_agp_ttm_priv *agp_priv;
+
+	agp_be = (backend != NULL) ? backend:
+		drm_ctl_calloc(1, sizeof(*agp_be), DRM_MEM_MAPPINGS);
+
+	if (!agp_be)
+		return NULL;
+	
+	agp_priv = drm_ctl_calloc(1, sizeof(*agp_priv), DRM_MEM_MAPPINGS);
+	
+	if (!agp_priv) {
+		drm_ctl_free(agp_be, sizeof(*agp_be), DRM_MEM_MAPPINGS);
+		return NULL;
+	}
+	
+	agp_priv->mem = NULL;
+	agp_priv->alloc_type = AGP_USER_MEMORY;
+	agp_priv->cached_type = AGP_USER_CACHED_MEMORY;
+	agp_priv->uncached_type = AGP_USER_MEMORY;
+	agp_priv->bridge = dev->agp->bridge;
+	agp_priv->populated = FALSE;
+	agp_be->aperture_base = dev->agp->agp_info.aper_base;
+	agp_be->private = (void *) agp_priv;
+	agp_be->needs_ub_cache_adjust = drm_agp_needs_unbind_cache_adjust;
+	agp_be->populate = drm_agp_populate;
+	agp_be->clear = drm_agp_clear_ttm;
+	agp_be->bind = drm_agp_bind_ttm;
+	agp_be->unbind = drm_agp_unbind_ttm;
+	agp_be->destroy = drm_agp_destroy_ttm;
+	DRM_MASK_VAL(agp_be->flags, DRM_BE_FLAG_NEEDS_FREE,
+		     (backend == NULL) ? DRM_BE_FLAG_NEEDS_FREE : 0);
+	DRM_MASK_VAL(agp_be->flags, DRM_BE_FLAG_CBA,
+		     (dev->agp->cant_use_aperture) ? DRM_BE_FLAG_CBA : 0);
+	agp_be->drm_map_type = _DRM_AGP;
+	return agp_be;
+}
+EXPORT_SYMBOL(drm_agp_init_ttm);
+
 #endif				/* __OS_HAS_AGP */

@@ -41,7 +41,6 @@
  * can build the DRM (part of PI DRI). 4/21/2000 S + B */
 #include <asm/current.h>
 #endif				/* __alpha__ */
-#include <linux/config.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/miscdevice.h>
@@ -84,6 +83,7 @@
 #include <linux/poll.h>
 #include <asm/pgalloc.h>
 #include "drm.h"
+#include <linux/slab.h>
 
 #define __OS_HAS_AGP (defined(CONFIG_AGP) || (defined(CONFIG_AGP_MODULE) && defined(MODULE)))
 #define __OS_HAS_MTRR (defined(CONFIG_MTRR))
@@ -155,9 +155,18 @@
 #define DRM_MEM_CTXLIST   21
 #define DRM_MEM_MM        22
 #define DRM_MEM_HASHTAB   23
+#define DRM_MEM_OBJECTS   24
+#define DRM_MEM_FENCE     25
+#define DRM_MEM_TTM       26
+#define DRM_MEM_BUFOBJ    27
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 #define DRM_MAP_HASH_OFFSET 0x10000000
+#define DRM_MAP_HASH_ORDER 12
+#define DRM_OBJECT_HASH_ORDER 12
+#define DRM_FILE_PAGE_OFFSET_START ((0xFFFFFFFFUL >> PAGE_SHIFT) + 1)
+#define DRM_FILE_PAGE_OFFSET_SIZE ((0xFFFFFFFFUL >> PAGE_SHIFT) * 16)
+#define DRM_MM_INIT_MAX_PAGES 256
 
 /*@}*/
 
@@ -388,6 +397,19 @@ typedef struct drm_buf_entry {
 	drm_freelist_t freelist;
 } drm_buf_entry_t;
 
+/*
+ * This should be small enough to allow the use of kmalloc for hash tables
+ * instead of vmalloc.
+ */
+
+#define DRM_FILE_HASH_ORDER 8
+typedef enum{
+	_DRM_REF_USE=0,
+	_DRM_REF_TYPE1,
+	_DRM_NO_REF_TYPES
+} drm_ref_t;
+
+
 /** File private data */
 typedef struct drm_file {
 	int authenticated;
@@ -402,6 +424,18 @@ typedef struct drm_file {
 	struct drm_head *head;
 	int remove_auth_on_close;
 	unsigned long lock_count;
+	
+	/*
+	 * The user object hash table is global and resides in the
+	 * drm_device structure. We protect the lists and hash tables with the
+	 * device struct_mutex. A bit coarse-grained but probably the best 
+	 * option.
+	 */
+
+        struct list_head refd_objects;
+	struct list_head user_objects;
+
+        drm_open_hash_t refd_object_hash[_DRM_NO_REF_TYPES];
 	void *driver_priv;
 } drm_file_t;
 
@@ -503,6 +537,26 @@ typedef struct drm_sigdata {
 	drm_hw_lock_t *lock;
 } drm_sigdata_t;
 
+
+/* 
+ * Generic memory manager structs
+ */
+
+typedef struct drm_mm_node {
+	struct list_head fl_entry;
+	struct list_head ml_entry;
+	int free;
+	unsigned long start;
+	unsigned long size;
+        struct drm_mm *mm;
+	void *private;
+} drm_mm_node_t;
+
+typedef struct drm_mm {
+	drm_mm_node_t root_node;
+} drm_mm_t;
+
+
 /**
  * Mappings list
  */
@@ -510,7 +564,8 @@ typedef struct drm_map_list {
 	struct list_head head;		/**< list head */
 	drm_hash_item_t hash;
 	drm_map_t *map;			/**< mapping */
-	unsigned int user_token;
+	drm_u64_t user_token;
+        drm_mm_node_t *file_offset_node;
 } drm_map_list_t;
 
 typedef drm_map_t drm_local_map_t;
@@ -543,22 +598,77 @@ typedef struct ati_pcigart_info {
 	drm_local_map_t mapping;
 } drm_ati_pcigart_info;
 
-/* 
- * Generic memory manager structs
+/*
+ * User space objects and their references.
  */
 
-typedef struct drm_mm_node {
-	struct list_head fl_entry;
-	struct list_head ml_entry;
-	int free;
-	unsigned long start;
-	unsigned long size;
-	void *private;
-} drm_mm_node_t;
+#define drm_user_object_entry(_ptr, _type, _member) container_of(_ptr, _type, _member)
 
-typedef struct drm_mm {
-	drm_mm_node_t root_node;
-} drm_mm_t;
+typedef enum {
+		drm_fence_type,
+		drm_buffer_type,
+		drm_ttm_type
+
+		/*
+		 * Add other user space object types here. 
+		 */
+
+} drm_object_type_t;
+
+
+
+
+/*
+ * A user object is a structure that helps the drm give out user handles
+ * to kernel internal objects and to keep track of these objects so that 
+ * they can be destroyed, for example when the user space process exits.
+ * Designed to be accessible using a user space 32-bit handle. 
+ */
+
+typedef struct drm_user_object{
+	drm_hash_item_t hash;
+	struct list_head list;
+	drm_object_type_t type;
+        atomic_t refcount;
+        int shareable;
+        drm_file_t *owner;
+	void (*ref_struct_locked) (drm_file_t *priv, struct drm_user_object *obj, 
+				   drm_ref_t ref_action); 
+	void (*unref)(drm_file_t *priv, struct drm_user_object *obj, 
+		      drm_ref_t unref_action);
+	void (*remove)(drm_file_t *priv, struct drm_user_object *obj);
+} drm_user_object_t;
+
+/*
+ * A ref object is a structure which is used to
+ * keep track of references to user objects and to keep track of these
+ * references so that they can be destroyed for example when the user space
+ * process exits. Designed to be accessible using a pointer to the _user_ object.
+ */
+
+
+typedef struct drm_ref_object {
+	drm_hash_item_t hash;
+	struct list_head list;
+	atomic_t refcount;
+	drm_ref_t unref_action;
+} drm_ref_object_t;
+
+
+#include "drm_ttm.h"
+
+/*
+ * buffer object driver
+ */
+
+typedef struct drm_bo_driver{
+	int cached[DRM_BO_MEM_TYPES];
+        drm_local_map_t *iomap[DRM_BO_MEM_TYPES];
+	drm_ttm_backend_t *(*create_ttm_backend_entry) 
+		(struct drm_device *dev);
+	int (*fence_type)(uint32_t flags, uint32_t *class, uint32_t *type);
+	int (*invalidate_caches)(struct drm_device *dev, uint32_t flags);
+} drm_bo_driver_t;
 
 
 /**
@@ -566,6 +676,7 @@ typedef struct drm_mm {
  * a family of cards. There will one drm_device for each card present
  * in this family
  */
+
 struct drm_device;
 struct drm_driver {
 	int (*load) (struct drm_device *, unsigned long flags);
@@ -612,6 +723,9 @@ struct drm_driver {
 	unsigned long (*get_reg_ofs) (struct drm_device * dev);
 	void (*set_version) (struct drm_device * dev, drm_set_version_t * sv);
 
+        struct drm_fence_driver *fence_driver;
+	struct drm_bo_driver *bo_driver;
+        
 	int major;
 	int minor;
 	int patchlevel;
@@ -640,6 +754,71 @@ typedef struct drm_head {
 	dev_t device;			/**< Device number for mknod */
 	struct class_device *dev_class;
 } drm_head_t;
+
+typedef struct drm_cache {
+
+	/*
+	 * Memory caches
+	 */
+
+	kmem_cache_t *mm;
+	kmem_cache_t *fence_object;
+} drm_cache_t;
+
+
+
+typedef struct drm_fence_driver{
+	int no_types;
+	uint32_t wrap_diff;
+	uint32_t flush_diff;
+        uint32_t sequence_mask;
+        int lazy_capable;
+	int (*emit) (struct drm_device *dev, uint32_t flags,
+		     uint32_t *breadcrumb,
+		     uint32_t *native_type);
+	void (*poke_flush) (struct drm_device *dev);
+} drm_fence_driver_t;
+
+#define _DRM_FENCE_TYPE_EXE 0x00
+
+typedef struct drm_fence_manager{
+        int initialized;
+	rwlock_t lock;
+
+	/*
+	 * The list below should be maintained in sequence order and 
+	 * access is protected by the above spinlock.
+	 */
+
+	struct list_head ring;
+	struct list_head *fence_types[32];
+	volatile uint32_t pending_flush;
+	wait_queue_head_t fence_queue;
+	int pending_exe_flush;
+	uint32_t last_exe_flush;
+	uint32_t exe_flush_sequence;
+        atomic_t count;
+} drm_fence_manager_t;
+
+typedef struct drm_buffer_manager{
+	struct mutex init_mutex;
+	int nice_mode;
+	int initialized;
+        drm_file_t *last_to_validate;
+	int has_type[DRM_BO_MEM_TYPES];
+        int use_type[DRM_BO_MEM_TYPES];
+	drm_mm_t manager[DRM_BO_MEM_TYPES];
+	struct list_head lru[DRM_BO_MEM_TYPES];
+        struct list_head pinned[DRM_BO_MEM_TYPES];
+	struct list_head unfenced;
+	struct list_head ddestroy;
+        struct work_struct wq;
+        uint32_t fence_type;
+        unsigned long cur_pages;
+        atomic_t count;
+} drm_buffer_manager_t;
+
+
 
 /**
  * DRM device structure. This structure represent a complete card that
@@ -687,7 +866,11 @@ typedef struct drm_device {
 	/*@{ */
 	drm_map_list_t *maplist;	/**< Linked list of regions */
 	int map_count;			/**< Number of mappable regions */
-	drm_open_hash_t map_hash;       /**< User token hash table for maps */
+        drm_open_hash_t map_hash;       /**< User token hash table for maps */
+        drm_mm_t offset_manager;        /**< User token manager */
+        drm_open_hash_t object_hash;    /**< User token hash table for objects */
+        struct address_space *dev_mapping;  /**< For unmap_mapping_range() */
+        struct page *ttm_dummy_page;
 
 	/** \name Context handle management */
 	/*@{ */
@@ -774,6 +957,9 @@ typedef struct drm_device {
 	unsigned int agp_buffer_token;
 	drm_head_t primary;		/**< primary screen head */
 
+	drm_fence_manager_t fm;
+	drm_buffer_manager_t bm;
+  
 	/** \name Drawable information */
 	/*@{ */
 	spinlock_t drw_lock;
@@ -783,6 +969,75 @@ typedef struct drm_device {
 	drm_drawable_info_t **drw_info;
 	/*@} */
 } drm_device_t;
+
+#if __OS_HAS_AGP
+typedef struct drm_agp_ttm_priv {
+	DRM_AGP_MEM *mem;
+	struct agp_bridge_data *bridge;
+	unsigned alloc_type;
+	unsigned cached_type;
+	unsigned uncached_type;
+	int populated;
+} drm_agp_ttm_priv;
+#endif
+
+typedef struct drm_fence_object{
+	drm_user_object_t base;
+        atomic_t usage;
+
+	/*
+	 * The below three fields are protected by the fence manager spinlock.
+	 */
+
+	struct list_head ring;
+        int class;
+        uint32_t native_type;
+	uint32_t type;
+	uint32_t signaled;
+	uint32_t sequence;
+	uint32_t flush_mask;
+	uint32_t submitted_flush;
+} drm_fence_object_t;
+
+
+typedef struct drm_buffer_object{
+	drm_device_t *dev;
+	drm_user_object_t base;
+
+    /*
+     * If there is a possibility that the usage variable is zero,
+     * then dev->struct_mutext should be locked before incrementing it.
+     */
+
+	atomic_t usage;
+	drm_ttm_object_t *ttm_object;
+        drm_ttm_t *ttm;
+	unsigned long num_pages;
+        unsigned long buffer_start;
+        drm_bo_type_t type;
+        unsigned long offset;
+        uint32_t page_alignment;
+	atomic_t mapped;
+	uint32_t flags;
+	uint32_t mask;
+
+	drm_mm_node_t *node_ttm;    /* MM node for on-card RAM */
+	drm_mm_node_t *node_card;   /* MM node for ttm*/
+	struct list_head lru_ttm;   /* LRU for the ttm pages*/
+        struct list_head lru_card;  /* For memory types with on-card RAM */
+	struct list_head ddestroy;
+
+	uint32_t fence_type;
+        uint32_t fence_class;
+	drm_fence_object_t *fence;
+        uint32_t priv_flags;
+	wait_queue_head_t event_queue;
+        struct mutex mutex;
+} drm_buffer_object_t;
+
+#define _DRM_BO_FLAG_UNFENCED 0x00000001
+#define _DRM_BO_FLAG_EVICTED  0x00000002
+
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,
 					     int feature)
@@ -841,6 +1096,7 @@ static inline int drm_mtrr_del(int handle, unsigned long offset,
 #define drm_core_has_MTRR(dev) (0)
 #endif
 
+
 /******************************************************************/
 /** \name Internal function definitions */
 /*@{*/
@@ -869,6 +1125,7 @@ unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait);
 extern int drm_mmap(struct file *filp, struct vm_area_struct *vma);
 extern unsigned long drm_core_get_map_ofs(drm_map_t * map);
 extern unsigned long drm_core_get_reg_ofs(struct drm_device *dev);
+extern pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma);
 
 				/* Memory management support (drm_memory.h) */
 #include "drm_memory.h"
@@ -883,6 +1140,14 @@ extern DRM_AGP_MEM *drm_alloc_agp(drm_device_t *dev, int pages, u32 type);
 extern int drm_free_agp(DRM_AGP_MEM * handle, int pages);
 extern int drm_bind_agp(DRM_AGP_MEM * handle, unsigned int start);
 extern int drm_unbind_agp(DRM_AGP_MEM * handle);
+
+extern void drm_free_memctl(size_t size);
+extern int drm_alloc_memctl(size_t size);
+extern void drm_query_memctl(drm_u64_t *cur_used,
+			     drm_u64_t *low_threshold,
+			     drm_u64_t *high_threshold); 
+extern void drm_init_memctl(size_t low_threshold,
+			    size_t high_threshold);
 
 				/* Misc. IOCTL support (drm_ioctl.h) */
 extern int drm_irq_by_busid(struct inode *inode, struct file *filp,
@@ -951,6 +1216,13 @@ extern int drm_unlock(struct inode *inode, struct file *filp,
 extern int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context);
 extern int drm_lock_free(drm_device_t * dev,
 			 __volatile__ unsigned int *lock, unsigned int context);
+/*
+ * These are exported to drivers so that they can implement fencing using
+ * DMA quiscent + idle. DMA quiescent usually requires the hardware lock. 
+ */
+
+extern int drm_i_have_hw_lock(struct file *filp);
+extern int drm_kernel_take_hw_lock(struct file *filp);
 
 				/* Buffer management support (drm_bufs.h) */
 extern int drm_addbufs_agp(drm_device_t * dev, drm_buf_desc_t * request);
@@ -1036,7 +1308,8 @@ extern DRM_AGP_MEM *drm_agp_allocate_memory(struct agp_bridge_data *bridge, size
 extern int drm_agp_free_memory(DRM_AGP_MEM * handle);
 extern int drm_agp_bind_memory(DRM_AGP_MEM * handle, off_t start);
 extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
-
+extern drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
+					   drm_ttm_backend_t *backend);
 				/* Stub support (drm_stub.h) */
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);
@@ -1045,6 +1318,7 @@ extern int drm_put_head(drm_head_t * head);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 extern unsigned int drm_cards_limit;
 extern drm_head_t **drm_heads;
+extern drm_cache_t drm_cache;
 extern struct drm_sysfs_class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
 
@@ -1088,11 +1362,121 @@ extern void drm_sysfs_device_remove(struct class_device *class_dev);
 
 extern drm_mm_node_t * drm_mm_get_block(drm_mm_node_t * parent, unsigned long size,
 					       unsigned alignment);
-extern void drm_mm_put_block(drm_mm_t *mm, drm_mm_node_t *cur);
+extern void drm_mm_put_block(drm_mm_node_t *cur);
 extern drm_mm_node_t *drm_mm_search_free(const drm_mm_t *mm, unsigned long size, 
 						unsigned alignment, int best_match);
 extern int drm_mm_init(drm_mm_t *mm, unsigned long start, unsigned long size);
 extern void drm_mm_takedown(drm_mm_t *mm);
+extern int drm_mm_clean(drm_mm_t *mm);
+extern unsigned long drm_mm_tail_space(drm_mm_t *mm);
+extern int drm_mm_remove_space_from_tail(drm_mm_t *mm, unsigned long size);
+extern int drm_mm_add_space_to_tail(drm_mm_t *mm, unsigned long size);
+
+static inline drm_mm_t *drm_get_mm(drm_mm_node_t *block)
+{
+	return block->mm;
+}
+  
+
+/*
+ * User space object bookkeeping (drm_object.c)
+ */
+
+/*
+ * Must be called with the struct_mutex held.
+ */
+
+extern int drm_add_user_object(drm_file_t *priv, drm_user_object_t *item, 
+
+/*
+ * Must be called with the struct_mutex held.
+ */
+			       int shareable);
+extern drm_user_object_t *drm_lookup_user_object(drm_file_t *priv, uint32_t key);
+
+/*
+ * Must be called with the struct_mutex held.
+ * If "item" has been obtained by a call to drm_lookup_user_object. You may not
+ * release the struct_mutex before calling drm_remove_ref_object.
+ * This function may temporarily release the struct_mutex.
+ */
+
+extern int drm_remove_user_object(drm_file_t *priv, drm_user_object_t *item);
+
+/*
+ * Must be called with the struct_mutex held. May temporarily release it.
+ */
+
+extern int drm_add_ref_object(drm_file_t *priv, drm_user_object_t *referenced_object,
+			      drm_ref_t ref_action);
+
+/*
+ * Must be called with the struct_mutex held.
+ */
+
+drm_ref_object_t *drm_lookup_ref_object(drm_file_t *priv, 
+					drm_user_object_t *referenced_object,
+					drm_ref_t ref_action);
+/*
+ * Must be called with the struct_mutex held.
+ * If "item" has been obtained by a call to drm_lookup_ref_object. You may not
+ * release the struct_mutex before calling drm_remove_ref_object.
+ * This function may temporarily release the struct_mutex.
+ */
+
+extern void drm_remove_ref_object(drm_file_t *priv, drm_ref_object_t *item);
+extern int drm_user_object_ref(drm_file_t *priv, uint32_t user_token, drm_object_type_t type,
+			       drm_user_object_t **object);
+extern int drm_user_object_unref(drm_file_t *priv, uint32_t user_token, drm_object_type_t type);
+
+
+
+/*
+ * fence objects (drm_fence.c)
+ */
+
+extern void drm_fence_handler(drm_device_t *dev, uint32_t breadcrumb, uint32_t type);
+extern void drm_fence_manager_init(drm_device_t *dev);
+extern void drm_fence_manager_takedown(drm_device_t *dev);
+extern void drm_fence_flush_old(drm_device_t *dev, uint32_t sequence);
+extern int drm_fence_object_flush(drm_device_t * dev,
+				  volatile drm_fence_object_t * fence, 
+				  uint32_t type);
+extern int drm_fence_object_signaled(volatile drm_fence_object_t * fence, 
+				     uint32_t type);
+extern void drm_fence_usage_deref_locked(drm_device_t * dev,
+					 drm_fence_object_t * fence);
+extern void drm_fence_usage_deref_unlocked(drm_device_t * dev,
+					 drm_fence_object_t * fence);
+extern int drm_fence_object_wait(drm_device_t * dev, 
+				 volatile drm_fence_object_t * fence,
+				 int lazy, int ignore_signals, uint32_t mask);
+extern int drm_fence_object_create(drm_device_t *dev, uint32_t type,
+				   uint32_t fence_flags, 
+				   drm_fence_object_t **c_fence);
+extern int drm_fence_add_user_object(drm_file_t *priv, 
+				     drm_fence_object_t *fence,
+				     int shareable);
+
+
+
+
+
+extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
+
+/*
+ * buffer objects (drm_bo.c)
+ */
+
+extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
+extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_driver_finish(drm_device_t *dev);
+extern int drm_bo_driver_init(drm_device_t *dev);
+extern int drm_fence_buffer_objects(drm_file_t * priv,
+				    struct list_head *list, 
+				    uint32_t fence_flags,
+				    drm_fence_object_t *fence,
+				    drm_fence_object_t **used_fence);
 
 
 /* Inline replacements for DRM_IOREMAP macros */
@@ -1163,6 +1547,58 @@ static __inline__ void drm_free(void *pt, size_t size, int area)
 extern void *drm_alloc(size_t size, int area);
 extern void drm_free(void *pt, size_t size, int area);
 #endif
+
+/*
+ * Accounting variants of standard calls.
+ */
+
+static inline void *drm_ctl_alloc(size_t size, int area)
+{
+	void *ret;
+	if (drm_alloc_memctl(size))
+		return NULL;
+	ret = drm_alloc(size, area);
+	if (!ret)
+		drm_free_memctl(size);
+	return ret;
+}
+
+static inline void *drm_ctl_calloc(size_t nmemb, size_t size, int area)
+{
+	void *ret;
+
+	if (drm_alloc_memctl(nmemb*size))
+		return NULL;
+	ret = drm_calloc(nmemb, size, area);
+	if (!ret)
+		drm_free_memctl(nmemb*size);
+	return ret;
+}
+
+static inline void drm_ctl_free(void *pt, size_t size, int area)
+{
+	drm_free(pt, size, area);
+	drm_free_memctl(size);
+}
+
+static inline void *drm_ctl_cache_alloc(kmem_cache_t *cache, size_t size, 
+					int flags)
+{
+	void *ret;
+	if (drm_alloc_memctl(size))
+		return NULL;
+	ret = kmem_cache_alloc(cache, flags);
+	if (!ret)
+		drm_free_memctl(size);
+	return ret;
+}
+
+static inline void drm_ctl_cache_free(kmem_cache_t *cache, size_t size,
+				      void *obj)
+{
+	kmem_cache_free(cache, obj);
+	drm_free_memctl(size);
+}
 
 /*@}*/
 

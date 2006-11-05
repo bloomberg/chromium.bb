@@ -32,7 +32,6 @@
  *    Lars Knoll <lars@trolltech.com>
  */
 
-#include <linux/config.h>
 #include "drmP.h"
 #include "nv_drv.h"
 

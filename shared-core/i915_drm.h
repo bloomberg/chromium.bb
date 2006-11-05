@@ -115,6 +115,16 @@ typedef struct _drm_i915_sarea {
 	int pipeB_h;
 } drm_i915_sarea_t;
 
+/* Driver specific fence types and classes.
+ */
+
+/* The only fence class we support */
+#define DRM_I915_FENCE_CLASS_ACCEL 0
+/* Fence type that guarantees read-write flush */
+#define DRM_I915_FENCE_TYPE_RW 2
+/* MI_FLUSH programmed just before the fence */
+#define DRM_I915_FENCE_FLAG_FLUSHED 0x01000000
+
 /* Flags for perf_boxes
  */
 #define I915_BOX_RING_EMPTY    0x1

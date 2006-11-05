@@ -47,6 +47,7 @@ static int drm_setup(drm_device_t * dev)
 	int i;
 	int ret;
 
+
 	if (dev->driver->firstopen) {
 		ret = dev->driver->firstopen(dev);
 		if (ret != 0)
@@ -56,6 +57,7 @@ static int drm_setup(drm_device_t * dev)
 	dev->magicfree.next = NULL;
 
 	/* prebuild the SAREA */
+
 	i = drm_addmap(dev, 0, SAREA_MAX, _DRM_SHM, _DRM_CONTAINS_LOCK, &map);
 	if (i != 0)
 		return i;
@@ -156,6 +158,12 @@ int drm_open(struct inode *inode, struct file *filp)
 		}
 		spin_unlock(&dev->count_lock);
 	}
+	mutex_lock(&dev->struct_mutex);
+	BUG_ON((dev->dev_mapping != NULL) && 
+	       (dev->dev_mapping != inode->i_mapping));
+	if (dev->dev_mapping == NULL)
+		dev->dev_mapping = inode->i_mapping;
+	mutex_unlock(&dev->struct_mutex);
 
 	return retcode;
 }
@@ -233,6 +241,7 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	int minor = iminor(inode);
 	drm_file_t *priv;
 	int ret;
+	int i,j;
 
 	if (filp->f_flags & O_EXCL)
 		return -EBUSY;	/* No exclusive opens */
@@ -255,6 +264,22 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	/* for compatibility root is always authenticated */
 	priv->authenticated = capable(CAP_SYS_ADMIN);
 	priv->lock_count = 0;
+
+	INIT_LIST_HEAD(&priv->user_objects);
+	INIT_LIST_HEAD(&priv->refd_objects);
+
+	for (i=0; i<_DRM_NO_REF_TYPES; ++i) {
+		ret = drm_ht_create(&priv->refd_object_hash[i], DRM_FILE_HASH_ORDER);
+		if (ret)
+			break;
+	}
+
+	if (ret) {
+		for(j=0; j<i; ++j) {
+			drm_ht_remove(&priv->refd_object_hash[j]);
+		}
+		goto out_free;
+	}
 
 	if (dev->driver->open) {
 		ret = dev->driver->open(dev, priv);
@@ -320,6 +345,53 @@ int drm_fasync(int fd, struct file *filp, int on)
 }
 EXPORT_SYMBOL(drm_fasync);
 
+static void drm_object_release(struct file *filp) {
+
+        drm_file_t *priv = filp->private_data;
+	struct list_head *head;
+	drm_user_object_t *user_object;
+	drm_ref_object_t *ref_object;
+	int i;
+
+	/*
+	 * Free leftover ref objects created by me. Note that we cannot use
+	 * list_for_each() here, as the struct_mutex may be temporarily released 
+	 * by the remove_() functions, and thus the lists may be altered.
+	 * Also, a drm_remove_ref_object() will not remove it
+	 * from the list unless its refcount is 1.
+	 */
+
+	head = &priv->refd_objects; 
+	while (head->next != head) {
+		ref_object = list_entry(head->next, drm_ref_object_t, list);
+		drm_remove_ref_object(priv, ref_object);		
+		head = &priv->refd_objects; 
+	}
+		
+	/*
+	 * Free leftover user objects created by me.
+	 */
+
+	head = &priv->user_objects; 
+	while (head->next != head) {
+		user_object = list_entry(head->next, drm_user_object_t, list);
+		drm_remove_user_object(priv, user_object);		
+		head = &priv->user_objects; 
+	}
+
+
+
+
+	for(i=0; i<_DRM_NO_REF_TYPES; ++i) {
+		drm_ht_remove(&priv->refd_object_hash[i]);
+	}
+}			
+		
+
+
+
+
+
 /**
  * Release file.
  *
@@ -354,57 +426,42 @@ int drm_release(struct inode *inode, struct file *filp)
 		  current->pid, (long)old_encode_dev(priv->head->device),
 		  dev->open_count);
 
-	if (priv->lock_count && dev->lock.hw_lock &&
-	    _DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) &&
-	    dev->lock.filp == filp) {
+	if (dev->driver->reclaim_buffers_locked) {
+	        unsigned long _end = jiffies + DRM_HZ*3;
+
+		do {
+			retcode = drm_kernel_take_hw_lock(filp);
+		} while(retcode && !time_after_eq(jiffies,_end));
+
+		if (!retcode) {
+			dev->driver->reclaim_buffers_locked(dev, filp);
+
+			drm_lock_free(dev, &dev->lock.hw_lock->lock,
+				      _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
+		} else {
+
+			/*
+			 * FIXME: This is not a good solution. We should perhaps associate the
+			 * DRM lock with a process context, and check whether the current process
+			 * holds the lock. Then we can run reclaim buffers locked anyway.
+			 */
+
+			DRM_ERROR("Reclaim buffers locked deadlock.\n");
+			DRM_ERROR("This is probably a single thread having multiple\n");
+			DRM_ERROR("DRM file descriptors open either dying or "
+				  "closing file descriptors\n");
+			DRM_ERROR("while having the lock. I will not reclaim buffers.\n");
+			DRM_ERROR("Locking context is 0x%08x\n",
+				  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
+		}
+	} else if (drm_i_have_hw_lock(filp)) {
 		DRM_DEBUG("File %p released, freeing lock for context %d\n",
 			  filp, _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
 
-		if (dev->driver->reclaim_buffers_locked)
-			dev->driver->reclaim_buffers_locked(dev, filp);
-
 		drm_lock_free(dev, &dev->lock.hw_lock->lock,
 			      _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
-
-		/* FIXME: may require heavy-handed reset of
-		   hardware at this point, possibly
-		   processed via a callback to the X
-		   server. */
-	} else if (dev->driver->reclaim_buffers_locked && priv->lock_count
-		   && dev->lock.hw_lock) {
-		/* The lock is required to reclaim buffers */
-		DECLARE_WAITQUEUE(entry, current);
-
-		add_wait_queue(&dev->lock.lock_queue, &entry);
-		for (;;) {
-			__set_current_state(TASK_INTERRUPTIBLE);
-			if (!dev->lock.hw_lock) {
-				/* Device has been unregistered */
-				retcode = -EINTR;
-				break;
-			}
-			if (drm_lock_take(&dev->lock.hw_lock->lock,
-					  DRM_KERNEL_CONTEXT)) {
-				dev->lock.filp = filp;
-				dev->lock.lock_time = jiffies;
-				atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
-				break;	/* Got lock */
-			}
-			/* Contention */
-			schedule();
-			if (signal_pending(current)) {
-				retcode = -ERESTARTSYS;
-				break;
-			}
-		}
-		__set_current_state(TASK_RUNNING);
-		remove_wait_queue(&dev->lock.lock_queue, &entry);
-		if (!retcode) {
-			dev->driver->reclaim_buffers_locked(dev, filp);
-			drm_lock_free(dev, &dev->lock.hw_lock->lock,
-				      DRM_KERNEL_CONTEXT);
-		}
 	}
+
 
 	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA) &&
 	    !dev->driver->reclaim_buffers_locked) {
@@ -414,6 +471,7 @@ int drm_release(struct inode *inode, struct file *filp)
 	drm_fasync(-1, filp, 0);
 
 	mutex_lock(&dev->ctxlist_mutex);
+
 	if (dev->ctxlist && (!list_empty(&dev->ctxlist->head))) {
 		drm_ctx_list_t *pos, *n;
 
@@ -435,6 +493,7 @@ int drm_release(struct inode *inode, struct file *filp)
 	mutex_unlock(&dev->ctxlist_mutex);
 
 	mutex_lock(&dev->struct_mutex);
+	drm_object_release(filp);
 	if (priv->remove_auth_on_close == 1) {
 		drm_file_t *temp = dev->file_first;
 		while (temp) {

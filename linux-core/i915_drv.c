@@ -38,6 +38,27 @@ static struct pci_device_id pciidlist[] = {
 	i915_PCI_IDS
 };
 
+#ifdef I915_HAVE_FENCE
+static drm_fence_driver_t i915_fence_driver = {
+	.no_types = 2,
+	.wrap_diff = (1 << 30),
+	.flush_diff = (1 << 29),
+	.sequence_mask = 0xffffffffU,
+	.lazy_capable = 1,
+	.emit = i915_fence_emit_sequence,
+	.poke_flush = i915_poke_flush,
+};
+#endif
+#ifdef I915_HAVE_BUFFER
+static drm_bo_driver_t i915_bo_driver = {
+        .iomap = {NULL, NULL},
+	.cached = {1, 1},
+	.create_ttm_backend_entry = i915_create_ttm_backend_entry,
+	.fence_type = i915_fence_types,
+	.invalidate_caches = i915_invalidate_caches
+};
+#endif
+
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	/* don't use mtrr's here, the Xserver or user space app should
@@ -79,7 +100,12 @@ static struct drm_driver driver = {
 		.probe = probe,
 		.remove = __devexit_p(drm_cleanup_pci),
 		},
-
+#ifdef I915_HAVE_FENCE
+	.fence_driver = &i915_fence_driver,
+#endif
+#ifdef I915_HAVE_BUFFER
+	.bo_driver = &i915_bo_driver,
+#endif
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
 	.date = DRIVER_DATE,

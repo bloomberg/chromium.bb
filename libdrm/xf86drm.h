@@ -283,7 +283,6 @@ typedef struct _drmSetVersion {
 	int drm_dd_minor;
 } drmSetVersion, *drmSetVersionPtr;
 
-
 #define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)
 
 #define DRM_LOCK_HELD  0x80000000U /**< Hardware lock is held */
@@ -487,6 +486,8 @@ do {	register unsigned int __old __asm("o0");		\
             }                                                          \
 	} while(0)
 
+
+
 /* General user-level programmer's API: unprivileged */
 extern int           drmAvailable(void);
 extern int           drmOpen(const char *name, const char *busid);
@@ -635,5 +636,7 @@ extern void drmSLDump(void *l);
 extern int  drmSLLookupNeighbors(void *l, unsigned long key,
 				 unsigned long *prev_key, void **prev_value,
 				 unsigned long *next_key, void **next_value);
+
+#include "xf86mm.h"
 
 #endif

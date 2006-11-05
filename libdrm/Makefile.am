@@ -26,6 +26,6 @@ AM_CFLAGS = -I$(top_srcdir)/shared-core
 libdrm_la_SOURCES = xf86drm.c xf86drmHash.c xf86drmRandom.c xf86drmSL.c
 
 libdrmincludedir = ${includedir}
-libdrminclude_HEADERS = xf86drm.h
+libdrminclude_HEADERS = xf86drm.h xf86mm.h
 
 EXTRA_DIST = ChangeLog TODO

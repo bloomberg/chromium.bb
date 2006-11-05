@@ -138,10 +138,11 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 
 	temp = I915_READ16(I915REG_INT_IDENTITY_R);
 
-	temp &= (USER_INT_FLAG | VSYNC_PIPEA_FLAG | VSYNC_PIPEB_FLAG);
+	temp &= (dev_priv->irq_enable_reg | USER_INT_FLAG);
 
+#if 0
 	DRM_DEBUG("%s flag=%08x\n", __FUNCTION__, temp);
-
+#endif
 	if (temp == 0)
 		return IRQ_NONE;
 
@@ -149,8 +150,12 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 
 	dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
-	if (temp & USER_INT_FLAG)
+	if (temp & USER_INT_FLAG) {
 		DRM_WAKEUP(&dev_priv->irq_queue);
+#ifdef I915_HAVE_FENCE
+		i915_fence_handler(dev);
+#endif
+	}
 
 	if (temp & (VSYNC_PIPEA_FLAG | VSYNC_PIPEB_FLAG)) {
 		int vblank_pipe = dev_priv->vblank_pipe;
@@ -178,7 +183,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	return IRQ_HANDLED;
 }
 
-static int i915_emit_irq(drm_device_t * dev)
+int i915_emit_irq(drm_device_t * dev)
 {
 	
 	drm_i915_private_t *dev_priv = dev->dev_private;
@@ -208,6 +213,28 @@ static int i915_emit_irq(drm_device_t * dev)
 
 }
 
+void i915_user_irq_on(drm_i915_private_t *dev_priv)
+{
+	spin_lock(&dev_priv->user_irq_lock);
+	if (dev_priv->irq_enabled && (++dev_priv->user_irq_refcount == 1)){
+		dev_priv->irq_enable_reg |= USER_INT_FLAG;
+		I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+	}
+	spin_unlock(&dev_priv->user_irq_lock);
+
+}
+		
+void i915_user_irq_off(drm_i915_private_t *dev_priv)
+{
+	spin_lock(&dev_priv->user_irq_lock);
+	if (dev_priv->irq_enabled && (--dev_priv->user_irq_refcount == 0)) {
+		//		dev_priv->irq_enable_reg &= ~USER_INT_FLAG;
+		//		I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+	}
+	spin_unlock(&dev_priv->user_irq_lock);
+}
+		
+
 static int i915_wait_irq(drm_device_t * dev, int irq_nr)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
@@ -220,9 +247,11 @@ static int i915_wait_irq(drm_device_t * dev, int irq_nr)
 		return 0;
 
 	dev_priv->sarea_priv->perf_boxes |= I915_BOX_WAIT;
-
+	
+	i915_user_irq_on(dev_priv);
 	DRM_WAIT_ON(ret, dev_priv->irq_queue, 3 * DRM_HZ,
 		    READ_BREADCRUMB(dev_priv) >= irq_nr);
+	i915_user_irq_off(dev_priv);
 
 	if (ret == DRM_ERR(EBUSY)) {
 		DRM_ERROR("%s: EBUSY -- rec: %d emitted: %d\n",
@@ -316,15 +345,15 @@ int i915_irq_wait(DRM_IOCTL_ARGS)
 static void i915_enable_interrupt (drm_device_t *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	u16 flag;
 	
-	flag = 0;
+	dev_priv->irq_enable_reg = USER_INT_FLAG; 
 	if (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_A)
-		flag |= VSYNC_PIPEA_FLAG;
+		dev_priv->irq_enable_reg |= VSYNC_PIPEA_FLAG;
 	if (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_B)
-		flag |= VSYNC_PIPEB_FLAG;
+		dev_priv->irq_enable_reg |= VSYNC_PIPEB_FLAG;
 
-	I915_WRITE16(I915REG_INT_ENABLE_R, USER_INT_FLAG | flag);
+	I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+	dev_priv->irq_enabled = 1;
 }
 
 /* Set the vblank monitor pipe
@@ -497,7 +526,7 @@ void i915_driver_irq_preinstall(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	I915_WRITE16(I915REG_HWSTAM, 0xfffe);
+	I915_WRITE16(I915REG_HWSTAM, 0xeffe);
 	I915_WRITE16(I915REG_INT_MASK_R, 0x0);
 	I915_WRITE16(I915REG_INT_ENABLE_R, 0x0);
 }
@@ -512,8 +541,24 @@ void i915_driver_irq_postinstall(drm_device_t * dev)
 
 	if (!dev_priv->vblank_pipe)
 		dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
+
+	dev_priv->swaps_lock = SPIN_LOCK_UNLOCKED;
+	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
+	dev_priv->swaps_pending = 0;
+
+	dev_priv->user_irq_lock = SPIN_LOCK_UNLOCKED;
+	dev_priv->user_irq_refcount = 0;
+
+	if (!dev_priv->vblank_pipe)
+		dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
 	i915_enable_interrupt(dev);
 	DRM_INIT_WAITQUEUE(&dev_priv->irq_queue);
+
+	/*
+	 * Initialize the hardware status page IRQ location.
+	 */
+
+	I915_WRITE(I915REG_INSTPM, ( 1 << 5) | ( 1 << 21));
 }
 
 void i915_driver_irq_uninstall(drm_device_t * dev)
@@ -523,6 +568,7 @@ void i915_driver_irq_uninstall(drm_device_t * dev)
 	if (!dev_priv)
 		return;
 
+	dev_priv->irq_enabled = 0;
 	I915_WRITE16(I915REG_HWSTAM, 0xffff);
 	I915_WRITE16(I915REG_INT_MASK_R, 0xffff);
 	I915_WRITE16(I915REG_INT_ENABLE_R, 0x0);
