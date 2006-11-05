@@ -22,7 +22,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <linux/config.h>
 #include "drmP.h"
 #include "drm.h"
 #include "nouveau_drv.h"
