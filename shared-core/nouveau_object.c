@@ -302,8 +302,12 @@ void nouveau_hash_table_init(drm_device_t* dev)
 	dev_priv->objs.inst_bmap = drm_calloc
 	    (1, dev_priv->objs.num_instance/32, DRM_MEM_DRIVER);
 
-	/* clear all of RAMIN  */
-	for (i=0x00700000; i<0x00800000; i+=4)
+	/* clear all of RAMIN
+	 * NOTE: except the bottom 0x10000 bytes, the binary driver doesn't
+	 *       like this and will die either sometime during init, or during
+	 *       shutdown - leaving the screen in an unusable state...
+	 */
+	for (i=0x00710000; i<0x00800000; i+=4)
 		NV_WRITE(i, 0x00000000);
 }
 
