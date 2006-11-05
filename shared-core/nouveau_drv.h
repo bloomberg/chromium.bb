@@ -171,8 +171,13 @@ extern void        nouveau_irq_preinstall(drm_device_t*);
 extern void        nouveau_irq_postinstall(drm_device_t*);
 extern void        nouveau_irq_uninstall(drm_device_t*);
 
+#if defined(__powerpc__)
+#define NV_READ(reg)        in_be32((void __iomem *)(dev_priv->mmio)->handle + (reg) )
+#define NV_WRITE(reg,val)   out_be32((void __iomem *)(dev_priv->mmio)->handle + (reg) , (val) )
+#else
 #define NV_READ(reg)        DRM_READ32(  dev_priv->mmio, (reg) )
 #define NV_WRITE(reg,val)   DRM_WRITE32( dev_priv->mmio, (reg), (val) )
+#endif
 
 #endif /* __NOUVEAU_DRV_H__ */
 
