@@ -171,6 +171,9 @@ extern void        nouveau_irq_preinstall(drm_device_t*);
 extern void        nouveau_irq_postinstall(drm_device_t*);
 extern void        nouveau_irq_uninstall(drm_device_t*);
 
+extern long nouveau_compat_ioctl(struct file *filp, unsigned int cmd,
+				unsigned long arg);
+
 #if defined(__powerpc__)
 #define NV_READ(reg)        in_be32((void __iomem *)(dev_priv->mmio)->handle + (reg) )
 #define NV_WRITE(reg,val)   out_be32((void __iomem *)(dev_priv->mmio)->handle + (reg) , (val) )
