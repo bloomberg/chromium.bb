@@ -38,7 +38,7 @@
 #define NV_DMA_TARGET_VIDMEM 0
 #define NV_DMA_TARGET_AGP    3
 
-#define NV03_FIFO_SIZE                                     0x8000
+#define NV03_FIFO_SIZE                                     0x8000UL
 #define NV_MAX_FIFO_NUMBER                                 32
 #define NV03_FIFO_REGS_SIZE                                0x10000
 #define NV03_FIFO_REGS(i)                                  (0x00800000+i*NV03_FIFO_REGS_SIZE)

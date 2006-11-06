@@ -138,7 +138,7 @@ static int nouveau_dma_init(struct drm_device *dev)
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	struct nouveau_config *config = &dev_priv->config;
 	struct mem_block *cb;
-	int cb_min_size = nouveau_fifo_number(dev) * NV03_FIFO_SIZE;
+	int cb_min_size = nouveau_fifo_number(dev) * max(NV03_FIFO_SIZE,PAGE_SIZE);
 
 	/* XXX this should be done earlier on init */
 	nouveau_hash_table_init(dev);
