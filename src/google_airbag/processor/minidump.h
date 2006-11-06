@@ -76,18 +76,16 @@
 //
 // Author: Mark Mentovai
 
-#ifndef PROCESSOR_MINIDUMP_H__
-#define PROCESSOR_MINIDUMP_H__
+#ifndef GOOGLE_AIRBAG_PROCESSOR_MINIDUMP_H__
+#define GOOGLE_AIRBAG_PROCESSOR_MINIDUMP_H__
 
 
-// TODO(mmentovai): is it ok to include non-<string> header in .h?
 #include <map>
 #include <string>
 #include <vector>
 
-#include "processor/minidump_format.h"
-#include "processor/memory_region.h"
-#include "processor/range_map.h"
+#include "google_airbag/common/minidump_format.h"
+#include "google_airbag/processor/memory_region.h"
 
 
 namespace google_airbag {
@@ -99,6 +97,7 @@ using std::vector;
 
 
 class Minidump;
+template<typename AddressType, typename EntryType> class RangeMap;
 
 
 // MinidumpObject is the base of all Minidump* objects except for Minidump
@@ -444,10 +443,10 @@ class MinidumpModuleList : public MinidumpStream {
   bool Read(u_int32_t expected_size);
 
   // Access to modules using addresses as the key.
-  RangeMap<u_int64_t, unsigned int> range_map_;
+  RangeMap<u_int64_t, unsigned int> *range_map_;
 
-  MinidumpModules*                  modules_;
-  u_int32_t                         module_count_;
+  MinidumpModules *modules_;
+  u_int32_t module_count_;
 };
 
 
@@ -489,17 +488,17 @@ class MinidumpMemoryList : public MinidumpStream {
   bool Read(u_int32_t expected_size);
 
   // Access to memory regions using addresses as the key.
-  RangeMap<u_int64_t, unsigned int> range_map_;
+  RangeMap<u_int64_t, unsigned int> *range_map_;
 
   // The list of descriptors.  This is maintained separately from the list
   // of regions, because MemoryRegion doesn't own its MemoryDescriptor, it
   // maintains a pointer to it.  descriptors_ provides the storage for this
   // purpose.
-  MemoryDescriptors*                descriptors_;
+  MemoryDescriptors *descriptors_;
 
   // The list of regions.
-  MemoryRegions*                    regions_;
-  u_int32_t                         region_count_;
+  MemoryRegions *regions_;
+  u_int32_t region_count_;
 };
 
 
@@ -733,4 +732,4 @@ class Minidump {
 }  // namespace google_airbag
 
 
-#endif  // PROCESSOR_MINIDUMP_H__
+#endif  // GOOGLE_AIRBAG_PROCESSOR_MINIDUMP_H__

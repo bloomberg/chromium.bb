@@ -64,11 +64,11 @@
  * Author: Mark Mentovai */
  
 
-#ifndef PROCESSOR_MINIDUMP_FORMAT_H__
-#define PROCESSOR_MINIDUMP_FORMAT_H__
+#ifndef GOOGLE_AIRBAG_COMMON_MINIDUMP_FORMAT_H__
+#define GOOGLE_AIRBAG_COMMON_MINIDUMP_FORMAT_H__
 
 
-#include "google/airbag_types.h"
+#include "google_airbag/common/airbag_types.h"
 
 
 /*
@@ -963,4 +963,4 @@ typedef enum {
 } MDMiscInfoFlags1;
 
 
-#endif  /* PROCESSOR_MINIDUMP_FORMAT_H__ */
+#endif  /* GOOGLE_AIRBAG_COMMON_MINIDUMP_FORMAT_H__ */

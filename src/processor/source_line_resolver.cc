@@ -39,7 +39,7 @@
 #include "processor/range_map-inl.h"
 
 #include "processor/source_line_resolver.h"
-#include "google/stack_frame.h"
+#include "google_airbag/processor/stack_frame.h"
 #include "processor/linked_ptr.h"
 #include "processor/scoped_ptr.h"
 #include "processor/stack_frame_info.h"

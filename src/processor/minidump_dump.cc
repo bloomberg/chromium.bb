@@ -37,7 +37,7 @@
 
 #include <string>
 
-#include "processor/minidump.h"
+#include "google_airbag/processor/minidump.h"
 
 
 using std::string;

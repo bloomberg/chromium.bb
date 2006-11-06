@@ -53,7 +53,7 @@ typedef SSIZE_T ssize_t;
 
 #include "processor/range_map-inl.h"
 
-#include "processor/minidump.h"
+#include "google_airbag/processor/minidump.h"
 #include "processor/scoped_ptr.h"
 
 
@@ -1408,20 +1408,21 @@ void MinidumpModule::Print() {
 
 MinidumpModuleList::MinidumpModuleList(Minidump* minidump)
     : MinidumpStream(minidump),
-      range_map_(),
+      range_map_(new RangeMap<u_int64_t, unsigned int>()),
       modules_(NULL),
       module_count_(0) {
 }
 
 
 MinidumpModuleList::~MinidumpModuleList() {
+  delete range_map_;
   delete modules_;
 }
 
 
 bool MinidumpModuleList::Read(u_int32_t expected_size) {
   // Invalidate cached data.
-  range_map_.Clear();
+  range_map_->Clear();
   delete modules_;
   modules_ = NULL;
   module_count_ = 0;
@@ -1460,7 +1461,7 @@ bool MinidumpModuleList::Read(u_int32_t expected_size) {
     if (base_address == (u_int64_t)-1)
       return false;
 
-    if (!range_map_.StoreRange(base_address, module_size, module_index))
+    if (!range_map_->StoreRange(base_address, module_size, module_index))
       return false;
   }
 
@@ -1486,7 +1487,7 @@ MinidumpModule* MinidumpModuleList::GetModuleForAddress(u_int64_t address) {
     return NULL;
 
   unsigned int module_index;
-  if (!range_map_.RetrieveRange(address, &module_index, NULL, NULL))
+  if (!range_map_->RetrieveRange(address, &module_index, NULL, NULL))
     return NULL;
 
   return GetModuleAtIndex(module_index);
@@ -1518,7 +1519,7 @@ void MinidumpModuleList::Print() {
 
 MinidumpMemoryList::MinidumpMemoryList(Minidump* minidump)
     : MinidumpStream(minidump),
-      range_map_(),
+      range_map_(new RangeMap<u_int64_t, unsigned int>()),
       descriptors_(NULL),
       regions_(NULL),
       region_count_(0) {
@@ -1526,6 +1527,7 @@ MinidumpMemoryList::MinidumpMemoryList(Minidump* minidump)
 
 
 MinidumpMemoryList::~MinidumpMemoryList() {
+  delete range_map_;
   delete descriptors_;
   delete regions_;
 }
@@ -1537,7 +1539,7 @@ bool MinidumpMemoryList::Read(u_int32_t expected_size) {
   descriptors_ = NULL;
   delete regions_;
   regions_ = NULL;
-  range_map_.Clear();
+  range_map_->Clear();
   region_count_ = 0;
 
   valid_ = false;
@@ -1587,7 +1589,7 @@ bool MinidumpMemoryList::Read(u_int32_t expected_size) {
     if (region_size == 0 || high_address < base_address)
       return false;
 
-    if (!range_map_.StoreRange(base_address, region_size, region_index))
+    if (!range_map_->StoreRange(base_address, region_size, region_index))
       return false;
 
     (*regions)[region_index].SetDescriptor(descriptor);
@@ -1617,7 +1619,7 @@ MinidumpMemoryRegion* MinidumpMemoryList::GetMemoryRegionForAddress(
     return NULL;
 
   unsigned int region_index;
-  if (!range_map_.RetrieveRange(address, &region_index, NULL, NULL))
+  if (!range_map_->RetrieveRange(address, &region_index, NULL, NULL))
     return NULL;
 
   return GetMemoryRegionAtIndex(region_index);

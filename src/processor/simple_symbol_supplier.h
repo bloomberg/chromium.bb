@@ -70,7 +70,7 @@
 
 #include <string>
 
-#include "google/symbol_supplier.h"
+#include "google_airbag/processor/symbol_supplier.h"
 
 namespace google_airbag {
 

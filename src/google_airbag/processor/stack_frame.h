@@ -27,55 +27,60 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// stackwalker_ppc.h: ppc-specific stackwalker.
-//
-// Provides stack frames given ppc register context and a memory region
-// corresponding to a ppc stack.
-//
-// Author: Mark Mentovai
+#ifndef GOOGLE_AIRBAG_PROCESSOR_STACK_FRAME_H__
+#define GOOGLE_AIRBAG_PROCESSOR_STACK_FRAME_H__
 
-
-#ifndef PROCESSOR_STACKWALKER_PPC_H__
-#define PROCESSOR_STACKWALKER_PPC_H__
-
-
+#include <string>
 #include "google_airbag/common/airbag_types.h"
-#include "google_airbag/common/minidump_format.h"
-#include "google_airbag/processor/stackwalker.h"
 
 namespace google_airbag {
 
-class MinidumpContext;
-class MinidumpModuleList;
+using std::string;
 
+struct StackFrame {
+  StackFrame()
+      : instruction(),
+        module_base(),
+        module_name(),
+        function_base(),
+        function_name(),
+        source_file_name(),
+        source_line(),
+        source_line_base() {}
+  virtual ~StackFrame() {}
 
-class StackwalkerPPC : public Stackwalker {
- public:
-  // context is a MinidumpContext object that gives access to ppc-specific
-  // register state corresponding to the innermost called frame to be
-  // included in the stack.  The other arguments are passed directly through
-  // to the base Stackwalker constructor.
-  StackwalkerPPC(const MDRawContextPPC *context,
-                 MemoryRegion *memory,
-                 MinidumpModuleList *modules,
-                 SymbolSupplier *supplier);
+  // The program counter location as an absolute virtual address.  For the
+  // innermost called frame in a stack, this will be an exact program counter
+  // or instruction pointer value.  For all other frames, this will be within
+  // the instruction that caused execution to branch to a called function,
+  // but may not necessarily point to the exact beginning of that instruction.
+  u_int64_t instruction;
 
- private:
-  // Implementation of Stackwalker, using ppc context (stack pointer in %r1,
-  // saved program counter in %srr0) and stack conventions (saved stack
-  // pointer at 0(%r1), return address at 8(0(%r1)).
-  virtual StackFrame* GetContextFrame();
-  virtual StackFrame* GetCallerFrame(
-      const CallStack *stack,
-      const vector< linked_ptr<StackFrameInfo> > &stack_frame_info);
+  // The base address of the module.
+  u_int64_t module_base;
 
-  // Stores the CPU context corresponding to the innermost stack frame to
-  // be returned by GetContextFrame.
-  const MDRawContextPPC *context_;
+  // The module in which the instruction resides.
+  string module_name;
+
+  // The start address of the function, may be omitted if debug symbols
+  // are not available.
+  u_int64_t function_base;
+
+  // The function name, may be omitted if debug symbols are not available.
+  string function_name;
+
+  // The source file name, may be omitted if debug symbols are not available.
+  string source_file_name;
+
+  // The (1-based) source line number, may be omitted if debug symbols are
+  // not available.
+  int source_line;
+
+  // The start address of the source line, may be omitted if debug symbols
+  // are not available.
+  u_int64_t source_line_base;
 };
-
 
 }  // namespace google_airbag
 
-
-#endif  // PROCESSOR_STACKWALKER_PPC_H__
+#endif  // GOOGLE_AIRBAG_PROCESSOR_STACK_FRAME_H__

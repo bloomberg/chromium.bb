@@ -27,10 +27,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/minidump_processor.h"
-#include "google/call_stack.h"
-#include "google/process_state.h"
-#include "processor/minidump.h"
+#include "google_airbag/processor/minidump_processor.h"
+#include "google_airbag/processor/call_stack.h"
+#include "google_airbag/processor/minidump.h"
+#include "google_airbag/processor/process_state.h"
 #include "processor/scoped_ptr.h"
 #include "processor/stackwalker_x86.h"
 

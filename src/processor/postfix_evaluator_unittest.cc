@@ -22,8 +22,8 @@
 
 #include "processor/postfix_evaluator-inl.h"
 
-#include "google/airbag_types.h"
-#include "processor/memory_region.h"
+#include "google_airbag/common/airbag_types.h"
+#include "google_airbag/processor/memory_region.h"
 
 
 using std::map;

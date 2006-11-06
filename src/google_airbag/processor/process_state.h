@@ -31,8 +31,8 @@
 //
 // Author: Mark Mentovai
 
-#ifndef GOOGLE_PROCESS_STATE_H__
-#define GOOGLE_PROCESS_STATE_H__
+#ifndef GOOGLE_AIRBAG_PROCESSOR_PROCESS_STATE_H__
+#define GOOGLE_AIRBAG_PROCESSOR_PROCESS_STATE_H__
 
 #include <string>
 #include <vector>
@@ -118,4 +118,4 @@ class ProcessState {
 
 }  // namespace google_airbag
 
-#endif  // GOOGLE_CALL_STACK_H__
+#endif  // GOOGLE_AIRBAG_PROCESSOR_CALL_STACK_H__

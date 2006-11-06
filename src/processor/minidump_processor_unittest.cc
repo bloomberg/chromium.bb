@@ -31,12 +31,12 @@
 // corresponding symbol file, and checks the stack frames for correctness.
 
 #include <string>
-#include "google/call_stack.h"
-#include "google/minidump_processor.h"
-#include "google/process_state.h"
-#include "google/stack_frame.h"
-#include "google/symbol_supplier.h"
-#include "processor/minidump.h"
+#include "google_airbag/processor/call_stack.h"
+#include "google_airbag/processor/minidump.h"
+#include "google_airbag/processor/minidump_processor.h"
+#include "google_airbag/processor/process_state.h"
+#include "google_airbag/processor/stack_frame.h"
+#include "google_airbag/processor/symbol_supplier.h"
 #include "processor/scoped_ptr.h"
 
 using std::string;

@@ -34,7 +34,7 @@
 // Author: Mark Mentovai
 
 #include "processor/simple_symbol_supplier.h"
-#include "processor/minidump.h"
+#include "google_airbag/processor/minidump.h"
 #include "processor/pathname_stripper.h"
 
 namespace google_airbag {
