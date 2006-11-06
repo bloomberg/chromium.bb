@@ -74,7 +74,7 @@ typedef struct drm_nouveau_mem_alloc {
 	int flags;
 	int alignment;
 	uint64_t size;	// in bytes
-	uint64_t __user *region_offset;
+	uint64_t region_offset;
 }
 drm_nouveau_mem_alloc_t;
 
