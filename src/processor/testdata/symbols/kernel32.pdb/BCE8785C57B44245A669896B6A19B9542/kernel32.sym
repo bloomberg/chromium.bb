@@ -1,3 +1,4 @@
+MODULE bce8785c-57b4-4245-a669-896b6a19b954 2 kernel32.pdb
 PUBLIC b5ae c BaseDllInitialize
 PUBLIC 9b47 4 CloseHandle
 PUBLIC 17826 0 BaseDllInitializeMemoryManager

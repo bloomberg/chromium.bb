@@ -36,8 +36,8 @@
 // directory with a name identical to the corresponding pdb file.  Within
 // each of these directories, there are subdirectories named for the uuid and
 // age of each pdb file.  The uuid is presented in hexadecimal form, with
-// uppercase characters and no dashes.  The age is appended to it in decimal
-// form, without any separators.  Within that subdirectory,
+// uppercase characters and no dashes.  The age is appended to it in
+// hexadecimal form, without any separators.  Within that subdirectory,
 // SimpleSymbolSupplier expects to find the symbol file, which is named
 // identically to the pdb file, but with a .sym extension.  This sample
 // hierarchy is rooted at the "symbols" base directory:
@@ -58,9 +58,6 @@
 // used for Microsoft Symbol Server storage is usable as a hierarchy for
 // SimpleSymbolServer, provided that the pdb files are transformed to dumped
 // format using a tool such as dump_syms, and given a .sym extension.
-//
-// TODO(mmentovai): verify that MSSS stores the age as presented as decimal
-// and not hexadecimal or something else.  Adjust here to match if necessary.
 //
 // SimpleSymbolSupplier presently only supports symbol files that have
 // the MSVC 7.0 CodeView record format.  See MDCVInfoPDB70 in

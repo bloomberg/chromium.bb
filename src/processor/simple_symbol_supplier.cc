@@ -67,7 +67,7 @@ string SimpleSymbolSupplier::GetSymbolFile(MinidumpModule *module) {
   path.append("/");
   char uuid_age_string[43];
   snprintf(uuid_age_string, sizeof(uuid_age_string),
-           "%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X%d",
+           "%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X%X",
            cv_record->signature.data1, cv_record->signature.data2,
            cv_record->signature.data3,
            cv_record->signature.data4[0], cv_record->signature.data4[1],

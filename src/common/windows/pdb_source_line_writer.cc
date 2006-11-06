@@ -77,6 +77,14 @@ bool PDBSourceLineWriter::Open(const wstring &file, FileFormat format) {
         return false;
       }
       break;
+    case ANY_FILE:
+      if (FAILED(data_source->loadDataFromPdb(file.c_str()))) {
+        if (FAILED(data_source->loadDataForExe(file.c_str(), NULL, NULL))) {
+          fprintf(stderr, "loadDataForPdb and loadDataFromExe failed\n");
+          return false;
+        }
+      }
+      break;
     default:
       fprintf(stderr, "Unknown file format\n");
       return false;
@@ -379,6 +387,18 @@ bool PDBSourceLineWriter::PrintCodePublicSymbol(IDiaSymbol *symbol) {
   return true;
 }
 
+bool PDBSourceLineWriter::PrintPDBInfo() {
+  wstring guid, filename;
+  int age;
+  if (!GetModuleInfo(&guid, &age, &filename)) {
+    return false;
+  }
+
+  fprintf(output_, "MODULE %ws %x %ws\n", guid.c_str(), age, filename.c_str());
+
+  return true;
+}
+
 // wcstol_positive_strict is sort of like wcstol, but much stricter.  string
 // should be a buffer pointing to a null-terminated string containing only
 // decimal digits.  If the entire string can be converted to an integer
@@ -608,11 +628,12 @@ next_child:
 }
 
 bool PDBSourceLineWriter::WriteMap(FILE *map_file) {
-  bool ret = false;
   output_ = map_file;
-  if (PrintSourceFiles() && PrintFunctions() && PrintFrameData()) {
-    ret = true;
-  }
+
+  bool ret = PrintPDBInfo() &&
+             PrintSourceFiles() && 
+             PrintFunctions() &&
+             PrintFrameData();
 
   output_ = NULL;
   return ret;
@@ -622,18 +643,47 @@ void PDBSourceLineWriter::Close() {
   session_.Release();
 }
 
-wstring PDBSourceLineWriter::GetModuleGUID() {
+// static
+wstring PDBSourceLineWriter::GetBaseName(const wstring &filename) {
+  wstring base_name(filename);
+  size_t slash_pos = base_name.find_last_of(L"/\\");
+  if (slash_pos != wstring::npos) {
+    base_name.erase(0, slash_pos + 1);
+  }
+  return base_name;
+}
+
+bool PDBSourceLineWriter::GetModuleInfo(wstring *guid, int *age,
+                                        wstring *filename) {
+  guid->clear();
+  *age = 0;
+  filename->clear();
+
   CComPtr<IDiaSymbol> global;
   if (FAILED(session_->get_globalScope(&global))) {
-    return L"";
+    return false;
   }
 
-  GUID guid;
-  if (FAILED(global->get_guid(&guid))) {
-    return L"";
+  GUID guid_number;
+  if (FAILED(global->get_guid(&guid_number))) {
+    return false;
   }
+  *guid = GUIDString::GUIDToWString(&guid_number);
 
-  return GUIDString::GUIDToWString(&guid);
+  // DWORD* and int* are not compatible.  This is clean and avoids a cast.
+  DWORD age_dword;
+  if (FAILED(global->get_age(&age_dword))) {
+    return false;
+  }
+  *age = age_dword;
+
+  CComBSTR filename_string;
+  if (FAILED(global->get_symbolsFileName(&filename_string))) {
+    return false;
+  }
+  *filename = GetBaseName(wstring(filename_string));
+
+  return true;
 }
 
 }  // namespace google_airbag

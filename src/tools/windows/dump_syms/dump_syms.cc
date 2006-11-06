@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
   }
 
   PDBSourceLineWriter writer;
-  if (!writer.Open(wstring(filename), PDBSourceLineWriter::PDB_FILE)) {
+  if (!writer.Open(wstring(filename), PDBSourceLineWriter::ANY_FILE)) {
     fprintf(stderr, "Open failed\n");
     return 1;
   }
