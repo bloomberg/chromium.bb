@@ -280,8 +280,9 @@ class MinidumpThread : public MinidumpObject {
 
   // The thread ID is used to determine if a thread is the exception thread,
   // so a special getter is provided to retrieve this data from the
-  // MDRawThread structure.
-  u_int32_t GetThreadID();
+  // MDRawThread structure.  Returns false if the thread ID cannot be
+  // determined.
+  bool GetThreadID(u_int32_t *thread_id) const;
 
   // Print a human-readable representation of the object to stdout.
   void Print();
@@ -349,9 +350,10 @@ class MinidumpModule : public MinidumpObject {
  public:
   ~MinidumpModule();
 
-  const MDRawModule* module() const { return valid_ ? &module_ : 0; }
+  const MDRawModule* module() const { return valid_ ? &module_ : NULL; }
   u_int64_t base_address() const {
-      return valid_ ? module_.base_of_image : static_cast<u_int64_t>(-1); }
+    return valid_ ? module_.base_of_image : static_cast<u_int64_t>(-1);
+  }
   u_int32_t size() const { return valid_ ? module_.size_of_image : 0; }
 
   // The name of the file containing this module's code (exe, dll, so,
@@ -513,12 +515,14 @@ class MinidumpException : public MinidumpStream {
   ~MinidumpException();
 
   const MDRawExceptionStream* exception() const {
-      return valid_ ? &exception_ : 0; }
+    return valid_ ? &exception_ : NULL;
+  }
 
   // The thread ID is used to determine if a thread is the exception thread,
   // so a special getter is provided to retrieve this data from the
-  // MDRawExceptionStream structure.
-  u_int32_t GetThreadID();
+  // MDRawExceptionStream structure.  Returns false if the thread ID cannot
+  // be determined.
+  bool GetThreadID(u_int32_t *thread_id) const;
 
   MinidumpContext* GetContext();
 
@@ -546,7 +550,8 @@ class MinidumpSystemInfo : public MinidumpStream {
   ~MinidumpSystemInfo();
 
   const MDRawSystemInfo* system_info() const {
-      return valid_ ? &system_info_ : 0; }
+    return valid_ ? &system_info_ : NULL;
+  }
 
   // I don't know what CSD stands for, but this field is documented as
   // returning a textual representation of the OS service pack.  On other
@@ -587,7 +592,9 @@ class MinidumpSystemInfo : public MinidumpStream {
 // information.  See also MinidumpSystemInfo.
 class MinidumpMiscInfo : public MinidumpStream {
  public:
-  const MDRawMiscInfo* misc_info() const { return valid_ ? &misc_info_ : 0; }
+  const MDRawMiscInfo* misc_info() const {
+    return valid_ ? &misc_info_ : NULL;
+  }
 
   // Print a human-readable representation of the object to stdout.
   void Print();
@@ -605,6 +612,38 @@ class MinidumpMiscInfo : public MinidumpStream {
 };
 
 
+// MinidumpAirbagInfo wraps MDRawAirbagInfo, which is an optional stream in
+// a minidump that provides additional information about the process state
+// at the time the minidump was generated.
+class MinidumpAirbagInfo : public MinidumpStream {
+ public:
+  const MDRawAirbagInfo* airbag_info() const {
+    return valid_ ? &airbag_info_ : NULL;
+  }
+
+  // These thread IDs are used to determine if threads deserve special
+  // treatment, so special getters are provided to retrieve this data from
+  // the MDRawAirbagInfo structure.  The getters return false if the thread
+  // IDs cannot be determined.
+  bool GetDumpThreadID(u_int32_t *thread_id) const;
+  bool GetRequestingThreadID(u_int32_t *thread_id) const;
+
+  // Print a human-readable representation of the object to stdout.
+  void Print();
+
+ private:
+  friend class Minidump;
+
+  static const u_int32_t kStreamType = MD_AIRBAG_INFO_STREAM;
+
+  explicit MinidumpAirbagInfo(Minidump* minidump_);
+
+  bool Read(u_int32_t expected_size_);
+
+  MDRawAirbagInfo airbag_info_;
+};
+
+
 // Minidump is the user's interface to a minidump file.  It wraps MDRawHeader
 // and provides access to the minidump's top-level stream directory.
 class Minidump {
@@ -614,7 +653,7 @@ class Minidump {
 
   ~Minidump();
 
-  const MDRawHeader* header() const { return valid_ ? &header_ : 0; }
+  const MDRawHeader* header() const { return valid_ ? &header_ : NULL; }
 
   // Reads the minidump file's header and top-level stream directory.
   // The minidump is expected to be positioned at the beginning of the
@@ -622,7 +661,7 @@ class Minidump {
   // Minidump object.
   bool Read();
 
-  // The next 6 methods are stubs that call GetStream.  They exist to
+  // The next set of methods are stubs that call GetStream.  They exist to
   // force code generation of the templatized API within the module, and
   // to avoid exposing an ugly API (GetStream needs to accept a garbage
   // parameter).
@@ -632,6 +671,7 @@ class Minidump {
   MinidumpException* GetException();
   MinidumpSystemInfo* GetSystemInfo();
   MinidumpMiscInfo* GetMiscInfo();
+  MinidumpAirbagInfo* GetAirbagInfo();
 
   // The next set of methods are provided for users who wish to access
   // data in minidump files directly, while leveraging the rest of
@@ -639,7 +679,8 @@ class Minidump {
   // structure and known stream types.
 
   unsigned int GetDirectoryEntryCount() const {
-      return valid_ ? header_.stream_count : 0; }
+    return valid_ ? header_.stream_count : 0;
+  }
   const MDRawDirectory* GetDirectoryEntryAtIndex(unsigned int index) const;
 
   // The next 2 methods are lower-level I/O routines.  They use fd_.

@@ -661,7 +661,8 @@ const u_int8_t* MinidumpMemoryRegion::GetMemory() {
 
 
 u_int64_t MinidumpMemoryRegion::GetBase() {
-  return valid_ ? descriptor_->start_of_memory_range : (u_int64_t)-1;
+  return valid_ ?
+      descriptor_->start_of_memory_range : static_cast<u_int64_t>(-1);
 }
 
 
@@ -829,8 +830,12 @@ MinidumpContext* MinidumpThread::GetContext() {
 }
 
 
-u_int32_t MinidumpThread::GetThreadID() {
-  return valid_ ? thread_.thread_id : (u_int32_t)-1;
+bool MinidumpThread::GetThreadID(u_int32_t *thread_id) const {
+  if (!thread_id || !valid_)
+    return false;
+
+  *thread_id = thread_.thread_id;
+  return true;
 }
 
 
@@ -928,7 +933,10 @@ bool MinidumpThreadList::Read(u_int32_t expected_size) {
     if (!thread->Read())
       return false;
 
-    u_int32_t thread_id = thread->GetThreadID();
+    u_int32_t thread_id;
+    if (!thread->GetThreadID(&thread_id))
+      return false;
+
     if (GetThreadByID(thread_id)) {
       // Another thread with this ID is already in the list.  Data error.
       return false;
@@ -1710,8 +1718,12 @@ bool MinidumpException::Read(u_int32_t expected_size) {
 }
 
 
-u_int32_t MinidumpException::GetThreadID() {
-  return valid_ ? exception_.thread_id : 0;
+bool MinidumpException::GetThreadID(u_int32_t *thread_id) const {
+  if (!thread_id || !valid_)
+    return false;
+
+  *thread_id = exception_.thread_id;
+  return true;
 }
 
 
@@ -2008,6 +2020,85 @@ void MinidumpMiscInfo::Print() {
     printf("  processor_current_idle_state = 0x%x\n",
            misc_info_.processor_current_idle_state);
   }
+  printf("\n");
+}
+
+
+//
+// MinidumpAirbagInfo
+//
+
+
+MinidumpAirbagInfo::MinidumpAirbagInfo(Minidump* minidump)
+    : MinidumpStream(minidump),
+      airbag_info_() {
+}
+
+
+bool MinidumpAirbagInfo::Read(u_int32_t expected_size) {
+  valid_ = false;
+
+  if (expected_size != sizeof(airbag_info_))
+    return false;
+
+  if (!minidump_->ReadBytes(&airbag_info_, sizeof(airbag_info_)))
+    return false;
+
+  if (minidump_->swap()) {
+    Swap(&airbag_info_.validity);
+    Swap(&airbag_info_.dump_thread_id);
+    Swap(&airbag_info_.requesting_thread_id);
+  }
+
+  valid_ = true;
+  return true;
+}
+
+
+bool MinidumpAirbagInfo::GetDumpThreadID(u_int32_t *thread_id) const {
+  if (!thread_id || !valid_ ||
+      !(airbag_info_.validity & MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID)) {
+    return false;
+  }
+
+  *thread_id = airbag_info_.dump_thread_id;
+  return true;
+}
+
+
+bool MinidumpAirbagInfo::GetRequestingThreadID(u_int32_t *thread_id)
+    const {
+  if (!thread_id || !valid_ ||
+      !(airbag_info_.validity & MD_AIRBAG_INFO_VALID_REQUESTING_THREAD_ID)) {
+    return false;
+  }
+
+  *thread_id = airbag_info_.requesting_thread_id;
+  return true;
+}
+
+
+void MinidumpAirbagInfo::Print() {
+  if (!valid_)
+    return;
+
+  printf("MDRawAirbagInfo\n");
+  printf("  validity             = 0x%x\n", airbag_info_.validity);
+
+  if (airbag_info_.validity & MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID) {
+    printf("  dump_thread_id       = 0x%x\n", airbag_info_.dump_thread_id);
+  } else {
+    printf("  dump_thread_id       = (invalid)\n");
+  }
+
+  if (airbag_info_.validity & MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID) {
+    printf("  requesting_thread_id = 0x%x\n",
+           airbag_info_.requesting_thread_id);
+  } else {
+    printf("  requesting_thread_id = (invalid)\n");
+  }
+
+  printf("\n");
 }
 
 
@@ -2135,7 +2226,8 @@ bool Minidump::Read() {
       case MD_MEMORY_LIST_STREAM:
       case MD_EXCEPTION_STREAM:
       case MD_SYSTEM_INFO_STREAM:
-      case MD_MISC_INFO_STREAM: {
+      case MD_MISC_INFO_STREAM:
+      case MD_AIRBAG_INFO_STREAM: {
         if (stream_map->find(stream_type) != stream_map->end()) {
           // Another stream with this type was already found.  A minidump
           // file should contain at most one of each of these stream types.
@@ -2196,6 +2288,12 @@ MinidumpMiscInfo* Minidump::GetMiscInfo() {
 }
 
 
+MinidumpAirbagInfo* Minidump::GetAirbagInfo() {
+  MinidumpAirbagInfo* airbag_info;
+  return GetStream(&airbag_info);
+}
+
+
 void Minidump::Print() {
   if (!valid_)
     return;
@@ -2235,7 +2333,7 @@ void Minidump::Print() {
        ++iterator) {
     u_int32_t stream_type = iterator->first;
     MinidumpStreamInfo info = iterator->second;
-    printf("  stream type %2d at index %d\n", stream_type, info.stream_index);
+    printf("  stream type 0x%x at index %d\n", stream_type, info.stream_index);
   }
   printf("\n");
 }

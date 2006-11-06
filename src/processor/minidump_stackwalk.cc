@@ -193,19 +193,21 @@ static bool PrintMinidumpProcess(const string &minidump_file,
     printf("No crash\n");
   }
 
-  // If there's a crash thread, print it first.
-  int crash_thread = -1;
-  if (process_state->crashed()) {
-    crash_thread = process_state->crash_thread();
+  // If the thread that requested the dump is known, print it first.
+  int requesting_thread = process_state->requesting_thread(); 
+  if (requesting_thread != -1) {
     printf("\n");
-    printf("Thread %d (crashed)\n", crash_thread);
-    PrintStack(process_state->threads()->at(crash_thread), cpu);
+    printf("Thread %d (%s)\n",
+          requesting_thread,
+          process_state->crashed() ? "crashed" :
+                                     "requested dump, did not crash");
+    PrintStack(process_state->threads()->at(requesting_thread), cpu);
   }
 
   // Print all of the threads in the dump.
   int thread_count = process_state->threads()->size();
   for (int thread_index = 0; thread_index < thread_count; ++thread_index) {
-    if (thread_index != crash_thread) {
+    if (thread_index != requesting_thread) {
       // Don't print the crash thread again, it was already printed.
       printf("\n");
       printf("Thread %d\n", thread_index);
