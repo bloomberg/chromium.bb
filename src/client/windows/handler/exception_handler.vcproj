@@ -294,6 +294,10 @@
 				RelativePath="..\..\..\common\windows\guid_string.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\google_airbag\common\minidump_format.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

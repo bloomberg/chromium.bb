@@ -71,6 +71,14 @@
 #include "google_airbag/common/airbag_types.h"
 
 
+#if defined(_MSC_VER)
+/* Disable "zero-sized array in struct/union" warnings when compiling in
+ * MSVC.  DbgHelp.h does this too. */
+#pragma warning(push)
+#pragma warning(disable:4200)
+#endif  /* _MSC_VER */
+
+
 /*
  * guiddef.h
  */
@@ -483,7 +491,10 @@ typedef enum {
   MD_FUNCTION_TABLE_STREAM       = 13,
   MD_UNLOADED_MODULE_LIST_STREAM = 14,
   MD_MISC_INFO_STREAM            = 15,  /* MDRawMiscInfo */
-  MD_LAST_RESERVED_STREAM        = 0x0000ffff
+  MD_LAST_RESERVED_STREAM        = 0x0000ffff,
+
+  /* Airbag extension types.  0x4767 = "Gg" */
+  MD_AIRBAG_INFO_STREAM          = 0x47670001  /* MDRawAirbagInfo */
 } MDStreamType;  /* MINIDUMP_STREAM_TYPE */
 
 
@@ -961,6 +972,53 @@ typedef enum {
   MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO = 0x00000004
       /* MINIDUMP_MISC1_PROCESSOR_POWER_INFO */
 } MDMiscInfoFlags1;
+
+
+/*
+ * Airbag extension types
+ */
+
+
+typedef struct {
+  /* validity is a bitmask with values from MDAirbagInfoValidity, indicating
+   * which of the other fields in the structure are valid. */
+  u_int32_t validity;
+
+  /* Thread ID of the handler thread.  dump_thread_id should correspond to
+   * the thread_id of an MDRawThread in the minidump's MDRawThreadList if
+   * a dedicated thread in that list was used to produce the minidump.  If
+   * the MDRawThreadList does not contain a dedicated thread used to produce
+   * the minidump, this field should be set to 0 and the validity field
+   * must not contain MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID. */
+  u_int32_t dump_thread_id;
+
+  /* Thread ID of the thread that requested the minidump be produced.  As
+   * with dump_thread_id, requesting_thread_id should correspond to the
+   * thread_id of an MDRawThread in the minidump's MDRawThreadList.  For
+   * minidumps produced as a result of an exception, requesting_thread_id
+   * will be the same as the MDRawExceptionStream's thread_id field.  For
+   * minidumps produced "manually" at the program's request,
+   * requesting_thread_id will indicate which thread caused the dump to be
+   * written.  If the minidump was produced at the request of something
+   * other than a thread in the MDRawThreadList, this field should be set
+   * to 0 and the validity field must not contain
+   * MD_AIRBAG_INFO_VALID_REQUESTING_THREAD_ID. */
+  u_int32_t requesting_thread_id;
+} MDRawAirbagInfo;
+
+/* For (MDRawAirbagInfo).validity: */
+typedef enum {
+  /* When set, the dump_thread_id field is valid. */
+  MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID       = 1 << 0,
+
+  /* When set, the requesting_thread_id field is valid. */
+  MD_AIRBAG_INFO_VALID_REQUESTING_THREAD_ID = 1 << 1
+} MDAirbagInfoValidity;
+
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif  /* _MSC_VER */
 
 
 #endif  /* GOOGLE_AIRBAG_COMMON_MINIDUMP_FORMAT_H__ */

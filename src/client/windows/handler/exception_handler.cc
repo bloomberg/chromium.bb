@@ -33,6 +33,7 @@
 
 #include "client/windows/handler/exception_handler.h"
 #include "common/windows/guid_string.h"
+#include "google_airbag/common/minidump_format.h"
 
 namespace google_airbag {
 
@@ -189,7 +190,26 @@ bool ExceptionHandler::WriteMinidumpWithException(DWORD requesting_thread_id,
       except_info.ExceptionPointers = exinfo;
       except_info.ClientPointers = FALSE;
 
-      // TODO(mmentovai): include IDs of handler and requesting threads.
+      // Add an MDRawAirbagInfo stream to the minidump, to provide additional
+      // information about the exception handler to the Airbag processor.  The
+      // information will help the processor determine which threads are
+      // relevant.  The Airbag processor does not require this information but
+      // can function better with Airbag-generated dumps when it is present.
+      // The native debugger is not harmed by the presence of this information.
+      MDRawAirbagInfo airbag_info;
+      airbag_info.validity = MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID |
+                             MD_AIRBAG_INFO_VALID_REQUESTING_THREAD_ID;
+      airbag_info.dump_thread_id = GetCurrentThreadId();
+      airbag_info.requesting_thread_id = requesting_thread_id;
+
+      MINIDUMP_USER_STREAM airbag_info_stream;
+      airbag_info_stream.Type = MD_AIRBAG_INFO_STREAM;
+      airbag_info_stream.BufferSize = sizeof(airbag_info);
+      airbag_info_stream.Buffer = &airbag_info;
+
+      MINIDUMP_USER_STREAM_INFORMATION user_streams;
+      user_streams.UserStreamCount = 1;
+      user_streams.UserStreamArray = &airbag_info_stream;
 
       // The explicit comparison to TRUE avoids a warning (C4800).
       success = (minidump_write_dump_(GetCurrentProcess(),
@@ -197,7 +217,7 @@ bool ExceptionHandler::WriteMinidumpWithException(DWORD requesting_thread_id,
                                       dump_file,
                                       MiniDumpNormal,
                                       exinfo ? &except_info : NULL,
-                                      NULL,
+                                      &user_streams,
                                       NULL) == TRUE);
 
       CloseHandle(dump_file);
