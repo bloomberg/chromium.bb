@@ -655,6 +655,9 @@ extern int  drmSLLookupNeighbors(void *l, unsigned long key,
 				 unsigned long *prev_key, void **prev_value,
 				 unsigned long *next_key, void **next_value);
 
+extern int drmOpenOnce(void *unused, const char *BusID, int *newlyopened);
+extern void drmCloseOnce(int fd);
+
 #include "xf86mm.h"
 
 #endif
