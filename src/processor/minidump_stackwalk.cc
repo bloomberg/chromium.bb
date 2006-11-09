@@ -45,6 +45,8 @@
 #include "processor/scoped_ptr.h"
 #include "processor/simple_symbol_supplier.h"
 
+namespace {
+
 using std::string;
 using google_airbag::CallStack;
 using google_airbag::MinidumpModule;
@@ -217,6 +219,8 @@ static bool PrintMinidumpProcess(const string &minidump_file,
 
   return true;
 }
+
+}  // namespace
 
 int main(int argc, char **argv) {
   if (argc < 2 || argc > 3) {

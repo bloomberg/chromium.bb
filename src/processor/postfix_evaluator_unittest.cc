@@ -26,6 +26,9 @@
 #include "google_airbag/processor/memory_region.h"
 
 
+namespace {
+
+
 using std::map;
 using std::string;
 using google_airbag::MemoryRegion;
@@ -84,7 +87,7 @@ struct EvaluateTestSet {
 };
 
 
-bool RunTests() {
+static bool RunTests() {
   // The first test set checks the basic operations and failure modes.
   PostfixEvaluator<unsigned int>::DictionaryType dictionary_0;
   const EvaluateTest evaluate_tests_0[] = {
@@ -272,6 +275,9 @@ bool RunTests() {
 
   return true;
 }
+
+
+}  // namespace
 
 
 int main(int argc, char **argv) {

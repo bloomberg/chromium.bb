@@ -37,6 +37,8 @@
 
 #define ASSERT_EQ(e1, e2) ASSERT_TRUE((e1) == (e2))
 
+namespace {
+
 using google_airbag::PathnameStripper;
 
 static bool RunTests() {
@@ -72,6 +74,8 @@ static bool RunTests() {
 
   return true;
 }
+
+}  // namespace
 
 int main(int argc, char **argv) {
   return RunTests() ? 0 : 1;

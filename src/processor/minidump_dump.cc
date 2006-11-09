@@ -36,18 +36,22 @@
 
 #include "google_airbag/processor/minidump.h"
 
-using namespace google_airbag;
+namespace {
 
-int main(int argc, char **argv) {
-  if (argc != 2) {
-    fprintf(stderr, "usage: %s <file>\n", argv[0]);
-    return 1;
-  }
+using google_airbag::Minidump;
+using google_airbag::MinidumpThreadList;
+using google_airbag::MinidumpModuleList;
+using google_airbag::MinidumpMemoryList;
+using google_airbag::MinidumpException;
+using google_airbag::MinidumpSystemInfo;
+using google_airbag::MinidumpMiscInfo;
+using google_airbag::MinidumpAirbagInfo;
 
-  Minidump minidump(argv[1]);
+static bool PrintMinidumpDump(const char *minidump_file) {
+  Minidump minidump(minidump_file);
   if (!minidump.Read()) {
-    printf("minidump.Read() failed\n");
-    return 1;
+    fprintf(stderr, "minidump.Read() failed\n");
+    return false;
   }
   minidump.Print();
 
@@ -109,6 +113,16 @@ int main(int argc, char **argv) {
     airbag_info->Print();
   }
 
-  // Use return instead of exit to allow destructors to run.
-  return errors == 0 ? 0 : 1;
+  return errors == 0;
+}
+
+}  // namespace
+
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    fprintf(stderr, "usage: %s <file>\n", argv[0]);
+    return 1;
+  }
+
+  return PrintMinidumpDump(argv[1]) ? 0 : 1;
 }

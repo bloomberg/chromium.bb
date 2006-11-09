@@ -39,11 +39,15 @@
 #include "google_airbag/processor/symbol_supplier.h"
 #include "processor/scoped_ptr.h"
 
+namespace {
+
 using std::string;
 using google_airbag::CallStack;
+using google_airbag::MinidumpModule;
 using google_airbag::MinidumpProcessor;
 using google_airbag::ProcessState;
 using google_airbag::scoped_ptr;
+using google_airbag::SymbolSupplier;
 
 #define ASSERT_TRUE(cond) \
   if (!(cond)) {                                                        \
@@ -52,8 +56,6 @@ using google_airbag::scoped_ptr;
   }
 
 #define ASSERT_EQ(e1, e2) ASSERT_TRUE((e1) == (e2))
-
-namespace google_airbag {
 
 class TestSymbolSupplier : public SymbolSupplier {
  public:
@@ -71,10 +73,6 @@ string TestSymbolSupplier::GetSymbolFile(MinidumpModule *module) {
 
   return "";
 }
-
-}  // namespace google_airbag
-
-using google_airbag::TestSymbolSupplier;
 
 static bool RunTests() {
   TestSymbolSupplier supplier;
@@ -128,6 +126,8 @@ static bool RunTests() {
 
   return true;
 }
+
+}  // namespace
 
 int main(int argc, char *argv[]) {
   if (!RunTests()) {
