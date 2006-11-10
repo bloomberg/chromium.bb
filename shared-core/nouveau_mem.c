@@ -234,6 +234,9 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 			break;
 		case NV_04:
 		case NV_05:
+			if (NV_READ(NV03_BOOT_0) & 0x00000100) {
+				return (((NV_READ(NV03_BOOT_0) >> 12) & 0xf)*2+2)*1024*1024;
+			} else
 			switch(NV_READ(NV03_BOOT_0)&NV03_BOOT_0_RAM_AMOUNT)
 			{
 				case NV04_BOOT_0_RAM_AMOUNT_32MB:
