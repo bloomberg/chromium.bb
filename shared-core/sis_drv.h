@@ -40,8 +40,8 @@
 #define DRIVER_PATCHLEVEL	1
 
 enum sis_family {
-        SIS_OTHER = 0,
-        SIS_CHIP_315 = 1,
+	SIS_OTHER = 0,
+	SIS_CHIP_315 = 1,
 };
 
 #if defined(__linux__)
@@ -52,18 +52,18 @@ enum sis_family {
 #include "drm_sman.h"
 
 #define SIS_BASE (dev_priv->mmio)
-#define SIS_READ(reg)         DRM_READ32(SIS_BASE, reg);
+#define SIS_READ(reg)	 DRM_READ32(SIS_BASE, reg);
 #define SIS_WRITE(reg, val)   DRM_WRITE32(SIS_BASE, reg, val);
 
 typedef struct drm_sis_private {
-        drm_local_map_t *mmio;
-        unsigned idle_fault;
-        drm_sman_t sman;
-        unsigned long chipset;
-        int vram_initialized;
-        int agp_initialized;
-        unsigned long vram_offset;
-        unsigned long agp_offset;
+	drm_local_map_t *mmio;
+	unsigned idle_fault;
+	drm_sman_t sman;
+	unsigned long chipset;
+	int vram_initialized;
+	int agp_initialized;
+	unsigned long vram_offset;
+	unsigned long agp_offset;
 } drm_sis_private_t;
 
 extern int sis_idle(drm_device_t *dev);

@@ -42,9 +42,9 @@
 
 #define DRIVER_NAME		"mach64"
 #define DRIVER_DESC		"DRM module for the ATI Rage Pro"
-#define DRIVER_DATE		"20020904"
+#define DRIVER_DATE		"20060718"
 
-#define DRIVER_MAJOR		1
+#define DRIVER_MAJOR		2
 #define DRIVER_MINOR		0
 #define DRIVER_PATCHLEVEL	0
 
@@ -61,7 +61,6 @@ typedef struct drm_mach64_freelist {
 } drm_mach64_freelist_t;
 
 typedef struct drm_mach64_descriptor_ring {
-	drm_dma_handle_t *dmah;	/* Handle to pci dma memory */
 	void *start;		/* write pointer (cpu address) to start of descriptor ring */
 	u32 start_addr;		/* bus address of beginning of descriptor ring */
 	int size;		/* size of ring in bytes */
@@ -123,6 +122,8 @@ extern void mach64_driver_lastclose(drm_device_t * dev);
 extern int mach64_init_freelist(drm_device_t * dev);
 extern void mach64_destroy_freelist(drm_device_t * dev);
 extern drm_buf_t *mach64_freelist_get(drm_mach64_private_t * dev_priv);
+extern int mach64_freelist_put(drm_mach64_private_t * dev_priv,
+			       drm_buf_t * copy_buf);
 
 extern int mach64_do_wait_for_fifo(drm_mach64_private_t * dev_priv,
 				   int entries);

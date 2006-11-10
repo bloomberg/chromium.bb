@@ -68,7 +68,7 @@
 /* Max number of swaps allowed on the ring
  * before the client must wait
  */
-#define MACH64_MAX_QUEUED_FRAMES        3
+#define MACH64_MAX_QUEUED_FRAMES        3U
 
 /* Byte offsets for host blit buffer data
  */
@@ -237,7 +237,7 @@ typedef struct drm_mach64_vertex {
 } drm_mach64_vertex_t;
 
 typedef struct drm_mach64_blit {
-	int idx;
+	void *buf;
 	int pitch;
 	int offset;
 	int format;

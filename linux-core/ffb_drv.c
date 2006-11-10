@@ -4,7 +4,6 @@
  * Copyright (C) 2000 David S. Miller (davem@redhat.com)
  */
 
-#include <linux/config.h>
 #include <linux/sched.h>
 #include <linux/smp_lock.h>
 #include <asm/shmparam.h>

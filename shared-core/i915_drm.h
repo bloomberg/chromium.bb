@@ -104,7 +104,26 @@ typedef struct _drm_i915_sarea {
 	unsigned int depth_tiled;
 	unsigned int rotated_tiled;
 	unsigned int rotated2_tiled;
+
+	int pipeA_x;
+	int pipeA_y;
+	int pipeA_w;
+	int pipeA_h;
+	int pipeB_x;
+	int pipeB_y;
+	int pipeB_w;
+	int pipeB_h;
 } drm_i915_sarea_t;
+
+/* Driver specific fence types and classes.
+ */
+
+/* The only fence class we support */
+#define DRM_I915_FENCE_CLASS_ACCEL 0
+/* Fence type that guarantees read-write flush */
+#define DRM_I915_FENCE_TYPE_RW 2
+/* MI_FLUSH programmed just before the fence */
+#define DRM_I915_FENCE_FLAG_FLUSHED 0x01000000
 
 /* Flags for perf_boxes
  */
@@ -132,6 +151,7 @@ typedef struct _drm_i915_sarea {
 #define DRM_I915_DESTROY_HEAP	0x0c
 #define DRM_I915_SET_VBLANK_PIPE	0x0d
 #define DRM_I915_GET_VBLANK_PIPE	0x0e
+#define DRM_I915_VBLANK_SWAP	0x0f
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -148,6 +168,7 @@ typedef struct _drm_i915_sarea {
 #define DRM_IOCTL_I915_DESTROY_HEAP	DRM_IOW( DRM_COMMAND_BASE + DRM_I915_DESTROY_HEAP, drm_i915_mem_destroy_heap_t)
 #define DRM_IOCTL_I915_SET_VBLANK_PIPE	DRM_IOW( DRM_COMMAND_BASE + DRM_I915_SET_VBLANK_PIPE, drm_i915_vblank_pipe_t)
 #define DRM_IOCTL_I915_GET_VBLANK_PIPE	DRM_IOR( DRM_COMMAND_BASE + DRM_I915_GET_VBLANK_PIPE, drm_i915_vblank_pipe_t)
+#define DRM_IOCTL_I915_VBLANK_SWAP	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_VBLANK_SWAP, drm_i915_vblank_swap_t)
 
 
 /* Allow drivers to submit batchbuffers directly to hardware, relying
@@ -243,5 +264,13 @@ typedef struct drm_i915_mem_destroy_heap {
 typedef struct drm_i915_vblank_pipe {
 	int pipe;
 } drm_i915_vblank_pipe_t;
+
+/* Schedule buffer swap at given vertical blank:
+ */
+typedef struct drm_i915_vblank_swap {
+	drm_drawable_t drawable;
+	drm_vblank_seq_type_t seqtype;
+	unsigned int sequence;
+} drm_i915_vblank_swap_t;
 
 #endif				/* _I915_DRM_H_ */

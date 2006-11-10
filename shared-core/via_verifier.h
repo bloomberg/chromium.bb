@@ -26,20 +26,20 @@
 #ifndef _VIA_VERIFIER_H_
 #define _VIA_VERIFIER_H_
 
-typedef enum{
+typedef enum {
 	no_sequence = 0, 
 	z_address,
 	dest_address,
 	tex_address
-}drm_via_sequence_t;
+} drm_via_sequence_t;
 
 
 
-typedef struct{
+typedef struct {
 	unsigned texture;
 	uint32_t z_addr; 
 	uint32_t d_addr; 
-        uint32_t t_addr[2][10];
+	uint32_t t_addr[2][10];
 	uint32_t pitch[2][10];
 	uint32_t height[2][10];
 	uint32_t tex_level_lo[2]; 

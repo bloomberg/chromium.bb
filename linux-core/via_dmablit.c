@@ -121,19 +121,18 @@ via_map_blit_for_device(struct pci_dev *pdev,
 		
 		while (line_len > 0) {
 
-                        remaining_len = min(PAGE_SIZE-VIA_PGOFF(cur_mem), line_len);
+			remaining_len = min(PAGE_SIZE-VIA_PGOFF(cur_mem), line_len);
 			line_len -= remaining_len;
 
 			if (mode == 1) {
-                                desc_ptr->mem_addr = 
-					dma_map_page(&pdev->dev, 
-						     vsg->pages[VIA_PFN(cur_mem) - 
-								VIA_PFN(first_addr)],
-						     VIA_PGOFF(cur_mem), remaining_len, 
-						     vsg->direction);
-                                desc_ptr->dev_addr = cur_fb;
+				desc_ptr->mem_addr = dma_map_page(&pdev->dev,
+					vsg->pages[VIA_PFN(cur_mem) -
+					VIA_PFN(first_addr)],
+					VIA_PGOFF(cur_mem), remaining_len,
+					vsg->direction);
+				desc_ptr->dev_addr = cur_fb;
 				
-                                desc_ptr->size = remaining_len;
+				desc_ptr->size = remaining_len;
 				desc_ptr->next = (uint32_t) next;
 				next = dma_map_single(&pdev->dev, desc_ptr, sizeof(*desc_ptr), 
 						      DMA_TO_DEVICE);
@@ -167,7 +166,7 @@ via_map_blit_for_device(struct pci_dev *pdev,
  */
 
 
-void
+static void
 via_free_sg_info(struct pci_dev *pdev, drm_via_sg_info_t *vsg) 
 {
 	struct page *page;
@@ -648,13 +647,13 @@ via_build_sg_info(drm_device_t *dev, drm_via_sg_info_t *vsg, drm_via_dmablit_t *
 	if ((((unsigned long)xfer->mem_addr & 3) != ((unsigned long)xfer->fb_addr & 3)) ||
 	    ((xfer->num_lines > 1) && ((xfer->mem_stride & 3) != (xfer->fb_stride & 3)))) {
 		DRM_ERROR("Invalid DRM bitblt alignment.\n");
-	        return DRM_ERR(EINVAL);
+		return DRM_ERR(EINVAL);
 	}
 #else
 	if ((((unsigned long)xfer->mem_addr & 15) || ((unsigned long)xfer->fb_addr & 3)) ||
 	    ((xfer->num_lines > 1) && ((xfer->mem_stride & 15) || (xfer->fb_stride & 3)))) {
 		DRM_ERROR("Invalid DRM bitblt alignment.\n");
-	        return DRM_ERR(EINVAL);
+		return DRM_ERR(EINVAL);
 	}	
 #endif
 
@@ -732,7 +731,7 @@ via_dmablit(drm_device_t *dev, drm_via_dmablit_t *xfer)
 	drm_via_private_t *dev_priv = (drm_via_private_t *)dev->dev_private;
 	drm_via_sg_info_t *vsg;
 	drm_via_blitq_t *blitq;
-        int ret;
+	int ret;
 	int engine;
 	unsigned long irqsave;
 

@@ -34,12 +34,42 @@
  */
 
 #include "drmP.h"
+
 #if defined(__ia64__)
 #include <linux/efi.h>
 #endif
 
 static void drm_vm_open(struct vm_area_struct *vma);
 static void drm_vm_close(struct vm_area_struct *vma);
+static void drm_vm_ttm_close(struct vm_area_struct *vma);
+static int drm_vm_ttm_open(struct vm_area_struct *vma);
+static void drm_vm_ttm_open_wrapper(struct vm_area_struct *vma);
+
+
+pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
+{
+	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
+
+#if defined(__i386__) || defined(__x86_64__)
+	if (boot_cpu_data.x86 > 3 && map_type != _DRM_AGP) {
+		pgprot_val(tmp) |= _PAGE_PCD;
+		pgprot_val(tmp) &= ~_PAGE_PWT;
+	}
+#elif defined(__powerpc__)
+	pgprot_val(tmp) |= _PAGE_NO_CACHE;
+	if (map_type == _DRM_REGISTERS)
+		pgprot_val(tmp) |= _PAGE_GUARDED;
+#endif
+#if defined(__ia64__)
+	if (efi_range_is_wc(vma->vm_start, vma->vm_end -
+				    vma->vm_start))
+		tmp = pgprot_writecombine(tmp);
+	else
+		tmp = pgprot_noncached(tmp);
+#endif
+	return tmp;
+}
+
 
 /**
  * \c nopage method for AGP virtual memory.
@@ -59,7 +89,7 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 	drm_device_t *dev = priv->head->dev;
 	drm_map_t *map = NULL;
 	drm_map_list_t *r_list;
-        drm_hash_item_t *hash;
+	drm_hash_item_t *hash;
 
 	/*
 	 * Find the right map
@@ -70,10 +100,10 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 	if (!dev->agp || !dev->agp->cant_use_aperture)
 		goto vm_nopage_error;
 
-        if (drm_ht_find_item(&dev->map_hash, VM_OFFSET(vma), &hash)) 
-                goto vm_nopage_error;
+	if (drm_ht_find_item(&dev->map_hash, vma->vm_pgoff, &hash))
+		goto vm_nopage_error;
 
-        r_list = drm_hash_entry(hash, drm_map_list_t, hash);
+	r_list = drm_hash_entry(hash, drm_map_list_t, hash);
 	map = r_list->map;
 
 	if (map && map->type == _DRM_AGP) {
@@ -128,6 +158,95 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 	return NOPAGE_SIGBUS;
 }
 #endif				/* __OS_HAS_AGP */
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20) || \
+     LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+static
+#endif
+struct page *drm_vm_ttm_fault(struct vm_area_struct *vma, 
+			      struct fault_data *data)
+{
+	unsigned long address = data->address;
+	drm_local_map_t *map = (drm_local_map_t *) vma->vm_private_data;
+	unsigned long page_offset;
+	struct page *page;
+	drm_ttm_t *ttm; 
+	drm_buffer_manager_t *bm;
+	drm_device_t *dev;
+	unsigned long pfn;
+	int err;
+	pgprot_t pgprot;
+
+	if (!map) {
+		data->type = VM_FAULT_OOM;
+		return NULL;
+	}
+
+	if (address > vma->vm_end) {
+		data->type = VM_FAULT_SIGBUS;
+		return NULL;
+	}
+
+	ttm = (drm_ttm_t *) map->offset;
+	
+	dev = ttm->dev;
+
+	/*
+	 * Perhaps retry here?
+	 */
+
+	mutex_lock(&dev->struct_mutex);
+	drm_fixup_ttm_caching(ttm);
+
+	bm = &dev->bm;
+	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
+	page = ttm->pages[page_offset];
+
+	if (!page) {
+		if (drm_alloc_memctl(PAGE_SIZE)) {
+			data->type = VM_FAULT_OOM;
+			goto out;
+		}
+		page = ttm->pages[page_offset] = drm_alloc_gatt_pages(0);
+		if (!page) {
+			drm_free_memctl(PAGE_SIZE);
+			data->type = VM_FAULT_OOM;
+			goto out;
+		}
+		++bm->cur_pages;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
+		SetPageLocked(page);
+#else
+		SetPageReserved(page);
+#endif
+	}
+
+	if (ttm->page_flags & DRM_TTM_PAGE_UNCACHED) {
+
+		/*
+		 * FIXME: Check can't map aperture flag.
+		 */
+
+		pfn = ttm->aper_offset + page_offset + 
+			(ttm->be->aperture_base >> PAGE_SHIFT);
+		pgprot = drm_io_prot(ttm->be->drm_map_type, vma);
+	} else {
+		pfn = page_to_pfn(page);
+		pgprot = vma->vm_page_prot;
+	}
+	
+	err = vm_insert_pfn(vma, address, pfn, pgprot);
+
+	if (!err || err == -EBUSY) 
+		data->type = VM_FAULT_MINOR; 
+	else
+		data->type = VM_FAULT_OOM;
+ out:
+	mutex_unlock(&dev->struct_mutex);
+	return NULL;
+}
+#endif
 
 /**
  * \c nopage method for shared virtual memory.
@@ -198,7 +317,7 @@ static void drm_vm_shm_close(struct vm_area_struct *vma)
 			} else {
 				dev->vmalist = pt->next;
 			}
-			drm_free(pt, sizeof(*pt), DRM_MEM_VMAS);
+			drm_ctl_free(pt, sizeof(*pt), DRM_MEM_VMAS);
 		} else {
 			prev = pt;
 		}
@@ -242,6 +361,9 @@ static void drm_vm_shm_close(struct vm_area_struct *vma)
 				dmah.busaddr = map->offset;
 				dmah.size = map->size;
 				__drm_pci_free(dev, &dmah);
+				break;
+		        case _DRM_TTM:
+				BUG_ON(1);
 				break;
 			}
 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
@@ -358,6 +480,7 @@ static struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
 	return drm_do_vm_sg_nopage(vma, address);
 }
 
+
 #else				/* LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,0) */
 
 static struct page *drm_vm_nopage(struct vm_area_struct *vma,
@@ -414,6 +537,20 @@ static struct vm_operations_struct drm_vm_sg_ops = {
 	.close = drm_vm_close,
 };
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+static struct vm_operations_struct drm_vm_ttm_ops = {
+	.nopage = drm_vm_ttm_nopage,
+	.open = drm_vm_ttm_open_wrapper,
+	.close = drm_vm_ttm_close,
+};
+#else
+static struct vm_operations_struct drm_vm_ttm_ops = {
+	.fault = drm_vm_ttm_fault,
+	.open = drm_vm_ttm_open_wrapper,
+	.close = drm_vm_ttm_close,
+};
+#endif
+
 /**
  * \c open method for shared virtual memory.
  *
@@ -432,7 +569,7 @@ static void drm_vm_open(struct vm_area_struct *vma)
 		  vma->vm_start, vma->vm_end - vma->vm_start);
 	atomic_inc(&dev->vma_count);
 
-	vma_entry = drm_alloc(sizeof(*vma_entry), DRM_MEM_VMAS);
+	vma_entry = drm_ctl_alloc(sizeof(*vma_entry), DRM_MEM_VMAS);
 	if (vma_entry) {
 		mutex_lock(&dev->struct_mutex);
 		vma_entry->vma = vma;
@@ -441,6 +578,29 @@ static void drm_vm_open(struct vm_area_struct *vma)
 		dev->vmalist = vma_entry;
 		mutex_unlock(&dev->struct_mutex);
 	}
+}
+
+static int drm_vm_ttm_open(struct vm_area_struct *vma) {
+  
+	drm_local_map_t *map = (drm_local_map_t *)vma->vm_private_data;
+	drm_ttm_t *ttm;
+	drm_file_t *priv = vma->vm_file->private_data;
+	drm_device_t *dev = priv->head->dev;
+
+	drm_vm_open(vma);
+	mutex_lock(&dev->struct_mutex);
+	ttm = (drm_ttm_t *) map->offset;
+	atomic_inc(&ttm->vma_count);
+#ifdef DRM_ODD_MM_COMPAT
+	drm_ttm_add_vma(ttm, vma);
+#endif
+	mutex_unlock(&dev->struct_mutex);
+	return 0;
+}
+
+static void drm_vm_ttm_open_wrapper(struct vm_area_struct *vma) 
+{
+	drm_vm_ttm_open(vma);
 }
 
 /**
@@ -469,12 +629,41 @@ static void drm_vm_close(struct vm_area_struct *vma)
 			} else {
 				dev->vmalist = pt->next;
 			}
-			drm_free(pt, sizeof(*pt), DRM_MEM_VMAS);
+			drm_ctl_free(pt, sizeof(*pt), DRM_MEM_VMAS);
 			break;
 		}
 	}
 	mutex_unlock(&dev->struct_mutex);
 }
+
+
+static void drm_vm_ttm_close(struct vm_area_struct *vma)
+{
+	drm_local_map_t *map = (drm_local_map_t *) vma->vm_private_data; 
+	drm_ttm_t *ttm; 
+        drm_device_t *dev;
+	int ret;
+
+	drm_vm_close(vma); 
+	if (map) {
+		ttm = (drm_ttm_t *) map->offset;
+		dev = ttm->dev;
+		mutex_lock(&dev->struct_mutex);
+#ifdef DRM_ODD_MM_COMPAT
+		drm_ttm_delete_vma(ttm, vma);
+#endif
+		if (atomic_dec_and_test(&ttm->vma_count)) {
+			if (ttm->destroy) {
+				ret = drm_destroy_ttm(ttm);
+				BUG_ON(ret);
+				drm_ctl_free(map, sizeof(*map), DRM_MEM_TTM);
+			}
+		}
+		mutex_unlock(&dev->struct_mutex);
+	}
+	return;
+}
+
 
 /**
  * mmap DMA memory.
@@ -496,8 +685,8 @@ static int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 	lock_kernel();
 	dev = priv->head->dev;
 	dma = dev->dma;
-	DRM_DEBUG("start = 0x%lx, end = 0x%lx, offset = 0x%lx\n",
-		  vma->vm_start, vma->vm_end, VM_OFFSET(vma));
+	DRM_DEBUG("start = 0x%lx, end = 0x%lx, page offset = 0x%lx\n",
+		  vma->vm_start, vma->vm_end, vma->vm_pgoff);
 
 	/* Length must match exact page count */
 	if (!dma || (length >> PAGE_SHIFT) != dma->page_count) {
@@ -505,6 +694,22 @@ static int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 		return -EINVAL;
 	}
 	unlock_kernel();
+
+	if (!capable(CAP_SYS_ADMIN) &&
+	    (dma->flags & _DRM_DMA_USE_PCI_RO)) {
+		vma->vm_flags &= ~(VM_WRITE | VM_MAYWRITE);
+#if defined(__i386__) || defined(__x86_64__)
+		pgprot_val(vma->vm_page_prot) &= ~_PAGE_RW;
+#else
+		/* Ye gads this is ugly.  With more thought
+		   we could move this up higher and use
+		   `protection_map' instead.  */
+		vma->vm_page_prot =
+		    __pgprot(pte_val
+			     (pte_wrprotect
+			      (__pte(pgprot_val(vma->vm_page_prot)))));
+#endif
+	}
 
 	vma->vm_ops = &drm_vm_dma_ops;
 
@@ -554,10 +759,10 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	drm_device_t *dev = priv->head->dev;
 	drm_map_t *map = NULL;
 	unsigned long offset = 0;
-        drm_hash_item_t *hash;
+	drm_hash_item_t *hash;
 
-	DRM_DEBUG("start = 0x%lx, end = 0x%lx, offset = 0x%lx\n",
-		  vma->vm_start, vma->vm_end, VM_OFFSET(vma));
+	DRM_DEBUG("start = 0x%lx, end = 0x%lx, page offset = 0x%lx\n",
+		  vma->vm_start, vma->vm_end, vma->vm_pgoff);
 
 	if (!priv->authenticated)
 		return -EACCES;
@@ -566,7 +771,7 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	 * the AGP mapped at physical address 0
 	 * --BenH.
 	 */
-	if (!VM_OFFSET(vma)
+	if (!vma->vm_pgoff
 #if __OS_HAS_AGP
 	    && (!dev->agp
 		|| dev->agp->agp_info.device->vendor != PCI_VENDOR_ID_APPLE)
@@ -574,11 +779,11 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	    )
 		return drm_mmap_dma(filp, vma);
 
-        if (drm_ht_find_item(&dev->map_hash, VM_OFFSET(vma), &hash)) {
-                DRM_ERROR("Could not find map\n");
+	if (drm_ht_find_item(&dev->map_hash, vma->vm_pgoff , &hash)) {
+		DRM_ERROR("Could not find map\n");
 		return -EINVAL;
-        }
-        
+	}
+
 	map = drm_hash_entry(hash,drm_map_list_t, hash)->map;
 
 	if (!map || ((map->flags & _DRM_RESTRICTED) && !capable(CAP_SYS_ADMIN)))
@@ -620,27 +825,9 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 		/* fall through to _DRM_FRAME_BUFFER... */
 	case _DRM_FRAME_BUFFER:
 	case _DRM_REGISTERS:
-#if defined(__i386__) || defined(__x86_64__)
-		if (boot_cpu_data.x86 > 3 && map->type != _DRM_AGP) {
-			pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
-			pgprot_val(vma->vm_page_prot) &= ~_PAGE_PWT;
-		}
-#elif defined(__powerpc__)
-		pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE;
-		if (map->type == _DRM_REGISTERS)
-			pgprot_val(vma->vm_page_prot) |= _PAGE_GUARDED;
-#endif
-		vma->vm_flags |= VM_IO;	/* not in core dump */
-#if defined(__ia64__)
-		if (efi_range_is_wc(vma->vm_start, vma->vm_end -
-				    vma->vm_start))
-			vma->vm_page_prot =
-				pgprot_writecombine(vma->vm_page_prot);
-		else
-			vma->vm_page_prot =
-				pgprot_noncached(vma->vm_page_prot);
-#endif
 		offset = dev->driver->get_reg_ofs(dev);
+		vma->vm_flags |= VM_IO;	/* not in core dump */
+		vma->vm_page_prot = drm_io_prot(map->type, vma);
 #ifdef __sparc__
 		if (io_remap_pfn_range(vma, vma->vm_start,
 					(map->offset + offset) >>PAGE_SHIFT,
@@ -687,6 +874,20 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 		vma->vm_flags |= VM_RESERVED;
 #endif
 		break;
+	case _DRM_TTM: {
+		vma->vm_ops = &drm_vm_ttm_ops;
+		vma->vm_private_data = (void *) map;
+		vma->vm_file = filp;
+		vma->vm_flags |= VM_RESERVED | VM_IO;
+#ifdef DRM_ODD_MM_COMPAT
+		mutex_lock(&dev->struct_mutex);
+		drm_ttm_map_bound(vma);
+		mutex_unlock(&dev->struct_mutex);
+#endif		
+		if (drm_vm_ttm_open(vma))
+		        return -EAGAIN;
+		return 0;
+	}
 	default:
 		return -EINVAL;	/* This should never happen. */
 	}

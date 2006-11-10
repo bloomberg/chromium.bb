@@ -53,7 +53,7 @@
  * \param ctx_handle context handle.
  *
  * Clears the bit specified by \p ctx_handle in drm_device::ctx_bitmap and the entry
- * in drm_device::context_sareas, while holding the drm_device::struct_sem
+ * in drm_device::context_sareas, while holding the drm_device::struct_mutex
  * lock.
  */
 void drm_ctxbitmap_free(drm_device_t * dev, int ctx_handle)
@@ -83,7 +83,7 @@ void drm_ctxbitmap_free(drm_device_t * dev, int ctx_handle)
  *
  * Find the first zero bit in drm_device::ctx_bitmap and (re)allocates
  * drm_device::context_sareas to accommodate the new entry while holding the
- * drm_device::struct_sem lock.
+ * drm_device::struct_mutex lock.
  */
 static int drm_ctxbitmap_next(drm_device_t * dev)
 {
@@ -145,7 +145,7 @@ static int drm_ctxbitmap_next(drm_device_t * dev)
  * \param dev DRM device.
  *
  * Allocates and initialize drm_device::ctx_bitmap and drm_device::context_sareas, while holding
- * the drm_device::struct_sem lock.
+ * the drm_device::struct_mutex lock.
  */
 int drm_ctxbitmap_init(drm_device_t * dev)
 {
@@ -178,7 +178,7 @@ int drm_ctxbitmap_init(drm_device_t * dev)
  * \param dev DRM device.
  *
  * Frees drm_device::ctx_bitmap and drm_device::context_sareas, while holding
- * the drm_device::struct_sem lock.
+ * the drm_device::struct_mutex lock.
  */
 void drm_ctxbitmap_cleanup(drm_device_t * dev)
 {

@@ -69,9 +69,6 @@
 #endif
 
 #if defined(__linux__)
-#if defined(__KERNEL__)
-#include <linux/config.h>
-#endif
 #include <asm/ioctl.h>		/* For _IO* macros */
 #define DRM_IOCTL_NR(n)		_IOC_NR(n)
 #define DRM_IOC_VOID		_IOC_NONE
@@ -134,8 +131,16 @@
 #define _DRM_LOCKING_CONTEXT(lock) ((lock) & ~(_DRM_LOCK_HELD|_DRM_LOCK_CONT))
 
 #if defined(__linux__)
+#if defined(__KERNEL__)
+typedef __u64 drm_u64_t;
+#else
+typedef unsigned long long drm_u64_t;
+#endif
+
 typedef unsigned int drm_handle_t;
 #else
+#include <sys/types.h>
+typedef u_int64_t drm_u64_t;
 typedef unsigned long drm_handle_t;	/**< To mapped regions */
 #endif
 typedef unsigned int drm_context_t;	/**< GLXContext handle */
@@ -157,6 +162,14 @@ typedef struct drm_clip_rect {
 	unsigned short x2;
 	unsigned short y2;
 } drm_clip_rect_t;
+
+/**
+ * Drawable information.
+ */
+typedef struct drm_drawable_info {
+	unsigned int num_rects;
+	drm_clip_rect_t *rects;
+} drm_drawable_info_t;
 
 /**
  * Texture region,
@@ -259,7 +272,8 @@ typedef enum drm_map_type {
 	_DRM_SHM = 2,		  /**< shared, cached */
 	_DRM_AGP = 3,		  /**< AGP/GART */
 	_DRM_SCATTER_GATHER = 4,  /**< Scatter/gather memory for PCI DMA */
-	_DRM_CONSISTENT = 5	  /**< Consistent memory for PCI DMA */
+	_DRM_CONSISTENT = 5,	  /**< Consistent memory for PCI DMA */
+	_DRM_TTM = 6
 } drm_map_type_t;
 
 /**
@@ -408,7 +422,8 @@ typedef struct drm_buf_desc {
 		_DRM_PAGE_ALIGN = 0x01,	/**< Align on page boundaries for DMA */
 		_DRM_AGP_BUFFER = 0x02,	/**< Buffer is in AGP space */
 		_DRM_SG_BUFFER  = 0x04,	/**< Scatter/gather memory buffer */
-		_DRM_FB_BUFFER  = 0x08  /**< Buffer is in frame buffer */
+		_DRM_FB_BUFFER  = 0x08, /**< Buffer is in frame buffer */
+		_DRM_PCI_BUFFER_RO = 0x10 /**< Map PCI DMA buffer read-only */
 	} flags;
 	unsigned long agp_start; /**<
 				  * Start address of where the AGP buffers are
@@ -508,6 +523,20 @@ typedef struct drm_draw {
 } drm_draw_t;
 
 /**
+ * DRM_IOCTL_UPDATE_DRAW ioctl argument type.
+ */
+typedef enum {
+	DRM_DRAWABLE_CLIPRECTS,
+} drm_drawable_info_type_t;
+
+typedef struct drm_update_draw {
+	drm_drawable_t handle;
+	unsigned int type;
+	unsigned int num;
+	unsigned long long data;
+} drm_update_draw_t;
+
+/**
  * DRM_IOCTL_GET_MAGIC and DRM_IOCTL_AUTH_MAGIC ioctl argument type.
  */
 typedef struct drm_auth {
@@ -529,10 +558,14 @@ typedef struct drm_irq_busid {
 typedef enum {
 	_DRM_VBLANK_ABSOLUTE = 0x0,	/**< Wait for specific vblank sequence number */
 	_DRM_VBLANK_RELATIVE = 0x1,	/**< Wait for given number of vblanks */
+	_DRM_VBLANK_NEXTONMISS = 0x10000000,	/**< If missed, wait for next vblank */
+	_DRM_VBLANK_SECONDARY = 0x20000000,	/**< Secondary display controller */
 	_DRM_VBLANK_SIGNAL = 0x40000000	/**< Send signal instead of blocking */
 } drm_vblank_seq_type_t;
 
-#define _DRM_VBLANK_FLAGS_MASK _DRM_VBLANK_SIGNAL
+#define _DRM_VBLANK_TYPES_MASK (_DRM_VBLANK_ABSOLUTE | _DRM_VBLANK_RELATIVE)
+#define _DRM_VBLANK_FLAGS_MASK (_DRM_VBLANK_SIGNAL | _DRM_VBLANK_SECONDARY | \
+				_DRM_VBLANK_NEXTONMISS)
 
 struct drm_wait_vblank_request {
 	drm_vblank_seq_type_t type;
@@ -629,6 +662,190 @@ typedef struct drm_set_version {
 	int drm_dd_minor;
 } drm_set_version_t;
 
+
+#define DRM_FENCE_FLAG_EMIT                0x00000001
+#define DRM_FENCE_FLAG_SHAREABLE           0x00000002
+#define DRM_FENCE_FLAG_WAIT_LAZY           0x00000004
+#define DRM_FENCE_FLAG_WAIT_IGNORE_SIGNALS 0x00000008
+
+/* Reserved for driver use */
+#define DRM_FENCE_MASK_DRIVER              0xFF000000
+
+#define DRM_FENCE_TYPE_EXE                 0x00000001
+
+typedef struct drm_fence_arg {
+	unsigned handle;
+        int class;
+	unsigned type;
+	unsigned flags;
+	unsigned signaled;
+	unsigned expand_pad[4]; /*Future expansion */
+	enum {
+		drm_fence_create,
+		drm_fence_destroy,
+		drm_fence_reference,
+		drm_fence_unreference,
+		drm_fence_signaled,
+		drm_fence_flush,
+		drm_fence_wait,
+		drm_fence_emit,
+		drm_fence_buffers
+	} op;
+} drm_fence_arg_t;
+
+/* Buffer permissions, referring to how the GPU uses the buffers.
+   these translate to fence types used for the buffers. 
+   Typically a texture buffer is read, A destination buffer is write and
+   a command (batch-) buffer is exe. Can be or-ed together. */
+
+#define DRM_BO_FLAG_READ        0x00000001
+#define DRM_BO_FLAG_WRITE       0x00000002
+#define DRM_BO_FLAG_EXE         0x00000004
+
+/*
+ * Status flags. Can be read to determine the actual state of a buffer.
+ */
+
+/* 
+ * Cannot evict this buffer. Not even with force. This type of buffer should
+ * only be available for root, and must be manually removed before buffer
+ * manager shutdown or swapout.
+ */
+#define DRM_BO_FLAG_NO_EVICT    0x00000010
+/* Always keep a system memory shadow to a vram buffer */
+#define DRM_BO_FLAG_SHADOW_VRAM 0x00000020
+/* The buffer is shareable with other processes */
+#define DRM_BO_FLAG_SHAREABLE   0x00000040
+/* The buffer is currently cached */
+#define DRM_BO_FLAG_CACHED      0x00000080
+/* Make sure that every time this buffer is validated, it ends up on the same
+ * location. The buffer will also not be evicted when claiming space for
+ * other buffers. Basically a pinned buffer but it may be thrown out as
+ * part of buffer manager shutdown or swapout. Not supported yet.*/
+#define DRM_BO_FLAG_NO_MOVE     0x00000100
+
+/* Make sure the buffer is in cached memory when mapped for reading */
+#define DRM_BO_FLAG_READ_CACHED 0x00080000
+/* When there is a choice between VRAM and TT, prefer VRAM. 
+   The default behaviour is to prefer TT. */
+#define DRM_BO_FLAG_PREFER_VRAM 0x00040000
+/* Bind this buffer cached if the hardware supports it. */
+#define DRM_BO_FLAG_BIND_CACHED 0x0002000
+
+/* System Memory */
+#define DRM_BO_FLAG_MEM_LOCAL  0x01000000
+/* Translation table memory */
+#define DRM_BO_FLAG_MEM_TT     0x02000000
+/* Vram memory */
+#define DRM_BO_FLAG_MEM_VRAM   0x04000000
+/* Unmappable Vram memory */
+#define DRM_BO_FLAG_MEM_VRAM_NM   0x08000000
+/* Memory flag mask */
+#define DRM_BO_MASK_MEM         0xFF000000
+
+/* When creating a buffer, Avoid system storage even if allowed */
+#define DRM_BO_HINT_AVOID_LOCAL 0x00000001
+/* Don't block on validate and map */
+#define DRM_BO_HINT_DONT_BLOCK  0x00000002
+/* Don't place this buffer on the unfenced list.*/
+#define DRM_BO_HINT_DONT_FENCE  0x00000004
+#define DRM_BO_HINT_WAIT_LAZY   0x00000008
+#define DRM_BO_HINT_ALLOW_UNFENCED_MAP 0x00000010
+
+
+/* Driver specific flags. Could be for example rendering engine */  
+#define DRM_BO_MASK_DRIVER      0x00F00000
+
+typedef enum {
+	drm_bo_type_dc,
+	drm_bo_type_user,
+	drm_bo_type_fake
+}drm_bo_type_t;
+	
+
+typedef struct drm_bo_arg_request {
+	unsigned handle; /* User space handle */
+	unsigned mask;
+	unsigned hint;
+	drm_u64_t size;
+	drm_bo_type_t type;
+	unsigned arg_handle;
+	drm_u64_t buffer_start;
+        unsigned page_alignment;
+	unsigned expand_pad[4]; /*Future expansion */
+	enum {
+		drm_bo_create,
+		drm_bo_validate,
+		drm_bo_map,
+		drm_bo_unmap,
+		drm_bo_fence,
+		drm_bo_destroy,
+		drm_bo_reference,
+		drm_bo_unreference,
+		drm_bo_info,
+		drm_bo_wait_idle,
+		drm_bo_ref_fence
+	} op;
+} drm_bo_arg_request_t;
+
+
+/*
+ * Reply flags
+ */
+
+#define DRM_BO_REP_BUSY 0x00000001
+
+typedef struct drm_bo_arg_reply {
+	int ret;
+	unsigned handle;
+	unsigned flags;
+	drm_u64_t size;
+	drm_u64_t offset;
+	drm_u64_t arg_handle;
+        unsigned mask;
+        drm_u64_t buffer_start;
+        unsigned fence_flags;
+        unsigned rep_flags;
+        unsigned page_alignment;
+	unsigned expand_pad[4]; /*Future expansion */
+}drm_bo_arg_reply_t;
+	
+
+typedef struct drm_bo_arg{
+        int handled;
+	drm_u64_t next;
+	union {
+		drm_bo_arg_request_t req;
+		drm_bo_arg_reply_t rep;
+	} d;
+} drm_bo_arg_t;
+
+#define DRM_BO_MEM_LOCAL 0
+#define DRM_BO_MEM_TT 1
+#define DRM_BO_MEM_VRAM 2
+#define DRM_BO_MEM_VRAM_NM 3
+#define DRM_BO_MEM_TYPES 2 /* For now. */
+
+typedef union drm_mm_init_arg{
+	struct {
+		enum {
+			mm_init,
+			mm_takedown,
+			mm_query,
+			mm_lock,
+			mm_unlock
+		} op;
+		drm_u64_t p_offset;
+		drm_u64_t p_size;
+		unsigned mem_type;
+		unsigned expand_pad[8]; /*Future expansion */
+	} req;
+	struct {
+		drm_handle_t mm_sarea;
+		unsigned expand_pad[8]; /*Future expansion */
+	} rep;
+} drm_mm_init_arg_t;
+
 /**
  * \name Ioctls Definitions
  */
@@ -694,15 +911,23 @@ typedef struct drm_set_version {
 
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, drm_wait_vblank_t)
 
+#define DRM_IOCTL_FENCE                 DRM_IOWR(0x3b, drm_fence_arg_t)
+#define DRM_IOCTL_BUFOBJ                DRM_IOWR(0x3d, drm_bo_arg_t)
+#define DRM_IOCTL_MM_INIT               DRM_IOWR(0x3e, drm_mm_init_arg_t)
+
+#define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, drm_update_draw_t)
+
 /*@}*/
 
 /**
  * Device specific ioctls should only be in their respective headers
- * The device specific ioctl range is from 0x40 to 0x79.
+ * The device specific ioctl range is from 0x40 to 0x99.
+ * Generic IOCTLS restart at 0xA0.
  *
  * \sa drmCommandNone(), drmCommandRead(), drmCommandWrite(), and
  * drmCommandReadWrite().
  */
 #define DRM_COMMAND_BASE                0x40
+#define DRM_COMMAND_END                 0xA0
 
 #endif

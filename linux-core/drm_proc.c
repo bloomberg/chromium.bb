@@ -49,6 +49,8 @@ static int drm_queues_info(char *buf, char **start, off_t offset,
 			   int request, int *eof, void *data);
 static int drm_bufs_info(char *buf, char **start, off_t offset,
 			 int request, int *eof, void *data);
+static int drm_objects_info(char *buf, char **start, off_t offset,
+			 int request, int *eof, void *data);
 #if DRM_DEBUG_CODE
 static int drm_vma_info(char *buf, char **start, off_t offset,
 			int request, int *eof, void *data);
@@ -67,6 +69,7 @@ static struct drm_proc_list {
 	{"clients", drm_clients_info},
 	{"queues", drm_queues_info},
 	{"bufs", drm_bufs_info},
+	{"objects", drm_objects_info},
 #if DRM_DEBUG_CODE
 	{"vma", drm_vma_info},
 #endif
@@ -238,10 +241,11 @@ static int drm__vm_info(char *buf, char **start, off_t offset, int request,
 			type = "??";
 		else
 			type = types[map->type];
-		DRM_PROC_PRINT("%4d 0x%08lx 0x%08lx %4.4s  0x%02x 0x%08x ",
+		DRM_PROC_PRINT("%4d 0x%08lx 0x%08lx %4.4s  0x%02x 0x%08lx ",
 			       i,
 			       map->offset,
-			       map->size, type, map->flags, r_list->user_token);
+			       map->size, type, map->flags, 
+			       (unsigned long) r_list->user_token);
 
 		if (map->mtrr < 0) {
 			DRM_PROC_PRINT("none\n");
@@ -258,7 +262,7 @@ static int drm__vm_info(char *buf, char **start, off_t offset, int request,
 }
 
 /**
- * Simply calls _vm_info() while holding the drm_device::struct_sem lock.
+ * Simply calls _vm_info() while holding the drm_device::struct_mutex lock.
  */
 static int drm_vm_info(char *buf, char **start, off_t offset, int request,
 		       int *eof, void *data)
@@ -331,7 +335,7 @@ static int drm__queues_info(char *buf, char **start, off_t offset,
 }
 
 /**
- * Simply calls _queues_info() while holding the drm_device::struct_sem lock.
+ * Simply calls _queues_info() while holding the drm_device::struct_mutex lock.
  */
 static int drm_queues_info(char *buf, char **start, off_t offset, int request,
 			   int *eof, void *data)
@@ -403,7 +407,7 @@ static int drm__bufs_info(char *buf, char **start, off_t offset, int request,
 }
 
 /**
- * Simply calls _bufs_info() while holding the drm_device::struct_sem lock.
+ * Simply calls _bufs_info() while holding the drm_device::struct_mutex lock.
  */
 static int drm_bufs_info(char *buf, char **start, off_t offset, int request,
 			 int *eof, void *data)
@@ -413,6 +417,89 @@ static int drm_bufs_info(char *buf, char **start, off_t offset, int request,
 
 	mutex_lock(&dev->struct_mutex);
 	ret = drm__bufs_info(buf, start, offset, request, eof, data);
+	mutex_unlock(&dev->struct_mutex);
+	return ret;
+}
+
+/**
+ * Called when "/proc/dri/.../objects" is read.
+ *
+ * \param buf output buffer.
+ * \param start start of output data.
+ * \param offset requested start offset.
+ * \param request requested number of bytes.
+ * \param eof whether there is no more data to return.
+ * \param data private data.
+ * \return number of written bytes.
+ */
+static int drm__objects_info(char *buf, char **start, off_t offset, int request,
+			  int *eof, void *data)
+{
+	drm_device_t *dev = (drm_device_t *) data;
+	int len = 0;
+	drm_buffer_manager_t *bm = &dev->bm;
+	drm_fence_manager_t *fm = &dev->fm; 
+	drm_u64_t used_mem;
+	drm_u64_t low_mem;
+	drm_u64_t high_mem;
+
+
+	if (offset > DRM_PROC_LIMIT) {
+		*eof = 1;
+		return 0;
+	}
+
+	*start = &buf[offset];
+	*eof = 0;
+	
+	if (fm->initialized) {
+		DRM_PROC_PRINT("Number of active fence objects: %d.\n\n", 
+			       atomic_read(&fm->count));
+	} else {
+		DRM_PROC_PRINT("Fence objects are not supported by this driver\n\n");
+	}
+
+	if (bm->initialized) {
+		DRM_PROC_PRINT("Number of active buffer objects: %d.\n\n", 
+			       atomic_read(&bm->count));
+		DRM_PROC_PRINT("Number of locked GATT pages: %lu.\n", bm->cur_pages);
+	} else {
+		DRM_PROC_PRINT("Buffer objects are not supported by this driver.\n\n");
+	}
+
+	drm_query_memctl(&used_mem, &low_mem, &high_mem);
+
+	if (used_mem > 16*PAGE_SIZE) { 
+		DRM_PROC_PRINT("Used object memory is %lu pages.\n", 
+			       (unsigned long) (used_mem >> PAGE_SHIFT));
+	} else {
+		DRM_PROC_PRINT("Used object memory is %lu bytes.\n", 
+			       (unsigned long) used_mem);
+	}
+	DRM_PROC_PRINT("Soft object memory usage threshold is %lu pages.\n", 
+		       (unsigned long) (low_mem >> PAGE_SHIFT));
+	DRM_PROC_PRINT("Hard object memory usage threshold is %lu pages.\n", 
+		       (unsigned long) (high_mem >> PAGE_SHIFT));
+
+	DRM_PROC_PRINT("\n");
+
+	if (len > request + offset)
+		return request;
+	*eof = 1;
+	return len - offset;
+}
+
+/**
+ * Simply calls _objects_info() while holding the drm_device::struct_mutex lock.
+ */
+static int drm_objects_info(char *buf, char **start, off_t offset, int request,
+			 int *eof, void *data)
+{
+	drm_device_t *dev = (drm_device_t *) data;
+	int ret;
+
+	mutex_lock(&dev->struct_mutex);
+	ret = drm__objects_info(buf, start, offset, request, eof, data);
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
@@ -459,7 +546,7 @@ static int drm__clients_info(char *buf, char **start, off_t offset,
 }
 
 /**
- * Simply calls _clients_info() while holding the drm_device::struct_sem lock.
+ * Simply calls _clients_info() while holding the drm_device::struct_mutex lock.
  */
 static int drm_clients_info(char *buf, char **start, off_t offset,
 			    int request, int *eof, void *data)
@@ -500,7 +587,7 @@ static int drm__vma_info(char *buf, char **start, off_t offset, int request,
 	for (pt = dev->vmalist; pt; pt = pt->next) {
 		if (!(vma = pt->vma))
 			continue;
-		DRM_PROC_PRINT("\n%5d 0x%08lx-0x%08lx %c%c%c%c%c%c 0x%08lx",
+		DRM_PROC_PRINT("\n%5d 0x%08lx-0x%08lx %c%c%c%c%c%c 0x%08lx000",
 			       pt->pid,
 			       vma->vm_start,
 			       vma->vm_end,
@@ -510,7 +597,7 @@ static int drm__vma_info(char *buf, char **start, off_t offset, int request,
 			       vma->vm_flags & VM_MAYSHARE ? 's' : 'p',
 			       vma->vm_flags & VM_LOCKED ? 'l' : '-',
 			       vma->vm_flags & VM_IO ? 'i' : '-',
-			       VM_OFFSET(vma));
+			       vma->vm_pgoff);
 
 #if defined(__i386__)
 		pgprot = pgprot_val(vma->vm_page_prot);

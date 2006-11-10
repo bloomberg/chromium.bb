@@ -38,6 +38,27 @@ static struct pci_device_id pciidlist[] = {
 	i915_PCI_IDS
 };
 
+#ifdef I915_HAVE_FENCE
+static drm_fence_driver_t i915_fence_driver = {
+	.no_types = 2,
+	.wrap_diff = (1 << 30),
+	.flush_diff = (1 << 29),
+	.sequence_mask = 0xffffffffU,
+	.lazy_capable = 1,
+	.emit = i915_fence_emit_sequence,
+	.poke_flush = i915_poke_flush,
+};
+#endif
+#ifdef I915_HAVE_BUFFER
+static drm_bo_driver_t i915_bo_driver = {
+        .iomap = {NULL, NULL},
+	.cached = {1, 1},
+	.create_ttm_backend_entry = i915_create_ttm_backend_entry,
+	.fence_type = i915_fence_types,
+	.invalidate_caches = i915_invalidate_caches
+};
+#endif
+
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	/* don't use mtrr's here, the Xserver or user space app should
@@ -45,12 +66,14 @@ static struct drm_driver driver = {
 	 */
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | /* DRIVER_USE_MTRR | */
-	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL,
+	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL |
+	    DRIVER_IRQ_VBL2,
 	.load = i915_driver_load,
 	.lastclose = i915_driver_lastclose,
 	.preclose = i915_driver_preclose,
 	.device_is_agp = i915_driver_device_is_agp,
 	.vblank_wait = i915_driver_vblank_wait,
+	.vblank_wait2 = i915_driver_vblank_wait2,
 	.irq_preinstall = i915_driver_irq_preinstall,
 	.irq_postinstall = i915_driver_irq_postinstall,
 	.irq_uninstall = i915_driver_irq_uninstall,
@@ -77,7 +100,12 @@ static struct drm_driver driver = {
 		.probe = probe,
 		.remove = __devexit_p(drm_cleanup_pci),
 		},
-
+#ifdef I915_HAVE_FENCE
+	.fence_driver = &i915_fence_driver,
+#endif
+#ifdef I915_HAVE_BUFFER
+	.bo_driver = &i915_bo_driver,
+#endif
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
 	.date = DRIVER_DATE,

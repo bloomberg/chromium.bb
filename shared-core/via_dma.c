@@ -44,14 +44,14 @@
 #define CMDBUF_ALIGNMENT_MASK   (0x0ff)
 
 /* defines for VIA 3D registers */
-#define VIA_REG_STATUS          0x400
-#define VIA_REG_TRANSET         0x43C
+#define VIA_REG_STATUS	  0x400
+#define VIA_REG_TRANSET	 0x43C
 #define VIA_REG_TRANSPACE       0x440
 
 /* VIA_REG_STATUS(0x400): Engine Status */
 #define VIA_CMD_RGTR_BUSY       0x00000080	/* Command Regulator is busy */
-#define VIA_2D_ENG_BUSY         0x00000001	/* 2D Engine is busy */
-#define VIA_3D_ENG_BUSY         0x00000002	/* 3D Engine is busy */
+#define VIA_2D_ENG_BUSY	 0x00000001	/* 2D Engine is busy */
+#define VIA_3D_ENG_BUSY	 0x00000002	/* 3D Engine is busy */
 #define VIA_VR_QUEUE_BUSY       0x00020000	/* Virtual Queue is busy */
 
 #define SetReg2DAGP(nReg, nData) {				\
@@ -120,7 +120,7 @@ via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
 	next_addr = cur_addr + size + 512*1024;
 	count = 1000000;
 	do {
-	        hw_addr = *hw_addr_ptr - agp_base;
+		hw_addr = *hw_addr_ptr - agp_base;
 		if (count-- == 0) {
 			DRM_ERROR
 			    ("via_cmdbuf_wait timed out hw %x cur_addr %x next_addr %x\n",
@@ -247,10 +247,10 @@ static int via_dma_init(DRM_IOCTL_ARGS)
 		else
 			retcode = via_dma_cleanup(dev);
 		break;
-        case VIA_DMA_INITIALIZED:
+	case VIA_DMA_INITIALIZED:
 		retcode = (dev_priv->ring.virtual_start != NULL) ? 
 			0: DRM_ERR( EFAULT );
-	        break;
+		break;
 	default:
 		retcode = DRM_ERR(EINVAL);
 		break;
@@ -406,7 +406,7 @@ static int via_pci_cmdbuffer(DRM_IOCTL_ARGS)
 static inline uint32_t *via_align_buffer(drm_via_private_t * dev_priv,
 					 uint32_t * vb, int qw_count)
 {
-        for (; qw_count > 0; --qw_count) {
+	for (; qw_count > 0; --qw_count) {
 		VIA_OUT_RING_QW(HC_DUMMY, HC_DUMMY);
 	}
 	return vb;
@@ -471,7 +471,7 @@ static int via_hook_segment(drm_via_private_t *dev_priv,
 	}
 		
 	if (paused && !no_pci_fire) {
-	        uint32_t rgtr,ptr;
+		uint32_t rgtr,ptr;
 		uint32_t ptr_low;
 
 		count = 1000000;
