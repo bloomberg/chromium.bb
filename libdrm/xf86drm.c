@@ -35,40 +35,25 @@
 #include <xorg-config.h>
 #endif
 
-#ifdef XFree86Server
-# include "xf86.h"
-# include "xf86_OSproc.h"
-# include "drm.h"
-# include "xf86_ansic.h"
-# define _DRM_MALLOC xalloc
-# define _DRM_FREE   xfree
-# ifndef XFree86LOADER
-#  include <sys/mman.h>
-# endif
-#else
-# ifdef HAVE_CONFIG_H
-#  include <config.h>
-# endif
-# include <stdio.h>
-# include <stdlib.h>
-# include <unistd.h>
-# include <string.h>
-# include <ctype.h>
-# include <fcntl.h>
-# include <errno.h>
-# include <signal.h>
-# include <sys/types.h>
-# include <sys/stat.h>
-# define stat_t struct stat
-# include <sys/ioctl.h>
-# include <sys/mman.h>
-# include <sys/time.h>
-# include <stdarg.h>
-# define _DRM_MALLOC malloc
-# define _DRM_FREE   free
-# include "drm.h"
+#ifdef HAVE_CONFIG_H
+# include <config.h>
 #endif
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#define stat_t struct stat
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <sys/time.h>
+#include <stdarg.h>
+#include "drm.h"
 
 /* Not all systems have MAP_FAILED defined */
 #ifndef MAP_FAILED
@@ -107,6 +92,13 @@
 
 #define DRM_MSG_VERBOSITY 3
 
+static drmServerInfoPtr drm_server_info;
+
+void drmSetServerInfo(drmServerInfoPtr info)
+{
+  drm_server_info = info;
+}
+
 /**
  * Output a message to stderr.
  *
@@ -115,44 +107,54 @@
  * \internal
  * This function is a wrapper around vfprintf().
  */
+
+static int drmDebugPrint(const char *format, va_list ap)
+{
+  return vfprintf(stderr, format, ap);
+}
+
+static int (*drm_debug_print)(const char *format, va_list ap) = drmDebugPrint;
+
 static void
 drmMsg(const char *format, ...)
 {
     va_list	ap;
-
-#ifndef XFree86Server
     const char *env;
-    if ((env = getenv("LIBGL_DEBUG")) && strstr(env, "verbose"))
-#endif
+    if (((env = getenv("LIBGL_DEBUG")) && strstr(env, "verbose")) || drm_server_info)
     {
 	va_start(ap, format);
-#ifdef XFree86Server
-	xf86VDrvMsgVerb(-1, X_NONE, DRM_MSG_VERBOSITY, format, ap);
-#else
-	vfprintf(stderr, format, ap);
-#endif
+	if (drm_server_info) {
+	  drm_server_info->debug_print(format,ap);
+	} else {
+	  drm_debug_print(format, ap);
+	}
 	va_end(ap);
     }
 }
 
+void
+drmSetDebugMsgFunction(int (*debug_msg_ptr)(const char *format, va_list ap))
+{
+  drm_debug_print = debug_msg_ptr;
+}
+
 static void *drmHashTable = NULL; /* Context switch callbacks */
 
-typedef struct drmHashEntry {
-    int      fd;
-    void     (*f)(int, void *, void *);
-    void     *tagTable;
-} drmHashEntry;
+void *drmGetHashTable(void)
+{
+  return drmHashTable;
+}
 
 void *drmMalloc(int size)
 {
     void *pt;
-    if ((pt = _DRM_MALLOC(size))) memset(pt, 0, size);
+    if ((pt = malloc(size))) memset(pt, 0, size);
     return pt;
 }
 
 void drmFree(void *pt)
 {
-    if (pt) _DRM_FREE(pt);
+    if (pt) free(pt);
 }
 
 /* drmStrdup can't use strdup(3), since it doesn't call _DRM_MALLOC... */
@@ -163,7 +165,7 @@ static char *drmStrdup(const char *s)
     if (!s)
         return NULL;
 
-    retval = _DRM_MALLOC(strlen(s)+1);
+    retval = malloc(strlen(s)+1);
     if (!retval)
         return NULL;
 
@@ -182,7 +184,7 @@ static unsigned long drmGetKeyFromFd(int fd)
     return st.st_rdev;
 }
 
-static drmHashEntry *drmGetEntry(int fd)
+drmHashEntry *drmGetEntry(int fd)
 {
     unsigned long key = drmGetKeyFromFd(fd);
     void          *value;
@@ -269,21 +271,20 @@ static int drmOpenDevice(long dev, int minor)
     stat_t          st;
     char            buf[64];
     int             fd;
-    mode_t          devmode = DRM_DEV_MODE;
+    mode_t          devmode = DRM_DEV_MODE, serv_mode;
     int             isroot  = !geteuid();
-#if defined(XFree86Server)
     uid_t           user    = DRM_DEV_UID;
-    gid_t           group   = DRM_DEV_GID;
-#endif
-
+    gid_t           group   = DRM_DEV_GID, serv_group;
+    
     sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);
     drmMsg("drmOpenDevice: node name is %s\n", buf);
 
-#if defined(XFree86Server)
-    devmode  = xf86ConfigDRI.mode ? xf86ConfigDRI.mode : DRM_DEV_MODE;
-    devmode &= ~(S_IXUSR|S_IXGRP|S_IXOTH);
-    group = (xf86ConfigDRI.group >= 0) ? xf86ConfigDRI.group : DRM_DEV_GID;
-#endif
+    if (drm_server_info) {
+      drm_server_info->get_perms(&serv_group, &serv_mode);
+      devmode  = serv_mode ? serv_mode : DRM_DEV_MODE;
+      devmode &= ~(S_IXUSR|S_IXGRP|S_IXOTH);
+      group = (serv_group >= 0) ? serv_group : DRM_DEV_GID;
+    }
 
     if (stat(DRM_DIR_NAME, &st)) {
 	if (!isroot) return DRM_ERR_NOT_ROOT;
@@ -298,10 +299,11 @@ static int drmOpenDevice(long dev, int minor)
 	remove(buf);
 	mknod(buf, S_IFCHR | devmode, dev);
     }
-#if defined(XFree86Server)
-    chown(buf, user, group);
-    chmod(buf, devmode);
-#endif
+
+    if (drm_server_info) {
+      chown(buf, user, group);
+      chmod(buf, devmode);
+    }
 
     fd = open(buf, O_RDWR, 0);
     drmMsg("drmOpenDevice: open result is %d, (%s)\n",
@@ -315,10 +317,10 @@ static int drmOpenDevice(long dev, int minor)
 	if (!isroot) return DRM_ERR_NOT_ROOT;
 	remove(buf);
 	mknod(buf, S_IFCHR | devmode, dev);
-#if defined(XFree86Server)
-	chown(buf, user, group);
-	chmod(buf, devmode);
-#endif
+	if (drm_server_info) {
+	  chown(buf, user, group);
+	  chmod(buf, devmode);
+	}
     }
     fd = open(buf, O_RDWR, 0);
     drmMsg("drmOpenDevice: open result is %d, (%s)\n",
@@ -456,16 +458,16 @@ static int drmOpenByName(const char *name)
     char *        id;
     
     if (!drmAvailable()) {
-#if !defined(XFree86Server)
+      if (!drm_server_info)
 	return -1;
-#else
+      else {
         /* try to load the kernel module now */
-        if (!xf86LoadKernelModule(name)) {
-            ErrorF("[drm] failed to load kernel module \"%s\"\n",
-		   name);
-            return -1;
+        if (!drm_server_info->load_module(name)) {
+	  drmMsg("[drm] failed to load kernel module \"%s\"\n",
+		 name);
+	  return -1;
         }
-#endif
+      }
     }
 
     /*
@@ -547,16 +549,14 @@ static int drmOpenByName(const char *name)
  */
 int drmOpen(const char *name, const char *busid)
 {
-#ifdef XFree86Server
-    if (!drmAvailable() && name != NULL) {
+    if (!drmAvailable() && name != NULL && drm_server_info) {
 	/* try to load the kernel */
-	if (!xf86LoadKernelModule(name)) {
-	    ErrorF("[drm] failed to load kernel module \"%s\"\n",
+	if (!drm_server_info->load_module(name)) {
+	  drmMsg("[drm] failed to load kernel module \"%s\"\n",
 	           name);
 	    return -1;
 	}
     }
-#endif
 
     if (busid) {
 	int fd;
@@ -710,15 +710,17 @@ drmVersionPtr drmGetLibVersion(int fd)
     drm_version_t *version = drmMalloc(sizeof(*version));
 
     /* Version history:
+     *   NOTE THIS MUST NOT GO ABOVE VERSION 1.X due to drivers needing it
      *   revision 1.0.x = original DRM interface with no drmGetLibVersion
      *                    entry point and many drm<Device> extensions
      *   revision 1.1.x = added drmCommand entry points for device extensions
      *                    added drmGetLibVersion to identify libdrm.a version
      *   revision 1.2.x = added drmSetInterfaceVersion
      *                    modified drmOpen to handle both busid and name
+     *   revision 1.3.x = added server + memory manager
      */
-    version->version_major      = 2;
-    version->version_minor      = 2;
+    version->version_major      = 1;
+    version->version_minor      = 3;
     version->version_patchlevel = 0;
 
     return (drmVersionPtr)version;
@@ -3212,4 +3214,65 @@ int drmMMUnlock(int fd, unsigned memType)
     } while (ret && errno == EAGAIN);
     
     return ret;	
+}
+
+#define DRM_MAX_FDS 16
+static struct {
+   char *BusID;
+   int fd;
+   int refcount;
+} connection[DRM_MAX_FDS];
+
+static int nr_fds = 0;
+
+int drmOpenOnce(void *unused, 
+		const char *BusID,
+		int *newlyopened)
+{
+   int i;
+   int fd;
+   
+   for (i = 0; i < nr_fds; i++)
+      if (strcmp(BusID, connection[i].BusID) == 0) {
+	 connection[i].refcount++;
+	 *newlyopened = 0;
+	 return connection[i].fd;
+      }
+
+   fd = drmOpen(unused, BusID);
+   if (fd <= 0 || nr_fds == DRM_MAX_FDS)
+      return fd;
+   
+   connection[nr_fds].BusID = strdup(BusID);
+   connection[nr_fds].fd = fd;
+   connection[nr_fds].refcount = 1;
+   *newlyopened = 1;
+
+   if (0)
+      fprintf(stderr, "saved connection %d for %s %d\n", 
+              nr_fds, connection[nr_fds].BusID, 
+              strcmp(BusID, connection[nr_fds].BusID));
+
+   nr_fds++;
+
+   return fd;   
+}
+
+void drmCloseOnce(int fd)
+{
+   int i;
+
+   for (i = 0; i < nr_fds; i++) {
+      if (fd == connection[i].fd) {
+	 if (--connection[i].refcount == 0) {
+	    drmClose(connection[i].fd);
+	    free(connection[i].BusID);
+	    
+	    if (i < --nr_fds) 
+	       connection[i] = connection[nr_fds];
+
+	    return;
+	 }
+      }
+   }
 }

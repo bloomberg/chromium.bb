@@ -139,6 +139,8 @@ typedef unsigned long long drm_u64_t;
 
 typedef unsigned int drm_handle_t;
 #else
+#include <sys/types.h>
+typedef u_int64_t drm_u64_t;
 typedef unsigned long drm_handle_t;	/**< To mapped regions */
 #endif
 typedef unsigned int drm_context_t;	/**< GLXContext handle */
