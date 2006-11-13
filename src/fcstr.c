@@ -833,7 +833,7 @@ FcStrBasename (const FcChar8 *file)
     return FcStrCopy (slash + 1);
 }
 
-FcChar8 *
+static FcChar8 *
 FcStrCanonAbsoluteFilename (const FcChar8 *s)
 {
     FcChar8 *file;
