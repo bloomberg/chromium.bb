@@ -132,15 +132,14 @@ static uint32_t nouveau_handle_hash(drm_device_t* dev, uint32_t handle,
 				    int fifo)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	struct nouveau_object_store *objs=&dev_priv->objs;
 	uint32_t hash = 0;
 	int i;
 
-	for (i=32;i>0;i-=objs->ht_bits) {
-		hash ^= (handle & ((1 << objs->ht_bits) - 1));
-		handle >>= objs->ht_bits;
+	for (i=32;i>0;i-=dev_priv->ramht_bits) {
+		hash ^= (handle & ((1 << dev_priv->ramht_bits) - 1));
+		handle >>= dev_priv->ramht_bits;
 	}
-	hash ^= fifo << (objs->ht_bits - 4);
+	hash ^= fifo << (dev_priv->ramht_bits - 4);
 	return hash << 3;
 }
 
@@ -148,9 +147,8 @@ static int nouveau_hash_table_insert(drm_device_t* dev, int fifo,
 				     struct nouveau_object *obj)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	struct nouveau_object_store *objs=&dev_priv->objs;
-	int ht_base = NV_RAMIN + objs->ht_base;
-	int ht_end  = ht_base + objs->ht_size;
+	int ht_base = NV_RAMIN + dev_priv->ramht_offset;
+	int ht_end  = ht_base + dev_priv->ramht_size;
 	int o_ofs, ofs;
 
 	o_ofs = ofs = nouveau_handle_hash(dev, obj->handle, fifo);
@@ -277,38 +275,18 @@ static void nouveau_object_instance_free(drm_device_t *dev,
 	objs->free_instance++;
 }
 
-/* Where is the hash table located:
-
-   Base address and size can be calculated from this register:
-
-   ht_base = 0x1000 *  GetBitField (pNv->PFIFO[0x0210/4],8:4);
-   ht_size = 0x1000 << GetBitField (pNv->PFIFO[0x0210/4],17:16);
-
-   and the hash table will be located between address PRAMIN + ht_base and
-   PRAMIN + ht_base + ht_size.	Each hash table entry has two longwords.
-*/
-void nouveau_hash_table_init(drm_device_t* dev)
+int nouveau_object_init(drm_device_t* dev)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	int i;
 
-	dev_priv->objs.ht_bits = 9;
-	dev_priv->objs.ht_base = 0x10000;
-	dev_priv->objs.ht_size = (1 << dev_priv->objs.ht_bits);
-
-	dev_priv->objs.first_instance = 0x13000;
+	dev_priv->objs.first_instance =
+		dev_priv->ramfc_offset +dev_priv->ramfc_size;
 	dev_priv->objs.free_instance  = 1024; /*FIXME*/
 	dev_priv->objs.num_instance   = 1024; /*FIXME*/
 	dev_priv->objs.inst_bmap = drm_calloc
 	    (1, dev_priv->objs.num_instance/32, DRM_MEM_DRIVER);
 
-	/* clear all of RAMIN
-	 * NOTE: except the bottom 0x10000 bytes, the binary driver doesn't
-	 *       like this and will die either sometime during init, or during
-	 *       shutdown - leaving the screen in an unusable state...
-	 */
-	for (i=0x00710000; i<0x00800000; i+=4)
-		NV_WRITE(i, 0x00000000);
+	return 0;
 }
 
 /*

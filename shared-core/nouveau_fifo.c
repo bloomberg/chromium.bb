@@ -53,63 +53,111 @@ int nouveau_fifo_number(drm_device_t* dev)
  * voir nv_driver.c : NVPreInit 
  */
 
-static void nouveau_fifo_init(drm_device_t* dev)
+static int nouveau_fifo_instmem_configure(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	
-	/* Init PFIFO - This is an exact copy of what's done in the Xorg ddx so far.
-	 *              We should be able to figure out what's happening from the
-	 *              resources available..
+	int i;
+
+	/* Clear RAMIN */
+	for (i=0x00710000; i<0x00800000; i++)
+		NV_WRITE(i, 0x00000000);
+
+	/* FIFO hash table (RAMHT)
+	 *   use 4k hash table at RAMIN+0x10000
+	 *   TODO: extend the hash table
 	 */
+	dev_priv->ramht_offset = 0x10000;
+	dev_priv->ramht_bits   = 9;
+	dev_priv->ramht_size   = (1 << dev_priv->ramht_bits);
+	NV_WRITE(NV_PFIFO_RAMHT,
+			(0x03 << 24) /* search 128 */ | 
+			((dev_priv->ramht_bits - 9) << 16) |
+			(dev_priv->ramht_offset >> 8)
+			);
+	DRM_DEBUG("RAMHT offset=0x%x, size=%d\n",
+			dev_priv->ramht_offset,
+			dev_priv->ramht_size);
 
-	if (dev->irq_enabled)
-		nouveau_irq_postinstall(dev);
+	/* FIFO runout table (RAMRO) - 512k at 0x11200 */
+	dev_priv->ramro_offset = 0x11200;
+	dev_priv->ramro_size   = 512;
+	NV_WRITE(NV_PFIFO_RAMRO, dev_priv->ramro_offset>>8);
+	DRM_DEBUG("RAMRO offset=0x%x, size=%d\n",
+			dev_priv->ramro_offset,
+			dev_priv->ramro_size);
 
-	if (dev_priv->card_type >= NV_40)
-		NV_WRITE(NV_PGRAPH_NV40_UNK220, dev_priv->fb_obj->instance >> 4);
+	/* FIFO context table (RAMFC)
+	 *   NV40  : Not sure exactly how to position RAMFC on some cards,
+	 *           0x30002 seems to position it at RAMIN+0x20000 on these
+	 *           cards.  RAMFC is 4kb (32 fifos, 128byte entries).
+	 *   Others: Position RAMFC at RAMIN+0x11400
+	 */
+	if (dev_priv->card_type >= NV_40) {
+		dev_priv->ramfc_offset = 0x20000;
+		dev_priv->ramfc_size   = nouveau_fifo_number(dev) * 128;
+		NV_WRITE(NV40_PFIFO_RAMFC, 0x30002);
+	} else if (dev_priv->card_type >= NV_10) {
+		dev_priv->ramfc_offset = 0x11400;
+		dev_priv->ramfc_size   = nouveau_fifo_number(dev) * 64;
+		NV_WRITE(NV_PFIFO_RAMFC, dev_priv->ramfc_offset>>8);
+	} else {
+		dev_priv->ramfc_offset = 0x11400;
+		dev_priv->ramfc_size   = nouveau_fifo_number(dev) * 32;
+		NV_WRITE(NV_PFIFO_RAMFC, dev_priv->ramfc_offset>>8);
+	}
+	DRM_DEBUG("RAMFC offset=0x%x, size=%d\n",
+			dev_priv->ramfc_offset,
+			dev_priv->ramfc_size);
 
-	DRM_DEBUG("%s: setting FIFO %d active\n", __func__, dev_priv->cur_fifo);
+	return 0;
+}
 
-	// FIXME remove all the stuff that's done in nouveau_fifo_alloc
+int nouveau_fifo_init(drm_device_t *dev)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	int ret;
+
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
+
+	ret = nouveau_fifo_instmem_configure(dev);
+	if (ret) {
+		DRM_ERROR("Failed to configure instance memory\n");
+		return ret;
+	}
+
+	/* FIXME remove all the stuff that's done in nouveau_fifo_alloc */
+
+	DRM_DEBUG("Setting defaults for remaining PFIFO regs\n");
+
+	/* All channels into PIO mode */
 	NV_WRITE(NV_PFIFO_MODE, 0x00000000);
 
 	NV_WRITE(NV_PFIFO_CACH1_PSH0, 0x00000000);
 	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000000);
-	if (dev_priv->card_type >= NV_40)
-		NV_WRITE(NV_PFIFO_CACH1_PSH1, 0x00010000|dev_priv->cur_fifo);
-	else
-		NV_WRITE(NV_PFIFO_CACH1_PSH1, 0x00000100|dev_priv->cur_fifo);
-	NV_WRITE(NV_PFIFO_CACH1_DMAP, dev_priv->cur_fifo * dev_priv->cmdbuf_ch_size);
-	NV_WRITE(NV_PFIFO_CACH1_DMAG, dev_priv->cur_fifo * dev_priv->cmdbuf_ch_size);
-	NV_WRITE(NV_PFIFO_CACH1_DMAI, dev_priv->cmdbuf_obj->instance >> 4);
+	/* Channel 0 active, PIO mode */
+	NV_WRITE(NV_PFIFO_CACH1_PSH1, 0x00000000);
+	/* PUT and GET to 0 */
+	NV_WRITE(NV_PFIFO_CACH1_DMAP, 0x00000000);
+	NV_WRITE(NV_PFIFO_CACH1_DMAP, 0x00000000);
+	/* No cmdbuf object */
+	NV_WRITE(NV_PFIFO_CACH1_DMAI, 0x00000000);
 	NV_WRITE(NV_PFIFO_CACH0_PSH0, 0x00000000);
 	NV_WRITE(NV_PFIFO_CACH0_PUL0, 0x00000000);
-	NV_WRITE(NV_PFIFO_SIZE , 0x0000FFFF);
+	NV_WRITE(NV_PFIFO_SIZE, 0x0000FFFF);
 	NV_WRITE(NV_PFIFO_CACH1_HASH, 0x0000FFFF);
-	NV_WRITE(NV_PFIFO_RAMHT,
-			(0x03 << 24) /* search 128 */ | 
-			((dev_priv->objs.ht_bits - 9) << 16) |
-			(dev_priv->objs.ht_base >> 8)
-			);
-	/* RAMFC needs to be at RAMIN+0x20000 on NV40, I currently don't know
-	 * how to move it..
-	 */
-	dev_priv->ramfc_offset=0x20000;
-	if (dev_priv->card_type < NV_40)
-		NV_WRITE(NV_PFIFO_RAMFC, dev_priv->ramfc_offset>>8); /* RAMIN+0x11000 0.5k */
-	else
-		NV_WRITE(0x2220, 0x30002);
-	dev_priv->ramro_offset=0x11200;
-	NV_WRITE(NV_PFIFO_RAMRO, dev_priv->ramro_offset>>8); /* RAMIN+0x11200 0.5k */
 	NV_WRITE(NV_PFIFO_CACH0_PUL1, 0x00000001);
 	NV_WRITE(NV_PFIFO_CACH1_DMAC, 0x00000000);
 	NV_WRITE(NV_PFIFO_CACH1_DMAS, 0x00000000);
 	NV_WRITE(NV_PFIFO_CACH1_ENG, 0x00000000);
 #ifdef __BIG_ENDIAN
-		NV_WRITE(NV_PFIFO_CACH1_DMAF, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
+	NV_WRITE(NV_PFIFO_CACH1_DMAF, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES |
+				      NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES |
+				      NV_PFIFO_CACH1_DMAF_MAX_REQS_4 |
+				      NV_PFIFO_CACH1_BIG_ENDIAN);
 #else
-		NV_WRITE(NV_PFIFO_CACH1_DMAF, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
+	NV_WRITE(NV_PFIFO_CACH1_DMAF, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES |
+				      NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES | 
+				      NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
 #endif
 	NV_WRITE(NV_PFIFO_CACH1_DMAPSH, 0x00000001);
 	NV_WRITE(NV_PFIFO_CACH1_PSH0, 0x00000001);
@@ -126,11 +174,7 @@ static void nouveau_fifo_init(drm_device_t* dev)
 	NV_WRITE(NV_PFIFO_DMA_TIMESLICE, 0x001fffff);
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);
 
-	DRM_DEBUG("%s: CACHE1 GET/PUT readback %d/%d\n", __func__,
-			NV_READ(NV_PFIFO_CACH1_DMAG),
-			NV_READ(NV_PFIFO_CACH1_DMAP));
-
-	DRM_INFO("%s: OK\n", __func__);
+	return 0;
 }
 
 static int nouveau_dma_init(struct drm_device *dev)
@@ -139,14 +183,6 @@ static int nouveau_dma_init(struct drm_device *dev)
 	struct nouveau_config *config = &dev_priv->config;
 	struct mem_block *cb;
 	int cb_min_size = nouveau_fifo_number(dev) * max(NV03_FIFO_SIZE,PAGE_SIZE);
-
-	/* XXX this should be done earlier on init */
-	nouveau_hash_table_init(dev);
-
-	if (dev_priv->card_type >= NV_40)
-		dev_priv->fb_obj = nouveau_dma_object_create(dev,
-				0, nouveau_mem_fb_amount(dev),
-				NV_DMA_ACCESS_RW, NV_DMA_TARGET_VIDMEM);
 
 	/* Defaults for unconfigured values */
 	if (!config->cmdbuf.location)
@@ -168,13 +204,6 @@ static int nouveau_dma_init(struct drm_device *dev)
 		return DRM_ERR(ENOMEM);
 	}
 
-	if (config->cmdbuf.location == NOUVEAU_MEM_AGP)
-		dev_priv->cmdbuf_obj = nouveau_dma_object_create(dev,
-				cb->start, cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP);
-	else
-		dev_priv->cmdbuf_obj = nouveau_dma_object_create(dev,
-				cb->start - drm_get_resource_start(dev, 1),
-				cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM);
 	dev_priv->cmdbuf_ch_size = (uint32_t)cb->size / nouveau_fifo_number(dev);
 	dev_priv->cmdbuf_alloc = cb;
 
@@ -190,6 +219,7 @@ static void nouveau_context_init(drm_device_t *dev,
 				 drm_nouveau_fifo_alloc_t *init)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_object *cb_obj;
 	uint32_t ctx_addr,ctx_size;
 	int i;
 
@@ -208,6 +238,8 @@ static void nouveau_context_init(drm_device_t *dev,
 			break;
 	}
 
+	cb_obj = dev_priv->fifos[init->channel].cmdbuf_obj;
+
 	ctx_addr=NV_RAMIN+dev_priv->ramfc_offset+init->channel*ctx_size;
 	// clear the fifo context
 	for(i=0;i<ctx_size/4;i++)
@@ -218,7 +250,7 @@ static void nouveau_context_init(drm_device_t *dev,
 	if (dev_priv->card_type <= NV_05)
 	{
 		// that's what is done in nvosdk, but that part of the code is buggy so...
-		NV_WRITE(ctx_addr+8,dev_priv->cmdbuf_obj->instance >> 4);
+		NV_WRITE(ctx_addr+8, cb_obj->instance >> 4);
 #ifdef __BIG_ENDIAN
 		NV_WRITE(ctx_addr+16,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
 #else
@@ -227,7 +259,7 @@ static void nouveau_context_init(drm_device_t *dev,
 	}
 	else
 	{
-		NV_WRITE(ctx_addr+12,dev_priv->cmdbuf_obj->instance >> 4/*DMA INST/DMA COUNT*/);
+		NV_WRITE(ctx_addr+12,cb_obj->instance >> 4/*DMA INST/DMA COUNT*/);
 #ifdef __BIG_ENDIAN
 		NV_WRITE(ctx_addr+20,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
 #else
@@ -242,9 +274,11 @@ static void nouveau_nv40_context_init(drm_device_t *dev,
 				      drm_nouveau_fifo_alloc_t *init)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_object *cb_obj;
 	uint32_t fifoctx;
 	int i;
 
+	cb_obj  = dev_priv->fifos[init->channel].cmdbuf_obj;
 	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + init->channel*128;
 	for (i=0;i<128;i+=4)
 		NV_WRITE(fifoctx + i, 0);
@@ -254,7 +288,7 @@ static void nouveau_nv40_context_init(drm_device_t *dev,
 	 */
 	RAMFC_WR(DMA_PUT       , init->put_base);
 	RAMFC_WR(DMA_GET       , init->put_base);
-	RAMFC_WR(DMA_INSTANCE  , dev_priv->cmdbuf_obj->instance >> 4);
+	RAMFC_WR(DMA_INSTANCE  , cb_obj->instance >> 4);
 	RAMFC_WR(DMA_FETCH     , 0x30086078);
 	RAMFC_WR(DMA_SUBROUTINE, init->put_base);
 	RAMFC_WR(GRCTX_INSTANCE, 0); /* XXX */
@@ -296,6 +330,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	int i;
 	int ret;
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_object *cb_obj;
 
 	/* Init cmdbuf on first FIFO init, this is delayed until now to
 	 * give the ddx a chance to configure the cmdbuf with SETPARAM
@@ -305,9 +340,6 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 		if (ret)
 			return ret;
 	}
-	/* Initialise PFIFO regs */
-	if (!dev_priv->fifo_alloc_count)
-		nouveau_fifo_init(dev);
 
 	/*
 	 * Alright, here is the full story
@@ -325,6 +357,23 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	/* no more fifos. you lost. */
 	if (i==nouveau_fifo_number(dev))
 		return DRM_ERR(EINVAL);
+
+	/* allocate a dma object for the command buffer */
+	if (dev_priv->cmdbuf_alloc->flags & NOUVEAU_MEM_AGP) {
+		cb_obj = nouveau_dma_object_create(dev,
+				dev_priv->cmdbuf_alloc->start,
+				dev_priv->cmdbuf_alloc->size,
+				NV_DMA_ACCESS_RO,
+				NV_DMA_TARGET_AGP);
+	} else {
+		cb_obj = nouveau_dma_object_create(dev,
+				dev_priv->cmdbuf_alloc->start -
+					drm_get_resource_start(dev, 1),
+				dev_priv->cmdbuf_alloc->size,
+				NV_DMA_ACCESS_RO,
+				NV_DMA_TARGET_VIDMEM);
+	}
+	dev_priv->fifos[i].cmdbuf_obj = cb_obj;
 
 	/* that fifo is used */
 	dev_priv->fifos[i].used=1;
@@ -370,7 +419,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 
 	NV_WRITE(NV_PFIFO_CACH1_DMAP, init->put_base);
 	NV_WRITE(NV_PFIFO_CACH1_DMAG, init->put_base);
-	NV_WRITE(NV_PFIFO_CACH1_DMAI, dev_priv->cmdbuf_obj->instance >> 4);
+	NV_WRITE(NV_PFIFO_CACH1_DMAI, cb_obj->instance >> 4);
 	NV_WRITE(NV_PFIFO_SIZE , 0x0000FFFF);
 	NV_WRITE(NV_PFIFO_CACH1_HASH, 0x0000FFFF);
 

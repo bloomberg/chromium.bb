@@ -85,6 +85,7 @@
 #define NV_PFIFO_RAMHT                                     0x00002210
 #define NV_PFIFO_RAMFC                                     0x00002214
 #define NV_PFIFO_RAMRO                                     0x00002218
+#define NV40_PFIFO_RAMFC                                   0x00002220
 #define NV_PFIFO_CACHES                                    0x00002500
 #define NV_PFIFO_MODE                                      0x00002504
 #define NV_PFIFO_DMA                                       0x00002508
