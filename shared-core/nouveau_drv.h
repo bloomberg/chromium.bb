@@ -112,6 +112,7 @@ typedef struct drm_nouveau_private {
 	drm_local_map_t *mmio;
 	drm_local_map_t *fb;
 
+	//TODO: Remove me, I'm bogus :)
 	int      cur_fifo;
 
 	struct nouveau_object *fb_obj;
@@ -119,6 +120,7 @@ typedef struct drm_nouveau_private {
 	int               cmdbuf_ch_size;
 	struct mem_block* cmdbuf_alloc;
 
+	int fifo_alloc_count;
 	struct nouveau_fifo fifos[NV_MAX_FIFO_NUMBER];
 	struct nouveau_object_store objs;
 	/* RAMFC and RAMRO offsets */

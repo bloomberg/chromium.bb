@@ -178,7 +178,6 @@ static int nouveau_dma_init(struct drm_device *dev)
 	dev_priv->cmdbuf_ch_size = (uint32_t)cb->size / nouveau_fifo_number(dev);
 	dev_priv->cmdbuf_alloc = cb;
 
-	nouveau_fifo_init(dev);
 	DRM_INFO("DMA command buffer is %dKiB at 0x%08x(%s)\n",
 			(uint32_t)cb->size>>10, (uint32_t)cb->start,
 			config->cmdbuf.location == NOUVEAU_MEM_FB ? "VRAM" : "AGP");
@@ -306,6 +305,9 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 		if (ret)
 			return ret;
 	}
+	/* Initialise PFIFO regs */
+	if (!dev_priv->fifo_alloc_count)
+		nouveau_fifo_init(dev);
 
 	/*
 	 * Alright, here is the full story
@@ -409,6 +411,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 
 	/* FIFO has no objects yet */
 	dev_priv->fifos[init->channel].objs = NULL;
+	dev_priv->fifo_alloc_count++;
 
 	DRM_INFO("%s: initialised FIFO %d\n", __func__, init->channel);
 	return 0;
@@ -438,6 +441,8 @@ void nouveau_fifo_free(drm_device_t* dev,int n)
 
 	/* reenable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);
+
+	dev_priv->fifo_alloc_count--;
 }
 
 /* cleanups all the fifos from filp */
