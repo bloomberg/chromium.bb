@@ -46,6 +46,8 @@
 #include <string>
 #include <vector>
 
+#include "common/windows/string_utils-inl.h"
+
 #include "common/windows/http_upload.h"
 #include "common/windows/pdb_source_line_writer.h"
 
@@ -55,6 +57,7 @@ using std::vector;
 using std::map;
 using google_airbag::HTTPUpload;
 using google_airbag::PDBSourceLineWriter;
+using google_airbag::WindowsStringUtils;
 
 // Extracts the file version information for the given filename,
 // as a string, for example, "1.2.3.4".  Returns true on success.
@@ -82,12 +85,13 @@ static bool GetFileVersionString(const wchar_t *filename, wstring *version) {
   wchar_t ver_string[24];
   VS_FIXEDFILEINFO *file_info =
     reinterpret_cast<VS_FIXEDFILEINFO*>(file_info_buffer);
-  _snwprintf_s(ver_string, sizeof(ver_string) / sizeof(wchar_t), _TRUNCATE,
-               L"%d.%d.%d.%d",
-               file_info->dwFileVersionMS >> 16,
-               file_info->dwFileVersionMS & 0xffff,
-               file_info->dwFileVersionLS >> 16,
-               file_info->dwFileVersionLS & 0xffff);
+  WindowsStringUtils::safe_swprintf(
+      ver_string, sizeof(ver_string) / sizeof(ver_string[0]),
+      L"%d.%d.%d.%d",
+      file_info->dwFileVersionMS >> 16,
+      file_info->dwFileVersionMS & 0xffff,
+      file_info->dwFileVersionLS >> 16,
+      file_info->dwFileVersionLS & 0xffff);
   *version = ver_string;
   return true;
 }
@@ -116,7 +120,13 @@ static bool DumpSymbolsToTempFile(const wchar_t *file,
   }
 
   FILE *temp_file = NULL;
+#if _MSC_VER >= 1400  // MSVC 2005/8
   if (_wfopen_s(&temp_file, temp_filename, L"w") != 0) {
+#else  // _MSC_VER >= 1400
+  // _wfopen_s was introduced in MSVC8.  Use _wfopen for earlier environments.
+  // Don't use it with MSVC8 and later, because it's deprecated.
+  if (!(temp_file = _wfopen(temp_filename, L"w"))) {
+#endif  // _MSC_VER >= 1400
     return false;
   }
 
@@ -148,8 +158,10 @@ int wmain(int argc, wchar_t *argv[]) {
   }
 
   wchar_t module_age_string[11];
-  _snwprintf_s(module_age_string, sizeof(module_age_string) / sizeof(wchar_t),
-               _TRUNCATE, L"0x%x", module_age);
+  WindowsStringUtils::safe_swprintf(
+      module_age_string,
+      sizeof(module_age_string) / sizeof(module_age_string[0]),
+      L"0x%x", module_age);
 
   map<wstring, wstring> parameters;
   parameters[L"module"] = module_basename;

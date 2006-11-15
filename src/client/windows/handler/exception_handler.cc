@@ -31,6 +31,8 @@
 
 #include <cstdio>
 
+#include "common/windows/string_utils-inl.h"
+
 #include "client/windows/handler/exception_handler.h"
 #include "common/windows/guid_string.h"
 #include "google_airbag/common/minidump_format.h"
@@ -172,8 +174,9 @@ bool ExceptionHandler::WriteMinidump(const wstring &dump_path,
 bool ExceptionHandler::WriteMinidumpWithException(DWORD requesting_thread_id,
                                                   EXCEPTION_POINTERS *exinfo) {
   wchar_t dump_file_name[MAX_PATH];
-  swprintf_s(dump_file_name, MAX_PATH, L"%s\\%s.dmp",
-             dump_path_.c_str(), next_minidump_id_.c_str());
+  WindowsStringUtils::safe_swprintf(dump_file_name, MAX_PATH, L"%s\\%s.dmp",
+                                    dump_path_.c_str(),
+                                    next_minidump_id_.c_str());
 
   bool success = false;
   if (minidump_write_dump_) {
