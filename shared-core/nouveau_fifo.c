@@ -536,7 +536,7 @@ void nouveau_fifo_cleanup(drm_device_t* dev, DRMFILE filp)
 
 	DRM_DEBUG("clearing FIFO enables from filp\n");
 	for(i=0;i<nouveau_fifo_number(dev);i++)
-		if (dev_priv->fifos[i].filp==filp)
+		if (dev_priv->fifos[i].used && dev_priv->fifos[i].filp==filp)
 			nouveau_fifo_free(dev,i);
 
 	/* check we still point at an active channel */
