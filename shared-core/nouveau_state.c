@@ -64,6 +64,25 @@ int nouveau_firstopen(struct drm_device *dev)
 
 	DRM_INFO("%lld MB of video ram detected\n",nouveau_mem_fb_amount(dev)>>20);
 
+	/* Clear RAMIN
+	 * Determine locations for RAMHT/FC/RO
+	 * Initialise PFIFO
+	 */
+	ret = nouveau_fifo_init(dev);
+	if (ret) return ret;
+	/* Initialise instance memory allocation */
+	ret = nouveau_object_init(dev);
+	if (ret) return ret;
+
+	/* FIXME: doesn't belong here, and have no idea what it's for.. */
+	if (dev_priv->card_type >= NV_40) {
+		dev_priv->fb_obj = nouveau_dma_object_create(dev,
+				0, nouveau_mem_fb_amount(dev),
+				NV_DMA_ACCESS_RW, NV_DMA_TARGET_VIDMEM);
+
+		NV_WRITE(NV_PGRAPH_NV40_UNK220, dev_priv->fb_obj->instance >> 4);
+	}
+
 	return 0;
 }
 

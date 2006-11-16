@@ -71,16 +71,14 @@ struct nouveau_fifo
 	drm_local_map_t *map;
 	/* mapping of the regs controling the fifo */
 	drm_local_map_t *regs;
+	/* dma object for the command buffer itself */
+	struct nouveau_object *cmdbuf_obj;
 	/* objects belonging to this fifo */
 	struct nouveau_object *objs;
 };
 
 struct nouveau_object_store
 {
-	int ht_bits;
-	int ht_size;
-	int ht_base;
-
 	uint32_t *inst_bmap;
 	uint32_t first_instance;
 	int      num_instance;
@@ -112,18 +110,24 @@ typedef struct drm_nouveau_private {
 	drm_local_map_t *mmio;
 	drm_local_map_t *fb;
 
+	//TODO: Remove me, I'm bogus :)
 	int      cur_fifo;
 
 	struct nouveau_object *fb_obj;
-	struct nouveau_object *cmdbuf_obj;
 	int               cmdbuf_ch_size;
 	struct mem_block* cmdbuf_alloc;
 
+	int fifo_alloc_count;
 	struct nouveau_fifo fifos[NV_MAX_FIFO_NUMBER];
 	struct nouveau_object_store objs;
 	/* RAMFC and RAMRO offsets */
+	uint32_t ramht_offset;
+	uint32_t ramht_size;
+	uint32_t ramht_bits;
 	uint32_t ramfc_offset;
+	uint32_t ramfc_size;
 	uint32_t ramro_offset;
+	uint32_t ramro_size;
 
 	struct mem_block *agp_heap;
 	struct mem_block *fb_heap;
@@ -153,12 +157,13 @@ extern int               nouveau_mem_init(struct drm_device *dev);
 extern void              nouveau_mem_close(struct drm_device *dev);
 
 /* nouveau_fifo.c */
+extern int  nouveau_fifo_init(drm_device_t *dev);
 extern int  nouveau_fifo_number(drm_device_t *dev);
 extern void nouveau_fifo_cleanup(drm_device_t *dev, DRMFILE filp);
 extern int  nouveau_fifo_id_get(drm_device_t *dev, DRMFILE filp);
 
 /* nouveau_object.c */
-extern void nouveau_hash_table_init(drm_device_t *dev);
+extern int  nouveau_object_init(drm_device_t *dev);
 extern void nouveau_object_cleanup(drm_device_t *dev, DRMFILE filp);
 extern struct nouveau_object *nouveau_dma_object_create(drm_device_t *dev,
 		uint32_t offset, uint32_t size, int access, uint32_t target);
