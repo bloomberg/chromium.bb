@@ -216,6 +216,8 @@ MDRVA MinidumpFileWriter::Allocate(size_t size) {
 }
 
 bool MinidumpFileWriter::Copy(MDRVA position, const void* src, ssize_t size) {
+  assert(src);
+  assert(size);
   assert(file_ != -1);
 
   // Ensure that the data will fit in the allocated space
@@ -228,6 +230,20 @@ bool MinidumpFileWriter::Copy(MDRVA position, const void* src, ssize_t size) {
       return true;
 
   return false;
+}
+
+bool UntypedMDRVA::Allocate(size_t size) {
+  assert(size_ == 0);
+  size_ = size;
+  position_ = writer_->Allocate(size_);
+  return position_ != MinidumpFileWriter::kInvalidMDRVA;
+}
+
+bool UntypedMDRVA::Copy(MDRVA position, const void *src, size_t size) {
+  assert(src);
+  assert(size);
+  assert(position + size <= position_ + size_);
+  return writer_->Copy(position, src, size);
 }
 
 }  // namespace google_airbag

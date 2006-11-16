@@ -109,12 +109,7 @@ class UntypedMDRVA {
 
   // Allocates |size| bytes.  Must not call more than once.
   // Return true on success, or false on failure
-  bool Allocate(size_t size) {
-    assert(size_ == 0);
-    size_ = size;
-    position_ = writer_->Allocate(size_);
-    return position_ != MinidumpFileWriter::kInvalidMDRVA;
-  }
+  bool Allocate(size_t size);
 
   // Returns the current position or kInvalidMDRVA if allocation failed
   MDRVA position() const { return position_; }
@@ -130,10 +125,7 @@ class UntypedMDRVA {
 
   // Copy |size| bytes starting at |src| into the minidump at |position|
   // Return true on success, or false on failure
-  bool Copy(MDRVA position, const void *src, size_t size) {
-    assert(position + size <= position_ + size_);
-    return writer_->Copy(position, src, size);
-  }
+  bool Copy(MDRVA position, const void *src, size_t size);
 
   // Copy |size| bytes from |src| to the current position
   bool Copy(const void *src, size_t size) {
