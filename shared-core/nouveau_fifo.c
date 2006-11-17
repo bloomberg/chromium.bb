@@ -403,6 +403,10 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 				NV_DMA_ACCESS_RO,
 				NV_DMA_TARGET_VIDMEM);
 	}
+	if (!cb_obj) {
+		DRM_ERROR("unable to alloc object for command buffer\n");
+		return DRM_ERR(EINVAL);
+	}
 	dev_priv->fifos[i].cmdbuf_obj = cb_obj;
 
 	/* that fifo is used */
