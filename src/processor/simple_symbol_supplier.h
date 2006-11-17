@@ -88,7 +88,12 @@ class SimpleSymbolSupplier : public SymbolSupplier {
 
   // Returns the path to the symbol file for the given module.  See the
   // description above.
-  virtual string GetSymbolFile(MinidumpModule *module);
+  virtual string GetSymbolFile(MinidumpModule *module) {
+    return GetSymbolFileAtPath(module, path_);
+  }
+
+ protected:
+  string GetSymbolFileAtPath(MinidumpModule *module, const string &root_path);
 
  private:
   string path_;

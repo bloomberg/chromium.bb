@@ -39,7 +39,8 @@
 
 namespace google_airbag {
 
-string SimpleSymbolSupplier::GetSymbolFile(MinidumpModule *module) {
+string SimpleSymbolSupplier::GetSymbolFileAtPath(MinidumpModule *module,
+                                                 const string &root_path) {
   // For now, only support modules that have GUIDs - which means
   // MDCVInfoPDB70.
 
@@ -55,7 +56,7 @@ string SimpleSymbolSupplier::GetSymbolFile(MinidumpModule *module) {
     return "";
 
   // Start with the base path.
-  string path = path_;
+  string path = root_path;
 
   // Append the pdb file name as a directory name.
   path.append("/");
