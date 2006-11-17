@@ -564,7 +564,7 @@ int nouveau_fifo_id_get(drm_device_t* dev, DRMFILE filp)
 	int i;
 
 	for(i=0;i<nouveau_fifo_number(dev);i++)
-		if (dev_priv->fifos[i].filp == filp)
+		if (dev_priv->fifos[i].used && dev_priv->fifos[i].filp == filp)
 			return i;
 	return -1;
 }
