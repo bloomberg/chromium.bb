@@ -2304,10 +2304,10 @@ void Minidump::Print() {
   printf("  stream_count         = %d\n",      header_.stream_count);
   printf("  stream_directory_rva = 0x%x\n",    header_.stream_directory_rva);
   printf("  checksum             = 0x%x\n",    header_.checksum);
-  struct tm* timestruct =
-      gmtime(reinterpret_cast<time_t*>(&header_.time_date_stamp));
+  struct tm timestruct;
+  gmtime_r(reinterpret_cast<time_t*>(&header_.time_date_stamp), &timestruct);
   char timestr[20];
-  strftime(timestr, 20, "%Y-%m-%d %H:%M:%S", timestruct);
+  strftime(timestr, 20, "%Y-%m-%d %H:%M:%S", &timestruct);
   printf("  time_date_stamp      = 0x%x %s\n", header_.time_date_stamp,
                                                timestr);
   printf("  flags                = 0x%llx\n",  header_.flags);

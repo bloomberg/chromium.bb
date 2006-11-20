@@ -365,16 +365,17 @@ bool SourceLineResolver::Module::Tokenize(char *line, int max_tokens,
 
   // Split tokens on the space character.  Look for newlines too to
   // strip them out before exhausting max_tokens.
-  char *token = strtok(line, " \r\n");
+  char *save_ptr;
+  char *token = strtok_r(line, " \r\n", &save_ptr);
   while (token && --remaining > 0) {
     tokens->push_back(token);
     if (remaining > 1)
-      token = strtok(NULL, " \r\n");
+      token = strtok_r(NULL, " \r\n", &save_ptr);
   }
 
   // If there's anything left, just add it as a single token.
   if (!remaining > 0) {
-    if ((token = strtok(NULL, "\r\n"))) {
+    if ((token = strtok_r(NULL, "\r\n", &save_ptr))) {
       tokens->push_back(token);
     }
   }
