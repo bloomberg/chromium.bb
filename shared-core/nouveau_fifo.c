@@ -403,6 +403,10 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 				NV_DMA_ACCESS_RO,
 				NV_DMA_TARGET_VIDMEM);
 	}
+	if (!cb_obj) {
+		DRM_ERROR("unable to alloc object for command buffer\n");
+		return DRM_ERR(EINVAL);
+	}
 	dev_priv->fifos[i].cmdbuf_obj = cb_obj;
 
 	/* that fifo is used */
@@ -536,7 +540,7 @@ void nouveau_fifo_cleanup(drm_device_t* dev, DRMFILE filp)
 
 	DRM_DEBUG("clearing FIFO enables from filp\n");
 	for(i=0;i<nouveau_fifo_number(dev);i++)
-		if (dev_priv->fifos[i].filp==filp)
+		if (dev_priv->fifos[i].used && dev_priv->fifos[i].filp==filp)
 			nouveau_fifo_free(dev,i);
 
 	/* check we still point at an active channel */
@@ -560,7 +564,7 @@ int nouveau_fifo_id_get(drm_device_t* dev, DRMFILE filp)
 	int i;
 
 	for(i=0;i<nouveau_fifo_number(dev);i++)
-		if (dev_priv->fifos[i].filp == filp)
+		if (dev_priv->fifos[i].used && dev_priv->fifos[i].filp == filp)
 			return i;
 	return -1;
 }

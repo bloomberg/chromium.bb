@@ -306,7 +306,32 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 	}
 
 	if (status & NV_PGRAPH_INTR_ERROR) {
+		uint32_t nsource, nstatus, instance;
+		uint32_t address;
+		uint32_t channel;
+		uint32_t method, subc, data;
+
 		DRM_ERROR("NV: PGRAPH error interrupt\n");
+
+		nstatus = NV_READ(0x00400104);
+		nsource = NV_READ(0x00400108);
+		DRM_DEBUG("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
+
+		instance = NV_READ(0x00400158);
+		DRM_DEBUG("instance:0x%08x\n", instance);
+
+		address = NV_READ(0x400704);
+		data    = NV_READ(0x400708);
+		channel = (address >> 20) & 0x1F;
+		subc    = (address >> 16) & 0x7;
+		method  = address & 0x1FFC;
+		DRM_DEBUG("NV: 0x400704 = 0x%08x\n", address);
+		DRM_ERROR("NV: Channel %d/%d (class 0x%04x) -"
+			  "Method 0x%04x, Data 0x%08x\n",
+				channel, subc,
+				NV_READ(0x400160+subc*4) & 0xFFFF,
+				method, data
+			 );
 
 		status &= ~NV_PGRAPH_INTR_ERROR;
 		NV_WRITE(NV_PGRAPH_INTSTAT, NV_PGRAPH_INTR_ERROR);
@@ -360,6 +385,8 @@ irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS)
 	uint32_t status;
 
 	status = NV_READ(NV_PMC_INTSTAT);
+	if (!status)
+		return IRQ_NONE;
 
 	DRM_DEBUG("PMC INTSTAT: 0x%08x\n", status);
 

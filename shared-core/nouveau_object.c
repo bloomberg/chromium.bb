@@ -523,6 +523,8 @@ int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
 	int fifo;
 
 	fifo = nouveau_fifo_id_get(dev, filp);
+	if (fifo == -1)
+		return DRM_ERR(EINVAL);
 
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_object_init_t __user *)
 		data, sizeof(init));
@@ -577,6 +579,8 @@ int nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS)
 	int fifo;
 
 	fifo = nouveau_fifo_id_get(dev, filp);
+	if (fifo == -1)
+		return DRM_ERR(EINVAL);
 
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_dma_object_init_t __user *)
 		data, sizeof(init));
