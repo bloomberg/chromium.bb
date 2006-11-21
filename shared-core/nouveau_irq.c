@@ -385,6 +385,8 @@ irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS)
 	uint32_t status;
 
 	status = NV_READ(NV_PMC_INTSTAT);
+	if (!status)
+		return IRQ_NONE;
 
 	DRM_DEBUG("PMC INTSTAT: 0x%08x\n", status);
 
