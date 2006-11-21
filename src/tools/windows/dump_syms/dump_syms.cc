@@ -41,7 +41,7 @@ using google_airbag::PDBSourceLineWriter;
 
 int wmain(int argc, wchar_t **argv) {
   if (argc < 2) {
-    fprintf(stderr, "Usage: %ws <pdb file>\n", argv[0]);
+    fprintf(stderr, "Usage: %ws <file.[pdb|exe|dll]>\n", argv[0]);
     return 1;
   }
 

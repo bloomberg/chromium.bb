@@ -139,7 +139,7 @@ static bool DumpSymbolsToTempFile(const wchar_t *file,
 
   *temp_file_path = temp_filename;
 
-  return writer.GetModuleInfo(module_guid, module_age, module_filename);
+  return writer.GetModuleInfo(module_guid, module_age, module_filename, NULL);
 }
 
 int wmain(int argc, wchar_t *argv[]) {

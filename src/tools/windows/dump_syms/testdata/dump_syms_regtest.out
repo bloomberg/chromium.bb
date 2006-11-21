@@ -1,4 +1,4 @@
-MODULE 21b67c7e-eef6-4504-b05a-a650d11afce4 2 dump_syms_regtest.pdb
+MODULE windows x86 21b67c7e-eef6-4504-b05a-a650d11afce4 2 dump_syms_regtest.pdb
 FILE 1 c:\airbag\tools\windows\dump_syms\Release\dump_syms.exe.embed.manifest.res
 FILE 2 c:\program files\microsoft visual studio 8\vc\platformsdk\include\propidl.h
 FILE 3 c:\program files\microsoft visual studio 8\vc\include\xlocinfo
@@ -1535,14 +1535,6 @@ STACK WIN 4 1000 187 39 0 8 8 23c 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 
 STACK WIN 4 1023 164 16 0 8 c 23c 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + = $ebx $T0 576 - ^ =
 STACK WIN 4 1190 a 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
 STACK WIN 4 11a0 f 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
-STACK WIN 4 11a0 f 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
-STACK WIN 4 11a0 f 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
-STACK WIN 4 11a0 f 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
-STACK WIN 4 11a0 f 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
-STACK WIN 4 11a0 f 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
-STACK WIN 4 11a0 f 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
-STACK WIN 4 11a0 f 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
-STACK WIN 4 11a0 f 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
 STACK WIN 4 11b0 15 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
 STACK WIN 4 11d0 10 2 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
 STACK WIN 4 11e0 163 24 0 4 8 10 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
@@ -1586,7 +1578,6 @@ STACK WIN 4 2215 23 0 0 10 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .ra
 STACK WIN 4 2238 29 1 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
 STACK WIN 4 2239 27 0 0 0 4 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
 STACK WIN 4 2261 3 0 0 0 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
-STACK WIN 4 2261 3 0 0 4 0 0 0 1 $T2 $esp .cbLocals + .cbSavedRegs + = $T0 .raSearchStart = $eip $T0 ^ = $esp $T0 4 + =
 STACK WIN 4 2264 94 15 0 0 0 10 0 1 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + =
 STACK WIN 4 2278 7e 1 0 0 4 10 0 1 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =
 STACK WIN 4 2279 7c 0 0 0 8 10 0 1 $T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + = $L $T0 .cbSavedRegs - = $P $T0 8 + .cbParams + = $ebx $T0 20 - ^ =

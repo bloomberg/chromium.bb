@@ -75,10 +75,21 @@ class PDBSourceLineWriter {
   void Close();
 
   // Sets guid to the GUID for the module, as a string,
-  // e.g. "11111111-2222-3333-4444-555555555555".  age will be set to the
-  // age of the pdb file, and filename will be set to the basename of the
-  // PDB's file name.  Returns true on success and false on failure.
-  bool GetModuleInfo(wstring *guid, int *age, wstring *filename);
+  // e.g. "11111111-2222-3333-4444-555555555555".  If the module has no guid,
+  // guid will instead be set to the module's 32-bit signature value, in
+  // zero-padded hexadecimal form, such as "0004beef".  age will be set to the
+  // age of the pdb file, filename will be set to the basename of the pdb's
+  // file name, and cpu will be set to a string identifying the associated CPU
+  // architecture.  cpu is permitted to be NULL, in which case CPU information
+  // will not be returned.  Returns true on success and false on failure.
+  bool GetModuleInfo(wstring *guid, int *age, wstring *filename, wstring *cpu);
+
+  // Sets uses_guid to true if the opened file uses a new-style CodeView
+  // record with a 128-bit GUID, or false if the opened file uses an old-style
+  // CodeView record.  When no GUID is available, a 32-bit signature should be
+  // used to identify the module instead.  If the information cannot be
+  // determined, this method returns false.
+  bool UsesGUID(bool *uses_guid);
 
  private:
   // Outputs the line/address pairs for each line in the enumerator.

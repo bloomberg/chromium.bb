@@ -1,4 +1,4 @@
-MODULE 8ddb7e9a-3657-4893-8d6e-b08b1dca31aa 1 test_app.pdb
+MODULE windows x86 8ddb7e9a-3657-4893-8d6e-b08b1dca31aa 1 test_app.pdb
 FILE 1 c:\program files\microsoft visual studio 8\vc\platformsdk\include\pshpack2.h
 FILE 2 c:\program files\microsoft visual studio 8\vc\platformsdk\include\winuser.h
 FILE 3 c:\program files\microsoft visual studio 8\vc\include\wtime.inl
