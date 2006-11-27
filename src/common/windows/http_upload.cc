@@ -226,7 +226,9 @@ bool HTTPUpload::GenerateRequestBody(const map<wstring, wstring> &parameters,
   request_body->append("Content-Type: application/octet-stream\r\n");
   request_body->append("\r\n");
 
-  request_body->append(&(contents[0]), contents.size());
+  if (!contents.empty()) {
+      request_body->append(&(contents[0]), contents.size());
+  }
   request_body->append("\r\n");
   request_body->append("--" + boundary_str + "--\r\n");
   return true;
@@ -249,8 +251,10 @@ void HTTPUpload::GetFileContents(const wstring &filename,
     file.seekg(0, ios::end);
     int length = file.tellg();
     contents->resize(length);
-    file.seekg(0, ios::beg);
-    file.read(&((*contents)[0]), length);
+    if (length != 0) {
+        file.seekg(0, ios::beg);
+        file.read(&((*contents)[0]), length);
+    }
     file.close();
   } else {
     contents->clear();
