@@ -1,4 +1,4 @@
-/ i915_dma.c -- DMA support for the I915 -*- linux-c -*-
+/* i915_dma.c -- DMA support for the I915 -*- linux-c -*-
  */
 /*
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -31,11 +31,12 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-#define IS_I965G(dev)  (dev->pdev->device == 0x2972 || \
-			dev->pdev->device == 0x2982 || \
-			dev->pdev->device == 0x2992 || \
-			dev->pdev->device == 0x29A2 || \
-			dev->pdev->device == 0x2A02)
+#define IS_I965G(dev)  (dev->pci_device == 0x2972 || \
+			dev->pci_device == 0x2982 || \
+			dev->pci_device == 0x2992 || \
+			dev->pci_device == 0x29A2 || \
+			dev->pci_device == 0x2A02)
+
 
 /* Really want an OS-independent resettable timer.  Would like to have
  * this loop run for (eg) 3 sec, but have the timer reset every time
@@ -776,6 +777,61 @@ static int i915_setparam(DRM_IOCTL_ARGS)
 	return 0;
 }
 
+drm_i915_mmio_entry_t mmio_table[] = {
+	[MMIO_REGS_PS_DEPTH_COUNT] = {
+		I915_MMIO_MAY_READ|I915_MMIO_MAY_WRITE,
+		0x2350,
+		8
+	}	
+};
+
+static int mmio_table_size = sizeof(mmio_table)/sizeof(drm_i915_mmio_entry_t);
+
+static int i915_mmio(DRM_IOCTL_ARGS)
+{
+	char buf[32];
+	DRM_DEVICE;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	drm_i915_mmio_entry_t *e;	 
+	drm_i915_mmio_t mmio;
+	void __iomem *base;
+	if (!dev_priv) {
+		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		return DRM_ERR(EINVAL);
+	}
+	DRM_COPY_FROM_USER_IOCTL(mmio, (drm_i915_setparam_t __user *) data,
+				 sizeof(mmio));
+
+	if (mmio.reg >= mmio_table_size)
+		return DRM_ERR(EINVAL);
+
+	e = &mmio_table[mmio.reg];
+	base = dev_priv->mmio_map->handle + e->offset;
+
+        switch (mmio.read_write) {
+		case I915_MMIO_READ:
+			if (!(e->flag & I915_MMIO_MAY_READ))
+				return DRM_ERR(EINVAL);
+			memcpy_fromio(buf, base, e->size);
+			if (DRM_COPY_TO_USER(mmio.data, buf, e->size)) {
+				DRM_ERROR("DRM_COPY_TO_USER failed\n");
+				return DRM_ERR(EFAULT);
+			}
+			break;
+
+		case I915_MMIO_WRITE:
+			if (!(e->flag & I915_MMIO_MAY_WRITE))
+				return DRM_ERR(EINVAL);
+			if(DRM_COPY_FROM_USER(buf, mmio.data, e->size)) {
+				DRM_ERROR("DRM_COPY_TO_USER failed\n");
+				return DRM_ERR(EFAULT);
+			}
+			memcpy_toio(base, buf, e->size);
+			break;
+	}
+	return 0;
+}
+
 int i915_driver_load(drm_device_t *dev, unsigned long flags)
 {
 	/* i915 has 4 more counters */
@@ -825,6 +881,7 @@ drm_ioctl_desc_t i915_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_I915_SET_VBLANK_PIPE)] = { i915_vblank_pipe_set, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY },
 	[DRM_IOCTL_NR(DRM_I915_GET_VBLANK_PIPE)] = { i915_vblank_pipe_get, DRM_AUTH },
 	[DRM_IOCTL_NR(DRM_I915_VBLANK_SWAP)] = {i915_vblank_swap, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_I915_MMIO)] = {i915_mmio, DRM_AUTH},
 };
 
 int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);
