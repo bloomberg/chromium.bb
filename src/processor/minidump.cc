@@ -643,6 +643,9 @@ const u_int8_t* MinidumpMemoryRegion::GetMemory() {
     return NULL;
 
   if (!memory_) {
+    if (descriptor_->memory.data_size == 0)
+      return NULL;
+
     if (!minidump_->SeekSet(descriptor_->memory.rva))
       return NULL;
 
@@ -920,31 +923,34 @@ bool MinidumpThreadList::Read(u_int32_t expected_size) {
     return false;
   }
 
-  // TODO(mmentovai): verify rational size!
-  scoped_ptr<MinidumpThreads> threads(
-      new MinidumpThreads(thread_count, MinidumpThread(minidump_)));
+  if (thread_count) {
+    // TODO(mmentovai): verify rational size!
+    scoped_ptr<MinidumpThreads> threads(
+        new MinidumpThreads(thread_count, MinidumpThread(minidump_)));
 
-  for (unsigned int thread_index = 0;
-       thread_index < thread_count;
-       ++thread_index) {
-    MinidumpThread* thread = &(*threads)[thread_index];
+    for (unsigned int thread_index = 0;
+         thread_index < thread_count;
+         ++thread_index) {
+      MinidumpThread* thread = &(*threads)[thread_index];
 
-    // Assume that the file offset is correct after the last read.
-    if (!thread->Read())
-      return false;
+      // Assume that the file offset is correct after the last read.
+      if (!thread->Read())
+        return false;
 
-    u_int32_t thread_id;
-    if (!thread->GetThreadID(&thread_id))
-      return false;
+      u_int32_t thread_id;
+      if (!thread->GetThreadID(&thread_id))
+        return false;
 
-    if (GetThreadByID(thread_id)) {
-      // Another thread with this ID is already in the list.  Data error.
-      return false;
+      if (GetThreadByID(thread_id)) {
+        // Another thread with this ID is already in the list.  Data error.
+        return false;
+      }
+      id_to_thread_map_[thread_id] = thread;
     }
-    id_to_thread_map_[thread_id] = thread;
+
+    threads_ = threads.release();
   }
 
-  threads_ = threads.release();
   thread_count_ = thread_count;
 
   valid_ = true;
@@ -1275,7 +1281,8 @@ const string* MinidumpModule::GetDebugFilename() {
     // UTF16ToUTF8 expects a vector<u_int16_t>, so create a temporary one and
     // copy the UTF-16 data into it.
     vector<u_int16_t> string_utf16(utf16_words);
-    memcpy(&string_utf16[0], &misc_record->data, bytes);
+    if (utf16_words)
+      memcpy(&string_utf16[0], &misc_record->data, bytes);
 
     // GetMiscRecord already byte-swapped the data[] field if it contains
     // UTF-16, so pass false as the swap argument.
@@ -1451,29 +1458,32 @@ bool MinidumpModuleList::Read(u_int32_t expected_size) {
     return false;
   }
 
-  // TODO(mmentovai): verify rational size!
-  scoped_ptr<MinidumpModules> modules(
-      new MinidumpModules(module_count, MinidumpModule(minidump_)));
+  if (module_count) {
+    // TODO(mmentovai): verify rational size!
+    scoped_ptr<MinidumpModules> modules(
+        new MinidumpModules(module_count, MinidumpModule(minidump_)));
 
-  for (unsigned int module_index = 0;
-       module_index < module_count;
-       ++module_index) {
-    MinidumpModule* module = &(*modules)[module_index];
+    for (unsigned int module_index = 0;
+         module_index < module_count;
+         ++module_index) {
+      MinidumpModule* module = &(*modules)[module_index];
 
-    // Assume that the file offset is correct after the last read.
-    if (!module->Read())
-      return false;
+      // Assume that the file offset is correct after the last read.
+      if (!module->Read())
+        return false;
 
-    u_int64_t base_address = module->base_address();
-    u_int64_t module_size = module->size();
-    if (base_address == (u_int64_t)-1)
-      return false;
+      u_int64_t base_address = module->base_address();
+      u_int64_t module_size = module->size();
+      if (base_address == static_cast<u_int64_t>(-1))
+        return false;
 
-    if (!range_map_->StoreRange(base_address, module_size, module_index))
-      return false;
+      if (!range_map_->StoreRange(base_address, module_size, module_index))
+        return false;
+    }
+
+    modules_ = modules.release();
   }
 
-  modules_ = modules.release();
   module_count_ = module_count;
 
   valid_ = true;
@@ -1566,46 +1576,49 @@ bool MinidumpMemoryList::Read(u_int32_t expected_size) {
     return false;
   }
 
-  // TODO(mmentovai): verify rational size!
-  scoped_ptr<MemoryDescriptors> descriptors(
-      new MemoryDescriptors(region_count));
+  if (region_count) {
+    // TODO(mmentovai): verify rational size!
+    scoped_ptr<MemoryDescriptors> descriptors(
+        new MemoryDescriptors(region_count));
 
-  // Read the entire array in one fell swoop, instead of reading one entry
-  // at a time in the loop.
-  if (!minidump_->ReadBytes(&(*descriptors)[0],
-                            sizeof(MDMemoryDescriptor) * region_count)) {
-    return false;
-  }
-
-  scoped_ptr<MemoryRegions> regions(
-      new MemoryRegions(region_count, MinidumpMemoryRegion(minidump_)));
-
-  for (unsigned int region_index = 0;
-       region_index < region_count;
-       ++region_index) {
-    MDMemoryDescriptor* descriptor = &(*descriptors)[region_index];
-
-    if (minidump_->swap())
-      Swap(&*descriptor);
-
-    u_int64_t base_address = descriptor->start_of_memory_range;
-    u_int32_t region_size = descriptor->memory.data_size;
-
-    // Check for base + size overflow or undersize.  A separate size==0
-    // check is needed in case base == 0.
-    u_int64_t high_address = base_address + region_size - 1;
-    if (region_size == 0 || high_address < base_address)
+    // Read the entire array in one fell swoop, instead of reading one entry
+    // at a time in the loop.
+    if (!minidump_->ReadBytes(&(*descriptors)[0],
+                              sizeof(MDMemoryDescriptor) * region_count)) {
       return false;
+    }
 
-    if (!range_map_->StoreRange(base_address, region_size, region_index))
-      return false;
+    scoped_ptr<MemoryRegions> regions(
+        new MemoryRegions(region_count, MinidumpMemoryRegion(minidump_)));
 
-    (*regions)[region_index].SetDescriptor(descriptor);
+    for (unsigned int region_index = 0;
+         region_index < region_count;
+         ++region_index) {
+      MDMemoryDescriptor* descriptor = &(*descriptors)[region_index];
+
+      if (minidump_->swap())
+        Swap(descriptor);
+
+      u_int64_t base_address = descriptor->start_of_memory_range;
+      u_int32_t region_size = descriptor->memory.data_size;
+
+      // Check for base + size overflow or undersize.  A separate size==0
+      // check is needed in case base == 0.
+      u_int64_t high_address = base_address + region_size - 1;
+      if (region_size == 0 || high_address < base_address)
+        return false;
+
+      if (!range_map_->StoreRange(base_address, region_size, region_index))
+        return false;
+
+      (*regions)[region_index].SetDescriptor(descriptor);
+    }
+
+    descriptors_ = descriptors.release();
+    regions_ = regions.release();
   }
 
   region_count_ = region_count;
-  descriptors_ = descriptors.release();
-  regions_ = regions.release();
 
   valid_ = true;
   return true;
@@ -2110,7 +2123,7 @@ void MinidumpAirbagInfo::Print() {
 Minidump::Minidump(const string& path)
     : header_(),
       directory_(NULL),
-      stream_map_(NULL),
+      stream_map_(new MinidumpStreamMap()),
       path_(path),
       fd_(-1),
       swap_(false),
@@ -2147,8 +2160,7 @@ bool Minidump::Read() {
   // Invalidate cached data.
   delete directory_;
   directory_ = NULL;
-  delete stream_map_;
-  stream_map_ = NULL;
+  stream_map_->clear();
 
   valid_ = false;
 
@@ -2195,57 +2207,56 @@ bool Minidump::Read() {
   if (!SeekSet(header_.stream_directory_rva))
     return false;
 
-  // TODO(mmentovai): verify rational size!
-  scoped_ptr<MinidumpDirectoryEntries> directory(
-      new MinidumpDirectoryEntries(header_.stream_count));
+  if (header_.stream_count) {
+    // TODO(mmentovai): verify rational size!
+    scoped_ptr<MinidumpDirectoryEntries> directory(
+        new MinidumpDirectoryEntries(header_.stream_count));
 
-  // Read the entire array in one fell swoop, instead of reading one entry
-  // at a time in the loop.
-  if (!ReadBytes(&(*directory)[0],
-                 sizeof(MDRawDirectory) * header_.stream_count))
-    return false;
+    // Read the entire array in one fell swoop, instead of reading one entry
+    // at a time in the loop.
+    if (!ReadBytes(&(*directory)[0],
+                   sizeof(MDRawDirectory) * header_.stream_count))
+      return false;
 
-  scoped_ptr<MinidumpStreamMap> stream_map(new MinidumpStreamMap());
+    for (unsigned int stream_index = 0;
+         stream_index < header_.stream_count;
+         ++stream_index) {
+      MDRawDirectory* directory_entry = &(*directory)[stream_index];
 
-  for (unsigned int stream_index = 0;
-       stream_index < header_.stream_count;
-       ++stream_index) {
-    MDRawDirectory* directory_entry = &(*directory)[stream_index];
+      if (swap_) {
+        Swap(&directory_entry->stream_type);
+        Swap(&directory_entry->location);
+      }
 
-    if (swap_) {
-      Swap(&directory_entry->stream_type);
-      Swap(&directory_entry->location);
-    }
-
-    // Initialize the stream_map map, which speeds locating a stream by
-    // type.
-    unsigned int stream_type = directory_entry->stream_type;
-    switch (stream_type) {
-      case MD_THREAD_LIST_STREAM:
-      case MD_MODULE_LIST_STREAM:
-      case MD_MEMORY_LIST_STREAM:
-      case MD_EXCEPTION_STREAM:
-      case MD_SYSTEM_INFO_STREAM:
-      case MD_MISC_INFO_STREAM:
-      case MD_AIRBAG_INFO_STREAM: {
-        if (stream_map->find(stream_type) != stream_map->end()) {
-          // Another stream with this type was already found.  A minidump
-          // file should contain at most one of each of these stream types.
-          return false;
+      // Initialize the stream_map_ map, which speeds locating a stream by
+      // type.
+      unsigned int stream_type = directory_entry->stream_type;
+      switch (stream_type) {
+        case MD_THREAD_LIST_STREAM:
+        case MD_MODULE_LIST_STREAM:
+        case MD_MEMORY_LIST_STREAM:
+        case MD_EXCEPTION_STREAM:
+        case MD_SYSTEM_INFO_STREAM:
+        case MD_MISC_INFO_STREAM:
+        case MD_AIRBAG_INFO_STREAM: {
+          if (stream_map_->find(stream_type) != stream_map_->end()) {
+            // Another stream with this type was already found.  A minidump
+            // file should contain at most one of each of these stream types.
+            return false;
+          }
+          // Fall through to default
         }
-        // Fall through to default
-      }
 
-      default: {
-        // Overwrites for stream types other than those above, but it's
-        // expected to be the user's burden in that case.
-        (*stream_map)[stream_type].stream_index = stream_index;
+        default: {
+          // Overwrites for stream types other than those above, but it's
+          // expected to be the user's burden in that case.
+          (*stream_map_)[stream_type].stream_index = stream_index;
+        }
       }
     }
-  }
 
-  directory_ = directory.release();
-  stream_map_ = stream_map.release();
+    directory_ = directory.release();
+  }
 
   valid_ = true;
   return true;
@@ -2391,8 +2402,11 @@ string* Minidump::ReadString(off_t offset) {
   // TODO(mmentovai): verify rational size!
   vector<u_int16_t> string_utf16(utf16_words);
 
-  if (!ReadBytes(&string_utf16[0], bytes))
-    return NULL;
+  if (utf16_words) {
+    if (!ReadBytes(&string_utf16[0], bytes)) {
+      return NULL;
+    }
+  }
 
   return UTF16ToUTF8(string_utf16, swap_);
 }
