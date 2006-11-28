@@ -164,6 +164,7 @@
 #define NV_PFIFO_CACH1_DMAP                                0x00003240
 #define NV_PFIFO_CACH1_DMAG                                0x00003244
 #define NV_PFIFO_CACH1_REF_CNT                             0x00003248
+#define NV_PFIFO_CACH1_DMASR                               0x0000324C
 #define NV_PFIFO_CACH1_PUL0                                0x00003250
 #define NV_PFIFO_CACH1_PUL1                                0x00003254
 #define NV_PFIFO_CACH1_HASH                                0x00003258

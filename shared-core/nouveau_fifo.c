@@ -44,6 +44,19 @@ int nouveau_fifo_number(drm_device_t* dev)
 	}
 }
 
+/* returns the size of fifo context */
+static int nouveau_fifo_ctx_size(drm_device_t* dev)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+
+	if (dev_priv->card_type >= NV_40)
+		return 128;
+	else if (dev_priv->card_type >= NV_10)
+		return 64;
+	else
+		return 32;
+}
+
 /***********************************
  * functions doing the actual work
  ***********************************/
@@ -99,7 +112,8 @@ static int nouveau_fifo_instmem_configure(drm_device_t *dev)
 	} else if (dev_priv->card_type >= NV_10) {
 		dev_priv->ramfc_offset = 0x11400;
 		dev_priv->ramfc_size   = nouveau_fifo_number(dev) * 64;
-		NV_WRITE(NV_PFIFO_RAMFC, dev_priv->ramfc_offset>>8);
+		NV_WRITE(NV_PFIFO_RAMFC, (dev_priv->ramfc_offset>>8) |
+				(1 << 16) /* 64 Bytes entry*/);
 	} else {
 		dev_priv->ramfc_offset = 0x11400;
 		dev_priv->ramfc_size   = nouveau_fifo_number(dev) * 32;
@@ -271,7 +285,7 @@ static void nouveau_nv10_context_init(drm_device_t *dev,
 				    NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES |
 				    NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
 #endif
-	RAMFC_WR(DMA_SUBROUTINE, init->put_base);
+	RAMFC_WR(DMA_SUBROUTINE, 0);
 }
 
 static void nouveau_nv10_context_save(drm_device_t *dev)
@@ -295,7 +309,7 @@ static void nouveau_nv10_context_save(drm_device_t *dev)
 	RAMFC_WR(ACQUIRE_TIMESTAMP, NV_READ(NV_PFIFO_CACH1_ACQUIRE_TIMESTAMP));
 	RAMFC_WR(ACQUIRE_TIMEOUT  , NV_READ(NV_PFIFO_CACH1_ACQUIRE_TIMEOUT));
 	RAMFC_WR(SEMAPHORE        , NV_READ(NV_PFIFO_CACH1_SEMAPHORE));
-	RAMFC_WR(DMA_SUBROUTINE   , NV_READ(NV_PFIFO_CACH1_DMAG));
+	RAMFC_WR(DMA_SUBROUTINE   , NV_READ(NV_PFIFO_CACH1_DMASR));
 }
 #undef RAMFC_WR
 
@@ -509,6 +523,7 @@ void nouveau_fifo_free(drm_device_t* dev,int n)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int i;
+	int ctx_size = nouveau_fifo_ctx_size(dev);
 
 	dev_priv->fifos[n].used=0;
 	DRM_INFO("%s: freeing fifo %d\n", __func__, n);
@@ -520,10 +535,10 @@ void nouveau_fifo_free(drm_device_t* dev,int n)
 	// FIXME XXX needs more code
 	
 	/* Clean RAMFC */
-	for (i=0;i<128;i+=4) {
+	for (i=0;i<ctx_size;i+=4) {
 		DRM_DEBUG("RAMFC +%02x: 0x%08x\n", i, NV_READ(NV_RAMIN +
-					dev_priv->ramfc_offset + n*128 + i));
-		NV_WRITE(NV_RAMIN + dev_priv->ramfc_offset + n*128 + i, 0);
+					dev_priv->ramfc_offset + n*ctx_size + i));
+		NV_WRITE(NV_RAMIN + dev_priv->ramfc_offset + n*ctx_size + i, 0);
 	}
 
 	/* reenable the fifo caches */
