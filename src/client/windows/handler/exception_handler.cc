@@ -173,14 +173,9 @@ bool ExceptionHandler::WriteMinidump(const wstring &dump_path,
 
 bool ExceptionHandler::WriteMinidumpWithException(DWORD requesting_thread_id,
                                                   EXCEPTION_POINTERS *exinfo) {
-  wchar_t dump_file_name[MAX_PATH];
-  WindowsStringUtils::safe_swprintf(dump_file_name, MAX_PATH, L"%s\\%s.dmp",
-                                    dump_path_.c_str(),
-                                    next_minidump_id_.c_str());
-
   bool success = false;
   if (minidump_write_dump_) {
-    HANDLE dump_file = CreateFile(dump_file_name,
+    HANDLE dump_file = CreateFile(next_minidump_path_.c_str(),
                                   GENERIC_WRITE,
                                   FILE_SHARE_WRITE,
                                   NULL,
@@ -239,6 +234,12 @@ void ExceptionHandler::UpdateNextID() {
   GUID id;
   CoCreateGuid(&id);
   next_minidump_id_ = GUIDString::GUIDToWString(&id);
+
+  wchar_t minidump_path[MAX_PATH];
+  WindowsStringUtils::safe_swprintf(minidump_path, MAX_PATH, L"%s\\%s.dmp",
+                                    dump_path_.c_str(),
+                                    next_minidump_id_.c_str());
+  next_minidump_path_ = minidump_path;
 }
 
 }  // namespace google_airbag

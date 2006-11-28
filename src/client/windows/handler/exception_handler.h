@@ -93,7 +93,10 @@ class ExceptionHandler {
 
   // Get and set the minidump path.
   wstring dump_path() const { return dump_path_; }
-  void set_dump_path(const wstring &dump_path) { dump_path_ = dump_path; }
+  void set_dump_path(const wstring &dump_path) {
+    dump_path_ = dump_path;
+    UpdateNextID();  // Necessary to put dump_path_ in next_minidump_path_.
+  }
 
   // Writes a minidump immediately.  This can be used to capture the
   // execution state independently of a crash.  Returns true on success.
@@ -140,7 +143,8 @@ class ExceptionHandler {
   bool WriteMinidumpWithException(DWORD requesting_thread_id,
                                   EXCEPTION_POINTERS *exinfo);
 
-  // Generates a new ID and stores it in next_minidump_id_.
+  // Generates a new ID and stores it in next_minidump_id_, and stores the
+  // path of the next minidump to be written in next_minidump_path_.
   void UpdateNextID();
 
   MinidumpCallback callback_;
@@ -148,6 +152,7 @@ class ExceptionHandler {
 
   wstring dump_path_;
   wstring next_minidump_id_;
+  wstring next_minidump_path_;
 
   HMODULE dbghelp_module_;
   MiniDumpWriteDump_type minidump_write_dump_;
