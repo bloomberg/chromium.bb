@@ -70,9 +70,6 @@ int nouveau_firstopen(struct drm_device *dev)
 	 */
 	ret = nouveau_fifo_init(dev);
 	if (ret) return ret;
-	/* Initialise instance memory allocation */
-	ret = nouveau_object_init(dev);
-	if (ret) return ret;
 
 	/* FIXME: doesn't belong here, and have no idea what it's for.. */
 	if (dev_priv->card_type >= NV_40) {

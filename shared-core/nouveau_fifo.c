@@ -69,6 +69,7 @@ static int nouveau_fifo_ctx_size(drm_device_t* dev)
 static int nouveau_fifo_instmem_configure(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	uint32_t obj_base, obj_size;
 	int i;
 
 	/* Clear RAMIN */
@@ -122,6 +123,13 @@ static int nouveau_fifo_instmem_configure(drm_device_t *dev)
 	DRM_DEBUG("RAMFC offset=0x%x, size=%d\n",
 			dev_priv->ramfc_offset,
 			dev_priv->ramfc_size);
+
+	obj_base = dev_priv->ramfc_offset + dev_priv->ramfc_size;
+	obj_size = (512*1024) - obj_base; /*XXX: probably wrong on some cards*/
+	if (nouveau_instmem_init(dev, obj_base, obj_size))
+		return 1;
+	DRM_DEBUG("RAMIN object space: offset=0x%08x, size=%dKiB\n",
+			obj_base, obj_size>>10);
 
 	return 0;
 }

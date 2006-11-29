@@ -52,11 +52,12 @@ struct nouveau_object
 	struct nouveau_object *next;
 	struct nouveau_object *prev;
 
+	struct mem_block *instance;
+	uint32_t          ht_loc;
+
 	uint32_t handle;
 	int      class;
 	int      engine;
-	uint32_t instance;
-	uint32_t ht_loc;
 };
 
 #define NV_DMA_TARGET_VIDMEM 0
@@ -75,14 +76,6 @@ struct nouveau_fifo
 	struct nouveau_object *cmdbuf_obj;
 	/* objects belonging to this fifo */
 	struct nouveau_object *objs;
-};
-
-struct nouveau_object_store
-{
-	uint32_t *inst_bmap;
-	uint32_t first_instance;
-	int      num_instance;
-	int      free_instance;
 };
 
 struct mem_block {
@@ -119,7 +112,7 @@ typedef struct drm_nouveau_private {
 
 	int fifo_alloc_count;
 	struct nouveau_fifo fifos[NV_MAX_FIFO_NUMBER];
-	struct nouveau_object_store objs;
+
 	/* RAMFC and RAMRO offsets */
 	uint32_t ramht_offset;
 	uint32_t ramht_size;
@@ -132,6 +125,7 @@ typedef struct drm_nouveau_private {
 	struct mem_block *agp_heap;
 	struct mem_block *fb_heap;
 	struct mem_block *fb_nomap_heap;
+	struct mem_block *ramin_heap;
 
 	struct nouveau_config config;
 }
@@ -155,6 +149,12 @@ extern struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment
 extern void              nouveau_mem_free(struct drm_device* dev, struct mem_block*);
 extern int               nouveau_mem_init(struct drm_device *dev);
 extern void              nouveau_mem_close(struct drm_device *dev);
+extern int               nouveau_instmem_init(struct drm_device *dev,
+					      uint32_t offset, uint32_t size);
+extern struct mem_block* nouveau_instmem_alloc(struct drm_device *dev,
+					       uint32_t size, uint32_t align);
+extern void              nouveau_instmem_free(struct drm_device *dev,
+					      struct mem_block *block);
 
 /* nouveau_fifo.c */
 extern int  nouveau_fifo_init(drm_device_t *dev);
@@ -163,13 +163,12 @@ extern void nouveau_fifo_cleanup(drm_device_t *dev, DRMFILE filp);
 extern int  nouveau_fifo_id_get(drm_device_t *dev, DRMFILE filp);
 
 /* nouveau_object.c */
-extern int  nouveau_object_init(drm_device_t *dev);
 extern void nouveau_object_cleanup(drm_device_t *dev, DRMFILE filp);
 extern struct nouveau_object *nouveau_dma_object_create(drm_device_t *dev,
 		uint32_t offset, uint32_t size, int access, uint32_t target);
 extern int  nouveau_ioctl_object_init(DRM_IOCTL_ARGS);
 extern int  nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS);
-extern uint32_t nouveau_chip_instance_get(drm_device_t *dev, uint32_t instance);
+extern uint32_t nouveau_chip_instance_get(drm_device_t *dev, struct mem_block *mem);
 
 /* nouveau_irq.c */
 extern irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS);
@@ -188,8 +187,8 @@ extern long nouveau_compat_ioctl(struct file *filp, unsigned int cmd,
 #define NV_WRITE(reg,val)   DRM_WRITE32( dev_priv->mmio, (reg), (val) )
 #endif
 
-#define INSTANCE_WR(inst,ofs,val) NV_WRITE(NV_RAMIN+(inst)+((ofs)<<2),(val))
-#define INSTANCE_RD(inst,ofs)     NV_READ(NV_RAMIN+(inst)+((ofs)<<2))
+#define INSTANCE_WR(mem,ofs,val) NV_WRITE(NV_RAMIN+(uint32_t)(mem)->start+((ofs)<<2),(val))
+#define INSTANCE_RD(mem,ofs)     NV_READ(NV_RAMIN+(uint32_t)(mem)->start+((ofs)<<2))
 
 #endif /* __NOUVEAU_DRV_H__ */
 

@@ -443,6 +443,49 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 	free_block(block);
 }
 
+int nouveau_instmem_init(struct drm_device *dev, uint32_t offset,
+			  uint32_t size)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	int ret;
+
+	ret = init_heap(&dev_priv->ramin_heap, offset, size);
+	if (ret) {
+		dev_priv->ramin_heap = NULL;
+		DRM_ERROR("Failed to init RAMIN heap\n");
+	}
+
+	return ret;
+}
+
+struct mem_block *nouveau_instmem_alloc(struct drm_device *dev,
+					uint32_t size, uint32_t align)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct mem_block *block;
+
+	if (!dev_priv->ramin_heap) {
+		DRM_ERROR("instmem alloc called without init\n");
+		return NULL;
+	}
+
+	block = alloc_block(dev_priv->ramin_heap, size, align, (DRMFILE)-2);
+	if (block) {
+		block->flags = NOUVEAU_MEM_INSTANCE;
+		DRM_DEBUG("instance(size=%d, align=%d) alloc'd at 0x%08x\n",
+				size, (1<<align), block->start);
+	}
+
+	return block;
+}
+
+void nouveau_instmem_free(struct drm_device *dev, struct mem_block *block)
+{
+	if (dev && block) {
+		free_block(block);
+	}
+}
+
 /*
  * Ioctls
  */

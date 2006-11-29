@@ -44,9 +44,13 @@
  * in the future when we can access more instance ram which isn't mapped into
  * the PRAMIN aperture
  */
-uint32_t nouveau_chip_instance_get(drm_device_t *dev, uint32_t instance)
+uint32_t nouveau_chip_instance_get(drm_device_t *dev,
+				   struct mem_block *mem)
 {
-	return (instance>>4);
+	uint32_t inst = (uint32_t)mem->start >> 4;
+	DRM_DEBUG("****** on-chip instance for 0x%016llx = 0x%08x\n",
+			mem->start, inst);
+	return inst;
 }
 
 static void nouveau_object_link(drm_device_t *dev, int fifo_num,
@@ -212,27 +216,7 @@ static void nouveau_hash_table_remove(drm_device_t* dev,
 static struct nouveau_object *nouveau_instance_alloc(drm_device_t* dev)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	struct nouveau_object_store *objs=&dev_priv->objs;
 	struct nouveau_object       *obj;
-	int instance = -1;
-	int i = 0, j = 0;
-
-	/* Allocate a block of instance RAM */
-	if (!objs->free_instance) {
-		DRM_ERROR("no free instance ram\n");
-		return NULL;
-	}
-	for (i=0;i<(objs->num_instance>>5);i++) {
-		if (objs->inst_bmap[i] == ~0) continue;
-		for (j=0;j<32;j++) {
-			if (!(objs->inst_bmap[i] & (1<<j))) {
-				instance = (i<<5) + j;
-				break;
-			}
-		}
-		if (instance != -1) break;
-	}
-	DRM_DEBUG("alloced instance %d (slot %d/%d)\n", instance, i, j);
 
 	/* Create object struct */
 	obj = drm_calloc(1, sizeof(struct nouveau_object), DRM_MEM_DRIVER);
@@ -240,13 +224,13 @@ static struct nouveau_object *nouveau_instance_alloc(drm_device_t* dev)
 		DRM_ERROR("couldn't alloc memory for object\n");
 		return NULL;
 	}
-	obj->instance  = objs->first_instance;
-	obj->instance += (instance << (dev_priv->card_type >= NV_40 ? 5 : 4));
-	DRM_DEBUG("instance address is 0x%08x\n", instance);
-
-	/* Mark instance slot as used */
-	objs->inst_bmap[i] |= (1 << j);
-	objs->free_instance--;
+	obj->instance  = nouveau_instmem_alloc(dev,
+			(dev_priv->card_type >= NV_40 ? 32 : 16), 4);
+	if (!obj->instance) {
+		DRM_ERROR("couldn't alloc RAMIN for object\n");
+		drm_free(obj, sizeof(struct nouveau_object), DRM_MEM_DRIVER);
+		return NULL;
+	}
 
 	return obj;
 }
@@ -255,9 +239,7 @@ static void nouveau_object_instance_free(drm_device_t *dev,
 					 struct nouveau_object *obj)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	struct nouveau_object_store *objs=&dev_priv->objs;
 	int count, i;
-	uint32_t be, bb;
 
 	if (dev_priv->card_type >= NV_40)
 		count = 8;
@@ -274,27 +256,8 @@ static void nouveau_object_instance_free(drm_device_t *dev,
 		INSTANCE_WR(obj->instance, i, 0x00000000);
 	}
 
-	/* Mark instance as free */
-	obj->instance -= objs->first_instance;
-	obj->instance >>= (dev_priv->card_type >=NV_40 ? 5 : 4);
-	be = obj->instance / 32;
-	bb = obj->instance % 32;
-	objs->inst_bmap[be] &= ~(1<<bb);	
-	objs->free_instance++;
-}
-
-int nouveau_object_init(drm_device_t* dev)
-{
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
-
-	dev_priv->objs.first_instance =
-		dev_priv->ramfc_offset +dev_priv->ramfc_size;
-	dev_priv->objs.free_instance  = 1024; /*FIXME*/
-	dev_priv->objs.num_instance   = 1024; /*FIXME*/
-	dev_priv->objs.inst_bmap = drm_calloc
-	    (1, dev_priv->objs.num_instance/32, DRM_MEM_DRIVER);
-
-	return 0;
+	/* Free RAMIN */
+	nouveau_instmem_free(dev, obj->instance);
 }
 
 /*

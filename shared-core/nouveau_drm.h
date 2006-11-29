@@ -69,6 +69,7 @@ drm_nouveau_dma_object_init_t;
 #define NOUVEAU_MEM_PINNED		0x00000010
 #define NOUVEAU_MEM_USER_BACKED		0x00000020
 #define NOUVEAU_MEM_MAPPED		0x00000040
+#define NOUVEAU_MEM_INSTANCE		0x00000080 /* internal */
 
 typedef struct drm_nouveau_mem_alloc {
 	int flags;
