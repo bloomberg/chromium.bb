@@ -40,6 +40,15 @@
  *  - Get rid of DMA object creation, this should be wrapped by MM routines.
  */
 
+/* Translate a RAMIN offset into a value the card understands, will be useful
+ * in the future when we can access more instance ram which isn't mapped into
+ * the PRAMIN aperture
+ */
+uint32_t nouveau_chip_instance_get(drm_device_t *dev, uint32_t instance)
+{
+	return (instance>>4);
+}
+
 static void nouveau_object_link(drm_device_t *dev, int fifo_num,
 				struct nouveau_object *obj)
 {
@@ -171,14 +180,14 @@ static int nouveau_hash_table_insert(drm_device_t* dev, int fifo,
 		NV_WRITE(NV_RAMHT_CONTEXT_OFFSET + ofs,
 			(fifo << NV40_RAMHT_CONTEXT_CHANNEL_SHIFT) |
 			(obj->engine << NV40_RAMHT_CONTEXT_ENGINE_SHIFT) |
-			(obj->instance>>4)
+			nouveau_chip_instance_get(dev, obj->instance)
 			);	    
 	else
 		NV_WRITE(NV_RAMHT_CONTEXT_OFFSET + ofs,
 			NV_RAMHT_CONTEXT_VALID |
 			(fifo << NV_RAMHT_CONTEXT_CHANNEL_SHIFT) |
 			(obj->engine << NV_RAMHT_CONTEXT_ENGINE_SHIFT) |
-			(obj->instance>>4)
+			nouveau_chip_instance_get(dev, obj->instance)
 			);
 
 	obj->ht_loc = ofs;
@@ -255,16 +264,15 @@ static void nouveau_object_instance_free(drm_device_t *dev,
 	else
 		count = 4;
 
+	/* Clean RAMIN entry */
 	DRM_DEBUG("Instance entry for 0x%08x"
 		"(engine %d, class 0x%x) before destroy:\n",
 		obj->handle, obj->engine, obj->class);
-	for (i=0;i<count;i++)
+	for (i=0;i<count;i++) {
 		DRM_DEBUG("  +0x%02x: 0x%08x\n", (i*4),
-			NV_READ(NV_RAMIN + obj->instance + (i*4)));
-
-	/* Clean RAMIN entry */
-	for (i=0;i<count;i++)
-		NV_WRITE(NV_RAMIN + obj->instance + (i*4), 0x00000000);
+			INSTANCE_RD(obj->instance, i));
+		INSTANCE_WR(obj->instance, i, 0x00000000);
+	}
 
 	/* Mark instance as free */
 	obj->instance -= objs->first_instance;
@@ -336,21 +344,18 @@ struct nouveau_object *nouveau_dma_object_create(drm_device_t* dev,
 	obj->engine = 0;
 	obj->class  = 0;
 
-	NV_WRITE(NV_RAMIN + obj->instance +  0, ((1<<12)
-			| (1<<13)
-			| (adjust<<20)
-			| (access<<14)
-			| (target<<16)
-			| 0x3D /* DMA_IN_MEMORY */)
-		);
-	NV_WRITE(NV_RAMIN + obj->instance +  4,
-			size - 1);
-	NV_WRITE(NV_RAMIN + obj->instance +  8,
+	INSTANCE_WR(obj->instance, 0, ((1<<12) | (1<<13) |
+				(adjust << 20) |
+				(access << 14) |
+				(target << 16) |
+				0x3D /* DMA_IN_MEMORY */));
+	INSTANCE_WR(obj->instance, 1, size-1);
+	INSTANCE_WR(obj->instance, 2,
 			frame | ((access != NV_DMA_ACCESS_RO) ? (1<<1) : 0));
 	/* I don't actually know what this is, the DMA objects I see
 	 * in renouveau dumps usually have this as the same as +8
 	 */
-	NV_WRITE(NV_RAMIN + obj->instance + 12,
+	INSTANCE_WR(obj->instance, 3, 
 			frame | ((access != NV_DMA_ACCESS_RO) ? (1<<1) : 0));
 
 	return obj;
@@ -467,24 +472,25 @@ static struct nouveau_object *nouveau_context_object_create(drm_device_t* dev,
 	obj->engine = 1;
 	obj->class  = class;
 
-	d0 = dma0 ? (dma0->instance >> 4) : 0;
-	d1 = dma1 ? (dma1->instance >> 4) : 0;
-	dn = dma_notifier ? (dma_notifier->instance >> 4) : 0;
+	d0 = dma0 ? nouveau_chip_instance_get(dev, dma0->instance) : 0;
+	d1 = dma1 ? nouveau_chip_instance_get(dev, dma1->instance) : 0;
+	dn = dma_notifier ? 
+		nouveau_chip_instance_get(dev, dma_notifier->instance) : 0;
 
 	if (dev_priv->card_type >= NV_40) {
-		NV_WRITE(NV_RAMIN + obj->instance +  0, class | flags0);
-		NV_WRITE(NV_RAMIN + obj->instance +  4, dn | flags1);
-		NV_WRITE(NV_RAMIN + obj->instance +  8, d0 | flags2);
-		NV_WRITE(NV_RAMIN + obj->instance + 12, d1);
-		NV_WRITE(NV_RAMIN + obj->instance + 16, 0x00000000);
-		NV_WRITE(NV_RAMIN + obj->instance + 20, 0x00000000);
-		NV_WRITE(NV_RAMIN + obj->instance + 24, 0x00000000);
-		NV_WRITE(NV_RAMIN + obj->instance + 28, 0x00000000);
+		INSTANCE_WR(obj->instance, 0, class | flags0);
+		INSTANCE_WR(obj->instance, 1, dn | flags1);
+		INSTANCE_WR(obj->instance, 2, d0 | flags2);
+		INSTANCE_WR(obj->instance, 3, d1);
+		INSTANCE_WR(obj->instance, 4, 0x00000000);
+		INSTANCE_WR(obj->instance, 5, 0x00000000);
+		INSTANCE_WR(obj->instance, 6, 0x00000000);
+		INSTANCE_WR(obj->instance, 7, 0x00000000);
 	} else {
-		NV_WRITE(NV_RAMIN + obj->instance +  0, class | flags0);
-		NV_WRITE(NV_RAMIN + obj->instance +  4, (dn << 16) | flags1);
-		NV_WRITE(NV_RAMIN + obj->instance +  8, d0 | (d1 << 16));
-		NV_WRITE(NV_RAMIN + obj->instance + 12, 0);
+		INSTANCE_WR(obj->instance, 0, class | flags0);
+		INSTANCE_WR(obj->instance, 1, (dn << 16) | flags1);
+		INSTANCE_WR(obj->instance, 2, d0 | (d1 << 16));
+		INSTANCE_WR(obj->instance, 3, 0);
 	}
 
 	return obj;

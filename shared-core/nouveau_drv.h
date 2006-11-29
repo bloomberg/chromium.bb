@@ -169,6 +169,7 @@ extern struct nouveau_object *nouveau_dma_object_create(drm_device_t *dev,
 		uint32_t offset, uint32_t size, int access, uint32_t target);
 extern int  nouveau_ioctl_object_init(DRM_IOCTL_ARGS);
 extern int  nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS);
+extern uint32_t nouveau_chip_instance_get(drm_device_t *dev, uint32_t instance);
 
 /* nouveau_irq.c */
 extern irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS);
@@ -186,6 +187,9 @@ extern long nouveau_compat_ioctl(struct file *filp, unsigned int cmd,
 #define NV_READ(reg)        DRM_READ32(  dev_priv->mmio, (reg) )
 #define NV_WRITE(reg,val)   DRM_WRITE32( dev_priv->mmio, (reg), (val) )
 #endif
+
+#define INSTANCE_WR(inst,ofs,val) NV_WRITE(NV_RAMIN+(inst)+((ofs)<<2),(val))
+#define INSTANCE_RD(inst,ofs)     NV_READ(NV_RAMIN+(inst)+((ofs)<<2))
 
 #endif /* __NOUVEAU_DRV_H__ */
 

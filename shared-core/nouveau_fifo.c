@@ -247,7 +247,7 @@ static void nouveau_context_init(drm_device_t *dev,
 	NV_WRITE(ctx_addr,init->put_base);
 	NV_WRITE(ctx_addr+4,init->put_base);
 	// that's what is done in nvosdk, but that part of the code is buggy so...
-	NV_WRITE(ctx_addr+8, cb_obj->instance >> 4);
+	NV_WRITE(ctx_addr+8, nouveau_chip_instance_get(dev, cb_obj->instance));
 #ifdef __BIG_ENDIAN
 	NV_WRITE(ctx_addr+16,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
 #else
@@ -274,7 +274,8 @@ static void nouveau_nv10_context_init(drm_device_t *dev,
 	 */
 	RAMFC_WR(DMA_PUT       , init->put_base);
 	RAMFC_WR(DMA_GET       , init->put_base);
-	RAMFC_WR(DMA_INSTANCE  , cb_obj->instance >> 4);
+	RAMFC_WR(DMA_INSTANCE  , nouveau_chip_instance_get(dev,
+				cb_obj->instance));
 #ifdef __BIG_ENDIAN
 		RAMFC_WR(DMA_FETCH, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES | 
 				    NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES |
@@ -332,7 +333,8 @@ static void nouveau_nv40_context_init(drm_device_t *dev,
 	 */
 	RAMFC_WR(DMA_PUT       , init->put_base);
 	RAMFC_WR(DMA_GET       , init->put_base);
-	RAMFC_WR(DMA_INSTANCE  , cb_obj->instance >> 4);
+	RAMFC_WR(DMA_INSTANCE  , nouveau_chip_instance_get(dev, 
+				cb_obj->instance));
 	RAMFC_WR(DMA_FETCH     , 0x30086078);
 	RAMFC_WR(DMA_SUBROUTINE, init->put_base);
 	RAMFC_WR(GRCTX_INSTANCE, 0); /* XXX */
@@ -471,7 +473,8 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 
 	NV_WRITE(NV_PFIFO_CACH1_DMAP, init->put_base);
 	NV_WRITE(NV_PFIFO_CACH1_DMAG, init->put_base);
-	NV_WRITE(NV_PFIFO_CACH1_DMAI, cb_obj->instance >> 4);
+	NV_WRITE(NV_PFIFO_CACH1_DMAI,
+			nouveau_chip_instance_get(dev, cb_obj->instance));
 	NV_WRITE(NV_PFIFO_SIZE , 0x0000FFFF);
 	NV_WRITE(NV_PFIFO_CACH1_HASH, 0x0000FFFF);
 
