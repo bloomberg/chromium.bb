@@ -316,6 +316,9 @@ void drm_rmmap(drm_device_t *dev, drm_local_map_t *map)
 	case _DRM_CONSISTENT:
 		drm_pci_free(dev, map->dmah);
 		break;
+	default:
+		DRM_ERROR("Bad map type %d\n", map->type);
+		break;
 	}
 
 	if (map->bsr != NULL) {
