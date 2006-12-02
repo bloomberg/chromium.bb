@@ -69,6 +69,25 @@ FcInitLoadConfig (void)
 	FcConfigDestroy (config);
 	return FcInitFallbackConfig ();
     }
+    
+    if (config->cacheDirs && config->cacheDirs->num == 0)
+    {
+	fprintf (stderr,
+		 "Fontconfig warning: no <cachedir> elements found. Check configuration.\n");
+	fprintf (stderr,
+		 "Fontconfig warning: adding <cachedir>%s</cachedir>\n",
+		 FC_CACHEDIR);
+	fprintf (stderr,
+		 "Fontconfig warning: adding <cachedir>~/.fontconfig</cachedir>\n");
+	if (!FcConfigAddCacheDir (config, (FcChar8 *) FC_CACHEDIR) ||
+	    !FcConfigAddCacheDir (config, (FcChar8 *) "~/.fontconfig"))
+	{
+	    fprintf (stderr,
+		     "Fontconfig error: out of memory");
+	    FcConfigDestroy (config);
+	    return FcInitFallbackConfig ();
+	}
+    }
 
     return config;
 }
