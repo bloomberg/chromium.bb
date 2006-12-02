@@ -295,22 +295,22 @@ following structure:
   </para>
 <refsect2><title><literal>&lt;fontconfig&gt;</literal></title><para>
 This is the top level element for a font configuration and can contain
-<sgmltag>dir</>, <sgmltag>cache</>, <sgmltag>include</>, <sgmltag>match</> and <sgmltag>alias</> elements in any order.
+<literal>&lt;dir&gt;</literal>, <literal>&lt;cache&gt;</literal>, <literal>&lt;include&gt;</literal>, <literal>&lt;match&gt;</literal> and <literal>&lt;alias&gt;</literal> elements in any order.
   </para></refsect2>
-  <refsect2><title><sgmltag>dir</></title><para>
+  <refsect2><title><literal>&lt;dir&gt;</literal></title><para>
 This element contains a directory name which will be scanned for font files
 to include in the set of available fonts.
   </para></refsect2>
-  <refsect2><title><sgmltag>cache</></title><para>
+  <refsect2><title><literal>&lt;cache&gt;</literal></title><para>
 This element contains a file name for the per-user cache of font
 information.  If it starts with '~', it refers to a file in the users
 home directory.  This file is used to hold information about fonts that
 isn't present in the per-directory cache files.  It is automatically
 maintained by the fontconfig library.  The default for this file 
-is ``~/.fonts.cache-<sgmltag>version</>'', where <sgmltag>version</> is the font configuration
+is ``~/.fonts.cache-<literal>&lt;version&gt;</literal>'', where <literal>&lt;version&gt;</literal> is the font configuration
 file version number (currently 2).
   </para></refsect2>
-  <refsect2><title><sgmltag>include ignore_missing="no"</></title><para>
+  <refsect2><title><literal>&lt;include ignore_missing="no"&gt;</literal></title><para>
 This element contains the name of an additional configuration file or
 directory.  If a directory, every file within that directory starting with an
 ASCII digit (U+0030 - U+0039) and ending with the string ``.conf'' will be processed in sorted order.  When
@@ -320,42 +320,42 @@ FcConfigLoadAndParse.  If 'ignore_missing' is set to "yes" instead of the
 default "no", a missing file or directory will elicit no warning message from
 the library.
   </para></refsect2>
-  <refsect2><title><sgmltag>config</></title><para>
+  <refsect2><title><literal>&lt;config&gt;</literal></title><para>
 This element provides a place to consolidate additional configuration
-information.  <sgmltag>config</> can contain <sgmltag>blank</> and <sgmltag>rescan</> elements in any
+information.  <literal>&lt;config&gt;</literal> can contain <literal>&lt;blank&gt;</literal> and <literal>&lt;rescan&gt;</literal> elements in any
 order.
   </para></refsect2>
-  <refsect2><title><sgmltag>blank</></title><para>
+  <refsect2><title><literal>&lt;blank&gt;</literal></title><para>
 Fonts often include "broken" glyphs which appear in the encoding but are
-drawn as blanks on the screen.  Within the <sgmltag>blank</> element, place each
-Unicode characters which is supposed to be blank in an <sgmltag>int</> element.
+drawn as blanks on the screen.  Within the <literal>&lt;blank&gt;</literal> element, place each
+Unicode characters which is supposed to be blank in an <literal>&lt;int&gt;</literal> element.
 Characters outside of this set which are drawn as blank will be elided from
 the set of characters supported by the font.
   </para></refsect2>
-  <refsect2><title><sgmltag>rescan</></title><para>
-The <sgmltag>rescan</> element holds an <sgmltag>int</> element which indicates the default
+  <refsect2><title><literal>&lt;rescan&gt;</literal></title><para>
+The <literal>&lt;rescan&gt;</literal> element holds an <literal>&lt;int&gt;</literal> element which indicates the default
 interval between automatic checks for font configuration changes.
 Fontconfig will validate all of the configuration files and directories and
 automatically rebuild the internal datastructures when this interval passes.
   </para></refsect2>
-  <refsect2><title><sgmltag>selectfont</></title><para>
+  <refsect2><title><literal>&lt;selectfont&gt;</literal></title><para>
 This element is used to black/white list fonts from being listed or matched
 against.  It holds acceptfont and rejectfont elements.
   </para></refsect2>
-  <refsect2><title><sgmltag>acceptfont</></title><para>
+  <refsect2><title><literal>&lt;acceptfont&gt;</literal></title><para>
 Fonts matched by an acceptfont element are "whitelisted"; such fonts are
 explicitly included in the set of fonts used to resolve list and match
 requests; including them in this list protects them from being "blacklisted"
 by a rejectfont element.  Acceptfont elements include glob and pattern
 elements which are used to match fonts.
   </para></refsect2>
-  <refsect2><title><sgmltag>rejectfont</></title><para>
+  <refsect2><title><literal>&lt;rejectfont&gt;</literal></title><para>
 Fonts matched by an rejectfont element are "blacklisted"; such fonts are
 excluded from the set of fonts used to resolve list and match requests as if
 they didn't exist in the system.  Rejectfont elements include glob and
 pattern elements which are used to match fonts.
   </para></refsect2>
-  <refsect2><title><sgmltag>glob</></title><para>
+  <refsect2><title><literal>&lt;glob&gt;</literal></title><para>
 Glob elements hold shell-style filename matching patterns (including ? and
 *) which match fonts based on their complete pathnames.  This can be used to
 exclude a set of directories (/usr/share/fonts/uglyfont*), or particular
@@ -363,7 +363,7 @@ font file types (*.pcf.gz), but the latter mechanism relies rather heavily
 on filenaming conventions which can't be relied upon.  Note that globs
 only apply to directories, not to individual fonts.
   </para></refsect2>
-  <refsect2><title><sgmltag>pattern</></title><para>
+  <refsect2><title><literal>&lt;pattern&gt;</literal></title><para>
 Pattern elements perform list-style matching on incoming fonts; that is,
 they hold a list of elements and associated values.  If all of those
 elements have a matching value, then the pattern matches the font.  This can
@@ -371,22 +371,22 @@ be used to select fonts based on attributes of the font (scalable, bold,
 etc), which is a more reliable mechanism than using file extensions.
 Pattern elements include patelt elements.
   </para></refsect2>
-  <refsect2><title><sgmltag>patelt name="property"</></title><para>
+  <refsect2><title><literal>&lt;patelt name="property"&gt;</literal></title><para>
 Patelt elements hold a single pattern element and list of values.  They must
 have a 'name' attribute which indicates the pattern element name.  Patelt
 elements include int, double, string, matrix, bool, charset and const
 elements.
   </para></refsect2>
-  <refsect2><title><sgmltag>match target="pattern"</></title><para>
-This element holds first a (possibly empty) list of <sgmltag>test</> elements and then
-a (possibly empty) list of <sgmltag>edit</> elements.  Patterns which match all of the
+  <refsect2><title><literal>&lt;match target="pattern"&gt;</literal></title><para>
+This element holds first a (possibly empty) list of <literal>&lt;test&gt;</literal> elements and then
+a (possibly empty) list of <literal>&lt;edit&gt;</literal> elements.  Patterns which match all of the
 tests are subjected to all the edits.  If 'target' is set to "font" instead
 of the default "pattern", then this element applies to the font name
 resulting from a match rather than a font pattern to be matched. If 'target'
 is set to "scan", then this element applies when the font is scanned to
 build the fontconfig database.
   </para></refsect2>
-  <refsect2><title><sgmltag>test qual="any" name="property" target="default" compare="eq"</></title><para>
+  <refsect2><title><literal>&lt;test qual="any" name="property" target="default" compare="eq"&gt;</literal></title><para>
 This element contains a single value which is compared with the target
 ('pattern', 'font', 'scan' or 'default') property "property" (substitute any of the property names seen 
 above). 'compare' can be one of "eq", "not_eq", "less", "less_eq", "more", or
@@ -398,11 +398,11 @@ the target= attribute in the &lt;test&gt; element selects between matching
 the original pattern or the font.  "default" selects whichever target the
 outer &lt;match&gt; element has selected.
   </para></refsect2>
-  <refsect2><title><sgmltag>edit name="property" mode="assign" binding="weak"</></title><para>
+  <refsect2><title><literal>&lt;edit name="property" mode="assign" binding="weak"&gt;</literal></title><para>
 This element contains a list of expression elements (any of the value or
 operator elements).  The expression elements are evaluated at run-time and
 modify the property "property".  The modification depends on whether
-"property" was matched by one of the associated <sgmltag>test</> elements, if so, the
+"property" was matched by one of the associated <literal>&lt;test&gt;</literal> elements, if so, the
 modification may affect the first matched value.  Any values inserted into
 the property are given the indicated binding ("strong", "weak" or "same")
 with "same" binding using the value from the matched pattern element.
@@ -418,23 +418,23 @@ with "same" binding using the value from the matched pattern element.
   "append_last"           Append at end of list   Append at end of list
     </programlisting>
   </para></refsect2>
-  <refsect2><title><sgmltag>int</>, <sgmltag>double</>, <sgmltag>string</>, <sgmltag>bool</></title><para>
-These elements hold a single value of the indicated type.  <sgmltag>bool</>
+  <refsect2><title><literal>&lt;int&gt;</literal>, <literal>&lt;double&gt;</literal>, <literal>&lt;string&gt;</literal>, <literal>&lt;bool&gt;</literal></title><para>
+These elements hold a single value of the indicated type.  <literal>&lt;bool&gt;</literal>
 elements hold either true or false.  An important limitation exists in
 the parsing of floating point numbers -- fontconfig requires that
 the mantissa start with a digit, not a decimal point, so insert a leading
 zero for purely fractional values (e.g. use 0.5 instead of .5 and -0.5
 instead of -.5).
   </para></refsect2>
-  <refsect2><title><sgmltag>matrix</></title><para>
-This element holds the four <sgmltag>double</> elements of an affine
+  <refsect2><title><literal>&lt;matrix&gt;</literal></title><para>
+This element holds the four <literal>&lt;double&gt;</literal> elements of an affine
 transformation.
   </para></refsect2>
-  <refsect2><title><sgmltag>name</></title><para>
+  <refsect2><title><literal>&lt;name&gt;</literal></title><para>
 Holds a property name.  Evaluates to the first value from the property of
 the font, not the pattern.
   </para></refsect2>
-  <refsect2><title><sgmltag>const</></title><para>
+  <refsect2><title><literal>&lt;const&gt;</literal></title><para>
 Holds the name of a constant; these are always integers and serve as
 symbolic names for common font values:
     <programlisting>
@@ -484,40 +484,39 @@ symbolic names for common font values:
       </para>
     </refsect2>
   <refsect2>
-      <title><sgmltag>or</>, <sgmltag>and</>, <sgmltag>plus</>, <sgmltag>minus</>, <sgmltag>times</>, <sgmltag>divide</></title>
+      <title><literal>&lt;or&gt;</literal>, <literal>&lt;and&gt;</literal>, <literal>&lt;plus&gt;</literal>, <literal>&lt;minus&gt;</literal>, <literal>&lt;times&gt;</literal>, <literal>&lt;divide&gt;</literal></title>
       <para>
 These elements perform the specified operation on a list of expression
-elements.  <sgmltag>or</> and <sgmltag>and</> are boolean, not bitwise.
+elements.  <literal>&lt;or&gt;</literal> and <literal>&lt;and&gt;</literal> are boolean, not bitwise.
       </para>
     </refsect2>
   <refsect2>
-    <title><sgmltag>eq</>, <sgmltag>not_eq</>, <sgmltag>less</>, <sgmltag>less_eq</>, <sgmltag>more</>, <sgmltag>more_eq</></title>
+    <title><literal>&lt;eq&gt;</literal>, <literal>&lt;not_eq&gt;</literal>, <literal>&lt;less&gt;</literal>, <literal>&lt;less_eq&gt;</literal>, <literal>&lt;more&gt;</literal>, <literal>&lt;more_eq&gt;</literal></title>
     <para>
 These elements compare two values, producing a boolean result.
   </para></refsect2>
-  <refsect2><title><sgmltag>not</></title><para>
+  <refsect2><title><literal>&lt;not&gt;</literal></title><para>
 Inverts the boolean sense of its one expression element
   </para></refsect2>
-  <refsect2><title><sgmltag>if</></title><para>
+  <refsect2><title><literal>&lt;if&gt;</literal></title><para>
 This element takes three expression elements; if the value of the first is
 true, it produces the value of the second, otherwise it produces the value
 of the third.
   </para></refsect2>
-  <refsect2><title><sgmltag>alias</></title><para>
+  <refsect2><title><literal>&lt;alias&gt;</literal></title><para>
 Alias elements provide a shorthand notation for the set of common match
 operations needed to substitute one font family for another.  They contain a
-<sgmltag>family</> element followed by optional <sgmltag>prefer</>, <sgmltag>accept</> and <sgmltag>default</>
-elements.  Fonts matching the <sgmltag>family</> element are edited to prepend the
-list of <sgmltag>prefer</>ed families before the matching <sgmltag>family</>, append the
-<sgmltag>accept</>able families after the matching <sgmltag>family</> and append the <sgmltag>default</>
+<literal>&lt;family&gt;</literal> element followed by optional <literal>&lt;prefer&gt;</literal>, <literal>&lt;accept&gt;</literal> and <literal>&lt;default&gt;</literal>
+elements.  Fonts matching the <literal>&lt;family&gt;</literal> element are edited to prepend the
+list of <literal>&lt;prefer&gt;</literal>ed families before the matching <literal>&lt;family&gt;</literal>, append the
+<literal>&lt;accept&gt;</literal>able families after the matching <literal>&lt;family&gt;</literal> and append the <literal>&lt;default&gt;</literal>
 families to the end of the family list.
   </para></refsect2>
-  <refsect2><title><sgmltag>family</></title><para>
+  <refsect2><title><literal>&lt;family&gt;</literal></title><para>
 Holds a single font family name
   </para></refsect2>
-  <refsect2><title><sgmltag>prefer</>, <sgmltag>accept</>, <sgmltag>default</></title><para>
-These hold a list of <sgmltag>family</> elements to be used by the <sgmltag>alias</> element.
-<sgmltag>/article</>
+  <refsect2><title><literal>&lt;prefer&gt;</literal>, <literal>&lt;accept&gt;</literal>, <literal>&lt;default&gt;</literal></title><para>
+These hold a list of <literal>&lt;family&gt;</literal> elements to be used by the <literal>&lt;alias&gt;</literal> element.
   </para></refsect2>
 </refsect1>
 <refsect1><title>EXAMPLE CONFIGURATION FILE</title>
