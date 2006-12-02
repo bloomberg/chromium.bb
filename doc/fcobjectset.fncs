@@ -54,7 +54,7 @@ Destroys an object set.
 @RET+@		FcObjectSet *
 @FUNC+@		FcObjectSetVaBuild
 @TYPE1+@	const char *			@ARG1+@		first
-@TYPE2+@	va_list				@ARG2+@		va
+@TYPE2+@	va_list%			@ARG2+@		va
 @PURPOSE@	Build object set from args
 @DESC@
 These build an object set from a null-terminated list of property names.

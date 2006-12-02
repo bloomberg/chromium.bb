@@ -23,7 +23,7 @@
  */
 @RET@		void
 @FUNC@		FcValueDestroy
-@TYPE1@		FcValue			@ARG1@		v
+@TYPE1@		FcValue%		@ARG1@		v
 @PURPOSE@	Free a value
 @DESC@
 Frees any memory referenced by <parameter>v</parameter>.  Values of type FcTypeString,
@@ -32,7 +32,7 @@ FcTypeMatrix and FcTypeCharSet reference memory, the other types do not.
 
 @RET@		FcValue 
 @FUNC@		FcValueSave
-@TYPE1@		FcValue 		@ARG1@		v
+@TYPE1@		FcValue% 		@ARG1@		v
 @PURPOSE@	Copy a value
 @DESC@
 Returns a copy of <parameter>v</parameter> duplicating any object referenced by it so that <parameter>v</parameter>

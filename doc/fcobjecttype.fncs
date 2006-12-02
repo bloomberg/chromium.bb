@@ -24,7 +24,7 @@
 @RET@		FcBool
 @FUNC@		FcNameRegisterObjectTypes
 @TYPE1@		const FcObjectType *		@ARG1@		types
-@TYPE2@		int				@ARG2@		ntype
+@TYPE2@		int%				@ARG2@		ntype
 @PURPOSE@	Register object types
 @DESC@
 Register <parameter>ntype</parameter> new object types.
@@ -33,7 +33,7 @@ Register <parameter>ntype</parameter> new object types.
 @RET@		FcBool
 @FUNC@		FcNameUnregisterObjectTypes
 @TYPE1@		const FcObjectType *		@ARG1@		types
-@TYPE2@		int 				@ARG2@		ntype
+@TYPE2@		int% 				@ARG2@		ntype
 @PURPOSE@	Unregister object types
 @DESC@
 Unregister <parameter>ntype</parameter> object types.

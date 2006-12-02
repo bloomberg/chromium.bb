@@ -69,9 +69,9 @@ the result in <parameter>result</parameter>.
 @PURPOSE@	Rotate a matrix
 @TYPE1@		FcMatrix *
 @ARG1@		matrix
-@TYPE2@		double
+@TYPE2@		double%
 @ARG2@		cos
-@TYPE3@		double
+@TYPE3@		double%
 @ARG3@		sin
 @DESC@
 <function>FcMatrixRotate</function> rotates <parameter>matrix</parameter>
@@ -88,9 +88,9 @@ matrix:
 @PURPOSE@	Scale a matrix
 @TYPE1@		FcMatrix *
 @ARG1@		matrix
-@TYPE2@		double
+@TYPE2@		double%
 @ARG2@		sx
-@TYPE3@		double
+@TYPE3@		double%
 @ARG3@		dy
 @DESC@
 <function>FcMatrixScale</function> multiplies <parameter>matrix</parameter>
@@ -107,9 +107,9 @@ the matrix:
 @PURPOSE@	Shear a matrix
 @TYPE1@		FcMatrix *
 @ARG1@		matrix
-@TYPE2@		double
+@TYPE2@		double%
 @ARG2@		sh
-@TYPE3@		double
+@TYPE3@		double%
 @ARG3@		sv
 @DESC@
 <function>FcMatrixShare</function> shears <parameter>matrix</parameter>

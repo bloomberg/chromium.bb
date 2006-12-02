@@ -114,7 +114,7 @@ Returns the name of the file used to store per-user font information.
 @RET@           FcFontSet *
 @FUNC@          FcConfigGetFonts
 @TYPE1@         FcConfig *			@ARG1@		config
-@TYPE2@		FcSetName                       @ARG2@          set
+@TYPE2@		FcSetName%                      @ARG2@          set
 @PURPOSE@	Get config font set
 @DESC@
 Returns one of the two sets of fonts from the configuration as specified
@@ -143,7 +143,7 @@ a call to FcFontList when this interval has passed since the last check.
 @RET@           FcBool
 @FUNC@          FcConfigSetRescanInverval
 @TYPE1@         FcConfig *			@ARG1@		config
-@TYPE2@		int                       	@ARG2@          rescanInterval
+@TYPE2@		int%                       	@ARG2@          rescanInterval
 @PURPOSE@	Set config rescan interval
 @DESC@
 Sets the rescan interval; returns FcFalse if an error occurred.
@@ -181,7 +181,7 @@ Clears the set of application-specific fonts.
 @TYPE1@         FcConfig *			@ARG1@		config
 @TYPE2@		FcPattern *			@ARG2@		p
 @TYPE3@		FcPattern *			@ARG3@		p_pat
-@TYPE4@		FcMatchKind                     @ARG4@          kind
+@TYPE4@		FcMatchKind%                     @ARG4@          kind
 @PURPOSE@	Execute substitutions
 @DESC@
 Performs the sequence of pattern modification operations, if <parameter>kind</parameter> is
@@ -194,7 +194,7 @@ p_pat is used for &lt;test&gt; elements with target=pattern.
 @FUNC@          FcConfigSubstitute
 @TYPE1@         FcConfig *			@ARG1@		config
 @TYPE2@		FcPattern *			@ARG2@		p
-@TYPE3@		FcMatchKind                     @ARG3@          kind
+@TYPE3@		FcMatchKind%                    @ARG3@          kind
 @PURPOSE@	Execute substitutions
 @DESC@
 Calls FcConfigSubstituteWithPat setting p_pat to NULL.
@@ -216,7 +216,7 @@ been called for <parameter>p</parameter>; otherwise the results will not be corr
 @FUNC@          FcFontSort
 @TYPE1@         FcConfig *			@ARG1@		config
 @TYPE2@		FcPattern *			@ARG2@		p
-@TYPE3@		FcBool				@ARG3@		trim
+@TYPE3@		FcBool%				@ARG3@		trim
 @TYPE4@		FcCharSet **			@ARG4@		csp
 @TYPE5@		FcResult *                      @ARG5@          result
 @PURPOSE@	Return list of matching fonts
@@ -282,7 +282,7 @@ FC_CONFIG_DIR environment variable.
 @FUNC@		FcConfigParseAndLoad
 @TYPE1@		FcConfig *			@ARG1@		config
 @TYPE2@		const FcChar8 *			@ARG2@		file
-@TYPE2@		FcBool				@ARG3@		complain
+@TYPE2@		FcBool%				@ARG3@		complain
 @PURPOSE@	load a configuration file
 @DESC@
 Walks the configuration in 'file' and constructs the internal representation

@@ -70,8 +70,8 @@ equal.
 @FUNC@		FcPatternAdd
 @TYPE1@		FcPattern * 			@ARG1@ 		p
 @TYPE2@ 	const char *			@ARG2@ 		object
-@TYPE3@		FcValue				@ARG3@		value
-@TYPE4@		FcBool				@ARG4@		append 
+@TYPE3@		FcValue%			@ARG3@		value
+@TYPE4@		FcBool%				@ARG4@		append 
 @PURPOSE@	Add a value to a pattern
 @DESC@
 Adds a single value to the list of values associated with the property named
@@ -85,8 +85,8 @@ retains no reference to any application-supplied data structure.
 @FUNC@		FcPatternAddWeak
 @TYPE1@ 	FcPattern * 			@ARG1@ 		p
 @TYPE2@ 	const char * 			@ARG2@ 		object
-@TYPE3@ 	FcValue  			@ARG3@ 		value
-@TYPE4@ 	FcBool  			@ARG4@		append 
+@TYPE3@ 	FcValue%  			@ARG3@ 		value
+@TYPE4@ 	FcBool%  			@ARG4@		append 
 @PURPOSE@	Add a value to a pattern with weak binding
 @DESC@
 FcPatternAddWeak is essentially the same as FcPatternAdd except that any
@@ -98,14 +98,14 @@ values added to the list have binding <parameter>weak</parameter> instead of <pa
 @FUNC@		FcPatternAddInteger
 @TYPE1@ 	FcPattern * 			@ARG1@ 		p
 @TYPE2@		const char *			@ARG2@		object
-@TYPE3@		int				@ARG3@		i
+@TYPE3@		int%				@ARG3@		i
 
 @PROTOTYPE+@
 @RET+@		FcBool
 @FUNC+@		FcPatternAddDouble
 @TYPE1+@ 	FcPattern * 			@ARG1+@ 	p
 @TYPE2+@	const char *			@ARG2+@		object
-@TYPE3+@	double				@ARG3+@		d
+@TYPE3+@	double%				@ARG3+@		d
 
 @PROTOTYPE++@
 @RET++@		FcBool
@@ -133,7 +133,7 @@ values added to the list have binding <parameter>weak</parameter> instead of <pa
 @FUNC+++++@	FcPatternAddBool
 @TYPE1+++++@ 	FcPattern * 			@ARG1+++++@ 	p
 @TYPE2+++++@	const char *			@ARG2+++++@	object
-@TYPE3+++++@	FcBool				@ARG3+++++@	b
+@TYPE3+++++@	FcBool%				@ARG3+++++@	b
 @PURPOSE@	Add a typed value to a pattern
 @DESC@
 These are all convenience functions that insert objects of the specified
@@ -146,7 +146,7 @@ any existing list of values.
 @FUNC@		FcPatternGet
 @TYPE1@		FcPattern *			@ARG1@		p
 @TYPE2@		const char *			@ARG2@		object
-@TYPE3@		int  				@ARG3@ 		id
+@TYPE3@		int%  				@ARG3@ 		id
 @TYPE4@		FcValue *			@ARG4@		v 
 @PURPOSE@	Return a value from a pattern
 @DESC@
@@ -162,7 +162,7 @@ within the pattern directly.  Applications must not free this value.
 @FUNC@		FcPatternGetInteger
 @TYPE1@		FcPattern *			@ARG1@		p
 @TYPE2@		const char *			@ARG2@		object
-@TYPE3@		int				@ARG3@		n
+@TYPE3@		int%				@ARG3@		n
 @TYPE4@		int *				@ARG4@		i
 
 @PROTOTYPE+@
@@ -170,7 +170,7 @@ within the pattern directly.  Applications must not free this value.
 @FUNC+@ 	FcPatternGetDouble
 @TYPE1+@	FcPattern *			@ARG1+@		p
 @TYPE2+@	const char *			@ARG2+@		object
-@TYPE3+@	int				@ARG3+@		n
+@TYPE3+@	int%				@ARG3+@		n
 @TYPE4+@	double *			@ARG4+@		d 
 
 @PROTOTYPE++@
@@ -178,7 +178,7 @@ within the pattern directly.  Applications must not free this value.
 @FUNC++@	FcPatternGetString
 @TYPE1++@	FcPattern *			@ARG1++@	p
 @TYPE2++@	const char *			@ARG2++@	object
-@TYPE3++@	int				@ARG3++@	n
+@TYPE3++@	int%				@ARG3++@	n
 @TYPE4++@	char **const			@ARG4++@	s
 
 @PROTOTYPE+++@
@@ -186,7 +186,7 @@ within the pattern directly.  Applications must not free this value.
 @FUNC+++@	FcPatternGetMatrix 
 @TYPE1+++@ 	FcPattern * 			@ARG1+++@ 	p 
 @TYPE2+++@ 	const char * 			@ARG2+++@ 	object 
-@TYPE3+++@ 	int  				@ARG3+++@ 	n 
+@TYPE3+++@ 	int%  				@ARG3+++@ 	n 
 @TYPE4+++@ 	FcMatrix ** 			@ARG4+++@ 	s 
 
 @PROTOTYPE++++@
@@ -194,7 +194,7 @@ within the pattern directly.  Applications must not free this value.
 @FUNC++++@ 	FcPatternGetCharSet 
 @TYPE1++++@ 	FcPattern * 			@ARG1++++@ 	p 
 @TYPE2++++@ 	const char * 			@ARG2++++@ 	object 
-@TYPE3++++@ 	int  				@ARG3++++@ 	n 
+@TYPE3++++@ 	int%  				@ARG3++++@ 	n 
 @TYPE4++++@ 	FcCharSet ** 			@ARG4++++@ 	c 
 
 @PROTOTYPE+++++@
@@ -202,7 +202,7 @@ within the pattern directly.  Applications must not free this value.
 @FUNC+++++@ 	FcPatternGetBool 		
 @TYPE1+++++@ 	FcPattern * 			@ARG1+++++@ 	p
 @TYPE2+++++@ 	const char * 			@ARG2+++++@ 	object 
-@TYPE3+++++@ 	int  				@ARG3+++++@ 	n 
+@TYPE3+++++@ 	int%  				@ARG3+++++@ 	n 
 @TYPE4+++++@ 	FcBool * 			@ARG4+++++@ 	b 
 @PURPOSE@	Return a typed value from a pattern
 @DESC@
@@ -222,7 +222,7 @@ in preference to FcPatternGet to provide compile-time typechecking.
 @RET+@		FcPattern *
 @FUNC+@		FcPatternVaBuild
 @TYPE1+@	FcPattern *			@ARG1+@		orig
-@TYPE2+@	va_list 			@ARG2+@		va
+@TYPE2+@	va_list% 			@ARG2+@		va
 @PURPOSE@	Create patterns from arguments
 @DESC@
 Builds a pattern using a list of objects, types and values.  Each
@@ -267,7 +267,7 @@ whether the property existed or not.
 @FUNC@		FcPatternRemove
 @TYPE1@		FcPattern *			@ARG1@		p
 @TYPE2@		const char *			@ARG2@		object 
-@TYPE3@		int				@ARG3@		id
+@TYPE3@		int%				@ARG3@		id
 @PURPOSE@	Remove one object of the specified type from the pattern
 @DESC@
 Removes the value associated with the property `object' at position `id', returning 

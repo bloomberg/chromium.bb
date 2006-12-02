@@ -294,6 +294,11 @@ ReplaceRead (FILE *f)
 	ungetc (c, f);
     while (isspace (StringLast (r->text)))
 	StringDel (r->text);
+    if (StringLast(r->text) == '%')
+    {
+	StringDel (r->text);
+	StringAdd (r->text, ' ');
+    }
     return r;
 }
 

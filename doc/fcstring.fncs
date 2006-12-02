@@ -27,7 +27,7 @@
 @FUNC@		FcUtf8ToUcs4 
 @TYPE1@		FcChar8 *			@ARG1@		src
 @TYPE2@		FcChar32 *			@ARG2@		dst
-@TYPE3@		int 				@ARG3@		len
+@TYPE3@		int% 				@ARG3@		len
 @PURPOSE@	convert UTF-8 to UCS4
 @DESC@
 Converts the next Unicode char from <parameter>src</parameter> into
@@ -38,8 +38,8 @@ char.  <parameter>src</parameter> nust be at least
 
 @RET@		int 
 @FUNC@		FcUcs4ToUtf8
-@TYPE1@		FcChar32 			@ARG1@		src	 
-@TYPE2@		FcChar8 			@ARG2@		dst[FC_UTF8_MAX_LEN]
+@TYPE1@		FcChar32% 			@ARG1@		src	 
+@TYPE2@		FcChar8% 			@ARG2@		dst[FC_UTF8_MAX_LEN]
 @PURPOSE@	convert UCS4 to UTF-8
 @DESC@
 Converts the Unicode char from <parameter>src</parameter> into
@@ -50,7 +50,7 @@ the char.
 @RET@		FcBool 
 @FUNC@		FcUtf8Len
 @TYPE1@		FcChar8 *			@ARG1@		src
-@TYPE2@		int 				@ARG2@		len
+@TYPE2@		int% 				@ARG2@		len
 @TYPE3@		int *				@ARG3@		nchar
 @TYPE4@		int *				@ARG4@		wchar
 @PURPOSE@	count UTF-8 encoded chars
@@ -66,9 +66,9 @@ well-formed UTF8 string.
 @RET@		int 
 @FUNC@		FcUtf16ToUcs4
 @TYPE1@		FcChar8 *			@ARG1@		src
-@TYPE2@		FcEndian 			@ARG2@		endian
+@TYPE2@		FcEndian% 			@ARG2@		endian
 @TYPE3@		FcChar32 *			@ARG3@		dst
-@TYPE4@		int 				@ARG4@		len
+@TYPE4@		int% 				@ARG4@		len
 @PURPOSE@	convert UTF-16 to UCS4
 @DESC@
 Converts the next Unicode char from <parameter>src</parameter> into
@@ -81,8 +81,8 @@ units according to <parameter>endian</parameter>.
 @RET@		FcBool
 @FUNC@		FcUtf16Len
 @TYPE1@		FcChar8 *			@ARG1@		src
-@TYPE2@		FcEndian 			@ARG2@		endian
-@TYPE3@		int 				@ARG3@		len
+@TYPE2@		FcEndian% 			@ARG2@		endian
+@TYPE3@		int% 				@ARG3@		len
 @TYPE4@		int *				@ARG4@		nchar
 @TYPE5@		int *				@ARG5@		wchar
 @PURPOSE@	count UTF-16 encoded chars

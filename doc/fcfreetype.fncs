@@ -27,8 +27,8 @@
 #include &lt;fcfreetype.h&gt;
 @RET@           FT_UInt       
 @FUNC@          FcFreeTypeCharIndex 
-@TYPE1@         FT_Face				@ARG1@          face      
-@TYPE2@         FcChar32			@ARG2@          ucs4      
+@TYPE1@         FT_Face%			@ARG1@          face      
+@TYPE2@         FcChar32%			@ARG2@          ucs4      
 @PURPOSE@	map Unicode to glyph id
 @DESC@
 Maps a Unicode char to a glyph index.  This function uses information from
@@ -43,7 +43,7 @@ higher level functions.
 #include &lt;fcfreetype.h&gt;
 @RET@           FcCharSet *      
 @FUNC@          FcFreeTypeCharSet 
-@TYPE1@         FT_Face				@ARG1@          face      
+@TYPE1@         FT_Face%			@ARG1@          face      
 @TYPE2@         FcBlanks *			@ARG2@          blanks
 @PURPOSE@	compute unicode coverage
 @DESC@
@@ -59,7 +59,7 @@ not in 'blanks' are not placed in the returned FcCharSet.
 @RET@           FcPattern *      
 @FUNC@          FcFreeTypeQuery 
 @TYPE1@         const char *			@ARG1@          file      
-@TYPE2@         int				@ARG2@          id      
+@TYPE2@         int%				@ARG2@          id      
 @TYPE3@         FcBlanks *			@ARG3@          blanks      
 @TYPE4@         int *				@ARG4@          count      
 @PURPOSE@	compute pattern from font file (and index)
@@ -73,9 +73,9 @@ of fonts in 'file' is returned in 'count'.
 #include &lt;fcfreetype.h&gt;
 @RET@           FcPattern *      
 @FUNC@          FcFreeTypeQueryFace
-@TYPE1@		const FT_Face			@ARG1@		face
+@TYPE1@		const FT_Face%			@ARG1@		face
 @TYPE2@         const char *			@ARG2@          file
-@TYPE3@         int				@ARG3@          id
+@TYPE3@         int%				@ARG3@          id
 @TYPE4@         FcBlanks *			@ARG4@          blanks
 @PURPOSE@	compute pattern from FT_Face
 @DESC@

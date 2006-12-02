@@ -43,7 +43,7 @@ memory referenced is freed.
 @RET@		FcBool 
 @FUNC@		FcCharSetAddChar
 @TYPE1@		FcCharSet *		@ARG1@		fcs
-@TYPE2@		FcChar32 		@ARG2@		ucs4 
+@TYPE2@		FcChar32% 		@ARG2@		ucs4 
 @PURPOSE@	Add a character to a charset
 @DESC@
 <function>FcCharSetAddChar</function> adds a single unicode char to the set,
@@ -101,7 +101,7 @@ Returns a set including only those chars found in <parameter>a</parameter> but n
 @RET@		FcBool 
 @FUNC@		FcCharSetHasChar
 @TYPE1@		const FcCharSet *	@ARG1@		fcs
-@TYPE2@		FcChar32 		@ARG2@		ucs4
+@TYPE2@		FcChar32% 		@ARG2@		ucs4
 @PURPOSE@	Check a charset for a char
 @DESC@
 Returns whether <parameter>fcs</parameter> contains the char <parameter>ucs4</parameter>. 
@@ -145,7 +145,7 @@ Returns whether <parameter>a</parameter> is a subset of <parameter>b</parameter>
 @RET@		FcChar32
 @FUNC@		FcCharSetFirstPage
 @TYPE1@		const FcCharSet *	@ARG1@		a
-@TYPE2@		FcChar32[FC_CHARSET_MAP_SIZE]	@ARG2@	map
+@TYPE2@		FcChar32[FC_CHARSET_MAP_SIZE]%	@ARG2@	map
 @TYPE3@		FcChar32 *		@ARG3@		next
 @PURPOSE@	Start enumerating charset contents
 @DESC@
@@ -157,7 +157,7 @@ font.
 @RET@		FcChar32
 @FUNC@		FcCharSetNextPage
 @TYPE1@		const FcCharSet *	@ARG1@		a
-@TYPE2@		FcChar32[FC_CHARSET_MAP_SIZE]	@ARG2@	map
+@TYPE2@		FcChar32[FC_CHARSET_MAP_SIZE]%	@ARG2@	map
 @TYPE3@		FcChar32 *		@ARG3@		next
 @PURPOSE@	Continue enumerating charset contents
 @DESC@

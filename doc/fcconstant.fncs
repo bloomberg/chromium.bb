@@ -24,7 +24,7 @@
 @RET@		FcBool
 @FUNC@		FcNameRegisterConstants 
 @TYPE1@		const FcConstant *		@ARG1@		consts
-@TYPE2@		int				@ARG2@		nconsts
+@TYPE2@		int%				@ARG2@		nconsts
 @PURPOSE@	Register symbolic constants
 @DESC@
 Register <parameter>nconsts</parameter> new symbolic constants.
@@ -33,7 +33,7 @@ Register <parameter>nconsts</parameter> new symbolic constants.
 @RET@		FcBool
 @FUNC@		FcNameUnregisterConstants
 @TYPE1@		const FcConstant *		@ARG1@		consts
-@TYPE2@		int				@ARG2@		nconsts
+@TYPE2@		int%				@ARG2@		nconsts
 @PURPOSE@	Unregister symbolic constants
 @DESC@
 Unregister <parameter>nconsts</parameter> symbolic constants.
