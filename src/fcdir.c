@@ -65,7 +65,7 @@ FcFileScanFontConfig (FcFontSet		*set,
 	/*
 	 * Edit pattern with user-defined rules
 	 */
-	if (config && !FcConfigSubstituteWithPat (config, font, NULL, FcMatchScan))
+	if (font && config && !FcConfigSubstituteWithPat (config, font, NULL, FcMatchScan))
 	{
 	    FcPatternDestroy (font);
 	    font = NULL;

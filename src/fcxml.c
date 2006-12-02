@@ -1845,6 +1845,12 @@ FcParseMatch (FcConfigParse *parse)
 	    vstack->u.edit->next = edit;
 	    edit = vstack->u.edit;
 	    vstack->tag = FcVStackNone;
+	    if (kind == FcMatchScan && edit->object > FC_MAX_BASE_OBJECT)
+	    {
+		FcConfigMessage (parse, FcSevereError, 
+				 "<match target=\"scan\"> cannot edit user-defined object \"%s\"",
+				 FcObjectName(edit->object));
+	    }
 	    break;
 	default:
 	    FcConfigMessage (parse, FcSevereWarning, "invalid match element");
