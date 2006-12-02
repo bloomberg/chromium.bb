@@ -62,8 +62,23 @@ not in 'blanks' are not placed in the returned FcCharSet.
 @TYPE2@         int				@ARG2@          id      
 @TYPE3@         FcBlanks *			@ARG3@          blanks      
 @TYPE4@         int *				@ARG4@          count      
-@PURPOSE@	compute font file pattern
+@PURPOSE@	compute pattern from font file (and index)
 @DESC@
 Constructs a pattern representing the 'id'th font in 'file'.  The number
 of fonts in 'file' is returned in 'count'.
+@@
+
+@SYNOPSIS@
+#include &lt;fontconfig.h&gt;
+#include &lt;fcfreetype.h&gt;
+@RET@           FcPattern *      
+@FUNC@          FcFreeTypeQueryFace
+@TYPE1@		const FT_Face			@ARG1@		face
+@TYPE2@         const char *			@ARG2@          file
+@TYPE3@         int				@ARG3@          id
+@TYPE4@         FcBlanks *			@ARG4@          blanks
+@PURPOSE@	compute pattern from FT_Face
+@DESC@
+Constructs a pattern representing 'face'. 'file' and 'id' are used solely as
+data for pattern elements (FC_FILE, FC_INDEX and sometimes FC_FAMILY).
 @@

@@ -1063,12 +1063,11 @@ static const FT_UShort nameid_order[] = {
 
 #define NUM_NAMEID_ORDER  (sizeof (nameid_order) / sizeof (nameid_order[0]))
 FcPattern *
-FcFreeTypeQuery (const FcChar8	*file,
-		 int		id,
-		 FcBlanks	*blanks,
-		 int		*count)
+FcFreeTypeQueryFace (const FT_Face  face,
+		     const FcChar8  *file,
+		     int	    id,
+		     FcBlanks	    *blanks)
 {
-    FT_Face	    face;
     FcPattern	    *pat;
     int		    slant = -1;
     int		    weight = -1;
@@ -1077,7 +1076,6 @@ FcFreeTypeQuery (const FcChar8	*file,
     int		    i;
     FcCharSet	    *cs;
     FcLangSet	    *ls;
-    FT_Library	    ftLibrary;
 #if 0
     FcChar8	    *family = 0;
 #endif
@@ -1108,14 +1106,6 @@ FcFreeTypeQuery (const FcChar8	*file,
     FcChar8	    *style = 0;
     int		    st;
     
-    if (FT_Init_FreeType (&ftLibrary))
-	return 0;
-    
-    if (FT_New_Face (ftLibrary, (char *) file, id, &face))
-	goto bail;
-
-    *count = face->num_faces;
-
     pat = FcPatternCreate ();
     if (!pat)
 	goto bail0;
@@ -1785,12 +1775,6 @@ FcFreeTypeQuery (const FcChar8	*file,
      */
     FcCharSetDestroy (cs);
     
-    /*
-     * Deallocate family/style values
-     */
-    
-    FT_Done_Face (face);
-    FT_Done_FreeType (ftLibrary);
     return pat;
 
 bail2:
@@ -1798,12 +1782,34 @@ bail2:
 bail1:
     FcPatternDestroy (pat);
 bail0:
+    return NULL;
+}
+
+FcPattern *
+FcFreeTypeQuery(const FcChar8	*file,
+		int		id,
+		FcBlanks	*blanks,
+		int		*count)
+{
+    FT_Face	    face;
+    FT_Library	    ftLibrary;
+    FcPattern	    *pat = NULL;
+    
+    if (FT_Init_FreeType (&ftLibrary))
+	return NULL;
+    
+    if (FT_New_Face (ftLibrary, (char *) file, id, &face))
+	goto bail;
+
+    *count = face->num_faces;
+
+    pat = FcFreeTypeQueryFace (face, file, id, blanks);
+
     FT_Done_Face (face);
 bail:
     FT_Done_FreeType (ftLibrary);
-    return 0;
+    return pat;
 }
-
 
 /*
  * For our purposes, this approximation is sufficient
