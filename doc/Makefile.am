@@ -142,7 +142,7 @@ fontconfig-devel.txt: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml
 
 fontconfig-devel.pdf: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) $@
-	../missing --run $(DOC2PDF) $< && mv local-$@ $@ \
+	$(top_srcdir)/missing --run $(DOC2PDF) $< && mv local-$@ $@ \
 	|| echo Failed to generate $@ >&2; \
 	(test -f $@ || echo $(DOC2PDF) is required to generate this file >> $@)
 
@@ -160,7 +160,7 @@ fontconfig-user.txt: local-fontconfig-user.sgml version.sgml confdir.sgml
 
 fontconfig-user.pdf: local-fontconfig-user.sgml version.sgml confdir.sgml
 	$(RM) $@
-	../missing --run $(DOC2PDF) $< && mv local-$@ $@ \
+	$(top_srcdir)/missing --run $(DOC2PDF) $< && mv local-$@ $@ \
 	|| echo Failed to generate $@ >&2; \
 	(test -f $@ || echo $(DOC2PDF) is required to generate this file >> $@)
 
@@ -170,7 +170,14 @@ confdir.sgml: ${DOC_SRC}/confdir.sgml.in
 
 CLEANFILES=confdir.sgml local-fontconfig-user.sgml local-fontconfig-devel.sgml
 
+htmldoc_DATA = $(HTML_DIR)/*
+
+$(HTML_DIR)/*: $(HTML_DIR)
+
 else
+
+htmldoc_DATA = $(srcdir)/$(HTML_DIR)/*
+
 all-local:
 clean-local:
 endif
@@ -179,6 +186,3 @@ htmldocdir=$(docdir)/$(HTML_DIR)
 
 doc_DATA = $(DOC_FILES)
 
-htmldoc_DATA = $(HTML_DIR)/*
-
-$(HTML_DIR)/*: $(HTML_DIR)

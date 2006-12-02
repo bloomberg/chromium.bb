@@ -510,7 +510,7 @@ default_docs="yes"
 # Check if docs exist or can be created
 #
 if test x$HASDOCBOOK = xno; then
-	if test -f doc/fonts-conf.5; then
+	if test -f $srcdir/doc/fonts-conf.5; then
 		:
 	else
 		default_docs="no"
