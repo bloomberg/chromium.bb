@@ -826,16 +826,17 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
  * Hokey little macro trick to permit the definitions of C functions
  * with the same name as CPP macros
  */
-#define args(x...)	    (x)
+#define args1(x)	    (x)
+#define args2(x,y)	    (x,y)
 
 const FcChar8 *
-FcCacheDir args(const FcCache *c)
+FcCacheDir args1(const FcCache *c)
 {
     return FcCacheDir (c);
 }
 
 FcFontSet *
-FcCacheCopySet args(const FcCache *c)
+FcCacheCopySet args1(const FcCache *c)
 {
     FcFontSet	*old = FcCacheSet (c);
     FcFontSet	*new = FcFontSetCreate ();
@@ -858,19 +859,19 @@ FcCacheCopySet args(const FcCache *c)
 }
 
 const FcChar8 *
-FcCacheSubdir args(const FcCache *c, int i)
+FcCacheSubdir args2(const FcCache *c, int i)
 {
     return FcCacheSubdir (c, i);
 }
 
 int
-FcCacheNumSubdir args(const FcCache *c)
+FcCacheNumSubdir args1(const FcCache *c)
 {
     return c->dirs_count;
 }
 
 int
-FcCacheNumFont args(const FcCache *c)
+FcCacheNumFont args1(const FcCache *c)
 {
     return FcCacheSet(c)->nfont;
 }
