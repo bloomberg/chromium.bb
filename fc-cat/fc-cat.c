@@ -149,10 +149,11 @@ static void
 usage (char *program)
 {
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "usage: %s [-V?] [--version] [--help] {*-%s.cache-2|directory}...\n",
+    fprintf (stderr, "usage: %s [-rv] [--recurse] [--verbose] [*-%s.cache-2|directory]...\n",
 	     program, FC_ARCHITECTURE);
+    fprintf (stderr, "       %s [-V?] [--version] [--help]\n", program);
 #else
-    fprintf (stderr, "usage: %s [-fsvV?] {*-%s.cache-2|directory}...\n",
+    fprintf (stderr, "usage: %s [-rvV?] [*-%s.cache-2|directory]...\n",
 	     program, FC_ARCHITECTURE);
 #endif
     fprintf (stderr, "Reads font information cache from:\n"); 
@@ -160,9 +161,13 @@ usage (char *program)
     fprintf (stderr, " 2) related to a particular font directory\n");
     fprintf (stderr, "\n");
 #if HAVE_GETOPT_LONG
+    fprintf (stderr, "  -r, --recurse        recurse into subdirectories\n");
+    fprintf (stderr, "  -v, --verbose        be verbose\n");
     fprintf (stderr, "  -V, --version        display font config version and exit\n");
     fprintf (stderr, "  -?, --help           display this help and exit\n");
 #else
+    fprintf (stderr, "  -r         (recurse) recurse into subdirectories\n");
+    fprintf (stderr, "  -v         (verbose) be verbose\n");
     fprintf (stderr, "  -V         (version) display font config version and exit\n");
     fprintf (stderr, "  -?         (help)    display this help and exit\n");
 #endif
