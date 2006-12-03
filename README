@@ -1,11 +1,43 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.4.1
-		        2006-09-15
+		      Version 2.4.2
+		        2006-12-02
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.4.2
+
+Han-Wen Nienhuys:
+      FcStrCanonFileName buggy for mingw. (bug 8311)
+      More fixes for Win32 building (bug 8311)
+
+Kean Johnston:
+      Don't use varargs CPP macros in fccache.c. (bug 8733)
+
+Keith Packard:
+      Remove documentation for non-existant FcConfigNormalizeFontDir.
+      Build fontconfig.def from header files when needed.
+      Detect and use available random number generator (bug 8308)
+      Add sparc64 architecture string.
+      FcStrCanonAbsoluteFilename should be static.
+      Use explicit platform/nameid order when scanning ttf files.
+      Warn (and recover) from config file without <cachedir> elements.
+      Avoid writing uninitialized structure pad bytes to cache files.
+      Fix grep pattern in makealias to work on non-Gnu grep (bug 8368).
+      Add FcFreeTypeQueryFace external API. Bug #7311.
+      Segfault scanning non-font files. Disallow scan edit of user vars. (#8767)
+      Add space between type and formal in devel man pages (bug 8935)
+
+Mike FABIAN:
+      Do not clean cache files for different architectures
+
+Peter Breitenlohner:
+      A VPATH build of fontconfig-2.4.1 fails for various reasons. Bug 8933.
+      Use <literal> instead of <sgmltag> when documenting fonts.conf. Bug 8935.
+      Fix fc-cat documentation (bug 8935).
+
 
 2.4.1
 

@@ -19,7 +19,7 @@ important steps:
 		Set the date
 		Append the short log
 
-		git-log --pretty=short 2.4.xx | git-shortlog
+		git-log --pretty=short 2.4.xx.. | git-shortlog
 		
  3.	Commit those changes
  
