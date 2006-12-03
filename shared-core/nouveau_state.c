@@ -117,6 +117,7 @@ int nouveau_unload(struct drm_device *dev)
 int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	drm_nouveau_getparam_t getparam;
 
 	DRM_COPY_FROM_USER_IOCTL(getparam, (drm_nouveau_getparam_t __user *)data,
@@ -136,6 +137,12 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 			getparam.value=NV_PCIE;
 		else
 			getparam.value=NV_PCI;
+		break;
+	case NOUVEAU_GETPARAM_FB_PHYSICAL:
+		getparam.value=dev_priv->fb_phys;
+		break;
+	case NOUVEAU_GETPARAM_AGP_PHYSICAL:
+		getparam.value=dev_priv->agp_phys;
 		break;
 	default:
 		DRM_ERROR("unknown parameter %d\n", getparam.param);

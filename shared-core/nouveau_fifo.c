@@ -106,19 +106,34 @@ static int nouveau_fifo_instmem_configure(drm_device_t *dev)
 	 *           cards.  RAMFC is 4kb (32 fifos, 128byte entries).
 	 *   Others: Position RAMFC at RAMIN+0x11400
 	 */
-	if (dev_priv->card_type >= NV_40) {
-		dev_priv->ramfc_offset = 0x20000;
-		dev_priv->ramfc_size   = nouveau_fifo_number(dev) * 128;
-		NV_WRITE(NV40_PFIFO_RAMFC, 0x30002);
-	} else if (dev_priv->card_type >= NV_10) {
-		dev_priv->ramfc_offset = 0x11400;
-		dev_priv->ramfc_size   = nouveau_fifo_number(dev) * 64;
-		NV_WRITE(NV_PFIFO_RAMFC, (dev_priv->ramfc_offset>>8) |
-				(1 << 16) /* 64 Bytes entry*/);
-	} else {
-		dev_priv->ramfc_offset = 0x11400;
-		dev_priv->ramfc_size   = nouveau_fifo_number(dev) * 32;
-		NV_WRITE(NV_PFIFO_RAMFC, dev_priv->ramfc_offset>>8);
+	switch(dev_priv->card_type)
+	{
+		case NV_50:
+		case NV_40:
+			dev_priv->ramfc_offset = 0x20000;
+			dev_priv->ramfc_size   = nouveau_fifo_number(dev) * nouveau_fifo_ctx_size(dev);
+			NV_WRITE(NV40_PFIFO_RAMFC, 0x30002);
+			break;
+		case NV_44:
+			dev_priv->ramfc_offset = 0x20000;
+			dev_priv->ramfc_size   = nouveau_fifo_number(dev) * nouveau_fifo_ctx_size(dev);
+			NV_WRITE(NV40_PFIFO_RAMFC, ((nouveau_mem_fb_amount(dev)-512*1024+dev_priv->ramfc_offset)>>16) |
+					(2 << 16));
+			break;
+		case NV_30:
+		case NV_20:
+		case NV_10:
+			dev_priv->ramfc_offset = 0x11400;
+			dev_priv->ramfc_size   = nouveau_fifo_number(dev) * nouveau_fifo_ctx_size(dev);
+			NV_WRITE(NV_PFIFO_RAMFC, (dev_priv->ramfc_offset>>8) |
+					(1 << 16) /* 64 Bytes entry*/);
+			break;
+		case NV_04:
+		case NV_03:
+			dev_priv->ramfc_offset = 0x11400;
+			dev_priv->ramfc_size   = nouveau_fifo_number(dev) * nouveau_fifo_ctx_size(dev);
+			NV_WRITE(NV_PFIFO_RAMFC, dev_priv->ramfc_offset>>8);
+			break;
 	}
 	DRM_DEBUG("RAMFC offset=0x%x, size=%d\n",
 			dev_priv->ramfc_offset,

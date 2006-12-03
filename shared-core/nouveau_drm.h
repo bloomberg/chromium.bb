@@ -86,12 +86,14 @@ typedef struct drm_nouveau_mem_free {
 drm_nouveau_mem_free_t;
 
 /* FIXME : maybe unify {GET,SET}PARAMs */
-#define NOUVEAU_GETPARAM_PCI_VENDOR 3
-#define NOUVEAU_GETPARAM_PCI_DEVICE 4
-#define NOUVEAU_GETPARAM_BUS_TYPE   5
+#define NOUVEAU_GETPARAM_PCI_VENDOR      3
+#define NOUVEAU_GETPARAM_PCI_DEVICE      4
+#define NOUVEAU_GETPARAM_BUS_TYPE        5
+#define NOUVEAU_GETPARAM_FB_PHYSICAL     6
+#define NOUVEAU_GETPARAM_AGP_PHYSICAL    7
 typedef struct drm_nouveau_getparam {
 	unsigned int param;
-	unsigned int value;
+	uint64_t value;
 }
 drm_nouveau_getparam_t;
 
@@ -110,10 +112,16 @@ enum nouveau_card_type {
 	NV_04      =4,
 	NV_05      =5,
 	NV_10      =10,
+	NV_11      =10,
+	NV_15      =10,
+	NV_17      =10,
 	NV_20      =20,
+	NV_25      =20,
 	NV_30      =30,
+	NV_34      =30,
 	NV_40      =40,
-	G_70       =50,
+	NV_44      =44,
+	NV_50      =50,
 	NV_LAST    =0xffff,
 };
 

@@ -253,7 +253,8 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 		case NV_20:
 		case NV_30:
 		case NV_40:
-		case G_70:
+		case NV_44:
+		case NV_50:
 		default:
 			// XXX won't work on BSD because of pci_read_config_dword
 			if (dev_priv->flags&NV_NFORCE) {
@@ -281,6 +282,8 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 int nouveau_mem_init(struct drm_device *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	dev_priv->agp_phys=0;
+	dev_priv->fb_phys=0;
 
 	/* init AGP */
 	dev_priv->agp_heap=NULL;
@@ -330,10 +333,13 @@ int nouveau_mem_init(struct drm_device *dev)
 
 		if (init_heap(&dev_priv->agp_heap, info.aperture_base, info.aperture_size))
 			goto no_agp;
+
+		dev_priv->agp_phys=info.aperture_base;
 	}
 no_agp:
 
 	/* Init FB */
+	dev_priv->fb_phys=drm_get_resource_start(dev,1);
 	if (nouveau_mem_fb_amount(dev)>256*1024*1024) {
 		/* On cards with > 256Mb, you can't map everything. 
 		 * So we create a second FB heap for that type of memory */
@@ -473,7 +479,7 @@ struct mem_block *nouveau_instmem_alloc(struct drm_device *dev,
 	if (block) {
 		block->flags = NOUVEAU_MEM_INSTANCE;
 		DRM_DEBUG("instance(size=%d, align=%d) alloc'd at 0x%08x\n",
-				size, (1<<align), block->start);
+				size, (1<<align), (uint32_t)block->start);
 	}
 
 	return block;
@@ -508,11 +514,9 @@ int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
 	block=nouveau_mem_alloc(dev, alloc.alignment, alloc.size, alloc.flags, filp);
 	if (!block)
 		return DRM_ERR(ENOMEM);
+	alloc.region_offset=block->start;
 
-	if (DRM_COPY_TO_USER(alloc.region_offset, &block->start, sizeof(uint64_t))) {
-		DRM_ERROR("copy_to_user\n");
-		return DRM_ERR(EFAULT);
-	}
+	DRM_COPY_TO_USER_IOCTL((drm_nouveau_mem_alloc_t __user *) data, alloc, sizeof(alloc));
 
 	return 0;
 }

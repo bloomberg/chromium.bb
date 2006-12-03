@@ -32,9 +32,9 @@
 #define DRIVER_DESC		"nVidia Riva/TNT/GeForce"
 #define DRIVER_DATE		"20060213"
 
-#define DRIVER_MAJOR		1
+#define DRIVER_MAJOR		0
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	0
+#define DRIVER_PATCHLEVEL	1
 
 #define NOUVEAU_FAMILY   0x0000FFFF
 #define NOUVEAU_FLAGS    0xFFFF0000
@@ -121,6 +121,10 @@ typedef struct drm_nouveau_private {
 	uint32_t ramfc_size;
 	uint32_t ramro_offset;
 	uint32_t ramro_size;
+
+	/* base physical adresses */
+	uint64_t fb_phys;
+	uint64_t agp_phys;
 
 	struct mem_block *agp_heap;
 	struct mem_block *fb_heap;
