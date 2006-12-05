@@ -38,14 +38,14 @@
 namespace google_airbag {
 
 using std::string;
-class MinidumpModule;
+class CodeModule;
 
 class SymbolSupplier {
  public:
   virtual ~SymbolSupplier() {}
 
   // Returns the path to the symbol file for the given module.
-  virtual string GetSymbolFile(MinidumpModule *module) = 0;
+  virtual string GetSymbolFile(const CodeModule *module) = 0;
 };
 
 }  // namespace google_airbag

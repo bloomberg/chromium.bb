@@ -32,7 +32,8 @@
 
 #include <string>
 #include "google_airbag/processor/call_stack.h"
-#include "google_airbag/processor/minidump.h"
+#include "google_airbag/processor/code_module.h"
+#include "google_airbag/processor/code_modules.h"
 #include "google_airbag/processor/minidump_processor.h"
 #include "google_airbag/processor/process_state.h"
 #include "google_airbag/processor/stack_frame.h"
@@ -43,7 +44,7 @@ namespace {
 
 using std::string;
 using google_airbag::CallStack;
-using google_airbag::MinidumpModule;
+using google_airbag::CodeModule;
 using google_airbag::MinidumpProcessor;
 using google_airbag::ProcessState;
 using google_airbag::scoped_ptr;
@@ -55,15 +56,17 @@ using google_airbag::SymbolSupplier;
     return false; \
   }
 
+#define ASSERT_FALSE(cond) ASSERT_TRUE(!(cond))
+
 #define ASSERT_EQ(e1, e2) ASSERT_TRUE((e1) == (e2))
 
 class TestSymbolSupplier : public SymbolSupplier {
  public:
-  virtual string GetSymbolFile(MinidumpModule *module);
+  virtual string GetSymbolFile(const CodeModule *module);
 };
 
-string TestSymbolSupplier::GetSymbolFile(MinidumpModule *module) {
-  if (*(module->GetName()) == "c:\\test_app.exe") {
+string TestSymbolSupplier::GetSymbolFile(const CodeModule *module) {
+  if (module && module->code_file() == "c:\\test_app.exe") {
     // The funny-looking pathname is so that the symbol file can also be
     // reached by a SimpleSymbolSupplier.
     return string(getenv("srcdir") ? getenv("srcdir") : ".") +
@@ -92,37 +95,53 @@ static bool RunTests() {
   ASSERT_EQ(state->crash_address(), 0x45);
   ASSERT_EQ(state->threads()->size(), 1);
   ASSERT_EQ(state->requesting_thread(), 0);
+
   CallStack *stack = state->threads()->at(0);
   ASSERT_TRUE(stack);
   ASSERT_EQ(stack->frames()->size(), 4);
 
-  ASSERT_EQ(stack->frames()->at(0)->module_base, 0x400000);
-  ASSERT_EQ(stack->frames()->at(0)->module_name, "c:\\test_app.exe");
+  ASSERT_TRUE(stack->frames()->at(0)->module);
+  ASSERT_EQ(stack->frames()->at(0)->module->base_address(), 0x400000);
+  ASSERT_EQ(stack->frames()->at(0)->module->code_file(), "c:\\test_app.exe");
   ASSERT_EQ(stack->frames()->at(0)->function_name, "CrashFunction()");
   ASSERT_EQ(stack->frames()->at(0)->source_file_name, "c:\\test_app.cc");
   ASSERT_EQ(stack->frames()->at(0)->source_line, 51);
 
-  ASSERT_EQ(stack->frames()->at(1)->module_base, 0x400000);
-  ASSERT_EQ(stack->frames()->at(1)->module_name, "c:\\test_app.exe");
+  ASSERT_TRUE(stack->frames()->at(1)->module);
+  ASSERT_EQ(stack->frames()->at(1)->module->base_address(), 0x400000);
+  ASSERT_EQ(stack->frames()->at(1)->module->code_file(), "c:\\test_app.exe");
   ASSERT_EQ(stack->frames()->at(1)->function_name, "main");
   ASSERT_EQ(stack->frames()->at(1)->source_file_name, "c:\\test_app.cc");
   ASSERT_EQ(stack->frames()->at(1)->source_line, 56);
 
   // This comes from the CRT
-  ASSERT_EQ(stack->frames()->at(2)->module_base, 0x400000);
-  ASSERT_EQ(stack->frames()->at(2)->module_name, "c:\\test_app.exe");
+  ASSERT_TRUE(stack->frames()->at(2)->module);
+  ASSERT_EQ(stack->frames()->at(2)->module->base_address(), 0x400000);
+  ASSERT_EQ(stack->frames()->at(2)->module->code_file(), "c:\\test_app.exe");
   ASSERT_EQ(stack->frames()->at(2)->function_name, "__tmainCRTStartup");
   ASSERT_EQ(stack->frames()->at(2)->source_file_name,
             "f:\\rtm\\vctools\\crt_bld\\self_x86\\crt\\src\\crt0.c");
   ASSERT_EQ(stack->frames()->at(2)->source_line, 318);
 
   // No debug info available for kernel32.dll
-  ASSERT_EQ(stack->frames()->at(3)->module_base, 0x7c800000);
-  ASSERT_EQ(stack->frames()->at(3)->module_name,
+  ASSERT_TRUE(stack->frames()->at(3)->module);
+  ASSERT_EQ(stack->frames()->at(3)->module->base_address(), 0x7c800000);
+  ASSERT_EQ(stack->frames()->at(3)->module->code_file(),
             "C:\\WINDOWS\\system32\\kernel32.dll");
   ASSERT_TRUE(stack->frames()->at(3)->function_name.empty());
   ASSERT_TRUE(stack->frames()->at(3)->source_file_name.empty());
   ASSERT_EQ(stack->frames()->at(3)->source_line, 0);
+
+  ASSERT_EQ(state->modules()->module_count(), 13);
+  ASSERT_TRUE(state->modules()->GetMainModule());
+  ASSERT_EQ(state->modules()->GetMainModule()->code_file(), "c:\\test_app.exe");
+  ASSERT_FALSE(state->modules()->GetModuleForAddress(0));
+  ASSERT_EQ(state->modules()->GetMainModule(),
+            state->modules()->GetModuleForAddress(0x400000));
+  ASSERT_EQ(state->modules()->GetModuleForAddress(0x7c801234)->debug_file(),
+            "kernel32.pdb");
+  ASSERT_EQ(state->modules()->GetModuleForAddress(0x77d43210)->version(),
+            "5.1.2600.2622");
 
   return true;
 }

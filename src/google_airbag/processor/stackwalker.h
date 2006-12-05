@@ -46,10 +46,10 @@
 namespace google_airbag {
 
 class CallStack;
+class CodeModules;
 template<typename T> class linked_ptr;
 class MemoryRegion;
 class MinidumpContext;
-class MinidumpModuleList;
 struct StackFrame;
 struct StackFrameInfo;
 class SymbolSupplier;
@@ -71,18 +71,18 @@ class Stackwalker {
   // argument.  If no suitable concrete subclass exists, returns NULL.
   static Stackwalker* StackwalkerForCPU(MinidumpContext *context,
                                         MemoryRegion *memory,
-                                        MinidumpModuleList *modules,
+                                        const CodeModules *modules,
                                         SymbolSupplier *supplier);
 
  protected:
   // memory identifies a MemoryRegion that provides the stack memory
-  // for the stack to walk.  modules, if non-NULL, is a MinidumpModuleList
-  // that is used to look up which code module each stack frame is
+  // for the stack to walk.  modules, if non-NULL, is a CodeModules
+  // object that is used to look up which code module each stack frame is
   // associated with.  supplier is an optional caller-supplied SymbolSupplier
   // implementation.  If supplier is NULL, source line info will not be
   // resolved.
   Stackwalker(MemoryRegion *memory,
-              MinidumpModuleList *modules,
+              const CodeModules *modules,
               SymbolSupplier *supplier);
 
   // The stack memory to walk.  Subclasses will require this region to
@@ -110,7 +110,7 @@ class Stackwalker {
 
   // A list of modules, for populating each StackFrame's module information.
   // This field is optional and may be NULL.
-  MinidumpModuleList *modules_;
+  const CodeModules *modules_;
 
   // The optional SymbolSupplier for resolving source line info.
   SymbolSupplier *supplier_;

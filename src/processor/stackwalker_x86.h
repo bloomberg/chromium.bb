@@ -45,19 +45,18 @@
 
 namespace google_airbag {
 
-class MinidumpContext;
-class MinidumpModuleList;
+class CodeModules;
 
 
 class StackwalkerX86 : public Stackwalker {
  public:
-  // context is a MinidumpContext object that gives access to x86-specific
+  // context is an x86 context object that gives access to x86-specific
   // register state corresponding to the innermost called frame to be
   // included in the stack.  The other arguments are passed directly through
   // to the base Stackwalker constructor.
   StackwalkerX86(const MDRawContextX86 *context,
                  MemoryRegion *memory,
-                 MinidumpModuleList *modules,
+                 const CodeModules *modules,
                  SymbolSupplier *supplier);
 
  private:

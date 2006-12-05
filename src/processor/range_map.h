@@ -75,6 +75,20 @@ class RangeMap {
                             AddressType *entry_base, AddressType *entry_size)
                             const;
 
+  // Treating all ranges as a list ordered by the address spaces that they
+  // occupy, locates the range at the index specified by index.  Returns
+  // false if index is larger than the number of ranges stored, or if another
+  // parameter error occurs.  entry_base and entry_size, if non-NULL, are set
+  // to the base and size of the entry's range.
+  //
+  // RetrieveRangeAtIndex is not optimized for speedy operation.
+  bool RetrieveRangeAtIndex(int index, EntryType *entry,
+                            AddressType *entry_base, AddressType *entry_size)
+                            const;
+
+  // Returns the number of ranges stored in the RangeMap.
+  int GetCount() const;
+
   // Empties the range map, restoring it to the state it was when it was
   // initially created.
   void Clear();

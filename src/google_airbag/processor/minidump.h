@@ -85,6 +85,8 @@
 #include <vector>
 
 #include "google_airbag/common/minidump_format.h"
+#include "google_airbag/processor/code_module.h"
+#include "google_airbag/processor/code_modules.h"
 #include "google_airbag/processor/memory_region.h"
 
 
@@ -162,7 +164,7 @@ class MinidumpStream : public MinidumpObject {
 // user wants).
 class MinidumpContext : public MinidumpStream {
  public:
-  ~MinidumpContext();
+  virtual ~MinidumpContext();
 
   // Returns an MD_CONTEXT_* value such as MD_CONTEXT_X86 or MD_CONTEXT_PPC
   // identifying the CPU type that the context was collected from.  The
@@ -217,7 +219,7 @@ class MinidumpContext : public MinidumpStream {
 class MinidumpMemoryRegion : public MinidumpObject,
                              public MemoryRegion {
  public:
-  ~MinidumpMemoryRegion();
+  virtual ~MinidumpMemoryRegion();
 
   // Returns a pointer to the base of the memory region.  Returns the
   // cached value if available, otherwise, reads the minidump file and
@@ -272,7 +274,7 @@ class MinidumpMemoryRegion : public MinidumpObject,
 // provided here.
 class MinidumpThread : public MinidumpObject {
  public:
-  ~MinidumpThread();
+  virtual ~MinidumpThread();
 
   const MDRawThread* thread() const { return valid_ ? &thread_ : NULL; }
   MinidumpMemoryRegion* GetMemory();
@@ -308,7 +310,7 @@ class MinidumpThread : public MinidumpObject {
 // a process.
 class MinidumpThreadList : public MinidumpStream {
  public:
-  ~MinidumpThreadList();
+  virtual ~MinidumpThreadList();
 
   unsigned int thread_count() const { return valid_ ? thread_count_ : 0; }
 
@@ -346,19 +348,24 @@ class MinidumpThreadList : public MinidumpStream {
 // code modules.  Access is provided to various data referenced indirectly
 // by MDRawModule, such as the module's name and a specification for where
 // to locate debugging information for the module.
-class MinidumpModule : public MinidumpObject {
+class MinidumpModule : public MinidumpObject,
+                       public CodeModule {
  public:
-  ~MinidumpModule();
+  virtual ~MinidumpModule();
 
   const MDRawModule* module() const { return valid_ ? &module_ : NULL; }
-  u_int64_t base_address() const {
+
+  // CodeModule implementation
+  virtual u_int64_t base_address() const {
     return valid_ ? module_.base_of_image : static_cast<u_int64_t>(-1);
   }
-  u_int32_t size() const { return valid_ ? module_.size_of_image : 0; }
-
-  // The name of the file containing this module's code (exe, dll, so,
-  // dylib).
-  const string* GetName();
+  virtual u_int64_t size() const { return valid_ ? module_.size_of_image : 0; }
+  virtual string code_file() const;
+  virtual string code_identifier() const;
+  virtual string debug_file() const;
+  virtual string debug_identifier() const;
+  virtual string version() const;
+  virtual const CodeModule* Copy() const;
 
   // The CodeView record, which contains information to locate the module's
   // debugging information (pdb).  This is returned as u_int8_t* because
@@ -371,12 +378,6 @@ class MinidumpModule : public MinidumpObject {
   // do not generate this type of debugging information (dbg), and this
   // field is not expected to be present.
   const MDImageDebugMisc* GetMiscRecord();
-
-  // The filename of the file containing debugging information for this
-  // module.  This data is supplied by the CodeView record, if present, or
-  // the miscellaneous debug record.  As such, it will reference either a
-  // pdb or dbg file.
-  const string* GetDebugFilename();
 
   // Print a human-readable representation of the object to stdout.
   void Print();
@@ -391,6 +392,21 @@ class MinidumpModule : public MinidumpObject {
   // MinidumpModuleList.  No size checking is done, because
   // MinidumpModuleList handles that directly.
   bool Read();
+
+  // Reads indirectly-referenced data, including the module name, CodeView
+  // record, and miscellaneous debugging record.  This is necessary to allow
+  // MinidumpModuleList to fully construct MinidumpModule objects without
+  // requiring seeks to read a contiguous set of MinidumpModule objects.
+  // All auxiliary data should be available when Read is called, in order to
+  // allow the CodeModule getters to be const methods.
+  bool ReadAuxiliaryData();
+
+  // True after a successful Read.  This is different from valid_, which is
+  // not set true until ReadAuxiliaryData also completes successfully.
+  // module_valid_ is only used by ReadAuxiliaryData and the functions it
+  // calls to determine whether the object is ready for auxiliary data to 
+  // be read.
+  bool              module_valid_;
 
   MDRawModule       module_;
 
@@ -407,9 +423,6 @@ class MinidumpModule : public MinidumpObject {
   // because the structure contains a variable-sized string and its exact
   // size cannot be known until it is processed.
   vector<u_int8_t>* misc_record_;
-
-  // Cached debug filename.
-  const string*     debug_filename_;
 };
 
 
@@ -417,18 +430,21 @@ class MinidumpModule : public MinidumpObject {
 // in the form of MinidumpModules.  It maintains a map of these modules
 // so that it may easily provide a code module corresponding to a specific
 // address.
-class MinidumpModuleList : public MinidumpStream {
+class MinidumpModuleList : public MinidumpStream,
+                           public CodeModules {
  public:
-  ~MinidumpModuleList();
+  virtual ~MinidumpModuleList();
 
-  unsigned int module_count() const { return valid_ ? module_count_ : 0; }
-
-  // Sequential access to modules.
-  MinidumpModule* GetModuleAtIndex(unsigned int index) const;
-
-  // Random access to modules.  Returns the module whose code is present
-  // at the address identified by address.
-  MinidumpModule* GetModuleForAddress(u_int64_t address);
+  // CodeModules implementation.
+  virtual unsigned int module_count() const {
+    return valid_ ? module_count_ : 0;
+  }
+  virtual const MinidumpModule* GetModuleForAddress(u_int64_t address) const;
+  virtual const MinidumpModule* GetMainModule() const;
+  virtual const MinidumpModule* GetModuleAtSequence(
+      unsigned int sequence) const;
+  virtual const MinidumpModule* GetModuleAtIndex(unsigned int index) const;
+  virtual const CodeModules* Copy() const;
 
   // Print a human-readable representation of the object to stdout.
   void Print();
@@ -463,7 +479,7 @@ class MinidumpModuleList : public MinidumpStream {
 // memory minidumps contain all of a process' mapped memory.
 class MinidumpMemoryList : public MinidumpStream {
  public:
-  ~MinidumpMemoryList();
+  virtual ~MinidumpMemoryList();
 
   unsigned int region_count() const { return valid_ ? region_count_ : 0; }
 
@@ -512,7 +528,7 @@ class MinidumpMemoryList : public MinidumpStream {
 // the exception occurred.
 class MinidumpException : public MinidumpStream {
  public:
-  ~MinidumpException();
+  virtual ~MinidumpException();
 
   const MDRawExceptionStream* exception() const {
     return valid_ ? &exception_ : NULL;
@@ -547,7 +563,7 @@ class MinidumpException : public MinidumpStream {
 // the system on which the minidump was generated.  See also MinidumpMiscInfo.
 class MinidumpSystemInfo : public MinidumpStream {
  public:
-  ~MinidumpSystemInfo();
+  virtual ~MinidumpSystemInfo();
 
   const MDRawSystemInfo* system_info() const {
     return valid_ ? &system_info_ : NULL;

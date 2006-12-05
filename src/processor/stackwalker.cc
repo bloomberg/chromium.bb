@@ -36,6 +36,8 @@
 
 #include "google_airbag/processor/stackwalker.h"
 #include "google_airbag/processor/call_stack.h"
+#include "google_airbag/processor/code_module.h"
+#include "google_airbag/processor/code_modules.h"
 #include "google_airbag/processor/minidump.h"
 #include "google_airbag/processor/stack_frame.h"
 #include "google_airbag/processor/symbol_supplier.h"
@@ -49,7 +51,7 @@
 namespace google_airbag {
 
 
-Stackwalker::Stackwalker(MemoryRegion *memory, MinidumpModuleList *modules,
+Stackwalker::Stackwalker(MemoryRegion *memory, const CodeModules *modules,
                          SymbolSupplier *supplier)
     : memory_(memory), modules_(modules), supplier_(supplier) {
 }
@@ -80,15 +82,14 @@ CallStack* Stackwalker::Walk() {
 
     // Resolve the module information, if a module map was provided.
     if (modules_) {
-      MinidumpModule *module =
+      const CodeModule *module =
           modules_->GetModuleForAddress(frame->instruction);
       if (module) {
-        frame->module_name = *(module->GetName());
-        frame->module_base = module->base_address();
-        if (!resolver.HasModule(frame->module_name) && supplier_) {
+        frame->module = module;
+        if (!resolver.HasModule(frame->module->code_file()) && supplier_) {
           string symbol_file = supplier_->GetSymbolFile(module);
           if (!symbol_file.empty()) {
-            resolver.LoadModule(frame->module_name, symbol_file);
+            resolver.LoadModule(frame->module->code_file(), symbol_file);
           }
         }
         frame_info.reset(resolver.FillSourceLineInfo(frame.get()));
@@ -114,7 +115,7 @@ CallStack* Stackwalker::Walk() {
 // static
 Stackwalker* Stackwalker::StackwalkerForCPU(MinidumpContext *context,
                                             MemoryRegion *memory,
-                                            MinidumpModuleList *modules,
+                                            const CodeModules *modules,
                                             SymbolSupplier *supplier) {
   Stackwalker *cpu_stackwalker = NULL;
 

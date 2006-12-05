@@ -33,14 +33,16 @@
 // that stores symbol files in a filesystem tree.  A SimpleSymbolSupplier is
 // created with a base directory, which is the root for all symbol files.
 // Each symbol file contained therien has a directory entry in the base
-// directory with a name identical to the corresponding pdb file.  Within
-// each of these directories, there are subdirectories named for the uuid and
-// age of each pdb file.  The uuid is presented in hexadecimal form, with
-// uppercase characters and no dashes.  The age is appended to it in
-// hexadecimal form, without any separators.  Within that subdirectory,
+// directory with a name identical to the corresponding debugging file (pdb).
+// Within each of these directories, there are subdirectories named for the
+// debugging file's identifier.  For recent pdb files, this is a concatenation
+// of the pdb's uuid and age, presented in hexadecimal form, using uppercase
+// characters and no dashes or separators.  Within that subdirectory,
 // SimpleSymbolSupplier expects to find the symbol file, which is named
-// identically to the pdb file, but with a .sym extension.  This sample
-// hierarchy is rooted at the "symbols" base directory:
+// identically to the debug file, but with a .sym extension.  If the original
+// debug file had a name ending in .pdb, the .pdb extension will be replaced
+// with .sym.  This sample hierarchy is rooted at the "symbols" base
+// directory:
 //
 // symbols
 // symbols/test_app.pdb
@@ -59,9 +61,11 @@
 // SimpleSymbolServer, provided that the pdb files are transformed to dumped
 // format using a tool such as dump_syms, and given a .sym extension.
 //
-// SimpleSymbolSupplier presently only supports symbol files that have
-// the MSVC 7.0 CodeView record format.  See MDCVInfoPDB70 in
-// minidump_format.h.
+// SimpleSymbolSupplier supports any debugging file which can be identified
+// by a CodeModule object's debug_file and debug_identifier accessors.  The
+// expected ultimate source of these CodeModule objects are MinidumpModule
+// objects; it is this class that is responsible for assigning appropriate
+// values for debug_file and debug_identifier.
 //
 // Author: Mark Mentovai
 
@@ -76,7 +80,7 @@ namespace google_airbag {
 
 using std::string;
 
-class MinidumpModule;
+class CodeModule;
 
 class SimpleSymbolSupplier : public SymbolSupplier {
  public:
@@ -88,12 +92,13 @@ class SimpleSymbolSupplier : public SymbolSupplier {
 
   // Returns the path to the symbol file for the given module.  See the
   // description above.
-  virtual string GetSymbolFile(MinidumpModule *module) {
+  virtual string GetSymbolFile(const CodeModule *module) {
     return GetSymbolFileAtPath(module, path_);
   }
 
  protected:
-  string GetSymbolFileAtPath(MinidumpModule *module, const string &root_path);
+  string GetSymbolFileAtPath(const CodeModule *module,
+                             const string &root_path);
 
  private:
   string path_;

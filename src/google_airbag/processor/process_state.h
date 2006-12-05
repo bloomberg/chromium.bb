@@ -43,6 +43,7 @@ using std::string;
 using std::vector;
 
 class CallStack;
+class CodeModules;
 
 class ProcessState {
  public:
@@ -58,6 +59,7 @@ class ProcessState {
   string os_version() const { return os_version_; }
   string cpu() const { return cpu_; }
   string cpu_info() const { return cpu_info_; }
+  const CodeModules* modules() const { return modules_; }
 
  private:
   // MinidumpProcessor is responsible for building ProcessState objects.
@@ -66,7 +68,7 @@ class ProcessState {
   // Disallow instantiation other than by friends.
   ProcessState() : crashed_(false), crash_reason_(), crash_address_(0),
                    requesting_thread_(-1), threads_(), os_(), os_version_(),
-                   cpu_(), cpu_info_() {}
+                   cpu_(), cpu_info_(), modules_(NULL) {}
 
   // True if the process crashed, false if the dump was produced outside
   // of an exception handler.
@@ -120,6 +122,10 @@ class ProcessState {
   // present in the dump, or additional identifying information is not
   // defined for the CPU family, this field will be empty.
   string cpu_info_;
+
+  // The modules that were loaded into the process represented by the
+  // ProcessState.
+  const CodeModules *modules_;
 };
 
 }  // namespace google_airbag

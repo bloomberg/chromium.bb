@@ -110,8 +110,9 @@ libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 src_libairbag_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
-am_src_libairbag_la_OBJECTS = src/processor/call_stack.lo \
-	src/processor/minidump.lo src/processor/minidump_processor.lo \
+am_src_libairbag_la_OBJECTS = src/processor/basic_code_modules.lo \
+	src/processor/call_stack.lo src/processor/minidump.lo \
+	src/processor/minidump_processor.lo \
 	src/processor/pathname_stripper.lo \
 	src/processor/process_state.lo \
 	src/processor/simple_symbol_supplier.lo \
@@ -137,12 +138,14 @@ am_src_processor_minidump_dump_OBJECTS =  \
 	src/processor/minidump_dump.$(OBJEXT)
 src_processor_minidump_dump_OBJECTS =  \
 	$(am_src_processor_minidump_dump_OBJECTS)
-src_processor_minidump_dump_DEPENDENCIES = src/processor/minidump.lo
+src_processor_minidump_dump_DEPENDENCIES =  \
+	src/processor/basic_code_modules.lo src/processor/minidump.lo
 am_src_processor_minidump_processor_unittest_OBJECTS =  \
 	src/processor/minidump_processor_unittest.$(OBJEXT)
 src_processor_minidump_processor_unittest_OBJECTS =  \
 	$(am_src_processor_minidump_processor_unittest_OBJECTS)
 src_processor_minidump_processor_unittest_DEPENDENCIES =  \
+	src/processor/basic_code_modules.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump_processor.lo src/processor/minidump.lo \
 	src/processor/process_state.lo src/processor/stackwalker.lo \
@@ -154,6 +157,7 @@ am_src_processor_minidump_stackwalk_OBJECTS =  \
 src_processor_minidump_stackwalk_OBJECTS =  \
 	$(am_src_processor_minidump_stackwalk_OBJECTS)
 src_processor_minidump_stackwalk_DEPENDENCIES =  \
+	src/processor/basic_code_modules.lo \
 	src/processor/call_stack.lo src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/pathname_stripper.lo \
@@ -189,6 +193,7 @@ am_src_processor_stackwalker_selftest_OBJECTS =  \
 src_processor_stackwalker_selftest_OBJECTS =  \
 	$(am_src_processor_stackwalker_selftest_OBJECTS)
 src_processor_stackwalker_selftest_DEPENDENCIES =  \
+	src/processor/basic_code_modules.lo \
 	src/processor/call_stack.lo src/processor/minidump.lo \
 	src/processor/source_line_resolver.lo \
 	src/processor/stackwalker.lo src/processor/stackwalker_ppc.lo \
@@ -370,6 +375,8 @@ src_libairbag_la_SOURCES = \
 	src/google_airbag/common/airbag_types.h \
 	src/google_airbag/common/minidump_format.h \
 	src/google_airbag/processor/call_stack.h \
+	src/google_airbag/processor/code_module.h \
+	src/google_airbag/processor/code_modules.h \
 	src/google_airbag/processor/memory_region.h \
 	src/google_airbag/processor/minidump.h \
 	src/google_airbag/processor/minidump_processor.h \
@@ -380,6 +387,9 @@ src_libairbag_la_SOURCES = \
 	src/google_airbag/processor/symbol_supplier.h \
 	src/processor/address_map.h \
 	src/processor/address_map-inl.h \
+	src/processor/basic_code_module.h \
+	src/processor/basic_code_modules.cc \
+	src/processor/basic_code_modules.h \
 	src/processor/call_stack.cc \
 	src/processor/contained_range_map.h \
 	src/processor/contained_range_map-inl.h \
@@ -421,6 +431,7 @@ src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc
 
 src_processor_minidump_processor_unittest_LDADD = \
+	src/processor/basic_code_modules.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
@@ -452,6 +463,7 @@ src_processor_stackwalker_selftest_SOURCES = \
 	src/processor/stackwalker_selftest.cc
 
 src_processor_stackwalker_selftest_LDADD = \
+	src/processor/basic_code_modules.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump.lo \
 	src/processor/source_line_resolver.lo \
@@ -464,12 +476,14 @@ src_processor_minidump_dump_SOURCES = \
 	src/processor/minidump_dump.cc
 
 src_processor_minidump_dump_LDADD = \
+	src/processor/basic_code_modules.lo \
 	src/processor/minidump.lo
 
 src_processor_minidump_stackwalk_SOURCES = \
 	src/processor/minidump_stackwalk.cc
 
 src_processor_minidump_stackwalk_LDADD = \
+	src/processor/basic_code_modules.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \
@@ -483,14 +497,39 @@ src_processor_minidump_stackwalk_LDADD = \
 
 EXTRA_DIST = \
 	$(SCRIPTS) \
-	src/processor/testdata/minidump1.dmp \
-	src/processor/testdata/minidump1.out \
-	src/processor/testdata/minidump1.stack.out \
+	src/client/minidump_file_writer.cc \
+	src/client/minidump_file_writer.h \
+	src/client/minidump_file_writer-inl.h \
+	src/client/windows/airbag_client.sln \
+	src/client/windows/handler/exception_handler.cc \
+	src/client/windows/handler/exception_handler.h \
+	src/client/windows/handler/exception_handler.vcproj \
+	src/client/windows/sender/crash_report_sender.cc \
+	src/client/windows/sender/crash_report_sender.h \
+	src/client/windows/sender/crash_report_sender.vcproj \
+	src/common/windows/guid_string.cc \
+	src/common/windows/guid_string.h \
+	src/common/windows/http_upload.cc \
+	src/common/windows/http_upload.h \
+	src/common/windows/pdb_source_line_writer.cc \
+	src/common/windows/pdb_source_line_writer.h \
+	src/common/windows/string_utils-inl.h \
 	src/processor/testdata/minidump2.dmp \
-	src/processor/testdata/minidump2.sym \
+	src/processor/testdata/minidump2.dump.out \
+	src/processor/testdata/minidump2.stackwalk.out \
 	src/processor/testdata/module1.out \
 	src/processor/testdata/module2.out \
-	src/processor/testdata/module3_bad.out
+	src/processor/testdata/module3_bad.out \
+	src/processor/testdata/symbols/kernel32.pdb/BCE8785C57B44245A669896B6A19B9542/kernel32.sym \
+	src/processor/testdata/symbols/test_app.pdb/8DDB7E9A365748938D6EB08B1DCA31AA1/test_app.sym \
+	src/processor/testdata/test_app.cc \
+	src/tools/windows/dump_syms/dump_syms.cc \
+	src/tools/windows/dump_syms/dump_syms.vcproj \
+	src/tools/windows/dump_syms/run_regtest.sh \
+	src/tools/windows/dump_syms/testdata/dump_syms_regtest.out \
+	src/tools/windows/dump_syms/testdata/dump_syms_regtest.pdb \
+	src/tools/windows/symupload/symupload.cc \
+	src/tools/windows/symupload/symupload.vcproj
 
 all: all-am
 
@@ -579,6 +618,8 @@ src/processor/$(am__dirstamp):
 src/processor/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) src/processor/$(DEPDIR)
 	@: > src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/basic_code_modules.lo: src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/call_stack.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/minidump.lo: src/processor/$(am__dirstamp) \
@@ -710,6 +751,8 @@ src/processor/stackwalker_selftest$(EXEEXT): $(src_processor_stackwalker_selftes
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f src/processor/address_map_unittest.$(OBJEXT)
+	-rm -f src/processor/basic_code_modules.$(OBJEXT)
+	-rm -f src/processor/basic_code_modules.lo
 	-rm -f src/processor/call_stack.$(OBJEXT)
 	-rm -f src/processor/call_stack.lo
 	-rm -f src/processor/contained_range_map_unittest.$(OBJEXT)
@@ -744,6 +787,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/address_map_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_code_modules.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/call_stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/contained_range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump.Plo@am__quote@
@@ -941,7 +985,7 @@ check-TESTS: $(TESTS)
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/autotools $(distdir)/src $(distdir)/src/processor $(distdir)/src/processor/testdata
+	$(mkdir_p) $(distdir)/autotools $(distdir)/src $(distdir)/src/client $(distdir)/src/client/windows $(distdir)/src/client/windows/handler $(distdir)/src/client/windows/sender $(distdir)/src/common/windows $(distdir)/src/processor $(distdir)/src/processor/testdata $(distdir)/src/processor/testdata/symbols/kernel32.pdb/BCE8785C57B44245A669896B6A19B9542 $(distdir)/src/processor/testdata/symbols/test_app.pdb/8DDB7E9A365748938D6EB08B1DCA31AA1 $(distdir)/src/tools/windows/dump_syms $(distdir)/src/tools/windows/dump_syms/testdata $(distdir)/src/tools/windows/symupload
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

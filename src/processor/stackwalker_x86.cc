@@ -38,7 +38,7 @@
 
 #include "processor/stackwalker_x86.h"
 #include "google_airbag/processor/call_stack.h"
-#include "google_airbag/processor/minidump.h"
+#include "google_airbag/processor/memory_region.h"
 #include "google_airbag/processor/stack_frame_cpu.h"
 #include "processor/linked_ptr.h"
 #include "processor/stack_frame_info.h"
@@ -48,7 +48,7 @@ namespace google_airbag {
 
 StackwalkerX86::StackwalkerX86(const MDRawContextX86 *context,
                                MemoryRegion *memory,
-                               MinidumpModuleList *modules,
+                               const CodeModules *modules,
                                SymbolSupplier *supplier)
     : Stackwalker(memory, modules, supplier),
       context_(context) {

@@ -75,6 +75,14 @@ ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
         &dump, &process_state->crash_address_);
   }
 
+  MinidumpModuleList *module_list = dump.GetModuleList();
+
+  // Put a copy of the module list into ProcessState object.  This is not
+  // necessarily a MinidumpModuleList, but it adheres to the CodeModules
+  // interface, which is all that ProcessState needs to expose.
+  if (module_list)
+    process_state->modules_ = module_list->Copy();
+
   MinidumpThreadList *threads = dump.GetThreadList();
   if (!threads) {
     return NULL;
@@ -137,10 +145,18 @@ ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
       return NULL;
     }
 
+    // Use process_state->modules_ instead of module_list, because the
+    // |modules| argument will be used to populate the |module| fields in
+    // the returned StackFrame objects, which will be placed into the
+    // returned ProcessState object.  module_list's lifetime is only as
+    // long as the Minidump object: it will be deleted when this function
+    // returns.  process_state->modules_ is owned by the ProcessState object
+    // (just like the StackFrame objects), and is much more suitable for this
+    // task.
     scoped_ptr<Stackwalker> stackwalker(
         Stackwalker::StackwalkerForCPU(context,
                                        thread_memory,
-                                       dump.GetModuleList(),
+                                       process_state->modules_,
                                        supplier_));
     if (!stackwalker.get()) {
       return NULL;

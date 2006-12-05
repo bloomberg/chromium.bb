@@ -35,15 +35,16 @@
 
 namespace google_airbag {
 
+class CodeModule;
+
 using std::string;
 
 struct StackFrame {
   StackFrame()
       : instruction(),
-        module_base(),
-        module_name(),
-        function_base(),
+        module(NULL),
         function_name(),
+        function_base(),
         source_file_name(),
         source_line(),
         source_line_base() {}
@@ -56,18 +57,15 @@ struct StackFrame {
   // but may not necessarily point to the exact beginning of that instruction.
   u_int64_t instruction;
 
-  // The base address of the module.
-  u_int64_t module_base;
-
   // The module in which the instruction resides.
-  string module_name;
+  const CodeModule *module;
+
+  // The function name, may be omitted if debug symbols are not available.
+  string function_name;
 
   // The start address of the function, may be omitted if debug symbols
   // are not available.
   u_int64_t function_base;
-
-  // The function name, may be omitted if debug symbols are not available.
-  string function_name;
 
   // The source file name, may be omitted if debug symbols are not available.
   string source_file_name;

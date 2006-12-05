@@ -30,6 +30,7 @@
 #include <cstdio>
 #include <string>
 #include "processor/source_line_resolver.h"
+#include "google_airbag/processor/code_module.h"
 #include "google_airbag/processor/stack_frame.h"
 #include "processor/linked_ptr.h"
 #include "processor/scoped_ptr.h"
@@ -48,11 +49,32 @@
 namespace {
 
 using std::string;
+using google_airbag::CodeModule;
 using google_airbag::linked_ptr;
 using google_airbag::scoped_ptr;
 using google_airbag::SourceLineResolver;
 using google_airbag::StackFrame;
 using google_airbag::StackFrameInfo;
+
+class TestCodeModule : public CodeModule {
+ public:
+  TestCodeModule(string code_file) : code_file_(code_file) {}
+  virtual ~TestCodeModule() {}
+
+  virtual u_int64_t base_address() const { return 0; }
+  virtual u_int64_t size() const { return 0x4000; }
+  virtual string code_file() const { return code_file_; }
+  virtual string code_identifier() const { return ""; }
+  virtual string debug_file() const { return ""; }
+  virtual string debug_identifier() const { return ""; }
+  virtual string version() const { return ""; }
+  virtual const CodeModule* Copy() const {
+    return new TestCodeModule(code_file_);
+  }
+
+ private:
+  string code_file_;
+};
 
 static bool VerifyEmpty(const StackFrame &frame) {
   ASSERT_TRUE(frame.function_name.empty());
@@ -63,6 +85,7 @@ static bool VerifyEmpty(const StackFrame &frame) {
 
 static void ClearSourceLineInfo(StackFrame *frame) {
   frame->function_name.clear();
+  frame->module = NULL;
   frame->source_file_name.clear();
   frame->source_line = 0;
 }
@@ -77,13 +100,28 @@ static bool RunTests() {
   ASSERT_TRUE(resolver.LoadModule("module2", testdata_dir + "/module2.out"));
   ASSERT_TRUE(resolver.HasModule("module2"));
 
+  TestCodeModule module1("module1");
+
   StackFrame frame;
   frame.instruction = 0x1000;
-  frame.module_name = "module1";
+  frame.module = NULL;
   scoped_ptr<StackFrameInfo> frame_info(resolver.FillSourceLineInfo(&frame));
+  ASSERT_FALSE(frame.module);
+  ASSERT_TRUE(frame.function_name.empty());
+  ASSERT_EQ(frame.function_base, 0);
+  ASSERT_TRUE(frame.source_file_name.empty());
+  ASSERT_EQ(frame.source_line, 0);
+  ASSERT_EQ(frame.source_line_base, 0);
+
+  frame.module = &module1;
+  frame_info.reset(resolver.FillSourceLineInfo(&frame));
   ASSERT_EQ(frame.function_name, "Function1_1");
+  ASSERT_TRUE(frame.module);
+  ASSERT_EQ(frame.module->code_file(), "module1");
+  ASSERT_EQ(frame.function_base, 0x1000);
   ASSERT_EQ(frame.source_file_name, "file1_1.cc");
   ASSERT_EQ(frame.source_line, 44);
+  ASSERT_EQ(frame.source_line_base, 0x1000);
   ASSERT_TRUE(frame_info.get());
   ASSERT_FALSE(frame_info->allocates_base_pointer);
   ASSERT_EQ(frame_info->program_string,
@@ -91,6 +129,7 @@ static bool RunTests() {
 
   ClearSourceLineInfo(&frame);
   frame.instruction = 0x800;
+  frame.module = &module1;
   frame_info.reset(resolver.FillSourceLineInfo(&frame));
   ASSERT_TRUE(VerifyEmpty(frame));
   ASSERT_FALSE(frame_info.get());
@@ -113,28 +152,33 @@ static bool RunTests() {
   ASSERT_FALSE(frame_info->allocates_base_pointer);
   ASSERT_FALSE(frame_info->program_string.empty());
 
-  frame.instruction = 0x2180;
-  frame.module_name = "module2";
+  TestCodeModule module2("module2");
+
+  frame.instruction = 0x2181;
+  frame.module = &module2;
   frame_info.reset(resolver.FillSourceLineInfo(&frame));
   ASSERT_EQ(frame.function_name, "Function2_2");
+  ASSERT_EQ(frame.function_base, 0x2170);
+  ASSERT_TRUE(frame.module);
+  ASSERT_EQ(frame.module->code_file(), "module2");
   ASSERT_EQ(frame.source_file_name, "file2_2.cc");
   ASSERT_EQ(frame.source_line, 21);
+  ASSERT_EQ(frame.source_line_base, 0x2180);
   ASSERT_TRUE(frame_info.get());
   ASSERT_EQ(frame_info->prolog_size, 1);
 
   frame.instruction = 0x216f;
-  frame.module_name = "module2";
   resolver.FillSourceLineInfo(&frame);
   ASSERT_EQ(frame.function_name, "Public2_1");
 
   ClearSourceLineInfo(&frame);
   frame.instruction = 0x219f;
-  frame.module_name = "module2";
+  frame.module = &module2;
   resolver.FillSourceLineInfo(&frame);
   ASSERT_TRUE(frame.function_name.empty());
 
   frame.instruction = 0x21a0;
-  frame.module_name = "module2";
+  frame.module = &module2;
   resolver.FillSourceLineInfo(&frame);
   ASSERT_EQ(frame.function_name, "Public2_2");
 

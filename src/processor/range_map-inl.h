@@ -142,6 +142,35 @@ bool RangeMap<AddressType, EntryType>::RetrieveNearestRange(
 
 
 template<typename AddressType, typename EntryType>
+bool RangeMap<AddressType, EntryType>::RetrieveRangeAtIndex(
+    int index, EntryType *entry,
+    AddressType *entry_base, AddressType *entry_size) const {
+  if (!entry || index >= GetCount())
+    return false;
+
+  // Walk through the map.  Although it's ordered, it's not a vector, so it
+  // can't be addressed directly by index.
+  MapConstIterator iterator = map_.begin();
+  for (int this_index = 0; this_index < index; ++this_index)
+    ++iterator;
+
+  *entry = iterator->second.entry();
+  if (entry_base)
+    *entry_base = iterator->first;
+  if (entry_size)
+    *entry_size = iterator->first - iterator->second.base() + 1;
+
+  return true;
+}
+
+
+template<typename AddressType, typename EntryType>
+int RangeMap<AddressType, EntryType>::GetCount() const {
+  return map_.size();
+}
+
+
+template<typename AddressType, typename EntryType>
 void RangeMap<AddressType, EntryType>::Clear() {
   map_.clear();
 }

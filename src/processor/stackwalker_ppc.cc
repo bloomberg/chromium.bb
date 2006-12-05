@@ -36,7 +36,7 @@
 
 #include "processor/stackwalker_ppc.h"
 #include "google_airbag/processor/call_stack.h"
-#include "google_airbag/processor/minidump.h"
+#include "google_airbag/processor/memory_region.h"
 #include "google_airbag/processor/stack_frame_cpu.h"
 
 namespace google_airbag {
@@ -44,7 +44,7 @@ namespace google_airbag {
 
 StackwalkerPPC::StackwalkerPPC(const MDRawContextPPC *context,
                                MemoryRegion *memory,
-                               MinidumpModuleList *modules,
+                               const CodeModules *modules,
                                SymbolSupplier *supplier)
     : Stackwalker(memory, modules, supplier),
       context_(context) {

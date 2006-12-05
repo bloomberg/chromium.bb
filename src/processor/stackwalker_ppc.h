@@ -45,19 +45,17 @@
 
 namespace google_airbag {
 
-class MinidumpContext;
-class MinidumpModuleList;
-
+class CodeModules;
 
 class StackwalkerPPC : public Stackwalker {
  public:
-  // context is a MinidumpContext object that gives access to ppc-specific
+  // context is a ppc context object that gives access to ppc-specific
   // register state corresponding to the innermost called frame to be
   // included in the stack.  The other arguments are passed directly through
   // to the base Stackwalker constructor.
   StackwalkerPPC(const MDRawContextPPC *context,
                  MemoryRegion *memory,
-                 MinidumpModuleList *modules,
+                 const CodeModules *modules,
                  SymbolSupplier *supplier);
 
  private:

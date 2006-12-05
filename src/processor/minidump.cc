@@ -54,6 +54,8 @@ typedef SSIZE_T ssize_t;
 #include "processor/range_map-inl.h"
 
 #include "google_airbag/processor/minidump.h"
+#include "processor/basic_code_module.h"
+#include "processor/basic_code_modules.h"
 #include "processor/scoped_ptr.h"
 
 
@@ -999,11 +1001,11 @@ void MinidumpThreadList::Print() {
 
 MinidumpModule::MinidumpModule(Minidump* minidump)
     : MinidumpObject(minidump),
+      module_valid_(false),
       module_(),
       name_(NULL),
       cv_record_(NULL),
-      misc_record_(NULL),
-      debug_filename_(NULL) {
+      misc_record_(NULL) {
 }
 
 
@@ -1011,7 +1013,6 @@ MinidumpModule::~MinidumpModule() {
   delete name_;
   delete cv_record_;
   delete misc_record_;
-  delete debug_filename_;
 }
 
 
@@ -1023,9 +1024,8 @@ bool MinidumpModule::Read() {
   cv_record_ = NULL;
   delete misc_record_;
   misc_record_ = NULL;
-  delete debug_filename_;
-  debug_filename_ = NULL;
 
+  module_valid_ = false;
   valid_ = false;
 
   if (!minidump_->ReadBytes(&module_, MD_MODULE_SIZE))
@@ -1062,24 +1062,239 @@ bool MinidumpModule::Read() {
   if (module_.size_of_image == 0 || high_address < module_.base_of_image)
     return false;
 
+  module_valid_ = true;
+  return true;
+}
+
+
+bool MinidumpModule::ReadAuxiliaryData() {
+  if (!module_valid_)
+    return false;
+
+  // Each module must have a name.
+  name_ = minidump_->ReadString(module_.module_name_rva);
+  if (!name_)
+    return false;
+
+  // CodeView and miscellaneous debug records are only required if the
+  // module indicates that they exist.
+  if (module_.cv_record.data_size && !GetCVRecord())
+    return false;
+
+  if (module_.misc_record.data_size && !GetMiscRecord())
+    return false;
+
   valid_ = true;
   return true;
 }
 
 
-const string* MinidumpModule::GetName() {
+string MinidumpModule::code_file() const {
   if (!valid_)
-    return NULL;
+    return "";
 
-  if (!name_)
-    name_ = minidump_->ReadString(module_.module_name_rva);
+  return *name_;
+}
 
-  return name_;
+
+string MinidumpModule::code_identifier() const {
+  if (!valid_)
+    return "";
+
+  MinidumpSystemInfo *minidump_system_info = minidump_->GetSystemInfo();
+  if (!minidump_system_info)
+    return "";
+
+  const MDRawSystemInfo *raw_system_info = minidump_system_info->system_info();
+  if (!raw_system_info)
+    return "";
+
+  string identifier;
+
+  switch (raw_system_info->platform_id) {
+    case MD_OS_WIN32_NT:
+    case MD_OS_WIN32_WINDOWS: {
+      char identifier_string[17];
+      snprintf(identifier_string, sizeof(identifier_string), "%08x%x",
+               module_.time_date_stamp, module_.size_of_image);
+      identifier = identifier_string;
+      break;
+    }
+
+    case MD_OS_MAC_OS_X: {
+      // TODO(mmentovai): support uuid extension if present, otherwise fall
+      // back to version (from LC_ID_DYLIB?), otherwise fall back to something
+      // else.
+      identifier = "id";
+      break;
+    }
+
+    default: {
+      // Without knowing what OS generated the dump, we can't generate a good
+      // identifier.  Return an empty string, signalling failure.
+      break;
+    }
+  }
+
+  return identifier;
+}
+
+
+string MinidumpModule::debug_file() const {
+  if (!valid_)
+    return "";
+
+  string file;
+  // Prefer the CodeView record if present.
+  const MDCVInfoPDB70* cv_record_70 =
+      reinterpret_cast<const MDCVInfoPDB70*>(&(*cv_record_)[0]);
+  if (cv_record_70) {
+    if (cv_record_70->cv_signature == MD_CVINFOPDB70_SIGNATURE) {
+      // GetCVRecord guarantees pdb_file_name is null-terminated.
+      file = reinterpret_cast<const char*>(cv_record_70->pdb_file_name);
+    } else if (cv_record_70->cv_signature == MD_CVINFOPDB20_SIGNATURE) {
+      // It's actually a MDCVInfoPDB20 structure.
+      const MDCVInfoPDB20* cv_record_20 =
+          reinterpret_cast<const MDCVInfoPDB20*>(&(*cv_record_)[0]);
+
+      // GetCVRecord guarantees pdb_file_name is null-terminated.
+      file = reinterpret_cast<const char*>(cv_record_20->pdb_file_name);
+    }
+
+    // If there's a CodeView record but it doesn't match a known signature,
+    // try the miscellaneous record - but it's suspicious because
+    // GetCVRecord shouldn't have accepted a CodeView record that doesn't
+    // match a known signature.
+  }
+
+  if (file.empty()) {
+    // No usable CodeView record.  Try the miscellaneous debug record.
+    const MDImageDebugMisc* misc_record =
+        reinterpret_cast<const MDImageDebugMisc *>(&(*misc_record_)[0]);
+    if (misc_record) {
+      if (!misc_record->unicode) {
+        // If it's not Unicode, just stuff it into the string.  It's unclear
+        // if misc_record->data is 0-terminated, so use an explicit size.
+        file = string(
+            reinterpret_cast<const char*>(misc_record->data),
+            module_.misc_record.data_size - sizeof(MDImageDebugMisc));
+      } else {
+        // There's a misc_record but it encodes the debug filename in UTF-16.
+        // (Actually, because miscellaneous records are so old, it's probably
+        // UCS-2.)  Convert it to UTF-8 for congruity with the other strings
+        // that this method (and all other methods in the Minidump family)
+        // return.
+
+        unsigned int bytes =
+            module_.misc_record.data_size - sizeof(MDImageDebugMisc);
+        if (bytes % 2 == 0) {
+          unsigned int utf16_words = bytes / 2;
+
+          // UTF16ToUTF8 expects a vector<u_int16_t>, so create a temporary one
+          // and copy the UTF-16 data into it.
+          vector<u_int16_t> string_utf16(utf16_words);
+          if (utf16_words)
+            memcpy(&string_utf16[0], &misc_record->data, bytes);
+
+          // GetMiscRecord already byte-swapped the data[] field if it contains
+          // UTF-16, so pass false as the swap argument.
+          scoped_ptr<string> new_file(UTF16ToUTF8(string_utf16, false));
+          file = *new_file;
+        }
+      }
+    }
+  }
+
+  return file;
+}
+
+
+string MinidumpModule::debug_identifier() const {
+  if (!valid_)
+    return "";
+
+  string identifier;
+
+  // Use the CodeView record if present.
+  const MDCVInfoPDB70* cv_record_70 =
+      reinterpret_cast<const MDCVInfoPDB70*>(&(*cv_record_)[0]);
+  if (cv_record_70) {
+    if (cv_record_70->cv_signature == MD_CVINFOPDB70_SIGNATURE) {
+      char identifier_string[41];
+      snprintf(identifier_string, sizeof(identifier_string),
+               "%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X%X",
+               cv_record_70->signature.data1,
+               cv_record_70->signature.data2,
+               cv_record_70->signature.data3,
+               cv_record_70->signature.data4[0],
+               cv_record_70->signature.data4[1],
+               cv_record_70->signature.data4[2],
+               cv_record_70->signature.data4[3],
+               cv_record_70->signature.data4[4],
+               cv_record_70->signature.data4[5],
+               cv_record_70->signature.data4[6],
+               cv_record_70->signature.data4[7],
+               cv_record_70->age);
+      identifier = identifier_string;
+    } else if (cv_record_70->cv_signature == MD_CVINFOPDB20_SIGNATURE) {
+      // It's actually a MDCVInfoPDB20 structure.
+      const MDCVInfoPDB20* cv_record_20 =
+          reinterpret_cast<const MDCVInfoPDB20*>(&(*cv_record_)[0]);
+
+      char identifier_string[17];
+      snprintf(identifier_string, sizeof(identifier_string),
+               "%08x%x", cv_record_20->signature, cv_record_20->age);
+      identifier = identifier_string;
+    }
+  }
+
+  // TODO(mmentovai): if there's no CodeView record, there might be a
+  // miscellaneous debug record.  It only carries a filename, though, and no
+  // identifier.  I'm not sure what the right thing to do for the identifier
+  // is in that case, but I don't expect to find many modules without a
+  // CodeView record (or some other Airbag extension structure in place of
+  // a CodeView record).  Treat it as an error (empty identifier) for now.
+
+  // TODO(mmentovai): on the Mac, provide fallbacks as in code_identifier().
+
+  return identifier;
+}
+
+
+string MinidumpModule::version() const {
+  if (!valid_)
+    return "";
+
+  string version;
+
+  if (module_.version_info.signature == MD_VSFIXEDFILEINFO_SIGNATURE &&
+      module_.version_info.struct_version & MD_VSFIXEDFILEINFO_VERSION) {
+    char version_string[24];
+    snprintf(version_string, sizeof(version_string), "%u.%u.%u.%u",
+             module_.version_info.file_version_hi >> 16,
+             module_.version_info.file_version_hi & 0xffff,
+             module_.version_info.file_version_lo >> 16,
+             module_.version_info.file_version_lo & 0xffff);
+    version = version_string;
+  }
+
+  // TODO(mmentovai): possibly support other struct types in place of
+  // the one used with MD_VSFIXEDFILEINFO_SIGNATURE.  We can possibly use
+  // a different structure that better represents versioning facilities on
+  // Mac OS X and Linux, instead of forcing them to adhere to the dotted
+  // quad of 16-bit ints that Windows uses.
+
+  return version;
+}
+
+
+const CodeModule* MinidumpModule::Copy() const {
+  return new BasicCodeModule(this);
 }
 
 
 const u_int8_t* MinidumpModule::GetCVRecord() {
-  if (!valid_)
+  if (!module_valid_)
     return NULL;
 
   if (!cv_record_) {
@@ -1157,7 +1372,7 @@ const u_int8_t* MinidumpModule::GetCVRecord() {
 
 
 const MDImageDebugMisc* MinidumpModule::GetMiscRecord() {
-  if (!valid_)
+  if (!module_valid_)
     return NULL;
 
   if (!misc_record_) {
@@ -1216,83 +1431,6 @@ const MDImageDebugMisc* MinidumpModule::GetMiscRecord() {
 }
 
 
-// This method will perform no allocation-size checking on its own; it relies
-// on GetCVRecord() and GetMiscRecord() to have made the determination that
-// the necessary structures aren't oversized.
-const string* MinidumpModule::GetDebugFilename() {
-  if (!valid_)
-    return NULL;
-
-  if (!debug_filename_) {
-    // Prefer the CodeView record if present.
-    const MDCVInfoPDB70* cv_record_70 =
-        reinterpret_cast<const MDCVInfoPDB70*>(GetCVRecord());
-    if (cv_record_70) {
-      if (cv_record_70->cv_signature == MD_CVINFOPDB70_SIGNATURE) {
-        // GetCVRecord guarantees pdb_file_name is null-terminated.
-        debug_filename_ = new string(
-            reinterpret_cast<const char*>(cv_record_70->pdb_file_name));
-
-        return debug_filename_;
-      } else if (cv_record_70->cv_signature == MD_CVINFOPDB20_SIGNATURE) {
-        // It's actually a MDCVInfoPDB20 structure.
-        const MDCVInfoPDB20* cv_record_20 =
-            reinterpret_cast<const MDCVInfoPDB20*>(cv_record_70);
-
-        // GetCVRecord guarantees pdb_file_name is null-terminated.
-        debug_filename_ = new string(
-            reinterpret_cast<const char*>(cv_record_20->pdb_file_name));
-
-        return debug_filename_;
-      }
-
-      // If there's a CodeView record but it doesn't match either of those
-      // signatures, try the miscellaneous record - but it's suspicious because
-      // GetCVRecord shouldn't have returned a CodeView record that doesn't
-      // match either signature.
-    }
-
-    // No usable CodeView record.  Try the miscellaneous debug record.
-    const MDImageDebugMisc* misc_record = GetMiscRecord();
-    if (!misc_record)
-      return NULL;
-
-    if (!misc_record->unicode) {
-      // If it's not Unicode, just stuff it into the string.  It's unclear
-      // if misc_record->data is 0-terminated, so use an explicit size.
-      debug_filename_ = new string(
-          reinterpret_cast<const char*>(misc_record->data),
-          module_.misc_record.data_size - sizeof(MDImageDebugMisc));
-
-      return debug_filename_;
-    }
-
-    // There's a misc_record but it encodes the debug filename in UTF-16.
-    // (Actually, because miscellaneous records are so old, it's probably
-    // UCS-2.)  Convert it to UTF-8 for congruity with the other strings that
-    // this method (and all other methods in the Minidump family) return.
-
-    unsigned int bytes =
-        module_.misc_record.data_size - sizeof(MDImageDebugMisc);
-    if (bytes % 2 != 0)
-      return NULL;
-    unsigned int utf16_words = bytes / 2;
-
-    // UTF16ToUTF8 expects a vector<u_int16_t>, so create a temporary one and
-    // copy the UTF-16 data into it.
-    vector<u_int16_t> string_utf16(utf16_words);
-    if (utf16_words)
-      memcpy(&string_utf16[0], &misc_record->data, bytes);
-
-    // GetMiscRecord already byte-swapped the data[] field if it contains
-    // UTF-16, so pass false as the swap argument.
-    debug_filename_ = UTF16ToUTF8(string_utf16, false);
-  }
-
-  return debug_filename_;
-}
-
-
 void MinidumpModule::Print() {
   if (!valid_)
     return;
@@ -1340,11 +1478,9 @@ void MinidumpModule::Print() {
   printf("  misc_record.rva                 = 0x%x\n",
          module_.misc_record.rva);
 
-  const char* module_name = GetName()->c_str();
-  if (module_name)
-    printf("  (module_name)                   = \"%s\"\n", module_name);
-  else
-    printf("  (module_name)                   = (null)\n");
+  printf("  (code_file)                     = \"%s\"\n", code_file().c_str());
+  printf("  (code_identifier)               = \"%s\"\n",
+         code_identifier().c_str());
 
   const MDCVInfoPDB70* cv_record =
       reinterpret_cast<const MDCVInfoPDB70*>(GetCVRecord());
@@ -1405,13 +1541,10 @@ void MinidumpModule::Print() {
     printf("  (misc_record)                   = (null)\n");
   }
 
-  const string* debug_filename = GetDebugFilename();
-  if (debug_filename) {
-    printf("  (debug_filename)                = \"%s\"\n",
-           debug_filename->c_str());
-  } else {
-    printf("  (debug_filename)                = (null)\n");
-  }
+  printf("  (debug_file)                    = \"%s\"\n", debug_file().c_str());
+  printf("  (debug_identifier)              = \"%s\"\n",
+         debug_identifier().c_str());
+  printf("  (version)                       = \"%s\"\n", version().c_str());
   printf("\n");
 }
 
@@ -1471,6 +1604,20 @@ bool MinidumpModuleList::Read(u_int32_t expected_size) {
       // Assume that the file offset is correct after the last read.
       if (!module->Read())
         return false;
+    }
+
+    // Loop through the module list once more to read additional data and
+    // build the range map.  This is done in a second pass because
+    // MinidumpModule::ReadAuxiliaryData seeks around, and if it were
+    // included in the loop above, additional seeks would be needed where
+    // none are now to read contiguous data.
+    for (unsigned int module_index = 0;
+         module_index < module_count;
+         ++module_index) {
+      MinidumpModule* module = &(*modules)[module_index];
+
+      if (!module->ReadAuxiliaryData())
+        return false;
 
       u_int64_t base_address = module->base_address();
       u_int64_t module_size = module->size();
@@ -1491,16 +1638,8 @@ bool MinidumpModuleList::Read(u_int32_t expected_size) {
 }
 
 
-MinidumpModule* MinidumpModuleList::GetModuleAtIndex(unsigned int index)
-    const {
-  if (!valid_ || index >= module_count_)
-    return NULL;
-
-  return &(*modules_)[index];
-}
-
-
-MinidumpModule* MinidumpModuleList::GetModuleForAddress(u_int64_t address) {
+const MinidumpModule* MinidumpModuleList::GetModuleForAddress(
+    u_int64_t address) const {
   if (!valid_)
     return NULL;
 
@@ -1509,6 +1648,43 @@ MinidumpModule* MinidumpModuleList::GetModuleForAddress(u_int64_t address) {
     return NULL;
 
   return GetModuleAtIndex(module_index);
+}
+
+
+const MinidumpModule* MinidumpModuleList::GetMainModule() const {
+  if (!valid_)
+    return NULL;
+
+  // The main code module is the first one present in a minidump file's
+  // MDRawModuleList.
+  return GetModuleAtSequence(0);
+}
+
+
+const MinidumpModule* MinidumpModuleList::GetModuleAtSequence(
+    unsigned int sequence) const {
+  if (!valid_ || sequence >= module_count_)
+    return NULL;
+
+  unsigned int module_index;
+  if (!range_map_->RetrieveRangeAtIndex(sequence, &module_index, NULL, NULL))
+    return NULL;
+
+  return GetModuleAtIndex(module_index);
+}
+
+
+const MinidumpModule* MinidumpModuleList::GetModuleAtIndex(
+    unsigned int index) const {
+  if (!valid_ || index >= module_count_)
+    return NULL;
+
+  return &(*modules_)[index];
+}
+
+
+const CodeModules* MinidumpModuleList::Copy() const {
+  return new BasicCodeModules(this);
 }
 
 

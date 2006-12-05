@@ -53,6 +53,8 @@ src_libairbag_la_SOURCES = \
 	src/google_airbag/common/airbag_types.h \
 	src/google_airbag/common/minidump_format.h \
 	src/google_airbag/processor/call_stack.h \
+	src/google_airbag/processor/code_module.h \
+	src/google_airbag/processor/code_modules.h \
 	src/google_airbag/processor/memory_region.h \
 	src/google_airbag/processor/minidump.h \
 	src/google_airbag/processor/minidump_processor.h \
@@ -63,6 +65,9 @@ src_libairbag_la_SOURCES = \
 	src/google_airbag/processor/symbol_supplier.h \
 	src/processor/address_map.h \
 	src/processor/address_map-inl.h \
+	src/processor/basic_code_module.h \
+	src/processor/basic_code_modules.cc \
+	src/processor/basic_code_modules.h \
 	src/processor/call_stack.cc \
 	src/processor/contained_range_map.h \
 	src/processor/contained_range_map-inl.h \
@@ -126,6 +131,7 @@ src_processor_contained_range_map_unittest_SOURCES = \
 src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc
 src_processor_minidump_processor_unittest_LDADD = \
+	src/processor/basic_code_modules.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
@@ -154,6 +160,7 @@ src_processor_source_line_resolver_unittest_LDADD = \
 src_processor_stackwalker_selftest_SOURCES = \
 	src/processor/stackwalker_selftest.cc
 src_processor_stackwalker_selftest_LDADD = \
+	src/processor/basic_code_modules.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump.lo \
 	src/processor/source_line_resolver.lo \
@@ -168,11 +175,13 @@ noinst_SCRIPTS = $(check_SCRIPTS)
 src_processor_minidump_dump_SOURCES = \
 	src/processor/minidump_dump.cc
 src_processor_minidump_dump_LDADD = \
+	src/processor/basic_code_modules.lo \
 	src/processor/minidump.lo
 
 src_processor_minidump_stackwalk_SOURCES = \
 	src/processor/minidump_stackwalk.cc
 src_processor_minidump_stackwalk_LDADD = \
+	src/processor/basic_code_modules.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \
@@ -186,16 +195,44 @@ src_processor_minidump_stackwalk_LDADD = \
 
 
 ## Additional files to be included in a source distribution
+##
+## find src/client src/common src/processor/testdata src/tools \
+##     -type f \! -wholename '*/.svn*' -print | sort
 EXTRA_DIST = \
 	$(SCRIPTS) \
-	src/processor/testdata/minidump1.dmp \
-	src/processor/testdata/minidump1.out \
-	src/processor/testdata/minidump1.stack.out \
+	src/client/minidump_file_writer.cc \
+	src/client/minidump_file_writer.h \
+	src/client/minidump_file_writer-inl.h \
+	src/client/windows/airbag_client.sln \
+	src/client/windows/handler/exception_handler.cc \
+	src/client/windows/handler/exception_handler.h \
+	src/client/windows/handler/exception_handler.vcproj \
+	src/client/windows/sender/crash_report_sender.cc \
+	src/client/windows/sender/crash_report_sender.h \
+	src/client/windows/sender/crash_report_sender.vcproj \
+	src/common/windows/guid_string.cc \
+	src/common/windows/guid_string.h \
+	src/common/windows/http_upload.cc \
+	src/common/windows/http_upload.h \
+	src/common/windows/pdb_source_line_writer.cc \
+	src/common/windows/pdb_source_line_writer.h \
+	src/common/windows/string_utils-inl.h \
 	src/processor/testdata/minidump2.dmp \
-	src/processor/testdata/minidump2.sym \
+	src/processor/testdata/minidump2.dump.out \
+	src/processor/testdata/minidump2.stackwalk.out \
 	src/processor/testdata/module1.out \
 	src/processor/testdata/module2.out \
-	src/processor/testdata/module3_bad.out
+	src/processor/testdata/module3_bad.out \
+	src/processor/testdata/symbols/kernel32.pdb/BCE8785C57B44245A669896B6A19B9542/kernel32.sym \
+	src/processor/testdata/symbols/test_app.pdb/8DDB7E9A365748938D6EB08B1DCA31AA1/test_app.sym \
+	src/processor/testdata/test_app.cc \
+	src/tools/windows/dump_syms/dump_syms.cc \
+	src/tools/windows/dump_syms/dump_syms.vcproj \
+	src/tools/windows/dump_syms/run_regtest.sh \
+	src/tools/windows/dump_syms/testdata/dump_syms_regtest.out \
+	src/tools/windows/dump_syms/testdata/dump_syms_regtest.pdb \
+	src/tools/windows/symupload/symupload.cc \
+	src/tools/windows/symupload/symupload.vcproj
 
 
 ## Additional rules

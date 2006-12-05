@@ -35,6 +35,7 @@
 
 #include "google_airbag/processor/process_state.h"
 #include "google_airbag/processor/call_stack.h"
+#include "google_airbag/processor/code_modules.h"
 
 namespace google_airbag {
 
@@ -44,6 +45,8 @@ ProcessState::~ProcessState() {
        ++iterator) {
     delete *iterator;
   }
+
+  delete modules_;
 }
 
 }  // namespace google_airbag

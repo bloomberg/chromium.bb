@@ -39,6 +39,7 @@
 #include "processor/range_map-inl.h"
 
 #include "processor/source_line_resolver.h"
+#include "google_airbag/processor/code_module.h"
 #include "google_airbag/processor/stack_frame.h"
 #include "processor/linked_ptr.h"
 #include "processor/scoped_ptr.h"
@@ -111,7 +112,7 @@ class SourceLineResolver::Module {
   // returned.  If no additional information is available, returns NULL.
   // A NULL return value is not an error.  The caller takes ownership of
   // any returned StackFrameInfo object.
-  StackFrameInfo* LookupAddress(MemAddr address, StackFrame *frame) const;
+  StackFrameInfo* LookupAddress(StackFrame *frame) const;
 
  private:
   friend class SourceLineResolver;
@@ -206,10 +207,11 @@ bool SourceLineResolver::HasModule(const string &module_name) const {
 
 StackFrameInfo* SourceLineResolver::FillSourceLineInfo(
     StackFrame *frame) const {
-  ModuleMap::const_iterator it = modules_->find(frame->module_name);
-  if (it != modules_->end()) {
-    return it->second->LookupAddress(frame->instruction - frame->module_base,
-                                     frame);
+  if (frame->module) {
+    ModuleMap::const_iterator it = modules_->find(frame->module->code_file());
+    if (it != modules_->end()) {
+      return it->second->LookupAddress(frame);
+    }
   }
   return NULL;
 }
@@ -273,8 +275,10 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
   return true;
 }
 
-StackFrameInfo* SourceLineResolver::Module::LookupAddress(
-    MemAddr address, StackFrame *frame) const {
+StackFrameInfo* SourceLineResolver::Module::LookupAddress(StackFrame *frame)
+    const {
+  MemAddr address = frame->instruction - frame->module->base_address();
+
   linked_ptr<StackFrameInfo> retrieved_info;
   // Check for debugging info first, before any possible early returns.
   //
@@ -318,7 +322,7 @@ StackFrameInfo* SourceLineResolver::Module::LookupAddress(
     parameter_size = func->parameter_size;
 
     frame->function_name = func->name;
-    frame->function_base = frame->module_base + function_base;
+    frame->function_base = frame->module->base_address() + function_base;
 
     linked_ptr<Line> line;
     MemAddr line_base;
@@ -328,7 +332,7 @@ StackFrameInfo* SourceLineResolver::Module::LookupAddress(
         frame->source_file_name = files_.find(line->source_file_id)->second;
       }
       frame->source_line = line->line;
-      frame->source_line_base = frame->module_base + line_base;
+      frame->source_line_base = frame->module->base_address() + line_base;
     }
   } else if (public_symbols_.Retrieve(address,
                                       &public_symbol, &public_address) &&
@@ -336,7 +340,7 @@ StackFrameInfo* SourceLineResolver::Module::LookupAddress(
     parameter_size = public_symbol->parameter_size;
 
     frame->function_name = public_symbol->name;
-    frame->function_base = frame->module_base + public_address;
+    frame->function_base = frame->module->base_address() + public_address;
   } else {
     // No FUNC or PUBLIC data available.
     return frame_info.release();
