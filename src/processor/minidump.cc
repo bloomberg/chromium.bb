@@ -1146,9 +1146,9 @@ string MinidumpModule::debug_file() const {
 
   string file;
   // Prefer the CodeView record if present.
-  const MDCVInfoPDB70* cv_record_70 =
-      reinterpret_cast<const MDCVInfoPDB70*>(&(*cv_record_)[0]);
-  if (cv_record_70) {
+  if (cv_record_) {
+    const MDCVInfoPDB70* cv_record_70 =
+        reinterpret_cast<const MDCVInfoPDB70*>(&(*cv_record_)[0]);
     if (cv_record_70->cv_signature == MD_CVINFOPDB70_SIGNATURE) {
       // GetCVRecord guarantees pdb_file_name is null-terminated.
       file = reinterpret_cast<const char*>(cv_record_70->pdb_file_name);
@@ -1169,9 +1169,9 @@ string MinidumpModule::debug_file() const {
 
   if (file.empty()) {
     // No usable CodeView record.  Try the miscellaneous debug record.
-    const MDImageDebugMisc* misc_record =
-        reinterpret_cast<const MDImageDebugMisc *>(&(*misc_record_)[0]);
-    if (misc_record) {
+    if (misc_record_) {
+      const MDImageDebugMisc* misc_record =
+          reinterpret_cast<const MDImageDebugMisc *>(&(*misc_record_)[0]);
       if (!misc_record->unicode) {
         // If it's not Unicode, just stuff it into the string.  It's unclear
         // if misc_record->data is 0-terminated, so use an explicit size.
@@ -1216,9 +1216,9 @@ string MinidumpModule::debug_identifier() const {
   string identifier;
 
   // Use the CodeView record if present.
-  const MDCVInfoPDB70* cv_record_70 =
-      reinterpret_cast<const MDCVInfoPDB70*>(&(*cv_record_)[0]);
-  if (cv_record_70) {
+  if (cv_record_) {
+    const MDCVInfoPDB70* cv_record_70 =
+        reinterpret_cast<const MDCVInfoPDB70*>(&(*cv_record_)[0]);
     if (cv_record_70->cv_signature == MD_CVINFOPDB70_SIGNATURE) {
       char identifier_string[41];
       snprintf(identifier_string, sizeof(identifier_string),
