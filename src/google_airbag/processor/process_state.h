@@ -50,6 +50,7 @@ class ProcessState {
   ~ProcessState();
 
   // Accessors.  See the data declarations below.
+  u_int32_t time_date_stamp() const { return time_date_stamp_; }
   bool crashed() const { return crashed_; }
   string crash_reason() const { return crash_reason_; }
   u_int64_t crash_address() const { return crash_address_; }
@@ -66,9 +67,12 @@ class ProcessState {
   friend class MinidumpProcessor;
 
   // Disallow instantiation other than by friends.
-  ProcessState() : crashed_(false), crash_reason_(), crash_address_(0),
-                   requesting_thread_(-1), threads_(), os_(), os_version_(),
-                   cpu_(), cpu_info_(), modules_(NULL) {}
+  ProcessState() : time_date_stamp_(0), crashed_(false), crash_reason_(),
+                   crash_address_(0), requesting_thread_(-1), threads_(),
+                   os_(), os_version_(), cpu_(), cpu_info_(), modules_(NULL) {}
+
+  // The time-date stamp of the minidump (time_t format)
+  u_int32_t time_date_stamp_;
 
   // True if the process crashed, false if the dump was produced outside
   // of an exception handler.

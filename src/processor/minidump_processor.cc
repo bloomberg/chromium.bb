@@ -27,6 +27,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <cassert>
+
 #include "google_airbag/processor/minidump_processor.h"
 #include "google_airbag/processor/call_stack.h"
 #include "google_airbag/processor/minidump.h"
@@ -50,6 +52,10 @@ ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
   }
 
   scoped_ptr<ProcessState> process_state(new ProcessState());
+
+  const MDRawHeader *header = dump.header();
+  assert(header);
+  process_state->time_date_stamp_ = header->time_date_stamp;
 
   process_state->cpu_ = GetCPUInfo(&dump, &process_state->cpu_info_);
   process_state->os_ = GetOSInfo(&dump, &process_state->os_version_);
@@ -320,9 +326,10 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
   // map the codes to a string (because there's no system info, or because
   // it's an unrecognized platform, or because it's an unrecognized code.)
   char reason_string[24];
+  u_int32_t exception_code = raw_exception->exception_record.exception_code;
+  u_int32_t exception_flags = raw_exception->exception_record.exception_flags;
   snprintf(reason_string, sizeof(reason_string), "0x%08x / 0x%08x",
-           raw_exception->exception_record.exception_code,
-           raw_exception->exception_record.exception_flags);
+           exception_code, exception_flags);
   string reason = reason_string;
 
   const MDRawSystemInfo *raw_system_info = GetSystemInfo(dump, NULL);
@@ -330,9 +337,250 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
     return reason;
 
   switch (raw_system_info->platform_id) {
+    case MD_OS_MAC_OS_X: {
+      char flags_string[11];
+      snprintf(flags_string, sizeof(flags_string), "0x%08x", exception_flags);
+      switch (exception_code) {
+        case MD_EXCEPTION_MAC_BAD_ACCESS:
+          reason = "EXC_BAD_ACCESS / ";
+          switch (exception_flags) {
+            case MD_EXCEPTION_CODE_MAC_INVALID_ADDRESS:
+              reason.append("KERN_INVALID_ADDRESS");
+              break;
+            case MD_EXCEPTION_CODE_MAC_PROTECTION_FAILURE:
+              reason.append("KERN_PROTECTION_FAILURE");
+              break;
+            case MD_EXCEPTION_CODE_MAC_NO_ACCESS:
+              reason.append("KERN_NO_ACCESS");
+              break;
+            case MD_EXCEPTION_CODE_MAC_MEMORY_FAILURE:
+              reason.append("KERN_MEMORY_FAILURE");
+              break;
+            case MD_EXCEPTION_CODE_MAC_MEMORY_ERROR:
+              reason.append("KERN_MEMORY_ERROR");
+              break;
+            // These are ppc only but shouldn't be a problem as they're
+            // unused on x86
+            case MD_EXCEPTION_CODE_MAC_PPC_VM_PROT_READ:
+              reason.append("EXC_PPC_VM_PROT_READ");
+              break;
+            case MD_EXCEPTION_CODE_MAC_PPC_BADSPACE:
+              reason.append("EXC_PPC_BADSPACE");
+              break;
+            case MD_EXCEPTION_CODE_MAC_PPC_UNALIGNED:
+              reason.append("EXC_PPC_UNALIGNED");
+              break;
+            default:
+              reason.append(flags_string);
+              break;
+          }
+          break;
+        case MD_EXCEPTION_MAC_BAD_INSTRUCTION:
+          reason = "EXC_BAD_INSTRUCTION / ";
+          switch (raw_system_info->processor_architecture) {
+            case MD_CPU_ARCHITECTURE_PPC: {
+              switch (exception_flags) {
+                case MD_EXCEPTION_CODE_MAC_PPC_INVALID_SYSCALL:
+                  reason.append("EXC_PPC_INVALID_SYSCALL");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_UNIMPLEMENTED_INSTRUCTION:
+                  reason.append("EXC_PPC_UNIPL_INST");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_PRIVILEGED_INSTRUCTION:
+                  reason.append("EXC_PPC_PRIVINST");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_PRIVILEGED_REGISTER:
+                  reason.append("EXC_PPC_PRIVREG");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_TRACE:
+                  reason.append("EXC_PPC_TRACE");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_PERFORMANCE_MONITOR:
+                  reason.append("EXC_PPC_PERFMON");
+                  break;
+                default:
+                  reason.append(flags_string);
+                  break;
+              }
+              break;
+            }
+            case MD_CPU_ARCHITECTURE_X86: {
+              switch (exception_flags) {
+                case MD_EXCEPTION_CODE_MAC_X86_INVALID_OPERATION:
+                  reason.append("EXC_I386_INVOP");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_INVALID_TASK_STATE_SEGMENT:
+                  reason.append("EXC_INVTSSFLT");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_SEGMENT_NOT_PRESENT:
+                  reason.append("EXC_SEGNPFLT");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_STACK_FAULT:
+                  reason.append("EXC_STKFLT");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_GENERAL_PROTECTION_FAULT:
+                  reason.append("EXC_GPFLT");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_ALIGNMENT_FAULT:
+                  reason.append("EXC_ALIGNFLT");
+                  break;
+                default:
+                  reason.append(flags_string);
+                  break;
+              }
+              break;
+            }
+            default:
+              reason.append(flags_string);
+              break;
+          }
+          break;
+        case MD_EXCEPTION_MAC_ARITHMETIC:
+          reason = "EXC_ARITHMETIC / ";
+          switch (raw_system_info->processor_architecture) {
+            case MD_CPU_ARCHITECTURE_PPC: {
+              switch (exception_flags) {
+                case MD_EXCEPTION_CODE_MAC_PPC_OVERFLOW:
+                  reason.append("EXC_PPC_OVERFLOW");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_ZERO_DIVIDE:
+                  reason.append("EXC_PPC_ZERO_DIVIDE");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_FLOAT_INEXACT:
+                  reason.append("EXC_FLT_INEXACT");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_FLOAT_ZERO_DIVIDE:
+                  reason.append("EXC_PPC_FLT_ZERO_DIVIDE");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_FLOAT_UNDERFLOW:
+                  reason.append("EXC_PPC_FLT_UNDERFLOW");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_FLOAT_OVERFLOW:
+                  reason.append("EXC_PPC_FLT_OVERFLOW");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_FLOAT_NOT_A_NUMBER:
+                  reason.append("EXC_PPC_FLT_NOT_A_NUMBER");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_NO_EMULATION:
+                  reason.append("EXC_PPC_NOEMULATION");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_PPC_ALTIVEC_ASSIST:
+                  reason.append("EXC_PPC_ALTIVECASSIST");
+                default:
+                  reason.append(flags_string);
+                  break;
+              }
+              break;
+            }
+            case MD_CPU_ARCHITECTURE_X86: {
+              switch (exception_flags) {
+                case MD_EXCEPTION_CODE_MAC_X86_DIV:
+                  reason.append("EXC_I386_DIV");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_INTO:
+                  reason.append("EXC_I386_INTO");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_NOEXT:
+                  reason.append("EXC_I386_NOEXT");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_EXTOVR:
+                  reason.append("EXC_I386_EXTOVR");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_EXTERR:
+                  reason.append("EXC_I386_EXTERR");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_EMERR:
+                  reason.append("EXC_I386_EMERR");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_BOUND:
+                  reason.append("EXC_I386_BOUND");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_SSEEXTERR:
+                  reason.append("EXC_I386_SSEEXTERR");
+                  break;
+                default:
+                  reason.append(flags_string);
+                  break;
+              }
+              break;
+            }
+            default:
+              reason.append(flags_string);
+              break;
+          }
+          break;
+        case MD_EXCEPTION_MAC_EMULATION:
+          reason = "EXC_EMULATION / ";
+          reason.append(flags_string);
+          break;
+        case MD_EXCEPTION_MAC_SOFTWARE:
+          reason = "EXC_SOFTWARE / ";
+          switch (exception_flags) {
+            // These are ppc only but shouldn't be a problem as they're
+            // unused on x86
+            case MD_EXCEPTION_CODE_MAC_PPC_TRAP:
+              reason.append("EXC_PPC_TRAP");
+              break;
+            case MD_EXCEPTION_CODE_MAC_PPC_MIGRATE:
+              reason.append("EXC_PPC_MIGRATE");
+              break;
+            default:
+              reason.append(flags_string);
+              break;
+          }
+          break;
+        case MD_EXCEPTION_MAC_BREAKPOINT:
+          reason = "EXC_BREAKPOINT / ";
+          switch (raw_system_info->processor_architecture) {
+            case MD_CPU_ARCHITECTURE_PPC: {
+              switch (exception_flags) {
+                case MD_EXCEPTION_CODE_MAC_PPC_BREAKPOINT:
+                  reason.append("EXC_PPC_BREAKPOINT");
+                  break;
+                default:
+                  reason.append(flags_string);
+                  break;
+              }
+              break;
+            }
+            case MD_CPU_ARCHITECTURE_X86: {
+              switch (exception_flags) {
+                case MD_EXCEPTION_CODE_MAC_X86_SGL:
+                  reason.append("EXC_I386_SGL");
+                  break;
+                case MD_EXCEPTION_CODE_MAC_X86_BPT:
+                  reason.append("EXC_I386_BPT");
+                  break;
+                default:
+                  reason.append(flags_string);
+                  break;
+              }
+              break;
+            }
+            default:
+              reason.append(flags_string);
+              break;
+          }
+          break;
+        case MD_EXCEPTION_MAC_SYSCALL:
+          reason = "EXC_SYSCALL / ";
+          reason.append(flags_string);
+          break;
+        case MD_EXCEPTION_MAC_MACH_SYSCALL:
+          reason = "EXC_MACH_SYSCALL / ";
+          reason.append(flags_string);
+          break;
+        case MD_EXCEPTION_MAC_RPC_ALERT:
+          reason = "EXC_RPC_ALERT / ";
+          reason.append(flags_string);
+          break;
+      }
+      break;
+    }
+
     case MD_OS_WIN32_NT:
     case MD_OS_WIN32_WINDOWS: {
-      switch (raw_exception->exception_record.exception_code) {
+      switch (exception_code) {
         case MD_EXCEPTION_CODE_WIN_CONTROL_C:
           reason = "DBG_CONTROL_C";
           break;
