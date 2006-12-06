@@ -36,6 +36,8 @@
 #include <stdarg.h>
 #include <wchar.h>
 
+#include <string>
+
 // The "ll" printf format size specifier corresponding to |long long| was
 // intrudced in MSVC8.  Earlier versions did not provide this size specifier,
 // but "I64" can be used to print 64-bit types.  Don't use "I64" where "ll"
@@ -48,6 +50,8 @@
 #endif  // MSC_VER >= 1400
 
 namespace google_airbag {
+
+using std::wstring;
 
 class WindowsStringUtils {
  public:
@@ -67,6 +71,9 @@ class WindowsStringUtils {
   // 0-terminated.
   static void safe_wcsncpy(wchar_t *destination, size_t destination_size,
                            const wchar_t *source, size_t count);
+
+  // Returns the base name of a file, e.g. strips off the path.
+  static wstring GetBaseName(const wstring &filename);
 
  private:
   // Disallow instantiation and other object-based operations.

@@ -27,42 +27,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// guid_string.cc: Convert GUIDs to strings.
-//
-// See guid_string.h for documentation.
-
-#include <wchar.h>
-
 #include "common/windows/string_utils-inl.h"
-
-#include "common/windows/guid_string.h"
 
 namespace google_airbag {
 
 // static
-wstring GUIDString::GUIDToWString(GUID *guid) {
-  wchar_t guid_string[37];
-  WindowsStringUtils::safe_swprintf(
-      guid_string, sizeof(guid_string) / sizeof(guid_string[0]),
-      L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-      guid->Data1, guid->Data2, guid->Data3,
-      guid->Data4[0], guid->Data4[1], guid->Data4[2],
-      guid->Data4[3], guid->Data4[4], guid->Data4[5],
-      guid->Data4[6], guid->Data4[7]);
-  return wstring(guid_string);
-}
-
-// static
-wstring GUIDString::GUIDToSymbolServerWString(GUID *guid) {
-  wchar_t guid_string[33];
-  WindowsStringUtils::safe_swprintf(
-      guid_string, sizeof(guid_string) / sizeof(guid_string[0]),
-      L"%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X",
-      guid->Data1, guid->Data2, guid->Data3,
-      guid->Data4[0], guid->Data4[1], guid->Data4[2],
-      guid->Data4[3], guid->Data4[4], guid->Data4[5],
-      guid->Data4[6], guid->Data4[7]);
-  return wstring(guid_string);
+wstring WindowsStringUtils::GetBaseName(const wstring &filename) {
+  wstring base_name(filename);
+  size_t slash_pos = base_name.find_last_of(L"/\\");
+  if (slash_pos != wstring::npos) {
+    base_name.erase(0, slash_pos + 1);
+  }
+  return base_name;
 }
 
 }  // namespace google_airbag

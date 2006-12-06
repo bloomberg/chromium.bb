@@ -408,17 +408,17 @@ bool PDBSourceLineWriter::PrintCodePublicSymbol(IDiaSymbol *symbol) {
 }
 
 bool PDBSourceLineWriter::PrintPDBInfo() {
-  wstring guid, filename, cpu;
-  int age;
-  if (!GetModuleInfo(&guid, &age, &filename, &cpu)) {
+  PDBModuleInfo info;
+  if (!GetModuleInfo(&info)) {
     return false;
   }
 
   // Hard-code "windows" for the OS because that's the only thing that makes
   // sense for PDB files.  (This might not be strictly correct for Windows CE
   // support, but we don't care about that at the moment.)
-  fprintf(output_, "MODULE windows %ws %ws %x %ws\n",
-          cpu.c_str(), guid.c_str(), age, filename.c_str());
+  fprintf(output_, "MODULE windows %ws %ws %ws\n",
+          info.cpu.c_str(), info.debug_identifier.c_str(),
+          info.debug_file.c_str());
 
   return true;
 }
@@ -674,38 +674,34 @@ void PDBSourceLineWriter::Close() {
   session_.Release();
 }
 
-// static
-wstring PDBSourceLineWriter::GetBaseName(const wstring &filename) {
-  wstring base_name(filename);
-  size_t slash_pos = base_name.find_last_of(L"/\\");
-  if (slash_pos != wstring::npos) {
-    base_name.erase(0, slash_pos + 1);
+bool PDBSourceLineWriter::GetModuleInfo(PDBModuleInfo *info) {
+  if (!info) {
+    return false;
   }
-  return base_name;
-}
 
-bool PDBSourceLineWriter::GetModuleInfo(wstring *guid, int *age,
-                                        wstring *filename, wstring *cpu) {
-  guid->clear();
-  *age = 0;
-  filename->clear();
+  info->debug_file.clear();
+  info->debug_identifier.clear();
+  info->cpu.clear();
 
   CComPtr<IDiaSymbol> global;
   if (FAILED(session_->get_globalScope(&global))) {
     return false;
   }
 
-  // cpu is permitted to be NULL.
-  if (cpu) {
-    // All CPUs in CV_CPU_TYPE_e (cvconst.h) below 0x10 are x86.  There's no
-    // single specific constant to use.
-    DWORD platform;
-    if (SUCCEEDED(global->get_platform(&platform)) && platform < 0x10) {
-      *cpu = L"x86";
-    } else {
-      // Unexpected, but handle gracefully.
-      *cpu = L"unknown";
-    }
+  // All CPUs in CV_CPU_TYPE_e (cvconst.h) below 0x10 are x86.  There's no
+  // single specific constant to use.
+  DWORD platform;
+  if (SUCCEEDED(global->get_platform(&platform)) && platform < 0x10) {
+    info->cpu = L"x86";
+  } else {
+    // Unexpected, but handle gracefully.
+    info->cpu = L"unknown";
+  }
+
+  // DWORD* and int* are not compatible.  This is clean and avoids a cast.
+  DWORD age;
+  if (FAILED(global->get_age(&age))) {
+    return false;
   }
 
   bool uses_guid;
@@ -714,38 +710,38 @@ bool PDBSourceLineWriter::GetModuleInfo(wstring *guid, int *age,
   }
 
   if (uses_guid) {
-    GUID guid_number;
-    if (FAILED(global->get_guid(&guid_number))) {
+    GUID guid;
+    if (FAILED(global->get_guid(&guid))) {
       return false;
     }
 
-    *guid = GUIDString::GUIDToWString(&guid_number);
+    wchar_t age_string[9];
+    WindowsStringUtils::safe_swprintf(
+        age_string, sizeof(age_string) / sizeof(age_string[0]),
+        L"%X", age);
+
+    info->debug_identifier = GUIDString::GUIDToSymbolServerWString(&guid);
+    info->debug_identifier.append(age_string);
   } else {
     DWORD signature;
     if (FAILED(global->get_signature(&signature))) {
       return false;
     }
 
-    wchar_t signature_string[9];
+    wchar_t identifier_string[17];
     WindowsStringUtils::safe_swprintf(
-        signature_string,
-        sizeof(signature_string) / sizeof(signature_string[0]),
-        L"%08x", signature);
-    *guid = signature_string;
+        identifier_string,
+        sizeof(identifier_string) / sizeof(identifier_string[0]),
+        L"%08x%x", signature, age);
+    info->debug_identifier = identifier_string;
   }
 
-  // DWORD* and int* are not compatible.  This is clean and avoids a cast.
-  DWORD age_dword;
-  if (FAILED(global->get_age(&age_dword))) {
+  CComBSTR debug_file_string;
+  if (FAILED(global->get_symbolsFileName(&debug_file_string))) {
     return false;
   }
-  *age = age_dword;
-
-  CComBSTR filename_string;
-  if (FAILED(global->get_symbolsFileName(&filename_string))) {
-    return false;
-  }
-  *filename = GetBaseName(wstring(filename_string));
+  info->debug_file =
+      WindowsStringUtils::GetBaseName(wstring(debug_file_string));
 
   return true;
 }

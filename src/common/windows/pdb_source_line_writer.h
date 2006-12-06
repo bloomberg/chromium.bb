@@ -45,6 +45,26 @@ namespace google_airbag {
 
 using std::wstring;
 
+// A structure that carries information that identifies a pdb file.
+struct PDBModuleInfo {
+ public:
+  // The basename of the pdb file from which information was loaded.
+  wstring debug_file;
+
+  // The pdb's identifier.  For recent pdb files, the identifier consists
+  // of the pdb's guid, in uppercase hexadecimal form without any dashes
+  // or separators, followed immediately by the pdb's age, also in
+  // uppercase hexadecimal form.  For older pdb files which have no guid,
+  // the identifier is the pdb's 32-bit signature value, in zero-padded
+  // hexadecimal form, followed immediately by the pdb's age, in lowercase
+  // hexadecimal form.
+  wstring debug_identifier;
+
+  // A string identifying the cpu that the pdb is associated with.
+  // Currently, this may be "x86" or "unknown".
+  wstring cpu;
+};
+
 class PDBSourceLineWriter {
  public:
   enum FileFormat {
@@ -74,15 +94,9 @@ class PDBSourceLineWriter {
   // Closes the current pdb file and its associated resources.
   void Close();
 
-  // Sets guid to the GUID for the module, as a string,
-  // e.g. "11111111-2222-3333-4444-555555555555".  If the module has no guid,
-  // guid will instead be set to the module's 32-bit signature value, in
-  // zero-padded hexadecimal form, such as "0004beef".  age will be set to the
-  // age of the pdb file, filename will be set to the basename of the pdb's
-  // file name, and cpu will be set to a string identifying the associated CPU
-  // architecture.  cpu is permitted to be NULL, in which case CPU information
-  // will not be returned.  Returns true on success and false on failure.
-  bool GetModuleInfo(wstring *guid, int *age, wstring *filename, wstring *cpu);
+  // Retrieves information about the module's debugging file.  Returns
+  // true on success and false on failure.
+  bool GetModuleInfo(PDBModuleInfo *info);
 
   // Sets uses_guid to true if the opened file uses a new-style CodeView
   // record with a 128-bit GUID, or false if the opened file uses an old-style
@@ -119,9 +133,6 @@ class PDBSourceLineWriter {
   // Outputs a line identifying the PDB file that is being dumped, along with
   // its uuid and age.
   bool PrintPDBInfo();
-
-  // Returns the base name of a file, e.g. strips off the path.
-  static wstring GetBaseName(const wstring &filename);
 
   // Returns the function name for a symbol.  If possible, the name is
   // undecorated.  If the symbol's decorated form indicates the size of
