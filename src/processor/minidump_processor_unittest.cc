@@ -66,12 +66,11 @@ class TestSymbolSupplier : public SymbolSupplier {
 };
 
 string TestSymbolSupplier::GetSymbolFile(const CodeModule *module) {
-  if (module && module->code_file() == "c:\\test_app.exe") {
-    // The funny-looking pathname is so that the symbol file can also be
-    // reached by a SimpleSymbolSupplier.
+  if (module && module->code_file() == "C:\\test_app.exe") {
     return string(getenv("srcdir") ? getenv("srcdir") : ".") +
-      "/src/processor/testdata/symbols/"
-      "test_app.pdb/8DDB7E9A365748938D6EB08B1DCA31AA1/test_app.sym";
+      "/src/processor/testdata/symbols/test_app.pdb/" +
+      module->debug_identifier() +
+      "/test_app.sym";
   }
 
   return "";
@@ -102,22 +101,22 @@ static bool RunTests() {
 
   ASSERT_TRUE(stack->frames()->at(0)->module);
   ASSERT_EQ(stack->frames()->at(0)->module->base_address(), 0x400000);
-  ASSERT_EQ(stack->frames()->at(0)->module->code_file(), "c:\\test_app.exe");
-  ASSERT_EQ(stack->frames()->at(0)->function_name, "CrashFunction()");
+  ASSERT_EQ(stack->frames()->at(0)->module->code_file(), "C:\\test_app.exe");
+  ASSERT_EQ(stack->frames()->at(0)->function_name, "`anonymous namespace'::CrashFunction");
   ASSERT_EQ(stack->frames()->at(0)->source_file_name, "c:\\test_app.cc");
-  ASSERT_EQ(stack->frames()->at(0)->source_line, 51);
+  ASSERT_EQ(stack->frames()->at(0)->source_line, 56);
 
   ASSERT_TRUE(stack->frames()->at(1)->module);
   ASSERT_EQ(stack->frames()->at(1)->module->base_address(), 0x400000);
-  ASSERT_EQ(stack->frames()->at(1)->module->code_file(), "c:\\test_app.exe");
+  ASSERT_EQ(stack->frames()->at(1)->module->code_file(), "C:\\test_app.exe");
   ASSERT_EQ(stack->frames()->at(1)->function_name, "main");
   ASSERT_EQ(stack->frames()->at(1)->source_file_name, "c:\\test_app.cc");
-  ASSERT_EQ(stack->frames()->at(1)->source_line, 56);
+  ASSERT_EQ(stack->frames()->at(1)->source_line, 63);
 
   // This comes from the CRT
   ASSERT_TRUE(stack->frames()->at(2)->module);
   ASSERT_EQ(stack->frames()->at(2)->module->base_address(), 0x400000);
-  ASSERT_EQ(stack->frames()->at(2)->module->code_file(), "c:\\test_app.exe");
+  ASSERT_EQ(stack->frames()->at(2)->module->code_file(), "C:\\test_app.exe");
   ASSERT_EQ(stack->frames()->at(2)->function_name, "__tmainCRTStartup");
   ASSERT_EQ(stack->frames()->at(2)->source_file_name,
             "f:\\rtm\\vctools\\crt_bld\\self_x86\\crt\\src\\crt0.c");
@@ -134,7 +133,7 @@ static bool RunTests() {
 
   ASSERT_EQ(state->modules()->module_count(), 13);
   ASSERT_TRUE(state->modules()->GetMainModule());
-  ASSERT_EQ(state->modules()->GetMainModule()->code_file(), "c:\\test_app.exe");
+  ASSERT_EQ(state->modules()->GetMainModule()->code_file(), "C:\\test_app.exe");
   ASSERT_FALSE(state->modules()->GetModuleForAddress(0));
   ASSERT_EQ(state->modules()->GetMainModule(),
             state->modules()->GetModuleForAddress(0x400000));
