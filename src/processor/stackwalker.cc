@@ -34,6 +34,8 @@
 // Author: Mark Mentovai
 
 
+#include <cassert>
+
 #include "google_airbag/processor/stackwalker.h"
 #include "google_airbag/processor/call_stack.h"
 #include "google_airbag/processor/code_module.h"
@@ -57,10 +59,10 @@ Stackwalker::Stackwalker(MemoryRegion *memory, const CodeModules *modules,
 }
 
 
-CallStack* Stackwalker::Walk() {
+bool Stackwalker::Walk(CallStack *stack) {
+  assert(stack);
   SourceLineResolver resolver;
-
-  scoped_ptr<CallStack> stack(new CallStack());
+  stack->Clear();
 
   // stack_frame_info parallels the CallStack.  The vector is passed to the
   // GetCallerFrame function.  It contains information that may be helpful
@@ -87,9 +89,18 @@ CallStack* Stackwalker::Walk() {
       if (module) {
         frame->module = module;
         if (!resolver.HasModule(frame->module->code_file()) && supplier_) {
-          string symbol_file = supplier_->GetSymbolFile(module);
-          if (!symbol_file.empty()) {
-            resolver.LoadModule(frame->module->code_file(), symbol_file);
+          string symbol_file;
+          SymbolSupplier::SymbolResult symbol_result =
+              supplier_->GetSymbolFile(module, &symbol_file);
+
+          switch (symbol_result) {
+            case SymbolSupplier::FOUND:
+              resolver.LoadModule(frame->module->code_file(), symbol_file);
+              break;
+            case SymbolSupplier::NOT_FOUND:
+              break;  // nothing to do
+            case SymbolSupplier::INTERRUPT:
+              return false;
           }
         }
         frame_info.reset(resolver.FillSourceLineInfo(frame.get()));
@@ -105,10 +116,10 @@ CallStack* Stackwalker::Walk() {
     frame_info.reset(NULL);
 
     // Get the next frame and take ownership.
-    frame.reset(GetCallerFrame(stack.get(), stack_frame_info));
+    frame.reset(GetCallerFrame(stack, stack_frame_info));
   }
 
-  return stack.release();
+  return true;
 }
 
 

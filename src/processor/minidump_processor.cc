@@ -45,13 +45,14 @@ MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier)
 MinidumpProcessor::~MinidumpProcessor() {
 }
 
-ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
+MinidumpProcessor::ProcessResult MinidumpProcessor::Process(
+    const string &minidump_file, ProcessState *process_state) {
   Minidump dump(minidump_file);
   if (!dump.Read()) {
-    return NULL;
+    return PROCESS_ERROR;
   }
 
-  scoped_ptr<ProcessState> process_state(new ProcessState());
+  process_state->Clear();
 
   const MDRawHeader *header = dump.header();
   assert(header);
@@ -91,7 +92,7 @@ ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
 
   MinidumpThreadList *threads = dump.GetThreadList();
   if (!threads) {
-    return NULL;
+    return PROCESS_ERROR;
   }
 
   bool found_requesting_thread = false;
@@ -101,12 +102,12 @@ ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
        ++thread_index) {
     MinidumpThread *thread = threads->GetThreadAtIndex(thread_index);
     if (!thread) {
-      return NULL;
+      return PROCESS_ERROR;
     }
 
     u_int32_t thread_id;
     if (!thread->GetThreadID(&thread_id)) {
-      return NULL;
+      return PROCESS_ERROR;
     }
 
     // If this thread is the thread that produced the minidump, don't process
@@ -122,7 +123,7 @@ ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
     if (has_requesting_thread && thread_id == requesting_thread_id) {
       if (found_requesting_thread) {
         // There can't be more than one requesting thread.
-        return NULL;
+        return PROCESS_ERROR;
       }
 
       // Use processed_state->threads_.size() instead of thread_index.
@@ -148,7 +149,7 @@ ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
 
     MinidumpMemoryRegion *thread_memory = thread->GetMemory();
     if (!thread_memory) {
-      return NULL;
+      return PROCESS_ERROR;
     }
 
     // Use process_state->modules_ instead of module_list, because the
@@ -165,23 +166,22 @@ ProcessState* MinidumpProcessor::Process(const string &minidump_file) {
                                        process_state->modules_,
                                        supplier_));
     if (!stackwalker.get()) {
-      return NULL;
+      return PROCESS_ERROR;
     }
 
-    scoped_ptr<CallStack> stack(stackwalker->Walk());
-    if (!stack.get()) {
-      return NULL;
+    scoped_ptr<CallStack> stack(new CallStack());
+    if (!stackwalker->Walk(stack.get())) {
+      return PROCESS_INTERRUPTED;
     }
-
     process_state->threads_.push_back(stack.release());
   }
 
   // If a requesting thread was indicated, it must be present.
   if (has_requesting_thread && !found_requesting_thread) {
-    return NULL;
+    return PROCESS_ERROR;
   }
 
-  return process_state.release();
+  return PROCESS_OK;
 }
 
 // Returns the MDRawSystemInfo from a minidump, or NULL if system info is

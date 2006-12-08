@@ -33,16 +33,19 @@
 //
 // Author: Mark Mentovai
 
+#include <cassert>
+
 #include "processor/simple_symbol_supplier.h"
 #include "google_airbag/processor/code_module.h"
 #include "processor/pathname_stripper.h"
 
 namespace google_airbag {
 
-string SimpleSymbolSupplier::GetSymbolFileAtPath(const CodeModule *module,
-                                                 const string &root_path) {
+SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFileAtPath(
+    const CodeModule *module, const string &root_path, string *symbol_file) {
+  assert(symbol_file);
   if (!module)
-    return "";
+    return NOT_FOUND;
 
   // Start with the base path.
   string path = root_path;
@@ -51,14 +54,14 @@ string SimpleSymbolSupplier::GetSymbolFileAtPath(const CodeModule *module,
   path.append("/");
   string debug_file_name = PathnameStripper::File(module->debug_file());
   if (debug_file_name.empty())
-    return "";
+    return NOT_FOUND;
   path.append(debug_file_name);
 
   // Append the identifier as a directory name.
   path.append("/");
   string identifier = module->debug_identifier();
   if (identifier.empty())
-    return "";
+    return NOT_FOUND;
   path.append(identifier);
 
   // Transform the debug file name into one ending in .sym.  If the existing
@@ -76,7 +79,8 @@ string SimpleSymbolSupplier::GetSymbolFileAtPath(const CodeModule *module,
   }
   path.append(".sym");
 
-  return path;
+  *symbol_file = path;
+  return FOUND;
 }
 
 }  // namespace google_airbag

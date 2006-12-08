@@ -62,18 +62,33 @@ using google_airbag::SymbolSupplier;
 
 class TestSymbolSupplier : public SymbolSupplier {
  public:
-  virtual string GetSymbolFile(const CodeModule *module);
+  TestSymbolSupplier() : interrupt_(false) {}
+
+  virtual SymbolResult GetSymbolFile(const CodeModule *module,
+                                     string *symbol_file);
+
+  // When set to true, causes the SymbolSupplier to return INTERRUPT
+  void set_interrupt(bool interrupt) { interrupt_ = interrupt; }
+
+ private:
+  bool interrupt_;
 };
 
-string TestSymbolSupplier::GetSymbolFile(const CodeModule *module) {
-  if (module && module->code_file() == "C:\\test_app.exe") {
-    return string(getenv("srcdir") ? getenv("srcdir") : ".") +
-      "/src/processor/testdata/symbols/test_app.pdb/" +
-      module->debug_identifier() +
-      "/test_app.sym";
+SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
+    const CodeModule *module, string *symbol_file) {
+  if (interrupt_) {
+    return INTERRUPT;
   }
 
-  return "";
+  if (module && module->code_file() == "C:\\test_app.exe") {
+      *symbol_file = string(getenv("srcdir") ? getenv("srcdir") : ".") +
+                     "/src/processor/testdata/symbols/test_app.pdb/" +
+                     module->debug_identifier() +
+                     "/test_app.sym";
+    return FOUND;
+  }
+
+  return NOT_FOUND;
 }
 
 static bool RunTests() {
@@ -83,19 +98,20 @@ static bool RunTests() {
   string minidump_file = string(getenv("srcdir") ? getenv("srcdir") : ".") +
                          "/src/processor/testdata/minidump2.dmp";
 
-  scoped_ptr<ProcessState> state(processor.Process(minidump_file));
-  ASSERT_TRUE(state.get());
-  ASSERT_EQ(state->cpu(), "x86");
-  ASSERT_EQ(state->cpu_info(), "GenuineIntel family 6 model 13 stepping 8");
-  ASSERT_EQ(state->os(), "Windows NT");
-  ASSERT_EQ(state->os_version(), "5.1.2600 Service Pack 2");
-  ASSERT_TRUE(state->crashed());
-  ASSERT_EQ(state->crash_reason(), "EXCEPTION_ACCESS_VIOLATION");
-  ASSERT_EQ(state->crash_address(), 0x45);
-  ASSERT_EQ(state->threads()->size(), 1);
-  ASSERT_EQ(state->requesting_thread(), 0);
+  ProcessState state;
+  ASSERT_EQ(processor.Process(minidump_file, &state),
+            MinidumpProcessor::PROCESS_OK);
+  ASSERT_EQ(state.cpu(), "x86");
+  ASSERT_EQ(state.cpu_info(), "GenuineIntel family 6 model 13 stepping 8");
+  ASSERT_EQ(state.os(), "Windows NT");
+  ASSERT_EQ(state.os_version(), "5.1.2600 Service Pack 2");
+  ASSERT_TRUE(state.crashed());
+  ASSERT_EQ(state.crash_reason(), "EXCEPTION_ACCESS_VIOLATION");
+  ASSERT_EQ(state.crash_address(), 0x45);
+  ASSERT_EQ(state.threads()->size(), 1);
+  ASSERT_EQ(state.requesting_thread(), 0);
 
-  CallStack *stack = state->threads()->at(0);
+  CallStack *stack = state.threads()->at(0);
   ASSERT_TRUE(stack);
   ASSERT_EQ(stack->frames()->size(), 4);
 
@@ -131,16 +147,22 @@ static bool RunTests() {
   ASSERT_TRUE(stack->frames()->at(3)->source_file_name.empty());
   ASSERT_EQ(stack->frames()->at(3)->source_line, 0);
 
-  ASSERT_EQ(state->modules()->module_count(), 13);
-  ASSERT_TRUE(state->modules()->GetMainModule());
-  ASSERT_EQ(state->modules()->GetMainModule()->code_file(), "C:\\test_app.exe");
-  ASSERT_FALSE(state->modules()->GetModuleForAddress(0));
-  ASSERT_EQ(state->modules()->GetMainModule(),
-            state->modules()->GetModuleForAddress(0x400000));
-  ASSERT_EQ(state->modules()->GetModuleForAddress(0x7c801234)->debug_file(),
+  ASSERT_EQ(state.modules()->module_count(), 13);
+  ASSERT_TRUE(state.modules()->GetMainModule());
+  ASSERT_EQ(state.modules()->GetMainModule()->code_file(), "C:\\test_app.exe");
+  ASSERT_FALSE(state.modules()->GetModuleForAddress(0));
+  ASSERT_EQ(state.modules()->GetMainModule(),
+            state.modules()->GetModuleForAddress(0x400000));
+  ASSERT_EQ(state.modules()->GetModuleForAddress(0x7c801234)->debug_file(),
             "kernel32.pdb");
-  ASSERT_EQ(state->modules()->GetModuleForAddress(0x77d43210)->version(),
+  ASSERT_EQ(state.modules()->GetModuleForAddress(0x77d43210)->version(),
             "5.1.2600.2622");
+
+  // Test that the symbol supplier can interrupt processing
+  state.Clear();
+  supplier.set_interrupt(true);
+  ASSERT_EQ(processor.Process(minidump_file, &state),
+            MinidumpProcessor::PROCESS_INTERRUPTED);
 
   return true;
 }

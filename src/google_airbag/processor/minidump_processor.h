@@ -42,15 +42,21 @@ class SymbolSupplier;
 
 class MinidumpProcessor {
  public:
+  // Return type for Process()
+  enum ProcessResult {
+    PROCESS_OK,  // the minidump was processed successfully
+    PROCESS_ERROR,  // there was an error processing the minidump
+    PROCESS_INTERRUPTED,  // processing was interrupted by the SymbolSupplier
+  };
+
   // Initializes this MinidumpProcessor.  supplier should be an
   // implementation of the SymbolSupplier abstract base class.
   explicit MinidumpProcessor(SymbolSupplier *supplier);
   ~MinidumpProcessor();
 
-  // Returns a new ProcessState object produced by processing the minidump
-  // file.  The caller takes ownership of the ProcessState.  Returns NULL on
-  // failure.
-  ProcessState* Process(const string &minidump_file);
+  // Processes the minidump file and fills process_state with the result.
+  ProcessResult Process(const string &minidump_file,
+                        ProcessState *process_state);
 
   // Returns a textual representation of the base CPU type that the minidump
   // in dump was produced on.  Returns an empty string if this information

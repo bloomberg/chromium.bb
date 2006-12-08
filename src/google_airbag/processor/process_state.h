@@ -47,7 +47,11 @@ class CodeModules;
 
 class ProcessState {
  public:
+  ProcessState() : modules_(NULL) { Clear(); }
   ~ProcessState();
+
+  // Resets the ProcessState to its default values
+  void Clear();
 
   // Accessors.  See the data declarations below.
   u_int32_t time_date_stamp() const { return time_date_stamp_; }
@@ -65,11 +69,6 @@ class ProcessState {
  private:
   // MinidumpProcessor is responsible for building ProcessState objects.
   friend class MinidumpProcessor;
-
-  // Disallow instantiation other than by friends.
-  ProcessState() : time_date_stamp_(0), crashed_(false), crash_reason_(),
-                   crash_address_(0), requesting_thread_(-1), threads_(),
-                   os_(), os_version_(), cpu_(), cpu_info_(), modules_(NULL) {}
 
   // The time-date stamp of the minidump (time_t format)
   u_int32_t time_date_stamp_;

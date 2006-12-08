@@ -42,10 +42,24 @@ class CodeModule;
 
 class SymbolSupplier {
  public:
+  // Result type for GetSymbolFile
+  enum SymbolResult {
+    // no symbols were found, but continue processing
+    NOT_FOUND,
+
+    // symbols were found, and the path has been placed in symbol_file
+    FOUND,
+
+    // stops processing the minidump immediately
+    INTERRUPT,
+  };
+
   virtual ~SymbolSupplier() {}
 
-  // Returns the path to the symbol file for the given module.
-  virtual string GetSymbolFile(const CodeModule *module) = 0;
+  // Retrieves the symbol file for the given CodeModule, placing the
+  // path in symbol_file if successful.
+  virtual SymbolResult GetSymbolFile(const CodeModule *module,
+                                     string *symbol_file) = 0;
 };
 
 }  // namespace google_airbag

@@ -195,18 +195,18 @@ static bool PrintMinidumpProcess(const string &minidump_file,
   MinidumpProcessor minidump_processor(symbol_supplier.get());
 
   // Process the minidump.
-  scoped_ptr<ProcessState> process_state(
-      minidump_processor.Process(minidump_file));
-  if (!process_state.get()) {
+  ProcessState process_state;
+  if (minidump_processor.Process(minidump_file, &process_state) !=
+      MinidumpProcessor::PROCESS_OK) {
     fprintf(stderr, "MinidumpProcessor::Process failed\n");
     return false;
   }
 
   // Print OS and CPU information.
-  string cpu = process_state->cpu();
-  string cpu_info = process_state->cpu_info();
-  printf("Operating system: %s\n", process_state->os().c_str());
-  printf("                  %s\n", process_state->os_version().c_str());
+  string cpu = process_state.cpu();
+  string cpu_info = process_state.cpu_info();
+  printf("Operating system: %s\n", process_state.os().c_str());
+  printf("                  %s\n", process_state.os_version().c_str());
   printf("CPU: %s\n", cpu.c_str());
   if (!cpu_info.empty()) {
     // This field is optional.
@@ -215,36 +215,36 @@ static bool PrintMinidumpProcess(const string &minidump_file,
   printf("\n");
 
   // Print crash information.
-  if (process_state->crashed()) {
-    printf("Crash reason:  %s\n", process_state->crash_reason().c_str());
-    printf("Crash address: 0x%llx\n", process_state->crash_address());
+  if (process_state.crashed()) {
+    printf("Crash reason:  %s\n", process_state.crash_reason().c_str());
+    printf("Crash address: 0x%llx\n", process_state.crash_address());
   } else {
     printf("No crash\n");
   }
 
   // If the thread that requested the dump is known, print it first.
-  int requesting_thread = process_state->requesting_thread(); 
+  int requesting_thread = process_state.requesting_thread();
   if (requesting_thread != -1) {
     printf("\n");
     printf("Thread %d (%s)\n",
           requesting_thread,
-          process_state->crashed() ? "crashed" :
-                                     "requested dump, did not crash");
-    PrintStack(process_state->threads()->at(requesting_thread), cpu);
+          process_state.crashed() ? "crashed" :
+                                    "requested dump, did not crash");
+    PrintStack(process_state.threads()->at(requesting_thread), cpu);
   }
 
   // Print all of the threads in the dump.
-  int thread_count = process_state->threads()->size();
+  int thread_count = process_state.threads()->size();
   for (int thread_index = 0; thread_index < thread_count; ++thread_index) {
     if (thread_index != requesting_thread) {
       // Don't print the crash thread again, it was already printed.
       printf("\n");
       printf("Thread %d\n", thread_index);
-      PrintStack(process_state->threads()->at(thread_index), cpu);
+      PrintStack(process_state.threads()->at(thread_index), cpu);
     }
   }
 
-  PrintModules(process_state->modules());
+  PrintModules(process_state.modules());
 
   return true;
 }

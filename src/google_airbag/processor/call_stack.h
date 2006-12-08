@@ -56,16 +56,17 @@ template<typename T> class linked_ptr;
 
 class CallStack {
  public:
+  CallStack() { Clear(); }
   ~CallStack();
 
+  // Resets the CallStack to its initial empty state
+  void Clear();
+  
   const vector<StackFrame*>* frames() const { return &frames_; }
 
  private:
   // Stackwalker is responsible for building the frames_ vector.
   friend class Stackwalker;
-
-  // Disallow instantiation other than by friends.
-  CallStack() : frames_() {}
 
   // Storage for pushed frames.
   vector<StackFrame*> frames_;

@@ -61,10 +61,11 @@ class Stackwalker {
  public:
   virtual ~Stackwalker() {}
 
-  // Creates a new CallStack and populates it by calling GetContextFrame and
+  // Populates the given CallStack by calling GetContextFrame and
   // GetCallerFrame.  The frames are further processed to fill all available
-  // data.  The caller takes ownership of the CallStack returned by Walk.
-  CallStack* Walk();
+  // data.  Returns true if the stackwalk completed, or false if it was
+  // interrupted by SymbolSupplier::GetSymbolFile().
+  bool Walk(CallStack *stack);
 
   // Returns a new concrete subclass suitable for the CPU that a stack was
   // generated on, according to the CPU type indicated by the context
