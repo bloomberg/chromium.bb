@@ -182,7 +182,7 @@ int wmain(int argc, wchar_t *argv[]) {
   }
 
   bool success = HTTPUpload::SendRequest(url, parameters,
-                                         symbol_file, L"symbol_file");
+                                         symbol_file, L"symbol_file", NULL);
   _wunlink(symbol_file.c_str());
 
   if (!success) {

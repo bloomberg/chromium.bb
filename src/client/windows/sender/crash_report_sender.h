@@ -56,11 +56,16 @@ class CrashReportSender {
   // name value pairs, as a multipart POST request to the given URL.
   // Parameter names must contain only printable ASCII characters,
   // and may not contain a quote (") character.
+  // If the report is sent successfully (the return value is true), a
+  // code uniquely identifying the report will be returned in report_code.
   // Only HTTP(S) URLs are currently supported.  Returns true on success.
-  // TODO(bryner): we should expose the response to the caller.
+  // If report_code is non-NULL and the report is sent successfully (that is,
+  // the return value is true), a code uniquely identifying the report will be
+  // returned in report_code.  (Otherwise, report_code will be unchanged.)
   static bool SendCrashReport(const wstring &url,
                               const map<wstring, wstring> &parameters,
-                              const wstring &dump_file_name);
+                              const wstring &dump_file_name,
+                              wstring *report_code);
 
  private:
   // No instances of this class should be created.

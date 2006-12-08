@@ -28,8 +28,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
-#include <Windows.h>
-#include <WinInet.h>
 
 // Disable exception handler warnings.
 #pragma warning( disable : 4530 ) 
@@ -67,7 +65,8 @@ class HTTPUpload::AutoInternetHandle {
 bool HTTPUpload::SendRequest(const wstring &url,
                              const map<wstring, wstring> &parameters,
                              const wstring &upload_file,
-                             const wstring &file_part_name) {
+                             const wstring &file_part_name,
+                             wstring *response_body) {
   // TODO(bryner): support non-ASCII parameter names
   if (!CheckParameters(parameters)) {
     return false;
@@ -154,7 +153,43 @@ bool HTTPUpload::SendRequest(const wstring &url,
     return false;
   }
 
-  return (wcscmp(http_status, L"200") == 0);
+  bool result = (wcscmp(http_status, L"200") == 0);
+
+  if (result) {
+    result = ReadResponse(request.get(), response_body);
+  }
+
+  return result;
+}
+
+// static
+bool HTTPUpload::ReadResponse(HINTERNET request, wstring *response) {
+  wchar_t content_length[32];
+  DWORD content_length_size = sizeof(content_length);
+  if (!HttpQueryInfo(request, HTTP_QUERY_CONTENT_LENGTH,
+                     static_cast<LPVOID>(&content_length), &content_length_size,
+                     0)) {
+    return false;
+  }
+  DWORD claimed_size = wcstol(content_length, NULL, 10);
+
+  char *response_buffer = new char[claimed_size];
+  DWORD size_read;
+  DWORD total_read = 0;
+  BOOL read_result;
+  do {
+    read_result = InternetReadFile(request, response_buffer + total_read,
+                                   claimed_size - total_read, &size_read);
+    total_read += size_read;
+  } while (read_result && (size_read != 0) && (total_read < claimed_size));
+
+  bool succeeded = (total_read == claimed_size);
+  if (succeeded && response) {
+    *response = UTF8ToWide(string(response_buffer, total_read));
+  }
+
+  delete[] response_buffer;
+  return succeeded;
 }
 
 // static
@@ -259,6 +294,27 @@ void HTTPUpload::GetFileContents(const wstring &filename,
   } else {
     contents->clear();
   }
+}
+
+// static
+wstring HTTPUpload::UTF8ToWide(const string &utf8) {
+  if (utf8.length() == 0) {
+    return wstring();
+  }
+
+  // compute the length of the buffer we'll need
+  int charcount = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, NULL, 0);
+
+  if (charcount == 0) {
+    return wstring();
+  }
+
+  // convert
+  wchar_t* buf = new wchar_t[charcount];
+  MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, buf, charcount);
+  wstring result(buf);
+  delete[] buf;
+  return result;
 }
 
 // static

@@ -38,10 +38,10 @@ namespace google_airbag {
 // static
 bool CrashReportSender::SendCrashReport(
     const wstring &url, const map<wstring, wstring> &parameters,
-    const wstring &dump_file_name) {
+    const wstring &dump_file_name, wstring *report_code) {
 
   return HTTPUpload::SendRequest(url, parameters, dump_file_name,
-                                 L"upload_file_minidump");
+                                 L"upload_file_minidump", report_code);
 }
 
 }  // namespace google_airbag
