@@ -57,7 +57,8 @@ class StackwalkerX86 : public Stackwalker {
   StackwalkerX86(const MDRawContextX86 *context,
                  MemoryRegion *memory,
                  const CodeModules *modules,
-                 SymbolSupplier *supplier);
+                 SymbolSupplier *supplier,
+                 SourceLineResolverInterface *resolver);
 
  private:
   // Implementation of Stackwalker, using x86 context (%ebp, %esp, %eip) and

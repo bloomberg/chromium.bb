@@ -31,6 +31,7 @@
 // corresponding symbol file, and checks the stack frames for correctness.
 
 #include <string>
+#include "google_airbag/processor/basic_source_line_resolver.h"
 #include "google_airbag/processor/call_stack.h"
 #include "google_airbag/processor/code_module.h"
 #include "google_airbag/processor/code_modules.h"
@@ -43,6 +44,7 @@
 namespace {
 
 using std::string;
+using google_airbag::BasicSourceLineResolver;
 using google_airbag::CallStack;
 using google_airbag::CodeModule;
 using google_airbag::MinidumpProcessor;
@@ -93,7 +95,8 @@ SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
 
 static bool RunTests() {
   TestSymbolSupplier supplier;
-  MinidumpProcessor processor(&supplier);
+  BasicSourceLineResolver resolver;
+  MinidumpProcessor processor(&supplier, &resolver);
 
   string minidump_file = string(getenv("srcdir") ? getenv("srcdir") : ".") +
                          "/src/processor/testdata/minidump2.dmp";

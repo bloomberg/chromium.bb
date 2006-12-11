@@ -27,31 +27,26 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// SourceLineResolver returns function/file/line info for a memory address.
-// It uses address map files produced by a compatible writer, e.g.
-// PDBSourceLineWriter.
+// Abstract interface to return function/file/line info for a memory address.
 
-#ifndef PROCESSOR_SOURCE_LINE_RESOLVER_H__
-#define PROCESSOR_SOURCE_LINE_RESOLVER_H__
+#ifndef GOOGLE_AIRBAG_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__
+#define GOOGLE_AIRBAG_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__
 
 #include <string>
-#include <ext/hash_map>
 #include "google_airbag/common/airbag_types.h"
 
 namespace google_airbag {
 
 using std::string;
-using __gnu_cxx::hash_map;
 
 struct StackFrame;
 struct StackFrameInfo;
 
-class SourceLineResolver {
+class SourceLineResolverInterface {
  public:
   typedef u_int64_t MemAddr;
 
-  SourceLineResolver();
-  ~SourceLineResolver();
+  virtual ~SourceLineResolverInterface() {}
 
   // Adds a module to this resolver, returning true on success.
   //
@@ -59,10 +54,11 @@ class SourceLineResolver {
   // filename of the module, optionally with version identifiers.
   //
   // map_file should contain line/address mappings for this module.
-  bool LoadModule(const string &module_name, const string &map_file);
+  virtual bool LoadModule(const string &module_name,
+                          const string &map_file) = 0;
 
   // Returns true if a module with the given name has been loaded.
-  bool HasModule(const string &module_name) const;
+  virtual bool HasModule(const string &module_name) const = 0;
 
   // Fills in the function_base, function_name, source_file_name,
   // and source_line fields of the StackFrame.  The instruction and
@@ -71,28 +67,13 @@ class SourceLineResolver {
   // available, returns NULL.  A NULL return value does not indicate an
   // error.  The caller takes ownership of any returned StackFrameInfo
   // object.
-  StackFrameInfo* FillSourceLineInfo(StackFrame *frame) const;
+  virtual StackFrameInfo* FillSourceLineInfo(StackFrame *frame) const = 0;
 
- private:
-  template<class T> class MemAddrMap;
-  struct Line;
-  struct Function;
-  struct PublicSymbol;
-  struct File;
-  struct HashString {
-    size_t operator()(const string &s) const;
-  };
-  class Module;
-
-  // All of the modules we've loaded
-  typedef hash_map<string, Module*, HashString> ModuleMap;
-  ModuleMap *modules_;
-
-  // Disallow unwanted copy ctor and assignment operator
-  SourceLineResolver(const SourceLineResolver&);
-  void operator=(const SourceLineResolver&);
+ protected:
+  // SourceLineResolverInterface cannot be instantiated except by subclasses
+  SourceLineResolverInterface() {}
 };
 
 }  // namespace google_airbag
 
-#endif  // PROCESSOR_SOURCE_LINE_RESOLVER_H__
+#endif  // GOOGLE_AIRBAG_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__

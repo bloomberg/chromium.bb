@@ -38,7 +38,7 @@
 #include "processor/contained_range_map-inl.h"
 #include "processor/range_map-inl.h"
 
-#include "processor/source_line_resolver.h"
+#include "google_airbag/processor/basic_source_line_resolver.h"
 #include "google_airbag/processor/code_module.h"
 #include "google_airbag/processor/stack_frame.h"
 #include "processor/linked_ptr.h"
@@ -52,7 +52,7 @@ using __gnu_cxx::hash;
 
 namespace google_airbag {
 
-struct SourceLineResolver::Line {
+struct BasicSourceLineResolver::Line {
   Line(MemAddr addr, MemAddr code_size, int file_id, int source_line)
       : address(addr)
       , size(code_size)
@@ -65,7 +65,7 @@ struct SourceLineResolver::Line {
   int line;
 };
 
-struct SourceLineResolver::Function {
+struct BasicSourceLineResolver::Function {
   Function(const string &function_name,
            MemAddr function_address,
            MemAddr code_size,
@@ -83,7 +83,7 @@ struct SourceLineResolver::Function {
   RangeMap< MemAddr, linked_ptr<Line> > lines;
 };
 
-struct SourceLineResolver::PublicSymbol {
+struct BasicSourceLineResolver::PublicSymbol {
   PublicSymbol(const string& set_name,
                MemAddr set_address,
                int set_parameter_size)
@@ -100,7 +100,7 @@ struct SourceLineResolver::PublicSymbol {
   int parameter_size;
 };
 
-class SourceLineResolver::Module {
+class BasicSourceLineResolver::Module {
  public:
   Module(const string &name) : name_(name) { }
 
@@ -115,7 +115,7 @@ class SourceLineResolver::Module {
   StackFrameInfo* LookupAddress(StackFrame *frame) const;
 
  private:
-  friend class SourceLineResolver;
+  friend class BasicSourceLineResolver;
   typedef hash_map<int, string> FileMap;
 
   // The types for stack_info_.  This is equivalent to MS DIA's
@@ -173,10 +173,10 @@ class SourceLineResolver::Module {
       stack_info_[STACK_INFO_LAST];
 };
 
-SourceLineResolver::SourceLineResolver() : modules_(new ModuleMap) {
+BasicSourceLineResolver::BasicSourceLineResolver() : modules_(new ModuleMap) {
 }
 
-SourceLineResolver::~SourceLineResolver() {
+BasicSourceLineResolver::~BasicSourceLineResolver() {
   ModuleMap::iterator it;
   for (it = modules_->begin(); it != modules_->end(); ++it) {
     delete it->second;
@@ -184,8 +184,8 @@ SourceLineResolver::~SourceLineResolver() {
   delete modules_;
 }
 
-bool SourceLineResolver::LoadModule(const string &module_name,
-                                    const string &map_file) {
+bool BasicSourceLineResolver::LoadModule(const string &module_name,
+                                         const string &map_file) {
   // Make sure we don't already have a module with the given name.
   if (modules_->find(module_name) != modules_->end()) {
     return false;
@@ -201,11 +201,11 @@ bool SourceLineResolver::LoadModule(const string &module_name,
   return true;
 }
 
-bool SourceLineResolver::HasModule(const string &module_name) const {
+bool BasicSourceLineResolver::HasModule(const string &module_name) const {
   return modules_->find(module_name) != modules_->end();
 }
 
-StackFrameInfo* SourceLineResolver::FillSourceLineInfo(
+StackFrameInfo* BasicSourceLineResolver::FillSourceLineInfo(
     StackFrame *frame) const {
   if (frame->module) {
     ModuleMap::const_iterator it = modules_->find(frame->module->code_file());
@@ -216,7 +216,7 @@ StackFrameInfo* SourceLineResolver::FillSourceLineInfo(
   return NULL;
 }
 
-bool SourceLineResolver::Module::LoadMap(const string &map_file) {
+bool BasicSourceLineResolver::Module::LoadMap(const string &map_file) {
   FILE *f = fopen(map_file.c_str(), "r");
   if (!f) {
     return false;
@@ -252,8 +252,8 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
         return false;
       }
     } else if (strncmp(buffer, "MODULE ", 7) == 0) {
-      // Ignore these.  They're not of any use to SourceLineResolver, which
-      // is fed modules by a SymbolSupplier.  These lines are present to
+      // Ignore these.  They're not of any use to BasicSourceLineResolver,
+      // which is fed modules by a SymbolSupplier.  These lines are present to
       // aid other tools in properly placing symbol files so that they can
       // be accessed by a SymbolSupplier.
       //
@@ -275,8 +275,8 @@ bool SourceLineResolver::Module::LoadMap(const string &map_file) {
   return true;
 }
 
-StackFrameInfo* SourceLineResolver::Module::LookupAddress(StackFrame *frame)
-    const {
+StackFrameInfo* BasicSourceLineResolver::Module::LookupAddress(
+    StackFrame *frame) const {
   MemAddr address = frame->instruction - frame->module->base_address();
 
   linked_ptr<StackFrameInfo> retrieved_info;
@@ -360,8 +360,8 @@ StackFrameInfo* SourceLineResolver::Module::LookupAddress(StackFrame *frame)
 }
 
 // static
-bool SourceLineResolver::Module::Tokenize(char *line, int max_tokens,
-                                          vector<char*> *tokens) {
+bool BasicSourceLineResolver::Module::Tokenize(char *line, int max_tokens,
+                                               vector<char*> *tokens) {
   tokens->clear();
   tokens->reserve(max_tokens);
 
@@ -387,7 +387,7 @@ bool SourceLineResolver::Module::Tokenize(char *line, int max_tokens,
   return tokens->size() == static_cast<unsigned int>(max_tokens);
 }
 
-void SourceLineResolver::Module::ParseFile(char *file_line) {
+void BasicSourceLineResolver::Module::ParseFile(char *file_line) {
   // FILE <id> <filename>
   file_line += 5;  // skip prefix
 
@@ -407,8 +407,8 @@ void SourceLineResolver::Module::ParseFile(char *file_line) {
   }
 }
 
-SourceLineResolver::Function* SourceLineResolver::Module::ParseFunction(
-    char *function_line) {
+BasicSourceLineResolver::Function*
+BasicSourceLineResolver::Module::ParseFunction(char *function_line) {
   // FUNC <address> <size> <stack_param_size> <name>
   function_line += 5;  // skip prefix
 
@@ -425,7 +425,7 @@ SourceLineResolver::Function* SourceLineResolver::Module::ParseFunction(
   return new Function(name, address, size, stack_param_size);
 }
 
-SourceLineResolver::Line* SourceLineResolver::Module::ParseLine(
+BasicSourceLineResolver::Line* BasicSourceLineResolver::Module::ParseLine(
     char *line_line) {
   // <address> <line number> <source file id>
   vector<char*> tokens;
@@ -444,7 +444,7 @@ SourceLineResolver::Line* SourceLineResolver::Module::ParseLine(
   return new Line(address, size, source_file, line_number);
 }
 
-bool SourceLineResolver::Module::ParsePublicSymbol(char *public_line) {
+bool BasicSourceLineResolver::Module::ParsePublicSymbol(char *public_line) {
   // PUBLIC <address> <stack_param_size> <name>
 
   // Skip "PUBLIC " prefix.
@@ -474,7 +474,7 @@ bool SourceLineResolver::Module::ParsePublicSymbol(char *public_line) {
   return public_symbols_.Store(address, symbol);
 }
 
-bool SourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
+bool BasicSourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
   // STACK WIN <type> <rva> <code_size> <prolog_size> <epliog_size>
   // <parameter_size> <saved_register_size> <local_size> <max_stack_size>
   // <has_program_string> <program_string_OR_allocates_base_pointer>
@@ -554,7 +554,7 @@ bool SourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
   return true;
 }
 
-size_t SourceLineResolver::HashString::operator()(const string &s) const {
+size_t BasicSourceLineResolver::HashString::operator()(const string &s) const {
   return hash<const char*>()(s.c_str());
 }
 

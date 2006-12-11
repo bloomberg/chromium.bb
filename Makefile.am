@@ -52,6 +52,7 @@ lib_LTLIBRARIES = src/libairbag.la
 src_libairbag_la_SOURCES = \
 	src/google_airbag/common/airbag_types.h \
 	src/google_airbag/common/minidump_format.h \
+	src/google_airbag/processor/basic_source_line_resolver.h \
 	src/google_airbag/processor/call_stack.h \
 	src/google_airbag/processor/code_module.h \
 	src/google_airbag/processor/code_modules.h \
@@ -68,6 +69,7 @@ src_libairbag_la_SOURCES = \
 	src/processor/basic_code_module.h \
 	src/processor/basic_code_modules.cc \
 	src/processor/basic_code_modules.h \
+	src/processor/basic_source_line_resolver.cc \
 	src/processor/call_stack.cc \
 	src/processor/contained_range_map.h \
 	src/processor/contained_range_map-inl.h \
@@ -84,8 +86,6 @@ src_libairbag_la_SOURCES = \
 	src/processor/scoped_ptr.h \
 	src/processor/simple_symbol_supplier.cc \
 	src/processor/simple_symbol_supplier.h \
-	src/processor/source_line_resolver.cc \
-	src/processor/source_line_resolver.h \
 	src/processor/stack_frame_info.h \
 	src/processor/stackwalker.cc \
 	src/processor/stackwalker_ppc.cc \
@@ -103,12 +103,12 @@ bin_PROGRAMS = \
 ## Tests
 check_PROGRAMS = \
 	src/processor/address_map_unittest \
+	src/processor/basic_source_line_resolver_unittest \
 	src/processor/contained_range_map_unittest \
 	src/processor/minidump_processor_unittest \
 	src/processor/pathname_stripper_unittest \
 	src/processor/postfix_evaluator_unittest \
-	src/processor/range_map_unittest \
-	src/processor/source_line_resolver_unittest
+	src/processor/range_map_unittest
 
 if SELFTEST
 check_PROGRAMS += \
@@ -125,6 +125,11 @@ TESTS_ENVIRONMENT =
 src_processor_address_map_unittest_SOURCES = \
 	src/processor/address_map_unittest.cc
 
+src_processor_basic_source_line_resolver_unittest_SOURCES = \
+	src/processor/basic_source_line_resolver_unittest.cc
+src_processor_basic_source_line_resolver_unittest_LDADD = \
+	src/processor/basic_source_line_resolver.lo
+
 src_processor_contained_range_map_unittest_SOURCES = \
 	src/processor/contained_range_map_unittest.cc
 
@@ -132,14 +137,14 @@ src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc
 src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/basic_code_modules.lo \
+	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
 	src/processor/process_state.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \
-	src/processor/stackwalker_x86.lo \
-	src/processor/source_line_resolver.lo
+	src/processor/stackwalker_x86.lo
 
 src_processor_pathname_stripper_unittest_SOURCES = \
 	src/processor/pathname_stripper_unittest.cc
@@ -152,18 +157,13 @@ src_processor_postfix_evaluator_unittest_SOURCES = \
 src_processor_range_map_unittest_SOURCES = \
 	src/processor/range_map_unittest.cc
 
-src_processor_source_line_resolver_unittest_SOURCES = \
-	src/processor/source_line_resolver_unittest.cc
-src_processor_source_line_resolver_unittest_LDADD = \
-	src/processor/source_line_resolver.lo
-
 src_processor_stackwalker_selftest_SOURCES = \
 	src/processor/stackwalker_selftest.cc
 src_processor_stackwalker_selftest_LDADD = \
 	src/processor/basic_code_modules.lo \
+	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump.lo \
-	src/processor/source_line_resolver.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_x86.lo
@@ -182,6 +182,7 @@ src_processor_minidump_stackwalk_SOURCES = \
 	src/processor/minidump_stackwalk.cc
 src_processor_minidump_stackwalk_LDADD = \
 	src/processor/basic_code_modules.lo \
+	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \
@@ -190,8 +191,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/simple_symbol_supplier.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \
-	src/processor/stackwalker_x86.lo \
-	src/processor/source_line_resolver.lo
+	src/processor/stackwalker_x86.lo
 
 
 ## Additional files to be included in a source distribution

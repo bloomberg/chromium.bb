@@ -217,6 +217,7 @@ static u_int32_t GetPC() {
 static unsigned int CountCallerFrames() __attribute__((noinline));
 static unsigned int CountCallerFrames() {
   SelfMemoryRegion memory;
+  BasicSourceLineResolver resolver;
 
 #if defined(__i386__)
   MDRawContextX86 context = MDRawContextX86();
@@ -224,13 +225,15 @@ static unsigned int CountCallerFrames() {
   context.ebp = GetEBP();
   context.esp = GetESP();
 
-  StackwalkerX86 stackwalker = StackwalkerX86(&context, &memory, NULL, NULL);
+  StackwalkerX86 stackwalker = StackwalkerX86(&context, &memory, NULL, NULL,
+                                              &resolver);
 #elif defined(__ppc__)
   MDRawContextPPC context = MDRawContextPPC();
   context.srr0 = GetPC();
   context.gpr[1] = GetSP();
 
-  StackwalkerPPC stackwalker = StackwalkerPPC(&context, &memory, NULL, NULL);
+  StackwalkerPPC stackwalker = StackwalkerPPC(&context, &memory, NULL, NULL,
+                                              &resolver);
 #endif  // __i386__ || __ppc__
 
   scoped_ptr<CallStack> stack(stackwalker.Walk());

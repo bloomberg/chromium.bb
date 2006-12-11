@@ -29,7 +29,7 @@
 
 #include <cstdio>
 #include <string>
-#include "processor/source_line_resolver.h"
+#include "google_airbag/processor/basic_source_line_resolver.h"
 #include "google_airbag/processor/code_module.h"
 #include "google_airbag/processor/stack_frame.h"
 #include "processor/linked_ptr.h"
@@ -49,10 +49,10 @@
 namespace {
 
 using std::string;
+using google_airbag::BasicSourceLineResolver;
 using google_airbag::CodeModule;
 using google_airbag::linked_ptr;
 using google_airbag::scoped_ptr;
-using google_airbag::SourceLineResolver;
 using google_airbag::StackFrame;
 using google_airbag::StackFrameInfo;
 
@@ -94,7 +94,7 @@ static bool RunTests() {
   string testdata_dir = string(getenv("srcdir") ? getenv("srcdir") : ".") +
                         "/src/processor/testdata";
 
-  SourceLineResolver resolver;
+  BasicSourceLineResolver resolver;
   ASSERT_TRUE(resolver.LoadModule("module1", testdata_dir + "/module1.out"));
   ASSERT_TRUE(resolver.HasModule("module1"));
   ASSERT_TRUE(resolver.LoadModule("module2", testdata_dir + "/module2.out"));

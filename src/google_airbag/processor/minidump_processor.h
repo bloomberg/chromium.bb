@@ -38,6 +38,7 @@ using std::string;
 
 class Minidump;
 class ProcessState;
+class SourceLineResolverInterface;
 class SymbolSupplier;
 
 class MinidumpProcessor {
@@ -51,7 +52,8 @@ class MinidumpProcessor {
 
   // Initializes this MinidumpProcessor.  supplier should be an
   // implementation of the SymbolSupplier abstract base class.
-  explicit MinidumpProcessor(SymbolSupplier *supplier);
+  MinidumpProcessor(SymbolSupplier *supplier,
+                    SourceLineResolverInterface *resolver);
   ~MinidumpProcessor();
 
   // Processes the minidump file and fills process_state with the result.
@@ -84,6 +86,7 @@ class MinidumpProcessor {
 
  private:
   SymbolSupplier *supplier_;
+  SourceLineResolverInterface *resolver_;
 };
 
 }  // namespace google_airbag

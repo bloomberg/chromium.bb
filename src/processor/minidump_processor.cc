@@ -38,8 +38,9 @@
 
 namespace google_airbag {
 
-MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier)
-    : supplier_(supplier) {
+MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier,
+                                     SourceLineResolverInterface *resolver)
+    : supplier_(supplier), resolver_(resolver) {
 }
 
 MinidumpProcessor::~MinidumpProcessor() {
@@ -164,7 +165,8 @@ MinidumpProcessor::ProcessResult MinidumpProcessor::Process(
         Stackwalker::StackwalkerForCPU(context,
                                        thread_memory,
                                        process_state->modules_,
-                                       supplier_));
+                                       supplier_,
+                                       resolver_));
     if (!stackwalker.get()) {
       return PROCESS_ERROR;
     }

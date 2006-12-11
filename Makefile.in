@@ -71,13 +71,12 @@ host_triplet = @host@
 bin_PROGRAMS = src/processor/minidump_dump$(EXEEXT) \
 	src/processor/minidump_stackwalk$(EXEEXT)
 check_PROGRAMS = src/processor/address_map_unittest$(EXEEXT) \
+	src/processor/basic_source_line_resolver_unittest$(EXEEXT) \
 	src/processor/contained_range_map_unittest$(EXEEXT) \
 	src/processor/minidump_processor_unittest$(EXEEXT) \
 	src/processor/pathname_stripper_unittest$(EXEEXT) \
 	src/processor/postfix_evaluator_unittest$(EXEEXT) \
-	src/processor/range_map_unittest$(EXEEXT) \
-	src/processor/source_line_resolver_unittest$(EXEEXT) \
-	$(am__EXEEXT_1)
+	src/processor/range_map_unittest$(EXEEXT) $(am__EXEEXT_1)
 @SELFTEST_TRUE@am__append_1 = \
 @SELFTEST_TRUE@	src/processor/stackwalker_selftest
 
@@ -111,12 +110,12 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 src_libairbag_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
 am_src_libairbag_la_OBJECTS = src/processor/basic_code_modules.lo \
+	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/pathname_stripper.lo \
 	src/processor/process_state.lo \
 	src/processor/simple_symbol_supplier.lo \
-	src/processor/source_line_resolver.lo \
 	src/processor/stackwalker.lo src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_x86.lo
 src_libairbag_la_OBJECTS = $(am_src_libairbag_la_OBJECTS)
@@ -129,6 +128,11 @@ am_src_processor_address_map_unittest_OBJECTS =  \
 src_processor_address_map_unittest_OBJECTS =  \
 	$(am_src_processor_address_map_unittest_OBJECTS)
 src_processor_address_map_unittest_LDADD = $(LDADD)
+am_src_processor_basic_source_line_resolver_unittest_OBJECTS =  \
+	src/processor/basic_source_line_resolver_unittest.$(OBJEXT)
+src_processor_basic_source_line_resolver_unittest_OBJECTS = $(am_src_processor_basic_source_line_resolver_unittest_OBJECTS)
+src_processor_basic_source_line_resolver_unittest_DEPENDENCIES =  \
+	src/processor/basic_source_line_resolver.lo
 am_src_processor_contained_range_map_unittest_OBJECTS =  \
 	src/processor/contained_range_map_unittest.$(OBJEXT)
 src_processor_contained_range_map_unittest_OBJECTS =  \
@@ -146,26 +150,26 @@ src_processor_minidump_processor_unittest_OBJECTS =  \
 	$(am_src_processor_minidump_processor_unittest_OBJECTS)
 src_processor_minidump_processor_unittest_DEPENDENCIES =  \
 	src/processor/basic_code_modules.lo \
+	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump_processor.lo src/processor/minidump.lo \
 	src/processor/process_state.lo src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \
-	src/processor/stackwalker_x86.lo \
-	src/processor/source_line_resolver.lo
+	src/processor/stackwalker_x86.lo
 am_src_processor_minidump_stackwalk_OBJECTS =  \
 	src/processor/minidump_stackwalk.$(OBJEXT)
 src_processor_minidump_stackwalk_OBJECTS =  \
 	$(am_src_processor_minidump_stackwalk_OBJECTS)
 src_processor_minidump_stackwalk_DEPENDENCIES =  \
 	src/processor/basic_code_modules.lo \
+	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/pathname_stripper.lo \
 	src/processor/process_state.lo \
 	src/processor/simple_symbol_supplier.lo \
 	src/processor/stackwalker.lo src/processor/stackwalker_ppc.lo \
-	src/processor/stackwalker_x86.lo \
-	src/processor/source_line_resolver.lo
+	src/processor/stackwalker_x86.lo
 am_src_processor_pathname_stripper_unittest_OBJECTS =  \
 	src/processor/pathname_stripper_unittest.$(OBJEXT)
 src_processor_pathname_stripper_unittest_OBJECTS =  \
@@ -182,20 +186,14 @@ am_src_processor_range_map_unittest_OBJECTS =  \
 src_processor_range_map_unittest_OBJECTS =  \
 	$(am_src_processor_range_map_unittest_OBJECTS)
 src_processor_range_map_unittest_LDADD = $(LDADD)
-am_src_processor_source_line_resolver_unittest_OBJECTS =  \
-	src/processor/source_line_resolver_unittest.$(OBJEXT)
-src_processor_source_line_resolver_unittest_OBJECTS =  \
-	$(am_src_processor_source_line_resolver_unittest_OBJECTS)
-src_processor_source_line_resolver_unittest_DEPENDENCIES =  \
-	src/processor/source_line_resolver.lo
 am_src_processor_stackwalker_selftest_OBJECTS =  \
 	src/processor/stackwalker_selftest.$(OBJEXT)
 src_processor_stackwalker_selftest_OBJECTS =  \
 	$(am_src_processor_stackwalker_selftest_OBJECTS)
 src_processor_stackwalker_selftest_DEPENDENCIES =  \
 	src/processor/basic_code_modules.lo \
+	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo src/processor/minidump.lo \
-	src/processor/source_line_resolver.lo \
 	src/processor/stackwalker.lo src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_x86.lo
 SCRIPTS = $(noinst_SCRIPTS)
@@ -220,6 +218,7 @@ LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_address_map_unittest_SOURCES) \
+	$(src_processor_basic_source_line_resolver_unittest_SOURCES) \
 	$(src_processor_contained_range_map_unittest_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
 	$(src_processor_minidump_processor_unittest_SOURCES) \
@@ -227,10 +226,10 @@ SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_pathname_stripper_unittest_SOURCES) \
 	$(src_processor_postfix_evaluator_unittest_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
-	$(src_processor_source_line_resolver_unittest_SOURCES) \
 	$(src_processor_stackwalker_selftest_SOURCES)
 DIST_SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_address_map_unittest_SOURCES) \
+	$(src_processor_basic_source_line_resolver_unittest_SOURCES) \
 	$(src_processor_contained_range_map_unittest_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
 	$(src_processor_minidump_processor_unittest_SOURCES) \
@@ -238,7 +237,6 @@ DIST_SOURCES = $(src_libairbag_la_SOURCES) \
 	$(src_processor_pathname_stripper_unittest_SOURCES) \
 	$(src_processor_postfix_evaluator_unittest_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
-	$(src_processor_source_line_resolver_unittest_SOURCES) \
 	$(src_processor_stackwalker_selftest_SOURCES)
 dist_docDATA_INSTALL = $(INSTALL_DATA)
 DATA = $(dist_doc_DATA)
@@ -284,7 +282,6 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
-GREP = @GREP@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -312,9 +309,12 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_F77 = @ac_ct_F77@
+ac_ct_RANLIB = @ac_ct_RANLIB@
+ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -331,30 +331,23 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
-datarootdir = @datarootdir@
-docdir = $(prefix)/share/doc/$(PACKAGE)-$(VERSION)
-dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
 host_os = @host_os@
 host_vendor = @host_vendor@
-htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
-localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
-pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
-psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
@@ -362,6 +355,7 @@ target_alias = @target_alias@
 
 # This allows #includes to be relative to src/
 AM_CPPFLAGS = -I$(top_srcdir)/src
+docdir = $(prefix)/share/doc/$(PACKAGE)-$(VERSION)
 dist_doc_DATA = \
 	AUTHORS \
 	COPYING \
@@ -374,6 +368,7 @@ lib_LTLIBRARIES = src/libairbag.la
 src_libairbag_la_SOURCES = \
 	src/google_airbag/common/airbag_types.h \
 	src/google_airbag/common/minidump_format.h \
+	src/google_airbag/processor/basic_source_line_resolver.h \
 	src/google_airbag/processor/call_stack.h \
 	src/google_airbag/processor/code_module.h \
 	src/google_airbag/processor/code_modules.h \
@@ -390,6 +385,7 @@ src_libairbag_la_SOURCES = \
 	src/processor/basic_code_module.h \
 	src/processor/basic_code_modules.cc \
 	src/processor/basic_code_modules.h \
+	src/processor/basic_source_line_resolver.cc \
 	src/processor/call_stack.cc \
 	src/processor/contained_range_map.h \
 	src/processor/contained_range_map-inl.h \
@@ -406,8 +402,6 @@ src_libairbag_la_SOURCES = \
 	src/processor/scoped_ptr.h \
 	src/processor/simple_symbol_supplier.cc \
 	src/processor/simple_symbol_supplier.h \
-	src/processor/source_line_resolver.cc \
-	src/processor/source_line_resolver.h \
 	src/processor/stack_frame_info.h \
 	src/processor/stackwalker.cc \
 	src/processor/stackwalker_ppc.cc \
@@ -424,6 +418,12 @@ TESTS_ENVIRONMENT =
 src_processor_address_map_unittest_SOURCES = \
 	src/processor/address_map_unittest.cc
 
+src_processor_basic_source_line_resolver_unittest_SOURCES = \
+	src/processor/basic_source_line_resolver_unittest.cc
+
+src_processor_basic_source_line_resolver_unittest_LDADD = \
+	src/processor/basic_source_line_resolver.lo
+
 src_processor_contained_range_map_unittest_SOURCES = \
 	src/processor/contained_range_map_unittest.cc
 
@@ -432,14 +432,14 @@ src_processor_minidump_processor_unittest_SOURCES = \
 
 src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/basic_code_modules.lo \
+	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
 	src/processor/process_state.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \
-	src/processor/stackwalker_x86.lo \
-	src/processor/source_line_resolver.lo
+	src/processor/stackwalker_x86.lo
 
 src_processor_pathname_stripper_unittest_SOURCES = \
 	src/processor/pathname_stripper_unittest.cc
@@ -453,20 +453,14 @@ src_processor_postfix_evaluator_unittest_SOURCES = \
 src_processor_range_map_unittest_SOURCES = \
 	src/processor/range_map_unittest.cc
 
-src_processor_source_line_resolver_unittest_SOURCES = \
-	src/processor/source_line_resolver_unittest.cc
-
-src_processor_source_line_resolver_unittest_LDADD = \
-	src/processor/source_line_resolver.lo
-
 src_processor_stackwalker_selftest_SOURCES = \
 	src/processor/stackwalker_selftest.cc
 
 src_processor_stackwalker_selftest_LDADD = \
 	src/processor/basic_code_modules.lo \
+	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump.lo \
-	src/processor/source_line_resolver.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_x86.lo
@@ -484,6 +478,7 @@ src_processor_minidump_stackwalk_SOURCES = \
 
 src_processor_minidump_stackwalk_LDADD = \
 	src/processor/basic_code_modules.lo \
+	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
 	src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \
@@ -492,8 +487,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/simple_symbol_supplier.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \
-	src/processor/stackwalker_x86.lo \
-	src/processor/source_line_resolver.lo
+	src/processor/stackwalker_x86.lo
 
 EXTRA_DIST = \
 	$(SCRIPTS) \
@@ -620,6 +614,9 @@ src/processor/$(DEPDIR)/$(am__dirstamp):
 	@: > src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/basic_code_modules.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/basic_source_line_resolver.lo:  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/call_stack.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/minidump.lo: src/processor/$(am__dirstamp) \
@@ -632,8 +629,6 @@ src/processor/process_state.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/simple_symbol_supplier.lo:  \
 	src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/source_line_resolver.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/stackwalker.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -694,6 +689,12 @@ src/processor/address_map_unittest.$(OBJEXT):  \
 src/processor/address_map_unittest$(EXEEXT): $(src_processor_address_map_unittest_OBJECTS) $(src_processor_address_map_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
 	@rm -f src/processor/address_map_unittest$(EXEEXT)
 	$(CXXLINK) $(src_processor_address_map_unittest_LDFLAGS) $(src_processor_address_map_unittest_OBJECTS) $(src_processor_address_map_unittest_LDADD) $(LIBS)
+src/processor/basic_source_line_resolver_unittest.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/basic_source_line_resolver_unittest$(EXEEXT): $(src_processor_basic_source_line_resolver_unittest_OBJECTS) $(src_processor_basic_source_line_resolver_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/basic_source_line_resolver_unittest$(EXEEXT)
+	$(CXXLINK) $(src_processor_basic_source_line_resolver_unittest_LDFLAGS) $(src_processor_basic_source_line_resolver_unittest_OBJECTS) $(src_processor_basic_source_line_resolver_unittest_LDADD) $(LIBS)
 src/processor/contained_range_map_unittest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -735,12 +736,6 @@ src/processor/range_map_unittest.$(OBJEXT):  \
 src/processor/range_map_unittest$(EXEEXT): $(src_processor_range_map_unittest_OBJECTS) $(src_processor_range_map_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
 	@rm -f src/processor/range_map_unittest$(EXEEXT)
 	$(CXXLINK) $(src_processor_range_map_unittest_LDFLAGS) $(src_processor_range_map_unittest_OBJECTS) $(src_processor_range_map_unittest_LDADD) $(LIBS)
-src/processor/source_line_resolver_unittest.$(OBJEXT):  \
-	src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/source_line_resolver_unittest$(EXEEXT): $(src_processor_source_line_resolver_unittest_OBJECTS) $(src_processor_source_line_resolver_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
-	@rm -f src/processor/source_line_resolver_unittest$(EXEEXT)
-	$(CXXLINK) $(src_processor_source_line_resolver_unittest_LDFLAGS) $(src_processor_source_line_resolver_unittest_OBJECTS) $(src_processor_source_line_resolver_unittest_LDADD) $(LIBS)
 src/processor/stackwalker_selftest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -753,6 +748,9 @@ mostlyclean-compile:
 	-rm -f src/processor/address_map_unittest.$(OBJEXT)
 	-rm -f src/processor/basic_code_modules.$(OBJEXT)
 	-rm -f src/processor/basic_code_modules.lo
+	-rm -f src/processor/basic_source_line_resolver.$(OBJEXT)
+	-rm -f src/processor/basic_source_line_resolver.lo
+	-rm -f src/processor/basic_source_line_resolver_unittest.$(OBJEXT)
 	-rm -f src/processor/call_stack.$(OBJEXT)
 	-rm -f src/processor/call_stack.lo
 	-rm -f src/processor/contained_range_map_unittest.$(OBJEXT)
@@ -772,9 +770,6 @@ mostlyclean-compile:
 	-rm -f src/processor/range_map_unittest.$(OBJEXT)
 	-rm -f src/processor/simple_symbol_supplier.$(OBJEXT)
 	-rm -f src/processor/simple_symbol_supplier.lo
-	-rm -f src/processor/source_line_resolver.$(OBJEXT)
-	-rm -f src/processor/source_line_resolver.lo
-	-rm -f src/processor/source_line_resolver_unittest.$(OBJEXT)
 	-rm -f src/processor/stackwalker.$(OBJEXT)
 	-rm -f src/processor/stackwalker.lo
 	-rm -f src/processor/stackwalker_ppc.$(OBJEXT)
@@ -788,6 +783,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/address_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_code_modules.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_source_line_resolver.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_source_line_resolver_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/call_stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/contained_range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump.Plo@am__quote@
@@ -801,8 +798,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/process_state.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/simple_symbol_supplier.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_line_resolver.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_line_resolver_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_ppc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_selftest.Po@am__quote@

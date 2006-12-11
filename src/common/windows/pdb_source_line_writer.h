@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // PDBSourceLineWriter uses a pdb file produced by Visual C++ to output
-// a line/address map for use with SourceLineResolver.
+// a line/address map for use with BasicSourceLineResolver.
 
 #ifndef _PDB_SOURCE_LINE_WRITER_H__
 #define _PDB_SOURCE_LINE_WRITER_H__

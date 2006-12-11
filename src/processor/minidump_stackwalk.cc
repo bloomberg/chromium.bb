@@ -36,6 +36,7 @@
 #include <cstdlib>
 #include <string>
 
+#include "google_airbag/processor/basic_source_line_resolver.h"
 #include "google_airbag/processor/call_stack.h"
 #include "google_airbag/processor/code_module.h"
 #include "google_airbag/processor/code_modules.h"
@@ -50,6 +51,7 @@
 namespace {
 
 using std::string;
+using google_airbag::BasicSourceLineResolver;
 using google_airbag::CallStack;
 using google_airbag::CodeModule;
 using google_airbag::CodeModules;
@@ -192,7 +194,8 @@ static bool PrintMinidumpProcess(const string &minidump_file,
     symbol_supplier.reset(new SimpleSymbolSupplier(symbol_path));
   }
 
-  MinidumpProcessor minidump_processor(symbol_supplier.get());
+  BasicSourceLineResolver resolver;
+  MinidumpProcessor minidump_processor(symbol_supplier.get(), &resolver);
 
   // Process the minidump.
   ProcessState process_state;
