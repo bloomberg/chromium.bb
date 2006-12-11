@@ -434,13 +434,24 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 				dev_priv->cmdbuf_alloc->size,
 				NV_DMA_ACCESS_RO,
 				NV_DMA_TARGET_AGP);
-	} else {
+
+	} else if (dev_priv->card_type != NV_04) {
 		cb_obj = nouveau_dma_object_create(dev,
 				dev_priv->cmdbuf_alloc->start -
 					drm_get_resource_start(dev, 1),
 				dev_priv->cmdbuf_alloc->size,
 				NV_DMA_ACCESS_RO,
 				NV_DMA_TARGET_VIDMEM);
+	} else {
+		/* NV04 cmdbuf hack, from original ddx.. not sure of it's
+		 * exact reason for existing :)  PCI access to cmdbuf in
+		 * VRAM.
+		 */
+		cb_obj = nouveau_dma_object_create(dev,
+				dev_priv->cmdbuf_alloc->start,
+				dev_priv->cmdbuf_alloc->size,
+				NV_DMA_ACCESS_RO,
+				NV_DMA_TARGET_PCI);
 	}
 	if (!cb_obj) {
 		DRM_ERROR("unable to alloc object for command buffer\n");
