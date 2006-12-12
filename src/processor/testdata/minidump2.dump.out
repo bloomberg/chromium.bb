@@ -201,7 +201,7 @@ MDRawModule
   misc_record.data_size           = 0
   misc_record.rva                 = 0x0
   (code_file)                     = "C:\test_app.exe"
-  (code_identifier)               = "45787a492c000"
+  (code_identifier)               = "45787A492c000"
   (cv_record).cv_signature        = 0x53445352
   (cv_record).signature           = da006aa3-0d68-4df0-80c8-d782a2273853
   (cv_record).age                 = 1
@@ -233,7 +233,7 @@ MDRawModule
   misc_record.data_size           = 0
   misc_record.rva                 = 0x0
   (code_file)                     = "C:\WINDOWS\system32\ntdll.dll"
-  (code_identifier)               = "411096b4b0000"
+  (code_identifier)               = "411096B4b0000"
   (cv_record).cv_signature        = 0x53445352
   (cv_record).signature           = 36515fb5-d043-45e4-91f6-72fa2e2878c0
   (cv_record).age                 = 2
@@ -265,7 +265,7 @@ MDRawModule
   misc_record.data_size           = 0
   misc_record.rva                 = 0x0
   (code_file)                     = "C:\WINDOWS\system32\kernel32.dll"
-  (code_identifier)               = "44ab9a84f4000"
+  (code_identifier)               = "44AB9A84f4000"
   (cv_record).cv_signature        = 0x53445352
   (cv_record).signature           = bce8785c-57b4-4245-a669-896b6a19b954
   (cv_record).age                 = 2
@@ -297,7 +297,7 @@ MDRawModule
   misc_record.data_size           = 0
   misc_record.rva                 = 0x0
   (code_file)                     = "C:\WINDOWS\system32\ole32.dll"
-  (code_identifier)               = "42e5be9313d000"
+  (code_identifier)               = "42E5BE9313d000"
   (cv_record).cv_signature        = 0x53445352
   (cv_record).signature           = 683b65b2-46f4-4187-96d2-ee6d4c55eb11
   (cv_record).age                 = 2
@@ -329,7 +329,7 @@ MDRawModule
   misc_record.data_size           = 0
   misc_record.rva                 = 0x0
   (code_file)                     = "C:\WINDOWS\system32\advapi32.dll"
-  (code_identifier)               = "411096a79b000"
+  (code_identifier)               = "411096A79b000"
   (cv_record).cv_signature        = 0x53445352
   (cv_record).signature           = 455d6c5f-184d-45bb-b5c5-f30f82975114
   (cv_record).age                 = 2
@@ -361,7 +361,7 @@ MDRawModule
   misc_record.data_size           = 0
   misc_record.rva                 = 0x0
   (code_file)                     = "C:\WINDOWS\system32\rpcrt4.dll"
-  (code_identifier)               = "411096ae91000"
+  (code_identifier)               = "411096AE91000"
   (cv_record).cv_signature        = 0x53445352
   (cv_record).signature           = bea45a72-1da1-41da-a3ba-86b3a2031153
   (cv_record).age                 = 2
@@ -393,7 +393,7 @@ MDRawModule
   misc_record.data_size           = 0
   misc_record.rva                 = 0x0
   (code_file)                     = "C:\WINDOWS\system32\gdi32.dll"
-  (code_identifier)               = "43b34feb47000"
+  (code_identifier)               = "43B34FEB47000"
   (cv_record).cv_signature        = 0x53445352
   (cv_record).signature           = c0ea66be-00a6-4bd7-aef7-9e443a91869c
   (cv_record).age                 = 2
@@ -489,7 +489,7 @@ MDRawModule
   misc_record.data_size           = 0
   misc_record.rva                 = 0x0
   (code_file)                     = "C:\WINDOWS\system32\imm32.dll"
-  (code_identifier)               = "411096ae1d000"
+  (code_identifier)               = "411096AE1d000"
   (cv_record).cv_signature        = 0x53445352
   (cv_record).signature           = 2c17a49c-251b-4c8e-b9e2-ad13d7d9ea16
   (cv_record).age                 = 2
@@ -521,7 +521,7 @@ MDRawModule
   misc_record.data_size           = 0
   misc_record.rva                 = 0x0
   (code_file)                     = "C:\WINDOWS\system32\dbghelp.dll"
-  (code_identifier)               = "4110969aa1000"
+  (code_identifier)               = "4110969Aa1000"
   (cv_record).cv_signature        = 0x53445352
   (cv_record).signature           = 39559573-e21b-46f2-8e28-6923be9e6a76
   (cv_record).age                 = 1
@@ -553,7 +553,7 @@ MDRawModule
   misc_record.data_size           = 0
   misc_record.rva                 = 0x0
   (code_file)                     = "C:\WINDOWS\system32\version.dll"
-  (code_identifier)               = "411096b78000"
+  (code_identifier)               = "411096B78000"
   (cv_record).cv_signature        = 0x53445352
   (cv_record).signature           = 180a90c4-0384-463e-82dd-c45b2c8ab76e
   (cv_record).age                 = 2
@@ -585,7 +585,7 @@ MDRawModule
   misc_record.data_size           = 0
   misc_record.rva                 = 0x0
   (code_file)                     = "C:\WINDOWS\system32\psapi.dll"
-  (code_identifier)               = "411096cab000"
+  (code_identifier)               = "411096CAb000"
   (cv_record).cv_signature        = 0x53445352
   (cv_record).signature           = a5c3a1f9-689f-43d8-ad22-8a0929388970
   (cv_record).age                 = 2

@@ -1114,8 +1114,10 @@ string MinidumpModule::code_identifier() const {
   switch (raw_system_info->platform_id) {
     case MD_OS_WIN32_NT:
     case MD_OS_WIN32_WINDOWS: {
+      // Use the same format that the MS symbol server uses in filesystem
+      // hierarchies.
       char identifier_string[17];
-      snprintf(identifier_string, sizeof(identifier_string), "%08x%x",
+      snprintf(identifier_string, sizeof(identifier_string), "%08X%x",
                module_.time_date_stamp, module_.size_of_image);
       identifier = identifier_string;
       break;
@@ -1220,9 +1222,11 @@ string MinidumpModule::debug_identifier() const {
     const MDCVInfoPDB70* cv_record_70 =
         reinterpret_cast<const MDCVInfoPDB70*>(&(*cv_record_)[0]);
     if (cv_record_70->cv_signature == MD_CVINFOPDB70_SIGNATURE) {
+      // Use the same format that the MS symbol server uses in filesystem
+      // hierarchies.
       char identifier_string[41];
       snprintf(identifier_string, sizeof(identifier_string),
-               "%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X%X",
+               "%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X%x",
                cv_record_70->signature.data1,
                cv_record_70->signature.data2,
                cv_record_70->signature.data3,
@@ -1241,9 +1245,11 @@ string MinidumpModule::debug_identifier() const {
       const MDCVInfoPDB20* cv_record_20 =
           reinterpret_cast<const MDCVInfoPDB20*>(&(*cv_record_)[0]);
 
+      // Use the same format that the MS symbol server uses in filesystem
+      // hierarchies.
       char identifier_string[17];
       snprintf(identifier_string, sizeof(identifier_string),
-               "%08x%x", cv_record_20->signature, cv_record_20->age);
+               "%08X%x", cv_record_20->signature, cv_record_20->age);
       identifier = identifier_string;
     }
   }

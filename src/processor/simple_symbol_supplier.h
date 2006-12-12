@@ -36,8 +36,9 @@
 // directory with a name identical to the corresponding debugging file (pdb).
 // Within each of these directories, there are subdirectories named for the
 // debugging file's identifier.  For recent pdb files, this is a concatenation
-// of the pdb's uuid and age, presented in hexadecimal form, using uppercase
-// characters and no dashes or separators.  Within that subdirectory,
+// of the pdb's uuid and age, presented in hexadecimal form, without any
+// dashes or separators.  The uuid is in uppercase hexadecimal and the age
+// is in lowercase hexadecimal.  Within that subdirectory,
 // SimpleSymbolSupplier expects to find the symbol file, which is named
 // identically to the debug file, but with a .sym extension.  If the original
 // debug file had a name ending in .pdb, the .pdb extension will be replaced

@@ -715,10 +715,12 @@ bool PDBSourceLineWriter::GetModuleInfo(PDBModuleInfo *info) {
       return false;
     }
 
+    // Use the same format that the MS symbol server uses in filesystem
+    // hierarchies.
     wchar_t age_string[9];
     WindowsStringUtils::safe_swprintf(
         age_string, sizeof(age_string) / sizeof(age_string[0]),
-        L"%X", age);
+        L"%x", age);
 
     info->debug_identifier = GUIDString::GUIDToSymbolServerWString(&guid);
     info->debug_identifier.append(age_string);
@@ -728,11 +730,13 @@ bool PDBSourceLineWriter::GetModuleInfo(PDBModuleInfo *info) {
       return false;
     }
 
+    // Use the same format that the MS symbol server uses in filesystem
+    // hierarchies.
     wchar_t identifier_string[17];
     WindowsStringUtils::safe_swprintf(
         identifier_string,
         sizeof(identifier_string) / sizeof(identifier_string[0]),
-        L"%08x%x", signature, age);
+        L"%08X%x", signature, age);
     info->debug_identifier = identifier_string;
   }
 
