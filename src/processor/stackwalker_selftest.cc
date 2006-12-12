@@ -56,12 +56,14 @@
 
 #include "google_airbag/common/airbag_types.h"
 #include "google_airbag/common/minidump_format.h"
+#include "google_airbag/processor/basic_source_line_resolver.h"
 #include "google_airbag/processor/call_stack.h"
 #include "google_airbag/processor/memory_region.h"
 #include "google_airbag/processor/stack_frame.h"
 #include "google_airbag/processor/stack_frame_cpu.h"
 #include "processor/scoped_ptr.h"
 
+using google_airbag::BasicSourceLineResolver;
 using google_airbag::CallStack;
 using google_airbag::MemoryRegion;
 using google_airbag::scoped_ptr;
@@ -236,14 +238,15 @@ static unsigned int CountCallerFrames() {
                                               &resolver);
 #endif  // __i386__ || __ppc__
 
-  scoped_ptr<CallStack> stack(stackwalker.Walk());
+  CallStack stack;
+  stackwalker.Walk(&stack);
 
 #ifdef PRINT_STACKS
   printf("\n");
   for (unsigned int frame_index = 0;
-      frame_index < stack->frames()->size();
+      frame_index < stack.frames()->size();
       ++frame_index) {
-    StackFrame *frame = stack->frames()->at(frame_index);
+    StackFrame *frame = stack.frames()->at(frame_index);
     printf("frame %-3d  instruction = 0x%08llx",
            frame_index, frame->instruction);
 #if defined(__i386__)
@@ -259,8 +262,8 @@ static unsigned int CountCallerFrames() {
 
   // Subtract 1 because the caller wants the number of frames beneath
   // itself.  Because the caller called us, subract two for our frame and its
-  // frame, which are included in stack->size().
-  return stack->frames()->size() - 2;
+  // frame, which are included in stack.size().
+  return stack.frames()->size() - 2;
 }
 
 
