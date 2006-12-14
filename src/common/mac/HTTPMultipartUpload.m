@@ -120,13 +120,13 @@
 //=============================================================================
 - (void)addFileAtPath:(NSString *)path name:(NSString *)name {
   if (!files_)
-    files_ = [[NSMutableArray alloc] init];
+    files_ = [[NSMutableDictionary alloc] init];
 
-  [files_ addObject:[NSDictionary dictionaryWithObject:name forKey:path]];
+  [files_ setObject:path forKey:name];
 }
 
 //=============================================================================
-- (NSArray *)files {
+- (NSDictionary *)files {
   return files_;
 }
 
@@ -151,11 +151,11 @@
   }
 
   // Add any files to the message
-  count = [files_ count];
+  NSArray *fileNames = [files_ allKeys];
+  count = [fileNames count];
   for (i = 0; i < count; ++i) {
-    NSDictionary *dict = [files_ objectAtIndex:i];
-    NSString *file = [[dict allKeys] objectAtIndex:0];
-    NSString *name = [dict objectForKey:file];
+    NSString *name = [fileNames objectAtIndex:i];
+    NSString *file = [files_ objectForKey:name];
 
     [postBody appendData:[self formDataForFile:file name:name]];
   }

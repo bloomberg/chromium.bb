@@ -38,7 +38,7 @@
  @protected
   NSURL *url_;                  // The destination URL (STRONG)
   NSDictionary *parameters_;    // The key/value pairs for sending data (STRONG)
-  NSMutableArray *files_;       // Array of NSDictionaries file/name (STRONG)
+  NSMutableDictionary *files_;  // Dictionary of name/file-path (STRONG)
   NSString *boundary_;          // The boundary string (STRONG)
   NSHTTPURLResponse *response_; // The response from the send (STRONG)
 }
@@ -51,7 +51,7 @@
 - (NSDictionary *)parameters;
 
 - (void)addFileAtPath:(NSString *)path name:(NSString *)name;
-- (NSArray *)files;
+- (NSDictionary *)files;
 
 // Set the data and return the response
 - (NSData *)send:(NSError **)error;
