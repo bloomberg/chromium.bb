@@ -1083,6 +1083,7 @@ static inline int drm_mtrr_del(int handle, unsigned long offset,
 }
 
 #define drm_core_has_MTRR(dev) (0)
+#define DRM_MTRR_WC		0
 #endif
 
 
