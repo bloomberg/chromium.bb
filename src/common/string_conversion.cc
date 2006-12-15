@@ -36,21 +36,21 @@ using std::vector;
 
 namespace google_airbag {
 
-void UTF8ToUTF16(const char *in, vector<u_int16_t> &out) {
+void UTF8ToUTF16(const char *in, vector<u_int16_t> *out) {
   size_t source_length = strlen(in);
   const UTF8 *source_ptr = reinterpret_cast<const UTF8 *>(in);
   const UTF8 *source_end_ptr = source_ptr + source_length;
   // Erase the contents and zero fill to the expected size
-  out.empty();
-  out.insert(out.begin(), source_length, 0);
-  u_int16_t *target_ptr = &out[0];
-  u_int16_t *target_end_ptr = target_ptr + out.capacity() * sizeof(u_int16_t);
+  out->empty();
+  out->insert(out->begin(), source_length, 0);
+  u_int16_t *target_ptr = &(*out)[0];
+  u_int16_t *target_end_ptr = target_ptr + out->capacity() * sizeof(u_int16_t);
   ConversionResult result = ConvertUTF8toUTF16(&source_ptr, source_end_ptr,
                                                &target_ptr, target_end_ptr,
                                                strictConversion);
 
   // Resize to be the size of the # of converted characters + NULL
-  out.resize(result == conversionOK ? target_ptr - &out[0] + 1: 0);
+  out->resize(result == conversionOK ? target_ptr - &(*out)[0] + 1: 0);
 }
 
 int UTF8ToUTF16Char(const char *in, int in_length, u_int16_t out[2]) {
@@ -80,21 +80,21 @@ int UTF8ToUTF16Char(const char *in, int in_length, u_int16_t out[2]) {
   return 0;
 }
 
-void UTF32ToUTF16(const wchar_t *in, vector<u_int16_t> &out) {
+void UTF32ToUTF16(const wchar_t *in, vector<u_int16_t> *out) {
   size_t source_length = wcslen(in);
   const UTF32 *source_ptr = reinterpret_cast<const UTF32 *>(in);
   const UTF32 *source_end_ptr = source_ptr + source_length;
   // Erase the contents and zero fill to the expected size
-  out.empty();
-  out.insert(out.begin(), source_length, 0);
-  u_int16_t *target_ptr = &out[0];
-  u_int16_t *target_end_ptr = target_ptr + out.capacity() * sizeof(u_int16_t);
+  out->empty();
+  out->insert(out->begin(), source_length, 0);
+  u_int16_t *target_ptr = &(*out)[0];
+  u_int16_t *target_end_ptr = target_ptr + out->capacity() * sizeof(u_int16_t);
   ConversionResult result = ConvertUTF32toUTF16(&source_ptr, source_end_ptr,
                                                 &target_ptr, target_end_ptr,
                                                 strictConversion);
 
   // Resize to be the size of the # of converted characters + NULL
-  out.resize(result == conversionOK ? target_ptr - &out[0] + 1: 0);
+  out->resize(result == conversionOK ? target_ptr - &(*out)[0] + 1: 0);
 }
 
 void UTF32ToUTF16Char(wchar_t in, u_int16_t out[2]) {
