@@ -446,52 +446,6 @@ static struct file_operations drm_stub_fops = {
 	.open = drm_stub_open
 };
 
-static int drm_create_memory_caches(void)
-{
-	drm_cache.mm = kmem_cache_create("drm_mm_node_t", 
-					 sizeof(drm_mm_node_t),
-					 0,
-					 SLAB_HWCACHE_ALIGN,
-					 NULL,NULL);
-	if (!drm_cache.mm)
-		return -ENOMEM;
-
-	drm_cache.fence_object= kmem_cache_create("drm_fence_object_t", 
-						  sizeof(drm_fence_object_t),
-						  0,
-						  SLAB_HWCACHE_ALIGN,
-						  NULL,NULL);
-	if (!drm_cache.fence_object)
-		return -ENOMEM;
-
-	return 0;
-}
-
-static void drm_free_mem_cache(kmem_cache_t *cache, 
-			       const char *name)
-{
-	if (!cache)
-		return;
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
-	if (kmem_cache_destroy(cache)) {
-		DRM_ERROR("Warning! DRM is leaking %s memory.\n",
-			  name);
-	}
-#else
-	kmem_cache_destroy(cache);
-#endif
-}
-
-static void drm_free_memory_caches(void )
-{
-	
-	drm_free_mem_cache(drm_cache.fence_object, "fence object");
-	drm_cache.fence_object = NULL;
-	drm_free_mem_cache(drm_cache.mm, "memory manager block");
-	drm_cache.mm = NULL;
-}
-
-
 static int __init drm_core_init(void)
 {
 	int ret;
@@ -499,9 +453,6 @@ static int __init drm_core_init(void)
 	
 	si_meminfo(&si);
 	drm_init_memctl(si.totalram/2, si.totalram*3/4);
-	ret = drm_create_memory_caches();
-	if (ret)
-		goto err_p1;
 
 	ret = -ENOMEM;
 	drm_cards_limit =
@@ -539,13 +490,11 @@ err_p2:
 	unregister_chrdev(DRM_MAJOR, "drm");
 	drm_free(drm_heads, sizeof(*drm_heads) * drm_cards_limit, DRM_MEM_STUB);
 err_p1:
-	drm_free_memory_caches();
 	return ret;
 }
 
 static void __exit drm_core_exit(void)
 {
-	drm_free_memory_caches();
 	remove_proc_entry("dri", NULL);
 	drm_sysfs_destroy(drm_class);
 

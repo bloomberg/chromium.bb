@@ -54,11 +54,6 @@ drm_head_t **drm_heads;
 struct drm_sysfs_class *drm_class;
 struct proc_dir_entry *drm_proc_root;
 
-drm_cache_t drm_cache =
-{ .mm = NULL,
-  .fence_object = NULL
-};
-
 static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 		       const struct pci_device_id *ent,
 		       struct drm_driver *driver)

@@ -82,8 +82,7 @@ static int drm_mm_create_tail_node(drm_mm_t *mm,
 	drm_mm_node_t *child;
 	
 	child = (drm_mm_node_t *)
-		drm_ctl_cache_alloc(drm_cache.mm, sizeof(*child),
-				    GFP_KERNEL);
+		drm_ctl_alloc(sizeof(*child), DRM_MEM_MM);
 	if (!child)
 		return -ENOMEM;
 
@@ -119,8 +118,7 @@ static drm_mm_node_t *drm_mm_split_at_start(drm_mm_node_t *parent,
 	drm_mm_node_t *child;
 	
 	child = (drm_mm_node_t *)
-		drm_ctl_cache_alloc(drm_cache.mm, sizeof(*child),
-				    GFP_KERNEL);
+		drm_ctl_alloc(sizeof(*child), DRM_MEM_MM);
 	if (!child)
 		return NULL;
 
@@ -207,9 +205,8 @@ void drm_mm_put_block(drm_mm_node_t * cur)
 				prev_node->size += next_node->size;
 				list_del(&next_node->ml_entry);
 				list_del(&next_node->fl_entry);
-				drm_ctl_cache_free(drm_cache.mm,
-						   sizeof(*next_node),
-						   next_node);
+				drm_ctl_free(next_node, sizeof(*next_node),
+					     DRM_MEM_MM);
 			} else {
 				next_node->size += cur->size;
 				next_node->start = cur->start;
@@ -222,7 +219,7 @@ void drm_mm_put_block(drm_mm_node_t * cur)
 		list_add(&cur->fl_entry, &list_root->fl_entry);
 	} else {
 		list_del(&cur->ml_entry);
-		drm_ctl_cache_free(drm_cache.mm, sizeof(*cur), cur);
+		drm_ctl_free(cur, sizeof(*cur), DRM_MEM_MM);
 	}
 }
 
@@ -296,7 +293,7 @@ void drm_mm_takedown(drm_mm_t * mm)
 
 	list_del(&entry->fl_entry);
 	list_del(&entry->ml_entry);
-	drm_ctl_cache_free(drm_cache.mm, sizeof(*entry), entry);
+	drm_ctl_free(entry, sizeof(*entry), DRM_MEM_MM);
 }
 
 EXPORT_SYMBOL(drm_mm_takedown);

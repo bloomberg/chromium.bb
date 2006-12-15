@@ -755,17 +755,6 @@ typedef struct drm_head {
 	struct class_device *dev_class;
 } drm_head_t;
 
-typedef struct drm_cache {
-
-	/*
-	 * Memory caches
-	 */
-
-	kmem_cache_t *mm;
-	kmem_cache_t *fence_object;
-} drm_cache_t;
-
-
 
 typedef struct drm_fence_driver{
 	int no_types;
@@ -1318,7 +1307,6 @@ extern int drm_put_head(drm_head_t * head);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 extern unsigned int drm_cards_limit;
 extern drm_head_t **drm_heads;
-extern drm_cache_t drm_cache;
 extern struct drm_sysfs_class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
 
@@ -1578,25 +1566,6 @@ static inline void *drm_ctl_calloc(size_t nmemb, size_t size, int area)
 static inline void drm_ctl_free(void *pt, size_t size, int area)
 {
 	drm_free(pt, size, area);
-	drm_free_memctl(size);
-}
-
-static inline void *drm_ctl_cache_alloc(kmem_cache_t *cache, size_t size, 
-					int flags)
-{
-	void *ret;
-	if (drm_alloc_memctl(size))
-		return NULL;
-	ret = kmem_cache_alloc(cache, flags);
-	if (!ret)
-		drm_free_memctl(size);
-	return ret;
-}
-
-static inline void drm_ctl_cache_free(kmem_cache_t *cache, size_t size,
-				      void *obj)
-{
-	kmem_cache_free(cache, obj);
 	drm_free_memctl(size);
 }
 
