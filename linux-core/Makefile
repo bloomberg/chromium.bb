@@ -58,7 +58,7 @@ endif
 
 # Modules for all architectures
 MODULE_LIST := drm.o tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o \
-               mach64.o nv.o
+               mach64.o nv.o nouveau.o
 
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))
@@ -91,6 +91,7 @@ VIAHEADERS =	via_drm.h via_drv.h via_3d_reg.h via_verifier.h $(DRMHEADERS)
 MACH64HEADERS = mach64_drv.h mach64_drm.h $(DRMHEADERS)
 NVHEADERS =     nv_drv.h $(DRMHEADERS)
 FFBHEADERS = 	ffb_drv.h $(DRMHEADERS)
+NOUVEAUHEADERS = nouveau_drv.h nouveau_drm.h nouveau_reg.h $(DRMHEADERS)
 
 PROGS = dristat drmstat
 
@@ -314,6 +315,9 @@ endif
 ifneq (,$(findstring nv,$(DRM_MODULES)))
 CONFIG_DRM_NV := m
 endif
+ifneq (,$(findstring nouveau,$(DRM_MODULES)))
+CONFIG_DRM_NOUVEAU := m
+endif
 
 # These require AGP support
 
@@ -344,6 +348,7 @@ $(savage-objs): $(SAVAGEHEADERS)
 $(via-objs):	$(VIAHEADERS)
 $(mach64-objs): $(MACH64HEADERS)
 $(nv-objs):     $(NVHEADERS)
+$(nouveau-objs): $(NOUVEAUHEADERS)
 
 endif
 
