@@ -107,6 +107,17 @@ static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from
 			  size,
 			  pgprot);
 }
+
+static __inline__ void *kcalloc(size_t nmemb, size_t size, int flags)
+{
+	void *addr;
+
+	addr = kmalloc(size * nmemb, flags);
+	if (addr != NULL)
+		memset((void *)addr, 0, size * nmemb);
+
+	return addr;
+}
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,16)

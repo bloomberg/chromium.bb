@@ -134,13 +134,7 @@ int drm_mem_info(char *buf, char **start, off_t offset,
 /** Wrapper around kmalloc() */
 void *drm_calloc(size_t nmemb, size_t size, int area)
 {
-	void *addr;
-
-	addr = kmalloc(size * nmemb, GFP_KERNEL);
-	if (addr != NULL)
-		memset((void *)addr, 0, size * nmemb);
-
-	return addr;
+	return kcalloc(nmemb, size, GFP_KERNEL);
 }
 EXPORT_SYMBOL(drm_calloc);
 
