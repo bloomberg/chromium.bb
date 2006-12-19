@@ -67,6 +67,7 @@
 #include <asm/mtrr.h>
 #endif
 #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
+#include <asm/agp.h>
 #include <linux/types.h>
 #include <linux/agp_backend.h>
 #endif

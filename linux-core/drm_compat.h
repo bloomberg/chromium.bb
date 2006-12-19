@@ -31,7 +31,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <asm/agp.h>
 #ifndef _DRM_COMPAT_H_
 #define _DRM_COMPAT_H_
 
