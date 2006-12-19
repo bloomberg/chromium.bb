@@ -40,4 +40,10 @@ do
 unifdef -D__linux__ -DVIA_HAVE_DMABLIT -DSIS_HAVE_CORE_MM $i > $i.tmp
 mv $i.tmp $i
 done
+
+for i in i915*.[ch]
+do
+unifdef -D__linux__ -DI915_HAVE_FENCE -DI915_HAVE_BUFFER $i > $i.tmp
+mv $i.tmp $i
+done
 cd -
