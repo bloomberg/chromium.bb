@@ -337,7 +337,7 @@ int drm_setversion(DRM_IOCTL_ARGS)
 	retv.drm_dd_major = dev->driver->major;
 	retv.drm_dd_minor = dev->driver->minor;
 
-	if (copy_to_user(argp, &retv, sizeof(sv)))
+	if (copy_to_user(argp, &retv, sizeof(retv)))
 		return -EFAULT;
 
 	if (sv.drm_di_major != -1) {
