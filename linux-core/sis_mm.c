@@ -36,11 +36,7 @@
 #include "sis_drv.h"
 
 #if defined(__linux__)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
 #include <video/sisfb.h>
-#else
-#include <linux/sisfb.h>
-#endif
 #endif
 
 #define VIDEO_TYPE 0

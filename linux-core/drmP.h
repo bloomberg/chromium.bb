@@ -70,16 +70,7 @@
 #include <linux/types.h>
 #include <linux/agp_backend.h>
 #endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,41)
-#define HAS_WORKQUEUE 0
-#else
-#define HAS_WORKQUEUE 1
-#endif
-#if !HAS_WORKQUEUE
-#include <linux/tqueue.h>
-#else
 #include <linux/workqueue.h>
-#endif
 #include <linux/poll.h>
 #include <asm/pgalloc.h>
 #include "drm.h"
@@ -897,11 +888,8 @@ typedef struct drm_device {
 	unsigned long last_switch;	/**< jiffies at last context switch */
 	/*@} */
 
-#if !HAS_WORKQUEUE
-	struct tq_struct tq;
-#else
 	struct work_struct work;
-#endif
+
 	/** \name VBLANK IRQ support */
 	/*@{ */
 
@@ -929,11 +917,7 @@ typedef struct drm_device {
 	int pci_vendor;			/**< PCI vendor id */
 	int pci_device;			/**< PCI device id */
 #ifdef __alpha__
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,3)
-	struct pci_controler *hose;
-#else
 	struct pci_controller *hose;
-#endif
 #endif
 	drm_sg_mem_t *sg;		/**< Scatter gather memory */
 	unsigned long *ctx_bitmap;	/**< context bitmap */

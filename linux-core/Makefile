@@ -241,11 +241,11 @@ else
 
 # Check for kernel versions that we don't support.
 
-BELOW24 := $(shell if [ $(VERSION) -lt 2 -o $(PATCHLEVEL) -lt 4 ]; then \
+BELOW26 := $(shell if [ $(VERSION) -lt 2 -o $(PATCHLEVEL) -lt 6 ]; then \
 		echo y; fi)
 
-ifeq ($(BELOW24),y)
-$(error Only 2.4.x and later kernels are supported \
+ifeq ($(BELOW26),y)
+$(error Only 2.6.x and later kernels are supported \
 	($(VERSION).$(PATCHLEVEL).$(SUBLEVEL)))
 endif
 
@@ -258,30 +258,6 @@ endif
 # This needs to go before all other include paths.
 CC += -I$(DRMSRCDIR)
 
-# Check for Red Hat's 4-argument do_munmap().
-DOMUNMAP := $(shell grep do_munmap $(LINUXDIR)/include/linux/mm.h | \
-                grep -c acct)
-
-ifneq ($(DOMUNMAP),0)
-EXTRA_CFLAGS += -DDO_MUNMAP_4_ARGS
-endif
-
-# Check for 5-argument remap_page_range() in RH9 kernel, and 2.5.x kernels
-RPR := $(shell grep remap_page_range $(LINUXDIR)/include/linux/mm.h | \
-		grep -c vma)
-
-ifneq ($(RPR),0)
-EXTRA_CFLAGS += -DREMAP_PAGE_RANGE_5_ARGS
-endif
-
-# Check for 4-argument vmap() in some 2.5.x and 2.4.x kernels
-VMAP := $(shell grep -A1 'vmap.*count,$$' $(LINUXDIR)/include/linux/vmalloc.h | \
-		grep -c prot)
-
-ifneq ($(VMAP),0)
-EXTRA_CFLAGS += -DVMAP_4_ARGS
-endif
-
 # Check for PAGE_AGP definition
 PAGE_AGP := $(shell cat $(LINUXDIR)/include/asm/agp.h 2>/dev/null | \
 		grep -c PAGE_AGP)
@@ -289,7 +265,6 @@ PAGE_AGP := $(shell cat $(LINUXDIR)/include/asm/agp.h 2>/dev/null | \
 ifneq ($(PAGE_AGP),0)
 EXTRA_CFLAGS += -DHAVE_PAGE_AGP
 endif
-
 
 # Start with all modules turned off.
 CONFIG_DRM_GAMMA := n

@@ -66,13 +66,8 @@ typedef void irqreturn_t;
 
 /** AGP types */
 #if __OS_HAS_AGP
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,70)
-#define DRM_AGP_MEM		agp_memory
-#define DRM_AGP_KERN		agp_kern_info
-#else
 #define DRM_AGP_MEM		struct agp_memory
 #define DRM_AGP_KERN		struct agp_kern_info
-#endif
 #else
 /* define some dummy types for non AGP supporting kernels */
 struct no_agp_kern {

@@ -106,10 +106,6 @@ int drm_agp_acquire(drm_device_t * dev)
 		return -ENODEV;
 	if (dev->agp->acquired)
 		return -EBUSY;
-#ifndef VMAP_4_ARGS
-	if (dev->agp->cant_use_aperture)
-		return -EINVAL;
-#endif
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 	if ((retcode = agp_backend_acquire()))
 		return retcode;

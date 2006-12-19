@@ -43,7 +43,7 @@
  */
 
 /* Need the 4-argument version of vmap().  */
-#if __OS_HAS_AGP && defined(VMAP_4_ARGS)
+#if __OS_HAS_AGP
 
 #include <linux/vmalloc.h>
 
@@ -55,18 +55,6 @@
 # else
 #  define PAGE_AGP	PAGE_KERNEL
 # endif
-#endif
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)
-#ifndef pte_offset_kernel
-# define pte_offset_kernel(dir, address)	pte_offset(dir, address)
-#endif
-#ifndef pte_pfn
-# define pte_pfn(pte)				(pte_page(pte) - mem_map)
-#endif
-#ifndef pfn_to_page
-# define pfn_to_page(pfn)			(mem_map + (pfn))
-#endif
 #endif
 
 /*
@@ -171,14 +159,12 @@ static inline unsigned long drm_follow_page(void *vaddr)
 static inline void *drm_ioremap(unsigned long offset, unsigned long size,
 				drm_device_t * dev)
 {
-#if defined(VMAP_4_ARGS)
 	if (drm_core_has_AGP(dev) && dev->agp && dev->agp->cant_use_aperture) {
 		drm_map_t *map = drm_lookup_map(offset, size, dev);
 
 		if (map && map->type == _DRM_AGP)
 			return agp_remap(offset, size, dev);
 	}
-#endif
 
 	return ioremap(offset, size);
 }
@@ -186,14 +172,12 @@ static inline void *drm_ioremap(unsigned long offset, unsigned long size,
 static inline void *drm_ioremap_nocache(unsigned long offset,
 					unsigned long size, drm_device_t * dev)
 {
-#if defined(VMAP_4_ARGS)
 	if (drm_core_has_AGP(dev) && dev->agp && dev->agp->cant_use_aperture) {
 		drm_map_t *map = drm_lookup_map(offset, size, dev);
 
 		if (map && map->type == _DRM_AGP)
 			return agp_remap(offset, size, dev);
 	}
-#endif
 
 	return ioremap_nocache(offset, size);
 }
@@ -201,7 +185,6 @@ static inline void *drm_ioremap_nocache(unsigned long offset,
 static inline void drm_ioremapfree(void *pt, unsigned long size,
 				   drm_device_t * dev)
 {
-#if defined(VMAP_4_ARGS)
 	/*
 	 * This is a bit ugly.  It would be much cleaner if the DRM API would use separate
 	 * routines for handling mappings in the AGP space.  Hopefully this can be done in
@@ -220,7 +203,6 @@ static inline void drm_ioremapfree(void *pt, unsigned long size,
 			return;
 		}
 	}
-#endif
 	iounmap(pt);
 }
 #else
