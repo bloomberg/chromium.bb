@@ -263,7 +263,7 @@ static int i915_dma_init(DRM_IOCTL_ARGS)
 		retcode = i915_dma_resume(dev);
 		break;
 	default:
-		retcode = -EINVAL;
+		retcode = DRM_ERR(EINVAL);
 		break;
 	}
 
@@ -360,10 +360,9 @@ static int i915_emit_cmds(drm_device_t * dev, int __user * buffer, int dwords)
 	for (i = 0; i < dwords;) {
 		int cmd, sz;
 
-	     if (DRM_COPY_FROM_USER_UNCHECKED(&cmd, &buffer[i], sizeof(cmd))) {
-
+		if (DRM_COPY_FROM_USER_UNCHECKED(&cmd, &buffer[i], sizeof(cmd)))
 			return DRM_ERR(EINVAL);
-	      }
+
 		if ((sz = validate_cmd(cmd)) == 0 || i + sz > dwords)
 			return DRM_ERR(EINVAL);
 
@@ -395,7 +394,7 @@ static int i915_emit_box(drm_device_t * dev,
 	RING_LOCALS;
 
 	if (DRM_COPY_FROM_USER_UNCHECKED(&box, &boxes[i], sizeof(box))) {
-		return EFAULT;
+		return DRM_ERR(EFAULT);
 	}
 
 	if (box.y2 <= box.y1 || box.x2 <= box.x1 || box.y2 <= 0 || box.x2 <= 0) {
