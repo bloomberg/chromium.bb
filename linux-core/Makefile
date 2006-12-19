@@ -107,11 +107,10 @@ NVHEADERS =     nv_drv.h $(DRMHEADERS)
 NVSHARED  =     nv_drv.h
 FFBHEADERS = 	ffb_drv.h $(DRMHEADERS)
 NOUVEAUHEADERS = nouveau_drv.h nouveau_drm.h nouveau_reg.h $(DRMHEADERS)
-NOUVEAUSHARED =  nouveau_drv.h nouveau_drm.h nouveau_reg.h nouveau_state.c nouveau_fifo.c nouveau_mem.c nouveau_object.c nouveau_irq.c
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
 	$(SISSHARED) $(TDFXSHARED) $(VIASHARED) $(MACH64SHARED) \
-	$(I915SHARED) $(SAVAGESHARED) $(NVSHARED) $(NOUVEAUSHARED)
+	$(I915SHARED) $(SAVAGESHARED) $(NVSHARED)
 
 PROGS = dristat drmstat
 
