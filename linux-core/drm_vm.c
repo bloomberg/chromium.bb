@@ -269,13 +269,13 @@ static __inline__ struct page *drm_do_vm_shm_nopage(struct vm_area_struct *vma,
 	if (address > vma->vm_end)
 		return NOPAGE_SIGBUS;	/* Disallow mremap */
 	if (!map)
-		return NOPAGE_OOM;	/* Nothing allocated */
+		return NOPAGE_SIGBUS;	/* Nothing allocated */
 
 	offset = address - vma->vm_start;
 	i = (unsigned long)map->handle + offset;
 	page = vmalloc_to_page((void *)i);
 	if (!page)
-		return NOPAGE_OOM;
+		return NOPAGE_SIGBUS;
 	get_page(page);
 
 	DRM_DEBUG("shm_nopage 0x%lx\n", address);
@@ -396,7 +396,7 @@ static __inline__ struct page *drm_do_vm_dma_nopage(struct vm_area_struct *vma,
 	if (address > vma->vm_end)
 		return NOPAGE_SIGBUS;	/* Disallow mremap */
 	if (!dma->pagelist)
-		return NOPAGE_OOM;	/* Nothing allocated */
+		return NOPAGE_SIGBUS;	/* Nothing allocated */
 
 	offset = address - vma->vm_start;	/* vm_[pg]off[set] should be 0 */
 	page_nr = offset >> PAGE_SHIFT;
@@ -435,7 +435,7 @@ static __inline__ struct page *drm_do_vm_sg_nopage(struct vm_area_struct *vma,
 	if (address > vma->vm_end)
 		return NOPAGE_SIGBUS;	/* Disallow mremap */
 	if (!entry->pagelist)
-		return NOPAGE_OOM;	/* Nothing allocated */
+		return NOPAGE_SIGBUS;	/* Nothing allocated */
 
 	offset = address - vma->vm_start;
 	map_offset = map->offset - (unsigned long)dev->sg->virtual;
