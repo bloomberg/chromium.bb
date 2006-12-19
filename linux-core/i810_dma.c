@@ -39,12 +39,6 @@
 #include "i810_drm.h"
 #include "i810_drv.h"
 
-#ifdef DO_MUNMAP_4_ARGS
-#define DO_MUNMAP(m, a, l)	do_munmap(m, a, l, 1)
-#else
-#define DO_MUNMAP(m, a, l)	do_munmap(m, a, l)
-#endif
-
 #define I810_BUF_FREE		2
 #define I810_BUF_CLIENT		1
 #define I810_BUF_HARDWARE      	0
@@ -186,7 +180,7 @@ static int i810_unmap_buffer(drm_buf_t * buf)
 		return -EINVAL;
 
 	down_write(&current->mm->mmap_sem);
-	retcode = DO_MUNMAP(current->mm,
+	retcode = do_munmap(current->mm,
 			    (unsigned long)buf_priv->virtual,
 			    (size_t) buf->total);
 	up_write(&current->mm->mmap_sem);
