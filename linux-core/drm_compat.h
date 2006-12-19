@@ -86,12 +86,6 @@
              pos = n, n = list_entry(n->member.next, typeof(*n), member))
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
-#define DRM_PCI_DEV(pdev) &pdev->dev
-#else
-#define DRM_PCI_DEV(pdev) NULL
-#endif
-
 #ifndef __user
 #define __user
 #endif

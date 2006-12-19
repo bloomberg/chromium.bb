@@ -162,7 +162,7 @@ struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs,
 	memset(s_dev, 0x00, sizeof(*s_dev));
 
 	s_dev->dev = MKDEV(DRM_MAJOR, head->minor);
-	s_dev->class_dev.dev = DRM_PCI_DEV(head->dev->pdev);
+	s_dev->class_dev.dev = &head->dev->pdev->dev;
 	s_dev->class_dev.class = &cs->class;
 
 	snprintf(s_dev->class_dev.class_id, BUS_ID_SIZE, "card%d", head->minor);
