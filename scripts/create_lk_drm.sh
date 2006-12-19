@@ -27,3 +27,17 @@ cp linux-core/Makefile.kernel $OUTDIR/Makefile
 echo "Copying 2.6 Kernel files"
 cp linux-core/Kconfig $OUTDIR/
 
+cd $OUTDIR
+
+for i in via*.[ch]
+do
+unifdef -D__linux__ -DVIA_HAVE_DMABLIT -DVIA_HAVE_CORE_MM $i > $i.tmp
+mv $i.tmp $i
+done
+
+for i in sis*.[ch]
+do
+unifdef -D__linux__ -DVIA_HAVE_DMABLIT -DSIS_HAVE_CORE_MM $i > $i.tmp
+mv $i.tmp $i
+done
+cd -
