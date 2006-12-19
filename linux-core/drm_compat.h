@@ -57,6 +57,12 @@
 #define module_param(name, type, perm)
 #endif
 
+/* older kernels had different irq args */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+#undef DRM_IRQ_ARGS
+#define DRM_IRQ_ARGS		int irq, void *arg, struct pt_regs *regs
+#endif
+
 #ifndef list_for_each_safe
 #define list_for_each_safe(pos, n, head)				\
 	for (pos = (head)->next, n = pos->next; pos != (head);		\
