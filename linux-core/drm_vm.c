@@ -220,6 +220,8 @@ struct page *drm_vm_ttm_fault(struct vm_area_struct *vma,
 #else
 		SetPageReserved(page);
 #endif
+		clear_page(kmap(page));
+		kunmap(page);
 	}
 
 	if (ttm->page_flags & DRM_TTM_PAGE_UNCACHED) {

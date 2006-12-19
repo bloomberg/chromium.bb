@@ -259,6 +259,8 @@ struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
 		}
 		++bm->cur_pages;
 		SetPageLocked(page);
+		clear_page(kmap(page));
+		kunmap(page);
 	}
 
 	get_page(page);

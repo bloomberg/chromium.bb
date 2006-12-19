@@ -235,6 +235,8 @@ static int drm_ttm_populate(drm_ttm_t * ttm)
 #else
 			SetPageReserved(page);
 #endif
+			clear_page(kmap(page));
+			kunmap(page);
 			ttm->pages[i] = page;
 			++bm->cur_pages;
 		}
