@@ -545,7 +545,8 @@ typedef struct drm_mm_node {
 } drm_mm_node_t;
 
 typedef struct drm_mm {
-	drm_mm_node_t root_node;
+	struct list_head fl_entry;
+	struct list_head ml_entry;
 } drm_mm_t;
 
 
