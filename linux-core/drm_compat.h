@@ -148,6 +148,13 @@ static __inline__ void *kcalloc(size_t nmemb, size_t size, int flags)
 }
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18)
+#define vmalloc_user(_size) ({void * tmp = vmalloc(_size);   \
+      if (tmp) memset(tmp, 0, size);			     \
+      (tmp);})
+#endif
+
+
 #include <linux/mm.h>
 #include <asm/page.h>
 

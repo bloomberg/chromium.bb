@@ -195,14 +195,13 @@ static int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 			*maplist = list;
 			return 0;
 		}
-		map->handle = vmalloc_32(map->size);
+		map->handle = vmalloc_user(map->size);
 		DRM_DEBUG("%lu %d %p\n",
 			  map->size, drm_order(map->size), map->handle);
 		if (!map->handle) {
 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 			return -ENOMEM;
 		}
-		memset(map->handle, 0, map->size);
 		map->offset = (unsigned long)map->handle;
 		if (map->flags & _DRM_CONTAINS_LOCK) {
 			/* Prevent a 2nd X Server from creating a 2nd lock */
