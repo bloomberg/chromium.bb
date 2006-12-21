@@ -559,6 +559,8 @@ int drm_agp_unbind_memory(DRM_AGP_MEM * handle)
 #define AGP_USER_MEMORY (AGP_USER_TYPES)
 #define AGP_USER_CACHED_MEMORY (AGP_USER_TYPES + 1)
 #endif
+#define AGP_REQUIRED_MAJOR 0
+#define AGP_REQUIRED_MINOR 102
 
 static int drm_agp_needs_unbind_cache_adjust(drm_ttm_backend_t *backend) {
 	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
@@ -669,6 +671,24 @@ drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 
         drm_ttm_backend_t *agp_be;
 	drm_agp_ttm_priv *agp_priv;
+	struct agp_kern_info *info;
+
+	if (!dev->agp) {
+		DRM_ERROR("AGP is not initialized.\n");
+		return NULL;
+	}
+	info = &dev->agp->agp_info;
+
+	if (info->version.major != AGP_REQUIRED_MAJOR ||
+	    info->version.minor < AGP_REQUIRED_MINOR) {
+		DRM_ERROR("Wrong agpgart version %d.%d\n"
+			  "\tYou need at least version %d.%d.\n",
+			  info->version.major,
+			  info->version.minor,
+			  AGP_REQUIRED_MAJOR,
+			  AGP_REQUIRED_MINOR);
+		return NULL;
+	}
 
 	agp_be = (backend != NULL) ? backend:
 		drm_ctl_calloc(1, sizeof(*agp_be), DRM_MEM_MAPPINGS);
@@ -683,6 +703,7 @@ drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 		return NULL;
 	}
 	
+		
 	agp_priv->mem = NULL;
 	agp_priv->alloc_type = AGP_USER_MEMORY;
 	agp_priv->cached_type = AGP_USER_CACHED_MEMORY;
