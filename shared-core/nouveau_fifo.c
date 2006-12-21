@@ -358,7 +358,13 @@ static void nouveau_nv40_context_init(drm_device_t *dev,
 	RAMFC_WR(DMA_GET       , init->put_base);
 	RAMFC_WR(DMA_INSTANCE  , nouveau_chip_instance_get(dev, 
 				cb_obj->instance));
-	RAMFC_WR(DMA_FETCH     , 0x30086078);
+	RAMFC_WR(DMA_FETCH     , NV_PFIFO_CACH1_DMAF_TRIG_128_BYTES |
+				 NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES |
+				 NV_PFIFO_CACH1_DMAF_MAX_REQS_8 |
+#ifdef __BIG_ENDIAN
+				 NV_PFIFO_CACH1_BIG_ENDIAN |
+#endif
+				 0x30000000 /* no idea.. */);
 	RAMFC_WR(DMA_SUBROUTINE, init->put_base);
 	RAMFC_WR(GRCTX_INSTANCE, 0); /* XXX */
 	RAMFC_WR(DMA_TIMESLICE , 0x0001FFFF);
@@ -379,7 +385,7 @@ static void nouveau_nv40_context_save(drm_device_t *dev)
 	RAMFC_WR(DMA_INSTANCE     , NV_READ(NV_PFIFO_CACH1_DMAI));
 	RAMFC_WR(DMA_DCOUNT       , NV_READ(NV_PFIFO_CACH1_DMA_DCOUNT));
 	RAMFC_WR(DMA_STATE        , NV_READ(NV_PFIFO_CACH1_DMAS));
-	//fetch
+	RAMFC_WR(DMA_FETCH	  , NV_READ(NV_PFIFO_CACH1_DMAF));
 	RAMFC_WR(ENGINE           , NV_READ(NV_PFIFO_CACH1_ENG));
 	RAMFC_WR(PULL1_ENGINE     , NV_READ(NV_PFIFO_CACH1_PUL1));
 	RAMFC_WR(ACQUIRE_VALUE    , NV_READ(NV_PFIFO_CACH1_ACQUIRE_VALUE));
