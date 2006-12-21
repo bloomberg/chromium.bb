@@ -452,19 +452,23 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 	*start = &buf[offset];
 	*eof = 0;
 	
+	DRM_PROC_PRINT("Object accounting:\n\n");
 	if (fm->initialized) {
-		DRM_PROC_PRINT("Number of active fence objects: %d.\n\n", 
+		DRM_PROC_PRINT("Number of active fence objects: %d.\n", 
 			       atomic_read(&fm->count));
 	} else {
-		DRM_PROC_PRINT("Fence objects are not supported by this driver\n\n");
+		DRM_PROC_PRINT("Fence objects are not supported by this driver\n");
 	}
 
 	if (bm->initialized) {
 		DRM_PROC_PRINT("Number of active buffer objects: %d.\n\n", 
 			       atomic_read(&bm->count));
+	}
+	DRM_PROC_PRINT("Memory accounting:\n\n");
+	if (bm->initialized) {
 		DRM_PROC_PRINT("Number of locked GATT pages: %lu.\n", bm->cur_pages);
 	} else {
-		DRM_PROC_PRINT("Buffer objects are not supported by this driver.\n\n");
+		DRM_PROC_PRINT("Buffer objects are not supported by this driver.\n");
 	}
 
 	drm_query_memctl(&used_mem, &low_mem, &high_mem);
