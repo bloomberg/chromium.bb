@@ -148,7 +148,7 @@ drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 	unsigned tmp = 0;
 
 	if (alignment)
-		tmp = size % alignment;
+		tmp = parent->start % alignment;
 	
 	if (tmp) {
 		align_splitoff = drm_mm_split_at_start(parent, alignment - tmp);
@@ -162,12 +162,8 @@ drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 		return parent;
 	} else {
 		child = drm_mm_split_at_start(parent, size);
-		if (!child) {
-			if (align_splitoff) 
-				drm_mm_put_block(align_splitoff);
-			return NULL;
-		}
 	}
+
 	if (align_splitoff)
 		drm_mm_put_block(align_splitoff);
 
@@ -240,8 +236,11 @@ drm_mm_node_t *drm_mm_search_free(const drm_mm_t * mm,
 		entry = list_entry(list, drm_mm_node_t, fl_entry);
 		wasted = 0;
 
+		if (entry->size < size) 
+			continue;
+
 		if (alignment) {
-			register unsigned tmp = size % alignment;
+			register unsigned tmp = entry->start % alignment;
 			if (tmp) 
 				wasted += alignment - tmp;
 		}
