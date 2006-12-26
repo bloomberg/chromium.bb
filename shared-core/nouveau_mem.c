@@ -515,6 +515,7 @@ int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
 	if (!block)
 		return DRM_ERR(ENOMEM);
 	alloc.region_offset=block->start;
+	alloc.flags=block->flags;
 
 	DRM_COPY_TO_USER_IOCTL((drm_nouveau_mem_alloc_t __user *) data, alloc, sizeof(alloc));
 
