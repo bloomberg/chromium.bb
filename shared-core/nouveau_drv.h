@@ -73,6 +73,7 @@ struct nouveau_fifo
 	/* mapping of the regs controling the fifo */
 	drm_local_map_t *regs;
 	/* dma object for the command buffer itself */
+	struct mem_block      *cmdbuf_mem;
 	struct nouveau_object *cmdbuf_obj;
 	/* objects belonging to this fifo */
 	struct nouveau_object *objs;

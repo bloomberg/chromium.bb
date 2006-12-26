@@ -214,12 +214,14 @@ int nouveau_fifo_init(drm_device_t *dev)
 	return 0;
 }
 
-static int nouveau_dma_init(struct drm_device *dev)
+static int
+nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	struct nouveau_config *config = &dev_priv->config;
 	struct mem_block *cb;
-	int cb_min_size = nouveau_fifo_number(dev) * max(NV03_FIFO_SIZE,PAGE_SIZE);
+	struct nouveau_object *cb_dma = NULL;
+	int cb_min_size = max(NV03_FIFO_SIZE,PAGE_SIZE);
 
 	/* Defaults for unconfigured values */
 	if (!config->cmdbuf.location)
@@ -228,27 +230,40 @@ static int nouveau_dma_init(struct drm_device *dev)
 		config->cmdbuf.size = cb_min_size;
 
 	cb = nouveau_mem_alloc(dev, 0, config->cmdbuf.size,
-			config->cmdbuf.location, (DRMFILE)-2);
-	/* Try defaults if that didn't succeed */
-	if (!cb) {
-		config->cmdbuf.location = NOUVEAU_MEM_FB;
-		config->cmdbuf.size = cb_min_size;
-		cb = nouveau_mem_alloc(dev, 0, config->cmdbuf.size,
-				config->cmdbuf.location, (DRMFILE)-2);
-	}
+			config->cmdbuf.location | NOUVEAU_MEM_MAPPED,
+			(DRMFILE)-2);
 	if (!cb) {
 		DRM_ERROR("Couldn't allocate DMA command buffer.\n");
 		return DRM_ERR(ENOMEM);
 	}
 
-	dev_priv->cmdbuf_ch_size = (uint32_t)cb->size / nouveau_fifo_number(dev);
-	dev_priv->cmdbuf_alloc = cb;
+	if (cb->flags & NOUVEAU_MEM_AGP) {
+		cb_dma = nouveau_dma_object_create(dev,
+				cb->start, cb->size,
+				NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP);
+	} else if (dev_priv->card_type != NV_04) {
+		cb_dma = nouveau_dma_object_create(dev,
+				cb->start - drm_get_resource_start(dev, 1),
+				cb->size,
+				NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM);
+	} else {
+		/* NV04 cmdbuf hack, from original ddx.. not sure of it's
+		 * exact reason for existing :)  PCI access to cmdbuf in
+		 * VRAM.
+		 */
+		cb_dma = nouveau_dma_object_create(dev,
+				cb->start, cb->size,
+				NV_DMA_ACCESS_RO, NV_DMA_TARGET_PCI);
+	}
 
-	DRM_INFO("DMA command buffer is %dKiB at 0x%08x(%s)\n",
-			(uint32_t)cb->size>>10, (uint32_t)cb->start,
-			config->cmdbuf.location == NOUVEAU_MEM_FB ? "VRAM" : "AGP");
-	DRM_INFO("FIFO size is %dKiB\n", dev_priv->cmdbuf_ch_size>>10);
+	if (!cb_dma) {
+		nouveau_mem_free(dev, cb);
+		DRM_ERROR("Failed to alloc DMA object for command buffer\n");
+		return DRM_ERR(ENOMEM);
+	}
 
+	dev_priv->fifos[channel].cmdbuf_mem = cb;
+	dev_priv->fifos[channel].cmdbuf_obj = cb_dma;
 	return 0;
 }
 
@@ -407,15 +422,6 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	struct nouveau_object *cb_obj;
 
-	/* Init cmdbuf on first FIFO init, this is delayed until now to
-	 * give the ddx a chance to configure the cmdbuf with SETPARAM
-	 */
-	if (!dev_priv->cmdbuf_alloc) {
-		ret = nouveau_dma_init(dev);
-		if (ret)
-			return ret;
-	}
-
 	/*
 	 * Alright, here is the full story
 	 * Nvidia cards have multiple hw fifo contexts (praise them for that, 
@@ -433,44 +439,17 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	if (i==nouveau_fifo_number(dev))
 		return DRM_ERR(EINVAL);
 
-	/* allocate a dma object for the command buffer */
-	if (dev_priv->cmdbuf_alloc->flags & NOUVEAU_MEM_AGP) {
-		cb_obj = nouveau_dma_object_create(dev,
-				dev_priv->cmdbuf_alloc->start,
-				dev_priv->cmdbuf_alloc->size,
-				NV_DMA_ACCESS_RO,
-				NV_DMA_TARGET_AGP);
-
-	} else if (dev_priv->card_type != NV_04) {
-		cb_obj = nouveau_dma_object_create(dev,
-				dev_priv->cmdbuf_alloc->start -
-					drm_get_resource_start(dev, 1),
-				dev_priv->cmdbuf_alloc->size,
-				NV_DMA_ACCESS_RO,
-				NV_DMA_TARGET_VIDMEM);
-	} else {
-		/* NV04 cmdbuf hack, from original ddx.. not sure of it's
-		 * exact reason for existing :)  PCI access to cmdbuf in
-		 * VRAM.
-		 */
-		cb_obj = nouveau_dma_object_create(dev,
-				dev_priv->cmdbuf_alloc->start,
-				dev_priv->cmdbuf_alloc->size,
-				NV_DMA_ACCESS_RO,
-				NV_DMA_TARGET_PCI);
-	}
-	if (!cb_obj) {
-		DRM_ERROR("unable to alloc object for command buffer\n");
-		return DRM_ERR(EINVAL);
-	}
-	dev_priv->fifos[i].cmdbuf_obj = cb_obj;
+	/* allocate a command buffer, and create a dma object for the gpu */
+	ret = nouveau_fifo_cmdbuf_alloc(dev, i);
+	if (ret) return ret;
+	cb_obj = dev_priv->fifos[i].cmdbuf_obj;
 
 	/* that fifo is used */
 	dev_priv->fifos[i].used=1;
 	dev_priv->fifos[i].filp=filp;
 
 	init->channel  = i;
-	init->put_base = i*dev_priv->cmdbuf_ch_size;
+	init->put_base = 0;
 	dev_priv->cur_fifo = init->channel;
 
 	nouveau_wait_for_idle(dev);
@@ -544,14 +523,9 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	if (ret != 0)
 		return ret;
 
-	/* then, the fifo itself */
-	init->cmdbuf       = dev_priv->cmdbuf_alloc->start;
-	init->cmdbuf      += init->channel * dev_priv->cmdbuf_ch_size;
-	init->cmdbuf_size  = dev_priv->cmdbuf_ch_size;
-	ret = drm_addmap(dev, init->cmdbuf, init->cmdbuf_size, _DRM_REGISTERS,
-			 0, &dev_priv->fifos[init->channel].map);
-	if (ret != 0)
-		return ret;
+	/* pass back FIFO map info to the caller */
+	init->cmdbuf       = dev_priv->fifos[init->channel].cmdbuf_mem->start;
+	init->cmdbuf_size  = dev_priv->fifos[init->channel].cmdbuf_mem->size;
 
 	/* FIFO has no objects yet */
 	dev_priv->fifos[init->channel].objs = NULL;
@@ -586,6 +560,9 @@ void nouveau_fifo_free(drm_device_t* dev,int n)
 
 	/* reenable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);
+
+	/* Deallocate command buffer, and dma object */
+	nouveau_mem_free(dev, dev_priv->fifos[n].cmdbuf_mem);
 
 	dev_priv->fifo_alloc_count--;
 }
