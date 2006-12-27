@@ -193,7 +193,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 				 * End debugging.
 				 */
 
-				drm_free_gatt_pages(*cur_page, 0);
+				__free_page(*cur_page);
 				drm_free_memctl(PAGE_SIZE);
 				--bm->cur_pages;
 			}
@@ -225,7 +225,7 @@ static int drm_ttm_populate(drm_ttm_t * ttm)
 			if (drm_alloc_memctl(PAGE_SIZE)) {
 				return -ENOMEM;
 			}
-			page = drm_alloc_gatt_pages(0);
+			page = alloc_page(GFP_KERNEL | __GFP_ZERO | GFP_DMA32);
 			if (!page) {
 				drm_free_memctl(PAGE_SIZE);
 				return -ENOMEM;
@@ -235,8 +235,6 @@ static int drm_ttm_populate(drm_ttm_t * ttm)
 #else
 			SetPageReserved(page);
 #endif
-			clear_page(kmap(page));
-			kunmap(page);
 			ttm->pages[i] = page;
 			++bm->cur_pages;
 		}

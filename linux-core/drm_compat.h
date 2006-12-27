@@ -180,16 +180,9 @@ extern void drm_clear_vma(struct vm_area_struct *vma,
 
 extern pgprot_t vm_get_page_prot(unsigned long vm_flags);
 
-/*
- * These are similar to the current kernel gatt pages allocator, only that we
- * want a struct page pointer instead of a virtual address. This allows for pages
- * that are not in the kernel linear map.
- */
-
-#define drm_alloc_gatt_pages(order) ({					\
-			void *_virt = alloc_gatt_pages(order);		\
-			((_virt) ? virt_to_page(_virt) : NULL);})
-#define drm_free_gatt_pages(pages, order) free_gatt_pages(page_address(pages), order) 
+#ifndef GFP_DMA32
+#define GFP_DMA32 0
+#endif
 
 #if defined(CONFIG_X86) && (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 

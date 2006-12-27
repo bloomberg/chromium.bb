@@ -208,7 +208,8 @@ struct page *drm_vm_ttm_fault(struct vm_area_struct *vma,
 			data->type = VM_FAULT_OOM;
 			goto out;
 		}
-		page = ttm->pages[page_offset] = drm_alloc_gatt_pages(0);
+		page = ttm->pages[page_offset] = 
+			alloc_page(GFP_KERNEL | __GFP_ZERO | GFP_DMA32);
 		if (!page) {
 			drm_free_memctl(PAGE_SIZE);
 			data->type = VM_FAULT_OOM;
@@ -220,8 +221,6 @@ struct page *drm_vm_ttm_fault(struct vm_area_struct *vma,
 #else
 		SetPageReserved(page);
 #endif
-		clear_page(kmap(page));
-		kunmap(page);
 	}
 
 	if (ttm->page_flags & DRM_TTM_PAGE_UNCACHED) {
