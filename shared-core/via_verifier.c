@@ -454,7 +454,7 @@ investigate_hazard(uint32_t cmd, hazard_t hz, drm_via_state_t * cur_seq)
 		cur_seq->unfinished = tex_address;
 		tmp = ((cmd >> 24) - HC_SubA_HTXnL0Pit);
 		if (tmp == 0 && 
-		    cmd & HC_HTXnEnPit_MASK) {
+		    (cmd & HC_HTXnEnPit_MASK)) {
 			cur_seq->pitch[cur_seq->texture][tmp] = 
 				(cmd & HC_HTXnLnPit_MASK);
 			cur_seq->tex_npot[cur_seq->texture] = 1;
