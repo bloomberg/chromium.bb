@@ -352,10 +352,20 @@ static void drm_bo_delayed_delete(drm_device_t * dev, int remove_all)
 
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 static void drm_bo_delayed_workqueue(void *data)
+#else
+static void drm_bo_delayed_workqueue(struct work_struct *work)
+#endif
 {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 	drm_device_t *dev = (drm_device_t *) data;
 	drm_buffer_manager_t *bm = &dev->bm;
+#else
+	drm_buffer_manager_t *bm = container_of(work, drm_buffer_manager_t, wq.work);
+	drm_device_t *dev = container_of(bm, drm_device_t, bm);
+#endif
+
 
 	DRM_DEBUG("Delayed delete Worker\n");
 
@@ -1904,7 +1914,11 @@ int drm_bo_driver_init(drm_device_t * dev)
 	if (ret)
 		goto out_unlock;
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 	INIT_WORK(&bm->wq, &drm_bo_delayed_workqueue, dev);
+#else
+	INIT_DELAYED_WORK(&bm->wq, drm_bo_delayed_workqueue);
+#endif
 	bm->initialized = 1;
 	bm->nice_mode = 1;
 	atomic_set(&bm->count, 0);

@@ -158,7 +158,7 @@ static __inline__ void *kcalloc(size_t nmemb, size_t size, int flags)
 #include <linux/mm.h>
 #include <asm/page.h>
 
-#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)) && \
+#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21)) && \
      (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))) 
 #define DRM_ODD_MM_COMPAT
 #endif
@@ -208,7 +208,7 @@ extern struct page *drm_vm_ttm_fault(struct vm_area_struct *vma,
 #endif
 
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))
 
 /*
  * Hopefully, real NOPAGE_RETRY functionality will be in 2.6.19. 

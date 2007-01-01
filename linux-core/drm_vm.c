@@ -159,9 +159,9 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 }
 #endif				/* __OS_HAS_AGP */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20) || \
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21) || \
      LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))
 static
 #endif
 struct page *drm_vm_ttm_fault(struct vm_area_struct *vma, 
@@ -508,7 +508,7 @@ static struct vm_operations_struct drm_vm_sg_ops = {
 	.close = drm_vm_close,
 };
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))
 static struct vm_operations_struct drm_vm_ttm_ops = {
 	.nopage = drm_vm_ttm_nopage,
 	.open = drm_vm_ttm_open_wrapper,

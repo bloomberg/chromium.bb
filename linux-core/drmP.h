@@ -794,7 +794,11 @@ typedef struct drm_buffer_manager{
         struct list_head pinned[DRM_BO_MEM_TYPES];
 	struct list_head unfenced;
 	struct list_head ddestroy;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
         struct work_struct wq;
+#else
+        struct delayed_work wq;
+#endif
         uint32_t fence_type;
         unsigned long cur_pages;
         atomic_t count;
