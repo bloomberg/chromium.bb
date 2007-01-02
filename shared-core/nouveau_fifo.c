@@ -357,11 +357,12 @@ static void nouveau_nv40_context_init(drm_device_t *dev,
 				      drm_nouveau_fifo_alloc_t *init)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_object *cb_obj;
-	uint32_t fifoctx;
+	struct nouveau_fifo *chan = &dev_priv->fifos[init->channel];
+	uint32_t fifoctx, cb_inst, grctx_inst;
 	int i;
 
-	cb_obj  = dev_priv->fifos[init->channel].cmdbuf_obj;
+	cb_inst = nouveau_chip_instance_get(dev, chan->cmdbuf_obj->instance);
+	grctx_inst = nouveau_chip_instance_get(dev, chan->ramin_grctx);
 	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + init->channel*128;
 	for (i=0;i<128;i+=4)
 		NV_WRITE(fifoctx + i, 0);
@@ -371,8 +372,7 @@ static void nouveau_nv40_context_init(drm_device_t *dev,
 	 */
 	RAMFC_WR(DMA_PUT       , init->put_base);
 	RAMFC_WR(DMA_GET       , init->put_base);
-	RAMFC_WR(DMA_INSTANCE  , nouveau_chip_instance_get(dev, 
-				cb_obj->instance));
+	RAMFC_WR(DMA_INSTANCE  , cb_inst);
 	RAMFC_WR(DMA_FETCH     , NV_PFIFO_CACH1_DMAF_TRIG_128_BYTES |
 				 NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES |
 				 NV_PFIFO_CACH1_DMAF_MAX_REQS_8 |
@@ -381,7 +381,7 @@ static void nouveau_nv40_context_init(drm_device_t *dev,
 #endif
 				 0x30000000 /* no idea.. */);
 	RAMFC_WR(DMA_SUBROUTINE, init->put_base);
-	RAMFC_WR(GRCTX_INSTANCE, 0); /* XXX */
+	RAMFC_WR(GRCTX_INSTANCE, grctx_inst);
 	RAMFC_WR(DMA_TIMESLICE , 0x0001FFFF);
 }
 
@@ -503,6 +503,11 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	} else if (dev_priv->card_type < NV_40) {
 		nouveau_nv10_context_init(dev, init);
 	} else {
+		ret = nv40_graph_context_create(dev, init->channel);
+		if (ret) {
+			nouveau_fifo_free(dev, init->channel);
+			return ret;
+		}
 		nouveau_nv40_context_init(dev, init);
 	}
 
@@ -518,6 +523,19 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	 */
 	if (dev_priv->fifo_alloc_count == 0) {
 		nouveau_fifo_context_restore(dev, init->channel);
+		if (dev_priv->card_type >= NV_40) {
+			struct nouveau_fifo *chan;
+			uint32_t inst;
+
+			chan = &dev_priv->fifos[init->channel];
+			inst = nouveau_chip_instance_get(dev,
+							 chan->ramin_grctx);
+
+			/* see comments in nv40_graph_context_restore() */
+			NV_WRITE(0x400784, inst);
+			NV_WRITE(0x40032C, inst | 0x01000000);
+			NV_WRITE(NV40_PFIFO_GRCTX_INSTANCE, inst);
+		}
 	}
 
 	NV_WRITE(NV_PFIFO_CACH1_DMAPSH, 0x00000001);

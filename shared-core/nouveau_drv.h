@@ -34,7 +34,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	1
+#define DRIVER_PATCHLEVEL	2
 
 #define NOUVEAU_FAMILY   0x0000FFFF
 #define NOUVEAU_FLAGS    0xFFFF0000
@@ -168,6 +168,7 @@ extern int  nouveau_fifo_init(drm_device_t *dev);
 extern int  nouveau_fifo_number(drm_device_t *dev);
 extern void nouveau_fifo_cleanup(drm_device_t *dev, DRMFILE filp);
 extern int  nouveau_fifo_id_get(drm_device_t *dev, DRMFILE filp);
+extern void nouveau_fifo_free(drm_device_t *dev, int channel);
 
 /* nouveau_object.c */
 extern void nouveau_object_cleanup(drm_device_t *dev, DRMFILE filp);
