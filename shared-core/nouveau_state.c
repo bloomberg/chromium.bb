@@ -72,17 +72,8 @@ int nouveau_firstopen(struct drm_device *dev)
 	if (ret) return ret;
 
 	/* FIXME: doesn't belong here, and have no idea what it's for.. */
-	if (dev_priv->card_type >= NV_40) {
-		uint32_t pg0220_inst;
-
-		dev_priv->fb_obj = nouveau_dma_object_create(dev,
-				0, nouveau_mem_fb_amount(dev),
-				NV_DMA_ACCESS_RW, NV_DMA_TARGET_VIDMEM);
-
-		pg0220_inst = nouveau_chip_instance_get(dev,
-				dev_priv->fb_obj->instance);
-		NV_WRITE(NV_PGRAPH_NV40_UNK220, pg0220_inst);
-	}
+	if (dev_priv->card_type >= NV_40)
+		nv40_graph_init(dev);
 
 	return 0;
 }

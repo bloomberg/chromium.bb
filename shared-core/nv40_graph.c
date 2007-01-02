@@ -426,6 +426,7 @@ nv40_graph_init(drm_device_t *dev)
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
 	uint32_t *ctx_voodoo;
+	uint32_t pg0220_inst;
 	int i;
 
 	switch (dev_priv->card_type) {
@@ -451,6 +452,14 @@ nv40_graph_init(drm_device_t *dev)
 
 	/* No context present currently */
 	NV_WRITE(0x40032C, 0x00000000);
+
+	/* No idea what this is for.. */
+	dev_priv->fb_obj = nouveau_dma_object_create(dev,
+			0, nouveau_mem_fb_amount(dev),
+			NV_DMA_ACCESS_RW, NV_DMA_TARGET_VIDMEM);
+	pg0220_inst = nouveau_chip_instance_get(dev,
+			dev_priv->fb_obj->instance);
+	NV_WRITE(NV_PGRAPH_NV40_UNK220, pg0220_inst);
 
 	return 0;
 }
