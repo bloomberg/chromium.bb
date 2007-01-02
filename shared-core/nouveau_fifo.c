@@ -414,6 +414,43 @@ static void nouveau_nv40_context_save(drm_device_t *dev)
 }
 #undef RAMFC_WR
 
+/* This function should load values from RAMFC into PFIFO, but for now
+ * it just clobbers PFIFO with what nouveau_fifo_alloc used to setup
+ * unconditionally.
+ */
+static void
+nouveau_fifo_context_restore(drm_device_t *dev, int channel)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	uint32_t cb_inst;
+
+	cb_inst = nouveau_chip_instance_get(dev, chan->cmdbuf_obj->instance);
+
+	// FIXME check if we need to refill the time quota with something like NV_WRITE(0x204C, 0x0003FFFF);
+
+	if (dev_priv->card_type >= NV_40)
+		NV_WRITE(NV_PFIFO_CACH1_PSH1, 0x00010000|channel);
+	else
+		NV_WRITE(NV_PFIFO_CACH1_PSH1, 0x00000100|channel);
+
+	NV_WRITE(NV_PFIFO_CACH1_DMAP, 0 /*RAMFC_DMA_PUT*/);
+	NV_WRITE(NV_PFIFO_CACH1_DMAG, 0 /*RAMFC_DMA_GET*/);
+	NV_WRITE(NV_PFIFO_CACH1_DMAI, cb_inst);
+	NV_WRITE(NV_PFIFO_SIZE , 0x0000FFFF);
+	NV_WRITE(NV_PFIFO_CACH1_HASH, 0x0000FFFF);
+
+	NV_WRITE(NV_PFIFO_CACH0_PUL1, 0x00000001);
+	NV_WRITE(NV_PFIFO_CACH1_DMAC, 0x00000000);
+	NV_WRITE(NV_PFIFO_CACH1_DMAS, 0x00000000);
+	NV_WRITE(NV_PFIFO_CACH1_ENG, 0x00000000);
+#ifdef __BIG_ENDIAN
+		NV_WRITE(NV_PFIFO_CACH1_DMAF, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
+#else
+		NV_WRITE(NV_PFIFO_CACH1_DMAF, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
+#endif
+}
+
 /* allocates and initializes a fifo for user space consumption */
 static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, DRMFILE filp)
 {
@@ -460,52 +497,29 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	NV_WRITE(NV_PFIFO_CACH1_PSH0, 0x00000000);
 	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000000);
 
-	/* Save current channel's state to it's RAMFC entry.
-	 *
-	 * Then, construct inital RAMFC for new channel, I'm not entirely
-	 * sure this is needed if we activate the channel immediately.
-	 * My understanding is that the GPU will fill RAMFC itself when
-	 * it switches away from the channel
-	 */
+	/* Construct inital RAMFC for new channel */
 	if (dev_priv->card_type < NV_10) {
 		nouveau_context_init(dev, init);
 	} else if (dev_priv->card_type < NV_40) {
-		nouveau_nv10_context_save(dev);
 		nouveau_nv10_context_init(dev, init);
 	} else {
-		nouveau_nv40_context_save(dev);
 		nouveau_nv40_context_init(dev, init);
 	}
 
 	/* enable the fifo dma operation */
 	NV_WRITE(NV_PFIFO_MODE,NV_READ(NV_PFIFO_MODE)|(1<<init->channel));
 
+	/* setup channel's default get/put values */
 	NV_WRITE(NV03_FIFO_REGS_DMAPUT(init->channel), init->put_base);
 	NV_WRITE(NV03_FIFO_REGS_DMAGET(init->channel), init->put_base);
 
-	// FIXME check if we need to refill the time quota with something like NV_WRITE(0x204C, 0x0003FFFF);
+	/* If this is the first channel, setup PFIFO ourselves.  For any
+	 * other case, the GPU will handle this when it switches contexts.
+	 */
+	if (dev_priv->fifo_alloc_count == 0) {
+		nouveau_fifo_context_restore(dev, init->channel);
+	}
 
-	if (dev_priv->card_type >= NV_40)
-		NV_WRITE(NV_PFIFO_CACH1_PSH1, 0x00010000|dev_priv->cur_fifo);
-	else
-		NV_WRITE(NV_PFIFO_CACH1_PSH1, 0x00000100|dev_priv->cur_fifo);
-
-	NV_WRITE(NV_PFIFO_CACH1_DMAP, init->put_base);
-	NV_WRITE(NV_PFIFO_CACH1_DMAG, init->put_base);
-	NV_WRITE(NV_PFIFO_CACH1_DMAI,
-			nouveau_chip_instance_get(dev, cb_obj->instance));
-	NV_WRITE(NV_PFIFO_SIZE , 0x0000FFFF);
-	NV_WRITE(NV_PFIFO_CACH1_HASH, 0x0000FFFF);
-
-	NV_WRITE(NV_PFIFO_CACH0_PUL1, 0x00000001);
-	NV_WRITE(NV_PFIFO_CACH1_DMAC, 0x00000000);
-	NV_WRITE(NV_PFIFO_CACH1_DMAS, 0x00000000);
-	NV_WRITE(NV_PFIFO_CACH1_ENG, 0x00000000);
-#ifdef __BIG_ENDIAN
-		NV_WRITE(NV_PFIFO_CACH1_DMAF, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
-#else
-		NV_WRITE(NV_PFIFO_CACH1_DMAF, NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
-#endif
 	NV_WRITE(NV_PFIFO_CACH1_DMAPSH, 0x00000001);
 	NV_WRITE(NV_PFIFO_CACH1_PSH0, 0x00000001);
 	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000001);
