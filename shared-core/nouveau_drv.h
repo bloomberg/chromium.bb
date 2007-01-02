@@ -42,6 +42,16 @@
 #include "nouveau_drm.h"
 #include "nouveau_reg.h"
 
+struct mem_block {
+	struct mem_block *next;
+	struct mem_block *prev;
+	uint64_t start;
+	uint64_t size;
+	DRMFILE filp;           /* 0: free, -1: heap, other: real files */
+	int flags;
+	drm_local_map_t *map;
+};
+
 enum nouveau_flags {
 	NV_NFORCE   =0x10000000,
 	NV_NFORCE2  =0x20000000
@@ -75,18 +85,10 @@ struct nouveau_fifo
 	/* dma object for the command buffer itself */
 	struct mem_block      *cmdbuf_mem;
 	struct nouveau_object *cmdbuf_obj;
+	/* PGRAPH context, for cards that keep it in RAMIN */
+	struct mem_block *ramin_grctx;
 	/* objects belonging to this fifo */
 	struct nouveau_object *objs;
-};
-
-struct mem_block {
-	struct mem_block *next;
-	struct mem_block *prev;
-	uint64_t start;
-	uint64_t size;
-	DRMFILE filp;           /* 0: free, -1: heap, other: real files */
-	int flags;
-	drm_local_map_t *map;
 };
 
 struct nouveau_config {
@@ -180,6 +182,12 @@ extern irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS);
 extern void        nouveau_irq_preinstall(drm_device_t*);
 extern void        nouveau_irq_postinstall(drm_device_t*);
 extern void        nouveau_irq_uninstall(drm_device_t*);
+
+/* nv40_graph.c */
+extern int  nv40_graph_init(drm_device_t *dev);
+extern int  nv40_graph_context_create(drm_device_t *dev, int channel);
+extern void nv40_graph_context_save_current(drm_device_t *dev);
+extern void nv40_graph_context_restore(drm_device_t *dev, int channel);
 
 extern long nouveau_compat_ioctl(struct file *filp, unsigned int cmd,
 				unsigned long arg);
