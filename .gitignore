@@ -49,6 +49,7 @@ bsd-core/via_map.c
 bsd-core/via_verifier.c
 bsd-core/via_verifier.h
 bsd-core/via_video.c
+*~
 *.flags
 *.ko
 *.ko.cmd
@@ -74,6 +75,7 @@ config.log
 config.status
 config.sub
 configure
+cscope.*
 depcomp
 device_if.h
 drm.kld
