@@ -590,6 +590,9 @@ void nouveau_fifo_free(drm_device_t* dev,int n)
 		NV_WRITE(NV_RAMIN + dev_priv->ramfc_offset + n*ctx_size + i, 0);
 	}
 
+	if (dev_priv->card_type >= NV_40)
+		nouveau_instmem_free(dev, dev_priv->fifos[n].ramin_grctx);
+
 	/* reenable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);
 
