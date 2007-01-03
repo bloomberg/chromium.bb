@@ -50,22 +50,29 @@ namespace google_airbag {
 using std::wstring;
 using std::map;
 
+typedef enum {
+  RESULT_FAILED = 0,  // Failed to communicate with the server; try later.
+  RESULT_REJECTED,    // Successfully sent the crash report, but the
+                      // server rejected it; don't resend this report.
+  RESULT_SUCCEEDED    // The server accepted the crash report.
+} ReportResult;
+
 class CrashReportSender {
  public:
   // Sends the specified minidump file, along with the map of
   // name value pairs, as a multipart POST request to the given URL.
   // Parameter names must contain only printable ASCII characters,
   // and may not contain a quote (") character.
-  // If the report is sent successfully (the return value is true), a
-  // code uniquely identifying the report will be returned in report_code.
-  // Only HTTP(S) URLs are currently supported.  Returns true on success.
+  // Only HTTP(S) URLs are currently supported.  The return value indicates
+  // the result of the operation (see above for possible results).
   // If report_code is non-NULL and the report is sent successfully (that is,
-  // the return value is true), a code uniquely identifying the report will be
-  // returned in report_code.  (Otherwise, report_code will be unchanged.)
-  static bool SendCrashReport(const wstring &url,
-                              const map<wstring, wstring> &parameters,
-                              const wstring &dump_file_name,
-                              wstring *report_code);
+  // the return value is RESULT_SUCCEEDED), a code uniquely identifying the
+  // report will be returned in report_code.
+  // (Otherwise, report_code will be unchanged.)
+  static ReportResult SendCrashReport(const wstring &url,
+                                      const map<wstring, wstring> &parameters,
+                                      const wstring &dump_file_name,
+                                      wstring *report_code);
 
  private:
   // No instances of this class should be created.

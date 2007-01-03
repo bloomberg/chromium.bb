@@ -63,11 +63,14 @@ class HTTPUpload {
   // Only HTTP(S) URLs are currently supported.  Returns true on success.
   // If the request is successful and response_body is non-NULL,
   // the response body will be returned in response_body.
+  // If response_code is non-NULL, it will be set to the HTTP response code
+  // received (or 0 if the request failed before getting an HTTP response).
   static bool SendRequest(const wstring &url,
                           const map<wstring, wstring> &parameters,
                           const wstring &upload_file,
                           const wstring &file_part_name,
-                          wstring *response_body);
+                          wstring *response_body,
+                          int *response_code);
 
  private:
   class AutoInternetHandle;

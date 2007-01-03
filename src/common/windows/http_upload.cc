@@ -66,7 +66,12 @@ bool HTTPUpload::SendRequest(const wstring &url,
                              const map<wstring, wstring> &parameters,
                              const wstring &upload_file,
                              const wstring &file_part_name,
-                             wstring *response_body) {
+                             wstring *response_body,
+                             int *response_code) {
+  if (response_code) {
+    *response_code = 0;
+  }
+                               
   // TODO(bryner): support non-ASCII parameter names
   if (!CheckParameters(parameters)) {
     return false;
@@ -153,7 +158,12 @@ bool HTTPUpload::SendRequest(const wstring &url,
     return false;
   }
 
-  bool result = (wcscmp(http_status, L"200") == 0);
+  int http_response = wcstol(http_status, NULL, 10);
+  if (response_code) {
+    *response_code = http_response;
+  }
+
+  bool result = (http_response == 200);
 
   if (result) {
     result = ReadResponse(request.get(), response_body);
