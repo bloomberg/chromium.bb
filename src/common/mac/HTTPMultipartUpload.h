@@ -51,6 +51,7 @@
 - (NSDictionary *)parameters;
 
 - (void)addFileAtPath:(NSString *)path name:(NSString *)name;
+- (void)addFileContents:(NSData *)data name:(NSString *)name;
 - (NSDictionary *)files;
 
 // Set the data and return the response

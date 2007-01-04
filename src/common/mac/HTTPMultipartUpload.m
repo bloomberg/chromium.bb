@@ -32,6 +32,7 @@
 @interface HTTPMultipartUpload(PrivateMethods)
 - (NSString *)multipartBoundary;
 - (NSData *)formDataForKey:(NSString *)key value:(NSString *)value;
+- (NSData *)formDataForFileContents:(NSData *)contents name:(NSString *)name;
 - (NSData *)formDataForFile:(NSString *)file name:(NSString *)name;
 @end
 
@@ -48,7 +49,7 @@
 
 //=============================================================================
 - (NSData *)formDataForKey:(NSString *)key value:(NSString *)value {
-  NSString *escaped = 
+  NSString *escaped =
     [key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
   NSString *fmt =
     @"--%@\r\nContent-Disposition: form-data; name=\"%@\"\r\n\r\n%@\r\n";
@@ -58,21 +59,27 @@
 }
 
 //=============================================================================
-- (NSData *)formDataForFile:(NSString *)file name:(NSString *)name {
+- (NSData *)formDataForFileContents:(NSData *)contents name:(NSString *)name {
   NSMutableData *data = [NSMutableData data];
-  NSString *escaped = 
+  NSString *escaped =
     [name stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
   NSString *fmt = @"--%@\r\nContent-Disposition: form-data; name=\"%@\"; "
-    "filename=\"%@\"\r\nContent-Type: application/octet-stream\r\n\r\n";
-  NSString *pre = [NSString stringWithFormat:fmt, boundary_, escaped,
-    [file lastPathComponent]];
+    "filename=\"minidump.dmp\"\r\nContent-Type: application/octet-stream\r\n\r\n";
+  NSString *pre = [NSString stringWithFormat:fmt, boundary_, escaped];
   NSString *post = [NSString stringWithFormat:@"\r\n--%@--\r\n", boundary_];
 
   [data appendData:[pre dataUsingEncoding:NSUTF8StringEncoding]];
-  [data appendData:[NSData dataWithContentsOfFile:file]];
+  [data appendData:contents];
   [data appendData:[post dataUsingEncoding:NSUTF8StringEncoding]];
 
   return data;
+}
+
+//=============================================================================
+- (NSData *)formDataForFile:(NSString *)file name:(NSString *)name {
+  NSData *contents = [NSData dataWithContentsOfFile:file];
+
+  return [self formDataForFileContents:contents name:name];
 }
 
 //=============================================================================
@@ -83,6 +90,7 @@
   if ((self = [super init])) {
     url_ = [url copy];
     boundary_ = [[self multipartBoundary] retain];
+    files_ = [[NSMutableDictionary alloc] init];
   }
 
   return self;
@@ -119,10 +127,12 @@
 
 //=============================================================================
 - (void)addFileAtPath:(NSString *)path name:(NSString *)name {
-  if (!files_)
-    files_ = [[NSMutableDictionary alloc] init];
-
   [files_ setObject:path forKey:name];
+}
+
+//=============================================================================
+- (void)addFileContents:(NSData *)data name:(NSString *)name {
+  [files_ setObject:data forKey:name];
 }
 
 //=============================================================================
@@ -155,9 +165,17 @@
   count = [fileNames count];
   for (i = 0; i < count; ++i) {
     NSString *name = [fileNames objectAtIndex:i];
-    NSString *file = [files_ objectForKey:name];
+    id fileOrData = [files_ objectForKey:name];
+    NSData *fileData;
 
-    [postBody appendData:[self formDataForFile:file name:name]];
+    // The object can be either the path to a file (NSString) or the contents
+    // of the file (NSData).
+    if ([fileOrData isKindOfClass:[NSData class]])
+      fileData = [self formDataForFileContents:fileOrData name:name];
+    else
+      fileData = [self formDataForFile:fileOrData name:name];
+
+    [postBody appendData:fileData];
   }
 
   [req setHTTPBody:postBody];
