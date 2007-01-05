@@ -194,6 +194,11 @@
 #define NV03_FIFO_CMD_REWIND                               (NV03_FIFO_CMD_JUMP | (0 & NV03_FIFO_CMD_JUMP_OFFSET_MASK))
 
 /* RAMFC offsets */
+#define NV04_RAMFC_DMA_PUT                                       0x00
+#define NV04_RAMFC_DMA_GET                                       0x04
+#define NV04_RAMFC_DMA_INSTANCE                                  0x08
+#define NV04_RAMFC_DMA_FETCH                                     0x16
+
 #define NV10_RAMFC_DMA_PUT                                       0x00
 #define NV10_RAMFC_DMA_GET                                       0x04
 #define NV10_RAMFC_REF_CNT                                       0x08

@@ -267,31 +267,32 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 	return 0;
 }
 
-static void nouveau_context_init(drm_device_t *dev,
+#define RAMFC_WR(offset, val) NV_WRITE(fifoctx + NV04_RAMFC_##offset, (val))
+static void nouveau_nv04_context_init(drm_device_t *dev,
 				 drm_nouveau_fifo_alloc_t *init)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	struct nouveau_object *cb_obj;
-	uint32_t ctx_addr, ctx_size = 32;
+	uint32_t fifoctx, ctx_size = 32;
 	int i;
 
 	cb_obj = dev_priv->fifos[init->channel].cmdbuf_obj;
 
-	ctx_addr=NV_RAMIN+dev_priv->ramfc_offset+init->channel*ctx_size;
+	fifoctx=NV_RAMIN+dev_priv->ramfc_offset+init->channel*ctx_size;
 	// clear the fifo context
 	for(i=0;i<ctx_size/4;i++)
-		NV_WRITE(ctx_addr+4*i,0x0);
+		NV_WRITE(fifoctx+4*i,0x0);
 
-	NV_WRITE(ctx_addr,init->put_base);
-	NV_WRITE(ctx_addr+4,init->put_base);
-	// that's what is done in nvosdk, but that part of the code is buggy so...
-	NV_WRITE(ctx_addr+8, nouveau_chip_instance_get(dev, cb_obj->instance));
+	RAMFC_WR(DMA_PUT	, init->put_base);
+	RAMFC_WR(DMA_GET	, init->put_base);
+	RAMFC_WR(DMA_INSTANCE	, nouveau_chip_instance_get(dev, cb_obj->instance));
 #ifdef __BIG_ENDIAN
-	NV_WRITE(ctx_addr+16,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
+	RAMFC_WR(DMA_FETCH,	NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4|NV_PFIFO_CACH1_BIG_ENDIAN);
 #else
-	NV_WRITE(ctx_addr+16,NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
+	RAMFC_WR(DMA_FETCH,	NV_PFIFO_CACH1_DMAF_TRIG_112_BYTES|NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES|NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
 #endif
 }
+#undef RAMFC_WR
 
 #define RAMFC_WR(offset, val) NV_WRITE(fifoctx + NV10_RAMFC_##offset, (val))
 static void nouveau_nv10_context_init(drm_device_t *dev,
@@ -500,7 +501,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 
 	/* Construct inital RAMFC for new channel */
 	if (dev_priv->card_type < NV_10) {
-		nouveau_context_init(dev, init);
+		nouveau_nv04_context_init(dev, init);
 	} else if (dev_priv->card_type < NV_40) {
 		nouveau_nv10_context_init(dev, init);
 	} else {
