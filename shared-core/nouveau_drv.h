@@ -129,6 +129,9 @@ typedef struct drm_nouveau_private {
 	uint64_t fb_phys;
 	uint64_t agp_phys;
 
+	/* the mtrr covering the FB */
+	int fb_mtrr;
+
 	struct mem_block *agp_heap;
 	struct mem_block *fb_heap;
 	struct mem_block *fb_nomap_heap;
@@ -142,6 +145,7 @@ drm_nouveau_private_t;
 extern void nouveau_preclose(drm_device_t * dev, DRMFILE filp);
 extern int nouveau_load(struct drm_device *dev, unsigned long flags);
 extern int nouveau_firstopen(struct drm_device *dev);
+extern void nouveau_lastclose(struct drm_device *dev);
 extern int nouveau_unload(struct drm_device *dev);
 extern int nouveau_ioctl_getparam(DRM_IOCTL_ARGS);
 extern int nouveau_ioctl_setparam(DRM_IOCTL_ARGS);

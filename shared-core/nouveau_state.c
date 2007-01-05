@@ -46,7 +46,7 @@ int nouveau_firstopen(struct drm_device *dev)
 
 	/* resource 0 is mmio regs */
 	/* resource 1 is linear FB */
-	/* resource 2 is ??? (mmio regs + 0x1000000) */
+	/* resource 2 is RAMIN (mmio regs + 0x1000000) */
 	/* resource 6 is bios */
 
 	/* map the mmio regs */
@@ -70,6 +70,11 @@ int nouveau_firstopen(struct drm_device *dev)
 	 */
 	ret = nouveau_fifo_init(dev);
 	if (ret) return ret;
+
+#if __OS_HAS_MTRR
+	/* setup a mtrr over the FB */
+	dev_priv->fb_mtrr=drm_mtrr_add(drm_get_resource_start(dev, 1),nouveau_mem_fb_amount(dev), DRM_MTRR_WC);
+#endif
 
 	/* FIXME: doesn't belong here, and have no idea what it's for.. */
 	if (dev_priv->card_type >= NV_40)
@@ -96,6 +101,15 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 	dev->dev_private = (void *)dev_priv;
 
 	return 0;
+}
+
+void nouveau_lastclose(struct drm_device *dev)
+{
+#if __OS_HAS_MTRR
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	if(dev_priv->fb_mtrr>0)
+		drm_mtrr_del(dev_priv->fb_mtrr, drm_get_resource_start(dev, 1),nouveau_mem_fb_amount(dev), DRM_MTRR_WC);
+#endif
 }
 
 int nouveau_unload(struct drm_device *dev)

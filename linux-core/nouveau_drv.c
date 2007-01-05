@@ -42,6 +42,7 @@ static struct drm_driver driver = {
 		DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED,
 	.load = nouveau_load,
 	.firstopen = nouveau_firstopen,
+	.lastclose = nouveau_lastclose,
 	.unload = nouveau_unload,
 	.preclose = nouveau_preclose,
 	.irq_preinstall = nouveau_irq_preinstall,
