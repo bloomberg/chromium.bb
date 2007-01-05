@@ -89,6 +89,9 @@ struct nouveau_fifo
 	struct mem_block *ramin_grctx;
 	/* objects belonging to this fifo */
 	struct nouveau_object *objs;
+
+	/* XXX move this in PGRAPH struct */
+	uint32_t pgraph_ctx_user;
 };
 
 struct nouveau_config {
