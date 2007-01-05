@@ -489,6 +489,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	init->channel  = i;
 	init->put_base = 0;
 	dev_priv->cur_fifo = init->channel;
+	dev_priv->fifos[i].pgraph_ctx_user = i << 24;
 
 	nouveau_wait_for_idle(dev);
 
