@@ -427,13 +427,16 @@ nv40_graph_init(drm_device_t *dev)
 		(drm_nouveau_private_t *)dev->dev_private;
 	uint32_t *ctx_voodoo;
 	uint32_t pg0220_inst;
-	int i;
+	int i, chipset;
 
-	switch (dev_priv->card_type) {
-	case NV_40:
+	chipset = (NV_READ(NV_PMC_BOOT_0) & 0x0ff00000) >> 20;
+	DRM_DEBUG("chipset (from PMC_BOOT_0): NV0x%02X\n", chipset);
+	switch (chipset) {
+	case 0x40:
 		ctx_voodoo = nv40_ctx_voodoo;
 		break;
 	default:
+		DRM_ERROR("Unknown ctx_voodoo for chipset 0x%02x\n", chipset);
 		ctx_voodoo = NULL;
 		break;
 	}

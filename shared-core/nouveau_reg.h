@@ -45,6 +45,7 @@
 #    define NV03_FIFO_REGS_DMAPUT(i)                       (NV03_FIFO_REGS(i)+0x40)
 #    define NV03_FIFO_REGS_DMAGET(i)                       (NV03_FIFO_REGS(i)+0x44)
 
+#define NV_PMC_BOOT_0                                      0x00000000
 #define NV_PMC_INTSTAT                                     0x00000100
 #    define NV_PMC_INTSTAT_PFIFO_PENDING                      (1<< 8)
 #    define NV_PMC_INTSTAT_PGRAPH_PENDING                     (1<<12)
