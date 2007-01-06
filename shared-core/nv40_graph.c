@@ -285,8 +285,12 @@ nv40_graph_context_create(drm_device_t *dev, int channel)
 	/* Initialise default context values */
 	if (dev_priv->card_type == NV_40)
 		nv40_graph_context_init(dev, chan->ramin_grctx);
-	else
+	else {
+		/*XXX: this context was pulled from a c51 card. no idea if it
+		 *     is usable on a "real" nv44...
+		 */
 		nv44_graph_context_init(dev, chan->ramin_grctx);
+	}
 
 	return 0;
 }
@@ -379,14 +383,20 @@ nv40_graph_context_restore(drm_device_t *dev, int channel)
 /* Some voodoo that makes context switching work without the binary driver
  * initialising the card first.
  *
- * My best guess is that this describes to the GPU how to save/restore the
- * context between RAMIN and PGRAPH.  But, this is just a hunch.. no actual
- * evidence as of yet.. Though, it should be easily testable.
+ * It is possible to effect how the context is saved from PGRAPH into a block
+ * of instance memory by altering the values in these tables.  This may mean
+ * that the context layout of each chipset is slightly different (at least
+ * NV40 and C51 are different).  It would also be possible for chipsets to
+ * have an identical context layout, but pull the data from different PGRAPH
+ * registers.
  *
- * If that hunch is correct, it's likely that this differs between cards.  At
- * least NV44 has a different grctx layout than NV40 does.
+ * TODO: decode the meaning of the magic values, may provide clues about the
+ *       differences between the various NV40 chipsets.
+ * TODO: one we have a better idea of how each chipset differs, perhaps think
+ *       about unifying these instead of providing a separate table for each
+ *       chip.
  *
- * mmio-trace dumps from other nv4x cards very welcome :)
+ * mmio-trace dumps from other nv4x/g7x/c5x cards very welcome :)
  */
 static uint32_t nv40_ctx_voodoo[] = {
 	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
@@ -420,6 +430,40 @@ static uint32_t nv40_ctx_voodoo[] = {
 	~0
 };
 
+static uint32_t c51_ctx_voodoo[] = {
+	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
+	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00409565, 0x00409a06,
+	0x0040a868, 0x00200000, 0x0060000a, 0x00700000, 0x00106000, 0x00700080,
+	0x004014e6, 0x007000a0, 0x00401a84, 0x00700082, 0x00600001, 0x00500061,
+	0x00600002, 0x00401b68, 0x00500060, 0x00200001, 0x0060000a, 0x0011814d,
+	0x00110158, 0x00105401, 0x0020003a, 0x00100051, 0x001040c5, 0x0010c1c4,
+	0x001041c9, 0x0010c1dc, 0x00150210, 0x0012c225, 0x00108238, 0x0010823e,
+	0x001242c0, 0x00200040, 0x00100280, 0x00128100, 0x00128120, 0x00128143,
+	0x0011415f, 0x0010815c, 0x0010c140, 0x00104029, 0x00110400, 0x00104d10,
+	0x001046ec, 0x00500060, 0x00403a87, 0x0060000d, 0x00407ce6, 0x002000f1,
+	0x0060000a, 0x00148653, 0x00104668, 0x0010c66d, 0x00120682, 0x0011068b,
+	0x00168691, 0x001046ae, 0x001046b0, 0x001206b4, 0x001046c4, 0x001146c6,
+	0x001646cc, 0x001186e6, 0x001046ed, 0x001246f0, 0x002000c0, 0x00100700,
+	0x0010c3d7, 0x001043e1, 0x00500060, 0x00405800, 0x00405884, 0x00600003,
+	0x00500067, 0x00600008, 0x00500060, 0x00700082, 0x00200232, 0x0060000a,
+	0x00104800, 0x00108901, 0x00104910, 0x00124920, 0x0020001f, 0x00100940,
+	0x00140965, 0x00148a00, 0x00108a14, 0x00140b00, 0x00134b2c, 0x0010cd00,
+	0x0010cd04, 0x00104d08, 0x00104d80, 0x00104e00, 0x00105c00, 0x00104f06,
+	0x002002b2, 0x0060000a, 0x00300000, 0x00200080, 0x00407200, 0x00200084,
+	0x00800001, 0x002004fa, 0x0060000a, 0x00201320, 0x0040788a, 0xfffffb06,
+	0x00800029, 0x00407c84, 0x00200b20, 0x00800002, 0x00408d00, 0x00600006,
+	0x00700003, 0x004086e6, 0x00700080, 0x002002b2, 0x0060000a, 0x00200004,
+	0x00800001, 0x00700000, 0x00200000, 0x0060000a, 0x00106002, 0x0040a884,
+	0x00700002, 0x00600004, 0x0040a868, 0x00700000, 0x00200000, 0x0060000a,
+	0x00106002, 0x00700080, 0x00400a84, 0x00700002, 0x00400a68, 0x00500060,
+	0x00600007, 0x00409988, 0x0060000f, 0x00000000, 0x00500060, 0x00200000,
+	0x0060000a, 0x00700000, 0x00106001, 0x00700083, 0x00910880, 0x00901ffe,
+	0x01940000, 0x00200020, 0x0060000b, 0x00500069, 0x0060000c, 0x00401b68,
+	0x0040aa06, 0x0040ab05, 0x00600009, 0x00700005, 0x00700006, 0x0060000e,
+	~0
+};
+
+
 int
 nv40_graph_init(drm_device_t *dev)
 {
@@ -430,11 +474,10 @@ nv40_graph_init(drm_device_t *dev)
 	int i, chipset;
 
 	chipset = (NV_READ(NV_PMC_BOOT_0) & 0x0ff00000) >> 20;
-	DRM_DEBUG("chipset (from PMC_BOOT_0): NV0x%02X\n", chipset);
+	DRM_DEBUG("chipset (from PMC_BOOT_0): NV%02X\n", chipset);
 	switch (chipset) {
-	case 0x40:
-		ctx_voodoo = nv40_ctx_voodoo;
-		break;
+	case 0x40: ctx_voodoo = nv40_ctx_voodoo; break;
+	case 0x4e: ctx_voodoo =  c51_ctx_voodoo; break;
 	default:
 		DRM_ERROR("Unknown ctx_voodoo for chipset 0x%02x\n", chipset);
 		ctx_voodoo = NULL;
