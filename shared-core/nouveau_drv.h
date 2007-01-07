@@ -108,6 +108,7 @@ typedef struct drm_nouveau_private {
 
 	drm_local_map_t *mmio;
 	drm_local_map_t *fb;
+	drm_local_map_t *ramin; /* NV40 onwards */
 
 	//TODO: Remove me, I'm bogus :)
 	int      cur_fifo;
@@ -169,6 +170,11 @@ extern struct mem_block* nouveau_instmem_alloc(struct drm_device *dev,
 					       uint32_t size, uint32_t align);
 extern void              nouveau_instmem_free(struct drm_device *dev,
 					      struct mem_block *block);
+extern uint32_t          nouveau_instmem_r32(drm_nouveau_private_t *dev_priv,
+					     struct mem_block *mem, int index);
+extern void              nouveau_instmem_w32(drm_nouveau_private_t *dev_priv,
+					     struct mem_block *mem, int index,
+					     uint32_t val);
 
 /* nouveau_fifo.c */
 extern int  nouveau_fifo_init(drm_device_t *dev);
@@ -208,8 +214,8 @@ extern long nouveau_compat_ioctl(struct file *filp, unsigned int cmd,
 #define NV_WRITE(reg,val)   DRM_WRITE32( dev_priv->mmio, (reg), (val) )
 #endif
 
-#define INSTANCE_WR(mem,ofs,val) NV_WRITE(NV_RAMIN+(uint32_t)(mem)->start+((ofs)<<2),(val))
-#define INSTANCE_RD(mem,ofs)     NV_READ(NV_RAMIN+(uint32_t)(mem)->start+((ofs)<<2))
+#define INSTANCE_WR(mem,ofs,val) nouveau_instmem_w32(dev_priv,(mem),(ofs),(val))
+#define INSTANCE_RD(mem,ofs)     nouveau_instmem_r32(dev_priv,(mem),(ofs))
 
 #endif /* __NOUVEAU_DRV_H__ */
 

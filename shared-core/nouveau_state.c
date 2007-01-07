@@ -64,6 +64,21 @@ int nouveau_firstopen(struct drm_device *dev)
 
 	DRM_INFO("%lld MB of video ram detected\n",nouveau_mem_fb_amount(dev)>>20);
 
+	/* map larger RAMIN aperture on NV40 cards */
+	if (dev_priv->card_type >= NV_40) {
+		ret = drm_addmap(dev, drm_get_resource_start(dev, 2),
+				      drm_get_resource_len(dev, 2),
+				      _DRM_REGISTERS,
+				      _DRM_READ_ONLY,
+				      &dev_priv->ramin);
+		if (ret) {
+			DRM_ERROR("Failed to init RAMIN mapping, "
+				  "limited instance memory available\n");
+			dev_priv->ramin = NULL;
+		}
+	} else
+		dev_priv->ramin = NULL;
+
 	/* Clear RAMIN
 	 * Determine locations for RAMHT/FC/RO
 	 * Initialise PFIFO
