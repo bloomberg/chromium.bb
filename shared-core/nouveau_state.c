@@ -120,7 +120,10 @@ void nouveau_lastclose(struct drm_device *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	if(dev_priv->fb_mtrr>0)
+	{
 		drm_mtrr_del(dev_priv->fb_mtrr, drm_get_resource_start(dev, 1),nouveau_mem_fb_amount(dev), DRM_MTRR_WC);
+		dev_priv->fb_mtrr=0;
+	}
 }
 
 int nouveau_unload(struct drm_device *dev)
