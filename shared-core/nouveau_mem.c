@@ -282,6 +282,7 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 int nouveau_mem_init(struct drm_device *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	uint32_t fb_size;
 	dev_priv->agp_phys=0;
 	dev_priv->fb_phys=0;
 
@@ -340,15 +341,22 @@ no_agp:
 
 	/* Init FB */
 	dev_priv->fb_phys=drm_get_resource_start(dev,1);
-	if (nouveau_mem_fb_amount(dev)>256*1024*1024) {
+	fb_size = nouveau_mem_fb_amount(dev);
+	/* On at least NV40, RAMIN is actually at the end of vram.
+	 * We don't want to allocate this... */
+	if (dev_priv->card_type >= NV_40)
+		fb_size -= dev_priv->ramin_size;
+	DRM_DEBUG("Available VRAM: %dKiB\n", fb_size>>10);
+
+	if (fb_size>256*1024*1024) {
 		/* On cards with > 256Mb, you can't map everything. 
 		 * So we create a second FB heap for that type of memory */
 		if (init_heap(&dev_priv->fb_heap, drm_get_resource_start(dev,1), 256*1024*1024))
 			return DRM_ERR(ENOMEM);
-		if (init_heap(&dev_priv->fb_nomap_heap, drm_get_resource_start(dev,1)+256*1024*1024, nouveau_mem_fb_amount(dev)-256*1024*1024))
+		if (init_heap(&dev_priv->fb_nomap_heap, drm_get_resource_start(dev,1)+256*1024*1024, fb_size-256*1024*1024))
 			return DRM_ERR(ENOMEM);
 	} else {
-		if (init_heap(&dev_priv->fb_heap, drm_get_resource_start(dev,1), nouveau_mem_fb_amount(dev)))
+		if (init_heap(&dev_priv->fb_heap, drm_get_resource_start(dev,1), fb_size))
 			return DRM_ERR(ENOMEM);
 		dev_priv->fb_nomap_heap=NULL;
 	}
@@ -449,13 +457,31 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 	free_block(block);
 }
 
-int nouveau_instmem_init(struct drm_device *dev, uint32_t offset,
-			  uint32_t size)
+int nouveau_instmem_init(struct drm_device *dev, uint32_t offset)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int ret;
 
-	ret = init_heap(&dev_priv->ramin_heap, offset, size);
+	if (dev_priv->card_type >= NV_40)
+		/* We'll want more instance memory than this on some NV4x cards.
+		 * There's a 16MB aperture to play with that maps onto the end
+		 * of vram.  For now, only reserve a small piece until we know
+		 * more about what each chipset requires.
+		 */
+		dev_priv->ramin_size = (1*1024* 1024);
+	else {
+		/*XXX: what *are* the limits on <NV40 cards?, and does RAMIN
+		 *     exist in vram on those cards as well?
+		 */
+		dev_priv->ramin_size = (512*1024);
+	}
+	DRM_DEBUG("RAMIN size: %dKiB\n", dev_priv->ramin_size>>10);
+
+	/* Create a heap to manage RAMIN allocations, we don't allocate
+	 * the space that was reserved for RAMHT/FC/RO.
+	 */
+	ret = init_heap(&dev_priv->ramin_heap, offset,
+			dev_priv->ramin_size - offset);
 	if (ret) {
 		dev_priv->ramin_heap = NULL;
 		DRM_ERROR("Failed to init RAMIN heap\n");

@@ -120,7 +120,8 @@ typedef struct drm_nouveau_private {
 	int fifo_alloc_count;
 	struct nouveau_fifo fifos[NV_MAX_FIFO_NUMBER];
 
-	/* RAMFC and RAMRO offsets */
+	/* RAMIN configuration, RAMFC, RAMHT and RAMRO offsets */
+	uint32_t ramin_size;
 	uint32_t ramht_offset;
 	uint32_t ramht_size;
 	uint32_t ramht_bits;
@@ -165,7 +166,7 @@ extern void              nouveau_mem_free(struct drm_device* dev, struct mem_blo
 extern int               nouveau_mem_init(struct drm_device *dev);
 extern void              nouveau_mem_close(struct drm_device *dev);
 extern int               nouveau_instmem_init(struct drm_device *dev,
-					      uint32_t offset, uint32_t size);
+					      uint32_t offset);
 extern struct mem_block* nouveau_instmem_alloc(struct drm_device *dev,
 					       uint32_t size, uint32_t align);
 extern void              nouveau_instmem_free(struct drm_device *dev,
