@@ -323,7 +323,7 @@ static int i830_freelist_init(drm_device_t * dev, drm_i830_private_t * dev_priv)
 
 		buf_priv->map.offset = buf->bus_address;
 		buf_priv->map.size = buf->total;
-		buf_priv->map.type = 0;
+		buf_priv->map.type = _DRM_AGP;
 		buf_priv->map.flags = 0;
 		buf_priv->map.mtrr = 0;
 
@@ -380,9 +380,9 @@ static int i830_dma_initialize(drm_device_t * dev,
 	dev_priv->ring.End = init->ring_end;
 	dev_priv->ring.Size = init->ring_size;
 
-	dev_priv->ring.map.offset = init->ring_start;
+	dev_priv->ring.map.offset = dev->agp->base + init->ring_start;
 	dev_priv->ring.map.size = init->ring_size;
-	dev_priv->ring.map.type = 0;
+	dev_priv->ring.map.type = _DRM_AGP;
 	dev_priv->ring.map.flags = 0;
 	dev_priv->ring.map.mtrr = 0;
 
