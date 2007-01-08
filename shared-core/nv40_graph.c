@@ -10,6 +10,7 @@
  */
 #define NV40_GRCTX_SIZE (175*1024)
 #define NV43_GRCTX_SIZE (70*1024)
+#define NV4A_GRCTX_SIZE (60*1024)
 #define NV4E_GRCTX_SIZE (25*1024)
 
 /*TODO: deciper what each offset in the context represents. The below
@@ -272,6 +273,122 @@ nv43_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 		INSTANCE_WR(ctx, i/4, 0x3f800000);
 };
 
+static void nv4a_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	int i;
+
+	INSTANCE_WR(ctx, 0x00000/4, nouveau_chip_instance_get(dev, ctx));
+	INSTANCE_WR(ctx, 0x00024/4, 0x0000ffff);
+	INSTANCE_WR(ctx, 0x00028/4, 0x0000ffff);
+	INSTANCE_WR(ctx, 0x00030/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x0011c/4, 0x20010001);
+	INSTANCE_WR(ctx, 0x00120/4, 0x0f73ef00);
+	INSTANCE_WR(ctx, 0x00128/4, 0x02008821);
+	INSTANCE_WR(ctx, 0x00158/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x0015c/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00160/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00164/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00168/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x0016c/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00170/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00174/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00178/4, 0x00000040);
+	INSTANCE_WR(ctx, 0x0017c/4, 0x00000040);
+	INSTANCE_WR(ctx, 0x00180/4, 0x00000040);
+	INSTANCE_WR(ctx, 0x00188/4, 0x00000040);
+	INSTANCE_WR(ctx, 0x001d0/4, 0x0b0b0b0c);
+	INSTANCE_WR(ctx, 0x00340/4, 0x00040000);
+	INSTANCE_WR(ctx, 0x00350/4, 0x55555555);
+	INSTANCE_WR(ctx, 0x00354/4, 0x55555555);
+	INSTANCE_WR(ctx, 0x00358/4, 0x55555555);
+	INSTANCE_WR(ctx, 0x0035c/4, 0x55555555);
+	INSTANCE_WR(ctx, 0x00388/4, 0x00000008);
+	INSTANCE_WR(ctx, 0x0039c/4, 0x00003010);
+	INSTANCE_WR(ctx, 0x003cc/4, 0x00000111);
+	INSTANCE_WR(ctx, 0x003d0/4, 0x00080060);
+	INSTANCE_WR(ctx, 0x003ec/4, 0x00000080);
+	INSTANCE_WR(ctx, 0x003f0/4, 0xffff0000);
+	INSTANCE_WR(ctx, 0x003f4/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00408/4, 0x46400000);
+	INSTANCE_WR(ctx, 0x00418/4, 0xffff0000);
+	INSTANCE_WR(ctx, 0x00424/4, 0x0fff0000);
+	INSTANCE_WR(ctx, 0x00428/4, 0x0fff0000);
+	INSTANCE_WR(ctx, 0x00430/4, 0x00011100);
+	for (i=0x0044c; i<=0x00488; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x07ff0000);
+	INSTANCE_WR(ctx, 0x00494/4, 0x4b7fffff);
+	INSTANCE_WR(ctx, 0x004bc/4, 0x30201000);
+	INSTANCE_WR(ctx, 0x004c0/4, 0x70605040);
+	INSTANCE_WR(ctx, 0x004c4/4, 0xb8a89888);
+	INSTANCE_WR(ctx, 0x004c8/4, 0xf8e8d8c8);
+	INSTANCE_WR(ctx, 0x004dc/4, 0x40100000);
+	INSTANCE_WR(ctx, 0x004f8/4, 0x0000ffff);
+	INSTANCE_WR(ctx, 0x0052c/4, 0x435185d6);
+	INSTANCE_WR(ctx, 0x00530/4, 0x2155b699);
+	INSTANCE_WR(ctx, 0x00534/4, 0xfedcba98);
+	INSTANCE_WR(ctx, 0x00538/4, 0x00000098);
+	INSTANCE_WR(ctx, 0x00548/4, 0xffffffff);
+	INSTANCE_WR(ctx, 0x0054c/4, 0x00ff7000);
+	INSTANCE_WR(ctx, 0x00550/4, 0x0000ffff);
+	INSTANCE_WR(ctx, 0x0055c/4, 0x00ff0000);
+	INSTANCE_WR(ctx, 0x00594/4, 0x00ffff00);
+	for (i=0x005d8; i<=0x00614; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00018488);
+	for (i=0x00618; i<=0x00654; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00028202);
+	for (i=0x00698; i<=0x006d4; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x0000aae4);
+	for (i=0x006d8; i<=0x00714; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x01012000);
+	for (i=0x00718; i<=0x00754; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00080008);
+	for (i=0x00798; i<=0x007d4; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00100008);
+	for (i=0x00828; i<=0x00834; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x0001bc80);
+	for (i=0x00838; i<=0x00844; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00000202);
+	for (i=0x00858; i<=0x00864; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00000008);
+	for (i=0x00878; i<=0x00884; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00080008);
+	INSTANCE_WR(ctx, 0x00898/4, 0x00000002);
+	INSTANCE_WR(ctx, 0x008cc/4, 0x00000021);
+	INSTANCE_WR(ctx, 0x008d0/4, 0x030c30c3);
+	INSTANCE_WR(ctx, 0x008d4/4, 0x00011001);
+	INSTANCE_WR(ctx, 0x008e0/4, 0x3e020200);
+	INSTANCE_WR(ctx, 0x008e4/4, 0x00ffffff);
+	INSTANCE_WR(ctx, 0x008e8/4, 0x0c103f00);
+	INSTANCE_WR(ctx, 0x008f4/4, 0x00040000);
+	INSTANCE_WR(ctx, 0x0092c/4, 0x00008100);
+	INSTANCE_WR(ctx, 0x009b8/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x009fc/4, 0x00001001);
+	INSTANCE_WR(ctx, 0x00a04/4, 0x00000003);
+	INSTANCE_WR(ctx, 0x00a08/4, 0x00888001);
+	INSTANCE_WR(ctx, 0x00a8c/4, 0x00000005);
+	INSTANCE_WR(ctx, 0x00a98/4, 0x0000ffff);
+	INSTANCE_WR(ctx, 0x00ab4/4, 0x00005555);
+	INSTANCE_WR(ctx, 0x00ab8/4, 0x00005555);
+	INSTANCE_WR(ctx, 0x00abc/4, 0x00005555);
+	INSTANCE_WR(ctx, 0x00ac0/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00af8/4, 0x00000001);
+	for (i=0x016c0; i<=0x01738; i+=8)
+		INSTANCE_WR(ctx, i/4, 0x3f800000);
+	for (i=0x03840; i<=0x05670; i+=24)
+		INSTANCE_WR(ctx, i/4, 0x00000001);
+	for (i=0x05680; i<=0x05a70; i+=16)
+		INSTANCE_WR(ctx, i/4, 0x3f800000);
+	for (i=0x07e00; i<=0x09ff0; i+=24)
+		INSTANCE_WR(ctx, i/4, 0x00000001);
+	for (i=0x0a000; i<=0x0a3f0; i+=16)
+		INSTANCE_WR(ctx, i/4, 0x3f800000);
+	for (i=0x0c780; i<=0x0e970; i+=24)
+		INSTANCE_WR(ctx, i/4, 0x00000001);
+	for (i=0x0e980; i<=0x0ed70; i+=16)
+		INSTANCE_WR(ctx, i/4, 0x3f800000);
+}
+
 static void nv4e_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
@@ -397,6 +514,10 @@ nv40_graph_context_create(drm_device_t *dev, int channel)
 	case 0x43:
 		ctx_size = NV43_GRCTX_SIZE;
 		ctx_init = nv43_graph_context_init;
+		break;
+	case 0x4a:
+		ctx_size = NV4A_GRCTX_SIZE;
+		ctx_init = nv4a_graph_context_init;
 		break;
 	case 0x4e:
 		ctx_size = NV4E_GRCTX_SIZE;
@@ -589,6 +710,39 @@ static uint32_t nv43_ctx_voodoo[] = {
 	~0
 };
 
+static uint32_t nv4a_ctx_voodoo[] = {
+	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001, 
+	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00409965, 0x00409e06, 
+	0x0040ac68, 0x00200000, 0x0060000a, 0x00700000, 0x00106000, 0x00700080, 
+	0x004014e6, 0x007000a0, 0x00401a84, 0x00700082, 0x00600001, 0x00500061, 
+	0x00600002, 0x00401b68, 0x00500060, 0x00200001, 0x0060000a, 0x0011814d, 
+	0x00110158, 0x00105401, 0x0020003a, 0x00100051, 0x001040c5, 0x0010c1c4, 
+	0x001041c9, 0x0010c1dc, 0x00150210, 0x0012c225, 0x00108238, 0x0010823e, 
+	0x001242c0, 0x00200040, 0x00100280, 0x00128100, 0x00128120, 0x00128143, 
+	0x0011415f, 0x0010815c, 0x0010c140, 0x00104029, 0x00110400, 0x00104d10, 
+	0x001046ec, 0x00500060, 0x00403a87, 0x0060000d, 0x00407de6, 0x002000f1, 
+	0x0060000a, 0x00148653, 0x00104668, 0x0010c66d, 0x00120682, 0x0011068b, 
+	0x00168691, 0x001046ae, 0x001046b0, 0x001206b4, 0x001046c4, 0x001146c6, 
+	0x001646cc, 0x001186e6, 0x001046ed, 0x001246f0, 0x002000c0, 0x00100700, 
+	0x0010c3d7, 0x001043e1, 0x00500060, 0x00405800, 0x00405884, 0x00600003, 
+	0x00500067, 0x00600008, 0x00500060, 0x00700082, 0x00200232, 0x0060000a, 
+	0x00104800, 0x00108901, 0x00104910, 0x00124920, 0x0020001f, 0x00100940, 
+	0x00140965, 0x00148a00, 0x00108a14, 0x00160b00, 0x00134b2c, 0x0010cd00, 
+	0x0010cd04, 0x0010cd08, 0x00104d80, 0x00104e00, 0x0012d600, 0x00105c00, 
+	0x00104f06, 0x002002c8, 0x0060000a, 0x00300000, 0x00200080, 0x00407300, 
+	0x00200084, 0x00800001, 0x00200510, 0x0060000a, 0x002037e0, 0x0040798a, 
+	0x00201320, 0x00800029, 0x00407d84, 0x00201560, 0x00800002, 0x00409100, 
+	0x00600006, 0x00700003, 0x00408ae6, 0x00700080, 0x0020007a, 0x0060000a, 
+	0x00104280, 0x002002c8, 0x0060000a, 0x00200004, 0x00800001, 0x00700000, 
+	0x00200000, 0x0060000a, 0x00106002, 0x0040ac84, 0x00700002, 0x00600004, 
+	0x0040ac68, 0x00700000, 0x00200000, 0x0060000a, 0x00106002, 0x00700080, 
+	0x00400a84, 0x00700002, 0x00400a68, 0x00500060, 0x00600007, 0x00409d88, 
+	0x0060000f, 0x00000000, 0x00500060, 0x00200000, 0x0060000a, 0x00700000, 
+	0x00106001, 0x00700083, 0x00910880, 0x00901ffe, 0x01940000, 0x00200020, 
+	0x0060000b, 0x00500069, 0x0060000c, 0x00401b68, 0x0040ae06, 0x0040af05, 
+	0x00600009, 0x00700005, 0x00700006, 0x0060000e, ~0
+};
+
 static uint32_t nv4e_ctx_voodoo[] = {
 	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
 	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00409565, 0x00409a06,
@@ -637,6 +791,7 @@ nv40_graph_init(drm_device_t *dev)
 	switch (chipset) {
 	case 0x40: ctx_voodoo = nv40_ctx_voodoo; break;
 	case 0x43: ctx_voodoo = nv43_ctx_voodoo; break;
+	case 0x4a: ctx_voodoo = nv4a_ctx_voodoo; break;
 	case 0x4e: ctx_voodoo = nv4e_ctx_voodoo; break;
 	default:
 		DRM_ERROR("Unknown ctx_voodoo for chipset 0x%02x\n", chipset);
