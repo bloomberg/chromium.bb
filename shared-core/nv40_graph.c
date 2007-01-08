@@ -388,8 +388,7 @@ nv40_graph_context_create(drm_device_t *dev, int channel)
 	unsigned int ctx_size;
 	int i, chipset;
 
-	chipset = (NV_READ(NV_PMC_BOOT_0) & 0x0ff00000) >> 24;
-
+	chipset = (NV_READ(NV_PMC_BOOT_0) & 0x0ff00000) >> 20;
 	switch (chipset) {
 	case 0x40:
 		ctx_size = NV40_GRCTX_SIZE;
