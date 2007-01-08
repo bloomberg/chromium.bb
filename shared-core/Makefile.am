@@ -29,6 +29,7 @@ klibdrminclude_HEADERS = \
                          i915_drm.h \
                          mach64_drm.h \
                          mga_drm.h \
+                         nouveau_drm.h \
                          r128_drm.h \
                          radeon_drm.h \
                          savage_drm.h \

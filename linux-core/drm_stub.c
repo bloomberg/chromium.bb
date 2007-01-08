@@ -47,17 +47,12 @@ MODULE_LICENSE("GPL and additional rights");
 MODULE_PARM_DESC(cards_limit, "Maximum number of graphics cards");
 MODULE_PARM_DESC(debug, "Enable debug output");
 
-module_param_named(cards_limit, drm_cards_limit, int, S_IRUGO);
-module_param_named(debug, drm_debug, int, S_IRUGO|S_IWUGO);
+module_param_named(cards_limit, drm_cards_limit, int, 0444);
+module_param_named(debug, drm_debug, int, 0600);
 
 drm_head_t **drm_heads;
 struct drm_sysfs_class *drm_class;
 struct proc_dir_entry *drm_proc_root;
-
-drm_cache_t drm_cache =
-{ .mm = NULL,
-  .fence_object = NULL
-};
 
 static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 		       const struct pci_device_id *ent,
@@ -249,9 +244,9 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 	if ((ret = drm_get_head(dev, &dev->primary)))
 		goto err_g1;
 
-	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d: %s\n",
+	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 driver->name, driver->major, driver->minor, driver->patchlevel,
-		 driver->date, dev->primary.minor, pci_pretty_name(dev->pdev));
+		 driver->date, dev->primary.minor);
 
 	return 0;
 

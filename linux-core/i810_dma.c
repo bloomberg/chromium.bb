@@ -39,12 +39,6 @@
 #include "i810_drm.h"
 #include "i810_drv.h"
 
-#ifdef DO_MUNMAP_4_ARGS
-#define DO_MUNMAP(m, a, l)	do_munmap(m, a, l, 1)
-#else
-#define DO_MUNMAP(m, a, l)	do_munmap(m, a, l)
-#endif
-
 #define I810_BUF_FREE		2
 #define I810_BUF_CLIENT		1
 #define I810_BUF_HARDWARE      	0
@@ -186,7 +180,7 @@ static int i810_unmap_buffer(drm_buf_t * buf)
 		return -EINVAL;
 
 	down_write(&current->mm->mmap_sem);
-	retcode = DO_MUNMAP(current->mm,
+	retcode = do_munmap(current->mm,
 			    (unsigned long)buf_priv->virtual,
 			    (size_t) buf->total);
 	up_write(&current->mm->mmap_sem);
@@ -244,8 +238,7 @@ static int i810_dma_cleanup(drm_device_t * dev)
 		    (drm_i810_private_t *) dev->dev_private;
 
 		if (dev_priv->ring.virtual_start) {
-			drm_ioremapfree((void *)dev_priv->ring.virtual_start,
-					dev_priv->ring.Size, dev);
+			drm_core_ioremapfree(&dev_priv->ring.map, dev);
 		}
 		if (dev_priv->hw_status_page) {
 			pci_free_consistent(dev->pdev, PAGE_SIZE,
@@ -261,9 +254,9 @@ static int i810_dma_cleanup(drm_device_t * dev)
 		for (i = 0; i < dma->buf_count; i++) {
 			drm_buf_t *buf = dma->buflist[i];
 			drm_i810_buf_priv_t *buf_priv = buf->dev_private;
+
 			if (buf_priv->kernel_virtual && buf->total)
-				drm_ioremapfree(buf_priv->kernel_virtual,
-						buf->total, dev);
+				drm_core_ioremapfree(&buf_priv->map, dev);
 		}
 	}
 	return 0;
@@ -336,8 +329,15 @@ static int i810_freelist_init(drm_device_t * dev, drm_i810_private_t * dev_priv)
 
 		*buf_priv->in_use = I810_BUF_FREE;
 
-		buf_priv->kernel_virtual = drm_ioremap(buf->bus_address,
-						       buf->total, dev);
+		buf_priv->map.offset = buf->bus_address;
+		buf_priv->map.size = buf->total;
+		buf_priv->map.type = _DRM_AGP;
+		buf_priv->map.flags = 0;
+		buf_priv->map.mtrr = 0;
+
+		drm_core_ioremap(&buf_priv->map, dev);
+		buf_priv->kernel_virtual = buf_priv->map.handle;
+
 	}
 	return 0;
 }
@@ -388,17 +388,23 @@ static int i810_dma_initialize(drm_device_t * dev,
 	dev_priv->ring.End = init->ring_end;
 	dev_priv->ring.Size = init->ring_size;
 
-	dev_priv->ring.virtual_start = drm_ioremap(dev->agp->base +
-						   init->ring_start,
-						   init->ring_size, dev);
+	dev_priv->ring.map.offset = dev->agp->base + init->ring_start;
+	dev_priv->ring.map.size = init->ring_size;
+	dev_priv->ring.map.type = _DRM_AGP;
+	dev_priv->ring.map.flags = 0;
+	dev_priv->ring.map.mtrr = 0;
 
-	if (dev_priv->ring.virtual_start == NULL) {
+	drm_core_ioremap(&dev_priv->ring.map, dev);
+
+	if (dev_priv->ring.map.handle == NULL) {
 		dev->dev_private = (void *)dev_priv;
 		i810_dma_cleanup(dev);
 		DRM_ERROR("can not ioremap virtual address for"
 			  " ring buffer\n");
-		return -ENOMEM;
+		return DRM_ERR(ENOMEM);
 	}
+
+	dev_priv->ring.virtual_start = dev_priv->ring.map.handle;
 
 	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
 

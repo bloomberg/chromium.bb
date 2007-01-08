@@ -46,7 +46,7 @@ static int drm_setup(drm_device_t * dev)
 	drm_local_map_t *map;
 	int i;
 	int ret;
-
+	int sareapage;
 
 	if (dev->driver->firstopen) {
 		ret = dev->driver->firstopen(dev);
@@ -57,8 +57,8 @@ static int drm_setup(drm_device_t * dev)
 	dev->magicfree.next = NULL;
 
 	/* prebuild the SAREA */
-
-	i = drm_addmap(dev, 0, SAREA_MAX, _DRM_SHM, _DRM_CONTAINS_LOCK, &map);
+	sareapage = max(SAREA_MAX, PAGE_SIZE);
+	i = drm_addmap(dev, 0, sareapage, _DRM_SHM, _DRM_CONTAINS_LOCK, &map);
 	if (i != 0)
 		return i;
 
@@ -426,7 +426,7 @@ int drm_release(struct inode *inode, struct file *filp)
 		  current->pid, (long)old_encode_dev(priv->head->device),
 		  dev->open_count);
 
-	if (dev->driver->reclaim_buffers_locked) {
+	if (dev->driver->reclaim_buffers_locked && dev->lock.hw_lock) {
 	        unsigned long _end = jiffies + DRM_HZ*3;
 
 		do {
@@ -446,12 +446,12 @@ int drm_release(struct inode *inode, struct file *filp)
 			 * holds the lock. Then we can run reclaim buffers locked anyway.
 			 */
 
-			DRM_ERROR("Reclaim buffers locked deadlock.\n");
-			DRM_ERROR("This is probably a single thread having multiple\n");
-			DRM_ERROR("DRM file descriptors open either dying or "
-				  "closing file descriptors\n");
-			DRM_ERROR("while having the lock. I will not reclaim buffers.\n");
-			DRM_ERROR("Locking context is 0x%08x\n",
+			DRM_ERROR("Reclaim buffers locked deadlock.\n"
+				  "\tThis is probably a single thread having multiple\n"
+				  "\tDRM file descriptors open either dying or"
+				  " closing file descriptors\n"
+				  "\twhile having the lock. I will not reclaim buffers.\n"
+				  "\tLocking context is 0x%08x\n",
 				  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
 		}
 	} else if (drm_i_have_hw_lock(filp)) {

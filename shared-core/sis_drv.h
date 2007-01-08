@@ -57,9 +57,9 @@ enum sis_family {
 
 typedef struct drm_sis_private {
 	drm_local_map_t *mmio;
-	unsigned idle_fault;
+	unsigned int idle_fault;
 	drm_sman_t sman;
-	unsigned long chipset;
+	unsigned int chipset;
 	int vram_initialized;
 	int agp_initialized;
 	unsigned long vram_offset;

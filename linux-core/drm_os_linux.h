@@ -56,7 +56,7 @@
 			drm_device_t	*dev	= priv->head->dev
 
 /** IRQ handler arguments and return type and values */
-#define DRM_IRQ_ARGS		int irq, void *arg, struct pt_regs *regs
+#define DRM_IRQ_ARGS		int irq, void *arg
 /** backwards compatibility with old irq return values */
 #ifndef IRQ_HANDLED
 typedef void irqreturn_t;
@@ -66,13 +66,8 @@ typedef void irqreturn_t;
 
 /** AGP types */
 #if __OS_HAS_AGP
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,70)
-#define DRM_AGP_MEM		agp_memory
-#define DRM_AGP_KERN		agp_kern_info
-#else
 #define DRM_AGP_MEM		struct agp_memory
 #define DRM_AGP_KERN		struct agp_kern_info
-#endif
 #else
 /* define some dummy types for non AGP supporting kernels */
 struct no_agp_kern {
@@ -97,9 +92,6 @@ static __inline__ int mtrr_del(int reg, unsigned long base, unsigned long size)
 
 #define MTRR_TYPE_WRCOMB     1
 #endif
-
-/** Task queue handler arguments */
-#define DRM_TASKQUEUE_ARGS	void *arg
 
 /** For data going into the kernel through the ioctl argument */
 #define DRM_COPY_FROM_USER_IOCTL(arg1, arg2, arg3)	\

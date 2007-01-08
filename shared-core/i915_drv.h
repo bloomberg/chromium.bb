@@ -35,7 +35,7 @@
 
 #define DRIVER_AUTHOR		"Tungsten Graphics, Inc."
 
-#define DRIVER_NAME		"i915-mm"
+#define DRIVER_NAME		"i915"
 #define DRIVER_DESC		"Intel Graphics"
 #define DRIVER_DATE		"20060929"
 
@@ -48,9 +48,10 @@
  * 1.5: Add vblank pipe configuration
  * 1.6: - New ioctl for scheduling buffer swaps on vertical blank
  *      - Support vertical blank on secondary display pipe
+ * 1.8: New ioctl for ARB_Occlusion_Query
  */
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		7
+#define DRIVER_MINOR		8
 #define DRIVER_PATCHLEVEL	0
 
 #if defined(__linux__)

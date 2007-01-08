@@ -67,19 +67,11 @@
 #include <asm/mtrr.h>
 #endif
 #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
+#include <asm/agp.h>
 #include <linux/types.h>
 #include <linux/agp_backend.h>
 #endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,41)
-#define HAS_WORKQUEUE 0
-#else
-#define HAS_WORKQUEUE 1
-#endif
-#if !HAS_WORKQUEUE
-#include <linux/tqueue.h>
-#else
 #include <linux/workqueue.h>
-#endif
 #include <linux/poll.h>
 #include <asm/pgalloc.h>
 #include "drm.h"
@@ -553,7 +545,8 @@ typedef struct drm_mm_node {
 } drm_mm_node_t;
 
 typedef struct drm_mm {
-	drm_mm_node_t root_node;
+	struct list_head fl_entry;
+	struct list_head ml_entry;
 } drm_mm_t;
 
 
@@ -755,17 +748,6 @@ typedef struct drm_head {
 	struct class_device *dev_class;
 } drm_head_t;
 
-typedef struct drm_cache {
-
-	/*
-	 * Memory caches
-	 */
-
-	kmem_cache_t *mm;
-	kmem_cache_t *fence_object;
-} drm_cache_t;
-
-
 
 typedef struct drm_fence_driver{
 	int no_types;
@@ -812,7 +794,11 @@ typedef struct drm_buffer_manager{
         struct list_head pinned[DRM_BO_MEM_TYPES];
 	struct list_head unfenced;
 	struct list_head ddestroy;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
         struct work_struct wq;
+#else
+        struct delayed_work wq;
+#endif
         uint32_t fence_type;
         unsigned long cur_pages;
         atomic_t count;
@@ -908,11 +894,8 @@ typedef struct drm_device {
 	unsigned long last_switch;	/**< jiffies at last context switch */
 	/*@} */
 
-#if !HAS_WORKQUEUE
-	struct tq_struct tq;
-#else
 	struct work_struct work;
-#endif
+
 	/** \name VBLANK IRQ support */
 	/*@{ */
 
@@ -940,11 +923,7 @@ typedef struct drm_device {
 	int pci_vendor;			/**< PCI vendor id */
 	int pci_device;			/**< PCI device id */
 #ifdef __alpha__
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,3)
-	struct pci_controler *hose;
-#else
 	struct pci_controller *hose;
-#endif
 #endif
 	drm_sg_mem_t *sg;		/**< Scatter gather memory */
 	unsigned long *ctx_bitmap;	/**< context bitmap */
@@ -1094,6 +1073,7 @@ static inline int drm_mtrr_del(int handle, unsigned long offset,
 }
 
 #define drm_core_has_MTRR(dev) (0)
+#define DRM_MTRR_WC		0
 #endif
 
 
@@ -1318,7 +1298,6 @@ extern int drm_put_head(drm_head_t * head);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 extern unsigned int drm_cards_limit;
 extern drm_head_t **drm_heads;
-extern drm_cache_t drm_cache;
 extern struct drm_sysfs_class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
 
@@ -1478,26 +1457,8 @@ extern int drm_fence_buffer_objects(drm_file_t * priv,
 				    drm_fence_object_t *fence,
 				    drm_fence_object_t **used_fence);
 
-
-/* Inline replacements for DRM_IOREMAP macros */
-static __inline__ void drm_core_ioremap(struct drm_map *map,
-					struct drm_device *dev)
-{
-	map->handle = drm_ioremap(map->offset, map->size, dev);
-}
-
-static __inline__ void drm_core_ioremap_nocache(struct drm_map *map,
-						struct drm_device *dev)
-{
-	map->handle = drm_ioremap_nocache(map->offset, map->size, dev);
-}
-
-static __inline__ void drm_core_ioremapfree(struct drm_map *map,
-					    struct drm_device *dev)
-{
-	if (map->handle && map->size)
-		drm_ioremapfree(map->handle, map->size, dev);
-}
+extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
+extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);
 
 static __inline__ struct drm_map *drm_core_findmap(struct drm_device *dev,
 						   unsigned int token)
@@ -1578,25 +1539,6 @@ static inline void *drm_ctl_calloc(size_t nmemb, size_t size, int area)
 static inline void drm_ctl_free(void *pt, size_t size, int area)
 {
 	drm_free(pt, size, area);
-	drm_free_memctl(size);
-}
-
-static inline void *drm_ctl_cache_alloc(kmem_cache_t *cache, size_t size, 
-					int flags)
-{
-	void *ret;
-	if (drm_alloc_memctl(size))
-		return NULL;
-	ret = kmem_cache_alloc(cache, flags);
-	if (!ret)
-		drm_free_memctl(size);
-	return ret;
-}
-
-static inline void drm_ctl_cache_free(kmem_cache_t *cache, size_t size,
-				      void *obj)
-{
-	kmem_cache_free(cache, obj);
 	drm_free_memctl(size);
 }
 

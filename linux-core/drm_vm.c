@@ -159,9 +159,9 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 }
 #endif				/* __OS_HAS_AGP */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20) || \
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21) || \
      LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))
 static
 #endif
 struct page *drm_vm_ttm_fault(struct vm_area_struct *vma, 
@@ -208,7 +208,8 @@ struct page *drm_vm_ttm_fault(struct vm_area_struct *vma,
 			data->type = VM_FAULT_OOM;
 			goto out;
 		}
-		page = ttm->pages[page_offset] = drm_alloc_gatt_pages(0);
+		page = ttm->pages[page_offset] = 
+			alloc_page(GFP_KERNEL | __GFP_ZERO | GFP_DMA32);
 		if (!page) {
 			drm_free_memctl(PAGE_SIZE);
 			data->type = VM_FAULT_OOM;
@@ -269,13 +270,13 @@ static __inline__ struct page *drm_do_vm_shm_nopage(struct vm_area_struct *vma,
 	if (address > vma->vm_end)
 		return NOPAGE_SIGBUS;	/* Disallow mremap */
 	if (!map)
-		return NOPAGE_OOM;	/* Nothing allocated */
+		return NOPAGE_SIGBUS;	/* Nothing allocated */
 
 	offset = address - vma->vm_start;
 	i = (unsigned long)map->handle + offset;
 	page = vmalloc_to_page((void *)i);
 	if (!page)
-		return NOPAGE_OOM;
+		return NOPAGE_SIGBUS;
 	get_page(page);
 
 	DRM_DEBUG("shm_nopage 0x%lx\n", address);
@@ -348,7 +349,7 @@ static void drm_vm_shm_close(struct vm_area_struct *vma)
 							   map->size);
 					DRM_DEBUG("mtrr_del = %d\n", retcode);
 				}
-				drm_ioremapfree(map->handle, map->size, dev);
+				iounmap(map->handle);
 				break;
 			case _DRM_SHM:
 				vfree(map->handle);
@@ -396,7 +397,7 @@ static __inline__ struct page *drm_do_vm_dma_nopage(struct vm_area_struct *vma,
 	if (address > vma->vm_end)
 		return NOPAGE_SIGBUS;	/* Disallow mremap */
 	if (!dma->pagelist)
-		return NOPAGE_OOM;	/* Nothing allocated */
+		return NOPAGE_SIGBUS;	/* Nothing allocated */
 
 	offset = address - vma->vm_start;	/* vm_[pg]off[set] should be 0 */
 	page_nr = offset >> PAGE_SHIFT;
@@ -435,7 +436,7 @@ static __inline__ struct page *drm_do_vm_sg_nopage(struct vm_area_struct *vma,
 	if (address > vma->vm_end)
 		return NOPAGE_SIGBUS;	/* Disallow mremap */
 	if (!entry->pagelist)
-		return NOPAGE_OOM;	/* Nothing allocated */
+		return NOPAGE_SIGBUS;	/* Nothing allocated */
 
 	offset = address - vma->vm_start;
 	map_offset = map->offset - (unsigned long)dev->sg->virtual;
@@ -445,8 +446,6 @@ static __inline__ struct page *drm_do_vm_sg_nopage(struct vm_area_struct *vma,
 
 	return page;
 }
-
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,0)
 
 static struct page *drm_vm_nopage(struct vm_area_struct *vma,
 				  unsigned long address, int *type)
@@ -481,34 +480,6 @@ static struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
 }
 
 
-#else				/* LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,0) */
-
-static struct page *drm_vm_nopage(struct vm_area_struct *vma,
-				  unsigned long address, int unused)
-{
-	return drm_do_vm_nopage(vma, address);
-}
-
-static struct page *drm_vm_shm_nopage(struct vm_area_struct *vma,
-				      unsigned long address, int unused)
-{
-	return drm_do_vm_shm_nopage(vma, address);
-}
-
-static struct page *drm_vm_dma_nopage(struct vm_area_struct *vma,
-				      unsigned long address, int unused)
-{
-	return drm_do_vm_dma_nopage(vma, address);
-}
-
-static struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
-				     unsigned long address, int unused)
-{
-	return drm_do_vm_sg_nopage(vma, address);
-}
-
-#endif
-
 /** AGP virtual memory operations */
 static struct vm_operations_struct drm_vm_ops = {
 	.nopage = drm_vm_nopage,
@@ -537,7 +508,7 @@ static struct vm_operations_struct drm_vm_sg_ops = {
 	.close = drm_vm_close,
 };
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))
 static struct vm_operations_struct drm_vm_ttm_ops = {
 	.nopage = drm_vm_ttm_nopage,
 	.open = drm_vm_ttm_open_wrapper,
@@ -712,12 +683,7 @@ static int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 	}
 
 	vma->vm_ops = &drm_vm_dma_ops;
-
-#if LINUX_VERSION_CODE <= 0x02040e	/* KERNEL_VERSION(2,4,14) */
-	vma->vm_flags |= VM_LOCKED | VM_SHM;	/* Don't swap */
-#else
 	vma->vm_flags |= VM_RESERVED;	/* Don't swap */
-#endif
 
 	vma->vm_file = filp;	/* Needed for drm_vm_open() */
 	drm_vm_open(vma);
@@ -829,6 +795,7 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 		vma->vm_flags |= VM_IO;	/* not in core dump */
 		vma->vm_page_prot = drm_io_prot(map->type, vma);
 #ifdef __sparc__
+		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
 		if (io_remap_pfn_range(vma, vma->vm_start,
 					(map->offset + offset) >>PAGE_SHIFT,
 					vma->vm_end - vma->vm_start,
@@ -859,20 +826,12 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 		vma->vm_private_data = (void *)map;
 		/* Don't let this area swap.  Change when
 		   DRM_KERNEL advisory is supported. */
-#if LINUX_VERSION_CODE <= 0x02040e	/* KERNEL_VERSION(2,4,14) */
-		vma->vm_flags |= VM_LOCKED;
-#else
 		vma->vm_flags |= VM_RESERVED;
-#endif
 		break;
 	case _DRM_SCATTER_GATHER:
 		vma->vm_ops = &drm_vm_sg_ops;
 		vma->vm_private_data = (void *)map;
-#if LINUX_VERSION_CODE <= 0x02040e	/* KERNEL_VERSION(2,4,14) */
-		vma->vm_flags |= VM_LOCKED;
-#else
 		vma->vm_flags |= VM_RESERVED;
-#endif
 		break;
 	case _DRM_TTM: {
 		vma->vm_ops = &drm_vm_ttm_ops;
@@ -891,11 +850,7 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	default:
 		return -EINVAL;	/* This should never happen. */
 	}
-#if LINUX_VERSION_CODE <= 0x02040e	/* KERNEL_VERSION(2,4,14) */
-	vma->vm_flags |= VM_LOCKED | VM_SHM;	/* Don't swap */
-#else
 	vma->vm_flags |= VM_RESERVED;	/* Don't swap */
-#endif
 
 	vma->vm_file = filp;	/* Needed for drm_vm_open() */
 	drm_vm_open(vma);

@@ -217,7 +217,9 @@ via_fire_dmablit(drm_device_t *dev, drm_via_sg_info_t *vsg, int engine)
 	VIA_WRITE(VIA_PCI_DMA_MR0  + engine*0x04, VIA_DMA_MR_CM | VIA_DMA_MR_TDIE);
 	VIA_WRITE(VIA_PCI_DMA_BCR0 + engine*0x10, 0);
 	VIA_WRITE(VIA_PCI_DMA_DPR0 + engine*0x10, vsg->chain_start);
+	DRM_WRITEMEMORYBARRIER();
 	VIA_WRITE(VIA_PCI_DMA_CSR0 + engine*0x04, VIA_DMA_CSR_DE | VIA_DMA_CSR_TS);
+	VIA_READ(VIA_PCI_DMA_CSR0 + engine*0x04);
 }
 
 /*
@@ -496,10 +498,18 @@ via_dmablit_timer(unsigned long data)
 
 
 static void 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 via_dmablit_workqueue(void *data)
+#else
+via_dmablit_workqueue(struct work_struct *work)
+#endif
 {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 	drm_via_blitq_t *blitq = (drm_via_blitq_t *) data;
-	drm_device_t *dev = blitq->dev;
+#else
+	drm_via_blitq_t *blitq = container_of(work, drm_via_blitq_t, wq);
+#endif
+        drm_device_t *dev = blitq->dev;
 	unsigned long irqsave;
 	drm_via_sg_info_t *cur_sg;
 	int cur_released;
@@ -562,12 +572,16 @@ via_init_dmablit(drm_device_t *dev)
 		blitq->num_outstanding = 0;
 		blitq->is_active = 0;
 		blitq->aborting = 0;
-		blitq->blit_lock = SPIN_LOCK_UNLOCKED;
+		spin_lock_init(&blitq->blit_lock);
 		for (j=0; j<VIA_NUM_BLIT_SLOTS; ++j) {
 			DRM_INIT_WAITQUEUE(blitq->blit_queue + j);
 		}
 		DRM_INIT_WAITQUEUE(&blitq->busy_queue);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 		INIT_WORK(&blitq->wq, via_dmablit_workqueue, blitq);
+#else
+		INIT_WORK(&blitq->wq, via_dmablit_workqueue);
+#endif
 		init_timer(&blitq->poll_timer);
 		blitq->poll_timer.function = &via_dmablit_timer;
 		blitq->poll_timer.data = (unsigned long) blitq;
