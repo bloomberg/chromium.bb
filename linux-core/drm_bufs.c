@@ -179,7 +179,7 @@ static int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 			}
 		}
 		if (map->type == _DRM_REGISTERS)
-			map->handle = drm_ioremap(map->offset, map->size, dev);
+			map->handle = ioremap(map->offset, map->size);
 		break;
 	case _DRM_SHM:
 		list = drm_find_matching_map(dev, map);
@@ -279,6 +279,8 @@ static int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 
 	list = drm_alloc(sizeof(*list), DRM_MEM_MAPS);
 	if (!list) {
+		if (map->type == _DRM_REGISTERS)
+			iounmap(map->handle);
 		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 		return -EINVAL;
 	}
@@ -295,6 +297,8 @@ static int drm_addmap_core(drm_device_t * dev, unsigned int offset,
 	ret = drm_map_handle(dev, &list->hash, user_token, 0);
 
 	if (ret) {
+		if (map->type == _DRM_REGISTERS)
+			iounmap(map->handle);
 		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 		drm_free(list, sizeof(*list), DRM_MEM_MAPS);
 		mutex_unlock(&dev->struct_mutex);
@@ -402,7 +406,7 @@ int drm_rmmap_locked(drm_device_t *dev, drm_local_map_t *map)
 
 	switch (map->type) {
 	case _DRM_REGISTERS:
-		drm_ioremapfree(map->handle, map->size, dev);
+		iounmap(map->handle);
 		/* FALLTHROUGH */
 	case _DRM_FRAME_BUFFER:
 		if (drm_core_has_MTRR(dev) && map->mtrr >= 0) {

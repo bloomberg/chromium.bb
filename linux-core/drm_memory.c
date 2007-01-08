@@ -244,3 +244,26 @@ int drm_unbind_agp(DRM_AGP_MEM * handle)
 }
 #endif				/* agp */
 #endif				/* debug_memory */
+
+void drm_core_ioremap(struct drm_map *map, struct drm_device *dev)
+{
+	if (drm_core_has_AGP(dev) &&
+	    dev->agp && dev->agp->cant_use_aperture && map->type == _DRM_AGP)
+		map->handle = agp_remap(map->offset, map->size, dev);
+	else
+		map->handle = ioremap(map->offset, map->size);
+}
+EXPORT_SYMBOL_GPL(drm_core_ioremap);
+
+void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev)
+{
+	if (!map->handle || !map->size)
+		return;
+
+	if (drm_core_has_AGP(dev) &&
+	    dev->agp && dev->agp->cant_use_aperture && map->type == _DRM_AGP)
+		vunmap(map->handle);
+	else
+		iounmap(map->handle);
+}
+EXPORT_SYMBOL_GPL(drm_core_ioremapfree);
