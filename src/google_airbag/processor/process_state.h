@@ -36,6 +36,7 @@
 
 #include <string>
 #include <vector>
+#include "google_airbag/processor/system_info.h"
 
 namespace google_airbag {
 
@@ -60,10 +61,7 @@ class ProcessState {
   u_int64_t crash_address() const { return crash_address_; }
   int requesting_thread() const { return requesting_thread_; }
   const vector<CallStack*>* threads() const { return &threads_; }
-  string os() const { return os_; }
-  string os_version() const { return os_version_; }
-  string cpu() const { return cpu_; }
-  string cpu_info() const { return cpu_info_; }
+  const SystemInfo* system_info() const { return &system_info_; }
   const CodeModules* modules() const { return modules_; }
 
  private:
@@ -103,28 +101,8 @@ class ProcessState {
   // thread) at the time of the crash.
   vector<CallStack*> threads_;
 
-  // A string identifying the operating system, such as "Windows NT",
-  // "Mac OS X", or "Linux".  If the information is present in the dump but
-  // its value is unknown, this field will contain a numeric value.  If
-  // the information is not present in the dump, this field will be empty.
-  string os_;
-
-  // A string identifying the version of the operating system, such as
-  // "5.1.2600 Service Pack 2" or "10.4.8 8L2127".  If the dump does not
-  // contain this information, this field will be empty.
-  string os_version_;
-
-  // A string identifying the basic CPU family, such as "x86" or "ppc".
-  // If this information is present in the dump but its value is unknown,
-  // this field will contain a numeric value.  If the information is not
-  // present in the dump, this field will be empty.
-  string cpu_;
-
-  // A string further identifying the specific CPU, such as
-  // "GenuineIntel level 6 model 13 stepping 8".  If the information is not
-  // present in the dump, or additional identifying information is not
-  // defined for the CPU family, this field will be empty.
-  string cpu_info_;
+  // OS and CPU information.
+  SystemInfo system_info_;
 
   // The modules that were loaded into the process represented by the
   // ProcessState.
@@ -133,4 +111,4 @@ class ProcessState {
 
 }  // namespace google_airbag
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_CALL_STACK_H__
+#endif  // GOOGLE_AIRBAG_PROCESSOR_PROCESS_STATE_H__

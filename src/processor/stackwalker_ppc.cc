@@ -42,12 +42,13 @@
 namespace google_airbag {
 
 
-StackwalkerPPC::StackwalkerPPC(const MDRawContextPPC *context,
+StackwalkerPPC::StackwalkerPPC(const SystemInfo *system_info,
+                               const MDRawContextPPC *context,
                                MemoryRegion *memory,
                                const CodeModules *modules,
                                SymbolSupplier *supplier,
                                SourceLineResolverInterface *resolver)
-    : Stackwalker(memory, modules, supplier, resolver),
+    : Stackwalker(system_info, memory, modules, supplier, resolver),
       context_(context) {
   if (memory_->GetBase() + memory_->GetSize() - 1 > 0xffffffff) {
     // This implementation only covers 32-bit ppc CPUs.  The limits of the

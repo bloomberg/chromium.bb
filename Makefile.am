@@ -64,6 +64,7 @@ src_libairbag_la_SOURCES = \
 	src/google_airbag/processor/stack_frame_cpu.h \
 	src/google_airbag/processor/stackwalker.h \
 	src/google_airbag/processor/symbol_supplier.h \
+	src/google_airbag/processor/system_info.h \
 	src/processor/address_map.h \
 	src/processor/address_map-inl.h \
 	src/processor/basic_code_module.h \

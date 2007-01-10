@@ -40,6 +40,7 @@ class Minidump;
 class ProcessState;
 class SourceLineResolverInterface;
 class SymbolSupplier;
+class SystemInfo;
 
 class MinidumpProcessor {
  public:
@@ -60,19 +61,15 @@ class MinidumpProcessor {
   ProcessResult Process(const string &minidump_file,
                         ProcessState *process_state);
 
-  // Returns a textual representation of the base CPU type that the minidump
-  // in dump was produced on.  Returns an empty string if this information
-  // cannot be determined.  If cpu_info is non-NULL, it will be set to
-  // contain additional identifying information about the CPU, or it will
-  // be set empty if additional information cannot be determined.
-  static string GetCPUInfo(Minidump *dump, string *cpu_info);
+  // Populates the cpu_* fields of the |info| parameter with textual
+  // representations of the CPU type that the minidump in |dump| was
+  // produced on.
+  static void GetCPUInfo(Minidump *dump, SystemInfo *info);
 
-  // Returns a textual representation of the operating system that the
-  // minidump in dump was produced on.  Returns an empty string if this
-  // information cannot be determined.  If os_version is non-NULL, it
-  // will be set to contain information about the specific version of the
-  // OS, or it will be set empty if version information cannot be determined.
-  static string GetOSInfo(Minidump *dump, string *os_version);
+  // Populates the os_* fields of the |info| parameter with textual
+  // representations of the operating system that the minidump in |dump|
+  // was produced on.
+  static void GetOSInfo(Minidump *dump, SystemInfo *info);
 
   // Returns a textual representation of the reason that a crash occurred,
   // if the minidump in dump was produced as a result of a crash.  Returns

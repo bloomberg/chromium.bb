@@ -46,12 +46,13 @@
 namespace google_airbag {
 
 
-StackwalkerX86::StackwalkerX86(const MDRawContextX86 *context,
+StackwalkerX86::StackwalkerX86(const SystemInfo *system_info,
+                               const MDRawContextX86 *context,
                                MemoryRegion *memory,
                                const CodeModules *modules,
                                SymbolSupplier *supplier,
                                SourceLineResolverInterface *resolver)
-    : Stackwalker(memory, modules, supplier, resolver),
+    : Stackwalker(system_info, memory, modules, supplier, resolver),
       context_(context) {
   if (memory_->GetBase() + memory_->GetSize() - 1 > 0xffffffff) {
     // The x86 is a 32-bit CPU, the limits of the supplied stack are invalid.

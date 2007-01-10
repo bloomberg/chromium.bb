@@ -54,6 +54,7 @@ class SourceLineResolverInterface;
 struct StackFrame;
 struct StackFrameInfo;
 class SymbolSupplier;
+class SystemInfo;
 
 using std::vector;
 
@@ -71,13 +72,15 @@ class Stackwalker {
   // Returns a new concrete subclass suitable for the CPU that a stack was
   // generated on, according to the CPU type indicated by the context
   // argument.  If no suitable concrete subclass exists, returns NULL.
-  static Stackwalker* StackwalkerForCPU(MinidumpContext *context,
+  static Stackwalker* StackwalkerForCPU(const SystemInfo *system_info,
+                                        MinidumpContext *context,
                                         MemoryRegion *memory,
                                         const CodeModules *modules,
                                         SymbolSupplier *supplier,
                                         SourceLineResolverInterface *resolver);
 
  protected:
+  // system_info identifies the operating system, NULL or empty if unknown.
   // memory identifies a MemoryRegion that provides the stack memory
   // for the stack to walk.  modules, if non-NULL, is a CodeModules
   // object that is used to look up which code module each stack frame is
@@ -86,10 +89,15 @@ class Stackwalker {
   // resolved.  resolver is an instance of SourceLineResolverInterface
   // (see source_line_resolver_interface.h and basic_source_line_resolver.h).
   // If resolver is NULL, source line info will not be resolved.
-  Stackwalker(MemoryRegion *memory,
+  Stackwalker(const SystemInfo *system_info,
+              MemoryRegion *memory,
               const CodeModules *modules,
               SymbolSupplier *supplier,
               SourceLineResolverInterface *resolver);
+
+  // Information about the system that produced the minidump.  Subclasses
+  // and the SymbolSupplier may find this information useful.
+  const SystemInfo *system_info_;
 
   // The stack memory to walk.  Subclasses will require this region to
   // get information from the stack.

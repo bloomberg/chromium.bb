@@ -39,6 +39,7 @@ namespace google_airbag {
 
 using std::string;
 class CodeModule;
+class SystemInfo;
 
 class SymbolSupplier {
  public:
@@ -57,8 +58,12 @@ class SymbolSupplier {
   virtual ~SymbolSupplier() {}
 
   // Retrieves the symbol file for the given CodeModule, placing the
-  // path in symbol_file if successful.
+  // path in symbol_file if successful.  system_info contains strings
+  // identifying the operating system and CPU; SymbolSupplier may use to help
+  // locate the symbol file.  system_info may be NULL or its fields may be
+  // empty if these values are unknown.
   virtual SymbolResult GetSymbolFile(const CodeModule *module,
+                                     const SystemInfo *system_info,
                                      string *symbol_file) = 0;
 };
 

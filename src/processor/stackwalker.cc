@@ -53,10 +53,13 @@
 namespace google_airbag {
 
 
-Stackwalker::Stackwalker(MemoryRegion *memory, const CodeModules *modules,
+Stackwalker::Stackwalker(const SystemInfo *system_info,
+                         MemoryRegion *memory,
+                         const CodeModules *modules,
                          SymbolSupplier *supplier,
                          SourceLineResolverInterface *resolver)
-    : memory_(memory),
+    : system_info_(system_info),
+      memory_(memory),
       modules_(modules),
       supplier_(supplier),
       resolver_(resolver) {
@@ -96,7 +99,7 @@ bool Stackwalker::Walk(CallStack *stack) {
             supplier_) {
           string symbol_file;
           SymbolSupplier::SymbolResult symbol_result =
-              supplier_->GetSymbolFile(module, &symbol_file);
+              supplier_->GetSymbolFile(module, system_info_, &symbol_file);
 
           switch (symbol_result) {
             case SymbolSupplier::FOUND:
@@ -130,6 +133,7 @@ bool Stackwalker::Walk(CallStack *stack) {
 
 // static
 Stackwalker* Stackwalker::StackwalkerForCPU(
+    const SystemInfo *system_info,
     MinidumpContext *context,
     MemoryRegion *memory,
     const CodeModules *modules,
@@ -140,13 +144,15 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
   u_int32_t cpu = context->GetContextCPU();
   switch (cpu) {
     case MD_CONTEXT_X86:
-      cpu_stackwalker = new StackwalkerX86(context->GetContextX86(),
+      cpu_stackwalker = new StackwalkerX86(system_info,
+                                           context->GetContextX86(),
                                            memory, modules, supplier,
                                            resolver);
       break;
 
     case MD_CONTEXT_PPC:
-      cpu_stackwalker = new StackwalkerPPC(context->GetContextPPC(),
+      cpu_stackwalker = new StackwalkerPPC(system_info,
+                                           context->GetContextPPC(),
                                            memory, modules, supplier,
                                            resolver);
       break;

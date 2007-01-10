@@ -59,8 +59,8 @@ MinidumpProcessor::ProcessResult MinidumpProcessor::Process(
   assert(header);
   process_state->time_date_stamp_ = header->time_date_stamp;
 
-  process_state->cpu_ = GetCPUInfo(&dump, &process_state->cpu_info_);
-  process_state->os_ = GetOSInfo(&dump, &process_state->os_version_);
+  GetCPUInfo(&dump, &process_state->system_info_);
+  GetOSInfo(&dump, &process_state->system_info_);
 
   u_int32_t dump_thread_id = 0;
   bool has_dump_thread = false;
@@ -162,7 +162,8 @@ MinidumpProcessor::ProcessResult MinidumpProcessor::Process(
     // (just like the StackFrame objects), and is much more suitable for this
     // task.
     scoped_ptr<Stackwalker> stackwalker(
-        Stackwalker::StackwalkerForCPU(context,
+        Stackwalker::StackwalkerForCPU(process_state->system_info(),
+                                       context,
                                        thread_memory,
                                        process_state->modules_,
                                        supplier_,
@@ -202,38 +203,38 @@ static const MDRawSystemInfo* GetSystemInfo(Minidump *dump,
 }
 
 // static
-string MinidumpProcessor::GetCPUInfo(Minidump *dump, string *cpu_info) {
-  if (cpu_info)
-    cpu_info->clear();
+void MinidumpProcessor::GetCPUInfo(Minidump *dump, SystemInfo *info) {
+  assert(dump);
+  assert(info);
+
+  info->cpu.clear();
+  info->cpu_info.clear();
 
   MinidumpSystemInfo *system_info;
   const MDRawSystemInfo *raw_system_info = GetSystemInfo(dump, &system_info);
   if (!raw_system_info)
-    return "";
+    return;
 
-  string cpu;
   switch (raw_system_info->processor_architecture) {
     case MD_CPU_ARCHITECTURE_X86: {
-      cpu = "x86";
-      if (cpu_info) {
-        const string *cpu_vendor = system_info->GetCPUVendor();
-        if (cpu_vendor) {
-          cpu_info->assign(*cpu_vendor);
-          cpu_info->append(" ");
-        }
-
-        char x86_info[36];
-        snprintf(x86_info, sizeof(x86_info), "family %u model %u stepping %u",
-                 raw_system_info->processor_level,
-                 raw_system_info->processor_revision >> 8,
-                 raw_system_info->processor_revision & 0xff);
-        cpu_info->append(x86_info);
+      info->cpu = "x86";
+      const string *cpu_vendor = system_info->GetCPUVendor();
+      if (cpu_vendor) {
+        info->cpu_info = *cpu_vendor;
+        info->cpu_info.append(" ");
       }
+
+      char x86_info[36];
+      snprintf(x86_info, sizeof(x86_info), "family %u model %u stepping %u",
+               raw_system_info->processor_level,
+               raw_system_info->processor_revision >> 8,
+               raw_system_info->processor_revision & 0xff);
+      info->cpu_info.append(x86_info);
       break;
     }
 
     case MD_CPU_ARCHITECTURE_PPC: {
-      cpu = "ppc";
+      info->cpu = "ppc";
       break;
     }
 
@@ -242,43 +243,46 @@ string MinidumpProcessor::GetCPUInfo(Minidump *dump, string *cpu_info) {
       char cpu_string[7];
       snprintf(cpu_string, sizeof(cpu_string), "0x%04x",
                raw_system_info->processor_architecture);
-      cpu = cpu_string;
+      info->cpu = cpu_string;
       break;
     }
   }
-
-  return cpu;
 }
 
 // static
-string MinidumpProcessor::GetOSInfo(Minidump *dump, string *os_version) {
-  if (os_version)
-    os_version->clear();
+void MinidumpProcessor::GetOSInfo(Minidump *dump, SystemInfo *info) {
+  assert(dump);
+  assert(info);
+
+  info->os.clear();
+  info->os_short.clear();
+  info->os_version.clear();
 
   MinidumpSystemInfo *system_info;
   const MDRawSystemInfo *raw_system_info = GetSystemInfo(dump, &system_info);
   if (!raw_system_info)
-    return "";
+    return;
 
-  string os;
+  info->os_short = system_info->GetOS();
+
   switch (raw_system_info->platform_id) {
     case MD_OS_WIN32_NT: {
-      os = "Windows NT";
+      info->os = "Windows NT";
       break;
     }
 
     case MD_OS_WIN32_WINDOWS: {
-      os = "Windows";
+      info->os = "Windows";
       break;
     }
 
     case MD_OS_MAC_OS_X: {
-      os = "Mac OS X";
+      info->os = "Mac OS X";
       break;
     }
 
     case MD_OS_LINUX: {
-      os = "Linux";
+      info->os = "Linux";
       break;
     }
 
@@ -287,27 +291,23 @@ string MinidumpProcessor::GetOSInfo(Minidump *dump, string *os_version) {
       char os_string[11];
       snprintf(os_string, sizeof(os_string), "0x%08x",
                raw_system_info->platform_id);
-      os = os_string;
+      info->os = os_string;
       break;
     }
   }
 
-  if (os_version) {
-    char os_version_string[33];
-    snprintf(os_version_string, sizeof(os_version_string), "%u.%u.%u",
-             raw_system_info->major_version,
-             raw_system_info->minor_version,
-             raw_system_info->build_number);
-    os_version->assign(os_version_string);
+  char os_version_string[33];
+  snprintf(os_version_string, sizeof(os_version_string), "%u.%u.%u",
+           raw_system_info->major_version,
+           raw_system_info->minor_version,
+           raw_system_info->build_number);
+  info->os_version = os_version_string;
 
-    const string *csd_version = system_info->GetCSDVersion();
-    if (csd_version) {
-      os_version->append(" ");
-      os_version->append(*csd_version);
-    }
+  const string *csd_version = system_info->GetCSDVersion();
+  if (csd_version) {
+    info->os_version.append(" ");
+    info->os_version.append(*csd_version);
   }
-
-  return os;
 }
 
 // static

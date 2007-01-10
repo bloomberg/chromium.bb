@@ -569,6 +569,15 @@ class MinidumpSystemInfo : public MinidumpStream {
     return valid_ ? &system_info_ : NULL;
   }
 
+  // GetOS and GetCPU return textual representations of the operating system
+  // and CPU that produced the minidump.  Unlike most other Minidump* methods,
+  // they return string objects, not weak pointers.  Defined values for
+  // GetOS() are "mac", "windows", and "linux".  Defined values for GetCPU
+  // are "x86" and "ppc".  These methods return an empty string when their
+  // values are unknown.
+  string GetOS();
+  string GetCPU();
+
   // I don't know what CSD stands for, but this field is documented as
   // returning a textual representation of the OS service pack.  On other
   // platforms, this provides additional information about an OS version

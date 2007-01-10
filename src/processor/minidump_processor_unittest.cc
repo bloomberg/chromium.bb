@@ -30,6 +30,7 @@
 // Unit test for MinidumpProcessor.  Uses a pre-generated minidump and
 // corresponding symbol file, and checks the stack frames for correctness.
 
+#include <cstdlib>
 #include <string>
 #include "google_airbag/processor/basic_source_line_resolver.h"
 #include "google_airbag/processor/call_stack.h"
@@ -51,6 +52,14 @@ using google_airbag::MinidumpProcessor;
 using google_airbag::ProcessState;
 using google_airbag::scoped_ptr;
 using google_airbag::SymbolSupplier;
+using google_airbag::SystemInfo;
+
+static const char *kSystemInfoOS = "Windows NT";
+static const char *kSystemInfoOSShort = "windows";
+static const char *kSystemInfoOSVersion = "5.1.2600 Service Pack 2";
+static const char *kSystemInfoCPU = "x86";
+static const char *kSystemInfoCPUInfo =
+    "GenuineIntel family 6 model 13 stepping 8";
 
 #define ASSERT_TRUE(cond) \
   if (!(cond)) {                                                        \
@@ -62,11 +71,21 @@ using google_airbag::SymbolSupplier;
 
 #define ASSERT_EQ(e1, e2) ASSERT_TRUE((e1) == (e2))
 
+// Use ASSERT_*_ABORT in functions that can't return a boolean.
+#define ASSERT_TRUE_ABORT(cond) \
+  if (!(cond)) {                                                        \
+    fprintf(stderr, "FAILED: %s at %s:%d\n", #cond, __FILE__, __LINE__); \
+    abort(); \
+  }
+
+#define ASSERT_EQ_ABORT(e1, e2) ASSERT_TRUE_ABORT((e1) == (e2))
+
 class TestSymbolSupplier : public SymbolSupplier {
  public:
   TestSymbolSupplier() : interrupt_(false) {}
 
   virtual SymbolResult GetSymbolFile(const CodeModule *module,
+                                     const SystemInfo *system_info,
                                      string *symbol_file);
 
   // When set to true, causes the SymbolSupplier to return INTERRUPT
@@ -77,7 +96,17 @@ class TestSymbolSupplier : public SymbolSupplier {
 };
 
 SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
-    const CodeModule *module, string *symbol_file) {
+    const CodeModule *module,
+    const SystemInfo *system_info,
+    string *symbol_file) {
+  ASSERT_TRUE_ABORT(module);
+  ASSERT_TRUE_ABORT(system_info);
+  ASSERT_EQ_ABORT(system_info->cpu, kSystemInfoCPU);
+  ASSERT_EQ_ABORT(system_info->cpu_info, kSystemInfoCPUInfo);
+  ASSERT_EQ_ABORT(system_info->os, kSystemInfoOS);
+  ASSERT_EQ_ABORT(system_info->os_short, kSystemInfoOSShort);
+  ASSERT_EQ_ABORT(system_info->os_version, kSystemInfoOSVersion);
+
   if (interrupt_) {
     return INTERRUPT;
   }
@@ -104,10 +133,11 @@ static bool RunTests() {
   ProcessState state;
   ASSERT_EQ(processor.Process(minidump_file, &state),
             MinidumpProcessor::PROCESS_OK);
-  ASSERT_EQ(state.cpu(), "x86");
-  ASSERT_EQ(state.cpu_info(), "GenuineIntel family 6 model 13 stepping 8");
-  ASSERT_EQ(state.os(), "Windows NT");
-  ASSERT_EQ(state.os_version(), "5.1.2600 Service Pack 2");
+  ASSERT_EQ(state.system_info()->os, kSystemInfoOS);
+  ASSERT_EQ(state.system_info()->os_short, kSystemInfoOSShort);
+  ASSERT_EQ(state.system_info()->os_version, kSystemInfoOSVersion);
+  ASSERT_EQ(state.system_info()->cpu, kSystemInfoCPU);
+  ASSERT_EQ(state.system_info()->cpu_info, kSystemInfoCPUInfo);
   ASSERT_TRUE(state.crashed());
   ASSERT_EQ(state.crash_reason(), "EXCEPTION_ACCESS_VIOLATION");
   ASSERT_EQ(state.crash_address(), 0x45);
@@ -121,7 +151,8 @@ static bool RunTests() {
   ASSERT_TRUE(stack->frames()->at(0)->module);
   ASSERT_EQ(stack->frames()->at(0)->module->base_address(), 0x400000);
   ASSERT_EQ(stack->frames()->at(0)->module->code_file(), "C:\\test_app.exe");
-  ASSERT_EQ(stack->frames()->at(0)->function_name, "`anonymous namespace'::CrashFunction");
+  ASSERT_EQ(stack->frames()->at(0)->function_name,
+            "`anonymous namespace'::CrashFunction");
   ASSERT_EQ(stack->frames()->at(0)->source_file_name, "c:\\test_app.cc");
   ASSERT_EQ(stack->frames()->at(0)->source_line, 56);
 

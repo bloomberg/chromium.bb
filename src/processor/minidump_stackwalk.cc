@@ -206,10 +206,11 @@ static bool PrintMinidumpProcess(const string &minidump_file,
   }
 
   // Print OS and CPU information.
-  string cpu = process_state.cpu();
-  string cpu_info = process_state.cpu_info();
-  printf("Operating system: %s\n", process_state.os().c_str());
-  printf("                  %s\n", process_state.os_version().c_str());
+  string cpu = process_state.system_info()->cpu;
+  string cpu_info = process_state.system_info()->cpu_info;
+  printf("Operating system: %s\n", process_state.system_info()->os.c_str());
+  printf("                  %s\n",
+         process_state.system_info()->os_version.c_str());
   printf("CPU: %s\n", cpu.c_str());
   if (!cpu_info.empty()) {
     // This field is optional.

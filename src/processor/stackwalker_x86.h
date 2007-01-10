@@ -54,7 +54,8 @@ class StackwalkerX86 : public Stackwalker {
   // register state corresponding to the innermost called frame to be
   // included in the stack.  The other arguments are passed directly through
   // to the base Stackwalker constructor.
-  StackwalkerX86(const MDRawContextX86 *context,
+  StackwalkerX86(const SystemInfo *system_info,
+                 const MDRawContextX86 *context,
                  MemoryRegion *memory,
                  const CodeModules *modules,
                  SymbolSupplier *supplier,

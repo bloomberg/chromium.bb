@@ -55,10 +55,7 @@ void ProcessState::Clear() {
     delete *iterator;
   }
   threads_.clear();
-  os_.clear();
-  os_version_.clear();
-  cpu_.clear();
-  cpu_info_.clear();
+  system_info_.Clear();
   delete modules_;
   modules_ = NULL;
 }

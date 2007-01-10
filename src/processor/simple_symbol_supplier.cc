@@ -37,12 +37,14 @@
 
 #include "processor/simple_symbol_supplier.h"
 #include "google_airbag/processor/code_module.h"
+#include "google_airbag/processor/system_info.h"
 #include "processor/pathname_stripper.h"
 
 namespace google_airbag {
 
 SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFileAtPath(
-    const CodeModule *module, const string &root_path, string *symbol_file) {
+    const CodeModule *module, const SystemInfo *system_info,
+    const string &root_path, string *symbol_file) {
   assert(symbol_file);
   if (!module)
     return NOT_FOUND;

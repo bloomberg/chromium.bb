@@ -2047,6 +2047,52 @@ bool MinidumpSystemInfo::Read(u_int32_t expected_size) {
 }
 
 
+string MinidumpSystemInfo::GetOS() {
+  if (!valid_)
+    return NULL;
+
+  string os;
+
+  switch (system_info_.platform_id) {
+    case MD_OS_WIN32_NT:
+    case MD_OS_WIN32_WINDOWS:
+      os = "windows";
+      break;
+
+    case MD_OS_MAC_OS_X:
+      os = "mac";
+      break;
+
+    case MD_OS_LINUX:
+      os = "linux";
+      break;
+  }
+
+  return os;
+}
+
+
+string MinidumpSystemInfo::GetCPU() {
+  if (!valid_)
+    return "";
+
+  string cpu;
+
+  switch (system_info_.processor_architecture) {
+    case MD_CPU_ARCHITECTURE_X86:
+    case MD_CPU_ARCHITECTURE_X86_WIN64:
+      cpu = "x86";
+      break;
+
+    case MD_CPU_ARCHITECTURE_PPC:
+      cpu = "ppc";
+      break;
+  }
+
+  return cpu;
+}
+
+
 const string* MinidumpSystemInfo::GetCSDVersion() {
   if (!valid_)
     return NULL;

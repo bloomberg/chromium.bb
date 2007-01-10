@@ -94,12 +94,14 @@ class SimpleSymbolSupplier : public SymbolSupplier {
   // Returns the path to the symbol file for the given module.  See the
   // description above.
   virtual SymbolResult GetSymbolFile(const CodeModule *module,
+                                     const SystemInfo *system_info,
                                      string *symbol_file) {
-    return GetSymbolFileAtPath(module, path_, symbol_file);
+    return GetSymbolFileAtPath(module, system_info, path_, symbol_file);
   }
 
  protected:
   SymbolResult GetSymbolFileAtPath(const CodeModule *module,
+                                   const SystemInfo *system_info,
                                    const string &root_path,
                                    string *symbol_file);
 

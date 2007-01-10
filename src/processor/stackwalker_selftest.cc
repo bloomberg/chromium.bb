@@ -227,15 +227,15 @@ static unsigned int CountCallerFrames() {
   context.ebp = GetEBP();
   context.esp = GetESP();
 
-  StackwalkerX86 stackwalker = StackwalkerX86(&context, &memory, NULL, NULL,
-                                              &resolver);
+  StackwalkerX86 stackwalker = StackwalkerX86(NULL, &context, &memory, NULL,
+                                              NULL, &resolver);
 #elif defined(__ppc__)
   MDRawContextPPC context = MDRawContextPPC();
   context.srr0 = GetPC();
   context.gpr[1] = GetSP();
 
-  StackwalkerPPC stackwalker = StackwalkerPPC(&context, &memory, NULL, NULL,
-                                              &resolver);
+  StackwalkerPPC stackwalker = StackwalkerPPC(NULL, &context, &memory, NULL,
+                                              NULL, &resolver);
 #endif  // __i386__ || __ppc__
 
   CallStack stack;

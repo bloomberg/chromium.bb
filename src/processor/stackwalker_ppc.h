@@ -53,7 +53,8 @@ class StackwalkerPPC : public Stackwalker {
   // register state corresponding to the innermost called frame to be
   // included in the stack.  The other arguments are passed directly through
   // to the base Stackwalker constructor.
-  StackwalkerPPC(const MDRawContextPPC *context,
+  StackwalkerPPC(const SystemInfo *system_info,
+                 const MDRawContextPPC *context,
                  MemoryRegion *memory,
                  const CodeModules *modules,
                  SymbolSupplier *supplier,
