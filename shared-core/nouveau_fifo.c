@@ -329,9 +329,6 @@ static void nouveau_nv10_context_init(drm_device_t *dev,
                         NV_PFIFO_CACH1_DMAF_SIZE_128_BYTES |
                         NV_PFIFO_CACH1_DMAF_MAX_REQS_4);
 #endif
-
-        RAMFC_WR(DMA_SUBROUTINE, 0);
-
 }
 
 static void nouveau_nv30_context_init(drm_device_t *dev,
