@@ -63,6 +63,7 @@ int i915_wait_ring(drm_device_t * dev, int n, const char *caller)
 			i = 0;
 
 		last_head = ring->head;
+		DRM_UDELAY(1);
 	}
 
 	return DRM_ERR(EBUSY);
