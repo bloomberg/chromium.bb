@@ -40,7 +40,8 @@
 namespace {
 
 static bool callback(const wchar_t *dump_path, const wchar_t *id,
-                     void *context, bool succeeded) {
+                     void *context, EXCEPTION_POINTERS *exinfo,
+                     bool succeeded) {
   if (succeeded) {
     printf("dump guid is %ws\n", id);
   } else {

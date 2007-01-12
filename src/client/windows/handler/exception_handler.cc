@@ -287,7 +287,7 @@ bool ExceptionHandler::WriteMinidumpWithException(DWORD requesting_thread_id,
   // HandleException to call any previous handler or return
   // EXCEPTION_CONTINUE_SEARCH on the exception thread, allowing it to appear
   // as though this handler were not present at all.
-  if (filter_&& !filter_(callback_context_)) {
+  if (filter_&& !filter_(callback_context_, exinfo)) {
     return false;
   }
 
@@ -342,7 +342,7 @@ bool ExceptionHandler::WriteMinidumpWithException(DWORD requesting_thread_id,
 
   if (callback_) {
     success = callback_(dump_path_c_, next_minidump_id_c_, callback_context_,
-                        success);
+                        exinfo, success);
   }
 
   return success;

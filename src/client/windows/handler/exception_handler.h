@@ -79,19 +79,21 @@ class ExceptionHandler {
   // A callback function to run before Airbag performs any substantial
   // processing of an exception.  A FilterCallback is called before writing
   // a minidump.  context is the parameter supplied by the user as
-  // callback_context when the handler was created.
+  // callback_context when the handler was created.  exinfo points to the
+  // exception record.
   //
   // If a FilterCallback returns true, Airbag will continue processing,
   // attempting to write a minidump.  If a FilterCallback returns false, Airbag
   // will immediately report the exception as unhandled without writing a
   // minidump, allowing another handler the opportunity to handle it.
-  typedef bool (*FilterCallback)(void *context);
+  typedef bool (*FilterCallback)(void *context, EXCEPTION_POINTERS *exinfo);
 
   // A callback function to run after the minidump has been written.
   // minidump_id is a unique id for the dump, so the minidump
   // file is <dump_path>\<minidump_id>.dmp.  context is the parameter supplied
-  // by the user as callback_context when the handler was created.  succeeded
-  // indicates whether a minidump file was successfully written.
+  // by the user as callback_context when the handler was created.  exinfo
+  // points to the exception record, or NULL if no exception occurred.
+  // succeeded indicates whether a minidump file was successfully written.
   //
   // If an exception occurred and the callback returns true, Airbag will treat
   // the exception as fully-handled, suppressing any other handlers from being
@@ -106,6 +108,7 @@ class ExceptionHandler {
   typedef bool (*MinidumpCallback)(const wchar_t *dump_path,
                                    const wchar_t *minidump_id,
                                    void *context,
+                                   EXCEPTION_POINTERS *exinfo,
                                    bool succeeded);
 
   // Creates a new ExceptionHandler instance to handle writing minidumps.
