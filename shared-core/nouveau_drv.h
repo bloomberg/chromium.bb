@@ -142,6 +142,10 @@ typedef struct drm_nouveau_private {
 	struct mem_block *fb_nomap_heap;
 	struct mem_block *ramin_heap;
 
+        /* context table pointed to be NV_PGRAPH_CHANNEL_CTX_TABLE (0x400780) */
+        uint32_t ctx_table_size;
+        struct mem_block *ctx_table;
+
 	struct nouveau_config config;
 }
 drm_nouveau_private_t;
@@ -197,6 +201,10 @@ extern irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS);
 extern void        nouveau_irq_preinstall(drm_device_t*);
 extern void        nouveau_irq_postinstall(drm_device_t*);
 extern void        nouveau_irq_uninstall(drm_device_t*);
+
+/* nv30_graph.c */
+extern int nv30_graph_init(drm_device_t *dev);
+extern int nv30_graph_context_create(drm_device_t *dev, int channel);
 
 /* nv40_graph.c */
 extern int  nv40_graph_init(drm_device_t *dev);
