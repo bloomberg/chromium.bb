@@ -119,7 +119,7 @@ void nouveau_nv20_context_switch(drm_device_t *dev)
 
 	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10000000);
 
-	nv20_graph_context_restore(dev, channel_old);
+	nv20_graph_context_restore(dev, channel);
 
 	nouveau_wait_for_idle(dev);
 	
