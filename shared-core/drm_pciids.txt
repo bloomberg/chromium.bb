@@ -600,6 +600,7 @@
 0x10de 0x0221 NV_44 "GeForce 6200"
 0x10de 0x0240 NV_44 "GeForce 6150"
 0x10de 0x0242 NV_44 "GeForce 6100"
+0x10de 0x0244 NV_44 "GeForce 6150 Go"
 0x10de 0x0250 NV_25 "GeForce4 Ti 4600"
 0x10de 0x0251 NV_25 "GeForce4 Ti 4400"
 0x10de 0x0252 NV_25 "GeForce4 Ti"
