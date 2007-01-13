@@ -213,7 +213,7 @@
 #define NV04_RAMFC_DMA_PUT                                       0x00
 #define NV04_RAMFC_DMA_GET                                       0x04
 #define NV04_RAMFC_DMA_INSTANCE                                  0x08
-#define NV04_RAMFC_DMA_FETCH                                     0x16
+#define NV04_RAMFC_DMA_FETCH                                     0x10
 
 #define NV10_RAMFC_DMA_PUT                                       0x00
 #define NV10_RAMFC_DMA_GET                                       0x04
