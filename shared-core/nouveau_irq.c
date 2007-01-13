@@ -329,6 +329,9 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 			case NV_10:
 				nouveau_nv10_context_switch(dev);
 				break;
+			case NV_20:
+				nouveau_nv20_context_switch(dev);
+				break;
 			default:
 				DRM_INFO("NV: Context switch not implemented\n");
 				break;

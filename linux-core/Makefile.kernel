@@ -22,7 +22,8 @@ i830-objs   := i830_drv.o i830_dma.o i830_irq.o
 i915-objs   := i915_drv.o i915_dma.o i915_irq.o i915_mem.o i915_fence.o \
 		i915_buffer.o
 nouveau-objs := nouveau_drv.o nouveau_state.o nouveau_fifo.o nouveau_mem.o \
-		nouveau_object.o nouveau_irq.o nv10_graph.o nv30_graph.o nv40_graph.o
+		nouveau_object.o nouveau_irq.o nv10_graph.o nv30_graph.o nv40_graph.o \
+		nv20_graph.o
 radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o r300_cmdbuf.o
 sis-objs    := sis_drv.o sis_mm.o
 ffb-objs    := ffb_drv.o ffb_context.o

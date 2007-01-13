@@ -207,6 +207,11 @@ extern void nouveau_nv10_context_switch(drm_device_t *dev);
 extern int nv10_graph_init(drm_device_t *dev);
 extern int nv10_graph_context_create(drm_device_t *dev, int channel);
 
+/* nv20_graph.c */
+extern void nouveau_nv20_context_switch(drm_device_t *dev);
+extern int nv20_graph_init(drm_device_t *dev);
+extern int nv20_graph_context_create(drm_device_t *dev, int channel);
+
 /* nv30_graph.c */
 extern int nv30_graph_init(drm_device_t *dev);
 extern int nv30_graph_context_create(drm_device_t *dev, int channel);

@@ -550,15 +550,22 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	/* Construct inital RAMFC for new channel */
 	if (dev_priv->card_type < NV_10) {
 		nouveau_nv04_context_init(dev, init);
-	} else if (dev_priv->card_type < NV_30) {
+	} else if (dev_priv->card_type < NV_20) {
 		nv10_graph_context_create(dev, init->channel);
 		nouveau_nv10_context_init(dev, init);
-        } else if (dev_priv->card_type < NV_40) {
-                ret = nv30_graph_context_create(dev, init->channel);
-                if (ret) {
-                        nouveau_fifo_free(dev, init->channel);
-                        return ret;
-                }
+	} else if (dev_priv->card_type < NV_30) {
+		ret = nv20_graph_context_create(dev, init->channel);
+		if (ret) {
+			nouveau_fifo_free(dev, init->channel);
+			return ret;
+		}
+		nouveau_nv10_context_init(dev, init);
+	} else if (dev_priv->card_type < NV_40) {
+		ret = nv30_graph_context_create(dev, init->channel);
+		if (ret) {
+			nouveau_fifo_free(dev, init->channel);
+			return ret;
+		}
 		nouveau_nv30_context_init(dev, init);
 	} else {
 		ret = nv40_graph_context_create(dev, init->channel);
@@ -652,6 +659,13 @@ void nouveau_fifo_free(drm_device_t* dev,int n)
 
 	if (dev_priv->card_type >= NV_40)
 		nouveau_instmem_free(dev, dev_priv->fifos[n].ramin_grctx);
+	else if (dev_priv->card_type >= NV_30) {
+	}
+	else if (dev_priv->card_type >= NV_20) {
+		/* clear ctx table */
+		INSTANCE_WR(dev_priv->ctx_table, n, 0);
+		nouveau_instmem_free(dev, dev_priv->fifos[n].ramin_grctx);
+	}
 
 	/* reenable the fifo caches */
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);

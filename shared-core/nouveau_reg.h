@@ -140,6 +140,8 @@
 #define NV_PGRAPH_FIFO                                     0x00400720
 
 #define NV_PGRAPH_BPIXEL                                   0x00400724
+#define NV_PGRAPH_RDI_INDEX                                0x00400750
+#define NV_PGRAPH_RDI_DATA                                 0x00400754
 #define NV_PGRAPH_FFINTFC_ST2                              0x00400764
 #define NV_PGRAPH_DMA_PITCH                                0x00400770
 #define NV_PGRAPH_DVD_COLORFMT                             0x00400774
