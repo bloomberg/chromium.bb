@@ -90,8 +90,8 @@ struct nouveau_fifo
 	/* objects belonging to this fifo */
 	struct nouveau_object *objs;
 
-	/* XXX move this in PGRAPH struct */
-	uint32_t pgraph_ctx_user;
+	/* XXX dynamic alloc ? */
+	uint32_t nv10_pgraph_ctx [340];
 };
 
 struct nouveau_config {
@@ -201,6 +201,11 @@ extern irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS);
 extern void        nouveau_irq_preinstall(drm_device_t*);
 extern void        nouveau_irq_postinstall(drm_device_t*);
 extern void        nouveau_irq_uninstall(drm_device_t*);
+
+/* nv10_graph.c */
+extern void nouveau_nv10_context_switch(drm_device_t *dev);
+extern int nv10_graph_init(drm_device_t *dev);
+extern int nv10_graph_context_create(drm_device_t *dev, int channel);
 
 /* nv30_graph.c */
 extern int nv30_graph_init(drm_device_t *dev);

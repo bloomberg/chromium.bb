@@ -538,7 +538,6 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	init->channel  = i;
 	init->put_base = 0;
 	dev_priv->cur_fifo = init->channel;
-	dev_priv->fifos[i].pgraph_ctx_user = i << 24;
 
 	nouveau_wait_for_idle(dev);
 
@@ -551,8 +550,9 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	/* Construct inital RAMFC for new channel */
 	if (dev_priv->card_type < NV_10) {
 		nouveau_nv04_context_init(dev, init);
-        } else if (dev_priv->card_type < NV_30) {
-                nouveau_nv10_context_init(dev, init);
+	} else if (dev_priv->card_type < NV_30) {
+		nv10_graph_context_create(dev, init->channel);
+		nouveau_nv10_context_init(dev, init);
         } else if (dev_priv->card_type < NV_40) {
                 ret = nv30_graph_context_create(dev, init->channel);
                 if (ret) {

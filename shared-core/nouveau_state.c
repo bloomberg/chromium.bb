@@ -96,6 +96,8 @@ int nouveau_firstopen(struct drm_device *dev)
 	/* FIXME: doesn't belong here, and have no idea what it's for.. */
 	if (dev_priv->card_type >= NV_40)
 		nv40_graph_init(dev);
+	else if (dev_priv->card_type == NV_10)
+		nv10_graph_init(dev);
 
 	return 0;
 }
