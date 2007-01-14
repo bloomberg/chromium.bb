@@ -27,7 +27,7 @@
 #include "nouveau_drv.h"
 #include "nouveau_drm.h"
 
-#define NV20_GRCTX_SIZE (3529)
+#define NV20_GRCTX_SIZE (3529*4)
 
 int nv20_graph_context_create(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv =
@@ -109,7 +109,7 @@ void nouveau_nv20_context_switch(drm_device_t *dev)
 	channel=NV_READ(NV_PFIFO_CACH1_PSH1)&(nouveau_fifo_number(dev)-1);
 	channel_old = (NV_READ(NV_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
 
-	DRM_INFO("NV: PGRAPH context switch interrupt channel %x -> %x\n",channel_old, channel);
+	DRM_DEBUG("NV: PGRAPH context switch interrupt channel %x -> %x\n",channel_old, channel);
 
 	NV_WRITE(NV_PGRAPH_FIFO,0x0);
 
