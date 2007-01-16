@@ -90,8 +90,8 @@ struct nouveau_fifo
 	/* objects belonging to this fifo */
 	struct nouveau_object *objs;
 
-	/* XXX move this in PGRAPH struct */
-	uint32_t pgraph_ctx_user;
+	/* XXX dynamic alloc ? */
+	uint32_t nv10_pgraph_ctx [340];
 };
 
 struct nouveau_config {
@@ -141,6 +141,10 @@ typedef struct drm_nouveau_private {
 	struct mem_block *fb_heap;
 	struct mem_block *fb_nomap_heap;
 	struct mem_block *ramin_heap;
+
+        /* context table pointed to be NV_PGRAPH_CHANNEL_CTX_TABLE (0x400780) */
+        uint32_t ctx_table_size;
+        struct mem_block *ctx_table;
 
 	struct nouveau_config config;
 }
@@ -197,6 +201,20 @@ extern irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS);
 extern void        nouveau_irq_preinstall(drm_device_t*);
 extern void        nouveau_irq_postinstall(drm_device_t*);
 extern void        nouveau_irq_uninstall(drm_device_t*);
+
+/* nv10_graph.c */
+extern void nouveau_nv10_context_switch(drm_device_t *dev);
+extern int nv10_graph_init(drm_device_t *dev);
+extern int nv10_graph_context_create(drm_device_t *dev, int channel);
+
+/* nv20_graph.c */
+extern void nouveau_nv20_context_switch(drm_device_t *dev);
+extern int nv20_graph_init(drm_device_t *dev);
+extern int nv20_graph_context_create(drm_device_t *dev, int channel);
+
+/* nv30_graph.c */
+extern int nv30_graph_init(drm_device_t *dev);
+extern int nv30_graph_context_create(drm_device_t *dev, int channel);
 
 /* nv40_graph.c */
 extern int  nv40_graph_init(drm_device_t *dev);

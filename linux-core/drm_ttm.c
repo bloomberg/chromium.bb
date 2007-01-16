@@ -44,34 +44,39 @@ static void drm_ttm_cache_flush(void)
  * Use kmalloc if possible. Otherwise fall back to vmalloc.
  */
 
-static void *ttm_alloc(unsigned long size, int type)
+static void ttm_alloc_pages(drm_ttm_t *ttm)
 {
-	void *ret = NULL;
+	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
+	ttm->pages = NULL;
 
 	if (drm_alloc_memctl(size))
-		return NULL;
+		return;
+
 	if (size <= PAGE_SIZE) {
-		ret = drm_alloc(size, type);
+		ttm->pages = drm_calloc(1, size, DRM_MEM_TTM);
 	}
-	if (!ret) {
-		ret = vmalloc(size);
+	if (!ttm->pages) {
+		ttm->pages = vmalloc_user(size);
+		if (ttm->pages)
+			ttm->page_flags |= DRM_TTM_PAGE_VMALLOC;
 	}
-	if (!ret) {
+	if (!ttm->pages) {
 		drm_free_memctl(size);
 	}
-	return ret;
 }
 
-static void ttm_free(void *pointer, unsigned long size, int type)
+static void ttm_free_pages(drm_ttm_t *ttm)
 {
+	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 
-	if ((unsigned long)pointer >= VMALLOC_START &&
-	    (unsigned long)pointer <= VMALLOC_END) {
-		vfree(pointer);
+	if (ttm->page_flags & DRM_TTM_PAGE_VMALLOC) {
+		vfree(ttm->pages);
+		ttm->page_flags &= ~DRM_TTM_PAGE_VMALLOC;
 	} else {
-		drm_free(pointer, size, type);
+		drm_free(ttm->pages, size, DRM_MEM_TTM);
 	}
 	drm_free_memctl(size);
+	ttm->pages = NULL;
 }
 
 /*
@@ -198,9 +203,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 				--bm->cur_pages;
 			}
 		}
-		ttm_free(ttm->pages, ttm->num_pages * sizeof(*ttm->pages),
-			 DRM_MEM_TTM);
-		ttm->pages = NULL;
+		ttm_free_pages(ttm);
 	}
 
 	drm_ctl_free(ttm, sizeof(*ttm), DRM_MEM_TTM);
@@ -277,14 +280,12 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 	 * Account also for AGP module memory usage.
 	 */
 
-	ttm->pages = ttm_alloc(ttm->num_pages * sizeof(*ttm->pages),
-			       DRM_MEM_TTM);
+	ttm_alloc_pages(ttm);
 	if (!ttm->pages) {
 		drm_destroy_ttm(ttm);
 		DRM_ERROR("Failed allocating page table\n");
 		return NULL;
 	}
-	memset(ttm->pages, 0, ttm->num_pages * sizeof(*ttm->pages));
 	ttm->be = bo_driver->create_ttm_backend_entry(dev);
 	if (!ttm->be) {
 		drm_destroy_ttm(ttm);

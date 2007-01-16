@@ -10,7 +10,7 @@
  */
 #define NV40_GRCTX_SIZE (175*1024)
 #define NV43_GRCTX_SIZE (70*1024)
-#define NV4A_GRCTX_SIZE (60*1024)
+#define NV4A_GRCTX_SIZE (64*1024)
 #define NV4E_GRCTX_SIZE (25*1024)
 
 /*TODO: deciper what each offset in the context represents. The below

@@ -38,7 +38,7 @@ extern int nouveau_max_ioctl;
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =
-		DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_SG |
+		DRIVER_USE_AGP | DRIVER_PCI_DMA | DRIVER_SG |
 		DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED,
 	.load = nouveau_load,
 	.firstopen = nouveau_firstopen,

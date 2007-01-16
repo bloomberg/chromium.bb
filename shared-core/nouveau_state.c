@@ -66,8 +66,12 @@ int nouveau_firstopen(struct drm_device *dev)
 
 	/* map larger RAMIN aperture on NV40 cards */
 	if (dev_priv->card_type >= NV_40) {
-		ret = drm_addmap(dev, drm_get_resource_start(dev, 2),
-				      drm_get_resource_len(dev, 2),
+		int ramin_resource = 2;
+		if (drm_get_resource_len(dev, ramin_resource) == 0)
+			ramin_resource = 3;
+
+		ret = drm_addmap(dev, drm_get_resource_start(dev, ramin_resource),
+				      drm_get_resource_len(dev, ramin_resource),
 				      _DRM_REGISTERS,
 				      _DRM_READ_ONLY,
 				      &dev_priv->ramin);
@@ -92,6 +96,12 @@ int nouveau_firstopen(struct drm_device *dev)
 	/* FIXME: doesn't belong here, and have no idea what it's for.. */
 	if (dev_priv->card_type >= NV_40)
 		nv40_graph_init(dev);
+	else if (dev_priv->card_type >= NV_30) {
+	}
+	else if (dev_priv->card_type >= NV_20)
+		nv20_graph_init(dev);
+	else if (dev_priv->card_type >= NV_10)
+		nv10_graph_init(dev);
 
 	return 0;
 }

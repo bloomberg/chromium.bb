@@ -141,5 +141,6 @@ static __inline__ drm_ttm_t *drm_ttm_from_object(drm_ttm_object_t * to)
 #define DRM_TTM_PAGE_USED     0x02
 #define DRM_TTM_PAGE_BOUND    0x04
 #define DRM_TTM_PAGE_PRESENT  0x08
+#define DRM_TTM_PAGE_VMALLOC  0x10
 
 #endif

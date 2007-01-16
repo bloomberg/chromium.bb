@@ -237,37 +237,6 @@ static void nouveau_nv04_context_switch(drm_device_t *dev)
 	
 }
 
-static void nouveau_nv10_context_switch(drm_device_t *dev)
-{
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	int channel, channel_old;
-
-	channel=NV_READ(NV_PFIFO_CACH1_PSH1)&(nouveau_fifo_number(dev)-1);
-	channel_old = (NV_READ(NV_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
-
-	DRM_INFO("NV: PGRAPH context switch interrupt channel %x -> %x\n",channel_old, channel);
-
-	NV_WRITE(NV_PGRAPH_FIFO,0x0);
-	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000000);
-	NV_WRITE(NV_PFIFO_CACH1_PUL1, 0x00000000);
-	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
-
-	dev_priv->fifos[channel_old].pgraph_ctx_user = NV_READ(NV_PGRAPH_CTX_USER);
-	//XXX save PGRAPH context
-	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10000000);
-	NV_WRITE(NV_PGRAPH_CTX_USER, dev_priv->fifos[channel].pgraph_ctx_user);
-	//XXX restore PGRAPH context
-	printk("ctx_user %x %x\n", dev_priv->fifos[channel_old].pgraph_ctx_user, dev_priv->fifos[channel].pgraph_ctx_user);
-
-	NV_WRITE(NV_PGRAPH_FFINTFC_ST2, NV_READ(NV_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
-	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10010100);
-
-	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000001);
-	NV_WRITE(NV_PFIFO_CACH1_PUL1, 0x00000001);
-	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);
-	NV_WRITE(NV_PGRAPH_FIFO,0x1);
-}
-
 static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 {
 	uint32_t status;
@@ -359,6 +328,9 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 				break;
 			case NV_10:
 				nouveau_nv10_context_switch(dev);
+				break;
+			case NV_20:
+				nouveau_nv20_context_switch(dev);
 				break;
 			default:
 				DRM_INFO("NV: Context switch not implemented\n");
