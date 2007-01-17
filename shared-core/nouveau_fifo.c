@@ -373,7 +373,7 @@ static void nouveau_nv30_context_init(drm_device_t *dev,
         /*
          * TODO: We need to put this somewhere...
          */
-        /* INSTANCE_WR(dev_priv->ctx_table, init->channel, grctx_inst); */
+        /*INSTANCE_WR(dev_priv->ctx_table, init->channel, grctx_inst);*/
         RAMFC_WR(DMA_SUBROUTINE,        init->put_base);
 }
 
