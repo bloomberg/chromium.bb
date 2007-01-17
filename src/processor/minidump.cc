@@ -48,6 +48,7 @@ typedef SSIZE_T ssize_t;
 #define O_BINARY 0
 #endif  // _WIN32
 
+#include <cassert>
 #include <map>
 #include <vector>
 
@@ -1005,6 +1006,7 @@ MinidumpModule::MinidumpModule(Minidump* minidump)
       module_(),
       name_(NULL),
       cv_record_(NULL),
+      cv_record_signature_(MD_CVINFOUNKNOWN_SIGNATURE),
       misc_record_(NULL) {
 }
 
@@ -1022,6 +1024,7 @@ bool MinidumpModule::Read() {
   name_ = NULL;
   delete cv_record_;
   cv_record_ = NULL;
+  cv_record_signature_ = MD_CVINFOUNKNOWN_SIGNATURE;
   delete misc_record_;
   misc_record_ = NULL;
 
@@ -1078,10 +1081,10 @@ bool MinidumpModule::ReadAuxiliaryData() {
 
   // CodeView and miscellaneous debug records are only required if the
   // module indicates that they exist.
-  if (module_.cv_record.data_size && !GetCVRecord())
+  if (module_.cv_record.data_size && !GetCVRecord(NULL))
     return false;
 
-  if (module_.misc_record.data_size && !GetMiscRecord())
+  if (module_.misc_record.data_size && !GetMiscRecord(NULL))
     return false;
 
   valid_ = true;
@@ -1149,24 +1152,26 @@ string MinidumpModule::debug_file() const {
   string file;
   // Prefer the CodeView record if present.
   if (cv_record_) {
-    const MDCVInfoPDB70* cv_record_70 =
-        reinterpret_cast<const MDCVInfoPDB70*>(&(*cv_record_)[0]);
-    if (cv_record_70->cv_signature == MD_CVINFOPDB70_SIGNATURE) {
+    if (cv_record_signature_ == MD_CVINFOPDB70_SIGNATURE) {
+      // It's actually an MDCVInfoPDB70 structure.
+      const MDCVInfoPDB70* cv_record_70 =
+          reinterpret_cast<const MDCVInfoPDB70*>(&(*cv_record_)[0]);
+      assert(cv_record_70->cv_signature == MD_CVINFOPDB70_SIGNATURE);
+
       // GetCVRecord guarantees pdb_file_name is null-terminated.
       file = reinterpret_cast<const char*>(cv_record_70->pdb_file_name);
-    } else if (cv_record_70->cv_signature == MD_CVINFOPDB20_SIGNATURE) {
-      // It's actually a MDCVInfoPDB20 structure.
+    } else if (cv_record_signature_ == MD_CVINFOPDB20_SIGNATURE) {
+      // It's actually an MDCVInfoPDB20 structure.
       const MDCVInfoPDB20* cv_record_20 =
           reinterpret_cast<const MDCVInfoPDB20*>(&(*cv_record_)[0]);
+      assert(cv_record_20->cv_header.signature == MD_CVINFOPDB20_SIGNATURE);
 
       // GetCVRecord guarantees pdb_file_name is null-terminated.
       file = reinterpret_cast<const char*>(cv_record_20->pdb_file_name);
     }
 
     // If there's a CodeView record but it doesn't match a known signature,
-    // try the miscellaneous record - but it's suspicious because
-    // GetCVRecord shouldn't have accepted a CodeView record that doesn't
-    // match a known signature.
+    // try the miscellaneous record.
   }
 
   if (file.empty()) {
@@ -1219,9 +1224,12 @@ string MinidumpModule::debug_identifier() const {
 
   // Use the CodeView record if present.
   if (cv_record_) {
-    const MDCVInfoPDB70* cv_record_70 =
-        reinterpret_cast<const MDCVInfoPDB70*>(&(*cv_record_)[0]);
-    if (cv_record_70->cv_signature == MD_CVINFOPDB70_SIGNATURE) {
+    if (cv_record_signature_ == MD_CVINFOPDB70_SIGNATURE) {
+      // It's actually an MDCVInfoPDB70 structure.
+      const MDCVInfoPDB70* cv_record_70 =
+          reinterpret_cast<const MDCVInfoPDB70*>(&(*cv_record_)[0]);
+      assert(cv_record_70->cv_signature == MD_CVINFOPDB70_SIGNATURE);
+
       // Use the same format that the MS symbol server uses in filesystem
       // hierarchies.
       char identifier_string[41];
@@ -1240,10 +1248,11 @@ string MinidumpModule::debug_identifier() const {
                cv_record_70->signature.data4[7],
                cv_record_70->age);
       identifier = identifier_string;
-    } else if (cv_record_70->cv_signature == MD_CVINFOPDB20_SIGNATURE) {
-      // It's actually a MDCVInfoPDB20 structure.
+    } else if (cv_record_signature_ == MD_CVINFOPDB20_SIGNATURE) {
+      // It's actually an MDCVInfoPDB20 structure.
       const MDCVInfoPDB20* cv_record_20 =
           reinterpret_cast<const MDCVInfoPDB20*>(&(*cv_record_)[0]);
+      assert(cv_record_20->cv_header.signature == MD_CVINFOPDB20_SIGNATURE);
 
       // Use the same format that the MS symbol server uses in filesystem
       // hierarchies.
@@ -1254,7 +1263,7 @@ string MinidumpModule::debug_identifier() const {
     }
   }
 
-  // TODO(mmentovai): if there's no CodeView record, there might be a
+  // TODO(mmentovai): if there's no usable CodeView record, there might be a
   // miscellaneous debug record.  It only carries a filename, though, and no
   // identifier.  I'm not sure what the right thing to do for the identifier
   // is in that case, but I don't expect to find many modules without a
@@ -1299,14 +1308,14 @@ const CodeModule* MinidumpModule::Copy() const {
 }
 
 
-const u_int8_t* MinidumpModule::GetCVRecord() {
+const u_int8_t* MinidumpModule::GetCVRecord(u_int32_t* size) {
   if (!module_valid_)
     return NULL;
 
   if (!cv_record_) {
-    // Only check against the smallest possible structure size now - recheck
-    // if necessary later if the actual structure is larger.
-    if (sizeof(MDCVInfoPDB20) > module_.cv_record.data_size)
+    // This just guards against 0-sized CodeView records; more specific checks
+    // are used when the signature is checked against various structure types.
+    if (!module_.cv_record.data_size)
       return NULL;
 
     if (!minidump_->SeekSet(module_.cv_record.rva))
@@ -1327,11 +1336,14 @@ const u_int8_t* MinidumpModule::GetCVRecord() {
     if (!minidump_->ReadBytes(&(*cv_record)[0], module_.cv_record.data_size))
       return NULL;
 
-    MDCVInfoPDB70* cv_record_70 =
-        reinterpret_cast<MDCVInfoPDB70*>(&(*cv_record)[0]);
-    u_int32_t signature = cv_record_70->cv_signature;
-    if (minidump_->swap())
-      Swap(&signature);
+    u_int32_t signature = MD_CVINFOUNKNOWN_SIGNATURE;
+    if (module_.cv_record.data_size > sizeof(signature)) {
+      MDCVInfoPDB70* cv_record_signature =
+          reinterpret_cast<MDCVInfoPDB70*>(&(*cv_record)[0]);
+      signature = cv_record_signature->cv_signature;
+      if (minidump_->swap())
+        Swap(&signature);
+    }
 
     if (signature == MD_CVINFOPDB70_SIGNATURE) {
       // Now that the structure type is known, recheck the size.
@@ -1339,16 +1351,26 @@ const u_int8_t* MinidumpModule::GetCVRecord() {
         return NULL;
 
       if (minidump_->swap()) {
+        MDCVInfoPDB70* cv_record_70 =
+            reinterpret_cast<MDCVInfoPDB70*>(&(*cv_record)[0]);
         Swap(&cv_record_70->cv_signature);
         Swap(&cv_record_70->signature);
         Swap(&cv_record_70->age);
         // Don't swap cv_record_70.pdb_file_name because it's an array of 8-bit
-        // quanities.  (It's a path, is it UTF-8?)
+        // quantities.  (It's a path, is it UTF-8?)
       }
+
+      // The last field of either structure is null-terminated 8-bit character
+      // data.  Ensure that it's null-terminated.
+      if ((*cv_record)[module_.cv_record.data_size - 1] != '\0')
+        return NULL;
     } else if (signature == MD_CVINFOPDB20_SIGNATURE) {
+      // Now that the structure type is known, recheck the size.
+      if (sizeof(MDCVInfoPDB20) > module_.cv_record.data_size)
+        return NULL;
       if (minidump_->swap()) {
         MDCVInfoPDB20* cv_record_20 =
-         reinterpret_cast<MDCVInfoPDB20*>(&(*cv_record)[0]);
+            reinterpret_cast<MDCVInfoPDB20*>(&(*cv_record)[0]);
         Swap(&cv_record_20->cv_header.signature);
         Swap(&cv_record_20->cv_header.offset);
         Swap(&cv_record_20->signature);
@@ -1356,28 +1378,33 @@ const u_int8_t* MinidumpModule::GetCVRecord() {
         // Don't swap cv_record_20.pdb_file_name because it's an array of 8-bit
         // quantities.  (It's a path, is it UTF-8?)
       }
-    } else {
-      // Some unknown structure type.  We don't need to bail out here, but we
-      // do instead of returning it, because this method guarantees properly
-      // swapped data, and data in an unknown format can't possibly be swapped.
-      return NULL;
+
+      // The last field of either structure is null-terminated 8-bit character
+      // data.  Ensure that it's null-terminated.
+      if ((*cv_record)[module_.cv_record.data_size - 1] != '\0')
+        return NULL;
     }
 
-    // The last field of either structure is null-terminated 8-bit character
-    // data.  Ensure that it's null-terminated.
-    if ((*cv_record)[module_.cv_record.data_size - 1] != '\0')
-      return NULL;
+    // If the signature doesn't match something above, it's not something
+    // that Airbag can presently handle directly.  Because some modules in
+    // the wild contain such CodeView records as MD_CVINFOCV50_SIGNATURE,
+    // don't bail out here - allow the data to be returned to the user,
+    // although byte-swapping can't be done.
 
     // Store the vector type because that's how storage was allocated, but
     // return it casted to u_int8_t*.
     cv_record_ = cv_record.release();
+    cv_record_signature_ = signature;
   }
+
+  if (size)
+    *size = module_.cv_record.data_size;
 
   return &(*cv_record_)[0];
 }
 
 
-const MDImageDebugMisc* MinidumpModule::GetMiscRecord() {
+const MDImageDebugMisc* MinidumpModule::GetMiscRecord(u_int32_t* size) {
   if (!module_valid_)
     return NULL;
 
@@ -1432,6 +1459,9 @@ const MDImageDebugMisc* MinidumpModule::GetMiscRecord() {
     // return it casted to MDImageDebugMisc*.
     misc_record_ = misc_record_mem.release();
   }
+
+  if (size)
+    *size = module_.misc_record.data_size;
 
   return reinterpret_cast<MDImageDebugMisc*>(&(*misc_record_)[0]);
 }
@@ -1488,31 +1518,37 @@ void MinidumpModule::Print() {
   printf("  (code_identifier)               = \"%s\"\n",
          code_identifier().c_str());
 
-  const MDCVInfoPDB70* cv_record =
-      reinterpret_cast<const MDCVInfoPDB70*>(GetCVRecord());
+  u_int32_t cv_record_size;
+  const u_int8_t *cv_record = GetCVRecord(&cv_record_size);
   if (cv_record) {
-    if (cv_record->cv_signature == MD_CVINFOPDB70_SIGNATURE) {
+    if (cv_record_signature_ == MD_CVINFOPDB70_SIGNATURE) {
+      const MDCVInfoPDB70* cv_record_70 =
+          reinterpret_cast<const MDCVInfoPDB70*>(cv_record);
+      assert(cv_record_70->cv_signature == MD_CVINFOPDB70_SIGNATURE);
+
       printf("  (cv_record).cv_signature        = 0x%x\n",
-             cv_record->cv_signature);
+             cv_record_70->cv_signature);
       printf("  (cv_record).signature           = %08x-%04x-%04x-%02x%02x-",
-             cv_record->signature.data1,
-             cv_record->signature.data2,
-             cv_record->signature.data3,
-             cv_record->signature.data4[0],
-             cv_record->signature.data4[1]);
+             cv_record_70->signature.data1,
+             cv_record_70->signature.data2,
+             cv_record_70->signature.data3,
+             cv_record_70->signature.data4[0],
+             cv_record_70->signature.data4[1]);
       for (unsigned int guidIndex = 2;
            guidIndex < 8;
            ++guidIndex) {
-        printf("%02x", cv_record->signature.data4[guidIndex]);
+        printf("%02x", cv_record_70->signature.data4[guidIndex]);
       }
       printf("\n");
       printf("  (cv_record).age                 = %d\n",
-             cv_record->age);
+             cv_record_70->age);
       printf("  (cv_record).pdb_file_name       = \"%s\"\n",
-             cv_record->pdb_file_name);
-    } else {
+             cv_record_70->pdb_file_name);
+    } else if (cv_record_signature_ == MD_CVINFOPDB20_SIGNATURE) {
       const MDCVInfoPDB20* cv_record_20 =
-       reinterpret_cast<const MDCVInfoPDB20*>(cv_record);
+          reinterpret_cast<const MDCVInfoPDB20*>(cv_record);
+      assert(cv_record_20->cv_header.signature == MD_CVINFOPDB20_SIGNATURE);
+
       printf("  (cv_record).cv_header.signature = 0x%x\n",
              cv_record_20->cv_header.signature);
       printf("  (cv_record).cv_header.offset    = 0x%x\n",
@@ -1523,12 +1559,20 @@ void MinidumpModule::Print() {
              cv_record_20->age);
       printf("  (cv_record).pdb_file_name       = \"%s\"\n",
              cv_record_20->pdb_file_name);
+    } else {
+      printf("  (cv_record)                     = ");
+      for (unsigned int cv_byte_index = 0;
+           cv_byte_index < cv_record_size;
+           ++cv_byte_index) {
+        printf("%02x", cv_record[cv_byte_index]);
+      }
+      printf("\n");
     }
   } else {
     printf("  (cv_record)                     = (null)\n");
   }
 
-  const MDImageDebugMisc* misc_record = GetMiscRecord();
+  const MDImageDebugMisc* misc_record = GetMiscRecord(NULL);
   if (misc_record) {
     printf("  (misc_record).data_type         = 0x%x\n",
            misc_record->data_type);

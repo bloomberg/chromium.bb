@@ -590,6 +590,23 @@ typedef struct {
 
 #define MD_CVINFOPDB70_SIGNATURE 0x53445352  /* cvSignature = 'SDSR' */
 
+/* In addition to the two CodeView record formats above, used for linking
+ * to external pdb files, it is possible for debugging data to be carried
+ * directly in the CodeView record itself.  These signature values will
+ * be found in the first 4 bytes of the CodeView record.  Additional values
+ * not commonly experienced in the wild are given by "Microsoft Symbol and
+ * Type Information", http://www.x86.org/ftp/manuals/tools/sym.pdf, section
+ * 7.2.  An in-depth description of the CodeView 4.1 format is given by
+ * "Undocumented Windows 2000 Secrets", Windows 2000 Debugging Support/
+ * Microsoft Symbol File Internals/CodeView Subsections,
+ * http://www.rawol.com/features/undocumented/sbs-w2k-1-windows-2000-debugging-support.pdf
+ */
+#define MD_CVINFOCV41_SIGNATURE 0x3930424e  /* '90BN', CodeView 4.10. */
+#define MD_CVINFOCV50_SIGNATURE 0x3131424e  /* '11BN', CodeView 5.0,
+                                             * MS C7-format (/Z7). */
+
+#define MD_CVINFOUNKNOWN_SIGNATURE 0xffffffff  /* An unlikely value. */
+
 /* (MDRawModule).miscRecord can reference MDImageDebugMisc.  The Windows
  * structure is actually defined in WinNT.h.  This structure is effectively
  * obsolete with modules built by recent toolchains. */

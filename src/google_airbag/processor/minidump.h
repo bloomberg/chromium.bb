@@ -369,15 +369,22 @@ class MinidumpModule : public MinidumpObject,
 
   // The CodeView record, which contains information to locate the module's
   // debugging information (pdb).  This is returned as u_int8_t* because
-  // the data can be one of two types: MDCVInfoPDB20* or MDCVInfoPDB70*.
-  // Check the record's signature in the first four bytes to differentiate.
-  // Current toolchains generate modules which carry MDCVInfoPDB70.
-  const u_int8_t* GetCVRecord();
+  // the data can be of types MDCVInfoPDB20* or MDCVInfoPDB70*, or it may be
+  // of a type unknown to Airbag, in which case the raw data will still be
+  // returned but no byte-swapping will have been performed.  Check the
+  // record's signature in the first four bytes to differentiate between
+  // the various types.  Current toolchains generate modules which carry
+  // MDCVInfoPDB70 by default.  Returns a pointer to the CodeView record on
+  // success, and NULL on failure.  On success, the optional |size| argument
+  // is set to the size of the CodeView record.
+  const u_int8_t* GetCVRecord(u_int32_t* size);
 
   // The miscellaneous debug record, which is obsolete.  Current toolchains
   // do not generate this type of debugging information (dbg), and this
-  // field is not expected to be present.
-  const MDImageDebugMisc* GetMiscRecord();
+  // field is not expected to be present.  Returns a pointer to the debugging
+  // record on success, and NULL on failure.  On success, the optional |size|
+  // argument is set to the size of the debugging record.
+  const MDImageDebugMisc* GetMiscRecord(u_int32_t* size);
 
   // Print a human-readable representation of the object to stdout.
   void Print();
@@ -414,10 +421,15 @@ class MinidumpModule : public MinidumpObject,
   const string*     name_;
 
   // Cached CodeView record - this is MDCVInfoPDB20 or (likely)
-  // MDCVInfoPDB70.  Stored as a u_int8_t because the structure contains
-  // a variable-sized string and its exact size cannot be known until it
-  // is processed.
+  // MDCVInfoPDB70, or possibly something else entirely.  Stored as a u_int8_t
+  // because the structure contains a variable-sized string and its exact
+  // size cannot be known until it is processed.
   vector<u_int8_t>* cv_record_;
+
+  // If cv_record_ is present, cv_record_signature_ contains a copy of the
+  // CodeView record's first four bytes, for ease of determinining the
+  // type of structure that cv_record_ contains.
+  u_int32_t cv_record_signature_;
 
   // Cached MDImageDebugMisc (usually not present), stored as u_int8_t
   // because the structure contains a variable-sized string and its exact
