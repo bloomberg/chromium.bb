@@ -27,6 +27,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <cassert>
+
 #include "common/windows/string_utils-inl.h"
 
 namespace google_airbag {
@@ -39,6 +41,52 @@ wstring WindowsStringUtils::GetBaseName(const wstring &filename) {
     base_name.erase(0, slash_pos + 1);
   }
   return base_name;
+}
+
+// static
+bool WindowsStringUtils::safe_mbstowcs(const string &mbs, wstring *wcs) {
+  assert(wcs);
+
+  // First, determine the length of the destination buffer.
+  size_t wcs_length;
+
+#if _MSC_VER >= 1400  // MSVC 2005/8
+  errno_t err;
+  if ((err = mbstowcs_s(&wcs_length, NULL, 0, mbs.c_str(), _TRUNCATE)) != 0) {
+    return false;
+  }
+#else  // _MSC_VER >= 1400
+  if ((wcs_length = mbstowcs(NULL, mbs.c_str(), mbs.length())) < 0) {
+    return false;
+  }
+
+  // Leave space for the 0-terminator.
+  ++wcs_length;
+#endif  // _MSC_VER >= 1400
+
+  // TODO(mmentovai): move scoped_ptr into common and use it for wcs_c.
+  wchar_t *wcs_c = new wchar_t[wcs_length];
+
+  // Now, convert.
+#if _MSC_VER >= 1400  // MSVC 2005/8
+  if ((err = mbstowcs_s(NULL, wcs_c, wcs_length, mbs.c_str(),
+                        _TRUNCATE)) != 0) {
+    delete[] wcs_c;
+    return false;
+  }
+#else  // _MSC_VER >= 1400
+  if (mbstowcs(wcs_c, mbs.c_str(), mbs.length()) < 0) {
+    delete[] wcs_c;
+    return false;
+  }
+
+  // Ensure presence of 0-terminator.
+  wcs_c[wcs_length - 1] = '\0';
+#endif  // _MSC_VER >= 1400
+
+  *wcs = wcs_c;
+  delete[] wcs_c;
+  return true;
 }
 
 }  // namespace google_airbag

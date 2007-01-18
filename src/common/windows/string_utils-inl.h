@@ -51,6 +51,7 @@
 
 namespace google_airbag {
 
+using std::string;
 using std::wstring;
 
 class WindowsStringUtils {
@@ -71,6 +72,11 @@ class WindowsStringUtils {
   // 0-terminated.
   static void safe_wcsncpy(wchar_t *destination, size_t destination_size,
                            const wchar_t *source, size_t count);
+
+  // Performs multi-byte to wide character conversion on C++ strings, using
+  // mbstowcs_s (MSVC8) or mbstowcs (pre-MSVC8).  Returns false on failure,
+  // without setting wcs.
+  static bool safe_mbstowcs(const string &mbs, wstring *wcs);
 
   // Returns the base name of a file, e.g. strips off the path.
   static wstring GetBaseName(const wstring &filename);
