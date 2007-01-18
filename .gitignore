@@ -83,6 +83,7 @@ drm_pciids.h
 export_syms
 i915.kld
 install-sh
+libdrm/config.h.in
 libdrm.pc
 libtool
 ltmain.sh
