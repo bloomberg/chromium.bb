@@ -586,6 +586,7 @@
 0x10de 0x01d7 NV_44 "Quadro NVS 110M / GeForce Go 7300"
 0x10de 0x01d8 NV_44 "GeForce Go 7400"
 0x10de 0x01da NV_44 "Quadro NVS 110M"
+0x10de 0x01dc NV_44 "Quadro FX 350M"
 0x10de 0x01df NV_44 "GeForce 7300 GS"
 0x10de 0x01f0 NV_17|NV_NFORCE2 "GeForce4 MX - nForce GPU"
 0x10de 0x0200 NV_20 "GeForce3"
