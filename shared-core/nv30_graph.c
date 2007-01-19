@@ -8,7 +8,6 @@
 #include "nouveau_drm.h"
 
 /*
- *  TODO: In the dump start seems to be 7654b0 while end is 76ac28.
  *  This is obviously not the correct size. 
  */
 #define NV30_GRCTX_SIZE (23840)
