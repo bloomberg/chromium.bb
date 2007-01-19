@@ -368,12 +368,7 @@ static void nouveau_nv30_context_init(drm_device_t *dev,
         RAMFC_WR(ACQUIRE_TIMESTAMP,     NV_READ(NV_PFIFO_CACH1_ACQUIRE_TIMESTAMP));
         RAMFC_WR(ACQUIRE_TIMEOUT,       NV_READ(NV_PFIFO_CACH1_ACQUIRE_TIMEOUT));
         RAMFC_WR(SEMAPHORE,             NV_READ(NV_PFIFO_CACH1_SEMAPHORE));
-        NV_WRITE(NV_PGRAPH_CHANNEL_CTX_SIZE, grctx_inst); /* Misnomer.  Really a ptr to the grctx */
 
-        /*
-         * TODO: We need to put this somewhere...
-         */
-        /*INSTANCE_WR(dev_priv->ctx_table, init->channel, grctx_inst);*/
         RAMFC_WR(DMA_SUBROUTINE,        init->put_base);
 }
 
