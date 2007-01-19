@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006 Apple Computer, Inc.
+ * Copyright (C) 2007 Nikolas Zimmermann <zimmermann@kde.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,21 +24,9 @@
  */
 
 module svg {
+    interface [Conditional=SVG] SVGElementInstanceList {
+        readonly attribute unsigned long length;
 
-    interface [Conditional=SVG] SVGUseElement : SVGElement,
-                                                SVGURIReference,
-                                                SVGTests,
-                                                SVGLangSpace,
-                                                SVGExternalResourcesRequired,
-                                                SVGStylable,
-                                                SVGTransformable {
-        readonly attribute SVGAnimatedLength   x;
-        readonly attribute SVGAnimatedLength   y;
-        readonly attribute SVGAnimatedLength   width;
-        readonly attribute SVGAnimatedLength   height;
-
-        readonly attribute SVGElementInstance instanceRoot;
-        readonly attribute SVGElementInstance animatedInstanceRoot;
+        SVGElementInstance item(in unsigned long index);
     };
-
 }

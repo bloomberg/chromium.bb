@@ -19,26 +19,37 @@
     Boston, MA 02111-1307, USA.
 */
 
-#ifndef SVGElementInstanceList_h
-#define SVGElementInstanceList_h
+#ifndef SVGHiddenElement_h
+#define SVGHiddenElement_h
 
 #ifdef SVG_SUPPORT
 
-#include "Shared.h"
-#include "SVGElementInstance.h"
-
 namespace WebCore {
-    class SVGElementInstanceList : public Shared<SVGElementInstanceList> {
+    // Rather crude hack for <use> support. This class "hides" another SVGElement
+    // derived class from the DOM, by assigning an arbitary node name, to exclude
+    // it ie. from getElementsByTagName() operations.
+    template<typename Type>
+    class SVGHiddenElement : public Type {
     public:
-        SVGElementInstanceList(PassRefPtr<SVGElementInstance> rootInstance);
-        virtual ~SVGElementInstanceList();
+        SVGHiddenElement<Type>(const QualifiedName& tagName, Document* document)
+            : Type(tagName, document)
+            , m_localName("webkitHiddenElement")
+        {
+        }
 
-        unsigned int length() const;
-        RefPtr<SVGElementInstance> item(unsigned int index);
+        virtual ~SVGHiddenElement()
+        {
+        }
 
+        virtual const AtomicString& localName() const
+        {
+            return m_localName;
+        }
+ 
     private:
-        RefPtr<SVGElementInstance> m_rootInstance;
-    };
+        AtomicString m_localName;
+   };
+
 } // namespace WebCore
 
 #endif // SVG_SUPPORT
