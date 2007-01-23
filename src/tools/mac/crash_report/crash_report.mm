@@ -309,6 +309,7 @@ static void SetupOptions(int argc, const char *argv[], Options *options) {
   if ((argc - optind) != 1) {
     fprintf(stderr, "%s: Missing minidump file\n", argv[0]);
     Usage(argc, argv);
+    exit(1);
   }
 
   options->minidumpPath = [[NSFileManager defaultManager]

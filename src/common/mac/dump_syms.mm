@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// dump_syms.m: Create a symbol file for use with minidumps
+// dump_syms.mm: Create a symbol file for use with minidumps
 
 #include <unistd.h>
 #include <signal.h>
@@ -43,6 +43,9 @@
 #import <Foundation/Foundation.h>
 
 #import "dump_syms.h"
+#import "common/mac/file_id.h"
+
+using google_airbag::FileID;
 
 static NSString *kAddressSymbolKey = @"symbol";
 static NSString *kAddressConvertedSymbolKey = @"converted_symbol";
@@ -52,6 +55,7 @@ static NSString *kHeaderBaseAddressKey = @"baseAddr";
 static NSString *kHeaderSizeKey = @"size";
 static NSString *kHeaderOffsetKey = @"offset";  // Offset to the header
 static NSString *kHeaderIs64BitKey = @"is64";
+static NSString *kHeaderCPUTypeKey = @"cpuType";
 static NSString *kUnknownSymbol = @"???";
 
 @interface DumpSymbols(PrivateMethods)
@@ -69,6 +73,26 @@ static NSString *kUnknownSymbol = @"???";
 - (BOOL)loadModuleInfo;
 - (NSMutableString *)generateSymbolFileString;
 @end
+
+static BOOL StringHeadMatches(NSString *str, NSString *head) {
+  int headLen = [head length];
+  int strLen = [str length];
+
+  if (headLen > strLen)
+    return NO;
+
+  return [[str substringToIndex:headLen] isEqualToString:head];
+}
+
+static BOOL StringTailMatches(NSString *str, NSString *tail) {
+  int tailLen = [tail length];
+  int strLen = [str length];
+
+  if (tailLen > strLen)
+    return NO;
+
+  return [[str substringFromIndex:strLen - tailLen] isEqualToString:tail];
+}
 
 @implementation DumpSymbols
 //=============================================================================
@@ -131,7 +155,7 @@ static NSString *kUnknownSymbol = @"???";
 //=============================================================================
 - (NSArray *)convertCPlusPlusSymbols:(NSArray *)symbols {
   NSString *action = @"/usr/bin/c++filt";
-  int count = [symbols count];
+  unsigned int count = [symbols count];
 
   // It's possible that we have too many symbols on the command line.
   // Unfortunately, c++filt doesn't take a file containing names, so we'll
@@ -168,7 +192,7 @@ static NSString *kUnknownSymbol = @"???";
   NSArray *addresses = [cppAddresses_ sortedArrayUsingSelector:
     @selector(compare:)];
 
-  for (int i = 0; i < count; ++i) {
+  for (unsigned int i = 0; i < count; ++i) {
     NSMutableDictionary *dict = [addresses_ objectForKey:
       [addresses objectAtIndex:i]];
     NSString *symbol = [dict objectForKey:kAddressSymbolKey];
@@ -183,7 +207,7 @@ static NSString *kUnknownSymbol = @"???";
   NSArray *converted = [self convertCPlusPlusSymbols:symbols];
   [symbols release];
 
-  for (int i = 0; i < count; ++i) {
+  for (unsigned int i = 0; i < count; ++i) {
     NSMutableDictionary *dict = [addresses_ objectForKey:
       [addresses objectAtIndex:i]];
     NSString *symbol = [converted objectAtIndex:i];
@@ -204,27 +228,26 @@ static NSString *kUnknownSymbol = @"???";
   // If the function starts with "_Z" or "__Z" then add it to the list of
   // addresses to run through the c++filt
   BOOL isCPP = NO;
-  if ([name length] > 3) {
-    unichar buffer[3];
-    [name getCharacters:buffer range:NSMakeRange(0, 3)];
-    if (buffer[0] == '_') {
-      if (buffer[1] == '_' && buffer[2] == 'Z') {
-        // Remove the leading underscore
-        name = [name substringFromIndex:1];
-        isCPP = YES;
-      } else if (buffer[1] == 'Z') {
-        isCPP = YES;
-      }
-    }
+
+  if (StringHeadMatches(name, @"__Z")) {
+    // Remove the leading underscore
+    name = [name substringFromIndex:1];
+    isCPP = YES;
+  } else if (StringHeadMatches(name, @"_Z")) {
+    isCPP = YES;
   }
 
-  if (isCPP) {
-    // Check if this is some debug symbol that ends in ".eh"  I appears as
-    // though it's got to do with exception handling, but it's not the
-    // actual address of the function.  So we'll ignore them
-    if ([[name substringFromIndex:[name length] - 3] isEqualToString:@".eh"])
-       return;
+  // Filter out non-functions
+  if (StringTailMatches(name, @".eh"))
+    return;
 
+  if (StringTailMatches(name, @"__func__"))
+    return;
+
+  if (StringTailMatches(name, @"GCC_except_table"))
+    return;
+
+  if (isCPP) {
     if (!cppAddresses_)
       cppAddresses_ = [[NSMutableArray alloc] init];
     [cppAddresses_ addObject:addressNum];
@@ -320,10 +343,11 @@ static NSString *kUnknownSymbol = @"???";
 #define SwapShortIfNeeded(a) (swap ? NXSwapShort(a) : (a))
 //=============================================================================
 - (BOOL)loadSymbolInfo:(void *)base offset:(uint32_t)offset {
-  struct mach_header *header = (struct mach_header *)(base + offset);
+  struct mach_header *header = (struct mach_header *)((uint32_t)base + offset);
   BOOL swap = (header->magic == MH_CIGAM);
   uint32_t count = SwapLongIfNeeded(header->ncmds);
-  struct load_command *cmd = (void *)header + sizeof(struct mach_header);
+  struct load_command *cmd =
+    (struct load_command *)((uint32_t)header + sizeof(struct mach_header));
   uint32_t symbolTableCommand = SwapLongIfNeeded(LC_SYMTAB);
   BOOL result = NO;
 
@@ -336,19 +360,18 @@ static NSString *kUnknownSymbol = @"???";
       uint32_t ncmds = SwapLongIfNeeded(symtab->nsyms);
       uint32_t symoff = SwapLongIfNeeded(symtab->symoff);
       uint32_t stroff = SwapLongIfNeeded(symtab->stroff);
-      struct nlist *list = (struct nlist *)(base + symoff + offset);
+      struct nlist *list = (struct nlist *)((uint32_t)base + symoff + offset);
       char *strtab = ((char *)header + stroff);
 
       // Process each command, looking for debugging stuff
       for (uint32_t j = 0; j < ncmds; ++j, ++list) {
         // Fill in an nlist_64 structure and process with that
-        struct nlist_64 nlist64 = {
-          .n_un.n_strx = SwapLongIfNeeded(list->n_un.n_strx),
-          .n_type = list->n_type,
-          .n_sect = list->n_sect,
-          .n_desc = SwapIntIfNeeded(list->n_desc),
-          .n_value = (uint64_t)SwapLongIfNeeded(list->n_value)
-        };
+        struct nlist_64 nlist64;
+        nlist64.n_un.n_strx = SwapLongIfNeeded(list->n_un.n_strx);
+        nlist64.n_type = list->n_type;
+        nlist64.n_sect = list->n_sect;
+        nlist64.n_desc = SwapIntIfNeeded(list->n_desc);
+        nlist64.n_value = (uint64_t)SwapLongIfNeeded(list->n_value);
 
         if ([self processSymbolItem:&nlist64 stringTable:strtab])
           result = YES;
@@ -356,7 +379,7 @@ static NSString *kUnknownSymbol = @"???";
     }
 
     uint32_t cmdSize = SwapLongIfNeeded(cmd->cmdsize);
-    cmd = (struct load_command *)((char *)cmd + cmdSize);
+    cmd = (struct load_command *)((uint32_t)cmd + cmdSize);
   }
 
   return result;
@@ -364,10 +387,12 @@ static NSString *kUnknownSymbol = @"???";
 
 //=============================================================================
 - (BOOL)loadSymbolInfo64:(void *)base offset:(uint32_t)offset {
-  struct mach_header_64 *header = (struct mach_header_64 *)(base + offset);
+  struct mach_header_64 *header = (struct mach_header_64 *)
+    ((uint32_t)base + offset);
   BOOL swap = (header->magic == MH_CIGAM_64);
   uint32_t count = SwapLongIfNeeded(header->ncmds);
-  struct load_command *cmd = (void *)header + sizeof(struct mach_header);
+  struct load_command *cmd =
+    (struct load_command *)((uint32_t)header + sizeof(struct mach_header));
   uint32_t symbolTableCommand = SwapLongIfNeeded(LC_SYMTAB);
   BOOL result = NO;
 
@@ -377,7 +402,7 @@ static NSString *kUnknownSymbol = @"???";
       uint32_t ncmds = SwapLongIfNeeded(symtab->nsyms);
       uint32_t symoff = SwapLongIfNeeded(symtab->symoff);
       uint32_t stroff = SwapLongIfNeeded(symtab->stroff);
-      struct nlist_64 *list = (struct nlist_64 *)(base + symoff);
+      struct nlist_64 *list = (struct nlist_64 *)((uint32_t)base + symoff);
       char *strtab = ((char *)header + stroff);
 
       // Process each command, looking for debugging stuff
@@ -386,13 +411,12 @@ static NSString *kUnknownSymbol = @"???";
           continue;
 
         // Fill in an nlist_64 structure and process with that
-        struct nlist_64 nlist64 = {
-          .n_un.n_strx = SwapLongIfNeeded(list->n_un.n_strx),
-          .n_type = list->n_type,
-          .n_sect = list->n_sect,
-          .n_desc = SwapIntIfNeeded(list->n_desc),
-          .n_value = SwapLongLongIfNeeded(list->n_value)
-        };
+        struct nlist_64 nlist64;
+        nlist64.n_un.n_strx = SwapLongIfNeeded(list->n_un.n_strx);
+        nlist64.n_type = list->n_type;
+        nlist64.n_sect = list->n_sect;
+        nlist64.n_desc = SwapIntIfNeeded(list->n_desc);
+        nlist64.n_value = SwapLongLongIfNeeded(list->n_value);
 
         if ([self processSymbolItem:&nlist64 stringTable:strtab])
           result = YES;
@@ -400,7 +424,7 @@ static NSString *kUnknownSymbol = @"???";
     }
 
     uint32_t cmdSize = SwapLongIfNeeded(cmd->cmdsize);
-    cmd = (struct load_command *)((char *)cmd + cmdSize);
+    cmd = (struct load_command *)((uint32_t)cmd + cmdSize);
   }
 
   return result;
@@ -411,7 +435,7 @@ static NSString *kUnknownSymbol = @"???";
   NSMutableData *data = [[NSMutableData alloc]
     initWithContentsOfMappedFile:sourcePath_];
   NSDictionary *headerInfo = [headers_ objectForKey:architecture_];
-  char *base = [data mutableBytes];
+  void *base = [data mutableBytes];
   uint32_t offset =
     [[headerInfo objectForKey:kHeaderOffsetKey] unsignedLongValue];
   BOOL is64 = [[headerInfo objectForKey:kHeaderIs64BitKey] boolValue];
@@ -424,10 +448,11 @@ static NSString *kUnknownSymbol = @"???";
 
 //=============================================================================
 - (BOOL)loadHeader:(void *)base offset:(uint32_t)offset {
-  struct mach_header *header = (struct mach_header *)(base + offset);
+  struct mach_header *header = (struct mach_header *)((uint32_t)base + offset);
   BOOL swap = (header->magic == MH_CIGAM);
   uint32_t count = SwapLongIfNeeded(header->ncmds);
-  struct load_command *cmd = (void *)header + sizeof(struct mach_header);
+  struct load_command *cmd =
+    (struct load_command *)((uint32_t)header + sizeof(struct mach_header));
 
   for (uint32_t i = 0; cmd && (i < count); i++) {
     uint32_t segmentCommand = SwapLongIfNeeded(LC_SEGMENT);
@@ -445,6 +470,7 @@ static NSString *kUnknownSymbol = @"???";
           [NSNumber numberWithUnsignedLongLong:(uint64_t)size], kHeaderSizeKey,
           [NSNumber numberWithUnsignedLong:offset], kHeaderOffsetKey,
           [NSNumber numberWithBool:NO], kHeaderIs64BitKey,
+          [NSNumber numberWithUnsignedLong:cpu], kHeaderCPUTypeKey,
           nil] forKey:cpuStr];
 
         return YES;
@@ -452,7 +478,7 @@ static NSString *kUnknownSymbol = @"???";
     }
 
     uint32_t cmdSize = SwapLongIfNeeded(cmd->cmdsize);
-    cmd = (struct load_command *)((char *)cmd + cmdSize);
+    cmd = (struct load_command *)((uint32_t)cmd + cmdSize);
   }
 
   return NO;
@@ -460,10 +486,12 @@ static NSString *kUnknownSymbol = @"???";
 
 //=============================================================================
 - (BOOL)loadHeader64:(void *)base offset:(uint32_t)offset {
-  struct mach_header_64 *header = (struct mach_header_64 *)(base + offset);
+  struct mach_header_64 *header =
+    (struct mach_header_64 *)((uint32_t)base + offset);
   BOOL swap = (header->magic == MH_CIGAM_64);
   uint32_t count = SwapLongIfNeeded(header->ncmds);
-  struct load_command *cmd = (void *)header + sizeof(struct mach_header_64);
+  struct load_command *cmd =
+    (struct load_command *)((uint32_t)header + sizeof(struct mach_header_64));
 
   for (uint32_t i = 0; cmd && (i < count); i++) {
     uint32_t segmentCommand = SwapLongIfNeeded(LC_SEGMENT_64);
@@ -487,7 +515,7 @@ static NSString *kUnknownSymbol = @"???";
     }
 
     uint32_t cmdSize = SwapLongIfNeeded(cmd->cmdsize);
-    cmd = (struct load_command *)((char *)cmd + cmdSize);
+    cmd = (struct load_command *)((uint32_t)cmd + cmdSize);
   }
 
   return NO;
@@ -498,7 +526,7 @@ static NSString *kUnknownSymbol = @"???";
   uint64_t result = 0;
   NSMutableData *data = [[NSMutableData alloc]
     initWithContentsOfMappedFile:sourcePath_];
-  char *bytes = [data mutableBytes];
+  void *bytes = [data mutableBytes];
   struct fat_header *fat = (struct fat_header *)bytes;
 
   if (!fat) {
@@ -523,7 +551,7 @@ static NSString *kUnknownSymbol = @"???";
 
   if (isFat) {
     struct fat_arch *archs =
-      (struct fat_arch *)((void *)fat + sizeof(struct fat_header));
+      (struct fat_arch *)((uint32_t)fat + sizeof(struct fat_header));
     uint32_t count = SwapLongIfNeeded(fat->nfat_arch);
 
     for (uint32_t i = 0; i < count; ++i) {
@@ -583,17 +611,36 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
   NSArray *sortedAddresses = [[addresses_ allKeys]
     sortedArrayUsingSelector:@selector(compare:)];
 
-  // Module
-  if (!WriteFormat(fd, "MODULE mac %s %s 1 %s\n", [architecture_ UTF8String],
-                   [uuidStr_ UTF8String], 
-                   [[sourcePath_ lastPathComponent] UTF8String]))
+  // UUID
+  FileID file_id([sourcePath_ fileSystemRepresentation]);
+  unsigned char identifier[16];
+  char identifierStr[40];
+  const char *moduleName = [[sourcePath_ lastPathComponent] UTF8String];
+  int cpu_type = [[archDict objectForKey:kHeaderCPUTypeKey] unsignedLongValue];
+  if (file_id.MachoIdentifier(cpu_type, identifier)) {
+    FileID::ConvertIdentifierToString(identifier, identifierStr,
+                                      sizeof(identifierStr));
+  }
+  else {
+    strlcpy(identifierStr, moduleName, sizeof(identifierStr));
+  }
+
+  // Remove the dashes from the string
+  NSMutableString *compactedStr =
+    [NSMutableString stringWithCString:identifierStr encoding:NSASCIIStringEncoding];
+  [compactedStr replaceOccurrencesOfString:@"-" withString:@"" options:0
+                                     range:NSMakeRange(0, [compactedStr length])];
+
+  if (!WriteFormat(fd, "MODULE mac %s %s0 %s\n", [architecture_ UTF8String],
+                   [compactedStr UTF8String], moduleName)) {
     return NO;
+  }
 
   // Sources ordered by address
-  NSArray *sources = [[sources_ allKeys] 
+  NSArray *sources = [[sources_ allKeys]
     sortedArrayUsingSelector:@selector(compare:)];
-  int sourceCount = [sources count];
-  for (int i = 0; i < sourceCount; ++i) {
+  unsigned int sourceCount = [sources count];
+  for (unsigned int i = 0; i < sourceCount; ++i) {
     NSString *file = [sources_ objectForKey:[sources objectAtIndex:i]];
     if (!WriteFormat(fd, "FILE %d %s\n", i + 1, [file UTF8String]))
       return NO;
@@ -605,9 +652,9 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
   uint64_t nextSourceFileAddress = 0;
   NSNumber *nextAddress;
   uint64_t nextAddressVal;
-  int addressCount = [sortedAddresses count];
+  unsigned int addressCount = [sortedAddresses count];
 
-  for (int i = 0; i < addressCount; ++i) {
+  for (unsigned int i = 0; i < addressCount; ++i) {
     NSNumber *address = [sortedAddresses objectAtIndex:i];
     uint64_t addressVal = [address unsignedLongLongValue] - baseAddress;
 
@@ -625,6 +672,22 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
     NSNumber *line = [dict objectForKey:kAddressSourceLineKey];
     NSString *symbol = [dict objectForKey:kAddressConvertedSymbolKey];
 
+    if (!symbol)
+      symbol = [dict objectForKey:kAddressSymbolKey];
+
+    // Skip some symbols
+    if (StringHeadMatches(symbol, @"__gnu"))
+      continue;
+
+    if (StringHeadMatches(symbol, @"typeinfo "))
+      continue;
+
+    if (StringHeadMatches(symbol, @"EH_frame"))
+      continue;
+
+    if (StringHeadMatches(symbol, @"GCC_except_table"))
+      continue;
+
     // Find the source file (if any) that contains this address
     while (sourceCount && (addressVal >= nextSourceFileAddress)) {
       fileIdx = nextFileIdx;
@@ -635,11 +698,9 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
         nextSourceFileAddress = [addr unsignedLongLongValue] - baseAddress;
       } else {
         nextSourceFileAddress = baseAddress + moduleSize;
+        break;
       }
     }
-
-    if (!symbol)
-      symbol = [dict objectForKey:kAddressSymbolKey];
 
     if (line) {
       if (symbol) {
@@ -647,21 +708,20 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
         uint64_t functionLengthVal = [functionLength unsignedLongLongValue];
 
         // Function
-        if (!WriteFormat(fd, "FUNC %llx %llx 0 %s%c", addressVal,
-                         functionLengthVal, [symbol UTF8String],
-                         terminatingChar))
+        if (!WriteFormat(fd, "FUNC %llx %llx 0 %s\n", addressVal,
+                         functionLengthVal, [symbol UTF8String]))
           return NO;
       }
 
       // Source line
       uint64_t length = nextAddressVal - addressVal;
-      if (!WriteFormat(fd, "%llx %llx %d %d%c", addressVal, length,
-                       [line unsignedIntValue], fileIdx, terminatingChar))
+      if (!WriteFormat(fd, "%llx %llx %d %d\n", addressVal, length,
+                       [line unsignedIntValue], fileIdx))
         return NO;
     } else {
       // PUBLIC <address> <stack-size> <name>
-      if (!WriteFormat(fd, "PUBLIC %llx 0 %s%c", addressVal,
-                       [symbol UTF8String], terminatingChar))
+      if (!WriteFormat(fd, "PUBLIC %llx 0 %s\n", addressVal,
+                       [symbol UTF8String]))
         return NO;
     }
   }
@@ -671,10 +731,9 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
 
 //=============================================================================
 - (id)initWithContentsOfFile:(NSString *)path {
-  if (self = [super init]) {
+  if ((self = [super init])) {
 
     if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
-      NSLog(@"Missing source file: %@", path);
       [self autorelease];
       return nil;
     }
@@ -682,7 +741,6 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
     sourcePath_ = [path copy];
 
     if (![self loadModuleInfo]) {
-      NSLog(@"Not a valid Mach-o file: %@", path);
       [self autorelease];
       return nil;
     }
@@ -707,8 +765,6 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
       // Specify the default architecture
       [self setArchitecture:[[headers_ allKeys] objectAtIndex:0]];
     }
-
-    [self setUUID:nil];
   }
 
   return self;
@@ -723,7 +779,6 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
 - (void)dealloc {
   [sourcePath_ release];
   [architecture_ release];
-  [uuidStr_ release];
   [addresses_ release];
   [sources_ release];
   [headers_ release];
@@ -767,22 +822,6 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
 //=============================================================================
 - (NSString *)architecture {
   return architecture_;
-}
-
-//=============================================================================
-- (void)setUUID:(NSString *)uuidStr {
-  if (!uuidStr) {
-    CFUUIDRef uuid = CFUUIDCreate(NULL);
-    uuidStr = [(NSString *)CFUUIDCreateString(NULL, uuid) autorelease];
-  }
-
-  [uuidStr_ autorelease];
-  uuidStr_ = [uuidStr copy];
-}
-
-//=============================================================================
-- (NSString *)uuid {
-  return uuidStr_;
 }
 
 //=============================================================================

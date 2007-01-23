@@ -103,7 +103,7 @@ bool MachoWalker::FindHeader(int cpu_type, off_t &offset) {
   offset = sizeof(magic);
 
   // Figure out what type of file we've got
-  bool is_fat;
+  bool is_fat = false;
   if (magic == FAT_MAGIC || magic == FAT_CIGAM) {
     is_fat = true;    
   }
@@ -118,9 +118,6 @@ bool MachoWalker::FindHeader(int cpu_type, off_t &offset) {
     cpu_type_t header_cpu_type;
     if (!ReadBytes(&header_cpu_type, sizeof(header_cpu_type), offset))
       return false;
-
-    if (NXHostByteOrder() != NX_BigEndian)
-      header_cpu_type = NXSwapLong(header_cpu_type);
 
     if (valid_cpu_type != header_cpu_type)
       return false;

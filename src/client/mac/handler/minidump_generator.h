@@ -95,7 +95,8 @@ class MinidumpGenerator {
   bool WriteContext(thread_state_data_t state,
                     MDLocationDescriptor *register_location);
   bool WriteThreadStream(mach_port_t thread_id, MDRawThread *thread);
-  bool WriteCVRecord(MDRawModule *module, const char *module_path);
+  bool WriteCVRecord(MDRawModule *module, int cpu_type, 
+                     const char *module_path);
   bool WriteModuleStream(unsigned int index, MDRawModule *module);
 
   // disallow copy ctor and operator=

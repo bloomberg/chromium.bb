@@ -38,7 +38,6 @@
  @protected
   NSString *sourcePath_;              // Source of symbols (STRONG)
   NSString *architecture_;            // Architecture to extract (STRONG)
-  NSString *uuidStr_;                 // Module UUID (STRONG)
   NSMutableDictionary *addresses_;    // Addresses and symbols (STRONG)
   NSMutableDictionary *sources_;      // Address and Source file paths (STRONG)
   NSMutableArray *cppAddresses_;      // Addresses of C++ symbols (STRONG)
@@ -55,11 +54,6 @@
 // If not set, the native architecture will be used
 - (BOOL)setArchitecture:(NSString *)architecture;
 - (NSString *)architecture;
-
-// Specify a UUID to output with the symbol file.
-// If none specified, a new one will be created
-- (void)setUUID:(NSString *)uuidStr;
-- (NSString *)uuid;
 
 // Write the symbols to |symbolFilePath|.  Return YES if successful.
 - (BOOL)writeSymbolFile:(NSString *)symbolFilePath;

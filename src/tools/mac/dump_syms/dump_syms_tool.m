@@ -46,21 +46,31 @@ typedef struct {
 static void Start(Options *options) {
   DumpSymbols *dump = [[DumpSymbols alloc]
     initWithContentsOfFile:options->srcPath];
+  
+  if (!dump) {
+    fprintf(stderr, "%s is not a valid Mach-o file\n",
+            [options->srcPath fileSystemRepresentation]);
+    options->result = NO;
+    return;
+  }
 
-  [dump setArchitecture:options->arch];
-  [dump setUUID:options->uuidStr];
+  if (![dump setArchitecture:options->arch]) {
+    fprintf(stderr, "Architecture: %s not available in %s\n", 
+            [options->arch UTF8String],
+            [options->srcPath fileSystemRepresentation]);
+    options->result = NO;
+    return;
+  }
+  
   options->result = [dump writeSymbolFile:@"-"];
 }
 
 //=============================================================================
 static void Usage(int argc, const char *argv[]) {
-  fprintf(stderr, "Output airbag symbol file.  If a UUID is not specified,\n"
-          "the program will try to locate one in the mach-o-file.  If one is\n"
-          "not found, one will be created.\n");
-  fprintf(stderr, "Usage: %s [-a ppc|i386|x86][-u uuid] <mach-o-file>\n",
+  fprintf(stderr, "Output an Airbag symbol file from a Mach-o file.\n");
+  fprintf(stderr, "Usage: %s [-a ppc|i386|x86] <Mach-o file>\n",
           argv[0]);
   fprintf(stderr, "\t-a: Architecture type [default: native]\n");
-  fprintf(stderr, "\t-u: Specify a UUID\n");
   fprintf(stderr, "\t-h: Usage\n");
   fprintf(stderr, "\t-?: Usage\n");
 }
@@ -97,9 +107,6 @@ static void SetupOptions(int argc, const char *argv[], Options *options) {
           exit(1);
         }
           break;
-      case 'u':
-        options->uuidStr = [NSString stringWithUTF8String:optarg];
-        break;
       case '?':
       case 'h':
         Usage(argc, argv);
@@ -107,14 +114,9 @@ static void SetupOptions(int argc, const char *argv[], Options *options) {
         break;
     }
   }
-
-  if (!options->uuidStr) {
-    CFUUIDRef uuid = CFUUIDCreate(NULL);
-    options->uuidStr = (NSString *)CFUUIDCreateString(NULL, uuid);
-  }
-
+  
   if ((argc - optind) != 1) {
-    fprintf(stderr, "%s: Missing executable\n", argv[0]);
+    fprintf(stderr, "Must specify Mach-o file\n");
     Usage(argc, argv);
     exit(1);
   }
@@ -135,5 +137,5 @@ int main (int argc, const char * argv[]) {
 
   [pool release];
 
-  return options.result;
+  return !options.result;
 }

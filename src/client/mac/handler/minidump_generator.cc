@@ -39,6 +39,7 @@
 
 #include "client/mac/handler/minidump_generator.h"
 #include "client/minidump_file_writer-inl.h"
+#include "common/mac/file_id.h"
 #include "common/mac/string_utilities.h"
 
 using MacStringUtils::ConvertToString;
@@ -492,6 +493,7 @@ bool MinidumpGenerator::WriteModuleStream(unsigned int index,
   if (!header)
     return false;
 
+  int cpu_type = header->cputype;
   unsigned long slide = _dyld_get_image_vmaddr_slide(index);
   const char* name = _dyld_get_image_name(index);
   const struct load_command *cmd =
@@ -513,7 +515,7 @@ bool MinidumpGenerator::WriteModuleStream(unsigned int index,
         module->size_of_image = seg->vmsize;
         module->module_name_rva = string_location.rva;
 
-        if (!WriteCVRecord(module, name))
+        if (!WriteCVRecord(module, cpu_type, name))
           return false;
 
         return true;
@@ -540,7 +542,7 @@ static int FindExecutableModule() {
   return 0;
 }
 
-bool MinidumpGenerator::WriteCVRecord(MDRawModule *module,
+bool MinidumpGenerator::WriteCVRecord(MDRawModule *module, int cpu_type,
                                       const char *module_path) {
   TypedMDRVA<MDCVInfoPDB70> cv(&writer_);
 
@@ -566,14 +568,25 @@ bool MinidumpGenerator::WriteCVRecord(MDRawModule *module,
   cv_ptr->cv_signature = MD_CVINFOPDB70_SIGNATURE;
   cv_ptr->age = 0;
 
-  // Convert the string to MDGUID
-  // TODO(waylonis):
-  // MacOS doesn't currently have a uuid string, so we'll just write a
-  // placeholder here.
-  cv_ptr->signature.data1 = 0;
-  cv_ptr->signature.data2 = 0;
-  cv_ptr->signature.data3 = 0;
-  memset(cv_ptr->signature.data4, 0, sizeof(cv_ptr->signature.data4));
+  // Get the module identifier
+  FileID file_id(module_path);
+  unsigned char identifier[16];
+  
+  if (file_id.MachoIdentifier(cpu_type, identifier)) {
+    cv_ptr->signature.data1 = (uint32_t)identifier[0] << 24 | 
+      (uint32_t)identifier[1] << 16 | (uint32_t)identifier[2] << 8 |
+      (uint32_t)identifier[3];
+    cv_ptr->signature.data2 = (uint32_t)identifier[4] << 8 | identifier[5];
+    cv_ptr->signature.data3 = (uint32_t)identifier[6] << 8 | identifier[7];
+    cv_ptr->signature.data4[0] = identifier[8];
+    cv_ptr->signature.data4[1] = identifier[9];
+    cv_ptr->signature.data4[2] = identifier[10];
+    cv_ptr->signature.data4[3] = identifier[11];
+    cv_ptr->signature.data4[4] = identifier[12];
+    cv_ptr->signature.data4[5] = identifier[13];
+    cv_ptr->signature.data4[6] = identifier[14];
+    cv_ptr->signature.data4[7] = identifier[15];
+  }
 
   return true;
 }

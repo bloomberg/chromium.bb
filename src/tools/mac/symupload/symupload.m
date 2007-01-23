@@ -34,7 +34,6 @@
 //  debug_identifier: the debug file's identifier, usually consisting of
 //                    the guid and age embedded in the pdb, e.g.
 //                    "11111111BBBB3333DDDD555555555555F"
-//  version: the file version of the module, e.g. "1.2.3.4"
 //  os: the operating system that the module was built for
 //  cpu: the CPU that the module was built for (x86 or ppc)
 //  symbol_file: the contents of the airbag-format symbol file
@@ -47,7 +46,6 @@
 typedef struct {
   NSString *symbolsPath;
   NSString *uploadURLStr;
-  NSString *version;
   BOOL success;
 } Options;
 
@@ -69,11 +67,11 @@ static NSArray *ModuleDataForSymbolFile(NSString *file) {
 }
 
 //=============================================================================
-static NSString *CompactIdentifier(NSString *uuid, NSString *age) {
+static NSString *CompactIdentifier(NSString *uuid) {
   NSMutableString *str = [NSMutableString stringWithString:uuid];
   [str replaceOccurrencesOfString:@"-" withString:@"" options:0
                             range:NSMakeRange(0, [str length])];
-  [str appendString:age];
+  
   return str;
 }
 
@@ -83,22 +81,30 @@ static void Start(Options *options) {
   HTTPMultipartUpload *ul = [[HTTPMultipartUpload alloc] initWithURL:url];
   NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
   NSArray *moduleParts = ModuleDataForSymbolFile(options->symbolsPath);
-  NSString *compactedID = CompactIdentifier([moduleParts objectAtIndex:3],
-                                            [moduleParts objectAtIndex:4]);
+  NSMutableString *compactedID =
+    [NSMutableString stringWithString:[moduleParts objectAtIndex:3]];
+  [compactedID replaceOccurrencesOfString:@"-" withString:@"" options:0
+                                    range:NSMakeRange(0, [compactedID length])];
 
   // Add parameters
-  if (options->version)
-    [parameters setObject:options->version forKey:@"version"];
+  [parameters setObject:compactedID forKey:@"debug_identifier"];
 
-  // MODULE <os> <cpu> <uuid> <age> <module-name>
-  // 0      1    2     3      4     5
-  [parameters setObject:@"1" forKey:@"age"];
+  // MODULE <os> <cpu> <uuid> <module-name>
+  // 0      1    2     3      4
   [parameters setObject:[moduleParts objectAtIndex:1] forKey:@"os"];
   [parameters setObject:[moduleParts objectAtIndex:2] forKey:@"cpu"];
-  [parameters setObject:[moduleParts objectAtIndex:5] forKey:@"debug_file"];
-  [parameters setObject:[moduleParts objectAtIndex:5] forKey:@"code_file"];
-  [parameters setObject:compactedID forKey:@"debug_identifier"];
+  [parameters setObject:[moduleParts objectAtIndex:4] forKey:@"debug_file"];
+  [parameters setObject:[moduleParts objectAtIndex:4] forKey:@"code_file"];
   [ul setParameters:parameters];
+  
+  NSArray *keys = [parameters allKeys];
+  int count = [keys count];
+  for (int i = 0; i < count; ++i) {
+    NSString *key = [keys objectAtIndex:i];
+    NSString *value = [parameters objectForKey:key];
+    fprintf(stdout, "'%s' = '%s'\n", [key UTF8String], 
+            [value UTF8String]);
+  }
 
   // Add file
   [ul addFileAtPath:options->symbolsPath name:@"symbol_file"];
@@ -123,10 +129,9 @@ static void Start(Options *options) {
 static void
 Usage(int argc, const char *argv[]) {
   fprintf(stderr, "Submit symbol information.\n");
-  fprintf(stderr, "Usage: %s [-v version] <symbols> <upload-URL>\n", argv[0]);
+  fprintf(stderr, "Usage: %s <symbols> <upload-URL>\n", argv[0]);
   fprintf(stderr, "<symbols> should be created by using the dump_syms tool.\n");
   fprintf(stderr, "<upload-URL> is the destination for the upload\n");
-  fprintf(stderr, "\t-v: Version information (e.g., 1.2.3.4)\n");
   fprintf(stderr, "\t-h: Usage\n");
   fprintf(stderr, "\t-?: Usage\n");
 }
@@ -137,11 +142,8 @@ SetupOptions(int argc, const char *argv[], Options *options) {
   extern int optind;
   char ch;
 
-  while ((ch = getopt(argc, (char * const *)argv, "v:h?")) != -1) {
+  while ((ch = getopt(argc, (char * const *)argv, "h?")) != -1) {
     switch (ch) {
-      case 'v':
-        options->version = [NSString stringWithCString:optarg];
-        break;
       default:
         Usage(argc, argv);
         exit(0);
