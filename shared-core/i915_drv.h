@@ -254,6 +254,12 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define I915REG_INT_ENABLE_R	0x020a0
 #define I915REG_INSTPM	        0x020c0
 
+#define I915REG_PIPEASTAT	0x70024
+#define I915REG_PIPEBSTAT	0x71024
+
+#define I915_VBLANK_INTERRUPT_ENABLE	(1UL<<17)
+#define I915_VBLANK_CLEAR		(1UL<<1)
+
 #define SRX_INDEX		0x3c4
 #define SRX_DATA		0x3c5
 #define SR01			1
