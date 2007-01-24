@@ -47,6 +47,7 @@
 #include "google_airbag/processor/minidump_processor.h"
 #include "google_airbag/processor/process_state.h"
 #include "google_airbag/processor/stack_frame_cpu.h"
+#include "google_airbag/processor/system_info.h"
 #include "processor/pathname_stripper.h"
 #include "processor/scoped_ptr.h"
 #include "processor/simple_symbol_supplier.h"
@@ -67,6 +68,7 @@ using google_airbag::scoped_ptr;
 using google_airbag::StackFrame;
 using google_airbag::StackFramePPC;
 using google_airbag::StackFrameX86;
+using google_airbag::SystemInfo;
 
 typedef struct {
   NSString *minidumpPath;
@@ -99,7 +101,7 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
       printf("%-*s", maxStr, buffer);
       u_int64_t instruction = frame->instruction;
 
-      // PPC only: Adjust the instruction to match that of Crash reporter.  The 
+      // PPC only: Adjust the instruction to match that of Crash reporter.  The
       // instruction listed is actually the return address.  See the detailed
       // comments in stackwalker_ppc.cc for more information.
       if (cpu == "ppc" && frame_index)
@@ -186,25 +188,12 @@ static void PrintRegisters(const CallStack *stack, const string &cpu) {
 static void Start(Options *options) {
   string minidump_file([options->minidumpPath fileSystemRepresentation]);
 
-  // Guess that the symbols are for our default architecture
-  const NXArchInfo *localArchInfo = NXGetLocalArchInfo();
-  string arch = "ppc";
-
-  if (!localArchInfo)
-    return;
-  
-  if (localArchInfo->cputype & CPU_ARCH_ABI64)
-    arch = ((localArchInfo->cputype & ~CPU_ARCH_ABI64) == CPU_TYPE_X86) ?
-      "x86_64" : "ppc64";
-  else
-    arch = (localArchInfo->cputype == CPU_TYPE_X86) ? "x86" : "ppc";
-
   BasicSourceLineResolver resolver;
   string search_dir = options->searchDir ?
     [options->searchDir fileSystemRepresentation] : "";
   scoped_ptr<OnDemandSymbolSupplier> symbol_supplier(
-    new OnDemandSymbolSupplier(arch, search_dir));
-  scoped_ptr<MinidumpProcessor> 
+    new OnDemandSymbolSupplier(search_dir));
+  scoped_ptr<MinidumpProcessor>
     minidump_processor(new MinidumpProcessor(symbol_supplier.get(), &resolver));
   ProcessState process_state;
   if (minidump_processor->Process(minidump_file, &process_state) !=
@@ -213,19 +202,8 @@ static void Start(Options *options) {
     return;
   }
 
-  string cpu = process_state.cpu();
-  // If the minidump is different than the default architecture
-  if (cpu != arch) {
-    symbol_supplier.reset(new OnDemandSymbolSupplier(cpu, search_dir));
-    minidump_processor.reset(new MinidumpProcessor(symbol_supplier.get(), 
-                                                   &resolver));
-
-    if (minidump_processor->Process(minidump_file, &process_state) !=
-        MinidumpProcessor::PROCESS_OK) {
-      fprintf(stderr, "MinidumpProcessor::Process failed\n");
-      return;
-    }
-  }
+  const SystemInfo *system_info = process_state.system_info();
+  string cpu = system_info->cpu;
 
   // Convert the time to a string
   u_int32_t time_date_stamp = process_state.time_date_stamp();
@@ -235,9 +213,8 @@ static void Start(Options *options) {
   strftime(timestr, 20, "%Y-%m-%d %H:%M:%S", &timestruct);
   printf("Date: %s GMT\n", timestr);
 
-  string cpu_info = process_state.cpu_info();
-  printf("Operating system: %s (%s)\n", process_state.os().c_str(),
-         process_state.os_version().c_str());
+  printf("Operating system: %s (%s)\n", system_info->os.c_str(),
+         system_info->os_version.c_str());
   printf("Architecture: %s\n", cpu.c_str());
 
   if (process_state.crashed()) {

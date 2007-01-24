@@ -45,20 +45,17 @@ class MinidumpModule;
 
 class OnDemandSymbolSupplier : public SymbolSupplier {
  public:
-  // |architecture| should be one of ppc, i386, x86, ppc64, x86_64
   // |search_dir| is the directory to search for alternative symbols with
   // the same name as the module in the minidump
-  OnDemandSymbolSupplier(const string &architecture, const string &search_dir);
+  OnDemandSymbolSupplier(const string &search_dir);
   virtual ~OnDemandSymbolSupplier() {}
 
   // Returns the path to the symbol file for the given module.
-  virtual SymbolResult GetSymbolFile(const CodeModule *module, 
+  virtual SymbolResult GetSymbolFile(const CodeModule *module,
+                                     const SystemInfo *system_info,
                                      string *symbol_file);
 
  protected:
-  // Return symbols for this architecture
-  string architecture_;
-
   // Search directory
   string search_dir_;
 
@@ -84,7 +81,8 @@ class OnDemandSymbolSupplier : public SymbolSupplier {
 
   // Generate the airbag symbol file for |module|.  Return true if successful.
   // File is generated in /tmp.
-  bool GenerateSymbolFile(const CodeModule *module);
+  bool GenerateSymbolFile(const CodeModule *module,
+                          const SystemInfo *system_info);
 };
 
 }  // namespace google_airbag

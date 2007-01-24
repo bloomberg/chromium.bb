@@ -33,6 +33,7 @@
 
 #include "google_airbag/processor/basic_source_line_resolver.h"
 #include "google_airbag/processor/minidump.h"
+#include "google_airbag/processor/system_info.h"
 #include "processor/pathname_stripper.h"
 
 #include "on_demand_symbol_supplier.h"
@@ -44,28 +45,28 @@ using std::string;
 using google_airbag::OnDemandSymbolSupplier;
 using google_airbag::PathnameStripper;
 using google_airbag::SymbolSupplier;
+using google_airbag::SystemInfo;
 
-OnDemandSymbolSupplier::OnDemandSymbolSupplier(const string &architecture,
-                                               const string &search_dir)
-  : architecture_(architecture),
-    search_dir_(search_dir) {
+OnDemandSymbolSupplier::OnDemandSymbolSupplier(const string &search_dir)
+  : search_dir_(search_dir) {
 }
 
-SymbolSupplier::SymbolResult 
+SymbolSupplier::SymbolResult
 OnDemandSymbolSupplier::GetSymbolFile(const CodeModule *module,
+                                      const SystemInfo *system_info,
                                       string *symbol_file) {
   string path(GetModuleSymbolFile(module));
 
   if (path.empty()) {
-    if (!GenerateSymbolFile(module))
+    if (!GenerateSymbolFile(module, system_info))
       return NOT_FOUND;
-        
+
     path = GetModuleSymbolFile(module);
   }
-  
+
   if (path.empty())
     return NOT_FOUND;
-  
+
   *symbol_file = path;
   return FOUND;
 }
@@ -127,16 +128,17 @@ static float GetFileModificationTime(const char *path) {
   if (stat(path, &file_stat) == 0)
     result = (float)file_stat.st_mtimespec.tv_sec +
       (float)file_stat.st_mtimespec.tv_nsec / 1.0e9;
-  
+
   return result;
 }
 
-bool OnDemandSymbolSupplier::GenerateSymbolFile(const CodeModule *module) {
+bool OnDemandSymbolSupplier::GenerateSymbolFile(const CodeModule *module,
+                                                const SystemInfo *system_info) {
   bool result = true;
   string name = GetNameForModule(module);
   string module_path = GetLocalModulePath(module);
   NSString *symbol_path = [NSString stringWithFormat:@"/tmp/%s.%s.sym",
-    name.c_str(), architecture_.c_str()];
+    name.c_str(), system_info->cpu.c_str()];
 
   if (module_path.empty())
     return false;
@@ -146,11 +148,11 @@ bool OnDemandSymbolSupplier::GenerateSymbolFile(const CodeModule *module) {
   BOOL generate_file = YES;
   if ([[NSFileManager defaultManager] fileExistsAtPath:symbol_path]) {
     // Check if the module file is newer than the saved symbols
-    float cache_time = 
+    float cache_time =
     GetFileModificationTime([symbol_path fileSystemRepresentation]);
-    float module_time = 
+    float module_time =
       GetFileModificationTime(module_path.c_str());
-    
+
     if (cache_time > module_time)
       generate_file = NO;
   }
@@ -160,7 +162,7 @@ bool OnDemandSymbolSupplier::GenerateSymbolFile(const CodeModule *module) {
       stringWithFileSystemRepresentation:module_path.c_str()
                                   length:module_path.length()];
     DumpSymbols *dump = [[DumpSymbols alloc] initWithContentsOfFile:module_str];
-    const char *archStr = architecture_.c_str();
+    const char *archStr = system_info->cpu.c_str();
     if ([dump setArchitecture:[NSString stringWithUTF8String:archStr]]) {
       [dump writeSymbolFile:symbol_path];
     } else {
