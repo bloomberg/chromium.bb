@@ -422,7 +422,7 @@ int main(int argc, char **argv) {
   }
 
   // extra arguments are symbol paths
-  vector<string> symbol_paths;
+  std::vector<std::string> symbol_paths;
   if (argc > symbol_path_arg) {
     for (int argi = symbol_path_arg; argi < argc; ++argi)
       symbol_paths.push_back(argv[argi]);
