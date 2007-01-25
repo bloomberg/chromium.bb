@@ -33,6 +33,9 @@
 //
 // Author: Mark Mentovai
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include <cassert>
 
 #include "processor/simple_symbol_supplier.h"
@@ -41,6 +44,25 @@
 #include "processor/pathname_stripper.h"
 
 namespace google_airbag {
+
+static bool file_exists(const string &file_name) {
+  struct stat sb;
+  return stat(file_name.c_str(), &sb) == 0;
+}
+
+SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFile(
+    const CodeModule *module, const SystemInfo *system_info,
+    string *symbol_file) {
+  assert(symbol_file);
+  for (unsigned int path_index = 0; path_index < paths_.size(); ++path_index) {
+    SymbolResult result;
+    if ((result = GetSymbolFileAtPath(module, system_info, paths_[path_index],
+                                      symbol_file)) != NOT_FOUND) {
+      return result;
+    }
+  }
+  return NOT_FOUND;
+}
 
 SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFileAtPath(
     const CodeModule *module, const SystemInfo *system_info,
@@ -80,6 +102,9 @@ SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFileAtPath(
     path.append(debug_file_name);
   }
   path.append(".sym");
+
+  if (!file_exists(path))
+    return NOT_FOUND;
 
   *symbol_file = path;
   return FOUND;

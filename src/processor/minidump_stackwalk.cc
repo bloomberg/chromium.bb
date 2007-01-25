@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <vector>
 
 #include "google_airbag/processor/basic_source_line_resolver.h"
 #include "google_airbag/processor/call_stack.h"
@@ -51,6 +52,7 @@
 namespace {
 
 using std::string;
+using std::vector;
 using google_airbag::BasicSourceLineResolver;
 using google_airbag::CallStack;
 using google_airbag::CodeModule;
@@ -64,6 +66,9 @@ using google_airbag::SimpleSymbolSupplier;
 using google_airbag::StackFrame;
 using google_airbag::StackFramePPC;
 using google_airbag::StackFrameX86;
+
+// Separator character for machine readable output.
+static const char kOutputSeparator = '|';
 
 // PrintRegister prints a register's name and value to stdout.  It will
 // print four registers on a line.  For the first register in a set,
@@ -79,6 +84,17 @@ static int PrintRegister(const char *name, u_int32_t value, int sequence) {
   }
   printf(" %5s = 0x%08x", name, value);
   return ++sequence;
+}
+
+// StripSeparator takes a string |original| and returns a copy
+// of the string with all occurences of |kOutputSeparator| removed.
+static string StripSeparator(const string &original) {
+  string result = original;
+  string::size_type position = 0;
+  while ((position = result.find(kOutputSeparator, position)) != string::npos) {
+    result.erase(position, 1);
+  }
+  return result;
 }
 
 // PrintStack prints the call stack in |stack| to stdout, in a reasonably
@@ -153,6 +169,62 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
   }
 }
 
+// PrintStackMachineReadable prints the call stack in |stack| to stdout,
+// in the following machine readable pipe-delimited text format:
+// thread number|frame number|module|function|source file|line|offset
+//
+// Module, function, source file, and source line may all be empty
+// depending on availability.  The code offset follows the same rules as
+// PrintStack above.
+static void PrintStackMachineReadable(int thread_num, const CallStack *stack) {
+  int frame_count = stack->frames()->size();
+  for (int frame_index = 0; frame_index < frame_count; ++frame_index) {
+    const StackFrame *frame = stack->frames()->at(frame_index);
+    printf("%d%c%d%c", thread_num, kOutputSeparator, frame_index,
+           kOutputSeparator);
+
+    if (frame->module) {
+      assert(!frame->module->code_file().empty());
+      printf("%s", StripSeparator(PathnameStripper::File(
+                     frame->module->code_file())).c_str());
+      if (!frame->function_name.empty()) {
+        printf("%c%s", kOutputSeparator,
+               StripSeparator(frame->function_name).c_str());
+        if (!frame->source_file_name.empty()) {
+          printf("%c%s%c%d%c0x%llx", kOutputSeparator,
+                                     StripSeparator(frame->source_file_name)
+                                       .c_str(),
+                                     kOutputSeparator,
+                                     frame->source_line,
+                                     kOutputSeparator,
+                                     frame->instruction -
+                                       frame->source_line_base);
+        } else {
+          printf("%c%c%c0x%llx", kOutputSeparator,  // empty source file
+                                 kOutputSeparator,  // empty source line
+                                 kOutputSeparator,
+                                 frame->instruction - frame->function_base);
+        }
+      } else {
+        printf("%c%c%c%c0x%llx", kOutputSeparator,  // empty function name
+                                 kOutputSeparator,  // empty source file
+                                 kOutputSeparator,  // empty source line
+                                 kOutputSeparator,
+                                 frame->instruction -
+                                   frame->module->base_address());
+      }
+    } else {
+      // the printf before this prints a trailing separator for module name
+      printf("%c%c%c%c0x%llx", kOutputSeparator,  // empty function name
+                               kOutputSeparator,  // empty source file
+                               kOutputSeparator,  // empty source line
+                               kOutputSeparator,
+                               frame->instruction);
+    }
+    printf("\n");
+  }
+}
+
 static void PrintModules(const CodeModules *modules) {
   if (!modules)
     return;
@@ -176,35 +248,7 @@ static void PrintModules(const CodeModules *modules) {
   }
 }
 
-// Processes |minidump_file| using MinidumpProcessor.  |symbol_path|, if
-// non-empty, is the base directory of a symbol storage area, laid out in
-// the format required by SimpleSymbolSupplier.  If such a storage area
-// is specified, it is made available for use by the MinidumpProcessor.
-//
-// Returns the value of MinidumpProcessor::Process.  If processing succeeds,
-// prints identifying OS and CPU information from the minidump, crash
-// information if the minidump was produced as a result of a crash, and
-// call stacks for each thread contained in the minidump.  All information
-// is printed to stdout.
-static bool PrintMinidumpProcess(const string &minidump_file,
-                                 const string &symbol_path) {
-  scoped_ptr<SimpleSymbolSupplier> symbol_supplier;
-  if (!symbol_path.empty()) {
-    // TODO(mmentovai): check existence of symbol_path if specified?
-    symbol_supplier.reset(new SimpleSymbolSupplier(symbol_path));
-  }
-
-  BasicSourceLineResolver resolver;
-  MinidumpProcessor minidump_processor(symbol_supplier.get(), &resolver);
-
-  // Process the minidump.
-  ProcessState process_state;
-  if (minidump_processor.Process(minidump_file, &process_state) !=
-      MinidumpProcessor::PROCESS_OK) {
-    fprintf(stderr, "MinidumpProcessor::Process failed\n");
-    return false;
-  }
-
+static void PrintProcessState(const ProcessState& process_state) {
   // Print OS and CPU information.
   string cpu = process_state.system_info()->cpu;
   string cpu_info = process_state.system_info()->cpu_info;
@@ -249,23 +293,142 @@ static bool PrintMinidumpProcess(const string &minidump_file,
   }
 
   PrintModules(process_state.modules());
+}
+
+static void PrintProcessStateMachineReadable(const ProcessState& process_state)
+{
+  // Print OS and CPU information.
+  // OS|{OS Name}|{OS Version}
+  // CPU|{CPU Name}|{CPU Info}
+  printf("OS%c%s%c%s\n", kOutputSeparator,
+         StripSeparator(process_state.system_info()->os).c_str(),
+         kOutputSeparator,
+         StripSeparator(process_state.system_info()->os_version).c_str());
+  printf("CPU%c%s%c%s\n", kOutputSeparator,
+         StripSeparator(process_state.system_info()->cpu).c_str(),
+         kOutputSeparator,
+         // this may be empty
+         StripSeparator(process_state.system_info()->cpu_info).c_str());
+
+  int requesting_thread = process_state.requesting_thread();
+
+  // Print crash information.
+  // Crash|{Crash Reason}|{Crash Address}|{Crashed Thread}
+  printf("Crash%c", kOutputSeparator);
+  if (process_state.crashed()) {
+    printf("%s%c0x%llx%c",
+           StripSeparator(process_state.crash_reason()).c_str(),
+           kOutputSeparator, process_state.crash_address(), kOutputSeparator);
+  } else {
+    printf("No crash%c%c\n", kOutputSeparator, kOutputSeparator);
+  }
+
+  if (requesting_thread != -1) {
+    printf("%d\n", requesting_thread);
+  } else {
+    printf("\n");
+  }
+
+  // blank line to indicate start of threads
+  printf("\n");
+
+  // If the thread that requested the dump is known, print it first.
+  if (requesting_thread != -1) {
+    PrintStackMachineReadable(requesting_thread,
+                              process_state.threads()->at(requesting_thread));
+  }
+
+  // Print all of the threads in the dump.
+  int thread_count = process_state.threads()->size();
+  for (int thread_index = 0; thread_index < thread_count; ++thread_index) {
+    if (thread_index != requesting_thread) {
+      // Don't print the crash thread again, it was already printed.
+      PrintStackMachineReadable(thread_index,
+                                process_state.threads()->at(thread_index));
+    }
+  }
+}
+
+// Processes |minidump_file| using MinidumpProcessor.  |symbol_path|, if
+// non-empty, is the base directory of a symbol storage area, laid out in
+// the format required by SimpleSymbolSupplier.  If such a storage area
+// is specified, it is made available for use by the MinidumpProcessor.
+//
+// Returns the value of MinidumpProcessor::Process.  If processing succeeds,
+// prints identifying OS and CPU information from the minidump, crash
+// information if the minidump was produced as a result of a crash, and
+// call stacks for each thread contained in the minidump.  All information
+// is printed to stdout.
+static bool PrintMinidumpProcess(const string &minidump_file,
+                                 const vector<string> &symbol_paths,
+                                 bool machine_readable) {
+  scoped_ptr<SimpleSymbolSupplier> symbol_supplier;
+  if (!symbol_paths.empty()) {
+    // TODO(mmentovai): check existence of symbol_path if specified?
+    symbol_supplier.reset(new SimpleSymbolSupplier(symbol_paths));
+  }
+
+  BasicSourceLineResolver resolver;
+  MinidumpProcessor minidump_processor(symbol_supplier.get(), &resolver);
+
+  // Process the minidump.
+  ProcessState process_state;
+  if (minidump_processor.Process(minidump_file, &process_state) !=
+      MinidumpProcessor::PROCESS_OK) {
+    fprintf(stderr, "MinidumpProcessor::Process failed\n");
+    return false;
+  }
+
+  if (machine_readable) {
+    PrintProcessStateMachineReadable(process_state);
+  } else {
+    PrintProcessState(process_state);
+  }
 
   return true;
 }
 
 }  // namespace
 
+static void usage(const char *program_name) {
+  fprintf(stderr, "usage: %s [-m] <minidump-file> [symbol-path ...]\n"
+          "    -m : Output in machine-readable format\n",
+          program_name);
+}
+
 int main(int argc, char **argv) {
-  if (argc < 2 || argc > 3) {
-    fprintf(stderr, "usage: %s <minidump-file> [symbol-path]\n", argv[0]);
+  if (argc < 2) {
+    usage(argv[0]);
     return 1;
   }
 
-  const char *minidump_file = argv[1];
-  const char *symbol_path = "";
-  if (argc == 3) {
-    symbol_path = argv[2];
+  const char *minidump_file;
+  bool machine_readable;
+  int symbol_path_arg;
+
+  if (strcmp(argv[1], "-m") == 0) {
+    if (argc < 3) {
+      usage(argv[0]);
+      return 1;
+    }
+
+    machine_readable = true;
+    minidump_file = argv[2];
+    symbol_path_arg = 3;
+  } else {
+    machine_readable = false;
+    minidump_file = argv[1];
+    symbol_path_arg = 2;
   }
 
-  return PrintMinidumpProcess(minidump_file, symbol_path) ? 0 : 1;
+  // extra arguments are symbol paths
+  vector<string> symbol_paths;
+  if (argc > symbol_path_arg) {
+    for (int argi = symbol_path_arg; argi < argc; ++argi)
+      symbol_paths.push_back(argv[argi]);
+  }
+
+  return PrintMinidumpProcess(minidump_file,
+                              symbol_paths,
+                              machine_readable) ? 0 : 1;
 }
