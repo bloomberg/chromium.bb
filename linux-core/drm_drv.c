@@ -148,10 +148,11 @@ int drm_lastclose(drm_device_t * dev)
 
 	DRM_DEBUG("\n");
 
-	if (drm_bo_driver_finish(dev)) {
-		DRM_ERROR("DRM memory manager still busy. "
-			  "System is unstable. Please reboot.\n");
-	}
+	/*
+	 * We can't do much about this function failing.
+	 */
+
+	drm_bo_driver_finish(dev);
 
 	if (dev->driver->lastclose)
 		dev->driver->lastclose(dev);
@@ -450,9 +451,28 @@ static int __init drm_core_init(void)
 {
 	int ret;
 	struct sysinfo si;
-	
+	unsigned long avail_memctl_mem;
+	unsigned long max_memctl_mem;
+
 	si_meminfo(&si);
-	drm_init_memctl(si.totalram/2, si.totalram*3/4);
+	
+	/*
+	 * AGP only allows low / DMA32 memory ATM.
+	 */
+
+	avail_memctl_mem = si.totalram - si.totalhigh;
+
+	/* 
+	 * Avoid overflows 
+	 */
+
+	max_memctl_mem = 1UL << (32 - PAGE_SHIFT);
+	max_memctl_mem = (max_memctl_mem / si.mem_unit) * PAGE_SIZE; 
+
+	if (avail_memctl_mem >= max_memctl_mem)
+		avail_memctl_mem = max_memctl_mem;
+
+	drm_init_memctl(avail_memctl_mem/2, avail_memctl_mem*3/4, si.mem_unit);
 
 	ret = -ENOMEM;
 	drm_cards_limit =

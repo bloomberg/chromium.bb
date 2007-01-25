@@ -95,12 +95,13 @@ void drm_query_memctl(drm_u64_t *cur_used,
 EXPORT_SYMBOL(drm_query_memctl);
 
 void drm_init_memctl(size_t p_low_threshold,
-		     size_t p_high_threshold)
+		     size_t p_high_threshold,
+		     size_t unit_size)
 {
 	spin_lock(&drm_memctl.lock);
 	drm_memctl.cur_used = 0;
-	drm_memctl.low_threshold = p_low_threshold << PAGE_SHIFT;
-	drm_memctl.high_threshold = p_high_threshold << PAGE_SHIFT;
+	drm_memctl.low_threshold = p_low_threshold * unit_size;
+	drm_memctl.high_threshold = p_high_threshold * unit_size;
 	spin_unlock(&drm_memctl.lock);
 }
 

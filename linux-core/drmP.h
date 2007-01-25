@@ -1127,7 +1127,8 @@ extern void drm_query_memctl(drm_u64_t *cur_used,
 			     drm_u64_t *low_threshold,
 			     drm_u64_t *high_threshold); 
 extern void drm_init_memctl(size_t low_threshold,
-			    size_t high_threshold);
+			    size_t high_threshold,
+			    size_t unit_size);
 
 				/* Misc. IOCTL support (drm_ioctl.h) */
 extern int drm_irq_by_busid(struct inode *inode, struct file *filp,
