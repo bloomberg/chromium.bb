@@ -295,10 +295,10 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 
 		nstatus = NV_READ(0x00400104);
 		nsource = NV_READ(0x00400108);
-		DRM_DEBUG("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
+		DRM_ERROR("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
 
 		instance = NV_READ(0x00400158);
-		DRM_DEBUG("instance:0x%08x\n", instance);
+		DRM_ERROR("instance:0x%08x\n", instance);
 
 		address = NV_READ(0x400704);
 		data    = NV_READ(0x400708);
@@ -330,6 +330,7 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 				nouveau_nv10_context_switch(dev);
 				break;
 			case NV_20:
+			case NV_30:
 				nouveau_nv20_context_switch(dev);
 				break;
 			default:

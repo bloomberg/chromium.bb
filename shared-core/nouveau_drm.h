@@ -93,6 +93,7 @@ drm_nouveau_mem_free_t;
 #define NOUVEAU_GETPARAM_AGP_PHYSICAL    7
 typedef struct drm_nouveau_getparam {
 	unsigned int param;
+	unsigned int dummy;
 	uint64_t value;
 }
 drm_nouveau_getparam_t;

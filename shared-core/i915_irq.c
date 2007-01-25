@@ -214,9 +214,12 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	drm_device_t *dev = (drm_device_t *) arg;
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	u16 temp;
+	u32 pipea_stats, pipeb_stats;
 
+	pipea_stats = I915_READ(I915REG_PIPEASTAT);
+	pipeb_stats = I915_READ(I915REG_PIPEBSTAT);
+		
 	temp = I915_READ16(I915REG_INT_IDENTITY_R);
-
 	temp &= (dev_priv->irq_enable_reg | USER_INT_FLAG);
 
 #if 0
@@ -257,6 +260,12 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 
 		if (dev_priv->swaps_pending > 0)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
+		I915_WRITE(I915REG_PIPEASTAT, 
+			pipea_stats|I915_VBLANK_INTERRUPT_ENABLE|
+			I915_VBLANK_CLEAR);
+		I915_WRITE(I915REG_PIPEBSTAT,
+			pipeb_stats|I915_VBLANK_INTERRUPT_ENABLE|
+			I915_VBLANK_CLEAR);
 	}
 
 	return IRQ_HANDLED;
