@@ -11,6 +11,7 @@
 #define NV40_GRCTX_SIZE (175*1024)
 #define NV43_GRCTX_SIZE (70*1024)
 #define NV4A_GRCTX_SIZE (64*1024)
+#define NV4C_GRCTX_SIZE (25*1024)
 #define NV4E_GRCTX_SIZE (25*1024)
 
 /*TODO: deciper what each offset in the context represents. The below
@@ -389,6 +390,113 @@ static void nv4a_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 		INSTANCE_WR(ctx, i/4, 0x3f800000);
 }
 
+
+static void nv4c_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	int i;
+
+	INSTANCE_WR(ctx, 0x00000/4, nouveau_chip_instance_get(dev, ctx));
+	INSTANCE_WR(ctx, 0x00024/4, 0x0000ffff);
+	INSTANCE_WR(ctx, 0x00028/4, 0x0000ffff);
+	INSTANCE_WR(ctx, 0x00030/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x0011c/4, 0x20010001);
+	INSTANCE_WR(ctx, 0x00120/4, 0x0f73ef00);
+	INSTANCE_WR(ctx, 0x00128/4, 0x02008821);
+	INSTANCE_WR(ctx, 0x00158/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x0015c/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00160/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00164/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00168/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x0016c/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00170/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00174/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00178/4, 0x00000040);
+	INSTANCE_WR(ctx, 0x0017c/4, 0x00000040);
+	INSTANCE_WR(ctx, 0x00180/4, 0x00000040);
+	INSTANCE_WR(ctx, 0x00188/4, 0x00000040);
+	INSTANCE_WR(ctx, 0x001d0/4, 0x0b0b0b0c);
+	INSTANCE_WR(ctx, 0x00340/4, 0x00040000);
+	INSTANCE_WR(ctx, 0x00350/4, 0x55555555);
+	INSTANCE_WR(ctx, 0x00354/4, 0x55555555);
+	INSTANCE_WR(ctx, 0x00358/4, 0x55555555);
+	INSTANCE_WR(ctx, 0x0035c/4, 0x55555555);
+	INSTANCE_WR(ctx, 0x00388/4, 0x00000008);
+	INSTANCE_WR(ctx, 0x0039c/4, 0x00001010);
+	INSTANCE_WR(ctx, 0x003d0/4, 0x00000111);
+	INSTANCE_WR(ctx, 0x003d4/4, 0x00080060);
+	INSTANCE_WR(ctx, 0x003f0/4, 0x00000080);
+	INSTANCE_WR(ctx, 0x003f4/4, 0xffff0000);
+	INSTANCE_WR(ctx, 0x003f8/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x0040c/4, 0x46400000);
+	INSTANCE_WR(ctx, 0x0041c/4, 0xffff0000);
+	INSTANCE_WR(ctx, 0x00428/4, 0x0fff0000);
+	INSTANCE_WR(ctx, 0x0042c/4, 0x0fff0000);
+	INSTANCE_WR(ctx, 0x00434/4, 0x00011100);
+	for (i=0x00450; i<0x0048c; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x07ff0000);
+	INSTANCE_WR(ctx, 0x00498/4, 0x4b7fffff);
+	INSTANCE_WR(ctx, 0x004c0/4, 0x30201000);
+	INSTANCE_WR(ctx, 0x004c4/4, 0x70605040);
+	INSTANCE_WR(ctx, 0x004c8/4, 0xb8a89888);
+	INSTANCE_WR(ctx, 0x004cc/4, 0xf8e8d8c8);
+	INSTANCE_WR(ctx, 0x004e0/4, 0x40100000);
+	INSTANCE_WR(ctx, 0x004fc/4, 0x0000ffff);
+	INSTANCE_WR(ctx, 0x00530/4, 0x435185d6);
+	INSTANCE_WR(ctx, 0x00534/4, 0x2155b699);
+	INSTANCE_WR(ctx, 0x00538/4, 0xfedcba98);
+	INSTANCE_WR(ctx, 0x0053c/4, 0x00000098);
+	INSTANCE_WR(ctx, 0x0054c/4, 0xffffffff);
+	INSTANCE_WR(ctx, 0x00550/4, 0x00ff7000);
+	INSTANCE_WR(ctx, 0x00554/4, 0x0000ffff);
+	INSTANCE_WR(ctx, 0x00564/4, 0x00ff0000);
+	INSTANCE_WR(ctx, 0x0059c/4, 0x00ffff00);
+	for (i=0x005e0; i<=0x0061c; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00018488);
+	for (i=0x00620; i<=0x0065c; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00028202);
+	for (i=0x006a0; i<=0x006dc; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x0000aae4);
+	for (i=0x006e0; i<=0x0071c; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x01012000);
+	for (i=0x00720; i<=0x0075c; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00080008);
+	for (i=0x007a0; i<=0x007dc; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00100008);
+	for (i=0x00830; i<=0x0083c; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x0001bc80);
+	for (i=0x00840; i<=0x0084c; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00000202);
+	for (i=0x00860; i<=0x0086c; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00000008);
+	for (i=0x00880; i<=0x0088c; i+=4)
+		INSTANCE_WR(ctx, i/4, 0x00080008);
+	INSTANCE_WR(ctx, 0x008a0/4, 0x00000002);
+	INSTANCE_WR(ctx, 0x008d4/4, 0x00000020);
+	INSTANCE_WR(ctx, 0x008d8/4, 0x030c30c3);
+	INSTANCE_WR(ctx, 0x008dc/4, 0x00011001);
+	INSTANCE_WR(ctx, 0x008e8/4, 0x3e020200);
+	INSTANCE_WR(ctx, 0x008ec/4, 0x00ffffff);
+	INSTANCE_WR(ctx, 0x008f0/4, 0x0c103f00);
+	INSTANCE_WR(ctx, 0x008fc/4, 0x00040000);
+	INSTANCE_WR(ctx, 0x00934/4, 0x00008100);
+	INSTANCE_WR(ctx, 0x009c0/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00a04/4, 0x00001001);
+	INSTANCE_WR(ctx, 0x00a0c/4, 0x00000003);
+	INSTANCE_WR(ctx, 0x00a10/4, 0x00888001);
+	INSTANCE_WR(ctx, 0x00a74/4, 0x00000005);
+	INSTANCE_WR(ctx, 0x00a80/4, 0x0000ffff);
+	INSTANCE_WR(ctx, 0x00a9c/4, 0x00005555);
+	INSTANCE_WR(ctx, 0x00aa0/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x00ad8/4, 0x00000001);
+	for (i=0x016a0; i<0x01718; i+=8)
+		INSTANCE_WR(ctx, i/4, 0x3f800000);
+	for (i=0x03460; i<0x05650; i+=24)
+		INSTANCE_WR(ctx, i/4, 0x00000001);
+	for (i=0x05660; i<0x05a50; i+=16)
+		INSTANCE_WR(ctx, i/4, 0x3f800000);
+}
+
 static void nv4e_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
@@ -518,6 +626,10 @@ nv40_graph_context_create(drm_device_t *dev, int channel)
 	case 0x4a:
 		ctx_size = NV4A_GRCTX_SIZE;
 		ctx_init = nv4a_graph_context_init;
+		break;
+	case 0x4c:
+		ctx_size = NV4C_GRCTX_SIZE;
+		ctx_init = nv4c_graph_context_init;
 		break;
 	case 0x4e:
 		ctx_size = NV4E_GRCTX_SIZE;
