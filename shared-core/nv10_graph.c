@@ -532,7 +532,7 @@ static int nv17_graph_ctx_regs [] = {
 void nouveau_nv10_context_switch(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	int channel, channel_old, i, gpu_type;
+	int channel, channel_old, i, j, gpu_type;
 
 	channel=NV_READ(NV_PFIFO_CACH1_PSH1)&(nouveau_fifo_number(dev)-1);
 	channel_old = (NV_READ(NV_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
@@ -554,8 +554,8 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 		|| (gpu_type==0x01800000)
 		|| (gpu_type==0x01f00000))
 	{
-		for (; nv17_graph_ctx_regs[i]; i++)
-			dev_priv->fifos[channel_old].nv10_pgraph_ctx[i] = NV_READ(nv17_graph_ctx_regs[i]);
+		for (j = 0; nv17_graph_ctx_regs[j]; i++,j++)
+			dev_priv->fifos[channel_old].nv10_pgraph_ctx[i] = NV_READ(nv17_graph_ctx_regs[j]);
 	}
 	
 	nouveau_wait_for_idle(dev);
@@ -573,8 +573,8 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 		|| (gpu_type==0x01800000)
 		|| (gpu_type==0x01f00000))
 	{
-		for (; nv17_graph_ctx_regs[i]; i++)
-			NV_WRITE(nv17_graph_ctx_regs[i], dev_priv->fifos[channel].nv10_pgraph_ctx[i]);
+		for (j = 0; nv17_graph_ctx_regs[j]; i++,j++)
+			NV_WRITE(nv17_graph_ctx_regs[j], dev_priv->fifos[channel].nv10_pgraph_ctx[i]);
 	}
 	nouveau_wait_for_idle(dev);
 #endif
