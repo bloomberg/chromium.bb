@@ -188,7 +188,7 @@ NV_PGRAPH_XY_LOGIC_MISC0,
 NV_PGRAPH_DEBUG_4,
 0x004006b0,
 
-NV_PGRAPH_CTX_SWITCH1,
+//NV_PGRAPH_CTX_SWITCH1, make ctx switch crash
 NV_PGRAPH_CTX_SWITCH2,
 NV_PGRAPH_CTX_SWITCH3,
 NV_PGRAPH_CTX_SWITCH4,
@@ -566,7 +566,7 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 	nouveau_wait_for_idle(dev);
 	// restore PGRAPH context
 	//XXX not working yet
-#if 0
+#if 1
 	for (i = 0; nv10_graph_ctx_regs[i]; i++)
 		NV_WRITE(nv10_graph_ctx_regs[i], dev_priv->fifos[channel].nv10_pgraph_ctx[i]);
 	if ((gpu_type==0x01700000)
@@ -602,12 +602,15 @@ int nv10_graph_context_create(drm_device_t *dev, int channel) {
 	/* is it really needed ??? */
 	dev_priv->fifos[channel].nv10_pgraph_ctx[1] = NV_READ(NV_PGRAPH_DEBUG_4);
 	dev_priv->fifos[channel].nv10_pgraph_ctx[2] = NV_READ(0x004006b0);
+
+
+	//XXX should be saved/restored for each fifo
+	//we supposed here we have X fifo and only one 3D fifo.
+	nv10_praph_pipe(dev);
 	return 0;
 }
 
 
 int nv10_graph_init(drm_device_t *dev) {
-	//XXX should be call at each fifo init
-	nv10_praph_pipe(dev);
 	return 0;
 }
