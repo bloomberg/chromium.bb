@@ -73,6 +73,13 @@
 #define NV_PGRAPH_CTX_SWITCH3                              0x00400154
 #define NV_PGRAPH_CTX_SWITCH4                              0x00400158
 #define NV_PGRAPH_CTX_SWITCH5                              0x0040015C
+#define NV_PGRAPH_CTX_CACHE1                               0x00400160
+#define NV_PGRAPH_CTX_CACHE2                               0x00400180
+#define NV_PGRAPH_CTX_CACHE3                               0x004001A0
+#define NV_PGRAPH_CTX_CACHE4                               0x004001C0
+#define NV_PGRAPH_CTX_CACHE5                               0x004001E0
+#define NV_PGRAPH_ABS_X_RAM                                0x00400400
+#define NV_PGRAPH_ABS_Y_RAM                                0x00400480
 #define NV_PGRAPH_X_MISC                                   0x00400500
 #define NV_PGRAPH_Y_MISC                                   0x00400504
 #define NV_PGRAPH_VALID1                                   0x00400508
@@ -151,9 +158,13 @@
 #define NV_PGRAPH_CHANNEL_CTX_POINTER                      0x00400788
 #define NV_PGRAPH_PATT_COLOR0                              0x00400800
 #define NV_PGRAPH_PATT_COLOR1                              0x00400804
+#define NV_PGRAPH_PATTERN                                  0x00400808
 #define NV_PGRAPH_PATTERN_SHAPE                            0x00400810
 #define NV_PGRAPH_CHROMA                                   0x00400814
 #define NV_PGRAPH_STORED_FMT                               0x00400830
+#define NV_PGRAPH_PATT_COLORRAM                            0x00400900
+#define NV_PGRAPH_WINDOWCLIP_HORIZONTAL                    0x00400F00
+#define NV_PGRAPH_WINDOWCLIP_VERTICAL                      0x00400F20
 #define NV_PGRAPH_XFMODE0                                  0x00400F40
 #define NV_PGRAPH_XFMODE1                                  0x00400F44
 #define NV_PGRAPH_GLOBALSTATE0                             0x00400F48
