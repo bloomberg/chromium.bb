@@ -354,21 +354,6 @@ NV_PGRAPH_BETA_PREMULT,
 0x00400ea4,
 0x00400ea8,
 0x00400eac,
-0x00400eb0,
-0x00400eb4,
-0x00400eb8,
-0x00400ebc,
-0x00400ec0,
-0x00400ec4,
-0x00400ec8,
-0x00400ecc,
-0x00400ed0,
-0x00400ed4,
-0x00400ed8,
-0x00400edc,
-0x00400ee0,
-0x00400a00,
-0x00400a04,
 0x00400e90,
 0x00400e94,
 0x00400e98,
@@ -525,6 +510,25 @@ NV_PGRAPH_VALID2,
 0
 };
 
+static int nv17_graph_ctx_regs [] = {
+0x00400eb0,
+0x00400eb4,
+0x00400eb8,
+0x00400ebc,
+0x00400ec0,
+0x00400ec4,
+0x00400ec8,
+0x00400ecc,
+0x00400ed0,
+0x00400ed4,
+0x00400ed8,
+0x00400edc,
+0x00400ee0,
+0x00400a00,
+0x00400a04,
+0
+};
+
 void nouveau_nv10_context_switch(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
@@ -545,6 +549,12 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 	// save PGRAPH context
 	for (i = 0; nv10_graph_ctx_regs[i]; i++)
 		dev_priv->fifos[channel_old].nv10_pgraph_ctx[i] = NV_READ(nv10_graph_ctx_regs[i]);
+	if ((NV_READ(NV_PMC_BOOT_0) & 0x0ff00000)==0x01700000)
+		|| (NV_READ(NV_PMC_BOOT_0) & 0x0ff00000)==0x01800000))
+	{
+		for (; nv17_graph_ctx_regs[i]; i++)
+			dev_priv->fifos[channel_old].nv10_pgraph_ctx[i] = NV_READ(nv17_graph_ctx_regs[i]);
+	}
 	
 	nouveau_wait_for_idle(dev);
 
@@ -557,6 +567,12 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 #if 0
 	for (i = 0; nv10_graph_ctx_regs[i]; i++)
 		NV_WRITE(nv10_graph_ctx_regs[i], dev_priv->fifos[channel].nv10_pgraph_ctx[i]);
+	if ((NV_READ(NV_PMC_BOOT_0) & 0x0ff00000)==0x01700000)
+		|| (NV_READ(NV_PMC_BOOT_0) & 0x0ff00000)==0x01800000))
+	{
+		for (; nv17_graph_ctx_regs[i]; i++)
+			NV_WRITE(nv17_graph_ctx_regs[i], dev_priv->fifos[channel].nv10_pgraph_ctx[i]);
+	}
 	nouveau_wait_for_idle(dev);
 #endif
 	
