@@ -83,6 +83,12 @@ int nouveau_firstopen(struct drm_device *dev)
 	} else
 		dev_priv->ramin = NULL;
 
+	/* Determine exact chipset we're running on */
+	if (dev_priv->card_type < NV_10)
+		dev_priv->chipset = dev_priv->card_type;
+	else
+		dev_priv->chipset =(NV_READ(NV_PMC_BOOT_0) & 0x0ff00000) >> 20;
+
 	/* Clear RAMIN
 	 * Determine locations for RAMHT/FC/RO
 	 * Initialise PFIFO

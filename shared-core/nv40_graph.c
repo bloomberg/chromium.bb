@@ -611,10 +611,9 @@ nv40_graph_context_create(drm_device_t *dev, int channel)
 	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
 	void (*ctx_init)(drm_device_t *, struct mem_block *);
 	unsigned int ctx_size;
-	int i, chipset;
+	int i;
 
-	chipset = (NV_READ(NV_PMC_BOOT_0) & 0x0ff00000) >> 20;
-	switch (chipset) {
+	switch (dev_priv->chipset) {
 	case 0x40:
 		ctx_size = NV40_GRCTX_SIZE;
 		ctx_init = nv40_graph_context_init;
@@ -896,17 +895,16 @@ nv40_graph_init(drm_device_t *dev)
 		(drm_nouveau_private_t *)dev->dev_private;
 	uint32_t *ctx_voodoo;
 	uint32_t pg0220_inst;
-	int i, chipset;
+	int i;
 
-	chipset = (NV_READ(NV_PMC_BOOT_0) & 0x0ff00000) >> 20;
-	DRM_DEBUG("chipset (from PMC_BOOT_0): NV%02X\n", chipset);
-	switch (chipset) {
+	switch (dev_priv->chipset) {
 	case 0x40: ctx_voodoo = nv40_ctx_voodoo; break;
 	case 0x43: ctx_voodoo = nv43_ctx_voodoo; break;
 	case 0x4a: ctx_voodoo = nv4a_ctx_voodoo; break;
 	case 0x4e: ctx_voodoo = nv4e_ctx_voodoo; break;
 	default:
-		DRM_ERROR("Unknown ctx_voodoo for chipset 0x%02x\n", chipset);
+		DRM_ERROR("Unknown ctx_voodoo for chipset 0x%02x\n",
+				dev_priv->chipset);
 		ctx_voodoo = NULL;
 		break;
 	}

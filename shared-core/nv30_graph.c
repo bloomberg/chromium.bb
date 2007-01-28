@@ -107,10 +107,9 @@ int nv30_graph_context_create(drm_device_t *dev, int channel)
 	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
 	void (*ctx_init)(drm_device_t *, struct mem_block *);
 	unsigned int ctx_size;
-	int i, chipset;
+	int i;
 
-	chipset = (NV_READ(NV_PMC_BOOT_0) & 0x0ff00000) >> 20;
-	switch (chipset) {
+	switch (dev_priv->chipset) {
 	default:
 		ctx_size = NV30_GRCTX_SIZE;
 		ctx_init = nv30_graph_context_init;
@@ -137,10 +136,7 @@ int nv30_graph_init(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
-	int i, chipset;
-
-	chipset = (NV_READ(NV_PMC_BOOT_0) & 0x0ff00000) >> 20;
-	DRM_DEBUG("chipset (from PMC_BOOT_0): NV%02X\n", chipset);
+	int i;
 
         /* Create Context Pointer Table */
         dev_priv->ctx_table_size = 32 * 4;

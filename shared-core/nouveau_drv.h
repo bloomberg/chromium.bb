@@ -104,6 +104,8 @@ struct nouveau_config {
 typedef struct drm_nouveau_private {
 	/* the card type, takes NV_* as values */
 	int card_type;
+	/* exact chipset, derived from NV_PMC_BOOT_0 */
+	int chipset;
 	int flags;
 
 	drm_local_map_t *mmio;
