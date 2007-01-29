@@ -68,28 +68,28 @@ static inline uint32_t drm_bo_type_flags(unsigned type)
  * bo locked. dev->struct_mutex locked.
  */
 
-static void drm_bo_add_to_lru(drm_buffer_object_t * buf,
+static void drm_bo_add_to_lru(drm_buffer_object_t * bo,
 			      drm_buffer_manager_t * bm)
 {
 	struct list_head *list;
-	buf->mem_type = 0;
+	bo->mem_type = 0;
 
-	switch(buf->flags & DRM_BO_MASK_MEM) {
+	switch(bo->flags & DRM_BO_MASK_MEM) {
 	case DRM_BO_FLAG_MEM_TT:
-		buf->mem_type = DRM_BO_MEM_TT;
+		bo->mem_type = DRM_BO_MEM_TT;
 		break;
 	case DRM_BO_FLAG_MEM_VRAM:
-		buf->mem_type = DRM_BO_MEM_VRAM;
+		bo->mem_type = DRM_BO_MEM_VRAM;
 		break;
 	case DRM_BO_FLAG_MEM_LOCAL:
-		buf->mem_type = DRM_BO_MEM_LOCAL;
+		bo->mem_type = DRM_BO_MEM_LOCAL;
 		break;
 	default:
 		BUG_ON(1);		
 	}
-	list = (buf->flags & (DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE)) ?
-		&bm->pinned[buf->mem_type] : &bm->lru[buf->mem_type];
-	list_add_tail(&buf->lru, list);
+	list = (bo->flags & (DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE)) ?
+		&bm->pinned[bo->mem_type] : &bm->lru[bo->mem_type];
+	list_add_tail(&bo->lru, list);
 	return;
 }
 
@@ -97,18 +97,18 @@ static void drm_bo_add_to_lru(drm_buffer_object_t * buf,
  * bo locked.
  */
 
-static int drm_move_tt_to_local(drm_buffer_object_t * buf, int evict,
+static int drm_move_tt_to_local(drm_buffer_object_t * bo, int evict,
 				int force_no_move)
 {
-	drm_device_t *dev = buf->dev;
+	drm_device_t *dev = bo->dev;
 	int ret;
 
-	if (buf->mm_node) {
+	if (bo->mm_node) {
 		mutex_lock(&dev->struct_mutex);
 		if (evict)
-			ret = drm_evict_ttm(buf->ttm);
+			ret = drm_evict_ttm(bo->ttm);
 		else
-			ret = drm_unbind_ttm(buf->ttm);
+			ret = drm_unbind_ttm(bo->ttm);
 
 		if (ret) {
 			mutex_unlock(&dev->struct_mutex);
@@ -117,15 +117,15 @@ static int drm_move_tt_to_local(drm_buffer_object_t * buf, int evict,
 			return ret;
 		}
 
-		if (!(buf->flags & DRM_BO_FLAG_NO_MOVE) || force_no_move) {
-			drm_mm_put_block(buf->mm_node);
-			buf->mm_node = NULL;
+		if (!(bo->flags & DRM_BO_FLAG_NO_MOVE) || force_no_move) {
+			drm_mm_put_block(bo->mm_node);
+			bo->mm_node = NULL;
 		}
 		mutex_unlock(&dev->struct_mutex);
 	}
 
-	buf->flags &= ~DRM_BO_FLAG_MEM_TT;
-	buf->flags |= DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
+	bo->flags &= ~DRM_BO_FLAG_MEM_TT;
+	bo->flags |= DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
 
 	return 0;
 }
@@ -513,24 +513,24 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 }
 
 /*
- * buf->mutex locked.
+ * bo->mutex locked.
  */
 
-int drm_bo_alloc_space(drm_buffer_object_t * buf, unsigned mem_type,
+int drm_bo_alloc_space(drm_buffer_object_t * bo, unsigned mem_type,
 		       int no_wait)
 {
-	drm_device_t *dev = buf->dev;
+	drm_device_t *dev = bo->dev;
 	drm_mm_node_t *node;
 	drm_buffer_manager_t *bm = &dev->bm;
-	drm_buffer_object_t *bo;
+	drm_buffer_object_t *entry;
 	drm_mm_t *mm = &bm->manager[mem_type];
 	struct list_head *lru;
-	unsigned long size = buf->num_pages;
+	unsigned long size = bo->num_pages;
 	int ret;
 
 	mutex_lock(&dev->struct_mutex);
 	do {
-		node = drm_mm_search_free(mm, size, buf->page_alignment, 1);
+		node = drm_mm_search_free(mm, size, bo->page_alignment, 1);
 		if (node)
 			break;
 
@@ -538,15 +538,15 @@ int drm_bo_alloc_space(drm_buffer_object_t * buf, unsigned mem_type,
 		if (lru->next == lru)
 			break;
 
-		bo = list_entry(lru->next, drm_buffer_object_t, lru);
+		entry = list_entry(lru->next, drm_buffer_object_t, lru);
 
-		atomic_inc(&bo->usage);
+		atomic_inc(&entry->usage);
 		mutex_unlock(&dev->struct_mutex);
-		mutex_lock(&bo->mutex);
+		mutex_lock(&entry->mutex);
 		BUG_ON(bo->flags & DRM_BO_FLAG_NO_MOVE);
-		ret = drm_bo_evict(bo, mem_type, no_wait, 0);
-		mutex_unlock(&bo->mutex);
-		drm_bo_usage_deref_unlocked(dev, bo);
+		ret = drm_bo_evict(entry, mem_type, no_wait, 0);
+		mutex_unlock(&entry->mutex);
+		drm_bo_usage_deref_unlocked(dev, entry);
 		if (ret)
 			return ret;
 		mutex_lock(&dev->struct_mutex);
@@ -558,13 +558,13 @@ int drm_bo_alloc_space(drm_buffer_object_t * buf, unsigned mem_type,
 		return -ENOMEM;
 	}
 
-	node = drm_mm_get_block(node, size, buf->page_alignment);
+	node = drm_mm_get_block(node, size, bo->page_alignment);
 	mutex_unlock(&dev->struct_mutex);
 	BUG_ON(!node);
-	node->private = (void *)buf;
+	node->private = (void *)bo;
 
-	buf->mm_node = node;
-	buf->offset = node->start * PAGE_SIZE;
+	bo->mm_node = node;
+	bo->offset = node->start * PAGE_SIZE;
 	return 0;
 }
 
