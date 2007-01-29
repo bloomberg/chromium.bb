@@ -381,7 +381,8 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 	uint32_t fence_type = 0;
 	int count = 0;
 	int ret = 0;
-	struct list_head f_list, *l;
+	struct list_head *l;
+	LIST_HEAD(f_list);
 
 	mutex_lock(&dev->struct_mutex);
 
@@ -411,8 +412,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 	 * the ones we already have..
 	 */
 
-	list_add_tail(&f_list, list);
-	list_del_init(list);
+	list_splice_init(list, &f_list);
 
 	if (fence) {
 		if ((fence_type & fence->type) != fence_type) {
