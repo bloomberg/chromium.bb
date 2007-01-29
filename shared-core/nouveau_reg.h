@@ -66,17 +66,26 @@
 #    define NV_PGRAPH_INTR_ERROR                              (1<<20)
 #define NV_PGRAPH_CTX_CONTROL                              0x00400144
 #define NV_PGRAPH_NV40_UNK220                              0x00400220
-#    define NV_PGRAPH_NV40_UNK220_FB_INSTANCE
+#    define NV_PGRAPH_NV40_UNK220_FB_INSTANCE              0xFFFFFFFF
 #define NV_PGRAPH_CTX_USER                                 0x00400148
 #define NV_PGRAPH_CTX_SWITCH1                              0x0040014C
 #define NV_PGRAPH_CTX_SWITCH2                              0x00400150
 #define NV_PGRAPH_CTX_SWITCH3                              0x00400154
 #define NV_PGRAPH_CTX_SWITCH4                              0x00400158
 #define NV_PGRAPH_CTX_SWITCH5                              0x0040015C
+#define NV04_PGRAPH_CTX_SWITCH1                            0x00400160
 #define NV_PGRAPH_CTX_CACHE1                               0x00400160
+#define NV04_PGRAPH_CTX_SWITCH2                            0x00400164
+#define NV04_PGRAPH_CTX_SWITCH3                            0x00400168
+#define NV04_PGRAPH_CTX_SWITCH4                            0x0040016C
+#define NV04_PGRAPH_CTX_USER                               0x00400174
+#define NV04_PGRAPH_CTX_CACHE1                             0x00400180
 #define NV_PGRAPH_CTX_CACHE2                               0x00400180
+#define NV04_PGRAPH_CTX_CACHE2                             0x004001A0
 #define NV_PGRAPH_CTX_CACHE3                               0x004001A0
+#define NV04_PGRAPH_CTX_CACHE3                             0x004001C0
 #define NV_PGRAPH_CTX_CACHE4                               0x004001C0
+#define NV04_PGRAPH_CTX_CACHE4                             0x004001E0
 #define NV_PGRAPH_CTX_CACHE5                               0x004001E0
 #define NV_PGRAPH_ABS_X_RAM                                0x00400400
 #define NV_PGRAPH_ABS_Y_RAM                                0x00400480
@@ -111,10 +120,19 @@
 #define NV_PGRAPH_PASSTHRU_2                               0x00400584
 #define NV_PGRAPH_DIMX_TEXTURE                             0x00400588
 #define NV_PGRAPH_WDIMX_TEXTURE                            0x0040058C
+#define NV04_PGRAPH_COMBINE_0_ALPHA                        0x00400590
+#define NV04_PGRAPH_COMBINE_0_COLOR                        0x00400594
+#define NV04_PGRAPH_COMBINE_1_ALPHA                        0x00400598
+#define NV04_PGRAPH_COMBINE_1_COLOR                        0x0040059C
+#define NV04_PGRAPH_FORMAT_0                               0x004005A8
+#define NV04_PGRAPH_FORMAT_1                               0x004005AC
+#define NV04_PGRAPH_FILTER_0                               0x004005B0
+#define NV04_PGRAPH_FILTER_1                               0x004005B4
 #define NV_PGRAPH_MONO_COLOR0                              0x00400600
 #define NV_PGRAPH_ROP3                                     0x00400604
 #define NV_PGRAPH_BETA_AND                                 0x00400608
 #define NV_PGRAPH_BETA_PREMULT                             0x0040060C
+#define NV04_PGRAPH_FORMATS                                0x00400618
 #define NV_PGRAPH_BOFFSET0                                 0x00400640
 #define NV_PGRAPH_BOFFSET1                                 0x00400644
 #define NV_PGRAPH_BOFFSET2                                 0x00400648
@@ -140,7 +158,10 @@
 #define NV_PGRAPH_BLIMIT5                                  0x00400698
 #define NV_PGRAPH_BSWIZZLE2                                0x0040069C
 #define NV_PGRAPH_BSWIZZLE5                                0x004006A0
+#define NV04_PGRAPH_SURFACE                                0x0040070C
+#define NV04_PGRAPH_STATE                                  0x00400710
 #define NV_PGRAPH_SURFACE                                  0x00400710
+#define NV04_PGRAPH_NOTIFY                                 0x00400714
 #define NV_PGRAPH_STATE                                    0x00400714
 #define NV_PGRAPH_NOTIFY                                   0x00400718
 
@@ -149,7 +170,10 @@
 #define NV_PGRAPH_BPIXEL                                   0x00400724
 #define NV_PGRAPH_RDI_INDEX                                0x00400750
 #define NV_PGRAPH_RDI_DATA                                 0x00400754
+#define NV04_PGRAPH_DMA_PITCH                              0x00400760
 #define NV_PGRAPH_FFINTFC_ST2                              0x00400764
+#define NV04_PGRAPH_DVD_COLORFMT                           0x00400764
+#define NV04_PGRAPH_SCALED_FORMAT                          0x00400768
 #define NV_PGRAPH_DMA_PITCH                                0x00400770
 #define NV_PGRAPH_DVD_COLORFMT                             0x00400774
 #define NV_PGRAPH_SCALED_FORMAT                            0x00400778
@@ -161,8 +185,15 @@
 #define NV_PGRAPH_PATTERN                                  0x00400808
 #define NV_PGRAPH_PATTERN_SHAPE                            0x00400810
 #define NV_PGRAPH_CHROMA                                   0x00400814
+#define NV04_PGRAPH_CONTROL0                               0x00400818
+#define NV04_PGRAPH_CONTROL1                               0x0040081C
+#define NV04_PGRAPH_CONTROL2                               0x00400820
+#define NV04_PGRAPH_BLEND                                  0x00400824
 #define NV_PGRAPH_STORED_FMT                               0x00400830
 #define NV_PGRAPH_PATT_COLORRAM                            0x00400900
+#define NV04_PGRAPH_U_RAM                                  0x00400D00
+#define NV04_PGRAPH_V_RAM                                  0x00400D40
+#define NV04_PGRAPH_W_RAM                                  0x00400D80
 #define NV_PGRAPH_WINDOWCLIP_HORIZONTAL                    0x00400F00
 #define NV_PGRAPH_WINDOWCLIP_VERTICAL                      0x00400F20
 #define NV_PGRAPH_XFMODE0                                  0x00400F40
@@ -175,6 +206,28 @@
 #define NV_PGRAPH_DMA_START_1                              0x00401004
 #define NV_PGRAPH_DMA_LENGTH                               0x00401008
 #define NV_PGRAPH_DMA_MISC                                 0x0040100C
+#define NV_PGRAPH_DMA_DATA_0                               0x00401020
+#define NV_PGRAPH_DMA_DATA_1                               0x00401024
+#define NV_PGRAPH_DMA_RM                                   0x00401030
+#define NV_PGRAPH_DMA_A_XLATE_INST                         0x00401040
+#define NV_PGRAPH_DMA_A_CONTROL                            0x00401044
+#define NV_PGRAPH_DMA_A_LIMIT                              0x00401048
+#define NV_PGRAPH_DMA_A_TLB_PTE                            0x0040104C
+#define NV_PGRAPH_DMA_A_TLB_TAG                            0x00401050
+#define NV_PGRAPH_DMA_A_ADJ_OFFSET                         0x00401054
+#define NV_PGRAPH_DMA_A_OFFSET                             0x00401058
+#define NV_PGRAPH_DMA_A_SIZE                               0x0040105C
+#define NV_PGRAPH_DMA_A_Y_SIZE                             0x00401060
+#define NV_PGRAPH_DMA_B_XLATE_INST                         0x00401080
+#define NV_PGRAPH_DMA_B_CONTROL                            0x00401084
+#define NV_PGRAPH_DMA_B_LIMIT                              0x00401088
+#define NV_PGRAPH_DMA_B_TLB_PTE                            0x0040108C
+#define NV_PGRAPH_DMA_B_TLB_TAG                            0x00401090
+#define NV_PGRAPH_DMA_B_ADJ_OFFSET                         0x00401094
+#define NV_PGRAPH_DMA_B_OFFSET                             0x00401098
+#define NV_PGRAPH_DMA_B_SIZE                               0x0040109C
+#define NV_PGRAPH_DMA_B_Y_SIZE                             0x004010A0
+
 
 /* It's a guess that this works on NV03. Confirmed on NV04, though */
 #define NV_PFIFO_DELAY_0                                   0x00002040
