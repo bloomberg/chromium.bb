@@ -232,7 +232,11 @@ static void PrintModules(const CodeModules *modules) {
   printf("\n");
   printf("Loaded modules:\n");
 
-  u_int64_t main_address = modules->GetMainModule()->base_address();
+  u_int64_t main_address = 0xffffffffffffffffLL;
+  const CodeModule *main_module = modules->GetMainModule();
+  if (main_module) {
+    main_address = main_module->base_address();
+  }
 
   unsigned int module_count = modules->module_count();
   for (unsigned int module_sequence = 0;
@@ -244,7 +248,37 @@ static void PrintModules(const CodeModules *modules) {
            base_address, base_address + module->size() - 1,
            PathnameStripper::File(module->code_file()).c_str(),
            module->version().empty() ? "???" : module->version().c_str(),
-           module->base_address() == main_address ? "  (main)" : "");
+           base_address == main_address ? "  (main)" : "");
+  }
+}
+
+// PrintModulesMachineReadable outputs a list of loaded modules,
+// one per line, in the following machine-readable pipe-delimited
+// text format:
+// Module|{Module Filename}|{Version}|{Base Address}|{Max Address}|{Main}
+static void PrintModulesMachineReadable(const CodeModules *modules) {
+  if (!modules)
+    return;
+
+  u_int64_t main_address = 0xffffffffffffffffLL;
+  const CodeModule *main_module = modules->GetMainModule();
+  if (main_module) {
+    main_address = main_module->base_address();
+  }
+
+  unsigned int module_count = modules->module_count();
+  for (unsigned int module_sequence = 0;
+       module_sequence < module_count;
+       ++module_sequence) {
+    const CodeModule *module = modules->GetModuleAtSequence(module_sequence);
+    u_int64_t base_address = module->base_address();
+    printf("Module%c%s%c%s%c0x%08llx%c0x%08llx%c%d\n",
+           kOutputSeparator,
+           StripSeparator(PathnameStripper::File(module->code_file())).c_str(),
+           kOutputSeparator, StripSeparator(module->version()).c_str(),
+           kOutputSeparator, base_address,
+           kOutputSeparator, base_address + module->size() - 1,
+           kOutputSeparator, base_address == main_address ? 1 : 0);
   }
 }
 
@@ -328,6 +362,8 @@ static void PrintProcessStateMachineReadable(const ProcessState& process_state)
   } else {
     printf("\n");
   }
+
+  PrintModulesMachineReadable(process_state.modules());
 
   // blank line to indicate start of threads
   printf("\n");

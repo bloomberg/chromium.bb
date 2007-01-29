@@ -118,7 +118,8 @@ endif SELFTEST
 
 check_SCRIPTS = \
 	src/processor/minidump_dump_test \
-	src/processor/minidump_stackwalk_test
+	src/processor/minidump_stackwalk_test \
+	src/processor/minidump_stackwalk_machine_readable_test
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT =
@@ -220,6 +221,7 @@ EXTRA_DIST = \
 	src/common/windows/string_utils-inl.h \
 	src/processor/testdata/minidump2.dmp \
 	src/processor/testdata/minidump2.dump.out \
+	src/processor/testdata/minidump2.stackwalk.machine_readable.out \
 	src/processor/testdata/minidump2.stackwalk.out \
 	src/processor/testdata/module1.out \
 	src/processor/testdata/module2.out \
