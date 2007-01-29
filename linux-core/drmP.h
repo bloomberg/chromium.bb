@@ -999,11 +999,10 @@ typedef struct drm_buffer_object{
 	atomic_t mapped;
 	uint32_t flags;
 	uint32_t mask;
+        uint32_t mem_type;
 
-	drm_mm_node_t *node_ttm;    /* MM node for on-card RAM */
-	drm_mm_node_t *node_card;   /* MM node for ttm*/
-	struct list_head lru_ttm;   /* LRU for the ttm pages*/
-        struct list_head lru_card;  /* For memory types with on-card RAM */
+	drm_mm_node_t *mm_node;     /* MM node for on-card RAM */
+        struct list_head lru;
 	struct list_head ddestroy;
 
 	uint32_t fence_type;
