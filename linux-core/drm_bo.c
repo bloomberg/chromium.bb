@@ -1346,6 +1346,49 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo)
 	return ret;
 }
 
+/*
+ * Transfer a buffer object's memory and LRU status to a newly
+ * created object. User-space references remains with the old
+ * object. Call bo->mutex locked.
+ */
+
+int drm_buffer_object_transfer(drm_buffer_object_t *bo,
+			       drm_buffer_object_t **new_obj)
+{
+	drm_buffer_object_t *fbo;
+	drm_device_t *dev = bo->dev;
+	drm_buffer_manager_t *bm = &dev->bm;
+
+	fbo = drm_ctl_calloc(1, sizeof(*bo), DRM_MEM_BUFOBJ);
+	if (!fbo)
+		return -ENOMEM;
+	
+	*fbo = *bo;
+	mutex_init(&fbo->mutex);
+	mutex_lock(&fbo->mutex);
+	mutex_lock(&dev->struct_mutex);
+
+	INIT_LIST_HEAD(&fbo->ddestroy);
+	INIT_LIST_HEAD(&fbo->lru);
+	list_splice_init(&bo->lru, &fbo->lru);
+
+	bo->mm_node = NULL;
+	bo->ttm = NULL;
+	bo->ttm_object = NULL;
+	bo->fence = NULL;
+	bo->flags = 0;
+
+	fbo->mm_node->private = (void *)fbo;
+	atomic_set(&fbo->usage, 1);
+	atomic_inc(&bm->count);
+	mutex_unlock(&dev->struct_mutex);
+	mutex_unlock(&fbo->mutex);
+
+	*new_obj = fbo;
+	return 0;
+}
+		
+
 int drm_buffer_object_create(drm_file_t * priv,
 			     unsigned long size,
 			     drm_bo_type_t type,
