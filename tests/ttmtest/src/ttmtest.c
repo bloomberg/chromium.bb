@@ -1,4 +1,3 @@
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -12,7 +11,10 @@
 #include "sys/types.h"
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
+#include <stdlib.h>
 #include "sys/mman.h"
+
 
 typedef struct
 {
@@ -75,6 +77,27 @@ fastrdtsc(void)
 }
 #endif
 
+
+void
+bmError(int val, const char *file, const char *function, int line)
+{
+    fprintf(stderr,"Fatal video memory manager error \"%s\".\n"
+	    "Check kernel logs or set the LIBGL_DEBUG\n"
+	    "environment variable to \"verbose\" for more info.\n"
+	    "Detected in file %s, line %d, function %s.\n",
+	    strerror(-val), file, line, function);
+    abort();
+}
+
+#define BM_CKFATAL(val)					       \
+  do{							       \
+    int tstVal = (val);					       \
+    if (tstVal) 					       \
+      bmError(tstVal, __FILE__, __FUNCTION__, __LINE__);       \
+  } while(0);
+
+
+
 static unsigned
 time_diff(unsigned t, unsigned t2)
 {
@@ -104,9 +127,205 @@ releaseContext(TinyDRIContext * ctx)
     return -1;
 }
 
+static void readBuf(void *buf, unsigned long size)
+{
+    volatile unsigned *buf32 = (unsigned *)buf;
+    unsigned *end = (unsigned *)buf32 + size / sizeof(*buf32);
+
+    while(buf32 < end) {
+	(void) *buf32++;
+    }
+}
+
+
+static int benchmarkBuffer(TinyDRIContext *ctx, unsigned long size, 
+			   unsigned long *ticks)
+{
+    unsigned long curTime, oldTime;
+    int ret;
+    drmBO buf;
+    void *virtual;
+
+    /*
+     * Test system memory objects.
+     */
+
+
+    oldTime = fastrdtsc();    
+    BM_CKFATAL(drmBOCreate(ctx->drmFD, 0, size, 0, NULL, 
+			   drm_bo_type_dc,
+			   DRM_BO_FLAG_READ |
+			   DRM_BO_FLAG_WRITE |
+			   DRM_BO_FLAG_MEM_LOCAL |
+			   DRM_BO_FLAG_NO_EVICT, 0, &buf));
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    BM_CKFATAL(drmBOMap(ctx->drmFD, &buf, 
+			DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE, 0,
+			&virtual));
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    memset(virtual, 0xF0, buf.size);
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    memset(virtual, 0x0F, buf.size);
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    readBuf(virtual, buf.size);
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    BM_CKFATAL(drmBOUnmap(ctx->drmFD, &buf));
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+    
+
+    /*
+     * Test TT bound buffer objects.
+     */
+
+
+    BM_CKFATAL(drmGetLock(ctx->drmFD, ctx->hwContext, 0));
+    oldTime = fastrdtsc();    
+    BM_CKFATAL(drmBOValidate(ctx->drmFD, &buf, 
+			     DRM_BO_FLAG_MEM_TT, DRM_BO_MASK_MEM,
+			     DRM_BO_HINT_DONT_FENCE));
+    curTime = fastrdtsc();
+    BM_CKFATAL(drmUnlock(ctx->drmFD, ctx->hwContext));
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    BM_CKFATAL(drmBOMap(ctx->drmFD, &buf, 
+			DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE, 0,
+			&virtual));
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    memset(virtual, 0xF0, buf.size);
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    memset(virtual, 0x0F, buf.size);
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    readBuf(virtual, buf.size);
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    BM_CKFATAL(drmBOUnmap(ctx->drmFD, &buf));
+
+    BM_CKFATAL(drmGetLock(ctx->drmFD, ctx->hwContext, 0));
+    oldTime = fastrdtsc();    
+    BM_CKFATAL(drmBOValidate(ctx->drmFD, &buf, 
+			     DRM_BO_FLAG_MEM_LOCAL, DRM_BO_MASK_MEM,
+			     DRM_BO_HINT_DONT_FENCE));
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    /*
+     * Test cached buffers objects.
+     */
+
+    oldTime = fastrdtsc();    
+    ret = drmBOValidate(ctx->drmFD, &buf, 
+			DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_BIND_CACHED, 
+			DRM_BO_MASK_MEM | DRM_BO_FLAG_BIND_CACHED,
+			DRM_BO_HINT_DONT_FENCE);
+    curTime = fastrdtsc();
+    drmUnlock(ctx->drmFD, ctx->hwContext);
+
+    if (ret) {
+	printf("Couldn't bind cached. Probably no support\n");
+	BM_CKFATAL(drmBODestroy(ctx->drmFD, &buf));
+	return 1;
+    }
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    BM_CKFATAL(drmBOMap(ctx->drmFD, &buf, 
+			DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE, 0,
+			&virtual));
+
+
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    memset(virtual, 0xF0, buf.size);
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    memset(virtual, 0x0F, buf.size);
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    oldTime = fastrdtsc();    
+    readBuf(virtual, buf.size);
+    curTime = fastrdtsc();
+    *ticks++ = time_diff(oldTime, curTime);
+
+    BM_CKFATAL(drmBOUnmap(ctx->drmFD, &buf));
+    BM_CKFATAL(drmBODestroy(ctx->drmFD, &buf));
+
+    return 0;
+}		      
+
+
 static void
 testAGP(TinyDRIContext * ctx)
 {
+    unsigned long ticks[128], *pTicks;
+    unsigned long size = 4096*1024;
+    int ret;
+
+    ret = benchmarkBuffer(ctx, size, ticks);
+    if (ret < 0) {
+	fprintf(stderr, "Buffer error %s\n", strerror(-ret));
+	return;
+    }
+    pTicks = ticks;
+
+    printf("Buffer size %d bytes\n", size);
+    printf("System memory timings ********************************\n");
+    printf("Creation took            %12lu ticks\n", *pTicks++);
+    printf("Mapping took             %12lu ticks\n", *pTicks++);
+    printf("Writing took             %12lu ticks\n", *pTicks++);
+    printf("Writing Again took       %12lu ticks\n", *pTicks++);
+    printf("Reading took             %12lu ticks\n", *pTicks++);
+    printf("Unmapping took           %12lu ticks\n", *pTicks++);
+
+    printf("\nTT Memory timings ************************************\n");
+    printf("Moving to TT took        %12lu ticks\n", *pTicks++);
+    printf("Mapping in TT took       %12lu ticks\n", *pTicks++);
+    printf("Writing to TT took       %12lu ticks\n", *pTicks++);
+    printf("Writing again to TT took %12lu ticks\n", *pTicks++);    
+    printf("Reading from TT took     %12lu ticks\n", *pTicks++);
+    printf("Moving to system took    %12lu ticks\n", *pTicks++);    
+
+    if (ret == 1)
+	return;
+
+    printf("\nCached TT Memory timings *****************************\n");
+    printf("Moving to CTT took       %12lu ticks\n", *pTicks++);
+    printf("Mapping in CTT took      %12lu ticks\n", *pTicks++);
+    printf("Writing to CTT took      %12lu ticks\n", *pTicks++);
+    printf("Re-writing to CTT took   %12lu ticks\n", *pTicks++);    
+    printf("Reading from CTT took    %12lu ticks\n", *pTicks++);
+    printf("\n\n");
 }
 
 int
