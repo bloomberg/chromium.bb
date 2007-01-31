@@ -650,17 +650,30 @@ typedef struct drm_ref_object {
 
 #include "drm_ttm.h"
 
+
+typedef struct drm_mem_type_manager {
+	int has_type;
+	int use_type;
+	drm_mm_t manager;
+	struct list_head lru;
+	struct list_head pinned;
+	uint32_t flags;
+	unsigned long io_offset;                 
+	unsigned long io_size;
+	void *io_addr;
+} drm_mem_type_manager_t;
+
 /*
  * buffer object driver
  */
 
 typedef struct drm_bo_driver{
-	int cached[DRM_BO_MEM_TYPES];
-        drm_local_map_t *iomap[DRM_BO_MEM_TYPES];
 	drm_ttm_backend_t *(*create_ttm_backend_entry) 
 		(struct drm_device *dev);
 	int (*fence_type)(uint32_t flags, uint32_t *class, uint32_t *type);
 	int (*invalidate_caches)(struct drm_device *dev, uint32_t flags);
+	int (*init_mem_type)(struct drm_device *dev, uint32_t type,
+			     drm_mem_type_manager_t *man);
 } drm_bo_driver_t;
 
 
@@ -782,16 +795,18 @@ typedef struct drm_fence_manager{
         atomic_t count;
 } drm_fence_manager_t;
 
+#define _DRM_FLAG_MEMTYPE_FIXED     0x00000001   /* Fixed (on-card) PCI memory */
+#define _DRM_FLAG_MEMTYPE_MAPPABLE  0x00000002   /* Memory mappable */
+#define _DRM_FLAG_MEMTYPE_CACHED    0x00000004   /* Supports cached binding */
+#define _DRM_FLAG_NEEDS_IOREMAP     0x00000008   /* Fixed memory needs ioremap
+						    before kernel access. */
+
 typedef struct drm_buffer_manager{
 	struct mutex init_mutex;
 	int nice_mode;
 	int initialized;
         drm_file_t *last_to_validate;
-	int has_type[DRM_BO_MEM_TYPES];
-        int use_type[DRM_BO_MEM_TYPES];
-	drm_mm_t manager[DRM_BO_MEM_TYPES];
-	struct list_head lru[DRM_BO_MEM_TYPES];
-        struct list_head pinned[DRM_BO_MEM_TYPES];
+	drm_mem_type_manager_t man[DRM_BO_MEM_TYPES];
 	struct list_head unfenced;
 	struct list_head ddestroy;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)

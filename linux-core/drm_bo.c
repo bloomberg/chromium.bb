@@ -74,8 +74,10 @@ static void drm_bo_add_to_lru(drm_buffer_object_t * bo,
 			      drm_buffer_manager_t * bm)
 {
 	struct list_head *list;
-	bo->mem_type = 0;
+	drm_mem_type_manager_t *man;
 
+	bo->mem_type = 0;
+	
 	switch(bo->flags & DRM_BO_MASK_MEM) {
 	case DRM_BO_FLAG_MEM_TT:
 		bo->mem_type = DRM_BO_MEM_TT;
@@ -89,8 +91,10 @@ static void drm_bo_add_to_lru(drm_buffer_object_t * bo,
 	default:
 		BUG_ON(1);		
 	}
+	
+	man = &bm->man[bo->mem_type];
 	list = (bo->flags & (DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE)) ?
-		&bm->pinned[bo->mem_type] : &bm->lru[bo->mem_type];
+		&man->pinned : &man->lru;
 	list_add_tail(&bo->lru, list);
 	return;
 }
@@ -543,7 +547,8 @@ int drm_bo_alloc_space(drm_buffer_object_t * bo, unsigned mem_type,
 	drm_mm_node_t *node;
 	drm_buffer_manager_t *bm = &dev->bm;
 	drm_buffer_object_t *entry;
-	drm_mm_t *mm = &bm->manager[mem_type];
+	drm_mem_type_manager_t *man = &bm->man[mem_type];
+	drm_mm_t *mm = &man->manager;
 	struct list_head *lru;
 	unsigned long size = bo->num_pages;
 	int ret;
@@ -554,7 +559,7 @@ int drm_bo_alloc_space(drm_buffer_object_t * bo, unsigned mem_type,
 		if (node)
 			break;
 
-		lru = &bm->lru[mem_type];
+		lru = &man->lru;
 		if (lru->next == lru)
 			break;
 
@@ -638,7 +643,6 @@ static int drm_bo_new_flags(drm_device_t * dev,
 {
 	uint32_t new_flags = 0;
 	uint32_t new_props;
-	drm_bo_driver_t *driver = dev->driver->bo_driver;
 	drm_buffer_manager_t *bm = &dev->bm;
 	unsigned i;
 
@@ -647,7 +651,7 @@ static int drm_bo_new_flags(drm_device_t * dev,
 	 */
 
 	for (i = 0; i < DRM_BO_MEM_TYPES; ++i) {
-		if (!bm->use_type[i])
+		if (!bm->man[i].use_type)
 			new_mask &= ~drm_bo_type_flags(i);
 	}
 
@@ -659,14 +663,18 @@ static int drm_bo_new_flags(drm_device_t * dev,
 	}
 	if (new_mask & DRM_BO_FLAG_BIND_CACHED) {
 		if (((new_mask & DRM_BO_FLAG_MEM_TT) &&
-		     !driver->cached[DRM_BO_MEM_TT]) &&
-		    ((new_mask & DRM_BO_FLAG_MEM_VRAM)
-		     && !driver->cached[DRM_BO_MEM_VRAM])) {
+		     !(bm->man[DRM_BO_MEM_TT].flags &
+			_DRM_FLAG_MEMTYPE_CACHED) &&
+		     ((new_mask & DRM_BO_FLAG_MEM_VRAM)
+		      && !(bm->man[DRM_BO_MEM_VRAM].flags &
+			   _DRM_FLAG_MEMTYPE_CACHED)))) {
 			new_mask &= ~DRM_BO_FLAG_BIND_CACHED;
 		} else {
-			if (!driver->cached[DRM_BO_MEM_TT])
+			if (!(bm->man[DRM_BO_MEM_TT].flags &
+			      _DRM_FLAG_MEMTYPE_CACHED))
 				new_flags &= DRM_BO_FLAG_MEM_TT;
-			if (!driver->cached[DRM_BO_MEM_VRAM])
+			if (!(bm->man[DRM_BO_MEM_VRAM].flags &
+			      _DRM_FLAG_MEMTYPE_CACHED))
 				new_flags &= DRM_BO_FLAG_MEM_VRAM;
 		}
 	}
@@ -1735,6 +1743,8 @@ static int drm_bo_force_list_clean(drm_device_t * dev,
 int drm_bo_clean_mm(drm_device_t * dev, unsigned mem_type)
 {
 	drm_buffer_manager_t *bm = &dev->bm;
+	drm_mem_type_manager_t *man = &bm->man[mem_type];
+	drm_mem_type_manager_t *local_man = &bm->man[DRM_BO_MEM_LOCAL];
 	int ret = -EINVAL;
 
 	if (mem_type >= DRM_BO_MEM_TYPES) {
@@ -1742,13 +1752,13 @@ int drm_bo_clean_mm(drm_device_t * dev, unsigned mem_type)
 		return ret;
 	}
 
-	if (!bm->has_type[mem_type]) {
+	if (!man->has_type) {
 		DRM_ERROR("Trying to take down uninitialized "
 			  "memory manager type\n");
 		return ret;
 	}
-	bm->use_type[mem_type] = 0;
-	bm->has_type[mem_type] = 0;
+	man->use_type = 0;
+	man->has_type = 0;
 
 	ret = 0;
 	if (mem_type > 0) {
@@ -1763,15 +1773,12 @@ int drm_bo_clean_mm(drm_device_t * dev, unsigned mem_type)
 		 * Throw out evicted no-move buffers.
 		 */
 
-		drm_bo_force_list_clean(dev, &bm->pinned[DRM_BO_MEM_LOCAL],
-					mem_type, 1, 0);
-		drm_bo_force_list_clean(dev, &bm->lru[mem_type], mem_type, 1,
-					0);
-		drm_bo_force_list_clean(dev, &bm->pinned[mem_type], mem_type, 1,
-					0);
+		drm_bo_force_list_clean(dev, &local_man->pinned, mem_type, 1, 0);
+		drm_bo_force_list_clean(dev, &man->lru, mem_type, 1, 0);
+		drm_bo_force_list_clean(dev, &man->pinned, mem_type, 1, 0);
 
-		if (drm_mm_clean(&bm->manager[mem_type])) {
-			drm_mm_takedown(&bm->manager[mem_type]);
+		if (drm_mm_clean(&man->manager)) {
+			drm_mm_takedown(&man->manager);
 		} else {
 			ret = -EBUSY;
 		}
@@ -1784,6 +1791,7 @@ static int drm_bo_lock_mm(drm_device_t * dev, unsigned mem_type)
 {
 	int ret;
 	drm_buffer_manager_t *bm = &dev->bm;
+	drm_mem_type_manager_t *man = &bm->man[mem_type];
 
 	if (mem_type == 0 || mem_type >= DRM_BO_MEM_TYPES) {
 		DRM_ERROR("Illegal memory manager memory type %u,\n", mem_type);
@@ -1793,11 +1801,11 @@ static int drm_bo_lock_mm(drm_device_t * dev, unsigned mem_type)
 	ret = drm_bo_force_list_clean(dev, &bm->unfenced, mem_type, 0, 1);
 	if (ret)
 		return ret;
-	ret = drm_bo_force_list_clean(dev, &bm->lru[mem_type], mem_type, 0, 1);
+	ret = drm_bo_force_list_clean(dev, &man->lru, mem_type, 0, 1);
 	if (ret)
 		return ret;
 	ret =
-	    drm_bo_force_list_clean(dev, &bm->pinned[mem_type], mem_type, 0, 1);
+	    drm_bo_force_list_clean(dev, &man->pinned, mem_type, 0, 1);
 	return ret;
 }
 
@@ -1807,16 +1815,23 @@ static int drm_bo_init_mm(drm_device_t * dev,
 {
 	drm_buffer_manager_t *bm = &dev->bm;
 	int ret = -EINVAL;
+	drm_mem_type_manager_t *man;
 
 	if (type >= DRM_BO_MEM_TYPES) {
 		DRM_ERROR("Illegal memory type %d\n", type);
 		return ret;
 	}
-	if (bm->has_type[type]) {
+	
+	man = &bm->man[type];
+	if (man->has_type) {
 		DRM_ERROR("Memory manager already initialized for type %d\n",
 			  type);
 		return ret;
 	}
+
+	ret = dev->driver->bo_driver->init_mem_type(dev, type, man);
+	if (ret) 
+		return ret;
 
 	ret = 0;
 	if (type != DRM_BO_MEM_LOCAL) {
@@ -1824,15 +1839,15 @@ static int drm_bo_init_mm(drm_device_t * dev,
 			DRM_ERROR("Zero size memory manager type %d\n", type);
 			return ret;
 		}
-		ret = drm_mm_init(&bm->manager[type], p_offset, p_size);
+		ret = drm_mm_init(&man->manager, p_offset, p_size);
 		if (ret)
 			return ret;
 	}
-	bm->has_type[type] = 1;
-	bm->use_type[type] = 1;
+	man->has_type = 1;
+	man->use_type = 1;
 
-	INIT_LIST_HEAD(&bm->lru[type]);
-	INIT_LIST_HEAD(&bm->pinned[type]);
+	INIT_LIST_HEAD(&man->lru);
+	INIT_LIST_HEAD(&man->pinned);
 
 	return 0;
 }
@@ -1847,6 +1862,7 @@ int drm_bo_driver_finish(drm_device_t * dev)
 	drm_buffer_manager_t *bm = &dev->bm;
 	int ret = 0;
 	unsigned i = DRM_BO_MEM_TYPES;
+	drm_mem_type_manager_t *man;
 
 	mutex_lock(&dev->bm.init_mutex);
 	mutex_lock(&dev->struct_mutex);
@@ -1856,14 +1872,15 @@ int drm_bo_driver_finish(drm_device_t * dev)
 	bm->initialized = 0;
 
 	while (i--) {
-		if (bm->has_type[i]) {
-			bm->use_type[i] = 0;
+		man = &bm->man[i];
+		if (man->has_type) {
+			man->use_type = 0;
 			if ((i != DRM_BO_MEM_LOCAL) && drm_bo_clean_mm(dev, i)) {
 				ret = -EBUSY;
 				DRM_ERROR("DRM memory manager type %d "
 					  "is not clean.\n", i);
 			}
-			bm->has_type[i] = 0;
+			man->has_type = 0;
 		}
 	}
 	mutex_unlock(&dev->struct_mutex);
@@ -1875,10 +1892,10 @@ int drm_bo_driver_finish(drm_device_t * dev)
 	if (list_empty(&bm->ddestroy)) {
 		DRM_DEBUG("Delayed destroy list was clean\n");
 	}
-	if (list_empty(&bm->lru[0])) {
+	if (list_empty(&bm->man[0].lru)) {
 		DRM_DEBUG("Swap list was clean\n");
 	}
-	if (list_empty(&bm->pinned[0])) {
+	if (list_empty(&bm->man[0].pinned)) {
 		DRM_DEBUG("NO_MOVE list was clean\n");
 	}
 	if (list_empty(&bm->unfenced)) {

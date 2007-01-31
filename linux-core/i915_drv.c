@@ -51,11 +51,10 @@ static drm_fence_driver_t i915_fence_driver = {
 #endif
 #ifdef I915_HAVE_BUFFER
 static drm_bo_driver_t i915_bo_driver = {
-        .iomap = {NULL, NULL},
-	.cached = {1, 1},
 	.create_ttm_backend_entry = i915_create_ttm_backend_entry,
 	.fence_type = i915_fence_types,
-	.invalidate_caches = i915_invalidate_caches
+	.invalidate_caches = i915_invalidate_caches,
+	.init_mem_type = i915_init_mem_type,
 };
 #endif
 

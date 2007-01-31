@@ -738,8 +738,12 @@ typedef struct drm_fence_arg {
 #define DRM_BO_FLAG_MEM_TT     0x02000000
 /* Vram memory */
 #define DRM_BO_FLAG_MEM_VRAM   0x04000000
-/* Unmappable Vram memory */
-#define DRM_BO_FLAG_MEM_VRAM_NM   0x08000000
+/* Up to the driver to define. */
+#define DRM_BO_FLAG_MEM_PRIV0  0x10000000
+#define DRM_BO_FLAG_MEM_PRIV1  0x20000000
+#define DRM_BO_FLAG_MEM_PRIV2  0x40000000
+#define DRM_BO_FLAG_MEM_PRIV3  0x80000000
+
 /* Memory flag mask */
 #define DRM_BO_MASK_MEM         0xFF000000
 
@@ -823,8 +827,13 @@ typedef struct drm_bo_arg{
 #define DRM_BO_MEM_LOCAL 0
 #define DRM_BO_MEM_TT 1
 #define DRM_BO_MEM_VRAM 2
-#define DRM_BO_MEM_VRAM_NM 3
-#define DRM_BO_MEM_TYPES 2 /* For now. */
+#define DRM_BO_MEM_PRIV0 4
+#define DRM_BO_MEM_PRIV1 5
+#define DRM_BO_MEM_PRIV2 6
+#define DRM_BO_MEM_PRIV3 7
+
+
+#define DRM_BO_MEM_TYPES 8 /* For now. */
 
 typedef union drm_mm_init_arg{
 	struct {

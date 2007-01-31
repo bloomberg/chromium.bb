@@ -126,7 +126,9 @@ typedef struct drm_i915_private {
 	uint32_t flush_pending;
 	uint32_t saved_flush_status;
 #endif
-
+#ifdef I915_HAVE_BUFFER
+	void *agp_iomap;
+#endif
 	spinlock_t swaps_lock;
 	drm_i915_vbl_swap_t vbl_swaps;
 	unsigned int swaps_pending;
@@ -187,6 +189,8 @@ extern void i915_poke_flush(drm_device_t *dev);
 extern drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev);
 extern int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *type);
 extern int i915_invalidate_caches(drm_device_t *dev, uint32_t buffer_flags);
+extern int i915_init_mem_type(drm_device_t *dev, uint32_t type, 
+			       drm_mem_type_manager_t *man);
 #endif
 
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
