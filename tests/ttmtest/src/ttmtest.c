@@ -182,7 +182,7 @@ benchmarkBuffer(TinyDRIContext * ctx, unsigned long size,
 	    drm_bo_type_dc,
 	    DRM_BO_FLAG_READ |
 	    DRM_BO_FLAG_WRITE |
-	    DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_NO_EVICT, 0, &buf));
+	    DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_NO_MOVE, 0, &buf));
     curTime = fastrdtsc();
     *ticks++ = time_diff(oldTime, curTime);
 
