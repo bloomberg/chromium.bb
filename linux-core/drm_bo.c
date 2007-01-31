@@ -373,11 +373,13 @@ static void drm_bo_base_deref_locked(drm_file_t * priv, drm_user_object_t * uo)
 
 static void drm_bo_usage_deref_unlocked(drm_buffer_object_t * bo)
 {
+	drm_device_t *dev = bo->dev;
+
 	if (atomic_dec_and_test(&bo->usage)) {
-		mutex_lock(&bo->dev->struct_mutex);
+		mutex_lock(&dev->struct_mutex);
 		if (atomic_read(&bo->usage) == 0)
 			drm_bo_destroy_locked(bo);
-		mutex_unlock(&bo->dev->struct_mutex);
+		mutex_unlock(&dev->struct_mutex);
 	}
 }
 
