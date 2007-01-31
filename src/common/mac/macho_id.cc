@@ -115,9 +115,29 @@ void MachoID::UpdateSHA1(unsigned char *bytes, size_t size) {
   SHA_Update(&sha1_context_, bytes, size);
 }
 
-void MachoID::Update(unsigned char *bytes, size_t size) {
-  if (update_function_)
-    (this->*update_function_)(bytes, size);
+void MachoID::Update(MachoWalker *walker, unsigned long offset, size_t size) {
+  if (!update_function_ || !size)
+    return;
+
+  // Read up to 4k bytes at a time
+  unsigned char buffer[4096];
+  size_t buffer_size;
+  off_t file_offset = offset;
+  while (size > 0) {
+    if (size > sizeof(buffer)) {
+      buffer_size = sizeof(buffer);
+      size -= buffer_size;
+    } else {
+      buffer_size = size;
+      size = 0;
+    }
+
+    if (!walker->ReadBytes(buffer, buffer_size, file_offset))
+      return;
+
+    (this->*update_function_)(buffer, buffer_size);
+    file_offset += buffer_size;
+  }
 }
 
 bool MachoID::UUIDCommand(int cpu_type, unsigned char bytes[16]) {
@@ -216,8 +236,6 @@ bool MachoID::SHA1(int cpu_type, unsigned char identifier[16]) {
 bool MachoID::WalkerCB(MachoWalker *walker, load_command *cmd, off_t offset,
                        bool swap, void *context) {
   MachoID *macho_id = (MachoID *)context;
-  off_t seg_offset = 0;
-  size_t seg_size = 0;
 
   if (cmd->cmd == LC_SEGMENT) {
     struct segment_command seg;
@@ -228,8 +246,20 @@ bool MachoID::WalkerCB(MachoWalker *walker, load_command *cmd, off_t offset,
     if (swap)
       swap_segment_command(&seg, NXHostByteOrder());
 
-    seg_offset = seg.fileoff;
-    seg_size = seg.filesize;
+    // Process segments that have sections:
+    // (e.g., __TEXT, __DATA, __IMPORT, __OBJC)
+    offset += sizeof(struct segment_command);
+    struct section sec;
+    for (unsigned long i = 0; i < seg.nsects; ++i) {
+      if (!walker->ReadBytes(&sec, sizeof(sec), offset))
+        return false;
+
+      if (swap)
+        swap_section(&sec, 1, NXHostByteOrder());
+
+      macho_id->Update(walker, sec.offset, sec.size);
+      offset += sizeof(struct section);
+    }
   } else if (cmd->cmd == LC_SEGMENT_64) {
     struct segment_command_64 seg64;
 
@@ -239,31 +269,19 @@ bool MachoID::WalkerCB(MachoWalker *walker, load_command *cmd, off_t offset,
     if (swap)
       swap_segment_command_64(&seg64, NXHostByteOrder());
 
-    seg_offset = seg64.fileoff;
-    seg_size = seg64.filesize;
-  }
-
-  // If this was a non-zero segment, read the bytes, update the hash
-  if (seg_size) {
-    // Read 4k x 2 bytes at a time.  This is faster than just 4k bytes, but
-    // doesn't seem to be an unreasonable size for the stack.
-    unsigned char buffer[4096 * 2];
-    size_t buffer_size;
-    off_t file_offset = seg_offset;
-    while (seg_size > 0) {
-      if (seg_size > sizeof(buffer)) {
-        buffer_size = sizeof(buffer);
-        seg_size -= buffer_size;
-      } else {
-        buffer_size = seg_size;
-        seg_size = 0;
-      }
-
-      if (!walker->ReadBytes(buffer, buffer_size, file_offset))
+    // Process segments that have sections:
+    // (e.g., __TEXT, __DATA, __IMPORT, __OBJC)
+    offset += sizeof(struct segment_command_64);
+    struct section_64 sec64;
+    for (unsigned long i = 0; i < seg64.nsects; ++i) {
+      if (!walker->ReadBytes(&sec64, sizeof(sec64), offset))
         return false;
 
-      macho_id->Update(buffer, buffer_size);
-      file_offset += buffer_size;
+      if (swap)
+        swap_section_64(&sec64, 1, NXHostByteOrder());
+
+      macho_id->Update(walker, sec64.offset, sec64.size);
+      offset += sizeof(struct section_64);
     }
   }
 
