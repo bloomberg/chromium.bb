@@ -1043,6 +1043,7 @@ typedef struct drm_buffer_object{
 	unsigned long bus_offset;
 	unsigned long num_pages;
 	uint32_t vm_flags;
+        void *iomap;
 
 } drm_buffer_object_t;
 

@@ -222,11 +222,8 @@ struct page *drm_vm_ttm_fault(struct vm_area_struct *vma,
 #endif
 	}
 
-	if (ttm->page_flags & DRM_TTM_PAGE_UNCACHED) {
-
-		/*
-		 * FIXME: Check can't map aperture flag.
-		 */
+	if ((ttm->page_flags & DRM_TTM_PAGE_UNCACHED) && 
+	    !(ttm->be->flags & DRM_BE_FLAG_CMA)) {
 
 		pfn = ttm->aper_offset + page_offset + 
 			(ttm->be->aperture_base >> PAGE_SHIFT);
@@ -845,6 +842,7 @@ static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 #ifdef DRM_ODD_MM_COMPAT
 		drm_ttm_map_bound(vma);
 #endif		
+		drm_vm_ttm_open_locked(vma);
 		return 0;
 	}
 	default:

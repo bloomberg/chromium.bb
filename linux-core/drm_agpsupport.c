@@ -720,8 +720,8 @@ drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 	agp_be->destroy = drm_agp_destroy_ttm;
 	DRM_MASK_VAL(agp_be->flags, DRM_BE_FLAG_NEEDS_FREE,
 		     (backend == NULL) ? DRM_BE_FLAG_NEEDS_FREE : 0);
-	DRM_MASK_VAL(agp_be->flags, DRM_BE_FLAG_CBA,
-		     (dev->agp->cant_use_aperture) ? DRM_BE_FLAG_CBA : 0);
+	DRM_MASK_VAL(agp_be->flags, DRM_BE_FLAG_CMA,
+		     (dev->agp->cant_use_aperture) ? DRM_BE_FLAG_CMA : 0);
 	agp_be->drm_map_type = _DRM_AGP;
 	return agp_be;
 }

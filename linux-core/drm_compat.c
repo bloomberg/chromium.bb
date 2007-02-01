@@ -277,7 +277,9 @@ int drm_ttm_map_bound(struct vm_area_struct *vma)
 	drm_ttm_t *ttm = (drm_ttm_t *) map->offset;
 	int ret = 0;
 
-	if (ttm->page_flags & DRM_TTM_PAGE_UNCACHED) {
+	if ((ttm->page_flags & DRM_TTM_PAGE_UNCACHED) && 
+	    !(ttm->be->flags & DRM_BE_FLAG_CMA)) {
+
 		unsigned long pfn = ttm->aper_offset + 
 			(ttm->be->aperture_base >> PAGE_SHIFT);
 		pgprot_t pgprot = drm_io_prot(ttm->be->drm_map_type, vma);
@@ -286,6 +288,7 @@ int drm_ttm_map_bound(struct vm_area_struct *vma)
 					 vma->vm_end - vma->vm_start,
 					 pgprot);
 	}
+
 	return ret;
 }
 	
@@ -408,10 +411,14 @@ int drm_ttm_remap_bound(drm_ttm_t *ttm)
 	vma_entry_t *v_entry;
 	int ret = 0;
 	
-	list_for_each_entry(v_entry, &ttm->vma_list, head) {
-		ret = drm_ttm_map_bound(v_entry->vma);
-		if (ret)
-			break;
+	if ((ttm->page_flags & DRM_TTM_PAGE_UNCACHED) && 
+	    !(ttm->be->flags & DRM_BE_FLAG_CMA)) {
+
+		list_for_each_entry(v_entry, &ttm->vma_list, head) {
+			ret = drm_ttm_map_bound(v_entry->vma);
+			if (ret)
+				break;
+		}
 	}
 
 	drm_ttm_unlock_mm(ttm);

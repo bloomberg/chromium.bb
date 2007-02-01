@@ -162,7 +162,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 
 	DRM_DEBUG("Destroying a ttm\n");
 
-#ifdef DRM_TTM_ODD_COMPAT
+#ifdef DRM_ODD_MM_COMPAT
 	BUG_ON(!list_empty(&ttm->vma_list));
 	BUG_ON(!list_empty(&ttm->p_mm_list));
 #endif
@@ -364,6 +364,7 @@ int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset)
 	ret = drm_ttm_populate(ttm);
 	if (ret)
 		return ret;
+
 	if (ttm->state == ttm_unbound && !cached) {
 		ret = unmap_vma_pages(ttm);
 		if (ret)
