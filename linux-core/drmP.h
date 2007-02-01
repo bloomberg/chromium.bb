@@ -650,6 +650,11 @@ typedef struct drm_ref_object {
 
 #include "drm_ttm.h"
 
+#define _DRM_FLAG_MEMTYPE_FIXED     0x00000001   /* Fixed (on-card) PCI memory */
+#define _DRM_FLAG_MEMTYPE_MAPPABLE  0x00000002   /* Memory mappable */
+#define _DRM_FLAG_MEMTYPE_CACHED    0x00000004   /* Supports cached binding */
+#define _DRM_FLAG_NEEDS_IOREMAP     0x00000008   /* Fixed memory needs ioremap
+						    before kernel access. */
 
 typedef struct drm_mem_type_manager {
 	int has_type;
@@ -795,11 +800,16 @@ typedef struct drm_fence_manager{
         atomic_t count;
 } drm_fence_manager_t;
 
-#define _DRM_FLAG_MEMTYPE_FIXED     0x00000001   /* Fixed (on-card) PCI memory */
-#define _DRM_FLAG_MEMTYPE_MAPPABLE  0x00000002   /* Memory mappable */
-#define _DRM_FLAG_MEMTYPE_CACHED    0x00000004   /* Supports cached binding */
-#define _DRM_FLAG_NEEDS_IOREMAP     0x00000008   /* Fixed memory needs ioremap
-						    before kernel access. */
+
+typedef struct drm_bo_mem_region {
+	drm_mm_node_t *node;
+	uint32_t memory_type;
+        drm_ttm_t *ttm;
+	unsigned long bus_offset;
+	unsigned long num_pages;
+	uint32_t vm_flags;
+} drm_bo_mem_region_t;
+	
 
 typedef struct drm_buffer_manager{
 	struct mutex init_mutex;
@@ -1005,8 +1015,6 @@ typedef struct drm_buffer_object{
 
 	atomic_t usage;
 	drm_ttm_object_t *ttm_object;
-        drm_ttm_t *ttm;
-	unsigned long num_pages;
         unsigned long buffer_start;
         drm_bo_type_t type;
         unsigned long offset;
@@ -1016,7 +1024,7 @@ typedef struct drm_buffer_object{
 	uint32_t mask;
         uint32_t mem_type;
 
-	drm_mm_node_t *mm_node;     /* MM node for on-card RAM */
+	drm_mm_node_t *mm_node;     
         struct list_head lru;
 	struct list_head ddestroy;
 
@@ -1026,6 +1034,16 @@ typedef struct drm_buffer_object{
         uint32_t priv_flags;
 	wait_queue_head_t event_queue;
         struct mutex mutex;
+
+	/* For vm */
+
+	drm_mm_node_t *node;
+	uint32_t memory_type;
+	drm_ttm_t *ttm;
+	unsigned long bus_offset;
+	unsigned long num_pages;
+	uint32_t vm_flags;
+
 } drm_buffer_object_t;
 
 #define _DRM_BO_FLAG_UNFENCED 0x00000001
