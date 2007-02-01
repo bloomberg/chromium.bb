@@ -181,7 +181,8 @@ MinidumpProcessor::ProcessResult MinidumpProcessor::Process(
 
   // If a requesting thread was indicated, it must be present.
   if (has_requesting_thread && !found_requesting_thread) {
-    return PROCESS_ERROR;
+    // Don't mark as an error, but invalidate the requesting thread
+    process_state->requesting_thread_ = -1;
   }
 
   return PROCESS_OK;
