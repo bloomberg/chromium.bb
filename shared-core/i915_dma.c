@@ -429,12 +429,15 @@ static int i915_emit_box(drm_device_t * dev,
  * emit.  For now, do it in both places:
  */
 
-static void i915_emit_breadcrumb(drm_device_t *dev)
+void i915_emit_breadcrumb(drm_device_t *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
 
 	dev_priv->sarea_priv->last_enqueue = ++dev_priv->counter;
+
+	if (dev_priv->counter > 0x7FFFFFFFUL)
+		 dev_priv->sarea_priv->last_enqueue = dev_priv->counter = 1;
 
 	BEGIN_LP_RING(4);
 	OUT_RING(CMD_STORE_DWORD_IDX);
@@ -442,9 +445,6 @@ static void i915_emit_breadcrumb(drm_device_t *dev)
 	OUT_RING(dev_priv->counter);
 	OUT_RING(0);
 	ADVANCE_LP_RING();
-#ifdef I915_HAVE_FENCE
-	drm_fence_flush_old(dev, 0, dev_priv->counter);
-#endif
 }
 
 
@@ -472,6 +472,7 @@ int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush)
 static int i915_dispatch_cmdbuffer(drm_device_t * dev,
 				   drm_i915_cmdbuffer_t * cmd)
 {
+	drm_i915_private_t *dev_priv = dev->dev_private;
 	int nbox = cmd->num_cliprects;
 	int i = 0, count, ret;
 
@@ -498,6 +499,9 @@ static int i915_dispatch_cmdbuffer(drm_device_t * dev,
 	}
 
 	i915_emit_breadcrumb( dev );
+#ifdef I915_HAVE_FENCE
+	drm_fence_flush_old(dev, 0, dev_priv->counter);
+#endif
 	return 0;
 }
 
@@ -543,6 +547,9 @@ static int i915_dispatch_batchbuffer(drm_device_t * dev,
 	}
 
 	i915_emit_breadcrumb( dev );
+#ifdef I915_HAVE_FENCE
+	drm_fence_flush_old(dev, 0, dev_priv->counter);
+#endif
 	return 0;
 }
 
@@ -580,18 +587,11 @@ static int i915_dispatch_flip(drm_device_t * dev)
 	OUT_RING(MI_WAIT_FOR_EVENT | MI_WAIT_FOR_PLANE_A_FLIP);
 	OUT_RING(0);
 	ADVANCE_LP_RING();
-
-	dev_priv->sarea_priv->last_enqueue = dev_priv->counter++;
-
-	BEGIN_LP_RING(4);
-	OUT_RING(CMD_STORE_DWORD_IDX);
-	OUT_RING(20);
-	OUT_RING(dev_priv->counter);
-	OUT_RING(0);
-	ADVANCE_LP_RING();
+	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
 	drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
+
 	dev_priv->sarea_priv->pf_current_page = dev_priv->current_page;
 	return 0;
 }

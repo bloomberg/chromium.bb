@@ -281,17 +281,9 @@ int i915_emit_irq(drm_device_t * dev)
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	dev_priv->sarea_priv->last_enqueue = ++dev_priv->counter;
+	i915_emit_breadcrumb(dev);
 
-	if (dev_priv->counter > 0x7FFFFFFFUL)
-		 dev_priv->sarea_priv->last_enqueue = dev_priv->counter = 1;
-
-	BEGIN_LP_RING(6);
-	OUT_RING(CMD_STORE_DWORD_IDX);
-	OUT_RING(20);
-	OUT_RING(dev_priv->counter);
-
-	OUT_RING(0);
+	BEGIN_LP_RING(2);
 	OUT_RING(0);
 	OUT_RING(GFX_OP_USER_INTERRUPT);
 	ADVANCE_LP_RING();

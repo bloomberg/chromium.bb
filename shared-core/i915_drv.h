@@ -152,6 +152,7 @@ extern void i915_driver_preclose(drm_device_t * dev, DRMFILE filp);
 extern int i915_driver_device_is_agp(drm_device_t * dev);
 extern long i915_compat_ioctl(struct file *filp, unsigned int cmd,
 			      unsigned long arg);
+extern void i915_emit_breadcrumb(drm_device_t *dev);
 extern int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush);
 
 
