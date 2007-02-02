@@ -304,7 +304,7 @@ static void
 testAGP(TinyDRIContext * ctx)
 {
     unsigned long ticks[128], *pTicks;
-    unsigned long size = 4096 * 1024;
+    unsigned long size = 8 * 1024;
     int ret;
 
     ret = benchmarkBuffer(ctx, size, ticks);

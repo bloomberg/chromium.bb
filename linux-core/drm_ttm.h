@@ -86,24 +86,10 @@ typedef struct drm_ttm {
 
 } drm_ttm_t;
 
-typedef struct drm_ttm_object {
-	atomic_t usage;
-	uint32_t flags;
-	drm_map_list_t map_list;
-} drm_ttm_object_t;
 
-extern int drm_ttm_object_create(struct drm_device *dev, unsigned long size,
-				 uint32_t flags,
-				 drm_ttm_object_t ** ttm_object);
-extern void drm_ttm_object_deref_locked(struct drm_device *dev,
-					drm_ttm_object_t * to);
-extern void drm_ttm_object_deref_unlocked(struct drm_device *dev,
-					  drm_ttm_object_t * to);
-extern drm_ttm_object_t *drm_lookup_ttm_object(drm_file_t * priv,
-					       uint32_t handle,
-					       int check_owner);
+extern drm_ttm_t *drm_ttm_init(struct drm_device *dev, unsigned long size);
+extern struct page *drm_ttm_alloc_page(void);
 extern int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset);
-
 extern int drm_unbind_ttm(drm_ttm_t * ttm);
 
 /*
@@ -111,7 +97,7 @@ extern int drm_unbind_ttm(drm_ttm_t * ttm);
  */
 
 extern int drm_evict_ttm(drm_ttm_t * ttm);
-extern void drm_fixup_ttm_caching(drm_ttm_t * ttm);
+extern void drm_ttm_fixup_caching(drm_ttm_t * ttm);
 
 /*
  * Destroy a ttm. The user normally calls drmRmMap or a similar IOCTL to do this, 
@@ -120,12 +106,6 @@ extern void drm_fixup_ttm_caching(drm_ttm_t * ttm);
  */
 
 extern int drm_destroy_ttm(drm_ttm_t * ttm);
-extern int drm_ttm_ioctl(DRM_IOCTL_ARGS);
-
-static __inline__ drm_ttm_t *drm_ttm_from_object(drm_ttm_object_t * to)
-{
-	return (drm_ttm_t *) to->map_list.map->offset;
-}
 
 #define DRM_MASK_VAL(dest, mask, val)			\
   (dest) = ((dest) & ~(mask)) | ((val) & (mask));

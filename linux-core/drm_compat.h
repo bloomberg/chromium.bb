@@ -201,8 +201,8 @@ extern int drm_map_page_into_agp(struct page *page);
 extern struct page *get_nopage_retry(void);
 extern void free_nopage_retry(void);
 struct fault_data;
-extern struct page *drm_vm_ttm_fault(struct vm_area_struct *vma, 
-				     struct fault_data *data);
+extern struct page *drm_bo_vm_fault(struct vm_area_struct *vma, 
+				    struct fault_data *data);
 
 #define NOPAGE_REFAULT get_nopage_retry()
 #endif
@@ -230,9 +230,9 @@ struct fault_data {
 extern int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr, 
 			 unsigned long pfn, pgprot_t pgprot);
 
-extern struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
-				      unsigned long address, 
-				      int *type);
+extern struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
+				     unsigned long address, 
+				     int *type);
 
 #endif
 

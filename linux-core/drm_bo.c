@@ -32,30 +32,30 @@
 #include "drmP.h"
 
 /*
- * Buffer object locking policy:
- * Lock dev->struct_mutex;
- * Increase usage
- * Unlock dev->struct_mutex;
- * Lock buffer->mutex;
- * Do whatever you want;
- * Unlock buffer->mutex;
- * Decrease usage. Call destruction if zero.
+ * Locking may look a bit complicated but isn't really:
  *
- * User object visibility ups usage just once, since it has its own 
- * refcounting.
+ * The buffer usage atomic_t needs to be protected by dev->struct_mutex
+ * when there is a chance that it can be zero before or after the operation.
+ * 
+ * dev->struct_mutex also protects all lists and list heads. Hash tables and hash
+ * heads.
  *
- * Destruction:
- * lock dev->struct_mutex;
- * Verify that usage is zero. Otherwise unlock and continue.
- * Destroy object.
- * unlock dev->struct_mutex;
+ * bo->mutex protects the buffer object itself excluding the usage field.
+ * bo->mutex does also protect the buffer list heads, so to manipulate those, we need
+ * both the bo->mutex and the dev->struct_mutex.
  *
- * Mutex and spinlock locking orders:
- * 1.) Buffer mutex
- * 2.) Refer to ttm locking orders.
+ * Locking order is bo->mutex, dev->struct_mutex. Therefore list traversal is a bit
+ * complicated. When dev->struct_mutex is released to grab bo->mutex, the list
+ * traversal will, in general, need to be restarted.
+ *
  */
 
+
+
 static void drm_bo_destroy_locked(drm_buffer_object_t *bo);
+static int drm_bo_setup_vm_locked(drm_buffer_object_t *bo);
+static void drm_bo_takedown_vm_locked(drm_buffer_object_t *bo);
+static void drm_bo_unmap_virtual(drm_buffer_object_t *bo);
 
 #define DRM_FLAG_MASKED(_old, _new, _mask) {\
 (_old) ^= (((_old) ^ (_new)) & (_mask)); \
@@ -110,6 +110,7 @@ static int drm_move_tt_to_local(drm_buffer_object_t * bo, int evict,
 	int ret;
 
 	if (bo->mm_node) {
+	        drm_bo_unmap_virtual(bo);
 		mutex_lock(&dev->struct_mutex);
 		if (evict)
 			ret = drm_evict_ttm(bo->ttm);
@@ -278,12 +279,9 @@ static void drm_bo_destroy_locked(drm_buffer_object_t *bo)
 				DRM_ERROR("Couldn't unbind TTM region while destroying a buffer. "
 					  "Bad. Continuing anyway\n");
 			}
+			drm_destroy_ttm(bo->ttm);
+			bo->ttm = NULL;
 		}
-
-		if (bo->ttm_object) {
-			drm_ttm_object_deref_locked(dev, bo->ttm_object);
-		}
-
 		atomic_dec(&bm->count);
 
 		drm_ctl_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
@@ -362,7 +360,7 @@ static void drm_bo_delayed_workqueue(struct work_struct *work)
 	mutex_unlock(&dev->struct_mutex);
 }
 
-static void drm_bo_usage_deref_locked(drm_buffer_object_t * bo)
+void drm_bo_usage_deref_locked(drm_buffer_object_t * bo)
 {
 	if (atomic_dec_and_test(&bo->usage)) {
 		drm_bo_destroy_locked(bo);
@@ -371,8 +369,11 @@ static void drm_bo_usage_deref_locked(drm_buffer_object_t * bo)
 
 static void drm_bo_base_deref_locked(drm_file_t * priv, drm_user_object_t * uo)
 {
-	drm_bo_usage_deref_locked(drm_user_object_entry(uo, drm_buffer_object_t,
-							base));
+	drm_buffer_object_t *bo =
+		drm_user_object_entry(uo, drm_buffer_object_t, base);
+
+	drm_bo_takedown_vm_locked(bo);
+	drm_bo_usage_deref_locked(bo);					       
 }
 
 static void drm_bo_usage_deref_unlocked(drm_buffer_object_t * bo)
@@ -608,6 +609,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 
 	DRM_DEBUG("Flipping in to AGP 0x%08lx\n", bo->mm_node->start);
 
+	drm_bo_unmap_virtual(bo);
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_bind_ttm(bo->ttm, bo->flags & DRM_BO_FLAG_BIND_CACHED,
 			   bo->mm_node->start);
@@ -927,13 +929,7 @@ static void drm_bo_fill_rep_arg(drm_buffer_object_t * bo,
 	rep->flags = bo->flags;
 	rep->size = bo->num_pages * PAGE_SIZE;
 	rep->offset = bo->offset;
-
-	if (bo->ttm_object) {
-		rep->arg_handle = bo->ttm_object->map_list.user_token;
-	} else {
-		rep->arg_handle = 0;
-	}
-
+	rep->arg_handle = bo->map_list.user_token;
 	rep->mask = bo->mask;
 	rep->buffer_start = bo->buffer_start;
 	rep->fence_flags = bo->fence_type;
@@ -1322,19 +1318,21 @@ static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
 static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo)
 {
 	drm_device_t *dev = bo->dev;
-	drm_ttm_object_t *to = NULL;
 	int ret = 0;
-	uint32_t ttm_flags = 0;
 
-	bo->ttm_object = NULL;
 	bo->ttm = NULL;
+	bo->map_list.user_token = 0ULL;
 
 	switch (bo->type) {
 	case drm_bo_type_dc:
 		mutex_lock(&dev->struct_mutex);
-		ret = drm_ttm_object_create(dev, bo->num_pages * PAGE_SIZE,
-					    ttm_flags, &to);
+		ret = drm_bo_setup_vm_locked(bo);
 		mutex_unlock(&dev->struct_mutex);
+		if (ret)
+			break;
+		bo->ttm = drm_ttm_init(dev, bo->num_pages << PAGE_SHIFT);
+		if (!bo->ttm)
+			ret = -ENOMEM;
 		break;
 	case drm_bo_type_user:
 	case drm_bo_type_fake:
@@ -1345,14 +1343,6 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo)
 		break;
 	}
 
-	if (ret) {
-		return ret;
-	}
-
-	if (to) {
-		bo->ttm_object = to;
-		bo->ttm = drm_ttm_from_object(to);
-	}
 	return ret;
 }
 
@@ -1384,7 +1374,6 @@ int drm_buffer_object_transfer(drm_buffer_object_t *bo,
 
 	bo->mm_node = NULL;
 	bo->ttm = NULL;
-	bo->ttm_object = NULL;
 	bo->fence = NULL;
 	bo->flags = 0;
 
@@ -2021,5 +2010,213 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 		return ret;
 
 	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
+	return 0;
+}
+
+/*
+ * buffer object vm functions.
+ */
+
+/**
+ * \c Get the PCI offset for the buffer object memory.
+ *
+ * \param bo The buffer object.
+ * \param bus_base On return the base of the PCI region
+ * \param bus_offset On return the byte offset into the PCI region
+ * \param bus_size On return the byte size of the buffer object or zero if
+ *     the buffer object memory is not accessible through a PCI region.
+ * \return Failure indication.
+ * 
+ * Returns -EINVAL if the buffer object is currently not mappable.
+ * Otherwise returns zero. Call bo->mutex locked.
+ */
+
+int drm_bo_pci_offset(const drm_buffer_object_t *bo,
+		      unsigned long *bus_base,
+		      unsigned long *bus_offset,
+		      unsigned long *bus_size)
+{
+	drm_device_t *dev = bo->dev;
+	drm_buffer_manager_t *bm = &dev->bm;
+	drm_mem_type_manager_t *man = &bm->man[bo->mem_type]; 
+
+	*bus_size = 0;
+
+	if (bo->type != drm_bo_type_dc)
+		return -EINVAL;
+	
+	if (!(man->flags & _DRM_FLAG_MEMTYPE_MAPPABLE)) 
+		return -EINVAL;
+		
+	if (!(man->flags & _DRM_FLAG_MEMTYPE_FIXED)) {
+		drm_ttm_t *ttm = bo->ttm;
+
+		if (!bo->ttm) {
+			return -EINVAL;
+		}
+		  
+		drm_ttm_fixup_caching(ttm);
+
+		if (!(ttm->page_flags & DRM_TTM_PAGE_UNCACHED))
+			return 0;
+		if (ttm->be->flags & DRM_BE_FLAG_CMA)
+			return 0;
+
+		*bus_base = ttm->be->aperture_base;
+	} else {
+		*bus_base = man->io_offset;
+	}
+
+	*bus_offset = bo->mm_node->start << PAGE_SHIFT;
+	*bus_size = bo->num_pages << PAGE_SHIFT;
+	
+	return 0;
+}
+
+/**
+ * \c Return a kernel virtual address to the buffer object PCI memory.
+ *
+ * \param bo The buffer object.
+ * \return Failure indication.
+ * 
+ * Returns -EINVAL if the buffer object is currently not mappable.
+ * Returns -ENOMEM if the ioremap operation failed.
+ * Otherwise returns zero.
+ * 
+ * After a successfull call, bo->iomap contains the virtual address, or NULL
+ * if the buffer object content is not accessible through PCI space. 
+ * Call bo->mutex locked.
+ */
+
+int drm_bo_ioremap(drm_buffer_object_t *bo)
+{
+	drm_device_t *dev = bo->dev;
+	drm_buffer_manager_t *bm = &dev->bm;
+	drm_mem_type_manager_t *man = &bm->man[bo->mem_type]; 
+	unsigned long bus_offset;
+	unsigned long bus_size;
+	unsigned long bus_base;
+	int ret;
+
+	BUG_ON(bo->iomap);
+
+	ret = drm_bo_pci_offset(bo, &bus_base, &bus_offset, &bus_size);
+	if (ret || bus_size == 0) 
+		return ret;
+
+	if (!(man->flags & _DRM_FLAG_NEEDS_IOREMAP))
+		bo->iomap = (void *) (((u8 *)man->io_addr) + bus_offset);
+	else {
+		bo->iomap = ioremap_nocache(bus_base + bus_offset, bus_size);
+		if (bo->iomap)
+			return -ENOMEM;
+	}
+	
+	return 0;
+}
+
+/**
+ * \c Unmap mapping obtained using drm_bo_ioremap
+ *
+ * \param bo The buffer object.
+ *
+ * Call bo->mutex locked.
+ */
+
+void drm_bo_iounmap(drm_buffer_object_t *bo)
+{
+	drm_device_t *dev = bo->dev;
+	drm_buffer_manager_t *bm; 
+	drm_mem_type_manager_t *man; 
+
+
+	bm = &dev->bm;
+	man = &bm->man[bo->mem_type];
+	
+	if (bo->iomap && (man->flags & _DRM_FLAG_NEEDS_IOREMAP)) 
+		iounmap(bo->iomap);
+	
+	bo->iomap = NULL;
+}
+
+/**
+ * \c Kill all user-space virtual mappings of this buffer object.
+ *
+ * \param bo The buffer object.
+ *
+ * Call bo->mutex locked.
+ */
+
+void drm_bo_unmap_virtual(drm_buffer_object_t *bo)
+{
+	drm_device_t *dev = bo->dev;
+	loff_t offset = ((loff_t) bo->map_list.hash.key) << PAGE_SHIFT;
+	loff_t holelen = ((loff_t) bo->num_pages) << PAGE_SHIFT;
+
+	unmap_mapping_range(dev->dev_mapping, offset, holelen, 1);
+}
+
+static void drm_bo_takedown_vm_locked(drm_buffer_object_t *bo)
+{
+	drm_map_list_t *list = &bo->map_list;
+	drm_local_map_t *map;
+	drm_device_t *dev = bo->dev;
+	
+	if (list->user_token) {
+		drm_ht_remove_item(&dev->map_hash, &list->hash);
+		list->user_token = 0;
+	}
+	if (list->file_offset_node) {
+		drm_mm_put_block(list->file_offset_node);
+		list->file_offset_node = NULL;
+	}
+
+	map = list->map;
+	if (!map)
+		return;
+
+	drm_ctl_free(map, sizeof(*map), DRM_MEM_BUFOBJ);
+	list->map = NULL;
+	list->user_token = 0ULL;
+	drm_bo_usage_deref_locked(bo);
+}
+
+static int drm_bo_setup_vm_locked(drm_buffer_object_t *bo)
+{
+	drm_map_list_t *list = &bo->map_list;
+	drm_local_map_t *map;
+	drm_device_t *dev = bo->dev;
+	
+	list->map = drm_ctl_calloc(1, sizeof(*map), DRM_MEM_BUFOBJ);
+	if (!list->map)
+		return -ENOMEM;
+
+	map = list->map;
+	map->offset = 0;
+	map->type = _DRM_TTM;
+	map->flags = _DRM_REMOVABLE;
+	map->size = bo->num_pages * PAGE_SIZE;
+	atomic_inc(&bo->usage);
+	map->handle = (void *) bo;
+	
+	list->file_offset_node = drm_mm_search_free(&dev->offset_manager,
+						    bo->num_pages, 0, 0);
+
+	if (!list->file_offset_node) {
+		drm_bo_takedown_vm_locked(bo);
+		return -ENOMEM;
+	}
+
+	list->file_offset_node = drm_mm_get_block(list->file_offset_node,
+						  bo->num_pages, 0);
+
+	list->hash.key = list->file_offset_node->start;
+	if (drm_ht_insert_item(&dev->map_hash, &list->hash)) {
+		drm_bo_takedown_vm_locked(bo);
+		return -ENOMEM;
+	}
+		
+	list->user_token = ((drm_u64_t) list->hash.key) << PAGE_SHIFT;
+
 	return 0;
 }

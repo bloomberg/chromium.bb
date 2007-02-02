@@ -160,7 +160,7 @@ void free_nopage_retry(void)
 	}
 }
 
-struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
+struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 			       unsigned long address, 
 			       int *type)
 {
@@ -171,7 +171,7 @@ struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
 
 	data.address = address;
 	data.vma = vma;
-	drm_vm_ttm_fault(vma, &data);
+	drm_bo_vm_fault(vma, &data);
 	switch (data.type) {
 	case VM_FAULT_OOM:
 		return NOPAGE_OOM;

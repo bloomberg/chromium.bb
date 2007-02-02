@@ -70,7 +70,6 @@ int i915_init_mem_type(drm_device_t *dev, uint32_t type,
 {
 	switch(type) {
 	case DRM_BO_MEM_LOCAL:
-		break;
 	case DRM_BO_MEM_TT:
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
 			_DRM_FLAG_MEMTYPE_CACHED;

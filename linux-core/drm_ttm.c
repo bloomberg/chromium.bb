@@ -79,28 +79,27 @@ static void ttm_free_pages(drm_ttm_t *ttm)
 	ttm->pages = NULL;
 }
 
-/*
- * Unmap all vma pages from vmas mapping this ttm.
- */
 
-static int unmap_vma_pages(drm_ttm_t * ttm)
+struct page *drm_ttm_alloc_page(void)
 {
-	drm_device_t *dev = ttm->dev;
-	loff_t offset = ((loff_t) ttm->mapping_offset) << PAGE_SHIFT;
-	loff_t holelen = ((loff_t) ttm->num_pages) << PAGE_SHIFT;
+	struct page *page;
 
-#ifdef DRM_ODD_MM_COMPAT
-	int ret;
-	ret = drm_ttm_lock_mm(ttm);
-	if (ret)
-		return ret;
+	if (drm_alloc_memctl(PAGE_SIZE)) {
+		return NULL;
+	}
+	page = alloc_page(GFP_KERNEL | __GFP_ZERO | GFP_DMA32);
+	if (!page) {
+		drm_free_memctl(PAGE_SIZE);
+		return NULL;
+	}
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
+	SetPageLocked(page);
+#else
+	SetPageReserved(page);
 #endif
-	unmap_mapping_range(dev->dev_mapping, offset, holelen, 1);
-#ifdef DRM_ODD_MM_COMPAT
-	drm_ttm_finish_unmap(ttm);
-#endif
-	return 0;
+	return page;
 }
+
 
 /*
  * Change caching policy for the linear kernel map 
@@ -154,13 +153,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 	if (!ttm)
 		return 0;
 
-	if (atomic_read(&ttm->vma_count) > 0) {
-		ttm->destroy = 1;
-		DRM_ERROR("VMAs are still alive. Skipping destruction.\n");
-		return -EBUSY;
-	}
-
-	DRM_DEBUG("Destroying a ttm\n");
+	DRM_ERROR("Drm destroy ttm\n");
 
 #ifdef DRM_ODD_MM_COMPAT
 	BUG_ON(!list_empty(&ttm->vma_list));
@@ -193,11 +186,6 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 					DRM_ERROR("Erroneous map count. "
 						  "Leaking page mappings.\n");
 				}
-
-				/*
-				 * End debugging.
-				 */
-
 				__free_page(*cur_page);
 				drm_free_memctl(PAGE_SIZE);
 				--bm->cur_pages;
@@ -225,19 +213,9 @@ static int drm_ttm_populate(drm_ttm_t * ttm)
 	for (i = 0; i < ttm->num_pages; ++i) {
 		page = ttm->pages[i];
 		if (!page) {
-			if (drm_alloc_memctl(PAGE_SIZE)) {
+			page = drm_ttm_alloc_page();
+			if (!page)
 				return -ENOMEM;
-			}
-			page = alloc_page(GFP_KERNEL | __GFP_ZERO | GFP_DMA32);
-			if (!page) {
-				drm_free_memctl(PAGE_SIZE);
-				return -ENOMEM;
-			}
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
-			SetPageLocked(page);
-#else
-			SetPageReserved(page);
-#endif
 			ttm->pages[i] = page;
 			++bm->cur_pages;
 		}
@@ -251,7 +229,7 @@ static int drm_ttm_populate(drm_ttm_t * ttm)
  * Initialize a ttm.
  */
 
-static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
+drm_ttm_t *drm_ttm_init(struct drm_device *dev, unsigned long size)
 {
 	drm_bo_driver_t *bo_driver = dev->driver->bo_driver;
 	drm_ttm_t *ttm;
@@ -303,26 +281,15 @@ static drm_ttm_t *drm_init_ttm(struct drm_device *dev, unsigned long size)
 int drm_evict_ttm(drm_ttm_t * ttm)
 {
 	drm_ttm_backend_t *be = ttm->be;
-	int ret;
 
-	switch (ttm->state) {
-	case ttm_bound:
-		if (be->needs_ub_cache_adjust(be)) {
-			ret = unmap_vma_pages(ttm);
-			if (ret) {
-				return ret;
-			}
-		}
+	if (ttm->state == ttm_bound) 
 		be->unbind(be);
-		break;
-	default:
-		break;
-	}
+
 	ttm->state = ttm_evicted;
 	return 0;
 }
 
-void drm_fixup_ttm_caching(drm_ttm_t * ttm)
+void drm_ttm_fixup_caching(drm_ttm_t * ttm)
 {
 
 	if (ttm->state == ttm_evicted) {
@@ -344,7 +311,7 @@ int drm_unbind_ttm(drm_ttm_t * ttm)
 	if (ret)
 		return ret;
 
-	drm_fixup_ttm_caching(ttm);
+	drm_ttm_fixup_caching(ttm);
 	return 0;
 }
 
@@ -366,10 +333,6 @@ int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset)
 		return ret;
 
 	if (ttm->state == ttm_unbound && !cached) {
-		ret = unmap_vma_pages(ttm);
-		if (ret)
-			return ret;
-
 		drm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
 	}
 #ifdef DRM_ODD_MM_COMPAT
@@ -400,122 +363,5 @@ int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset)
 	}
 #endif
 
-	return 0;
-}
-
-/*
- * dev->struct_mutex locked.
- */
-static void drm_ttm_object_remove(drm_device_t * dev, drm_ttm_object_t * object)
-{
-	drm_map_list_t *list = &object->map_list;
-	drm_local_map_t *map;
-
-	if (list->user_token)
-		drm_ht_remove_item(&dev->map_hash, &list->hash);
-
-	if (list->file_offset_node) {
-		drm_mm_put_block(list->file_offset_node);
-		list->file_offset_node = NULL;
-	}
-
-	map = list->map;
-
-	if (map) {
-		drm_ttm_t *ttm = (drm_ttm_t *) map->offset;
-		if (ttm) {
-			if (drm_destroy_ttm(ttm) != -EBUSY) {
-				drm_ctl_free(map, sizeof(*map), DRM_MEM_TTM);
-			}
-		} else {
-			drm_ctl_free(map, sizeof(*map), DRM_MEM_TTM);
-		}
-	}
-
-	drm_ctl_free(object, sizeof(*object), DRM_MEM_TTM);
-}
-
-void drm_ttm_object_deref_locked(drm_device_t * dev, drm_ttm_object_t * to)
-{
-	if (atomic_dec_and_test(&to->usage)) {
-		drm_ttm_object_remove(dev, to);
-	}
-}
-
-void drm_ttm_object_deref_unlocked(drm_device_t * dev, drm_ttm_object_t * to)
-{
-	if (atomic_dec_and_test(&to->usage)) {
-		mutex_lock(&dev->struct_mutex);
-		if (atomic_read(&to->usage) == 0)
-			drm_ttm_object_remove(dev, to);
-		mutex_unlock(&dev->struct_mutex);
-	}
-}
-
-/*
- * Create a ttm and add it to the drm book-keeping. 
- * dev->struct_mutex locked.
- */
-
-int drm_ttm_object_create(drm_device_t * dev, unsigned long size,
-			  uint32_t flags, drm_ttm_object_t ** ttm_object)
-{
-	drm_ttm_object_t *object;
-	drm_map_list_t *list;
-	drm_local_map_t *map;
-	drm_ttm_t *ttm;
-
-	object = drm_ctl_calloc(1, sizeof(*object), DRM_MEM_TTM);
-	if (!object)
-		return -ENOMEM;
-	object->flags = flags;
-	list = &object->map_list;
-
-	list->map = drm_ctl_calloc(1, sizeof(*map), DRM_MEM_TTM);
-	if (!list->map) {
-		drm_ttm_object_remove(dev, object);
-		return -ENOMEM;
-	}
-	map = list->map;
-
-	ttm = drm_init_ttm(dev, size);
-	if (!ttm) {
-		DRM_ERROR("Could not create ttm\n");
-		drm_ttm_object_remove(dev, object);
-		return -ENOMEM;
-	}
-
-	map->offset = (unsigned long)ttm;
-	map->type = _DRM_TTM;
-	map->flags = _DRM_REMOVABLE;
-	map->size = ttm->num_pages * PAGE_SIZE;
-	map->handle = (void *)object;
-
-	/*
-	 * Add a one-page "hole" to the block size to avoid the mm subsystem
-	 * merging vmas.
-	 * FIXME: Is this really needed?
-	 */
-
-	list->file_offset_node = drm_mm_search_free(&dev->offset_manager,
-						    ttm->num_pages + 1, 0, 0);
-	if (!list->file_offset_node) {
-		drm_ttm_object_remove(dev, object);
-		return -ENOMEM;
-	}
-	list->file_offset_node = drm_mm_get_block(list->file_offset_node,
-						  ttm->num_pages + 1, 0);
-
-	list->hash.key = list->file_offset_node->start;
-
-	if (drm_ht_insert_item(&dev->map_hash, &list->hash)) {
-		drm_ttm_object_remove(dev, object);
-		return -ENOMEM;
-	}
-
-	list->user_token = ((drm_u64_t) list->hash.key) << PAGE_SHIFT;
-	ttm->mapping_offset = list->hash.key;
-	atomic_set(&object->usage, 1);
-	*ttm_object = object;
 	return 0;
 }
