@@ -238,7 +238,7 @@ extern struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 
 #ifdef DRM_ODD_MM_COMPAT
 
-struct drm_ttm;
+struct drm_buffer_object;
 
 
 /*
@@ -246,14 +246,14 @@ struct drm_ttm;
  * process mm pointer to the ttm mm list. Needs the ttm mutex.
  */
 
-extern int drm_ttm_add_vma(struct drm_ttm * ttm, 
+extern int drm_bo_add_vma(struct drm_buffer_object * bo, 
 			   struct vm_area_struct *vma);
 /*
  * Delete a vma and the corresponding mm pointer from the
  * ttm lists. Needs the ttm mutex.
  */
-extern void drm_ttm_delete_vma(struct drm_ttm * ttm, 
-			       struct vm_area_struct *vma);
+extern void drm_bo_delete_vma(struct drm_buffer_object * bo, 
+			      struct vm_area_struct *vma);
 
 /*
  * Attempts to lock all relevant mmap_sems for a ttm, while
@@ -262,12 +262,12 @@ extern void drm_ttm_delete_vma(struct drm_ttm * ttm,
  * schedule() and try again.
  */
 
-extern int drm_ttm_lock_mm(struct drm_ttm * ttm);
+extern int drm_bo_lock_kmm(struct drm_buffer_object * bo);
 
 /*
  * Unlock all relevant mmap_sems for a ttm.
  */
-extern void drm_ttm_unlock_mm(struct drm_ttm * ttm);
+extern void drm_bo_unlock_kmm(struct drm_buffer_object * bo);
 
 /*
  * If the ttm was bound to the aperture, this function shall be called
@@ -277,7 +277,7 @@ extern void drm_ttm_unlock_mm(struct drm_ttm * ttm);
  * releases the mmap_sems for this ttm.
  */
 
-extern void drm_ttm_finish_unmap(struct drm_ttm *ttm);
+extern void drm_bo_finish_unmap(struct drm_buffer_object *bo);
 
 /*
  * Remap all vmas of this ttm using io_remap_pfn_range. We cannot 
@@ -286,14 +286,14 @@ extern void drm_ttm_finish_unmap(struct drm_ttm *ttm);
  * releases the mmap_sems for this ttm.
  */
 
-extern int drm_ttm_remap_bound(struct drm_ttm *ttm);
+extern int drm_bo_remap_bound(struct drm_buffer_object *bo);
 
 
 /*
  * Remap a vma for a bound ttm. Call with the ttm mutex held and
  * the relevant mmap_sem locked.
  */
-extern int drm_ttm_map_bound(struct vm_area_struct *vma);
+extern int drm_bo_map_bound(struct vm_area_struct *vma);
 
 #endif
 #endif

@@ -1044,6 +1044,13 @@ typedef struct drm_buffer_object{
 	unsigned long num_pages;
 	uint32_t vm_flags;
         void *iomap;
+  
+        
+#ifdef DRM_ODD_MM_COMPAT
+  /* dev->struct_mutex only protected. */
+	struct list_head vma_list;
+	struct list_head p_mm_list;
+#endif
 
 } drm_buffer_object_t;
 

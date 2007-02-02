@@ -153,12 +153,6 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 	if (!ttm)
 		return 0;
 
-	DRM_ERROR("Drm destroy ttm\n");
-
-#ifdef DRM_ODD_MM_COMPAT
-	BUG_ON(!list_empty(&ttm->vma_list));
-	BUG_ON(!list_empty(&ttm->p_mm_list));
-#endif
 	be = ttm->be;
 	if (be) {
 		be->destroy(be);
@@ -241,11 +235,6 @@ drm_ttm_t *drm_ttm_init(struct drm_device *dev, unsigned long size)
 	if (!ttm)
 		return NULL;
 
-#ifdef DRM_ODD_MM_COMPAT
-	INIT_LIST_HEAD(&ttm->p_mm_list);
-	INIT_LIST_HEAD(&ttm->vma_list);
-#endif
-
 	ttm->dev = dev;
 	atomic_set(&ttm->vma_count, 0);
 
@@ -278,15 +267,17 @@ drm_ttm_t *drm_ttm_init(struct drm_device *dev, unsigned long size)
  * Unbind a ttm region from the aperture.
  */
 
-int drm_evict_ttm(drm_ttm_t * ttm)
+void drm_ttm_evict(drm_ttm_t * ttm)
 {
 	drm_ttm_backend_t *be = ttm->be;
+	int ret;
 
-	if (ttm->state == ttm_bound) 
-		be->unbind(be);
+	if (ttm->state == ttm_bound) {
+		ret = be->unbind(be);
+		BUG_ON(ret);
+	}
 
 	ttm->state = ttm_evicted;
-	return 0;
 }
 
 void drm_ttm_fixup_caching(drm_ttm_t * ttm)
@@ -301,18 +292,12 @@ void drm_ttm_fixup_caching(drm_ttm_t * ttm)
 	}
 }
 
-int drm_unbind_ttm(drm_ttm_t * ttm)
+void drm_ttm_unbind(drm_ttm_t * ttm)
 {
-	int ret = 0;
-
 	if (ttm->state == ttm_bound)
-		ret = drm_evict_ttm(ttm);
-
-	if (ret)
-		return ret;
+		drm_ttm_evict(ttm);
 
 	drm_ttm_fixup_caching(ttm);
-	return 0;
 }
 
 int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset)
@@ -335,33 +320,15 @@ int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset)
 	if (ttm->state == ttm_unbound && !cached) {
 		drm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
 	}
-#ifdef DRM_ODD_MM_COMPAT
-	else if (ttm->state == ttm_evicted && !cached) {
-		ret = drm_ttm_lock_mm(ttm);
-		if (ret)
-			return ret;
-	}
-#endif
+
 	if ((ret = be->bind(be, aper_offset, cached))) {
 		ttm->state = ttm_evicted;
-#ifdef DRM_ODD_MM_COMPAT
-		if (be->needs_ub_cache_adjust(be))
-			drm_ttm_unlock_mm(ttm);
-#endif
 		DRM_ERROR("Couldn't bind backend.\n");
 		return ret;
 	}
 
 	ttm->aper_offset = aper_offset;
 	ttm->state = ttm_bound;
-
-#ifdef DRM_ODD_MM_COMPAT
-	if (be->needs_ub_cache_adjust(be)) {
-		ret = drm_ttm_remap_bound(ttm);
-		if (ret)
-			return ret;
-	}
-#endif
 
 	return 0;
 }

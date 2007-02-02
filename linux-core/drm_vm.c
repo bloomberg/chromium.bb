@@ -747,12 +747,6 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	
 
 	mutex_lock(&bo->mutex);
-	map = bo->map_list.map;
-
-	if (!map) {
-		data->type = VM_FAULT_OOM;
-		goto out_unlock;
-	}
 
 	if (address > vma->vm_end) {
 		data->type = VM_FAULT_SIGBUS;
@@ -808,8 +802,8 @@ static void drm_bo_vm_open_locked(struct vm_area_struct *vma)
 
 	drm_vm_open_locked(vma);
 	atomic_inc(&bo->usage);
-#ifdef DRM_MM_ODD_COMPAT
-	drm_bo_vm_add_vma(bo, vma);
+#ifdef DRM_ODD_MM_COMPAT
+	drm_bo_add_vma(bo, vma);
 #endif
 }
 
@@ -843,8 +837,8 @@ static void drm_bo_vm_close(struct vm_area_struct *vma)
 	drm_vm_close(vma);
 	if (bo) {
 		mutex_lock(&dev->struct_mutex);
-#ifdef DRM_MM_ODD_COMPAT
-		drm_bo_vm_delete_vma(bo, vma);
+#ifdef DRM_ODD_MM_COMPAT
+		drm_bo_delete_vma(bo, vma);
 #endif
 		drm_bo_usage_deref_locked(bo);
 		mutex_unlock(&dev->struct_mutex);
@@ -881,7 +875,7 @@ int drm_bo_mmap_locked(struct vm_area_struct *vma,
 	vma->vm_flags |= VM_RESERVED | VM_IO;
 	drm_bo_vm_open_locked(vma);
 #ifdef DRM_ODD_MM_COMPAT
-	drm_ttm_map_bound(vma);
+	drm_bo_map_bound(vma);
 #endif		
 	return 0;
 }
