@@ -570,6 +570,12 @@ static int i915_dispatch_flip(drm_device_t * dev)
 	OUT_RING(0);
 	ADVANCE_LP_RING();
 
+	/* Wait for a pending flip to take effect */
+	BEGIN_LP_RING(2);
+	OUT_RING(MI_WAIT_FOR_EVENT | MI_WAIT_FOR_PLANE_A_FLIP);
+	OUT_RING(0);
+	ADVANCE_LP_RING();
+
 	BEGIN_LP_RING(6);
 	OUT_RING(CMD_OP_DISPLAYBUFFER_INFO | ASYNC_FLIP);
 	OUT_RING(0);
@@ -583,10 +589,6 @@ static int i915_dispatch_flip(drm_device_t * dev)
 	OUT_RING(0);
 	ADVANCE_LP_RING();
 
-	BEGIN_LP_RING(2);
-	OUT_RING(MI_WAIT_FOR_EVENT | MI_WAIT_FOR_PLANE_A_FLIP);
-	OUT_RING(0);
-	ADVANCE_LP_RING();
 	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
 	drm_fence_flush_old(dev, 0, dev_priv->counter);
@@ -856,9 +858,7 @@ void i915_driver_preclose(drm_device_t * dev, DRMFILE filp)
 {
 	if (dev->dev_private) {
 		drm_i915_private_t *dev_priv = dev->dev_private;
-		if (dev_priv->page_flipping) {
-			i915_do_cleanup_pageflip(dev);
-		}
+		i915_do_cleanup_pageflip(dev);
 		i915_mem_release(dev, filp, dev_priv->agp_heap);
 	}
 }
