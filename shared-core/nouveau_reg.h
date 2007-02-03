@@ -170,6 +170,7 @@
 
 #define NV04_PGRAPH_BPIXEL                                 0x00400724
 #define NV10_PGRAPH_RDI_INDEX                              0x00400750
+#define NV04_PGRAPH_FFINTFC_ST2                            0x00400754
 #define NV10_PGRAPH_RDI_DATA                               0x00400754
 #define NV04_PGRAPH_DMA_PITCH                              0x00400760
 #define NV10_PGRAPH_FFINTFC_ST2                            0x00400764
