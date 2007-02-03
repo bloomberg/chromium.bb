@@ -544,6 +544,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	{
 		case NV_04:
 		case NV_05:
+			nv04_graph_context_create(dev, init->channel);
 			nouveau_nv04_context_init(dev, init);
 			break;
 		case NV_10:

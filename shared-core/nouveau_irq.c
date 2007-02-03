@@ -192,6 +192,7 @@ static void nouveau_fifo_irq_handler(drm_device_t *dev)
 	NV_WRITE(NV03_PMC_INTR_0, NV_PMC_INTR_0_PFIFO_PENDING);
 }
 
+#if 0
 static void nouveau_nv04_context_switch(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
@@ -236,6 +237,7 @@ static void nouveau_nv04_context_switch(drm_device_t *dev)
 	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
 	
 }
+#endif
 
 static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 {

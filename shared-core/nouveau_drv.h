@@ -204,6 +204,11 @@ extern void        nouveau_irq_preinstall(drm_device_t*);
 extern void        nouveau_irq_postinstall(drm_device_t*);
 extern void        nouveau_irq_uninstall(drm_device_t*);
 
+/* nv04_graph.c */
+extern void nouveau_nv04_context_switch(drm_device_t *dev);
+extern int nv04_graph_init(drm_device_t *dev);
+extern int nv04_graph_context_create(drm_device_t *dev, int channel);
+
 /* nv10_graph.c */
 extern void nouveau_nv10_context_switch(drm_device_t *dev);
 extern int nv10_graph_init(drm_device_t *dev);
