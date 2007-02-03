@@ -664,11 +664,11 @@ nv40_graph_context_save_current(drm_device_t *dev)
 	uint32_t instance;
 	int i;
 
-	NV_WRITE(NV_PGRAPH_FIFO, 0);
+	NV_WRITE(NV04_PGRAPH_FIFO, 0);
 
 	instance = NV_READ(0x40032C) & 0xFFFFF;
 	if (!instance) {
-		NV_WRITE(NV_PGRAPH_FIFO, 1);
+		NV_WRITE(NV04_PGRAPH_FIFO, 1);
 		return;
 	}
 
@@ -684,11 +684,11 @@ nv40_graph_context_save_current(drm_device_t *dev)
 		DRM_ERROR("failed to save current grctx to ramin\n");
 		DRM_ERROR("instance = 0x%08x\n", NV_READ(0x40032C));
 		DRM_ERROR("0x40030C = 0x%08x\n", NV_READ(0x40030C));
-		NV_WRITE(NV_PGRAPH_FIFO, 1);
+		NV_WRITE(NV04_PGRAPH_FIFO, 1);
 		return;
 	}
 
-	NV_WRITE(NV_PGRAPH_FIFO, 1);
+	NV_WRITE(NV04_PGRAPH_FIFO, 1);
 }
 
 /* Restore the context for a specific channel into PGRAPH
@@ -705,7 +705,7 @@ nv40_graph_context_restore(drm_device_t *dev, int channel)
 
 	instance = nouveau_chip_instance_get(dev, chan->ramin_grctx);
 
-	NV_WRITE(NV_PGRAPH_FIFO, 0);
+	NV_WRITE(NV04_PGRAPH_FIFO, 0);
 	NV_WRITE(0x400784, instance);
 	NV_WRITE(0x400310, NV_READ(0x400310) | 0x40);
 	NV_WRITE(0x400304, 1);
@@ -719,7 +719,7 @@ nv40_graph_context_restore(drm_device_t *dev, int channel)
 				channel);
 		DRM_ERROR("instance = 0x%08x\n", instance);
 		DRM_ERROR("0x40030C = 0x%08x\n", NV_READ(0x40030C));
-		NV_WRITE(NV_PGRAPH_FIFO, 1);
+		NV_WRITE(NV04_PGRAPH_FIFO, 1);
 		return;
 	}
 
@@ -735,7 +735,7 @@ nv40_graph_context_restore(drm_device_t *dev, int channel)
 	 * recieve PGRAPH_INTR_CONTEXT_SWITCH
 	 */
 	NV_WRITE(NV40_PFIFO_GRCTX_INSTANCE, instance);
-	NV_WRITE(NV_PGRAPH_FIFO, 1);
+	NV_WRITE(NV04_PGRAPH_FIFO, 1);
 }
 
 /* Some voodoo that makes context switching work without the binary driver
@@ -930,7 +930,7 @@ nv40_graph_init(drm_device_t *dev)
 			NV_DMA_ACCESS_RW, NV_DMA_TARGET_VIDMEM);
 	pg0220_inst = nouveau_chip_instance_get(dev,
 			dev_priv->fb_obj->instance);
-	NV_WRITE(NV_PGRAPH_NV40_UNK220, pg0220_inst);
+	NV_WRITE(NV40_PGRAPH_UNK220, pg0220_inst);
 
 	return 0;
 }

@@ -56,9 +56,9 @@ static void nv20_graph_rdi(drm_device_t *dev) {
 		(drm_nouveau_private_t *)dev->dev_private;
 	int i;
 
-	NV_WRITE(NV_PGRAPH_RDI_INDEX, 0x2c80000);
+	NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x2c80000);
 	for (i = 0; i < 32; i++)
-		NV_WRITE(NV_PGRAPH_RDI_DATA, 0);
+		NV_WRITE(NV10_PGRAPH_RDI_DATA, 0);
 
 	nouveau_wait_for_idle(dev);
 }
@@ -77,8 +77,8 @@ static void nv20_graph_context_save_current(drm_device_t *dev, int channel) {
 	if (instance != nouveau_chip_instance_get(dev, dev_priv->fifos[channel].ramin_grctx))
 		DRM_ERROR("nv20_graph_context_save_current : bad instance\n");
 
-	NV_WRITE(NV_PGRAPH_CHANNEL_CTX_SIZE, instance);
-	NV_WRITE(NV_PGRAPH_CHANNEL_CTX_POINTER, 2 /* save ctx */);
+	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_SIZE, instance);
+	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_POINTER, 2 /* save ctx */);
 }
 
 
@@ -96,9 +96,9 @@ static void nv20_graph_context_restore(drm_device_t *dev, int channel) {
 	if (instance != nouveau_chip_instance_get(dev, dev_priv->fifos[channel].ramin_grctx))
 		DRM_ERROR("nv20_graph_context_restore_current : bad instance\n");
 
-	NV_WRITE(NV_PGRAPH_CTX_USER, channel << 24);
-	NV_WRITE(NV_PGRAPH_CHANNEL_CTX_SIZE, instance);
-	NV_WRITE(NV_PGRAPH_CHANNEL_CTX_POINTER, 1 /* restore ctx */);
+	NV_WRITE(NV10_PGRAPH_CTX_USER, channel << 24);
+	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_SIZE, instance);
+	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_POINTER, 1 /* restore ctx */);
 }
 
 void nouveau_nv20_context_switch(drm_device_t *dev)
@@ -106,30 +106,30 @@ void nouveau_nv20_context_switch(drm_device_t *dev)
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int channel, channel_old;
 
-	channel=NV_READ(NV_PFIFO_CACH1_PSH1)&(nouveau_fifo_number(dev)-1);
-	channel_old = (NV_READ(NV_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
+	channel=NV_READ(NV03_PFIFO_CACHE1_PUSH1)&(nouveau_fifo_number(dev)-1);
+	channel_old = (NV_READ(NV10_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
 
 	DRM_DEBUG("NV: PGRAPH context switch interrupt channel %x -> %x\n",channel_old, channel);
 
-	NV_WRITE(NV_PGRAPH_FIFO,0x0);
+	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
 
 	nv20_graph_context_save_current(dev, channel_old);
 	
 	nouveau_wait_for_idle(dev);
 
-	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10000000);
+	NV_WRITE(NV03_PGRAPH_CTX_CONTROL, 0x10000000);
 
 	nv20_graph_context_restore(dev, channel);
 
 	nouveau_wait_for_idle(dev);
 	
-	if ((NV_READ(NV_PGRAPH_CTX_USER) >> 24) != channel)
-		DRM_ERROR("nouveau_nv20_context_switch : wrong channel restored %x %x!!!\n", channel, NV_READ(NV_PGRAPH_CTX_USER) >> 24);
+	if ((NV_READ(NV10_PGRAPH_CTX_USER) >> 24) != channel)
+		DRM_ERROR("nouveau_nv20_context_switch : wrong channel restored %x %x!!!\n", channel, NV_READ(NV10_PGRAPH_CTX_USER) >> 24);
 
-	NV_WRITE(NV_PGRAPH_CTX_CONTROL, 0x10010100);
-	NV_WRITE(NV_PGRAPH_FFINTFC_ST2, NV_READ(NV_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
+	NV_WRITE(NV03_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV10_PGRAPH_FFINTFC_ST2, NV_READ(NV10_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
 
-	NV_WRITE(NV_PGRAPH_FIFO,0x1);
+	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
 }
 
 int nv20_graph_init(drm_device_t *dev) {
@@ -146,7 +146,7 @@ int nv20_graph_init(drm_device_t *dev) {
 	for (i=0; i< dev_priv->ctx_table_size; i+=4)
 		INSTANCE_WR(dev_priv->ctx_table, i/4, 0x00000000);
 
-	NV_WRITE(NV_PGRAPH_CHANNEL_CTX_TABLE, nouveau_chip_instance_get(dev, dev_priv->ctx_table));
+	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_TABLE, nouveau_chip_instance_get(dev, dev_priv->ctx_table));
 
 	//XXX need to be done and save/restore for each fifo ???
 	nv20_graph_rdi(dev);

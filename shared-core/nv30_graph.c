@@ -147,7 +147,7 @@ int nv30_graph_init(drm_device_t *dev)
         for (i=0; i< dev_priv->ctx_table_size; i+=4)
                 INSTANCE_WR(dev_priv->ctx_table, i/4, 0x00000000);
 
-        NV_WRITE(NV_PGRAPH_CHANNEL_CTX_TABLE, nouveau_chip_instance_get(dev, dev_priv->ctx_table));
+        NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_TABLE, nouveau_chip_instance_get(dev, dev_priv->ctx_table));
 
 	return 0;
 }
