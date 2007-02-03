@@ -546,10 +546,10 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 
 	// save PGRAPH context
 	for (i = 0; i < sizeof(nv10_graph_ctx_regs)/sizeof(nv10_graph_ctx_regs[0]); i++)
-		dev_priv->fifos[channel_old].nv10_pgraph_ctx[i] = NV_READ(nv10_graph_ctx_regs[i]);
+		dev_priv->fifos[channel_old].pgraph_ctx[i] = NV_READ(nv10_graph_ctx_regs[i]);
 	if (dev_priv->chipset>=0x17) {
 		for (j = 0; j < sizeof(nv17_graph_ctx_regs)/sizeof(nv17_graph_ctx_regs[0]); i++,j++)
-			dev_priv->fifos[channel_old].nv10_pgraph_ctx[i] = NV_READ(nv17_graph_ctx_regs[j]);
+			dev_priv->fifos[channel_old].pgraph_ctx[i] = NV_READ(nv17_graph_ctx_regs[j]);
 	}
 	
 	nouveau_wait_for_idle(dev);
@@ -562,10 +562,10 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 	//XXX not working yet
 #if 1
 	for (i = 0; i < sizeof(nv10_graph_ctx_regs)/sizeof(nv10_graph_ctx_regs[0]); i++)
-		NV_WRITE(nv10_graph_ctx_regs[i], dev_priv->fifos[channel].nv10_pgraph_ctx[i]);
+		NV_WRITE(nv10_graph_ctx_regs[i], dev_priv->fifos[channel].pgraph_ctx[i]);
 	if (dev_priv->chipset>=0x17) {
 		for (j = 0; j < sizeof(nv17_graph_ctx_regs)/sizeof(nv17_graph_ctx_regs[0]); i++,j++)
-			NV_WRITE(nv17_graph_ctx_regs[j], dev_priv->fifos[channel].nv10_pgraph_ctx[i]);
+			NV_WRITE(nv17_graph_ctx_regs[j], dev_priv->fifos[channel].pgraph_ctx[i]);
 	}
 	nouveau_wait_for_idle(dev);
 #endif
@@ -586,14 +586,14 @@ int nv10_graph_context_create(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG("nv10_graph_context_create %d\n", channel);
 
-	memset(dev_priv->fifos[channel].nv10_pgraph_ctx, 0, sizeof(dev_priv->fifos[channel].nv10_pgraph_ctx));
+	memset(dev_priv->fifos[channel].pgraph_ctx, 0, sizeof(dev_priv->fifos[channel].pgraph_ctx));
 
 	//dev_priv->fifos[channel].pgraph_ctx_user = channel << 24;
-	dev_priv->fifos[channel].nv10_pgraph_ctx[0] = 0x0001ffff;
+	dev_priv->fifos[channel].pgraph_ctx[0] = 0x0001ffff;
 	/* is it really needed ??? */
 	if (dev_priv->chipset>=0x17) {
-		dev_priv->fifos[channel].nv10_pgraph_ctx[sizeof(nv10_graph_ctx_regs) + 0] = NV_READ(NV10_PGRAPH_DEBUG_4);
-		dev_priv->fifos[channel].nv10_pgraph_ctx[sizeof(nv10_graph_ctx_regs) + 1] = NV_READ(0x004006b0);
+		dev_priv->fifos[channel].pgraph_ctx[sizeof(nv10_graph_ctx_regs) + 0] = NV_READ(NV10_PGRAPH_DEBUG_4);
+		dev_priv->fifos[channel].pgraph_ctx[sizeof(nv10_graph_ctx_regs) + 1] = NV_READ(0x004006b0);
 	}
 
 

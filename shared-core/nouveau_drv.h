@@ -91,7 +91,7 @@ struct nouveau_fifo
 	struct nouveau_object *objs;
 
 	/* XXX dynamic alloc ? */
-	uint32_t nv10_pgraph_ctx [340];
+	uint32_t pgraph_ctx [340];
 };
 
 struct nouveau_config {
