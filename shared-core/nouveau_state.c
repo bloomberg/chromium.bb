@@ -108,6 +108,8 @@ int nouveau_firstopen(struct drm_device *dev)
 		nv20_graph_init(dev);
 	else if (dev_priv->card_type >= NV_10)
 		nv10_graph_init(dev);
+	else if (dev_priv->card_type >= NV_04)
+		nv04_graph_init(dev);
 
 	return 0;
 }
