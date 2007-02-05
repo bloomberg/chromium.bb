@@ -224,11 +224,14 @@ kern_return_t ForwardException(mach_port_t task, mach_port_t failed_thread,
                                exception_type_t exception,
                                exception_data_t code,
                                mach_msg_type_number_t code_count) {
-  ExceptionParameters *previous = (*s_exception_parameter_map)[pthread_self()];
+  map<pthread_t, ExceptionParameters *>::iterator previous_location = 
+    s_exception_parameter_map->find(pthread_self());
 
   // If we don't have the previous data, we need to just exit
-  if (!previous)
+  if (previous_location == (*s_exception_parameter_map).end())
     exit(exception);
+
+  ExceptionParameters *previous = (*previous_location).second;
 
   // Find the first exception handler that matches the exception
   unsigned int found;
@@ -312,8 +315,14 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
 
   // Save a pointer to our instance so that it will be available in the
   // routines that are called from exc_server();
-  if (!s_exception_parameter_map)
-    s_exception_parameter_map = new map<pthread_t, ExceptionParameters *>;
+  if (!s_exception_parameter_map) {
+    try {
+      s_exception_parameter_map = new map<pthread_t, ExceptionParameters *>;
+    }
+    catch (std::bad_alloc) {
+      return NULL;
+    }
+  }
 
   (*s_exception_parameter_map)[pthread_self()] = self->previous_;
 
@@ -328,8 +337,10 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
 
     if (result == KERN_SUCCESS) {
       // Uninstall our handler so that we don't get in a loop if the process of
-      // writing out a minidump causes an exception.
-      self->UninstallHandler();
+      // writing out a minidump causes an exception.  However, if the exception
+      // was caused by a fork'd process, don't uninstall things
+      if (receive.task.name == mach_task_self())
+        self->UninstallHandler();
       
       // If the actual exception code is zero, then we're calling this handler
       // in a way that indicates that we want to either exit this thread or
@@ -344,21 +355,31 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
         if (self->use_minidump_write_mutex_)
           pthread_mutex_unlock(&self->minidump_write_mutex_);
       } else {
-        // Generate the minidump with the exception data.
-        self->WriteMinidumpWithException(receive.exception, receive.code[0],
-                                         receive.thread.name);
-      
-        // Pass along the exception to the server, which will setup the message
-        // and call catch_exception_raise() and put the KERN_SUCCESS into the
-        // reply.
-        ExceptionReplyMessage reply;
-        if (!exc_server(&receive.header, &reply.header))
-          exit(1);
+        // When forking a child process with the exception handler installed,
+        // if the child crashes, it will send the exception back to the parent
+        // process.  The check for task == self_task() ensures that only 
+        // exceptions that occur in the parent process are caught and 
+        // processed.
+        if (receive.task.name == mach_task_self()) {
+          
+          // Generate the minidump with the exception data.
+          self->WriteMinidumpWithException(receive.exception, receive.code[0],
+                                           receive.thread.name);
+        
+          // Pass along the exception to the server, which will setup the 
+          // message and call catch_exception_raise() and put the KERN_SUCCESS
+          // into the reply.
+          ExceptionReplyMessage reply;
+          if (!exc_server(&receive.header, &reply.header))
+            exit(1);
 
-        // Send a reply and exit
-        result = mach_msg(&(reply.header), MACH_SEND_MSG,
-                          reply.header.msgh_size, 0, MACH_PORT_NULL,
-                          MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+          // Send a reply and exit
+          result = mach_msg(&(reply.header), MACH_SEND_MSG,
+                            reply.header.msgh_size, 0, MACH_PORT_NULL,
+                            MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+        } else {
+          // An exception occurred in a child process 
+        }
       }
     }
   }
@@ -367,12 +388,19 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
 }
 
 bool ExceptionHandler::InstallHandler() {
-  // Get the actual previous data
-  exception_mask_t exception_mask = EXC_MASK_ALL &
-  ~(EXC_MASK_BREAKPOINT | EXC_MASK_MACH_SYSCALL |
-    EXC_MASK_SYSCALL | EXC_MASK_RPC_ALERT);
+  // Only catch these three exceptions.  The other ones are nebulously defined
+  // and may result in treating a non-fatal exception as fatal.
+  exception_mask_t exception_mask = EXC_MASK_BAD_ACCESS | 
+    EXC_MASK_BAD_INSTRUCTION | EXC_MASK_ARITHMETIC;
 
-  previous_ = new ExceptionParameters();
+  try {
+    previous_ = new ExceptionParameters();
+  }
+  catch (std::bad_alloc) {
+    return false;
+  }
+
+  // Save the current exception ports so that we can forward to them
   previous_->count = EXC_TYPES_COUNT;
   mach_port_t current_task = mach_task_self();
   kern_return_t result = task_get_exception_ports(current_task, exception_mask,
@@ -436,10 +464,14 @@ bool ExceptionHandler::Setup(bool install_handler) {
       return false;
 
   if (result == KERN_SUCCESS) {
-    // Install the handler in its own thread
-    if (pthread_create(&handler_thread_, NULL, &WaitForMessage, this) == 0) {
-      pthread_detach(handler_thread_);
-    }
+    // Install the handler in its own thread, detached as we won't be joining.
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    int thread_create_result = pthread_create(&handler_thread_, &attr, 
+                                              &WaitForMessage, this);
+    pthread_attr_destroy(&attr);
+    result = thread_create_result ? KERN_FAILURE : KERN_SUCCESS;
   }
 
   return result == KERN_SUCCESS ? true : false;
