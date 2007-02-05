@@ -96,3 +96,47 @@ int i915_init_mem_type(drm_device_t *dev, uint32_t type,
 	}
 	return 0;
 }
+
+void i915_emit_copy_blit(drm_device_t *dev,
+			 uint32_t src_offset,
+			 uint32_t dst_offset,
+			 uint32_t pages,
+			 int direction)
+{
+	uint32_t cur_pages;
+	uint32_t stride = PAGE_SIZE;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	RING_LOCALS;
+
+	if (!dev_priv)
+		return;
+	
+	if (direction) {
+		stride = -stride;
+		src_offset += (pages - 1) << PAGE_SHIFT;
+		dst_offset += (pages - 1) << PAGE_SHIFT;
+	}
+
+	while(pages > 0) {
+		cur_pages = pages;
+		if (cur_pages > 2048)
+			cur_pages = 2048;
+		pages -= cur_pages;
+
+		BEGIN_LP_RING(8);
+		OUT_RING(XY_SRC_COPY_BLT_CMD | XY_SRC_COPY_BLT_WRITE_ALPHA |
+			 XY_SRC_COPY_BLT_WRITE_RGB);
+		OUT_RING((stride & 0xffff) | ( 0xcc << 16) | (1 << 24) | 
+			 (1 << 25));
+		OUT_RING(0);
+		OUT_RING((cur_pages << 16) | (PAGE_SIZE >> 2));
+		OUT_RING(dst_offset);
+		OUT_RING(0);
+		OUT_RING(stride & 0xffff);
+		OUT_RING(src_offset);
+		ADVANCE_LP_RING();
+		dst_offset += (cur_pages << PAGE_SHIFT)*(direction ? -1 : 1);
+		src_offset += (cur_pages << PAGE_SHIFT)*(direction ? -1 : 1);
+	}
+	return;
+}
