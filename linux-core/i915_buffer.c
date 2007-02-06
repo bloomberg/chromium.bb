@@ -97,6 +97,17 @@ int i915_init_mem_type(drm_device_t *dev, uint32_t type,
 	return 0;
 }
 
+uint32_t i915_evict_flags(drm_device_t *dev, uint32_t type)
+{
+	switch(type) {
+	case DRM_BO_MEM_LOCAL:
+	case DRM_BO_MEM_TT:
+		return DRM_BO_FLAG_MEM_LOCAL;
+	default:
+		return DRM_BO_FLAG_MEM_TT;
+	}
+}
+
 void i915_emit_copy_blit(drm_device_t *dev,
 			 uint32_t src_offset,
 			 uint32_t dst_offset,

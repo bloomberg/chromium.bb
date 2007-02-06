@@ -56,6 +56,8 @@ static void drm_bo_destroy_locked(drm_buffer_object_t *bo);
 static int drm_bo_setup_vm_locked(drm_buffer_object_t *bo);
 static void drm_bo_takedown_vm_locked(drm_buffer_object_t *bo);
 static void drm_bo_unmap_virtual(drm_buffer_object_t *bo);
+static int drm_bo_mem_space(drm_device_t *dev, drm_bo_mem_reg_t *mem,
+			    int no_wait);
 
 #define DRM_FLAG_MASKED(_old, _new, _mask) {\
 (_old) ^= (((_old) ^ (_new)) & (_mask)); \
@@ -497,6 +499,7 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 	int ret = 0;
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
+	drm_bo_mem_reg_t evict_mem;
 
 	/*
 	 * Someone might have modified the buffer before we took the buffer mutex.
@@ -509,22 +512,39 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 
 	ret = drm_bo_wait(bo, 0, 0, no_wait);
 
-	if (ret) {
-		if (ret != -EAGAIN)
-			DRM_ERROR("Failed to expire fence before "
-				  "buffer eviction.\n");
+	if (ret && ret != -EAGAIN) {
+		DRM_ERROR("Failed to expire fence before "
+			  "buffer eviction.\n");
 		goto out;
 	}
 
-	if (mem_type == DRM_BO_MEM_TT) {
-		ret = drm_move_tt_to_local(bo, 1, force_no_move);
-		if (ret)
-			goto out;
-		mutex_lock(&dev->struct_mutex);
-		list_del_init(&bo->lru);
-		drm_bo_add_to_lru(bo, bm);
-		mutex_unlock(&dev->struct_mutex);
+	evict_mem.num_pages = bo->num_pages;
+	evict_mem.page_alignment = bo->page_alignment;
+	evict_mem.size = evict_mem.num_pages << PAGE_SHIFT;
+	evict_mem.mask = dev->driver->bo_driver->evict_flags(dev, mem_type);
+	
+	ret = drm_bo_mem_space(dev, &evict_mem, no_wait);
+
+	if (ret && ret != -EAGAIN) {
+		DRM_ERROR("Failed to find memory space for "
+			  "buffer eviction.\n");
+		goto out;
 	}
+	
+	if ((mem_type != DRM_BO_MEM_TT) &&
+	    (evict_mem.mem_type != DRM_BO_MEM_LOCAL)) {
+		ret = -EINVAL;
+		DRM_ERROR("Unsupported memory types for eviction.\n");
+		goto out;
+	}
+      
+	ret = drm_move_tt_to_local(bo, 1, force_no_move);
+	if (ret)
+		goto out;
+	mutex_lock(&dev->struct_mutex);
+	list_del_init(&bo->lru);
+	drm_bo_add_to_lru(bo, bm);
+	mutex_unlock(&dev->struct_mutex);
 
 	if (ret)
 		goto out;
@@ -535,26 +555,25 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 	return ret;
 }
 
-/*
- * bo->mutex locked.
- */
 
-int drm_bo_alloc_space(drm_buffer_object_t * bo, unsigned mem_type,
-		       int no_wait)
+
+static int drm_bo_mem_force_space(drm_device_t *dev,
+				  drm_bo_mem_reg_t *mem,
+				  uint32_t mem_type,
+				  int no_wait)
 {
-	drm_device_t *dev = bo->dev;
 	drm_mm_node_t *node;
 	drm_buffer_manager_t *bm = &dev->bm;
 	drm_buffer_object_t *entry;
 	drm_mem_type_manager_t *man = &bm->man[mem_type];
-	drm_mm_t *mm = &man->manager;
 	struct list_head *lru;
-	unsigned long size = bo->num_pages;
+	unsigned long num_pages = mem->num_pages;
 	int ret;
 
 	mutex_lock(&dev->struct_mutex);
 	do {
-		node = drm_mm_search_free(mm, size, bo->page_alignment, 1);
+		node = drm_mm_search_free(&man->manager, num_pages, 
+					  mem->page_alignment, 1);
 		if (node)
 			break;
 
@@ -563,11 +582,11 @@ int drm_bo_alloc_space(drm_buffer_object_t * bo, unsigned mem_type,
 			break;
 
 		entry = list_entry(lru->next, drm_buffer_object_t, lru);
-
 		atomic_inc(&entry->usage);
 		mutex_unlock(&dev->struct_mutex);
 		mutex_lock(&entry->mutex);
-		BUG_ON(bo->flags & DRM_BO_FLAG_NO_MOVE);
+		BUG_ON(entry->flags & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT));
+
 		ret = drm_bo_evict(entry, mem_type, no_wait, 0);
 		mutex_unlock(&entry->mutex);
 		drm_bo_usage_deref_unlocked(entry);
@@ -577,34 +596,108 @@ int drm_bo_alloc_space(drm_buffer_object_t * bo, unsigned mem_type,
 	} while (1);
 
 	if (!node) {
-		DRM_ERROR("Out of videoram / aperture space\n");
 		mutex_unlock(&dev->struct_mutex);
 		return -ENOMEM;
 	}
 
-	node = drm_mm_get_block(node, size, bo->page_alignment);
+	node = drm_mm_get_block(node, num_pages, mem->page_alignment);
 	mutex_unlock(&dev->struct_mutex);
-	BUG_ON(!node);
-	node->private = (void *)bo;
-
-	bo->mm_node = node;
-	bo->offset = node->start * PAGE_SIZE;
+	mem->mm_node = node;
+	mem->mem_type = mem_type;
+	mem->flags = drm_bo_type_flags(mem_type);
 	return 0;
 }
 
-static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
+
+static int drm_bo_mem_space(drm_device_t *dev,
+	                    drm_bo_mem_reg_t *mem,
+			    int no_wait)
+{
+	drm_buffer_manager_t *bm= &dev->bm;
+	drm_mem_type_manager_t *man; 
+
+	uint32_t num_prios = dev->driver->bo_driver->num_mem_type_prio;
+	const uint32_t *prios = dev->driver->bo_driver->mem_type_prio;
+	uint32_t i;
+	uint32_t mem_type = DRM_BO_MEM_LOCAL;
+	int type_found = 0;
+	int type_ok = 0;
+	int has_eagain = 0;
+	drm_mm_node_t *node = NULL;
+	int ret;
+
+	for (i=0; i<num_prios; ++i) {
+		mem_type = prios[i];
+		type_ok = drm_bo_type_flags(mem_type) & mem->mask ;
+		if (!type_ok)
+			continue;
+
+		if (mem_type == DRM_BO_MEM_LOCAL)
+			break;
+
+		man = &bm->man[mem_type];
+		mutex_lock(&dev->struct_mutex);
+		if (man->has_type && man->use_type) {
+			type_found = 1;
+			node = drm_mm_search_free(&man->manager, mem->num_pages, 
+						  mem->page_alignment, 1);
+			if (node) 
+				node = drm_mm_get_block(node, mem->num_pages, 
+							mem->page_alignment);
+		}
+		mutex_unlock(&dev->struct_mutex);
+		if (node)
+			break;
+	}
+	
+	if ((type_ok && (mem_type == DRM_BO_MEM_LOCAL)) || node) {
+		mem->mm_node = node;
+		mem->mem_type = mem_type;
+		mem->flags = drm_bo_type_flags(mem_type);
+		return 0;
+	}
+
+	if (!type_found) {
+		DRM_ERROR("Requested memory types are not supported\n");
+		return -EINVAL;
+	}
+
+	num_prios = dev->driver->bo_driver->num_mem_busy_prio;
+	prios = dev->driver->bo_driver->mem_busy_prio;
+
+	for (i=0; i<num_prios; ++i) {
+		mem_type = prios[i];
+		if (!(drm_bo_type_flags(mem_type) & mem->mask))
+			continue;
+		
+		man = &bm->man[mem_type];
+		ret = drm_bo_mem_force_space(dev, mem, mem_type, no_wait);
+		
+		if (ret == 0) 
+			return 0;
+		
+		if (ret == -EAGAIN)
+			has_eagain = 1;
+	}
+
+	ret = (has_eagain) ? -EAGAIN : -ENOMEM;
+	return ret;
+}
+
+
+
+
+static int drm_move_local_to_tt(drm_buffer_object_t * bo, 
+				drm_bo_mem_reg_t * mem, 
+				int no_wait)
 {
 	drm_device_t *dev = bo->dev;
 	int ret = 0;
+	
+	bo->mm_node = mem->mm_node;
 
-	if (!(bo->mm_node && (bo->flags & DRM_BO_FLAG_NO_MOVE))) {
-		BUG_ON(bo->mm_node);
-		ret = drm_bo_alloc_space(bo, DRM_BO_MEM_TT, no_wait);
-		if (ret)
-			return ret;
-	}
-
-	DRM_DEBUG("Flipping in to AGP 0x%08lx\n", bo->mm_node->start);
+	DRM_DEBUG("Flipping in to AGP 0x%08lx 0x%08lx\n", 
+		  bo->mm_node->start, bo->mm_node->size);
 	
 #ifdef DRM_ODD_MM_COMPAT
 	mutex_lock(&dev->struct_mutex);
@@ -631,6 +724,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo, int no_wait)
 	bo->flags &= ~DRM_BO_MASK_MEM;
 	bo->flags |= DRM_BO_FLAG_MEM_TT;
 	bo->mem_type = DRM_BO_MEM_TT;
+	bo->offset = bo->mm_node->start << PAGE_SHIFT;
 
 #ifdef DRM_ODD_MM_COMPAT
 	ret = drm_bo_remap_bound(bo);
@@ -1103,14 +1197,18 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
  * bo->mutex locked. 
  */
 
-static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
+static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
 			      int no_wait, int force_no_move)
 {
+	drm_device_t *dev = bo->dev;
+	drm_buffer_manager_t *bm = &dev->bm;
 	int ret = 0;
+	drm_bo_mem_reg_t mem;
 
 	/*
 	 * Flush outstanding fences.
 	 */
+
 	drm_bo_busy(bo);
 
 	/*
@@ -1126,16 +1224,38 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_flags,
 	 */
 
 	ret = drm_bo_wait(bo, 0, 0, no_wait);
-
-	if (ret == -EINTR)
-		return -EAGAIN;
 	if (ret)
 		return ret;
 
-	if (new_flags & DRM_BO_FLAG_MEM_TT) {
-		ret = drm_move_local_to_tt(bo, no_wait);
-		if (ret)
+
+	mem.num_pages = bo->num_pages;
+	mem.size = mem.num_pages << PAGE_SHIFT;
+	mem.mask = new_mem_flags;
+	mem.page_alignment = bo->page_alignment;
+
+	mutex_lock(&bm->evict_mutex);
+	mutex_lock(&dev->struct_mutex);
+	list_del(&bo->lru);
+	list_add_tail(&bo->lru,&bm->unfenced);
+	DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_UNFENCED, _DRM_BO_FLAG_UNFENCED);
+	mutex_unlock(&dev->struct_mutex);
+
+	ret = drm_bo_mem_space(dev, &mem, no_wait);
+	mutex_unlock(&bm->evict_mutex);
+	
+	if (ret)
+		return ret;
+
+	if (mem.mem_type == DRM_BO_MEM_TT) {
+		ret = drm_move_local_to_tt(bo, &mem, no_wait);
+		if (ret) {
+			mutex_lock(&dev->struct_mutex);
+			list_del_init(&bo->lru);
+			drm_bo_add_to_lru(bo, bm);
+			mutex_unlock(&dev->struct_mutex);
+			DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
 			return ret;
+		}
 	} else {
 		drm_move_tt_to_local(bo, 0, force_no_move);
 	}
@@ -1231,6 +1351,8 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		list_add_tail(&bo->lru, &bm->unfenced);
 		mutex_unlock(&dev->struct_mutex);
 	} else {
+		DRM_FLAG_MASKED(bo->priv_flags, 0,
+				_DRM_BO_FLAG_UNFENCED);
 		mutex_lock(&dev->struct_mutex);
 		list_del_init(&bo->lru);
 		drm_bo_add_to_lru(bo, bm);

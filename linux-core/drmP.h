@@ -673,12 +673,17 @@ typedef struct drm_mem_type_manager {
  */
 
 typedef struct drm_bo_driver{
+        const uint32_t *mem_type_prio;
+	const uint32_t *mem_busy_prio;
+        uint32_t num_mem_type_prio;
+	uint32_t num_mem_busy_prio;
 	drm_ttm_backend_t *(*create_ttm_backend_entry) 
 		(struct drm_device *dev);
 	int (*fence_type)(uint32_t flags, uint32_t *class, uint32_t *type);
 	int (*invalidate_caches)(struct drm_device *dev, uint32_t flags);
 	int (*init_mem_type)(struct drm_device *dev, uint32_t type,
 			     drm_mem_type_manager_t *man);
+        uint32_t (*evict_flags) (struct drm_device *dev, uint32_t type);
 } drm_bo_driver_t;
 
 
@@ -800,19 +805,9 @@ typedef struct drm_fence_manager{
         atomic_t count;
 } drm_fence_manager_t;
 
-
-typedef struct drm_bo_mem_region {
-	drm_mm_node_t *node;
-	uint32_t memory_type;
-        drm_ttm_t *ttm;
-	unsigned long bus_offset;
-	unsigned long num_pages;
-	uint32_t vm_flags;
-} drm_bo_mem_region_t;
-	
-
 typedef struct drm_buffer_manager{
 	struct mutex init_mutex;
+	struct mutex evict_mutex;
 	int nice_mode;
 	int initialized;
         drm_file_t *last_to_validate;
@@ -1003,6 +998,16 @@ typedef struct drm_fence_object{
 	uint32_t submitted_flush;
 } drm_fence_object_t;
 
+typedef struct drm_bo_mem_reg {
+	drm_mm_node_t *mm_node;
+	unsigned long size;
+	unsigned long num_pages;
+	uint32_t page_alignment;
+	uint32_t mem_type;
+	uint32_t flags;
+	uint32_t mask;
+} drm_bo_mem_reg_t;
+	
 
 typedef struct drm_buffer_object{
 	drm_device_t *dev;

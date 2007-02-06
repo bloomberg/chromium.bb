@@ -191,6 +191,7 @@ extern int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *ty
 extern int i915_invalidate_caches(drm_device_t *dev, uint32_t buffer_flags);
 extern int i915_init_mem_type(drm_device_t *dev, uint32_t type, 
 			       drm_mem_type_manager_t *man);
+extern uint32_t i915_evict_flags(drm_device_t *dev, uint32_t type);
 #endif
 
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))

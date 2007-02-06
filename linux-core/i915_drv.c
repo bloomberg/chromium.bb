@@ -50,11 +50,20 @@ static drm_fence_driver_t i915_fence_driver = {
 };
 #endif
 #ifdef I915_HAVE_BUFFER
+
+static uint32_t i915_mem_prios[] = {DRM_BO_MEM_PRIV0, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
+static uint32_t i915_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_PRIV0, DRM_BO_MEM_LOCAL};
+
 static drm_bo_driver_t i915_bo_driver = {
+	.mem_type_prio = i915_mem_prios,
+	.mem_busy_prio = i915_busy_prios,
+	.num_mem_type_prio = sizeof(i915_mem_prios)/sizeof(uint32_t),
+	.num_mem_busy_prio = sizeof(i915_busy_prios)/sizeof(uint32_t),
 	.create_ttm_backend_entry = i915_create_ttm_backend_entry,
 	.fence_type = i915_fence_types,
 	.invalidate_caches = i915_invalidate_caches,
 	.init_mem_type = i915_init_mem_type,
+	.evict_flags = i915_evict_flags,
 };
 #endif
 
