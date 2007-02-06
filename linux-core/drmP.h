@@ -1022,13 +1022,9 @@ typedef struct drm_buffer_object{
         unsigned long buffer_start;
         drm_bo_type_t type;
         unsigned long offset;
-        uint32_t page_alignment;
 	atomic_t mapped;
-	uint32_t flags;
-	uint32_t mask;
-        uint32_t mem_type;
+	drm_bo_mem_reg_t mem;
 
-	drm_mm_node_t *mm_node;     
         struct list_head lru;
 	struct list_head ddestroy;
 
@@ -1042,11 +1038,9 @@ typedef struct drm_buffer_object{
 	/* For vm */
 
         drm_map_list_t map_list;
-	drm_mm_node_t *node;
 	uint32_t memory_type;
 	drm_ttm_t *ttm;
 	unsigned long bus_offset;
-	unsigned long num_pages;
 	uint32_t vm_flags;
         void *iomap;
   

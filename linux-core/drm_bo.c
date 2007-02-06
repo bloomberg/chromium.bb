@@ -78,24 +78,24 @@ static void drm_bo_add_to_lru(drm_buffer_object_t * bo,
 	struct list_head *list;
 	drm_mem_type_manager_t *man;
 
-	bo->mem_type = 0;
+	bo->mem.mem_type = 0;
 	
-	switch(bo->flags & DRM_BO_MASK_MEM) {
+	switch(bo->mem.flags & DRM_BO_MASK_MEM) {
 	case DRM_BO_FLAG_MEM_TT:
-		bo->mem_type = DRM_BO_MEM_TT;
+		bo->mem.mem_type = DRM_BO_MEM_TT;
 		break;
 	case DRM_BO_FLAG_MEM_VRAM:
-		bo->mem_type = DRM_BO_MEM_VRAM;
+		bo->mem.mem_type = DRM_BO_MEM_VRAM;
 		break;
 	case DRM_BO_FLAG_MEM_LOCAL:
-		bo->mem_type = DRM_BO_MEM_LOCAL;
+		bo->mem.mem_type = DRM_BO_MEM_LOCAL;
 		break;
 	default:
 		BUG_ON(1);		
 	}
 	
-	man = &bm->man[bo->mem_type];
-	list = (bo->flags & (DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE)) ?
+	man = &bm->man[bo->mem.mem_type];
+	list = (bo->mem.flags & (DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE)) ?
 		&man->pinned : &man->lru;
 	list_add_tail(&bo->lru, list);
 	return;
@@ -111,7 +111,7 @@ static int drm_move_tt_to_local(drm_buffer_object_t * bo, int evict,
 	drm_device_t *dev = bo->dev;
 	int ret = 0;
 
-	if (bo->mm_node) {
+	if (bo->mem.mm_node) {
 #ifdef DRM_ODD_MM_COMPAT
 		mutex_lock(&dev->struct_mutex);
 		ret = drm_bo_lock_kmm(bo);
@@ -133,16 +133,16 @@ static int drm_move_tt_to_local(drm_buffer_object_t * bo, int evict,
 		else
 			drm_ttm_unbind(bo->ttm);
 
-		bo->mem_type = DRM_BO_MEM_LOCAL;
-		if (!(bo->flags & DRM_BO_FLAG_NO_MOVE) || force_no_move) {
-			drm_mm_put_block(bo->mm_node);
-			bo->mm_node = NULL;
+		bo->mem.mem_type = DRM_BO_MEM_LOCAL;
+		if (!(bo->mem.flags & DRM_BO_FLAG_NO_MOVE) || force_no_move) {
+			drm_mm_put_block(bo->mem.mm_node);
+			bo->mem.mm_node = NULL;
 		}
 		mutex_unlock(&dev->struct_mutex);
 	}
 
-	bo->flags &= ~DRM_BO_FLAG_MEM_TT;
-	bo->flags |= DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
+	bo->mem.flags &= ~DRM_BO_FLAG_MEM_TT;
+	bo->mem.flags |= DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
 
 	return 0;
 }
@@ -235,9 +235,9 @@ static void drm_bo_cleanup_refs(drm_buffer_object_t *bo, int remove_all)
 
 	if (!bo->fence) {
 		list_del_init(&bo->lru);
-		if (bo->mm_node) {
-			drm_mm_put_block(bo->mm_node);
-			bo->mm_node = NULL;
+		if (bo->mem.mm_node) {
+			drm_mm_put_block(bo->mem.mm_node);
+			bo->mem.mm_node = NULL;
 		}
 		list_del_init(&bo->ddestroy);
 		mutex_unlock(&bo->mutex);
@@ -269,7 +269,7 @@ static void drm_bo_destroy_locked(drm_buffer_object_t *bo)
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
 
-	if (list_empty(&bo->lru) && bo->mm_node == NULL && atomic_read(&bo->usage) == 0) {
+	if (list_empty(&bo->lru) && bo->mem.mm_node == NULL && atomic_read(&bo->usage) == 0) {
 		BUG_ON(bo->fence != NULL);
 
 #ifdef DRM_ODD_MM_COMPAT
@@ -507,7 +507,7 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 
 	if (bo->priv_flags & _DRM_BO_FLAG_UNFENCED)
 		goto out;
-	if (!(bo->flags & drm_bo_type_flags(mem_type)))
+	if (!(bo->mem.flags & drm_bo_type_flags(mem_type)))
 		goto out;
 
 	ret = drm_bo_wait(bo, 0, 0, no_wait);
@@ -518,9 +518,7 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 		goto out;
 	}
 
-	evict_mem.num_pages = bo->num_pages;
-	evict_mem.page_alignment = bo->page_alignment;
-	evict_mem.size = evict_mem.num_pages << PAGE_SHIFT;
+	evict_mem = bo->mem;
 	evict_mem.mask = dev->driver->bo_driver->evict_flags(dev, mem_type);
 	
 	ret = drm_bo_mem_space(dev, &evict_mem, no_wait);
@@ -585,7 +583,7 @@ static int drm_bo_mem_force_space(drm_device_t *dev,
 		atomic_inc(&entry->usage);
 		mutex_unlock(&dev->struct_mutex);
 		mutex_lock(&entry->mutex);
-		BUG_ON(entry->flags & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT));
+		BUG_ON(entry->mem.flags & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT));
 
 		ret = drm_bo_evict(entry, mem_type, no_wait, 0);
 		mutex_unlock(&entry->mutex);
@@ -694,10 +692,10 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo,
 	drm_device_t *dev = bo->dev;
 	int ret = 0;
 	
-	bo->mm_node = mem->mm_node;
+	bo->mem.mm_node = mem->mm_node;
 
 	DRM_DEBUG("Flipping in to AGP 0x%08lx 0x%08lx\n", 
-		  bo->mm_node->start, bo->mm_node->size);
+		  bo->mem.mm_node->start, bo->mem.mm_node->size);
 	
 #ifdef DRM_ODD_MM_COMPAT
 	mutex_lock(&dev->struct_mutex);
@@ -708,8 +706,8 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo,
 	}
 #endif
 	drm_bo_unmap_virtual(bo);
-	ret = drm_bind_ttm(bo->ttm, bo->flags & DRM_BO_FLAG_BIND_CACHED,
-			   bo->mm_node->start);
+	ret = drm_bind_ttm(bo->ttm, bo->mem.flags & DRM_BO_FLAG_BIND_CACHED,
+			   bo->mem.mm_node->start);
 	
 	if (ret) {
 #ifdef DRM_ODD_MM_COMPAT
@@ -719,12 +717,12 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo,
 		goto out_put_unlock;
 	}
 	
-	if (!(bo->flags & DRM_BO_FLAG_BIND_CACHED))
-		bo->flags &= DRM_BO_FLAG_CACHED;
-	bo->flags &= ~DRM_BO_MASK_MEM;
-	bo->flags |= DRM_BO_FLAG_MEM_TT;
-	bo->mem_type = DRM_BO_MEM_TT;
-	bo->offset = bo->mm_node->start << PAGE_SHIFT;
+	if (!(bo->mem.flags & DRM_BO_FLAG_BIND_CACHED))
+		bo->mem.flags &= DRM_BO_FLAG_CACHED;
+	bo->mem.flags &= ~DRM_BO_MASK_MEM;
+	bo->mem.flags |= DRM_BO_FLAG_MEM_TT;
+	bo->mem.mem_type = DRM_BO_MEM_TT;
+	bo->offset = bo->mem.mm_node->start << PAGE_SHIFT;
 
 #ifdef DRM_ODD_MM_COMPAT
 	ret = drm_bo_remap_bound(bo);
@@ -736,7 +734,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo,
 #endif
 
 	if (bo->priv_flags & _DRM_BO_FLAG_EVICTED) {
-		ret = dev->driver->bo_driver->invalidate_caches(dev, bo->flags);
+		ret = dev->driver->bo_driver->invalidate_caches(dev, bo->mem.flags);
 		if (ret)
 			DRM_ERROR("Could not flush read caches\n");
 	}
@@ -746,8 +744,8 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo,
 
 out_put_unlock:
 	mutex_lock(&dev->struct_mutex);
-	drm_mm_put_block(bo->mm_node);
-	bo->mm_node = NULL;
+	drm_mm_put_block(bo->mem.mm_node);
+	bo->mem.mm_node = NULL;
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
@@ -948,7 +946,7 @@ static int drm_bo_read_cached(drm_buffer_object_t * bo)
 	int ret = 0;
 
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
-	if (bo->mm_node)
+	if (bo->mem.mm_node)
 		ret = drm_bo_evict(bo, DRM_BO_MEM_TT, 1, 0);
 	return ret;
 }
@@ -1039,15 +1037,15 @@ static void drm_bo_fill_rep_arg(drm_buffer_object_t * bo,
 				drm_bo_arg_reply_t * rep)
 {
 	rep->handle = bo->base.hash.key;
-	rep->flags = bo->flags;
-	rep->size = bo->num_pages * PAGE_SIZE;
+	rep->flags = bo->mem.flags;
+	rep->size = bo->mem.num_pages * PAGE_SIZE;
 	rep->offset = bo->offset;
 	rep->arg_handle = bo->map_list.user_token;
-	rep->mask = bo->mask;
+	rep->mask = bo->mem.mask;
 	rep->buffer_start = bo->buffer_start;
 	rep->fence_flags = bo->fence_type;
 	rep->rep_flags = 0;
-	rep->page_alignment = bo->page_alignment;
+	rep->page_alignment = bo->mem.page_alignment;
 
 	if ((bo->priv_flags & _DRM_BO_FLAG_UNFENCED) || drm_bo_quick_busy(bo)) {
 		DRM_FLAG_MASKED(rep->rep_flags, DRM_BO_REP_BUSY,
@@ -1105,14 +1103,14 @@ static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle,
 			}
 
 			if ((map_flags & DRM_BO_FLAG_READ) &&
-			    (bo->flags & DRM_BO_FLAG_READ_CACHED) &&
-			    (!(bo->flags & DRM_BO_FLAG_CACHED))) {
+			    (bo->mem.flags & DRM_BO_FLAG_READ_CACHED) &&
+			    (!(bo->mem.flags & DRM_BO_FLAG_CACHED))) {
 				drm_bo_read_cached(bo);
 			}
 			break;
 		} else if ((map_flags & DRM_BO_FLAG_READ) &&
-			   (bo->flags & DRM_BO_FLAG_READ_CACHED) &&
-			   (!(bo->flags & DRM_BO_FLAG_CACHED))) {
+			   (bo->mem.flags & DRM_BO_FLAG_READ_CACHED) &&
+			   (!(bo->mem.flags & DRM_BO_FLAG_CACHED))) {
 
 			/*
 			 * We are already mapped with different flags.
@@ -1228,17 +1226,22 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
 		return ret;
 
 
-	mem.num_pages = bo->num_pages;
+	mem.num_pages = bo->mem.num_pages;
 	mem.size = mem.num_pages << PAGE_SHIFT;
 	mem.mask = new_mem_flags;
-	mem.page_alignment = bo->page_alignment;
+	mem.page_alignment = bo->mem.page_alignment;
 
 	mutex_lock(&bm->evict_mutex);
 	mutex_lock(&dev->struct_mutex);
 	list_del(&bo->lru);
 	list_add_tail(&bo->lru,&bm->unfenced);
-	DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_UNFENCED, _DRM_BO_FLAG_UNFENCED);
+	DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_UNFENCED, 
+			_DRM_BO_FLAG_UNFENCED);
 	mutex_unlock(&dev->struct_mutex);
+
+	/*
+	 * Determine where to move the buffer.
+	 */
 
 	ret = drm_bo_mem_space(dev, &mem, no_wait);
 	mutex_unlock(&bm->evict_mutex);
@@ -1272,7 +1275,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 {
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
-	uint32_t flag_diff = (new_flags ^ bo->flags);
+	uint32_t flag_diff = (new_flags ^ bo->mem.flags);
 	drm_bo_driver_t *driver = dev->driver->bo_driver;
 
 	int ret;
@@ -1282,7 +1285,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		return -EINVAL;
 	}
 
-	DRM_DEBUG("New flags 0x%08x, Old flags 0x%08x\n", new_flags, bo->flags);
+	DRM_DEBUG("New flags 0x%08x, Old flags 0x%08x\n", new_flags, bo->mem.flags);
 	ret = driver->fence_type(new_flags, &bo->fence_class, &bo->fence_type);
 	if (ret) {
 		DRM_ERROR("Driver did not support given buffer permissions\n");
@@ -1294,8 +1297,8 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	 */
 
 	if ((flag_diff & DRM_BO_FLAG_BIND_CACHED) &&
-	    !(bo->flags & DRM_BO_FLAG_MEM_LOCAL)) {
-		if (bo->flags & (DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE)) {
+	    !(bo->mem.flags & DRM_BO_FLAG_MEM_LOCAL)) {
+		if (bo->mem.flags & (DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE)) {
 			DRM_ERROR("Cannot change caching policy of "
 				  "pinned buffer.\n");
 			return -EINVAL;
@@ -1307,8 +1310,8 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 			return ret;
 		}
 	}
-	DRM_MASK_VAL(bo->flags, DRM_BO_FLAG_BIND_CACHED, new_flags);
-	flag_diff = (new_flags ^ bo->flags);
+	DRM_MASK_VAL(bo->mem.flags, DRM_BO_FLAG_BIND_CACHED, new_flags);
+	flag_diff = (new_flags ^ bo->mem.flags);
 
 	/*
 	 * Check whether we dropped no_move policy, and in that case,
@@ -1318,9 +1321,9 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	if ((flag_diff & DRM_BO_FLAG_NO_MOVE) &&
 	    !(new_flags & DRM_BO_FLAG_NO_MOVE)) {
 		mutex_lock(&dev->struct_mutex);
-		if (bo->mm_node) {
-			drm_mm_put_block(bo->mm_node);
-			bo->mm_node = NULL;
+		if (bo->mem.mm_node) {
+			drm_mm_put_block(bo->mem.mm_node);
+			bo->mem.mm_node = NULL;
 		}
 		mutex_unlock(&dev->struct_mutex);
 	}
@@ -1359,7 +1362,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		mutex_unlock(&dev->struct_mutex);
 	}
 	
-	bo->flags = new_flags;
+	bo->mem.flags = new_flags;
 	return 0;
 }
 
@@ -1384,9 +1387,9 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 	if (ret)
 		goto out;
 
-	ret = drm_bo_new_flags(dev, bo->flags,
-			       (flags & mask) | (bo->mask & ~mask), hint,
-			       0, &new_flags, &bo->mask);
+	ret = drm_bo_new_flags(dev, bo->mem.flags,
+			       (flags & mask) | (bo->mem.mask & ~mask), hint,
+			       0, &new_flags, &bo->mem.mask);
 
 	if (ret)
 		goto out;
@@ -1469,7 +1472,7 @@ static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo)
 		mutex_unlock(&dev->struct_mutex);
 		if (ret)
 			break;
-		bo->ttm = drm_ttm_init(dev, bo->num_pages << PAGE_SHIFT);
+		bo->ttm = drm_ttm_init(dev, bo->mem.num_pages << PAGE_SHIFT);
 		if (!bo->ttm)
 			ret = -ENOMEM;
 		break;
@@ -1511,12 +1514,12 @@ int drm_buffer_object_transfer(drm_buffer_object_t *bo,
 	INIT_LIST_HEAD(&fbo->lru);
 	list_splice_init(&bo->lru, &fbo->lru);
 
-	bo->mm_node = NULL;
+	bo->mem.mm_node = NULL;
 	bo->ttm = NULL;
 	bo->fence = NULL;
-	bo->flags = 0;
+	bo->mem.flags = 0;
 
-	fbo->mm_node->private = (void *)fbo;
+	fbo->mem.mm_node->private = (void *)fbo;
 	atomic_set(&fbo->usage, 1);
 	atomic_inc(&bm->count);
 	mutex_unlock(&dev->struct_mutex);
@@ -1572,9 +1575,9 @@ int drm_buffer_object_create(drm_file_t * priv,
 #endif
 	bo->dev = dev;
 	bo->type = type;
-	bo->num_pages = num_pages;
-	bo->mm_node = NULL;
-	bo->page_alignment = page_alignment;
+	bo->mem.num_pages = num_pages;
+	bo->mem.mm_node = NULL;
+	bo->mem.page_alignment = page_alignment;
 	if (bo->type == drm_bo_type_fake) {
 		bo->offset = buffer_start;
 		bo->buffer_start = 0;
@@ -1582,10 +1585,10 @@ int drm_buffer_object_create(drm_file_t * priv,
 		bo->buffer_start = buffer_start;
 	}
 	bo->priv_flags = 0;
-	bo->flags = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
+	bo->mem.flags = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
 	atomic_inc(&bm->count);
-	ret = drm_bo_new_flags(dev, bo->flags, mask, hint,
-			       1, &new_flags, &bo->mask);
+	ret = drm_bo_new_flags(dev, bo->mem.flags, mask, hint,
+			       1, &new_flags, &bo->mem.mask);
 	if (ret)
 		goto out_err;
 	ret = drm_bo_add_ttm(priv, bo);
@@ -1800,7 +1803,7 @@ static int drm_bo_force_list_clean(drm_device_t * dev,
 			drm_bo_usage_deref_locked(entry);
 			goto retry;
 		}
-		if (entry->mm_node) {
+		if (entry->mem.mm_node) {
 			clean = 0;
 
 			/*
@@ -1836,14 +1839,14 @@ static int drm_bo_force_list_clean(drm_device_t * dev,
 				     0);
 
 			if (force_no_move) {
-				DRM_MASK_VAL(entry->flags, DRM_BO_FLAG_NO_MOVE,
+				DRM_MASK_VAL(entry->mem.flags, DRM_BO_FLAG_NO_MOVE,
 					     0);
 			}
-			if (entry->flags & DRM_BO_FLAG_NO_EVICT) {
+			if (entry->mem.flags & DRM_BO_FLAG_NO_EVICT) {
 				DRM_ERROR("A DRM_BO_NO_EVICT buffer present at "
 					  "cleanup. Removing flag and evicting.\n");
-				entry->flags &= ~DRM_BO_FLAG_NO_EVICT;
-				entry->mask &= ~DRM_BO_FLAG_NO_EVICT;
+				entry->mem.flags &= ~DRM_BO_FLAG_NO_EVICT;
+				entry->mem.mask &= ~DRM_BO_FLAG_NO_EVICT;
 			}
 
 			ret = drm_bo_evict(entry, mem_type, 1, force_no_move);
@@ -2181,7 +2184,7 @@ int drm_bo_pci_offset(const drm_buffer_object_t *bo,
 {
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
-	drm_mem_type_manager_t *man = &bm->man[bo->mem_type]; 
+	drm_mem_type_manager_t *man = &bm->man[bo->mem.mem_type]; 
 
 	*bus_size = 0;
 	if (bo->type != drm_bo_type_dc)
@@ -2208,8 +2211,8 @@ int drm_bo_pci_offset(const drm_buffer_object_t *bo,
 		*bus_base = man->io_offset;
 	}
 
-	*bus_offset = bo->mm_node->start << PAGE_SHIFT;
-	*bus_size = bo->num_pages << PAGE_SHIFT;
+	*bus_offset = bo->mem.mm_node->start << PAGE_SHIFT;
+	*bus_size = bo->mem.num_pages << PAGE_SHIFT;
 	return 0;
 }
 
@@ -2232,7 +2235,7 @@ int drm_bo_ioremap(drm_buffer_object_t *bo)
 {
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
-	drm_mem_type_manager_t *man = &bm->man[bo->mem_type]; 
+	drm_mem_type_manager_t *man = &bm->man[bo->mem.mem_type]; 
 	unsigned long bus_offset;
 	unsigned long bus_size;
 	unsigned long bus_base;
@@ -2271,7 +2274,7 @@ void drm_bo_iounmap(drm_buffer_object_t *bo)
 
 
 	bm = &dev->bm;
-	man = &bm->man[bo->mem_type];
+	man = &bm->man[bo->mem.mem_type];
 	
 	if (bo->iomap && (man->flags & _DRM_FLAG_NEEDS_IOREMAP)) 
 		iounmap(bo->iomap);
@@ -2291,7 +2294,7 @@ void drm_bo_unmap_virtual(drm_buffer_object_t *bo)
 {
 	drm_device_t *dev = bo->dev;
 	loff_t offset = ((loff_t) bo->map_list.hash.key) << PAGE_SHIFT;
-	loff_t holelen = ((loff_t) bo->num_pages) << PAGE_SHIFT;
+	loff_t holelen = ((loff_t) bo->mem.num_pages) << PAGE_SHIFT;
 
 	unmap_mapping_range(dev->dev_mapping, offset, holelen, 1);
 }
@@ -2335,12 +2338,12 @@ static int drm_bo_setup_vm_locked(drm_buffer_object_t *bo)
 	map->offset = 0;
 	map->type = _DRM_TTM;
 	map->flags = _DRM_REMOVABLE;
-	map->size = bo->num_pages * PAGE_SIZE;
+	map->size = bo->mem.num_pages * PAGE_SIZE;
 	atomic_inc(&bo->usage);
 	map->handle = (void *) bo;
 	
 	list->file_offset_node = drm_mm_search_free(&dev->offset_manager,
-						    bo->num_pages, 0, 0);
+						    bo->mem.num_pages, 0, 0);
 
 	if (!list->file_offset_node) {
 		drm_bo_takedown_vm_locked(bo);
@@ -2348,7 +2351,7 @@ static int drm_bo_setup_vm_locked(drm_buffer_object_t *bo)
 	}
 
 	list->file_offset_node = drm_mm_get_block(list->file_offset_node,
-						  bo->num_pages, 0);
+						  bo->mem.num_pages, 0);
 
 	list->hash.key = list->file_offset_node->start;
 	if (drm_ht_insert_item(&dev->map_hash, &list->hash)) {
