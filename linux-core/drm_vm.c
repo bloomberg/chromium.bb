@@ -754,7 +754,8 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	}
 
 	dev = bo->dev;
-	err = drm_bo_pci_offset(bo, &bus_base, &bus_offset, &bus_size);
+	err = drm_bo_pci_offset(dev, &bo->mem, &bus_base, &bus_offset, 
+				&bus_size);
 
 	if (err) {
 		data->type = VM_FAULT_SIGBUS;
@@ -770,6 +771,7 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 		bm = &dev->bm;
 		ttm = bo->ttm;
 
+		drm_ttm_fixup_caching(ttm);
 		page = ttm->pages[page_offset];
 		if (!page) {
 			page = drm_ttm_alloc_page();

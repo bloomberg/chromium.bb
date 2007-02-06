@@ -46,10 +46,8 @@
 
 #define DRM_BE_FLAG_NEEDS_FREE     0x00000001
 #define DRM_BE_FLAG_BOUND_CACHED   0x00000002
-#define DRM_BE_FLAG_CMA            0x00000004 /* Don't map through aperture */
 
 typedef struct drm_ttm_backend {
-	unsigned long aperture_base;
 	void *private;
 	uint32_t flags;
 	uint32_t drm_map_type;

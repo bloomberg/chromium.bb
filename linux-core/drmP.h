@@ -655,6 +655,7 @@ typedef struct drm_ref_object {
 #define _DRM_FLAG_MEMTYPE_CACHED    0x00000004   /* Supports cached binding */
 #define _DRM_FLAG_NEEDS_IOREMAP     0x00000008   /* Fixed memory needs ioremap
 						    before kernel access. */
+#define _DRM_FLAG_MEMTYPE_CMA       0x00000010   /* Can't map aperture */
 
 typedef struct drm_mem_type_manager {
 	int has_type;
@@ -1037,9 +1038,9 @@ typedef struct drm_buffer_object{
 
 	/* For vm */
 
+        drm_ttm_t *ttm;
         drm_map_list_t map_list;
 	uint32_t memory_type;
-	drm_ttm_t *ttm;
 	unsigned long bus_offset;
 	uint32_t vm_flags;
         void *iomap;
@@ -1491,10 +1492,14 @@ extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
 extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
 extern int drm_bo_driver_finish(drm_device_t *dev);
 extern int drm_bo_driver_init(drm_device_t *dev);
-extern int drm_bo_pci_offset(const drm_buffer_object_t *bo,
+extern int drm_bo_pci_offset(drm_device_t *dev,
+			     drm_bo_mem_reg_t *mem,
 			     unsigned long *bus_base,
 			     unsigned long *bus_offset,
 			     unsigned long *bus_size);
+extern int drm_mem_reg_is_pci(drm_device_t *dev, drm_bo_mem_reg_t *mem);
+
+
 extern void drm_bo_usage_deref_locked(drm_buffer_object_t * bo);
 extern int drm_fence_buffer_objects(drm_file_t * priv,
 				    struct list_head *list, 

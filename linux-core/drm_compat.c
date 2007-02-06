@@ -222,10 +222,6 @@ struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 	drm_ttm_t *ttm; 
 	drm_buffer_manager_t *bm;
 	drm_device_t *dev;
-	unsigned long bus_base;
-	unsigned long bus_offset;
-	unsigned long bus_size;
-	int err;
 
 	mutex_lock(&bo->mutex);
 
@@ -238,14 +234,8 @@ struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 	}
 	
 	dev = bo->dev;
-	err = drm_bo_pci_offset(bo, &bus_base, &bus_offset, &bus_size);
-	
-	if (err) {
-		page = NOPAGE_SIGBUS;
-		goto out_unlock;
-	}
 
-	if (bus_size != 0) {
+	if (drm_mem_reg_is_pci(dev, &bo->mem)) {
 		DRM_ERROR("Invalid compat nopage.\n");
 		page = NOPAGE_SIGBUS;
 		goto out_unlock;
@@ -253,6 +243,7 @@ struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 
 	bm = &dev->bm;
 	ttm = bo->ttm;
+	drm_ttm_fixup_caching(ttm);
 	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
 	page = ttm->pages[page_offset];
 
@@ -284,7 +275,8 @@ int drm_bo_map_bound(struct vm_area_struct *vma)
 	unsigned long bus_offset;
 	unsigned long bus_size;
 	
-	ret = drm_bo_pci_offset(bo, &bus_base, &bus_offset, &bus_size);
+	ret = drm_bo_pci_offset(bo->dev, &bo->mem, &bus_base, 
+				&bus_offset, &bus_size);
 	BUG_ON(ret);
 
 	if (bus_size) {
@@ -415,14 +407,8 @@ int drm_bo_remap_bound(drm_buffer_object_t *bo)
 {
 	vma_entry_t *v_entry;
 	int ret = 0;
-	unsigned long bus_base;
-	unsigned long bus_offset;
-	unsigned long bus_size;
-	
-	ret = drm_bo_pci_offset(bo, &bus_base, &bus_offset, &bus_size);
-	BUG_ON(ret);
 
-	if (bus_size) {
+	if (drm_mem_reg_is_pci(bo->dev, &bo->mem)) {
 		list_for_each_entry(v_entry, &bo->vma_list, head) {
 			ret = drm_bo_map_bound(v_entry->vma);
 			if (ret)

@@ -718,7 +718,7 @@ static int drm_move_local_to_tt(drm_buffer_object_t * bo,
 	}
 	
 	if (!(bo->mem.flags & DRM_BO_FLAG_BIND_CACHED))
-		bo->mem.flags &= DRM_BO_FLAG_CACHED;
+		bo->mem.flags &= ~DRM_BO_FLAG_CACHED;
 	bo->mem.flags &= ~DRM_BO_MASK_MEM;
 	bo->mem.flags |= DRM_BO_FLAG_MEM_TT;
 	bo->mem.mem_type = DRM_BO_MEM_TT;
@@ -2163,6 +2163,26 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
  * buffer object vm functions.
  */
 
+int drm_mem_reg_is_pci(drm_device_t *dev, drm_bo_mem_reg_t *mem)
+{
+	drm_buffer_manager_t *bm = &dev->bm;
+	drm_mem_type_manager_t *man = &bm->man[mem->mem_type]; 
+
+	if (!(man->flags & _DRM_FLAG_MEMTYPE_FIXED)) {
+		if (mem->mem_type == DRM_BO_MEM_LOCAL)
+			return 0;
+		
+		if (man->flags & _DRM_FLAG_MEMTYPE_CMA)
+			return 0;
+
+		if ((mem->mask & DRM_BO_FLAG_BIND_CACHED) &&
+		    (man->flags & _DRM_FLAG_MEMTYPE_CACHED)) 
+			return 0;
+	}
+	return 1;
+}
+EXPORT_SYMBOL(drm_mem_reg_is_pci);
+
 /**
  * \c Get the PCI offset for the buffer object memory.
  *
@@ -2174,47 +2194,31 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
  * \return Failure indication.
  * 
  * Returns -EINVAL if the buffer object is currently not mappable.
- * Otherwise returns zero. Call bo->mutex locked.
+ * Otherwise returns zero.
  */
 
-int drm_bo_pci_offset(const drm_buffer_object_t *bo,
+int drm_bo_pci_offset(drm_device_t *dev,
+		      drm_bo_mem_reg_t *mem,
 		      unsigned long *bus_base,
 		      unsigned long *bus_offset,
 		      unsigned long *bus_size)
 {
-	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
-	drm_mem_type_manager_t *man = &bm->man[bo->mem.mem_type]; 
+	drm_mem_type_manager_t *man = &bm->man[mem->mem_type]; 
 
 	*bus_size = 0;
-	if (bo->type != drm_bo_type_dc)
-		return -EINVAL;
-	
 	if (!(man->flags & _DRM_FLAG_MEMTYPE_MAPPABLE)) 
 		return -EINVAL;
-		
-	if (!(man->flags & _DRM_FLAG_MEMTYPE_FIXED)) {
-		drm_ttm_t *ttm = bo->ttm;
 
-		if (!bo->ttm) {
-			return -EINVAL;
-		}
-		  
-		drm_ttm_fixup_caching(ttm);
-
-		if (!(ttm->page_flags & DRM_TTM_PAGE_UNCACHED)) 
-			return 0;
-		if (ttm->be->flags & DRM_BE_FLAG_CMA)
-			return 0;
-		*bus_base = ttm->be->aperture_base;
-	} else {
+	if (drm_mem_reg_is_pci(dev, mem)) {
+		*bus_offset = mem->mm_node->start << PAGE_SHIFT;
+		*bus_size = mem->num_pages << PAGE_SHIFT;
 		*bus_base = man->io_offset;
 	}
 
-	*bus_offset = bo->mem.mm_node->start << PAGE_SHIFT;
-	*bus_size = bo->mem.num_pages << PAGE_SHIFT;
 	return 0;
 }
+
 
 /**
  * \c Return a kernel virtual address to the buffer object PCI memory.
@@ -2231,7 +2235,8 @@ int drm_bo_pci_offset(const drm_buffer_object_t *bo,
  * Call bo->mutex locked.
  */
 
-int drm_bo_ioremap(drm_buffer_object_t *bo)
+#if 0
+int drm_mem_reg_ioremap(drm_bo_mem_reg_t *mem)
 {
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
@@ -2281,6 +2286,7 @@ void drm_bo_iounmap(drm_buffer_object_t *bo)
 	
 	bo->iomap = NULL;
 }
+#endif
 
 /**
  * \c Kill all user-space virtual mappings of this buffer object.

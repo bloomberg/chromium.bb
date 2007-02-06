@@ -710,7 +710,6 @@ drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 	agp_priv->uncached_type = AGP_USER_MEMORY;
 	agp_priv->bridge = dev->agp->bridge;
 	agp_priv->populated = FALSE;
-	agp_be->aperture_base = dev->agp->agp_info.aper_base;
 	agp_be->private = (void *) agp_priv;
 	agp_be->needs_ub_cache_adjust = drm_agp_needs_unbind_cache_adjust;
 	agp_be->populate = drm_agp_populate;
@@ -720,8 +719,6 @@ drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 	agp_be->destroy = drm_agp_destroy_ttm;
 	DRM_MASK_VAL(agp_be->flags, DRM_BE_FLAG_NEEDS_FREE,
 		     (backend == NULL) ? DRM_BE_FLAG_NEEDS_FREE : 0);
-	DRM_MASK_VAL(agp_be->flags, DRM_BE_FLAG_CMA,
-		     (dev->agp->cant_use_aperture) ? DRM_BE_FLAG_CMA : 0);
 	agp_be->drm_map_type = _DRM_AGP;
 	return agp_be;
 }
