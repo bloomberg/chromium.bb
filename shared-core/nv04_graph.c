@@ -29,7 +29,7 @@
 
 struct reg_interval
 {
-	int reg;
+	uint32_t reg;
 	int number;
 } nv04_graph_ctx_regs [] = {
 	{NV04_PGRAPH_CTX_SWITCH1,	1},
@@ -160,12 +160,10 @@ void nouveau_nv04_context_switch(drm_device_t *dev)
 
 	DRM_INFO("NV: PGRAPH context switch interrupt channel %x -> %x\n",channel_old, channel);
 
+	NV_WRITE(NV03_PFIFO_CACHES, 0x0);
+	NV_WRITE(NV04_PFIFO_CACHE0_PULL0, 0x0);
+	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x0);
 	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
-#if 0
-	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000000);
-	NV_WRITE(NV_PFIFO_CACH1_PUL1, 0x00000000);
-	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
-#endif
 
 	// save PGRAPH context
 	index=0;
@@ -178,8 +176,8 @@ void nouveau_nv04_context_switch(drm_device_t *dev)
 
 	nouveau_wait_for_idle(dev);
 
-	NV_WRITE(NV03_PGRAPH_CTX_CONTROL, 0x10000000);
-	NV_WRITE(NV04_PGRAPH_CTX_USER, (NV_READ(NV04_PGRAPH_CTX_USER) & 0xffffff) | (0x1f << 24));
+	NV_WRITE(NV04_PGRAPH_CTX_CONTROL, 0x10000000);
+	NV_WRITE(NV04_PGRAPH_CTX_USER, (NV_READ(NV04_PGRAPH_CTX_USER) & 0xffffff) | (0x0f << 24));
 
 	nouveau_wait_for_idle(dev);
 	// restore PGRAPH context
@@ -195,15 +193,14 @@ void nouveau_nv04_context_switch(drm_device_t *dev)
 	nouveau_wait_for_idle(dev);
 #endif
 
-	NV_WRITE(NV03_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV04_PGRAPH_CTX_CONTROL, 0x10010100);
 	NV_WRITE(NV04_PGRAPH_CTX_USER, channel << 24);
 	NV_WRITE(NV04_PGRAPH_FFINTFC_ST2, NV_READ(NV04_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
 
-#if 0
-	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000001);
-	NV_WRITE(NV_PFIFO_CACH1_PUL1, 0x00000001);
-	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);
-#endif
+	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
+	NV_WRITE(NV04_PFIFO_CACHE0_PULL0, 0x0);
+	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x1);
+	NV_WRITE(NV03_PFIFO_CACHES, 0x1);
 	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
 }
 
@@ -231,7 +228,7 @@ int nv04_graph_init(drm_device_t *dev) {
 	for ( i = 0 ; i<sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0]); i++)
 		sum+=nv04_graph_ctx_regs[i].number;
 	if ( sum*4>sizeof(dev_priv->fifos[0].pgraph_ctx) )
-		DRM_ERROR();
+		DRM_ERROR("pgraph_ctx too small\n");
 	return 0;
 }
 

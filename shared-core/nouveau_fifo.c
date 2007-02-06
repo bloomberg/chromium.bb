@@ -197,16 +197,21 @@ int nouveau_fifo_init(drm_device_t *dev)
 	NV_WRITE(NV04_PFIFO_CACHE1_PULL1, 0x00000001);
 
 	/* FIXME on NV04 */
-	NV_WRITE(NV10_PGRAPH_CTX_USER, 0x0);
-	NV_WRITE(NV04_PFIFO_DELAY_0, 0xff /* retrycount*/ );
-	if (dev_priv->card_type >= NV_40)
-		NV_WRITE(NV03_PGRAPH_CTX_CONTROL, 0x00002001);
-	else
-		NV_WRITE(NV03_PGRAPH_CTX_CONTROL, 0x10110000);
+	if (dev_priv->card_type >= NV_10) {
+		NV_WRITE(NV10_PGRAPH_CTX_USER, 0x0);
+		NV_WRITE(NV04_PFIFO_DELAY_0, 0xff /* retrycount*/ );
+		if (dev_priv->card_type >= NV_40)
+			NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x00002001);
+		else
+			NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10110000);
+	} else {
+		NV_WRITE(NV04_PGRAPH_CTX_USER, 0x0);
+		NV_WRITE(NV04_PFIFO_DELAY_0, 0xff /* retrycount*/ );
+		NV_WRITE(NV04_PGRAPH_CTX_CONTROL, 0x10110000);
+	}
 
 	NV_WRITE(NV04_PFIFO_DMA_TIMESLICE, 0x001fffff);
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000001);
-
 	return 0;
 }
 

@@ -64,11 +64,7 @@
 #    define NV_PGRAPH_INTR_CONTEXT_SWITCH                     (1<<12)
 #    define NV_PGRAPH_INTR_BUFFER_NOTIFY                      (1<<16)
 #    define NV_PGRAPH_INTR_ERROR                              (1<<20)
-#define NV03_PGRAPH_CTX_CONTROL                            0x00400144
-#define NV40_PGRAPH_UNK220                                 0x00400220
-#    define NV40_PGRAPH_UNK220_FB_INSTANCE                 0xFFFFFFFF
-#define NV03_PGRAPH_CTX_USER                               0x00400194
-#define NV04_PGRAPH_CTX_USER                               0x00400174
+#define NV10_PGRAPH_CTX_CONTROL                            0x00400144
 #define NV10_PGRAPH_CTX_USER                               0x00400148
 #define NV10_PGRAPH_CTX_SWITCH1                            0x0040014C
 #define NV10_PGRAPH_CTX_SWITCH2                            0x00400150
@@ -80,14 +76,20 @@
 #define NV04_PGRAPH_CTX_SWITCH2                            0x00400164
 #define NV04_PGRAPH_CTX_SWITCH3                            0x00400168
 #define NV04_PGRAPH_CTX_SWITCH4                            0x0040016C
+#define NV04_PGRAPH_CTX_CONTROL                            0x00400170
+#define NV04_PGRAPH_CTX_USER                               0x00400174
 #define NV04_PGRAPH_CTX_CACHE1                             0x00400180
 #define NV10_PGRAPH_CTX_CACHE2                             0x00400180
+#define NV03_PGRAPH_CTX_CONTROL                            0x00400190
+#define NV03_PGRAPH_CTX_USER                               0x00400194
 #define NV04_PGRAPH_CTX_CACHE2                             0x004001A0
 #define NV10_PGRAPH_CTX_CACHE3                             0x004001A0
 #define NV04_PGRAPH_CTX_CACHE3                             0x004001C0
 #define NV10_PGRAPH_CTX_CACHE4                             0x004001C0
 #define NV04_PGRAPH_CTX_CACHE4                             0x004001E0
 #define NV10_PGRAPH_CTX_CACHE5                             0x004001E0
+#define NV40_PGRAPH_UNK220                                 0x00400220
+#    define NV40_PGRAPH_UNK220_FB_INSTANCE                 0xFFFFFFFF
 #define NV03_PGRAPH_ABS_X_RAM                              0x00400400
 #define NV03_PGRAPH_ABS_Y_RAM                              0x00400480
 #define NV03_PGRAPH_X_MISC                                 0x00400500
