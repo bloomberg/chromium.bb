@@ -38,6 +38,7 @@
 #include <mach-o/arch.h>
 #include <mach-o/loader.h>
 #include <mach-o/swap.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "common/mac/macho_walker.h"
@@ -91,6 +92,16 @@ bool MachoWalker::WalkHeader(int cpu_type) {
 
 bool MachoWalker::ReadBytes(void *buffer, size_t size, off_t offset) {
   return pread(file_, buffer, size, offset) == (ssize_t)size;
+}
+
+bool MachoWalker::CurrentHeader(struct mach_header_64 *header, off_t *offset) {
+  if (current_header_) {
+    memcpy(header, current_header_, sizeof(mach_header_64));
+    *offset = current_header_offset_;
+    return true;
+  }
+  
+  return false;
 }
 
 bool MachoWalker::FindHeader(int cpu_type, off_t &offset) {
@@ -165,8 +176,22 @@ bool MachoWalker::WalkHeaderAtOffset(off_t offset) {
   bool swap = (header.magic == MH_CIGAM);
   if (swap)
     swap_mach_header(&header, NXHostByteOrder());
-
-  return WalkHeaderCore(offset + sizeof(header), header.ncmds, swap);
+  
+  // Copy the data into the mach_header_64 structure.  Since the 32-bit and
+  // 64-bit only differ in the last field (reserved), this is safe to do.
+  struct mach_header_64 header64;
+  memcpy((void *)&header64, (const void *)&header, sizeof(header));
+  header64.reserved = 0;
+  
+  current_header_ = &header64;
+  current_header_size_ = sizeof(header); // 32-bit, not 64-bit
+  current_header_offset_ = offset;
+  offset += current_header_size_;
+  bool result = WalkHeaderCore(offset, header.ncmds, swap);
+  current_header_ = NULL;
+  current_header_size_ = 0;
+  current_header_offset_ = 0;
+  return result;
 }
 
 bool MachoWalker::WalkHeader64AtOffset(off_t offset) {
@@ -178,7 +203,15 @@ bool MachoWalker::WalkHeader64AtOffset(off_t offset) {
   if (swap)
     swap_mach_header_64(&header, NXHostByteOrder());
 
-  return WalkHeaderCore(offset + sizeof(header), header.ncmds, swap);
+  current_header_ = &header;
+  current_header_size_ = sizeof(header);
+  current_header_offset_ = offset;
+  offset += current_header_size_;
+  bool result = WalkHeaderCore(offset, header.ncmds, swap);
+  current_header_ = NULL;
+  current_header_size_ = 0;
+  current_header_offset_ = 0;
+  return result;
 }
 
 bool MachoWalker::WalkHeaderCore(off_t offset, uint32_t number_of_commands,

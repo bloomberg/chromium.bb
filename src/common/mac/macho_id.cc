@@ -39,6 +39,7 @@
 #include <openssl/md5.h>
 #include <openssl/sha.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -246,6 +247,12 @@ bool MachoID::WalkerCB(MachoWalker *walker, load_command *cmd, off_t offset,
     if (swap)
       swap_segment_command(&seg, NXHostByteOrder());
 
+    struct mach_header_64 header;
+    off_t header_offset;
+    
+    if (!walker->CurrentHeader(&header, &header_offset))
+      return false;
+        
     // Process segments that have sections:
     // (e.g., __TEXT, __DATA, __IMPORT, __OBJC)
     offset += sizeof(struct segment_command);
@@ -257,7 +264,7 @@ bool MachoID::WalkerCB(MachoWalker *walker, load_command *cmd, off_t offset,
       if (swap)
         swap_section(&sec, 1, NXHostByteOrder());
 
-      macho_id->Update(walker, sec.offset, sec.size);
+      macho_id->Update(walker, header_offset + sec.offset, sec.size);
       offset += sizeof(struct section);
     }
   } else if (cmd->cmd == LC_SEGMENT_64) {
@@ -269,6 +276,12 @@ bool MachoID::WalkerCB(MachoWalker *walker, load_command *cmd, off_t offset,
     if (swap)
       swap_segment_command_64(&seg64, NXHostByteOrder());
 
+    struct mach_header_64 header;
+    off_t header_offset;
+    
+    if (!walker->CurrentHeader(&header, &header_offset))
+      return false;
+    
     // Process segments that have sections:
     // (e.g., __TEXT, __DATA, __IMPORT, __OBJC)
     offset += sizeof(struct segment_command_64);
@@ -280,7 +293,7 @@ bool MachoID::WalkerCB(MachoWalker *walker, load_command *cmd, off_t offset,
       if (swap)
         swap_section_64(&sec64, 1, NXHostByteOrder());
 
-      macho_id->Update(walker, sec64.offset, sec64.size);
+      macho_id->Update(walker, header_offset + sec64.offset, sec64.size);
       offset += sizeof(struct section_64);
     }
   }

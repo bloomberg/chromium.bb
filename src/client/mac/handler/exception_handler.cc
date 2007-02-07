@@ -66,11 +66,10 @@ struct ExceptionReplyMessage {
   kern_return_t      return_code;
 };
 
-// Each thread needs to keep track of its ExceptionParameters.  Since the time
-// that they are needed is when calling through exc_server(), we have no way
-// of retrieving the values from the class.  Therefore, we'll create a map
-// that will allows storage per thread.
-static map<pthread_t, ExceptionParameters *> *s_exception_parameter_map = NULL;
+// Only catch these three exceptions.  The other ones are nebulously defined
+// and may result in treating a non-fatal exception as fatal.
+exception_mask_t s_exception_mask = EXC_MASK_BAD_ACCESS | 
+EXC_MASK_BAD_INSTRUCTION | EXC_MASK_ARITHMETIC;
 
 extern "C"
 {
@@ -224,33 +223,38 @@ kern_return_t ForwardException(mach_port_t task, mach_port_t failed_thread,
                                exception_type_t exception,
                                exception_data_t code,
                                mach_msg_type_number_t code_count) {
-  map<pthread_t, ExceptionParameters *>::iterator previous_location = 
-    s_exception_parameter_map->find(pthread_self());
-
-  // If we don't have the previous data, we need to just exit
-  if (previous_location == (*s_exception_parameter_map).end())
-    exit(exception);
-
-  ExceptionParameters *previous = (*previous_location).second;
-
+  // At this time, we should have called Uninstall() on the exception handler
+  // so that the current exception ports are the ones that we should be 
+  // forwarding to.
+  ExceptionParameters current;
+  
+  current.count = EXC_TYPES_COUNT;
+  mach_port_t current_task = mach_task_self();
+  kern_return_t result = task_get_exception_ports(current_task, 
+                                                  s_exception_mask,
+                                                  current.masks,
+                                                  &current.count,
+                                                  current.ports,
+                                                  current.behaviors,
+                                                  current.flavors);
+  
   // Find the first exception handler that matches the exception
   unsigned int found;
-  for (found = 0; found < previous->count; ++found) {
-    if (previous->masks[found] & (1 << exception)) {
+  for (found = 0; found < current.count; ++found) {
+    if (current.masks[found] & (1 << exception)) {
       break;
     }
   }
 
   // Nothing to forward
-  if (found == previous->count) {
+  if (found == current.count) {
     fprintf(stderr, "** No previous ports for forwarding!! \n");
     exit(KERN_FAILURE);
   }
 
-  mach_port_t target_port = previous->ports[found];
-  exception_behavior_t target_behavior = previous->behaviors[found];
-  thread_state_flavor_t target_flavor = previous->flavors[found];
-  kern_return_t result;
+  mach_port_t target_port = current.ports[found];
+  exception_behavior_t target_behavior = current.behaviors[found];
+  thread_state_flavor_t target_flavor = current.flavors[found];
 
   mach_msg_type_number_t thread_state_count = THREAD_STATE_MAX;
   thread_state_data_t thread_state;
@@ -291,6 +295,7 @@ kern_return_t ForwardException(mach_port_t task, mach_port_t failed_thread,
       break;
 
     default:
+      fprintf(stderr, "** Unknown exception behavior\n");
       result = KERN_FAILURE;
       break;
   }
@@ -312,19 +317,6 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
   ExceptionHandler *self =
     reinterpret_cast<ExceptionHandler *>(exception_handler_class);
   ExceptionMessage receive;
-
-  // Save a pointer to our instance so that it will be available in the
-  // routines that are called from exc_server();
-  if (!s_exception_parameter_map) {
-    try {
-      s_exception_parameter_map = new map<pthread_t, ExceptionParameters *>;
-    }
-    catch (std::bad_alloc) {
-      return NULL;
-    }
-  }
-
-  (*s_exception_parameter_map)[pthread_self()] = self->previous_;
 
   // Wait for the exception info
   while (1) {
@@ -388,11 +380,6 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
 }
 
 bool ExceptionHandler::InstallHandler() {
-  // Only catch these three exceptions.  The other ones are nebulously defined
-  // and may result in treating a non-fatal exception as fatal.
-  exception_mask_t exception_mask = EXC_MASK_BAD_ACCESS | 
-    EXC_MASK_BAD_INSTRUCTION | EXC_MASK_ARITHMETIC;
-
   try {
     previous_ = new ExceptionParameters();
   }
@@ -403,7 +390,8 @@ bool ExceptionHandler::InstallHandler() {
   // Save the current exception ports so that we can forward to them
   previous_->count = EXC_TYPES_COUNT;
   mach_port_t current_task = mach_task_self();
-  kern_return_t result = task_get_exception_ports(current_task, exception_mask,
+  kern_return_t result = task_get_exception_ports(current_task, 
+                                                  s_exception_mask,
                                                   previous_->masks,
                                                   &previous_->count,
                                                   previous_->ports,
@@ -412,7 +400,7 @@ bool ExceptionHandler::InstallHandler() {
   
   // Setup the exception ports on this task
   if (result == KERN_SUCCESS)
-    result = task_set_exception_ports(current_task, exception_mask,
+    result = task_set_exception_ports(current_task, s_exception_mask,
                                       handler_port_, EXCEPTION_DEFAULT,
                                       THREAD_STATE_NONE);
 
@@ -493,8 +481,6 @@ bool ExceptionHandler::Teardown() {
   } else {
     return false;
   }
-  if (s_exception_parameter_map)
-    s_exception_parameter_map->erase(handler_thread_);
   
   handler_thread_ = NULL;
   handler_port_ = NULL;

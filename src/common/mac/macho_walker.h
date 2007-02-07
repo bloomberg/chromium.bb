@@ -68,6 +68,9 @@ class MachoWalker {
 
   // Read |size| bytes from the opened file at |offset| into |buffer|
   bool ReadBytes(void *buffer, size_t size, off_t offset);
+  
+  // Return the current header and header offset
+  bool CurrentHeader(struct mach_header_64 *header, off_t *offset);
 
  private:
   // Validate the |cpu_type|
@@ -87,6 +90,15 @@ class MachoWalker {
   // User specified callback & context
   LoadCommandCallback callback_;
   void *callback_context_;
+  
+  // Current header, size, and offset.  The mach_header_64 is used for both
+  // 32-bit and 64-bit headers because they only differ in their last field
+  // (reserved).  By adding the |current_header_size_| and the 
+  // |current_header_offset_|, you can determine the offset in the file just
+  // after the header.
+  struct mach_header_64 *current_header_;
+  unsigned long current_header_size_;
+  off_t current_header_offset_;
 };
 
 }  // namespace MacFileUtilities
