@@ -652,10 +652,12 @@ typedef struct drm_ref_object {
 
 #define _DRM_FLAG_MEMTYPE_FIXED     0x00000001   /* Fixed (on-card) PCI memory */
 #define _DRM_FLAG_MEMTYPE_MAPPABLE  0x00000002   /* Memory mappable */
-#define _DRM_FLAG_MEMTYPE_CACHED    0x00000004   /* Supports cached binding */
+#define _DRM_FLAG_MEMTYPE_CACHED    0x00000004   /* Cached binding */
 #define _DRM_FLAG_NEEDS_IOREMAP     0x00000008   /* Fixed memory needs ioremap
 						    before kernel access. */
 #define _DRM_FLAG_MEMTYPE_CMA       0x00000010   /* Can't map aperture */
+#define _DRM_FLAG_MEMTYPE_CSELECT   0x00000020   /* Select caching */
+
 
 typedef struct drm_mem_type_manager {
 	int has_type;

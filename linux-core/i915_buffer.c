@@ -70,6 +70,9 @@ int i915_init_mem_type(drm_device_t *dev, uint32_t type,
 {
 	switch(type) {
 	case DRM_BO_MEM_LOCAL:
+		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
+			_DRM_FLAG_MEMTYPE_CACHED;
+		break;
 	case DRM_BO_MEM_TT:
 		if (!(drm_core_has_AGP(dev) && dev->agp)) {
 			DRM_ERROR("AGP is not enabled for memory type %u\n", 
@@ -80,7 +83,7 @@ int i915_init_mem_type(drm_device_t *dev, uint32_t type,
 		man->io_size = dev->agp->agp_info.aper_size * 1024 * 1024;
 		man->io_addr = NULL;
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-			_DRM_FLAG_MEMTYPE_CACHED |
+			_DRM_FLAG_MEMTYPE_CSELECT |
 			_DRM_FLAG_NEEDS_IOREMAP;
 		break;
 	case DRM_BO_MEM_PRIV0:

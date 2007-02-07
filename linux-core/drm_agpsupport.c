@@ -606,8 +606,8 @@ static int drm_agp_bind_ttm(drm_ttm_backend_t *backend,
 	int ret;
 
 	DRM_DEBUG("drm_agp_bind_ttm\n");
-	DRM_MASK_VAL(backend->flags, DRM_BE_FLAG_BOUND_CACHED,
-		     (cached) ? DRM_BE_FLAG_BOUND_CACHED : 0);
+	DRM_FLAG_MASKED(backend->flags, (cached) ? DRM_BE_FLAG_BOUND_CACHED : 0,
+			DRM_BE_FLAG_BOUND_CACHED);
 	mem->is_flushed = TRUE;
 	mem->type = (cached) ? agp_priv->cached_type : agp_priv->uncached_type;
 	ret = drm_agp_bind_memory(mem, offset);
@@ -717,8 +717,8 @@ drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 	agp_be->bind = drm_agp_bind_ttm;
 	agp_be->unbind = drm_agp_unbind_ttm;
 	agp_be->destroy = drm_agp_destroy_ttm;
-	DRM_MASK_VAL(agp_be->flags, DRM_BE_FLAG_NEEDS_FREE,
-		     (backend == NULL) ? DRM_BE_FLAG_NEEDS_FREE : 0);
+	DRM_FLAG_MASKED(agp_be->flags, (backend == NULL) ? DRM_BE_FLAG_NEEDS_FREE : 0,
+			DRM_BE_FLAG_NEEDS_FREE);
 	agp_be->drm_map_type = _DRM_AGP;
 	return agp_be;
 }

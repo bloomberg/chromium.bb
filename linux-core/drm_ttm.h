@@ -96,8 +96,9 @@ extern void drm_ttm_fixup_caching(drm_ttm_t * ttm);
 
 extern int drm_destroy_ttm(drm_ttm_t * ttm);
 
-#define DRM_MASK_VAL(dest, mask, val)			\
-  (dest) = ((dest) & ~(mask)) | ((val) & (mask));
+#define DRM_FLAG_MASKED(_old, _new, _mask) {\
+(_old) ^= (((_old) ^ (_new)) & (_mask)); \
+}
 
 #define DRM_TTM_MASK_FLAGS ((1 << PAGE_SHIFT) - 1)
 #define DRM_TTM_MASK_PFN (0xFFFFFFFFU - DRM_TTM_MASK_FLAGS)

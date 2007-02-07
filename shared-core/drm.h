@@ -713,7 +713,7 @@ typedef struct drm_fence_arg {
  */
 #define DRM_BO_FLAG_NO_EVICT    0x00000010
 /* Always keep a system memory shadow to a vram buffer */
-#define DRM_BO_FLAG_SHADOW_VRAM 0x00000020
+#define DRM_BO_FLAG_MAPPABLE 0x00000020
 /* The buffer is shareable with other processes */
 #define DRM_BO_FLAG_SHAREABLE   0x00000040
 /* The buffer is currently cached */
@@ -724,13 +724,16 @@ typedef struct drm_fence_arg {
  * part of buffer manager shutdown or swapout. Not supported yet.*/
 #define DRM_BO_FLAG_NO_MOVE     0x00000100
 
+
+/*
+ * Request flags.
+ */
+
 /* Make sure the buffer is in cached memory when mapped for reading */
-#define DRM_BO_FLAG_READ_CACHED 0x00080000
-/* When there is a choice between VRAM and TT, prefer VRAM. 
-   The default behaviour is to prefer TT. */
-#define DRM_BO_FLAG_PREFER_VRAM 0x00040000
+#define DRM_BO_FLAG_READ_CACHED    0x00080000
 /* Bind this buffer cached if the hardware supports it. */
-#define DRM_BO_FLAG_BIND_CACHED 0x0002000
+#define DRM_BO_FLAG_FORCE_CACHING  0x00002000
+#define DRM_BO_FLAG_FORCE_MAPPABLE 0x00004000
 
 /* System Memory */
 #define DRM_BO_FLAG_MEM_LOCAL  0x01000000
@@ -746,6 +749,7 @@ typedef struct drm_fence_arg {
 
 /* Memory flag mask */
 #define DRM_BO_MASK_MEM         0xFF000000
+#define DRM_BO_MASK_MEMTYPE     0xFF0000A0
 
 /* When creating a buffer, Avoid system storage even if allowed */
 #define DRM_BO_HINT_AVOID_LOCAL 0x00000001

@@ -50,26 +50,25 @@ int drm_bo_move_ttm(drm_device_t *dev,
 
 		mutex_lock(&dev->struct_mutex);
 		drm_mm_put_block(old_mem->mm_node);
+		old_mem->mm_node = NULL;
 		mutex_unlock(&dev->struct_mutex);
-		save_flags |= DRM_BO_FLAG_CACHED;
-
-	} else {
-
+		DRM_FLAG_MASKED(old_mem->flags, 
+			     DRM_BO_FLAG_CACHED | DRM_BO_FLAG_MAPPABLE |
+			     DRM_BO_FLAG_MEM_LOCAL, DRM_BO_MASK_MEMTYPE);
+		old_mem->mem_type = DRM_BO_MEM_LOCAL;
+		save_flags = old_mem->flags;
+	} 
+	if (new_mem->mem_type != DRM_BO_MEM_LOCAL) {
 		ret = drm_bind_ttm(ttm, 
-				   new_mem->flags & DRM_BO_FLAG_BIND_CACHED, 
+				   new_mem->flags & DRM_BO_FLAG_CACHED, 
 				   new_mem->mm_node->start);
 		if (ret)
 			return ret;
-
-		if (!(new_mem->flags & DRM_BO_FLAG_BIND_CACHED)) {
-			save_flags &= ~DRM_BO_FLAG_CACHED;
-		}
-
 	}
 
 	*old_mem = *new_mem;
 	new_mem->mm_node = NULL;
 	old_mem->mask = save_mask;
-	DRM_MASK_VAL(save_flags, new_mem->flags, DRM_BO_MASK_MEM);
+	DRM_FLAG_MASKED(save_flags, new_mem->flags, DRM_BO_MASK_MEMTYPE);
 	return 0;
 }

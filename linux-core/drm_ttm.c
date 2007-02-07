@@ -134,7 +134,7 @@ static int drm_set_caching(drm_ttm_t * ttm, int noncached)
 	if (do_tlbflush)
 		flush_agp_mappings();
 
-	DRM_MASK_VAL(ttm->page_flags, DRM_TTM_PAGE_UNCACHED, noncached);
+	DRM_FLAG_MASKED(ttm->page_flags, noncached, DRM_TTM_PAGE_UNCACHED);
 
 	return 0;
 }
