@@ -513,7 +513,6 @@ static int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 
 	/* Length must match exact page count */
 	if (!dma || (length >> PAGE_SHIFT) != dma->page_count) {
-		unlock_kernel();
 		return -EINVAL;
 	}
 
@@ -588,6 +587,7 @@ static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 	 * the AGP mapped at physical address 0
 	 * --BenH.
 	 */
+
 	if (!vma->vm_pgoff
 #if __OS_HAS_AGP
 	    && (!dev->agp

@@ -78,22 +78,6 @@ static void drm_bo_add_to_lru(drm_buffer_object_t * bo,
 	struct list_head *list;
 	drm_mem_type_manager_t *man;
 
-	bo->mem.mem_type = 0;
-	
-	switch(bo->mem.flags & DRM_BO_MASK_MEM) {
-	case DRM_BO_FLAG_MEM_TT:
-		bo->mem.mem_type = DRM_BO_MEM_TT;
-		break;
-	case DRM_BO_FLAG_MEM_VRAM:
-		bo->mem.mem_type = DRM_BO_MEM_VRAM;
-		break;
-	case DRM_BO_FLAG_MEM_LOCAL:
-		bo->mem.mem_type = DRM_BO_MEM_LOCAL;
-		break;
-	default:
-		BUG_ON(1);		
-	}
-	
 	man = &bm->man[bo->mem.mem_type];
 	list = (bo->mem.flags & (DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE)) ?
 		&man->pinned : &man->lru;
@@ -101,52 +85,135 @@ static void drm_bo_add_to_lru(drm_buffer_object_t * bo,
 	return;
 }
 
+static int drm_bo_vm_pre_move(drm_buffer_object_t *bo,
+			      int old_is_pci)
+{
+#ifdef DRM_ODD_MM_COMPAT
+	int ret;
+
+	ret = drm_bo_lock_kmm(bo);
+	if (ret) {
+		if (ret == -EAGAIN)
+			schedule();
+		return ret;
+	}
+	drm_bo_unmap_virtual(bo);
+	if (old_is_pci)
+		drm_bo_finish_unmap(bo);
+#else
+	drm_bo_unmap_virtual(bo);
+#endif
+	return 0;
+}
+
+static void drm_bo_vm_post_move(drm_buffer_object_t *bo)
+{
+#ifdef DRM_ODD_MM_COMPAT
+	int ret;
+	
+	ret = drm_bo_remap_bound(bo);
+	if (ret) {
+		DRM_ERROR("Failed to remap a bound buffer object.\n"
+			  "\tThis might cause a sigbus later.\n");
+	}
+	drm_bo_unlock_kmm(bo);
+#endif
+}
+
 /*
- * bo locked.
+ * Call bo->mutex locked.
  */
 
-static int drm_move_tt_to_local(drm_buffer_object_t * bo, int evict,
-				int force_no_move)
+static int drm_bo_add_ttm(drm_buffer_object_t * bo)
 {
 	drm_device_t *dev = bo->dev;
 	int ret = 0;
 
-	if (bo->mem.mm_node) {
-#ifdef DRM_ODD_MM_COMPAT
-		mutex_lock(&dev->struct_mutex);
-		ret = drm_bo_lock_kmm(bo);
-		if (ret) {
-			mutex_unlock(&dev->struct_mutex);
-			if (ret == -EAGAIN)
-				schedule();
-			return ret;
-		}
-	        drm_bo_unmap_virtual(bo);
-		drm_bo_finish_unmap(bo);
-		drm_bo_unlock_kmm(bo);
-#else
-		drm_bo_unmap_virtual(bo);
-		mutex_lock(&dev->struct_mutex);
-#endif
-		if (evict)
-			drm_ttm_evict(bo->ttm);
-		else
-			drm_ttm_unbind(bo->ttm);
+	bo->ttm = NULL;
 
-		bo->mem.mem_type = DRM_BO_MEM_LOCAL;
-		if (!(bo->mem.flags & DRM_BO_FLAG_NO_MOVE) || force_no_move) {
-			drm_mm_put_block(bo->mem.mm_node);
-			bo->mem.mm_node = NULL;
-		}
-		mutex_unlock(&dev->struct_mutex);
+	switch (bo->type) {
+	case drm_bo_type_dc:
+		bo->ttm = drm_ttm_init(dev, bo->mem.num_pages << PAGE_SHIFT);
+		if (!bo->ttm)
+			ret = -ENOMEM;
+		break;
+	case drm_bo_type_user:
+	case drm_bo_type_fake:
+		break;
+	default:
+		DRM_ERROR("Illegal buffer object type\n");
+		ret = -EINVAL;
+		break;
 	}
 
-	bo->mem.flags &= ~DRM_BO_FLAG_MEM_TT;
-	bo->mem.flags |= DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
+	return ret;
+}
+
+
+static int drm_bo_handle_move_mem(drm_buffer_object_t *bo, 
+				  drm_bo_mem_reg_t *mem,
+				  int evict,
+				  int no_wait)
+{
+	drm_device_t *dev = bo->dev;
+	drm_buffer_manager_t *bm = &dev->bm;
+	int old_is_pci = drm_mem_reg_is_pci(dev, &bo->mem);
+	int new_is_pci = drm_mem_reg_is_pci(dev, mem);
+	drm_mem_type_manager_t *old_man = &bm->man[bo->mem.mem_type];
+	drm_mem_type_manager_t *new_man = &bm->man[mem->mem_type];
+	int ret = 0;
+
+
+	if (old_is_pci || new_is_pci)
+		ret = drm_bo_vm_pre_move(bo, old_is_pci);
+	if (ret)
+		return ret;
+
+	if ((!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) ||
+	     !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED)) && 
+	    (bo->ttm == NULL)) 
+		ret = drm_bo_add_ttm(bo);
+	if (ret)
+		return ret;
+
+	if (!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) &&
+	    !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED)) {		
+		ret = drm_bo_move_ttm(dev, bo->ttm, evict, no_wait, 
+				      &bo->mem, mem);
+	} else if (dev->driver->bo_driver->move) {
+		ret = dev->driver->bo_driver->move(dev, bo->ttm, evict, 
+						   no_wait, &bo->mem, mem);
+	} else {
+		ret = -EINVAL;
+		DRM_ERROR("Unsupported function\n");
+#if 0
+		ret = drm_bo_move_memcpy(dev, bo->ttm, evict, no_wait, 
+					 &bo->mem, mem);
+		ret = 0;
+#endif
+	}
+
+	if (old_is_pci || new_is_pci)
+		drm_bo_vm_post_move(bo);
+       
+	if (ret)
+		return ret;
+
+	if (bo->priv_flags & _DRM_BO_FLAG_EVICTED) {
+		ret = dev->driver->bo_driver->invalidate_caches(dev, bo->mem.flags);
+		if (ret)
+			DRM_ERROR("Can not flush read caches\n");
+	}
+	
+	DRM_FLAG_MASKED(bo->priv_flags,
+			(evict) ? _DRM_BO_FLAG_EVICTED : 0,
+			_DRM_BO_FLAG_EVICTED);
+
+	if (bo->mem.mm_node)
+		bo->offset = bo->mem.mm_node->start << PAGE_SHIFT;
 
 	return 0;
 }
-
 
 /*
  * Call bo->mutex locked.
@@ -503,12 +570,11 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 
 	/*
 	 * Someone might have modified the buffer before we took the buffer mutex.
-	 */
+<	 */
 
 	if (bo->priv_flags & _DRM_BO_FLAG_UNFENCED)
 		goto out;
-	if (!(bo->mem.flags & drm_bo_type_flags(mem_type)))
-		goto out;
+	if (bo->mem.mem_type != mem_type)
 
 	ret = drm_bo_wait(bo, 0, 0, no_wait);
 
@@ -520,36 +586,36 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 
 	evict_mem = bo->mem;
 	evict_mem.mask = dev->driver->bo_driver->evict_flags(dev, mem_type);
-	
 	ret = drm_bo_mem_space(dev, &evict_mem, no_wait);
 
-	if (ret && ret != -EAGAIN) {
-		DRM_ERROR("Failed to find memory space for "
-			  "buffer eviction.\n");
+	if (ret) {
+		if (ret != -EAGAIN)
+			DRM_ERROR("Failed to find memory space for "
+				  "buffer eviction.\n");
 		goto out;
 	}
 	
-	if ((mem_type != DRM_BO_MEM_TT) &&
-	    (evict_mem.mem_type != DRM_BO_MEM_LOCAL)) {
-		ret = -EINVAL;
-		DRM_ERROR("Unsupported memory types for eviction.\n");
+	ret = drm_bo_handle_move_mem(bo, &evict_mem, 1, no_wait);
+	
+	if (ret) {
+		if (ret != -EAGAIN)
+			DRM_ERROR("Buffer eviction failed\n");
 		goto out;
 	}
-      
-	ret = drm_move_tt_to_local(bo, 1, force_no_move);
-	if (ret)
-		goto out;
+	
 	mutex_lock(&dev->struct_mutex);
-	list_del_init(&bo->lru);
+	if (evict_mem.mm_node) {
+		drm_mm_put_block(evict_mem.mm_node);
+		evict_mem.mm_node = NULL;
+	}
+	list_del(&bo->lru);
 	drm_bo_add_to_lru(bo, bm);
 	mutex_unlock(&dev->struct_mutex);
 
-	if (ret)
-		goto out;
-
 	DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_EVICTED,
 			_DRM_BO_FLAG_EVICTED);
-      out:
+				     
+out:
 	return ret;
 }
 
@@ -679,74 +745,6 @@ static int drm_bo_mem_space(drm_device_t *dev,
 	}
 
 	ret = (has_eagain) ? -EAGAIN : -ENOMEM;
-	return ret;
-}
-
-
-
-
-static int drm_move_local_to_tt(drm_buffer_object_t * bo, 
-				drm_bo_mem_reg_t * mem, 
-				int no_wait)
-{
-	drm_device_t *dev = bo->dev;
-	int ret = 0;
-	
-	bo->mem.mm_node = mem->mm_node;
-
-	DRM_DEBUG("Flipping in to AGP 0x%08lx 0x%08lx\n", 
-		  bo->mem.mm_node->start, bo->mem.mm_node->size);
-	
-#ifdef DRM_ODD_MM_COMPAT
-	mutex_lock(&dev->struct_mutex);
-	ret = drm_bo_lock_kmm(bo);
-	if (ret) {
-		mutex_unlock(&dev->struct_mutex);
-		goto out_put_unlock;
-	}
-#endif
-	drm_bo_unmap_virtual(bo);
-	ret = drm_bind_ttm(bo->ttm, bo->mem.flags & DRM_BO_FLAG_BIND_CACHED,
-			   bo->mem.mm_node->start);
-	
-	if (ret) {
-#ifdef DRM_ODD_MM_COMPAT
-		drm_bo_unlock_kmm(bo);
-		mutex_unlock(&dev->struct_mutex);
-#endif
-		goto out_put_unlock;
-	}
-	
-	if (!(bo->mem.flags & DRM_BO_FLAG_BIND_CACHED))
-		bo->mem.flags &= ~DRM_BO_FLAG_CACHED;
-	bo->mem.flags &= ~DRM_BO_MASK_MEM;
-	bo->mem.flags |= DRM_BO_FLAG_MEM_TT;
-	bo->mem.mem_type = DRM_BO_MEM_TT;
-	bo->offset = bo->mem.mm_node->start << PAGE_SHIFT;
-
-#ifdef DRM_ODD_MM_COMPAT
-	ret = drm_bo_remap_bound(bo);
-	if (ret) {
-		/* FIXME */
-	}
-	drm_bo_unlock_kmm(bo);
-	mutex_unlock(&dev->struct_mutex);
-#endif
-
-	if (bo->priv_flags & _DRM_BO_FLAG_EVICTED) {
-		ret = dev->driver->bo_driver->invalidate_caches(dev, bo->mem.flags);
-		if (ret)
-			DRM_ERROR("Could not flush read caches\n");
-	}
-	DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_EVICTED);
-
-	return 0;
-
-out_put_unlock:
-	mutex_lock(&dev->struct_mutex);
-	drm_mm_put_block(bo->mem.mm_node);
-	bo->mem.mm_node = NULL;
-	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
 
@@ -1249,19 +1247,21 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
 	if (ret)
 		return ret;
 
-	if (mem.mem_type == DRM_BO_MEM_TT) {
-		ret = drm_move_local_to_tt(bo, &mem, no_wait);
-		if (ret) {
-			mutex_lock(&dev->struct_mutex);
-			list_del_init(&bo->lru);
-			drm_bo_add_to_lru(bo, bm);
-			mutex_unlock(&dev->struct_mutex);
-			DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
-			return ret;
+	ret = drm_bo_handle_move_mem(bo, &mem, 0, no_wait);
+
+	if (ret) {
+		mutex_lock(&dev->struct_mutex);
+		if (mem.mm_node) {
+			drm_mm_put_block(mem.mm_node);
+			mem.mm_node = NULL;
 		}
-	} else {
-		drm_move_tt_to_local(bo, 0, force_no_move);
+		DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
+		list_del_init(&bo->lru);
+		drm_bo_add_to_lru(bo, bm);
+		mutex_unlock(&dev->struct_mutex);
+		return ret;
 	}
+
 	return 0;
 }
 
@@ -1279,11 +1279,6 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	drm_bo_driver_t *driver = dev->driver->bo_driver;
 
 	int ret;
-
-	if (new_flags & DRM_BO_FLAG_MEM_VRAM) {
-		DRM_ERROR("Vram support not implemented yet\n");
-		return -EINVAL;
-	}
 
 	DRM_DEBUG("New flags 0x%08x, Old flags 0x%08x\n", new_flags, bo->mem.flags);
 	ret = driver->fence_type(new_flags, &bo->fence_class, &bo->fence_type);
@@ -1339,6 +1334,13 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 				DRM_ERROR("Failed moving buffer.\n");
 			return ret;
 		}
+	}
+
+
+	if (bo->mem.mem_type == DRM_BO_MEM_LOCAL && bo->ttm == NULL) {
+		ret = drm_bo_add_ttm(bo);
+		if (ret) 
+			return ret;
 	}
 
 	if (move_unfenced) {
@@ -1454,41 +1456,6 @@ static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
 }
 
 /*
- * Call bo->mutex locked.
- */
-
-static int drm_bo_add_ttm(drm_file_t * priv, drm_buffer_object_t * bo)
-{
-	drm_device_t *dev = bo->dev;
-	int ret = 0;
-
-	bo->ttm = NULL;
-	bo->map_list.user_token = 0ULL;
-
-	switch (bo->type) {
-	case drm_bo_type_dc:
-		mutex_lock(&dev->struct_mutex);
-		ret = drm_bo_setup_vm_locked(bo);
-		mutex_unlock(&dev->struct_mutex);
-		if (ret)
-			break;
-		bo->ttm = drm_ttm_init(dev, bo->mem.num_pages << PAGE_SHIFT);
-		if (!bo->ttm)
-			ret = -ENOMEM;
-		break;
-	case drm_bo_type_user:
-	case drm_bo_type_fake:
-		break;
-	default:
-		DRM_ERROR("Illegal buffer object type\n");
-		ret = -EINVAL;
-		break;
-	}
-
-	return ret;
-}
-
-/*
  * Transfer a buffer object's memory and LRU status to a newly
  * created object. User-space references remains with the old
  * object. Call bo->mutex locked.
@@ -1591,10 +1558,14 @@ int drm_buffer_object_create(drm_file_t * priv,
 			       1, &new_flags, &bo->mem.mask);
 	if (ret)
 		goto out_err;
-	ret = drm_bo_add_ttm(priv, bo);
-	if (ret)
-		goto out_err;
-
+	
+	if (bo->type == drm_bo_type_dc) {
+		mutex_lock(&dev->struct_mutex);
+		ret = drm_bo_setup_vm_locked(bo);
+		mutex_unlock(&dev->struct_mutex);
+		if (ret)
+			goto out_err;
+	}
 	ret = drm_buffer_object_validate(bo, new_flags, 0,
 					 hint & DRM_BO_HINT_DONT_BLOCK);
 	if (ret)

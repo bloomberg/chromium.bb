@@ -669,6 +669,16 @@ typedef struct drm_mem_type_manager {
 	void *io_addr;
 } drm_mem_type_manager_t;
 
+typedef struct drm_bo_mem_reg {
+	drm_mm_node_t *mm_node;
+	unsigned long size;
+	unsigned long num_pages;
+	uint32_t page_alignment;
+	uint32_t mem_type;
+	uint32_t flags;
+	uint32_t mask;
+} drm_bo_mem_reg_t;
+	
 /*
  * buffer object driver
  */
@@ -685,6 +695,10 @@ typedef struct drm_bo_driver{
 	int (*init_mem_type)(struct drm_device *dev, uint32_t type,
 			     drm_mem_type_manager_t *man);
         uint32_t (*evict_flags) (struct drm_device *dev, uint32_t type);
+	int (*move)(struct drm_device *dev,
+		    struct drm_ttm *ttm, int evict, int no_wait,
+		    struct drm_bo_mem_reg *old_mem,
+		    struct drm_bo_mem_reg *new_mem);
 } drm_bo_driver_t;
 
 
@@ -999,16 +1013,6 @@ typedef struct drm_fence_object{
 	uint32_t submitted_flush;
 } drm_fence_object_t;
 
-typedef struct drm_bo_mem_reg {
-	drm_mm_node_t *mm_node;
-	unsigned long size;
-	unsigned long num_pages;
-	uint32_t page_alignment;
-	uint32_t mem_type;
-	uint32_t flags;
-	uint32_t mask;
-} drm_bo_mem_reg_t;
-	
 
 typedef struct drm_buffer_object{
 	drm_device_t *dev;
@@ -1506,6 +1510,16 @@ extern int drm_fence_buffer_objects(drm_file_t * priv,
 				    uint32_t fence_flags,
 				    drm_fence_object_t *fence,
 				    drm_fence_object_t **used_fence);
+/*
+ * Buffer object memory move helpers.
+ * drm_bo_move.c
+ */
+
+extern int drm_bo_move_ttm(drm_device_t *dev, 
+			   drm_ttm_t *ttm, int evict,
+			   int no_wait,
+			   drm_bo_mem_reg_t *old_mem,
+			   drm_bo_mem_reg_t *new_mem);
 
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);
