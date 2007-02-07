@@ -41,6 +41,7 @@ namespace {
 
 static bool callback(const wchar_t *dump_path, const wchar_t *id,
                      void *context, EXCEPTION_POINTERS *exinfo,
+                     MDRawAssertionInfo *assertion,
                      bool succeeded) {
   if (succeeded) {
     printf("dump guid is %ws\n", id);

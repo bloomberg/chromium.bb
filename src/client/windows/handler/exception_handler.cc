@@ -36,7 +36,6 @@
 
 #include "client/windows/handler/exception_handler.h"
 #include "common/windows/guid_string.h"
-#include "google_airbag/common/minidump_format.h"
 
 namespace google_airbag {
 
@@ -65,12 +64,14 @@ ExceptionHandler::ExceptionHandler(const wstring &dump_path,
       minidump_write_dump_(NULL),
       installed_handler_(install_handler),
       previous_filter_(NULL),
+      previous_iph_(NULL),
       handler_thread_(0),
       handler_critical_section_(),
       handler_start_semaphore_(NULL),
       handler_finish_semaphore_(NULL),
       requesting_thread_id_(0),
       exception_info_(NULL),
+      assertion_(NULL),
       handler_return_value_(false) {
   // set_dump_path calls UpdateNextID.  This sets up all of the path and id
   // strings, and their equivalent c_str pointers.
@@ -116,6 +117,10 @@ ExceptionHandler::ExceptionHandler(const wstring &dump_path,
     handler_stack_->push_back(this);
     previous_filter_ = SetUnhandledExceptionFilter(HandleException);
 
+#if _MSC_VER >= 1400  // MSVC 2005/8
+    previous_iph_ = _set_invalid_parameter_handler(HandleInvalidParameter);
+#endif  // _MSC_VER >= 1400
+
     LeaveCriticalSection(&handler_stack_critical_section_);
   }
 }
@@ -129,6 +134,11 @@ ExceptionHandler::~ExceptionHandler() {
     EnterCriticalSection(&handler_stack_critical_section_);
 
     SetUnhandledExceptionFilter(previous_filter_);
+
+#if _MSC_VER >= 1400  // MSVC 2005/8
+    _set_invalid_parameter_handler(previous_iph_);
+#endif  // _MSC_VER >= 1400
+
     if (handler_stack_->back() == this) {
       handler_stack_->pop_back();
     } else {
@@ -172,7 +182,7 @@ DWORD ExceptionHandler::ExceptionHandlerThreadMain(void *lpParameter) {
         WAIT_OBJECT_0) {
       // Perform the requested action.
       self->handler_return_value_ = self->WriteMinidumpWithException(
-          self->requesting_thread_id_, self->exception_info_);
+          self->requesting_thread_id_, self->exception_info_, self->assertion_);
 
       // Allow the requesting thread to proceed.
       ReleaseSemaphore(self->handler_finish_semaphore_, 1, NULL);
@@ -184,36 +194,75 @@ DWORD ExceptionHandler::ExceptionHandlerThreadMain(void *lpParameter) {
   return 0;
 }
 
+// HandleException and HandleInvalidParameter must create an
+// AutoExceptionHandler object to maintain static state and to determine which
+// ExceptionHandler instance to use.  The constructor locates the correct
+// instance, and makes it available through get_handler().  The destructor
+// restores the state in effect prior to allocating the AutoExceptionHandler.
+class AutoExceptionHandler {
+ public:
+  AutoExceptionHandler() {
+    // Increment handler_stack_index_ so that if another Airbag handler is
+    // registered using this same HandleException function, and it needs to be
+    // called while this handler is running (either becaause this handler
+    // declines to handle the exception, or an exception occurs during
+    // handling), HandleException will find the appropriate ExceptionHandler
+    // object in handler_stack_ to deliver the exception to.
+    //
+    // Because handler_stack_ is addressed in reverse (as |size - index|),
+    // preincrementing handler_stack_index_ avoids needing to subtract 1 from
+    // the argument to |at|.
+    //
+    // The index is maintained instead of popping elements off of the handler
+    // stack and pushing them at the end of this method.  This avoids ruining
+    // the order of elements in the stack in the event that some other thread
+    // decides to manipulate the handler stack (such as creating a new
+    // ExceptionHandler object) while an exception is being handled.
+    EnterCriticalSection(&ExceptionHandler::handler_stack_critical_section_);
+    handler_ = ExceptionHandler::handler_stack_->at(
+        ExceptionHandler::handler_stack_->size() -
+        ++ExceptionHandler::handler_stack_index_);
+    LeaveCriticalSection(&ExceptionHandler::handler_stack_critical_section_);
+
+    // In case another exception occurs while this handler is doing its thing,
+    // it should be delivered to the previous filter.
+    SetUnhandledExceptionFilter(handler_->previous_filter_);
+#if _MSC_VER >= 1400  // MSVC 2005/8
+    _set_invalid_parameter_handler(handler_->previous_iph_);
+#endif  // _MSC_VER >= 1400
+  }
+
+  ~AutoExceptionHandler() {
+    // Put things back the way they were before entering this handler.
+    SetUnhandledExceptionFilter(ExceptionHandler::HandleException);
+#if _MSC_VER >= 1400  // MSVC 2005/8
+    _set_invalid_parameter_handler(ExceptionHandler::HandleInvalidParameter);
+#endif  // _MSC_VER >= 1400
+
+    EnterCriticalSection(&ExceptionHandler::handler_stack_critical_section_);
+    --ExceptionHandler::handler_stack_index_;
+    LeaveCriticalSection(&ExceptionHandler::handler_stack_critical_section_);
+  }
+
+  ExceptionHandler *get_handler() const { return handler_; }
+
+ private:
+  ExceptionHandler *handler_;
+};
+
 // static
 LONG ExceptionHandler::HandleException(EXCEPTION_POINTERS *exinfo) {
-  // Increment handler_stack_index_ so that if another Airbag handler is
-  // registered using this same HandleException function, and it needs to be
-  // called while this handler is running (either becaause this handler
-  // declines to handle the exception, or an exception occurs during
-  // handling), HandleException will find the appropriate ExceptionHandler
-  // object in handler_stack_ to deliver the exception to.
-  //
-  // Because handler_stack_ is addressed in reverse (as |size - index|),
-  // preincrementing handler_stack_index_ avoids needing to subtract 1 from
-  // the argument to |at|.
-  //
-  // The index is maintained instead of popping elements off of the handler
-  // stack and pushing them at the end of this method.  This avoids ruining
-  // the order of elements in the stack in the event that some other thread
-  // decides to manipulate the handler stack (such as creating a new
-  // ExceptionHandler object) while an exception is being handled.
-  EnterCriticalSection(&handler_stack_critical_section_);
-  ExceptionHandler *current_handler =
-      handler_stack_->at(handler_stack_->size() - ++handler_stack_index_);
-  LeaveCriticalSection(&handler_stack_critical_section_);
+  AutoExceptionHandler auto_exception_handler;
+  ExceptionHandler *current_handler = auto_exception_handler.get_handler();
 
-  // In case another exception occurs while this handler is doing its thing,
-  // it should be delivered to the previous filter.
-  LPTOP_LEVEL_EXCEPTION_FILTER previous = current_handler->previous_filter_;
-  LPTOP_LEVEL_EXCEPTION_FILTER restore = SetUnhandledExceptionFilter(previous);
-
+  // Ignore EXCEPTION_BREAKPOINT and EXCEPTION_SINGLE_STEP exceptions.  This
+  // logic will short-circuit before calling WriteMinidumpOnHandlerThread,
+  // allowing something else to handle the breakpoint without incurring the
+  // overhead transitioning to and from the handler thread.
+  DWORD code = exinfo->ExceptionRecord->ExceptionCode;
   LONG action;
-  if (current_handler->WriteMinidumpOnHandlerThread(exinfo)) {
+  if (code != EXCEPTION_BREAKPOINT && code != EXCEPTION_SINGLE_STEP &&
+      current_handler->WriteMinidumpOnHandlerThread(exinfo, NULL)) {
     // The handler fully handled the exception.  Returning
     // EXCEPTION_EXECUTE_HANDLER indicates this to the system, and usually
     // results in the applicaiton being terminated.
@@ -223,31 +272,88 @@ LONG ExceptionHandler::HandleException(EXCEPTION_POINTERS *exinfo) {
     // application to be restarted.
     action = EXCEPTION_EXECUTE_HANDLER;
   } else {
-    // There was an exception, but the handler decided not to handle it.
+    // There was an exception, it was a breakpoint or something else ignored
+    // above, or it was passed to the handler, which decided not to handle it.
     // This could be because the filter callback didn't want it, because
     // minidump writing failed for some reason, or because the post-minidump
     // callback function indicated failure.  Give the previous handler a
     // chance to do something with the exception.  If there is no previous
     // handler, return EXCEPTION_CONTINUE_SEARCH, which will allow a debugger
     // or native "crashed" dialog to handle the exception.
-    action = previous ? previous(exinfo) : EXCEPTION_CONTINUE_SEARCH;
+    if (current_handler->previous_filter_) {
+      action = current_handler->previous_filter_(exinfo);
+    } else {
+      action = EXCEPTION_CONTINUE_SEARCH;
+    }
   }
-
-  // Put things back the way they were before entering this handler.
-  SetUnhandledExceptionFilter(restore);
-  EnterCriticalSection(&handler_stack_critical_section_);
-  --handler_stack_index_;
-  LeaveCriticalSection(&handler_stack_critical_section_);
 
   return action;
 }
 
-bool ExceptionHandler::WriteMinidumpOnHandlerThread(EXCEPTION_POINTERS *exinfo) {
+#if _MSC_VER >= 1400  // MSVC 2005/8
+// static
+void ExceptionHandler::HandleInvalidParameter(const wchar_t *expression,
+                                              const wchar_t *function,
+                                              const wchar_t *file,
+                                              unsigned int line,
+                                              uintptr_t reserved) {
+  // This is an invalid parameter, not an exception.  It's safe to play with
+  // sprintf here.
+  AutoExceptionHandler auto_exception_handler;
+  ExceptionHandler *current_handler = auto_exception_handler.get_handler();
+
+  MDRawAssertionInfo assertion;
+  memset(&assertion, 0, sizeof(assertion));
+  _snwprintf_s(reinterpret_cast<wchar_t *>(assertion.expression),
+               sizeof(assertion.expression) / sizeof(assertion.expression[0]),
+               _TRUNCATE, L"%s", expression);
+  _snwprintf_s(reinterpret_cast<wchar_t *>(assertion.function),
+               sizeof(assertion.function) / sizeof(assertion.function[0]),
+               _TRUNCATE, L"%s", function);
+  _snwprintf_s(reinterpret_cast<wchar_t *>(assertion.file),
+               sizeof(assertion.file) / sizeof(assertion.file[0]),
+               _TRUNCATE, L"%s", file);
+  assertion.line = line;
+  assertion.type = MD_ASSERTION_INFO_TYPE_INVALID_PARAMETER;
+
+  if (!current_handler->WriteMinidumpOnHandlerThread(NULL, &assertion)) {
+    if (current_handler->previous_iph_) {
+      // The handler didn't fully handle the exception.  Give it to the
+      // previous invalid parameter handler.
+      current_handler->previous_iph_(expression, function, file, line, reserved);
+    } else {
+      // If there's no previous handler, pass the exception back in to the
+      // invalid parameter handler's core.  That's the routine that called this
+      // function, but now, since this function is no longer registered (and in
+      // fact, no function at all is registered), this will result in the
+      // default code path being taken: _CRT_DEBUGGER_HOOK and _invoke_watson.
+      // Use _invalid_parameter where it exists (in _DEBUG builds) as it passes
+      // more information through.  In non-debug builds, it is not available,
+      // so fall back to using _invalid_parameter_noinfo.  See invarg.c in the
+      // CRT source.
+#ifdef _DEBUG
+      _invalid_parameter(expression, function, file, line, reserved);
+#else  // _DEBUG
+      _invalid_parameter_noinfo();
+#endif  // _DEBUG
+    }
+  }
+
+  // The handler either took care of the invalid parameter problem itself,
+  // or passed it on to another handler.  "Swallow" it by exiting, paralleling
+  // the behavior of "swallowing" exceptions.
+  exit(0);
+}
+#endif  // _MSC_VER >= 1400
+
+bool ExceptionHandler::WriteMinidumpOnHandlerThread(
+    EXCEPTION_POINTERS *exinfo, MDRawAssertionInfo *assertion) {
   EnterCriticalSection(&handler_critical_section_);
 
   // Set up data to be passed in to the handler thread.
   requesting_thread_id_ = GetCurrentThreadId();
   exception_info_ = exinfo;
+  assertion_ = assertion;
 
   // This causes the handler thread to call WriteMinidumpWithException.
   ReleaseSemaphore(handler_start_semaphore_, 1, NULL);
@@ -259,6 +365,7 @@ bool ExceptionHandler::WriteMinidumpOnHandlerThread(EXCEPTION_POINTERS *exinfo) 
   // Clean up.
   requesting_thread_id_ = 0;
   exception_info_ = NULL;
+  assertion_ = NULL;
 
   LeaveCriticalSection(&handler_critical_section_);
 
@@ -266,7 +373,7 @@ bool ExceptionHandler::WriteMinidumpOnHandlerThread(EXCEPTION_POINTERS *exinfo) 
 }
 
 bool ExceptionHandler::WriteMinidump() {
-  bool success = WriteMinidumpOnHandlerThread(NULL);
+  bool success = WriteMinidumpOnHandlerThread(NULL, NULL);
   UpdateNextID();
   return success;
 }
@@ -279,15 +386,17 @@ bool ExceptionHandler::WriteMinidump(const wstring &dump_path,
   return handler.WriteMinidump();
 }
 
-bool ExceptionHandler::WriteMinidumpWithException(DWORD requesting_thread_id,
-                                                  EXCEPTION_POINTERS *exinfo) {
+bool ExceptionHandler::WriteMinidumpWithException(
+    DWORD requesting_thread_id,
+    EXCEPTION_POINTERS *exinfo,
+    MDRawAssertionInfo *assertion) {
   // Give user code a chance to approve or prevent writing a minidump.  If the
   // filter returns false, don't handle the exception at all.  If this method
   // was called as a result of an exception, returning false will cause
   // HandleException to call any previous handler or return
   // EXCEPTION_CONTINUE_SEARCH on the exception thread, allowing it to appear
   // as though this handler were not present at all.
-  if (filter_&& !filter_(callback_context_, exinfo)) {
+  if (filter_ && !filter_(callback_context_, exinfo, assertion)) {
     return false;
   }
 
@@ -318,14 +427,22 @@ bool ExceptionHandler::WriteMinidumpWithException(DWORD requesting_thread_id,
       airbag_info.dump_thread_id = GetCurrentThreadId();
       airbag_info.requesting_thread_id = requesting_thread_id;
 
-      MINIDUMP_USER_STREAM airbag_info_stream;
-      airbag_info_stream.Type = MD_AIRBAG_INFO_STREAM;
-      airbag_info_stream.BufferSize = sizeof(airbag_info);
-      airbag_info_stream.Buffer = &airbag_info;
+      // Leave room in user_stream_array for a possible assertion info stream.
+      MINIDUMP_USER_STREAM user_stream_array[2];
+      user_stream_array[0].Type = MD_AIRBAG_INFO_STREAM;
+      user_stream_array[0].BufferSize = sizeof(airbag_info);
+      user_stream_array[0].Buffer = &airbag_info;
 
       MINIDUMP_USER_STREAM_INFORMATION user_streams;
       user_streams.UserStreamCount = 1;
-      user_streams.UserStreamArray = &airbag_info_stream;
+      user_streams.UserStreamArray = user_stream_array;
+
+      if (assertion) {
+        user_stream_array[1].Type = MD_ASSERTION_INFO_STREAM;
+        user_stream_array[1].BufferSize = sizeof(MDRawAssertionInfo);
+        user_stream_array[1].Buffer = assertion;
+        ++user_streams.UserStreamCount;
+      }
 
       // The explicit comparison to TRUE avoids a warning (C4800).
       success = (minidump_write_dump_(GetCurrentProcess(),
@@ -342,7 +459,7 @@ bool ExceptionHandler::WriteMinidumpWithException(DWORD requesting_thread_id,
 
   if (callback_) {
     success = callback_(dump_path_c_, next_minidump_id_c_, callback_context_,
-                        exinfo, success);
+                        exinfo, assertion, success);
   }
 
   return success;

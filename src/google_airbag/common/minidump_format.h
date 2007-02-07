@@ -494,7 +494,8 @@ typedef enum {
   MD_LAST_RESERVED_STREAM        = 0x0000ffff,
 
   /* Airbag extension types.  0x4767 = "Gg" */
-  MD_AIRBAG_INFO_STREAM          = 0x47670001  /* MDRawAirbagInfo */
+  MD_AIRBAG_INFO_STREAM          = 0x47670001,  /* MDRawAirbagInfo */
+  MD_ASSERTION_INFO_STREAM       = 0x47670002   /* MDRawAssertionInfo */
 } MDStreamType;  /* MINIDUMP_STREAM_TYPE */
 
 
@@ -1032,6 +1033,27 @@ typedef enum {
   MD_AIRBAG_INFO_VALID_REQUESTING_THREAD_ID = 1 << 1
 } MDAirbagInfoValidity;
 
+typedef struct {
+  /* expression, function, and file are 0-terminated UTF-16 strings.  They
+   * may be truncated if necessary, but should always be 0-terminated when
+   * written to a file.
+   * Fixed-length strings are used because MiniDumpWriteDump doesn't offer
+   * a way for user streams to point to arbitrary RVAs for strings. */
+  u_int16_t expression[128];  /* Assertion that failed... */
+  u_int16_t function[128];    /* ...within this function... */
+  u_int16_t file[128];        /* ...in this file... */
+  u_int32_t line;             /* ...at this line. */
+  u_int32_t type;
+} MDRawAssertionInfo;
+
+/* For (MDRawAssertionInfo).info: */
+typedef enum {
+  MD_ASSERTION_INFO_TYPE_UNKNOWN = 0,
+
+  /* Used for assertions that would be raised by the MSVC CRT but are
+   * directed to an invalid parameter handler instead. */
+  MD_ASSERTION_INFO_TYPE_INVALID_PARAMETER
+} MDAssertionInfoData;
 
 #if defined(_MSC_VER)
 #pragma warning(pop)

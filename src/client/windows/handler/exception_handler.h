@@ -59,6 +59,7 @@
 #ifndef CLIENT_WINDOWS_HANDLER_EXCEPTION_HANDLER_H__
 #define CLIENT_WINDOWS_HANDLER_EXCEPTION_HANDLER_H__
 
+#include <stdlib.h>
 #include <Windows.h>
 #include <DbgHelp.h>
 
@@ -68,6 +69,8 @@
 
 #include <string>
 #include <vector>
+
+#include "google_airbag/common/minidump_format.h"
 
 namespace google_airbag {
 
@@ -80,13 +83,15 @@ class ExceptionHandler {
   // processing of an exception.  A FilterCallback is called before writing
   // a minidump.  context is the parameter supplied by the user as
   // callback_context when the handler was created.  exinfo points to the
-  // exception record.
+  // exception record, if any; assertion points to assertion information,
+  // if any.
   //
   // If a FilterCallback returns true, Airbag will continue processing,
   // attempting to write a minidump.  If a FilterCallback returns false, Airbag
   // will immediately report the exception as unhandled without writing a
   // minidump, allowing another handler the opportunity to handle it.
-  typedef bool (*FilterCallback)(void *context, EXCEPTION_POINTERS *exinfo);
+  typedef bool (*FilterCallback)(void *context, EXCEPTION_POINTERS *exinfo,
+                                 MDRawAssertionInfo *assertion);
 
   // A callback function to run after the minidump has been written.
   // minidump_id is a unique id for the dump, so the minidump
@@ -94,6 +99,8 @@ class ExceptionHandler {
   // by the user as callback_context when the handler was created.  exinfo
   // points to the exception record, or NULL if no exception occurred.
   // succeeded indicates whether a minidump file was successfully written.
+  // assertion points to information about an assertion if the handler was
+  // invoked by an assertion.
   //
   // If an exception occurred and the callback returns true, Airbag will treat
   // the exception as fully-handled, suppressing any other handlers from being
@@ -109,6 +116,7 @@ class ExceptionHandler {
                                    const wchar_t *minidump_id,
                                    void *context,
                                    EXCEPTION_POINTERS *exinfo,
+                                   MDRawAssertionInfo *assertion,
                                    bool succeeded);
 
   // Creates a new ExceptionHandler instance to handle writing minidumps.
@@ -142,6 +150,8 @@ class ExceptionHandler {
                             MinidumpCallback callback, void *callback_context);
 
  private:
+  friend class AutoExceptionHandler;
+
   // Function pointer type for MiniDumpWriteDump, which is looked up
   // dynamically.
   typedef BOOL (WINAPI *MiniDumpWriteDump_type)(
@@ -160,14 +170,30 @@ class ExceptionHandler {
   // Signals the exception handler thread to handle the exception.
   static LONG WINAPI HandleException(EXCEPTION_POINTERS *exinfo);
 
+#if _MSC_VER >= 1400  // MSVC 2005/8
+  // This function will be called by some CRT functions when they detect
+  // that they were passed an invalid parameter.  Note that in _DEBUG builds,
+  // the CRT may display an assertion dialog before calling this function,
+  // and the function will not be called unless the assertion dialog is
+  // dismissed by clicking "Ignore."
+  static void HandleInvalidParameter(const wchar_t *expression,
+                                     const wchar_t *function,
+                                     const wchar_t *file,
+                                     unsigned int line,
+                                     uintptr_t reserved);
+#endif  // _MSC_VER >= 1400
+
   // This is called on the exception thread or on another thread that
   // the user wishes to produce a dump from.  It calls
   // WriteMinidumpWithException on the handler thread, avoiding stack
   // overflows and inconsistent dumps due to writing the dump from
   // the exception thread.  If the dump is requested as a result of an
   // exception, exinfo contains exception information, otherwise, it
-  // is NULL.
-  bool WriteMinidumpOnHandlerThread(EXCEPTION_POINTERS *exinfo);
+  // is NULL.  If the dump is requested as a result of an assertion
+  // (such as an invalid parameter being passed to a CRT function),
+  // assertion contains data about the assertion, otherwise, it is NULL.
+  bool WriteMinidumpOnHandlerThread(EXCEPTION_POINTERS *exinfo,
+                                    MDRawAssertionInfo *assertion);
 
   // This function does the actual writing of a minidump.  It is called
   // on the handler thread.  requesting_thread_id is the ID of the thread
@@ -175,7 +201,8 @@ class ExceptionHandler {
   // an exception, exinfo contains exception information, otherwise,
   // it is NULL.
   bool WriteMinidumpWithException(DWORD requesting_thread_id,
-                                  EXCEPTION_POINTERS *exinfo);
+                                  EXCEPTION_POINTERS *exinfo,
+                                  MDRawAssertionInfo *assertion);
 
   // Generates a new ID and stores it in next_minidump_id_, and stores the
   // path of the next minidump to be written in next_minidump_path_.
@@ -219,6 +246,14 @@ class ExceptionHandler {
   // that there is no previous unhandled exception filter.
   LPTOP_LEVEL_EXCEPTION_FILTER previous_filter_;
 
+#if _MSC_VER >= 1400  // MSVC 2005/8
+  // Beginning in VC 8, the CRT provides an invalid parameter handler that will
+  // be called when some CRT functions are passed invalid parameters.  In
+  // earlier CRTs, the same conditions would cause unexpected behavior or
+  // crashes.
+  _invalid_parameter_handler previous_iph_;
+#endif  // _MSC_VER >= 1400
+
   // The exception handler thread.
   HANDLE handler_thread_;
 
@@ -244,6 +279,10 @@ class ExceptionHandler {
   // The exception info passed to the exception handler on the exception
   // thread, if an exception occurred.  NULL for user-requested dumps.
   EXCEPTION_POINTERS *exception_info_;
+
+  // If the handler is invoked due to an assertion, this will contain a
+  // pointer to the assertion information.  It is NULL at other times.
+  MDRawAssertionInfo *assertion_;
 
   // The return value of the handler, passed from the handler thread back to
   // the requesting thread.
