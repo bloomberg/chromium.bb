@@ -115,18 +115,23 @@ static inline void Swap(u_int64_t* value) {
 }
 
 
-// Nontrivial, not often used, not inline.  This will put *value into
-// native endianness even on machines where there is no native 128-bit type.
-// half[0] will be the most significant half on big-endian CPUs and half[1]
-// will be the most significant half on little-endian CPUs.
-static void Swap(u_int128_t* value) {
-  Swap(&value->half[0]);
-  Swap(&value->half[1]);
+// Given a pointer to a 128-bit int in the minidump data, set the "low"
+// and "high" fields appropriately.
+static void Normalize128(u_int128_t* value, bool is_big_endian) {
+  // The struct format is [high, low], so if the format is big-endian,
+  // the most significant bytes will already be in the high field.
+  if (!is_big_endian) {
+    u_int64_t temp = value->low;
+    value->low = value->high;
+    value->high = temp;
+  }
+}
 
-  // Swap the two sections with one another.
-  u_int64_t temp = value->half[0];
-  value->half[0] = value->half[1];
-  value->half[1] = temp;
+// This just swaps each int64 half of the 128-bit value.
+// The value should also be normalized by calling Normalize128().
+static void Swap(u_int128_t* value) {
+  Swap(&value->low);
+  Swap(&value->high);
 }
 
 
@@ -377,6 +382,14 @@ bool MinidumpContext::Read(u_int32_t expected_size) {
       // GetSystemInfo may seek minidump to a new position.
       if (!CheckAgainstSystemInfo(cpu_type))
         return false;
+
+      // Normalize the 128-bit types in the dump.
+      // Since this is PowerPC, by definition, the values are big-endian.
+      for (unsigned int vr_index = 0;
+           vr_index < MD_VECTORSAVEAREA_PPC_VR_COUNT;
+           ++vr_index) {
+        Normalize128(&context_ppc->vector_save.save_vr[vr_index], true);
+      }
 
       if (minidump_->swap()) {
         // context_ppc->context_flags was already swapped.
