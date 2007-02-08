@@ -295,10 +295,7 @@ int drm_buffer_object_transfer(drm_buffer_object_t *bo,
 	INIT_LIST_HEAD(&fbo->ddestroy);
 	INIT_LIST_HEAD(&fbo->lru);
 
-	bo->mem.mm_node = NULL;
-	bo->ttm = NULL;
 	atomic_inc(&bo->fence->usage);
-	bo->mem.flags = 0;
 
 	fbo->mem.mm_node->private = (void *)fbo;
 	atomic_set(&fbo->usage, 1);
@@ -355,7 +352,7 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
 		/* This should help pipeline ordinary buffer moves.
 		 *
 		 * Hang old buffer memory on a new buffer object,
-		 * and leave it to be released when the blit
+		 * and leave it to be released when the GPU
 		 * operation has completed.
 		 */
 

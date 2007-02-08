@@ -1149,7 +1149,7 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
  */
 
 static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
-			      int no_wait, int force_no_move)
+			      int no_wait, int force_no_move, int move_unfenced)
 {
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
@@ -1160,14 +1160,6 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
 	 */
 
 	drm_bo_busy(bo);
-
-	/*
-	 * Make sure we're not mapped.
-	 */
-
-	ret = drm_bo_wait_unmapped(bo, no_wait);
-	if (ret)
-		return ret;
 
 	/*
 	 * Wait for outstanding fences.
@@ -1195,15 +1187,15 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
 	 * Determine where to move the buffer.
 	 */
 	ret = drm_bo_mem_space(dev, &mem, no_wait);
-	mutex_unlock(&bm->evict_mutex);
 	
 	if (ret)
-		return ret;
+		goto out_unlock;
 
 	ret = drm_bo_handle_move_mem(bo, &mem, 0, no_wait);
 
-	if (ret) {
-	        mutex_lock(&dev->struct_mutex);
+ out_unlock:
+	if (ret || !move_unfenced) {
+		mutex_lock(&dev->struct_mutex);
 		if (mem.mm_node) {
 			drm_mm_put_block(mem.mm_node);
 			mem.mm_node = NULL;
@@ -1214,6 +1206,7 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
           	mutex_unlock(&dev->struct_mutex);
 	}
 
+	mutex_unlock(&bm->evict_mutex);
 	return ret;
 }
 
@@ -1293,6 +1286,10 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		return ret;
 	}
 
+	ret = drm_bo_wait_unmapped(bo, no_wait);
+	if (ret)
+		return ret;
+
 	if (bo->type == drm_bo_type_fake) {
 		ret = drm_bo_check_fake(dev, &bo->mem);
 		if (ret)
@@ -1315,7 +1312,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 
 	if (!drm_bo_mem_compat(&bo->mem)) {
 		ret = drm_bo_move_buffer(bo, bo->mem.mask & DRM_BO_MASK_MEMTYPE, 
-					 no_wait, 1);
+					 no_wait, 1, move_unfenced);
 		if (ret) {
 			if (ret != -EAGAIN)
 				DRM_ERROR("Failed moving buffer.\n");
@@ -1728,11 +1725,9 @@ static int drm_bo_force_list_clean(drm_device_t * dev,
 				unsigned long _end = jiffies + 3 * DRM_HZ;
 				do {
 					ret = drm_bo_wait(entry, 0, 1, 0);
-					if (ret && allow_errors) {
-						if (ret == -EINTR)
-							ret = -EAGAIN;
+					if (ret && allow_errors)
 						goto out_err;
-					}
+       
 				} while (ret && !time_after_eq(jiffies, _end));
 
 				if (entry->fence) {
