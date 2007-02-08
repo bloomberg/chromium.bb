@@ -129,7 +129,7 @@ static int drm_bo_add_ttm(drm_buffer_object_t * bo)
 
 	switch (bo->type) {
 	case drm_bo_type_dc:
-		bo->ttm = drm_ttm_init(dev, bo->mem.num_pages << PAGE_SHIFT);
+	        bo->ttm = drm_ttm_init(dev, bo->mem.num_pages << PAGE_SHIFT);
 		if (!bo->ttm)
 			ret = -ENOMEM;
 		break;
@@ -173,10 +173,10 @@ static int drm_bo_handle_move_mem(drm_buffer_object_t *bo,
 		return ret;
 
 	if (!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) &&
-	    !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED)) {		
+	    !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED)) {
 		ret = drm_bo_move_ttm(dev, bo->ttm, evict, no_wait, 
 				      &bo->mem, mem);
-	} else if (dev->driver->bo_driver->move) {
+	}  else if (dev->driver->bo_driver->move) {
 		ret = dev->driver->bo_driver->move(dev, bo->ttm, evict, 
 						   no_wait, &bo->mem, mem);
 	} else {
@@ -345,6 +345,7 @@ static void drm_bo_destroy_locked(drm_buffer_object_t *bo)
 			drm_destroy_ttm(bo->ttm);
 			bo->ttm = NULL;
 		}
+
 		atomic_dec(&bm->count);
 
 		drm_ctl_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
@@ -571,6 +572,7 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 	if (bo->priv_flags & _DRM_BO_FLAG_UNFENCED)
 		goto out;
 	if (bo->mem.mem_type != mem_type)
+		goto out;
 
 	ret = drm_bo_wait(bo, 0, 0, no_wait);
 
@@ -579,6 +581,9 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 			  "buffer eviction.\n");
 		goto out;
 	}
+
+	if (bo->type != drm_bo_type_dc)
+		goto out1;
 
 	evict_mem = bo->mem;
 	evict_mem.mask = dev->driver->bo_driver->evict_flags(dev, mem_type);
@@ -599,6 +604,7 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 		goto out;
 	}
 	
+out1:
 	mutex_lock(&dev->struct_mutex);
 	if (evict_mem.mm_node) {
 		drm_mm_put_block(evict_mem.mm_node);
@@ -674,6 +680,7 @@ static int drm_bo_mt_compatible(drm_mem_type_manager_t *man,
 				uint32_t *res_mask)
 {
 	uint32_t cur_flags = drm_bo_type_flags(mem_type);
+	uint32_t flag_diff;
 
 	if (man->flags & _DRM_FLAG_MEMTYPE_CACHED)
 		cur_flags |= DRM_BO_FLAG_CACHED;
@@ -682,13 +689,21 @@ static int drm_bo_mt_compatible(drm_mem_type_manager_t *man,
 	if (man->flags & _DRM_FLAG_MEMTYPE_CSELECT)
 		DRM_FLAG_MASKED(cur_flags, mask, DRM_BO_FLAG_CACHED);
 
-	if (!(mask & DRM_BO_FLAG_FORCE_CACHING)) 
-		DRM_FLAG_MASKED(mask, cur_flags, DRM_BO_FLAG_CACHED);
-	if (!(mask & DRM_BO_FLAG_FORCE_MAPPABLE)) 
-		DRM_FLAG_MASKED(mask, cur_flags, DRM_BO_FLAG_MAPPABLE);
-	
-	*res_mask = mask;
-	return ((cur_flags & mask & DRM_BO_MASK_MEMTYPE) == cur_flags);
+	if ((cur_flags & mask & DRM_BO_MASK_MEM) == 0) {
+		return 0;
+	}
+	flag_diff = (mask ^ cur_flags);
+	if ((flag_diff & DRM_BO_FLAG_CACHED) &&
+	    (mask & DRM_BO_FLAG_FORCE_CACHING)) {
+		return 0;
+	}
+	if ((flag_diff & DRM_BO_FLAG_MAPPABLE) &&
+	    (mask & DRM_BO_FLAG_FORCE_MAPPABLE)) {
+		return 0;
+	}
+
+	*res_mask = cur_flags;
+	return 1;
 }
 	
 
@@ -778,13 +793,22 @@ static int drm_bo_new_mask(drm_buffer_object_t *bo,
 {
 	uint32_t new_props;
 
+	if (bo->type == drm_bo_type_user) {
+		DRM_ERROR("User buffers are not supported yet\n");
+		return -EINVAL;
+	}
+	if (bo->type == drm_bo_type_fake &&
+	    !(new_mask & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT))) {
+		DRM_ERROR("Fake buffers must be pinned.\n");
+		return -EINVAL;
+	}
+
 	if ((new_mask & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
 		DRM_ERROR
 		    ("DRM_BO_FLAG_NO_EVICT is only available to priviliged "
 		     "processes\n");
 		return -EPERM;
 	}
-
 
 	new_props = new_mask & (DRM_BO_FLAG_EXE | DRM_BO_FLAG_WRITE |
 				DRM_BO_FLAG_READ);
@@ -1220,6 +1244,43 @@ static int drm_bo_mem_compat(drm_bo_mem_reg_t *mem)
 	return 1;
 }
 	
+static int drm_bo_check_fake(drm_device_t *dev, drm_bo_mem_reg_t *mem)
+{
+	drm_buffer_manager_t *bm = &dev->bm;
+	drm_mem_type_manager_t *man; 
+	uint32_t num_prios = dev->driver->bo_driver->num_mem_type_prio;
+	const uint32_t *prios = dev->driver->bo_driver->mem_type_prio;
+	uint32_t i;
+	int type_ok = 0;
+	uint32_t mem_type = 0;
+	uint32_t cur_flags;
+
+	if (drm_bo_mem_compat(mem))
+		return 0;
+
+	BUG_ON(mem->mm_node);
+
+	for (i=0; i<num_prios; ++i) {
+		mem_type = prios[i];
+		man = &bm->man[mem_type];
+		type_ok = drm_bo_mt_compatible(man, mem_type, mem->mask, 
+					       &cur_flags); 
+		if (type_ok)
+			break;
+	}
+
+	if (type_ok) {
+		mem->mm_node = NULL;
+		mem->mem_type = mem_type;
+		mem->flags = cur_flags;
+		DRM_FLAG_MASKED(mem->flags, mem->mask, ~DRM_BO_MASK_MEMTYPE);
+		return 0;
+	}
+
+	DRM_ERROR("Illegal fake buffer flags 0x%08x\n", mem->mask);
+	return -EINVAL;
+}
+		
 /*
  * bo locked.
  */
@@ -1240,6 +1301,12 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	if (ret) {
 		DRM_ERROR("Driver did not support given buffer permissions\n");
 		return ret;
+	}
+
+	if (bo->type == drm_bo_type_fake) {
+		ret = drm_bo_check_fake(dev, &bo->mem);
+		if (ret)
+			return ret;
 	}
 
 	/*
