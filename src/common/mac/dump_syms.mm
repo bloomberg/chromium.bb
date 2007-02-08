@@ -58,6 +58,10 @@ static NSString *kHeaderIs64BitKey = @"is64";
 static NSString *kHeaderCPUTypeKey = @"cpuType";
 static NSString *kUnknownSymbol = @"???";
 
+// The section for __TEXT, __text seems to be always 1.  This is useful
+// for pruning out extraneous non-function symbols.
+static const int kTextSection = 1;
+
 @interface DumpSymbols(PrivateMethods)
 - (NSString *)stringFromTask:(NSString *)action args:(NSArray *)args
                   standardIn:(NSFileHandle *)standardIn;
@@ -71,7 +75,6 @@ static NSString *kUnknownSymbol = @"???";
 - (BOOL)loadHeader:(void *)base offset:(uint32_t)offset;
 - (BOOL)loadHeader64:(void *)base offset:(uint32_t)offset;
 - (BOOL)loadModuleInfo;
-- (NSMutableString *)generateSymbolFileString;
 @end
 
 static BOOL StringHeadMatches(NSString *str, NSString *head) {
@@ -283,6 +286,10 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
   uint32_t n_strx = list->n_un.n_strx;
   BOOL result = NO;
 
+  // We only care about symbols in the __text sect
+  if (list->n_sect != kTextSection)
+    return NO;
+  
   // Extract debugging information:
   // Doc: http://developer.apple.com/documentation/DeveloperTools/gdb/stabs/stabs_toc.html
   // Header: /usr/include/mach-o/stab.h:
@@ -316,21 +323,22 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
   } else if (list->n_type == N_SLINE) {
     [self addFunction:nil line:list->n_desc address:list->n_value];
     result = YES;
-  } else if ((list->n_type & N_TYPE) == N_SECT &&
-             !(list->n_type & N_STAB)) {
+  } else if (((list->n_type & N_TYPE) == N_SECT) && !(list->n_type & N_STAB)) {
     // Regular symbols or ones that are external
     NSString *fn = [NSString stringWithUTF8String:&table[n_strx]];
     [self addFunction:fn line:0 address:list->n_value];
     result = YES;
   } else if (list->n_type == N_ENSYM) {
-    // End of symbols for current function
     if (lastFunctionStart_) {
       unsigned long long start = [lastFunctionStart_ unsignedLongLongValue];
       unsigned long long size = list->n_value - start;
       NSMutableDictionary *dict = [addresses_ objectForKey:lastFunctionStart_];
       assert(dict);
+      assert(list->n_value > start);
+      
       [dict setObject:[NSNumber numberWithUnsignedLongLong:size]
                forKey:kFunctionSizeKey];
+      lastFunctionStart_ = nil;
     }
   }
 
@@ -509,6 +517,7 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
           [NSNumber numberWithUnsignedLongLong:size], kHeaderSizeKey,
           [NSNumber numberWithUnsignedLong:offset], kHeaderOffsetKey,
           [NSNumber numberWithBool:YES], kHeaderIs64BitKey,
+          [NSNumber numberWithUnsignedLong:cpu], kHeaderCPUTypeKey,
           nil] forKey:cpuStr];
         return YES;
       }
