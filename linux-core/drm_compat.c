@@ -250,7 +250,6 @@ struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 	}
 
 	get_page(page);
-
 out_unlock:
 	mutex_unlock(&bo->mutex);
 	return page;
@@ -274,7 +273,6 @@ int drm_bo_map_bound(struct vm_area_struct *vma)
 	if (bus_size) {
 		unsigned long pfn = (bus_base + bus_offset) >> PAGE_SHIFT;
 		pgprot_t pgprot = drm_io_prot(_DRM_AGP, vma);
-	     
 		ret = io_remap_pfn_range(vma, vma->vm_start, pfn,
 					 vma->vm_end - vma->vm_start,
 					 pgprot);

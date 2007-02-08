@@ -697,9 +697,8 @@ typedef struct drm_bo_driver{
 	int (*init_mem_type)(struct drm_device *dev, uint32_t type,
 			     drm_mem_type_manager_t *man);
         uint32_t (*evict_flags) (struct drm_device *dev, uint32_t type);
-	int (*move)(struct drm_device *dev,
-		    struct drm_ttm *ttm, int evict, int no_wait,
-		    struct drm_bo_mem_reg *old_mem,
+	int (*move)(struct drm_buffer_object *bo,
+		    int evict, int no_wait,
 		    struct drm_bo_mem_reg *new_mem);
 } drm_bo_driver_t;
 
@@ -1517,15 +1516,13 @@ extern int drm_fence_buffer_objects(drm_file_t * priv,
  * drm_bo_move.c
  */
 
-extern int drm_bo_move_ttm(drm_device_t *dev, 
-			   drm_ttm_t *ttm, int evict,
+extern int drm_bo_move_ttm(drm_buffer_object_t *bo, 
+			   int evict,
 			   int no_wait,
-			   drm_bo_mem_reg_t *old_mem,
 			   drm_bo_mem_reg_t *new_mem);
-extern int drm_bo_move_memcpy(drm_device_t *dev, 
-			      drm_ttm_t *ttm, int evict,
+extern int drm_bo_move_memcpy(drm_buffer_object_t *bo, 
+			      int evict,
 			      int no_wait,
-			      drm_bo_mem_reg_t *old_mem,
 			      drm_bo_mem_reg_t *new_mem);
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);

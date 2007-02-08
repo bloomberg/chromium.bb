@@ -124,7 +124,6 @@ static int drm_bo_add_ttm(drm_buffer_object_t * bo)
 {
 	drm_device_t *dev = bo->dev;
 	int ret = 0;
-
 	bo->ttm = NULL;
 
 	switch (bo->type) {
@@ -174,14 +173,11 @@ static int drm_bo_handle_move_mem(drm_buffer_object_t *bo,
 
 	if (!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) &&
 	    !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED)) {
-		ret = drm_bo_move_ttm(dev, bo->ttm, evict, no_wait, 
-				      &bo->mem, mem);
+		ret = drm_bo_move_ttm(bo, evict, no_wait, mem);
 	}  else if (dev->driver->bo_driver->move) {
-		ret = dev->driver->bo_driver->move(dev, bo->ttm, evict, 
-						   no_wait, &bo->mem, mem);
+		ret = dev->driver->bo_driver->move(bo, evict, no_wait, mem);
 	} else {
-		ret = drm_bo_move_memcpy(dev, bo->ttm, evict, no_wait, 
-					 &bo->mem, mem);
+		ret = drm_bo_move_memcpy(bo, evict, no_wait, mem);
 	}
 
 	if (old_is_pci || new_is_pci)

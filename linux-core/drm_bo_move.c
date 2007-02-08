@@ -30,13 +30,14 @@
 
 #include "drmP.h"
 
-int drm_bo_move_ttm(drm_device_t *dev,
-		    drm_ttm_t *ttm, 
+int drm_bo_move_ttm(drm_buffer_object_t *bo,
 		    int evict,
 		    int no_wait,
-		    drm_bo_mem_reg_t *old_mem,
 		    drm_bo_mem_reg_t *new_mem)
 {
+	drm_device_t *dev = bo->dev;
+	drm_ttm_t *ttm = bo->ttm;
+	drm_bo_mem_reg_t *old_mem = &bo->mem;
 	uint32_t save_flags = old_mem->flags;
 	uint32_t save_mask = old_mem->mask;
 	int ret;
@@ -135,8 +136,9 @@ void drm_mem_reg_iounmap(drm_device_t *dev, drm_bo_mem_reg_t *mem,
 	bm = &dev->bm;
 	man = &bm->man[mem->mem_type];
 	
-	if (virtual && (man->flags & _DRM_FLAG_NEEDS_IOREMAP)) 
+	if (virtual && (man->flags & _DRM_FLAG_NEEDS_IOREMAP)) {
 		iounmap(virtual);
+	}
 }
 
 
@@ -188,13 +190,16 @@ static int drm_copy_ttm_io_page(drm_ttm_t *ttm, void *dst, unsigned long page)
 }
 
 	
-int drm_bo_move_memcpy(drm_device_t *dev,
-		       drm_ttm_t *ttm, 
+int drm_bo_move_memcpy(drm_buffer_object_t *bo,
 		       int evict,
 		       int no_wait,
-		       drm_bo_mem_reg_t *old_mem,
 		       drm_bo_mem_reg_t *new_mem)
 {
+	drm_device_t *dev = bo->dev;
+	drm_mem_type_manager_t *man = &dev->bm.man[new_mem->mem_type];
+	drm_ttm_t *ttm = bo->ttm;
+	drm_bo_mem_reg_t *old_mem = &bo->mem;
+	drm_bo_mem_reg_t old_copy = *old_mem;
 	void *old_iomap;
 	void *new_iomap;
 	int ret;
@@ -204,7 +209,6 @@ int drm_bo_move_memcpy(drm_device_t *dev,
 	unsigned long page;
 	unsigned long add = 0;
 	int dir;
-	
 	
 	ret = drm_mem_reg_ioremap(dev, old_mem, &old_iomap);
 	if (ret)
@@ -237,15 +241,22 @@ int drm_bo_move_memcpy(drm_device_t *dev,
 		if (ret)
 			goto out1;
 	}
-				
+	mb();
 out2:	
 	*old_mem = *new_mem;
 	new_mem->mm_node = NULL;
 	old_mem->mask = save_mask;
 	DRM_FLAG_MASKED(save_flags, new_mem->flags, DRM_BO_MASK_MEMTYPE);
+
+	if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && (ttm != NULL)) {
+		drm_ttm_unbind(ttm);
+		drm_destroy_ttm(ttm);
+		bo->ttm = NULL;
+	}
+
 out1:
-	drm_mem_reg_iounmap(dev, new_mem, &new_iomap);
+	drm_mem_reg_iounmap(dev, new_mem, new_iomap);
 out:
-	drm_mem_reg_iounmap(dev, old_mem, old_iomap);
+	drm_mem_reg_iounmap(dev, &old_copy, old_iomap);
 	return ret;
 }
