@@ -219,6 +219,8 @@ int drm_bo_move_memcpy(drm_buffer_object_t *bo,
 
 	if (old_iomap == NULL && new_iomap == NULL)
 		goto out2;
+	if (old_iomap == NULL && ttm == NULL)
+		goto out2;
 	
 	add = 0;
 	dir = 1;

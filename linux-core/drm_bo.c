@@ -164,8 +164,7 @@ static int drm_bo_handle_move_mem(drm_buffer_object_t *bo,
 	if (ret)
 		return ret;
 
-	if ((!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) ||
-	     !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED)) && 
+	if (!(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED) && 
 	    (bo->ttm == NULL)) 
 		ret = drm_bo_add_ttm(bo);
 	if (ret)
