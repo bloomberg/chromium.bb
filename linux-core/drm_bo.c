@@ -1329,25 +1329,6 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 			return ret;
 	}
 
-	if (move_unfenced) {
-		DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_UNFENCED,
-				_DRM_BO_FLAG_UNFENCED);
-		mutex_lock(&dev->struct_mutex);
-		list_del(&bo->lru);
-		list_add_tail(&bo->lru, &bm->unfenced);
-		mutex_unlock(&dev->struct_mutex);
-	} else {
-		mutex_lock(&dev->struct_mutex);
-		list_del(&bo->lru);
-		if (bo->priv_flags & _DRM_BO_FLAG_UNFENCED) {
-			DRM_FLAG_MASKED(bo->priv_flags, 0,
-					_DRM_BO_FLAG_UNFENCED);
-			DRM_WAKEUP(& bo->event_queue);
-		}
-		drm_bo_add_to_lru(bo, bm);
-		mutex_unlock(&dev->struct_mutex);
-	}	
-
 	DRM_FLAG_MASKED(bo->mem.flags, bo->mem.mask, ~DRM_BO_MASK_MEMTYPE);
 
 	return 0;
