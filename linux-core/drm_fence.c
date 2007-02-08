@@ -1,6 +1,6 @@
 /**************************************************************************
  * 
- * Copyright 2006 Tungsten Graphics, Inc., Bismarck, ND., USA
+ * Copyright (c) 2006-2007 Tungsten Graphics, Inc., Cedar Park, TX., USA
  * All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -11,6 +11,10 @@
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
  * 
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
@@ -19,11 +23,6 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- * 
- * 
  **************************************************************************/
 /*
  * Authors: Thomas Hellström <thomas-at-tungstengraphics-dot-com>
