@@ -80,7 +80,7 @@ static void ttm_free_pages(drm_ttm_t *ttm)
 }
 
 
-struct page *drm_ttm_alloc_page(void)
+static struct page *drm_ttm_alloc_page(void)
 {
 	struct page *page;
 
@@ -192,27 +192,37 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 	return 0;
 }
 
+struct page *drm_ttm_get_page(drm_ttm_t *ttm, int index)
+{
+	struct page *p;
+	drm_buffer_manager_t *bm = &ttm->dev->bm;
+
+	p = ttm->pages[index];
+	if (!p) {
+		p = drm_ttm_alloc_page();
+		if (!p)
+			return NULL;
+		ttm->pages[index] = p;
+		++bm->cur_pages;
+	}
+	return p;
+}
+
+
 static int drm_ttm_populate(drm_ttm_t * ttm)
 {
 	struct page *page;
 	unsigned long i;
-	drm_buffer_manager_t *bm;
 	drm_ttm_backend_t *be;
 
 	if (ttm->state != ttm_unpopulated)
 		return 0;
 
-	bm = &ttm->dev->bm;
 	be = ttm->be;
 	for (i = 0; i < ttm->num_pages; ++i) {
-		page = ttm->pages[i];
-		if (!page) {
-			page = drm_ttm_alloc_page();
-			if (!page)
-				return -ENOMEM;
-			ttm->pages[i] = page;
-			++bm->cur_pages;
-		}
+		page = drm_ttm_get_page(ttm, i);
+		if (!page)
+			return -ENOMEM;
 	}
 	be->populate(be, ttm->num_pages, ttm->pages);
 	ttm->state = ttm_unbound;

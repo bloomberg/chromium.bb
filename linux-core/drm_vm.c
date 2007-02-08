@@ -736,7 +736,6 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	unsigned long page_offset;
 	struct page *page = NULL;
 	drm_ttm_t *ttm; 
-	drm_buffer_manager_t *bm;
 	drm_device_t *dev;
 	unsigned long pfn;
 	int err;
@@ -768,19 +767,13 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 		pfn = ((bus_base + bus_offset) >> PAGE_SHIFT) + page_offset;
 		pgprot = drm_io_prot(_DRM_AGP, vma);
 	} else {
-		bm = &dev->bm;
 		ttm = bo->ttm;
 
 		drm_ttm_fixup_caching(ttm);
-		page = ttm->pages[page_offset];
+		page = drm_ttm_get_page(ttm, page_offset);
 		if (!page) {
-			page = drm_ttm_alloc_page();
-			if (!page) {
-				data->type = VM_FAULT_OOM;
-				goto out_unlock;
-			}
-			ttm->pages[page_offset] = page;
-			++bm->cur_pages;
+			data->type = VM_FAULT_OOM;
+			goto out_unlock;
 		}
 		pfn = page_to_pfn(page);
 		pgprot = vma->vm_page_prot;

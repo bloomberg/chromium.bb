@@ -180,13 +180,8 @@ static int drm_bo_handle_move_mem(drm_buffer_object_t *bo,
 		ret = dev->driver->bo_driver->move(dev, bo->ttm, evict, 
 						   no_wait, &bo->mem, mem);
 	} else {
-		ret = -EINVAL;
-		DRM_ERROR("Unsupported function\n");
-#if 0
 		ret = drm_bo_move_memcpy(dev, bo->ttm, evict, no_wait, 
 					 &bo->mem, mem);
-		ret = 0;
-#endif
 	}
 
 	if (old_is_pci || new_is_pci)
@@ -2183,74 +2178,6 @@ int drm_bo_pci_offset(drm_device_t *dev,
 	return 0;
 }
 
-
-/**
- * \c Return a kernel virtual address to the buffer object PCI memory.
- *
- * \param bo The buffer object.
- * \return Failure indication.
- * 
- * Returns -EINVAL if the buffer object is currently not mappable.
- * Returns -ENOMEM if the ioremap operation failed.
- * Otherwise returns zero.
- * 
- * After a successfull call, bo->iomap contains the virtual address, or NULL
- * if the buffer object content is not accessible through PCI space. 
- * Call bo->mutex locked.
- */
-
-#if 0
-int drm_mem_reg_ioremap(drm_bo_mem_reg_t *mem)
-{
-	drm_device_t *dev = bo->dev;
-	drm_buffer_manager_t *bm = &dev->bm;
-	drm_mem_type_manager_t *man = &bm->man[bo->mem.mem_type]; 
-	unsigned long bus_offset;
-	unsigned long bus_size;
-	unsigned long bus_base;
-	int ret;
-
-	BUG_ON(bo->iomap);
-
-	ret = drm_bo_pci_offset(bo, &bus_base, &bus_offset, &bus_size);
-	if (ret || bus_size == 0) 
-		return ret;
-
-	if (!(man->flags & _DRM_FLAG_NEEDS_IOREMAP))
-		bo->iomap = (void *) (((u8 *)man->io_addr) + bus_offset);
-	else {
-		bo->iomap = ioremap_nocache(bus_base + bus_offset, bus_size);
-		if (bo->iomap)
-			return -ENOMEM;
-	}
-	
-	return 0;
-}
-
-/**
- * \c Unmap mapping obtained using drm_bo_ioremap
- *
- * \param bo The buffer object.
- *
- * Call bo->mutex locked.
- */
-
-void drm_bo_iounmap(drm_buffer_object_t *bo)
-{
-	drm_device_t *dev = bo->dev;
-	drm_buffer_manager_t *bm; 
-	drm_mem_type_manager_t *man; 
-
-
-	bm = &dev->bm;
-	man = &bm->man[bo->mem.mem_type];
-	
-	if (bo->iomap && (man->flags & _DRM_FLAG_NEEDS_IOREMAP)) 
-		iounmap(bo->iomap);
-	
-	bo->iomap = NULL;
-}
-#endif
 
 /**
  * \c Kill all user-space virtual mappings of this buffer object.

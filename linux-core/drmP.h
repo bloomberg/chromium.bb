@@ -1522,7 +1522,11 @@ extern int drm_bo_move_ttm(drm_device_t *dev,
 			   int no_wait,
 			   drm_bo_mem_reg_t *old_mem,
 			   drm_bo_mem_reg_t *new_mem);
-
+extern int drm_bo_move_memcpy(drm_device_t *dev, 
+			      drm_ttm_t *ttm, int evict,
+			      int no_wait,
+			      drm_bo_mem_reg_t *old_mem,
+			      drm_bo_mem_reg_t *new_mem);
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);
 

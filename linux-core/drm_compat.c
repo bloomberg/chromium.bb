@@ -220,7 +220,6 @@ struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 	unsigned long page_offset;
 	struct page *page;
 	drm_ttm_t *ttm; 
-	drm_buffer_manager_t *bm;
 	drm_device_t *dev;
 
 	mutex_lock(&bo->mutex);
@@ -241,20 +240,13 @@ struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 		goto out_unlock;
 	}
 
-	bm = &dev->bm;
 	ttm = bo->ttm;
 	drm_ttm_fixup_caching(ttm);
 	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
-	page = ttm->pages[page_offset];
-
+	page = drm_ttm_get_page(ttm, page_offset);
 	if (!page) {
-		page = drm_ttm_alloc_page();
-		if (!page) {
-			page = NOPAGE_OOM;
-			goto out_unlock;
-		}
-		ttm->pages[page_offset] = page;
-		++bm->cur_pages;		
+		page = NOPAGE_OOM;
+		goto out_unlock;
 	}
 
 	get_page(page);
