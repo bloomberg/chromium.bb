@@ -732,7 +732,6 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 {
 	unsigned long address = data->address;
 	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
-	drm_local_map_t *map;
 	unsigned long page_offset;
 	struct page *page = NULL;
 	drm_ttm_t *ttm; 

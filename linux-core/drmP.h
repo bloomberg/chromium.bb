@@ -608,9 +608,6 @@ typedef enum {
 
 } drm_object_type_t;
 
-
-
-
 /*
  * A user object is a structure that helps the drm give out user handles
  * to kernel internal objects and to keep track of these objects so that 
@@ -647,6 +644,7 @@ typedef struct drm_ref_object {
 	drm_ref_t unref_action;
 } drm_ref_object_t;
 
+struct drm_buffer_object;
 
 #include "drm_ttm.h"
 

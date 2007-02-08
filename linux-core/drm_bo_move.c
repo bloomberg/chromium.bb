@@ -243,6 +243,11 @@ int drm_bo_move_memcpy(drm_buffer_object_t *bo,
 	}
 	mb();
 out2:	
+	if (old_mem->mm_node) {
+		mutex_lock(&dev->struct_mutex);
+		drm_mm_put_block(old_mem->mm_node);
+		mutex_unlock(&dev->struct_mutex);
+	}
 	*old_mem = *new_mem;
 	new_mem->mm_node = NULL;
 	old_mem->mask = save_mask;
