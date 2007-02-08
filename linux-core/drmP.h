@@ -1509,6 +1509,15 @@ extern int drm_fence_buffer_objects(drm_file_t * priv,
 				    uint32_t fence_flags,
 				    drm_fence_object_t *fence,
 				    drm_fence_object_t **used_fence);
+extern void drm_bo_add_to_lru(drm_buffer_object_t * bo,
+			      drm_buffer_manager_t * bm);
+extern int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
+		       int no_wait);
+extern int drm_bo_mem_space(drm_device_t *dev,
+			    drm_bo_mem_reg_t *mem,
+			    int no_wait);
+
+
 /*
  * Buffer object memory move helpers.
  * drm_bo_move.c
@@ -1522,6 +1531,13 @@ extern int drm_bo_move_memcpy(drm_buffer_object_t *bo,
 			      int evict,
 			      int no_wait,
 			      drm_bo_mem_reg_t *new_mem);
+extern int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
+				     int evict,
+				     int no_wait,
+				     uint32_t fence_type,
+				     uint32_t fence_flags,
+				     drm_bo_mem_reg_t *new_mem);
+
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);
 

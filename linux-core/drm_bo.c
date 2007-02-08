@@ -56,8 +56,6 @@ static void drm_bo_destroy_locked(drm_buffer_object_t *bo);
 static int drm_bo_setup_vm_locked(drm_buffer_object_t *bo);
 static void drm_bo_takedown_vm_locked(drm_buffer_object_t *bo);
 static void drm_bo_unmap_virtual(drm_buffer_object_t *bo);
-static int drm_bo_mem_space(drm_device_t *dev, drm_bo_mem_reg_t *mem,
-			    int no_wait);
 
 static inline uint32_t drm_bo_type_flags(unsigned type)
 {
@@ -68,8 +66,8 @@ static inline uint32_t drm_bo_type_flags(unsigned type)
  * bo locked. dev->struct_mutex locked.
  */
 
-static void drm_bo_add_to_lru(drm_buffer_object_t * bo,
-			      drm_buffer_manager_t * bm)
+void drm_bo_add_to_lru(drm_buffer_object_t * bo,
+		       drm_buffer_manager_t * bm)
 {
 	struct list_head *list;
 	drm_mem_type_manager_t *man;
@@ -206,8 +204,8 @@ static int drm_bo_handle_move_mem(drm_buffer_object_t *bo,
  * Wait until the buffer is idle.
  */
 
-static int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
-		       int no_wait)
+int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
+		int no_wait)
 {
 
 	drm_fence_object_t *fence = bo->fence;
@@ -697,9 +695,9 @@ static int drm_bo_mt_compatible(drm_mem_type_manager_t *man,
 }
 	
 
-static int drm_bo_mem_space(drm_device_t *dev,
-	                    drm_bo_mem_reg_t *mem,
-			    int no_wait)
+int drm_bo_mem_space(drm_device_t *dev,
+		     drm_bo_mem_reg_t *mem,
+		     int no_wait)
 {
 	drm_buffer_manager_t *bm= &dev->bm;
 	drm_mem_type_manager_t *man; 
@@ -777,6 +775,8 @@ static int drm_bo_mem_space(drm_device_t *dev,
 	ret = (has_eagain) ? -EAGAIN : -ENOMEM;
 	return ret;
 }
+EXPORT_SYMBOL(drm_bo_mem_space);
+
 
 static int drm_bo_new_mask(drm_buffer_object_t *bo,
 			   uint32_t new_mask, uint32_t hint)
@@ -1438,50 +1438,6 @@ static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
 	drm_bo_usage_deref_unlocked(bo);
 	return ret;
 }
-
-/*
- * Transfer a buffer object's memory and LRU status to a newly
- * created object. User-space references remains with the old
- * object. Call bo->mutex locked.
- */
-
-int drm_buffer_object_transfer(drm_buffer_object_t *bo,
-			       drm_buffer_object_t **new_obj)
-{
-	drm_buffer_object_t *fbo;
-	drm_device_t *dev = bo->dev;
-	drm_buffer_manager_t *bm = &dev->bm;
-
-	fbo = drm_ctl_calloc(1, sizeof(*bo), DRM_MEM_BUFOBJ);
-	if (!fbo)
-		return -ENOMEM;
-	
-	*fbo = *bo;
-	mutex_init(&fbo->mutex);
-	mutex_lock(&fbo->mutex);
-	mutex_lock(&dev->struct_mutex);
-
-	INIT_LIST_HEAD(&fbo->ddestroy);
-	INIT_LIST_HEAD(&fbo->lru);
-	list_splice_init(&bo->lru, &fbo->lru);
-
-	bo->mem.mm_node = NULL;
-	bo->ttm = NULL;
-	bo->fence = NULL;
-	bo->mem.flags = 0;
-
-	fbo->mem.mm_node->private = (void *)fbo;
-	atomic_set(&fbo->usage, 1);
-	atomic_inc(&bm->count);
-	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&fbo->mutex);
-
-	*new_obj = fbo;
-	return 0;
-}
-
-
-		
 
 int drm_buffer_object_create(drm_file_t * priv,
 			     unsigned long size,

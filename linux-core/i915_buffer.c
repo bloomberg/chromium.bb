@@ -118,7 +118,7 @@ uint32_t i915_evict_flags(drm_device_t *dev, uint32_t type)
 	}
 }
 
-void i915_emit_copy_blit(drm_device_t *dev,
+static void i915_emit_copy_blit(drm_device_t *dev,
 			 uint32_t src_offset,
 			 uint32_t dst_offset,
 			 uint32_t pages,
@@ -161,3 +161,35 @@ void i915_emit_copy_blit(drm_device_t *dev,
 	}
 	return;
 }
+
+static int drm_bo_move_blit(drm_buffer_object_t *bo,
+			    int evict,
+			    int no_wait,
+			    drm_bo_mem_reg_t *new_mem)
+{
+	drm_bo_mem_reg_t *old_mem = &bo->mem;
+	int dir = 0;
+
+	if ((old_mem->mem_type == new_mem->mem_type) && 
+	    (new_mem->mm_node->start < 
+	     old_mem->mm_node->start +  old_mem->mm_node->size)) {
+		dir = 1;
+	}
+
+	i915_emit_copy_blit(bo->dev,
+			    old_mem->mm_node->start << PAGE_SHIFT,
+			    new_mem->mm_node->start << PAGE_SHIFT,
+			    new_mem->num_pages,
+			    dir);
+
+	i915_emit_mi_flush(bo->dev, MI_READ_FLUSH | MI_EXE_FLUSH);
+
+	return drm_bo_move_accel_cleanup(bo, evict, no_wait,
+					 DRM_FENCE_TYPE_EXE |
+					 DRM_I915_FENCE_TYPE_RW, 
+					 DRM_I915_FENCE_FLAG_FLUSHED, 
+					 new_mem);
+}
+
+	
+

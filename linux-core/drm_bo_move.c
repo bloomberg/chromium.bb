@@ -73,6 +73,7 @@ int drm_bo_move_ttm(drm_buffer_object_t *bo,
 	DRM_FLAG_MASKED(save_flags, new_mem->flags, DRM_BO_MASK_MEMTYPE);
 	return 0;
 }
+EXPORT_SYMBOL(drm_bo_move_ttm);
 
 
 /**
@@ -267,3 +268,121 @@ out:
 	drm_mem_reg_iounmap(dev, &old_copy, old_iomap);
 	return ret;
 }
+EXPORT_SYMBOL(drm_bo_move_memcpy);
+
+/*
+ * Transfer a buffer object's memory and LRU status to a newly
+ * created object. User-space references remains with the old
+ * object. Call bo->mutex locked.
+ */
+
+int drm_buffer_object_transfer(drm_buffer_object_t *bo,
+			       drm_buffer_object_t **new_obj)
+{
+	drm_buffer_object_t *fbo;
+	drm_device_t *dev = bo->dev;
+	drm_buffer_manager_t *bm = &dev->bm;
+
+	fbo = drm_ctl_calloc(1, sizeof(*bo), DRM_MEM_BUFOBJ);
+	if (!fbo)
+		return -ENOMEM;
+	
+	*fbo = *bo;
+	mutex_init(&fbo->mutex);
+	mutex_lock(&fbo->mutex);
+	mutex_lock(&dev->struct_mutex);
+
+	INIT_LIST_HEAD(&fbo->ddestroy);
+	INIT_LIST_HEAD(&fbo->lru);
+
+	bo->mem.mm_node = NULL;
+	bo->ttm = NULL;
+	atomic_inc(&bo->fence->usage);
+	bo->mem.flags = 0;
+
+	fbo->mem.mm_node->private = (void *)fbo;
+	atomic_set(&fbo->usage, 1);
+	atomic_inc(&bm->count);
+	mutex_unlock(&dev->struct_mutex);
+	mutex_unlock(&fbo->mutex);
+
+	*new_obj = fbo;
+	return 0;
+}
+
+int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
+			      int evict,
+			      int no_wait,
+			      uint32_t fence_type,
+			      uint32_t fence_flags,
+			      drm_bo_mem_reg_t *new_mem)
+{
+	drm_device_t *dev = bo->dev;
+	drm_mem_type_manager_t *man = &dev->bm.man[new_mem->mem_type];
+	drm_bo_mem_reg_t *old_mem = &bo->mem;
+	int ret;
+	uint32_t save_flags = old_mem->flags;
+	uint32_t save_mask = old_mem->mask;
+	drm_buffer_object_t *old_obj;
+	
+	if (bo->fence)
+		drm_fence_usage_deref_unlocked(dev, bo->fence);
+       
+	ret = drm_fence_object_create(dev, fence_type,
+				      fence_flags | DRM_FENCE_FLAG_EMIT,
+				      &bo->fence);
+	if (ret)
+		return ret;
+
+	if (evict) {
+		ret = drm_bo_wait(bo, 0, 1, 0);
+		if (ret)
+			return ret;
+		if (old_mem->mm_node) {
+			mutex_lock(&dev->struct_mutex);
+			drm_mm_put_block(old_mem->mm_node);
+			old_mem->mm_node = NULL;
+			mutex_unlock(&dev->struct_mutex);
+		}
+		if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && 
+		    (bo->ttm != NULL)) {
+			drm_ttm_unbind(bo->ttm);
+			drm_destroy_ttm(bo->ttm);
+			bo->ttm = NULL;
+		}
+	} else {
+
+		/* This should help pipeline ordinary buffer moves.
+		 *
+		 * Hang old buffer memory on a new buffer object,
+		 * and leave it to be released when the blit
+		 * operation has completed.
+		 */
+
+		ret = drm_buffer_object_transfer(bo, &old_obj);
+		if (ret)
+			return ret;
+
+		if (!(man->flags & _DRM_FLAG_MEMTYPE_FIXED))
+			old_obj->ttm = NULL;
+		else
+			bo->ttm = NULL;
+
+		atomic_inc(&old_obj->fence->usage);
+		mutex_lock(&dev->struct_mutex);
+		list_del(&old_obj->lru);
+		drm_bo_add_to_lru(old_obj, &old_obj->dev->bm);
+		drm_bo_usage_deref_locked(old_obj);
+		mutex_unlock(&dev->struct_mutex);
+
+	}
+
+	*old_mem = *new_mem;
+	new_mem->mm_node = NULL;
+	old_mem->mask = save_mask;
+	DRM_FLAG_MASKED(save_flags, new_mem->flags, DRM_BO_MASK_MEMTYPE);
+	return 0;
+}
+EXPORT_SYMBOL(drm_bo_move_accel_cleanup);
+		
+
