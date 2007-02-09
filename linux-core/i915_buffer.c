@@ -132,37 +132,28 @@ static void i915_emit_copy_blit(drm_device_t *dev,
 	if (!dev_priv)
 		return;
 	
-	if (direction) {
-		stride = -stride;
-		src_offset += (pages - 1) << PAGE_SHIFT;
-		dst_offset += (pages - 1) << PAGE_SHIFT;
-	}
-
+	i915_kernel_lost_context(dev);
 	while(pages > 0) {
 		cur_pages = pages;
 		if (cur_pages > 2048)
 			cur_pages = 2048;
 		pages -= cur_pages;
 
-		BEGIN_LP_RING(8);
-		OUT_RING(XY_SRC_COPY_BLT_CMD | XY_SRC_COPY_BLT_WRITE_ALPHA |
+		BEGIN_LP_RING(6);
+		OUT_RING(SRC_COPY_BLT_CMD | XY_SRC_COPY_BLT_WRITE_ALPHA |
 			 XY_SRC_COPY_BLT_WRITE_RGB);
 		OUT_RING((stride & 0xffff) | ( 0xcc << 16) | (1 << 24) | 
-			 (1 << 25));
-		OUT_RING(0);
-		OUT_RING((cur_pages << 16) | (PAGE_SIZE >> 2));
+			 (1 << 25) | (direction ? (1 << 30) : 0));
+		OUT_RING((cur_pages << 16) | PAGE_SIZE);
 		OUT_RING(dst_offset);
-		OUT_RING(0);
 		OUT_RING(stride & 0xffff);
 		OUT_RING(src_offset);
 		ADVANCE_LP_RING();
-		dst_offset += (cur_pages << PAGE_SHIFT)*(direction ? -1 : 1);
-		src_offset += (cur_pages << PAGE_SHIFT)*(direction ? -1 : 1);
 	}
 	return;
 }
 
-static int drm_bo_move_blit(drm_buffer_object_t *bo,
+static int i915_move_blit(drm_buffer_object_t *bo,
 			    int evict,
 			    int no_wait,
 			    drm_bo_mem_reg_t *new_mem)
@@ -191,5 +182,66 @@ static int drm_bo_move_blit(drm_buffer_object_t *bo,
 					 new_mem);
 }
 
-	
+/*
+ * Flip destination ttm into cached-coherent AGP, 
+ * then blit and subsequently move out again.
+ */
 
+
+static int i915_move_flip(drm_buffer_object_t *bo,
+			  int evict,
+			  int no_wait,
+			  drm_bo_mem_reg_t *new_mem)
+{
+	drm_device_t *dev = bo->dev;
+	drm_bo_mem_reg_t tmp_mem;
+	int ret;
+
+	tmp_mem = *new_mem;
+	tmp_mem.mm_node = NULL;
+	tmp_mem.mask = DRM_BO_FLAG_MEM_TT |
+	        DRM_BO_FLAG_CACHED  |
+		DRM_BO_FLAG_FORCE_CACHING;
+	
+	ret = drm_bo_mem_space(dev, &tmp_mem, no_wait);
+	if (ret) 
+		return ret;
+	
+	ret = drm_bind_ttm(bo->ttm, 1, tmp_mem.mm_node->start);
+	if (ret) 
+		goto out_cleanup;
+
+	ret = i915_move_blit(bo, 1, no_wait, &tmp_mem);
+	if (ret) 
+		goto out_cleanup;
+	
+	ret = drm_bo_move_ttm(bo, evict, no_wait, new_mem);
+out_cleanup:
+	if (tmp_mem.mm_node) {
+		mutex_lock(&dev->struct_mutex);
+		drm_mm_put_block(tmp_mem.mm_node);
+		tmp_mem.mm_node = NULL;
+		mutex_unlock(&dev->struct_mutex);
+	}
+	return ret;
+}
+
+	
+int i915_move(drm_buffer_object_t *bo,
+	      int evict,
+	      int no_wait,
+	      drm_bo_mem_reg_t *new_mem)
+{
+	drm_bo_mem_reg_t *old_mem = &bo->mem;
+
+	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) 
+		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+	if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
+		if (i915_move_flip(bo, evict, no_wait, new_mem)) 
+			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+	} else {
+		if (i915_move_blit(bo, evict, no_wait, new_mem)) 
+			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+	}
+	return 0;
+}

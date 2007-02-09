@@ -192,6 +192,9 @@ extern int i915_invalidate_caches(drm_device_t *dev, uint32_t buffer_flags);
 extern int i915_init_mem_type(drm_device_t *dev, uint32_t type, 
 			       drm_mem_type_manager_t *man);
 extern uint32_t i915_evict_flags(drm_device_t *dev, uint32_t type);
+extern int i915_move(drm_buffer_object_t *bo, int evict,
+	      	int no_wait, drm_bo_mem_reg_t *new_mem);
+
 #endif
 
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
@@ -329,6 +332,7 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 #define GFX_OP_DRAWRECT_INFO_I965  ((0x7900<<16)|0x2)
 
+#define SRC_COPY_BLT_CMD                ((2<<29)|(0x43<<22)|4)
 #define XY_SRC_COPY_BLT_CMD		((2<<29)|(0x53<<22)|6)
 #define XY_SRC_COPY_BLT_WRITE_ALPHA	(1<<21)
 #define XY_SRC_COPY_BLT_WRITE_RGB	(1<<20)

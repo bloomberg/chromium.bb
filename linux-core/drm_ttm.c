@@ -344,3 +344,4 @@ int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset)
 
 	return 0;
 }
+EXPORT_SYMBOL(drm_bind_ttm);

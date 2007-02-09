@@ -333,8 +333,10 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
 
 	if (evict) {
 		ret = drm_bo_wait(bo, 0, 1, 0);
-		if (ret)
+		if (ret) {
+		  DRM_ERROR("Wait failure\n");
 			return ret;
+		}
 		if (old_mem->mm_node) {
 			mutex_lock(&dev->struct_mutex);
 			drm_mm_put_block(old_mem->mm_node);
