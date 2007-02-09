@@ -1145,6 +1145,7 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
 
 /*
  * bo->mutex locked. 
+ * Note that new_mem_flags are NOT transferred to the bo->mem.mask.
  */
 
 static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
@@ -1200,6 +1201,7 @@ static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
 			mem.mm_node = NULL;
 		}
 		DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
+		DRM_WAKEUP(&bo->event_queue);
 		list_del(&bo->lru);
 		drm_bo_add_to_lru(bo, bm);
           	mutex_unlock(&dev->struct_mutex);
@@ -1328,6 +1330,25 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 		if (ret) 
 			return ret;
 	}
+
+	/*
+	 * Adjust lru to be sure.
+	 */
+	
+	mutex_lock(&dev->struct_mutex);
+	list_del(&bo->lru);
+	if (move_unfenced) {
+		list_add_tail(&bo->lru, &bm->unfenced);
+		DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_UNFENCED, 
+				_DRM_BO_FLAG_UNFENCED);
+	} else {
+		drm_bo_add_to_lru(bo, bm);
+		if (bo->priv_flags & _DRM_BO_FLAG_UNFENCED) {
+			DRM_WAKEUP(&bo->event_queue);
+			DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
+		}
+	}
+	mutex_unlock(&dev->struct_mutex);
 
 	DRM_FLAG_MASKED(bo->mem.flags, bo->mem.mask, ~DRM_BO_MASK_MEMTYPE);
 
