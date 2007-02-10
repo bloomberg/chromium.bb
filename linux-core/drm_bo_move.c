@@ -168,7 +168,7 @@ static int drm_copy_io_ttm_page(drm_ttm_t *ttm, void *src, unsigned long page)
 		return -ENOMEM;
 
 	memcpy_fromio(dst, src, PAGE_SIZE);
-	kunmap(dst);
+	kunmap(d);
 	return 0;
 }
 
@@ -186,7 +186,7 @@ static int drm_copy_ttm_io_page(drm_ttm_t *ttm, void *dst, unsigned long page)
 		return -ENOMEM;
 
 	memcpy_toio(dst, src, PAGE_SIZE);
-	kunmap(src);
+	kunmap(s);
 	return 0;
 }
 
@@ -283,7 +283,7 @@ int drm_buffer_object_transfer(drm_buffer_object_t *bo,
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
 
-	fbo = drm_ctl_calloc(1, sizeof(*bo), DRM_MEM_BUFOBJ);
+	fbo = drm_ctl_calloc(1, sizeof(*fbo), DRM_MEM_BUFOBJ);
 	if (!fbo)
 		return -ENOMEM;
 	
@@ -292,11 +292,15 @@ int drm_buffer_object_transfer(drm_buffer_object_t *bo,
 	mutex_lock(&fbo->mutex);
 	mutex_lock(&dev->struct_mutex);
 
+	DRM_INIT_WAITQUEUE(&bo->event_queue);
 	INIT_LIST_HEAD(&fbo->ddestroy);
 	INIT_LIST_HEAD(&fbo->lru);
+#ifdef DRM_ODD_MM_COMPAT
+	INIT_LIST_HEAD(&fbo->vma_list);
+	INIT_LIST_HEAD(&fbo->p_mm_list);
+#endif
 
 	atomic_inc(&bo->fence->usage);
-
 	fbo->mem.mm_node->private = (void *)fbo;
 	atomic_set(&fbo->usage, 1);
 	atomic_inc(&bm->count);
@@ -306,6 +310,11 @@ int drm_buffer_object_transfer(drm_buffer_object_t *bo,
 	*new_obj = fbo;
 	return 0;
 }
+
+/*
+ * Since move is underway, we need to block signals in this function.
+ * We cannot restart until it has finished.
+ */
 
 int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
 			      int evict,
@@ -324,19 +333,29 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
 	
 	if (bo->fence)
 		drm_fence_usage_deref_unlocked(dev, bo->fence);
-       
 	ret = drm_fence_object_create(dev, fence_type,
 				      fence_flags | DRM_FENCE_FLAG_EMIT,
 				      &bo->fence);
 	if (ret)
 		return ret;
 
-	if (evict) {
+#ifdef DRM_ODD_MM_COMPAT
+	/*
+	 * In this mode, we don't allow pipelining a copy blit,
+	 * since the buffer will be accessible from user space 
+	 * the moment we return and rebuild the page tables.
+	 *
+	 * With normal vm operation, page tables are rebuilt
+	 * on demand using fault(), which waits for buffer idle. 
+	 */
+	if (1)
+#else
+	if (evict)
+#endif
+	{
 		ret = drm_bo_wait(bo, 0, 1, 0);
-		if (ret) {
-		  DRM_ERROR("Wait failure\n");
+		if (ret) 
 			return ret;
-		}
 		if (old_mem->mm_node) {
 			mutex_lock(&dev->struct_mutex);
 			drm_mm_put_block(old_mem->mm_node);
@@ -359,6 +378,7 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
 		 */
 
 		ret = drm_buffer_object_transfer(bo, &old_obj);
+
 		if (ret)
 			return ret;
 
@@ -367,9 +387,9 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
 		else
 			bo->ttm = NULL;
 
-		atomic_inc(&old_obj->fence->usage);
 		mutex_lock(&dev->struct_mutex);
 		list_del(&old_obj->lru);
+		DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
 		drm_bo_add_to_lru(old_obj, &old_obj->dev->bm);
 		drm_bo_usage_deref_locked(old_obj);
 		mutex_unlock(&dev->struct_mutex);

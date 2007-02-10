@@ -746,6 +746,14 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 
 	mutex_lock(&bo->mutex);
 
+	err = drm_bo_wait(bo, 0, 0, 0);
+	if (err) {
+		data->type = (err == -EAGAIN) ? 
+			VM_FAULT_MINOR : VM_FAULT_SIGBUS;
+		goto out_unlock;
+	}
+	
+	
 	/*
 	 * If buffer happens to be in a non-mappable location,
 	 * move it to a mappable.
@@ -760,16 +768,13 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 		err = drm_bo_move_buffer(bo, new_mask, 0, 0);
 		bo->mem.mask = mask_save;
 		
-		if (!err)
-			err = drm_bo_wait(bo, 0, 0, 0);
-
 		if (err) {
 			data->type = (err == -EAGAIN) ? 
 				VM_FAULT_MINOR : VM_FAULT_SIGBUS;
 			goto out_unlock;
 		}
 	}
-	
+
 	if (address > vma->vm_end) {
 		data->type = VM_FAULT_SIGBUS;
 		goto out_unlock;

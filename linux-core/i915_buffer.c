@@ -234,9 +234,9 @@ int i915_move(drm_buffer_object_t *bo,
 {
 	drm_bo_mem_reg_t *old_mem = &bo->mem;
 
-	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) 
+	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
 		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
-	if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
+	} else if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
 		if (i915_move_flip(bo, evict, no_wait, new_mem)) 
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else {

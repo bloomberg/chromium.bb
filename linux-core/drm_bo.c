@@ -85,11 +85,8 @@ static int drm_bo_vm_pre_move(drm_buffer_object_t *bo,
 	int ret;
 
 	ret = drm_bo_lock_kmm(bo);
-	if (ret) {
-		if (ret == -EAGAIN)
-			schedule();
+	if (ret) 
 		return ret;
-	}
 	drm_bo_unmap_virtual(bo);
 	if (old_is_pci)
 		drm_bo_finish_unmap(bo);
@@ -142,6 +139,8 @@ static int drm_bo_add_ttm(drm_buffer_object_t * bo)
 }
 
 
+
+
 static int drm_bo_handle_move_mem(drm_buffer_object_t *bo, 
 				  drm_bo_mem_reg_t *mem,
 				  int evict,
@@ -155,33 +154,63 @@ static int drm_bo_handle_move_mem(drm_buffer_object_t *bo,
 	drm_mem_type_manager_t *new_man = &bm->man[mem->mem_type];
 	int ret = 0;
 
-
+	
 	if (old_is_pci || new_is_pci)
 		ret = drm_bo_vm_pre_move(bo, old_is_pci);
 	if (ret)
 		return ret;
 
-	if (!(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED) && 
-	    (bo->ttm == NULL)) 
-		ret = drm_bo_add_ttm(bo);
-	if (ret)
-		return ret;
+	/*
+	 * Create and bind a ttm if required.
+	 */
 
-	if (!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) &&
+	if (!(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED) && 
+	    (bo->ttm == NULL)) {
+		ret = drm_bo_add_ttm(bo);
+		if (ret)
+			goto out_err;
+
+		if (mem->mem_type != DRM_BO_MEM_LOCAL) {
+			ret = drm_bind_ttm(bo->ttm, new_man->flags &
+					   DRM_BO_FLAG_CACHED,
+					   mem->mm_node->start);
+			if (ret)
+				goto out_err;
+		}
+	}
+	
+	if ((bo->mem.mem_type == DRM_BO_MEM_LOCAL) && bo->ttm == NULL) {
+
+		drm_bo_mem_reg_t *old_mem = &bo->mem;
+		uint32_t save_flags = old_mem->flags;
+		uint32_t save_mask = old_mem->mask;
+
+		*old_mem = *mem;
+		mem->mm_node = NULL;
+		old_mem->mask = save_mask;
+		DRM_FLAG_MASKED(save_flags, mem->flags, 
+				DRM_BO_MASK_MEMTYPE);
+
+	} else if (!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) &&
 	    !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED)) {
+
 		ret = drm_bo_move_ttm(bo, evict, no_wait, mem);
+
 	}  else if (dev->driver->bo_driver->move) {
 		ret = dev->driver->bo_driver->move(bo, evict, no_wait, mem);
+
 	} else {
+
 		ret = drm_bo_move_memcpy(bo, evict, no_wait, mem);
+
 	}
+
+	if (ret)
+		goto out_err;
 
 	if (old_is_pci || new_is_pci)
 		drm_bo_vm_post_move(bo);
        
-	if (ret)
-		return ret;
-
 	if (bo->priv_flags & _DRM_BO_FLAG_EVICTED) {
 		ret = dev->driver->bo_driver->invalidate_caches(dev, bo->mem.flags);
 		if (ret)
@@ -196,6 +225,19 @@ static int drm_bo_handle_move_mem(drm_buffer_object_t *bo,
 		bo->offset = bo->mem.mm_node->start << PAGE_SHIFT;
 
 	return 0;
+
+out_err:
+	if (old_is_pci || new_is_pci)
+		drm_bo_vm_post_move(bo);
+	
+	new_man = &bm->man[bo->mem.mem_type];
+	if ((new_man->flags & _DRM_FLAG_MEMTYPE_FIXED) && bo->ttm) {
+		drm_ttm_unbind(bo->ttm);
+		drm_destroy_ttm(bo->ttm);
+		bo->ttm = NULL;
+	}
+
+	return ret;
 }
 
 /*
@@ -269,7 +311,7 @@ static void drm_bo_cleanup_refs(drm_buffer_object_t *bo, int remove_all)
 				bm->nice_mode = 0;
 				DRM_ERROR("Detected GPU lockup or "
 					  "fence driver was taken down. "
-					  "Evicting waiting buffers.\n");
+					  "Evicting buffer.\n");
 			}
 			if (bo->fence) {
 				drm_fence_usage_deref_unlocked(dev, bo->fence);
@@ -1148,8 +1190,8 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
  * Note that new_mem_flags are NOT transferred to the bo->mem.mask.
  */
 
-static int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
-			      int no_wait, int force_no_move, int move_unfenced)
+int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
+		       int no_wait, int force_no_move, int move_unfenced)
 {
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
@@ -1387,6 +1429,7 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
       out:
 
 	mutex_unlock(&bo->mutex);
+
 	drm_bo_usage_deref_unlocked(bo);
 	return ret;
 }
@@ -1481,6 +1524,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 #endif
 	bo->dev = dev;
 	bo->type = type;
+	bo->mem.mem_type = DRM_BO_MEM_LOCAL;
 	bo->mem.num_pages = num_pages;
 	bo->mem.mm_node = NULL;
 	bo->mem.page_alignment = page_alignment;
@@ -1491,8 +1535,8 @@ int drm_buffer_object_create(drm_file_t * priv,
 		bo->buffer_start = buffer_start;
 	}
 	bo->priv_flags = 0;
-	bo->mem.flags = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
-	bo->mem.mask = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
+	bo->mem.flags = 0;
+	bo->mem.mask = 0;
 	atomic_inc(&bm->count);
 	ret = drm_bo_new_mask(bo, mask, hint);
 
@@ -1517,6 +1561,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 
       out_err:
 	mutex_unlock(&bo->mutex);
+
 	drm_bo_usage_deref_unlocked(bo);
 	return ret;
 }
