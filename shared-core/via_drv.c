@@ -57,8 +57,9 @@ static struct drm_driver driver = {
 	.dma_quiescent = via_driver_dma_quiescent,
 	.dri_library_name = dri_library_name,
 	.reclaim_buffers = drm_core_reclaim_buffers,
+	.reclaim_buffers_locked = NULL,
 #ifdef VIA_HAVE_CORE_MM
-	.reclaim_buffers_locked = via_reclaim_buffers_locked,
+	.reclaim_buffers_idlelocked = via_reclaim_buffers_locked,
 	.lastclose = via_lastclose,
 #endif
 	.get_map_ofs = drm_core_get_map_ofs,
