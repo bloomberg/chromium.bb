@@ -365,7 +365,8 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
 	 */
 	if (1)
 #else
-	if (evict)
+	if (evict || ((bo->mem.mm_node == bo->pinned_node) && 
+		      bo->mem.mm_node != NULL))
 #endif
 	{
 		ret = drm_bo_wait(bo, 0, 1, 0);
@@ -402,11 +403,7 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
 		mutex_lock(&dev->struct_mutex);
 		list_del_init(&old_obj->lru);
 		DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
-
-		if (old_obj->mem.mm_node == bo->pinned_node)
-			old_obj->mem.mm_node = NULL;
-		else 
-			drm_bo_add_to_lru(old_obj);
+		drm_bo_add_to_lru(old_obj);
 	    
 		drm_bo_usage_deref_locked(old_obj);
 		mutex_unlock(&dev->struct_mutex);

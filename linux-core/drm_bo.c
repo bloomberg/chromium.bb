@@ -692,8 +692,6 @@ out:
 	return ret;
 }
 
-
-
 static int drm_bo_mem_force_space(drm_device_t *dev,
 				  drm_bo_mem_reg_t *mem,
 				  uint32_t mem_type,
@@ -744,7 +742,6 @@ static int drm_bo_mem_force_space(drm_device_t *dev,
 	return 0;
 }
 
-
 static int drm_bo_mt_compatible(drm_mem_type_manager_t *man,
 				uint32_t mem_type,
 				uint32_t mask,
@@ -777,7 +774,6 @@ static int drm_bo_mt_compatible(drm_mem_type_manager_t *man,
 	return 1;
 }
 	
-
 int drm_bo_mem_space(drm_buffer_object_t *bo,
 		     drm_bo_mem_reg_t *mem,
 		     int no_wait)
@@ -1817,10 +1813,8 @@ static int drm_bo_leave_list(drm_buffer_object_t *bo,
 		if (bo->pinned_node == bo->mem.mm_node)
 			bo->pinned_node = NULL;
 		if (bo->pinned_node != NULL) {
-			mutex_lock(&dev->struct_mutex);
 			drm_mm_put_block(bo->pinned_node);
 			bo->pinned_node = NULL;
-			mutex_unlock(&dev->struct_mutex);
 		}						
 		mutex_unlock(&dev->struct_mutex);
 	}
@@ -1831,8 +1825,9 @@ static int drm_bo_leave_list(drm_buffer_object_t *bo,
 		bo->mem.flags &= ~DRM_BO_FLAG_NO_EVICT;
 		bo->mem.mask &= ~DRM_BO_FLAG_NO_EVICT;
 	}
-
-	ret = drm_bo_evict(bo, mem_type, 0);
+	
+	if (bo->mem.mem_type == mem_type)
+		ret = drm_bo_evict(bo, mem_type, 0);
 
 	if (ret){
 		if (allow_errors){
@@ -1862,29 +1857,40 @@ static int drm_bo_force_list_clean(drm_device_t * dev,
 				   int allow_errors,
 				   int pinned_list)
 {
-	struct list_head *list;
+	struct list_head *list, *next;
 	drm_buffer_object_t *entry;
 	int ret;
+	int do_retry;
 
-	list = head->next;
-	while(list != head) {	
+	/*
+	 * We need to 
+	 * restart if a node disappears from under us.
+	 * Nodes cannot be added since the hardware lock is needed
+	 * For this operation.
+	 */
+
+retry:
+	list_for_each_safe(list, next, head) {
 		if (pinned_list)
 			entry = list_entry(list, drm_buffer_object_t, 
 					   pinned_lru);
 		else
 			entry = list_entry(list, drm_buffer_object_t, 
 					   lru);
-		
+		atomic_inc(&entry->usage);
 		ret = drm_bo_leave_list(entry, mem_type, free_pinned, 
 					allow_errors);
-		
+
+		do_retry = list->next != next;
+		drm_bo_usage_deref_locked(entry);
+
 		if (ret)
 			return ret;
-		
-		list = head->next;
+
+		if (do_retry)
+			goto retry;
 	}
-	return 0;
-		
+	return 0;		
 }
 
 int drm_bo_clean_mm(drm_device_t * dev, unsigned mem_type)
@@ -1909,12 +1915,7 @@ int drm_bo_clean_mm(drm_device_t * dev, unsigned mem_type)
 	ret = 0;
 	if (mem_type > 0) {
 
-		/*
-		 * Throw out unfenced buffers.
-		 */
-
 		drm_bo_force_list_clean(dev, &bm->unfenced, mem_type, 1, 0, 0);
-
 		drm_bo_force_list_clean(dev, &man->lru, mem_type, 1, 0, 0);
 		drm_bo_force_list_clean(dev, &man->pinned, mem_type, 1, 0, 1);
 
@@ -1927,6 +1928,12 @@ int drm_bo_clean_mm(drm_device_t * dev, unsigned mem_type)
 
 	return ret;
 }
+
+/**
+ *Evict all buffers of a particular mem_type, but leave memory manager
+ *regions for NO_MOVE buffers intact. New buffers cannot be added at this
+ *point since we have the hardware lock.
+ */
 
 static int drm_bo_lock_mm(drm_device_t * dev, unsigned mem_type)
 {
@@ -1942,11 +1949,8 @@ static int drm_bo_lock_mm(drm_device_t * dev, unsigned mem_type)
 	ret = drm_bo_force_list_clean(dev, &bm->unfenced, mem_type, 0, 1, 0);
 	if (ret)
 		return ret;
-	ret = drm_bo_force_list_clean(dev, &man->lru, mem_type, 0, 1, 1);
-	if (ret)
-		return ret;
-	ret =
-	    drm_bo_force_list_clean(dev, &man->pinned, mem_type, 0, 1, 1);
+	ret = drm_bo_force_list_clean(dev, &man->lru, mem_type, 0, 1, 0);
+
 	return ret;
 }
 
