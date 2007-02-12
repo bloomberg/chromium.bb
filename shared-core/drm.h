@@ -694,9 +694,10 @@ typedef struct drm_fence_arg {
 } drm_fence_arg_t;
 
 /* Buffer permissions, referring to how the GPU uses the buffers.
-   these translate to fence types used for the buffers. 
-   Typically a texture buffer is read, A destination buffer is write and
-   a command (batch-) buffer is exe. Can be or-ed together. */
+ * these translate to fence types used for the buffers.
+ * Typically a texture buffer is read, A destination buffer is write and
+ *  a command (batch-) buffer is exe. Can be or-ed together.
+ */
 
 #define DRM_BO_FLAG_READ        0x00000001
 #define DRM_BO_FLAG_WRITE       0x00000002
@@ -704,55 +705,82 @@ typedef struct drm_fence_arg {
 
 /*
  * Status flags. Can be read to determine the actual state of a buffer.
+ * Can also be set in the buffer mask before validation.
  */
-
-/* 
- * Cannot evict this buffer. Not even with force. This type of buffer should
- * only be available for root, and must be manually removed before buffer
- * manager shutdown or swapout.
- */
-#define DRM_BO_FLAG_NO_EVICT    0x00000010
-/* Always keep a system memory shadow to a vram buffer */
-#define DRM_BO_FLAG_MAPPABLE 0x00000020
-/* The buffer is shareable with other processes */
-#define DRM_BO_FLAG_SHAREABLE   0x00000040
-/* The buffer is currently cached */
-#define DRM_BO_FLAG_CACHED      0x00000080
-/* Make sure that every time this buffer is validated, it ends up on the same
- * location. The buffer will also not be evicted when claiming space for
- * other buffers. Basically a pinned buffer but it may be thrown out as
- * part of buffer manager shutdown or swapout. Not supported yet.*/
-#define DRM_BO_FLAG_NO_MOVE     0x00000100
-
 
 /*
- * Request flags.
+ * Mask: Never evict this buffer. Not even with force. This type of buffer is only
+ * available to root and must be manually removed before buffer manager shutdown
+ * or lock.
+ * Flags: Acknowledge
  */
+#define DRM_BO_FLAG_NO_EVICT    0x00000010
 
-/* Make sure the buffer is in cached memory when mapped for reading */
+/*
+ * Mask: Require that the buffer is placed in mappable memory when validated.
+ *       If not set the buffer may or may not be in mappable memory when validated.
+ * Flags: If set, the buffer is in mappable memory.
+ */
+#define DRM_BO_FLAG_MAPPABLE 0x00000020
+
+/* Mask: The buffer should be shareable with other processes.
+ * Flags: The buffer is shareable with other processes.
+ */
+#define DRM_BO_FLAG_SHAREABLE   0x00000040
+
+/* Mask: If set, place the buffer in cache-coherent memory if available.
+ *       If clear, never place the buffer in cache coherent memory if validated.
+ * Flags: The buffer is currently in cache-coherent memory.
+ */
+#define DRM_BO_FLAG_CACHED      0x00000080
+
+/* Mask: Make sure that every time this buffer is validated,
+ *       it ends up on the same location provided that the memory mask is the same.
+ *       The buffer will also not be evicted when claiming space for
+ *       other buffers. Basically a pinned buffer but it may be thrown out as
+ *       part of buffer manager shutdown or locking.
+ * Flags: Acknowledge.
+ */
+#define DRM_BO_FLAG_NO_MOVE     0x00000100
+
+/* Mask: Make sure the buffer is in cached memory when mapped for reading.
+ * Flags: Acknowledge.
+ */
 #define DRM_BO_FLAG_READ_CACHED    0x00080000
-/* Bind this buffer cached if the hardware supports it. */
+
+/* Mask: Force DRM_BO_FLAG_CACHED flag strictly also if it is set.
+ * Flags: Acknowledge.
+ */
 #define DRM_BO_FLAG_FORCE_CACHING  0x00002000
+
+/*
+ * Mask: Force DRM_BO_FLAG_MAPPABLE flag strictly also if it is clear.
+ * Flags: Acknowledge.
+ */
 #define DRM_BO_FLAG_FORCE_MAPPABLE 0x00004000
 
-/* System Memory */
+/*
+ * Memory type flags that can be or'ed together in the mask, but only
+ * one appears in flags.
+ */
+
+/* System memory */
 #define DRM_BO_FLAG_MEM_LOCAL  0x01000000
 /* Translation table memory */
 #define DRM_BO_FLAG_MEM_TT     0x02000000
 /* Vram memory */
 #define DRM_BO_FLAG_MEM_VRAM   0x04000000
 /* Up to the driver to define. */
-#define DRM_BO_FLAG_MEM_PRIV0  0x10000000
-#define DRM_BO_FLAG_MEM_PRIV1  0x20000000
-#define DRM_BO_FLAG_MEM_PRIV2  0x40000000
-#define DRM_BO_FLAG_MEM_PRIV3  0x80000000
+#define DRM_BO_FLAG_MEM_PRIV0  0x08000000
+#define DRM_BO_FLAG_MEM_PRIV1  0x10000000
+#define DRM_BO_FLAG_MEM_PRIV2  0x20000000
+#define DRM_BO_FLAG_MEM_PRIV3  0x40000000
+#define DRM_BO_FLAG_MEM_PRIV4  0x80000000
 
 /* Memory flag mask */
 #define DRM_BO_MASK_MEM         0xFF000000
 #define DRM_BO_MASK_MEMTYPE     0xFF0000A0
 
-/* When creating a buffer, Avoid system storage even if allowed */
-#define DRM_BO_HINT_AVOID_LOCAL 0x00000001
 /* Don't block on validate and map */
 #define DRM_BO_HINT_DONT_BLOCK  0x00000002
 /* Don't place this buffer on the unfenced list.*/
@@ -760,9 +788,6 @@ typedef struct drm_fence_arg {
 #define DRM_BO_HINT_WAIT_LAZY   0x00000008
 #define DRM_BO_HINT_ALLOW_UNFENCED_MAP 0x00000010
 
-
-/* Driver specific flags. Could be for example rendering engine */  
-#define DRM_BO_MASK_DRIVER      0x00F00000
 
 typedef enum {
 	drm_bo_type_dc,
@@ -831,11 +856,11 @@ typedef struct drm_bo_arg{
 #define DRM_BO_MEM_LOCAL 0
 #define DRM_BO_MEM_TT 1
 #define DRM_BO_MEM_VRAM 2
-#define DRM_BO_MEM_PRIV0 4
-#define DRM_BO_MEM_PRIV1 5
-#define DRM_BO_MEM_PRIV2 6
-#define DRM_BO_MEM_PRIV3 7
-
+#define DRM_BO_MEM_PRIV0 3
+#define DRM_BO_MEM_PRIV1 4
+#define DRM_BO_MEM_PRIV2 5
+#define DRM_BO_MEM_PRIV3 6
+#define DRM_BO_MEM_PRIV4 7
 
 #define DRM_BO_MEM_TYPES 8 /* For now. */
 
