@@ -154,9 +154,9 @@ static void i915_emit_copy_blit(drm_device_t *dev,
 }
 
 static int i915_move_blit(drm_buffer_object_t *bo,
-			    int evict,
-			    int no_wait,
-			    drm_bo_mem_reg_t *new_mem)
+			  int evict,
+			  int no_wait,
+			  drm_bo_mem_reg_t *new_mem)
 {
 	drm_bo_mem_reg_t *old_mem = &bo->mem;
 	int dir = 0;
@@ -203,7 +203,7 @@ static int i915_move_flip(drm_buffer_object_t *bo,
 	        DRM_BO_FLAG_CACHED  |
 		DRM_BO_FLAG_FORCE_CACHING;
 	
-	ret = drm_bo_mem_space(dev, &tmp_mem, no_wait);
+	ret = drm_bo_mem_space(bo, &tmp_mem, no_wait);
 	if (ret) 
 		return ret;
 	
@@ -238,10 +238,12 @@ int i915_move(drm_buffer_object_t *bo,
 		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
 		if (i915_move_flip(bo, evict, no_wait, new_mem)) 
-			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+			return drm_bo_move_memcpy(bo, evict, no_wait, 
+						  new_mem);
 	} else {
-		if (i915_move_blit(bo, evict, no_wait, new_mem)) 
-			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+		if (i915_move_blit(bo, evict, no_wait, new_mem))
+			return drm_bo_move_memcpy(bo, evict, no_wait, 
+						  new_mem);
 	}
 	return 0;
 }

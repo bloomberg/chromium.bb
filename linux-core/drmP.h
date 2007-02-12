@@ -1039,6 +1039,11 @@ typedef struct drm_buffer_object{
 	wait_queue_head_t event_queue;
         struct mutex mutex;
 
+	/* For pinned buffers */
+	drm_mm_node_t *pinned_node;
+	uint32_t pinned_mem_type;
+	struct list_head pinned_lru;
+
 	/* For vm */
 
         drm_ttm_t *ttm;
@@ -1509,11 +1514,10 @@ extern int drm_fence_buffer_objects(drm_file_t * priv,
 				    uint32_t fence_flags,
 				    drm_fence_object_t *fence,
 				    drm_fence_object_t **used_fence);
-extern void drm_bo_add_to_lru(drm_buffer_object_t * bo,
-			      drm_buffer_manager_t * bm);
+extern void drm_bo_add_to_lru(drm_buffer_object_t * bo);
 extern int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
 		       int no_wait);
-extern int drm_bo_mem_space(drm_device_t *dev,
+extern int drm_bo_mem_space(drm_buffer_object_t *bo,
 			    drm_bo_mem_reg_t *mem,
 			    int no_wait);
 

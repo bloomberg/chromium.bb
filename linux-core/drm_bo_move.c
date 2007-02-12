@@ -30,12 +30,31 @@
 
 #include "drmP.h"
 
+
+/**
+ * Free the old memory node unless it's a pinned region and we
+ * have not been requested to free also pinned regions.
+ */
+
+static void drm_bo_free_old_node(drm_buffer_object_t *bo)
+{
+	drm_bo_mem_reg_t *old_mem = &bo->mem;
+
+	if (old_mem->mm_node && 
+	    (old_mem->mm_node != bo->pinned_node)) {
+		mutex_lock(&bo->dev->struct_mutex);
+		drm_mm_put_block(old_mem->mm_node);
+		old_mem->mm_node = NULL;
+		mutex_unlock(&bo->dev->struct_mutex);
+	}
+	old_mem->mm_node = NULL;
+}
+
 int drm_bo_move_ttm(drm_buffer_object_t *bo,
 		    int evict,
 		    int no_wait,
 		    drm_bo_mem_reg_t *new_mem)
 {
-	drm_device_t *dev = bo->dev;
 	drm_ttm_t *ttm = bo->ttm;
 	drm_bo_mem_reg_t *old_mem = &bo->mem;
 	uint32_t save_flags = old_mem->flags;
@@ -49,10 +68,7 @@ int drm_bo_move_ttm(drm_buffer_object_t *bo,
 		else
 			drm_ttm_unbind(ttm);
 
-		mutex_lock(&dev->struct_mutex);
-		drm_mm_put_block(old_mem->mm_node);
-		old_mem->mm_node = NULL;
-		mutex_unlock(&dev->struct_mutex);
+		drm_bo_free_old_node(bo);
 		DRM_FLAG_MASKED(old_mem->flags, 
 			     DRM_BO_FLAG_CACHED | DRM_BO_FLAG_MAPPABLE |
 			     DRM_BO_FLAG_MEM_LOCAL, DRM_BO_MASK_MEMTYPE);
@@ -246,11 +262,8 @@ int drm_bo_move_memcpy(drm_buffer_object_t *bo,
 	}
 	mb();
 out2:	
-	if (old_mem->mm_node) {
-		mutex_lock(&dev->struct_mutex);
-		drm_mm_put_block(old_mem->mm_node);
-		mutex_unlock(&dev->struct_mutex);
-	}
+	drm_bo_free_old_node(bo);
+
 	*old_mem = *new_mem;
 	new_mem->mm_node = NULL;
 	old_mem->mask = save_mask;
@@ -295,12 +308,14 @@ int drm_buffer_object_transfer(drm_buffer_object_t *bo,
 	DRM_INIT_WAITQUEUE(&bo->event_queue);
 	INIT_LIST_HEAD(&fbo->ddestroy);
 	INIT_LIST_HEAD(&fbo->lru);
+	INIT_LIST_HEAD(&fbo->pinned_lru);
 #ifdef DRM_ODD_MM_COMPAT
 	INIT_LIST_HEAD(&fbo->vma_list);
 	INIT_LIST_HEAD(&fbo->p_mm_list);
 #endif
 
 	atomic_inc(&bo->fence->usage);
+	fbo->pinned_node = NULL;
 	fbo->mem.mm_node->private = (void *)fbo;
 	atomic_set(&fbo->usage, 1);
 	atomic_inc(&bm->count);
@@ -356,12 +371,9 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
 		ret = drm_bo_wait(bo, 0, 1, 0);
 		if (ret) 
 			return ret;
-		if (old_mem->mm_node) {
-			mutex_lock(&dev->struct_mutex);
-			drm_mm_put_block(old_mem->mm_node);
-			old_mem->mm_node = NULL;
-			mutex_unlock(&dev->struct_mutex);
-		}
+
+		drm_bo_free_old_node(bo);
+
 		if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && 
 		    (bo->ttm != NULL)) {
 			drm_ttm_unbind(bo->ttm);
@@ -388,9 +400,14 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t *bo,
 			bo->ttm = NULL;
 
 		mutex_lock(&dev->struct_mutex);
-		list_del(&old_obj->lru);
+		list_del_init(&old_obj->lru);
 		DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
-		drm_bo_add_to_lru(old_obj, &old_obj->dev->bm);
+
+		if (old_obj->mem.mm_node == bo->pinned_node)
+			old_obj->mem.mm_node = NULL;
+		else 
+			drm_bo_add_to_lru(old_obj);
+	    
 		drm_bo_usage_deref_locked(old_obj);
 		mutex_unlock(&dev->struct_mutex);
 
