@@ -79,13 +79,12 @@ typedef struct drm_ttm {
 
 } drm_ttm_t;
 
-
 extern drm_ttm_t *drm_ttm_init(struct drm_device *dev, unsigned long size);
 extern int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset);
 extern void drm_ttm_unbind(drm_ttm_t * ttm);
 extern void drm_ttm_evict(drm_ttm_t * ttm);
 extern void drm_ttm_fixup_caching(drm_ttm_t * ttm);
-extern struct page *drm_ttm_get_page(drm_ttm_t *ttm, int index);
+extern struct page *drm_ttm_get_page(drm_ttm_t * ttm, int index);
 
 /*
  * Destroy a ttm. The user normally calls drmRmMap or a similar IOCTL to do this, 

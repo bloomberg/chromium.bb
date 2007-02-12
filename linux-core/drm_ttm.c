@@ -35,18 +35,17 @@ static void drm_ttm_ipi_handler(void *null)
 	flush_agp_cache();
 }
 
-static void drm_ttm_cache_flush(void) 
+static void drm_ttm_cache_flush(void)
 {
 	if (on_each_cpu(drm_ttm_ipi_handler, NULL, 1, 1) != 0)
 		DRM_ERROR("Timed out waiting for drm cache flush.\n");
 }
 
-
 /*
  * Use kmalloc if possible. Otherwise fall back to vmalloc.
  */
 
-static void ttm_alloc_pages(drm_ttm_t *ttm)
+static void ttm_alloc_pages(drm_ttm_t * ttm)
 {
 	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 	ttm->pages = NULL;
@@ -67,7 +66,7 @@ static void ttm_alloc_pages(drm_ttm_t *ttm)
 	}
 }
 
-static void ttm_free_pages(drm_ttm_t *ttm)
+static void ttm_free_pages(drm_ttm_t * ttm)
 {
 	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 
@@ -80,7 +79,6 @@ static void ttm_free_pages(drm_ttm_t *ttm)
 	drm_free_memctl(size);
 	ttm->pages = NULL;
 }
-
 
 static struct page *drm_ttm_alloc_page(void)
 {
@@ -102,7 +100,6 @@ static struct page *drm_ttm_alloc_page(void)
 	return page;
 }
 
-
 /*
  * Change caching policy for the linear kernel map 
  * for range of pages in a ttm.
@@ -117,7 +114,7 @@ static int drm_set_caching(drm_ttm_t * ttm, int noncached)
 	if ((ttm->page_flags & DRM_TTM_PAGE_UNCACHED) == noncached)
 		return 0;
 
-	if (noncached) 
+	if (noncached)
 		drm_ttm_cache_flush();
 
 	for (i = 0; i < ttm->num_pages; ++i) {
@@ -194,7 +191,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 	return 0;
 }
 
-struct page *drm_ttm_get_page(drm_ttm_t *ttm, int index)
+struct page *drm_ttm_get_page(drm_ttm_t * ttm, int index)
 {
 	struct page *p;
 	drm_buffer_manager_t *bm = &ttm->dev->bm;
@@ -209,7 +206,6 @@ struct page *drm_ttm_get_page(drm_ttm_t *ttm, int index)
 	}
 	return p;
 }
-
 
 static int drm_ttm_populate(drm_ttm_t * ttm)
 {
@@ -235,7 +231,7 @@ static int drm_ttm_populate(drm_ttm_t * ttm)
  * Initialize a ttm.
  */
 
-drm_ttm_t *drm_ttm_init(struct drm_device *dev, unsigned long size)
+drm_ttm_t *drm_ttm_init(struct drm_device * dev, unsigned long size)
 {
 	drm_bo_driver_t *bo_driver = dev->driver->bo_driver;
 	drm_ttm_t *ttm;
@@ -344,4 +340,5 @@ int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset)
 
 	return 0;
 }
+
 EXPORT_SYMBOL(drm_bind_ttm);
