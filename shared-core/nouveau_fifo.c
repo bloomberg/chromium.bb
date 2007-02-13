@@ -187,7 +187,7 @@ int nouveau_fifo_init(drm_device_t *dev)
 				      NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
 				      NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_4 |
 #ifdef __BIG_ENDIAN
-				      NV_PFIFO_CACH1_BIG_ENDIAN |
+				      NV_PFIFO_CACHE1_BIG_ENDIAN |
 #endif				      
 				      0x00000000);
 
@@ -293,7 +293,7 @@ static void nouveau_nv04_context_init(drm_device_t *dev,
                                 NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
                                 NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_4     |
 #ifdef __BIG_ENDIAN
-                                NV_PFIFO_CACH1_BIG_ENDIAN |
+                                NV_PFIFO_CACHE1_BIG_ENDIAN |
 #endif
 				0x00000000);
 }
@@ -326,7 +326,7 @@ static void nouveau_nv10_context_init(drm_device_t *dev,
                         NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
                         NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_4     |
 #ifdef __BIG_ENDIAN
-                        NV_PFIFO_CACH1_BIG_ENDIAN |
+                        NV_PFIFO_CACHE1_BIG_ENDIAN |
 #endif
 			0x00000000);
 }
@@ -357,7 +357,7 @@ static void nouveau_nv30_context_init(drm_device_t *dev,
                                 NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
                                 NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_8 |
 #ifdef __BIG_ENDIAN
-                                NV_PFIFO_CACH1_BIG_ENDIAN |
+                                NV_PFIFO_CACHE1_BIG_ENDIAN |
 #endif
                                 0x00000000);
         
@@ -421,7 +421,7 @@ static void nouveau_nv40_context_init(drm_device_t *dev,
 				 NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
 				 NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_8 |
 #ifdef __BIG_ENDIAN
-				 NV_PFIFO_CACH1_BIG_ENDIAN |
+				 NV_PFIFO_CACHE1_BIG_ENDIAN |
 #endif
 				 0x30000000 /* no idea.. */);
 	RAMFC_WR(DMA_SUBROUTINE, init->put_base);
@@ -493,7 +493,7 @@ nouveau_fifo_context_restore(drm_device_t *dev, int channel)
 					NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
 					NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_4 |
 #ifdef __BIG_ENDIAN
-					NV_PFIFO_CACH1_BIG_ENDIAN |
+					NV_PFIFO_CACHE1_BIG_ENDIAN |
 #endif
 					0x00000000);
 }
