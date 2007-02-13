@@ -1,6 +1,6 @@
 ************************************************************
 * For the very latest on DRI development, please see:      *
-*     http://dri.sourceforge.net/                          *
+*     http://dri.freedesktop.org/                          *
 ************************************************************
 
 The Direct Rendering Manager (drm) is a device-independent kernel-level
@@ -23,24 +23,3 @@ ways:
 
     4. The DRM is extensible via the use of small device-specific modules
        that rely extensively on the API exported by the DRM module.
-
-
-Documentation on the DRI is available from:
-    http://precisioninsight.com/piinsights.html
-
-For specific information about kernel-level support, see:
-
-    The Direct Rendering Manager, Kernel Support for the Direct Rendering
-    Infrastructure
-    http://precisioninsight.com/dr/drm.html
-
-    Hardware Locking for the Direct Rendering Infrastructure
-    http://precisioninsight.com/dr/locking.html
-
-    A Security Analysis of the Direct Rendering Infrastructure
-    http://precisioninsight.com/dr/security.html
-
-************************************************************
-* For the very latest on DRI development, please see:      *
-*     http://dri.sourceforge.net/                          *
-************************************************************

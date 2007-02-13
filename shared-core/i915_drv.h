@@ -132,6 +132,13 @@ typedef struct drm_i915_private {
 	unsigned int swaps_pending;
 } drm_i915_private_t;
 
+enum intel_chip_family {
+	CHIP_I8XX = 0x01,
+	CHIP_I9XX = 0x02,
+	CHIP_I915 = 0x04,
+	CHIP_I965 = 0x08,
+};
+
 extern drm_ioctl_desc_t i915_ioctls[];
 extern int i915_max_ioctl;
 

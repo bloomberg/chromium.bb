@@ -61,6 +61,9 @@
 #ifndef __user
 #define __user
 #endif
+#ifndef __iomem
+#define __iomem
+#endif
 
 #ifdef __GNUC__
 # define DEPRECATED  __attribute__ ((deprecated))

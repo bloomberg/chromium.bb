@@ -102,6 +102,7 @@ typedef struct drm_via_private {
 #ifdef VIA_HAVE_DMABLIT
 	drm_via_blitq_t blit_queues[VIA_NUM_BLIT_ENGINES];
 #endif
+        uint32_t dma_diff;
 } drm_via_private_t;
 
 enum via_family {

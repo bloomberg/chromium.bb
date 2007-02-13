@@ -798,7 +798,7 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
 		return DRM_ERR(EINVAL);
 	}
-	DRM_COPY_FROM_USER_IOCTL(mmio, (drm_i915_setparam_t __user *) data,
+	DRM_COPY_FROM_USER_IOCTL(mmio, (drm_i915_mmio_t __user *) data,
 				 sizeof(mmio));
 
 	if (mmio.reg >= mmio_table_size)

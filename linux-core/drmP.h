@@ -999,11 +999,10 @@ typedef struct drm_buffer_object{
 	atomic_t mapped;
 	uint32_t flags;
 	uint32_t mask;
+        uint32_t mem_type;
 
-	drm_mm_node_t *node_ttm;    /* MM node for on-card RAM */
-	drm_mm_node_t *node_card;   /* MM node for ttm*/
-	struct list_head lru_ttm;   /* LRU for the ttm pages*/
-        struct list_head lru_card;  /* For memory types with on-card RAM */
+	drm_mm_node_t *mm_node;     /* MM node for on-card RAM */
+        struct list_head lru;
 	struct list_head ddestroy;
 
 	uint32_t fence_type;
@@ -1127,7 +1126,8 @@ extern void drm_query_memctl(drm_u64_t *cur_used,
 			     drm_u64_t *low_threshold,
 			     drm_u64_t *high_threshold); 
 extern void drm_init_memctl(size_t low_threshold,
-			    size_t high_threshold);
+			    size_t high_threshold,
+			    size_t unit_size);
 
 				/* Misc. IOCTL support (drm_ioctl.h) */
 extern int drm_irq_by_busid(struct inode *inode, struct file *filp,

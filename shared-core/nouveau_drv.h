@@ -91,7 +91,7 @@ struct nouveau_fifo
 	struct nouveau_object *objs;
 
 	/* XXX dynamic alloc ? */
-	uint32_t nv10_pgraph_ctx [340];
+	uint32_t pgraph_ctx [340];
 };
 
 struct nouveau_config {
@@ -104,6 +104,8 @@ struct nouveau_config {
 typedef struct drm_nouveau_private {
 	/* the card type, takes NV_* as values */
 	int card_type;
+	/* exact chipset, derived from NV_PMC_BOOT_0 */
+	int chipset;
 	int flags;
 
 	drm_local_map_t *mmio;
@@ -201,6 +203,11 @@ extern irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS);
 extern void        nouveau_irq_preinstall(drm_device_t*);
 extern void        nouveau_irq_postinstall(drm_device_t*);
 extern void        nouveau_irq_uninstall(drm_device_t*);
+
+/* nv04_graph.c */
+extern void nouveau_nv04_context_switch(drm_device_t *dev);
+extern int nv04_graph_init(drm_device_t *dev);
+extern int nv04_graph_context_create(drm_device_t *dev, int channel);
 
 /* nv10_graph.c */
 extern void nouveau_nv10_context_switch(drm_device_t *dev);
