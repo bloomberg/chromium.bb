@@ -204,7 +204,6 @@ void via_reclaim_buffers_locked(drm_device_t * dev, struct file *filp)
 	if (dev->driver->dma_quiescent) {
 		dev->driver->dma_quiescent(dev);
 	}
-	DRM_ERROR("Lock status is %d\n", dev->lock.idle_has_lock);
 
 	drm_sman_owner_cleanup(&dev_priv->sman, (unsigned long)priv);
 	mutex_unlock(&dev->struct_mutex);
