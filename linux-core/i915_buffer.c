@@ -93,7 +93,7 @@ int i915_init_mem_type(drm_device_t * dev, uint32_t type,
 		man->io_offset = dev->agp->agp_info.aper_base;
 		man->io_size = dev->agp->agp_info.aper_size * 1024 * 1024;
 		man->io_addr = NULL;
-		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
+		man->flags =  _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_FIXED | _DRM_FLAG_NEEDS_IOREMAP;
 
 		break;
@@ -111,7 +111,7 @@ uint32_t i915_evict_flags(drm_device_t * dev, uint32_t type)
 	case DRM_BO_MEM_TT:
 		return DRM_BO_FLAG_MEM_LOCAL;
 	default:
-		return DRM_BO_FLAG_MEM_TT;
+		return DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_CACHED;
 	}
 }
 
@@ -204,10 +204,11 @@ static int i915_move_flip(drm_buffer_object_t * bo,
 		goto out_cleanup;
 
 	ret = drm_bo_move_ttm(bo, evict, no_wait, new_mem);
-      out_cleanup:
+out_cleanup:
 	if (tmp_mem.mm_node) {
 		mutex_lock(&dev->struct_mutex);
-		drm_mm_put_block(tmp_mem.mm_node);
+		if (tmp_mem.mm_node != bo->pinned_node)
+			drm_mm_put_block(tmp_mem.mm_node);
 		tmp_mem.mm_node = NULL;
 		mutex_unlock(&dev->struct_mutex);
 	}

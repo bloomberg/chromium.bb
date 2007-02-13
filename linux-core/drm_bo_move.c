@@ -58,7 +58,6 @@ int drm_bo_move_ttm(drm_buffer_object_t * bo,
 	int ret;
 
 	if (old_mem->mem_type == DRM_BO_MEM_TT) {
-
 		if (evict)
 			drm_ttm_evict(ttm);
 		else
