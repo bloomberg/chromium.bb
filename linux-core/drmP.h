@@ -592,7 +592,7 @@ typedef struct ati_pcigart_info {
 } drm_ati_pcigart_info;
 
 
-#include "drm_ttm.h"
+#include "drm_objects.h"
 
 /**
  * DRM driver structure. This structure represent the common code for

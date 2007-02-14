@@ -28,8 +28,8 @@
  * Authors: Thomas Hellström <thomas-at-tungstengraphics-dot-com>
  */
 
-#ifndef _DRM_TTM_H
-#define _DRM_TTM_H
+#ifndef _DRM_OBJECTS_H
+#define _DRM_OJBECTS_H
 #define DRM_HAS_TTM
 
 struct drm_device;

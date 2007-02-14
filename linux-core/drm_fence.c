@@ -147,7 +147,7 @@ static void drm_fence_object_destroy(drm_file_t * priv,
 	drm_fence_usage_deref_locked(dev, fence);
 }
 
-static int fence_signaled(drm_device_t * dev, volatile
+static int fence_signaled(drm_device_t * dev,
 			  drm_fence_object_t * fence,
 			  uint32_t mask, int poke_flush)
 {
@@ -172,7 +172,7 @@ static void drm_fence_flush_exe(drm_fence_manager_t * fm,
 	uint32_t diff;
 
 	if (!fm->pending_exe_flush) {
-		volatile struct list_head *list;
+		struct list_head *list;
 
 		/*
 		 * Last_exe_flush is invalid. Find oldest sequence.
@@ -201,14 +201,15 @@ static void drm_fence_flush_exe(drm_fence_manager_t * fm,
 	}
 }
 
-int drm_fence_object_signaled(volatile drm_fence_object_t * fence,
+int drm_fence_object_signaled(drm_fence_object_t * fence,
 			      uint32_t type)
 {
 	return ((fence->signaled & type) == type);
 }
 
 int drm_fence_object_flush(drm_device_t * dev,
-			   volatile drm_fence_object_t * fence, uint32_t type)
+			   drm_fence_object_t * fence,
+			   uint32_t type)
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
@@ -274,7 +275,7 @@ void drm_fence_flush_old(drm_device_t * dev, uint32_t sequence)
 EXPORT_SYMBOL(drm_fence_flush_old);
 
 static int drm_fence_lazy_wait(drm_device_t *dev,
-			       volatile drm_fence_object_t *fence,
+			       drm_fence_object_t *fence,
 			       int ignore_signals, uint32_t mask)
 {
 	drm_fence_manager_t *fm = &dev->fm;
@@ -301,7 +302,7 @@ static int drm_fence_lazy_wait(drm_device_t *dev,
 }
 
 int drm_fence_object_wait(drm_device_t * dev,
-			  volatile drm_fence_object_t * fence,
+			  drm_fence_object_t * fence,
 			  int lazy, int ignore_signals, uint32_t mask)
 {
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
