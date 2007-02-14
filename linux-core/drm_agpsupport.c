@@ -606,8 +606,8 @@ static int drm_agp_bind_ttm(drm_ttm_backend_t *backend,
 	int ret;
 
 	DRM_DEBUG("drm_agp_bind_ttm\n");
-	DRM_MASK_VAL(backend->flags, DRM_BE_FLAG_BOUND_CACHED,
-		     (cached) ? DRM_BE_FLAG_BOUND_CACHED : 0);
+	DRM_FLAG_MASKED(backend->flags, (cached) ? DRM_BE_FLAG_BOUND_CACHED : 0,
+			DRM_BE_FLAG_BOUND_CACHED);
 	mem->is_flushed = TRUE;
 	mem->type = (cached) ? agp_priv->cached_type : agp_priv->uncached_type;
 	ret = drm_agp_bind_memory(mem, offset);
@@ -620,7 +620,7 @@ static int drm_agp_bind_ttm(drm_ttm_backend_t *backend,
 static int drm_agp_unbind_ttm(drm_ttm_backend_t *backend) {
 
 	drm_agp_ttm_priv *agp_priv = (drm_agp_ttm_priv *) backend->private;
-
+	
 	DRM_DEBUG("drm_agp_unbind_ttm\n");
 	if (agp_priv->mem->is_bound)
 		return drm_agp_unbind_memory(agp_priv->mem);
@@ -710,7 +710,6 @@ drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 	agp_priv->uncached_type = AGP_USER_MEMORY;
 	agp_priv->bridge = dev->agp->bridge;
 	agp_priv->populated = FALSE;
-	agp_be->aperture_base = dev->agp->agp_info.aper_base;
 	agp_be->private = (void *) agp_priv;
 	agp_be->needs_ub_cache_adjust = drm_agp_needs_unbind_cache_adjust;
 	agp_be->populate = drm_agp_populate;
@@ -718,10 +717,8 @@ drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 	agp_be->bind = drm_agp_bind_ttm;
 	agp_be->unbind = drm_agp_unbind_ttm;
 	agp_be->destroy = drm_agp_destroy_ttm;
-	DRM_MASK_VAL(agp_be->flags, DRM_BE_FLAG_NEEDS_FREE,
-		     (backend == NULL) ? DRM_BE_FLAG_NEEDS_FREE : 0);
-	DRM_MASK_VAL(agp_be->flags, DRM_BE_FLAG_CBA,
-		     (dev->agp->cant_use_aperture) ? DRM_BE_FLAG_CBA : 0);
+	DRM_FLAG_MASKED(agp_be->flags, (backend == NULL) ? DRM_BE_FLAG_NEEDS_FREE : 0,
+			DRM_BE_FLAG_NEEDS_FREE);
 	agp_be->drm_map_type = _DRM_AGP;
 	return agp_be;
 }

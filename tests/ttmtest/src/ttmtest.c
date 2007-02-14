@@ -182,7 +182,7 @@ benchmarkBuffer(TinyDRIContext * ctx, unsigned long size,
 	    drm_bo_type_dc,
 	    DRM_BO_FLAG_READ |
 	    DRM_BO_FLAG_WRITE |
-	    DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_NO_MOVE, 0, &buf));
+			   DRM_BO_FLAG_MEM_LOCAL /*| DRM_BO_FLAG_NO_MOVE*/, 0, &buf));
     curTime = fastrdtsc();
     *ticks++ = time_diff(oldTime, curTime);
 
@@ -260,8 +260,8 @@ benchmarkBuffer(TinyDRIContext * ctx, unsigned long size,
 
     oldTime = fastrdtsc();
     ret = drmBOValidate(ctx->drmFD, &buf,
-	DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_BIND_CACHED,
-	DRM_BO_MASK_MEM | DRM_BO_FLAG_BIND_CACHED, DRM_BO_HINT_DONT_FENCE);
+	DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING,
+	DRM_BO_MASK_MEMTYPE | DRM_BO_FLAG_FORCE_CACHING, DRM_BO_HINT_DONT_FENCE);
     curTime = fastrdtsc();
     drmUnlock(ctx->drmFD, ctx->hwContext);
 
@@ -304,7 +304,7 @@ static void
 testAGP(TinyDRIContext * ctx)
 {
     unsigned long ticks[128], *pTicks;
-    unsigned long size = 4096 * 1024;
+    unsigned long size = 8 * 1024;
     int ret;
 
     ret = benchmarkBuffer(ctx, size, ticks);

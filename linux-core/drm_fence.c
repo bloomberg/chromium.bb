@@ -1,6 +1,6 @@
 /**************************************************************************
  * 
- * Copyright 2006 Tungsten Graphics, Inc., Bismarck, ND., USA
+ * Copyright (c) 2006-2007 Tungsten Graphics, Inc., Cedar Park, TX., USA
  * All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -11,6 +11,10 @@
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
  * 
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
@@ -19,11 +23,6 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- * 
- * 
  **************************************************************************/
 /*
  * Authors: Thomas Hellström <thomas-at-tungstengraphics-dot-com>
@@ -35,7 +34,8 @@
  * Typically called by the IRQ handler.
  */
 
-void drm_fence_handler(drm_device_t * dev, uint32_t sequence, uint32_t type)
+void drm_fence_handler(drm_device_t * dev, uint32_t class,
+		       uint32_t sequence, uint32_t type)
 {
 	int wake = 0;
 	uint32_t diff;
@@ -147,7 +147,7 @@ static void drm_fence_object_destroy(drm_file_t * priv,
 	drm_fence_usage_deref_locked(dev, fence);
 }
 
-static int fence_signaled(drm_device_t * dev, volatile
+static int fence_signaled(drm_device_t * dev,
 			  drm_fence_object_t * fence,
 			  uint32_t mask, int poke_flush)
 {
@@ -157,7 +157,7 @@ static int fence_signaled(drm_device_t * dev, volatile
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
 
 	if (poke_flush)
-		driver->poke_flush(dev);
+		driver->poke_flush(dev, fence->class);
 	read_lock_irqsave(&fm->lock, flags);
 	signaled =
 	    (fence->type & mask & fence->signaled) == (fence->type & mask);
@@ -172,13 +172,12 @@ static void drm_fence_flush_exe(drm_fence_manager_t * fm,
 	uint32_t diff;
 
 	if (!fm->pending_exe_flush) {
-		volatile struct list_head *list;
+		struct list_head *list;
 
 		/*
 		 * Last_exe_flush is invalid. Find oldest sequence.
 		 */
 
-/*		list = fm->fence_types[_DRM_FENCE_TYPE_EXE];*/
 		list = &fm->ring;
 		if (list->next == &fm->ring) {
 			return;
@@ -202,14 +201,15 @@ static void drm_fence_flush_exe(drm_fence_manager_t * fm,
 	}
 }
 
-int drm_fence_object_signaled(volatile drm_fence_object_t * fence,
+int drm_fence_object_signaled(drm_fence_object_t * fence,
 			      uint32_t type)
 {
 	return ((fence->signaled & type) == type);
 }
 
 int drm_fence_object_flush(drm_device_t * dev,
-			   volatile drm_fence_object_t * fence, uint32_t type)
+			   drm_fence_object_t * fence,
+			   uint32_t type)
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
@@ -235,7 +235,7 @@ int drm_fence_object_flush(drm_device_t * dev,
 		}
 	}
 	write_unlock_irqrestore(&fm->lock, flags);
-	driver->poke_flush(dev);
+	driver->poke_flush(dev, fence->class);
 	return 0;
 }
 
@@ -274,11 +274,37 @@ void drm_fence_flush_old(drm_device_t * dev, uint32_t sequence)
 
 EXPORT_SYMBOL(drm_fence_flush_old);
 
-int drm_fence_object_wait(drm_device_t * dev,
-			  volatile drm_fence_object_t * fence,
-			  int lazy, int ignore_signals, uint32_t mask)
+static int drm_fence_lazy_wait(drm_device_t *dev,
+			       drm_fence_object_t *fence,
+			       int ignore_signals, uint32_t mask)
 {
 	drm_fence_manager_t *fm = &dev->fm;
+	unsigned long _end = jiffies + 3*DRM_HZ;
+	int ret = 0;
+
+	do {
+		DRM_WAIT_ON(ret, fm->fence_queue, 3 * DRM_HZ,
+			    fence_signaled(dev, fence, mask, 1));
+		if (time_after_eq(jiffies, _end))
+			break;
+	} while (ret == -EINTR && ignore_signals);
+	if (time_after_eq(jiffies, _end) && (ret != 0))
+		ret = -EBUSY;
+	if (ret) {
+		if (ret == -EBUSY) {
+			DRM_ERROR("Fence timeout. "
+				  "GPU lockup or fence driver was "
+				  "taken down.\n");
+		}
+		return ((ret == -EINTR) ? -EAGAIN : ret);
+	}
+	return 0;
+}
+
+int drm_fence_object_wait(drm_device_t * dev,
+			  drm_fence_object_t * fence,
+			  int lazy, int ignore_signals, uint32_t mask)
+{
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
 	int ret = 0;
 	unsigned long _end;
@@ -299,46 +325,32 @@ int drm_fence_object_wait(drm_device_t * dev,
 
 	if (lazy && driver->lazy_capable) {
 
-		do {
-			DRM_WAIT_ON(ret, fm->fence_queue, 3 * DRM_HZ,
-				    fence_signaled(dev, fence, mask, 1));
-			if (time_after_eq(jiffies, _end))
-				break;
-		} while (ret == -EINTR && ignore_signals);
-		if (time_after_eq(jiffies, _end) && (ret != 0))
-			ret = -EBUSY;
-		if (ret) {
-			if (ret == -EBUSY) {
-				DRM_ERROR("Fence timeout. "
-					  "GPU lockup or fence driver was "
-					  "taken down.\n");
-			}
-			return ((ret == -EINTR) ? -EAGAIN : ret);
-		}
-	} else if ((fence->class == 0) && (mask & DRM_FENCE_TYPE_EXE) &&
-		   driver->lazy_capable) {
-
-		/*
-		 * We use IRQ wait for EXE fence if available to gain 
-		 * CPU in some cases.
-		 */
-
-		do {
-			DRM_WAIT_ON(ret, fm->fence_queue, 3 * DRM_HZ,
-				    fence_signaled(dev, fence,
-						   DRM_FENCE_TYPE_EXE, 1));
-			if (time_after_eq(jiffies, _end))
-				break;
-		} while (ret == -EINTR && ignore_signals);
-		if (time_after_eq(jiffies, _end) && (ret != 0))
-			ret = -EBUSY;
+		ret = drm_fence_lazy_wait(dev, fence, ignore_signals, mask);
 		if (ret)
-			return ((ret == -EINTR) ? -EAGAIN : ret);
-	}
+			return ret;
 
+	} else {
+
+		if (driver->has_irq(dev, fence->class,
+				    DRM_FENCE_TYPE_EXE)) {
+			ret = drm_fence_lazy_wait(dev, fence, ignore_signals,
+						  DRM_FENCE_TYPE_EXE);
+			if (ret)
+				return ret;
+		}
+
+		if (driver->has_irq(dev, fence->class,
+				    mask & ~DRM_FENCE_TYPE_EXE)) {
+			ret = drm_fence_lazy_wait(dev, fence, ignore_signals,
+						  mask);
+			if (ret)
+				return ret;
+		}
+	}
 	if (fence_signaled(dev, fence, mask, 0))
 		return 0;
 
+	DRM_ERROR("Busy wait\n");
 	/*
 	 * Avoid kernel-space busy-waits.
 	 */
@@ -368,7 +380,7 @@ int drm_fence_object_emit(drm_device_t * dev, drm_fence_object_t * fence,
 	int ret;
 
 	drm_fence_unring(dev, &fence->ring);
-	ret = driver->emit(dev, fence_flags, &sequence, &native_type);
+	ret = driver->emit(dev, fence->class, fence_flags, &sequence, &native_type);
 	if (ret)
 		return ret;
 

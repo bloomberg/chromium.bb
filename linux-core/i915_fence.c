@@ -61,7 +61,7 @@ static void i915_perform_flush(drm_device_t * dev)
 
 		diff = sequence - fm->last_exe_flush;
 		if (diff < driver->wrap_diff && diff != 0) {
-			drm_fence_handler(dev, sequence, DRM_FENCE_TYPE_EXE);
+			drm_fence_handler(dev, 0, sequence, DRM_FENCE_TYPE_EXE);
 		}
 
 		diff = sequence - fm->exe_flush_sequence;
@@ -84,7 +84,7 @@ static void i915_perform_flush(drm_device_t * dev)
 			flush_flags = dev_priv->flush_flags;
 			flush_sequence = dev_priv->flush_sequence;
 			dev_priv->flush_pending = 0;
-			drm_fence_handler(dev, flush_sequence, flush_flags);
+			drm_fence_handler(dev, 0, flush_sequence, flush_flags);
 		}
 	}
 
@@ -104,13 +104,13 @@ static void i915_perform_flush(drm_device_t * dev)
 			flush_flags = dev_priv->flush_flags;
 			flush_sequence = dev_priv->flush_sequence;
 			dev_priv->flush_pending = 0;
-			drm_fence_handler(dev, flush_sequence, flush_flags);
+			drm_fence_handler(dev, 0, flush_sequence, flush_flags);
 		}
 	}
 
 }
 
-void i915_poke_flush(drm_device_t * dev)
+void i915_poke_flush(drm_device_t * dev, uint32_t class)
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	unsigned long flags;
@@ -120,7 +120,7 @@ void i915_poke_flush(drm_device_t * dev)
 	write_unlock_irqrestore(&fm->lock, flags);
 }
 
-int i915_fence_emit_sequence(drm_device_t * dev, uint32_t flags,
+int i915_fence_emit_sequence(drm_device_t * dev, uint32_t class, uint32_t flags,
 			     uint32_t * sequence, uint32_t * native_type)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
@@ -143,4 +143,16 @@ void i915_fence_handler(drm_device_t * dev)
 	write_lock(&fm->lock);
 	i915_perform_flush(dev);
 	write_unlock(&fm->lock);
+}
+
+int i915_fence_has_irq(drm_device_t *dev, uint32_t class, uint32_t flags)
+{
+	/*
+	 * We have an irq that tells us when we have a new breadcrumb.
+	 */
+
+	if (class == 0 && flags == DRM_FENCE_TYPE_EXE)
+		return 1;
+
+	return 0;
 }

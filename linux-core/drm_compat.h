@@ -158,11 +158,14 @@ static __inline__ void *kcalloc(size_t nmemb, size_t size, int flags)
 #include <linux/mm.h>
 #include <asm/page.h>
 
-#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21)) && \
-     (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))) 
+#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)) && \
+     (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)))
 #define DRM_ODD_MM_COMPAT
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))
+#define DRM_FULL_MM_COMPAT
+#endif
 
 
 /*
@@ -200,18 +203,23 @@ extern int drm_map_page_into_agp(struct page *page);
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 extern struct page *get_nopage_retry(void);
 extern void free_nopage_retry(void);
-struct fault_data;
-extern struct page *drm_vm_ttm_fault(struct vm_area_struct *vma, 
-				     struct fault_data *data);
 
 #define NOPAGE_REFAULT get_nopage_retry()
 #endif
 
+#if !defined(DRM_FULL_MM_COMPAT) && \
+  ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15)) || \
+   (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)))
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))
+struct fault_data;
+extern struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
+				    struct fault_data *data);
+
+#endif
+#ifndef DRM_FULL_MM_COMPAT
 
 /*
- * Hopefully, real NOPAGE_RETRY functionality will be in 2.6.19. 
+ * Hopefully, real NOPAGE_RETRY functionality will be in 2.6.19.
  * For now, just return a dummy page that we've allocated out of 
  * static space. The page will be put by do_nopage() since we've already
  * filled out the pte.
@@ -228,17 +236,21 @@ struct fault_data {
 
 
 extern int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr, 
-			 unsigned long pfn, pgprot_t pgprot);
+			 unsigned long pfn);
 
-extern struct page *drm_vm_ttm_nopage(struct vm_area_struct *vma,
-				      unsigned long address, 
-				      int *type);
-
-#endif
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+extern struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
+				     unsigned long address, 
+				     int *type);
+#else
+extern unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
+				     unsigned long address);
+#endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)) */
+#endif /* ndef DRM_FULL_MM_COMPAT */
 
 #ifdef DRM_ODD_MM_COMPAT
 
-struct drm_ttm;
+struct drm_buffer_object;
 
 
 /*
@@ -246,14 +258,14 @@ struct drm_ttm;
  * process mm pointer to the ttm mm list. Needs the ttm mutex.
  */
 
-extern int drm_ttm_add_vma(struct drm_ttm * ttm, 
+extern int drm_bo_add_vma(struct drm_buffer_object * bo, 
 			   struct vm_area_struct *vma);
 /*
  * Delete a vma and the corresponding mm pointer from the
  * ttm lists. Needs the ttm mutex.
  */
-extern void drm_ttm_delete_vma(struct drm_ttm * ttm, 
-			       struct vm_area_struct *vma);
+extern void drm_bo_delete_vma(struct drm_buffer_object * bo, 
+			      struct vm_area_struct *vma);
 
 /*
  * Attempts to lock all relevant mmap_sems for a ttm, while
@@ -262,12 +274,12 @@ extern void drm_ttm_delete_vma(struct drm_ttm * ttm,
  * schedule() and try again.
  */
 
-extern int drm_ttm_lock_mm(struct drm_ttm * ttm);
+extern int drm_bo_lock_kmm(struct drm_buffer_object * bo);
 
 /*
  * Unlock all relevant mmap_sems for a ttm.
  */
-extern void drm_ttm_unlock_mm(struct drm_ttm * ttm);
+extern void drm_bo_unlock_kmm(struct drm_buffer_object * bo);
 
 /*
  * If the ttm was bound to the aperture, this function shall be called
@@ -277,7 +289,7 @@ extern void drm_ttm_unlock_mm(struct drm_ttm * ttm);
  * releases the mmap_sems for this ttm.
  */
 
-extern void drm_ttm_finish_unmap(struct drm_ttm *ttm);
+extern void drm_bo_finish_unmap(struct drm_buffer_object *bo);
 
 /*
  * Remap all vmas of this ttm using io_remap_pfn_range. We cannot 
@@ -286,14 +298,14 @@ extern void drm_ttm_finish_unmap(struct drm_ttm *ttm);
  * releases the mmap_sems for this ttm.
  */
 
-extern int drm_ttm_remap_bound(struct drm_ttm *ttm);
+extern int drm_bo_remap_bound(struct drm_buffer_object *bo);
 
 
 /*
  * Remap a vma for a bound ttm. Call with the ttm mutex held and
  * the relevant mmap_sem locked.
  */
-extern int drm_ttm_map_bound(struct vm_area_struct *vma);
+extern int drm_bo_map_bound(struct vm_area_struct *vma);
 
 #endif
 #endif
