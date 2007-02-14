@@ -47,6 +47,7 @@ static drm_fence_driver_t i915_fence_driver = {
 	.lazy_capable = 1,
 	.emit = i915_fence_emit_sequence,
 	.poke_flush = i915_poke_flush,
+	.has_irq = i915_fence_has_irq,
 };
 #endif
 #ifdef I915_HAVE_BUFFER

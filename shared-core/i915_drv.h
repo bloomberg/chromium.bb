@@ -178,10 +178,12 @@ extern void i915_mem_release(drm_device_t * dev,
 
 
 extern void i915_fence_handler(drm_device_t *dev);
-extern int i915_fence_emit_sequence(drm_device_t *dev, uint32_t flags,
+extern int i915_fence_emit_sequence(drm_device_t *dev, uint32_t class,
+				    uint32_t flags,
 				    uint32_t *sequence, 
 				    uint32_t *native_type);
-extern void i915_poke_flush(drm_device_t *dev);
+extern void i915_poke_flush(drm_device_t *dev, uint32_t class);
+extern int i915_fence_has_irq(drm_device_t *dev, uint32_t class, uint32_t flags);
 #endif
 
 #ifdef I915_HAVE_BUFFER

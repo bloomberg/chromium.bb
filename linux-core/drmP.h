@@ -793,10 +793,11 @@ typedef struct drm_fence_driver{
 	uint32_t flush_diff;
         uint32_t sequence_mask;
         int lazy_capable;
-	int (*emit) (struct drm_device *dev, uint32_t flags,
+	int (*has_irq) (struct drm_device *dev, uint32_t class, uint32_t flags);
+	int (*emit) (struct drm_device *dev, uint32_t class, uint32_t flags,
 		     uint32_t *breadcrumb,
 		     uint32_t *native_type);
-	void (*poke_flush) (struct drm_device *dev);
+	void (*poke_flush) (struct drm_device *dev, uint32_t class);
 } drm_fence_driver_t;
 
 #define _DRM_FENCE_TYPE_EXE 0x00
@@ -1464,7 +1465,8 @@ extern int drm_user_object_unref(drm_file_t *priv, uint32_t user_token, drm_obje
  * fence objects (drm_fence.c)
  */
 
-extern void drm_fence_handler(drm_device_t *dev, uint32_t breadcrumb, uint32_t type);
+extern void drm_fence_handler(drm_device_t *dev, uint32_t class,
+			      uint32_t sequence, uint32_t type);
 extern void drm_fence_manager_init(drm_device_t *dev);
 extern void drm_fence_manager_takedown(drm_device_t *dev);
 extern void drm_fence_flush_old(drm_device_t *dev, uint32_t sequence);
