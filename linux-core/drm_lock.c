@@ -224,7 +224,6 @@ int drm_lock_take(drm_lock_data_t *lock_data,
 
 	if (_DRM_LOCKING_CONTEXT(old) == context) {
 		if (old & _DRM_LOCK_HELD) {
-			spin_unlock(&lock_data->spinlock);
 			if (context != DRM_KERNEL_CONTEXT) {
 				DRM_ERROR("%d holds heavyweight lock\n",
 					  context);
@@ -236,10 +235,8 @@ int drm_lock_take(drm_lock_data_t *lock_data,
 	if ((_DRM_LOCKING_CONTEXT(new)) == context && (new & _DRM_LOCK_HELD)) {
 		/* Have lock */
 
-		spin_unlock(&lock_data->spinlock);
 		return 1;
 	}
-	spin_unlock(&lock_data->spinlock);
 	return 0;
 }
 
