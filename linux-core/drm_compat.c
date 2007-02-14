@@ -79,53 +79,13 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 
 /*
- * vm code for kernels below 2,6,15 in which version a major vm write
+ * vm code for kernels below 2.6.15 in which version a major vm write
  * occured. This implement a simple straightforward 
  * version similar to what's going to be
- * in kernel 2.6.20+?
+ * in kernel 2.6.19+
+ * Kernels below 2.6.15 use nopage whereas 2.6.19 and upwards use
+ * nopfn.
  */ 
-
-static int drm_pte_is_clear(struct vm_area_struct *vma,
-			    unsigned long addr)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	int ret = 1;
-	pte_t *pte;
-	pmd_t *pmd;
-	pud_t *pud;
-	pgd_t *pgd;
-	
-
-	spin_lock(&mm->page_table_lock);
-	pgd = pgd_offset(mm, addr);
-	if (pgd_none(*pgd))
-		goto unlock;
-	pud = pud_offset(pgd, addr);
-        if (pud_none(*pud))
-		goto unlock;
-	pmd = pmd_offset(pud, addr);
-	if (pmd_none(*pmd))
-		goto unlock;
-	pte = pte_offset_map(pmd, addr);
-	if (!pte)
-		goto unlock;
-	ret = pte_none(*pte);
-	pte_unmap(pte);
- unlock:	
-	spin_unlock(&mm->page_table_lock);
-	return ret;
-}
-	
-int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr, 
-		  unsigned long pfn, pgprot_t pgprot)
-{
-	int ret;
-	if (!drm_pte_is_clear(vma, addr))
-		return -EBUSY;
-
-	ret = io_remap_pfn_range(vma, addr, pfn, PAGE_SIZE, pgprot);
-	return ret;
-}
 
 static struct {
 	spinlock_t lock;
@@ -186,10 +146,85 @@ struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 
 #endif
 
+#if !defined(DRM_FULL_MM_COMPAT) && \
+  ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15)) || \
+   (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)))
+
+static int drm_pte_is_clear(struct vm_area_struct *vma,
+			    unsigned long addr)
+{
+	struct mm_struct *mm = vma->vm_mm;
+	int ret = 1;
+	pte_t *pte;
+	pmd_t *pmd;
+	pud_t *pud;
+	pgd_t *pgd;
+
+	spin_lock(&mm->page_table_lock);
+	pgd = pgd_offset(mm, addr);
+	if (pgd_none(*pgd))
+		goto unlock;
+	pud = pud_offset(pgd, addr);
+        if (pud_none(*pud))
+		goto unlock;
+	pmd = pmd_offset(pud, addr);
+	if (pmd_none(*pmd))
+		goto unlock;
+	pte = pte_offset_map(pmd, addr);
+	if (!pte)
+		goto unlock;
+	ret = pte_none(*pte);
+	pte_unmap(pte);
+ unlock:
+	spin_unlock(&mm->page_table_lock);
+	return ret;
+}
+
+int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
+		  unsigned long pfn)
+{
+	int ret;
+	if (!drm_pte_is_clear(vma, addr))
+		return -EBUSY;
+
+	ret = io_remap_pfn_range(vma, addr, pfn, PAGE_SIZE, vma->vm_page_prot);
+	return ret;
+}
+#endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19) && !defined(DRM_FULL_MM_COMPAT))
+
+/**
+ * While waiting for the fault() handler to appear in
+ * we accomplish approximately
+ * the same wrapping it with nopfn.
+ */
+
+unsigned long drm_bo_vm_nopfn(struct vm_area_struct * vma,
+			   unsigned long address)
+{
+	struct fault_data data;
+	data.address = address;
+
+	(void) drm_bo_vm_fault(vma, &data);
+	if (data.type == VM_FAULT_OOM)
+		return NOPFN_OOM;
+	else if (data.type == VM_FAULT_SIGBUS)
+		return NOPFN_SIGBUS;
+
+	/*
+	 * pfn already set.
+	 */
+
+	return 0;
+}
+#endif
+
+
 #ifdef DRM_ODD_MM_COMPAT
 
 /*
- * VM compatibility code for 2.6.15-2.6.19(?). This code implements a complicated
+ * VM compatibility code for 2.6.15-2.6.18. This code implements a complicated
  * workaround for a single BUG statement in do_no_page in these versions. The
  * tricky thing is that we need to take the mmap_sem in exclusive mode for _all_
  * vmas mapping the ttm, before dev->struct_mutex is taken. The way we do this is to 

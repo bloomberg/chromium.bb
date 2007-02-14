@@ -720,11 +720,20 @@ EXPORT_SYMBOL(drm_mmap);
  * \param vma Virtual memory area.
  * \param data Fault data on failure or refault.
  * \return Always NULL as we insert pfns directly.
+ *
+ * It's important that pfns are inserted while holding the bo->mutex lock.
+ * otherwise we might race with unmap_mapping_range() which is always
+ * called with the bo->mutex lock held.
+ *
+ * It's not pretty to modify the vma->vm_page_prot variable while not
+ * holding the mm semaphore in write mode. However, we have it i read mode,
+ * so we won't be racing with any other writers, and we only actually modify
+ * it when no ptes are present so it shouldn't be a big deal.
  */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21) || \
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19) ||	\
      LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))
+#ifdef DRM_FULL_MM_COMPAT
 static
 #endif
 struct page *drm_bo_vm_fault(struct vm_area_struct *vma, 
@@ -738,7 +747,6 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	drm_device_t *dev;
 	unsigned long pfn;
 	int err;
-	pgprot_t pgprot;
 	unsigned long bus_base;
 	unsigned long bus_offset;
 	unsigned long bus_size;
@@ -759,14 +767,12 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	 * move it to a mappable.
 	 */
 
+#ifdef DRM_BO_FULL_COMPAT
 	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
-		uint32_t mask_save = bo->mem.mask;
 		uint32_t new_mask = bo->mem.mask | 
 			DRM_BO_FLAG_MAPPABLE | 
 			DRM_BO_FLAG_FORCE_MAPPABLE;
-
 		err = drm_bo_move_buffer(bo, new_mask, 0, 0);
-		bo->mem.mask = mask_save;
 		
 		if (err) {
 			data->type = (err == -EAGAIN) ? 
@@ -774,6 +780,24 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 			goto out_unlock;
 		}
 	}
+#else
+	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
+		unsigned long _end = jiffies + 3*DRM_HZ;
+		uint32_t new_mask = bo->mem.mask |
+			DRM_BO_FLAG_MAPPABLE |
+			DRM_BO_FLAG_FORCE_MAPPABLE;
+
+		do {
+			err = drm_bo_move_buffer(bo, new_mask, 0, 0);
+		} while((err == -EAGAIN) && !time_after_eq(jiffies, _end));
+
+		if (err) {
+			DRM_ERROR("Timeout moving buffer to mappable location.\n");
+			data->type = VM_FAULT_SIGBUS;
+			goto out_unlock;
+		}
+	}
+#endif
 
 	if (address > vma->vm_end) {
 		data->type = VM_FAULT_SIGBUS;
@@ -793,7 +817,7 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 
 	if (bus_size) {
 		pfn = ((bus_base + bus_offset) >> PAGE_SHIFT) + page_offset;
-		pgprot = drm_io_prot(_DRM_AGP, vma);
+		vma->vm_page_prot = drm_io_prot(_DRM_AGP, vma);
 	} else {
 		ttm = bo->ttm;
 
@@ -804,10 +828,10 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 			goto out_unlock;
 		}
 		pfn = page_to_pfn(page);
-		pgprot = vma->vm_page_prot;
+		vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
 	}
 	
-	err = vm_insert_pfn(vma, address, pfn, pgprot);
+	err = vm_insert_pfn(vma, address, pfn);
 
 	if (!err || err == -EBUSY) 
 		data->type = VM_FAULT_MINOR; 
@@ -870,10 +894,14 @@ static void drm_bo_vm_close(struct vm_area_struct *vma)
 }
 
 static struct vm_operations_struct drm_bo_vm_ops = {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))
-	.nopage = drm_bo_vm_nopage,
-#else
+#ifdef DRM_FULL_MM_COMPAT
 	.fault = drm_bo_vm_fault,
+#else
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19))
+	.nopfn = drm_bo_vm_nopfn,
+#else
+	.nopage = drm_bo_vm_nopage,
+#endif
 #endif
 	.open = drm_bo_vm_open,
 	.close = drm_bo_vm_close,
@@ -896,6 +924,9 @@ int drm_bo_mmap_locked(struct vm_area_struct *vma,
 	vma->vm_private_data = map->handle;
 	vma->vm_file = filp;
 	vma->vm_flags |= VM_RESERVED | VM_IO;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19))
+	vma->vm_flags |= VM_PFNMAP;
+#endif
 	drm_bo_vm_open_locked(vma);
 #ifdef DRM_ODD_MM_COMPAT
 	drm_bo_map_bound(vma);
