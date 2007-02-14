@@ -816,8 +816,10 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
 
 	if (bus_size) {
+		drm_mem_type_manager_t *man = &dev->bm.man[bo->mem.mem_type];
+
 		pfn = ((bus_base + bus_offset) >> PAGE_SHIFT) + page_offset;
-		vma->vm_page_prot = drm_io_prot(_DRM_AGP, vma);
+		vma->vm_page_prot = drm_io_prot(man->drm_bus_maptype, vma);
 	} else {
 		ttm = bo->ttm;
 

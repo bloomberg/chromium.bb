@@ -71,6 +71,7 @@ int i915_init_mem_type(drm_device_t * dev, uint32_t type,
 	case DRM_BO_MEM_LOCAL:
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_CACHED;
+		man->drm_bus_maptype = 0;
 		break;
 	case DRM_BO_MEM_TT:
 		if (!(drm_core_has_AGP(dev) && dev->agp)) {
@@ -83,6 +84,7 @@ int i915_init_mem_type(drm_device_t * dev, uint32_t type,
 		man->io_addr = NULL;
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_NEEDS_IOREMAP;
+		man->drm_bus_maptype = _DRM_AGP;
 		break;
 	case DRM_BO_MEM_PRIV0:
 		if (!(drm_core_has_AGP(dev) && dev->agp)) {
@@ -95,7 +97,7 @@ int i915_init_mem_type(drm_device_t * dev, uint32_t type,
 		man->io_addr = NULL;
 		man->flags =  _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_FIXED | _DRM_FLAG_NEEDS_IOREMAP;
-
+		man->drm_bus_maptype = _DRM_AGP;
 		break;
 	default:
 		DRM_ERROR("Unsupported memory type %u\n", (unsigned)type);

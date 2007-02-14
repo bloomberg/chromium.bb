@@ -664,6 +664,7 @@ typedef struct drm_mem_type_manager {
 	struct list_head lru;
 	struct list_head pinned;
 	uint32_t flags;
+        uint32_t drm_bus_maptype;
 	unsigned long io_offset;                 
 	unsigned long io_size;
 	void *io_addr;
