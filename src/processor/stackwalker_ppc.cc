@@ -35,11 +35,11 @@
 
 
 #include "processor/stackwalker_ppc.h"
-#include "google_airbag/processor/call_stack.h"
-#include "google_airbag/processor/memory_region.h"
-#include "google_airbag/processor/stack_frame_cpu.h"
+#include "google_breakpad/processor/call_stack.h"
+#include "google_breakpad/processor/memory_region.h"
+#include "google_breakpad/processor/stack_frame_cpu.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 
 StackwalkerPPC::StackwalkerPPC(const SystemInfo *system_info,
@@ -135,4 +135,4 @@ StackFrame* StackwalkerPPC::GetCallerFrame(
 }
 
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

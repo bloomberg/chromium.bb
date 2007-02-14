@@ -26,7 +26,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
+
 // file_id.h: Return a unique identifier for a file
 //
 // Author: Dan Waylonis
@@ -36,7 +36,7 @@
 
 #include <limits.h>
 
-namespace google_airbag {
+namespace google_breakpad {
 
 class FileID {
  public:
@@ -72,7 +72,7 @@ class FileID {
   char path_[PATH_MAX];
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // COMMON_MAC_FILE_ID_H__
 

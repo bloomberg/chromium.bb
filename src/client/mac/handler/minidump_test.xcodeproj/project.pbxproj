@@ -102,7 +102,7 @@
 		08FB7794FE84155DC02AAC07 /* MinidumpWriter */ = {
 			isa = PBXGroup;
 			children = (
-				9BD82C040B0133420055103E /* Airbag */,
+				9BD82C040B0133420055103E /* Breakpad */,
 				08FB7795FE84155DC02AAC07 /* Source */,
 				9B37CEEA0AF98EB600FA4BD4 /* Frameworks */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
@@ -138,7 +138,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		9BD82C040B0133420055103E /* Airbag */ = {
+		9BD82C040B0133420055103E /* Breakpad */ = {
 			isa = PBXGroup;
 			children = (
 				9B35FF560B267D5F008DE8C7 /* convert_UTF.c */,
@@ -155,7 +155,7 @@
 				9BD82C2B0B01345E0055103E /* string_utilities.cc */,
 				9BD82C2C0B01345E0055103E /* string_utilities.h */,
 			);
-			name = Airbag;
+			name = Breakpad;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

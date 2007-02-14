@@ -27,46 +27,51 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// The caller may implement the SymbolSupplier abstract base class
-// to provide symbols for a given module.
+// call_stack.h: A call stack comprised of stack frames.
+//
+// This class manages a vector of stack frames.  It is used instead of
+// exposing the vector directly to allow the CallStack to own StackFrame
+// pointers without having to publicly export the linked_ptr class.  A
+// CallStack must be composed of pointers instead of objects to allow for
+// CPU-specific StackFrame subclasses.
+//
+// By convention, the stack frame at index 0 is the innermost callee frame,
+// and the frame at the highest index in a call stack is the outermost
+// caller.  CallStack only allows stacks to be built by pushing frames,
+// beginning with the innermost callee frame.
+//
+// Author: Mark Mentovai
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_SYMBOL_SUPPLIER_H__
-#define GOOGLE_AIRBAG_PROCESSOR_SYMBOL_SUPPLIER_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_CALL_STACK_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_CALL_STACK_H__
 
-#include <string>
+#include <vector>
 
-namespace google_airbag {
+namespace google_breakpad {
 
-using std::string;
-class CodeModule;
-class SystemInfo;
+using std::vector;
 
-class SymbolSupplier {
+struct StackFrame;
+template<typename T> class linked_ptr;
+
+class CallStack {
  public:
-  // Result type for GetSymbolFile
-  enum SymbolResult {
-    // no symbols were found, but continue processing
-    NOT_FOUND,
+  CallStack() { Clear(); }
+  ~CallStack();
 
-    // symbols were found, and the path has been placed in symbol_file
-    FOUND,
+  // Resets the CallStack to its initial empty state
+  void Clear();
+  
+  const vector<StackFrame*>* frames() const { return &frames_; }
 
-    // stops processing the minidump immediately
-    INTERRUPT,
-  };
+ private:
+  // Stackwalker is responsible for building the frames_ vector.
+  friend class Stackwalker;
 
-  virtual ~SymbolSupplier() {}
-
-  // Retrieves the symbol file for the given CodeModule, placing the
-  // path in symbol_file if successful.  system_info contains strings
-  // identifying the operating system and CPU; SymbolSupplier may use to help
-  // locate the symbol file.  system_info may be NULL or its fields may be
-  // empty if these values are unknown.
-  virtual SymbolResult GetSymbolFile(const CodeModule *module,
-                                     const SystemInfo *system_info,
-                                     string *symbol_file) = 0;
+  // Storage for pushed frames.
+  vector<StackFrame*> frames_;
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_SYMBOL_SUPPLIER_H__
+#endif  // GOOGLE_BREAKPAD_PROCSSOR_CALL_STACK_H__

@@ -36,13 +36,13 @@
 //
 // Author: Mark Mentovai
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_STACK_FRAME_CPU_H__
-#define GOOGLE_AIRBAG_PROCESSOR_STACK_FRAME_CPU_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_STACK_FRAME_CPU_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_STACK_FRAME_CPU_H__
 
-#include "google_airbag/common/minidump_format.h"
-#include "google_airbag/processor/stack_frame.h"
+#include "google_breakpad/common/minidump_format.h"
+#include "google_breakpad/processor/stack_frame.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 struct StackFrameX86 : public StackFrame {
   // ContextValidity has one entry for each relevant hardware pointer register
@@ -98,6 +98,6 @@ struct StackFramePPC : public StackFrame {
   int context_validity;
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_STACK_FRAME_CPU_H__
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_STACK_FRAME_CPU_H__

@@ -31,7 +31,7 @@
 
 #include "common/windows/string_utils-inl.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 // static
 wstring WindowsStringUtils::GetBaseName(const wstring &filename) {
@@ -89,4 +89,4 @@ bool WindowsStringUtils::safe_mbstowcs(const string &mbs, wstring *wcs) {
   return true;
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

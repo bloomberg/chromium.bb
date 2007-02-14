@@ -39,11 +39,11 @@
 #include <cassert>
 
 #include "processor/simple_symbol_supplier.h"
-#include "google_airbag/processor/code_module.h"
-#include "google_airbag/processor/system_info.h"
+#include "google_breakpad/processor/code_module.h"
+#include "google_breakpad/processor/system_info.h"
 #include "processor/pathname_stripper.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 static bool file_exists(const string &file_name) {
   struct stat sb;
@@ -110,4 +110,4 @@ SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFileAtPath(
   return FOUND;
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

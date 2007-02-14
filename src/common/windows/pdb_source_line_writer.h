@@ -41,7 +41,7 @@ struct IDiaEnumLineNumbers;
 struct IDiaSession;
 struct IDiaSymbol;
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::wstring;
 
@@ -158,6 +158,6 @@ class PDBSourceLineWriter {
   void operator=(const PDBSourceLineWriter&);
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // _PDB_SOURCE_LINE_WRITER_H__

@@ -45,7 +45,7 @@
 #include <string>
 #include <vector>
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 using std::wstring;
@@ -118,7 +118,7 @@ class HTTPUpload {
   ~HTTPUpload();
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #pragma warning( pop )
 

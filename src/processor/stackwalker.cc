@@ -36,21 +36,21 @@
 
 #include <cassert>
 
-#include "google_airbag/processor/stackwalker.h"
-#include "google_airbag/processor/call_stack.h"
-#include "google_airbag/processor/code_module.h"
-#include "google_airbag/processor/code_modules.h"
-#include "google_airbag/processor/minidump.h"
-#include "google_airbag/processor/source_line_resolver_interface.h"
-#include "google_airbag/processor/stack_frame.h"
-#include "google_airbag/processor/symbol_supplier.h"
+#include "google_breakpad/processor/stackwalker.h"
+#include "google_breakpad/processor/call_stack.h"
+#include "google_breakpad/processor/code_module.h"
+#include "google_breakpad/processor/code_modules.h"
+#include "google_breakpad/processor/minidump.h"
+#include "google_breakpad/processor/source_line_resolver_interface.h"
+#include "google_breakpad/processor/stack_frame.h"
+#include "google_breakpad/processor/symbol_supplier.h"
 #include "processor/linked_ptr.h"
 #include "processor/scoped_ptr.h"
 #include "processor/stack_frame_info.h"
 #include "processor/stackwalker_ppc.h"
 #include "processor/stackwalker_x86.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 
 Stackwalker::Stackwalker(const SystemInfo *system_info,
@@ -162,4 +162,4 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
 }
 
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

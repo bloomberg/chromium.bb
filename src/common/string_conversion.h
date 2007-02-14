@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-namespace google_airbag {
+namespace google_breakpad {
   
 using std::vector;
 
@@ -60,6 +60,6 @@ void UTF32ToUTF16Char(wchar_t in, u_int16_t out[2]);
 // Convert |in| to UTF-8.  If |swap| is true, swap bytes before converting.
 std::string UTF16ToUTF8(const vector<u_int16_t> &in, bool swap);
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // COMMON_STRING_CONVERSION_H__

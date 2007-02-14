@@ -33,7 +33,7 @@
 #include "client/windows/sender/crash_report_sender.h"
 #include "common/windows/http_upload.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 // static
 ReportResult CrashReportSender::SendCrashReport(
@@ -55,4 +55,4 @@ ReportResult CrashReportSender::SendCrashReport(
   }
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

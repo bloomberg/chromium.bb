@@ -40,7 +40,7 @@
 //  os: the operating system that the module was built for, always
 //      "windows" in this implementation.
 //  cpu: the CPU that the module was built for, typically "x86".
-//  symbol_file: the contents of the airbag-format symbol file
+//  symbol_file: the contents of the breakpad-format symbol file
 
 #include <Windows.h>
 #include <DbgHelp.h>
@@ -60,10 +60,10 @@ using std::string;
 using std::wstring;
 using std::vector;
 using std::map;
-using google_airbag::HTTPUpload;
-using google_airbag::PDBModuleInfo;
-using google_airbag::PDBSourceLineWriter;
-using google_airbag::WindowsStringUtils;
+using google_breakpad::HTTPUpload;
+using google_breakpad::PDBModuleInfo;
+using google_breakpad::PDBSourceLineWriter;
+using google_breakpad::WindowsStringUtils;
 
 // Extracts the file version information for the given filename,
 // as a string, for example, "1.2.3.4".  Returns true on success.
@@ -108,7 +108,7 @@ static bool GetFileVersionString(const wchar_t *filename, wstring *version) {
 static bool DumpSymbolsToTempFile(const wchar_t *file,
                                   wstring *temp_file_path,
                                   PDBModuleInfo *pdb_info) {
-  google_airbag::PDBSourceLineWriter writer;
+  google_breakpad::PDBSourceLineWriter writer;
   // Use EXE_FILE to get information out of the exe/dll in addition to the
   // pdb.  The name and version number of the exe/dll are of value, and
   // there's no way to locate an exe/dll given a pdb.

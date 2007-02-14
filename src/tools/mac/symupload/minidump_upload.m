@@ -31,7 +31,7 @@
 // a multipart/form-data POST request with the following parameters:
 //  prod: the product name
 //  ver: the product version
-//  symbol_file: the airbag format symbol file
+//  symbol_file: the breakpad format symbol file
 
 #import <unistd.h>
 

@@ -27,42 +27,46 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// This file is used to generate minidump2.dmp and minidump2.sym.
-// cl /Zi test_app.cc /Fetest_app.exe /I google_breakpad/src \
-//   google_breakpad/src/client/windows/releasestaticcrt/exception_handler.lib \
-//   ole32.lib
-// Then run test_app to generate a dump, and dump_syms to create the .sym file.
+// The caller may implement the SymbolSupplier abstract base class
+// to provide symbols for a given module.
 
-#include <cstdio>
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_SYMBOL_SUPPLIER_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_SYMBOL_SUPPLIER_H__
 
-#include "client/windows/handler/exception_handler.h"
+#include <string>
 
-namespace {
+namespace google_breakpad {
 
-static bool callback(const wchar_t *dump_path, const wchar_t *id,
-                     void *context, EXCEPTION_POINTERS *exinfo,
-                     MDRawAssertionInfo *assertion,
-                     bool succeeded) {
-  if (succeeded) {
-    printf("dump guid is %ws\n", id);
-  } else {
-    printf("dump failed\n");
-  }
-  fflush(stdout);
+using std::string;
+class CodeModule;
+class SystemInfo;
 
-  return succeeded;
-}
+class SymbolSupplier {
+ public:
+  // Result type for GetSymbolFile
+  enum SymbolResult {
+    // no symbols were found, but continue processing
+    NOT_FOUND,
 
-static void CrashFunction() {
-  int *i = reinterpret_cast<int*>(0x45);
-  *i = 5;  // crash!
-}
+    // symbols were found, and the path has been placed in symbol_file
+    FOUND,
 
-}  // namespace
+    // stops processing the minidump immediately
+    INTERRUPT,
+  };
 
-int main(int argc, char **argv) {
-  google_breakpad::ExceptionHandler eh(L".", NULL, callback, NULL, true);
-  CrashFunction();
-  printf("did not crash?\n");
-  return 0;
-}
+  virtual ~SymbolSupplier() {}
+
+  // Retrieves the symbol file for the given CodeModule, placing the
+  // path in symbol_file if successful.  system_info contains strings
+  // identifying the operating system and CPU; SymbolSupplier may use to help
+  // locate the symbol file.  system_info may be NULL or its fields may be
+  // empty if these values are unknown.
+  virtual SymbolResult GetSymbolFile(const CodeModule *module,
+                                     const SystemInfo *system_info,
+                                     string *symbol_file) = 0;
+};
+
+}  // namespace google_breakpad
+
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_SYMBOL_SUPPLIER_H__

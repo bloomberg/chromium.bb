@@ -79,9 +79,9 @@
 #include <string>
 #include <vector>
 
-#include "google_airbag/processor/symbol_supplier.h"
+#include "google_breakpad/processor/symbol_supplier.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 using std::vector;
@@ -116,6 +116,6 @@ class SimpleSymbolSupplier : public SymbolSupplier {
   vector<string> paths_;
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // PROCESSOR_SIMPLE_SYMBOL_SUPPLIER_H__

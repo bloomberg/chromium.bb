@@ -70,24 +70,24 @@
 #include <string>
 #include <vector>
 
-#include "google_airbag/common/minidump_format.h"
+#include "google_breakpad/common/minidump_format.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::vector;
 using std::wstring;
 
 class ExceptionHandler {
  public:
-  // A callback function to run before Airbag performs any substantial
+  // A callback function to run before Breakpad performs any substantial
   // processing of an exception.  A FilterCallback is called before writing
   // a minidump.  context is the parameter supplied by the user as
   // callback_context when the handler was created.  exinfo points to the
   // exception record, if any; assertion points to assertion information,
   // if any.
   //
-  // If a FilterCallback returns true, Airbag will continue processing,
-  // attempting to write a minidump.  If a FilterCallback returns false, Airbag
+  // If a FilterCallback returns true, Breakpad will continue processing,
+  // attempting to write a minidump.  If a FilterCallback returns false, Breakpad
   // will immediately report the exception as unhandled without writing a
   // minidump, allowing another handler the opportunity to handle it.
   typedef bool (*FilterCallback)(void *context, EXCEPTION_POINTERS *exinfo,
@@ -102,11 +102,11 @@ class ExceptionHandler {
   // assertion points to information about an assertion if the handler was
   // invoked by an assertion.
   //
-  // If an exception occurred and the callback returns true, Airbag will treat
+  // If an exception occurred and the callback returns true, Breakpad will treat
   // the exception as fully-handled, suppressing any other handlers from being
-  // notified of the exception.  If the callback returns false, Airbag will
+  // notified of the exception.  If the callback returns false, Breakpad will
   // treat the exception as unhandled, and allow another handler to handle it.
-  // If there are no other handlers, Airbag will report the exception to the
+  // If there are no other handlers, Breakpad will report the exception to the
   // system as unhandled, allowing a debugger or native crash dialog the
   // opportunity to handle the exception.  Most callback implementations
   // should normally return the value of |succeeded|, or when they wish to
@@ -121,7 +121,7 @@ class ExceptionHandler {
 
   // Creates a new ExceptionHandler instance to handle writing minidumps.
   // Before writing a minidump, the optional filter callback will be called.
-  // Its return value determines whether or not Airbag should write a minidump.
+  // Its return value determines whether or not Breakpad should write a minidump.
   // Minidump files will be written to dump_path, and the optional callback
   // is called after writing the dump file, as described above.
   // If install_handler is true, then a minidump will be written whenever
@@ -298,7 +298,7 @@ class ExceptionHandler {
   // The index of the ExceptionHandler in handler_stack_ that will handle the
   // next exception.  Note that 0 means the last entry in handler_stack_, 1
   // means the next-to-last entry, and so on.  This is used by HandleException
-  // to support multiple stacked Airbag handlers.
+  // to support multiple stacked Breakpad handlers.
   static LONG handler_stack_index_;
 
   // handler_stack_critical_section_ guards operations on handler_stack_ and
@@ -313,7 +313,7 @@ class ExceptionHandler {
   void operator=(const ExceptionHandler &);
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #pragma warning( pop )
 

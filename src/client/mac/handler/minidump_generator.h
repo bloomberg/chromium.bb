@@ -37,9 +37,9 @@
 #include <string>
 
 #include "client/minidump_file_writer.h"
-#include "google_airbag/common/minidump_format.h"
+#include "google_breakpad/common/minidump_format.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 
@@ -84,7 +84,7 @@ class MinidumpGenerator {
   bool WriteSystemInfoStream(MDRawDirectory *system_info_stream);
   bool WriteModuleListStream(MDRawDirectory *module_list_stream);
   bool WriteMiscInfoStream(MDRawDirectory *misc_info_stream);
-  bool WriteAirbagInfoStream(MDRawDirectory *airbag_info_stream);
+  bool WriteBreakpadInfoStream(MDRawDirectory *breakpad_info_stream);
 
   // Helpers
   u_int64_t CurrentPCForStack(thread_state_data_t state);
@@ -118,6 +118,6 @@ class MinidumpGenerator {
   static int os_build_number_;
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // CLIENT_MAC_GENERATOR_MINIDUMP_GENERATOR_H__

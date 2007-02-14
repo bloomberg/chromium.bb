@@ -33,11 +33,11 @@
 //
 // Author: Mark Mentovai
 
-#include "google_airbag/processor/process_state.h"
-#include "google_airbag/processor/call_stack.h"
-#include "google_airbag/processor/code_modules.h"
+#include "google_breakpad/processor/process_state.h"
+#include "google_breakpad/processor/call_stack.h"
+#include "google_breakpad/processor/code_modules.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 ProcessState::~ProcessState() {
   Clear();
@@ -60,4 +60,4 @@ void ProcessState::Clear() {
   modules_ = NULL;
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

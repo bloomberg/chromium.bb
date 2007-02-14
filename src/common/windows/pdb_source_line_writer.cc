@@ -43,7 +43,7 @@
 #define UNDNAME_NO_ECSU 0x8000  // Suppresses enum/class/struct/union.
 #endif  // UNDNAME_NO_ECSU
 
-namespace google_airbag {
+namespace google_breakpad {
 
 PDBSourceLineWriter::PDBSourceLineWriter() : output_(NULL) {
 }
@@ -785,4 +785,4 @@ bool PDBSourceLineWriter::UsesGUID(bool *uses_guid) {
   return true;
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

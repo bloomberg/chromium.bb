@@ -54,13 +54,13 @@ typedef SSIZE_T ssize_t;
 
 #include "processor/range_map-inl.h"
 
-#include "google_airbag/processor/minidump.h"
+#include "google_breakpad/processor/minidump.h"
 #include "processor/basic_code_module.h"
 #include "processor/basic_code_modules.h"
 #include "processor/scoped_ptr.h"
 
 
-namespace google_airbag {
+namespace google_breakpad {
 
 
 using std::vector;
@@ -1280,7 +1280,7 @@ string MinidumpModule::debug_identifier() const {
   // miscellaneous debug record.  It only carries a filename, though, and no
   // identifier.  I'm not sure what the right thing to do for the identifier
   // is in that case, but I don't expect to find many modules without a
-  // CodeView record (or some other Airbag extension structure in place of
+  // CodeView record (or some other Breakpad extension structure in place of
   // a CodeView record).  Treat it as an error (empty identifier) for now.
 
   // TODO(mmentovai): on the Mac, provide fallbacks as in code_identifier().
@@ -1399,7 +1399,7 @@ const u_int8_t* MinidumpModule::GetCVRecord(u_int32_t* size) {
     }
 
     // If the signature doesn't match something above, it's not something
-    // that Airbag can presently handle directly.  Because some modules in
+    // that Breakpad can presently handle directly.  Because some modules in
     // the wild contain such CodeView records as MD_CVINFOCV50_SIGNATURE,
     // don't bail out here - allow the data to be returned to the user,
     // although byte-swapping can't be done.
@@ -2323,29 +2323,29 @@ void MinidumpMiscInfo::Print() {
 
 
 //
-// MinidumpAirbagInfo
+// MinidumpBreakpadInfo
 //
 
 
-MinidumpAirbagInfo::MinidumpAirbagInfo(Minidump* minidump)
+MinidumpBreakpadInfo::MinidumpBreakpadInfo(Minidump* minidump)
     : MinidumpStream(minidump),
-      airbag_info_() {
+      breakpad_info_() {
 }
 
 
-bool MinidumpAirbagInfo::Read(u_int32_t expected_size) {
+bool MinidumpBreakpadInfo::Read(u_int32_t expected_size) {
   valid_ = false;
 
-  if (expected_size != sizeof(airbag_info_))
+  if (expected_size != sizeof(breakpad_info_))
     return false;
 
-  if (!minidump_->ReadBytes(&airbag_info_, sizeof(airbag_info_)))
+  if (!minidump_->ReadBytes(&breakpad_info_, sizeof(breakpad_info_)))
     return false;
 
   if (minidump_->swap()) {
-    Swap(&airbag_info_.validity);
-    Swap(&airbag_info_.dump_thread_id);
-    Swap(&airbag_info_.requesting_thread_id);
+    Swap(&breakpad_info_.validity);
+    Swap(&breakpad_info_.dump_thread_id);
+    Swap(&breakpad_info_.requesting_thread_id);
   }
 
   valid_ = true;
@@ -2353,45 +2353,45 @@ bool MinidumpAirbagInfo::Read(u_int32_t expected_size) {
 }
 
 
-bool MinidumpAirbagInfo::GetDumpThreadID(u_int32_t *thread_id) const {
+bool MinidumpBreakpadInfo::GetDumpThreadID(u_int32_t *thread_id) const {
   if (!thread_id || !valid_ ||
-      !(airbag_info_.validity & MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID)) {
+      !(breakpad_info_.validity & MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID)) {
     return false;
   }
 
-  *thread_id = airbag_info_.dump_thread_id;
+  *thread_id = breakpad_info_.dump_thread_id;
   return true;
 }
 
 
-bool MinidumpAirbagInfo::GetRequestingThreadID(u_int32_t *thread_id)
+bool MinidumpBreakpadInfo::GetRequestingThreadID(u_int32_t *thread_id)
     const {
   if (!thread_id || !valid_ ||
-      !(airbag_info_.validity & MD_AIRBAG_INFO_VALID_REQUESTING_THREAD_ID)) {
+      !(breakpad_info_.validity & MD_BREAKPAD_INFO_VALID_REQUESTING_THREAD_ID)) {
     return false;
   }
 
-  *thread_id = airbag_info_.requesting_thread_id;
+  *thread_id = breakpad_info_.requesting_thread_id;
   return true;
 }
 
 
-void MinidumpAirbagInfo::Print() {
+void MinidumpBreakpadInfo::Print() {
   if (!valid_)
     return;
 
-  printf("MDRawAirbagInfo\n");
-  printf("  validity             = 0x%x\n", airbag_info_.validity);
+  printf("MDRawBreakpadInfo\n");
+  printf("  validity             = 0x%x\n", breakpad_info_.validity);
 
-  if (airbag_info_.validity & MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID) {
-    printf("  dump_thread_id       = 0x%x\n", airbag_info_.dump_thread_id);
+  if (breakpad_info_.validity & MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID) {
+    printf("  dump_thread_id       = 0x%x\n", breakpad_info_.dump_thread_id);
   } else {
     printf("  dump_thread_id       = (invalid)\n");
   }
 
-  if (airbag_info_.validity & MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID) {
+  if (breakpad_info_.validity & MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID) {
     printf("  requesting_thread_id = 0x%x\n",
-           airbag_info_.requesting_thread_id);
+           breakpad_info_.requesting_thread_id);
   } else {
     printf("  requesting_thread_id = (invalid)\n");
   }
@@ -2523,7 +2523,7 @@ bool Minidump::Read() {
         case MD_EXCEPTION_STREAM:
         case MD_SYSTEM_INFO_STREAM:
         case MD_MISC_INFO_STREAM:
-        case MD_AIRBAG_INFO_STREAM: {
+        case MD_BREAKPAD_INFO_STREAM: {
           if (stream_map_->find(stream_type) != stream_map_->end()) {
             // Another stream with this type was already found.  A minidump
             // file should contain at most one of each of these stream types.
@@ -2584,9 +2584,9 @@ MinidumpMiscInfo* Minidump::GetMiscInfo() {
 }
 
 
-MinidumpAirbagInfo* Minidump::GetAirbagInfo() {
-  MinidumpAirbagInfo* airbag_info;
-  return GetStream(&airbag_info);
+MinidumpBreakpadInfo* Minidump::GetBreakpadInfo() {
+  MinidumpBreakpadInfo* breakpad_info;
+  return GetStream(&breakpad_info);
 }
 
 
@@ -2766,4 +2766,4 @@ T* Minidump::GetStream(T** stream) {
 }
 
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

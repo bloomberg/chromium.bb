@@ -27,51 +27,50 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// call_stack.h: A call stack comprised of stack frames.
+// memory_region.h: Access to memory regions.
 //
-// This class manages a vector of stack frames.  It is used instead of
-// exposing the vector directly to allow the CallStack to own StackFrame
-// pointers without having to publicly export the linked_ptr class.  A
-// CallStack must be composed of pointers instead of objects to allow for
-// CPU-specific StackFrame subclasses.
-//
-// By convention, the stack frame at index 0 is the innermost callee frame,
-// and the frame at the highest index in a call stack is the outermost
-// caller.  CallStack only allows stacks to be built by pushing frames,
-// beginning with the innermost callee frame.
+// A MemoryRegion provides virtual access to a range of memory.  It is an
+// abstraction allowing the actual source of memory to be independent of
+// methods which need to access a virtual memory space.
 //
 // Author: Mark Mentovai
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_CALL_STACK_H__
-#define GOOGLE_AIRBAG_PROCESSOR_CALL_STACK_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_MEMORY_REGION_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_MEMORY_REGION_H__
 
-#include <vector>
 
-namespace google_airbag {
+#include "google_breakpad/common/breakpad_types.h"
 
-using std::vector;
 
-struct StackFrame;
-template<typename T> class linked_ptr;
+namespace google_breakpad {
 
-class CallStack {
+
+class MemoryRegion {
  public:
-  CallStack() { Clear(); }
-  ~CallStack();
+  virtual ~MemoryRegion() {}
 
-  // Resets the CallStack to its initial empty state
-  void Clear();
-  
-  const vector<StackFrame*>* frames() const { return &frames_; }
+  // The base address of this memory region.
+  virtual u_int64_t GetBase() = 0;
 
- private:
-  // Stackwalker is responsible for building the frames_ vector.
-  friend class Stackwalker;
+  // The size of this memory region.
+  virtual u_int32_t GetSize() = 0;
 
-  // Storage for pushed frames.
-  vector<StackFrame*> frames_;
+  // Access to data of various sizes within the memory region.  address
+  // is a pointer to read, and it must lie within the memory region as
+  // defined by its base address and size.  The location pointed to by
+  // value is set to the value at address.  Byte-swapping is performed
+  // if necessary so that the value is appropriate for the running
+  // program.  Returns true on success.  Fails and returns false if address
+  // is out of the region's bounds (after considering the width of value),
+  // or for other types of errors.
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int8_t*  value) = 0;
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int16_t* value) = 0;
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int32_t* value) = 0;
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int64_t* value) = 0;
 };
 
-}  // namespace google_airbag
 
-#endif  // GOOGLE_AIRBAG_PROCSSOR_CALL_STACK_H__
+}  // namespace google_breakpad
+
+
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_MEMORY_REGION_H__

@@ -54,29 +54,29 @@
 
 #include <cstdio>
 
-#include "google_airbag/common/airbag_types.h"
-#include "google_airbag/common/minidump_format.h"
-#include "google_airbag/processor/basic_source_line_resolver.h"
-#include "google_airbag/processor/call_stack.h"
-#include "google_airbag/processor/memory_region.h"
-#include "google_airbag/processor/stack_frame.h"
-#include "google_airbag/processor/stack_frame_cpu.h"
+#include "google_breakpad/common/breakpad_types.h"
+#include "google_breakpad/common/minidump_format.h"
+#include "google_breakpad/processor/basic_source_line_resolver.h"
+#include "google_breakpad/processor/call_stack.h"
+#include "google_breakpad/processor/memory_region.h"
+#include "google_breakpad/processor/stack_frame.h"
+#include "google_breakpad/processor/stack_frame_cpu.h"
 #include "processor/scoped_ptr.h"
 
-using google_airbag::BasicSourceLineResolver;
-using google_airbag::CallStack;
-using google_airbag::MemoryRegion;
-using google_airbag::scoped_ptr;
-using google_airbag::StackFrame;
-using google_airbag::StackFramePPC;
-using google_airbag::StackFrameX86;
+using google_breakpad::BasicSourceLineResolver;
+using google_breakpad::CallStack;
+using google_breakpad::MemoryRegion;
+using google_breakpad::scoped_ptr;
+using google_breakpad::StackFrame;
+using google_breakpad::StackFramePPC;
+using google_breakpad::StackFrameX86;
 
 #if defined(__i386__)
 #include "processor/stackwalker_x86.h"
-using google_airbag::StackwalkerX86;
+using google_breakpad::StackwalkerX86;
 #elif defined(__ppc__)
 #include "processor/stackwalker_ppc.h"
-using google_airbag::StackwalkerPPC;
+using google_breakpad::StackwalkerPPC;
 #endif  // __i386__ || __ppc__
 
 #define RECURSION_DEPTH 100

@@ -38,12 +38,12 @@
 // Author: Mark Mentovai
 
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_STACKWALKER_H__
-#define GOOGLE_AIRBAG_PROCESSOR_STACKWALKER_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_STACKWALKER_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_STACKWALKER_H__
 
 #include <vector>
 
-namespace google_airbag {
+namespace google_breakpad {
 
 class CallStack;
 class CodeModules;
@@ -134,7 +134,7 @@ class Stackwalker {
 };
 
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_STACKWALKER_H__
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_STACKWALKER_H__

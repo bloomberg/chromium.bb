@@ -1,5 +1,5 @@
-// Copyright (c) 2006, Google Inc. All rights reserved.
-// Author: waylonis@google.com (Dan Waylonis)
+// Copyright (c) 2006, Google Inc.
+// All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -27,6 +27,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Author: waylonis@google.com (Dan Waylonis)
+
 /*
  g++ -I../ ../common/convert_UTF.c \
  ../common/string_conversion.cc \
@@ -40,7 +42,7 @@
 
 #include "minidump_file_writer-inl.h"
 
-using google_airbag::MinidumpFileWriter;
+using google_breakpad::MinidumpFileWriter;
 
 #define ASSERT_TRUE(cond) \
 if (!(cond)) { \
@@ -72,7 +74,7 @@ static bool WriteFile(const char *path) {
   MinidumpFileWriter writer;
   if (writer.Open(path)) {
     // Test a single structure
-    google_airbag::TypedMDRVA<StringStructure> strings(&writer);
+    google_breakpad::TypedMDRVA<StringStructure> strings(&writer);
     ASSERT_TRUE(strings.Allocate());
     strings.get()->integer_value = 0xBEEF;
     const char *first = "First String";
@@ -81,7 +83,7 @@ static bool WriteFile(const char *path) {
     ASSERT_TRUE(writer.WriteString(second, 0, &strings.get()->second_string));
 
     // Test an array structure
-    google_airbag::TypedMDRVA<ArrayStructure> array(&writer);
+    google_breakpad::TypedMDRVA<ArrayStructure> array(&writer);
     unsigned int count = 10;
     ASSERT_TRUE(array.AllocateArray(count));
     for (unsigned int i = 0; i < count; ++i) {
@@ -93,7 +95,7 @@ static bool WriteFile(const char *path) {
     }
 
     // Test an object followed by an array
-    google_airbag::TypedMDRVA<ObjectAndArrayStructure> obj_array(&writer);
+    google_breakpad::TypedMDRVA<ObjectAndArrayStructure> obj_array(&writer);
     ASSERT_TRUE(obj_array.AllocateObjectAndArray(count,
                                                  sizeof(ArrayStructure)));
     obj_array.get()->count = count;

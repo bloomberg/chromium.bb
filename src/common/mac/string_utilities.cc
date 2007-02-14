@@ -32,7 +32,7 @@
 
 namespace MacStringUtils {
 
-using google_airbag::scoped_array;
+using google_breakpad::scoped_array;
 
 std::string ConvertToString(CFStringRef str) {
   CFIndex length = CFStringGetLength(str);

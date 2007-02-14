@@ -1,4 +1,4 @@
-// Copyright (c) 2006, Google Inc.
+// Copyright (c) 2007, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,42 +27,39 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// This file is used to generate minidump2.dmp and minidump2.sym.
-// cl /Zi test_app.cc /Fetest_app.exe /I google_breakpad/src \
-//   google_breakpad/src/client/windows/releasestaticcrt/exception_handler.lib \
-//   ole32.lib
-// Then run test_app to generate a dump, and dump_syms to create the .sym file.
+// cl /Zi dump_syms_regtest.cc
+// dump_syms dump_syms_regtest.pdb | tr -d '\015' > dump_syms_regtest.sym
 
-#include <cstdio>
+namespace google_breakpad {
 
-#include "client/windows/handler/exception_handler.h"
+class C {
+ public:
+  C() : member_(1) {}
+  virtual ~C() {}
 
-namespace {
+  void set_member(int value) { member_ = value; }
+  int member() const { return member_; }
 
-static bool callback(const wchar_t *dump_path, const wchar_t *id,
-                     void *context, EXCEPTION_POINTERS *exinfo,
-                     MDRawAssertionInfo *assertion,
-                     bool succeeded) {
-  if (succeeded) {
-    printf("dump guid is %ws\n", id);
-  } else {
-    printf("dump failed\n");
-  }
-  fflush(stdout);
+  void f() { member_ = g(); }
+  virtual int g() { return 2; }
+  static char* h(const C &that) { return 0; }
 
-  return succeeded;
+ private:
+  int member_;
+};
+
+static int i() {
+  return 3;
 }
 
-static void CrashFunction() {
-  int *i = reinterpret_cast<int*>(0x45);
-  *i = 5;  // crash!
-}
-
-}  // namespace
+}  // namespace google_breakpad
 
 int main(int argc, char **argv) {
-  google_breakpad::ExceptionHandler eh(L".", NULL, callback, NULL, true);
-  CrashFunction();
-  printf("did not crash?\n");
+  google_breakpad::C object;
+  object.set_member(google_breakpad::i());
+  object.f();
+  int value = object.g();
+  char *nothing = object.h(object);
+
   return 0;
 }

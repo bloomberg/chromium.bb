@@ -36,7 +36,7 @@
 
 #include <string>
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::wstring;
 
@@ -53,6 +53,6 @@ class GUIDString {
   static wstring GUIDToSymbolServerWString(GUID *guid);
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // COMMON_WINDOWS_GUID_STRING_H__

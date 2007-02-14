@@ -27,7 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-/* airbag_types.h: Precise-width types
+/* breakpad_types.h: Precise-width types
  *
  * (This is C99 source, please don't corrupt it with C++.)
  *
@@ -37,8 +37,8 @@
  *
  * Author: Mark Mentovai */
 
-#ifndef GOOGLE_AIRBAG_COMMON_AIRBAG_TYPES_H__
-#define GOOGLE_AIRBAG_COMMON_AIRBAG_TYPES_H__
+#ifndef GOOGLE_BREAKPAD_COMMON_BREAKPAD_TYPES_H__
+#define GOOGLE_BREAKPAD_COMMON_BREAKPAD_TYPES_H__
 
 #ifndef _WIN32
 
@@ -60,6 +60,6 @@ typedef struct {
   u_int64_t low;
 } u_int128_t;
 
-typedef u_int64_t airbag_time_t;
+typedef u_int64_t breakpad_time_t;
 
-#endif  /* GOOGLE_AIRBAG_COMMON_AIRBAG_TYPES_H__ */
+#endif  /* GOOGLE_BREAKPAD_COMMON_BREAKPAD_TYPES_H__ */

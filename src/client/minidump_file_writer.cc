@@ -40,7 +40,7 @@
 #include "client/minidump_file_writer-inl.h"
 #include "common/string_conversion.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 const MDRVA MinidumpFileWriter::kInvalidMDRVA = static_cast<MDRVA>(-1);
 
@@ -248,4 +248,4 @@ bool UntypedMDRVA::Copy(MDRVA position, const void *src, size_t size) {
   return writer_->Copy(position, src, size);
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

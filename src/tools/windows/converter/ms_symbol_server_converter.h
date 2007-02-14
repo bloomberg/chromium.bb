@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // ms_symbol_server_converter.h: Obtain symbol files from a Microsoft
-// symbol server, and convert them to Airbag's dumped format.
+// symbol server, and convert them to Breakpad's dumped format.
 //
 // At runtime, MSSymbolServerConverter and code that it calls depend on being
 // able to locate suitable versions of dbghelp.dll and symsrv.dll.  For best
@@ -71,7 +71,7 @@
 #include <string>
 #include <vector>
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 using std::vector;
@@ -196,6 +196,6 @@ class MSSymbolServerConverter {
                          // fail_* member set, then it is authoritative.
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // MS_SYMBOL_SERVER_CONVERTER_H__

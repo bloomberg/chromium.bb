@@ -49,7 +49,7 @@
 #define WIN_STRING_FORMAT_LL "I64"
 #endif  // MSC_VER >= 1400
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 using std::wstring;
@@ -140,6 +140,6 @@ inline void WindowsStringUtils::safe_wcsncpy(wchar_t *destination,
 #endif  // _MSC_VER >= 1400
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // COMMON_WINDOWS_STRING_UTILS_INL_H__

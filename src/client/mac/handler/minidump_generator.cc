@@ -45,7 +45,7 @@
 using MacStringUtils::ConvertToString;
 using MacStringUtils::IntegerValueAtIndex;
 
-namespace google_airbag {
+namespace google_breakpad {
   
 MinidumpGenerator::MinidumpGenerator()
     : exception_type_(0),
@@ -136,7 +136,7 @@ bool MinidumpGenerator::Write(const char *path) {
     &MinidumpGenerator::WriteSystemInfoStream,
     &MinidumpGenerator::WriteModuleListStream,
     &MinidumpGenerator::WriteMiscInfoStream,
-    &MinidumpGenerator::WriteAirbagInfoStream,
+    &MinidumpGenerator::WriteBreakpadInfoStream,
     // Exception stream needs to be the last entry in this array as it may
     // be omitted in the case where the minidump is written without an
     // exception.
@@ -679,24 +679,24 @@ bool MinidumpGenerator::WriteMiscInfoStream(MDRawDirectory *misc_info_stream) {
   return true;
 }
 
-bool MinidumpGenerator::WriteAirbagInfoStream(
-    MDRawDirectory *airbag_info_stream) {
-  TypedMDRVA<MDRawAirbagInfo> info(&writer_);
+bool MinidumpGenerator::WriteBreakpadInfoStream(
+    MDRawDirectory *breakpad_info_stream) {
+  TypedMDRVA<MDRawBreakpadInfo> info(&writer_);
 
   if (!info.Allocate())
     return false;
 
-  airbag_info_stream->stream_type = MD_AIRBAG_INFO_STREAM;
-  airbag_info_stream->location = info.location();
-  MDRawAirbagInfo *info_ptr = info.get();
+  breakpad_info_stream->stream_type = MD_BREAKPAD_INFO_STREAM;
+  breakpad_info_stream->location = info.location();
+  MDRawBreakpadInfo *info_ptr = info.get();
 
   if (exception_thread_ && exception_type_) {
-    info_ptr->validity = MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID |
-                         MD_AIRBAG_INFO_VALID_REQUESTING_THREAD_ID;
+    info_ptr->validity = MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID |
+                         MD_BREAKPAD_INFO_VALID_REQUESTING_THREAD_ID;
     info_ptr->dump_thread_id = mach_thread_self();
     info_ptr->requesting_thread_id = exception_thread_;
   } else {
-    info_ptr->validity = MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID;
+    info_ptr->validity = MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID;
     info_ptr->dump_thread_id = mach_thread_self();
     info_ptr->requesting_thread_id = 0;
   }
@@ -704,4 +704,4 @@ bool MinidumpGenerator::WriteAirbagInfoStream(
   return true;
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

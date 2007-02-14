@@ -37,7 +37,7 @@
 #include "client/windows/handler/exception_handler.h"
 #include "common/windows/guid_string.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 static const int kExceptionHandlerThreadInitialStackSize = 64 * 1024;
 
@@ -144,7 +144,7 @@ ExceptionHandler::~ExceptionHandler() {
     } else {
       // TODO(mmentovai): use advapi32!ReportEvent to log the warning to the
       // system's application event log.
-      fprintf(stderr, "warning: removing Airbag handler out of order\n");
+      fprintf(stderr, "warning: removing Breakpad handler out of order\n");
       for (vector<ExceptionHandler *>::iterator iterator =
                handler_stack_->begin();
            iterator != handler_stack_->end();
@@ -202,7 +202,7 @@ DWORD ExceptionHandler::ExceptionHandlerThreadMain(void *lpParameter) {
 class AutoExceptionHandler {
  public:
   AutoExceptionHandler() {
-    // Increment handler_stack_index_ so that if another Airbag handler is
+    // Increment handler_stack_index_ so that if another Breakpad handler is
     // registered using this same HandleException function, and it needs to be
     // called while this handler is running (either becaause this handler
     // declines to handle the exception, or an exception occurs during
@@ -415,23 +415,23 @@ bool ExceptionHandler::WriteMinidumpWithException(
       except_info.ExceptionPointers = exinfo;
       except_info.ClientPointers = FALSE;
 
-      // Add an MDRawAirbagInfo stream to the minidump, to provide additional
-      // information about the exception handler to the Airbag processor.  The
+      // Add an MDRawBreakpadInfo stream to the minidump, to provide additional
+      // information about the exception handler to the Breakpad processor.  The
       // information will help the processor determine which threads are
-      // relevant.  The Airbag processor does not require this information but
-      // can function better with Airbag-generated dumps when it is present.
+      // relevant.  The Breakpad processor does not require this information but
+      // can function better with Breakpad-generated dumps when it is present.
       // The native debugger is not harmed by the presence of this information.
-      MDRawAirbagInfo airbag_info;
-      airbag_info.validity = MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID |
-                             MD_AIRBAG_INFO_VALID_REQUESTING_THREAD_ID;
-      airbag_info.dump_thread_id = GetCurrentThreadId();
-      airbag_info.requesting_thread_id = requesting_thread_id;
+      MDRawBreakpadInfo breakpad_info;
+      breakpad_info.validity = MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID |
+                             MD_BREAKPAD_INFO_VALID_REQUESTING_THREAD_ID;
+      breakpad_info.dump_thread_id = GetCurrentThreadId();
+      breakpad_info.requesting_thread_id = requesting_thread_id;
 
       // Leave room in user_stream_array for a possible assertion info stream.
       MINIDUMP_USER_STREAM user_stream_array[2];
-      user_stream_array[0].Type = MD_AIRBAG_INFO_STREAM;
-      user_stream_array[0].BufferSize = sizeof(airbag_info);
-      user_stream_array[0].Buffer = &airbag_info;
+      user_stream_array[0].Type = MD_BREAKPAD_INFO_STREAM;
+      user_stream_array[0].BufferSize = sizeof(breakpad_info);
+      user_stream_array[0].Buffer = &breakpad_info;
 
       MINIDUMP_USER_STREAM_INFORMATION user_streams;
       user_streams.UserStreamCount = 1;
@@ -479,4 +479,4 @@ void ExceptionHandler::UpdateNextID() {
   next_minidump_path_c_ = next_minidump_path_.c_str();
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

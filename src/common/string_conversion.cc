@@ -34,7 +34,7 @@
 using std::string;
 using std::vector;
 
-namespace google_airbag {
+namespace google_breakpad {
 
 void UTF8ToUTF16(const char *in, vector<u_int16_t> *out) {
   size_t source_length = strlen(in);
@@ -151,4 +151,4 @@ string UTF16ToUTF8(const vector<u_int16_t> &in, bool swap) {
   return "";
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

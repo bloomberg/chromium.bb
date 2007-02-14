@@ -40,7 +40,7 @@
 
 #include <string>
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 
@@ -48,13 +48,13 @@ struct ExceptionParameters;
 
 class ExceptionHandler {
  public:
-  // A callback function to run before Airbag performs any substantial
+  // A callback function to run before Breakpad performs any substantial
   // processing of an exception.  A FilterCallback is called before writing
   // a minidump.  context is the parameter supplied by the user as
   // callback_context when the handler was created.
   //
-  // If a FilterCallback returns true, Airbag will continue processing,
-  // attempting to write a minidump.  If a FilterCallback returns false, Airbag
+  // If a FilterCallback returns true, Breakpad will continue processing,
+  // attempting to write a minidump.  If a FilterCallback returns false, Breakpad
   // will immediately report the exception as unhandled without writing a
   // minidump, allowing another handler the opportunity to handle it.
   typedef bool (*FilterCallback)(void *context);
@@ -64,7 +64,7 @@ class ExceptionHandler {
   // file is <dump_dir>/<minidump_id>.dmp.
   // |context| is the value passed into the constructor. 
   // |succeeded| indicates whether a minidump file was successfully written.
-  // Return true if the exception was fully handled and airbag should exit.
+  // Return true if the exception was fully handled and breakpad should exit.
   // Return false to allow any other exception handlers to process the 
   // exception.
   typedef bool (*MinidumpCallback)(const char *dump_dir,
@@ -183,6 +183,6 @@ class ExceptionHandler {
   bool use_minidump_write_mutex_;
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // CLIENT_MAC_HANDLER_EXCEPTION_HANDLER_H__

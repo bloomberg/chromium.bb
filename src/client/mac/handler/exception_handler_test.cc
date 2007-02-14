@@ -1,4 +1,3 @@
-//
 // Copyright (c) 2006, Google Inc.
 // All rights reserved.
 //
@@ -39,6 +38,7 @@ g++ -framework CoreFoundation -I../../.. \
 	exception_handler_test.cc \
 	-o exception_handler_test
 */
+
 #include <pthread.h>
 #include <pwd.h>
 #include <unistd.h>
@@ -49,7 +49,7 @@ g++ -framework CoreFoundation -I../../.. \
 #include "minidump_generator.h"
 
 using std::string;
-using google_airbag::ExceptionHandler;
+using google_breakpad::ExceptionHandler;
 
 static void *SleepyFunction(void *) {
   while (1) {

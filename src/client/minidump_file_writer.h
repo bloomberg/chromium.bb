@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // minidump_file_writer.h:  Implements file-based minidump generation.  It's
-// intended to be used with the Google Airbag open source crash handling
+// intended to be used with the Google Breakpad open source crash handling
 // project.
 
 #ifndef CLIENT_MINIDUMP_FILE_WRITER_H__
@@ -36,9 +36,9 @@
 
 #include <string>
 
-#include "google_airbag/common/minidump_format.h"
+#include "google_breakpad/common/minidump_format.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 class UntypedMDRVA;
 template<typename MDType> class TypedMDRVA;
@@ -245,6 +245,6 @@ class TypedMDRVA : public UntypedMDRVA {
   AllocationState allocation_state_;
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // CLIENT_MINIDUMP_FILE_WRITER_H__

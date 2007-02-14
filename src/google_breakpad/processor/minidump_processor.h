@@ -27,12 +27,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_MINIDUMP_PROCESSOR_H__
-#define GOOGLE_AIRBAG_PROCESSOR_MINIDUMP_PROCESSOR_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_MINIDUMP_PROCESSOR_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_MINIDUMP_PROCESSOR_H__
 
 #include <string>
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 
@@ -86,6 +86,6 @@ class MinidumpProcessor {
   SourceLineResolverInterface *resolver_;
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_MINIDUMP_PROCESSOR_H__
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_MINIDUMP_PROCESSOR_H__

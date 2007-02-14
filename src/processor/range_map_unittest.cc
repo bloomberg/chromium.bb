@@ -44,9 +44,9 @@
 namespace {
 
 
-using google_airbag::linked_ptr;
-using google_airbag::scoped_ptr;
-using google_airbag::RangeMap;
+using google_breakpad::linked_ptr;
+using google_breakpad::scoped_ptr;
+using google_breakpad::RangeMap;
 
 
 // A CountedObject holds an int.  A global (not thread safe!) count of

@@ -31,14 +31,14 @@
 //
 // Author: Mark Mentovai
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_PROCESS_STATE_H__
-#define GOOGLE_AIRBAG_PROCESSOR_PROCESS_STATE_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_PROCESS_STATE_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_PROCESS_STATE_H__
 
 #include <string>
 #include <vector>
-#include "google_airbag/processor/system_info.h"
+#include "google_breakpad/processor/system_info.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 using std::vector;
@@ -90,10 +90,10 @@ class ProcessState {
   // The index of the thread that requested a dump be written in the
   // threads vector.  If a dump was produced as a result of a crash, this
   // will point to the thread that crashed.  If the dump was produced as
-  // by user code without crashing, and the dump contains extended Airbag
+  // by user code without crashing, and the dump contains extended Breakpad
   // information, this will point to the thread that requested the dump.
   // If the dump was not produced as a result of an exception and no
-  // extended Airbag information is present, this field will be set to -1,
+  // extended Breakpad information is present, this field will be set to -1,
   // indicating that the dump thread is not available.
   int requesting_thread_;
 
@@ -109,6 +109,6 @@ class ProcessState {
   const CodeModules *modules_;
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_PROCESS_STATE_H__
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_PROCESS_STATE_H__

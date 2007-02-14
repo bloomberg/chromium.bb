@@ -37,11 +37,11 @@
 #include <cassert>
 
 #include "processor/basic_code_modules.h"
-#include "google_airbag/processor/code_module.h"
+#include "google_breakpad/processor/code_module.h"
 #include "processor/linked_ptr.h"
 #include "processor/range_map-inl.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 BasicCodeModules::BasicCodeModules(const CodeModules *that)
     : main_address_(0),
@@ -109,4 +109,4 @@ const CodeModules* BasicCodeModules::Copy() const {
   return new BasicCodeModules(this);
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

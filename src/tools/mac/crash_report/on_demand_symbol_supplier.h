@@ -28,16 +28,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // on_demand_symbol_supplier.h: Provides a Symbol Supplier that will create
-// an airbag symbol file on demand.
+// an breakpad symbol file on demand.
 
 #ifndef TOOLS_MAC_CRASH_REPORT_ON_DEMAND_SYMBOL_SUPPLIER_H__
 #define TOOLS_MAC_CRASH_REPORT_ON_DEMAND_SYMBOL_SUPPLIER_H__
 
 #include <map>
 #include <string>
-#include "google_airbag/processor/symbol_supplier.h"
+#include "google_breakpad/processor/symbol_supplier.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::map;
 using std::string;
@@ -79,12 +79,12 @@ class OnDemandSymbolSupplier : public SymbolSupplier {
   // returned, then |module| doesn't have a symbol file.
   string GetModuleSymbolFile(const CodeModule *module);
 
-  // Generate the airbag symbol file for |module|.  Return true if successful.
+  // Generate the breakpad symbol file for |module|.  Return true if successful.
   // File is generated in /tmp.
   bool GenerateSymbolFile(const CodeModule *module,
                           const SystemInfo *system_info);
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // TOOLS_MAC_CRASH_REPORT_ON_DEMAND_SYMBOL_SUPPLIER_H__

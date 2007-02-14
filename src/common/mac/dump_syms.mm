@@ -1,4 +1,3 @@
-//
 // Copyright (c) 2006, Google Inc.
 // All rights reserved.
 //
@@ -45,7 +44,7 @@
 #import "dump_syms.h"
 #import "common/mac/file_id.h"
 
-using google_airbag::FileID;
+using google_breakpad::FileID;
 
 static NSString *kAddressSymbolKey = @"symbol";
 static NSString *kAddressConvertedSymbolKey = @"converted_symbol";

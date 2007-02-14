@@ -29,14 +29,14 @@
 
 #include <cassert>
 
-#include "google_airbag/processor/minidump_processor.h"
-#include "google_airbag/processor/call_stack.h"
-#include "google_airbag/processor/minidump.h"
-#include "google_airbag/processor/process_state.h"
+#include "google_breakpad/processor/minidump_processor.h"
+#include "google_breakpad/processor/call_stack.h"
+#include "google_breakpad/processor/minidump.h"
+#include "google_breakpad/processor/process_state.h"
 #include "processor/scoped_ptr.h"
 #include "processor/stackwalker_x86.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier,
                                      SourceLineResolverInterface *resolver)
@@ -67,11 +67,11 @@ MinidumpProcessor::ProcessResult MinidumpProcessor::Process(
   u_int32_t requesting_thread_id = 0;
   bool has_requesting_thread = false;
 
-  MinidumpAirbagInfo *airbag_info = dump.GetAirbagInfo();
-  if (airbag_info) {
-    has_dump_thread = airbag_info->GetDumpThreadID(&dump_thread_id);
+  MinidumpBreakpadInfo *breakpad_info = dump.GetBreakpadInfo();
+  if (breakpad_info) {
+    has_dump_thread = breakpad_info->GetDumpThreadID(&dump_thread_id);
     has_requesting_thread =
-        airbag_info->GetRequestingThreadID(&requesting_thread_id);
+        breakpad_info->GetRequestingThreadID(&requesting_thread_id);
   }
 
   MinidumpException *exception = dump.GetException();
@@ -675,4 +675,4 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
   return reason;
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

@@ -37,7 +37,7 @@
 
 #include "common/windows/guid_string.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 // static
 wstring GUIDString::GUIDToWString(GUID *guid) {
@@ -65,4 +65,4 @@ wstring GUIDString::GUIDToSymbolServerWString(GUID *guid) {
   return wstring(guid_string);
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

@@ -64,11 +64,11 @@
  * Author: Mark Mentovai */
  
 
-#ifndef GOOGLE_AIRBAG_COMMON_MINIDUMP_FORMAT_H__
-#define GOOGLE_AIRBAG_COMMON_MINIDUMP_FORMAT_H__
+#ifndef GOOGLE_BREAKPAD_COMMON_MINIDUMP_FORMAT_H__
+#define GOOGLE_BREAKPAD_COMMON_MINIDUMP_FORMAT_H__
 
 
-#include "google_airbag/common/airbag_types.h"
+#include "google_breakpad/common/breakpad_types.h"
 
 
 #if defined(_MSC_VER)
@@ -195,7 +195,7 @@ typedef struct {
      /* CONTEXT_ALL */
 
 /* Non-x86 CPU identifiers found in the high 26 bits of
- * (MDRawContext*).context_flags.  These aren't used by Airbag, but are
+ * (MDRawContext*).context_flags.  These aren't used by Breakpad, but are
  * defined here for reference, to avoid assigning values that conflict
  * (although some values already conflict). */
 #define MD_CONTEXT_IA64  0x00080000  /* CONTEXT_IA64 */
@@ -210,7 +210,7 @@ typedef struct {
 
 
 /*
- * Airbag minidump extension for PowerPC support.  Based on Darwin/Mac OS X'
+ * Breakpad minidump extension for PowerPC support.  Based on Darwin/Mac OS X'
  * mach/ppc/_types.h
  */
 
@@ -277,7 +277,7 @@ typedef struct {
 } MDRawContextPPC;  /* Based on ppc_thread_state */
 
 /* For (MDRawContextPPC).context_flags.  These values indicate the type of
- * context stored in the structure.  MD_CONTEXT_PPC is Airbag-defined.  Its
+ * context stored in the structure.  MD_CONTEXT_PPC is Breakpad-defined.  Its
  * value was chosen to avoid likely conflicts with MD_CONTEXT_* for other
  * CPUs. */
 #define MD_CONTEXT_PPC                0x20000000
@@ -493,8 +493,8 @@ typedef enum {
   MD_MISC_INFO_STREAM            = 15,  /* MDRawMiscInfo */
   MD_LAST_RESERVED_STREAM        = 0x0000ffff,
 
-  /* Airbag extension types.  0x4767 = "Gg" */
-  MD_AIRBAG_INFO_STREAM          = 0x47670001,  /* MDRawAirbagInfo */
+  /* Breakpad extension types.  0x4767 = "Gg" */
+  MD_BREAKPAD_INFO_STREAM          = 0x47670001,  /* MDRawBreakpadInfo */
   MD_ASSERTION_INFO_STREAM       = 0x47670002   /* MDRawAssertionInfo */
 } MDStreamType;  /* MINIDUMP_STREAM_TYPE */
 
@@ -707,7 +707,7 @@ typedef enum {
       /* EXCEPTION_POSSIBLE_DEADLOCK */
 } MDExceptionCodeWin;
 
-/* For (MDException).exception_code.  Airbag minidump extension for Mac OS X
+/* For (MDException).exception_code.  Breakpad minidump extension for Mac OS X
  * support.  Based on Darwin/Mac OS X' mach/exception_types.h.  This is
  * what Mac OS X calls an "exception", not a "code". */
 typedef enum {
@@ -733,7 +733,7 @@ typedef enum {
       /* EXC_RPC_ALERT */
 } MDExceptionMac;
 
-/* For (MDException).exception_flags.  Airbag minidump extension for Mac OS X
+/* For (MDException).exception_flags.  Breakpad minidump extension for Mac OS X
  * support.  Based on Darwin/Mac OS X' mach/ppc/exception.h and
  * mach/i386/exception.h.  This is what Mac OS X calls a "code". */
 typedef enum {
@@ -944,7 +944,7 @@ typedef enum {
   MD_OS_WIN32_CE      = 3,  /* VER_PLATFORM_WIN32_CE, VER_PLATFORM_WIN32_HH
                              * (Windows CE, Windows Mobile, "Handheld") */
 
-  /* The following values are Airbag-defined. */
+  /* The following values are Breakpad-defined. */
   MD_OS_UNIX          = 0x8000,  /* Generic Unix-ish */
   MD_OS_MAC_OS_X      = 0x8101,  /* Mac OS X/Darwin */
   MD_OS_LINUX         = 0x8201,  /* Linux */
@@ -993,12 +993,12 @@ typedef enum {
 
 
 /*
- * Airbag extension types
+ * Breakpad extension types
  */
 
 
 typedef struct {
-  /* validity is a bitmask with values from MDAirbagInfoValidity, indicating
+  /* validity is a bitmask with values from MDBreakpadInfoValidity, indicating
    * which of the other fields in the structure are valid. */
   u_int32_t validity;
 
@@ -1007,7 +1007,7 @@ typedef struct {
    * a dedicated thread in that list was used to produce the minidump.  If
    * the MDRawThreadList does not contain a dedicated thread used to produce
    * the minidump, this field should be set to 0 and the validity field
-   * must not contain MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID. */
+   * must not contain MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID. */
   u_int32_t dump_thread_id;
 
   /* Thread ID of the thread that requested the minidump be produced.  As
@@ -1020,18 +1020,18 @@ typedef struct {
    * written.  If the minidump was produced at the request of something
    * other than a thread in the MDRawThreadList, this field should be set
    * to 0 and the validity field must not contain
-   * MD_AIRBAG_INFO_VALID_REQUESTING_THREAD_ID. */
+   * MD_BREAKPAD_INFO_VALID_REQUESTING_THREAD_ID. */
   u_int32_t requesting_thread_id;
-} MDRawAirbagInfo;
+} MDRawBreakpadInfo;
 
-/* For (MDRawAirbagInfo).validity: */
+/* For (MDRawBreakpadInfo).validity: */
 typedef enum {
   /* When set, the dump_thread_id field is valid. */
-  MD_AIRBAG_INFO_VALID_DUMP_THREAD_ID       = 1 << 0,
+  MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID       = 1 << 0,
 
   /* When set, the requesting_thread_id field is valid. */
-  MD_AIRBAG_INFO_VALID_REQUESTING_THREAD_ID = 1 << 1
-} MDAirbagInfoValidity;
+  MD_BREAKPAD_INFO_VALID_REQUESTING_THREAD_ID = 1 << 1
+} MDBreakpadInfoValidity;
 
 typedef struct {
   /* expression, function, and file are 0-terminated UTF-16 strings.  They
@@ -1060,4 +1060,4 @@ typedef enum {
 #endif  /* _MSC_VER */
 
 
-#endif  /* GOOGLE_AIRBAG_COMMON_MINIDUMP_FORMAT_H__ */
+#endif  /* GOOGLE_BREAKPAD_COMMON_MINIDUMP_FORMAT_H__ */

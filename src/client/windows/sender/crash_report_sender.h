@@ -45,7 +45,7 @@
 #include <map>
 #include <string>
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::wstring;
 using std::map;
@@ -83,7 +83,7 @@ class CrashReportSender {
   ~CrashReportSender();
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #pragma warning( pop )
 

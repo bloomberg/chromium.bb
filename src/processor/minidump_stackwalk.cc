@@ -37,14 +37,14 @@
 #include <string>
 #include <vector>
 
-#include "google_airbag/processor/basic_source_line_resolver.h"
-#include "google_airbag/processor/call_stack.h"
-#include "google_airbag/processor/code_module.h"
-#include "google_airbag/processor/code_modules.h"
-#include "google_airbag/processor/minidump.h"
-#include "google_airbag/processor/minidump_processor.h"
-#include "google_airbag/processor/process_state.h"
-#include "google_airbag/processor/stack_frame_cpu.h"
+#include "google_breakpad/processor/basic_source_line_resolver.h"
+#include "google_breakpad/processor/call_stack.h"
+#include "google_breakpad/processor/code_module.h"
+#include "google_breakpad/processor/code_modules.h"
+#include "google_breakpad/processor/minidump.h"
+#include "google_breakpad/processor/minidump_processor.h"
+#include "google_breakpad/processor/process_state.h"
+#include "google_breakpad/processor/stack_frame_cpu.h"
 #include "processor/pathname_stripper.h"
 #include "processor/scoped_ptr.h"
 #include "processor/simple_symbol_supplier.h"
@@ -53,19 +53,19 @@ namespace {
 
 using std::string;
 using std::vector;
-using google_airbag::BasicSourceLineResolver;
-using google_airbag::CallStack;
-using google_airbag::CodeModule;
-using google_airbag::CodeModules;
-using google_airbag::MinidumpModule;
-using google_airbag::MinidumpProcessor;
-using google_airbag::PathnameStripper;
-using google_airbag::ProcessState;
-using google_airbag::scoped_ptr;
-using google_airbag::SimpleSymbolSupplier;
-using google_airbag::StackFrame;
-using google_airbag::StackFramePPC;
-using google_airbag::StackFrameX86;
+using google_breakpad::BasicSourceLineResolver;
+using google_breakpad::CallStack;
+using google_breakpad::CodeModule;
+using google_breakpad::CodeModules;
+using google_breakpad::MinidumpModule;
+using google_breakpad::MinidumpProcessor;
+using google_breakpad::PathnameStripper;
+using google_breakpad::ProcessState;
+using google_breakpad::scoped_ptr;
+using google_breakpad::SimpleSymbolSupplier;
+using google_breakpad::StackFrame;
+using google_breakpad::StackFramePPC;
+using google_breakpad::StackFrameX86;
 
 // Separator character for machine readable output.
 static const char kOutputSeparator = '|';

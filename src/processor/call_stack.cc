@@ -33,10 +33,10 @@
 //
 // Author: Mark Mentovai
 
-#include "google_airbag/processor/call_stack.h"
-#include "google_airbag/processor/stack_frame.h"
+#include "google_breakpad/processor/call_stack.h"
+#include "google_breakpad/processor/stack_frame.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 CallStack::~CallStack() {
   Clear();
@@ -50,4 +50,4 @@ void CallStack::Clear() {
   }
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

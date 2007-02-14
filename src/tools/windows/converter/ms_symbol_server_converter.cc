@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // ms_symbol_server_converter.cc: Obtain symbol files from a Microsoft
-// symbol server, and convert them to Airbag's dumped format.
+// symbol server, and convert them to Breakpad's dumped format.
 //
 // See ms_symbol_server_converter.h for documentation.
 //
@@ -52,7 +52,7 @@
 #define SYMOPT_NO_PROMPTS 0x00080000
 #endif  // SYMOPT_NO_PROMPTS
 
-namespace google_airbag {
+namespace google_breakpad {
 
 // Use sscanf_s if it is available, to quench the warning about scanf being
 // deprecated.  Use scanf where sscanf_is not available.  Note that the
@@ -513,4 +513,4 @@ MSSymbolServerConverter::LocateAndConvertSymbolFile(
   return LOCATE_SUCCESS;
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

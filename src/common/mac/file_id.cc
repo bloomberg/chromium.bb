@@ -26,7 +26,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
+
 // file_id.cc: Return a unique identifier for a file
 //
 // See file_id.h for documentation
@@ -42,7 +42,7 @@
 
 using MacFileUtilities::MachoID;
 
-namespace google_airbag {
+namespace google_breakpad {
 
 FileID::FileID(const char *path) {
   strlcpy(path_, path, sizeof(path_));
@@ -101,4 +101,4 @@ void FileID::ConvertIdentifierToString(const unsigned char identifier[16],
   buffer[(buffer_idx < buffer_length) ? buffer_idx : buffer_idx - 1] = 0;
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

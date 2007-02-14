@@ -41,9 +41,9 @@
 #ifndef PROCESSOR_BASIC_CODE_MODULES_H__
 #define PROCESSOR_BASIC_CODE_MODULES_H__
 
-#include "google_airbag/processor/code_modules.h"
+#include "google_breakpad/processor/code_modules.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 template<typename T> class linked_ptr;
 template<typename AddressType, typename EntryType> class RangeMap;
@@ -80,6 +80,6 @@ class BasicCodeModules : public CodeModules {
   void operator=(const BasicCodeModules &that);
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // PROCESSOR_BASIC_CODE_MODULES_H__

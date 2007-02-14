@@ -36,7 +36,7 @@
 //                    "11111111BBBB3333DDDD555555555555F"
 //  os: the operating system that the module was built for
 //  cpu: the CPU that the module was built for (x86 or ppc)
-//  symbol_file: the contents of the airbag-format symbol file
+//  symbol_file: the contents of the breakpad-format symbol file
 
 #include <unistd.h>
 

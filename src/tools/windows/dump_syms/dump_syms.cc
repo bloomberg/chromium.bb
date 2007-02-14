@@ -37,7 +37,7 @@
 #include "common/windows/pdb_source_line_writer.h"
 
 using std::wstring;
-using google_airbag::PDBSourceLineWriter;
+using google_breakpad::PDBSourceLineWriter;
 
 int wmain(int argc, wchar_t **argv) {
   if (argc < 2) {

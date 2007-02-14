@@ -47,24 +47,24 @@ dist_doc_DATA = \
 
 
 ## Libraries
-lib_LTLIBRARIES = src/libairbag.la
+lib_LTLIBRARIES = src/libbreakpad.la
 
-src_libairbag_la_SOURCES = \
-	src/google_airbag/common/airbag_types.h \
-	src/google_airbag/common/minidump_format.h \
-	src/google_airbag/processor/basic_source_line_resolver.h \
-	src/google_airbag/processor/call_stack.h \
-	src/google_airbag/processor/code_module.h \
-	src/google_airbag/processor/code_modules.h \
-	src/google_airbag/processor/memory_region.h \
-	src/google_airbag/processor/minidump.h \
-	src/google_airbag/processor/minidump_processor.h \
-	src/google_airbag/processor/process_state.h \
-	src/google_airbag/processor/stack_frame.h \
-	src/google_airbag/processor/stack_frame_cpu.h \
-	src/google_airbag/processor/stackwalker.h \
-	src/google_airbag/processor/symbol_supplier.h \
-	src/google_airbag/processor/system_info.h \
+src_libbreakpad_la_SOURCES = \
+	src/google_breakpad/common/breakpad_types.h \
+	src/google_breakpad/common/minidump_format.h \
+	src/google_breakpad/processor/basic_source_line_resolver.h \
+	src/google_breakpad/processor/call_stack.h \
+	src/google_breakpad/processor/code_module.h \
+	src/google_breakpad/processor/code_modules.h \
+	src/google_breakpad/processor/memory_region.h \
+	src/google_breakpad/processor/minidump.h \
+	src/google_breakpad/processor/minidump_processor.h \
+	src/google_breakpad/processor/process_state.h \
+	src/google_breakpad/processor/stack_frame.h \
+	src/google_breakpad/processor/stack_frame_cpu.h \
+	src/google_breakpad/processor/stackwalker.h \
+	src/google_breakpad/processor/symbol_supplier.h \
+	src/google_breakpad/processor/system_info.h \
 	src/processor/address_map.h \
 	src/processor/address_map-inl.h \
 	src/processor/basic_code_module.h \
@@ -199,19 +199,43 @@ src_processor_minidump_stackwalk_LDADD = \
 ## Additional files to be included in a source distribution
 ##
 ## find src/client src/common src/processor/testdata src/tools \
-##     -type f \! -wholename '*/.svn*' -print | sort
+##     -type f \! -path '*/.svn/*' -print | sort
 EXTRA_DIST = \
 	$(SCRIPTS) \
+	src/client/mac/handler/exception_handler.cc \
+	src/client/mac/handler/exception_handler.h \
+	src/client/mac/handler/exception_handler_test.cc \
+	src/client/mac/handler/minidump_generator.cc \
+	src/client/mac/handler/minidump_generator.h \
+	src/client/mac/handler/minidump_generator_test.cc \
+	src/client/mac/handler/minidump_test.xcodeproj/project.pbxproj \
 	src/client/minidump_file_writer.cc \
 	src/client/minidump_file_writer.h \
 	src/client/minidump_file_writer-inl.h \
-	src/client/windows/airbag_client.sln \
+	src/client/minidump_file_writer_unittest.cc \
+	src/client/windows/breakpad_client.sln \
 	src/client/windows/handler/exception_handler.cc \
 	src/client/windows/handler/exception_handler.h \
 	src/client/windows/handler/exception_handler.vcproj \
 	src/client/windows/sender/crash_report_sender.cc \
 	src/client/windows/sender/crash_report_sender.h \
 	src/client/windows/sender/crash_report_sender.vcproj \
+	src/common/convert_UTF.c \
+	src/common/convert_UTF.h \
+	src/common/mac/HTTPMultipartUpload.h \
+	src/common/mac/HTTPMultipartUpload.m \
+	src/common/mac/dump_syms.h \
+	src/common/mac/dump_syms.mm \
+	src/common/mac/file_id.cc \
+	src/common/mac/file_id.h \
+	src/common/mac/macho_id.cc \
+	src/common/mac/macho_id.h \
+	src/common/mac/macho_walker.cc \
+	src/common/mac/macho_walker.h \
+	src/common/mac/string_utilities.cc \
+	src/common/mac/string_utilities.h \
+	src/common/string_conversion.cc \
+	src/common/string_conversion.h \
 	src/common/windows/guid_string.cc \
 	src/common/windows/guid_string.h \
 	src/common/windows/http_upload.cc \
@@ -219,6 +243,7 @@ EXTRA_DIST = \
 	src/common/windows/pdb_source_line_writer.cc \
 	src/common/windows/pdb_source_line_writer.h \
 	src/common/windows/string_utils-inl.h \
+	src/common/windows/string_utils.cc \
 	src/processor/testdata/minidump2.dmp \
 	src/processor/testdata/minidump2.dump.out \
 	src/processor/testdata/minidump2.stackwalk.machine_readable.out \
@@ -227,13 +252,26 @@ EXTRA_DIST = \
 	src/processor/testdata/module2.out \
 	src/processor/testdata/module3_bad.out \
 	src/processor/testdata/symbols/kernel32.pdb/BCE8785C57B44245A669896B6A19B9542/kernel32.sym \
-	src/processor/testdata/symbols/test_app.pdb/8DDB7E9A365748938D6EB08B1DCA31AA1/test_app.sym \
+	src/processor/testdata/symbols/test_app.pdb/5A9832E5287241C1838ED98914E9B7FF1/test_app.sym \
 	src/processor/testdata/test_app.cc \
+	src/tools/mac/crash_report/crash_report.mm \
+	src/tools/mac/crash_report/crash_report.xcodeproj/project.pbxproj \
+	src/tools/mac/crash_report/on_demand_symbol_supplier.h \
+	src/tools/mac/crash_report/on_demand_symbol_supplier.mm \
+	src/tools/mac/dump_syms/dump_syms.xcodeproj/project.pbxproj \
+	src/tools/mac/dump_syms/dump_syms_tool.m \
+	src/tools/mac/symupload/minidump_upload.m \
+	src/tools/mac/symupload/symupload.m \
+	src/tools/mac/symupload/symupload.xcodeproj/project.pbxproj \
+	src/tools/windows/converter/ms_symbol_server_converter.cc \
+	src/tools/windows/converter/ms_symbol_server_converter.h \
+	src/tools/windows/converter/ms_symbol_server_converter.vcproj \
 	src/tools/windows/dump_syms/dump_syms.cc \
 	src/tools/windows/dump_syms/dump_syms.vcproj \
 	src/tools/windows/dump_syms/run_regtest.sh \
-	src/tools/windows/dump_syms/testdata/dump_syms_regtest.out \
+	src/tools/windows/dump_syms/testdata/dump_syms_regtest.cc \
 	src/tools/windows/dump_syms/testdata/dump_syms_regtest.pdb \
+	src/tools/windows/dump_syms/testdata/dump_syms_regtest.sym \
 	src/tools/windows/symupload/symupload.cc \
 	src/tools/windows/symupload/symupload.vcproj
 

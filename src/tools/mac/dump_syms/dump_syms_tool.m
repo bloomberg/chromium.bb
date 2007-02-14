@@ -67,7 +67,7 @@ static void Start(Options *options) {
 
 //=============================================================================
 static void Usage(int argc, const char *argv[]) {
-  fprintf(stderr, "Output an Airbag symbol file from a Mach-o file.\n");
+  fprintf(stderr, "Output an Breakpad symbol file from a Mach-o file.\n");
   fprintf(stderr, "Usage: %s [-a ppc|i386|x86] <Mach-o file>\n",
           argv[0]);
   fprintf(stderr, "\t-a: Architecture type [default: native]\n");

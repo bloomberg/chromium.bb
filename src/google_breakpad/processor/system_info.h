@@ -32,12 +32,12 @@
 //
 // Author: Mark Mentovai
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_SYSTEM_INFO_H__
-#define GOOGLE_AIRBAG_PROCESSOR_SYSTEM_INFO_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_SYSTEM_INFO_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_SYSTEM_INFO_H__
 
 #include <string>
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 
@@ -84,6 +84,6 @@ struct SystemInfo {
   string cpu_info;
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_SYSTEM_INFO_H__
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_SYSTEM_INFO_H__

@@ -76,21 +76,21 @@
 //
 // Author: Mark Mentovai
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_MINIDUMP_H__
-#define GOOGLE_AIRBAG_PROCESSOR_MINIDUMP_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_MINIDUMP_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_MINIDUMP_H__
 
 
 #include <map>
 #include <string>
 #include <vector>
 
-#include "google_airbag/common/minidump_format.h"
-#include "google_airbag/processor/code_module.h"
-#include "google_airbag/processor/code_modules.h"
-#include "google_airbag/processor/memory_region.h"
+#include "google_breakpad/common/minidump_format.h"
+#include "google_breakpad/processor/code_module.h"
+#include "google_breakpad/processor/code_modules.h"
+#include "google_breakpad/processor/memory_region.h"
 
 
-namespace google_airbag {
+namespace google_breakpad {
 
 
 using std::map;
@@ -370,7 +370,7 @@ class MinidumpModule : public MinidumpObject,
   // The CodeView record, which contains information to locate the module's
   // debugging information (pdb).  This is returned as u_int8_t* because
   // the data can be of types MDCVInfoPDB20* or MDCVInfoPDB70*, or it may be
-  // of a type unknown to Airbag, in which case the raw data will still be
+  // of a type unknown to Breakpad, in which case the raw data will still be
   // returned but no byte-swapping will have been performed.  Check the
   // record's signature in the first four bytes to differentiate between
   // the various types.  Current toolchains generate modules which carry
@@ -649,18 +649,18 @@ class MinidumpMiscInfo : public MinidumpStream {
 };
 
 
-// MinidumpAirbagInfo wraps MDRawAirbagInfo, which is an optional stream in
+// MinidumpBreakpadInfo wraps MDRawBreakpadInfo, which is an optional stream in
 // a minidump that provides additional information about the process state
 // at the time the minidump was generated.
-class MinidumpAirbagInfo : public MinidumpStream {
+class MinidumpBreakpadInfo : public MinidumpStream {
  public:
-  const MDRawAirbagInfo* airbag_info() const {
-    return valid_ ? &airbag_info_ : NULL;
+  const MDRawBreakpadInfo* breakpad_info() const {
+    return valid_ ? &breakpad_info_ : NULL;
   }
 
   // These thread IDs are used to determine if threads deserve special
   // treatment, so special getters are provided to retrieve this data from
-  // the MDRawAirbagInfo structure.  The getters return false if the thread
+  // the MDRawBreakpadInfo structure.  The getters return false if the thread
   // IDs cannot be determined.
   bool GetDumpThreadID(u_int32_t *thread_id) const;
   bool GetRequestingThreadID(u_int32_t *thread_id) const;
@@ -671,13 +671,13 @@ class MinidumpAirbagInfo : public MinidumpStream {
  private:
   friend class Minidump;
 
-  static const u_int32_t kStreamType = MD_AIRBAG_INFO_STREAM;
+  static const u_int32_t kStreamType = MD_BREAKPAD_INFO_STREAM;
 
-  explicit MinidumpAirbagInfo(Minidump* minidump_);
+  explicit MinidumpBreakpadInfo(Minidump* minidump_);
 
   bool Read(u_int32_t expected_size_);
 
-  MDRawAirbagInfo airbag_info_;
+  MDRawBreakpadInfo breakpad_info_;
 };
 
 
@@ -708,7 +708,7 @@ class Minidump {
   MinidumpException* GetException();
   MinidumpSystemInfo* GetSystemInfo();
   MinidumpMiscInfo* GetMiscInfo();
-  MinidumpAirbagInfo* GetAirbagInfo();
+  MinidumpBreakpadInfo* GetBreakpadInfo();
 
   // The next set of methods are provided for users who wish to access
   // data in minidump files directly, while leveraging the rest of
@@ -807,7 +807,7 @@ class Minidump {
 };
 
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_MINIDUMP_H__
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_MINIDUMP_H__

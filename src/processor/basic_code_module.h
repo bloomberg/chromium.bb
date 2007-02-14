@@ -43,9 +43,9 @@
 
 #include <string>
 
-#include "google_airbag/processor/code_module.h"
+#include "google_breakpad/processor/code_module.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 
@@ -90,6 +90,6 @@ class BasicCodeModule : public CodeModule {
   void operator=(const BasicCodeModule &that);
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 #endif  // PROCESSOR_BASIC_CODE_MODULE_H__

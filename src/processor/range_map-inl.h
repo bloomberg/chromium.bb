@@ -40,7 +40,7 @@
 #include "processor/range_map.h"
 
 
-namespace google_airbag {
+namespace google_breakpad {
 
 
 template<typename AddressType, typename EntryType>
@@ -176,7 +176,7 @@ void RangeMap<AddressType, EntryType>::Clear() {
 }
 
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 
 #endif  // PROCESSOR_RANGE_MAP_INL_H__

@@ -38,12 +38,12 @@
 
 #include "common/windows/http_upload.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::ifstream;
 using std::ios;
 
-static const wchar_t kUserAgent[] = L"Airbag/1.0 (Windows)";
+static const wchar_t kUserAgent[] = L"Breakpad/1.0 (Windows)";
 
 // Helper class which closes an internet handle when it goes away
 class HTTPUpload::AutoInternetHandle {
@@ -368,4 +368,4 @@ bool HTTPUpload::CheckParameters(const map<wstring, wstring> &parameters) {
   return true;
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

@@ -74,8 +74,8 @@
 		08FB7796FE84155DC02AAC07 /* crash_report.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = crash_report.mm; sourceTree = "<group>"; };
 		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		8DD76FA10486AA7600D96B5E /* crash_report */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = crash_report; sourceTree = BUILT_PRODUCTS_DIR; };
-		9B35FEE20B2675F9008DE8C7 /* code_module.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = code_module.h; path = ../../../google_airbag/processor/code_module.h; sourceTree = SOURCE_ROOT; };
-		9B35FEE30B2675F9008DE8C7 /* code_modules.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = code_modules.h; path = ../../../google_airbag/processor/code_modules.h; sourceTree = SOURCE_ROOT; };
+		9B35FEE20B2675F9008DE8C7 /* code_module.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = code_module.h; path = ../../../google_breakpad/processor/code_module.h; sourceTree = SOURCE_ROOT; };
+		9B35FEE30B2675F9008DE8C7 /* code_modules.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = code_modules.h; path = ../../../google_breakpad/processor/code_modules.h; sourceTree = SOURCE_ROOT; };
 		9B35FEE60B26761C008DE8C7 /* basic_code_module.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = basic_code_module.h; path = ../../../processor/basic_code_module.h; sourceTree = SOURCE_ROOT; };
 		9B35FEE70B26761C008DE8C7 /* basic_code_modules.cc */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = basic_code_modules.cc; path = ../../../processor/basic_code_modules.cc; sourceTree = SOURCE_ROOT; };
 		9B35FEE80B26761C008DE8C7 /* basic_code_modules.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = basic_code_modules.h; path = ../../../processor/basic_code_modules.h; sourceTree = SOURCE_ROOT; };
@@ -83,7 +83,7 @@
 		9B3904950B2E52D90059FABE /* source_line_resolver_interface.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = source_line_resolver_interface.h; sourceTree = "<group>"; };
 		9B3904980B2E52FD0059FABE /* basic_source_line_resolver.cc */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = basic_source_line_resolver.cc; path = ../../../processor/basic_source_line_resolver.cc; sourceTree = SOURCE_ROOT; };
 		9B44619D0B66C66B00BBB817 /* system_info.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = system_info.h; sourceTree = "<group>"; };
-		9BDF16F90B1B8ACD00F8391B /* airbag_types.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = airbag_types.h; sourceTree = "<group>"; };
+		9BDF16F90B1B8ACD00F8391B /* breakpad_types.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = breakpad_types.h; sourceTree = "<group>"; };
 		9BDF16FA0B1B8ACD00F8391B /* minidump_format.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = minidump_format.h; sourceTree = "<group>"; };
 		9BDF16FC0B1B8ACD00F8391B /* call_stack.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = call_stack.h; sourceTree = "<group>"; };
 		9BDF16FD0B1B8ACD00F8391B /* memory_region.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = memory_region.h; sourceTree = "<group>"; };
@@ -138,21 +138,21 @@
 				08FB7796FE84155DC02AAC07 /* crash_report.mm */,
 				9BDF176B0B1B8CB100F8391B /* on_demand_symbol_supplier.h */,
 				9BDF176C0B1B8CB100F8391B /* on_demand_symbol_supplier.mm */,
-				08FB7795FE84155DC02AAC07 /* airbag */,
+				08FB7795FE84155DC02AAC07 /* breakpad */,
 				08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 			);
 			name = crash_report;
 			sourceTree = "<group>";
 		};
-		08FB7795FE84155DC02AAC07 /* airbag */ = {
+		08FB7795FE84155DC02AAC07 /* breakpad */ = {
 			isa = PBXGroup;
 			children = (
 				9BE650AB0B52FE1A00611104 /* common */,
 				9BDF17280B1B8B0200F8391B /* processor */,
-				9BDF16F70B1B8ACD00F8391B /* google_airbag */,
+				9BDF16F70B1B8ACD00F8391B /* google_breakpad */,
 			);
-			name = airbag;
+			name = breakpad;
 			sourceTree = "<group>";
 		};
 		08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */ = {
@@ -171,20 +171,20 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		9BDF16F70B1B8ACD00F8391B /* google_airbag */ = {
+		9BDF16F70B1B8ACD00F8391B /* google_breakpad */ = {
 			isa = PBXGroup;
 			children = (
 				9BDF16F80B1B8ACD00F8391B /* common */,
 				9BDF16FB0B1B8ACD00F8391B /* processor */,
 			);
-			name = google_airbag;
-			path = ../../../google_airbag;
+			name = google_breakpad;
+			path = ../../../google_breakpad;
 			sourceTree = SOURCE_ROOT;
 		};
 		9BDF16F80B1B8ACD00F8391B /* common */ = {
 			isa = PBXGroup;
 			children = (
-				9BDF16F90B1B8ACD00F8391B /* airbag_types.h */,
+				9BDF16F90B1B8ACD00F8391B /* breakpad_types.h */,
 				9BDF16FA0B1B8ACD00F8391B /* minidump_format.h */,
 			);
 			path = common;

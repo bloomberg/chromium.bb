@@ -31,9 +31,9 @@
 #include <map>
 #include <string>
 
-#include "google_airbag/processor/basic_source_line_resolver.h"
-#include "google_airbag/processor/minidump.h"
-#include "google_airbag/processor/system_info.h"
+#include "google_breakpad/processor/basic_source_line_resolver.h"
+#include "google_breakpad/processor/minidump.h"
+#include "google_breakpad/processor/system_info.h"
 #include "processor/pathname_stripper.h"
 
 #include "on_demand_symbol_supplier.h"
@@ -42,10 +42,10 @@
 using std::map;
 using std::string;
 
-using google_airbag::OnDemandSymbolSupplier;
-using google_airbag::PathnameStripper;
-using google_airbag::SymbolSupplier;
-using google_airbag::SystemInfo;
+using google_breakpad::OnDemandSymbolSupplier;
+using google_breakpad::PathnameStripper;
+using google_breakpad::SymbolSupplier;
+using google_breakpad::SystemInfo;
 
 OnDemandSymbolSupplier::OnDemandSymbolSupplier(const string &search_dir)
   : search_dir_(search_dir) {

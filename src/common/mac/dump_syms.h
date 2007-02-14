@@ -29,7 +29,7 @@
 
 // dump_syms.h: Interface for DumpSymbols.  This class will take a mach-o file
 // and extract the symbol information and write it to a file using the
-// airbag symbol file format.  
+// breakpad symbol file format.  
 // NOTE: Only Stabs format is currently supported -- not DWARF.
 
 #import <Foundation/Foundation.h>

@@ -32,12 +32,12 @@
 //
 // Author: Mark Mentovai
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_CODE_MODULES_H__
-#define GOOGLE_AIRBAG_PROCESSOR_CODE_MODULES_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_CODE_MODULES_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_CODE_MODULES_H__
 
-#include "google_airbag/common/airbag_types.h"
+#include "google_breakpad/common/breakpad_types.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 class CodeModule;
 
@@ -93,6 +93,6 @@ class CodeModules {
   virtual const CodeModules* Copy() const = 0;
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_CODE_MODULES_H__
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_CODE_MODULES_H__

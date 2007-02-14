@@ -30,14 +30,14 @@
 // BasicSourceLineResolver implements SourceLineResolverInterface, using
 // address map files produced by a compatible writer, e.g. PDBSourceLineWriter.
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_BASIC_SOURCE_LINE_RESOLVER_H__
-#define GOOGLE_AIRBAG_PROCESSOR_BASIC_SOURCE_LINE_RESOLVER_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_BASIC_SOURCE_LINE_RESOLVER_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_BASIC_SOURCE_LINE_RESOLVER_H__
 
 #include <ext/hash_map>
 
-#include "google_airbag/processor/source_line_resolver_interface.h"
+#include "google_breakpad/processor/source_line_resolver_interface.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 using __gnu_cxx::hash_map;
@@ -79,6 +79,6 @@ class BasicSourceLineResolver : public SourceLineResolverInterface {
   void operator=(const BasicSourceLineResolver&);
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_BASIC_SOURCE_LINE_RESOLVER_H__
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_BASIC_SOURCE_LINE_RESOLVER_H__

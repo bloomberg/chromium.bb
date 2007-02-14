@@ -29,13 +29,13 @@
 
 // Abstract interface to return function/file/line info for a memory address.
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__
-#define GOOGLE_AIRBAG_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__
 
 #include <string>
-#include "google_airbag/common/airbag_types.h"
+#include "google_breakpad/common/breakpad_types.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::string;
 
@@ -74,6 +74,6 @@ class SourceLineResolverInterface {
   SourceLineResolverInterface() {}
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__

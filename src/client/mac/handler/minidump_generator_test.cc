@@ -1,4 +1,3 @@
-//
 // Copyright (c) 2006, Google Inc.
 // All rights reserved.
 //
@@ -39,7 +38,7 @@
 #include "minidump_file_writer.h"
 
 using std::string;
-using google_airbag::MinidumpGenerator;
+using google_breakpad::MinidumpGenerator;
 
 static bool doneWritingReport = false;
 

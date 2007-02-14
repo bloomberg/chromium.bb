@@ -33,7 +33,7 @@
 #include "client/mac/handler/exception_handler.h"
 #include "client/mac/handler/minidump_generator.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 using std::map;
 
@@ -512,4 +512,4 @@ void ExceptionHandler::UpdateNextID() {
   next_minidump_id_c_ = next_minidump_id_.c_str();
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

@@ -32,27 +32,27 @@
 
 #include <cstdlib>
 #include <string>
-#include "google_airbag/processor/basic_source_line_resolver.h"
-#include "google_airbag/processor/call_stack.h"
-#include "google_airbag/processor/code_module.h"
-#include "google_airbag/processor/code_modules.h"
-#include "google_airbag/processor/minidump_processor.h"
-#include "google_airbag/processor/process_state.h"
-#include "google_airbag/processor/stack_frame.h"
-#include "google_airbag/processor/symbol_supplier.h"
+#include "google_breakpad/processor/basic_source_line_resolver.h"
+#include "google_breakpad/processor/call_stack.h"
+#include "google_breakpad/processor/code_module.h"
+#include "google_breakpad/processor/code_modules.h"
+#include "google_breakpad/processor/minidump_processor.h"
+#include "google_breakpad/processor/process_state.h"
+#include "google_breakpad/processor/stack_frame.h"
+#include "google_breakpad/processor/symbol_supplier.h"
 #include "processor/scoped_ptr.h"
 
 namespace {
 
 using std::string;
-using google_airbag::BasicSourceLineResolver;
-using google_airbag::CallStack;
-using google_airbag::CodeModule;
-using google_airbag::MinidumpProcessor;
-using google_airbag::ProcessState;
-using google_airbag::scoped_ptr;
-using google_airbag::SymbolSupplier;
-using google_airbag::SystemInfo;
+using google_breakpad::BasicSourceLineResolver;
+using google_breakpad::CallStack;
+using google_breakpad::CodeModule;
+using google_breakpad::MinidumpProcessor;
+using google_breakpad::ProcessState;
+using google_breakpad::scoped_ptr;
+using google_breakpad::SymbolSupplier;
+using google_breakpad::SystemInfo;
 
 static const char *kSystemInfoOS = "Windows NT";
 static const char *kSystemInfoOSShort = "windows";
@@ -111,7 +111,7 @@ SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
     return INTERRUPT;
   }
 
-  if (module && module->code_file() == "C:\\test_app.exe") {
+  if (module && module->code_file() == "c:\\test_app.exe") {
       *symbol_file = string(getenv("srcdir") ? getenv("srcdir") : ".") +
                      "/src/processor/testdata/symbols/test_app.pdb/" +
                      module->debug_identifier() +
@@ -150,27 +150,27 @@ static bool RunTests() {
 
   ASSERT_TRUE(stack->frames()->at(0)->module);
   ASSERT_EQ(stack->frames()->at(0)->module->base_address(), 0x400000);
-  ASSERT_EQ(stack->frames()->at(0)->module->code_file(), "C:\\test_app.exe");
+  ASSERT_EQ(stack->frames()->at(0)->module->code_file(), "c:\\test_app.exe");
   ASSERT_EQ(stack->frames()->at(0)->function_name,
             "`anonymous namespace'::CrashFunction");
   ASSERT_EQ(stack->frames()->at(0)->source_file_name, "c:\\test_app.cc");
-  ASSERT_EQ(stack->frames()->at(0)->source_line, 56);
+  ASSERT_EQ(stack->frames()->at(0)->source_line, 58);
 
   ASSERT_TRUE(stack->frames()->at(1)->module);
   ASSERT_EQ(stack->frames()->at(1)->module->base_address(), 0x400000);
-  ASSERT_EQ(stack->frames()->at(1)->module->code_file(), "C:\\test_app.exe");
+  ASSERT_EQ(stack->frames()->at(1)->module->code_file(), "c:\\test_app.exe");
   ASSERT_EQ(stack->frames()->at(1)->function_name, "main");
   ASSERT_EQ(stack->frames()->at(1)->source_file_name, "c:\\test_app.cc");
-  ASSERT_EQ(stack->frames()->at(1)->source_line, 63);
+  ASSERT_EQ(stack->frames()->at(1)->source_line, 65);
 
   // This comes from the CRT
   ASSERT_TRUE(stack->frames()->at(2)->module);
   ASSERT_EQ(stack->frames()->at(2)->module->base_address(), 0x400000);
-  ASSERT_EQ(stack->frames()->at(2)->module->code_file(), "C:\\test_app.exe");
+  ASSERT_EQ(stack->frames()->at(2)->module->code_file(), "c:\\test_app.exe");
   ASSERT_EQ(stack->frames()->at(2)->function_name, "__tmainCRTStartup");
   ASSERT_EQ(stack->frames()->at(2)->source_file_name,
-            "f:\\rtm\\vctools\\crt_bld\\self_x86\\crt\\src\\crt0.c");
-  ASSERT_EQ(stack->frames()->at(2)->source_line, 318);
+            "f:\\sp\\vctools\\crt_bld\\self_x86\\crt\\src\\crt0.c");
+  ASSERT_EQ(stack->frames()->at(2)->source_line, 327);
 
   // No debug info available for kernel32.dll
   ASSERT_TRUE(stack->frames()->at(3)->module);
@@ -183,7 +183,7 @@ static bool RunTests() {
 
   ASSERT_EQ(state.modules()->module_count(), 13);
   ASSERT_TRUE(state.modules()->GetMainModule());
-  ASSERT_EQ(state.modules()->GetMainModule()->code_file(), "C:\\test_app.exe");
+  ASSERT_EQ(state.modules()->GetMainModule()->code_file(), "c:\\test_app.exe");
   ASSERT_FALSE(state.modules()->GetModuleForAddress(0));
   ASSERT_EQ(state.modules()->GetMainModule(),
             state.modules()->GetModuleForAddress(0x400000));

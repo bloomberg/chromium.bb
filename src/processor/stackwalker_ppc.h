@@ -39,11 +39,11 @@
 #define PROCESSOR_STACKWALKER_PPC_H__
 
 
-#include "google_airbag/common/airbag_types.h"
-#include "google_airbag/common/minidump_format.h"
-#include "google_airbag/processor/stackwalker.h"
+#include "google_breakpad/common/breakpad_types.h"
+#include "google_breakpad/common/minidump_format.h"
+#include "google_breakpad/processor/stackwalker.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 class CodeModules;
 
@@ -75,7 +75,7 @@ class StackwalkerPPC : public Stackwalker {
 };
 
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
 
 #endif  // PROCESSOR_STACKWALKER_PPC_H__

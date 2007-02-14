@@ -38,9 +38,9 @@
 #include "processor/contained_range_map-inl.h"
 #include "processor/range_map-inl.h"
 
-#include "google_airbag/processor/basic_source_line_resolver.h"
-#include "google_airbag/processor/code_module.h"
-#include "google_airbag/processor/stack_frame.h"
+#include "google_breakpad/processor/basic_source_line_resolver.h"
+#include "google_breakpad/processor/code_module.h"
+#include "google_breakpad/processor/stack_frame.h"
 #include "processor/linked_ptr.h"
 #include "processor/scoped_ptr.h"
 #include "processor/stack_frame_info.h"
@@ -50,7 +50,7 @@ using std::vector;
 using std::make_pair;
 using __gnu_cxx::hash;
 
-namespace google_airbag {
+namespace google_breakpad {
 
 struct BasicSourceLineResolver::Line {
   Line(MemAddr addr, MemAddr code_size, int file_id, int source_line)
@@ -558,4 +558,4 @@ size_t BasicSourceLineResolver::HashString::operator()(const string &s) const {
   return hash<const char*>()(s.c_str());
 }
 
-}  // namespace google_airbag
+}  // namespace google_breakpad

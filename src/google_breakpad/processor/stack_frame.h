@@ -27,13 +27,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_AIRBAG_PROCESSOR_STACK_FRAME_H__
-#define GOOGLE_AIRBAG_PROCESSOR_STACK_FRAME_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_STACK_FRAME_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_STACK_FRAME_H__
 
 #include <string>
-#include "google_airbag/common/airbag_types.h"
+#include "google_breakpad/common/breakpad_types.h"
 
-namespace google_airbag {
+namespace google_breakpad {
 
 class CodeModule;
 
@@ -79,6 +79,6 @@ struct StackFrame {
   u_int64_t source_line_base;
 };
 
-}  // namespace google_airbag
+}  // namespace google_breakpad
 
-#endif  // GOOGLE_AIRBAG_PROCESSOR_STACK_FRAME_H__
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_STACK_FRAME_H__
