@@ -158,29 +158,28 @@ typedef struct drm_fence_object {
 	uint32_t submitted_flush;
 } drm_fence_object_t;
 
+#define _DRM_FENCE_CLASSES 8
 #define _DRM_FENCE_TYPE_EXE 0x00
 
-typedef struct drm_fence_manager {
-	int initialized;
-	rwlock_t lock;
-
-	/*
-	 * The list below should be maintained in sequence order and
-	 * access is protected by the above spinlock.
-	 */
-
+typedef struct drm_fence_class_manager {
 	struct list_head ring;
-	struct list_head *fence_types[32];
-	volatile uint32_t pending_flush;
+	uint32_t pending_flush;
 	wait_queue_head_t fence_queue;
 	int pending_exe_flush;
 	uint32_t last_exe_flush;
 	uint32_t exe_flush_sequence;
+} drm_fence_class_manager_t;
+
+typedef struct drm_fence_manager {
+	int initialized;
+	rwlock_t lock;
+	drm_fence_class_manager_t class[_DRM_FENCE_CLASSES];
+	uint32_t num_classes;
 	atomic_t count;
 } drm_fence_manager_t;
 
 typedef struct drm_fence_driver {
-	int no_types;
+	uint32_t num_classes;
 	uint32_t wrap_diff;
 	uint32_t flush_diff;
 	uint32_t sequence_mask;
@@ -196,7 +195,8 @@ extern void drm_fence_handler(struct drm_device *dev, uint32_t class,
 			      uint32_t sequence, uint32_t type);
 extern void drm_fence_manager_init(struct drm_device *dev);
 extern void drm_fence_manager_takedown(struct drm_device *dev);
-extern void drm_fence_flush_old(struct drm_device *dev, uint32_t sequence);
+extern void drm_fence_flush_old(struct drm_device *dev, uint32_t class,
+				uint32_t sequence);
 extern int drm_fence_object_flush(struct drm_device *dev,
 				  drm_fence_object_t * fence, uint32_t type);
 extern int drm_fence_object_signaled(drm_fence_object_t * fence, uint32_t type);
@@ -208,7 +208,7 @@ extern int drm_fence_object_wait(struct drm_device *dev,
 				 drm_fence_object_t * fence,
 				 int lazy, int ignore_signals, uint32_t mask);
 extern int drm_fence_object_create(struct drm_device *dev, uint32_t type,
-				   uint32_t fence_flags,
+				   uint32_t fence_flags, uint32_t class,
 				   drm_fence_object_t ** c_fence);
 extern int drm_fence_add_user_object(drm_file_t * priv,
 				     drm_fence_object_t * fence, int shareable);
@@ -462,6 +462,7 @@ extern int drm_bo_move_memcpy(drm_buffer_object_t * bo,
 extern int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
 				     int evict,
 				     int no_wait,
+				     uint32_t fence_class,
 				     uint32_t fence_type,
 				     uint32_t fence_flags,
 				     drm_bo_mem_reg_t * new_mem);

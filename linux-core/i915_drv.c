@@ -40,7 +40,7 @@ static struct pci_device_id pciidlist[] = {
 
 #ifdef I915_HAVE_FENCE
 static drm_fence_driver_t i915_fence_driver = {
-	.no_types = 2,
+	.num_classes = 1,
 	.wrap_diff = (1 << 30),
 	.flush_diff = (1 << 29),
 	.sequence_mask = 0xffffffffU,

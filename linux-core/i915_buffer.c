@@ -170,7 +170,7 @@ static int i915_move_blit(drm_buffer_object_t * bo,
 
 	i915_emit_mi_flush(bo->dev, MI_READ_FLUSH | MI_EXE_FLUSH);
 
-	return drm_bo_move_accel_cleanup(bo, evict, no_wait,
+	return drm_bo_move_accel_cleanup(bo, evict, no_wait, 0,
 					 DRM_FENCE_TYPE_EXE |
 					 DRM_I915_FENCE_TYPE_RW,
 					 DRM_I915_FENCE_FLAG_FLUSHED, new_mem);

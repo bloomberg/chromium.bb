@@ -561,7 +561,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 		}
 	} else {
 		mutex_unlock(&dev->struct_mutex);
-		ret = drm_fence_object_create(dev, fence_type,
+		ret = drm_fence_object_create(dev, 0, fence_type,
 					      fence_flags | DRM_FENCE_FLAG_EMIT,
 					      &fence);
 		mutex_lock(&dev->struct_mutex);

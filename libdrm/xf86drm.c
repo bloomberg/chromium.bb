@@ -2267,7 +2267,7 @@ int drmCommandWriteRead(int fd, unsigned long drmCommandIndex, void *data,
  * DRM_FENCE_MASK_DRIVER
  */
 
-int drmFenceCreate(int fd, unsigned flags, int class,unsigned type, 
+int drmFenceCreate(int fd, unsigned flags, int class, unsigned type,
 		   drmFence *fence)
 {
     drm_fence_arg_t arg;
@@ -2410,8 +2410,9 @@ int drmFenceSignaled(int fd, drmFence *fence, unsigned fenceType,
 int drmFenceEmit(int fd, unsigned flags, drmFence *fence, unsigned emit_type)
 {
     drm_fence_arg_t arg;
-   
+
     memset(&arg, 0, sizeof(arg));
+    arg.class = fence->class;
     arg.flags = flags;
     arg.handle = fence->handle;
     arg.type = emit_type;

@@ -326,6 +326,7 @@ int drm_buffer_object_transfer(drm_buffer_object_t * bo,
 int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
 			      int evict,
 			      int no_wait,
+			      uint32_t fence_class,
 			      uint32_t fence_type,
 			      uint32_t fence_flags, drm_bo_mem_reg_t * new_mem)
 {
@@ -339,7 +340,7 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
 
 	if (bo->fence)
 		drm_fence_usage_deref_unlocked(dev, bo->fence);
-	ret = drm_fence_object_create(dev, fence_type,
+	ret = drm_fence_object_create(dev, fence_class, fence_type,
 				      fence_flags | DRM_FENCE_FLAG_EMIT,
 				      &bo->fence);
 	if (ret)

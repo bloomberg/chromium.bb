@@ -42,6 +42,7 @@ static void i915_perform_flush(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	drm_fence_manager_t *fm = &dev->fm;
+	drm_fence_class_manager_t *fc = &fm->class[0];
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
 	uint32_t flush_flags = 0;
 	uint32_t flush_sequence = 0;
@@ -52,21 +53,21 @@ static void i915_perform_flush(drm_device_t * dev)
 	if (!dev_priv)
 		return;
 
-	if (fm->pending_exe_flush) {
+	if (fc->pending_exe_flush) {
 		sequence = READ_BREADCRUMB(dev_priv);
 
 		/*
 		 * First update fences with the current breadcrumb.
 		 */
 
-		diff = sequence - fm->last_exe_flush;
+		diff = sequence - fc->last_exe_flush;
 		if (diff < driver->wrap_diff && diff != 0) {
 			drm_fence_handler(dev, 0, sequence, DRM_FENCE_TYPE_EXE);
 		}
 
-		diff = sequence - fm->exe_flush_sequence;
+		diff = sequence - fc->exe_flush_sequence;
 		if (diff < driver->wrap_diff) {
-			fm->pending_exe_flush = 0;
+			fc->pending_exe_flush = 0;
 			if (dev_priv->fence_irq_on) {
 				i915_user_irq_off(dev_priv);
 				dev_priv->fence_irq_on = 0;
@@ -88,13 +89,13 @@ static void i915_perform_flush(drm_device_t * dev)
 		}
 	}
 
-	if (fm->pending_flush && !dev_priv->flush_pending) {
+	if (fc->pending_flush && !dev_priv->flush_pending) {
 		dev_priv->flush_sequence = (uint32_t) READ_BREADCRUMB(dev_priv);
-		dev_priv->flush_flags = fm->pending_flush;
+		dev_priv->flush_flags = fc->pending_flush;
 		dev_priv->saved_flush_status = READ_HWSP(dev_priv, 0);
 		I915_WRITE(I915REG_INSTPM, (1 << 5) | (1 << 21));
 		dev_priv->flush_pending = 1;
-		fm->pending_flush = 0;
+		fc->pending_flush = 0;
 	}
 
 	if (dev_priv->flush_pending) {
