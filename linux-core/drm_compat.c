@@ -306,7 +306,7 @@ int drm_bo_map_bound(struct vm_area_struct *vma)
 	BUG_ON(ret);
 
 	if (bus_size) {
-		drm_mem_type_manager_t *man = &dev->bm.man[bo->mem.mem_type];
+		drm_mem_type_manager_t *man = &bo->dev->bm.man[bo->mem.mem_type];
 		unsigned long pfn = (bus_base + bus_offset) >> PAGE_SHIFT;
 		pgprot_t pgprot = drm_io_prot(man->drm_bus_maptype, vma);
 		ret = io_remap_pfn_range(vma, vma->vm_start, pfn,
