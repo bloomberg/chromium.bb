@@ -38,10 +38,10 @@ drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t * dev)
 	return drm_agp_init_ttm(dev, NULL);
 }
 
-int i915_fence_types(uint32_t buffer_flags, uint32_t * class, uint32_t * type)
+int i915_fence_types(drm_buffer_object_t *bo, uint32_t * class, uint32_t * type)
 {
 	*class = 0;
-	if (buffer_flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
+	if (bo->mem.flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
 		*type = 3;
 	else
 		*type = 1;
@@ -106,9 +106,9 @@ int i915_init_mem_type(drm_device_t * dev, uint32_t type,
 	return 0;
 }
 
-uint32_t i915_evict_flags(drm_device_t * dev, uint32_t type)
+uint32_t i915_evict_mask(drm_buffer_object_t *bo)
 {
-	switch (type) {
+	switch (bo->mem.mem_type) {
 	case DRM_BO_MEM_LOCAL:
 	case DRM_BO_MEM_TT:
 		return DRM_BO_FLAG_MEM_LOCAL;

@@ -2271,8 +2271,9 @@ int drmFenceCreate(int fd, unsigned flags, int class, unsigned type,
 		   drmFence *fence)
 {
     drm_fence_arg_t arg;
-    
+
     memset(&arg, 0, sizeof(arg));
+    arg.flags = flags;
     arg.type = type;
     arg.class = class;
     arg.op = drm_fence_create;

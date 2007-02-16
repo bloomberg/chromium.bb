@@ -38,6 +38,47 @@ static struct pci_device_id pciidlist[] = {
 	viadrv_PCI_IDS
 };
 
+
+#ifdef VIA_HAVE_FENCE
+static drm_fence_driver_t via_fence_driver = {
+	.num_classes = 1,
+	.wrap_diff = (1 << 30),
+	.flush_diff = (1 << 20),
+	.sequence_mask = 0xffffffffU,
+	.lazy_capable = 1,
+	.emit = via_fence_emit_sequence,
+	.poke_flush = via_poke_flush,
+	.has_irq = via_fence_has_irq,
+};
+#endif
+#ifdef VIA_HAVE_BUFFER
+
+/**
+ * If there's no thrashing. This is the preferred memory type order.
+ */
+static uint32_t via_mem_prios[] = {DRM_BO_MEM_PRIV0, DRM_BO_MEM_VRAM, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
+
+/**
+ * If we have thrashing, most memory will be evicted to TT anyway, so we might as well
+ * just move the new buffer into TT from the start.
+ */
+static uint32_t via_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_PRIV0, DRM_BO_MEM_VRAM, DRM_BO_MEM_LOCAL};
+
+
+static drm_bo_driver_t via_bo_driver = {
+	.mem_type_prio = via_mem_prios,
+	.mem_busy_prio = via_busy_prios,
+	.num_mem_type_prio = ARRAY_SIZE(via_mem_prios),
+	.num_mem_busy_prio = ARRAY_SIZE(via_busy_prios),
+	.create_ttm_backend_entry = via_create_ttm_backend_entry,
+	.fence_type = via_fence_types,
+	.invalidate_caches = via_invalidate_caches,
+	.init_mem_type = via_init_mem_type,
+	.evict_mask = via_evict_mask,
+	.move = NULL,
+};
+#endif
+
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =
@@ -80,7 +121,12 @@ static struct drm_driver driver = {
 		.probe = probe,
 		.remove = __devexit_p(drm_cleanup_pci),
 	},
-
+#ifdef VIA_HAVE_FENCE
+	.fence_driver = &via_fence_driver,
+#endif
+#ifdef VIA_HAVE_BUFFER
+	.bo_driver = &via_bo_driver,
+#endif
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
 	.date = VIA_DRM_DRIVER_DATE,

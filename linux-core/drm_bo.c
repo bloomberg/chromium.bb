@@ -641,7 +641,7 @@ static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
 	}
 
 	evict_mem = bo->mem;
-	evict_mem.mask = dev->driver->bo_driver->evict_flags(dev, mem_type);
+	evict_mem.mask = dev->driver->bo_driver->evict_mask(bo);
 	ret = drm_bo_mem_space(bo, &evict_mem, no_wait);
 
 	if (ret) {
@@ -1351,7 +1351,7 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	DRM_DEBUG("New flags 0x%08x, Old flags 0x%08x\n", bo->mem.mask,
 		  bo->mem.flags);
 	ret =
-	    driver->fence_type(bo->mem.mask, &bo->fence_class, &bo->fence_type);
+	    driver->fence_type(bo, &bo->fence_class, &bo->fence_type);
 	if (ret) {
 		DRM_ERROR("Driver did not support given buffer permissions\n");
 		return ret;
@@ -2001,9 +2001,9 @@ static int drm_bo_lock_mm(drm_device_t * dev, unsigned mem_type)
 	return ret;
 }
 
-static int drm_bo_init_mm(drm_device_t * dev,
-			  unsigned type,
-			  unsigned long p_offset, unsigned long p_size)
+int drm_bo_init_mm(drm_device_t * dev,
+		   unsigned type,
+		   unsigned long p_offset, unsigned long p_size)
 {
 	drm_buffer_manager_t *bm = &dev->bm;
 	int ret = -EINVAL;
@@ -2043,6 +2043,7 @@ static int drm_bo_init_mm(drm_device_t * dev,
 
 	return 0;
 }
+EXPORT_SYMBOL(drm_bo_init_mm);
 
 /*
  * This is called from lastclose, so we don't need to bother about

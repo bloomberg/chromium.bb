@@ -32,6 +32,27 @@
 
 #include "via_verifier.h"
 
+/*
+ * Registers go here.
+ */
+
+
+#define CMDBUF_ALIGNMENT_SIZE   (0x100)
+#define CMDBUF_ALIGNMENT_MASK   (0x0ff)
+
+/* defines for VIA 3D registers */
+#define VIA_REG_STATUS	        0x400
+#define VIA_REG_TRANSET	        0x43C
+#define VIA_REG_TRANSPACE       0x440
+
+/* VIA_REG_STATUS(0x400): Engine Status */
+#define VIA_CMD_RGTR_BUSY       0x00000080	/* Command Regulator is busy */
+#define VIA_2D_ENG_BUSY	        0x00000001	/* 2D Engine is busy */
+#define VIA_3D_ENG_BUSY	        0x00000002	/* 3D Engine is busy */
+#define VIA_VR_QUEUE_BUSY       0x00020000	/* Virtual Queue is busy */
+
+
+
 #if defined(__linux__)
 #include "via_dmablit.h"
 
@@ -41,6 +62,8 @@
  */
 #define VIA_HAVE_DMABLIT 1
 #define VIA_HAVE_CORE_MM 1
+#define VIA_HAVE_FENCE   1
+#define VIA_HAVE_BUFFER  1
 #endif
 
 #define VIA_PCI_BUF_SIZE 60000
@@ -103,6 +126,12 @@ typedef struct drm_via_private {
 	drm_via_blitq_t blit_queues[VIA_NUM_BLIT_ENGINES];
 #endif
         uint32_t dma_diff;
+#ifdef VIA_HAVE_FENCE
+	spinlock_t fence_lock;
+	uint32_t emit_0_sequence;
+	int have_idlelock;
+	struct timer_list fence_timer;
+#endif
 } drm_via_private_t;
 
 enum via_family {
@@ -161,6 +190,28 @@ extern int via_init_context(drm_device_t * dev, int context);
 #ifdef VIA_HAVE_DMABLIT
 extern void via_dmablit_handler(drm_device_t *dev, int engine, int from_irq);
 extern void via_init_dmablit(drm_device_t *dev);
+#endif
+
+#ifdef VIA_HAVE_FENCE
+extern void via_fence_timer(unsigned long data);
+extern void via_poke_flush(drm_device_t * dev, uint32_t class);
+extern int via_fence_emit_sequence(drm_device_t * dev, uint32_t class,
+				   uint32_t flags,
+				   uint32_t * sequence,
+				   uint32_t * native_type);
+extern int via_fence_has_irq(struct drm_device * dev, uint32_t class,
+			     uint32_t flags);
+#endif
+
+#ifdef VIA_HAVE_BUFFER
+extern drm_ttm_backend_t *via_create_ttm_backend_entry(drm_device_t *dev);
+extern int via_fence_types(drm_buffer_object_t *bo, uint32_t *class, uint32_t *type);
+extern int via_invalidate_caches(drm_device_t *dev, uint32_t buffer_flags);
+extern int via_init_mem_type(drm_device_t *dev, uint32_t type,
+			       drm_mem_type_manager_t *man);
+extern uint32_t via_evict_mask(drm_buffer_object_t *bo);
+extern int via_move(drm_buffer_object_t *bo, int evict,
+	      	int no_wait, drm_bo_mem_reg_t *new_mem);
 #endif
 
 #endif

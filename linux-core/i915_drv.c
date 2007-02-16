@@ -64,7 +64,7 @@ static drm_bo_driver_t i915_bo_driver = {
 	.fence_type = i915_fence_types,
 	.invalidate_caches = i915_invalidate_caches,
 	.init_mem_type = i915_init_mem_type,
-	.evict_flags = i915_evict_flags,
+	.evict_mask = i915_evict_mask,
 	.move = i915_move,
 };
 #endif

@@ -411,11 +411,11 @@ typedef struct drm_bo_driver {
 	uint32_t num_mem_busy_prio;
 	drm_ttm_backend_t *(*create_ttm_backend_entry)
 	 (struct drm_device * dev);
-	int (*fence_type) (uint32_t flags, uint32_t * class, uint32_t * type);
+	int (*fence_type) (struct drm_buffer_object *bo, uint32_t * class, uint32_t * type);
 	int (*invalidate_caches) (struct drm_device * dev, uint32_t flags);
 	int (*init_mem_type) (struct drm_device * dev, uint32_t type,
 			      drm_mem_type_manager_t * man);
-	 uint32_t(*evict_flags) (struct drm_device * dev, uint32_t type);
+	 uint32_t(*evict_mask) (struct drm_buffer_object *bo);
 	int (*move) (struct drm_buffer_object * bo,
 		     int evict, int no_wait, struct drm_bo_mem_reg * new_mem);
 } drm_bo_driver_t;

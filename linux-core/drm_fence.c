@@ -91,6 +91,11 @@ void drm_fence_handler(drm_device_t * dev, uint32_t class,
 
 	}
 
+	fc->pending_flush &= ~type;
+	if (fc->pending_exe_flush && (type & DRM_FENCE_TYPE_EXE) &&
+	    ((sequence - fc->exe_flush_sequence) < driver->wrap_diff))
+		fc->pending_exe_flush = 0;
+
 	if (wake) {
 		DRM_WAKEUP(&fc->fence_queue);
 	}
@@ -180,7 +185,7 @@ static void drm_fence_flush_exe(drm_fence_class_manager_t * fc,
 		 */
 
 		list = &fc->ring;
-		if (list->next == &fc->ring) {
+		if (list_empty(list)) {
 			return;
 		} else {
 			drm_fence_object_t *fence =
@@ -279,7 +284,8 @@ EXPORT_SYMBOL(drm_fence_flush_old);
 
 static int drm_fence_lazy_wait(drm_device_t *dev,
 			       drm_fence_object_t *fence,
-			       int ignore_signals, uint32_t mask)
+			       int ignore_signals,
+			       uint32_t mask)
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_class_manager_t *fc = &fm->class[fence->class];
@@ -289,7 +295,7 @@ static int drm_fence_lazy_wait(drm_device_t *dev,
 
 	do {
 		DRM_WAIT_ON(ret, fc->fence_queue, 3 * DRM_HZ,
-			    fence_signaled(dev, fence, mask, 1));
+			    fence_signaled(dev, fence, mask, 0));
 		if (time_after_eq(jiffies, _end))
 			break;
 	} while (ret == -EINTR && ignore_signals);
@@ -352,10 +358,9 @@ int drm_fence_object_wait(drm_device_t * dev,
 				return ret;
 		}
 	}
-	if (fence_signaled(dev, fence, mask, 0))
+	if (drm_fence_object_signaled(fence, mask))
 		return 0;
 
-	DRM_ERROR("Busy wait\n");
 	/*
 	 * Avoid kernel-space busy-waits.
 	 */
