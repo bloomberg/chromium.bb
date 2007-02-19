@@ -37,7 +37,7 @@
 
 #define DRIVER_NAME		"i915"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20060929"
+#define DRIVER_DATE		"20070209"
 
 /* Interface history:
  *
@@ -49,9 +49,10 @@
  * 1.6: - New ioctl for scheduling buffer swaps on vertical blank
  *      - Support vertical blank on secondary display pipe
  * 1.8: New ioctl for ARB_Occlusion_Query
+ * 1.9: Usable page flipping and triple buffering
  */
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		8
+#define DRIVER_MINOR		9
 #define DRIVER_PATCHLEVEL	0
 
 #if defined(__linux__)
@@ -99,8 +100,6 @@ typedef struct drm_i915_private {
 	uint32_t counter;
 
 	unsigned int cpp;
-	int back_offset;
-	int front_offset;
 	int current_page;
 	int use_mi_batchbuffer_start;
 
@@ -352,6 +351,7 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define MI_BATCH_NON_SECURE	(1)
 
 #define MI_WAIT_FOR_EVENT       ((0x3<<23))
+#define MI_WAIT_FOR_PLANE_B_FLIP      (1<<6)
 #define MI_WAIT_FOR_PLANE_A_FLIP      (1<<2)
 #define MI_WAIT_FOR_PLANE_A_SCANLINES (1<<1)
 
@@ -359,6 +359,8 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 #define CMD_OP_DISPLAYBUFFER_INFO ((0x0<<29)|(0x14<<23)|2)
 #define ASYNC_FLIP                (1<<22)
+#define DISPLAY_PLANE_A           (0<<20)
+#define DISPLAY_PLANE_B           (1<<20)
 
 #define CMD_OP_DESTBUFFER_INFO	 ((0x3<<29)|(0x1d<<24)|(0x8e<<16)|1)
 

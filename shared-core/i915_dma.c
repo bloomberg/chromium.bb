@@ -165,8 +165,6 @@ static int i915_initialize(drm_device_t * dev,
 	dev_priv->ring.virtual_start = dev_priv->ring.map.handle;
 
 	dev_priv->cpp = init->cpp;
-	dev_priv->back_offset = init->back_offset;
-	dev_priv->front_offset = init->front_offset;
 	dev_priv->current_page = 0;
 	dev_priv->sarea_priv->pf_current_page = dev_priv->current_page;
 
@@ -553,15 +551,73 @@ static int i915_dispatch_batchbuffer(drm_device_t * dev,
 	return 0;
 }
 
-static int i915_dispatch_flip(drm_device_t * dev)
+static void i915_do_dispatch_flip(drm_device_t * dev, int pipe)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
+	u32 num_pages, current_page, next_page, dspbase;
+	int shift = 2 * pipe, x, y;
 	RING_LOCALS;
 
-	DRM_DEBUG("%s: page=%d pfCurrentPage=%d\n",
+	/* Calculate display base offset */
+	num_pages = dev_priv->sarea_priv->third_handle ? 3 : 2;
+	current_page = (dev_priv->current_page >> shift) & 0x3;
+	next_page = (current_page + 1) % num_pages;
+
+	switch (next_page) {
+	default:
+	case 0:
+		dspbase = dev_priv->sarea_priv->front_offset;
+		break;
+	case 1:
+		dspbase = dev_priv->sarea_priv->back_offset;
+		break;
+	case 2:
+		dspbase = dev_priv->sarea_priv->third_offset;
+		break;
+	}
+
+	if (pipe == 0) {
+		x = dev_priv->sarea_priv->pipeA_x;
+		y = dev_priv->sarea_priv->pipeA_y;
+	} else {
+		x = dev_priv->sarea_priv->pipeB_x;
+		y = dev_priv->sarea_priv->pipeB_y;
+	}
+
+	dspbase += (y * dev_priv->sarea_priv->pitch + x) * dev_priv->cpp;
+
+	DRM_DEBUG("pipe=%d current_page=%d dspbase=0x%x\n", pipe, current_page,
+		  dspbase);
+
+	BEGIN_LP_RING(4);
+	OUT_RING(CMD_OP_DISPLAYBUFFER_INFO | ASYNC_FLIP |
+		 (pipe ? DISPLAY_PLANE_B : DISPLAY_PLANE_A));
+	OUT_RING(0);
+	OUT_RING(dspbase);
+	OUT_RING(0);
+	ADVANCE_LP_RING();
+
+	dev_priv->current_page &= ~(0x3 << shift);
+	dev_priv->current_page |= next_page << shift;
+}
+
+static void i915_dispatch_flip(drm_device_t * dev, int pipes)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	u32 mi_wait = MI_WAIT_FOR_EVENT;
+	int i;
+	RING_LOCALS;
+
+	DRM_DEBUG("%s: pipes=0x%x page=%d pfCurrentPage=%d\n",
 		  __FUNCTION__,
-		  dev_priv->current_page,
+		  pipes, dev_priv->current_page,
 		  dev_priv->sarea_priv->pf_current_page);
+
+	if (pipes & 0x1)
+		mi_wait |= MI_WAIT_FOR_PLANE_A_FLIP;
+
+	if (pipes & 0x2)
+		mi_wait |= MI_WAIT_FOR_PLANE_B_FLIP;
 
 	i915_kernel_lost_context(dev);
 
@@ -570,24 +626,15 @@ static int i915_dispatch_flip(drm_device_t * dev)
 	OUT_RING(0);
 	ADVANCE_LP_RING();
 
-	/* Wait for a pending flip to take effect */
+	/* Wait for pending flips to take effect */
 	BEGIN_LP_RING(2);
-	OUT_RING(MI_WAIT_FOR_EVENT | MI_WAIT_FOR_PLANE_A_FLIP);
+	OUT_RING(mi_wait);
 	OUT_RING(0);
 	ADVANCE_LP_RING();
 
-	BEGIN_LP_RING(6);
-	OUT_RING(CMD_OP_DISPLAYBUFFER_INFO | ASYNC_FLIP);
-	OUT_RING(0);
-	if (dev_priv->current_page == 0) {
-		OUT_RING(dev_priv->back_offset);
-		dev_priv->current_page = 1;
-	} else {
-		OUT_RING(dev_priv->front_offset);
-		dev_priv->current_page = 0;
-	}
-	OUT_RING(0);
-	ADVANCE_LP_RING();
+	for (i = 0; i < 2; i++)
+		if (pipes & (1 << i))
+			i915_do_dispatch_flip(dev, i);
 
 	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
@@ -595,7 +642,6 @@ static int i915_dispatch_flip(drm_device_t * dev)
 #endif
 
 	dev_priv->sarea_priv->pf_current_page = dev_priv->current_page;
-	return 0;
 }
 
 static int i915_quiescent(drm_device_t * dev)
@@ -688,10 +734,19 @@ static int i915_cmdbuffer(DRM_IOCTL_ARGS)
 static int i915_do_cleanup_pageflip(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
+	int j;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
-	if (dev_priv->current_page != 0)
-		i915_dispatch_flip(dev);
+
+	for (j = 0; j < 2 && dev_priv->current_page != 0; j++) {
+		int i, pipes;
+
+		for (i = 0, pipes = 0; i < 2; i++)
+			if (dev_priv->current_page & (0x3 << (2 * i)))
+				pipes |= 1 << i;
+
+		i915_dispatch_flip(dev, pipes);
+	}
 
 	return 0;
 }
@@ -699,12 +754,24 @@ static int i915_do_cleanup_pageflip(drm_device_t * dev)
 static int i915_flip_bufs(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
+	drm_i915_flip_t param;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	LOCK_TEST_WITH_RETURN(dev, filp);
 
-	return i915_dispatch_flip(dev);
+	DRM_COPY_FROM_USER_IOCTL(param, (drm_i915_flip_t __user *) data,
+				 sizeof(param));
+
+	if (param.pipes & ~0x3) {
+		DRM_ERROR("Invalid pipes 0x%x, only <= 0x3 is valid\n",
+			  param.pipes);
+		return DRM_ERR(EINVAL);
+	}
+
+	i915_dispatch_flip(dev, param.pipes);
+
+	return 0;
 }
 
 

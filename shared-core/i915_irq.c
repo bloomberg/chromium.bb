@@ -47,12 +47,12 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	unsigned long irqflags;
 	struct list_head *list, *tmp, hits, *hit;
-	int nhits, nrects, slice[2], upper[2], lower[2], i;
+	int nhits, nrects, slice[2], upper[2], lower[2], i, num_pages;
 	unsigned counter[2] = { atomic_read(&dev->vbl_received),
 				atomic_read(&dev->vbl_received2) };
 	drm_drawable_info_t *drw;
 	drm_i915_sarea_t *sarea_priv = dev_priv->sarea_priv;
-	u32 cpp = dev_priv->cpp;
+	u32 cpp = dev_priv->cpp,  offsets[3];
 	u32 cmd = (cpp == 4) ? (XY_SRC_COPY_BLT_CMD |
 				XY_SRC_COPY_BLT_WRITE_ALPHA |
 				XY_SRC_COPY_BLT_WRITE_RGB)
@@ -144,6 +144,11 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 	lower[0] = sarea_priv->pipeA_y + slice[0];
 	lower[1] = sarea_priv->pipeB_y + slice[0];
 
+	offsets[0] = sarea_priv->front_offset;
+	offsets[1] = sarea_priv->back_offset;
+	offsets[2] = sarea_priv->third_offset;
+	num_pages = sarea_priv->third_handle ? 3 : 2;
+
 	spin_lock(&dev->drw_lock);
 
 	/* Emit blits for buffer swaps, partitioning both outputs into as many
@@ -161,7 +166,7 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 			drm_i915_vbl_swap_t *swap_hit =
 				list_entry(hit, drm_i915_vbl_swap_t, head);
 			drm_clip_rect_t *rect;
-			int num_rects, pipe;
+			int num_rects, pipe, front, back;
 			unsigned short top, bottom;
 
 			drw = drm_get_drawable_info(dev, swap_hit->drw_id);
@@ -173,6 +178,9 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 			pipe = swap_hit->pipe;
 			top = upper[pipe];
 			bottom = lower[pipe];
+
+			front = (dev_priv->current_page >> (2 * pipe)) & 0x3;
+			back = (front + 1) % num_pages;
 
 			for (num_rects = drw->num_rects; num_rects--; rect++) {
 				int y1 = max(rect->y1, top);
@@ -187,10 +195,10 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 				OUT_RING(pitchropcpp);
 				OUT_RING((y1 << 16) | rect->x1);
 				OUT_RING((y2 << 16) | rect->x2);
-				OUT_RING(sarea_priv->front_offset);
+				OUT_RING(offsets[front]);
 				OUT_RING((y1 << 16) | rect->x1);
 				OUT_RING(pitchropcpp & 0xffff);
-				OUT_RING(sarea_priv->back_offset);
+				OUT_RING(offsets[back]);
 
 				ADVANCE_LP_RING();
 			}
