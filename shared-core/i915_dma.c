@@ -551,7 +551,7 @@ static int i915_dispatch_batchbuffer(drm_device_t * dev,
 	return 0;
 }
 
-static void i915_do_dispatch_flip(drm_device_t * dev, int pipe)
+static void i915_do_dispatch_flip(drm_device_t * dev, int pipe, int sync)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	u32 num_pages, current_page, next_page, dspbase;
@@ -590,9 +590,9 @@ static void i915_do_dispatch_flip(drm_device_t * dev, int pipe)
 		  dspbase);
 
 	BEGIN_LP_RING(4);
-	OUT_RING(CMD_OP_DISPLAYBUFFER_INFO | ASYNC_FLIP |
+	OUT_RING(CMD_OP_DISPLAYBUFFER_INFO | (sync ? 0 : ASYNC_FLIP) |
 		 (pipe ? DISPLAY_PLANE_B : DISPLAY_PLANE_A));
-	OUT_RING(0);
+	OUT_RING(dev_priv->sarea_priv->pitch * dev_priv->cpp);
 	OUT_RING(dspbase);
 	OUT_RING(0);
 	ADVANCE_LP_RING();
@@ -601,7 +601,7 @@ static void i915_do_dispatch_flip(drm_device_t * dev, int pipe)
 	dev_priv->current_page |= next_page << shift;
 }
 
-static void i915_dispatch_flip(drm_device_t * dev, int pipes)
+void i915_dispatch_flip(drm_device_t * dev, int pipes, int sync)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	u32 mi_wait = MI_WAIT_FOR_EVENT;
@@ -634,11 +634,12 @@ static void i915_dispatch_flip(drm_device_t * dev, int pipes)
 
 	for (i = 0; i < 2; i++)
 		if (pipes & (1 << i))
-			i915_do_dispatch_flip(dev, i);
+			i915_do_dispatch_flip(dev, i, sync);
 
 	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
-	drm_fence_flush_old(dev, 0, dev_priv->counter);
+	if (!sync)
+		drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
 
 	dev_priv->sarea_priv->pf_current_page = dev_priv->current_page;
@@ -745,7 +746,7 @@ static int i915_do_cleanup_pageflip(drm_device_t * dev)
 			if (dev_priv->current_page & (0x3 << (2 * i)))
 				pipes |= 1 << i;
 
-		i915_dispatch_flip(dev, pipes);
+		i915_dispatch_flip(dev, pipes, 0);
 	}
 
 	return 0;
@@ -769,7 +770,7 @@ static int i915_flip_bufs(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 	}
 
-	i915_dispatch_flip(dev, param.pipes);
+	i915_dispatch_flip(dev, param.pipes, 0);
 
 	return 0;
 }

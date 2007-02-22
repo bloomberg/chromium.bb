@@ -85,6 +85,7 @@ typedef struct _drm_i915_vbl_swap {
 	drm_drawable_t drw_id;
 	unsigned int pipe;
 	unsigned int sequence;
+	int flip;
 } drm_i915_vbl_swap_t;
 
 typedef struct drm_i915_private {
@@ -151,6 +152,7 @@ extern int i915_driver_device_is_agp(drm_device_t * dev);
 extern long i915_compat_ioctl(struct file *filp, unsigned int cmd,
 			      unsigned long arg);
 extern void i915_emit_breadcrumb(drm_device_t *dev);
+extern void i915_dispatch_flip(drm_device_t * dev, int pipes, int sync);
 extern int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush);
 
 
