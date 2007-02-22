@@ -43,10 +43,29 @@ void drm_fence_handler(drm_device_t * dev, uint32_t class,
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_class_manager_t *fc = &fm->class[class];
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
-	struct list_head *list, *prev;
-	drm_fence_object_t *fence;
+	struct list_head *head;
+	drm_fence_object_t *fence, *next;
 	int found = 0;
+	int is_exe = (type & DRM_FENCE_TYPE_EXE);
+	int ge_last_exe;
 
+
+	
+	diff = (sequence - fc->exe_flush_sequence) & driver->sequence_mask;
+
+	if (fc->pending_exe_flush && is_exe && diff < driver->wrap_diff)
+		fc->pending_exe_flush = 0;
+
+	diff = (sequence - fc->last_exe_flush) & driver->sequence_mask;
+	ge_last_exe = diff < driver->wrap_diff;
+
+	if (ge_last_exe) 
+		fc->pending_flush &= ~type;
+
+	if (is_exe && ge_last_exe) {
+		fc->last_exe_flush = sequence;
+	}
+	
 	if (list_empty(&fc->ring))
 		return;
 
@@ -58,11 +77,11 @@ void drm_fence_handler(drm_device_t * dev, uint32_t class,
 		}
 	}
 
-	list = (found) ? fence->ring.prev : fc->ring.prev;
-	prev = list->prev;
+	head = (found) ? &fence->ring : &fc->ring;
 
-	for (; list != &fc->ring; list = prev, prev = list->prev) {
-		fence = list_entry(list, drm_fence_object_t, ring);
+	list_for_each_entry_safe_reverse(fence, next, head, ring) {
+		if (&fence->ring == &fc->ring)
+			break;
 
 		type |= fence->native_type;
 		relevant = type & fence->type;
@@ -90,12 +109,7 @@ void drm_fence_handler(drm_device_t * dev, uint32_t class,
 		}
 
 	}
-
-	fc->pending_flush &= ~type;
-	if (fc->pending_exe_flush && (type & DRM_FENCE_TYPE_EXE) &&
-	    ((sequence - fc->exe_flush_sequence) < driver->wrap_diff))
-		fc->pending_exe_flush = 0;
-
+	
 	if (wake) {
 		DRM_WAKEUP(&fc->fence_queue);
 	}
@@ -178,24 +192,6 @@ static void drm_fence_flush_exe(drm_fence_class_manager_t * fc,
 	uint32_t diff;
 
 	if (!fc->pending_exe_flush) {
-		struct list_head *list;
-
-		/*
-		 * Last_exe_flush is invalid. Find oldest sequence.
-		 */
-
-		list = &fc->ring;
-		if (list_empty(list)) {
-			return;
-		} else {
-			drm_fence_object_t *fence =
-			    list_entry(list->next, drm_fence_object_t, ring);
-			fc->last_exe_flush = (fence->sequence - 1) &
-			    driver->sequence_mask;
-		}
-		diff = (sequence - fc->last_exe_flush) & driver->sequence_mask;
-		if (diff >= driver->wrap_diff)
-			return;
 		fc->exe_flush_sequence = sequence;
 		fc->pending_exe_flush = 1;
 	} else {
@@ -261,14 +257,24 @@ void drm_fence_flush_old(drm_device_t * dev, uint32_t class, uint32_t sequence)
 	drm_fence_object_t *fence;
 	uint32_t diff;
 
+	write_lock_irqsave(&fm->lock, flags);
+	old_sequence = (sequence - driver->flush_diff) & driver->sequence_mask;
+	diff = (old_sequence - fc->last_exe_flush) & driver->sequence_mask;
+
+	if ((diff < driver->wrap_diff) && !fc->pending_exe_flush) {
+		fc->pending_exe_flush = 1;
+		fc->exe_flush_sequence = sequence - (driver->flush_diff / 2);
+	}
+	write_unlock_irqrestore(&fm->lock, flags);
+	
 	mutex_lock(&dev->struct_mutex);
 	read_lock_irqsave(&fm->lock, flags);
-	if (fc->ring.next == &fc->ring) {
+
+	if (list_empty(&fc->ring)) {
 		read_unlock_irqrestore(&fm->lock, flags);
 		mutex_unlock(&dev->struct_mutex);
 		return;
 	}
-	old_sequence = (sequence - driver->flush_diff) & driver->sequence_mask;
 	fence = list_entry(fc->ring.next, drm_fence_object_t, ring);
 	atomic_inc(&fence->usage);
 	mutex_unlock(&dev->struct_mutex);
@@ -384,6 +390,7 @@ int drm_fence_object_emit(drm_device_t * dev, drm_fence_object_t * fence,
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
+	drm_fence_class_manager_t *fc = &fm->class[fence->class];
 	unsigned long flags;
 	uint32_t sequence;
 	uint32_t native_type;
@@ -402,7 +409,9 @@ int drm_fence_object_emit(drm_device_t * dev, drm_fence_object_t * fence,
 	fence->signaled = 0x00;
 	fence->sequence = sequence;
 	fence->native_type = native_type;
-	list_add_tail(&fence->ring, &fm->class[class].ring);
+	if (list_empty(&fc->ring)) 
+		fc->last_exe_flush = sequence - 1;
+	list_add_tail(&fence->ring, &fc->ring);
 	write_unlock_irqrestore(&fm->lock, flags);
 	return 0;
 }

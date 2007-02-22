@@ -49,6 +49,7 @@ static void i915_perform_flush(drm_device_t * dev)
 	uint32_t i_status;
 	uint32_t diff;
 	uint32_t sequence;
+	int rwflush;
 
 	if (!dev_priv)
 		return;
@@ -65,14 +66,10 @@ static void i915_perform_flush(drm_device_t * dev)
 			drm_fence_handler(dev, 0, sequence, DRM_FENCE_TYPE_EXE);
 		}
 
-		diff = sequence - fc->exe_flush_sequence;
-		if (diff < driver->wrap_diff) {
-			fc->pending_exe_flush = 0;
-			if (dev_priv->fence_irq_on) {
-				i915_user_irq_off(dev_priv);
-				dev_priv->fence_irq_on = 0;
-			}
-		} else if (!dev_priv->fence_irq_on) {
+		if (dev_priv->fence_irq_on && !fc->pending_exe_flush) {
+			i915_user_irq_off(dev_priv);
+			dev_priv->fence_irq_on = 0;
+		} else if (!dev_priv->fence_irq_on && fc->pending_exe_flush) { 
 			i915_user_irq_on(dev_priv);
 			dev_priv->fence_irq_on = 1;
 		}
@@ -89,13 +86,14 @@ static void i915_perform_flush(drm_device_t * dev)
 		}
 	}
 
-	if (fc->pending_flush && !dev_priv->flush_pending) {
+	rwflush = fc->pending_flush & DRM_I915_FENCE_TYPE_RW;
+	if (rwflush && !dev_priv->flush_pending) {
 		dev_priv->flush_sequence = (uint32_t) READ_BREADCRUMB(dev_priv);
 		dev_priv->flush_flags = fc->pending_flush;
 		dev_priv->saved_flush_status = READ_HWSP(dev_priv, 0);
 		I915_WRITE(I915REG_INSTPM, (1 << 5) | (1 << 21));
 		dev_priv->flush_pending = 1;
-		fc->pending_flush = 0;
+		fc->pending_flush &= ~DRM_I915_FENCE_TYPE_RW;
 	}
 
 	if (dev_priv->flush_pending) {

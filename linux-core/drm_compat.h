@@ -152,6 +152,13 @@ static __inline__ void *kcalloc(size_t nmemb, size_t size, int flags)
       (tmp);})
 #endif
 
+#ifndef list_for_each_entry_safe_reverse
+#define list_for_each_entry_safe_reverse(pos, n, head, member)          \
+        for (pos = list_entry((head)->prev, typeof(*pos), member),      \
+                n = list_entry(pos->member.prev, typeof(*pos), member); \
+             &pos->member != (head);                                    \
+             pos = n, n = list_entry(n->member.prev, typeof(*n), member))
+#endif
 
 #include <linux/mm.h>
 #include <asm/page.h>
