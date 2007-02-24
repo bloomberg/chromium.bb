@@ -678,7 +678,7 @@ typedef struct drm_set_version {
 
 typedef struct drm_fence_arg {
 	unsigned handle;
-        int class;
+	int class;
 	unsigned type;
 	unsigned flags;
 	unsigned signaled;
@@ -807,7 +807,7 @@ typedef struct drm_bo_arg_request {
 	drm_bo_type_t type;
 	unsigned arg_handle;
 	drm_u64_t buffer_start;
-        unsigned page_alignment;
+	unsigned page_alignment;
 	unsigned expand_pad[4]; /*Future expansion */
 	enum {
 		drm_bo_create,
@@ -838,11 +838,11 @@ typedef struct drm_bo_arg_reply {
 	drm_u64_t size;
 	drm_u64_t offset;
 	drm_u64_t arg_handle;
-        unsigned mask;
-        drm_u64_t buffer_start;
-        unsigned fence_flags;
-        unsigned rep_flags;
-        unsigned page_alignment;
+	unsigned mask;
+	drm_u64_t buffer_start;
+	unsigned fence_flags;
+	unsigned rep_flags;
+	unsigned page_alignment;
 	unsigned expand_pad[4]; /*Future expansion */
 }drm_bo_arg_reply_t;
 	

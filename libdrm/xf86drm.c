@@ -585,9 +585,9 @@ int drmOpen(const char *name, const char *busid)
 void drmFreeVersion(drmVersionPtr v)
 {
     if (!v) return;
-    if (v->name) drmFree(v->name);
-    if (v->date) drmFree(v->date);
-    if (v->desc) drmFree(v->desc);
+    drmFree(v->name);
+    drmFree(v->date);
+    drmFree(v->desc);
     drmFree(v);
 }
 
@@ -604,9 +604,9 @@ void drmFreeVersion(drmVersionPtr v)
 static void drmFreeKernelVersion(drm_version_t *v)
 {
     if (!v) return;
-    if (v->name) drmFree(v->name);
-    if (v->date) drmFree(v->date);
-    if (v->desc) drmFree(v->desc);
+    drmFree(v->name);
+    drmFree(v->date);
+    drmFree(v->desc);
     drmFree(v);
 }
 
