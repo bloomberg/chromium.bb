@@ -217,6 +217,7 @@ void drm_mm_put_block(drm_mm_node_t * cur)
 		drm_ctl_free(cur, sizeof(*cur), DRM_MEM_MM);
 	}
 }
+EXPORT_SYMBOL(drm_mm_put_block);
 
 drm_mm_node_t *drm_mm_search_free(const drm_mm_t * mm,
 				  unsigned long size,

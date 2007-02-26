@@ -110,7 +110,7 @@ static int i830_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
 	unlock_kernel();
 
 	if (remap_pfn_range(vma, vma->vm_start,
-			    VM_OFFSET(vma) >> PAGE_SHIFT,
+			    vma->vm_pgoff,
 			    vma->vm_end - vma->vm_start,
 			    vma->vm_page_prot))
 		return -EAGAIN;

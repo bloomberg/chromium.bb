@@ -126,7 +126,9 @@ typedef struct drm_i915_private {
 	uint32_t flush_pending;
 	uint32_t saved_flush_status;
 #endif
-
+#ifdef I915_HAVE_BUFFER
+	void *agp_iomap;
+#endif
 	spinlock_t swaps_lock;
 	drm_i915_vbl_swap_t vbl_swaps;
 	unsigned int swaps_pending;
@@ -183,17 +185,25 @@ extern void i915_mem_release(drm_device_t * dev,
 
 
 extern void i915_fence_handler(drm_device_t *dev);
-extern int i915_fence_emit_sequence(drm_device_t *dev, uint32_t flags,
+extern int i915_fence_emit_sequence(drm_device_t *dev, uint32_t class,
+				    uint32_t flags,
 				    uint32_t *sequence, 
 				    uint32_t *native_type);
-extern void i915_poke_flush(drm_device_t *dev);
+extern void i915_poke_flush(drm_device_t *dev, uint32_t class);
+extern int i915_fence_has_irq(drm_device_t *dev, uint32_t class, uint32_t flags);
 #endif
 
 #ifdef I915_HAVE_BUFFER
 /* i915_buffer.c */
 extern drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev);
-extern int i915_fence_types(uint32_t buffer_flags, uint32_t *class, uint32_t *type);
+extern int i915_fence_types(drm_buffer_object_t *bo, uint32_t *class, uint32_t *type);
 extern int i915_invalidate_caches(drm_device_t *dev, uint32_t buffer_flags);
+extern int i915_init_mem_type(drm_device_t *dev, uint32_t type,
+			       drm_mem_type_manager_t *man);
+extern uint32_t i915_evict_mask(drm_buffer_object_t *bo);
+extern int i915_move(drm_buffer_object_t *bo, int evict,
+	      	int no_wait, drm_bo_mem_reg_t *new_mem);
+
 #endif
 
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
@@ -331,6 +341,7 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 #define GFX_OP_DRAWRECT_INFO_I965  ((0x7900<<16)|0x2)
 
+#define SRC_COPY_BLT_CMD                ((2<<29)|(0x43<<22)|4)
 #define XY_SRC_COPY_BLT_CMD		((2<<29)|(0x53<<22)|6)
 #define XY_SRC_COPY_BLT_WRITE_ALPHA	(1<<21)
 #define XY_SRC_COPY_BLT_WRITE_RGB	(1<<20)

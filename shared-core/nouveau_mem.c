@@ -35,7 +35,7 @@
 #include "drm_sarea.h"
 #include "nouveau_drv.h"
 
-static int meminit_ok=0;
+//static int meminit_ok=0;
 
 static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64_t size,
 		DRMFILE filp)
@@ -373,10 +373,9 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint6
 	/*
 	 * Init memory if needed
 	 */
-	if (meminit_ok==0)
+	if (dev_priv->fb_phys == 0)
 	{
 		nouveau_mem_init(dev);
-		meminit_ok=1;
 	}
 
 	/* 
@@ -446,8 +445,10 @@ alloc_ok:
 
 void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 {
+        drm_nouveau_private_t *dev_priv = dev->dev_private;
+
 	DRM_INFO("freeing 0x%llx\n", block->start);
-	if (meminit_ok==0)
+	if (dev_priv->fb_phys == 0)
 	{
 		DRM_ERROR("%s called without init\n", __FUNCTION__);
 		return;

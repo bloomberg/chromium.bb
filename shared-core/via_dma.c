@@ -40,20 +40,6 @@
 #include "via_drv.h"
 #include "via_3d_reg.h"
 
-#define CMDBUF_ALIGNMENT_SIZE   (0x100)
-#define CMDBUF_ALIGNMENT_MASK   (0x0ff)
-
-/* defines for VIA 3D registers */
-#define VIA_REG_STATUS	  0x400
-#define VIA_REG_TRANSET	 0x43C
-#define VIA_REG_TRANSPACE       0x440
-
-/* VIA_REG_STATUS(0x400): Engine Status */
-#define VIA_CMD_RGTR_BUSY       0x00000080	/* Command Regulator is busy */
-#define VIA_2D_ENG_BUSY	 0x00000001	/* 2D Engine is busy */
-#define VIA_3D_ENG_BUSY	 0x00000002	/* 3D Engine is busy */
-#define VIA_VR_QUEUE_BUSY       0x00020000	/* Virtual Queue is busy */
-
 #define SetReg2DAGP(nReg, nData) {				\
 	*((uint32_t *)(vb)) = ((nReg) >> 2) | HALCYON_HEADER1;	\
 	*((uint32_t *)(vb) + 1) = (nData);			\

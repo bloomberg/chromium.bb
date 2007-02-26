@@ -427,38 +427,51 @@ int drm_release(struct inode *inode, struct file *filp)
 		  dev->open_count);
 
 	if (dev->driver->reclaim_buffers_locked && dev->lock.hw_lock) {
-	        unsigned long _end = jiffies + DRM_HZ*3;
-
-		do {
-			retcode = drm_kernel_take_hw_lock(filp);
-		} while(retcode && !time_after_eq(jiffies,_end));
-
-		if (!retcode) {
+		if (drm_i_have_hw_lock(filp)) {
 			dev->driver->reclaim_buffers_locked(dev, filp);
-
-			drm_lock_free(dev, &dev->lock.hw_lock->lock,
-				      _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
 		} else {
+			unsigned long _end=jiffies + 3*DRM_HZ;
+			int locked = 0;
+
+			drm_idlelock_take(&dev->lock);
 
 			/*
-			 * FIXME: This is not a good solution. We should perhaps associate the
-			 * DRM lock with a process context, and check whether the current process
-			 * holds the lock. Then we can run reclaim buffers locked anyway.
+			 * Wait for a while.
 			 */
 
-			DRM_ERROR("Reclaim buffers locked deadlock.\n"
-				  "\tThis is probably a single thread having multiple\n"
-				  "\tDRM file descriptors open either dying or"
-				  " closing file descriptors\n"
-				  "\twhile having the lock. I will not reclaim buffers.\n"
-				  "\tLocking context is 0x%08x\n",
-				  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
+			do{
+				spin_lock(&dev->lock.spinlock);
+				locked = dev->lock.idle_has_lock;
+				spin_unlock(&dev->lock.spinlock);
+				if (locked)
+					break;
+				schedule();
+			} while (!time_after_eq(jiffies, _end));
+
+			if (!locked) {
+				DRM_ERROR("reclaim_buffers_locked() deadlock. Please rework this\n"
+					  "\tdriver to use reclaim_buffers_idlelocked() instead.\n"
+					  "\tI will go on reclaiming the buffers anyway.\n");
+			}
+
+			dev->driver->reclaim_buffers_locked(dev, filp);
+			drm_idlelock_release(&dev->lock);
 		}
-	} else if (drm_i_have_hw_lock(filp)) {
+	}
+
+	if (dev->driver->reclaim_buffers_idlelocked && dev->lock.hw_lock) {
+
+		drm_idlelock_take(&dev->lock);
+		dev->driver->reclaim_buffers_idlelocked(dev, filp);
+		drm_idlelock_release(&dev->lock);
+
+	}
+
+	if (drm_i_have_hw_lock(filp)) {
 		DRM_DEBUG("File %p released, freeing lock for context %d\n",
 			  filp, _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
 
-		drm_lock_free(dev, &dev->lock.hw_lock->lock,
+		drm_lock_free(&dev->lock,
 			      _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
 	}
 

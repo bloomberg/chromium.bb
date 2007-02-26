@@ -585,9 +585,9 @@ int drmOpen(const char *name, const char *busid)
 void drmFreeVersion(drmVersionPtr v)
 {
     if (!v) return;
-    if (v->name) drmFree(v->name);
-    if (v->date) drmFree(v->date);
-    if (v->desc) drmFree(v->desc);
+    drmFree(v->name);
+    drmFree(v->date);
+    drmFree(v->desc);
     drmFree(v);
 }
 
@@ -604,9 +604,9 @@ void drmFreeVersion(drmVersionPtr v)
 static void drmFreeKernelVersion(drm_version_t *v)
 {
     if (!v) return;
-    if (v->name) drmFree(v->name);
-    if (v->date) drmFree(v->date);
-    if (v->desc) drmFree(v->desc);
+    drmFree(v->name);
+    drmFree(v->date);
+    drmFree(v->desc);
     drmFree(v);
 }
 
@@ -2267,12 +2267,13 @@ int drmCommandWriteRead(int fd, unsigned long drmCommandIndex, void *data,
  * DRM_FENCE_MASK_DRIVER
  */
 
-int drmFenceCreate(int fd, unsigned flags, int class,unsigned type, 
+int drmFenceCreate(int fd, unsigned flags, int class, unsigned type,
 		   drmFence *fence)
 {
     drm_fence_arg_t arg;
-    
+
     memset(&arg, 0, sizeof(arg));
+    arg.flags = flags;
     arg.type = type;
     arg.class = class;
     arg.op = drm_fence_create;
@@ -2410,8 +2411,9 @@ int drmFenceSignaled(int fd, drmFence *fence, unsigned fenceType,
 int drmFenceEmit(int fd, unsigned flags, drmFence *fence, unsigned emit_type)
 {
     drm_fence_arg_t arg;
-   
+
     memset(&arg, 0, sizeof(arg));
+    arg.class = fence->class;
     arg.flags = flags;
     arg.handle = fence->handle;
     arg.type = emit_type;
