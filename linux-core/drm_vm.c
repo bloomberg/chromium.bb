@@ -718,28 +718,23 @@ EXPORT_SYMBOL(drm_mmap);
  * \c Pagefault method for buffer objects.
  *
  * \param vma Virtual memory area.
- * \param data Fault data on failure or refault.
- * \return Always NULL as we insert pfns directly.
+ * \param address File offset.
+ * \return Error or refault. The pfn is manually inserted.
  *
  * It's important that pfns are inserted while holding the bo->mutex lock.
  * otherwise we might race with unmap_mapping_range() which is always
  * called with the bo->mutex lock held.
  *
- * It's not pretty to modify the vma->vm_page_prot variable while not
- * holding the mm semaphore in write mode. However, we have it i read mode,
- * so we won't be racing with any other writers, and we only actually modify
- * it when no ptes are present so it shouldn't be a big deal.
+ * We're modifying the page attribute bits of the vma->vm_page_prot field,
+ * without holding the mmap_sem in write mode. Only in read mode.
+ * These bits are not used by the mm subsystem code, and we consider them
+ * protected by the bo->mutex lock.
  */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19) ||	\
-     LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 #ifdef DRM_FULL_MM_COMPAT
-static
-#endif
-struct page *drm_bo_vm_fault(struct vm_area_struct *vma, 
-			     struct fault_data *data)
+static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma, 
+				     unsigned long address)
 {
-	unsigned long address = data->address;
 	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
 	unsigned long page_offset;
 	struct page *page = NULL;
@@ -750,58 +745,35 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	unsigned long bus_base;
 	unsigned long bus_offset;
 	unsigned long bus_size;
+	int ret = NOPFN_REFAULT;
 	
-
-	mutex_lock(&bo->mutex);
+	if (address > vma->vm_end) 
+		return NOPFN_SIGBUS;
+		
+	err = mutex_lock_interruptible(&bo->mutex);
+	if (err)
+		return NOPFN_REFAULT;
 
 	err = drm_bo_wait(bo, 0, 0, 0);
 	if (err) {
-		data->type = (err == -EAGAIN) ? 
-			VM_FAULT_MINOR : VM_FAULT_SIGBUS;
+		ret = (err != -EAGAIN) ? NOPFN_SIGBUS : NOPFN_REFAULT;
 		goto out_unlock;
 	}
-	
-	
+
 	/*
 	 * If buffer happens to be in a non-mappable location,
 	 * move it to a mappable.
 	 */
 
-#ifdef DRM_BO_FULL_COMPAT
 	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
 		uint32_t new_mask = bo->mem.mask | 
 			DRM_BO_FLAG_MAPPABLE | 
 			DRM_BO_FLAG_FORCE_MAPPABLE;
 		err = drm_bo_move_buffer(bo, new_mask, 0, 0);
-		
 		if (err) {
-			data->type = (err == -EAGAIN) ? 
-				VM_FAULT_MINOR : VM_FAULT_SIGBUS;
+			ret = (err != -EAGAIN) ? NOPFN_SIGBUS : NOPFN_REFAULT;
 			goto out_unlock;
 		}
-	}
-#else
-	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
-		unsigned long _end = jiffies + 3*DRM_HZ;
-		uint32_t new_mask = bo->mem.mask |
-			DRM_BO_FLAG_MAPPABLE |
-			DRM_BO_FLAG_FORCE_MAPPABLE;
-
-		do {
-			err = drm_bo_move_buffer(bo, new_mask, 0, 0);
-		} while((err == -EAGAIN) && !time_after_eq(jiffies, _end));
-
-		if (err) {
-			DRM_ERROR("Timeout moving buffer to mappable location.\n");
-			data->type = VM_FAULT_SIGBUS;
-			goto out_unlock;
-		}
-	}
-#endif
-
-	if (address > vma->vm_end) {
-		data->type = VM_FAULT_SIGBUS;
-		goto out_unlock;
 	}
 
 	dev = bo->dev;
@@ -809,7 +781,7 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 				&bus_size);
 
 	if (err) {
-		data->type = VM_FAULT_SIGBUS;
+		ret = NOPFN_SIGBUS;
 		goto out_unlock;
 	}
 
@@ -826,7 +798,7 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 		drm_ttm_fixup_caching(ttm);
 		page = drm_ttm_get_page(ttm, page_offset);
 		if (!page) {
-			data->type = VM_FAULT_OOM;
+			ret = NOPFN_OOM;
 			goto out_unlock;
 		}
 		pfn = page_to_pfn(page);
@@ -834,14 +806,13 @@ struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	}
 	
 	err = vm_insert_pfn(vma, address, pfn);
-
-	if (!err || err == -EBUSY) 
-		data->type = VM_FAULT_MINOR; 
-	else
-		data->type = VM_FAULT_OOM;
+	if (err) {
+		ret = (err != -EAGAIN) ? NOPFN_OOM : NOPFN_REFAULT;
+		goto out_unlock;
+	}
 out_unlock:
 	mutex_unlock(&bo->mutex);
-	return NULL;
+	return ret;
 }
 #endif
 
@@ -897,7 +868,7 @@ static void drm_bo_vm_close(struct vm_area_struct *vma)
 
 static struct vm_operations_struct drm_bo_vm_ops = {
 #ifdef DRM_FULL_MM_COMPAT
-	.fault = drm_bo_vm_fault,
+	.nopfn = drm_bo_vm_nopfn,
 #else
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19))
 	.nopfn = drm_bo_vm_nopfn,
