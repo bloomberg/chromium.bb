@@ -212,19 +212,10 @@ extern void free_nopage_retry(void);
 #define NOPAGE_REFAULT get_nopage_retry()
 #endif
 
-#if !defined(DRM_FULL_MM_COMPAT) && \
-  ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15)) || \
-   (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)))
 
-struct fault_data;
-extern struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
-				    struct fault_data *data);
-
-#endif
 #ifndef DRM_FULL_MM_COMPAT
 
 /*
- * Hopefully, real NOPAGE_RETRY functionality will be in 2.6.19.
  * For now, just return a dummy page that we've allocated out of 
  * static space. The page will be put by do_nopage() since we've already
  * filled out the pte.
@@ -239,15 +230,12 @@ struct fault_data {
 	int type;
 };
 
-
-extern int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr, 
-			 unsigned long pfn);
-
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
 extern struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 				     unsigned long address, 
 				     int *type);
-#else
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)) && \
+  !defined(DRM_FULL_MM_COMPAT)
 extern unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 				     unsigned long address);
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)) */

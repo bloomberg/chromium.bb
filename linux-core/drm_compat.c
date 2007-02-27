@@ -94,6 +94,11 @@ static struct {
 } drm_np_retry = 
 {SPIN_LOCK_UNLOCKED, NOPAGE_OOM, ATOMIC_INIT(0)};
 
+
+static struct page *drm_bo_vm_fault(struct vm_area_struct *vma, 
+				    struct fault_data *data);
+
+
 struct page * get_nopage_retry(void)
 {
 	if (atomic_read(&drm_np_retry.present) == 0) {
@@ -180,7 +185,7 @@ static int drm_pte_is_clear(struct vm_area_struct *vma,
 	return ret;
 }
 
-int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
+static int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 		  unsigned long pfn)
 {
 	int ret;
@@ -190,14 +195,106 @@ int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 	ret = io_remap_pfn_range(vma, addr, pfn, PAGE_SIZE, vma->vm_page_prot);
 	return ret;
 }
+
+static struct page *drm_bo_vm_fault(struct vm_area_struct *vma, 
+				    struct fault_data *data)
+{
+	unsigned long address = data->address;
+	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
+	unsigned long page_offset;
+	struct page *page = NULL;
+	drm_ttm_t *ttm; 
+	drm_device_t *dev;
+	unsigned long pfn;
+	int err;
+	unsigned long bus_base;
+	unsigned long bus_offset;
+	unsigned long bus_size;
+	
+
+	mutex_lock(&bo->mutex);
+
+	err = drm_bo_wait(bo, 0, 1, 0);
+	if (err) {
+		data->type = (err == -EAGAIN) ? 
+			VM_FAULT_MINOR : VM_FAULT_SIGBUS;
+		goto out_unlock;
+	}
+	
+	
+	/*
+	 * If buffer happens to be in a non-mappable location,
+	 * move it to a mappable.
+	 */
+
+	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
+		unsigned long _end = jiffies + 3*DRM_HZ;
+		uint32_t new_mask = bo->mem.mask |
+			DRM_BO_FLAG_MAPPABLE |
+			DRM_BO_FLAG_FORCE_MAPPABLE;
+
+		do {
+			err = drm_bo_move_buffer(bo, new_mask, 0, 0);
+		} while((err == -EAGAIN) && !time_after_eq(jiffies, _end));
+
+		if (err) {
+			DRM_ERROR("Timeout moving buffer to mappable location.\n");
+			data->type = VM_FAULT_SIGBUS;
+			goto out_unlock;
+		}
+	}
+
+	if (address > vma->vm_end) {
+		data->type = VM_FAULT_SIGBUS;
+		goto out_unlock;
+	}
+
+	dev = bo->dev;
+	err = drm_bo_pci_offset(dev, &bo->mem, &bus_base, &bus_offset, 
+				&bus_size);
+
+	if (err) {
+		data->type = VM_FAULT_SIGBUS;
+		goto out_unlock;
+	}
+
+	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
+
+	if (bus_size) {
+		drm_mem_type_manager_t *man = &dev->bm.man[bo->mem.mem_type];
+
+		pfn = ((bus_base + bus_offset) >> PAGE_SHIFT) + page_offset;
+		vma->vm_page_prot = drm_io_prot(man->drm_bus_maptype, vma);
+	} else {
+		ttm = bo->ttm;
+
+		drm_ttm_fixup_caching(ttm);
+		page = drm_ttm_get_page(ttm, page_offset);
+		if (!page) {
+			data->type = VM_FAULT_OOM;
+			goto out_unlock;
+		}
+		pfn = page_to_pfn(page);
+		vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+	}
+	
+	err = vm_insert_pfn(vma, address, pfn);
+
+	if (!err || err == -EBUSY) 
+		data->type = VM_FAULT_MINOR; 
+	else
+		data->type = VM_FAULT_OOM;
+out_unlock:
+	mutex_unlock(&bo->mutex);
+	return NULL;
+}
+
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19) && !defined(DRM_FULL_MM_COMPAT))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)) && \
+  !defined(DRM_FULL_MM_COMPAT)
 
 /**
- * While waiting for the fault() handler to appear in
- * we accomplish approximately
- * the same wrapping it with nopfn.
  */
 
 unsigned long drm_bo_vm_nopfn(struct vm_area_struct * vma,
