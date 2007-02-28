@@ -926,6 +926,7 @@ nv40_graph_init(drm_device_t *dev)
 
 	/* No idea what this is for.. */
 	dev_priv->fb_obj = nouveau_dma_object_create(dev,
+			NV_CLASS_DMA_IN_MEMORY,
 			0, nouveau_mem_fb_amount(dev),
 			NV_DMA_ACCESS_RW, NV_DMA_TARGET_VIDMEM);
 	pg0220_inst = nouveau_chip_instance_get(dev,

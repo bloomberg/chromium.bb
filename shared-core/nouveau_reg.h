@@ -32,11 +32,19 @@
 #    define NV40_RAMHT_CONTEXT_ENGINE_SHIFT                20
 #    define NV40_RAMHT_CONTEXT_INSTANCE_SHIFT              0
 
+/* DMA object defines */
 #define NV_DMA_ACCESS_RW 0
 #define NV_DMA_ACCESS_RO 1
 #define NV_DMA_ACCESS_WO 2
 #define NV_DMA_TARGET_VIDMEM 0
+#define NV_DMA_TARGET_PCI    2
 #define NV_DMA_TARGET_AGP    3
+
+/* Some object classes we care about in the drm */
+#define NV_CLASS_DMA_FROM_MEMORY                           0x00000002
+#define NV_CLASS_DMA_TO_MEMORY                             0x00000003
+#define NV_CLASS_NULL                                      0x00000030
+#define NV_CLASS_DMA_IN_MEMORY                             0x0000003D
 
 #define NV03_FIFO_SIZE                                     0x8000UL
 #define NV_MAX_FIFO_NUMBER                                 32

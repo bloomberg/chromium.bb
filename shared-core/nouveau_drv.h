@@ -34,7 +34,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	3
+#define DRIVER_PATCHLEVEL	4
 
 #define NOUVEAU_FAMILY   0x0000FFFF
 #define NOUVEAU_FLAGS    0xFFFF0000
@@ -70,9 +70,6 @@ struct nouveau_object
 	int      engine;
 };
 
-#define NV_DMA_TARGET_VIDMEM 0
-#define NV_DMA_TARGET_PCI    2
-#define NV_DMA_TARGET_AGP    3
 struct nouveau_fifo
 {
 	int used;
@@ -134,7 +131,9 @@ typedef struct drm_nouveau_private {
 
 	/* base physical adresses */
 	uint64_t fb_phys;
+	uint64_t fb_available_size;
 	uint64_t agp_phys;
+	uint64_t agp_available_size;
 
 	/* the mtrr covering the FB */
 	int fb_mtrr;
@@ -192,8 +191,10 @@ extern void nouveau_fifo_free(drm_device_t *dev, int channel);
 
 /* nouveau_object.c */
 extern void nouveau_object_cleanup(drm_device_t *dev, DRMFILE filp);
-extern struct nouveau_object *nouveau_dma_object_create(drm_device_t *dev,
-		uint32_t offset, uint32_t size, int access, uint32_t target);
+extern struct nouveau_object *
+nouveau_dma_object_create(drm_device_t *dev, int class,
+			  uint32_t offset, uint32_t size,
+			  int access, int target);
 extern int  nouveau_ioctl_object_init(DRM_IOCTL_ARGS);
 extern int  nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS);
 extern uint32_t nouveau_chip_instance_get(drm_device_t *dev, struct mem_block *mem);

@@ -181,8 +181,14 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 	case NOUVEAU_GETPARAM_AGP_PHYSICAL:
 		getparam.value=dev_priv->agp_phys;
 		break;
+	case NOUVEAU_GETPARAM_FB_SIZE:
+		getparam.value=dev_priv->fb_available_size;
+		break;
+	case NOUVEAU_GETPARAM_AGP_SIZE:
+		getparam.value=dev_priv->agp_available_size;
+		break;
 	default:
-		DRM_ERROR("unknown parameter %d\n", getparam.param);
+		DRM_ERROR("unknown parameter %lld\n", getparam.param);
 		return DRM_ERR(EINVAL);
 	}
 
@@ -207,7 +213,8 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 		case NOUVEAU_MEM_FB:
 			break;
 		default:
-			DRM_ERROR("invalid CMDBUF_LOCATION value=%d\n", setparam.value);
+			DRM_ERROR("invalid CMDBUF_LOCATION value=%lld\n",
+					setparam.value);
 			return DRM_ERR(EINVAL);
 		}
 		dev_priv->config.cmdbuf.location = setparam.value;
@@ -216,7 +223,7 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 		dev_priv->config.cmdbuf.size = setparam.value;
 		break;
 	default:
-		DRM_ERROR("unknown parameter %d\n", setparam.param);
+		DRM_ERROR("unknown parameter %lld\n", setparam.param);
 		return DRM_ERR(EINVAL);
 	}
 

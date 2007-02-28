@@ -239,11 +239,12 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 	}
 
 	if (cb->flags & NOUVEAU_MEM_AGP) {
-		cb_dma = nouveau_dma_object_create(dev,
-				cb->start, cb->size,
+		cb_dma = nouveau_dma_object_create(dev, NV_CLASS_DMA_IN_MEMORY,
+				cb->start - dev_priv->agp_phys,
+				cb->size,
 				NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP);
 	} else if (dev_priv->card_type != NV_04) {
-		cb_dma = nouveau_dma_object_create(dev,
+		cb_dma = nouveau_dma_object_create(dev, NV_CLASS_DMA_IN_MEMORY,
 				cb->start - drm_get_resource_start(dev, 1),
 				cb->size,
 				NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM);
@@ -252,7 +253,7 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 		 * exact reason for existing :)  PCI access to cmdbuf in
 		 * VRAM.
 		 */
-		cb_dma = nouveau_dma_object_create(dev,
+		cb_dma = nouveau_dma_object_create(dev, NV_CLASS_DMA_IN_MEMORY,
 				cb->start, cb->size,
 				NV_DMA_ACCESS_RO, NV_DMA_TARGET_PCI);
 	}
