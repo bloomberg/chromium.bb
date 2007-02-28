@@ -604,7 +604,6 @@ static void i915_do_dispatch_flip(drm_device_t * dev, int pipe, int sync)
 void i915_dispatch_flip(drm_device_t * dev, int pipes, int sync)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	u32 mi_wait = MI_WAIT_FOR_EVENT;
 	int i;
 	RING_LOCALS;
 
@@ -613,24 +612,23 @@ void i915_dispatch_flip(drm_device_t * dev, int pipes, int sync)
 		  pipes, dev_priv->current_page,
 		  dev_priv->sarea_priv->pf_current_page);
 
-	if (pipes & 0x1)
-		mi_wait |= MI_WAIT_FOR_PLANE_A_FLIP;
+	i915_emit_mi_flush(dev, MI_READ_FLUSH | MI_EXE_FLUSH);
 
-	if (pipes & 0x2)
-		mi_wait |= MI_WAIT_FOR_PLANE_B_FLIP;
+	if (!sync) {
+		u32 mi_wait = MI_WAIT_FOR_EVENT;
 
-	i915_kernel_lost_context(dev);
+		/* Wait for pending flips to take effect */
+		if (pipes & 0x1)
+			mi_wait |= MI_WAIT_FOR_PLANE_A_FLIP;
 
-	BEGIN_LP_RING(2);
-	OUT_RING(INST_PARSER_CLIENT | INST_OP_FLUSH | INST_FLUSH_MAP_CACHE);
-	OUT_RING(0);
-	ADVANCE_LP_RING();
+		if (pipes & 0x2)
+			mi_wait |= MI_WAIT_FOR_PLANE_B_FLIP;
 
-	/* Wait for pending flips to take effect */
-	BEGIN_LP_RING(2);
-	OUT_RING(mi_wait);
-	OUT_RING(0);
-	ADVANCE_LP_RING();
+		BEGIN_LP_RING(2);
+		OUT_RING(mi_wait);
+		OUT_RING(0);
+		ADVANCE_LP_RING();
+	}
 
 	for (i = 0; i < 2; i++)
 		if (pipes & (1 << i))

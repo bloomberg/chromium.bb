@@ -252,10 +252,6 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define CMD_STORE_DWORD_IDX		((0x21<<23) | 0x1)
 #define CMD_OP_BATCH_BUFFER  ((0x0<<29)|(0x30<<23)|0x1)
 
-#define INST_PARSER_CLIENT   0x00000000
-#define INST_OP_FLUSH        0x02000000
-#define INST_FLUSH_MAP_CACHE 0x00000001
-
 #define CMD_MI_FLUSH         (0x04 << 23)
 #define MI_NO_WRITE_FLUSH    (1 << 2)
 #define MI_READ_FLUSH        (1 << 0)
