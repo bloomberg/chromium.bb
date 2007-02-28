@@ -101,7 +101,6 @@ typedef struct drm_i915_private {
 	uint32_t counter;
 
 	unsigned int cpp;
-	int current_page;
 	int use_mi_batchbuffer_start;
 
 	wait_queue_head_t irq_queue;

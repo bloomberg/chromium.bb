@@ -235,7 +235,8 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 			top = upper[pipe];
 			bottom = lower[pipe];
 
-			front = (dev_priv->current_page >> (2 * pipe)) & 0x3;
+			front = (dev_priv->sarea_priv->pf_current_page >>
+				 (2 * pipe)) & 0x3;
 			back = (front + 1) % num_pages;
 
 			for (num_rects = drw->num_rects; num_rects--; rect++) {

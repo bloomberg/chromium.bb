@@ -165,8 +165,7 @@ static int i915_initialize(drm_device_t * dev,
 	dev_priv->ring.virtual_start = dev_priv->ring.map.handle;
 
 	dev_priv->cpp = init->cpp;
-	dev_priv->current_page = 0;
-	dev_priv->sarea_priv->pf_current_page = dev_priv->current_page;
+	dev_priv->sarea_priv->pf_current_page = 0;
 
 	/* We are using separate values as placeholders for mechanisms for
 	 * private backbuffer/depthbuffer usage.
@@ -560,7 +559,7 @@ static void i915_do_dispatch_flip(drm_device_t * dev, int pipe, int sync)
 
 	/* Calculate display base offset */
 	num_pages = dev_priv->sarea_priv->third_handle ? 3 : 2;
-	current_page = (dev_priv->current_page >> shift) & 0x3;
+	current_page = (dev_priv->sarea_priv->pf_current_page >> shift) & 0x3;
 	next_page = (current_page + 1) % num_pages;
 
 	switch (next_page) {
@@ -597,8 +596,8 @@ static void i915_do_dispatch_flip(drm_device_t * dev, int pipe, int sync)
 	OUT_RING(0);
 	ADVANCE_LP_RING();
 
-	dev_priv->current_page &= ~(0x3 << shift);
-	dev_priv->current_page |= next_page << shift;
+	dev_priv->sarea_priv->pf_current_page &= ~(0x3 << shift);
+	dev_priv->sarea_priv->pf_current_page |= next_page << shift;
 }
 
 void i915_dispatch_flip(drm_device_t * dev, int pipes, int sync)
@@ -607,10 +606,9 @@ void i915_dispatch_flip(drm_device_t * dev, int pipes, int sync)
 	int i;
 	RING_LOCALS;
 
-	DRM_DEBUG("%s: pipes=0x%x page=%d pfCurrentPage=%d\n",
+	DRM_DEBUG("%s: pipes=0x%x pfCurrentPage=%d\n",
 		  __FUNCTION__,
-		  pipes, dev_priv->current_page,
-		  dev_priv->sarea_priv->pf_current_page);
+		  pipes, dev_priv->sarea_priv->pf_current_page);
 
 	i915_emit_mi_flush(dev, MI_READ_FLUSH | MI_EXE_FLUSH);
 
@@ -639,8 +637,6 @@ void i915_dispatch_flip(drm_device_t * dev, int pipes, int sync)
 	if (!sync)
 		drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
-
-	dev_priv->sarea_priv->pf_current_page = dev_priv->current_page;
 }
 
 static int i915_quiescent(drm_device_t * dev)
@@ -733,19 +729,21 @@ static int i915_cmdbuffer(DRM_IOCTL_ARGS)
 static int i915_do_cleanup_pageflip(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	int j;
+	int i, pipes, num_pages = dev_priv->sarea_priv->third_handle ? 3 : 2;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	for (j = 0; j < 2 && dev_priv->current_page != 0; j++) {
-		int i, pipes;
+	for (i = 0, pipes = 0; i < 2; i++)
+		if (dev_priv->sarea_priv->pf_current_page & (0x3 << (2 * i))) {
+			dev_priv->sarea_priv->pf_current_page =
+				(dev_priv->sarea_priv->pf_current_page &
+				 ~(0x3 << (2 * i))) | (num_pages - 1) << (2 * i);
 
-		for (i = 0, pipes = 0; i < 2; i++)
-			if (dev_priv->current_page & (0x3 << (2 * i)))
-				pipes |= 1 << i;
+			pipes |= 1 << i;
+		}
 
+	if (pipes)
 		i915_dispatch_flip(dev, pipes, 0);
-	}
 
 	return 0;
 }
