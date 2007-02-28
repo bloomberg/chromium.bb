@@ -70,8 +70,8 @@ i915_dispatch_vsync_flip(drm_device_t *dev, drm_drawable_info_t *drw, int pipe)
 		drm_clip_rect_t *rect = drw->rects;
 
 		for (i = 0; i < num_rects; i++)
-			if (!((rect[i].x1 > x2 && rect[i].y1 > y2) ||
-			      (rect[i].x2 < x1 && rect[i].y2 < y1))) {
+			if (!(rect[i].x1 >= x2 || rect[i].y1 >= y2 ||
+			      rect[i].x2 <= x1 || rect[i].y2 <= y1)) {
 				pf_pipes = 0x3;
 
 				break;
