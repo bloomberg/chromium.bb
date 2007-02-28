@@ -915,6 +915,7 @@ void i915_driver_lastclose(drm_device_t * dev)
 {
 	if (dev->dev_private) {
 		drm_i915_private_t *dev_priv = dev->dev_private;
+		i915_do_cleanup_pageflip(dev);
 		i915_mem_takedown(&(dev_priv->agp_heap));
 	}
 	i915_dma_cleanup(dev);
@@ -924,7 +925,6 @@ void i915_driver_preclose(drm_device_t * dev, DRMFILE filp)
 {
 	if (dev->dev_private) {
 		drm_i915_private_t *dev_priv = dev->dev_private;
-		i915_do_cleanup_pageflip(dev);
 		i915_mem_release(dev, filp, dev_priv->agp_heap);
 	}
 }
