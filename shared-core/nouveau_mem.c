@@ -335,7 +335,8 @@ int nouveau_mem_init(struct drm_device *dev)
 		if (init_heap(&dev_priv->agp_heap, info.aperture_base, info.aperture_size))
 			goto no_agp;
 
-		dev_priv->agp_phys=info.aperture_base;
+		dev_priv->agp_phys		= info.aperture_base;
+		dev_priv->agp_available_size	= info.aperture_size;
 	}
 no_agp:
 
@@ -346,6 +347,7 @@ no_agp:
 	 * We don't want to allocate this... */
 	if (dev_priv->card_type >= NV_40)
 		fb_size -= dev_priv->ramin_size;
+	dev_priv->fb_available_size = fb_size;
 	DRM_DEBUG("Available VRAM: %dKiB\n", fb_size>>10);
 
 	if (fb_size>256*1024*1024) {

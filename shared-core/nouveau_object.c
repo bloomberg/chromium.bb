@@ -97,9 +97,6 @@ nouveau_object_handle_find(drm_device_t *dev, int fifo_num, uint32_t handle)
 	struct nouveau_fifo *fifo = &dev_priv->fifos[fifo_num];
 	struct nouveau_object *obj = fifo->objs;
 
-	if (!handle)
-		return NULL;
-
 	DRM_DEBUG("Looking for handle 0x%08x\n", handle);
 	while (obj) {
 		if (obj->handle == handle)
@@ -166,7 +163,7 @@ static int nouveau_hash_table_insert(drm_device_t* dev, int fifo,
 
 	o_ofs = ofs = nouveau_handle_hash(dev, obj->handle, fifo);
 
-	while (NV_READ(ht_base + ofs)) {
+	while (NV_READ(ht_base + ofs) || NV_READ(ht_base + ofs + 4)) {
 		ofs += 8;
 		if (ofs == ht_end) ofs = ht_base;
 		if (ofs == o_ofs) {
@@ -284,16 +281,39 @@ static void nouveau_object_instance_free(drm_device_t *dev,
    The method below creates a DMA object in instance RAM and returns a handle
    to it that can be used to set up context objects.
 */
-struct nouveau_object *nouveau_dma_object_create(drm_device_t* dev,
-						 uint32_t offset, uint32_t size,
-						 int access, uint32_t target)
+
+struct nouveau_object *
+nouveau_dma_object_create(drm_device_t* dev, int class,
+			  uint32_t offset, uint32_t size,
+			  int access, int target)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
 	struct   nouveau_object *obj;
 	uint32_t frame, adjust;
+	uint32_t pte_flags = 0;
 
 	DRM_DEBUG("offset:0x%08x, size:0x%08x, target:%d, access:%d\n",
 			offset, size, target, access);
+
+	switch (target) {
+	case NV_DMA_TARGET_AGP:
+		offset += dev_priv->agp_phys;
+		break;
+	default:
+		break;
+	}
+
+	switch (access) {
+	case NV_DMA_ACCESS_RO:
+		break;
+	case NV_DMA_ACCESS_WO:
+	case NV_DMA_ACCESS_RW:
+		pte_flags  |= (1 << 1);
+		break;
+	default:
+		DRM_ERROR("invalid access mode=%d\n", access);
+		return NULL;
+	}
 
 	frame  = offset & ~0x00000FFF;
 	adjust = offset &  0x00000FFF;
@@ -305,21 +325,16 @@ struct nouveau_object *nouveau_dma_object_create(drm_device_t* dev,
 	}
 
 	obj->engine = 0;
-	obj->class  = 0;
+	obj->class  = class;
 
 	INSTANCE_WR(obj->instance, 0, ((1<<12) | (1<<13) |
 				(adjust << 20) |
 				(access << 14) |
 				(target << 16) |
-				0x3D /* DMA_IN_MEMORY */));
+				class));
 	INSTANCE_WR(obj->instance, 1, size-1);
-	INSTANCE_WR(obj->instance, 2,
-			frame | ((access != NV_DMA_ACCESS_RO) ? (1<<1) : 0));
-	/* I don't actually know what this is, the DMA objects I see
-	 * in renouveau dumps usually have this as the same as +8
-	 */
-	INSTANCE_WR(obj->instance, 3, 
-			frame | ((access != NV_DMA_ACCESS_RO) ? (1<<1) : 0));
+	INSTANCE_WR(obj->instance, 2, frame | pte_flags);
+	INSTANCE_WR(obj->instance, 3, frame | pte_flags);
 
 	return obj;
 }
@@ -376,55 +391,13 @@ struct nouveau_object *nouveau_dma_object_create(drm_device_t* dev,
    entry[5]:
    set to 0?
 */
-static struct nouveau_object *nouveau_context_object_create(drm_device_t* dev,
-		int class, uint32_t flags,
-		struct nouveau_object *dma0,
-		struct nouveau_object *dma1,
-		struct nouveau_object *dma_notifier)
+static struct nouveau_object *
+nouveau_context_object_create(drm_device_t* dev, int class)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
 	struct   nouveau_object *obj;
-	uint32_t d0, d1, dn;
-	uint32_t flags0,flags1,flags2;
-	flags0=0;flags1=0;flags2=0;
 
-	if (dev_priv->card_type >= NV_40) {
-		if (flags & NV_DMA_CONTEXT_FLAGS_PATCH_ROP_AND)
-			flags0 |= 0x02080000;
-		else if (flags & NV_DMA_CONTEXT_FLAGS_PATCH_SRCCOPY)
-			flags0 |= 0x02080000;
-		if (flags & NV_DMA_CONTEXT_FLAGS_CLIP_ENABLE)
-			flags0 |= 0x00020000;
-#ifdef __BIG_ENDIAN
-		if (flags & NV_DMA_CONTEXT_FLAGS_MONO)
-			flags1 |= 0x01000000;
-		flags2 |= 0x01000000;
-#else
-		if (flags & NV_DMA_CONTEXT_FLAGS_MONO)
-			flags1 |= 0x02000000;
-#endif
-	} else {
-		if (flags & NV_DMA_CONTEXT_FLAGS_PATCH_ROP_AND)
-			flags0 |= 0x01008000;
-		else if (flags & NV_DMA_CONTEXT_FLAGS_PATCH_SRCCOPY)
-			flags0 |= 0x01018000;
-		if (flags & NV_DMA_CONTEXT_FLAGS_CLIP_ENABLE)
-			flags0 |= 0x00002000;
-#ifdef __BIG_ENDIAN
-		flags0 |= 0x00080000;
-		if (flags & NV_DMA_CONTEXT_FLAGS_MONO)
-			flags1 |= 0x00000001;
-#else
-		if (flags & NV_DMA_CONTEXT_FLAGS_MONO)
-			flags1 |= 0x00000002;
-#endif
-	}
-
-	DRM_DEBUG("class=%x, dma0=%08x, dma1=%08x, dman=%08x\n",
-			class,
-			dma0 ? dma0->handle : 0,
-			dma1 ? dma1->handle : 0,
-			dma_notifier ? dma_notifier->handle : 0);
+	DRM_DEBUG("class=%x\n",	class);
 
 	obj = nouveau_instance_alloc(dev);
 	if (!obj) {
@@ -435,25 +408,37 @@ static struct nouveau_object *nouveau_context_object_create(drm_device_t* dev,
 	obj->engine = 1;
 	obj->class  = class;
 
-	d0 = dma0 ? nouveau_chip_instance_get(dev, dma0->instance) : 0;
-	d1 = dma1 ? nouveau_chip_instance_get(dev, dma1->instance) : 0;
-	dn = dma_notifier ? 
-		nouveau_chip_instance_get(dev, dma_notifier->instance) : 0;
-
-	if (dev_priv->card_type >= NV_40) {
-		INSTANCE_WR(obj->instance, 0, class | flags0);
-		INSTANCE_WR(obj->instance, 1, dn | flags1);
-		INSTANCE_WR(obj->instance, 2, d0 | flags2);
-		INSTANCE_WR(obj->instance, 3, d1);
-		INSTANCE_WR(obj->instance, 4, 0x00000000);
-		INSTANCE_WR(obj->instance, 5, 0x00000000);
-		INSTANCE_WR(obj->instance, 6, 0x00000000);
-		INSTANCE_WR(obj->instance, 7, 0x00000000);
-	} else {
-		INSTANCE_WR(obj->instance, 0, class | flags0);
-		INSTANCE_WR(obj->instance, 1, (dn << 16) | flags1);
-		INSTANCE_WR(obj->instance, 2, d0 | (d1 << 16));
-		INSTANCE_WR(obj->instance, 3, 0);
+	switch (class) {
+	case NV_CLASS_NULL:
+		INSTANCE_WR(obj->instance, 0, 0x00001030);
+		INSTANCE_WR(obj->instance, 1, 0xFFFFFFFF);
+		INSTANCE_WR(obj->instance, 2, 0x00000000);
+		INSTANCE_WR(obj->instance, 2, 0x00000000);
+		break;
+	default:
+		if (dev_priv->card_type >= NV_40) {
+			INSTANCE_WR(obj->instance, 0,  obj->class);
+			INSTANCE_WR(obj->instance, 1, 0x00000000);
+#ifdef __BIG_ENDIAN
+			INSTANCE_WR(obj->instance, 2, 0x01000000);
+#else
+			INSTANCE_WR(obj->instance, 2, 0x00000000);
+#endif
+			INSTANCE_WR(obj->instance, 3, 0x00000000);
+			INSTANCE_WR(obj->instance, 4, 0x00000000);
+			INSTANCE_WR(obj->instance, 5, 0x00000000);
+			INSTANCE_WR(obj->instance, 6, 0x00000000);
+			INSTANCE_WR(obj->instance, 7, 0x00000000);
+		} else {
+#ifdef __BIG_ENDIAN
+			INSTANCE_WR(obj->instance, 0, obj->class | 0x00080000);
+#else
+			INSTANCE_WR(obj->instance, 0, obj->class);
+#endif
+			INSTANCE_WR(obj->instance, 1, 0x00000000);
+			INSTANCE_WR(obj->instance, 2, 0x00000000);
+			INSTANCE_WR(obj->instance, 3, 0x00000000);
+		}
 	}
 
 	return obj;
@@ -488,7 +473,7 @@ int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_nouveau_object_init_t init;
-	struct nouveau_object *obj, *dma0, *dma1, *dman;
+	struct nouveau_object *obj;
 	int fifo;
 
 	fifo = nouveau_fifo_id_get(dev, filp);
@@ -506,36 +491,75 @@ int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 	}
 
-	dma0 = nouveau_object_handle_find(dev, fifo, init.dma0);
-	if (init.dma0 && !dma0) {
-		DRM_ERROR("context dma0 - invalid handle 0x%08x\n", init.dma0);
-		return DRM_ERR(EINVAL);
-	}
-	dma1 = nouveau_object_handle_find(dev, fifo, init.dma1);
-	if (init.dma1 && !dma1) {
-		DRM_ERROR("context dma1 - invalid handle 0x%08x\n", init.dma0);
-		return DRM_ERR(EINVAL);
-	}
-	dman = nouveau_object_handle_find(dev, fifo, init.dma_notifier);
-	if (init.dma_notifier && !dman) {
-		DRM_ERROR("context dman - invalid handle 0x%08x\n",
-			init.dma_notifier);
-		return DRM_ERR(EINVAL);
-	}
-
-	obj = nouveau_context_object_create(dev, init.class, init.flags,
-		dma0, dma1, dman);
+	obj = nouveau_context_object_create(dev, init.class);
 	if (!obj)
 		return DRM_ERR(ENOMEM);
 
 	obj->handle = init.handle;
-
 	if (nouveau_hash_table_insert(dev, fifo, obj)) {
 		nouveau_object_free(dev, fifo, obj);
 		return DRM_ERR(ENOMEM);
 	}
 
 	nouveau_object_link(dev, fifo, obj);
+
+	return 0;
+}
+
+static int
+nouveau_dma_object_check_access(drm_device_t *dev,
+				drm_nouveau_dma_object_init_t *init)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	uint64_t limit;
+
+	/* Check for known DMA object classes */
+	switch (init->class) {
+	case NV_CLASS_DMA_IN_MEMORY:
+	case NV_CLASS_DMA_FROM_MEMORY:
+	case NV_CLASS_DMA_TO_MEMORY:
+		break;
+	default:
+		DRM_ERROR("invalid class = 0x%x\n", init->class);
+		return DRM_ERR(EPERM);
+	}
+
+	/* Check access mode, and translate to NV_DMA_ACCESS_* */
+	switch (init->access) {
+	case NOUVEAU_MEM_ACCESS_RO:
+		init->access = NV_DMA_ACCESS_RO;
+		break;
+	case NOUVEAU_MEM_ACCESS_WO:
+		init->access = NV_DMA_ACCESS_WO;
+		break;
+	case NOUVEAU_MEM_ACCESS_RW:
+		init->access = NV_DMA_ACCESS_RW;
+		break;
+	default:
+		DRM_ERROR("invalid access mode = %d\n", init->access);
+		return DRM_ERR(EPERM);
+	}
+
+	/* Check that request is within the allowed limits of "target" */
+	switch (init->target) {
+	case NOUVEAU_MEM_FB:
+		limit = dev_priv->fb_available_size;
+		init->target = NV_DMA_TARGET_VIDMEM;
+		break;
+	case NOUVEAU_MEM_AGP:
+		limit = dev_priv->agp_available_size;
+		init->target = NV_DMA_TARGET_AGP;
+		break;
+	default:
+		DRM_ERROR("invalid target = 0x%x\n", init->target);
+		return DRM_ERR(EPERM);
+	}
+
+	if ((init->offset > limit) || (init->offset + init->size) > limit) {
+		DRM_ERROR("access out of allowed range (%d,0x%08x,0x%08x)\n",
+				init->target, init->offset, init->size);
+		return DRM_ERR(EPERM);
+	}
 
 	return 0;
 }
@@ -554,14 +578,18 @@ int nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS)
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_dma_object_init_t __user *)
 		data, sizeof(init));
 
+	if (nouveau_dma_object_check_access(dev, &init))
+		return DRM_ERR(EPERM);
+
 	if (nouveau_object_handle_find(dev, fifo, init.handle)) {
 		DRM_ERROR("Channel %d: handle 0x%08x already exists\n",
 			fifo, init.handle);
 		return DRM_ERR(EINVAL);
 	}
 
-	obj = nouveau_dma_object_create(dev, init.offset, init.size,
-		init.access, init.target);
+	obj = nouveau_dma_object_create(dev, init.class,
+					init.offset, init.size,
+					init.access, init.target);
 	if (!obj)
 		return DRM_ERR(ENOMEM);
 

@@ -25,6 +25,8 @@
 #ifndef __NOUVEAU_DRM_H__
 #define __NOUVEAU_DRM_H__
 
+#define NOUVEAU_DRM_HEADER_PATCHLEVEL 4
+
 typedef struct drm_nouveau_fifo_alloc {
 	int          channel;
 	uint32_t     put_base;
@@ -37,24 +39,18 @@ typedef struct drm_nouveau_fifo_alloc {
 }
 drm_nouveau_fifo_alloc_t;
 
-#define NV_DMA_CONTEXT_FLAGS_PATCH_ROP_AND 0x1
-#define NV_DMA_CONTEXT_FLAGS_PATCH_SRCCOPY 0x2
-#define NV_DMA_CONTEXT_FLAGS_CLIP_ENABLE 0x4
-#define NV_DMA_CONTEXT_FLAGS_MONO 0x8
-
 typedef struct drm_nouveau_object_init {
 	uint32_t handle;
-	int class;
-	uint32_t flags;
-	/* these are object handles */
-	uint32_t dma0;
-	uint32_t dma1;
-	uint32_t dma_notifier;
+	int      class;
 }
 drm_nouveau_object_init_t;
 
+#define NOUVEAU_MEM_ACCESS_RO	1
+#define NOUVEAU_MEM_ACCESS_WO	2
+#define NOUVEAU_MEM_ACCESS_RW	3
 typedef struct drm_nouveau_dma_object_init {
 	uint32_t handle;
+	int      class;
 	int      access;
 	int      target;
 	uint32_t offset;
@@ -80,8 +76,8 @@ typedef struct drm_nouveau_mem_alloc {
 drm_nouveau_mem_alloc_t;
 
 typedef struct drm_nouveau_mem_free {
-	int flags;
 	uint64_t region_offset;
+	int flags;
 }
 drm_nouveau_mem_free_t;
 
@@ -91,9 +87,10 @@ drm_nouveau_mem_free_t;
 #define NOUVEAU_GETPARAM_BUS_TYPE        5
 #define NOUVEAU_GETPARAM_FB_PHYSICAL     6
 #define NOUVEAU_GETPARAM_AGP_PHYSICAL    7
+#define NOUVEAU_GETPARAM_FB_SIZE         8
+#define NOUVEAU_GETPARAM_AGP_SIZE        9
 typedef struct drm_nouveau_getparam {
-	unsigned int param;
-	unsigned int dummy;
+	uint64_t param;
 	uint64_t value;
 }
 drm_nouveau_getparam_t;
@@ -101,8 +98,8 @@ drm_nouveau_getparam_t;
 #define NOUVEAU_SETPARAM_CMDBUF_LOCATION 1
 #define NOUVEAU_SETPARAM_CMDBUF_SIZE     2
 typedef struct drm_nouveau_setparam {
-	unsigned int param;
-	unsigned int value;
+	uint64_t param;
+	uint64_t value;
 }
 drm_nouveau_setparam_t;
 
