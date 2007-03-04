@@ -1622,6 +1622,7 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 	} else
 #endif
 	{
+		dev_priv->gart_info.table_size = RADEON_PCIGART_TABLE_SIZE;
 		/* if we have an offset set from userspace */
 		if (dev_priv->pcigart_offset) {
 			dev_priv->gart_info.bus_addr =
@@ -1629,7 +1630,7 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 			dev_priv->gart_info.mapping.offset =
 			    dev_priv->gart_info.bus_addr;
 			dev_priv->gart_info.mapping.size =
-			    RADEON_PCIGART_TABLE_SIZE;
+			    dev_priv->gart_info.table_size;
 
 			drm_core_ioremap(&dev_priv->gart_info.mapping, dev);
 			dev_priv->gart_info.addr =
