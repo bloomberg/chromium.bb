@@ -64,7 +64,6 @@ ExceptionHandler::ExceptionHandler(const wstring &dump_path,
       minidump_write_dump_(NULL),
       installed_handler_(install_handler),
       previous_filter_(NULL),
-      previous_iph_(NULL),
       handler_thread_(0),
       handler_critical_section_(),
       handler_start_semaphore_(NULL),
@@ -73,6 +72,10 @@ ExceptionHandler::ExceptionHandler(const wstring &dump_path,
       exception_info_(NULL),
       assertion_(NULL),
       handler_return_value_(false) {
+#if _MSC_VER >= 1400  // MSVC 2005/8
+  previous_iph_ = NULL;
+#endif  // _MSC_VER >= 1400
+
   // set_dump_path calls UpdateNextID.  This sets up all of the path and id
   // strings, and their equivalent c_str pointers.
   set_dump_path(dump_path);
