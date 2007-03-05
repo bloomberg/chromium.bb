@@ -593,6 +593,7 @@ typedef struct ati_pcigart_info {
 	void *addr;
 	dma_addr_t bus_addr;
 	drm_local_map_t mapping;
+	int table_size;
 } drm_ati_pcigart_info;
 
 

@@ -95,10 +95,11 @@
  * 1.24- Add general-purpose packet for manipulating scratch registers (r300)
  * 1.25- Add support for r200 vertex programs (R200_EMIT_VAP_PVS_CNTL,
  *       new packet type)
+ * 1.26- Add support for variable size PCI(E) gart aperture
  */
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		25
+#define DRIVER_MINOR		26
 #define DRIVER_PATCHLEVEL	0
 
 /*
@@ -282,6 +283,7 @@ typedef struct drm_radeon_private {
 	struct radeon_virt_surface virt_surfaces[2*RADEON_MAX_SURFACES];
 
 	unsigned long pcigart_offset;
+	unsigned int pcigart_offset_set;
 	drm_ati_pcigart_info gart_info;
 
 	u32 scratch_ages[5];
