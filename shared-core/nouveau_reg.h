@@ -96,8 +96,6 @@
 #define NV10_PGRAPH_CTX_CACHE4                             0x004001C0
 #define NV04_PGRAPH_CTX_CACHE4                             0x004001E0
 #define NV10_PGRAPH_CTX_CACHE5                             0x004001E0
-#define NV40_PGRAPH_UNK220                                 0x00400220
-#    define NV40_PGRAPH_UNK220_FB_INSTANCE                 0xFFFFFFFF
 #define NV03_PGRAPH_ABS_X_RAM                              0x00400400
 #define NV03_PGRAPH_ABS_Y_RAM                              0x00400480
 #define NV03_PGRAPH_X_MISC                                 0x00400500
