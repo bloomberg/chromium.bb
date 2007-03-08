@@ -184,9 +184,6 @@ bool MinidumpGenerator::Write(const char *path) {
   return result;
 }
 
-// TODO(waylonis): This routine works most of the time.  However, if a process
-// fork()s, it might cause the stack so that the current top of stack will
-// exist on a single page.
 static size_t CalculateStackSize(vm_address_t start_addr) {
   vm_address_t stack_region_base = start_addr;
   vm_size_t stack_region_size;
@@ -198,6 +195,17 @@ static size_t CalculateStackSize(vm_address_t start_addr) {
                       &nesting_level, 
                       reinterpret_cast<vm_region_recurse_info_t>(&submap_info),
                       &info_count);
+
+  if ((stack_region_base + stack_region_size) == 0xbffff000) {
+    // The stack for thread 0 needs to extend all the way to 0xc0000000
+    // For many processes the stack is first created in one page
+    // from 0xbffff000 - 0xc0000000 and is then later extended to
+    // a much larger size by creating a new VM region immediately below
+    // the initial page
+
+    // include the original stack frame page (0xbffff000 - 0xc0000000)
+    stack_region_size += 0x1000;  
+  }
 
   return result == KERN_SUCCESS ? 
     stack_region_base + stack_region_size - start_addr : 0;
@@ -223,7 +231,6 @@ bool MinidumpGenerator::WriteStackFromStartAddress(
 
   return result;
 }
-
 
 #if TARGET_CPU_PPC
 bool MinidumpGenerator::WriteStack(thread_state_data_t state,
@@ -393,6 +400,7 @@ bool MinidumpGenerator::WriteThreadListStream(
 
   MDRawThread thread;
   int thread_idx = 0;
+
   for (unsigned int i = 0; i < thread_count; ++i) {
     memset(&thread, 0, sizeof(MDRawThread));
 

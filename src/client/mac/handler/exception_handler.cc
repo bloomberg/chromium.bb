@@ -337,13 +337,22 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
       // If the actual exception code is zero, then we're calling this handler
       // in a way that indicates that we want to either exit this thread or
       // generate a minidump
+      //
+      // While reporting, all threads (except this one) must be suspended
+      // to avoid misleading stacks.  If appropriate they will be resumed
+      // afterwards.
       if (!receive.exception) {
         if (self->is_in_teardown_)
           return NULL;
 
+        self->SuspendThreads();
+
         // Write out the dump and save the result for later retrieval
         self->last_minidump_write_result_ =
           self->WriteMinidumpWithException(0, 0, 0);
+
+        self->ResumeThreads();
+
         if (self->use_minidump_write_mutex_)
           pthread_mutex_unlock(&self->minidump_write_mutex_);
       } else {
@@ -353,6 +362,7 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
         // exceptions that occur in the parent process are caught and 
         // processed.
         if (receive.task.name == mach_task_self()) {
+          self->SuspendThreads();
           
           // Generate the minidump with the exception data.
           self->WriteMinidumpWithException(receive.exception, receive.code[0],
@@ -510,6 +520,42 @@ void ExceptionHandler::UpdateNextID() {
 
   next_minidump_path_c_ = next_minidump_path_.c_str();
   next_minidump_id_c_ = next_minidump_id_.c_str();
+}
+
+bool ExceptionHandler::SuspendThreads() {
+  thread_act_port_array_t   threads_for_task;
+  mach_msg_type_number_t    thread_count;
+
+  if (task_threads(mach_task_self(), &threads_for_task, &thread_count))
+    return false;
+
+  // suspend all of the threads except for this one
+  for (unsigned int i = 0; i < thread_count; ++i) {
+    if (threads_for_task[i] != mach_thread_self()) {
+      if (thread_suspend(threads_for_task[i]))
+        return false;
+    }
+  }
+  
+  return true;
+}
+
+bool ExceptionHandler::ResumeThreads() {
+  thread_act_port_array_t   threads_for_task;
+  mach_msg_type_number_t    thread_count;
+
+  if (task_threads(mach_task_self(), &threads_for_task, &thread_count))
+    return false;
+
+  // resume all of the threads except for this one
+  for (unsigned int i = 0; i < thread_count; ++i) {
+    if (threads_for_task[i] != mach_thread_self()) {
+      if (thread_resume(threads_for_task[i]))
+        return false;
+    }
+  }
+  
+  return true;
 }
 
 }  // namespace google_breakpad

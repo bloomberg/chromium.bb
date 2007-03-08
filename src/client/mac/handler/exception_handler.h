@@ -133,6 +133,11 @@ class ExceptionHandler {
   // Generates a new ID and stores it in next_minidump_id_, and stores the
   // path of the next minidump to be written in next_minidump_path_.
   void UpdateNextID();
+
+  // These functions will suspend/resume all threads except for the 
+  // reporting thread
+  bool SuspendThreads();
+  bool ResumeThreads();
   
   // The destination directory for the minidump
   string dump_path_;
