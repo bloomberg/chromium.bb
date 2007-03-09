@@ -589,8 +589,9 @@ static void i915_do_dispatch_flip(drm_device_t * dev, int pipe, int sync)
 		  dspbase);
 
 	BEGIN_LP_RING(4);
-	OUT_RING(MI_WAIT_FOR_EVENT | (pipe ? MI_WAIT_FOR_PLANE_B_FLIP :
-				      MI_WAIT_FOR_PLANE_A_FLIP));
+	OUT_RING(sync ? 0 :
+		 (MI_WAIT_FOR_EVENT | (pipe ? MI_WAIT_FOR_PLANE_B_FLIP :
+				       MI_WAIT_FOR_PLANE_A_FLIP)));
 	OUT_RING(CMD_OP_DISPLAYBUFFER_INFO | (sync ? 0 : ASYNC_FLIP) |
 		 (pipe ? DISPLAY_PLANE_B : DISPLAY_PLANE_A));
 	OUT_RING(dev_priv->sarea_priv->pitch * dev_priv->cpp);
