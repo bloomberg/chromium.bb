@@ -66,11 +66,12 @@ static const int kTextSection = 1;
                   standardIn:(NSFileHandle *)standardIn;
 - (NSArray *)convertCPlusPlusSymbols:(NSArray *)symbols;
 - (void)convertSymbols;
-- (void)addFunction:(NSString *)name line:(int)line address:(uint64_t)address;
+- (void)addFunction:(NSString *)name line:(int)line address:(uint64_t)address section:(int)section;
 - (BOOL)processSymbolItem:(struct nlist_64 *)list stringTable:(char *)table;
 - (BOOL)loadSymbolInfo:(void *)base offset:(uint32_t)offset;
 - (BOOL)loadSymbolInfo64:(void *)base offset:(uint32_t)offset;
 - (BOOL)loadSymbolInfoForArchitecture;
+- (void)generateSectionDictionary:(struct mach_header*)header;
 - (BOOL)loadHeader:(void *)base offset:(uint32_t)offset;
 - (BOOL)loadHeader64:(void *)base offset:(uint32_t)offset;
 - (BOOL)loadModuleInfo;
@@ -221,7 +222,7 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
 }
 
 //=============================================================================
-- (void)addFunction:(NSString *)name line:(int)line address:(uint64_t)address {
+- (void)addFunction:(NSString *)name line:(int)line address:(uint64_t)address section:(int)section {
   NSNumber *addressNum = [NSNumber numberWithUnsignedLongLong:address];
 
   if (!address)
@@ -276,8 +277,9 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
              forKey:kAddressSourceLineKey];
 
   // Save the function name so that we can add the end of function address
-  if ([name length])
-    lastFunctionStart_ = addressNum;
+  if ([name length]) {
+    [lastFunctionStartDict_ setObject:addressNum forKey:[NSNumber numberWithUnsignedInt:section] ];
+  }
 }
 
 //=============================================================================
@@ -285,10 +287,18 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
   uint32_t n_strx = list->n_un.n_strx;
   BOOL result = NO;
 
-  // We only care about symbols in the __text sect
-  if (list->n_sect != kTextSection)
+  // We don't care about non-section specific information
+  if (list->n_sect == 0 )
     return NO;
+
+  int line = list->n_desc;
   
+  // We only care about line number information in __TEXT __text
+  uint32_t mainSection = [[sectionNumbers_ objectForKey:@"__TEXT__text" ] unsignedLongValue];
+  if(list->n_sect != mainSection) {
+    line = 0;
+  }
+       
   // Extract debugging information:
   // Doc: http://developer.apple.com/documentation/DeveloperTools/gdb/stabs/stabs_toc.html
   // Header: /usr/include/mach-o/stab.h:
@@ -317,27 +327,32 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
 
     // The function has a ":" followed by some stuff
     fn = [fn substringToIndex:range.location];
-    [self addFunction:fn line:list->n_desc address:list->n_value];
+    [self addFunction:fn line:line address:list->n_value section:list->n_sect ];
+
     result = YES;
-  } else if (list->n_type == N_SLINE) {
-    [self addFunction:nil line:list->n_desc address:list->n_value];
+  } else if (list->n_type == N_SLINE && list->n_sect == mainSection ) {
+    [self addFunction:nil line:line address:list->n_value section:list->n_sect ];
     result = YES;
   } else if (((list->n_type & N_TYPE) == N_SECT) && !(list->n_type & N_STAB)) {
     // Regular symbols or ones that are external
     NSString *fn = [NSString stringWithUTF8String:&table[n_strx]];
-    [self addFunction:fn line:0 address:list->n_value];
+    [self addFunction:fn line:0 address:list->n_value section:list->n_sect ];
     result = YES;
-  } else if (list->n_type == N_ENSYM) {
-    if (lastFunctionStart_) {
-      unsigned long long start = [lastFunctionStart_ unsignedLongLongValue];
+  } else if (list->n_type == N_ENSYM && list->n_sect == mainSection ) {
+    NSNumber *lastFunctionStart = [lastFunctionStartDict_ 
+      objectForKey:[NSNumber numberWithUnsignedLongLong:list->n_sect]  ];
+
+    if (lastFunctionStart) {
+      unsigned long long start = [lastFunctionStart unsignedLongLongValue];
       unsigned long long size = list->n_value - start;
-      NSMutableDictionary *dict = [addresses_ objectForKey:lastFunctionStart_];
+      NSMutableDictionary *dict = [addresses_ objectForKey:lastFunctionStart];
       assert(dict);
       assert(list->n_value > start);
       
       [dict setObject:[NSNumber numberWithUnsignedLongLong:size]
                forKey:kFunctionSizeKey];
-      lastFunctionStart_ = nil;
+
+      [lastFunctionStartDict_ removeObjectForKey:[NSNumber numberWithUnsignedLongLong:list->n_sect] ];
     }
   }
 
@@ -361,7 +376,7 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
   if (!addresses_)
     addresses_ = [[NSMutableDictionary alloc] init];
 
-  for (uint32_t i = 0; cmd && (i < count); i++) {
+  for (uint32_t i = 0; cmd && (i < count); ++i) {
     if (cmd->cmd == symbolTableCommand) {
       struct symtab_command *symtab = (struct symtab_command *)cmd;
       uint32_t ncmds = SwapLongIfNeeded(symtab->nsyms);
@@ -454,17 +469,60 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
 }
 
 //=============================================================================
+// build a dictionary of section numbers keyed off a string
+// which is the concatenation of the segment name and the section name
+- (void)generateSectionDictionary:(struct mach_header*)header {
+  BOOL swap = (header->magic == MH_CIGAM);
+  uint32_t count = SwapLongIfNeeded(header->ncmds);
+  struct load_command *cmd =
+    (struct load_command *)((uint32_t)header + sizeof(struct mach_header));
+  uint32_t segmentCommand = SwapLongIfNeeded(LC_SEGMENT);
+  uint32_t sectionNumber = 1;   // section numbers are counted from 1
+  
+  if (!sectionNumbers_)
+    sectionNumbers_ = [[NSMutableDictionary alloc] init];
+  
+  // loop through every segment command, then through every section
+  // contained inside each of them
+  for (uint32_t i = 0; cmd && (i < count); ++i) {
+    if (cmd->cmd == segmentCommand) {            
+      struct segment_command *seg = (struct segment_command *)cmd;
+      section *sect = (section *)((uint32_t)cmd + sizeof(segment_command));
+      uint32_t nsects = SwapLongIfNeeded(seg->nsects);
+      
+      for (uint32_t j = 0; j < nsects; ++j) {
+        //printf("%d: %s %s\n", sectionNumber, seg->segname, sect->sectname );
+        NSString *segSectName = [NSString stringWithFormat:@"%s%s",
+          seg->segname, sect->sectname ];
+        
+        [sectionNumbers_ setValue:[NSNumber numberWithUnsignedLong:sectionNumber]
+          forKey:segSectName ];
+        
+        ++sect;
+        ++sectionNumber;
+      }
+    }
+
+    uint32_t cmdSize = SwapLongIfNeeded(cmd->cmdsize);
+    cmd = (struct load_command *)((uint32_t)cmd + cmdSize);
+  }
+}
+
+//=============================================================================
 - (BOOL)loadHeader:(void *)base offset:(uint32_t)offset {
   struct mach_header *header = (struct mach_header *)((uint32_t)base + offset);
   BOOL swap = (header->magic == MH_CIGAM);
   uint32_t count = SwapLongIfNeeded(header->ncmds);
   struct load_command *cmd =
     (struct load_command *)((uint32_t)header + sizeof(struct mach_header));
+  uint32_t segmentCommand = SwapLongIfNeeded(LC_SEGMENT);
 
-  for (uint32_t i = 0; cmd && (i < count); i++) {
-    uint32_t segmentCommand = SwapLongIfNeeded(LC_SEGMENT);
+  [self generateSectionDictionary:header];
+
+  for (uint32_t i = 0; cmd && (i < count); ++i) {
     if (cmd->cmd == segmentCommand) {
       struct segment_command *seg = (struct segment_command *)cmd;
+      
       if (!strcmp(seg->segname, "__TEXT")) {
         uint32_t addr = SwapLongIfNeeded(seg->vmaddr);
         uint32_t size = SwapLongIfNeeded(seg->vmsize);
@@ -500,7 +558,7 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
   struct load_command *cmd =
     (struct load_command *)((uint32_t)header + sizeof(struct mach_header_64));
 
-  for (uint32_t i = 0; cmd && (i < count); i++) {
+  for (uint32_t i = 0; cmd && (i < count); ++i) {
     uint32_t segmentCommand = SwapLongIfNeeded(LC_SEGMENT_64);
     if (cmd->cmd == segmentCommand) {
       struct segment_command_64 *seg = (struct segment_command_64 *)cmd;
@@ -610,8 +668,8 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
   uint64_t moduleSize =
     moduleSizeNum ? [moduleSizeNum unsignedLongLongValue] : 0;
 
-  lastFunctionStart_ = nil;
-
+  [lastFunctionStartDict_ removeAllObjects];
+  
   // Gather the information
   [self loadSymbolInfoForArchitecture];
   [self convertSymbols];
@@ -684,6 +742,18 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
       symbol = [dict objectForKey:kAddressSymbolKey];
 
     // Skip some symbols
+    if (StringHeadMatches(symbol, @"vtable for"))
+      continue;
+
+    if (StringHeadMatches(symbol, @"__static_initialization_and_destruction_0"))
+      continue;
+
+    if (StringHeadMatches(symbol, @"_GLOBAL__I__"))
+      continue;
+
+    if (StringHeadMatches(symbol, @"__func__."))
+      continue;
+
     if (StringHeadMatches(symbol, @"__gnu"))
       continue;
 
@@ -710,9 +780,10 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
       }
     }
 
+    NSNumber *functionLength = [dict objectForKey:kFunctionSizeKey];
+
     if (line) {
-      if (symbol) {
-        NSNumber *functionLength = [dict objectForKey:kFunctionSizeKey];
+      if (symbol && functionLength) {
         uint64_t functionLengthVal = [functionLength unsignedLongLongValue];
 
         // Function
@@ -753,6 +824,10 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
       return nil;
     }
 
+    // keep track of last function start address on a per-section basis
+    if (!lastFunctionStartDict_)
+      lastFunctionStartDict_ = [[NSMutableDictionary alloc] init];
+
     // If there's more than one, use the native one
     if ([headers_ count] > 1) {
       const NXArchInfo *localArchInfo = NXGetLocalArchInfo();
@@ -790,6 +865,7 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
   [addresses_ release];
   [sources_ release];
   [headers_ release];
+  [lastFunctionStartDict_ release];
 
   [super dealloc];
 }
