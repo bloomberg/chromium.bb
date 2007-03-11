@@ -97,6 +97,10 @@
 #define __GFP_COMP 0
 #endif
 
+#if !defined(IRQF_SHARED)
+#define IRQF_SHARED SA_SHIRQ
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,10)
 static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from, unsigned long pfn, unsigned long size, pgprot_t pgprot)
 {
