@@ -925,10 +925,14 @@ FcPatternDuplicate (const FcPattern *orig)
     for (i = 0; i < orig->num; i++)
     {
 	for (l = FcPatternEltValues(e + i); l; l = FcValueListNext(l))
-	    if (!FcPatternObjectAdd (new, e[i].object,
-				     FcValueCanonicalize(&l->value),
-				     FcTrue))
+	{
+	    if (!FcPatternObjectAddWithBinding (new, e[i].object,
+						FcValueCanonicalize(&l->value),
+						l->binding,
+						FcTrue))
 		goto bail1;
+	    
+	}
     }
 
     return new;
