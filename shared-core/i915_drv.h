@@ -37,7 +37,7 @@
 
 #define DRIVER_NAME		"i915"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20060929"
+#define DRIVER_DATE		"20070209"
 
 /* Interface history:
  *
@@ -49,9 +49,10 @@
  * 1.6: - New ioctl for scheduling buffer swaps on vertical blank
  *      - Support vertical blank on secondary display pipe
  * 1.8: New ioctl for ARB_Occlusion_Query
+ * 1.9: Usable page flipping and triple buffering
  */
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		8
+#define DRIVER_MINOR		9
 #define DRIVER_PATCHLEVEL	0
 
 #if defined(__linux__)
@@ -84,6 +85,7 @@ typedef struct _drm_i915_vbl_swap {
 	drm_drawable_t drw_id;
 	unsigned int pipe;
 	unsigned int sequence;
+	int flip;
 } drm_i915_vbl_swap_t;
 
 typedef struct drm_i915_private {
@@ -99,10 +101,6 @@ typedef struct drm_i915_private {
 	uint32_t counter;
 
 	unsigned int cpp;
-	int back_offset;
-	int front_offset;
-	int current_page;
-	int page_flipping;
 	int use_mi_batchbuffer_start;
 
 	wait_queue_head_t irq_queue;
@@ -152,6 +150,8 @@ extern void i915_driver_preclose(drm_device_t * dev, DRMFILE filp);
 extern int i915_driver_device_is_agp(drm_device_t * dev);
 extern long i915_compat_ioctl(struct file *filp, unsigned int cmd,
 			      unsigned long arg);
+extern void i915_emit_breadcrumb(drm_device_t *dev);
+extern void i915_dispatch_flip(drm_device_t * dev, int pipes, int sync);
 extern int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush);
 
 
@@ -251,10 +251,6 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define CMD_STORE_DWORD_IDX		((0x21<<23) | 0x1)
 #define CMD_OP_BATCH_BUFFER  ((0x0<<29)|(0x30<<23)|0x1)
 
-#define INST_PARSER_CLIENT   0x00000000
-#define INST_OP_FLUSH        0x02000000
-#define INST_FLUSH_MAP_CACHE 0x00000001
-
 #define CMD_MI_FLUSH         (0x04 << 23)
 #define MI_NO_WRITE_FLUSH    (1 << 2)
 #define MI_READ_FLUSH        (1 << 0)
@@ -352,6 +348,7 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define MI_BATCH_NON_SECURE	(1)
 
 #define MI_WAIT_FOR_EVENT       ((0x3<<23))
+#define MI_WAIT_FOR_PLANE_B_FLIP      (1<<6)
 #define MI_WAIT_FOR_PLANE_A_FLIP      (1<<2)
 #define MI_WAIT_FOR_PLANE_A_SCANLINES (1<<1)
 
@@ -359,6 +356,8 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 #define CMD_OP_DISPLAYBUFFER_INFO ((0x0<<29)|(0x14<<23)|2)
 #define ASYNC_FLIP                (1<<22)
+#define DISPLAY_PLANE_A           (0<<20)
+#define DISPLAY_PLANE_B           (1<<20)
 
 #define CMD_OP_DESTBUFFER_INFO	 ((0x3<<29)|(0x1d<<24)|(0x8e<<16)|1)
 

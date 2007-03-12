@@ -44,7 +44,7 @@ void nouveau_irq_preinstall(drm_device_t *dev)
 
 	/* Disable/Clear PFIFO interrupts */
 	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0);
-	NV_WRITE(NV03_PMC_INTR_0, 0xFFFFFFFF);
+	NV_WRITE(NV03_PFIFO_INTR_0, 0xFFFFFFFF);
 	/* Disable/Clear PGRAPH interrupts */
 	if (dev_priv->card_type<NV_40)
 		NV_WRITE(NV03_PGRAPH_INTR_EN, 0);
@@ -78,7 +78,7 @@ void nouveau_irq_postinstall(drm_device_t *dev)
 			NV_PFIFO_INTR_SEMAPHORE |
 			NV_PFIFO_INTR_ACQUIRE_TIMEOUT
 			);
-	NV_WRITE(NV03_PMC_INTR_0, 0xFFFFFFFF);
+	NV_WRITE(NV03_PFIFO_INTR_0, 0xFFFFFFFF);
 
 	/* Enable PGRAPH interrupts */
 	if (dev_priv->card_type<NV_40)
@@ -166,14 +166,14 @@ static void nouveau_fifo_irq_handler(drm_device_t *dev)
 			 );
 
 		status &= ~NV_PFIFO_INTR_CACHE_ERROR;
-		NV_WRITE(NV03_PMC_INTR_0, NV_PFIFO_INTR_CACHE_ERROR);
+		NV_WRITE(NV03_PFIFO_INTR_0, NV_PFIFO_INTR_CACHE_ERROR);
 	}
 
 	if (status & NV_PFIFO_INTR_DMA_PUSHER) {
 		DRM_INFO("NV: PFIFO DMA pusher interrupt\n");
 
 		status &= ~NV_PFIFO_INTR_DMA_PUSHER;
-		NV_WRITE(NV03_PMC_INTR_0, NV_PFIFO_INTR_DMA_PUSHER);
+		NV_WRITE(NV03_PFIFO_INTR_0, NV_PFIFO_INTR_DMA_PUSHER);
 
 		NV_WRITE(NV04_PFIFO_CACHE1_DMA_STATE, 0x00000000);
 		if (NV_READ(NV04_PFIFO_CACHE1_DMA_PUT)!=NV_READ(NV04_PFIFO_CACHE1_DMA_GET))
@@ -186,7 +186,7 @@ static void nouveau_fifo_irq_handler(drm_device_t *dev)
 	if (status) {
 		DRM_INFO("NV: unknown PFIFO interrupt. status=0x%08x\n", status);
 
-		NV_WRITE(NV03_PMC_INTR_0, status);
+		NV_WRITE(NV03_PFIFO_INTR_0, status);
 	}
 
 	NV_WRITE(NV03_PMC_INTR_0, NV_PMC_INTR_0_PFIFO_PENDING);
