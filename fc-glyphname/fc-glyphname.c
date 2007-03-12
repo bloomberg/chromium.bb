@@ -206,7 +206,7 @@ insert (FcGlyphName *gn, FcGlyphName **table, FcChar32 h)
     i = (int) (h % hash);
     while (table[i])
     {
-	if (!r) r = (int) (h % rehash);
+	if (!r) r = (int) (h % rehash + 1);
 	i += r;
 	if (i >= hash)
 	    i -= hash;
