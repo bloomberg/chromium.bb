@@ -2413,6 +2413,19 @@ FcGlyphNameToUcs4 (FcChar8 *name)
 }
 
 /*
+ * Work around a bug in some FreeType versions which fail
+ * to correctly bounds check glyph name buffers and overwrite
+ * the stack. As Postscript names have a limit of 127 characters,
+ * this should be sufficient.
+ */
+
+#if FC_GLYPHNAME_MAXLEN < 127
+# define FC_GLYPHNAME_BUFLEN 127
+#else
+# define FC_GLYPHNAME_BUFLEN FC_GLYPHNAME_MAXLEN
+#endif
+
+/*
  * Search through a font for a glyph by name.  This is
  * currently a linear search as there doesn't appear to be
  * any defined order within the font
@@ -2421,11 +2434,11 @@ static FT_UInt
 FcFreeTypeGlyphNameIndex (FT_Face face, const FcChar8 *name)
 {
     FT_UInt gindex;
-    FcChar8 name_buf[FC_GLYPHNAME_MAXLEN + 2];
+    FcChar8 name_buf[FC_GLYPHNAME_BUFLEN + 2];
 
     for (gindex = 0; gindex < (FT_UInt) face->num_glyphs; gindex++)
     {
-	if (FT_Get_Glyph_Name (face, gindex, name_buf, FC_GLYPHNAME_MAXLEN+1) == 0)
+	if (FT_Get_Glyph_Name (face, gindex, name_buf, FC_GLYPHNAME_BUFLEN+1) == 0)
 	    if (!strcmp ((char *) name, (char *) name_buf))
 		return gindex;
     }
@@ -2715,11 +2728,11 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
      */
     if (FcFreeTypeUseNames (face))
     {
-	FcChar8 name_buf[FC_GLYPHNAME_MAXLEN + 2];
+	FcChar8 name_buf[FC_GLYPHNAME_BUFLEN + 2];
 
 	for (glyph = 0; glyph < (FT_UInt) face->num_glyphs; glyph++)
 	{
-	    if (FT_Get_Glyph_Name (face, glyph, name_buf, FC_GLYPHNAME_MAXLEN+1) == 0)
+	    if (FT_Get_Glyph_Name (face, glyph, name_buf, FC_GLYPHNAME_BUFLEN+1) == 0)
 	    {
 		ucs4 = FcGlyphNameToUcs4 (name_buf);
 		if (ucs4 != 0xffff && 
