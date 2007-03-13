@@ -54,10 +54,10 @@ nouveau_chip_instance_get(drm_device_t *dev, struct mem_block *mem)
 }
 
 static void
-nouveau_object_link(drm_device_t *dev, int channel, struct nouveau_object *obj)
+nouveau_object_link(drm_device_t *dev, struct nouveau_object *obj)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = &dev_priv->fifos[obj->channel];
 
 	if (!chan->objs) {
 		chan->objs = obj;
@@ -72,11 +72,10 @@ nouveau_object_link(drm_device_t *dev, int channel, struct nouveau_object *obj)
 }
 
 static void
-nouveau_object_unlink(drm_device_t *dev, int channel,
-		      struct nouveau_object *obj)
+nouveau_object_unlink(drm_device_t *dev, struct nouveau_object *obj)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = &dev_priv->fifos[obj->channel];
 
 	if (obj->prev == NULL) {	
 		if (obj->next)
@@ -155,7 +154,7 @@ nouveau_ht_handle_hash(drm_device_t *dev, int channel, uint32_t handle)
 }
 
 static int
-nouveau_ht_object_insert(drm_device_t* dev, int channel,
+nouveau_ht_object_insert(drm_device_t* dev, int channel, uint32_t handle,
 			 struct nouveau_object *obj)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
@@ -163,6 +162,7 @@ nouveau_ht_object_insert(drm_device_t* dev, int channel,
 	int ht_end  = ht_base + dev_priv->ramht_size;
 	int o_ofs, ofs;
 
+	obj->handle = handle;
 	o_ofs = ofs = nouveau_ht_handle_hash(dev, channel, obj->handle);
 
 	while (NV_READ(ht_base + ofs) || NV_READ(ht_base + ofs + 4)) {
@@ -212,7 +212,8 @@ static void nouveau_hash_table_remove(drm_device_t* dev,
 	}
 }
 
-static struct nouveau_object *nouveau_instance_alloc(drm_device_t* dev)
+static struct nouveau_object *
+nouveau_object_instance_alloc(drm_device_t* dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
 	struct nouveau_object       *obj;
@@ -223,6 +224,8 @@ static struct nouveau_object *nouveau_instance_alloc(drm_device_t* dev)
 		DRM_ERROR("couldn't alloc memory for object\n");
 		return NULL;
 	}
+
+	/* Allocate instance memory */
 	obj->instance  = nouveau_instmem_alloc(dev,
 			(dev_priv->card_type >= NV_40 ? 32 : 16), 4);
 	if (!obj->instance) {
@@ -231,25 +234,28 @@ static struct nouveau_object *nouveau_instance_alloc(drm_device_t* dev)
 		return NULL;
 	}
 
+	/* Bind object to channel */
+	obj->channel = channel;
+	obj->handle  = ~0;
+	nouveau_object_link(dev, obj);
+
 	return obj;
 }
 
-static void nouveau_object_instance_free(drm_device_t *dev,
-					 struct nouveau_object *obj)
+static void
+nouveau_object_instance_free(drm_device_t *dev, struct nouveau_object *obj)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	int count, i;
+	int i;
 
-	if (dev_priv->card_type >= NV_40)
-		count = 8;
-	else
-		count = 4;
+	/* Unbind object from channel */
+	nouveau_object_unlink(dev, obj);
 
 	/* Clean RAMIN entry */
 	DRM_DEBUG("Instance entry for 0x%08x"
 		"(engine %d, class 0x%x) before destroy:\n",
 		obj->handle, obj->engine, obj->class);
-	for (i=0;i<count;i++) {
+	for (i=0; i<(obj->instance->size/4); i++) {
 		DRM_DEBUG("  +0x%02x: 0x%08x\n", (i*4),
 			INSTANCE_RD(obj->instance, i));
 		INSTANCE_WR(obj->instance, i, 0x00000000);
@@ -285,7 +291,7 @@ static void nouveau_object_instance_free(drm_device_t *dev,
 */
 
 struct nouveau_object *
-nouveau_dma_object_create(drm_device_t* dev, int class,
+nouveau_object_dma_create(drm_device_t* dev, int channel, int class,
 			  uint32_t offset, uint32_t size,
 			  int access, int target)
 {
@@ -320,7 +326,7 @@ nouveau_dma_object_create(drm_device_t* dev, int class,
 	frame  = offset & ~0x00000FFF;
 	adjust = offset &  0x00000FFF;
 
-	obj = nouveau_instance_alloc(dev);
+	obj = nouveau_object_instance_alloc(dev, channel);
 	if (!obj) {
 		DRM_ERROR("couldn't allocate DMA object\n");
 		return obj;
@@ -393,15 +399,15 @@ nouveau_dma_object_create(drm_device_t* dev, int class,
    entry[5]:
    set to 0?
 */
-static struct nouveau_object *
-nouveau_context_object_create(drm_device_t* dev, int class)
+struct nouveau_object *
+nouveau_object_gr_create(drm_device_t* dev, int channel, int class)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
 	struct   nouveau_object *obj;
 
 	DRM_DEBUG("class=%x\n",	class);
 
-	obj = nouveau_instance_alloc(dev);
+	obj = nouveau_object_instance_alloc(dev, channel);
 	if (!obj) {
 		DRM_ERROR("couldn't allocate context object\n");
 		return obj;
@@ -446,16 +452,13 @@ nouveau_context_object_create(drm_device_t* dev, int class)
 	return obj;
 }
 
-static void
-nouveau_object_free(drm_device_t *dev, int channel, struct nouveau_object *obj)
+void
+nouveau_object_free(drm_device_t *dev, struct nouveau_object *obj)
 {
-	nouveau_object_unlink(dev, channel, obj);
-
 	nouveau_object_instance_free(dev, obj);
-	nouveau_hash_table_remove(dev, obj);
-
+	if (obj->handle != ~0)
+		nouveau_hash_table_remove(dev, obj);
 	drm_free(obj, sizeof(struct nouveau_object), DRM_MEM_DRIVER);
-	return;
 }
 
 void nouveau_object_cleanup(drm_device_t *dev, DRMFILE filp)
@@ -468,8 +471,7 @@ void nouveau_object_cleanup(drm_device_t *dev, DRMFILE filp)
 		return;
 
 	while (dev_priv->fifos[channel].objs)
-		nouveau_object_free(dev, channel,
-					 dev_priv->fifos[channel].objs);
+		nouveau_object_free(dev, dev_priv->fifos[channel].objs);
 }
 
 int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
@@ -494,17 +496,14 @@ int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 	}
 
-	obj = nouveau_context_object_create(dev, init.class);
+	obj = nouveau_object_gr_create(dev, channel, init.class);
 	if (!obj)
 		return DRM_ERR(ENOMEM);
 
-	obj->handle = init.handle;
-	if (nouveau_ht_object_insert(dev, channel, obj)) {
-		nouveau_object_free(dev, channel, obj);
+	if (nouveau_ht_object_insert(dev, channel, init.handle, obj)) {
+		nouveau_object_free(dev, obj);
 		return DRM_ERR(ENOMEM);
 	}
-
-	nouveau_object_link(dev, channel, obj);
 
 	return 0;
 }
@@ -590,19 +589,17 @@ int nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 	}
 
-	obj = nouveau_dma_object_create(dev, init.class,
+	obj = nouveau_object_dma_create(dev, channel, init.class,
 					init.offset, init.size,
 					init.access, init.target);
 	if (!obj)
 		return DRM_ERR(ENOMEM);
 
 	obj->handle = init.handle;
-	if (nouveau_ht_object_insert(dev, channel, obj)) {
-		nouveau_object_free(dev, channel, obj);
+	if (nouveau_ht_object_insert(dev, channel, init.handle, obj)) {
+		nouveau_object_free(dev, obj);
 		return DRM_ERR(ENOMEM);
 	}
-
-	nouveau_object_link(dev, channel, obj);
 
 	return 0;
 }

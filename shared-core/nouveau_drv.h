@@ -61,6 +61,7 @@ struct nouveau_object
 {
 	struct nouveau_object *next;
 	struct nouveau_object *prev;
+	int channel;
 
 	struct mem_block *instance;
 	uint32_t          ht_loc;
@@ -192,9 +193,12 @@ extern void nouveau_fifo_free(drm_device_t *dev, int channel);
 /* nouveau_object.c */
 extern void nouveau_object_cleanup(drm_device_t *dev, DRMFILE filp);
 extern struct nouveau_object *
-nouveau_dma_object_create(drm_device_t *dev, int class,
+nouveau_object_gr_create(drm_device_t *dev, int channel, int class);
+extern struct nouveau_object *
+nouveau_object_dma_create(drm_device_t *dev, int channel, int class,
 			  uint32_t offset, uint32_t size,
 			  int access, int target);
+extern void nouveau_object_free(drm_device_t *dev, struct nouveau_object *obj);
 extern int  nouveau_ioctl_object_init(DRM_IOCTL_ARGS);
 extern int  nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS);
 extern uint32_t nouveau_chip_instance_get(drm_device_t *dev, struct mem_block *mem);

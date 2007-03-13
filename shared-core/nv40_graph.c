@@ -894,7 +894,6 @@ nv40_graph_init(drm_device_t *dev)
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
 	uint32_t *ctx_voodoo;
-	uint32_t pg0220_inst;
 	int i;
 
 	switch (dev_priv->chipset) {
