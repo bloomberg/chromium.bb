@@ -461,17 +461,13 @@ nouveau_object_free(drm_device_t *dev, struct nouveau_object *obj)
 	drm_free(obj, sizeof(struct nouveau_object), DRM_MEM_DRIVER);
 }
 
-void nouveau_object_cleanup(drm_device_t *dev, DRMFILE filp)
+void nouveau_object_cleanup(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	int channel;
 
-	channel = nouveau_fifo_id_get(dev, filp);
-	if (channel == -1)
-		return;
-
-	while (dev_priv->fifos[channel].objs)
+	while (dev_priv->fifos[channel].objs) {
 		nouveau_object_free(dev, dev_priv->fifos[channel].objs);
+	}
 }
 
 int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)

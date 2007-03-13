@@ -191,7 +191,7 @@ extern int  nouveau_fifo_id_get(drm_device_t *dev, DRMFILE filp);
 extern void nouveau_fifo_free(drm_device_t *dev, int channel);
 
 /* nouveau_object.c */
-extern void nouveau_object_cleanup(drm_device_t *dev, DRMFILE filp);
+extern void nouveau_object_cleanup(drm_device_t *dev, int channel);
 extern struct nouveau_object *
 nouveau_object_gr_create(drm_device_t *dev, int channel, int class);
 extern struct nouveau_object *
