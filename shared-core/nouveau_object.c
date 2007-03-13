@@ -44,8 +44,8 @@
  * in the future when we can access more instance ram which isn't mapped into
  * the PRAMIN aperture
  */
-uint32_t nouveau_chip_instance_get(drm_device_t *dev,
-				   struct mem_block *mem)
+uint32_t
+nouveau_chip_instance_get(drm_device_t *dev, struct mem_block *mem)
 {
 	uint32_t inst = (uint32_t)mem->start >> 4;
 	DRM_DEBUG("****** on-chip instance for 0x%016llx = 0x%08x\n",
@@ -53,34 +53,35 @@ uint32_t nouveau_chip_instance_get(drm_device_t *dev,
 	return inst;
 }
 
-static void nouveau_object_link(drm_device_t *dev, int fifo_num,
-				struct nouveau_object *obj)
+static void
+nouveau_object_link(drm_device_t *dev, int channel, struct nouveau_object *obj)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	struct nouveau_fifo *fifo = &dev_priv->fifos[fifo_num];
+	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
 
-	if (!fifo->objs) {
-		fifo->objs = obj;
+	if (!chan->objs) {
+		chan->objs = obj;
 		return;
 	}
 
 	obj->prev = NULL;
-	obj->next = fifo->objs;
+	obj->next = chan->objs;
 
-	fifo->objs->prev = obj;
-	fifo->objs = obj;
+	chan->objs->prev = obj;
+	chan->objs = obj;
 }
 
-static void nouveau_object_unlink(drm_device_t *dev, int fifo_num,
-				  struct nouveau_object *obj)
+static void
+nouveau_object_unlink(drm_device_t *dev, int channel,
+		      struct nouveau_object *obj)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	struct nouveau_fifo *fifo = &dev_priv->fifos[fifo_num];
+	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
 
 	if (obj->prev == NULL) {	
 		if (obj->next)
 			obj->next->prev = NULL;
-		fifo->objs = obj->next;
+		chan->objs = obj->next;
 	} else if (obj->next == NULL) {
 		if (obj->prev)
 			obj->prev->next = NULL;
@@ -91,11 +92,11 @@ static void nouveau_object_unlink(drm_device_t *dev, int fifo_num,
 }
 
 static struct nouveau_object *
-nouveau_object_handle_find(drm_device_t *dev, int fifo_num, uint32_t handle)
+nouveau_object_handle_find(drm_device_t *dev, int channel, uint32_t handle)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	struct nouveau_fifo *fifo = &dev_priv->fifos[fifo_num];
-	struct nouveau_object *obj = fifo->objs;
+	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_object *obj = chan->objs;
 
 	DRM_DEBUG("Looking for handle 0x%08x\n", handle);
 	while (obj) {
@@ -138,8 +139,8 @@ nouveau_object_handle_find(drm_device_t *dev, int fifo_num, uint32_t handle)
    The key into the hash table depends on the object handle and channel id and
    is given as:
 */
-static uint32_t nouveau_handle_hash(drm_device_t* dev, uint32_t handle,
-				    int fifo)
+static uint32_t
+nouveau_ht_handle_hash(drm_device_t *dev, int channel, uint32_t handle)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
 	uint32_t hash = 0;
@@ -149,19 +150,20 @@ static uint32_t nouveau_handle_hash(drm_device_t* dev, uint32_t handle,
 		hash ^= (handle & ((1 << dev_priv->ramht_bits) - 1));
 		handle >>= dev_priv->ramht_bits;
 	}
-	hash ^= fifo << (dev_priv->ramht_bits - 4);
+	hash ^= channel << (dev_priv->ramht_bits - 4);
 	return hash << 3;
 }
 
-static int nouveau_hash_table_insert(drm_device_t* dev, int fifo,
-				     struct nouveau_object *obj)
+static int
+nouveau_ht_object_insert(drm_device_t* dev, int channel,
+			 struct nouveau_object *obj)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
 	int ht_base = NV_RAMIN + dev_priv->ramht_offset;
 	int ht_end  = ht_base + dev_priv->ramht_size;
 	int o_ofs, ofs;
 
-	o_ofs = ofs = nouveau_handle_hash(dev, obj->handle, fifo);
+	o_ofs = ofs = nouveau_ht_handle_hash(dev, channel, obj->handle);
 
 	while (NV_READ(ht_base + ofs) || NV_READ(ht_base + ofs + 4)) {
 		ofs += 8;
@@ -174,19 +176,19 @@ static int nouveau_hash_table_insert(drm_device_t* dev, int fifo,
 	ofs += ht_base;
 
 	DRM_DEBUG("Channel %d - Handle 0x%08x at 0x%08x\n",
-		fifo, obj->handle, ofs);
+		channel, obj->handle, ofs);
 
 	NV_WRITE(NV_RAMHT_HANDLE_OFFSET + ofs, obj->handle);
 	if (dev_priv->card_type >= NV_40)
 		NV_WRITE(NV_RAMHT_CONTEXT_OFFSET + ofs,
-			(fifo << NV40_RAMHT_CONTEXT_CHANNEL_SHIFT) |
+			(channel     << NV40_RAMHT_CONTEXT_CHANNEL_SHIFT) |
 			(obj->engine << NV40_RAMHT_CONTEXT_ENGINE_SHIFT) |
 			nouveau_chip_instance_get(dev, obj->instance)
 			);	    
 	else
 		NV_WRITE(NV_RAMHT_CONTEXT_OFFSET + ofs,
 			NV_RAMHT_CONTEXT_VALID |
-			(fifo << NV_RAMHT_CONTEXT_CHANNEL_SHIFT) |
+			(channel     << NV_RAMHT_CONTEXT_CHANNEL_SHIFT) |
 			(obj->engine << NV_RAMHT_CONTEXT_ENGINE_SHIFT) |
 			nouveau_chip_instance_get(dev, obj->instance)
 			);
@@ -445,9 +447,9 @@ nouveau_context_object_create(drm_device_t* dev, int class)
 }
 
 static void
-nouveau_object_free(drm_device_t *dev, int fifo_num, struct nouveau_object *obj)
+nouveau_object_free(drm_device_t *dev, int channel, struct nouveau_object *obj)
 {
-	nouveau_object_unlink(dev, fifo_num, obj);
+	nouveau_object_unlink(dev, channel, obj);
 
 	nouveau_object_instance_free(dev, obj);
 	nouveau_hash_table_remove(dev, obj);
@@ -459,14 +461,15 @@ nouveau_object_free(drm_device_t *dev, int fifo_num, struct nouveau_object *obj)
 void nouveau_object_cleanup(drm_device_t *dev, DRMFILE filp)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	int fifo;
+	int channel;
 
-	fifo = nouveau_fifo_id_get(dev, filp);
-	if (fifo == -1)
+	channel = nouveau_fifo_id_get(dev, filp);
+	if (channel == -1)
 		return;
 
-	while (dev_priv->fifos[fifo].objs)
-		nouveau_object_free(dev, fifo, dev_priv->fifos[fifo].objs);
+	while (dev_priv->fifos[channel].objs)
+		nouveau_object_free(dev, channel,
+					 dev_priv->fifos[channel].objs);
 }
 
 int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
@@ -474,10 +477,10 @@ int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	drm_nouveau_object_init_t init;
 	struct nouveau_object *obj;
-	int fifo;
+	int channel;
 
-	fifo = nouveau_fifo_id_get(dev, filp);
-	if (fifo == -1)
+	channel = nouveau_fifo_id_get(dev, filp);
+	if (channel == -1)
 		return DRM_ERR(EINVAL);
 
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_object_init_t __user *)
@@ -485,9 +488,9 @@ int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
 
 	//FIXME: check args, only allow trusted objects to be created
 
-	if (nouveau_object_handle_find(dev, fifo, init.handle)) {
+	if (nouveau_object_handle_find(dev, channel, init.handle)) {
 		DRM_ERROR("Channel %d: handle 0x%08x already exists\n",
-			fifo, init.handle);
+			channel, init.handle);
 		return DRM_ERR(EINVAL);
 	}
 
@@ -496,12 +499,12 @@ int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
 		return DRM_ERR(ENOMEM);
 
 	obj->handle = init.handle;
-	if (nouveau_hash_table_insert(dev, fifo, obj)) {
-		nouveau_object_free(dev, fifo, obj);
+	if (nouveau_ht_object_insert(dev, channel, obj)) {
+		nouveau_object_free(dev, channel, obj);
 		return DRM_ERR(ENOMEM);
 	}
 
-	nouveau_object_link(dev, fifo, obj);
+	nouveau_object_link(dev, channel, obj);
 
 	return 0;
 }
@@ -569,10 +572,10 @@ int nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	drm_nouveau_dma_object_init_t init;
 	struct nouveau_object *obj;
-	int fifo;
+	int channel;
 
-	fifo = nouveau_fifo_id_get(dev, filp);
-	if (fifo == -1)
+	channel = nouveau_fifo_id_get(dev, filp);
+	if (channel == -1)
 		return DRM_ERR(EINVAL);
 
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_dma_object_init_t __user *)
@@ -581,9 +584,9 @@ int nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS)
 	if (nouveau_dma_object_check_access(dev, &init))
 		return DRM_ERR(EPERM);
 
-	if (nouveau_object_handle_find(dev, fifo, init.handle)) {
+	if (nouveau_object_handle_find(dev, channel, init.handle)) {
 		DRM_ERROR("Channel %d: handle 0x%08x already exists\n",
-			fifo, init.handle);
+			channel, init.handle);
 		return DRM_ERR(EINVAL);
 	}
 
@@ -594,12 +597,12 @@ int nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS)
 		return DRM_ERR(ENOMEM);
 
 	obj->handle = init.handle;
-	if (nouveau_hash_table_insert(dev, fifo, obj)) {
-		nouveau_object_free(dev, fifo, obj);
+	if (nouveau_ht_object_insert(dev, channel, obj)) {
+		nouveau_object_free(dev, channel, obj);
 		return DRM_ERR(ENOMEM);
 	}
 
-	nouveau_object_link(dev, fifo, obj);
+	nouveau_object_link(dev, channel, obj);
 
 	return 0;
 }
