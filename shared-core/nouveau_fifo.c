@@ -239,12 +239,14 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 	}
 
 	if (cb->flags & NOUVEAU_MEM_AGP) {
-		cb_dma = nouveau_dma_object_create(dev, NV_CLASS_DMA_IN_MEMORY,
+		cb_dma = nouveau_object_dma_create(dev, channel,
+				NV_CLASS_DMA_IN_MEMORY,
 				cb->start - dev_priv->agp_phys,
 				cb->size,
 				NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP);
 	} else if (dev_priv->card_type != NV_04) {
-		cb_dma = nouveau_dma_object_create(dev, NV_CLASS_DMA_IN_MEMORY,
+		cb_dma = nouveau_object_dma_create(dev, channel,
+				NV_CLASS_DMA_IN_MEMORY,
 				cb->start - drm_get_resource_start(dev, 1),
 				cb->size,
 				NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM);
@@ -253,7 +255,8 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 		 * exact reason for existing :)  PCI access to cmdbuf in
 		 * VRAM.
 		 */
-		cb_dma = nouveau_dma_object_create(dev, NV_CLASS_DMA_IN_MEMORY,
+		cb_dma = nouveau_object_dma_create(dev, channel,
+				NV_CLASS_DMA_IN_MEMORY,
 				cb->start, cb->size,
 				NV_DMA_ACCESS_RO, NV_DMA_TARGET_PCI);
 	}
@@ -524,14 +527,19 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	if (i==nouveau_fifo_number(dev))
 		return DRM_ERR(EINVAL);
 
+	/* that fifo is used */
+	dev_priv->fifos[i].used = 1;
+	dev_priv->fifos[i].filp = filp;
+	/* FIFO has no objects yet */
+	dev_priv->fifos[i].objs = NULL;
+
 	/* allocate a command buffer, and create a dma object for the gpu */
 	ret = nouveau_fifo_cmdbuf_alloc(dev, i);
-	if (ret) return ret;
+	if (ret) {
+		nouveau_fifo_free(dev, i);
+		return ret;
+	}
 	cb_obj = dev_priv->fifos[i].cmdbuf_obj;
-
-	/* that fifo is used */
-	dev_priv->fifos[i].used=1;
-	dev_priv->fifos[i].filp=filp;
 
 	init->channel  = i;
 	init->put_base = 0;
@@ -635,8 +643,6 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 	init->cmdbuf       = dev_priv->fifos[init->channel].cmdbuf_mem->start;
 	init->cmdbuf_size  = dev_priv->fifos[init->channel].cmdbuf_mem->size;
 
-	/* FIFO has no objects yet */
-	dev_priv->fifos[init->channel].objs = NULL;
 	dev_priv->fifo_alloc_count++;
 
 	DRM_INFO("%s: initialised FIFO %d\n", __func__, init->channel);
@@ -644,43 +650,51 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 }
 
 /* stops a fifo */
-void nouveau_fifo_free(drm_device_t* dev,int n)
+void nouveau_fifo_free(drm_device_t* dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
 	int i;
 	int ctx_size = nouveau_fifo_ctx_size(dev);
 
-	dev_priv->fifos[n].used=0;
-	DRM_INFO("%s: freeing fifo %d\n", __func__, n);
+	chan->used = 0;
+	DRM_INFO("%s: freeing fifo %d\n", __func__, channel);
 
 	/* disable the fifo caches */
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000000);
 
-	NV_WRITE(NV04_PFIFO_MODE,NV_READ(NV04_PFIFO_MODE)&~(1<<n));
+	NV_WRITE(NV04_PFIFO_MODE, NV_READ(NV04_PFIFO_MODE)&~(1<<channel));
 	// FIXME XXX needs more code
 	
 	/* Clean RAMFC */
 	for (i=0;i<ctx_size;i+=4) {
 		DRM_DEBUG("RAMFC +%02x: 0x%08x\n", i, NV_READ(NV_RAMIN +
-					dev_priv->ramfc_offset + n*ctx_size + i));
-		NV_WRITE(NV_RAMIN + dev_priv->ramfc_offset + n*ctx_size + i, 0);
+					dev_priv->ramfc_offset + 
+					channel*ctx_size + i));
+		NV_WRITE(NV_RAMIN + dev_priv->ramfc_offset +
+				channel*ctx_size + i, 0);
 	}
 
+	/* Cleanup PGRAPH state */
 	if (dev_priv->card_type >= NV_40)
-		nouveau_instmem_free(dev, dev_priv->fifos[n].ramin_grctx);
+		nouveau_instmem_free(dev, chan->ramin_grctx);
 	else if (dev_priv->card_type >= NV_30) {
 	}
 	else if (dev_priv->card_type >= NV_20) {
 		/* clear ctx table */
-		INSTANCE_WR(dev_priv->ctx_table, n, 0);
-		nouveau_instmem_free(dev, dev_priv->fifos[n].ramin_grctx);
+		INSTANCE_WR(dev_priv->ctx_table, channel, 0);
+		nouveau_instmem_free(dev, chan->ramin_grctx);
 	}
 
 	/* reenable the fifo caches */
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000001);
 
-	/* Deallocate command buffer, and dma object */
-	nouveau_mem_free(dev, dev_priv->fifos[n].cmdbuf_mem);
+	/* Deallocate command buffer */
+	if (chan->cmdbuf_mem)
+		nouveau_mem_free(dev, chan->cmdbuf_mem);
+
+	/* Destroy objects belonging to the channel */
+	nouveau_object_cleanup(dev, channel);
 
 	dev_priv->fifo_alloc_count--;
 }

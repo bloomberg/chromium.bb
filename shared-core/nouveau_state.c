@@ -34,7 +34,6 @@ void nouveau_preclose(drm_device_t * dev, DRMFILE filp)
 
 	nouveau_mem_release(filp,dev_priv->fb_heap);
 	nouveau_mem_release(filp,dev_priv->agp_heap);
-	nouveau_object_cleanup(dev, filp);
 	nouveau_fifo_cleanup(dev, filp);
 }
 
