@@ -142,7 +142,11 @@
 
 //=============================================================================
 - (NSData *)send:(NSError **)error {
-  NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:url_];
+  NSMutableURLRequest *req = 
+    [[NSMutableURLRequest alloc]
+          initWithURL:url_ cachePolicy:NSURLRequestUseProtocolCachePolicy
+      timeoutInterval:10.0 ];
+
   NSMutableData *postBody = [NSMutableData data];
   int i, count;
 
