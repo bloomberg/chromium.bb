@@ -170,12 +170,19 @@ bool MachoID::IDCommand(int cpu_type, unsigned char identifier[16]) {
   // If we found the command, we'll have initialized the dylib_command
   // structure
   if (dylib_cmd.cmd == LC_ID_DYLIB) {
-    // Take the timestamp, version, and compatability version bytes to form
-    // the first 12 bytes, pad the rest with zeros
-    identifier[0] = (dylib_cmd.dylib.timestamp >> 24) & 0xFF;
-    identifier[1] = (dylib_cmd.dylib.timestamp >> 16) & 0xFF;
-    identifier[2] = (dylib_cmd.dylib.timestamp >> 8) & 0xFF;
-    identifier[3] = dylib_cmd.dylib.timestamp & 0xFF;
+    // Take the hashed filename, version, and compatability version bytes
+    // to form the first 12 bytes, pad the rest with zeros
+
+    // create a crude hash of the filename to generate the first 4 bytes
+    identifier[0] = 0;
+    identifier[1] = 0;
+    identifier[2] = 0;
+    identifier[3] = 0;
+
+    for (int j = 0, i = strlen(path_)-1; i >= 0 && path_[i]!='/'; ++j, --i) {
+      identifier[j%4] += path_[i];
+    }
+
     identifier[4] = (dylib_cmd.dylib.current_version >> 24) & 0xFF;
     identifier[5] = (dylib_cmd.dylib.current_version >> 16) & 0xFF;
     identifier[6] = (dylib_cmd.dylib.current_version >> 8) & 0xFF;
