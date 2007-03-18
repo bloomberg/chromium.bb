@@ -591,21 +591,20 @@ int drm_ioctl(struct inode *inode, struct file *filp,
 		  current->pid, cmd, nr, (long)old_encode_dev(priv->head->device),
 		  priv->authenticated);
 
-	if (nr >= DRIVER_IOCTL_COUNT && 
-	    (nr < DRM_COMMAND_BASE || nr >= DRM_COMMAND_END))
+	if ((nr >= DRIVER_IOCTL_COUNT) &&
+	    ((nr < DRM_COMMAND_BASE) || (nr >= DRM_COMMAND_END)))
 		goto err_i1;
 	if ((nr >= DRM_COMMAND_BASE) && (nr < DRM_COMMAND_END)
 		&& (nr < DRM_COMMAND_BASE + dev->driver->num_ioctls))
 			ioctl = &dev->driver->ioctls[nr - DRM_COMMAND_BASE];
-	else if (nr >= DRM_COMMAND_END || nr < DRM_COMMAND_BASE)	
+	else if ((nr >= DRM_COMMAND_END) || (nr < DRM_COMMAND_BASE))
 		ioctl = &drm_ioctls[nr];
-	else 
+	else
 		goto err_i1;
 
-
-
 	func = ioctl->func;
-	if ((nr == DRM_IOCTL_NR(DRM_IOCTL_DMA)) && dev->driver->dma_ioctl)	/* Local override? */
+	/* is there a local override? */
+	if ((nr == DRM_IOCTL_NR(DRM_IOCTL_DMA)) && dev->driver->dma_ioctl)
 		func = dev->driver->dma_ioctl;
 
 	if (!func) {
