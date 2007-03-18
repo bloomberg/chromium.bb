@@ -138,12 +138,12 @@ static int drm_set_busid(drm_device_t * dev)
 {
 	int len;
 	if (dev->unique != NULL)
-		return EBUSY;
+		return -EBUSY;
 
 	dev->unique_len = 40;
 	dev->unique = drm_alloc(dev->unique_len + 1, DRM_MEM_DRIVER);
 	if (dev->unique == NULL)
-		return ENOMEM;
+		return -ENOMEM;
 
 	len = snprintf(dev->unique, dev->unique_len, "pci:%04x:%02x:%02x.%d",
 		       drm_get_pci_domain(dev),
@@ -156,7 +156,7 @@ static int drm_set_busid(drm_device_t * dev)
 	dev->devname = drm_alloc(strlen(dev->driver->pci_driver.name) + dev->unique_len + 2,
 				 DRM_MEM_DRIVER);
 	if (dev->devname == NULL)
-		return ENOMEM;
+		return -ENOMEM;
 
 	sprintf(dev->devname, "%s@%s", dev->driver->pci_driver.name, dev->unique);
 
