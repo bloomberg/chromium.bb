@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright (c) 2006-2007 Tungsten Graphics, Inc., Cedar Park, TX., USA
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -14,15 +14,15 @@
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
  * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  **************************************************************************/
 /*
  * Authors: Thomas Hellström <thomas-at-tungstengraphics-dot-com>
@@ -35,7 +35,7 @@
  *
  * The buffer usage atomic_t needs to be protected by dev->struct_mutex
  * when there is a chance that it can be zero before or after the operation.
- * 
+ *
  * dev->struct_mutex also protects all lists and list heads. Hash tables and hash
  * heads.
  *
@@ -502,7 +502,7 @@ static void drm_bo_usage_deref_unlocked(drm_buffer_object_t * bo)
 }
 
 /*
- * Note. The caller has to register (if applicable) 
+ * Note. The caller has to register (if applicable)
  * and deregister fence object usage.
  */
 
@@ -546,7 +546,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 
 	/*
 	 * Transfer to a local list before we release the dev->struct_mutex;
-	 * This is so we don't get any new unfenced objects while fencing 
+	 * This is so we don't get any new unfenced objects while fencing
 	 * the ones we already have..
 	 */
 
@@ -604,7 +604,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 EXPORT_SYMBOL(drm_fence_buffer_objects);
 
 /*
- * bo->mutex locked 
+ * bo->mutex locked
  */
 
 static int drm_bo_evict(drm_buffer_object_t * bo, unsigned mem_type,
@@ -1011,7 +1011,7 @@ static int drm_bo_check_unfenced(drm_buffer_object_t * bo)
  * 1) validating
  * 2) submitting commands
  * 3) fencing
- * Should really be an atomic operation. 
+ * Should really be an atomic operation.
  * We now "solve" this problem by keeping
  * the buffer "unfenced" after validating, but before fencing.
  */
@@ -1053,7 +1053,7 @@ static int drm_bo_wait_unfenced(drm_buffer_object_t * bo, int no_wait,
 
 /*
  * Fill in the ioctl reply argument with buffer info.
- * Bo locked. 
+ * Bo locked.
  */
 
 static void drm_bo_fill_rep_arg(drm_buffer_object_t * bo,
@@ -1078,8 +1078,8 @@ static void drm_bo_fill_rep_arg(drm_buffer_object_t * bo,
 
 /*
  * Wait for buffer idle and register that we've mapped the buffer.
- * Mapping is registered as a drm_ref_object with type _DRM_REF_TYPE1, 
- * so that if the client dies, the mapping is automatically 
+ * Mapping is registered as a drm_ref_object with type _DRM_REF_TYPE1,
+ * so that if the client dies, the mapping is automatically
  * unregistered.
  */
 
@@ -1215,7 +1215,7 @@ static void drm_buffer_user_object_unmap(drm_file_t * priv,
 }
 
 /*
- * bo->mutex locked. 
+ * bo->mutex locked.
  * Note that new_mem_flags are NOT transferred to the bo->mem.mask.
  */
 
@@ -2251,7 +2251,7 @@ EXPORT_SYMBOL(drm_mem_reg_is_pci);
  * \param bus_size On return the byte size of the buffer object or zero if
  *     the buffer object memory is not accessible through a PCI region.
  * \return Failure indication.
- * 
+ *
  * Returns -EINVAL if the buffer object is currently not mappable.
  * Otherwise returns zero.
  */

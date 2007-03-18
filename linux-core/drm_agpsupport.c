@@ -567,7 +567,7 @@ static int drm_agp_needs_unbind_cache_adjust(drm_ttm_backend_t *backend) {
 }
 
 
-static int drm_agp_populate(drm_ttm_backend_t *backend, unsigned long num_pages, 
+static int drm_agp_populate(drm_ttm_backend_t *backend, unsigned long num_pages,
 			    struct page **pages) {
 
 	drm_agp_ttm_priv *agp_priv = (drm_agp_ttm_priv *) backend->private;
@@ -597,9 +597,9 @@ static int drm_agp_populate(drm_ttm_backend_t *backend, unsigned long num_pages,
 	return 0;
 }
 
-static int drm_agp_bind_ttm(drm_ttm_backend_t *backend, 
+static int drm_agp_bind_ttm(drm_ttm_backend_t *backend,
 			    unsigned long offset,
-			    int cached) 
+			    int cached)
 {
 	drm_agp_ttm_priv *agp_priv = (drm_agp_ttm_priv *) backend->private;
 	DRM_AGP_MEM *mem = agp_priv->mem;
@@ -620,7 +620,7 @@ static int drm_agp_bind_ttm(drm_ttm_backend_t *backend,
 static int drm_agp_unbind_ttm(drm_ttm_backend_t *backend) {
 
 	drm_agp_ttm_priv *agp_priv = (drm_agp_ttm_priv *) backend->private;
-	
+
 	DRM_DEBUG("drm_agp_unbind_ttm\n");
 	if (agp_priv->mem->is_bound)
 		return drm_agp_unbind_memory(agp_priv->mem);
@@ -646,8 +646,8 @@ static void drm_agp_clear_ttm(drm_ttm_backend_t *backend) {
 
 static void drm_agp_destroy_ttm(drm_ttm_backend_t *backend) {
 
-	drm_agp_ttm_priv *agp_priv; 
-	
+	drm_agp_ttm_priv *agp_priv;
+
 	if (backend) {
 		DRM_DEBUG("drm_agp_destroy_ttm\n");
 		agp_priv = (drm_agp_ttm_priv *) backend->private;
@@ -659,11 +659,11 @@ static void drm_agp_destroy_ttm(drm_ttm_backend_t *backend) {
 			backend->private = NULL;
 		}
 		if (backend->flags & DRM_BE_FLAG_NEEDS_FREE) {
-			drm_ctl_free(backend, sizeof(*backend), DRM_MEM_MAPPINGS);                     
+			drm_ctl_free(backend, sizeof(*backend), DRM_MEM_MAPPINGS);
 		}
 	}
 }
-	
+
 
 drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 				    drm_ttm_backend_t *backend)
@@ -695,15 +695,15 @@ drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev,
 
 	if (!agp_be)
 		return NULL;
-	
+
 	agp_priv = drm_ctl_calloc(1, sizeof(*agp_priv), DRM_MEM_MAPPINGS);
-	
+
 	if (!agp_priv) {
 		drm_ctl_free(agp_be, sizeof(*agp_be), DRM_MEM_MAPPINGS);
 		return NULL;
 	}
-	
-		
+
+
 	agp_priv->mem = NULL;
 	agp_priv->alloc_type = AGP_USER_MEMORY;
 	agp_priv->cached_type = AGP_USER_CACHED_MEMORY;

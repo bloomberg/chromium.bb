@@ -416,11 +416,11 @@ typedef struct drm_file {
 	struct drm_head *head;
 	int remove_auth_on_close;
 	unsigned long lock_count;
-	
+
 	/*
 	 * The user object hash table is global and resides in the
 	 * drm_device structure. We protect the lists and hash tables with the
-	 * device struct_mutex. A bit coarse-grained but probably the best 
+	 * device struct_mutex. A bit coarse-grained but probably the best
 	 * option.
 	 */
 
@@ -534,7 +534,7 @@ typedef struct drm_sigdata {
 } drm_sigdata_t;
 
 
-/* 
+/*
  * Generic memory manager structs
  */
 
@@ -655,7 +655,7 @@ struct drm_driver {
 
         struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;
-        
+
 	int major;
 	int minor;
 	int patchlevel;
@@ -732,11 +732,11 @@ typedef struct drm_device {
 	/*@{ */
 	drm_map_list_t *maplist;	/**< Linked list of regions */
 	int map_count;			/**< Number of mappable regions */
-        drm_open_hash_t map_hash;       /**< User token hash table for maps */
-        drm_mm_t offset_manager;        /**< User token manager */
-        drm_open_hash_t object_hash;    /**< User token hash table for objects */
-        struct address_space *dev_mapping;  /**< For unmap_mapping_range() */
-        struct page *ttm_dummy_page;
+	drm_open_hash_t map_hash;       /**< User token hash table for maps */
+	drm_mm_t offset_manager;        /**< User token manager */
+	drm_open_hash_t object_hash;    /**< User token hash table for objects */
+	struct address_space *dev_mapping;  /**< For unmap_mapping_range() */
+	struct page *ttm_dummy_page;
 
 	/** \name Context handle management */
 	/*@{ */
@@ -818,7 +818,7 @@ typedef struct drm_device {
 
 	drm_fence_manager_t fm;
 	drm_buffer_manager_t bm;
-  
+
 	/** \name Drawable information */
 	/*@{ */
 	spinlock_t drw_lock;
@@ -948,7 +948,7 @@ extern void drm_free_memctl(size_t size);
 extern int drm_alloc_memctl(size_t size);
 extern void drm_query_memctl(drm_u64_t *cur_used,
 			     drm_u64_t *low_threshold,
-			     drm_u64_t *high_threshold); 
+			     drm_u64_t *high_threshold);
 extern void drm_init_memctl(size_t low_threshold,
 			    size_t high_threshold,
 			    size_t unit_size);
@@ -1161,14 +1161,14 @@ extern struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs,
 						 drm_head_t * head);
 extern void drm_sysfs_device_remove(struct class_device *class_dev);
 
-/* 
- * Basic memory manager support (drm_mm.c) 
+/*
+ * Basic memory manager support (drm_mm.c)
  */
 
 extern drm_mm_node_t * drm_mm_get_block(drm_mm_node_t * parent, unsigned long size,
 					       unsigned alignment);
 extern void drm_mm_put_block(drm_mm_node_t *cur);
-extern drm_mm_node_t *drm_mm_search_free(const drm_mm_t *mm, unsigned long size, 
+extern drm_mm_node_t *drm_mm_search_free(const drm_mm_t *mm, unsigned long size,
 						unsigned alignment, int best_match);
 extern int drm_mm_init(drm_mm_t *mm, unsigned long start, unsigned long size);
 extern void drm_mm_takedown(drm_mm_t *mm);
@@ -1181,11 +1181,6 @@ static inline drm_mm_t *drm_get_mm(drm_mm_node_t *block)
 {
 	return block->mm;
 }
-  
-
-
-
-
 
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);
@@ -1204,7 +1199,7 @@ static __inline__ int drm_device_is_agp(drm_device_t *dev)
 {
 	if ( dev->driver->device_is_agp != NULL ) {
 		int err = (*dev->driver->device_is_agp)( dev );
-	
+
 		if (err != 2) {
 			return err;
 		}

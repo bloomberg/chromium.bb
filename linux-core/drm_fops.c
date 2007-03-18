@@ -159,7 +159,7 @@ int drm_open(struct inode *inode, struct file *filp)
 		spin_unlock(&dev->count_lock);
 	}
 	mutex_lock(&dev->struct_mutex);
-	BUG_ON((dev->dev_mapping != NULL) && 
+	BUG_ON((dev->dev_mapping != NULL) &&
 	       (dev->dev_mapping != inode->i_mapping));
 	if (dev->dev_mapping == NULL)
 		dev->dev_mapping = inode->i_mapping;
@@ -355,42 +355,34 @@ static void drm_object_release(struct file *filp) {
 
 	/*
 	 * Free leftover ref objects created by me. Note that we cannot use
-	 * list_for_each() here, as the struct_mutex may be temporarily released 
+	 * list_for_each() here, as the struct_mutex may be temporarily released
 	 * by the remove_() functions, and thus the lists may be altered.
 	 * Also, a drm_remove_ref_object() will not remove it
 	 * from the list unless its refcount is 1.
 	 */
 
-	head = &priv->refd_objects; 
+	head = &priv->refd_objects;
 	while (head->next != head) {
 		ref_object = list_entry(head->next, drm_ref_object_t, list);
-		drm_remove_ref_object(priv, ref_object);		
-		head = &priv->refd_objects; 
+		drm_remove_ref_object(priv, ref_object);
+		head = &priv->refd_objects;
 	}
-		
+
 	/*
 	 * Free leftover user objects created by me.
 	 */
 
-	head = &priv->user_objects; 
+	head = &priv->user_objects;
 	while (head->next != head) {
 		user_object = list_entry(head->next, drm_user_object_t, list);
-		drm_remove_user_object(priv, user_object);		
-		head = &priv->user_objects; 
+		drm_remove_user_object(priv, user_object);
+		head = &priv->user_objects;
 	}
-
-
-
 
 	for(i=0; i<_DRM_NO_REF_TYPES; ++i) {
 		drm_ht_remove(&priv->refd_object_hash[i]);
 	}
-}			
-		
-
-
-
-
+}
 
 /**
  * Release file.
@@ -563,7 +555,7 @@ EXPORT_SYMBOL(drm_release);
  * to set a newer interface version to avoid breaking older Xservers.
  * Without fixing the Xserver you get: "WaitForSomething(): select: errno=22"
  * http://freedesktop.org/bugzilla/show_bug.cgi?id=1505 if you try
- * to return the correct response. 
+ * to return the correct response.
  */
 unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait)
 {

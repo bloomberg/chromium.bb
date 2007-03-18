@@ -798,7 +798,7 @@ typedef enum {
 	drm_bo_type_user,
 	drm_bo_type_fake
 }drm_bo_type_t;
-	
+
 
 typedef struct drm_bo_arg_request {
 	unsigned handle; /* User space handle */
@@ -846,10 +846,10 @@ typedef struct drm_bo_arg_reply {
 	unsigned page_alignment;
 	unsigned expand_pad[4]; /*Future expansion */
 }drm_bo_arg_reply_t;
-	
+
 
 typedef struct drm_bo_arg{
-        int handled;
+	int handled;
 	drm_u64_t next;
 	union {
 		drm_bo_arg_request_t req;
