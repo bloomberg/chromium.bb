@@ -57,28 +57,6 @@
 # endif
 #endif
 
-/*
- * Find the drm_map that covers the range [offset, offset+size).
- */
-static inline drm_map_t *drm_lookup_map(unsigned long offset,
-					unsigned long size, drm_device_t * dev)
-{
-	struct list_head *list;
-	drm_map_list_t *r_list;
-	drm_map_t *map;
-
-	list_for_each(list, &dev->maplist->head) {
-		r_list = (drm_map_list_t *) list;
-		map = r_list->map;
-		if (!map)
-			continue;
-		if (map->offset <= offset
-		    && (offset + size) <= (map->offset + map->size))
-			return map;
-	}
-	return NULL;
-}
-
 static inline void *agp_remap(unsigned long offset, unsigned long size,
 			      drm_device_t * dev)
 {
