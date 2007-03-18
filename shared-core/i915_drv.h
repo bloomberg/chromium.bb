@@ -112,14 +112,14 @@ typedef struct drm_i915_private {
 	struct mem_block *agp_heap;
 	unsigned int sr01, adpa, ppcr, dvob, dvoc, lvds;
 	int vblank_pipe;
-        spinlock_t user_irq_lock;
-        int user_irq_refcount;
-        int fence_irq_on;
-        uint32_t irq_enable_reg;
-        int irq_enabled;
+	spinlock_t user_irq_lock;
+	int user_irq_refcount;
+	int fence_irq_on;
+	uint32_t irq_enable_reg;
+	int irq_enabled;
 
 #ifdef I915_HAVE_FENCE
-        uint32_t flush_sequence;
+	uint32_t flush_sequence;
 	uint32_t flush_flags;
 	uint32_t flush_pending;
 	uint32_t saved_flush_status;
