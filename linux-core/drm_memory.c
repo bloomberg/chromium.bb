@@ -286,6 +286,12 @@ int drm_unbind_agp(DRM_AGP_MEM * handle)
 {
 	return drm_agp_unbind_memory(handle);
 }
+
+static void *agp_remap(unsigned long offset, unsigned long size,
+		       drm_device_t * dev)
+{
+	return NULL;
+}
 #endif				/* agp */
 #endif				/* debug_memory */
 

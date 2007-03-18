@@ -59,16 +59,4 @@
 
 #else				/* __OS_HAS_AGP */
 
-static inline drm_map_t *drm_lookup_map(unsigned long offset,
-					unsigned long size, drm_device_t * dev)
-{
-	return NULL;
-}
-
-static inline void *agp_remap(unsigned long offset, unsigned long size,
-			      drm_device_t * dev)
-{
-	return NULL;
-}
-
 #endif
