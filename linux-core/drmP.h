@@ -424,10 +424,10 @@ typedef struct drm_file {
 	 * option.
 	 */
 
-        struct list_head refd_objects;
+	struct list_head refd_objects;
 	struct list_head user_objects;
 
-        drm_open_hash_t refd_object_hash[_DRM_NO_REF_TYPES];
+	drm_open_hash_t refd_object_hash[_DRM_NO_REF_TYPES];
 	void *driver_priv;
 } drm_file_t;
 
@@ -544,7 +544,7 @@ typedef struct drm_mm_node {
 	int free;
 	unsigned long start;
 	unsigned long size;
-        struct drm_mm *mm;
+	struct drm_mm *mm;
 	void *private;
 } drm_mm_node_t;
 
@@ -562,7 +562,7 @@ typedef struct drm_map_list {
 	drm_hash_item_t hash;
 	drm_map_t *map;			/**< mapping */
 	drm_u64_t user_token;
-        drm_mm_node_t *file_offset_node;
+	drm_mm_node_t *file_offset_node;
 } drm_map_list_t;
 
 typedef drm_map_t drm_local_map_t;
@@ -653,7 +653,7 @@ struct drm_driver {
 	unsigned long (*get_reg_ofs) (struct drm_device * dev);
 	void (*set_version) (struct drm_device * dev, drm_set_version_t * sv);
 
-        struct drm_fence_driver *fence_driver;
+	struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;
 
 	int major;
