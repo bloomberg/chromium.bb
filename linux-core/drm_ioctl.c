@@ -343,7 +343,7 @@ int drm_setversion(DRM_IOCTL_ARGS)
 	if (sv.drm_di_major != -1) {
 		if (sv.drm_di_major != DRM_IF_MAJOR ||
 		    sv.drm_di_minor < 0 || sv.drm_di_minor > DRM_IF_MINOR)
-			return EINVAL;
+			return -EINVAL;
 		if_version = DRM_IF_VERSION(sv.drm_di_major, sv.drm_di_minor);
 		dev->if_version = max(if_version, dev->if_version);
 		if (sv.drm_di_minor >= 1) {
@@ -357,7 +357,7 @@ int drm_setversion(DRM_IOCTL_ARGS)
 	if (sv.drm_dd_major != -1) {
 		if (sv.drm_dd_major != dev->driver->major ||
 		    sv.drm_dd_minor < 0 || sv.drm_dd_minor > dev->driver->minor)
-			return EINVAL;
+			return -EINVAL;
 
 		if (dev->driver->set_version)
 			dev->driver->set_version(dev, &sv);
