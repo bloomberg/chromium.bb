@@ -213,6 +213,49 @@ void drm_free_pages(unsigned long address, int order, int area)
 }
 
 #if __OS_HAS_AGP
+static void *agp_remap(unsigned long offset, unsigned long size,
+			      drm_device_t * dev)
+{
+	unsigned long *phys_addr_map, i, num_pages =
+	    PAGE_ALIGN(size) / PAGE_SIZE;
+	struct drm_agp_mem *agpmem;
+	struct page **page_map;
+	void *addr;
+
+	size = PAGE_ALIGN(size);
+
+#ifdef __alpha__
+	offset -= dev->hose->mem_space->start;
+#endif
+
+	for (agpmem = dev->agp->memory; agpmem; agpmem = agpmem->next)
+		if (agpmem->bound <= offset
+		    && (agpmem->bound + (agpmem->pages << PAGE_SHIFT)) >=
+		    (offset + size))
+			break;
+	if (!agpmem)
+		return NULL;
+
+	/*
+	 * OK, we're mapping AGP space on a chipset/platform on which memory accesses by
+	 * the CPU do not get remapped by the GART.  We fix this by using the kernel's
+	 * page-table instead (that's probably faster anyhow...).
+	 */
+	/* note: use vmalloc() because num_pages could be large... */
+	page_map = vmalloc(num_pages * sizeof(struct page *));
+	if (!page_map)
+		return NULL;
+
+	phys_addr_map =
+	    agpmem->memory->memory + (offset - agpmem->bound) / PAGE_SIZE;
+	for (i = 0; i < num_pages; ++i)
+		page_map[i] = pfn_to_page(phys_addr_map[i] >> PAGE_SHIFT);
+	addr = vmap(page_map, num_pages, VM_IOREMAP, PAGE_AGP);
+	vfree(page_map);
+
+	return addr;
+}
+
 /** Wrapper around agp_allocate_memory() */
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 DRM_AGP_MEM *drm_alloc_agp(drm_device_t *dev, int pages, u32 type)
