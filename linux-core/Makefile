@@ -63,7 +63,7 @@ MODULE_LIST := drm.o tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o \
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))
 ARCHX86 := 1
-MODULE_LIST += i830.o i810.o i915.o
+MODULE_LIST += i810.o i915.o
 endif
 
 ifneq (,$(findstring sparc64,$(MACHINE)))
@@ -83,7 +83,6 @@ R128HEADERS =   r128_drv.h r128_drm.h $(DRMHEADERS)
 RADEONHEADERS = radeon_drv.h radeon_drm.h r300_reg.h $(DRMHEADERS)
 MGAHEADERS =    mga_drv.h mga_drm.h mga_ucode.h $(DRMHEADERS)
 I810HEADERS =   i810_drv.h i810_drm.h $(DRMHEADERS)
-I830HEADERS =   i830_drv.h i830_drm.h $(DRMHEADERS)
 I915HEADERS =   i915_drv.h i915_drm.h $(DRMHEADERS)
 SISHEADERS=     sis_drv.h sis_drm.h drm_hashtab.h drm_sman.h $(DRMHEADERS)
 SAVAGEHEADERS=  savage_drv.h savage_drm.h $(DRMHEADERS)
@@ -274,7 +273,6 @@ CONFIG_DRM_MGA := n
 CONFIG_DRM_I810 := n
 CONFIG_DRM_R128 := n
 CONFIG_DRM_RADEON := n
-CONFIG_DRM_I830 := n
 CONFIG_DRM_I915 := n
 CONFIG_DRM_SIS := n
 CONFIG_DRM_FFB := n
@@ -324,9 +322,6 @@ endif
 ifneq (,$(findstring i810,$(DRM_MODULES)))
 CONFIG_DRM_I810 := m
 endif
-ifneq (,$(findstring i830,$(DRM_MODULES)))
-CONFIG_DRM_I830 := m
-endif
 ifneq (,$(findstring i915,$(DRM_MODULES)))
 CONFIG_DRM_I915 := m
 endif
@@ -339,7 +334,6 @@ $(tdfx-objs):	$(TDFXHEADERS)
 $(r128-objs):	$(R128HEADERS)
 $(mga-objs):	$(MGAHEADERS)
 $(i810-objs):	$(I810HEADERS)
-$(i830-objs):	$(I830HEADERS)
 $(i915-objs):	$(I915HEADERS)
 $(radeon-objs):	$(RADEONHEADERS)
 $(sis-objs):	$(SISHEADERS)

@@ -48,7 +48,6 @@ obj-$(CONFIG_DRM_R128)	+= r128.o
 obj-$(CONFIG_DRM_RADEON)+= radeon.o
 obj-$(CONFIG_DRM_MGA)	+= mga.o
 obj-$(CONFIG_DRM_I810)	+= i810.o
-obj-$(CONFIG_DRM_I830)	+= i830.o
 obj-$(CONFIG_DRM_I915)	+= i915.o
 obj-$(CONFIG_DRM_SIS)   += sis.o
 obj-$(CONFIG_DRM_FFB)   += ffb.o
