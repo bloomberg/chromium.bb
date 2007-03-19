@@ -138,12 +138,12 @@ static int drm_set_busid(drm_device_t * dev)
 {
 	int len;
 	if (dev->unique != NULL)
-		return EBUSY;
+		return -EBUSY;
 
 	dev->unique_len = 40;
 	dev->unique = drm_alloc(dev->unique_len + 1, DRM_MEM_DRIVER);
 	if (dev->unique == NULL)
-		return ENOMEM;
+		return -ENOMEM;
 
 	len = snprintf(dev->unique, dev->unique_len, "pci:%04x:%02x:%02x.%d",
 		       drm_get_pci_domain(dev),
@@ -156,7 +156,7 @@ static int drm_set_busid(drm_device_t * dev)
 	dev->devname = drm_alloc(strlen(dev->driver->pci_driver.name) + dev->unique_len + 2,
 				 DRM_MEM_DRIVER);
 	if (dev->devname == NULL)
-		return ENOMEM;
+		return -ENOMEM;
 
 	sprintf(dev->devname, "%s@%s", dev->driver->pci_driver.name, dev->unique);
 
@@ -343,7 +343,7 @@ int drm_setversion(DRM_IOCTL_ARGS)
 	if (sv.drm_di_major != -1) {
 		if (sv.drm_di_major != DRM_IF_MAJOR ||
 		    sv.drm_di_minor < 0 || sv.drm_di_minor > DRM_IF_MINOR)
-			return EINVAL;
+			return -EINVAL;
 		if_version = DRM_IF_VERSION(sv.drm_di_major, sv.drm_di_minor);
 		dev->if_version = max(if_version, dev->if_version);
 		if (sv.drm_di_minor >= 1) {
@@ -357,7 +357,7 @@ int drm_setversion(DRM_IOCTL_ARGS)
 	if (sv.drm_dd_major != -1) {
 		if (sv.drm_dd_major != dev->driver->major ||
 		    sv.drm_dd_minor < 0 || sv.drm_dd_minor > dev->driver->minor)
-			return EINVAL;
+			return -EINVAL;
 
 		if (dev->driver->set_version)
 			dev->driver->set_version(dev, &sv);

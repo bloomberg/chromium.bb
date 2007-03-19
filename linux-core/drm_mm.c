@@ -53,7 +53,7 @@ unsigned long drm_mm_tail_space(drm_mm_t *mm)
 	entry = list_entry(tail_node, drm_mm_node_t, ml_entry);
 	if (!entry->free)
 		return 0;
-	
+
 	return entry->size;
 }
 
@@ -66,7 +66,7 @@ int drm_mm_remove_space_from_tail(drm_mm_t *mm, unsigned long size)
 	entry = list_entry(tail_node, drm_mm_node_t, ml_entry);
 	if (!entry->free)
 		return -ENOMEM;
-	
+
 	if (entry->size <= size)
 		return -ENOMEM;
 
@@ -80,7 +80,7 @@ static int drm_mm_create_tail_node(drm_mm_t *mm,
 			    unsigned long size)
 {
 	drm_mm_node_t *child;
-	
+
 	child = (drm_mm_node_t *)
 		drm_ctl_alloc(sizeof(*child), DRM_MEM_MM);
 	if (!child)
@@ -96,7 +96,7 @@ static int drm_mm_create_tail_node(drm_mm_t *mm,
 
 	return 0;
 }
-	
+
 
 int drm_mm_add_space_to_tail(drm_mm_t *mm, unsigned long size)
 {
@@ -111,12 +111,12 @@ int drm_mm_add_space_to_tail(drm_mm_t *mm, unsigned long size)
 	entry->size += size;
 	return 0;
 }
-	
+
 static drm_mm_node_t *drm_mm_split_at_start(drm_mm_node_t *parent,
 					    unsigned long size)
 {
 	drm_mm_node_t *child;
-	
+
 	child = (drm_mm_node_t *)
 		drm_ctl_alloc(sizeof(*child), DRM_MEM_MM);
 	if (!child)
@@ -136,8 +136,6 @@ static drm_mm_node_t *drm_mm_split_at_start(drm_mm_node_t *parent,
 	parent->start += size;
 	return child;
 }
-	
-	
 
 drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 				unsigned long size, unsigned alignment)
@@ -149,13 +147,13 @@ drm_mm_node_t *drm_mm_get_block(drm_mm_node_t * parent,
 
 	if (alignment)
 		tmp = parent->start % alignment;
-	
+
 	if (tmp) {
 		align_splitoff = drm_mm_split_at_start(parent, alignment - tmp);
 		if (!align_splitoff)
 			return NULL;
 	}
-		
+
 	if (parent->size == size) {
 		list_del_init(&parent->fl_entry);
 		parent->free = 0;
