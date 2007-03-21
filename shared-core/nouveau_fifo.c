@@ -725,15 +725,16 @@ void nouveau_fifo_cleanup(drm_device_t* dev, DRMFILE filp)
 		nouveau_fifo_init(dev);*/
 }
 
-int nouveau_fifo_id_get(drm_device_t* dev, DRMFILE filp)
+int
+nouveau_fifo_owner(drm_device_t *dev, DRMFILE filp, int channel)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	int i;
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
 
-	for(i=0;i<nouveau_fifo_number(dev);i++)
-		if (dev_priv->fifos[i].used && dev_priv->fifos[i].filp == filp)
-			return i;
-	return -1;
+	if (channel >= nouveau_fifo_number(dev))
+		return 0;
+	if (dev_priv->fifos[channel].used == 0)
+		return 0;
+	return (dev_priv->fifos[channel].filp == filp);
 }
 
 /***********************************

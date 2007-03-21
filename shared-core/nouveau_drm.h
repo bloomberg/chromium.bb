@@ -25,7 +25,7 @@
 #ifndef __NOUVEAU_DRM_H__
 #define __NOUVEAU_DRM_H__
 
-#define NOUVEAU_DRM_HEADER_PATCHLEVEL 4
+#define NOUVEAU_DRM_HEADER_PATCHLEVEL 5
 
 typedef struct drm_nouveau_fifo_alloc {
 	int          channel;
@@ -40,6 +40,7 @@ typedef struct drm_nouveau_fifo_alloc {
 drm_nouveau_fifo_alloc_t;
 
 typedef struct drm_nouveau_object_init {
+	int      channel;
 	uint32_t handle;
 	int      class;
 }
@@ -49,6 +50,7 @@ drm_nouveau_object_init_t;
 #define NOUVEAU_MEM_ACCESS_WO	2
 #define NOUVEAU_MEM_ACCESS_RW	3
 typedef struct drm_nouveau_dma_object_init {
+	int      channel;
 	uint32_t handle;
 	int      class;
 	int      access;
