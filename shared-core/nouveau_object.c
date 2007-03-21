@@ -475,28 +475,29 @@ int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	drm_nouveau_object_init_t init;
 	struct nouveau_object *obj;
-	int channel;
-
-	channel = nouveau_fifo_id_get(dev, filp);
-	if (channel == -1)
-		return DRM_ERR(EINVAL);
 
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_object_init_t __user *)
 		data, sizeof(init));
 
-	//FIXME: check args, only allow trusted objects to be created
-
-	if (nouveau_object_handle_find(dev, channel, init.handle)) {
-		DRM_ERROR("Channel %d: handle 0x%08x already exists\n",
-			channel, init.handle);
+	if (!nouveau_fifo_owner(dev, filp, init.channel)) {
+		DRM_ERROR("pid %d doesn't own channel %d\n",
+				DRM_CURRENTPID, init.channel);
 		return DRM_ERR(EINVAL);
 	}
 
-	obj = nouveau_object_gr_create(dev, channel, init.class);
+	//FIXME: check args, only allow trusted objects to be created
+
+	if (nouveau_object_handle_find(dev, init.channel, init.handle)) {
+		DRM_ERROR("Channel %d: handle 0x%08x already exists\n",
+			init.channel, init.handle);
+		return DRM_ERR(EINVAL);
+	}
+
+	obj = nouveau_object_gr_create(dev, init.channel, init.class);
 	if (!obj)
 		return DRM_ERR(ENOMEM);
 
-	if (nouveau_ht_object_insert(dev, channel, init.handle, obj)) {
+	if (nouveau_ht_object_insert(dev, init.channel, init.handle, obj)) {
 		nouveau_object_free(dev, obj);
 		return DRM_ERR(ENOMEM);
 	}
@@ -567,32 +568,33 @@ int nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	drm_nouveau_dma_object_init_t init;
 	struct nouveau_object *obj;
-	int channel;
-
-	channel = nouveau_fifo_id_get(dev, filp);
-	if (channel == -1)
-		return DRM_ERR(EINVAL);
 
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_dma_object_init_t __user *)
 		data, sizeof(init));
 
-	if (nouveau_dma_object_check_access(dev, &init))
-		return DRM_ERR(EPERM);
-
-	if (nouveau_object_handle_find(dev, channel, init.handle)) {
-		DRM_ERROR("Channel %d: handle 0x%08x already exists\n",
-			channel, init.handle);
+	if (!nouveau_fifo_owner(dev, filp, init.channel)) {
+		DRM_ERROR("pid %d doesn't own channel %d\n",
+				DRM_CURRENTPID, init.channel);
 		return DRM_ERR(EINVAL);
 	}
 
-	obj = nouveau_object_dma_create(dev, channel, init.class,
-					init.offset, init.size,
-					init.access, init.target);
+	if (nouveau_dma_object_check_access(dev, &init))
+		return DRM_ERR(EPERM);
+
+	if (nouveau_object_handle_find(dev, init.channel, init.handle)) {
+		DRM_ERROR("Channel %d: handle 0x%08x already exists\n",
+			init.channel, init.handle);
+		return DRM_ERR(EINVAL);
+	}
+
+	obj = nouveau_object_dma_create(dev, init.channel, init.class,
+					     init.offset, init.size,
+					     init.access, init.target);
 	if (!obj)
 		return DRM_ERR(ENOMEM);
 
 	obj->handle = init.handle;
-	if (nouveau_ht_object_insert(dev, channel, init.handle, obj)) {
+	if (nouveau_ht_object_insert(dev, init.channel, init.handle, obj)) {
 		nouveau_object_free(dev, obj);
 		return DRM_ERR(ENOMEM);
 	}
