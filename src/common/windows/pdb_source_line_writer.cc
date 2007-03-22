@@ -151,6 +151,11 @@ bool PDBSourceLineWriter::PrintFunction(IDiaSymbol *function) {
     return false;
   }
 
+  if (length == 0) {
+    // Silently ignore zero-length functions, which can infrequently pop up.
+    return true;
+  }
+
   CComBSTR name;
   int stack_param_size;
   if (!GetSymbolFunctionName(function, &name, &stack_param_size)) {
