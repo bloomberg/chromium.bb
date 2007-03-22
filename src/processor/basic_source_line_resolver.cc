@@ -226,7 +226,7 @@ bool BasicSourceLineResolver::Module::LoadMap(const string &map_file) {
   // lines, which might be present for FUNC lines of highly-templatized
   // code.
   char buffer[8192];
-  Function *cur_func = NULL;
+  linked_ptr<Function> cur_func;
 
   while (fgets(buffer, sizeof(buffer), f)) {
     if (strncmp(buffer, "FILE ", 5) == 0) {
@@ -236,17 +236,17 @@ bool BasicSourceLineResolver::Module::LoadMap(const string &map_file) {
         return false;
       }
     } else if (strncmp(buffer, "FUNC ", 5) == 0) {
-      cur_func = ParseFunction(buffer);
-      if (!cur_func) {
+      cur_func.reset(ParseFunction(buffer));
+      if (!cur_func.get()) {
         return false;
       }
-      if (!functions_.StoreRange(cur_func->address, cur_func->size,
-                                 linked_ptr<Function>(cur_func))) {
-        return false;
-      }
+      // StoreRange will fail if the function has an invalid address or size.
+      // We'll silently ignore this, the function and any corresponding lines
+      // will be destroyed when cur_func is released.
+      functions_.StoreRange(cur_func->address, cur_func->size, cur_func);
     } else if (strncmp(buffer, "PUBLIC ", 7) == 0) {
       // Clear cur_func: public symbols don't contain line number information.
-      cur_func = NULL;
+      cur_func.reset();
 
       if (!ParsePublicSymbol(buffer)) {
         return false;
@@ -259,7 +259,7 @@ bool BasicSourceLineResolver::Module::LoadMap(const string &map_file) {
       //
       // MODULE <guid> <age> <filename>
     } else {
-      if (!cur_func) {
+      if (!cur_func.get()) {
         return false;
       }
       Line *line = ParseLine(buffer);

@@ -152,6 +152,10 @@ static bool RunTests() {
   ASSERT_FALSE(frame_info->allocates_base_pointer);
   ASSERT_FALSE(frame_info->program_string.empty());
 
+  frame.instruction = 0x2000;
+  frame_info.reset(resolver.FillSourceLineInfo(&frame));
+  ASSERT_FALSE(frame_info.get());
+
   TestCodeModule module2("module2");
 
   frame.instruction = 0x2181;
@@ -186,8 +190,11 @@ static bool RunTests() {
                                    testdata_dir + "/module3_bad.out"));
   ASSERT_FALSE(resolver.HasModule("module3"));
   ASSERT_FALSE(resolver.LoadModule("module4",
-                                   testdata_dir + "/invalid-filename"));
+                                   testdata_dir + "/module4_bad.out"));
   ASSERT_FALSE(resolver.HasModule("module4"));
+  ASSERT_FALSE(resolver.LoadModule("module5",
+                                   testdata_dir + "/invalid-filename"));
+  ASSERT_FALSE(resolver.HasModule("module5"));
   ASSERT_FALSE(resolver.HasModule("invalid-module"));
   return true;
 }
