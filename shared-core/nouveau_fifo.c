@@ -543,7 +543,6 @@ static int nouveau_fifo_alloc(drm_device_t* dev,drm_nouveau_fifo_alloc_t* init, 
 
 	init->channel  = i;
 	init->put_base = 0;
-	dev_priv->cur_fifo = init->channel;
 
 	nouveau_wait_for_idle(dev);
 
@@ -709,20 +708,6 @@ void nouveau_fifo_cleanup(drm_device_t* dev, DRMFILE filp)
 	for(i=0;i<nouveau_fifo_number(dev);i++)
 		if (dev_priv->fifos[i].used && dev_priv->fifos[i].filp==filp)
 			nouveau_fifo_free(dev,i);
-
-	/* check we still point at an active channel */
-	if (dev_priv->fifos[dev_priv->cur_fifo].used == 0) {	
-		DRM_DEBUG("%s: cur_fifo is no longer owned.\n", __func__);
-		for (i=0;i<nouveau_fifo_number(dev);i++)
-			if (dev_priv->fifos[i].used) break;
-		if (i==nouveau_fifo_number(dev))
-			i=0;
-		DRM_DEBUG("%s: new cur_fifo is %d\n", __func__, i);
-		dev_priv->cur_fifo = i;
-	}
-
-/*	if (dev_priv->cmdbuf_alloc)
-		nouveau_fifo_init(dev);*/
 }
 
 int

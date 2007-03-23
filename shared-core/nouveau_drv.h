@@ -110,13 +110,6 @@ typedef struct drm_nouveau_private {
 	drm_local_map_t *fb;
 	drm_local_map_t *ramin; /* NV40 onwards */
 
-	//TODO: Remove me, I'm bogus :)
-	int      cur_fifo;
-
-	struct nouveau_object *fb_obj;
-	int               cmdbuf_ch_size;
-	struct mem_block* cmdbuf_alloc;
-
 	int fifo_alloc_count;
 	struct nouveau_fifo fifos[NV_MAX_FIFO_NUMBER];
 
