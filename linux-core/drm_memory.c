@@ -61,17 +61,17 @@ int drm_alloc_memctl(size_t size)
 {
 	int ret;
 	unsigned long a_size = drm_size_align(size);
- 
+
 	spin_lock(&drm_memctl.lock);
-	ret = ((drm_memctl.cur_used + a_size) > drm_memctl.high_threshold) ? 
+	ret = ((drm_memctl.cur_used + a_size) > drm_memctl.high_threshold) ?
 		-ENOMEM : 0;
-	if (!ret) 
+	if (!ret)
 		drm_memctl.cur_used += a_size;
 	spin_unlock(&drm_memctl.lock);
 	return ret;
 }
 EXPORT_SYMBOL(drm_alloc_memctl);
-	
+
 void drm_free_memctl(size_t size)
 {
 	unsigned long a_size = drm_size_align(size);
@@ -84,14 +84,14 @@ EXPORT_SYMBOL(drm_free_memctl);
 
 void drm_query_memctl(drm_u64_t *cur_used,
 		      drm_u64_t *low_threshold,
-		      drm_u64_t *high_threshold) 
+		      drm_u64_t *high_threshold)
 {
 	spin_lock(&drm_memctl.lock);
 	*cur_used = drm_memctl.cur_used;
 	*low_threshold = drm_memctl.low_threshold;
 	*high_threshold = drm_memctl.high_threshold;
 	spin_unlock(&drm_memctl.lock);
-}	
+}
 EXPORT_SYMBOL(drm_query_memctl);
 
 void drm_init_memctl(size_t p_low_threshold,

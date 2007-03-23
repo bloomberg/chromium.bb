@@ -83,7 +83,7 @@ static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		return -ENOMEM;
 	}
-	if (drm_mm_init(&dev->offset_manager, DRM_FILE_PAGE_OFFSET_START, 
+	if (drm_mm_init(&dev->offset_manager, DRM_FILE_PAGE_OFFSET_START,
 			DRM_FILE_PAGE_OFFSET_SIZE)) {
 		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		drm_ht_remove(&dev->map_hash);

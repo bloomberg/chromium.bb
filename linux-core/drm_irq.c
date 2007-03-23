@@ -118,7 +118,6 @@ static int drm_irq_install(drm_device_t * dev)
 		init_waitqueue_head(&dev->vbl_queue);
 
 		spin_lock_init(&dev->vbl_lock);
-		spin_lock_init(&dev->tasklet_lock);
 
 		INIT_LIST_HEAD(&dev->vbl_sigs.head);
 		INIT_LIST_HEAD(&dev->vbl_sigs2.head);

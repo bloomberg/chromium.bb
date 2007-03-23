@@ -684,7 +684,7 @@ static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 		vma->vm_private_data = (void *)map;
 		vma->vm_flags |= VM_RESERVED;
 		break;
-	case _DRM_TTM: 
+	case _DRM_TTM:
 		return drm_bo_mmap_locked(vma, filp, map);
 	default:
 		return -EINVAL;	/* This should never happen. */
@@ -732,13 +732,13 @@ EXPORT_SYMBOL(drm_mmap);
  */
 
 #ifdef DRM_FULL_MM_COMPAT
-static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma, 
+static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 				     unsigned long address)
 {
 	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
 	unsigned long page_offset;
 	struct page *page = NULL;
-	drm_ttm_t *ttm; 
+	drm_ttm_t *ttm;
 	drm_device_t *dev;
 	unsigned long pfn;
 	int err;
@@ -746,10 +746,10 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	unsigned long bus_offset;
 	unsigned long bus_size;
 	int ret = NOPFN_REFAULT;
-	
-	if (address > vma->vm_end) 
+
+	if (address > vma->vm_end)
 		return NOPFN_SIGBUS;
-		
+
 	err = mutex_lock_interruptible(&bo->mutex);
 	if (err)
 		return NOPFN_REFAULT;
@@ -766,8 +766,8 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	 */
 
 	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
-		uint32_t new_mask = bo->mem.mask | 
-			DRM_BO_FLAG_MAPPABLE | 
+		uint32_t new_mask = bo->mem.mask |
+			DRM_BO_FLAG_MAPPABLE |
 			DRM_BO_FLAG_FORCE_MAPPABLE;
 		err = drm_bo_move_buffer(bo, new_mask, 0, 0);
 		if (err) {
@@ -777,7 +777,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	}
 
 	dev = bo->dev;
-	err = drm_bo_pci_offset(dev, &bo->mem, &bus_base, &bus_offset, 
+	err = drm_bo_pci_offset(dev, &bo->mem, &bus_base, &bus_offset,
 				&bus_size);
 
 	if (err) {
@@ -804,7 +804,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 		pfn = page_to_pfn(page);
 		vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
 	}
-	
+
 	err = vm_insert_pfn(vma, address, pfn);
 	if (err) {
 		ret = (err != -EAGAIN) ? NOPFN_OOM : NOPFN_REFAULT;
@@ -903,6 +903,6 @@ int drm_bo_mmap_locked(struct vm_area_struct *vma,
 	drm_bo_vm_open_locked(vma);
 #ifdef DRM_ODD_MM_COMPAT
 	drm_bo_map_bound(vma);
-#endif		
+#endif
 	return 0;
 }
