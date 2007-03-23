@@ -244,7 +244,7 @@ static int drm__vm_info(char *buf, char **start, off_t offset, int request,
 		DRM_PROC_PRINT("%4d 0x%08lx 0x%08lx %4.4s  0x%02x 0x%08lx ",
 			       i,
 			       map->offset,
-			       map->size, type, map->flags, 
+			       map->size, type, map->flags,
 			       (unsigned long) r_list->user_token);
 
 		if (map->mtrr < 0) {
@@ -438,7 +438,7 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 	drm_device_t *dev = (drm_device_t *) data;
 	int len = 0;
 	drm_buffer_manager_t *bm = &dev->bm;
-	drm_fence_manager_t *fm = &dev->fm; 
+	drm_fence_manager_t *fm = &dev->fm;
 	drm_u64_t used_mem;
 	drm_u64_t low_mem;
 	drm_u64_t high_mem;
@@ -451,17 +451,17 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 
 	*start = &buf[offset];
 	*eof = 0;
-	
+
 	DRM_PROC_PRINT("Object accounting:\n\n");
 	if (fm->initialized) {
-		DRM_PROC_PRINT("Number of active fence objects: %d.\n", 
+		DRM_PROC_PRINT("Number of active fence objects: %d.\n",
 			       atomic_read(&fm->count));
 	} else {
 		DRM_PROC_PRINT("Fence objects are not supported by this driver\n");
 	}
 
 	if (bm->initialized) {
-		DRM_PROC_PRINT("Number of active buffer objects: %d.\n\n", 
+		DRM_PROC_PRINT("Number of active buffer objects: %d.\n\n",
 			       atomic_read(&bm->count));
 	}
 	DRM_PROC_PRINT("Memory accounting:\n\n");
@@ -473,16 +473,16 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 
 	drm_query_memctl(&used_mem, &low_mem, &high_mem);
 
-	if (used_mem > 16*PAGE_SIZE) { 
-		DRM_PROC_PRINT("Used object memory is %lu pages.\n", 
+	if (used_mem > 16*PAGE_SIZE) {
+		DRM_PROC_PRINT("Used object memory is %lu pages.\n",
 			       (unsigned long) (used_mem >> PAGE_SHIFT));
 	} else {
-		DRM_PROC_PRINT("Used object memory is %lu bytes.\n", 
+		DRM_PROC_PRINT("Used object memory is %lu bytes.\n",
 			       (unsigned long) used_mem);
 	}
-	DRM_PROC_PRINT("Soft object memory usage threshold is %lu pages.\n", 
+	DRM_PROC_PRINT("Soft object memory usage threshold is %lu pages.\n",
 		       (unsigned long) (low_mem >> PAGE_SHIFT));
-	DRM_PROC_PRINT("Hard object memory usage threshold is %lu pages.\n", 
+	DRM_PROC_PRINT("Hard object memory usage threshold is %lu pages.\n",
 		       (unsigned long) (high_mem >> PAGE_SHIFT));
 
 	DRM_PROC_PRINT("\n");
