@@ -191,7 +191,10 @@ bool MachoID::IDCommand(int cpu_type, unsigned char identifier[16]) {
     identifier[9] = (dylib_cmd.dylib.compatibility_version >> 16) & 0xFF;
     identifier[10] = (dylib_cmd.dylib.compatibility_version >> 8) & 0xFF;
     identifier[11] = dylib_cmd.dylib.compatibility_version & 0xFF;
-    identifier[12] = identifier[13] = identifier[14] = identifier[15] = 0;
+    identifier[12] = (cpu_type >> 24) & 0xFF;
+    identifier[13] = (cpu_type >> 16) & 0xFF;
+    identifier[14] = (cpu_type >> 8) & 0xFF;
+    identifier[15] = cpu_type & 0xFF;
 
     return true;
   }
