@@ -134,7 +134,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(
 
   // Set up the dictionary for the PostfixEvaluator.  %ebp and %esp are used
   // in each program string, and their previous values are known, so set them
-  // here.  .cbCalleeParams is an Breakpad extension that allows us to use
+  // here.  .cbCalleeParams is a Breakpad extension that allows us to use
   // the PostfixEvaluator engine when certain types of debugging information
   // are present without having to write the constants into the program string
   // as literals.

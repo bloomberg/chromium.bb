@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // on_demand_symbol_supplier.h: Provides a Symbol Supplier that will create
-// an breakpad symbol file on demand.
+// a breakpad symbol file on demand.
 
 #ifndef TOOLS_MAC_CRASH_REPORT_ON_DEMAND_SYMBOL_SUPPLIER_H__
 #define TOOLS_MAC_CRASH_REPORT_ON_DEMAND_SYMBOL_SUPPLIER_H__
