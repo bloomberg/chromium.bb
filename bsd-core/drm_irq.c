@@ -102,11 +102,13 @@ int drm_irq_install(drm_device_t *dev)
 		retcode = ENOENT;
 		goto err;
 	}
-#if __FreeBSD_version < 500000
-	retcode = bus_setup_intr(dev->device, dev->irqr, INTR_TYPE_TTY,
-				 dev->irq_handler, dev, &dev->irqh);
+#if __FreeBSD_version >= 700031
+	retcode = bus_setup_intr(dev->device, dev->irqr,
+				 INTR_TYPE_TTY | INTR_MPSAFE,
+				 NULL, drm_irq_handler_wrap, dev, &dev->irqh);
 #else
-	retcode = bus_setup_intr(dev->device, dev->irqr, INTR_TYPE_TTY | INTR_MPSAFE,
+	retcode = bus_setup_intr(dev->device, dev->irqr,
+				 INTR_TYPE_TTY | INTR_MPSAFE,
 				 drm_irq_handler_wrap, dev, &dev->irqh);
 #endif
 	if (retcode != 0)
