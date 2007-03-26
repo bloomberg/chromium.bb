@@ -26,6 +26,187 @@
 #include "drm.h"
 #include "drm_sarea.h"
 #include "nouveau_drv.h"
+#include "nouveau_drm.h"
+
+static int nouveau_init_card_mappings(drm_device_t *dev)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	int ret;
+
+	/* resource 0 is mmio regs */
+	/* resource 1 is linear FB */
+	/* resource 2 is RAMIN (mmio regs + 0x1000000) */
+	/* resource 6 is bios */
+
+	/* map the mmio regs */
+	ret = drm_addmap(dev, drm_get_resource_start(dev, 0),
+			      drm_get_resource_len(dev, 0), 
+			      _DRM_REGISTERS, _DRM_READ_ONLY, &dev_priv->mmio);
+	if (ret) {
+		DRM_ERROR("Unable to initialize the mmio mapping (%d). "
+			  "Please report your setup to " DRIVER_EMAIL "\n",
+			  ret);
+		return 1;
+	}
+	DRM_DEBUG("regs mapped ok at 0x%lx\n", dev_priv->mmio->offset);
+
+	/* map larger RAMIN aperture on NV40 cards */
+	if (dev_priv->card_type >= NV_40) {
+		int ramin_resource = 2;
+		if (drm_get_resource_len(dev, ramin_resource) == 0)
+			ramin_resource = 3;
+
+		ret = drm_addmap(dev,
+				 drm_get_resource_start(dev, ramin_resource),
+				 drm_get_resource_len(dev, ramin_resource),
+				 _DRM_REGISTERS, _DRM_READ_ONLY,
+				 &dev_priv->ramin);
+		if (ret) {
+			DRM_ERROR("Failed to init RAMIN mapping, "
+				  "limited instance memory available\n");
+			dev_priv->ramin = NULL;
+		}
+	} else
+		dev_priv->ramin = NULL;
+
+	return 0;
+}
+
+static void nouveau_stub_takedown(drm_device_t *dev) {}
+static int nouveau_init_engine_ptrs(drm_device_t *dev)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_engine_func *engine = &dev_priv->Engine;
+
+	switch (dev_priv->chipset & 0xf0) {
+	case 0x00:
+		engine->Mc.Init		= nv04_mc_init;
+		engine->Mc.Takedown	= nv04_mc_takedown;
+		engine->Timer.Init	= nv04_timer_init;
+		engine->Timer.Takedown	= nv04_timer_takedown;
+		engine->Fb.Init		= nv04_fb_init;
+		engine->Fb.Takedown	= nv04_fb_takedown;
+		engine->Graph.Init	= nv04_graph_init;
+		engine->Graph.Takedown	= nv04_graph_takedown;
+		engine->Fifo.Init	= nouveau_fifo_init;
+		engine->Fifo.Takedown	= nouveau_stub_takedown;
+		break;
+	case 0x10:
+		engine->Mc.Init		= nv04_mc_init;
+		engine->Mc.Takedown	= nv04_mc_takedown;
+		engine->Timer.Init	= nv04_timer_init;
+		engine->Timer.Takedown	= nv04_timer_takedown;
+		engine->Fb.Init		= nv10_fb_init;
+		engine->Fb.Takedown	= nv10_fb_takedown;
+		engine->Graph.Init	= nv10_graph_init;
+		engine->Graph.Takedown	= nv10_graph_takedown;
+		engine->Fifo.Init	= nouveau_fifo_init;
+		engine->Fifo.Takedown	= nouveau_stub_takedown;
+		break;
+	case 0x20:
+		engine->Mc.Init		= nv04_mc_init;
+		engine->Mc.Takedown	= nv04_mc_takedown;
+		engine->Timer.Init	= nv04_timer_init;
+		engine->Timer.Takedown	= nv04_timer_takedown;
+		engine->Fb.Init		= nv10_fb_init;
+		engine->Fb.Takedown	= nv10_fb_takedown;
+		engine->Graph.Init	= nv20_graph_init;
+		engine->Graph.Takedown	= nv20_graph_takedown;
+		engine->Fifo.Init	= nouveau_fifo_init;
+		engine->Fifo.Takedown	= nouveau_stub_takedown;
+		break;
+	case 0x30:
+		engine->Mc.Init		= nv04_mc_init;
+		engine->Mc.Takedown	= nv04_mc_takedown;
+		engine->Timer.Init	= nv04_timer_init;
+		engine->Timer.Takedown	= nv04_timer_takedown;
+		engine->Fb.Init		= nv10_fb_init;
+		engine->Fb.Takedown	= nv10_fb_takedown;
+		engine->Graph.Init	= nv30_graph_init;
+		engine->Graph.Takedown	= nv30_graph_takedown;
+		engine->Fifo.Init	= nouveau_fifo_init;
+		engine->Fifo.Takedown	= nouveau_stub_takedown;
+		break;
+	case 0x40:
+		engine->Mc.Init		= nv40_mc_init;
+		engine->Mc.Takedown	= nv40_mc_takedown;
+		engine->Timer.Init	= nv04_timer_init;
+		engine->Timer.Takedown	= nv04_timer_takedown;
+		engine->Fb.Init		= nv40_fb_init;
+		engine->Fb.Takedown	= nv40_fb_takedown;
+		engine->Graph.Init	= nv40_graph_init;
+		engine->Graph.Takedown	= nv40_graph_takedown;
+		engine->Fifo.Init	= nouveau_fifo_init;
+		engine->Fifo.Takedown	= nouveau_stub_takedown;
+		break;
+	case 0x50:
+	default:
+		DRM_ERROR("NV%02x unsupported\n", dev_priv->chipset);
+		return 1;
+	}
+
+	return 0;
+}
+
+static int nouveau_card_init(drm_device_t *dev)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_engine_func *engine;
+	int ret;
+
+	/* Map any PCI resources we need on the card */
+	ret = nouveau_init_card_mappings(dev);
+	if (ret) return ret;
+
+	/* Determine exact chipset we're running on */
+	if (dev_priv->card_type < NV_10)
+		dev_priv->chipset = dev_priv->card_type;
+	else
+		dev_priv->chipset =
+			(NV_READ(NV03_PMC_BOOT_0) & 0x0ff00000) >> 20;
+
+	/* Initialise internal driver API hooks */
+	ret = nouveau_init_engine_ptrs(dev);
+	if (ret) return ret;
+	engine = &dev_priv->Engine;
+
+	/* Initialise instance memory, must happen before mem_init so we
+	 * know exactly how much VRAM we're able to use for "normal"
+	 * purposes.
+	 */
+	ret = nouveau_instmem_init(dev);
+	if (ret) return ret;
+
+	/* Setup the memory manager */
+	ret = nouveau_mem_init(dev);
+	if (ret) return ret;
+
+	/* Parse BIOS tables / Run init tables? */
+
+	/* PMC */
+	ret = engine->Mc.Init(dev);
+	if (ret) return ret;
+
+	/* PTIMER */
+	ret = engine->Timer.Init(dev);
+	if (ret) return ret;
+
+	/* PFB */
+	ret = engine->Fb.Init(dev);
+	if (ret) return ret;
+
+	/* PGRAPH */
+	ret = engine->Graph.Init(dev);
+	if (ret) return ret;
+
+	/* PFIFO */
+	ret = engine->Fifo.Init(dev);
+	if (ret) return ret;
+
+	/* what about PVIDEO/PCRTC/PRAMDAC etc? */
+
+	return 0;
+}
 
 /* here a client dies, release the stuff that was allocated for its filp */
 void nouveau_preclose(drm_device_t * dev, DRMFILE filp)
@@ -41,74 +222,12 @@ void nouveau_preclose(drm_device_t * dev, DRMFILE filp)
 int nouveau_firstopen(struct drm_device *dev)
 {
 	int ret;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
 
-	/* resource 0 is mmio regs */
-	/* resource 1 is linear FB */
-	/* resource 2 is RAMIN (mmio regs + 0x1000000) */
-	/* resource 6 is bios */
-
-	/* map the mmio regs */
-	ret = drm_addmap(dev, drm_get_resource_start(dev, 0), drm_get_resource_len(dev, 0), 
-			_DRM_REGISTERS, _DRM_READ_ONLY, &dev_priv->mmio);
-	if (dev_priv->mmio)
-	{
-		DRM_INFO("regs mapped ok at 0x%lx\n",dev_priv->mmio->offset);
+	ret = nouveau_card_init(dev);
+	if (ret) {
+		DRM_ERROR("nouveau_card_init() failed! (%d)\n", ret);
+		return ret;
 	}
-	else
-	{
-		DRM_ERROR("Unable to initialize the mmio mapping. Please report your setup to " DRIVER_EMAIL "\n");
-		return 1; 
-	}
-
-	DRM_INFO("%lld MB of video ram detected\n",nouveau_mem_fb_amount(dev)>>20);
-
-	/* map larger RAMIN aperture on NV40 cards */
-	if (dev_priv->card_type >= NV_40) {
-		int ramin_resource = 2;
-		if (drm_get_resource_len(dev, ramin_resource) == 0)
-			ramin_resource = 3;
-
-		ret = drm_addmap(dev, drm_get_resource_start(dev, ramin_resource),
-				      drm_get_resource_len(dev, ramin_resource),
-				      _DRM_REGISTERS,
-				      _DRM_READ_ONLY,
-				      &dev_priv->ramin);
-		if (ret) {
-			DRM_ERROR("Failed to init RAMIN mapping, "
-				  "limited instance memory available\n");
-			dev_priv->ramin = NULL;
-		}
-	} else
-		dev_priv->ramin = NULL;
-
-	/* Determine exact chipset we're running on */
-	if (dev_priv->card_type < NV_10)
-		dev_priv->chipset = dev_priv->card_type;
-	else
-		dev_priv->chipset =(NV_READ(NV03_PMC_BOOT_0) & 0x0ff00000) >> 20;
-
-	/* Clear RAMIN
-	 * Determine locations for RAMHT/FC/RO
-	 * Initialise PFIFO
-	 */
-	ret = nouveau_fifo_init(dev);
-	if (ret) return ret;
-
-	/* setup a mtrr over the FB */
-	dev_priv->fb_mtrr=drm_mtrr_add(drm_get_resource_start(dev, 1),nouveau_mem_fb_amount(dev), DRM_MTRR_WC);
-
-	/* FIXME: doesn't belong here, and have no idea what it's for.. */
-	if (dev_priv->card_type >= NV_40)
-		nv40_graph_init(dev);
-	else if (dev_priv->card_type >= NV_30)
-		nv30_graph_init(dev);
-	else if (dev_priv->card_type >= NV_20)
-		nv20_graph_init(dev);
-	else if (dev_priv->card_type >= NV_10)
-		nv10_graph_init(dev);
-	else if (dev_priv->card_type >= NV_04)
-		nv04_graph_init(dev);
 
 	return 0;
 }
@@ -116,6 +235,7 @@ int nouveau_firstopen(struct drm_device *dev)
 int nouveau_load(struct drm_device *dev, unsigned long flags)
 {
 	drm_nouveau_private_t *dev_priv;
+	int ret;
 
 	if (flags==NV_UNKNOWN)
 		return DRM_ERR(EINVAL);
@@ -129,6 +249,14 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 	dev_priv->flags=flags&NOUVEAU_FLAGS;
 
 	dev->dev_private = (void *)dev_priv;
+
+#if 0
+	ret = nouveau_card_init(dev);
+	if (ret) {
+		DRM_ERROR("nouveau_card_init() failed! (%d)\n", ret);
+		return ret;
+	}
+#endif
 
 	return 0;
 }
@@ -243,4 +371,5 @@ void nouveau_wait_for_idle(struct drm_device *dev)
 			break;
 	}
 }
+
 

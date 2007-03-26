@@ -45,7 +45,7 @@ int nouveau_fifo_number(drm_device_t* dev)
 }
 
 /* returns the size of fifo context */
-static int nouveau_fifo_ctx_size(drm_device_t* dev)
+int nouveau_fifo_ctx_size(drm_device_t* dev)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
 
@@ -69,78 +69,36 @@ static int nouveau_fifo_ctx_size(drm_device_t* dev)
 static int nouveau_fifo_instmem_configure(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	int i;
 
-	/* Clear start of RAMIN, enough to cover RAMFC/HT/RO basically */
-	for (i=0x00710000; i<0x00730000; i++)
-		NV_WRITE(i, 0x00000000);
-
-	/* FIFO hash table (RAMHT)
-	 *   use 4k hash table at RAMIN+0x10000
-	 *   TODO: extend the hash table
-	 */
-	dev_priv->ramht_offset = 0x10000;
-	dev_priv->ramht_bits   = 9;
-	dev_priv->ramht_size   = (1 << dev_priv->ramht_bits);
 	NV_WRITE(NV03_PFIFO_RAMHT,
 			(0x03 << 24) /* search 128 */ | 
 			((dev_priv->ramht_bits - 9) << 16) |
 			(dev_priv->ramht_offset >> 8)
 			);
-	DRM_DEBUG("RAMHT offset=0x%x, size=%d\n",
-			dev_priv->ramht_offset,
-			dev_priv->ramht_size);
 
-	/* FIFO runout table (RAMRO) - 512k at 0x11200 */
-	dev_priv->ramro_offset = 0x11200;
-	dev_priv->ramro_size   = 512;
 	NV_WRITE(NV03_PFIFO_RAMRO, dev_priv->ramro_offset>>8);
-	DRM_DEBUG("RAMRO offset=0x%x, size=%d\n",
-			dev_priv->ramro_offset,
-			dev_priv->ramro_size);
 
-	/* FIFO context table (RAMFC)
-	 *   NV40  : Not sure exactly how to position RAMFC on some cards,
-	 *           0x30002 seems to position it at RAMIN+0x20000 on these
-	 *           cards.  RAMFC is 4kb (32 fifos, 128byte entries).
-	 *   Others: Position RAMFC at RAMIN+0x11400
-	 */
 	switch(dev_priv->card_type)
 	{
 		case NV_50:
 		case NV_40:
-			dev_priv->ramfc_offset = 0x20000;
-			dev_priv->ramfc_size   = nouveau_fifo_number(dev) * nouveau_fifo_ctx_size(dev);
 			NV_WRITE(NV40_PFIFO_RAMFC, 0x30002);
 			break;
 		case NV_44:
-			dev_priv->ramfc_offset = 0x20000;
-			dev_priv->ramfc_size   = nouveau_fifo_number(dev) * nouveau_fifo_ctx_size(dev);
 			NV_WRITE(NV40_PFIFO_RAMFC, ((nouveau_mem_fb_amount(dev)-512*1024+dev_priv->ramfc_offset)>>16) |
 					(2 << 16));
 			break;
 		case NV_30:
 		case NV_20:
 		case NV_10:
-			dev_priv->ramfc_offset = 0x11400;
-			dev_priv->ramfc_size   = nouveau_fifo_number(dev) * nouveau_fifo_ctx_size(dev);
 			NV_WRITE(NV03_PFIFO_RAMFC, (dev_priv->ramfc_offset>>8) |
 					(1 << 16) /* 64 Bytes entry*/);
 			break;
 		case NV_04:
 		case NV_03:
-			dev_priv->ramfc_offset = 0x11400;
-			dev_priv->ramfc_size   = nouveau_fifo_number(dev) * nouveau_fifo_ctx_size(dev);
 			NV_WRITE(NV03_PFIFO_RAMFC, dev_priv->ramfc_offset>>8);
 			break;
 	}
-	DRM_DEBUG("RAMFC offset=0x%x, size=%d\n",
-			dev_priv->ramfc_offset,
-			dev_priv->ramfc_size);
-
-	if (nouveau_instmem_init(dev, dev_priv->ramfc_offset +
-				      dev_priv->ramfc_size))
-		return 1;
 
 	return 0;
 }
@@ -149,6 +107,11 @@ int nouveau_fifo_init(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int ret;
+
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) &
+			~NV_PMC_ENABLE_PFIFO);
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |
+			 NV_PMC_ENABLE_PFIFO);
 
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000000);
 
@@ -736,7 +699,7 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
  ***********************************/
 
 drm_ioctl_desc_t nouveau_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_NOUVEAU_FIFO_ALLOC)] = {nouveau_ioctl_fifo_alloc, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_NOUVEAU_FIFO_ALLOC)] = {nouveau_ioctl_fifo_alloc, DRM_AUTH},	
 	[DRM_IOCTL_NR(DRM_NOUVEAU_OBJECT_INIT)] = {nouveau_ioctl_object_init, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_NOUVEAU_DMA_OBJECT_INIT)] = {nouveau_ioctl_dma_object_init, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_NOUVEAU_MEM_ALLOC)] = {nouveau_ioctl_mem_alloc, DRM_AUTH},

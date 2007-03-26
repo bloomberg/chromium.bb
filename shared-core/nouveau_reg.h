@@ -62,7 +62,42 @@
 #    define NV_PMC_INTR_0_CRTCn_PENDING                       (3<<24)
 #define NV03_PMC_INTR_EN_0                                 0x00000140
 #    define NV_PMC_INTR_EN_0_MASTER_ENABLE                    (1<< 0)
+#define NV03_PMC_ENABLE                                    0x00000200
+#    define NV_PMC_ENABLE_PFIFO                               (1<< 8)
+#    define NV_PMC_ENABLE_PGRAPH                              (1<<12)
+#define NV40_PMC_1700                                      0x00001700
+#define NV40_PMC_1704                                      0x00001704
+#define NV40_PMC_1708                                      0x00001708
+#define NV40_PMC_170C                                      0x0000170C
 
+#define NV04_PTIMER_INTR_0                                 0x00009100
+#define NV04_PTIMER_INTR_EN_0                              0x00009140
+#define NV04_PTIMER_NUMERATOR                              0x00009200
+#define NV04_PTIMER_DENOMINATOR                            0x00009210
+#define NV04_PTIMER_TIME_0                                 0x00009400
+#define NV04_PTIMER_TIME_1                                 0x00009410
+#define NV04_PTIMER_ALARM_0                                0x00009420
+
+#define NV04_PFB_CFG0                                      0x00100200
+#define NV04_PFB_CFG1                                      0x00100204
+#define NV40_PFB_020C                                      0x0010020C
+#define NV10_PFB_TILE(i)                                   (0x00100240 + (i*16))
+#define NV10_PFB_TILE__SIZE                                8
+#define NV10_PFB_TLIMIT(i)                                 (0x00100244 + (i*16))
+#define NV10_PFB_TSIZE(i)                                  (0x00100248 + (i*16))
+#define NV10_PFB_TSTATUS(i)                                (0x0010024C + (i*16))
+#define NV10_PFB_CLOSE_PAGE2                               0x0010033C
+#define NV40_PFB_TILE(i)                                   (0x00100600 + (i*16))
+#define NV40_PFB_TILE__SIZE_0                              12
+#define NV40_PFB_TILE__SIZE_1                              15
+#define NV40_PFB_TLIMIT(i)                                 (0x00100604 + (i*16))
+#define NV40_PFB_TSIZE(i)                                  (0x00100608 + (i*16))
+#define NV40_PFB_TSTATUS(i)                                (0x0010060C + (i*16))
+
+#define NV04_PGRAPH_DEBUG_0                                0x00400080
+#define NV04_PGRAPH_DEBUG_1                                0x00400084
+#define NV04_PGRAPH_DEBUG_2                                0x00400088
+#define NV04_PGRAPH_DEBUG_3                                0x0040008c
 #define NV10_PGRAPH_DEBUG_4                                0x00400090
 #define NV03_PGRAPH_INTR                                   0x00400100
 #define NV03_PGRAPH_INTR_EN                                0x00400140
@@ -141,7 +176,9 @@
 #define NV04_PGRAPH_ROP3                                   0x00400604
 #define NV04_PGRAPH_BETA_AND                               0x00400608
 #define NV04_PGRAPH_BETA_PREMULT                           0x0040060C
+#define NV04_PGRAPH_LIMIT_VIOL_PIX                         0x00400610
 #define NV04_PGRAPH_FORMATS                                0x00400618
+#define NV10_PGRAPH_DEBUG_2                                0x00400620
 #define NV04_PGRAPH_BOFFSET0                               0x00400640
 #define NV04_PGRAPH_BOFFSET1                               0x00400644
 #define NV04_PGRAPH_BOFFSET2                               0x00400648
@@ -201,7 +238,19 @@
 #define NV04_PGRAPH_BLEND                                  0x00400824
 #define NV04_PGRAPH_STORED_FMT                             0x00400830
 #define NV04_PGRAPH_PATT_COLORRAM                          0x00400900
+#define NV40_PGRAPH_TILE0(i)                               0x00400900
+#define NV40_PGRAPH_TLIMIT0(i)                             0x00400904
+#define NV40_PGRAPH_TSIZE0(i)                              0x00400908
+#define NV40_PGRAPH_TSTATUS0(i)                            0x0040090C
+#define NV10_PGRAPH_TILE(i)                                (0x00400B00 + (i*16))
+#define NV10_PGRAPH_TLIMIT(i)                              (0x00400B04 + (i*16))
+#define NV10_PGRAPH_TSIZE(i)                               (0x00400B08 + (i*16))
+#define NV10_PGRAPH_TSTATUS(i)                             (0x00400B0C + (i*16))
 #define NV04_PGRAPH_U_RAM                                  0x00400D00
+#define NV47_PGRAPH_TILE0(i)                               0x00400D00
+#define NV47_PGRAPH_TLIMIT0(i)                             0x00400D04
+#define NV47_PGRAPH_TSIZE0(i)                              0x00400D08
+#define NV47_PGRAPH_TSTATUS0(i)                            0x00400D0C
 #define NV04_PGRAPH_V_RAM                                  0x00400D40
 #define NV04_PGRAPH_W_RAM                                  0x00400D80
 #define NV10_PGRAPH_WINDOWCLIP_HORIZONTAL                  0x00400F00
@@ -237,6 +286,10 @@
 #define NV04_PGRAPH_DMA_B_OFFSET                           0x00401098
 #define NV04_PGRAPH_DMA_B_SIZE                             0x0040109C
 #define NV04_PGRAPH_DMA_B_Y_SIZE                           0x004010A0
+#define NV40_PGRAPH_TILE1(i)                               0x00406900
+#define NV40_PGRAPH_TLIMIT1(i)                             0x00406904
+#define NV40_PGRAPH_TSIZE1(i)                              0x00406908
+#define NV40_PGRAPH_TSTATUS1(i)                            0x0040690C
 
 
 /* It's a guess that this works on NV03. Confirmed on NV04, though */

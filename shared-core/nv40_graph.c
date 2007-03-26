@@ -887,14 +887,28 @@ static uint32_t nv4e_ctx_voodoo[] = {
 	~0
 };
 
-
+/*
+ * G70		0x47
+ * G71		0x49
+ * NV45		0x48
+ * G72		0x46
+ * G73		0x4b
+ * C51_G7X	0x4c
+ * C51		0x4e
+ */
 int
 nv40_graph_init(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
 	uint32_t *ctx_voodoo;
-	int i;
+	uint32_t vramsz, tmp;
+	int i, j;
+
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) &
+			~NV_PMC_ENABLE_PGRAPH);
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |
+			 NV_PMC_ENABLE_PGRAPH);
 
 	switch (dev_priv->chipset) {
 	case 0x40: ctx_voodoo = nv40_ctx_voodoo; break;
@@ -923,6 +937,194 @@ nv40_graph_init(drm_device_t *dev)
 	/* No context present currently */
 	NV_WRITE(0x40032C, 0x00000000);
 
+	NV_WRITE(NV03_PGRAPH_INTR_EN, 0x00000000);
+	NV_WRITE(NV03_PGRAPH_INTR   , 0xFFFFFFFF);
+
+	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0xFFFFFFFF);
+	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x00000000);
+	NV_WRITE(NV04_PGRAPH_DEBUG_1, 0x401287c0);
+	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0xe0de8055);
+	NV_WRITE(NV10_PGRAPH_DEBUG_4, 0x00008000);
+	NV_WRITE(NV04_PGRAPH_LIMIT_VIOL_PIX, 0x00be3c5f);
+
+	NV_WRITE(NV04_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV10_PGRAPH_STATE      , 0xFFFFFFFF);
+	NV_WRITE(NV04_PGRAPH_FIFO       , 0x00000001);
+
+	j = NV_READ(0x1540) & 0xff;
+	if (j) {
+		for (i=0; !(j&1); j>>=1, i++);
+		NV_WRITE(0x405000, i);
+	}
+
+	if (dev_priv->chipset == 0x40) {
+		NV_WRITE(0x4009b0, 0x83280fff);
+		NV_WRITE(0x4009b4, 0x000000a0);
+	} else {
+		NV_WRITE(0x400820, 0x83280eff);
+		NV_WRITE(0x400824, 0x000000a0);
+	}
+
+	switch (dev_priv->chipset) {
+	case 0x40:
+	case 0x45:
+		NV_WRITE(0x4009b8, 0x0078e366);
+		NV_WRITE(0x4009bc, 0x0000014c);
+		break;
+	case 0x41:
+	case 0x42: /* pciid also 0x00Cx */
+//	case 0x0120: //XXX (pciid)
+		NV_WRITE(0x400828, 0x007596ff);
+		NV_WRITE(0x40082c, 0x00000108);
+		break;
+	case 0x43:
+		NV_WRITE(0x400828, 0x0072cb77);
+		NV_WRITE(0x40082c, 0x00000108);
+		break;
+	case 0x44:
+	case 0x46: /* G72 */
+	case 0x4a:
+	case 0x4c: /* G7x-based C51 */
+	case 0x4e:
+		NV_WRITE(0x400860, 0);
+		NV_WRITE(0x400864, 0);
+		break;
+	case 0x47: /* G70 */
+	case 0x49: /* G71 */
+	case 0x4b: /* G73 */
+		NV_WRITE(0x400828, 0x07830610);
+		NV_WRITE(0x40082c, 0x0000016A);
+		break;
+	default:
+		break;
+	}
+
+	NV_WRITE(0x400b38, 0x2ffff800);
+	NV_WRITE(0x400b3c, 0x00006000);
+
+	/* copy tile info from PFB */
+	switch (dev_priv->chipset) {
+	case 0x40: /* vanilla NV40 */
+		for (i=0; i<NV10_PFB_TILE__SIZE; i++) {
+			tmp = NV_READ(NV10_PFB_TILE(i));
+			NV_WRITE(NV40_PGRAPH_TILE0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TILE1(i), tmp);
+			tmp = NV_READ(NV10_PFB_TLIMIT(i));
+			NV_WRITE(NV40_PGRAPH_TLIMIT0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TLIMIT1(i), tmp);
+			tmp = NV_READ(NV10_PFB_TSIZE(i));
+			NV_WRITE(NV40_PGRAPH_TSIZE0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TSIZE1(i), tmp);
+			tmp = NV_READ(NV10_PFB_TSTATUS(i));
+			NV_WRITE(NV40_PGRAPH_TSTATUS0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TSTATUS1(i), tmp);
+		}
+		break;
+	case 0x44:
+	case 0x4a:
+	case 0x4e: /* NV44-based cores don't have 0x406900? */
+		for (i=0; i<NV40_PFB_TILE__SIZE_0; i++) {
+			tmp = NV_READ(NV40_PFB_TILE(i));
+			NV_WRITE(NV40_PGRAPH_TILE0(i), tmp);
+			tmp = NV_READ(NV40_PFB_TLIMIT(i));
+			NV_WRITE(NV40_PGRAPH_TLIMIT0(i), tmp);
+			tmp = NV_READ(NV40_PFB_TSIZE(i));
+			NV_WRITE(NV40_PGRAPH_TSIZE0(i), tmp);
+			tmp = NV_READ(NV40_PFB_TSTATUS(i));
+			NV_WRITE(NV40_PGRAPH_TSTATUS0(i), tmp);
+		}
+		break;
+	case 0x46:
+	case 0x47:
+	case 0x49:
+	case 0x4b: /* G7X-based cores */
+		for (i=0; i<NV40_PFB_TILE__SIZE_1; i++) {
+			tmp = NV_READ(NV40_PFB_TILE(i));
+			NV_WRITE(NV47_PGRAPH_TILE0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TILE1(i), tmp);
+			tmp = NV_READ(NV40_PFB_TLIMIT(i));
+			NV_WRITE(NV47_PGRAPH_TLIMIT0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TLIMIT1(i), tmp);
+			tmp = NV_READ(NV40_PFB_TSIZE(i));
+			NV_WRITE(NV47_PGRAPH_TSIZE0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TSIZE1(i), tmp);
+			tmp = NV_READ(NV40_PFB_TSTATUS(i));
+			NV_WRITE(NV47_PGRAPH_TSTATUS0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TSTATUS1(i), tmp);
+		}
+		break;
+	default: /* everything else */
+		for (i=0; i<NV40_PFB_TILE__SIZE_0; i++) {
+			tmp = NV_READ(NV40_PFB_TILE(i));
+			NV_WRITE(NV40_PGRAPH_TILE0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TILE1(i), tmp);
+			tmp = NV_READ(NV40_PFB_TLIMIT(i));
+			NV_WRITE(NV40_PGRAPH_TLIMIT0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TLIMIT1(i), tmp);
+			tmp = NV_READ(NV40_PFB_TSIZE(i));
+			NV_WRITE(NV40_PGRAPH_TSIZE0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TSIZE1(i), tmp);
+			tmp = NV_READ(NV40_PFB_TSTATUS(i));
+			NV_WRITE(NV40_PGRAPH_TSTATUS0(i), tmp);
+			NV_WRITE(NV40_PGRAPH_TSTATUS1(i), tmp);
+		}
+		break;
+	}
+
+	/* begin RAM config */
+	vramsz = drm_get_resource_len(dev, 0) - 1;
+	switch (dev_priv->chipset) {
+	case 0x40:
+		NV_WRITE(0x4009A4, NV_READ(NV04_PFB_CFG0));
+		NV_WRITE(0x4009A8, NV_READ(NV04_PFB_CFG1));
+		NV_WRITE(0x4069A4, NV_READ(NV04_PFB_CFG0));
+		NV_WRITE(0x4069A8, NV_READ(NV04_PFB_CFG1));
+		NV_WRITE(0x400820, 0);
+		NV_WRITE(0x400824, 0);
+		NV_WRITE(0x400864, vramsz);
+		NV_WRITE(0x400868, vramsz);
+		break;
+	default:
+		switch (dev_priv->chipset) {
+		case 0x46:
+		case 0x47:
+		case 0x49:
+		case 0x4b:
+			NV_WRITE(0x400DF0, NV_READ(NV04_PFB_CFG0));
+			NV_WRITE(0x400DF4, NV_READ(NV04_PFB_CFG1));
+			break;
+		default:
+			NV_WRITE(0x4009F0, NV_READ(NV04_PFB_CFG0));
+			NV_WRITE(0x4009F4, NV_READ(NV04_PFB_CFG1));
+			break;
+		}
+		NV_WRITE(0x4069F0, NV_READ(NV04_PFB_CFG0));
+		NV_WRITE(0x4069F4, NV_READ(NV04_PFB_CFG1));
+		NV_WRITE(0x400840, 0);
+		NV_WRITE(0x400844, 0);
+		NV_WRITE(0x4008A0, vramsz);
+		NV_WRITE(0x4008A4, vramsz);
+		break;
+	}
+
+	/* per-context state, doesn't belong here */
+	NV_WRITE(0x400B20, 0x00000000);
+	NV_WRITE(0x400B04, 0xFFFFFFFF);
+
+	tmp = NV_READ(NV10_PGRAPH_SURFACE) & 0x0007ff00;
+	NV_WRITE(NV10_PGRAPH_SURFACE, tmp);
+	tmp = NV_READ(NV10_PGRAPH_SURFACE) | 0x00020100;
+	NV_WRITE(NV10_PGRAPH_SURFACE, tmp);
+
+	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_XMIN, 0);
+	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_YMIN, 0);
+	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_XMAX, 0x7fff);
+	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_YMAX, 0x7fff);
+
 	return 0;
+}
+
+void nv40_graph_takedown(drm_device_t *dev)
+{
 }
 
