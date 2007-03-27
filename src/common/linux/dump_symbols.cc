@@ -138,15 +138,15 @@ void FixAddress(void *obj_base) {
 }
 
 // Find the prefered loading address of the binary.
-// It is the PT_LOAD segment with offset to zero.
 ElfW(Addr) GetLoadingAddress(const ElfW(Phdr) *program_headers, int nheader) {
   for (int i = 0; i < nheader; ++i) {
     const ElfW(Phdr) &header = program_headers[i];
+    // For executable, it is the PT_LOAD segment with offset to zero.
     if (header.p_type == PT_LOAD &&
         header.p_offset == 0)
       return header.p_vaddr;
   }
-  assert(!"Should get a valid loading address");
+  // For other types of ELF, return 0.
   return 0;
 }
 
@@ -263,6 +263,8 @@ int LoadFuncSymbols(struct nlist *list,
       cur_list += LoadLineInfo(cur_list, list_end, &func_info);
       // Functions in this module should have address bigger than the module
       // startring address.
+      // There maybe a lot of duplicated entry for a function in the symbol,
+      // only one of them can met this.
       if (func_info.addr >= source_file_info->addr) {
         source_file_info->func_info.push_back(func_info);
       }
@@ -344,10 +346,40 @@ bool ComputeSizeAndRVA(ElfW(Addr) loading_addr, struct SymbolInfo *symbols) {
       ElfW(Addr) next_addr = NextAddress(&sorted_functions,
                                          &sorted_files,
                                          func_info);
-      if (next_addr == 0)
-        continue;
-      func_info.size = next_addr - func_info.addr;
+      // I've noticed functions with an address bigger than any other functions
+      // and source files modules, this is probably the last function in the
+      // module, due to limitions of Linux stab symbol, it is impossible to get
+      // the exact size of this kind of function, thus we give it a default
+      // very big value. This should be safe since this is the last function.
+      // But it is a ugly hack.....
+      // The following code can reproduce the case:
+      // template<class T>
+      // void Foo(T value) {
+      // }
+      //
+      // int main(void) {
+      //   Foo(10);
+      //   Foo(std::string("hello"));
+      //   return 0;
+      // }
+      // TODO(liuli): Find a better solution.
+      static const int kDefaultSize = 0x10000000;
+      static int no_next_addr_count = 0;
+      if (next_addr != 0) {
+        func_info.size = next_addr - func_info.addr;
+      } else {
+        if (no_next_addr_count > 1) {
+          fprintf(stderr, "Got more than one funtion without the \
+                  following symbol. Igore this function.\n");
+          fprintf(stderr, "The dumped symbol may not correct.\n");
+          assert(!"This should not happen!\n");
+          func_info.size = 0;
+          continue;
+        }
 
+        no_next_addr_count++;
+        func_info.size = kDefaultSize;
+      }
       // Compute line size.
       for (size_t k = 0; k < func_info.line_info.size(); ++k) {
         struct LineInfo &line_info = func_info.line_info[k];
@@ -356,9 +388,18 @@ bool ComputeSizeAndRVA(ElfW(Addr) loading_addr, struct SymbolInfo *symbols) {
           line_info.size =
             func_info.line_info[k + 1].rva_to_func - line_info.rva_to_func;
         } else {
+          // The last line in the function.
+          // If we can find a function or source file symbol immediately
+          // following the line, we can get the size of the line by computing
+          // the difference of the next address to the starting address of this
+          // line.
+          // Otherwise, we need to set a default big enough value. This occurs
+          // mostly because the this function is the last one in the module.
           if (next_addr != 0) {
             ElfW(Off) next_addr_offset = next_addr - func_info.addr;
             line_info.size = next_addr_offset - line_info.rva_to_func;
+          } else {
+            line_info.size = kDefaultSize;
           }
         }
         line_info.rva_to_base = line_info.rva_to_func + func_info.rva_to_base;
@@ -409,8 +450,6 @@ bool LoadSymbols(ElfW(Ehdr) *elf_header, struct SymbolInfo *symbols) {
   ElfW(Addr) loading_addr = GetLoadingAddress(
       reinterpret_cast<ElfW(Phdr) *>(elf_header->e_phoff),
       elf_header->e_phnum);
-  if (loading_addr == 0)
-    return false;
 
   const ElfW(Shdr) *sections =
     reinterpret_cast<ElfW(Shdr) *>(elf_header->e_shoff);

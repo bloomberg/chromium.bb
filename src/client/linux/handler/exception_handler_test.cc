@@ -107,7 +107,7 @@ static bool MinidumpCallback(const char *dump_path,
 }
 
 int main(int argc, char *argv[]) {
-  int handler_index = 1;
+  int handler_index = 0;
   ExceptionHandler handler_ignore(".", NULL, MinidumpCallback,
                            (void*)handler_index, true);
   ++handler_index;

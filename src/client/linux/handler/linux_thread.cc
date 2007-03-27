@@ -297,7 +297,7 @@ int LinuxThread::GetModuleCount() const {
 int LinuxThread::ListModules(
     CallbackParam<ModuleCallback> *callback_param) const {
   char line[512];
-  char *maps_path = "/proc/self/maps";
+  const char *maps_path = "/proc/self/maps";
 
   int module_count = 0;
   FILE *fp = fopen(maps_path, "r");

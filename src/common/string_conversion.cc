@@ -31,10 +31,10 @@
 #include "processor/scoped_ptr.h"
 #include "common/string_conversion.h"
 
+namespace google_breakpad {
+
 using std::string;
 using std::vector;
-
-namespace google_breakpad {
 
 void UTF8ToUTF16(const char *in, vector<u_int16_t> *out) {
   size_t source_length = strlen(in);

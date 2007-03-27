@@ -48,6 +48,10 @@
 #include "google_breakpad/common/minidump_format.h"
 #include "client/linux/handler/minidump_generator.h"
 
+#ifndef CLONE_UNTRACED
+#define CLONE_UNTRACED 0x00800000
+#endif
+
 // This unnamed namespace contains helper functions.
 namespace {
 
@@ -322,11 +326,11 @@ bool WriteThreadStream(MinidumpFileWriter *minidump_writer,
 }
 
 bool WriteCPUInformation(MDRawSystemInfo *sys_info) {
-  char *proc_cpu_path = "/proc/cpuinfo";
+  const char *proc_cpu_path = "/proc/cpuinfo";
   char line[128];
 
   struct CpuInfoEntry {
-    char *info_name;
+    const char *info_name;
     int value;
   } cpu_info_table[] = {
     { "processor", -1 },
@@ -384,7 +388,7 @@ bool WriteOSInformation(MinidumpFileWriter *minidump_writer,
     char os_version[512];
     size_t space_left = sizeof(os_version);
     memset(os_version, 0, space_left);
-    char *os_info_table[] = {
+    const char *os_info_table[] = {
       uts.sysname,
       uts.release,
       uts.version,
@@ -392,7 +396,7 @@ bool WriteOSInformation(MinidumpFileWriter *minidump_writer,
       "GNU/Linux",
       NULL
     };
-    for (char **cur_os_info = os_info_table;
+    for (const char **cur_os_info = os_info_table;
          *cur_os_info != NULL;
          cur_os_info++) {
       if (cur_os_info != os_info_table && space_left > 1) {
@@ -472,7 +476,8 @@ bool WriteThreadListStream(MinidumpFileWriter *minidump_writer,
   context.thread_index = 0;
   CallbackParam<ThreadCallback> callback_param(ThreadInfomationCallback,
                                                &context);
-  return thread_lister->ListThreads(&callback_param) == thread_count;
+  int written = thread_lister->ListThreads(&callback_param);
+  return written == thread_count;
 }
 
 bool WriteCVRecord(MinidumpFileWriter *minidump_writer,
@@ -481,7 +486,7 @@ bool WriteCVRecord(MinidumpFileWriter *minidump_writer,
   TypedMDRVA<MDCVInfoPDB70> cv(minidump_writer);
 
   // Only return the last path component of the full module path
-  char *module_name = strrchr(module_path, '/');
+  const char *module_name = strrchr(module_path, '/');
   // Increment past the slash
   if (module_name)
     ++module_name;
@@ -491,11 +496,13 @@ bool WriteCVRecord(MinidumpFileWriter *minidump_writer,
   size_t module_name_length = strlen(module_name);
   if (!cv.AllocateObjectAndArray(module_name_length + 1, sizeof(u_int8_t)))
     return false;
-  if (!cv.CopyIndexAfterObject(0, module_name, module_name_length))
+  if (!cv.CopyIndexAfterObject(0, const_cast<char *>(module_name),
+                               module_name_length))
     return false;
 
   module->cv_record = cv.location();
   MDCVInfoPDB70 *cv_ptr = cv.get();
+  memset(cv_ptr, 0, sizeof(MDCVInfoPDB70));
   cv_ptr->cv_signature = MD_CVINFOPDB70_SIGNATURE;
   cv_ptr->age = 0;
 
@@ -517,9 +524,8 @@ bool WriteCVRecord(MinidumpFileWriter *minidump_writer,
     cv_ptr->signature.data4[5] = identifier[13];
     cv_ptr->signature.data4[6] = identifier[14];
     cv_ptr->signature.data4[7] = identifier[15];
-    return true;
   }
-  return false;
+  return true;
 }
 
 struct ModuleInfoCallbackCtx {
