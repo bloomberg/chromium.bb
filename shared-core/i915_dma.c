@@ -195,9 +195,6 @@ static int i915_initialize(drm_device_t * dev,
 	I915_WRITE(0x02080, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
 	dev->dev_private = (void *)dev_priv;
-#ifdef I915_HAVE_BUFFER
-	drm_bo_driver_init(dev);
-#endif
 	return 0;
 }
 
@@ -948,4 +945,12 @@ int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);
 int i915_driver_device_is_agp(drm_device_t * dev)
 {
 	return 1;
+}
+
+int i915_driver_firstopen(struct drm_device *dev)
+{
+#ifdef I915_HAVE_BUFFER
+	drm_bo_driver_init(dev);
+#endif
+	return 0;
 }
