@@ -42,6 +42,15 @@ void nouveau_irq_preinstall(drm_device_t *dev)
 
 	DRM_DEBUG("IRQ: preinst\n");
 
+	if (!dev_priv) {
+		DRM_ERROR("AIII, no dev_priv\n");
+		return;
+	}
+	if (!dev_priv->mmio) {
+		DRM_ERROR("AIII, no dev_priv->mmio\n");
+		return;
+	}
+
 	/* Disable/Clear PFIFO interrupts */
 	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0);
 	NV_WRITE(NV03_PFIFO_INTR_0, 0xFFFFFFFF);
@@ -65,6 +74,15 @@ void nouveau_irq_preinstall(drm_device_t *dev)
 void nouveau_irq_postinstall(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+
+	if (!dev_priv) {
+		DRM_ERROR("AIII, no dev_priv\n");
+		return;
+	}
+	if (!dev_priv->mmio) {
+		DRM_ERROR("AIII, no dev_priv->mmio\n");
+		return;
+	}
 
 	DRM_DEBUG("IRQ: postinst\n");
 
@@ -112,6 +130,15 @@ void nouveau_irq_postinstall(drm_device_t *dev)
 void nouveau_irq_uninstall(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+
+	if (!dev_priv) {
+		DRM_ERROR("AIII, no dev_priv\n");
+		return;
+	}
+	if (!dev_priv->mmio) {
+		DRM_ERROR("AIII, no dev_priv->mmio\n");
+		return;
+	}
 
 	DRM_DEBUG("IRQ: uninst\n");
 

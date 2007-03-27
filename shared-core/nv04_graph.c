@@ -222,13 +222,44 @@ int nv04_graph_context_create(drm_device_t *dev, int channel) {
 
 int nv04_graph_init(drm_device_t *dev) {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	int i,sum=0;
+
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) &
+			~NV_PMC_ENABLE_PGRAPH);
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |
+			 NV_PMC_ENABLE_PGRAPH);
 
 	// check the context is big enough
-	int i,sum=0;
 	for ( i = 0 ; i<sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0]); i++)
 		sum+=nv04_graph_ctx_regs[i].number;
 	if ( sum*4>sizeof(dev_priv->fifos[0].pgraph_ctx) )
 		DRM_ERROR("pgraph_ctx too small\n");
+
+	NV_WRITE(NV03_PGRAPH_INTR_EN, 0x00000000);
+	NV_WRITE(NV03_PGRAPH_INTR   , 0xFFFFFFFF);
+
+	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x000001FF);
+	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x1230C000);
+	NV_WRITE(NV04_PGRAPH_DEBUG_1, 0x72111101);
+	NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x11D5F071);
+	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0x0004FF31);
+	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0x4004FF31 |
+				    (0x00D00000) |
+				    (1<<29) |
+				    (1<<31));
+
+	NV_WRITE(NV04_PGRAPH_STATE        , 0xFFFFFFFF);
+	NV_WRITE(NV04_PGRAPH_CTX_CONTROL  , 0x10010100);
+	NV_WRITE(NV04_PGRAPH_FIFO         , 0x00000001);
+
+	/* These don't belong here, they're part of a per-channel context */
+	NV_WRITE(NV04_PGRAPH_PATTERN_SHAPE, 0x00000000);
+	NV_WRITE(NV04_PGRAPH_BETA_AND     , 0xFFFFFFFF);
+
 	return 0;
+}
+
+void nv04_graph_takedown(drm_device_t *dev)
+{
 }
 

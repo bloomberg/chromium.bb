@@ -605,5 +605,58 @@ int nv10_graph_context_create(drm_device_t *dev, int channel) {
 
 
 int nv10_graph_init(drm_device_t *dev) {
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	uint32_t tmp, vramsz;
+	int i;
+
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) &
+			~NV_PMC_ENABLE_PGRAPH);
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |
+			 NV_PMC_ENABLE_PGRAPH);
+
+	NV_WRITE(NV03_PGRAPH_INTR_EN, 0x00000000);
+	NV_WRITE(NV03_PGRAPH_INTR   , 0xFFFFFFFF);
+
+	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0xFFFFFFFF);
+	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x00000000);
+	NV_WRITE(NV04_PGRAPH_DEBUG_1, 0x00118700);
+	NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x24E00810);
+	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0x55DE0030 |
+				      (1<<29) |
+				      (1<<31));
+
+	/* copy tile info from PFB */
+	for (i=0; i<NV10_PFB_TILE__SIZE; i++) {
+		NV_WRITE(NV10_PGRAPH_TILE(i), NV_READ(NV10_PFB_TILE(i)));
+		NV_WRITE(NV10_PGRAPH_TLIMIT(i), NV_READ(NV10_PFB_TLIMIT(i)));
+		NV_WRITE(NV10_PGRAPH_TSIZE(i), NV_READ(NV10_PFB_TSIZE(i)));
+		NV_WRITE(NV10_PGRAPH_TSTATUS(i), NV_READ(NV10_PFB_TSTATUS(i)));
+	}
+
+	NV_WRITE(NV04_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV10_PGRAPH_STATE      , 0xFFFFFFFF);
+	NV_WRITE(NV04_PGRAPH_FIFO       , 0x00000001);
+
+	/* the below don't belong here, per-channel context state */
+	tmp = NV_READ(NV10_PGRAPH_SURFACE) & 0x0007ff00;
+	NV_WRITE(NV10_PGRAPH_SURFACE, tmp);
+	tmp = NV_READ(NV10_PGRAPH_SURFACE) | 0x00020100;
+	NV_WRITE(NV10_PGRAPH_SURFACE, tmp);
+
+	vramsz = drm_get_resource_len(dev, 0) - 1;
+	NV_WRITE(NV04_PGRAPH_BOFFSET0, 0);
+	NV_WRITE(NV04_PGRAPH_BOFFSET1, 0);
+	NV_WRITE(NV04_PGRAPH_BLIMIT0 , vramsz);
+	NV_WRITE(NV04_PGRAPH_BLIMIT1 , vramsz);
+
+	NV_WRITE(NV04_PGRAPH_PATTERN_SHAPE, 0x00000000);
+	NV_WRITE(NV04_PGRAPH_BETA_AND     , 0xFFFFFFFF);
+
 	return 0;
+
 }
+
+void nv10_graph_takedown(drm_device_t *dev)
+{
+}
+
