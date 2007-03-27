@@ -154,10 +154,13 @@ int drm_open(struct inode *inode, struct file *filp)
 		spin_lock(&dev->count_lock);
 		if (!dev->open_count++) {
 			spin_unlock(&dev->count_lock);
-			return drm_setup(dev);
+			retcode = drm_setup(dev);
+			goto out;
 		}
 		spin_unlock(&dev->count_lock);
 	}
+
+ out:
 	mutex_lock(&dev->struct_mutex);
 	BUG_ON((dev->dev_mapping != NULL) &&
 	       (dev->dev_mapping != inode->i_mapping));
