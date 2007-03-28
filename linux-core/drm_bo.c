@@ -832,6 +832,9 @@ int drm_bo_mem_space(drm_buffer_object_t * bo,
 		mem_type = prios[i];
 		man = &bm->man[mem_type];
 
+		if (!man->has_type)
+			continue;
+
 		if (!drm_bo_mt_compatible(man, mem_type, mem->mask, &cur_flags))
 			continue;
 
