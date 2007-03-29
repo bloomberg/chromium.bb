@@ -214,7 +214,7 @@ void ExceptionHandler::HandleException(int signo) {
 bool ExceptionHandler::InternalWriteMinidump(int signo,
                                     const struct sigcontext *sig_ctx) {
   if (filter_ && !filter_(callback_context_))
-      return false;
+    return false;
 
   GUID guid;
   bool success = false;;
@@ -224,8 +224,28 @@ bool ExceptionHandler::InternalWriteMinidump(int signo,
     snprintf(minidump_path, sizeof(minidump_path), "%s/%s.dmp",
              dump_path_c_,
              guid_str);
+
+    // Block all the signals we want to process when writting minidump.
+    // We don't want it to be interrupted.
+    sigset_t sig_blocked, sig_old;
+    bool blocked = true;
+    sigfillset(&sig_blocked);
+    for (size_t i = 0; i < sizeof(SigTable) / sizeof(SigTable[0]); ++i)
+      sigdelset(&sig_blocked, SigTable[i]);
+    if (sigprocmask(SIG_BLOCK, &sig_blocked, &sig_old) != 0) {
+      blocked = false;
+      fprintf(stderr, "google_breakpad::ExceptionHandler::HandleException: "
+                      "failed to block signals.\n");
+    }
+
     success = minidump_generator_.WriteMinidumpToFile(
         minidump_path, signo, sig_ctx);
+
+    // Unblock the signals.
+    if (blocked) {
+      sigprocmask(SIG_SETMASK, &sig_old, &sig_old);
+    }
+
     if (callback_)
       success = callback_(dump_path_c_, guid_str,
                           callback_context_, success);
