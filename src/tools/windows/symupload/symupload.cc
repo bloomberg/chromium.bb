@@ -91,13 +91,14 @@ static bool GetFileVersionString(const wchar_t *filename, wstring *version) {
   wchar_t ver_string[24];
   VS_FIXEDFILEINFO *file_info =
     reinterpret_cast<VS_FIXEDFILEINFO*>(file_info_buffer);
-  WindowsStringUtils::safe_swprintf(
-      ver_string, sizeof(ver_string) / sizeof(ver_string[0]),
-      L"%d.%d.%d.%d",
-      file_info->dwFileVersionMS >> 16,
-      file_info->dwFileVersionMS & 0xffff,
-      file_info->dwFileVersionLS >> 16,
-      file_info->dwFileVersionLS & 0xffff);
+  swprintf(ver_string, sizeof(ver_string) / sizeof(ver_string[0]),
+           L"%d.%d.%d.%d",
+           file_info->dwFileVersionMS >> 16,
+           file_info->dwFileVersionMS & 0xffff,
+           file_info->dwFileVersionLS >> 16,
+           file_info->dwFileVersionLS & 0xffff);
+  GB_WSU_SAFE_SWPRINTF_TERMINATE(ver_string,
+                                 sizeof(ver_string) / sizeof(ver_string[0]));
   *version = ver_string;
   return true;
 }

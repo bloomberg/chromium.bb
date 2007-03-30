@@ -475,9 +475,9 @@ void ExceptionHandler::UpdateNextID() {
   next_minidump_id_c_ = next_minidump_id_.c_str();
 
   wchar_t minidump_path[MAX_PATH];
-  WindowsStringUtils::safe_swprintf(minidump_path, MAX_PATH, L"%s\\%s.dmp",
-                                    dump_path_c_,
-                                    next_minidump_id_c_);
+  swprintf(minidump_path, MAX_PATH, L"%s\\%s.dmp",
+           dump_path_c_, next_minidump_id_c_);
+  GB_WSU_SAFE_SWPRINTF_TERMINATE(minidump_path, MAX_PATH);
   next_minidump_path_ = minidump_path;
   next_minidump_path_c_ = next_minidump_path_.c_str();
 }

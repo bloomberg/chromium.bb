@@ -49,6 +49,19 @@
 #define WIN_STRING_FORMAT_LL "I64"
 #endif  // MSC_VER >= 1400
 
+// When using swprintf, call GB_WSU_SWPRINTF_TERMINATE afterwards using the
+// first two arguments to swprintf.  This will ensure that the buffer is
+// 0-terminated.  MSVC8's swprintf always 0-terminates the buffer, so the
+// macro is a no-op.  This is done in a macro rather than a function
+// because the function approach relies on vswprintf, which is incompatible
+// with some analysis tools.
+#if _MSC_VER >= 1400 // MSVC 2005/8
+#define GB_WSU_SAFE_SWPRINTF_TERMINATE(buffer, count);
+#else  // _MSC_VER >= 1400
+#define GB_WSU_SAFE_SWPRINTF_TERMINATE(buffer, count); \
+    (buffer)[(count) - 1] = L'\0';
+#endif  // _MSC_VER >= 1400
+
 namespace google_breakpad {
 
 using std::string;
@@ -56,10 +69,6 @@ using std::wstring;
 
 class WindowsStringUtils {
  public:
-  // Equivalent to MSVC8's swprintf, which always 0-terminates buffer.
-  static void safe_swprintf(wchar_t *buffer, size_t count,
-                            const wchar_t *format, ...);
-
   // Roughly equivalent to MSVC8's wcscpy_s, except pre-MSVC8, this does
   // not fail if source is longer than destination_size.  The destination
   // buffer is always 0-terminated.
@@ -88,21 +97,6 @@ class WindowsStringUtils {
   ~WindowsStringUtils();
   void operator=(const WindowsStringUtils&);
 };
-
-// static
-inline void WindowsStringUtils::safe_swprintf(wchar_t *buffer, size_t count,
-                                              const wchar_t *format, ...) {
-  va_list args;
-  va_start(args, format);
-  vswprintf(buffer, count, format, args);
-
-#if _MSC_VER < 1400  // MSVC 2005/8
-  // Pre-MSVC 2005/8 doesn't 0-terminate the buffer if the formatted string
-  // is larger than the buffer.  Ensure that the string is 0-terminated.
-  if (buffer && count)
-    buffer[count - 1] = 0;
-#endif  // _MSC_VER < 1400
-}
 
 // static
 inline void WindowsStringUtils::safe_wcscpy(wchar_t *destination,

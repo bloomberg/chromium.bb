@@ -213,8 +213,8 @@ wstring HTTPUpload::GenerateMultipartBoundary() {
   int r1 = rand();
 
   wchar_t temp[kBoundaryLength];
-  WindowsStringUtils::safe_swprintf(temp, kBoundaryLength, L"%s%08X%08X",
-                                    kBoundaryPrefix, r0, r1);
+  swprintf(temp, kBoundaryLength, L"%s%08X%08X", kBoundaryPrefix, r0, r1);
+  GB_WSU_SAFE_SWPRINTF_TERMINATE(temp, kBoundaryLength);
   return wstring(temp);
 }
 
