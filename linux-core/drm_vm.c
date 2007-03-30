@@ -596,13 +596,12 @@ static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 	    )
 		return drm_mmap_dma(filp, vma);
 
-	if (drm_ht_find_item(&dev->map_hash, vma->vm_pgoff , &hash)) {
+	if (drm_ht_find_item(&dev->map_hash, vma->vm_pgoff, &hash)) {
 		DRM_ERROR("Could not find map\n");
 		return -EINVAL;
 	}
 
-	map = drm_hash_entry(hash,drm_map_list_t, hash)->map;
-
+	map = drm_hash_entry(hash, drm_map_list_t, hash)->map;
 	if (!map || ((map->flags & _DRM_RESTRICTED) && !capable(CAP_SYS_ADMIN)))
 		return -EPERM;
 
@@ -647,16 +646,11 @@ static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 		vma->vm_page_prot = drm_io_prot(map->type, vma);
 #ifdef __sparc__
 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+#endif
 		if (io_remap_pfn_range(vma, vma->vm_start,
-					(map->offset + offset) >>PAGE_SHIFT,
+					(map->offset + offset) >> PAGE_SHIFT,
 					vma->vm_end - vma->vm_start,
 					vma->vm_page_prot))
-#else
-		if (remap_pfn_range(vma, vma->vm_start,
-				     (map->offset + offset) >> PAGE_SHIFT,
-				     vma->vm_end - vma->vm_start,
-				     vma->vm_page_prot))
-#endif
 			return -EAGAIN;
 		DRM_DEBUG("   Type = %d; start = 0x%lx, end = 0x%lx,"
 			  " offset = 0x%lx\n",

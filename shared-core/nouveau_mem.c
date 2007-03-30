@@ -35,8 +35,6 @@
 #include "drm_sarea.h"
 #include "nouveau_drv.h"
 
-//static int meminit_ok=0;
-
 static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64_t size,
 		DRMFILE filp)
 {
@@ -340,6 +338,11 @@ int nouveau_mem_init(struct drm_device *dev)
 	}
 no_agp:
 
+	/* setup a mtrr over the FB */
+	dev_priv->fb_mtrr = drm_mtrr_add(drm_get_resource_start(dev, 1),
+					 nouveau_mem_fb_amount(dev),
+					 DRM_MTRR_WC);
+
 	/* Init FB */
 	dev_priv->fb_phys=drm_get_resource_start(dev,1);
 	fb_size = nouveau_mem_fb_amount(dev);
@@ -371,14 +374,6 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint6
 	struct mem_block *block;
 	int type;
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-
-	/*
-	 * Init memory if needed
-	 */
-	if (dev_priv->fb_phys == 0)
-	{
-		nouveau_mem_init(dev);
-	}
 
 	/* 
 	 * Make things easier on ourselves: all allocations are page-aligned. 
@@ -447,44 +442,113 @@ alloc_ok:
 
 void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 {
-        drm_nouveau_private_t *dev_priv = dev->dev_private;
-
 	DRM_INFO("freeing 0x%llx\n", block->start);
-	if (dev_priv->fb_phys == 0)
-	{
-		DRM_ERROR("%s called without init\n", __FUNCTION__);
-		return;
-	}
 	if (block->flags&NOUVEAU_MEM_MAPPED)
 		drm_rmmap(dev, block->map);
 	free_block(block);
 }
 
-int nouveau_instmem_init(struct drm_device *dev, uint32_t offset)
+static void
+nouveau_instmem_determine_amount(struct drm_device *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	int ret;
+	int i;
 
-	if (dev_priv->card_type >= NV_40)
+	/* Figure out how much instance memory we need */
+	switch (dev_priv->card_type) {
+	case NV_40:
 		/* We'll want more instance memory than this on some NV4x cards.
 		 * There's a 16MB aperture to play with that maps onto the end
 		 * of vram.  For now, only reserve a small piece until we know
 		 * more about what each chipset requires.
 		 */
 		dev_priv->ramin_size = (1*1024* 1024);
-	else {
+		break;
+	default:
 		/*XXX: what *are* the limits on <NV40 cards?, and does RAMIN
 		 *     exist in vram on those cards as well?
 		 */
 		dev_priv->ramin_size = (512*1024);
+		break;
 	}
 	DRM_DEBUG("RAMIN size: %dKiB\n", dev_priv->ramin_size>>10);
+
+	/* Clear all of it, except the BIOS image that's in the first 64KiB */
+	if (dev_priv->ramin) {
+		for (i=(64*1024); i<dev_priv->ramin_size; i+=4)
+			DRM_WRITE32(dev_priv->ramin, i, 0x00000000);
+	} else {
+		for (i=(64*1024); i<dev_priv->ramin_size; i+=4)
+			DRM_WRITE32(dev_priv->mmio, NV_RAMIN + i, 0x00000000);
+	}
+}
+
+static void
+nouveau_instmem_configure_fixed_tables(struct drm_device *dev)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+
+	/* FIFO hash table (RAMHT)
+	 *   use 4k hash table at RAMIN+0x10000
+	 *   TODO: extend the hash table
+	 */
+	dev_priv->ramht_offset = 0x10000;
+	dev_priv->ramht_bits   = 9;
+	dev_priv->ramht_size   = (1 << dev_priv->ramht_bits);
+	DRM_DEBUG("RAMHT offset=0x%x, size=%d\n", dev_priv->ramht_offset,
+						  dev_priv->ramht_size);
+
+	/* FIFO runout table (RAMRO) - 512k at 0x11200 */
+	dev_priv->ramro_offset = 0x11200;
+	dev_priv->ramro_size   = 512;
+	DRM_DEBUG("RAMRO offset=0x%x, size=%d\n", dev_priv->ramro_offset,
+						  dev_priv->ramro_size);
+
+	/* FIFO context table (RAMFC)
+	 *   NV40  : Not sure exactly how to position RAMFC on some cards,
+	 *           0x30002 seems to position it at RAMIN+0x20000 on these
+	 *           cards.  RAMFC is 4kb (32 fifos, 128byte entries).
+	 *   Others: Position RAMFC at RAMIN+0x11400
+	 */
+	switch(dev_priv->card_type)
+	{
+		case NV_50:
+		case NV_40:
+		case NV_44:
+			dev_priv->ramfc_offset = 0x20000;
+			dev_priv->ramfc_size   = nouveau_fifo_number(dev) *
+				nouveau_fifo_ctx_size(dev);
+			break;
+		case NV_30:
+		case NV_20:
+		case NV_10:
+		case NV_04:
+		case NV_03:
+		default:
+			dev_priv->ramfc_offset = 0x11400;
+			dev_priv->ramfc_size   = nouveau_fifo_number(dev) *
+				nouveau_fifo_ctx_size(dev);
+			break;
+	}
+	DRM_DEBUG("RAMFC offset=0x%x, size=%d\n", dev_priv->ramfc_offset,
+						  dev_priv->ramfc_size);
+}
+
+int nouveau_instmem_init(struct drm_device *dev)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	uint32_t offset;
+	int ret = 0;
+
+	nouveau_instmem_determine_amount(dev);
+	nouveau_instmem_configure_fixed_tables(dev);
 
 	/* Create a heap to manage RAMIN allocations, we don't allocate
 	 * the space that was reserved for RAMHT/FC/RO.
 	 */
-	ret = init_heap(&dev_priv->ramin_heap, offset,
-			dev_priv->ramin_size - offset);
+	offset = dev_priv->ramfc_offset + dev_priv->ramfc_size;
+	ret = init_heap(&dev_priv->ramin_heap,
+			 offset, dev_priv->ramin_size - offset);
 	if (ret) {
 		dev_priv->ramin_heap = NULL;
 		DRM_ERROR("Failed to init RAMIN heap\n");
@@ -589,11 +653,6 @@ int nouveau_ioctl_mem_free(DRM_IOCTL_ARGS)
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	drm_nouveau_mem_free_t memfree;
 	struct mem_block *block;
-
-	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
-		return DRM_ERR(EINVAL);
-	}
 
 	DRM_COPY_FROM_USER_IOCTL(memfree, (drm_nouveau_mem_free_t __user *) data,
 				 sizeof(memfree));
