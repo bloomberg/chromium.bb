@@ -1991,8 +1991,14 @@ static int drm_bo_lock_mm(drm_device_t * dev, unsigned mem_type)
 	drm_mem_type_manager_t *man = &bm->man[mem_type];
 
 	if (mem_type == 0 || mem_type >= DRM_BO_MEM_TYPES) {
-		DRM_ERROR("Illegal memory manager memory type %u,\n", mem_type);
+		DRM_ERROR("Illegal memory manager memory type %u.\n", mem_type);
 		return -EINVAL;
+	}
+
+	if (!man->has_type) {
+		DRM_ERROR("Memory type %u has not been initialized.\n",
+			  mem_type);
+		return 0;
 	}
 
 	drm_bo_clean_unfenced(dev);
