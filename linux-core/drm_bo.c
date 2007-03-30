@@ -75,7 +75,8 @@ void drm_bo_add_to_lru(drm_buffer_object_t * bo)
 {
 	drm_mem_type_manager_t *man;
 
-	if (!(bo->mem.mask & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT))) {
+	if (!(bo->mem.mask & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT))
+	    || bo->mem.mem_type != bo->pinned_mem_type) {
 		man = &bo->dev->bm.man[bo->mem.mem_type];
 		list_add_tail(&bo->lru, &man->lru);
 	} else {
