@@ -554,7 +554,7 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 	
 	nouveau_wait_for_idle(dev);
 
-	NV_WRITE(NV03_PGRAPH_CTX_CONTROL, 0x10000000);
+	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10000000);
 	NV_WRITE(NV10_PGRAPH_CTX_USER, (NV_READ(NV10_PGRAPH_CTX_USER) & 0xffffff) | (0x1f << 24));
 
 	nouveau_wait_for_idle(dev);
@@ -570,7 +570,7 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 	nouveau_wait_for_idle(dev);
 #endif
 	
-	NV_WRITE(NV03_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
 	NV_WRITE(NV10_PGRAPH_CTX_USER, channel << 24);
 	NV_WRITE(NV10_PGRAPH_FFINTFC_ST2, NV_READ(NV10_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
 
@@ -633,7 +633,7 @@ int nv10_graph_init(drm_device_t *dev) {
 		NV_WRITE(NV10_PGRAPH_TSTATUS(i), NV_READ(NV10_PFB_TSTATUS(i)));
 	}
 
-	NV_WRITE(NV04_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
 	NV_WRITE(NV10_PGRAPH_STATE      , 0xFFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_FIFO       , 0x00000001);
 
