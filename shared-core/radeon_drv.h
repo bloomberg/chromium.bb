@@ -102,6 +102,11 @@
 #define DRIVER_MINOR		26
 #define DRIVER_PATCHLEVEL	0
 
+#if defined(__linux__)
+#define RADEON_HAVE_FENCE
+#define RADEON_HAVE_BUFFER
+#endif
+
 /*
  * Radeon chip families
  */
@@ -276,8 +281,8 @@ typedef struct drm_radeon_private {
 	struct mem_block *fb_heap;
 
 	/* SW interrupt */
-	wait_queue_head_t swi_queue;
-	atomic_t swi_emitted;
+	wait_queue_head_t irq_queue;
+	int counter;
 
 	struct radeon_surface surfaces[RADEON_MAX_SURFACES];
 	struct radeon_virt_surface virt_surfaces[2*RADEON_MAX_SURFACES];
@@ -376,6 +381,30 @@ extern int r300_do_cp_cmdbuf(drm_device_t *dev, DRMFILE filp,
 			     drm_file_t* filp_priv,
 			     drm_radeon_kcmd_buffer_t* cmdbuf);
 
+
+#ifdef RADEON_HAVE_FENCE
+/* i915_fence.c */
+
+
+extern void radeon_fence_handler(drm_device_t *dev);
+extern int radeon_fence_emit_sequence(drm_device_t *dev, uint32_t class,
+				      uint32_t flags, uint32_t *sequence, 
+				    uint32_t *native_type);
+extern void radeon_poke_flush(drm_device_t *dev, uint32_t class);
+extern int radeon_fence_has_irq(drm_device_t *dev, uint32_t class, uint32_t flags);
+#endif
+
+#ifdef RADEON_HAVE_BUFFER
+/* radeon_buffer.c */
+extern drm_ttm_backend_t *radeon_create_ttm_backend_entry(drm_device_t *dev);
+extern int radeon_fence_types(struct drm_buffer_object *bo, uint32_t *class, uint32_t *type);
+extern int radeon_invalidate_caches(drm_device_t *dev, uint32_t buffer_flags);
+extern uint32_t radeon_evict_mask(drm_buffer_object_t *bo);
+extern int radeon_init_mem_type(drm_device_t * dev, uint32_t type,
+				drm_mem_type_manager_t * man);
+extern int radeon_move(drm_buffer_object_t * bo,
+		       int evict, int no_wait, drm_bo_mem_reg_t * new_mem);
+#endif
 /* Flags for stats.boxes
  */
 #define RADEON_BOX_DMA_IDLE      0x1
@@ -1183,5 +1212,20 @@ do {									\
 	}							\
 	write &= mask;						\
 } while (0)
+
+/* Breadcrumb - swi irq */
+#define READ_BREADCRUMB(dev_priv) RADEON_READ(RADEON_LAST_SWI_REG)
+
+static inline int radeon_update_breadcrumb(drm_device_t *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
+	dev_priv->sarea_priv->last_fence = ++dev_priv->counter;
+
+	if (dev_priv->counter > 0x7FFFFFFFUL)
+		dev_priv->sarea_priv->last_fence = dev_priv->counter = 1;
+
+	return dev_priv->counter;
+}
 
 #endif				/* __RADEON_DRV_H__ */
