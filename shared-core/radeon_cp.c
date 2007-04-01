@@ -2244,6 +2244,9 @@ int radeon_driver_firstopen(struct drm_device *dev)
 	if (ret != 0)
 		return ret;
 
+#ifdef RADEON_HAVE_BUFFER
+	drm_bo_driver_init(dev);
+#endif
 	return 0;
 }
 
