@@ -186,7 +186,7 @@ static void nv10_praph_pipe(drm_device_t *dev) {
 static int nv10_graph_ctx_regs [] = {
 NV03_PGRAPH_XY_LOGIC_MISC0,
 
-//NV10_PGRAPH_CTX_SWITCH1, make ctx switch crash
+NV10_PGRAPH_CTX_SWITCH1,
 NV10_PGRAPH_CTX_SWITCH2,
 NV10_PGRAPH_CTX_SWITCH3,
 NV10_PGRAPH_CTX_SWITCH4,
