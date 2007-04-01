@@ -95,7 +95,7 @@ irqreturn_t radeon_driver_irq_handler(DRM_IRQ_ARGS)
 	return IRQ_HANDLED;
 }
 
-static int radeon_emit_irq(drm_device_t * dev)
+int radeon_emit_irq(drm_device_t * dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	unsigned int ret;

@@ -51,20 +51,13 @@ int radeon_fence_types(drm_buffer_object_t *bo, uint32_t * class, uint32_t * typ
 
 int radeon_invalidate_caches(drm_device_t * dev, uint32_t flags)
 {
-	/*
-	 * FIXME: Only emit once per batchbuffer submission.
-	 */
-#if 0
-	uint32_t flush_cmd = MI_NO_WRITE_FLUSH;
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	RING_LOCALS;
 
-	if (flags & DRM_BO_FLAG_READ)
-		flush_cmd |= MI_READ_FLUSH;
-	if (flags & DRM_BO_FLAG_EXE)
-		flush_cmd |= MI_EXE_FLUSH;
-
-	return 0;
-//	return radeon_emit_mi_flush(dev, flush_cmd);
-#endif
+	BEGIN_RING(4);
+	RADEON_FLUSH_CACHE();
+	RADEON_FLUSH_ZCACHE();
+	ADVANCE_RING();
 	return 0;
 }
 
@@ -111,7 +104,11 @@ int radeon_init_mem_type(drm_device_t * dev, uint32_t type,
 int radeon_move(drm_buffer_object_t * bo,
 		int evict, int no_wait, drm_bo_mem_reg_t * new_mem)
 {
+	drm_bo_mem_reg_t *old_mem = &bo->mem;
 
+	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
+		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+	}
 	return 0;
 }
 

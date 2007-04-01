@@ -45,10 +45,6 @@ static void radeon_perform_flush(drm_device_t * dev)
 	drm_fence_class_manager_t *fc = &dev->fm.class[0];
 	drm_fence_driver_t *driver = dev->driver->fence_driver;
 	uint32_t pending_flush_types = 0;
-	uint32_t flush_flags = 0;
-	uint32_t flush_sequence = 0;
-	uint32_t i_status;
-	uint32_t diff;
 	uint32_t sequence;
 
 	if (!dev_priv)
@@ -58,8 +54,9 @@ static void radeon_perform_flush(drm_device_t * dev)
 		((fc->pending_exe_flush) ? DRM_FENCE_TYPE_EXE : 0);
 
 	if (pending_flush_types) {
-		drm_fence_handler(dev, 0, 0,0);
-
+		sequence = READ_BREADCRUMB(dev_priv);
+					     
+		drm_fence_handler(dev, 0, sequence, pending_flush_types);
 	}
 
 	return;
