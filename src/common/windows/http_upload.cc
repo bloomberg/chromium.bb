@@ -174,31 +174,47 @@ bool HTTPUpload::SendRequest(const wstring &url,
 
 // static
 bool HTTPUpload::ReadResponse(HINTERNET request, wstring *response) {
+  bool has_content_length_header = false;
   wchar_t content_length[32];
   DWORD content_length_size = sizeof(content_length);
-  if (!HttpQueryInfo(request, HTTP_QUERY_CONTENT_LENGTH,
-                     static_cast<LPVOID>(&content_length), &content_length_size,
-                     0)) {
-    return false;
-  }
-  DWORD claimed_size = wcstol(content_length, NULL, 10);
+  DWORD claimed_size;
+  string response_body;
 
-  char *response_buffer = new char[claimed_size];
-  DWORD size_read;
+  if (HttpQueryInfo(request, HTTP_QUERY_CONTENT_LENGTH,
+                    static_cast<LPVOID>(&content_length),
+                    &content_length_size, 0)) {
+    has_content_length_header = true;
+    claimed_size = wcstol(content_length, NULL, 10);
+    response_body.reserve(claimed_size);
+  }
+
+
+  DWORD bytes_available;
   DWORD total_read = 0;
-  BOOL read_result;
-  do {
-    read_result = InternetReadFile(request, response_buffer + total_read,
-                                   claimed_size - total_read, &size_read);
-    total_read += size_read;
-  } while (read_result && (size_read != 0) && (total_read < claimed_size));
+  bool return_code;
 
-  bool succeeded = (total_read == claimed_size);
-  if (succeeded && response) {
-    *response = UTF8ToWide(string(response_buffer, total_read));
+  while ((return_code = InternetQueryDataAvailable(request, &bytes_available,
+                                                   0, 0) != 0) &&
+          bytes_available > 0) {
+    vector<char> response_buffer(bytes_available);
+    DWORD size_read;
+
+    if ((return_code = InternetReadFile(request, &response_buffer[0],
+                                        bytes_available, &size_read) != 0) &&
+        size_read > 0) {
+      total_read += size_read;
+      response_body.append(&response_buffer[0], size_read);
+    } else {
+      break;
+    }
   }
 
-  delete[] response_buffer;
+  bool succeeded = return_code && (!has_content_length_header ||
+                                   (total_read == claimed_size));
+  if (succeeded && response) {
+    *response = UTF8ToWide(response_body);
+  }
+
   return succeeded;
 }
 
