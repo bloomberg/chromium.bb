@@ -269,17 +269,16 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
     [dict release];
   }
 
-  if (name && ![dict objectForKey:kAddressSymbolKey])
+  if (name && ![dict objectForKey:kAddressSymbolKey]) {
     [dict setObject:name forKey:kAddressSymbolKey];
 
+    // only functions, not line number addresses
+    [functionAddresses_ addObject:addressNum];
+  }
+  
   if (line && ![dict objectForKey:kAddressSourceLineKey])
     [dict setObject:[NSNumber numberWithUnsignedInt:line]
              forKey:kAddressSourceLineKey];
-
-  // Save the function name so that we can add the end of function address
-  if ([name length]) {
-    [lastFunctionStartDict_ setObject:addressNum forKey:[NSNumber numberWithUnsignedInt:section] ];
-  }
 }
 
 //=============================================================================
@@ -287,10 +286,32 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
   uint32_t n_strx = list->n_un.n_strx;
   BOOL result = NO;
 
-  // We don't care about non-section specific information
-  if (list->n_sect == 0 )
+  // We don't care about non-section specific information except function length
+  if (list->n_sect == 0 && list->n_type != N_FUN )
     return NO;
 
+  if (list->n_type == N_FUN) {
+    if (list->n_sect != 0) {
+      // we get the function address from the first N_FUN
+      lastStartAddress_ = list->n_value;
+    }
+    else {
+      // an N_FUN from section 0 may follow the initial N_FUN
+      // giving us function length information
+      NSMutableDictionary *dict = [addresses_ objectForKey:
+        [NSNumber numberWithUnsignedLong:lastStartAddress_] ];
+      
+      assert(dict);
+
+      // only set the function size the first time
+      // (sometimes multiple section 0 N_FUN entries appear!)
+      if (![dict objectForKey:kFunctionSizeKey]) {
+        [dict setObject:[NSNumber numberWithUnsignedLongLong:list->n_value]
+                 forKey:kFunctionSizeKey];
+      }
+    }
+  }
+  
   int line = list->n_desc;
   
   // We only care about line number information in __TEXT __text
@@ -298,7 +319,7 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
   if(list->n_sect != mainSection) {
     line = 0;
   }
-       
+
   // Extract debugging information:
   // Doc: http://developer.apple.com/documentation/DeveloperTools/gdb/stabs/stabs_toc.html
   // Header: /usr/include/mach-o/stab.h:
@@ -336,24 +357,9 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
   } else if (((list->n_type & N_TYPE) == N_SECT) && !(list->n_type & N_STAB)) {
     // Regular symbols or ones that are external
     NSString *fn = [NSString stringWithUTF8String:&table[n_strx]];
+
     [self addFunction:fn line:0 address:list->n_value section:list->n_sect ];
     result = YES;
-  } else if (list->n_type == N_ENSYM && list->n_sect == mainSection ) {
-    NSNumber *lastFunctionStart = [lastFunctionStartDict_ 
-      objectForKey:[NSNumber numberWithUnsignedLongLong:list->n_sect]  ];
-
-    if (lastFunctionStart) {
-      unsigned long long start = [lastFunctionStart unsignedLongLongValue];
-      unsigned long long size = list->n_value - start;
-      NSMutableDictionary *dict = [addresses_ objectForKey:lastFunctionStart];
-      assert(dict);
-      assert(list->n_value > start);
-      
-      [dict setObject:[NSNumber numberWithUnsignedLongLong:size]
-               forKey:kFunctionSizeKey];
-
-      [lastFunctionStartDict_ removeObjectForKey:[NSNumber numberWithUnsignedLongLong:list->n_sect] ];
-    }
   }
 
   return result;
@@ -392,7 +398,7 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
         nlist64.n_un.n_strx = SwapLongIfNeeded(list->n_un.n_strx);
         nlist64.n_type = list->n_type;
         nlist64.n_sect = list->n_sect;
-        nlist64.n_desc = SwapIntIfNeeded(list->n_desc);
+        nlist64.n_desc = SwapShortIfNeeded(list->n_desc);
         nlist64.n_value = (uint64_t)SwapLongIfNeeded(list->n_value);
 
         if ([self processSymbolItem:&nlist64 stringTable:strtab])
@@ -437,7 +443,7 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
         nlist64.n_un.n_strx = SwapLongIfNeeded(list->n_un.n_strx);
         nlist64.n_type = list->n_type;
         nlist64.n_sect = list->n_sect;
-        nlist64.n_desc = SwapIntIfNeeded(list->n_desc);
+        nlist64.n_desc = SwapShortIfNeeded(list->n_desc);
         nlist64.n_value = SwapLongLongIfNeeded(list->n_value);
 
         if ([self processSymbolItem:&nlist64 stringTable:strtab])
@@ -668,15 +674,6 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
   uint64_t moduleSize =
     moduleSizeNum ? [moduleSizeNum unsignedLongLongValue] : 0;
 
-  [lastFunctionStartDict_ removeAllObjects];
-  
-  // Gather the information
-  [self loadSymbolInfoForArchitecture];
-  [self convertSymbols];
-
-  NSArray *sortedAddresses = [[addresses_ allKeys]
-    sortedArrayUsingSelector:@selector(compare:)];
-
   // UUID
   FileID file_id([sourcePath_ fileSystemRepresentation]);
   unsigned char identifier[16];
@@ -688,8 +685,26 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
                                       sizeof(identifierStr));
   }
   else {
-    strlcpy(identifierStr, moduleName, sizeof(identifierStr));
+    fprintf(stderr, "Unable to calculate UUID of mach-o binary!\n");
+    return NO;
   }
+
+  // keep track exclusively of function addresses
+  // for sanity checking function lengths
+  functionAddresses_ = [[NSMutableSet alloc] init];
+
+  // Gather the information
+  [self loadSymbolInfoForArchitecture];
+  [self convertSymbols];
+
+  NSArray *sortedAddresses = [[addresses_ allKeys]
+    sortedArrayUsingSelector:@selector(compare:)];
+
+  NSArray *sortedFunctionAddresses = [[functionAddresses_ allObjects]
+    sortedArrayUsingSelector:@selector(compare:)];
+
+  // position ourselves at the 2nd function
+  unsigned int funcIndex = 1;
 
   // Remove the dashes from the string
   NSMutableString *compactedStr =
@@ -733,13 +748,22 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
       // The symbol reader doesn't want a trailing newline
       terminatingChar = '\0';
     }
-
+    
     NSDictionary *dict = [addresses_ objectForKey:address];
     NSNumber *line = [dict objectForKey:kAddressSourceLineKey];
     NSString *symbol = [dict objectForKey:kAddressConvertedSymbolKey];
 
     if (!symbol)
       symbol = [dict objectForKey:kAddressSymbolKey];
+
+    // sanity check the function length by making sure it doesn't
+    // run beyond the next function entry
+    uint64_t nextFunctionAddress = 0;
+    if (symbol && funcIndex < [sortedFunctionAddresses count]) {
+      nextFunctionAddress = [[sortedFunctionAddresses objectAtIndex:funcIndex]
+        unsignedLongLongValue] - baseAddress;
+      ++funcIndex;
+    }
 
     // Skip some symbols
     if (StringHeadMatches(symbol, @"vtable for"))
@@ -785,6 +809,16 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
     if (line) {
       if (symbol && functionLength) {
         uint64_t functionLengthVal = [functionLength unsignedLongLongValue];
+        
+        // sanity check to make sure the length we were told does not exceed
+        // the space between this function and the next
+        if (nextFunctionAddress != 0) {
+          uint64_t functionLengthVal2 = nextFunctionAddress - addressVal;
+
+          if(functionLengthVal > functionLengthVal2 ) {
+            functionLengthVal = functionLengthVal2;
+          }
+        }
 
         // Function
         if (!WriteFormat(fd, "FUNC %llx %llx 0 %s\n", addressVal,
@@ -824,10 +858,6 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
       return nil;
     }
 
-    // keep track of last function start address on a per-section basis
-    if (!lastFunctionStartDict_)
-      lastFunctionStartDict_ = [[NSMutableDictionary alloc] init];
-
     // If there's more than one, use the native one
     if ([headers_ count] > 1) {
       const NXArchInfo *localArchInfo = NXGetLocalArchInfo();
@@ -863,10 +893,10 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
   [sourcePath_ release];
   [architecture_ release];
   [addresses_ release];
+  [functionAddresses_ release];
   [sources_ release];
   [headers_ release];
-  [lastFunctionStartDict_ release];
-
+  
   [super dealloc];
 }
 
