@@ -301,7 +301,7 @@ static int drm_fence_lazy_wait(drm_device_t *dev,
 
 	do {
 		DRM_WAIT_ON(ret, fc->fence_queue, 3 * DRM_HZ,
-			    fence_signaled(dev, fence, mask, 0));
+			    fence_signaled(dev, fence, mask, 1));
 		if (time_after_eq(jiffies, _end))
 			break;
 	} while (ret == -EINTR && ignore_signals);
