@@ -840,6 +840,9 @@ typedef struct drm_agp_ttm_priv {
 } drm_agp_ttm_priv;
 #endif
 
+typedef struct ati_pcigart_ttm_priv {
+	int populated;
+} ati_pcigart_ttm_priv;
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,
 					     int feature)

@@ -228,3 +228,88 @@ int drm_ati_pcigart_init(drm_device_t *dev, drm_ati_pcigart_info *gart_info)
 	return ret;
 }
 EXPORT_SYMBOL(drm_ati_pcigart_init);
+
+static int ati_pcigart_needs_unbind_cache_adjust(drm_ttm_backend_t *backend)
+{
+	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
+}
+
+static int ati_pcigart_populate(drm_ttm_backend_t *backend,
+				unsigned long num_pages,
+				struct page **pages)
+{
+	ati_pcigart_ttm_priv *atipci_priv = (ati_pcigart_ttm_priv *)backend->private;	
+
+	return -1;
+}
+
+static int ati_pcigart_bind_ttm(drm_ttm_backend_t *backend,
+				unsigned long offset,
+				int cached)
+{
+	ati_pcigart_ttm_priv *atipci_priv = (ati_pcigart_ttm_priv *)backend->private;
+
+	return -1;
+}
+
+static int ati_pcigart_unbind_ttm(drm_ttm_backend_t *backend)
+{
+	ati_pcigart_ttm_priv *atipci_priv = (ati_pcigart_ttm_priv *)backend->private;
+	
+	return -1;
+}
+
+static void ati_pcigart_clear_ttm(drm_ttm_backend_t *backend)
+{
+	ati_pcigart_ttm_priv *atipci_priv = (ati_pcigart_ttm_priv *)backend->private;
+}
+
+static void ati_pcigart_destroy_ttm(drm_ttm_backend_t *backend)
+{
+	ati_pcigart_ttm_priv *atipci_priv;
+
+	if (backend) {
+		DRM_DEBUG("\n");
+		atipci_priv = (ati_pcigart_ttm_priv *)backend->private;
+		if (atipci_priv) {
+			drm_ctl_free(atipci_priv, sizeof(*atipci_priv), DRM_MEM_MAPPINGS);
+			backend->private = NULL;
+		}
+		if (backend->flags & DRM_BE_FLAG_NEEDS_FREE) {
+			drm_ctl_free(backend, sizeof(*backend), DRM_MEM_MAPPINGS);
+		}
+	}
+}
+
+
+drm_ttm_backend_t *ati_pcigart_init_ttm(struct drm_device *dev,
+					drm_ttm_backend_t *backend)
+{
+	drm_ttm_backend_t *atipci_be;
+	ati_pcigart_ttm_priv *atipci_priv;
+
+	atipci_be = (backend != NULL) ? backend : 
+		drm_ctl_calloc(1, sizeof (*atipci_be), DRM_MEM_MAPPINGS);
+
+	if (!atipci_be)
+		return NULL;
+
+	atipci_priv = drm_ctl_calloc(1, sizeof(*atipci_priv), DRM_MEM_MAPPINGS);
+	if (!atipci_priv) {
+		drm_ctl_free(atipci_be, sizeof(*atipci_be), DRM_MEM_MAPPINGS);
+		return NULL;
+	}
+
+	atipci_priv->populated = FALSE;
+	atipci_be->needs_ub_cache_adjust = ati_pcigart_needs_unbind_cache_adjust;
+	atipci_be->populate = ati_pcigart_populate;
+	atipci_be->clear = ati_pcigart_clear_ttm;
+	atipci_be->bind = ati_pcigart_bind_ttm;
+	atipci_be->unbind = ati_pcigart_unbind_ttm;
+	atipci_be->destroy = ati_pcigart_destroy_ttm;
+	
+	DRM_FLAG_MASKED(atipci_be->flags, (backend == NULL) ? DRM_BE_FLAG_NEEDS_FREE : 0, DRM_BE_FLAG_NEEDS_FREE);
+	atipci_be->drm_map_type = _DRM_SCATTER_GATHER;
+	return atipci_be;
+}
+EXPORT_SYMBOL(ati_pcigart_init_ttm);
