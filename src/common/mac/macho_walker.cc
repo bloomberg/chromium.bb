@@ -130,6 +130,9 @@ bool MachoWalker::FindHeader(int cpu_type, off_t &offset) {
     if (!ReadBytes(&header_cpu_type, sizeof(header_cpu_type), offset))
       return false;
 
+    if (magic == MH_CIGAM || magic == MH_CIGAM_64)
+      header_cpu_type = NXSwapInt(header_cpu_type);
+
     if (valid_cpu_type != header_cpu_type)
       return false;
 
