@@ -840,8 +840,16 @@ typedef struct drm_agp_ttm_priv {
 } drm_agp_ttm_priv;
 #endif
 
+#define ATI_PCIGART_FLAG_VMALLOC 1
+struct ati_pcigart_memory {
+	size_t page_count;
+	unsigned long *memory;
+	int flags;
+};
+
 typedef struct ati_pcigart_ttm_priv {
 	int populated;
+	struct ati_pcigart_memory *mem;
 } ati_pcigart_ttm_priv;
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,

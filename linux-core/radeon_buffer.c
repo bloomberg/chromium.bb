@@ -80,6 +80,8 @@ uint32_t radeon_evict_mask(drm_buffer_object_t *bo)
 int radeon_init_mem_type(drm_device_t * dev, uint32_t type,
 			 drm_mem_type_manager_t * man)
 {
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
 	switch (type) {
 	case DRM_BO_MEM_LOCAL:
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
@@ -87,17 +89,25 @@ int radeon_init_mem_type(drm_device_t * dev, uint32_t type,
 		man->drm_bus_maptype = 0;
 		break;
 	case DRM_BO_MEM_TT:
-		if (!(drm_core_has_AGP(dev) && dev->agp)) {
-			DRM_ERROR("AGP is not enabled for memory type %u\n",
-				  (unsigned)type);
-			return -EINVAL;
+		if (dev_priv->flags & RADEON_IS_AGP) {
+			if (!(drm_core_has_AGP(dev) && dev->agp)) {
+				DRM_ERROR("AGP is not enabled for memory type %u\n",
+					  (unsigned)type);
+				return -EINVAL;
+			}
+			man->io_offset = dev->agp->agp_info.aper_base;
+			man->io_size = dev->agp->agp_info.aper_size * 1024 * 1024;
+			man->io_addr = NULL;
+			man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
+				_DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_NEEDS_IOREMAP;
+			man->drm_bus_maptype = _DRM_AGP;
+		} else {
+			man->io_offset = 0;
+			man->io_size = dev_priv->gart_size;
+			man->io_addr = NULL;
+			man->flags = _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_MAPPABLE;
+			man->drm_bus_maptype = _DRM_SCATTER_GATHER;
 		}
-		man->io_offset = dev->agp->agp_info.aper_base;
-		man->io_size = dev->agp->agp_info.aper_size * 1024 * 1024;
-		man->io_addr = NULL;
-		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_NEEDS_IOREMAP;
-		man->drm_bus_maptype = _DRM_AGP;
 		break;
 	default:
 		DRM_ERROR("Unsupported memory type %u\n", (unsigned)type);
