@@ -892,6 +892,8 @@ typedef union drm_mm_init_arg{
  * Drm mode setting
  */
 
+#define DRM_DISPLAY_MODE_LEN 32
+
 struct drm_mode_modeinfo {
 
 	unsigned int id;
@@ -901,8 +903,8 @@ struct drm_mode_modeinfo {
 	unsigned short vdisplay, vsync_start, vsync_end, vtotal, vscan;
 
 	unsigned int flags;
-//	int count_flag;
-//	unsigned int __user *modeFlags;
+
+	char name[DRM_DISPLAY_MODE_LEN];
 };
 
 struct drm_mode_card_res {
@@ -910,7 +912,11 @@ struct drm_mode_card_res {
 	unsigned int fb_id;
 
 	int count_crtcs;
+	unsigned int __user *crtc_id;
+
 	int count_outputs;
+	unsigned int __user *output_id;
+
 	int count_modes;
         struct drm_mode_modeinfo __user *modes;
 
@@ -918,10 +924,10 @@ struct drm_mode_card_res {
 
 struct drm_mode_crtc {
 	unsigned int crtc_id; /**< Id */
-	unsigned int buffer_id; /**< Id of framebuffer */
+	unsigned int fb_id; /**< Id of framebuffer */
 
 	int x, y; /**< Position on the frameuffer */
-	unsigned int width, height;
+
 	unsigned int mode; /**< Current mode used */
 
 	int count_outputs;
@@ -942,7 +948,7 @@ struct drm_mode_get_output {
 	unsigned int crtc; /**< Id of crtc */
 
 	unsigned int connection;
-	unsigned int width, height; /**< HxW in millimeters */
+	unsigned int mm_width, mm_height; /**< HxW in millimeters */
 	unsigned int subpixel;
 
 	int count_crtcs;
@@ -1028,8 +1034,8 @@ struct drm_mode_get_output {
 #define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, drm_update_draw_t)
 
 #define DRM_IOCTL_MODE_GETRESOURCES     DRM_IOWR(0xA0, struct drm_mode_card_res)
-#define DRM_IOCTL_MODE_GETCRTC          DRM_IOWR(0xA1, drm_mode_crtc_t)
-#define DRM_IOCTL_MODE_GETOUTPUT        DRM_IOWR(0xA2, drm_mode_get_output_t)
+#define DRM_IOCTL_MODE_GETCRTC          DRM_IOWR(0xA1, struct drm_mode_crtc)
+#define DRM_IOCTL_MODE_GETOUTPUT        DRM_IOWR(0xA2, struct drm_mode_get_output)
 
 /*@}*/
 

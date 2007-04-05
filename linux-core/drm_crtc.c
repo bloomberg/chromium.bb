@@ -3,6 +3,33 @@
 #include "drm.h"
 #include "drm_crtc.h"
 
+int drm_mode_idr_get(struct drm_device *dev, void *ptr)
+{
+	int new_id = 0;
+	int ret;
+again:
+	if (idr_pre_get(&dev->crtc_config.crtc_idr, GFP_KERNEL) == 0) {
+		DRM_ERROR("Ran out memory getting a mode number\n");
+		return 0;
+	}
+
+	spin_lock(&dev->crtc_config.config_lock);
+
+	ret = idr_get_new_above(&dev->crtc_config.crtc_idr, ptr, 1, &new_id);
+	if (ret == -EAGAIN) {
+		spin_unlock(&dev->crtc_config.config_lock);
+		goto again;
+	}	
+
+	spin_unlock(&dev->crtc_config.config_lock);
+	return new_id;
+}
+
+void drm_mode_idr_put(struct drm_device *dev, int id)
+{
+	idr_remove(&dev->crtc_config.crtc_idr, id);
+}
+
 struct drm_framebuffer *drm_framebuffer_create(drm_device_t *dev)
 {
 	struct drm_framebuffer *fb;
@@ -20,7 +47,8 @@ struct drm_framebuffer *drm_framebuffer_create(drm_device_t *dev)
 
 		return NULL;
 	}
-
+	
+	fb->id = drm_mode_idr_get(dev, fb);
 	fb->dev = dev;
 	spin_lock(&dev->crtc_config.config_lock);
 	dev->crtc_config.num_fb++;
@@ -35,6 +63,7 @@ void drm_framebuffer_destroy(struct drm_framebuffer *fb)
 	drm_device_t *dev = fb->dev;
 
 	spin_lock(&dev->crtc_config.config_lock);
+	drm_mode_idr_put(dev, fb->id);
 	list_del(&fb->head);
 	dev->crtc_config.num_fb--;
 	spin_unlock(&dev->crtc_config.config_lock);
@@ -45,19 +74,21 @@ void drm_framebuffer_destroy(struct drm_framebuffer *fb)
 struct drm_crtc *drm_crtc_create(drm_device_t *dev,
 				 const struct drm_crtc_funcs *funcs)
 {
-	struct drm_crtc *crtc = NULL;
-	crtc = kmalloc(sizeof(struct drm_crtc), GFP_KERNEL);
+	struct drm_crtc *crtc;
+
+	crtc = kzalloc(sizeof(struct drm_crtc), GFP_KERNEL);
 	if (!crtc)
 		return NULL;
 
 	crtc->dev = dev;
 	crtc->funcs = funcs;
 
-	spin_lock(&dev->crtc_config.config_lock);
+	crtc->id = drm_mode_idr_get(dev, crtc);
+	DRM_DEBUG("crtc %p got id %d\n", crtc, crtc->id);
 
+	spin_lock(&dev->crtc_config.config_lock);
 	list_add_tail(&crtc->head, &dev->crtc_config.crtc_list);
 	dev->crtc_config.num_crtc++;
-
 	spin_unlock(&dev->crtc_config.config_lock);
 
 	return crtc;
@@ -71,7 +102,9 @@ void drm_crtc_destroy(struct drm_crtc *crtc)
 	if (crtc->funcs->cleanup)
 		(*crtc->funcs->cleanup)(crtc);
 
+
 	spin_lock(&dev->crtc_config.config_lock);
+	drm_mode_idr_put(dev, crtc->id);
 	list_del(&crtc->head);
 	dev->crtc_config.num_crtc--;
 	spin_unlock(&dev->crtc_config.config_lock);
@@ -257,6 +290,7 @@ bool drm_set_desired_modes(struct drm_device *dev)
 	list_for_each_entry(crtc, &dev->crtc_config.crtc_list, head) {
 		output = NULL;
 
+		DRM_DEBUG("crtc is %d\n", crtc->id);
 		list_for_each_entry(list_output, &dev->crtc_config.output_list, head) {
 			if (list_output->crtc == crtc) {
 				output = list_output;
@@ -345,6 +379,7 @@ struct drm_output *drm_output_create(drm_device_t *dev,
 		
 	output->dev = dev;
 	output->funcs = funcs;
+	output->id = drm_mode_idr_get(dev, output);
 	if (name)
 		strncpy(output->name, name, DRM_OUTPUT_LEN);
 	output->name[DRM_OUTPUT_LEN - 1] = 0;
@@ -382,6 +417,7 @@ void drm_output_destroy(struct drm_output *output)
 		drm_mode_remove(output, mode);
 
 	spin_lock(&dev->crtc_config.config_lock);
+	drm_mode_idr_put(dev, output->id);
 	list_del(&output->head);
 	spin_unlock(&dev->crtc_config.config_lock);
 	kfree(output);
@@ -411,28 +447,13 @@ struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev)
 	if (!nmode)
 		return NULL;
 
-again:
-	if (idr_pre_get(&dev->crtc_config.mode_idr, GFP_KERNEL) == 0) {
-		DRM_ERROR("Ran out memory getting a mode number\n");
-		kfree(nmode);
-		return NULL;
-	}
-
-	spin_lock(&dev->crtc_config.config_lock);
-	
-	ret = idr_get_new(&dev->crtc_config.mode_idr, nmode, &nmode->mode_id);
-	if (ret == -EAGAIN) {
-		udelay(1);
-		spin_unlock(&dev->crtc_config.config_lock);
-		goto again;
-	}
-	spin_unlock(&dev->crtc_config.config_lock);
+	nmode->mode_id = drm_mode_idr_get(dev, nmode);
 	return nmode;
 }
 
 void drm_crtc_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode)
 {
-	idr_remove(&dev->crtc_config.mode_idr, mode->mode_id);
+	drm_mode_idr_put(dev, mode->mode_id);
 
 	kfree(mode);
 }
@@ -443,7 +464,7 @@ void drm_crtc_config_init(drm_device_t *dev)
 	INIT_LIST_HEAD(&dev->crtc_config.fb_list);
 	INIT_LIST_HEAD(&dev->crtc_config.crtc_list);
 	INIT_LIST_HEAD(&dev->crtc_config.output_list);
-	idr_init(&dev->crtc_config.mode_idr);
+	idr_init(&dev->crtc_config.crtc_idr);
 }
 EXPORT_SYMBOL(drm_crtc_config_init);
 
@@ -502,6 +523,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 	/* bind both CRTCs to this fb */
 	/* only initialise one crtc to enabled state */
 	list_for_each_entry(crtc, &dev->crtc_config.crtc_list, head) {
+		DRM_DEBUG("crtc is %d\n", crtc->id);
 		crtc->fb = fb;
 		if (!vga_crtc) {
 			vga_crtc = crtc;
@@ -568,7 +590,6 @@ void drm_crtc_config_cleanup(drm_device_t *dev)
 		drm_output_destroy(output);
 	}
 
-	
 	list_for_each_entry_safe(crtc, ct, &dev->crtc_config.crtc_list, head) {
 		drm_crtc_destroy(crtc);
 	}
@@ -592,6 +613,8 @@ void drm_crtc_convert_to_umode(struct drm_mode_modeinfo *out, struct drm_display
 	out->vscan = in->vscan;
 	
 	out->flags = in->flags;
+	strncpy(out->name, in->name, DRM_DISPLAY_MODE_LEN);
+	out->name[DRM_DISPLAY_MODE_LEN-1] = 0;
 }
 
 	
@@ -605,15 +628,24 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 	struct drm_mode_card_res card_res;
 	struct list_head *lh;
 	struct drm_output *output;
+	struct drm_crtc *crtc;
 	struct drm_mode_modeinfo u_mode;
 	struct drm_display_mode *mode;
 	int retcode = 0;
 	int mode_count= 0;
+	int output_count = 0;
+	int crtc_count = 0;
+	int copied = 0;
 
 	memset(&u_mode, 0, sizeof(struct drm_mode_modeinfo));
+
+	list_for_each(lh, &dev->crtc_config.crtc_list)
+		crtc_count++;
+
 	list_for_each_entry(output, &dev->crtc_config.output_list,
 			    head)
 	{
+		output_count++;
 		list_for_each(lh, &output->modes)
 			mode_count++;
 	}
@@ -621,8 +653,38 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 	if (copy_from_user(&card_res, argp, sizeof(card_res)))
 		return -EFAULT;
 
+	/* handle this in 3 parts */
+	/* CRTCs */
+	if (card_res.count_crtcs >= crtc_count) {
+		copied = 0;
+		list_for_each_entry(crtc, &dev->crtc_config.crtc_list, head){
+			DRM_DEBUG("CRTC ID is %d\n", crtc->id);
+			if (put_user(crtc->id, &card_res.crtc_id[copied++])) {
+				retcode = -EFAULT;
+				goto done;
+			}
+		}
+	}
+	card_res.count_crtcs = crtc_count;
+
+
+	/* Outputs */
+	if (card_res.count_outputs >= output_count) {
+		copied = 0;
+		list_for_each_entry(output, &dev->crtc_config.output_list,
+				    head) {
+ 			DRM_DEBUG("OUTPUT ID is %d\n", output->id);
+			if (put_user(output->id, &card_res.output_id[copied++])) {
+				retcode = -EFAULT;
+				goto done;
+			}
+		}
+	}
+	card_res.count_outputs = output_count;
+	
+	/* Modes */
 	if (card_res.count_modes >= mode_count) {
-		int copied = 0;
+		copied = 0;
 		list_for_each_entry(output, &dev->crtc_config.output_list,
 				    head) {
 			list_for_each_entry(mode, &output->modes, head) {
@@ -634,19 +696,7 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 			}
 		}
 	}
-
-	else {
-		list_for_each(lh, &dev->crtc_config.crtc_list)
-			card_res.count_crtcs++;
-		
-		list_for_each_entry(output, &dev->crtc_config.output_list,
-				    head)
-		{
-			list_for_each(lh, &output->modes)
-				card_res.count_modes++;
-			card_res.count_outputs++;
-		}
-	}
+	card_res.count_modes = mode_count;
 
 done:
 	DRM_DEBUG("Counted %d %d %d\n", card_res.count_crtcs,
@@ -654,6 +704,98 @@ done:
 		  card_res.count_modes);
 	
 	if (copy_to_user(argp, &card_res, sizeof(card_res)))
+		return -EFAULT;
+
+	return retcode;
+}
+
+int drm_mode_getcrtc(struct inode *inode, struct file *filp,
+		     unsigned int cmd, unsigned long arg)
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->head->dev;
+	struct drm_mode_crtc __user *argp = (void __user *)arg;
+	struct drm_mode_crtc crtc_resp;
+	struct drm_crtc *crtc;
+	struct drm_output *output;
+	int ocount;
+	int retcode = 0;
+
+	if (copy_from_user(&crtc_resp, argp, sizeof(crtc_resp)))
+		return -EFAULT;
+
+	crtc = idr_find(&dev->crtc_config.crtc_idr, crtc_resp.crtc_id);
+	if (!crtc || (crtc->id != crtc_resp.crtc_id))
+		return -EINVAL;
+	crtc_resp.x = crtc->x;
+	crtc_resp.y = crtc->y;
+	crtc_resp.fb_id = 1;
+
+	crtc_resp.outputs = 0;
+	if (crtc->enabled) {
+
+		crtc_resp.mode = crtc->mode.mode_id;
+		ocount = 0;
+		list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+			if (output->crtc == crtc)
+				crtc_resp.outputs |= 1 << (ocount++);
+		}
+	} else {
+		crtc_resp.mode = 0;
+	}
+
+	if (copy_to_user(argp, &crtc_resp, sizeof(crtc_resp)))
+		return -EFAULT;
+
+	return retcode;
+}
+
+int drm_mode_getoutput(struct inode *inode, struct file *filp,
+		       unsigned int cmd, unsigned long arg)
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->head->dev;
+	struct drm_mode_get_output __user *argp = (void __user *)arg;
+	struct drm_mode_get_output out_resp;
+	struct drm_crtc *crtc;
+	struct drm_output *output;
+	struct drm_display_mode *mode;
+	int mode_count = 0;
+	int retcode = 0;
+	int copied = 0;
+
+	if (copy_from_user(&out_resp, argp, sizeof(out_resp)))
+		return -EFAULT;	
+
+	output= idr_find(&dev->crtc_config.crtc_idr, out_resp.output);
+	if (!output || (output->id != out_resp.output))
+		return -EINVAL;
+
+	list_for_each_entry(mode, &output->modes, head)
+		mode_count++;
+
+	out_resp.mm_width = output->mm_width;
+	out_resp.mm_height = output->mm_height;
+	out_resp.subpixel = output->subpixel_order;
+	out_resp.connection = output->status;
+	if (output->crtc)
+		out_resp.crtc = output->crtc->id;
+	else
+		out_resp.crtc = 0;
+
+	if (out_resp.count_modes >= mode_count) {
+		copied = 0;
+		list_for_each_entry(mode, &output->modes, head) {
+			if (put_user(mode->mode_id, &out_resp.modes[copied++])) {
+				retcode = -EFAULT;
+				goto done;
+			}
+		}
+	}
+	out_resp.count_modes = mode_count;
+
+done:
+	if (copy_to_user(argp, &out_resp, sizeof(out_resp)))
 		return -EFAULT;
 
 	return retcode;

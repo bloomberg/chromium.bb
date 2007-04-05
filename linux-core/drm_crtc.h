@@ -74,8 +74,6 @@ enum drm_mode_status {
 #define DRM_MODE_TYPE_CLOCK_CRTC_C (DRM_MODE_TYPE_CLOCK_C | \
 				    DRM_MODE_TYPE_CRTC_C)
 
-#define DRM_DISPLAY_MODE_LEN 32
-
 #define DRM_MODE(nm, t, c, hd, hss, hse, ht, hsk, vd, vss, vse, vt, vs, f) \
 	.name = nm, .status = 0, .type = (t), .clock = (c), \
 	.hdisplay = (hd), .hsync_start = (hss), .hsync_end = (hse), \
@@ -173,6 +171,7 @@ enum subpixel_order {
 struct drm_framebuffer {
 	struct drm_device *dev;
 	struct list_head head;
+	int id; /* idr assigned */
 	unsigned int pitch;
 	unsigned long offset;
 	unsigned int width;
@@ -258,6 +257,8 @@ struct drm_crtc_funcs {
 struct drm_crtc {
 	struct drm_device *dev;
 	struct list_head head;
+
+	int id; /* idr assigned */
 
 	/* framebuffer the CRTC is currently bound to */
 	struct drm_framebuffer *fb;
@@ -350,6 +351,7 @@ struct drm_output {
 	struct drm_device *dev;
 	struct list_head head;
 	struct drm_crtc *crtc;
+	int id; /* idr assigned */
 	unsigned long possible_crtcs;
 	unsigned long possible_clones;
 	bool interlace_allowed;
@@ -394,7 +396,7 @@ struct drm_crtc_config_funcs {
  */
 struct drm_crtc_config {
 	spinlock_t config_lock;
-	struct idr mode_idr;
+	struct idr crtc_idr; /* use this idr for all IDs, fb, crtc, output, modes - just makes life easier */
 	/* this is limited to one for now */
 	int num_fb;
 	struct list_head fb_list;
@@ -437,5 +439,9 @@ extern void drm_crtc_mode_destroy(struct drm_device *dev, struct drm_display_mod
 extern int drm_mode_getresources(struct inode *inode, struct file *filp,
 				 unsigned int cmd, unsigned long arg);
 
+extern int drm_mode_getcrtc(struct inode *inode, struct file *filp,
+			    unsigned int cmd, unsigned long arg);
+extern int drm_mode_getoutput(struct inode *inode, struct file *filp,
+			      unsigned int cmd, unsigned long arg);
 #endif /* __DRM_CRTC_H__ */
 
