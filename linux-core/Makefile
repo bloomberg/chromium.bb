@@ -237,6 +237,11 @@ dristat: dristat.c
 drmstat: drmstat.c
 	$(CC) $(PRGCFLAGS) $< -o $@ $(DRMSTATLIBS)
 
+install:
+	echo "Installing DRM modules to "$(O)
+	install *.ko $(O)/driver/char/drm
+	depmod -a
+
 else
 
 # Check for kernel versions that we don't support.
