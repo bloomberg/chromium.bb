@@ -65,6 +65,10 @@
 #define NV03_PMC_ENABLE                                    0x00000200
 #    define NV_PMC_ENABLE_PFIFO                               (1<< 8)
 #    define NV_PMC_ENABLE_PGRAPH                              (1<<12)
+/* Disabling the below bit breaks newer (G7X only?) mobile chipsets,
+ * the card will hang early on in the X init process.
+ */
+#    define NV_PMC_ENABLE_UNK13                               (1<<13)
 #define NV40_PMC_1700                                      0x00001700
 #define NV40_PMC_1704                                      0x00001704
 #define NV40_PMC_1708                                      0x00001708
