@@ -164,6 +164,8 @@
 
 #include "drm_compat.h"
 
+#include "drm_crtc.h"
+
 /***********************************************************************/
 /** \name Macros to make printk easier */
 /*@{*/
@@ -827,6 +829,9 @@ typedef struct drm_device {
 	unsigned int drw_info_length;
 	drm_drawable_info_t **drw_info;
 	/*@} */
+
+	/* DRM mode setting */
+	struct drm_crtc_config crtc_config;
 } drm_device_t;
 
 #if __OS_HAS_AGP
