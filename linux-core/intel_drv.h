@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2006 Dave Airlie <airlied@linux.ie>
+ * Copyright (c) 2007 Intel Corporation
+ *   Jesse Barnes <jesse.barnes@intel.com>
+ */
 #ifndef __INTEL_DRV_H__
 #define __INTEL_DRV_H__
 

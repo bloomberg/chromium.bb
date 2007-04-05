@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2006-2007 Intel Corporation
+ *   Eric Anholt <eric@anholt.net>
+ */
 #include <linux/i2c.h>
 #include "drmP.h"
 #include "drm.h"

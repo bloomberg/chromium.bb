@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2007 Dave Airlie <airlied@linux.ie>
+ * Copyright (c) 2007 Intel Corporation
+ *   Jesse Barnes <jesse.barnes@intel.com>
+ */
+
 #include <linux/i2c.h>
 #include <linux/fb.h>
 #include "drmP.h"

@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2007 Intel Corporation
+ *   Jesse Barnes <jesse.barnes@intel.com>
+ */
+
 #include <linux/i2c.h>
 #include <linux/fb.h>
 #include "drmP.h"
@@ -73,7 +78,7 @@ struct detailed_data_monitor_range {
 	u16 sec_gtf_toggle; /* A000=use above, 20=use below */
 	u8 hfreq_start_khz; /* need to multiply by 2 */
 	u8 c; /* need to divide by 2 */
-	u16 m;
+	u16 m; /* FIXME: byte order */
 	u8 k;
 	u8 j; /* need to divide by 2 */
 } __attribute__((packed));
@@ -126,9 +131,9 @@ struct detailed_timing {
 struct edid {
 	u8 header[8];
 	/* Vendor & product info */
-	u16 mfg_id;
-	u16 prod_code;
-	u32 serial;
+	u16 mfg_id; /* FIXME: byte order */
+	u16 prod_code; /* FIXME: byte order */
+	u32 serial; /* FIXME: byte order */
 	u8 mfg_week;
 	u8 mfg_year;
 	/* EDID version */
