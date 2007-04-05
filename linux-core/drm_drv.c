@@ -123,6 +123,7 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 					     DRM_AUTH },
 
 	[DRM_IOCTL_NR(DRM_IOCTL_UPDATE_DRAW)] = {drm_update_drawable_info, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_IOCTL_MODE_GETRESOURCES)] = {drm_mode_getresources, DRM_ROOT_ONLY},
 };
 
 #define DRM_CORE_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )

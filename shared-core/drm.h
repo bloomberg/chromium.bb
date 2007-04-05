@@ -888,6 +888,74 @@ typedef union drm_mm_init_arg{
 	} rep;
 } drm_mm_init_arg_t;
 
+/*
+ * Drm mode setting
+ */
+
+struct drm_mode_modeinfo {
+
+	unsigned int id;
+
+	unsigned int clock;
+	unsigned short hdisplay, hsync_start, hsync_end, htotal, hskew;
+	unsigned short vdisplay, vsync_start, vsync_end, vtotal, vscan;
+
+	unsigned int flags;
+//	int count_flag;
+//	unsigned int __user *modeFlags;
+};
+
+struct drm_mode_card_res {
+
+	unsigned int fb_id;
+
+	int count_crtcs;
+	int count_outputs;
+	int count_modes;
+        struct drm_mode_modeinfo __user *modes;
+
+};
+
+struct drm_mode_crtc {
+	unsigned int crtc_id; /**< Id */
+	unsigned int buffer_id; /**< Id of framebuffer */
+
+	int x, y; /**< Position on the frameuffer */
+	unsigned int width, height;
+	unsigned int mode; /**< Current mode used */
+
+	int count_outputs;
+	unsigned int outputs; /**< Outputs that are connected */
+
+	int count_possibles;
+	unsigned int possibles; /**< Outputs that can be connected */
+
+	unsigned int __user *set_outputs; /**< Outputs to be connected */
+
+	int gamma_size;
+
+};
+
+struct drm_mode_get_output {
+
+	unsigned int output; /**< Id */
+	unsigned int crtc; /**< Id of crtc */
+
+	unsigned int connection;
+	unsigned int width, height; /**< HxW in millimeters */
+	unsigned int subpixel;
+
+	int count_crtcs;
+	unsigned int crtcs; /**< possible crtc to connect to */
+
+	int count_clones;
+	unsigned int clones; /**< list of clones */
+
+	int count_modes;
+	unsigned int __user *modes; /**< list of modes it supports */
+
+};
+
 /**
  * \name Ioctls Definitions
  */
@@ -958,6 +1026,10 @@ typedef union drm_mm_init_arg{
 #define DRM_IOCTL_MM_INIT               DRM_IOWR(0x3e, drm_mm_init_arg_t)
 
 #define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, drm_update_draw_t)
+
+#define DRM_IOCTL_MODE_GETRESOURCES     DRM_IOWR(0xA0, struct drm_mode_card_res)
+#define DRM_IOCTL_MODE_GETCRTC          DRM_IOWR(0xA1, drm_mode_crtc_t)
+#define DRM_IOCTL_MODE_GETOUTPUT        DRM_IOWR(0xA2, drm_mode_get_output_t)
 
 /*@}*/
 

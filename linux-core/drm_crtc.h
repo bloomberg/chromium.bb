@@ -9,6 +9,7 @@
 #include <linux/i2c.h>
 #include <linux/spinlock.h>
 #include <linux/types.h>
+#include <linux/idr.h>
 #include "drmP.h"
 #include "drm.h"
 
@@ -86,6 +87,7 @@ struct drm_display_mode {
 	/* Header */
 	struct list_head head;
 	char name[DRM_DISPLAY_MODE_LEN];
+	int mode_id;
 	enum drm_mode_status status;
 	int type;
 
@@ -392,6 +394,7 @@ struct drm_crtc_config_funcs {
  */
 struct drm_crtc_config {
 	spinlock_t config_lock;
+	struct idr mode_idr;
 	/* this is limited to one for now */
 	int num_fb;
 	struct list_head fb_list;
@@ -419,10 +422,20 @@ int drm_add_edid_modes(struct drm_output *output,
 			struct i2c_adapter *adapter);
 void drm_mode_probed_add(struct drm_output *output, struct drm_display_mode *mode);
 void drm_mode_remove(struct drm_output *output, struct drm_display_mode *mode);
-extern struct drm_display_mode *drm_mode_duplicate(struct drm_display_mode *mode);
+extern struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev,
+						   struct drm_display_mode *mode);
 extern void drm_mode_debug_printmodeline(struct drm_device *dev,
 					 struct drm_display_mode *mode);
 extern void drm_crtc_config_init(struct drm_device *dev);
 extern void drm_crtc_config_cleanup(struct drm_device *dev);
 extern void drm_disable_unused_functions(struct drm_device *dev);
+
+extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
+extern void drm_crtc_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode);
+
+/* IOCTLs */
+extern int drm_mode_getresources(struct inode *inode, struct file *filp,
+				 unsigned int cmd, unsigned long arg);
+
 #endif /* __DRM_CRTC_H__ */
+

@@ -154,7 +154,7 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	bool ret = false;
 	struct drm_output *output;
 
-	adjusted_mode = drm_mode_duplicate(mode);
+	adjusted_mode = drm_mode_duplicate(dev, mode);
 
 	crtc->enabled = drm_crtc_in_use(crtc);
 
@@ -230,6 +230,7 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	}
 	
 	/* XXX free adjustedmode */
+	drm_crtc_mode_destroy(dev, adjusted_mode);
 	ret = TRUE;
 	/* TODO */
 //	if (scrn->pScreen)
@@ -401,12 +402,48 @@ bool drm_output_rename(struct drm_output *output, const char *name)
 }
 EXPORT_SYMBOL(drm_output_rename);
 
+struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev)
+{
+	int ret;
+	struct drm_display_mode *nmode;
+
+	nmode = kzalloc(sizeof(struct drm_display_mode), GFP_KERNEL);
+	if (!nmode)
+		return NULL;
+
+again:
+	if (idr_pre_get(&dev->crtc_config.mode_idr, GFP_KERNEL) == 0) {
+		DRM_ERROR("Ran out memory getting a mode number\n");
+		kfree(nmode);
+		return NULL;
+	}
+
+	spin_lock(&dev->crtc_config.config_lock);
+	
+	ret = idr_get_new(&dev->crtc_config.mode_idr, nmode, &nmode->mode_id);
+	if (ret == -EAGAIN) {
+		udelay(1);
+		spin_unlock(&dev->crtc_config.config_lock);
+		goto again;
+	}
+	spin_unlock(&dev->crtc_config.config_lock);
+	return nmode;
+}
+
+void drm_crtc_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode)
+{
+	idr_remove(&dev->crtc_config.mode_idr, mode->mode_id);
+
+	kfree(mode);
+}
+
 void drm_crtc_config_init(drm_device_t *dev)
 {
 	spin_lock_init(&dev->crtc_config.config_lock);
 	INIT_LIST_HEAD(&dev->crtc_config.fb_list);
 	INIT_LIST_HEAD(&dev->crtc_config.crtc_list);
 	INIT_LIST_HEAD(&dev->crtc_config.output_list);
+	idr_init(&dev->crtc_config.mode_idr);
 }
 EXPORT_SYMBOL(drm_crtc_config_init);
 
@@ -441,7 +478,7 @@ void drm_framebuffer_set_object(drm_device_t *dev, unsigned long handle)
 	ret = 0;
 out_err:
 	mutex_unlock(&dev->struct_mutex);
-	return ret;
+	return;
 }
 EXPORT_SYMBOL(drm_framebuffer_set_object);
 
@@ -538,3 +575,86 @@ void drm_crtc_config_cleanup(drm_device_t *dev)
 }
 EXPORT_SYMBOL(drm_crtc_config_cleanup);
 
+void drm_crtc_convert_to_umode(struct drm_mode_modeinfo *out, struct drm_display_mode *in)
+{
+
+	out->id = in->mode_id;
+	out->clock = in->clock;
+	out->hdisplay = in->hdisplay;
+	out->hsync_start = in->hsync_start;
+	out->hsync_end = in->hsync_end;
+	out->htotal = in->htotal;
+	out->hskew = in->hskew;
+	out->vdisplay = in->vdisplay;
+	out->vsync_start = in->vsync_start;
+	out->vsync_end = in->vsync_end;
+	out->vtotal = in->vtotal;
+	out->vscan = in->vscan;
+	
+	out->flags = in->flags;
+}
+
+	
+/* IOCTL code from userspace */
+int drm_mode_getresources(struct inode *inode, struct file *filp,
+			  unsigned int cmd, unsigned long arg)
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->head->dev;
+	struct drm_mode_card_res __user *argp = (void __user *)arg;
+	struct drm_mode_card_res card_res;
+	struct list_head *lh;
+	struct drm_output *output;
+	struct drm_mode_modeinfo u_mode;
+	struct drm_display_mode *mode;
+	int retcode = 0;
+	int mode_count= 0;
+
+	memset(&u_mode, 0, sizeof(struct drm_mode_modeinfo));
+	list_for_each_entry(output, &dev->crtc_config.output_list,
+			    head)
+	{
+		list_for_each(lh, &output->modes)
+			mode_count++;
+	}
+
+	if (copy_from_user(&card_res, argp, sizeof(card_res)))
+		return -EFAULT;
+
+	if (card_res.count_modes >= mode_count) {
+		int copied = 0;
+		list_for_each_entry(output, &dev->crtc_config.output_list,
+				    head) {
+			list_for_each_entry(mode, &output->modes, head) {
+				drm_crtc_convert_to_umode(&u_mode, mode);
+				if (copy_to_user(&card_res.modes[copied++], &u_mode, sizeof(struct drm_mode_modeinfo))) {
+					retcode = -EFAULT;
+					goto done;
+				}
+			}
+		}
+	}
+
+	else {
+		list_for_each(lh, &dev->crtc_config.crtc_list)
+			card_res.count_crtcs++;
+		
+		list_for_each_entry(output, &dev->crtc_config.output_list,
+				    head)
+		{
+			list_for_each(lh, &output->modes)
+				card_res.count_modes++;
+			card_res.count_outputs++;
+		}
+	}
+
+done:
+	DRM_DEBUG("Counted %d %d %d\n", card_res.count_crtcs,
+		  card_res.count_outputs,
+		  card_res.count_modes);
+	
+	if (copy_to_user(argp, &card_res, sizeof(card_res)))
+		return -EFAULT;
+
+	return retcode;
+}
