@@ -166,6 +166,7 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
   char buffer[PATH_MAX];
   snprintf(buffer, sizeof(buffer), "/tmp/dump_syms_filtXXXXX");
   int fd = mkstemp(buffer);
+  unlink(buffer);
   char nl = '\n';
   for (unsigned int i = 0; i < count; ++i) {
     const char *symbol = [[symbols objectAtIndex:i] UTF8String];
