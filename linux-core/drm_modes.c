@@ -115,15 +115,18 @@ void drm_mode_set_crtcinfo(struct drm_display_mode *p, int adjust_flags)
 EXPORT_SYMBOL(drm_mode_set_crtcinfo);
 
 
-struct drm_display_mode *drm_mode_duplicate(struct drm_display_mode *mode)
+struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev, struct drm_display_mode *mode)
 {
 	struct drm_display_mode *nmode;
+	int new_id;
 
-	nmode = kzalloc(sizeof(struct drm_display_mode), GFP_KERNEL);
+	nmode = drm_crtc_mode_create(dev);
 	if (!nmode)
 		return NULL;
 
+	new_id = nmode->mode_id;
 	*nmode = *mode;
+	nmode->mode_id = new_id;
 	INIT_LIST_HEAD(&nmode->head);
 	return nmode;
 }

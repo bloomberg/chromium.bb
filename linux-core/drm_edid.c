@@ -217,7 +217,8 @@ bad:
  *
  * Punts for now.
  */
-struct drm_display_mode *drm_mode_std(struct std_timing *t)
+struct drm_display_mode *drm_mode_std(struct drm_device *dev,
+				      struct std_timing *t)
 {
 //	struct fb_videomode mode;
 
@@ -226,7 +227,7 @@ struct drm_display_mode *drm_mode_std(struct std_timing *t)
 	struct drm_display_mode *mode;
 	int hsize = t->hsize * 8 + 248, vsize;
 
-	mode = kzalloc(sizeof(struct drm_display_mode), GFP_KERNEL);
+	mode = drm_crtc_mode_create(dev);
 	if (!mode)
 		return NULL;
 
@@ -244,7 +245,8 @@ struct drm_display_mode *drm_mode_std(struct std_timing *t)
 	return mode;
 }
 
-struct drm_display_mode *drm_mode_detailed(struct detailed_timing *timing,
+struct drm_display_mode *drm_mode_detailed(drm_device_t *dev,
+					   struct detailed_timing *timing,
 					   bool preferred)
 {
 	struct drm_display_mode *mode;
@@ -259,7 +261,7 @@ struct drm_display_mode *drm_mode_detailed(struct detailed_timing *timing,
 		return NULL;
 	}
 
-	mode = kzalloc(sizeof(struct drm_display_mode), GFP_KERNEL);
+	mode = drm_crtc_mode_create(dev);
 	if (!mode)
 		return NULL;
 
@@ -362,6 +364,7 @@ static struct drm_display_mode established_modes[] = {
  */
 static int add_established_modes(struct drm_output *output, struct edid *edid)
 {
+	struct drm_device *dev = output->dev;
 	unsigned long est_bits = edid->established_timings.t1 |
 		(edid->established_timings.t2 << 8) |
 		((edid->established_timings.mfg_rsvd & 0x80) << 9);
@@ -370,7 +373,7 @@ static int add_established_modes(struct drm_output *output, struct edid *edid)
 	for (i = 0; i <= EDID_EST_TIMINGS; i++)
 		if (est_bits & (1<<i)) {
 			drm_mode_probed_add(output,
-				    drm_mode_duplicate(&established_modes[i]));
+					    drm_mode_duplicate(dev, &established_modes[i]));
 			modes++;
 		}
 
@@ -387,6 +390,7 @@ static int add_established_modes(struct drm_output *output, struct edid *edid)
 static int add_standard_modes(struct drm_output *output, struct edid *edid)
 {
 	int i, modes = 0;
+	struct drm_device *dev = output->dev;
 
 	for (i = 0; i < EDID_STD_TIMINGS; i++) {
 		struct std_timing *t = &edid->standard_timings[i];
@@ -396,7 +400,7 @@ static int add_standard_modes(struct drm_output *output, struct edid *edid)
 			continue;
 
 		drm_mode_probed_add(output,
-				 drm_mode_std(&edid->standard_timings[i]));
+				    drm_mode_std(dev, &edid->standard_timings[i]));
 		modes++;
 	}
 
@@ -414,6 +418,7 @@ static int add_detailed_info(struct drm_output *output, struct edid *edid)
 {
 	int i, j, modes = 0;
 	bool preferred = 0;
+	struct drm_device *dev = output->dev;
 
 	for (i = 0; i < EDID_DETAILED_TIMINGS; i++) {
 		struct detailed_timing *timing = &edid->detailed_timings[i];
@@ -428,7 +433,7 @@ static int add_detailed_info(struct drm_output *output, struct edid *edid)
 			if (i == 0 && edid->preferred_timing)
 				preferred = 1;
 			drm_mode_probed_add(output,
-					 drm_mode_detailed(timing, preferred));
+					    drm_mode_detailed(dev, timing, preferred));
 			modes++;
 			continue;
 		}
@@ -451,7 +456,7 @@ static int add_detailed_info(struct drm_output *output, struct edid *edid)
 				struct std_timing *std;
 
 				std = &data->data.timings[j];
-				drm_mode_probed_add(output, drm_mode_std(std));
+				drm_mode_probed_add(output, drm_mode_std(dev, std));
 				modes++;
 			}
 			break;
