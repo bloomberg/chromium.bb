@@ -286,7 +286,7 @@ err_allocs:
 	return 0;
 }
 
-#if 0
+
 int drmModeSetCrtc(
 		int fd, uint32_t crtcId, uint32_t bufferId,
 		uint32_t x, uint32_t y, uint32_t modeId,
@@ -302,15 +302,16 @@ int drmModeSetCrtc(
 
 	crtc.x             = x;
 	crtc.y             = y;
-	crtc.crtcId        = crtcId;
-	crtc.bufferId      = bufferId;
+	crtc.crtc_id        = crtcId;
+	crtc.fb_id      = bufferId;
 	crtc.set_outputs   = outputs;
 	crtc.count_outputs = count;
 	crtc.mode          = modeId;
 
-	//	return ioctl(fd, DRM_IOCTL_MODE_SETCRTC, &crtc);
+	return ioctl(fd, DRM_IOCTL_MODE_SETCRTC, &crtc);
 }
 
+#if 0
 drmModeGammaTriplePtr drmModeGetCrtcGamma(int fd, uint32_t crtc, int *count)
 {
 	/* TODO impl */

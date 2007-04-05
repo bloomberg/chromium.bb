@@ -272,7 +272,7 @@ struct drm_crtc {
 	struct drm_display_mode mode;
 
 	int x, y;
-	struct drm_display_mode desired_mode;
+	struct drm_display_mode *desired_mode;
 	int desired_x, desired_y;
 	const struct drm_crtc_funcs *funcs;
 	void *driver_private;
@@ -443,5 +443,7 @@ extern int drm_mode_getcrtc(struct inode *inode, struct file *filp,
 			    unsigned int cmd, unsigned long arg);
 extern int drm_mode_getoutput(struct inode *inode, struct file *filp,
 			      unsigned int cmd, unsigned long arg);
+extern int drm_mode_setcrtc(struct inode *inode, struct file *filp,
+			    unsigned int cmd, unsigned long arg);
 #endif /* __DRM_CRTC_H__ */
 

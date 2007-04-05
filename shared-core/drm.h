@@ -1036,7 +1036,7 @@ struct drm_mode_get_output {
 #define DRM_IOCTL_MODE_GETRESOURCES     DRM_IOWR(0xA0, struct drm_mode_card_res)
 #define DRM_IOCTL_MODE_GETCRTC          DRM_IOWR(0xA1, struct drm_mode_crtc)
 #define DRM_IOCTL_MODE_GETOUTPUT        DRM_IOWR(0xA2, struct drm_mode_get_output)
-
+#define DRM_IOCTL_MODE_SETCRTC          DRM_IOWR(0xA3, struct drm_mode_crtc)
 /*@}*/
 
 /**

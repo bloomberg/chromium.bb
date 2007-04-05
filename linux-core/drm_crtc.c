@@ -302,10 +302,10 @@ bool drm_set_desired_modes(struct drm_device *dev)
 			continue;
 
 		memset(&crtc->mode, 0, sizeof(crtc->mode));
-		if (!crtc->desired_mode.crtc_hdisplay) {
+		if (!crtc->desired_mode->crtc_hdisplay) {
 			
 		}
-		if (!drm_crtc_set_mode(crtc, &crtc->desired_mode,
+		if (!drm_crtc_set_mode(crtc, crtc->desired_mode,
 				       crtc->desired_x, crtc->desired_y))
 			return false;
 	}
@@ -556,7 +556,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 				break;
 			DRM_DEBUG("Setting desired mode for output %s\n", output->name);
 			drm_mode_debug_printmodeline(dev, des_mode);
-			output->crtc->desired_mode = *des_mode;
+			output->crtc->desired_mode = des_mode;
 			output->initial_x = 0;
 			output->initial_y = 0;
 			use_output = output;
@@ -568,7 +568,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 				break;
 			DRM_DEBUG("Setting desired mode for output %s\n", output->name);
 			drm_mode_debug_printmodeline(dev, des_mode);
-			output->crtc->desired_mode = *des_mode;
+			output->crtc->desired_mode = des_mode;
 #endif
 			output->initial_x = 0;
 			output->initial_y = 0;
@@ -595,6 +595,68 @@ void drm_crtc_config_cleanup(drm_device_t *dev)
 	}
 }
 EXPORT_SYMBOL(drm_crtc_config_cleanup);
+
+int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, struct drm_display_mode *new_mode, struct drm_output **output_set)
+{
+	drm_device_t *dev = crtc->dev;
+	struct drm_crtc **save_crtcs, *new_crtc;
+	bool save_enabled = crtc->enabled;
+	bool changed;
+	struct drm_output *output;
+	int count = 0, ro;
+
+	save_crtcs = kzalloc(dev->crtc_config.num_crtc * sizeof(struct drm_crtc *), GFP_KERNEL);
+	if (!save_crtcs)
+		return -ENOMEM;
+
+	if (crtc_info->x != crtc->x || crtc_info->y != crtc->y)
+		changed = true;
+
+	if (crtc->mode.mode_id != new_mode->mode_id)
+		changed = true;
+
+	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+		save_crtcs[count++] = output->crtc;
+
+		if (output->crtc == crtc)
+			new_crtc = NULL;
+		else
+			new_crtc = output->crtc;
+
+		for (ro = 0; ro < crtc_info->count_outputs; ro++)
+		{
+			if (output_set[ro] == output)
+				new_crtc = crtc;
+		}
+		if (new_crtc != output->crtc) {
+			changed = true;
+			output->crtc = new_crtc;
+		}
+	}
+
+	if (changed) {
+		crtc->enabled = new_mode != NULL;
+		if (new_mode) {
+			DRM_DEBUG("attempting to set mode from userspace\n");
+			drm_mode_debug_printmodeline(dev, new_mode);
+			if (!drm_crtc_set_mode(crtc, new_mode, crtc_info->x,
+					       crtc_info->y)) {
+				crtc->enabled = save_enabled;
+				count = 0;
+				list_for_each_entry(output, &dev->crtc_config.output_list, head)
+					output->crtc = save_crtcs[count++];
+				kfree(save_crtcs);
+				return -EINVAL;
+			}
+			crtc->desired_x = crtc_info->x;
+			crtc->desired_y = crtc_info->y;
+			crtc->desired_mode =  new_mode;
+		}
+		drm_disable_unused_functions(dev);
+	}
+	kfree(save_crtcs);
+	return 0;
+}
 
 void drm_crtc_convert_to_umode(struct drm_mode_modeinfo *out, struct drm_display_mode *in)
 {
@@ -757,7 +819,6 @@ int drm_mode_getoutput(struct inode *inode, struct file *filp,
 	drm_device_t *dev = priv->head->dev;
 	struct drm_mode_get_output __user *argp = (void __user *)arg;
 	struct drm_mode_get_output out_resp;
-	struct drm_crtc *crtc;
 	struct drm_output *output;
 	struct drm_display_mode *mode;
 	int mode_count = 0;
@@ -798,5 +859,62 @@ done:
 	if (copy_to_user(argp, &out_resp, sizeof(out_resp)))
 		return -EFAULT;
 
+	return retcode;
+}
+
+
+int drm_mode_setcrtc(struct inode *inode, struct file *filp,
+		     unsigned int cmd, unsigned long arg)
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->head->dev;
+	struct drm_mode_crtc __user *argp = (void __user *)arg;
+	struct drm_mode_crtc crtc_req;
+	struct drm_crtc *crtc;
+	struct drm_output **output_set = NULL, *output;
+	struct drm_display_mode *mode;
+	int retcode = 0;
+	int i;
+
+	if (copy_from_user(&crtc_req, argp, sizeof(crtc_req)))
+		return -EFAULT;
+
+	crtc = idr_find(&dev->crtc_config.crtc_idr, crtc_req.crtc_id);
+	if (!crtc || (crtc->id != crtc_req.crtc_id))
+		return -EINVAL;
+
+	if (crtc_req.mode) {
+		mode = idr_find(&dev->crtc_config.crtc_idr, crtc_req.mode);
+		if (!mode || (mode->mode_id != crtc_req.mode))
+			return -EINVAL;
+	} else
+		mode = NULL;
+
+	if (crtc_req.count_outputs == 0 && mode)
+		return -EINVAL;
+
+	if (crtc_req.count_outputs > 0 && !mode)
+		return -EINVAL;
+
+	if (crtc_req.count_outputs > 0) {
+		u32 out_id;
+		output_set = kmalloc(crtc_req.count_outputs * sizeof(struct drm_output *), GFP_KERNEL);
+		if (!output_set)
+			return -ENOMEM;
+
+		for (i = 0; i < crtc_req.count_outputs; i++)
+		{
+			if (get_user(out_id, &crtc_req.set_outputs[i]))
+				return -EFAULT;
+
+			output = idr_find(&dev->crtc_config.crtc_idr, out_id);
+			if (!output || (out_id != output->id))
+				return -EINVAL;
+
+			output_set[i] = output;
+		}
+	}
+		
+	retcode = drm_crtc_set_config(crtc, &crtc_req, mode, output_set);
 	return retcode;
 }
