@@ -1,18 +1,15 @@
 /*
  * Copyright (c) 2007 Intel Corporation
  *   Jesse Barnes <jesse.barnes@intel.com>
+ *
+ * DDC probing routines (drm_ddc_read & drm_do_probe_ddc_edid) originally from
+ * FB layer.
  */
-
 #include <linux/i2c.h>
-#include <linux/fb.h>
+#include <linux/i2c-algo-bit.h>
 #include "drmP.h"
-#include "intel_drv.h"
 
-/*
- * DDC/EDID probing rippped off from FB layer
- */
-
-#include "edid.h"
+#define EDID_LENGTH 128
 #define DDC_ADDR 0x50
 
 #ifdef BIG_ENDIAN
@@ -75,7 +72,7 @@ struct detailed_data_monitor_range {
 	u8 min_hfreq_khz;
 	u8 max_hfreq_khz;
 	u8 pixel_clock_mhz; /* need to multiply by 10 */
-	u16 sec_gtf_toggle; /* A000=use above, 20=use below */
+	u16 sec_gtf_toggle; /* A000=use above, 20=use below */ /* FIXME: byte order */
 	u8 hfreq_start_khz; /* need to multiply by 2 */
 	u8 c; /* need to divide by 2 */
 	u16 m; /* FIXME: byte order */
@@ -114,14 +111,14 @@ struct detailed_non_pixel {
 } __attribute__((packed));
 
 #define EDID_DETAIL_STD_MODES 0xfa
-#define EDID_DETAIL_CPDATA 0xfb
-#define EDID_DETAIL_NAME 0xfc
-#define EDID_DETAIL_RANGE 0xfd
-#define EDID_DETAIL_STRING 0xfe
-#define EDID_DETAIL_SERIAL 0xff
+#define EDID_DETAIL_MONITOR_CPDATA 0xfb
+#define EDID_DETAIL_MONITOR_NAME 0xfc
+#define EDID_DETAIL_MONITOR_RANGE 0xfd
+#define EDID_DETAIL_MONITOR_STRING 0xfe
+#define EDID_DETAIL_MONITOR_SERIAL 0xff
 
 struct detailed_timing {
-	u16 pixel_clock; /* need to multiply by 10 KHz */
+	u16 pixel_clock; /* need to multiply by 10 KHz */ /* FIXME: byte order */
 	union {
 		struct detailed_pixel_timing pixel_data;
 		struct detailed_non_pixel other_data;
@@ -184,6 +181,14 @@ struct edid {
 
 static u8 edid_header[] = { 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 };
 
+/**
+ * edid_valid - sanity check EDID data
+ * @edid: EDID data
+ *
+ * Sanity check the EDID block by looking at the header, the version number
+ * and the checksum.  Return 0 if the EDID doesn't check out, or 1 if it's
+ * valid.
+ */
 static bool edid_valid(struct edid *edid)
 {
 	int i;
@@ -215,7 +220,8 @@ bad:
  * Take the standard timing params (in this case width, aspect, and refresh)
  * and convert them into a real mode using CVT.
  *
- * Punts for now.
+ * Punts for now, but should eventually use the FB layer's CVT based mode
+ * generation code.
  */
 struct drm_display_mode *drm_mode_std(struct drm_device *dev,
 				      struct std_timing *t)
@@ -245,19 +251,28 @@ struct drm_display_mode *drm_mode_std(struct drm_device *dev,
 	return mode;
 }
 
+/**
+ * drm_mode_detailed - create a new mode from an EDID detailed timing section
+ * @timing: EDID detailed timing info
+ * @preferred: is this a preferred mode?
+ *
+ * An EDID detailed timing block contains enough info for us to create and
+ * return a new struct drm_display_mode.  The @preferred flag will be set
+ * if this is the display's preferred timing, and we'll use it to indicate
+ * to the other layers that this mode is desired.
+ */
 struct drm_display_mode *drm_mode_detailed(drm_device_t *dev,
-					   struct detailed_timing *timing,
-					   bool preferred)
+					   struct detailed_timing *timing)
 {
 	struct drm_display_mode *mode;
 	struct detailed_pixel_timing *pt = &timing->data.pixel_data;
 
 	if (pt->stereo) {
-		printk(KERN_ERR "stereo mode not supported\n");
+		printk(KERN_WARNING "stereo mode not supported\n");
 		return NULL;
 	}
 	if (!pt->separate_sync) {
-		printk(KERN_ERR "integrated sync not supported\n");
+		printk(KERN_WARNING "integrated sync not supported\n");
 		return NULL;
 	}
 
@@ -266,7 +281,6 @@ struct drm_display_mode *drm_mode_detailed(drm_device_t *dev,
 		return NULL;
 
 	mode->type = DRM_MODE_TYPE_DRIVER;
-	mode->type |= preferred ? DRM_MODE_TYPE_PREFERRED : 0;
 	mode->clock = timing->pixel_clock / 100;
 
 	mode->hdisplay = (pt->hactive_hi << 8) | pt->hactive_lo;
@@ -297,7 +311,10 @@ struct drm_display_mode *drm_mode_detailed(drm_device_t *dev,
 	return mode;
 }
 
-static struct drm_display_mode established_modes[] = {
+/*
+ * Detailed mode info for the EDID "established modes" data to use.
+ */
+static struct drm_display_mode edid_est_modes[] = {
 	{ DRM_MODE("800x600", DRM_MODE_TYPE_DRIVER, 40000, 800, 840,
 		   968, 1056, 0, 600, 601, 605, 628, 0,
 		   V_PHSYNC | V_PVSYNC) }, /* 800x600@60Hz */
@@ -372,8 +389,9 @@ static int add_established_modes(struct drm_output *output, struct edid *edid)
 
 	for (i = 0; i <= EDID_EST_TIMINGS; i++)
 		if (est_bits & (1<<i)) {
-			drm_mode_probed_add(output,
-					    drm_mode_duplicate(dev, &established_modes[i]));
+			struct drm_display_mode *newmode;
+			newmode = drm_mode_duplicate(dev, &edid_est_modes[i]);
+			drm_mode_probed_add(output, newmode);
 			modes++;
 		}
 
@@ -381,7 +399,7 @@ static int add_established_modes(struct drm_output *output, struct edid *edid)
 }
 
 /**
- * add_established_modes - get std. modes from EDID and add them
+ * add_standard_modes - get std. modes from EDID and add them
  * @edid: EDID block to scan
  *
  * Standard modes can be calculated using the CVT standard.  Grab them from
@@ -389,18 +407,19 @@ static int add_established_modes(struct drm_output *output, struct edid *edid)
  */
 static int add_standard_modes(struct drm_output *output, struct edid *edid)
 {
-	int i, modes = 0;
 	struct drm_device *dev = output->dev;
+	int i, modes = 0;
 
 	for (i = 0; i < EDID_STD_TIMINGS; i++) {
 		struct std_timing *t = &edid->standard_timings[i];
+		struct drm_display_mode *newmode;
 
 		/* If std timings bytes are 1, 1 it's empty */
 		if (t->hsize == 1 && (t->aspect_ratio | t->vfreq) == 1)
 			continue;
 
-		drm_mode_probed_add(output,
-				    drm_mode_std(dev, &edid->standard_timings[i]));
+		newmode = drm_mode_std(dev, &edid->standard_timings[i]);
+		drm_mode_probed_add(output, newmode);
 		modes++;
 	}
 
@@ -416,13 +435,13 @@ static int add_standard_modes(struct drm_output *output, struct edid *edid)
  */
 static int add_detailed_info(struct drm_output *output, struct edid *edid)
 {
-	int i, j, modes = 0;
-	bool preferred = 0;
 	struct drm_device *dev = output->dev;
+	int i, j, modes = 0;
 
 	for (i = 0; i < EDID_DETAILED_TIMINGS; i++) {
 		struct detailed_timing *timing = &edid->detailed_timings[i];
 		struct detailed_non_pixel *data = &timing->data.other_data;
+		struct drm_display_mode *newmode;
 
 		/* EDID up to and including 1.2 may put monitor info here */
 		if (edid->version == 1 && edid->revision < 3)
@@ -430,33 +449,38 @@ static int add_detailed_info(struct drm_output *output, struct edid *edid)
 
 		/* Detailed mode timing */
 		if (timing->pixel_clock) {
+			newmode = drm_mode_detailed(dev, timing);
+			/* First detailed mode is preferred */
 			if (i == 0 && edid->preferred_timing)
-				preferred = 1;
-			drm_mode_probed_add(output,
-					    drm_mode_detailed(dev, timing, preferred));
+				newmode->type |= DRM_MODE_TYPE_PREFERRED;
+			drm_mode_probed_add(output, newmode);
+				     
 			modes++;
 			continue;
 		}
 
 		/* Other timing or info */
 		switch (data->type) {
-		case EDID_DETAIL_SERIAL:
+		case EDID_DETAIL_MONITOR_SERIAL:
 			break;
-		case EDID_DETAIL_STRING:
+		case EDID_DETAIL_MONITOR_STRING:
 			break;
-		case EDID_DETAIL_RANGE:
+		case EDID_DETAIL_MONITOR_RANGE:
+			/* Get monitor range data */
 			break;
-		case EDID_DETAIL_NAME:
+		case EDID_DETAIL_MONITOR_NAME:
 			break;
-		case EDID_DETAIL_CPDATA:
+		case EDID_DETAIL_MONITOR_CPDATA:
 			break;
 		case EDID_DETAIL_STD_MODES:
 			/* Five modes per detailed section */
 			for (j = 0; j < 5; i++) {
 				struct std_timing *std;
+				struct drm_display_mode *newmode;
 
 				std = &data->data.timings[j];
-				drm_mode_probed_add(output, drm_mode_std(dev, std));
+				newmode = drm_mode_std(dev, std);
+				drm_mode_probed_add(output, newmode);
 				modes++;
 			}
 			break;
@@ -466,6 +490,108 @@ static int add_detailed_info(struct drm_output *output, struct edid *edid)
 	}
 
 	return modes;
+}
+
+#define DDC_ADDR 0x50
+
+static unsigned char *drm_do_probe_ddc_edid(struct i2c_adapter *adapter)
+{
+	unsigned char start = 0x0;
+	unsigned char *buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
+	struct i2c_msg msgs[] = {
+		{
+			.addr	= DDC_ADDR,
+			.flags	= 0,
+			.len	= 1,
+			.buf	= &start,
+		}, {
+			.addr	= DDC_ADDR,
+			.flags	= I2C_M_RD,
+			.len	= EDID_LENGTH,
+			.buf	= buf,
+		}
+	};
+
+	if (!buf) {
+		dev_warn(&adapter->dev, "unable to allocate memory for EDID "
+			 "block.\n");
+		return NULL;
+	}
+
+	if (i2c_transfer(adapter, msgs, 2) == 2)
+		return buf;
+
+	dev_info(&adapter->dev, "unable to read EDID block.\n");
+	kfree(buf);
+	return NULL;
+}
+
+static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
+{
+	struct i2c_algo_bit_data *algo_data = adapter->algo_data;
+	unsigned char *edid = NULL;
+	int i, j;
+
+	/*
+	 * Startup the bus:
+	 *   Set clock line high (but give it time to come up)
+	 *   Then set clock & data low
+	 */
+	algo_data->setscl(algo_data->data, 1);
+	udelay(550); /* startup delay */
+	algo_data->setscl(algo_data->data, 0);
+	algo_data->setsda(algo_data->data, 0);
+
+	for (i = 0; i < 3; i++) {
+		/* For some old monitors we need the
+		 * following process to initialize/stop DDC
+		 */
+		algo_data->setsda(algo_data->data, 0);
+		msleep(13);
+
+		algo_data->setscl(algo_data->data, 1);
+		for (j = 0; j < 5; j++) {
+			msleep(10);
+			if (algo_data->getscl(algo_data->data))
+				break;
+		}
+		if (j == 5)
+			continue;
+
+		algo_data->setsda(algo_data->data, 0);
+		msleep(15);
+		algo_data->setscl(algo_data->data, 0);
+		msleep(15);
+		algo_data->setsda(algo_data->data, 1);
+		msleep(15);
+
+		/* Do the real work */
+		edid = drm_do_probe_ddc_edid(adapter);
+		algo_data->setsda(algo_data->data, 0);
+		algo_data->setscl(algo_data->data, 0);
+		msleep(15);
+
+		algo_data->setscl(algo_data->data, 1);
+		for (j = 0; j < 10; j++) {
+			msleep(10);
+			if (algo_data->getscl(algo_data->data))
+				break;
+		}
+
+		algo_data->setsda(algo_data->data, 1);
+		msleep(15);
+		algo_data->setscl(algo_data->data, 0);
+		if (edid)
+			break;
+	}
+	/* Release the DDC lines when done or the Apple Cinema HD display
+	 * will switch off
+	 */
+	algo_data->setsda(algo_data->data, 0);
+	algo_data->setscl(algo_data->data, 0);
+	algo_data->setscl(algo_data->data, 1);
+
+	return edid;
 }
 
 /**
@@ -481,42 +607,26 @@ static int add_detailed_info(struct drm_output *output, struct edid *edid)
 int drm_add_edid_modes(struct drm_output *output, struct i2c_adapter *adapter)
 {
 	struct edid *edid;
-	u8 *raw_edid;
-	int i, est_modes, std_modes, det_modes;
+	int num_modes = 0;
 
-	edid = (struct edid *)fb_ddc_read(adapter);
-
+	edid = (struct edid *)drm_ddc_read(adapter);
 	if (!edid) {
-		dev_warn(&output->dev->pdev->dev, "no EDID data\n");
+		dev_warn(&output->dev->pdev->dev, "%s: no EDID data\n",
+			 output->name);
 		goto out_err;
 	}
 
 	if (!edid_valid(edid)) {
-		dev_warn(&output->dev->pdev->dev, "EDID invalid, ignoring.\n");
+		dev_warn(&output->dev->pdev->dev, "%s: EDID invalid.\n",
+			 output->name);
 		goto out_err;
 	}
 
-	est_modes = add_established_modes(output, edid);
-	std_modes = add_standard_modes(output, edid);
-	det_modes = add_detailed_info(output, edid);
-	printk(KERN_ERR "est modes: %d, std_modes: %d, det_modes: %d\n",
-	       est_modes, std_modes, det_modes);
+	num_modes += add_established_modes(output, edid);
+	num_modes += add_standard_modes(output, edid);
+	num_modes += add_detailed_info(output, edid);
 
-	raw_edid = (u8 *)edid;
-	printk(KERN_ERR "EDID:\n" KERN_ERR);
-	for (i = 0; i < EDID_LENGTH; i++) {
-		if (i != 0 && ((i % 16) == 0))
-		    printk("\n" KERN_ERR);
-		printk("%02x", raw_edid[i] & 0xff);
-	}
-	printk("\n");
-
-	printk(KERN_ERR "EDID info:\n");
-	printk(KERN_ERR "  mfg_id: 0x%04x\n", edid->mfg_id);
-	printk(KERN_ERR "  digital?  %s\n", edid->digital ? "Yes" : "No");
-	printk(KERN_ERR "  extensions: %d\n", edid->extensions);
-
-	return est_modes + std_modes + det_modes;
+	return num_modes;
 
 out_err:
 	kfree(edid);
