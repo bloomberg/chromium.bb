@@ -124,7 +124,6 @@ void intel_lvds_init(drm_device_t *dev)
 	}
 
 	modes = intel_ddc_get_modes(output);
-	printk(KERN_ERR "LVDS: added %d modes from EDID.\n", modes);
 	intel_i2c_destroy(intel_output->ddc_bus);
 	drm_output_destroy(output);
 }
