@@ -340,8 +340,6 @@ void drm_disable_unused_functions(struct drm_device *dev)
  */
 void drm_mode_probed_add(struct drm_output *output, struct drm_display_mode *mode)
 {
-	printk(KERN_ERR "adding DDC mode %s to output %s\n", mode->name,
-	       output->name);
 	spin_lock(&output->modes_lock);
 	list_add(&mode->head, &output->probed_modes);
 	spin_unlock(&output->modes_lock);
@@ -440,7 +438,6 @@ EXPORT_SYMBOL(drm_output_rename);
 
 struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev)
 {
-	int ret;
 	struct drm_display_mode *nmode;
 
 	nmode = kzalloc(sizeof(struct drm_display_mode), GFP_KERNEL);
@@ -506,7 +503,8 @@ EXPORT_SYMBOL(drm_framebuffer_set_object);
 bool drm_initial_config(drm_device_t *dev, bool can_grow)
 {
 	/* do a hardcoded initial configuration here */
-	struct drm_crtc *crtc, *vga_crtc = NULL, *dvi_crtc = NULL;
+	struct drm_crtc *crtc, *vga_crtc = NULL, *dvi_crtc = NULL,
+		*lvds_crtc = NULL;;
 	struct drm_framebuffer *fb;
 	struct drm_output *output, *use_output = NULL;
 
@@ -523,14 +521,18 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 	/* bind both CRTCs to this fb */
 	/* only initialise one crtc to enabled state */
 	list_for_each_entry(crtc, &dev->crtc_config.crtc_list, head) {
-		DRM_DEBUG("crtc is %d\n", crtc->id);
 		crtc->fb = fb;
 		if (!vga_crtc) {
 			vga_crtc = crtc;
 			crtc->enabled = 1;
 			crtc->desired_x = 0;
 			crtc->desired_y = 0;
-		} 
+		} else if (!lvds_crtc) {
+			lvds_crtc = crtc;
+			crtc->enabled = 1;
+			crtc->desired_x = 0;
+			crtc->desired_y = 0;
+		}
 #if 0
 		else if (!dvi_crtc) {
 			dvi_crtc = crtc;
@@ -549,27 +551,30 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
 		struct drm_display_mode *des_mode;
 
-		if (strncmp(output->name, "VGA", 3)) {
-			output->crtc = vga_crtc;
-			/* just pull the first mode out of that hat */
-			list_for_each_entry(des_mode, &output->modes, head)
+		/* Get the first preferred moded */
+		list_for_each_entry(des_mode, &output->modes, head) {
+			if (des_mode->flags & DRM_MODE_TYPE_PREFERRED)
 				break;
-			DRM_DEBUG("Setting desired mode for output %s\n", output->name);
+		}
+		if (!strncmp(output->name, "VGA", 3)) {
+			output->crtc = vga_crtc;
 			drm_mode_debug_printmodeline(dev, des_mode);
 			output->crtc->desired_mode = des_mode;
 			output->initial_x = 0;
 			output->initial_y = 0;
 			use_output = output;
-		} else if (strncmp(output->name, "TMDS", 4)) {
+		} else if (!strncmp(output->name, "TMDS", 4)) {
 			output->crtc = vga_crtc;
 #if 0
-			/* just pull the first mode out of that hat */
-			list_for_each_entry(des_mode, &output->modes, head)
-				break;
-			DRM_DEBUG("Setting desired mode for output %s\n", output->name);
 			drm_mode_debug_printmodeline(dev, des_mode);
 			output->crtc->desired_mode = des_mode;
 #endif
+			output->initial_x = 0;
+			output->initial_y = 0;
+		} else 	if (!strncmp(output->name, "LVDS", 3)) {
+			output->crtc = lvds_crtc;
+			drm_mode_debug_printmodeline(dev, des_mode);
+			output->crtc->desired_mode = des_mode;
 			output->initial_x = 0;
 			output->initial_y = 0;
 		} else

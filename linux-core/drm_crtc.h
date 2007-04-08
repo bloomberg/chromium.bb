@@ -10,8 +10,6 @@
 #include <linux/spinlock.h>
 #include <linux/types.h>
 #include <linux/idr.h>
-#include "drmP.h"
-#include "drm.h"
 
 struct drm_device;
 
@@ -79,7 +77,7 @@ enum drm_mode_status {
 	.hdisplay = (hd), .hsync_start = (hss), .hsync_end = (hse), \
 	.htotal = (ht), .hskew = (hsk), .vdisplay = (vd), \
 	.vsync_start = (vss), .vsync_end = (vse), .vtotal = (vt), \
-	.vscan = (vs), .flags = (f)
+	.vscan = (vs), .flags = (f), .vrefresh = 0
 
 struct drm_display_mode {
 	/* Header */
@@ -128,7 +126,7 @@ struct drm_display_mode {
 	int private_flags;
 
 	int vrefresh;
-	float hsync;//, vrefresh;
+	float hsync;
 };
 
 /* Video mode flags */
@@ -417,13 +415,13 @@ struct drm_crtc_config {
 struct drm_output *drm_output_create(struct drm_device *dev,
 				     const struct drm_output_funcs *funcs,
 				     const char *name);
-void drm_output_destroy(struct drm_output *output);
-bool drm_output_rename(struct drm_output *output, const char *name);
+extern void drm_output_destroy(struct drm_output *output);
+extern bool drm_output_rename(struct drm_output *output, const char *name);
 
-int drm_add_edid_modes(struct drm_output *output,
+extern int drm_add_edid_modes(struct drm_output *output,
 			struct i2c_adapter *adapter);
-void drm_mode_probed_add(struct drm_output *output, struct drm_display_mode *mode);
-void drm_mode_remove(struct drm_output *output, struct drm_display_mode *mode);
+extern void drm_mode_probed_add(struct drm_output *output, struct drm_display_mode *mode);
+extern void drm_mode_remove(struct drm_output *output, struct drm_display_mode *mode);
 extern struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev,
 						   struct drm_display_mode *mode);
 extern void drm_mode_debug_printmodeline(struct drm_device *dev,
@@ -445,5 +443,18 @@ extern int drm_mode_getoutput(struct inode *inode, struct file *filp,
 			      unsigned int cmd, unsigned long arg);
 extern int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 			    unsigned int cmd, unsigned long arg);
+extern void drm_mode_list_concat(struct list_head *head,
+				 struct list_head *new);
+extern void drm_mode_validate_size(struct drm_device *dev,
+				   struct list_head *mode_list,
+				   int maxX, int maxY, int maxPitch);
+extern void drm_mode_prune_invalid(struct drm_device *dev,
+				   struct list_head *mode_list, bool verbose);
+extern void drm_mode_sort(struct list_head *mode_list);
+extern int drm_mode_vrefresh(struct drm_display_mode *mode);
+extern void drm_mode_set_crtcinfo(struct drm_display_mode *p,
+				  int adjust_flags);
+extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
+
 #endif /* __DRM_CRTC_H__ */
 
