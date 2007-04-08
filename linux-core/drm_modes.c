@@ -75,7 +75,7 @@ int drm_mode_vrefresh(struct drm_display_mode *mode)
 	if (mode->vrefresh > 0)
 		refresh = mode->vrefresh;
 	else if (mode->htotal > 0 && mode->vtotal > 0) {
-		refresh = ((mode->clock * 1000) * 1000) / mode->htotal / mode->vtotal;
+		refresh = (mode->clock * 1000) / mode->htotal / mode->vtotal;
 		if (mode->flags & V_INTERLACE)
 			refresh *= 2;
 		if (mode->flags & V_DBLSCAN)
@@ -139,6 +139,13 @@ void drm_mode_set_crtcinfo(struct drm_display_mode *p, int adjust_flags)
 EXPORT_SYMBOL(drm_mode_set_crtcinfo);
 
 
+/**
+ * drm_mode_duplicate - allocate and duplicate an existing mode
+ * @m: mode to duplicate
+ *
+ * Just allocate a new mode, copy the existing mode into it, and return
+ * a pointer to it.  Used to create new instances of established modes.
+ */
 struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev, struct drm_display_mode *mode)
 {
 	struct drm_display_mode *nmode;
