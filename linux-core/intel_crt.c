@@ -109,10 +109,10 @@ static void intel_crt_mode_set(struct drm_output *output,
 	 * Disable separate mode multiplier used when cloning SDVO to CRT
 	 * XXX this needs to be adjusted when we really are cloning
 	 */
-	if (IS_I965G(dev))
-	{
+	if (IS_I965G(dev)) {
 		dpll_md = I915_READ(dpll_md_reg);
-		I915_WRITE(dpll_md_reg, dpll_md & ~DPLL_MD_UDI_MULTIPLIER_MASK);
+		I915_WRITE(dpll_md_reg,
+			   dpll_md & ~DPLL_MD_UDI_MULTIPLIER_MASK);
 	}
 	
 	adpa = 0;
@@ -143,8 +143,8 @@ static bool intel_crt_detect_hotplug(struct drm_output *output)
 //	struct intel_output *intel_output = output->driver_private;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	u32 temp;
-	const int timeout_ms = 1000;
-	int starttime, curtime;
+//	const int timeout_ms = 1000;
+//	int starttime, curtime;
 
 	temp = I915_READ(PORT_HOTPLUG_EN);
 
@@ -180,7 +180,6 @@ static bool intel_crt_detect_ddc(struct drm_output *output)
 static enum drm_output_status intel_crt_detect(struct drm_output *output)
 {
 	drm_device_t *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
 	
 	if (IS_I945G(dev)| IS_I945GM(dev) || IS_I965G(dev)) {
 		if (intel_crt_detect_hotplug(output))
@@ -227,9 +226,8 @@ void intel_crt_init(drm_device_t *dev)
 {
 	struct drm_output *output;
 	struct intel_output *intel_output;
-	int modes;
 
-	output = drm_output_create (dev, &intel_crt_output_funcs, "VGA");
+	output = drm_output_create(dev, &intel_crt_output_funcs, "VGA");
 
 	intel_output = kmalloc(sizeof(struct intel_output), GFP_KERNEL);
 	if (!intel_output) {
