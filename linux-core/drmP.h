@@ -587,9 +587,13 @@ typedef struct drm_vbl_sig {
 #define DRM_ATI_GART_MAIN 1
 #define DRM_ATI_GART_FB   2
 
+#define DRM_ATI_GART_PCI 1
+#define DRM_ATI_GART_PCIE 2
+#define DRM_ATI_GART_IGP 3
+
 typedef struct ati_pcigart_info {
 	int gart_table_location;
-	int is_pcie;
+	int gart_reg_if;
 	void *addr;
 	dma_addr_t bus_addr;
 	drm_local_map_t mapping;
