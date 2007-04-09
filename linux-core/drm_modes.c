@@ -37,7 +37,7 @@ void drm_mode_debug_printmodeline(struct drm_device *dev,
 				  struct drm_display_mode *mode)
 {
 	DRM_DEBUG("Modeline \"%s\" %d %d %d %d %d %d %d %d %d %d\n",
-		  mode->name, mode->vrefresh, mode->clock,
+		  mode->name, mode->vrefresh / 1000, mode->clock,
 		  mode->hdisplay, mode->hsync_start,
 		  mode->hsync_end, mode->htotal,
 		  mode->vdisplay, mode->vsync_start,
@@ -75,7 +75,7 @@ int drm_mode_vrefresh(struct drm_display_mode *mode)
 	if (mode->vrefresh > 0)
 		refresh = mode->vrefresh;
 	else if (mode->htotal > 0 && mode->vtotal > 0) {
-		refresh = (mode->clock * 1000) / mode->htotal / mode->vtotal;
+		refresh = ((mode->clock * 1000) * 1000) / mode->htotal / mode->vtotal;
 		if (mode->flags & V_INTERLACE)
 			refresh *= 2;
 		if (mode->flags & V_DBLSCAN)
