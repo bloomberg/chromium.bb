@@ -96,10 +96,11 @@
  * 1.25- Add support for r200 vertex programs (R200_EMIT_VAP_PVS_CNTL,
  *       new packet type)
  * 1.26- Add support for variable size PCI(E) gart aperture
+ * 1.27- Add support for IGP GART
  */
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		26
+#define DRIVER_MINOR		27
 #define DRIVER_PATCHLEVEL	0
 
 /*
