@@ -439,8 +439,8 @@ extern int r300_do_cp_cmdbuf(drm_device_t *dev, DRMFILE filp,
 #define RADEON_IGPGART_UNK_18           0x18
 #define RADEON_IGPGART_CTRL             0x2b
 #define RADEON_IGPGART_BASE_ADDR        0x2c
-#define RADEON_IGPGART_UNK_2E           0x2e
-#define RADEON_IGPGART_UNK_38           0x38
+#define RADEON_IGPGART_FLUSH            0x2e
+#define RADEON_IGPGART_ENABLE           0x38
 #define RADEON_IGPGART_UNK_39           0x39
 
 
