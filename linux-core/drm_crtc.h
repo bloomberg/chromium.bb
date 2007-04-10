@@ -178,7 +178,7 @@ struct drm_framebuffer {
 	unsigned int depth;
 	int bits_per_pixel;
 	int flags;
-        struct drm_buffer_object *bo;
+	struct drm_buffer_object *bo;
 };
 struct drm_crtc;
 struct drm_output;
@@ -456,8 +456,8 @@ extern int drm_mode_getoutput(struct inode *inode, struct file *filp,
 extern int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 			    unsigned int cmd, unsigned long arg);
 extern int drm_mode_addfb(struct inode *inode, struct file *filp,
-                          unsigned int cmd, unsigned long arg);
+			  unsigned int cmd, unsigned long arg);
 extern int drm_mode_rmfb(struct inode *inode, struct file *filp,
-                         unsigned int cmd, unsigned long arg);
+			 unsigned int cmd, unsigned long arg);
 #endif /* __DRM_CRTC_H__ */
 

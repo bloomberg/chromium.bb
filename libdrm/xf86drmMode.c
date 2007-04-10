@@ -311,11 +311,9 @@ err_allocs:
 }
 
 
-int drmModeSetCrtc(
-		int fd, uint32_t crtcId, uint32_t bufferId,
-		uint32_t x, uint32_t y, uint32_t modeId,
-		uint32_t *outputs, int count
-	)
+int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
+                   uint32_t x, uint32_t y, uint32_t modeId,
+                   uint32_t *outputs, int count)
 {
 	struct drm_mode_crtc crtc;
 

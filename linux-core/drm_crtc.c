@@ -371,7 +371,7 @@ struct drm_output *drm_output_create(drm_device_t *dev,
 {
 	struct drm_output *output = NULL;
 
-	output = kmalloc(sizeof(struct drm_output), GFP_KERNEL);
+	output = kzalloc(sizeof(struct drm_output), GFP_KERNEL);
 	if (!output)
 		return NULL;
 		
@@ -471,13 +471,13 @@ static int drm_get_buffer_object(drm_device_t *dev, struct drm_buffer_object **b
 	drm_hash_item_t *hash;
 	int ret;
 
-        *bo = NULL;
+	*bo = NULL;
 
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_ht_find_item(&dev->object_hash, handle, &hash);
 	if (ret) {
 		DRM_ERROR("Couldn't find handle.\n");
-                ret = -EINVAL;
+		ret = -EINVAL;
 		goto out_err;
 	}
 
@@ -486,7 +486,7 @@ static int drm_get_buffer_object(drm_device_t *dev, struct drm_buffer_object **b
 		ret = -EINVAL;
 		goto out_err;
 	}
-        
+	
 	*bo = drm_user_object_entry(uo, drm_buffer_object_t, base);
 	ret = 0;
 out_err:
@@ -517,7 +517,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 	/* bind both CRTCs to this fb */
 	/* only initialise one crtc to enabled state */
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		crtc->fb = fb;
+		//		crtc->fb = fb;
 		if (!vga_crtc) {
 			vga_crtc = crtc;
 			crtc->enabled = 1;
@@ -699,15 +699,14 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 	int output_count = 0;
 	int crtc_count = 0;
 	int copied = 0;
-
+	
 	memset(&u_mode, 0, sizeof(struct drm_mode_modeinfo));
 
 	list_for_each(lh, &dev->mode_config.crtc_list)
 		crtc_count++;
 
 	list_for_each_entry(output, &dev->mode_config.output_list,
-			    head)
-	{
+			    head) {
 		output_count++;
 		list_for_each(lh, &output->modes)
 			mode_count++;
@@ -715,6 +714,16 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 
 	if (copy_from_user(&card_res, argp, sizeof(card_res)))
 		return -EFAULT;
+
+	if (card_res.count_modes == 0) {
+		DRM_DEBUG("probing modes %dx%d\n", dev->mode_config.max_width, dev->mode_config.max_height);
+		drm_crtc_probe_output_modes(dev, dev->mode_config.max_width, dev->mode_config.max_height);
+		mode_count = 0;
+		list_for_each_entry(output, &dev->mode_config.output_list, head) {
+			list_for_each(lh, &output->modes)
+				mode_count++;
+		}
+	}
 
 	/* handle this in 3 parts */
 	/* CRTCs */
@@ -829,13 +838,16 @@ int drm_mode_getoutput(struct inode *inode, struct file *filp,
 	if (copy_from_user(&out_resp, argp, sizeof(out_resp)))
 		return -EFAULT;	
 
+	DRM_DEBUG("output id %d\n", out_resp.output);
 	output= idr_find(&dev->mode_config.crtc_idr, out_resp.output);
 	if (!output || (output->id != out_resp.output))
 		return -EINVAL;
 
+	DRM_DEBUG("about to count modes\n");
 	list_for_each_entry(mode, &output->modes, head)
 		mode_count++;
 
+	DRM_DEBUG("about to count modes %d %d %p\n", mode_count, out_resp.count_modes, output->crtc);
 	out_resp.mm_width = output->mm_width;
 	out_resp.mm_height = output->mm_height;
 	out_resp.subpixel = output->subpixel_order;
@@ -845,7 +857,7 @@ int drm_mode_getoutput(struct inode *inode, struct file *filp,
 	else
 		out_resp.crtc = 0;
 
-	if (out_resp.count_modes >= mode_count) {
+	if ((out_resp.count_modes >= mode_count) && mode_count) {
 		copied = 0;
 		list_for_each_entry(mode, &output->modes, head) {
 			if (put_user(mode->mode_id, &out_resp.modes[copied++])) {
@@ -882,20 +894,40 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 
 	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_req.crtc_id);
 	if (!crtc || (crtc->id != crtc_req.crtc_id))
+	{
+		DRM_DEBUG("Unknown CRTC ID %d\n", crtc_req.crtc_id);
 		return -EINVAL;
+	}
 
 	if (crtc_req.mode) {
 		mode = idr_find(&dev->mode_config.crtc_idr, crtc_req.mode);
 		if (!mode || (mode->mode_id != crtc_req.mode))
+		{
+			{
+				struct drm_output *output;
+
+				list_for_each_entry(output, &dev->mode_config.output_list, head) {
+					list_for_each_entry(mode, &output->modes, head) {
+						drm_mode_debug_printmodeline(dev, mode);
+					}
+				}
+			}
+
+			DRM_DEBUG("Unknown mode id %d, %p\n", crtc_req.mode, mode);
 			return -EINVAL;
+		}
 	} else
 		mode = NULL;
 
-	if (crtc_req.count_outputs == 0 && mode)
+	if (crtc_req.count_outputs == 0 && mode) {
+		DRM_DEBUG("Count outputs is 0 but mode set\n");
 		return -EINVAL;
+	}
 
-	if (crtc_req.count_outputs > 0 && !mode)
+	if (crtc_req.count_outputs > 0 && !mode) {
+		DRM_DEBUG("Count outputs is %d but no mode set\n", crtc_req.count_outputs);
 		return -EINVAL;
+	}
 
 	if (crtc_req.count_outputs > 0) {
 		u32 out_id;
@@ -903,14 +935,15 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 		if (!output_set)
 			return -ENOMEM;
 
-		for (i = 0; i < crtc_req.count_outputs; i++)
-		{
+		for (i = 0; i < crtc_req.count_outputs; i++) {
 			if (get_user(out_id, &crtc_req.set_outputs[i]))
 				return -EFAULT;
 
 			output = idr_find(&dev->mode_config.crtc_idr, out_id);
-			if (!output || (out_id != output->id))
+			if (!output || (out_id != output->id)) {
+				DRM_DEBUG("Output id %d unknown\n", out_id);
 				return -EINVAL;
+			}
 
 			output_set[i] = output;
 		}
@@ -922,16 +955,16 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 
 /* Add framebuffer ioctl */
 int drm_mode_addfb(struct inode *inode, struct file *filp,
-                   unsigned int cmd, unsigned long arg)
+		   unsigned int cmd, unsigned long arg)
 {
 	struct drm_file *priv = filp->private_data;
 	struct drm_device *dev = priv->head->dev;
 	struct drm_mode_fb_cmd __user *argp = (void __user *)arg;
 	struct drm_mode_fb_cmd r;
-        struct drm_mode_config *config = &dev->mode_config;
+	struct drm_mode_config *config = &dev->mode_config;
 	struct drm_framebuffer *fb;
 	struct drm_buffer_object *bo;
-        int ret;
+	int ret;
 
 	if (copy_from_user(&r, argp, sizeof(r)))
 		return -EFAULT;
@@ -939,16 +972,16 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 	if ((config->min_width > r.width) || (r.width > config->max_width)) {
 		DRM_ERROR("mode new framebuffer width not within limits\n");
 		return -EINVAL;
-        }
+	}
 	if ((config->min_height > r.height) || (r.height > config->max_height)) {
 		DRM_ERROR("mode new framebuffer height not within limits\n");
 		return -EINVAL;
 	}
 
 	/* TODO check limits are okay */
-        ret = drm_get_buffer_object(dev, &bo, r.handle);
-        if (ret || !bo)
-                return -EINVAL;
+	ret = drm_get_buffer_object(dev, &bo, r.handle);
+	if (ret || !bo)
+		return -EINVAL;
 
 	/* TODO check buffer is sufficently large */
 	/* TODO setup destructor callback */
@@ -957,22 +990,30 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 	if(!fb)
 		return -EINVAL;;
 
-	fb->width          = r.width;
-	fb->height         = r.height;
-	fb->pitch          = r.pitch;
+	fb->width	  = r.width;
+	fb->height	 = r.height;
+	fb->pitch	  = r.pitch;
 	fb->bits_per_pixel = r.bpp;
-	fb->offset         = bo->offset;
-	fb->bo             = bo;
+	fb->offset	 = bo->offset;
+	fb->bo	     = bo;
 
-        r.buffer_id = fb->id;
-        if (copy_to_user(argp, &r, sizeof(r)))
-                return -EFAULT;
+	r.buffer_id = fb->id;
+
+	/* bind the fb to the crtc for now */
+	{
+		struct drm_crtc *crtc;
+		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+			crtc->fb = fb;
+		}
+	}
+	if (copy_to_user(argp, &r, sizeof(r)))
+		return -EFAULT;
 
 	return 0;
 }
 
 int drm_mode_rmfb(struct inode *inode, struct file *filp,
-                  unsigned int cmd, unsigned long arg)
+		  unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
