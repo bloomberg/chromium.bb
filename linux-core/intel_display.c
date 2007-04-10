@@ -26,8 +26,6 @@
 
 #include <linux/i2c.h>
 #include "drmP.h"
-#include "drm.h"
-#include "drm_crtc.h"
 #include "intel_drv.h"
 #include "i915_drm.h"
 #include "i915_drv.h"
@@ -973,10 +971,115 @@ static void intel_crtc_gamma_set(struct drm_crtc *crtc, u16 *red, u16 *green,
 	intel_crtc_load_lut(crtc);
 }
 
+/* Returns the clock of the currently programmed mode of the given pipe. */
+static int intel_crtc_clock_get(struct drm_device *dev, struct drm_crtc *crtc)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct intel_crtc *intel_crtc = crtc->driver_private;
+	int pipe = intel_crtc->pipe;
+	u32 dpll = I915_READ((pipe == 0) ? DPLL_A : DPLL_B);
+	u32 fp;
+	intel_clock_t clock;
+
+	if ((dpll & DISPLAY_RATE_SELECT_FPA1) == 0)
+		fp = I915_READ((pipe == 0) ? FPA0 : FPB0);
+	else
+		fp = I915_READ((pipe == 0) ? FPA1 : FPB1);
+
+	clock.m1 = (fp & FP_M1_DIV_MASK) >> FP_M1_DIV_SHIFT;
+	clock.m2 = (fp & FP_M2_DIV_MASK) >> FP_M2_DIV_SHIFT;
+	clock.n = (fp & FP_N_DIV_MASK) >> FP_N_DIV_SHIFT;
+	if (IS_I9XX(dev)) {
+		clock.p1 = ffs((dpll & DPLL_FPA01_P1_POST_DIV_MASK) >>
+			       DPLL_FPA01_P1_POST_DIV_SHIFT);
+
+		switch (dpll & DPLL_MODE_MASK) {
+		case DPLLB_MODE_DAC_SERIAL:
+			clock.p2 = dpll & DPLL_DAC_SERIAL_P2_CLOCK_DIV_5 ?
+				5 : 10;
+			break;
+		case DPLLB_MODE_LVDS:
+			clock.p2 = dpll & DPLLB_LVDS_P2_CLOCK_DIV_7 ?
+				7 : 14;
+			break;
+		default:
+			DRM_DEBUG("Unknown DPLL mode %08x in programmed "
+				  "mode\n", (int)(dpll & DPLL_MODE_MASK));
+			return 0;
+		}
+
+		/* XXX: Handle the 100Mhz refclk */
+		i9xx_clock(96000, &clock);
+	} else {
+		bool is_lvds = (pipe == 1) && (I915_READ(LVDS) & LVDS_PORT_EN);
+
+		if (is_lvds) {
+			clock.p1 = ffs((dpll & DPLL_FPA01_P1_POST_DIV_MASK_I830_LVDS) >>
+				       DPLL_FPA01_P1_POST_DIV_SHIFT);
+			clock.p2 = 14;
+
+			if ((dpll & PLL_REF_INPUT_MASK) ==
+			    PLLB_REF_INPUT_SPREADSPECTRUMIN) {
+				/* XXX: might not be 66MHz */
+				i8xx_clock(66000, &clock);
+			} else
+				i8xx_clock(48000, &clock);		
+		} else {
+			if (dpll & PLL_P1_DIVIDE_BY_TWO)
+				clock.p1 = 2;
+			else {
+				clock.p1 = ((dpll & DPLL_FPA01_P1_POST_DIV_MASK_I830) >>
+					    DPLL_FPA01_P1_POST_DIV_SHIFT) + 2;
+			}
+			if (dpll & PLL_P2_DIVIDE_BY_4)
+				clock.p2 = 4;
+			else
+				clock.p2 = 2;
+
+			i8xx_clock(48000, &clock);
+		}
+	}
+
+	/* XXX: It would be nice to validate the clocks, but we can't reuse
+	 * i830PllIsValid() because it relies on the xf86_config output
+	 * configuration being accurate, which it isn't necessarily.
+	 */
+
+	return clock.dot;
+}
+
+/** Returns the currently programmed mode of the given pipe. */
 struct drm_display_mode *intel_crtc_mode_get(drm_device_t *dev,
 					     struct drm_crtc *crtc)
 {
-	return NULL;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct intel_crtc *intel_crtc = crtc->driver_private;
+	int pipe = intel_crtc->pipe;
+	struct drm_display_mode *mode;
+	int htot = I915_READ((pipe == 0) ? HTOTAL_A : HTOTAL_B);
+	int hsync = I915_READ((pipe == 0) ? HSYNC_A : HSYNC_B);
+	int vtot = I915_READ((pipe == 0) ? VTOTAL_A : VTOTAL_B);
+	int vsync = I915_READ((pipe == 0) ? VSYNC_A : VSYNC_B);
+
+	mode = kzalloc(sizeof(*mode), GFP_KERNEL);
+	if (!mode)
+		return NULL;
+
+	mode->clock = intel_crtc_clock_get(dev, crtc);
+	mode->hdisplay = (htot & 0xffff) + 1;
+	mode->htotal = ((htot & 0xffff0000) >> 16) + 1;
+	mode->hsync_start = (hsync & 0xffff) + 1;
+	mode->hsync_end = ((hsync & 0xffff0000) >> 16) + 1;
+	mode->vdisplay = (vtot & 0xffff) + 1;
+	mode->vtotal = ((vtot & 0xffff0000) >> 16) + 1;
+	mode->vsync_start = (vsync & 0xffff) + 1;
+	mode->vsync_end = ((vsync & 0xffff0000) >> 16) + 1;
+	/* FIXME: pull name generation into a common routine */
+	snprintf(mode->name, DRM_DISPLAY_MODE_LEN, "%dx%d", mode->hdisplay,
+		 mode->vdisplay);
+	drm_mode_set_crtcinfo(mode, 0);
+
+	return mode;
 }
 
 static const struct drm_crtc_funcs intel_crtc_funcs = {
@@ -1017,7 +1120,7 @@ void intel_crtc_init(drm_device_t *dev, int pipe)
 	crtc->driver_private = intel_crtc;
 }
 
-int intel_output_clones (drm_device_t *dev, int type_mask)
+int intel_output_clones(drm_device_t *dev, int type_mask)
 {
 	int index_mask = 0;
 	struct drm_output *output;
@@ -1039,9 +1142,11 @@ static void intel_setup_outputs(drm_device_t *dev)
 
 	intel_crt_init(dev);
 
+#if 0
 	/* Set up integrated LVDS */
 	if (IS_MOBILE(dev) && !IS_I830(dev))
 		intel_lvds_init(dev);
+#endif
 
 	if (IS_I9XX(dev)) {
 		intel_sdvo_init(dev, SDVOB);
@@ -1105,6 +1210,7 @@ void intel_modeset_init(drm_device_t *dev)
 	intel_setup_outputs(dev);
 
 	drm_initial_config(dev, false);
+	drm_set_desired_modes(dev);
 }
 
 void intel_modeset_cleanup(drm_device_t *dev)

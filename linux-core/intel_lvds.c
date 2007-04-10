@@ -31,6 +31,7 @@
 #include "drmP.h"
 #include "drm.h"
 #include "drm_crtc.h"
+#include "drm_edid.h"
 #include "intel_drv.h"
 #include "i915_drm.h"
 #include "i915_drv.h"
@@ -262,7 +263,7 @@ static int intel_lvds_get_modes(struct drm_output *output)
 	struct intel_output *intel_output = output->driver_private;
 	struct drm_device *dev = output->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	struct drm_monitor_info *edid_mon;
+	struct edid *edid_info;
 	int ret = 0;
 
 	intel_output->ddc_bus = intel_i2c_create(dev, GPIOC, "LVDSDDC_C");
@@ -276,23 +277,29 @@ static int intel_lvds_get_modes(struct drm_output *output)
 	ret = intel_ddc_get_modes(output);
 	if (ret)
 		return ret;
-#if 0
+
+	/* Didn't get an EDID */
 	if (!output->monitor_info) {
-		edid_mon = kzalloc(sizeof(*output->monitor_info), GFP_KERNEL);
-		if (edid_mon) {
-			/* Set wide sync ranges so we get all modes
-			 * handed to valid_mode for checking
-			 */
-			edid_mon->det_mon[0].type = DS_RANGES;
-			edid_mon->det_mon[0].section.ranges.min_v = 0;
-			edid_mon->det_mon[0].section.ranges.max_v = 200;
-			edid_mon->det_mon[0].section.ranges.min_h = 0;
-			edid_mon->det_mon[0].section.ranges.max_h = 200;
-	    
-			output->monitor_info = edid_mon;
-		}
+		struct detailed_data_monitor_range *edid_range;
+		edid_info = kzalloc(sizeof(*output->monitor_info), GFP_KERNEL);
+		if (!edid_info)
+			goto out;
+
+		edid_info->detailed_timings[0].data.other_data.type =
+			EDID_DETAIL_MONITOR_RANGE;
+		edid_range = &edid_info->detailed_timings[0].data.other_data.data.range;
+
+		/* Set wide sync ranges so we get all modes
+		 * handed to valid_mode for checking
+		 */
+		edid_range->min_vfreq = 0;
+		edid_range->max_vfreq = 200;
+		edid_range->min_hfreq_khz = 0;
+		edid_range->max_hfreq_khz = 200;
+		output->monitor_info = edid_info;
 	}
-#endif
+
+out:
 	if (dev_priv->panel_fixed_mode != NULL) {
 		struct drm_display_mode *mode =
 			drm_mode_duplicate(dev, dev_priv->panel_fixed_mode);
@@ -322,13 +329,19 @@ static const struct drm_output_funcs intel_lvds_output_funcs = {
 	.cleanup = intel_lvds_destroy
 };
 
-void
-intel_lvds_init(struct drm_device *dev)
+/**
+ * intel_lvds_init - setup LVDS outputs on this device
+ * @dev: drm device
+ *
+ * Create the output, register the LVDS DDC bus, and try to figure out what
+ * modes we can display on the LVDS panel (if present).
+ */
+void intel_lvds_init(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_output *output;
 	struct intel_output *intel_output;
-	struct drm_display_mode *modes, scan, bios_mode;
+	struct drm_display_mode *scan; /* *modes, *bios_mode; */
 
 	output = drm_output_create(dev, &intel_lvds_output_funcs, "LVDS");
 	if (!output)
@@ -356,37 +369,43 @@ intel_lvds_init(struct drm_device *dev)
 			break;
 	}
 
-	if (scan != NULL)
+	if (scan)
 		dev_priv->panel_fixed_mode = scan;
 
-#if 0
 	/*
 	 * If we didn't get EDID, try checking if the panel is already turned
 	 * on.  If so, assume that whatever is currently programmed is the
 	 * correct mode.
 	 */
-	if (dev_priv->panel_fixed_mode == NULL) {
+	if (!dev_priv->panel_fixed_mode) {
 		u32 lvds = I915_READ(LVDS);
 		int pipe = (lvds & LVDS_PIPEB_SELECT) ? 1 : 0;
-		struct drm_crtc_config *crtc_config = dev->crtc_config;
-		struct drm_crtc *crtc = crtc_config->crtc[pipe];
-
-		if (lvds & LVDS_PORT_EN) {
-			dev_priv->panel_fixed_mode = intel_crtc_mode_get(pScrn, crtc);
-			if (dev_priv->panel_fixed_mode != NULL)
-				dev_priv->panel_fixed_mode->type |= M_T_PREFERRED;
+		struct drm_crtc_config *crtc_config = &dev->crtc_config;
+		struct drm_crtc *crtc;
+		/* FIXME: need drm_crtc_from_pipe */
+		//crtc = drm_crtc_from_pipe(crtc_config, pipe);
+		
+		if (lvds & LVDS_PORT_EN && 0) {
+			dev_priv->panel_fixed_mode =
+				intel_crtc_mode_get(dev, crtc);
+			if (dev_priv->panel_fixed_mode)
+				dev_priv->panel_fixed_mode->type |=
+					DRM_MODE_TYPE_PREFERRED;
 		}
 	}
 
-	/* Get the LVDS fixed mode out of the BIOS.  We should support LVDS with
-	 * the BIOS being unavailable or broken, but lack the configuration options
-	 * for now.
+/* No BIOS poking yet... */
+#if 0
+	/* Get the LVDS fixed mode out of the BIOS.  We should support LVDS
+	 * with the BIOS being unavailable or broken, but lack the
+	 * configuration options for now.
 	 */
 	bios_mode = intel_bios_get_panel_mode(pScrn);
 	if (bios_mode != NULL) {
 		if (dev_priv->panel_fixed_mode != NULL) {
 			if (dev_priv->debug_modes &&
-			    !xf86ModesEqual(dev_priv->panel_fixed_mode, bios_mode))
+			    !xf86ModesEqual(dev_priv->panel_fixed_mode,
+					    bios_mode))
 			{
 				xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 					   "BIOS panel mode data doesn't match probed data, "
@@ -439,35 +458,3 @@ intel_lvds_init(struct drm_device *dev)
 #endif
 	return;
 }
-
-#if 0
-/**
- * intel_lvds_init - setup LVDS outputs on this device
- * @dev: drm device
- *
- * Create the output, register the LVDS DDC bus, and try to figure out what
- * modes we can display on the LVDS panel (if present).
- */
-void intel_lvds_init(drm_device_t *dev)
-{
-	struct drm_output *output;
-	struct intel_output *intel_output;
-	int modes;
-
-	output = drm_output_create(dev, &intel_lvds_output_funcs, "LVDS");
-	if (!output)
-		return;
-
-	intel_output = kmalloc(sizeof(struct intel_output), GFP_KERNEL);
-	if (!intel_output) {
-		drm_output_destroy(output);
-		return;
-	}
-
-	intel_output->type = INTEL_OUTPUT_LVDS;
-	output->driver_private = intel_output;
-	output->subpixel_order = SubPixelHorizontalRGB;
-	output->interlace_allowed = 0;
-	output->doublescan_allowed = 0;
-}
-#endif

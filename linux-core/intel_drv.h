@@ -71,4 +71,7 @@ extern void intel_lvds_init(drm_device_t *dev);
 extern void intel_crtc_load_lut(struct drm_crtc *crtc);
 extern void intel_output_prepare (struct drm_output *output);
 extern void intel_output_commit (struct drm_output *output);
+extern struct drm_display_mode *intel_crtc_mode_get(drm_device_t *dev,
+						    struct drm_crtc *crtc);
+
 #endif /* __INTEL_DRV_H__ */
