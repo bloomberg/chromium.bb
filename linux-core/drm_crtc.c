@@ -838,16 +838,19 @@ int drm_mode_getoutput(struct inode *inode, struct file *filp,
 	if (copy_from_user(&out_resp, argp, sizeof(out_resp)))
 		return -EFAULT;	
 
-	DRM_DEBUG("output id %d\n", out_resp.output);
+	DRM_DEBUG("output id %d:\n", out_resp.output);
 	output= idr_find(&dev->mode_config.crtc_idr, out_resp.output);
 	if (!output || (output->id != out_resp.output))
 		return -EINVAL;
 
-	DRM_DEBUG("about to count modes\n");
+	DRM_DEBUG("about to count modes: %s\n", output->name);
 	list_for_each_entry(mode, &output->modes, head)
 		mode_count++;
 
 	DRM_DEBUG("about to count modes %d %d %p\n", mode_count, out_resp.count_modes, output->crtc);
+	strncpy(out_resp.name, output->name, DRM_OUTPUT_NAME_LEN);
+	out_resp.name[DRM_OUTPUT_NAME_LEN-1] = 0;
+
 	out_resp.mm_width = output->mm_width;
 	out_resp.mm_height = output->mm_height;
 	out_resp.subpixel = output->subpixel_order;

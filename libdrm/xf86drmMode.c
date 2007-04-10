@@ -40,6 +40,7 @@
 #include "xf86drmMode.h"
 #include "xf86drm.h"
 #include <drm.h>
+#include <string.h>
 
 /*
  * Util functions
@@ -385,7 +386,8 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 	r->crtcs        = out.crtcs;
 	r->clones       = out.clones;
 	r->modes        = drmAllocCpy(out.modes, out.count_modes, sizeof(uint32_t));
-
+	strncpy(r->name, out.name, DRM_OUTPUT_NAME_LEN);
+	r->name[DRM_OUTPUT_NAME_LEN-1] = 0;
 	return r;
 
 err_allocs:

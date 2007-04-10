@@ -120,7 +120,7 @@ typedef enum {
 typedef struct _drmModeOutput {
 
 	unsigned int crtc; /**< Crtc currently connected to */
-
+	unsigned char name[DRM_OUTPUT_NAME_LEN];
 	drmModeConnection connection;
 	uint32_t mmWidth, mmHeight; /**< HxW in millimeters */
 	drmModeSubPixel subpixel;

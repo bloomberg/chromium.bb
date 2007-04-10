@@ -891,7 +891,7 @@ typedef union drm_mm_init_arg{
 /*
  * Drm mode setting
  */
-
+#define DRM_OUTPUT_NAME_LEN 32
 #define DRM_DISPLAY_MODE_LEN 32
 
 struct drm_mode_modeinfo {
@@ -946,6 +946,7 @@ struct drm_mode_get_output {
 
 	unsigned int output; /**< Id */
 	unsigned int crtc; /**< Id of crtc */
+	unsigned char name[DRM_OUTPUT_NAME_LEN];
 
 	unsigned int connection;
 	unsigned int mm_width, mm_height; /**< HxW in millimeters */
