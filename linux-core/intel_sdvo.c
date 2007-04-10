@@ -209,11 +209,30 @@ static void intel_sdvo_write_cmd(struct drm_output *output, u8 cmd,
 				 void *args, int args_len)
 {
 	struct intel_output *intel_output = output->driver_private;
+	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	int i;
 
+        if (1) {
+                printk("%s: W: %02X ", SDVO_NAME(sdvo_priv), cmd);
+                for (i = 0; i < args_len; i++)
+                        printk("%02X ", ((u8 *)args)[i]);
+                for (; i < 8; i++)
+                        printk("   ");
+                for (i = 0; i < sizeof(sdvo_cmd_names) / sizeof(sdvo_cmd_names[0]); i++) {
+                        if (cmd == sdvo_cmd_names[i].cmd) {
+                                printk("(%s)", sdvo_cmd_names[i].name);
+                                break;
+                        }
+                }
+                if (i == sizeof(sdvo_cmd_names)/ sizeof(sdvo_cmd_names[0]))
+                        printk("(%02X)",cmd);
+                printk("\n");
+        }
+                        
 	for (i = 0; i < args_len; i++) {
 		intel_sdvo_write_byte(output, SDVO_I2C_ARG_0 - i, ((u8*)args)[i]);
 	}
+
 	intel_sdvo_write_byte(output, SDVO_I2C_OPCODE, cmd);
 }
 
@@ -230,6 +249,8 @@ static const char *cmd_status_names[] = {
 static u8 intel_sdvo_read_response(struct drm_output *output, void *response,
 				   int response_len)
 {
+	struct intel_output *intel_output = output->driver_private;
+	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	int i;
 	u8 status;
 
@@ -242,6 +263,18 @@ static u8 intel_sdvo_read_response(struct drm_output *output, void *response,
 	/* read the return status */
 	intel_sdvo_read_byte(output, SDVO_I2C_CMD_STATUS, &status);
 
+        if (1) {
+                printk("%s: R: ", SDVO_NAME(sdvo_priv));
+                for (i = 0; i < response_len; i++)
+                        printk("%02X ", ((u8 *)response)[i]);
+                for (; i < 8; i++)
+                        printk("   ");
+                if (status <= SDVO_CMD_STATUS_SCALING_NOT_SUPP)
+                        printk("(%s)", cmd_status_names[status]);
+                else
+                        printk("(??? %d)", status);
+                printk("\n");
+        }
 	return status;
 
 }
