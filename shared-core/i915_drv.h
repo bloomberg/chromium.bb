@@ -133,6 +133,67 @@ typedef struct drm_i915_private {
 	spinlock_t swaps_lock;
 	drm_i915_vbl_swap_t vbl_swaps;
 	unsigned int swaps_pending;
+
+	/* LVDS info */
+	int backlight_duty_cycle;  /* restore backlight to this value */
+	bool panel_wants_dither;
+	struct drm_display_mode *panel_fixed_mode;
+
+	/* Register state */
+	u32 saveDSPACNTR;
+	u32 saveDSPBCNTR;
+	u32 savePIPEACONF;
+	u32 savePIPEBCONF;
+	u32 savePIPEASRC;
+	u32 savePIPEBSRC;
+	u32 saveFPA0;
+	u32 saveFPA1;
+	u32 saveDPLL_A;
+	u32 saveDPLL_A_MD;
+	u32 saveHTOTAL_A;
+	u32 saveHBLANK_A;
+	u32 saveHSYNC_A;
+	u32 saveVTOTAL_A;
+	u32 saveVBLANK_A;
+	u32 saveVSYNC_A;
+	u32 saveDSPASTRIDE;
+	u32 saveDSPASIZE;
+	u32 saveDSPAPOS;
+	u32 saveDSPABASE;
+	u32 saveDSPASURF;
+	u32 saveFPB0;
+	u32 saveFPB1;
+	u32 saveDPLL_B;
+	u32 saveDPLL_B_MD;
+	u32 saveHTOTAL_B;
+	u32 saveHBLANK_B;
+	u32 saveHSYNC_B;
+	u32 saveVTOTAL_B;
+	u32 saveVBLANK_B;
+	u32 saveVSYNC_B;
+	u32 saveDSPBSTRIDE;
+	u32 saveDSPBSIZE;
+	u32 saveDSPBPOS;
+	u32 saveDSPBBASE;
+	u32 saveDSPBSURF;
+	u32 saveVCLK_DIVISOR_VGA0;
+	u32 saveVCLK_DIVISOR_VGA1;
+	u32 saveVCLK_POST_DIV;
+	u32 saveVGACNTRL;
+	u32 saveADPA;
+	u32 saveLVDS;
+	u32 saveDVOA;
+	u32 saveDVOB;
+	u32 saveDVOC;
+	u32 savePP_ON;
+	u32 savePP_OFF;
+	u32 savePP_CONTROL;
+	u32 savePP_CYCLE;
+	u32 savePFIT_CONTROL;
+	u32 savePaletteA[256];
+	u32 savePaletteB[256];
+	u32 saveSWF[17];
+	u32 saveBLC_PWM_CTL;
 } drm_i915_private_t;
 
 enum intel_chip_family {
@@ -478,6 +539,8 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 #define PFIT_CONTROL	0x61230
 # define PFIT_ENABLE				(1 << 31)
+# define PFIT_PIPE_MASK				(3 << 29)
+# define PFIT_PIPE_SHIFT			29
 # define VERT_INTERP_DISABLE			(0 << 10)
 # define VERT_INTERP_BILINEAR			(1 << 10)
 # define VERT_INTERP_MASK			(3 << 10)
