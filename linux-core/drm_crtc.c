@@ -116,6 +116,7 @@ bool drm_crtc_in_use(struct drm_crtc *crtc)
 {
 	struct drm_output *output;
 	drm_device_t *dev = crtc->dev;
+	/* FIXME: Locking around list access? */
 	list_for_each_entry(output, &dev->crtc_config.output_list, head)
 		if (output->crtc == crtc)
 			return true;
@@ -504,7 +505,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 {
 	/* do a hardcoded initial configuration here */
 	struct drm_crtc *crtc, *vga_crtc = NULL, *dvi_crtc = NULL,
-		*lvds_crtc = NULL;;
+		*lvds_crtc = NULL;
 	struct drm_framebuffer *fb;
 	struct drm_output *output, *use_output = NULL;
 
@@ -517,7 +518,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 	fb->height = 768;
 	fb->depth = 24;
 	fb->bits_per_pixel = 32;
-	
+
 	/* bind both CRTCs to this fb */
 	/* only initialise one crtc to enabled state */
 	list_for_each_entry(crtc, &dev->crtc_config.crtc_list, head) {
@@ -533,14 +534,12 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 			crtc->desired_x = 0;
 			crtc->desired_y = 0;
 		}
-#if 0
 		else if (!dvi_crtc) {
 			dvi_crtc = crtc;
 			crtc->enabled = 1;
 			crtc->desired_x = 0;
 			crtc->desired_y = 0;
 		}
-#endif
 	}
 
 	drm_crtc_probe_output_modes(dev, 1024, 768);
@@ -565,10 +564,8 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 			use_output = output;
 		} else if (!strncmp(output->name, "TMDS", 4)) {
 			output->crtc = vga_crtc;
-#if 0
 			drm_mode_debug_printmodeline(dev, des_mode);
 			output->crtc->desired_mode = des_mode;
-#endif
 			output->initial_x = 0;
 			output->initial_y = 0;
 		} else 	if (!strncmp(output->name, "LVDS", 3)) {
