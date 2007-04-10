@@ -78,7 +78,7 @@ void i915_kernel_lost_context(drm_device_t * dev)
 		dev_priv->sarea_priv->perf_boxes |= I915_BOX_RING_EMPTY;
 }
 
-static int i915_dma_cleanup(drm_device_t * dev)
+int i915_dma_cleanup(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	/* Make sure interrupts are disabled here because the uninstall ioctl
@@ -855,78 +855,6 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-int i915_driver_load(drm_device_t *dev, unsigned long flags)
-{
-	drm_i915_private_t *dev_priv;
-	int ret;
-	unsigned long mmiobase, mmiolen;
-
-	dev_priv = drm_alloc(sizeof(drm_i915_private_t), DRM_MEM_DRIVER);
-	if (dev_priv == NULL)
-		return DRM_ERR(ENOMEM);
-
-	memset(dev_priv, 0, sizeof(drm_i915_private_t));
-	dev->dev_private = (void *)dev_priv;
-//	dev_priv->flags = flags;
-
-	/* i915 has 4 more counters */
-	dev->counters += 4;
-	dev->types[6] = _DRM_STAT_IRQ;
-	dev->types[7] = _DRM_STAT_PRIMARY;
-	dev->types[8] = _DRM_STAT_SECONDARY;
-	dev->types[9] = _DRM_STAT_DMA;
-
-	if (IS_I9XX(dev)) {
-		dev_priv->mmiobase = drm_get_resource_start(dev, 0);
-		dev_priv->mmiolen = drm_get_resource_len(dev, 0);
-	} else if (drm_get_resource_start(dev, 1)) {
-		dev_priv->mmiobase = drm_get_resource_start(dev, 1);
-		dev_priv->mmiolen = drm_get_resource_len(dev, 1);
-	} else {
-		DRM_ERROR("Unable to find MMIO registers\n");
-		return -ENODEV;
-	}
-
-	ret = drm_addmap(dev, dev_priv->mmiobase, dev_priv->mmiolen,
-			 _DRM_REGISTERS, _DRM_READ_ONLY, &dev_priv->mmio_map);
-	if (ret != 0) {
-		DRM_ERROR("Cannot add mapping for MMIO registers\n");
-		return ret;
-	}
- 
-	DRM_DEBUG("dev_priv->mmio map is %08X\n", dev_priv->mmio_map);
-	intel_modeset_init(dev);
-	return 0;
-}
-
-int i915_driver_unload(drm_device_t *dev)
-{
-	drm_i915_private_t *dev_priv = dev->dev_private;
-
-	intel_modeset_cleanup(dev);
-	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
-
-	dev->dev_private = NULL;
-	return 0;
-}
-
-void i915_driver_lastclose(drm_device_t * dev)
-{
-	drm_i915_private_t *dev_priv = dev->dev_private;
-	
-	i915_mem_takedown(&(dev_priv->agp_heap));
-
-	i915_dma_cleanup(dev);
-
-	dev_priv->mmio_map = NULL;
-}
-
-void i915_driver_preclose(drm_device_t * dev, DRMFILE filp)
-{
-	drm_i915_private_t *dev_priv = dev->dev_private;
-	i915_mem_release(dev, filp, dev_priv->agp_heap);
-}
-
 drm_ioctl_desc_t i915_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_I915_INIT)] = {i915_dma_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 	[DRM_IOCTL_NR(DRM_I915_FLUSH)] = {i915_flush_ioctl, DRM_AUTH},
@@ -981,7 +909,7 @@ int i915_driver_firstopen(struct drm_device *dev)
 		}
 	}
  
-	DRM_DEBUG("dev_priv->mmio map is %08X\n", dev_priv->mmio_map);
+	DRM_DEBUG("dev_priv->mmio map is %p\n", dev_priv->mmio_map);
 
 	return 0;
 }
