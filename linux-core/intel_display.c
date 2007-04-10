@@ -1090,6 +1090,11 @@ void intel_modeset_init(drm_device_t *dev)
 
 	drm_mode_config_init(dev);
 
+	dev->mode_config.min_width = 0;
+	dev->mode_config.min_height = 0;
+
+	dev->mode_config.max_width = 4096;
+	dev->mode_config.max_height = 4096;
 
 	if (IS_MOBILE(dev) || IS_I9XX(dev))
 		num_pipe = 2;
@@ -1104,7 +1109,7 @@ void intel_modeset_init(drm_device_t *dev)
 
 	intel_setup_outputs(dev);
 
-	drm_initial_config(dev, false);
+	//drm_initial_config(dev, false);
 }
 
 void intel_modeset_cleanup(drm_device_t *dev)

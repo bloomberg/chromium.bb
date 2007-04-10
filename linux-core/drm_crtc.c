@@ -502,6 +502,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 	struct drm_framebuffer *fb;
 	struct drm_output *output, *use_output = NULL;
 
+#if 0
 	fb = drm_framebuffer_create(dev);
 	if (!fb)
 		return false;
@@ -512,6 +513,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 	fb->depth = 24;
 	fb->bits_per_pixel = 32;
 	
+#endif
 	/* bind both CRTCs to this fb */
 	/* only initialise one crtc to enabled state */
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
@@ -931,15 +933,15 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 	struct drm_buffer_object *bo;
         int ret;
 
-	if (!copy_from_user(&r, argp, sizeof(r)))
+	if (copy_from_user(&r, argp, sizeof(r)))
 		return -EFAULT;
 
-	if (config->min_width > r.width || r.width > config->max_width) {
-		DRM_ERROR("mode new framebuffer width not within limits");
+	if ((config->min_width > r.width) || (r.width > config->max_width)) {
+		DRM_ERROR("mode new framebuffer width not within limits\n");
 		return -EINVAL;
         }
-	if (config->min_height > r.height || r.height > config->min_height) {
-		DRM_ERROR("mode new framebuffer height not within limits");
+	if ((config->min_height > r.height) || (r.height > config->max_height)) {
+		DRM_ERROR("mode new framebuffer height not within limits\n");
 		return -EINVAL;
 	}
 
@@ -963,7 +965,7 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 	fb->bo             = bo;
 
         r.buffer_id = fb->id;
-        if (!copy_to_user(argp, &r, sizeof(r)))
+        if (copy_to_user(argp, &r, sizeof(r)))
                 return -EFAULT;
 
 	return 0;
