@@ -877,11 +877,13 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	if (IS_I9XX(dev)) {
 		dev_priv->mmiobase = drm_get_resource_start(dev, 0);
 		dev_priv->mmiolen = drm_get_resource_len(dev, 0);
+		dev_priv->baseaddr = drm_get_resource_start(dev, 2) & 0xff000000;
 	} else if (drm_get_resource_start(dev, 1)) {
 		dev_priv->mmiobase = drm_get_resource_start(dev, 1);
 		dev_priv->mmiolen = drm_get_resource_len(dev, 1);
+		dev_priv->baseaddr = drm_get_resource_start(dev, 0) & 0xff000000;
 	} else {
-		DRM_ERROR("Unable to find MMIO registers\n");
+		DRM_ERROR("Unable to find MMIO registers or FB\n");
 		return -ENODEV;
 	}
 

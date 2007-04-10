@@ -92,6 +92,7 @@ typedef struct drm_i915_private {
 	drm_local_map_t *sarea;
 	drm_local_map_t *mmio_map;
 
+	unsigned long baseaddr;
 	unsigned long mmiobase;
 	unsigned long mmiolen;
 

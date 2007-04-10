@@ -351,9 +351,10 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	int dspbase = (pipe == 0 ? DSPABASE : DSPBBASE);
 	int dspsurf = (pipe == 0 ? DSPASURF : DSPBSURF);
 	
-	Start = crtc->fb->offset;
+	Start = crtc->fb->offset + dev_priv->baseaddr;
 	Offset = ((y * crtc->fb->width + x) * (crtc->fb->bits_per_pixel / 8));
 
+	DRM_DEBUG("Writing base %08X %08X %d %d\n", Start, Offset, x, y);
 	if (IS_I965G(dev)) {
 		I915_WRITE(dspbase, Offset);
 		I915_READ(dspbase);
