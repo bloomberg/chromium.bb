@@ -366,27 +366,22 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	}
 	
 
-#if 0
-	drmI830Sarea *sPriv = (drmI830Sarea *) DRIGetSAREAPrivate(pScrn->pScreen);
-	
-	if (!sPriv)
+	if (!dev_priv->sarea_priv) 
 		return;
 		
 	switch (pipe) {
-		case 0:
-			sPriv->pipeA_x = x;
-			sPriv->pipeA_y = y;
-			break;
+	case 0:
+		dev_priv->sarea_priv->pipeA_x = x;
+		dev_priv->sarea_priv->pipeA_y = y;
+		break;
 	case 1:
-		sPriv->pipeB_x = x;
-		sPriv->pipeB_y = y;
+		dev_priv->sarea_priv->pipeB_x = x;
+		dev_priv->sarea_priv->pipeB_y = y;
 		break;
 	default:
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "Can't update pipe %d in SAREA\n", pipe);
+		DRM_ERROR("Can't update pipe %d in SAREA\n", pipe);
 		break;
 	}
-#endif
 }
 
 /**
@@ -406,6 +401,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 	int dspbase_reg = (pipe == 0) ? DSPABASE : DSPBBASE;
 	int pipeconf_reg = (pipe == 0) ? PIPEACONF : PIPEBCONF;
 	u32 temp;
+	bool enabled;
 
 	/* XXX: When our outputs are all unaware of DPMS modes other than off
 	 * and on, we should map those modes to DPMSModeOff in the CRTC.
@@ -494,30 +490,25 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 		break;
 	}
 	
-#if 0 //TODO
-	if (pI830->directRenderingEnabled) {
-		drmI830Sarea *sPriv = (drmI830Sarea *) DRIGetSAREAPrivate(pScrn->pScreen);
-		Bool enabled = crtc->enabled && mode != DPMSModeOff;
-		
-		if (!sPriv)
-			return;
-		
-		switch (pipe) {
-		case 0:
-			sPriv->pipeA_w = enabled ? crtc->mode.HDisplay : 0;
-			sPriv->pipeA_h = enabled ? crtc->mode.VDisplay : 0;
-			break;
-		case 1:
-			sPriv->pipeB_w = enabled ? crtc->mode.HDisplay : 0;
-			sPriv->pipeB_h = enabled ? crtc->mode.VDisplay : 0;
-			break;
-		default:
-			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-				   "Can't update pipe %d in SAREA\n", pipe);
-			break;
-		}
+
+	if (!dev_priv->sarea_priv)
+		return;
+
+	enabled = crtc->enabled && mode != DPMSModeOff;
+	
+	switch (pipe) {
+	case 0:
+		dev_priv->sarea_priv->pipeA_w = enabled ? crtc->mode.hdisplay : 0;
+		dev_priv->sarea_priv->pipeA_h = enabled ? crtc->mode.vdisplay : 0;
+		break;
+	case 1:
+		dev_priv->sarea_priv->pipeB_w = enabled ? crtc->mode.hdisplay : 0;
+		dev_priv->sarea_priv->pipeB_h = enabled ? crtc->mode.vdisplay : 0;
+		break;
+	default:
+		DRM_ERROR("Can't update pipe %d in SAREA\n", pipe);
+		break;
 	}
-#endif
 }
 
 static bool intel_crtc_lock(struct drm_crtc *crtc)
