@@ -224,10 +224,10 @@ static void intel_clock(struct drm_device *dev, int refclk,
 bool intel_pipe_has_type (struct drm_crtc *crtc, int type)
 {
     struct drm_device *dev = crtc->dev;
-    struct drm_crtc_config *crtc_config = &dev->crtc_config;
+    struct drm_mode_config *mode_config = &dev->mode_config;
     struct drm_output *l_entry;
 
-    list_for_each_entry(l_entry, &crtc_config->output_list, head) {
+    list_for_each_entry(l_entry, &mode_config->output_list, head) {
 	    if (l_entry->crtc == crtc) {
 		    struct intel_output *intel_output = l_entry->driver_private;
 		    if (intel_output->type == type)
@@ -681,10 +681,10 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	u32 dpll = 0, fp = 0, dspcntr, pipeconf;
 	bool ok, is_sdvo = false, is_dvo = false;
 	bool is_crt = false, is_lvds = false, is_tv = false;
-	struct drm_crtc_config *crtc_config = &dev->crtc_config;
+	struct drm_mode_config *mode_config = &dev->mode_config;
 	struct drm_output *output;
 
-	list_for_each_entry(output, &crtc_config->output_list, head) {
+	list_for_each_entry(output, &mode_config->output_list, head) {
 		struct intel_output *intel_output = output->driver_private;
 
 		if (output->crtc != crtc)
@@ -1023,7 +1023,7 @@ int intel_output_clones (drm_device_t *dev, int type_mask)
 	struct drm_output *output;
 	int entry = 0;
 
-        list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+        list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		struct intel_output *intel_output = output->driver_private;
 		if (type_mask & (1 << intel_output->type))
 			index_mask |= (1 << entry);
@@ -1048,7 +1048,7 @@ static void intel_setup_outputs(drm_device_t *dev)
 		intel_sdvo_init(dev, SDVOC);
 	}
 
-	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		struct intel_output *intel_output = output->driver_private;
 		int crtc_mask = 0, clone_mask = 0;
 		
@@ -1088,7 +1088,7 @@ void intel_modeset_init(drm_device_t *dev)
 	int num_pipe;
 	int i;
 
-	drm_crtc_config_init(dev);
+	drm_mode_config_init(dev);
 
 
 	if (IS_MOBILE(dev) || IS_I9XX(dev))
@@ -1109,5 +1109,5 @@ void intel_modeset_init(drm_device_t *dev)
 
 void intel_modeset_cleanup(drm_device_t *dev)
 {
-	drm_crtc_config_cleanup(dev);
+	drm_mode_config_cleanup(dev);
 }

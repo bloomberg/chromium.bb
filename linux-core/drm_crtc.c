@@ -8,39 +8,39 @@ int drm_mode_idr_get(struct drm_device *dev, void *ptr)
 	int new_id = 0;
 	int ret;
 again:
-	if (idr_pre_get(&dev->crtc_config.crtc_idr, GFP_KERNEL) == 0) {
+	if (idr_pre_get(&dev->mode_config.crtc_idr, GFP_KERNEL) == 0) {
 		DRM_ERROR("Ran out memory getting a mode number\n");
 		return 0;
 	}
 
-	spin_lock(&dev->crtc_config.config_lock);
+	spin_lock(&dev->mode_config.config_lock);
 
-	ret = idr_get_new_above(&dev->crtc_config.crtc_idr, ptr, 1, &new_id);
+	ret = idr_get_new_above(&dev->mode_config.crtc_idr, ptr, 1, &new_id);
 	if (ret == -EAGAIN) {
-		spin_unlock(&dev->crtc_config.config_lock);
+		spin_unlock(&dev->mode_config.config_lock);
 		goto again;
 	}	
 
-	spin_unlock(&dev->crtc_config.config_lock);
+	spin_unlock(&dev->mode_config.config_lock);
 	return new_id;
 }
 
 void drm_mode_idr_put(struct drm_device *dev, int id)
 {
-	idr_remove(&dev->crtc_config.crtc_idr, id);
+	idr_remove(&dev->mode_config.crtc_idr, id);
 }
 
 struct drm_framebuffer *drm_framebuffer_create(drm_device_t *dev)
 {
 	struct drm_framebuffer *fb;
 
-	spin_lock(&dev->crtc_config.config_lock);
+	spin_lock(&dev->mode_config.config_lock);
 	/* Limit to single framebuffer for now */
-	if (dev->crtc_config.num_fb > 1) {
+	if (dev->mode_config.num_fb > 1) {
 		DRM_ERROR("Attempt to add multiple framebuffers failed\n");
 		return NULL;
 	}
-	spin_unlock(&dev->crtc_config.config_lock);
+	spin_unlock(&dev->mode_config.config_lock);
 
 	fb = kzalloc(sizeof(struct drm_framebuffer), GFP_KERNEL);
 	if (!fb) {
@@ -50,10 +50,10 @@ struct drm_framebuffer *drm_framebuffer_create(drm_device_t *dev)
 	
 	fb->id = drm_mode_idr_get(dev, fb);
 	fb->dev = dev;
-	spin_lock(&dev->crtc_config.config_lock);
-	dev->crtc_config.num_fb++;
-	list_add(&fb->head, &dev->crtc_config.fb_list);
-	spin_unlock(&dev->crtc_config.config_lock);
+	spin_lock(&dev->mode_config.config_lock);
+	dev->mode_config.num_fb++;
+	list_add(&fb->head, &dev->mode_config.fb_list);
+	spin_unlock(&dev->mode_config.config_lock);
 
 	return fb;
 }
@@ -62,11 +62,11 @@ void drm_framebuffer_destroy(struct drm_framebuffer *fb)
 {
 	drm_device_t *dev = fb->dev;
 
-	spin_lock(&dev->crtc_config.config_lock);
+	spin_lock(&dev->mode_config.config_lock);
 	drm_mode_idr_put(dev, fb->id);
 	list_del(&fb->head);
-	dev->crtc_config.num_fb--;
-	spin_unlock(&dev->crtc_config.config_lock);
+	dev->mode_config.num_fb--;
+	spin_unlock(&dev->mode_config.config_lock);
 
 	kfree(fb);
 }
@@ -86,10 +86,10 @@ struct drm_crtc *drm_crtc_create(drm_device_t *dev,
 	crtc->id = drm_mode_idr_get(dev, crtc);
 	DRM_DEBUG("crtc %p got id %d\n", crtc, crtc->id);
 
-	spin_lock(&dev->crtc_config.config_lock);
-	list_add_tail(&crtc->head, &dev->crtc_config.crtc_list);
-	dev->crtc_config.num_crtc++;
-	spin_unlock(&dev->crtc_config.config_lock);
+	spin_lock(&dev->mode_config.config_lock);
+	list_add_tail(&crtc->head, &dev->mode_config.crtc_list);
+	dev->mode_config.num_crtc++;
+	spin_unlock(&dev->mode_config.config_lock);
 
 	return crtc;
 }
@@ -103,11 +103,11 @@ void drm_crtc_destroy(struct drm_crtc *crtc)
 		(*crtc->funcs->cleanup)(crtc);
 
 
-	spin_lock(&dev->crtc_config.config_lock);
+	spin_lock(&dev->mode_config.config_lock);
 	drm_mode_idr_put(dev, crtc->id);
 	list_del(&crtc->head);
-	dev->crtc_config.num_crtc--;
-	spin_unlock(&dev->crtc_config.config_lock);
+	dev->mode_config.num_crtc--;
+	spin_unlock(&dev->mode_config.config_lock);
 	kfree(crtc);
 }
 EXPORT_SYMBOL(drm_crtc_destroy);
@@ -116,7 +116,7 @@ bool drm_crtc_in_use(struct drm_crtc *crtc)
 {
 	struct drm_output *output;
 	drm_device_t *dev = crtc->dev;
-	list_for_each_entry(output, &dev->crtc_config.output_list, head)
+	list_for_each_entry(output, &dev->mode_config.output_list, head)
 		if (output->crtc == crtc)
 			return true;
 	return false;
@@ -131,7 +131,7 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 	//if (maxX == 0 || maxY == 0) 
 	// TODO
 
-	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		
 		list_for_each_entry_safe(mode, t, &output->modes, head)
 			drm_mode_remove(output, mode);
@@ -214,7 +214,7 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	 * adjust it according to limitations or output properties, and also
 	 * a chance to reject the mode entirely.
 	 */
-	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		
 		if (output->crtc != crtc)
 			continue;
@@ -229,7 +229,7 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	}
 
 	/* Prepare the outputs and CRTCs before setting the mode. */
-	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 
 		if (output->crtc != crtc)
 			continue;
@@ -244,14 +244,14 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	 * on the DPLL.
 	 */
 	crtc->funcs->mode_set(crtc, mode, adjusted_mode, x, y);
-	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		if (output->crtc == crtc)
 			output->funcs->mode_set(output, mode, adjusted_mode);
 	}
 	
 	/* Now, enable the clocks, plane, pipe, and outputs that we set up. */
 	crtc->funcs->commit(crtc);
-	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		if (output->crtc == crtc)
 		{
 			output->funcs->commit(output);
@@ -287,11 +287,11 @@ bool drm_set_desired_modes(struct drm_device *dev)
 	struct drm_crtc *crtc;
 	struct drm_output *output, *list_output;
 
-	list_for_each_entry(crtc, &dev->crtc_config.crtc_list, head) {
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 		output = NULL;
 
 		DRM_DEBUG("crtc is %d\n", crtc->id);
-		list_for_each_entry(list_output, &dev->crtc_config.output_list, head) {
+		list_for_each_entry(list_output, &dev->mode_config.output_list, head) {
 			if (list_output->crtc == crtc) {
 				output = list_output;
 				break;
@@ -320,12 +320,12 @@ void drm_disable_unused_functions(struct drm_device *dev)
 	struct drm_output *output;
 	struct drm_crtc *crtc;
 
-	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		if (!output->crtc)
 			(*output->funcs->dpms)(output, DPMSModeOff);
 	}
 
-	list_for_each_entry(crtc, &dev->crtc_config.crtc_list, head) {
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 		if (!crtc->enabled)
 			crtc->funcs->dpms(crtc, DPMSModeOff);
 	}
@@ -389,11 +389,11 @@ struct drm_output *drm_output_create(drm_device_t *dev,
 	/* output_set_monitor(output)? */
 	/* check for output_ignored(output)? */
 
-	spin_lock(&dev->crtc_config.config_lock);
-	list_add_tail(&output->head, &dev->crtc_config.output_list);
-	dev->crtc_config.num_output++;
+	spin_lock(&dev->mode_config.config_lock);
+	list_add_tail(&output->head, &dev->mode_config.output_list);
+	dev->mode_config.num_output++;
 
-	spin_unlock(&dev->crtc_config.config_lock);
+	spin_unlock(&dev->mode_config.config_lock);
 
 	return output;
 
@@ -414,10 +414,10 @@ void drm_output_destroy(struct drm_output *output)
 	list_for_each_entry_safe(mode, t, &output->modes, head)
 		drm_mode_remove(output, mode);
 
-	spin_lock(&dev->crtc_config.config_lock);
+	spin_lock(&dev->mode_config.config_lock);
 	drm_mode_idr_put(dev, output->id);
 	list_del(&output->head);
-	spin_unlock(&dev->crtc_config.config_lock);
+	spin_unlock(&dev->mode_config.config_lock);
 	kfree(output);
 }
 EXPORT_SYMBOL(drm_output_destroy);
@@ -455,15 +455,15 @@ void drm_crtc_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode
 	kfree(mode);
 }
 
-void drm_crtc_config_init(drm_device_t *dev)
+void drm_mode_config_init(drm_device_t *dev)
 {
-	spin_lock_init(&dev->crtc_config.config_lock);
-	INIT_LIST_HEAD(&dev->crtc_config.fb_list);
-	INIT_LIST_HEAD(&dev->crtc_config.crtc_list);
-	INIT_LIST_HEAD(&dev->crtc_config.output_list);
-	idr_init(&dev->crtc_config.crtc_idr);
+	spin_lock_init(&dev->mode_config.config_lock);
+	INIT_LIST_HEAD(&dev->mode_config.fb_list);
+	INIT_LIST_HEAD(&dev->mode_config.crtc_list);
+	INIT_LIST_HEAD(&dev->mode_config.output_list);
+	idr_init(&dev->mode_config.crtc_idr);
 }
-EXPORT_SYMBOL(drm_crtc_config_init);
+EXPORT_SYMBOL(drm_mode_config_init);
 
 static int drm_get_buffer_object(drm_device_t *dev, struct drm_buffer_object **bo, unsigned long handle)
 {
@@ -514,7 +514,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 	
 	/* bind both CRTCs to this fb */
 	/* only initialise one crtc to enabled state */
-	list_for_each_entry(crtc, &dev->crtc_config.crtc_list, head) {
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 		crtc->fb = fb;
 		if (!vga_crtc) {
 			vga_crtc = crtc;
@@ -542,7 +542,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 	/* hard bind the CRTCS */
 
 	/* bind analog output to one crtc */
-	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		struct drm_display_mode *des_mode;
 
 		/* Get the first preferred moded */
@@ -580,20 +580,20 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 }
 EXPORT_SYMBOL(drm_initial_config);
 
-void drm_crtc_config_cleanup(drm_device_t *dev)
+void drm_mode_config_cleanup(drm_device_t *dev)
 {
 	struct drm_output *output, *ot;
 	struct drm_crtc *crtc, *ct;
 	
-	list_for_each_entry_safe(output, ot, &dev->crtc_config.output_list, head) {
+	list_for_each_entry_safe(output, ot, &dev->mode_config.output_list, head) {
 		drm_output_destroy(output);
 	}
 
-	list_for_each_entry_safe(crtc, ct, &dev->crtc_config.crtc_list, head) {
+	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {
 		drm_crtc_destroy(crtc);
 	}
 }
-EXPORT_SYMBOL(drm_crtc_config_cleanup);
+EXPORT_SYMBOL(drm_mode_config_cleanup);
 
 int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, struct drm_display_mode *new_mode, struct drm_output **output_set)
 {
@@ -604,7 +604,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	struct drm_output *output;
 	int count = 0, ro;
 
-	save_crtcs = kzalloc(dev->crtc_config.num_crtc * sizeof(struct drm_crtc *), GFP_KERNEL);
+	save_crtcs = kzalloc(dev->mode_config.num_crtc * sizeof(struct drm_crtc *), GFP_KERNEL);
 	if (!save_crtcs)
 		return -ENOMEM;
 
@@ -614,7 +614,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	if (crtc->mode.mode_id != new_mode->mode_id)
 		changed = true;
 
-	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		save_crtcs[count++] = output->crtc;
 
 		if (output->crtc == crtc)
@@ -642,7 +642,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 					       crtc_info->y)) {
 				crtc->enabled = save_enabled;
 				count = 0;
-				list_for_each_entry(output, &dev->crtc_config.output_list, head)
+				list_for_each_entry(output, &dev->mode_config.output_list, head)
 					output->crtc = save_crtcs[count++];
 				kfree(save_crtcs);
 				return -EINVAL;
@@ -700,10 +700,10 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 
 	memset(&u_mode, 0, sizeof(struct drm_mode_modeinfo));
 
-	list_for_each(lh, &dev->crtc_config.crtc_list)
+	list_for_each(lh, &dev->mode_config.crtc_list)
 		crtc_count++;
 
-	list_for_each_entry(output, &dev->crtc_config.output_list,
+	list_for_each_entry(output, &dev->mode_config.output_list,
 			    head)
 	{
 		output_count++;
@@ -718,7 +718,7 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 	/* CRTCs */
 	if (card_res.count_crtcs >= crtc_count) {
 		copied = 0;
-		list_for_each_entry(crtc, &dev->crtc_config.crtc_list, head){
+		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head){
 			DRM_DEBUG("CRTC ID is %d\n", crtc->id);
 			if (put_user(crtc->id, &card_res.crtc_id[copied++])) {
 				retcode = -EFAULT;
@@ -732,7 +732,7 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 	/* Outputs */
 	if (card_res.count_outputs >= output_count) {
 		copied = 0;
-		list_for_each_entry(output, &dev->crtc_config.output_list,
+		list_for_each_entry(output, &dev->mode_config.output_list,
 				    head) {
  			DRM_DEBUG("OUTPUT ID is %d\n", output->id);
 			if (put_user(output->id, &card_res.output_id[copied++])) {
@@ -746,7 +746,7 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 	/* Modes */
 	if (card_res.count_modes >= mode_count) {
 		copied = 0;
-		list_for_each_entry(output, &dev->crtc_config.output_list,
+		list_for_each_entry(output, &dev->mode_config.output_list,
 				    head) {
 			list_for_each_entry(mode, &output->modes, head) {
 				drm_crtc_convert_to_umode(&u_mode, mode);
@@ -785,7 +785,7 @@ int drm_mode_getcrtc(struct inode *inode, struct file *filp,
 	if (copy_from_user(&crtc_resp, argp, sizeof(crtc_resp)))
 		return -EFAULT;
 
-	crtc = idr_find(&dev->crtc_config.crtc_idr, crtc_resp.crtc_id);
+	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_resp.crtc_id);
 	if (!crtc || (crtc->id != crtc_resp.crtc_id))
 		return -EINVAL;
 	crtc_resp.x = crtc->x;
@@ -797,7 +797,7 @@ int drm_mode_getcrtc(struct inode *inode, struct file *filp,
 
 		crtc_resp.mode = crtc->mode.mode_id;
 		ocount = 0;
-		list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+		list_for_each_entry(output, &dev->mode_config.output_list, head) {
 			if (output->crtc == crtc)
 				crtc_resp.outputs |= 1 << (ocount++);
 		}
@@ -827,7 +827,7 @@ int drm_mode_getoutput(struct inode *inode, struct file *filp,
 	if (copy_from_user(&out_resp, argp, sizeof(out_resp)))
 		return -EFAULT;	
 
-	output= idr_find(&dev->crtc_config.crtc_idr, out_resp.output);
+	output= idr_find(&dev->mode_config.crtc_idr, out_resp.output);
 	if (!output || (output->id != out_resp.output))
 		return -EINVAL;
 
@@ -878,12 +878,12 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 	if (copy_from_user(&crtc_req, argp, sizeof(crtc_req)))
 		return -EFAULT;
 
-	crtc = idr_find(&dev->crtc_config.crtc_idr, crtc_req.crtc_id);
+	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_req.crtc_id);
 	if (!crtc || (crtc->id != crtc_req.crtc_id))
 		return -EINVAL;
 
 	if (crtc_req.mode) {
-		mode = idr_find(&dev->crtc_config.crtc_idr, crtc_req.mode);
+		mode = idr_find(&dev->mode_config.crtc_idr, crtc_req.mode);
 		if (!mode || (mode->mode_id != crtc_req.mode))
 			return -EINVAL;
 	} else
@@ -906,7 +906,7 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 			if (get_user(out_id, &crtc_req.set_outputs[i]))
 				return -EFAULT;
 
-			output = idr_find(&dev->crtc_config.crtc_idr, out_id);
+			output = idr_find(&dev->mode_config.crtc_idr, out_id);
 			if (!output || (out_id != output->id))
 				return -EINVAL;
 
@@ -926,7 +926,7 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 	struct drm_device *dev = priv->head->dev;
 	struct drm_mode_fb_cmd __user *argp = (void __user *)arg;
 	struct drm_mode_fb_cmd r;
-        struct drm_crtc_config *config = &dev->crtc_config;
+        struct drm_mode_config *config = &dev->mode_config;
 	struct drm_framebuffer *fb;
 	struct drm_buffer_object *bo;
         int ret;
@@ -977,7 +977,7 @@ int drm_mode_rmfb(struct inode *inode, struct file *filp,
 	struct drm_framebuffer *fb = 0;
 	uint32_t id = arg;
 
-	fb = idr_find(&dev->crtc_config.crtc_idr, id);
+	fb = idr_find(&dev->mode_config.crtc_idr, id);
 	/* TODO check that we realy get a framebuffer back. */
 	if (!fb || (id != fb->id)) {
 		DRM_ERROR("mode invalid framebuffer id\n");
