@@ -41,7 +41,7 @@
 static int drm_open_helper(struct inode *inode, struct file *filp,
 			   drm_device_t * dev);
 
-static int drm_setup(drm_device_t * dev)
+int drm_setup(drm_device_t * dev)
 {
 	drm_local_map_t *map;
 	int i;
@@ -121,6 +121,7 @@ static int drm_setup(drm_device_t * dev)
 
 	return 0;
 }
+EXPORT_SYMBOL(drm_setup);
 
 /**
  * Open file.
