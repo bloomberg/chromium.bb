@@ -171,8 +171,6 @@ static int i915_initialize(drm_device_t * dev,
 	I915_WRITE(0x02080, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
 
-	/* this probably doesn't belong here - TODO */
-	drm_framebuffer_set_object(dev, dev_priv->sarea_priv->front_handle);
 	drm_set_desired_modes(dev);
 
 	return 0;

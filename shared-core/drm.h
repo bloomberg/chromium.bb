@@ -962,6 +962,14 @@ struct drm_mode_get_output {
 
 };
 
+struct drm_mode_fb_cmd {
+        unsigned int buffer_id;
+        unsigned int width, height;
+        unsigned int pitch;
+        unsigned int bpp;
+        unsigned int handle;
+};
+
 /**
  * \name Ioctls Definitions
  */
@@ -1037,6 +1045,8 @@ struct drm_mode_get_output {
 #define DRM_IOCTL_MODE_GETCRTC          DRM_IOWR(0xA1, struct drm_mode_crtc)
 #define DRM_IOCTL_MODE_GETOUTPUT        DRM_IOWR(0xA2, struct drm_mode_get_output)
 #define DRM_IOCTL_MODE_SETCRTC          DRM_IOWR(0xA3, struct drm_mode_crtc)
+#define DRM_IOCTL_MODE_ADDFB            DRM_IOWR(0xA4, struct drm_mode_fb_cmd)
+#define DRM_IOCTL_MODE_RMFB             DRM_IOWR(0xA5, unsigned int)
 /*@}*/
 
 /**

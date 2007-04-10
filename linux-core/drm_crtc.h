@@ -178,6 +178,7 @@ struct drm_framebuffer {
 	unsigned int depth;
 	int bits_per_pixel;
 	int flags;
+        struct drm_buffer_object *bo;
 };
 struct drm_crtc;
 struct drm_output;
@@ -432,17 +433,6 @@ extern void drm_disable_unused_functions(struct drm_device *dev);
 
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern void drm_crtc_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode);
-
-/* IOCTLs */
-extern int drm_mode_getresources(struct inode *inode, struct file *filp,
-				 unsigned int cmd, unsigned long arg);
-
-extern int drm_mode_getcrtc(struct inode *inode, struct file *filp,
-			    unsigned int cmd, unsigned long arg);
-extern int drm_mode_getoutput(struct inode *inode, struct file *filp,
-			      unsigned int cmd, unsigned long arg);
-extern int drm_mode_setcrtc(struct inode *inode, struct file *filp,
-			    unsigned int cmd, unsigned long arg);
 extern void drm_mode_list_concat(struct list_head *head,
 				 struct list_head *new);
 extern void drm_mode_validate_size(struct drm_device *dev,
@@ -454,7 +444,20 @@ extern void drm_mode_sort(struct list_head *mode_list);
 extern int drm_mode_vrefresh(struct drm_display_mode *mode);
 extern void drm_mode_set_crtcinfo(struct drm_display_mode *p,
 				  int adjust_flags);
-extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 
+/* IOCTLs */
+extern int drm_mode_getresources(struct inode *inode, struct file *filp,
+				 unsigned int cmd, unsigned long arg);
+
+extern int drm_mode_getcrtc(struct inode *inode, struct file *filp,
+			    unsigned int cmd, unsigned long arg);
+extern int drm_mode_getoutput(struct inode *inode, struct file *filp,
+			      unsigned int cmd, unsigned long arg);
+extern int drm_mode_setcrtc(struct inode *inode, struct file *filp,
+			    unsigned int cmd, unsigned long arg);
+extern int drm_mode_addfb(struct inode *inode, struct file *filp,
+                          unsigned int cmd, unsigned long arg);
+extern int drm_mode_rmfb(struct inode *inode, struct file *filp,
+                         unsigned int cmd, unsigned long arg);
 #endif /* __DRM_CRTC_H__ */
 

@@ -77,8 +77,10 @@ typedef struct _drmModeRes {
 
 typedef struct _drmModeFrameBuffer {
 
-	uint32_t minWidth, maxWidth;
-	uint32_t minHeight, maxHeight;
+        uint32_t width;
+        uint32_t height;
+        uint32_t pitch;
+        uint8_t bpp;
 
 } drmModeFrameBuffer, *drmModeFrameBufferPtr;
 

@@ -192,6 +192,28 @@ err_allocs:
 	return 0;
 }
 
+uint32_t drmModeAddFB(int fd, uint32_t width, uint32_t height,
+                               uint8_t bpp, uint32_t pitch, drmBO *bo)
+{
+	struct drm_mode_fb_cmd f;
+
+	f.width  = width;
+	f.height = height;
+	f.pitch  = pitch;
+	f.bpp    = bpp;
+	f.handle = bo->handle;
+
+	if (ioctl(fd, DRM_IOCTL_MODE_ADDFB, &f))
+		return 0;
+
+	return f.buffer_id;
+}
+
+int drmModeRmFB(int fd, uint32_t bufferId)
+{
+        return ioctl(fd, DRM_IOCTL_MODE_RMFB, bufferId);
+}
+
 #if 0
 int drmModeForceProbe(int fd, uint32_t outputId)
 {

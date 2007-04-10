@@ -465,18 +465,19 @@ void drm_crtc_config_init(drm_device_t *dev)
 }
 EXPORT_SYMBOL(drm_crtc_config_init);
 
-void drm_framebuffer_set_object(drm_device_t *dev, unsigned long handle)
+static int drm_get_buffer_object(drm_device_t *dev, struct drm_buffer_object **bo, unsigned long handle)
 {
-	struct drm_framebuffer *fb;
 	drm_user_object_t *uo;
 	drm_hash_item_t *hash;
-	drm_buffer_object_t *bo;
 	int ret;
+
+        *bo = NULL;
 
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_ht_find_item(&dev->object_hash, handle, &hash);
 	if (ret) {
 		DRM_ERROR("Couldn't find handle.\n");
+                ret = -EINVAL;
 		goto out_err;
 	}
 
@@ -485,20 +486,13 @@ void drm_framebuffer_set_object(drm_device_t *dev, unsigned long handle)
 		ret = -EINVAL;
 		goto out_err;
 	}
-
-	bo = drm_user_object_entry(uo, drm_buffer_object_t, base);
-	
-	/* get the first fb */
-	list_for_each_entry(fb, &dev->crtc_config.fb_list, head) {
-		fb->offset = bo->offset;
-		break;
-	}
+        
+	*bo = drm_user_object_entry(uo, drm_buffer_object_t, base);
 	ret = 0;
 out_err:
 	mutex_unlock(&dev->struct_mutex);
-	return;
+	return ret;
 }
-EXPORT_SYMBOL(drm_framebuffer_set_object);
 
 bool drm_initial_config(drm_device_t *dev, bool can_grow)
 {
@@ -922,4 +916,79 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 		
 	retcode = drm_crtc_set_config(crtc, &crtc_req, mode, output_set);
 	return retcode;
+}
+
+/* Add framebuffer ioctl */
+int drm_mode_addfb(struct inode *inode, struct file *filp,
+                   unsigned int cmd, unsigned long arg)
+{
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_mode_fb_cmd __user *argp = (void __user *)arg;
+	struct drm_mode_fb_cmd r;
+        struct drm_crtc_config *config = &dev->crtc_config;
+	struct drm_framebuffer *fb;
+	struct drm_buffer_object *bo;
+        int ret;
+
+	if (!copy_from_user(&r, argp, sizeof(r)))
+		return -EFAULT;
+
+	if (config->min_width > r.width || r.width > config->max_width) {
+		DRM_ERROR("mode new framebuffer width not within limits");
+		return -EINVAL;
+        }
+	if (config->min_height > r.height || r.height > config->min_height) {
+		DRM_ERROR("mode new framebuffer height not within limits");
+		return -EINVAL;
+	}
+
+	/* TODO check limits are okay */
+        ret = drm_get_buffer_object(dev, &bo, r.handle);
+        if (ret || !bo)
+                return -EINVAL;
+
+	/* TODO check buffer is sufficently large */
+	/* TODO setup destructor callback */
+
+	fb = drm_framebuffer_create(dev);
+	if(!fb)
+		return -EINVAL;;
+
+	fb->width          = r.width;
+	fb->height         = r.height;
+	fb->pitch          = r.pitch;
+	fb->bits_per_pixel = r.bpp;
+	fb->offset         = bo->offset;
+	fb->bo             = bo;
+
+        r.buffer_id = fb->id;
+        if (!copy_to_user(argp, &r, sizeof(r)))
+                return -EFAULT;
+
+	return 0;
+}
+
+int drm_mode_rmfb(struct inode *inode, struct file *filp,
+                  unsigned int cmd, unsigned long arg)
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->head->dev;
+	struct drm_framebuffer *fb = 0;
+	uint32_t id = arg;
+
+	fb = idr_find(&dev->crtc_config.crtc_idr, id);
+	/* TODO check that we realy get a framebuffer back. */
+	if (!fb || (id != fb->id)) {
+		DRM_ERROR("mode invalid framebuffer id\n");
+		return -EINVAL;
+	}
+
+	/* TODO check if we own the buffer */
+	/* TODO release all crtc connected to the framebuffer */
+	/* TODO unhock the destructor from the buffer object */
+
+	drm_framebuffer_destroy(fb);
+
+	return 0;
 }
