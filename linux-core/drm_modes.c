@@ -36,8 +36,8 @@
 void drm_mode_debug_printmodeline(struct drm_device *dev,
 				  struct drm_display_mode *mode)
 {
-	DRM_DEBUG("Modeline \"%s\" %d %d %d %d %d %d %d %d %d %d\n",
-		  mode->name, mode->vrefresh / 1000, mode->clock,
+	DRM_DEBUG("Modeline %d:\"%s\" %d %d %d %d %d %d %d %d %d %d\n",
+		  mode->mode_id, mode->name, mode->vrefresh / 1000, mode->clock,
 		  mode->hdisplay, mode->hsync_start,
 		  mode->hsync_end, mode->htotal,
 		  mode->vdisplay, mode->vsync_start,

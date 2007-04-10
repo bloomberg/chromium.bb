@@ -40,6 +40,7 @@
 #include "xf86drmMode.h"
 #include "xf86drm.h"
 #include <drm.h>
+#include <string.h>
 
 /*
  * Util functions
@@ -192,6 +193,30 @@ err_allocs:
 	return 0;
 }
 
+int drmModeAddFB(int fd, uint32_t width, uint32_t height,
+                 uint8_t bpp, uint32_t pitch, drmBO *bo, uint32_t *buf_id)
+{
+	struct drm_mode_fb_cmd f;
+	int ret;
+
+	f.width  = width;
+	f.height = height;
+	f.pitch  = pitch;
+	f.bpp    = bpp;
+	f.handle = bo->handle;
+
+	if (ret = ioctl(fd, DRM_IOCTL_MODE_ADDFB, &f))
+		return ret;
+
+	*buf_id = f.buffer_id;
+	return 0;
+}
+
+int drmModeRmFB(int fd, uint32_t bufferId)
+{
+        return ioctl(fd, DRM_IOCTL_MODE_RMFB, bufferId);
+}
+
 #if 0
 int drmModeForceProbe(int fd, uint32_t outputId)
 {
@@ -287,11 +312,9 @@ err_allocs:
 }
 
 
-int drmModeSetCrtc(
-		int fd, uint32_t crtcId, uint32_t bufferId,
-		uint32_t x, uint32_t y, uint32_t modeId,
-		uint32_t *outputs, int count
-	)
+int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
+                   uint32_t x, uint32_t y, uint32_t modeId,
+                   uint32_t *outputs, int count)
 {
 	struct drm_mode_crtc crtc;
 
@@ -363,7 +386,8 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 	r->crtcs        = out.crtcs;
 	r->clones       = out.clones;
 	r->modes        = drmAllocCpy(out.modes, out.count_modes, sizeof(uint32_t));
-
+	strncpy(r->name, out.name, DRM_OUTPUT_NAME_LEN);
+	r->name[DRM_OUTPUT_NAME_LEN-1] = 0;
 	return r;
 
 err_allocs:

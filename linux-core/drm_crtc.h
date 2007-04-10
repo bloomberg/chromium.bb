@@ -178,6 +178,7 @@ struct drm_framebuffer {
 	unsigned int depth;
 	int bits_per_pixel;
 	int flags;
+	struct drm_buffer_object *bo;
 };
 struct drm_crtc;
 struct drm_output;
@@ -377,7 +378,7 @@ struct drm_output {
 };
 
 /**
- * struct drm_crtc_config_funcs - configure CRTCs for a given screen layout
+ * struct drm_mode_config_funcs - configure CRTCs for a given screen layout
  * @resize: adjust CRTCs as necessary for the proposed layout
  *
  * Currently only a resize hook is available.  DRM will call back into the
@@ -385,15 +386,15 @@ struct drm_output {
  * the proposed size, it can return false.  Otherwise it should adjust
  * the CRTC<->output mappings as needed and update its view of the screen.
  */
-struct drm_crtc_config_funcs {
+struct drm_mode_config_funcs {
 	bool (*resize)(struct drm_device *dev, int width, int height);
 };
 
 /**
- * drm_crtc_config - CRTC configuration control structure
+ * drm_mode_config - Mode configuration control structure
  *
  */
-struct drm_crtc_config {
+struct drm_mode_config {
 	spinlock_t config_lock;
 	struct idr crtc_idr; /* use this idr for all IDs, fb, crtc, output, modes - just makes life easier */
 	/* this is limited to one for now */
@@ -410,7 +411,7 @@ struct drm_crtc_config {
 	int max_width, max_height;
 	/* DamagePtr rotationDamage? */
 	/* DGA stuff? */
-	struct drm_crtc_config_funcs *funcs;
+	struct drm_mode_config_funcs *funcs;
 };
 
 struct drm_output *drm_output_create(struct drm_device *dev,
@@ -427,23 +428,12 @@ extern struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev,
 						   struct drm_display_mode *mode);
 extern void drm_mode_debug_printmodeline(struct drm_device *dev,
 					 struct drm_display_mode *mode);
-extern void drm_crtc_config_init(struct drm_device *dev);
-extern void drm_crtc_config_cleanup(struct drm_device *dev);
+extern void drm_mode_config_init(struct drm_device *dev);
+extern void drm_mode_config_cleanup(struct drm_device *dev);
 extern void drm_disable_unused_functions(struct drm_device *dev);
 
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern void drm_crtc_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode);
-
-/* IOCTLs */
-extern int drm_mode_getresources(struct inode *inode, struct file *filp,
-				 unsigned int cmd, unsigned long arg);
-
-extern int drm_mode_getcrtc(struct inode *inode, struct file *filp,
-			    unsigned int cmd, unsigned long arg);
-extern int drm_mode_getoutput(struct inode *inode, struct file *filp,
-			      unsigned int cmd, unsigned long arg);
-extern int drm_mode_setcrtc(struct inode *inode, struct file *filp,
-			    unsigned int cmd, unsigned long arg);
 extern void drm_mode_list_concat(struct list_head *head,
 				 struct list_head *new);
 extern void drm_mode_validate_size(struct drm_device *dev,
@@ -461,5 +451,19 @@ extern void drm_framebuffer_set_object(struct drm_device *dev,
 				       unsigned long handle);
 extern bool drm_set_desired_modes(struct drm_device *dev);
 
+/* IOCTLs */
+extern int drm_mode_getresources(struct inode *inode, struct file *filp,
+				 unsigned int cmd, unsigned long arg);
+
+extern int drm_mode_getcrtc(struct inode *inode, struct file *filp,
+			    unsigned int cmd, unsigned long arg);
+extern int drm_mode_getoutput(struct inode *inode, struct file *filp,
+			      unsigned int cmd, unsigned long arg);
+extern int drm_mode_setcrtc(struct inode *inode, struct file *filp,
+			    unsigned int cmd, unsigned long arg);
+extern int drm_mode_addfb(struct inode *inode, struct file *filp,
+			  unsigned int cmd, unsigned long arg);
+extern int drm_mode_rmfb(struct inode *inode, struct file *filp,
+			 unsigned int cmd, unsigned long arg);
 #endif /* __DRM_CRTC_H__ */
 

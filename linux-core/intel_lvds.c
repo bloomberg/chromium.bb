@@ -164,15 +164,15 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 	struct intel_crtc *intel_crtc = output->crtc->driver_private;
 	struct drm_output *tmp_output;
 
-	spin_lock(&dev->crtc_config.config_lock);
-	list_for_each_entry(tmp_output, &dev->crtc_config.output_list, head) {
+	spin_lock(&dev->mode_config.config_lock);
+	list_for_each_entry(tmp_output, &dev->mode_config.output_list, head) {
 		if (tmp_output != output && tmp_output->crtc == output->crtc) {
 			printk(KERN_ERR "Can't enable LVDS and another "
 			       "output on the same pipe\n");
 			return false;
 		}
 	}
-	spin_lock(&dev->crtc_config.config_lock);
+	spin_lock(&dev->mode_config.config_lock);
 
 	if (intel_crtc->pipe == 0) {
 		printk(KERN_ERR "Can't support LVDS on pipe A\n");
@@ -380,10 +380,10 @@ void intel_lvds_init(struct drm_device *dev)
 	if (!dev_priv->panel_fixed_mode) {
 		u32 lvds = I915_READ(LVDS);
 		int pipe = (lvds & LVDS_PIPEB_SELECT) ? 1 : 0;
-		struct drm_crtc_config *crtc_config = &dev->crtc_config;
+		struct drm_mode_config *mode_config = &dev->mode_config;
 		struct drm_crtc *crtc;
 		/* FIXME: need drm_crtc_from_pipe */
-		//crtc = drm_crtc_from_pipe(crtc_config, pipe);
+		//crtc = drm_crtc_from_pipe(mode_config, pipe);
 		
 		if (lvds & LVDS_PORT_EN && 0) {
 			dev_priv->panel_fixed_mode =

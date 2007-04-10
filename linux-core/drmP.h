@@ -832,7 +832,7 @@ typedef struct drm_device {
 	/*@} */
 
 	/* DRM mode setting */
-	struct drm_crtc_config crtc_config;
+	struct drm_mode_config mode_config;
 } drm_device_t;
 
 #if __OS_HAS_AGP

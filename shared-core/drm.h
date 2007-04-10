@@ -891,7 +891,7 @@ typedef union drm_mm_init_arg{
 /*
  * Drm mode setting
  */
-
+#define DRM_OUTPUT_NAME_LEN 32
 #define DRM_DISPLAY_MODE_LEN 32
 
 struct drm_mode_modeinfo {
@@ -946,6 +946,7 @@ struct drm_mode_get_output {
 
 	unsigned int output; /**< Id */
 	unsigned int crtc; /**< Id of crtc */
+	unsigned char name[DRM_OUTPUT_NAME_LEN];
 
 	unsigned int connection;
 	unsigned int mm_width, mm_height; /**< HxW in millimeters */
@@ -960,6 +961,14 @@ struct drm_mode_get_output {
 	int count_modes;
 	unsigned int __user *modes; /**< list of modes it supports */
 
+};
+
+struct drm_mode_fb_cmd {
+        unsigned int buffer_id;
+        unsigned int width, height;
+        unsigned int pitch;
+        unsigned int bpp;
+        unsigned int handle;
 };
 
 /**
@@ -1037,6 +1046,8 @@ struct drm_mode_get_output {
 #define DRM_IOCTL_MODE_GETCRTC          DRM_IOWR(0xA1, struct drm_mode_crtc)
 #define DRM_IOCTL_MODE_GETOUTPUT        DRM_IOWR(0xA2, struct drm_mode_get_output)
 #define DRM_IOCTL_MODE_SETCRTC          DRM_IOWR(0xA3, struct drm_mode_crtc)
+#define DRM_IOCTL_MODE_ADDFB            DRM_IOWR(0xA4, struct drm_mode_fb_cmd)
+#define DRM_IOCTL_MODE_RMFB             DRM_IOWR(0xA5, unsigned int)
 /*@}*/
 
 /**

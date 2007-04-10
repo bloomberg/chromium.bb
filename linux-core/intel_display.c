@@ -222,10 +222,10 @@ static void intel_clock(struct drm_device *dev, int refclk,
 bool intel_pipe_has_type (struct drm_crtc *crtc, int type)
 {
     struct drm_device *dev = crtc->dev;
-    struct drm_crtc_config *crtc_config = &dev->crtc_config;
+    struct drm_mode_config *mode_config = &dev->mode_config;
     struct drm_output *l_entry;
 
-    list_for_each_entry(l_entry, &crtc_config->output_list, head) {
+    list_for_each_entry(l_entry, &mode_config->output_list, head) {
 	    if (l_entry->crtc == crtc) {
 		    struct intel_output *intel_output = l_entry->driver_private;
 		    if (intel_output->type == type)
@@ -349,9 +349,10 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	int dspbase = (pipe == 0 ? DSPABASE : DSPBBASE);
 	int dspsurf = (pipe == 0 ? DSPASURF : DSPBSURF);
 	
-	Start = crtc->fb->offset;
+	Start = crtc->fb->offset + dev_priv->baseaddr;
 	Offset = ((y * crtc->fb->width + x) * (crtc->fb->bits_per_pixel / 8));
 
+	DRM_DEBUG("Writing base %08lX %08lX %d %d\n", Start, Offset, x, y);
 	if (IS_I965G(dev)) {
 		I915_WRITE(dspbase, Offset);
 		I915_READ(dspbase);
@@ -363,27 +364,22 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	}
 	
 
-#if 0
-	drmI830Sarea *sPriv = (drmI830Sarea *) DRIGetSAREAPrivate(pScrn->pScreen);
-	
-	if (!sPriv)
+	if (!dev_priv->sarea_priv) 
 		return;
 		
 	switch (pipe) {
-		case 0:
-			sPriv->pipeA_x = x;
-			sPriv->pipeA_y = y;
-			break;
+	case 0:
+		dev_priv->sarea_priv->pipeA_x = x;
+		dev_priv->sarea_priv->pipeA_y = y;
+		break;
 	case 1:
-		sPriv->pipeB_x = x;
-		sPriv->pipeB_y = y;
+		dev_priv->sarea_priv->pipeB_x = x;
+		dev_priv->sarea_priv->pipeB_y = y;
 		break;
 	default:
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "Can't update pipe %d in SAREA\n", pipe);
+		DRM_ERROR("Can't update pipe %d in SAREA\n", pipe);
 		break;
 	}
-#endif
 }
 
 /**
@@ -403,6 +399,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 	int dspbase_reg = (pipe == 0) ? DSPABASE : DSPBBASE;
 	int pipeconf_reg = (pipe == 0) ? PIPEACONF : PIPEBCONF;
 	u32 temp;
+	bool enabled;
 
 	/* XXX: When our outputs are all unaware of DPMS modes other than off
 	 * and on, we should map those modes to DPMSModeOff in the CRTC.
@@ -491,30 +488,25 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 		break;
 	}
 	
-#if 0 //TODO
-	if (pI830->directRenderingEnabled) {
-		drmI830Sarea *sPriv = (drmI830Sarea *) DRIGetSAREAPrivate(pScrn->pScreen);
-		Bool enabled = crtc->enabled && mode != DPMSModeOff;
-		
-		if (!sPriv)
-			return;
-		
-		switch (pipe) {
-		case 0:
-			sPriv->pipeA_w = enabled ? crtc->mode.HDisplay : 0;
-			sPriv->pipeA_h = enabled ? crtc->mode.VDisplay : 0;
-			break;
-		case 1:
-			sPriv->pipeB_w = enabled ? crtc->mode.HDisplay : 0;
-			sPriv->pipeB_h = enabled ? crtc->mode.VDisplay : 0;
-			break;
-		default:
-			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-				   "Can't update pipe %d in SAREA\n", pipe);
-			break;
-		}
+
+	if (!dev_priv->sarea_priv)
+		return;
+
+	enabled = crtc->enabled && mode != DPMSModeOff;
+	
+	switch (pipe) {
+	case 0:
+		dev_priv->sarea_priv->pipeA_w = enabled ? crtc->mode.hdisplay : 0;
+		dev_priv->sarea_priv->pipeA_h = enabled ? crtc->mode.vdisplay : 0;
+		break;
+	case 1:
+		dev_priv->sarea_priv->pipeB_w = enabled ? crtc->mode.hdisplay : 0;
+		dev_priv->sarea_priv->pipeB_h = enabled ? crtc->mode.vdisplay : 0;
+		break;
+	default:
+		DRM_ERROR("Can't update pipe %d in SAREA\n", pipe);
+		break;
 	}
-#endif
 }
 
 static bool intel_crtc_lock(struct drm_crtc *crtc)
@@ -580,8 +572,9 @@ static int intel_get_core_clock_speed(drm_device_t *dev)
 	else if (IS_I945GM(dev) || IS_845G(dev))
 		return 200000;
 	else if (IS_I915GM(dev)) {
-#if 0
-		u16 gcfgc = pciReadWord(dev->PciTag, I915_GCFGC);
+		u16 gcfgc = 0;
+
+		pci_read_config_word(dev->pdev, I915_GCFGC, &gcfgc);
 		
 		if (gcfgc & I915_LOW_FREQUENCY_ENABLE)
 			return 133000;
@@ -594,7 +587,6 @@ static int intel_get_core_clock_speed(drm_device_t *dev)
 				return 190000;
 			}
 		}
-#endif
 	} else if (IS_I865G(dev))
 		return 266000;
 	else if (IS_I855(dev)) {
@@ -679,10 +671,10 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	u32 dpll = 0, fp = 0, dspcntr, pipeconf;
 	bool ok, is_sdvo = false, is_dvo = false;
 	bool is_crt = false, is_lvds = false, is_tv = false;
-	struct drm_crtc_config *crtc_config = &dev->crtc_config;
+	struct drm_mode_config *mode_config = &dev->mode_config;
 	struct drm_output *output;
 
-	list_for_each_entry(output, &crtc_config->output_list, head) {
+	list_for_each_entry(output, &mode_config->output_list, head) {
 		struct intel_output *intel_output = output->driver_private;
 
 		if (output->crtc != crtc)
@@ -832,106 +824,102 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	if (intel_panel_fitter_pipe(dev) == pipe)
 		I915_WRITE(PFIT_CONTROL, 0);
 
+	DRM_DEBUG("Mode for pipe %c:\n", pipe == 0 ? 'A' : 'B');
+	drm_mode_debug_printmodeline(dev, mode);
+	
 #if 0
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	       "Mode for pipe %c:\n", pipe == 0 ? 'A' : 'B');
-    xf86PrintModeline(pScrn->scrnIndex, mode);
-    if (!xf86ModesEqual(mode, adjusted_mode)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "Adjusted mode for pipe %c:\n", pipe == 0 ? 'A' : 'B');
-	xf86PrintModeline(pScrn->scrnIndex, mode);
-    }
-    i830PrintPll("chosen", &clock);
+	if (!xf86ModesEqual(mode, adjusted_mode)) {
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			   "Adjusted mode for pipe %c:\n", pipe == 0 ? 'A' : 'B');
+		xf86PrintModeline(pScrn->scrnIndex, mode);
+	}
+	i830PrintPll("chosen", &clock);
 #endif
 
-    if (dpll & DPLL_VCO_ENABLE)
-    {
+	if (dpll & DPLL_VCO_ENABLE) {
+		I915_WRITE(fp_reg, fp);
+		I915_WRITE(dpll_reg, dpll & ~DPLL_VCO_ENABLE);
+		I915_READ(dpll_reg);
+		udelay(150);
+	}
+	
+	/* The LVDS pin pair needs to be on before the DPLLs are enabled.
+	 * This is an exception to the general rule that mode_set doesn't turn
+	 * things on.
+	 */
+	if (is_lvds) {
+		u32 lvds = I915_READ(LVDS);
+		
+		lvds |= LVDS_PORT_EN | LVDS_A0A2_CLKA_POWER_UP | LVDS_PIPEB_SELECT;
+		/* Set the B0-B3 data pairs corresponding to whether we're going to
+		 * set the DPLLs for dual-channel mode or not.
+		 */
+		if (clock.p2 == 7)
+			lvds |= LVDS_B0B3_POWER_UP | LVDS_CLKB_POWER_UP;
+		else
+			lvds &= ~(LVDS_B0B3_POWER_UP | LVDS_CLKB_POWER_UP);
+		
+		/* It would be nice to set 24 vs 18-bit mode (LVDS_A3_POWER_UP)
+		 * appropriately here, but we need to look more thoroughly into how
+		 * panels behave in the two modes.
+		 */
+		
+		I915_WRITE(LVDS, lvds);
+		I915_READ(LVDS);
+	}
+	
 	I915_WRITE(fp_reg, fp);
-	I915_WRITE(dpll_reg, dpll & ~DPLL_VCO_ENABLE);
+	I915_WRITE(dpll_reg, dpll);
 	I915_READ(dpll_reg);
+	/* Wait for the clocks to stabilize. */
 	udelay(150);
-    }
-
-    /* The LVDS pin pair needs to be on before the DPLLs are enabled.
-     * This is an exception to the general rule that mode_set doesn't turn
-     * things on.
-     */
-    if (is_lvds)
-    {
-	    u32 lvds = I915_READ(LVDS);
-
-	    lvds |= LVDS_PORT_EN | LVDS_A0A2_CLKA_POWER_UP | LVDS_PIPEB_SELECT;
-	    /* Set the B0-B3 data pairs corresponding to whether we're going to
-	     * set the DPLLs for dual-channel mode or not.
-	     */
-	    if (clock.p2 == 7)
-		    lvds |= LVDS_B0B3_POWER_UP | LVDS_CLKB_POWER_UP;
-	    else
-		    lvds &= ~(LVDS_B0B3_POWER_UP | LVDS_CLKB_POWER_UP);
-	    
-	    /* It would be nice to set 24 vs 18-bit mode (LVDS_A3_POWER_UP)
-	     * appropriately here, but we need to look more thoroughly into how
-	     * panels behave in the two modes.
-	     */
-	    
-	    I915_WRITE(LVDS, lvds);
-	    I915_READ(LVDS);
-    }
-    
-    I915_WRITE(fp_reg, fp);
-    I915_WRITE(dpll_reg, dpll);
-    I915_READ(dpll_reg);
-    /* Wait for the clocks to stabilize. */
-    udelay(150);
-    
-    if (IS_I965G(dev)) {
-	    int sdvo_pixel_multiply = adjusted_mode->clock / mode->clock;
-	    I915_WRITE(dpll_md_reg, (0 << DPLL_MD_UDI_DIVIDER_SHIFT) |
-		       ((sdvo_pixel_multiply - 1) << DPLL_MD_UDI_MULTIPLIER_SHIFT));
-    } else {
-	    /* write it again -- the BIOS does, after all */
-	    I915_WRITE(dpll_reg, dpll);
-    }
-    I915_READ(dpll_reg);
-    /* Wait for the clocks to stabilize. */
-    udelay(150);
-    
-    I915_WRITE(htot_reg, (adjusted_mode->crtc_hdisplay - 1) |
-	       ((adjusted_mode->crtc_htotal - 1) << 16));
-    I915_WRITE(hblank_reg, (adjusted_mode->crtc_hblank_start - 1) |
-	       ((adjusted_mode->crtc_hblank_end - 1) << 16));
-    I915_WRITE(hsync_reg, (adjusted_mode->crtc_hsync_start - 1) |
-	       ((adjusted_mode->crtc_hsync_end - 1) << 16));
-    I915_WRITE(vtot_reg, (adjusted_mode->crtc_vdisplay - 1) |
-	       ((adjusted_mode->crtc_vtotal - 1) << 16));
-    I915_WRITE(vblank_reg, (adjusted_mode->crtc_vblank_start - 1) |
-	       ((adjusted_mode->crtc_vblank_end - 1) << 16));
-    I915_WRITE(vsync_reg, (adjusted_mode->crtc_vsync_start - 1) |
-	       ((adjusted_mode->crtc_vsync_end - 1) << 16));
-    I915_WRITE(dspstride_reg, crtc->fb->pitch * (crtc->fb->bits_per_pixel / 8));
-    /* pipesrc and dspsize control the size that is scaled from, which should
-     * always be the user's requested size.
-     */
-    I915_WRITE(dspsize_reg, ((mode->vdisplay - 1) << 16) | (mode->hdisplay - 1));
-    I915_WRITE(dsppos_reg, 0);
-    I915_WRITE(pipesrc_reg, ((mode->hdisplay - 1) << 16) | (mode->vdisplay - 1));
-    I915_WRITE(pipeconf_reg, pipeconf);
-    I915_READ(pipeconf_reg);
-
-    intel_wait_for_vblank(dev);
-
-    I915_WRITE(dspcntr_reg, dspcntr);
-
-    /* Flush the plane changes */
-    intel_pipe_set_base(crtc, x, y);
-
+	
+	if (IS_I965G(dev)) {
+		int sdvo_pixel_multiply = adjusted_mode->clock / mode->clock;
+		I915_WRITE(dpll_md_reg, (0 << DPLL_MD_UDI_DIVIDER_SHIFT) |
+			   ((sdvo_pixel_multiply - 1) << DPLL_MD_UDI_MULTIPLIER_SHIFT));
+	} else {
+		/* write it again -- the BIOS does, after all */
+		I915_WRITE(dpll_reg, dpll);
+	}
+	I915_READ(dpll_reg);
+	/* Wait for the clocks to stabilize. */
+	udelay(150);
+	
+	I915_WRITE(htot_reg, (adjusted_mode->crtc_hdisplay - 1) |
+		   ((adjusted_mode->crtc_htotal - 1) << 16));
+	I915_WRITE(hblank_reg, (adjusted_mode->crtc_hblank_start - 1) |
+		   ((adjusted_mode->crtc_hblank_end - 1) << 16));
+	I915_WRITE(hsync_reg, (adjusted_mode->crtc_hsync_start - 1) |
+		   ((adjusted_mode->crtc_hsync_end - 1) << 16));
+	I915_WRITE(vtot_reg, (adjusted_mode->crtc_vdisplay - 1) |
+		   ((adjusted_mode->crtc_vtotal - 1) << 16));
+	I915_WRITE(vblank_reg, (adjusted_mode->crtc_vblank_start - 1) |
+		   ((adjusted_mode->crtc_vblank_end - 1) << 16));
+	I915_WRITE(vsync_reg, (adjusted_mode->crtc_vsync_start - 1) |
+		   ((adjusted_mode->crtc_vsync_end - 1) << 16));
+	I915_WRITE(dspstride_reg, crtc->fb->pitch * (crtc->fb->bits_per_pixel / 8));
+	/* pipesrc and dspsize control the size that is scaled from, which should
+	 * always be the user's requested size.
+	 */
+	I915_WRITE(dspsize_reg, ((mode->vdisplay - 1) << 16) | (mode->hdisplay - 1));
+	I915_WRITE(dsppos_reg, 0);
+	I915_WRITE(pipesrc_reg, ((mode->hdisplay - 1) << 16) | (mode->vdisplay - 1));
+	I915_WRITE(pipeconf_reg, pipeconf);
+	I915_READ(pipeconf_reg);
+	
+	intel_wait_for_vblank(dev);
+	
+	I915_WRITE(dspcntr_reg, dspcntr);
+	
+	/* Flush the plane changes */
+	intel_pipe_set_base(crtc, x, y);
+	
 #ifdef XF86DRI // TODO
 //   I830DRISetVBlankInterrupt (pScrn, TRUE);
 #endif
-
-    intel_wait_for_vblank(dev);    
-
-
+	
+	intel_wait_for_vblank(dev);    
 }
 
 /** Loads the palette/gamma unit for the CRTC with the prepared values */
@@ -1104,7 +1092,7 @@ void intel_crtc_init(drm_device_t *dev, int pipe)
 	if (crtc == NULL)
 		return;
 
-	intel_crtc = kmalloc(sizeof(struct intel_crtc), GFP_KERNEL);
+	intel_crtc = kzalloc(sizeof(struct intel_crtc), GFP_KERNEL);
 	if (intel_crtc == NULL) {
 		kfree(crtc);
 		return;
@@ -1126,7 +1114,7 @@ int intel_output_clones(drm_device_t *dev, int type_mask)
 	struct drm_output *output;
 	int entry = 0;
 
-        list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+        list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		struct intel_output *intel_output = output->driver_private;
 		if (type_mask & (1 << intel_output->type))
 			index_mask |= (1 << entry);
@@ -1153,7 +1141,7 @@ static void intel_setup_outputs(drm_device_t *dev)
 		intel_sdvo_init(dev, SDVOC);
 	}
 
-	list_for_each_entry(output, &dev->crtc_config.output_list, head) {
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		struct intel_output *intel_output = output->driver_private;
 		int crtc_mask = 0, clone_mask = 0;
 		
@@ -1193,8 +1181,13 @@ void intel_modeset_init(drm_device_t *dev)
 	int num_pipe;
 	int i;
 
-	drm_crtc_config_init(dev);
+	drm_mode_config_init(dev);
 
+	dev->mode_config.min_width = 0;
+	dev->mode_config.min_height = 0;
+
+	dev->mode_config.max_width = 4096;
+	dev->mode_config.max_height = 4096;
 
 	if (IS_MOBILE(dev) || IS_I9XX(dev))
 		num_pipe = 2;
@@ -1209,11 +1202,11 @@ void intel_modeset_init(drm_device_t *dev)
 
 	intel_setup_outputs(dev);
 
-	drm_initial_config(dev, false);
-	drm_set_desired_modes(dev);
+	//drm_initial_config(dev, false);
+	//drm_set_desired_modes(dev);
 }
 
 void intel_modeset_cleanup(drm_device_t *dev)
 {
-	drm_crtc_config_cleanup(dev);
+	drm_mode_config_cleanup(dev);
 }
