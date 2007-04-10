@@ -80,8 +80,8 @@ static void set_clock(void *data, int state_high)
 	else
 		clock_bits = GPIO_CLOCK_DIR_OUT | GPIO_CLOCK_DIR_MASK |
 			GPIO_CLOCK_VAL_MASK;
+
 	I915_WRITE(chan->reg, reserved | clock_bits);
-	udelay(I2C_RISEFALL_TIME); /* wait for the line to change state */
 }
 
 static void set_data(void *data, int state_high)
@@ -103,7 +103,6 @@ static void set_data(void *data, int state_high)
 			GPIO_DATA_VAL_MASK;
 
 	I915_WRITE(chan->reg, reserved | data_bits);
-	udelay(I2C_RISEFALL_TIME); /* wait for the line to change state */
 }
 
 /**
@@ -147,7 +146,7 @@ struct intel_i2c_chan *intel_i2c_create(drm_device_t *dev, const u32 reg,
 	chan->algo.setscl = set_clock;
 	chan->algo.getsda = get_data;
 	chan->algo.getscl = get_clock;
-	chan->algo.udelay = 20;
+	chan->algo.udelay = 20; /* between calls to (set|get)_(clock|data) */
 	chan->algo.timeout = usecs_to_jiffies(2200);
 	chan->algo.data = chan;
 
@@ -159,7 +158,6 @@ struct intel_i2c_chan *intel_i2c_create(drm_device_t *dev, const u32 reg,
 	/* JJJ:  raise SCL and SDA? */
 	set_data(chan, 1);
 	set_clock(chan, 1);
-	udelay(20);
 
 	return chan;
 
