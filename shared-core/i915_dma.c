@@ -896,7 +896,6 @@ int i915_driver_firstopen(struct drm_device *dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	int ret;
 	DRM_DEBUG("\n");
-	drm_bo_driver_init(dev);
 
 	if (!dev_priv->mmio_map) {
 		ret = drm_addmap(dev, dev_priv->mmiobase, dev_priv->mmiolen,
