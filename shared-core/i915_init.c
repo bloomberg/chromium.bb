@@ -64,7 +64,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	dev_priv->sarea_priv = kmalloc(sizeof(drm_i915_sarea_t), GFP_KERNEL);
 
 	/* FIXME: need real front buffer offset */
-	dev_priv->sarea_priv->front_handle = 0xa0000000 + 1024*1024;
+	dev_priv->sarea_priv->front_handle = dev_priv->baseaddr + 1024*1024;
 
 	drm_bo_driver_init(dev);
 	/* this probably doesn't belong here - TODO */
@@ -73,7 +73,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	drm_set_desired_modes(dev);
 
 	/* FIXME: command ring needs AGP space, do we own it at this point? */
-	dev_priv->ring.Start = 0xa0000000;
+	dev_priv->ring.Start = dev_priv->baseaddr;
 	dev_priv->ring.End = 128*1024;
 	dev_priv->ring.Size = 128*1024;
 	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
