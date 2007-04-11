@@ -1128,11 +1128,9 @@ static void intel_setup_outputs(drm_device_t *dev)
 
 	intel_crt_init(dev);
 
-#if 0
 	/* Set up integrated LVDS */
 	if (IS_MOBILE(dev) && !IS_I830(dev))
 		intel_lvds_init(dev);
-#endif
 
 	if (IS_I9XX(dev)) {
 		intel_sdvo_init(dev, SDVOB);

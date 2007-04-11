@@ -1530,7 +1530,7 @@ static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
 	return ret;
 }
 
-int drm_buffer_object_create(drm_file_t * priv,
+int drm_buffer_object_create(drm_device_t *dev,
 			     unsigned long size,
 			     drm_bo_type_t type,
 			     uint32_t mask,
@@ -1539,7 +1539,6 @@ int drm_buffer_object_create(drm_file_t * priv,
 			     unsigned long buffer_start,
 			     drm_buffer_object_t ** buf_obj)
 {
-	drm_device_t *dev = priv->head->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
 	drm_buffer_object_t *bo;
 	int ret = 0;
@@ -1615,6 +1614,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 	drm_bo_usage_deref_unlocked(bo);
 	return ret;
 }
+EXPORT_SYMBOL(drm_buffer_object_create);
 
 static int drm_bo_add_user_object(drm_file_t * priv, drm_buffer_object_t * bo,
 				  int shareable)
@@ -1670,7 +1670,8 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 		switch (req->op) {
 		case drm_bo_create:
 			rep.ret =
-			    drm_buffer_object_create(priv, req->size,
+			    drm_buffer_object_create(priv->head->dev,
+						     req->size,
 						     req->type,
 						     req->mask,
 						     req->hint,
@@ -2300,6 +2301,9 @@ void drm_bo_unmap_virtual(drm_buffer_object_t * bo)
 	drm_device_t *dev = bo->dev;
 	loff_t offset = ((loff_t) bo->map_list.hash.key) << PAGE_SHIFT;
 	loff_t holelen = ((loff_t) bo->mem.num_pages) << PAGE_SHIFT;
+
+	if (!dev->dev_mapping)
+		return;
 
 	unmap_mapping_range(dev->dev_mapping, offset, holelen, 1);
 }

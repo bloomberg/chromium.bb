@@ -4,10 +4,23 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
+/**
+ * i915_driver_load - setup chip and create an initial config
+ * @dev: DRM device
+ * @flags: startup flags
+ *
+ * The driver load routine has to do several things:
+ *   - drive output discovery via intel_modeset_init()
+ *   - initialize the memory manager
+ *   - allocate initial config memory
+ *   - setup the DRM framebuffer with the allocated memory
+ */
 int i915_driver_load(drm_device_t *dev, unsigned long flags)
 {
 	drm_i915_private_t *dev_priv;
 	drm_i915_init_t init;
+	drm_buffer_object_t *entry;
+	struct drm_framebuffer *fb;
 	int ret;
 
 	dev_priv = drm_alloc(sizeof(drm_i915_private_t), DRM_MEM_DRIVER);
@@ -45,7 +58,6 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 		return ret;
 	}
 
-#if 0	
 	ret = drm_setup(dev);
 	if (ret) {
 		DRM_ERROR("drm_setup failed\n");
@@ -60,17 +72,48 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 		return DRM_ERR(EINVAL);
 	}
 
-	/* FIXME: where does the sarea_priv really go? */
-        //	dev_priv->sarea_priv = kmalloc(sizeof(drm_i915_sarea_t), GFP_KERNEL);
+	/* FIXME: assume sarea_priv is right after SAREA */
+        dev_priv->sarea_priv = dev_priv->sarea->handle + sizeof(drm_sarea_t);
 
-	/* FIXME: need real front buffer offset */
-        ///	dev_priv->sarea_priv->front_handle = dev_priv->baseaddr + 1024*1024;
-#endif
+	/*
+	 * Initialize the memory manager for local and AGP space
+	 */
 	drm_bo_driver_init(dev);
-	/* this probably doesn't belong here - TODO */
-	//drm_framebuffer_set_object(dev, dev_priv->sarea_priv->front_handle);
+	/* FIXME: initial stolen area 8M init */
+#define SCANOUT_SIZE 1024*1024*8 /* big enough for 2048x1024 32bpp */
+	drm_bo_init_mm(dev, DRM_BO_MEM_PRIV0, dev->mode_config.fb_base,
+		       SCANOUT_SIZE);
+
+	/* Allocate scanout buffer and command ring */
+	/* FIXME: types and other args correct? */
+	drm_buffer_object_create(dev, SCANOUT_SIZE, drm_bo_type_dc,
+				 DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
+				 DRM_BO_FLAG_MEM_PRIV0 | DRM_BO_FLAG_NO_MOVE,
+				 0, PAGE_SIZE, 0,
+				 &entry);
+
+	DRM_DEBUG("allocated bo, start: 0x%lx, offset: 0x%lx\n",
+		  entry->buffer_start, entry->offset);
 	intel_modeset_init(dev);
-        //	drm_set_desired_modes(dev);
+
+	fb = drm_framebuffer_create(dev);
+	if (!fb) {
+		DRM_ERROR("failed to allocate fb\n");
+		return -EINVAL;
+	}
+
+	fb->width = 1024;
+	fb->height = 768;
+	fb->pitch = 1024;
+	fb->bits_per_pixel = 32;
+	fb->depth = 32;
+	fb->offset = entry->offset;
+	fb->bo = entry;
+
+	drm_initial_config(dev, fb, false);
+	drmfb_probe(dev, fb);
+        drm_set_desired_modes(dev);
+
 #if 0
 	/* FIXME: command ring needs AGP space, do we own it at this point? */
 	dev_priv->ring.Start = dev_priv->baseaddr;
@@ -133,8 +176,10 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 int i915_driver_unload(drm_device_t *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_framebuffer *fb;
 
-	intel_modeset_cleanup(dev);
+	/* FIXME: remove framebuffer */
+	//intel_modeset_cleanup(dev);
 	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
 
 	dev->dev_private = NULL;

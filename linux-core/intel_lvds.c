@@ -164,6 +164,7 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 	struct intel_crtc *intel_crtc = output->crtc->driver_private;
 	struct drm_output *tmp_output;
 
+#if 0
 	spin_lock(&dev->mode_config.config_lock);
 	list_for_each_entry(tmp_output, &dev->mode_config.output_list, head) {
 		if (tmp_output != output && tmp_output->crtc == output->crtc) {
@@ -173,6 +174,7 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 		}
 	}
 	spin_lock(&dev->mode_config.config_lock);
+#endif
 
 	if (intel_crtc->pipe == 0) {
 		printk(KERN_ERR "Can't support LVDS on pipe A\n");
@@ -199,7 +201,7 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 			dev_priv->panel_fixed_mode->vsync_end;
 		adjusted_mode->vtotal = dev_priv->panel_fixed_mode->vtotal;
 		adjusted_mode->clock = dev_priv->panel_fixed_mode->clock;
-//		xf86SetModeCrtc(adjusted_mode, INTERLACE_HALVE_V);
+		drm_mode_set_crtcinfo(adjusted_mode, CRTC_INTERLACE_HALVE_V);
 	}
 
 	/*
@@ -272,11 +274,11 @@ static int intel_lvds_get_modes(struct drm_output *output)
 			   "failed.\n");
 		return 0;
 	}
-	intel_i2c_destroy(intel_output->ddc_bus);
 
 	ret = intel_ddc_get_modes(output);
 	if (ret)
 		return ret;
+	intel_i2c_destroy(intel_output->ddc_bus);
 
 	/* Didn't get an EDID */
 	if (!output->monitor_info) {
@@ -359,19 +361,31 @@ void intel_lvds_init(struct drm_device *dev)
 	output->interlace_allowed = FALSE;
 	output->doublescan_allowed = FALSE;
 
+	/* Set up the DDC bus. */
+	intel_output->ddc_bus = intel_i2c_create(dev, GPIOC, "LVDSDDC_C");
+	if (!intel_output->ddc_bus) {
+		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
+			   "failed.\n");
+		return;
+	}
+
 	/*
 	 * Attempt to get the fixed panel mode from DDC.  Assume that the
 	 * preferred mode is the right one.
 	 */
 	intel_ddc_get_modes(output);
+	intel_i2c_destroy(intel_output->ddc_bus);
 	list_for_each_entry(scan, &output->probed_modes, head) {
 		if (scan->type & DRM_MODE_TYPE_PREFERRED)
 			break;
 	}
 
-	if (scan)
+	if (scan) {
 		dev_priv->panel_fixed_mode = scan;
+		DRM_DEBUG("LVDS panel_fixed: %s\n", scan->name);
+	}
 
+#if 0
 	/*
 	 * If we didn't get EDID, try checking if the panel is already turned
 	 * on.  If so, assume that whatever is currently programmed is the
@@ -395,7 +409,6 @@ void intel_lvds_init(struct drm_device *dev)
 	}
 
 /* No BIOS poking yet... */
-#if 0
 	/* Get the LVDS fixed mode out of the BIOS.  We should support LVDS
 	 * with the BIOS being unavailable or broken, but lack the
 	 * configuration options for now.
