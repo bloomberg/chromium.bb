@@ -156,8 +156,6 @@ int drm_lastclose(drm_device_t * dev)
 	 * We can't do much about this function failing.
 	 */
 
-	drm_bo_driver_finish(dev);
-
 	if (dev->driver->lastclose)
 		dev->driver->lastclose(dev);
 	DRM_DEBUG("driver lastclose completed\n");
@@ -399,6 +397,8 @@ static void drm_cleanup(drm_device_t * dev)
 				  dev->agp->agp_info.aper_size * 1024 * 1024);
 		DRM_DEBUG("mtrr_del=%d\n", retval);
 	}
+
+	drm_bo_driver_finish(dev);
 
 	if (drm_core_has_AGP(dev) && dev->agp) {
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
