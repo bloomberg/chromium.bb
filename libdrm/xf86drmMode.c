@@ -276,7 +276,7 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 	r->mode            = crtc.mode;
 //	r->width           = crtc.width;
 //	r->height          = crtc.height;
-	r->bufferId        = crtc.fb_id;
+	r->buffer_id        = crtc.fb_id;
 	r->gamma_size      = crtc.gamma_size;
 	r->count_outputs   = crtc.count_outputs;
 	r->count_possibles = crtc.count_possibles;

@@ -590,7 +590,7 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 }
 EXPORT_SYMBOL(drm_mode_config_cleanup);
 
-int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, struct drm_display_mode *new_mode, struct drm_output **output_set)
+int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, struct drm_display_mode *new_mode, struct drm_output **output_set, struct drm_framebuffer *fb)
 {
 	drm_device_t *dev = crtc->dev;
 	struct drm_crtc **save_crtcs, *new_crtc;
@@ -602,6 +602,9 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	save_crtcs = kzalloc(dev->mode_config.num_crtc * sizeof(struct drm_crtc *), GFP_KERNEL);
 	if (!save_crtcs)
 		return -ENOMEM;
+
+	if (crtc->fb != fb)
+		changed = true;
 
 	if (crtc_info->x != crtc->x || crtc_info->y != crtc->y)
 		changed = true;
@@ -629,6 +632,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	}
 
 	if (changed) {
+		crtc->fb = fb;
 		crtc->enabled = (new_mode != NULL);
 		if (new_mode != NULL) {
 			DRM_DEBUG("attempting to set mode from userspace\n");
@@ -897,6 +901,7 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 	struct drm_crtc *crtc;
 	struct drm_output **output_set = NULL, *output;
 	struct drm_display_mode *mode;
+	struct drm_framebuffer *fb = NULL;
 	int retcode = 0;
 	int i;
 
@@ -911,6 +916,15 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 	}
 
 	if (crtc_req.mode) {
+
+		/* if we have a mode we need a framebuffer */
+		if (crtc_req.fb_id) {
+			fb = idr_find(&dev->mode_config.crtc_idr, crtc_req.fb_id);
+			if (!fb || (fb->id != crtc_req.fb_id)) {
+				DRM_DEBUG("Unknown FB ID%d\n", crtc_req.fb_id);
+				return -EINVAL;
+			}
+		}
 		mode = idr_find(&dev->mode_config.crtc_idr, crtc_req.mode);
 		if (!mode || (mode->mode_id != crtc_req.mode))
 		{
@@ -935,8 +949,8 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 
-	if (crtc_req.count_outputs > 0 && !mode) {
-		DRM_DEBUG("Count outputs is %d but no mode set\n", crtc_req.count_outputs);
+	if (crtc_req.count_outputs > 0 && !mode && !fb) {
+		DRM_DEBUG("Count outputs is %d but no mode or fb set\n", crtc_req.count_outputs);
 		return -EINVAL;
 	}
 
@@ -960,7 +974,7 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 		}
 	}
 		
-	retcode = drm_crtc_set_config(crtc, &crtc_req, mode, output_set);
+	retcode = drm_crtc_set_config(crtc, &crtc_req, mode, output_set, fb);
 	return retcode;
 }
 

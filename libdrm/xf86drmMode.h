@@ -80,7 +80,7 @@ typedef struct drm_mode_fb_cmd drmModeFrameBuffer, *drmModeFrameBufferPtr;
 
 typedef struct _drmModeCrtc {
 
-	unsigned int bufferId; /**< Buffer currently connected to */
+	unsigned int buffer_id; /**< FB id to connect to 0 = disconnect*/
 
 	uint32_t x, y; /**< Position on the frameuffer */
 	uint32_t width, height;
