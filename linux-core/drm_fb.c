@@ -66,6 +66,7 @@ static int drmfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 				((blue  & 0xf800) >> 11);
 			break;
 		case 24:
+		case 32:
 			fb->pseudo_palette[regno] = ((red & 0xff00) << 8) |
 				(green & 0xff00) |
 				((blue  & 0xff00) >> 8);
