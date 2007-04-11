@@ -129,6 +129,7 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_MODE_SETCRTC)] = {drm_mode_setcrtc, DRM_MASTER|DRM_ROOT_ONLY},
 	[DRM_IOCTL_NR(DRM_IOCTL_MODE_ADDFB)] = {drm_mode_addfb, DRM_MASTER|DRM_ROOT_ONLY},
 	[DRM_IOCTL_NR(DRM_IOCTL_MODE_RMFB)] = {drm_mode_rmfb, DRM_MASTER|DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_IOCTL_MODE_GETFB)] = {drm_mode_getfb, DRM_MASTER|DRM_ROOT_ONLY},
 };
 
 #define DRM_CORE_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )

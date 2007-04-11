@@ -474,5 +474,7 @@ extern int drm_mode_addfb(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg);
 extern int drm_mode_rmfb(struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg);
+extern int drm_mode_getfb(struct inode *inode, struct file *filp,
+			  unsigned int cmd, unsigned long arg);
 #endif /* __DRM_CRTC_H__ */
 

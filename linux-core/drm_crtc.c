@@ -1058,3 +1058,33 @@ int drm_mode_rmfb(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+int drm_mode_getfb(struct inode *inode, struct file *filp,
+		   unsigned int cmd, unsigned long arg)
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->head->dev;	
+	struct drm_mode_fb_cmd __user *argp = (void __user *)arg;
+	struct drm_mode_fb_cmd r;
+	struct drm_framebuffer *fb;
+
+	if (copy_from_user(&r, argp, sizeof(r)))
+		return -EFAULT;
+
+	fb = idr_find(&dev->mode_config.crtc_idr, r.buffer_id);
+	if (!fb || (r.buffer_id != fb->id)) {
+		DRM_ERROR("invalid framebuffer id\n");
+		return -EINVAL;
+	}
+
+	r.height = fb->height;
+	r.width = fb->width;
+	r.depth = fb->depth;
+	r.bpp = fb->bits_per_pixel;
+	r.handle = fb->bo->base.hash.key;
+	r.pitch = fb->pitch;
+
+	if (copy_to_user(argp, &r, sizeof(r)))
+		return -EFAULT;
+
+	return 0;
+}
