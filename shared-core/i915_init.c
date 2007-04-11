@@ -44,23 +44,18 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
 	*preallocated_size = 1024 * 1024;
 
 	switch (pdev->device) {
-	case PCI_DEVICE_ID_INTEL_82915G_IG:
-	case PCI_DEVICE_ID_INTEL_82915GM_IG:
-	case PCI_DEVICE_ID_INTEL_82945G_IG:
-	case PCI_DEVICE_ID_INTEL_82945GM_IG:
-		/* 915 and 945 chipsets support a 256MB aperture.
-		   Aperture size is determined by inspected the
-		   base address of the aperture. */
-		if (pci_resource_start(pdev, 2) & 0x08000000)
-			*aperture_size *= 128;
-		else
-			*aperture_size *= 256;
-		break;
-	default:
+	case PCI_DEVICE_ID_INTEL_82830_CGC:
+	case PCI_DEVICE_ID_INTEL_82845G_HB:
+	case PCI_DEVICE_ID_INTEL_82855GM_IG:
+	case PCI_DEVICE_ID_INTEL_82865_IG:
 		if ((tmp & INTEL_GMCH_MEM_MASK) == INTEL_GMCH_MEM_64M)
 			*aperture_size *= 64;
 		else
 			*aperture_size *= 128;
+		break;
+	default:
+		/* 9xx supports large sizes, just look at the length */
+		*aperture_size = pci_resource_len(pdev, 2);
 		break;
 	}
 
@@ -192,7 +187,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	vsize = 800;
 	bytes_per_pixel = 4;
 	size = hsize * vsize * bytes_per_pixel;
-	drm_buffer_object_create(dev, size, drm_bo_type_dc,
+	drm_buffer_object_create(dev, size, drm_bo_type_kernel,
 				 DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
 				 DRM_BO_FLAG_MEM_PRIV0 | DRM_BO_FLAG_NO_MOVE,
 				 0, PAGE_SIZE, 0,
