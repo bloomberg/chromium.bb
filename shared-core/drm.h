@@ -909,7 +909,8 @@ struct drm_mode_modeinfo {
 
 struct drm_mode_card_res {
 
-	unsigned int fb_id;
+	int count_fbs;
+	unsigned int __user *fb_id;
 
 	int count_crtcs;
 	unsigned int __user *crtc_id;

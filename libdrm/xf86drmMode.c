@@ -144,14 +144,13 @@ drmModeResPtr drmModeGetResources(int fd)
 	int i;
 	drmModeResPtr r = 0;
 
-	res.count_crtcs   = 0;
-	res.count_outputs = 0;
-	res.count_modes   = 0;
-	res.modes         = 0;
+	memset(&res, 0, sizeof(struct drm_mode_card_res));
 
 	if (ioctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res))
 		return 0;
 
+	if (res.count_fbs)
+		res.fb_id = drmMalloc(res.count_fbs*sizeof(uint32_t));
 	if (res.count_crtcs)
 		res.crtc_id = drmMalloc(res.count_crtcs*sizeof(uint32_t));
 	if (res.count_outputs)
@@ -159,8 +158,10 @@ drmModeResPtr drmModeGetResources(int fd)
 	if (res.count_modes)
 		res.modes = drmMalloc(res.count_modes*sizeof(*res.modes));
 
-	if (ioctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res))
+	if (ioctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res)) {
+		r = NULL;
 		goto err_allocs;
+	}
 
 	/*
 	 * return
@@ -170,27 +171,23 @@ drmModeResPtr drmModeGetResources(int fd)
 	if (!(r = drmMalloc(sizeof(*r))))
 		return 0;
 
-	r->frameBufferId = res.fb_id;
+	r->count_fbs     = res.count_fbs;
 	r->count_crtcs   = res.count_crtcs;
 	r->count_outputs = res.count_outputs;
 	r->count_modes   = res.count_modes;
 	/* TODO we realy should test if these allocs fails. */
+	r->fbs           = drmAllocCpy(res.fb_id, res.count_fbs, sizeof(uint32_t));
 	r->crtcs         = drmAllocCpy(res.crtc_id, res.count_crtcs, sizeof(uint32_t));
 	r->outputs       = drmAllocCpy(res.output_id, res.count_outputs, sizeof(uint32_t));
 	r->modes         = drmAllocCpy(res.modes, res.count_modes, sizeof(struct drm_mode_modeinfo));
 
+err_allocs:
+	drmFree(res.fb_id);
 	drmFree(res.crtc_id);
 	drmFree(res.output_id);
 	drmFree(res.modes);
 
 	return r;
-
-err_allocs:
-	drmFree(res.crtc_id);
-	drmFree(res.output_id);
-	drmFree(res.modes);
-
-	return 0;
 }
 
 int drmModeAddFB(int fd, uint32_t width, uint32_t height,
@@ -214,7 +211,7 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height,
 
 int drmModeRmFB(int fd, uint32_t bufferId)
 {
-        return ioctl(fd, DRM_IOCTL_MODE_RMFB, bufferId);
+	return ioctl(fd, DRM_IOCTL_MODE_RMFB, bufferId);
 }
 
 #if 0

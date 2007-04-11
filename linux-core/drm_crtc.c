@@ -84,7 +84,6 @@ struct drm_crtc *drm_crtc_create(drm_device_t *dev,
 	crtc->funcs = funcs;
 
 	crtc->id = drm_mode_idr_get(dev, crtc);
-	DRM_DEBUG("crtc %p got id %d\n", crtc, crtc->id);
 
 	spin_lock(&dev->mode_config.config_lock);
 	list_add_tail(&crtc->head, &dev->mode_config.crtc_list);
@@ -291,7 +290,6 @@ bool drm_set_desired_modes(struct drm_device *dev)
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 		output = NULL;
 
-		DRM_DEBUG("crtc is %d\n", crtc->id);
 		list_for_each_entry(list_output, &dev->mode_config.output_list, head) {
 			if (list_output->crtc == crtc) {
 				output = list_output;
@@ -610,7 +608,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	if (crtc_info->x != crtc->x || crtc_info->y != crtc->y)
 		changed = true;
 
-	if (crtc->mode.mode_id != new_mode->mode_id)
+	if (new_mode && (crtc->mode.mode_id != new_mode->mode_id))
 		changed = true;
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
@@ -633,8 +631,8 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	}
 
 	if (changed) {
-		crtc->enabled = new_mode != NULL;
-		if (new_mode) {
+		crtc->enabled = (new_mode != NULL);
+		if (new_mode != NULL) {
 			DRM_DEBUG("attempting to set mode from userspace\n");
 			drm_mode_debug_printmodeline(dev, new_mode);
 			if (!drm_crtc_set_mode(crtc, new_mode, crtc_info->x,
@@ -648,7 +646,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 			}
 			crtc->desired_x = crtc_info->x;
 			crtc->desired_y = crtc_info->y;
-			crtc->desired_mode =  new_mode;
+			crtc->desired_mode = new_mode;
 		}
 		drm_disable_unused_functions(dev);
 	}
@@ -687,6 +685,7 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 	struct drm_mode_card_res __user *argp = (void __user *)arg;
 	struct drm_mode_card_res card_res;
 	struct list_head *lh;
+	struct drm_framebuffer *fb;
 	struct drm_output *output;
 	struct drm_crtc *crtc;
 	struct drm_mode_modeinfo u_mode;
@@ -695,9 +694,13 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 	int mode_count= 0;
 	int output_count = 0;
 	int crtc_count = 0;
+	int fb_count = 0;
 	int copied = 0;
 	
 	memset(&u_mode, 0, sizeof(struct drm_mode_modeinfo));
+
+	list_for_each(lh, &dev->mode_config.fb_list)
+		fb_count++;
 
 	list_for_each(lh, &dev->mode_config.crtc_list)
 		crtc_count++;
@@ -722,7 +725,19 @@ int drm_mode_getresources(struct inode *inode, struct file *filp,
 		}
 	}
 
-	/* handle this in 3 parts */
+	/* handle this in 4 parts */
+	/* FBs */
+	if (card_res.count_fbs >= fb_count) {
+		copied = 0;
+		list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
+			if (put_user(fb->id, &card_res.fb_id[copied++])) {
+				retcode = -EFAULT;
+				goto done;
+			}
+		}
+	}
+	card_res.count_fbs = fb_count;
+
 	/* CRTCs */
 	if (card_res.count_crtcs >= crtc_count) {
 		copied = 0;
@@ -840,11 +855,9 @@ int drm_mode_getoutput(struct inode *inode, struct file *filp,
 	if (!output || (output->id != out_resp.output))
 		return -EINVAL;
 
-	DRM_DEBUG("about to count modes: %s\n", output->name);
 	list_for_each_entry(mode, &output->modes, head)
 		mode_count++;
 
-	DRM_DEBUG("about to count modes %d %d %p\n", mode_count, out_resp.count_modes, output->crtc);
 	strncpy(out_resp.name, output->name, DRM_OUTPUT_NAME_LEN);
 	out_resp.name[DRM_OUTPUT_NAME_LEN-1] = 0;
 
@@ -1029,9 +1042,18 @@ int drm_mode_rmfb(struct inode *inode, struct file *filp,
 
 	/* TODO check if we own the buffer */
 	/* TODO release all crtc connected to the framebuffer */
+	/* bind the fb to the crtc for now */
+	{
+		struct drm_crtc *crtc;
+		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+			if (crtc->fb == fb)
+				crtc->fb = NULL;
+		}
+	}
 	/* TODO unhock the destructor from the buffer object */
 
 	drm_framebuffer_destroy(fb);
 
 	return 0;
 }
+
