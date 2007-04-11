@@ -121,7 +121,7 @@ int drmfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 	info->fix.type_aux = 0;
 	info->fix.mmio_start = 0;
 	info->fix.mmio_len = 0;
-	info->fix.line_length = fb->pitch;
+	info->fix.line_length = fb->pitch * ((fb->bits_per_pixel + 1) / 8);
 
 	info->flags = FBINFO_DEFAULT;
 
