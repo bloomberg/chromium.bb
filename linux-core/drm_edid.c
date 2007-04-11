@@ -114,7 +114,7 @@ struct drm_display_mode *drm_mode_detailed(drm_device_t *dev,
 		return NULL;
 
 	mode->type = DRM_MODE_TYPE_DRIVER;
-	mode->clock = timing->pixel_clock / 100;
+	mode->clock = timing->pixel_clock * 10;
 
 	mode->hdisplay = (pt->hactive_hi << 8) | pt->hactive_lo;
 	mode->hsync_start = mode->hdisplay + ((pt->hsync_offset_hi << 8) |
