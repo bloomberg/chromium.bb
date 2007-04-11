@@ -45,7 +45,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 		return ret;
 	}
 
-	
+#if 0	
 	ret = drm_setup(dev);
 	if (ret) {
 		DRM_ERROR("drm_setup failed\n");
@@ -61,17 +61,17 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	}
 
 	/* FIXME: where does the sarea_priv really go? */
-	dev_priv->sarea_priv = kmalloc(sizeof(drm_i915_sarea_t), GFP_KERNEL);
+        //	dev_priv->sarea_priv = kmalloc(sizeof(drm_i915_sarea_t), GFP_KERNEL);
 
 	/* FIXME: need real front buffer offset */
-	dev_priv->sarea_priv->front_handle = dev_priv->baseaddr + 1024*1024;
-
+        ///	dev_priv->sarea_priv->front_handle = dev_priv->baseaddr + 1024*1024;
+#endif
 	drm_bo_driver_init(dev);
 	/* this probably doesn't belong here - TODO */
 	//drm_framebuffer_set_object(dev, dev_priv->sarea_priv->front_handle);
 	intel_modeset_init(dev);
-	drm_set_desired_modes(dev);
-
+        //	drm_set_desired_modes(dev);
+#if 0
 	/* FIXME: command ring needs AGP space, do we own it at this point? */
 	dev_priv->ring.Start = dev_priv->baseaddr;
 	dev_priv->ring.End = 128*1024;
@@ -125,6 +125,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 
 	I915_WRITE(0x02080, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
+#endif
 
 	return 0;
 }
