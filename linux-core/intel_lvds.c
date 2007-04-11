@@ -314,7 +314,8 @@ out:
 
 static void intel_lvds_destroy(struct drm_output *output)
 {
-	drm_output_destroy(output);
+	if (output->driver_private)
+		kfree(output->driver_private);
 }
 
 static const struct drm_output_funcs intel_lvds_output_funcs = {

@@ -179,7 +179,7 @@ int i915_driver_unload(drm_device_t *dev)
 	struct drm_framebuffer *fb;
 
 	/* FIXME: remove framebuffer */
-	//intel_modeset_cleanup(dev);
+	intel_modeset_cleanup(dev);
 	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
 
 	dev->dev_private = NULL;
