@@ -11,6 +11,8 @@
 #include <linux/types.h>
 #include <linux/idr.h>
 
+#include <linux/fb.h>
+
 struct drm_device;
 
 /*
@@ -179,6 +181,9 @@ struct drm_framebuffer {
 	int bits_per_pixel;
 	int flags;
 	struct drm_buffer_object *bo;
+	void *fbdev;
+	u32 pseudo_palette[17];
+	void *virtual_base;
 };
 struct drm_crtc;
 struct drm_output;
@@ -412,6 +417,7 @@ struct drm_mode_config {
 	/* DamagePtr rotationDamage? */
 	/* DGA stuff? */
 	struct drm_mode_config_funcs *funcs;
+	int fb_base;
 };
 
 struct drm_output *drm_output_create(struct drm_device *dev,

@@ -1022,6 +1022,7 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 	if (copy_to_user(argp, &r, sizeof(r)))
 		return -EFAULT;
 
+	drmfb_probe(dev, fb);
 	return 0;
 }
 
@@ -1040,6 +1041,7 @@ int drm_mode_rmfb(struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 
+	drmfb_remove(dev, fb);
 	/* TODO check if we own the buffer */
 	/* TODO release all crtc connected to the framebuffer */
 	/* bind the fb to the crtc for now */
