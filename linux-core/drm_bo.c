@@ -89,6 +89,9 @@ static int drm_bo_vm_pre_move(drm_buffer_object_t * bo, int old_is_pci)
 #ifdef DRM_ODD_MM_COMPAT
 	int ret;
 
+	if (!bo->map_list.map)
+		return 0;
+
 	ret = drm_bo_lock_kmm(bo);
 	if (ret)
 		return ret;
@@ -96,6 +99,9 @@ static int drm_bo_vm_pre_move(drm_buffer_object_t * bo, int old_is_pci)
 	if (old_is_pci)
 		drm_bo_finish_unmap(bo);
 #else
+	if (!bo->map_list.map)
+		return 0;
+
 	drm_bo_unmap_virtual(bo);
 #endif
 	return 0;
@@ -105,6 +111,9 @@ static void drm_bo_vm_post_move(drm_buffer_object_t * bo)
 {
 #ifdef DRM_ODD_MM_COMPAT
 	int ret;
+
+	if (!bo->map_list.map)
+		return;
 
 	ret = drm_bo_remap_bound(bo);
 	if (ret) {
@@ -127,6 +136,11 @@ static int drm_bo_add_ttm(drm_buffer_object_t * bo)
 
 	switch (bo->type) {
 	case drm_bo_type_dc:
+		bo->ttm = drm_ttm_init(dev, bo->mem.num_pages << PAGE_SHIFT);
+		if (!bo->ttm)
+			ret = -ENOMEM;
+		break;
+	case drm_bo_type_kernel:
 		bo->ttm = drm_ttm_init(dev, bo->mem.num_pages << PAGE_SHIFT);
 		if (!bo->ttm)
 			ret = -ENOMEM;
@@ -2301,9 +2315,6 @@ void drm_bo_unmap_virtual(drm_buffer_object_t * bo)
 	drm_device_t *dev = bo->dev;
 	loff_t offset = ((loff_t) bo->map_list.hash.key) << PAGE_SHIFT;
 	loff_t holelen = ((loff_t) bo->mem.num_pages) << PAGE_SHIFT;
-
-	if (!dev->dev_mapping)
-		return;
 
 	unmap_mapping_range(dev->dev_mapping, offset, holelen, 1);
 }
