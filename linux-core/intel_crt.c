@@ -180,6 +180,7 @@ static bool intel_crt_detect_ddc(struct drm_output *output)
 static enum drm_output_status intel_crt_detect(struct drm_output *output)
 {
 	drm_device_t *dev = output->dev;
+	struct intel_output *intel_output = output->driver_private;
 	
 	if (IS_I945G(dev)| IS_I945GM(dev) || IS_I965G(dev)) {
 		if (intel_crt_detect_hotplug(output))
@@ -188,21 +189,47 @@ static enum drm_output_status intel_crt_detect(struct drm_output *output)
 			return output_status_disconnected;
 	}
 
-	if (intel_crt_detect_ddc(output))
-		return output_status_connected;
+	/* Set up the DDC bus. */
+	intel_output->ddc_bus = intel_i2c_create(dev, GPIOA, "CRTDDC_A");
+	if (!intel_output->ddc_bus) {
+		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
+			   "failed.\n");
+		return 0;
+	}
 
+	if (intel_crt_detect_ddc(output)) {
+		intel_i2c_destroy(intel_output->ddc_bus);
+		return output_status_connected;
+	}
+
+	intel_i2c_destroy(intel_output->ddc_bus);
 	/* TODO use load detect */
 	return output_status_unknown;
 }
 
 static void intel_crt_destroy(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
-
-	intel_i2c_destroy(intel_output->ddc_bus);
-
 	if (output->driver_private)
 		kfree(output->driver_private);
+}
+
+static int intel_crt_get_modes(struct drm_output *output)
+{
+	struct drm_device *dev = output->dev;
+	struct intel_output *intel_output = output->driver_private;
+	int ret;
+
+	/* Set up the DDC bus. */
+	intel_output->ddc_bus = intel_i2c_create(dev, GPIOA, "CRTDDC_A");
+	if (!intel_output->ddc_bus) {
+		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
+			   "failed.\n");
+		return 0;
+	}
+
+	ret = intel_ddc_get_modes(output);
+	intel_i2c_destroy(intel_output->ddc_bus);
+	return ret;
 }
 
 /*
@@ -218,7 +245,7 @@ static const struct drm_output_funcs intel_crt_output_funcs = {
 	.mode_set = intel_crt_mode_set,
 	.commit = intel_output_commit,
 	.detect = intel_crt_detect,
-	.get_modes = intel_ddc_get_modes,
+	.get_modes = intel_crt_get_modes,
 	.cleanup = intel_crt_destroy,
 };
 
@@ -239,12 +266,4 @@ void intel_crt_init(drm_device_t *dev)
 	output->driver_private = intel_output;
 	output->interlace_allowed = 0;
 	output->doublescan_allowed = 0;
-
-	/* Set up the DDC bus. */
-	intel_output->ddc_bus = intel_i2c_create(dev, GPIOA, "CRTDDC_A");
-	if (!intel_output->ddc_bus) {
-		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
-			   "failed.\n");
-		return;
-	}
 }
