@@ -1,8 +1,107 @@
+/*
+ * Copyright (c) 2007 Intel Corporation
+ *   Jesse Barnes <jesse.barnes@intel.com>
+ *
+ * Copyright © 2002, 2003 David Dawes <dawes@xfree86.org>
+ *                   2004 Sylvain Meyer
+ *
+ * GPL/BSD dual license
+ */
 #include "drmP.h"
 #include "drm.h"
 #include "drm_sarea.h"
 #include "i915_drm.h"
 #include "i915_drv.h"
+
+/**
+ * i915_probe_agp - get AGP bootup configuration
+ * @pdev: PCI device
+ * @aperture_size: returns AGP aperture configured size
+ * @preallocated_size: returns size of BIOS preallocated AGP space
+ *
+ * Since Intel integrated graphics are UMA, the BIOS has to set aside
+ * some RAM for the framebuffer at early boot.  This code figures out
+ * how much was set aside so we can use it for our own purposes.
+ */
+int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
+		   unsigned long *preallocated_size)
+{
+	struct pci_dev *bridge_dev;
+	u16 tmp = 0;
+	unsigned long overhead;
+
+	bridge_dev = pci_get_bus_and_slot(0, PCI_DEVFN(0,0));
+	if (!bridge_dev) {
+		DRM_ERROR("bridge device not found\n");
+		return -1;
+	}
+
+	/* Get the fb aperture size and "stolen" memory amount. */
+	pci_read_config_word(bridge_dev, INTEL_GMCH_CTRL, &tmp);
+	pci_dev_put(bridge_dev);
+
+	*aperture_size = 1024 * 1024;
+	*preallocated_size = 1024 * 1024;
+
+	switch (pdev->device) {
+	case PCI_DEVICE_ID_INTEL_82915G_IG:
+	case PCI_DEVICE_ID_INTEL_82915GM_IG:
+	case PCI_DEVICE_ID_INTEL_82945G_IG:
+	case PCI_DEVICE_ID_INTEL_82945GM_IG:
+		/* 915 and 945 chipsets support a 256MB aperture.
+		   Aperture size is determined by inspected the
+		   base address of the aperture. */
+		if (pci_resource_start(pdev, 2) & 0x08000000)
+			*aperture_size *= 128;
+		else
+			*aperture_size *= 256;
+		break;
+	default:
+		if ((tmp & INTEL_GMCH_MEM_MASK) == INTEL_GMCH_MEM_64M)
+			*aperture_size *= 64;
+		else
+			*aperture_size *= 128;
+		break;
+	}
+
+	/*
+	 * Some of the preallocated space is taken by the GTT
+	 * and popup.  GTT is 1K per MB of aperture size, and popup is 4K.
+	 */
+	overhead = (*aperture_size / 1024) + 4096;
+	switch (tmp & INTEL_855_GMCH_GMS_MASK) {
+	case INTEL_855_GMCH_GMS_STOLEN_1M:
+		break; /* 1M already */
+	case INTEL_855_GMCH_GMS_STOLEN_4M:
+		*preallocated_size *= 4;
+		break;
+	case INTEL_855_GMCH_GMS_STOLEN_8M:
+		*preallocated_size *= 8;
+		break;
+	case INTEL_855_GMCH_GMS_STOLEN_16M:
+		*preallocated_size *= 16;
+		break;
+	case INTEL_855_GMCH_GMS_STOLEN_32M:
+		*preallocated_size *= 32;
+		break;
+	case INTEL_915G_GMCH_GMS_STOLEN_48M:
+		*preallocated_size *= 48;
+		break;
+	case INTEL_915G_GMCH_GMS_STOLEN_64M:
+		*preallocated_size *= 64;
+		break;
+	case INTEL_855_GMCH_GMS_DISABLED:
+		DRM_ERROR("video memory is disabled\n");
+		return -1;
+	default:
+		DRM_ERROR("unexpected GMCH_GMS value: 0x%02x\n",
+			tmp & INTEL_855_GMCH_GMS_MASK);
+		return -1;
+	}
+	*preallocated_size -= overhead;
+
+	return 0;
+}
 
 /**
  * i915_driver_load - setup chip and create an initial config
@@ -21,7 +120,8 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	drm_i915_init_t init;
 	drm_buffer_object_t *entry;
 	struct drm_framebuffer *fb;
-	int ret;
+	unsigned long agp_size, prealloc_size;
+	int hsize, vsize, bytes_per_pixel, size, ret;
 
 	dev_priv = drm_alloc(sizeof(drm_i915_private_t), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
@@ -41,11 +141,13 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	if (IS_I9XX(dev)) {
 		dev_priv->mmiobase = drm_get_resource_start(dev, 0);
 		dev_priv->mmiolen = drm_get_resource_len(dev, 0);
-		dev->mode_config.fb_base = dev_priv->baseaddr = drm_get_resource_start(dev, 2) & 0xff000000;
+		dev->mode_config.fb_base = dev_priv->baseaddr =
+			drm_get_resource_start(dev, 2) & 0xff000000;
 	} else if (drm_get_resource_start(dev, 1)) {
 		dev_priv->mmiobase = drm_get_resource_start(dev, 1);
 		dev_priv->mmiolen = drm_get_resource_len(dev, 1);
-		dev->mode_config.fb_base = dev_priv->baseaddr = drm_get_resource_start(dev, 0) & 0xff000000;
+		dev->mode_config.fb_base = dev_priv->baseaddr =
+			drm_get_resource_start(dev, 0) & 0xff000000;
 	} else {
 		DRM_ERROR("Unable to find MMIO registers\n");
 		return -ENODEV;
@@ -79,14 +181,18 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	 * Initialize the memory manager for local and AGP space
 	 */
 	drm_bo_driver_init(dev);
-	/* FIXME: initial stolen area 8M init */
-#define SCANOUT_SIZE 1024*1024*8 /* big enough for 2048x1024 32bpp */
-	drm_bo_init_mm(dev, DRM_BO_MEM_PRIV0, dev->mode_config.fb_base,
-		       SCANOUT_SIZE);
+
+	i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
+	drm_bo_init_mm(dev, DRM_BO_MEM_PRIV0, dev_priv->baseaddr,
+		       prealloc_size);
 
 	/* Allocate scanout buffer and command ring */
 	/* FIXME: types and other args correct? */
-	drm_buffer_object_create(dev, SCANOUT_SIZE, drm_bo_type_dc,
+	hsize = 1280;
+	vsize = 800;
+	bytes_per_pixel = 4;
+	size = hsize * vsize * bytes_per_pixel;
+	drm_buffer_object_create(dev, size, drm_bo_type_dc,
 				 DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
 				 DRM_BO_FLAG_MEM_PRIV0 | DRM_BO_FLAG_NO_MOVE,
 				 0, PAGE_SIZE, 0,
@@ -102,11 +208,11 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 		return -EINVAL;
 	}
 
-	fb->width = 1024;
-	fb->height = 768;
-	fb->pitch = 1024;
-	fb->bits_per_pixel = 32;
-	fb->depth = 32;
+	fb->width = hsize;
+	fb->height = vsize;
+	fb->pitch = hsize;
+	fb->bits_per_pixel = bytes_per_pixel * 8;
+	fb->depth = bytes_per_pixel * 8;
 	fb->offset = entry->offset;
 	fb->bo = entry;
 

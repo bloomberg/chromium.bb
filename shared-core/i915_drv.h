@@ -318,6 +318,27 @@ extern void intel_modeset_cleanup(drm_device_t *dev);
 
 extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
+/*
+ * The Bridge device's PCI config space has information about the
+ * fb aperture size and the amount of pre-reserved memory.
+ */
+#define INTEL_GMCH_CTRL		0x52
+#define INTEL_GMCH_ENABLED	0x4
+#define INTEL_GMCH_MEM_MASK	0x1
+#define INTEL_GMCH_MEM_64M	0x1
+#define INTEL_GMCH_MEM_128M	0
+
+#define INTEL_855_GMCH_GMS_MASK		(0x7 << 4)
+#define INTEL_855_GMCH_GMS_DISABLED	(0x0 << 4)
+#define INTEL_855_GMCH_GMS_STOLEN_1M	(0x1 << 4)
+#define INTEL_855_GMCH_GMS_STOLEN_4M	(0x2 << 4)
+#define INTEL_855_GMCH_GMS_STOLEN_8M	(0x3 << 4)
+#define INTEL_855_GMCH_GMS_STOLEN_16M	(0x4 << 4)
+#define INTEL_855_GMCH_GMS_STOLEN_32M	(0x5 << 4)
+
+#define INTEL_915G_GMCH_GMS_STOLEN_48M	(0x6 << 4)
+#define INTEL_915G_GMCH_GMS_STOLEN_64M	(0x7 << 4)
+
 #define GFX_OP_USER_INTERRUPT 		((0<<29)|(2<<23))
 #define GFX_OP_BREAKPOINT_INTERRUPT	((0<<29)|(1<<23))
 #define CMD_REPORT_HEAD			(7<<23)
