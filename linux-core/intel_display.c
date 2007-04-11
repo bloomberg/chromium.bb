@@ -168,18 +168,18 @@ static const intel_limit_t intel_limits[] = {
     },
 };
 
-static const intel_limit_t *intel_limit (struct drm_crtc *crtc)
+static const intel_limit_t *intel_limit(struct drm_crtc *crtc)
 {
 	drm_device_t *dev = crtc->dev;
 	const intel_limit_t *limit;
 	
 	if (IS_I9XX(dev)) {
-		if (intel_pipe_has_type (crtc, INTEL_OUTPUT_LVDS))
+		if (intel_pipe_has_type(crtc, INTEL_OUTPUT_LVDS))
 			limit = &intel_limits[INTEL_LIMIT_I9XX_LVDS];
 		else
 			limit = &intel_limits[INTEL_LIMIT_I9XX_SDVO_DAC];
 	} else {
-		if (intel_pipe_has_type (crtc, INTEL_OUTPUT_LVDS))
+		if (intel_pipe_has_type(crtc, INTEL_OUTPUT_LVDS))
 			limit = &intel_limits[INTEL_LIMIT_I8XX_LVDS];
 		else
 			limit = &intel_limits[INTEL_LIMIT_I8XX_DVO_DAC];
@@ -280,18 +280,20 @@ static bool intel_find_best_PLL(struct drm_crtc *crtc, int target,
 {
 	drm_device_t *dev = crtc->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	intel_clock_t   clock;
-	const intel_limit_t   *limit = intel_limit (crtc);
+	intel_clock_t clock;
+	const intel_limit_t *limit = intel_limit(crtc);
 	int err = target;
 
-	if (IS_I9XX(dev)& intel_pipe_has_type(crtc, INTEL_OUTPUT_LVDS) &&
-	    (I915_READ(LVDS) & LVDS_PORT_EN) != 0)
-	{
-		/* For LVDS, if the panel is on, just rely on its current settings for
-		 * dual-channel.  We haven't figured out how to reliably set up
-		 * different single/dual channel state, if we even can.
-	 */
-		if ((I915_READ(LVDS) & LVDS_CLKB_POWER_MASK) == LVDS_CLKB_POWER_UP)
+	if (IS_I9XX(dev) && intel_pipe_has_type(crtc, INTEL_OUTPUT_LVDS) &&
+	    (I915_READ(LVDS) & LVDS_PORT_EN) != 0) {
+		/*
+		 * For LVDS, if the panel is on, just rely on its current
+		 * settings for dual-channel.  We haven't figured out how to
+		 * reliably set up different single/dual channel state, if we
+		 * even can.
+		 */
+		if ((I915_READ(LVDS) & LVDS_CLKB_POWER_MASK) ==
+		    LVDS_CLKB_POWER_UP)
 			clock.p2 = limit->p2.p2_fast;
 		else
 			clock.p2 = limit->p2.p2_slow;
@@ -304,17 +306,16 @@ static bool intel_find_best_PLL(struct drm_crtc *crtc, int target,
 	
 	memset (best_clock, 0, sizeof (*best_clock));
 	
-	for (clock.m1 = limit->m1.min; clock.m1 <= limit->m1.max; clock.m1++) 
-	{
-		for (clock.m2 = limit->m2.min; clock.m2 < clock.m1 && clock.m2 <= limit->m2.max; clock.m2++) 
-		{
-			for (clock.n = limit->n.min; clock.n <= limit->n.max; clock.n++) 
-			{
-				for (clock.p1 = limit->p1.min; clock.p1 <= limit->p1.max; clock.p1++) 
-				{
+	for (clock.m1 = limit->m1.min; clock.m1 <= limit->m1.max; clock.m1++) {
+		for (clock.m2 = limit->m2.min; clock.m2 < clock.m1 &&
+			     clock.m2 <= limit->m2.max; clock.m2++) {
+			for (clock.n = limit->n.min; clock.n <= limit->n.max;
+			     clock.n++) {
+				for (clock.p1 = limit->p1.min;
+				     clock.p1 <= limit->p1.max; clock.p1++) {
 					int this_err;
 					
-					intel_clock (dev, refclk, &clock);
+					intel_clock(dev, refclk, &clock);
 					
 					if (!intel_PLL_is_valid(crtc, &clock))
 						continue;
@@ -328,6 +329,7 @@ static bool intel_find_best_PLL(struct drm_crtc *crtc, int target,
 			}
 		}
 	}
+
 	return (err != target);
 }
 
