@@ -53,8 +53,6 @@ static int drmfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 	if (regno > 17)
 		return 1;
 
-	printk(KERN_INFO "Got set col reg %d %d %d %d\n", red, green, blue, regno);
-
 	if (regno < 16) {
 		switch (fb->depth) {
 		case 15:
@@ -118,6 +116,7 @@ int drmfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 	info->fix.smem_len = (8*1024*1024);
 	info->fix.type = FB_TYPE_PACKED_PIXELS;
 	info->fix.visual = FB_VISUAL_DIRECTCOLOR;
+	info->fix.accel = FB_ACCEL_NONE;
 	info->fix.type_aux = 0;
 	info->fix.mmio_start = 0;
 	info->fix.mmio_len = 0;
@@ -141,12 +140,18 @@ int drmfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 	info->var.bits_per_pixel = fb->bits_per_pixel;
 	info->var.xoffset = 0;
 	info->var.yoffset = 0;
+	info->var.activate = FB_ACTIVATE_NOW;
+	info->var.height = -1;
+	info->var.width = -1;
+	info->var.vmode = FB_VMODE_NONINTERLACED;
 
+	DRM_DEBUG("fb depth is %d\n", fb->depth);
 	switch(fb->depth) {
 	case 8:
 	case 15:
 	case 16:
 		break;
+	default:
 	case 24:
 	case 32:
 		info->var.red.offset = 16;
