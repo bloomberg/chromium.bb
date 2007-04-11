@@ -350,7 +350,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	int dspsurf = (pipe == 0 ? DSPASURF : DSPBSURF);
 	
 	Start = crtc->fb->offset + dev_priv->baseaddr;
-	Offset = ((y * crtc->fb->width + x) * (crtc->fb->bits_per_pixel / 8));
+	Offset = ((y * crtc->fb->pitch + x) * (crtc->fb->bits_per_pixel / 8));
 
 	DRM_DEBUG("Writing base %08lX %08lX %d %d\n", Start, Offset, x, y);
 	if (IS_I965G(dev)) {
@@ -530,24 +530,22 @@ static void intel_crtc_unlock (struct drm_crtc *crtc)
 
 static void intel_crtc_prepare (struct drm_crtc *crtc)
 {
-    crtc->funcs->dpms (crtc, DPMSModeOff);
+	crtc->funcs->dpms(crtc, DPMSModeOff);
 }
 
 static void intel_crtc_commit (struct drm_crtc *crtc)
 {
-	crtc->funcs->dpms (crtc, DPMSModeOn);
-//	if (crtc->scrn->pScreen != NULL)
-//		xf86_reload_cursors (crtc->scrn->pScreen);
+	crtc->funcs->dpms(crtc, DPMSModeOn);
 }
 
 void intel_output_prepare (struct drm_output *output)
 {
-	output->funcs->dpms (output, DPMSModeOff);
+	output->funcs->dpms(output, DPMSModeOff);
 }
 
 void intel_output_commit (struct drm_output *output)
 {
-	output->funcs->dpms (output, DPMSModeOn);
+	output->funcs->dpms(output, DPMSModeOn);
 }
 
 static bool intel_crtc_mode_fixup(struct drm_crtc *crtc,
