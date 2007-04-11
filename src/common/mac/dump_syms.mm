@@ -207,18 +207,40 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
     [symbols addObject:symbol];
   }
 
-  NSArray *converted = [self convertCPlusPlusSymbols:symbols];
-  [symbols release];
+  // In order to deal with crashing problems in c++filt, we setup
+  // a while loop to handle the case where convertCPlusPlusSymbols
+  // only returns partial results.
+  // We then attempt to continue from the point where c++filt failed
+  // and add the partial results to the total results until we're
+  // completely done.
+  
+  unsigned int totalIndex = 0;
+  unsigned int totalCount = count;
+  
+  while (totalIndex < totalCount) {
+    NSRange range = NSMakeRange(totalIndex, totalCount - totalIndex);
+    NSArray *subarray = [symbols subarrayWithRange:range];
+    NSArray *converted = [self convertCPlusPlusSymbols:subarray];
+    unsigned int convertedCount = [converted count];
 
-  for (unsigned int i = 0; i < count; ++i) {
-    NSMutableDictionary *dict = [addresses_ objectForKey:
-      [addresses objectAtIndex:i]];
-    NSString *symbol = [converted objectAtIndex:i];
+    if (convertedCount == 0) {
+      break; // we give up at this point
+    }
+    
+    for (unsigned int convertedIndex = 0;
+      convertedIndex < convertedCount && totalIndex < totalCount;
+       ++totalIndex, ++convertedIndex) {
+      NSMutableDictionary *dict = [addresses_ objectForKey:
+        [addresses objectAtIndex:totalIndex]];
+      NSString *symbol = [converted objectAtIndex:convertedIndex];
 
-    // Only add if this is a non-zero length symbol
-    if ([symbol length])
-      [dict setObject:symbol forKey:kAddressConvertedSymbolKey];
+      // Only add if this is a non-zero length symbol
+      if ([symbol length])
+        [dict setObject:symbol forKey:kAddressConvertedSymbolKey];
+    }
   }
+  
+  [symbols release];
 }
 
 //=============================================================================
