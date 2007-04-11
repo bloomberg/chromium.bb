@@ -164,7 +164,7 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 	struct intel_crtc *intel_crtc = output->crtc->driver_private;
 	struct drm_output *tmp_output;
 
-#if 0
+#if 0 /* FIXME: Check for other outputs on this pipe */
 	spin_lock(&dev->mode_config.config_lock);
 	list_for_each_entry(tmp_output, &dev->mode_config.output_list, head) {
 		if (tmp_output != output && tmp_output->crtc == output->crtc) {
@@ -274,11 +274,11 @@ static int intel_lvds_get_modes(struct drm_output *output)
 			   "failed.\n");
 		return 0;
 	}
-
 	ret = intel_ddc_get_modes(output);
+	intel_i2c_destroy(intel_output->ddc_bus);
+
 	if (ret)
 		return ret;
-	intel_i2c_destroy(intel_output->ddc_bus);
 
 	/* Didn't get an EDID */
 	if (!output->monitor_info) {
@@ -377,13 +377,11 @@ void intel_lvds_init(struct drm_device *dev)
 	intel_ddc_get_modes(output);
 	intel_i2c_destroy(intel_output->ddc_bus);
 	list_for_each_entry(scan, &output->probed_modes, head) {
-		if (scan->type & DRM_MODE_TYPE_PREFERRED)
+		if (scan->type & DRM_MODE_TYPE_PREFERRED) {
+			dev_priv->panel_fixed_mode = 
+				drm_mode_duplicate(dev, scan);
 			break;
-	}
-
-	if (scan) {
-		dev_priv->panel_fixed_mode = scan;
-		DRM_DEBUG("LVDS panel_fixed: %s\n", scan->name);
+		}
 	}
 
 #if 0
