@@ -970,6 +970,7 @@ struct drm_mode_fb_cmd {
         unsigned int pitch;
         unsigned int bpp;
         unsigned int handle;
+	unsigned int depth;
 };
 
 /**

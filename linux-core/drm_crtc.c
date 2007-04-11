@@ -1003,12 +1003,13 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 	if(!fb)
 		return -EINVAL;;
 
-	fb->width	  = r.width;
-	fb->height	 = r.height;
-	fb->pitch	  = r.pitch;
+	fb->width = r.width;
+	fb->height = r.height;
+	fb->pitch = r.pitch;
 	fb->bits_per_pixel = r.bpp;
-	fb->offset	 = bo->offset;
-	fb->bo	     = bo;
+	fb->depth = r.depth;
+	fb->offset = bo->offset;
+	fb->bo = bo;
 
 	r.buffer_id = fb->id;
 

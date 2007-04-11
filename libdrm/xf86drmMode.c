@@ -190,7 +190,7 @@ err_allocs:
 	return r;
 }
 
-int drmModeAddFB(int fd, uint32_t width, uint32_t height,
+int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
                  uint8_t bpp, uint32_t pitch, drmBO *bo, uint32_t *buf_id)
 {
 	struct drm_mode_fb_cmd f;
@@ -200,6 +200,7 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height,
 	f.height = height;
 	f.pitch  = pitch;
 	f.bpp    = bpp;
+	f.depth  = depth;
 	f.handle = bo->handle;
 
 	if (ret = ioctl(fd, DRM_IOCTL_MODE_ADDFB, &f))
