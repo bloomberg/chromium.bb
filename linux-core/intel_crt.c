@@ -201,9 +201,7 @@ static void intel_crt_destroy(struct drm_output *output)
 	struct intel_output *intel_output = output->driver_private;
 
 	intel_i2c_destroy(intel_output->ddc_bus);
-
-	if (output->driver_private)
-		kfree(output->driver_private);
+	kfree(output->driver_private);
 }
 
 static int intel_crt_get_modes(struct drm_output *output)
