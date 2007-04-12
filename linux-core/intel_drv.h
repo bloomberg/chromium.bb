@@ -74,5 +74,6 @@ extern void intel_output_commit (struct drm_output *output);
 extern struct drm_display_mode *intel_crtc_mode_get(drm_device_t *dev,
 						    struct drm_crtc *crtc);
 extern void intel_wait_for_vblank(drm_device_t *dev);
+extern struct drm_crtc *intel_get_crtc_from_pipe(drm_device_t *dev, int pipe);
 
 #endif /* __INTEL_DRV_H__ */

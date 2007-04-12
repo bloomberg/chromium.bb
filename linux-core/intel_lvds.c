@@ -164,8 +164,6 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 	struct intel_crtc *intel_crtc = output->crtc->driver_private;
 	struct drm_output *tmp_output;
 
-#if 0 /* FIXME: Check for other outputs on this pipe */
-	spin_lock(&dev->mode_config.config_lock);
 	list_for_each_entry(tmp_output, &dev->mode_config.output_list, head) {
 		if (tmp_output != output && tmp_output->crtc == output->crtc) {
 			printk(KERN_ERR "Can't enable LVDS and another "
@@ -173,8 +171,6 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 			return false;
 		}
 	}
-	spin_lock(&dev->mode_config.config_lock);
-#endif
 
 	if (intel_crtc->pipe == 0) {
 		printk(KERN_ERR "Can't support LVDS on pipe A\n");
@@ -262,7 +258,6 @@ static enum drm_output_status intel_lvds_detect(struct drm_output *output)
  */
 static int intel_lvds_get_modes(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
 	struct drm_device *dev = output->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct edid *edid_info;
@@ -317,9 +312,7 @@ static void intel_lvds_destroy(struct drm_output *output)
 	struct intel_output *intel_output = output->driver_private;
 
 	intel_i2c_destroy(intel_output->ddc_bus);
-
-	if (output->driver_private)
-		kfree(output->driver_private);
+	kfree(output->driver_private);
 }
 
 static const struct drm_output_funcs intel_lvds_output_funcs = {
@@ -349,6 +342,9 @@ void intel_lvds_init(struct drm_device *dev)
 	struct drm_output *output;
 	struct intel_output *intel_output;
 	struct drm_display_mode *scan; /* *modes, *bios_mode; */
+	struct drm_crtc *crtc;
+	u32 lvds;
+	int pipe;
 
 	output = drm_output_create(dev, &intel_lvds_output_funcs, "LVDS");
 	if (!output)
@@ -384,34 +380,34 @@ void intel_lvds_init(struct drm_device *dev)
 		if (scan->type & DRM_MODE_TYPE_PREFERRED) {
 			dev_priv->panel_fixed_mode = 
 				drm_mode_duplicate(dev, scan);
-			break;
+			goto out; /* FIXME: check for quirks */
 		}
 	}
 
-#if 0
 	/*
 	 * If we didn't get EDID, try checking if the panel is already turned
 	 * on.  If so, assume that whatever is currently programmed is the
 	 * correct mode.
 	 */
-	if (!dev_priv->panel_fixed_mode) {
-		u32 lvds = I915_READ(LVDS);
-		int pipe = (lvds & LVDS_PIPEB_SELECT) ? 1 : 0;
-		struct drm_mode_config *mode_config = &dev->mode_config;
-		struct drm_crtc *crtc;
-		/* FIXME: need drm_crtc_from_pipe */
-		//crtc = drm_crtc_from_pipe(mode_config, pipe);
+	lvds = I915_READ(LVDS);
+	pipe = (lvds & LVDS_PIPEB_SELECT) ? 1 : 0;
+	crtc = intel_get_crtc_from_pipe(dev, pipe);
 		
-		if (lvds & LVDS_PORT_EN && 0) {
-			dev_priv->panel_fixed_mode =
-				intel_crtc_mode_get(dev, crtc);
-			if (dev_priv->panel_fixed_mode)
-				dev_priv->panel_fixed_mode->type |=
-					DRM_MODE_TYPE_PREFERRED;
+	if (crtc && (lvds & LVDS_PORT_EN)) {
+		dev_priv->panel_fixed_mode = intel_crtc_mode_get(dev, crtc);
+		if (dev_priv->panel_fixed_mode) {
+			dev_priv->panel_fixed_mode->type |=
+				DRM_MODE_TYPE_PREFERRED;
+			goto out; /* FIXME: check for quirks */
 		}
 	}
 
-/* No BIOS poking yet... */
+	/* If we still don't have a mode after all that, give up. */
+	if (!dev_priv->panel_fixed_mode)
+		goto failed;
+
+	/* FIXME: probe the BIOS for modes and check for LVDS quirks */
+#if 0
 	/* Get the LVDS fixed mode out of the BIOS.  We should support LVDS
 	 * with the BIOS being unavailable or broken, but lack the
 	 * configuration options for now.
@@ -442,22 +438,25 @@ void intel_lvds_init(struct drm_device *dev)
 		goto disable_exit;
 	}
 
-	/* Blacklist machines with BIOSes that list an LVDS panel without actually
-	 * having one.
+	/*
+	 * Blacklist machines with BIOSes that list an LVDS panel without
+	 * actually having one.
 	 */
 	if (dev_priv->PciInfo->chipType == PCI_CHIP_I945_GM) {
-		if (dev_priv->PciInfo->subsysVendor == 0xa0a0)  /* aopen mini pc */
+		/* aopen mini pc */
+		if (dev_priv->PciInfo->subsysVendor == 0xa0a0)
 			goto disable_exit;
 
 		if ((dev_priv->PciInfo->subsysVendor == 0x8086) &&
 		    (dev_priv->PciInfo->subsysCard == 0x7270)) {
 			/* It's a Mac Mini or Macbook Pro.
 			 *
-			 * Apple hardware is out to get us.  The macbook pro has a real
-			 * LVDS panel, but the mac mini does not, and they have the same
-			 * device IDs.  We'll distinguish by panel size, on the assumption
-			 * that Apple isn't about to make any machines with an 800x600
-			 * display.
+			 * Apple hardware is out to get us.  The macbook pro
+			 * has a real LVDS panel, but the mac mini does not,
+			 * and they have the same device IDs.  We'll
+			 * distinguish by panel size, on the assumption
+			 * that Apple isn't about to make any machines with an
+			 * 800x600 display.
 			 */
 
 			if (dev_priv->panel_fixed_mode != NULL &&
@@ -472,5 +471,13 @@ void intel_lvds_init(struct drm_device *dev)
 	}
 
 #endif
+
+out:
 	return;
+
+failed:
+	DRM_DEBUG("No LVDS modes found, disabling.\n");
+	intel_i2c_destroy(intel_output->ddc_bus);
+	kfree(output->driver_private);
+	drm_output_destroy(output);
 }
