@@ -77,6 +77,15 @@ static int drmfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 	return 0;
 }
 
+/* this will let fbcon do the mode init */
+static int drmfb_set_par(struct fb_info *info)
+{
+	struct drmfb_par *par = info->par;
+	struct drm_device *dev = par->dev;
+
+	drm_set_desired_modes(dev);
+}
+
 static struct fb_ops drmfb_ops = {
 	.owner = THIS_MODULE,
 	//	.fb_open = drmfb_open,
@@ -84,6 +93,7 @@ static struct fb_ops drmfb_ops = {
 	//	.fb_write = drmfb_write,
 	//	.fb_release = drmfb_release,
 	//	.fb_ioctl = drmfb_ioctl,
+	.fb_set_par = drmfb_set_par,
 	.fb_setcolreg = drmfb_setcolreg,
 	.fb_fillrect = cfb_fillrect,
 	.fb_copyarea = cfb_copyarea,

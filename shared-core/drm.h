@@ -1051,6 +1051,7 @@ struct drm_mode_fb_cmd {
 #define DRM_IOCTL_MODE_SETCRTC          DRM_IOWR(0xA3, struct drm_mode_crtc)
 #define DRM_IOCTL_MODE_ADDFB            DRM_IOWR(0xA4, struct drm_mode_fb_cmd)
 #define DRM_IOCTL_MODE_RMFB             DRM_IOWR(0xA5, unsigned int)
+#define DRM_IOCTL_MODE_GETFB             DRM_IOWR(0xA6, struct drm_mode_fb_cmd)
 /*@}*/
 
 /**

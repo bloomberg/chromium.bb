@@ -37,6 +37,7 @@ struct drm_framebuffer *drm_framebuffer_create(drm_device_t *dev)
 	spin_lock(&dev->mode_config.config_lock);
 	/* Limit to single framebuffer for now */
 	if (dev->mode_config.num_fb > 1) {
+		spin_unlock(&dev->mode_config.config_lock);
 		DRM_ERROR("Attempt to add multiple framebuffers failed\n");
 		return NULL;
 	}
@@ -253,8 +254,7 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	/* Now, enable the clocks, plane, pipe, and outputs that we set up. */
 	crtc->funcs->commit(crtc);
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		if (output->crtc == crtc)
-		{
+		if (output->crtc == crtc) {
 			output->funcs->commit(output);
 #if 0 // TODO def RANDR_12_INTERFACE
 			if (output->randr_output)
@@ -542,6 +542,9 @@ bool drm_initial_config(drm_device_t *dev, struct drm_framebuffer *fb,
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		struct drm_display_mode *des_mode;
 
+		if (list_empty(&output->modes))
+			continue;
+
 		/* Get the first preferred moded */
 		list_for_each_entry(des_mode, &output->modes, head) {
 			if (des_mode->flags & DRM_MODE_TYPE_PREFERRED)
@@ -579,7 +582,7 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 {
 	struct drm_output *output, *ot;
 	struct drm_crtc *crtc, *ct;
-	
+	struct drm_crtc *fb, *fbt;
 	list_for_each_entry_safe(output, ot, &dev->mode_config.output_list, head) {
 		drm_output_destroy(output);
 	}
@@ -587,10 +590,15 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {
 		drm_crtc_destroy(crtc);
 	}
+
+	list_for_each_entry_safe(fb, fbt, &dev->mode_config.fb_list, head) {
+		drmfb_remove(dev, fb);
+		drm_framebuffer_destroy(fb);
+	}
 }
 EXPORT_SYMBOL(drm_mode_config_cleanup);
 
-int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, struct drm_display_mode *new_mode, struct drm_output **output_set)
+int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, struct drm_display_mode *new_mode, struct drm_output **output_set, struct drm_framebuffer *fb)
 {
 	drm_device_t *dev = crtc->dev;
 	struct drm_crtc **save_crtcs, *new_crtc;
@@ -602,6 +610,9 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	save_crtcs = kzalloc(dev->mode_config.num_crtc * sizeof(struct drm_crtc *), GFP_KERNEL);
 	if (!save_crtcs)
 		return -ENOMEM;
+
+	if (crtc->fb != fb)
+		changed = true;
 
 	if (crtc_info->x != crtc->x || crtc_info->y != crtc->y)
 		changed = true;
@@ -617,8 +628,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 		else
 			new_crtc = output->crtc;
 
-		for (ro = 0; ro < crtc_info->count_outputs; ro++)
-		{
+		for (ro = 0; ro < crtc_info->count_outputs; ro++) {
 			if (output_set[ro] == output)
 				new_crtc = crtc;
 		}
@@ -629,6 +639,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	}
 
 	if (changed) {
+		crtc->fb = fb;
 		crtc->enabled = (new_mode != NULL);
 		if (new_mode != NULL) {
 			DRM_DEBUG("attempting to set mode from userspace\n");
@@ -897,6 +908,7 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 	struct drm_crtc *crtc;
 	struct drm_output **output_set = NULL, *output;
 	struct drm_display_mode *mode;
+	struct drm_framebuffer *fb = NULL;
 	int retcode = 0;
 	int i;
 
@@ -904,23 +916,28 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_req.crtc_id);
-	if (!crtc || (crtc->id != crtc_req.crtc_id))
-	{
+	if (!crtc || (crtc->id != crtc_req.crtc_id)) {
 		DRM_DEBUG("Unknown CRTC ID %d\n", crtc_req.crtc_id);
 		return -EINVAL;
 	}
 
 	if (crtc_req.mode) {
-		mode = idr_find(&dev->mode_config.crtc_idr, crtc_req.mode);
-		if (!mode || (mode->mode_id != crtc_req.mode))
-		{
-			{
-				struct drm_output *output;
 
-				list_for_each_entry(output, &dev->mode_config.output_list, head) {
-					list_for_each_entry(mode, &output->modes, head) {
-						drm_mode_debug_printmodeline(dev, mode);
-					}
+		/* if we have a mode we need a framebuffer */
+		if (crtc_req.fb_id) {
+			fb = idr_find(&dev->mode_config.crtc_idr, crtc_req.fb_id);
+			if (!fb || (fb->id != crtc_req.fb_id)) {
+				DRM_DEBUG("Unknown FB ID%d\n", crtc_req.fb_id);
+				return -EINVAL;
+			}
+		}
+		mode = idr_find(&dev->mode_config.crtc_idr, crtc_req.mode);
+		if (!mode || (mode->mode_id != crtc_req.mode)) {
+			struct drm_output *output;
+			
+			list_for_each_entry(output, &dev->mode_config.output_list, head) {
+				list_for_each_entry(mode, &output->modes, head) {
+					drm_mode_debug_printmodeline(dev, mode);
 				}
 			}
 
@@ -935,8 +952,8 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 
-	if (crtc_req.count_outputs > 0 && !mode) {
-		DRM_DEBUG("Count outputs is %d but no mode set\n", crtc_req.count_outputs);
+	if (crtc_req.count_outputs > 0 && !mode && !fb) {
+		DRM_DEBUG("Count outputs is %d but no mode or fb set\n", crtc_req.count_outputs);
 		return -EINVAL;
 	}
 
@@ -960,7 +977,7 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 		}
 	}
 		
-	retcode = drm_crtc_set_config(crtc, &crtc_req, mode, output_set);
+	retcode = drm_crtc_set_config(crtc, &crtc_req, mode, output_set, fb);
 	return retcode;
 }
 
@@ -1058,3 +1075,33 @@ int drm_mode_rmfb(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+int drm_mode_getfb(struct inode *inode, struct file *filp,
+		   unsigned int cmd, unsigned long arg)
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->head->dev;	
+	struct drm_mode_fb_cmd __user *argp = (void __user *)arg;
+	struct drm_mode_fb_cmd r;
+	struct drm_framebuffer *fb;
+
+	if (copy_from_user(&r, argp, sizeof(r)))
+		return -EFAULT;
+
+	fb = idr_find(&dev->mode_config.crtc_idr, r.buffer_id);
+	if (!fb || (r.buffer_id != fb->id)) {
+		DRM_ERROR("invalid framebuffer id\n");
+		return -EINVAL;
+	}
+
+	r.height = fb->height;
+	r.width = fb->width;
+	r.depth = fb->depth;
+	r.bpp = fb->bits_per_pixel;
+	r.handle = fb->bo->base.hash.key;
+	r.pitch = fb->pitch;
+
+	if (copy_to_user(argp, &r, sizeof(r)))
+		return -EFAULT;
+
+	return 0;
+}

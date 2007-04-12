@@ -106,7 +106,7 @@ void drmModeFreeResources(drmModeResPtr ptr)
 
 }
 
-void drmModeFreeFrameBuffer(drmModeFrameBufferPtr ptr)
+void drmModeFreeFB(drmModeFBPtr ptr)
 {
 	if (!ptr)
 		return;
@@ -215,51 +215,33 @@ int drmModeRmFB(int fd, uint32_t bufferId)
 	return ioctl(fd, DRM_IOCTL_MODE_RMFB, bufferId);
 }
 
+drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
+{
+	struct drm_mode_fb_cmd info;
+	drmModeFBPtr r;
+
+	info.buffer_id = buf;
+
+	if (ioctl(fd, DRM_IOCTL_MODE_GETFB, &info))
+		return NULL;
+
+	if (!(r = drmMalloc(sizeof(*r))))
+		return NULL;
+
+	r->buffer_id = info.buffer_id;
+	r->width = info.width;
+	r->height = info.height;
+	r->pitch = info.pitch;
+	r->bpp = info.bpp;
+	r->handle = info.handle;
+	r->depth = info.depth;
+
+	return r;
+}
 #if 0
 int drmModeForceProbe(int fd, uint32_t outputId)
 {
 	/* TODO impl/keep? */
-}
-
-drmModeFrameBufferPtr drmModeGetFrameBuffer(int fd, uint32_t buf)
-{
-//	struct drm_mode_fb_cmd info;
-	drmModeFrameBufferPtr r;
-
-	//	if (ioctl(fd, DRM_IOCTL_MODE_GETFRAMEBUFFER, &info))
-		return 0;
-
-	if (!(r = drmMalloc(sizeof(*r))))
-		return 0;
-
-	/* TODO change to new code
-	r->minWidth  = info.minWidth;
-	r->maxWidth  = info.maxWidth;
-	r->minHeight = info.minHeight;
-	r->maxHeight = info.maxHeight;*/
-
-	return r;
-}
-
-uint32_t drmModeNewFrameBuffer(int fd, uint32_t width, uint32_t height,
-		uint8_t bpp, uint32_t pitch, drmBO *bo)
-{
-	drm_mode_fb_cmd_t f;
-
-	f.handle = bo->handle;
-	f.width  = width;
-	f.height = height;
-	f.pitch  = pitch;
-
-	//	if (ioctl(fd, DRM_IOCTL_MODE_NEWFRAMEBUFFER, &f))
-		return 0;
-
-	return f.bufferId;
-}
-
-int drmModeDesFrameBuffer(int fd, uint32_t bufferId)
-{
-  //	return ioctl(fd, DRM_IOCTL_MODE_DESFRAMEBUFFER, bufferId);
 }
 
 #endif
@@ -294,7 +276,7 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 	r->mode            = crtc.mode;
 //	r->width           = crtc.width;
 //	r->height          = crtc.height;
-	r->bufferId        = crtc.fb_id;
+	r->buffer_id        = crtc.fb_id;
 	r->gamma_size      = crtc.gamma_size;
 	r->count_outputs   = crtc.count_outputs;
 	r->count_possibles = crtc.count_possibles;
