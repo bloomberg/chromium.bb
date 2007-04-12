@@ -152,6 +152,7 @@ static bool intel_crt_detect_hotplug(struct drm_output *output)
 	do {
 		if (!(I915_READ(PORT_HOTPLUG_EN) & CRT_HOTPLUG_FORCE_DETECT))
 			break;
+		msleep(1);
 	} while (time_after(timeout, jiffies));
 
 	if ((I915_READ(PORT_HOTPLUG_STAT) & CRT_HOTPLUG_MONITOR_MASK) ==
