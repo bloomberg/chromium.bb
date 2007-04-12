@@ -213,8 +213,6 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 
 	drm_initial_config(dev, fb, false);
 	drmfb_probe(dev, fb);
-        drm_set_desired_modes(dev);
-
 #if 0
 	/* FIXME: command ring needs AGP space, do we own it at this point? */
 	dev_priv->ring.Start = dev_priv->baseaddr;
