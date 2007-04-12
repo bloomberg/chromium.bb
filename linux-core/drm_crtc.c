@@ -37,6 +37,7 @@ struct drm_framebuffer *drm_framebuffer_create(drm_device_t *dev)
 	spin_lock(&dev->mode_config.config_lock);
 	/* Limit to single framebuffer for now */
 	if (dev->mode_config.num_fb > 1) {
+		spin_unlock(&dev->mode_config.config_lock);
 		DRM_ERROR("Attempt to add multiple framebuffers failed\n");
 		return NULL;
 	}
@@ -541,6 +542,9 @@ bool drm_initial_config(drm_device_t *dev, struct drm_framebuffer *fb,
 	/* bind analog output to one crtc */
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		struct drm_display_mode *des_mode;
+
+		if (list_empty(&output->modes))
+			continue;
 
 		/* Get the first preferred moded */
 		list_for_each_entry(des_mode, &output->modes, head) {
