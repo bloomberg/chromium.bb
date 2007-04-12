@@ -77,26 +77,6 @@ static const int kTextSection = 1;
 - (BOOL)loadModuleInfo;
 @end
 
-static BOOL StringHeadMatches(NSString *str, NSString *head) {
-  int headLen = [head length];
-  int strLen = [str length];
-
-  if (headLen > strLen)
-    return NO;
-
-  return [[str substringToIndex:headLen] isEqualToString:head];
-}
-
-static BOOL StringTailMatches(NSString *str, NSString *tail) {
-  int tailLen = [tail length];
-  int strLen = [str length];
-
-  if (tailLen > strLen)
-    return NO;
-
-  return [[str substringFromIndex:strLen - tailLen] isEqualToString:tail];
-}
-
 @implementation DumpSymbols
 //=============================================================================
 - (NSString *)stringFromTask:(NSString *)action args:(NSArray *)args
@@ -164,13 +144,13 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
   // Unfortunately, c++filt doesn't take a file containing names, so we'll
   // copy the symbols to a temporary file and use that as stdin.
   char buffer[PATH_MAX];
-  snprintf(buffer, sizeof(buffer), "/tmp/dump_syms_filtXXXXX");
+  strlcpy(buffer, "/tmp/dump_syms_filtXXXXX", sizeof(buffer));
   int fd = mkstemp(buffer);
-  char nl = '\n';
+
   for (unsigned int i = 0; i < count; ++i) {
     const char *symbol = [[symbols objectAtIndex:i] UTF8String];
     write(fd, symbol, strlen(symbol));
-    write(fd, &nl, 1);
+    write(fd, "\n", 1);
   }
 
   // Reset to the beginning and wrap up with a file handle
@@ -254,24 +234,44 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
   // addresses to run through the c++filt
   BOOL isCPP = NO;
 
-  if (StringHeadMatches(name, @"__Z")) {
+  if ([name hasPrefix:@"__Z"]) {
     // Remove the leading underscore
     name = [name substringFromIndex:1];
     isCPP = YES;
-  } else if (StringHeadMatches(name, @"_Z")) {
+  } else if ([name hasPrefix:@"_Z"]) {
     isCPP = YES;
   }
 
   // Filter out non-functions
-  if (StringTailMatches(name, @".eh"))
+  if ([name hasSuffix:@".eh"])
     return;
 
-  if (StringTailMatches(name, @"__func__"))
+  if ([name hasSuffix:@"__func__"])
     return;
 
-  if (StringTailMatches(name, @"GCC_except_table"))
+  if ([name hasSuffix:@"GCC_except_table"])
     return;
 
+  if (isCPP) {
+    // OBJCPP_MANGLING_HACK
+    // There are cases where ObjC++ mangles up an ObjC name using quasi-C++ 
+    // mangling:
+    // @implementation Foozles + (void)barzles {
+    //    static int Baz = 0;
+    // } @end
+    // gives you _ZZ18+[Foozles barzles]E3Baz
+    // c++filt won't parse this properly, and will crash in certain cases. 
+    // Logged as radar:
+    // 5129938: c++filt does not deal with ObjC++ symbols
+    // If 5129938 ever gets fixed, we can remove this, but for now this prevents
+    // c++filt from attempting to demangle names it doesn't know how to handle.
+    // This is with c++filt 2.16
+    NSCharacterSet *objcppCharSet = [NSCharacterSet characterSetWithCharactersInString:@"-+[]: "];
+    NSRange emptyRange = { NSNotFound, 0 };
+    NSRange objcppRange = [name rangeOfCharacterFromSet:objcppCharSet];
+    isCPP = NSEqualRanges(objcppRange, emptyRange);
+  }
+  
   if (isCPP) {
     if (!cppAddresses_)
       cppAddresses_ = [[NSMutableArray alloc] init];
@@ -321,7 +321,7 @@ static BOOL StringTailMatches(NSString *str, NSString *tail) {
       // an N_FUN from section 0 may follow the initial N_FUN
       // giving us function length information
       NSMutableDictionary *dict = [addresses_ objectForKey:
-        [NSNumber numberWithUnsignedLong:lastStartAddress_] ];
+        [NSNumber numberWithUnsignedLong:lastStartAddress_]];
       
       assert(dict);
 
@@ -788,28 +788,28 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
     }
 
     // Skip some symbols
-    if (StringHeadMatches(symbol, @"vtable for"))
+    if ([symbol hasPrefix:@"vtable for"])
       continue;
 
-    if (StringHeadMatches(symbol, @"__static_initialization_and_destruction_0"))
+    if ([symbol hasPrefix:@"__static_initialization_and_destruction_0"])
       continue;
 
-    if (StringHeadMatches(symbol, @"_GLOBAL__I__"))
+    if ([symbol hasPrefix:@"_GLOBAL__I__"])
       continue;
 
-    if (StringHeadMatches(symbol, @"__func__."))
+    if ([symbol hasPrefix:@"__func__."])
       continue;
 
-    if (StringHeadMatches(symbol, @"__gnu"))
+    if ([symbol hasPrefix:@"__gnu"])
       continue;
 
-    if (StringHeadMatches(symbol, @"typeinfo "))
+    if ([symbol hasPrefix:@"typeinfo "])
       continue;
 
-    if (StringHeadMatches(symbol, @"EH_frame"))
+    if ([symbol hasPrefix:@"EH_frame"])
       continue;
 
-    if (StringHeadMatches(symbol, @"GCC_except_table"))
+    if ([symbol hasPrefix:@"GCC_except_table"])
       continue;
 
     // Find the source file (if any) that contains this address
