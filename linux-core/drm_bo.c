@@ -89,6 +89,9 @@ static int drm_bo_vm_pre_move(drm_buffer_object_t * bo, int old_is_pci)
 #ifdef DRM_ODD_MM_COMPAT
 	int ret;
 
+	if (!bo->map_list.map)
+		return 0;
+
 	ret = drm_bo_lock_kmm(bo);
 	if (ret)
 		return ret;
@@ -96,6 +99,9 @@ static int drm_bo_vm_pre_move(drm_buffer_object_t * bo, int old_is_pci)
 	if (old_is_pci)
 		drm_bo_finish_unmap(bo);
 #else
+	if (!bo->map_list.map)
+		return 0;
+
 	drm_bo_unmap_virtual(bo);
 #endif
 	return 0;
@@ -105,6 +111,9 @@ static void drm_bo_vm_post_move(drm_buffer_object_t * bo)
 {
 #ifdef DRM_ODD_MM_COMPAT
 	int ret;
+
+	if (!bo->map_list.map)
+		return;
 
 	ret = drm_bo_remap_bound(bo);
 	if (ret) {
@@ -127,6 +136,11 @@ static int drm_bo_add_ttm(drm_buffer_object_t * bo)
 
 	switch (bo->type) {
 	case drm_bo_type_dc:
+		bo->ttm = drm_ttm_init(dev, bo->mem.num_pages << PAGE_SHIFT);
+		if (!bo->ttm)
+			ret = -ENOMEM;
+		break;
+	case drm_bo_type_kernel:
 		bo->ttm = drm_ttm_init(dev, bo->mem.num_pages << PAGE_SHIFT);
 		if (!bo->ttm)
 			ret = -ENOMEM;
@@ -1530,7 +1544,7 @@ static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
 	return ret;
 }
 
-int drm_buffer_object_create(drm_file_t * priv,
+int drm_buffer_object_create(drm_device_t *dev,
 			     unsigned long size,
 			     drm_bo_type_t type,
 			     uint32_t mask,
@@ -1539,7 +1553,6 @@ int drm_buffer_object_create(drm_file_t * priv,
 			     unsigned long buffer_start,
 			     drm_buffer_object_t ** buf_obj)
 {
-	drm_device_t *dev = priv->head->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
 	drm_buffer_object_t *bo;
 	int ret = 0;
@@ -1615,6 +1628,7 @@ int drm_buffer_object_create(drm_file_t * priv,
 	drm_bo_usage_deref_unlocked(bo);
 	return ret;
 }
+EXPORT_SYMBOL(drm_buffer_object_create);
 
 static int drm_bo_add_user_object(drm_file_t * priv, drm_buffer_object_t * bo,
 				  int shareable)
@@ -1670,7 +1684,8 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 		switch (req->op) {
 		case drm_bo_create:
 			rep.ret =
-			    drm_buffer_object_create(priv, req->size,
+			    drm_buffer_object_create(priv->head->dev,
+						     req->size,
 						     req->type,
 						     req->mask,
 						     req->hint,

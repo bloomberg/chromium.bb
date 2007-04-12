@@ -75,6 +75,7 @@
 #include <linux/poll.h>
 #include <asm/pgalloc.h>
 #include "drm.h"
+#include "drm_crtc.h"
 #include <linux/slab.h>
 
 #define __OS_HAS_AGP (defined(CONFIG_AGP) || (defined(CONFIG_AGP_MODULE) && defined(MODULE)))
@@ -163,6 +164,8 @@
 /*@}*/
 
 #include "drm_compat.h"
+
+#include "drm_crtc.h"
 
 /***********************************************************************/
 /** \name Macros to make printk easier */
@@ -831,6 +834,9 @@ typedef struct drm_device {
 	unsigned int drw_info_length;
 	drm_drawable_info_t **drw_info;
 	/*@} */
+
+	/* DRM mode setting */
+	struct drm_mode_config mode_config;
 } drm_device_t;
 
 #if __OS_HAS_AGP

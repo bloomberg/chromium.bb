@@ -31,13 +31,6 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-#define IS_I965G(dev)  (dev->pci_device == 0x2972 || \
-			dev->pci_device == 0x2982 || \
-			dev->pci_device == 0x2992 || \
-			dev->pci_device == 0x29A2 || \
-			dev->pci_device == 0x2A02)
-
-
 /* Really want an OS-independent resettable timer.  Would like to have
  * this loop run for (eg) 3 sec, but have the timer reset every time
  * the head pointer changes, so that EBUSY only happens if the ring
@@ -85,8 +78,9 @@ void i915_kernel_lost_context(drm_device_t * dev)
 		dev_priv->sarea_priv->perf_boxes |= I915_BOX_RING_EMPTY;
 }
 
-static int i915_dma_cleanup(drm_device_t * dev)
+int i915_dma_cleanup(drm_device_t * dev)
 {
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	/* Make sure interrupts are disabled here because the uninstall ioctl
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
@@ -94,25 +88,16 @@ static int i915_dma_cleanup(drm_device_t * dev)
 	if (dev->irq)
 		drm_irq_uninstall(dev);
 
-	if (dev->dev_private) {
-		drm_i915_private_t *dev_priv =
-		    (drm_i915_private_t *) dev->dev_private;
-
-		if (dev_priv->ring.virtual_start) {
-			drm_core_ioremapfree(&dev_priv->ring.map, dev);
-		}
-
-		if (dev_priv->status_page_dmah) {
-			drm_pci_free(dev, dev_priv->status_page_dmah);
-			/* Need to rewrite hardware status page */
-			I915_WRITE(0x02080, 0x1ffff000);
-		}
-
-		drm_free(dev->dev_private, sizeof(drm_i915_private_t),
-			 DRM_MEM_DRIVER);
-
-		dev->dev_private = NULL;
+	if (dev_priv->status_page_dmah) {
+		drm_pci_free(dev, dev_priv->status_page_dmah);
+		dev_priv->status_page_dmah = NULL;
+		dev_priv->hw_status_page = NULL;
+		dev_priv->dma_status_page = 0;
+		/* Need to rewrite hardware status page */
+		I915_WRITE(0x02080, 0x1ffff000);
 	}
+	
+	dev_priv->sarea_priv = NULL;
 
 	return 0;
 }
@@ -121,21 +106,11 @@ static int i915_initialize(drm_device_t * dev,
 			   drm_i915_private_t * dev_priv,
 			   drm_i915_init_t * init)
 {
-	memset(dev_priv, 0, sizeof(drm_i915_private_t));
-
 	DRM_GETSAREA();
 	if (!dev_priv->sarea) {
 		DRM_ERROR("can not find sarea!\n");
 		dev->dev_private = (void *)dev_priv;
 		i915_dma_cleanup(dev);
-		return DRM_ERR(EINVAL);
-	}
-
-	dev_priv->mmio_map = drm_core_findmap(dev, init->mmio_offset);
-	if (!dev_priv->mmio_map) {
-		dev->dev_private = (void *)dev_priv;
-		i915_dma_cleanup(dev);
-		DRM_ERROR("can not find mmio map!\n");
 		return DRM_ERR(EINVAL);
 	}
 
@@ -195,7 +170,9 @@ static int i915_initialize(drm_device_t * dev,
 
 	I915_WRITE(0x02080, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
-	dev->dev_private = (void *)dev_priv;
+
+//drm_set_desired_modes(dev);
+
 	return 0;
 }
 
@@ -237,7 +214,7 @@ static int i915_dma_resume(drm_device_t * dev)
 static int i915_dma_init(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_i915_private_t *dev_priv;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	drm_i915_init_t init;
 	int retcode = 0;
 
@@ -246,10 +223,6 @@ static int i915_dma_init(DRM_IOCTL_ARGS)
 
 	switch (init.func) {
 	case I915_INIT_DMA:
-		dev_priv = drm_alloc(sizeof(drm_i915_private_t),
-				     DRM_MEM_DRIVER);
-		if (dev_priv == NULL)
-			return DRM_ERR(ENOMEM);
 		retcode = i915_initialize(dev, dev_priv, &init);
 		break;
 	case I915_CLEANUP_DMA:
@@ -878,36 +851,6 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-int i915_driver_load(drm_device_t *dev, unsigned long flags)
-{
-	/* i915 has 4 more counters */
-	dev->counters += 4;
-	dev->types[6] = _DRM_STAT_IRQ;
-	dev->types[7] = _DRM_STAT_PRIMARY;
-	dev->types[8] = _DRM_STAT_SECONDARY;
-	dev->types[9] = _DRM_STAT_DMA;
-
-	return 0;
-}
-
-void i915_driver_lastclose(drm_device_t * dev)
-{
-	if (dev->dev_private) {
-		drm_i915_private_t *dev_priv = dev->dev_private;
-		i915_do_cleanup_pageflip(dev);
-		i915_mem_takedown(&(dev_priv->agp_heap));
-	}
-	i915_dma_cleanup(dev);
-}
-
-void i915_driver_preclose(drm_device_t * dev, DRMFILE filp)
-{
-	if (dev->dev_private) {
-		drm_i915_private_t *dev_priv = dev->dev_private;
-		i915_mem_release(dev, filp, dev_priv->agp_heap);
-	}
-}
-
 drm_ioctl_desc_t i915_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_I915_INIT)] = {i915_dma_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 	[DRM_IOCTL_NR(DRM_I915_FLUSH)] = {i915_flush_ioctl, DRM_AUTH},
@@ -948,8 +891,21 @@ int i915_driver_device_is_agp(drm_device_t * dev)
 
 int i915_driver_firstopen(struct drm_device *dev)
 {
-#ifdef I915_HAVE_BUFFER
-	drm_bo_driver_init(dev);
-#endif
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	int ret;
+	DRM_DEBUG("\n");
+
+	if (!dev_priv->mmio_map) {
+		ret = drm_addmap(dev, dev_priv->mmiobase, dev_priv->mmiolen,
+				 _DRM_REGISTERS, _DRM_READ_ONLY, &dev_priv->mmio_map);
+		if (ret != 0) {
+			DRM_ERROR("Cannot add mapping for MMIO registers\n");
+			return ret;
+		}
+	}
+ 
+	DRM_DEBUG("dev_priv->mmio map is %p\n", dev_priv->mmio_map);
+
 	return 0;
 }
+

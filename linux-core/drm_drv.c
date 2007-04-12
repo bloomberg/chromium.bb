@@ -123,6 +123,13 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 					     DRM_AUTH },
 
 	[DRM_IOCTL_NR(DRM_IOCTL_UPDATE_DRAW)] = {drm_update_drawable_info, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_IOCTL_MODE_GETRESOURCES)] = {drm_mode_getresources, DRM_MASTER|DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_IOCTL_MODE_GETCRTC)] = {drm_mode_getcrtc, DRM_MASTER|DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_IOCTL_MODE_GETOUTPUT)] = {drm_mode_getoutput, DRM_MASTER|DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_IOCTL_MODE_SETCRTC)] = {drm_mode_setcrtc, DRM_MASTER|DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_IOCTL_MODE_ADDFB)] = {drm_mode_addfb, DRM_MASTER|DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_IOCTL_MODE_RMFB)] = {drm_mode_rmfb, DRM_MASTER|DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_IOCTL_MODE_GETFB)] = {drm_mode_getfb, DRM_MASTER|DRM_ROOT_ONLY},
 };
 
 #define DRM_CORE_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )
@@ -149,8 +156,6 @@ int drm_lastclose(drm_device_t * dev)
 	/*
 	 * We can't do much about this function failing.
 	 */
-
-	drm_bo_driver_finish(dev);
 
 	if (dev->driver->lastclose)
 		dev->driver->lastclose(dev);
@@ -393,6 +398,8 @@ static void drm_cleanup(drm_device_t * dev)
 				  dev->agp->agp_info.aper_size * 1024 * 1024);
 		DRM_DEBUG("mtrr_del=%d\n", retval);
 	}
+
+	drm_bo_driver_finish(dev);
 
 	if (drm_core_has_AGP(dev) && dev->agp) {
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);

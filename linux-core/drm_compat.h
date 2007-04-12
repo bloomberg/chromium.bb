@@ -60,6 +60,13 @@
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
 #undef DRM_IRQ_ARGS
 #define DRM_IRQ_ARGS		int irq, void *arg, struct pt_regs *regs
+
+typedef _Bool bool;
+enum {
+        false   = 0,
+        true    = 1
+};
+
 #endif
 
 #ifndef list_for_each_safe
