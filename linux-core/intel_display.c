@@ -412,8 +412,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 	case DPMSModeSuspend:
 		/* Enable the DPLL */
 		temp = I915_READ(dpll_reg);
-		if ((temp & DPLL_VCO_ENABLE) == 0)
-		{
+		if ((temp & DPLL_VCO_ENABLE) == 0) {
 			I915_WRITE(dpll_reg, temp);
 			I915_READ(dpll_reg);
 			/* Wait for the clocks to stabilize. */
@@ -435,8 +434,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 		
 		/* Enable the plane */
 		temp = I915_READ(dspcntr_reg);
-		if ((temp & DISPLAY_PLANE_ENABLE) == 0)
-		{
+		if ((temp & DISPLAY_PLANE_ENABLE) == 0) {
 			I915_WRITE(dspcntr_reg, temp | DISPLAY_PLANE_ENABLE);
 			/* Flush the plane changes */
 			I915_WRITE(dspbase_reg, I915_READ(dspbase_reg));
@@ -456,8 +454,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 		
 		/* Disable display plane */
 		temp = I915_READ(dspcntr_reg);
-		if ((temp & DISPLAY_PLANE_ENABLE) != 0)
-		{
+		if ((temp & DISPLAY_PLANE_ENABLE) != 0) {
 			I915_WRITE(dspcntr_reg, temp & ~DISPLAY_PLANE_ENABLE);
 			/* Flush the plane changes */
 			I915_WRITE(dspbase_reg, I915_READ(dspbase_reg));
@@ -719,11 +716,9 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 			dpll |= DPLLB_MODE_LVDS;
 		else
 			dpll |= DPLLB_MODE_DAC_SERIAL;
-		if (is_sdvo)
-		{
+		if (is_sdvo) {
 			dpll |= DPLL_DVO_HIGH_SPEED;
-			if (IS_I945G(dev) || IS_I945GM(dev))
-			{
+			if (IS_I945G(dev) || IS_I945GM(dev)) {
 				int sdvo_pixel_multiply = adjusted_mode->clock / mode->clock;
 				dpll |= (sdvo_pixel_multiply - 1) << SDVO_MULTIPLIER_SHIFT_HIRES;
 			}
@@ -760,8 +755,7 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 		}
 	}
 	
-	if (is_tv)
-	{
+	if (is_tv) {
 		/* XXX: just matching BIOS for now */
 /*	dpll |= PLL_REF_INPUT_TVCLKINBC; */
 		dpll |= 3;
@@ -801,8 +795,7 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 		dspcntr |= DISPPLANE_SEL_PIPE_B;
 	
 	pipeconf = I915_READ(pipeconf_reg);
-	if (pipe == 0 && !IS_I965G(dev))
-	{
+	if (pipe == 0 && !IS_I965G(dev)) {
 		/* Enable pixel doubling when the dot clock is > 90% of the (display)
 		 * core speed.
 		 *

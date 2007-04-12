@@ -254,8 +254,7 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	/* Now, enable the clocks, plane, pipe, and outputs that we set up. */
 	crtc->funcs->commit(crtc);
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		if (output->crtc == crtc)
-		{
+		if (output->crtc == crtc) {
 			output->funcs->commit(output);
 #if 0 // TODO def RANDR_12_INTERFACE
 			if (output->randr_output)
@@ -624,8 +623,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 		else
 			new_crtc = output->crtc;
 
-		for (ro = 0; ro < crtc_info->count_outputs; ro++)
-		{
+		for (ro = 0; ro < crtc_info->count_outputs; ro++) {
 			if (output_set[ro] == output)
 				new_crtc = crtc;
 		}
@@ -913,8 +911,7 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_req.crtc_id);
-	if (!crtc || (crtc->id != crtc_req.crtc_id))
-	{
+	if (!crtc || (crtc->id != crtc_req.crtc_id)) {
 		DRM_DEBUG("Unknown CRTC ID %d\n", crtc_req.crtc_id);
 		return -EINVAL;
 	}
@@ -930,15 +927,12 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 			}
 		}
 		mode = idr_find(&dev->mode_config.crtc_idr, crtc_req.mode);
-		if (!mode || (mode->mode_id != crtc_req.mode))
-		{
-			{
-				struct drm_output *output;
-
-				list_for_each_entry(output, &dev->mode_config.output_list, head) {
-					list_for_each_entry(mode, &output->modes, head) {
-						drm_mode_debug_printmodeline(dev, mode);
-					}
+		if (!mode || (mode->mode_id != crtc_req.mode)) {
+			struct drm_output *output;
+			
+			list_for_each_entry(output, &dev->mode_config.output_list, head) {
+				list_for_each_entry(mode, &output->modes, head) {
+					drm_mode_debug_printmodeline(dev, mode);
 				}
 			}
 
