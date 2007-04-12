@@ -1101,6 +1101,18 @@ void intel_crtc_init(drm_device_t *dev, int pipe)
 	crtc->driver_private = intel_crtc;
 }
 
+struct drm_crtc *intel_get_crtc_from_pipe(drm_device_t *dev, int pipe)
+{
+	struct drm_crtc *crtc = NULL;
+
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		struct intel_crtc *intel_crtc = crtc->driver_private;
+		if (intel_crtc->pipe == pipe)
+			break;
+	}
+	return crtc;
+}
+
 int intel_output_clones(drm_device_t *dev, int type_mask)
 {
 	int index_mask = 0;
