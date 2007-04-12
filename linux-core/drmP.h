@@ -75,7 +75,6 @@
 #include <linux/poll.h>
 #include <asm/pgalloc.h>
 #include "drm.h"
-#include "drm_crtc.h"
 #include <linux/slab.h>
 
 #define __OS_HAS_AGP (defined(CONFIG_AGP) || (defined(CONFIG_AGP_MODULE) && defined(MODULE)))
