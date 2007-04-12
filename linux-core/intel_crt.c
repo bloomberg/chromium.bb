@@ -140,30 +140,25 @@ static void intel_crt_mode_set(struct drm_output *output,
 static bool intel_crt_detect_hotplug(struct drm_output *output)
 {
 	drm_device_t *dev = output->dev;
-//	struct intel_output *intel_output = output->driver_private;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	u32 temp;
-//	const int timeout_ms = 1000;
-//	int starttime, curtime;
+	unsigned long timeout = jiffies + msecs_to_jiffies(1000);
 
 	temp = I915_READ(PORT_HOTPLUG_EN);
 
-	I915_WRITE(PORT_HOTPLUG_EN, temp | CRT_HOTPLUG_FORCE_DETECT | (1 << 5));
-#if 0	
-	for (curtime = starttime = GetTimeInMillis();
-	     (curtime - starttime) < timeout_ms; curtime = GetTimeInMillis())
-	{
-		if ((I915_READ(PORT_HOTPLUG_EN) & CRT_HOTPLUG_FORCE_DETECT) == 0)
+	I915_WRITE(PORT_HOTPLUG_EN,
+		   temp | CRT_HOTPLUG_FORCE_DETECT | (1 << 5));
+
+	do {
+		if (!(I915_READ(PORT_HOTPLUG_EN) & CRT_HOTPLUG_FORCE_DETECT))
 			break;
-	}
-#endif
+	} while (time_after(timeout, jiffies));
+
 	if ((I915_READ(PORT_HOTPLUG_STAT) & CRT_HOTPLUG_MONITOR_MASK) ==
 	    CRT_HOTPLUG_MONITOR_COLOR)
-	{
 		return true;
-	} else {
-		return false;
-	}
+
+	return false;
 }
 
 static bool intel_crt_detect_ddc(struct drm_output *output)
@@ -180,7 +175,6 @@ static bool intel_crt_detect_ddc(struct drm_output *output)
 static enum drm_output_status intel_crt_detect(struct drm_output *output)
 {
 	drm_device_t *dev = output->dev;
-	struct intel_output *intel_output = output->driver_private;
 	
 	if (IS_I945G(dev)| IS_I945GM(dev) || IS_I965G(dev)) {
 		if (intel_crt_detect_hotplug(output))
@@ -206,10 +200,6 @@ static void intel_crt_destroy(struct drm_output *output)
 
 static int intel_crt_get_modes(struct drm_output *output)
 {
-	struct drm_device *dev = output->dev;
-	struct intel_output *intel_output = output->driver_private;
-	int ret;
-
 	return intel_ddc_get_modes(output);
 }
 
