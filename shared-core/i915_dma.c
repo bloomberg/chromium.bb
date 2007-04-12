@@ -616,7 +616,6 @@ static int i915_batchbuffer(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	u32 *hw_status = dev_priv->hw_status_page;
 	drm_i915_sarea_t *sarea_priv = (drm_i915_sarea_t *)
 	    dev_priv->sarea_priv;
 	drm_i915_batchbuffer_t batch;
@@ -642,7 +641,7 @@ static int i915_batchbuffer(DRM_IOCTL_ARGS)
 
 	ret = i915_dispatch_batchbuffer(dev, &batch);
 
-	sarea_priv->last_dispatch = (int)hw_status[5];
+	sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 	return ret;
 }
 
@@ -650,7 +649,6 @@ static int i915_cmdbuffer(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	u32 *hw_status = dev_priv->hw_status_page;
 	drm_i915_sarea_t *sarea_priv = (drm_i915_sarea_t *)
 	    dev_priv->sarea_priv;
 	drm_i915_cmdbuffer_t cmdbuf;
@@ -678,7 +676,7 @@ static int i915_cmdbuffer(DRM_IOCTL_ARGS)
 		return ret;
 	}
 
-	sarea_priv->last_dispatch = (int)hw_status[5];
+	sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 	return 0;
 }
 

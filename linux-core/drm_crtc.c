@@ -582,7 +582,7 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 {
 	struct drm_output *output, *ot;
 	struct drm_crtc *crtc, *ct;
-	struct drm_crtc *fb, *fbt;
+	struct drm_framebuffer *fb, *fbt;
 	list_for_each_entry_safe(output, ot, &dev->mode_config.output_list, head) {
 		drm_output_destroy(output);
 	}

@@ -238,9 +238,7 @@ drmstat: drmstat.c
 	$(CC) $(PRGCFLAGS) $< -o $@ $(DRMSTATLIBS)
 
 install:
-	echo "Installing DRM modules to "$(O)
-	install *.ko $(O)/driver/char/drm
-	depmod -a
+	make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`pwd` DRMSRCDIR=`pwd` modules_install
 
 else
 
