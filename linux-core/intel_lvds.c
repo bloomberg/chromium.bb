@@ -268,14 +268,7 @@ static int intel_lvds_get_modes(struct drm_output *output)
 	struct edid *edid_info;
 	int ret = 0;
 
-	intel_output->ddc_bus = intel_i2c_create(dev, GPIOC, "LVDSDDC_C");
-	if (!intel_output->ddc_bus) {
-		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
-			   "failed.\n");
-		return 0;
-	}
 	ret = intel_ddc_get_modes(output);
-	intel_i2c_destroy(intel_output->ddc_bus);
 
 	if (ret)
 		return ret;
@@ -312,8 +305,19 @@ out:
 	return 0;
 }
 
+/**
+ * intel_lvds_destroy - unregister and free LVDS structures
+ * @output: output to free
+ *
+ * Unregister the DDC bus for this output then free the driver private
+ * structure.
+ */
 static void intel_lvds_destroy(struct drm_output *output)
 {
+	struct intel_output *intel_output = output->driver_private;
+
+	intel_i2c_destroy(intel_output->ddc_bus);
+
 	if (output->driver_private)
 		kfree(output->driver_private);
 }
@@ -375,7 +379,7 @@ void intel_lvds_init(struct drm_device *dev)
 	 * preferred mode is the right one.
 	 */
 	intel_ddc_get_modes(output);
-	intel_i2c_destroy(intel_output->ddc_bus);
+
 	list_for_each_entry(scan, &output->probed_modes, head) {
 		if (scan->type & DRM_MODE_TYPE_PREFERRED) {
 			dev_priv->panel_fixed_mode = 

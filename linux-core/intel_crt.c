@@ -189,26 +189,19 @@ static enum drm_output_status intel_crt_detect(struct drm_output *output)
 			return output_status_disconnected;
 	}
 
-	/* Set up the DDC bus. */
-	intel_output->ddc_bus = intel_i2c_create(dev, GPIOA, "CRTDDC_A");
-	if (!intel_output->ddc_bus) {
-		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
-			   "failed.\n");
-		return 0;
-	}
-
-	if (intel_crt_detect_ddc(output)) {
-		intel_i2c_destroy(intel_output->ddc_bus);
+	if (intel_crt_detect_ddc(output))
 		return output_status_connected;
-	}
 
-	intel_i2c_destroy(intel_output->ddc_bus);
 	/* TODO use load detect */
 	return output_status_unknown;
 }
 
 static void intel_crt_destroy(struct drm_output *output)
 {
+	struct intel_output *intel_output = output->driver_private;
+
+	intel_i2c_destroy(intel_output->ddc_bus);
+
 	if (output->driver_private)
 		kfree(output->driver_private);
 }
@@ -219,17 +212,7 @@ static int intel_crt_get_modes(struct drm_output *output)
 	struct intel_output *intel_output = output->driver_private;
 	int ret;
 
-	/* Set up the DDC bus. */
-	intel_output->ddc_bus = intel_i2c_create(dev, GPIOA, "CRTDDC_A");
-	if (!intel_output->ddc_bus) {
-		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
-			   "failed.\n");
-		return 0;
-	}
-
-	ret = intel_ddc_get_modes(output);
-	intel_i2c_destroy(intel_output->ddc_bus);
-	return ret;
+	return intel_ddc_get_modes(output);
 }
 
 /*
@@ -259,6 +242,13 @@ void intel_crt_init(drm_device_t *dev)
 	intel_output = kmalloc(sizeof(struct intel_output), GFP_KERNEL);
 	if (!intel_output) {
 		drm_output_destroy(output);
+		return;
+	}
+	/* Set up the DDC bus. */
+	intel_output->ddc_bus = intel_i2c_create(dev, GPIOA, "CRTDDC_A");
+	if (!intel_output->ddc_bus) {
+		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
+			   "failed.\n");
 		return;
 	}
 
