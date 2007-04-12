@@ -193,8 +193,6 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 				 0, PAGE_SIZE, 0,
 				 &entry);
 
-	DRM_DEBUG("allocated bo, start: 0x%lx, offset: 0x%lx\n",
-		  entry->buffer_start, entry->offset);
 	intel_modeset_init(dev);
 
 	fb = drm_framebuffer_create(dev);
