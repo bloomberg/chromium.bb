@@ -76,7 +76,7 @@ typedef struct _drmModeRes {
 
 } drmModeRes, *drmModeResPtr;
 
-typedef struct drm_mode_fb_cmd drmModeFrameBuffer, *drmModeFrameBufferPtr;
+typedef struct drm_mode_fb_cmd drmModeFB, *drmModeFBPtr;
 
 typedef struct _drmModeCrtc {
 
@@ -180,7 +180,7 @@ typedef struct _drmModeOutput {
 
 extern void drmModeFreeModeInfo( struct drm_mode_modeinfo *ptr );
 extern void drmModeFreeResources( drmModeResPtr ptr );
-extern void drmModeFreeFrameBuffer( drmModeFrameBufferPtr ptr );
+extern void drmModeFreeFB( drmModeFBPtr ptr );
 extern void drmModeFreeCrtc( drmModeCrtcPtr ptr );
 extern void drmModeFreeOutput( drmModeOutputPtr ptr );
 
@@ -202,7 +202,7 @@ extern int drmModeForceProbe(int fd, uint32_t outputId);
 /**
  * Retrive information about framebuffer bufferId
  */
-extern drmModeFrameBufferPtr drmModeGetFB(int fd, uint32_t bufferId);
+extern drmModeFBPtr drmModeGetFB(int fd, uint32_t bufferId);
 
 /**
  * Creates a new framebuffer with an buffer object as its scanout buffer.

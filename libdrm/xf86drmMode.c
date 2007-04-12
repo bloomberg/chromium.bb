@@ -106,7 +106,7 @@ void drmModeFreeResources(drmModeResPtr ptr)
 
 }
 
-void drmModeFreeFrameBuffer(drmModeFrameBufferPtr ptr)
+void drmModeFreeFB(drmModeFBPtr ptr)
 {
 	if (!ptr)
 		return;
@@ -215,10 +215,10 @@ int drmModeRmFB(int fd, uint32_t bufferId)
 	return ioctl(fd, DRM_IOCTL_MODE_RMFB, bufferId);
 }
 
-drmModeFrameBufferPtr drmModeGetFB(int fd, uint32_t buf)
+drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
 {
 	struct drm_mode_fb_cmd info;
-	drmModeFrameBufferPtr r;
+	drmModeFBPtr r;
 
 	info.buffer_id = buf;
 
