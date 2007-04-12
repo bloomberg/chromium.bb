@@ -146,7 +146,8 @@ EXPORT_SYMBOL(drm_mode_set_crtcinfo);
  * Just allocate a new mode, copy the existing mode into it, and return
  * a pointer to it.  Used to create new instances of established modes.
  */
-struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev, struct drm_display_mode *mode)
+struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev,
+					    struct drm_display_mode *mode)
 {
 	struct drm_display_mode *nmode;
 	int new_id;
