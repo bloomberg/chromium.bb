@@ -114,8 +114,10 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	drm_i915_private_t *dev_priv;
 	drm_i915_init_t init;
 	drm_buffer_object_t *entry;
+	drm_local_map_t *map;
 	struct drm_framebuffer *fb;
 	unsigned long agp_size, prealloc_size;
+	unsigned long sareapage;
 	int hsize, vsize, bytes_per_pixel, size, ret;
 
 	dev_priv = drm_alloc(sizeof(drm_i915_private_t), DRM_MEM_DRIVER);
@@ -155,9 +157,12 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 		return ret;
 	}
 
-	ret = drm_setup(dev);
+	/* prebuild the SAREA */
+	sareapage = max(SAREA_MAX, PAGE_SIZE);
+	ret = drm_addmap(dev, 0, sareapage, _DRM_SHM, _DRM_CONTAINS_LOCK,
+			 &map);
 	if (ret) {
-		DRM_ERROR("drm_setup failed\n");
+		DRM_ERROR("SAREA setup failed\n");
 		return ret;
 	}
 
