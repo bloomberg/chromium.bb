@@ -173,6 +173,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 		i915_dma_cleanup(dev);
 		return DRM_ERR(EINVAL);
 	}
+	init_waitqueue_head(&dev->lock.lock_queue);
 
 	/* FIXME: assume sarea_priv is right after SAREA */
         dev_priv->sarea_priv = dev_priv->sarea->handle + sizeof(drm_sarea_t);
@@ -280,7 +281,6 @@ int i915_driver_unload(drm_device_t *dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_framebuffer *fb;
 
-	/* FIXME: remove framebuffer */
 	intel_modeset_cleanup(dev);
 	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
 
