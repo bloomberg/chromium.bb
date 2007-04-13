@@ -134,13 +134,14 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 	// TODO
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		
+
 		list_for_each_entry_safe(mode, t, &output->modes, head)
 			drm_mode_remove(output, mode);
 		
 		output->status = (*output->funcs->detect)(output);
 
 		if (output->status == output_status_disconnected) {
+			DRM_DEBUG("%s is disconnected\n", output->name);
 			/* TODO set EDID to NULL */
 			continue;
 		}
@@ -164,8 +165,10 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 
 		drm_mode_prune_invalid(dev, &output->modes, TRUE);
 
-		if (list_empty(&output->modes))
+		if (list_empty(&output->modes)) {
+			DRM_DEBUG("No valid modes found on %s\n", output->name);
 			continue;
+		}
 
 		drm_mode_sort(&output->modes);
 
@@ -429,9 +432,12 @@ bool drm_output_rename(struct drm_output *output, const char *name)
 
 	strncpy(output->name, name, DRM_OUTPUT_LEN);
 	output->name[DRM_OUTPUT_LEN - 1] = 0;
+
+	DRM_DEBUG("Changed name to %s\n", output->name);
 //	drm_output_set_monitor(output);
 //	if (drm_output_ignored(output))
 //		return FALSE;
+
 	return TRUE;
 }
 EXPORT_SYMBOL(drm_output_rename);
