@@ -476,8 +476,7 @@ out:
 	return;
 
 failed:
-	DRM_DEBUG("No LVDS modes found, disabling.\n");
-	intel_i2c_destroy(intel_output->ddc_bus);
-	kfree(output->driver_private);
-	drm_output_destroy(output);
+        DRM_DEBUG("No LVDS modes found, disabling.\n");
+        //        intel_lvds_destroy(output);
+        //	drm_output_destroy(output);
 }
