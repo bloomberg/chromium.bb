@@ -151,7 +151,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	}
 
 	ret = drm_addmap(dev, dev_priv->mmiobase, dev_priv->mmiolen,
-			 _DRM_REGISTERS, _DRM_READ_ONLY, &dev_priv->mmio_map);
+			 _DRM_REGISTERS, _DRM_READ_ONLY|_DRM_DRIVER, &dev_priv->mmio_map);
 	if (ret != 0) {
 		DRM_ERROR("Cannot add mapping for MMIO registers\n");
 		return ret;
@@ -159,20 +159,13 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 
 	/* prebuild the SAREA */
 	sareapage = max(SAREA_MAX, PAGE_SIZE);
-	ret = drm_addmap(dev, 0, sareapage, _DRM_SHM, _DRM_CONTAINS_LOCK,
-			 &map);
+	ret = drm_addmap(dev, 0, sareapage, _DRM_SHM, _DRM_CONTAINS_LOCK|_DRM_DRIVER,
+			 &dev_priv->sarea);
 	if (ret) {
 		DRM_ERROR("SAREA setup failed\n");
 		return ret;
 	}
 
-	DRM_GETSAREA();
-	if (!dev_priv->sarea) {
-		DRM_ERROR("can not find sarea!\n");
-		dev->dev_private = (void *)dev_priv;
-		i915_dma_cleanup(dev);
-		return DRM_ERR(EINVAL);
-	}
 	init_waitqueue_head(&dev->lock.lock_queue);
 
 	/* FIXME: assume sarea_priv is right after SAREA */
@@ -187,61 +180,34 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	drm_bo_init_mm(dev, DRM_BO_MEM_PRIV0, dev_priv->baseaddr,
 		       prealloc_size);
 
-	/* Allocate scanout buffer and command ring */
-	/* FIXME: types and other args correct? */
-	hsize = 1280;
-	vsize = 800;
-	bytes_per_pixel = 4;
-	size = hsize * vsize * bytes_per_pixel;
-	drm_buffer_object_create(dev, size, drm_bo_type_kernel,
-				 DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
-				 DRM_BO_FLAG_MEM_PRIV0 | DRM_BO_FLAG_NO_MOVE,
-				 0, PAGE_SIZE, 0,
-				 &entry);
-
-	intel_modeset_init(dev);
-
-	fb = drm_framebuffer_create(dev);
-	if (!fb) {
-		DRM_ERROR("failed to allocate fb\n");
+	size = PRIMARY_RINGBUFFER_SIZE;
+	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
+				       DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
+				       DRM_BO_FLAG_MEM_PRIV0 |
+				       DRM_BO_FLAG_NO_MOVE,
+				       DRM_BO_HINT_DONT_FENCE, 0x1, 0,
+				       &dev_priv->ring_buffer);
+	if (ret < 0) {
+		DRM_ERROR("Unable to allocate ring buffer\n");
 		return -EINVAL;
 	}
 
-	fb->width = hsize;
-	fb->height = vsize;
-	fb->pitch = hsize;
-	fb->bits_per_pixel = bytes_per_pixel * 8;
-	fb->depth = bytes_per_pixel * 8;
-	fb->offset = entry->offset;
-	fb->bo = entry;
-
-	drm_initial_config(dev, fb, false);
-	drmfb_probe(dev, fb);
-#if 0
-	/* FIXME: command ring needs AGP space, do we own it at this point? */
-	dev_priv->ring.Start = dev_priv->baseaddr;
-	dev_priv->ring.End = 128*1024;
-	dev_priv->ring.Size = 128*1024;
+	/* remap the buffer object properly */
+	dev_priv->ring.Start = dev_priv->ring_buffer->offset + dev_priv->baseaddr;
+	dev_priv->ring.End = dev_priv->ring.Start + size;
+	dev_priv->ring.Size = size;
 	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
 
-	dev_priv->ring.map.offset = dev_priv->ring.Start;
-	dev_priv->ring.map.size = dev_priv->ring.Size;
-	dev_priv->ring.map.type = 0;
-	dev_priv->ring.map.flags = 0;
-	dev_priv->ring.map.mtrr = 0;
+	dev_priv->ring.virtual_start = ioremap((dev_priv->ring.Start), (dev_priv->ring_buffer->mem.num_pages * PAGE_SIZE));
 
-	drm_core_ioremap(&dev_priv->ring.map, dev);
 
-	if (dev_priv->ring.map.handle == NULL) {
-		dev->dev_private = (void *)dev_priv;
-		i915_dma_cleanup(dev);
-		DRM_ERROR("can not ioremap virtual address for"
-			  " ring buffer\n");
-		return DRM_ERR(ENOMEM);
-	}
+	DRM_DEBUG("ring start %08X, %08X, %08X\n", dev_priv->ring.Start, dev_priv->ring.virtual_start, dev_priv->ring.Size);
+	I915_WRITE(LP_RING + RING_HEAD, 0);
+	I915_WRITE(LP_RING + RING_TAIL, 0);
+	I915_WRITE(LP_RING + RING_START, dev_priv->ring.Start);
+	I915_WRITE(LP_RING + RING_LEN, ((dev_priv->ring.Size - 4096) & RING_NR_PAGES) |
+		   (RING_NO_REPORT | RING_VALID));
 
-	dev_priv->ring.virtual_start = dev_priv->ring.map.handle;
-	dev_priv->cpp = 4;
 	dev_priv->sarea_priv->pf_current_page = 0;
 
 	/* We are using separate values as placeholders for mechanisms for
@@ -271,8 +237,40 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 
 	I915_WRITE(0x02080, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
-#endif
 
+#if 1
+	/* Allocate scanout buffer and command ring */
+	/* FIXME: types and other args correct? */
+	hsize = 1280;
+	vsize = 800;
+	bytes_per_pixel = 4;
+	size = hsize * vsize * bytes_per_pixel;
+	drm_buffer_object_create(dev, size, drm_bo_type_kernel,
+				 DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
+				 DRM_BO_FLAG_MEM_PRIV0 | DRM_BO_FLAG_NO_MOVE,
+				 0, PAGE_SIZE, 0,
+				 &entry);
+#endif
+	intel_modeset_init(dev);
+
+#if 1
+	fb = drm_framebuffer_create(dev);
+	if (!fb) {
+		DRM_ERROR("failed to allocate fb\n");
+		return -EINVAL;
+	}
+
+	fb->width = hsize;
+	fb->height = vsize;
+	fb->pitch = hsize;
+	fb->bits_per_pixel = bytes_per_pixel * 8;
+	fb->depth = bytes_per_pixel * 8;
+	fb->offset = entry->offset;
+	fb->bo = entry;
+
+	drm_initial_config(dev, fb, false);
+	drmfb_probe(dev, fb);
+#endif
 	return 0;
 }
 
@@ -281,7 +279,26 @@ int i915_driver_unload(drm_device_t *dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_framebuffer *fb;
 
+	if (dev_priv->status_page_dmah) {
+		drm_pci_free(dev, dev_priv->status_page_dmah);
+		dev_priv->status_page_dmah = NULL;
+		dev_priv->hw_status_page = NULL;
+		dev_priv->dma_status_page = 0;
+		/* Need to rewrite hardware status page */
+		I915_WRITE(0x02080, 0x1ffff000);
+	}
+
+	I915_WRITE(LP_RING + RING_LEN, 0);
+
+	iounmap(dev_priv->ring.virtual_start);
+
+	drm_bo_driver_finish(dev);
+
 	intel_modeset_cleanup(dev);
+        DRM_DEBUG("%p, %p\n", dev_priv->mmio_map, dev_priv->sarea);
+        drm_rmmap(dev, dev_priv->mmio_map);
+        drm_rmmap(dev, dev_priv->sarea);
+
 	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
 
 	dev->dev_private = NULL;
@@ -296,7 +313,6 @@ void i915_driver_lastclose(drm_device_t * dev)
 
 	i915_dma_cleanup(dev);
 
-	dev_priv->mmio_map = NULL;
 }
 
 void i915_driver_preclose(drm_device_t * dev, DRMFILE filp)

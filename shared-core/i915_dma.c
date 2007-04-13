@@ -88,16 +88,6 @@ int i915_dma_cleanup(drm_device_t * dev)
 	if (dev->irq)
 		drm_irq_uninstall(dev);
 
-	if (dev_priv->status_page_dmah) {
-		drm_pci_free(dev, dev_priv->status_page_dmah);
-		dev_priv->status_page_dmah = NULL;
-		dev_priv->hw_status_page = NULL;
-		dev_priv->dma_status_page = 0;
-		/* Need to rewrite hardware status page */
-		I915_WRITE(0x02080, 0x1ffff000);
-	}
-	
-	dev_priv->sarea_priv = NULL;
 
 	return 0;
 }
@@ -106,39 +96,6 @@ static int i915_initialize(drm_device_t * dev,
 			   drm_i915_private_t * dev_priv,
 			   drm_i915_init_t * init)
 {
-	DRM_GETSAREA();
-	if (!dev_priv->sarea) {
-		DRM_ERROR("can not find sarea!\n");
-		dev->dev_private = (void *)dev_priv;
-		i915_dma_cleanup(dev);
-		return DRM_ERR(EINVAL);
-	}
-
-	dev_priv->sarea_priv = (drm_i915_sarea_t *)
-	    ((u8 *) dev_priv->sarea->handle + init->sarea_priv_offset);
-
-	dev_priv->ring.Start = init->ring_start;
-	dev_priv->ring.End = init->ring_end;
-	dev_priv->ring.Size = init->ring_size;
-	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
-
-	dev_priv->ring.map.offset = init->ring_start;
-	dev_priv->ring.map.size = init->ring_size;
-	dev_priv->ring.map.type = 0;
-	dev_priv->ring.map.flags = 0;
-	dev_priv->ring.map.mtrr = 0;
-
-	drm_core_ioremap(&dev_priv->ring.map, dev);
-
-	if (dev_priv->ring.map.handle == NULL) {
-		dev->dev_private = (void *)dev_priv;
-		i915_dma_cleanup(dev);
-		DRM_ERROR("can not ioremap virtual address for"
-			  " ring buffer\n");
-		return DRM_ERR(ENOMEM);
-	}
-
-	dev_priv->ring.virtual_start = dev_priv->ring.map.handle;
 
 	dev_priv->cpp = init->cpp;
 	dev_priv->sarea_priv->pf_current_page = 0;
@@ -152,27 +109,6 @@ static int i915_initialize(drm_device_t * dev,
 	 */
 	dev_priv->allow_batchbuffer = 1;
 
-	/* Program Hardware Status Page */
-	dev_priv->status_page_dmah = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 
-	    0xffffffff);
-
-	if (!dev_priv->status_page_dmah) {
-		dev->dev_private = (void *)dev_priv;
-		i915_dma_cleanup(dev);
-		DRM_ERROR("Can not allocate hardware status page\n");
-		return DRM_ERR(ENOMEM);
-	}
-	dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
-	dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
-	
-	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
-	DRM_DEBUG("hw status page @ %p\n", dev_priv->hw_status_page);
-
-	I915_WRITE(0x02080, dev_priv->dma_status_page);
-	DRM_DEBUG("Enabled hardware status page\n");
-
-//drm_set_desired_modes(dev);
-
 	return 0;
 }
 
@@ -181,29 +117,6 @@ static int i915_dma_resume(drm_device_t * dev)
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
-
-	if (!dev_priv->sarea) {
-		DRM_ERROR("can not find sarea!\n");
-		return DRM_ERR(EINVAL);
-	}
-
-	if (!dev_priv->mmio_map) {
-		DRM_ERROR("can not find mmio map!\n");
-		return DRM_ERR(EINVAL);
-	}
-
-	if (dev_priv->ring.map.handle == NULL) {
-		DRM_ERROR("can not ioremap virtual address for"
-			  " ring buffer\n");
-		return DRM_ERR(ENOMEM);
-	}
-
-	/* Program Hardware Status Page */
-	if (!dev_priv->hw_status_page) {
-		DRM_ERROR("Can not find hardware status page\n");
-		return DRM_ERR(EINVAL);
-	}
-	DRM_DEBUG("hw status page @ %p\n", dev_priv->hw_status_page);
 
 	I915_WRITE(0x02080, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
@@ -889,23 +802,4 @@ int i915_driver_device_is_agp(drm_device_t * dev)
 	return 1;
 }
 
-int i915_driver_firstopen(struct drm_device *dev)
-{
-	drm_i915_private_t *dev_priv = dev->dev_private;
-	int ret;
-	DRM_DEBUG("\n");
-
-	if (!dev_priv->mmio_map) {
-		ret = drm_addmap(dev, dev_priv->mmiobase, dev_priv->mmiolen,
-				 _DRM_REGISTERS, _DRM_READ_ONLY, &dev_priv->mmio_map);
-		if (ret != 0) {
-			DRM_ERROR("Cannot add mapping for MMIO registers\n");
-			return ret;
-		}
-	}
- 
-	DRM_DEBUG("dev_priv->mmio map is %p\n", dev_priv->mmio_map);
-
-	return 0;
-}
 

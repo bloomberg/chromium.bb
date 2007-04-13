@@ -89,6 +89,7 @@ typedef struct _drm_i915_vbl_swap {
 } drm_i915_vbl_swap_t;
 
 typedef struct drm_i915_private {
+	drm_buffer_object_t *ring_buffer;
 	drm_local_map_t *sarea;
 	drm_local_map_t *mmio_map;
 
@@ -921,5 +922,7 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define IS_I9XX(pI810) (IS_I915G(pI810) || IS_I915GM(pI810) || IS_I945G(pI810) || IS_I945GM(pI810) || IS_I965G(pI810))
 
 #define IS_MOBILE(pI810) (IS_I830(pI810) || IS_I85X(pI810) || IS_I915GM(pI810) || IS_I945GM(pI810))
+
+#define PRIMARY_RINGBUFFER_SIZE         (128*1024)
 
 #endif

@@ -132,7 +132,6 @@ static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 		}
 	}
 
-
 	if (dev->driver->load)
 		if ((retcode = dev->driver->load(dev, ent->driver_data)))
 			goto error_out_unreg;

@@ -147,7 +147,7 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 int drm_lastclose(drm_device_t * dev)
 {
 	drm_magic_entry_t *pt, *next;
-	drm_map_list_t *r_list;
+	drm_map_list_t *r_list, *r_list_tmp;
 	drm_vma_entry_t *vma, *vma_next;
 	int i;
 
@@ -238,10 +238,9 @@ int drm_lastclose(drm_device_t * dev)
 	}
 
 	if (dev->maplist) {
-		while (!list_empty(&dev->maplist->head)) {
-			struct list_head *list = dev->maplist->head.next;
-			r_list = list_entry(list, drm_map_list_t, head);
-			drm_rmmap_locked(dev, r_list->map);
+                list_for_each_entry_safe(r_list, r_list_tmp, &dev->maplist->head, head) {
+                        if (!(r_list->map->flags & _DRM_DRIVER))
+                                drm_rmmap_locked(dev, r_list->map);
 		}
 	}
 
@@ -265,8 +264,7 @@ int drm_lastclose(drm_device_t * dev)
 	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 		drm_dma_takedown(dev);
 
-	if (dev->lock.hw_lock) {
-		dev->sigdata.lock = dev->lock.hw_lock = NULL;	/* SHM removed */
+	if (dev->lock.filp) {
 		dev->lock.filp = NULL;
 		wake_up_interruptible(&dev->lock.lock_queue);
 	}
@@ -377,14 +375,6 @@ static void drm_cleanup(drm_device_t * dev)
 	drm_lastclose(dev);
 	drm_fence_manager_takedown(dev);
 
-	if (dev->maplist) {
-		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
-		dev->maplist = NULL;
-		drm_ht_remove(&dev->map_hash);
-		drm_mm_takedown(&dev->offset_manager);
-		drm_ht_remove(&dev->object_hash);
-	}
-
 	if (!drm_fb_loaded)
 		pci_disable_device(dev->pdev);
 
@@ -399,7 +389,7 @@ static void drm_cleanup(drm_device_t * dev)
 		DRM_DEBUG("mtrr_del=%d\n", retval);
 	}
 
-	drm_bo_driver_finish(dev);
+        //	drm_bo_driver_finish(dev);
 
 	if (drm_core_has_AGP(dev) && dev->agp) {
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
@@ -407,6 +397,14 @@ static void drm_cleanup(drm_device_t * dev)
 	}
 	if (dev->driver->unload)
 		dev->driver->unload(dev);
+
+	if (dev->maplist) {
+		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
+		dev->maplist = NULL;
+		drm_ht_remove(&dev->map_hash);
+		drm_mm_takedown(&dev->offset_manager);
+		drm_ht_remove(&dev->object_hash);
+	}
 
 	drm_put_head(&dev->primary);
 	if (drm_put_dev(dev))
