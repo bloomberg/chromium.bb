@@ -2125,6 +2125,7 @@ int drm_bo_driver_finish(drm_device_t * dev)
 	mutex_unlock(&dev->bm.init_mutex);
 	return ret;
 }
+EXPORT_SYMBOL(drm_bo_driver_finish);
 
 int drm_bo_driver_init(drm_device_t * dev)
 {
