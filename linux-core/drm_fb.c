@@ -107,6 +107,7 @@ int drmfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 	struct device *device = &dev->pdev->dev; 
 	struct fb_var_screeninfo *var_info;
 	unsigned long base, size;
+	int ret;
 
 	info = framebuffer_alloc(sizeof(struct drmfb_par), device);
 	if (!info){
@@ -139,7 +140,9 @@ int drmfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 	size = (fb->bo->mem.num_pages * PAGE_SIZE);
 
 	DRM_DEBUG("remapping %08X %d\n", base, size);
-	fb->virtual_base = ioremap_nocache(base, size);
+	ret = drm_mem_reg_ioremap(dev, &fb->bo->mem, &fb->virtual_base);
+	if (ret)
+		DRM_ERROR("error mapping fb: %d\n", ret);
 
 	info->screen_base = fb->virtual_base;
 	info->screen_size = size;
