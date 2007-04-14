@@ -177,8 +177,9 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	drm_bo_driver_init(dev);
 
 	i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
+	DRM_DEBUG("setting up %d bytes of PRIV0 space\n", prealloc_size);
 	drm_bo_init_mm(dev, DRM_BO_MEM_PRIV0, dev_priv->baseaddr,
-		       prealloc_size);
+		       prealloc_size >> PAGE_SHIFT);
 
 	size = PRIMARY_RINGBUFFER_SIZE;
 	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
@@ -198,8 +199,11 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	dev_priv->ring.Size = size;
 	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
 
-	dev_priv->ring.virtual_start = ioremap((dev_priv->ring.Start), (dev_priv->ring_buffer->mem.num_pages * PAGE_SIZE));
 
+	ret = drm_mem_reg_ioremap(dev, &dev_priv->ring_buffer->mem,
+				  &dev_priv->ring.virtual_start);
+	if (ret)
+		DRM_ERROR("error mapping ring buffer: %d\n", ret);
 
 	DRM_DEBUG("ring start %08X, %08X, %08X\n", dev_priv->ring.Start, dev_priv->ring.virtual_start, dev_priv->ring.Size);
 	I915_WRITE(LP_RING + RING_HEAD, 0);
@@ -248,7 +252,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	drm_buffer_object_create(dev, size, drm_bo_type_kernel,
 				 DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
 				 DRM_BO_FLAG_MEM_PRIV0 | DRM_BO_FLAG_NO_MOVE,
-				 0, PAGE_SIZE, 0,
+				 0, 0, 0,
 				 &entry);
 #endif
 	intel_modeset_init(dev);
