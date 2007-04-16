@@ -2814,7 +2814,7 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
     } while (ret != 0 && errno == EAGAIN);
 
     if (ret) 
-	return ret;
+	return -errno;
     if (!arg.handled) 
 	return -EFAULT;
     if (rep->ret)
@@ -2870,7 +2870,7 @@ int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask,
     } while (ret && errno == EAGAIN);
     
     if (ret) 
-	return ret;
+	return -errno;
     if (!arg.handled)
 	return -EFAULT;
     if (rep->ret)
@@ -2897,7 +2897,7 @@ int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
     ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     
     if (ret) 
-	return ret;
+	return -errno;
     if (!arg.handled)
 	return -EFAULT;
     if (rep->ret)
@@ -2919,7 +2919,7 @@ int drmBOInfo(int fd, drmBO *buf)
     ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     
     if (ret) 
-	return ret;
+	return -errno;
     if (!arg.handled)
 	return -EFAULT;
     if (rep->ret)
@@ -2947,7 +2947,7 @@ int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint)
 	} while (ret && errno == EAGAIN);
 
 	if (ret) 
-	    return ret;
+	    return -errno;
 	if (!arg.handled)
 	    return -EFAULT;
 	if (rep->ret)
@@ -3199,7 +3199,7 @@ int drmMMLock(int fd, unsigned memType)
 	ret = ioctl(fd, DRM_IOCTL_MM_INIT, &arg);
     } while (ret && errno == EAGAIN);
     
-    return ret;	
+    return -errno;	
 }
 
 int drmMMUnlock(int fd, unsigned memType)
@@ -3215,7 +3215,7 @@ int drmMMUnlock(int fd, unsigned memType)
 	ret = ioctl(fd, DRM_IOCTL_MM_INIT, &arg);
     } while (ret && errno == EAGAIN);
     
-    return ret;	
+    return -errno;	
 }
 
 #define DRM_MAX_FDS 16

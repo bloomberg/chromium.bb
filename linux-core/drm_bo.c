@@ -1024,30 +1024,23 @@ static int drm_bo_wait_unfenced(drm_buffer_object_t * bo, int no_wait,
 				int eagain_if_wait)
 {
 	int ret = (bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
-	unsigned long _end = jiffies + 3 * DRM_HZ;
 
 	if (ret && no_wait)
 		return -EBUSY;
 	else if (!ret)
 		return 0;
 
-	do {
-		mutex_unlock(&bo->mutex);
-		DRM_WAIT_ON(ret, bo->event_queue, 3 * DRM_HZ,
-			    !drm_bo_check_unfenced(bo));
-		mutex_lock(&bo->mutex);
-		if (ret == -EINTR)
-			return -EAGAIN;
-		if (ret) {
-			DRM_ERROR
-			    ("Error waiting for buffer to become fenced\n");
-			return ret;
-		}
-		ret = (bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
-	} while (ret && !time_after_eq(jiffies, _end));
+	ret = 0;
+	mutex_unlock(&bo->mutex);
+	DRM_WAIT_ON(ret, bo->event_queue, 3 * DRM_HZ,
+		    !drm_bo_check_unfenced(bo));
+	mutex_lock(&bo->mutex);
+	if (ret == -EINTR)
+		return -EAGAIN;
+	ret = (bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (ret) {
 		DRM_ERROR("Timeout waiting for buffer to become fenced\n");
-		return ret;
+		return -EBUSY;
 	}
 	if (eagain_if_wait)
 		return -EAGAIN;
@@ -1669,6 +1662,9 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 		rep.ret = 0;
 		switch (req->op) {
 		case drm_bo_create:
+			rep.ret = drm_bo_lock_test(dev, filp);
+			if (rep.ret)
+				break;	
 			rep.ret =
 			    drm_buffer_object_create(priv, req->size,
 						     req->type,
