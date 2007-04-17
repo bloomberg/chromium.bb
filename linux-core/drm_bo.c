@@ -1740,7 +1740,8 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 			entry =
 			    drm_user_object_entry(uo, drm_buffer_object_t,
 						  base);
-			atomic_dec(&entry->usage);
+			/* I don't think this is needed - D.A. */
+			//			atomic_dec(&entry->usage);
 			mutex_unlock(&dev->struct_mutex);
 			mutex_lock(&entry->mutex);
 			drm_bo_fill_rep_arg(entry, &rep);
