@@ -29,6 +29,7 @@
  */
 
 #include <linux/i2c.h>
+#include <linux/delay.h>
 #include "drmP.h"
 #include "drm.h"
 #include "drm_crtc.h"
@@ -69,9 +70,9 @@ static void intel_sdvo_write_sdvox(struct drm_output *output, u32 val)
 	int i;
 
 	if (sdvo_priv->output_device == SDVOB)
-		cval = I915_READ(SDVOC);
-	else
 		bval = I915_READ(SDVOB);
+	else
+		cval = I915_READ(SDVOC);
 	
 	/*
 	 * Write the registers twice for luck. Sometimes,
@@ -869,12 +870,21 @@ static enum drm_output_status intel_sdvo_detect(struct drm_output *output)
 {
 	u8 response[2];
 	u8 status;
+	u8 retry = 50;
 
 	intel_sdvo_write_cmd(output, SDVO_CMD_GET_ATTACHED_DISPLAYS, NULL, 0);
-	status = intel_sdvo_read_response(output, &response, 2);
 
-	if (status != SDVO_CMD_STATUS_SUCCESS)
-		return output_status_unknown;
+	while (retry--) {
+		status = intel_sdvo_read_response(output, &response, 2);
+
+		if (status == SDVO_CMD_STATUS_SUCCESS)
+			break;
+
+		if (status != SDVO_CMD_STATUS_PENDING)
+			return output_status_unknown;
+
+		mdelay(50);
+	}
 
 	DRM_DEBUG("SDVO response %d %d\n", response[0], response[1]);
 	if ((response[0] != 0) || (response[1] != 0))
