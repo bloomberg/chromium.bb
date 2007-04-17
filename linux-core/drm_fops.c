@@ -86,7 +86,7 @@ static int drm_setup(drm_device_t * dev)
 	INIT_LIST_HEAD(&dev->ctxlist->head);
 
 	dev->vmalist = NULL;
-	dev->sigdata.lock = NULL;
+	//	dev->sigdata.lock = NULL;
 	init_waitqueue_head(&dev->lock.lock_queue);
 	dev->queue_count = 0;
 	dev->queue_reserved = 0;
@@ -270,6 +270,7 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 
 	INIT_LIST_HEAD(&priv->user_objects);
 	INIT_LIST_HEAD(&priv->refd_objects);
+	INIT_LIST_HEAD(&priv->fbs);
 
 	for (i=0; i<_DRM_NO_REF_TYPES; ++i) {
 		ret = drm_ht_create(&priv->refd_object_hash[i], DRM_FILE_HASH_ORDER);
@@ -501,6 +502,7 @@ int drm_release(struct inode *inode, struct file *filp)
 	mutex_unlock(&dev->ctxlist_mutex);
 
 	mutex_lock(&dev->struct_mutex);
+	drm_fb_release(filp);
 	drm_object_release(filp);
 	if (priv->remove_auth_on_close == 1) {
 		drm_file_t *temp = dev->file_first;

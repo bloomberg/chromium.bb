@@ -431,6 +431,8 @@ typedef struct drm_file {
 
 	drm_open_hash_t refd_object_hash[_DRM_NO_REF_TYPES];
 	void *driver_priv;
+
+	struct list_head fbs;
 } drm_file_t;
 
 /** Wait queue */

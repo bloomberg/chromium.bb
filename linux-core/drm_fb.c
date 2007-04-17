@@ -84,6 +84,7 @@ static int drmfb_set_par(struct fb_info *info)
 	struct drm_device *dev = par->dev;
 
 	drm_set_desired_modes(dev);
+	return 0;
 }
 
 static struct fb_ops drmfb_ops = {
@@ -136,10 +137,6 @@ int drmfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 
 	info->flags = FBINFO_DEFAULT;
 
-	base = fb->bo->offset + dev->mode_config.fb_base;
-	size = (fb->bo->mem.num_pages * PAGE_SIZE);
-
-	DRM_DEBUG("remapping %08X %d\n", base, size);
 	ret = drm_mem_reg_ioremap(dev, &fb->bo->mem, &fb->virtual_base);
 	if (ret)
 		DRM_ERROR("error mapping fb: %d\n", ret);
@@ -194,7 +191,7 @@ int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 	struct fb_info *info = fb->fbdev;
 	
 	if (info) {
-		iounmap(fb->virtual_base);
+		drm_mem_reg_iounmap(dev, &fb->bo->mem, fb->virtual_base);
 		unregister_framebuffer(info);
 		framebuffer_release(info);
 	}

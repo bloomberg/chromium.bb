@@ -79,27 +79,28 @@ static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 #endif
 	dev->irq = pdev->irq;
 
-	if (drm_ht_create(&dev->map_hash, DRM_MAP_HASH_ORDER)) {
-		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
+	if (drm_ht_create(&dev->map_hash, DRM_MAP_HASH_ORDER))
 		return -ENOMEM;
-	}
+
 	if (drm_mm_init(&dev->offset_manager, DRM_FILE_PAGE_OFFSET_START,
 			DRM_FILE_PAGE_OFFSET_SIZE)) {
-		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		drm_ht_remove(&dev->map_hash);
 		return -ENOMEM;
 	}
 
 	if (drm_ht_create(&dev->object_hash, DRM_OBJECT_HASH_ORDER)) {
-                drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		drm_ht_remove(&dev->map_hash);
 		drm_mm_takedown(&dev->offset_manager);
 		return -ENOMEM;
 	}
 
 	dev->maplist = drm_calloc(1, sizeof(*dev->maplist), DRM_MEM_MAPS);
-	if (dev->maplist == NULL)
+	if (dev->maplist == NULL) {
+		drm_ht_remove(&dev->object_hash);
+		drm_ht_remove(&dev->map_hash);
+		drm_mm_takedown(&dev->offset_manager);
 		return -ENOMEM;
+	}
 	INIT_LIST_HEAD(&dev->maplist->head);
 
 	/* the DRM has 6 counters */

@@ -184,6 +184,7 @@ struct drm_framebuffer {
 	void *fbdev;
 	u32 pseudo_palette[17];
 	void *virtual_base;
+	struct list_head filp_head;
 };
 struct drm_crtc;
 struct drm_output;

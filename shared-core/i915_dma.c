@@ -85,6 +85,8 @@ int i915_dma_cleanup(drm_device_t * dev)
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
+	I915_WRITE(LP_RING + RING_LEN, 0);
+
 	if (dev->irq)
 		drm_irq_uninstall(dev);
 
@@ -96,6 +98,16 @@ static int i915_initialize(drm_device_t * dev,
 			   drm_i915_private_t * dev_priv,
 			   drm_i915_init_t * init)
 {
+
+	/* reset ring pointers */
+	I915_WRITE(LP_RING + RING_LEN, 0);
+	mb();
+
+	memset((void *)(dev_priv->ring.virtual_start), 0, dev_priv->ring.Size);
+
+	I915_WRITE(LP_RING + RING_START, dev_priv->ring.Start);
+	I915_WRITE(LP_RING + RING_LEN, ((dev_priv->ring.Size - 4096) & RING_NR_PAGES) | (RING_NO_REPORT | RING_VALID));
+
 
 	dev_priv->cpp = init->cpp;
 	dev_priv->sarea_priv->pf_current_page = 0;
