@@ -494,6 +494,7 @@ void drm_bo_usage_deref_locked(drm_buffer_object_t * bo)
 		drm_bo_destroy_locked(bo);
 	}
 }
+EXPORT_SYMBOL(drm_bo_usage_deref_locked);
 
 static void drm_bo_base_deref_locked(drm_file_t * priv, drm_user_object_t * uo)
 {
@@ -1993,6 +1994,7 @@ int drm_bo_clean_mm(drm_device_t * dev, unsigned mem_type)
 
 	return ret;
 }
+EXPORT_SYMBOL(drm_bo_clean_mm);
 
 /**
  *Evict all buffers of a particular mem_type, but leave memory manager
