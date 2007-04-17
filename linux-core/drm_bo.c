@@ -1715,6 +1715,13 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 						      drm_buffer_type, &uo);
 			if (rep.ret)
 				break;
+
+			/*
+			 * Note: The following code is only to 
+			 * fill in the rep argument. drm_lookup_user_object ups the
+			 * refcount which is decreased again when we're done with the bo.
+			 */
+
 			mutex_lock(&dev->struct_mutex);
 			uo = drm_lookup_user_object(priv, req->handle);
 			entry =
