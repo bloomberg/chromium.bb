@@ -37,7 +37,11 @@
 #define SDVO_OUTPUT_SCART0  (1 << 5)
 #define SDVO_OUTPUT_LVDS0   (1 << 6)
 #define SDVO_OUTPUT_TMDS1   (1 << 8)
-#define SDVO_OUTPUT_RGB1    (1 << 13)
+#define SDVO_OUTPUT_RGB1    (1 << 9)
+#define SDVO_OUTPUT_CVBS1   (1 << 10)
+#define SDVO_OUTPUT_SVID1   (1 << 11)
+#define SDVO_OUTPUT_YPRPB1  (1 << 12)
+#define SDVO_OUTPUT_SCART1  (1 << 13)
 #define SDVO_OUTPUT_LVDS1   (1 << 14)
 #define SDVO_OUTPUT_LAST    (14)
 
