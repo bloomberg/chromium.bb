@@ -45,7 +45,7 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
 
 	switch (pdev->device) {
 	case PCI_DEVICE_ID_INTEL_82830_CGC:
-	case PCI_DEVICE_ID_INTEL_82845G_HB:
+	case PCI_DEVICE_ID_INTEL_82845G_IG:
 	case PCI_DEVICE_ID_INTEL_82855GM_IG:
 	case PCI_DEVICE_ID_INTEL_82865_IG:
 		if ((tmp & INTEL_GMCH_MEM_MASK) == INTEL_GMCH_MEM_64M)
