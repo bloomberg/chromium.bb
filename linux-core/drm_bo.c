@@ -1399,7 +1399,10 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	} else if (bo->pinned_node != NULL) {
 
 		mutex_lock(&dev->struct_mutex);
-		drm_mm_put_block(bo->pinned_node);
+
+		if (bo->pinned_node != bo->mem.mm_node)
+			drm_mm_put_block(bo->pinned_node);
+
 		list_del_init(&bo->pinned_lru);
 		bo->pinned_node = NULL;
 		mutex_unlock(&dev->struct_mutex);
