@@ -209,6 +209,30 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 	return true;
 }
 
+static void intel_lvds_prepare(struct drm_output *output)
+{
+	struct drm_device *dev = output->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+
+	dev_priv->saveBLC_PWM_CTL = I915_READ(BLC_PWM_CTL);
+	dev_priv->backlight_duty_cycle = (dev_priv->saveBLC_PWM_CTL &
+				       BACKLIGHT_DUTY_CYCLE_MASK);
+
+	intel_lvds_set_power(dev, false);
+}
+
+static void intel_lvds_commit( struct drm_output *output)
+{
+	struct drm_device *dev = output->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+
+	if (dev_priv->backlight_duty_cycle == 0)
+		dev_priv->backlight_duty_cycle =
+			intel_lvds_get_max_backlight(dev);
+
+	intel_lvds_set_power(dev, true);
+}
+
 static void intel_lvds_mode_set(struct drm_output *output,
 				struct drm_display_mode *mode,
 				struct drm_display_mode *adjusted_mode)
@@ -321,9 +345,9 @@ static const struct drm_output_funcs intel_lvds_output_funcs = {
 	.restore = intel_lvds_restore,
 	.mode_valid = intel_lvds_mode_valid,
 	.mode_fixup = intel_lvds_mode_fixup,
-	.prepare = intel_output_prepare,
+	.prepare = intel_lvds_prepare,
 	.mode_set = intel_lvds_mode_set,
-	.commit = intel_output_commit,
+	.commit = intel_lvds_commit,
 	.detect = intel_lvds_detect,
 	.get_modes = intel_lvds_get_modes,
 	.cleanup = intel_lvds_destroy
