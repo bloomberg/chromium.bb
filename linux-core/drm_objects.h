@@ -473,4 +473,9 @@ extern int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
 				     uint32_t fence_flags,
 				     drm_bo_mem_reg_t * new_mem);
 
+extern int drm_mem_reg_ioremap(struct drm_device *dev, drm_bo_mem_reg_t * mem,
+			       void **virtual);
+extern void drm_mem_reg_iounmap(struct drm_device *dev, drm_bo_mem_reg_t * mem,
+				void *virtual);
+
 #endif

@@ -350,8 +350,8 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	unsigned long Start, Offset;
 	int dspbase = (pipe == 0 ? DSPABASE : DSPBBASE);
 	int dspsurf = (pipe == 0 ? DSPASURF : DSPBSURF);
-	
-	Start = crtc->fb->offset + dev_priv->baseaddr;
+
+	Start = crtc->fb->offset;
 	Offset = ((y * crtc->fb->pitch + x) * (crtc->fb->bits_per_pixel / 8));
 
 	DRM_DEBUG("Writing base %08lX %08lX %d %d\n", Start, Offset, x, y);

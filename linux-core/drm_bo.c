@@ -494,6 +494,7 @@ void drm_bo_usage_deref_locked(drm_buffer_object_t * bo)
 		drm_bo_destroy_locked(bo);
 	}
 }
+EXPORT_SYMBOL(drm_bo_usage_deref_locked);
 
 static void drm_bo_base_deref_locked(drm_file_t * priv, drm_user_object_t * uo)
 {
@@ -1739,7 +1740,8 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 			entry =
 			    drm_user_object_entry(uo, drm_buffer_object_t,
 						  base);
-			atomic_dec(&entry->usage);
+			/* I don't think this is needed - D.A. */
+			//			atomic_dec(&entry->usage);
 			mutex_unlock(&dev->struct_mutex);
 			mutex_lock(&entry->mutex);
 			drm_bo_fill_rep_arg(entry, &rep);
@@ -1993,6 +1995,7 @@ int drm_bo_clean_mm(drm_device_t * dev, unsigned mem_type)
 
 	return ret;
 }
+EXPORT_SYMBOL(drm_bo_clean_mm);
 
 /**
  *Evict all buffers of a particular mem_type, but leave memory manager

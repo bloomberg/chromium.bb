@@ -45,7 +45,7 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
 
 	switch (pdev->device) {
 	case PCI_DEVICE_ID_INTEL_82830_CGC:
-	case PCI_DEVICE_ID_INTEL_82845G_HB:
+	case PCI_DEVICE_ID_INTEL_82845G_IG:
 	case PCI_DEVICE_ID_INTEL_82855GM_IG:
 	case PCI_DEVICE_ID_INTEL_82865_IG:
 		if ((tmp & INTEL_GMCH_MEM_MASK) == INTEL_GMCH_MEM_64M)
@@ -134,19 +134,19 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	if (IS_I9XX(dev)) {
 		dev_priv->mmiobase = drm_get_resource_start(dev, 0);
 		dev_priv->mmiolen = drm_get_resource_len(dev, 0);
-		dev->mode_config.fb_base = dev_priv->baseaddr =
+		dev->mode_config.fb_base =
 			drm_get_resource_start(dev, 2) & 0xff000000;
 	} else if (drm_get_resource_start(dev, 1)) {
 		dev_priv->mmiobase = drm_get_resource_start(dev, 1);
 		dev_priv->mmiolen = drm_get_resource_len(dev, 1);
-		dev->mode_config.fb_base = dev_priv->baseaddr =
+		dev->mode_config.fb_base =
 			drm_get_resource_start(dev, 0) & 0xff000000;
 	} else {
 		DRM_ERROR("Unable to find MMIO registers\n");
 		return -ENODEV;
 	}
 
-	DRM_DEBUG("fb_base: 0x%08lx\n", dev_priv->baseaddr);
+	DRM_DEBUG("fb_base: 0x%08lx\n", dev->mode_config.fb_base);
 
 	ret = drm_addmap(dev, dev_priv->mmiobase, dev_priv->mmiolen,
 			 _DRM_REGISTERS, _DRM_READ_ONLY|_DRM_DRIVER, &dev_priv->mmio_map);
@@ -176,14 +176,17 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 
 	i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
 	DRM_DEBUG("setting up %ld bytes of PRIV0 space\n", prealloc_size);
-	drm_bo_init_mm(dev, DRM_BO_MEM_PRIV0, dev_priv->baseaddr,
-		       prealloc_size >> PAGE_SHIFT);
+	drm_bo_init_mm(dev, DRM_BO_MEM_PRIV0, 0, prealloc_size >> PAGE_SHIFT);
+
+	I915_WRITE(LP_RING + RING_LEN, 0);
+	I915_WRITE(LP_RING + RING_HEAD, 0);
+	I915_WRITE(LP_RING + RING_TAIL, 0);
 
 	size = PRIMARY_RINGBUFFER_SIZE;
 	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
 				       DRM_BO_FLAG_MEM_PRIV0 |
-				       DRM_BO_FLAG_NO_MOVE,
+				       DRM_BO_FLAG_NO_EVICT,
 				       DRM_BO_HINT_DONT_FENCE, 0x1, 0,
 				       &dev_priv->ring_buffer);
 	if (ret < 0) {
@@ -192,7 +195,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	}
 
 	/* remap the buffer object properly */
-	dev_priv->ring.Start = dev_priv->ring_buffer->offset + dev_priv->baseaddr;
+	dev_priv->ring.Start = dev_priv->ring_buffer->offset;
 	dev_priv->ring.End = dev_priv->ring.Start + size;
 	dev_priv->ring.Size = size;
 	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
@@ -205,11 +208,6 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 
 	DRM_DEBUG("ring start %08lX, %p, %08lX\n", dev_priv->ring.Start,
 		  dev_priv->ring.virtual_start, dev_priv->ring.Size);
-	I915_WRITE(LP_RING + RING_HEAD, 0);
-	I915_WRITE(LP_RING + RING_TAIL, 0);
-	I915_WRITE(LP_RING + RING_START, dev_priv->ring.Start);
-	I915_WRITE(LP_RING + RING_LEN, ((dev_priv->ring.Size - 4096) & RING_NR_PAGES) |
-		   (RING_NO_REPORT | RING_VALID));
 
 	dev_priv->sarea_priv->pf_current_page = 0;
 
@@ -262,11 +260,22 @@ int i915_driver_unload(drm_device_t *dev)
 
 	I915_WRITE(LP_RING + RING_LEN, 0);
 
-	iounmap(dev_priv->ring.virtual_start);
+	intel_modeset_cleanup(dev);
+
+	drm_mem_reg_iounmap(dev, &dev_priv->ring_buffer->mem,
+			    dev_priv->ring.virtual_start);
+
+	mutex_lock(&dev->struct_mutex);
+	drm_bo_usage_deref_locked(dev_priv->ring_buffer);
+	mutex_unlock(&dev->struct_mutex);
+
+	if (drm_bo_clean_mm(dev, DRM_BO_MEM_PRIV0)) {
+		DRM_ERROR("Memory manager type 3 not clean. "
+			  "Delaying takedown\n");
+	}
 
 	drm_bo_driver_finish(dev);
 
-	intel_modeset_cleanup(dev);
         DRM_DEBUG("%p, %p\n", dev_priv->mmio_map, dev_priv->sarea);
         drm_rmmap(dev, dev_priv->mmio_map);
         drm_rmmap(dev, dev_priv->sarea);

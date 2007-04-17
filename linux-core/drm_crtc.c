@@ -64,6 +64,15 @@ void drm_framebuffer_destroy(struct drm_framebuffer *fb)
 {
 	drm_device_t *dev = fb->dev;
 
+	/* remove from any CRTC */
+	{
+		struct drm_crtc *crtc;
+		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+			if (crtc->fb == fb)
+				crtc->fb = NULL;
+		}
+	}
+
 	spin_lock(&dev->mode_config.config_lock);
 	drm_mode_idr_put(dev, fb->id);
 	list_del(&fb->head);
@@ -1065,6 +1074,7 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 
 	r.buffer_id = fb->id;
 
+	list_add(&fb->filp_head, &priv->fbs);
 	/* bind the fb to the crtc for now */
 	{
 		struct drm_crtc *crtc;
@@ -1080,7 +1090,7 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 }
 
 int drm_mode_rmfb(struct inode *inode, struct file *filp,
-		  unsigned int cmd, unsigned long arg)
+		   unsigned int cmd, unsigned long arg)
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
@@ -1098,13 +1108,6 @@ int drm_mode_rmfb(struct inode *inode, struct file *filp,
 	/* TODO check if we own the buffer */
 	/* TODO release all crtc connected to the framebuffer */
 	/* bind the fb to the crtc for now */
-	{
-		struct drm_crtc *crtc;
-		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-			if (crtc->fb == fb)
-				crtc->fb = NULL;
-		}
-	}
 	/* TODO unhock the destructor from the buffer object */
 
 	drm_framebuffer_destroy(fb);
@@ -1141,4 +1144,18 @@ int drm_mode_getfb(struct inode *inode, struct file *filp,
 		return -EFAULT;
 
 	return 0;
+}
+
+void drm_fb_release(struct file *filp)
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->head->dev;
+	struct drm_framebuffer *fb, *tfb;
+
+	list_for_each_entry_safe(fb, tfb, &priv->fbs, filp_head) {
+		list_del(&fb->filp_head);
+		drmfb_remove(dev, fb);
+		drm_framebuffer_destroy(fb);
+		
+	}
 }

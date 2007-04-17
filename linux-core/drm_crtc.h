@@ -184,6 +184,7 @@ struct drm_framebuffer {
 	void *fbdev;
 	u32 pseudo_palette[17];
 	void *virtual_base;
+	struct list_head filp_head;
 };
 struct drm_crtc;
 struct drm_output;
@@ -417,7 +418,7 @@ struct drm_mode_config {
 	/* DamagePtr rotationDamage? */
 	/* DGA stuff? */
 	struct drm_mode_config_funcs *funcs;
-	int fb_base;
+	unsigned long fb_base;
 };
 
 struct drm_output *drm_output_create(struct drm_device *dev,
