@@ -1,6 +1,6 @@
 #include <linux/list.h>
-#include "drmP.h"
 #include "drm.h"
+#include "drmP.h"
 #include "drm_crtc.h"
 
 int drm_mode_idr_get(struct drm_device *dev, void *ptr)
@@ -500,6 +500,15 @@ out_err:
 	return ret;
 }
 
+static void drm_setup_output(struct drm_output *output, struct drm_crtc *crtc,
+			     struct drm_display_mode *mode)
+{
+	output->crtc = crtc;
+	output->crtc->desired_mode = mode;
+	output->initial_x = 0;
+	output->initial_y = 0;
+}
+
 /**
  * drm_initial_config - setup a sane initial output configuration
  * @dev: DRM device
@@ -510,13 +519,21 @@ out_err:
  * At the moment, this is a cloned configuration across all heads with
  * @fb as the backing store.
  */
-bool drm_initial_config(drm_device_t *dev, struct drm_framebuffer *fb,
-			bool can_grow)
+bool drm_initial_config(drm_device_t *dev, bool can_grow)
 {
 	/* do a hardcoded initial configuration here */
-	struct drm_crtc *crtc, *vga_crtc = NULL, *dvi_crtc = NULL,
+	struct drm_crtc *crtc, *vga_crtc = NULL, *tmds_crtc = NULL,
 		*lvds_crtc = NULL;
-	struct drm_output *output, *use_output = NULL;
+	struct drm_output *output;
+	struct drm_framebuffer *fb;
+	drm_buffer_object_t *fbo;
+	unsigned long size, bytes_per_pixel;
+
+	fb = drm_framebuffer_create(dev);
+	if (!fb) {
+		DRM_ERROR("failed to allocate fb.\n");
+		return true;
+	}
 
 	/* bind both CRTCs to this fb */
 	/* only initialise one crtc to enabled state */
@@ -532,8 +549,8 @@ bool drm_initial_config(drm_device_t *dev, struct drm_framebuffer *fb,
 			crtc->enabled = 1;
 			crtc->desired_x = 0;
 			crtc->desired_y = 0;
-		} else if (!dvi_crtc) {
-			dvi_crtc = crtc;
+		} else if (!tmds_crtc) {
+			tmds_crtc = crtc;
 			crtc->enabled = 1;
 			crtc->desired_x = 0;
 			crtc->desired_y = 0;
@@ -557,28 +574,42 @@ bool drm_initial_config(drm_device_t *dev, struct drm_framebuffer *fb,
 				break;
 		}
 		if (!strncmp(output->name, "VGA", 3)) {
-			output->crtc = vga_crtc;
 			DRM_DEBUG("VGA preferred mode: %s\n", des_mode->name);
-			output->crtc->desired_mode = des_mode;
-			output->initial_x = 0;
-			output->initial_y = 0;
-			use_output = output;
+			drm_setup_output(output, vga_crtc, des_mode);
 		} else if (!strncmp(output->name, "TMDS", 4)) {
-			output->crtc = vga_crtc;
 			DRM_DEBUG("TMDS preferred mode: %s\n", des_mode->name);
-			output->crtc->desired_mode = des_mode;
-			output->initial_x = 0;
-			output->initial_y = 0;
+			drm_setup_output(output, tmds_crtc, des_mode);
 		} else 	if (!strncmp(output->name, "LVDS", 3)) {
-			output->crtc = lvds_crtc;
 			DRM_DEBUG("LVDS preferred mode: %s\n", des_mode->name);
-			output->crtc->desired_mode = des_mode;
-			output->initial_x = 0;
-			output->initial_y = 0;
+			drm_setup_output(output, lvds_crtc, des_mode);
 		} else
 			output->crtc = NULL;
-	       
+
+		/* FB config is max of above desired resolutions */
+		/* FIXME: per-output FBs/CRTCs */
+		if (des_mode->hdisplay > fb->width) {
+			fb->width = des_mode->hdisplay;
+			fb->pitch = fb->width;
+		}
+		if (des_mode->vdisplay > fb->height)
+			fb->height = des_mode->vdisplay;
 	}
+
+	/* FIXME: multiple depths */
+	bytes_per_pixel = 4;
+	fb->bits_per_pixel = bytes_per_pixel * 8;
+	fb->depth = bytes_per_pixel * 8;
+	size = fb->width * fb->height * bytes_per_pixel;
+	drm_buffer_object_create(dev, size, drm_bo_type_kernel,
+				 DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
+				 DRM_BO_FLAG_MEM_PRIV0 | DRM_BO_FLAG_NO_MOVE,
+				 0, 0, 0,
+				 &fbo);
+	DRM_DEBUG("allocated %dx%d fb: 0x%08lx\n", fb->width, fb->height,
+		  fbo->offset);
+	fb->offset = fbo->offset;
+	fb->bo = fbo;
+	drmfb_probe(dev, fb);
 
 	return false;
 }
