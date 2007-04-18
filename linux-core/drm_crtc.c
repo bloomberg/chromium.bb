@@ -614,8 +614,8 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 				 DRM_BO_FLAG_MEM_PRIV0 | DRM_BO_FLAG_NO_MOVE,
 				 0, 0, 0,
 				 &fbo);
-	DRM_DEBUG("allocated %dx%d fb: 0x%08lx\n", fb->width, fb->height,
-		  fbo->offset);
+	DRM_DEBUG("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,
+		  fb->height, fbo->offset, fbo);
 	fb->offset = fbo->offset;
 	fb->bo = fbo;
 	drmfb_probe(dev, fb);
@@ -639,6 +639,12 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 
 	list_for_each_entry_safe(fb, fbt, &dev->mode_config.fb_list, head) {
 		drmfb_remove(dev, fb);
+		/* If this FB was the kernel one, free it */
+		if (fb->bo->type == drm_bo_type_kernel) {
+			mutex_lock(&dev->struct_mutex);
+			drm_bo_usage_deref_locked(fb->bo);
+			mutex_unlock(&dev->struct_mutex);
+		}
 		drm_framebuffer_destroy(fb);
 	}
 }
