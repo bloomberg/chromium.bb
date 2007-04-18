@@ -298,9 +298,14 @@ int intel_sdvo_get_pixel_multiplier(struct drm_display_mode *mode)
 		return 4;
 }
 
-static void intel_sdvo_set_control_bus_switch(struct drm_output *output, u8 target)
+static bool intel_sdvo_set_control_bus_switch(struct drm_output *output, u8 target)
 {
+	u8 status;
+
 	intel_sdvo_write_cmd(output, SDVO_CMD_SET_CONTROL_BUS_SWITCH, &target, 1);
+	status = intel_sdvo_read_response(output, NULL, 0);
+
+	return (status == SDVO_CMD_STATUS_SUCCESS);
 }
 
 static bool intel_sdvo_set_target_input(struct drm_output *output, bool target_0, bool target_1)
