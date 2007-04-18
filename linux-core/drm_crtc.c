@@ -184,7 +184,7 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 		drm_mode_prune_invalid(dev, &output->modes, TRUE);
 
 		if (list_empty(&output->modes)) {
-			struct drm_display_mode *newmode;
+			struct drm_display_mode *stdmode;
 
 			DRM_DEBUG("No valid modes found on %s\n", output->name);
 
@@ -193,10 +193,11 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 			 * here and bailed in the past, now we add a standard
 			 * 640x480@60Hz mode and carry on.
 			 */
-			newmode = drm_mode_duplicate(dev, &std_mode[0]);
+			stdmode = drm_mode_duplicate(dev, &std_mode[0]);
 			drm_mode_probed_add(output, newmode);
 			drm_mode_list_concat(&output->probed_modes,
 					     &output->modes);
+			drm_crtc_mode_destroy(dev, stdmode);
 
 			DRM_DEBUG("Adding standard 640x480 @ 60Hz to %s\n",
 								output->name);
