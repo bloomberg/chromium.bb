@@ -197,7 +197,6 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 			drm_mode_probed_add(output, stdmode);
 			drm_mode_list_concat(&output->probed_modes,
 					     &output->modes);
-			drm_crtc_mode_destroy(dev, stdmode);
 
 			DRM_DEBUG("Adding standard 640x480 @ 60Hz to %s\n",
 								output->name);
