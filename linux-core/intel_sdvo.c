@@ -254,30 +254,38 @@ static u8 intel_sdvo_read_response(struct drm_output *output, void *response,
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	int i;
 	u8 status;
+	u8 retry = 50;
 
-	/* Read the command response */
-	for (i = 0; i < response_len; i++) {
-		intel_sdvo_read_byte(output, SDVO_I2C_RETURN_0 + i,
+	while (retry--) {
+		/* Read the command response */
+		for (i = 0; i < response_len; i++) {
+			intel_sdvo_read_byte(output, SDVO_I2C_RETURN_0 + i,
 				     &((u8 *)response)[i]);
+		}
+
+		/* read the return status */
+		intel_sdvo_read_byte(output, SDVO_I2C_CMD_STATUS, &status);
+
+	        if (1) {
+			printk("%s: R: ", SDVO_NAME(sdvo_priv));
+       			for (i = 0; i < response_len; i++)
+                        	printk("%02X ", ((u8 *)response)[i]);
+                	for (; i < 8; i++)
+                        	printk("   ");
+                	if (status <= SDVO_CMD_STATUS_SCALING_NOT_SUPP)
+                        	printk("(%s)", cmd_status_names[status]);
+                	else
+                        	printk("(??? %d)", status);
+                	printk("\n");
+        	}
+
+		if (status != SDVO_CMD_STATUS_PENDING)
+			return status;
+
+		mdelay(50);
 	}
 
-	/* read the return status */
-	intel_sdvo_read_byte(output, SDVO_I2C_CMD_STATUS, &status);
-
-        if (1) {
-                printk("%s: R: ", SDVO_NAME(sdvo_priv));
-                for (i = 0; i < response_len; i++)
-                        printk("%02X ", ((u8 *)response)[i]);
-                for (; i < 8; i++)
-                        printk("   ");
-                if (status <= SDVO_CMD_STATUS_SCALING_NOT_SUPP)
-                        printk("(%s)", cmd_status_names[status]);
-                else
-                        printk("(??? %d)", status);
-                printk("\n");
-        }
-	return status;
-
+	return SDVO_CMD_STATUS_SUCCESS;
 }
 
 int intel_sdvo_get_pixel_multiplier(struct drm_display_mode *mode)
@@ -870,21 +878,9 @@ static enum drm_output_status intel_sdvo_detect(struct drm_output *output)
 {
 	u8 response[2];
 	u8 status;
-	u8 retry = 50;
 
 	intel_sdvo_write_cmd(output, SDVO_CMD_GET_ATTACHED_DISPLAYS, NULL, 0);
-
-	while (retry--) {
-		status = intel_sdvo_read_response(output, &response, 2);
-
-		if (status == SDVO_CMD_STATUS_SUCCESS)
-			break;
-
-		if (status != SDVO_CMD_STATUS_PENDING)
-			return output_status_unknown;
-
-		mdelay(50);
-	}
+	status = intel_sdvo_read_response(output, &response, 2);
 
 	DRM_DEBUG("SDVO response %d %d\n", response[0], response[1]);
 	if ((response[0] != 0) || (response[1] != 0))
