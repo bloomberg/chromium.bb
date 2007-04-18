@@ -553,16 +553,19 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 			crtc->enabled = 1;
 			crtc->desired_x = 0;
 			crtc->desired_y = 0;
-		} else if (!lvds_crtc) {
-			lvds_crtc = crtc;
-			crtc->enabled = 1;
-			crtc->desired_x = 0;
-			crtc->desired_y = 0;
-		} else if (!tmds_crtc) {
-			tmds_crtc = crtc;
-			crtc->enabled = 1;
-			crtc->desired_x = 0;
-			crtc->desired_y = 0;
+		} else {
+			if (!lvds_crtc) {
+				lvds_crtc = crtc;
+				crtc->enabled = 1;
+				crtc->desired_x = 0;
+				crtc->desired_y = 0;
+			}
+			if (!tmds_crtc) {
+				tmds_crtc = crtc;
+				crtc->enabled = 1;
+				crtc->desired_x = 0;
+				crtc->desired_y = 0;
+			}
 		}
 	}
 
