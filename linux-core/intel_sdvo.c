@@ -1014,7 +1014,28 @@ void intel_sdvo_init(drm_device_t *dev, int output_device)
 
 	memset(&sdvo_priv->active_outputs, 0, sizeof(sdvo_priv->active_outputs));
 
-	if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS0)
+	/* TODO, CVBS, SVID, YPRPB & SCART outputs.
+	 * drm_initial_config probably wants tweaking too to support the
+	 * above. But has fixed VGA, TMDS and LVDS checking code. That should
+	 * be dealt with.
+	 */
+	if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB0)
+	{
+		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB0;
+		output->subpixel_order = SubPixelHorizontalRGB;
+		/* drm_initial_config wants this name, but should be RGB */
+		/* Use this for now.... */
+		name_prefix="VGA";
+	}
+	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB1)
+	{
+		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB1;
+		output->subpixel_order = SubPixelHorizontalRGB;
+		/* drm_initial_config wants this name, but should be RGB */
+		/* Use this for now.... */
+		name_prefix="VGA";
+	}
+	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS0)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_TMDS0;
 		output->subpixel_order = SubPixelHorizontalRGB;
@@ -1031,7 +1052,7 @@ void intel_sdvo_init(drm_device_t *dev, int output_device)
 		unsigned char bytes[2];
 		
 		memcpy (bytes, &sdvo_priv->caps.output_flags, 2);
-		DRM_DEBUG("%s: No active TMDS outputs (0x%02x%02x)\n",
+		DRM_DEBUG("%s: No active RGB or TMDS outputs (0x%02x%02x)\n",
 			  SDVO_NAME(sdvo_priv),
 			  bytes[0], bytes[1]);
 	}
@@ -1063,8 +1084,11 @@ void intel_sdvo_init(drm_device_t *dev, int output_device)
 		  sdvo_priv->pixel_clock_max / 1000,
 		  (sdvo_priv->caps.sdvo_inputs_mask & 0x1) ? 'Y' : 'N',
 		  (sdvo_priv->caps.sdvo_inputs_mask & 0x2) ? 'Y' : 'N',
-		  sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS0 ? 'Y' : 'N',
-		  sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS1 ? 'Y' : 'N');
+		  /* check currently supported outputs */
+		  sdvo_priv->caps.output_flags & 
+		  	(SDVO_OUTPUT_TMDS0 | SDVO_OUTPUT_RGB0) ? 'Y' : 'N',
+		  sdvo_priv->caps.output_flags & 
+		  	(SDVO_OUTPUT_TMDS1 | SDVO_OUTPUT_RGB1) ? 'Y' : 'N');
 
 	intel_output->ddc_bus = i2cbus;	
 }
