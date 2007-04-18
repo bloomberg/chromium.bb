@@ -284,7 +284,7 @@ static u8 intel_sdvo_read_response(struct drm_output *output, void *response,
 		mdelay(50);
 	}
 
-	return SDVO_CMD_STATUS_SUCCESS;
+	return status;
 }
 
 int intel_sdvo_get_pixel_multiplier(struct drm_display_mode *mode)
