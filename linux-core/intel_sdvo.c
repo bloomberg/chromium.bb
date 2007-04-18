@@ -70,10 +70,9 @@ static void intel_sdvo_write_sdvox(struct drm_output *output, u32 val)
 	int i;
 
 	if (sdvo_priv->output_device == SDVOB)
-		bval = I915_READ(SDVOB);
-	else
 		cval = I915_READ(SDVOC);
-	
+	else
+		bval = I915_READ(SDVOB);
 	/*
 	 * Write the registers twice for luck. Sometimes,
 	 * writing them only once doesn't appear to 'stick'.

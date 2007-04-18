@@ -265,6 +265,7 @@ int i915_driver_unload(drm_device_t *dev)
 	drm_mem_reg_iounmap(dev, &dev_priv->ring_buffer->mem,
 			    dev_priv->ring.virtual_start);
 
+	DRM_DEBUG("usage is %d\n", dev_priv->ring_buffer->usage);
 	mutex_lock(&dev->struct_mutex);
 	drm_bo_usage_deref_locked(dev_priv->ring_buffer);
 	mutex_unlock(&dev->struct_mutex);

@@ -572,7 +572,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 
 	/* bind analog output to one crtc */
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		struct drm_display_mode *des_mode;
+		struct drm_display_mode *des_mode = NULL;
 
 		if (list_empty(&output->modes))
 			continue;
@@ -582,6 +582,10 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 			if (des_mode->flags & DRM_MODE_TYPE_PREFERRED)
 				break;
 		}
+
+		if (!des_mode)
+			continue;
+
 		if (!strncmp(output->name, "VGA", 3)) {
 			DRM_DEBUG("VGA preferred mode: %s\n", des_mode->name);
 			drm_setup_output(output, vga_crtc, des_mode);
