@@ -375,9 +375,6 @@ static void drm_cleanup(drm_device_t * dev)
 	drm_lastclose(dev);
 	drm_fence_manager_takedown(dev);
 
-	if (!drm_fb_loaded)
-		pci_disable_device(dev->pdev);
-
 	drm_ctxbitmap_cleanup(dev);
 
 	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) && dev->agp
@@ -389,15 +386,16 @@ static void drm_cleanup(drm_device_t * dev)
 		DRM_DEBUG("mtrr_del=%d\n", retval);
 	}
 
-        //	drm_bo_driver_finish(dev);
-
+	if (dev->driver->unload)
+		dev->driver->unload(dev);
+        
 	if (drm_core_has_AGP(dev) && dev->agp) {
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
 		dev->agp = NULL;
 	}
-	if (dev->driver->unload)
-		dev->driver->unload(dev);
 
+
+        //	drm_bo_driver_finish(dev);
 	if (dev->maplist) {
 		drm_free(dev->maplist, sizeof(*dev->maplist), DRM_MEM_MAPS);
 		dev->maplist = NULL;
@@ -405,6 +403,9 @@ static void drm_cleanup(drm_device_t * dev)
 		drm_mm_takedown(&dev->offset_manager);
 		drm_ht_remove(&dev->object_hash);
 	}
+
+	if (!drm_fb_loaded)
+		pci_disable_device(dev->pdev);
 
 	drm_put_head(&dev->primary);
 	if (drm_put_dev(dev))

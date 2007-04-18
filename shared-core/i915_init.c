@@ -112,13 +112,9 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
 int i915_driver_load(drm_device_t *dev, unsigned long flags)
 {
 	drm_i915_private_t *dev_priv;
-	drm_i915_init_t init;
-	drm_buffer_object_t *entry;
-	drm_local_map_t *map;
-	struct drm_framebuffer *fb;
 	unsigned long agp_size, prealloc_size;
 	unsigned long sareapage;
-	int hsize, vsize, bytes_per_pixel, size, ret;
+	int size, ret;
 
 	dev_priv = drm_alloc(sizeof(drm_i915_private_t), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
@@ -150,6 +146,8 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 		return -ENODEV;
 	}
 
+	DRM_DEBUG("fb_base: 0x%08lx\n", dev->mode_config.fb_base);
+
 	ret = drm_addmap(dev, dev_priv->mmiobase, dev_priv->mmiolen,
 			 _DRM_REGISTERS, _DRM_READ_ONLY|_DRM_DRIVER, &dev_priv->mmio_map);
 	if (ret != 0) {
@@ -177,9 +175,8 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	drm_bo_driver_init(dev);
 
 	i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
-	DRM_DEBUG("setting up %d bytes of PRIV0 space\n", prealloc_size);
-	drm_bo_init_mm(dev, DRM_BO_MEM_PRIV0, 0,
-		       prealloc_size >> PAGE_SHIFT);
+	DRM_DEBUG("setting up %ld bytes of PRIV0 space\n", prealloc_size);
+	drm_bo_init_mm(dev, DRM_BO_MEM_PRIV0, 0, prealloc_size >> PAGE_SHIFT);
 
 	I915_WRITE(LP_RING + RING_LEN, 0);
 	I915_WRITE(LP_RING + RING_HEAD, 0);
@@ -203,12 +200,14 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	dev_priv->ring.Size = size;
 	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
 
+	/* FIXME: need wrapper with PCI mem checks */
 	ret = drm_mem_reg_ioremap(dev, &dev_priv->ring_buffer->mem,
 				  &dev_priv->ring.virtual_start);
 	if (ret)
 		DRM_ERROR("error mapping ring buffer: %d\n", ret);
 
-	DRM_DEBUG("ring start %08X, %08X, %08X\n", dev_priv->ring.Start, dev_priv->ring.virtual_start, dev_priv->ring.Size);
+	DRM_DEBUG("ring start %08lX, %p, %08lX\n", dev_priv->ring.Start,
+		  dev_priv->ring.virtual_start, dev_priv->ring.Size);
 
 	dev_priv->sarea_priv->pf_current_page = 0;
 
@@ -240,46 +239,15 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	I915_WRITE(0x02080, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
 
-#if 1
-	/* Allocate scanout buffer and command ring */
-	/* FIXME: types and other args correct? */
-	hsize = 1280;
-	vsize = 800;
-	bytes_per_pixel = 4;
-	size = hsize * vsize * bytes_per_pixel;
-	drm_buffer_object_create(dev, size, drm_bo_type_kernel,
-				 DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
-				 DRM_BO_FLAG_MEM_PRIV0 | DRM_BO_FLAG_NO_MOVE,
-				 0, 0, 0,
-				 &entry);
-#endif
 	intel_modeset_init(dev);
+	drm_initial_config(dev, false);
 
-#if 1
-	fb = drm_framebuffer_create(dev);
-	if (!fb) {
-		DRM_ERROR("failed to allocate fb\n");
-		return -EINVAL;
-	}
-
-	fb->width = hsize;
-	fb->height = vsize;
-	fb->pitch = hsize;
-	fb->bits_per_pixel = bytes_per_pixel * 8;
-	fb->depth = bytes_per_pixel * 8;
-	fb->offset = entry->offset;
-	fb->bo = entry;
-
-	drm_initial_config(dev, fb, false);
-	drmfb_probe(dev, fb);
-#endif
 	return 0;
 }
 
 int i915_driver_unload(drm_device_t *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	struct drm_framebuffer *fb;
 
 	if (dev_priv->status_page_dmah) {
 		drm_pci_free(dev, dev_priv->status_page_dmah);
@@ -297,6 +265,7 @@ int i915_driver_unload(drm_device_t *dev)
 	drm_mem_reg_iounmap(dev, &dev_priv->ring_buffer->mem,
 			    dev_priv->ring.virtual_start);
 
+	DRM_DEBUG("usage is %d\n", dev_priv->ring_buffer->usage);
 	mutex_lock(&dev->struct_mutex);
 	drm_bo_usage_deref_locked(dev_priv->ring_buffer);
 	mutex_unlock(&dev->struct_mutex);

@@ -907,8 +907,8 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define IS_I855(dev) ((dev)->pci_device == PCI_DEVICE_ID_INTEL_82855GM_IG)
 #define IS_I865G(dev) ((dev)->pci_device == PCI_DEVICE_ID_INTEL_82865_IG)
 
-#define IS_I915G(pI810) (dev->pci_device == PCI_DEVICE_ID_INTEL_82915G_IG)/* || dev->pci_device == PCI_DEVICE_ID_INTELPCI_CHIP_E7221_G)*/
-#define IS_I915GM(pI810) ((dev)->pci_device == PCI_DEVICE_ID_INTEL_82915GM_IG)
+#define IS_I915G(dev) (dev->pci_device == PCI_DEVICE_ID_INTEL_82915G_IG)/* || dev->pci_device == PCI_DEVICE_ID_INTELPCI_CHIP_E7221_G)*/
+#define IS_I915GM(dev) ((dev)->pci_device == PCI_DEVICE_ID_INTEL_82915GM_IG)
 #define IS_I945G(dev) ((dev)->pci_device == PCI_DEVICE_ID_INTEL_82945G_IG)
 #define IS_I945GM(dev) ((dev)->pci_device == PCI_DEVICE_ID_INTEL_82945GM_IG)
 
@@ -918,9 +918,11 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 		       (dev)->pci_device == 0x29A2)
 
 
-#define IS_I9XX(pI810) (IS_I915G(pI810) || IS_I915GM(pI810) || IS_I945G(pI810) || IS_I945GM(pI810) || IS_I965G(pI810))
+#define IS_I9XX(dev) (IS_I915G(dev) || IS_I915GM(dev) || IS_I945G(dev) || \
+		      IS_I945GM(dev) || IS_I965G(dev))
 
-#define IS_MOBILE(pI810) (IS_I830(pI810) || IS_I85X(pI810) || IS_I915GM(pI810) || IS_I945GM(pI810))
+#define IS_MOBILE(dev) (IS_I830(dev) || IS_I85X(dev) || IS_I915GM(dev) || \
+			IS_I945GM(dev))
 
 #define PRIMARY_RINGBUFFER_SIZE         (128*1024)
 

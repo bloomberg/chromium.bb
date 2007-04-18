@@ -423,7 +423,13 @@ typedef struct drm_bo_driver {
 /*
  * buffer objects (drm_bo.c)
  */
-
+extern int drm_bo_init_mm(struct drm_device * dev, unsigned type,
+			  unsigned long p_offset, unsigned long p_size);
+extern int drm_buffer_object_create(struct drm_device *dev, unsigned long size,
+				    drm_bo_type_t type, uint32_t mask,
+				    uint32_t hint, uint32_t page_alignment,
+				    unsigned long buffer_start,
+				    drm_buffer_object_t ** buf_obj);
 extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
 extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
 extern int drm_bo_driver_finish(struct drm_device *dev);

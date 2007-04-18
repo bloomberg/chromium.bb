@@ -539,11 +539,13 @@ static void intel_crtc_commit (struct drm_crtc *crtc)
 
 void intel_output_prepare (struct drm_output *output)
 {
+	/* lvds has its own version of prepare see intel_lvds_prepare */
 	output->funcs->dpms(output, DPMSModeOff);
 }
 
 void intel_output_commit (struct drm_output *output)
 {
+	/* lvds has its own version of commit see intel_lvds_commit */
 	output->funcs->dpms(output, DPMSModeOn);
 }
 
