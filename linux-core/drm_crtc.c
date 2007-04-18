@@ -134,6 +134,15 @@ bool drm_crtc_in_use(struct drm_crtc *crtc)
 }
 EXPORT_SYMBOL(drm_crtc_in_use);
 
+/*
+ * Detailed mode info for a standard 640x480@60Hz monitor
+ */
+static struct drm_display_mode std_mode[] = {
+	{ DRM_MODE("640x480", DRM_MODE_TYPE_DRIVER, 25200, 640, 656,
+		   752, 800, 0, 480, 490, 492, 525, 0,
+		   V_NHSYNC | V_NVSYNC) }, /* 640x480@60Hz */
+};
+
 void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 {
 	struct drm_output *output;
@@ -175,8 +184,22 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 		drm_mode_prune_invalid(dev, &output->modes, TRUE);
 
 		if (list_empty(&output->modes)) {
+			struct drm_display_mode *newmode;
+
 			DRM_DEBUG("No valid modes found on %s\n", output->name);
-			continue;
+
+			/* Should we do this here ???
+			 * When no valid EDID modes are available we end up
+			 * here and bailed in the past, now we add a standard
+			 * 640x480@60Hz mode and carry on.
+			 */
+			newmode = drm_mode_duplicate(dev, &std_mode[0]);
+			drm_mode_probed_add(output, newmode);
+			drm_mode_list_concat(&output->probed_modes,
+					     &output->modes);
+
+			DRM_DEBUG("Adding standard 640x480 @ 60Hz to %s\n",
+								output->name);
 		}
 
 		drm_mode_sort(&output->modes);
@@ -310,13 +333,11 @@ bool drm_set_desired_modes(struct drm_device *dev)
 			}
 		}
 		/* Skip disabled crtcs */
-		if (!output)
+		if (!output) {
+			DRM_DEBUG("skipping disabled crtc\n");
 			continue;
-
-		memset(&crtc->mode, 0, sizeof(crtc->mode));
-		if (!crtc->desired_mode->crtc_hdisplay) {
-			
 		}
+
 		if (!drm_crtc_set_mode(crtc, crtc->desired_mode,
 				       crtc->desired_x, crtc->desired_y))
 			return false;
