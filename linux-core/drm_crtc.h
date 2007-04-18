@@ -361,7 +361,7 @@ struct drm_output {
 	unsigned long possible_clones;
 	bool interlace_allowed;
 	bool doublescan_allowed;
-	spinlock_t modes_lock;
+	spinlock_t modes_lock; /* protects modes and probed_modes lists */
 	struct list_head modes; /* list of modes on this output */
 	/*
 	  OptionInfoPtr options;
@@ -401,7 +401,7 @@ struct drm_mode_config_funcs {
  *
  */
 struct drm_mode_config {
-	spinlock_t config_lock;
+	spinlock_t config_lock; /* protects configuration and IDR */
 	struct idr crtc_idr; /* use this idr for all IDs, fb, crtc, output, modes - just makes life easier */
 	/* this is limited to one for now */
 	int num_fb;
@@ -439,8 +439,8 @@ extern void drm_mode_config_init(struct drm_device *dev);
 extern void drm_mode_config_cleanup(struct drm_device *dev);
 extern void drm_disable_unused_functions(struct drm_device *dev);
 
-extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
-extern void drm_crtc_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode);
+extern struct drm_display_mode *drm_mode_create(struct drm_device *dev);
+extern void drm_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode);
 extern void drm_mode_list_concat(struct list_head *head,
 				 struct list_head *new);
 extern void drm_mode_validate_size(struct drm_device *dev,

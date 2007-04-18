@@ -1,9 +1,55 @@
+/*
+ * Copyright (c) 2006-2007 Intel Corporation
+ * Copyright (c) 2007 Dave Airlie <airlied@linux.ie>
+ *
+ * DRM core CRTC related functions
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * that the name of the copyright holders not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  The copyright holders make no representations
+ * about the suitability of this software for any purpose.  It is provided "as
+ * is" without express or implied warranty.
+ *
+ * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+ * OF THIS SOFTWARE.
+ *
+ * Authors:
+ *      Keith Packard
+ *	Eric Anholt <eric@anholt.net>
+ *      Dave Airlie <airlied@linux.ie>
+ *      Jesse Barnes <jesse.barnes@intel.com>
+ */
 #include <linux/list.h>
 #include "drm.h"
 #include "drmP.h"
 #include "drm_crtc.h"
 
-int drm_mode_idr_get(struct drm_device *dev, void *ptr)
+/**
+ * drm_idr_get - allocate a new identifier
+ * @dev: DRM device
+ * @ptr: object pointer, used to generate unique ID
+ *
+ * LOCKING:
+ * Process context (either init or calling process).  Must take DRM mode_config
+ * lock around IDR allocation.
+ *
+ * Create a unique identifier based on @ptr in @dev's identifier space.  Used
+ * for tracking modes, CRTCs and outputs.
+ *
+ * RETURNS:
+ * New unique (relative to other objects in @dev) integer identifier for the
+ * object.
+ */
+int drm_idr_get(struct drm_device *dev, void *ptr)
 {
 	int new_id = 0;
 	int ret;
@@ -25,11 +71,34 @@ again:
 	return new_id;
 }
 
-void drm_mode_idr_put(struct drm_device *dev, int id)
+/**
+ * drm_idr_put - free an identifer
+ * @dev: DRM device
+ * @id: ID to free
+ *
+ * LOCKING:
+ * Caller must hold DRM mode_config lock.
+ *
+ * Free @id from @dev's unique identifier pool.
+ */
+void drm_idr_put(struct drm_device *dev, int id)
 {
 	idr_remove(&dev->mode_config.crtc_idr, id);
 }
 
+/**
+ * drm_framebuffer_create - create a new framebuffer object
+ * @dev: DRM device
+ *
+ * LOCKING:
+ * Process context (either init or calling process).  Must take DRM mode_config
+ * lock around mode_config manipulation.
+ *
+ * Creates a new framebuffer objects and adds it to @dev's DRM mode_config.
+ *
+ * RETURNS:
+ * Pointer to new framebuffer or NULL on error.
+ */
 struct drm_framebuffer *drm_framebuffer_create(drm_device_t *dev)
 {
 	struct drm_framebuffer *fb;
@@ -49,7 +118,7 @@ struct drm_framebuffer *drm_framebuffer_create(drm_device_t *dev)
 		return NULL;
 	}
 	
-	fb->id = drm_mode_idr_get(dev, fb);
+	fb->id = drm_idr_get(dev, fb);
 	fb->dev = dev;
 	spin_lock(&dev->mode_config.config_lock);
 	dev->mode_config.num_fb++;
@@ -60,21 +129,30 @@ struct drm_framebuffer *drm_framebuffer_create(drm_device_t *dev)
 }
 EXPORT_SYMBOL(drm_framebuffer_create);
 
+/**
+ * drm_framebuffer_destroy - remove a framebuffer object
+ * @fb: framebuffer to remove
+ *
+ * LOCKING:
+ * Process context (either init or calling process).  Must take DRM mode_config
+ * lock around mode_config manipulation.
+ *
+ * Scans all the CRTCs in @dev's mode_config.  If they're using @fb, removes
+ * it, setting it to NULL.
+ */
 void drm_framebuffer_destroy(struct drm_framebuffer *fb)
 {
 	drm_device_t *dev = fb->dev;
+	struct drm_crtc *crtc;
 
 	/* remove from any CRTC */
-	{
-		struct drm_crtc *crtc;
-		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-			if (crtc->fb == fb)
-				crtc->fb = NULL;
-		}
+	spin_lock(&dev->mode_config.config_lock);
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		if (crtc->fb == fb)
+			crtc->fb = NULL;
 	}
 
-	spin_lock(&dev->mode_config.config_lock);
-	drm_mode_idr_put(dev, fb->id);
+	drm_idr_put(dev, fb->id);
 	list_del(&fb->head);
 	dev->mode_config.num_fb--;
 	spin_unlock(&dev->mode_config.config_lock);
@@ -82,6 +160,20 @@ void drm_framebuffer_destroy(struct drm_framebuffer *fb)
 	kfree(fb);
 }
 
+/**
+ * drm_crtc_create - create a new CRTC object
+ * @dev: DRM device
+ * @funcs: callbacks for the new CRTC
+ *
+ * LOCKING:
+ * Process context (either init or calling process).  Must take DRM mode_config
+ * lock around mode_config manipulation.
+ *
+ * Creates a new CRTC object and adds it to @dev's mode_config structure.
+ *
+ * RETURNS:
+ * Pointer to new CRTC object or NULL on error.
+ */
 struct drm_crtc *drm_crtc_create(drm_device_t *dev,
 				 const struct drm_crtc_funcs *funcs)
 {
@@ -94,7 +186,7 @@ struct drm_crtc *drm_crtc_create(drm_device_t *dev,
 	crtc->dev = dev;
 	crtc->funcs = funcs;
 
-	crtc->id = drm_mode_idr_get(dev, crtc);
+	crtc->id = drm_idr_get(dev, crtc);
 
 	spin_lock(&dev->mode_config.config_lock);
 	list_add_tail(&crtc->head, &dev->mode_config.crtc_list);
@@ -105,6 +197,17 @@ struct drm_crtc *drm_crtc_create(drm_device_t *dev,
 }
 EXPORT_SYMBOL(drm_crtc_create);
 
+/**
+ * drm_crtc_destroy - remove a CRTC object
+ * @crtc: CRTC to remove
+ *
+ * LOCKING:
+ * Process context (either init or calling process).  Must take DRM mode_config
+ * lock around mode_config traversal.
+ *
+ * Cleanup @crtc.  Calls @crtc's cleanup function, then removes @crtc from
+ * its associated DRM device's mode_config.  Frees it afterwards.
+ */
 void drm_crtc_destroy(struct drm_crtc *crtc)
 {
 	drm_device_t *dev = crtc->dev;
@@ -112,9 +215,8 @@ void drm_crtc_destroy(struct drm_crtc *crtc)
 	if (crtc->funcs->cleanup)
 		(*crtc->funcs->cleanup)(crtc);
 
-
 	spin_lock(&dev->mode_config.config_lock);
-	drm_mode_idr_put(dev, crtc->id);
+	drm_idr_put(dev, crtc->id);
 	list_del(&crtc->head);
 	dev->mode_config.num_crtc--;
 	spin_unlock(&dev->mode_config.config_lock);
@@ -122,6 +224,18 @@ void drm_crtc_destroy(struct drm_crtc *crtc)
 }
 EXPORT_SYMBOL(drm_crtc_destroy);
 
+/**
+ * drm_crtc_in_use - check if a given CRTC is in a mode_config
+ * @crtc: CRTC to check
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Walk @crtc's DRM device's mode_config and see if it's in use.
+ *
+ * RETURNS:
+ * True if @crtc is part of the mode_config, false otherwise.
+ */
 bool drm_crtc_in_use(struct drm_crtc *crtc)
 {
 	struct drm_output *output;
@@ -143,6 +257,25 @@ static struct drm_display_mode std_mode[] = {
 		   V_NHSYNC | V_NVSYNC) }, /* 640x480@60Hz */
 };
 
+/**
+ * drm_crtc_probe_output_modes - get complete set of display modes
+ * @dev: DRM device
+ * @maxX: max width for modes
+ * @maxY: max height for modes
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Based on @dev's mode_config layout, scan all the outputs and try to detect
+ * modes on them.  Modes will first be added to the output's probed_modes
+ * list, then culled (based on validity and the @maxX, @maxY parameters) and
+ * put into the normal modes list.
+ *
+ * Intended to be used either at bootup time or when major configuration
+ * changes have occurred.
+ *
+ * FIXME: take into account monitor limits
+ */
 void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 {
 	struct drm_output *output;
@@ -186,7 +319,7 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 		if (list_empty(&output->modes)) {
 			struct drm_display_mode *stdmode;
 
-			DRM_DEBUG("No valid modes found on %s\n", output->name);
+			DRM_DEBUG("No valid modes on %s\n", output->name);
 
 			/* Should we do this here ???
 			 * When no valid EDID modes are available we end up
@@ -214,6 +347,22 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 	}
 }
 
+/**
+ * drm_crtc_set_mode - set a mode
+ * @crtc: CRTC to program
+ * @mode: mode to use
+ * @x: width of mode
+ * @y: height of mode
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Try to set @mode on @crtc.  Give @crtc and its associated outputs a chance
+ * to fixup or reject the mode prior to trying to set it.
+ *
+ * RETURNS:
+ * True if the mode was set successfully, or false otherwise.
+ */
 bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 		       int x, int y)
 {
@@ -299,7 +448,7 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	}
 	
 	/* XXX free adjustedmode */
-	drm_crtc_mode_destroy(dev, adjusted_mode);
+	drm_mode_destroy(dev, adjusted_mode);
 	ret = TRUE;
 	/* TODO */
 //	if (scrn->pScreen)
@@ -318,6 +467,20 @@ done:
 	return ret;
 }
 
+/**
+ * drm_set_desired_modes - set a good mode on every CRTC & output
+ * @dev: DRM device
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Each CRTC may have a desired mode associated with it.  This routine simply
+ * walks @dev's mode_config and sets the desired mode on every CRTC.  Intended
+ * for use at startup time.
+ *
+ * RETURNS:
+ * True if modes were set, false otherwise.
+ */
 bool drm_set_desired_modes(struct drm_device *dev)
 {
 	struct drm_crtc *crtc;
@@ -326,7 +489,8 @@ bool drm_set_desired_modes(struct drm_device *dev)
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 		output = NULL;
 
-		list_for_each_entry(list_output, &dev->mode_config.output_list, head) {
+		list_for_each_entry(list_output, &dev->mode_config.output_list,
+				    head) {
 			if (list_output->crtc == crtc) {
 				output = list_output;
 				break;
@@ -348,6 +512,16 @@ bool drm_set_desired_modes(struct drm_device *dev)
 }
 EXPORT_SYMBOL(drm_set_desired_modes);
 
+/**
+ * drm_disable_unused_functions - disable unused objects
+ * @dev: DRM device
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * If an output or CRTC isn't part of @dev's mode_config, it can be disabled
+ * by calling its dpms function, which should power it off.
+ */
 void drm_disable_unused_functions(struct drm_device *dev)
 {
 	struct drm_output *output;
@@ -369,9 +543,14 @@ void drm_disable_unused_functions(struct drm_device *dev)
  * @output: output the new mode
  * @mode: mode data
  *
+ * LOCKING:
+ * Process context (either init or calling process).  Must take @output's
+ * mode_lock around mode list manipulation.
+ * 
  * Add @mode to @output's mode list for later use.
  */
-void drm_mode_probed_add(struct drm_output *output, struct drm_display_mode *mode)
+void drm_mode_probed_add(struct drm_output *output,
+			 struct drm_display_mode *mode)
 {
 	spin_lock(&output->modes_lock);
 	list_add(&mode->head, &output->probed_modes);
@@ -384,6 +563,10 @@ EXPORT_SYMBOL(drm_mode_probed_add);
  * @output: output list to modify
  * @mode: mode to remove
  *
+ * LOCKING:
+ * Process context (either init or calling process).  Must take @output's
+ * mode_lock around mode list manipulation.
+ * 
  * Remove @mode from @output's mode list, then free it.
  */
 void drm_mode_remove(struct drm_output *output, struct drm_display_mode *mode)
@@ -395,8 +578,21 @@ void drm_mode_remove(struct drm_output *output, struct drm_display_mode *mode)
 }
 EXPORT_SYMBOL(drm_mode_remove);
 
-/*
- * Probably belongs in the DRM device structure
+/**
+ * drm_output_create - create a new output
+ * @dev: DRM device
+ * @funcs: callbacks for this output
+ * @name: user visible name of the output
+ *
+ * LOCKING:
+ * Process context (either init or calling process).  Must take @dev's
+ * mode_config lock around mode list manipulation.
+ *
+ * Creates a new drm_output structure and adds it to @dev's mode_config
+ * structure.
+ *
+ * RETURNS:
+ * Pointer to the new output or NULL on error.
  */
 struct drm_output *drm_output_create(drm_device_t *dev,
 				     const struct drm_output_funcs *funcs,
@@ -410,7 +606,7 @@ struct drm_output *drm_output_create(drm_device_t *dev,
 		
 	output->dev = dev;
 	output->funcs = funcs;
-	output->id = drm_mode_idr_get(dev, output);
+	output->id = drm_idr_get(dev, output);
 	if (name)
 		strncpy(output->name, name, DRM_OUTPUT_LEN);
 	output->name[DRM_OUTPUT_LEN - 1] = 0;
@@ -433,6 +629,18 @@ struct drm_output *drm_output_create(drm_device_t *dev,
 }
 EXPORT_SYMBOL(drm_output_create);
 
+/**
+ * drm_output_destroy - remove an output
+ * @output: output to remove
+ *
+ * LOCKING:
+ * Process context (either init or calling process).  Must take @dev's
+ * mode_config lock around mode list manipulation.  Caller must hold
+ * modes lock? (FIXME)
+ *
+ * Call @output's cleanup function, then remove the output from the DRM
+ * mode_config after freeing @output's modes.
+ */
 void drm_output_destroy(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
@@ -448,13 +656,26 @@ void drm_output_destroy(struct drm_output *output)
 		drm_mode_remove(output, mode);
 
 	spin_lock(&dev->mode_config.config_lock);
-	drm_mode_idr_put(dev, output->id);
+	drm_idr_put(dev, output->id);
 	list_del(&output->head);
 	spin_unlock(&dev->mode_config.config_lock);
 	kfree(output);
 }
 EXPORT_SYMBOL(drm_output_destroy);
 
+/**
+ * drm_output_rename - rename an output
+ * @output: output to rename
+ * @name: new user visible name
+ *
+ * LOCKING:
+ * None.
+ *
+ * Simply stuff a new name into @output's name field, based on @name.
+ *
+ * RETURNS:
+ * True if the name was changed, false otherwise.
+ */
 bool drm_output_rename(struct drm_output *output, const char *name)
 {
 	if (!name)
@@ -472,7 +693,19 @@ bool drm_output_rename(struct drm_output *output, const char *name)
 }
 EXPORT_SYMBOL(drm_output_rename);
 
-struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev)
+/**
+ * drm_mode_create - create a new display mode
+ * @dev: DRM device
+ *
+ * LOCKING:
+ * None.
+ *
+ * Create a new drm_display_mode, give it an ID, and return it.
+ *
+ * RETURNS:
+ * Pointer to new mode on success, NULL on error.
+ */
+struct drm_display_mode *drm_mode_create(struct drm_device *dev)
 {
 	struct drm_display_mode *nmode;
 
@@ -480,17 +713,37 @@ struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev)
 	if (!nmode)
 		return NULL;
 
-	nmode->mode_id = drm_mode_idr_get(dev, nmode);
+	nmode->mode_id = drm_idr_get(dev, nmode);
 	return nmode;
 }
 
-void drm_crtc_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode)
+/**
+ * drm_mode_destroy - remove a mode
+ * @dev: DRM device
+ * @mode: mode to remove
+ *
+ * LOCKING:
+ * None.
+ *
+ * Free @mode's unique identifier, then free it.
+ */
+void drm_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode)
 {
-	drm_mode_idr_put(dev, mode->mode_id);
+	drm_idr_put(dev, mode->mode_id);
 
 	kfree(mode);
 }
 
+/**
+ * drm_mode_config_init - initialize DRM mode_configuration structure
+ * @dev: DRM device
+ *
+ * LOCKING:
+ * None, should happen single threaded at init time.
+ *
+ * Initialize @dev's mode_config structure, used for tracking the graphics
+ * configuration of @dev.
+ */
 void drm_mode_config_init(drm_device_t *dev)
 {
 	spin_lock_init(&dev->mode_config.config_lock);
@@ -501,6 +754,21 @@ void drm_mode_config_init(drm_device_t *dev)
 }
 EXPORT_SYMBOL(drm_mode_config_init);
 
+/**
+ * drm_get_buffer_object - find the buffer object for a given handle
+ * @dev: DRM device
+ * @bo: pointer to caller's buffer_object pointer
+ * @handle: handle to lookup
+ *
+ * LOCKING:
+ * Must take @dev's struct_mutex to protect buffer object lookup.
+ *
+ * Given @handle, lookup the buffer object in @dev and put it in the caller's
+ * @bo pointer.
+ *
+ * RETURNS:
+ * Zero on success, -EINVAL if the handle couldn't be found.
+ */
 static int drm_get_buffer_object(drm_device_t *dev, struct drm_buffer_object **bo, unsigned long handle)
 {
 	drm_user_object_t *uo;
@@ -530,6 +798,18 @@ out_err:
 	return ret;
 }
 
+/**
+ * drm_setup_output - setup an output structure
+ * @output: output to setup
+ * @crtc: CRTC this output belongs to
+ * @mode: desired mode for this output
+ *
+ * LOCKING:
+ * None.
+ *
+ * Setup @output with the parameters given, with its initial coordinates set
+ * at the origin.
+ */
 static void drm_setup_output(struct drm_output *output, struct drm_crtc *crtc,
 			     struct drm_display_mode *mode)
 {
@@ -542,12 +822,19 @@ static void drm_setup_output(struct drm_output *output, struct drm_crtc *crtc,
 /**
  * drm_initial_config - setup a sane initial output configuration
  * @dev: DRM device
- * @fb: framebuffer backing for new setup
  * @can_grow: this configuration is growable
+ *
+ * LOCKING:
+ * Must take various locks. (FIXME)
  *
  * Scan the CRTCs and outputs and try to put together an initial setup.
  * At the moment, this is a cloned configuration across all heads with
- * @fb as the backing store.
+ * a new framebuffer object as the backing store.
+ *
+ * FIXME: return value and better initial config.
+ *
+ * RETURNS:
+ * Zero if everything went ok, nonzero otherwise.
  */
 bool drm_initial_config(drm_device_t *dev, bool can_grow)
 {
@@ -652,6 +939,18 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 }
 EXPORT_SYMBOL(drm_initial_config);
 
+/**
+ * drm_mode_config_cleanup - free up DRM mode_config info
+ * @dev: DRM device
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Free up all the outputs and CRTCs associated with this DRM device, then
+ * free up the framebuffers and associated buffer objects.
+ *
+ * FIXME: cleanup any dangling user buffer objects too
+ */
 void drm_mode_config_cleanup(drm_device_t *dev)
 {
 	struct drm_output *output, *ot;
@@ -678,6 +977,23 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 }
 EXPORT_SYMBOL(drm_mode_config_cleanup);
 
+/**
+ * drm_crtc_set_config - set a new config from userspace
+ * @crtc: CRTC to setup
+ * @crtc_info: user provided configuration
+ * @new_mode: new mode to set
+ * @output_set: set of outputs for the new config
+ * @fb: new framebuffer
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Setup a new configuration, provided by the user in @crtc_info, and enable
+ * it.
+ *
+ * RETURNS:
+ * Zero. (FIXME)
+ */
 int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, struct drm_display_mode *new_mode, struct drm_output **output_set, struct drm_framebuffer *fb)
 {
 	drm_device_t *dev = crtc->dev;
@@ -743,6 +1059,17 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	return 0;
 }
 
+/**
+ * drm_crtc_convert_to_umode - convert a drm_display_mode into a modeinfo
+ * @out: drm_mode_modeinfo struct to return to the user
+ * @in: drm_display_mode to use
+ *
+ * LOCKING:
+ * None.
+ *
+ * Convert a drm_display_mode into a drm_mode_modeinfo structure to return to
+ * the user.
+ */
 void drm_crtc_convert_to_umode(struct drm_mode_modeinfo *out, struct drm_display_mode *in)
 {
 
@@ -765,7 +1092,24 @@ void drm_crtc_convert_to_umode(struct drm_mode_modeinfo *out, struct drm_display
 }
 
 	
-/* IOCTL code from userspace */
+/**
+ * drm_mode_getresources - get graphics configuration
+ * @inode: inode from the ioctl
+ * @filp: file * from the ioctl
+ * @cmd: cmd from ioctl
+ * @arg: arg from ioctl
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Construct a set of configuration description structures and return
+ * them to the user, including CRTC, output and framebuffer configuration.
+ *
+ * Called by the user via ioctl.
+ *
+ * RETURNS:
+ * Zero on success, errno on failure.
+ */
 int drm_mode_getresources(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg)
 {
@@ -882,6 +1226,23 @@ done:
 	return retcode;
 }
 
+/**
+ * drm_mode_getcrtc - get CRTC configuration
+ * @inode: inode from the ioctl
+ * @filp: file * from the ioctl
+ * @cmd: cmd from ioctl
+ * @arg: arg from ioctl
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Construct a CRTC configuration structure to return to the user.
+ *
+ * Called by the user via ioctl.
+ *
+ * RETURNS:
+ * Zero on success, errno on failure.
+ */
 int drm_mode_getcrtc(struct inode *inode, struct file *filp,
 		     unsigned int cmd, unsigned long arg)
 {
@@ -923,6 +1284,23 @@ int drm_mode_getcrtc(struct inode *inode, struct file *filp,
 	return retcode;
 }
 
+/**
+ * drm_mode_getoutput - get output configuration
+ * @inode: inode from the ioctl
+ * @filp: file * from the ioctl
+ * @cmd: cmd from ioctl
+ * @arg: arg from ioctl
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Construct a output configuration structure to return to the user.
+ *
+ * Called by the user via ioctl.
+ *
+ * RETURNS:
+ * Zero on success, errno on failure.
+ */
 int drm_mode_getoutput(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg)
 {
@@ -977,7 +1355,23 @@ done:
 	return retcode;
 }
 
-
+/**
+ * drm_mode_setcrtc - set CRTC configuration
+ * @inode: inode from the ioctl
+ * @filp: file * from the ioctl
+ * @cmd: cmd from ioctl
+ * @arg: arg from ioctl
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Build a new CRTC configuration based on user request.
+ *
+ * Called by the user via ioctl.
+ *
+ * RETURNS:
+ * Zero on success, errno on failure.
+ */
 int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 		     unsigned int cmd, unsigned long arg)
 {
@@ -1061,7 +1455,23 @@ int drm_mode_setcrtc(struct inode *inode, struct file *filp,
 	return retcode;
 }
 
-/* Add framebuffer ioctl */
+/**
+ * drm_mode_addfb - add an FB to the graphics configuration
+ * @inode: inode from the ioctl
+ * @filp: file * from the ioctl
+ * @cmd: cmd from ioctl
+ * @arg: arg from ioctl
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Add a new FB to the specified CRTC, given a user request.
+ *
+ * Called by the user via ioctl.
+ *
+ * RETURNS:
+ * Zero on success, errno on failure.
+ */
 int drm_mode_addfb(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
 {
@@ -1123,6 +1533,23 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+/**
+ * drm_mode_rmfb - remove an FB from the configuration
+ * @inode: inode from the ioctl
+ * @filp: file * from the ioctl
+ * @cmd: cmd from ioctl
+ * @arg: arg from ioctl
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Remove the FB specified by the user.
+ *
+ * Called by the user via ioctl.
+ *
+ * RETURNS:
+ * Zero on success, errno on failure.
+ */
 int drm_mode_rmfb(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
 {
@@ -1149,6 +1576,23 @@ int drm_mode_rmfb(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+/**
+ * drm_mode_getfb - get FB info
+ * @inode: inode from the ioctl
+ * @filp: file * from the ioctl
+ * @cmd: cmd from ioctl
+ * @arg: arg from ioctl
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Lookup the FB given its ID and return info about it.
+ *
+ * Called by the user via ioctl.
+ *
+ * RETURNS:
+ * Zero on success, errno on failure.
+ */
 int drm_mode_getfb(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
 {
@@ -1180,6 +1624,20 @@ int drm_mode_getfb(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+/**
+ * drm_fb_release - remove and free the FBs on this file
+ * @filp: file * from the ioctl
+ *
+ * LOCKING:
+ * Caller? (FIXME)
+ *
+ * Destroy all the FBs associated with @filp.
+ *
+ * Called by the user via ioctl.
+ *
+ * RETURNS:
+ * Zero on success, errno on failure.
+ */
 void drm_fb_release(struct file *filp)
 {
 	drm_file_t *priv = filp->private_data;

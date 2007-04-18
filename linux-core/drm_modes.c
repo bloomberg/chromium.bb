@@ -152,7 +152,7 @@ struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev,
 	struct drm_display_mode *nmode;
 	int new_id;
 
-	nmode = drm_crtc_mode_create(dev);
+	nmode = drm_mode_create(dev);
 	if (!nmode)
 		return NULL;
 
@@ -184,6 +184,7 @@ bool drm_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mod
 }
 EXPORT_SYMBOL(drm_mode_equal);
 
+/* caller must hold modes lock */
 void drm_mode_validate_size(struct drm_device *dev,
 			    struct list_head *mode_list,
 			    int maxX, int maxY, int maxPitch)
@@ -224,6 +225,7 @@ void drm_mode_validate_clocks(struct drm_device *dev,
 }
 EXPORT_SYMBOL(drm_mode_validate_clocks);
 
+/* caller must hold modes lock */
 void drm_mode_prune_invalid(struct drm_device *dev,
 			    struct list_head *mode_list, bool verbose)
 {

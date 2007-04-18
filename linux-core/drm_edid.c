@@ -66,7 +66,7 @@ struct drm_display_mode *drm_mode_std(struct drm_device *dev,
 	struct drm_display_mode *mode;
 	int hsize = t->hsize * 8 + 248, vsize;
 
-	mode = drm_crtc_mode_create(dev);
+	mode = drm_mode_create(dev);
 	if (!mode)
 		return NULL;
 
@@ -109,7 +109,7 @@ struct drm_display_mode *drm_mode_detailed(drm_device_t *dev,
 		return NULL;
 	}
 
-	mode = drm_crtc_mode_create(dev);
+	mode = drm_mode_create(dev);
 	if (!mode)
 		return NULL;
 
