@@ -194,7 +194,7 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 			 * 640x480@60Hz mode and carry on.
 			 */
 			stdmode = drm_mode_duplicate(dev, &std_mode[0]);
-			drm_mode_probed_add(output, newmode);
+			drm_mode_probed_add(output, stdmode);
 			drm_mode_list_concat(&output->probed_modes,
 					     &output->modes);
 			drm_crtc_mode_destroy(dev, stdmode);
