@@ -501,6 +501,5 @@ out:
 
 failed:
         DRM_DEBUG("No LVDS modes found, disabling.\n");
-        //        intel_lvds_destroy(output);
-        //	drm_output_destroy(output);
+	drm_output_destroy(output); /* calls intel_lvds_destroy above */
 }
