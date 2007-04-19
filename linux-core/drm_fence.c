@@ -295,17 +295,21 @@ static int drm_fence_lazy_wait(drm_device_t *dev,
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_class_manager_t *fc = &fm->class[fence->class];
-
+	int signaled;
 	unsigned long _end = jiffies + 3*DRM_HZ;
 	int ret = 0;
 
 	do {
 		DRM_WAIT_ON(ret, fc->fence_queue, 3 * DRM_HZ,
-			    fence_signaled(dev, fence, mask, 1));
+			    (signaled = fence_signaled(dev, fence, mask, 1)));
+		if (signaled)
+			return 0;
 		if (time_after_eq(jiffies, _end))
 			break;
 	} while (ret == -EINTR && ignore_signals);
-	if (time_after_eq(jiffies, _end) && (ret != 0))
+	if (fence_signaled(dev, fence, mask, 0))
+		return 0;
+	if (time_after_eq(jiffies, _end))
 		ret = -EBUSY;
 	if (ret) {
 		if (ret == -EBUSY) {
