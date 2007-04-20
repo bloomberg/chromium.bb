@@ -79,7 +79,7 @@ struct drm_display_mode *drm_mode_std(struct drm_device *dev,
 	else
 		vsize = (hsize * 9) / 16;
 
-	snprintf(mode->name, DRM_DISPLAY_MODE_LEN, "%dx%d", hsize, vsize);
+	drm_mode_set_name(mode);
 
 	return mode;
 }
@@ -132,8 +132,7 @@ struct drm_display_mode *drm_mode_detailed(drm_device_t *dev,
 		 pt->vsync_pulse_width_lo);
 	mode->vtotal = mode->vdisplay + ((pt->vblank_hi << 8) | pt->vblank_lo);
 
-	snprintf(mode->name, DRM_DISPLAY_MODE_LEN, "%dx%d", mode->hdisplay,
-		 mode->vdisplay);
+	drm_mode_set_name(mode);
 
 	if (pt->interlaced)
 		mode->flags |= V_INTERLACE;

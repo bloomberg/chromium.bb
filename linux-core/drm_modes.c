@@ -45,6 +45,13 @@ void drm_mode_debug_printmodeline(struct drm_device *dev,
 }
 EXPORT_SYMBOL(drm_mode_debug_printmodeline);
 
+void drm_mode_set_name(struct drm_display_mode *mode)
+{
+	snprintf(mode->name, DRM_DISPLAY_MODE_LEN, "%dx%d", mode->hdisplay,
+		 mode->vdisplay);
+}
+EXPORT_SYMBOL(drm_mode_set_name);
+
 void drm_mode_list_concat(struct list_head *head, struct list_head *new)
 {
 

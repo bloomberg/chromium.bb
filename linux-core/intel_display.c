@@ -1057,9 +1057,8 @@ struct drm_display_mode *intel_crtc_mode_get(drm_device_t *dev,
 	mode->vtotal = ((vtot & 0xffff0000) >> 16) + 1;
 	mode->vsync_start = (vsync & 0xffff) + 1;
 	mode->vsync_end = ((vsync & 0xffff0000) >> 16) + 1;
-	/* FIXME: pull name generation into a common routine */
-	snprintf(mode->name, DRM_DISPLAY_MODE_LEN, "%dx%d", mode->hdisplay,
-		 mode->vdisplay);
+
+	drm_mode_set_name(mode);
 	drm_mode_set_crtcinfo(mode, 0);
 
 	return mode;

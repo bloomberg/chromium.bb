@@ -437,6 +437,7 @@ extern void drm_mode_debug_printmodeline(struct drm_device *dev,
 					 struct drm_display_mode *mode);
 extern void drm_mode_config_init(struct drm_device *dev);
 extern void drm_mode_config_cleanup(struct drm_device *dev);
+extern void drm_mode_set_name(struct drm_display_mode *mode);
 extern void drm_disable_unused_functions(struct drm_device *dev);
 
 extern struct drm_display_mode *drm_mode_create(struct drm_device *dev);
