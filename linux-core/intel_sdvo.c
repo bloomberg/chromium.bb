@@ -1054,6 +1054,8 @@ void intel_sdvo_init(drm_device_t *dev, int output_device)
 		DRM_DEBUG("%s: No active RGB or TMDS outputs (0x%02x%02x)\n",
 			  SDVO_NAME(sdvo_priv),
 			  bytes[0], bytes[1]);
+		drm_output_destroy(output);
+		return;
 	}
 	strcpy (name, name_prefix);
 	strcat (name, name_suffix);
