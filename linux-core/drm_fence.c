@@ -499,7 +499,7 @@ void drm_fence_manager_init(drm_device_t * dev)
 	int i;
 
 
-	fm->lock = RW_LOCK_UNLOCKED;
+	rwlock_init(&fm->lock);
 	write_lock(&fm->lock);
 	fm->initialized = 0;
 	if (!fed)
