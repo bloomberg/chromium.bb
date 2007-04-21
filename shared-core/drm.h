@@ -893,6 +893,7 @@ typedef union drm_mm_init_arg{
 /*
  * Drm mode setting
  */
+#define DRM_DISPLAY_INFO_LEN 32
 #define DRM_OUTPUT_NAME_LEN 32
 #define DRM_DISPLAY_MODE_LEN 32
 

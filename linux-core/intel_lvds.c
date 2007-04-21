@@ -284,7 +284,6 @@ static int intel_lvds_get_modes(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	struct edid *edid_info;
 	int ret = 0;
 
 	ret = intel_ddc_get_modes(output);
@@ -294,23 +293,19 @@ static int intel_lvds_get_modes(struct drm_output *output)
 
 	/* Didn't get an EDID */
 	if (!output->monitor_info) {
-		struct detailed_data_monitor_range *edid_range;
-		edid_info = kzalloc(sizeof(*output->monitor_info), GFP_KERNEL);
-		if (!edid_info)
+		struct drm_display_info *dspinfo;
+		dspinfo = kzalloc(sizeof(*output->monitor_info), GFP_KERNEL);
+		if (!dspinfo)
 			goto out;
-
-		edid_info->detailed_timings[0].data.other_data.type =
-			EDID_DETAIL_MONITOR_RANGE;
-		edid_range = &edid_info->detailed_timings[0].data.other_data.data.range;
 
 		/* Set wide sync ranges so we get all modes
 		 * handed to valid_mode for checking
 		 */
-		edid_range->min_vfreq = 0;
-		edid_range->max_vfreq = 200;
-		edid_range->min_hfreq_khz = 0;
-		edid_range->max_hfreq_khz = 200;
-		output->monitor_info = edid_info;
+		dspinfo->min_vfreq = 0;
+		dspinfo->max_vfreq = 200;
+		dspinfo->min_hfreq = 0;
+		dspinfo->max_hfreq = 200;
+		output->monitor_info = dspinfo;
 	}
 
 out:
