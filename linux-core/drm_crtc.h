@@ -218,7 +218,7 @@ struct drm_display_info {
 
 	/* Preferred mode (if any) */
 	struct drm_display_mode *preferred_mode;
-	struct edid *raw_edid; /* if any */
+	char *raw_edid; /* if any */
 };
 
 struct drm_framebuffer {
