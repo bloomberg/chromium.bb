@@ -33,6 +33,16 @@
 #include "drm.h"
 #include "drm_crtc.h"
 
+/**
+ * drm_mode_debug_printmodeline - debug print a mode
+ * @dev: DRM device
+ * @mode: mode to print
+ *
+ * LOCKING:
+ * None.
+ *
+ * Describe @mode using DRM_DEBUG.
+ */
 void drm_mode_debug_printmodeline(struct drm_device *dev,
 				  struct drm_display_mode *mode)
 {
@@ -45,6 +55,15 @@ void drm_mode_debug_printmodeline(struct drm_device *dev,
 }
 EXPORT_SYMBOL(drm_mode_debug_printmodeline);
 
+/**
+ * drm_mode_set_name - set the name on a mode
+ * @mode: name will be set in this mode
+ *
+ * LOCKING:
+ * None.
+ *
+ * Set the name of @mode to a standard format.
+ */
 void drm_mode_set_name(struct drm_display_mode *mode)
 {
 	snprintf(mode->name, DRM_DISPLAY_MODE_LEN, "%dx%d", mode->hdisplay,
@@ -52,6 +71,16 @@ void drm_mode_set_name(struct drm_display_mode *mode)
 }
 EXPORT_SYMBOL(drm_mode_set_name);
 
+/**
+ * drm_mode_list_concat - move modes from one list to another
+ * @head: source list
+ * @new: dst list
+ *
+ * LOCKING:
+ * Caller must ensure both lists are locked.
+ *
+ * Move all the modes from @head to @new.
+ */
 void drm_mode_list_concat(struct list_head *head, struct list_head *new)
 {
 
@@ -62,6 +91,20 @@ void drm_mode_list_concat(struct list_head *head, struct list_head *new)
 	}
 }
 
+/**
+ * drm_mode_width - get the width of a mode
+ * @mode: mode
+ *
+ * LOCKING:
+ * None.
+ *
+ * Return @mode's width (hdisplay) value.
+ *
+ * FIXME: is this needed?
+ *
+ * RETURNS:
+ * @mode->hdisplay
+ */
 int drm_mode_width(struct drm_display_mode *mode)
 {
 	return mode->hdisplay;
@@ -69,12 +112,40 @@ int drm_mode_width(struct drm_display_mode *mode)
 }
 EXPORT_SYMBOL(drm_mode_width);
 
+/**
+ * drm_mode_height - get the height of a mode
+ * @mode: mode
+ *
+ * LOCKING:
+ * None.
+ *
+ * Return @mode's height (vdisplay) value.
+ *
+ * FIXME: is this needed?
+ *
+ * RETURNS:
+ * @mode->vdisplay
+ */
 int drm_mode_height(struct drm_display_mode *mode)
 {
 	return mode->vdisplay;
 }
 EXPORT_SYMBOL(drm_mode_height);
 
+/**
+ * drm_mode_vrefresh - get the vrefresh of a mode
+ * @mode: mode
+ *
+ * LOCKING:
+ * None.
+ *
+ * Return @mode's vrefresh rate or calculate it if necessary.
+ *
+ * FIXME: why is this needed?
+ *
+ * RETURNS:
+ * Vertical refresh rate of @mode.
+ */
 int drm_mode_vrefresh(struct drm_display_mode *mode)
 {
 	int refresh = 0;
@@ -94,7 +165,16 @@ int drm_mode_vrefresh(struct drm_display_mode *mode)
 }
 EXPORT_SYMBOL(drm_mode_vrefresh);
 	
-
+/**
+ * drm_mode_set_crtcinfo - set CRTC modesetting parameters
+ * @p: mode
+ * @adjust_flags: unused? (FIXME)
+ *
+ * LOCKING:
+ * None.
+ *
+ * Setup the CRTC modesetting parameters for @p, adjusting if necessary.
+ */
 void drm_mode_set_crtcinfo(struct drm_display_mode *p, int adjust_flags)
 {
 	if ((p == NULL) || ((p->type & DRM_MODE_TYPE_CRTC_C) == DRM_MODE_TYPE_BUILTIN))
@@ -150,6 +230,9 @@ EXPORT_SYMBOL(drm_mode_set_crtcinfo);
  * drm_mode_duplicate - allocate and duplicate an existing mode
  * @m: mode to duplicate
  *
+ * LOCKING:
+ * None.
+ *
  * Just allocate a new mode, copy the existing mode into it, and return
  * a pointer to it.  Used to create new instances of established modes.
  */
@@ -171,6 +254,19 @@ struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev,
 }
 EXPORT_SYMBOL(drm_mode_duplicate);
 
+/**
+ * drm_mode_equal - test modes for equality
+ * @mode1: first mode
+ * @mode2: second mode
+ *
+ * LOCKING:
+ * None.
+ *
+ * Check to see if @mode1 and @mode2 are equivalent.
+ *
+ * RETURNS:
+ * True if the modes are equal, false otherwise.
+ */
 bool drm_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mode2)
 {
 	if (mode1->clock == mode2->clock &&
@@ -191,7 +287,21 @@ bool drm_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mod
 }
 EXPORT_SYMBOL(drm_mode_equal);
 
-/* caller must hold modes lock */
+/**
+ * drm_mode_validate_size - make sure modes adhere to size constraints
+ * @dev: DRM device
+ * @mode_list: list of modes to check
+ * @maxX: maximum width
+ * @maxY: maximum height
+ * @maxPitch: max pitch
+ *
+ * LOCKING:
+ * Caller must hold a lock protecting @mode_list.
+ *
+ * The DRM device (@dev) has size and pitch limits.  Here we validate the
+ * modes we probed for @dev against those limits and set their status as
+ * necessary.
+ */
 void drm_mode_validate_size(struct drm_device *dev,
 			    struct list_head *mode_list,
 			    int maxX, int maxY, int maxPitch)
@@ -211,6 +321,22 @@ void drm_mode_validate_size(struct drm_device *dev,
 }
 EXPORT_SYMBOL(drm_mode_validate_size);
 
+/**
+ * drm_mode_validate_clocks - validate modes against clock limits
+ * @dev: DRM device
+ * @mode_list: list of modes to check
+ * @min: minimum clock rate array
+ * @max: maximum clock rate array
+ * @n_ranges: number of clock ranges (size of arrays)
+ *
+ * LOCKING:
+ * Caller must hold a lock protecting @mode_list.
+ *
+ * Some code may need to check a mode list against the clock limits of the
+ * device in question.  This function walks the mode list, testing to make
+ * sure each mode falls within a given range (defined by @min and @max
+ * arrays) and sets @mode->status as needed.
+ */
 void drm_mode_validate_clocks(struct drm_device *dev,
 			      struct list_head *mode_list,
 			      int *min, int *max, int n_ranges)
@@ -232,7 +358,19 @@ void drm_mode_validate_clocks(struct drm_device *dev,
 }
 EXPORT_SYMBOL(drm_mode_validate_clocks);
 
-/* caller must hold modes lock */
+/**
+ * drm_mode_prune_invalid - remove invalid modes from mode list
+ * @dev: DRM device
+ * @mode_list: list of modes to check
+ * @verbose: be verbose about it
+ *
+ * LOCKING:
+ * Caller must hold a lock protecting @mode_list.
+ *
+ * Once mode list generation is complete, a caller can use this routine to
+ * remove invalid modes from a mode list.  If any of the modes have a
+ * status other than %MODE_OK, they are removed from @mode_list and freed.
+ */
 void drm_mode_prune_invalid(struct drm_device *dev,
 			    struct list_head *mode_list, bool verbose)
 {
@@ -248,6 +386,21 @@ void drm_mode_prune_invalid(struct drm_device *dev,
 	}
 }
 
+/**
+ * drm_mode_compare - compare modes for favorability
+ * @lh_a: list_head for first mode
+ * @lh_b: list_head for second mode
+ *
+ * LOCKING:
+ * None.
+ *
+ * Compare two modes, given by @lh_a and @lh_b, returning a value indicating
+ * which is better.
+ *
+ * RETURNS:
+ * Negative if @lh_a is better than @lh_b, zero if they're equivalent, or
+ * positive if @lh_b is better than @lh_a.
+ */
 static int drm_mode_compare(struct list_head *lh_a, struct list_head *lh_b)
 {
 	struct drm_display_mode *a = list_entry(lh_a, struct drm_display_mode, head);
@@ -265,6 +418,7 @@ static int drm_mode_compare(struct list_head *lh_a, struct list_head *lh_b)
 	return diff;
 }
 
+/* FIXME: what we don't have a list sort function? */
 /* list sort from Mark J Roberts (mjr@znex.org) */
 void list_sort(struct list_head *head, int (*cmp)(struct list_head *a, struct list_head *b))
 {
@@ -342,6 +496,15 @@ void list_sort(struct list_head *head, int (*cmp)(struct list_head *a, struct li
 	list->prev = head;
 }
 
+/**
+ * drm_mode_sort - sort mode list
+ * @mode_list: list to sort
+ *
+ * LOCKING:
+ * Caller must hold a lock protecting @mode_list.
+ *
+ * Sort @mode_list by favorability, putting good modes first.
+ */
 void drm_mode_sort(struct list_head *mode_list)
 {
 	list_sort(mode_list, drm_mode_compare);
