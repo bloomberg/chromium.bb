@@ -47,7 +47,7 @@ void drm_mode_debug_printmodeline(struct drm_device *dev,
 				  struct drm_display_mode *mode)
 {
 	DRM_DEBUG("Modeline %d:\"%s\" %d %d %d %d %d %d %d %d %d %d\n",
-		  mode->mode_id, mode->name, mode->vrefresh / 1000, mode->clock,
+		  mode->mode_id, mode->name, mode->vrefresh, mode->clock,
 		  mode->hdisplay, mode->hsync_start,
 		  mode->hsync_end, mode->htotal,
 		  mode->vdisplay, mode->vsync_start,
@@ -144,16 +144,24 @@ EXPORT_SYMBOL(drm_mode_height);
  * FIXME: why is this needed?
  *
  * RETURNS:
- * Vertical refresh rate of @mode.
+ * Vertical refresh rate of @mode x 1000. For precision reasons.
  */
 int drm_mode_vrefresh(struct drm_display_mode *mode)
 {
 	int refresh = 0;
+	unsigned int calc_val;
 
 	if (mode->vrefresh > 0)
 		refresh = mode->vrefresh;
 	else if (mode->htotal > 0 && mode->vtotal > 0) {
-		refresh = ((mode->clock * 1000) * 1000) / mode->htotal / mode->vtotal;
+		/* work out vrefresh the value will be x1000 */
+		calc_val = (mode->clock * 1000);
+
+		calc_val /= mode->htotal;
+		calc_val *= 1000;
+		calc_val /= mode->vtotal;
+
+		refresh = calc_val;
 		if (mode->flags & V_INTERLACE)
 			refresh *= 2;
 		if (mode->flags & V_DBLSCAN)

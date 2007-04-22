@@ -905,6 +905,8 @@ struct drm_mode_modeinfo {
 	unsigned short hdisplay, hsync_start, hsync_end, htotal, hskew;
 	unsigned short vdisplay, vsync_start, vsync_end, vtotal, vscan;
 
+	unsigned int vrefresh; /* vertical refresh * 1000 */
+
 	unsigned int flags;
 
 	char name[DRM_DISPLAY_MODE_LEN];

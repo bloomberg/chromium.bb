@@ -1085,7 +1085,7 @@ void drm_crtc_convert_to_umode(struct drm_mode_modeinfo *out, struct drm_display
 	out->vsync_end = in->vsync_end;
 	out->vtotal = in->vtotal;
 	out->vscan = in->vscan;
-	
+	out->vrefresh = in->vrefresh;
 	out->flags = in->flags;
 	strncpy(out->name, in->name, DRM_DISPLAY_MODE_LEN);
 	out->name[DRM_DISPLAY_MODE_LEN-1] = 0;
