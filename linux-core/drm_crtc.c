@@ -286,8 +286,9 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 
+		/* set all modes to the unverified state */
 		list_for_each_entry_safe(mode, t, &output->modes, head)
-			drm_mode_remove(output, mode);
+			mode->status = MODE_UNVERIFIED;
 		
 		output->status = (*output->funcs->detect)(output);
 
@@ -300,9 +301,7 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 		ret = (*output->funcs->get_modes)(output);
 
 		if (ret) {
-			/* move the modes over to the main mode list */
-			drm_mode_list_concat(&output->probed_modes,
-					     &output->modes);
+			drm_mode_output_list_update(output);
 		}
 
 		if (maxX && maxY)

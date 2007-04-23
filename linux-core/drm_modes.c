@@ -517,3 +517,42 @@ void drm_mode_sort(struct list_head *mode_list)
 {
 	list_sort(mode_list, drm_mode_compare);
 }
+
+
+/**
+ * drm_mode_output_list_update - update the mode list for the output
+ * @output: the output to update
+ *
+ * LOCKING:
+ * Caller must hold a lock protecting @mode_list.
+ *
+ * This moves the modes from the @output probed_modes list
+ * to the actual mode list. It compares the probed mode against the current
+ * list and only adds different modes. All modes unverified after this point
+ * will be removed by the prune invalid modes.
+ */
+void drm_mode_output_list_update(struct drm_output *output)
+{
+	struct drm_display_mode *mode, *t;
+	struct drm_display_mode *pmode, *pt;
+	int found_it;
+	list_for_each_entry_safe(pmode, pt, &output->probed_modes,
+				 head) {
+		found_it = 0;
+		/* go through current modes checking for the new probed mode */
+		list_for_each_entry(mode, &output->modes, head) {
+			if (drm_mode_equal(pmode, mode)) {
+				found_it = 1;
+				/* if equal delete the probed mode */
+				mode->status = pmode->status;
+				list_del(&pmode->head);
+				kfree(pmode);
+				break;
+			}
+		}
+
+		if (!found_it) {
+			list_move_tail(&pmode->head, &output->modes);
+		}
+	}
+}
