@@ -615,7 +615,8 @@ int PDBSourceLineWriter::GetFunctionStackParamSize(IDiaSymbol *function) {
       goto next_child;
     }
 
-    if (FAILED(child->get_type(&child_type))) {
+    // IDiaSymbol::get_type can succeed but still pass back a NULL value.
+    if (FAILED(child->get_type(&child_type)) || !child_type) {
       goto next_child;
     }
 
