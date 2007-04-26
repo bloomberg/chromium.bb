@@ -334,6 +334,24 @@ static bool intel_find_best_PLL(struct drm_crtc *crtc, int target,
 }
 
 void
+intel_set_vblank(drm_device_t *dev)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_crtc *crtc;
+	struct intel_crtc *intel_crtc;
+	int vbl_pipe = 0;
+
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		intel_crtc = crtc->driver_private;
+
+		if (crtc->enabled)
+			vbl_pipe |= (1<<intel_crtc->pipe);
+	}
+
+	dev_priv->vblank_pipe = vbl_pipe;
+	i915_enable_interrupt(dev);
+}
+void
 intel_wait_for_vblank(drm_device_t *dev)
 {
 	/* Wait for 20ms, i.e. one cycle at 50hz. */
@@ -910,10 +928,8 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	/* Flush the plane changes */
 	intel_pipe_set_base(crtc, x, y);
 	
-#ifdef XF86DRI // TODO
-//   I830DRISetVBlankInterrupt (pScrn, TRUE);
-#endif
-	
+	intel_set_vblank(dev);
+
 	intel_wait_for_vblank(dev);    
 }
 

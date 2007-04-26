@@ -237,6 +237,7 @@ extern int i915_vblank_pipe_get(DRM_IOCTL_ARGS);
 extern int i915_emit_irq(drm_device_t * dev);
 extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
 extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
+extern void i915_enable_interrupt (drm_device_t *dev);
 extern int i915_vblank_swap(DRM_IOCTL_ARGS);
 
 /* i915_mem.c */

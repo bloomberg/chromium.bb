@@ -489,7 +489,7 @@ int i915_irq_wait(DRM_IOCTL_ARGS)
 	return i915_wait_irq(dev, irqwait.irq_seq);
 }
 
-static void i915_enable_interrupt (drm_device_t *dev)
+void i915_enable_interrupt (drm_device_t *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	
