@@ -739,7 +739,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	unsigned long bus_base;
 	unsigned long bus_offset;
 	unsigned long bus_size;
-	int ret = NOPFN_REFAULT;
+	unsigned long ret = NOPFN_REFAULT;
 
 	if (address > vma->vm_end)
 		return NOPFN_SIGBUS;
