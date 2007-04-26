@@ -516,8 +516,7 @@ static int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 		return -EINVAL;
 	}
 
-	if (!capable(CAP_SYS_ADMIN) &&
-	    (dma->flags & _DRM_DMA_USE_PCI_RO)) {
+	if (!capable(CAP_SYS_ADMIN) && (dma->flags & _DRM_DMA_USE_PCI_RO)) {
 		vma->vm_flags &= ~(VM_WRITE | VM_MAYWRITE);
 #if defined(__i386__) || defined(__x86_64__)
 		pgprot_val(vma->vm_page_prot) &= ~_PAGE_RW;
