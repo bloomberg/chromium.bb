@@ -47,7 +47,7 @@ static struct {
 
 static inline size_t drm_size_align(size_t size) {
 
-	register size_t tmpSize = 4;
+	size_t tmpSize = 4;
 	if (size > PAGE_SIZE)
 		return PAGE_ALIGN(size);
 
