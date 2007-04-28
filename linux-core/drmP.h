@@ -1128,6 +1128,8 @@ extern drm_head_t **drm_heads;
 extern struct drm_sysfs_class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
 
+extern drm_local_map_t *drm_getsarea(struct drm_device *dev);
+
 				/* Proc support (drm_proc.h) */
 extern int drm_proc_init(drm_device_t * dev,
 			 int minor,
