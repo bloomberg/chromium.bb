@@ -87,6 +87,7 @@ struct drm_display_mode {
 	struct list_head head;
 	char name[DRM_DISPLAY_MODE_LEN];
 	int mode_id;
+	int output_count;
 	enum drm_mode_status status;
 	int type;
 
@@ -382,6 +383,7 @@ struct drm_output_funcs {
 	void (*cleanup)(struct drm_output *output);
 };
 
+#define DRM_OUTPUT_MAX_UMODES 16
 #define DRM_OUTPUT_LEN 32
 /**
  * drm_output - central DRM output control structure
@@ -417,6 +419,7 @@ struct drm_output {
 	bool doublescan_allowed;
 	spinlock_t modes_lock; /* protects modes and probed_modes lists */
 	struct list_head modes; /* list of modes on this output */
+
 	/*
 	  OptionInfoPtr options;
 	  XF86ConfMonitorPtr conf_monitor;
@@ -434,7 +437,8 @@ struct drm_output {
 	char name[DRM_OUTPUT_LEN];
 	const struct drm_output_funcs *funcs;
 	void *driver_private;
-	/* RROutputPtr randr_output? */
+
+	u32 user_mode_ids[DRM_OUTPUT_MAX_UMODES];
 };
 
 /**
@@ -467,6 +471,7 @@ struct drm_mode_config {
 	int num_crtc;
 	struct list_head crtc_list;
 
+	struct list_head usermode_list;
 	int min_width, min_height;
 	int max_width, max_height;
 	/* DamagePtr rotationDamage? */
@@ -480,6 +485,7 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 				     const char *name);
 extern void drm_output_destroy(struct drm_output *output);
 extern bool drm_output_rename(struct drm_output *output, const char *name);
+extern void drm_fb_release(struct file *filp);
 
 extern int drm_add_edid_modes(struct drm_output *output,
 			struct i2c_adapter *adapter);
@@ -507,6 +513,8 @@ extern void drm_mode_sort(struct list_head *mode_list);
 extern int drm_mode_vrefresh(struct drm_display_mode *mode);
 extern void drm_mode_set_crtcinfo(struct drm_display_mode *p,
 				  int adjust_flags);
+extern void drm_mode_output_list_update(struct drm_output *output);
+
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern bool drm_initial_config(struct drm_device *dev, bool cangrow);
 extern void drm_framebuffer_set_object(struct drm_device *dev,
@@ -531,5 +539,14 @@ extern int drm_mode_rmfb(struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg);
 extern int drm_mode_getfb(struct inode *inode, struct file *filp,
 			  unsigned int cmd, unsigned long arg);
+extern int drm_mode_addmode(struct inode *inode, struct file *filp,
+			    unsigned int cmd, unsigned long arg);
+extern int drm_mode_rmmode(struct inode *inode, struct file *filp,
+			   unsigned int cmd, unsigned long arg);
+extern int drm_mode_attachmode(struct inode *inode, struct file *filp,
+			       unsigned int cmd, unsigned long arg);
+extern int drm_mode_detachmode(struct inode *inode, struct file *filp,
+			       unsigned int cmd, unsigned long arg);
+
 #endif /* __DRM_CRTC_H__ */
 

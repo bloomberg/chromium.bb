@@ -376,37 +376,38 @@ err_allocs:
 	return 0;
 }
 
-#if 0
-uint32_t drmModeNewMode(int fd, struct drm_mode_modeinfo *modeInfo)
+uint32_t drmModeAddMode(int fd, struct drm_mode_modeinfo *mode_info)
 {
-	/* TODO impl */
+	if (ioctl(fd, DRM_IOCTL_MODE_ADDMODE, mode_info))
+		return 0;
+	
+	return mode_info->id;
 }
 
-int drmModeDesMode(int fd, uint32_t modeId)
+int drmModeRmMode(int fd, uint32_t mode_id)
 {
-  //	return ioctl(fd, DRM_IOCTL_MODE_DESMODE, modeId);
+  	return ioctl(fd, DRM_IOCTL_MODE_RMMODE, mode_id);
 }
 
-int drmModeAddMode(int fd, uint32_t outputId, uint32_t modeId)
+int drmModeAttachMode(int fd, uint32_t output_id, uint32_t mode_id)
 {
 
-	drm_mode_outputmode_t res;
+	struct drm_mode_mode_cmd res;
 
-	res.outputId = outputId;
-	res.modeId = modeId;
+	res.output_id = output_id;
+	res.mode_id = mode_id;
 
-	//	return ioctl(fd, DRM_IOCTL_MODE_ADDMODE, &res);
+	return ioctl(fd, DRM_IOCTL_MODE_ATTACHMODE, &res);
 }
 
-int drmModeDelMode(int fd, uint32_t outputId, uint32_t modeId)
+int drmModeDetachMode(int fd, uint32_t output_id, uint32_t mode_id)
 {
-	drm_mode_outputmode_t res;
+	struct drm_mode_mode_cmd res;
 
-	res.outputId = outputId;
-	res.modeId = modeId;
+	res.output_id = output_id;
+	res.mode_id = mode_id;
 
-	//	return ioctl(fd, DRM_IOCTL_MODE_DELMODE, &res);
+	return ioctl(fd, DRM_IOCTL_MODE_DETACHMODE, &res);
 }
 
-#endif
 
