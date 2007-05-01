@@ -956,6 +956,7 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 	struct drm_output *output, *ot;
 	struct drm_crtc *crtc, *ct;
 	struct drm_framebuffer *fb, *fbt;
+	struct drm_display_mode *mode, *mt;
 	list_for_each_entry_safe(output, ot, &dev->mode_config.output_list, head) {
 		drm_output_destroy(output);
 	}
@@ -964,6 +965,10 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 		drm_crtc_destroy(crtc);
 	}
 
+	list_for_each_entry_safe(mode, mt, &dev->mode_config.usermode_list, head) {
+		drm_mode_destroy(dev, mode);
+	}
+		
 	list_for_each_entry_safe(fb, fbt, &dev->mode_config.fb_list, head) {
 		drmfb_remove(dev, fb);
 		/* If this FB was the kernel one, free it */
