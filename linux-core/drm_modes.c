@@ -533,7 +533,7 @@ void drm_mode_sort(struct list_head *mode_list)
  */
 void drm_mode_output_list_update(struct drm_output *output)
 {
-	struct drm_display_mode *mode, *t;
+	struct drm_display_mode *mode;
 	struct drm_display_mode *pmode, *pt;
 	int found_it;
 	list_for_each_entry_safe(pmode, pt, &output->probed_modes,
