@@ -616,7 +616,7 @@ class MmapWrapper {
 namespace google_breakpad {
 
 bool DumpSymbols::WriteSymbolFile(const std::string &obj_file,
-                       const std::string &symbol_file) {
+				  int sym_fd) {
   int obj_fd = open(obj_file.c_str(), O_RDONLY);
   if (obj_fd < 0)
     return false;
@@ -636,16 +636,10 @@ bool DumpSymbols::WriteSymbolFile(const std::string &obj_file,
   if (!LoadSymbols(elf_header, &symbols))
      return false;
   // Write to symbol file.
-  int sym_fd = open(symbol_file.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0666);
-  if (sym_fd < 0)
-    return false;
-  FDWrapper sym_fd_wrapper(sym_fd);
   if (WriteModuleInfo(sym_fd, elf_header->e_machine, obj_file) &&
       DumpStabSymbols(sym_fd, symbols))
     return true;
 
-  // Remove the symbol file if failed to write the symbols.
-  unlink(symbol_file.c_str());
   return false;
 }
 
