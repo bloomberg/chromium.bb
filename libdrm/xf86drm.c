@@ -2499,7 +2499,7 @@ void drmBOFreeList(drmBOList *list)
 	DRMLISTDEL(l);
 	node = DRMLISTENTRY(drmBONode, l, head);
 	free(node);
-	l = list->free.next;
+	l = list->list.next;
 	list->numCurrent--;
 	list->numOnList--;
     }
