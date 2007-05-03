@@ -38,11 +38,13 @@
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
 #include <mach-o/stab.h>
+#include <fcntl.h>
 
 #import <Foundation/Foundation.h>
 
 #import "dump_syms.h"
 #import "common/mac/file_id.h"
+#import "common/mac/macho_utilities.h"
 
 using google_breakpad::FileID;
 

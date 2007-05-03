@@ -34,6 +34,7 @@
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>
 #include <sys/sysctl.h>
+#include <sys/resource.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -253,7 +254,7 @@ bool MinidumpGenerator::WriteStackFromStartAddress(
 }
 
 #if TARGET_CPU_PPC
-bool MinidumpGenerator::WriteStack(thread_state_data_t state,
+bool MinidumpGenerator::WriteStack(breakpad_thread_state_data_t state,
                                    MDMemoryDescriptor *stack_location) {
   ppc_thread_state_t *machine_state =
     reinterpret_cast<ppc_thread_state_t *>(state);
@@ -261,14 +262,14 @@ bool MinidumpGenerator::WriteStack(thread_state_data_t state,
   return WriteStackFromStartAddress(start_addr, stack_location);
 }
 
-u_int64_t MinidumpGenerator::CurrentPCForStack(thread_state_data_t state) {
+u_int64_t MinidumpGenerator::CurrentPCForStack(breakpad_thread_state_data_t state) {
   ppc_thread_state_t *machine_state =
     reinterpret_cast<ppc_thread_state_t *>(state);
 
   return machine_state->srr0;
 }
 
-bool MinidumpGenerator::WriteContext(thread_state_data_t state,
+bool MinidumpGenerator::WriteContext(breakpad_thread_state_data_t state,
                                      MDLocationDescriptor *register_location) {
   TypedMDRVA<MDRawContextPPC> context(&writer_);
   ppc_thread_state_t *machine_state =
@@ -327,7 +328,7 @@ bool MinidumpGenerator::WriteContext(thread_state_data_t state,
 }
 
 #elif TARGET_CPU_X86
-bool MinidumpGenerator::WriteStack(thread_state_data_t state,
+bool MinidumpGenerator::WriteStack(breakpad_thread_state_data_t state,
                                    MDMemoryDescriptor *stack_location) {
   x86_thread_state_t *machine_state =
     reinterpret_cast<x86_thread_state_t *>(state);
@@ -335,14 +336,14 @@ bool MinidumpGenerator::WriteStack(thread_state_data_t state,
   return WriteStackFromStartAddress(start_addr, stack_location);
 }
 
-u_int64_t MinidumpGenerator::CurrentPCForStack(thread_state_data_t state) {
+u_int64_t MinidumpGenerator::CurrentPCForStack(breakpad_thread_state_data_t state) {
   x86_thread_state_t *machine_state =
     reinterpret_cast<x86_thread_state_t *>(state);
 
   return machine_state->uts.ts32.eip;
 }
 
-bool MinidumpGenerator::WriteContext(thread_state_data_t state,
+bool MinidumpGenerator::WriteContext(breakpad_thread_state_data_t state,
                                      MDLocationDescriptor *register_location) {
   TypedMDRVA<MDRawContextX86> context(&writer_);
   x86_thread_state_t *machine_state =
@@ -378,7 +379,7 @@ bool MinidumpGenerator::WriteContext(thread_state_data_t state,
 
 bool MinidumpGenerator::WriteThreadStream(mach_port_t thread_id,
                                           MDRawThread *thread) {
-  thread_state_data_t state;
+  breakpad_thread_state_data_t state;
   mach_msg_type_number_t state_count = sizeof(state);
 
   if (thread_get_state(thread_id, MACHINE_THREAD_STATE, state, &state_count) ==
@@ -451,7 +452,7 @@ bool MinidumpGenerator::WriteExceptionStream(MDRawDirectory *exception_stream) {
   exception_ptr->exception_record.exception_code = exception_type_;
   exception_ptr->exception_record.exception_flags = exception_code_;
 
-  thread_state_data_t state;
+  breakpad_thread_state_data_t state;
   mach_msg_type_number_t stateCount = sizeof(state);
 
   if (thread_get_state(exception_thread_, MACHINE_THREAD_STATE, state,

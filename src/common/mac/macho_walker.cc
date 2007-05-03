@@ -42,6 +42,7 @@
 #include <unistd.h>
 
 #include "common/mac/macho_walker.h"
+#include "common/mac/macho_utilities.h"
 
 namespace MacFileUtilities {
 
@@ -204,7 +205,7 @@ bool MachoWalker::WalkHeader64AtOffset(off_t offset) {
 
   bool swap = (header.magic == MH_CIGAM_64);
   if (swap)
-    swap_mach_header_64(&header, NXHostByteOrder());
+    breakpad_swap_mach_header_64(&header, NXHostByteOrder());
 
   current_header_ = &header;
   current_header_size_ = sizeof(header);

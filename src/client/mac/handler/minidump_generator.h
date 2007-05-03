@@ -38,6 +38,7 @@
 
 #include "client/minidump_file_writer.h"
 #include "google_breakpad/common/minidump_format.h"
+#include "common/mac/mac_compat.h"
 
 #include "dynamic_images.h"
 
@@ -91,12 +92,12 @@ class MinidumpGenerator {
   bool WriteBreakpadInfoStream(MDRawDirectory *breakpad_info_stream);
 
   // Helpers
-  u_int64_t CurrentPCForStack(thread_state_data_t state);
+  u_int64_t CurrentPCForStack(breakpad_thread_state_data_t state);
   bool WriteStackFromStartAddress(vm_address_t start_addr,
                                   MDMemoryDescriptor *stack_location);
-  bool WriteStack(thread_state_data_t state,
+  bool WriteStack(breakpad_thread_state_data_t state,
                   MDMemoryDescriptor *stack_location);
-  bool WriteContext(thread_state_data_t state,
+  bool WriteContext(breakpad_thread_state_data_t state,
                     MDLocationDescriptor *register_location);
   bool WriteThreadStream(mach_port_t thread_id, MDRawThread *thread);
   bool WriteCVRecord(MDRawModule *module, int cpu_type, 

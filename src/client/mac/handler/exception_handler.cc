@@ -32,6 +32,7 @@
 
 #include "client/mac/handler/exception_handler.h"
 #include "client/mac/handler/minidump_generator.h"
+#include "common/mac/mac_compat.h"
 
 namespace google_breakpad {
 
@@ -290,7 +291,7 @@ kern_return_t ForwardException(mach_port_t task, mach_port_t failed_thread,
   thread_state_flavor_t target_flavor = current.flavors[found];
 
   mach_msg_type_number_t thread_state_count = THREAD_STATE_MAX;
-  thread_state_data_t thread_state;
+  breakpad_thread_state_data_t thread_state;
   switch (target_behavior) {
     case EXCEPTION_DEFAULT:
       result = exception_raise(target_port, failed_thread, task, exception,
