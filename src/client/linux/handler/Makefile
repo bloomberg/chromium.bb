@@ -1,7 +1,8 @@
-CC=g++
+CXX=g++
+CC=gcc
 
-CPPFLAGS=-gstabs -I../../.. -Wall -DNDEBUG -D_REENTRANT
-LDFLAGS=-lpthread -lssl
+CXXFLAGS=-gstabs -I../../.. -Wall -D_REENTRANT
+LDFLAGS=-lpthread
 
 OBJ_DIR=.
 BIN_DIR=.
@@ -22,7 +23,7 @@ EXCEPTION_TEST_SRC=exception_handler_test.cc
 THREAD_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o,$(THREAD_SRC))
 SHARE_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o,$(SHARE_SRC))
 HANDLER_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o,$(HANDLER_SRC))
-SHARE_C_OBJ=$(patsubst %.c,$(OBJ_DIR)/%.o,$(SHARE_C_SRC))
+SHARE_C_OBJ=$(patsubst %.c,$(OBJ_DIR)/%.o,$(SHARE_C_SRC)) md5.o
 THREAD_TEST_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o, $(THREAD_TEST_SRC))\
 		$(THREAD_OBJ)
 MINIDUMP_TEST_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o, $(MINIDUMP_TEST_SRC))\
@@ -39,13 +40,16 @@ BIN=$(BIN_DIR)/minidump_test\
 all:$(BIN)
 
 $(BIN_DIR)/linux_thread_test:$(THREAD_TEST_OBJ)
-	$(CC) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
 $(BIN_DIR)/minidump_test:$(MINIDUMP_TEST_OBJ)
-	$(CC) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
 $(BIN_DIR)/exception_handler_test:$(EXCEPTION_TEST_OBJ)
-	$(CC) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
+
+md5.o:../../../common/linux/md5.c
+	$(CC) $(CXXFLAGS) -c $^
 
 clean:
 	rm -f $(BIN) *.o *.dmp
