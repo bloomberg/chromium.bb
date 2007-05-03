@@ -31,6 +31,8 @@
 
 #include <unistd.h>
 #include <signal.h>
+#include <cxxabi.h>
+#include <stdlib.h>
 
 #include <mach/machine.h>
 #include <mach-o/arch.h>
@@ -64,8 +66,6 @@ static NSString *kUnknownSymbol = @"???";
 static const int kTextSection = 1;
 
 @interface DumpSymbols(PrivateMethods)
-- (NSString *)stringFromTask:(NSString *)action args:(NSArray *)args
-                  standardIn:(NSFileHandle *)standardIn;
 - (NSArray *)convertCPlusPlusSymbols:(NSArray *)symbols;
 - (void)convertSymbols;
 - (void)addFunction:(NSString *)name line:(int)line address:(uint64_t)address section:(int)section;
@@ -81,91 +81,29 @@ static const int kTextSection = 1;
 
 @implementation DumpSymbols
 //=============================================================================
-- (NSString *)stringFromTask:(NSString *)action args:(NSArray *)args
-                  standardIn:(NSFileHandle *)standardIn {
-  NSTask *task = [[NSTask alloc] init];
-  [task setLaunchPath:action];
-  NSPipe *pipe = [NSPipe pipe];
-  [task setStandardOutput:pipe];
-  NSFileHandle *output = [pipe fileHandleForReading];
-
-  if (standardIn)
-    [task setStandardInput:standardIn];
-
-  if (args)
-    [task setArguments:args];
-
-  [task launch];
-
-  // This seems a bit strange, but when using [task waitUntilExit], it hangs
-  // waiting for data, but there isn't any.  So, we'll poll for data,
-  // take a short nap, and then ask again
-  BOOL done = NO;
-  NSMutableData *allData = [NSMutableData data];
-  NSData *data = nil;
-  int exceptionCount = 0;
-
-  while (!done) {
-    data = nil;
-    // If there's a communications problem with the task, this might throw
-    // an exception.  We'll catch and keep trying.
-    @try {
-      data = [output availableData];
-    }
-    @catch (NSException *e) {
-      ++exceptionCount;
-    }
-
-    [allData appendData:data];
-
-    // Loop over the data until we're no longer returning data.  If we're
-    // still receiving data, sleep for 1/2 second and let the task
-    // continue.  If we keep receiving exceptions, bail out
-    if (![data length] && data || exceptionCount > 10)
-      done = YES;
-    else
-      usleep(500);
-  }
-
-  // Gather any remaining data
-  [task waitUntilExit];
-  data = [output availableData];
-  [allData appendData:data];
-  [task release];
-
-  return [[[NSString alloc] initWithData:allData
-                                encoding:NSUTF8StringEncoding] autorelease];
-}
-
-//=============================================================================
 - (NSArray *)convertCPlusPlusSymbols:(NSArray *)symbols {
-  NSString *action = @"/usr/bin/c++filt";
-  unsigned int count = [symbols count];
+  NSMutableArray *symbols_demangled = [[NSMutableArray alloc]
+					initWithCapacity:[symbols count]];
+  // __cxa_demangle will realloc this if needed
+  char *buffer = (char *)malloc(1024);
+  size_t buffer_size = 1024;
+  int result;
 
-  // It's possible that we have too many symbols on the command line.
-  // Unfortunately, c++filt doesn't take a file containing names, so we'll
-  // copy the symbols to a temporary file and use that as stdin.
-  char buffer[PATH_MAX];
-  strlcpy(buffer, "/tmp/dump_syms_filtXXXXX", sizeof(buffer));
-  int fd = mkstemp(buffer);
-
-  for (unsigned int i = 0; i < count; ++i) {
-    const char *symbol = [[symbols objectAtIndex:i] UTF8String];
-    write(fd, symbol, strlen(symbol));
-    write(fd, "\n", 1);
+  NSEnumerator *enumerator = [symbols objectEnumerator];
+  id symbolObject;
+  while ((symbolObject = [enumerator nextObject])) {
+    const char *symbol = [symbolObject UTF8String];
+    buffer = abi::__cxa_demangle(symbol, buffer, &buffer_size, &result);
+    if (result == 0) {
+      [symbols_demangled addObject:[NSString stringWithUTF8String:buffer]];
+    } else {
+      // unable to demangle - use mangled name instead
+      [symbols_demangled addObject:symbolObject];
+    }
   }
+  free(buffer);
 
-  // Reset to the beginning and wrap up with a file handle
-  lseek(fd, 0, SEEK_SET);
-  NSArray *args = [NSArray arrayWithObject:@"-n"];
-  NSFileHandle *fh = [[NSFileHandle alloc] initWithFileDescriptor:fd
-                                                   closeOnDealloc:YES];
-  NSArray *result = [[self stringFromTask:action args:args standardIn:fh]
-      componentsSeparatedByString:@"\n"];
-
-  [fh release];
-
-  return result;
+  return symbols_demangled;
 }
 
 //=============================================================================
