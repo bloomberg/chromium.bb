@@ -153,7 +153,8 @@ class DynamicImage {
       path = "(unknown)";
     }
     printf("%p: %s\n", GetLoadAddress(), path);
-    MachHeader(*GetMachHeader()).Print();
+    mach_header *header = GetMachHeader();
+    MachHeader(*header).Print();
     printf("vmaddr\t\t: %p\n", reinterpret_cast<void*>(GetVMAddr()));
     printf("vmsize\t\t: %d\n", GetVMSize());
     printf("slide\t\t: %d\n", GetVMAddrSlide());
@@ -278,7 +279,8 @@ class DynamicImages {
     for (int i = 0; i < (int)image_list_.size(); ++i) {
       printf("dyld: %p: name = %s\n", _dyld_get_image_header(i),
         _dyld_get_image_name(i) );
-      MachHeader(*_dyld_get_image_header(i)).Print();
+      const mach_header *header = _dyld_get_image_header(i);
+      MachHeader(*header).Print();
     }
   }
 
