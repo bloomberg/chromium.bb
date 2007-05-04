@@ -38,7 +38,7 @@
 
 #include "client/minidump_file_writer.h"
 #include "google_breakpad/common/minidump_format.h"
-#include "common/mac/mac_compat.h"
+#include "common/mac/macho_utilities.h"
 
 #include "dynamic_images.h"
 

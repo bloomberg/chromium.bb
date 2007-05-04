@@ -32,7 +32,7 @@
 
 #include "client/mac/handler/exception_handler.h"
 #include "client/mac/handler/minidump_generator.h"
-#include "common/mac/mac_compat.h"
+#include "common/mac/macho_utilities.h"
 
 namespace google_breakpad {
 
