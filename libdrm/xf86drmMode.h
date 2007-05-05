@@ -40,25 +40,17 @@
  * In order to use this interface you must include either <stdint.h> or another
  * header defining uint32_t, int32_t and uint16_t.
  *
- * It aims to provide a randr compatible interface for modesettings in the
+ * It aims to provide a randr1.2 compatible interface for modesettings in the
  * kernel, the interface is also ment to be used by libraries like EGL.
  *
  * More information can be found in randrproto.txt which can be found here:
  * http://gitweb.freedesktop.org/?p=xorg/proto/randrproto.git
  *
- * All framebuffer, crtc and output ids start at 1 while 0 is either an invalid
- * parameter or used to indicate that the command should disconnect from the
- * currently bound target, as with drmModeMapOutput.
- *
- * Currently only one framebuffer exist and has a id of 1, which is also the
- * default framebuffer and should allways be avaible to the client, unless
- * it is locked/used or any other limiting state is applied on it.
- *
+ * There are some major diffrences to be noted. Unlike the randr1.2 proto you
+ * need to create the memory object of the framebuffer yourself with the ttm
+ * buffer object interface. This object needs to be pinned.
  */
 
-typedef struct _drmModeGammaTriple {
-	uint16_t r, g, b;
-} drmModeGammaTriple, *drmModeGammaTriplePtr;
 
 typedef struct _drmModeRes {
 
@@ -130,53 +122,7 @@ typedef struct _drmModeOutput {
 
 } drmModeOutput, *drmModeOutputPtr;
 
-/*
- * RRSetScreenConfig o
- * RRGetScreenInfo o
- *
- * RRGetScreenSizeRange - see frameBuffer info
- * RRSetScreenSize
- * RRGetScreenResources
- *
- * RRGetOutputInfo
- *
- * RRListOutputProperties *
- * RRQueryOutputProperty *
- * RRConfigureOutputProperty *
- * RRChangeOutputProperty *
- * RRDeleteOutputProperty *
- * RRGetOutputProperty *
- *
- * RRCreateMode
- * RRDestroyMode
- * RRAddOutputMode
- * RRDeleteOutputMode
- *
- * RRGetCrtcInfo
- * RRSetCrtcConfig
- *
- * RRGetCrtcGammaSize - see crtc info
- * RRGetCrtcGamma
- * RRSetCrtcGamma
- *
- * drmModeGetResources
- * drmModeForceProbe
- *
- * drmModeGetFrameBufferInfo
- * drmModeSetFrameBufferSize
- *
- * drmModeGetCrtcInfo
- * drmModeSetCrtcConfig
- * drmModeGetCrtcGamma
- * drmModeSetCrtcGamma
- *
- * drmModeGetOutputInfo
- *
- * drmModeAddMode
- * drmModeDestroyMode
- * drmModeAddOutputMode
- * drmModeDeleteOutputMode
- */
+
 
 extern void drmModeFreeModeInfo( struct drm_mode_modeinfo *ptr );
 extern void drmModeFreeResources( drmModeResPtr ptr );
@@ -188,11 +134,6 @@ extern void drmModeFreeOutput( drmModeOutputPtr ptr );
  * Retrives all of the resources associated with a card.
  */
 extern drmModeResPtr drmModeGetResources(int fd);
-
-/**
- * Forces a probe of the give output outputId, on 0 all will be probed.
- */
-extern int drmModeForceProbe(int fd, uint32_t outputId);
 
 
 /*
@@ -215,13 +156,9 @@ extern int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
  */
 extern int drmModeRmFB(int fd, uint32_t bufferId);
 
-/**
- * Changes the scanout buffer to the given buffer object.
- */
-extern int drmModeFlipFrameBuffer(int fd, uint32_t bufferId, drmBO *bo);
 
 /*
- * Crtc function.
+ * Crtc functions
  */
 
 /**
@@ -235,19 +172,6 @@ extern drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId);
 extern int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
 		uint32_t x, uint32_t y, uint32_t modeId,
 		uint32_t *outputs, int count);
-
-/**
- * Gets the gamma from a crtc
- */
-extern drmModeGammaTriplePtr drmModeGetCrtcGamma(int fd, uint32_t crtcId,
-		int *count);
-
-/**
- * Sets the gamma on a crtc
- */
-extern int drmModeSetCrtcGamma(int fd, uint32_t crtcId,
-		drmModeGammaTriplePtr ptr, int count);
-
 
 
 /*
