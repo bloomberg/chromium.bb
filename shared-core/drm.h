@@ -677,17 +677,6 @@ typedef struct drm_fence_arg {
 	unsigned flags;
 	unsigned signaled;
 	unsigned expand_pad[4]; /*Future expansion */
-	enum {
-		drm_fence_create,
-		drm_fence_destroy,
-		drm_fence_reference,
-		drm_fence_unreference,
-		drm_fence_signaled,
-		drm_fence_flush,
-		drm_fence_wait,
-		drm_fence_emit,
-		drm_fence_buffers
-	} op;
 } drm_fence_arg_t;
 
 /* Buffer permissions, referring to how the GPU uses the buffers.
@@ -954,19 +943,20 @@ typedef struct drm_mm_init_arg {
 #define DRM_IOCTL_FENCE_SIGNALED        DRM_IOWR(0xc8, drm_fence_arg_t)
 #define DRM_IOCTL_FENCE_FLUSH           DRM_IOWR(0xc9, drm_fence_arg_t)
 #define DRM_IOCTL_FENCE_WAIT            DRM_IOWR(0xca, drm_fence_arg_t)
-#define DRM_IOCTL_FENCE_BUFFERS         DRM_IOWR(0xcb, drm_fence_arg_t)
+#define DRM_IOCTL_FENCE_EMIT            DRM_IOWR(0xcb, drm_fence_arg_t)
+#define DRM_IOCTL_FENCE_BUFFERS         DRM_IOWR(0xcc, drm_fence_arg_t)
 
-#define DRM_IOCTL_BO_CREATE             DRM_IOWR(0xcc, drm_bo_arg_t)
-#define DRM_IOCTL_BO_DESTROY            DRM_IOWR(0xcd, drm_bo_arg_t)
-#define DRM_IOCTL_BO_MAP                DRM_IOWR(0xce, drm_bo_arg_t)
-#define DRM_IOCTL_BO_UNMAP              DRM_IOWR(0xcf, drm_bo_arg_t)
-#define DRM_IOCTL_BO_REFERENCE          DRM_IOWR(0xd0, drm_bo_arg_t)
-#define DRM_IOCTL_BO_UNREFERENCE        DRM_IOWR(0xd1, drm_bo_arg_t)
-#define DRM_IOCTL_BO_VALIDATE           DRM_IOWR(0xd2, drm_bo_arg_t)
-#define DRM_IOCTL_BO_FENCE              DRM_IOWR(0xd3, drm_bo_arg_t)
-#define DRM_IOCTL_BO_INFO               DRM_IOWR(0xd4, drm_bo_arg_t)
-#define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd5, drm_bo_arg_t)
-#define DRM_IOCTL_BO_REF_FENCE          DRM_IOWR(0xd6, drm_bo_arg_t)
+#define DRM_IOCTL_BO_CREATE             DRM_IOWR(0xcd, drm_bo_arg_t)
+#define DRM_IOCTL_BO_DESTROY            DRM_IOWR(0xce, drm_bo_arg_t)
+#define DRM_IOCTL_BO_MAP                DRM_IOWR(0xcf, drm_bo_arg_t)
+#define DRM_IOCTL_BO_UNMAP              DRM_IOWR(0xd0, drm_bo_arg_t)
+#define DRM_IOCTL_BO_REFERENCE          DRM_IOWR(0xd1, drm_bo_arg_t)
+#define DRM_IOCTL_BO_UNREFERENCE        DRM_IOWR(0xd2, drm_bo_arg_t)
+#define DRM_IOCTL_BO_VALIDATE           DRM_IOWR(0xd3, drm_bo_arg_t)
+#define DRM_IOCTL_BO_FENCE              DRM_IOWR(0xd4, drm_bo_arg_t)
+#define DRM_IOCTL_BO_INFO               DRM_IOWR(0xd5, drm_bo_arg_t)
+#define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd6, drm_bo_arg_t)
+#define DRM_IOCTL_BO_REF_FENCE          DRM_IOWR(0xd7, drm_bo_arg_t)
 
 
 /*@}*/

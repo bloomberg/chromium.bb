@@ -2272,8 +2272,7 @@ int drmFenceCreate(int fd, unsigned flags, int class, unsigned type,
     arg.flags = flags;
     arg.type = type;
     arg.class = class;
-    arg.op = drm_fence_create;
-    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+    if (ioctl(fd, DRM_IOCTL_FENCE_CREATE, &arg))
 	return -errno;
     fence->handle = arg.handle;
     fence->class = arg.class;
@@ -2295,8 +2294,8 @@ int drmFenceBuffers(int fd, unsigned flags, drmFence *fence)
     
     memset(&arg, 0, sizeof(arg));
     arg.flags = flags;
-    arg.op = drm_fence_buffers;
-    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+
+    if (ioctl(fd, DRM_IOCTL_FENCE_BUFFERS, &arg))
 	return -errno;
     fence->handle = arg.handle;
     fence->class = arg.class;
@@ -2312,8 +2311,8 @@ int drmFenceDestroy(int fd, const drmFence *fence)
    
     memset(&arg, 0, sizeof(arg));
     arg.handle = fence->handle;
-    arg.op = drm_fence_destroy;
-    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+
+    if (ioctl(fd, DRM_IOCTL_FENCE_DESTROY, &arg))
 	return -errno;
     return 0;
 }
@@ -2324,8 +2323,8 @@ int drmFenceReference(int fd, unsigned handle, drmFence *fence)
    
     memset(&arg, 0, sizeof(arg));
     arg.handle = handle;
-    arg.op = drm_fence_reference;
-    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+
+    if (ioctl(fd, DRM_IOCTL_FENCE_REFERENCE, &arg))
 	return -errno;
     fence->handle = arg.handle;
     fence->class = arg.class;
@@ -2341,8 +2340,8 @@ int drmFenceUnreference(int fd, const drmFence *fence)
    
     memset(&arg, 0, sizeof(arg));
     arg.handle = fence->handle;
-    arg.op = drm_fence_unreference;
-    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+
+    if (ioctl(fd, DRM_IOCTL_FENCE_UNREFERENCE, &arg))
 	return -errno;
     return 0;
 }
@@ -2354,8 +2353,8 @@ int drmFenceFlush(int fd, drmFence *fence, unsigned flush_type)
     memset(&arg, 0, sizeof(arg));
     arg.handle = fence->handle;
     arg.type = flush_type;
-    arg.op = drm_fence_flush;
-    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+
+    if (ioctl(fd, DRM_IOCTL_FENCE_FLUSH, &arg))
 	return -errno;
     fence->class = arg.class;
     fence->type = arg.type;
@@ -2369,8 +2368,8 @@ int drmFenceUpdate(int fd, drmFence *fence)
 	
     memset(&arg, 0, sizeof(arg));
     arg.handle = fence->handle;
-    arg.op = drm_fence_signaled;
-    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+
+    if (ioctl(fd, DRM_IOCTL_FENCE_SIGNALED, &arg))
 	return -errno;
     fence->class = arg.class;
     fence->type = arg.type;
@@ -2413,8 +2412,8 @@ int drmFenceEmit(int fd, unsigned flags, drmFence *fence, unsigned emit_type)
     arg.flags = flags;
     arg.handle = fence->handle;
     arg.type = emit_type;
-    arg.op = drm_fence_emit;
-    if (ioctl(fd, DRM_IOCTL_FENCE, &arg))
+
+    if (ioctl(fd, DRM_IOCTL_FENCE_EMIT, &arg))
 	return -errno;
     fence->class = arg.class;
     fence->type = arg.type;
@@ -2447,9 +2446,9 @@ int drmFenceWait(int fd, unsigned flags, drmFence *fence, unsigned flush_type)
     arg.handle = fence->handle;
     arg.type = flush_type;
     arg.flags = flags;
-    arg.op = drm_fence_wait;
+
     do {
-	ret = ioctl(fd, DRM_IOCTL_FENCE, &arg);
+	ret = ioctl(fd, DRM_IOCTL_FENCE_WAIT, &arg);
     } while (ret != 0 && errno == EAGAIN);
 
     if (ret)
