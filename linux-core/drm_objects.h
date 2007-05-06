@@ -29,7 +29,7 @@
  */
 
 #ifndef _DRM_OBJECTS_H
-#define _DRM_OJBECTS_H
+#define _DRM_OBJECTS_H
 
 struct drm_device;
 
