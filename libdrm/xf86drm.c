@@ -3153,13 +3153,13 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
 int drmMMInit(int fd, unsigned long pOffset, unsigned long pSize,
 	      unsigned memType)
 {
-    drm_mm_init_arg_t arg;
+    struct drm_mm_init_arg arg;
     
     memset(&arg, 0, sizeof(arg));
-    arg.req.op = mm_init;
-    arg.req.p_offset = pOffset;
-    arg.req.p_size = pSize;
-    arg.req.mem_type = memType;
+
+    arg.p_offset = pOffset;
+    arg.p_size = pSize;
+    arg.mem_type = memType;
 
     if (ioctl(fd, DRM_IOCTL_MM_INIT, &arg))
 	return -errno;
@@ -3169,14 +3169,12 @@ int drmMMInit(int fd, unsigned long pOffset, unsigned long pSize,
 
 int drmMMTakedown(int fd, unsigned memType)
 {
-    drm_mm_init_arg_t arg;
-
+    struct drm_mm_type_arg arg;
 
     memset(&arg, 0, sizeof(arg));
-    arg.req.op = mm_takedown;
-    arg.req.mem_type = memType;
+    arg.mem_type = memType;
 
-    if (ioctl(fd, DRM_IOCTL_MM_INIT, &arg))
+    if (ioctl(fd, DRM_IOCTL_MM_TAKEDOWN, &arg))
 	return -errno;
     
     return 0;	
@@ -3184,15 +3182,14 @@ int drmMMTakedown(int fd, unsigned memType)
 
 int drmMMLock(int fd, unsigned memType)
 {
-    drm_mm_init_arg_t arg;
+    struct drm_mm_type_arg arg;
     int ret;
 
     memset(&arg, 0, sizeof(arg));
-    arg.req.op = mm_lock;
-    arg.req.mem_type = memType;
+    arg.mem_type = memType;
 
     do{
-	ret = ioctl(fd, DRM_IOCTL_MM_INIT, &arg);
+        ret = ioctl(fd, DRM_IOCTL_MM_LOCK, &arg);
     } while (ret && errno == EAGAIN);
     
     return -errno;	
@@ -3200,15 +3197,15 @@ int drmMMLock(int fd, unsigned memType)
 
 int drmMMUnlock(int fd, unsigned memType)
 {
-    drm_mm_init_arg_t arg;
+    struct drm_mm_type_arg arg;
     int ret;
 
     memset(&arg, 0, sizeof(arg));
-    arg.req.op = mm_unlock;
-    arg.req.mem_type = memType;
+    
+    arg.mem_type = memType;
 
     do{
-	ret = ioctl(fd, DRM_IOCTL_MM_INIT, &arg);
+	ret = ioctl(fd, DRM_IOCTL_MM_UNLOCK, &arg);
     } while (ret && errno == EAGAIN);
     
     return -errno;	
