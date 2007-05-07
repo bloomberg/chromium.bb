@@ -726,9 +726,6 @@ void i915_driver_irq_postinstall(drm_device_t * dev)
 	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending = 0;
 
-	if (!dev_priv->vblank_pipe)
-		dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
-
 	dev_priv->swaps_lock = SPIN_LOCK_UNLOCKED;
 	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending = 0;
@@ -736,8 +733,6 @@ void i915_driver_irq_postinstall(drm_device_t * dev)
 	dev_priv->user_irq_lock = SPIN_LOCK_UNLOCKED;
 	dev_priv->user_irq_refcount = 0;
 
-	if (!dev_priv->vblank_pipe)
-		dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
 	i915_enable_interrupt(dev);
 	DRM_INIT_WAITQUEUE(&dev_priv->irq_queue);
 

@@ -177,6 +177,10 @@ static int i915_initialize(drm_device_t * dev,
 	 */
 	dev_priv->allow_batchbuffer = 1;
 
+	/* Enable vblank on pipe A for older X servers
+	 */
+    	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
+
 	/* Program Hardware Status Page */
 	dev_priv->status_page_dmah = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 
 	    0xffffffff);
