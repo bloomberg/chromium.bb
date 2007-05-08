@@ -1391,8 +1391,7 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 	DRM_DEBUG("\n");
 
 	/* if we require new memory map but we don't have it fail */
-	if ((dev_priv->flags & RADEON_NEW_MEMMAP) && !dev_priv->new_memmap)
-	{
+	if ((dev_priv->flags & RADEON_NEW_MEMMAP) && !dev_priv->new_memmap) {
 		DRM_ERROR("Cannot initialise DRM on this card\nThis card requires a new X.org DDX for 3D\n");
 		radeon_do_cleanup_cp(dev);
 		return DRM_ERR(EINVAL);

@@ -51,10 +51,8 @@ drm_dma_handle_t *drm_pci_alloc(drm_device_t * dev, size_t size, size_t align,
 				dma_addr_t maxaddr)
 {
 	drm_dma_handle_t *dmah;
-#if 1
 	unsigned long addr;
 	size_t sz;
-#endif
 #ifdef DRM_DEBUG_MEMORY
 	int area = DRM_MEM_DMA;
 
