@@ -114,7 +114,7 @@ enum nouveau_card_type {
 	NV_10      =10,
 	NV_11      =10,
 	NV_15      =10,
-	NV_17      =10,
+	NV_17      =17,
 	NV_20      =20,
 	NV_25      =20,
 	NV_30      =30,
