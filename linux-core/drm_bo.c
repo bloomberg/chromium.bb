@@ -1784,6 +1784,80 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 	return 0;
 }
 
+int drm_bo_create_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_bo_create_arg_t arg;
+	unsigned long next;
+	drm_user_object_t *uo;
+	drm_buffer_object_t *entry;
+	int ret = 0;
+
+	if (!dev->bm.initialized) {
+		DRM_ERROR("Buffer object manager is not initialized.\n");
+		return -EINVAL;
+	}
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+	
+	ret = drm_bo_lock_test(dev, filp);
+	if (ret)
+		goto out;
+
+	ret = drm_buffer_object_create(priv->head->dev,
+				       req->size, req->type, req->mask,
+				       req->hint, req->page_alignment,
+				       req->buffer_start, &entry);
+	if (ret)
+		goto out;
+	
+	ret = drm_bo_add_user_object(priv, entry,
+				     req->mask & DRM_BO_FLAG_SHAREABLE);
+	if (ret) {
+		drm_bo_usage_deref_unlocked(entry);
+		goto out;
+	}
+	
+	mutex_lock(&entry->mutex);
+	drm_bo_fill_rep_arg(entry, &rep);
+	mutex_unlock(&entry->mutex);
+
+	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
+out:
+	return 0;
+}
+
+int drm_bo_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_bo_arg_t arg;
+	drm_bo_arg_request_t *req = &arg.d.req;
+	drm_bo_arg_reply_t rep;
+	unsigned long next;
+	drm_user_object_t *uo;
+	drm_buffer_object_t *entry;
+
+	if (!dev->bm.initialized) {
+		DRM_ERROR("Buffer object manager is not initialized.\n");
+		return -EINVAL;
+	}
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+
+	rep.ret = 0;
+
+	rep.ret = drm_buffer_object_unmap(priv, req->handle);
+
+
+	if (rep.ret == -EAGAIN)
+		return -EAGAIN;
+
+	
+	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
+
+	return 0;
+}
+
 /**
  *Clean the unfenced list and put on regular LRU.
  *This is part of the memory manager cleanup and should only be

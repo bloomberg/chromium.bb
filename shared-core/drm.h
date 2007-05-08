@@ -782,32 +782,29 @@ typedef enum {
 	drm_bo_type_kernel, /* for initial kernel allocations */
 }drm_bo_type_t;
 
+struct drm_bo_info_req {
+	unsigned int handle;
+	unsigned int mask;
+	unsigned int hint;
+};
 
-typedef struct drm_bo_arg_request {
-	unsigned handle; /* User space handle */
-	unsigned mask;
-	unsigned hint;
+struct drm_bo_create_req {
+	unsigned int mask;
+	unsigned int hint;
+	unsigned page_alignment;
 	drm_u64_t size;
 	drm_bo_type_t type;
-	unsigned arg_handle;
 	drm_u64_t buffer_start;
-	unsigned page_alignment;
-	unsigned expand_pad[4]; /*Future expansion */
-	enum {
-		drm_bo_create,
-		drm_bo_validate,
-		drm_bo_map,
-		drm_bo_unmap,
-		drm_bo_fence,
-		drm_bo_destroy,
-		drm_bo_reference,
-		drm_bo_unreference,
-		drm_bo_info,
-		drm_bo_wait_idle,
-		drm_bo_ref_fence
-	} op;
-} drm_bo_arg_request_t;
+};
 
+struct drm_bo_op_req {
+	struct drm_bo_info_req bo_req;
+	unsigned int arg_handle;
+	enum {
+		drm_bo_validate,
+		drm_bo_fence,
+	} op;
+};
 
 /*
  * Reply flags
@@ -815,30 +812,58 @@ typedef struct drm_bo_arg_request {
 
 #define DRM_BO_REP_BUSY 0x00000001
 
-typedef struct drm_bo_arg_reply {
-	int ret;
-	unsigned handle;
-	unsigned flags;
+struct drm_bo_info_rep {
+	unsigned int handle;
+	unsigned int flags;
 	drm_u64_t size;
 	drm_u64_t offset;
 	drm_u64_t arg_handle;
-	unsigned mask;
+	unsigned int mask;
 	drm_u64_t buffer_start;
-	unsigned fence_flags;
-	unsigned rep_flags;
-	unsigned page_alignment;
-	unsigned expand_pad[4]; /*Future expansion */
-}drm_bo_arg_reply_t;
+	unsigned int fence_flags;
+	unsigned int rep_flags;
+	unsigned int page_alignment;
+	unsigned int expand_pad[4]; /*Future expansion */
+};
 
+struct drm_bo_arg_rep {
+	int ret;
+	struct drm_bo_info_rep bo_info;
+};
 
-typedef struct drm_bo_arg{
+struct drm_bo_create_arg {
+	union {
+		struct drm_bo_create_req req;
+		struct drm_bo_info_rep rep;
+	} d;
+};
+
+struct drm_bo_handle_arg {
+	unsigned int handle;
+};
+
+struct drm_bo_reference_info_arg {
+	union {
+		struct drm_bo_handle_arg req;
+		struct drm_bo_info_rep rep;
+	} d;
+};
+
+struct drm_bo_map_wait_idle_arg {
+	union {
+		struct drm_bo_info_req req;
+		struct drm_bo_info_rep rep;
+	} d;
+};
+
+struct drm_bo_op_arg {
 	int handled;
 	drm_u64_t next;
 	union {
-		drm_bo_arg_request_t req;
-		drm_bo_arg_reply_t rep;
+		struct drm_bo_op_req req;
+		struct drm_bo_arg_rep rep;
 	} d;
-} drm_bo_arg_t;
+};
 
 #define DRM_BO_MEM_LOCAL 0
 #define DRM_BO_MEM_TT 1
@@ -926,9 +951,6 @@ typedef struct drm_mm_init_arg {
 
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, drm_wait_vblank_t)
 
-#define DRM_IOCTL_FENCE                 DRM_IOWR(0x3b, drm_fence_arg_t)
-#define DRM_IOCTL_BUFOBJ                DRM_IOWR(0x3d, drm_bo_arg_t)
-
 #define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, drm_update_draw_t)
 
 #define DRM_IOCTL_MM_INIT               DRM_IOWR(0xc0, drm_mm_init_arg_t)
@@ -946,17 +968,15 @@ typedef struct drm_mm_init_arg {
 #define DRM_IOCTL_FENCE_EMIT            DRM_IOWR(0xcb, drm_fence_arg_t)
 #define DRM_IOCTL_FENCE_BUFFERS         DRM_IOWR(0xcc, drm_fence_arg_t)
 
-#define DRM_IOCTL_BO_CREATE             DRM_IOWR(0xcd, drm_bo_arg_t)
-#define DRM_IOCTL_BO_DESTROY            DRM_IOWR(0xce, drm_bo_arg_t)
-#define DRM_IOCTL_BO_MAP                DRM_IOWR(0xcf, drm_bo_arg_t)
-#define DRM_IOCTL_BO_UNMAP              DRM_IOWR(0xd0, drm_bo_arg_t)
-#define DRM_IOCTL_BO_REFERENCE          DRM_IOWR(0xd1, drm_bo_arg_t)
-#define DRM_IOCTL_BO_UNREFERENCE        DRM_IOWR(0xd2, drm_bo_arg_t)
-#define DRM_IOCTL_BO_VALIDATE           DRM_IOWR(0xd3, drm_bo_arg_t)
-#define DRM_IOCTL_BO_FENCE              DRM_IOWR(0xd4, drm_bo_arg_t)
-#define DRM_IOCTL_BO_INFO               DRM_IOWR(0xd5, drm_bo_arg_t)
-#define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd6, drm_bo_arg_t)
-#define DRM_IOCTL_BO_REF_FENCE          DRM_IOWR(0xd7, drm_bo_arg_t)
+#define DRM_IOCTL_BO_CREATE             DRM_IOWR(0xcd, struct drm_bo_create_arg)
+#define DRM_IOCTL_BO_DESTROY            DRM_IOWR(0xce, struct drm_bo_handle_arg)
+#define DRM_IOCTL_BO_MAP                DRM_IOWR(0xcf, struct drm_bo_map_wait_idle_arg)
+#define DRM_IOCTL_BO_UNMAP              DRM_IOWR(0xd0, struct drm_bo_handle_arg)
+#define DRM_IOCTL_BO_REFERENCE          DRM_IOWR(0xd1, struct drm_bo_reference_info_arg)
+#define DRM_IOCTL_BO_UNREFERENCE        DRM_IOWR(0xd2, struct drm_bo_handle_arg)
+#define DRM_IOCTL_BO_OP                 DRM_IOWR(0xd3, struct drm_bo_op_arg)
+#define DRM_IOCTL_BO_INFO               DRM_IOWR(0xd4, struct drm_bo_reference_info_arg)
+#define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd5, struct drm_bo_map_wait_idle_arg)
 
 
 /*@}*/

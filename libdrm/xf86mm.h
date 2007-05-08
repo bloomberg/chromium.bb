@@ -125,7 +125,7 @@ typedef struct _drmBO{
 typedef struct _drmBONode {
     drmMMListHead head;
     drmBO *buf;
-    drm_bo_arg_t bo_arg;
+    struct drm_bo_op_arg bo_arg;
     unsigned long arg0;
     unsigned long arg1;
 } drmBONode;

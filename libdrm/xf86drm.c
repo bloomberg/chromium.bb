@@ -2598,7 +2598,7 @@ int drmBOCreateList(int numTarget, drmBOList *list)
     return drmAdjustListNodes(list);
 }
 
-static void drmBOCopyReply(const drm_bo_arg_reply_t *rep, 
+static void drmBOCopyReply(struct drm_bo_info_rep *rep, 
 			   drmBO *buf)
 {
     buf->handle = rep->handle;
@@ -2620,9 +2620,9 @@ int drmBOCreate(int fd, unsigned long start, unsigned long size,
 		unsigned mask,
 		unsigned hint, drmBO *buf)
 {
-    drm_bo_arg_t arg;
-    drm_bo_arg_request_t *req = &arg.d.req;
-    drm_bo_arg_reply_t *rep = &arg.d.rep;
+    struct drm_bo_create_arg arg;
+    struct drm_bo_create_req *req = &arg.d.req;
+    struct drm_bo_info_rep *rep = &arg.d.rep;
     int ret;
 
     memset(buf, 0, sizeof(*buf));
@@ -2649,21 +2649,13 @@ int drmBOCreate(int fd, unsigned long start, unsigned long size,
     default:
 	return -EINVAL;
     }
-    req->op = drm_bo_create;
 
     do {
-	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+	ret = ioctl(fd, DRM_IOCTL_BO_CREATE, &arg);
     } while (ret != 0 && errno == EAGAIN);
 
     if (ret)
 	return -errno;
-    if (!arg.handled) {
-	return -EFAULT;
-    }
-    if (rep->ret) {
-        fprintf(stderr, "Error %d\n", rep->ret);
-	return rep->ret;
-    }
     
     drmBOCopyReply(rep, buf);
     buf->mapVirtual = NULL;
@@ -2674,9 +2666,7 @@ int drmBOCreate(int fd, unsigned long start, unsigned long size,
 
 int drmBODestroy(int fd, drmBO *buf)
 {
-    drm_bo_arg_t arg;
-    drm_bo_arg_request_t *req = &arg.d.req;
-    drm_bo_arg_reply_t *rep = &arg.d.rep;
+    struct drm_bo_handle_arg arg;
     
     if (buf->mapVirtual && (buf->type != drm_bo_type_fake)) {
 	(void) drmUnmap(buf->mapVirtual, buf->start + buf->size);
@@ -2685,41 +2675,27 @@ int drmBODestroy(int fd, drmBO *buf)
     }
 
     memset(&arg, 0, sizeof(arg));
-    req->handle = buf->handle;
-    req->op = drm_bo_destroy;
+    arg.handle = buf->handle;
 
-    if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
+    if (ioctl(fd, DRM_IOCTL_BO_DESTROY, &arg))
 	return -errno;
-    if (!arg.handled) {
-	return -EFAULT;
-    }
-    if (rep->ret) {
-	return rep->ret;
-    }
 
     buf->handle = 0;
     return 0;
 }
- 
+
 int drmBOReference(int fd, unsigned handle, drmBO *buf)
 {
 
-    drm_bo_arg_t arg;
-    drm_bo_arg_request_t *req = &arg.d.req;
-    drm_bo_arg_reply_t *rep = &arg.d.rep;
+    struct drm_bo_reference_info_arg arg;
+    struct drm_bo_handle_arg *req = &arg.d.req;
+    struct drm_bo_info_rep *rep = &arg.d.rep;
     
     memset(&arg, 0, sizeof(arg));
     req->handle = handle;
-    req->op = drm_bo_reference;
     
-    if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
+    if (ioctl(fd, DRM_IOCTL_BO_REFERENCE, &arg))
 	return -errno;
-    if (!arg.handled) {
-	return -EFAULT;
-    }
-    if (rep->ret) {
-	return rep->ret;
-    }
 
     drmBOCopyReply(rep, buf);
     buf->type = drm_bo_type_dc;
@@ -2732,10 +2708,7 @@ int drmBOReference(int fd, unsigned handle, drmBO *buf)
 
 int drmBOUnReference(int fd, drmBO *buf)
 {
-    drm_bo_arg_t arg;
-    drm_bo_arg_request_t *req = &arg.d.req;
-    drm_bo_arg_reply_t *rep = &arg.d.rep;
-    
+    struct drm_bo_handle_arg arg;
 
     if (buf->mapVirtual && (buf->type != drm_bo_type_fake)) {
 	(void) munmap(buf->mapVirtual, buf->start + buf->size);
@@ -2744,21 +2717,15 @@ int drmBOUnReference(int fd, drmBO *buf)
     }
 
     memset(&arg, 0, sizeof(arg));
-    req->handle = buf->handle;
-    req->op = drm_bo_unreference;
+    arg.handle = buf->handle;
 
-    if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg))
+    if (ioctl(fd, DRM_IOCTL_BO_UNREFERENCE, &arg))
 	return -errno;
-    if (!arg.handled) {
-	return -EFAULT;
-    }
-    if (rep->ret) {
-	return rep->ret;
-    }
 
     buf->handle = 0;
     return 0;
 }   
+
 
 /*
  * Flags can be  DRM_BO_FLAG_READ, DRM_BO_FLAG_WRITE or'ed together
@@ -2770,9 +2737,9 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
 	     void **address)
 {
 
-    drm_bo_arg_t arg;
-    drm_bo_arg_request_t *req = &arg.d.req;
-    drm_bo_arg_reply_t *rep = &arg.d.rep;
+    struct drm_bo_map_wait_idle_arg arg;
+    struct drm_bo_info_req *req = &arg.d.req;
+    struct drm_bo_info_rep *rep = &arg.d.rep;
     int ret = 0;
 
     /*
@@ -2797,7 +2764,6 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
     req->handle = buf->handle;
     req->mask = mapFlags;
     req->hint = mapHint;
-    req->op = drm_bo_map;
 
     /*
      * May hang if the buffer object is busy.
@@ -2805,15 +2771,11 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
      */
     
     do {
-	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+	ret = ioctl(fd, DRM_IOCTL_BO_MAP, &arg);
     } while (ret != 0 && errno == EAGAIN);
 
     if (ret) 
 	return -errno;
-    if (!arg.handled) 
-	return -EFAULT;
-    if (rep->ret)
-	return rep->ret;
 
     drmBOCopyReply(rep, buf);	
     buf->mapFlags = mapFlags;
@@ -2823,45 +2785,37 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
     return 0;
 }
 
+
 int drmBOUnmap(int fd, drmBO *buf)
 {
-    drm_bo_arg_t arg;
-    drm_bo_arg_request_t *req = &arg.d.req;
-    drm_bo_arg_reply_t *rep = &arg.d.rep;
-
+    struct drm_bo_handle_arg arg;
 	
     memset(&arg, 0, sizeof(arg));
-    req->handle = buf->handle;
-    req->op = drm_bo_unmap;
+    arg.handle = buf->handle;
 
-    if (ioctl(fd, DRM_IOCTL_BUFOBJ, &arg)) {
+    if (ioctl(fd, DRM_IOCTL_BO_UNMAP, &arg)) {
 	return -errno;
     }
-    if (!arg.handled) 
-        return -EFAULT;
-    if (rep->ret)
-	return rep->ret;
-
     return 0;
 }
     
 int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask, 
 		  unsigned hint)
 {
-    drm_bo_arg_t arg;
-    drm_bo_arg_request_t *req = &arg.d.req;
-    drm_bo_arg_reply_t *rep = &arg.d.rep;
+    struct drm_bo_op_arg arg;
+    struct drm_bo_op_req *req = &arg.d.req;
+    struct drm_bo_arg_rep *rep = &arg.d.rep;
     int ret = 0;
 
     memset(&arg, 0, sizeof(arg));
-    req->handle = buf->handle;
-    req->mask = flags;
-    req->hint = hint;
+    req->bo_req.handle = buf->handle;
+    req->bo_req.mask = flags;
+    req->bo_req.hint = hint;
     req->arg_handle = mask; /* Encode mask in the arg_handle field :/ */
     req->op = drm_bo_validate;
 
     do{
-	ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+	ret = ioctl(fd, DRM_IOCTL_BO_OP, &arg);
     } while (ret && errno == EAGAIN);
     
     if (ret) 
@@ -2871,25 +2825,25 @@ int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask,
     if (rep->ret)
 	return rep->ret;
 
-    drmBOCopyReply(rep, buf);
+    drmBOCopyReply(&rep->bo_info, buf);
     return 0;
 }
 	    
 
 int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
 {
-    drm_bo_arg_t arg;
-    drm_bo_arg_request_t *req = &arg.d.req;
-    drm_bo_arg_reply_t *rep = &arg.d.rep;
+    struct drm_bo_op_arg arg;
+    struct drm_bo_op_req *req = &arg.d.req;
+    struct drm_bo_arg_rep *rep = &arg.d.rep;
     int ret = 0;
 
     memset(&arg, 0, sizeof(arg));
-    req->handle = buf->handle;
-    req->mask = flags;
+    req->bo_req.handle = buf->handle;
+    req->bo_req.mask = flags;
     req->arg_handle = fenceHandle;
-    req->op = drm_bo_validate;
+    req->op = drm_bo_fence;
 
-    ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+    ret = ioctl(fd, DRM_IOCTL_BO_OP, &arg);
     
     if (ret) 
 	return -errno;
@@ -2902,51 +2856,43 @@ int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
 
 int drmBOInfo(int fd, drmBO *buf)
 {
-    drm_bo_arg_t arg;
-    drm_bo_arg_request_t *req = &arg.d.req;
-    drm_bo_arg_reply_t *rep = &arg.d.rep;
+    struct drm_bo_reference_info_arg arg;
+    struct drm_bo_handle_arg *req = &arg.d.req;
+    struct drm_bo_info_rep *rep = &arg.d.rep;
     int ret = 0;
 
     memset(&arg, 0, sizeof(arg));
     req->handle = buf->handle;
-    req->op = drm_bo_info;
 
-    ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+    ret = ioctl(fd, DRM_IOCTL_BO_INFO, &arg);
     
     if (ret) 
 	return -errno;
-    if (!arg.handled)
-	return -EFAULT;
-    if (rep->ret)
-	return rep->ret;
+
     drmBOCopyReply(rep, buf);
     return 0;
 }
 
 int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint)
 {
-    drm_bo_arg_t arg;
-    drm_bo_arg_request_t *req = &arg.d.req;
-    drm_bo_arg_reply_t *rep = &arg.d.rep;
+    struct drm_bo_map_wait_idle_arg arg;
+    struct drm_bo_info_req *req = &arg.d.req;
+    struct drm_bo_info_rep *rep = &arg.d.rep;
     int ret = 0;
 
     if ((buf->flags & DRM_BO_FLAG_SHAREABLE) ||
 	(buf->replyFlags & DRM_BO_REP_BUSY)) {
         memset(&arg, 0, sizeof(arg));
 	req->handle = buf->handle;
-	req->op = drm_bo_wait_idle;
 	req->hint = hint;
 
 	do {
-	    ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
+	    ret = ioctl(fd, DRM_IOCTL_BO_WAIT_IDLE, &arg);
 	} while (ret && errno == EAGAIN);
 
 	if (ret) 
 	    return -errno;
-	if (!arg.handled)
-	    return -EFAULT;
-	if (rep->ret)
-	    return rep->ret;
+
 	drmBOCopyReply(rep, buf);
     }
     return 0;
@@ -2966,7 +2912,6 @@ int drmBOBusy(int fd, drmBO *buf, int *busy)
 	return 0;
     }
 }
-    
     
 int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags, 
 		       unsigned mask,
@@ -3029,9 +2974,9 @@ int drmBOValidateList(int fd, drmBOList *list)
    
   drmBONode *node;
   drmMMListHead *l;
-  drm_bo_arg_t *arg, *first;
-  drm_bo_arg_request_t *req;
-  drm_bo_arg_reply_t *rep;
+  struct drm_bo_op_arg *arg, *first;
+  struct drm_bo_op_req *req;
+  struct drm_bo_arg_rep *rep;
   drm_u64_t *prevNext = NULL;
   drmBO *buf;
   int ret;
@@ -3052,10 +2997,10 @@ int drmBOValidateList(int fd, drmBOList *list)
 
       memset(arg, 0, sizeof(*arg));
       prevNext = &arg->next;
-      req->handle = node->buf->handle;
+      req->bo_req.handle = node->buf->handle;
       req->op = drm_bo_validate;
-      req->mask = node->arg0;
-      req->hint = 0;
+      req->bo_req.mask = node->arg0;
+      req->bo_req.hint = 0;
       req->arg_handle = node->arg1;
   }
   
@@ -3063,7 +3008,7 @@ int drmBOValidateList(int fd, drmBOList *list)
       return 0;
 
   do{
-      ret = ioctl(fd, DRM_IOCTL_BUFOBJ, first);
+      ret = ioctl(fd, DRM_IOCTL_BO_OP, first);
   } while (ret && errno == EAGAIN);
 
 
@@ -3083,7 +3028,7 @@ int drmBOValidateList(int fd, drmBOList *list)
 	  return rep->ret;
 
       buf = node->buf;
-      drmBOCopyReply(rep, buf);
+      drmBOCopyReply(&rep->bo_info, buf);
   }
 
   return 0;
@@ -3095,9 +3040,9 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
    
   drmBONode *node;
   drmMMListHead *l;
-  drm_bo_arg_t *arg, *first;
-  drm_bo_arg_request_t *req;
-  drm_bo_arg_reply_t *rep;
+  struct drm_bo_op_arg *arg, *first;
+  struct drm_bo_op_req *req;
+  struct drm_bo_arg_rep *rep;
   drm_u64_t *prevNext = NULL;
   drmBO *buf;
   unsigned fence_flags;
@@ -3119,16 +3064,16 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
 
       memset(arg, 0, sizeof(*arg));
       prevNext = &arg->next;
-      req->handle = node->buf->handle;
+      req->bo_req.handle = node->buf->handle;
       req->op = drm_bo_fence;
-      req->mask = node->arg0;
+      req->bo_req.mask = node->arg0;
       req->arg_handle = fenceHandle;
   }
   
   if (!first) 
       return 0;
 
-  ret = ioctl(fd, DRM_IOCTL_BUFOBJ, first);
+  ret = ioctl(fd, DRM_IOCTL_BO_OP, first);
 
   if (ret)
       return -errno;
@@ -3143,7 +3088,7 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
 	  return -EFAULT;
       if (rep->ret)
 	  return rep->ret;
-      drmBOCopyReply(rep, node->buf);
+      drmBOCopyReply(&rep->bo_info, node->buf);
   }
 
   return 0;
