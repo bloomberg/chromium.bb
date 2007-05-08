@@ -223,9 +223,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(
                        "$esp .raSearchStart 4 + =";
     } else {
       // The function corresponding to the last frame doesn't use %ebp at
-      // all.  The callee frame is located relative to %esp.  %ebp is reset
-      // to itself only to cause it to appear to have been set in
-      // dictionary_validity.
+      // all.  The callee frame is located relative to %esp.
       //
       // The called procedure's instruction pointer and stack pointer are
       // recovered in the same way as the case above, except that no
@@ -244,8 +242,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(
       // %esp_new = %esp_old + callee_params + saved_regs + locals + 4
       // %ebp_new = %ebp_old
       program_string = "$eip .raSearchStart ^ = "
-                       "$esp .raSearchStart 4 + = "
-                       "$ebp $ebp =";
+                       "$esp .raSearchStart 4 + =";
       recover_ebp = false;
     }
   } else {
@@ -280,15 +277,14 @@ StackFrame* StackwalkerX86::GetCallerFrame(
                      "$ebp $ebp ^ =";
   }
 
-  // Now crank it out, making sure that the program string set the three
-  // required variables.
+  // Now crank it out, making sure that the program string set at least the
+  // two required variables.
   PostfixEvaluator<u_int32_t> evaluator =
       PostfixEvaluator<u_int32_t>(&dictionary, memory_);
   PostfixEvaluator<u_int32_t>::DictionaryValidityType dictionary_validity;
   if (!evaluator.Evaluate(program_string, &dictionary_validity) ||
       dictionary_validity.find("$eip") == dictionary_validity.end() ||
-      dictionary_validity.find("$esp") == dictionary_validity.end() ||
-      dictionary_validity.find("$ebp") == dictionary_validity.end()) {
+      dictionary_validity.find("$esp") == dictionary_validity.end()) {
     return NULL;
   }
 
