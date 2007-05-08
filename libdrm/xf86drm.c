@@ -2888,7 +2888,7 @@ int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
     req->handle = buf->handle;
     req->mask = flags;
     req->arg_handle = fenceHandle;
-    req->op = drm_bo_validate;
+    req->op = drm_bo_fence;
 
     ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     
