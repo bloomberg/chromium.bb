@@ -803,6 +803,7 @@ struct drm_bo_op_req {
 	enum {
 		drm_bo_validate,
 		drm_bo_fence,
+		drm_bo_ref_fence,
 	} op;
 };
 

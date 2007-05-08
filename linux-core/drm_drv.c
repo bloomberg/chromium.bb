@@ -118,7 +118,7 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 
 	[DRM_IOCTL_NR(DRM_IOCTL_WAIT_VBLANK)] = {drm_wait_vblank, 0},
 
-	[DRM_IOCTL_NR(DRM_IOCTL_BUFOBJ)] = {drm_bo_ioctl, DRM_AUTH},
+	//	[DRM_IOCTL_NR(DRM_IOCTL_BUFOBJ)] = {drm_bo_ioctl, DRM_AUTH},
 
 	[DRM_IOCTL_NR(DRM_IOCTL_UPDATE_DRAW)] = {drm_update_drawable_info, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 
@@ -141,6 +141,18 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_FENCE_WAIT)] = {drm_fence_wait_ioctl, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_IOCTL_FENCE_EMIT)] = {drm_fence_emit_ioctl, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_IOCTL_FENCE_BUFFERS)] = {drm_fence_buffers_ioctl, DRM_AUTH},
+
+	[DRM_IOCTL_NR(DRM_IOCTL_BO_CREATE)] = {drm_bo_create_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_IOCTL_BO_DESTROY)] = {drm_bo_destroy_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_IOCTL_BO_MAP)] = {drm_bo_map_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_IOCTL_BO_UNMAP)] = {drm_bo_unmap_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_IOCTL_BO_REFERENCE)] = {drm_bo_reference_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_IOCTL_BO_UNREFERENCE)] = {drm_bo_unreference_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_IOCTL_BO_OP)] = {drm_bo_op_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_IOCTL_BO_INFO)] = {drm_bo_info_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_IOCTL_BO_WAIT_IDLE)] = {drm_bo_wait_idle_ioctl, DRM_AUTH},
+
+
 
 };
 

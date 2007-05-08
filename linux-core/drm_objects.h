@@ -436,7 +436,17 @@ typedef struct drm_bo_driver {
  * buffer objects (drm_bo.c)
  */
 
-extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_create_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_destroy_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_map_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_unmap_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_reference_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_unreference_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_wait_idle_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_info_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_op_ioctl(DRM_IOCTL_ARGS);
+
+
 extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
 extern int drm_mm_takedown_ioctl(DRM_IOCTL_ARGS);
 extern int drm_mm_lock_ioctl(DRM_IOCTL_ARGS);
