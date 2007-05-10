@@ -525,7 +525,6 @@ static bool intel_sdvo_get_preferred_input_timing(struct drm_output *output,
 
 static int intel_sdvo_get_clock_rate_mult(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
 	u8 response, status;
 
 	intel_sdvo_write_cmd(output, SDVO_CMD_GET_CLOCK_RATE_MULT, NULL, 0);
@@ -895,8 +894,6 @@ static enum drm_output_status intel_sdvo_detect(struct drm_output *output)
 
 static int intel_sdvo_get_modes(struct drm_output *output)
 {
-	struct drm_display_mode *modes;
-
 	/* set the bus switch and get the modes */
 	intel_sdvo_set_control_bus_switch(output, SDVO_CONTROL_BUS_DDC2);
 	intel_ddc_get_modes(output);

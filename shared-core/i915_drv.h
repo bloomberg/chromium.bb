@@ -221,6 +221,7 @@ extern void i915_emit_breadcrumb(drm_device_t *dev);
 extern void i915_dispatch_flip(drm_device_t * dev, int pipes, int sync);
 extern int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush);
 extern int i915_driver_firstopen(struct drm_device *dev);
+extern int i915_dma_cleanup(drm_device_t * dev);
 
 /* i915_irq.c */
 extern int i915_irq_emit(DRM_IOCTL_ARGS);
