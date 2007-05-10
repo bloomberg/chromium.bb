@@ -1046,13 +1046,17 @@ typedef struct {
   u_int32_t type;
 } MDRawAssertionInfo;
 
-/* For (MDRawAssertionInfo).info: */
+/* For (MDRawAssertionInfo).type: */
 typedef enum {
   MD_ASSERTION_INFO_TYPE_UNKNOWN = 0,
 
   /* Used for assertions that would be raised by the MSVC CRT but are
    * directed to an invalid parameter handler instead. */
-  MD_ASSERTION_INFO_TYPE_INVALID_PARAMETER
+  MD_ASSERTION_INFO_TYPE_INVALID_PARAMETER,
+
+  /* Used for assertions that would be raised by the MSVC CRT but are
+   * directed to a pure virtual call handler instead. */
+  MD_ASSERTION_INFO_TYPE_PURE_VIRTUAL_CALL
 } MDAssertionInfoData;
 
 #if defined(_MSC_VER)
