@@ -867,7 +867,7 @@ typedef struct {
 
 typedef union {
   struct {
-    u_int32_t vendor_id[3];               /* cpuid 0: eax, ebx, ecx */
+    u_int32_t vendor_id[3];               /* cpuid 0: ebx, edx, ecx */
     u_int32_t version_information;        /* cpuid 1: eax */
     u_int32_t feature_information;        /* cpuid 1: edx */
     u_int32_t amd_extended_cpu_features;  /* cpuid 0x80000001, ebx */
