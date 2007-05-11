@@ -493,6 +493,35 @@ bool MinidumpGenerator::WriteSystemInfoStream(
       break;
     case CPU_TYPE_I386:
       info_ptr->processor_architecture = MD_CPU_ARCHITECTURE_X86;
+#ifdef __i386__
+      // ebx is used for PIC code, so we need
+      // to preserve it.
+#define cpuid(op,eax,ebx,ecx,edx)      \
+  asm ("pushl %%ebx   \n\t"            \
+       "cpuid         \n\t"	       \
+       "movl %%ebx,%1 \n\t"	       \
+       "popl %%ebx"		       \
+       : "=a" (eax),		       \
+         "=g" (ebx),		       \
+         "=c" (ecx),		       \
+         "=d" (edx)		       \
+       : "0" (op))
+      int unused, unused2;
+      // get vendor id
+      cpuid(0, unused, info_ptr->cpu.x86_cpu_info.vendor_id[0],
+            info_ptr->cpu.x86_cpu_info.vendor_id[2],
+            info_ptr->cpu.x86_cpu_info.vendor_id[1]);
+      // get version and feature info
+      cpuid(1, info_ptr->cpu.x86_cpu_info.version_information, unused, unused2,
+            info_ptr->cpu.x86_cpu_info.feature_information);
+      // family
+      info_ptr->processor_level =
+        (info_ptr->cpu.x86_cpu_info.version_information & 0xF00) >> 8;
+      // 0xMMSS (Model, Stepping)
+      info_ptr->processor_revision =
+        (info_ptr->cpu.x86_cpu_info.version_information & 0xF) |
+        ((info_ptr->cpu.x86_cpu_info.version_information & 0xF0) << 4);
+#endif // __i386__
       break;
     default:
       info_ptr->processor_architecture = MD_CPU_ARCHITECTURE_UNKNOWN;
