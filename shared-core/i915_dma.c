@@ -471,7 +471,9 @@ int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush)
 static int i915_dispatch_cmdbuffer(drm_device_t * dev,
 				   drm_i915_cmdbuffer_t * cmd)
 {
+#ifdef I915_HAVE_FENCE
 	drm_i915_private_t *dev_priv = dev->dev_private;
+#endif
 	int nbox = cmd->num_cliprects;
 	int i = 0, count, ret;
 
@@ -856,7 +858,7 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 
 	e = &mmio_table[mmio.reg];
-	base = dev_priv->mmio_map->handle + e->offset;
+	base = (u8 *) dev_priv->mmio_map->handle + e->offset;
 
         switch (mmio.read_write) {
 		case I915_MMIO_READ:

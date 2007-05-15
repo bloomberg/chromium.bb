@@ -912,6 +912,18 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 	return DRM_ERR(retcode);
 }
 
+drm_local_map_t *drm_getsarea(drm_device_t *dev)
+{
+	drm_local_map_t *map;
+
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
+	TAILQ_FOREACH(map, &dev->maplist, link) {
+		if (map->type == _DRM_SHM && (map->flags & _DRM_CONTAINS_LOCK))
+			return map;
+	}
+
+	return NULL;
+}
 
 #if DRM_LINUX
 
