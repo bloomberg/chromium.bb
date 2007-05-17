@@ -504,7 +504,9 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
         info->var.vsync_len = mode->vsync_end - mode->vsync_start;
 	info->var.upper_margin = mode->vtotal - mode->vsync_end;
         info->var.pixclock = 10000000 / mode->htotal * 1000 /
-		mode->vtotal * 100000 / mode->vrefresh;
+		mode->vtotal * 100;
+	/* avoid overflow */
+	info->var.pixclock = info->var.pixclock * 1000 / mode->vrefresh;
 
 	info->pixmap.size = 64*1024;
 	info->pixmap.buf_align = 8;
