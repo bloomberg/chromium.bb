@@ -971,10 +971,6 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 		drm_output_destroy(output);
 	}
 
-	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {
-		drm_crtc_destroy(crtc);
-	}
-
 	list_for_each_entry_safe(mode, mt, &dev->mode_config.usermode_list, head) {
 		drm_mode_destroy(dev, mode);
 	}
@@ -989,6 +985,11 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 		}
 		drm_framebuffer_destroy(fb);
 	}
+
+	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {
+		drm_crtc_destroy(crtc);
+	}
+
 }
 EXPORT_SYMBOL(drm_mode_config_cleanup);
 
