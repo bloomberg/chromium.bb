@@ -787,6 +787,9 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	else
 		dpll |= PLL_REF_INPUT_DREFCLK;
 	
+	/* setup pipeconf */
+	pipeconf = I915_READ(pipeconf_reg);
+
 	/* Set up the display plane register */
 	dspcntr = DISPPLANE_GAMMA_ENABLE;
 
@@ -814,7 +817,6 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	else
 		dspcntr |= DISPPLANE_SEL_PIPE_B;
 	
-	pipeconf = I915_READ(pipeconf_reg);
 	if (pipe == 0 && !IS_I965G(dev)) {
 		/* Enable pixel doubling when the dot clock is > 90% of the (display)
 		 * core speed.
@@ -955,19 +957,14 @@ void intel_crtc_load_lut(struct drm_crtc *crtc)
 }
 
 /** Sets the color ramps on behalf of RandR */
-static void intel_crtc_gamma_set(struct drm_crtc *crtc, u16 *red, u16 *green,
-				 u16 *blue, int size)
+static void intel_crtc_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
+				 u16 blue, int regno)
 {
 	struct intel_crtc *intel_crtc = crtc->driver_private;
-	int i;
 	
-	for (i = 0; i < 256; i++) {
-		intel_crtc->lut_r[i] = red[i] >> 8;
-		intel_crtc->lut_g[i] = green[i] >> 8;
-		intel_crtc->lut_b[i] = blue[i] >> 8;
-	}
-	
-	intel_crtc_load_lut(crtc);
+	intel_crtc->lut_r[regno] = red >> 8;
+	intel_crtc->lut_g[regno] = green >> 8;
+	intel_crtc->lut_b[regno] = blue >> 8;
 }
 
 /* Returns the clock of the currently programmed mode of the given pipe. */
@@ -1176,7 +1173,8 @@ static void intel_setup_outputs(drm_device_t *dev)
 				      (1 << INTEL_OUTPUT_SDVO));
 			break;
 		case INTEL_OUTPUT_ANALOG:
-			crtc_mask = ((1 << 0));
+			crtc_mask = ((1 << 0)|
+				     (1 << 1));
 			clone_mask = ((1 << INTEL_OUTPUT_ANALOG) |
 				      (1 << INTEL_OUTPUT_DVO) |
 				      (1 << INTEL_OUTPUT_SDVO));
@@ -1223,7 +1221,6 @@ void intel_modeset_init(drm_device_t *dev)
 	intel_setup_outputs(dev);
 
 	//drm_initial_config(dev, false);
-	//drm_set_desired_modes(dev);
 }
 
 void intel_modeset_cleanup(drm_device_t *dev)

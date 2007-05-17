@@ -1010,26 +1010,18 @@ void intel_sdvo_init(drm_device_t *dev, int output_device)
 
 	memset(&sdvo_priv->active_outputs, 0, sizeof(sdvo_priv->active_outputs));
 
-	/* TODO, CVBS, SVID, YPRPB & SCART outputs.
-	 * drm_initial_config probably wants tweaking too to support the
-	 * above. But has fixed VGA, TMDS and LVDS checking code. That should
-	 * be dealt with.
-	 */
+	/* TODO, CVBS, SVID, YPRPB & SCART outputs. */
 	if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB0)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB0;
 		output->subpixel_order = SubPixelHorizontalRGB;
-		/* drm_initial_config wants this name, but should be RGB */
-		/* Use this for now.... */
-		name_prefix="VGA";
+		name_prefix="RGB";
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB1)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB1;
 		output->subpixel_order = SubPixelHorizontalRGB;
-		/* drm_initial_config wants this name, but should be RGB */
-		/* Use this for now.... */
-		name_prefix="VGA";
+		name_prefix="RGB";
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS0)
 	{

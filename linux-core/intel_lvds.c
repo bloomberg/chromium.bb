@@ -164,17 +164,19 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 	struct intel_crtc *intel_crtc = output->crtc->driver_private;
 	struct drm_output *tmp_output;
 
+	/* Should never happen!! */
+	if (!IS_I965G(dev) && intel_crtc->pipe == 0) {
+		printk(KERN_ERR "Can't support LVDS on pipe A\n");
+		return false;
+	}
+
+	/* Should never happen!! */
 	list_for_each_entry(tmp_output, &dev->mode_config.output_list, head) {
 		if (tmp_output != output && tmp_output->crtc == output->crtc) {
 			printk(KERN_ERR "Can't enable LVDS and another "
 			       "output on the same pipe\n");
 			return false;
 		}
-	}
-
-	if (intel_crtc->pipe == 0) {
-		printk(KERN_ERR "Can't support LVDS on pipe A\n");
-		return false;
 	}
 
 	/*

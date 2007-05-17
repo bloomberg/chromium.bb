@@ -467,51 +467,6 @@ done:
 }
 
 /**
- * drm_set_desired_modes - set a good mode on every CRTC & output
- * @dev: DRM device
- *
- * LOCKING:
- * Caller? (FIXME)
- *
- * Each CRTC may have a desired mode associated with it.  This routine simply
- * walks @dev's mode_config and sets the desired mode on every CRTC.  Intended
- * for use at startup time.
- *
- * RETURNS:
- * True if modes were set, false otherwise.
- */
-bool drm_set_desired_modes(struct drm_device *dev)
-{
-	struct drm_crtc *crtc;
-	struct drm_output *output, *list_output;
-
-	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		output = NULL;
-
-		list_for_each_entry(list_output, &dev->mode_config.output_list,
-				    head) {
-			if (list_output->crtc == crtc) {
-				output = list_output;
-				break;
-			}
-		}
-		/* Skip disabled crtcs */
-		if (!output) {
-			DRM_DEBUG("skipping disabled crtc\n");
-			continue;
-		}
-
-		if (!drm_crtc_set_mode(crtc, crtc->desired_mode,
-				       crtc->desired_x, crtc->desired_y))
-			return false;
-	}
-
-	drm_disable_unused_functions(dev);
-	return true;
-}
-EXPORT_SYMBOL(drm_set_desired_modes);
-
-/**
  * drm_disable_unused_functions - disable unused objects
  * @dev: DRM device
  *
@@ -799,25 +754,81 @@ out_err:
 }
 
 /**
- * drm_setup_output - setup an output structure
- * @output: output to setup
- * @crtc: CRTC this output belongs to
- * @mode: desired mode for this output
+ * drm_pick_crtcs - pick crtcs for output devices
+ * @dev: DRM device
  *
  * LOCKING:
  * None.
- *
- * Setup @output with the parameters given, with its initial coordinates set
- * at the origin.
  */
-static void drm_setup_output(struct drm_output *output, struct drm_crtc *crtc,
-			     struct drm_display_mode *mode)
+static void drm_pick_crtcs (drm_device_t *dev)
 {
-	output->crtc = crtc;
-	output->crtc->desired_mode = mode;
-	output->initial_x = 0;
-	output->initial_y = 0;
+	int c, o;
+	struct drm_output *output, *output_equal;
+	struct drm_crtc   *crtc;
+	struct drm_display_mode *des_mode = NULL, *modes, *modes_equal;
+
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+       		output->crtc = NULL;
+    
+    		/* Don't hook up outputs that are disconnected ??
+		 *
+		 * This is debateable. Do we want fixed /dev/fbX or
+		 * dynamic on hotplug (need mode code for that though) ?
+		 *
+		 * If we don't hook up outputs now, then we only create
+		 * /dev/fbX for the output that's enabled, that's good as
+		 * the users console will be on that output.
+		 *
+		 * If we do hook up outputs that are disconnected now, then
+		 * the user may end up having to muck about with the fbcon
+		 * map flags to assign his console to the enabled output. Ugh.
+		 */
+    		if (output->status != output_status_connected)
+			continue;
+
+		des_mode = NULL;
+		list_for_each_entry(des_mode, &output->modes, head) {
+			if (des_mode->flags & DRM_MODE_TYPE_PREFERRED)
+				break;
+		}
+
+		c = -1;
+		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+			c++;
+			if ((output->possible_crtcs & (1 << c)) == 0)
+		    		continue;
+	
+#if 0 /* should we try and clone ?? - code not tested - FIXME */
+			o = -1;
+			list_for_each_entry(output_equal, &dev->mode_config.output_list, head) {
+				o++;
+				if (output->id == output_equal->id)
+					continue;
+
+				list_for_each_entry(modes, &output->modes, head) {
+					list_for_each_entry(modes_equal, &output_equal->modes, head) {
+						if (drm_mode_equal (modes, modes_equal)) {
+							if ((output->possible_clones & (1 << o))) {
+								goto clone;
+							}
+						}
+					}
+				}
+			}
+
+clone:
+#endif
+			/* Found a CRTC to attach to, do it ! */
+			output->crtc = crtc;
+			output->crtc->desired_mode = des_mode;
+			output->initial_x = 0;
+			output->initial_y = 0;
+			DRM_DEBUG("Desired mode for CRTC %d is %dx%x\n",c,des_mode->hdisplay,des_mode->vdisplay);
+			break;
+    		}
+	}
 }
+
 
 /**
  * drm_initial_config - setup a sane initial output configuration
@@ -831,109 +842,61 @@ static void drm_setup_output(struct drm_output *output, struct drm_crtc *crtc,
  * At the moment, this is a cloned configuration across all heads with
  * a new framebuffer object as the backing store.
  *
- * FIXME: return value and better initial config.
- *
  * RETURNS:
  * Zero if everything went ok, nonzero otherwise.
  */
 bool drm_initial_config(drm_device_t *dev, bool can_grow)
 {
 	/* do a hardcoded initial configuration here */
-	struct drm_crtc *crtc, *vga_crtc = NULL, *tmds_crtc = NULL,
-		*lvds_crtc = NULL;
+	struct drm_display_mode *des_mode = NULL;
 	struct drm_output *output;
 	struct drm_framebuffer *fb;
 	drm_buffer_object_t *fbo;
 	unsigned long size, bytes_per_pixel;
 
-	fb = drm_framebuffer_create(dev);
-	if (!fb) {
-		DRM_ERROR("failed to allocate fb.\n");
-		return true;
-	}
-
-	/* bind both CRTCs to this fb */
-	/* only initialise one crtc to enabled state */
-	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		crtc->fb = fb;
-		if (!vga_crtc) {
-			vga_crtc = crtc;
-			crtc->enabled = 1;
-			crtc->desired_x = 0;
-			crtc->desired_y = 0;
-		} else {
-			if (!lvds_crtc) {
-				lvds_crtc = crtc;
-				crtc->enabled = 1;
-				crtc->desired_x = 0;
-				crtc->desired_y = 0;
-			}
-			if (!tmds_crtc) {
-				tmds_crtc = crtc;
-				crtc->enabled = 1;
-				crtc->desired_x = 0;
-				crtc->desired_y = 0;
-			}
-		}
-	}
-
 	drm_crtc_probe_output_modes(dev, 2048, 2048);
 
-	/* hard bind the CRTCS */
+	drm_pick_crtcs(dev);
 
-	/* bind analog output to one crtc */
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		struct drm_display_mode *des_mode = NULL;
 
-		if (list_empty(&output->modes))
+		/* can't setup the output if there's no assigned crtc or mode */
+		if (!output->crtc || !output->crtc->desired_mode)
 			continue;
 
-		/* Get the first preferred moded */
-		list_for_each_entry(des_mode, &output->modes, head) {
-			if (des_mode->flags & DRM_MODE_TYPE_PREFERRED)
-				break;
+		fb = drm_framebuffer_create(dev);
+		if (!fb) {
+			DRM_ERROR("failed to allocate fb.\n");
+			return true;
 		}
+		output->crtc->fb = fb;
+		des_mode = output->crtc->desired_mode;
 
-		if (!des_mode)
-			continue;
-
-		if (!strncmp(output->name, "VGA", 3)) {
-			DRM_DEBUG("VGA preferred mode: %s\n", des_mode->name);
-			drm_setup_output(output, vga_crtc, des_mode);
-		} else if (!strncmp(output->name, "TMDS", 4)) {
-			DRM_DEBUG("TMDS preferred mode: %s\n", des_mode->name);
-			drm_setup_output(output, tmds_crtc, des_mode);
-		} else 	if (!strncmp(output->name, "LVDS", 3)) {
-			DRM_DEBUG("LVDS preferred mode: %s\n", des_mode->name);
-			drm_setup_output(output, lvds_crtc, des_mode);
-		} else
-			output->crtc = NULL;
-
-		/* FB config is max of above desired resolutions */
-		/* FIXME: per-output FBs/CRTCs */
 		if (des_mode->hdisplay > fb->width) {
 			fb->width = des_mode->hdisplay;
 			fb->pitch = fb->width;
 		}
 		if (des_mode->vdisplay > fb->height)
 			fb->height = des_mode->vdisplay;
-	}
 
-	/* FIXME: multiple depths */
-	bytes_per_pixel = 4;
-	fb->bits_per_pixel = bytes_per_pixel * 8;
-	fb->depth = bytes_per_pixel * 8;
-	size = fb->width * fb->height * bytes_per_pixel;
-	drm_buffer_object_create(dev, size, drm_bo_type_kernel,
+		/* FIXME: multiple depths */
+		bytes_per_pixel = 4;
+		fb->bits_per_pixel = 32;
+		fb->depth = 24;
+		size = fb->pitch * fb->height * bytes_per_pixel;
+		/* FIXME - what about resizeable objects ??? */
+		drm_buffer_object_create(dev, size, drm_bo_type_kernel,
 				 DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
 				 DRM_BO_FLAG_MEM_PRIV0 | DRM_BO_FLAG_NO_MOVE,
 				 0, 0, 0,
 				 &fbo);
-	DRM_DEBUG("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,
-		  fb->height, fbo->offset, fbo);
-	fb->offset = fbo->offset;
-	fb->bo = fbo;
-	drmfb_probe(dev, fb);
+		printk("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,
+			  fb->height, fbo->offset, fbo);
+		fb->offset = fbo->offset;
+		fb->bo = fbo;
+		drmfb_probe(dev, output->crtc);
+	}
+	drm_disable_unused_functions(dev);
 
 	return false;
 }
@@ -1582,17 +1545,20 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 	r.buffer_id = fb->id;
 
 	list_add(&fb->filp_head, &priv->fbs);
+
+	if (copy_to_user(argp, &r, sizeof(r)))
+		return -EFAULT;
+		
 	/* bind the fb to the crtc for now */
 	{
 		struct drm_crtc *crtc;
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 			crtc->fb = fb;
+			
+			drmfb_probe(dev, crtc);
 		}
 	}
-	if (copy_to_user(argp, &r, sizeof(r)))
-		return -EFAULT;
 
-	drmfb_probe(dev, fb);
 	return 0;
 }
 
@@ -1629,6 +1595,7 @@ int drm_mode_rmfb(struct inode *inode, struct file *filp,
 	}
 
 	drmfb_remove(dev, fb);
+
 	/* TODO check if we own the buffer */
 	/* TODO release all crtc connected to the framebuffer */
 	/* bind the fb to the crtc for now */
@@ -1711,7 +1678,6 @@ void drm_fb_release(struct file *filp)
 		list_del(&fb->filp_head);
 		drmfb_remove(dev, fb);
 		drm_framebuffer_destroy(fb);
-		
 	}
 }
 

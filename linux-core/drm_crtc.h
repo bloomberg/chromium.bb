@@ -294,8 +294,8 @@ struct drm_crtc_funcs {
 	void (*mode_set)(struct drm_crtc *crtc, struct drm_display_mode *mode,
 			 struct drm_display_mode *adjusted_mode, int x, int y);
 	/* Set gamma on the CRTC */
-	void (*gamma_set)(struct drm_crtc *crtc, u16 *r, u16 *g, u16 *b,
-			  int size);
+	void (*gamma_set)(struct drm_crtc *crtc, u16 r, u16 g, u16 b,
+			  int regno);
 	/* Driver cleanup routine */
 	void (*cleanup)(struct drm_crtc *crtc);
 };
@@ -320,7 +320,7 @@ struct drm_crtc {
 
 	int id; /* idr assigned */
 
-	/* framebuffer the CRTC is currently bound to */
+	/* framebuffer the output is currently bound to */
 	struct drm_framebuffer *fb;
 
 	bool enabled;
@@ -439,6 +439,7 @@ struct drm_output {
 	void *driver_private;
 
 	u32 user_mode_ids[DRM_OUTPUT_MAX_UMODES];
+
 };
 
 /**
@@ -498,6 +499,7 @@ extern void drm_mode_debug_printmodeline(struct drm_device *dev,
 extern void drm_mode_config_init(struct drm_device *dev);
 extern void drm_mode_config_cleanup(struct drm_device *dev);
 extern void drm_mode_set_name(struct drm_display_mode *mode);
+extern bool drm_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mode2);
 extern void drm_disable_unused_functions(struct drm_device *dev);
 
 extern struct drm_display_mode *drm_mode_create(struct drm_device *dev);
@@ -519,8 +521,7 @@ extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern bool drm_initial_config(struct drm_device *dev, bool cangrow);
 extern void drm_framebuffer_set_object(struct drm_device *dev,
 				       unsigned long handle);
-extern bool drm_set_desired_modes(struct drm_device *dev);
-extern int drmfb_probe(struct drm_device *dev, struct drm_framebuffer *fb);
+extern int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 
 /* IOCTLs */
