@@ -252,7 +252,7 @@ EXPORT_SYMBOL(drm_crtc_in_use);
  * Detailed mode info for a standard 640x480@60Hz monitor
  */
 static struct drm_display_mode std_mode[] = {
-	{ DRM_MODE("640x480", DRM_MODE_TYPE_DRIVER, 25200, 640, 656,
+	{ DRM_MODE("640x480", DRM_MODE_TYPE_DEFAULT, 25200, 640, 656,
 		   752, 800, 0, 480, 490, 492, 525, 0,
 		   V_NHSYNC | V_NVSYNC) }, /* 640x480@60Hz */
 };
@@ -792,6 +792,18 @@ static void drm_pick_crtcs (drm_device_t *dev)
 				break;
 		}
 
+
+		/* No preferred mode, let's select another which should pick
+  		 * the default 640x480 if nothing else is here.
+  		 * 
+		 */
+		if (!des_mode || !(des_mode->flags & DRM_MODE_TYPE_PREFERRED)) {
+			list_for_each_entry(des_mode, &output->modes, head) {
+				if (des_mode->flags & DRM_MODE_TYPE_DEFAULT)
+					break;
+			}
+		}
+
 		c = -1;
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 			c++;
@@ -823,7 +835,7 @@ clone:
 			output->crtc->desired_mode = des_mode;
 			output->initial_x = 0;
 			output->initial_y = 0;
-			DRM_DEBUG("Desired mode for CRTC %d is %dx%x\n",c,des_mode->hdisplay,des_mode->vdisplay);
+			DRM_DEBUG("Desired mode for CRTC %d is %s\n",c,des_mode->name);
 			break;
     		}
 	}
