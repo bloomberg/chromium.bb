@@ -92,6 +92,7 @@ static int drmfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 {
 	struct drmfb_par *par = info->par;
 	struct drm_device *dev = par->dev;
+	struct drm_framebuffer *fb = par->crtc->fb;
 	struct drm_display_mode *drm_mode;
 	struct drm_output *output;
 	int depth;
