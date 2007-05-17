@@ -259,6 +259,7 @@ static int drmfb_set_par(struct fb_info *info)
 	drm_mode->clock = PICOS2KHZ(var->pixclock);
 	drm_mode->vrefresh = drm_mode_vrefresh(drm_mode);
 	drm_mode_set_name(drm_mode);
+	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
 #endif
 
 	if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
