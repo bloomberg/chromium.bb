@@ -130,7 +130,7 @@ static int i915_dma_resume(drm_device_t * dev)
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	I915_WRITE(0x02080, dev_priv->dma_status_page);
+	I915_WRITE(I915REG_HWS_PGA, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
 
 	return 0;

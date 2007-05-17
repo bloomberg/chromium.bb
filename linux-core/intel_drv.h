@@ -76,4 +76,7 @@ extern struct drm_display_mode *intel_crtc_mode_get(drm_device_t *dev,
 extern void intel_wait_for_vblank(drm_device_t *dev);
 extern struct drm_crtc *intel_get_crtc_from_pipe(drm_device_t *dev, int pipe);
 
+extern int intelfb_probe(struct drm_device *dev, struct drm_framebuffer *fb);
+extern int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
+
 #endif /* __INTEL_DRV_H__ */

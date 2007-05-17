@@ -211,6 +211,13 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 
 	dev_priv->sarea_priv->pf_current_page = 0;
 
+	memset((void *)(dev_priv->ring.virtual_start), 0, dev_priv->ring.Size);
+
+	I915_WRITE(LP_RING + RING_START, dev_priv->ring.Start);
+	I915_WRITE(LP_RING + RING_LEN,
+		   ((dev_priv->ring.Size - 4096) & RING_NR_PAGES) |
+		   (RING_NO_REPORT | RING_VALID));
+
 	/* We are using separate values as placeholders for mechanisms for
 	 * private backbuffer/depthbuffer usage.
 	 */
@@ -236,7 +243,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
 	DRM_DEBUG("hw status page @ %p\n", dev_priv->hw_status_page);
 
-	I915_WRITE(0x02080, dev_priv->dma_status_page);
+	I915_WRITE(I915REG_HWS_PGA, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
 
 	intel_modeset_init(dev);
@@ -255,7 +262,7 @@ int i915_driver_unload(drm_device_t *dev)
 		dev_priv->hw_status_page = NULL;
 		dev_priv->dma_status_page = 0;
 		/* Need to rewrite hardware status page */
-		I915_WRITE(0x02080, 0x1ffff000);
+		I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
 	}
 
 	I915_WRITE(LP_RING + RING_LEN, 0);

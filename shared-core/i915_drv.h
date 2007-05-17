@@ -317,6 +317,8 @@ extern void intel_modeset_cleanup(drm_device_t *dev);
 	I915_WRITE(LP_RING + RING_TAIL, outring);			\
 } while(0)
 
+#define MI_NOOP	(0x00 << 23)
+
 extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 /*
@@ -356,6 +358,7 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 #define BB1_UNPROTECTED       (0<<0)
 #define BB2_END_ADDR_MASK     (~0x7)
 
+#define I915REG_HWS_PGA		0x02080
 #define I915REG_HWSTAM		0x02098
 #define I915REG_INT_IDENTITY_R	0x020a4
 #define I915REG_INT_MASK_R 	0x020a8
@@ -460,8 +463,14 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 #define SRC_COPY_BLT_CMD                ((2<<29)|(0x43<<22)|4)
 #define XY_SRC_COPY_BLT_CMD		((2<<29)|(0x53<<22)|6)
+#define XY_MONO_SRC_COPY_IMM_BLT	((2<<29)|(0x71<<22)|5)
 #define XY_SRC_COPY_BLT_WRITE_ALPHA	(1<<21)
 #define XY_SRC_COPY_BLT_WRITE_RGB	(1<<20)
+#define   BLT_DEPTH_8			(0<<24)
+#define   BLT_DEPTH_16_565		(1<<24)
+#define   BLT_DEPTH_16_1555		(2<<24)
+#define   BLT_DEPTH_32			(3<<24)
+#define   BLT_ROP_GXCOPY		(0xcc<<16)
 
 #define MI_BATCH_BUFFER 	((0x30<<23)|1)
 #define MI_BATCH_BUFFER_START 	(0x31<<23)

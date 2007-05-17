@@ -370,7 +370,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	int dspsurf = (pipe == 0 ? DSPASURF : DSPBSURF);
 
 	Start = crtc->fb->offset;
-	Offset = ((y * crtc->fb->pitch + x) * (crtc->fb->bits_per_pixel / 8));
+	Offset = y * crtc->fb->pitch + x;
 
 	DRM_DEBUG("Writing base %08lX %08lX %d %d\n", Start, Offset, x, y);
 	if (IS_I965G(dev)) {
@@ -911,7 +911,7 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 		   ((adjusted_mode->crtc_vblank_end - 1) << 16));
 	I915_WRITE(vsync_reg, (adjusted_mode->crtc_vsync_start - 1) |
 		   ((adjusted_mode->crtc_vsync_end - 1) << 16));
-	I915_WRITE(dspstride_reg, crtc->fb->pitch * (crtc->fb->bits_per_pixel / 8));
+	I915_WRITE(dspstride_reg, crtc->fb->pitch);
 	/* pipesrc and dspsize control the size that is scaled from, which should
 	 * always be the user's requested size.
 	 */

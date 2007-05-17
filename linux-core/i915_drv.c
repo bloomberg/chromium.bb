@@ -30,6 +30,7 @@
 #include "drmP.h"
 #include "drm.h"
 #include "i915_drm.h"
+#include "intel_drv.h"
 #include "i915_drv.h"
 
 #include "drm_pciids.h"
@@ -92,6 +93,8 @@ static struct drm_driver driver = {
 	.reclaim_buffers = drm_core_reclaim_buffers,
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
+	.fb_probe = intelfb_probe,
+	.fb_remove = intelfb_remove,
 	.ioctls = i915_ioctls,
 	.fops = {
 		.owner = THIS_MODULE,

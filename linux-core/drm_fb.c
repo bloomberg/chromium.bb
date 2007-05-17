@@ -106,8 +106,6 @@ int drmfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 	struct fb_info *info;
 	struct drmfb_par *par;
 	struct device *device = &dev->pdev->dev; 
-	struct fb_var_screeninfo *var_info;
-	unsigned long base, size;
 	int ret;
 
 	info = framebuffer_alloc(sizeof(struct drmfb_par), device);
@@ -126,7 +124,7 @@ int drmfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 
 	strcpy(info->fix.id, "drmfb");
 	info->fix.smem_start = fb->offset + dev->mode_config.fb_base;
-	info->fix.smem_len = (8*1024*1024);
+	info->fix.smem_len = fb->bo->mem.size;
 	info->fix.type = FB_TYPE_PACKED_PIXELS;
 	info->fix.visual = FB_VISUAL_DIRECTCOLOR;
 	info->fix.accel = FB_ACCEL_NONE;
@@ -142,7 +140,7 @@ int drmfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 		DRM_ERROR("error mapping fb: %d\n", ret);
 
 	info->screen_base = fb->virtual_base;
-	info->screen_size = size;
+	info->screen_size = fb->bo->mem.size;
 	info->pseudo_palette = fb->pseudo_palette;
 	info->var.xres = fb->width;
 	info->var.xres_virtual = fb->pitch;

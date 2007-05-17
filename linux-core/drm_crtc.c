@@ -910,10 +910,8 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 
 		/* FB config is max of above desired resolutions */
 		/* FIXME: per-output FBs/CRTCs */
-		if (des_mode->hdisplay > fb->width) {
+		if (des_mode->hdisplay > fb->width)
 			fb->width = des_mode->hdisplay;
-			fb->pitch = fb->width;
-		}
 		if (des_mode->vdisplay > fb->height)
 			fb->height = des_mode->vdisplay;
 	}
@@ -921,6 +919,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 	/* FIXME: multiple depths */
 	bytes_per_pixel = 4;
 	fb->bits_per_pixel = bytes_per_pixel * 8;
+	fb->pitch = fb->width * ((fb->bits_per_pixel + 1) / 8);
 	fb->depth = bytes_per_pixel * 8;
 	size = fb->width * fb->height * bytes_per_pixel;
 	drm_buffer_object_create(dev, size, drm_bo_type_kernel,
@@ -932,7 +931,7 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 		  fb->height, fbo->offset, fbo);
 	fb->offset = fbo->offset;
 	fb->bo = fbo;
-	drmfb_probe(dev, fb);
+	dev->driver->fb_probe(dev, fb);
 
 	return false;
 }
@@ -964,7 +963,7 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 	}
 
 	list_for_each_entry_safe(fb, fbt, &dev->mode_config.fb_list, head) {
-		drmfb_remove(dev, fb);
+		dev->driver->fb_remove(dev, fb);
 		/* If this FB was the kernel one, free it */
 		if (fb->bo->type == drm_bo_type_kernel) {
 			mutex_lock(&dev->struct_mutex);
@@ -1528,7 +1527,7 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 	if (copy_to_user(argp, &r, sizeof(r)))
 		return -EFAULT;
 
-	drmfb_probe(dev, fb);
+	dev->driver->fb_probe(dev, fb);
 	return 0;
 }
 
@@ -1564,7 +1563,7 @@ int drm_mode_rmfb(struct inode *inode, struct file *filp,
 		return -EINVAL;
 	}
 
-	drmfb_remove(dev, fb);
+	dev->driver->fb_remove(dev, fb);
 	/* TODO check if we own the buffer */
 	/* TODO release all crtc connected to the framebuffer */
 	/* bind the fb to the crtc for now */
@@ -1645,7 +1644,7 @@ void drm_fb_release(struct file *filp)
 
 	list_for_each_entry_safe(fb, tfb, &priv->fbs, filp_head) {
 		list_del(&fb->filp_head);
-		drmfb_remove(dev, fb);
+		dev->driver->fb_remove(dev, fb);
 		drm_framebuffer_destroy(fb);
 		
 	}
