@@ -202,7 +202,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 
 	/* FIXME: need wrapper with PCI mem checks */
 	ret = drm_mem_reg_ioremap(dev, &dev_priv->ring_buffer->mem,
-				  &dev_priv->ring.virtual_start);
+				  (void **) &dev_priv->ring.virtual_start);
 	if (ret)
 		DRM_ERROR("error mapping ring buffer: %d\n", ret);
 
@@ -272,7 +272,7 @@ int i915_driver_unload(drm_device_t *dev)
 	drm_mem_reg_iounmap(dev, &dev_priv->ring_buffer->mem,
 			    dev_priv->ring.virtual_start);
 
-	DRM_DEBUG("usage is %d\n", dev_priv->ring_buffer->usage);
+	DRM_DEBUG("usage is %d\n", atomic_read(&dev_priv->ring_buffer->usage));
 	mutex_lock(&dev->struct_mutex);
 	drm_bo_usage_deref_locked(dev_priv->ring_buffer);
 	mutex_unlock(&dev->struct_mutex);

@@ -40,12 +40,13 @@
 
 #include "drmP.h"
 #include "drm.h"
+#include "drm_crtc.h"
 #include "i915_drm.h"
 #include "i915_drv.h"
 
 struct intelfb_par {
 	struct drm_device *dev;
-	struct drm_framebuffer *fb;
+	struct drm_crtc *crtc;
 };
 
 static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
@@ -53,9 +54,17 @@ static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 			   struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
-	struct drm_framebuffer *fb = par->fb;
-	if (regno > 17)
+	struct drm_framebuffer *fb = par->crtc->fb;
+	struct drm_crtc *crtc = par->crtc;
+
+	if (regno > 255)
 		return 1;
+
+	if (fb->depth == 8) {
+		if (crtc->funcs->gamma_set)
+			crtc->funcs->gamma_set(crtc, red, green, blue, regno);
+		return 0;
+	}
 
 	if (regno < 16) {
 		switch (fb->depth) {
@@ -81,16 +90,194 @@ static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 	return 0;
 }
 
+static int intelfb_check_var(struct fb_var_screeninfo *var,
+			     struct fb_info *info)
+{
+        struct intelfb_par *par = info->par;
+        struct drm_device *dev = par->dev;
+	struct drm_framebuffer *fb = par->crtc->fb;
+        struct drm_display_mode *drm_mode;
+        struct drm_output *output;
+        int depth;
+
+        if (!var->pixclock)
+                return -EINVAL;
+
+        /* Need to resize the fb object !!! */
+        if (var->xres > fb->width || var->yres > fb->height) {
+                DRM_ERROR("Requested width/height is greater than current fb object %dx%d > %dx%d\n",var->xres,var->yres,fb->width,fb->height);
+                DRM_ERROR("Need resizing code.\n");
+                return -EINVAL;
+        }
+
+        switch (var->bits_per_pixel) {
+        case 16:
+                depth = (var->green.length == 6) ? 16 : 15;
+                break;
+        case 32:
+                depth = (var->transp.length > 0) ? 32 : 24;
+                break;
+        default:
+                depth = var->bits_per_pixel;
+                break;
+        }
+                
+        switch (depth) {
+        case 8:
+                var->red.offset = 0;
+                var->green.offset = 0;
+                var->blue.offset = 0;
+                var->red.length = 8;
+                var->green.length = 8;
+                var->blue.length = 8;
+                var->transp.length = 0;
+                var->transp.offset = 0;
+                break;
+        case 15:
+                var->red.offset = 10;
+                var->green.offset = 5;
+                var->blue.offset = 0;
+                var->red.length = 5;
+                var->green.length = 5;
+                var->blue.length = 5;
+                var->transp.length = 1;
+                var->transp.offset = 15;
+                break;
+        case 16:
+                var->red.offset = 11;
+                var->green.offset = 6;
+                var->blue.offset = 0;
+                var->red.length = 5;
+                var->green.length = 6;
+                var->blue.length = 5;
+                var->transp.length = 0;
+                var->transp.offset = 0;
+                break;
+        case 24:
+                var->red.offset = 16;
+                var->green.offset = 8;
+                var->blue.offset = 0;
+                var->red.length = 8;
+                var->green.length = 8;
+                var->blue.length = 8;
+                var->transp.length = 0;
+                var->transp.offset = 0;
+                break;
+        case 32:
+                var->red.offset = 16;
+                var->green.offset = 8;
+                var->blue.offset = 0;
+                var->red.length = 8;
+                var->green.length = 8;
+                var->blue.length = 8;
+                var->transp.length = 8;
+                var->transp.offset = 24;
+                break;
+        default:
+                return -EINVAL; 
+        }
+
+#if 0
+        /* Here we walk the output mode list and look for modes. If we haven't
+         * got it, then bail. Not very nice, so this is disabled.
+         * In the set_par code, we create our mode based on the incoming
+         * parameters. Nicer, but may not be desired by some.
+         */
+        list_for_each_entry(output, &dev->mode_config.output_list, head) {
+                if (output->crtc == par->crtc)
+                        break;
+        }
+    
+        list_for_each_entry(drm_mode, &output->modes, head) {
+                if (drm_mode->hdisplay == var->xres &&
+                    drm_mode->vdisplay == var->yres &&
+                    drm_mode->clock != 0)
+			break;
+	}
+ 
+        if (!drm_mode)
+                return -EINVAL;
+#endif
+
+	return 0;
+}
+
 /* this will let fbcon do the mode init */
 static int intelfb_set_par(struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
+	struct drm_framebuffer *fb = par->crtc->fb;
 	struct drm_device *dev = par->dev;
+        struct drm_display_mode *drm_mode;
+        struct fb_var_screeninfo *var = &info->var;
+        struct drm_output *output;
 
-	drm_set_desired_modes(dev);
+        switch (var->bits_per_pixel) {
+        case 16:
+                fb->depth = (var->green.length == 6) ? 16 : 15;
+                break;
+        case 32:
+                fb->depth = (var->transp.length > 0) ? 32 : 24;
+                break;
+        default:
+                fb->depth = var->bits_per_pixel;
+                break;
+        }
+
+        fb->bits_per_pixel = var->bits_per_pixel;
+
+        info->fix.line_length = fb->pitch;
+        info->fix.smem_len = info->fix.line_length * fb->height;
+        info->fix.visual = (fb->depth == 8) ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+
+        info->screen_size = info->fix.smem_len; /* ??? */
+
+        /* Should we walk the output's modelist or just create our own ???
+         * For now, we create and destroy a mode based on the incoming 
+         * parameters. But there's commented out code below which scans 
+         * the output list too.
+         */
+#if 0
+        list_for_each_entry(output, &dev->mode_config.output_list, head) {
+                if (output->crtc == par->crtc)
+                        break;
+        }
+    
+        list_for_each_entry(drm_mode, &output->modes, head) {
+                if (drm_mode->hdisplay == var->xres &&
+                    drm_mode->vdisplay == var->yres &&
+                    drm_mode->clock != 0)
+			break;
+        }
+#else
+        drm_mode = drm_mode_create(dev);
+        drm_mode->hdisplay = var->xres;
+        drm_mode->hsync_start = drm_mode->hdisplay + var->right_margin;
+        drm_mode->hsync_end = drm_mode->hsync_start + var->hsync_len;
+        drm_mode->htotal = drm_mode->hsync_end + var->left_margin;
+        drm_mode->vdisplay = var->yres;
+        drm_mode->vsync_start = drm_mode->vdisplay + var->lower_margin;
+        drm_mode->vsync_end = drm_mode->vsync_start + var->vsync_len;
+        drm_mode->vtotal = drm_mode->vsync_end + var->upper_margin;
+        drm_mode->clock = PICOS2KHZ(var->pixclock);
+        drm_mode->vrefresh = drm_mode_vrefresh(drm_mode);
+        drm_mode_set_name(drm_mode);
+#endif
+
+        if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
+                return -EINVAL;
+
+        /* Have to destroy our created mode if we're not searching the mode
+         * list for it.
+         */
+#if 1 
+        drm_mode_destroy(dev, drm_mode);
+#endif
+
 	return 0;
 }
 
+#if 0
 static void intelfb_copyarea(struct fb_info *info,
 			     const struct fb_copyarea *region)
 {
@@ -234,6 +421,7 @@ void intelfb_imageblit(struct fb_info *info, const struct fb_image *image)
 		OUT_RING(MI_NOOP);
 	ADVANCE_LP_RING();
 }
+#endif
 
 static struct fb_ops intelfb_ops = {
 	.owner = THIS_MODULE,
@@ -242,18 +430,21 @@ static struct fb_ops intelfb_ops = {
 	//	.fb_write = intelfb_write,
 	//	.fb_release = intelfb_release,
 	//	.fb_ioctl = intelfb_ioctl,
+	.fb_check_var = intelfb_check_var,
 	.fb_set_par = intelfb_set_par,
 	.fb_setcolreg = intelfb_setcolreg,
 	.fb_fillrect = cfb_fillrect,
 	.fb_copyarea = cfb_copyarea, //intelfb_copyarea,
-	.fb_imageblit = intelfb_imageblit,
+	.fb_imageblit = cfb_imageblit, //intelfb_imageblit,
 };
 
-int intelfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
+int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 {
 	struct fb_info *info;
 	struct intelfb_par *par;
 	struct device *device = &dev->pdev->dev; 
+	struct drm_framebuffer *fb = crtc->fb;
+	struct drm_display_mode *mode = crtc->desired_mode;
 	int ret;
 
 	info = framebuffer_alloc(sizeof(struct intelfb_par), device);
@@ -266,24 +457,24 @@ int intelfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 	par = info->par;
 
 	par->dev = dev;
-	par->fb = fb;
+	par->crtc = crtc;
 
 	info->fbops = &intelfb_ops;
 
 	strcpy(info->fix.id, "intelfb");
-	info->fix.smem_start = fb->offset + dev->mode_config.fb_base;
-	info->fix.smem_len = fb->bo->mem.size;
 	info->fix.type = FB_TYPE_PACKED_PIXELS;
+	info->fix.visual = FB_VISUAL_TRUECOLOR;
 	info->fix.type_aux = 0;
 	info->fix.xpanstep = 8;
 	info->fix.ypanstep = 1;
 	info->fix.ywrapstep = 0;
-	info->fix.visual = FB_VISUAL_DIRECTCOLOR;
 	info->fix.accel = FB_ACCEL_I830;
 	info->fix.type_aux = 0;
 	info->fix.mmio_start = 0;
 	info->fix.mmio_len = 0;
 	info->fix.line_length = fb->pitch;
+	info->fix.smem_start = fb->offset + dev->mode_config.fb_base;
+	info->fix.smem_len = info->fix.line_length * fb->height;
 
 	info->flags = FBINFO_DEFAULT;
 
@@ -292,11 +483,9 @@ int intelfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 		DRM_ERROR("error mapping fb: %d\n", ret);
 
 	info->screen_base = fb->virtual_base;
-	info->screen_size = fb->bo->mem.size;
+	info->screen_size = info->fix.smem_len; /* FIXME */
 	info->pseudo_palette = fb->pseudo_palette;
-	info->var.xres = fb->width;
 	info->var.xres_virtual = fb->width;
-	info->var.yres = fb->height;
 	info->var.yres_virtual = fb->height;
 	info->var.bits_per_pixel = fb->bits_per_pixel;
 	info->var.xoffset = 0;
@@ -305,6 +494,17 @@ int intelfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 	info->var.height = -1;
 	info->var.width = -1;
 	info->var.vmode = FB_VMODE_NONINTERLACED;
+
+        info->var.xres = mode->hdisplay;
+        info->var.right_margin = mode->hsync_start - mode->hdisplay;
+        info->var.hsync_len = mode->hsync_end - mode->hsync_start;
+        info->var.left_margin = mode->htotal - mode->hsync_end;
+        info->var.yres = mode->vdisplay;
+        info->var.lower_margin = mode->vsync_start - mode->vdisplay;
+        info->var.vsync_len = mode->vsync_end - mode->vsync_start;
+	info->var.upper_margin = mode->vtotal - mode->vsync_end;
+        info->var.pixclock = 10000000 / mode->htotal * 1000 /
+		mode->vtotal * 100000 / mode->vrefresh;
 
 	info->pixmap.size = 64*1024;
 	info->pixmap.buf_align = 8;
@@ -316,21 +516,52 @@ int intelfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 	DRM_DEBUG("   pitch is %d\n", fb->pitch);
 	switch(fb->depth) {
 	case 8:
-	case 15:
+                info->var.red.offset = 0;
+                info->var.green.offset = 0;
+                info->var.blue.offset = 0;
+                info->var.red.length = 8; /* 8bit DAC */
+                info->var.green.length = 8;
+                info->var.blue.length = 8;
+                info->var.transp.offset = 0;
+                info->var.transp.length = 0;
+                break;
+ 	case 15:
+                info->var.red.offset = 10;
+                info->var.green.offset = 5;
+                info->var.blue.offset = 0;
+                info->var.red.length = info->var.green.length =
+                        info->var.blue.length = 5;
+                info->var.transp.offset = 15;
+                info->var.transp.length = 1;
+                break;
 	case 16:
-		break;
-	default:
+                info->var.red.offset = 11;
+                info->var.green.offset = 5;
+                info->var.blue.offset = 0;
+                info->var.red.length = 5;
+                info->var.green.length = 6;
+                info->var.blue.length = 5;
+                info->var.transp.offset = 0;
+ 		break;
 	case 24:
+                info->var.red.offset = 16;
+                info->var.green.offset = 8;
+                info->var.blue.offset = 0;
+                info->var.red.length = info->var.green.length =
+                        info->var.blue.length = 8;
+                info->var.transp.offset = 0;
+                info->var.transp.length = 0;
+                break;
 	case 32:
 		info->var.red.offset = 16;
 		info->var.green.offset = 8;
 		info->var.blue.offset = 0;
 		info->var.red.length = info->var.green.length =
 			info->var.blue.length = 8;
-		if (fb->depth == 32) {
-			info->var.transp.offset = 24;
-			info->var.transp.length = 8;
-		}
+		info->var.transp.offset = 24;
+		info->var.transp.length = 8;
+		break;
+	default:
 		break;
 	}
 
@@ -343,8 +574,9 @@ int intelfb_probe(struct drm_device *dev, struct drm_framebuffer *fb)
 }
 EXPORT_SYMBOL(intelfb_probe);
 
-int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
+int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 {
+	struct drm_framebuffer *fb = crtc->fb;
 	struct fb_info *info = fb->fbdev;
 	
 	if (info) {

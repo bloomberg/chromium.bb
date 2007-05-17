@@ -459,6 +459,7 @@ extern int drm_bo_mem_space(drm_buffer_object_t * bo,
 			    drm_bo_mem_reg_t * mem, int no_wait);
 extern int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
 			      int no_wait, int move_unfenced);
+extern int drm_bo_clean_mm(struct drm_device *dev, unsigned mem_type);
 
 /*
  * Buffer object memory move helpers.

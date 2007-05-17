@@ -238,15 +238,10 @@ drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
 
 	return r;
 }
-#if 0
-int drmModeForceProbe(int fd, uint32_t outputId)
-{
-	/* TODO impl/keep? */
-}
 
-#endif
+
 /*
- * Crtc function.
+ * Crtc functions
  */
 
 drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
@@ -274,9 +269,7 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 	r->x               = crtc.x;
 	r->y               = crtc.y;
 	r->mode            = crtc.mode;
-//	r->width           = crtc.width;
-//	r->height          = crtc.height;
-	r->buffer_id        = crtc.fb_id;
+	r->buffer_id       = crtc.fb_id;
 	r->gamma_size      = crtc.gamma_size;
 	r->count_outputs   = crtc.count_outputs;
 	r->count_possibles = crtc.count_possibles;
@@ -305,8 +298,8 @@ int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
 
 	crtc.x             = x;
 	crtc.y             = y;
-	crtc.crtc_id        = crtcId;
-	crtc.fb_id      = bufferId;
+	crtc.crtc_id       = crtcId;
+	crtc.fb_id         = bufferId;
 	crtc.set_outputs   = outputs;
 	crtc.count_outputs = count;
 	crtc.mode          = modeId;
@@ -314,22 +307,11 @@ int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
 	return ioctl(fd, DRM_IOCTL_MODE_SETCRTC, &crtc);
 }
 
-#if 0
-drmModeGammaTriplePtr drmModeGetCrtcGamma(int fd, uint32_t crtc, int *count)
-{
-	/* TODO impl */
-}
 
-int drmModeSetCrtcGamma(int fd, uint32_t crtcId,
-		drmModeGammaTriplePtr ptr, int count)
-{
-	/* TODO impl */
-}
-
-#endif
 /*
  * Output manipulation
  */
+
 drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 {
 	struct drm_mode_get_output out;
@@ -376,37 +358,38 @@ err_allocs:
 	return 0;
 }
 
-#if 0
-uint32_t drmModeNewMode(int fd, struct drm_mode_modeinfo *modeInfo)
+uint32_t drmModeAddMode(int fd, struct drm_mode_modeinfo *mode_info)
 {
-	/* TODO impl */
+	if (ioctl(fd, DRM_IOCTL_MODE_ADDMODE, mode_info))
+		return 0;
+	
+	return mode_info->id;
 }
 
-int drmModeDesMode(int fd, uint32_t modeId)
+int drmModeRmMode(int fd, uint32_t mode_id)
 {
-  //	return ioctl(fd, DRM_IOCTL_MODE_DESMODE, modeId);
+  	return ioctl(fd, DRM_IOCTL_MODE_RMMODE, mode_id);
 }
 
-int drmModeAddMode(int fd, uint32_t outputId, uint32_t modeId)
+int drmModeAttachMode(int fd, uint32_t output_id, uint32_t mode_id)
 {
 
-	drm_mode_outputmode_t res;
+	struct drm_mode_mode_cmd res;
 
-	res.outputId = outputId;
-	res.modeId = modeId;
+	res.output_id = output_id;
+	res.mode_id = mode_id;
 
-	//	return ioctl(fd, DRM_IOCTL_MODE_ADDMODE, &res);
+	return ioctl(fd, DRM_IOCTL_MODE_ATTACHMODE, &res);
 }
 
-int drmModeDelMode(int fd, uint32_t outputId, uint32_t modeId)
+int drmModeDetachMode(int fd, uint32_t output_id, uint32_t mode_id)
 {
-	drm_mode_outputmode_t res;
+	struct drm_mode_mode_cmd res;
 
-	res.outputId = outputId;
-	res.modeId = modeId;
+	res.output_id = output_id;
+	res.mode_id = mode_id;
 
-	//	return ioctl(fd, DRM_IOCTL_MODE_DELMODE, &res);
+	return ioctl(fd, DRM_IOCTL_MODE_DETACHMODE, &res);
 }
 
-#endif
 

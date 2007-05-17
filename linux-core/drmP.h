@@ -662,8 +662,8 @@ struct drm_driver {
 	void (*set_version) (struct drm_device * dev, drm_set_version_t * sv);
 
 	/* FB routines, if present */
-	int (*fb_probe)(struct drm_device *dev, struct drm_framebuffer *fb);
-	int (*fb_remove)(struct drm_device *dev, struct drm_framebuffer *fb);
+	int (*fb_probe)(struct drm_device *dev, struct drm_crtc *crtc);
+	int (*fb_remove)(struct drm_device *dev, struct drm_crtc *crtc);
 
 	struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;

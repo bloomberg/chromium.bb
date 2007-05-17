@@ -525,7 +525,6 @@ static bool intel_sdvo_get_preferred_input_timing(struct drm_output *output,
 
 static int intel_sdvo_get_clock_rate_mult(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
 	u8 response, status;
 
 	intel_sdvo_write_cmd(output, SDVO_CMD_GET_CLOCK_RATE_MULT, NULL, 0);
@@ -895,8 +894,6 @@ static enum drm_output_status intel_sdvo_detect(struct drm_output *output)
 
 static int intel_sdvo_get_modes(struct drm_output *output)
 {
-	struct drm_display_mode *modes;
-
 	/* set the bus switch and get the modes */
 	intel_sdvo_set_control_bus_switch(output, SDVO_CONTROL_BUS_DDC2);
 	intel_ddc_get_modes(output);
@@ -1013,26 +1010,18 @@ void intel_sdvo_init(drm_device_t *dev, int output_device)
 
 	memset(&sdvo_priv->active_outputs, 0, sizeof(sdvo_priv->active_outputs));
 
-	/* TODO, CVBS, SVID, YPRPB & SCART outputs.
-	 * drm_initial_config probably wants tweaking too to support the
-	 * above. But has fixed VGA, TMDS and LVDS checking code. That should
-	 * be dealt with.
-	 */
+	/* TODO, CVBS, SVID, YPRPB & SCART outputs. */
 	if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB0)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB0;
 		output->subpixel_order = SubPixelHorizontalRGB;
-		/* drm_initial_config wants this name, but should be RGB */
-		/* Use this for now.... */
-		name_prefix="VGA";
+		name_prefix="RGB";
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB1)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB1;
 		output->subpixel_order = SubPixelHorizontalRGB;
-		/* drm_initial_config wants this name, but should be RGB */
-		/* Use this for now.... */
-		name_prefix="VGA";
+		name_prefix="RGB";
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS0)
 	{
