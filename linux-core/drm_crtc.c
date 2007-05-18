@@ -170,6 +170,7 @@ void drm_framebuffer_destroy(struct drm_framebuffer *fb)
 
 	kfree(fb);
 }
+EXPORT_SYMBOL(drm_framebuffer_destroy);
 
 /**
  * drm_crtc_create - create a new CRTC object
@@ -790,10 +791,8 @@ static void drm_pick_crtcs (drm_device_t *dev)
 				break;
 		}
 
-
 		/* No preferred mode, let's select another which should pick
   		 * the default 640x480 if nothing else is here.
-  		 * 
 		 */
 		if (!des_mode || !(des_mode->flags & DRM_MODE_TYPE_PREFERRED)) {
 			list_for_each_entry(des_mode, &output->modes, head) {
@@ -857,12 +856,7 @@ clone:
  */
 bool drm_initial_config(drm_device_t *dev, bool can_grow)
 {
-	/* do a hardcoded initial configuration here */
-	struct drm_display_mode *des_mode = NULL;
 	struct drm_output *output;
-	struct drm_framebuffer *fb;
-	drm_buffer_object_t *fbo;
-	unsigned long size, bytes_per_pixel;
 	int ret = false;
 
 	spin_lock(&dev->mode_config.config_lock);
@@ -877,48 +871,10 @@ bool drm_initial_config(drm_device_t *dev, bool can_grow)
 		if (!output->crtc || !output->crtc->desired_mode)
 			continue;
 
-		fb = drm_framebuffer_create(dev);
-		if (!fb) {
-			DRM_ERROR("failed to allocate fb.\n");
-			ret = true;
-			goto out;
-		}
-		output->crtc->fb = fb;
-		des_mode = output->crtc->desired_mode;
-
-		if (des_mode->hdisplay > fb->width)
-			fb->width = des_mode->hdisplay;
-		if (des_mode->vdisplay > fb->height)
-			fb->height = des_mode->vdisplay;
-
-		/* FIXME: multiple depths */
-		bytes_per_pixel = 4;
-		fb->bits_per_pixel = 32;
-		fb->pitch = fb->width * ((fb->bits_per_pixel + 1) / 8);
-		fb->depth = 24;
-		size = fb->width * fb->height * bytes_per_pixel;
-		/* FIXME - what about resizeable objects ??? */
-		ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
-					       DRM_BO_FLAG_READ |
-					       DRM_BO_FLAG_WRITE |
-					       DRM_BO_FLAG_MEM_PRIV0 |
-					       DRM_BO_FLAG_NO_MOVE,
-					       0, 0, 0,
-					       &fbo);
-		if (ret) {
-			printk(KERN_ERR "failed to allocate framebuffer\n");
-			drm_framebuffer_destroy(fb);
-			continue;
-		}
-		fb->offset = fbo->offset;
-		fb->bo = fbo;
-		printk("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,
-		       fb->height, fbo->offset, fbo);
 		dev->driver->fb_probe(dev, output->crtc);
 	}
 	drm_disable_unused_functions(dev);
 
-out:
 	spin_unlock(&dev->mode_config.config_lock);
 	return ret;
 }
@@ -946,10 +902,6 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 		drm_output_destroy(output);
 	}
 
-	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {
-		drm_crtc_destroy(crtc);
-	}
-
 	list_for_each_entry_safe(mode, mt, &dev->mode_config.usermode_list, head) {
 		drm_mode_destroy(dev, mode);
 	}
@@ -964,6 +916,11 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 		}
 		drm_framebuffer_destroy(fb);
 	}
+
+	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {
+		drm_crtc_destroy(crtc);
+	}
+
 }
 EXPORT_SYMBOL(drm_mode_config_cleanup);
 

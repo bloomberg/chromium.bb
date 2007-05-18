@@ -211,7 +211,6 @@ static int intelfb_set_par(struct fb_info *info)
 	struct drm_device *dev = par->dev;
         struct drm_display_mode *drm_mode;
         struct fb_var_screeninfo *var = &info->var;
-        struct drm_output *output;
 
         switch (var->bits_per_pixel) {
         case 16:
@@ -263,6 +262,7 @@ static int intelfb_set_par(struct fb_info *info)
         drm_mode->clock = PICOS2KHZ(var->pixclock);
         drm_mode->vrefresh = drm_mode_vrefresh(drm_mode);
         drm_mode_set_name(drm_mode);
+	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
 #endif
 
         if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
@@ -444,14 +444,50 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	struct fb_info *info;
 	struct intelfb_par *par;
 	struct device *device = &dev->pdev->dev; 
-	struct drm_framebuffer *fb = crtc->fb;
+	struct drm_framebuffer *fb;
 	struct drm_display_mode *mode = crtc->desired_mode;
+	drm_buffer_object_t *fbo = NULL;
 	int ret;
 
 	info = framebuffer_alloc(sizeof(struct intelfb_par), device);
 	if (!info){
 		return -EINVAL;
 	}
+
+	fb = drm_framebuffer_create(dev);
+	if (!fb) {
+		framebuffer_release(info);
+		DRM_ERROR("failed to allocate fb.\n");
+		return -EINVAL;
+	}
+	crtc->fb = fb;
+
+	fb->width = crtc->desired_mode->hdisplay;
+	fb->height = crtc->desired_mode->vdisplay;
+
+	fb->bits_per_pixel = 32;
+	fb->pitch = fb->width * ((fb->bits_per_pixel + 1) / 8);
+	fb->depth = 24;
+	ret = drm_buffer_object_create(dev, 
+				       fb->width * fb->height * 4, 
+				       drm_bo_type_kernel,
+				       DRM_BO_FLAG_READ |
+				       DRM_BO_FLAG_WRITE |
+				       DRM_BO_FLAG_MEM_PRIV0 | /* FIXME! */
+				       DRM_BO_FLAG_NO_MOVE,
+				       0, 0, 0,
+				       &fbo);
+	if (ret || !fbo) {
+		printk(KERN_ERR "failed to allocate framebuffer\n");
+		drm_framebuffer_destroy(fb);
+		framebuffer_release(info);
+		return -EINVAL;
+	}
+	fb->offset = fbo->offset;
+	fb->bo = fbo;
+	printk("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,
+		       fb->height, fbo->offset, fbo);
+
 
 	fb->fbdev = info;
 		
@@ -505,7 +541,9 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
         info->var.vsync_len = mode->vsync_end - mode->vsync_start;
 	info->var.upper_margin = mode->vtotal - mode->vsync_end;
         info->var.pixclock = 10000000 / mode->htotal * 1000 /
-		mode->vtotal * 100000 / mode->vrefresh;
+		mode->vtotal * 100;
+	/* avoid overflow */
+	info->var.pixclock = info->var.pixclock * 1000 / mode->vrefresh;
 
 	info->pixmap.size = 64*1024;
 	info->pixmap.buf_align = 8;

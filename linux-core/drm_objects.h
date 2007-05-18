@@ -29,8 +29,7 @@
  */
 
 #ifndef _DRM_OBJECTS_H
-#define _DRM_OJBECTS_H
-#define DRM_HAS_TTM
+#define _DRM_OBJECTS_H
 
 struct drm_device;
 
@@ -248,9 +247,9 @@ typedef struct drm_ttm_backend_func {
 
 
 typedef struct drm_ttm_backend {
-        uint32_t flags;
-        int mem_type;
-        drm_ttm_backend_func_t *func;
+	uint32_t flags;
+	int mem_type;
+	drm_ttm_backend_func_t *func;
 } drm_ttm_backend_t;
 
 typedef struct drm_ttm {

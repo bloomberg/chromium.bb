@@ -259,6 +259,7 @@ static int drmfb_set_par(struct fb_info *info)
 	drm_mode->clock = PICOS2KHZ(var->pixclock);
 	drm_mode->vrefresh = drm_mode_vrefresh(drm_mode);
 	drm_mode_set_name(drm_mode);
+	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
 #endif
 
 	if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
@@ -418,9 +419,10 @@ int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 }
 EXPORT_SYMBOL(drmfb_probe);
 
-int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
+int drmfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 {
 	struct fb_info *info = fb->fbdev;
+	struct drm_framebuffer *fb = crtc->fb;
 	
 	if (info) {
 		drm_mem_reg_iounmap(dev, &fb->bo->mem, fb->virtual_base);

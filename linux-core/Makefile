@@ -283,6 +283,7 @@ CONFIG_DRM_SAVAGE := n
 CONFIG_DRM_VIA := n
 CONFIG_DRM_MACH64 := n
 CONFIG_DRM_NV := n
+CONFIG_DRM_NOUVEAU := n
 
 # Enable module builds for the modules requested/supported.
 

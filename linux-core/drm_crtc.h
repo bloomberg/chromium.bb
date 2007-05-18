@@ -520,8 +520,12 @@ extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern bool drm_initial_config(struct drm_device *dev, bool cangrow);
 extern void drm_framebuffer_set_object(struct drm_device *dev,
 				       unsigned long handle);
+extern struct drm_framebuffer *drm_framebuffer_create(struct drm_device *dev);
+extern void drm_framebuffer_destroy(struct drm_framebuffer *fb);
 extern int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
+extern bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
+		       int x, int y);
 
 /* IOCTLs */
 extern int drm_mode_getresources(struct inode *inode, struct file *filp,

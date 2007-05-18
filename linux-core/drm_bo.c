@@ -2309,6 +2309,9 @@ void drm_bo_unmap_virtual(drm_buffer_object_t * bo)
 	loff_t offset = ((loff_t) bo->map_list.hash.key) << PAGE_SHIFT;
 	loff_t holelen = ((loff_t) bo->mem.num_pages) << PAGE_SHIFT;
 
+	if (!dev->dev_mapping)
+		return;
+
 	unmap_mapping_range(dev->dev_mapping, offset, holelen, 1);
 }
 

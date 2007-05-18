@@ -213,20 +213,20 @@ static void intel_sdvo_write_cmd(struct drm_output *output, u8 cmd,
 	int i;
 
         if (1) {
-                printk("%s: W: %02X ", SDVO_NAME(sdvo_priv), cmd);
+                DRM_DEBUG("%s: W: %02X ", SDVO_NAME(sdvo_priv), cmd);
                 for (i = 0; i < args_len; i++)
-                        printk("%02X ", ((u8 *)args)[i]);
+                        DRM_DEBUG("%02X ", ((u8 *)args)[i]);
                 for (; i < 8; i++)
-                        printk("   ");
+                        DRM_DEBUG("   ");
                 for (i = 0; i < sizeof(sdvo_cmd_names) / sizeof(sdvo_cmd_names[0]); i++) {
                         if (cmd == sdvo_cmd_names[i].cmd) {
-                                printk("(%s)", sdvo_cmd_names[i].name);
+                                DRM_DEBUG("(%s)", sdvo_cmd_names[i].name);
                                 break;
                         }
                 }
                 if (i == sizeof(sdvo_cmd_names)/ sizeof(sdvo_cmd_names[0]))
-                        printk("(%02X)",cmd);
-                printk("\n");
+                        DRM_DEBUG("(%02X)",cmd);
+                DRM_DEBUG("\n");
         }
                         
 	for (i = 0; i < args_len; i++) {
@@ -266,16 +266,16 @@ static u8 intel_sdvo_read_response(struct drm_output *output, void *response,
 		intel_sdvo_read_byte(output, SDVO_I2C_CMD_STATUS, &status);
 
 	        if (1) {
-			printk("%s: R: ", SDVO_NAME(sdvo_priv));
+			DRM_DEBUG("%s: R: ", SDVO_NAME(sdvo_priv));
        			for (i = 0; i < response_len; i++)
-                        	printk("%02X ", ((u8 *)response)[i]);
+                        	DRM_DEBUG("%02X ", ((u8 *)response)[i]);
                 	for (; i < 8; i++)
-                        	printk("   ");
+                        	DRM_DEBUG("   ");
                 	if (status <= SDVO_CMD_STATUS_SCALING_NOT_SUPP)
-                        	printk("(%s)", cmd_status_names[status]);
+                        	DRM_DEBUG("(%s)", cmd_status_names[status]);
                 	else
-                        	printk("(??? %d)", status);
-                	printk("\n");
+                        	DRM_DEBUG("(??? %d)", status);
+                	DRM_DEBUG("\n");
         	}
 
 		if (status != SDVO_CMD_STATUS_PENDING)
