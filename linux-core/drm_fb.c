@@ -418,9 +418,10 @@ int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 }
 EXPORT_SYMBOL(drmfb_probe);
 
-int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
+int drmfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 {
 	struct fb_info *info = fb->fbdev;
+	struct drm_framebuffer *fb = crtc->fb;
 	
 	if (info) {
 		drm_mem_reg_iounmap(dev, &fb->bo->mem, fb->virtual_base);
