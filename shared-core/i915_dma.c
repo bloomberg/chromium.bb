@@ -98,10 +98,13 @@ static int i915_initialize(drm_device_t * dev,
 			   drm_i915_private_t * dev_priv,
 			   drm_i915_init_t * init)
 {
-
-	/* reset ring pointers */
-	I915_WRITE(LP_RING + RING_LEN, 0);
-	mb();
+	dev_priv->sarea = drm_getsarea(dev);
+	if (!dev_priv->sarea) {
+		DRM_ERROR("can not find sarea!\n");
+		dev->dev_private = (void *)dev_priv;
+		i915_dma_cleanup(dev);
+		return DRM_ERR(EINVAL);
+	}
 
 	memset((void *)(dev_priv->ring.virtual_start), 0, dev_priv->ring.Size);
 
@@ -121,6 +124,29 @@ static int i915_initialize(drm_device_t * dev,
 	 */
 	dev_priv->allow_batchbuffer = 1;
 
+	/* Enable vblank on pipe A for older X servers
+	 */
+    	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
+
+	/* Program Hardware Status Page */
+	dev_priv->status_page_dmah = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 
+	    0xffffffff);
+
+	if (!dev_priv->status_page_dmah) {
+		dev->dev_private = (void *)dev_priv;
+		i915_dma_cleanup(dev);
+		DRM_ERROR("Can not allocate hardware status page\n");
+		return DRM_ERR(ENOMEM);
+	}
+	dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
+	dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
+	
+	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+	DRM_DEBUG("hw status page @ %p\n", dev_priv->hw_status_page);
+
+	I915_WRITE(0x02080, dev_priv->dma_status_page);
+	DRM_DEBUG("Enabled hardware status page\n");
+	dev->dev_private = (void *)dev_priv;
 	return 0;
 }
 

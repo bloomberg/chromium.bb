@@ -792,8 +792,7 @@ static int mach64_do_dma_init(drm_device_t * dev, drm_mach64_init_t * init)
 	INIT_LIST_HEAD(&dev_priv->placeholders);
 	INIT_LIST_HEAD(&dev_priv->pending);
 
-	DRM_GETSAREA();
-
+	dev_priv->sarea = drm_getsarea(dev);
 	if (!dev_priv->sarea) {
 		DRM_ERROR("can not find sarea!\n");
 		dev->dev_private = (void *)dev_priv;

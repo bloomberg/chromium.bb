@@ -25,8 +25,6 @@
  * 
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSL.c,v 1.3 2000/06/17 00:03:34 martin Exp $
- *
  * DESCRIPTION
  *
  * This file contains a straightforward skip list implementation.n
@@ -40,26 +38,16 @@
  *
  */
 
-#ifdef HAVE_XORG_CONFIG_H
-#include <xorg-config.h>
-#endif
+#include <stdio.h>
+#include <stdlib.h>
 
 #define SL_MAIN 0
 
-#if SL_MAIN
-# include <stdio.h>
-# include <stdlib.h>
-#  include <sys/time.h>
-#else
+#if !SL_MAIN
 # include "drm.h"
 # include "xf86drm.h"
-# ifdef XFree86LOADER
-#  include "xf86.h"
-#  include "xf86_ansic.h"
-# else
-#  include <stdio.h>
-#  include <stdlib.h>
-# endif
+#else
+# include <sys/time.h>
 #endif
 
 #define SL_LIST_MAGIC  0xfacade00LU

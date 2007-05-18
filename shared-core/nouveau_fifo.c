@@ -51,7 +51,7 @@ int nouveau_fifo_ctx_size(drm_device_t* dev)
 
 	if (dev_priv->card_type >= NV_40)
 		return 128;
-	else if (dev_priv->card_type >= NV_10)
+	else if (dev_priv->card_type >= NV_17)
 		return 64;
 	else
 		return 32;
@@ -90,10 +90,12 @@ static int nouveau_fifo_instmem_configure(drm_device_t *dev)
 			break;
 		case NV_30:
 		case NV_20:
-		case NV_10:
+		case NV_17:
 			NV_WRITE(NV03_PFIFO_RAMFC, (dev_priv->ramfc_offset>>8) |
 					(1 << 16) /* 64 Bytes entry*/);
+			/* XXX nvidia blob set bit 18, 21,23 for nv20 & nv30 */
 			break;
+		case NV_10:
 		case NV_04:
 		case NV_03:
 			NV_WRITE(NV03_PFIFO_RAMFC, dev_priv->ramfc_offset>>8);
@@ -269,11 +271,12 @@ static void nouveau_nv10_context_init(drm_device_t *dev, int channel)
         drm_nouveau_private_t *dev_priv = dev->dev_private;
         struct nouveau_object *cb_obj;
         uint32_t fifoctx;
+        int ctx_size = nouveau_fifo_ctx_size(dev);
         int i;
         cb_obj  = dev_priv->fifos[channel].cmdbuf_obj;
-        fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*64;
+        fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*ctx_size;
 
-        for (i=0;i<64;i+=4)
+        for (i=0;i<ctx_size;i+=4)
                 NV_WRITE(fifoctx + i, 0);
 
         /* Fill entries that are seen filled in dumps of nvidia driver just
@@ -327,6 +330,7 @@ static void nouveau_nv30_context_init(drm_device_t *dev, int channel)
         RAMFC_WR(SEMAPHORE,             NV_READ(NV10_PFIFO_CACHE1_SEMAPHORE));
 }
 
+#if 0
 static void nouveau_nv10_context_save(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
@@ -350,6 +354,7 @@ static void nouveau_nv10_context_save(drm_device_t *dev)
 	RAMFC_WR(SEMAPHORE        , NV_READ(NV10_PFIFO_CACHE1_SEMAPHORE));
 	RAMFC_WR(DMA_SUBROUTINE   , NV_READ(NV10_PFIFO_CACHE1_DMA_SUBROUTINE));
 }
+#endif
 #undef RAMFC_WR
 
 #define RAMFC_WR(offset, val) NV_WRITE(fifoctx + NV40_RAMFC_##offset, (val))
@@ -507,6 +512,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 			nouveau_nv04_context_init(dev, channel);
 			break;
 		case NV_10:
+		case NV_17:
 			nv10_graph_context_create(dev, channel);
 			nouveau_nv10_context_init(dev, channel);
 			break;

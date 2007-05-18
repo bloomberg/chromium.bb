@@ -516,8 +516,7 @@ static int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 		return -EINVAL;
 	}
 
-	if (!capable(CAP_SYS_ADMIN) &&
-	    (dma->flags & _DRM_DMA_USE_PCI_RO)) {
+	if (!capable(CAP_SYS_ADMIN) && (dma->flags & _DRM_DMA_USE_PCI_RO)) {
 		vma->vm_flags &= ~(VM_WRITE | VM_MAYWRITE);
 #if defined(__i386__) || defined(__x86_64__)
 		pgprot_val(vma->vm_page_prot) &= ~_PAGE_RW;
@@ -739,7 +738,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	unsigned long bus_base;
 	unsigned long bus_offset;
 	unsigned long bus_size;
-	int ret = NOPFN_REFAULT;
+	unsigned long ret = NOPFN_REFAULT;
 
 	if (address > vma->vm_end)
 		return NOPFN_SIGBUS;

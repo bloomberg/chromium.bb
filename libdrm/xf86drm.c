@@ -31,10 +31,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifdef HAVE_XORG_CONFIG_H
-#include <xorg-config.h>
-#endif
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -2503,7 +2499,7 @@ void drmBOFreeList(drmBOList *list)
 	DRMLISTDEL(l);
 	node = DRMLISTENTRY(drmBONode, l, head);
 	free(node);
-	l = list->free.next;
+	l = list->list.next;
 	list->numCurrent--;
 	list->numOnList--;
     }
@@ -2892,7 +2888,7 @@ int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
     req->handle = buf->handle;
     req->mask = flags;
     req->arg_handle = fenceHandle;
-    req->op = drm_bo_validate;
+    req->op = drm_bo_fence;
 
     ret = ioctl(fd, DRM_IOCTL_BUFOBJ, &arg);
     
