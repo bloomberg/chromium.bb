@@ -417,7 +417,6 @@ struct drm_output {
 	unsigned long possible_clones;
 	bool interlace_allowed;
 	bool doublescan_allowed;
-	spinlock_t modes_lock; /* protects modes and probed_modes lists */
 	struct list_head modes; /* list of modes on this output */
 
 	/*

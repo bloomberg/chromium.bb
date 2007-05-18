@@ -141,7 +141,7 @@ EXPORT_SYMBOL(drm_mode_height);
  *
  * Return @mode's vrefresh rate or calculate it if necessary.
  *
- * FIXME: why is this needed?
+ * FIXME: why is this needed?  shouldn't vrefresh be set already?
  *
  * RETURNS:
  * Vertical refresh rate of @mode x 1000. For precision reasons.

@@ -299,9 +299,8 @@ int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	int ret;
 
 	info = framebuffer_alloc(sizeof(struct drmfb_par), device);
-	if (!info){
-		return -EINVAL;
-	}
+	if (!info)
+		return -ENOMEM;
 
 	fb->fbdev = info;
 		
@@ -408,8 +407,10 @@ int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 		break;
 	}
 
-	if (register_framebuffer(info) < 0)
+	if (register_framebuffer(info) < 0) {
+		unregister_framebuffer(info);
 		return -EINVAL;
+	}
 
 	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
 	       info->fix.id);

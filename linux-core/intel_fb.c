@@ -203,6 +203,7 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 }
 
 /* this will let fbcon do the mode init */
+/* FIXME: take mode config lock? */
 static int intelfb_set_par(struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
