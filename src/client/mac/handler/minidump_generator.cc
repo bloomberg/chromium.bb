@@ -594,7 +594,7 @@ bool MinidumpGenerator::WriteCVRecord(MDRawModule *module, int cpu_type,
   TypedMDRVA<MDCVInfoPDB70> cv(&writer_);
 
   // Only return the last path component of the full module path
-  char *module_name = strrchr(module_path, '/');
+  const char *module_name = strrchr(module_path, '/');
 
   // Increment past the slash
   if (module_name)
