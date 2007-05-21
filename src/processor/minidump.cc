@@ -49,6 +49,7 @@ typedef SSIZE_T ssize_t;
 #endif  // _WIN32
 
 #include <cassert>
+#include <limits>
 #include <map>
 #include <vector>
 
@@ -64,6 +65,7 @@ typedef SSIZE_T ssize_t;
 namespace google_breakpad {
 
 
+using std::numeric_limits;
 using std::vector;
 
 
@@ -699,9 +701,9 @@ MinidumpMemoryRegion::~MinidumpMemoryRegion() {
 void MinidumpMemoryRegion::SetDescriptor(MDMemoryDescriptor* descriptor) {
   descriptor_ = descriptor;
   valid_ = descriptor &&
-           (descriptor_->start_of_memory_range +
-            descriptor_->memory.data_size) >
-           descriptor_->start_of_memory_range;
+           descriptor_->memory.data_size <=
+               numeric_limits<uint64_t>::max() -
+               descriptor_->start_of_memory_range;
 }
 
 
@@ -779,6 +781,7 @@ bool MinidumpMemoryRegion::GetMemoryAtAddressInternal(u_int64_t address,
   }
 
   if (address < descriptor_->start_of_memory_range ||
+      sizeof(T) > numeric_limits<u_int64_t>::max() - address ||
       address + sizeof(T) > descriptor_->start_of_memory_range +
                             descriptor_->memory.data_size) {
     BPLOG(ERROR) << "MinidumpMemoryRegion request out of range: " <<
@@ -894,16 +897,13 @@ bool MinidumpThread::Read() {
     Swap(&thread_.thread_context);
   }
 
-  // Check for base + size overflow or undersize.  A separate size==0
-  // check is needed in case base == 0.
-  u_int64_t high_address = thread_.stack.start_of_memory_range +
-                           thread_.stack.memory.data_size - 1;
+  // Check for base + size overflow or undersize.
   if (thread_.stack.memory.data_size == 0 ||
-      high_address < thread_.stack.start_of_memory_range) {
+      thread_.stack.memory.data_size > numeric_limits<u_int64_t>::max() -
+                                       thread_.stack.start_of_memory_range) {
     BPLOG(ERROR) << "MinidumpThread has a memory region problem, " <<
                     HexString(thread_.stack.start_of_memory_range) << "+" <<
-                    HexString(thread_.stack.memory.data_size) << ", " <<
-                    HexString(high_address);
+                    HexString(thread_.stack.memory.data_size);
     return false;
   }
 
@@ -1049,6 +1049,12 @@ bool MinidumpThreadList::Read(u_int32_t expected_size) {
 
   if (minidump_->swap())
     Swap(&thread_count);
+
+  if (thread_count > numeric_limits<u_int32_t>::max() / sizeof(MDRawThread)) {
+    BPLOG(ERROR) << "MinidumpThreadList thread count " << thread_count <<
+                    " would cause multiplication overflow";
+    return false;
+  }
 
   if (expected_size != sizeof(thread_count) +
                        thread_count * sizeof(MDRawThread)) {
@@ -1212,14 +1218,13 @@ bool MinidumpModule::Read() {
     // are their proper widths).
   }
 
-  // Check for base + size overflow or undersize.  A separate size==0
-  // check is needed in case base == 0.
-  u_int64_t high_address = module_.base_of_image + module_.size_of_image - 1;
-  if (module_.size_of_image == 0 || high_address < module_.base_of_image) {
+  // Check for base + size overflow or undersize.
+  if (module_.size_of_image == 0 ||
+      module_.size_of_image >
+          numeric_limits<u_int64_t>::max() - module_.base_of_image) {
     BPLOG(ERROR) << "MinidumpModule has a module problem, " <<
                     HexString(module_.base_of_image) << "+" <<
-                    HexString(module_.size_of_image) << ", " <<
-                    HexString(high_address);
+                    HexString(module_.size_of_image);
     return false;
   }
 
@@ -1878,6 +1883,12 @@ bool MinidumpModuleList::Read(u_int32_t expected_size) {
   if (minidump_->swap())
     Swap(&module_count);
 
+  if (module_count > numeric_limits<u_int32_t>::max() / MD_MODULE_SIZE) {
+    BPLOG(ERROR) << "MinidumpModuleList module count " << module_count <<
+                    " would cause multiplication overflow";
+    return false;
+  }
+
   if (expected_size != sizeof(module_count) +
                        module_count * MD_MODULE_SIZE) {
     BPLOG(ERROR) << "MinidumpModuleList size mismatch, " << expected_size <<
@@ -2094,6 +2105,13 @@ bool MinidumpMemoryList::Read(u_int32_t expected_size) {
   if (minidump_->swap())
     Swap(&region_count);
 
+  if (region_count >
+          numeric_limits<u_int32_t>::max() / sizeof(MDMemoryDescriptor)) {
+    BPLOG(ERROR) << "MinidumpMemoryList region count " << region_count <<
+                    " would cause multiplication overflow";
+    return false;
+  }
+
   if (expected_size != sizeof(region_count) +
                        region_count * sizeof(MDMemoryDescriptor)) {
     BPLOG(ERROR) << "MinidumpMemoryList size mismatch, " << expected_size <<
@@ -2128,15 +2146,13 @@ bool MinidumpMemoryList::Read(u_int32_t expected_size) {
       u_int64_t base_address = descriptor->start_of_memory_range;
       u_int32_t region_size = descriptor->memory.data_size;
 
-      // Check for base + size overflow or undersize.  A separate size==0
-      // check is needed in case base == 0.
-      u_int64_t high_address = base_address + region_size - 1;
-      if (region_size == 0 || high_address < base_address) {
+      // Check for base + size overflow or undersize.
+      if (region_size == 0 ||
+          region_size > numeric_limits<u_int64_t>::max() - base_address) {
         BPLOG(ERROR) << "MinidumpMemoryList has a memory region problem, " <<
                         " region " << region_index << "/" << region_count <<
                         ", " << HexString(base_address) << "+" <<
-                        HexString(region_size) << ", " <<
-                        HexString(high_address);
+                        HexString(region_size);
         return false;
       }
 
