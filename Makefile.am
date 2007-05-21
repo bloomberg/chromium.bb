@@ -128,14 +128,22 @@ TESTS_ENVIRONMENT =
 
 src_processor_address_map_unittest_SOURCES = \
 	src/processor/address_map_unittest.cc
+src_processor_address_map_unittest_LDADD = \
+	src/processor/logging.lo \
+	src/processor/pathname_stripper.lo
 
 src_processor_basic_source_line_resolver_unittest_SOURCES = \
 	src/processor/basic_source_line_resolver_unittest.cc
 src_processor_basic_source_line_resolver_unittest_LDADD = \
-	src/processor/basic_source_line_resolver.lo
+	src/processor/basic_source_line_resolver.lo \
+	src/processor/pathname_stripper.lo \
+	src/processor/logging.lo
 
 src_processor_contained_range_map_unittest_SOURCES = \
 	src/processor/contained_range_map_unittest.cc
+src_processor_contained_range_map_unittest_LDADD = \
+	src/processor/logging.lo \
+	src/processor/pathname_stripper.lo
 
 src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc
@@ -159,9 +167,15 @@ src_processor_pathname_stripper_unittest_LDADD = \
 
 src_processor_postfix_evaluator_unittest_SOURCES = \
 	src/processor/postfix_evaluator_unittest.cc
+src_processor_postfix_evaluator_unittest_LDADD = \
+	src/processor/logging.lo \
+	src/processor/pathname_stripper.lo
 
 src_processor_range_map_unittest_SOURCES = \
 	src/processor/range_map_unittest.cc
+src_processor_range_map_unittest_LDADD = \
+	src/processor/logging.lo \
+	src/processor/pathname_stripper.lo
 
 src_processor_stackwalker_selftest_SOURCES = \
 	src/processor/stackwalker_selftest.cc

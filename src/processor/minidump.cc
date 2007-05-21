@@ -2650,9 +2650,9 @@ bool MinidumpMiscInfo::Read(u_int32_t expected_size) {
     }
   }
 
-  if (misc_info_.size_of_info != expected_size) {
+  if (expected_size != misc_info_.size_of_info) {
     BPLOG(ERROR) << "MinidumpMiscInfo size mismatch, " <<
-                    misc_info_.size_of_info << " != " << expected_size;
+                    expected_size << " != " << misc_info_.size_of_info;
     return false;
   }
 
