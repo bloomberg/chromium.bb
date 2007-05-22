@@ -473,7 +473,7 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 				       drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ |
 				       DRM_BO_FLAG_WRITE |
-				       DRM_BO_FLAG_MEM_PRIV0 | /* FIXME! */
+				       DRM_BO_FLAG_MEM_VRAM | /* FIXME! */
 				       DRM_BO_FLAG_NO_MOVE,
 				       0, 0, 0,
 				       &fbo);

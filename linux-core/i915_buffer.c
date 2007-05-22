@@ -86,7 +86,7 @@ int i915_init_mem_type(drm_device_t * dev, uint32_t type,
 		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_NEEDS_IOREMAP;
 		man->drm_bus_maptype = _DRM_AGP;
 		break;
-	case DRM_BO_MEM_PRIV0:
+	case DRM_BO_MEM_VRAM:
 		if (!(drm_core_has_AGP(dev) && dev->agp)) {
 			DRM_ERROR("AGP is not enabled for memory type %u\n",
 				  (unsigned)type);
@@ -98,6 +98,9 @@ int i915_init_mem_type(drm_device_t * dev, uint32_t type,
 		man->flags =  _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_FIXED | _DRM_FLAG_NEEDS_IOREMAP;
 		man->drm_bus_maptype = _DRM_AGP;
+		break;
+	case DRM_BO_MEM_PRIV0: /* for OS preallocated space */
+		DRM_ERROR("PRIV0 not used yet.\n");
 		break;
 	default:
 		DRM_ERROR("Unsupported memory type %u\n", (unsigned)type);

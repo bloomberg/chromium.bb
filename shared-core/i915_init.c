@@ -175,8 +175,8 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	drm_bo_driver_init(dev);
 
 	i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
-	DRM_DEBUG("setting up %ld bytes of PRIV0 space\n", prealloc_size);
-	drm_bo_init_mm(dev, DRM_BO_MEM_PRIV0, 0, prealloc_size >> PAGE_SHIFT);
+	DRM_DEBUG("setting up %ld bytes of VRAM space\n", prealloc_size);
+	drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, prealloc_size >> PAGE_SHIFT);
 
 	I915_WRITE(LP_RING + RING_LEN, 0);
 	I915_WRITE(LP_RING + RING_HEAD, 0);
@@ -185,7 +185,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	size = PRIMARY_RINGBUFFER_SIZE;
 	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
-				       DRM_BO_FLAG_MEM_PRIV0 |
+				       DRM_BO_FLAG_MEM_VRAM |
 				       DRM_BO_FLAG_NO_EVICT,
 				       DRM_BO_HINT_DONT_FENCE, 0x1, 0,
 				       &dev_priv->ring_buffer);
@@ -277,7 +277,7 @@ int i915_driver_unload(drm_device_t *dev)
 	drm_bo_usage_deref_locked(dev_priv->ring_buffer);
 	mutex_unlock(&dev->struct_mutex);
 
-	if (drm_bo_clean_mm(dev, DRM_BO_MEM_PRIV0)) {
+	if (drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM)) {
 		DRM_ERROR("Memory manager type 3 not clean. "
 			  "Delaying takedown\n");
 	}
