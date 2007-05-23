@@ -438,6 +438,19 @@ static int i915_driver_vblank_do_wait(drm_device_t *dev, unsigned int *sequence,
 	return ret;
 }
 
+void i915_driver_wait_next_vblank(drm_device_t *dev, int pipe)
+{
+	unsigned int seq;
+
+	seq = pipe ? atomic_read(&dev->vbl_received2) + 1 :
+		atomic_read(&dev->vbl_received) + 1;
+
+	if (!pipe)
+		i915_driver_vblank_do_wait(dev, &seq, &dev->vbl_received);
+	else
+		i915_driver_vblank_do_wait(dev, &seq, &dev->vbl_received2);
+}
+
 int i915_driver_vblank_wait(drm_device_t *dev, unsigned int *sequence)
 {
 	return i915_driver_vblank_do_wait(dev, sequence, &dev->vbl_received);

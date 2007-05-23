@@ -227,6 +227,7 @@ extern int i915_dma_cleanup(drm_device_t * dev);
 extern int i915_irq_emit(DRM_IOCTL_ARGS);
 extern int i915_irq_wait(DRM_IOCTL_ARGS);
 
+extern void i915_driver_wait_next_vblank(drm_device_t *dev, int pipe);
 extern int i915_driver_vblank_wait(drm_device_t *dev, unsigned int *sequence);
 extern int i915_driver_vblank_wait2(drm_device_t *dev, unsigned int *sequence);
 extern irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS);
@@ -395,6 +396,39 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 # define GPIO_DATA_VAL_IN		(1 << 12)
 # define GPIO_DATA_PULLUP_DISABLE	(1 << 13)
 
+/* p317, 319
+ */
+#define VCLK2_VCO_M        0x6008 /* treat as 16 bit? (includes msbs) */
+#define VCLK2_VCO_N        0x600a
+#define VCLK2_VCO_DIV_SEL  0x6012
+
+#define VCLK_DIVISOR_VGA0   0x6000
+#define VCLK_DIVISOR_VGA1   0x6004
+#define VCLK_POST_DIV	    0x6010
+/** Selects a post divisor of 4 instead of 2. */
+# define VGA1_PD_P2_DIV_4	(1 << 15)
+/** Overrides the p2 post divisor field */
+# define VGA1_PD_P1_DIV_2	(1 << 13)
+# define VGA1_PD_P1_SHIFT	8
+/** P1 value is 2 greater than this field */
+# define VGA1_PD_P1_MASK	(0x1f << 8)
+/** Selects a post divisor of 4 instead of 2. */
+# define VGA0_PD_P2_DIV_4	(1 << 7)
+/** Overrides the p2 post divisor field */
+# define VGA0_PD_P1_DIV_2	(1 << 5)
+# define VGA0_PD_P1_SHIFT	0
+/** P1 value is 2 greater than this field */
+# define VGA0_PD_P1_MASK	(0x1f << 0)
+
+#define POST_DIV_SELECT        0x70
+#define POST_DIV_1             0x00
+#define POST_DIV_2             0x10
+#define POST_DIV_4             0x20
+#define POST_DIV_8             0x30
+#define POST_DIV_16            0x40
+#define POST_DIV_32            0x50
+#define VCO_LOOP_DIV_BY_4M     0x00
+#define VCO_LOOP_DIV_BY_16M    0x04
 
 #define SRX_INDEX		0x3c4
 #define SRX_DATA		0x3c5
@@ -905,6 +939,58 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 # define VGA_DISP_DISABLE			(1 << 31)
 # define VGA_2X_MODE				(1 << 30)
 # define VGA_PIPE_B_SELECT			(1 << 29)
+
+/*
+ * Some BIOS scratch area registers.  The 845 (and 830?) store the amount
+ * of video memory available to the BIOS in SWF1.
+ */
+
+#define SWF0			0x71410
+#define SWF1			0x71414
+#define SWF2			0x71418
+#define SWF3			0x7141c
+#define SWF4			0x71420
+#define SWF5			0x71424
+#define SWF6			0x71428
+
+/*
+ * 855 scratch registers.
+ */
+#define SWF00			0x70410
+#define SWF01			0x70414
+#define SWF02			0x70418
+#define SWF03			0x7041c
+#define SWF04			0x70420
+#define SWF05			0x70424
+#define SWF06			0x70428
+
+#define SWF10			SWF0
+#define SWF11			SWF1
+#define SWF12			SWF2
+#define SWF13			SWF3
+#define SWF14			SWF4
+#define SWF15			SWF5
+#define SWF16			SWF6
+
+#define SWF30			0x72414
+#define SWF31			0x72418
+#define SWF32			0x7241c
+
+/*
+ * Overlay registers.  These are overlay registers accessed via MMIO.
+ * Those loaded via the overlay register page are defined in i830_video.c.
+ */
+#define OVADD			0x30000
+
+#define DOVSTA			0x30008
+#define OC_BUF			(0x3<<20)
+
+#define OGAMC5			0x30010
+#define OGAMC4			0x30014
+#define OGAMC3			0x30018
+#define OGAMC2			0x3001c
+#define OGAMC1			0x30020
+#define OGAMC0			0x30024
 
 /*
  * Palette registers

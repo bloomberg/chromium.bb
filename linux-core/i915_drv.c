@@ -70,6 +70,235 @@ static drm_bo_driver_t i915_bo_driver = {
 };
 #endif
 
+static int i915_suspend(struct pci_dev *pdev, pm_message_t state)
+{
+	struct drm_device *dev = pci_get_drvdata(pdev);
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_output *output;
+	int i;
+
+	pci_save_state(pdev);
+
+	/* Save video mode information for native mode-setting. */
+	dev_priv->saveDSPACNTR = I915_READ(DSPACNTR);
+	dev_priv->savePIPEACONF = I915_READ(PIPEACONF);
+	dev_priv->savePIPEASRC = I915_READ(PIPEASRC);
+	dev_priv->saveFPA0 = I915_READ(FPA0);
+	dev_priv->saveFPA1 = I915_READ(FPA1);
+	dev_priv->saveDPLL_A = I915_READ(DPLL_A);
+	if (IS_I965G(dev))
+		dev_priv->saveDPLL_A_MD = I915_READ(DPLL_A_MD);
+	dev_priv->saveHTOTAL_A = I915_READ(HTOTAL_A);
+	dev_priv->saveHBLANK_A = I915_READ(HBLANK_A);
+	dev_priv->saveHSYNC_A = I915_READ(HSYNC_A);
+	dev_priv->saveVTOTAL_A = I915_READ(VTOTAL_A);
+	dev_priv->saveVBLANK_A = I915_READ(VBLANK_A);
+	dev_priv->saveVSYNC_A = I915_READ(VSYNC_A);
+	dev_priv->saveDSPASTRIDE = I915_READ(DSPASTRIDE);
+	dev_priv->saveDSPASIZE = I915_READ(DSPASIZE);
+	dev_priv->saveDSPAPOS = I915_READ(DSPAPOS);
+	dev_priv->saveDSPABASE = I915_READ(DSPABASE);
+
+	for(i= 0; i < 256; i++)
+		dev_priv->savePaletteA[i] = I915_READ(PALETTE_A + (i << 2));
+
+	if(dev->mode_config.num_crtc == 2) {
+		dev_priv->savePIPEBCONF = I915_READ(PIPEBCONF);
+		dev_priv->savePIPEBSRC = I915_READ(PIPEBSRC);
+		dev_priv->saveDSPBCNTR = I915_READ(DSPBCNTR);
+		dev_priv->saveFPB0 = I915_READ(FPB0);
+		dev_priv->saveFPB1 = I915_READ(FPB1);
+		dev_priv->saveDPLL_B = I915_READ(DPLL_B);
+		if (IS_I965G(dev))
+			dev_priv->saveDPLL_B_MD = I915_READ(DPLL_B_MD);
+		dev_priv->saveHTOTAL_B = I915_READ(HTOTAL_B);
+		dev_priv->saveHBLANK_B = I915_READ(HBLANK_B);
+		dev_priv->saveHSYNC_B = I915_READ(HSYNC_B);
+		dev_priv->saveVTOTAL_B = I915_READ(VTOTAL_B);
+		dev_priv->saveVBLANK_B = I915_READ(VBLANK_B);
+		dev_priv->saveVSYNC_B = I915_READ(VSYNC_B);
+		dev_priv->saveDSPBSTRIDE = I915_READ(DSPBSTRIDE);
+		dev_priv->saveDSPBSIZE = I915_READ(DSPBSIZE);
+		dev_priv->saveDSPBPOS = I915_READ(DSPBPOS);
+		dev_priv->saveDSPBBASE = I915_READ(DSPBBASE);
+		for(i= 0; i < 256; i++)
+			dev_priv->savePaletteB[i] =
+				I915_READ(PALETTE_B + (i << 2));
+	}
+
+	if (IS_I965G(dev)) {
+		dev_priv->saveDSPASURF = I915_READ(DSPASURF);
+		dev_priv->saveDSPBSURF = I915_READ(DSPBSURF);
+	}
+
+	dev_priv->saveVCLK_DIVISOR_VGA0 = I915_READ(VCLK_DIVISOR_VGA0);
+	dev_priv->saveVCLK_DIVISOR_VGA1 = I915_READ(VCLK_DIVISOR_VGA1);
+	dev_priv->saveVCLK_POST_DIV = I915_READ(VCLK_POST_DIV);
+	dev_priv->saveVGACNTRL = I915_READ(VGACNTRL);
+
+	for(i = 0; i < 7; i++) {
+		dev_priv->saveSWF[i] = I915_READ(SWF0 + (i << 2));
+		dev_priv->saveSWF[i+7] = I915_READ(SWF00 + (i << 2));
+	}
+	dev_priv->saveSWF[14] = I915_READ(SWF30);
+	dev_priv->saveSWF[15] = I915_READ(SWF31);
+	dev_priv->saveSWF[16] = I915_READ(SWF32);
+
+	if (IS_MOBILE(dev) && !IS_I830(dev))
+		dev_priv->saveLVDS = I915_READ(LVDS);
+	dev_priv->savePFIT_CONTROL = I915_READ(PFIT_CONTROL);
+
+	list_for_each_entry(output, &dev->mode_config.output_list, head)
+		if (output->funcs->save)
+			(*output->funcs->save) (output);
+
+#if 0 /* FIXME: save VGA bits */
+	vgaHWUnlock(hwp);
+	vgaHWSave(pScrn, vgaReg, VGA_SR_FONTS);
+#endif
+	pci_disable_device(pdev);
+	pci_set_power_state(pdev, PCI_D3hot);
+
+	return 0;
+}
+
+static int i915_resume(struct pci_dev *pdev)
+{
+	struct drm_device *dev = pci_get_drvdata(pdev);
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_output *output;
+	struct drm_crtc *crtc;
+	int i;
+
+	pci_set_power_state(pdev, PCI_D0);
+	pci_restore_state(pdev);
+	pci_enable_device(pdev);
+
+	/* Disable outputs */
+	list_for_each_entry(output, &dev->mode_config.output_list, head)
+		output->funcs->dpms(output, DPMSModeOff);
+
+	i915_driver_wait_next_vblank(dev, 0);
+   
+	/* Disable pipes */
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head)
+		crtc->funcs->dpms(crtc, DPMSModeOff);
+
+	/* FIXME: wait for vblank on each pipe? */
+	i915_driver_wait_next_vblank(dev, 0);
+
+	if (IS_MOBILE(dev) && !IS_I830(dev))
+		I915_WRITE(LVDS, dev_priv->saveLVDS);
+
+	if (!IS_I830(dev) && !IS_845G(dev))
+		I915_WRITE(PFIT_CONTROL, dev_priv->savePFIT_CONTROL);
+
+	if (dev_priv->saveDPLL_A & DPLL_VCO_ENABLE) {
+		I915_WRITE(DPLL_A, dev_priv->saveDPLL_A & ~DPLL_VCO_ENABLE);
+		udelay(150);
+	}
+	I915_WRITE(FPA0, dev_priv->saveFPA0);
+	I915_WRITE(FPA1, dev_priv->saveFPA1);
+	I915_WRITE(DPLL_A, dev_priv->saveDPLL_A);
+	udelay(150);
+	if (IS_I965G(dev))
+		I915_WRITE(DPLL_A_MD, dev_priv->saveDPLL_A_MD);
+	else
+		I915_WRITE(DPLL_A, dev_priv->saveDPLL_A);
+	udelay(150);
+
+	I915_WRITE(HTOTAL_A, dev_priv->saveHTOTAL_A);
+	I915_WRITE(HBLANK_A, dev_priv->saveHBLANK_A);
+	I915_WRITE(HSYNC_A, dev_priv->saveHSYNC_A);
+	I915_WRITE(VTOTAL_A, dev_priv->saveVTOTAL_A);
+	I915_WRITE(VBLANK_A, dev_priv->saveVBLANK_A);
+	I915_WRITE(VSYNC_A, dev_priv->saveVSYNC_A);
+   
+	I915_WRITE(DSPASTRIDE, dev_priv->saveDSPASTRIDE);
+	I915_WRITE(DSPASIZE, dev_priv->saveDSPASIZE);
+	I915_WRITE(DSPAPOS, dev_priv->saveDSPAPOS);
+	I915_WRITE(PIPEASRC, dev_priv->savePIPEASRC);
+	I915_WRITE(DSPABASE, dev_priv->saveDSPABASE);
+	if (IS_I965G(dev))
+		I915_WRITE(DSPASURF, dev_priv->saveDSPASURF);
+	I915_WRITE(PIPEACONF, dev_priv->savePIPEACONF);
+	i915_driver_wait_next_vblank(dev, 0);
+	I915_WRITE(DSPACNTR, dev_priv->saveDSPACNTR);
+	I915_WRITE(DSPABASE, I915_READ(DSPABASE));
+	i915_driver_wait_next_vblank(dev, 0);
+   
+	if(dev->mode_config.num_crtc == 2) {
+		if (dev_priv->saveDPLL_B & DPLL_VCO_ENABLE) {
+			I915_WRITE(DPLL_B, dev_priv->saveDPLL_B & ~DPLL_VCO_ENABLE);
+			udelay(150);
+		}
+		I915_WRITE(FPB0, dev_priv->saveFPB0);
+		I915_WRITE(FPB1, dev_priv->saveFPB1);
+		I915_WRITE(DPLL_B, dev_priv->saveDPLL_B);
+		udelay(150);
+		if (IS_I965G(dev))
+			I915_WRITE(DPLL_B_MD, dev_priv->saveDPLL_B_MD);
+		else
+			I915_WRITE(DPLL_B, dev_priv->saveDPLL_B);
+		udelay(150);
+   
+		I915_WRITE(HTOTAL_B, dev_priv->saveHTOTAL_B);
+		I915_WRITE(HBLANK_B, dev_priv->saveHBLANK_B);
+		I915_WRITE(HSYNC_B, dev_priv->saveHSYNC_B);
+		I915_WRITE(VTOTAL_B, dev_priv->saveVTOTAL_B);
+		I915_WRITE(VBLANK_B, dev_priv->saveVBLANK_B);
+		I915_WRITE(VSYNC_B, dev_priv->saveVSYNC_B);
+		I915_WRITE(DSPBSTRIDE, dev_priv->saveDSPBSTRIDE);
+		I915_WRITE(DSPBSIZE, dev_priv->saveDSPBSIZE);
+		I915_WRITE(DSPBPOS, dev_priv->saveDSPBPOS);
+		I915_WRITE(PIPEBSRC, dev_priv->savePIPEBSRC);
+		I915_WRITE(DSPBBASE, dev_priv->saveDSPBBASE);
+		if (IS_I965G(dev))
+			I915_WRITE(DSPBSURF, dev_priv->saveDSPBSURF);
+		I915_WRITE(PIPEBCONF, dev_priv->savePIPEBCONF);
+		i915_driver_wait_next_vblank(dev, 0);
+		I915_WRITE(DSPBCNTR, dev_priv->saveDSPBCNTR);
+		I915_WRITE(DSPBBASE, I915_READ(DSPBBASE));
+		i915_driver_wait_next_vblank(dev, 0);
+	}
+
+	/* Restore outputs */
+	list_for_each_entry(output, &dev->mode_config.output_list, head)
+		if (output->funcs->restore)
+			output->funcs->restore(output);
+    
+	I915_WRITE(VGACNTRL, dev_priv->saveVGACNTRL);
+
+	I915_WRITE(VCLK_DIVISOR_VGA0, dev_priv->saveVCLK_DIVISOR_VGA0);
+	I915_WRITE(VCLK_DIVISOR_VGA1, dev_priv->saveVCLK_DIVISOR_VGA1);
+	I915_WRITE(VCLK_POST_DIV, dev_priv->saveVCLK_POST_DIV);
+
+	for(i = 0; i < 256; i++)
+		I915_WRITE(PALETTE_A + (i << 2), dev_priv->savePaletteA[i]);
+   
+	if(dev->mode_config.num_crtc == 2)
+		for(i= 0; i < 256; i++)
+			I915_WRITE(PALETTE_B + (i << 2), dev_priv->savePaletteB[i]);
+
+	for(i = 0; i < 7; i++) {
+		I915_WRITE(SWF0 + (i << 2), dev_priv->saveSWF[i]);
+		I915_WRITE(SWF00 + (i << 2), dev_priv->saveSWF[i+7]);
+	}
+
+	I915_WRITE(SWF30, dev_priv->saveSWF[14]);
+	I915_WRITE(SWF31, dev_priv->saveSWF[15]);
+	I915_WRITE(SWF32, dev_priv->saveSWF[16]);
+
+#if 0 /* FIXME: restore VGA bits */
+	vgaHWRestore(pScrn, vgaReg, VGA_SR_FONTS);
+	vgaHWLock(hwp);
+#endif
+
+	drm_initial_config(dev, 0);
+
+	return 0;
+}
+
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	/* don't use mtrr's here, the Xserver or user space app should
@@ -113,6 +342,8 @@ static struct drm_driver driver = {
 		.id_table = pciidlist,
 		.probe = probe,
 		.remove = __devexit_p(drm_cleanup_pci),
+		.suspend = i915_suspend,
+		.resume = i915_resume,
 		},
 #ifdef I915_HAVE_FENCE
 	.fence_driver = &i915_fence_driver,
