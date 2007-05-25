@@ -211,16 +211,8 @@ extern int drm_fence_object_create(struct drm_device *dev, uint32_t type,
 				   drm_fence_object_t ** c_fence);
 extern int drm_fence_add_user_object(drm_file_t * priv,
 				     drm_fence_object_t * fence, int shareable);
+extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 
-extern int drm_fence_create_ioctl(DRM_IOCTL_ARGS);
-extern int drm_fence_destroy_ioctl(DRM_IOCTL_ARGS);
-extern int drm_fence_reference_ioctl(DRM_IOCTL_ARGS);
-extern int drm_fence_unreference_ioctl(DRM_IOCTL_ARGS);
-extern int drm_fence_signaled_ioctl(DRM_IOCTL_ARGS);
-extern int drm_fence_flush_ioctl(DRM_IOCTL_ARGS);
-extern int drm_fence_wait_ioctl(DRM_IOCTL_ARGS);
-extern int drm_fence_emit_ioctl(DRM_IOCTL_ARGS);
-extern int drm_fence_buffers_ioctl(DRM_IOCTL_ARGS);
 /**************************************************
  *TTMs
  */
