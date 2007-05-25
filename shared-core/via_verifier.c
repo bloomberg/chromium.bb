@@ -255,7 +255,6 @@ static __inline__ drm_local_map_t *via_drm_lookup_agp_map(drm_via_state_t * seq,
 							  drm_device_t * dev)
 {
 #ifdef __linux__
-	struct list_head *list;
 	drm_map_list_t *r_list;
 #endif
 	drm_local_map_t *map = seq->map_cache;
@@ -265,8 +264,7 @@ static __inline__ drm_local_map_t *via_drm_lookup_agp_map(drm_via_state_t * seq,
 		return map;
 	}
 #ifdef __linux__
-	list_for_each(list, &dev->maplist->head) {
-		r_list = (drm_map_list_t *) list;
+	list_for_each_entry(r_list, &dev->maplist, head) {
 		map = r_list->map;
 		if (!map)
 			continue;
