@@ -172,7 +172,8 @@ static int i915_resume(struct pci_dev *pdev)
 
 	pci_set_power_state(pdev, PCI_D0);
 	pci_restore_state(pdev);
-	pci_enable_device(pdev);
+	if (pci_enable_device(pdev))
+		return -1;
 
 	/* Disable outputs */
 	list_for_each_entry(output, &dev->mode_config.output_list, head)
@@ -293,8 +294,6 @@ static int i915_resume(struct pci_dev *pdev)
 	vgaHWRestore(pScrn, vgaReg, VGA_SR_FONTS);
 	vgaHWLock(hwp);
 #endif
-
-	drm_initial_config(dev, 0);
 
 	return 0;
 }
