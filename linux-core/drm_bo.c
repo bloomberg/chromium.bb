@@ -2158,48 +2158,11 @@ EXPORT_SYMBOL(drm_bo_driver_init);
 int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	struct drm_mm_init_arg arg;
+
+	int ret = 0;
+	drm_mm_init_arg_t arg;
 	drm_buffer_manager_t *bm = &dev->bm;
 	drm_bo_driver_t *driver = dev->driver->bo_driver;
-	int ret;
-
-	if (!driver) {
-		DRM_ERROR("Buffer objects are not supported by this driver\n");
-		return -EINVAL;
-	}
-
-	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
-	ret = -EINVAL;
-	mutex_lock(&dev->bm.init_mutex);
-	mutex_lock(&dev->struct_mutex);
-	if (!bm->initialized) {
-		DRM_ERROR("DRM memory manager was not initialized.\n");
-		goto out;
-	}
-	if (arg.mem_type == 0) {
-		DRM_ERROR("System memory buffers already initialized.\n");
-		goto out;
-	}
-	ret = drm_bo_init_mm(dev, arg.mem_type,
-			     arg.p_offset, arg.p_size);
-
-out:
-	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&dev->bm.init_mutex);
-	if (ret)
-		return ret;
-
-	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
-	return 0;
-}
-
-int drm_mm_takedown_ioctl(DRM_IOCTL_ARGS)
-{
-	DRM_DEVICE;
-	struct drm_mm_type_arg arg;
-	drm_buffer_manager_t *bm = &dev->bm;
-	drm_bo_driver_t *driver = dev->driver->bo_driver;
-	int ret;
 
 	if (!driver) {
 		DRM_ERROR("Buffer objects are not supported by this driver\n");
@@ -2208,77 +2171,58 @@ int drm_mm_takedown_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
-	mutex_lock(&dev->bm.init_mutex);
-	mutex_lock(&dev->struct_mutex);
-	ret = -EINVAL;
-	if (!bm->initialized) {
-		DRM_ERROR("DRM memory manager was not initialized\n");
-		goto out;
-	}
-	if (arg.mem_type == 0) {
-		DRM_ERROR("No takedown for System memory buffers.\n");
-		goto out;
-	}
-	ret = 0;
-	if (drm_bo_clean_mm(dev, arg.mem_type)) {
-		DRM_ERROR("Memory manager type %d not clean. "
-			  "Delaying takedown\n", arg.mem_type);
-	}
-out:
-	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&dev->bm.init_mutex);
-	if (ret)
-		return ret;
-
-	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
-	return 0;
-}
-
-int drm_mm_lock_ioctl(DRM_IOCTL_ARGS)
-{
-	DRM_DEVICE;
-	struct drm_mm_type_arg arg;
-	drm_bo_driver_t *driver = dev->driver->bo_driver;
-	int ret;
-
-	if (!driver) {
-		DRM_ERROR("Buffer objects are not supported by this driver\n");
+	switch (arg.req.op) {
+	case mm_init:
+		ret = -EINVAL;
+		mutex_lock(&dev->bm.init_mutex);
+		mutex_lock(&dev->struct_mutex);
+		if (!bm->initialized) {
+			DRM_ERROR("DRM memory manager was not initialized.\n");
+			break;
+		}
+		if (arg.req.mem_type == 0) {
+			DRM_ERROR
+			    ("System memory buffers already initialized.\n");
+			break;
+		}
+		ret = drm_bo_init_mm(dev, arg.req.mem_type,
+				     arg.req.p_offset, arg.req.p_size);
+		break;
+	case mm_takedown:
+		LOCK_TEST_WITH_RETURN(dev, filp);
+		mutex_lock(&dev->bm.init_mutex);
+		mutex_lock(&dev->struct_mutex);
+		ret = -EINVAL;
+		if (!bm->initialized) {
+			DRM_ERROR("DRM memory manager was not initialized\n");
+			break;
+		}
+		if (arg.req.mem_type == 0) {
+			DRM_ERROR("No takedown for System memory buffers.\n");
+			break;
+		}
+		ret = 0;
+		if (drm_bo_clean_mm(dev, arg.req.mem_type)) {
+			DRM_ERROR("Memory manager type %d not clean. "
+				  "Delaying takedown\n", arg.req.mem_type);
+		}
+		break;
+	case mm_lock:
+		LOCK_TEST_WITH_RETURN(dev, filp);
+		mutex_lock(&dev->bm.init_mutex);
+		mutex_lock(&dev->struct_mutex);
+		ret = drm_bo_lock_mm(dev, arg.req.mem_type);
+		break;
+	case mm_unlock:
+		LOCK_TEST_WITH_RETURN(dev, filp);
+		mutex_lock(&dev->bm.init_mutex);
+		mutex_lock(&dev->struct_mutex);
+		ret = 0;
+		break;
+	default:
+		DRM_ERROR("Function not implemented yet\n");
 		return -EINVAL;
 	}
-
-	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
-
-	LOCK_TEST_WITH_RETURN(dev, filp);
-	mutex_lock(&dev->bm.init_mutex);
-	mutex_lock(&dev->struct_mutex);
-	ret = drm_bo_lock_mm(dev, arg.mem_type);
-	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&dev->bm.init_mutex);
-	if (ret)
-		return ret;
-
-	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
-	return 0;
-}
-
-int drm_mm_unlock_ioctl(DRM_IOCTL_ARGS)
-{
-	DRM_DEVICE;
-	struct drm_mm_type_arg arg;
-	drm_bo_driver_t *driver = dev->driver->bo_driver;
-	int ret;
-
-	if (!driver) {
-		DRM_ERROR("Buffer objects are not supported by this driver\n");
-		return -EINVAL;
-	}
-
-	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
-	LOCK_TEST_WITH_RETURN(dev, filp);
-	mutex_lock(&dev->bm.init_mutex);
-	mutex_lock(&dev->struct_mutex);
-	ret = 0;
 
 	mutex_unlock(&dev->struct_mutex);
 	mutex_unlock(&dev->bm.init_mutex);

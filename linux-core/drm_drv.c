@@ -119,18 +119,10 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_WAIT_VBLANK)] = {drm_wait_vblank, 0},
 	[DRM_IOCTL_NR(DRM_IOCTL_FENCE)] = {drm_fence_ioctl, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_IOCTL_BUFOBJ)] = {drm_bo_ioctl, DRM_AUTH},
-
-	[DRM_IOCTL_NR(DRM_IOCTL_UPDATE_DRAW)] = {drm_update_drawable_info, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
-
-
 	[DRM_IOCTL_NR(DRM_IOCTL_MM_INIT)] = {drm_mm_init_ioctl, 
 					     DRM_AUTH },
-	[DRM_IOCTL_NR(DRM_IOCTL_MM_TAKEDOWN)] = {drm_mm_takedown_ioctl, 
-					     DRM_AUTH },
-	[DRM_IOCTL_NR(DRM_IOCTL_MM_LOCK)] = {drm_mm_lock_ioctl, 
-					     DRM_AUTH },
-	[DRM_IOCTL_NR(DRM_IOCTL_MM_UNLOCK)] = {drm_mm_unlock_ioctl, 
-					     DRM_AUTH },
+
+	[DRM_IOCTL_NR(DRM_IOCTL_UPDATE_DRAW)] = {drm_update_drawable_info, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 };
 
 #define DRM_CORE_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )
