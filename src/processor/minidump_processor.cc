@@ -112,6 +112,7 @@ MinidumpProcessor::ProcessResult MinidumpProcessor::Process(
               (has_dump_thread        ? "" : "no ") << "dump thread, and " <<
               (has_requesting_thread  ? "" : "no ") << "requesting thread";
 
+  bool interrupted = false;
   bool found_requesting_thread = false;
   unsigned int thread_count = threads->thread_count();
   for (unsigned int thread_index = 0;
@@ -203,11 +204,16 @@ MinidumpProcessor::ProcessResult MinidumpProcessor::Process(
 
     scoped_ptr<CallStack> stack(new CallStack());
     if (!stackwalker->Walk(stack.get())) {
-      BPLOG(INFO) << "Processing interrupted by stackwalker (missing " <<
-                     "symbols?) at " << thread_string;
-      return PROCESS_INTERRUPTED;
+      BPLOG(INFO) << "Stackwalker interrupt (missing symbols?) at " <<
+                     thread_string;
+      interrupted = true;
     }
     process_state->threads_.push_back(stack.release());
+  }
+
+  if (interrupted) {
+    BPLOG(INFO) << "Processing interrupted for " << minidump_file;
+    return PROCESS_INTERRUPTED;
   }
 
   // If a requesting thread was indicated, it must be present.
