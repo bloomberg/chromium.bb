@@ -46,6 +46,12 @@
 // be specified by the BP_LOGGING_INCLUDE macro.  If defined, this header
 // will #include the header specified by that macro.
 //
+// If any initialization is needed before logging, it can be performed by
+// a function called through the BPLOG_INIT macro.  Each main function of
+// an executable program in the Breakpad processor library calls
+// BPLOG_INIT(&argc, &argv); before any logging can be performed; define
+// BPLOG_INIT appropriately if initialization is required.
+//
 // Author: Mark Mentovai
 
 #ifndef PROCESSOR_LOGGING_H__
@@ -114,6 +120,10 @@ int ErrnoString(std::string *error_string);
 
 }  // namespace google_breakpad
 
+#ifndef BPLOG_INIT
+#define BPLOG_INIT(pargc, pargv)
+#endif  // BPLOG_INIT
+
 #ifndef BPLOG
 #define BPLOG(severity) BPLOG_ ## severity
 #endif  // BPLOG
@@ -122,19 +132,22 @@ int ErrnoString(std::string *error_string);
 #ifndef BPLOG_INFO_STREAM
 #define BPLOG_INFO_STREAM std::clog
 #endif  // BPLOG_INFO_STREAM
-#define BPLOG_INFO LogStream(BPLOG_INFO_STREAM, LogStream::SEVERITY_INFO, \
-                             __FILE__, __LINE__)
+#define BPLOG_INFO google_breakpad::LogStream(BPLOG_INFO_STREAM, \
+                       google_breakpad::LogStream::SEVERITY_INFO, \
+                       __FILE__, __LINE__)
 #endif  // BPLOG_INFO
 
 #ifndef BPLOG_ERROR
 #ifndef BPLOG_ERROR_STREAM
 #define BPLOG_ERROR_STREAM std::cerr
 #endif  // BPLOG_ERROR_STREAM
-#define BPLOG_ERROR LogStream(BPLOG_ERROR_STREAM, LogStream::SEVERITY_ERROR, \
-                              __FILE__, __LINE__)
+#define BPLOG_ERROR google_breakpad::LogStream(BPLOG_ERROR_STREAM, \
+                        google_breakpad::LogStream::SEVERITY_ERROR, \
+                        __FILE__, __LINE__)
 #endif  // BPLOG_ERROR
 
 #define BPLOG_IF(severity, condition) \
-    !(condition) ? (void) 0 : LogMessageVoidify() & BPLOG(severity)
+    !(condition) ? (void) 0 : \
+                   google_breakpad::LogMessageVoidify() & BPLOG(severity)
 
 #endif  // PROCESSOR_LOGGING_H__

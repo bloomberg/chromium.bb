@@ -45,6 +45,7 @@
 #include "google_breakpad/processor/minidump_processor.h"
 #include "google_breakpad/processor/process_state.h"
 #include "google_breakpad/processor/stack_frame_cpu.h"
+#include "processor/logging.h"
 #include "processor/pathname_stripper.h"
 #include "processor/scoped_ptr.h"
 #include "processor/simple_symbol_supplier.h"
@@ -416,7 +417,7 @@ static bool PrintMinidumpProcess(const string &minidump_file,
   ProcessState process_state;
   if (minidump_processor.Process(minidump_file, &process_state) !=
       MinidumpProcessor::PROCESS_OK) {
-    fprintf(stderr, "MinidumpProcessor::Process failed\n");
+    BPLOG(ERROR) << "MinidumpProcessor::Process failed";
     return false;
   }
 
@@ -438,6 +439,8 @@ static void usage(const char *program_name) {
 }
 
 int main(int argc, char **argv) {
+  BPLOG_INIT(&argc, &argv);
+
   if (argc < 2) {
     usage(argv[0]);
     return 1;
