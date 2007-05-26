@@ -76,6 +76,7 @@
 #include <asm/pgalloc.h>
 #include "drm.h"
 #include <linux/slab.h>
+#include <linux/idr.h>
 
 #define __OS_HAS_AGP (defined(CONFIG_AGP) || (defined(CONFIG_AGP_MODULE) && defined(MODULE)))
 #define __OS_HAS_MTRR (defined(CONFIG_MTRR))
@@ -593,6 +594,11 @@ typedef struct ati_pcigart_info {
 	int table_size;
 } drm_ati_pcigart_info;
 
+struct drm_drawable_list {
+	struct list_head head;
+	int id;
+	drm_drawable_info_t info;
+};
 
 #include "drm_objects.h"
 
@@ -818,10 +824,8 @@ typedef struct drm_device {
 	/** \name Drawable information */
 	/*@{ */
 	spinlock_t drw_lock;
-	unsigned int drw_bitfield_length;
-	u32 *drw_bitfield;
-	unsigned int drw_info_length;
-	drm_drawable_info_t **drw_info;
+	struct idr drw_idr;
+	struct list_head drwlist;
 	/*@} */
 } drm_device_t;
 
