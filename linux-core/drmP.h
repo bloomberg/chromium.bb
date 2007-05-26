@@ -570,6 +570,12 @@ typedef struct drm_ctx_list {
 	drm_file_t *tag;		/**< associated fd private data */
 } drm_ctx_list_t;
 
+struct drm_ctx_sarea_list {
+	struct list_head head;
+	int ctx_id;
+	drm_map_t *map;
+};
+
 typedef struct drm_vbl_sig {
 	struct list_head head;
 	unsigned int sequence;
@@ -746,8 +752,8 @@ typedef struct drm_device {
 	int ctx_count;			/**< Number of context handles */
 	struct mutex ctxlist_mutex;	/**< For ctxlist */
 
-	drm_map_t **context_sareas;	/**< per-context SAREA's */
-	int max_context;
+	struct idr ctx_idr;
+	struct list_head context_sarealist;
 
 	struct list_head vmalist;	/**< List of vmas (for debugging) */
 	drm_lock_data_t lock;		/**< Information on hardware lock */
@@ -808,7 +814,6 @@ typedef struct drm_device {
 	struct pci_controller *hose;
 #endif
 	drm_sg_mem_t *sg;		/**< Scatter gather memory */
-	unsigned long *ctx_bitmap;	/**< context bitmap */
 	void *dev_private;		/**< device private data */
 	drm_sigdata_t sigdata;		/**< For block_all_signals */
 	sigset_t sigmask;
