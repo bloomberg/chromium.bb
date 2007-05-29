@@ -1308,7 +1308,8 @@ string MinidumpModule::code_identifier() const {
       break;
     }
 
-    case MD_OS_MAC_OS_X: {
+    case MD_OS_MAC_OS_X:
+    case MD_OS_LINUX: {
       // TODO(mmentovai): support uuid extension if present, otherwise fall
       // back to version (from LC_ID_DYLIB?), otherwise fall back to something
       // else.
