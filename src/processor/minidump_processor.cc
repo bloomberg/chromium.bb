@@ -290,6 +290,8 @@ bool MinidumpProcessor::GetCPUInfo(Minidump *dump, SystemInfo *info) {
     }
   }
 
+  info->cpu_count = raw_system_info->number_of_processors;
+
   return true;
 }
 

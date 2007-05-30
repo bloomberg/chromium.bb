@@ -300,6 +300,9 @@ static void PrintProcessState(const ProcessState& process_state) {
     // This field is optional.
     printf("     %s\n", cpu_info.c_str());
   }
+  printf("     %d CPU%s\n",
+         process_state.system_info()->cpu_count,
+         process_state.system_info()->cpu_count != 1 ? "s" : "");
   printf("\n");
 
   // Print crash information.
@@ -339,16 +342,18 @@ static void PrintProcessStateMachineReadable(const ProcessState& process_state)
 {
   // Print OS and CPU information.
   // OS|{OS Name}|{OS Version}
-  // CPU|{CPU Name}|{CPU Info}
+  // CPU|{CPU Name}|{CPU Info}|{Number of CPUs}
   printf("OS%c%s%c%s\n", kOutputSeparator,
          StripSeparator(process_state.system_info()->os).c_str(),
          kOutputSeparator,
          StripSeparator(process_state.system_info()->os_version).c_str());
-  printf("CPU%c%s%c%s\n", kOutputSeparator,
+  printf("CPU%c%s%c%s%c%d\n", kOutputSeparator,
          StripSeparator(process_state.system_info()->cpu).c_str(),
          kOutputSeparator,
          // this may be empty
-         StripSeparator(process_state.system_info()->cpu_info).c_str());
+         StripSeparator(process_state.system_info()->cpu_info).c_str(),
+         kOutputSeparator,
+         process_state.system_info()->cpu_count);
 
   int requesting_thread = process_state.requesting_thread();
 
