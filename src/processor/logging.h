@@ -72,7 +72,7 @@ class LogStream {
  public:
   enum Severity {
     SEVERITY_INFO,
-    SEVERITY_ERROR,
+    SEVERITY_ERROR
   };
 
   // Begin logging a message to the stream identified by |stream|, at the

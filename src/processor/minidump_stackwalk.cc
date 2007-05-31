@@ -233,7 +233,7 @@ static void PrintModules(const CodeModules *modules) {
   printf("\n");
   printf("Loaded modules:\n");
 
-  u_int64_t main_address = 0xffffffffffffffffLL;
+  u_int64_t main_address = 0;
   const CodeModule *main_module = modules->GetMainModule();
   if (main_module) {
     main_address = main_module->base_address();
@@ -249,7 +249,8 @@ static void PrintModules(const CodeModules *modules) {
            base_address, base_address + module->size() - 1,
            PathnameStripper::File(module->code_file()).c_str(),
            module->version().empty() ? "???" : module->version().c_str(),
-           base_address == main_address ? "  (main)" : "");
+           main_module != NULL && base_address == main_address ?
+               "  (main)" : "");
   }
 }
 
@@ -262,7 +263,7 @@ static void PrintModulesMachineReadable(const CodeModules *modules) {
   if (!modules)
     return;
 
-  u_int64_t main_address = 0xffffffffffffffffLL;
+  u_int64_t main_address = 0;
   const CodeModule *main_module = modules->GetMainModule();
   if (main_module) {
     main_address = main_module->base_address();
@@ -284,7 +285,8 @@ static void PrintModulesMachineReadable(const CodeModules *modules) {
            StripSeparator(module->debug_identifier()).c_str(),
            kOutputSeparator, base_address,
            kOutputSeparator, base_address + module->size() - 1,
-           kOutputSeparator, base_address == main_address ? 1 : 0);
+           kOutputSeparator,
+           main_module != NULL && base_address == main_address ? 1 : 0);
   }
 }
 

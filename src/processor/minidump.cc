@@ -106,15 +106,13 @@ static inline void Swap(u_int32_t* value) {
 }
 
 
-static inline void Swap(u_int64_t* value) {
-  *value =  (*value >> 56) |
-           ((*value >> 40) & 0x000000000000ff00LL) |
-           ((*value >> 24) & 0x0000000000ff0000LL) |
-           ((*value >> 8)  & 0x00000000ff000000LL) |
-           ((*value << 8)  & 0x000000ff00000000LL) |
-           ((*value << 24) & 0x0000ff0000000000LL) |
-           ((*value << 40) & 0x00ff000000000000LL) |
-            (*value << 56);
+static void Swap(u_int64_t* value) {
+  u_int32_t* value32 = reinterpret_cast<u_int32_t*>(value);
+  Swap(&value32[0]);
+  Swap(&value32[1]);
+  u_int32_t temp = value32[0];
+  value32[0] = value32[1];
+  value32[1] = temp;
 }
 
 
@@ -1392,7 +1390,7 @@ string MinidumpModule::debug_file() const {
         // if misc_record->data is 0-terminated, so use an explicit size.
         file = string(
             reinterpret_cast<const char*>(misc_record->data),
-            module_.misc_record.data_size - sizeof(MDImageDebugMisc));
+            module_.misc_record.data_size - MDImageDebugMisc_minsize);
       } else {
         // There's a misc_record but it encodes the debug filename in UTF-16.
         // (Actually, because miscellaneous records are so old, it's probably
@@ -1401,7 +1399,7 @@ string MinidumpModule::debug_file() const {
         // return.
 
         unsigned int bytes =
-            module_.misc_record.data_size - sizeof(MDImageDebugMisc);
+            module_.misc_record.data_size - MDImageDebugMisc_minsize;
         if (bytes % 2 == 0) {
           unsigned int utf16_words = bytes / 2;
 
@@ -1559,7 +1557,7 @@ const u_int8_t* MinidumpModule::GetCVRecord(u_int32_t* size) {
     // problems.  x86 and ppc are able to cope, though.  This allocation
     // style is needed because the MDCVInfoPDB70 or MDCVInfoPDB20 are
     // variable-sized due to their pdb_file_name fields; these structures
-    // are not sizeof(MDCVInfoPDB70) or sizeof(MDCVInfoPDB20) and treating
+    // are not MDCVInfoPDB70_minsize or MDCVInfoPDB20_minsize and treating
     // them as such would result in incomplete structures or overruns.
     scoped_ptr< vector<u_int8_t> > cv_record(
         new vector<u_int8_t>(module_.cv_record.data_size));
@@ -1580,9 +1578,9 @@ const u_int8_t* MinidumpModule::GetCVRecord(u_int32_t* size) {
 
     if (signature == MD_CVINFOPDB70_SIGNATURE) {
       // Now that the structure type is known, recheck the size.
-      if (sizeof(MDCVInfoPDB70) > module_.cv_record.data_size) {
+      if (MDCVInfoPDB70_minsize > module_.cv_record.data_size) {
         BPLOG(ERROR) << "MinidumpModule CodeView7 record size mismatch, " <<
-                        sizeof(MDCVInfoPDB70) << " > " <<
+                        MDCVInfoPDB70_minsize << " > " <<
                         module_.cv_record.data_size;
         return NULL;
       }
@@ -1606,9 +1604,9 @@ const u_int8_t* MinidumpModule::GetCVRecord(u_int32_t* size) {
       }
     } else if (signature == MD_CVINFOPDB20_SIGNATURE) {
       // Now that the structure type is known, recheck the size.
-      if (sizeof(MDCVInfoPDB20) > module_.cv_record.data_size) {
+      if (MDCVInfoPDB20_minsize > module_.cv_record.data_size) {
         BPLOG(ERROR) << "MinidumpModule CodeView2 record size mismatch, " <<
-                        sizeof(MDCVInfoPDB20) << " > " <<
+                        MDCVInfoPDB20_minsize << " > " <<
                         module_.cv_record.data_size;
         return NULL;
       }
@@ -1662,9 +1660,9 @@ const MDImageDebugMisc* MinidumpModule::GetMiscRecord(u_int32_t* size) {
       return NULL;
     }
 
-    if (sizeof(MDImageDebugMisc) > module_.misc_record.data_size) {
+    if (MDImageDebugMisc_minsize > module_.misc_record.data_size) {
       BPLOG(ERROR) << "MinidumpModule miscellaneous debugging record "
-                      "size mismatch, " << sizeof(MDImageDebugMisc) << " > " <<
+                      "size mismatch, " << MDImageDebugMisc_minsize << " > " <<
                       module_.misc_record.data_size;
       return NULL;
     }
@@ -1686,7 +1684,7 @@ const MDImageDebugMisc* MinidumpModule::GetMiscRecord(u_int32_t* size) {
     // is allocated as u_int8_t[] can cause alignment problems.  x86 and
     // ppc are able to cope, though.  This allocation style is needed
     // because the MDImageDebugMisc is variable-sized due to its data field;
-    // this structure is not sizeof(MDImageDebugMisc) and treating it as such
+    // this structure is not MDImageDebugMisc_minsize and treating it as such
     // would result in an incomplete structure or an overrun.
     scoped_ptr< vector<u_int8_t> > misc_record_mem(
         new vector<u_int8_t>(module_.misc_record.data_size));
@@ -1710,7 +1708,7 @@ const MDImageDebugMisc* MinidumpModule::GetMiscRecord(u_int32_t* size) {
         // in practice due to the layout of MDImageDebugMisc.
         u_int16_t* data16 = reinterpret_cast<u_int16_t*>(&(misc_record->data));
         unsigned int dataBytes = module_.misc_record.data_size -
-                                 sizeof(MDImageDebugMisc);
+                                 MDImageDebugMisc_minsize;
         unsigned int dataLength = dataBytes / 2;
         for (unsigned int characterIndex = 0;
              characterIndex < dataLength;

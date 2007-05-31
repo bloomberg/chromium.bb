@@ -44,6 +44,12 @@
  * writing affected structures, MD_*_SIZE macros are provided where needed,
  * containing the useful size of the structures without padding.
  *
+ * Structures that are defined by Microsoft to contain a zero-length array
+ * are instead defined here to contain an array with one element, as
+ * zero-length arrays are forbidden by standard C and C++.  In these cases,
+ * *_minsize constants are provided to be used in place of sizeof.  For a
+ * cleaner interface to these sizes when using C++, see minidump_size.h.
+ *
  * These structures are also sufficient to populate minidump files.
  *
  * These definitions may be extended to support handling minidump files
@@ -67,6 +73,7 @@
 #ifndef GOOGLE_BREAKPAD_COMMON_MINIDUMP_FORMAT_H__
 #define GOOGLE_BREAKPAD_COMMON_MINIDUMP_FORMAT_H__
 
+#include <stddef.h>
 
 #include "google_breakpad/common/breakpad_types.h"
 
@@ -502,8 +509,10 @@ typedef enum {
 typedef struct {
   u_int32_t length;     /* Length of buffer in bytes (not characters),
                          * excluding 0-terminator */
-  u_int16_t buffer[0];  /* UTF-16-encoded, 0-terminated */
+  u_int16_t buffer[1];  /* UTF-16-encoded, 0-terminated */
 } MDString;  /* MINIDUMP_STRING */
+
+static const size_t MDString_minsize = offsetof(MDString, buffer[0]);
 
 
 typedef struct {
@@ -519,8 +528,11 @@ typedef struct {
 
 typedef struct {
   u_int32_t   number_of_threads;
-  MDRawThread threads[0];
+  MDRawThread threads[1];
 } MDRawThreadList;  /* MINIDUMP_THREAD_LIST */
+
+static const size_t MDRawThreadList_minsize = offsetof(MDRawThreadList,
+                                                       threads[0]);
 
 
 typedef struct {
@@ -576,8 +588,11 @@ typedef struct {
   MDCVHeader cv_header;
   u_int32_t  signature;         /* time_t debug information created */
   u_int32_t  age;               /* revision of PDB file */
-  u_int8_t   pdb_file_name[0];  /* Pathname or filename of PDB file */
+  u_int8_t   pdb_file_name[1];  /* Pathname or filename of PDB file */
 } MDCVInfoPDB20;
+
+static const size_t MDCVInfoPDB20_minsize = offsetof(MDCVInfoPDB20,
+                                                     pdb_file_name[0]);
 
 #define MD_CVINFOPDB20_SIGNATURE 0x3031424e  /* cvHeader.signature = '01BN' */
 
@@ -585,9 +600,12 @@ typedef struct {
   u_int32_t cv_signature;
   MDGUID    signature;         /* GUID, identifies PDB file */
   u_int32_t age;               /* Identifies incremental changes to PDB file */
-  u_int8_t  pdb_file_name[0];  /* Pathname or filename of PDB file,
+  u_int8_t  pdb_file_name[1];  /* Pathname or filename of PDB file,
                                 * 0-terminated 8-bit character data (UTF-8?) */
 } MDCVInfoPDB70;
+
+static const size_t MDCVInfoPDB70_minsize = offsetof(MDCVInfoPDB70,
+                                                     pdb_file_name[0]);
 
 #define MD_CVINFOPDB70_SIGNATURE 0x53445352  /* cvSignature = 'SDSR' */
 
@@ -618,20 +636,29 @@ typedef struct {
   u_int32_t length;       /* Length of entire MDImageDebugMisc structure */
   u_int8_t  unicode;      /* True if data is multibyte */
   u_int8_t  reserved[3];
-  u_int8_t  data[0];
+  u_int8_t  data[1];
 } MDImageDebugMisc;  /* IMAGE_DEBUG_MISC */
+
+static const size_t MDImageDebugMisc_minsize = offsetof(MDImageDebugMisc,
+                                                        data[0]);
 
 
 typedef struct {
   u_int32_t   number_of_modules;
-  MDRawModule modules[0];
+  MDRawModule modules[1];
 } MDRawModuleList;  /* MINIDUMP_MODULE_LIST */
+
+static const size_t MDRawModuleList_minsize = offsetof(MDRawModuleList,
+                                                       modules[0]);
 
 
 typedef struct {
   u_int32_t          number_of_memory_ranges;
-  MDMemoryDescriptor memory_ranges[0];
+  MDMemoryDescriptor memory_ranges[1];
 } MDRawMemoryList;  /* MINIDUMP_MEMORY_LIST */
+
+static const size_t MDRawMemoryList_minsize = offsetof(MDRawMemoryList,
+                                                       memory_ranges[0]);
 
 
 #define MD_EXCEPTION_MAXIMUM_PARAMETERS 15
@@ -848,7 +875,7 @@ typedef enum {
       /* EXC_GPFLT */
   /* EXC_I386_PGFLT     = 14: should not occur in user space */
   /* EXC_I386_EXTERRFLT = 16: mapped to EXC_ARITHMETIC/EXC_I386_EXTERR */
-  MD_EXCEPTION_CODE_MAC_X86_ALIGNMENT_FAULT            = 17,
+  MD_EXCEPTION_CODE_MAC_X86_ALIGNMENT_FAULT            = 17
       /* EXC_ALIGNFLT (for vector operations) */
   /* EXC_I386_ENOEXTFLT = 32: should be handled by the kernel */
   /* EXC_I386_ENDPERR   = 33: should not occur */
@@ -885,13 +912,9 @@ typedef struct {
   u_int16_t        processor_level;         /* x86: 5 = 586, 6 = 686, ... */
   u_int16_t        processor_revision;      /* x86: 0xMMSS, where MM=model,
                                              *      SS=stepping */
-  union {
-    u_int16_t      reserved0;
-    struct {
-      u_int8_t     number_of_processors;
-      u_int8_t     product_type;          /* Windows: VER_NT_* from WinNT.h */
-    };
-  };
+
+  u_int8_t         number_of_processors;
+  u_int8_t         product_type;            /* Windows: VER_NT_* from WinNT.h */
 
   /* The next 5 fields are from the OSVERSIONINFO structure as returned
    * by GetVersionEx */
@@ -907,13 +930,9 @@ typedef struct {
                                       *           (sw_vers -buildVersion).
                                       * Linux: uname -srvmo */
 
-  union {
-    u_int32_t      reserved1;
-    struct {
-      u_int16_t    suite_mask;  /* Windows: VER_SUITE_* from WinNT.h */
-      u_int16_t    reserved2;
-    };
-  };
+  u_int16_t        suite_mask;       /* Windows: VER_SUITE_* from WinNT.h */
+  u_int16_t        reserved2;
+
   MDCPUInformation cpu;
 } MDRawSystemInfo;  /* MINIDUMP_SYSTEM_INFO */
 
@@ -947,7 +966,7 @@ typedef enum {
   /* The following values are Breakpad-defined. */
   MD_OS_UNIX          = 0x8000,  /* Generic Unix-ish */
   MD_OS_MAC_OS_X      = 0x8101,  /* Mac OS X/Darwin */
-  MD_OS_LINUX         = 0x8201,  /* Linux */
+  MD_OS_LINUX         = 0x8201   /* Linux */
 } MDOSPlatform;
 
 
