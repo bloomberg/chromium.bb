@@ -104,4 +104,4 @@ class minidump_size<MDRawModule> {
 
 }  // namespace google_breakpad
 
-#endif  /* GOOGLE_BREAKPAD_COMMON_MINIDUMP_SIZE_H__ */
+#endif  // GOOGLE_BREAKPAD_COMMON_MINIDUMP_SIZE_H__
