@@ -686,6 +686,9 @@ void MinidumpContext::Print() {
 //
 
 
+u_int32_t MinidumpMemoryRegion::max_bytes_ = 1024 * 1024;  // 1MB
+
+
 MinidumpMemoryRegion::MinidumpMemoryRegion(Minidump* minidump)
     : MinidumpObject(minidump),
       descriptor_(NULL),
@@ -724,7 +727,13 @@ const u_int8_t* MinidumpMemoryRegion::GetMemory() {
       return NULL;
     }
 
-    // TODO(mmentovai): verify rational size!
+    if (descriptor_->memory.data_size > max_bytes_) {
+      BPLOG(ERROR) << "MinidumpMemoryRegion size " <<
+                      descriptor_->memory.data_size << " exceeds maximum " <<
+                      max_bytes_;
+      return NULL;
+    }
+
     scoped_ptr< vector<u_int8_t> > memory(
         new vector<u_int8_t>(descriptor_->memory.data_size));
 
@@ -1014,6 +1023,9 @@ void MinidumpThread::Print() {
 //
 
 
+u_int32_t MinidumpThreadList::max_threads_ = 256;
+
+
 MinidumpThreadList::MinidumpThreadList(Minidump* minidump)
     : MinidumpStream(minidump),
       id_to_thread_map_(),
@@ -1064,8 +1076,13 @@ bool MinidumpThreadList::Read(u_int32_t expected_size) {
     return false;
   }
 
-  if (thread_count) {
-    // TODO(mmentovai): verify rational size!
+  if (thread_count > max_threads_) {
+    BPLOG(ERROR) << "MinidumpThreadList count " << thread_count <<
+                    " exceeds maximum " << max_threads_;
+    return false;
+  }
+
+  if (thread_count != 0) {
     scoped_ptr<MinidumpThreads> threads(
         new MinidumpThreads(thread_count, MinidumpThread(minidump_)));
 
@@ -1155,6 +1172,10 @@ void MinidumpThreadList::Print() {
 //
 // MinidumpModule
 //
+
+
+u_int32_t MinidumpModule::max_cv_bytes_ = 1024;
+u_int32_t MinidumpModule::max_misc_bytes_ = 1024;
 
 
 MinidumpModule::MinidumpModule(Minidump* minidump)
@@ -1526,7 +1547,12 @@ const u_int8_t* MinidumpModule::GetCVRecord(u_int32_t* size) {
       return NULL;
     }
 
-    // TODO(mmentovai): verify rational size!
+    if (module_.cv_record.data_size > max_cv_bytes_) {
+      BPLOG(ERROR) << "MinidumpModule CodeView record size " <<
+                      module_.cv_record.data_size << " exceeds maximum " <<
+                      max_cv_bytes_;
+      return NULL;
+    }
 
     // Allocating something that will be accessed as MDCVInfoPDB70 or
     // MDCVInfoPDB20 but is allocated as u_int8_t[] can cause alignment
@@ -1649,7 +1675,12 @@ const MDImageDebugMisc* MinidumpModule::GetMiscRecord(u_int32_t* size) {
       return NULL;
     }
 
-    // TODO(mmentovai): verify rational size!
+    if (module_.misc_record.data_size > max_misc_bytes_) {
+      BPLOG(ERROR) << "MinidumpModule miscellaneous debugging record size " <<
+                      module_.misc_record.data_size << " exceeds maximum " <<
+                      max_misc_bytes_;
+      return NULL;
+    }
 
     // Allocating something that will be accessed as MDImageDebugMisc but
     // is allocated as u_int8_t[] can cause alignment problems.  x86 and
@@ -1847,6 +1878,9 @@ void MinidumpModule::Print() {
 //
 
 
+u_int32_t MinidumpModuleList::max_modules_ = 1024;
+
+
 MinidumpModuleList::MinidumpModuleList(Minidump* minidump)
     : MinidumpStream(minidump),
       range_map_(new RangeMap<u_int64_t, unsigned int>()),
@@ -1898,8 +1932,13 @@ bool MinidumpModuleList::Read(u_int32_t expected_size) {
     return false;
   }
 
-  if (module_count) {
-    // TODO(mmentovai): verify rational size!
+  if (module_count > max_modules_) {
+    BPLOG(ERROR) << "MinidumpModuleList count " << module_count_ <<
+                    " exceeds maximum " << max_modules_;
+    return false;
+  }
+
+  if (module_count != 0) {
     scoped_ptr<MinidumpModules> modules(
         new MinidumpModules(module_count, MinidumpModule(minidump_)));
 
@@ -2065,6 +2104,9 @@ void MinidumpModuleList::Print() {
 //
 
 
+u_int32_t MinidumpMemoryList::max_regions_ = 256;
+
+
 MinidumpMemoryList::MinidumpMemoryList(Minidump* minidump)
     : MinidumpStream(minidump),
       range_map_(new RangeMap<u_int64_t, unsigned int>()),
@@ -2120,8 +2162,13 @@ bool MinidumpMemoryList::Read(u_int32_t expected_size) {
     return false;
   }
 
-  if (region_count) {
-    // TODO(mmentovai): verify rational size!
+  if (region_count > max_regions_) {
+    BPLOG(ERROR) << "MinidumpMemoryList count " << region_count <<
+                    " exceeds maximum " << max_regions_;
+    return false;
+  }
+
+  if (region_count != 0) {
     scoped_ptr<MemoryDescriptors> descriptors(
         new MemoryDescriptors(region_count));
 
@@ -2821,6 +2868,10 @@ void MinidumpBreakpadInfo::Print() {
 //
 
 
+u_int32_t Minidump::max_streams_ = 128;
+unsigned int Minidump::max_string_length_ = 1024;
+
+
 Minidump::Minidump(const string& path)
     : header_(),
       directory_(NULL),
@@ -2934,8 +2985,13 @@ bool Minidump::Read() {
     return false;
   }
 
-  if (header_.stream_count) {
-    // TODO(mmentovai): verify rational size!
+  if (header_.stream_count > max_streams_) {
+    BPLOG(ERROR) << "Minidump stream count " << header_.stream_count <<
+                    " exceeds maximum " << max_streams_;
+    return false;
+  }
+
+  if (header_.stream_count != 0) {
     scoped_ptr<MinidumpDirectoryEntries> directory(
         new MinidumpDirectoryEntries(header_.stream_count));
 
@@ -3146,31 +3202,39 @@ string* Minidump::ReadString(off_t offset) {
     return NULL;
   }
   if (!SeekSet(offset)) {
-    BPLOG(ERROR) << "ReadString could not seek to string";
+    BPLOG(ERROR) << "ReadString could not seek to string at offset " << offset;
     return NULL;
   }
 
   u_int32_t bytes;
   if (!ReadBytes(&bytes, sizeof(bytes))) {
-    BPLOG(ERROR) << "ReadString could not read string size";
+    BPLOG(ERROR) << "ReadString could not read string size at offset " <<
+                    offset;
     return NULL;
   }
   if (swap_)
     Swap(&bytes);
 
   if (bytes % 2 != 0) {
-    BPLOG(ERROR) << "ReadString found odd-sized string of " << bytes <<
-                    " bytes at offset " << offset;
+    BPLOG(ERROR) << "ReadString found odd-sized " << bytes <<
+                    "-byte string at offset " << offset;
     return NULL;
   }
   unsigned int utf16_words = bytes / 2;
 
-  // TODO(mmentovai): verify rational size!
+  if (utf16_words > max_string_length_) {
+    BPLOG(ERROR) << "ReadString string length " << utf16_words <<
+                    " exceeds maximum " << max_string_length_ <<
+                    " at offset " << offset;
+    return NULL;
+  }
+
   vector<u_int16_t> string_utf16(utf16_words);
 
   if (utf16_words) {
     if (!ReadBytes(&string_utf16[0], bytes)) {
-      BPLOG(ERROR) << "ReadString could not read string";
+      BPLOG(ERROR) << "ReadString could not read " << bytes <<
+                      "-byte string at offset " << offset;
       return NULL;
     }
   }
