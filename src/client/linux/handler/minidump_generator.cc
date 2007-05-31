@@ -328,6 +328,9 @@ bool WriteThreadStream(MinidumpFileWriter *minidump_writer,
 bool WriteCPUInformation(MDRawSystemInfo *sys_info) {
   const char *proc_cpu_path = "/proc/cpuinfo";
   char line[128];
+  char vendor_id[13];
+  const char vendor_id_name[] = "vendor_id";
+  const size_t vendor_id_name_length = sizeof(vendor_id_name) - 1;
 
   struct CpuInfoEntry {
     const char *info_name;
@@ -339,6 +342,8 @@ bool WriteCPUInformation(MDRawSystemInfo *sys_info) {
     { "cpuid level", 0 },
     { NULL, -1 },
   };
+
+  memset(vendor_id, 0, sizeof(vendor_id));
 
   FILE *fp = fopen(proc_cpu_path, "r");
   if (fp != NULL) {
@@ -352,6 +357,26 @@ bool WriteCPUInformation(MDRawSystemInfo *sys_info) {
             sscanf(value, " %d", &(entry->value));
         }
         entry++;
+      }
+
+      // special case for vendor_id
+      if (!strncmp(line, vendor_id_name, vendor_id_name_length)) {
+        char *value = strchr(line, ':');
+        if (value == NULL)
+          continue;
+
+        value++;
+        while (*value && isspace(*value))
+          value++;
+        if (*value) {
+          size_t length = strlen(value);
+          // we don't want the trailing newline
+          if (value[length - 1] == '\n')
+            length--;
+          // ensure we have space for the value
+          if (length < sizeof(vendor_id))
+            strncpy(vendor_id, value, length);
+        }
       }
     }
     fclose(fp);
@@ -373,8 +398,12 @@ bool WriteCPUInformation(MDRawSystemInfo *sys_info) {
         (strlen(uts.machine) == 4 &&
          uts.machine[0] == 'i' &&
          uts.machine[2] == '8' &&
-         uts.machine[3] == '6'))
+         uts.machine[3] == '6')) {
       sys_info->processor_architecture = MD_CPU_ARCHITECTURE_X86;
+      if (vendor_id[0] != '\0')
+        memcpy(sys_info->cpu.x86_cpu_info.vendor_id, vendor_id,
+               sizeof(sys_info->cpu.x86_cpu_info.vendor_id));
+    }
   }
   return true;
 }
