@@ -234,6 +234,19 @@ static int ati_pcigart_needs_unbind_cache_adjust(drm_ttm_backend_t *backend)
 	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
 }
 
+void ati_pcigart_alloc_page_array(size_t size, struct ati_pcigart_memory *mem)
+{
+        mem->memory = NULL;
+        mem->flags = 0;
+
+        if (size <= 2*PAGE_SIZE)
+                mem->memory = kmalloc(size, GFP_KERNEL | __GFP_NORETRY);
+        if (mem->memory == NULL) {
+                mem->memory = vmalloc(size);
+                mem->flags |= ATI_PCIGART_FLAG_VMALLOC;
+        }
+}
+
 static int ati_pcigart_populate(drm_ttm_backend_t *backend,
 				unsigned long num_pages,
 				struct page **pages)
@@ -241,6 +254,7 @@ static int ati_pcigart_populate(drm_ttm_backend_t *backend,
 	ati_pcigart_ttm_priv *atipci_priv = (ati_pcigart_ttm_priv *)backend->private;	
 	struct page **cur_page, **last_page = pages + num_pages;
 	struct ati_pcigart_memory *mem;
+        unsigned long alloc_size = num_pages * sizeof(struct page *);
 
 	DRM_DEBUG("%d\n", num_pages);
 	if (drm_alloc_memctl(num_pages * sizeof(void *)))
@@ -252,7 +266,11 @@ static int ati_pcigart_populate(drm_ttm_backend_t *backend,
 		return -1;
 	}
 
-	mem->page_count = num_pages;
+        ati_pcigart_alloc_page_array(alloc_size, mem);
+        mem->page_count = 0;
+        for (cur_page = pages; cur_page < last_page; ++cur_page) {
+                mem->memory[mem->page_count++] = page_to_phys(*cur_page);
+        }
 	atipci_priv->mem = mem;
 	return 0;
 }
@@ -262,7 +280,19 @@ static int ati_pcigart_bind_ttm(drm_ttm_backend_t *backend,
 				int cached)
 {
 	ati_pcigart_ttm_priv *atipci_priv = (ati_pcigart_ttm_priv *)backend->private;
+        struct ati_pcigart_memory *mem = atipci_priv->mem;
+        off_t j;
 
+        j = offset;
+        while (j < (pg_start + mem->page_count)) {
+                j++;
+        }
+
+        for (i = 0, j = offset; i < mem->page_count; i++, j++) {
+                /* write value */
+        }
+
+        /* need to traverse table and add entries */
 	DRM_DEBUG("\n");
 	return -1;
 }
