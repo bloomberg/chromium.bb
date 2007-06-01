@@ -79,12 +79,6 @@ static int drm_setup(drm_device_t * dev)
 	drm_ht_create(&dev->magiclist, DRM_MAGIC_HASH_ORDER);
 	INIT_LIST_HEAD(&dev->magicfree);
 
-	INIT_LIST_HEAD(&dev->ctxlist);
-	INIT_LIST_HEAD(&dev->vmalist);
-
-	INIT_LIST_HEAD(&dev->drwlist);
-	idr_init(&dev->drw_idr);
-	
 	dev->sigdata.lock = NULL;
 	init_waitqueue_head(&dev->lock.lock_queue);
 	dev->queue_count = 0;
