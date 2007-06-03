@@ -610,34 +610,6 @@ err_i1:
 }
 EXPORT_SYMBOL(drm_ioctl);
 
-int drm_wait_on(drm_device_t *dev, wait_queue_head_t *queue, int timeout,
-		int (*fn)(drm_device_t *dev, void *priv), void *priv)
-{
-	DECLARE_WAITQUEUE(entry, current);
-	unsigned long end = jiffies + (timeout);
-	int ret = 0;
-	add_wait_queue(queue, &entry);
-
-	for (;;) {
-		__set_current_state(TASK_INTERRUPTIBLE);
-		if ((*fn)(dev, priv))
-			break;
-		if (time_after_eq(jiffies, end)) {
-			ret = -EBUSY;
-			break;
-		}
-		schedule_timeout((HZ/100 > 1) ? HZ/100 : 1);
-		if (signal_pending(current)) {
-			ret = -EINTR;
-			break;
-		}
-	}
-	__set_current_state(TASK_RUNNING);
-	remove_wait_queue(queue, &entry);
-	return ret;
-}
-EXPORT_SYMBOL(drm_wait_on);
-
 drm_local_map_t *drm_getsarea(struct drm_device *dev)
 {
 	drm_map_list_t *entry;
