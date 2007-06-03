@@ -141,19 +141,29 @@ static int radeon_wait_irq(drm_device_t * dev, int swi_nr)
 }
 
 int radeon_driver_vblank_do_wait(drm_device_t * dev, unsigned int *sequence,
-				 atomic_t *counter)
+				 int crtc)
 {
 	drm_radeon_private_t *dev_priv =
 	    (drm_radeon_private_t *) dev->dev_private;
 	unsigned int cur_vblank;
 	int ret = 0;
-
+	int ack = 0;
+	atomic_t *counter;
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
 		return DRM_ERR(EINVAL);
 	}
 
-	radeon_acknowledge_irqs(dev_priv, RADEON_CRTC_VBLANK_STAT);
+	if (crtc == DRM_RADEON_VBLANK_CRTC1) {
+		counter = &dev->vbl_received;
+		ack |= RADEON_CRTC_VBLANK_STAT;
+	} else if (crtc == DRM_RADEON_VBLANK_CRTC2) {
+		counter = &dev->vbl_received2;
+		ack |= RADEON_CRTC2_VBLANK_STAT;
+	} else
+		return DRM_ERR(EINVAL);
+
+	radeon_acknowledge_irqs(dev_priv, ack);
 
 	dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
 
@@ -172,12 +182,12 @@ int radeon_driver_vblank_do_wait(drm_device_t * dev, unsigned int *sequence,
 
 int radeon_driver_vblank_wait(drm_device_t *dev, unsigned int *sequence)
 {
-	return radeon_driver_vblank_do_wait(dev, sequence, &dev->vbl_received);
+	return radeon_driver_vblank_do_wait(dev, sequence, DRM_RADEON_VBLANK_CRTC1);
 }
 
 int radeon_driver_vblank_wait2(drm_device_t *dev, unsigned int *sequence)
 {
-	return radeon_driver_vblank_do_wait(dev, sequence, &dev->vbl_received2);
+	return radeon_driver_vblank_do_wait(dev, sequence, DRM_RADEON_VBLANK_CRTC2);
 }
 
 /* Needs the lock as it touches the ring.
