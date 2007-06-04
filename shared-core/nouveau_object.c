@@ -167,7 +167,7 @@ nouveau_ht_object_insert(drm_device_t* dev, int channel, uint32_t handle,
 
 	while (NV_READ(ht_base + ofs) || NV_READ(ht_base + ofs + 4)) {
 		ofs += 8;
-		if (ofs == ht_end) ofs = ht_base;
+		if (ofs == dev_priv->ramht_size) ofs = 0;
 		if (ofs == o_ofs) {
 			DRM_ERROR("no free hash table entries\n");
 			return 1;
