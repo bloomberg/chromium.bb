@@ -456,8 +456,7 @@ static int r128_do_init_cce(drm_device_t * dev, drm_r128_init_t * init)
 	dev_priv->span_pitch_offset_c = (((dev_priv->depth_pitch / 8) << 21) |
 					 (dev_priv->span_offset >> 5));
 
-	DRM_GETSAREA();
-
+	dev_priv->sarea = drm_getsarea(dev);
 	if (!dev_priv->sarea) {
 		DRM_ERROR("could not find sarea!\n");
 		dev->dev_private = (void *)dev_priv;
@@ -563,7 +562,7 @@ static int r128_do_init_cce(drm_device_t * dev, drm_r128_init_t * init)
 		dev_priv->gart_info.table_size = R128_PCIGART_TABLE_SIZE;
 		dev_priv->gart_info.addr = NULL;
 		dev_priv->gart_info.bus_addr = 0;
-		dev_priv->gart_info.is_pcie = 0;
+		dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_PCI;
 		if (!drm_ati_pcigart_init(dev, &dev_priv->gart_info)) {
 			DRM_ERROR("failed to init PCI GART!\n");
 			dev->dev_private = (void *)dev_priv;

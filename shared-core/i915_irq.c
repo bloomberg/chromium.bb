@@ -294,6 +294,8 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		return IRQ_NONE;
 
 	I915_WRITE16(I915REG_INT_IDENTITY_R, temp);
+	(void) I915_READ16(I915REG_INT_IDENTITY_R);
+	DRM_READMEMORYBARRIER();
 
 	dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
@@ -713,22 +715,13 @@ void i915_driver_irq_postinstall(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	dev_priv->swaps_lock = SPIN_LOCK_UNLOCKED;
-	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
-	dev_priv->swaps_pending = 0;
-
-	if (!dev_priv->vblank_pipe)
-		dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
-
-	dev_priv->swaps_lock = SPIN_LOCK_UNLOCKED;
+	spin_lock_init(&dev_priv->swaps_lock);
 	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending = 0;
 
 	dev_priv->user_irq_lock = SPIN_LOCK_UNLOCKED;
 	dev_priv->user_irq_refcount = 0;
 
-	if (!dev_priv->vblank_pipe)
-		dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
 	i915_enable_interrupt(dev);
 	DRM_INIT_WAITQUEUE(&dev_priv->irq_queue);
 

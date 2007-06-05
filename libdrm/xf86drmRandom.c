@@ -25,8 +25,6 @@
  * 
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRandom.c,v 1.4 2000/06/17 00:03:34 martin Exp $
- *
  * DESCRIPTION
  *
  * This file contains a simple, straightforward implementation of the Park
@@ -73,25 +71,14 @@
  *
  */
 
-#ifdef HAVE_XORG_CONFIG_H
-#include <xorg-config.h>
-#endif
+#include <stdio.h>
+#include <stdlib.h>
 
 #define RANDOM_MAIN 0
 
-#if RANDOM_MAIN
-# include <stdio.h>
-# include <stdlib.h>
-#else
+#if !RANDOM_MAIN
 # include "drm.h"
 # include "xf86drm.h"
-# ifdef XFree86LOADER
-#  include "xf86.h"
-#  include "xf86_ansic.h"
-# else
-#  include <stdio.h>
-#  include <stdlib.h>
-# endif
 #endif
 
 #define RANDOM_MAGIC 0xfeedbeef

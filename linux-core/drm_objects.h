@@ -29,8 +29,7 @@
  */
 
 #ifndef _DRM_OBJECTS_H
-#define _DRM_OJBECTS_H
-#define DRM_HAS_TTM
+#define _DRM_OBJECTS_H
 
 struct drm_device;
 
@@ -234,10 +233,8 @@ extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 #define DRM_BE_FLAG_NEEDS_FREE     0x00000001
 #define DRM_BE_FLAG_BOUND_CACHED   0x00000002
 
-typedef struct drm_ttm_backend {
-	void *private;
-	uint32_t flags;
-	uint32_t drm_map_type;
+struct drm_ttm_backend;
+typedef struct drm_ttm_backend_func {
 	int (*needs_ub_cache_adjust) (struct drm_ttm_backend * backend);
 	int (*populate) (struct drm_ttm_backend * backend,
 			 unsigned long num_pages, struct page ** pages);
@@ -246,6 +243,13 @@ typedef struct drm_ttm_backend {
 		     unsigned long offset, int cached);
 	int (*unbind) (struct drm_ttm_backend * backend);
 	void (*destroy) (struct drm_ttm_backend * backend);
+} drm_ttm_backend_func_t;
+
+
+typedef struct drm_ttm_backend {
+	uint32_t flags;
+	int mem_type;
+	drm_ttm_backend_func_t *func;
 } drm_ttm_backend_t;
 
 typedef struct drm_ttm {

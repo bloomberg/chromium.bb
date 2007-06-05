@@ -47,7 +47,7 @@ static struct {
 
 static inline size_t drm_size_align(size_t size) {
 
-	register size_t tmpSize = 4;
+	size_t tmpSize = 4;
 	if (size > PAGE_SIZE)
 		return PAGE_ALIGN(size);
 
@@ -228,7 +228,7 @@ static void *agp_remap(unsigned long offset, unsigned long size,
 	offset -= dev->hose->mem_space->start;
 #endif
 
-	for (agpmem = dev->agp->memory; agpmem; agpmem = agpmem->next)
+	list_for_each_entry(agpmem, &dev->agp->memory, head)
 		if (agpmem->bound <= offset
 		    && (agpmem->bound + (agpmem->pages << PAGE_SHIFT)) >=
 		    (offset + size))

@@ -154,7 +154,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 
 	be = ttm->be;
 	if (be) {
-		be->destroy(be);
+		be->func->destroy(be);
 		ttm->be = NULL;
 	}
 
@@ -222,7 +222,7 @@ static int drm_ttm_populate(drm_ttm_t * ttm)
 		if (!page)
 			return -ENOMEM;
 	}
-	be->populate(be, ttm->num_pages, ttm->pages);
+	be->func->populate(be, ttm->num_pages, ttm->pages);
 	ttm->state = ttm_unbound;
 	return 0;
 }
@@ -281,7 +281,7 @@ void drm_ttm_evict(drm_ttm_t * ttm)
 	int ret;
 
 	if (ttm->state == ttm_bound) {
-		ret = be->unbind(be);
+		ret = be->func->unbind(be);
 		BUG_ON(ret);
 	}
 
@@ -293,7 +293,7 @@ void drm_ttm_fixup_caching(drm_ttm_t * ttm)
 
 	if (ttm->state == ttm_evicted) {
 		drm_ttm_backend_t *be = ttm->be;
-		if (be->needs_ub_cache_adjust(be)) {
+		if (be->func->needs_ub_cache_adjust(be)) {
 			drm_set_caching(ttm, 0);
 		}
 		ttm->state = ttm_unbound;
@@ -329,7 +329,7 @@ int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset)
 		drm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
 	}
 
-	if ((ret = be->bind(be, aper_offset, cached))) {
+	if ((ret = be->func->bind(be, aper_offset, cached))) {
 		ttm->state = ttm_evicted;
 		DRM_ERROR("Couldn't bind backend.\n");
 		return ret;

@@ -80,14 +80,7 @@
 #define DRM_IOC_READWRITE	_IOC_READ|_IOC_WRITE
 #define DRM_IOC(dir, group, nr, size) _IOC(dir, group, nr, size)
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
-#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)) && defined(IN_MODULE)
-/* Prevent name collision when including sys/ioccom.h */
-#undef ioctl
 #include <sys/ioccom.h>
-#define ioctl(a,b,c)		xf86ioctl(a,b,c)
-#else
-#include <sys/ioccom.h>
-#endif				/* __FreeBSD__ && xf86ioctl */
 #define DRM_IOCTL_NR(n)		((n) & 0xff)
 #define DRM_IOC_VOID		IOC_VOID
 #define DRM_IOC_READ		IOC_OUT
@@ -796,7 +789,8 @@ typedef struct drm_fence_arg {
 typedef enum {
 	drm_bo_type_dc,
 	drm_bo_type_user,
-	drm_bo_type_fake
+	drm_bo_type_fake,
+	drm_bo_type_kernel, /* for initial kernel allocations */
 }drm_bo_type_t;
 
 

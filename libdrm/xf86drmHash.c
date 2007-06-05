@@ -25,8 +25,6 @@
  *
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmHash.c,v 1.4 2001/03/21 18:08:54 dawes Exp $
- *
  * DESCRIPTION
  *
  * This file contains a straightforward implementation of a fixed-sized
@@ -70,25 +68,14 @@
  *
  */
 
-#ifdef HAVE_XORG_CONFIG_H
-#include <xorg-config.h>
-#endif
+#include <stdio.h>
+#include <stdlib.h>
 
 #define HASH_MAIN 0
 
-#if HASH_MAIN
-# include <stdio.h>
-# include <stdlib.h>
-#else
+#if !HASH_MAIN
 # include "drm.h"
 # include "xf86drm.h"
-# ifdef XFree86LOADER
-#  include "xf86.h"
-#  include "xf86_ansic.h"
-# else
-#  include <stdio.h>
-#  include <stdlib.h>
-# endif
 #endif
 
 #define HASH_MAGIC 0xdeadbeef

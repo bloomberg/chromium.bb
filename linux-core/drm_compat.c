@@ -275,12 +275,14 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 			goto out_unlock;
 		}
 		pfn = page_to_pfn(page);
-		vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+		vma->vm_page_prot = (bo->mem.flags & DRM_BO_FLAG_CACHED) ?
+			vm_get_page_prot(vma->vm_flags) :
+			drm_io_prot(_DRM_TTM, vma);
 	}
-	
+
 	err = vm_insert_pfn(vma, address, pfn);
 
-	if (!err || err == -EBUSY) 
+	if (!err || err == -EBUSY)
 		data->type = VM_FAULT_MINOR; 
 	else
 		data->type = VM_FAULT_OOM;

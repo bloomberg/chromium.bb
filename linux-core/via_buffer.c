@@ -34,7 +34,7 @@
 
 drm_ttm_backend_t *via_create_ttm_backend_entry(drm_device_t * dev)
 {
-	return drm_agp_init_ttm(dev, NULL);
+	return drm_agp_init_ttm(dev);
 }
 
 int via_fence_types(drm_buffer_object_t *bo, uint32_t * class, uint32_t * type)

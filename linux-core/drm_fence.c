@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright (c) 2006-2007 Tungsten Graphics, Inc., Cedar Park, TX., USA
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,17 +10,17 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
  * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
@@ -49,8 +49,6 @@ void drm_fence_handler(drm_device_t * dev, uint32_t class,
 	int is_exe = (type & DRM_FENCE_TYPE_EXE);
 	int ge_last_exe;
 
-
-	
 	diff = (sequence - fc->exe_flush_sequence) & driver->sequence_mask;
 
 	if (fc->pending_exe_flush && is_exe && diff < driver->wrap_diff)
@@ -59,13 +57,13 @@ void drm_fence_handler(drm_device_t * dev, uint32_t class,
 	diff = (sequence - fc->last_exe_flush) & driver->sequence_mask;
 	ge_last_exe = diff < driver->wrap_diff;
 
-	if (ge_last_exe) 
+	if (ge_last_exe)
 		fc->pending_flush &= ~type;
 
 	if (is_exe && ge_last_exe) {
 		fc->last_exe_flush = sequence;
 	}
-	
+
 	if (list_empty(&fc->ring))
 		return;
 
@@ -107,9 +105,8 @@ void drm_fence_handler(drm_device_t * dev, uint32_t class,
 				  fence->base.hash.key);
 			list_del_init(&fence->ring);
 		}
-
 	}
-	
+
 	if (wake) {
 		DRM_WAKEUP(&fc->fence_queue);
 	}
@@ -266,7 +263,7 @@ void drm_fence_flush_old(drm_device_t * dev, uint32_t class, uint32_t sequence)
 		fc->exe_flush_sequence = sequence - (driver->flush_diff / 2);
 	}
 	write_unlock_irqrestore(&fm->lock, flags);
-	
+
 	mutex_lock(&dev->struct_mutex);
 	read_lock_irqsave(&fm->lock, flags);
 
@@ -295,17 +292,21 @@ static int drm_fence_lazy_wait(drm_device_t *dev,
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_class_manager_t *fc = &fm->class[fence->class];
-
+	int signaled;
 	unsigned long _end = jiffies + 3*DRM_HZ;
 	int ret = 0;
 
 	do {
 		DRM_WAIT_ON(ret, fc->fence_queue, 3 * DRM_HZ,
-			    fence_signaled(dev, fence, mask, 0));
+			    (signaled = fence_signaled(dev, fence, mask, 1)));
+		if (signaled)
+			return 0;
 		if (time_after_eq(jiffies, _end))
 			break;
 	} while (ret == -EINTR && ignore_signals);
-	if (time_after_eq(jiffies, _end) && (ret != 0))
+	if (fence_signaled(dev, fence, mask, 0))
+		return 0;
+	if (time_after_eq(jiffies, _end))
 		ret = -EBUSY;
 	if (ret) {
 		if (ret == -EBUSY) {
@@ -409,7 +410,7 @@ int drm_fence_object_emit(drm_device_t * dev, drm_fence_object_t * fence,
 	fence->signaled = 0x00;
 	fence->sequence = sequence;
 	fence->native_type = native_type;
-	if (list_empty(&fc->ring)) 
+	if (list_empty(&fc->ring))
 		fc->last_exe_flush = sequence - 1;
 	list_add_tail(&fence->ring, &fc->ring);
 	write_unlock_irqrestore(&fm->lock, flags);
@@ -494,8 +495,7 @@ void drm_fence_manager_init(drm_device_t * dev)
 	drm_fence_driver_t *fed = dev->driver->fence_driver;
 	int i;
 
-
-	fm->lock = RW_LOCK_UNLOCKED;
+	rwlock_init(&fm->lock);
 	write_lock(&fm->lock);
 	fm->initialized = 0;
 	if (!fed)

@@ -117,7 +117,7 @@ void nouveau_nv20_context_switch(drm_device_t *dev)
 	
 	nouveau_wait_for_idle(dev);
 
-	NV_WRITE(NV03_PGRAPH_CTX_CONTROL, 0x10000000);
+	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10000000);
 
 	nv20_graph_context_restore(dev, channel);
 
@@ -126,7 +126,7 @@ void nouveau_nv20_context_switch(drm_device_t *dev)
 	if ((NV_READ(NV10_PGRAPH_CTX_USER) >> 24) != channel)
 		DRM_ERROR("nouveau_nv20_context_switch : wrong channel restored %x %x!!!\n", channel, NV_READ(NV10_PGRAPH_CTX_USER) >> 24);
 
-	NV_WRITE(NV03_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
 	NV_WRITE(NV10_PGRAPH_FFINTFC_ST2, NV_READ(NV10_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
 
 	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
@@ -194,7 +194,7 @@ int nv20_graph_init(drm_device_t *dev) {
 		NV_WRITE(NV10_PGRAPH_TSTATUS(i), NV_READ(NV10_PFB_TSTATUS(i)));
 	}
 
-	NV_WRITE(NV04_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
 	NV_WRITE(NV10_PGRAPH_STATE      , 0xFFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_FIFO       , 0x00000001);
 

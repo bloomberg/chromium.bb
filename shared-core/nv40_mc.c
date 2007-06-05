@@ -9,6 +9,11 @@ nv40_mc_init(drm_device_t *dev)
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	uint32_t tmp;
 
+	/* Power up everything, resetting each individual unit will
+	 * be done later if needed.
+	 */
+	NV_WRITE(NV03_PMC_ENABLE, 0xFFFFFFFF);
+
 	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
 
 	switch (dev_priv->chipset) {

@@ -48,4 +48,10 @@ do
 unifdef -D__linux__ -DI915_HAVE_FENCE -DI915_HAVE_BUFFER $i > $i.tmp
 mv $i.tmp $i
 done
+
+for i in drm*.[ch]
+do
+unifdef -UDRM_ODD_MM_COMPAT -D__linux__ $i > $i.tmp
+mv $i.tmp $i
+done
 cd -

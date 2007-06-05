@@ -151,7 +151,8 @@ int drm_ati_pcigart_init(drm_device_t *dev, drm_ati_pcigart_info *gart_info)
 	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN) {
 		DRM_DEBUG("PCI: no table in VRAM: using normal RAM\n");
 
-		order = drm_order((gart_info->table_size + (PAGE_SIZE-1)) / PAGE_SIZE);
+		order = drm_order((gart_info->table_size +
+				   (PAGE_SIZE-1)) / PAGE_SIZE);
 		num_pages = 1 << order;
 		address = drm_ati_alloc_pcigart_table(order);
 		if (!address) {
@@ -169,7 +170,8 @@ int drm_ati_pcigart_init(drm_device_t *dev, drm_ati_pcigart_info *gart_info)
 					     PCI_DMA_TODEVICE);
 		if (bus_address == 0) {
 			DRM_ERROR("unable to map PCIGART pages!\n");
-			order = drm_order((gart_info->table_size + (PAGE_SIZE-1)) / PAGE_SIZE);
+			order = drm_order((gart_info->table_size +
+					   (PAGE_SIZE-1)) / PAGE_SIZE);
 			drm_ati_free_pcigart_table(address, order);
 			address = NULL;
 			goto done;
@@ -205,10 +207,18 @@ int drm_ati_pcigart_init(drm_device_t *dev, drm_ati_pcigart_info *gart_info)
 		page_base = (u32) entry->busaddr[i];
 
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
-			if (gart_info->is_pcie)
+			switch(gart_info->gart_reg_if) {
+			case DRM_ATI_GART_IGP:
+				*pci_gart = cpu_to_le32((page_base) | 0xc);
+				break;
+			case DRM_ATI_GART_PCIE:
 				*pci_gart = cpu_to_le32((page_base >> 8) | 0xc);
-			else
+				break;
+			default:
+			case DRM_ATI_GART_PCI:
 				*pci_gart = cpu_to_le32(page_base);
+				break;
+			}
 			pci_gart++;
 			page_base += ATI_PCIGART_PAGE_SIZE;
 		}

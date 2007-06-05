@@ -551,7 +551,7 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 		drm_map_list_t *_entry;
 		unsigned long agp_token = 0;
 
-		list_for_each_entry(_entry, &dev->maplist->head, head) {
+		list_for_each_entry(_entry, &dev->maplist, head) {
 			if (_entry->map == dev->agp_buffer_map)
 				agp_token = _entry->user_token;
 		}
@@ -830,8 +830,7 @@ static int mga_do_init_dma(drm_device_t * dev, drm_mga_init_t * init)
 	dev_priv->texture_offset = init->texture_offset[0];
 	dev_priv->texture_size = init->texture_size[0];
 
-	DRM_GETSAREA();
-
+	dev_priv->sarea = drm_getsarea(dev);
 	if (!dev_priv->sarea) {
 		DRM_ERROR("failed to find sarea!\n");
 		return DRM_ERR(EINVAL);

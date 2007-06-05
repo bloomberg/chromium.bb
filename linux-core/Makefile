@@ -237,6 +237,9 @@ dristat: dristat.c
 drmstat: drmstat.c
 	$(CC) $(PRGCFLAGS) $< -o $@ $(DRMSTATLIBS)
 
+install:
+	make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`pwd` DRMSRCDIR=`pwd` modules_install
+
 else
 
 # Check for kernel versions that we don't support.
@@ -280,6 +283,7 @@ CONFIG_DRM_SAVAGE := n
 CONFIG_DRM_VIA := n
 CONFIG_DRM_MACH64 := n
 CONFIG_DRM_NV := n
+CONFIG_DRM_NOUVEAU := n
 
 # Enable module builds for the modules requested/supported.
 

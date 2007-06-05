@@ -35,7 +35,8 @@
 			dev->pci_device == 0x2982 || \
 			dev->pci_device == 0x2992 || \
 			dev->pci_device == 0x29A2 || \
-			dev->pci_device == 0x2A02)
+			dev->pci_device == 0x2A02 || \
+			dev->pci_device == 0x2A12)
 
 
 /* Really want an OS-independent resettable timer.  Would like to have
@@ -123,7 +124,7 @@ static int i915_initialize(drm_device_t * dev,
 {
 	memset(dev_priv, 0, sizeof(drm_i915_private_t));
 
-	DRM_GETSAREA();
+	dev_priv->sarea = drm_getsarea(dev);
 	if (!dev_priv->sarea) {
 		DRM_ERROR("can not find sarea!\n");
 		dev->dev_private = (void *)dev_priv;
@@ -176,6 +177,10 @@ static int i915_initialize(drm_device_t * dev,
 	/* Allow hardware batchbuffers unless told otherwise.
 	 */
 	dev_priv->allow_batchbuffer = 1;
+
+	/* Enable vblank on pipe A for older X servers
+	 */
+    	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
 
 	/* Program Hardware Status Page */
 	dev_priv->status_page_dmah = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 
@@ -467,7 +472,9 @@ int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush)
 static int i915_dispatch_cmdbuffer(drm_device_t * dev,
 				   drm_i915_cmdbuffer_t * cmd)
 {
+#ifdef I915_HAVE_FENCE
 	drm_i915_private_t *dev_priv = dev->dev_private;
+#endif
 	int nbox = cmd->num_cliprects;
 	int i = 0, count, ret;
 
@@ -643,7 +650,6 @@ static int i915_batchbuffer(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	u32 *hw_status = dev_priv->hw_status_page;
 	drm_i915_sarea_t *sarea_priv = (drm_i915_sarea_t *)
 	    dev_priv->sarea_priv;
 	drm_i915_batchbuffer_t batch;
@@ -669,7 +675,7 @@ static int i915_batchbuffer(DRM_IOCTL_ARGS)
 
 	ret = i915_dispatch_batchbuffer(dev, &batch);
 
-	sarea_priv->last_dispatch = (int)hw_status[5];
+	sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 	return ret;
 }
 
@@ -677,7 +683,6 @@ static int i915_cmdbuffer(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	u32 *hw_status = dev_priv->hw_status_page;
 	drm_i915_sarea_t *sarea_priv = (drm_i915_sarea_t *)
 	    dev_priv->sarea_priv;
 	drm_i915_cmdbuffer_t cmdbuf;
@@ -705,7 +710,7 @@ static int i915_cmdbuffer(DRM_IOCTL_ARGS)
 		return ret;
 	}
 
-	sarea_priv->last_dispatch = (int)hw_status[5];
+	sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 	return 0;
 }
 
@@ -854,7 +859,7 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 
 	e = &mmio_table[mmio.reg];
-	base = dev_priv->mmio_map->handle + e->offset;
+	base = (u8 *) dev_priv->mmio_map->handle + e->offset;
 
         switch (mmio.read_write) {
 		case I915_MMIO_READ:
