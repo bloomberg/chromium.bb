@@ -101,7 +101,7 @@ int radeon_init_mem_type(drm_device_t * dev, uint32_t type,
 				_DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_NEEDS_IOREMAP;
 			man->drm_bus_maptype = _DRM_AGP;
 		} else {
-			man->io_offset = 0;
+			man->io_offset = dev_priv->gart_vm_start;
 			man->io_size = dev_priv->gart_size;
 			man->io_addr = NULL;
 			man->flags = _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_MAPPABLE;
@@ -120,6 +120,7 @@ int radeon_move(drm_buffer_object_t * bo,
 {
 	drm_bo_mem_reg_t *old_mem = &bo->mem;
 
+	DRM_DEBUG("\n");
 	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
 		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
