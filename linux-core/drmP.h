@@ -843,18 +843,13 @@ typedef struct drm_agp_ttm_backend {
 } drm_agp_ttm_backend_t;
 #endif
 
-#define ATI_PCIGART_FLAG_VMALLOC 1
-struct ati_pcigart_memory {
-	size_t page_count;
-	unsigned long *memory;
-	int flags;
-};
-
 typedef struct ati_pcigart_ttm_backend {
 	drm_ttm_backend_t backend;
 	int populated;
 	struct ati_pcigart_info *gart_info;
-	struct ati_pcigart_memory *mem;
+	struct page **pages;
+	int num_pages;
+	int bound;
 } ati_pcigart_ttm_backend_t;
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,

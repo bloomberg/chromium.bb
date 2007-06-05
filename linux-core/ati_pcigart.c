@@ -35,6 +35,24 @@
 
 # define ATI_PCIGART_PAGE_SIZE		4096	/**< PCI GART page size */
 
+static __inline__ void insert_page_into_table(struct ati_pcigart_info *info, u32 page_base, u32 *pci_gart)
+{
+	switch(info->gart_reg_if) {
+	case DRM_ATI_GART_IGP:
+		*pci_gart = cpu_to_le32((page_base) | 0xc);
+		break;
+	case DRM_ATI_GART_PCIE:
+		*pci_gart = cpu_to_le32((page_base >> 8) | 0xc);
+		break;
+	default:
+	case DRM_ATI_GART_PCI:
+		*pci_gart = cpu_to_le32(page_base);
+		break;
+	}
+}
+
+
+
 static void *drm_ati_alloc_pcigart_table(int order)
 {
 	unsigned long address;
@@ -207,18 +225,7 @@ int drm_ati_pcigart_init(drm_device_t *dev, drm_ati_pcigart_info *gart_info)
 		page_base = (u32) entry->busaddr[i];
 
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
-			switch(gart_info->gart_reg_if) {
-			case DRM_ATI_GART_IGP:
-				*pci_gart = cpu_to_le32((page_base) | 0xc);
-				break;
-			case DRM_ATI_GART_PCIE:
-				*pci_gart = cpu_to_le32((page_base >> 8) | 0xc);
-				break;
-			default:
-			case DRM_ATI_GART_PCI:
-				*pci_gart = cpu_to_le32(page_base);
-				break;
-			}
+			insert_page_into_table(gart_info, page_base, pci_gart);
 			pci_gart++;
 			page_base += ATI_PCIGART_PAGE_SIZE;
 		}
@@ -244,45 +251,16 @@ static int ati_pcigart_needs_unbind_cache_adjust(drm_ttm_backend_t *backend)
 	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
 }
 
-void ati_pcigart_alloc_page_array(size_t size, struct ati_pcigart_memory *mem)
-{
-        mem->memory = NULL;
-        mem->flags = 0;
-
-        if (size <= 2*PAGE_SIZE)
-                mem->memory = kmalloc(size, GFP_KERNEL | __GFP_NORETRY);
-        if (mem->memory == NULL) {
-                mem->memory = vmalloc(size);
-                mem->flags |= ATI_PCIGART_FLAG_VMALLOC;
-        }
-}
-
 static int ati_pcigart_populate(drm_ttm_backend_t *backend,
 				unsigned long num_pages,
 				struct page **pages)
 {
 	ati_pcigart_ttm_backend_t *atipci_be =
 		container_of(backend, ati_pcigart_ttm_backend_t, backend);
-	struct page **cur_page, **last_page = pages + num_pages;
-	struct ati_pcigart_memory *mem;
-        unsigned long alloc_size = num_pages * sizeof(struct page *);
 
 	DRM_DEBUG("%d\n", num_pages);
-	if (drm_alloc_memctl(num_pages * sizeof(void *)))
-		return -1;
-
-	mem = drm_alloc(sizeof(struct ati_pcigart_memory), DRM_MEM_MAPPINGS);
-	if (!mem) {
-		drm_free_memctl(num_pages * sizeof(void *));
-		return -1;
-	}
-
-        ati_pcigart_alloc_page_array(alloc_size, mem);
-        mem->page_count = 0;
-        for (cur_page = pages; cur_page < last_page; ++cur_page) {
-                mem->memory[mem->page_count++] = page_to_phys(*cur_page);
-        }
-	atipci_be->mem = mem;
+	atipci_be->pages = pages;
+	atipci_be->num_pages = num_pages;
 	return 0;
 }
 
@@ -292,12 +270,10 @@ static int ati_pcigart_bind_ttm(drm_ttm_backend_t *backend,
 {
 	ati_pcigart_ttm_backend_t *atipci_be =
 		container_of(backend, ati_pcigart_ttm_backend_t, backend);
-
-        struct ati_pcigart_memory *mem = atipci_be->mem;
         off_t j;
 
         j = offset;
-        while (j < (offset + mem->page_count)) {
+        while (j < (offset + atipci_be->num_pages)) {
                 j++;
         }
 
@@ -323,17 +299,14 @@ static void ati_pcigart_clear_ttm(drm_ttm_backend_t *backend)
 {
 	ati_pcigart_ttm_backend_t *atipci_be =
 		container_of(backend, ati_pcigart_ttm_backend_t, backend);
-	struct ati_pcigart_memory *mem = atipci_be->mem;
 
 	DRM_DEBUG("\n");	
-	if (mem) {
-		unsigned long num_pages = mem->page_count;
+	if (atipci_be->pages) {
 		backend->func->unbind(backend);
-		/* free test */
-//		drm_free(mem, sizeof(struct ati_pcigart_memory), DRM_MEM_MAPPINGS);
-//		drm_free_memctl(num_pages * sizeof(void *));
+		atipci_be->pages = NULL;
+
 	}
-	atipci_be->mem = NULL;
+	atipci_be->num_pages = 0;
 }
 
 static void ati_pcigart_destroy_ttm(drm_ttm_backend_t *backend)
@@ -343,7 +316,7 @@ static void ati_pcigart_destroy_ttm(drm_ttm_backend_t *backend)
 		DRM_DEBUG("\n");
 		atipci_be = container_of(backend, ati_pcigart_ttm_backend_t, backend);
 		if (atipci_be) {
-			if (atipci_be->mem) {
+			if (atipci_be->pages) {
 				backend->func->clear(backend);
 			}
 			drm_ctl_free(atipci_be, sizeof(*atipci_be), DRM_MEM_TTM);
