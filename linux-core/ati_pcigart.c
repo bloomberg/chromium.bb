@@ -314,6 +314,12 @@ static int ati_pcigart_bind_ttm(drm_ttm_backend_t *backend,
 		insert_page_into_table(info, page_base, pci_gart + j);
         }
 
+#if defined(__i386__) || defined(__x86_64__)
+	wbinvd();
+#else
+	mb();
+#endif
+
 	atipci_be->gart_flush_fn(atipci_be->dev);
 
 	atipci_be->bound = 1;
