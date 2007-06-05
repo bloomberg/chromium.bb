@@ -656,7 +656,7 @@ extern int r300_do_cp_cmdbuf(drm_device_t *dev, DRMFILE filp,
 #	define RADEON_TIM_BUSY 		(1 << 25) /* not used on r300 */
 #	define RADEON_GA_BUSY 		(1 << 26)
 #	define RADEON_CBA2D_BUSY 	(1 << 27)
-#	define RADEON_GUI_ACTIVE 	(1 << 31) /* previously known as RADEON_RBBM_ACTIVE */
+#	define RADEON_RBBM_ACTIVE 	(1 << 31)
 #define RADEON_RE_LINE_PATTERN		0x1cd0
 #define RADEON_RE_MISC			0x26c4
 #define RADEON_RE_TOP_LEFT		0x26c0
