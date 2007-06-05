@@ -261,7 +261,8 @@ static int ati_pcigart_populate(drm_ttm_backend_t *backend,
 				unsigned long num_pages,
 				struct page **pages)
 {
-	ati_pcigart_ttm_priv *atipci_priv = (ati_pcigart_ttm_priv *)backend->private;	
+	ati_pcigart_ttm_backend_t *atipci_be =
+		container_of(backend, ati_pcigart_ttm_backend_t, backend);
 	struct page **cur_page, **last_page = pages + num_pages;
 	struct ati_pcigart_memory *mem;
         unsigned long alloc_size = num_pages * sizeof(struct page *);
@@ -281,7 +282,7 @@ static int ati_pcigart_populate(drm_ttm_backend_t *backend,
         for (cur_page = pages; cur_page < last_page; ++cur_page) {
                 mem->memory[mem->page_count++] = page_to_phys(*cur_page);
         }
-	atipci_priv->mem = mem;
+	atipci_be->mem = mem;
 	return 0;
 }
 
@@ -289,18 +290,20 @@ static int ati_pcigart_bind_ttm(drm_ttm_backend_t *backend,
 				unsigned long offset,
 				int cached)
 {
-	ati_pcigart_ttm_priv *atipci_priv = (ati_pcigart_ttm_priv *)backend->private;
-        struct ati_pcigart_memory *mem = atipci_priv->mem;
+	ati_pcigart_ttm_backend_t *atipci_be =
+		container_of(backend, ati_pcigart_ttm_backend_t, backend);
+
+        struct ati_pcigart_memory *mem = atipci_be->mem;
         off_t j;
 
         j = offset;
-        while (j < (pg_start + mem->page_count)) {
+        while (j < (offset + mem->page_count)) {
                 j++;
         }
 
-        for (i = 0, j = offset; i < mem->page_count; i++, j++) {
+//        for (i = 0, j = offset; i < mem->page_count; i++, j++) {
                 /* write value */
-        }
+//        }
 
         /* need to traverse table and add entries */
 	DRM_DEBUG("\n");
@@ -309,7 +312,8 @@ static int ati_pcigart_bind_ttm(drm_ttm_backend_t *backend,
 
 static int ati_pcigart_unbind_ttm(drm_ttm_backend_t *backend)
 {
-	ati_pcigart_ttm_priv *atipci_priv = (ati_pcigart_ttm_priv *)backend->private;
+	ati_pcigart_ttm_backend_t *atipci_be =
+		container_of(backend, ati_pcigart_ttm_backend_t, backend);
 	
 	DRM_DEBUG("\n");
 	return -1;
@@ -317,69 +321,59 @@ static int ati_pcigart_unbind_ttm(drm_ttm_backend_t *backend)
 
 static void ati_pcigart_clear_ttm(drm_ttm_backend_t *backend)
 {
-	ati_pcigart_ttm_priv *atipci_priv = (ati_pcigart_ttm_priv *)backend->private;
-	struct ati_pcigart_memory *mem = atipci_priv->mem;
+	ati_pcigart_ttm_backend_t *atipci_be =
+		container_of(backend, ati_pcigart_ttm_backend_t, backend);
+	struct ati_pcigart_memory *mem = atipci_be->mem;
 
 	DRM_DEBUG("\n");	
 	if (mem) {
 		unsigned long num_pages = mem->page_count;
-		backend->unbind(backend);
+		backend->func->unbind(backend);
 		/* free test */
-		drm_free(mem, sizeof(struct ati_pcigart_memory), DRM_MEM_MAPPINGS);
-		drm_free_memctl(num_pages * sizeof(void *));
+//		drm_free(mem, sizeof(struct ati_pcigart_memory), DRM_MEM_MAPPINGS);
+//		drm_free_memctl(num_pages * sizeof(void *));
 	}
-	atipci_priv->mem = NULL;
+	atipci_be->mem = NULL;
 }
 
 static void ati_pcigart_destroy_ttm(drm_ttm_backend_t *backend)
 {
-	ati_pcigart_ttm_priv *atipci_priv;
-
+	ati_pcigart_ttm_backend_t *atipci_be;
 	if (backend) {
 		DRM_DEBUG("\n");
-		atipci_priv = (ati_pcigart_ttm_priv *)backend->private;
-		if (atipci_priv) {
-			if (atipci_priv->mem) {
-				backend->clear(backend);
+		atipci_be = container_of(backend, ati_pcigart_ttm_backend_t, backend);
+		if (atipci_be) {
+			if (atipci_be->mem) {
+				backend->func->clear(backend);
 			}
-			drm_ctl_free(atipci_priv, sizeof(*atipci_priv), DRM_MEM_MAPPINGS);
-			backend->private = NULL;
-		}
-		if (backend->flags & DRM_BE_FLAG_NEEDS_FREE) {
-			drm_ctl_free(backend, sizeof(*backend), DRM_MEM_MAPPINGS);
+			drm_ctl_free(atipci_be, sizeof(*atipci_be), DRM_MEM_TTM);
 		}
 	}
 }
 
-
-drm_ttm_backend_t *ati_pcigart_init_ttm(struct drm_device *dev,
-					drm_ttm_backend_t *backend)
+static drm_ttm_backend_func_t ati_pcigart_ttm_backend = 
 {
-	drm_ttm_backend_t *atipci_be;
-	ati_pcigart_ttm_priv *atipci_priv;
+	.needs_ub_cache_adjust = ati_pcigart_needs_unbind_cache_adjust,
+	.populate = ati_pcigart_populate,
+	.clear = ati_pcigart_clear_ttm,
+	.bind = ati_pcigart_bind_ttm,
+	.unbind = ati_pcigart_unbind_ttm,
+	.destroy =  ati_pcigart_destroy_ttm,
+};
 
-	atipci_be = (backend != NULL) ? backend : 
-		drm_ctl_calloc(1, sizeof (*atipci_be), DRM_MEM_MAPPINGS);
+drm_ttm_backend_t *ati_pcigart_init_ttm(struct drm_device *dev, struct ati_pcigart_info *info)
+{
+	ati_pcigart_ttm_backend_t *atipci_be;
 
+	atipci_be = drm_ctl_calloc(1, sizeof (*atipci_be), DRM_MEM_TTM);
 	if (!atipci_be)
 		return NULL;
-
-	atipci_priv = drm_ctl_calloc(1, sizeof(*atipci_priv), DRM_MEM_MAPPINGS);
-	if (!atipci_priv) {
-		drm_ctl_free(atipci_be, sizeof(*atipci_be), DRM_MEM_MAPPINGS);
-		return NULL;
-	}
-
-	atipci_priv->populated = FALSE;
-	atipci_be->needs_ub_cache_adjust = ati_pcigart_needs_unbind_cache_adjust;
-	atipci_be->populate = ati_pcigart_populate;
-	atipci_be->clear = ati_pcigart_clear_ttm;
-	atipci_be->bind = ati_pcigart_bind_ttm;
-	atipci_be->unbind = ati_pcigart_unbind_ttm;
-	atipci_be->destroy = ati_pcigart_destroy_ttm;
 	
-	DRM_FLAG_MASKED(atipci_be->flags, (backend == NULL) ? DRM_BE_FLAG_NEEDS_FREE : 0, DRM_BE_FLAG_NEEDS_FREE);
-	atipci_be->drm_map_type = _DRM_SCATTER_GATHER;
-	return atipci_be;
+	atipci_be->populated = 0;
+	atipci_be->backend.func = &ati_pcigart_ttm_backend;
+	atipci_be->backend.mem_type = DRM_BO_MEM_TT;
+	atipci_be->gart_info = info;
+
+	return &atipci_be->backend;
 }
 EXPORT_SYMBOL(ati_pcigart_init_ttm);

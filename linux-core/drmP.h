@@ -850,10 +850,12 @@ struct ati_pcigart_memory {
 	int flags;
 };
 
-typedef struct ati_pcigart_ttm_priv {
+typedef struct ati_pcigart_ttm_backend {
+	drm_ttm_backend_t backend;
 	int populated;
+	struct ati_pcigart_info *gart_info;
 	struct ati_pcigart_memory *mem;
-} ati_pcigart_ttm_priv;
+} ati_pcigart_ttm_backend_t;
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,
 					     int feature)
