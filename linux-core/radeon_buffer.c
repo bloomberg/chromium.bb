@@ -33,7 +33,6 @@
 #include "radeon_drm.h"
 #include "radeon_drv.h"
 
-
 drm_ttm_backend_t *radeon_create_ttm_backend_entry(drm_device_t * dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
@@ -41,7 +40,7 @@ drm_ttm_backend_t *radeon_create_ttm_backend_entry(drm_device_t * dev)
 	if(dev_priv->flags & RADEON_IS_AGP)
 		return drm_agp_init_ttm(dev);
 	else
-		return ati_pcigart_init_ttm(dev, &dev_priv->gart_info);
+		return ati_pcigart_init_ttm(dev, &dev_priv->gart_info, radeon_gart_flush);
 }
 
 int radeon_fence_types(drm_buffer_object_t *bo, uint32_t * class, uint32_t * type)

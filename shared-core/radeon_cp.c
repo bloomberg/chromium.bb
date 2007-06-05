@@ -1384,6 +1384,26 @@ static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 	}
 }
 
+
+void radeon_gart_flush(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	
+	if (dev_priv->flags & RADEON_IS_IGPGART) {
+		RADEON_READ_IGPGART(dev_priv, RADEON_IGPGART_FLUSH);
+		RADEON_WRITE_IGPGART(RADEON_IGPGART_FLUSH, 0x1);
+		RADEON_READ_IGPGART(dev_priv, RADEON_IGPGART_FLUSH);
+		RADEON_WRITE_IGPGART(RADEON_IGPGART_FLUSH, 0x0);
+	} else if (dev_priv->flags & RADEON_IS_PCIE) {
+
+
+	} else {
+
+
+	}
+
+}
+
 static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;

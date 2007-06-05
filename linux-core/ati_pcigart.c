@@ -51,6 +51,27 @@ static __inline__ void insert_page_into_table(struct ati_pcigart_info *info, u32
 	}
 }
 
+static __inline__ u32 get_page_base_from_table(struct ati_pcigart_info *info, u32 *pci_gart)
+{
+	u32 retval;
+	switch(info->gart_reg_if) {
+	case DRM_ATI_GART_IGP:
+		retval = *pci_gart;
+		retval &= ~0xc;
+		break;
+	case DRM_ATI_GART_PCIE:
+		retval = *pci_gart;
+		retval &= ~0xc;
+		retval <<= 8;
+		break;
+	default:
+	case DRM_ATI_GART_PCI:
+		retval = *pci_gart;
+		break;
+	}
+	return retval;
+}
+
 
 
 static void *drm_ati_alloc_pcigart_table(int order)
@@ -258,9 +279,10 @@ static int ati_pcigart_populate(drm_ttm_backend_t *backend,
 	ati_pcigart_ttm_backend_t *atipci_be =
 		container_of(backend, ati_pcigart_ttm_backend_t, backend);
 
-	DRM_DEBUG("%d\n", num_pages);
+	DRM_ERROR("%ld\n", num_pages);
 	atipci_be->pages = pages;
 	atipci_be->num_pages = num_pages;
+	atipci_be->populated = 1;
 	return 0;
 }
 
@@ -271,28 +293,58 @@ static int ati_pcigart_bind_ttm(drm_ttm_backend_t *backend,
 	ati_pcigart_ttm_backend_t *atipci_be =
 		container_of(backend, ati_pcigart_ttm_backend_t, backend);
         off_t j;
+	int i;
+	struct ati_pcigart_info *info = atipci_be->gart_info;
+	u32 *pci_gart;
+	u32 page_base;
+	pci_gart = info->addr;
 
+	DRM_ERROR("Offset is %08lX\n", offset);
         j = offset;
         while (j < (offset + atipci_be->num_pages)) {
+		if (get_page_base_from_table(info, pci_gart+j))
+			return -EBUSY;
                 j++;
         }
 
-//        for (i = 0, j = offset; i < mem->page_count; i++, j++) {
+        for (i = 0, j = offset; i < atipci_be->num_pages; i++, j++) {
+		struct page *cur_page = atipci_be->pages[i];
                 /* write value */
-//        }
+		page_base = page_to_phys(cur_page);
+		insert_page_into_table(info, page_base, pci_gart + j);
+        }
 
+	atipci_be->gart_flush_fn(atipci_be->dev);
+
+	atipci_be->bound = 1;
+	atipci_be->offset = offset;
         /* need to traverse table and add entries */
 	DRM_DEBUG("\n");
-	return -1;
+	return 0;
 }
 
 static int ati_pcigart_unbind_ttm(drm_ttm_backend_t *backend)
 {
 	ati_pcigart_ttm_backend_t *atipci_be =
 		container_of(backend, ati_pcigart_ttm_backend_t, backend);
-	
+	struct ati_pcigart_info *info = atipci_be->gart_info;	
+	unsigned long offset = atipci_be->offset;
+	int i;
+	off_t j;
+	u32 *pci_gart = info->addr;
+
 	DRM_DEBUG("\n");
-	return -1;
+
+	if (atipci_be->bound != 1)
+		return -EINVAL;
+
+	for (i = 0, j = offset; i < atipci_be->num_pages; i++, j++) {
+		*(pci_gart + j) = 0;
+	}
+	atipci_be->gart_flush_fn(atipci_be->dev);
+	atipci_be->bound = 0;
+	atipci_be->offset = 0;
+	return 0;
 }
 
 static void ati_pcigart_clear_ttm(drm_ttm_backend_t *backend)
@@ -334,7 +386,7 @@ static drm_ttm_backend_func_t ati_pcigart_ttm_backend =
 	.destroy =  ati_pcigart_destroy_ttm,
 };
 
-drm_ttm_backend_t *ati_pcigart_init_ttm(struct drm_device *dev, struct ati_pcigart_info *info)
+drm_ttm_backend_t *ati_pcigart_init_ttm(struct drm_device *dev, struct ati_pcigart_info *info, void (*gart_flush_fn)(struct drm_device *dev))
 {
 	ati_pcigart_ttm_backend_t *atipci_be;
 
@@ -346,6 +398,8 @@ drm_ttm_backend_t *ati_pcigart_init_ttm(struct drm_device *dev, struct ati_pciga
 	atipci_be->backend.func = &ati_pcigart_ttm_backend;
 	atipci_be->backend.mem_type = DRM_BO_MEM_TT;
 	atipci_be->gart_info = info;
+	atipci_be->gart_flush_fn = gart_flush_fn;
+	atipci_be->dev = dev;
 
 	return &atipci_be->backend;
 }

@@ -846,10 +846,13 @@ typedef struct drm_agp_ttm_backend {
 typedef struct ati_pcigart_ttm_backend {
 	drm_ttm_backend_t backend;
 	int populated;
+	void (*gart_flush_fn)(struct drm_device *dev);
 	struct ati_pcigart_info *gart_info;
+	unsigned long offset;
 	struct page **pages;
 	int num_pages;
 	int bound;
+	drm_device_t *dev;
 } ati_pcigart_ttm_backend_t;
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,

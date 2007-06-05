@@ -344,6 +344,7 @@ extern int radeon_cp_resume(DRM_IOCTL_ARGS);
 extern int radeon_engine_reset(DRM_IOCTL_ARGS);
 extern int radeon_fullscreen(DRM_IOCTL_ARGS);
 extern int radeon_cp_buffers(DRM_IOCTL_ARGS);
+extern void radeon_gart_flush(struct drm_device *dev);
 
 extern void radeon_freelist_reset(drm_device_t * dev);
 extern drm_buf_t *radeon_freelist_get(drm_device_t * dev);
