@@ -32,7 +32,6 @@
  */
 
 #include <linux/compat.h>
-#include <linux/ioctl32.h>
 
 #include "drmP.h"
 #include "drm.h"
