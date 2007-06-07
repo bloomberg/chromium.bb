@@ -104,7 +104,7 @@ int radeon_init_mem_type(drm_device_t * dev, uint32_t type,
 			man->io_offset = dev_priv->gart_vm_start;
 			man->io_size = dev_priv->gart_size;
 			man->io_addr = NULL;
-			man->flags = _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_MAPPABLE;
+			man->flags = _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_MAPPABLE | _DRM_FLAG_MEMTYPE_CMA;
 			man->drm_bus_maptype = _DRM_SCATTER_GATHER;
 		}
 		break;
