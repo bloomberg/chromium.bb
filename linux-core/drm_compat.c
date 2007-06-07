@@ -185,7 +185,6 @@ static int drm_pte_is_clear(struct vm_area_struct *vma,
 	return ret;
 }
 
-#if 0
 static int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 		  unsigned long pfn)
 {
@@ -196,7 +195,6 @@ static int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 	ret = io_remap_pfn_range(vma, addr, pfn, PAGE_SIZE, vma->vm_page_prot);
 	return ret;
 }
-#endif
 
 static struct page *drm_bo_vm_fault(struct vm_area_struct *vma, 
 				    struct fault_data *data)
