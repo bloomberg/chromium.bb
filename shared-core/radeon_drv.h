@@ -164,8 +164,14 @@ typedef struct drm_radeon_freelist {
 typedef struct drm_radeon_ring_buffer {
 	u32 *start;
 	u32 *end;
-	int size;
-	int size_l2qw;
+	int size; /* Double Words */
+	int size_l2qw; /* log2 Quad Words */
+
+	int rptr_update; /* Double Words */
+	int rptr_update_l2qw; /* log2 Quad Words */
+
+	int fetch_size; /* Double Words */
+	int fetch_size_l2ow; /* log2 Oct Words */
 
 	u32 tail;
 	u32 tail_mask;
