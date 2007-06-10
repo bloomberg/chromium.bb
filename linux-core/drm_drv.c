@@ -142,7 +142,6 @@ int drm_lastclose(drm_device_t * dev)
 	drm_magic_entry_t *pt, *next;
 	drm_map_list_t *r_list, *list_t;
 	drm_vma_entry_t *vma, *vma_temp;
-	struct drm_drawable_list *drw_entry, *drw_temp;
 	int i;
 
 	DRM_DEBUG("\n");
@@ -167,16 +166,9 @@ int drm_lastclose(drm_device_t * dev)
 		drm_irq_uninstall(dev);
 
 	/* Free drawable information memory */
-	list_for_each_entry_safe(drw_entry, drw_temp, &dev->drwlist, head) {
-		drm_free(drw_entry->info.rects, drw_entry->info.num_rects *
-			 sizeof(drm_clip_rect_t), DRM_MEM_BUFS);
-
-		idr_remove(&dev->drw_idr, drw_entry->id);
-		list_del(&drw_entry->head);
-		drm_free(drw_entry, sizeof(struct drm_drawable_list), DRM_MEM_BUFS);
-	}
-
 	mutex_lock(&dev->struct_mutex);
+
+	drm_drawable_free_all(dev);
 	del_timer(&dev->timer);
 
 	if (dev->unique) {

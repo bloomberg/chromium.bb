@@ -60,7 +60,6 @@ static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 {
 	int retcode;
 
-	INIT_LIST_HEAD(&dev->drwlist);
 	INIT_LIST_HEAD(&dev->filelist);
 	INIT_LIST_HEAD(&dev->ctxlist);
 	INIT_LIST_HEAD(&dev->vmalist);

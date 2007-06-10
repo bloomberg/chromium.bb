@@ -571,8 +571,6 @@ typedef struct drm_ctx_list {
 } drm_ctx_list_t;
 
 struct drm_ctx_sarea_list {
-	struct list_head head;
-	int ctx_id;
 	drm_map_t *map;
 };
 
@@ -601,8 +599,6 @@ typedef struct ati_pcigart_info {
 } drm_ati_pcigart_info;
 
 struct drm_drawable_list {
-	struct list_head head;
-	int id;
 	drm_drawable_info_t info;
 };
 
@@ -753,7 +749,6 @@ typedef struct drm_device {
 	struct mutex ctxlist_mutex;	/**< For ctxlist */
 
 	struct idr ctx_idr;
-	struct list_head context_sarealist;
 
 	struct list_head vmalist;	/**< List of vmas (for debugging) */
 	drm_lock_data_t lock;		/**< Information on hardware lock */
@@ -830,7 +825,6 @@ typedef struct drm_device {
 	/*@{ */
 	spinlock_t drw_lock;
 	struct idr drw_idr;
-	struct list_head drwlist;
 	/*@} */
 } drm_device_t;
 
@@ -1008,6 +1002,7 @@ extern int drm_update_drawable_info(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 extern drm_drawable_info_t *drm_get_drawable_info(drm_device_t *dev,
 						  drm_drawable_t id);
+extern void drm_drawable_free_all(drm_device_t *dev);
 
 				/* Authentication IOCTL support (drm_auth.h) */
 extern int drm_getmagic(struct inode *inode, struct file *filp,

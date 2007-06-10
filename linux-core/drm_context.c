@@ -53,19 +53,18 @@
  * \param ctx_handle context handle.
  *
  * Clears the bit specified by \p ctx_handle in drm_device::ctx_bitmap and the entry
- * in drm_device::context_sareas, while holding the drm_device::struct_mutex
+ * in drm_device::ctx_idr, while holding the drm_device::struct_mutex
  * lock.
  */
 void drm_ctxbitmap_free(drm_device_t * dev, int ctx_handle)
 {
-	struct drm_ctx_sarea_list *ctx_sarea;
+	struct drm_ctx_sarea_list *ctx;
 
 	mutex_lock(&dev->struct_mutex);
-	ctx_sarea = idr_find(&dev->ctx_idr, ctx_handle);
-	if (ctx_sarea) {
+	ctx = idr_find(&dev->ctx_idr, ctx_handle);
+	if (ctx) {
 		idr_remove(&dev->ctx_idr, ctx_handle);
-		list_del(&ctx_sarea->head);
-		drm_free(ctx_sarea, sizeof(struct drm_ctx_sarea_list), DRM_MEM_BUFS);
+		drm_free(ctx, sizeof(struct drm_ctx_sarea_list), DRM_MEM_CTXLIST);
 	} else
 		DRM_ERROR("Attempt to free invalid context handle: %d\n", ctx_handle);
 	mutex_unlock(&dev->struct_mutex);
@@ -78,8 +77,7 @@ void drm_ctxbitmap_free(drm_device_t * dev, int ctx_handle)
  * \param dev DRM device.
  * \return (non-negative) context handle on success or a negative number on failure.
  *
- * Find the first zero bit in drm_device::ctx_bitmap and (re)allocates
- * drm_device::context_sareas to accommodate the new entry while holding the
+ * Allocate a new idr from drm_device::ctx_idr while holding the
  * drm_device::struct_mutex lock.
  */
 static int drm_ctxbitmap_next(drm_device_t * dev)
@@ -88,14 +86,14 @@ static int drm_ctxbitmap_next(drm_device_t * dev)
 	int ret;
 	struct drm_ctx_sarea_list *new_ctx;
 
-	new_ctx = drm_calloc(1, sizeof(struct drm_ctx_sarea_list), DRM_MEM_BUFS);
+	new_ctx = drm_calloc(1, sizeof(struct drm_ctx_sarea_list), DRM_MEM_CTXLIST);
 	if (!new_ctx)
 		return -1;
 
 again:
 	if (idr_pre_get(&dev->ctx_idr, GFP_KERNEL) == 0) {
 		DRM_ERROR("Out of memory expanding drawable idr\n");
-		drm_free(new_ctx, sizeof(struct drm_ctx_sarea_list), DRM_MEM_BUFS);
+		drm_free(new_ctx, sizeof(struct drm_ctx_sarea_list), DRM_MEM_CTXLIST);
 		return -ENOMEM;
 	}
 	mutex_lock(&dev->struct_mutex);
@@ -106,9 +104,6 @@ again:
 	}
 	
 	mutex_unlock(&dev->struct_mutex);
-
-	new_ctx->ctx_id = new_id;
-	list_add(&new_ctx->head, &dev->context_sarealist);
 	return new_id;
 }
 
@@ -117,14 +112,20 @@ again:
  *
  * \param dev DRM device.
  *
- * Allocates and initialize drm_device::ctx_bitmap and drm_device::context_sareas, while holding
- * the drm_device::struct_mutex lock.
+ * Initialise the drm_device::ctx_idr
  */
 int drm_ctxbitmap_init(drm_device_t * dev)
 {
 	idr_init(&dev->ctx_idr);
-	INIT_LIST_HEAD(&dev->context_sarealist);
+	return 0;
+}
 
+
+
+static int drm_ctx_sarea_free(int id, void *p, void *data)
+{
+	struct drm_ctx_sarea_list *ctx_entry = p;
+	drm_free(ctx_entry, sizeof(struct drm_ctx_sarea_list), DRM_MEM_CTXLIST);
 	return 0;
 }
 
@@ -133,18 +134,14 @@ int drm_ctxbitmap_init(drm_device_t * dev)
  *
  * \param dev DRM device.
  *
- * Frees drm_device::ctx_bitmap and drm_device::context_sareas, while holding
- * the drm_device::struct_mutex lock.
+ * Free all idr members using drm_ctx_sarea_free helper function
+ * while holding the drm_device::struct_mutex lock.
  */
 void drm_ctxbitmap_cleanup(drm_device_t * dev)
 {
-	struct drm_ctx_sarea_list *ctx_entry, *ctx_temp;
-
 	mutex_lock(&dev->struct_mutex);
-	list_for_each_entry_safe(ctx_entry, ctx_temp, &dev->context_sarealist, head) {
-		idr_remove(&dev->ctx_idr, ctx_entry->ctx_id);
-		drm_free(ctx_entry, sizeof(struct drm_ctx_sarea_list), DRM_MEM_MAPS);
-	}
+	idr_for_each(&dev->ctx_idr, drm_ctx_sarea_free, NULL);
+	idr_remove_all(&dev->ctx_idr);
 	mutex_unlock(&dev->struct_mutex);
 }
 
@@ -163,7 +160,7 @@ void drm_ctxbitmap_cleanup(drm_device_t * dev)
  * \param arg user argument pointing to a drm_ctx_priv_map structure.
  * \return zero on success or a negative number on failure.
  *
- * Gets the map from drm_device::context_sareas with the handle specified and
+ * Gets the map from drm_device::ctx_idr with the handle specified and
  * returns its handle.
  */
 int drm_getsareactx(struct inode *inode, struct file *filp,
@@ -187,8 +184,8 @@ int drm_getsareactx(struct inode *inode, struct file *filp,
 		mutex_unlock(&dev->struct_mutex);
 		return -EINVAL;
 	}
-	
 	map = ctx_sarea->map;
+
 	mutex_unlock(&dev->struct_mutex);
 
 	request.handle = NULL;
@@ -217,7 +214,7 @@ int drm_getsareactx(struct inode *inode, struct file *filp,
  * \return zero on success or a negative number on failure.
  *
  * Searches the mapping specified in \p arg and update the entry in
- * drm_device::context_sareas with it.
+ * drm_device::ctx_idr with it.
  */
 int drm_setsareactx(struct inode *inode, struct file *filp,
 		    unsigned int cmd, unsigned long arg)
@@ -251,10 +248,9 @@ int drm_setsareactx(struct inode *inode, struct file *filp,
 	mutex_lock(&dev->struct_mutex);
 
 	ctx_sarea = idr_find(&dev->ctx_idr, request.ctx_id);
-	if (!ctx_sarea) {
+	if (!ctx_sarea)
 		goto bad;
-	}
-	
+
 	ctx_sarea->map = map;
 	mutex_unlock(&dev->struct_mutex);
 	return 0;

@@ -67,11 +67,8 @@ again:
 		goto again;
 	}
 
-	list_add(&draw_info->head, &dev->drwlist);
-
 	spin_unlock_irqrestore(&dev->drw_lock, irqflags);
 
-	draw_info->id = new_id;
 	draw.handle = new_id;
 
 	DRM_DEBUG("%d\n", draw.handle);
@@ -102,7 +99,6 @@ int drm_rmdraw(DRM_IOCTL_ARGS)
 
 	spin_lock_irqsave(&dev->drw_lock, irqflags);
 
-	list_del(&draw_info->head);
 	idr_remove(&dev->drw_idr, draw.handle);
 	drm_free(draw_info, sizeof(struct drm_drawable_list), DRM_MEM_BUFS);
 
@@ -199,3 +195,18 @@ drm_drawable_info_t *drm_get_drawable_info(drm_device_t *dev, drm_drawable_t id)
 	return &draw_info->info;
 }
 EXPORT_SYMBOL(drm_get_drawable_info);
+
+static int drm_drawable_free(int idr, void *p, void *data)
+{
+	struct drm_drawable_list *drw_entry = p;
+	drm_free(drw_entry->info.rects, drw_entry->info.num_rects *
+		 sizeof(drm_clip_rect_t), DRM_MEM_BUFS);
+	drm_free(drw_entry, sizeof(struct drm_drawable_list), DRM_MEM_BUFS);
+	return 0;
+}
+
+void drm_drawable_free_all(drm_device_t *dev)
+{
+	idr_for_each(&dev->drw_idr, drm_drawable_free, NULL);
+	idr_remove_all(&dev->drw_idr);
+}
