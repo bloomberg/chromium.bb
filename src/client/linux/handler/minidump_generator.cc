@@ -78,8 +78,14 @@ struct WriterArgument {
   // Signal number when crash happed. Can be 0 if this is a requested dump.
   int signo;
 
-  // Signal contex when crash happed. Can be NULL if this is a requested dump.
-  const struct sigcontext *sig_ctx;
+  // The ebp of the signal handler frame.  Can be zero if this
+  // is a requested dump.
+  uintptr_t sighandler_ebp;
+
+  // Signal context when crash happed. Can be NULL if this is a requested dump.
+  // This is actually an out parameter, but it will be filled in at the start
+  // of the writer thread.
+  struct sigcontext *sig_ctx;
 
   // Used to get information about the threads.
   LinuxThread *thread_lister;
@@ -272,10 +278,10 @@ bool WriteCrashedThreadStream(MinidumpFileWriter *minidump_writer,
 
   UntypedMDRVA memory(minidump_writer);
   if (!WriteThreadStack(writer_args->sig_ctx->ebp,
-                   writer_args->sig_ctx->esp,
-                   writer_args->thread_lister,
-                   &memory,
-                   &thread->stack))
+                        writer_args->sig_ctx->esp,
+                        writer_args->thread_lister,
+                        &memory,
+                        &thread->stack))
     return false;
 
   TypedMDRVA<MDRawContextX86> context(minidump_writer);
@@ -714,12 +720,15 @@ int Write(void *argument) {
   if (!writer_args->thread_lister->SuspendAllThreads())
     return -1;
 
-  if (writer_args->sig_ctx != NULL) {
+  if (writer_args->sighandler_ebp != 0 &&
+      writer_args->thread_lister->FindSigContext(writer_args->sighandler_ebp,
+                                                 &writer_args->sig_ctx)) {
     writer_args->crashed_stack_bottom =
-    writer_args->thread_lister->GetThreadStackBottom(writer_args->sig_ctx->ebp);
+      writer_args->thread_lister->GetThreadStackBottom(
+                                             writer_args->sig_ctx->ebp);
     int crashed_pid =  FindCrashingThread(writer_args->crashed_stack_bottom,
-                                         writer_args->requester_pid,
-                                         writer_args->thread_lister);
+                                          writer_args->requester_pid,
+                                          writer_args->thread_lister);
     if (crashed_pid > 0)
       writer_args->crashed_pid = crashed_pid;
   }
@@ -769,7 +778,8 @@ void MinidumpGenerator::AllocateStack() {
 
 bool MinidumpGenerator::WriteMinidumpToFile(const char *file_pathname,
                                    int signo,
-                                   const struct sigcontext *sig_ctx) const {
+                                   uintptr_t sighandler_ebp,
+                                   struct sigcontext **sig_ctx) const {
   assert(file_pathname != NULL);
   assert(stack_ != NULL);
 
@@ -786,12 +796,15 @@ bool MinidumpGenerator::WriteMinidumpToFile(const char *file_pathname,
     argument.requester_pid = getpid();
     argument.crashed_pid = getpid();
     argument.signo = signo;
-    argument.sig_ctx = sig_ctx;
+    argument.sighandler_ebp = sighandler_ebp;
+    argument.sig_ctx = NULL;
 
     int cloned_pid = clone(Write, stack_.get() + kStackSize,
                            CLONE_VM | CLONE_FILES | CLONE_FS | CLONE_UNTRACED,
                            (void*)&argument);
     waitpid(cloned_pid, NULL, __WALL);
+    if (sig_ctx != NULL)
+        *sig_ctx = argument.sig_ctx;
     return true;
   }
 
