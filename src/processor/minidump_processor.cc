@@ -731,6 +731,107 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
           break;
       }
       break;
+
+    case MD_OS_LINUX:
+      switch (exception_code) {
+        case MD_EXCEPTION_CODE_LIN_SIGHUP:
+          reason = "SIGHUP";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGINT:
+          reason = "SIGINT";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGQUIT:
+          reason = "SIGQUIT";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGILL:
+          reason = "SIGILL";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGTRAP:
+          reason = "SIGTRAP";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGABRT:
+          reason = "SIGABRT";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGBUS:
+          reason = "SIGBUS";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGFPE:
+          reason = "SIGFPE";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGKILL:
+          reason = "SIGKILL";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGUSR1:
+          reason = "SIGUSR1";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGSEGV:
+          reason = "SIGSEGV";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGUSR2:
+          reason = "SIGUSR2";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGPIPE:
+          reason = "SIGPIPE";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGALRM:
+          reason = "SIGALRM";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGTERM:
+          reason = "SIGTERM";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGSTKFLT:
+          reason = "SIGSTKFLT";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGCHLD:
+          reason = "SIGCHLD";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGCONT:
+          reason = "SIGCONT";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGSTOP:
+          reason = "SIGSTOP";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGTSTP:
+          reason = "SIGTSTP";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGTTIN:
+          reason = "SIGTTIN";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGTTOU:
+          reason = "SIGTTOU";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGURG:
+          reason = "SIGURG";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGXCPU:
+          reason = "SIGXCPU";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGXFSZ:
+          reason = "SIGXFSZ";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGVTALRM:
+          reason = "SIGVTALRM";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGPROF:
+          reason = "SIGPROF";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGWINCH:
+          reason = "SIGWINCH";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGIO:
+          reason = "SIGIO";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGPWR:
+          reason = "SIGPWR";
+          break;
+        case MD_EXCEPTION_CODE_LIN_SIGSYS:
+          reason = "SIGSYS";
+          break;
+        default:
+          BPLOG(INFO) << "Unknown exception reason " << reason;
+          break;
+      }
+      break;
     }
 
     default: {
