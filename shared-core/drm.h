@@ -587,6 +587,21 @@ typedef union drm_wait_vblank {
 	struct drm_wait_vblank_reply reply;
 } drm_wait_vblank_t;
 
+typedef enum {
+	_DRM_PRE_MODESET = 1,
+	_DRM_POST_MODESET = 2,
+} drm_modeset_ctl_cmd_t;
+
+/**
+ * DRM_IOCTL_MODESET_CTL ioctl argument type
+ *
+ * \sa drmModesetCtl().
+ */
+typedef struct drm_modeset_ctl {
+	drm_modeset_ctl_cmd_t cmd;
+	unsigned long arg;
+} drm_modeset_ctl_t;
+
 /**
  * DRM_IOCTL_AGP_ENABLE ioctl argument type.
  *
@@ -952,6 +967,8 @@ typedef union drm_mm_init_arg{
 #define DRM_IOCTL_MM_INIT               DRM_IOWR(0x3e, drm_mm_init_arg_t)
 
 #define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, drm_update_draw_t)
+
+#define DRM_IOCTL_MODESET_CTL           DRM_IOW(0x40, drm_modeset_ctl_t)
 
 /*@}*/
 

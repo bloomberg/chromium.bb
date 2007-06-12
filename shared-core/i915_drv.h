@@ -132,8 +132,6 @@ typedef struct drm_i915_private {
 	spinlock_t swaps_lock;
 	drm_i915_vbl_swap_t vbl_swaps;
 	unsigned int swaps_pending;
-	unsigned long vblank_offset[2];
-	unsigned long vblank_premodeset[2];
 } drm_i915_private_t;
 
 enum intel_chip_family {
@@ -165,7 +163,7 @@ extern int i915_irq_wait(DRM_IOCTL_ARGS);
 
 extern irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS);
 extern void i915_driver_irq_preinstall(drm_device_t * dev);
-extern void i915_driver_irq_postinstall(drm_device_t * dev);
+extern int i915_driver_irq_postinstall(drm_device_t * dev);
 extern void i915_driver_irq_uninstall(drm_device_t * dev);
 extern int i915_vblank_pipe_set(DRM_IOCTL_ARGS);
 extern int i915_vblank_pipe_get(DRM_IOCTL_ARGS);
@@ -176,8 +174,6 @@ extern int i915_vblank_swap(DRM_IOCTL_ARGS);
 extern void i915_enable_vblank(drm_device_t *dev, int crtc);
 extern void i915_disable_vblank(drm_device_t *dev, int crtc);
 extern u32 i915_get_vblank_counter(drm_device_t *dev, int crtc);
-extern void i915_premodeset(drm_device_t *dev, int crtc);
-extern void i915_postmodeset(drm_device_t *dev, int crtc);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(DRM_IOCTL_ARGS);

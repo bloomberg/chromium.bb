@@ -648,7 +648,7 @@ struct drm_driver {
 /* these have to be filled in */
 	 irqreturn_t(*irq_handler) (DRM_IRQ_ARGS);
 	void (*irq_preinstall) (struct drm_device * dev);
-	void (*irq_postinstall) (struct drm_device * dev);
+	int (*irq_postinstall) (struct drm_device * dev);
 	void (*irq_uninstall) (struct drm_device * dev);
 	void (*reclaim_buffers) (struct drm_device *dev, struct file * filp);
 	void (*reclaim_buffers_locked) (struct drm_device *dev,
@@ -786,10 +786,14 @@ typedef struct drm_device {
 	wait_queue_head_t vbl_queue;	/**< VBLANK wait queue */
 	atomic_t *vblank_count;		/**< number of VBLANK interrupts (driver must alloc the right number of counters) */
 	spinlock_t vbl_lock;
-	struct list_head vbl_sigs;		/**< signal list to send on VBLANK */
-	struct list_head vbl_sigs2;	/**< signals to send on secondary VBLANK */
-	atomic_t *vbl_pending;
-	u32 *last_vblank; /* protected by dev->vbl_lock */
+	struct list_head *vbl_sigs;		/**< signal list to send on VBLANK */
+	atomic_t vbl_pending;		/* number of signals pending on all crtcs*/
+	atomic_t *vblank_usage;		/* number of users of vblank interrupts per crtc */
+	u32 *last_vblank;		/* protected by dev->vbl_lock, used */
+					/* for wraparound handling */
+	u32 *vblank_offset;		/* used to track how many vblanks */
+	u32 *vblank_premodeset;		/*  were lost during modeset */
+
 	unsigned long max_vblank_count; /**< size of vblank counter register */
 	spinlock_t tasklet_lock;	/**< For drm_locked_tasklet */
 	void (*locked_tasklet_func)(struct drm_device *dev);
@@ -810,6 +814,7 @@ typedef struct drm_device {
 #ifdef __alpha__
 	struct pci_controller *hose;
 #endif
+	int num_crtcs;			/**< Number of CRTCs on this device */
 	drm_sg_mem_t *sg;		/**< Scatter gather memory */
 	void *dev_private;		/**< device private data */
 	drm_sigdata_t sigdata;		/**< For block_all_signals */
@@ -1074,11 +1079,18 @@ extern void drm_driver_irq_preinstall(drm_device_t * dev);
 extern void drm_driver_irq_postinstall(drm_device_t * dev);
 extern void drm_driver_irq_uninstall(drm_device_t * dev);
 
+extern int drm_vblank_init(drm_device_t *dev, int num_crtcs);
 extern int drm_wait_vblank(struct inode *inode, struct file *filp,
 			   unsigned int cmd, unsigned long arg);
 extern int drm_vblank_wait(drm_device_t * dev, unsigned int *vbl_seq);
 extern void drm_vbl_send_signals(drm_device_t * dev);
 extern void drm_locked_tasklet(drm_device_t *dev, void(*func)(drm_device_t*));
+extern void drm_vblank_get(drm_device_t *dev, int crtc);
+extern void drm_vblank_put(drm_device_t *dev, int crtc);
+
+				/* Modesetting support */
+extern int drm_modeset_ctl(struct inode *inode, struct file *filp,
+			   unsigned int cmd, unsigned long arg);
 
 				/* AGP/GART support (drm_agpsupport.h) */
 extern drm_agp_head_t *drm_agp_init(drm_device_t *dev);

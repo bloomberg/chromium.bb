@@ -77,6 +77,70 @@ int drm_irq_by_busid(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+int drm_vblank_init(drm_device_t *dev, int num_crtcs)
+{
+	int i, ret = -ENOMEM;
+
+	init_waitqueue_head(&dev->vbl_queue);
+	spin_lock_init(&dev->vbl_lock);
+	atomic_set(&dev->vbl_pending, 0);
+	dev->num_crtcs = num_crtcs;
+
+	dev->vbl_sigs = drm_alloc(sizeof(struct list_head) * num_crtcs,
+				  DRM_MEM_DRIVER);
+	if (!dev->vbl_sigs)
+		goto err;
+
+	dev->vblank_count = drm_alloc(sizeof(atomic_t) * num_crtcs,
+				      DRM_MEM_DRIVER);
+	if (!dev->vblank_count)
+		goto err;
+
+	dev->vblank_usage = drm_alloc(sizeof(atomic_t) * num_crtcs,
+				      DRM_MEM_DRIVER);
+	if (!dev->vblank_count)
+		goto err;
+
+	dev->last_vblank = drm_alloc(sizeof(u32) * num_crtcs,
+				     DRM_MEM_DRIVER);
+	if (!dev->last_vblank)
+		goto err;
+
+	dev->vblank_premodeset = drm_alloc(sizeof(u32) * num_crtcs,
+					   DRM_MEM_DRIVER);
+	if (!dev->vblank_premodeset)
+		goto err;
+
+	dev->vblank_offset = drm_alloc(sizeof(u32) * num_crtcs,
+				       DRM_MEM_DRIVER);
+	if (!dev->vblank_offset)
+		goto err;
+
+	/* Zero per-crtc vblank stuff */
+	for (i = 0; i < num_crtcs; i++) {
+		INIT_LIST_HEAD(&dev->vbl_sigs[i]);
+		atomic_set(&dev->vblank_count[i], 0);
+		atomic_set(&dev->vblank_usage[i], 0);
+		dev->last_vblank[i] = 0;
+		dev->vblank_premodeset[i] = 0;
+		dev->vblank_offset[i] = 0;
+	}
+
+	ret = 0;
+	goto out;
+
+err:
+	kfree(dev->vbl_sigs);
+	kfree(dev->vblank_count);
+	kfree(dev->vblank_usage);
+	kfree(dev->last_vblank);
+	kfree(dev->vblank_premodeset);
+	kfree(dev->vblank_offset);
+out:
+	return ret;
+}
+EXPORT_SYMBOL(drm_vblank_init);
+
 /**
  * Install IRQ handler.
  *
@@ -88,7 +152,7 @@ int drm_irq_by_busid(struct inode *inode, struct file *filp,
  */
 static int drm_irq_install(drm_device_t * dev)
 {
-	int ret;
+	int ret = 0;
 	unsigned long sh_flags = 0;
 
 	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
@@ -114,17 +178,6 @@ static int drm_irq_install(drm_device_t * dev)
 
 	DRM_DEBUG("%s: irq=%d\n", __FUNCTION__, dev->irq);
 
-	if (drm_core_check_feature(dev, DRIVER_IRQ_VBL)) {
-		init_waitqueue_head(&dev->vbl_queue);
-
-		spin_lock_init(&dev->vbl_lock);
-
-		INIT_LIST_HEAD(&dev->vbl_sigs);
-		INIT_LIST_HEAD(&dev->vbl_sigs2);
-
-		dev->vbl_pending = 0;
-	}
-
 	/* Before installing handler */
 	dev->driver->irq_preinstall(dev);
 
@@ -142,9 +195,9 @@ static int drm_irq_install(drm_device_t * dev)
 	}
 
 	/* After installing handler */
-	dev->driver->irq_postinstall(dev);
+	ret = dev->driver->irq_postinstall(dev);
 
-	return 0;
+	return ret;
 }
 
 /**
@@ -221,12 +274,12 @@ int drm_control(struct inode *inode, struct file *filp,
 	}
 }
 
-static void drm_vblank_get(drm_device_t *dev, int crtc)
+void drm_vblank_get(drm_device_t *dev, int crtc)
 {
 	unsigned long irqflags;
 	u32 cur_vblank, diff;
 
-	if (atomic_add_return(1, &dev->vbl_pending[crtc]) != 1)
+	if (atomic_add_return(1, &dev->vblank_count[crtc]) != 1)
 		return;
 
 	/*
@@ -243,21 +296,60 @@ static void drm_vblank_get(drm_device_t *dev, int crtc)
 			dev->last_vblank[crtc];
 		diff += cur_vblank;
 	} else {
-		diff = cur_vblank - last_vblank;
+		diff = cur_vblank - dev->last_vblank[crtc];
 	}
 	dev->last_vblank[crtc] = cur_vblank;
-	spin_lock_irqrestore(&dev->vbl_lock, irqflags);
+	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 
 	atomic_add(diff, &dev->vblank_count[crtc]);
 	dev->driver->enable_vblank(dev, crtc);
 }
+EXPORT_SYMBOL(drm_vblank_get);
 
-static void drm_vblank_put(drm_device_t *dev, int crtc)
+void drm_vblank_put(drm_device_t *dev, int crtc)
 {
-	if (atomic_dec_and_test(&dev->vbl_pending[crtc]))
+	if (atomic_dec_and_test(&dev->vblank_count[crtc]))
 		dev->driver->disable_vblank(dev, crtc);
 }
+EXPORT_SYMBOL(drm_vblank_put);
 
+int drm_modeset_ctl(DRM_IOCTL_ARGS)
+{
+	drm_file_t *priv = filp->private_data;
+	drm_device_t *dev = priv->head->dev;
+	drm_modeset_ctl_t __user *argp = (void __user *)data;
+	drm_modeset_ctl_t modeset;
+	int crtc, ret = 0;
+	u32 new;
+
+	if (copy_from_user(&modeset, argp, sizeof(modeset))) {
+		ret = -EFAULT;
+		goto out;
+	}
+
+	crtc = modeset.arg;
+	if (crtc > dev->num_crtcs) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	switch (modeset.cmd) {
+	case _DRM_PRE_MODESET:
+		dev->vblank_premodeset[crtc] =
+			dev->driver->get_vblank_counter(dev, crtc);
+		break;
+	case _DRM_POST_MODESET:
+		new = dev->driver->get_vblank_counter(dev, crtc);
+		dev->vblank_offset[crtc] = dev->vblank_premodeset[crtc] - new;
+		break;
+	default:
+		ret = -EINVAL;
+		break;
+	}
+
+out:
+	return ret;
+}
 
 /**
  * Wait for VBLANK.
@@ -329,8 +421,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 
 	if (flags & _DRM_VBLANK_SIGNAL) {
 		unsigned long irqflags;
-		struct list_head *vbl_sigs = (flags & _DRM_VBLANK_SECONDARY)
-				      ? &dev->vbl_sigs2 : &dev->vbl_sigs;
+		struct list_head *vbl_sigs = &dev->vbl_sigs[crtc];
 		drm_vbl_sig_t *vbl_sig;
 
 		spin_lock_irqsave(&dev->vbl_lock, irqflags);
@@ -351,13 +442,15 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 			}
 		}
 
-		if (atomic_read(&dev->vbl_pending[crtc]) >= 100) {
+		if (atomic_read(&dev->vbl_pending) >= 100) {
 			spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 			drm_vblank_put(dev, crtc);
 			return -EBUSY;
 		}
 
 		spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
+
+		atomic_inc(&dev->vbl_pending);
 
 		if (!
 		    (vbl_sig =
@@ -414,9 +507,9 @@ void drm_vbl_send_signals(drm_device_t * dev)
 
 	spin_lock_irqsave(&dev->vbl_lock, flags);
 
-	for (i = 0; i < 2; i++) {
+	for (i = 0; i < dev->num_crtcs; i++) {
 		drm_vbl_sig_t *vbl_sig, *tmp;
-		struct list_head *vbl_sigs = i ? &dev->vbl_sigs2 : &dev->vbl_sigs;
+		struct list_head *vbl_sigs = &dev->vbl_sigs[i];
 		unsigned int vbl_seq = atomic_read(&dev->vblank_count[i]);
 
 		list_for_each_entry_safe(vbl_sig, tmp, vbl_sigs, head) {
@@ -429,7 +522,7 @@ void drm_vbl_send_signals(drm_device_t * dev)
 
 				drm_free(vbl_sig, sizeof(*vbl_sig),
 					 DRM_MEM_DRIVER);
-
+				atomic_dec(&dev->vbl_pending);
 				drm_vblank_put(dev, i);
 			}
 		}
