@@ -323,7 +323,6 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 
 	I915_WRITE16(I915REG_INT_IDENTITY_R, temp);
 	(void) I915_READ16(I915REG_INT_IDENTITY_R);
-	DRM_READMEMORYBARRIER();
 
 	dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
