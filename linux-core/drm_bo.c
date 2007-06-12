@@ -1716,13 +1716,13 @@ int drm_bo_op_ioctl(DRM_IOCTL_ARGS)
 						     &rep);
 			break;
 		case drm_bo_fence:
-			ret = drm_bo_lock_test(dev, filp);
-			if (ret)
-				break;
+			ret = -EINVAL;
+			DRM_ERROR("Function is not implemented yet.\n");
 			break;
 		case drm_bo_ref_fence:
 			ret = -EINVAL;
 			DRM_ERROR("Function is not implemented yet.\n");
+			break;
 		default:
 			ret = -EINVAL;
 		}

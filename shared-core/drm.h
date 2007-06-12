@@ -733,7 +733,7 @@ typedef struct drm_fence_arg {
 /* Mask: Make sure the buffer is in cached memory when mapped for reading.
  * Flags: Acknowledge.
  */
-#define DRM_BO_FLAG_READ_CACHED    (1ULL << 16)
+#define DRM_BO_FLAG_READ_CACHED    (1ULL << 19)
 
 /* Mask: Force DRM_BO_FLAG_CACHED flag strictly also if it is set.
  * Flags: Acknowledge.
