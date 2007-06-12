@@ -221,6 +221,44 @@ int drm_control(struct inode *inode, struct file *filp,
 	}
 }
 
+static void drm_vblank_get(drm_device_t *dev, int crtc)
+{
+	unsigned long irqflags;
+	u32 cur_vblank, diff;
+
+	if (atomic_add_return(1, &dev->vbl_pending[crtc]) != 1)
+		return;
+
+	/*
+	 * Interrupts were disabled prior to this call, so deal with counter
+	 * wrap if needed.
+	 * NOTE!  It's possible we lost a full dev->max_vblank_count events
+	 * here if the register is small or we had vblank interrupts off for
+	 * a long time.
+	 */
+	cur_vblank = dev->driver->get_vblank_counter(dev, crtc);
+	spin_lock_irqsave(&dev->vbl_lock, irqflags);
+	if (cur_vblank < dev->last_vblank[crtc]) {
+		diff = dev->max_vblank_count -
+			dev->last_vblank[crtc];
+		diff += cur_vblank;
+	} else {
+		diff = cur_vblank - last_vblank;
+	}
+	dev->last_vblank[crtc] = cur_vblank;
+	spin_lock_irqrestore(&dev->vbl_lock, irqflags);
+
+	atomic_add(diff, &dev->vblank_count[crtc]);
+	dev->driver->enable_vblank(dev, crtc);
+}
+
+static void drm_vblank_put(drm_device_t *dev, int crtc)
+{
+	if (atomic_dec_and_test(&dev->vbl_pending[crtc]))
+		dev->driver->disable_vblank(dev, crtc);
+}
+
+
 /**
  * Wait for VBLANK.
  *
@@ -248,7 +286,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 	drm_wait_vblank_t vblwait;
 	struct timeval now;
 	int ret = 0;
-	unsigned int flags, seq;
+	unsigned int flags, seq, crtc;
 
 	if ((!dev->irq) || (!dev->irq_enabled))
 		return -EINVAL;
@@ -265,13 +303,14 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 	}
 
 	flags = vblwait.request.type & _DRM_VBLANK_FLAGS_MASK;
+	crtc = flags & _DRM_VBLANK_SECONDARY ? 1 : 0;
 
 	if (!drm_core_check_feature(dev, (flags & _DRM_VBLANK_SECONDARY) ?
 				    DRIVER_IRQ_VBL2 : DRIVER_IRQ_VBL))
 		return -EINVAL;
 
-	seq = atomic_read((flags & _DRM_VBLANK_SECONDARY) ? &dev->vbl_received2
-			  : &dev->vbl_received);
+	drm_vblank_get(dev, crtc);
+	seq = atomic_read(&dev->vblank_count[crtc]);
 
 	switch (vblwait.request.type & _DRM_VBLANK_TYPES_MASK) {
 	case _DRM_VBLANK_RELATIVE:
@@ -307,22 +346,23 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 				spin_unlock_irqrestore(&dev->vbl_lock,
 						       irqflags);
 				vblwait.reply.sequence = seq;
+				drm_vblank_put(dev, crtc);
 				goto done;
 			}
 		}
 
-		if (dev->vbl_pending >= 100) {
+		if (atomic_read(&dev->vbl_pending[crtc]) >= 100) {
 			spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
+			drm_vblank_put(dev, crtc);
 			return -EBUSY;
 		}
-
-		dev->vbl_pending++;
 
 		spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 
 		if (!
 		    (vbl_sig =
 		     drm_alloc(sizeof(drm_vbl_sig_t), DRM_MEM_DRIVER))) {
+			drm_vblank_put(dev, crtc);
 			return -ENOMEM;
 		}
 
@@ -340,14 +380,12 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 
 		vblwait.reply.sequence = seq;
 	} else {
-		if (flags & _DRM_VBLANK_SECONDARY) {
-			if (dev->driver->vblank_wait2)
-				ret = dev->driver->vblank_wait2(dev, &vblwait.request.sequence);
-		} else if (dev->driver->vblank_wait)
-			ret =
-			    dev->driver->vblank_wait(dev,
-						     &vblwait.request.sequence);
+		unsigned long cur_vblank;
 
+		DRM_WAIT_ON(ret, dev->vbl_queue, 3 * DRM_HZ,
+			    (((cur_vblank = atomic_read(&dev->vblank_count[crtc]))
+			      - seq) <= (1 << 23)));
+		drm_vblank_put(dev, crtc);
 		do_gettimeofday(&now);
 		vblwait.reply.tval_sec = now.tv_sec;
 		vblwait.reply.tval_usec = now.tv_usec;
@@ -379,8 +417,7 @@ void drm_vbl_send_signals(drm_device_t * dev)
 	for (i = 0; i < 2; i++) {
 		drm_vbl_sig_t *vbl_sig, *tmp;
 		struct list_head *vbl_sigs = i ? &dev->vbl_sigs2 : &dev->vbl_sigs;
-		unsigned int vbl_seq = atomic_read(i ? &dev->vbl_received2 :
-						   &dev->vbl_received);
+		unsigned int vbl_seq = atomic_read(&dev->vblank_count[i]);
 
 		list_for_each_entry_safe(vbl_sig, tmp, vbl_sigs, head) {
 			if ((vbl_seq - vbl_sig->sequence) <= (1 << 23)) {
@@ -393,7 +430,7 @@ void drm_vbl_send_signals(drm_device_t * dev)
 				drm_free(vbl_sig, sizeof(*vbl_sig),
 					 DRM_MEM_DRIVER);
 
-				dev->vbl_pending--;
+				drm_vblank_put(dev, i);
 			}
 		}
 	}

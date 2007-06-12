@@ -92,8 +92,8 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 	unsigned long irqflags;
 	struct list_head *list, *tmp, hits, *hit;
 	int nhits, nrects, slice[2], upper[2], lower[2], i, num_pages;
-	unsigned counter[2] = { atomic_read(&dev->vbl_received),
-				atomic_read(&dev->vbl_received2) };
+	unsigned counter[2] = { atomic_read(&dev->vblank_count[0]),
+				atomic_read(&dev->vblank_count[1]) };
 	drm_drawable_info_t *drw;
 	drm_i915_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	u32 cpp = dev_priv->cpp,  offsets[3];
@@ -313,14 +313,14 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		     (DRM_I915_VBLANK_PIPE_A | DRM_I915_VBLANK_PIPE_B))
 		    == (DRM_I915_VBLANK_PIPE_A | DRM_I915_VBLANK_PIPE_B)) {
 			if (temp & VSYNC_PIPEA_FLAG)
-				atomic_inc(&dev->vbl_received);
+				atomic_inc(&dev->vblank_count[0]);
 			if (temp & VSYNC_PIPEB_FLAG)
-				atomic_inc(&dev->vbl_received2);
+				atomic_inc(&dev->vblank_count[1]);
 		} else if (((temp & VSYNC_PIPEA_FLAG) &&
 			    (vblank_pipe & DRM_I915_VBLANK_PIPE_A)) ||
 			   ((temp & VSYNC_PIPEB_FLAG) &&
 			    (vblank_pipe & DRM_I915_VBLANK_PIPE_B)))
-			atomic_inc(&dev->vbl_received);
+			atomic_inc(&dev->vblank_count[0]);
 
 		DRM_WAKEUP(&dev->vbl_queue);
 		drm_vbl_send_signals(dev);
@@ -410,37 +410,6 @@ static int i915_wait_irq(drm_device_t * dev, int irq_nr)
 	return ret;
 }
 
-static int i915_driver_vblank_do_wait(drm_device_t *dev, unsigned int *sequence,
-				      atomic_t *counter)
-{
-	drm_i915_private_t *dev_priv = dev->dev_private;
-	unsigned int cur_vblank;
-	int ret = 0;
-
-	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
-		return DRM_ERR(EINVAL);
-	}
-
-	DRM_WAIT_ON(ret, dev->vbl_queue, 3 * DRM_HZ,
-		    (((cur_vblank = atomic_read(counter))
-			- *sequence) <= (1<<23)));
-	
-	*sequence = cur_vblank;
-
-	return ret;
-}
-
-int i915_driver_vblank_wait(drm_device_t *dev, unsigned int *sequence)
-{
-	return i915_driver_vblank_do_wait(dev, sequence, &dev->vbl_received);
-}
-
-int i915_driver_vblank_wait2(drm_device_t *dev, unsigned int *sequence)
-{
-	return i915_driver_vblank_do_wait(dev, sequence, &dev->vbl_received2);
-}
-
 /* Needs the lock as it touches the ring.
  */
 int i915_irq_emit(DRM_IOCTL_ARGS)
@@ -489,15 +458,99 @@ int i915_irq_wait(DRM_IOCTL_ARGS)
 	return i915_wait_irq(dev, irqwait.irq_seq);
 }
 
+void i915_enable_vblank(drm_device_t *dev, int crtc)
+{
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	
+	switch (crtc) {
+	case 0:
+		dev_priv->irq_enable_reg |= VSYNC_PIPEA_FLAG;
+		break;
+	case 1:
+		dev_priv->irq_enable_reg |= VSYNC_PIPEB_FLAG;
+		break;
+	default:
+		DRM_ERROR("tried to enable vblank on non-existent crtc %d\n",
+			  crtc);
+		break;
+	}
+
+	I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+}
+
+void i915_disable_vblank(drm_device_t *dev, int crtc)
+{
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	
+	switch (crtc) {
+	case 0:
+		dev_priv->irq_enable_reg &= ~VSYNC_PIPEA_FLAG;
+		break;
+	case 1:
+		dev_priv->irq_enable_reg &= ~VSYNC_PIPEB_FLAG;
+		break;
+	default:
+		DRM_ERROR("tried to disable vblank on non-existent crtc %d\n",
+			  crtc);
+		break;
+	}
+
+	I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+}
+
+static u32 i915_vblank_counter(drm_device_t *dev, int crtc)
+{
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	unsigned long high_frame = crtc ? PIPEBFRAMEHIGH : PIPEAFRAMEHIGH;
+	unsigned long low_frame = crtc ? PIPEBFRAMEPIXEL : PIPEAFRAMEPIXEL;
+	u32 high1, high2, low, count;
+
+	/*
+	 * High & low register fields aren't synchronized, so make sure
+	 * we get a low value that's stable across two reads of the high
+	 * register.
+	 */
+	do {
+		high1 = ((I915_READ(high_frame) & PIPE_FRAME_HIGH_MASK) >>
+			 PIPE_FRAME_HIGH_SHIFT);
+		low =  ((I915_READ(low_frame) & PIPE_FRAME_LOW_MASK) >>
+			PIPE_FRAME_LOW_SHIFT);
+		high2 = ((I915_READ(high_frame) & PIPE_FRAME_HIGH_MASK) >>
+			 PIPE_FRAME_HIGH_SHIFT);
+	} while (high1 != high2);
+
+	count = (high1 << 8) | low;
+
+	return count;
+}
+
+u32 i915_get_vblank_counter(drm_device_t *dev, int crtc)
+{
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	return i915_vblank_counter(dev, crtc) +	dev_priv->vblank_offset[crtc];
+}
+
+void i915_premodeset(drm_device_t *dev, int crtc)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+
+	dev_priv->vblank_premodeset[crtc] = i915_vblank_counter(dev, crtc);
+}
+
+void i915_postmodeset(drm_device_t *dev, int crtc)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	u32 new;
+
+	new = i915_vblank_counter(dev, crtc);
+	dev_priv->vblank_offset[crtc] = dev_priv->vblank_premodeset[crtc] - new;
+}
+
 static void i915_enable_interrupt (drm_device_t *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	
-	dev_priv->irq_enable_reg = USER_INT_FLAG; 
-	if (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_A)
-		dev_priv->irq_enable_reg |= VSYNC_PIPEA_FLAG;
-	if (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_B)
-		dev_priv->irq_enable_reg |= VSYNC_PIPEB_FLAG;
+	dev_priv->irq_enable_reg |= USER_INT_FLAG;
 
 	I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
 	dev_priv->irq_enabled = 1;
@@ -607,7 +660,7 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 
 	spin_unlock_irqrestore(&dev->drw_lock, irqflags);
 
-	curseq = atomic_read(pipe ? &dev->vbl_received2 : &dev->vbl_received);
+	curseq = atomic_read(&dev->vblank_count[pipe]);
 
 	if (seqtype == _DRM_VBLANK_RELATIVE)
 		swap.sequence += curseq;
@@ -714,6 +767,7 @@ void i915_driver_irq_preinstall(drm_device_t * dev)
 void i915_driver_irq_postinstall(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	int i;
 
 	spin_lock_init(&dev_priv->swaps_lock);
 	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
@@ -721,6 +775,34 @@ void i915_driver_irq_postinstall(drm_device_t * dev)
 
 	dev_priv->user_irq_lock = SPIN_LOCK_UNLOCKED;
 	dev_priv->user_irq_refcount = 0;
+	dev_priv->irq_enable_reg = 0;
+	dev->vblank_count = kmalloc(sizeof(atomic_t) * 2, GFP_KERNEL);
+	if (!dev->vblank_count) {
+		DRM_ERROR("out of memory\n");
+		return;
+	}
+	dev->vbl_pending = kmalloc(sizeof(atomic_t) * 2, GFP_KERNEL);
+	if (!dev->vbl_pending) {
+		DRM_ERROR("out of memory\n");
+		kfree(dev->vblank_count);
+		return;
+	}
+	dev->last_vblank = kmalloc(sizeof(atomic_t) * 2, GFP_KERNEL);
+	if (!dev->last_vblank) {
+		DRM_ERROR("out of memory\n");
+		kfree(dev->vblank_count);
+		return;
+	}
+
+	/* Zero per-crtc vblank stuff */
+	for (i = 0; i < 2; i++) {
+		atomic_set(&dev->vbl_pending[i], 0);
+		atomic_set(&dev->vblank_count[i], 0);
+		dev->last_vblank[i] = 0;
+		dev_priv->vblank_offset[i] = 0;
+	}
+
+	dev->max_vblank_count = 0xffffff; /* only 24 bits of frame count */
 
 	i915_enable_interrupt(dev);
 	DRM_INIT_WAITQUEUE(&dev_priv->irq_queue);

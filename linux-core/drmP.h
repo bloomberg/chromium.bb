@@ -627,8 +627,9 @@ struct drm_driver {
 	int (*kernel_context_switch) (struct drm_device * dev, int old,
 				      int new);
 	void (*kernel_context_switch_unlock) (struct drm_device * dev);
-	int (*vblank_wait) (struct drm_device * dev, unsigned int *sequence);
-	int (*vblank_wait2) (struct drm_device * dev, unsigned int *sequence);
+	u32 (*get_vblank_counter) (struct drm_device *dev, int crtc);
+	void (*enable_vblank) (struct drm_device *dev, int crtc);
+	void (*disable_vblank) (struct drm_device *dev, int crtc);
 	int (*dri_library_name) (struct drm_device * dev, char * buf);
 
 	/**
@@ -783,12 +784,13 @@ typedef struct drm_device {
 	/*@{ */
 
 	wait_queue_head_t vbl_queue;	/**< VBLANK wait queue */
-	atomic_t vbl_received;
-	atomic_t vbl_received2;		/**< number of secondary VBLANK interrupts */
+	atomic_t *vblank_count;		/**< number of VBLANK interrupts (driver must alloc the right number of counters) */
 	spinlock_t vbl_lock;
 	struct list_head vbl_sigs;		/**< signal list to send on VBLANK */
 	struct list_head vbl_sigs2;	/**< signals to send on secondary VBLANK */
-	unsigned int vbl_pending;
+	atomic_t *vbl_pending;
+	u32 *last_vblank; /* protected by dev->vbl_lock */
+	unsigned long max_vblank_count; /**< size of vblank counter register */
 	spinlock_t tasklet_lock;	/**< For drm_locked_tasklet */
 	void (*locked_tasklet_func)(struct drm_device *dev);
 

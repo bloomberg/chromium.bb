@@ -299,6 +299,9 @@ typedef struct drm_radeon_private {
 
 	u32 scratch_ages[5];
 
+	unsigned int crtc_last_cnt;
+	unsigned int crtc2_last_cnt;
+
 	/* starting from here on, data is preserved accross an open */
 	uint32_t flags;		/* see radeon_chip_flags */
 
@@ -364,9 +367,9 @@ extern int radeon_irq_wait(DRM_IOCTL_ARGS);
 
 extern void radeon_do_release(drm_device_t * dev);
 extern int radeon_driver_vblank_wait(drm_device_t * dev,
-				     unsigned int *sequence);
+				     unsigned int *sequence, int relative);
 extern int radeon_driver_vblank_wait2(drm_device_t * dev,
-				      unsigned int *sequence);
+				      unsigned int *sequence, int relative);
 extern irqreturn_t radeon_driver_irq_handler(DRM_IRQ_ARGS);
 extern void radeon_driver_irq_preinstall(drm_device_t * dev);
 extern void radeon_driver_irq_postinstall(drm_device_t * dev);
@@ -506,6 +509,9 @@ extern int r300_do_cp_cmdbuf(drm_device_t *dev, DRMFILE filp,
 #define GET_SCRATCH( x )	(dev_priv->writeback_works			\
 				? DRM_READ32( dev_priv->ring_rptr, RADEON_SCRATCHOFF(x) ) \
 				: RADEON_READ( RADEON_SCRATCH_REG0 + 4*(x) ) )
+
+#define RADEON_CRTC_CRNT_FRAME 0x0214
+#define RADEON_CRTC2_CRNT_FRAME 0x0314
 
 #define RADEON_GEN_INT_CNTL		0x0040
 #	define RADEON_CRTC_VBLANK_MASK		(1 << 0)

@@ -235,6 +235,8 @@ typedef struct drm_i915_getparam {
 #define I915_SETPARAM_USE_MI_BATCHBUFFER_START            1
 #define I915_SETPARAM_TEX_LRU_LOG_GRANULARITY             2
 #define I915_SETPARAM_ALLOW_BATCHBUFFER                   3
+#define I915_SETPARAM_PREMODESET                          4
+#define I915_SETPARAM_POSTMODESET                         5
 
 typedef struct drm_i915_setparam {
 	int param;

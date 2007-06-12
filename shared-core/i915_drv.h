@@ -132,6 +132,8 @@ typedef struct drm_i915_private {
 	spinlock_t swaps_lock;
 	drm_i915_vbl_swap_t vbl_swaps;
 	unsigned int swaps_pending;
+	unsigned long vblank_offset[2];
+	unsigned long vblank_premodeset[2];
 } drm_i915_private_t;
 
 enum intel_chip_family {
@@ -161,8 +163,6 @@ extern int i915_driver_firstopen(struct drm_device *dev);
 extern int i915_irq_emit(DRM_IOCTL_ARGS);
 extern int i915_irq_wait(DRM_IOCTL_ARGS);
 
-extern int i915_driver_vblank_wait(drm_device_t *dev, unsigned int *sequence);
-extern int i915_driver_vblank_wait2(drm_device_t *dev, unsigned int *sequence);
 extern irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS);
 extern void i915_driver_irq_preinstall(drm_device_t * dev);
 extern void i915_driver_irq_postinstall(drm_device_t * dev);
@@ -173,6 +173,11 @@ extern int i915_emit_irq(drm_device_t * dev);
 extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
 extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
 extern int i915_vblank_swap(DRM_IOCTL_ARGS);
+extern void i915_enable_vblank(drm_device_t *dev, int crtc);
+extern void i915_disable_vblank(drm_device_t *dev, int crtc);
+extern u32 i915_get_vblank_counter(drm_device_t *dev, int crtc);
+extern void i915_premodeset(drm_device_t *dev, int crtc);
+extern void i915_postmodeset(drm_device_t *dev, int crtc);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(DRM_IOCTL_ARGS);
@@ -271,6 +276,36 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 #define I915REG_PIPEASTAT	0x70024
 #define I915REG_PIPEBSTAT	0x71024
+/*
+ * The two pipe frame counter registers are not synchronized, so
+ * reading a stable value is somewhat tricky. The following code 
+ * should work:
+ *
+ *  do {
+ *    high1 = ((INREG(PIPEAFRAMEHIGH) & PIPE_FRAME_HIGH_MASK) >>
+ *             PIPE_FRAME_HIGH_SHIFT;
+ *    low1 =  ((INREG(PIPEAFRAMEPIXEL) & PIPE_FRAME_LOW_MASK) >>
+ *             PIPE_FRAME_LOW_SHIFT);
+ *    high2 = ((INREG(PIPEAFRAMEHIGH) & PIPE_FRAME_HIGH_MASK) >>
+ *             PIPE_FRAME_HIGH_SHIFT);
+ *  } while (high1 != high2);
+ *  frame = (high1 << 8) | low1;
+ */
+#define PIPEAFRAMEHIGH          0x70040
+#define PIPEBFRAMEHIGH		0x71040
+#define PIPE_FRAME_HIGH_MASK    0x0000ffff
+#define PIPE_FRAME_HIGH_SHIFT   0
+#define PIPEAFRAMEPIXEL         0x70044
+#define PIPEBFRAMEPIXEL		0x71044
+
+#define PIPE_FRAME_LOW_MASK     0xff000000
+#define PIPE_FRAME_LOW_SHIFT    24
+/*
+ * Pixel within the current frame is counted in the PIPEAFRAMEPIXEL register
+ * and is 24 bits wide.
+ */
+#define PIPE_PIXEL_MASK         0x00ffffff
+#define PIPE_PIXEL_SHIFT        0
 
 #define I915_VBLANK_INTERRUPT_ENABLE	(1UL<<17)
 #define I915_VBLANK_CLEAR		(1UL<<1)

@@ -35,6 +35,18 @@
 #include "radeon_drm.h"
 #include "radeon_drv.h"
 
+static void radeon_irq_set_state(drm_device_t *dev, u32 mask, int state)
+{
+	drm_radeon_private_t *dev_priv = (drm_radeon_private_t *) dev->dev_private;
+
+	if (state)
+		dev_priv->irq_enable_reg |= mask;
+	else
+		dev_priv->irq_enable_reg &= ~mask;
+
+	RADEON_WRITE(RADEON_GEN_INT_CNTL, dev_priv->irq_enable_reg);
+}
+
 static __inline__ u32 radeon_acknowledge_irqs(drm_radeon_private_t * dev_priv,
 					      u32 mask)
 {
@@ -141,14 +153,17 @@ static int radeon_wait_irq(drm_device_t * dev, int swi_nr)
 }
 
 int radeon_driver_vblank_do_wait(drm_device_t * dev, unsigned int *sequence,
-				 int crtc)
+				 int crtc, int relative)
 {
 	drm_radeon_private_t *dev_priv =
 	    (drm_radeon_private_t *) dev->dev_private;
-	unsigned int cur_vblank;
+	unsigned int cur_vblank, diff, irqflags, current_cnt;
 	int ret = 0;
 	int ack = 0;
 	atomic_t *counter;
+	unsigned int *last_cnt;
+	int crtc_cnt_reg;
+	
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
 		return DRM_ERR(EINVAL);
@@ -156,10 +171,14 @@ int radeon_driver_vblank_do_wait(drm_device_t * dev, unsigned int *sequence,
 
 	if (crtc == DRM_RADEON_VBLANK_CRTC1) {
 		counter = &dev->vbl_received;
-		ack |= RADEON_CRTC_VBLANK_STAT;
+		ack = RADEON_CRTC_VBLANK_STAT;
+		last_cnt = &dev_priv->crtc_last_cnt;
+		crtc_cnt_reg = RADEON_CRTC_CRNT_FRAME;
 	} else if (crtc == DRM_RADEON_VBLANK_CRTC2) {
 		counter = &dev->vbl_received2;
-		ack |= RADEON_CRTC2_VBLANK_STAT;
+		ack = RADEON_CRTC2_VBLANK_STAT;
+		last_cnt = &dev_priv->crtc2_last_cnt;
+		crtc_cnt_reg = RADEON_CRTC2_CRNT_FRAME;
 	} else
 		return DRM_ERR(EINVAL);
 
@@ -167,27 +186,46 @@ int radeon_driver_vblank_do_wait(drm_device_t * dev, unsigned int *sequence,
 
 	dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
 
+	if (!relative) {
+		/*
+		 * Assume we haven't missed more than several hours of vblank
+		 * events, or that it won't matter if they're not accounted
+		 * for in the master counter.
+		 */
+		spin_lock_irqsave(&dev->vbl_lock, irqflags);
+		current_cnt = RADEON_READ(crtc_cnt_reg);
+		if (current_cnt < *last_cnt) {
+			current_cnt += (1 << 21) - *last_cnt;
+			*last_cnt = 0;
+		}
+		diff = current_cnt - *last_cnt;
+		*last_cnt = RADEON_READ(crtc_cnt_reg);
+		spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
+		atomic_add(diff, counter);
+	}
+
 	/* Assume that the user has missed the current sequence number
 	 * by about a day rather than she wants to wait for years
 	 * using vertical blanks...
 	 */
+	radeon_irq_set_state(dev, ack, 1);
 	DRM_WAIT_ON(ret, dev->vbl_queue, 3 * DRM_HZ,
 		    (((cur_vblank = atomic_read(counter))
 		      - *sequence) <= (1 << 23)));
-
+	radeon_irq_set_state(dev, ack, 0);
 	*sequence = cur_vblank;
 
 	return ret;
 }
 
-int radeon_driver_vblank_wait(drm_device_t *dev, unsigned int *sequence)
+int radeon_driver_vblank_wait(drm_device_t *dev, unsigned int *sequence, int relative)
 {
-	return radeon_driver_vblank_do_wait(dev, sequence, DRM_RADEON_VBLANK_CRTC1);
+	return radeon_driver_vblank_do_wait(dev, sequence, DRM_RADEON_VBLANK_CRTC1, relative);
 }
 
-int radeon_driver_vblank_wait2(drm_device_t *dev, unsigned int *sequence)
+int radeon_driver_vblank_wait2(drm_device_t *dev, unsigned int *sequence, int relative)
 {
-	return radeon_driver_vblank_do_wait(dev, sequence, DRM_RADEON_VBLANK_CRTC2);
+	return radeon_driver_vblank_do_wait(dev, sequence, DRM_RADEON_VBLANK_CRTC2, relative);
 }
 
 /* Needs the lock as it touches the ring.
@@ -238,20 +276,7 @@ int radeon_irq_wait(DRM_IOCTL_ARGS)
 	return radeon_wait_irq(dev, irqwait.irq_seq);
 }
 
-static void radeon_enable_interrupt(drm_device_t *dev)
-{
-	drm_radeon_private_t *dev_priv = (drm_radeon_private_t *) dev->dev_private;
 
-	dev_priv->irq_enable_reg = RADEON_SW_INT_ENABLE;
-	if (dev_priv->vblank_crtc & DRM_RADEON_VBLANK_CRTC1)
-		dev_priv->irq_enable_reg |= RADEON_CRTC_VBLANK_MASK;
-
-	if (dev_priv->vblank_crtc & DRM_RADEON_VBLANK_CRTC2)
-		dev_priv->irq_enable_reg |= RADEON_CRTC2_VBLANK_MASK;
-
-	RADEON_WRITE(RADEON_GEN_INT_CNTL, dev_priv->irq_enable_reg);
-	dev_priv->irq_enabled = 1;
-}
 
 /* drm_dma.h hooks
 */
@@ -265,7 +290,8 @@ void radeon_driver_irq_preinstall(drm_device_t * dev)
 
 	/* Clear bits if they're already high */
 	radeon_acknowledge_irqs(dev_priv, (RADEON_SW_INT_TEST_ACK |
-					   RADEON_CRTC_VBLANK_STAT));
+					   RADEON_CRTC_VBLANK_STAT |
+					   RADEON_CRTC2_VBLANK_STAT));
 }
 
 void radeon_driver_irq_postinstall(drm_device_t * dev)
@@ -276,7 +302,7 @@ void radeon_driver_irq_postinstall(drm_device_t * dev)
 	atomic_set(&dev_priv->swi_emitted, 0);
 	DRM_INIT_WAITQUEUE(&dev_priv->swi_queue);
 
-	radeon_enable_interrupt(dev);
+	radeon_irq_set_state(dev, RADEON_SW_INT_ENABLE, 1);
 }
 
 void radeon_driver_irq_uninstall(drm_device_t * dev)
@@ -318,6 +344,5 @@ int radeon_vblank_crtc_set(drm_device_t *dev, int64_t value)
 		return DRM_ERR(EINVAL);
 	}
 	dev_priv->vblank_crtc = (unsigned int)value;
-	radeon_enable_interrupt(dev);
 	return 0;
 }

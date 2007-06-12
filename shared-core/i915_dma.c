@@ -833,6 +833,20 @@ static int i915_setparam(DRM_IOCTL_ARGS)
 	case I915_SETPARAM_ALLOW_BATCHBUFFER:
 		dev_priv->allow_batchbuffer = param.value;
 		break;
+	case I915_SETPARAM_PREMODESET:
+		if (param.value > 1) {
+			DRM_ERROR("bad crtc\n");
+			return -EINVAL;
+		}
+		i915_premodeset(dev, param.value);
+		break;
+	case I915_SETPARAM_POSTMODESET:
+		if (param.value > 1) {
+			DRM_ERROR("bad crtc\n");
+			return -EINVAL;
+		}
+		i915_postmodeset(dev, param.value);
+		break;
 	default:
 		DRM_ERROR("unknown parameter %d\n", param.param);
 		return DRM_ERR(EINVAL);
