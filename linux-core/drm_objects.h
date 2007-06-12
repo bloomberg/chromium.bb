@@ -321,8 +321,8 @@ typedef struct drm_bo_mem_reg {
 	unsigned long num_pages;
 	uint32_t page_alignment;
 	uint32_t mem_type;
-	uint32_t flags;
-	uint32_t mask;
+	uint64_t flags;
+	uint64_t mask;
 } drm_bo_mem_reg_t;
 
 typedef struct drm_buffer_object {
@@ -423,8 +423,8 @@ typedef struct drm_bo_driver {
 	uint32_t num_mem_busy_prio;
 	drm_ttm_backend_t *(*create_ttm_backend_entry)
 	 (struct drm_device * dev);
-	int (*fence_type) (struct drm_buffer_object *bo, uint32_t * class, uint32_t * type);
-	int (*invalidate_caches) (struct drm_device * dev, uint32_t flags);
+	int (*fence_type) (struct drm_buffer_object *bo, uint32_t * type);
+	int (*invalidate_caches) (struct drm_device * dev, uint64_t flags);
 	int (*init_mem_type) (struct drm_device * dev, uint32_t type,
 			      drm_mem_type_manager_t * man);
 	 uint32_t(*evict_mask) (struct drm_buffer_object *bo);

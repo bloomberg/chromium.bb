@@ -195,8 +195,8 @@ static int drm_bo_handle_move_mem(drm_buffer_object_t * bo,
 	if ((bo->mem.mem_type == DRM_BO_MEM_LOCAL) && bo->ttm == NULL) {
 
 		drm_bo_mem_reg_t *old_mem = &bo->mem;
-		uint32_t save_flags = old_mem->flags;
-		uint32_t save_mask = old_mem->mask;
+		uint64_t save_flags = old_mem->flags;
+		uint64_t save_mask = old_mem->mask;
 
 		*old_mem = *mem;
 		mem->mm_node = NULL;
@@ -871,7 +871,7 @@ int drm_bo_mem_space(drm_buffer_object_t * bo,
 EXPORT_SYMBOL(drm_bo_mem_space);
 
 static int drm_bo_new_mask(drm_buffer_object_t * bo,
-			   uint32_t new_mask, uint32_t hint)
+			   uint64_t new_mask, uint32_t hint)
 {
 	uint32_t new_props;
 
@@ -1343,7 +1343,8 @@ static int drm_bo_check_fake(drm_device_t * dev, drm_bo_mem_reg_t * mem)
 		return 0;
 	}
 
-	DRM_ERROR("Illegal fake buffer flags 0x%08x\n", mem->mask);
+	DRM_ERROR("Illegal fake buffer flags 0x%016llx\n",
+		  (unsigned long long) mem->mask);
 	return -EINVAL;
 }
 
@@ -1352,22 +1353,45 @@ static int drm_bo_check_fake(drm_device_t * dev, drm_bo_mem_reg_t * mem)
  */
 
 static int drm_buffer_object_validate(drm_buffer_object_t * bo,
+				      uint32_t fence_class,
 				      int move_unfenced, int no_wait)
 {
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
 	drm_bo_driver_t *driver = dev->driver->bo_driver;
+	uint32_t ftype;
 	int ret;
 
-	DRM_DEBUG("New flags 0x%08x, Old flags 0x%08x\n", bo->mem.mask,
-		  bo->mem.flags);
-	ret =
-	    driver->fence_type(bo, &bo->fence_class, &bo->fence_type);
+	DRM_DEBUG("New flags 0x%016llx, Old flags 0x%016llx\n",
+		  (unsigned long long) bo->mem.mask,
+		  (unsigned long long) bo->mem.flags);
+
+	ret = driver->fence_type(bo, &ftype);
+
 	if (ret) {
 		DRM_ERROR("Driver did not support given buffer permissions\n");
 		return ret;
 	}
 
+	/*
+	 * We're switching command submission mechanism,
+	 * or cannot simply rely on the hardware serializing for us.
+	 *
+	 * Wait for buffer idle.
+	 */
+
+	if ((fence_class != bo->fence_class) ||
+	    ((ftype ^ bo->fence_type) & bo->fence_type)) {
+
+		ret = drm_bo_wait(bo, 0, 0, no_wait);
+
+		if (ret)
+			return ret;
+
+	}
+	
+	bo->fence_class = fence_class;
+	bo->fence_type = ftype;
 	ret = drm_bo_wait_unmapped(bo, no_wait);
 	if (ret)
 		return ret;
@@ -1457,8 +1481,10 @@ static int drm_buffer_object_validate(drm_buffer_object_t * bo,
 	return 0;
 }
 
-static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
-				  uint32_t flags, uint32_t mask, uint32_t hint,
+static int drm_bo_handle_validate(drm_file_t * priv,
+				  uint32_t handle,
+				  uint32_t fence_class,
+				  uint64_t flags, uint64_t mask, uint32_t hint,
 				  struct drm_bo_info_rep *rep)
 {
 	drm_buffer_object_t *bo;
@@ -1482,7 +1508,8 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 		goto out;
 
 	ret =
-	    drm_buffer_object_validate(bo, !(hint & DRM_BO_HINT_DONT_FENCE),
+	    drm_buffer_object_validate(bo, fence_class,
+				       !(hint & DRM_BO_HINT_DONT_FENCE),
 				       no_wait);
 	drm_bo_fill_rep_arg(bo, rep);
 
@@ -1544,7 +1571,7 @@ static int drm_bo_handle_wait(drm_file_t *priv, uint32_t handle,
 int drm_buffer_object_create(drm_device_t *dev,
 			     unsigned long size,
 			     drm_bo_type_t type,
-			     uint32_t mask,
+			     uint64_t mask,
 			     uint32_t hint,
 			     uint32_t page_alignment,
 			     unsigned long buffer_start,
@@ -1596,8 +1623,8 @@ int drm_buffer_object_create(drm_device_t *dev,
 		bo->buffer_start = buffer_start;
 	}
 	bo->priv_flags = 0;
-	bo->mem.flags = 0;
-	bo->mem.mask = 0;
+	bo->mem.flags = 0ULL;
+	bo->mem.mask = 0ULL;
 	atomic_inc(&bm->count);
 	ret = drm_bo_new_mask(bo, mask, hint);
 
@@ -1611,7 +1638,7 @@ int drm_buffer_object_create(drm_device_t *dev,
 		if (ret)
 			goto out_err;
 	}
-	ret = drm_buffer_object_validate(bo, 0, hint & DRM_BO_HINT_DONT_BLOCK);
+	ret = drm_buffer_object_validate(bo, 0, 0, hint & DRM_BO_HINT_DONT_BLOCK);
 	if (ret)
 		goto out_err;
 
@@ -1682,8 +1709,9 @@ int drm_bo_op_ioctl(DRM_IOCTL_ARGS)
 			if (ret)
 				break;
 			ret = drm_bo_handle_validate(priv, req->bo_req.handle,
+						     req->bo_req.fence_class,
+						     req->bo_req.flags,
 						     req->bo_req.mask,
-						     req->arg_handle,
 						     req->bo_req.hint,
 						     &rep);
 			break;
@@ -2305,6 +2333,25 @@ int drm_mm_init_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 	ret = -EINVAL;
+	if (arg.magic != DRM_BO_INIT_MAGIC) {
+		DRM_ERROR("You are using an old libdrm that is not compatible with\n"
+			  "\tthe kernel DRM module. Please upgrade your libdrm.\n");
+		return -EINVAL;
+	}
+	if (arg.major != DRM_BO_INIT_MAJOR) {
+		DRM_ERROR("libdrm and kernel DRM buffer object interface major\n"
+			  "\tversion don't match. Got %d, expected %d,\n",
+			  arg.major, DRM_BO_INIT_MAJOR);
+		return -EINVAL;
+	}
+	if (arg.minor > DRM_BO_INIT_MINOR) {
+		DRM_ERROR("libdrm expects a newer DRM buffer object interface.\n"
+			  "\tlibdrm buffer object interface version is %d.%d.\n"
+			  "\tkernel DRM buffer object interface version is %d.%d\n",
+			  arg.major, arg.minor, DRM_BO_INIT_MAJOR, DRM_BO_INIT_MINOR);
+		return -EINVAL;
+	}
+
 	mutex_lock(&dev->bm.init_mutex);
 	mutex_lock(&dev->struct_mutex);
 	if (!bm->initialized) {

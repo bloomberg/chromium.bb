@@ -196,8 +196,8 @@ extern int i915_fence_has_irq(drm_device_t *dev, uint32_t class, uint32_t flags)
 #ifdef I915_HAVE_BUFFER
 /* i915_buffer.c */
 extern drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev);
-extern int i915_fence_types(drm_buffer_object_t *bo, uint32_t *class, uint32_t *type);
-extern int i915_invalidate_caches(drm_device_t *dev, uint32_t buffer_flags);
+extern int i915_fence_types(drm_buffer_object_t *bo, uint32_t *type);
+extern int i915_invalidate_caches(drm_device_t *dev, uint64_t buffer_flags);
 extern int i915_init_mem_type(drm_device_t *dev, uint32_t type,
 			       drm_mem_type_manager_t *man);
 extern uint32_t i915_evict_mask(drm_buffer_object_t *bo);

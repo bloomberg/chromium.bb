@@ -2611,13 +2611,16 @@ static void drmBOCopyReply(struct drm_bo_info_rep *rep,
     buf->fenceFlags = rep->fence_flags;
     buf->replyFlags = rep->rep_flags;
     buf->pageAlignment = rep->page_alignment;
+    buf->tileInfo = rep->tile_info;
+    buf->hwTileStride = rep->hw_tile_stride;
+    buf->desiredTileStride = rep->desired_tile_stride;
 }
-    
-    
 
-int drmBOCreate(int fd, unsigned long start, unsigned long size, 
-		unsigned pageAlignment, void *user_buffer, drm_bo_type_t type, 
-		unsigned mask,
+
+
+int drmBOCreate(int fd, unsigned long start, unsigned long size,
+		unsigned pageAlignment, void *user_buffer, drm_bo_type_t type,
+		drm_u64_t mask,
 		unsigned hint, drmBO *buf)
 {
     struct drm_bo_create_arg arg;
@@ -2798,8 +2801,9 @@ int drmBOUnmap(int fd, drmBO *buf)
     }
     return 0;
 }
-    
-int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask, 
+
+int drmBOValidate(int fd, drmBO *buf,
+		  drm_u64_t flags, drm_u64_t mask,
 		  unsigned hint)
 {
     struct drm_bo_op_arg arg;
@@ -2809,9 +2813,10 @@ int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask,
 
     memset(&arg, 0, sizeof(arg));
     req->bo_req.handle = buf->handle;
-    req->bo_req.mask = flags;
+    req->bo_req.flags = flags;
+    req->bo_req.mask = mask;
     req->bo_req.hint = hint;
-    req->arg_handle = mask; /* Encode mask in the arg_handle field :/ */
+    req->bo_req.fence_class = 0; /* Backwards compatibility. */
     req->op = drm_bo_validate;
 
     do{
@@ -2839,7 +2844,7 @@ int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
 
     memset(&arg, 0, sizeof(arg));
     req->bo_req.handle = buf->handle;
-    req->bo_req.mask = flags;
+    req->bo_req.flags = flags;
     req->arg_handle = fenceHandle;
     req->op = drm_bo_fence;
 
@@ -2999,12 +3004,13 @@ int drmBOValidateList(int fd, drmBOList *list)
       prevNext = &arg->next;
       req->bo_req.handle = node->buf->handle;
       req->op = drm_bo_validate;
-      req->bo_req.mask = node->arg0;
+      req->bo_req.flags = node->arg0;
       req->bo_req.hint = 0;
-      req->arg_handle = node->arg1;
+      req->bo_req.mask = node->arg1;
+      req->bo_req.fence_class = 0; /* Backwards compat. */
   }
-  
-  if (!first) 
+
+  if (!first)
       return 0;
 
   do{
@@ -3101,6 +3107,9 @@ int drmMMInit(int fd, unsigned long pOffset, unsigned long pSize,
     
     memset(&arg, 0, sizeof(arg));
 
+    arg.magic = DRM_BO_INIT_MAGIC;
+    arg.major = DRM_BO_INIT_MAJOR;
+    arg.minor = DRM_BO_INIT_MINOR;
     arg.p_offset = pOffset;
     arg.p_size = pSize;
     arg.mem_type = memType;
