@@ -338,7 +338,7 @@ static void drm_bo_cleanup_refs(drm_buffer_object_t * bo, int remove_all)
 	DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
 
 	if (bo->fence && drm_fence_object_signaled(bo->fence, bo->fence_type)) {
-		drm_fence_usage_deref_locked(dev, bo->fence);
+		drm_fence_usage_deref_unlocked(dev, bo->fence);
 		bo->fence = NULL;
 	}
 
