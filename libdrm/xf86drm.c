@@ -3260,7 +3260,8 @@ int drmMMLock(int fd, unsigned memType)
     do{
 	ret = ioctl(fd, DRM_IOCTL_MM_INIT, &arg);
     } while (ret && errno == EAGAIN);
-    return -errno;	
+
+    return (ret) ? -errno : 0;
 }
 
 int drmMMUnlock(int fd, unsigned memType)
@@ -3275,7 +3276,8 @@ int drmMMUnlock(int fd, unsigned memType)
     do{
 	ret = ioctl(fd, DRM_IOCTL_MM_INIT, &arg);
     } while (ret && errno == EAGAIN);
-    return -errno;	
+
+    return (ret) ? -errno : 0;
 }
 
 #define DRM_MAX_FDS 16
