@@ -198,7 +198,9 @@ extern void drm_fence_flush_old(struct drm_device *dev, uint32_t class,
 				uint32_t sequence);
 extern int drm_fence_object_flush(struct drm_device *dev,
 				  drm_fence_object_t * fence, uint32_t type);
-extern int drm_fence_object_signaled(drm_fence_object_t * fence, uint32_t type);
+extern int drm_fence_object_signaled(struct drm_device *dev, 
+				     drm_fence_object_t * fence, 
+				     uint32_t type, int flush);
 extern void drm_fence_usage_deref_locked(struct drm_device *dev,
 					 drm_fence_object_t * fence);
 extern void drm_fence_usage_deref_unlocked(struct drm_device *dev,

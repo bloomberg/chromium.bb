@@ -164,7 +164,7 @@ static void drm_fence_object_destroy(drm_file_t * priv,
 	drm_fence_usage_deref_locked(dev, fence);
 }
 
-static int fence_signaled(drm_device_t * dev,
+int drm_fence_object_signaled(drm_device_t * dev,
 			  drm_fence_object_t * fence,
 			  uint32_t mask, int poke_flush)
 {
@@ -198,12 +198,6 @@ static void drm_fence_flush_exe(drm_fence_class_manager_t * fc,
 			fc->exe_flush_sequence = sequence;
 		}
 	}
-}
-
-int drm_fence_object_signaled(drm_fence_object_t * fence,
-			      uint32_t type)
-{
-	return ((fence->signaled & type) == type);
 }
 
 int drm_fence_object_flush(drm_device_t * dev,
@@ -298,13 +292,13 @@ static int drm_fence_lazy_wait(drm_device_t *dev,
 
 	do {
 		DRM_WAIT_ON(ret, fc->fence_queue, 3 * DRM_HZ,
-			    (signaled = fence_signaled(dev, fence, mask, 1)));
+			    (signaled = drm_fence_object_signaled(dev, fence, mask, 1)));
 		if (signaled)
 			return 0;
 		if (time_after_eq(jiffies, _end))
 			break;
 	} while (ret == -EINTR && ignore_signals);
-	if (fence_signaled(dev, fence, mask, 0))
+	if (drm_fence_object_signaled(dev, fence, mask, 0))
 		return 0;
 	if (time_after_eq(jiffies, _end))
 		ret = -EBUSY;
@@ -334,7 +328,7 @@ int drm_fence_object_wait(drm_device_t * dev,
 		return -EINVAL;
 	}
 
-	if (fence_signaled(dev, fence, mask, 0))
+	if (drm_fence_object_signaled(dev, fence, mask, 0))
 		return 0;
 
 	_end = jiffies + 3 * DRM_HZ;
@@ -365,7 +359,7 @@ int drm_fence_object_wait(drm_device_t * dev,
 				return ret;
 		}
 	}
-	if (drm_fence_object_signaled(fence, mask))
+	if (drm_fence_object_signaled(dev, fence, mask, 0))
 		return 0;
 
 	/*
@@ -377,7 +371,7 @@ int drm_fence_object_wait(drm_device_t * dev,
 #endif
 	do {
 		schedule();
-		signaled = fence_signaled(dev, fence, mask, 1);
+		signaled = drm_fence_object_signaled(dev, fence, mask, 1);
 	} while (!signaled && !time_after_eq(jiffies, _end));
 
 	if (!signaled)

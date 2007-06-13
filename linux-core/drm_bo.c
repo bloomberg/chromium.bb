@@ -268,7 +268,7 @@ int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
 
 	if (fence) {
 		drm_device_t *dev = bo->dev;
-		if (drm_fence_object_signaled(fence, bo->fence_type)) {
+		if (drm_fence_object_signaled(dev, fence, bo->fence_type, 0)) {
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
 			return 0;
@@ -337,7 +337,8 @@ static void drm_bo_cleanup_refs(drm_buffer_object_t * bo, int remove_all)
 
 	DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
 
-	if (bo->fence && drm_fence_object_signaled(bo->fence, bo->fence_type)) {
+	if (bo->fence && drm_fence_object_signaled(dev, bo->fence, 
+						   bo->fence_type, 0)) {
 		drm_fence_usage_deref_unlocked(dev, bo->fence);
 		bo->fence = NULL;
 	}
@@ -944,7 +945,7 @@ static int drm_bo_quick_busy(drm_buffer_object_t * bo)
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (fence) {
 		drm_device_t *dev = bo->dev;
-		if (drm_fence_object_signaled(fence, bo->fence_type)) {
+		if (drm_fence_object_signaled(dev, fence, bo->fence_type, 0)) {
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
 			return 0;
@@ -966,13 +967,13 @@ static int drm_bo_busy(drm_buffer_object_t * bo)
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (fence) {
 		drm_device_t *dev = bo->dev;
-		if (drm_fence_object_signaled(fence, bo->fence_type)) {
+		if (drm_fence_object_signaled(dev, fence, bo->fence_type, 0)) {
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
 			return 0;
 		}
 		drm_fence_object_flush(dev, fence, DRM_FENCE_TYPE_EXE);
-		if (drm_fence_object_signaled(fence, bo->fence_type)) {
+		if (drm_fence_object_signaled(dev, fence, bo->fence_type, 0)) {
 			drm_fence_usage_deref_unlocked(dev, fence);
 			bo->fence = NULL;
 			return 0;
