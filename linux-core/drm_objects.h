@@ -473,4 +473,12 @@ extern int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
 				     uint32_t fence_flags,
 				     drm_bo_mem_reg_t * new_mem);
 
+#ifdef CONFIG_DEBUG_MUTEXES
+#define DRM_ASSERT_LOCKED(_mutex)					\
+	BUG_ON(!mutex_is_locked(_mutex) ||				\
+	       ((_mutex)->owner != current_thread_info()))
+#else
+#define DRM_ASSERT_LOCKED(_mutex)
+#endif
+
 #endif

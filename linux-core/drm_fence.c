@@ -129,11 +129,14 @@ void drm_fence_usage_deref_locked(drm_device_t * dev,
 {
 	drm_fence_manager_t *fm = &dev->fm;
 
+	DRM_ASSERT_LOCKED(&dev->struct_mutex);
+
 	if (atomic_dec_and_test(&fence->usage)) {
 		drm_fence_unring(dev, &fence->ring);
 		DRM_DEBUG("Destroyed a fence object 0x%08lx\n",
 			  fence->base.hash.key);
 		atomic_dec(&fm->count);
+		BUG_ON(!list_empty(&fence->base.list));
 		drm_ctl_free(fence, sizeof(*fence), DRM_MEM_FENCE);
 	}
 }
@@ -148,6 +151,7 @@ void drm_fence_usage_deref_unlocked(drm_device_t * dev,
 		if (atomic_read(&fence->usage) == 0) {
 			drm_fence_unring(dev, &fence->ring);
 			atomic_dec(&fm->count);
+			BUG_ON(!list_empty(&fence->base.list));
 			drm_ctl_free(fence, sizeof(*fence), DRM_MEM_FENCE);
 		}
 		mutex_unlock(&dev->struct_mutex);
@@ -448,15 +452,16 @@ int drm_fence_add_user_object(drm_file_t * priv, drm_fence_object_t * fence,
 
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_add_user_object(priv, &fence->base, shareable);
-	mutex_unlock(&dev->struct_mutex);
 	if (ret)
-		return ret;
+		goto out;
+	atomic_inc(&fence->usage);
 	fence->base.type = drm_fence_type;
 	fence->base.remove = &drm_fence_object_destroy;
 	DRM_DEBUG("Fence 0x%08lx created\n", fence->base.hash.key);
-	return 0;
+out:
+	mutex_unlock(&dev->struct_mutex);
+	return ret;
 }
-
 EXPORT_SYMBOL(drm_fence_add_user_object);
 
 int drm_fence_object_create(drm_device_t * dev, uint32_t class, uint32_t type,
@@ -466,7 +471,7 @@ int drm_fence_object_create(drm_device_t * dev, uint32_t class, uint32_t type,
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
 
-	fence = drm_ctl_alloc(sizeof(*fence), DRM_MEM_FENCE);
+	fence = drm_ctl_calloc(1, sizeof(*fence), DRM_MEM_FENCE);
 	if (!fence)
 		return -ENOMEM;
 	ret = drm_fence_object_init(dev, class, type, flags, fence);
@@ -566,13 +571,8 @@ int drm_fence_ioctl(DRM_IOCTL_ARGS)
 			drm_fence_usage_deref_unlocked(dev, fence);
 			return ret;
 		}
-
-		/*
-		 * usage > 0. No need to lock dev->struct_mutex;
-		 */
-
-		atomic_inc(&fence->usage);
 		arg.handle = fence->base.hash.key;
+
 		break;
 	case drm_fence_destroy:
 		mutex_lock(&dev->struct_mutex);
@@ -637,7 +637,6 @@ int drm_fence_ioctl(DRM_IOCTL_ARGS)
 						DRM_FENCE_FLAG_SHAREABLE);
 		if (ret)
 			return ret;
-		atomic_inc(&fence->usage);
 		arg.handle = fence->base.hash.key;
 		break;
 	default:

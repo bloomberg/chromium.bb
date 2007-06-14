@@ -67,6 +67,9 @@ void drm_bo_add_to_pinned_lru(drm_buffer_object_t * bo)
 {
 	drm_mem_type_manager_t *man;
 
+	DRM_ASSERT_LOCKED(&bo->dev->struct_mutex);
+	DRM_ASSERT_LOCKED(&bo->mutex);
+
 	man = &bo->dev->bm.man[bo->pinned_mem_type];
 	list_add_tail(&bo->pinned_lru, &man->pinned);
 }
@@ -74,6 +77,8 @@ void drm_bo_add_to_pinned_lru(drm_buffer_object_t * bo)
 void drm_bo_add_to_lru(drm_buffer_object_t * bo)
 {
 	drm_mem_type_manager_t *man;
+
+	DRM_ASSERT_LOCKED(&bo->dev->struct_mutex);
 
 	if (!(bo->mem.mask & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT))
 	    || bo->mem.mem_type != bo->pinned_mem_type) {
@@ -133,6 +138,8 @@ static int drm_bo_add_ttm(drm_buffer_object_t * bo)
 	drm_device_t *dev = bo->dev;
 	int ret = 0;
 	bo->ttm = NULL;
+
+	DRM_ASSERT_LOCKED(&bo->mutex);
 
 	switch (bo->type) {
 	case drm_bo_type_dc:
@@ -266,6 +273,8 @@ int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
 	drm_fence_object_t *fence = bo->fence;
 	int ret;
 
+	DRM_ASSERT_LOCKED(&bo->mutex);
+
 	if (fence) {
 		drm_device_t *dev = bo->dev;
 		if (drm_fence_object_signaled(dev, fence, bo->fence_type, 0)) {
@@ -331,6 +340,8 @@ static void drm_bo_cleanup_refs(drm_buffer_object_t * bo, int remove_all)
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
 
+	DRM_ASSERT_LOCKED(&dev->struct_mutex);
+
 	atomic_inc(&bo->usage);
 	mutex_unlock(&dev->struct_mutex);
 	mutex_lock(&bo->mutex);
@@ -393,6 +404,8 @@ static void drm_bo_destroy_locked(drm_buffer_object_t * bo)
 	drm_device_t *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
 
+	DRM_ASSERT_LOCKED(&dev->struct_mutex);
+
 	if (list_empty(&bo->lru) && bo->mem.mm_node == NULL &&
 	    list_empty(&bo->pinned_lru) && bo->pinned_node == NULL &&
 	    list_empty(&bo->ddestroy) && atomic_read(&bo->usage) == 0) {
@@ -415,6 +428,7 @@ static void drm_bo_destroy_locked(drm_buffer_object_t * bo)
 
 		atomic_dec(&bm->count);
 
+		BUG_ON(!list_empty(&bo->base.list));
 		drm_ctl_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
 
 		return;
@@ -491,6 +505,8 @@ static void drm_bo_delayed_workqueue(struct work_struct *work)
 
 void drm_bo_usage_deref_locked(drm_buffer_object_t * bo)
 {
+	DRM_ASSERT_LOCKED(&bo->dev->struct_mutex);
+
 	if (atomic_dec_and_test(&bo->usage)) {
 		drm_bo_destroy_locked(bo);
 	}
@@ -500,6 +516,8 @@ static void drm_bo_base_deref_locked(drm_file_t * priv, drm_user_object_t * uo)
 {
 	drm_buffer_object_t *bo =
 	    drm_user_object_entry(uo, drm_buffer_object_t, base);
+
+	DRM_ASSERT_LOCKED(&bo->dev->struct_mutex);
 
 	drm_bo_takedown_vm_locked(bo);
 	drm_bo_usage_deref_locked(bo);
@@ -1462,11 +1480,14 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 				  uint32_t flags, uint32_t mask, uint32_t hint,
 				  drm_bo_arg_reply_t * rep)
 {
+        struct drm_device *dev = priv->head->dev;
 	drm_buffer_object_t *bo;
 	int ret;
 	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
 
+	mutex_lock(&dev->struct_mutex);
 	bo = drm_lookup_buffer_object(priv, handle, 1);
+	mutex_unlock(&dev->struct_mutex);
 	if (!bo) {
 		return -EINVAL;
 	}
@@ -1498,9 +1519,13 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 static int drm_bo_handle_info(drm_file_t * priv, uint32_t handle,
 			      drm_bo_arg_reply_t * rep)
 {
+        struct drm_device *dev = priv->head->dev;
 	drm_buffer_object_t *bo;
 
+	mutex_lock(&dev->struct_mutex);
 	bo = drm_lookup_buffer_object(priv, handle, 1);
+	mutex_unlock(&dev->struct_mutex);
+
 	if (!bo) {
 		return -EINVAL;
 	}
@@ -1520,7 +1545,11 @@ static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
 	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
 	int ret;
 
+        struct drm_device *dev = priv->head->dev;
+	mutex_lock(&dev->struct_mutex);
 	bo = drm_lookup_buffer_object(priv, handle, 1);
+	mutex_unlock(&dev->struct_mutex);
+
 	if (!bo) {
 		return -EINVAL;
 	}
@@ -2319,6 +2348,7 @@ static void drm_bo_takedown_vm_locked(drm_buffer_object_t * bo)
 	drm_local_map_t *map;
 	drm_device_t *dev = bo->dev;
 
+	DRM_ASSERT_LOCKED(&dev->struct_mutex);
 	if (list->user_token) {
 		drm_ht_remove_item(&dev->map_hash, &list->hash);
 		list->user_token = 0;
@@ -2344,6 +2374,7 @@ static int drm_bo_setup_vm_locked(drm_buffer_object_t * bo)
 	drm_local_map_t *map;
 	drm_device_t *dev = bo->dev;
 
+	DRM_ASSERT_LOCKED(&dev->struct_mutex);
 	list->map = drm_ctl_calloc(1, sizeof(*map), DRM_MEM_BUFOBJ);
 	if (!list->map)
 		return -ENOMEM;
