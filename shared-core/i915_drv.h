@@ -171,7 +171,7 @@ extern int i915_emit_irq(drm_device_t * dev);
 extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
 extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
 extern int i915_vblank_swap(DRM_IOCTL_ARGS);
-extern void i915_enable_vblank(drm_device_t *dev, int crtc);
+extern int i915_enable_vblank(drm_device_t *dev, int crtc);
 extern void i915_disable_vblank(drm_device_t *dev, int crtc);
 extern u32 i915_get_vblank_counter(drm_device_t *dev, int crtc);
 

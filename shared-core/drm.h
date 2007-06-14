@@ -599,7 +599,7 @@ typedef enum {
  */
 typedef struct drm_modeset_ctl {
 	drm_modeset_ctl_cmd_t cmd;
-	unsigned long arg;
+	u64 arg;
 } drm_modeset_ctl_t;
 
 /**
@@ -968,7 +968,7 @@ typedef union drm_mm_init_arg{
 
 #define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, drm_update_draw_t)
 
-#define DRM_IOCTL_MODESET_CTL           DRM_IOW(0x40, drm_modeset_ctl_t)
+#define DRM_IOCTL_MODESET_CTL           DRM_IOW(0xa0, drm_modeset_ctl_t)
 
 /*@}*/
 

@@ -83,7 +83,7 @@ int drm_vblank_init(drm_device_t *dev, int num_crtcs)
 
 	init_waitqueue_head(&dev->vbl_queue);
 	spin_lock_init(&dev->vbl_lock);
-	atomic_set(&dev->vbl_pending, 0);
+	atomic_set(&dev->vbl_signal_pending, 0);
 	dev->num_crtcs = num_crtcs;
 
 	dev->vbl_sigs = drm_alloc(sizeof(struct list_head) * num_crtcs,
@@ -91,14 +91,14 @@ int drm_vblank_init(drm_device_t *dev, int num_crtcs)
 	if (!dev->vbl_sigs)
 		goto err;
 
-	dev->vblank_count = drm_alloc(sizeof(atomic_t) * num_crtcs,
+	dev->_vblank_count = drm_alloc(sizeof(atomic_t) * num_crtcs,
 				      DRM_MEM_DRIVER);
-	if (!dev->vblank_count)
+	if (!dev->_vblank_count)
 		goto err;
 
-	dev->vblank_usage = drm_alloc(sizeof(atomic_t) * num_crtcs,
-				      DRM_MEM_DRIVER);
-	if (!dev->vblank_count)
+	dev->vblank_refcount = drm_alloc(sizeof(atomic_t) * num_crtcs,
+					 DRM_MEM_DRIVER);
+	if (!dev->vblank_refcount)
 		goto err;
 
 	dev->last_vblank = drm_alloc(sizeof(u32) * num_crtcs,
@@ -119,24 +119,28 @@ int drm_vblank_init(drm_device_t *dev, int num_crtcs)
 	/* Zero per-crtc vblank stuff */
 	for (i = 0; i < num_crtcs; i++) {
 		INIT_LIST_HEAD(&dev->vbl_sigs[i]);
-		atomic_set(&dev->vblank_count[i], 0);
-		atomic_set(&dev->vblank_usage[i], 0);
+		atomic_set(&dev->_vblank_count[i], 0);
+		atomic_set(&dev->vblank_refcount[i], 0);
 		dev->last_vblank[i] = 0;
 		dev->vblank_premodeset[i] = 0;
 		dev->vblank_offset[i] = 0;
 	}
 
-	ret = 0;
-	goto out;
+	return 0;
 
 err:
-	kfree(dev->vbl_sigs);
-	kfree(dev->vblank_count);
-	kfree(dev->vblank_usage);
-	kfree(dev->last_vblank);
-	kfree(dev->vblank_premodeset);
-	kfree(dev->vblank_offset);
-out:
+	drm_free(dev->vbl_sigs, sizeof(*dev->vbl_sigs) * num_crtcs,
+		 DRM_MEM_DRIVER);
+	drm_free(dev->_vblank_count, sizeof(*dev->_vblank_count) * num_crtcs,
+		 DRM_MEM_DRIVER);
+	drm_free(dev->vblank_refcount, sizeof(*dev->vblank_refcount) *
+		 num_crtcs, DRM_MEM_DRIVER);
+	drm_free(dev->last_vblank, sizeof(*dev->last_vblank) * num_crtcs,
+		 DRM_MEM_DRIVER);
+	drm_free(dev->vblank_premodeset, sizeof(*dev->vblank_premodeset) *
+		 num_crtcs, DRM_MEM_DRIVER);
+	drm_free(dev->vblank_offset, sizeof(*dev->vblank_offset) * num_crtcs,
+		 DRM_MEM_DRIVER);
 	return ret;
 }
 EXPORT_SYMBOL(drm_vblank_init);
@@ -274,13 +278,36 @@ int drm_control(struct inode *inode, struct file *filp,
 	}
 }
 
-void drm_vblank_get(drm_device_t *dev, int crtc)
+/**
+ * drm_vblank_count - retrieve "cooked" vblank counter value
+ * @dev: DRM device
+ * @crtc: which counter to retrieve
+ *
+ * Fetches the "cooked" vblank count value that represents the number of
+ * vblank events since the system was booted, including lost events due to
+ * modesetting activity.
+ */
+u32 drm_vblank_count(drm_device_t *dev, int crtc)
+{
+	return atomic_read(&dev->_vblank_count[crtc]) +
+		dev->vblank_offset[crtc];
+}
+EXPORT_SYMBOL(drm_vblank_count);
+
+/**
+ * drm_update_vblank_count - update the master vblank counter
+ * @dev: DRM device
+ * @crtc: counter to update
+ *
+ * Call back into the driver to update the appropriate vblank counter
+ * (specified by @crtc).  Deal with wraparound, if it occurred, and
+ * update the last read value so we can deal with wraparound on the next
+ * call if necessary.
+ */
+void drm_update_vblank_count(drm_device_t *dev, int crtc)
 {
 	unsigned long irqflags;
 	u32 cur_vblank, diff;
-
-	if (atomic_add_return(1, &dev->vblank_count[crtc]) != 1)
-		return;
 
 	/*
 	 * Interrupts were disabled prior to this call, so deal with counter
@@ -301,18 +328,61 @@ void drm_vblank_get(drm_device_t *dev, int crtc)
 	dev->last_vblank[crtc] = cur_vblank;
 	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 
-	atomic_add(diff, &dev->vblank_count[crtc]);
-	dev->driver->enable_vblank(dev, crtc);
+	atomic_add(diff, &dev->_vblank_count[crtc]);
+}
+EXPORT_SYMBOL(drm_update_vblank_count);
+
+/**
+ * drm_vblank_get - get a reference count on vblank events
+ * @dev: DRM device
+ * @crtc: which CRTC to own
+ *
+ * Acquire a reference count on vblank events to avoid having them disabled
+ * while in use.  Note callers will probably want to update the master counter
+ * using drm_update_vblank_count() above before calling this routine so that
+ * wakeups occur on the right vblank event.
+ *
+ * RETURNS
+ * Zero on success, nonzero on failure.
+ */
+int drm_vblank_get(drm_device_t *dev, int crtc)
+{
+	int ret = 0;
+
+	/* Going from 0->1 means we have to enable interrupts again */
+	if (atomic_add_return(1, &dev->vblank_refcount[crtc]) == 1) {
+		ret = dev->driver->enable_vblank(dev, crtc);
+		if (ret)
+			atomic_dec(&dev->vblank_refcount[crtc]);
+	}
+
+	return ret;
 }
 EXPORT_SYMBOL(drm_vblank_get);
 
+/**
+ * drm_vblank_put - give up ownership of vblank events
+ * @dev: DRM device
+ * @crtc: which counter to give up
+ *
+ * Release ownership of a given vblank counter, turning off interrupts
+ * if possible.
+ */
 void drm_vblank_put(drm_device_t *dev, int crtc)
 {
-	if (atomic_dec_and_test(&dev->vblank_count[crtc]))
+	/* Last user can disable interrupts */
+	if (atomic_dec_and_test(&dev->vblank_refcount[crtc]))
 		dev->driver->disable_vblank(dev, crtc);
 }
 EXPORT_SYMBOL(drm_vblank_put);
 
+/**
+ * drm_modeset_ctl - handle vblank event counter changes across mode switch
+ * @DRM_IOCTL_ARGS: standard ioctl arguments
+ *
+ * Applications should call the %_DRM_PRE_MODESET and %_DRM_POST_MODESET
+ * ioctls around modesetting so that any lost vblank events are accounted for.
+ */
 int drm_modeset_ctl(DRM_IOCTL_ARGS)
 {
 	drm_file_t *priv = filp->private_data;
@@ -401,8 +471,8 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 				    DRIVER_IRQ_VBL2 : DRIVER_IRQ_VBL))
 		return -EINVAL;
 
-	drm_vblank_get(dev, crtc);
-	seq = atomic_read(&dev->vblank_count[crtc]);
+	drm_update_vblank_count(dev, crtc);
+	seq = drm_vblank_count(dev, crtc);
 
 	switch (vblwait.request.type & _DRM_VBLANK_TYPES_MASK) {
 	case _DRM_VBLANK_RELATIVE:
@@ -437,27 +507,27 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 				spin_unlock_irqrestore(&dev->vbl_lock,
 						       irqflags);
 				vblwait.reply.sequence = seq;
-				drm_vblank_put(dev, crtc);
 				goto done;
 			}
 		}
 
-		if (atomic_read(&dev->vbl_pending) >= 100) {
+		if (atomic_read(&dev->vbl_signal_pending) >= 100) {
 			spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
-			drm_vblank_put(dev, crtc);
 			return -EBUSY;
 		}
 
 		spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 
-		atomic_inc(&dev->vbl_pending);
-
 		if (!
 		    (vbl_sig =
 		     drm_alloc(sizeof(drm_vbl_sig_t), DRM_MEM_DRIVER))) {
-			drm_vblank_put(dev, crtc);
 			return -ENOMEM;
 		}
+
+		ret = drm_vblank_get(dev, crtc);
+		if (ret)
+			return ret;
+		atomic_inc(&dev->vbl_signal_pending);
 
 		memset((void *)vbl_sig, 0, sizeof(*vbl_sig));
 
@@ -475,8 +545,11 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 	} else {
 		unsigned long cur_vblank;
 
+		ret = drm_vblank_get(dev, crtc);
+		if (ret)
+			return ret;
 		DRM_WAIT_ON(ret, dev->vbl_queue, 3 * DRM_HZ,
-			    (((cur_vblank = atomic_read(&dev->vblank_count[crtc]))
+			    (((cur_vblank = drm_vblank_count(dev, crtc))
 			      - seq) <= (1 << 23)));
 		drm_vblank_put(dev, crtc);
 		do_gettimeofday(&now);
@@ -495,42 +568,56 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
  * Send the VBLANK signals.
  *
  * \param dev DRM device.
+ * \param crtc CRTC where the vblank event occurred
  *
  * Sends a signal for each task in drm_device::vbl_sigs and empties the list.
  *
  * If a signal is not requested, then calls vblank_wait().
  */
-void drm_vbl_send_signals(drm_device_t * dev)
+static void drm_vbl_send_signals(drm_device_t * dev, int crtc)
 {
+	drm_vbl_sig_t *vbl_sig, *tmp;
+	struct list_head *vbl_sigs;
+	unsigned int vbl_seq;
 	unsigned long flags;
-	int i;
 
 	spin_lock_irqsave(&dev->vbl_lock, flags);
 
-	for (i = 0; i < dev->num_crtcs; i++) {
-		drm_vbl_sig_t *vbl_sig, *tmp;
-		struct list_head *vbl_sigs = &dev->vbl_sigs[i];
-		unsigned int vbl_seq = atomic_read(&dev->vblank_count[i]);
+	vbl_sigs = &dev->vbl_sigs[crtc];
+	vbl_seq = drm_vblank_count(dev, crtc);
 
-		list_for_each_entry_safe(vbl_sig, tmp, vbl_sigs, head) {
-			if ((vbl_seq - vbl_sig->sequence) <= (1 << 23)) {
-				vbl_sig->info.si_code = vbl_seq;
-				send_sig_info(vbl_sig->info.si_signo,
-					      &vbl_sig->info, vbl_sig->task);
+	list_for_each_entry_safe(vbl_sig, tmp, vbl_sigs, head) {
+	    if ((vbl_seq - vbl_sig->sequence) <= (1 << 23)) {
+		vbl_sig->info.si_code = vbl_seq;
+		send_sig_info(vbl_sig->info.si_signo,
+			      &vbl_sig->info, vbl_sig->task);
 
-				list_del(&vbl_sig->head);
+		list_del(&vbl_sig->head);
 
-				drm_free(vbl_sig, sizeof(*vbl_sig),
-					 DRM_MEM_DRIVER);
-				atomic_dec(&dev->vbl_pending);
-				drm_vblank_put(dev, i);
-			}
-		}
+		drm_free(vbl_sig, sizeof(*vbl_sig),
+			 DRM_MEM_DRIVER);
+		atomic_dec(&dev->vbl_signal_pending);
+		drm_vblank_put(dev, crtc);
+	    }
 	}
 
 	spin_unlock_irqrestore(&dev->vbl_lock, flags);
 }
-EXPORT_SYMBOL(drm_vbl_send_signals);
+
+/**
+ * drm_handle_vblank - handle a vblank event
+ * @dev: DRM device
+ * @crtc: where this event occurred
+ *
+ * Drivers should call this routine in their vblank interrupt handlers to
+ * update the vblank counter and send any signals that may be pending.
+ */
+void drm_handle_vblank(drm_device_t *dev, int crtc)
+{
+	drm_update_vblank_count(dev, crtc);
+	drm_vbl_send_signals(dev, crtc);
+}
+EXPORT_SYMBOL(drm_handle_vblank);
 
 /**
  * Tasklet wrapper function.

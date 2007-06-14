@@ -92,8 +92,7 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 	unsigned long irqflags;
 	struct list_head *list, *tmp, hits, *hit;
 	int nhits, nrects, slice[2], upper[2], lower[2], i, num_pages;
-	unsigned counter[2] = { atomic_read(&dev->vblank_count[0]),
-				atomic_read(&dev->vblank_count[1]) };
+	unsigned counter[2];
 	drm_drawable_info_t *drw;
 	drm_i915_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	u32 cpp = dev_priv->cpp,  offsets[3];
@@ -104,6 +103,9 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 	u32 pitchropcpp = (sarea_priv->pitch * cpp) | (0xcc << 16) |
 			  (cpp << 23) | (1 << 24);
 	RING_LOCALS;
+
+	counter[0] = drm_vblank_count(dev, 0);
+	counter[1] = drm_vblank_count(dev, 1);
 
 	DRM_DEBUG("\n");
 
@@ -333,16 +335,17 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 #endif
 	}
 
+	/*
+	 * Use drm_update_vblank_counter here to deal with potential lost
+	 * interrupts
+	 */
 	if (temp & VSYNC_PIPEA_FLAG)
-		atomic_add(i915_get_vblank_counter(dev, 0),
-			   &dev->vblank_count[0]);
+		drm_handle_vblank(dev, 0);
 	if (temp & VSYNC_PIPEB_FLAG)
-		atomic_add(i915_get_vblank_counter(dev, 1),
-			   &dev->vblank_count[1]);
+		drm_handle_vblank(dev, 1);
 
 	if (temp & (VSYNC_PIPEA_FLAG | VSYNC_PIPEB_FLAG)) {
 		DRM_WAKEUP(&dev->vbl_queue);
-		drm_vbl_send_signals(dev);
 
 		if (dev_priv->swaps_pending > 0)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
@@ -477,12 +480,12 @@ int i915_irq_wait(DRM_IOCTL_ARGS)
 	return i915_wait_irq(dev, irqwait.irq_seq);
 }
 
-void i915_enable_vblank(drm_device_t *dev, int crtc)
+int i915_enable_vblank(drm_device_t *dev, int crtc)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	if (crtc > dev_priv->vblank_pipe)
-		return;
+	if (dev_priv->vblank_pipe != (1 << crtc))
+		return -EINVAL;
 	
 	switch (crtc) {
 	case 0:
@@ -498,6 +501,8 @@ void i915_enable_vblank(drm_device_t *dev, int crtc)
 	}
 
 	I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+
+	return 0;
 }
 
 void i915_disable_vblank(drm_device_t *dev, int crtc)
@@ -597,6 +602,7 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 	unsigned int pipe, seqtype, curseq;
 	unsigned long irqflags;
 	struct list_head *list;
+	int ret;
 
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __func__);
@@ -637,8 +643,8 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 
 	spin_unlock_irqrestore(&dev->drw_lock, irqflags);
 
-	drm_vblank_get(dev, pipe);
-	curseq = atomic_read(&dev->vblank_count[pipe]);
+	drm_update_vblank_count(dev, pipe);
+	curseq = drm_vblank_count(dev, pipe);
 
 	if (seqtype == _DRM_VBLANK_RELATIVE)
 		swap.sequence += curseq;
@@ -648,7 +654,6 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 			swap.sequence = curseq + 1;
 		} else {
 			DRM_DEBUG("Missed target sequence\n");
-			drm_vblank_put(dev, pipe);
 			return DRM_ERR(EINVAL);
 		}
 	}
@@ -669,7 +674,6 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 				spin_unlock_irqrestore(&dev->drw_lock, irqflags);
 				DRM_DEBUG("Invalid drawable ID %d\n",
 					  swap.drawable);
-				drm_vblank_put(dev, pipe);
 				return DRM_ERR(EINVAL);
 			}
 
@@ -677,7 +681,6 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 
 			spin_unlock_irqrestore(&dev->drw_lock, irqflags);
 
-			drm_vblank_put(dev, pipe);
 			return 0;
 		}
 	}
@@ -693,7 +696,6 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 			vbl_swap->flip = (swap.seqtype & _DRM_VBLANK_FLIP);
 			spin_unlock_irqrestore(&dev_priv->swaps_lock, irqflags);
 			DRM_DEBUG("Already scheduled\n");
-			drm_vblank_put(dev, pipe);
 			return 0;
 		}
 	}
@@ -702,7 +704,6 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 
 	if (dev_priv->swaps_pending >= 100) {
 		DRM_DEBUG("Too many swaps queued\n");
-		drm_vblank_put(dev, pipe);
 		return DRM_ERR(EBUSY);
 	}
 
@@ -710,11 +711,14 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 
 	if (!vbl_swap) {
 		DRM_ERROR("Failed to allocate memory to queue swap\n");
-		drm_vblank_put(dev, pipe);
 		return DRM_ERR(ENOMEM);
 	}
 
 	DRM_DEBUG("\n");
+
+	ret = drm_vblank_get(dev, pipe);
+	if (ret)
+		return ret;
 
 	vbl_swap->drw_id = swap.drawable;
 	vbl_swap->pipe = pipe;
