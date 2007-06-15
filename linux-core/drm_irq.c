@@ -405,7 +405,7 @@ int drm_modeset_ctl(DRM_IOCTL_ARGS)
 	}
 
 	crtc = modeset.arg;
-	if (crtc > dev->num_crtcs) {
+	if (crtc >= dev->num_crtcs) {
 		ret = -EINVAL;
 		goto out;
 	}
@@ -474,8 +474,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 	flags = vblwait.request.type & _DRM_VBLANK_FLAGS_MASK;
 	crtc = flags & _DRM_VBLANK_SECONDARY ? 1 : 0;
 
-	if (!drm_core_check_feature(dev, (flags & _DRM_VBLANK_SECONDARY) ?
-				    DRIVER_IRQ_VBL2 : DRIVER_IRQ_VBL))
+	if (crtc >= dev->num_crtcs)
 		return -EINVAL;
 
 	drm_update_vblank_count(dev, crtc);

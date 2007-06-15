@@ -76,8 +76,7 @@ static struct drm_driver driver = {
 	 */
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | /* DRIVER_USE_MTRR | */
-	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL |
-	    DRIVER_IRQ_VBL2,
+	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED,
 	.load = i915_driver_load,
 	.firstopen = i915_driver_firstopen,
 	.lastclose = i915_driver_lastclose,
