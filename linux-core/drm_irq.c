@@ -617,6 +617,7 @@ static void drm_vbl_send_signals(drm_device_t * dev, int crtc)
 void drm_handle_vblank(drm_device_t *dev, int crtc)
 {
 	drm_update_vblank_count(dev, crtc);
+	DRM_WAKEUP(&dev->vbl_queue);
 	drm_vbl_send_signals(dev, crtc);
 }
 EXPORT_SYMBOL(drm_handle_vblank);

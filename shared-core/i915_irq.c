@@ -345,8 +345,6 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		drm_handle_vblank(dev, 1);
 
 	if (temp & (VSYNC_PIPEA_FLAG | VSYNC_PIPEB_FLAG)) {
-		DRM_WAKEUP(&dev->vbl_queue);
-
 		if (dev_priv->swaps_pending > 0)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
 		I915_WRITE(I915REG_PIPEASTAT, 
