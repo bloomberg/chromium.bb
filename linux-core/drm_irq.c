@@ -518,18 +518,19 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 
 		spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 
-		if (!
-		    (vbl_sig =
-		     drm_alloc(sizeof(drm_vbl_sig_t), DRM_MEM_DRIVER))) {
+		vbl_sig = drm_calloc(1, sizeof(drm_vbl_sig_t), DRM_MEM_DRIVER);
+		if (!vbl_sig) {
 			return -ENOMEM;
 		}
 
 		ret = drm_vblank_get(dev, crtc);
-		if (ret)
+		if (ret) {
+			drm_free(vbl_sig, sizeof(drm_vbl_sig_t),
+				 DRM_MEM_DRIVER);
 			return ret;
-		atomic_inc(&dev->vbl_signal_pending);
+		}
 
-		memset((void *)vbl_sig, 0, sizeof(*vbl_sig));
+		atomic_inc(&dev->vbl_signal_pending);
 
 		vbl_sig->sequence = vblwait.request.sequence;
 		vbl_sig->info.si_signo = vblwait.request.signal;

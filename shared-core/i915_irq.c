@@ -707,7 +707,7 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 		return DRM_ERR(EBUSY);
 	}
 
-	vbl_swap = drm_calloc(1, sizeof(vbl_swap), DRM_MEM_DRIVER);
+	vbl_swap = drm_calloc(1, sizeof(*vbl_swap), DRM_MEM_DRIVER);
 
 	if (!vbl_swap) {
 		DRM_ERROR("Failed to allocate memory to queue swap\n");
@@ -717,8 +717,10 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 	DRM_DEBUG("\n");
 
 	ret = drm_vblank_get(dev, pipe);
-	if (ret)
+	if (ret) {
+		drm_free(vbl_swap, sizeof(*vbl_swap), DRM_MEM_DRIVER);
 		return ret;
+	}
 
 	vbl_swap->drw_id = swap.drawable;
 	vbl_swap->pipe = pipe;
