@@ -618,6 +618,7 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 			if (entry->fence)
 				drm_fence_usage_deref_locked(dev, entry->fence);
 			entry->fence = fence;
+			atomic_inc(&fence->usage);
 			DRM_FLAG_MASKED(entry->priv_flags, 0,
 					_DRM_BO_FLAG_UNFENCED);
 			DRM_WAKEUP(&entry->event_queue);
@@ -627,7 +628,6 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 		drm_bo_usage_deref_locked(entry);
 		l = f_list.next;
 	}
-	atomic_add(count, &fence->usage);
 	DRM_DEBUG("Fenced %d buffers\n", count);
       out:
 	mutex_unlock(&dev->struct_mutex);
