@@ -1480,7 +1480,7 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 				  uint32_t flags, uint32_t mask, uint32_t hint,
 				  drm_bo_arg_reply_t * rep)
 {
-        struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = priv->head->dev;
 	drm_buffer_object_t *bo;
 	int ret;
 	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
@@ -1519,7 +1519,7 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 static int drm_bo_handle_info(drm_file_t * priv, uint32_t handle,
 			      drm_bo_arg_reply_t * rep)
 {
-        struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = priv->head->dev;
 	drm_buffer_object_t *bo;
 
 	mutex_lock(&dev->struct_mutex);
@@ -1541,11 +1541,11 @@ static int drm_bo_handle_info(drm_file_t * priv, uint32_t handle,
 static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
 			      uint32_t hint, drm_bo_arg_reply_t * rep)
 {
+	struct drm_device *dev = priv->head->dev;
 	drm_buffer_object_t *bo;
 	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
 	int ret;
 
-        struct drm_device *dev = priv->head->dev;
 	mutex_lock(&dev->struct_mutex);
 	bo = drm_lookup_buffer_object(priv, handle, 1);
 	mutex_unlock(&dev->struct_mutex);
