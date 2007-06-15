@@ -484,7 +484,7 @@ int i915_enable_vblank(drm_device_t *dev, int crtc)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	if (dev_priv->vblank_pipe != (1 << crtc))
+	if (!(dev_priv->vblank_pipe & (1 << crtc)))
 		return -EINVAL;
 	
 	switch (crtc) {
@@ -509,7 +509,7 @@ void i915_disable_vblank(drm_device_t *dev, int crtc)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	if (crtc > dev_priv->vblank_pipe)
+	if (!(dev_priv->vblank_pipe & (1 << crtc)))
 		return;
 	
 	switch (crtc) {
