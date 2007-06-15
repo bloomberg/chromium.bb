@@ -81,10 +81,14 @@ int drm_vblank_init(drm_device_t *dev, int num_crtcs)
 {
 	int i, ret = -ENOMEM;
 
-	init_waitqueue_head(&dev->vbl_queue);
 	spin_lock_init(&dev->vbl_lock);
 	atomic_set(&dev->vbl_signal_pending, 0);
 	dev->num_crtcs = num_crtcs;
+
+	dev->vbl_queue = drm_alloc(sizeof(wait_queue_head_t) * num_crtcs,
+				   DRM_MEM_DRIVER);
+	if (!dev->vbl_queue)
+		goto err;
 
 	dev->vbl_sigs = drm_alloc(sizeof(struct list_head) * num_crtcs,
 				  DRM_MEM_DRIVER);
@@ -118,6 +122,7 @@ int drm_vblank_init(drm_device_t *dev, int num_crtcs)
 
 	/* Zero per-crtc vblank stuff */
 	for (i = 0; i < num_crtcs; i++) {
+		init_waitqueue_head(&dev->vbl_queue[i]);
 		INIT_LIST_HEAD(&dev->vbl_sigs[i]);
 		atomic_set(&dev->_vblank_count[i], 0);
 		atomic_set(&dev->vblank_refcount[i], 0);
@@ -129,6 +134,8 @@ int drm_vblank_init(drm_device_t *dev, int num_crtcs)
 	return 0;
 
 err:
+	drm_free(dev->vbl_queue, sizeof(*dev->vbl_queue) * num_crtcs,
+		 DRM_MEM_DRIVER);
 	drm_free(dev->vbl_sigs, sizeof(*dev->vbl_sigs) * num_crtcs,
 		 DRM_MEM_DRIVER);
 	drm_free(dev->_vblank_count, sizeof(*dev->_vblank_count) * num_crtcs,
@@ -150,7 +157,7 @@ EXPORT_SYMBOL(drm_vblank_init);
  *
  * \param dev DRM device.
  *
- * Initializes the IRQ related data, and setups drm_device::vbl_queue. Installs the handler, calling the driver
+ * Initializes the IRQ related data. Installs the handler, calling the driver
  * \c drm_driver_irq_preinstall() and \c drm_driver_irq_postinstall() functions
  * before and after the installation.
  */
@@ -549,7 +556,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 		ret = drm_vblank_get(dev, crtc);
 		if (ret)
 			return ret;
-		DRM_WAIT_ON(ret, dev->vbl_queue, 3 * DRM_HZ,
+		DRM_WAIT_ON(ret, dev->vbl_queue[crtc], 3 * DRM_HZ,
 			    (((cur_vblank = drm_vblank_count(dev, crtc))
 			      - seq) <= (1 << 23)));
 		drm_vblank_put(dev, crtc);
@@ -617,7 +624,7 @@ static void drm_vbl_send_signals(drm_device_t * dev, int crtc)
 void drm_handle_vblank(drm_device_t *dev, int crtc)
 {
 	drm_update_vblank_count(dev, crtc);
-	DRM_WAKEUP(&dev->vbl_queue);
+	DRM_WAKEUP(&dev->vbl_queue[crtc]);
 	drm_vbl_send_signals(dev, crtc);
 }
 EXPORT_SYMBOL(drm_handle_vblank);

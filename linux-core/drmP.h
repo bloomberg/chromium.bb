@@ -824,7 +824,7 @@ typedef struct drm_device {
 	/** \name VBLANK IRQ support */
 	/*@{ */
 
-	wait_queue_head_t vbl_queue;	/**< VBLANK wait queue */
+	wait_queue_head_t *vbl_queue;	/**< VBLANK wait queue */
 	atomic_t *_vblank_count;	/**< number of VBLANK interrupts (driver must alloc the right number of counters) */
 	spinlock_t vbl_lock;
 	struct list_head *vbl_sigs;		/**< signal list to send on VBLANK */
