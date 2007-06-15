@@ -556,6 +556,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 		do_gettimeofday(&now);
 		vblwait.reply.tval_sec = now.tv_sec;
 		vblwait.reply.tval_usec = now.tv_usec;
+		vblwait.reply.sequence = cur_vblank;
 	}
 
       done:
