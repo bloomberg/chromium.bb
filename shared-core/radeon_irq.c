@@ -51,9 +51,6 @@ int radeon_enable_vblank(drm_device_t *dev, int crtc)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
-	if (!(dev_priv->vblank_crtc & (1 << crtc)))
-		return -EINVAL;
-	
 	switch (crtc) {
 	case 0:
 		radeon_irq_set_state(dev, RADEON_CRTC_VBLANK_MASK, 1);
@@ -64,7 +61,7 @@ int radeon_enable_vblank(drm_device_t *dev, int crtc)
 	default:
 		DRM_ERROR("tried to enable vblank on non-existent crtc %d\n",
 			  crtc);
-		break;
+		return -EINVAL;
 	}
 
 	return 0;
@@ -74,9 +71,6 @@ void radeon_disable_vblank(drm_device_t *dev, int crtc)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
-	if (!(dev_priv->vblank_crtc & (1 << crtc)))
-		return;
-	
 	switch (crtc) {
 	case 0:
 		radeon_irq_set_state(dev, RADEON_CRTC_VBLANK_MASK, 0);
@@ -185,9 +179,9 @@ u32 radeon_get_vblank_counter(drm_device_t *dev, int crtc)
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	u32 crtc_cnt_reg, current_cnt;
 
-	if (crtc == DRM_RADEON_VBLANK_CRTC1)
+	if (crtc == 0)
 		crtc_cnt_reg = RADEON_CRTC_CRNT_FRAME;
-	else if (crtc == DRM_RADEON_VBLANK_CRTC2)
+	else if (crtc == 1)
 		crtc_cnt_reg = RADEON_CRTC2_CRNT_FRAME;
 	else
 		return 0;
