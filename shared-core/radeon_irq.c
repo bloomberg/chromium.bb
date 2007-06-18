@@ -49,8 +49,6 @@ static void radeon_irq_set_state(drm_device_t *dev, u32 mask, int state)
 
 int radeon_enable_vblank(drm_device_t *dev, int crtc)
 {
-	drm_radeon_private_t *dev_priv = dev->dev_private;
-
 	switch (crtc) {
 	case 0:
 		radeon_irq_set_state(dev, RADEON_CRTC_VBLANK_MASK, 1);
@@ -61,7 +59,7 @@ int radeon_enable_vblank(drm_device_t *dev, int crtc)
 	default:
 		DRM_ERROR("tried to enable vblank on non-existent crtc %d\n",
 			  crtc);
-		return -EINVAL;
+		return DRM_ERR(EINVAL);
 	}
 
 	return 0;
@@ -69,8 +67,6 @@ int radeon_enable_vblank(drm_device_t *dev, int crtc)
 
 void radeon_disable_vblank(drm_device_t *dev, int crtc)
 {
-	drm_radeon_private_t *dev_priv = dev->dev_private;
-
 	switch (crtc) {
 	case 0:
 		radeon_irq_set_state(dev, RADEON_CRTC_VBLANK_MASK, 0);
@@ -177,7 +173,7 @@ static int radeon_wait_irq(drm_device_t * dev, int swi_nr)
 u32 radeon_get_vblank_counter(drm_device_t *dev, int crtc)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
-	u32 crtc_cnt_reg, current_cnt;
+	u32 crtc_cnt_reg;
 
 	if (crtc == 0)
 		crtc_cnt_reg = RADEON_CRTC_CRNT_FRAME;
@@ -186,9 +182,7 @@ u32 radeon_get_vblank_counter(drm_device_t *dev, int crtc)
 	else
 		return 0;
 
-	current_cnt = RADEON_READ(crtc_cnt_reg);
-
-	return current_cnt;
+	return RADEON_READ(crtc_cnt_reg);
 }
 
 /* Needs the lock as it touches the ring.
@@ -261,16 +255,16 @@ int radeon_driver_irq_postinstall(drm_device_t * dev)
 {
 	drm_radeon_private_t *dev_priv =
 	    (drm_radeon_private_t *) dev->dev_private;
-	int num_pipes = 2, ret;
+	int ret;
 
 	atomic_set(&dev_priv->swi_emitted, 0);
 	DRM_INIT_WAITQUEUE(&dev_priv->swi_queue);
 
-	ret = drm_vblank_init(dev, num_pipes);
+	ret = drm_vblank_init(dev, 2);
 	if (ret)
 		return ret;
 
-	dev->max_vblank_count = 0xffffffff;
+	dev->max_vblank_count = 0x001fffff;
 
 	radeon_irq_set_state(dev, RADEON_SW_INT_ENABLE, 1);
 

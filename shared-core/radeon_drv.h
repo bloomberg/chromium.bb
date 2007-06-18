@@ -512,9 +512,6 @@ extern int r300_do_cp_cmdbuf(drm_device_t *dev, DRMFILE filp,
 #define RADEON_CRTC_CRNT_FRAME 0x0214
 #define RADEON_CRTC2_CRNT_FRAME 0x0314
 
-#define RADEON_CRTC_CRNT_FRAME              0x0214
-#define RADEON_CRTC2_CRNT_FRAME              0x0314
-
 #define RADEON_GEN_INT_CNTL		0x0040
 #	define RADEON_CRTC_VBLANK_MASK		(1 << 0)
 #	define RADEON_CRTC2_VBLANK_MASK		(1 << 9)
