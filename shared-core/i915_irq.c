@@ -482,9 +482,6 @@ int i915_enable_vblank(drm_device_t *dev, int crtc)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	if (!(dev_priv->vblank_pipe & (1 << crtc)))
-		return -EINVAL;
-	
 	switch (crtc) {
 	case 0:
 		dev_priv->irq_enable_reg |= VSYNC_PIPEA_FLAG;
@@ -507,9 +504,6 @@ void i915_disable_vblank(drm_device_t *dev, int crtc)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	if (!(dev_priv->vblank_pipe & (1 << crtc)))
-		return;
-	
 	switch (crtc) {
 	case 0:
 		dev_priv->irq_enable_reg &= ~VSYNC_PIPEA_FLAG;
@@ -559,8 +553,6 @@ int i915_vblank_pipe_set(DRM_IOCTL_ARGS)
 	}
 
 	dev_priv->vblank_pipe = pipe.pipe;
-
-	i915_enable_interrupt (dev);
 
 	return 0;
 }
