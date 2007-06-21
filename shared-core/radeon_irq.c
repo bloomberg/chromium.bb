@@ -37,7 +37,7 @@
 
 static void radeon_irq_set_state(drm_device_t *dev, u32 mask, int state)
 {
-	drm_radeon_private_t *dev_priv = (drm_radeon_private_t *) dev->dev_private;
+	drm_radeon_private_t *dev_priv = dev->dev_private;
 
 	if (state)
 		dev_priv->irq_enable_reg |= mask;
@@ -84,7 +84,8 @@ void radeon_disable_vblank(drm_device_t *dev, int crtc)
 static __inline__ u32 radeon_acknowledge_irqs(drm_radeon_private_t * dev_priv,
 					      u32 mask)
 {
-	u32 irqs = RADEON_READ(RADEON_GEN_INT_STATUS) & mask;
+	u32 irqs = RADEON_READ(RADEON_GEN_INT_STATUS) &
+		(mask | RADEON_CRTC_VBLANK_MASK | RADEON_CRTC2_VBLANK_MASK);
 	if (irqs)
 		RADEON_WRITE(RADEON_GEN_INT_STATUS, irqs);
 	return irqs;
