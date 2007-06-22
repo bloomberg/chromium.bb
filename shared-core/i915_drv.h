@@ -396,4 +396,17 @@ extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
 
 #define READ_BREADCRUMB(dev_priv)  (((volatile u32*)(dev_priv->hw_status_page))[5])
 #define READ_HWSP(dev_priv, reg)  (((volatile u32*)(dev_priv->hw_status_page))[reg])
+
+#define IS_I965G(dev)  (dev->pci_device == 0x2972 || \
+			dev->pci_device == 0x2982 || \
+			dev->pci_device == 0x2992 || \
+			dev->pci_device == 0x29A2 || \
+			dev->pci_device == 0x2A02 || \
+			dev->pci_device == 0x2A12)
+
+#define IS_G33(dev)    (dev->pci_device == 0x29C2 || \
+		   	dev->pci_device == 0x29B2 || \
+			dev->pci_device == 0x29D2) 
+
+
 #endif

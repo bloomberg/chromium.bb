@@ -832,6 +832,7 @@ typedef struct drm_device {
 					/* for wraparound handling */
 	u32 *vblank_offset;		/* used to track how many vblanks */
 	u32 *vblank_premodeset;		/*  were lost during modeset */
+	struct timer_list vblank_disable_timer;
 
 	unsigned long max_vblank_count; /**< size of vblank counter register */
 	spinlock_t tasklet_lock;	/**< For drm_locked_tasklet */

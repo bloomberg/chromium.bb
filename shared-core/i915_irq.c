@@ -285,6 +285,9 @@ u32 i915_get_vblank_counter(drm_device_t *dev, int crtc)
 	unsigned long low_frame = crtc ? PIPEBFRAMEPIXEL : PIPEAFRAMEPIXEL;
 	u32 high1, high2, low, count;
 
+	if (!IS_I965G(dev))
+		return 0;
+
 	/*
 	 * High & low register fields aren't synchronized, so make sure
 	 * we get a low value that's stable across two reads of the high
@@ -315,7 +318,6 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	pipeb_stats = I915_READ(I915REG_PIPEBSTAT);
 		
 	temp = I915_READ16(I915REG_INT_IDENTITY_R);
-	temp &= (dev_priv->irq_enable_reg | USER_INT_FLAG);
 
 #if 0
 	DRM_DEBUG("%s flag=%08x\n", __FUNCTION__, temp);
@@ -324,7 +326,10 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		return IRQ_NONE;
 
 	I915_WRITE16(I915REG_INT_IDENTITY_R, temp);
-	(void) I915_READ16(I915REG_INT_IDENTITY_R);
+	(void) I915_READ16(I915REG_INT_IDENTITY_R); /* Flush posted write */
+
+	temp &= (dev_priv->irq_enable_reg | USER_INT_FLAG | VSYNC_PIPEA_FLAG |
+		 VSYNC_PIPEB_FLAG);
 
 	dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
@@ -333,6 +338,13 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 #ifdef I915_HAVE_FENCE
 		i915_fence_handler(dev);
 #endif
+	}
+
+	if (!IS_I965G(dev)) {
+		if (temp & VSYNC_PIPEA_FLAG)
+			atomic_inc(&dev->_vblank_count[0]);
+		if (temp & VSYNC_PIPEB_FLAG)
+			atomic_inc(&dev->_vblank_count[1]);
 	}
 
 	/*
@@ -482,6 +494,9 @@ int i915_enable_vblank(drm_device_t *dev, int crtc)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
+	if (!IS_I965G(dev))
+		return 0;
+
 	switch (crtc) {
 	case 0:
 		dev_priv->irq_enable_reg |= VSYNC_PIPEA_FLAG;
@@ -503,6 +518,9 @@ int i915_enable_vblank(drm_device_t *dev, int crtc)
 void i915_disable_vblank(drm_device_t *dev, int crtc)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+
+	if (!IS_I965G(dev))
+		return;
 
 	switch (crtc) {
 	case 0:
@@ -762,6 +780,11 @@ int i915_driver_irq_postinstall(drm_device_t * dev)
 		return ret;
 
 	dev->max_vblank_count = 0xffffff; /* only 24 bits of frame count */
+
+	if (!IS_I965G(dev)) {
+		dev_priv->irq_enable_reg |= VSYNC_PIPEA_FLAG | VSYNC_PIPEB_FLAG;
+		I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+	}
 
 	i915_enable_interrupt(dev);
 	DRM_INIT_WAITQUEUE(&dev_priv->irq_queue);
