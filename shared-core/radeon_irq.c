@@ -81,13 +81,15 @@ void radeon_disable_vblank(drm_device_t *dev, int crtc)
 	}
 }
 
-static __inline__ u32 radeon_acknowledge_irqs(drm_radeon_private_t * dev_priv,
-					      u32 mask)
+static __inline__ u32 radeon_acknowledge_irqs(drm_radeon_private_t * dev_priv)
 {
 	u32 irqs = RADEON_READ(RADEON_GEN_INT_STATUS) &
-		(mask | RADEON_CRTC_VBLANK_MASK | RADEON_CRTC2_VBLANK_MASK);
+		(RADEON_SW_INT_TEST | RADEON_CRTC_VBLANK_STAT |
+		 RADEON_CRTC2_VBLANK_STAT);
+
 	if (irqs)
 		RADEON_WRITE(RADEON_GEN_INT_STATUS, irqs);
+
 	return irqs;
 }
 
@@ -119,9 +121,11 @@ irqreturn_t radeon_driver_irq_handler(DRM_IRQ_ARGS)
 	/* Only consider the bits we're interested in - others could be used
 	 * outside the DRM
 	 */
-	stat = radeon_acknowledge_irqs(dev_priv, dev_priv->irq_enable_reg);
+	stat = radeon_acknowledge_irqs(dev_priv);
 	if (!stat)
 		return IRQ_NONE;
+
+	stat &= dev_priv->irq_enable_reg;
 
 	/* SW interrupt */
 	if (stat & RADEON_SW_INT_TEST)
@@ -247,9 +251,7 @@ void radeon_driver_irq_preinstall(drm_device_t * dev)
 	RADEON_WRITE(RADEON_GEN_INT_CNTL, 0);
 
 	/* Clear bits if they're already high */
-	radeon_acknowledge_irqs(dev_priv, (RADEON_SW_INT_TEST_ACK |
-					   RADEON_CRTC_VBLANK_STAT |
-					   RADEON_CRTC2_VBLANK_STAT));
+	radeon_acknowledge_irqs(dev_priv);
 }
 
 int radeon_driver_irq_postinstall(drm_device_t * dev)
