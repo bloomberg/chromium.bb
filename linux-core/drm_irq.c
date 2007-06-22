@@ -77,10 +77,22 @@ int drm_irq_by_busid(struct inode *inode, struct file *filp,
 	return 0;
 }
 
+static void vblank_disable_fn(unsigned long arg)
+{
+	drm_device_t *dev = (drm_device_t *)arg;
+	int i;
+
+	for (i = 0; i < dev->num_crtcs; i++)
+		if (atomic_read(&dev->vblank_refcount[i]) == 0)
+			dev->driver->disable_vblank(dev, i);
+}
+
 int drm_vblank_init(drm_device_t *dev, int num_crtcs)
 {
 	int i, ret = -ENOMEM;
 
+	setup_timer(&dev->vblank_disable_timer, vblank_disable_fn,\
+		    (unsigned long)dev);
 	spin_lock_init(&dev->vbl_lock);
 	atomic_set(&dev->vbl_signal_pending, 0);
 	dev->num_crtcs = num_crtcs;
@@ -377,9 +389,10 @@ EXPORT_SYMBOL(drm_vblank_get);
  */
 void drm_vblank_put(drm_device_t *dev, int crtc)
 {
-	/* Last user can disable interrupts */
+	/* Last user schedules interrupt disable */
 	if (atomic_dec_and_test(&dev->vblank_refcount[crtc]))
-		dev->driver->disable_vblank(dev, crtc);
+		mod_timer(&dev->vblank_disable_timer,
+			  round_jiffies_relative(DRM_HZ));
 }
 EXPORT_SYMBOL(drm_vblank_put);
 
