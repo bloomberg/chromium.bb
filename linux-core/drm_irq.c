@@ -105,18 +105,18 @@ int drm_vblank_init(drm_device_t *dev, int num_crtcs)
 	if (!dev->vblank_refcount)
 		goto err;
 
-	dev->last_vblank = drm_alloc(sizeof(u32) * num_crtcs,
-				     DRM_MEM_DRIVER);
+	dev->last_vblank = drm_calloc(1, sizeof(u32) * num_crtcs,
+				      DRM_MEM_DRIVER);
 	if (!dev->last_vblank)
 		goto err;
 
-	dev->vblank_premodeset = drm_alloc(sizeof(u32) * num_crtcs,
-					   DRM_MEM_DRIVER);
+	dev->vblank_premodeset = drm_calloc(1, sizeof(u32) * num_crtcs,
+					    DRM_MEM_DRIVER);
 	if (!dev->vblank_premodeset)
 		goto err;
 
-	dev->vblank_offset = drm_alloc(sizeof(u32) * num_crtcs,
-				       DRM_MEM_DRIVER);
+	dev->vblank_offset = drm_calloc(1, sizeof(u32) * num_crtcs,
+					DRM_MEM_DRIVER);
 	if (!dev->vblank_offset)
 		goto err;
 
@@ -126,9 +126,6 @@ int drm_vblank_init(drm_device_t *dev, int num_crtcs)
 		INIT_LIST_HEAD(&dev->vbl_sigs[i]);
 		atomic_set(&dev->_vblank_count[i], 0);
 		atomic_set(&dev->vblank_refcount[i], 0);
-		dev->last_vblank[i] = 0;
-		dev->vblank_premodeset[i] = 0;
-		dev->vblank_offset[i] = 0;
 	}
 
 	return 0;
