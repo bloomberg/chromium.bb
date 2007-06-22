@@ -554,7 +554,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 			return ret;
 		DRM_WAIT_ON(ret, dev->vbl_queue[crtc], 3 * DRM_HZ,
 			    (((cur_vblank = drm_vblank_count(dev, crtc))
-			      - seq) <= (1 << 23)));
+			      - vblwait.request.sequence) <= (1 << 23)));
 		drm_vblank_put(dev, crtc);
 		do_gettimeofday(&now);
 		vblwait.reply.tval_sec = now.tv_sec;
