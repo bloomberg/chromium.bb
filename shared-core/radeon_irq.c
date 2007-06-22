@@ -72,9 +72,13 @@ irqreturn_t radeon_driver_irq_handler(DRM_IRQ_ARGS)
 	/* Only consider the bits we're interested in - others could be used
 	 * outside the DRM
 	 */
-	stat = radeon_acknowledge_irqs(dev_priv, dev_priv->irq_enable_reg);
+	stat = radeon_acknowledge_irqs(dev_priv, (RADEON_SW_INT_TEST_ACK |
+						  RADEON_CRTC_VBLANK_STAT |
+						  RADEON_CRTC2_VBLANK_STAT));
 	if (!stat)
 		return IRQ_NONE;
+
+	stat &= dev_priv->irq_enable_reg;
 
 	/* SW interrupt */
 	if (stat & RADEON_SW_INT_TEST) {
@@ -265,7 +269,8 @@ void radeon_driver_irq_preinstall(drm_device_t * dev)
 
 	/* Clear bits if they're already high */
 	radeon_acknowledge_irqs(dev_priv, (RADEON_SW_INT_TEST_ACK |
-					   RADEON_CRTC_VBLANK_STAT));
+					   RADEON_CRTC_VBLANK_STAT |
+					   RADEON_CRTC2_VBLANK_STAT));
 }
 
 void radeon_driver_irq_postinstall(drm_device_t * dev)
