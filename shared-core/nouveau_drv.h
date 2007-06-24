@@ -116,13 +116,23 @@ struct nouveau_engine_func {
 	} fb;
 
 	struct {
-		int	(*init)(drm_device_t *dev);
-		void	(*takedown)(drm_device_t *dev);
+		int	(*init)(drm_device_t *);
+		void	(*takedown)(drm_device_t *);
+
+		int	(*create_context)(drm_device_t *, int channel);
+		void	(*destroy_context)(drm_device_t *, int channel);
+		int	(*load_context)(drm_device_t *, int channel);
+		int	(*save_context)(drm_device_t *, int channel);
 	} graph;
 
 	struct {
-		int	(*init)(drm_device_t *dev);
-		void	(*takedown)(drm_device_t *dev);
+		int	(*init)(drm_device_t *);
+		void	(*takedown)(drm_device_t *);
+
+		int	(*create_context)(drm_device_t *, int channel);
+		void	(*destroy_context)(drm_device_t *, int channel);
+		int	(*load_context)(drm_device_t *, int channel);
+		int	(*save_context)(drm_device_t *, int channel);
 	} fifo;
 };
 
