@@ -261,6 +261,12 @@ extern void nv04_fifo_destroy_context(drm_device_t *dev, int channel);
 extern int  nv04_fifo_load_context(drm_device_t *dev, int channel);
 extern int  nv04_fifo_save_context(drm_device_t *dev, int channel);
 
+/* nv10_fifo.c */
+extern int  nv10_fifo_create_context(drm_device_t *dev, int channel);
+extern void nv10_fifo_destroy_context(drm_device_t *dev, int channel);
+extern int  nv10_fifo_load_context(drm_device_t *dev, int channel);
+extern int  nv10_fifo_save_context(drm_device_t *dev, int channel);
+
 /* nv40_fifo.c */
 extern int  nv40_fifo_create_context(drm_device_t *, int channel);
 extern void nv40_fifo_destroy_context(drm_device_t *, int channel);

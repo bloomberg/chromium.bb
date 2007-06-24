@@ -106,6 +106,17 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->graph.takedown	= nv10_graph_takedown;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
+		if (dev_priv->chipset < 0x17) {
+		engine->fifo.create_context	= nv04_fifo_create_context;
+		engine->fifo.destroy_context	= nv04_fifo_destroy_context;
+		engine->fifo.load_context	= nv04_fifo_load_context;
+		engine->fifo.save_context	= nv04_fifo_save_context;
+		} else {
+		engine->fifo.create_context	= nv10_fifo_create_context;
+		engine->fifo.destroy_context	= nv10_fifo_destroy_context;
+		engine->fifo.load_context	= nv10_fifo_load_context;
+		engine->fifo.save_context	= nv10_fifo_save_context;
+		}
 		break;
 	case 0x20:
 		engine->mc.init		= nv04_mc_init;
@@ -118,6 +129,10 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->graph.takedown	= nv20_graph_takedown;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
+		engine->fifo.create_context	= nv10_fifo_create_context;
+		engine->fifo.destroy_context	= nv10_fifo_destroy_context;
+		engine->fifo.load_context	= nv10_fifo_load_context;
+		engine->fifo.save_context	= nv10_fifo_save_context;
 		break;
 	case 0x30:
 		engine->mc.init		= nv04_mc_init;
@@ -130,6 +145,10 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->graph.takedown	= nv30_graph_takedown;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
+		engine->fifo.create_context	= nv10_fifo_create_context;
+		engine->fifo.destroy_context	= nv10_fifo_destroy_context;
+		engine->fifo.load_context	= nv10_fifo_load_context;
+		engine->fifo.save_context	= nv10_fifo_save_context;
 		break;
 	case 0x40:
 		engine->mc.init		= nv40_mc_init;

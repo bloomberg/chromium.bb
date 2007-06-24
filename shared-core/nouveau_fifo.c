@@ -238,138 +238,6 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 	return 0;
 }
 
-#define RAMFC_WR(offset, val) NV_WRITE(fifoctx + NV10_RAMFC_##offset, (val))
-static void nouveau_nv10_context_init(drm_device_t *dev, int channel)
-{
-        drm_nouveau_private_t *dev_priv = dev->dev_private;
-        struct nouveau_object *cb_obj;
-        uint32_t fifoctx;
-        int ctx_size = nouveau_fifo_ctx_size(dev);
-        int i;
-        cb_obj  = dev_priv->fifos[channel].cmdbuf_obj;
-        fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*ctx_size;
-
-        for (i=0;i<ctx_size;i+=4)
-                NV_WRITE(fifoctx + i, 0);
-
-        /* Fill entries that are seen filled in dumps of nvidia driver just
-         * after channel's is put into DMA mode
-         */
-
-        RAMFC_WR(DMA_INSTANCE  , nouveau_chip_instance_get(dev,
-                                cb_obj->instance));
-
-        RAMFC_WR(DMA_FETCH, NV_PFIFO_CACHE1_DMA_FETCH_TRIG_112_BYTES | 
-                        NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
-                        NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_4     |
-#ifdef __BIG_ENDIAN
-                        NV_PFIFO_CACHE1_BIG_ENDIAN |
-#endif
-			0x00000000);
-}
-
-static void nouveau_nv30_context_init(drm_device_t *dev, int channel)
-{
-        drm_nouveau_private_t *dev_priv = dev->dev_private;
-        struct nouveau_fifo *chan = &dev_priv->fifos[channel];
-	struct nouveau_object *cb_obj;
-	uint32_t fifoctx, grctx_inst, cb_inst, ctx_size = 64;
-	int i;
-
-	cb_obj = dev_priv->fifos[channel].cmdbuf_obj;
-        cb_inst = nouveau_chip_instance_get(dev, chan->cmdbuf_obj->instance);
-        grctx_inst = nouveau_chip_instance_get(dev, chan->ramin_grctx);
-        fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel * ctx_size;
-        
-        for (i = 0; i < ctx_size; i += 4)
-                NV_WRITE(fifoctx + i, 0);
-
-        RAMFC_WR(REF_CNT,       NV_READ(NV10_PFIFO_CACHE1_REF_CNT));
-        RAMFC_WR(DMA_INSTANCE,  cb_inst);
-        RAMFC_WR(DMA_STATE,     NV_READ(NV04_PFIFO_CACHE1_DMA_STATE));
-        RAMFC_WR(DMA_FETCH,     NV_PFIFO_CACHE1_DMA_FETCH_TRIG_128_BYTES | 
-                                NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
-                                NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_8 |
-#ifdef __BIG_ENDIAN
-                                NV_PFIFO_CACHE1_BIG_ENDIAN |
-#endif
-                                0x00000000);
-        
-        RAMFC_WR(ENGINE,                NV_READ(NV04_PFIFO_CACHE1_ENGINE));
-        RAMFC_WR(PULL1_ENGINE,          NV_READ(NV04_PFIFO_CACHE1_PULL1)); 
-        RAMFC_WR(ACQUIRE_VALUE,         NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_VALUE));
-        RAMFC_WR(ACQUIRE_TIMESTAMP,     NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_TIMESTAMP));
-        RAMFC_WR(ACQUIRE_TIMEOUT,       NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_TIMEOUT));
-        RAMFC_WR(SEMAPHORE,             NV_READ(NV10_PFIFO_CACHE1_SEMAPHORE));
-}
-
-#if 0
-static void nouveau_nv10_context_save(drm_device_t *dev)
-{
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint32_t fifoctx;
-	int channel;
-
-	channel = NV_READ(NV03_PFIFO_CACHE1_PUSH1) & (nouveau_fifo_number(dev)-1);
-	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*64;
-
-	RAMFC_WR(DMA_PUT          , NV_READ(NV04_PFIFO_CACHE1_DMA_PUT));
-	RAMFC_WR(DMA_GET          , NV_READ(NV04_PFIFO_CACHE1_DMA_GET));
-	RAMFC_WR(REF_CNT          , NV_READ(NV10_PFIFO_CACHE1_REF_CNT));
-	RAMFC_WR(DMA_INSTANCE     , NV_READ(NV04_PFIFO_CACHE1_DMA_INSTANCE));
-	RAMFC_WR(DMA_STATE        , NV_READ(NV04_PFIFO_CACHE1_DMA_STATE));
-	RAMFC_WR(DMA_FETCH        , NV_READ(NV04_PFIFO_CACHE1_DMA_FETCH));
-	RAMFC_WR(ENGINE           , NV_READ(NV04_PFIFO_CACHE1_ENGINE));
-	RAMFC_WR(PULL1_ENGINE     , NV_READ(NV04_PFIFO_CACHE1_PULL1));
-	RAMFC_WR(ACQUIRE_VALUE    , NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_VALUE));
-	RAMFC_WR(ACQUIRE_TIMESTAMP, NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_TIMESTAMP));
-	RAMFC_WR(ACQUIRE_TIMEOUT  , NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_TIMEOUT));
-	RAMFC_WR(SEMAPHORE        , NV_READ(NV10_PFIFO_CACHE1_SEMAPHORE));
-	RAMFC_WR(DMA_SUBROUTINE   , NV_READ(NV10_PFIFO_CACHE1_DMA_SUBROUTINE));
-}
-#endif
-#undef RAMFC_WR
-
-/* This function should load values from RAMFC into PFIFO, but for now
- * it just clobbers PFIFO with what nouveau_fifo_alloc used to setup
- * unconditionally.
- */
-static void
-nouveau_fifo_context_restore(drm_device_t *dev, int channel)
-{
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
-	uint32_t cb_inst;
-
-	cb_inst = nouveau_chip_instance_get(dev, chan->cmdbuf_obj->instance);
-
-	// FIXME check if we need to refill the time quota with something like NV_WRITE(0x204C, 0x0003FFFF);
-
-	if (dev_priv->card_type >= NV_40)
-		NV_WRITE(NV03_PFIFO_CACHE1_PUSH1, 0x00010000|channel);
-	else
-		NV_WRITE(NV03_PFIFO_CACHE1_PUSH1, 0x00000100|channel);
-
-	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUT, 0 /*RAMFC_DMA_PUT*/);
-	NV_WRITE(NV04_PFIFO_CACHE1_DMA_GET, 0 /*RAMFC_DMA_GET*/);
-	NV_WRITE(NV04_PFIFO_CACHE1_DMA_INSTANCE, cb_inst);
-	NV_WRITE(NV04_PFIFO_SIZE , 0x0000FFFF);
-	NV_WRITE(NV04_PFIFO_CACHE1_HASH, 0x0000FFFF);
-
-	NV_WRITE(NV04_PFIFO_CACHE0_PULL1, 0x00000001);
-	NV_WRITE(NV04_PFIFO_CACHE1_DMA_CTL, 0x00000000);
-	NV_WRITE(NV04_PFIFO_CACHE1_DMA_STATE, 0x00000000);
-	NV_WRITE(NV04_PFIFO_CACHE1_ENGINE, 0x00000000);
-
-	NV_WRITE(NV04_PFIFO_CACHE1_DMA_FETCH,	NV_PFIFO_CACHE1_DMA_FETCH_TRIG_112_BYTES |
-					NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
-					NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_4 |
-#ifdef __BIG_ENDIAN
-					NV_PFIFO_CACHE1_BIG_ENDIAN |
-#endif
-					0x00000000);
-}
-
 /* allocates and initializes a fifo for user space consumption */
 static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 {
@@ -459,28 +327,10 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 	}
 
 	/* Construct inital RAMFC for new channel */
-	switch (dev_priv->card_type) {
-	case NV_10:
-	case NV_17:
-		nouveau_nv10_context_init(dev, channel);
-		break;
-	case NV_20:
-		nouveau_nv10_context_init(dev, channel);
-		break;
-	case NV_30:
-		nouveau_nv30_context_init(dev, channel);
-		break;
-	default:
-		if (!engine->fifo.create_context) {
-			DRM_ERROR("fifo.create_context == NULL\n");
-			return DRM_ERR(EINVAL);
-		}
-
-		ret = engine->fifo.create_context(dev, channel);
-		if (ret) {
-			nouveau_fifo_free(dev, channel);
-			return ret;
-		}
+	ret = engine->fifo.create_context(dev, channel);
+	if (ret) {
+		nouveau_fifo_free(dev, channel);
+		return ret;
 	}
 
 	/* enable the fifo dma operation */
@@ -494,10 +344,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 	 * other case, the GPU will handle this when it switches contexts.
 	 */
 	if (dev_priv->fifo_alloc_count == 0) {
-		if (engine->fifo.load_context)
-			engine->fifo.load_context(dev, channel);
-		else
-			nouveau_fifo_context_restore(dev, channel);
+		engine->fifo.load_context(dev, channel);
 
 		if (engine->graph.load_context) {
 			ret = engine->graph.load_context(dev, channel);
@@ -553,19 +400,7 @@ void nouveau_fifo_free(drm_device_t* dev, int channel)
 	NV_WRITE(NV04_PFIFO_MODE, NV_READ(NV04_PFIFO_MODE)&~(1<<channel));
 	// FIXME XXX needs more code
 	
-	/* Clean RAMFC */
-	if (engine->fifo.destroy_context)
-		engine->fifo.destroy_context(dev, channel);
-	else {
-		for (i=0;i<ctx_size;i+=4) {
-			DRM_DEBUG("RAMFC +%02x: 0x%08x\n",
-				  i, NV_READ(NV_RAMIN +
-					     dev_priv->ramfc_offset + 
-					     channel*ctx_size + i));
-			NV_WRITE(NV_RAMIN + dev_priv->ramfc_offset +
-					channel*ctx_size + i, 0);
-		}
-	}
+	engine->fifo.destroy_context(dev, channel);
 
 	/* Cleanup PGRAPH state */
 	if (engine->graph.destroy_context)
