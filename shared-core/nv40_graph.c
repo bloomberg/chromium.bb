@@ -1,7 +1,32 @@
+/*
+ * Copyright (C) 2007 Ben Skeggs.
+ * All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial
+ * portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE COPYRIGHT OWNER(S) AND/OR ITS SUPPLIERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #include "drmP.h"
 #include "drm.h"
 #include "nouveau_drv.h"
-#include "nouveau_drm.h"
 
 /* The sizes are taken from the difference between the start of two
  * grctx addresses while running the nvidia driver.  Probably slightly
@@ -755,7 +780,7 @@ static void nv4e_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 }
 
 int
-nv40_graph_context_create(drm_device_t *dev, int channel)
+nv40_graph_create_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
@@ -808,89 +833,94 @@ nv40_graph_context_create(drm_device_t *dev, int channel)
 	return 0;
 }
 
+void
+nv40_graph_destroy_context(drm_device_t *dev, int channel)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+
+	if (chan->ramin_grctx) {
+		nouveau_instmem_free(dev, chan->ramin_grctx);
+		chan->ramin_grctx = NULL;
+	}
+}
+
+static int
+nv40_graph_transfer_context(drm_device_t *dev, uint32_t inst, int save)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	uint32_t old_cp, tv = 1000;
+	int i;
+
+	old_cp = NV_READ(0x400784);
+	NV_WRITE(0x400784, inst);
+	NV_WRITE(0x400310, save ? 0x20 : 0x40);
+	NV_WRITE(0x400304, 1);
+
+	for (i = 0; i < tv; i++) {
+		if (NV_READ(0x40030c) == 0)
+			break;
+	}
+	NV_WRITE(0x400784, old_cp);
+
+	if (i == tv) {
+		DRM_ERROR("failed: inst=0x%08x save=%d\n", inst, save);
+		DRM_ERROR("0x40030C = 0x%08x\n", NV_READ(0x40030c));
+		return DRM_ERR(EBUSY);
+	}
+
+	return 0;
+}
+
 /* Save current context (from PGRAPH) into the channel's context
  *XXX: fails sometimes, not sure why..
  */
-void
-nv40_graph_context_save_current(drm_device_t *dev)
+int
+nv40_graph_save_context(drm_device_t *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv =
-		(drm_nouveau_private_t *)dev->dev_private;
-	uint32_t instance;
-	int i;
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	uint32_t inst;
 
-	NV_WRITE(NV04_PGRAPH_FIFO, 0);
+	if (!chan->ramin_grctx)
+		return DRM_ERR(EINVAL);
+	inst = nouveau_chip_instance_get(dev, chan->ramin_grctx);
 
-	instance = NV_READ(0x40032C) & 0xFFFFF;
-	if (!instance) {
-		NV_WRITE(NV04_PGRAPH_FIFO, 1);
-		return;
-	}
-
-	NV_WRITE(0x400784, instance);
-	NV_WRITE(0x400310, NV_READ(0x400310) | 0x20);
-	NV_WRITE(0x400304, 1);
-	/* just in case, we don't want to spin in-kernel forever */
-	for (i=0; i<1000; i++) {
-		if (NV_READ(0x40030C) == 0)
-			break;
-	}
-	if (i==1000) {
-		DRM_ERROR("failed to save current grctx to ramin\n");
-		DRM_ERROR("instance = 0x%08x\n", NV_READ(0x40032C));
-		DRM_ERROR("0x40030C = 0x%08x\n", NV_READ(0x40030C));
-		NV_WRITE(NV04_PGRAPH_FIFO, 1);
-		return;
-	}
-
-	NV_WRITE(NV04_PGRAPH_FIFO, 1);
+	return nv40_graph_transfer_context(dev, inst, 1);
 }
 
 /* Restore the context for a specific channel into PGRAPH
  * XXX: fails sometimes.. not sure why
  */
-void
-nv40_graph_context_restore(drm_device_t *dev, int channel)
+int
+nv40_graph_load_context(drm_device_t *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv =
-		(drm_nouveau_private_t *)dev->dev_private;
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
-	uint32_t instance;
-	int i;
+	uint32_t inst;
+	int ret;
 
-	instance = nouveau_chip_instance_get(dev, chan->ramin_grctx);
+	if (!chan->ramin_grctx)
+		return DRM_ERR(EINVAL);
+	inst = nouveau_chip_instance_get(dev, chan->ramin_grctx);
 
-	NV_WRITE(NV04_PGRAPH_FIFO, 0);
-	NV_WRITE(0x400784, instance);
-	NV_WRITE(0x400310, NV_READ(0x400310) | 0x40);
-	NV_WRITE(0x400304, 1);
-	/* just in case, we don't want to spin in-kernel forever */
-	for (i=0; i<1000; i++) {
-		if (NV_READ(0x40030C) == 0)
-			break;
-	}
-	if (i==1000) {
-		DRM_ERROR("failed to restore grctx for ch%d to PGRAPH\n",
-				channel);
-		DRM_ERROR("instance = 0x%08x\n", instance);
-		DRM_ERROR("0x40030C = 0x%08x\n", NV_READ(0x40030C));
-		NV_WRITE(NV04_PGRAPH_FIFO, 1);
-		return;
-	}
-
+	ret = nv40_graph_transfer_context(dev, inst, 0);
+	if (ret)
+		return ret;
 
 	/* 0x40032C, no idea of it's exact function.  Could simply be a
 	 * record of the currently active PGRAPH context.  It's currently
 	 * unknown as to what bit 24 does.  The nv ddx has it set, so we will
 	 * set it here too.
 	 */
-	NV_WRITE(0x40032C, instance | 0x01000000);
+	NV_WRITE(0x400784, inst);
+	NV_WRITE(0x40032C, inst | 0x01000000);
 	/* 0x32E0 records the instance address of the active FIFO's PGRAPH
 	 * context.  If at any time this doesn't match 0x40032C, you will
 	 * recieve PGRAPH_INTR_CONTEXT_SWITCH
 	 */
-	NV_WRITE(NV40_PFIFO_GRCTX_INSTANCE, instance);
-	NV_WRITE(NV04_PGRAPH_FIFO, 1);
+	NV_WRITE(NV40_PFIFO_GRCTX_INSTANCE, inst);
+	return 0;
 }
 
 /* Some voodoo that makes context switching work without the binary driver

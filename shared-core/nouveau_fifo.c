@@ -473,18 +473,17 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 				return ret;
 			}
 			break;
-		case NV_40:
-		case NV_44:
-			ret = nv40_graph_context_create(dev, channel);
+		default:
+			if (!engine->graph.create_context) {
+				DRM_ERROR("graph.create_context == NULL\n");
+				return DRM_ERR(EINVAL);
+			}
+			ret = engine->graph.create_context(dev, channel);
 			if (ret) {
 				nouveau_fifo_free(dev, channel);
 				return ret;
 			}
 			break;
-		default:
-			DRM_ERROR("grctx: unknown card type\n");
-			nouveau_fifo_free(dev, channel);
-			return DRM_ERR(EINVAL);
 	}
 
 	/* Construct inital RAMFC for new channel */
@@ -532,6 +531,13 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 		else
 			nouveau_fifo_context_restore(dev, channel);
 
+		if (engine->graph.load_context) {
+			ret = engine->graph.load_context(dev, channel);
+			if (ret) {
+				nouveau_fifo_free(dev, channel);
+				return ret;
+			}
+		} else
 		if (dev_priv->card_type >= NV_30) {
 			uint32_t inst;
 
@@ -594,8 +600,8 @@ void nouveau_fifo_free(drm_device_t* dev, int channel)
 	}
 
 	/* Cleanup PGRAPH state */
-	if (dev_priv->card_type >= NV_40)
-		nouveau_instmem_free(dev, chan->ramin_grctx);
+	if (engine->graph.destroy_context)
+		engine->graph.destroy_context(dev, channel);
 	else if (dev_priv->card_type >= NV_30) {
 	}
 	else if (dev_priv->card_type >= NV_20) {
