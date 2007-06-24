@@ -255,6 +255,12 @@ extern void nv10_fb_takedown(drm_device_t *dev);
 extern int  nv40_fb_init(drm_device_t *dev);
 extern void nv40_fb_takedown(drm_device_t *dev);
 
+/* nv04_fifo.c */
+extern int  nv04_fifo_create_context(drm_device_t *dev, int channel);
+extern void nv04_fifo_destroy_context(drm_device_t *dev, int channel);
+extern int  nv04_fifo_load_context(drm_device_t *dev, int channel);
+extern int  nv04_fifo_save_context(drm_device_t *dev, int channel);
+
 /* nv40_fifo.c */
 extern int  nv40_fifo_create_context(drm_device_t *, int channel);
 extern void nv40_fifo_destroy_context(drm_device_t *, int channel);

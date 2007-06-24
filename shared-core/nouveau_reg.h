@@ -404,7 +404,7 @@
 #define NV10_PFIFO_CACHE1_SEMAPHORE                        0x0000326C
 #define NV03_PFIFO_CACHE1_GET                              0x00003270
 #define NV04_PFIFO_CACHE1_ENGINE                           0x00003280
-#define NV10_PFIFO_CACHE1_DMA_DCOUNT                       0x000032A0
+#define NV04_PFIFO_CACHE1_DMA_DCOUNT                       0x000032A0
 #define NV40_PFIFO_GRCTX_INSTANCE                          0x000032E0
 #define NV40_PFIFO_UNK32E4                                 0x000032E4
 #define NV04_PFIFO_CACHE1_METHOD(i)                (0x00003800+(i*8))
@@ -427,7 +427,10 @@
 #define NV04_RAMFC_DMA_PUT                                       0x00
 #define NV04_RAMFC_DMA_GET                                       0x04
 #define NV04_RAMFC_DMA_INSTANCE                                  0x08
+#define NV04_RAMFC_DMA_STATE                                     0x0C
 #define NV04_RAMFC_DMA_FETCH                                     0x10
+#define NV04_RAMFC_ENGINE                                        0x14
+#define NV04_RAMFC_PULL1_ENGINE                                  0x18
 
 #define NV10_RAMFC_DMA_PUT                                       0x00
 #define NV10_RAMFC_DMA_GET                                       0x04

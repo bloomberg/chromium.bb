@@ -238,34 +238,6 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 	return 0;
 }
 
-#define RAMFC_WR(offset, val) NV_WRITE(fifoctx + NV04_RAMFC_##offset, (val))
-static void nouveau_nv04_context_init(drm_device_t *dev, int channel)
-{
-        drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_object *cb_obj;
-	uint32_t fifoctx, ctx_size = 32;
-	int i;
-
-	cb_obj = dev_priv->fifos[channel].cmdbuf_obj;
-
-	fifoctx=NV_RAMIN+dev_priv->ramfc_offset+channel*ctx_size;
-	
-        // clear the fifo context
-        for(i=0;i<ctx_size/4;i++)
-                NV_WRITE(fifoctx+4*i,0x0);
-
-	RAMFC_WR(DMA_INSTANCE	, nouveau_chip_instance_get(dev, cb_obj->instance));
-
-        RAMFC_WR(DMA_FETCH,	NV_PFIFO_CACHE1_DMA_FETCH_TRIG_112_BYTES |
-                                NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
-                                NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_4     |
-#ifdef __BIG_ENDIAN
-                                NV_PFIFO_CACHE1_BIG_ENDIAN |
-#endif
-				0x00000000);
-}
-#undef RAMFC_WR
-
 #define RAMFC_WR(offset, val) NV_WRITE(fifoctx + NV10_RAMFC_##offset, (val))
 static void nouveau_nv10_context_init(drm_device_t *dev, int channel)
 {
@@ -488,10 +460,6 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 
 	/* Construct inital RAMFC for new channel */
 	switch (dev_priv->card_type) {
-	case NV_04:
-	case NV_05:
-		nouveau_nv04_context_init(dev, channel);
-		break;
 	case NV_10:
 	case NV_17:
 		nouveau_nv10_context_init(dev, channel);

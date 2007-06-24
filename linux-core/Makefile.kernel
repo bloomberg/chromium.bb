@@ -25,7 +25,7 @@ nouveau-objs := nouveau_drv.o nouveau_state.o nouveau_fifo.o nouveau_mem.o \
 		nv04_timer.o \
 		nv04_mc.o nv40_mc.o \
 		nv04_fb.o nv10_fb.o nv40_fb.o \
-		nv40_fifo.o \
+		nv04_fifo.o nv40_fifo.o \
 		nv04_graph.o nv10_graph.o nv20_graph.o nv30_graph.o \
 		nv40_graph.o
 radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o r300_cmdbuf.o
