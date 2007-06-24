@@ -174,8 +174,9 @@ int nv30_graph_load_context(drm_device_t *dev, int channel)
 		return DRM_ERR(EINVAL);
 	inst = nouveau_chip_instance_get(dev, chan->ramin_grctx);
 
-	NV_WRITE(0x400784, inst);
-	NV_WRITE(0x400788, 1);
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_XFER,
+		 NV20_PGRAPH_CHANNEL_CTX_XFER_LOAD);
 
 	return nouveau_graph_wait_idle(dev);
 }
@@ -190,8 +191,9 @@ int nv30_graph_save_context(drm_device_t *dev, int channel)
 		return DRM_ERR(EINVAL);
 	inst = nouveau_chip_instance_get(dev, chan->ramin_grctx);
 
-	NV_WRITE(0x400784, inst);
-	NV_WRITE(0x400788, 2);
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_XFER,
+		 NV20_PGRAPH_CHANNEL_CTX_XFER_SAVE);
 
 	return nouveau_graph_wait_idle(dev);
 }

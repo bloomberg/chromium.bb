@@ -1304,20 +1304,23 @@ nv40_graph_transfer_context(drm_device_t *dev, uint32_t inst, int save)
 	uint32_t old_cp, tv = 1000;
 	int i;
 
-	old_cp = NV_READ(0x400784);
-	NV_WRITE(0x400784, inst);
-	NV_WRITE(0x400310, save ? 0x20 : 0x40);
-	NV_WRITE(0x400304, 1);
+	old_cp = NV_READ(NV20_PGRAPH_CHANNEL_CTX_POINTER);
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);
+	NV_WRITE(NV40_PGRAPH_CTXCTL_0310,
+		 save ? NV40_PGRAPH_CTXCTL_0310_XFER_SAVE :
+		 	NV40_PGRAPH_CTXCTL_0310_XFER_LOAD);
+	NV_WRITE(NV40_PGRAPH_CTXCTL_0304, NV40_PGRAPH_CTXCTL_0304_XFER_CTX);
 
 	for (i = 0; i < tv; i++) {
-		if (NV_READ(0x40030c) == 0)
+		if (NV_READ(NV40_PGRAPH_CTXCTL_030C) == 0)
 			break;
 	}
-	NV_WRITE(0x400784, old_cp);
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, old_cp);
 
 	if (i == tv) {
 		DRM_ERROR("failed: inst=0x%08x save=%d\n", inst, save);
-		DRM_ERROR("0x40030C = 0x%08x\n", NV_READ(0x40030c));
+		DRM_ERROR("0x40030C = 0x%08x\n",
+			  NV_READ(NV40_PGRAPH_CTXCTL_030C));
 		return DRM_ERR(EBUSY);
 	}
 
@@ -1365,8 +1368,10 @@ nv40_graph_load_context(drm_device_t *dev, int channel)
 	 * unknown as to what bit 24 does.  The nv ddx has it set, so we will
 	 * set it here too.
 	 */
-	NV_WRITE(0x400784, inst);
-	NV_WRITE(0x40032C, inst | 0x01000000);
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);
+	NV_WRITE(NV40_PGRAPH_CTXCTL_CUR,
+		 (inst & NV40_PGRAPH_CTXCTL_CUR_INST_MASK) |
+		  NV40_PGRAPH_CTXCTL_CUR_LOADED);
 	/* 0x32E0 records the instance address of the active FIFO's PGRAPH
 	 * context.  If at any time this doesn't match 0x40032C, you will
 	 * recieve PGRAPH_INTR_CONTEXT_SWITCH
@@ -1631,15 +1636,15 @@ nv40_graph_init(drm_device_t *dev)
 		DRM_DEBUG("Loading context-switch voodoo\n");
 		i = 0;
 
-		NV_WRITE(0x400324, 0);
+		NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_INDEX, 0);
 		while (ctx_voodoo[i] != ~0) {
-			NV_WRITE(0x400328, ctx_voodoo[i]);
+			NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_DATA, ctx_voodoo[i]);
 			i++;
 		}
 	}	
 
 	/* No context present currently */
-	NV_WRITE(0x40032C, 0x00000000);
+	NV_WRITE(NV40_PGRAPH_CTXCTL_CUR, 0x00000000);
 
 	NV_WRITE(NV03_PGRAPH_INTR_EN, 0x00000000);
 	NV_WRITE(NV03_PGRAPH_INTR   , 0xFFFFFFFF);
