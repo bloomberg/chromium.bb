@@ -101,29 +101,29 @@ struct nouveau_config {
 
 struct nouveau_engine_func {
 	struct {
-		int	(*Init)(drm_device_t *dev);
-		void	(*Takedown)(drm_device_t *dev);
-	} Mc;
+		int	(*init)(drm_device_t *dev);
+		void	(*takedown)(drm_device_t *dev);
+	} mc;
 
 	struct {
-		int	(*Init)(drm_device_t *dev);
-		void	(*Takedown)(drm_device_t *dev);
-	} Timer;
+		int	(*init)(drm_device_t *dev);
+		void	(*takedown)(drm_device_t *dev);
+	} timer;
 
 	struct {
-		int	(*Init)(drm_device_t *dev);
-		void	(*Takedown)(drm_device_t *dev);
-	} Fb;
+		int	(*init)(drm_device_t *dev);
+		void	(*takedown)(drm_device_t *dev);
+	} fb;
 
 	struct {
-		int	(*Init)(drm_device_t *dev);
-		void	(*Takedown)(drm_device_t *dev);
-	} Graph;
+		int	(*init)(drm_device_t *dev);
+		void	(*takedown)(drm_device_t *dev);
+	} graph;
 
 	struct {
-		int	(*Init)(drm_device_t *dev);
-		void	(*Takedown)(drm_device_t *dev);
-	} Fifo;
+		int	(*init)(drm_device_t *dev);
+		void	(*takedown)(drm_device_t *dev);
+	} fifo;
 };
 
 typedef struct drm_nouveau_private {

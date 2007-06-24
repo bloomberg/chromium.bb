@@ -80,64 +80,64 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 
 	switch (dev_priv->chipset & 0xf0) {
 	case 0x00:
-		engine->Mc.Init		= nv04_mc_init;
-		engine->Mc.Takedown	= nv04_mc_takedown;
-		engine->Timer.Init	= nv04_timer_init;
-		engine->Timer.Takedown	= nv04_timer_takedown;
-		engine->Fb.Init		= nv04_fb_init;
-		engine->Fb.Takedown	= nv04_fb_takedown;
-		engine->Graph.Init	= nv04_graph_init;
-		engine->Graph.Takedown	= nv04_graph_takedown;
-		engine->Fifo.Init	= nouveau_fifo_init;
-		engine->Fifo.Takedown	= nouveau_stub_takedown;
+		engine->mc.init		= nv04_mc_init;
+		engine->mc.takedown	= nv04_mc_takedown;
+		engine->timer.init	= nv04_timer_init;
+		engine->timer.takedown	= nv04_timer_takedown;
+		engine->fb.init		= nv04_fb_init;
+		engine->fb.takedown	= nv04_fb_takedown;
+		engine->graph.init	= nv04_graph_init;
+		engine->graph.takedown	= nv04_graph_takedown;
+		engine->fifo.init	= nouveau_fifo_init;
+		engine->fifo.takedown	= nouveau_stub_takedown;
 		break;
 	case 0x10:
-		engine->Mc.Init		= nv04_mc_init;
-		engine->Mc.Takedown	= nv04_mc_takedown;
-		engine->Timer.Init	= nv04_timer_init;
-		engine->Timer.Takedown	= nv04_timer_takedown;
-		engine->Fb.Init		= nv10_fb_init;
-		engine->Fb.Takedown	= nv10_fb_takedown;
-		engine->Graph.Init	= nv10_graph_init;
-		engine->Graph.Takedown	= nv10_graph_takedown;
-		engine->Fifo.Init	= nouveau_fifo_init;
-		engine->Fifo.Takedown	= nouveau_stub_takedown;
+		engine->mc.init		= nv04_mc_init;
+		engine->mc.takedown	= nv04_mc_takedown;
+		engine->timer.init	= nv04_timer_init;
+		engine->timer.takedown	= nv04_timer_takedown;
+		engine->fb.init		= nv10_fb_init;
+		engine->fb.takedown	= nv10_fb_takedown;
+		engine->graph.init	= nv10_graph_init;
+		engine->graph.takedown	= nv10_graph_takedown;
+		engine->fifo.init	= nouveau_fifo_init;
+		engine->fifo.takedown	= nouveau_stub_takedown;
 		break;
 	case 0x20:
-		engine->Mc.Init		= nv04_mc_init;
-		engine->Mc.Takedown	= nv04_mc_takedown;
-		engine->Timer.Init	= nv04_timer_init;
-		engine->Timer.Takedown	= nv04_timer_takedown;
-		engine->Fb.Init		= nv10_fb_init;
-		engine->Fb.Takedown	= nv10_fb_takedown;
-		engine->Graph.Init	= nv20_graph_init;
-		engine->Graph.Takedown	= nv20_graph_takedown;
-		engine->Fifo.Init	= nouveau_fifo_init;
-		engine->Fifo.Takedown	= nouveau_stub_takedown;
+		engine->mc.init		= nv04_mc_init;
+		engine->mc.takedown	= nv04_mc_takedown;
+		engine->timer.init	= nv04_timer_init;
+		engine->timer.takedown	= nv04_timer_takedown;
+		engine->fb.init		= nv10_fb_init;
+		engine->fb.takedown	= nv10_fb_takedown;
+		engine->graph.init	= nv20_graph_init;
+		engine->graph.takedown	= nv20_graph_takedown;
+		engine->fifo.init	= nouveau_fifo_init;
+		engine->fifo.takedown	= nouveau_stub_takedown;
 		break;
 	case 0x30:
-		engine->Mc.Init		= nv04_mc_init;
-		engine->Mc.Takedown	= nv04_mc_takedown;
-		engine->Timer.Init	= nv04_timer_init;
-		engine->Timer.Takedown	= nv04_timer_takedown;
-		engine->Fb.Init		= nv10_fb_init;
-		engine->Fb.Takedown	= nv10_fb_takedown;
-		engine->Graph.Init	= nv30_graph_init;
-		engine->Graph.Takedown	= nv30_graph_takedown;
-		engine->Fifo.Init	= nouveau_fifo_init;
-		engine->Fifo.Takedown	= nouveau_stub_takedown;
+		engine->mc.init		= nv04_mc_init;
+		engine->mc.takedown	= nv04_mc_takedown;
+		engine->timer.init	= nv04_timer_init;
+		engine->timer.takedown	= nv04_timer_takedown;
+		engine->fb.init		= nv10_fb_init;
+		engine->fb.takedown	= nv10_fb_takedown;
+		engine->graph.init	= nv30_graph_init;
+		engine->graph.takedown	= nv30_graph_takedown;
+		engine->fifo.init	= nouveau_fifo_init;
+		engine->fifo.takedown	= nouveau_stub_takedown;
 		break;
 	case 0x40:
-		engine->Mc.Init		= nv40_mc_init;
-		engine->Mc.Takedown	= nv40_mc_takedown;
-		engine->Timer.Init	= nv04_timer_init;
-		engine->Timer.Takedown	= nv04_timer_takedown;
-		engine->Fb.Init		= nv40_fb_init;
-		engine->Fb.Takedown	= nv40_fb_takedown;
-		engine->Graph.Init	= nv40_graph_init;
-		engine->Graph.Takedown	= nv40_graph_takedown;
-		engine->Fifo.Init	= nouveau_fifo_init;
-		engine->Fifo.Takedown	= nouveau_stub_takedown;
+		engine->mc.init		= nv40_mc_init;
+		engine->mc.takedown	= nv40_mc_takedown;
+		engine->timer.init	= nv04_timer_init;
+		engine->timer.takedown	= nv04_timer_takedown;
+		engine->fb.init		= nv40_fb_init;
+		engine->fb.takedown	= nv40_fb_takedown;
+		engine->graph.init	= nv40_graph_init;
+		engine->graph.takedown	= nv40_graph_takedown;
+		engine->fifo.init	= nouveau_fifo_init;
+		engine->fifo.takedown	= nouveau_stub_takedown;
 		break;
 	case 0x50:
 	default:
@@ -184,23 +184,23 @@ static int nouveau_card_init(drm_device_t *dev)
 	/* Parse BIOS tables / Run init tables? */
 
 	/* PMC */
-	ret = engine->Mc.Init(dev);
+	ret = engine->mc.init(dev);
 	if (ret) return ret;
 
 	/* PTIMER */
-	ret = engine->Timer.Init(dev);
+	ret = engine->timer.init(dev);
 	if (ret) return ret;
 
 	/* PFB */
-	ret = engine->Fb.Init(dev);
+	ret = engine->fb.init(dev);
 	if (ret) return ret;
 
 	/* PGRAPH */
-	ret = engine->Graph.Init(dev);
+	ret = engine->graph.init(dev);
 	if (ret) return ret;
 
 	/* PFIFO */
-	ret = engine->Fifo.Init(dev);
+	ret = engine->fifo.init(dev);
 	if (ret) return ret;
 
 	/* what about PVIDEO/PCRTC/PRAMDAC etc? */
