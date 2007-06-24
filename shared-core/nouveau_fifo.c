@@ -289,34 +289,10 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000000);
 
 	/* Create a graphics context for new channel */
-	switch(dev_priv->card_type)
-	{
-		case NV_04:
-		case NV_05:
-			nv04_graph_context_create(dev, channel);
-			break;
-		case NV_10:
-		case NV_17:
-			nv10_graph_context_create(dev, channel);
-			break;
-		case NV_20:
-			ret = nv20_graph_context_create(dev, channel);
-			if (ret) {
-				nouveau_fifo_free(dev, channel);
-				return ret;
-			}
-			break;
-		default:
-			if (!engine->graph.create_context) {
-				DRM_ERROR("graph.create_context == NULL\n");
-				return DRM_ERR(EINVAL);
-			}
-			ret = engine->graph.create_context(dev, channel);
-			if (ret) {
-				nouveau_fifo_free(dev, channel);
-				return ret;
-			}
-			break;
+	ret = engine->graph.create_context(dev, channel);
+	if (ret) {
+		nouveau_fifo_free(dev, channel);
+		return ret;
 	}
 
 	/* Construct inital RAMFC for new channel */

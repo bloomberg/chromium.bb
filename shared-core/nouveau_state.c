@@ -88,6 +88,10 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->fb.takedown	= nv04_fb_takedown;
 		engine->graph.init	= nv04_graph_init;
 		engine->graph.takedown	= nv04_graph_takedown;
+		engine->graph.create_context	= nv04_graph_create_context;
+		engine->graph.destroy_context	= nv04_graph_destroy_context;
+		engine->graph.load_context	= nv04_graph_load_context;
+		engine->graph.save_context	= nv04_graph_save_context;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
 		engine->fifo.create_context	= nv04_fifo_create_context;
@@ -104,6 +108,10 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->fb.takedown	= nv10_fb_takedown;
 		engine->graph.init	= nv10_graph_init;
 		engine->graph.takedown	= nv10_graph_takedown;
+		engine->graph.create_context	= nv10_graph_create_context;
+		engine->graph.destroy_context	= nv10_graph_destroy_context;
+		engine->graph.load_context	= nv10_graph_load_context;
+		engine->graph.save_context	= nv10_graph_save_context;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
 		if (dev_priv->chipset < 0x17) {
@@ -127,6 +135,10 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->fb.takedown	= nv10_fb_takedown;
 		engine->graph.init	= nv20_graph_init;
 		engine->graph.takedown	= nv20_graph_takedown;
+		engine->graph.create_context	= nv20_graph_create_context;
+		engine->graph.destroy_context	= nv20_graph_destroy_context;
+		engine->graph.load_context	= nv20_graph_load_context;
+		engine->graph.save_context	= nv20_graph_save_context;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
 		engine->fifo.create_context	= nv10_fifo_create_context;

@@ -275,21 +275,30 @@ extern int  nv40_fifo_save_context(drm_device_t *, int channel);
 
 /* nv04_graph.c */
 extern void nouveau_nv04_context_switch(drm_device_t *dev);
-extern int nv04_graph_init(drm_device_t *dev);
+extern int  nv04_graph_init(drm_device_t *dev);
 extern void nv04_graph_takedown(drm_device_t *dev);
-extern int nv04_graph_context_create(drm_device_t *dev, int channel);
+extern int  nv04_graph_create_context(drm_device_t *dev, int channel);
+extern void nv04_graph_destroy_context(drm_device_t *dev, int channel);
+extern int  nv04_graph_load_context(drm_device_t *dev, int channel);
+extern int  nv04_graph_save_context(drm_device_t *dev, int channel);
 
 /* nv10_graph.c */
 extern void nouveau_nv10_context_switch(drm_device_t *dev);
-extern int nv10_graph_init(drm_device_t *dev);
+extern int  nv10_graph_init(drm_device_t *dev);
 extern void nv10_graph_takedown(drm_device_t *dev);
-extern int nv10_graph_context_create(drm_device_t *dev, int channel);
+extern int  nv10_graph_create_context(drm_device_t *dev, int channel);
+extern void nv10_graph_destroy_context(drm_device_t *dev, int channel);
+extern int  nv10_graph_load_context(drm_device_t *dev, int channel);
+extern int  nv10_graph_save_context(drm_device_t *dev, int channel);
 
 /* nv20_graph.c */
 extern void nouveau_nv20_context_switch(drm_device_t *dev);
-extern int nv20_graph_init(drm_device_t *dev);
+extern int  nv20_graph_init(drm_device_t *dev);
 extern void nv20_graph_takedown(drm_device_t *dev);
-extern int nv20_graph_context_create(drm_device_t *dev, int channel);
+extern int  nv20_graph_create_context(drm_device_t *dev, int channel);
+extern void nv20_graph_destroy_context(drm_device_t *dev, int channel);
+extern int  nv20_graph_load_context(drm_device_t *dev, int channel);
+extern int  nv20_graph_save_context(drm_device_t *dev, int channel);
 
 /* nv30_graph.c */
 extern int  nv30_graph_init(drm_device_t *dev);
