@@ -34,7 +34,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	6
+#define DRIVER_PATCHLEVEL	7
 
 #define NOUVEAU_FAMILY   0x0000FFFF
 #define NOUVEAU_FLAGS    0xFFFF0000
@@ -84,6 +84,10 @@ struct nouveau_fifo
 	struct mem_block      *cmdbuf_mem;
 	struct nouveau_object *cmdbuf_obj;
 	uint32_t pushbuf_base;
+	/* notifier memory */
+	struct mem_block *notifier_block;
+	struct mem_block *notifier_heap;
+	drm_local_map_t  *notifier_map;
 	/* PGRAPH context, for cards that keep it in RAMIN */
 	struct mem_block *ramin_grctx;
 	/* objects belonging to this fifo */
@@ -197,6 +201,12 @@ extern void nouveau_wait_for_idle(struct drm_device *dev);
 extern int nouveau_ioctl_card_init(DRM_IOCTL_ARGS);
 
 /* nouveau_mem.c */
+extern int               nouveau_mem_init_heap(struct mem_block **,
+					       uint64_t start, uint64_t size);
+extern struct mem_block *nouveau_mem_alloc_block(struct mem_block *,
+						 uint64_t size, int align2,
+						 DRMFILE);
+extern void              nouveau_mem_free_block(struct mem_block *);
 extern uint64_t          nouveau_mem_fb_amount(struct drm_device *dev);
 extern void              nouveau_mem_release(DRMFILE filp, struct mem_block *heap);
 extern int               nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS);
@@ -216,6 +226,13 @@ extern void              nouveau_instmem_w32(drm_nouveau_private_t *dev_priv,
 					     struct mem_block *mem, int index,
 					     uint32_t val);
 
+/* nouveau_notifier.c */
+extern int  nouveau_notifier_init_channel(drm_device_t *, int channel, DRMFILE);
+extern void nouveau_notifier_takedown_channel(drm_device_t *, int channel);
+extern int  nouveau_notifier_alloc(drm_device_t *, int channel,
+				   uint32_t handle, int cout, uint32_t *offset);
+extern int  nouveau_ioctl_notifier_alloc(DRM_IOCTL_ARGS);
+
 /* nouveau_fifo.c */
 extern int  nouveau_fifo_init(drm_device_t *dev);
 extern int  nouveau_fifo_number(drm_device_t *dev);
@@ -225,7 +242,13 @@ extern int  nouveau_fifo_owner(drm_device_t *dev, DRMFILE filp, int channel);
 extern void nouveau_fifo_free(drm_device_t *dev, int channel);
 
 /* nouveau_object.c */
+extern int  nouveau_object_init_channel(drm_device_t *, int channel,
+					uint32_t vram_handle,
+					uint32_t tt_handle);
+extern void nouveau_object_takedown_channel(drm_device_t *dev, int channel);
 extern void nouveau_object_cleanup(drm_device_t *dev, int channel);
+extern int  nouveau_ht_object_insert(drm_device_t *, int channel,
+				     uint32_t handle, struct nouveau_object *);
 extern struct nouveau_object *
 nouveau_object_gr_create(drm_device_t *dev, int channel, int class);
 extern struct nouveau_object *
@@ -233,8 +256,7 @@ nouveau_object_dma_create(drm_device_t *dev, int channel, int class,
 			  uint32_t offset, uint32_t size,
 			  int access, int target);
 extern void nouveau_object_free(drm_device_t *dev, struct nouveau_object *obj);
-extern int  nouveau_ioctl_object_init(DRM_IOCTL_ARGS);
-extern int  nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS);
+extern int  nouveau_ioctl_grobj_alloc(DRM_IOCTL_ARGS);
 extern uint32_t nouveau_chip_instance_get(drm_device_t *dev, struct mem_block *mem);
 
 /* nouveau_irq.c */

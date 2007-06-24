@@ -241,7 +241,8 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 }
 
 /* allocates and initializes a fifo for user space consumption */
-static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
+int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp,
+		       uint32_t vram_handle, uint32_t tt_handle)
 {
 	int ret;
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
@@ -277,6 +278,20 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 
 	/* allocate a command buffer, and create a dma object for the gpu */
 	ret = nouveau_fifo_cmdbuf_alloc(dev, channel);
+	if (ret) {
+		nouveau_fifo_free(dev, channel);
+		return ret;
+	}
+
+	/* Setup channel's default objects */
+	ret = nouveau_object_init_channel(dev, channel, vram_handle, tt_handle);
+	if (ret) {
+		nouveau_fifo_free(dev, channel);
+		return ret;
+	}
+
+	/* Allocate space for per-channel fixed notifier memory */
+	ret = nouveau_notifier_init_channel(dev, channel, filp);
 	if (ret) {
 		nouveau_fifo_free(dev, channel);
 		return ret;
@@ -370,6 +385,8 @@ void nouveau_fifo_free(drm_device_t* dev, int channel)
 	if (chan->cmdbuf_mem)
 		nouveau_mem_free(dev, chan->cmdbuf_mem);
 
+	nouveau_notifier_takedown_channel(dev, channel);
+
 	/* Destroy objects belonging to the channel */
 	nouveau_object_cleanup(dev, channel);
 
@@ -408,30 +425,42 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_fifo *chan;
 	drm_nouveau_fifo_alloc_t init;
 	int res;
 
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_fifo_alloc_t __user *) data,
 				 sizeof(init));
 
-	res = nouveau_fifo_alloc(dev, &init.channel, filp);
+	res = nouveau_fifo_alloc(dev, &init.channel, filp,
+				 init.fb_ctxdma_handle,
+				 init.tt_ctxdma_handle);
 	if (res)
 		return res;
+	chan = &dev_priv->fifos[init.channel];
 
-	init.put_base = dev_priv->fifos[init.channel].pushbuf_base;
+	init.put_base = chan->pushbuf_base;
 
 	/* make the fifo available to user space */
 	/* first, the fifo control regs */
 	init.ctrl      = dev_priv->mmio->offset + NV03_FIFO_REGS(init.channel);
 	init.ctrl_size = NV03_FIFO_REGS_SIZE;
 	res = drm_addmap(dev, init.ctrl, init.ctrl_size, _DRM_REGISTERS,
-			 0, &dev_priv->fifos[init.channel].regs);
+			 0, &chan->regs);
 	if (res != 0)
 		return res;
 
 	/* pass back FIFO map info to the caller */
-	init.cmdbuf      = dev_priv->fifos[init.channel].cmdbuf_mem->start;
-	init.cmdbuf_size = dev_priv->fifos[init.channel].cmdbuf_mem->size;
+	init.cmdbuf      = chan->cmdbuf_mem->start;
+	init.cmdbuf_size = chan->cmdbuf_mem->size;
+
+	/* and the notifier block */
+	init.notifier      = chan->notifier_block->start;
+	init.notifier_size = chan->notifier_block->size;
+	res = drm_addmap(dev, init.notifier, init.notifier_size, _DRM_REGISTERS,
+			 0, &chan->notifier_map);
+	if (res != 0)
+		return res;
 
 	DRM_COPY_TO_USER_IOCTL((drm_nouveau_fifo_alloc_t __user *)data,
 			       init, sizeof(init));
@@ -444,8 +473,8 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 
 drm_ioctl_desc_t nouveau_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_NOUVEAU_FIFO_ALLOC)] = {nouveau_ioctl_fifo_alloc, DRM_AUTH},	
-	[DRM_IOCTL_NR(DRM_NOUVEAU_OBJECT_INIT)] = {nouveau_ioctl_object_init, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_NOUVEAU_DMA_OBJECT_INIT)] = {nouveau_ioctl_dma_object_init, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_NOUVEAU_GROBJ_ALLOC)] = {nouveau_ioctl_grobj_alloc, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_NOUVEAU_NOTIFIER_ALLOC)] = {nouveau_ioctl_notifier_alloc, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_NOUVEAU_MEM_ALLOC)] = {nouveau_ioctl_mem_alloc, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_NOUVEAU_MEM_FREE)] = {nouveau_ioctl_mem_free, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_NOUVEAU_GETPARAM)] = {nouveau_ioctl_getparam, DRM_AUTH},

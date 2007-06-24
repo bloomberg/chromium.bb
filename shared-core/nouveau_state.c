@@ -260,9 +260,9 @@ void nouveau_preclose(drm_device_t * dev, DRMFILE filp)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 
+	nouveau_fifo_cleanup(dev, filp);
 	nouveau_mem_release(filp,dev_priv->fb_heap);
 	nouveau_mem_release(filp,dev_priv->agp_heap);
-	nouveau_fifo_cleanup(dev, filp);
 }
 
 /* first module load, setup the mmio/fb mapping */
@@ -282,7 +282,6 @@ int nouveau_firstopen(struct drm_device *dev)
 int nouveau_load(struct drm_device *dev, unsigned long flags)
 {
 	drm_nouveau_private_t *dev_priv;
-	int ret;
 
 	if (flags==NV_UNKNOWN)
 		return DRM_ERR(EINVAL);
