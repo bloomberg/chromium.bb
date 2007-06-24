@@ -72,6 +72,7 @@ static int nouveau_init_card_mappings(drm_device_t *dev)
 	return 0;
 }
 
+static int nouveau_stub_init(drm_device_t *dev) { return 0; }
 static void nouveau_stub_takedown(drm_device_t *dev) {}
 static int nouveau_init_engine_ptrs(drm_device_t *dev)
 {
@@ -187,6 +188,26 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->fifo.save_context	= nv40_fifo_save_context;
 		break;
 	case 0x50:
+	case 0x80: /* gotta love NVIDIA's consistency.. */
+		engine->mc.init		= nv50_mc_init;
+		engine->mc.takedown	= nv50_mc_takedown;
+		engine->timer.init	= nouveau_stub_init;
+		engine->timer.takedown	= nouveau_stub_takedown;
+		engine->fb.init		= nouveau_stub_init;
+		engine->fb.takedown	= nouveau_stub_takedown;
+		engine->graph.init	= nv50_graph_init;
+		engine->graph.takedown	= nv50_graph_takedown;
+		engine->graph.create_context	= nv50_graph_create_context;
+		engine->graph.destroy_context	= nv50_graph_destroy_context;
+		engine->graph.load_context	= nv50_graph_load_context;
+		engine->graph.save_context	= nv50_graph_save_context;
+		engine->fifo.init	= nv50_fifo_init;
+		engine->fifo.takedown	= nv50_fifo_takedown;
+		engine->fifo.create_context	= nv50_fifo_create_context;
+		engine->fifo.destroy_context	= nv50_fifo_destroy_context;
+		engine->fifo.load_context	= nv50_fifo_load_context;
+		engine->fifo.save_context	= nv50_fifo_save_context;
+		break;
 	default:
 		DRM_ERROR("NV%02x unsupported\n", dev_priv->chipset);
 		return 1;
