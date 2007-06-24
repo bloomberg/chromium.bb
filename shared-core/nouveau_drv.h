@@ -292,9 +292,12 @@ extern void nv20_graph_takedown(drm_device_t *dev);
 extern int nv20_graph_context_create(drm_device_t *dev, int channel);
 
 /* nv30_graph.c */
-extern int nv30_graph_init(drm_device_t *dev);
+extern int  nv30_graph_init(drm_device_t *dev);
 extern void nv30_graph_takedown(drm_device_t *dev);
-extern int nv30_graph_context_create(drm_device_t *dev, int channel);
+extern int  nv30_graph_create_context(drm_device_t *, int channel);
+extern void nv30_graph_destroy_context(drm_device_t *, int channel);
+extern int  nv30_graph_load_context(drm_device_t *, int channel);
+extern int  nv30_graph_save_context(drm_device_t *, int channel);
 
 /* nv40_graph.c */
 extern int  nv40_graph_init(drm_device_t *);

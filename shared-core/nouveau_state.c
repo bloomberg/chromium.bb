@@ -143,6 +143,10 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->fb.takedown	= nv10_fb_takedown;
 		engine->graph.init	= nv30_graph_init;
 		engine->graph.takedown	= nv30_graph_takedown;
+		engine->graph.create_context	= nv30_graph_create_context;
+		engine->graph.destroy_context	= nv30_graph_destroy_context;
+		engine->graph.load_context	= nv30_graph_load_context;
+		engine->graph.save_context	= nv30_graph_save_context;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
 		engine->fifo.create_context	= nv10_fifo_create_context;

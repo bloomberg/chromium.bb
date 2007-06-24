@@ -306,13 +306,6 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 				return ret;
 			}
 			break;
-		case NV_30:
-			ret = nv30_graph_context_create(dev, channel);
-			if (ret) {
-				nouveau_fifo_free(dev, channel);
-				return ret;
-			}
-			break;
 		default:
 			if (!engine->graph.create_context) {
 				DRM_ERROR("graph.create_context == NULL\n");
@@ -388,8 +381,6 @@ void nouveau_fifo_free(drm_device_t* dev, int channel)
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	nouveau_engine_func_t *engine = &dev_priv->Engine;
 	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
-	int i;
-	int ctx_size = nouveau_fifo_ctx_size(dev);
 
 	chan->used = 0;
 	DRM_INFO("%s: freeing fifo %d\n", __func__, channel);
