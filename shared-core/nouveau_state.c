@@ -138,6 +138,10 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->graph.takedown	= nv40_graph_takedown;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
+		engine->fifo.create_context	= nv40_fifo_create_context;
+		engine->fifo.destroy_context	= nv40_fifo_destroy_context;
+		engine->fifo.load_context	= nv40_fifo_load_context;
+		engine->fifo.save_context	= nv40_fifo_save_context;
 		break;
 	case 0x50:
 	default:

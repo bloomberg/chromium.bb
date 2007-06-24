@@ -100,7 +100,7 @@ struct nouveau_config {
 	} cmdbuf;
 };
 
-struct nouveau_engine_func {
+typedef struct nouveau_engine_func {
 	struct {
 		int	(*init)(drm_device_t *dev);
 		void	(*takedown)(drm_device_t *dev);
@@ -135,7 +135,7 @@ struct nouveau_engine_func {
 		int	(*load_context)(drm_device_t *, int channel);
 		int	(*save_context)(drm_device_t *, int channel);
 	} fifo;
-};
+} nouveau_engine_func_t;
 
 typedef struct drm_nouveau_private {
 	/* the card type, takes NV_* as values */
@@ -254,6 +254,12 @@ extern void nv10_fb_takedown(drm_device_t *dev);
 /* nv40_fb.c */
 extern int  nv40_fb_init(drm_device_t *dev);
 extern void nv40_fb_takedown(drm_device_t *dev);
+
+/* nv40_fifo.c */
+extern int  nv40_fifo_create_context(drm_device_t *, int channel);
+extern void nv40_fifo_destroy_context(drm_device_t *, int channel);
+extern int  nv40_fifo_load_context(drm_device_t *, int channel);
+extern int  nv40_fifo_save_context(drm_device_t *, int channel);
 
 /* nv04_graph.c */
 extern void nouveau_nv04_context_switch(drm_device_t *dev);

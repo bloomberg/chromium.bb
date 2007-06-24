@@ -462,6 +462,6 @@
 #define NV40_RAMFC_UNK_40                                        0x40
 #define NV40_RAMFC_UNK_44                                        0x44
 #define NV40_RAMFC_UNK_48                                        0x48
-#define NV40_RAMFC_2088                                          0x4C
-#define NV40_RAMFC_3300                                          0x50
+#define NV40_RAMFC_UNK_4C                                        0x4C
+#define NV40_RAMFC_UNK_50                                        0x50
 
