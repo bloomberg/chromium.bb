@@ -313,27 +313,16 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 	 * other case, the GPU will handle this when it switches contexts.
 	 */
 	if (dev_priv->fifo_alloc_count == 0) {
-		engine->fifo.load_context(dev, channel);
+		ret = engine->fifo.load_context(dev, channel);
+		if (ret) {
+			nouveau_fifo_free(dev, channel);
+			return ret;
+		}
 
-		if (engine->graph.load_context) {
-			ret = engine->graph.load_context(dev, channel);
-			if (ret) {
-				nouveau_fifo_free(dev, channel);
-				return ret;
-			}
-		} else
-		if (dev_priv->card_type >= NV_30) {
-			uint32_t inst;
-
-			inst = nouveau_chip_instance_get(dev,
-							 chan->ramin_grctx);
-
-			/* see comments in nv40_graph_context_restore() */
-			NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_SIZE, inst);
-                        if (dev_priv->card_type >= NV_40) {
-                                NV_WRITE(0x40032C, inst | 0x01000000);
-                                NV_WRITE(NV40_PFIFO_GRCTX_INSTANCE, inst);
-                        }
+		ret = engine->graph.load_context(dev, channel);
+		if (ret) {
+			nouveau_fifo_free(dev, channel);
+			return ret;
 		}
 	}
 
@@ -370,15 +359,7 @@ void nouveau_fifo_free(drm_device_t* dev, int channel)
 	engine->fifo.destroy_context(dev, channel);
 
 	/* Cleanup PGRAPH state */
-	if (engine->graph.destroy_context)
-		engine->graph.destroy_context(dev, channel);
-	else if (dev_priv->card_type >= NV_30) {
-	}
-	else if (dev_priv->card_type >= NV_20) {
-		/* clear ctx table */
-		INSTANCE_WR(dev_priv->ctx_table, channel, 0);
-		nouveau_instmem_free(dev, chan->ramin_grctx);
-	}
+	engine->graph.destroy_context(dev, channel);
 
 	/* reenable the fifo caches */
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000001);
