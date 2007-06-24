@@ -232,6 +232,7 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 		return DRM_ERR(ENOMEM);
 	}
 
+	dev_priv->fifos[channel].pushbuf_base = 0;
 	dev_priv->fifos[channel].cmdbuf_mem = cb;
 	dev_priv->fifos[channel].cmdbuf_obj = cb_dma;
 	return 0;
@@ -460,7 +461,7 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 {
 	int ret;
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_object *cb_obj;
+	struct nouveau_fifo *chan;
 	int channel;
 
 	/*
@@ -478,14 +479,16 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 	if (channel==nouveau_fifo_number(dev))
 		return DRM_ERR(EINVAL);
 	(*chan_ret) = channel;
+	chan = &dev_priv->fifos[channel];
 
 	DRM_INFO("Allocating FIFO number %d\n", channel);
 
 	/* that fifo is used */
-	dev_priv->fifos[channel].used = 1;
-	dev_priv->fifos[channel].filp = filp;
+	chan->used = 1;
+	chan->filp = filp;
+
 	/* FIFO has no objects yet */
-	dev_priv->fifos[channel].objs = NULL;
+	chan->objs = NULL;
 
 	/* allocate a command buffer, and create a dma object for the gpu */
 	ret = nouveau_fifo_cmdbuf_alloc(dev, channel);
@@ -493,7 +496,6 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 		nouveau_fifo_free(dev, channel);
 		return ret;
 	}
-	cb_obj = dev_priv->fifos[channel].cmdbuf_obj;
 
 	nouveau_wait_for_idle(dev);
 
@@ -548,8 +550,8 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 	NV_WRITE(NV04_PFIFO_MODE,NV_READ(NV04_PFIFO_MODE)|(1<<channel));
 
 	/* setup channel's default get/put values */
-	NV_WRITE(NV03_FIFO_REGS_DMAPUT(channel), 0);
-	NV_WRITE(NV03_FIFO_REGS_DMAGET(channel), 0);
+	NV_WRITE(NV03_FIFO_REGS_DMAPUT(channel), chan->pushbuf_base);
+	NV_WRITE(NV03_FIFO_REGS_DMAGET(channel), chan->pushbuf_base);
 
 	/* If this is the first channel, setup PFIFO ourselves.  For any
 	 * other case, the GPU will handle this when it switches contexts.
@@ -557,10 +559,8 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 	if (dev_priv->fifo_alloc_count == 0) {
 		nouveau_fifo_context_restore(dev, channel);
 		if (dev_priv->card_type >= NV_30) {
-			struct nouveau_fifo *chan;
 			uint32_t inst;
 
-			chan = &dev_priv->fifos[channel];
 			inst = nouveau_chip_instance_get(dev,
 							 chan->ramin_grctx);
 
@@ -679,8 +679,7 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 	if (res)
 		return res;
 
-	/* this should probably disappear in the next abi break? */
-	init.put_base = 0;
+	init.put_base = dev_priv->fifos[init.channel].pushbuf_base;
 
 	/* make the fifo available to user space */
 	/* first, the fifo control regs */

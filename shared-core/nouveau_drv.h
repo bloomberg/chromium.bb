@@ -83,6 +83,7 @@ struct nouveau_fifo
 	/* dma object for the command buffer itself */
 	struct mem_block      *cmdbuf_mem;
 	struct nouveau_object *cmdbuf_obj;
+	uint32_t pushbuf_base;
 	/* PGRAPH context, for cards that keep it in RAMIN */
 	struct mem_block *ramin_grctx;
 	/* objects belonging to this fifo */
