@@ -505,18 +505,16 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 	NV_WRITE(NV03_PFIFO_CACHE1_PUSH0, 0x00000000);
 	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000000);
 
-	/* Construct inital RAMFC for new channel */
+	/* Create a graphics context for new channel */
 	switch(dev_priv->card_type)
 	{
 		case NV_04:
 		case NV_05:
 			nv04_graph_context_create(dev, channel);
-			nouveau_nv04_context_init(dev, channel);
 			break;
 		case NV_10:
 		case NV_17:
 			nv10_graph_context_create(dev, channel);
-			nouveau_nv10_context_init(dev, channel);
 			break;
 		case NV_20:
 			ret = nv20_graph_context_create(dev, channel);
@@ -524,7 +522,6 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 				nouveau_fifo_free(dev, channel);
 				return ret;
 			}
-			nouveau_nv10_context_init(dev, channel);
 			break;
 		case NV_30:
 			ret = nv30_graph_context_create(dev, channel);
@@ -532,18 +529,45 @@ static int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp)
 				nouveau_fifo_free(dev, channel);
 				return ret;
 			}
-			nouveau_nv30_context_init(dev, channel);
 			break;
 		case NV_40:
 		case NV_44:
-		case NV_50:
 			ret = nv40_graph_context_create(dev, channel);
 			if (ret) {
 				nouveau_fifo_free(dev, channel);
 				return ret;
 			}
-			nouveau_nv40_context_init(dev, channel);
 			break;
+		default:
+			DRM_ERROR("grctx: unknown card type\n");
+			nouveau_fifo_free(dev, channel);
+			return DRM_ERR(EINVAL);
+	}
+
+	/* Construct inital RAMFC for new channel */
+	switch (dev_priv->card_type) {
+	case NV_04:
+	case NV_05:
+		nouveau_nv04_context_init(dev, channel);
+		break;
+	case NV_10:
+	case NV_17:
+		nouveau_nv10_context_init(dev, channel);
+		break;
+	case NV_20:
+		nouveau_nv10_context_init(dev, channel);
+		break;
+	case NV_30:
+		nouveau_nv30_context_init(dev, channel);
+		break;
+	case NV_40:
+	case NV_44:
+		nouveau_nv40_context_init(dev, channel);
+		break;
+	default:
+		DRM_ERROR("fifoctx: unknown card type\n");
+		nouveau_fifo_free(dev, channel);
+		return DRM_ERR(EINVAL);
 	}
 
 	/* enable the fifo dma operation */
