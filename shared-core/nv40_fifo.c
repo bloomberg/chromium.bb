@@ -28,8 +28,8 @@
 #include "nouveau_drv.h"
 #include "nouveau_drm.h"
 
-#define RAMFC_WR(offset, val)	NV_WRITE(fifoctx + NV40_RAMFC_##offset, (val))
-#define RAMFC_RD(offset)	NV_READ (fifoctx + NV40_RAMFC_##offset)
+#define RAMFC_WR(offset, val)	NV_WI32(fifoctx + NV40_RAMFC_##offset, (val))
+#define RAMFC_RD(offset)	NV_RI32(fifoctx + NV40_RAMFC_##offset)
 
 int
 nv40_fifo_create_context(drm_device_t *dev, int channel)
@@ -39,9 +39,9 @@ nv40_fifo_create_context(drm_device_t *dev, int channel)
 	uint32_t fifoctx, grctx, pushbuf;
 	int i;
 
-	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*128;
+	fifoctx = dev_priv->ramfc_offset + channel*128;
 	for (i=0;i<128;i+=4)
-		NV_WRITE(fifoctx + i, 0);
+		NV_WI32(fifoctx + i, 0);
 
 	grctx   = nouveau_chip_instance_get(dev, chan->ramin_grctx);
 	pushbuf = nouveau_chip_instance_get(dev, chan->cmdbuf_obj->instance);
@@ -73,9 +73,9 @@ nv40_fifo_destroy_context(drm_device_t *dev, int channel)
 	uint32_t fifoctx;
 	int i;
 
-	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*128;
+	fifoctx = dev_priv->ramfc_offset + channel*128;
 	for (i=0;i<128;i+=4)
-		NV_WRITE(fifoctx + i, 0);
+		NV_WI32(fifoctx + i, 0);
 }
 
 int
@@ -85,7 +85,7 @@ nv40_fifo_load_context(drm_device_t *dev, int channel)
 	uint32_t fifoctx;
 	uint32_t tmp, tmp2;
 
-	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*128;
+	fifoctx = dev_priv->ramfc_offset + channel*128;
 
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_GET          , RAMFC_RD(DMA_GET));
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUT          , RAMFC_RD(DMA_PUT));
@@ -146,7 +146,7 @@ nv40_fifo_save_context(drm_device_t *dev, int channel)
 	uint32_t fifoctx;
 	uint32_t tmp;
 
-	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*128;
+	fifoctx = dev_priv->ramfc_offset + channel*128;
 
 	RAMFC_WR(DMA_PUT          , NV_READ(NV04_PFIFO_CACHE1_DMA_PUT));
 	RAMFC_WR(DMA_GET          , NV_READ(NV04_PFIFO_CACHE1_DMA_GET));

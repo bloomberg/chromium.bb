@@ -28,8 +28,8 @@
 #include "drm.h"
 #include "nouveau_drv.h"
 
-#define RAMFC_WR(offset, val)	NV_WRITE(fifoctx + NV10_RAMFC_##offset, (val))
-#define RAMFC_RD(offset)	NV_READ (fifoctx + NV10_RAMFC_##offset)
+#define RAMFC_WR(offset, val)	NV_WI32(fifoctx + NV10_RAMFC_##offset, (val))
+#define RAMFC_RD(offset)	NV_RI32(fifoctx + NV10_RAMFC_##offset)
 #define NV10_FIFO_CONTEXT_SIZE 64
 
 int
@@ -42,9 +42,9 @@ nv10_fifo_create_context(drm_device_t *dev, int channel)
 
 	pushbuf = nouveau_chip_instance_get(dev, chan->cmdbuf_obj->instance);
 
-	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*64;
+	fifoctx = dev_priv->ramfc_offset + channel*64;
 	for (i=0; i<NV10_FIFO_CONTEXT_SIZE;i+=4)
-		NV_WRITE(fifoctx + i, 0);
+		NV_WI32(fifoctx + i, 0);
 
 	/* Fill entries that are seen filled in dumps of nvidia driver just
 	 * after channel's is put into DMA mode
@@ -70,9 +70,9 @@ nv10_fifo_destroy_context(drm_device_t *dev, int channel)
 	uint32_t fifoctx;
 	int i;
 
-	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*64;
+	fifoctx = dev_priv->ramfc_offset + channel*64;
 	for (i=0; i<NV10_FIFO_CONTEXT_SIZE;i+=4)
-		NV_WRITE(fifoctx + i, 0);
+		NV_WI32(fifoctx + i, 0);
 }
 
 int
@@ -82,7 +82,7 @@ nv10_fifo_load_context(drm_device_t *dev, int channel)
 	uint32_t fifoctx;
 	uint32_t tmp;
 
-	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*64;
+	fifoctx = dev_priv->ramfc_offset + channel*64;
 
 	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1            , 0x00000100 | channel);
 
@@ -118,7 +118,7 @@ nv10_fifo_save_context(drm_device_t *dev, int channel)
 	uint32_t fifoctx;
 	uint32_t tmp;
 
-	fifoctx = NV_RAMIN + dev_priv->ramfc_offset + channel*64;
+	fifoctx = dev_priv->ramfc_offset + channel*64;
 
 	RAMFC_WR(DMA_PUT          , NV_READ(NV04_PFIFO_CACHE1_DMA_PUT));
 	RAMFC_WR(DMA_GET          , NV_READ(NV04_PFIFO_CACHE1_DMA_GET));

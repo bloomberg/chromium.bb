@@ -28,9 +28,9 @@
 #include "drm.h"
 #include "nouveau_drv.h"
 
-#define NV04_RAMFC (NV_RAMIN + dev_priv->ramfc_offset)
-#define RAMFC_WR(offset, val) NV_WRITE(fifoctx + NV04_RAMFC_##offset, (val))
-#define RAMFC_RD(offset)      NV_READ(fifoctx + NV04_RAMFC_##offset)
+#define NV04_RAMFC dev_priv->ramfc_offset
+#define RAMFC_WR(offset, val) NV_WI32(fifoctx + NV04_RAMFC_##offset, (val))
+#define RAMFC_RD(offset)      NV_RI32(fifoctx + NV04_RAMFC_##offset)
 #define NV04_FIFO_CONTEXT_SIZE 32
 
 int
@@ -47,7 +47,7 @@ nv04_fifo_create_context(drm_device_t *dev, int channel)
 
 	/* Clear RAMFC */
 	for (i=0; i<NV04_FIFO_CONTEXT_SIZE; i+=4)
-		NV_WRITE(fifoctx + i, 0);
+		NV_WI32(fifoctx + i, 0);
 	
 	/* Setup initial state */
 	RAMFC_WR(DMA_PUT, chan->pushbuf_base);
@@ -72,7 +72,7 @@ nv04_fifo_destroy_context(drm_device_t *dev, int channel)
 
 	fifoctx = NV04_RAMFC + (channel * NV04_FIFO_CONTEXT_SIZE);
 	for (i=0; i<NV04_FIFO_CONTEXT_SIZE; i+=4)
-		NV_WRITE(fifoctx + i, 0);
+		NV_WI32(fifoctx + i, 0);
 }
 
 int

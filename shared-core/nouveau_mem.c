@@ -489,13 +489,8 @@ nouveau_instmem_determine_amount(struct drm_device *dev)
 	DRM_DEBUG("RAMIN size: %dKiB\n", dev_priv->ramin_size>>10);
 
 	/* Clear all of it, except the BIOS image that's in the first 64KiB */
-	if (dev_priv->ramin) {
-		for (i=(64*1024); i<dev_priv->ramin_size; i+=4)
-			DRM_WRITE32(dev_priv->ramin, i, 0x00000000);
-	} else {
-		for (i=(64*1024); i<dev_priv->ramin_size; i+=4)
-			DRM_WRITE32(dev_priv->mmio, NV_RAMIN + i, 0x00000000);
-	}
+	for (i=(64*1024); i<dev_priv->ramin_size; i+=4)
+		NV_WI32(i, 0x00000000);
 }
 
 static void

@@ -64,7 +64,6 @@ struct nouveau_object
 	int channel;
 
 	struct mem_block *instance;
-	uint32_t          ht_loc;
 
 	uint32_t handle;
 	int      class;
@@ -242,8 +241,8 @@ extern int  nouveau_object_init_channel(drm_device_t *, int channel,
 					uint32_t tt_handle);
 extern void nouveau_object_takedown_channel(drm_device_t *dev, int channel);
 extern void nouveau_object_cleanup(drm_device_t *dev, int channel);
-extern int  nouveau_ht_object_insert(drm_device_t *, int channel,
-				     uint32_t handle, struct nouveau_object *);
+extern int  nouveau_ramht_insert(drm_device_t *, int channel,
+				 uint32_t handle, struct nouveau_object *);
 extern struct nouveau_object *
 nouveau_object_gr_create(drm_device_t *dev, int channel, int class);
 extern struct nouveau_object *

@@ -115,7 +115,7 @@ nouveau_notifier_alloc(drm_device_t *dev, int channel, uint32_t handle,
 	}
 
 	obj->handle = handle;
-	if (nouveau_ht_object_insert(dev, channel, handle, obj)) {
+	if (nouveau_ramht_insert(dev, channel, handle, obj)) {
 		nouveau_object_free(dev, obj);
 		nouveau_mem_free_block(mem);
 		DRM_ERROR("Error inserting notifier ctxdma into RAMHT\n");
