@@ -602,38 +602,6 @@ void nouveau_instmem_free(struct drm_device *dev, struct mem_block *block)
 	}
 }
 
-uint32_t nouveau_instmem_r32(drm_nouveau_private_t *dev_priv,
-			     struct mem_block *mem, int index)
-{
-	uint32_t ofs = (uint32_t)mem->start + (index<<2);
-
-	if (dev_priv->ramin) {
-#if defined(__powerpc__)
-		return in_be32((void __iomem *)(dev_priv->ramin)->handle + ofs);
-#else
-		return DRM_READ32(dev_priv->ramin, ofs);
-#endif
-	} else {
-		return NV_READ(NV_RAMIN+ofs);
-	}
-}
-
-void nouveau_instmem_w32(drm_nouveau_private_t *dev_priv,
-			 struct mem_block *mem, int index, uint32_t val)
-{
-	uint32_t ofs = (uint32_t)mem->start + (index<<2);
-
-	if (dev_priv->ramin) {
-#if defined(__powerpc__)
-		out_be32((void __iomem *)(dev_priv->ramin)->handle + ofs, val);
-#else
-		DRM_WRITE32(dev_priv->ramin, ofs, val);
-#endif
-	} else {
-		NV_WRITE(NV_RAMIN+ofs, val);
-	}
-}
-
 /*
  * Ioctls
  */

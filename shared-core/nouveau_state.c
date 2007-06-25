@@ -51,6 +51,7 @@ static int nouveau_init_card_mappings(drm_device_t *dev)
 	DRM_DEBUG("regs mapped ok at 0x%lx\n", dev_priv->mmio->offset);
 
 	/* map larger RAMIN aperture on NV40 cards */
+	dev_priv->ramin = NULL;
 	if (dev_priv->card_type >= NV_40) {
 		int ramin_resource = 2;
 		if (drm_get_resource_len(dev, ramin_resource) == 0)
@@ -66,8 +67,21 @@ static int nouveau_init_card_mappings(drm_device_t *dev)
 				  "limited instance memory available\n");
 			dev_priv->ramin = NULL;
 		}
-	} else
-		dev_priv->ramin = NULL;
+	}
+
+	/* On older cards (or if the above failed), create a map covering
+	 * the BAR0 PRAMIN aperture */
+	if (!dev_priv->ramin) {
+		ret = drm_addmap(dev,
+				 drm_get_resource_start(dev, 0) + NV_RAMIN,
+				 (1*1024*1024),
+				 _DRM_REGISTERS, _DRM_READ_ONLY,
+				 &dev_priv->ramin);
+		if (ret) {
+			DRM_ERROR("Failed to map BAR0 PRAMIN: %d\n", ret);
+			return ret;
+		}
+	}
 
 	return 0;
 }

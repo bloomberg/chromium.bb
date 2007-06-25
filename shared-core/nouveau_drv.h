@@ -220,11 +220,6 @@ extern struct mem_block* nouveau_instmem_alloc(struct drm_device *dev,
 					       uint32_t size, uint32_t align);
 extern void              nouveau_instmem_free(struct drm_device *dev,
 					      struct mem_block *block);
-extern uint32_t          nouveau_instmem_r32(drm_nouveau_private_t *dev_priv,
-					     struct mem_block *mem, int index);
-extern void              nouveau_instmem_w32(drm_nouveau_private_t *dev_priv,
-					     struct mem_block *mem, int index,
-					     uint32_t val);
 
 /* nouveau_notifier.c */
 extern int  nouveau_notifier_init_channel(drm_device_t *, int channel, DRMFILE);
@@ -381,8 +376,17 @@ extern long nouveau_compat_ioctl(struct file *filp, unsigned int cmd,
 #define NV_WRITE(reg,val)   DRM_WRITE32( dev_priv->mmio, (reg), (val) )
 #endif
 
-#define INSTANCE_WR(mem,ofs,val) nouveau_instmem_w32(dev_priv,(mem),(ofs),(val))
-#define INSTANCE_RD(mem,ofs)     nouveau_instmem_r32(dev_priv,(mem),(ofs))
+/* PRAMIN access */
+#if defined(__powerpc__)
+#define NV_RI32(o) in_be32((void __iomem *)(dev_priv->ramin)->handle+(o))
+#define NV_WI32(o,v) out_be32((void __iomem*)(dev_priv->ramin)->handle+(o), (v))
+#else
+#define NV_RI32(o) DRM_READ32(dev_priv->ramin, (o))
+#define NV_WI32(o,v) DRM_WRITE32(dev_priv->ramin, (o), (v))
+#endif
+
+#define INSTANCE_RD(o,i) NV_RI32((o)->start + ((i)<<2))
+#define INSTANCE_WR(o,i,v) NV_WI32((o)->start + ((i)<<2), (v))
 
 #endif /* __NOUVEAU_DRV_H__ */
 
