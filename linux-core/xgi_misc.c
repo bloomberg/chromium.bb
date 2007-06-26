@@ -200,13 +200,15 @@ BOOL xgi_ge_irq_handler(xgi_info_t * info)
 					    STALL_INTERRUPT_RESET_THRESHOLD) {
 						continoue_int_count = 0;
 					} else if (continoue_int_count >= 3) {
+						int time_out;
+
 						continoue_int_count = 0;
 
 						// GE Hung up, need reset.
 						XGI_INFO("Reset GE!\n");
 
 						*(mmio_vbase + 0xb057) = 8;
-						int time_out = 0xffff;
+						time_out = 0xffff;
 						while (0 !=
 						       (ge_3d_status[0x00] &
 							0xf0000000)) {
@@ -214,6 +216,11 @@ BOOL xgi_ge_irq_handler(xgi_info_t * info)
 							       ((--time_out) &
 								0xfff)) ;
 							if (0 == time_out) {
+								U8 old_3ce;
+								U8 old_3cf;
+								U8 old_index;
+								U8 old_36;
+
 								XGI_INFO
 								    ("Can not reset back 0x%lx!\n",
 								     ge_3d_status
@@ -222,24 +229,24 @@ BOOL xgi_ge_irq_handler(xgi_info_t * info)
 								  0xb057) = 0;
 								// Have to use 3x5.36 to reset.
 								// Save and close dynamic gating
-								U8 old_3ce =
+								old_3ce =
 								    *(mmio_vbase
 								      + 0x3ce);
 								*(mmio_vbase +
 								  0x3ce) = 0x2a;
-								U8 old_3cf =
+								old_3cf =
 								    *(mmio_vbase
 								      + 0x3cf);
 								*(mmio_vbase +
 								  0x3cf) =
 						       old_3cf & 0xfe;
 								// Reset GE
-								U8 old_index =
+								old_index =
 								    *(mmio_vbase
 								      + 0x3d4);
 								*(mmio_vbase +
 								  0x3d4) = 0x36;
-								U8 old_36 =
+								old_36 =
 								    *(mmio_vbase
 								      + 0x3d5);
 								*(mmio_vbase +

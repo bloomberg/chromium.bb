@@ -196,9 +196,10 @@ void xgi_submit_cmdlist(xgi_info_t * info, xgi_cmd_info_t * pCmdInfo)
 		/* Jong 06/13/2006; remove marked for system hang test */
 		/* xgi_waitfor_pci_idle(info); */
 	} else {
+		U32 *lastBatchVirtAddr;
+
 		XGI_INFO
 		    ("Jong-xgi_submit_cmdlist-s_cmdring._lastBatchStartAddr != 0 \n");
-		U32 *lastBatchVirtAddr;
 
 		/* Jong 05/25/2006 */
 		/* return; */
