@@ -29,8 +29,6 @@
 #ifndef _XGI_LINUX_H_
 #define _XGI_LINUX_H_
 
-#include <linux/config.h>
-
 #ifndef LINUX_VERSION_CODE
 #include <linux/version.h>
 #endif
