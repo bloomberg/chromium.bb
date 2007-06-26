@@ -350,8 +350,10 @@ void xgi_pcie_heap_check(void)
 	struct list_head *useList, *temp;
 	xgi_pcie_block_t *block;
 	unsigned int ownerIndex;
+#ifdef XGI_DEBUG
 	char *ownerStr[6] =
 	    { "2D", "3D", "3D_CMD", "3D_SCR", "3D_TEX", "ELSE" };
+#endif
 
 	if (xgi_pcie_heap) {
 		useList = &xgi_pcie_heap->used_list;

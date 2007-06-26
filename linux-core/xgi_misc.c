@@ -131,7 +131,7 @@ BOOL xgi_ge_irq_handler(xgi_info_t * info)
 				BOOL is_wrong_signal = FALSE;
 				static U32 last_int_tick_low,
 				    last_int_tick_high;
-				static U32 new_int_tick_low, new_int_tick_high;
+				static U32 new_int_tick_low;
 				static U32 continoue_int_count = 0;
 				// OE II is busy.
 				while (old_ge_status & 0x001c0000) {
@@ -290,9 +290,6 @@ BOOL xgi_ge_irq_handler(xgi_info_t * info)
 BOOL xgi_crt_irq_handler(xgi_info_t * info)
 {
 	BOOL ret = FALSE;
-	U8 *mmio_vbase = info->mmio.vbase;
-	U32 device_status = 0;
-	U32 hw_status = 0;
 	U8 save_3ce = bReadReg(0x3ce);
 
 	if (bIn3cf(0x37) & 0x01)	// CRT1 interrupt just happened
@@ -303,15 +300,6 @@ BOOL xgi_crt_irq_handler(xgi_info_t * info)
 		// What happened?
 		op3cf_37 = bIn3cf(0x37);
 
-#if 0
-		if (op3cf_37 & 0x04)
-			device_status |= GDEVST_CONNECT;
-		else
-			device_status &= ~GDEVST_CONNECT;
-
-		device_status |= GDEVST_DEVICE_CHANGED;
-		hw_status |= HWST_DEVICE_CHANGED;
-#endif
 		// Clear CRT interrupt
 		op3cf_3d = bIn3cf(0x3d);
 		bOut3cf(0x3d, (op3cf_3d | 0x04));
@@ -326,9 +314,6 @@ BOOL xgi_crt_irq_handler(xgi_info_t * info)
 BOOL xgi_dvi_irq_handler(xgi_info_t * info)
 {
 	BOOL ret = FALSE;
-	U8 *mmio_vbase = info->mmio.vbase;
-	U32 device_status = 0;
-	U32 hw_status = 0;
 	U8 save_3ce = bReadReg(0x3ce);
 
 	if (bIn3cf(0x38) & 0x20)	// DVI interrupt just happened
@@ -340,27 +325,12 @@ BOOL xgi_dvi_irq_handler(xgi_info_t * info)
 
 		// What happened?
 		op3cf_37 = bIn3cf(0x37);
-#if 0
-		//Also update our internal flag
-		if (op3cf_37 & 0x10)	// Second Monitor plugged In
-		{
-			device_status |= GDEVST_CONNECT;
-			//Because currenly we cannot determine if DVI digital
-			//or DVI analog is connected according to DVI interrupt
-			//We should still call BIOS to check it when utility ask us
-			device_status &= ~GDEVST_CHECKED;
-		} else {
-			device_status &= ~GDEVST_CONNECT;
-		}
-#endif
+
 		//Notify BIOS that DVI plug/unplug happened
 		op3x5_5a = bIn3x5(0x5a);
 		bOut3x5(0x5a, op3x5_5a & 0xf7);
 
 		bWriteReg(0x3d4, save_3x4);
-
-		//device_status |= GDEVST_DEVICE_CHANGED;
-		//hw_status |= HWST_DEVICE_CHANGED;
 
 		// Clear DVI interrupt
 		op3cf_39 = bIn3cf(0x39);

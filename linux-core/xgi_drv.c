@@ -153,11 +153,6 @@ static inline void xgi_check_pci_config(xgi_info_t * info, int line)
 		pci_write_config_word(info->dev, PCI_COMMAND, cmd);
 }
 
-static int xgi_post_vbios(xgi_ioctl_post_vbios_t * info)
-{
-	return 1;
-}
-
 /*
  * struct pci_device_id {
  *  unsigned int vendor, device;        // Vendor and device ID or PCI_ANY_ID
@@ -1484,14 +1479,8 @@ static int __init xgi_init_module(void)
 void __exit xgi_exit_module(void)
 {
 	int i;
-	xgi_info_t *info, *max_devices;
 
 #ifdef CONFIG_DEVFS_FS
-	/*
-	   XGI_DEVFS_REMOVE_CONTROL();
-	   for (i = 0; i < XGI_MAX_DEVICES; i++)
-	   XGI_DEVFS_REMOVE_DEVICE(i);
-	 */
 	XGI_DEVFS_REMOVE_DEVICE(xgi_num_devices);
 #endif
 
