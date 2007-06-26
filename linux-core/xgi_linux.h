@@ -26,7 +26,6 @@
  * DEALINGS IN THE SOFTWARE.												
  ***************************************************************************/
 
-
 #ifndef _XGI_LINUX_H_
 #define _XGI_LINUX_H_
 
@@ -36,7 +35,7 @@
 #include <linux/version.h>
 #endif
 
-#ifndef KERNEL_VERSION /* pre-2.1.90 didn't have it */
+#ifndef KERNEL_VERSION		/* pre-2.1.90 didn't have it */
 #define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
 #endif
 
@@ -64,25 +63,25 @@
 #include <linux/modversions.h>
 #endif
 
-#include <linux/kernel.h>           /* printk */
+#include <linux/kernel.h>	/* printk */
 #include <linux/module.h>
 
-#include <linux/init.h>             /* module_init, module_exit         */
-#include <linux/types.h>            /* pic_t, size_t, __u32, etc        */
-#include <linux/errno.h>            /* error codes                      */
-#include <linux/list.h>             /* circular linked list             */
-#include <linux/stddef.h>           /* NULL, offsetof                   */
-#include <linux/wait.h>             /* wait queues                      */
+#include <linux/init.h>		/* module_init, module_exit         */
+#include <linux/types.h>	/* pic_t, size_t, __u32, etc        */
+#include <linux/errno.h>	/* error codes                      */
+#include <linux/list.h>		/* circular linked list             */
+#include <linux/stddef.h>	/* NULL, offsetof                   */
+#include <linux/wait.h>		/* wait queues                      */
 
-#include <linux/slab.h>             /* kmalloc, kfree, etc              */
-#include <linux/vmalloc.h>          /* vmalloc, vfree, etc              */
+#include <linux/slab.h>		/* kmalloc, kfree, etc              */
+#include <linux/vmalloc.h>	/* vmalloc, vfree, etc              */
 
-#include <linux/poll.h>             /* poll_wait                        */
-#include <linux/delay.h>            /* mdelay, udelay                   */
-#include <asm/msr.h>                /* rdtsc rdtscl                     */
+#include <linux/poll.h>		/* poll_wait                        */
+#include <linux/delay.h>	/* mdelay, udelay                   */
+#include <asm/msr.h>		/* rdtsc rdtscl                     */
 
-#include <linux/sched.h>            /* suser(), capable() replacement
-                                       for_each_task, for_each_process  */
+#include <linux/sched.h>	/* suser(), capable() replacement
+				   for_each_task, for_each_process  */
 #ifdef for_each_process
 #define XGI_SCAN_PROCESS(p) for_each_process(p)
 #else
@@ -90,21 +89,21 @@
 #endif
 
 #ifdef KERNEL_2_6
-#include <linux/moduleparam.h>      /* module_param()                   */
-#include <linux/smp_lock.h>         /* kernel_locked                    */
-#include <asm/tlbflush.h>           /* flush_tlb(), flush_tlb_all()     */
-#include <asm/kmap_types.h>         /* page table entry lookup          */
+#include <linux/moduleparam.h>	/* module_param()                   */
+#include <linux/smp_lock.h>	/* kernel_locked                    */
+#include <asm/tlbflush.h>	/* flush_tlb(), flush_tlb_all()     */
+#include <asm/kmap_types.h>	/* page table entry lookup          */
 #endif
 
-#include <linux/pci.h>              /* pci_find_class, etc              */
-#include <linux/interrupt.h>        /* tasklets, interrupt helpers      */
+#include <linux/pci.h>		/* pci_find_class, etc              */
+#include <linux/interrupt.h>	/* tasklets, interrupt helpers      */
 #include <linux/timer.h>
 
-#include <asm/system.h>             /* cli, sli, save_flags             */
-#include <asm/io.h>                 /* ioremap, virt_to_phys            */
-#include <asm/uaccess.h>            /* access_ok                        */
-#include <asm/page.h>               /* PAGE_OFFSET                      */
-#include <asm/pgtable.h>            /* pte bit definitions              */
+#include <asm/system.h>		/* cli, sli, save_flags             */
+#include <asm/io.h>		/* ioremap, virt_to_phys            */
+#include <asm/uaccess.h>	/* access_ok                        */
+#include <asm/page.h>		/* PAGE_OFFSET                      */
+#include <asm/pgtable.h>	/* pte bit definitions              */
 
 #include <linux/spinlock.h>
 #include <asm/semaphore.h>
@@ -264,10 +263,9 @@ EXPORT_NO_SYMBOLS;
 #define XGI_PM_SUPPORT_APM
 #endif
 
-
 #if defined(CONFIG_DEVFS_FS)
 #if defined(KERNEL_2_6)
-typedef void* devfs_handle_t;
+typedef void *devfs_handle_t;
 #define XGI_DEVFS_REGISTER(_name, _minor) \
     ({ \
         devfs_handle_t __handle = NULL; \
@@ -283,7 +281,7 @@ typedef void* devfs_handle_t;
 */
 #define XGI_DEVFS_REMOVE_CONTROL() devfs_remove("xgi_ctl")
 #define XGI_DEVFS_REMOVE_DEVICE(i) devfs_remove("xgi")
-#else // defined(KERNEL_2_4)
+#else				// defined(KERNEL_2_4)
 #define XGI_DEVFS_REGISTER(_name, _minor) \
     ({ \
         devfs_handle_t __handle = devfs_register(NULL, _name, DEVFS_FL_AUTO_DEVNUM, \
@@ -306,8 +304,8 @@ typedef void* devfs_handle_t;
             devfs_unregister(xgi_devfs_handles[0]); \
         } \
     })
-#endif /* defined(KERNEL_2_4) */
-#endif /* defined(CONFIG_DEVFS_FS) */
+#endif				/* defined(KERNEL_2_4) */
+#endif				/* defined(CONFIG_DEVFS_FS) */
 
 #if defined(CONFIG_DEVFS_FS) && !defined(KERNEL_2_6)
 #define XGI_REGISTER_CHRDEV(x...)    devfs_register_chrdev(x)
@@ -409,12 +407,12 @@ typedef void* devfs_handle_t;
 
 #if !defined (pgprot_noncached)
 static inline pgprot_t pgprot_noncached(pgprot_t old_prot)
-    {
-        pgprot_t new_prot = old_prot;
-        if (boot_cpu_data.x86 > 3)
-            new_prot = __pgprot(pgprot_val(old_prot) | _PAGE_PCD);
-        return new_prot;
-    }
+{
+	pgprot_t new_prot = old_prot;
+	if (boot_cpu_data.x86 > 3)
+		new_prot = __pgprot(pgprot_val(old_prot) | _PAGE_PCD);
+	return new_prot;
+}
 #endif
 
 #if defined(XGI_BUILD_XGI_PAT_SUPPORT) && !defined (pgprot_writecombined)
@@ -425,15 +423,14 @@ static inline pgprot_t pgprot_noncached(pgprot_t old_prot)
 #define PAGE_KERNEL_WRTCOMB MAKE_GLOBAL(__PAGE_KERNEL_WRTCOMB)
 
 static inline pgprot_t pgprot_writecombined(pgprot_t old_prot)
-    {
-        pgprot_t new_prot = old_prot;
-        if (boot_cpu_data.x86 > 3)
-        {
-            pgprot_val(old_prot) &= ~(_PAGE_PCD | _PAGE_PWT);
-            new_prot = __pgprot(pgprot_val(old_prot) | _PAGE_WRTCOMB);
-        }
-        return new_prot;
-    }
+{
+	pgprot_t new_prot = old_prot;
+	if (boot_cpu_data.x86 > 3) {
+		pgprot_val(old_prot) &= ~(_PAGE_PCD | _PAGE_PWT);
+		new_prot = __pgprot(pgprot_val(old_prot) | _PAGE_WRTCOMB);
+	}
+	return new_prot;
+}
 #endif
 
 #if !defined(page_to_pfn)
@@ -494,9 +491,9 @@ static inline pgprot_t pgprot_writecombined(pgprot_t old_prot)
         free_pages(ptr, order); \
     }
 
-typedef struct xgi_pte_s  {
-    unsigned long       phys_addr;
-    unsigned long       virt_addr;
+typedef struct xgi_pte_s {
+	unsigned long phys_addr;
+	unsigned long virt_addr;
 } xgi_pte_t;
 
 /*
@@ -507,16 +504,16 @@ typedef struct xgi_pte_s  {
  * page_attr API provides the means to solve the problem.
  */
 #if defined(XGI_CHANGE_PAGE_ATTR_PRESENT)
-static inline void XGI_SET_PAGE_ATTRIB_UNCACHED(xgi_pte_t *page_ptr)
-    {
-        struct page *page = virt_to_page(__va(page_ptr->phys_addr));
-        change_page_attr(page, 1, PAGE_KERNEL_NOCACHE);
-    }
-static inline void XGI_SET_PAGE_ATTRIB_CACHED(xgi_pte_t *page_ptr)
-    {
-        struct page *page = virt_to_page(__va(page_ptr->phys_addr));
-        change_page_attr(page, 1, PAGE_KERNEL);
-    }
+static inline void XGI_SET_PAGE_ATTRIB_UNCACHED(xgi_pte_t * page_ptr)
+{
+	struct page *page = virt_to_page(__va(page_ptr->phys_addr));
+	change_page_attr(page, 1, PAGE_KERNEL_NOCACHE);
+}
+static inline void XGI_SET_PAGE_ATTRIB_CACHED(xgi_pte_t * page_ptr)
+{
+	struct page *page = virt_to_page(__va(page_ptr->phys_addr));
+	change_page_attr(page, 1, PAGE_KERNEL);
+}
 #else
 #define XGI_SET_PAGE_ATTRIB_UNCACHED(page_list)
 #define XGI_SET_PAGE_ATTRIB_CACHED(page_list)
@@ -549,17 +546,15 @@ static inline void XGI_SET_PAGE_ATTRIB_CACHED(xgi_pte_t *page_ptr)
 #define XGIUnlockPage(page)         ClearPageLocked(page)
 #endif
 
-
 /*
  * hide a pointer to struct xgi_info_t in a file-private info
  */
 
-typedef struct
-{
-    void                *info;
-    U32                 num_events;
-    spinlock_t          fp_lock;
-    wait_queue_head_t   wait_queue;
+typedef struct {
+	void *info;
+	U32 num_events;
+	spinlock_t fp_lock;
+	wait_queue_head_t wait_queue;
 } xgi_file_private_t;
 
 #define FILE_PRIVATE(filp)      ((filp)->private_data)

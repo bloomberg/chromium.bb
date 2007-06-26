@@ -42,38 +42,35 @@
 #define 	BEGIN_LINK_ENABLE_MASK                  (ONE_BIT_MASK<<31)
 #define     M2REG_PCI_TRIGGER_REGISTER_ADDRESS      0x14
 
-typedef enum
-{
-    FLUSH_2D			= M2REG_FLUSH_2D_ENGINE_MASK,
-    FLUSH_3D			= M2REG_FLUSH_3D_ENGINE_MASK,
-    FLUSH_FLIP			= M2REG_FLUSH_FLIP_ENGINE_MASK
-}FLUSH_CODE;
+typedef enum {
+	FLUSH_2D = M2REG_FLUSH_2D_ENGINE_MASK,
+	FLUSH_3D = M2REG_FLUSH_3D_ENGINE_MASK,
+	FLUSH_FLIP = M2REG_FLUSH_FLIP_ENGINE_MASK
+} FLUSH_CODE;
 
-typedef enum
-{
-    AGPCMDLIST_SCRATCH_SIZE         = 0x100,
-    AGPCMDLIST_BEGIN_SIZE           = 0x004,
-    AGPCMDLIST_3D_SCRATCH_CMD_SIZE  = 0x004,
-    AGPCMDLIST_2D_SCRATCH_CMD_SIZE  = 0x00c,
-    AGPCMDLIST_FLUSH_CMD_LEN        = 0x004,
-    AGPCMDLIST_DUMY_END_BATCH_LEN   = AGPCMDLIST_BEGIN_SIZE
-}CMD_SIZE;
+typedef enum {
+	AGPCMDLIST_SCRATCH_SIZE = 0x100,
+	AGPCMDLIST_BEGIN_SIZE = 0x004,
+	AGPCMDLIST_3D_SCRATCH_CMD_SIZE = 0x004,
+	AGPCMDLIST_2D_SCRATCH_CMD_SIZE = 0x00c,
+	AGPCMDLIST_FLUSH_CMD_LEN = 0x004,
+	AGPCMDLIST_DUMY_END_BATCH_LEN = AGPCMDLIST_BEGIN_SIZE
+} CMD_SIZE;
 
-typedef struct xgi_cmdring_info_s
-{
-	U32		_cmdRingSize;
-	U32     _cmdRingBuffer;
-    U32     _cmdRingBusAddr;
-	U32     _lastBatchStartAddr;
-    U32     _cmdRingOffset;
-}xgi_cmdring_info_t;
+typedef struct xgi_cmdring_info_s {
+	U32 _cmdRingSize;
+	U32 _cmdRingBuffer;
+	U32 _cmdRingBusAddr;
+	U32 _lastBatchStartAddr;
+	U32 _cmdRingOffset;
+} xgi_cmdring_info_t;
 
-extern int xgi_cmdlist_initialize(xgi_info_t *info, U32 size);
+extern int xgi_cmdlist_initialize(xgi_info_t * info, U32 size);
 
-extern void xgi_submit_cmdlist(xgi_info_t *info, xgi_cmd_info_t * pCmdInfo);
+extern void xgi_submit_cmdlist(xgi_info_t * info, xgi_cmd_info_t * pCmdInfo);
 
-extern void xgi_state_change(xgi_info_t *info, xgi_state_info_t * pStateInfo);
+extern void xgi_state_change(xgi_info_t * info, xgi_state_info_t * pStateInfo);
 
-extern void xgi_cmdlist_cleanup(xgi_info_t *info);
+extern void xgi_cmdlist_cleanup(xgi_info_t * info);
 
-#endif /* _XGI_CMDLIST_H_ */
+#endif				/* _XGI_CMDLIST_H_ */
