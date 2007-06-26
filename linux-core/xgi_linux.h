@@ -35,20 +35,8 @@
 #include <linux/version.h>
 #endif
 
-#ifndef KERNEL_VERSION		/* pre-2.1.90 didn't have it */
-#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
-#endif
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 4, 0)
-#   error "This driver does not support pre-2.4 kernels!"
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(2, 5, 0)
-#define KERNEL_2_4
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0)
-#   error "This driver does not support 2.5 kernels!"
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(2, 7, 0)
-#define KERNEL_2_6
-#else
-#   error "This driver does not support development kernels!"
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0)
+#   error "This driver does not support pre-2.6 kernels!"
 #endif
 
 #if defined (CONFIG_SMP) && !defined (__SMP__)
@@ -57,10 +45,6 @@
 
 #if defined (CONFIG_MODVERSIONS) && !defined (MODVERSIONS)
 #define MODVERSIONS
-#endif
-
-#if defined (MODVERSIONS) && !defined (KERNEL_2_6)
-#include <linux/modversions.h>
 #endif
 
 #include <linux/kernel.h>	/* printk */
@@ -88,12 +72,10 @@
 #define XGI_SCAN_PROCESS(p) for_each_task(p)
 #endif
 
-#ifdef KERNEL_2_6
 #include <linux/moduleparam.h>	/* module_param()                   */
 #include <linux/smp_lock.h>	/* kernel_locked                    */
 #include <asm/tlbflush.h>	/* flush_tlb(), flush_tlb_all()     */
 #include <asm/kmap_types.h>	/* page table entry lookup          */
-#endif
 
 #include <linux/pci.h>		/* pci_find_class, etc              */
 #include <linux/interrupt.h>	/* tasklets, interrupt helpers      */
@@ -141,12 +123,7 @@
 #endif
 
 #ifndef MAX_ORDER
-#ifdef KERNEL_2_4
-#define MAX_ORDER 10
-#endif
-#ifdef KERNEL_2_6
 #define MAX_ORDER 11
-#endif
 #endif
 
 #ifndef module_init
@@ -171,39 +148,20 @@ typedef void irqreturn_t;
          pos = pos->next, prefetch(pos->next))
 #endif
 
-#ifdef KERNEL_2_4
-#define XGI_PCI_FOR_EACH_DEV(dev)   pci_for_each_dev(dev)
-#endif
-#ifdef KERNEL_2_6
 extern struct list_head pci_devices;	/* list of all devices */
 #define XGI_PCI_FOR_EACH_DEV(dev) \
     for(dev = pci_dev_g(pci_devices.next); dev != pci_dev_g(&pci_devices); dev = pci_dev_g(dev->global_list.next))
-#endif
 
 /*
  * the following macro causes problems when used in the same module
  * as module_param(); undef it so we don't accidentally mix the two
  */
-#if defined (KERNEL_2_6)
 #undef  MODULE_PARM
-#endif
 
 #ifdef EXPORT_NO_SYMBOLS
 EXPORT_NO_SYMBOLS;
 #endif
 
-#if defined (KERNEL_2_4)
-#define XGI_IS_SUSER()                 suser()
-#define XGI_PCI_DEVICE_NAME(dev)       ((dev)->name)
-#define XGI_NUM_CPUS()                 smp_num_cpus
-#define XGI_CLI()                      __cli()
-#define XGI_SAVE_FLAGS(eflags)         __save_flags(eflags)
-#define XGI_RESTORE_FLAGS(eflags)      __restore_flags(eflags)
-#define XGI_MAY_SLEEP()                (!in_interrupt())
-#define XGI_MODULE_PARAMETER(x)        MODULE_PARM(x, "i")
-#endif
-
-#if defined (KERNEL_2_6)
 #define XGI_IS_SUSER()                 capable(CAP_SYS_ADMIN)
 #define XGI_PCI_DEVICE_NAME(dev)       ((dev)->pretty_name)
 #define XGI_NUM_CPUS()                 num_online_cpus()
@@ -212,7 +170,7 @@ EXPORT_NO_SYMBOLS;
 #define XGI_RESTORE_FLAGS(eflags)      local_irq_restore(eflags)
 #define XGI_MAY_SLEEP()                (!in_interrupt() && !in_atomic())
 #define XGI_MODULE_PARAMETER(x)        module_param(x, int, 0)
-#endif
+
 
 /* Earlier 2.4.x kernels don't have pci_disable_device() */
 #ifdef XGI_PCI_DISABLE_DEVICE_PRESENT
@@ -255,7 +213,7 @@ EXPORT_NO_SYMBOLS;
  * model is not sufficient for full acpi support. it may work in some cases,
  * but not enough for us to officially support this configuration.
  */
-#if defined(CONFIG_ACPI) && defined(KERNEL_2_6)
+#if defined(CONFIG_ACPI)
 #define XGI_PM_SUPPORT_ACPI
 #endif
 
@@ -264,7 +222,6 @@ EXPORT_NO_SYMBOLS;
 #endif
 
 #if defined(CONFIG_DEVFS_FS)
-#if defined(KERNEL_2_6)
 typedef void *devfs_handle_t;
 #define XGI_DEVFS_REGISTER(_name, _minor) \
     ({ \
@@ -281,39 +238,10 @@ typedef void *devfs_handle_t;
 */
 #define XGI_DEVFS_REMOVE_CONTROL() devfs_remove("xgi_ctl")
 #define XGI_DEVFS_REMOVE_DEVICE(i) devfs_remove("xgi")
-#else				// defined(KERNEL_2_4)
-#define XGI_DEVFS_REGISTER(_name, _minor) \
-    ({ \
-        devfs_handle_t __handle = devfs_register(NULL, _name, DEVFS_FL_AUTO_DEVNUM, \
-                                                 XGI_DEV_MAJOR, _minor, \
-                                                 S_IFCHR | S_IRUGO | S_IWUGO, &xgi_fops, NULL); \
-        __handle; \
-    })
-
-#define XGI_DEVFS_REMOVE_DEVICE(i)                                    \
-    ({ \
-        if (xgi_devfs_handles[i] != NULL) \
-        { \
-            devfs_unregister(xgi_devfs_handles[i]); \
-        } \
-    })
-#define XGI_DEVFS_REMOVE_CONTROL()                                    \
-    ({ \
-        if (xgi_devfs_handles[0] != NULL) \
-        { \
-            devfs_unregister(xgi_devfs_handles[0]); \
-        } \
-    })
-#endif				/* defined(KERNEL_2_4) */
 #endif				/* defined(CONFIG_DEVFS_FS) */
 
-#if defined(CONFIG_DEVFS_FS) && !defined(KERNEL_2_6)
-#define XGI_REGISTER_CHRDEV(x...)    devfs_register_chrdev(x)
-#define XGI_UNREGISTER_CHRDEV(x...)  devfs_unregister_chrdev(x)
-#else
 #define XGI_REGISTER_CHRDEV(x...)    register_chrdev(x)
 #define XGI_UNREGISTER_CHRDEV(x...)  unregister_chrdev(x)
-#endif
 
 #if defined(XGI_REMAP_PFN_RANGE_PRESENT)
 #define XGI_REMAP_PAGE_RANGE(from, offset, x...) \
@@ -519,17 +447,6 @@ static inline void XGI_SET_PAGE_ATTRIB_CACHED(xgi_pte_t * page_ptr)
 #define XGI_SET_PAGE_ATTRIB_CACHED(page_list)
 #endif
 
-#ifdef KERNEL_2_4
-#define XGI_INC_PAGE_COUNT(page)    atomic_inc(&(page)->count)
-#define XGI_DEC_PAGE_COUNT(page)    atomic_dec(&(page)->count)
-#define XGI_PAGE_COUNT(page)		atomic_read(&(page)->count)
-#define XGI_SET_PAGE_COUNT(page,v) 	atomic_set(&(page)->count, v)
-
-#define XGILockPage(page)           set_bit(PG_locked, &(page)->flags)
-#define XGIUnlockPage(page)         clear_bit(PG_locked, &(page)->flags)
-#endif
-
-#ifdef KERNEL_2_6
 /* add for SUSE 9, Jill*/
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 4)
 #define XGI_INC_PAGE_COUNT(page)    atomic_inc(&(page)->count)
@@ -544,7 +461,6 @@ static inline void XGI_SET_PAGE_ATTRIB_CACHED(xgi_pte_t * page_ptr)
 #endif
 #define XGILockPage(page)           SetPageLocked(page)
 #define XGIUnlockPage(page)         ClearPageLocked(page)
-#endif
 
 /*
  * hide a pointer to struct xgi_info_t in a file-private info
@@ -564,11 +480,7 @@ typedef struct {
 /* for the card devices */
 #define XGI_INFO_FROM_FP(filp)  (XGI_GET_FP(filp)->info)
 
-#ifdef KERNEL_2_0
-#define INODE_FROM_FP(filp) ((filp)->f_inode)
-#else
 #define INODE_FROM_FP(filp) ((filp)->f_dentry->d_inode)
-#endif
 
 #define XGI_ATOMIC_SET(data,val)         atomic_set(&(data), (val))
 #define XGI_ATOMIC_INC(data)             atomic_inc(&(data))
