@@ -37,6 +37,12 @@
 #   error "This driver does not support pre-2.6 kernels!"
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 10)
+#   define XGI_REMAP_PFN_RANGE_PRESENT
+#else
+#   define XGI_REMAP_PAGE_RANGE_5
+#endif
+
 #if defined (CONFIG_SMP) && !defined (__SMP__)
 #define __SMP__
 #endif
@@ -170,12 +176,7 @@ EXPORT_NO_SYMBOLS;
 #define XGI_MODULE_PARAMETER(x)        module_param(x, int, 0)
 
 
-/* Earlier 2.4.x kernels don't have pci_disable_device() */
-#ifdef XGI_PCI_DISABLE_DEVICE_PRESENT
 #define XGI_PCI_DISABLE_DEVICE(dev)      pci_disable_device(dev)
-#else
-#define XGI_PCI_DISABLE_DEVICE(dev)
-#endif
 
 /* common defines */
 #define GET_MODULE_SYMBOL(mod,sym)    (const void *) inter_module_get(sym)
@@ -195,15 +196,9 @@ EXPORT_NO_SYMBOLS;
 #define XGI_PCI_SLOT_NUMBER(dev)       PCI_SLOT((dev)->devfn)
 
 #ifdef XGI_PCI_GET_CLASS_PRESENT
-#define XGI_PCI_DEV_PUT(dev)                    pci_dev_put(dev)
 #define XGI_PCI_GET_DEVICE(vendor,device,from)  pci_get_device(vendor,device,from)
-#define XGI_PCI_GET_SLOT(bus,devfn)             pci_get_slot(pci_find_bus(0,bus),devfn)
-#define XGI_PCI_GET_CLASS(class,from)           pci_get_class(class,from)
 #else
-#define XGI_PCI_DEV_PUT(dev)
 #define XGI_PCI_GET_DEVICE(vendor,device,from)  pci_find_device(vendor,device,from)
-#define XGI_PCI_GET_SLOT(bus,devfn)             pci_find_slot(bus,devfn)
-#define XGI_PCI_GET_CLASS(class,from)           pci_find_class(class,from)
 #endif
 
 /*
@@ -429,7 +424,6 @@ typedef struct xgi_pte_s {
  * 2.4.20 is the first kernel to address it properly. The
  * page_attr API provides the means to solve the problem.
  */
-#if defined(XGI_CHANGE_PAGE_ATTR_PRESENT)
 static inline void XGI_SET_PAGE_ATTRIB_UNCACHED(xgi_pte_t * page_ptr)
 {
 	struct page *page = virt_to_page(__va(page_ptr->phys_addr));
@@ -440,10 +434,6 @@ static inline void XGI_SET_PAGE_ATTRIB_CACHED(xgi_pte_t * page_ptr)
 	struct page *page = virt_to_page(__va(page_ptr->phys_addr));
 	change_page_attr(page, 1, PAGE_KERNEL);
 }
-#else
-#define XGI_SET_PAGE_ATTRIB_UNCACHED(page_list)
-#define XGI_SET_PAGE_ATTRIB_CACHED(page_list)
-#endif
 
 /* add for SUSE 9, Jill*/
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 4)
