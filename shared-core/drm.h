@@ -676,7 +676,7 @@ typedef struct drm_fence_arg {
 	unsigned int type;
 	unsigned int flags;
 	unsigned int signaled;
-	unsigned int pad_64;
+	unsigned int pad64;
 	drm_u64_t expand_pad[3]; /*Future expansion */
 } drm_fence_arg_t;
 
@@ -797,6 +797,7 @@ struct drm_bo_info_req {
         unsigned int handle;
 	unsigned int hint;
 	unsigned int fence_class;
+	unsigned int pad64;
 };
 
 struct drm_bo_create_req {
@@ -806,6 +807,7 @@ struct drm_bo_create_req {
 	unsigned int hint;
 	unsigned int page_alignment;
 	drm_bo_type_t type;
+	unsigned int pad64;
 };
 
 struct drm_bo_op_req {
@@ -838,13 +840,14 @@ struct drm_bo_info_rep {
 	unsigned int desired_tile_stride;
         unsigned int hw_tile_stride;
 	unsigned int tile_info;
-        unsigned int pad64;
+	unsigned int pad64;
 	drm_u64_t expand_pad[4]; /*Future expansion */
 };
 
 struct drm_bo_arg_rep {
 	struct drm_bo_info_rep bo_info;
 	int ret;
+	unsigned int pad64;
 };
 
 struct drm_bo_create_arg {
@@ -873,13 +876,13 @@ struct drm_bo_map_wait_idle_arg {
 };
 
 struct drm_bo_op_arg {
-	int handled;
-	unsigned int pad_64;
 	drm_u64_t next;
 	union {
 		struct drm_bo_op_req req;
 		struct drm_bo_arg_rep rep;
 	} d;
+	int handled;
+	unsigned int pad64;
 };
 
 #define DRM_BO_MEM_LOCAL 0
