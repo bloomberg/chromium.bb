@@ -195,9 +195,12 @@ EXPORT_NO_SYMBOLS;
 #define XGI_PCI_BUS_NUMBER(dev)        (dev)->bus->number
 #define XGI_PCI_SLOT_NUMBER(dev)       PCI_SLOT((dev)->devfn)
 
+#define XGI_PCI_GET_CLASS_PRESENT
 #ifdef XGI_PCI_GET_CLASS_PRESENT
+#define XGI_PCI_DEV_PUT(dev)                    pci_dev_put(dev)
 #define XGI_PCI_GET_DEVICE(vendor,device,from)  pci_get_device(vendor,device,from)
 #else
+#define XGI_PCI_DEV_PUT(dev)
 #define XGI_PCI_GET_DEVICE(vendor,device,from)  pci_find_device(vendor,device,from)
 #endif
 
