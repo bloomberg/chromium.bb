@@ -30,20 +30,20 @@
 
 #define RAMFC_WR(offset, val)	NV_WI32(fifoctx + NV10_RAMFC_##offset, (val))
 #define RAMFC_RD(offset)	NV_RI32(fifoctx + NV10_RAMFC_##offset)
-#define NV10_FIFO_CONTEXT_SIZE 64
+#define NV10_RAMFC(c) (dev_priv->ramfc_offset + NV10_RAMFC__SIZE)
+#define NV10_RAMFC__SIZE ((dev_priv->chipset) >= 0x17 ? 64 : 32)
 
 int
 nv10_fifo_create_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
-	uint32_t fifoctx, pushbuf;
+	uint32_t fifoctx = NV10_RAMFC(channel), pushbuf;
 	int i;
 
 	pushbuf = nouveau_chip_instance_get(dev, chan->cmdbuf_obj->instance);
 
-	fifoctx = dev_priv->ramfc_offset + channel*64;
-	for (i=0; i<NV10_FIFO_CONTEXT_SIZE;i+=4)
+	for (i=0; i<NV10_RAMFC__SIZE; i+=4)
 		NV_WI32(fifoctx + i, 0);
 
 	/* Fill entries that are seen filled in dumps of nvidia driver just
@@ -67,11 +67,10 @@ void
 nv10_fifo_destroy_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint32_t fifoctx;
+	uint32_t fifoctx = NV10_RAMFC(channel);
 	int i;
 
-	fifoctx = dev_priv->ramfc_offset + channel*64;
-	for (i=0; i<NV10_FIFO_CONTEXT_SIZE;i+=4)
+	for (i=0; i<NV10_RAMFC__SIZE; i+=4)
 		NV_WI32(fifoctx + i, 0);
 }
 
@@ -79,10 +78,8 @@ int
 nv10_fifo_load_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint32_t fifoctx;
+	uint32_t fifoctx = NV10_RAMFC(channel);
 	uint32_t tmp;
-
-	fifoctx = dev_priv->ramfc_offset + channel*64;
 
 	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1            , 0x00000100 | channel);
 
@@ -98,11 +95,19 @@ nv10_fifo_load_context(drm_device_t *dev, int channel)
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_FETCH        , RAMFC_RD(DMA_FETCH));
 	NV_WRITE(NV04_PFIFO_CACHE1_ENGINE           , RAMFC_RD(ENGINE));
 	NV_WRITE(NV04_PFIFO_CACHE1_PULL1            , RAMFC_RD(PULL1_ENGINE));
-	NV_WRITE(NV10_PFIFO_CACHE1_ACQUIRE_VALUE    , RAMFC_RD(ACQUIRE_VALUE));
-	NV_WRITE(NV10_PFIFO_CACHE1_ACQUIRE_TIMESTAMP, RAMFC_RD(ACQUIRE_TIMESTAMP));
-	NV_WRITE(NV10_PFIFO_CACHE1_ACQUIRE_TIMEOUT  , RAMFC_RD(ACQUIRE_TIMEOUT));
-	NV_WRITE(NV10_PFIFO_CACHE1_SEMAPHORE        , RAMFC_RD(SEMAPHORE));
-	NV_WRITE(NV10_PFIFO_CACHE1_DMA_SUBROUTINE   , RAMFC_RD(DMA_SUBROUTINE));
+
+	if (dev_priv->chipset >= 0x17) {
+		NV_WRITE(NV10_PFIFO_CACHE1_ACQUIRE_VALUE,
+			 RAMFC_RD(ACQUIRE_VALUE));
+		NV_WRITE(NV10_PFIFO_CACHE1_ACQUIRE_TIMESTAMP,
+			 RAMFC_RD(ACQUIRE_TIMESTAMP));
+		NV_WRITE(NV10_PFIFO_CACHE1_ACQUIRE_TIMEOUT,
+			 RAMFC_RD(ACQUIRE_TIMEOUT));
+		NV_WRITE(NV10_PFIFO_CACHE1_SEMAPHORE,
+			 RAMFC_RD(SEMAPHORE));
+		NV_WRITE(NV10_PFIFO_CACHE1_DMA_SUBROUTINE,
+			 RAMFC_RD(DMA_SUBROUTINE));
+	}
 
 	/* Reset NV04_PFIFO_CACHE1_DMA_CTL_AT_INFO to INVALID */
 	tmp = NV_READ(NV04_PFIFO_CACHE1_DMA_CTL) & ~(1<<31);
@@ -115,10 +120,8 @@ int
 nv10_fifo_save_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint32_t fifoctx;
+	uint32_t fifoctx = NV10_RAMFC(channel);
 	uint32_t tmp;
-
-	fifoctx = dev_priv->ramfc_offset + channel*64;
 
 	RAMFC_WR(DMA_PUT          , NV_READ(NV04_PFIFO_CACHE1_DMA_PUT));
 	RAMFC_WR(DMA_GET          , NV_READ(NV04_PFIFO_CACHE1_DMA_GET));
@@ -132,11 +135,19 @@ nv10_fifo_save_context(drm_device_t *dev, int channel)
 	RAMFC_WR(DMA_FETCH	  , NV_READ(NV04_PFIFO_CACHE1_DMA_FETCH));
 	RAMFC_WR(ENGINE           , NV_READ(NV04_PFIFO_CACHE1_ENGINE));
 	RAMFC_WR(PULL1_ENGINE     , NV_READ(NV04_PFIFO_CACHE1_PULL1));
-	RAMFC_WR(ACQUIRE_VALUE    , NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_VALUE));
-	RAMFC_WR(ACQUIRE_TIMESTAMP, NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_TIMESTAMP));
-	RAMFC_WR(ACQUIRE_TIMEOUT  , NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_TIMEOUT));
-	RAMFC_WR(SEMAPHORE        , NV_READ(NV10_PFIFO_CACHE1_SEMAPHORE));
-	RAMFC_WR(DMA_SUBROUTINE   , NV_READ(NV04_PFIFO_CACHE1_DMA_GET));
+
+	if (dev_priv->chipset >= 0x17) {
+		RAMFC_WR(ACQUIRE_VALUE,
+			 NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_VALUE));
+		RAMFC_WR(ACQUIRE_TIMESTAMP,
+			 NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_TIMESTAMP));
+		RAMFC_WR(ACQUIRE_TIMEOUT,
+			 NV_READ(NV10_PFIFO_CACHE1_ACQUIRE_TIMEOUT));
+		RAMFC_WR(SEMAPHORE,
+			 NV_READ(NV10_PFIFO_CACHE1_SEMAPHORE));
+		RAMFC_WR(DMA_SUBROUTINE,
+			 NV_READ(NV04_PFIFO_CACHE1_DMA_GET));
+	}
 
 	return 0;
 }
