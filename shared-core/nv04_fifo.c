@@ -53,10 +53,9 @@ nv04_fifo_create_context(drm_device_t *dev, int channel)
 	RAMFC_WR(DMA_PUT, chan->pushbuf_base);
 	RAMFC_WR(DMA_GET, chan->pushbuf_base);
 	RAMFC_WR(DMA_INSTANCE, nouveau_chip_instance_get(dev, pb->instance));
-	/* NOTE: nvidia use TRIG_128/SIZE_128/MAX_REQS_8 */
-	RAMFC_WR(DMA_FETCH, (NV_PFIFO_CACHE1_DMA_FETCH_TRIG_112_BYTES |
+	RAMFC_WR(DMA_FETCH, (NV_PFIFO_CACHE1_DMA_FETCH_TRIG_128_BYTES |
 			     NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
-			     NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_4 |
+			     NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_8 |
 #ifdef __BIG_ENDIAN
 			     NV_PFIFO_CACHE1_BIG_ENDIAN |
 #endif
@@ -83,8 +82,10 @@ nv04_fifo_load_context(drm_device_t *dev, int channel)
 	int fifoctx = NV04_RAMFC + (channel * NV04_FIFO_CONTEXT_SIZE);
 	uint32_t tmp;
 
-	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUT, RAMFC_RD(DMA_PUT));
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1, (1<<8) | channel);
+
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_GET, RAMFC_RD(DMA_GET));
+	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUT, RAMFC_RD(DMA_PUT));
 	
 	tmp = RAMFC_RD(DMA_INSTANCE);
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_INSTANCE, tmp & 0xFFFF);
