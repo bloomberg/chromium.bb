@@ -598,10 +598,6 @@ typedef struct ati_pcigart_info {
 	int table_size;
 } drm_ati_pcigart_info;
 
-struct drm_drawable_list {
-	drm_drawable_info_t info;
-};
-
 #include "drm_objects.h"
 
 /**
