@@ -436,8 +436,11 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	 */
 	crtc->funcs->mode_set(crtc, mode, adjusted_mode, x, y);
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		if (output->crtc == crtc)
+		if (output->crtc == crtc) {
+			dev_warn(&output->dev->pdev->dev, "%s: set mode %s\n",
+				output->name, mode->name);
 			output->funcs->mode_set(output, mode, adjusted_mode);
+		}
 	}
 	
 	/* Now, enable the clocks, plane, pipe, and outputs that we set up. */
@@ -787,16 +790,14 @@ static void drm_pick_crtcs (drm_device_t *dev)
 
 		des_mode = NULL;
 		list_for_each_entry(des_mode, &output->modes, head) {
-			if (des_mode->flags & DRM_MODE_TYPE_PREFERRED)
+			if (des_mode->type & DRM_MODE_TYPE_PREFERRED)
 				break;
 		}
 
-		/* No preferred mode, let's select another which should pick
-  		 * the default 640x480 if nothing else is here.
-		 */
-		if (!des_mode || !(des_mode->flags & DRM_MODE_TYPE_PREFERRED)) {
+		/* No preferred mode, let's just select the first available */
+		if (!des_mode || !(des_mode->type & DRM_MODE_TYPE_PREFERRED)) {
 			list_for_each_entry(des_mode, &output->modes, head) {
-				if (des_mode->flags & DRM_MODE_TYPE_DEFAULT)
+				if (des_mode)
 					break;
 			}
 		}

@@ -46,12 +46,12 @@
 void drm_mode_debug_printmodeline(struct drm_device *dev,
 				  struct drm_display_mode *mode)
 {
-	DRM_DEBUG("Modeline %d:\"%s\" %d %d %d %d %d %d %d %d %d %d\n",
+	DRM_DEBUG("Modeline %d:\"%s\" %d %d %d %d %d %d %d %d %d %d 0x%x\n",
 		  mode->mode_id, mode->name, mode->vrefresh, mode->clock,
 		  mode->hdisplay, mode->hsync_start,
 		  mode->hsync_end, mode->htotal,
 		  mode->vdisplay, mode->vsync_start,
-		  mode->vsync_end, mode->vtotal);
+		  mode->vsync_end, mode->vtotal, mode->type);
 }
 EXPORT_SYMBOL(drm_mode_debug_printmodeline);
 
@@ -387,8 +387,10 @@ void drm_mode_prune_invalid(struct drm_device *dev,
 	list_for_each_entry_safe(mode, t, mode_list, head) {
 		if (mode->status != MODE_OK) {
 			list_del(&mode->head);
-			if (verbose)
+			if (verbose) {
+				drm_mode_debug_printmodeline(dev, mode);
 				DRM_DEBUG("Not using %s mode %d\n", mode->name, mode->status);
+			}
 			kfree(mode);
 		}
 	}
