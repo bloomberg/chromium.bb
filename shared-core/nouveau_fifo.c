@@ -341,6 +341,19 @@ int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp,
 			nouveau_fifo_free(dev, channel);
 			return ret;
 		}
+
+		/* Temporary hack, to avoid breaking Xv on cards where the
+		 * initial context value for 0x400710 doesn't have these bits
+		 * set.  Proper fix would be to find which object+method is
+		 * responsible for modifying this state.
+		 */
+		if (dev_priv->chipset >= 0x10) {
+			uint32_t tmp;
+			tmp = NV_READ(NV10_PGRAPH_SURFACE) & 0x0007ff00;
+			NV_WRITE(NV10_PGRAPH_SURFACE, tmp);
+			tmp = NV_READ(NV10_PGRAPH_SURFACE) | 0x00020100;
+			NV_WRITE(NV10_PGRAPH_SURFACE, tmp);
+		}
 	}
 
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUSH, 0x00000001);
