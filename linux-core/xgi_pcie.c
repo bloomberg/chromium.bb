@@ -938,12 +938,13 @@ void *xgi_find_pcie_block(xgi_info_t * info, unsigned long address)
 	return NULL;
 }
 
-/*
-	address -- GE HW address
-	return  -- CPU virtual address
-
-    assume the CPU VAddr is continuous in not the same block
-*/
+/**
+ * xgi_find_pcie_virt
+ * @address: GE HW address
+ *
+ * Returns CPU virtual address.  Assumes the CPU VAddr is continuous in not
+ * the same block
+ */
 void *xgi_find_pcie_virt(xgi_info_t * info, unsigned long address)
 {
 	struct list_head *used_list;
