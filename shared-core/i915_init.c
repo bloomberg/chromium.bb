@@ -257,12 +257,22 @@ int i915_driver_unload(drm_device_t *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 
+	if (dev_priv->ring.virtual_start) {
+		drm_core_ioremapfree(&dev_priv->ring.map, dev);
+	}
+
 	if (dev_priv->status_page_dmah) {
 		drm_pci_free(dev, dev_priv->status_page_dmah);
 		dev_priv->status_page_dmah = NULL;
 		dev_priv->hw_status_page = NULL;
 		dev_priv->dma_status_page = 0;
 		/* Need to rewrite hardware status page */
+		I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
+	}
+
+	if (dev_priv->status_gfx_addr) {
+		dev_priv->status_gfx_addr = 0;
+		drm_core_ioremapfree(&dev_priv->hws_map, dev);
 		I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
 	}
 
