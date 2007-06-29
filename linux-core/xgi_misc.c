@@ -111,13 +111,13 @@ void xgi_sarea_info(struct xgi_info * info, struct xgi_sarea_info * req)
 
 static U32 s_invalid_begin = 0;
 
-BOOL xgi_ge_irq_handler(struct xgi_info * info)
+bool xgi_ge_irq_handler(struct xgi_info * info)
 {
 	volatile U8 *mmio_vbase = info->mmio.vbase;
 	volatile U32 *ge_3d_status = (volatile U32 *)(mmio_vbase + 0x2800);
 	U32 int_status = ge_3d_status[4];	// interrupt status
 	U32 auto_reset_count = 0;
-	BOOL is_support_auto_reset = FALSE;
+	bool is_support_auto_reset = FALSE;
 
 	// Check GE on/off
 	if (0 == (0xffffc0f0 & int_status)) {
@@ -128,7 +128,7 @@ BOOL xgi_ge_irq_handler(struct xgi_info * info)
 			ge_3d_status[0x04] = int_status | 0x04000000;
 
 			if (TRUE == is_support_auto_reset) {
-				BOOL is_wrong_signal = FALSE;
+				bool is_wrong_signal = FALSE;
 				static U32 last_int_tick_low,
 				    last_int_tick_high;
 				static U32 new_int_tick_low;
@@ -287,9 +287,9 @@ BOOL xgi_ge_irq_handler(struct xgi_info * info)
 	return FALSE;
 }
 
-BOOL xgi_crt_irq_handler(struct xgi_info * info)
+bool xgi_crt_irq_handler(struct xgi_info * info)
 {
-	BOOL ret = FALSE;
+	bool ret = FALSE;
 	U8 save_3ce = bReadReg(0x3ce);
 
 	if (bIn3cf(0x37) & 0x01)	// CRT1 interrupt just happened
@@ -311,9 +311,9 @@ BOOL xgi_crt_irq_handler(struct xgi_info * info)
 	return (ret);
 }
 
-BOOL xgi_dvi_irq_handler(struct xgi_info * info)
+bool xgi_dvi_irq_handler(struct xgi_info * info)
 {
-	BOOL ret = FALSE;
+	bool ret = FALSE;
 	U8 save_3ce = bReadReg(0x3ce);
 
 	if (bIn3cf(0x38) & 0x20)	// DVI interrupt just happened

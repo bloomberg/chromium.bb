@@ -39,9 +39,9 @@ extern void xgi_sarea_info(struct xgi_info * info, struct xgi_sarea_info * req);
 extern int xgi_get_cpu_id(struct cpu_info *arg);
 
 extern void xgi_restore_registers(struct xgi_info * info);
-extern BOOL xgi_ge_irq_handler(struct xgi_info * info);
-extern BOOL xgi_crt_irq_handler(struct xgi_info * info);
-extern BOOL xgi_dvi_irq_handler(struct xgi_info * info);
+extern bool xgi_ge_irq_handler(struct xgi_info * info);
+extern bool xgi_crt_irq_handler(struct xgi_info * info);
+extern bool xgi_dvi_irq_handler(struct xgi_info * info);
 extern void xgi_waitfor_pci_idle(struct xgi_info * info);
 
 #endif

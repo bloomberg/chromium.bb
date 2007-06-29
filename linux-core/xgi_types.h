@@ -35,7 +35,6 @@
 
 typedef unsigned char U8;	/* 0 to 255                                */
 typedef unsigned short U16;	/* 0 to 65535                              */
-typedef unsigned long BOOL;
 /*
  * mainly for 64-bit linux, where long is 64 bits
  * and win9x, where int is 16 bit.
