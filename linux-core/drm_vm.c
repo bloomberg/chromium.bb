@@ -840,7 +840,8 @@ static void drm_bo_vm_close(struct vm_area_struct *vma)
 #ifdef DRM_ODD_MM_COMPAT
 		drm_bo_delete_vma(bo, vma);
 #endif
-		drm_bo_usage_deref_locked(bo);
+		drm_bo_usage_deref_locked((struct drm_buffer_object **)
+					  &vma->vm_private_data);
 		mutex_unlock(&dev->struct_mutex);
 	}
 	return;

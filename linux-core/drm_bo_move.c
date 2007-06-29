@@ -306,7 +306,7 @@ int drm_buffer_object_transfer(drm_buffer_object_t * bo,
 	INIT_LIST_HEAD(&fbo->p_mm_list);
 #endif
 
-	atomic_inc(&bo->fence->usage);
+	drm_fence_reference_unlocked(&fbo->fence, bo->fence);
 	fbo->pinned_node = NULL;
 	fbo->mem.mm_node->private = (void *)fbo;
 	atomic_set(&fbo->usage, 1);
@@ -339,7 +339,7 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
 	drm_buffer_object_t *old_obj;
 
 	if (bo->fence)
-		drm_fence_usage_deref_unlocked(dev, bo->fence);
+		drm_fence_usage_deref_unlocked(&bo->fence);
 	ret = drm_fence_object_create(dev, fence_class, fence_type,
 				      fence_flags | DRM_FENCE_FLAG_EMIT,
 				      &bo->fence);
@@ -396,7 +396,7 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
 		DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
 		drm_bo_add_to_lru(old_obj);
 
-		drm_bo_usage_deref_locked(old_obj);
+		drm_bo_usage_deref_locked(&old_obj);
 		mutex_unlock(&dev->struct_mutex);
 
 	}

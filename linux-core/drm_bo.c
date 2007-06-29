@@ -269,31 +269,25 @@ static int drm_bo_handle_move_mem(drm_buffer_object_t * bo,
 int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
 		int no_wait)
 {
-
-	drm_fence_object_t *fence = bo->fence;
 	int ret;
 
 	DRM_ASSERT_LOCKED(&bo->mutex);
 
-	if (fence) {
-		drm_device_t *dev = bo->dev;
-		if (drm_fence_object_signaled(dev, fence, bo->fence_type, 0)) {
-			drm_fence_usage_deref_unlocked(dev, fence);
-			bo->fence = NULL;
+	if (bo->fence) {
+		if (drm_fence_object_signaled(bo->fence, bo->fence_type, 0)) {
+			drm_fence_usage_deref_unlocked(&bo->fence);
 			return 0;
 		}
 		if (no_wait) {
 			return -EBUSY;
 		}
 		ret =
-		    drm_fence_object_wait(dev, fence, lazy, ignore_signals,
+		    drm_fence_object_wait(bo->fence, lazy, ignore_signals,
 					  bo->fence_type);
 		if (ret)
 			return ret;
 
-		drm_fence_usage_deref_unlocked(dev, fence);
-		bo->fence = NULL;
-
+		drm_fence_usage_deref_unlocked(&bo->fence);
 	}
 	return 0;
 }
@@ -321,10 +315,8 @@ static int drm_bo_expire_fence(drm_buffer_object_t * bo, int allow_errors)
 					  "Evicting buffer.\n");
 			}
 		}
-		if (bo->fence) {
-			drm_fence_usage_deref_unlocked(dev, bo->fence);
-			bo->fence = NULL;
-		}
+		if (bo->fence)
+			drm_fence_usage_deref_unlocked(&bo->fence);
 	}
 	return 0;
 }
@@ -348,11 +340,9 @@ static void drm_bo_cleanup_refs(drm_buffer_object_t * bo, int remove_all)
 
 	DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
 
-	if (bo->fence && drm_fence_object_signaled(dev, bo->fence, 
-						   bo->fence_type, 0)) {
-		drm_fence_usage_deref_unlocked(dev, bo->fence);
-		bo->fence = NULL;
-	}
+	if (bo->fence && drm_fence_object_signaled(bo->fence,
+						   bo->fence_type, 0))
+		drm_fence_usage_deref_unlocked(&bo->fence);
 
 	if (bo->fence && remove_all)
 		(void)drm_bo_expire_fence(bo, 0);
@@ -383,7 +373,7 @@ static void drm_bo_cleanup_refs(drm_buffer_object_t * bo, int remove_all)
 	}
 
 	if (list_empty(&bo->ddestroy)) {
-		drm_fence_object_flush(dev, bo->fence, bo->fence_type);
+		drm_fence_object_flush(bo->fence, bo->fence_type);
 		list_add_tail(&bo->ddestroy, &bm->ddestroy);
 		schedule_delayed_work(&bm->wq,
 				      ((DRM_HZ / 100) < 1) ? 1 : DRM_HZ / 100);
@@ -503,12 +493,15 @@ static void drm_bo_delayed_workqueue(struct work_struct *work)
 	mutex_unlock(&dev->struct_mutex);
 }
 
-void drm_bo_usage_deref_locked(drm_buffer_object_t * bo)
+void drm_bo_usage_deref_locked(drm_buffer_object_t ** bo)
 {
-	DRM_ASSERT_LOCKED(&bo->dev->struct_mutex);
+        struct drm_buffer_object *tmp_bo = *bo;
+	bo = NULL;
 
-	if (atomic_dec_and_test(&bo->usage)) {
-		drm_bo_destroy_locked(bo);
+	DRM_ASSERT_LOCKED(&tmp_bo->dev->struct_mutex);
+
+	if (atomic_dec_and_test(&tmp_bo->usage)) {
+		drm_bo_destroy_locked(tmp_bo);
 	}
 }
 
@@ -520,17 +513,19 @@ static void drm_bo_base_deref_locked(drm_file_t * priv, drm_user_object_t * uo)
 	DRM_ASSERT_LOCKED(&bo->dev->struct_mutex);
 
 	drm_bo_takedown_vm_locked(bo);
-	drm_bo_usage_deref_locked(bo);
+	drm_bo_usage_deref_locked(&bo);
 }
 
-static void drm_bo_usage_deref_unlocked(drm_buffer_object_t * bo)
+static void drm_bo_usage_deref_unlocked(drm_buffer_object_t ** bo)
 {
-	drm_device_t *dev = bo->dev;
+	struct drm_buffer_object *tmp_bo = *bo;
+	drm_device_t *dev = tmp_bo->dev;
 
-	if (atomic_dec_and_test(&bo->usage)) {
+	*bo = NULL;
+	if (atomic_dec_and_test(&tmp_bo->usage)) {
 		mutex_lock(&dev->struct_mutex);
-		if (atomic_read(&bo->usage) == 0)
-			drm_bo_destroy_locked(bo);
+		if (atomic_read(&tmp_bo->usage) == 0)
+			drm_bo_destroy_locked(tmp_bo);
 		mutex_unlock(&dev->struct_mutex);
 	}
 }
@@ -616,16 +611,15 @@ int drm_fence_buffer_objects(drm_file_t * priv,
 		if (entry->priv_flags & _DRM_BO_FLAG_UNFENCED) {
 			count++;
 			if (entry->fence)
-				drm_fence_usage_deref_locked(dev, entry->fence);
-			entry->fence = fence;
-			atomic_inc(&fence->usage);
+				drm_fence_usage_deref_locked(&entry->fence);
+			entry->fence = drm_fence_reference_locked(fence);
 			DRM_FLAG_MASKED(entry->priv_flags, 0,
 					_DRM_BO_FLAG_UNFENCED);
 			DRM_WAKEUP(&entry->event_queue);
 			drm_bo_add_to_lru(entry);
 		}
 		mutex_unlock(&entry->mutex);
-		drm_bo_usage_deref_locked(entry);
+		drm_bo_usage_deref_locked(&entry);
 		l = f_list.next;
 	}
 	DRM_DEBUG("Fenced %d buffers\n", count);
@@ -742,7 +736,7 @@ static int drm_bo_mem_force_space(drm_device_t * dev,
 
 		ret = drm_bo_evict(entry, mem_type, no_wait);
 		mutex_unlock(&entry->mutex);
-		drm_bo_usage_deref_unlocked(entry);
+		drm_bo_usage_deref_unlocked(&entry);
 		if (ret)
 			return ret;
 		mutex_lock(&dev->struct_mutex);
@@ -962,10 +956,8 @@ static int drm_bo_quick_busy(drm_buffer_object_t * bo)
 
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (fence) {
-		drm_device_t *dev = bo->dev;
-		if (drm_fence_object_signaled(dev, fence, bo->fence_type, 0)) {
-			drm_fence_usage_deref_unlocked(dev, fence);
-			bo->fence = NULL;
+		if (drm_fence_object_signaled(fence, bo->fence_type, 0)) {
+			drm_fence_usage_deref_unlocked(&bo->fence);
 			return 0;
 		}
 		return 1;
@@ -984,16 +976,13 @@ static int drm_bo_busy(drm_buffer_object_t * bo)
 
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (fence) {
-		drm_device_t *dev = bo->dev;
-		if (drm_fence_object_signaled(dev, fence, bo->fence_type, 0)) {
-			drm_fence_usage_deref_unlocked(dev, fence);
-			bo->fence = NULL;
+		if (drm_fence_object_signaled(fence, bo->fence_type, 0)) {
+			drm_fence_usage_deref_unlocked(&bo->fence);
 			return 0;
 		}
-		drm_fence_object_flush(dev, fence, DRM_FENCE_TYPE_EXE);
-		if (drm_fence_object_signaled(dev, fence, bo->fence_type, 0)) {
-			drm_fence_usage_deref_unlocked(dev, fence);
-			bo->fence = NULL;
+		drm_fence_object_flush(fence, DRM_FENCE_TYPE_EXE);
+		if (drm_fence_object_signaled(fence, bo->fence_type, 0)) {
+			drm_fence_usage_deref_unlocked(&bo->fence);
 			return 0;
 		}
 		return 1;
@@ -1190,7 +1179,7 @@ static int drm_buffer_object_map(drm_file_t * priv, uint32_t handle,
 		drm_bo_fill_rep_arg(bo, rep);
       out:
 	mutex_unlock(&bo->mutex);
-	drm_bo_usage_deref_unlocked(bo);
+	drm_bo_usage_deref_unlocked(&bo);
 	return ret;
 }
 
@@ -1216,7 +1205,7 @@ static int drm_buffer_object_unmap(drm_file_t * priv, uint32_t handle)
 	}
 
 	drm_remove_ref_object(priv, ro);
-	drm_bo_usage_deref_locked(bo);
+	drm_bo_usage_deref_locked(&bo);
       out:
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
@@ -1512,7 +1501,7 @@ static int drm_bo_handle_validate(drm_file_t * priv, uint32_t handle,
 
 	mutex_unlock(&bo->mutex);
 
-	drm_bo_usage_deref_unlocked(bo);
+	drm_bo_usage_deref_unlocked(&bo);
 	return ret;
 }
 
@@ -1534,7 +1523,7 @@ static int drm_bo_handle_info(drm_file_t * priv, uint32_t handle,
 		(void)drm_bo_busy(bo);
 	drm_bo_fill_rep_arg(bo, rep);
 	mutex_unlock(&bo->mutex);
-	drm_bo_usage_deref_unlocked(bo);
+	drm_bo_usage_deref_unlocked(&bo);
 	return 0;
 }
 
@@ -1566,7 +1555,7 @@ static int drm_bo_handle_wait(drm_file_t * priv, uint32_t handle,
 
       out:
 	mutex_unlock(&bo->mutex);
-	drm_bo_usage_deref_unlocked(bo);
+	drm_bo_usage_deref_unlocked(&bo);
 	return ret;
 }
 
@@ -1651,7 +1640,7 @@ int drm_buffer_object_create(drm_device_t *dev,
       out_err:
 	mutex_unlock(&bo->mutex);
 
-	drm_bo_usage_deref_unlocked(bo);
+	drm_bo_usage_deref_unlocked(&bo);
 	return ret;
 }
 
@@ -1728,7 +1717,7 @@ int drm_bo_ioctl(DRM_IOCTL_ARGS)
 						   mask &
 						   DRM_BO_FLAG_SHAREABLE);
 			if (rep.ret)
-				drm_bo_usage_deref_unlocked(entry);
+				drm_bo_usage_deref_unlocked(&entry);
 
 			if (rep.ret)
 				break;
@@ -1957,7 +1946,7 @@ restart:
 					allow_errors);
 		mutex_lock(&dev->struct_mutex);
 
-		drm_bo_usage_deref_locked(entry);
+		drm_bo_usage_deref_locked(&entry);
 		if (ret)
 			return ret;
 
@@ -1967,10 +1956,8 @@ restart:
 
 		do_restart = ((next->prev != list) && (next->prev != prev));
 
-		if (nentry != NULL && do_restart) {
-			drm_bo_usage_deref_locked(nentry);
-			nentry = NULL;
-		}
+		if (nentry != NULL && do_restart)
+			drm_bo_usage_deref_locked(&nentry);
 
 		if (do_restart)
 			goto restart;
@@ -2365,7 +2352,7 @@ static void drm_bo_takedown_vm_locked(drm_buffer_object_t * bo)
 	drm_ctl_free(map, sizeof(*map), DRM_MEM_BUFOBJ);
 	list->map = NULL;
 	list->user_token = 0ULL;
-	drm_bo_usage_deref_locked(bo);
+	drm_bo_usage_deref_locked(&bo);
 }
 
 static int drm_bo_setup_vm_locked(drm_buffer_object_t * bo)
