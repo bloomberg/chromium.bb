@@ -113,7 +113,7 @@ static U32 s_invalid_begin = 0;
 
 bool xgi_ge_irq_handler(struct xgi_info * info)
 {
-	volatile U8 *mmio_vbase = info->mmio.vbase;
+	volatile u8 *mmio_vbase = info->mmio.vbase;
 	volatile U32 *ge_3d_status = (volatile U32 *)(mmio_vbase + 0x2800);
 	U32 int_status = ge_3d_status[4];	// interrupt status
 	U32 auto_reset_count = 0;
@@ -135,11 +135,11 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 				static U32 continoue_int_count = 0;
 				// OE II is busy.
 				while (old_ge_status & 0x001c0000) {
-					U16 check;
+					u16 check;
 					// Check Read back status
 					*(mmio_vbase + 0x235c) = 0x80;
 					check =
-					    *((volatile U16 *)(mmio_vbase +
+					    *((volatile u16 *)(mmio_vbase +
 							       0x2360));
 					if ((check & 0x3f) !=
 					    ((check & 0x3f00) >> 8)) {
@@ -149,7 +149,7 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 					// Check RO channel
 					*(mmio_vbase + 0x235c) = 0x83;
 					check =
-					    *((volatile U16 *)(mmio_vbase +
+					    *((volatile u16 *)(mmio_vbase +
 							       0x2360));
 					if ((check & 0x0f) !=
 					    ((check & 0xf0) >> 4)) {
@@ -159,7 +159,7 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 					// Check RW channel
 					*(mmio_vbase + 0x235c) = 0x88;
 					check =
-					    *((volatile U16 *)(mmio_vbase +
+					    *((volatile u16 *)(mmio_vbase +
 							       0x2360));
 					if ((check & 0x0f) !=
 					    ((check & 0xf0) >> 4)) {
@@ -169,7 +169,7 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 					// Check RO channel outstanding
 					*(mmio_vbase + 0x235c) = 0x8f;
 					check =
-					    *((volatile U16 *)(mmio_vbase +
+					    *((volatile u16 *)(mmio_vbase +
 							       0x2360));
 					if (0 != (check & 0x3ff)) {
 						is_wrong_signal = TRUE;
@@ -178,7 +178,7 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 					// Check RW channel outstanding
 					*(mmio_vbase + 0x235c) = 0x90;
 					check =
-					    *((volatile U16 *)(mmio_vbase +
+					    *((volatile u16 *)(mmio_vbase +
 							       0x2360));
 					if (0 != (check & 0x3ff)) {
 						is_wrong_signal = TRUE;
@@ -216,10 +216,10 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 							       ((--time_out) &
 								0xfff)) ;
 							if (0 == time_out) {
-								U8 old_3ce;
-								U8 old_3cf;
-								U8 old_index;
-								U8 old_36;
+								u8 old_3ce;
+								u8 old_3cf;
+								u8 old_index;
+								u8 old_36;
 
 								XGI_INFO
 								    ("Can not reset back 0x%lx!\n",
@@ -290,12 +290,12 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 bool xgi_crt_irq_handler(struct xgi_info * info)
 {
 	bool ret = FALSE;
-	U8 save_3ce = bReadReg(0x3ce);
+	u8 save_3ce = bReadReg(0x3ce);
 
 	if (bIn3cf(0x37) & 0x01)	// CRT1 interrupt just happened
 	{
-		U8 op3cf_3d;
-		U8 op3cf_37;
+		u8 op3cf_3d;
+		u8 op3cf_37;
 
 		// What happened?
 		op3cf_37 = bIn3cf(0x37);
@@ -314,14 +314,14 @@ bool xgi_crt_irq_handler(struct xgi_info * info)
 bool xgi_dvi_irq_handler(struct xgi_info * info)
 {
 	bool ret = FALSE;
-	U8 save_3ce = bReadReg(0x3ce);
+	u8 save_3ce = bReadReg(0x3ce);
 
 	if (bIn3cf(0x38) & 0x20)	// DVI interrupt just happened
 	{
-		U8 op3cf_39;
-		U8 op3cf_37;
-		U8 op3x5_5a;
-		U8 save_3x4 = bReadReg(0x3d4);;
+		u8 op3cf_39;
+		u8 op3cf_37;
+		u8 op3x5_5a;
+		u8 save_3x4 = bReadReg(0x3d4);;
 
 		// What happened?
 		op3cf_37 = bIn3cf(0x37);

@@ -96,7 +96,7 @@
 struct xgi_aperture {
 	U32 base;		// pcie base is different from fb base
 	U32 size;
-	U8 *vbase;
+	u8 *vbase;
 };
 
 struct xgi_screen_info {
@@ -120,7 +120,7 @@ struct xgi_info {
 	int slot;
 	int vendor_id;
 	U32 device_id;
-	U8 revision_id;
+	u8 revision_id;
 
 	/* physical characteristics */
 	struct xgi_aperture mmio;
