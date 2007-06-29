@@ -58,11 +58,6 @@ typedef struct xgi_pcie_block_s {
 	unsigned long processID;
 } xgi_pcie_block_t;
 
-typedef struct xgi_pcie_list_s {
-	xgi_pcie_block_t *head;
-	xgi_pcie_block_t *tail;
-} xgi_pcie_list_t;
-
 typedef struct xgi_pcie_heap_s {
 	struct list_head free_list;
 	struct list_head used_list;
