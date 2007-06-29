@@ -28,10 +28,10 @@
 #include "drm.h"
 #include "nouveau_drv.h"
 
-#define NV04_RAMFC dev_priv->ramfc_offset
 #define RAMFC_WR(offset, val) NV_WI32(fifoctx + NV04_RAMFC_##offset, (val))
 #define RAMFC_RD(offset)      NV_RI32(fifoctx + NV04_RAMFC_##offset)
-#define NV04_FIFO_CONTEXT_SIZE 32
+#define NV04_RAMFC(c) (dev_priv->ramfc_offset + ((c) * NV04_RAMFC__SIZE))
+#define NV04_RAMFC__SIZE 32
 
 int
 nv04_fifo_create_context(drm_device_t *dev, int channel)
@@ -39,14 +39,14 @@ nv04_fifo_create_context(drm_device_t *dev, int channel)
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
 	struct nouveau_object *pb = chan->cmdbuf_obj;
-	int fifoctx = NV04_RAMFC + (channel * NV04_FIFO_CONTEXT_SIZE);
+	uint32_t fifoctx = NV04_RAMFC(channel);
 	int i;
 
 	if (!pb || !pb->instance)
 		return DRM_ERR(EINVAL);
 
 	/* Clear RAMFC */
-	for (i=0; i<NV04_FIFO_CONTEXT_SIZE; i+=4)
+	for (i=0; i<NV04_RAMFC__SIZE; i+=4)
 		NV_WI32(fifoctx + i, 0);
 	
 	/* Setup initial state */
@@ -67,11 +67,10 @@ void
 nv04_fifo_destroy_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint32_t fifoctx;
+	uint32_t fifoctx = NV04_RAMFC(channel);
 	int i;
 
-	fifoctx = NV04_RAMFC + (channel * NV04_FIFO_CONTEXT_SIZE);
-	for (i=0; i<NV04_FIFO_CONTEXT_SIZE; i+=4)
+	for (i=0; i<NV04_RAMFC__SIZE; i+=4)
 		NV_WI32(fifoctx + i, 0);
 }
 
@@ -79,7 +78,7 @@ int
 nv04_fifo_load_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	int fifoctx = NV04_RAMFC + (channel * NV04_FIFO_CONTEXT_SIZE);
+	uint32_t fifoctx = NV04_RAMFC(channel);
 	uint32_t tmp;
 
 	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1, (1<<8) | channel);
@@ -107,7 +106,7 @@ int
 nv04_fifo_save_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	int fifoctx = NV04_RAMFC + (channel * NV04_FIFO_CONTEXT_SIZE);
+	uint32_t fifoctx = NV04_RAMFC(channel);
 	uint32_t tmp;
 
 	RAMFC_WR(DMA_PUT, NV04_PFIFO_CACHE1_DMA_PUT);
