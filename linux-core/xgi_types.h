@@ -45,12 +45,4 @@ typedef unsigned int U32;	/* 0 to 4294967295                         */
 typedef unsigned long U32;	/* 0 to 4294967295                         */
 #endif
 
-#ifndef TRUE
-#define TRUE    1UL
-#endif
-
-#ifndef FALSE
-#define FALSE   0UL
-#endif
-
 #endif
