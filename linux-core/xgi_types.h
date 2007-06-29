@@ -33,27 +33,17 @@
  *                                 Typedefs                                 *
  ***************************************************************************/
 
-typedef unsigned char V8;	/* "void": enumerated or multiple fields   */
-typedef unsigned short V16;	/* "void": enumerated or multiple fields   */
 typedef unsigned char U8;	/* 0 to 255                                */
 typedef unsigned short U16;	/* 0 to 65535                              */
-typedef signed char S8;		/* -128 to 127                             */
-typedef signed short S16;	/* -32768 to 32767                         */
-typedef float F32;		/* IEEE Single Precision (S1E8M23)         */
-typedef double F64;		/* IEEE Double Precision (S1E11M52)        */
 typedef unsigned long BOOL;
 /*
  * mainly for 64-bit linux, where long is 64 bits
  * and win9x, where int is 16 bit.
  */
 #if defined(vxworks)
-typedef unsigned int V32;	/* "void": enumerated or multiple fields   */
 typedef unsigned int U32;	/* 0 to 4294967295                         */
-typedef signed int S32;		/* -2147483648 to 2147483647               */
 #else
-typedef unsigned long V32;	/* "void": enumerated or multiple fields   */
 typedef unsigned long U32;	/* 0 to 4294967295                         */
-typedef signed long S32;	/* -2147483648 to 2147483647               */
 #endif
 
 #ifndef TRUE
