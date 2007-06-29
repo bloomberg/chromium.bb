@@ -93,26 +93,26 @@
 /* need a fake device number for control device; just to flag it for msgs */
 #define XGI_CONTROL_DEVICE_NUMBER   100
 
-typedef struct {
+struct xgi_aperture {
 	U32 base;		// pcie base is different from fb base
 	U32 size;
 	U8 *vbase;
-} xgi_aperture_t;
+};
 
-typedef struct xgi_screen_info_s {
+struct xgi_screen_info {
 	U32 scrn_start;
 	U32 scrn_xres;
 	U32 scrn_yres;
 	U32 scrn_bpp;
 	U32 scrn_pitch;
-} xgi_screen_info_t;
+};
 
-typedef struct xgi_sarea_info_s {
+struct xgi_sarea_info {
 	U32 bus_addr;
 	U32 size;
-} xgi_sarea_info_t;
+};
 
-typedef struct xgi_info_s {
+struct xgi_info {
 	struct pci_dev *dev;
 	int flags;
 	int device_number;
@@ -123,11 +123,11 @@ typedef struct xgi_info_s {
 	U8 revision_id;
 
 	/* physical characteristics */
-	xgi_aperture_t mmio;
-	xgi_aperture_t fb;
-	xgi_aperture_t pcie;
-	xgi_screen_info_t scrn_info;
-	xgi_sarea_info_t sarea_info;
+	struct xgi_aperture mmio;
+	struct xgi_aperture fb;
+	struct xgi_aperture pcie;
+	struct xgi_screen_info scrn_info;
+	struct xgi_sarea_info sarea_info;
 
 	/* look up table parameters */
 	U32 *lut_base;
@@ -150,18 +150,18 @@ typedef struct xgi_info_s {
 	struct semaphore info_sem;
 	struct semaphore fb_sem;
 	struct semaphore pcie_sem;
-} xgi_info_t;
+};
 
-typedef struct xgi_ioctl_post_vbios {
+struct xgi_ioctl_post_vbios {
 	U32 bus;
 	U32 slot;
-} xgi_ioctl_post_vbios_t;
+};
 
-typedef enum xgi_mem_location_s {
+enum xgi_mem_location {
 	NON_LOCAL = 0,
 	LOCAL = 1,
 	INVALID = 0x7fffffff
-} xgi_mem_location_t;
+};
 
 enum PcieOwner {
 	PCIE_2D = 0,
@@ -176,23 +176,23 @@ enum PcieOwner {
 	PCIE_INVALID = 0x7fffffff
 };
 
-typedef struct xgi_mem_req_s {
-	xgi_mem_location_t location;
+struct xgi_mem_req {
+	enum xgi_mem_location location;
 	unsigned long size;
 	unsigned long is_front;
 	enum PcieOwner owner;
 	unsigned long pid;
-} xgi_mem_req_t;
+};
 
-typedef struct xgi_mem_alloc_s {
-	xgi_mem_location_t location;
+struct xgi_mem_alloc {
+	enum xgi_mem_location location;
 	unsigned long size;
 	unsigned long bus_addr;
 	unsigned long hw_addr;
 	unsigned long pid;
-} xgi_mem_alloc_t;
+};
 
-typedef struct xgi_chip_info_s {
+struct xgi_chip_info {
 	U32 device_id;
 	char device_name[32];
 	U32 vendor_id;
@@ -200,17 +200,17 @@ typedef struct xgi_chip_info_s {
 	U32 fb_size;
 	U32 sarea_bus_addr;
 	U32 sarea_size;
-} xgi_chip_info_t;
+};
 
-typedef struct xgi_opengl_cmd_s {
+struct xgi_opengl_cmd {
 	U32 cmd;
-} xgi_opengl_cmd_t;
+};
 
-typedef struct xgi_mmio_info_s {
-	xgi_opengl_cmd_t cmd_head;
+struct xgi_mmio_info {
+	struct xgi_opengl_cmd cmd_head;
 	void *mmioBase;
 	int size;
-} xgi_mmio_info_t;
+};
 
 typedef enum {
 	BTYPE_2D = 0,
@@ -220,33 +220,33 @@ typedef enum {
 	BTYPE_NONE = 0x7fffffff
 } BATCH_TYPE;
 
-typedef struct xgi_cmd_info_s {
+struct xgi_cmd_info {
 	BATCH_TYPE _firstBeginType;
 	U32 _firstBeginAddr;
 	U32 _firstSize;
 	U32 _curDebugID;
 	U32 _lastBeginAddr;
 	U32 _beginCount;
-} xgi_cmd_info_t;
+};
 
-typedef struct xgi_state_info_s {
+struct xgi_state_info {
 	U32 _fromState;
 	U32 _toState;
-} xgi_state_info_t;
+};
 
-typedef struct cpu_info_s {
+struct cpu_info {
 	U32 _eax;
 	U32 _ebx;
 	U32 _ecx;
 	U32 _edx;
-} cpu_info_t;
+};
 
-typedef struct xgi_mem_pid_s {
+struct xgi_mem_pid {
 	struct list_head list;
-	xgi_mem_location_t location;
+	enum xgi_mem_location location;
 	unsigned long bus_addr;
 	unsigned long pid;
-} xgi_mem_pid_t;
+};
 
 /*
  * Ioctl definitions
@@ -278,32 +278,32 @@ typedef struct xgi_mem_pid_s {
 #define XGI_ESC_CPUID               (XGI_IOCTL_BASE + 20)
 #define XGI_ESC_MEM_COLLECT          (XGI_IOCTL_BASE + 21)
 
-#define XGI_IOCTL_DEVICE_INFO       _IOR(XGI_IOCTL_MAGIC, XGI_ESC_DEVICE_INFO, xgi_chip_info_t)
+#define XGI_IOCTL_DEVICE_INFO       _IOR(XGI_IOCTL_MAGIC, XGI_ESC_DEVICE_INFO, struct xgi_chip_info)
 #define XGI_IOCTL_POST_VBIOS        _IO(XGI_IOCTL_MAGIC, XGI_ESC_POST_VBIOS)
 
 #define XGI_IOCTL_FB_INIT           _IO(XGI_IOCTL_MAGIC, XGI_ESC_FB_INIT)
-#define XGI_IOCTL_FB_ALLOC          _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_FB_ALLOC, xgi_mem_req_t)
+#define XGI_IOCTL_FB_ALLOC          _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_FB_ALLOC, struct xgi_mem_req)
 #define XGI_IOCTL_FB_FREE           _IOW(XGI_IOCTL_MAGIC, XGI_ESC_FB_FREE, unsigned long)
 
 #define XGI_IOCTL_PCIE_INIT         _IO(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_INIT)
-#define XGI_IOCTL_PCIE_ALLOC        _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_ALLOC, xgi_mem_req_t)
+#define XGI_IOCTL_PCIE_ALLOC        _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_ALLOC, struct xgi_mem_req)
 #define XGI_IOCTL_PCIE_FREE         _IOW(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_FREE, unsigned long)
 
-#define XGI_IOCTL_PUT_SCREEN_INFO   _IOW(XGI_IOCTL_MAGIC, XGI_ESC_PUT_SCREEN_INFO, xgi_screen_info_t)
-#define XGI_IOCTL_GET_SCREEN_INFO   _IOR(XGI_IOCTL_MAGIC, XGI_ESC_GET_SCREEN_INFO, xgi_screen_info_t)
+#define XGI_IOCTL_PUT_SCREEN_INFO   _IOW(XGI_IOCTL_MAGIC, XGI_ESC_PUT_SCREEN_INFO, struct xgi_screen_info)
+#define XGI_IOCTL_GET_SCREEN_INFO   _IOR(XGI_IOCTL_MAGIC, XGI_ESC_GET_SCREEN_INFO, struct xgi_screen_info)
 
 #define XGI_IOCTL_GE_RESET          _IO(XGI_IOCTL_MAGIC, XGI_ESC_GE_RESET)
-#define XGI_IOCTL_SAREA_INFO        _IOW(XGI_IOCTL_MAGIC, XGI_ESC_SAREA_INFO, xgi_sarea_info_t)
+#define XGI_IOCTL_SAREA_INFO        _IOW(XGI_IOCTL_MAGIC, XGI_ESC_SAREA_INFO, struct xgi_sarea_info)
 #define XGI_IOCTL_DUMP_REGISTER     _IO(XGI_IOCTL_MAGIC, XGI_ESC_DUMP_REGISTER)
 #define XGI_IOCTL_DEBUG_INFO        _IO(XGI_IOCTL_MAGIC, XGI_ESC_DEBUG_INFO)
-#define XGI_IOCTL_MMIO_INFO         _IOR(XGI_IOCTL_MAGIC, XGI_ESC_MMIO_INFO, xgi_mmio_info_t)
+#define XGI_IOCTL_MMIO_INFO         _IOR(XGI_IOCTL_MAGIC, XGI_ESC_MMIO_INFO, struct xgi_mmio_info)
 
-#define XGI_IOCTL_SUBMIT_CMDLIST	_IOWR(XGI_IOCTL_MAGIC, XGI_ESC_SUBMIT_CMDLIST, xgi_cmd_info_t)
+#define XGI_IOCTL_SUBMIT_CMDLIST	_IOWR(XGI_IOCTL_MAGIC, XGI_ESC_SUBMIT_CMDLIST, struct xgi_cmd_info)
 #define XGI_IOCTL_TEST_RWINKERNEL	_IOWR(XGI_IOCTL_MAGIC, XGI_ESC_TEST_RWINKERNEL, unsigned long)
-#define XGI_IOCTL_STATE_CHANGE      _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_STATE_CHANGE, xgi_state_info_t)
+#define XGI_IOCTL_STATE_CHANGE      _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_STATE_CHANGE, struct xgi_state_info)
 
 #define XGI_IOCTL_PCIE_CHECK        _IO(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_CHECK)
-#define XGI_IOCTL_CPUID             _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_CPUID, cpu_info_t)
+#define XGI_IOCTL_CPUID             _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_CPUID, struct cpu_info)
 #define XGI_IOCTL_MAXNR          30
 
 /*
@@ -338,28 +338,28 @@ typedef struct xgi_mem_pid_s {
             (((offset) >= (info)->pcie.base) \
             && (((offset) + (length)) <= (info)->pcie.base + (info)->pcie.size))
 
-extern int xgi_fb_heap_init(xgi_info_t * info);
-extern void xgi_fb_heap_cleanup(xgi_info_t * info);
+extern int xgi_fb_heap_init(struct xgi_info * info);
+extern void xgi_fb_heap_cleanup(struct xgi_info * info);
 
-extern void xgi_fb_alloc(xgi_info_t * info, xgi_mem_req_t * req,
-			 xgi_mem_alloc_t * alloc);
-extern void xgi_fb_free(xgi_info_t * info, unsigned long offset);
-extern void xgi_mem_collect(xgi_info_t * info, unsigned int *pcnt);
+extern void xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_req * req,
+			 struct xgi_mem_alloc * alloc);
+extern void xgi_fb_free(struct xgi_info * info, unsigned long offset);
+extern void xgi_mem_collect(struct xgi_info * info, unsigned int *pcnt);
 
-extern int xgi_pcie_heap_init(xgi_info_t * info);
-extern void xgi_pcie_heap_cleanup(xgi_info_t * info);
+extern int xgi_pcie_heap_init(struct xgi_info * info);
+extern void xgi_pcie_heap_cleanup(struct xgi_info * info);
 
-extern void xgi_pcie_alloc(xgi_info_t * info, unsigned long size,
-			   enum PcieOwner owner, xgi_mem_alloc_t * alloc);
-extern void xgi_pcie_free(xgi_info_t * info, unsigned long offset);
+extern void xgi_pcie_alloc(struct xgi_info * info, unsigned long size,
+			   enum PcieOwner owner, struct xgi_mem_alloc * alloc);
+extern void xgi_pcie_free(struct xgi_info * info, unsigned long offset);
 extern void xgi_pcie_heap_check(void);
-extern struct xgi_pcie_block_s *xgi_find_pcie_block(xgi_info_t * info,
+extern struct xgi_pcie_block *xgi_find_pcie_block(struct xgi_info * info,
 						    unsigned long address);
-extern void *xgi_find_pcie_virt(xgi_info_t * info, unsigned long address);
+extern void *xgi_find_pcie_virt(struct xgi_info * info, unsigned long address);
 
-extern void xgi_read_pcie_mem(xgi_info_t * info, xgi_mem_req_t * req);
-extern void xgi_write_pcie_mem(xgi_info_t * info, xgi_mem_req_t * req);
+extern void xgi_read_pcie_mem(struct xgi_info * info, struct xgi_mem_req * req);
+extern void xgi_write_pcie_mem(struct xgi_info * info, struct xgi_mem_req * req);
 
-extern void xgi_test_rwinkernel(xgi_info_t * info, unsigned long address);
+extern void xgi_test_rwinkernel(struct xgi_info * info, unsigned long address);
 
 #endif

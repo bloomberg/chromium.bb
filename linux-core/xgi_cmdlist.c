@@ -47,17 +47,17 @@ U32 s_flush2D[AGPCMDLIST_FLUSH_CMD_LEN] = {
 	FLUSH_2D
 };
 
-xgi_cmdring_info_t s_cmdring;
+struct xgi_cmdring_info s_cmdring;
 
-static void addFlush2D(xgi_info_t * info);
-static U32 getCurBatchBeginPort(xgi_cmd_info_t * pCmdInfo);
-static void triggerHWCommandList(xgi_info_t * info, U32 triggerCounter);
+static void addFlush2D(struct xgi_info * info);
+static U32 getCurBatchBeginPort(struct xgi_cmd_info * pCmdInfo);
+static void triggerHWCommandList(struct xgi_info * info, U32 triggerCounter);
 static void xgi_cmdlist_reset(void);
 
-int xgi_cmdlist_initialize(xgi_info_t * info, U32 size)
+int xgi_cmdlist_initialize(struct xgi_info * info, U32 size)
 {
-	//xgi_mem_req_t mem_req;
-	xgi_mem_alloc_t mem_alloc;
+	//struct xgi_mem_req mem_req;
+	struct xgi_mem_alloc mem_alloc;
 
 	//mem_req.size = size;
 
@@ -76,7 +76,7 @@ int xgi_cmdlist_initialize(xgi_info_t * info, U32 size)
 	return 1;
 }
 
-void xgi_submit_cmdlist(xgi_info_t * info, xgi_cmd_info_t * pCmdInfo)
+void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
 {
 	U32 beginPort;
     /** XGI_INFO("Jong-xgi_submit_cmdlist-Begin \n"); **/
@@ -238,7 +238,7 @@ void xgi_submit_cmdlist(xgi_info_t * info, xgi_cmd_info_t * pCmdInfo)
                 2 - fb
                 3 - logout
 */
-void xgi_state_change(xgi_info_t * info, xgi_state_info_t * pStateInfo)
+void xgi_state_change(struct xgi_info * info, struct xgi_state_info * pStateInfo)
 {
 #define STATE_CONSOLE   0
 #define STATE_GRAPHIC   1
@@ -273,7 +273,7 @@ void xgi_cmdlist_reset(void)
 	s_cmdring._cmdRingOffset = 0;
 }
 
-void xgi_cmdlist_cleanup(xgi_info_t * info)
+void xgi_cmdlist_cleanup(struct xgi_info * info)
 {
 	if (s_cmdring._cmdRingBuffer != 0) {
 		xgi_pcie_free(info, s_cmdring._cmdRingBusAddr);
@@ -283,7 +283,7 @@ void xgi_cmdlist_cleanup(xgi_info_t * info)
 	}
 }
 
-static void triggerHWCommandList(xgi_info_t * info, U32 triggerCounter)
+static void triggerHWCommandList(struct xgi_info * info, U32 triggerCounter)
 {
 	static U32 s_triggerID = 1;
 
@@ -295,7 +295,7 @@ static void triggerHWCommandList(xgi_info_t * info, U32 triggerCounter)
 	}
 }
 
-static U32 getCurBatchBeginPort(xgi_cmd_info_t * pCmdInfo)
+static U32 getCurBatchBeginPort(struct xgi_cmd_info * pCmdInfo)
 {
 	// Convert the batch type to begin port ID
 	switch (pCmdInfo->_firstBeginType) {
@@ -313,7 +313,7 @@ static U32 getCurBatchBeginPort(xgi_cmd_info_t * pCmdInfo)
 	}
 }
 
-static void addFlush2D(xgi_info_t * info)
+static void addFlush2D(struct xgi_info * info)
 {
 	U32 *flushBatchVirtAddr;
 	U32 flushBatchHWAddr;

@@ -53,14 +53,14 @@ int xgi_major = XGI_DEV_MAJOR;	/* xgi reserved major device number. */
 
 static int xgi_num_devices = 0;
 
-xgi_info_t xgi_devices[XGI_MAX_DEVICES];
+struct xgi_info xgi_devices[XGI_MAX_DEVICES];
 
 #if defined(XGI_PM_SUPPORT_APM)
 static struct pm_dev *apm_xgi_dev[XGI_MAX_DEVICES] = { 0 };
 #endif
 
 /* add one for the control device */
-xgi_info_t xgi_ctl_device;
+struct xgi_info xgi_ctl_device;
 wait_queue_head_t xgi_ctl_waitqueue;
 
 #ifdef CONFIG_PROC_FS
@@ -74,7 +74,7 @@ devfs_handle_t xgi_devfs_handles[XGI_MAX_DEVICES];
 struct list_head xgi_mempid_list;
 
 /* xgi_ functions.. do not take a state device parameter  */
-static int xgi_post_vbios(xgi_ioctl_post_vbios_t * info);
+static int xgi_post_vbios(struct xgi_ioctl_post_vbios * info);
 static void xgi_proc_create(void);
 static void xgi_proc_remove_all(struct proc_dir_entry *);
 static void xgi_proc_remove(void);
@@ -110,7 +110,7 @@ unsigned int xgi_kern_ctl_poll(struct file *, poll_table *);
 void xgi_kern_isr_bh(unsigned long);
 irqreturn_t xgi_kern_isr(int, void *, struct pt_regs *);
 
-static void xgi_lock_init(xgi_info_t * info);
+static void xgi_lock_init(struct xgi_info * info);
 
 #if defined(XGI_PM_SUPPORT_ACPI)
 int xgi_kern_acpi_standby(struct pci_dev *, u32);
@@ -128,7 +128,7 @@ int xgi_kern_acpi_resume(struct pci_dev *);
 #define XGI_CHECK_PCI_CONFIG(xgi) \
     xgi_check_pci_config(xgi, __LINE__)
 
-static inline void xgi_check_pci_config(xgi_info_t * info, int line)
+static inline void xgi_check_pci_config(struct xgi_info * info, int line)
 {
 	unsigned short cmd, flag = 0;
 
@@ -208,7 +208,7 @@ static struct pci_driver xgi_pci_driver = {
  */
 int xgi_kern_probe(struct pci_dev *dev, const struct pci_device_id *id_table)
 {
-	xgi_info_t *info;
+	struct xgi_info *info;
 
 	if ((dev->vendor != PCI_VENDOR_ID_XGI)
 	    || (dev->class != (PCI_CLASS_DISPLAY_VGA << 8))) {
@@ -361,8 +361,8 @@ void xgi_kern_vma_open(struct vm_area_struct *vma)
 		 vma->vm_start, vma->vm_end, XGI_VMA_OFFSET(vma));
 
 	if (XGI_VMA_PRIVATE(vma)) {
-		xgi_pcie_block_t *block =
-		    (xgi_pcie_block_t *) XGI_VMA_PRIVATE(vma);
+		struct xgi_pcie_block *block =
+		    (struct xgi_pcie_block *) XGI_VMA_PRIVATE(vma);
 		XGI_ATOMIC_INC(block->use_count);
 	}
 }
@@ -373,8 +373,8 @@ void xgi_kern_vma_release(struct vm_area_struct *vma)
 		 vma->vm_start, vma->vm_end, XGI_VMA_OFFSET(vma));
 
 	if (XGI_VMA_PRIVATE(vma)) {
-		xgi_pcie_block_t *block =
-		    (xgi_pcie_block_t *) XGI_VMA_PRIVATE(vma);
+		struct xgi_pcie_block *block =
+		    (struct xgi_pcie_block *) XGI_VMA_PRIVATE(vma);
 		XGI_ATOMIC_DEC(block->use_count);
 
 		/*
@@ -393,7 +393,7 @@ void xgi_kern_vma_release(struct vm_area_struct *vma)
 struct page *xgi_kern_vma_nopage(struct vm_area_struct *vma,
 				 unsigned long address, int *type)
 {
-	xgi_pcie_block_t *block = (xgi_pcie_block_t *) XGI_VMA_PRIVATE(vma);
+	struct xgi_pcie_block *block = (struct xgi_pcie_block *) XGI_VMA_PRIVATE(vma);
 	struct page *page = NOPAGE_SIGBUS;
 	unsigned long offset = 0;
 	unsigned long page_addr = 0;
@@ -436,7 +436,7 @@ struct page *xgi_kern_vma_nopage(struct vm_area_struct *vma,
 struct page *xgi_kern_vma_nopage(struct vm_area_struct *vma,
 				 unsigned long address, int write_access)
 {
-	xgi_pcie_block_t *block = (xgi_pcie_block_t *) XGI_VMA_PRIVATE(vma);
+	struct xgi_pcie_block *block = (struct xgi_pcie_block *) XGI_VMA_PRIVATE(vma);
 	struct page *page = NOPAGE_SIGBUS;
 	unsigned long offset = 0;
 	unsigned long page_addr = 0;
@@ -496,15 +496,15 @@ static struct file_operations xgi_fops = {
 	.release = xgi_kern_release,
 };
 
-static xgi_file_private_t *xgi_alloc_file_private(void)
+static struct xgi_file_private *xgi_alloc_file_private(void)
 {
-	xgi_file_private_t *fp;
+	struct xgi_file_private *fp;
 
-	XGI_KMALLOC(fp, sizeof(xgi_file_private_t));
+	XGI_KMALLOC(fp, sizeof(struct xgi_file_private));
 	if (!fp)
 		return NULL;
 
-	memset(fp, 0, sizeof(xgi_file_private_t));
+	memset(fp, 0, sizeof(struct xgi_file_private));
 
 	/* initialize this file's event queue */
 	init_waitqueue_head(&fp->wait_queue);
@@ -514,17 +514,17 @@ static xgi_file_private_t *xgi_alloc_file_private(void)
 	return fp;
 }
 
-static void xgi_free_file_private(xgi_file_private_t * fp)
+static void xgi_free_file_private(struct xgi_file_private * fp)
 {
 	if (fp == NULL)
 		return;
 
-	XGI_KFREE(fp, sizeof(xgi_file_private_t));
+	XGI_KFREE(fp, sizeof(struct xgi_file_private));
 }
 
 int xgi_kern_open(struct inode *inode, struct file *filp)
 {
-	xgi_info_t *info = NULL;
+	struct xgi_info *info = NULL;
 	int dev_num;
 	int result = 0, status;
 
@@ -621,7 +621,7 @@ int xgi_kern_open(struct inode *inode, struct file *filp)
 
 int xgi_kern_release(struct inode *inode, struct file *filp)
 {
-	xgi_info_t *info = XGI_INFO_FROM_FP(filp);
+	struct xgi_info *info = XGI_INFO_FROM_FP(filp);
 
 	XGI_CHECK_PCI_CONFIG(info);
 
@@ -674,8 +674,8 @@ int xgi_kern_release(struct inode *inode, struct file *filp)
 int xgi_kern_mmap(struct file *filp, struct vm_area_struct *vma)
 {
 	//struct inode        *inode = INODE_FROM_FP(filp);
-	xgi_info_t *info = XGI_INFO_FROM_FP(filp);
-	xgi_pcie_block_t *block;
+	struct xgi_info *info = XGI_INFO_FROM_FP(filp);
+	struct xgi_pcie_block *block;
 	int pages = 0;
 	unsigned long prot;
 
@@ -792,8 +792,8 @@ int xgi_kern_mmap(struct file *filp, struct vm_area_struct *vma)
 
 unsigned int xgi_kern_poll(struct file *filp, struct poll_table_struct *wait)
 {
-	xgi_file_private_t *fp;
-	xgi_info_t *info;
+	struct xgi_file_private *fp;
+	struct xgi_info *info;
 	unsigned int mask = 0;
 	unsigned long eflags;
 
@@ -828,8 +828,8 @@ unsigned int xgi_kern_poll(struct file *filp, struct poll_table_struct *wait)
 int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 		   unsigned int cmd, unsigned long arg)
 {
-	xgi_info_t *info;
-	xgi_mem_alloc_t *alloc = NULL;
+	struct xgi_info *info;
+	struct xgi_mem_alloc *alloc = NULL;
 
 	int status = 0;
 	void *arg_copy;
@@ -880,21 +880,21 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 	} else
 		XGI_INFO("Jong-copy_from_user-OK! \n");
 
-	alloc = (xgi_mem_alloc_t *) arg_copy;
+	alloc = (struct xgi_mem_alloc *) arg_copy;
 	XGI_INFO("Jong-succeeded in copy_from_user 0x%lx, 0x%x bytes.\n", arg,
 		 arg_size);
 
 	switch (_IOC_NR(cmd)) {
 	case XGI_ESC_DEVICE_INFO:
 		XGI_INFO("Jong-xgi_ioctl_get_device_info \n");
-		xgi_get_device_info(info, (struct xgi_chip_info_s *)arg_copy);
+		xgi_get_device_info(info, (struct xgi_chip_info *)arg_copy);
 		break;
 	case XGI_ESC_POST_VBIOS:
 		XGI_INFO("Jong-xgi_ioctl_post_vbios \n");
 		break;
 	case XGI_ESC_FB_ALLOC:
 		XGI_INFO("Jong-xgi_ioctl_fb_alloc \n");
-		xgi_fb_alloc(info, (struct xgi_mem_req_s *)arg_copy, alloc);
+		xgi_fb_alloc(info, (struct xgi_mem_req *)arg_copy, alloc);
 		break;
 	case XGI_ESC_FB_FREE:
 		XGI_INFO("Jong-xgi_ioctl_fb_free \n");
@@ -906,8 +906,8 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 		break;
 	case XGI_ESC_PCIE_ALLOC:
 		XGI_INFO("Jong-xgi_ioctl_pcie_alloc \n");
-		xgi_pcie_alloc(info, ((xgi_mem_req_t *) arg_copy)->size,
-			       ((xgi_mem_req_t *) arg_copy)->owner, alloc);
+		xgi_pcie_alloc(info, ((struct xgi_mem_req *) arg_copy)->size,
+			       ((struct xgi_mem_req *) arg_copy)->owner, alloc);
 		break;
 	case XGI_ESC_PCIE_FREE:
 		XGI_INFO("Jong-xgi_ioctl_pcie_free: bus_addr = 0x%lx \n",
@@ -920,15 +920,15 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 		break;
 	case XGI_ESC_GET_SCREEN_INFO:
 		XGI_INFO("Jong-xgi_get_screen_info \n");
-		xgi_get_screen_info(info, (struct xgi_screen_info_s *)arg_copy);
+		xgi_get_screen_info(info, (struct xgi_screen_info *)arg_copy);
 		break;
 	case XGI_ESC_PUT_SCREEN_INFO:
 		XGI_INFO("Jong-xgi_put_screen_info \n");
-		xgi_put_screen_info(info, (struct xgi_screen_info_s *)arg_copy);
+		xgi_put_screen_info(info, (struct xgi_screen_info *)arg_copy);
 		break;
 	case XGI_ESC_MMIO_INFO:
 		XGI_INFO("Jong-xgi_ioctl_get_mmio_info \n");
-		xgi_get_mmio_info(info, (struct xgi_mmio_info_s *)arg_copy);
+		xgi_get_mmio_info(info, (struct xgi_mmio_info *)arg_copy);
 		break;
 	case XGI_ESC_GE_RESET:
 		XGI_INFO("Jong-xgi_ioctl_ge_reset \n");
@@ -936,7 +936,7 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 		break;
 	case XGI_ESC_SAREA_INFO:
 		XGI_INFO("Jong-xgi_ioctl_sarea_info \n");
-		xgi_sarea_info(info, (struct xgi_sarea_info_s *)arg_copy);
+		xgi_sarea_info(info, (struct xgi_sarea_info *)arg_copy);
 		break;
 	case XGI_ESC_DUMP_REGISTER:
 		XGI_INFO("Jong-xgi_ioctl_dump_register \n");
@@ -945,12 +945,12 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 	case XGI_ESC_DEBUG_INFO:
 		XGI_INFO("Jong-xgi_ioctl_restore_registers \n");
 		xgi_restore_registers(info);
-		//xgi_write_pcie_mem(info, (struct xgi_mem_req_s *) arg_copy);
-		//xgi_read_pcie_mem(info, (struct xgi_mem_req_s *) arg_copy);
+		//xgi_write_pcie_mem(info, (struct xgi_mem_req *) arg_copy);
+		//xgi_read_pcie_mem(info, (struct xgi_mem_req *) arg_copy);
 		break;
 	case XGI_ESC_SUBMIT_CMDLIST:
 		XGI_INFO("Jong-xgi_ioctl_submit_cmdlist \n");
-		xgi_submit_cmdlist(info, (xgi_cmd_info_t *) arg_copy);
+		xgi_submit_cmdlist(info, (struct xgi_cmd_info *) arg_copy);
 		break;
 	case XGI_ESC_TEST_RWINKERNEL:
 		XGI_INFO("Jong-xgi_test_rwinkernel \n");
@@ -958,11 +958,11 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 		break;
 	case XGI_ESC_STATE_CHANGE:
 		XGI_INFO("Jong-xgi_state_change \n");
-		xgi_state_change(info, (xgi_state_info_t *) arg_copy);
+		xgi_state_change(info, (struct xgi_state_info *) arg_copy);
 		break;
 	case XGI_ESC_CPUID:
 		XGI_INFO("Jong-XGI_ESC_CPUID \n");
-		xgi_get_cpu_id((struct cpu_info_s *)arg_copy);
+		xgi_get_cpu_id((struct cpu_info *)arg_copy);
 		break;
 	default:
 		XGI_INFO("Jong-xgi_ioctl_default \n");
@@ -985,7 +985,7 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
  */
 int xgi_kern_ctl_open(struct inode *inode, struct file *filp)
 {
-	xgi_info_t *info = &xgi_ctl_device;
+	struct xgi_info *info = &xgi_ctl_device;
 
 	int rc = 0;
 
@@ -1011,7 +1011,7 @@ int xgi_kern_ctl_open(struct inode *inode, struct file *filp)
 
 int xgi_kern_ctl_close(struct inode *inode, struct file *filp)
 {
-	xgi_info_t *info = XGI_INFO_FROM_FP(filp);
+	struct xgi_info *info = XGI_INFO_FROM_FP(filp);
 
 	XGI_INFO("Jong-xgi_kern_ctl_close\n");
 
@@ -1031,7 +1031,7 @@ int xgi_kern_ctl_close(struct inode *inode, struct file *filp)
 
 unsigned int xgi_kern_ctl_poll(struct file *filp, poll_table * wait)
 {
-	//xgi_info_t  *info = XGI_INFO_FROM_FP(filp);;
+	//struct xgi_info  *info = XGI_INFO_FROM_FP(filp);;
 	unsigned int ret = 0;
 
 	if (!(filp->f_flags & O_NONBLOCK)) {
@@ -1073,7 +1073,7 @@ static u8 xgi_find_pcie_capability(struct pci_dev *dev)
 	return 0;
 }
 
-static struct pci_dev *xgi_get_pci_device(xgi_info_t * info)
+static struct pci_dev *xgi_get_pci_device(struct xgi_info * info)
 {
 	struct pci_dev *dev;
 
@@ -1095,8 +1095,8 @@ int xgi_kern_read_card_info(char *page, char **start, off_t off,
 	char *type;
 	int len = 0;
 
-	xgi_info_t *info;
-	info = (xgi_info_t *) data;
+	struct xgi_info *info;
+	info = (struct xgi_info *) data;
 
 	dev = xgi_get_pci_device(info);
 	if (!dev)
@@ -1143,8 +1143,8 @@ static void xgi_proc_create(void)
 	struct proc_dir_entry *entry;
 	struct proc_dir_entry *proc_xgi_pcie, *proc_xgi_cards;
 
-	xgi_info_t *info;
-	xgi_info_t *xgi_max_devices;
+	struct xgi_info *info;
+	struct xgi_info *xgi_max_devices;
 
 	/* world readable directory */
 	int flags = S_IFDIR | S_IRUGO | S_IXUGO;
@@ -1268,7 +1268,7 @@ static void xgi_proc_remove(void)
  */
 irqreturn_t xgi_kern_isr(int irq, void *dev_id, struct pt_regs *regs)
 {
-	xgi_info_t *info = (xgi_info_t *) dev_id;
+	struct xgi_info *info = (struct xgi_info *) dev_id;
 	u32 need_to_run_bottom_half = 0;
 
 	//XGI_INFO("xgi_kern_isr \n");
@@ -1286,7 +1286,7 @@ irqreturn_t xgi_kern_isr(int irq, void *dev_id, struct pt_regs *regs)
 
 void xgi_kern_isr_bh(unsigned long data)
 {
-	xgi_info_t *info = (xgi_info_t *) data;
+	struct xgi_info *info = (struct xgi_info *) data;
 
 	XGI_INFO("xgi_kern_isr_bh \n");
 
@@ -1295,7 +1295,7 @@ void xgi_kern_isr_bh(unsigned long data)
 	XGI_CHECK_PCI_CONFIG(info);
 }
 
-static void xgi_lock_init(xgi_info_t * info)
+static void xgi_lock_init(struct xgi_info * info)
 {
 	if (info == NULL)
 		return;
@@ -1309,7 +1309,7 @@ static void xgi_lock_init(xgi_info_t * info)
 	XGI_ATOMIC_SET(info->use_count, 0);
 }
 
-static void xgi_dev_init(xgi_info_t * info)
+static void xgi_dev_init(struct xgi_info * info)
 {
 	struct pci_dev *pdev = NULL;
 	struct xgi_dev *dev;
@@ -1354,7 +1354,7 @@ static void xgi_dev_init(xgi_info_t * info)
 
 static int __init xgi_init_module(void)
 {
-	xgi_info_t *info = &xgi_devices[xgi_num_devices];
+	struct xgi_info *info = &xgi_devices[xgi_num_devices];
 	int i, result;
 
 	XGI_INFO("Jong-xgi kernel driver %s initializing\n", XGI_DRV_VERSION);
@@ -1421,7 +1421,7 @@ static int __init xgi_init_module(void)
 
 	/* init the xgi control device */
 	{
-		xgi_info_t *info_ctl = &xgi_ctl_device;
+		struct xgi_info *info_ctl = &xgi_ctl_device;
 		xgi_lock_init(info_ctl);
 	}
 

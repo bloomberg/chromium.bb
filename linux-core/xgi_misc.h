@@ -29,19 +29,19 @@
 #ifndef _XGI_MISC_H_
 #define _XGI_MISC_H_
 
-extern void xgi_dump_register(xgi_info_t * info);
-extern void xgi_get_device_info(xgi_info_t * info, xgi_chip_info_t * req);
-extern void xgi_get_mmio_info(xgi_info_t * info, xgi_mmio_info_t * req);
-extern void xgi_get_screen_info(xgi_info_t * info, xgi_screen_info_t * req);
-extern void xgi_put_screen_info(xgi_info_t * info, xgi_screen_info_t * req);
-extern void xgi_ge_reset(xgi_info_t * info);
-extern void xgi_sarea_info(xgi_info_t * info, xgi_sarea_info_t * req);
-extern int xgi_get_cpu_id(struct cpu_info_s *arg);
+extern void xgi_dump_register(struct xgi_info * info);
+extern void xgi_get_device_info(struct xgi_info * info, struct xgi_chip_info * req);
+extern void xgi_get_mmio_info(struct xgi_info * info, struct xgi_mmio_info * req);
+extern void xgi_get_screen_info(struct xgi_info * info, struct xgi_screen_info * req);
+extern void xgi_put_screen_info(struct xgi_info * info, struct xgi_screen_info * req);
+extern void xgi_ge_reset(struct xgi_info * info);
+extern void xgi_sarea_info(struct xgi_info * info, struct xgi_sarea_info * req);
+extern int xgi_get_cpu_id(struct cpu_info *arg);
 
-extern void xgi_restore_registers(xgi_info_t * info);
-extern BOOL xgi_ge_irq_handler(xgi_info_t * info);
-extern BOOL xgi_crt_irq_handler(xgi_info_t * info);
-extern BOOL xgi_dvi_irq_handler(xgi_info_t * info);
-extern void xgi_waitfor_pci_idle(xgi_info_t * info);
+extern void xgi_restore_registers(struct xgi_info * info);
+extern BOOL xgi_ge_irq_handler(struct xgi_info * info);
+extern BOOL xgi_crt_irq_handler(struct xgi_info * info);
+extern BOOL xgi_dvi_irq_handler(struct xgi_info * info);
+extern void xgi_waitfor_pci_idle(struct xgi_info * info);
 
 #endif

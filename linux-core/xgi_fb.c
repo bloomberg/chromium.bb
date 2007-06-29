@@ -33,19 +33,19 @@
 
 #define XGI_FB_HEAP_START 0x1000000
 
-static xgi_mem_heap_t *xgi_fb_heap;
-static kmem_cache_t *xgi_fb_cache_block = NULL;
+static struct xgi_mem_heap *xgi_fb_heap;
+static struct kmem_cache *xgi_fb_cache_block = NULL;
 extern struct list_head xgi_mempid_list;
 
-static xgi_mem_block_t *xgi_mem_new_node(void);
-static xgi_mem_block_t *xgi_mem_alloc(xgi_info_t * info, unsigned long size);
-static xgi_mem_block_t *xgi_mem_free(xgi_info_t * info, unsigned long offset);
+static struct xgi_mem_block *xgi_mem_new_node(void);
+static struct xgi_mem_block *xgi_mem_alloc(struct xgi_info * info, unsigned long size);
+static struct xgi_mem_block *xgi_mem_free(struct xgi_info * info, unsigned long offset);
 
-void xgi_fb_alloc(xgi_info_t * info,
-		  xgi_mem_req_t * req, xgi_mem_alloc_t * alloc)
+void xgi_fb_alloc(struct xgi_info * info,
+		  struct xgi_mem_req * req, struct xgi_mem_alloc * alloc)
 {
-	xgi_mem_block_t *block;
-	xgi_mem_pid_t *mempid_block;
+	struct xgi_mem_block *block;
+	struct xgi_mem_pid *mempid_block;
 
 	if (req->is_front) {
 		alloc->location = LOCAL;
@@ -74,7 +74,7 @@ void xgi_fb_alloc(xgi_info_t * info,
 
 			/* manage mempid */
 			mempid_block =
-			    kmalloc(sizeof(xgi_mem_pid_t), GFP_KERNEL);
+			    kmalloc(sizeof(struct xgi_mem_pid), GFP_KERNEL);
 			mempid_block->location = LOCAL;
 			mempid_block->bus_addr = alloc->bus_addr;
 			mempid_block->pid = alloc->pid;
@@ -90,12 +90,12 @@ void xgi_fb_alloc(xgi_info_t * info,
 	}
 }
 
-void xgi_fb_free(xgi_info_t * info, unsigned long bus_addr)
+void xgi_fb_free(struct xgi_info * info, unsigned long bus_addr)
 {
-	xgi_mem_block_t *block;
+	struct xgi_mem_block *block;
 	unsigned long offset = bus_addr - info->fb.base;
-	xgi_mem_pid_t *mempid_block;
-	xgi_mem_pid_t *mempid_freeblock = NULL;
+	struct xgi_mem_pid *mempid_block;
+	struct xgi_mem_pid *mempid_freeblock = NULL;
 	struct list_head *mempid_list;
 
 	if (offset < 0) {
@@ -114,7 +114,7 @@ void xgi_fb_free(xgi_info_t * info, unsigned long bus_addr)
 		mempid_list = xgi_mempid_list.next;
 		while (mempid_list != &xgi_mempid_list) {
 			mempid_block =
-			    list_entry(mempid_list, struct xgi_mem_pid_s, list);
+			    list_entry(mempid_list, struct xgi_mem_pid, list);
 			if (mempid_block->location == LOCAL
 			    && mempid_block->bus_addr == bus_addr) {
 				mempid_freeblock = mempid_block;
@@ -132,11 +132,11 @@ void xgi_fb_free(xgi_info_t * info, unsigned long bus_addr)
 	}
 }
 
-int xgi_fb_heap_init(xgi_info_t * info)
+int xgi_fb_heap_init(struct xgi_info * info)
 {
-	xgi_mem_block_t *block;
+	struct xgi_mem_block *block;
 
-	xgi_fb_heap = kmalloc(sizeof(xgi_mem_heap_t), GFP_KERNEL);
+	xgi_fb_heap = kmalloc(sizeof(struct xgi_mem_heap), GFP_KERNEL);
 	if (!xgi_fb_heap) {
 		XGI_ERROR("xgi_fb_heap alloc failed\n");
 		return 0;
@@ -147,7 +147,7 @@ int xgi_fb_heap_init(xgi_info_t * info)
 	INIT_LIST_HEAD(&xgi_fb_heap->sort_list);
 
 	xgi_fb_cache_block =
-	    kmem_cache_create("xgi_fb_block", sizeof(xgi_mem_block_t), 0,
+	    kmem_cache_create("xgi_fb_block", sizeof(struct xgi_mem_block), 0,
 			      SLAB_HWCACHE_ALIGN, NULL, NULL);
 
 	if (NULL == xgi_fb_cache_block) {
@@ -156,7 +156,7 @@ int xgi_fb_heap_init(xgi_info_t * info)
 	}
 
 	block =
-	    (xgi_mem_block_t *) kmem_cache_alloc(xgi_fb_cache_block,
+	    (struct xgi_mem_block *) kmem_cache_alloc(xgi_fb_cache_block,
 						 GFP_KERNEL);
 	if (!block) {
 		XGI_ERROR("kmem_cache_alloc failed\n");
@@ -190,10 +190,10 @@ int xgi_fb_heap_init(xgi_info_t * info)
 	return 0;
 }
 
-void xgi_fb_heap_cleanup(xgi_info_t * info)
+void xgi_fb_heap_cleanup(struct xgi_info * info)
 {
 	struct list_head *free_list, *temp;
-	xgi_mem_block_t *block;
+	struct xgi_mem_block *block;
 	int i;
 
 	if (xgi_fb_heap) {
@@ -202,7 +202,7 @@ void xgi_fb_heap_cleanup(xgi_info_t * info)
 			temp = free_list->next;
 			while (temp != free_list) {
 				block =
-				    list_entry(temp, struct xgi_mem_block_s,
+				    list_entry(temp, struct xgi_mem_block,
 					       list);
 				temp = temp->next;
 
@@ -225,12 +225,12 @@ void xgi_fb_heap_cleanup(xgi_info_t * info)
 	}
 }
 
-static xgi_mem_block_t *xgi_mem_new_node(void)
+static struct xgi_mem_block *xgi_mem_new_node(void)
 {
-	xgi_mem_block_t *block;
+	struct xgi_mem_block *block;
 
 	block =
-	    (xgi_mem_block_t *) kmem_cache_alloc(xgi_fb_cache_block,
+	    (struct xgi_mem_block *) kmem_cache_alloc(xgi_fb_cache_block,
 						 GFP_KERNEL);
 	if (!block) {
 		XGI_ERROR("kmem_cache_alloc failed\n");
@@ -241,23 +241,23 @@ static xgi_mem_block_t *xgi_mem_new_node(void)
 }
 
 #if 0
-static void xgi_mem_insert_node_after(xgi_mem_list_t * list,
-				      xgi_mem_block_t * current,
-				      xgi_mem_block_t * block);
-static void xgi_mem_insert_node_before(xgi_mem_list_t * list,
-				       xgi_mem_block_t * current,
-				       xgi_mem_block_t * block);
-static void xgi_mem_insert_node_head(xgi_mem_list_t * list,
-				     xgi_mem_block_t * block);
-static void xgi_mem_insert_node_tail(xgi_mem_list_t * list,
-				     xgi_mem_block_t * block);
-static void xgi_mem_delete_node(xgi_mem_list_t * list, xgi_mem_block_t * block);
+static void xgi_mem_insert_node_after(struct xgi_mem_list * list,
+				      struct xgi_mem_block * current,
+				      struct xgi_mem_block * block);
+static void xgi_mem_insert_node_before(struct xgi_mem_list * list,
+				       struct xgi_mem_block * current,
+				       struct xgi_mem_block * block);
+static void xgi_mem_insert_node_head(struct xgi_mem_list * list,
+				     struct xgi_mem_block * block);
+static void xgi_mem_insert_node_tail(struct xgi_mem_list * list,
+				     struct xgi_mem_block * block);
+static void xgi_mem_delete_node(struct xgi_mem_list * list, struct xgi_mem_block * block);
 /*
  *  insert node:block after node:current
  */
-static void xgi_mem_insert_node_after(xgi_mem_list_t * list,
-				      xgi_mem_block_t * current,
-				      xgi_mem_block_t * block)
+static void xgi_mem_insert_node_after(struct xgi_mem_list * list,
+				      struct xgi_mem_block * current,
+				      struct xgi_mem_block * block)
 {
 	block->prev = current;
 	block->next = current->next;
@@ -273,9 +273,9 @@ static void xgi_mem_insert_node_after(xgi_mem_list_t * list,
 /*
  *  insert node:block before node:current
  */
-static void xgi_mem_insert_node_before(xgi_mem_list_t * list,
-				       xgi_mem_block_t * current,
-				       xgi_mem_block_t * block)
+static void xgi_mem_insert_node_before(struct xgi_mem_list * list,
+				       struct xgi_mem_block * current,
+				       struct xgi_mem_block * block)
 {
 	block->prev = current->prev;
 	block->next = current;
@@ -286,7 +286,7 @@ static void xgi_mem_insert_node_before(xgi_mem_list_t * list,
 		block->prev->next = block;
 	}
 }
-void xgi_mem_insert_node_head(xgi_mem_list_t * list, xgi_mem_block_t * block)
+void xgi_mem_insert_node_head(struct xgi_mem_list * list, struct xgi_mem_block * block)
 {
 	block->next = list->head;
 	block->prev = NULL;
@@ -299,8 +299,8 @@ void xgi_mem_insert_node_head(xgi_mem_list_t * list, xgi_mem_block_t * block)
 	list->head = block;
 }
 
-static void xgi_mem_insert_node_tail(xgi_mem_list_t * list,
-				     xgi_mem_block_t * block)
+static void xgi_mem_insert_node_tail(struct xgi_mem_list * list,
+				     struct xgi_mem_block * block)
 {
 	block->next = NULL;
 	block->prev = list->tail;
@@ -312,7 +312,7 @@ static void xgi_mem_insert_node_tail(xgi_mem_list_t * list,
 	list->tail = block;
 }
 
-static void xgi_mem_delete_node(xgi_mem_list_t * list, xgi_mem_block_t * block)
+static void xgi_mem_delete_node(struct xgi_mem_list * list, struct xgi_mem_block * block)
 {
 	if (block == list->head) {
 		list->head = block->next;
@@ -331,11 +331,11 @@ static void xgi_mem_delete_node(xgi_mem_list_t * list, xgi_mem_block_t * block)
 	block->next = block->prev = NULL;
 }
 #endif
-static xgi_mem_block_t *xgi_mem_alloc(xgi_info_t * info,
+static struct xgi_mem_block *xgi_mem_alloc(struct xgi_info * info,
 				      unsigned long originalSize)
 {
 	struct list_head *free_list;
-	xgi_mem_block_t *block, *free_block, *used_block;
+	struct xgi_mem_block *block, *free_block, *used_block;
 
 	unsigned long size = (originalSize + PAGE_SIZE - 1) & PAGE_MASK;
 
@@ -358,7 +358,7 @@ static xgi_mem_block_t *xgi_mem_alloc(xgi_info_t * info,
 
 	while (free_list != &xgi_fb_heap->free_list) {
 		XGI_INFO("free_list: 0x%px \n", free_list);
-		block = list_entry(free_list, struct xgi_mem_block_s, list);
+		block = list_entry(free_list, struct xgi_mem_block, list);
 		if (size <= block->size) {
 			break;
 		}
@@ -406,18 +406,18 @@ static xgi_mem_block_t *xgi_mem_alloc(xgi_info_t * info,
 	return (used_block);
 }
 
-static xgi_mem_block_t *xgi_mem_free(xgi_info_t * info, unsigned long offset)
+static struct xgi_mem_block *xgi_mem_free(struct xgi_info * info, unsigned long offset)
 {
 	struct list_head *free_list, *used_list;
-	xgi_mem_block_t *used_block = NULL, *block = NULL;
-	xgi_mem_block_t *prev, *next;
+	struct xgi_mem_block *used_block = NULL, *block = NULL;
+	struct xgi_mem_block *prev, *next;
 
 	unsigned long upper;
 	unsigned long lower;
 
 	used_list = xgi_fb_heap->used_list.next;
 	while (used_list != &xgi_fb_heap->used_list) {
-		block = list_entry(used_list, struct xgi_mem_block_s, list);
+		block = list_entry(used_list, struct xgi_mem_block, list);
 		if (block->offset == offset) {
 			break;
 		}
@@ -441,7 +441,7 @@ static xgi_mem_block_t *xgi_mem_free(xgi_info_t * info, unsigned long offset)
 
 	free_list = xgi_fb_heap->free_list.next;
 	while (free_list != &xgi_fb_heap->free_list) {
-		block = list_entry(free_list, struct xgi_mem_block_s, list);
+		block = list_entry(free_list, struct xgi_mem_block, list);
 
 		if (block->offset == upper) {
 			next = block;

@@ -33,15 +33,15 @@
 #define XGI_PCIE_ALLOC_MAX_ORDER    1	/* 8K in Kernel 2.4.* */
 #endif
 
-typedef struct xgi_page_block_s {
-	struct xgi_page_block_s *next;
+struct xgi_page_block {
+	struct xgi_page_block *next;
 	unsigned long phys_addr;
 	unsigned long virt_addr;
 	unsigned long page_count;
 	unsigned long page_order;
-} xgi_page_block_t;
+};
 
-typedef struct xgi_pcie_block_s {
+struct xgi_pcie_block {
 	struct list_head list;
 	unsigned long offset;	/* block's offset in pcie memory, begin from 0 */
 	unsigned long size;	/* The block size.              */
@@ -50,19 +50,19 @@ typedef struct xgi_pcie_block_s {
 
 	unsigned long page_count;
 	unsigned long page_order;
-	xgi_page_block_t *page_block;
-	xgi_pte_t *page_table;	/* list of physical pages allocated */
+	struct xgi_page_block *page_block;
+	struct xgi_pte *page_table;	/* list of physical pages allocated */
 
 	atomic_t use_count;
 	enum PcieOwner owner;
 	unsigned long processID;
-} xgi_pcie_block_t;
+};
 
-typedef struct xgi_pcie_heap_s {
+struct xgi_pcie_heap {
 	struct list_head free_list;
 	struct list_head used_list;
 	struct list_head sort_list;
 	unsigned long max_freesize;
-} xgi_pcie_heap_t;
+};
 
 #endif

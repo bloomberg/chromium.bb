@@ -57,20 +57,20 @@ typedef enum {
 	AGPCMDLIST_DUMY_END_BATCH_LEN = AGPCMDLIST_BEGIN_SIZE
 } CMD_SIZE;
 
-typedef struct xgi_cmdring_info_s {
+struct xgi_cmdring_info {
 	U32 _cmdRingSize;
 	U32 _cmdRingBuffer;
 	U32 _cmdRingBusAddr;
 	U32 _lastBatchStartAddr;
 	U32 _cmdRingOffset;
-} xgi_cmdring_info_t;
+};
 
-extern int xgi_cmdlist_initialize(xgi_info_t * info, U32 size);
+extern int xgi_cmdlist_initialize(struct xgi_info * info, U32 size);
 
-extern void xgi_submit_cmdlist(xgi_info_t * info, xgi_cmd_info_t * pCmdInfo);
+extern void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo);
 
-extern void xgi_state_change(xgi_info_t * info, xgi_state_info_t * pStateInfo);
+extern void xgi_state_change(struct xgi_info * info, struct xgi_state_info * pStateInfo);
 
-extern void xgi_cmdlist_cleanup(xgi_info_t * info);
+extern void xgi_cmdlist_cleanup(struct xgi_info * info);
 
 #endif				/* _XGI_CMDLIST_H_ */

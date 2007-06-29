@@ -29,42 +29,19 @@
 #ifndef _XGI_FB_H_
 #define _XGI_FB_H_
 
-typedef struct xgi_mem_block_s {
+struct xgi_mem_block {
 	struct list_head list;
 	unsigned long offset;
 	unsigned long size;
 	atomic_t use_count;
-} xgi_mem_block_t;
+};
 
-typedef struct xgi_mem_heap_s {
+struct xgi_mem_heap {
 	struct list_head free_list;
 	struct list_head used_list;
 	struct list_head sort_list;
 	unsigned long max_freesize;
 	spinlock_t lock;
-} xgi_mem_heap_t;
-
-#if 0
-typedef struct xgi_mem_block_s {
-	struct xgi_mem_block_s *next;
-	struct xgi_mem_block_s *prev;
-	unsigned long offset;
-	unsigned long size;
-	atomic_t use_count;
-} xgi_mem_block_t;
-
-typedef struct xgi_mem_list_s {
-	xgi_mem_block_t *head;
-	xgi_mem_block_t *tail;
-} xgi_mem_list_t;
-
-typedef struct xgi_mem_heap_s {
-	xgi_mem_list_t *free_list;
-	xgi_mem_list_t *used_list;
-	xgi_mem_list_t *sort_list;
-	unsigned long max_freesize;
-	spinlock_t lock;
-} xgi_mem_heap_t;
-#endif
+};
 
 #endif

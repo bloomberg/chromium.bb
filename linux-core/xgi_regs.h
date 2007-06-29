@@ -50,25 +50,25 @@
 #endif
 
 /* Hardware access functions */
-static inline void OUT3C5B(xgi_info_t * info, u8 index, u8 data)
+static inline void OUT3C5B(struct xgi_info * info, u8 index, u8 data)
 {
 	OUTB(0x3C4, index);
 	OUTB(0x3C5, data);
 }
 
-static inline void OUT3X5B(xgi_info_t * info, u8 index, u8 data)
+static inline void OUT3X5B(struct xgi_info * info, u8 index, u8 data)
 {
 	OUTB(0x3D4, index);
 	OUTB(0x3D5, data);
 }
 
-static inline void OUT3CFB(xgi_info_t * info, u8 index, u8 data)
+static inline void OUT3CFB(struct xgi_info * info, u8 index, u8 data)
 {
 	OUTB(0x3CE, index);
 	OUTB(0x3CF, data);
 }
 
-static inline u8 IN3C5B(xgi_info_t * info, u8 index)
+static inline u8 IN3C5B(struct xgi_info * info, u8 index)
 {
 	volatile u8 data = 0;
 	OUTB(0x3C4, index);
@@ -76,7 +76,7 @@ static inline u8 IN3C5B(xgi_info_t * info, u8 index)
 	return data;
 }
 
-static inline u8 IN3X5B(xgi_info_t * info, u8 index)
+static inline u8 IN3X5B(struct xgi_info * info, u8 index)
 {
 	volatile u8 data = 0;
 	OUTB(0x3D4, index);
@@ -84,7 +84,7 @@ static inline u8 IN3X5B(xgi_info_t * info, u8 index)
 	return data;
 }
 
-static inline u8 IN3CFB(xgi_info_t * info, u8 index)
+static inline u8 IN3CFB(struct xgi_info * info, u8 index)
 {
 	volatile u8 data = 0;
 	OUTB(0x3CE, index);
@@ -92,25 +92,25 @@ static inline u8 IN3CFB(xgi_info_t * info, u8 index)
 	return data;
 }
 
-static inline void OUT3C5W(xgi_info_t * info, u8 index, u16 data)
+static inline void OUT3C5W(struct xgi_info * info, u8 index, u16 data)
 {
 	OUTB(0x3C4, index);
 	OUTB(0x3C5, data);
 }
 
-static inline void OUT3X5W(xgi_info_t * info, u8 index, u16 data)
+static inline void OUT3X5W(struct xgi_info * info, u8 index, u16 data)
 {
 	OUTB(0x3D4, index);
 	OUTB(0x3D5, data);
 }
 
-static inline void OUT3CFW(xgi_info_t * info, u8 index, u8 data)
+static inline void OUT3CFW(struct xgi_info * info, u8 index, u8 data)
 {
 	OUTB(0x3CE, index);
 	OUTB(0x3CF, data);
 }
 
-static inline u8 IN3C5W(xgi_info_t * info, u8 index)
+static inline u8 IN3C5W(struct xgi_info * info, u8 index)
 {
 	volatile u8 data = 0;
 	OUTB(0x3C4, index);
@@ -118,7 +118,7 @@ static inline u8 IN3C5W(xgi_info_t * info, u8 index)
 	return data;
 }
 
-static inline u8 IN3X5W(xgi_info_t * info, u8 index)
+static inline u8 IN3X5W(struct xgi_info * info, u8 index)
 {
 	volatile u8 data = 0;
 	OUTB(0x3D4, index);
@@ -126,7 +126,7 @@ static inline u8 IN3X5W(xgi_info_t * info, u8 index)
 	return data;
 }
 
-static inline u8 IN3CFW(xgi_info_t * info, u8 index)
+static inline u8 IN3CFW(struct xgi_info * info, u8 index)
 {
 	volatile u8 data = 0;
 	OUTB(0x3CE, index);
@@ -134,14 +134,14 @@ static inline u8 IN3CFW(xgi_info_t * info, u8 index)
 	return data;
 }
 
-static inline u8 readAttr(xgi_info_t * info, u8 index)
+static inline u8 readAttr(struct xgi_info * info, u8 index)
 {
 	INB(0x3DA);		/* flip-flop to index */
 	OUTB(0x3C0, index);
 	return INB(0x3C1);
 }
 
-static inline void writeAttr(xgi_info_t * info, u8 index, u8 value)
+static inline void writeAttr(struct xgi_info * info, u8 index, u8 value)
 {
 	INB(0x3DA);		/* flip-flop to index */
 	OUTB(0x3C0, index);
@@ -151,7 +151,7 @@ static inline void writeAttr(xgi_info_t * info, u8 index, u8 value)
 /*
  * Graphic engine register (2d/3d) acessing interface
  */
-static inline void WriteRegDWord(xgi_info_t * info, u32 addr, u32 data)
+static inline void WriteRegDWord(struct xgi_info * info, u32 addr, u32 data)
 {
 	/* Jong 05/25/2006 */
 	XGI_INFO("Jong-WriteRegDWord()-Begin \n");
@@ -165,31 +165,31 @@ static inline void WriteRegDWord(xgi_info_t * info, u32 addr, u32 data)
 	XGI_INFO("Jong-WriteRegDWord()-End \n");
 }
 
-static inline void WriteRegWord(xgi_info_t * info, u32 addr, u16 data)
+static inline void WriteRegWord(struct xgi_info * info, u32 addr, u16 data)
 {
 	*(volatile u16 *)(info->mmio.vbase + addr) = (data);
 }
 
-static inline void WriteRegByte(xgi_info_t * info, u32 addr, u8 data)
+static inline void WriteRegByte(struct xgi_info * info, u32 addr, u8 data)
 {
 	*(volatile u8 *)(info->mmio.vbase + addr) = (data);
 }
 
-static inline u32 ReadRegDWord(xgi_info_t * info, u32 addr)
+static inline u32 ReadRegDWord(struct xgi_info * info, u32 addr)
 {
 	volatile u32 data;
 	data = *(volatile u32 *)(info->mmio.vbase + addr);
 	return data;
 }
 
-static inline u16 ReadRegWord(xgi_info_t * info, u32 addr)
+static inline u16 ReadRegWord(struct xgi_info * info, u32 addr)
 {
 	volatile u16 data;
 	data = *(volatile u16 *)(info->mmio.vbase + addr);
 	return data;
 }
 
-static inline u8 ReadRegByte(xgi_info_t * info, u32 addr)
+static inline u8 ReadRegByte(struct xgi_info * info, u32 addr)
 {
 	volatile u8 data;
 	data = *(volatile u8 *)(info->mmio.vbase + addr);
@@ -197,25 +197,25 @@ static inline u8 ReadRegByte(xgi_info_t * info, u32 addr)
 }
 
 #if 0
-extern void OUT3C5B(xgi_info_t * info, u8 index, u8 data);
-extern void OUT3X5B(xgi_info_t * info, u8 index, u8 data);
-extern void OUT3CFB(xgi_info_t * info, u8 index, u8 data);
-extern u8 IN3C5B(xgi_info_t * info, u8 index);
-extern u8 IN3X5B(xgi_info_t * info, u8 index);
-extern u8 IN3CFB(xgi_info_t * info, u8 index);
-extern void OUT3C5W(xgi_info_t * info, u8 index, u8 data);
-extern void OUT3X5W(xgi_info_t * info, u8 index, u8 data);
-extern void OUT3CFW(xgi_info_t * info, u8 index, u8 data);
-extern u8 IN3C5W(xgi_info_t * info, u8 index);
-extern u8 IN3X5W(xgi_info_t * info, u8 index);
-extern u8 IN3CFW(xgi_info_t * info, u8 index);
+extern void OUT3C5B(struct xgi_info * info, u8 index, u8 data);
+extern void OUT3X5B(struct xgi_info * info, u8 index, u8 data);
+extern void OUT3CFB(struct xgi_info * info, u8 index, u8 data);
+extern u8 IN3C5B(struct xgi_info * info, u8 index);
+extern u8 IN3X5B(struct xgi_info * info, u8 index);
+extern u8 IN3CFB(struct xgi_info * info, u8 index);
+extern void OUT3C5W(struct xgi_info * info, u8 index, u8 data);
+extern void OUT3X5W(struct xgi_info * info, u8 index, u8 data);
+extern void OUT3CFW(struct xgi_info * info, u8 index, u8 data);
+extern u8 IN3C5W(struct xgi_info * info, u8 index);
+extern u8 IN3X5W(struct xgi_info * info, u8 index);
+extern u8 IN3CFW(struct xgi_info * info, u8 index);
 
-extern void WriteRegDWord(xgi_info_t * info, u32 addr, u32 data);
-extern void WriteRegWord(xgi_info_t * info, u32 addr, u16 data);
-extern void WriteRegByte(xgi_info_t * info, u32 addr, u8 data);
-extern u32 ReadRegDWord(xgi_info_t * info, u32 addr);
-extern u16 ReadRegWord(xgi_info_t * info, u32 addr);
-extern u8 ReadRegByte(xgi_info_t * info, u32 addr);
+extern void WriteRegDWord(struct xgi_info * info, u32 addr, u32 data);
+extern void WriteRegWord(struct xgi_info * info, u32 addr, u16 data);
+extern void WriteRegByte(struct xgi_info * info, u32 addr, u8 data);
+extern u32 ReadRegDWord(struct xgi_info * info, u32 addr);
+extern u16 ReadRegWord(struct xgi_info * info, u32 addr);
+extern u8 ReadRegByte(struct xgi_info * info, u32 addr);
 
 extern void EnableProtect();
 extern void DisableProtect();
@@ -262,19 +262,19 @@ extern void DisableProtect();
 #define wReadReg(addr)          ReadRegWord(info, addr)
 #define bReadReg(addr)          ReadRegByte(info, addr)
 
-static inline void xgi_protect_all(xgi_info_t * info)
+static inline void xgi_protect_all(struct xgi_info * info)
 {
 	OUTB(0x3C4, 0x11);
 	OUTB(0x3C5, 0x92);
 }
 
-static inline void xgi_unprotect_all(xgi_info_t * info)
+static inline void xgi_unprotect_all(struct xgi_info * info)
 {
 	OUTB(0x3C4, 0x11);
 	OUTB(0x3C5, 0x92);
 }
 
-static inline void xgi_enable_mmio(xgi_info_t * info)
+static inline void xgi_enable_mmio(struct xgi_info * info)
 {
 	u8 protect = 0;
 
@@ -294,7 +294,7 @@ static inline void xgi_enable_mmio(xgi_info_t * info)
 	OUTB(0x3C5, protect);
 }
 
-static inline void xgi_disable_mmio(xgi_info_t * info)
+static inline void xgi_disable_mmio(struct xgi_info * info)
 {
 	u8 protect = 0;
 
@@ -312,7 +312,7 @@ static inline void xgi_disable_mmio(xgi_info_t * info)
 	outb(protect, 0x3C5);
 }
 
-static inline void xgi_enable_ge(xgi_info_t * info)
+static inline void xgi_enable_ge(struct xgi_info * info)
 {
 	unsigned char bOld3cf2a = 0;
 	int wait = 0;
@@ -350,7 +350,7 @@ static inline void xgi_enable_ge(xgi_info_t * info)
 	bOut3cf(0x2a, bOld3cf2a);
 }
 
-static inline void xgi_disable_ge(xgi_info_t * info)
+static inline void xgi_disable_ge(struct xgi_info * info)
 {
 	int wait = 0;
 
@@ -378,25 +378,25 @@ static inline void xgi_disable_ge(xgi_info_t * info)
 	bOut3x5(0x36, 0);
 }
 
-static inline void xgi_enable_dvi_interrupt(xgi_info_t * info)
+static inline void xgi_enable_dvi_interrupt(struct xgi_info * info)
 {
 	Out3cf(0x39, In3cf(0x39) & ~0x01);	//Set 3cf.39 bit 0 to 0
 	Out3cf(0x39, In3cf(0x39) | 0x01);	//Set 3cf.39 bit 0 to 1
 	Out3cf(0x39, In3cf(0x39) | 0x02);
 }
-static inline void xgi_disable_dvi_interrupt(xgi_info_t * info)
+static inline void xgi_disable_dvi_interrupt(struct xgi_info * info)
 {
 	Out3cf(0x39, In3cf(0x39) & ~0x02);
 }
 
-static inline void xgi_enable_crt1_interrupt(xgi_info_t * info)
+static inline void xgi_enable_crt1_interrupt(struct xgi_info * info)
 {
 	Out3cf(0x3d, In3cf(0x3d) | 0x04);
 	Out3cf(0x3d, In3cf(0x3d) & ~0x04);
 	Out3cf(0x3d, In3cf(0x3d) | 0x08);
 }
 
-static inline void xgi_disable_crt1_interrupt(xgi_info_t * info)
+static inline void xgi_disable_crt1_interrupt(struct xgi_info * info)
 {
 	Out3cf(0x3d, In3cf(0x3d) & ~0x08);
 }

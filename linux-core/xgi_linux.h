@@ -415,10 +415,10 @@ static inline pgprot_t pgprot_writecombined(pgprot_t old_prot)
         free_pages(ptr, order); \
     }
 
-typedef struct xgi_pte_s {
+struct xgi_pte {
 	unsigned long phys_addr;
 	unsigned long virt_addr;
-} xgi_pte_t;
+};
 
 /*
  * AMD Athlon processors expose a subtle bug in the Linux
@@ -427,12 +427,12 @@ typedef struct xgi_pte_s {
  * 2.4.20 is the first kernel to address it properly. The
  * page_attr API provides the means to solve the problem.
  */
-static inline void XGI_SET_PAGE_ATTRIB_UNCACHED(xgi_pte_t * page_ptr)
+static inline void XGI_SET_PAGE_ATTRIB_UNCACHED(struct xgi_pte * page_ptr)
 {
 	struct page *page = virt_to_page(__va(page_ptr->phys_addr));
 	change_page_attr(page, 1, PAGE_KERNEL_NOCACHE);
 }
-static inline void XGI_SET_PAGE_ATTRIB_CACHED(xgi_pte_t * page_ptr)
+static inline void XGI_SET_PAGE_ATTRIB_CACHED(struct xgi_pte * page_ptr)
 {
 	struct page *page = virt_to_page(__va(page_ptr->phys_addr));
 	change_page_attr(page, 1, PAGE_KERNEL);
@@ -453,20 +453,16 @@ static inline void XGI_SET_PAGE_ATTRIB_CACHED(xgi_pte_t * page_ptr)
 #define XGILockPage(page)           SetPageLocked(page)
 #define XGIUnlockPage(page)         ClearPageLocked(page)
 
-/*
- * hide a pointer to struct xgi_info_t in a file-private info
- */
-
-typedef struct {
-	void *info;
+struct xgi_file_private {
+	struct xgi_info *info;
 	U32 num_events;
 	spinlock_t fp_lock;
 	wait_queue_head_t wait_queue;
-} xgi_file_private_t;
+};
 
 #define FILE_PRIVATE(filp)      ((filp)->private_data)
 
-#define XGI_GET_FP(filp)        ((xgi_file_private_t *) FILE_PRIVATE(filp))
+#define XGI_GET_FP(filp)        ((struct xgi_file_private *) FILE_PRIVATE(filp))
 
 /* for the card devices */
 #define XGI_INFO_FROM_FP(filp)  (XGI_GET_FP(filp)->info)

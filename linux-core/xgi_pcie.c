@@ -33,11 +33,11 @@
 #include "xgi_pcie.h"
 #include "xgi_misc.h"
 
-static xgi_pcie_heap_t *xgi_pcie_heap = NULL;
-static kmem_cache_t *xgi_pcie_cache_block = NULL;
-static xgi_pcie_block_t *xgi_pcie_vertex_block = NULL;
-static xgi_pcie_block_t *xgi_pcie_cmdlist_block = NULL;
-static xgi_pcie_block_t *xgi_pcie_scratchpad_block = NULL;
+static struct xgi_pcie_heap *xgi_pcie_heap = NULL;
+static struct kmem_cache *xgi_pcie_cache_block = NULL;
+static struct xgi_pcie_block *xgi_pcie_vertex_block = NULL;
+static struct xgi_pcie_block *xgi_pcie_cmdlist_block = NULL;
+static struct xgi_pcie_block *xgi_pcie_scratchpad_block = NULL;
 extern struct list_head xgi_mempid_list;
 
 static unsigned long xgi_pcie_lut_alloc(unsigned long page_order)
@@ -85,7 +85,7 @@ static void xgi_pcie_lut_free(unsigned long page_addr, unsigned long page_order)
 	free_pages(page_addr, page_order);
 }
 
-static int xgi_pcie_lut_init(xgi_info_t * info)
+static int xgi_pcie_lut_init(struct xgi_info * info)
 {
 	unsigned char *page_addr = NULL;
 	unsigned long pciePageCount, lutEntryNum, lutPageCount, lutPageOrder;
@@ -214,7 +214,7 @@ static int xgi_pcie_lut_init(xgi_info_t * info)
 	return 0;
 }
 
-static void xgi_pcie_lut_cleanup(xgi_info_t * info)
+static void xgi_pcie_lut_cleanup(struct xgi_info * info)
 {
 	if (info->lut_base) {
 		XGI_INFO("info->lut_base: 0x%p info->lutPageOrder: 0x%lx \n",
@@ -225,10 +225,10 @@ static void xgi_pcie_lut_cleanup(xgi_info_t * info)
 	}
 }
 
-static xgi_pcie_block_t *xgi_pcie_new_node(void)
+static struct xgi_pcie_block *xgi_pcie_new_node(void)
 {
-	xgi_pcie_block_t *block =
-	    (xgi_pcie_block_t *) kmem_cache_alloc(xgi_pcie_cache_block,
+	struct xgi_pcie_block *block =
+	    (struct xgi_pcie_block *) kmem_cache_alloc(xgi_pcie_cache_block,
 						  GFP_KERNEL);
 	if (block == NULL) {
 		return NULL;
@@ -247,11 +247,11 @@ static xgi_pcie_block_t *xgi_pcie_new_node(void)
 	return block;
 }
 
-static void xgi_pcie_block_stuff_free(xgi_pcie_block_t * block)
+static void xgi_pcie_block_stuff_free(struct xgi_pcie_block * block)
 {
 	struct page *page;
-	xgi_page_block_t *page_block = block->page_block;
-	xgi_page_block_t *free_block;
+	struct xgi_page_block *page_block = block->page_block;
+	struct xgi_page_block *free_block;
 	unsigned long page_count = 0;
 	int i;
 
@@ -285,9 +285,9 @@ static void xgi_pcie_block_stuff_free(xgi_pcie_block_t * block)
 	}
 }
 
-int xgi_pcie_heap_init(xgi_info_t * info)
+int xgi_pcie_heap_init(struct xgi_info * info)
 {
-	xgi_pcie_block_t *block;
+	struct xgi_pcie_block *block;
 
 	if (!xgi_pcie_lut_init(info)) {
 		XGI_ERROR("xgi_pcie_lut_init failed\n");
@@ -295,7 +295,7 @@ int xgi_pcie_heap_init(xgi_info_t * info)
 	}
 
 	xgi_pcie_heap =
-	    (xgi_pcie_heap_t *) kmalloc(sizeof(xgi_pcie_heap_t), GFP_KERNEL);
+	    (struct xgi_pcie_heap *) kmalloc(sizeof(struct xgi_pcie_heap), GFP_KERNEL);
 	if (!xgi_pcie_heap) {
 		XGI_ERROR("xgi_pcie_heap alloc failed\n");
 		goto fail1;
@@ -307,7 +307,7 @@ int xgi_pcie_heap_init(xgi_info_t * info)
 	xgi_pcie_heap->max_freesize = info->pcie.size;
 
 	xgi_pcie_cache_block =
-	    kmem_cache_create("xgi_pcie_block", sizeof(xgi_pcie_block_t), 0,
+	    kmem_cache_create("xgi_pcie_block", sizeof(struct xgi_pcie_block), 0,
 			      SLAB_HWCACHE_ALIGN, NULL, NULL);
 
 	if (NULL == xgi_pcie_cache_block) {
@@ -315,7 +315,7 @@ int xgi_pcie_heap_init(xgi_info_t * info)
 		goto fail2;
 	}
 
-	block = (xgi_pcie_block_t *) xgi_pcie_new_node();
+	block = (struct xgi_pcie_block *) xgi_pcie_new_node();
 	if (!block) {
 		XGI_ERROR("xgi_pcie_new_node failed\n");
 		goto fail3;
@@ -348,7 +348,7 @@ int xgi_pcie_heap_init(xgi_info_t * info)
 void xgi_pcie_heap_check(void)
 {
 	struct list_head *useList, *temp;
-	xgi_pcie_block_t *block;
+	struct xgi_pcie_block *block;
 	unsigned int ownerIndex;
 #ifdef XGI_DEBUG
 	char *ownerStr[6] =
@@ -360,7 +360,7 @@ void xgi_pcie_heap_check(void)
 		temp = useList->next;
 		XGI_INFO("pcie freemax = 0x%lx\n", xgi_pcie_heap->max_freesize);
 		while (temp != useList) {
-			block = list_entry(temp, struct xgi_pcie_block_s, list);
+			block = list_entry(temp, struct xgi_pcie_block, list);
 			if (block->owner == PCIE_2D)
 				ownerIndex = 0;
 			else if (block->owner > PCIE_3D_TEXTURE
@@ -378,10 +378,10 @@ void xgi_pcie_heap_check(void)
 	}
 }
 
-void xgi_pcie_heap_cleanup(xgi_info_t * info)
+void xgi_pcie_heap_cleanup(struct xgi_info * info)
 {
 	struct list_head *free_list, *temp;
-	xgi_pcie_block_t *block;
+	struct xgi_pcie_block *block;
 	int j;
 
 	xgi_pcie_lut_cleanup(info);
@@ -394,7 +394,7 @@ void xgi_pcie_heap_cleanup(xgi_info_t * info)
 
 			while (temp != free_list) {
 				block =
-				    list_entry(temp, struct xgi_pcie_block_s,
+				    list_entry(temp, struct xgi_pcie_block,
 					       list);
 				XGI_INFO
 				    ("No. %d block->offset: 0x%lx block->size: 0x%lx \n",
@@ -421,13 +421,13 @@ void xgi_pcie_heap_cleanup(xgi_info_t * info)
 	}
 }
 
-static xgi_pcie_block_t *xgi_pcie_mem_alloc(xgi_info_t * info,
+static struct xgi_pcie_block *xgi_pcie_mem_alloc(struct xgi_info * info,
 					    unsigned long originalSize,
 					    enum PcieOwner owner)
 {
 	struct list_head *free_list;
-	xgi_pcie_block_t *block, *used_block, *free_block;
-	xgi_page_block_t *page_block, *prev_page_block;
+	struct xgi_pcie_block *block, *used_block, *free_block;
+	struct xgi_page_block *page_block, *prev_page_block;
 	struct page *page;
 	unsigned long page_order = 0, count = 0, index = 0;
 	unsigned long page_addr = 0;
@@ -482,7 +482,7 @@ static xgi_pcie_block_t *xgi_pcie_mem_alloc(xgi_info_t * info,
 	free_list = xgi_pcie_heap->free_list.next;
 	while (free_list != &xgi_pcie_heap->free_list) {
 		//XGI_INFO("free_list: 0x%px \n", free_list);
-		block = list_entry(free_list, struct xgi_pcie_block_s, list);
+		block = list_entry(free_list, struct xgi_pcie_block, list);
 		if (size <= block->size) {
 			break;
 		}
@@ -543,12 +543,12 @@ static xgi_pcie_block_t *xgi_pcie_mem_alloc(xgi_info_t * info,
 	     used_block->page_order);
 
 	used_block->page_block = NULL;
-	//used_block->page_block = (xgi_pages_block_t *)kmalloc(sizeof(xgi_pages_block_t), GFP_KERNEL);
-	//if (!used_block->page_block) return NULL;
+	//used_block->page_block = (struct xgi_pages_block *)kmalloc(sizeof(struct xgi_pages_block), GFP_KERNEL);
+	//if (!used_block->page_block) return NULL;_t
 	//used_block->page_block->next = NULL;
 
 	used_block->page_table =
-	    (xgi_pte_t *) kmalloc(sizeof(xgi_pte_t) * used_block->page_count,
+	    (struct xgi_pte *) kmalloc(sizeof(struct xgi_pte) * used_block->page_count,
 				  GFP_KERNEL);
 	if (used_block->page_table == NULL) {
 		goto fail;
@@ -595,8 +595,8 @@ static xgi_pcie_block_t *xgi_pcie_mem_alloc(xgi_info_t * info,
 
 		if (page_block == NULL) {
 			page_block =
-			    (xgi_page_block_t *)
-			    kmalloc(sizeof(xgi_page_block_t), GFP_KERNEL);
+			    (struct xgi_page_block *)
+			    kmalloc(sizeof(struct xgi_page_block), GFP_KERNEL);
 			if (!page_block) {
 				XGI_ERROR
 				    ("Can't get memory for page_block! \n");
@@ -697,17 +697,17 @@ static xgi_pcie_block_t *xgi_pcie_mem_alloc(xgi_info_t * info,
 	return NULL;
 }
 
-static xgi_pcie_block_t *xgi_pcie_mem_free(xgi_info_t * info,
+static struct xgi_pcie_block *xgi_pcie_mem_free(struct xgi_info * info,
 					   unsigned long offset)
 {
 	struct list_head *free_list, *used_list;
-	xgi_pcie_block_t *used_block, *block = NULL;
-	xgi_pcie_block_t *prev, *next;
+	struct xgi_pcie_block *used_block, *block = NULL;
+	struct xgi_pcie_block *prev, *next;
 	unsigned long upper, lower;
 
 	used_list = xgi_pcie_heap->used_list.next;
 	while (used_list != &xgi_pcie_heap->used_list) {
-		block = list_entry(used_list, struct xgi_pcie_block_s, list);
+		block = list_entry(used_list, struct xgi_pcie_block, list);
 		if (block->offset == offset) {
 			break;
 		}
@@ -737,7 +737,7 @@ static xgi_pcie_block_t *xgi_pcie_mem_free(xgi_info_t * info,
 	free_list = xgi_pcie_heap->free_list.next;
 
 	while (free_list != &xgi_pcie_heap->free_list) {
-		block = list_entry(free_list, struct xgi_pcie_block_s, list);
+		block = list_entry(free_list, struct xgi_pcie_block, list);
 		if (block->offset == upper) {
 			next = block;
 		} else if ((block->offset + block->size) == lower) {
@@ -787,11 +787,11 @@ static xgi_pcie_block_t *xgi_pcie_mem_free(xgi_info_t * info,
 	return (used_block);
 }
 
-void xgi_pcie_alloc(xgi_info_t * info, unsigned long size,
-		    enum PcieOwner owner, xgi_mem_alloc_t * alloc)
+void xgi_pcie_alloc(struct xgi_info * info, unsigned long size,
+		    enum PcieOwner owner, struct xgi_mem_alloc * alloc)
 {
-	xgi_pcie_block_t *block;
-	xgi_mem_pid_t *mempid_block;
+	struct xgi_pcie_block *block;
+	struct xgi_mem_pid *mempid_block;
 
 	xgi_down(info->pcie_sem);
 	block = xgi_pcie_mem_alloc(info, size, owner);
@@ -819,7 +819,7 @@ void xgi_pcie_alloc(xgi_info_t * info, unsigned long size,
 		 */
 		if (owner == PCIE_3D || owner == PCIE_3D_TEXTURE) {
 			mempid_block =
-			    kmalloc(sizeof(xgi_mem_pid_t), GFP_KERNEL);
+			    kmalloc(sizeof(struct xgi_mem_pid), GFP_KERNEL);
 			if (!mempid_block)
 				XGI_ERROR("mempid_block alloc failed\n");
 			mempid_block->location = NON_LOCAL;
@@ -837,12 +837,12 @@ void xgi_pcie_alloc(xgi_info_t * info, unsigned long size,
 	}
 }
 
-void xgi_pcie_free(xgi_info_t * info, unsigned long bus_addr)
+void xgi_pcie_free(struct xgi_info * info, unsigned long bus_addr)
 {
-	xgi_pcie_block_t *block;
+	struct xgi_pcie_block *block;
 	unsigned long offset = bus_addr - info->pcie.base;
-	xgi_mem_pid_t *mempid_block;
-	xgi_mem_pid_t *mempid_freeblock = NULL;
+	struct xgi_mem_pid *mempid_block;
+	struct xgi_mem_pid *mempid_freeblock = NULL;
 	struct list_head *mempid_list;
 	char isvertex = 0;
 	int processcnt;
@@ -857,7 +857,7 @@ void xgi_pcie_free(xgi_info_t * info, unsigned long bus_addr)
 		mempid_list = xgi_mempid_list.next;
 		while (mempid_list != &xgi_mempid_list) {
 			mempid_block =
-			    list_entry(mempid_list, struct xgi_mem_pid_s, list);
+			    list_entry(mempid_list, struct xgi_mem_pid, list);
 			if (mempid_block->location == NON_LOCAL
 			    && mempid_block->bus_addr == 0xFFFFFFFF) {
 				++processcnt;
@@ -884,7 +884,7 @@ void xgi_pcie_free(xgi_info_t * info, unsigned long bus_addr)
 	mempid_list = xgi_mempid_list.next;
 	while (mempid_list != &xgi_mempid_list) {
 		mempid_block =
-		    list_entry(mempid_list, struct xgi_mem_pid_s, list);
+		    list_entry(mempid_list, struct xgi_mem_pid, list);
 		if (mempid_block->location == NON_LOCAL
 		    && ((isvertex && mempid_block->bus_addr == 0xFFFFFFFF)
 			|| (!isvertex && mempid_block->bus_addr == bus_addr))) {
@@ -906,17 +906,17 @@ void xgi_pcie_free(xgi_info_t * info, unsigned long bus_addr)
  * given a bus address, fid the pcie mem block
  * uses the bus address as the key.
  */
-struct xgi_pcie_block_s *xgi_find_pcie_block(xgi_info_t * info,
-					     unsigned long address)
+struct xgi_pcie_block *xgi_find_pcie_block(struct xgi_info * info,
+					   unsigned long address)
 {
 	struct list_head *used_list;
-	xgi_pcie_block_t *block;
+	struct xgi_pcie_block *block;
 	int i;
 
 	used_list = xgi_pcie_heap->used_list.next;
 
 	while (used_list != &xgi_pcie_heap->used_list) {
-		block = list_entry(used_list, struct xgi_pcie_block_s, list);
+		block = list_entry(used_list, struct xgi_pcie_block, list);
 
 		if (block->bus_addr == address) {
 			return block;
@@ -946,7 +946,7 @@ struct xgi_pcie_block_s *xgi_find_pcie_block(xgi_info_t * info,
  * Returns CPU virtual address.  Assumes the CPU VAddr is continuous in not
  * the same block
  */
-void *xgi_find_pcie_virt(xgi_info_t * info, unsigned long address)
+void *xgi_find_pcie_virt(struct xgi_info * info, unsigned long address)
 {
 	struct list_head *used_list = xgi_pcie_heap->used_list.next;
 	const unsigned long offset_in_page = address & (PAGE_SIZE - 1);
@@ -956,8 +956,8 @@ void *xgi_find_pcie_virt(xgi_info_t * info, unsigned long address)
 		 used_list, address, PAGE_SIZE - 1, offset_in_page);
 
 	while (used_list != &xgi_pcie_heap->used_list) {
-		xgi_pcie_block_t *block = 
-			list_entry(used_list, struct xgi_pcie_block_s, list);
+		struct xgi_pcie_block *block = 
+			list_entry(used_list, struct xgi_pcie_block, list);
 
 		XGI_INFO("block = 0x%p (hw_addr = 0x%lx, size=%lu)\n",
 			 block, block->hw_addr, block->size);
@@ -987,19 +987,19 @@ void *xgi_find_pcie_virt(xgi_info_t * info, unsigned long address)
 	return NULL;
 }
 
-void xgi_read_pcie_mem(xgi_info_t * info, xgi_mem_req_t * req)
+void xgi_read_pcie_mem(struct xgi_info * info, struct xgi_mem_req * req)
 {
 
 }
 
-void xgi_write_pcie_mem(xgi_info_t * info, xgi_mem_req_t * req)
+void xgi_write_pcie_mem(struct xgi_info * info, struct xgi_mem_req * req)
 {
 }
 
 /*
     address -- GE hw address
 */
-void xgi_test_rwinkernel(xgi_info_t * info, unsigned long address)
+void xgi_test_rwinkernel(struct xgi_info * info, unsigned long address)
 {
 	unsigned long *virtaddr = 0;
 	if (address == 0) {

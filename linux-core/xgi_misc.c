@@ -32,7 +32,7 @@
 #include "xgi_regs.h"
 #include "xgi_pcie.h"
 
-void xgi_get_device_info(xgi_info_t * info, xgi_chip_info_t * req)
+void xgi_get_device_info(struct xgi_info * info, struct xgi_chip_info * req)
 {
 	req->device_id = info->device_id;
 	req->device_name[0] = 'x';
@@ -46,13 +46,13 @@ void xgi_get_device_info(xgi_info_t * info, xgi_chip_info_t * req)
 	req->sarea_size = info->sarea_info.size;
 }
 
-void xgi_get_mmio_info(xgi_info_t * info, xgi_mmio_info_t * req)
+void xgi_get_mmio_info(struct xgi_info * info, struct xgi_mmio_info * req)
 {
 	req->mmioBase = (void *)info->mmio.base;
 	req->size = info->mmio.size;
 }
 
-void xgi_put_screen_info(xgi_info_t * info, xgi_screen_info_t * req)
+void xgi_put_screen_info(struct xgi_info * info, struct xgi_screen_info * req)
 {
 	info->scrn_info.scrn_start = req->scrn_start;
 	info->scrn_info.scrn_xres = req->scrn_xres;
@@ -71,7 +71,7 @@ void xgi_put_screen_info(xgi_info_t * info, xgi_screen_info_t * req)
 		 info->scrn_info.scrn_bpp, info->scrn_info.scrn_pitch);
 }
 
-void xgi_get_screen_info(xgi_info_t * info, xgi_screen_info_t * req)
+void xgi_get_screen_info(struct xgi_info * info, struct xgi_screen_info * req)
 {
 	req->scrn_start = info->scrn_info.scrn_start;
 	req->scrn_xres = info->scrn_info.scrn_xres;
@@ -89,13 +89,13 @@ void xgi_get_screen_info(xgi_info_t * info, xgi_screen_info_t * req)
 		 req->scrn_yres, req->scrn_bpp, req->scrn_pitch);
 }
 
-void xgi_ge_reset(xgi_info_t * info)
+void xgi_ge_reset(struct xgi_info * info)
 {
 	xgi_disable_ge(info);
 	xgi_enable_ge(info);
 }
 
-void xgi_sarea_info(xgi_info_t * info, xgi_sarea_info_t * req)
+void xgi_sarea_info(struct xgi_info * info, struct xgi_sarea_info * req)
 {
 	info->sarea_info.bus_addr = req->bus_addr;
 	info->sarea_info.size = req->size;
@@ -111,7 +111,7 @@ void xgi_sarea_info(xgi_info_t * info, xgi_sarea_info_t * req)
 
 static U32 s_invalid_begin = 0;
 
-BOOL xgi_ge_irq_handler(xgi_info_t * info)
+BOOL xgi_ge_irq_handler(struct xgi_info * info)
 {
 	volatile U8 *mmio_vbase = info->mmio.vbase;
 	volatile U32 *ge_3d_status = (volatile U32 *)(mmio_vbase + 0x2800);
@@ -287,7 +287,7 @@ BOOL xgi_ge_irq_handler(xgi_info_t * info)
 	return FALSE;
 }
 
-BOOL xgi_crt_irq_handler(xgi_info_t * info)
+BOOL xgi_crt_irq_handler(struct xgi_info * info)
 {
 	BOOL ret = FALSE;
 	U8 save_3ce = bReadReg(0x3ce);
@@ -311,7 +311,7 @@ BOOL xgi_crt_irq_handler(xgi_info_t * info)
 	return (ret);
 }
 
-BOOL xgi_dvi_irq_handler(xgi_info_t * info)
+BOOL xgi_dvi_irq_handler(struct xgi_info * info)
 {
 	BOOL ret = FALSE;
 	U8 save_3ce = bReadReg(0x3ce);
@@ -344,7 +344,7 @@ BOOL xgi_dvi_irq_handler(xgi_info_t * info)
 	return (ret);
 }
 
-void xgi_dump_register(xgi_info_t * info)
+void xgi_dump_register(struct xgi_info * info)
 {
 	int i, j;
 	unsigned char temp;
@@ -518,13 +518,13 @@ void xgi_dump_register(xgi_info_t * info)
 	}
 }
 
-void xgi_restore_registers(xgi_info_t * info)
+void xgi_restore_registers(struct xgi_info * info)
 {
 	bOut3x5(0x13, 0);
 	bOut3x5(0x8b, 2);
 }
 
-void xgi_waitfor_pci_idle(xgi_info_t * info)
+void xgi_waitfor_pci_idle(struct xgi_info * info)
 {
 #define WHOLD_GE_STATUS             0x2800
 #define IDLE_MASK                   ~0x90200000
@@ -539,7 +539,7 @@ void xgi_waitfor_pci_idle(xgi_info_t * info)
 	}
 }
 
-int xgi_get_cpu_id(struct cpu_info_s *arg)
+int xgi_get_cpu_id(struct cpu_info *arg)
 {
 	int op = arg->_eax;
       __asm__("cpuid":"=a"(arg->_eax),
@@ -554,9 +554,9 @@ int xgi_get_cpu_id(struct cpu_info_s *arg)
 
 /*memory collect function*/
 extern struct list_head xgi_mempid_list;
-void xgi_mem_collect(xgi_info_t * info, unsigned int *pcnt)
+void xgi_mem_collect(struct xgi_info * info, unsigned int *pcnt)
 {
-	xgi_mem_pid_t *mempid_block;
+	struct xgi_mem_pid *mempid_block;
 	struct list_head *mempid_list;
 	struct task_struct *p, *find;
 	unsigned int cnt = 0;
@@ -565,7 +565,7 @@ void xgi_mem_collect(xgi_info_t * info, unsigned int *pcnt)
 
 	while (mempid_list != &xgi_mempid_list) {
 		mempid_block =
-		    list_entry(mempid_list, struct xgi_mem_pid_s, list);
+		    list_entry(mempid_list, struct xgi_mem_pid, list);
 		mempid_list = mempid_list->next;
 
 		find = NULL;
