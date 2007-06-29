@@ -953,22 +953,18 @@ void *xgi_find_pcie_virt(xgi_info_t * info, unsigned long address)
 	unsigned long loc_in_pagetable;
 	void *ret;
 
-	XGI_INFO("Jong_05292006-xgi_find_pcie_virt-Begin\n");
-
 	used_list = xgi_pcie_heap->used_list.next;
-	XGI_INFO("Jong_05292006-used_list=%ul\n", used_list);
-
 	offset_in_page = address & (PAGE_SIZE - 1);
-	XGI_INFO
-	    ("Jong_05292006-address=0x%px, PAGE_SIZE-1=%ul, offset_in_page=%ul\n",
-	     address, PAGE_SIZE - 1, offset_in_page);
+
+	XGI_INFO("begin (used_list = 0x%p, address = 0x%lx, "
+		 "PAGE_SIZE - 1 = %lu, offset_in_page = %lu)\n",
+		 used_list, address, PAGE_SIZE - 1, offset_in_page);
 
 	while (used_list != &xgi_pcie_heap->used_list) {
 		block = list_entry(used_list, struct xgi_pcie_block_s, list);
-		XGI_INFO("Jong_05292006-block=0x%px\n", block);
-		XGI_INFO("Jong_05292006-block->hw_addr=0x%px\n",
-			 block->hw_addr);
-		XGI_INFO("Jong_05292006- block->size=%ul\n", block->size);
+
+		XGI_INFO("block = 0x%p (hw_addr = 0x%lx, size=%lu)\n",
+			 block, block->hw_addr, block->size);
 
 		if ((address >= block->hw_addr)
 		    && (address < (block->hw_addr + block->size))) {
@@ -978,21 +974,15 @@ void *xgi_find_pcie_virt(xgi_info_t * info, unsigned long address)
 			    (void *)(block->page_table[loc_in_pagetable].
 				     virt_addr + offset_in_page);
 
-			XGI_INFO("Jong_05292006-PAGE_SHIFT=%d\n", PAGE_SHIFT);
-			XGI_INFO("Jong_05292006-loc_in_pagetable=0x%px\n",
-				 loc_in_pagetable);
-			XGI_INFO
-			    ("Jong_05292006-block->page_table[loc_in_pagetable].virt_addr=0x%px\n",
-			     block->page_table[loc_in_pagetable].virt_addr);
-			XGI_INFO("Jong_05292006-offset_in_page=%d\n",
-				 offset_in_page);
-			XGI_INFO("Jong_05292006-return(virt_addr)=0x%px\n",
-				 ret);
+			XGI_INFO("PAGE_SHIFT = %d\n", PAGE_SHIFT);
+			XGI_INFO("block->page_table[0x%lx].virt_addr = 0x%lx\n",
+				 loc_in_pagetable,
+				 block->page_table[loc_in_pagetable].virt_addr);
+			XGI_INFO("return 0x%p\n", ret);
 
 			return ret;
 		} else {
-			XGI_INFO
-			    ("Jong_05292006-used_list = used_list->next;\n");
+			XGI_INFO("used_list = used_list->next;\n");
 			used_list = used_list->next;
 		}
 	}
