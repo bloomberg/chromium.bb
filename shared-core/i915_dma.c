@@ -80,12 +80,40 @@ void i915_kernel_lost_context(drm_device_t * dev)
 
 int i915_dma_cleanup(drm_device_t * dev)
 {
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+
 	/* Make sure interrupts are disabled here because the uninstall ioctl
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
+	I915_WRITE(LP_RING + RING_LEN, 0);
+
 	if (dev->irq)
 		drm_irq_uninstall(dev);
+
+	if (dev->dev_private) {
+		drm_i915_private_t *dev_priv =
+		    (drm_i915_private_t *) dev->dev_private;
+
+		if (dev_priv->ring.virtual_start) {
+			drm_core_ioremapfree(&dev_priv->ring.map, dev);
+		}
+
+		if (dev_priv->status_page_dmah) {
+			drm_pci_free(dev, dev_priv->status_page_dmah);
+			/* Need to rewrite hardware status page */
+			I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
+		}
+		if (dev_priv->status_gfx_addr) {
+			dev_priv->status_gfx_addr = 0;
+			drm_core_ioremapfree(&dev_priv->hws_map, dev);
+			I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
+		}
+		drm_free(dev->dev_private, sizeof(drm_i915_private_t),
+			 DRM_MEM_DRIVER);
+
+		dev->dev_private = NULL;
+	}
 
 	return 0;
 }
