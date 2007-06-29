@@ -228,22 +228,23 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	dev_priv->allow_batchbuffer = 1;
 
 	/* Program Hardware Status Page */
-	dev_priv->status_page_dmah = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 
-	    0xffffffff);
+	if (!IS_G33(dev)) {
+		dev_priv->status_page_dmah = 
+			drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
 
-	if (!dev_priv->status_page_dmah) {
-		dev->dev_private = (void *)dev_priv;
-		i915_dma_cleanup(dev);
-		DRM_ERROR("Can not allocate hardware status page\n");
-		return DRM_ERR(ENOMEM);
+		if (!dev_priv->status_page_dmah) {
+			dev->dev_private = (void *)dev_priv;
+			i915_dma_cleanup(dev);
+			DRM_ERROR("Can not allocate hardware status page\n");
+			return DRM_ERR(ENOMEM);
+		}
+		dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
+		dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
+
+		memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+
+		I915_WRITE(I915REG_HWS_PGA, dev_priv->dma_status_page);
 	}
-	dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
-	dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
-	
-	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
-	DRM_DEBUG("hw status page @ %p\n", dev_priv->hw_status_page);
-
-	I915_WRITE(I915REG_HWS_PGA, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
 
 	intel_modeset_init(dev);

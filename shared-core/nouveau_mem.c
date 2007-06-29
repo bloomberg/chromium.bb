@@ -77,8 +77,8 @@ out:
 	return p;
 }
 
-static struct mem_block *alloc_block(struct mem_block *heap, uint64_t size,
-		int align2, DRMFILE filp)
+struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap, uint64_t size,
+					  int align2, DRMFILE filp)
 {
 	struct mem_block *p;
 	uint64_t mask = (1 << align2) - 1;
@@ -106,7 +106,7 @@ static struct mem_block *find_block(struct mem_block *heap, uint64_t start)
 	return NULL;
 }
 
-static void free_block(struct mem_block *p)
+void nouveau_mem_free_block(struct mem_block *p)
 {
 	p->filp = NULL;
 
@@ -132,7 +132,8 @@ static void free_block(struct mem_block *p)
 
 /* Initialize.  How to check for an uninitialized heap?
  */
-static int init_heap(struct mem_block **heap, uint64_t start, uint64_t size)
+int nouveau_mem_init_heap(struct mem_block **heap, uint64_t start,
+			  uint64_t size)
 {
 	struct mem_block *blocks = drm_alloc(sizeof(*blocks), DRM_MEM_BUFS);
 
@@ -331,7 +332,9 @@ int nouveau_mem_init(struct drm_device *dev)
 			goto no_agp;
 		}
 
-		if (init_heap(&dev_priv->agp_heap, info.aperture_base, info.aperture_size))
+		if (nouveau_mem_init_heap(&dev_priv->agp_heap,
+					  info.aperture_base,
+					  info.aperture_size))
 			goto no_agp;
 
 		dev_priv->agp_phys		= info.aperture_base;
@@ -357,12 +360,19 @@ no_agp:
 	if (fb_size>256*1024*1024) {
 		/* On cards with > 256Mb, you can't map everything. 
 		 * So we create a second FB heap for that type of memory */
-		if (init_heap(&dev_priv->fb_heap, drm_get_resource_start(dev,1), 256*1024*1024))
+		if (nouveau_mem_init_heap(&dev_priv->fb_heap,
+					  drm_get_resource_start(dev,1),
+					  256*1024*1024))
 			return DRM_ERR(ENOMEM);
-		if (init_heap(&dev_priv->fb_nomap_heap, drm_get_resource_start(dev,1)+256*1024*1024, fb_size-256*1024*1024))
+		if (nouveau_mem_init_heap(&dev_priv->fb_nomap_heap,
+					  drm_get_resource_start(dev,1) + 
+					  256*1024*1024,
+					  fb_size-256*1024*1024))
 			return DRM_ERR(ENOMEM);
 	} else {
-		if (init_heap(&dev_priv->fb_heap, drm_get_resource_start(dev,1), fb_size))
+		if (nouveau_mem_init_heap(&dev_priv->fb_heap,
+					  drm_get_resource_start(dev,1),
+					  fb_size))
 			return DRM_ERR(ENOMEM);
 		dev_priv->fb_nomap_heap=NULL;
 	}
@@ -397,21 +407,25 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint6
 
 	if (flags&NOUVEAU_MEM_AGP) {
 		type=NOUVEAU_MEM_AGP;
-		block = alloc_block(dev_priv->agp_heap, size, alignment, filp);
+		block = nouveau_mem_alloc_block(dev_priv->agp_heap, size,
+						alignment, filp);
 		if (block) goto alloc_ok;
 	}
 	if (flags&(NOUVEAU_MEM_FB|NOUVEAU_MEM_FB_ACCEPTABLE)) {
 		type=NOUVEAU_MEM_FB;
 		if (!(flags&NOUVEAU_MEM_MAPPED)) {
-			block = alloc_block(dev_priv->fb_nomap_heap, size, alignment, filp);
+			block = nouveau_mem_alloc_block(dev_priv->fb_nomap_heap,
+							size, alignment, filp);
 			if (block) goto alloc_ok;
 		}
-		block = alloc_block(dev_priv->fb_heap, size, alignment, filp);
+		block = nouveau_mem_alloc_block(dev_priv->fb_heap, size,
+						alignment, filp);
 		if (block) goto alloc_ok;	
 	}
 	if (flags&NOUVEAU_MEM_AGP_ACCEPTABLE) {
 		type=NOUVEAU_MEM_AGP;
-		block = alloc_block(dev_priv->agp_heap, size, alignment, filp);
+		block = nouveau_mem_alloc_block(dev_priv->agp_heap, size,
+						alignment, filp);
 		if (block) goto alloc_ok;
 	}
 
@@ -432,7 +446,7 @@ alloc_ok:
 			ret = drm_addmap(dev, block->start, block->size,
 					_DRM_FRAME_BUFFER, 0, &block->map);
 		if (ret) { 
-			free_block(block);
+			nouveau_mem_free_block(block);
 			return NULL;
 		}
 	}
@@ -446,7 +460,7 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 	DRM_INFO("freeing 0x%llx\n", block->start);
 	if (block->flags&NOUVEAU_MEM_MAPPED)
 		drm_rmmap(dev, block->map);
-	free_block(block);
+	nouveau_mem_free_block(block);
 }
 
 static void
@@ -475,13 +489,8 @@ nouveau_instmem_determine_amount(struct drm_device *dev)
 	DRM_DEBUG("RAMIN size: %dKiB\n", dev_priv->ramin_size>>10);
 
 	/* Clear all of it, except the BIOS image that's in the first 64KiB */
-	if (dev_priv->ramin) {
-		for (i=(64*1024); i<dev_priv->ramin_size; i+=4)
-			DRM_WRITE32(dev_priv->ramin, i, 0x00000000);
-	} else {
-		for (i=(64*1024); i<dev_priv->ramin_size; i+=4)
-			DRM_WRITE32(dev_priv->mmio, NV_RAMIN + i, 0x00000000);
-	}
+	for (i=(64*1024); i<dev_priv->ramin_size; i+=4)
+		NV_WI32(i, 0x00000000);
 }
 
 static void
@@ -549,8 +558,8 @@ int nouveau_instmem_init(struct drm_device *dev)
 	 * the space that was reserved for RAMHT/FC/RO.
 	 */
 	offset = dev_priv->ramfc_offset + dev_priv->ramfc_size;
-	ret = init_heap(&dev_priv->ramin_heap,
-			 offset, dev_priv->ramin_size - offset);
+	ret = nouveau_mem_init_heap(&dev_priv->ramin_heap,
+				    offset, dev_priv->ramin_size - offset);
 	if (ret) {
 		dev_priv->ramin_heap = NULL;
 		DRM_ERROR("Failed to init RAMIN heap\n");
@@ -570,7 +579,8 @@ struct mem_block *nouveau_instmem_alloc(struct drm_device *dev,
 		return NULL;
 	}
 
-	block = alloc_block(dev_priv->ramin_heap, size, align, (DRMFILE)-2);
+	block = nouveau_mem_alloc_block(dev_priv->ramin_heap, size, align,
+					(DRMFILE)-2);
 	if (block) {
 		block->flags = NOUVEAU_MEM_INSTANCE;
 		DRM_DEBUG("instance(size=%d, align=%d) alloc'd at 0x%08x\n",
@@ -583,39 +593,7 @@ struct mem_block *nouveau_instmem_alloc(struct drm_device *dev,
 void nouveau_instmem_free(struct drm_device *dev, struct mem_block *block)
 {
 	if (dev && block) {
-		free_block(block);
-	}
-}
-
-uint32_t nouveau_instmem_r32(drm_nouveau_private_t *dev_priv,
-			     struct mem_block *mem, int index)
-{
-	uint32_t ofs = (uint32_t)mem->start + (index<<2);
-
-	if (dev_priv->ramin) {
-#if defined(__powerpc__)
-		return in_be32((void __iomem *)(dev_priv->ramin)->handle + ofs);
-#else
-		return DRM_READ32(dev_priv->ramin, ofs);
-#endif
-	} else {
-		return NV_READ(NV_RAMIN+ofs);
-	}
-}
-
-void nouveau_instmem_w32(drm_nouveau_private_t *dev_priv,
-			 struct mem_block *mem, int index, uint32_t val)
-{
-	uint32_t ofs = (uint32_t)mem->start + (index<<2);
-
-	if (dev_priv->ramin) {
-#if defined(__powerpc__)
-		out_be32((void __iomem *)(dev_priv->ramin)->handle + ofs, val);
-#else
-		DRM_WRITE32(dev_priv->ramin, ofs, val);
-#endif
-	} else {
-		NV_WRITE(NV_RAMIN+ofs, val);
+		nouveau_mem_free_block(block);
 	}
 }
 

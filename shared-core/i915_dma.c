@@ -78,18 +78,14 @@ void i915_kernel_lost_context(drm_device_t * dev)
 		dev_priv->sarea_priv->perf_boxes |= I915_BOX_RING_EMPTY;
 }
 
-int i915_dma_cleanup(drm_device_t * dev)
+static int i915_dma_cleanup(drm_device_t * dev)
 {
-	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	/* Make sure interrupts are disabled here because the uninstall ioctl
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
-	I915_WRITE(LP_RING + RING_LEN, 0);
-
 	if (dev->irq)
 		drm_irq_uninstall(dev);
-
 
 	return 0;
 }
@@ -98,6 +94,8 @@ static int i915_initialize(drm_device_t * dev,
 			   drm_i915_private_t * dev_priv,
 			   drm_i915_init_t * init)
 {
+	memset(dev_priv, 0, sizeof(drm_i915_private_t));
+
 	dev_priv->sarea = drm_getsarea(dev);
 	if (!dev_priv->sarea) {
 		DRM_ERROR("can not find sarea!\n");
@@ -106,11 +104,13 @@ static int i915_initialize(drm_device_t * dev,
 		return DRM_ERR(EINVAL);
 	}
 
-	memset((void *)(dev_priv->ring.virtual_start), 0, dev_priv->ring.Size);
-
-	I915_WRITE(LP_RING + RING_START, dev_priv->ring.Start);
-	I915_WRITE(LP_RING + RING_LEN, ((dev_priv->ring.Size - 4096) & RING_NR_PAGES) | (RING_NO_REPORT | RING_VALID));
-
+	dev_priv->mmio_map = drm_core_findmap(dev, init->mmio_offset);
+	if (!dev_priv->mmio_map) {
+		dev->dev_private = (void *)dev_priv;
+		i915_dma_cleanup(dev);
+		DRM_ERROR("can not find mmio map!\n");
+		return DRM_ERR(EINVAL);
+	}
 
 	dev_priv->cpp = init->cpp;
 	dev_priv->sarea_priv->pf_current_page = 0;
@@ -128,24 +128,6 @@ static int i915_initialize(drm_device_t * dev,
 	 */
     	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
 
-	/* Program Hardware Status Page */
-	dev_priv->status_page_dmah = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 
-	    0xffffffff);
-
-	if (!dev_priv->status_page_dmah) {
-		dev->dev_private = (void *)dev_priv;
-		i915_dma_cleanup(dev);
-		DRM_ERROR("Can not allocate hardware status page\n");
-		return DRM_ERR(ENOMEM);
-	}
-	dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
-	dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
-	
-	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
-	DRM_DEBUG("hw status page @ %p\n", dev_priv->hw_status_page);
-
-	I915_WRITE(0x02080, dev_priv->dma_status_page);
-	DRM_DEBUG("Enabled hardware status page\n");
 	dev->dev_private = (void *)dev_priv;
 	return 0;
 }
@@ -156,8 +138,15 @@ static int i915_dma_resume(drm_device_t * dev)
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	I915_WRITE(I915REG_HWS_PGA, dev_priv->dma_status_page);
-	DRM_DEBUG("Enabled hardware status page\n");
+	if (!dev_priv->sarea) {
+		DRM_ERROR("can not find sarea!\n");
+		return DRM_ERR(EINVAL);
+	}
+
+	if (!dev_priv->mmio_map) {
+		DRM_ERROR("can not find mmio map!\n");
+		return DRM_ERR(EINVAL);
+	}
 
 	return 0;
 }
@@ -353,10 +342,12 @@ void i915_emit_breadcrumb(drm_device_t *dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
 
-	dev_priv->sarea_priv->last_enqueue = ++dev_priv->counter;
+	if (++dev_priv->counter > BREADCRUMB_MASK) {
+		 dev_priv->counter = 1;
+		 DRM_DEBUG("Breadcrumb counter wrapped around\n");
+	}
 
-	if (dev_priv->counter > 0x7FFFFFFFUL)
-		 dev_priv->sarea_priv->last_enqueue = dev_priv->counter = 1;
+	dev_priv->sarea_priv->last_enqueue = dev_priv->counter;
 
 	BEGIN_LP_RING(4);
 	OUT_RING(CMD_STORE_DWORD_IDX);
@@ -391,7 +382,9 @@ int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush)
 static int i915_dispatch_cmdbuffer(drm_device_t * dev,
 				   drm_i915_cmdbuffer_t * cmd)
 {
+#ifdef I915_HAVE_FENCE
 	drm_i915_private_t *dev_priv = dev->dev_private;
+#endif
 	int nbox = cmd->num_cliprects;
 	int i = 0, count, ret;
 
@@ -776,7 +769,7 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 
 	e = &mmio_table[mmio.reg];
-	base = dev_priv->mmio_map->handle + e->offset;
+	base = (u8 *) dev_priv->mmio_map->handle + e->offset;
 
         switch (mmio.read_write) {
 		case I915_MMIO_READ:
@@ -802,6 +795,47 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 	return 0;
 }
 
+static int i915_set_status_page(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	drm_i915_hws_addr_t hws;
+
+	if (!dev_priv) {
+		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		return DRM_ERR(EINVAL);
+	}
+	DRM_COPY_FROM_USER_IOCTL(hws, (drm_i915_hws_addr_t __user *) data,
+			sizeof(hws));
+	printk(KERN_DEBUG "set status page addr 0x%08x\n", (u32)hws.addr);
+
+	dev_priv->status_gfx_addr = hws.addr & (0x1ffff<<12);
+
+	dev_priv->hws_map.offset = dev->agp->agp_info.aper_base + hws.addr;
+	dev_priv->hws_map.size = 4*1024;
+	dev_priv->hws_map.type = 0;
+	dev_priv->hws_map.flags = 0;
+	dev_priv->hws_map.mtrr = 0;
+
+	drm_core_ioremap(&dev_priv->hws_map, dev);
+	if (dev_priv->hws_map.handle == NULL) {
+		dev->dev_private = (void *)dev_priv;
+		i915_dma_cleanup(dev);
+		dev_priv->status_gfx_addr = 0;
+		DRM_ERROR("can not ioremap virtual address for"
+				" G33 hw status page\n");
+		return DRM_ERR(ENOMEM);
+	}
+	dev_priv->hw_status_page = dev_priv->hws_map.handle;
+
+	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+	I915_WRITE(I915REG_HWS_PGA, dev_priv->status_gfx_addr);
+	DRM_DEBUG("load hws 0x2080 with gfx mem 0x%x\n",
+			dev_priv->status_gfx_addr);
+	DRM_DEBUG("load hws at %p\n", dev_priv->hw_status_page);
+	return 0;
+}
+
 drm_ioctl_desc_t i915_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_I915_INIT)] = {i915_dma_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 	[DRM_IOCTL_NR(DRM_I915_FLUSH)] = {i915_flush_ioctl, DRM_AUTH},
@@ -820,6 +854,7 @@ drm_ioctl_desc_t i915_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_I915_GET_VBLANK_PIPE)] = { i915_vblank_pipe_get, DRM_AUTH },
 	[DRM_IOCTL_NR(DRM_I915_VBLANK_SWAP)] = {i915_vblank_swap, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_I915_MMIO)] = {i915_mmio, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_I915_HWS_ADDR)] = {i915_set_status_page, DRM_AUTH},
 };
 
 int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);

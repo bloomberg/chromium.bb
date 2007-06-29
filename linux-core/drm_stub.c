@@ -60,6 +60,11 @@ static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 {
 	int retcode;
 
+	INIT_LIST_HEAD(&dev->filelist);
+	INIT_LIST_HEAD(&dev->ctxlist);
+	INIT_LIST_HEAD(&dev->vmalist);
+	INIT_LIST_HEAD(&dev->maplist);
+
 	spin_lock_init(&dev->count_lock);
 	spin_lock_init(&dev->drw_lock);
 	spin_lock_init(&dev->tasklet_lock);
@@ -70,6 +75,8 @@ static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 	mutex_init(&dev->bm.init_mutex);
 	mutex_init(&dev->bm.evict_mutex);
 
+	idr_init(&dev->drw_idr);
+	
 	dev->pdev = pdev;
 	dev->pci_device = pdev->device;
 	dev->pci_vendor = pdev->vendor;
@@ -93,15 +100,6 @@ static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 		drm_mm_takedown(&dev->offset_manager);
 		return -ENOMEM;
 	}
-
-	dev->maplist = drm_calloc(1, sizeof(*dev->maplist), DRM_MEM_MAPS);
-	if (dev->maplist == NULL) {
-		drm_ht_remove(&dev->object_hash);
-		drm_ht_remove(&dev->map_hash);
-		drm_mm_takedown(&dev->offset_manager);
-		return -ENOMEM;
-	}
-	INIT_LIST_HEAD(&dev->maplist->head);
 
 	/* the DRM has 6 counters */
 	dev->counters = 6;

@@ -36,6 +36,8 @@ int drm_add_user_object(drm_file_t * priv, drm_user_object_t * item,
 	drm_device_t *dev = priv->head->dev;
 	int ret;
 
+	DRM_ASSERT_LOCKED(&dev->struct_mutex);
+
 	atomic_set(&item->refcount, 1);
 	item->shareable = shareable;
 	item->owner = priv;
@@ -55,6 +57,8 @@ drm_user_object_t *drm_lookup_user_object(drm_file_t * priv, uint32_t key)
 	drm_hash_item_t *hash;
 	int ret;
 	drm_user_object_t *item;
+
+	DRM_ASSERT_LOCKED(&dev->struct_mutex);
 
 	ret = drm_ht_find_item(&dev->object_hash, key, &hash);
 	if (ret) {
@@ -88,6 +92,8 @@ static void drm_deref_user_object(drm_file_t * priv, drm_user_object_t * item)
 
 int drm_remove_user_object(drm_file_t * priv, drm_user_object_t * item)
 {
+	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
+
 	if (item->owner != priv) {
 		DRM_ERROR("Cannot destroy object not owned by you.\n");
 		return -EINVAL;
@@ -125,6 +131,7 @@ int drm_add_ref_object(drm_file_t * priv, drm_user_object_t * referenced_object,
 	drm_ref_object_t *item;
 	drm_open_hash_t *ht = &priv->refd_object_hash[ref_action];
 
+	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
 	if (!referenced_object->shareable && priv != referenced_object->owner) {
 		DRM_ERROR("Not allowed to reference this object\n");
 		return -EINVAL;
@@ -181,6 +188,7 @@ drm_ref_object_t *drm_lookup_ref_object(drm_file_t * priv,
 	drm_hash_item_t *hash;
 	int ret;
 
+	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
 	ret = drm_ht_find_item(&priv->refd_object_hash[ref_action],
 			       (unsigned long)referenced_object, &hash);
 	if (ret)
@@ -213,6 +221,7 @@ void drm_remove_ref_object(drm_file_t * priv, drm_ref_object_t * item)
 	drm_open_hash_t *ht = &priv->refd_object_hash[item->unref_action];
 	drm_ref_t unref_action;
 
+	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
 	unref_action = item->unref_action;
 	if (atomic_dec_and_test(&item->refcount)) {
 		ret = drm_ht_remove_item(ht, &item->hash);

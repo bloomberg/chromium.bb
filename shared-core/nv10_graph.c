@@ -611,7 +611,7 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 	if (offset > 0) \
 		fifo->pgraph_ctx[offset] = val; \
 	} while (0)
-int nv10_graph_context_create(drm_device_t *dev, int channel) {
+int nv10_graph_create_context(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	struct nouveau_fifo *fifo = &dev_priv->fifos[channel];
 	uint32_t tmp, vramsz;
@@ -663,6 +663,21 @@ int nv10_graph_context_create(drm_device_t *dev, int channel) {
 	return 0;
 }
 
+void nv10_graph_destroy_context(drm_device_t *dev, int channel)
+{
+}
+
+int nv10_graph_load_context(drm_device_t *dev, int channel)
+{
+	DRM_ERROR("stub!\n");
+	return 0;
+}
+
+int nv10_graph_save_context(drm_device_t *dev, int channel)
+{
+	DRM_ERROR("stub!\n");
+	return 0;
+}
 
 int nv10_graph_init(drm_device_t *dev) {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;

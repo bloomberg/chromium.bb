@@ -139,7 +139,7 @@ nouveau_object_handle_find(drm_device_t *dev, int channel, uint32_t handle)
    is given as:
 */
 static uint32_t
-nouveau_ht_handle_hash(drm_device_t *dev, int channel, uint32_t handle)
+nouveau_ramht_hash_handle(drm_device_t *dev, int channel, uint32_t handle)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
 	uint32_t hash = 0;
@@ -154,62 +154,89 @@ nouveau_ht_handle_hash(drm_device_t *dev, int channel, uint32_t handle)
 }
 
 static int
-nouveau_ht_object_insert(drm_device_t* dev, int channel, uint32_t handle,
-			 struct nouveau_object *obj)
+nouveau_ramht_entry_valid(drm_device_t *dev, uint32_t ramht, uint32_t offset)
 {
 	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	int ht_base = NV_RAMIN + dev_priv->ramht_offset;
-	int ht_end  = ht_base + dev_priv->ramht_size;
-	int o_ofs, ofs;
+	uint32_t ctx = NV_RI32(ramht + offset + 4);
 
-	obj->handle = handle;
-	o_ofs = ofs = nouveau_ht_handle_hash(dev, channel, obj->handle);
-
-	while (NV_READ(ht_base + ofs) || NV_READ(ht_base + ofs + 4)) {
-		ofs += 8;
-		if (ofs == ht_end) ofs = ht_base;
-		if (ofs == o_ofs) {
-			DRM_ERROR("no free hash table entries\n");
-			return 1;
-		}
-	}
-	ofs += ht_base;
-
-	DRM_DEBUG("Channel %d - Handle 0x%08x at 0x%08x\n",
-		channel, obj->handle, ofs);
-
-	NV_WRITE(NV_RAMHT_HANDLE_OFFSET + ofs, obj->handle);
-	if (dev_priv->card_type >= NV_40)
-		NV_WRITE(NV_RAMHT_CONTEXT_OFFSET + ofs,
-			(channel     << NV40_RAMHT_CONTEXT_CHANNEL_SHIFT) |
-			(obj->engine << NV40_RAMHT_CONTEXT_ENGINE_SHIFT) |
-			nouveau_chip_instance_get(dev, obj->instance)
-			);	    
-	else
-		NV_WRITE(NV_RAMHT_CONTEXT_OFFSET + ofs,
-			NV_RAMHT_CONTEXT_VALID |
-			(channel     << NV_RAMHT_CONTEXT_CHANNEL_SHIFT) |
-			(obj->engine << NV_RAMHT_CONTEXT_ENGINE_SHIFT) |
-			nouveau_chip_instance_get(dev, obj->instance)
-			);
-
-	obj->ht_loc = ofs;
-	return 0;
+	if (dev_priv->card_type < NV_40)
+		return ((ctx & NV_RAMHT_CONTEXT_VALID) != 0);
+	return (ctx != 0);
 }
 
-static void nouveau_hash_table_remove(drm_device_t* dev,
-				      struct nouveau_object *obj)
+int
+nouveau_ramht_insert(drm_device_t* dev, int channel, uint32_t handle,
+		     struct nouveau_object *obj)
+{
+	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	uint32_t ramht = dev_priv->ramht_offset;
+	uint32_t ctx, co, ho;
+	uint32_t inst;
+
+	inst = nouveau_chip_instance_get(dev, obj->instance);
+	if (dev_priv->card_type < NV_40) {
+		ctx = NV_RAMHT_CONTEXT_VALID | inst |
+		      (channel     << NV_RAMHT_CONTEXT_CHANNEL_SHIFT) |
+		      (obj->engine << NV_RAMHT_CONTEXT_ENGINE_SHIFT);
+	} else
+	if (dev_priv->card_type < NV_50) {
+		ctx = inst |
+		      (channel     << NV40_RAMHT_CONTEXT_CHANNEL_SHIFT) |
+		      (obj->engine << NV40_RAMHT_CONTEXT_ENGINE_SHIFT);
+	} else {
+		ctx = inst |
+		      (obj->engine << NV40_RAMHT_CONTEXT_ENGINE_SHIFT);
+	}
+
+	co = ho = nouveau_ramht_hash_handle(dev, channel, handle);
+	do {
+		if (!nouveau_ramht_entry_valid(dev, ramht, co)) {
+			DRM_DEBUG("insert ch%d 0x%08x: h=0x%08x, c=0x%08x\n",
+				  channel, co, handle, ctx);
+			NV_WI32(ramht + co + 0, handle);
+			NV_WI32(ramht + co + 4, ctx);
+			obj->handle = handle;
+			return 0;
+		}
+		DRM_DEBUG("collision ch%d 0x%08x: h=0x%08x\n",
+			  channel, co, NV_RI32(ramht + co));
+
+		co += 8;
+		if (co == dev_priv->ramht_size)
+			co = 0;
+	} while (co != ho);
+
+	DRM_ERROR("RAMHT space exhausted. ch=%d\n", channel);
+	return DRM_ERR(ENOMEM);
+}
+
+static void
+nouveau_ramht_remove(drm_device_t* dev, struct nouveau_object *obj)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	uint32_t ramht = dev_priv->ramht_offset;
+	uint32_t co, ho;
 
-	DRM_DEBUG("Remove handle 0x%08x at 0x%08x from HT\n",
-			obj->handle, obj->ht_loc);
-	if (obj->ht_loc) {
-		DRM_DEBUG("... HT entry was: 0x%08x/0x%08x\n",
-				NV_READ(obj->ht_loc), NV_READ(obj->ht_loc+4));
-		NV_WRITE(obj->ht_loc  , 0x00000000);
-		NV_WRITE(obj->ht_loc+4, 0x00000000);
-	}
+	co = ho = nouveau_ramht_hash_handle(dev, obj->channel, obj->handle);
+	do {
+		if (nouveau_ramht_entry_valid(dev, ramht, co) &&
+		    (obj->handle == NV_RI32(ramht + co))) {
+			DRM_DEBUG("remove ch%d 0x%08x: h=0x%08x, c=0x%08x\n",
+				  obj->channel, co, obj->handle,
+				  NV_RI32(ramht + co + 4));
+			NV_WI32(ramht + co + 0, 0x00000000);
+			NV_WI32(ramht + co + 4, 0x00000000);
+			obj->handle = ~0;
+			return;
+		}
+
+		co += 8;
+		if (co == dev_priv->ramht_size)
+			co = 0;
+	} while (co != ho);
+
+	DRM_ERROR("RAMHT entry not found. ch=%d, handle=0x%08x\n",
+		  obj->channel, obj->handle);
 }
 
 static struct nouveau_object *
@@ -457,8 +484,56 @@ nouveau_object_free(drm_device_t *dev, struct nouveau_object *obj)
 {
 	nouveau_object_instance_free(dev, obj);
 	if (obj->handle != ~0)
-		nouveau_hash_table_remove(dev, obj);
+		nouveau_ramht_remove(dev, obj);
 	drm_free(obj, sizeof(struct nouveau_object), DRM_MEM_DRIVER);
+}
+
+int
+nouveau_object_init_channel(drm_device_t *dev, int channel,
+			    uint32_t vram_handle,
+			    uint32_t tt_handle)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_object *gpuobj;
+	int ret;
+
+	/* VRAM ctxdma */
+	gpuobj = nouveau_object_dma_create(dev, channel, NV_CLASS_DMA_IN_MEMORY,
+					   0, dev_priv->fb_available_size,
+					   NV_DMA_ACCESS_RW,
+					   NV_DMA_TARGET_VIDMEM);
+	if (!gpuobj) {
+		DRM_ERROR("Error creating VRAM ctxdma: %d\n", DRM_ERR(ENOMEM));
+		return DRM_ERR(ENOMEM);
+	}
+
+	ret = nouveau_ramht_insert(dev, channel, vram_handle, gpuobj);
+	if (ret) {
+		DRM_ERROR("Error referencing VRAM ctxdma: %d\n", ret);
+		return ret;
+	}
+
+	/* non-AGP unimplemented */
+	if (dev_priv->agp_heap == NULL)
+		return 0;
+
+	/* GART ctxdma */
+	gpuobj = nouveau_object_dma_create(dev, channel, NV_CLASS_DMA_IN_MEMORY,
+					   0, dev_priv->agp_available_size,
+					   NV_DMA_ACCESS_RW,
+					   NV_DMA_TARGET_AGP);
+	if (!gpuobj) {
+		DRM_ERROR("Error creating TT ctxdma: %d\n", DRM_ERR(ENOMEM));
+		return DRM_ERR(ENOMEM);
+	}
+
+	ret = nouveau_ramht_insert(dev, channel, tt_handle, gpuobj);
+	if (ret) {
+		DRM_ERROR("Error referencing TT ctxdma: %d\n", ret);
+		return ret;
+	}
+
+	return 0;
 }
 
 void nouveau_object_cleanup(drm_device_t *dev, int channel)
@@ -470,13 +545,13 @@ void nouveau_object_cleanup(drm_device_t *dev, int channel)
 	}
 }
 
-int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
+int nouveau_ioctl_grobj_alloc(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_nouveau_object_init_t init;
+	drm_nouveau_grobj_alloc_t init;
 	struct nouveau_object *obj;
 
-	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_object_init_t __user *)
+	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_grobj_alloc_t __user *)
 		data, sizeof(init));
 
 	if (!nouveau_fifo_owner(dev, filp, init.channel)) {
@@ -497,104 +572,7 @@ int nouveau_ioctl_object_init(DRM_IOCTL_ARGS)
 	if (!obj)
 		return DRM_ERR(ENOMEM);
 
-	if (nouveau_ht_object_insert(dev, init.channel, init.handle, obj)) {
-		nouveau_object_free(dev, obj);
-		return DRM_ERR(ENOMEM);
-	}
-
-	return 0;
-}
-
-static int
-nouveau_dma_object_check_access(drm_device_t *dev,
-				drm_nouveau_dma_object_init_t *init)
-{
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint64_t limit;
-
-	/* Check for known DMA object classes */
-	switch (init->class) {
-	case NV_CLASS_DMA_IN_MEMORY:
-	case NV_CLASS_DMA_FROM_MEMORY:
-	case NV_CLASS_DMA_TO_MEMORY:
-		break;
-	default:
-		DRM_ERROR("invalid class = 0x%x\n", init->class);
-		return DRM_ERR(EPERM);
-	}
-
-	/* Check access mode, and translate to NV_DMA_ACCESS_* */
-	switch (init->access) {
-	case NOUVEAU_MEM_ACCESS_RO:
-		init->access = NV_DMA_ACCESS_RO;
-		break;
-	case NOUVEAU_MEM_ACCESS_WO:
-		init->access = NV_DMA_ACCESS_WO;
-		break;
-	case NOUVEAU_MEM_ACCESS_RW:
-		init->access = NV_DMA_ACCESS_RW;
-		break;
-	default:
-		DRM_ERROR("invalid access mode = %d\n", init->access);
-		return DRM_ERR(EPERM);
-	}
-
-	/* Check that request is within the allowed limits of "target" */
-	switch (init->target) {
-	case NOUVEAU_MEM_FB:
-		limit = dev_priv->fb_available_size;
-		init->target = NV_DMA_TARGET_VIDMEM;
-		break;
-	case NOUVEAU_MEM_AGP:
-		limit = dev_priv->agp_available_size;
-		init->target = NV_DMA_TARGET_AGP;
-		break;
-	default:
-		DRM_ERROR("invalid target = 0x%x\n", init->target);
-		return DRM_ERR(EPERM);
-	}
-
-	if ((init->offset > limit) || (init->offset + init->size) > limit) {
-		DRM_ERROR("access out of allowed range (%d,0x%08x,0x%08x)\n",
-				init->target, init->offset, init->size);
-		return DRM_ERR(EPERM);
-	}
-
-	return 0;
-}
-
-int nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS)
-{
-	DRM_DEVICE;
-	drm_nouveau_dma_object_init_t init;
-	struct nouveau_object *obj;
-
-	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_dma_object_init_t __user *)
-		data, sizeof(init));
-
-	if (!nouveau_fifo_owner(dev, filp, init.channel)) {
-		DRM_ERROR("pid %d doesn't own channel %d\n",
-				DRM_CURRENTPID, init.channel);
-		return DRM_ERR(EINVAL);
-	}
-
-	if (nouveau_dma_object_check_access(dev, &init))
-		return DRM_ERR(EPERM);
-
-	if (nouveau_object_handle_find(dev, init.channel, init.handle)) {
-		DRM_ERROR("Channel %d: handle 0x%08x already exists\n",
-			init.channel, init.handle);
-		return DRM_ERR(EINVAL);
-	}
-
-	obj = nouveau_object_dma_create(dev, init.channel, init.class,
-					     init.offset, init.size,
-					     init.access, init.target);
-	if (!obj)
-		return DRM_ERR(ENOMEM);
-
-	obj->handle = init.handle;
-	if (nouveau_ht_object_insert(dev, init.channel, init.handle, obj)) {
+	if (nouveau_ramht_insert(dev, init.channel, init.handle, obj)) {
 		nouveau_object_free(dev, obj);
 		return DRM_ERR(ENOMEM);
 	}

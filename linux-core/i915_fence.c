@@ -61,7 +61,7 @@ static void i915_perform_flush(drm_device_t * dev)
 		 * First update fences with the current breadcrumb.
 		 */
 
-		diff = sequence - fc->last_exe_flush;
+		diff = (sequence - fc->last_exe_flush) & BREADCRUMB_MASK;
 		if (diff < driver->wrap_diff && diff != 0) {
 			drm_fence_handler(dev, 0, sequence, DRM_FENCE_TYPE_EXE);
 		}

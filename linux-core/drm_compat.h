@@ -312,4 +312,13 @@ extern int drm_bo_remap_bound(struct drm_buffer_object *bo);
 extern int drm_bo_map_bound(struct vm_area_struct *vma);
 
 #endif
+
+/* fixme when functions are upstreamed */
+#define DRM_IDR_COMPAT_FN
+#ifdef DRM_IDR_COMPAT_FN
+int idr_for_each(struct idr *idp,
+		 int (*fn)(int id, void *p, void *data), void *data);
+void idr_remove_all(struct idr *idp);
+#endif
+
 #endif

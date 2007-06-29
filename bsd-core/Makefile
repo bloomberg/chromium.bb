@@ -69,4 +69,3 @@ drm_pciids.h: ${SHARED}/drm_pciids.txt
 
 ${SHAREDFILES}:
 	ln -sf ${SHARED}/$@ $@
-

@@ -381,13 +381,6 @@ void i915_user_irq_off(drm_i915_private_t *dev_priv)
 	spin_unlock(&dev_priv->user_irq_lock);
 }
 		
-static int wait_compare(struct drm_device *dev, void *priv)
-{
-	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	int irq_nr = (u64)priv;
-
-	return (READ_BREADCRUMB(dev_priv) >= irq_nr);
-}
 
 static int i915_wait_irq(drm_device_t * dev, int irq_nr)
 {
@@ -403,8 +396,8 @@ static int i915_wait_irq(drm_device_t * dev, int irq_nr)
 	dev_priv->sarea_priv->perf_boxes |= I915_BOX_WAIT;
 	
 	i915_user_irq_on(dev_priv);
-	ret = drm_wait_on(dev, &dev_priv->irq_queue, 3 * DRM_HZ, wait_compare,
-			  (void *)(u64)irq_nr);
+	DRM_WAIT_ON(ret, dev_priv->irq_queue, 3 * DRM_HZ,
+		    READ_BREADCRUMB(dev_priv) >= irq_nr);
 	i915_user_irq_off(dev_priv);
 
 	if (ret == DRM_ERR(EBUSY)) {
@@ -735,11 +728,7 @@ void i915_driver_irq_postinstall(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	dev_priv->swaps_lock = SPIN_LOCK_UNLOCKED;
-	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
-	dev_priv->swaps_pending = 0;
-
-	dev_priv->swaps_lock = SPIN_LOCK_UNLOCKED;
+	spin_lock_init(&dev_priv->swaps_lock);
 	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending = 0;
 

@@ -141,6 +141,7 @@ extern int drm_user_object_unref(drm_file_t * priv, uint32_t user_token,
 
 typedef struct drm_fence_object {
 	drm_user_object_t base;
+        struct drm_device *dev;
 	atomic_t usage;
 
 	/*
@@ -196,15 +197,15 @@ extern void drm_fence_manager_init(struct drm_device *dev);
 extern void drm_fence_manager_takedown(struct drm_device *dev);
 extern void drm_fence_flush_old(struct drm_device *dev, uint32_t class,
 				uint32_t sequence);
-extern int drm_fence_object_flush(struct drm_device *dev,
-				  drm_fence_object_t * fence, uint32_t type);
-extern int drm_fence_object_signaled(drm_fence_object_t * fence, uint32_t type);
-extern void drm_fence_usage_deref_locked(struct drm_device *dev,
-					 drm_fence_object_t * fence);
-extern void drm_fence_usage_deref_unlocked(struct drm_device *dev,
-					   drm_fence_object_t * fence);
-extern int drm_fence_object_wait(struct drm_device *dev,
-				 drm_fence_object_t * fence,
+extern int drm_fence_object_flush(drm_fence_object_t * fence, uint32_t type);
+extern int drm_fence_object_signaled(drm_fence_object_t * fence,
+				     uint32_t type, int flush);
+extern void drm_fence_usage_deref_locked(drm_fence_object_t ** fence);
+extern void drm_fence_usage_deref_unlocked(drm_fence_object_t ** fence);
+extern struct drm_fence_object *drm_fence_reference_locked(struct drm_fence_object *src);
+extern void drm_fence_reference_unlocked(struct drm_fence_object **dst,
+					 struct drm_fence_object *src);
+extern int drm_fence_object_wait(drm_fence_object_t * fence,
 				 int lazy, int ignore_signals, uint32_t mask);
 extern int drm_fence_object_create(struct drm_device *dev, uint32_t type,
 				   uint32_t fence_flags, uint32_t class,
@@ -445,7 +446,7 @@ extern int drm_bo_pci_offset(struct drm_device *dev,
 			     unsigned long *bus_size);
 extern int drm_mem_reg_is_pci(struct drm_device *dev, drm_bo_mem_reg_t * mem);
 
-extern void drm_bo_usage_deref_locked(drm_buffer_object_t * bo);
+extern void drm_bo_usage_deref_locked(drm_buffer_object_t ** bo);
 extern int drm_fence_buffer_objects(drm_file_t * priv,
 				    struct list_head *list,
 				    uint32_t fence_flags,
@@ -482,5 +483,12 @@ extern int drm_mem_reg_ioremap(struct drm_device *dev, drm_bo_mem_reg_t * mem,
 			       void **virtual);
 extern void drm_mem_reg_iounmap(struct drm_device *dev, drm_bo_mem_reg_t * mem,
 				void *virtual);
+#ifdef CONFIG_DEBUG_MUTEXES
+#define DRM_ASSERT_LOCKED(_mutex)					\
+	BUG_ON(!mutex_is_locked(_mutex) ||				\
+	       ((_mutex)->owner != current_thread_info()))
+#else
+#define DRM_ASSERT_LOCKED(_mutex)
+#endif
 
 #endif

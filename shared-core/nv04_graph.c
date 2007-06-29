@@ -336,7 +336,7 @@ void nouveau_nv04_context_switch(drm_device_t *dev)
 	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
 }
 
-int nv04_graph_context_create(drm_device_t *dev, int channel) {
+int nv04_graph_create_context(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG("nv04_graph_context_create %d\n", channel);
 
@@ -351,6 +351,21 @@ int nv04_graph_context_create(drm_device_t *dev, int channel) {
 	return 0;
 }
 
+void nv04_graph_destroy_context(drm_device_t *dev, int channel)
+{
+}
+
+int nv04_graph_load_context(drm_device_t *dev, int channel)
+{
+	DRM_ERROR("stub!\n");
+	return 0;
+}
+
+int nv04_graph_save_context(drm_device_t *dev, int channel)
+{
+	DRM_ERROR("stub!\n");
+	return 0;
+}
 
 int nv04_graph_init(drm_device_t *dev) {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
