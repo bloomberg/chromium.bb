@@ -730,10 +730,7 @@ int xgi_kern_mmap(struct file *filp, struct vm_area_struct *vma)
 		 (info, XGI_VMA_OFFSET(vma), vma->vm_end - vma->vm_start)) {
 		xgi_down(info->pcie_sem);
 
-		block =
-		    (xgi_pcie_block_t *) xgi_find_pcie_block(info,
-							     XGI_VMA_OFFSET
-							     (vma));
+		block = xgi_find_pcie_block(info, XGI_VMA_OFFSET(vma));
 
 		if (block == NULL) {
 			XGI_ERROR("couldn't find pre-allocated PCIE memory!\n");

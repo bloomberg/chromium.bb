@@ -353,7 +353,8 @@ extern void xgi_pcie_alloc(xgi_info_t * info, unsigned long size,
 			   enum PcieOwner owner, xgi_mem_alloc_t * alloc);
 extern void xgi_pcie_free(xgi_info_t * info, unsigned long offset);
 extern void xgi_pcie_heap_check(void);
-extern void *xgi_find_pcie_block(xgi_info_t * info, unsigned long address);
+extern struct xgi_pcie_block_s *xgi_find_pcie_block(xgi_info_t * info,
+						    unsigned long address);
 extern void *xgi_find_pcie_virt(xgi_info_t * info, unsigned long address);
 
 extern void xgi_read_pcie_mem(xgi_info_t * info, xgi_mem_req_t * req);

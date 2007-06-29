@@ -906,7 +906,8 @@ void xgi_pcie_free(xgi_info_t * info, unsigned long bus_addr)
  * given a bus address, fid the pcie mem block
  * uses the bus address as the key.
  */
-void *xgi_find_pcie_block(xgi_info_t * info, unsigned long address)
+struct xgi_pcie_block_s *xgi_find_pcie_block(xgi_info_t * info,
+					     unsigned long address)
 {
 	struct list_head *used_list;
 	xgi_pcie_block_t *block;
