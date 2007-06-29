@@ -947,30 +947,25 @@ void *xgi_find_pcie_block(xgi_info_t * info, unsigned long address)
  */
 void *xgi_find_pcie_virt(xgi_info_t * info, unsigned long address)
 {
-	struct list_head *used_list;
-	xgi_pcie_block_t *block;
-	unsigned long offset_in_page;
-	unsigned long loc_in_pagetable;
-	void *ret;
-
-	used_list = xgi_pcie_heap->used_list.next;
-	offset_in_page = address & (PAGE_SIZE - 1);
+	struct list_head *used_list = xgi_pcie_heap->used_list.next;
+	const unsigned long offset_in_page = address & (PAGE_SIZE - 1);
 
 	XGI_INFO("begin (used_list = 0x%p, address = 0x%lx, "
 		 "PAGE_SIZE - 1 = %lu, offset_in_page = %lu)\n",
 		 used_list, address, PAGE_SIZE - 1, offset_in_page);
 
 	while (used_list != &xgi_pcie_heap->used_list) {
-		block = list_entry(used_list, struct xgi_pcie_block_s, list);
+		xgi_pcie_block_t *block = 
+			list_entry(used_list, struct xgi_pcie_block_s, list);
 
 		XGI_INFO("block = 0x%p (hw_addr = 0x%lx, size=%lu)\n",
 			 block, block->hw_addr, block->size);
 
 		if ((address >= block->hw_addr)
 		    && (address < (block->hw_addr + block->size))) {
-			loc_in_pagetable =
+			const unsigned long loc_in_pagetable =
 			    (address - block->hw_addr) >> PAGE_SHIFT;
-			ret =
+			void *const ret =
 			    (void *)(block->page_table[loc_in_pagetable].
 				     virt_addr + offset_in_page);
 
