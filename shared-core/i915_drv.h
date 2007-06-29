@@ -213,7 +213,6 @@ extern int i915_max_ioctl;
 extern void i915_kernel_lost_context(drm_device_t * dev);
 extern int i915_driver_load(struct drm_device *, unsigned long flags);
 extern int i915_driver_unload(drm_device_t *dev);
-extern int i915_driver_firstopen(struct drm_device *dev);
 extern void i915_driver_lastclose(drm_device_t * dev);
 extern void i915_driver_preclose(drm_device_t * dev, DRMFILE filp);
 extern int i915_driver_device_is_agp(drm_device_t * dev);
@@ -222,7 +221,6 @@ extern long i915_compat_ioctl(struct file *filp, unsigned int cmd,
 extern void i915_emit_breadcrumb(drm_device_t *dev);
 extern void i915_dispatch_flip(drm_device_t * dev, int pipes, int sync);
 extern int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush);
-extern int i915_driver_firstopen(struct drm_device *dev);
 extern int i915_dma_cleanup(drm_device_t * dev);
 
 /* i915_irq.c */

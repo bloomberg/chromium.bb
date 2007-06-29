@@ -275,7 +275,7 @@ int i915_driver_unload(drm_device_t *dev)
 
 	DRM_DEBUG("usage is %d\n", atomic_read(&dev_priv->ring_buffer->usage));
 	mutex_lock(&dev->struct_mutex);
-	drm_bo_usage_deref_locked(dev_priv->ring_buffer);
+	drm_bo_usage_deref_locked(&dev_priv->ring_buffer);
 	mutex_unlock(&dev->struct_mutex);
 
 	if (drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM)) {
@@ -302,7 +302,6 @@ void i915_driver_lastclose(drm_device_t * dev)
 	i915_mem_takedown(&(dev_priv->agp_heap));
 
 	i915_dma_cleanup(dev);
-
 }
 
 void i915_driver_preclose(drm_device_t * dev, DRMFILE filp)

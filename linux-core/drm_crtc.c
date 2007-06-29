@@ -912,7 +912,7 @@ void drm_mode_config_cleanup(drm_device_t *dev)
 		/* If this FB was the kernel one, free it */
 		if (fb->bo->type == drm_bo_type_kernel) {
 			mutex_lock(&dev->struct_mutex);
-			drm_bo_usage_deref_locked(fb->bo);
+			drm_bo_usage_deref_locked(&fb->bo);
 			mutex_unlock(&dev->struct_mutex);
 		}
 		drm_framebuffer_destroy(fb);
