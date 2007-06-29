@@ -450,6 +450,12 @@ static int drm_fence_object_init(drm_device_t * dev, uint32_t class,
 
 	write_lock_irqsave(&fm->lock, flags);
 	INIT_LIST_HEAD(&fence->ring);
+
+	/* 
+	 *  Avoid hitting BUG() for kernel-only fence objects.
+	 */
+
+	INIT_LIST_HEAD(&fence->base.list);
 	fence->class = class;
 	fence->type = type;
 	fence->flush_mask = 0;
