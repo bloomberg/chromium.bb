@@ -198,17 +198,24 @@ void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
 		    (U32 *) xgi_find_pcie_virt(info,
 					       s_cmdring._lastBatchStartAddr);
 
-		lastBatchVirtAddr[1] =
-		    BEGIN_LINK_ENABLE_MASK + pCmdInfo->_firstSize;
-		lastBatchVirtAddr[2] = pCmdInfo->_firstBeginAddr >> 4;
-		lastBatchVirtAddr[3] = 0;
-		//barrier();
-		lastBatchVirtAddr[0] =
-		    (beginPort << 22) + (BEGIN_VALID_MASK) +
-		    (0xffff & pCmdInfo->_curDebugID);
+		/* lastBatchVirtAddr should *never* be NULL.  However, there
+		 * are currently some bugs that cause this to happen.  The
+		 * if-statement here prevents some fatal (i.e., hard lock
+		 * requiring the reset button) oopses.
+		 */
+		if (lastBatchVirtAddr) {
+			lastBatchVirtAddr[1] =
+				BEGIN_LINK_ENABLE_MASK + pCmdInfo->_firstSize;
+			lastBatchVirtAddr[2] = pCmdInfo->_firstBeginAddr >> 4;
+			lastBatchVirtAddr[3] = 0;
+			//barrier();
+			lastBatchVirtAddr[0] =
+				(beginPort << 22) + (BEGIN_VALID_MASK) +
+				(0xffff & pCmdInfo->_curDebugID);
 
-		/* Jong 06/12/2006; system hang; marked for test */
-		triggerHWCommandList(info, pCmdInfo->_beginCount);
+			/* Jong 06/12/2006; system hang; marked for test */
+			triggerHWCommandList(info, pCmdInfo->_beginCount);
+		}
 
 		XGI_INFO
 		    ("Jong-xgi_submit_cmdlist-s_cmdring._lastBatchStartAddr != 0 - End\n");
