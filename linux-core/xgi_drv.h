@@ -131,10 +131,10 @@ struct xgi_info {
 
 	/* look up table parameters */
 	U32 *lut_base;
-	U32 lutPageSize;
-	U32 lutPageOrder;
-	U32 isLUTInLFB;
-	U32 sdfbPageSize;
+	unsigned int lutPageSize;
+	unsigned int lutPageOrder;
+	bool isLUTInLFB;
+	unsigned int sdfbPageSize;
 
 	U32 pcie_config;
 	U32 pcie_status;
