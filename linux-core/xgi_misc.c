@@ -556,50 +556,45 @@ int xgi_get_cpu_id(struct cpu_info *arg)
 extern struct list_head xgi_mempid_list;
 void xgi_mem_collect(struct xgi_info * info, unsigned int *pcnt)
 {
-	struct xgi_mem_pid *mempid_block;
-	struct list_head *mempid_list;
+	struct xgi_mem_pid *block;
+	struct xgi_mem_pid *next;
 	struct task_struct *p, *find;
 	unsigned int cnt = 0;
 
-	mempid_list = xgi_mempid_list.next;
-
-	while (mempid_list != &xgi_mempid_list) {
-		mempid_block =
-		    list_entry(mempid_list, struct xgi_mem_pid, list);
-		mempid_list = mempid_list->next;
+	list_for_each_entry_safe(block, next, &xgi_mempid_list, list) {
 
 		find = NULL;
 		XGI_SCAN_PROCESS(p) {
-			if (p->pid == mempid_block->pid) {
+			if (p->pid == block->pid) {
 				XGI_INFO
 				    ("[!]Find active pid:%ld state:%ld location:%d addr:0x%lx! \n",
-				     mempid_block->pid, p->state,
-				     mempid_block->location,
-				     mempid_block->bus_addr);
+				     block->pid, p->state,
+				     block->location,
+				     block->bus_addr);
 				find = p;
-				if (mempid_block->bus_addr == 0xFFFFFFFF)
+				if (block->bus_addr == 0xFFFFFFFF)
 					++cnt;
 				break;
 			}
 		}
 		if (!find) {
-			if (mempid_block->location == LOCAL) {
+			if (block->location == LOCAL) {
 				XGI_INFO
 				    ("Memory ProcessID free fb and delete one block pid:%ld addr:0x%lx successfully! \n",
-				     mempid_block->pid, mempid_block->bus_addr);
-				xgi_fb_free(info, mempid_block->bus_addr);
-			} else if (mempid_block->bus_addr != 0xFFFFFFFF) {
+				     block->pid, block->bus_addr);
+				xgi_fb_free(info, block->bus_addr);
+			} else if (block->bus_addr != 0xFFFFFFFF) {
 				XGI_INFO
 				    ("Memory ProcessID free pcie and delete one block pid:%ld addr:0x%lx successfully! \n",
-				     mempid_block->pid, mempid_block->bus_addr);
-				xgi_pcie_free(info, mempid_block->bus_addr);
+				     block->pid, block->bus_addr);
+				xgi_pcie_free(info, block->bus_addr);
 			} else {
 				/*only delete the memory block */
-				list_del(&mempid_block->list);
+				list_del(&block->list);
 				XGI_INFO
 				    ("Memory ProcessID delete one pcie block pid:%ld successfully! \n",
-				     mempid_block->pid);
-				kfree(mempid_block);
+				     block->pid);
+				kfree(block);
 			}
 		}
 	}

@@ -96,7 +96,6 @@ void xgi_fb_free(struct xgi_info * info, unsigned long bus_addr)
 	unsigned long offset = bus_addr - info->fb.base;
 	struct xgi_mem_pid *mempid_block;
 	struct xgi_mem_pid *mempid_freeblock = NULL;
-	struct list_head *mempid_list;
 
 	if (offset < 0) {
 		XGI_INFO("free onscreen frame buffer successfully !\n");
@@ -111,16 +110,12 @@ void xgi_fb_free(struct xgi_info * info, unsigned long bus_addr)
 		}
 
 		/* manage mempid */
-		mempid_list = xgi_mempid_list.next;
-		while (mempid_list != &xgi_mempid_list) {
-			mempid_block =
-			    list_entry(mempid_list, struct xgi_mem_pid, list);
+		list_for_each_entry(mempid_block, &xgi_mempid_list, list) {
 			if (mempid_block->location == LOCAL
 			    && mempid_block->bus_addr == bus_addr) {
 				mempid_freeblock = mempid_block;
 				break;
 			}
-			mempid_list = mempid_list->next;
 		}
 		if (mempid_freeblock) {
 			list_del(&mempid_freeblock->list);
@@ -192,20 +187,15 @@ int xgi_fb_heap_init(struct xgi_info * info)
 
 void xgi_fb_heap_cleanup(struct xgi_info * info)
 {
-	struct list_head *free_list, *temp;
+	struct list_head *free_list;
 	struct xgi_mem_block *block;
+	struct xgi_mem_block *next;
 	int i;
 
 	if (xgi_fb_heap) {
 		free_list = &xgi_fb_heap->free_list;
 		for (i = 0; i < 3; i++, free_list++) {
-			temp = free_list->next;
-			while (temp != free_list) {
-				block =
-				    list_entry(temp, struct xgi_mem_block,
-					       list);
-				temp = temp->next;
-
+			list_for_each_entry_safe(block, next, free_list, list) {
 				XGI_INFO
 				    ("No. %d block->offset: 0x%lx block->size: 0x%lx \n",
 				     i, block->offset, block->size);
@@ -334,7 +324,6 @@ static void xgi_mem_delete_node(struct xgi_mem_list * list, struct xgi_mem_block
 static struct xgi_mem_block *xgi_mem_alloc(struct xgi_info * info,
 				      unsigned long originalSize)
 {
-	struct list_head *free_list;
 	struct xgi_mem_block *block, *free_block, *used_block;
 
 	unsigned long size = (originalSize + PAGE_SIZE - 1) & PAGE_MASK;
@@ -354,18 +343,14 @@ static struct xgi_mem_block *xgi_mem_alloc(struct xgi_info * info,
 		return (NULL);
 	}
 
-	free_list = xgi_fb_heap->free_list.next;
-
-	while (free_list != &xgi_fb_heap->free_list) {
+	list_for_each_entry(block, &xgi_fb_heap->free_list, list) {
 		XGI_INFO("free_list: 0x%px \n", free_list);
-		block = list_entry(free_list, struct xgi_mem_block, list);
 		if (size <= block->size) {
 			break;
 		}
-		free_list = free_list->next;
 	}
 
-	if (free_list == &xgi_fb_heap->free_list) {
+	if (&block->list == &xgi_fb_heap->free_list) {
 		XGI_ERROR
 		    ("Can't allocate %ldk size from frame buffer memory !\n",
 		     size / 1024);
@@ -408,23 +393,19 @@ static struct xgi_mem_block *xgi_mem_alloc(struct xgi_info * info,
 
 static struct xgi_mem_block *xgi_mem_free(struct xgi_info * info, unsigned long offset)
 {
-	struct list_head *free_list, *used_list;
-	struct xgi_mem_block *used_block = NULL, *block = NULL;
+	struct xgi_mem_block *used_block = NULL, *block;
 	struct xgi_mem_block *prev, *next;
 
 	unsigned long upper;
 	unsigned long lower;
 
-	used_list = xgi_fb_heap->used_list.next;
-	while (used_list != &xgi_fb_heap->used_list) {
-		block = list_entry(used_list, struct xgi_mem_block, list);
+	list_for_each_entry(block, &xgi_fb_heap->used_list, list) {
 		if (block->offset == offset) {
 			break;
 		}
-		used_list = used_list->next;
 	}
 
-	if (used_list == &xgi_fb_heap->used_list) {
+	if (&block->list == &xgi_fb_heap->used_list) {
 		XGI_ERROR("can't find block: 0x%lx to free!\n", offset);
 		return (NULL);
 	}
@@ -439,16 +420,12 @@ static struct xgi_mem_block *xgi_mem_free(struct xgi_info * info, unsigned long 
 	upper = used_block->offset + used_block->size;
 	lower = used_block->offset;
 
-	free_list = xgi_fb_heap->free_list.next;
-	while (free_list != &xgi_fb_heap->free_list) {
-		block = list_entry(free_list, struct xgi_mem_block, list);
-
+	list_for_each_entry(block, &xgi_fb_heap->free_list, list) {
 		if (block->offset == upper) {
 			next = block;
 		} else if ((block->offset + block->size) == lower) {
 			prev = block;
 		}
-		free_list = free_list->next;
 	}
 
 	XGI_INFO("next = 0x%p, prev = 0x%p\n", next, prev);

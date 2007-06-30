@@ -376,8 +376,9 @@ void xgi_pcie_heap_check(void)
 
 void xgi_pcie_heap_cleanup(struct xgi_info * info)
 {
-	struct list_head *free_list, *temp;
+	struct list_head *free_list;
 	struct xgi_pcie_block *block;
+	struct xgi_pcie_block *next;
 	int j;
 
 	xgi_pcie_lut_cleanup(info);
@@ -386,23 +387,16 @@ void xgi_pcie_heap_cleanup(struct xgi_info * info)
 	if (xgi_pcie_heap) {
 		free_list = &xgi_pcie_heap->free_list;
 		for (j = 0; j < 3; j++, free_list++) {
-			temp = free_list->next;
-
-			while (temp != free_list) {
-				block =
-				    list_entry(temp, struct xgi_pcie_block,
-					       list);
+			list_for_each_entry_safe(block, next, free_list, list) {
 				XGI_INFO
-				    ("No. %d block->offset: 0x%lx block->size: 0x%lx \n",
+				    ("No. %d block offset: 0x%lx size: 0x%lx\n",
 				     j, block->offset, block->size);
 				xgi_pcie_block_stuff_free(block);
 				block->bus_addr = 0;
 				block->hw_addr = 0;
 
-				temp = temp->next;
 				//XGI_INFO("No. %d free block: 0x%p \n", j, block);
 				kmem_cache_free(xgi_pcie_cache_block, block);
-				block = NULL;
 			}
 		}
 
@@ -421,7 +415,6 @@ static struct xgi_pcie_block *xgi_pcie_mem_alloc(struct xgi_info * info,
 					    unsigned long originalSize,
 					    enum PcieOwner owner)
 {
-	struct list_head *free_list;
 	struct xgi_pcie_block *block, *used_block, *free_block;
 	struct xgi_page_block *page_block, *prev_page_block;
 	struct page *page;
@@ -475,17 +468,13 @@ static struct xgi_pcie_block *xgi_pcie_mem_alloc(struct xgi_info * info,
 	}
 
 	/* Jong 05/30/2006; find next free list which has enough space */
-	free_list = xgi_pcie_heap->free_list.next;
-	while (free_list != &xgi_pcie_heap->free_list) {
-		//XGI_INFO("free_list: 0x%px \n", free_list);
-		block = list_entry(free_list, struct xgi_pcie_block, list);
+	list_for_each_entry(block, &xgi_pcie_heap->free_list, list) {
 		if (size <= block->size) {
 			break;
 		}
-		free_list = free_list->next;
 	}
 
-	if (free_list == &xgi_pcie_heap->free_list) {
+	if (&block->list == &xgi_pcie_heap->free_list) {
 		XGI_ERROR("Can't allocate %ldk size from PCIE memory !\n",
 			  size / 1024);
 		return (NULL);
@@ -696,21 +685,17 @@ static struct xgi_pcie_block *xgi_pcie_mem_alloc(struct xgi_info * info,
 static struct xgi_pcie_block *xgi_pcie_mem_free(struct xgi_info * info,
 					   unsigned long offset)
 {
-	struct list_head *free_list, *used_list;
-	struct xgi_pcie_block *used_block, *block = NULL;
+	struct xgi_pcie_block *used_block, *block;
 	struct xgi_pcie_block *prev, *next;
 	unsigned long upper, lower;
 
-	used_list = xgi_pcie_heap->used_list.next;
-	while (used_list != &xgi_pcie_heap->used_list) {
-		block = list_entry(used_list, struct xgi_pcie_block, list);
+	list_for_each_entry(block, &xgi_pcie_heap->used_list, list) {
 		if (block->offset == offset) {
 			break;
 		}
-		used_list = used_list->next;
 	}
 
-	if (used_list == &xgi_pcie_heap->used_list) {
+	if (&block->list == &xgi_pcie_heap->used_list) {
 		XGI_ERROR("can't find block: 0x%lx to free!\n", offset);
 		return (NULL);
 	}
@@ -730,16 +715,12 @@ static struct xgi_pcie_block *xgi_pcie_mem_free(struct xgi_info * info,
 	upper = used_block->offset + used_block->size;
 	lower = used_block->offset;
 
-	free_list = xgi_pcie_heap->free_list.next;
-
-	while (free_list != &xgi_pcie_heap->free_list) {
-		block = list_entry(free_list, struct xgi_pcie_block, list);
+	list_for_each_entry(block, &xgi_pcie_heap->free_list, list) {
 		if (block->offset == upper) {
 			next = block;
 		} else if ((block->offset + block->size) == lower) {
 			prev = block;
 		}
-		free_list = free_list->next;
 	}
 
 	XGI_INFO("next = 0x%p, prev = 0x%p\n", next, prev);
@@ -839,7 +820,6 @@ void xgi_pcie_free(struct xgi_info * info, unsigned long bus_addr)
 	unsigned long offset = bus_addr - info->pcie.base;
 	struct xgi_mem_pid *mempid_block;
 	struct xgi_mem_pid *mempid_freeblock = NULL;
-	struct list_head *mempid_list;
 	char isvertex = 0;
 	int processcnt;
 
@@ -850,15 +830,12 @@ void xgi_pcie_free(struct xgi_info * info, unsigned long bus_addr)
 	if (isvertex) {
 		/*check is there any other process using vertex */
 		processcnt = 0;
-		mempid_list = xgi_mempid_list.next;
-		while (mempid_list != &xgi_mempid_list) {
-			mempid_block =
-			    list_entry(mempid_list, struct xgi_mem_pid, list);
+
+		list_for_each_entry(mempid_block, &xgi_mempid_list, list) {
 			if (mempid_block->location == NON_LOCAL
 			    && mempid_block->bus_addr == 0xFFFFFFFF) {
 				++processcnt;
 			}
-			mempid_list = mempid_list->next;
 		}
 		if (processcnt > 1) {
 			return;
@@ -877,17 +854,13 @@ void xgi_pcie_free(struct xgi_info * info, unsigned long bus_addr)
 		xgi_pcie_vertex_block = NULL;
 
 	/* manage mempid */
-	mempid_list = xgi_mempid_list.next;
-	while (mempid_list != &xgi_mempid_list) {
-		mempid_block =
-		    list_entry(mempid_list, struct xgi_mem_pid, list);
+	list_for_each_entry(mempid_block, &xgi_mempid_list, list) {
 		if (mempid_block->location == NON_LOCAL
 		    && ((isvertex && mempid_block->bus_addr == 0xFFFFFFFF)
 			|| (!isvertex && mempid_block->bus_addr == bus_addr))) {
 			mempid_freeblock = mempid_block;
 			break;
 		}
-		mempid_list = mempid_list->next;
 	}
 	if (mempid_freeblock) {
 		list_del(&mempid_freeblock->list);
@@ -905,15 +878,11 @@ void xgi_pcie_free(struct xgi_info * info, unsigned long bus_addr)
 struct xgi_pcie_block *xgi_find_pcie_block(struct xgi_info * info,
 					   unsigned long address)
 {
-	struct list_head *used_list;
 	struct xgi_pcie_block *block;
 	int i;
 
-	used_list = xgi_pcie_heap->used_list.next;
 
-	while (used_list != &xgi_pcie_heap->used_list) {
-		block = list_entry(used_list, struct xgi_pcie_block, list);
-
+	list_for_each_entry(block, &xgi_pcie_heap->used_list, list) {
 		if (block->bus_addr == address) {
 			return block;
 		}
@@ -927,7 +896,6 @@ struct xgi_pcie_block *xgi_find_pcie_block(struct xgi_info * info,
 				}
 			}
 		}
-		used_list = used_list->next;
 	}
 
 	XGI_ERROR("could not find map for vm 0x%lx\n", address);
@@ -944,17 +912,13 @@ struct xgi_pcie_block *xgi_find_pcie_block(struct xgi_info * info,
  */
 void *xgi_find_pcie_virt(struct xgi_info * info, unsigned long address)
 {
-	struct list_head *used_list = xgi_pcie_heap->used_list.next;
+	struct xgi_pcie_block *block;
 	const unsigned long offset_in_page = address & (PAGE_SIZE - 1);
 
-	XGI_INFO("begin (used_list = 0x%p, address = 0x%lx, "
-		 "PAGE_SIZE - 1 = %lu, offset_in_page = %lu)\n",
-		 used_list, address, PAGE_SIZE - 1, offset_in_page);
+	XGI_INFO("begin (address = 0x%lx, offset_in_page = %lu)\n",
+		 address, offset_in_page);
 
-	while (used_list != &xgi_pcie_heap->used_list) {
-		struct xgi_pcie_block *block = 
-			list_entry(used_list, struct xgi_pcie_block, list);
-
+	list_for_each_entry(block, &xgi_pcie_heap->used_list, list) {
 		XGI_INFO("block = 0x%p (hw_addr = 0x%lx, size=%lu)\n",
 			 block, block->hw_addr, block->size);
 
@@ -973,9 +937,6 @@ void *xgi_find_pcie_virt(struct xgi_info * info, unsigned long address)
 			XGI_INFO("return 0x%p\n", ret);
 
 			return ret;
-		} else {
-			XGI_INFO("used_list = used_list->next;\n");
-			used_list = used_list->next;
 		}
 	}
 
