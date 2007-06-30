@@ -455,7 +455,7 @@ static inline void XGI_SET_PAGE_ATTRIB_CACHED(struct xgi_pte * page_ptr)
 
 struct xgi_file_private {
 	struct xgi_info *info;
-	U32 num_events;
+	unsigned int num_events;
 	spinlock_t fp_lock;
 	wait_queue_head_t wait_queue;
 };

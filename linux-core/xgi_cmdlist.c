@@ -36,11 +36,11 @@
 struct xgi_cmdring_info s_cmdring;
 
 static void addFlush2D(struct xgi_info * info);
-static U32 getCurBatchBeginPort(struct xgi_cmd_info * pCmdInfo);
+static unsigned int getCurBatchBeginPort(struct xgi_cmd_info * pCmdInfo);
 static void triggerHWCommandList(struct xgi_info * info, U32 triggerCounter);
 static void xgi_cmdlist_reset(void);
 
-int xgi_cmdlist_initialize(struct xgi_info * info, U32 size)
+int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 {
 	//struct xgi_mem_req mem_req;
 	struct xgi_mem_alloc mem_alloc;
@@ -64,7 +64,7 @@ int xgi_cmdlist_initialize(struct xgi_info * info, U32 size)
 
 void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
 {
-	U32 beginPort;
+	unsigned int beginPort;
     /** XGI_INFO("Jong-xgi_submit_cmdlist-Begin \n"); **/
 
 	/* Jong 05/25/2006 */
@@ -77,7 +77,7 @@ void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
 	/* return; */
 
 	if (s_cmdring._lastBatchStartAddr == 0) {
-		U32 portOffset;
+		unsigned int portOffset;
 
 		/* Jong 06/13/2006; remove marked for system hang test */
 		/* xgi_waitfor_pci_idle(info); */
@@ -278,17 +278,17 @@ void xgi_cmdlist_cleanup(struct xgi_info * info)
 
 static void triggerHWCommandList(struct xgi_info * info, U32 triggerCounter)
 {
-	static U32 s_triggerID = 1;
+	static unsigned int s_triggerID = 1;
 
 	//Fix me, currently we just trigger one time
 	while (triggerCounter--) {
 		dwWriteReg(BASE_3D_ENG + M2REG_PCI_TRIGGER_REGISTER_ADDRESS,
-			   0x05000000 + (0xffff & s_triggerID++));
+			   0x05000000 + (0x0ffff & s_triggerID++));
 		// xgi_waitfor_pci_idle(info);
 	}
 }
 
-static U32 getCurBatchBeginPort(struct xgi_cmd_info * pCmdInfo)
+static unsigned int getCurBatchBeginPort(struct xgi_cmd_info * pCmdInfo)
 {
 	// Convert the batch type to begin port ID
 	switch (pCmdInfo->_firstBeginType) {

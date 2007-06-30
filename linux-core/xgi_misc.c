@@ -109,7 +109,7 @@ void xgi_sarea_info(struct xgi_info * info, struct xgi_sarea_info * req)
  */
 #define STALL_INTERRUPT_RESET_THRESHOLD 0xffff
 
-static U32 s_invalid_begin = 0;
+static unsigned int s_invalid_begin = 0;
 
 bool xgi_ge_irq_handler(struct xgi_info * info)
 {
