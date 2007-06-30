@@ -33,20 +33,6 @@
 #include "xgi_misc.h"
 #include "xgi_cmdlist.h"
 
-U32 s_emptyBegin[AGPCMDLIST_BEGIN_SIZE] = {
-	0x10000000,		// 3D Type Begin, Invalid
-	0x80000004,		// Length = 4;
-	0x00000000,
-	0x00000000
-};
-
-U32 s_flush2D[AGPCMDLIST_FLUSH_CMD_LEN] = {
-	FLUSH_2D,
-	FLUSH_2D,
-	FLUSH_2D,
-	FLUSH_2D
-};
-
 struct xgi_cmdring_info s_cmdring;
 
 static void addFlush2D(struct xgi_info * info);
