@@ -578,7 +578,7 @@ void xgi_mem_collect(struct xgi_info * info, unsigned int *pcnt)
 			}
 		}
 		if (!find) {
-			if (block->location == LOCAL) {
+			if (block->location == XGI_MEMLOC_LOCAL) {
 				XGI_INFO
 				    ("Memory ProcessID free fb and delete one block pid:%ld addr:0x%lx successfully! \n",
 				     block->pid, block->bus_addr);

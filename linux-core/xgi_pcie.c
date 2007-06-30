@@ -775,7 +775,7 @@ void xgi_pcie_alloc(struct xgi_info * info, unsigned long size,
 	xgi_up(info->pcie_sem);
 
 	if (block == NULL) {
-		alloc->location = INVALID;
+		alloc->location = XGI_MEMLOC_INVALID;
 		alloc->size = 0;
 		alloc->bus_addr = 0;
 		alloc->hw_addr = 0;
@@ -784,7 +784,7 @@ void xgi_pcie_alloc(struct xgi_info * info, unsigned long size,
 		XGI_INFO
 		    ("PCIE RAM allocation succeeded: offset = 0x%lx, bus_addr = 0x%lx\n",
 		     block->offset, block->bus_addr);
-		alloc->location = NON_LOCAL;
+		alloc->location = XGI_MEMLOC_NON_LOCAL;
 		alloc->size = block->size;
 		alloc->bus_addr = block->bus_addr;
 		alloc->hw_addr = block->hw_addr;
@@ -799,7 +799,7 @@ void xgi_pcie_alloc(struct xgi_info * info, unsigned long size,
 			    kmalloc(sizeof(struct xgi_mem_pid), GFP_KERNEL);
 			if (!mempid_block)
 				XGI_ERROR("mempid_block alloc failed\n");
-			mempid_block->location = NON_LOCAL;
+			mempid_block->location = XGI_MEMLOC_NON_LOCAL;
 			if (owner == PCIE_3D)
 				mempid_block->bus_addr = 0xFFFFFFFF;	/*xgi_pcie_vertex_block has the address */
 			else
@@ -832,7 +832,7 @@ void xgi_pcie_free(struct xgi_info * info, unsigned long bus_addr)
 		processcnt = 0;
 
 		list_for_each_entry(mempid_block, &xgi_mempid_list, list) {
-			if (mempid_block->location == NON_LOCAL
+			if (mempid_block->location == XGI_MEMLOC_NON_LOCAL
 			    && mempid_block->bus_addr == 0xFFFFFFFF) {
 				++processcnt;
 			}
@@ -855,7 +855,7 @@ void xgi_pcie_free(struct xgi_info * info, unsigned long bus_addr)
 
 	/* manage mempid */
 	list_for_each_entry(mempid_block, &xgi_mempid_list, list) {
-		if (mempid_block->location == NON_LOCAL
+		if (mempid_block->location == XGI_MEMLOC_NON_LOCAL
 		    && ((isvertex && mempid_block->bus_addr == 0xFFFFFFFF)
 			|| (!isvertex && mempid_block->bus_addr == bus_addr))) {
 			mempid_freeblock = mempid_block;

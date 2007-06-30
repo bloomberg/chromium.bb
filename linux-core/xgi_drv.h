@@ -158,9 +158,9 @@ struct xgi_ioctl_post_vbios {
 };
 
 enum xgi_mem_location {
-	NON_LOCAL = 0,
-	LOCAL = 1,
-	INVALID = 0x7fffffff
+	XGI_MEMLOC_NON_LOCAL = 0,
+	XGI_MEMLOC_LOCAL = 1,
+	XGI_MEMLOC_INVALID = 0x7fffffff
 };
 
 enum PcieOwner {

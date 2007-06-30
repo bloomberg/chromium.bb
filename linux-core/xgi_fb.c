@@ -48,7 +48,7 @@ void xgi_fb_alloc(struct xgi_info * info,
 	struct xgi_mem_pid *mempid_block;
 
 	if (req->is_front) {
-		alloc->location = LOCAL;
+		alloc->location = XGI_MEMLOC_LOCAL;
 		alloc->bus_addr = info->fb.base;
 		alloc->hw_addr = 0;
 		XGI_INFO
@@ -59,7 +59,7 @@ void xgi_fb_alloc(struct xgi_info * info,
 		xgi_up(info->fb_sem);
 
 		if (block == NULL) {
-			alloc->location = LOCAL;
+			alloc->location = XGI_MEMLOC_LOCAL;
 			alloc->size = 0;
 			alloc->bus_addr = 0;
 			alloc->hw_addr = 0;
@@ -67,7 +67,7 @@ void xgi_fb_alloc(struct xgi_info * info,
 		} else {
 			XGI_INFO("Video RAM allocation succeeded: 0x%p\n",
 				 (char *)block->offset);
-			alloc->location = LOCAL;
+			alloc->location = XGI_MEMLOC_LOCAL;
 			alloc->size = block->size;
 			alloc->bus_addr = info->fb.base + block->offset;
 			alloc->hw_addr = block->offset;
@@ -75,7 +75,7 @@ void xgi_fb_alloc(struct xgi_info * info,
 			/* manage mempid */
 			mempid_block =
 			    kmalloc(sizeof(struct xgi_mem_pid), GFP_KERNEL);
-			mempid_block->location = LOCAL;
+			mempid_block->location = XGI_MEMLOC_LOCAL;
 			mempid_block->bus_addr = alloc->bus_addr;
 			mempid_block->pid = alloc->pid;
 
@@ -111,7 +111,7 @@ void xgi_fb_free(struct xgi_info * info, unsigned long bus_addr)
 
 		/* manage mempid */
 		list_for_each_entry(mempid_block, &xgi_mempid_list, list) {
-			if (mempid_block->location == LOCAL
+			if (mempid_block->location == XGI_MEMLOC_LOCAL
 			    && mempid_block->bus_addr == bus_addr) {
 				mempid_freeblock = mempid_block;
 				break;
