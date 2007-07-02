@@ -311,7 +311,7 @@ int drm_init(struct drm_driver *driver,
 	}
 
 	if (!drm_fb_loaded)
-		pci_register_driver(&driver->pci_driver);
+		return pci_register_driver(&driver->pci_driver);
 	else {
 		for (i = 0; pciidlist[i].vendor != 0; i++) {
 			pid = &pciidlist[i];

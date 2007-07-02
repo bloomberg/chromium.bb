@@ -232,18 +232,22 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 
 	if (!drm_fb_loaded) {
 		pci_set_drvdata(pdev, dev);
-		pci_request_regions(pdev, driver->pci_driver.name);
+		ret = pci_request_regions(pdev, driver->pci_driver.name);
+		if (ret)
+			goto err_g1;
 	}
 
-	pci_enable_device(pdev);
+	ret = pci_enable_device(pdev);
+	if (ret)
+		goto err_g2;
 	pci_set_master(pdev);
 
 	if ((ret = drm_fill_in_dev(dev, pdev, ent, driver))) {
 		printk(KERN_ERR "DRM: fill_in_dev failed\n");
-		goto err_g1;
+		goto err_g3;
 	}
 	if ((ret = drm_get_head(dev, &dev->primary)))
-		goto err_g1;
+		goto err_g3;
 
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 driver->name, driver->major, driver->minor, driver->patchlevel,
@@ -251,12 +255,16 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 
 	return 0;
 
-err_g1:
-	if (!drm_fb_loaded) {
-		pci_set_drvdata(pdev, NULL);
-		pci_release_regions(pdev);
+ err_g3:
+	if (!drm_fb_loaded)
 		pci_disable_device(pdev);
-	}
+ err_g2:
+	if (!drm_fb_loaded)
+		pci_release_regions(pdev);
+ err_g1:
+	if (!drm_fb_loaded)
+		pci_set_drvdata(pdev, NULL);
+
 	drm_free(dev, sizeof(*dev), DRM_MEM_STUB);
 	printk(KERN_ERR "DRM: drm_get_dev failed.\n");
 	return ret;
