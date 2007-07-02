@@ -144,6 +144,10 @@ class ExceptionHandler {
   // execution state independently of a crash.  Returns true on success.
   bool WriteMinidump();
 
+  // Writes a minidump immediately, with the user-supplied exception
+  // information.
+  bool WriteMinidumpForException(EXCEPTION_POINTERS *exinfo);
+
   // Convenience form of WriteMinidump which does not require an
   // ExceptionHandler instance.
   static bool WriteMinidump(const wstring &dump_path,
