@@ -50,7 +50,7 @@ ExceptionHandler::ExceptionHandler(const wstring &dump_path,
                                    FilterCallback filter,
                                    MinidumpCallback callback,
                                    void *callback_context,
-                                   HandlerType handler_types)
+                                   int handler_types)
     : filter_(filter),
       callback_(callback),
       callback_context_(callback_context),

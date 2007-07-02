@@ -145,7 +145,7 @@ class ExceptionHandler {
                    FilterCallback filter,
                    MinidumpCallback callback,
                    void *callback_context,
-                   HandlerType handler_types);
+                   int handler_types);
   ~ExceptionHandler();
 
   // Get and set the minidump path.
@@ -262,7 +262,7 @@ class ExceptionHandler {
 
   // Tracks the handler types that were installed according to the
   // handler_types constructor argument.
-  HandlerType handler_types_;
+  int handler_types_;
 
   // When installed_handler_ is true, previous_filter_ is the unhandled
   // exception filter that was set prior to installing ExceptionHandler as
