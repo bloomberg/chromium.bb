@@ -74,10 +74,10 @@ nouveau_notifier_alloc(drm_device_t *dev, int channel, uint32_t handle,
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
-	struct nouveau_object *obj;
+	nouveau_gpuobj_t *nobj = NULL;
 	struct mem_block *mem;
 	uint32_t offset;
-	int target;
+	int target, ret;
 
 	if (!chan->notifier_heap) {
 		DRM_ERROR("Channel %d doesn't have a notifier heap!\n",
@@ -105,21 +105,19 @@ nouveau_notifier_alloc(drm_device_t *dev, int channel, uint32_t handle,
 		return DRM_ERR(EINVAL);
 	}
 
-	obj = nouveau_object_dma_create(dev, channel, NV_CLASS_DMA_IN_MEMORY,
-					offset, mem->size, NV_DMA_ACCESS_RW,
-					target);
-	if (!obj) {
+	if ((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
+					  offset, mem->size,
+					  NV_DMA_ACCESS_RW, target, &nobj))) {
 		nouveau_mem_free_block(mem);
-		DRM_ERROR("Error creating notifier ctxdma\n");
-		return DRM_ERR(ENOMEM);
+		DRM_ERROR("Error creating notifier ctxdma: %d\n", ret);
+		return ret;
 	}
 
-	obj->handle = handle;
-	if (nouveau_ramht_insert(dev, channel, handle, obj)) {
-		nouveau_object_free(dev, obj);
+	if ((ret = nouveau_gpuobj_ref_add(dev, channel, handle, nobj, NULL))) {
+		nouveau_gpuobj_del(dev, &nobj);
 		nouveau_mem_free_block(mem);
-		DRM_ERROR("Error inserting notifier ctxdma into RAMHT\n");
-		return DRM_ERR(ENOMEM);
+		DRM_ERROR("Error referencing notifier ctxdma: %d\n", ret);
+		return ret;
 	}
 
 	*b_offset = mem->start;

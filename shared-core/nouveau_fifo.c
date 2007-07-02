@@ -186,10 +186,12 @@ static int
 nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
 	struct nouveau_config *config = &dev_priv->config;
 	struct mem_block *cb;
-	struct nouveau_object *cb_dma = NULL;
 	int cb_min_size = max(NV03_FIFO_SIZE,PAGE_SIZE);
+	nouveau_gpuobj_t *pushbuf = NULL;
+	int ret;
 
 	/* Defaults for unconfigured values */
 	if (!config->cmdbuf.location)
@@ -206,37 +208,42 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 	}
 
 	if (cb->flags & NOUVEAU_MEM_AGP) {
-		cb_dma = nouveau_object_dma_create(dev, channel,
-				NV_CLASS_DMA_IN_MEMORY,
-				cb->start - dev_priv->agp_phys,
-				cb->size,
-				NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP);
+		ret = nouveau_gpuobj_dma_new
+			(dev, channel, NV_CLASS_DMA_IN_MEMORY,
+			 cb->start - dev_priv->agp_phys,
+			 cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP,
+			 &pushbuf);
 	} else if (dev_priv->card_type != NV_04) {
-		cb_dma = nouveau_object_dma_create(dev, channel,
-				NV_CLASS_DMA_IN_MEMORY,
-				cb->start - drm_get_resource_start(dev, 1),
-				cb->size,
-				NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM);
+		ret = nouveau_gpuobj_dma_new
+			(dev, channel, NV_CLASS_DMA_IN_MEMORY,
+			 cb->start - drm_get_resource_start(dev, 1),
+			 cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM,
+			 &pushbuf);
 	} else {
 		/* NV04 cmdbuf hack, from original ddx.. not sure of it's
 		 * exact reason for existing :)  PCI access to cmdbuf in
 		 * VRAM.
 		 */
-		cb_dma = nouveau_object_dma_create(dev, channel,
-				NV_CLASS_DMA_IN_MEMORY,
-				cb->start, cb->size,
-				NV_DMA_ACCESS_RO, NV_DMA_TARGET_PCI);
+		ret = nouveau_gpuobj_dma_new
+			(dev, channel, NV_CLASS_DMA_IN_MEMORY,
+			 cb->start, cb->size, NV_DMA_ACCESS_RO,
+			 NV_DMA_TARGET_PCI, &pushbuf);
 	}
 
-	if (!cb_dma) {
+	if (ret) {
 		nouveau_mem_free(dev, cb);
-		DRM_ERROR("Failed to alloc DMA object for command buffer\n");
-		return DRM_ERR(ENOMEM);
+		DRM_ERROR("Error creating push buffer ctxdma: %d\n", ret);
+		return ret;
+	}
+
+	if ((ret = nouveau_gpuobj_ref_add(dev, channel, 0, pushbuf,
+					  &chan->pushbuf))) {
+		DRM_ERROR("Error referencing push buffer ctxdma: %d\n", ret);
+		return ret;
 	}
 
 	dev_priv->fifos[channel].pushbuf_base = 0;
 	dev_priv->fifos[channel].cmdbuf_mem = cb;
-	dev_priv->fifos[channel].cmdbuf_obj = cb_dma;
 	return 0;
 }
 
@@ -266,6 +273,7 @@ int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp,
 		return DRM_ERR(EINVAL);
 	(*chan_ret) = channel;
 	chan = &dev_priv->fifos[channel];
+	memset(chan, sizeof(*chan), 0);
 
 	DRM_INFO("Allocating FIFO number %d\n", channel);
 
@@ -273,18 +281,15 @@ int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp,
 	chan->used = 1;
 	chan->filp = filp;
 
-	/* FIFO has no objects yet */
-	chan->objs = NULL;
-
-	/* allocate a command buffer, and create a dma object for the gpu */
-	ret = nouveau_fifo_cmdbuf_alloc(dev, channel);
+	/* Setup channel's default objects */
+	ret = nouveau_gpuobj_channel_init(dev, channel, vram_handle, tt_handle);
 	if (ret) {
 		nouveau_fifo_free(dev, channel);
 		return ret;
 	}
 
-	/* Setup channel's default objects */
-	ret = nouveau_object_init_channel(dev, channel, vram_handle, tt_handle);
+	/* allocate a command buffer, and create a dma object for the gpu */
+	ret = nouveau_fifo_cmdbuf_alloc(dev, channel);
 	if (ret) {
 		nouveau_fifo_free(dev, channel);
 		return ret;
@@ -395,13 +400,18 @@ void nouveau_fifo_free(drm_device_t* dev, int channel)
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000001);
 
 	/* Deallocate command buffer */
-	if (chan->cmdbuf_mem)
+	if (chan->pushbuf)
+		nouveau_gpuobj_ref_del(dev, &chan->pushbuf);
+
+	if (chan->cmdbuf_mem) {
 		nouveau_mem_free(dev, chan->cmdbuf_mem);
+		chan->cmdbuf_mem = NULL;
+	}
 
 	nouveau_notifier_takedown_channel(dev, channel);
 
 	/* Destroy objects belonging to the channel */
-	nouveau_object_cleanup(dev, channel);
+	nouveau_gpuobj_channel_takedown(dev, channel);
 
 	dev_priv->fifo_alloc_count--;
 }

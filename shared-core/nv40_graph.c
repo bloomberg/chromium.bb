@@ -47,13 +47,13 @@
  *      created.
  */
 static void
-nv40_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
+nv40_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int i;
 
 	/* Always has the "instance address" of itself at offset 0 */
-	INSTANCE_WR(ctx, 0x00000/4, nouveau_chip_instance_get(dev, ctx));
+	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
 	/* unknown */
 	INSTANCE_WR(ctx, 0x00024/4, 0x0000ffff);
 	INSTANCE_WR(ctx, 0x00028/4, 0x0000ffff);
@@ -188,12 +188,12 @@ nv40_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 }
 
 static void
-nv43_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
+nv43_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int i;
 	
-	INSTANCE_WR(ctx, 0x00000/4, nouveau_chip_instance_get(dev, ctx));
+	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
 	INSTANCE_WR(ctx, 0x00024/4, 0x0000ffff);
 	INSTANCE_WR(ctx, 0x00028/4, 0x0000ffff);
 	INSTANCE_WR(ctx, 0x00030/4, 0x00000001);
@@ -304,12 +304,12 @@ nv43_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 };
 
 static void
-nv46_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
+nv46_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int i;
 
-	INSTANCE_WR(ctx, 0x00000/4, nouveau_chip_instance_get(dev, ctx));
+	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
 	INSTANCE_WR(ctx, 0x00040/4, 0x0000ffff);
 	INSTANCE_WR(ctx, 0x00044/4, 0x0000ffff);
 	INSTANCE_WR(ctx, 0x0004c/4, 0x00000001);
@@ -455,12 +455,12 @@ nv46_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 }
 
 static void
-nv49_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
+nv49_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int i;
 
-	INSTANCE_WR(ctx, 0x00000/4, nouveau_chip_instance_get(dev, ctx));
+	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
 	INSTANCE_WR(ctx, 0x00004/4, 0x0000c040);
 	INSTANCE_WR(ctx, 0x00008/4, 0x0000c040);
 	INSTANCE_WR(ctx, 0x0000c/4, 0x0000c040);
@@ -678,12 +678,12 @@ nv49_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 }
 
 static void
-nv4a_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
+nv4a_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int i;
 
-	INSTANCE_WR(ctx, 0x00000/4, nouveau_chip_instance_get(dev, ctx));
+	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
 	INSTANCE_WR(ctx, 0x00024/4, 0x0000ffff);
 	INSTANCE_WR(ctx, 0x00028/4, 0x0000ffff);
 	INSTANCE_WR(ctx, 0x00030/4, 0x00000001);
@@ -795,12 +795,12 @@ nv4a_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 }
 
 static void
-nv4b_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
+nv4b_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int i;
 
-	INSTANCE_WR(ctx, 0x00000/4, nouveau_chip_instance_get(dev, ctx));
+	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
 	INSTANCE_WR(ctx, 0x00004/4, 0x0000c040);
 	INSTANCE_WR(ctx, 0x00008/4, 0x0000c040);
 	INSTANCE_WR(ctx, 0x0000c/4, 0x0000c040);
@@ -1010,12 +1010,12 @@ nv4b_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 }
 
 static void
-nv4c_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
+nv4c_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int i;
 
-	INSTANCE_WR(ctx, 0x00000/4, nouveau_chip_instance_get(dev, ctx));
+	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
 	INSTANCE_WR(ctx, 0x00024/4, 0x0000ffff);
 	INSTANCE_WR(ctx, 0x00028/4, 0x0000ffff);
 	INSTANCE_WR(ctx, 0x00030/4, 0x00000001);
@@ -1117,12 +1117,12 @@ nv4c_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 }
 
 static void
-nv4e_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
+nv4e_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int i;
 
-	INSTANCE_WR(ctx, 0x00000/4, nouveau_chip_instance_get(dev, ctx));
+	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
 	INSTANCE_WR(ctx, 0x00024/4, 0x0000ffff);
 	INSTANCE_WR(ctx, 0x00028/4, 0x0000ffff);
 	INSTANCE_WR(ctx, 0x00030/4, 0x00000001);
@@ -1229,9 +1229,9 @@ nv40_graph_create_context(drm_device_t *dev, int channel)
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
 	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
-	void (*ctx_init)(drm_device_t *, struct mem_block *);
+	void (*ctx_init)(drm_device_t *, nouveau_gpuobj_t *);
 	unsigned int ctx_size;
-	int i;
+	int ret;
 
 	switch (dev_priv->chipset) {
 	case 0x40:
@@ -1272,15 +1272,13 @@ nv40_graph_create_context(drm_device_t *dev, int channel)
 		break;
 	}
 
-	/* Alloc and clear RAMIN to store the context */
-	chan->ramin_grctx = nouveau_instmem_alloc(dev, ctx_size, 4);
-	if (!chan->ramin_grctx)
-		return DRM_ERR(ENOMEM);
-	for (i=0; i<ctx_size; i+=4)
-		INSTANCE_WR(chan->ramin_grctx, i/4, 0x00000000);
+	if ((ret = nouveau_gpuobj_new_ref(dev, channel, -1, 0, ctx_size, 16,
+					  NVOBJ_FLAG_ZERO_ALLOC,
+					  &chan->ramin_grctx)))
+		return ret;
 
 	/* Initialise default context values */
-	ctx_init(dev, chan->ramin_grctx);
+	ctx_init(dev, chan->ramin_grctx->gpuobj);
 
 	return 0;
 }
@@ -1291,10 +1289,8 @@ nv40_graph_destroy_context(drm_device_t *dev, int channel)
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
 
-	if (chan->ramin_grctx) {
-		nouveau_instmem_free(dev, chan->ramin_grctx);
-		chan->ramin_grctx = NULL;
-	}
+	if (chan->ramin_grctx)
+		nouveau_gpuobj_ref_del(dev, &chan->ramin_grctx);
 }
 
 static int
@@ -1339,7 +1335,7 @@ nv40_graph_save_context(drm_device_t *dev, int channel)
 
 	if (!chan->ramin_grctx)
 		return DRM_ERR(EINVAL);
-	inst = nouveau_chip_instance_get(dev, chan->ramin_grctx);
+	inst = chan->ramin_grctx->instance >> 4;
 
 	return nv40_graph_transfer_context(dev, inst, 1);
 }
@@ -1357,7 +1353,7 @@ nv40_graph_load_context(drm_device_t *dev, int channel)
 
 	if (!chan->ramin_grctx)
 		return DRM_ERR(EINVAL);
-	inst = nouveau_chip_instance_get(dev, chan->ramin_grctx);
+	inst = chan->ramin_grctx->instance >> 4;
 
 	ret = nv40_graph_transfer_context(dev, inst, 0);
 	if (ret)

@@ -57,18 +57,38 @@ enum nouveau_flags {
 	NV_NFORCE2  =0x20000000
 };
 
-struct nouveau_object
-{
-	struct nouveau_object *next;
-	struct nouveau_object *prev;
+#define NVOBJ_ENGINE_SW		0
+#define NVOBJ_ENGINE_GR  	1
+#define NVOBJ_ENGINE_INT	0xdeadbeef
+
+#define NVOBJ_FLAG_ALLOW_NO_REFS	(1 << 0)
+#define NVOBJ_FLAG_ZERO_ALLOC		(1 << 1)
+#define NVOBJ_FLAG_ZERO_FREE		(1 << 2)
+#define NVOBJ_FLAG_FAKE			(1 << 3)
+typedef struct nouveau_gpuobj {
+	struct nouveau_gpuobj *next;
+	struct nouveau_gpuobj *prev;
+
+	int im_channel;
+	struct mem_block *im_pramin;
+	struct mem_block *im_backing;
+
+	uint32_t flags;
+	int refcount;
+
+	uint32_t engine;
+	uint32_t class;
+} nouveau_gpuobj_t;
+
+typedef struct nouveau_gpuobj_ref {
+	struct nouveau_gpuobj_ref *next;
+
+	nouveau_gpuobj_t *gpuobj;
+	uint32_t instance;
+
 	int channel;
-
-	struct mem_block *instance;
-
-	uint32_t handle;
-	int      class;
-	int      engine;
-};
+	int handle;
+} nouveau_gpuobj_ref_t;
 
 struct nouveau_fifo
 {
@@ -79,21 +99,29 @@ struct nouveau_fifo
 	drm_local_map_t *map;
 	/* mapping of the regs controling the fifo */
 	drm_local_map_t *regs;
-	/* dma object for the command buffer itself */
-	struct mem_block      *cmdbuf_mem;
-	struct nouveau_object *cmdbuf_obj;
-	uint32_t pushbuf_base;
-	/* notifier memory */
+
+	/* DMA push buffer */
+	struct mem_block     *cmdbuf_mem;
+	nouveau_gpuobj_ref_t *pushbuf;
+	uint32_t              pushbuf_base;
+
+	/* Notifier memory */
 	struct mem_block *notifier_block;
 	struct mem_block *notifier_heap;
 	drm_local_map_t  *notifier_map;
-	/* PGRAPH context, for cards that keep it in RAMIN */
-	struct mem_block *ramin_grctx;
-	/* objects belonging to this fifo */
-	struct nouveau_object *objs;
 
-	/* XXX dynamic alloc ? */
-	uint32_t pgraph_ctx [340];
+	/* PFIFO context */
+	nouveau_gpuobj_ref_t *ramfc;
+
+	/* PGRAPH context */
+	nouveau_gpuobj_ref_t *ramin_grctx;
+	uint32_t pgraph_ctx [340]; /* XXX dynamic alloc ? */
+
+	/* Objects */
+	nouveau_gpuobj_ref_t *ramin; /* Private instmem */
+	struct mem_block     *ramin_heap; /* Private PRAMIN heap */
+	nouveau_gpuobj_ref_t *ramht; /* Hash table */
+	nouveau_gpuobj_ref_t *ramht_refs; /* Objects referenced by RAMHT */
 };
 
 struct nouveau_config {
@@ -157,6 +185,7 @@ typedef struct drm_nouveau_private {
 	struct nouveau_engine_func Engine;
 
 	/* RAMIN configuration, RAMFC, RAMHT and RAMRO offsets */
+	nouveau_gpuobj_t *ramht;
 	uint32_t ramin_size;
 	uint32_t ramht_offset;
 	uint32_t ramht_size;
@@ -182,9 +211,11 @@ typedef struct drm_nouveau_private {
 
         /* context table pointed to be NV_PGRAPH_CHANNEL_CTX_TABLE (0x400780) */
         uint32_t ctx_table_size;
-        struct mem_block *ctx_table;
+	nouveau_gpuobj_ref_t *ctx_table;
 
 	struct nouveau_config config;
+
+	nouveau_gpuobj_t *gpuobj_all;
 }
 drm_nouveau_private_t;
 
@@ -205,6 +236,7 @@ extern int               nouveau_mem_init_heap(struct mem_block **,
 extern struct mem_block *nouveau_mem_alloc_block(struct mem_block *,
 						 uint64_t size, int align2,
 						 DRMFILE);
+extern void              nouveau_mem_takedown(struct mem_block **heap);
 extern void              nouveau_mem_free_block(struct mem_block *);
 extern uint64_t          nouveau_mem_fb_amount(struct drm_device *dev);
 extern void              nouveau_mem_release(DRMFILE filp, struct mem_block *heap);
@@ -236,22 +268,28 @@ extern int  nouveau_fifo_owner(drm_device_t *dev, DRMFILE filp, int channel);
 extern void nouveau_fifo_free(drm_device_t *dev, int channel);
 
 /* nouveau_object.c */
-extern int  nouveau_object_init_channel(drm_device_t *, int channel,
-					uint32_t vram_handle,
-					uint32_t tt_handle);
-extern void nouveau_object_takedown_channel(drm_device_t *dev, int channel);
-extern void nouveau_object_cleanup(drm_device_t *dev, int channel);
-extern int  nouveau_ramht_insert(drm_device_t *, int channel,
-				 uint32_t handle, struct nouveau_object *);
-extern struct nouveau_object *
-nouveau_object_gr_create(drm_device_t *dev, int channel, int class);
-extern struct nouveau_object *
-nouveau_object_dma_create(drm_device_t *dev, int channel, int class,
-			  uint32_t offset, uint32_t size,
-			  int access, int target);
-extern void nouveau_object_free(drm_device_t *dev, struct nouveau_object *obj);
-extern int  nouveau_ioctl_grobj_alloc(DRM_IOCTL_ARGS);
-extern uint32_t nouveau_chip_instance_get(drm_device_t *dev, struct mem_block *mem);
+extern void nouveau_gpuobj_takedown(drm_device_t *dev);
+extern int nouveau_gpuobj_channel_init(drm_device_t *, int channel,
+				       uint32_t vram_h, uint32_t tt_h);
+extern void nouveau_gpuobj_channel_takedown(drm_device_t *, int channel);
+extern int nouveau_gpuobj_new(drm_device_t *, int channel, int size, int align,
+			      uint32_t flags, nouveau_gpuobj_t **);
+extern int nouveau_gpuobj_del(drm_device_t *, nouveau_gpuobj_t **);
+extern int nouveau_gpuobj_ref_add(drm_device_t *, int channel, uint32_t handle,
+				  nouveau_gpuobj_t *, nouveau_gpuobj_ref_t **);
+extern int nouveau_gpuobj_ref_del(drm_device_t *, nouveau_gpuobj_ref_t **);
+extern int nouveau_gpuobj_new_ref(drm_device_t *, int chan_obj, int chan_ref,
+				  uint32_t handle, int size, int align,
+				  uint32_t flags, nouveau_gpuobj_ref_t **);
+extern int nouveau_gpuobj_new_fake(drm_device_t *, uint32_t offset,
+				   uint32_t size, uint32_t flags,
+				   nouveau_gpuobj_t**, nouveau_gpuobj_ref_t**);
+extern int nouveau_gpuobj_dma_new(drm_device_t *, int channel, int class,
+				  uint64_t offset, uint64_t size,
+				  int access, int target, nouveau_gpuobj_t **);
+extern int nouveau_gpuobj_gr_new(drm_device_t *, int channel, int class,
+				 nouveau_gpuobj_t **);
+extern int nouveau_ioctl_grobj_alloc(DRM_IOCTL_ARGS);
 
 /* nouveau_irq.c */
 extern irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS);
@@ -384,8 +422,8 @@ extern long nouveau_compat_ioctl(struct file *filp, unsigned int cmd,
 #define NV_WI32(o,v) DRM_WRITE32(dev_priv->ramin, (o), (v))
 #endif
 
-#define INSTANCE_RD(o,i) NV_RI32((o)->start + ((i)<<2))
-#define INSTANCE_WR(o,i,v) NV_WI32((o)->start + ((i)<<2), (v))
+#define INSTANCE_RD(o,i) NV_RI32((o)->im_pramin->start + ((i)<<2))
+#define INSTANCE_WR(o,i,v) NV_WI32((o)->im_pramin->start + ((i)<<2), (v))
 
 #endif /* __NOUVEAU_DRV_H__ */
 

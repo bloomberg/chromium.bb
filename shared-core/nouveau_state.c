@@ -283,6 +283,20 @@ static int nouveau_card_init(drm_device_t *dev)
 	return 0;
 }
 
+static void nouveau_card_takedown(drm_device_t *dev)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	nouveau_engine_func_t *engine = &dev_priv->Engine;
+
+	engine->fifo.takedown(dev);
+	engine->graph.takedown(dev);
+	engine->fb.takedown(dev);
+	engine->timer.takedown(dev);
+	engine->mc.takedown(dev);
+	nouveau_gpuobj_takedown(dev);
+	nouveau_mem_close(dev);
+}
+
 /* here a client dies, release the stuff that was allocated for its filp */
 void nouveau_preclose(drm_device_t * dev, DRMFILE filp)
 {
@@ -314,11 +328,10 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 	if (flags==NV_UNKNOWN)
 		return DRM_ERR(EINVAL);
 
-	dev_priv = drm_alloc(sizeof(drm_nouveau_private_t), DRM_MEM_DRIVER);
+	dev_priv = drm_calloc(1, sizeof(*dev_priv), DRM_MEM_DRIVER);
 	if (!dev_priv)                   
 		return DRM_ERR(ENOMEM);
 
-	memset(dev_priv, 0, sizeof(drm_nouveau_private_t));
 	dev_priv->card_type=flags&NOUVEAU_FAMILY;
 	dev_priv->flags=flags&NOUVEAU_FLAGS;
 
@@ -338,6 +351,9 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 void nouveau_lastclose(struct drm_device *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
+
+	nouveau_card_takedown(dev);
+
 	if(dev_priv->fb_mtrr>0)
 	{
 		drm_mtrr_del(dev_priv->fb_mtrr, drm_get_resource_start(dev, 1),nouveau_mem_fb_amount(dev), DRM_MTRR_WC);

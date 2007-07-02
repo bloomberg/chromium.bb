@@ -189,7 +189,7 @@ void nouveau_mem_release(DRMFILE filp, struct mem_block *heap)
 /* 
  * Cleanup everything
  */
-static void nouveau_mem_takedown(struct mem_block **heap)
+void nouveau_mem_takedown(struct mem_block **heap)
 {
 	struct mem_block *p;
 
@@ -553,6 +553,13 @@ int nouveau_instmem_init(struct drm_device *dev)
 
 	nouveau_instmem_determine_amount(dev);
 	nouveau_instmem_configure_fixed_tables(dev);
+
+	if ((ret = nouveau_gpuobj_new_fake(dev, dev_priv->ramht_offset,
+						dev_priv->ramht_size,
+						NVOBJ_FLAG_ZERO_ALLOC |
+						NVOBJ_FLAG_ALLOW_NO_REFS,
+						&dev_priv->ramht, NULL)))
+		return ret;
 
 	/* Create a heap to manage RAMIN allocations, we don't allocate
 	 * the space that was reserved for RAMHT/FC/RO.
