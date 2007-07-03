@@ -113,8 +113,7 @@ int drm_update_drawable_info(DRM_IOCTL_ARGS)
 		info = drm_calloc(1, sizeof(*info), DRM_MEM_BUFS);
 		if (!info)
 			return -ENOMEM;
-		if (idr_replace(&dev->drw_idr, info, update.handle) ==
-		    (void*)-ENOENT) {
+		if (IS_ERR(idr_replace(&dev->drw_idr, info, update.handle))) {
 			DRM_ERROR("No such drawable %d\n", update.handle);
 			drm_free(info, sizeof(*info), DRM_MEM_BUFS);
 			return -EINVAL;

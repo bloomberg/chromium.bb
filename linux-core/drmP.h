@@ -570,10 +570,6 @@ typedef struct drm_ctx_list {
 	drm_file_t *tag;		/**< associated fd private data */
 } drm_ctx_list_t;
 
-struct drm_ctx_sarea_list {
-	drm_map_t *map;
-};
-
 typedef struct drm_vbl_sig {
 	struct list_head head;
 	unsigned int sequence;
