@@ -245,8 +245,6 @@ int drm_setsareactx(struct inode *inode, struct file *filp,
 	if (!map)
 		goto bad;
 
-	mutex_lock(&dev->struct_mutex);
-
 	ctx_sarea = idr_find(&dev->ctx_idr, request.ctx_id);
 	if (!ctx_sarea)
 		goto bad;
