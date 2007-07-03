@@ -37,8 +37,6 @@
 
 #include "drmP.h"
 
-#define NO_DRW_INFO (void*)1
-
 /**
  * Allocate drawable ID and memory to store information about it.
  */
@@ -57,7 +55,7 @@ again:
 	}
 
 	spin_lock_irqsave(&dev->drw_lock, irqflags);
-	ret = idr_get_new_above(&dev->drw_idr, NO_DRW_INFO, 1, &new_id);
+	ret = idr_get_new_above(&dev->drw_idr, NULL, 1, &new_id);
 	if (ret == -EAGAIN) {
 		spin_unlock_irqrestore(&dev->drw_lock, irqflags);
 		goto again;
@@ -112,15 +110,15 @@ int drm_update_drawable_info(DRM_IOCTL_ARGS)
 
 	info = idr_find(&dev->drw_idr, update.handle);
 	if (!info) {
-		DRM_ERROR("No such drawable %d\n", update.handle);
-		return DRM_ERR(EINVAL);
-	}
-
-	if (info == NO_DRW_INFO) {
 		info = drm_calloc(1, sizeof(*info), DRM_MEM_BUFS);
 		if (!info)
 			return -ENOMEM;
-		idr_replace(&dev->drw_idr, info, update.handle);
+		if (idr_replace(&dev->drw_idr, info, update.handle) ==
+		    (void*)-ENOENT) {
+			DRM_ERROR("No such drawable %d\n", update.handle);
+			drm_free(info, sizeof(*info), DRM_MEM_BUFS);
+			return -EINVAL;
+		}
 	}
 
 	switch (update.type) {
@@ -182,21 +180,7 @@ error:
  */
 drm_drawable_info_t *drm_get_drawable_info(drm_device_t *dev, drm_drawable_t id)
 {
-	struct drm_drawable_info *info;
-
-	info = idr_find(&dev->drw_idr, id);
-
-	if (!info) {
-		DRM_DEBUG("No such drawable %d\n", id);
-		return NULL;
-	}
-
-	if (info == NO_DRW_INFO) {
-		DRM_DEBUG("No information for drawable %d\n", id);
-		return NULL;
-	}
-
-	return info;
+	return idr_find(&dev->drw_idr, id);
 }
 EXPORT_SYMBOL(drm_get_drawable_info);
 
@@ -204,7 +188,7 @@ static int drm_drawable_free(int idr, void *p, void *data)
 {
 	struct drm_drawable_info *info = p;
 
-	if (info != NO_DRW_INFO) {
+	if (info) {
 		drm_free(info->rects, info->num_rects *
 			 sizeof(drm_clip_rect_t), DRM_MEM_BUFS);
 		drm_free(info, sizeof(*info), DRM_MEM_BUFS);
