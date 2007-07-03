@@ -719,7 +719,7 @@ void i915_driver_irq_postinstall(drm_device_t * dev)
 	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending = 0;
 
-	dev_priv->user_irq_lock = SPIN_LOCK_UNLOCKED;
+	spin_lock_init(&dev_priv->user_irq_lock);
 	dev_priv->user_irq_refcount = 0;
 
 	i915_enable_interrupt(dev);
