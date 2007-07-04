@@ -95,6 +95,12 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 
 	switch (dev_priv->chipset & 0xf0) {
 	case 0x00:
+		engine->instmem.init	= nv04_instmem_init;
+		engine->instmem.takedown= nv04_instmem_takedown;
+		engine->instmem.populate	= nv04_instmem_populate;
+		engine->instmem.clear		= nv04_instmem_clear;
+		engine->instmem.bind		= nv04_instmem_bind;
+		engine->instmem.unbind		= nv04_instmem_unbind;
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
@@ -115,6 +121,12 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->fifo.save_context	= nv04_fifo_save_context;
 		break;
 	case 0x10:
+		engine->instmem.init	= nv04_instmem_init;
+		engine->instmem.takedown= nv04_instmem_takedown;
+		engine->instmem.populate	= nv04_instmem_populate;
+		engine->instmem.clear		= nv04_instmem_clear;
+		engine->instmem.bind		= nv04_instmem_bind;
+		engine->instmem.unbind		= nv04_instmem_unbind;
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
@@ -135,6 +147,12 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->fifo.save_context	= nv10_fifo_save_context;
 		break;
 	case 0x20:
+		engine->instmem.init	= nv04_instmem_init;
+		engine->instmem.takedown= nv04_instmem_takedown;
+		engine->instmem.populate	= nv04_instmem_populate;
+		engine->instmem.clear		= nv04_instmem_clear;
+		engine->instmem.bind		= nv04_instmem_bind;
+		engine->instmem.unbind		= nv04_instmem_unbind;
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
@@ -155,6 +173,12 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->fifo.save_context	= nv10_fifo_save_context;
 		break;
 	case 0x30:
+		engine->instmem.init	= nv04_instmem_init;
+		engine->instmem.takedown= nv04_instmem_takedown;
+		engine->instmem.populate	= nv04_instmem_populate;
+		engine->instmem.clear		= nv04_instmem_clear;
+		engine->instmem.bind		= nv04_instmem_bind;
+		engine->instmem.unbind		= nv04_instmem_unbind;
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
@@ -175,6 +199,12 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->fifo.save_context	= nv10_fifo_save_context;
 		break;
 	case 0x40:
+		engine->instmem.init	= nv04_instmem_init;
+		engine->instmem.takedown= nv04_instmem_takedown;
+		engine->instmem.populate	= nv04_instmem_populate;
+		engine->instmem.clear		= nv04_instmem_clear;
+		engine->instmem.bind		= nv04_instmem_bind;
+		engine->instmem.unbind		= nv04_instmem_unbind;
 		engine->mc.init		= nv40_mc_init;
 		engine->mc.takedown	= nv40_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
@@ -196,6 +226,12 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		break;
 	case 0x50:
 	case 0x80: /* gotta love NVIDIA's consistency.. */
+		engine->instmem.init	= nv50_instmem_init;
+		engine->instmem.takedown= nv50_instmem_takedown;
+		engine->instmem.populate	= nv50_instmem_populate;
+		engine->instmem.clear		= nv50_instmem_clear;
+		engine->instmem.bind		= nv50_instmem_bind;
+		engine->instmem.unbind		= nv50_instmem_unbind;
 		engine->mc.init		= nv50_mc_init;
 		engine->mc.takedown	= nv50_mc_takedown;
 		engine->timer.init	= nouveau_stub_init;
@@ -249,7 +285,7 @@ static int nouveau_card_init(drm_device_t *dev)
 	 * know exactly how much VRAM we're able to use for "normal"
 	 * purposes.
 	 */
-	ret = nouveau_instmem_init(dev);
+	ret = engine->instmem.init(dev);
 	if (ret) return ret;
 
 	/* Setup the memory manager */
@@ -295,6 +331,7 @@ static void nouveau_card_takedown(drm_device_t *dev)
 	engine->mc.takedown(dev);
 	nouveau_gpuobj_takedown(dev);
 	nouveau_mem_close(dev);
+	engine->instmem.takedown(dev);
 }
 
 /* here a client dies, release the stuff that was allocated for its filp */
@@ -455,6 +492,8 @@ void nouveau_wait_for_idle(struct drm_device *dev)
 	{
 		case NV_03:
 			while(NV_READ(NV03_PGRAPH_STATUS));
+			break;
+		case NV_50:
 			break;
 		default:
 			while(NV_READ(NV04_PGRAPH_STATUS));

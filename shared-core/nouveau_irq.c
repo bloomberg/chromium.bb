@@ -251,22 +251,25 @@ nouveau_graph_dump_trap_info(drm_device_t *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	uint32_t address;
-	uint32_t channel;
+	uint32_t channel, class;
 	uint32_t method, subc, data;
 
 	address = NV_READ(0x400704);
-	data    = NV_READ(0x400708);
 	channel = (address >> 20) & 0x1F;
 	subc    = (address >> 16) & 0x7;
 	method  = address & 0x1FFC;
+	data    = NV_READ(0x400708);
+	if (dev_priv->card_type < NV_50) {
+		class = NV_READ(0x400160 + subc*4) & 0xFFFF;
+	} else {
+		class = NV_READ(0x400814);
+	}
 
 	DRM_ERROR("NV: nSource: 0x%08x, nStatus: 0x%08x\n",
 			NV_READ(0x400108), NV_READ(0x400104));
 	DRM_ERROR("NV: Channel %d/%d (class 0x%04x) -"
 			"Method 0x%04x, Data 0x%08x\n",
-			channel, subc,
-			NV_READ(0x400160+subc*4) & 0xFFFF,
-			method, data
+			channel, subc, class, method, data
 		 );
 }
 
@@ -294,7 +297,7 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 			instance = NV_READ(0x00400158);
 			notify   = NV_READ(0x00400150) >> 16;
 			DRM_DEBUG("instance:0x%08x\tnotify:0x%08x\n",
-					nsource, nstatus);
+				  instance, notify);
 		}
 
 		status &= ~NV_PGRAPH_INTR_NOTIFY;

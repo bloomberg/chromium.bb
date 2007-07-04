@@ -40,7 +40,7 @@ int
 nv40_fifo_create_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	int ret;
 
 	if ((ret = nouveau_gpuobj_new_fake(dev, NV40_RAMFC(channel),
@@ -67,6 +67,8 @@ nv40_fifo_create_context(drm_device_t *dev, int channel)
 	RAMFC_WR(GRCTX_INSTANCE, chan->ramin_grctx->instance >> 4);
 	RAMFC_WR(DMA_TIMESLICE , 0x0001FFFF);
 
+	/* enable the fifo dma operation */
+	NV_WRITE(NV04_PFIFO_MODE,NV_READ(NV04_PFIFO_MODE)|(1<<channel));
 	return 0;
 }
 
@@ -74,7 +76,9 @@ void
 nv40_fifo_destroy_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+
+	NV_WRITE(NV04_PFIFO_MODE, NV_READ(NV04_PFIFO_MODE)&~(1<<channel));
 
 	if (chan->ramfc)
 		nouveau_gpuobj_ref_del(dev, &chan->ramfc);
@@ -84,7 +88,7 @@ int
 nv40_fifo_load_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t tmp, tmp2;
 
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_GET          , RAMFC_RD(DMA_GET));
@@ -143,7 +147,7 @@ int
 nv40_fifo_save_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t tmp;
 
 	RAMFC_WR(DMA_PUT          , NV_READ(NV04_PFIFO_CACHE1_DMA_PUT));

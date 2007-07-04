@@ -32,7 +32,7 @@
 int nv20_graph_create_context(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	unsigned int ctx_size = NV20_GRCTX_SIZE;
 	int ret;
 
@@ -51,7 +51,7 @@ int nv20_graph_create_context(drm_device_t *dev, int channel) {
 
 void nv20_graph_destroy_context(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 
 	if (chan->ramin_grctx)
 		nouveau_gpuobj_ref_del(dev, &chan->ramin_grctx);
@@ -76,7 +76,7 @@ static void nv20_graph_rdi(drm_device_t *dev) {
 int nv20_graph_save_context(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t instance;
 
 	instance = INSTANCE_RD(dev_priv->ctx_table->gpuobj, channel);
@@ -97,7 +97,7 @@ int nv20_graph_save_context(drm_device_t *dev, int channel) {
 int nv20_graph_load_context(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t instance;
 
 	instance = INSTANCE_RD(dev_priv->ctx_table->gpuobj, channel);

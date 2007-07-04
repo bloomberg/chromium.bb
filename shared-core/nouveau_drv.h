@@ -72,6 +72,7 @@ typedef struct nouveau_gpuobj {
 	int im_channel;
 	struct mem_block *im_pramin;
 	struct mem_block *im_backing;
+	int im_bound;
 
 	uint32_t flags;
 	int refcount;
@@ -92,7 +93,6 @@ typedef struct nouveau_gpuobj_ref {
 
 struct nouveau_fifo
 {
-	int used;
 	/* owner of this fifo */
 	DRMFILE filp;
 	/* mapping of the fifo itself */
@@ -101,8 +101,8 @@ struct nouveau_fifo
 	drm_local_map_t *regs;
 
 	/* DMA push buffer */
-	struct mem_block     *cmdbuf_mem;
 	nouveau_gpuobj_ref_t *pushbuf;
+	struct mem_block     *pushbuf_mem;
 	uint32_t              pushbuf_base;
 
 	/* Notifier memory */
@@ -133,6 +133,19 @@ struct nouveau_config {
 
 typedef struct nouveau_engine_func {
 	struct {
+		void	*priv;
+
+		int	(*init)(drm_device_t *dev);
+		void	(*takedown)(drm_device_t *dev);
+
+		int	(*populate)(drm_device_t *, nouveau_gpuobj_t *,
+				    uint32_t *size);
+		void	(*clear)(drm_device_t *, nouveau_gpuobj_t *);
+		int	(*bind)(drm_device_t *, nouveau_gpuobj_t *);
+		int	(*unbind)(drm_device_t *, nouveau_gpuobj_t *);
+	} instmem;
+
+	struct {
 		int	(*init)(drm_device_t *dev);
 		void	(*takedown)(drm_device_t *dev);
 	} mc;
@@ -158,6 +171,8 @@ typedef struct nouveau_engine_func {
 	} graph;
 
 	struct {
+		void	*priv;
+
 		int	(*init)(drm_device_t *);
 		void	(*takedown)(drm_device_t *);
 
@@ -180,13 +195,13 @@ typedef struct drm_nouveau_private {
 	drm_local_map_t *ramin; /* NV40 onwards */
 
 	int fifo_alloc_count;
-	struct nouveau_fifo fifos[NV_MAX_FIFO_NUMBER];
+	struct nouveau_fifo *fifos[NV_MAX_FIFO_NUMBER];
 
 	struct nouveau_engine_func Engine;
 
 	/* RAMIN configuration, RAMFC, RAMHT and RAMRO offsets */
 	nouveau_gpuobj_t *ramht;
-	uint32_t ramin_size;
+	uint32_t ramin_rsvd_vram;
 	uint32_t ramht_offset;
 	uint32_t ramht_size;
 	uint32_t ramht_bits;
@@ -246,11 +261,6 @@ extern struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment
 extern void              nouveau_mem_free(struct drm_device* dev, struct mem_block*);
 extern int               nouveau_mem_init(struct drm_device *dev);
 extern void              nouveau_mem_close(struct drm_device *dev);
-extern int               nouveau_instmem_init(struct drm_device *dev);
-extern struct mem_block* nouveau_instmem_alloc(struct drm_device *dev,
-					       uint32_t size, uint32_t align);
-extern void              nouveau_instmem_free(struct drm_device *dev,
-					      struct mem_block *block);
 
 /* nouveau_notifier.c */
 extern int  nouveau_notifier_init_channel(drm_device_t *, int channel, DRMFILE);
@@ -385,6 +395,24 @@ extern int  nv50_graph_create_context(drm_device_t *, int channel);
 extern void nv50_graph_destroy_context(drm_device_t *, int channel);
 extern int  nv50_graph_load_context(drm_device_t *, int channel);
 extern int  nv50_graph_save_context(drm_device_t *, int channel);
+
+/* nv04_instmem.c */
+extern int  nv04_instmem_init(drm_device_t *dev);
+extern void nv04_instmem_takedown(drm_device_t *dev);
+extern int  nv04_instmem_populate(drm_device_t*, nouveau_gpuobj_t*,
+				  uint32_t *size);
+extern void nv04_instmem_clear(drm_device_t*, nouveau_gpuobj_t*);
+extern int  nv04_instmem_bind(drm_device_t*, nouveau_gpuobj_t*);
+extern int  nv04_instmem_unbind(drm_device_t*, nouveau_gpuobj_t*);
+
+/* nv50_instmem.c */
+extern int  nv50_instmem_init(drm_device_t *dev);
+extern void nv50_instmem_takedown(drm_device_t *dev);
+extern int  nv50_instmem_populate(drm_device_t*, nouveau_gpuobj_t*,
+				  uint32_t *size);
+extern void nv50_instmem_clear(drm_device_t*, nouveau_gpuobj_t*);
+extern int  nv50_instmem_bind(drm_device_t*, nouveau_gpuobj_t*);
+extern int  nv50_instmem_unbind(drm_device_t*, nouveau_gpuobj_t*);
 
 /* nv04_mc.c */
 extern int  nv04_mc_init(drm_device_t *dev);

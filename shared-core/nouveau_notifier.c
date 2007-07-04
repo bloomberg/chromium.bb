@@ -33,7 +33,7 @@ int
 nouveau_notifier_init_channel(drm_device_t *dev, int channel, DRMFILE filp)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	int flags, ret;
 
 	/*TODO: PCI notifier blocks */
@@ -58,7 +58,7 @@ void
 nouveau_notifier_takedown_channel(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 
 	if (chan->notifier_block) {
 		nouveau_mem_free(dev, chan->notifier_block);
@@ -73,7 +73,7 @@ nouveau_notifier_alloc(drm_device_t *dev, int channel, uint32_t handle,
 		       int count, uint32_t *b_offset)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	nouveau_gpuobj_t *nobj = NULL;
 	struct mem_block *mem;
 	uint32_t offset;

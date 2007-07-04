@@ -47,11 +47,15 @@
 #define NV_CLASS_DMA_IN_MEMORY                             0x0000003D
 
 #define NV03_FIFO_SIZE                                     0x8000UL
-#define NV_MAX_FIFO_NUMBER                                 32
+#define NV_MAX_FIFO_NUMBER                                 128
 #define NV03_FIFO_REGS_SIZE                                0x10000
 #define NV03_FIFO_REGS(i)                                  (0x00800000+i*NV03_FIFO_REGS_SIZE)
 #    define NV03_FIFO_REGS_DMAPUT(i)                       (NV03_FIFO_REGS(i)+0x40)
 #    define NV03_FIFO_REGS_DMAGET(i)                       (NV03_FIFO_REGS(i)+0x44)
+#define NV50_FIFO_REGS_SIZE                                0x2000
+#define NV50_FIFO_REGS(i)                                  (0x00c00000+i*NV50_FIFO_REGS_SIZE)
+#    define NV50_FIFO_REGS_DMAPUT(i)                       (NV50_FIFO_REGS(i)+0x40)
+#    define NV50_FIFO_REGS_DMAGET(i)                       (NV50_FIFO_REGS(i)+0x44)
 
 #define NV03_PMC_BOOT_0                                    0x00000000
 #define NV03_PMC_INTR_0                                    0x00000100
@@ -332,6 +336,12 @@
 #define NV04_PFIFO_MODE                                    0x00002504
 #define NV04_PFIFO_DMA                                     0x00002508
 #define NV04_PFIFO_SIZE                                    0x0000250c
+#define NV50_PFIFO_CTX_TABLE(c)                        (0x2600+(c)*4)
+#define NV50_PFIFO_CTX_TABLE__SIZE                                128
+#define NV50_PFIFO_CTX_TABLE_CHANNEL_ENABLED                  (1<<31)
+#define NV50_PFIFO_CTX_TABLE_UNK30_BAD                        (1<<30)
+#define NV50_PFIFO_CTX_TABLE_INSTANCE_MASK_G80             0x0FFFFFFF
+#define NV50_PFIFO_CTX_TABLE_INSTANCE_MASK_G84             0x00FFFFFF
 #define NV03_PFIFO_CACHE0_PUSH0                            0x00003000
 #define NV03_PFIFO_CACHE0_PULL0                            0x00003040
 #define NV04_PFIFO_CACHE0_PULL0                            0x00003050
