@@ -157,6 +157,7 @@ struct nouveau_engine_func {
 
 	struct {
 		int	(*init)(struct drm_device *dev);
+		uint64_t (*read)(struct drm_device *dev);
 		void	(*takedown)(struct drm_device *dev);
 	} timer;
 
@@ -469,6 +470,7 @@ extern void nv50_mc_takedown(struct drm_device *dev);
 
 /* nv04_timer.c */
 extern int  nv04_timer_init(struct drm_device *dev);
+extern uint64_t nv04_timer_read(struct drm_device *dev);
 extern void nv04_timer_takedown(struct drm_device *dev);
 
 extern long nouveau_compat_ioctl(struct file *filp, unsigned int cmd,

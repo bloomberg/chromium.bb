@@ -88,6 +88,8 @@ static int nouveau_init_card_mappings(struct drm_device *dev)
 
 static int nouveau_stub_init(struct drm_device *dev) { return 0; }
 static void nouveau_stub_takedown(struct drm_device *dev) {}
+static uint64_t nouveau_stub_timer_read(struct drm_device *dev) { return 0; }
+
 static int nouveau_init_engine_ptrs(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -104,6 +106,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv04_fb_init;
 		engine->fb.takedown	= nv04_fb_takedown;
@@ -130,6 +133,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv10_fb_init;
 		engine->fb.takedown	= nv10_fb_takedown;
@@ -156,6 +160,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv10_fb_init;
 		engine->fb.takedown	= nv10_fb_takedown;
@@ -182,6 +187,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv10_fb_init;
 		engine->fb.takedown	= nv10_fb_takedown;
@@ -208,6 +214,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv40_mc_init;
 		engine->mc.takedown	= nv40_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv40_fb_init;
 		engine->fb.takedown	= nv40_fb_takedown;
@@ -235,6 +242,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv50_mc_init;
 		engine->mc.takedown	= nv50_mc_takedown;
 		engine->timer.init	= nouveau_stub_init;
+		engine->timer.read	= nouveau_stub_timer_read;
 		engine->timer.takedown	= nouveau_stub_takedown;
 		engine->fb.init		= nouveau_stub_init;
 		engine->fb.takedown	= nouveau_stub_takedown;
