@@ -178,16 +178,18 @@ static int radeon_wait_irq(drm_device_t * dev, int swi_nr)
 u32 radeon_get_vblank_counter(drm_device_t *dev, int crtc)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
-	u32 crtc_cnt_reg;
+	u32 crtc_cnt_reg, crtc_status_reg;
 
-	if (crtc == 0)
+	if (crtc == 0) {
 		crtc_cnt_reg = RADEON_CRTC_CRNT_FRAME;
-	else if (crtc == 1)
+		crtc_status_reg = RADEON_CRTC_STATUS;
+	} else if (crtc == 1) {
 		crtc_cnt_reg = RADEON_CRTC2_CRNT_FRAME;
-	else
+		crtc_status_reg = RADEON_CRTC2_STATUS;
+	} else
 		return 0;
 
-	return RADEON_READ(crtc_cnt_reg);
+	return RADEON_READ(crtc_cnt_reg) + (RADEON_READ(crtc_status_reg) & 1);
 }
 
 /* Needs the lock as it touches the ring.
