@@ -111,83 +111,136 @@ void xgi_sarea_info(struct xgi_info * info, struct xgi_sarea_info * req)
 
 static unsigned int s_invalid_begin = 0;
 
+static bool xgi_validate_signal(volatile u8 *mmio_vbase)
+{
+	volatile u32 *const ge_3d_status = 
+		(volatile u32 *)(mmio_vbase + 0x2800);
+	const u32 old_ge_status = ge_3d_status[0x00];
+
+	if (old_ge_status & 0x001c0000) {
+		u16 check;
+
+		/* Check Read back status */
+		*(mmio_vbase + 0x235c) = 0x80;
+		check = *((volatile u16 *)(mmio_vbase + 0x2360));
+
+		if ((check & 0x3f) != ((check & 0x3f00) >> 8)) {
+			return FALSE;
+		}
+
+		/* Check RO channel */
+		*(mmio_vbase + 0x235c) = 0x83;
+		check = *((volatile u16 *)(mmio_vbase + 0x2360));
+		if ((check & 0x0f) != ((check & 0xf0) >> 4)) {
+			return FALSE;
+		}
+
+		/* Check RW channel */
+		*(mmio_vbase + 0x235c) = 0x88;
+		check = *((volatile u16 *)(mmio_vbase + 0x2360));
+		if ((check & 0x0f) != ((check & 0xf0) >> 4)) {
+			return FALSE;
+		}
+
+		/* Check RO channel outstanding */
+		*(mmio_vbase + 0x235c) = 0x8f;
+		check = *((volatile u16 *)(mmio_vbase + 0x2360));
+		if (0 != (check & 0x3ff)) {
+			return FALSE;
+		}
+
+		/* Check RW channel outstanding */
+		*(mmio_vbase + 0x235c) = 0x90;
+		check = *((volatile u16 *)(mmio_vbase + 0x2360));
+		if (0 != (check & 0x3ff)) {
+			return FALSE;
+		}
+
+		/* No pending PCIE request. GE stall. */
+	}
+
+	return TRUE;
+}
+
+
+static void xgi_ge_hang_reset(volatile u8 *mmio_vbase)
+{
+	volatile u32 *const ge_3d_status =
+		(volatile u32 *)(mmio_vbase + 0x2800);
+	int time_out = 0xffff;
+
+	*(mmio_vbase + 0xb057) = 8;
+	while (0 != (ge_3d_status[0x00] & 0xf0000000)) {
+		while (0 != ((--time_out) & 0xfff)) 
+			/* empty */ ;
+
+		if (0 == time_out) {
+			u8 old_3ce;
+			u8 old_3cf;
+			u8 old_index;
+			u8 old_36;
+
+			XGI_INFO("Can not reset back 0x%x!\n",
+				 ge_3d_status[0x00]);
+
+			*(mmio_vbase + 0xb057) = 0;
+
+			/* Have to use 3x5.36 to reset. */
+			/* Save and close dynamic gating */
+
+			old_3ce = *(mmio_vbase + 0x3ce);
+			*(mmio_vbase + 0x3ce) = 0x2a;
+			old_3cf = *(mmio_vbase + 0x3cf);
+			*(mmio_vbase + 0x3cf) = old_3cf & 0xfe;
+
+			/* Reset GE */
+			old_index = *(mmio_vbase + 0x3d4);
+			*(mmio_vbase + 0x3d4) = 0x36;
+			old_36 = *(mmio_vbase + 0x3d5);
+			*(mmio_vbase + 0x3d5) = old_36 | 0x10;
+
+			while (0 != ((--time_out) & 0xfff)) 
+				/* empty */ ;
+
+			*(mmio_vbase + 0x3d5) = old_36;
+			*(mmio_vbase + 0x3d4) = old_index;
+
+			/* Restore dynamic gating */
+			*(mmio_vbase + 0x3cf) = old_3cf; 
+			*(mmio_vbase + 0x3ce) = old_3ce;
+			break;
+		}
+	}
+
+	*(mmio_vbase + 0xb057) = 0;
+}
+
+	
 bool xgi_ge_irq_handler(struct xgi_info * info)
 {
-	volatile u8 *mmio_vbase = info->mmio.vbase;
-	volatile U32 *ge_3d_status = (volatile U32 *)(mmio_vbase + 0x2800);
-	U32 int_status = ge_3d_status[4];	// interrupt status
-	U32 auto_reset_count = 0;
+	volatile u8 *const mmio_vbase = info->mmio.vbase;
+	volatile u32 *const ge_3d_status =
+		(volatile u32 *)(mmio_vbase + 0x2800);
+	const u32 int_status = ge_3d_status[4];
 	bool is_support_auto_reset = FALSE;
 
-	// Check GE on/off
+	/* Check GE on/off */
 	if (0 == (0xffffc0f0 & int_status)) {
-		U32 old_ge_status = ge_3d_status[0x00];
-		U32 old_pcie_cmd_fetch_Addr = ge_3d_status[0x0a];
+		u32 old_pcie_cmd_fetch_Addr = ge_3d_status[0x0a];
+
 		if (0 != (0x1000 & int_status)) {
-			// We got GE stall interrupt.
+			/* We got GE stall interrupt. 
+			 */
 			ge_3d_status[0x04] = int_status | 0x04000000;
 
 			if (is_support_auto_reset) {
-				bool is_wrong_signal = FALSE;
 				static cycles_t last_tick;
 				static unsigned continue_int_count = 0;
-				// OE II is busy.
-				while (old_ge_status & 0x001c0000) {
-					u16 check;
-					// Check Read back status
-					*(mmio_vbase + 0x235c) = 0x80;
-					check =
-					    *((volatile u16 *)(mmio_vbase +
-							       0x2360));
-					if ((check & 0x3f) !=
-					    ((check & 0x3f00) >> 8)) {
-						is_wrong_signal = TRUE;
-						break;
-					}
-					// Check RO channel
-					*(mmio_vbase + 0x235c) = 0x83;
-					check =
-					    *((volatile u16 *)(mmio_vbase +
-							       0x2360));
-					if ((check & 0x0f) !=
-					    ((check & 0xf0) >> 4)) {
-						is_wrong_signal = TRUE;
-						break;
-					}
-					// Check RW channel
-					*(mmio_vbase + 0x235c) = 0x88;
-					check =
-					    *((volatile u16 *)(mmio_vbase +
-							       0x2360));
-					if ((check & 0x0f) !=
-					    ((check & 0xf0) >> 4)) {
-						is_wrong_signal = TRUE;
-						break;
-					}
-					// Check RO channel outstanding
-					*(mmio_vbase + 0x235c) = 0x8f;
-					check =
-					    *((volatile u16 *)(mmio_vbase +
-							       0x2360));
-					if (0 != (check & 0x3ff)) {
-						is_wrong_signal = TRUE;
-						break;
-					}
-					// Check RW channel outstanding
-					*(mmio_vbase + 0x235c) = 0x90;
-					check =
-					    *((volatile u16 *)(mmio_vbase +
-							       0x2360));
-					if (0 != (check & 0x3ff)) {
-						is_wrong_signal = TRUE;
-						break;
-					}
-					// No pending PCIE request. GE stall.
-					break;
-				}
 
-				if (is_wrong_signal) {
-					// Nothing but skip.
+				/* OE II is busy. */
+
+				if (!xgi_validate_signal(mmio_vbase)) {
+					/* Nothing but skip. */
 				} else if (0 == continue_int_count++) {
 					last_tick = get_cycles();
 				} else {
@@ -196,90 +249,23 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 					    STALL_INTERRUPT_RESET_THRESHOLD) {
 						continue_int_count = 0;
 					} else if (continue_int_count >= 3) {
-						int time_out;
-
 						continue_int_count = 0;
 
-						// GE Hung up, need reset.
+						/* GE Hung up, need reset. */
 						XGI_INFO("Reset GE!\n");
 
-						*(mmio_vbase + 0xb057) = 8;
-						time_out = 0xffff;
-						while (0 !=
-						       (ge_3d_status[0x00] &
-							0xf0000000)) {
-							while (0 !=
-							       ((--time_out) &
-								0xfff)) ;
-							if (0 == time_out) {
-								u8 old_3ce;
-								u8 old_3cf;
-								u8 old_index;
-								u8 old_36;
-
-								XGI_INFO
-								    ("Can not reset back 0x%lx!\n",
-								     ge_3d_status
-								     [0x00]);
-								*(mmio_vbase +
-								  0xb057) = 0;
-								// Have to use 3x5.36 to reset.
-								// Save and close dynamic gating
-								old_3ce =
-								    *(mmio_vbase
-								      + 0x3ce);
-								*(mmio_vbase +
-								  0x3ce) = 0x2a;
-								old_3cf =
-								    *(mmio_vbase
-								      + 0x3cf);
-								*(mmio_vbase +
-								  0x3cf) =
-						       old_3cf & 0xfe;
-								// Reset GE
-								old_index =
-								    *(mmio_vbase
-								      + 0x3d4);
-								*(mmio_vbase +
-								  0x3d4) = 0x36;
-								old_36 =
-								    *(mmio_vbase
-								      + 0x3d5);
-								*(mmio_vbase +
-								  0x3d5) =
-						       old_36 | 0x10;
-								while (0 !=
-								       ((--time_out) & 0xfff)) ;
-								*(mmio_vbase +
-								  0x3d5) =
-						       old_36;
-								*(mmio_vbase +
-								  0x3d4) =
-						       old_index;
-								// Restore dynamic gating
-								*(mmio_vbase +
-								  0x3cf) =
-						       old_3cf;
-								*(mmio_vbase +
-								  0x3ce) =
-						       old_3ce;
-								break;
-							}
-						}
-						*(mmio_vbase + 0xb057) = 0;
-
-						// Increase Reset counter
-						auto_reset_count++;
+						xgi_ge_hang_reset(mmio_vbase);
 					}
 				}
 			}
-			return TRUE;
 		} else if (0 != (0x1 & int_status)) {
 			s_invalid_begin++;
 			ge_3d_status[0x04] = (int_status & ~0x01) | 0x04000000;
-			return TRUE;
 		}
+
+		return TRUE;
 	}
+
 	return FALSE;
 }
 
