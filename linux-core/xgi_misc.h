@@ -36,7 +36,6 @@ extern void xgi_get_screen_info(struct xgi_info * info, struct xgi_screen_info *
 extern void xgi_put_screen_info(struct xgi_info * info, struct xgi_screen_info * req);
 extern void xgi_ge_reset(struct xgi_info * info);
 extern void xgi_sarea_info(struct xgi_info * info, struct xgi_sarea_info * req);
-extern int xgi_get_cpu_id(struct cpu_info *arg);
 
 extern void xgi_restore_registers(struct xgi_info * info);
 extern bool xgi_ge_irq_handler(struct xgi_info * info);

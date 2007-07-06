@@ -234,13 +234,6 @@ struct xgi_state_info {
 	U32 _toState;
 };
 
-struct cpu_info {
-	U32 _eax;
-	U32 _ebx;
-	U32 _ecx;
-	U32 _edx;
-};
-
 struct xgi_mem_pid {
 	struct list_head list;
 	enum xgi_mem_location location;
@@ -275,8 +268,7 @@ struct xgi_mem_pid {
 #define XGI_ESC_STATE_CHANGE        (XGI_IOCTL_BASE + 17)
 #define XGI_ESC_MMIO_INFO           (XGI_IOCTL_BASE + 18)
 #define XGI_ESC_PCIE_CHECK          (XGI_IOCTL_BASE + 19)
-#define XGI_ESC_CPUID               (XGI_IOCTL_BASE + 20)
-#define XGI_ESC_MEM_COLLECT          (XGI_IOCTL_BASE + 21)
+#define XGI_ESC_MEM_COLLECT         (XGI_IOCTL_BASE + 20)
 
 #define XGI_IOCTL_DEVICE_INFO       _IOR(XGI_IOCTL_MAGIC, XGI_ESC_DEVICE_INFO, struct xgi_chip_info)
 #define XGI_IOCTL_POST_VBIOS        _IO(XGI_IOCTL_MAGIC, XGI_ESC_POST_VBIOS)
@@ -298,12 +290,11 @@ struct xgi_mem_pid {
 #define XGI_IOCTL_DEBUG_INFO        _IO(XGI_IOCTL_MAGIC, XGI_ESC_DEBUG_INFO)
 #define XGI_IOCTL_MMIO_INFO         _IOR(XGI_IOCTL_MAGIC, XGI_ESC_MMIO_INFO, struct xgi_mmio_info)
 
-#define XGI_IOCTL_SUBMIT_CMDLIST	_IOWR(XGI_IOCTL_MAGIC, XGI_ESC_SUBMIT_CMDLIST, struct xgi_cmd_info)
-#define XGI_IOCTL_TEST_RWINKERNEL	_IOWR(XGI_IOCTL_MAGIC, XGI_ESC_TEST_RWINKERNEL, unsigned long)
+#define XGI_IOCTL_SUBMIT_CMDLIST    _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_SUBMIT_CMDLIST, struct xgi_cmd_info)
+#define XGI_IOCTL_TEST_RWINKERNEL   _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_TEST_RWINKERNEL, unsigned long)
 #define XGI_IOCTL_STATE_CHANGE      _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_STATE_CHANGE, struct xgi_state_info)
 
 #define XGI_IOCTL_PCIE_CHECK        _IO(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_CHECK)
-#define XGI_IOCTL_CPUID             _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_CPUID, struct cpu_info)
 #define XGI_IOCTL_MAXNR          30
 
 /*

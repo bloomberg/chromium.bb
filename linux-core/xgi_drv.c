@@ -960,10 +960,6 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 		XGI_INFO("Jong-xgi_state_change \n");
 		xgi_state_change(info, (struct xgi_state_info *) arg_copy);
 		break;
-	case XGI_ESC_CPUID:
-		XGI_INFO("Jong-XGI_ESC_CPUID \n");
-		xgi_get_cpu_id((struct cpu_info *)arg_copy);
-		break;
 	default:
 		XGI_INFO("Jong-xgi_ioctl_default \n");
 		status = -EINVAL;

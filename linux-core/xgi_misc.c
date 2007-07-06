@@ -521,18 +521,6 @@ void xgi_waitfor_pci_idle(struct xgi_info * info)
 	}
 }
 
-int xgi_get_cpu_id(struct cpu_info *arg)
-{
-	int op = arg->_eax;
-      __asm__("cpuid":"=a"(arg->_eax),
-		"=b"(arg->_ebx),
-		"=c"(arg->_ecx), "=d"(arg->_edx)
-      :	"0"(op));
-
-	XGI_INFO
-	    ("opCode = 0x%x, eax = 0x%x, ebx = 0x%x, ecx = 0x%x, edx = 0x%x \n",
-	     op, arg->_eax, arg->_ebx, arg->_ecx, arg->_edx);
-}
 
 /*memory collect function*/
 extern struct list_head xgi_mempid_list;
