@@ -127,12 +127,10 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 			// We got GE stall interrupt.
 			ge_3d_status[0x04] = int_status | 0x04000000;
 
-			if (TRUE == is_support_auto_reset) {
+			if (is_support_auto_reset) {
 				bool is_wrong_signal = FALSE;
-				static U32 last_int_tick_low,
-				    last_int_tick_high;
-				static U32 new_int_tick_low;
-				static U32 continoue_int_count = 0;
+				static cycles_t last_tick;
+				static unsigned continue_int_count = 0;
 				// OE II is busy.
 				while (old_ge_status & 0x001c0000) {
 					u16 check;
@@ -190,19 +188,17 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 
 				if (is_wrong_signal) {
 					// Nothing but skip.
-				} else if (0 == continoue_int_count++) {
-					rdtsc(last_int_tick_low,
-					      last_int_tick_high);
+				} else if (0 == continue_int_count++) {
+					last_tick = get_cycles();
 				} else {
-					rdtscl(new_int_tick_low);
-					if ((new_int_tick_low -
-					     last_int_tick_low) >
+					const cycles_t new_tick = get_cycles();
+					if ((new_tick - last_tick) >
 					    STALL_INTERRUPT_RESET_THRESHOLD) {
-						continoue_int_count = 0;
-					} else if (continoue_int_count >= 3) {
+						continue_int_count = 0;
+					} else if (continue_int_count >= 3) {
 						int time_out;
 
-						continoue_int_count = 0;
+						continue_int_count = 0;
 
 						// GE Hung up, need reset.
 						XGI_INFO("Reset GE!\n");
