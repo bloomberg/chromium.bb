@@ -110,6 +110,8 @@
 #define NV04_PGRAPH_DEBUG_3                                0x0040008c
 #define NV10_PGRAPH_DEBUG_4                                0x00400090
 #define NV03_PGRAPH_INTR                                   0x00400100
+#define NV03_PGRAPH_NSTATUS                                0x00400104
+#define NV03_PGRAPH_NSOURCE                                0x00400108
 #define NV03_PGRAPH_INTR_EN                                0x00400140
 #define NV40_PGRAPH_INTR_EN                                0x0040013C
 #    define NV_PGRAPH_INTR_NOTIFY                             (1<< 0)

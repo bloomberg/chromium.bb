@@ -266,7 +266,8 @@ nouveau_graph_dump_trap_info(struct drm_device *dev)
 	}
 
 	DRM_ERROR("NV: nSource: 0x%08x, nStatus: 0x%08x\n",
-			NV_READ(0x400108), NV_READ(0x400104));
+			NV_READ(NV03_PGRAPH_NSOURCE),
+			NV_READ(NV03_PGRAPH_NSTATUS));
 	DRM_ERROR("NV: Channel %d/%d (class 0x%04x) -"
 			"Method 0x%04x, Data 0x%08x\n",
 			channel, subc, class, method, data
@@ -286,8 +287,8 @@ static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 		uint32_t nsource, nstatus, instance, notify;
 		DRM_DEBUG("NV: PGRAPH notify interrupt\n");
 
-		nstatus = NV_READ(0x00400104);
-		nsource = NV_READ(0x00400108);
+		nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
+		nsource = NV_READ(NV03_PGRAPH_NSOURCE);
 		DRM_DEBUG("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
 
 		/* if this wasn't NOTIFICATION_PENDING, dump extra trap info */
@@ -308,8 +309,8 @@ static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 		uint32_t nsource, nstatus, instance, notify;
 		DRM_DEBUG("NV: PGRAPH buffer notify interrupt\n");
 
-		nstatus = NV_READ(0x00400104);
-		nsource = NV_READ(0x00400108);
+		nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
+		nsource = NV_READ(NV03_PGRAPH_NSOURCE);
 		DRM_DEBUG("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
 
 		instance = NV_READ(0x00400158);
@@ -332,8 +333,8 @@ static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 
 		DRM_ERROR("NV: PGRAPH error interrupt\n");
 
-		nstatus = NV_READ(0x00400104);
-		nsource = NV_READ(0x00400108);
+		nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
+		nsource = NV_READ(NV03_PGRAPH_NSOURCE);
 		DRM_ERROR("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
 
 		instance = NV_READ(0x00400158);
