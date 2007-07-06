@@ -246,6 +246,61 @@ static void nouveau_nv04_context_switch(struct drm_device *dev)
 }
 #endif
 
+
+struct nouveau_bitfield_names
+{
+	uint32_t mask;
+	const char * name;
+};
+
+static struct nouveau_bitfield_names nouveau_nstatus_names[] =
+{
+	{ NV03_PGRAPH_NSTATUS_STATE_IN_USE,       "STATE_IN_USE" },
+	{ NV03_PGRAPH_NSTATUS_INVALID_STATE,      "INVALID_STATE" },
+	{ NV03_PGRAPH_NSTATUS_BAD_ARGUMENT,       "BAD_ARGUMENT" },
+	{ NV03_PGRAPH_NSTATUS_PROTECTION_FAULT,   "PROTECTION_FAULT" }
+};
+
+static struct nouveau_bitfield_names nouveau_nsource_names[] =
+{
+	{ NV03_PGRAPH_NSOURCE_NOTIFICATION,       "NOTIFICATION" },
+	{ NV03_PGRAPH_NSOURCE_DATA_ERROR,         "DATA_ERROR" },
+	{ NV03_PGRAPH_NSOURCE_PROTECTION_ERROR,   "PROTECTION_ERROR" },
+	{ NV03_PGRAPH_NSOURCE_RANGE_EXCEPTION,    "RANGE_EXCEPTION" },
+	{ NV03_PGRAPH_NSOURCE_LIMIT_COLOR,        "LIMIT_COLOR" },
+	{ NV03_PGRAPH_NSOURCE_LIMIT_ZETA,         "LIMIT_ZETA" },
+	{ NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD,       "ILLEGAL_MTHD" },
+	{ NV03_PGRAPH_NSOURCE_DMA_R_PROTECTION,   "DMA_R_PROTECTION" },
+	{ NV03_PGRAPH_NSOURCE_DMA_W_PROTECTION,   "DMA_W_PROTECTION" },
+	{ NV03_PGRAPH_NSOURCE_FORMAT_EXCEPTION,   "FORMAT_EXCEPTION" },
+	{ NV03_PGRAPH_NSOURCE_PATCH_EXCEPTION,    "PATCH_EXCEPTION" },
+	{ NV03_PGRAPH_NSOURCE_STATE_INVALID,      "STATE_INVALID" },
+	{ NV03_PGRAPH_NSOURCE_DOUBLE_NOTIFY,      "DOUBLE_NOTIFY" },
+	{ NV03_PGRAPH_NSOURCE_NOTIFY_IN_USE,      "NOTIFY_IN_USE" },
+	{ NV03_PGRAPH_NSOURCE_METHOD_CNT,         "METHOD_CNT" },
+	{ NV03_PGRAPH_NSOURCE_BFR_NOTIFICATION,   "BFR_NOTIFICATION" },
+	{ NV03_PGRAPH_NSOURCE_DMA_VTX_PROTECTION, "DMA_VTX_PROTECTION" },
+	{ NV03_PGRAPH_NSOURCE_DMA_WIDTH_A,        "DMA_WIDTH_A" },
+	{ NV03_PGRAPH_NSOURCE_DMA_WIDTH_B,        "DMA_WIDTH_B" },
+};
+
+static void
+nouveau_print_bitfield_names(uint32_t value,
+                             const struct nouveau_bitfield_names *namelist,
+                             const int namelist_len)
+{
+	int i;
+	for(i=0; i<namelist_len; ++i) {
+		uint32_t mask = namelist[i].mask;
+		if(value & mask) {
+			printk(" %s", namelist[i].name);
+			value &= ~mask;
+		}
+	}
+	if(value)
+		printk(" (unknown bits 0x%08x)", value);
+}
+
 static void
 nouveau_graph_dump_trap_info(struct drm_device *dev)
 {
@@ -253,22 +308,30 @@ nouveau_graph_dump_trap_info(struct drm_device *dev)
 	uint32_t address;
 	uint32_t channel, class;
 	uint32_t method, subc, data;
+	uint32_t nsource, nstatus;
 
 	address = NV_READ(0x400704);
 	channel = (address >> 20) & 0x1F;
 	subc    = (address >> 16) & 0x7;
 	method  = address & 0x1FFC;
 	data    = NV_READ(0x400708);
+	nsource = NV_READ(NV03_PGRAPH_NSOURCE);
+	nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
 	if (dev_priv->card_type < NV_50) {
 		class = NV_READ(0x400160 + subc*4) & 0xFFFF;
 	} else {
 		class = NV_READ(0x400814);
 	}
 
-	DRM_ERROR("NV: nSource: 0x%08x, nStatus: 0x%08x\n",
-			NV_READ(NV03_PGRAPH_NSOURCE),
-			NV_READ(NV03_PGRAPH_NSTATUS));
-	DRM_ERROR("NV: Channel %d/%d (class 0x%04x) -"
+	DRM_ERROR("nSource:");
+	nouveau_print_bitfield_names(nsource, nouveau_nsource_names,
+	                             ARRAY_SIZE(nouveau_nsource_names));
+	printk(", nStatus:");
+	nouveau_print_bitfield_names(nstatus, nouveau_nstatus_names,
+	                             ARRAY_SIZE(nouveau_nstatus_names));
+	printk("\n");
+
+	DRM_ERROR("NV: Channel %d/%d (class 0x%04x) - "
 			"Method 0x%04x, Data 0x%08x\n",
 			channel, subc, class, method, data
 		 );

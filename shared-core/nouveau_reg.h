@@ -111,7 +111,30 @@
 #define NV10_PGRAPH_DEBUG_4                                0x00400090
 #define NV03_PGRAPH_INTR                                   0x00400100
 #define NV03_PGRAPH_NSTATUS                                0x00400104
+#    define NV03_PGRAPH_NSTATUS_STATE_IN_USE                  (1<<23)
+#    define NV03_PGRAPH_NSTATUS_INVALID_STATE                 (1<<24)
+#    define NV03_PGRAPH_NSTATUS_BAD_ARGUMENT                  (1<<25)
+#    define NV03_PGRAPH_NSTATUS_PROTECTION_FAULT              (1<<26)
 #define NV03_PGRAPH_NSOURCE                                0x00400108
+#    define NV03_PGRAPH_NSOURCE_NOTIFICATION                  (1<< 0)
+#    define NV03_PGRAPH_NSOURCE_DATA_ERROR                    (1<< 1)
+#    define NV03_PGRAPH_NSOURCE_PROTECTION_ERROR              (1<< 2)
+#    define NV03_PGRAPH_NSOURCE_RANGE_EXCEPTION               (1<< 3)
+#    define NV03_PGRAPH_NSOURCE_LIMIT_COLOR                   (1<< 4)
+#    define NV03_PGRAPH_NSOURCE_LIMIT_ZETA                    (1<< 5)
+#    define NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD                  (1<< 6)
+#    define NV03_PGRAPH_NSOURCE_DMA_R_PROTECTION              (1<< 7)
+#    define NV03_PGRAPH_NSOURCE_DMA_W_PROTECTION              (1<< 8)
+#    define NV03_PGRAPH_NSOURCE_FORMAT_EXCEPTION              (1<< 9)
+#    define NV03_PGRAPH_NSOURCE_PATCH_EXCEPTION               (1<<10)
+#    define NV03_PGRAPH_NSOURCE_STATE_INVALID                 (1<<11)
+#    define NV03_PGRAPH_NSOURCE_DOUBLE_NOTIFY                 (1<<12)
+#    define NV03_PGRAPH_NSOURCE_NOTIFY_IN_USE                 (1<<13)
+#    define NV03_PGRAPH_NSOURCE_METHOD_CNT                    (1<<14)
+#    define NV03_PGRAPH_NSOURCE_BFR_NOTIFICATION              (1<<15)
+#    define NV03_PGRAPH_NSOURCE_DMA_VTX_PROTECTION            (1<<16)
+#    define NV03_PGRAPH_NSOURCE_DMA_WIDTH_A                   (1<<17)
+#    define NV03_PGRAPH_NSOURCE_DMA_WIDTH_B                   (1<<18)
 #define NV03_PGRAPH_INTR_EN                                0x00400140
 #define NV40_PGRAPH_INTR_EN                                0x0040013C
 #    define NV_PGRAPH_INTR_NOTIFY                             (1<< 0)
