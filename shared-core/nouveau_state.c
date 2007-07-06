@@ -522,16 +522,31 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 void nouveau_wait_for_idle(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv=dev->dev_private;
-	switch(dev_priv->card_type)
-	{
-		case NV_03:
-			while(NV_READ(NV03_PGRAPH_STATUS));
-			break;
-		case NV_50:
-			break;
-		default:
-			while(NV_READ(NV04_PGRAPH_STATUS));
-			break;
+	switch(dev_priv->card_type) {
+	case NV_03:
+		while (NV_READ(NV03_PGRAPH_STATUS));
+		break;
+	case NV_50:
+		break;
+	default: {
+		/* This stuff is more or less a copy of what is seen
+		 * in nv28 kmmio dump.
+		 */
+		uint64_t started = dev_priv->Engine.timer.read(dev);
+		uint64_t stopped = started;
+		uint32_t status;
+		do {
+			uint32_t pmc_e = NV_READ(NV03_PMC_ENABLE);
+			status = NV_READ(NV04_PGRAPH_STATUS);
+			if (!status)
+				break;
+			stopped = dev_priv->Engine.timer.read(dev);
+		/* It'll never wrap anyway... */
+		} while (stopped - started < 1000000000ULL);
+		if (status)
+			DRM_ERROR("timed out with status 0x%08x\n",
+			          status);
+	}
 	}
 }
 
