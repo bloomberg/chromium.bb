@@ -331,16 +331,16 @@ nouveau_gpuobj_instance_get(drm_device_t *dev, int channel,
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	nouveau_gpuobj_t *cpramin;
 
-	if ((channel > 0) && gpuobj->im_channel != channel) {
-		DRM_ERROR("Channel mismatch: obj %d, ref %d\n",
-			  gpuobj->im_channel, channel);
-		return DRM_ERR(EINVAL);
-	}
-
 	/* <NV50 use PRAMIN address everywhere */
 	if (dev_priv->card_type < NV_50) {
 		*inst = gpuobj->im_pramin->start;
 		return 0;
+	}
+
+	if ((channel > 0) && gpuobj->im_channel != channel) {
+		DRM_ERROR("Channel mismatch: obj %d, ref %d\n",
+			  gpuobj->im_channel, channel);
+		return DRM_ERR(EINVAL);
 	}
 
 	/* NV50 channel-local instance */
