@@ -41,6 +41,7 @@ nouveau_notifier_init_channel(drm_device_t *dev, int channel, DRMFILE filp)
 		flags = NOUVEAU_MEM_AGP | NOUVEAU_MEM_FB_ACCEPTABLE;
 	else
 		flags = NOUVEAU_MEM_FB;
+	flags |= NOUVEAU_MEM_MAPPED;
 
 	chan->notifier_block = nouveau_mem_alloc(dev, 0, PAGE_SIZE, flags,filp);
 	if (!chan->notifier_block)

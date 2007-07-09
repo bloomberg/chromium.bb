@@ -497,10 +497,6 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 	/* and the notifier block */
 	init.notifier      = chan->notifier_block->start;
 	init.notifier_size = chan->notifier_block->size;
-	res = drm_addmap(dev, init.notifier, init.notifier_size, _DRM_REGISTERS,
-			 0, &chan->notifier_map);
-	if (res != 0)
-		return res;
 
 	DRM_COPY_TO_USER_IOCTL((drm_nouveau_fifo_alloc_t __user *)data,
 			       init, sizeof(init));
