@@ -184,6 +184,12 @@ typedef struct nouveau_engine_func {
 } nouveau_engine_func_t;
 
 typedef struct drm_nouveau_private {
+	enum {
+		NOUVEAU_CARD_INIT_DOWN,
+		NOUVEAU_CARD_INIT_DONE,
+		NOUVEAU_CARD_INIT_FAILED
+	} init_state;
+
 	/* the card type, takes NV_* as values */
 	int card_type;
 	/* exact chipset, derived from NV_PMC_BOOT_0 */

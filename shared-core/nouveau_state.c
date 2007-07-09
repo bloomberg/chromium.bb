@@ -280,6 +280,7 @@ static int nouveau_card_init(drm_device_t *dev)
 	ret = nouveau_init_engine_ptrs(dev);
 	if (ret) return ret;
 	engine = &dev_priv->Engine;
+	dev_priv->init_state = NOUVEAU_CARD_INIT_FAILED;
 
 	/* Initialise instance memory, must happen before mem_init so we
 	 * know exactly how much VRAM we're able to use for "normal"
@@ -316,6 +317,7 @@ static int nouveau_card_init(drm_device_t *dev)
 
 	/* what about PVIDEO/PCRTC/PRAMDAC etc? */
 
+	dev_priv->init_state = NOUVEAU_CARD_INIT_DONE;
 	return 0;
 }
 
@@ -324,14 +326,18 @@ static void nouveau_card_takedown(drm_device_t *dev)
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	nouveau_engine_func_t *engine = &dev_priv->Engine;
 
-	engine->fifo.takedown(dev);
-	engine->graph.takedown(dev);
-	engine->fb.takedown(dev);
-	engine->timer.takedown(dev);
-	engine->mc.takedown(dev);
-	nouveau_gpuobj_takedown(dev);
-	nouveau_mem_close(dev);
-	engine->instmem.takedown(dev);
+	if (dev_priv->init_state != NOUVEAU_CARD_INIT_DOWN) {
+		engine->fifo.takedown(dev);
+		engine->graph.takedown(dev);
+		engine->fb.takedown(dev);
+		engine->timer.takedown(dev);
+		engine->mc.takedown(dev);
+		nouveau_gpuobj_takedown(dev);
+		nouveau_mem_close(dev);
+		engine->instmem.takedown(dev);
+
+		dev_priv->init_state = NOUVEAU_CARD_INIT_DOWN;
+	}
 }
 
 /* here a client dies, release the stuff that was allocated for its filp */
@@ -371,6 +377,7 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 
 	dev_priv->card_type=flags&NOUVEAU_FAMILY;
 	dev_priv->flags=flags&NOUVEAU_FLAGS;
+	dev_priv->init_state = NOUVEAU_CARD_INIT_DOWN;
 
 	dev->dev_private = (void *)dev_priv;
 
