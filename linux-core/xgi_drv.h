@@ -177,19 +177,23 @@ enum PcieOwner {
 };
 
 struct xgi_mem_req {
-	enum xgi_mem_location location;
-	unsigned long size;
-	unsigned long is_front;
-	enum PcieOwner owner;
-	unsigned long pid;
 };
 
 struct xgi_mem_alloc {
-	enum xgi_mem_location location;
-	unsigned long size;
+	unsigned int location;
+	unsigned int size;
+	unsigned int is_front;
+	unsigned int owner;
+
+	/**
+	 * Address of the memory from the graphics hardware's point of view.
+	 */
+	u32 hw_addr;
+
+	/**
+	 * Physical address of the memory from the processor's point of view.
+	 */
 	unsigned long bus_addr;
-	unsigned long hw_addr;
-	unsigned long pid;
 };
 
 struct xgi_chip_info {
@@ -274,11 +278,11 @@ struct xgi_mem_pid {
 #define XGI_IOCTL_POST_VBIOS        _IO(XGI_IOCTL_MAGIC, XGI_ESC_POST_VBIOS)
 
 #define XGI_IOCTL_FB_INIT           _IO(XGI_IOCTL_MAGIC, XGI_ESC_FB_INIT)
-#define XGI_IOCTL_FB_ALLOC          _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_FB_ALLOC, struct xgi_mem_req)
+#define XGI_IOCTL_FB_ALLOC          _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_FB_ALLOC, struct xgi_mem_alloc)
 #define XGI_IOCTL_FB_FREE           _IOW(XGI_IOCTL_MAGIC, XGI_ESC_FB_FREE, unsigned long)
 
 #define XGI_IOCTL_PCIE_INIT         _IO(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_INIT)
-#define XGI_IOCTL_PCIE_ALLOC        _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_ALLOC, struct xgi_mem_req)
+#define XGI_IOCTL_PCIE_ALLOC        _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_ALLOC, struct xgi_mem_alloc)
 #define XGI_IOCTL_PCIE_FREE         _IOW(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_FREE, unsigned long)
 
 #define XGI_IOCTL_PUT_SCREEN_INFO   _IOW(XGI_IOCTL_MAGIC, XGI_ESC_PUT_SCREEN_INFO, struct xgi_screen_info)
@@ -332,24 +336,21 @@ struct xgi_mem_pid {
 extern int xgi_fb_heap_init(struct xgi_info * info);
 extern void xgi_fb_heap_cleanup(struct xgi_info * info);
 
-extern void xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_req * req,
-			 struct xgi_mem_alloc * alloc);
+extern void xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
+			 pid_t pid);
 extern void xgi_fb_free(struct xgi_info * info, unsigned long offset);
 extern void xgi_mem_collect(struct xgi_info * info, unsigned int *pcnt);
 
 extern int xgi_pcie_heap_init(struct xgi_info * info);
 extern void xgi_pcie_heap_cleanup(struct xgi_info * info);
 
-extern void xgi_pcie_alloc(struct xgi_info * info, unsigned long size,
-			   enum PcieOwner owner, struct xgi_mem_alloc * alloc);
+extern void xgi_pcie_alloc(struct xgi_info * info, 
+			   struct xgi_mem_alloc * alloc, pid_t pid);
 extern void xgi_pcie_free(struct xgi_info * info, unsigned long offset);
 extern void xgi_pcie_heap_check(void);
 extern struct xgi_pcie_block *xgi_find_pcie_block(struct xgi_info * info,
 						    unsigned long address);
 extern void *xgi_find_pcie_virt(struct xgi_info * info, unsigned long address);
-
-extern void xgi_read_pcie_mem(struct xgi_info * info, struct xgi_mem_req * req);
-extern void xgi_write_pcie_mem(struct xgi_info * info, struct xgi_mem_req * req);
 
 extern void xgi_test_rwinkernel(struct xgi_info * info, unsigned long address);
 

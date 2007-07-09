@@ -764,14 +764,13 @@ static struct xgi_pcie_block *xgi_pcie_mem_free(struct xgi_info * info,
 	return (used_block);
 }
 
-void xgi_pcie_alloc(struct xgi_info * info, unsigned long size,
-		    enum PcieOwner owner, struct xgi_mem_alloc * alloc)
+void xgi_pcie_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
+		    pid_t pid)
 {
 	struct xgi_pcie_block *block;
-	struct xgi_mem_pid *mempid_block;
 
 	xgi_down(info->pcie_sem);
-	block = xgi_pcie_mem_alloc(info, size, owner);
+	block = xgi_pcie_mem_alloc(info, alloc->size, alloc->owner);
 	xgi_up(info->pcie_sem);
 
 	if (block == NULL) {
@@ -794,17 +793,18 @@ void xgi_pcie_alloc(struct xgi_info * info, unsigned long size,
 		   PCIE_3D request means a opengl process created.
 		   PCIE_3D_TEXTURE request means texture cannot alloc from fb.
 		 */
-		if (owner == PCIE_3D || owner == PCIE_3D_TEXTURE) {
-			mempid_block =
+		if ((alloc->owner == PCIE_3D)
+		    || (alloc->owner == PCIE_3D_TEXTURE)) {
+			struct xgi_mem_pid *mempid_block =
 			    kmalloc(sizeof(struct xgi_mem_pid), GFP_KERNEL);
 			if (!mempid_block)
 				XGI_ERROR("mempid_block alloc failed\n");
 			mempid_block->location = XGI_MEMLOC_NON_LOCAL;
-			if (owner == PCIE_3D)
+			if (alloc->owner == PCIE_3D)
 				mempid_block->bus_addr = 0xFFFFFFFF;	/*xgi_pcie_vertex_block has the address */
 			else
 				mempid_block->bus_addr = alloc->bus_addr;
-			mempid_block->pid = alloc->pid;
+			mempid_block->pid = pid;
 
 			XGI_INFO
 			    ("Memory ProcessID add one pcie block pid:%ld successfully! \n",
@@ -942,15 +942,6 @@ void *xgi_find_pcie_virt(struct xgi_info * info, unsigned long address)
 
 	XGI_ERROR("could not find map for vm 0x%lx\n", address);
 	return NULL;
-}
-
-void xgi_read_pcie_mem(struct xgi_info * info, struct xgi_mem_req * req)
-{
-
-}
-
-void xgi_write_pcie_mem(struct xgi_info * info, struct xgi_mem_req * req)
-{
 }
 
 /*

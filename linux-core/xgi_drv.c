@@ -894,7 +894,7 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 		break;
 	case XGI_ESC_FB_ALLOC:
 		XGI_INFO("Jong-xgi_ioctl_fb_alloc \n");
-		xgi_fb_alloc(info, (struct xgi_mem_req *)arg_copy, alloc);
+		xgi_fb_alloc(info, alloc, 0);
 		break;
 	case XGI_ESC_FB_FREE:
 		XGI_INFO("Jong-xgi_ioctl_fb_free \n");
@@ -906,8 +906,7 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 		break;
 	case XGI_ESC_PCIE_ALLOC:
 		XGI_INFO("Jong-xgi_ioctl_pcie_alloc \n");
-		xgi_pcie_alloc(info, ((struct xgi_mem_req *) arg_copy)->size,
-			       ((struct xgi_mem_req *) arg_copy)->owner, alloc);
+		xgi_pcie_alloc(info, alloc, 0);
 		break;
 	case XGI_ESC_PCIE_FREE:
 		XGI_INFO("Jong-xgi_ioctl_pcie_free: bus_addr = 0x%lx \n",
@@ -945,8 +944,6 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 	case XGI_ESC_DEBUG_INFO:
 		XGI_INFO("Jong-xgi_ioctl_restore_registers \n");
 		xgi_restore_registers(info);
-		//xgi_write_pcie_mem(info, (struct xgi_mem_req *) arg_copy);
-		//xgi_read_pcie_mem(info, (struct xgi_mem_req *) arg_copy);
 		break;
 	case XGI_ESC_SUBMIT_CMDLIST:
 		XGI_INFO("Jong-xgi_ioctl_submit_cmdlist \n");

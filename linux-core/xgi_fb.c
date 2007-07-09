@@ -41,13 +41,13 @@ static struct xgi_mem_block *xgi_mem_new_node(void);
 static struct xgi_mem_block *xgi_mem_alloc(struct xgi_info * info, unsigned long size);
 static struct xgi_mem_block *xgi_mem_free(struct xgi_info * info, unsigned long offset);
 
-void xgi_fb_alloc(struct xgi_info * info,
-		  struct xgi_mem_req * req, struct xgi_mem_alloc * alloc)
+void xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc, 
+		  pid_t pid)
 {
 	struct xgi_mem_block *block;
 	struct xgi_mem_pid *mempid_block;
 
-	if (req->is_front) {
+	if (alloc->is_front) {
 		alloc->location = XGI_MEMLOC_LOCAL;
 		alloc->bus_addr = info->fb.base;
 		alloc->hw_addr = 0;
@@ -55,7 +55,7 @@ void xgi_fb_alloc(struct xgi_info * info,
 		    ("Video RAM allocation on front buffer successfully! \n");
 	} else {
 		xgi_down(info->fb_sem);
-		block = xgi_mem_alloc(info, req->size);
+		block = xgi_mem_alloc(info, alloc->size);
 		xgi_up(info->fb_sem);
 
 		if (block == NULL) {
@@ -77,7 +77,7 @@ void xgi_fb_alloc(struct xgi_info * info,
 			    kmalloc(sizeof(struct xgi_mem_pid), GFP_KERNEL);
 			mempid_block->location = XGI_MEMLOC_LOCAL;
 			mempid_block->bus_addr = alloc->bus_addr;
-			mempid_block->pid = alloc->pid;
+			mempid_block->pid = pid;
 
 			if (!mempid_block)
 				XGI_ERROR("mempid_block alloc failed\n");

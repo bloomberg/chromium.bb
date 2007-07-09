@@ -42,12 +42,12 @@ static void xgi_cmdlist_reset(void);
 
 int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 {
-	//struct xgi_mem_req mem_req;
-	struct xgi_mem_alloc mem_alloc;
+	struct xgi_mem_alloc mem_alloc = {
+		.size = size,
+		.owner = PCIE_2D,
+	};
 
-	//mem_req.size = size;
-
-	xgi_pcie_alloc(info, size, PCIE_2D, &mem_alloc);
+	xgi_pcie_alloc(info, &mem_alloc, 0);
 
 	if ((mem_alloc.size == 0) && (mem_alloc.hw_addr == 0)) {
 		return -1;
