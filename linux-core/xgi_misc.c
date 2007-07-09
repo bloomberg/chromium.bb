@@ -34,12 +34,12 @@
 
 void xgi_get_device_info(struct xgi_info * info, struct xgi_chip_info * req)
 {
-	req->device_id = info->device_id;
+	req->device_id = info->dev->device;
 	req->device_name[0] = 'x';
 	req->device_name[1] = 'g';
 	req->device_name[2] = '4';
 	req->device_name[3] = '7';
-	req->vendor_id = info->vendor_id;
+	req->vendor_id = info->dev->vendor;
 	req->curr_display_mode = 0;
 	req->fb_size = info->fb.size;
 	req->sarea_bus_addr = info->sarea_info.bus_addr;

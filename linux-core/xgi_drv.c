@@ -233,10 +233,6 @@ int xgi_kern_probe(struct pci_dev *dev, const struct pci_device_id *id_table)
 
 	info = &xgi_devices[xgi_num_devices];
 	info->dev = dev;
-	info->vendor_id = dev->vendor;
-	info->device_id = dev->device;
-	info->bus = dev->bus->number;
-	info->slot = PCI_SLOT((dev)->devfn);
 
 	xgi_lock_init(info);
 
@@ -294,14 +290,13 @@ int xgi_kern_probe(struct pci_dev *dev, const struct pci_device_id *id_table)
 	info->fb.vbase = NULL;
 	XGI_INFO("info->fb.vbase: 0x%p \n", info->fb.vbase);
 
-	info->irq = dev->irq;
 
 	/* check common error condition */
-	if (info->irq == 0) {
+	if (info->dev->irq == 0) {
 		XGI_ERROR("Can't find an IRQ for your XGI card!  \n");
 		goto error_zero_dev;
 	}
-	XGI_INFO("info->irq: %lx \n", info->irq);
+	XGI_INFO("info->irq: %lx \n", info->dev->irq);
 
 	//xgi_enable_dvi_interrupt(info);
 
@@ -568,21 +563,21 @@ int xgi_kern_open(struct inode *inode, struct file *filp)
 	if (!(info->flags & XGI_FLAG_OPEN)) {
 		XGI_INFO("info->flags & XGI_FLAG_OPEN \n");
 
-		if (info->device_id == 0) {
+		if (info->dev->device == 0) {
 			XGI_INFO("open of nonexistent device %d\n", dev_num);
 			result = -ENXIO;
 			goto failed;
 		}
 
 		/* initialize struct irqaction */
-		status = request_irq(info->irq, xgi_kern_isr,
+		status = request_irq(info->dev->irq, xgi_kern_isr,
 				     SA_INTERRUPT | SA_SHIRQ, "xgi",
 				     (void *)info);
 		if (status != 0) {
-			if (info->irq && (status == -EBUSY)) {
+			if (info->dev->irq && (status == -EBUSY)) {
 				XGI_ERROR
 				    ("Tried to get irq %d, but another driver",
-				     (unsigned int)info->irq);
+				     (unsigned int)info->dev->irq);
 				XGI_ERROR("has it and is not sharing it.\n");
 			}
 			XGI_ERROR("isr request failed 0x%x\n", status);
@@ -651,7 +646,7 @@ int xgi_kern_release(struct inode *inode, struct file *filp)
 		 * Free the IRQ, which may block until all pending interrupt processing
 		 * has completed.
 		 */
-		free_irq(info->irq, (void *)info);
+		free_irq(info->dev->irq, (void *)info);
 
 		xgi_cmdlist_cleanup(info);
 
@@ -1064,21 +1059,6 @@ static u8 xgi_find_pcie_capability(struct pci_dev *dev)
 	return 0;
 }
 
-static struct pci_dev *xgi_get_pci_device(struct xgi_info * info)
-{
-	struct pci_dev *dev;
-
-	dev = XGI_PCI_GET_DEVICE(info->vendor_id, info->device_id, NULL);
-	while (dev) {
-		if (XGI_PCI_SLOT_NUMBER(dev) == info->slot
-		    && XGI_PCI_BUS_NUMBER(dev) == info->bus)
-			return dev;
-		dev = XGI_PCI_GET_DEVICE(info->vendor_id, info->device_id, dev);
-	}
-
-	return NULL;
-}
-
 int xgi_kern_read_card_info(char *page, char **start, off_t off,
 			    int count, int *eof, void *data)
 {
@@ -1089,7 +1069,7 @@ int xgi_kern_read_card_info(char *page, char **start, off_t off,
 	struct xgi_info *info;
 	info = (struct xgi_info *) data;
 
-	dev = xgi_get_pci_device(info);
+	dev = info->dev;
 	if (!dev)
 		return 0;
 
@@ -1162,13 +1142,10 @@ static void xgi_proc_create(void)
 
 	xgi_max_devices = xgi_devices + XGI_MAX_DEVICES;
 	for (info = xgi_devices; info < xgi_max_devices; info++) {
-		if (info->device_id == 0)
-			break;
-
 		/* world readable file */
 		flags = S_IFREG | S_IRUGO;
 
-		dev = xgi_get_pci_device(info);
+		dev = info->dev;
 		if (!dev)
 			break;
 
@@ -1314,19 +1291,19 @@ static void xgi_dev_init(struct xgi_info * info)
 		for (dev = xgidev_list; dev->vendor; dev++) {
 			if ((dev->vendor == pdev->vendor)
 			    && (dev->device == pdev->device)) {
+				u8 rev_id;
+
 				XGI_INFO("dev->vendor = pdev->vendor= %x \n",
 					 dev->vendor);
 				XGI_INFO("dev->device = pdev->device= %x \n",
 					 dev->device);
 
-				xgi_devices[found].device_id = pdev->device;
+				xgi_devices[found].dev = pdev;
 
 				pci_read_config_byte(pdev, PCI_REVISION_ID,
-						     &xgi_devices[found].
-						     revision_id);
+						     rev_id);
 
-				XGI_INFO("PCI_REVISION_ID= %x \n",
-					 xgi_devices[found].revision_id);
+				XGI_INFO("PCI_REVISION_ID= %x \n", rev_id);
 
 				pci_read_config_word(pdev, PCI_COMMAND,
 						     &pci_cmd);

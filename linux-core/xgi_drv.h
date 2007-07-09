@@ -105,11 +105,6 @@ struct xgi_info {
 	struct pci_dev *dev;
 	int flags;
 	int device_number;
-	int bus;		/* PCI config info */
-	int slot;
-	int vendor_id;
-	U32 device_id;
-	u8 revision_id;
 
 	/* physical characteristics */
 	struct xgi_aperture mmio;
@@ -125,9 +120,8 @@ struct xgi_info {
 	bool isLUTInLFB;
 	unsigned int sdfbPageSize;
 
-	U32 pcie_config;
-	U32 pcie_status;
-	U32 irq;
+	u32 pcie_config;
+	u32 pcie_status;
 
 	atomic_t use_count;
 
