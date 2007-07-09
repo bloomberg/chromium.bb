@@ -94,9 +94,9 @@
 #define XGI_CONTROL_DEVICE_NUMBER   100
 
 struct xgi_aperture {
-	U32 base;		// pcie base is different from fb base
-	U32 size;
-	u8 *vbase;
+	unsigned long base;
+	unsigned int size;
+	void *vbase;
 };
 
 struct xgi_screen_info {

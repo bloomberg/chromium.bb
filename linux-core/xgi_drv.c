@@ -252,8 +252,7 @@ int xgi_kern_probe(struct pci_dev *dev, const struct pci_device_id *id_table)
 	XGI_INFO("info->mmio.base: 0x%lx \n", info->mmio.base);
 	XGI_INFO("info->mmio.size: 0x%lx \n", info->mmio.size);
 
-	info->mmio.vbase = (unsigned char *)ioremap_nocache(info->mmio.base,
-							    info->mmio.size);
+	info->mmio.vbase = ioremap_nocache(info->mmio.base, info->mmio.size);
 	if (!info->mmio.vbase) {
 		release_mem_region(info->mmio.base, info->mmio.size);
 		XGI_ERROR("info->mmio.vbase failed\n");
@@ -282,8 +281,7 @@ int xgi_kern_probe(struct pci_dev *dev, const struct pci_device_id *id_table)
 	   goto error_disable_dev;
 	   }
 
-	   info->fb.vbase = (unsigned char *)ioremap_nocache(info->fb.base,
-	   info->fb.size);
+	   info->fb.vbase = ioremap_nocache(info->fb.base, info->fb.size);
 
 	   if (!info->fb.vbase)
 	   {
@@ -1484,11 +1482,11 @@ void __exit xgi_exit_module(void)
 			xgi_cmdlist_cleanup(&xgi_devices[i]);
 
 			if (xgi_devices[i].fb.vbase != NULL) {
-				iounmap((void *)xgi_devices[i].fb.vbase);
+				iounmap(xgi_devices[i].fb.vbase);
 				xgi_devices[i].fb.vbase = NULL;
 			}
 			if (xgi_devices[i].mmio.vbase != NULL) {
-				iounmap((void *)xgi_devices[i].mmio.vbase);
+				iounmap(xgi_devices[i].mmio.vbase);
 				xgi_devices[i].mmio.vbase = NULL;
 			}
 			//release_mem_region(xgi_devices[i].fb.base, xgi_devices[i].fb.size);
