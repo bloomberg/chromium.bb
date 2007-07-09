@@ -100,16 +100,16 @@ struct xgi_aperture {
 };
 
 struct xgi_screen_info {
-	U32 scrn_start;
-	U32 scrn_xres;
-	U32 scrn_yres;
-	U32 scrn_bpp;
-	U32 scrn_pitch;
+	unsigned int scrn_start;
+	unsigned int scrn_xres;
+	unsigned int scrn_yres;
+	unsigned int scrn_bpp;
+	unsigned int scrn_pitch;
 };
 
 struct xgi_sarea_info {
-	U32 bus_addr;
-	U32 size;
+	unsigned long bus_addr;
+	unsigned int size;
 };
 
 struct xgi_info {
@@ -153,8 +153,8 @@ struct xgi_info {
 };
 
 struct xgi_ioctl_post_vbios {
-	U32 bus;
-	U32 slot;
+	unsigned int bus;
+	unsigned int slot;
 };
 
 enum xgi_mem_location {
@@ -176,9 +176,6 @@ enum PcieOwner {
 	PCIE_INVALID = 0x7fffffff
 };
 
-struct xgi_mem_req {
-};
-
 struct xgi_mem_alloc {
 	unsigned int location;
 	unsigned int size;
@@ -197,45 +194,41 @@ struct xgi_mem_alloc {
 };
 
 struct xgi_chip_info {
-	U32 device_id;
-	char device_name[32];
-	U32 vendor_id;
-	U32 curr_display_mode;	//Singe, DualView(Contained), MHS
-	U32 fb_size;
-	U32 sarea_bus_addr;
-	U32 sarea_size;
-};
+	u16 device_id;
+	u16 vendor_id;
 
-struct xgi_opengl_cmd {
-	U32 cmd;
+	char device_name[32];
+	unsigned int curr_display_mode;	//Singe, DualView(Contained), MHS
+	unsigned int fb_size;
+	unsigned long sarea_bus_addr;
+	unsigned int sarea_size;
 };
 
 struct xgi_mmio_info {
-	struct xgi_opengl_cmd cmd_head;
-	void *mmioBase;
-	int size;
+	unsigned long mmio_base;
+	unsigned int size;
 };
 
-typedef enum {
+enum xgi_batch_type {
 	BTYPE_2D = 0,
 	BTYPE_3D = 1,
 	BTYPE_FLIP = 2,
 	BTYPE_CTRL = 3,
 	BTYPE_NONE = 0x7fffffff
-} BATCH_TYPE;
+};
 
 struct xgi_cmd_info {
-	BATCH_TYPE _firstBeginType;
-	U32 _firstBeginAddr;
-	U32 _firstSize;
-	U32 _curDebugID;
-	U32 _lastBeginAddr;
-	U32 _beginCount;
+	unsigned int  _firstBeginType;
+	u32 _firstBeginAddr;
+	u32 _firstSize;
+	u32 _curDebugID;
+	u32 _lastBeginAddr;
+	unsigned int _beginCount;
 };
 
 struct xgi_state_info {
-	U32 _fromState;
-	U32 _toState;
+	unsigned int _fromState;
+	unsigned int _toState;
 };
 
 struct xgi_mem_pid {

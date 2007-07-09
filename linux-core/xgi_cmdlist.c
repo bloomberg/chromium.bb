@@ -37,7 +37,8 @@ struct xgi_cmdring_info s_cmdring;
 
 static void addFlush2D(struct xgi_info * info);
 static unsigned int getCurBatchBeginPort(struct xgi_cmd_info * pCmdInfo);
-static void triggerHWCommandList(struct xgi_info * info, U32 triggerCounter);
+static void triggerHWCommandList(struct xgi_info * info,
+				 unsigned int triggerCounter);
 static void xgi_cmdlist_reset(void);
 
 int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
@@ -276,7 +277,8 @@ void xgi_cmdlist_cleanup(struct xgi_info * info)
 	}
 }
 
-static void triggerHWCommandList(struct xgi_info * info, U32 triggerCounter)
+static void triggerHWCommandList(struct xgi_info * info,
+				 unsigned int triggerCounter)
 {
 	static unsigned int s_triggerID = 1;
 

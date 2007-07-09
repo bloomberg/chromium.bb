@@ -48,7 +48,7 @@ void xgi_get_device_info(struct xgi_info * info, struct xgi_chip_info * req)
 
 void xgi_get_mmio_info(struct xgi_info * info, struct xgi_mmio_info * req)
 {
-	req->mmioBase = (void *)info->mmio.base;
+	req->mmio_base = info->mmio.base;
 	req->size = info->mmio.size;
 }
 
