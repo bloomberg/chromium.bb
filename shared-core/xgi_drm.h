@@ -140,11 +140,11 @@ struct xgi_mmio_info {
 #define XGI_IOCTL_POST_VBIOS        _IO(XGI_IOCTL_MAGIC, XGI_ESC_POST_VBIOS)
 
 #define XGI_IOCTL_FB_INIT           _IO(XGI_IOCTL_MAGIC, XGI_ESC_FB_INIT)
-#define XGI_IOCTL_FB_ALLOC          _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_FB_ALLOC, struct xgi_mem_req)
+#define XGI_IOCTL_FB_ALLOC          _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_FB_ALLOC, struct xgi_mem_alloc)
 #define XGI_IOCTL_FB_FREE           _IOW(XGI_IOCTL_MAGIC, XGI_ESC_FB_FREE, unsigned long)
 
 #define XGI_IOCTL_PCIE_INIT         _IO(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_INIT)
-#define XGI_IOCTL_PCIE_ALLOC        _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_ALLOC, struct xgi_mem_req)
+#define XGI_IOCTL_PCIE_ALLOC        _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_ALLOC, struct xgi_mem_alloc)
 #define XGI_IOCTL_PCIE_FREE         _IOW(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_FREE, unsigned long)
 
 #define XGI_IOCTL_PUT_SCREEN_INFO   _IOW(XGI_IOCTL_MAGIC, XGI_ESC_PUT_SCREEN_INFO, struct xgi_screen_info)
