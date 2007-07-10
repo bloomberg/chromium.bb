@@ -114,7 +114,7 @@ struct xgi_info {
 	struct xgi_sarea_info sarea_info;
 
 	/* look up table parameters */
-	U32 *lut_base;
+	u32 *lut_base;
 	unsigned int lutPageSize;
 	unsigned int lutPageOrder;
 	bool isLUTInLFB;

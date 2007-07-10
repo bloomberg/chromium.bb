@@ -26,7 +26,6 @@
  * DEALINGS IN THE SOFTWARE.												
  ***************************************************************************/
 
-#include "xgi_types.h"
 #include "xgi_linux.h"
 #include "xgi_drv.h"
 #include "xgi_regs.h"

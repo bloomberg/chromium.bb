@@ -26,7 +26,6 @@
  * DEALINGS IN THE SOFTWARE.												
  ***************************************************************************/
 
-#include "xgi_types.h"
 #include "xgi_linux.h"
 #include "xgi_drv.h"
 #include "xgi_regs.h"
@@ -420,7 +419,7 @@ static struct xgi_pcie_block *xgi_pcie_mem_alloc(struct xgi_info * info,
 	struct page *page;
 	unsigned long page_order = 0, count = 0, index = 0;
 	unsigned long page_addr = 0;
-	unsigned long *lut_addr = NULL;
+	u32 *lut_addr = NULL;
 	unsigned long lut_id = 0;
 	unsigned long size = (originalSize + PAGE_SIZE - 1) & PAGE_MASK;
 	int i, j, page_count = 0;

@@ -26,7 +26,6 @@
  * DEALINGS IN THE SOFTWARE.												
  ***************************************************************************/
 
-#include "xgi_types.h"
 #include "xgi_linux.h"
 #include "xgi_drv.h"
 #include "xgi_regs.h"
@@ -183,7 +182,7 @@ void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
 		/* Jong 06/13/2006; remove marked for system hang test */
 		/* xgi_waitfor_pci_idle(info); */
 	} else {
-		U32 *lastBatchVirtAddr;
+		u32 *lastBatchVirtAddr;
 
 		XGI_INFO
 		    ("Jong-xgi_submit_cmdlist-s_cmdring._lastBatchStartAddr != 0 \n");
@@ -195,9 +194,9 @@ void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
 			addFlush2D(info);
 		}
 
-		lastBatchVirtAddr =
-		    (U32 *) xgi_find_pcie_virt(info,
-					       s_cmdring._lastBatchStartAddr);
+		lastBatchVirtAddr = 
+			xgi_find_pcie_virt(info,
+					   s_cmdring._lastBatchStartAddr);
 
 		/* lastBatchVirtAddr should *never* be NULL.  However, there
 		 * are currently some bugs that cause this to happen.  The
@@ -310,10 +309,9 @@ static unsigned int getCurBatchBeginPort(struct xgi_cmd_info * pCmdInfo)
 
 static void addFlush2D(struct xgi_info * info)
 {
-	U32 *flushBatchVirtAddr;
-	U32 flushBatchHWAddr;
-
-	U32 *lastBatchVirtAddr;
+	u32 *flushBatchVirtAddr;
+	u32 flushBatchHWAddr;
+	u32 *lastBatchVirtAddr;
 
 	/* check buf is large enough to contain a new flush batch */
 	if ((s_cmdring._cmdRingOffset + 0x20) >= s_cmdring._cmdRingSize) {
@@ -321,7 +319,7 @@ static void addFlush2D(struct xgi_info * info)
 	}
 
 	flushBatchHWAddr = s_cmdring._cmdRingBuffer + s_cmdring._cmdRingOffset;
-	flushBatchVirtAddr = (U32 *) xgi_find_pcie_virt(info, flushBatchHWAddr);
+	flushBatchVirtAddr = xgi_find_pcie_virt(info, flushBatchHWAddr);
 
 	/* not using memcpy for I assume the address is discrete */
 	*(flushBatchVirtAddr + 0) = 0x10000000;
@@ -335,7 +333,7 @@ static void addFlush2D(struct xgi_info * info)
 
 	// ASSERT(s_cmdring._lastBatchStartAddr != NULL);
 	lastBatchVirtAddr =
-	    (U32 *) xgi_find_pcie_virt(info, s_cmdring._lastBatchStartAddr);
+		xgi_find_pcie_virt(info, s_cmdring._lastBatchStartAddr);
 
 	lastBatchVirtAddr[1] = BEGIN_LINK_ENABLE_MASK + 0x08;
 	lastBatchVirtAddr[2] = flushBatchHWAddr >> 4;

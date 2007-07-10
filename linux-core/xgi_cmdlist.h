@@ -58,11 +58,11 @@ typedef enum {
 } CMD_SIZE;
 
 struct xgi_cmdring_info {
-	U32 _cmdRingSize;
-	U32 _cmdRingBuffer;
-	U32 _cmdRingBusAddr;
-	U32 _lastBatchStartAddr;
-	U32 _cmdRingOffset;
+	unsigned int _cmdRingSize;
+	u32 _cmdRingBuffer;
+	unsigned long _cmdRingBusAddr;
+	u32 _lastBatchStartAddr;
+	u32 _cmdRingOffset;
 };
 
 extern int xgi_cmdlist_initialize(struct xgi_info * info, size_t size);
