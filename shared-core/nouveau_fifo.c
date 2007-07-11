@@ -474,6 +474,9 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_fifo_alloc_t __user *) data,
 				 sizeof(init));
 
+	if (init.fb_ctxdma_handle == ~0 || init.tt_ctxdma_handle == ~0)
+		return DRM_ERR(EINVAL);
+
 	res = nouveau_fifo_alloc(dev, &init.channel, filp,
 				 init.fb_ctxdma_handle,
 				 init.tt_ctxdma_handle);

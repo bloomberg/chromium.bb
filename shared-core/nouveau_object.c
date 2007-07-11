@@ -470,6 +470,26 @@ nouveau_gpuobj_new_ref(drm_device_t *dev, int oc, int rc, uint32_t handle,
 	return 0;
 }
 
+static int
+nouveau_gpuobj_ref_find(drm_device_t *dev, int channel, uint32_t handle,
+			nouveau_gpuobj_ref_t **ref_ret)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	nouveau_gpuobj_ref_t *ref = chan->ramht_refs;
+
+	while (ref) {
+		if (ref->handle == handle) {
+			if (ref_ret)
+				*ref_ret = ref;
+			return 0;
+		}
+		ref = ref->next;
+	}
+
+	return DRM_ERR(EINVAL);
+}
+
 int
 nouveau_gpuobj_new_fake(drm_device_t *dev, uint32_t offset, uint32_t size,
 			uint32_t flags, nouveau_gpuobj_t **pgpuobj,
@@ -927,7 +947,11 @@ int nouveau_ioctl_grobj_alloc(DRM_IOCTL_ARGS)
 	}
 
 	//FIXME: check args, only allow trusted objects to be created
-	//FIXME: check for pre-existing handle
+	
+	if (init.handle == ~0)
+		return DRM_ERR(EINVAL);
+	if (nouveau_gpuobj_ref_find(dev, init.channel, init.handle, NULL) == 0)
+		return DRM_ERR(EEXIST);
 
 	if ((ret = nouveau_gpuobj_gr_new(dev, init.channel, init.class, &gr))) {
 		DRM_ERROR("Error creating gr object: %d (%d/0x%08x)\n",
