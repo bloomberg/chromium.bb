@@ -29,26 +29,34 @@
 
 #define NV20_GRCTX_SIZE (3529*4)
 
-int nv20_graph_context_create(drm_device_t *dev, int channel) {
+int nv20_graph_create_context(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	unsigned int ctx_size = NV20_GRCTX_SIZE;
-	int i;
+	int ret;
 
-	/* Alloc and clear RAMIN to store the context */
-	chan->ramin_grctx = nouveau_instmem_alloc(dev, ctx_size, 4);
-	if (!chan->ramin_grctx)
-		return DRM_ERR(ENOMEM);
-	for (i=0; i<ctx_size; i+=4)
-		INSTANCE_WR(chan->ramin_grctx, i/4, 0x00000000);
+	if ((ret = nouveau_gpuobj_new_ref(dev, channel, -1, 0, ctx_size, 16,
+					  NVOBJ_FLAG_ZERO_ALLOC,
+					  &chan->ramin_grctx)))
+		return ret;
 
 	/* Initialise default context values */
-	INSTANCE_WR(chan->ramin_grctx, 10, channel << 24); /* CTX_USER */
+	INSTANCE_WR(chan->ramin_grctx->gpuobj, 10, channel<<24); /* CTX_USER */
 
-	INSTANCE_WR(dev_priv->ctx_table, channel, nouveau_chip_instance_get(dev, chan->ramin_grctx));
-
+	INSTANCE_WR(dev_priv->ctx_table->gpuobj, channel,
+		    chan->ramin_grctx->instance >> 4);
 	return 0;
+}
+
+void nv20_graph_destroy_context(drm_device_t *dev, int channel) {
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+
+	if (chan->ramin_grctx)
+		nouveau_gpuobj_ref_del(dev, &chan->ramin_grctx);
+
+	INSTANCE_WR(dev_priv->ctx_table->gpuobj, channel, 0);
 }
 
 static void nv20_graph_rdi(drm_device_t *dev) {
@@ -65,40 +73,44 @@ static void nv20_graph_rdi(drm_device_t *dev) {
 
 /* Save current context (from PGRAPH) into the channel's context
  */
-static void nv20_graph_context_save_current(drm_device_t *dev, int channel) {
+int nv20_graph_save_context(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t instance;
 
-	instance = INSTANCE_RD(dev_priv->ctx_table, channel);
+	instance = INSTANCE_RD(dev_priv->ctx_table->gpuobj, channel);
 	if (!instance) {
-		return;
+		return DRM_ERR(EINVAL);
 	}
-	if (instance != nouveau_chip_instance_get(dev, dev_priv->fifos[channel].ramin_grctx))
-		DRM_ERROR("nv20_graph_context_save_current : bad instance\n");
+	if (instance != (chan->ramin_grctx->instance >> 4))
+		DRM_ERROR("nv20_graph_save_context : bad instance\n");
 
 	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_SIZE, instance);
 	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_POINTER, 2 /* save ctx */);
+	return 0;
 }
 
 
 /* Restore the context for a specific channel into PGRAPH
  */
-static void nv20_graph_context_restore(drm_device_t *dev, int channel) {
+int nv20_graph_load_context(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t instance;
 
-	instance = INSTANCE_RD(dev_priv->ctx_table, channel);
+	instance = INSTANCE_RD(dev_priv->ctx_table->gpuobj, channel);
 	if (!instance) {
-		return;
+		return DRM_ERR(EINVAL);
 	}
-	if (instance != nouveau_chip_instance_get(dev, dev_priv->fifos[channel].ramin_grctx))
-		DRM_ERROR("nv20_graph_context_restore_current : bad instance\n");
+	if (instance != (chan->ramin_grctx->instance >> 4))
+		DRM_ERROR("nv20_graph_load_context_current : bad instance\n");
 
 	NV_WRITE(NV10_PGRAPH_CTX_USER, channel << 24);
 	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_SIZE, instance);
 	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_POINTER, 1 /* restore ctx */);
+	return 0;
 }
 
 void nouveau_nv20_context_switch(drm_device_t *dev)
@@ -113,13 +125,13 @@ void nouveau_nv20_context_switch(drm_device_t *dev)
 
 	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
 
-	nv20_graph_context_save_current(dev, channel_old);
+	nv20_graph_save_context(dev, channel_old);
 	
 	nouveau_wait_for_idle(dev);
 
 	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10000000);
 
-	nv20_graph_context_restore(dev, channel);
+	nv20_graph_load_context(dev, channel);
 
 	nouveau_wait_for_idle(dev);
 	
@@ -135,8 +147,8 @@ void nouveau_nv20_context_switch(drm_device_t *dev)
 int nv20_graph_init(drm_device_t *dev) {
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
-	int i;
 	uint32_t tmp, vramsz;
+	int ret, i;
 
 	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) &
 			~NV_PMC_ENABLE_PGRAPH);
@@ -145,14 +157,14 @@ int nv20_graph_init(drm_device_t *dev) {
 
 	/* Create Context Pointer Table */
 	dev_priv->ctx_table_size = 32 * 4;
-	dev_priv->ctx_table = nouveau_instmem_alloc(dev, dev_priv->ctx_table_size, 4);
-	if (!dev_priv->ctx_table)
-		return DRM_ERR(ENOMEM);
+	if ((ret = nouveau_gpuobj_new_ref(dev, -1, -1, 0,
+					  dev_priv->ctx_table_size, 16,
+					  NVOBJ_FLAG_ZERO_ALLOC,
+					  &dev_priv->ctx_table)))
+		return ret;
 
-	for (i=0; i< dev_priv->ctx_table_size; i+=4)
-		INSTANCE_WR(dev_priv->ctx_table, i/4, 0x00000000);
-
-	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_TABLE, nouveau_chip_instance_get(dev, dev_priv->ctx_table));
+	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_TABLE,
+		 dev_priv->ctx_table->instance >> 4);
 
 	//XXX need to be done and save/restore for each fifo ???
 	nv20_graph_rdi(dev);

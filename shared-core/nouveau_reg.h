@@ -39,6 +39,8 @@
 #define NV_DMA_TARGET_VIDMEM 0
 #define NV_DMA_TARGET_PCI    2
 #define NV_DMA_TARGET_AGP    3
+/*The following is not a real value used by nvidia cards, it's changed by nouveau_object_dma_create*/
+#define NV_DMA_TARGET_PCI_NONLINEAR   8
 
 /* Some object classes we care about in the drm */
 #define NV_CLASS_DMA_FROM_MEMORY                           0x00000002
@@ -47,11 +49,15 @@
 #define NV_CLASS_DMA_IN_MEMORY                             0x0000003D
 
 #define NV03_FIFO_SIZE                                     0x8000UL
-#define NV_MAX_FIFO_NUMBER                                 32
+#define NV_MAX_FIFO_NUMBER                                 128
 #define NV03_FIFO_REGS_SIZE                                0x10000
 #define NV03_FIFO_REGS(i)                                  (0x00800000+i*NV03_FIFO_REGS_SIZE)
 #    define NV03_FIFO_REGS_DMAPUT(i)                       (NV03_FIFO_REGS(i)+0x40)
 #    define NV03_FIFO_REGS_DMAGET(i)                       (NV03_FIFO_REGS(i)+0x44)
+#define NV50_FIFO_REGS_SIZE                                0x2000
+#define NV50_FIFO_REGS(i)                                  (0x00c00000+i*NV50_FIFO_REGS_SIZE)
+#    define NV50_FIFO_REGS_DMAPUT(i)                       (NV50_FIFO_REGS(i)+0x40)
+#    define NV50_FIFO_REGS_DMAGET(i)                       (NV50_FIFO_REGS(i)+0x44)
 
 #define NV03_PMC_BOOT_0                                    0x00000000
 #define NV03_PMC_INTR_0                                    0x00000100
@@ -135,6 +141,17 @@
 #define NV10_PGRAPH_CTX_CACHE4                             0x004001C0
 #define NV04_PGRAPH_CTX_CACHE4                             0x004001E0
 #define NV10_PGRAPH_CTX_CACHE5                             0x004001E0
+#define NV40_PGRAPH_CTXCTL_0304                            0x00400304
+#define NV40_PGRAPH_CTXCTL_0304_XFER_CTX                   0x00000001
+#define NV40_PGRAPH_CTXCTL_0310                            0x00400310
+#define NV40_PGRAPH_CTXCTL_0310_XFER_SAVE                  0x00000020
+#define NV40_PGRAPH_CTXCTL_0310_XFER_LOAD                  0x00000040
+#define NV40_PGRAPH_CTXCTL_030C                            0x0040030c
+#define NV40_PGRAPH_CTXCTL_UCODE_INDEX                     0x00400324
+#define NV40_PGRAPH_CTXCTL_UCODE_DATA                      0x00400328
+#define NV40_PGRAPH_CTXCTL_CUR                             0x0040032c
+#define NV40_PGRAPH_CTXCTL_CUR_LOADED                      0x01000000
+#define NV40_PGRAPH_CTXCTL_CUR_INST_MASK                   0x000FFFFF
 #define NV03_PGRAPH_ABS_X_RAM                              0x00400400
 #define NV03_PGRAPH_ABS_Y_RAM                              0x00400480
 #define NV03_PGRAPH_X_MISC                                 0x00400500
@@ -230,7 +247,11 @@
 #define NV10_PGRAPH_SCALED_FORMAT                          0x00400778
 #define NV10_PGRAPH_CHANNEL_CTX_TABLE                      0x00400780
 #define NV10_PGRAPH_CHANNEL_CTX_SIZE                       0x00400784
+#define NV20_PGRAPH_CHANNEL_CTX_POINTER                    0x00400784
 #define NV10_PGRAPH_CHANNEL_CTX_POINTER                    0x00400788
+#define NV20_PGRAPH_CHANNEL_CTX_XFER                       0x00400788
+#define NV20_PGRAPH_CHANNEL_CTX_XFER_LOAD                  0x00000001
+#define NV20_PGRAPH_CHANNEL_CTX_XFER_SAVE                  0x00000002
 #define NV04_PGRAPH_PATT_COLOR0                            0x00400800
 #define NV04_PGRAPH_PATT_COLOR1                            0x00400804
 #define NV04_PGRAPH_PATTERN                                0x00400808
@@ -317,6 +338,12 @@
 #define NV04_PFIFO_MODE                                    0x00002504
 #define NV04_PFIFO_DMA                                     0x00002508
 #define NV04_PFIFO_SIZE                                    0x0000250c
+#define NV50_PFIFO_CTX_TABLE(c)                        (0x2600+(c)*4)
+#define NV50_PFIFO_CTX_TABLE__SIZE                                128
+#define NV50_PFIFO_CTX_TABLE_CHANNEL_ENABLED                  (1<<31)
+#define NV50_PFIFO_CTX_TABLE_UNK30_BAD                        (1<<30)
+#define NV50_PFIFO_CTX_TABLE_INSTANCE_MASK_G80             0x0FFFFFFF
+#define NV50_PFIFO_CTX_TABLE_INSTANCE_MASK_G84             0x00FFFFFF
 #define NV03_PFIFO_CACHE0_PUSH0                            0x00003000
 #define NV03_PFIFO_CACHE0_PULL0                            0x00003040
 #define NV04_PFIFO_CACHE0_PULL0                            0x00003050
@@ -404,7 +431,7 @@
 #define NV10_PFIFO_CACHE1_SEMAPHORE                        0x0000326C
 #define NV03_PFIFO_CACHE1_GET                              0x00003270
 #define NV04_PFIFO_CACHE1_ENGINE                           0x00003280
-#define NV10_PFIFO_CACHE1_DMA_DCOUNT                       0x000032A0
+#define NV04_PFIFO_CACHE1_DMA_DCOUNT                       0x000032A0
 #define NV40_PFIFO_GRCTX_INSTANCE                          0x000032E0
 #define NV40_PFIFO_UNK32E4                                 0x000032E4
 #define NV04_PFIFO_CACHE1_METHOD(i)                (0x00003800+(i*8))
@@ -427,7 +454,10 @@
 #define NV04_RAMFC_DMA_PUT                                       0x00
 #define NV04_RAMFC_DMA_GET                                       0x04
 #define NV04_RAMFC_DMA_INSTANCE                                  0x08
+#define NV04_RAMFC_DMA_STATE                                     0x0C
 #define NV04_RAMFC_DMA_FETCH                                     0x10
+#define NV04_RAMFC_ENGINE                                        0x14
+#define NV04_RAMFC_PULL1_ENGINE                                  0x18
 
 #define NV10_RAMFC_DMA_PUT                                       0x00
 #define NV10_RAMFC_DMA_GET                                       0x04
@@ -462,6 +492,6 @@
 #define NV40_RAMFC_UNK_40                                        0x40
 #define NV40_RAMFC_UNK_44                                        0x44
 #define NV40_RAMFC_UNK_48                                        0x48
-#define NV40_RAMFC_2088                                          0x4C
-#define NV40_RAMFC_3300                                          0x50
+#define NV40_RAMFC_UNK_4C                                        0x4C
+#define NV40_RAMFC_UNK_50                                        0x50
 

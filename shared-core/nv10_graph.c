@@ -547,7 +547,7 @@ static int nv10_graph_ctx_regs_find_offset(drm_device_t *dev, int reg)
 static void restore_ctx_regs(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *fifo = &dev_priv->fifos[channel];
+	struct nouveau_fifo *fifo = dev_priv->fifos[channel];
 	int i, j;
 	for (i = 0; i < sizeof(nv10_graph_ctx_regs)/sizeof(nv10_graph_ctx_regs[0]); i++)
 		NV_WRITE(nv10_graph_ctx_regs[i], fifo->pgraph_ctx[i]);
@@ -577,10 +577,10 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 
 	// save PGRAPH context
 	for (i = 0; i < sizeof(nv10_graph_ctx_regs)/sizeof(nv10_graph_ctx_regs[0]); i++)
-		dev_priv->fifos[channel_old].pgraph_ctx[i] = NV_READ(nv10_graph_ctx_regs[i]);
+		dev_priv->fifos[channel_old]->pgraph_ctx[i] = NV_READ(nv10_graph_ctx_regs[i]);
 	if (dev_priv->chipset>=0x17) {
 		for (j = 0; j < sizeof(nv17_graph_ctx_regs)/sizeof(nv17_graph_ctx_regs[0]); i++,j++)
-			dev_priv->fifos[channel_old].pgraph_ctx[i] = NV_READ(nv17_graph_ctx_regs[j]);
+			dev_priv->fifos[channel_old]->pgraph_ctx[i] = NV_READ(nv17_graph_ctx_regs[j]);
 	}
 	
 	nouveau_wait_for_idle(dev);
@@ -611,9 +611,9 @@ void nouveau_nv10_context_switch(drm_device_t *dev)
 	if (offset > 0) \
 		fifo->pgraph_ctx[offset] = val; \
 	} while (0)
-int nv10_graph_context_create(drm_device_t *dev, int channel) {
+int nv10_graph_create_context(drm_device_t *dev, int channel) {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *fifo = &dev_priv->fifos[channel];
+	struct nouveau_fifo *fifo = dev_priv->fifos[channel];
 	uint32_t tmp, vramsz;
 
 	DRM_DEBUG("nv10_graph_context_create %d\n", channel);
@@ -640,6 +640,10 @@ int nv10_graph_context_create(drm_device_t *dev, int channel) {
 	NV_WRITE_CTX(NV04_PGRAPH_PATTERN_SHAPE, 0x00000000);
 	NV_WRITE_CTX(NV04_PGRAPH_BETA_AND     , 0xFFFFFFFF);
 
+	NV_WRITE_CTX(NV03_PGRAPH_ABS_UCLIP_XMIN, 0);
+	NV_WRITE_CTX(NV03_PGRAPH_ABS_UCLIP_YMIN, 0);
+	NV_WRITE_CTX(NV03_PGRAPH_ABS_UCLIP_XMAX, 0x7fff);
+	NV_WRITE_CTX(NV03_PGRAPH_ABS_UCLIP_YMAX, 0x7fff);
 
 	NV_WRITE_CTX(NV03_PGRAPH_XY_LOGIC_MISC0, 0x0001ffff);
 	/* is it really needed ??? */
@@ -659,6 +663,21 @@ int nv10_graph_context_create(drm_device_t *dev, int channel) {
 	return 0;
 }
 
+void nv10_graph_destroy_context(drm_device_t *dev, int channel)
+{
+}
+
+int nv10_graph_load_context(drm_device_t *dev, int channel)
+{
+	DRM_ERROR("stub!\n");
+	return 0;
+}
+
+int nv10_graph_save_context(drm_device_t *dev, int channel)
+{
+	DRM_ERROR("stub!\n");
+	return 0;
+}
 
 int nv10_graph_init(drm_device_t *dev) {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;

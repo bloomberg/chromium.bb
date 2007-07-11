@@ -35,8 +35,12 @@
 			dev->pci_device == 0x2982 || \
 			dev->pci_device == 0x2992 || \
 			dev->pci_device == 0x29A2 || \
-			dev->pci_device == 0x2A02)
+			dev->pci_device == 0x2A02 || \
+			dev->pci_device == 0x2A12)
 
+#define IS_G33(dev)    (dev->pci_device == 0x29C2 || \
+		   	dev->pci_device == 0x29B2 || \
+			dev->pci_device == 0x29D2) 
 
 /* Really want an OS-independent resettable timer.  Would like to have
  * this loop run for (eg) 3 sec, but have the timer reset every time
@@ -107,7 +111,11 @@ static int i915_dma_cleanup(drm_device_t * dev)
 			/* Need to rewrite hardware status page */
 			I915_WRITE(0x02080, 0x1ffff000);
 		}
-
+		if (dev_priv->status_gfx_addr) {
+			dev_priv->status_gfx_addr = 0;
+			drm_core_ioremapfree(&dev_priv->hws_map, dev);
+			I915_WRITE(0x02080, 0x1ffff000);
+		}
 		drm_free(dev->dev_private, sizeof(drm_i915_private_t),
 			 DRM_MEM_DRIVER);
 
@@ -177,23 +185,28 @@ static int i915_initialize(drm_device_t * dev,
 	 */
 	dev_priv->allow_batchbuffer = 1;
 
+	/* Enable vblank on pipe A for older X servers
+	 */
+    	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
+
 	/* Program Hardware Status Page */
-	dev_priv->status_page_dmah = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 
-	    0xffffffff);
+	if (!IS_G33(dev)) {
+		dev_priv->status_page_dmah = 
+			drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
 
-	if (!dev_priv->status_page_dmah) {
-		dev->dev_private = (void *)dev_priv;
-		i915_dma_cleanup(dev);
-		DRM_ERROR("Can not allocate hardware status page\n");
-		return DRM_ERR(ENOMEM);
+		if (!dev_priv->status_page_dmah) {
+			dev->dev_private = (void *)dev_priv;
+			i915_dma_cleanup(dev);
+			DRM_ERROR("Can not allocate hardware status page\n");
+			return DRM_ERR(ENOMEM);
+		}
+		dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
+		dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
+
+		memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+
+		I915_WRITE(0x02080, dev_priv->dma_status_page);
 	}
-	dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
-	dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
-	
-	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
-	DRM_DEBUG("hw status page @ %p\n", dev_priv->hw_status_page);
-
-	I915_WRITE(0x02080, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
 	dev->dev_private = (void *)dev_priv;
 	return 0;
@@ -228,7 +241,10 @@ static int i915_dma_resume(drm_device_t * dev)
 	}
 	DRM_DEBUG("hw status page @ %p\n", dev_priv->hw_status_page);
 
-	I915_WRITE(0x02080, dev_priv->dma_status_page);
+	if (dev_priv->status_gfx_addr != 0)
+		I915_WRITE(0x02080, dev_priv->status_gfx_addr);
+	else
+		I915_WRITE(0x02080, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
 
 	return 0;
@@ -429,10 +445,12 @@ void i915_emit_breadcrumb(drm_device_t *dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
 
-	dev_priv->sarea_priv->last_enqueue = ++dev_priv->counter;
+	if (++dev_priv->counter > BREADCRUMB_MASK) {
+		 dev_priv->counter = 1;
+		 DRM_DEBUG("Breadcrumb counter wrapped around\n");
+	}
 
-	if (dev_priv->counter > 0x7FFFFFFFUL)
-		 dev_priv->sarea_priv->last_enqueue = dev_priv->counter = 1;
+	dev_priv->sarea_priv->last_enqueue = dev_priv->counter;
 
 	BEGIN_LP_RING(4);
 	OUT_RING(CMD_STORE_DWORD_IDX);
@@ -467,7 +485,9 @@ int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush)
 static int i915_dispatch_cmdbuffer(drm_device_t * dev,
 				   drm_i915_cmdbuffer_t * cmd)
 {
+#ifdef I915_HAVE_FENCE
 	drm_i915_private_t *dev_priv = dev->dev_private;
+#endif
 	int nbox = cmd->num_cliprects;
 	int i = 0, count, ret;
 
@@ -852,7 +872,7 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 
 	e = &mmio_table[mmio.reg];
-	base = dev_priv->mmio_map->handle + e->offset;
+	base = (u8 *) dev_priv->mmio_map->handle + e->offset;
 
         switch (mmio.read_write) {
 		case I915_MMIO_READ:
@@ -875,6 +895,47 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 			memcpy_toio(base, buf, e->size);
 			break;
 	}
+	return 0;
+}
+
+static int i915_set_status_page(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	drm_i915_hws_addr_t hws;
+
+	if (!dev_priv) {
+		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		return DRM_ERR(EINVAL);
+	}
+	DRM_COPY_FROM_USER_IOCTL(hws, (drm_i915_hws_addr_t __user *) data,
+			sizeof(hws));
+	printk(KERN_DEBUG "set status page addr 0x%08x\n", (u32)hws.addr);
+
+	dev_priv->status_gfx_addr = hws.addr & (0x1ffff<<12);
+
+	dev_priv->hws_map.offset = dev->agp->agp_info.aper_base + hws.addr;
+	dev_priv->hws_map.size = 4*1024;
+	dev_priv->hws_map.type = 0;
+	dev_priv->hws_map.flags = 0;
+	dev_priv->hws_map.mtrr = 0;
+
+	drm_core_ioremap(&dev_priv->hws_map, dev);
+	if (dev_priv->hws_map.handle == NULL) {
+		dev->dev_private = (void *)dev_priv;
+		i915_dma_cleanup(dev);
+		dev_priv->status_gfx_addr = 0;
+		DRM_ERROR("can not ioremap virtual address for"
+				" G33 hw status page\n");
+		return DRM_ERR(ENOMEM);
+	}
+	dev_priv->hw_status_page = dev_priv->hws_map.handle;
+
+	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+	I915_WRITE(0x02080, dev_priv->status_gfx_addr);
+	DRM_DEBUG("load hws 0x2080 with gfx mem 0x%x\n",
+			dev_priv->status_gfx_addr);
+	DRM_DEBUG("load hws at %p\n", dev_priv->hw_status_page);
 	return 0;
 }
 
@@ -926,6 +987,7 @@ drm_ioctl_desc_t i915_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_I915_GET_VBLANK_PIPE)] = { i915_vblank_pipe_get, DRM_AUTH },
 	[DRM_IOCTL_NR(DRM_I915_VBLANK_SWAP)] = {i915_vblank_swap, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_I915_MMIO)] = {i915_mmio, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_I915_HWS_ADDR)] = {i915_set_status_page, DRM_AUTH},
 };
 
 int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);

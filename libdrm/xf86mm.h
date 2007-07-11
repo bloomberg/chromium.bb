@@ -60,7 +60,7 @@ typedef struct _drmMMListHead
     (__item)->next = (__item);		       \
   } while (0)
 
-#define DRMLISTADD(__item, __list)			\
+#define DRMLISTADD(__item, __list)		\
   do {						\
     (__item)->prev = (__list);			\
     (__item)->next = (__list)->next;		\
@@ -93,16 +93,18 @@ typedef struct _drmMMListHead
 #define DRMLISTENTRY(__type, __item, __field)   \
     ((__type *)(((char *) (__item)) - offsetof(__type, __field)))
 
-typedef struct _drmFence{
-        unsigned handle;
-        int class;
-        unsigned type; 
-        unsigned flags;
-        unsigned signaled;
-        unsigned pad[4]; /* for future expansion */
+typedef struct _drmFence
+{
+    unsigned handle;
+    int class;
+    unsigned type; 
+    unsigned flags;
+    unsigned signaled;
+    unsigned pad[4]; /* for future expansion */
 } drmFence;
 
-typedef struct _drmBO{
+typedef struct _drmBO
+{
     drm_bo_type_t type;
     unsigned handle;
     drm_u64_t mapHandle;
@@ -124,8 +126,8 @@ typedef struct _drmBO{
     unsigned pad[8];     /* for future expansion */
 } drmBO;
 
-
-typedef struct _drmBONode {
+typedef struct _drmBONode
+{
     drmMMListHead head;
     drmBO *buf;
     struct drm_bo_op_arg bo_arg;
@@ -141,22 +143,24 @@ typedef struct _drmBOList {
     drmMMListHead free;
 } drmBOList;
 
-/* Fencing */
 
-extern int           drmFenceCreate(int fd, unsigned flags, int class,
-				    unsigned type, 
-				    drmFence *fence);
-extern int           drmFenceDestroy(int fd, const drmFence *fence);
-extern int           drmFenceReference(int fd, unsigned handle, drmFence *fence);
-extern int           drmFenceUnreference(int fd, const drmFence *fence);
-extern int           drmFenceFlush(int fd, drmFence *fence, unsigned flush_type);
-extern int           drmFenceSignaled(int fd, drmFence *fence, 
-				      unsigned fenceType, int *signaled);
-extern int           drmFenceWait(int fd, unsigned flags, drmFence *fence, 
-				  unsigned flush_type);
-extern int           drmFenceEmit(int fd, unsigned flags, drmFence *fence, 
-				  unsigned emit_type);
-extern int           drmFenceBuffers(int fd, unsigned flags, drmFence *fence);
+/*
+ * Fence functions.
+ */
+
+extern int drmFenceCreate(int fd, unsigned flags, int class,
+                          unsigned type, drmFence *fence);
+extern int drmFenceDestroy(int fd, const drmFence *fence);
+extern int drmFenceReference(int fd, unsigned handle, drmFence *fence);
+extern int drmFenceUnreference(int fd, const drmFence *fence);
+extern int drmFenceFlush(int fd, drmFence *fence, unsigned flush_type);
+extern int drmFenceSignaled(int fd, drmFence *fence, 
+                            unsigned fenceType, int *signaled);
+extern int drmFenceWait(int fd, unsigned flags, drmFence *fence, 
+                        unsigned flush_type);
+extern int drmFenceEmit(int fd, unsigned flags, drmFence *fence, 
+                        unsigned emit_type);
+extern int drmFenceBuffers(int fd, unsigned flags, drmFence *fence);
 
 
 /*

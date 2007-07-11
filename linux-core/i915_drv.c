@@ -41,9 +41,9 @@ static struct pci_device_id pciidlist[] = {
 #ifdef I915_HAVE_FENCE
 static drm_fence_driver_t i915_fence_driver = {
 	.num_classes = 1,
-	.wrap_diff = (1 << 30),
-	.flush_diff = (1 << 29),
-	.sequence_mask = 0xffffffffU,
+	.wrap_diff = (1U << (BREADCRUMB_BITS - 1)),
+	.flush_diff = (1U << (BREADCRUMB_BITS - 2)),
+	.sequence_mask = BREADCRUMB_MASK,
 	.lazy_capable = 1,
 	.emit = i915_fence_emit_sequence,
 	.poke_flush = i915_poke_flush,

@@ -77,8 +77,8 @@ out:
 	return p;
 }
 
-static struct mem_block *alloc_block(struct mem_block *heap, uint64_t size,
-		int align2, DRMFILE filp)
+struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap, uint64_t size,
+					  int align2, DRMFILE filp)
 {
 	struct mem_block *p;
 	uint64_t mask = (1 << align2) - 1;
@@ -106,7 +106,7 @@ static struct mem_block *find_block(struct mem_block *heap, uint64_t start)
 	return NULL;
 }
 
-static void free_block(struct mem_block *p)
+void nouveau_mem_free_block(struct mem_block *p)
 {
 	p->filp = NULL;
 
@@ -132,7 +132,8 @@ static void free_block(struct mem_block *p)
 
 /* Initialize.  How to check for an uninitialized heap?
  */
-static int init_heap(struct mem_block **heap, uint64_t start, uint64_t size)
+int nouveau_mem_init_heap(struct mem_block **heap, uint64_t start,
+			  uint64_t size)
 {
 	struct mem_block *blocks = drm_alloc(sizeof(*blocks), DRM_MEM_BUFS);
 
@@ -188,7 +189,7 @@ void nouveau_mem_release(DRMFILE filp, struct mem_block *heap)
 /* 
  * Cleanup everything
  */
-static void nouveau_mem_takedown(struct mem_block **heap)
+void nouveau_mem_takedown(struct mem_block **heap)
 {
 	struct mem_block *p;
 
@@ -210,6 +211,10 @@ void nouveau_mem_close(struct drm_device *dev)
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	nouveau_mem_takedown(&dev_priv->agp_heap);
 	nouveau_mem_takedown(&dev_priv->fb_heap);
+	if ( dev_priv->pci_heap ) 
+		{
+		nouveau_mem_takedown(&dev_priv->pci_heap);
+		}
 }
 
 /* returns the amount of FB ram in bytes */
@@ -248,6 +253,7 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 			}
 			break;
 		case NV_10:
+		case NV_17:
 		case NV_20:
 		case NV_30:
 		case NV_40:
@@ -281,8 +287,10 @@ int nouveau_mem_init(struct drm_device *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	uint32_t fb_size;
+	drm_scatter_gather_t sgreq;
 	dev_priv->agp_phys=0;
 	dev_priv->fb_phys=0;
+	sgreq . size = 4 << 20; //4MB of PCI scatter-gather zone
 
 	/* init AGP */
 	dev_priv->agp_heap=NULL;
@@ -330,14 +338,34 @@ int nouveau_mem_init(struct drm_device *dev)
 			goto no_agp;
 		}
 
-		if (init_heap(&dev_priv->agp_heap, info.aperture_base, info.aperture_size))
+		if (nouveau_mem_init_heap(&dev_priv->agp_heap,
+					  info.aperture_base,
+					  info.aperture_size))
 			goto no_agp;
 
 		dev_priv->agp_phys		= info.aperture_base;
 		dev_priv->agp_available_size	= info.aperture_size;
 	}
-no_agp:
 
+goto have_agp;
+no_agp:
+	dev_priv->pci_heap = NULL;
+	DRM_DEBUG("Allocating sg memory for PCI DMA\n");
+	if ( drm_sg_alloc(dev, &sgreq) )
+		{
+		DRM_ERROR("Unable to allocate 4MB of scatter-gather pages for PCI DMA!");
+		goto no_pci;
+		}
+
+	DRM_DEBUG("Got %d KiB\n", (dev->sg->pages * PAGE_SIZE) >> 10);
+	if ( nouveau_mem_init_heap(&dev_priv->pci_heap, dev->sg->virtual, dev->sg->pages * PAGE_SIZE))
+		{
+		DRM_ERROR("Unable to initialize pci_heap!");	
+		goto no_pci;
+		}
+
+no_pci:
+have_agp:
 	/* setup a mtrr over the FB */
 	dev_priv->fb_mtrr = drm_mtrr_add(drm_get_resource_start(dev, 1),
 					 nouveau_mem_fb_amount(dev),
@@ -349,19 +377,26 @@ no_agp:
 	/* On at least NV40, RAMIN is actually at the end of vram.
 	 * We don't want to allocate this... */
 	if (dev_priv->card_type >= NV_40)
-		fb_size -= dev_priv->ramin_size;
+		fb_size -= dev_priv->ramin_rsvd_vram;
 	dev_priv->fb_available_size = fb_size;
 	DRM_DEBUG("Available VRAM: %dKiB\n", fb_size>>10);
 
 	if (fb_size>256*1024*1024) {
 		/* On cards with > 256Mb, you can't map everything. 
 		 * So we create a second FB heap for that type of memory */
-		if (init_heap(&dev_priv->fb_heap, drm_get_resource_start(dev,1), 256*1024*1024))
+		if (nouveau_mem_init_heap(&dev_priv->fb_heap,
+					  drm_get_resource_start(dev,1),
+					  256*1024*1024))
 			return DRM_ERR(ENOMEM);
-		if (init_heap(&dev_priv->fb_nomap_heap, drm_get_resource_start(dev,1)+256*1024*1024, fb_size-256*1024*1024))
+		if (nouveau_mem_init_heap(&dev_priv->fb_nomap_heap,
+					  drm_get_resource_start(dev,1) + 
+					  256*1024*1024,
+					  fb_size-256*1024*1024))
 			return DRM_ERR(ENOMEM);
 	} else {
-		if (init_heap(&dev_priv->fb_heap, drm_get_resource_start(dev,1), fb_size))
+		if (nouveau_mem_init_heap(&dev_priv->fb_heap,
+					  drm_get_resource_start(dev,1),
+					  fb_size))
 			return DRM_ERR(ENOMEM);
 		dev_priv->fb_nomap_heap=NULL;
 	}
@@ -394,25 +429,40 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint6
 	if (size & (~PAGE_MASK))
 		size = ((size/PAGE_SIZE) + 1) * PAGE_SIZE;
 
-	if (flags&NOUVEAU_MEM_AGP) {
-		type=NOUVEAU_MEM_AGP;
-		block = alloc_block(dev_priv->agp_heap, size, alignment, filp);
-		if (block) goto alloc_ok;
-	}
-	if (flags&(NOUVEAU_MEM_FB|NOUVEAU_MEM_FB_ACCEPTABLE)) {
-		type=NOUVEAU_MEM_FB;
-		if (!(flags&NOUVEAU_MEM_MAPPED)) {
-			block = alloc_block(dev_priv->fb_nomap_heap, size, alignment, filp);
-			if (block) goto alloc_ok;
-		}
-		block = alloc_block(dev_priv->fb_heap, size, alignment, filp);
-		if (block) goto alloc_ok;	
-	}
-	if (flags&NOUVEAU_MEM_AGP_ACCEPTABLE) {
-		type=NOUVEAU_MEM_AGP;
-		block = alloc_block(dev_priv->agp_heap, size, alignment, filp);
-		if (block) goto alloc_ok;
-	}
+
+#define NOUVEAU_MEM_ALLOC_AGP {\
+		type=NOUVEAU_MEM_AGP;\
+                block = nouveau_mem_alloc_block(dev_priv->agp_heap, size,\
+                                                alignment, filp);\
+                if (block) goto alloc_ok;\
+	        }
+
+#define NOUVEAU_MEM_ALLOC_PCI {\
+                type = NOUVEAU_MEM_PCI;\
+                block = nouveau_mem_alloc_block(dev_priv->pci_heap, size, alignment, filp);\
+                if ( block ) goto alloc_ok;\
+	        }
+
+#define NOUVEAU_MEM_ALLOC_FB {\
+                type=NOUVEAU_MEM_FB;\
+                if (!(flags&NOUVEAU_MEM_MAPPED)) {\
+                        block = nouveau_mem_alloc_block(dev_priv->fb_nomap_heap,\
+                                                        size, alignment, filp); \
+                        if (block) goto alloc_ok;\
+                }\
+                block = nouveau_mem_alloc_block(dev_priv->fb_heap, size,\
+                                                alignment, filp);\
+                if (block) goto alloc_ok;\
+	        }
+
+
+	if (flags&NOUVEAU_MEM_FB) NOUVEAU_MEM_ALLOC_FB
+	if (flags&NOUVEAU_MEM_AGP) NOUVEAU_MEM_ALLOC_AGP
+	if (flags&NOUVEAU_MEM_PCI) NOUVEAU_MEM_ALLOC_PCI
+	if (flags&NOUVEAU_MEM_FB_ACCEPTABLE) NOUVEAU_MEM_ALLOC_FB
+	if (flags&NOUVEAU_MEM_AGP_ACCEPTABLE) NOUVEAU_MEM_ALLOC_AGP
+	if (flags&NOUVEAU_MEM_PCI_ACCEPTABLE) NOUVEAU_MEM_ALLOC_PCI
+
 
 	return NULL;
 
@@ -421,17 +471,21 @@ alloc_ok:
 
 	if (flags&NOUVEAU_MEM_MAPPED)
 	{
-		int ret;
+		int ret = 0;
 		block->flags|=NOUVEAU_MEM_MAPPED;
 
 		if (type == NOUVEAU_MEM_AGP)
 			ret = drm_addmap(dev, block->start - dev->agp->base, block->size, 
 					_DRM_AGP, 0, &block->map);
-		else
+		else if (type == NOUVEAU_MEM_FB)
 			ret = drm_addmap(dev, block->start, block->size,
 					_DRM_FRAME_BUFFER, 0, &block->map);
+		else if (type == NOUVEAU_MEM_PCI)
+			ret = drm_addmap(dev, block->start - (unsigned long int)dev->sg->virtual, block->size,
+					_DRM_SCATTER_GATHER, 0, &block->map);
+
 		if (ret) { 
-			free_block(block);
+			nouveau_mem_free_block(block);
 			return NULL;
 		}
 	}
@@ -445,176 +499,7 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 	DRM_INFO("freeing 0x%llx\n", block->start);
 	if (block->flags&NOUVEAU_MEM_MAPPED)
 		drm_rmmap(dev, block->map);
-	free_block(block);
-}
-
-static void
-nouveau_instmem_determine_amount(struct drm_device *dev)
-{
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	int i;
-
-	/* Figure out how much instance memory we need */
-	switch (dev_priv->card_type) {
-	case NV_40:
-		/* We'll want more instance memory than this on some NV4x cards.
-		 * There's a 16MB aperture to play with that maps onto the end
-		 * of vram.  For now, only reserve a small piece until we know
-		 * more about what each chipset requires.
-		 */
-		dev_priv->ramin_size = (1*1024* 1024);
-		break;
-	default:
-		/*XXX: what *are* the limits on <NV40 cards?, and does RAMIN
-		 *     exist in vram on those cards as well?
-		 */
-		dev_priv->ramin_size = (512*1024);
-		break;
-	}
-	DRM_DEBUG("RAMIN size: %dKiB\n", dev_priv->ramin_size>>10);
-
-	/* Clear all of it, except the BIOS image that's in the first 64KiB */
-	if (dev_priv->ramin) {
-		for (i=(64*1024); i<dev_priv->ramin_size; i+=4)
-			DRM_WRITE32(dev_priv->ramin, i, 0x00000000);
-	} else {
-		for (i=(64*1024); i<dev_priv->ramin_size; i+=4)
-			DRM_WRITE32(dev_priv->mmio, NV_RAMIN + i, 0x00000000);
-	}
-}
-
-static void
-nouveau_instmem_configure_fixed_tables(struct drm_device *dev)
-{
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-
-	/* FIFO hash table (RAMHT)
-	 *   use 4k hash table at RAMIN+0x10000
-	 *   TODO: extend the hash table
-	 */
-	dev_priv->ramht_offset = 0x10000;
-	dev_priv->ramht_bits   = 9;
-	dev_priv->ramht_size   = (1 << dev_priv->ramht_bits);
-	DRM_DEBUG("RAMHT offset=0x%x, size=%d\n", dev_priv->ramht_offset,
-						  dev_priv->ramht_size);
-
-	/* FIFO runout table (RAMRO) - 512k at 0x11200 */
-	dev_priv->ramro_offset = 0x11200;
-	dev_priv->ramro_size   = 512;
-	DRM_DEBUG("RAMRO offset=0x%x, size=%d\n", dev_priv->ramro_offset,
-						  dev_priv->ramro_size);
-
-	/* FIFO context table (RAMFC)
-	 *   NV40  : Not sure exactly how to position RAMFC on some cards,
-	 *           0x30002 seems to position it at RAMIN+0x20000 on these
-	 *           cards.  RAMFC is 4kb (32 fifos, 128byte entries).
-	 *   Others: Position RAMFC at RAMIN+0x11400
-	 */
-	switch(dev_priv->card_type)
-	{
-		case NV_50:
-		case NV_40:
-		case NV_44:
-			dev_priv->ramfc_offset = 0x20000;
-			dev_priv->ramfc_size   = nouveau_fifo_number(dev) *
-				nouveau_fifo_ctx_size(dev);
-			break;
-		case NV_30:
-		case NV_20:
-		case NV_10:
-		case NV_04:
-		case NV_03:
-		default:
-			dev_priv->ramfc_offset = 0x11400;
-			dev_priv->ramfc_size   = nouveau_fifo_number(dev) *
-				nouveau_fifo_ctx_size(dev);
-			break;
-	}
-	DRM_DEBUG("RAMFC offset=0x%x, size=%d\n", dev_priv->ramfc_offset,
-						  dev_priv->ramfc_size);
-}
-
-int nouveau_instmem_init(struct drm_device *dev)
-{
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint32_t offset;
-	int ret = 0;
-
-	nouveau_instmem_determine_amount(dev);
-	nouveau_instmem_configure_fixed_tables(dev);
-
-	/* Create a heap to manage RAMIN allocations, we don't allocate
-	 * the space that was reserved for RAMHT/FC/RO.
-	 */
-	offset = dev_priv->ramfc_offset + dev_priv->ramfc_size;
-	ret = init_heap(&dev_priv->ramin_heap,
-			 offset, dev_priv->ramin_size - offset);
-	if (ret) {
-		dev_priv->ramin_heap = NULL;
-		DRM_ERROR("Failed to init RAMIN heap\n");
-	}
-
-	return ret;
-}
-
-struct mem_block *nouveau_instmem_alloc(struct drm_device *dev,
-					uint32_t size, uint32_t align)
-{
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct mem_block *block;
-
-	if (!dev_priv->ramin_heap) {
-		DRM_ERROR("instmem alloc called without init\n");
-		return NULL;
-	}
-
-	block = alloc_block(dev_priv->ramin_heap, size, align, (DRMFILE)-2);
-	if (block) {
-		block->flags = NOUVEAU_MEM_INSTANCE;
-		DRM_DEBUG("instance(size=%d, align=%d) alloc'd at 0x%08x\n",
-				size, (1<<align), (uint32_t)block->start);
-	}
-
-	return block;
-}
-
-void nouveau_instmem_free(struct drm_device *dev, struct mem_block *block)
-{
-	if (dev && block) {
-		free_block(block);
-	}
-}
-
-uint32_t nouveau_instmem_r32(drm_nouveau_private_t *dev_priv,
-			     struct mem_block *mem, int index)
-{
-	uint32_t ofs = (uint32_t)mem->start + (index<<2);
-
-	if (dev_priv->ramin) {
-#if defined(__powerpc__)
-		return in_be32((void __iomem *)(dev_priv->ramin)->handle + ofs);
-#else
-		return DRM_READ32(dev_priv->ramin, ofs);
-#endif
-	} else {
-		return NV_READ(NV_RAMIN+ofs);
-	}
-}
-
-void nouveau_instmem_w32(drm_nouveau_private_t *dev_priv,
-			 struct mem_block *mem, int index, uint32_t val)
-{
-	uint32_t ofs = (uint32_t)mem->start + (index<<2);
-
-	if (dev_priv->ramin) {
-#if defined(__powerpc__)
-		out_be32((void __iomem *)(dev_priv->ramin)->handle + ofs, val);
-#else
-		DRM_WRITE32(dev_priv->ramin, ofs, val);
-#endif
-	} else {
-		NV_WRITE(NV_RAMIN+ofs, val);
-	}
+	nouveau_mem_free_block(block);
 }
 
 /*

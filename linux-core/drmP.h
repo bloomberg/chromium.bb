@@ -76,6 +76,7 @@
 #include <asm/pgalloc.h>
 #include "drm.h"
 #include <linux/slab.h>
+#include <linux/idr.h>
 
 #define __OS_HAS_AGP (defined(CONFIG_AGP) || (defined(CONFIG_AGP_MODULE) && defined(MODULE)))
 #define __OS_HAS_MTRR (defined(CONFIG_MTRR))
@@ -300,19 +301,14 @@ typedef struct drm_devstate {
 } drm_devstate_t;
 
 typedef struct drm_magic_entry {
-	drm_hash_item_t hash_item;
 	struct list_head head;
+	drm_hash_item_t hash_item;
 	struct drm_file *priv;
 } drm_magic_entry_t;
 
-typedef struct drm_magic_head {
-	struct drm_magic_entry *head;
-	struct drm_magic_entry *tail;
-} drm_magic_head_t;
-
 typedef struct drm_vma_entry {
+	struct list_head head;
 	struct vm_area_struct *vma;
-	struct drm_vma_entry *next;
 	pid_t pid;
 } drm_vma_entry_t;
 
@@ -411,8 +407,7 @@ typedef struct drm_file {
 	uid_t uid;
 	drm_magic_t magic;
 	unsigned long ioctl_count;
-	struct drm_file *next;
-	struct drm_file *prev;
+	struct list_head lhead;
 	struct drm_head *head;
 	int remove_auth_on_close;
 	unsigned long lock_count;
@@ -493,8 +488,7 @@ typedef struct drm_agp_mem {
 	DRM_AGP_MEM *memory;
 	unsigned long bound;		/**< address */
 	int pages;
-	struct drm_agp_mem *prev;	/**< previous entry */
-	struct drm_agp_mem *next;	/**< next entry */
+	struct list_head head;
 } drm_agp_mem_t;
 
 /**
@@ -504,7 +498,7 @@ typedef struct drm_agp_mem {
  */
 typedef struct drm_agp_head {
 	DRM_AGP_KERN agp_info;		/**< AGP device information */
-	drm_agp_mem_t *memory;		/**< memory entries */
+	struct list_head memory;
 	unsigned long mode;		/**< AGP mode */
 #if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,11)
 	struct agp_bridge_data  *bridge;
@@ -599,7 +593,6 @@ typedef struct ati_pcigart_info {
 	drm_local_map_t mapping;
 	int table_size;
 } drm_ati_pcigart_info;
-
 
 #include "drm_objects.h"
 
@@ -726,15 +719,14 @@ typedef struct drm_device {
 
 	/** \name Authentication */
 	/*@{ */
-	drm_file_t *file_first;		/**< file list head */
-	drm_file_t *file_last;		/**< file list tail */
+	struct list_head filelist;
 	drm_open_hash_t magiclist;
 	struct list_head magicfree;
 	/*@} */
 
 	/** \name Memory management */
 	/*@{ */
-	drm_map_list_t *maplist;	/**< Linked list of regions */
+	struct list_head maplist;	/**< Linked list of regions */
 	int map_count;			/**< Number of mappable regions */
 	drm_open_hash_t map_hash;       /**< User token hash table for maps */
 	drm_mm_t offset_manager;        /**< User token manager */
@@ -744,14 +736,13 @@ typedef struct drm_device {
 
 	/** \name Context handle management */
 	/*@{ */
-	drm_ctx_list_t *ctxlist;	/**< Linked list of context handles */
+	struct list_head ctxlist;	/**< Linked list of context handles */
 	int ctx_count;			/**< Number of context handles */
 	struct mutex ctxlist_mutex;	/**< For ctxlist */
 
-	drm_map_t **context_sareas;	/**< per-context SAREA's */
-	int max_context;
+	struct idr ctx_idr;
 
-	drm_vma_entry_t *vmalist;	/**< List of vmas (for debugging) */
+	struct list_head vmalist;	/**< List of vmas (for debugging) */
 	drm_lock_data_t lock;		/**< Information on hardware lock */
 	/*@} */
 
@@ -787,8 +778,8 @@ typedef struct drm_device {
 	atomic_t vbl_received;
 	atomic_t vbl_received2;		/**< number of secondary VBLANK interrupts */
 	spinlock_t vbl_lock;
-	drm_vbl_sig_t vbl_sigs;		/**< signal list to send on VBLANK */
-	drm_vbl_sig_t vbl_sigs2;	/**< signals to send on secondary VBLANK */
+	struct list_head vbl_sigs;		/**< signal list to send on VBLANK */
+	struct list_head vbl_sigs2;	/**< signals to send on secondary VBLANK */
 	unsigned int vbl_pending;
 	spinlock_t tasklet_lock;	/**< For drm_locked_tasklet */
 	void (*locked_tasklet_func)(struct drm_device *dev);
@@ -810,7 +801,6 @@ typedef struct drm_device {
 	struct pci_controller *hose;
 #endif
 	drm_sg_mem_t *sg;		/**< Scatter gather memory */
-	unsigned long *ctx_bitmap;	/**< context bitmap */
 	void *dev_private;		/**< device private data */
 	drm_sigdata_t sigdata;		/**< For block_all_signals */
 	sigset_t sigmask;
@@ -826,10 +816,7 @@ typedef struct drm_device {
 	/** \name Drawable information */
 	/*@{ */
 	spinlock_t drw_lock;
-	unsigned int drw_bitfield_length;
-	u32 *drw_bitfield;
-	unsigned int drw_info_length;
-	drm_drawable_info_t **drw_info;
+	struct idr drw_idr;
 	/*@} */
 } drm_device_t;
 
@@ -1007,6 +994,7 @@ extern int drm_update_drawable_info(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 extern drm_drawable_info_t *drm_get_drawable_info(drm_device_t *dev,
 						  drm_drawable_t id);
+extern void drm_drawable_free_all(drm_device_t *dev);
 
 				/* Authentication IOCTL support (drm_auth.h) */
 extern int drm_getmagic(struct inode *inode, struct file *filp,
@@ -1129,9 +1117,7 @@ extern struct drm_sysfs_class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
 
 extern drm_local_map_t *drm_getsarea(struct drm_device *dev);
-extern int drm_wait_on(drm_device_t *dev, wait_queue_head_t *queue,
-		       int timeout, int (*fn)(drm_device_t *dev, void *priv),
-		       void *priv);
+
 				/* Proc support (drm_proc.h) */
 extern int drm_proc_init(drm_device_t * dev,
 			 int minor,
@@ -1143,8 +1129,9 @@ extern int drm_proc_cleanup(int minor,
 
 				/* Scatter Gather Support (drm_scatter.h) */
 extern void drm_sg_cleanup(drm_sg_mem_t * entry);
-extern int drm_sg_alloc(struct inode *inode, struct file *filp,
+extern int drm_sg_alloc_ioctl(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
+extern int drm_sg_alloc(drm_device_t *dev, drm_scatter_gather_t * request);
 extern int drm_sg_free(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 
@@ -1194,7 +1181,7 @@ static __inline__ struct drm_map *drm_core_findmap(struct drm_device *dev,
 						   unsigned int token)
 {
 	drm_map_list_t *_entry;
-	list_for_each_entry(_entry, &dev->maplist->head, head)
+	list_for_each_entry(_entry, &dev->maplist, head)
 		if (_entry->user_token == token)
 			return _entry->map;
 	return NULL;

@@ -1190,9 +1190,15 @@ static void radeon_cp_init_ring_buffer(drm_device_t * dev,
 	/* Set ring buffer size */
 #ifdef __BIG_ENDIAN
 	RADEON_WRITE(RADEON_CP_RB_CNTL,
-		     dev_priv->ring.size_l2qw | RADEON_BUF_SWAP_32BIT);
+		     RADEON_BUF_SWAP_32BIT |
+		     (dev_priv->ring.fetch_size_l2ow << 18) |
+		     (dev_priv->ring.rptr_update_l2qw << 8) |
+		     dev_priv->ring.size_l2qw);
 #else
-	RADEON_WRITE(RADEON_CP_RB_CNTL, dev_priv->ring.size_l2qw);
+	RADEON_WRITE(RADEON_CP_RB_CNTL,
+		     (dev_priv->ring.fetch_size_l2ow << 18) |
+		     (dev_priv->ring.rptr_update_l2qw << 8) |
+		     dev_priv->ring.size_l2qw);
 #endif
 
 	/* Start with assuming that writeback doesn't work */
@@ -1391,8 +1397,7 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 	DRM_DEBUG("\n");
 
 	/* if we require new memory map but we don't have it fail */
-	if ((dev_priv->flags & RADEON_NEW_MEMMAP) && !dev_priv->new_memmap)
-	{
+	if ((dev_priv->flags & RADEON_NEW_MEMMAP) && !dev_priv->new_memmap) {
 		DRM_ERROR("Cannot initialise DRM on this card\nThis card requires a new X.org DDX for 3D\n");
 		radeon_do_cleanup_cp(dev);
 		return DRM_ERR(EINVAL);
@@ -1423,6 +1428,10 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 		radeon_do_cleanup_cp(dev);
 		return DRM_ERR(EINVAL);
 	}
+
+	/* Enable vblank on CRTC1 for older X servers
+	 */
+	dev_priv->vblank_crtc = DRM_RADEON_VBLANK_CRTC1;
 
 	switch(init->func) {
 	case RADEON_INIT_R200_CP:
@@ -1662,6 +1671,12 @@ static int radeon_do_init_cp(drm_device_t * dev, drm_radeon_init_t * init)
 			      + init->ring_size / sizeof(u32));
 	dev_priv->ring.size = init->ring_size;
 	dev_priv->ring.size_l2qw = drm_order(init->ring_size / 8);
+
+	dev_priv->ring.rptr_update = /* init->rptr_update */ 4096;
+	dev_priv->ring.rptr_update_l2qw = drm_order( /* init->rptr_update */ 4096 / 8);
+
+	dev_priv->ring.fetch_size = /* init->fetch_size */ 32;
+	dev_priv->ring.fetch_size_l2ow = drm_order( /* init->fetch_size */ 32 / 16);
 
 	dev_priv->ring.tail_mask = (dev_priv->ring.size / sizeof(u32)) - 1;
 

@@ -40,28 +40,20 @@ void drm_sg_cleanup(drm_sg_mem_t *entry)
 	free(entry, M_DRM);
 }
 
-int drm_sg_alloc(DRM_IOCTL_ARGS)
+int drm_sg_alloc(drm_device_t * dev, drm_scatter_gather_t * request)
 {
-	DRM_DEVICE;
-	drm_scatter_gather_t request;
 	drm_sg_mem_t *entry;
 	unsigned long pages;
-	int i;
-
-	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
 	if ( dev->sg )
 		return EINVAL;
-
-	DRM_COPY_FROM_USER_IOCTL(request, (drm_scatter_gather_t *)data,
-			     sizeof(request) );
 
 	entry = malloc(sizeof(*entry), M_DRM, M_WAITOK | M_ZERO);
 	if ( !entry )
 		return ENOMEM;
 
 	pages = round_page(request.size) / PAGE_SIZE;
-	DRM_DEBUG( "sg size=%ld pages=%ld\n", request.size, pages );
+	DRM_DEBUG( "sg size=%ld pages=%ld\n", request->size, pages );
 
 	entry->pages = pages;
 
@@ -86,11 +78,7 @@ int drm_sg_alloc(DRM_IOCTL_ARGS)
 	DRM_DEBUG( "sg alloc handle  = %08lx\n", entry->handle );
 
 	entry->virtual = (void *)entry->handle;
-	request.handle = entry->handle;
-
-	DRM_COPY_TO_USER_IOCTL( (drm_scatter_gather_t *)data,
-			   request,
-			   sizeof(request) );
+	request->handle = entry->handle;
 
 	DRM_LOCK();
 	if (dev->sg) {
@@ -100,6 +88,27 @@ int drm_sg_alloc(DRM_IOCTL_ARGS)
 	}
 	dev->sg = entry;
 	DRM_UNLOCK();
+
+}
+
+int drm_sg_alloc_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	drm_scatter_gather_t request;
+	int ret;
+
+	DRM_DEBUG( "%s\n", __FUNCTION__ );
+
+
+	DRM_COPY_FROM_USER_IOCTL(request, (drm_scatter_gather_t *)data,
+			     sizeof(request) );
+
+	ret = drm_sg_alloc(dev, &request);
+	if ( ret ) return ret;
+
+	DRM_COPY_TO_USER_IOCTL( (drm_scatter_gather_t *)data,
+			   request,
+			   sizeof(request) );
 
 	return 0;
 }

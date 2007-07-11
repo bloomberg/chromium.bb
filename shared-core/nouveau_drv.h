@@ -34,7 +34,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	6
+#define DRIVER_PATCHLEVEL	8
 
 #define NOUVEAU_FAMILY   0x0000FFFF
 #define NOUVEAU_FLAGS    0xFFFF0000
@@ -57,39 +57,71 @@ enum nouveau_flags {
 	NV_NFORCE2  =0x20000000
 };
 
-struct nouveau_object
-{
-	struct nouveau_object *next;
-	struct nouveau_object *prev;
+#define NVOBJ_ENGINE_SW		0
+#define NVOBJ_ENGINE_GR  	1
+#define NVOBJ_ENGINE_INT	0xdeadbeef
+
+#define NVOBJ_FLAG_ALLOW_NO_REFS	(1 << 0)
+#define NVOBJ_FLAG_ZERO_ALLOC		(1 << 1)
+#define NVOBJ_FLAG_ZERO_FREE		(1 << 2)
+#define NVOBJ_FLAG_FAKE			(1 << 3)
+typedef struct nouveau_gpuobj {
+	struct nouveau_gpuobj *next;
+	struct nouveau_gpuobj *prev;
+
+	int im_channel;
+	struct mem_block *im_pramin;
+	struct mem_block *im_backing;
+	int im_bound;
+
+	uint32_t flags;
+	int refcount;
+
+	uint32_t engine;
+	uint32_t class;
+} nouveau_gpuobj_t;
+
+typedef struct nouveau_gpuobj_ref {
+	struct nouveau_gpuobj_ref *next;
+
+	nouveau_gpuobj_t *gpuobj;
+	uint32_t instance;
+
 	int channel;
-
-	struct mem_block *instance;
-	uint32_t          ht_loc;
-
-	uint32_t handle;
-	int      class;
-	int      engine;
-};
+	int handle;
+} nouveau_gpuobj_ref_t;
 
 struct nouveau_fifo
 {
-	int used;
 	/* owner of this fifo */
 	DRMFILE filp;
 	/* mapping of the fifo itself */
 	drm_local_map_t *map;
 	/* mapping of the regs controling the fifo */
 	drm_local_map_t *regs;
-	/* dma object for the command buffer itself */
-	struct mem_block      *cmdbuf_mem;
-	struct nouveau_object *cmdbuf_obj;
-	/* PGRAPH context, for cards that keep it in RAMIN */
-	struct mem_block *ramin_grctx;
-	/* objects belonging to this fifo */
-	struct nouveau_object *objs;
 
-	/* XXX dynamic alloc ? */
-	uint32_t pgraph_ctx [340];
+	/* DMA push buffer */
+	nouveau_gpuobj_ref_t *pushbuf;
+	struct mem_block     *pushbuf_mem;
+	uint32_t              pushbuf_base;
+
+	/* Notifier memory */
+	struct mem_block *notifier_block;
+	struct mem_block *notifier_heap;
+	drm_local_map_t  *notifier_map;
+
+	/* PFIFO context */
+	nouveau_gpuobj_ref_t *ramfc;
+
+	/* PGRAPH context */
+	nouveau_gpuobj_ref_t *ramin_grctx;
+	uint32_t pgraph_ctx [340]; /* XXX dynamic alloc ? */
+
+	/* Objects */
+	nouveau_gpuobj_ref_t *ramin; /* Private instmem */
+	struct mem_block     *ramin_heap; /* Private PRAMIN heap */
+	nouveau_gpuobj_ref_t *ramht; /* Hash table */
+	nouveau_gpuobj_ref_t *ramht_refs; /* Objects referenced by RAMHT */
 };
 
 struct nouveau_config {
@@ -99,34 +131,65 @@ struct nouveau_config {
 	} cmdbuf;
 };
 
-struct nouveau_engine_func {
+typedef struct nouveau_engine_func {
 	struct {
-		int	(*Init)(drm_device_t *dev);
-		void	(*Takedown)(drm_device_t *dev);
-	} Mc;
+		void	*priv;
+
+		int	(*init)(drm_device_t *dev);
+		void	(*takedown)(drm_device_t *dev);
+
+		int	(*populate)(drm_device_t *, nouveau_gpuobj_t *,
+				    uint32_t *size);
+		void	(*clear)(drm_device_t *, nouveau_gpuobj_t *);
+		int	(*bind)(drm_device_t *, nouveau_gpuobj_t *);
+		int	(*unbind)(drm_device_t *, nouveau_gpuobj_t *);
+	} instmem;
 
 	struct {
-		int	(*Init)(drm_device_t *dev);
-		void	(*Takedown)(drm_device_t *dev);
-	} Timer;
+		int	(*init)(drm_device_t *dev);
+		void	(*takedown)(drm_device_t *dev);
+	} mc;
 
 	struct {
-		int	(*Init)(drm_device_t *dev);
-		void	(*Takedown)(drm_device_t *dev);
-	} Fb;
+		int	(*init)(drm_device_t *dev);
+		void	(*takedown)(drm_device_t *dev);
+	} timer;
 
 	struct {
-		int	(*Init)(drm_device_t *dev);
-		void	(*Takedown)(drm_device_t *dev);
-	} Graph;
+		int	(*init)(drm_device_t *dev);
+		void	(*takedown)(drm_device_t *dev);
+	} fb;
 
 	struct {
-		int	(*Init)(drm_device_t *dev);
-		void	(*Takedown)(drm_device_t *dev);
-	} Fifo;
-};
+		int	(*init)(drm_device_t *);
+		void	(*takedown)(drm_device_t *);
+
+		int	(*create_context)(drm_device_t *, int channel);
+		void	(*destroy_context)(drm_device_t *, int channel);
+		int	(*load_context)(drm_device_t *, int channel);
+		int	(*save_context)(drm_device_t *, int channel);
+	} graph;
+
+	struct {
+		void	*priv;
+
+		int	(*init)(drm_device_t *);
+		void	(*takedown)(drm_device_t *);
+
+		int	(*create_context)(drm_device_t *, int channel);
+		void	(*destroy_context)(drm_device_t *, int channel);
+		int	(*load_context)(drm_device_t *, int channel);
+		int	(*save_context)(drm_device_t *, int channel);
+	} fifo;
+} nouveau_engine_func_t;
 
 typedef struct drm_nouveau_private {
+	enum {
+		NOUVEAU_CARD_INIT_DOWN,
+		NOUVEAU_CARD_INIT_DONE,
+		NOUVEAU_CARD_INIT_FAILED
+	} init_state;
+
 	/* the card type, takes NV_* as values */
 	int card_type;
 	/* exact chipset, derived from NV_PMC_BOOT_0 */
@@ -138,12 +201,13 @@ typedef struct drm_nouveau_private {
 	drm_local_map_t *ramin; /* NV40 onwards */
 
 	int fifo_alloc_count;
-	struct nouveau_fifo fifos[NV_MAX_FIFO_NUMBER];
+	struct nouveau_fifo *fifos[NV_MAX_FIFO_NUMBER];
 
 	struct nouveau_engine_func Engine;
 
 	/* RAMIN configuration, RAMFC, RAMHT and RAMRO offsets */
-	uint32_t ramin_size;
+	nouveau_gpuobj_t *ramht;
+	uint32_t ramin_rsvd_vram;
 	uint32_t ramht_offset;
 	uint32_t ramht_size;
 	uint32_t ramht_bits;
@@ -165,12 +229,15 @@ typedef struct drm_nouveau_private {
 	struct mem_block *fb_heap;
 	struct mem_block *fb_nomap_heap;
 	struct mem_block *ramin_heap;
+	struct mem_block *pci_heap;
 
         /* context table pointed to be NV_PGRAPH_CHANNEL_CTX_TABLE (0x400780) */
         uint32_t ctx_table_size;
-        struct mem_block *ctx_table;
+	nouveau_gpuobj_ref_t *ctx_table;
 
 	struct nouveau_config config;
+
+	nouveau_gpuobj_t *gpuobj_all;
 }
 drm_nouveau_private_t;
 
@@ -186,6 +253,13 @@ extern void nouveau_wait_for_idle(struct drm_device *dev);
 extern int nouveau_ioctl_card_init(DRM_IOCTL_ARGS);
 
 /* nouveau_mem.c */
+extern int               nouveau_mem_init_heap(struct mem_block **,
+					       uint64_t start, uint64_t size);
+extern struct mem_block *nouveau_mem_alloc_block(struct mem_block *,
+						 uint64_t size, int align2,
+						 DRMFILE);
+extern void              nouveau_mem_takedown(struct mem_block **heap);
+extern void              nouveau_mem_free_block(struct mem_block *);
 extern uint64_t          nouveau_mem_fb_amount(struct drm_device *dev);
 extern void              nouveau_mem_release(DRMFILE filp, struct mem_block *heap);
 extern int               nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS);
@@ -194,16 +268,13 @@ extern struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment
 extern void              nouveau_mem_free(struct drm_device* dev, struct mem_block*);
 extern int               nouveau_mem_init(struct drm_device *dev);
 extern void              nouveau_mem_close(struct drm_device *dev);
-extern int               nouveau_instmem_init(struct drm_device *dev);
-extern struct mem_block* nouveau_instmem_alloc(struct drm_device *dev,
-					       uint32_t size, uint32_t align);
-extern void              nouveau_instmem_free(struct drm_device *dev,
-					      struct mem_block *block);
-extern uint32_t          nouveau_instmem_r32(drm_nouveau_private_t *dev_priv,
-					     struct mem_block *mem, int index);
-extern void              nouveau_instmem_w32(drm_nouveau_private_t *dev_priv,
-					     struct mem_block *mem, int index,
-					     uint32_t val);
+
+/* nouveau_notifier.c */
+extern int  nouveau_notifier_init_channel(drm_device_t *, int channel, DRMFILE);
+extern void nouveau_notifier_takedown_channel(drm_device_t *, int channel);
+extern int  nouveau_notifier_alloc(drm_device_t *, int channel,
+				   uint32_t handle, int cout, uint32_t *offset);
+extern int  nouveau_ioctl_notifier_alloc(DRM_IOCTL_ARGS);
 
 /* nouveau_fifo.c */
 extern int  nouveau_fifo_init(drm_device_t *dev);
@@ -214,17 +285,28 @@ extern int  nouveau_fifo_owner(drm_device_t *dev, DRMFILE filp, int channel);
 extern void nouveau_fifo_free(drm_device_t *dev, int channel);
 
 /* nouveau_object.c */
-extern void nouveau_object_cleanup(drm_device_t *dev, int channel);
-extern struct nouveau_object *
-nouveau_object_gr_create(drm_device_t *dev, int channel, int class);
-extern struct nouveau_object *
-nouveau_object_dma_create(drm_device_t *dev, int channel, int class,
-			  uint32_t offset, uint32_t size,
-			  int access, int target);
-extern void nouveau_object_free(drm_device_t *dev, struct nouveau_object *obj);
-extern int  nouveau_ioctl_object_init(DRM_IOCTL_ARGS);
-extern int  nouveau_ioctl_dma_object_init(DRM_IOCTL_ARGS);
-extern uint32_t nouveau_chip_instance_get(drm_device_t *dev, struct mem_block *mem);
+extern void nouveau_gpuobj_takedown(drm_device_t *dev);
+extern int nouveau_gpuobj_channel_init(drm_device_t *, int channel,
+				       uint32_t vram_h, uint32_t tt_h);
+extern void nouveau_gpuobj_channel_takedown(drm_device_t *, int channel);
+extern int nouveau_gpuobj_new(drm_device_t *, int channel, int size, int align,
+			      uint32_t flags, nouveau_gpuobj_t **);
+extern int nouveau_gpuobj_del(drm_device_t *, nouveau_gpuobj_t **);
+extern int nouveau_gpuobj_ref_add(drm_device_t *, int channel, uint32_t handle,
+				  nouveau_gpuobj_t *, nouveau_gpuobj_ref_t **);
+extern int nouveau_gpuobj_ref_del(drm_device_t *, nouveau_gpuobj_ref_t **);
+extern int nouveau_gpuobj_new_ref(drm_device_t *, int chan_obj, int chan_ref,
+				  uint32_t handle, int size, int align,
+				  uint32_t flags, nouveau_gpuobj_ref_t **);
+extern int nouveau_gpuobj_new_fake(drm_device_t *, uint32_t offset,
+				   uint32_t size, uint32_t flags,
+				   nouveau_gpuobj_t**, nouveau_gpuobj_ref_t**);
+extern int nouveau_gpuobj_dma_new(drm_device_t *, int channel, int class,
+				  uint64_t offset, uint64_t size,
+				  int access, int target, nouveau_gpuobj_t **);
+extern int nouveau_gpuobj_gr_new(drm_device_t *, int channel, int class,
+				 nouveau_gpuobj_t **);
+extern int nouveau_ioctl_grobj_alloc(DRM_IOCTL_ARGS);
 
 /* nouveau_irq.c */
 extern irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS);
@@ -244,35 +326,100 @@ extern void nv10_fb_takedown(drm_device_t *dev);
 extern int  nv40_fb_init(drm_device_t *dev);
 extern void nv40_fb_takedown(drm_device_t *dev);
 
+/* nv04_fifo.c */
+extern int  nv04_fifo_create_context(drm_device_t *dev, int channel);
+extern void nv04_fifo_destroy_context(drm_device_t *dev, int channel);
+extern int  nv04_fifo_load_context(drm_device_t *dev, int channel);
+extern int  nv04_fifo_save_context(drm_device_t *dev, int channel);
+
+/* nv10_fifo.c */
+extern int  nv10_fifo_create_context(drm_device_t *dev, int channel);
+extern void nv10_fifo_destroy_context(drm_device_t *dev, int channel);
+extern int  nv10_fifo_load_context(drm_device_t *dev, int channel);
+extern int  nv10_fifo_save_context(drm_device_t *dev, int channel);
+
+/* nv40_fifo.c */
+extern int  nv40_fifo_create_context(drm_device_t *, int channel);
+extern void nv40_fifo_destroy_context(drm_device_t *, int channel);
+extern int  nv40_fifo_load_context(drm_device_t *, int channel);
+extern int  nv40_fifo_save_context(drm_device_t *, int channel);
+
+/* nv50_fifo.c */
+extern int  nv50_fifo_init(drm_device_t *);
+extern void nv50_fifo_takedown(drm_device_t *);
+extern int  nv50_fifo_create_context(drm_device_t *, int channel);
+extern void nv50_fifo_destroy_context(drm_device_t *, int channel);
+extern int  nv50_fifo_load_context(drm_device_t *, int channel);
+extern int  nv50_fifo_save_context(drm_device_t *, int channel);
+
 /* nv04_graph.c */
 extern void nouveau_nv04_context_switch(drm_device_t *dev);
-extern int nv04_graph_init(drm_device_t *dev);
+extern int  nv04_graph_init(drm_device_t *dev);
 extern void nv04_graph_takedown(drm_device_t *dev);
-extern int nv04_graph_context_create(drm_device_t *dev, int channel);
+extern int  nv04_graph_create_context(drm_device_t *dev, int channel);
+extern void nv04_graph_destroy_context(drm_device_t *dev, int channel);
+extern int  nv04_graph_load_context(drm_device_t *dev, int channel);
+extern int  nv04_graph_save_context(drm_device_t *dev, int channel);
 
 /* nv10_graph.c */
 extern void nouveau_nv10_context_switch(drm_device_t *dev);
-extern int nv10_graph_init(drm_device_t *dev);
+extern int  nv10_graph_init(drm_device_t *dev);
 extern void nv10_graph_takedown(drm_device_t *dev);
-extern int nv10_graph_context_create(drm_device_t *dev, int channel);
+extern int  nv10_graph_create_context(drm_device_t *dev, int channel);
+extern void nv10_graph_destroy_context(drm_device_t *dev, int channel);
+extern int  nv10_graph_load_context(drm_device_t *dev, int channel);
+extern int  nv10_graph_save_context(drm_device_t *dev, int channel);
 
 /* nv20_graph.c */
 extern void nouveau_nv20_context_switch(drm_device_t *dev);
-extern int nv20_graph_init(drm_device_t *dev);
+extern int  nv20_graph_init(drm_device_t *dev);
 extern void nv20_graph_takedown(drm_device_t *dev);
-extern int nv20_graph_context_create(drm_device_t *dev, int channel);
+extern int  nv20_graph_create_context(drm_device_t *dev, int channel);
+extern void nv20_graph_destroy_context(drm_device_t *dev, int channel);
+extern int  nv20_graph_load_context(drm_device_t *dev, int channel);
+extern int  nv20_graph_save_context(drm_device_t *dev, int channel);
 
 /* nv30_graph.c */
-extern int nv30_graph_init(drm_device_t *dev);
+extern int  nv30_graph_init(drm_device_t *dev);
 extern void nv30_graph_takedown(drm_device_t *dev);
-extern int nv30_graph_context_create(drm_device_t *dev, int channel);
+extern int  nv30_graph_create_context(drm_device_t *, int channel);
+extern void nv30_graph_destroy_context(drm_device_t *, int channel);
+extern int  nv30_graph_load_context(drm_device_t *, int channel);
+extern int  nv30_graph_save_context(drm_device_t *, int channel);
 
 /* nv40_graph.c */
-extern int  nv40_graph_init(drm_device_t *dev);
-extern void nv40_graph_takedown(drm_device_t *dev);
-extern int  nv40_graph_context_create(drm_device_t *dev, int channel);
-extern void nv40_graph_context_save_current(drm_device_t *dev);
-extern void nv40_graph_context_restore(drm_device_t *dev, int channel);
+extern int  nv40_graph_init(drm_device_t *);
+extern void nv40_graph_takedown(drm_device_t *);
+extern int  nv40_graph_create_context(drm_device_t *, int channel);
+extern void nv40_graph_destroy_context(drm_device_t *, int channel);
+extern int  nv40_graph_load_context(drm_device_t *, int channel);
+extern int  nv40_graph_save_context(drm_device_t *, int channel);
+
+/* nv50_graph.c */
+extern int  nv50_graph_init(drm_device_t *);
+extern void nv50_graph_takedown(drm_device_t *);
+extern int  nv50_graph_create_context(drm_device_t *, int channel);
+extern void nv50_graph_destroy_context(drm_device_t *, int channel);
+extern int  nv50_graph_load_context(drm_device_t *, int channel);
+extern int  nv50_graph_save_context(drm_device_t *, int channel);
+
+/* nv04_instmem.c */
+extern int  nv04_instmem_init(drm_device_t *dev);
+extern void nv04_instmem_takedown(drm_device_t *dev);
+extern int  nv04_instmem_populate(drm_device_t*, nouveau_gpuobj_t*,
+				  uint32_t *size);
+extern void nv04_instmem_clear(drm_device_t*, nouveau_gpuobj_t*);
+extern int  nv04_instmem_bind(drm_device_t*, nouveau_gpuobj_t*);
+extern int  nv04_instmem_unbind(drm_device_t*, nouveau_gpuobj_t*);
+
+/* nv50_instmem.c */
+extern int  nv50_instmem_init(drm_device_t *dev);
+extern void nv50_instmem_takedown(drm_device_t *dev);
+extern int  nv50_instmem_populate(drm_device_t*, nouveau_gpuobj_t*,
+				  uint32_t *size);
+extern void nv50_instmem_clear(drm_device_t*, nouveau_gpuobj_t*);
+extern int  nv50_instmem_bind(drm_device_t*, nouveau_gpuobj_t*);
+extern int  nv50_instmem_unbind(drm_device_t*, nouveau_gpuobj_t*);
 
 /* nv04_mc.c */
 extern int  nv04_mc_init(drm_device_t *dev);
@@ -281,6 +428,10 @@ extern void nv04_mc_takedown(drm_device_t *dev);
 /* nv40_mc.c */
 extern int  nv40_mc_init(drm_device_t *dev);
 extern void nv40_mc_takedown(drm_device_t *dev);
+
+/* nv50_mc.c */
+extern int  nv50_mc_init(drm_device_t *dev);
+extern void nv50_mc_takedown(drm_device_t *dev);
 
 /* nv04_timer.c */
 extern int  nv04_timer_init(drm_device_t *dev);
@@ -297,8 +448,17 @@ extern long nouveau_compat_ioctl(struct file *filp, unsigned int cmd,
 #define NV_WRITE(reg,val)   DRM_WRITE32( dev_priv->mmio, (reg), (val) )
 #endif
 
-#define INSTANCE_WR(mem,ofs,val) nouveau_instmem_w32(dev_priv,(mem),(ofs),(val))
-#define INSTANCE_RD(mem,ofs)     nouveau_instmem_r32(dev_priv,(mem),(ofs))
+/* PRAMIN access */
+#if defined(__powerpc__)
+#define NV_RI32(o) in_be32((void __iomem *)(dev_priv->ramin)->handle+(o))
+#define NV_WI32(o,v) out_be32((void __iomem*)(dev_priv->ramin)->handle+(o), (v))
+#else
+#define NV_RI32(o) DRM_READ32(dev_priv->ramin, (o))
+#define NV_WI32(o,v) DRM_WRITE32(dev_priv->ramin, (o), (v))
+#endif
+
+#define INSTANCE_RD(o,i) NV_RI32((o)->im_pramin->start + ((i)<<2))
+#define INSTANCE_WR(o,i,v) NV_WI32((o)->im_pramin->start + ((i)<<2), (v))
 
 #endif /* __NOUVEAU_DRV_H__ */
 

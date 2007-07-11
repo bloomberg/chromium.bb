@@ -25,9 +25,12 @@
 #ifndef __NOUVEAU_DRM_H__
 #define __NOUVEAU_DRM_H__
 
-#define NOUVEAU_DRM_HEADER_PATCHLEVEL 6
+#define NOUVEAU_DRM_HEADER_PATCHLEVEL 8
 
 typedef struct drm_nouveau_fifo_alloc {
+	uint32_t     fb_ctxdma_handle;
+	uint32_t     tt_ctxdma_handle;
+
 	int          channel;
 	uint32_t     put_base;
 	/* FIFO control regs */
@@ -36,38 +39,42 @@ typedef struct drm_nouveau_fifo_alloc {
 	/* DMA command buffer */
 	drm_handle_t cmdbuf;
 	int          cmdbuf_size;
+	/* Notifier memory */
+	drm_handle_t notifier;
+	int          notifier_size;
 }
 drm_nouveau_fifo_alloc_t;
 
-typedef struct drm_nouveau_object_init {
+typedef struct drm_nouveau_grobj_alloc {
 	int      channel;
 	uint32_t handle;
 	int      class;
 }
-drm_nouveau_object_init_t;
+drm_nouveau_grobj_alloc_t;
 
 #define NOUVEAU_MEM_ACCESS_RO	1
 #define NOUVEAU_MEM_ACCESS_WO	2
 #define NOUVEAU_MEM_ACCESS_RW	3
-typedef struct drm_nouveau_dma_object_init {
+typedef struct drm_nouveau_notifier_alloc {
 	int      channel;
 	uint32_t handle;
-	int      class;
-	int      access;
-	int      target;
+	int      count;
+
 	uint32_t offset;
-	int      size;
 }
-drm_nouveau_dma_object_init_t;
+drm_nouveau_notifier_alloc_t;
 
 #define NOUVEAU_MEM_FB			0x00000001
 #define NOUVEAU_MEM_AGP			0x00000002
 #define NOUVEAU_MEM_FB_ACCEPTABLE	0x00000004
 #define NOUVEAU_MEM_AGP_ACCEPTABLE	0x00000008
-#define NOUVEAU_MEM_PINNED		0x00000010
-#define NOUVEAU_MEM_USER_BACKED		0x00000020
-#define NOUVEAU_MEM_MAPPED		0x00000040
-#define NOUVEAU_MEM_INSTANCE		0x00000080 /* internal */
+#define NOUVEAU_MEM_PCI			0x00000010
+#define NOUVEAU_MEM_PCI_ACCEPTABLE	0x00000020
+#define NOUVEAU_MEM_PINNED		0x00000040
+#define NOUVEAU_MEM_USER_BACKED		0x00000080
+#define NOUVEAU_MEM_MAPPED		0x00000100
+#define NOUVEAU_MEM_INSTANCE		0x00000200 /* internal */
+#define NOUVEAU_MEM_NOTIFIER            0x00000400 /* internal */
 
 typedef struct drm_nouveau_mem_alloc {
 	int flags;
@@ -91,6 +98,7 @@ drm_nouveau_mem_free_t;
 #define NOUVEAU_GETPARAM_AGP_PHYSICAL    7
 #define NOUVEAU_GETPARAM_FB_SIZE         8
 #define NOUVEAU_GETPARAM_AGP_SIZE        9
+#define NOUVEAU_GETPARAM_PCI_PHYSICAL    10
 typedef struct drm_nouveau_getparam {
 	uint64_t param;
 	uint64_t value;
@@ -114,7 +122,7 @@ enum nouveau_card_type {
 	NV_10      =10,
 	NV_11      =10,
 	NV_15      =10,
-	NV_17      =10,
+	NV_17      =17,
 	NV_20      =20,
 	NV_25      =20,
 	NV_30      =30,
@@ -141,8 +149,8 @@ typedef struct drm_nouveau_sarea {
 drm_nouveau_sarea_t;
 
 #define DRM_NOUVEAU_FIFO_ALLOC      0x00
-#define DRM_NOUVEAU_OBJECT_INIT     0x01
-#define DRM_NOUVEAU_DMA_OBJECT_INIT 0x02
+#define DRM_NOUVEAU_GROBJ_ALLOC     0x01
+#define DRM_NOUVEAU_NOTIFIER_ALLOC  0x02
 #define DRM_NOUVEAU_MEM_ALLOC       0x03
 #define DRM_NOUVEAU_MEM_FREE        0x04
 #define DRM_NOUVEAU_GETPARAM        0x05

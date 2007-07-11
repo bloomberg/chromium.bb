@@ -117,7 +117,7 @@ static drm_ioctl_desc_t		  drm_ioctls[256] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_BIND)]      = { drm_agp_bind_ioctl, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY },
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)]    = { drm_agp_unbind_ioctl, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY },
 
-	[DRM_IOCTL_NR(DRM_IOCTL_SG_ALLOC)]      = { drm_sg_alloc,    DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY },
+	[DRM_IOCTL_NR(DRM_IOCTL_SG_ALLOC)]      = { drm_sg_alloc_ioctl,    DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY },
 	[DRM_IOCTL_NR(DRM_IOCTL_SG_FREE)]       = { drm_sg_free,     DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY },
 
 	[DRM_IOCTL_NR(DRM_IOCTL_WAIT_VBLANK)]   = { drm_wait_vblank, 0 },
@@ -912,6 +912,18 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 	return DRM_ERR(retcode);
 }
 
+drm_local_map_t *drm_getsarea(drm_device_t *dev)
+{
+	drm_local_map_t *map;
+
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
+	TAILQ_FOREACH(map, &dev->maplist, link) {
+		if (map->type == _DRM_SHM && (map->flags & _DRM_CONTAINS_LOCK))
+			return map;
+	}
+
+	return NULL;
+}
 
 #if DRM_LINUX
 

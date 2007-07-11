@@ -47,6 +47,9 @@ typedef struct drm_file drm_file_t;
 #include <sys/systm.h>
 #include <sys/conf.h>
 #include <sys/stat.h>
+#if __FreeBSD_version >= 700000
+#include <sys/priv.h>
+#endif
 #include <sys/proc.h>
 #include <sys/lock.h>
 #include <sys/fcntl.h>
@@ -230,7 +233,11 @@ enum {
 
 #define PAGE_ALIGN(addr) round_page(addr)
 /* DRM_SUSER returns true if the user is superuser */
+#if __FreeBSD_version >= 700000
+#define DRM_SUSER(p)		(priv_check(p, PRIV_DRIVER) == 0)
+#else
 #define DRM_SUSER(p)		(suser(p) == 0)
+#endif
 #define DRM_AGP_FIND_DEVICE()	agp_find_device()
 #define DRM_MTRR_WC		MDF_WRITECOMBINE
 #define jiffies			ticks
@@ -392,19 +399,6 @@ do {									\
 			   __FUNCTION__);				\
 		return EINVAL;						\
 	}								\
-} while (0)
-
-#define DRM_GETSAREA()					\
-do {								\
-	drm_local_map_t *map;					\
-	DRM_SPINLOCK_ASSERT(&dev->dev_lock);			\
-	TAILQ_FOREACH(map, &dev->maplist, link) {		\
-		if (map->type == _DRM_SHM &&			\
-			map->flags & _DRM_CONTAINS_LOCK) {	\
-			dev_priv->sarea = map;			\
-			break;					\
-		}						\
-	}							\
 } while (0)
 
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
@@ -627,12 +621,17 @@ typedef struct drm_vbl_sig {
 #define DRM_ATI_GART_MAIN 1
 #define DRM_ATI_GART_FB   2
 
+#define DRM_ATI_GART_PCI  1
+#define DRM_ATI_GART_PCIE 2
+#define DRM_ATI_GART_IGP  3
+
 typedef struct ati_pcigart_info {
 	int gart_table_location;
-	int is_pcie;
+	int gart_reg_if;
 	void *addr;
 	dma_addr_t bus_addr;
 	drm_local_map_t mapping;
+	int table_size;
 } drm_ati_pcigart_info;
 
 struct drm_driver_info {
@@ -822,6 +821,7 @@ dev_type_read(drm_read);
 dev_type_poll(drm_poll);
 dev_type_mmap(drm_mmap);
 #endif
+extern drm_local_map_t	*drm_getsarea(drm_device_t *dev);
 
 /* File operations helpers (drm_fops.c) */
 #ifdef __FreeBSD__
@@ -915,6 +915,7 @@ int	drm_agp_unbind(drm_device_t *dev, drm_agp_binding_t *request);
 
 /* Scatter Gather Support (drm_scatter.c) */
 void	drm_sg_cleanup(drm_sg_mem_t *entry);
+int	drm_sg_alloc(drm_device_t * dev, drm_scatter_gather_t * request);
 
 #ifdef __FreeBSD__
 /* sysctl support (drm_sysctl.h) */
@@ -989,7 +990,7 @@ int	drm_agp_unbind_ioctl(DRM_IOCTL_ARGS);
 int	drm_agp_bind_ioctl(DRM_IOCTL_ARGS);
 
 /* Scatter Gather Support (drm_scatter.c) */
-int	drm_sg_alloc(DRM_IOCTL_ARGS);
+int	drm_sg_alloc_ioctl(DRM_IOCTL_ARGS);
 int	drm_sg_free(DRM_IOCTL_ARGS);
 
 /* consistent PCI memory functions (drm_pci.c) */
