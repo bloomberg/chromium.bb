@@ -445,11 +445,11 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 		break;
 	case NOUVEAU_GETPARAM_PCI_PHYSICAL:
 		if ( dev -> sg )
-			getparam.value=dev->sg->virtual;
+			getparam.value=(uint64_t) dev->sg->virtual;
 		else 
 		     {
 		     DRM_ERROR("Requested PCIGART address, while no PCIGART was created\n");
-		     DRM_ERR(EINVAL);
+		     return DRM_ERR(EINVAL);
 		     }
 		break;
 	case NOUVEAU_GETPARAM_FB_SIZE:

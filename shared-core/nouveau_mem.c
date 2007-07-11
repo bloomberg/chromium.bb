@@ -345,9 +345,9 @@ int nouveau_mem_init(struct drm_device *dev)
 
 		dev_priv->agp_phys		= info.aperture_base;
 		dev_priv->agp_available_size	= info.aperture_size;
+		goto have_agp;
 	}
 
-goto have_agp;
 no_agp:
 	dev_priv->pci_heap = NULL;
 	DRM_DEBUG("Allocating sg memory for PCI DMA\n");
@@ -357,8 +357,7 @@ no_agp:
 		goto no_pci;
 		}
 
-	DRM_DEBUG("Got %d KiB\n", (dev->sg->pages * PAGE_SIZE) >> 10);
-	if ( nouveau_mem_init_heap(&dev_priv->pci_heap, dev->sg->virtual, dev->sg->pages * PAGE_SIZE))
+	if ( nouveau_mem_init_heap(&dev_priv->pci_heap, (uint64_t) dev->sg->virtual, dev->sg->pages * PAGE_SIZE))
 		{
 		DRM_ERROR("Unable to initialize pci_heap!");	
 		goto no_pci;
