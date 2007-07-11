@@ -349,6 +349,9 @@ int nouveau_mem_init(struct drm_device *dev)
 	}
 
 no_agp:
+
+	if ( dev_priv->card_type >= NV_50 ) goto no_pci;
+
 	dev_priv->pci_heap = NULL;
 	DRM_DEBUG("Allocating sg memory for PCI DMA\n");
 	if ( drm_sg_alloc(dev, &sgreq) )

@@ -890,6 +890,8 @@ nouveau_gpuobj_channel_init(drm_device_t *dev, int channel,
 		}
 	}
 	else {
+		if ( dev_priv -> card_type >= NV_50 ) return 0; /*no PCIGART for NV50*/
+
 		/*PCI*/
 		if((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
 						   (unsigned int) dev->sg->virtual, dev->sg->pages * PAGE_SIZE,
