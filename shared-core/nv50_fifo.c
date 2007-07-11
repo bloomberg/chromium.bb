@@ -235,8 +235,7 @@ nv50_fifo_create_context(drm_device_t *dev, int channel)
 	DRM_DEBUG("ch%d\n", channel);
 
 	if (IS_G80) {
-		uint32_t ramfc_offset;
-		ramfc_offset = chan->ramin->gpuobj->im_pramin->start + 0x1000;
+		uint32_t ramfc_offset = chan->ramin->gpuobj->im_pramin->start;
 		if ((ret = nouveau_gpuobj_new_fake(dev, ramfc_offset, 0x100,
 						   NVOBJ_FLAG_ZERO_ALLOC |
 						   NVOBJ_FLAG_ZERO_FREE,

@@ -68,7 +68,7 @@ nv50_instmem_init(drm_device_t *dev)
 	} else {
 		unk = cb + 0x5400;
 		cb0 = cb + 0x5440;
-		cb1 = cb + 0x1438;
+		cb1 = cb + 0x1478;
 	}
 
 	DRM_DEBUG("PRAMIN config:\n");
