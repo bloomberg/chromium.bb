@@ -1129,8 +1129,9 @@ extern int drm_proc_cleanup(int minor,
 
 				/* Scatter Gather Support (drm_scatter.h) */
 extern void drm_sg_cleanup(drm_sg_mem_t * entry);
-extern int drm_sg_alloc(struct inode *inode, struct file *filp,
+extern int drm_sg_alloc_ioctl(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
+extern int drm_sg_alloc(drm_device_t *dev, drm_scatter_gather_t * request);
 extern int drm_sg_free(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 

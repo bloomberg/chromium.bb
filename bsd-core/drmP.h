@@ -915,6 +915,7 @@ int	drm_agp_unbind(drm_device_t *dev, drm_agp_binding_t *request);
 
 /* Scatter Gather Support (drm_scatter.c) */
 void	drm_sg_cleanup(drm_sg_mem_t *entry);
+int	drm_sg_alloc(drm_device_t * dev, drm_scatter_gather_t * request);
 
 #ifdef __FreeBSD__
 /* sysctl support (drm_sysctl.h) */
@@ -989,7 +990,7 @@ int	drm_agp_unbind_ioctl(DRM_IOCTL_ARGS);
 int	drm_agp_bind_ioctl(DRM_IOCTL_ARGS);
 
 /* Scatter Gather Support (drm_scatter.c) */
-int	drm_sg_alloc(DRM_IOCTL_ARGS);
+int	drm_sg_alloc_ioctl(DRM_IOCTL_ARGS);
 int	drm_sg_free(DRM_IOCTL_ARGS);
 
 /* consistent PCI memory functions (drm_pci.c) */

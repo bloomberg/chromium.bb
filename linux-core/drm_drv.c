@@ -113,7 +113,7 @@ static drm_ioctl_desc_t drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_AGP_UNBIND)] = {drm_agp_unbind_ioctl, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 #endif
 
-	[DRM_IOCTL_NR(DRM_IOCTL_SG_ALLOC)] = {drm_sg_alloc, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
+	[DRM_IOCTL_NR(DRM_IOCTL_SG_ALLOC)] = {drm_sg_alloc_ioctl, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 	[DRM_IOCTL_NR(DRM_IOCTL_SG_FREE)] = {drm_sg_free, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 
 	[DRM_IOCTL_NR(DRM_IOCTL_WAIT_VBLANK)] = {drm_wait_vblank, 0},
