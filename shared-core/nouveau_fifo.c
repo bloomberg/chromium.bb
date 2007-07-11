@@ -210,11 +210,19 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 	}
 
 	if (cb->flags & NOUVEAU_MEM_AGP) {
-		ret = nouveau_gpuobj_dma_new
-			(dev, channel, NV_CLASS_DMA_IN_MEMORY,
-			 cb->start - dev_priv->agp_phys,
-			 cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP,
-			 &pushbuf);
+		DRM_DEBUG("Creating CB in AGP memory\n");
+		ret = nouveau_gpuobj_dma_new(dev, channel,
+				NV_CLASS_DMA_IN_MEMORY,
+				cb->start - dev_priv->agp_phys,
+				cb->size,
+				NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP, &pushbuf);
+	} else if ( cb->flags & NOUVEAU_MEM_PCI) {
+		DRM_DEBUG("Creating CB in PCI memory starting at virt 0x%08llx size %d\n", cb->start, cb->size);
+		ret = nouveau_gpuobj_dma_new(dev, channel,
+				NV_CLASS_DMA_IN_MEMORY,
+				cb->start,
+				cb->size,
+				NV_DMA_ACCESS_RO, NV_DMA_TARGET_PCI_NONLINEAR, &pushbuf);
 	} else if (dev_priv->card_type != NV_04) {
 		ret = nouveau_gpuobj_dma_new
 			(dev, channel, NV_CLASS_DMA_IN_MEMORY,

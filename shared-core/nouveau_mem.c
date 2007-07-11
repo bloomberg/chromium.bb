@@ -211,6 +211,10 @@ void nouveau_mem_close(struct drm_device *dev)
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	nouveau_mem_takedown(&dev_priv->agp_heap);
 	nouveau_mem_takedown(&dev_priv->fb_heap);
+	if ( dev_priv->pci_heap ) 
+		{
+		nouveau_mem_takedown(&dev_priv->pci_heap);
+		}
 }
 
 /* returns the amount of FB ram in bytes */
@@ -283,8 +287,10 @@ int nouveau_mem_init(struct drm_device *dev)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	uint32_t fb_size;
+	drm_scatter_gather_t sgreq;
 	dev_priv->agp_phys=0;
 	dev_priv->fb_phys=0;
+	sgreq . size = 4 << 20; //4MB of PCI scatter-gather zone
 
 	/* init AGP */
 	dev_priv->agp_heap=NULL;
@@ -340,8 +346,26 @@ int nouveau_mem_init(struct drm_device *dev)
 		dev_priv->agp_phys		= info.aperture_base;
 		dev_priv->agp_available_size	= info.aperture_size;
 	}
-no_agp:
 
+goto have_agp;
+no_agp:
+	dev_priv->pci_heap = NULL;
+	DRM_DEBUG("Allocating sg memory for PCI DMA\n");
+	if ( drm_sg_alloc(dev, &sgreq) )
+		{
+		DRM_ERROR("Unable to allocate 4MB of scatter-gather pages for PCI DMA!");
+		goto no_pci;
+		}
+
+	DRM_DEBUG("Got %d KiB\n", (dev->sg->pages * PAGE_SIZE) >> 10);
+	if ( nouveau_mem_init_heap(&dev_priv->pci_heap, dev->sg->virtual, dev->sg->pages * PAGE_SIZE))
+		{
+		DRM_ERROR("Unable to initialize pci_heap!");	
+		goto no_pci;
+		}
+
+no_pci:
+have_agp:
 	/* setup a mtrr over the FB */
 	dev_priv->fb_mtrr = drm_mtrr_add(drm_get_resource_start(dev, 1),
 					 nouveau_mem_fb_amount(dev),
@@ -405,29 +429,40 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint6
 	if (size & (~PAGE_MASK))
 		size = ((size/PAGE_SIZE) + 1) * PAGE_SIZE;
 
-	if (flags&NOUVEAU_MEM_AGP) {
-		type=NOUVEAU_MEM_AGP;
-		block = nouveau_mem_alloc_block(dev_priv->agp_heap, size,
-						alignment, filp);
-		if (block) goto alloc_ok;
-	}
-	if (flags&(NOUVEAU_MEM_FB|NOUVEAU_MEM_FB_ACCEPTABLE)) {
-		type=NOUVEAU_MEM_FB;
-		if (!(flags&NOUVEAU_MEM_MAPPED)) {
-			block = nouveau_mem_alloc_block(dev_priv->fb_nomap_heap,
-							size, alignment, filp);
-			if (block) goto alloc_ok;
-		}
-		block = nouveau_mem_alloc_block(dev_priv->fb_heap, size,
-						alignment, filp);
-		if (block) goto alloc_ok;	
-	}
-	if (flags&NOUVEAU_MEM_AGP_ACCEPTABLE) {
-		type=NOUVEAU_MEM_AGP;
-		block = nouveau_mem_alloc_block(dev_priv->agp_heap, size,
-						alignment, filp);
-		if (block) goto alloc_ok;
-	}
+
+#define NOUVEAU_MEM_ALLOC_AGP {\
+		type=NOUVEAU_MEM_AGP;\
+                block = nouveau_mem_alloc_block(dev_priv->agp_heap, size,\
+                                                alignment, filp);\
+                if (block) goto alloc_ok;\
+	        }
+
+#define NOUVEAU_MEM_ALLOC_PCI {\
+                type = NOUVEAU_MEM_PCI;\
+                block = nouveau_mem_alloc_block(dev_priv->pci_heap, size, alignment, filp);\
+                if ( block ) goto alloc_ok;\
+	        }
+
+#define NOUVEAU_MEM_ALLOC_FB {\
+                type=NOUVEAU_MEM_FB;\
+                if (!(flags&NOUVEAU_MEM_MAPPED)) {\
+                        block = nouveau_mem_alloc_block(dev_priv->fb_nomap_heap,\
+                                                        size, alignment, filp); \
+                        if (block) goto alloc_ok;\
+                }\
+                block = nouveau_mem_alloc_block(dev_priv->fb_heap, size,\
+                                                alignment, filp);\
+                if (block) goto alloc_ok;\
+	        }
+
+
+	if (flags&NOUVEAU_MEM_FB) NOUVEAU_MEM_ALLOC_FB
+	if (flags&NOUVEAU_MEM_AGP) NOUVEAU_MEM_ALLOC_AGP
+	if (flags&NOUVEAU_MEM_PCI) NOUVEAU_MEM_ALLOC_PCI
+	if (flags&NOUVEAU_MEM_FB_ACCEPTABLE) NOUVEAU_MEM_ALLOC_FB
+	if (flags&NOUVEAU_MEM_AGP_ACCEPTABLE) NOUVEAU_MEM_ALLOC_AGP
+	if (flags&NOUVEAU_MEM_PCI_ACCEPTABLE) NOUVEAU_MEM_ALLOC_PCI
+
 
 	return NULL;
 
@@ -436,15 +471,19 @@ alloc_ok:
 
 	if (flags&NOUVEAU_MEM_MAPPED)
 	{
-		int ret;
+		int ret = 0;
 		block->flags|=NOUVEAU_MEM_MAPPED;
 
 		if (type == NOUVEAU_MEM_AGP)
 			ret = drm_addmap(dev, block->start - dev->agp->base, block->size, 
 					_DRM_AGP, 0, &block->map);
-		else
+		else if (type == NOUVEAU_MEM_FB)
 			ret = drm_addmap(dev, block->start, block->size,
 					_DRM_FRAME_BUFFER, 0, &block->map);
+		else if (type == NOUVEAU_MEM_PCI)
+			ret = drm_addmap(dev, block->start - (unsigned long int)dev->sg->virtual, block->size,
+					_DRM_SCATTER_GATHER, 0, &block->map);
+
 		if (ret) { 
 			nouveau_mem_free_block(block);
 			return NULL;

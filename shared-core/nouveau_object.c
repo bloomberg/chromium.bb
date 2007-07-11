@@ -515,30 +515,6 @@ nouveau_gpuobj_new_fake(drm_device_t *dev, uint32_t offset, uint32_t size,
 	return 0;
 }
 
-/*
-   DMA objects are used to reference a piece of memory in the
-   framebuffer, PCI or AGP address space. Each object is 16 bytes big
-   and looks as follows:
-   
-   entry[0]
-   11:0  class (seems like I can always use 0 here)
-   12    page table present?
-   13    page entry linear?
-   15:14 access: 0 rw, 1 ro, 2 wo
-   17:16 target: 0 NV memory, 1 NV memory tiled, 2 PCI, 3 AGP
-   31:20 dma adjust (bits 0-11 of the address)
-   entry[1]
-   dma limit
-   entry[2]
-   1     0 readonly, 1 readwrite
-   31:12 dma frame address (bits 12-31 of the address)
-
-   Non linear page tables seem to need a list of frame addresses afterwards,
-   the rivatv project has some info on this.   
-
-   The method below creates a DMA object in instance RAM and returns a handle
-   to it that can be used to set up context objects.
-*/
 
 static int
 nouveau_gpuobj_class_instmem_size(drm_device_t *dev, int class)
@@ -553,6 +529,33 @@ nouveau_gpuobj_class_instmem_size(drm_device_t *dev, int class)
 	return 16;
 }
 
+/*
+   DMA objects are used to reference a piece of memory in the
+   framebuffer, PCI or AGP address space. Each object is 16 bytes big
+   and looks as follows:
+   
+   entry[0]
+   11:0  class (seems like I can always use 0 here)
+   12    page table present?
+   13    page entry linear?
+   15:14 access: 0 rw, 1 ro, 2 wo
+   17:16 target: 0 NV memory, 1 NV memory tiled, 2 PCI, 3 AGP
+   31:20 dma adjust (bits 0-11 of the address)
+   entry[1]
+   dma limit (size of transfer)
+   entry[X]
+   1     0 readonly, 1 readwrite
+   31:12 dma frame address of the page (bits 12-31 of the address)
+   entry[N]
+   page table terminator, same value as the first pte, as does nvidia
+   rivatv uses 0xffffffff
+
+   Non linear page tables need a list of frame addresses afterwards,
+   the rivatv project has some info on this.
+
+   The method below creates a DMA object in instance RAM and returns a handle
+   to it that can be used to set up context objects.
+*/
 int
 nouveau_gpuobj_dma_new(drm_device_t *dev, int channel, int class,
 		       uint64_t offset, uint64_t size, int access, int target,
@@ -560,13 +563,28 @@ nouveau_gpuobj_dma_new(drm_device_t *dev, int channel, int class,
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int ret;
-
+	uint32_t is_scatter_gather = 0;
+	
 	DRM_DEBUG("ch%d class=0x%04x offset=0x%llx size=0x%llx\n",
 		  channel, class, offset, size);
 	DRM_DEBUG("access=%d target=%d\n", access, target);
 
+	switch (target) {
+        case NV_DMA_TARGET_AGP:
+                 offset += dev_priv->agp_phys;
+                 break;
+        case NV_DMA_TARGET_PCI_NONLINEAR:
+                /*assume the "offset" is a virtual memory address*/
+                is_scatter_gather = 1;
+                /*put back the right value*/
+                target = NV_DMA_TARGET_PCI;
+                break;
+        default:
+                break;
+        }
+	
 	ret = nouveau_gpuobj_new(dev, channel,
-				 nouveau_gpuobj_class_instmem_size(dev, class),
+				 is_scatter_gather ? ((((size + PAGE_SIZE - 1) / PAGE_SIZE) << 2) + 12) : nouveau_gpuobj_class_instmem_size(dev, class),
 				 16,
 				 NVOBJ_FLAG_ZERO_ALLOC | NVOBJ_FLAG_ZERO_FREE,
 				 gpuobj);
@@ -577,22 +595,53 @@ nouveau_gpuobj_dma_new(drm_device_t *dev, int channel, int class,
 
 	if (dev_priv->card_type < NV_50) {
 		uint32_t frame, adjust, pte_flags = 0;
-
-		if (target == NV_DMA_TARGET_AGP)
-			offset += dev_priv->agp_phys;
-		if (access != NV_DMA_ACCESS_RO)
-			pte_flags |= (1<<1);
-		frame  = offset & ~0x00000fff;
 		adjust = offset &  0x00000fff;
-
-		INSTANCE_WR(*gpuobj, 0, ((1<<12) | (1<<13) |
-					 (adjust << 20) |
+		if (access != NV_DMA_ACCESS_RO)
+				pte_flags |= (1<<1);
+		
+		if ( ! is_scatter_gather ) 
+			{
+			frame  = offset & ~0x00000fff;
+			
+			INSTANCE_WR(*gpuobj, 0, ((1<<12) | (1<<13) |
+					(adjust << 20) |
 					 (access << 14) |
 					 (target << 16) |
 					  class));
-		INSTANCE_WR(*gpuobj, 1, size - 1);
-		INSTANCE_WR(*gpuobj, 2, frame | pte_flags);
-		INSTANCE_WR(*gpuobj, 3, frame | pte_flags);
+			INSTANCE_WR(*gpuobj, 1, size - 1);
+			INSTANCE_WR(*gpuobj, 2, frame | pte_flags);
+			INSTANCE_WR(*gpuobj, 3, frame | pte_flags);
+			}
+		else 
+			{
+			uint32_t instance_offset;
+			uint32_t bus_addr;
+			size = (uint32_t) size;
+
+			DRM_DEBUG("Creating PCI DMA object using virtual zone starting at 0x%08x, size %d\n", (uint32_t) offset, (uint32_t)size);
+	                INSTANCE_WR(*gpuobj, 0, ((1<<12) | (0<<13) |
+                                (adjust << 20) |
+                                (access << 14) |
+                                (target << 16) |
+                                class));
+			INSTANCE_WR(*gpuobj, 1, size-1);
+
+			/*write starting at the third dword*/
+			instance_offset = 2;
+ 
+			/*for each PAGE, get its bus address, fill in the page table entry, and advance*/
+			while ( size > 0 ) {
+				bus_addr = (uint32_t) page_address(vmalloc_to_page((void *) (uint32_t) offset));
+				bus_addr |= (offset & ~PAGE_MASK);
+				bus_addr = virt_to_bus((void *)bus_addr);
+				frame = bus_addr & ~0x00000FFF;
+				INSTANCE_WR(*gpuobj, instance_offset, frame | pte_flags);
+				offset += PAGE_SIZE;
+				instance_offset ++;
+				size -= PAGE_SIZE;
+				}
+
+			}
 	} else {
 		INSTANCE_WR(*gpuobj, 0, 0x00190000 | class);
 		INSTANCE_WR(*gpuobj, 1, offset + size - 1);
@@ -804,24 +853,38 @@ nouveau_gpuobj_channel_init(drm_device_t *dev, int channel,
 		return ret;
 	}
 
-	/* non-AGP unimplemented */
-	if (dev_priv->agp_heap == NULL)
-		return 0;
-
-	/* GART ctxdma */
-	if ((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
-					  0, dev_priv->agp_available_size,
-					  NV_DMA_ACCESS_RW, NV_DMA_TARGET_AGP,
-					  &tt))) {
-		DRM_ERROR("Error creating TT ctxdma: %d\n", ret);
-		return ret;
+	if (dev_priv->agp_heap) {
+		/* AGPGART ctxdma */
+		if ((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
+						   0, dev_priv->agp_available_size,
+						   NV_DMA_ACCESS_RW,
+						   NV_DMA_TARGET_AGP, &tt))) {
+			DRM_ERROR("Error creating AGP TT ctxdma: %d\n", DRM_ERR(ENOMEM));
+			return DRM_ERR(ENOMEM);
+		}
+	
+		ret = nouveau_gpuobj_ref_add(dev, channel, tt_h, tt, NULL);
+		if (ret) {
+			DRM_ERROR("Error referencing AGP TT ctxdma: %d\n", ret);
+			return ret;
+		}
 	}
-
-	if ((ret = nouveau_gpuobj_ref_add(dev, channel, tt_h, tt, NULL))) {
-		DRM_ERROR("Error referencing TT ctxdma: %d\n", ret);
-		return ret;
+	else {
+		/*PCI*/
+		if((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
+						   (unsigned int) dev->sg->virtual, dev->sg->pages * PAGE_SIZE,
+						   NV_DMA_ACCESS_RW,
+						   NV_DMA_TARGET_PCI_NONLINEAR, &tt))) {
+			DRM_ERROR("Error creating PCI TT ctxdma: %d\n", DRM_ERR(ENOMEM));
+			return DRM_ERR(ENOMEM);
+		}
+	
+		ret = nouveau_gpuobj_ref_add(dev, channel, tt_h, tt, NULL);
+		if (ret) {
+			DRM_ERROR("Error referencing PCI TT ctxdma: %d\n", ret);
+			return ret;
+		}
 	}
-
 	return 0;
 }
 

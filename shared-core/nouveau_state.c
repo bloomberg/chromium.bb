@@ -348,6 +348,7 @@ void nouveau_preclose(drm_device_t * dev, DRMFILE filp)
 	nouveau_fifo_cleanup(dev, filp);
 	nouveau_mem_release(filp,dev_priv->fb_heap);
 	nouveau_mem_release(filp,dev_priv->agp_heap);
+	nouveau_mem_release(filp,dev_priv->pci_heap);
 }
 
 /* first module load, setup the mmio/fb mapping */
@@ -442,6 +443,15 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 	case NOUVEAU_GETPARAM_AGP_PHYSICAL:
 		getparam.value=dev_priv->agp_phys;
 		break;
+	case NOUVEAU_GETPARAM_PCI_PHYSICAL:
+		if ( dev -> sg )
+			getparam.value=dev->sg->virtual;
+		else 
+		     {
+		     DRM_ERROR("Requested PCIGART address, while no PCIGART was created\n");
+		     DRM_ERR(EINVAL);
+		     }
+		break;
 	case NOUVEAU_GETPARAM_FB_SIZE:
 		getparam.value=dev_priv->fb_available_size;
 		break;
@@ -472,6 +482,8 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 		switch (setparam.value) {
 		case NOUVEAU_MEM_AGP:
 		case NOUVEAU_MEM_FB:
+		case NOUVEAU_MEM_PCI:
+		case NOUVEAU_MEM_AGP | NOUVEAU_MEM_PCI_ACCEPTABLE:
 			break;
 		default:
 			DRM_ERROR("invalid CMDBUF_LOCATION value=%lld\n",

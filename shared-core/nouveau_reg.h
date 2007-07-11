@@ -39,6 +39,8 @@
 #define NV_DMA_TARGET_VIDMEM 0
 #define NV_DMA_TARGET_PCI    2
 #define NV_DMA_TARGET_AGP    3
+/*The following is not a real value used by nvidia cards, it's changed by nouveau_object_dma_create*/
+#define NV_DMA_TARGET_PCI_NONLINEAR   8
 
 /* Some object classes we care about in the drm */
 #define NV_CLASS_DMA_FROM_MEMORY                           0x00000002

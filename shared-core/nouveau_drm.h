@@ -25,7 +25,7 @@
 #ifndef __NOUVEAU_DRM_H__
 #define __NOUVEAU_DRM_H__
 
-#define NOUVEAU_DRM_HEADER_PATCHLEVEL 7
+#define NOUVEAU_DRM_HEADER_PATCHLEVEL 8
 
 typedef struct drm_nouveau_fifo_alloc {
 	uint32_t     fb_ctxdma_handle;
@@ -68,11 +68,14 @@ drm_nouveau_notifier_alloc_t;
 #define NOUVEAU_MEM_AGP			0x00000002
 #define NOUVEAU_MEM_FB_ACCEPTABLE	0x00000004
 #define NOUVEAU_MEM_AGP_ACCEPTABLE	0x00000008
-#define NOUVEAU_MEM_PINNED		0x00000010
-#define NOUVEAU_MEM_USER_BACKED		0x00000020
-#define NOUVEAU_MEM_MAPPED		0x00000040
-#define NOUVEAU_MEM_INSTANCE		0x00000080 /* internal */
-#define NOUVEAU_MEM_NOTIFIER            0x00000100 /* internal */
+#define NOUVEAU_MEM_PCI			0x00000010
+#define NOUVEAU_MEM_PCI_ACCEPTABLE	0x00000020
+#define NOUVEAU_MEM_PINNED		0x00000040
+#define NOUVEAU_MEM_USER_BACKED		0x00000080
+#define NOUVEAU_MEM_MAPPED		0x00000100
+#define NOUVEAU_MEM_INSTANCE		0x00000200 /* internal */
+#define NOUVEAU_MEM_NOTIFIER            0x00000400 /* internal */
+
 typedef struct drm_nouveau_mem_alloc {
 	int flags;
 	int alignment;
@@ -95,6 +98,7 @@ drm_nouveau_mem_free_t;
 #define NOUVEAU_GETPARAM_AGP_PHYSICAL    7
 #define NOUVEAU_GETPARAM_FB_SIZE         8
 #define NOUVEAU_GETPARAM_AGP_SIZE        9
+#define NOUVEAU_GETPARAM_PCI_PHYSICAL    10
 typedef struct drm_nouveau_getparam {
 	uint64_t param;
 	uint64_t value;

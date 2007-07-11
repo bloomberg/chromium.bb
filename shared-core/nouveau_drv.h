@@ -34,7 +34,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	7
+#define DRIVER_PATCHLEVEL	8
 
 #define NOUVEAU_FAMILY   0x0000FFFF
 #define NOUVEAU_FLAGS    0xFFFF0000
@@ -229,6 +229,7 @@ typedef struct drm_nouveau_private {
 	struct mem_block *fb_heap;
 	struct mem_block *fb_nomap_heap;
 	struct mem_block *ramin_heap;
+	struct mem_block *pci_heap;
 
         /* context table pointed to be NV_PGRAPH_CHANNEL_CTX_TABLE (0x400780) */
         uint32_t ctx_table_size;
