@@ -1,6 +1,6 @@
 /**************************************************************************
  * 
- * Copyright 2006 Tungsten Graphics, Inc., Bismarck, ND., USA
+ * Copyright 2007 Dave Airlie
  * All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -26,7 +26,7 @@
  * 
  **************************************************************************/
 /*
- * Authors: Thomas Hellström <thomas-at-tungstengraphics-dot-com>
+ * Authors: Dave Airlie <airlied@linux.ie>
  */
 
 #include "drmP.h"
@@ -87,6 +87,14 @@ int radeon_init_mem_type(drm_device_t * dev, uint32_t type,
 		    _DRM_FLAG_MEMTYPE_CACHED;
 		man->drm_bus_maptype = 0;
 		break;
+	case DRM_BO_MEM_VRAM:
+		man->flags =  _DRM_FLAG_MEMTYPE_MAPPABLE |
+			_DRM_FLAG_MEMTYPE_FIXED | _DRM_FLAG_NEEDS_IOREMAP;
+		man->io_addr = NULL;
+		man->drm_bus_maptype = _DRM_FRAME_BUFFER;
+		man->io_offset = drm_get_resource_start(dev, 0);
+		man->io_size = drm_get_resource_len(dev, 0);
+		break;
 	case DRM_BO_MEM_TT:
 		if (dev_priv->flags & RADEON_IS_AGP) {
 			if (!(drm_core_has_AGP(dev) && dev->agp)) {
@@ -115,6 +123,122 @@ int radeon_init_mem_type(drm_device_t * dev, uint32_t type,
 	return 0;
 }
 
+static void radeon_emit_copy_blit(drm_device_t * dev,
+				  uint32_t src_offset,
+				  uint32_t dst_offset,
+				  uint32_t pages, int direction)
+{
+	uint32_t cur_pages;
+	uint32_t stride = PAGE_SIZE;
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	uint32_t format, height;
+	RING_LOCALS;
+
+	if (!dev_priv)
+		return;
+
+	/* 32-bit copy format */
+	format = RADEON_COLOR_FORMAT_ARGB8888;
+
+	/* radeon limited to 16k stride */
+	stride &= 0x3fff;
+	while(pages > 0) {
+		cur_pages = pages;
+		if (cur_pages > 2048)
+			cur_pages = 2048;
+		pages -= cur_pages;
+
+		/* needs verification */
+		BEGIN_RING(7);		
+		OUT_RING(CP_PACKET3(RADEON_CNTL_BITBLT_MULTI, 5));
+		OUT_RING(RADEON_GMC_SRC_PITCH_OFFSET_CNTL |
+			 RADEON_GMC_DST_PITCH_OFFSET_CNTL |
+			 RADEON_GMC_BRUSH_NONE |
+			 (format << 8) |
+			 RADEON_GMC_SRC_DATATYPE_COLOR |
+			 RADEON_ROP3_S |
+			 RADEON_DP_SRC_SOURCE_MEMORY |
+			 RADEON_GMC_CLR_CMP_CNTL_DIS | RADEON_GMC_WR_MSK_DIS);
+		if (direction) {
+			OUT_RING((stride << 22) | (src_offset >> 10));
+			OUT_RING((stride << 22) | (dst_offset >> 10));
+		} else {
+			OUT_RING((stride << 22) | (dst_offset >> 10));
+			OUT_RING((stride << 22) | (src_offset >> 10));
+		}
+		OUT_RING(0);
+		OUT_RING(pages); /* x - y */
+		OUT_RING((stride << 16) | cur_pages);
+		ADVANCE_RING();
+	}
+
+	BEGIN_RING(2);
+	RADEON_WAIT_UNTIL_2D_IDLE();
+	ADVANCE_RING();
+
+	return;
+}
+
+static int radeon_move_blit(drm_buffer_object_t * bo,
+			    int evict, int no_wait, drm_bo_mem_reg_t *new_mem)
+{
+	drm_bo_mem_reg_t *old_mem = &bo->mem;
+	int dir = 0;
+
+	if ((old_mem->mem_type == new_mem->mem_type) &&
+	    (new_mem->mm_node->start <
+	     old_mem->mm_node->start + old_mem->mm_node->size)) {
+		dir = 1;
+	}
+
+	radeon_emit_copy_blit(bo->dev,
+			      old_mem->mm_node->start << PAGE_SHIFT,
+			      new_mem->mm_node->start << PAGE_SHIFT,
+			      new_mem->num_pages, dir);
+
+	
+	return drm_bo_move_accel_cleanup(bo, evict, no_wait, 0,
+					 DRM_FENCE_TYPE_EXE |
+					 DRM_RADEON_FENCE_TYPE_RW,
+					 DRM_RADEON_FENCE_FLAG_FLUSHED, new_mem);
+}
+
+static int radeon_move_flip(drm_buffer_object_t * bo,
+			    int evict, int no_wait, drm_bo_mem_reg_t * new_mem)
+{
+	drm_device_t *dev = bo->dev;
+	drm_bo_mem_reg_t tmp_mem;
+	int ret;
+
+	tmp_mem = *new_mem;
+	tmp_mem.mm_node = NULL;
+	tmp_mem.mask = DRM_BO_FLAG_MEM_TT |
+	    DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING;
+
+	ret = drm_bo_mem_space(bo, &tmp_mem, no_wait);
+	if (ret)
+		return ret;
+
+	ret = drm_bind_ttm(bo->ttm, 1, tmp_mem.mm_node->start);
+	if (ret)
+		goto out_cleanup;
+
+	ret = radeon_move_blit(bo, 1, no_wait, &tmp_mem);
+	if (ret)
+		goto out_cleanup;
+
+	ret = drm_bo_move_ttm(bo, evict, no_wait, new_mem);
+out_cleanup:
+	if (tmp_mem.mm_node) {
+		mutex_lock(&dev->struct_mutex);
+		if (tmp_mem.mm_node != bo->pinned_node)
+			drm_mm_put_block(tmp_mem.mm_node);
+		tmp_mem.mm_node = NULL;
+		mutex_unlock(&dev->struct_mutex);
+	}
+	return ret;
+}
+
 int radeon_move(drm_buffer_object_t * bo,
 		int evict, int no_wait, drm_bo_mem_reg_t * new_mem)
 {
@@ -123,6 +247,12 @@ int radeon_move(drm_buffer_object_t * bo,
 	DRM_DEBUG("\n");
 	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
 		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+	} else if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
+		if (radeon_move_flip(bo, evict, no_wait, new_mem))
+			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+	} else {
+		if (radeon_move_blit(bo, evict, no_wait, new_mem))
+			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	return 0;
 }
