@@ -646,6 +646,8 @@ nouveau_gpuobj_dma_new(drm_device_t *dev, int channel, int class,
                                 class));
 			INSTANCE_WR(*gpuobj, 1, size-1);
 
+			offset += dev->sg->virtual;
+
 			/*write starting at the third dword*/
 			instance_offset = 2;
  
@@ -921,7 +923,7 @@ nouveau_gpuobj_channel_init(drm_device_t *dev, int channel,
 
 		/*PCI*/
 		if((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
-						   dev->sg->virtual, dev->sg->pages * PAGE_SIZE,
+						   0, dev->sg->pages * PAGE_SIZE,
 						   NV_DMA_ACCESS_RW,
 						   NV_DMA_TARGET_PCI_NONLINEAR, &tt))) {
 			DRM_ERROR("Error creating PCI TT ctxdma: %d\n", DRM_ERR(ENOMEM));
