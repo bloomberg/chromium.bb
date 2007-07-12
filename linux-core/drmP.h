@@ -1048,6 +1048,9 @@ extern unsigned long drm_get_resource_start(drm_device_t *dev,
 					    unsigned int resource);
 extern unsigned long drm_get_resource_len(drm_device_t *dev,
 					  unsigned int resource);
+extern drm_map_list_t *drm_find_matching_map(drm_device_t *dev,
+					     drm_local_map_t *map);
+
 
 				/* DMA support (drm_dma.h) */
 extern int drm_dma_setup(drm_device_t * dev);

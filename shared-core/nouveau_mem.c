@@ -339,8 +339,7 @@ int nouveau_mem_init(struct drm_device *dev)
 		}
 
 		if (nouveau_mem_init_heap(&dev_priv->agp_heap,
-					  info.aperture_base,
-					  info.aperture_size))
+					  0, info.aperture_size))
 			goto no_agp;
 
 		dev_priv->agp_phys		= info.aperture_base;
@@ -360,7 +359,8 @@ no_agp:
 		goto no_pci;
 		}
 
-	if ( nouveau_mem_init_heap(&dev_priv->pci_heap, (uint64_t) dev->sg->virtual, dev->sg->pages * PAGE_SIZE))
+	if ( nouveau_mem_init_heap(&dev_priv->pci_heap, 0,
+				   dev->sg->pages * PAGE_SIZE))
 		{
 		DRM_ERROR("Unable to initialize pci_heap!");	
 		goto no_pci;
@@ -387,18 +387,13 @@ have_agp:
 		/* On cards with > 256Mb, you can't map everything. 
 		 * So we create a second FB heap for that type of memory */
 		if (nouveau_mem_init_heap(&dev_priv->fb_heap,
-					  drm_get_resource_start(dev,1),
-					  256*1024*1024))
+					  0, 256*1024*1024))
 			return DRM_ERR(ENOMEM);
 		if (nouveau_mem_init_heap(&dev_priv->fb_nomap_heap,
-					  drm_get_resource_start(dev,1) + 
-					  256*1024*1024,
-					  fb_size-256*1024*1024))
+					  256*1024*1024, fb_size-256*1024*1024))
 			return DRM_ERR(ENOMEM);
 	} else {
-		if (nouveau_mem_init_heap(&dev_priv->fb_heap,
-					  drm_get_resource_start(dev,1),
-					  fb_size))
+		if (nouveau_mem_init_heap(&dev_priv->fb_heap, 0, fb_size))
 			return DRM_ERR(ENOMEM);
 		dev_priv->fb_nomap_heap=NULL;
 	}
@@ -473,23 +468,33 @@ alloc_ok:
 
 	if (flags&NOUVEAU_MEM_MAPPED)
 	{
+		drm_map_list_t *entry;
 		int ret = 0;
 		block->flags|=NOUVEAU_MEM_MAPPED;
 
 		if (type == NOUVEAU_MEM_AGP)
-			ret = drm_addmap(dev, block->start - dev->agp->base, block->size, 
-					_DRM_AGP, 0, &block->map);
+			ret = drm_addmap(dev, block->start + dev->agp->base,
+					 block->size, _DRM_AGP, 0, &block->map);
 		else if (type == NOUVEAU_MEM_FB)
-			ret = drm_addmap(dev, block->start, block->size,
-					_DRM_FRAME_BUFFER, 0, &block->map);
+			ret = drm_addmap(dev, block->start + dev_priv->fb_phys,
+					 block->size, _DRM_FRAME_BUFFER,
+					 0, &block->map);
 		else if (type == NOUVEAU_MEM_PCI)
-			ret = drm_addmap(dev, block->start - (unsigned long int)dev->sg->virtual, block->size,
-					_DRM_SCATTER_GATHER, 0, &block->map);
+			ret = drm_addmap(dev, block->start, block->size,
+					 _DRM_SCATTER_GATHER, 0, &block->map);
 
 		if (ret) { 
 			nouveau_mem_free_block(block);
 			return NULL;
 		}
+
+		entry = drm_find_matching_map(dev, block->map);
+		if (!entry) {
+			nouveau_mem_free_block(block);
+			return NULL;
+		}
+		DRM_ERROR("user_token=0x%08x\n", entry->user_token);
+		block->map_handle = entry->user_token;
 	}
 
 	DRM_INFO("allocated 0x%llx\n", block->start);
@@ -526,7 +531,8 @@ int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
 	block=nouveau_mem_alloc(dev, alloc.alignment, alloc.size, alloc.flags, filp);
 	if (!block)
 		return DRM_ERR(ENOMEM);
-	alloc.region_offset=block->start;
+	alloc.map_handle=block->map_handle;
+	alloc.offset=block->start;
 	alloc.flags=block->flags;
 
 	DRM_COPY_TO_USER_IOCTL((drm_nouveau_mem_alloc_t __user *) data, alloc, sizeof(alloc));
@@ -546,11 +552,11 @@ int nouveau_ioctl_mem_free(DRM_IOCTL_ARGS)
 
 	block=NULL;
 	if (memfree.flags&NOUVEAU_MEM_FB)
-		block = find_block(dev_priv->fb_heap, memfree.region_offset);
+		block = find_block(dev_priv->fb_heap, memfree.offset);
 	else if (memfree.flags&NOUVEAU_MEM_AGP)
-		block = find_block(dev_priv->agp_heap, memfree.region_offset);
+		block = find_block(dev_priv->agp_heap, memfree.offset);
 	else if (memfree.flags&NOUVEAU_MEM_PCI)
-		block = find_block(dev_priv->pci_heap, memfree.region_offset);
+		block = find_block(dev_priv->pci_heap, memfree.offset);
 	if (!block)
 		return DRM_ERR(EFAULT);
 	if (block->filp != filp)

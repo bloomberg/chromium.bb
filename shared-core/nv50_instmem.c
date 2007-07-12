@@ -215,7 +215,7 @@ nv50_instmem_bind(drm_device_t *dev, nouveau_gpuobj_t *gpuobj)
 
 	pte     = (gpuobj->im_pramin->start >> 12) << 3;
 	pte_end = ((gpuobj->im_pramin->size >> 12) << 3) + pte;
-	vram    = gpuobj->im_backing->start - dev_priv->fb_phys;
+	vram    = gpuobj->im_backing->start;
 
 	if (pte == pte_end) {
 		DRM_ERROR("WARNING: badness in bind() pte calc\n");

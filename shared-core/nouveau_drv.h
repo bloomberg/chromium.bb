@@ -34,7 +34,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	8
+#define DRIVER_PATCHLEVEL	9
 
 #define NOUVEAU_FAMILY   0x0000FFFF
 #define NOUVEAU_FLAGS    0xFFFF0000
@@ -50,6 +50,7 @@ struct mem_block {
 	DRMFILE filp;           /* 0: free, -1: heap, other: real files */
 	int flags;
 	drm_local_map_t *map;
+	drm_handle_t map_handle;
 };
 
 enum nouveau_flags {

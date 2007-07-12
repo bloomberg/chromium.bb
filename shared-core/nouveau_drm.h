@@ -25,7 +25,7 @@
 #ifndef __NOUVEAU_DRM_H__
 #define __NOUVEAU_DRM_H__
 
-#define NOUVEAU_DRM_HEADER_PATCHLEVEL 8
+#define NOUVEAU_DRM_HEADER_PATCHLEVEL 9
 
 typedef struct drm_nouveau_fifo_alloc {
 	uint32_t     fb_ctxdma_handle;
@@ -80,12 +80,13 @@ typedef struct drm_nouveau_mem_alloc {
 	int flags;
 	int alignment;
 	uint64_t size;	// in bytes
-	uint64_t region_offset;
+	uint64_t offset;
+	drm_handle_t map_handle;
 }
 drm_nouveau_mem_alloc_t;
 
 typedef struct drm_nouveau_mem_free {
-	uint64_t region_offset;
+	uint64_t offset;
 	int flags;
 }
 drm_nouveau_mem_free_t;

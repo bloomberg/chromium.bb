@@ -95,10 +95,8 @@ nouveau_notifier_alloc(drm_device_t *dev, int channel, uint32_t handle,
 
 	offset = chan->notifier_block->start + mem->start;
 	if (chan->notifier_block->flags & NOUVEAU_MEM_FB) {
-		offset -= drm_get_resource_start(dev, 1);
 		target = NV_DMA_TARGET_VIDMEM;
 	} else if (chan->notifier_block->flags & NOUVEAU_MEM_AGP) {
-		offset -= dev_priv->agp_phys;
 		target = NV_DMA_TARGET_AGP;
 	} else {
 		DRM_ERROR("Bad DMA target, flags 0x%08x!\n",

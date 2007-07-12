@@ -213,8 +213,7 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 		DRM_DEBUG("Creating CB in AGP memory\n");
 		ret = nouveau_gpuobj_dma_new(dev, channel,
 				NV_CLASS_DMA_IN_MEMORY,
-				cb->start - dev_priv->agp_phys,
-				cb->size,
+				cb->start, cb->size,
 				NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP, &pushbuf);
 	} else if ( cb->flags & NOUVEAU_MEM_PCI) {
 		DRM_DEBUG("Creating CB in PCI memory\n");
@@ -226,7 +225,7 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 	} else if (dev_priv->card_type != NV_04) {
 		ret = nouveau_gpuobj_dma_new
 			(dev, channel, NV_CLASS_DMA_IN_MEMORY,
-			 cb->start - drm_get_resource_start(dev, 1),
+			 cb->start,
 			 cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM,
 			 &pushbuf);
 	} else {
@@ -236,7 +235,8 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 		 */
 		ret = nouveau_gpuobj_dma_new
 			(dev, channel, NV_CLASS_DMA_IN_MEMORY,
-			 cb->start, cb->size, NV_DMA_ACCESS_RO,
+			 cb->start + drm_get_resource_start(dev, 1),
+			 cb->size, NV_DMA_ACCESS_RO,
 			 NV_DMA_TARGET_PCI, &pushbuf);
 	}
 
@@ -467,8 +467,9 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan;
 	drm_nouveau_fifo_alloc_t init;
+	drm_map_list_t *entry;
+	struct nouveau_fifo *chan;
 	int res;
 
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_fifo_alloc_t __user *) data,
@@ -501,12 +502,17 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 	if (res != 0)
 		return res;
 
+	entry = drm_find_matching_map(dev, chan->regs);
+	if (!entry)
+		return DRM_ERR(EINVAL);
+	init.ctrl = entry->user_token;
+
 	/* pass back FIFO map info to the caller */
-	init.cmdbuf      = chan->pushbuf_mem->start;
+	init.cmdbuf      = chan->pushbuf_mem->map_handle;
 	init.cmdbuf_size = chan->pushbuf_mem->size;
 
 	/* and the notifier block */
-	init.notifier      = chan->notifier_block->start;
+	init.notifier      = chan->notifier_block->map_handle;
 	init.notifier_size = chan->notifier_block->size;
 
 	DRM_COPY_TO_USER_IOCTL((drm_nouveau_fifo_alloc_t __user *)data,

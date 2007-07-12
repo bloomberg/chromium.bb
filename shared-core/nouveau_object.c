@@ -357,12 +357,12 @@ nouveau_gpuobj_instance_get(drm_device_t *dev, int channel,
 			DRM_ERROR("AII, no VRAM backing gpuobj\n");
 			return DRM_ERR(EINVAL);
 		}
-		*inst = gpuobj->im_backing->start - dev_priv->fb_phys;
+		*inst = gpuobj->im_backing->start;
 		return 0;
 	} else {
 		/* ...from local heap */
 		cpramin = dev_priv->fifos[gpuobj->im_channel]->ramin->gpuobj;
-		*inst = (cpramin->im_backing->start - dev_priv->fb_phys) +
+		*inst = cpramin->im_backing->start +
 			(gpuobj->im_pramin->start - cpramin->im_pramin->start);
 		return 0;
 	}
@@ -917,7 +917,7 @@ nouveau_gpuobj_channel_init(drm_device_t *dev, int channel,
 		}
 	}
 	else {
-		if ( dev_priv -> card_type >= NV_50 ) return 0; /*no PCIGART for NV50*/
+		if (dev_priv -> card_type >= NV_50 ) return 0; /*no PCIGART for NV50*/
 
 		/*PCI*/
 		if((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,

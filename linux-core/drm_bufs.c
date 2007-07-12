@@ -48,8 +48,7 @@ unsigned long drm_get_resource_len(drm_device_t *dev, unsigned int resource)
 }
 EXPORT_SYMBOL(drm_get_resource_len);
 
-static drm_map_list_t *drm_find_matching_map(drm_device_t *dev,
-					      drm_local_map_t *map)
+drm_map_list_t *drm_find_matching_map(drm_device_t *dev, drm_local_map_t *map)
 {
 	drm_map_list_t *entry;
 	list_for_each_entry(entry, &dev->maplist, head) {
@@ -62,6 +61,7 @@ static drm_map_list_t *drm_find_matching_map(drm_device_t *dev,
 
 	return NULL;
 }
+EXPORT_SYMBOL(drm_find_matching_map);
 
 static int drm_map_handle(drm_device_t *dev, drm_hash_item_t *hash,
 			  unsigned long user_token, int hashed_handle)
