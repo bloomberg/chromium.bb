@@ -16,7 +16,7 @@
  *      contexts are taken from dumps just after the 3D object is
  *      created.
  */
-static void nv30_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
+static void nv30_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 {
 	drm_nouveau_private_t *dev_priv = dev->dev_private;
 	int i;
@@ -100,14 +100,14 @@ static void nv30_graph_context_init(drm_device_t *dev, struct mem_block *ctx)
 }
 
 
-int nv30_graph_context_create(drm_device_t *dev, int channel)
+int nv30_graph_create_context(drm_device_t *dev, int channel)
 {
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
-	void (*ctx_init)(drm_device_t *, struct mem_block *);
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	void (*ctx_init)(drm_device_t *, nouveau_gpuobj_t *);
 	unsigned int ctx_size;
-	int i;
+	int ret;
 
 	switch (dev_priv->chipset) {
 	default:
@@ -116,20 +116,83 @@ int nv30_graph_context_create(drm_device_t *dev, int channel)
 		break;
 	}
 
-	/* Alloc and clear RAMIN to store the context */
-	chan->ramin_grctx = nouveau_instmem_alloc(dev, ctx_size, 4);
-	if (!chan->ramin_grctx)
-		return DRM_ERR(ENOMEM);
-	for (i=0; i<ctx_size; i+=4)
-		INSTANCE_WR(chan->ramin_grctx, i/4, 0x00000000);
+	if ((ret = nouveau_gpuobj_new_ref(dev, channel, -1, 0, ctx_size, 16,
+					  NVOBJ_FLAG_ZERO_ALLOC,
+					  &chan->ramin_grctx)))
+		return ret;
 
 	/* Initialise default context values */
-	ctx_init(dev, chan->ramin_grctx);
+	ctx_init(dev, chan->ramin_grctx->gpuobj);
         
-        INSTANCE_WR(chan->ramin_grctx, 10, channel << 24); /* CTX_USER */
-        INSTANCE_WR(dev_priv->ctx_table, channel, nouveau_chip_instance_get(dev, chan->ramin_grctx));
+        INSTANCE_WR(chan->ramin_grctx->gpuobj, 10, channel<<24); /* CTX_USER */
+        INSTANCE_WR(dev_priv->ctx_table->gpuobj, channel,
+		    chan->ramin_grctx->instance >> 4);
 
 	return 0;
+}
+
+void nv30_graph_destroy_context(drm_device_t *dev, int channel)
+{
+	drm_nouveau_private_t *dev_priv =
+		(drm_nouveau_private_t *)dev->dev_private;
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+
+	if (chan->ramin_grctx)
+		nouveau_gpuobj_ref_del(dev, &chan->ramin_grctx);
+
+	INSTANCE_WR(dev_priv->ctx_table->gpuobj, channel, 0);
+}
+
+static int
+nouveau_graph_wait_idle(drm_device_t *dev)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	int tv = 1000;
+
+	while (tv--) {
+		if (NV_READ(0x400700) == 0)
+			break;
+	}
+
+	if (NV_READ(0x400700)) {
+		DRM_ERROR("timeout!\n");
+		return DRM_ERR(EBUSY);
+	}
+	return 0;
+}
+
+int nv30_graph_load_context(drm_device_t *dev, int channel)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	uint32_t inst;
+
+	if (!chan->ramin_grctx)
+		return DRM_ERR(EINVAL);
+	inst = chan->ramin_grctx->instance >> 4;
+
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_XFER,
+		 NV20_PGRAPH_CHANNEL_CTX_XFER_LOAD);
+
+	return nouveau_graph_wait_idle(dev);
+}
+
+int nv30_graph_save_context(drm_device_t *dev, int channel)
+{
+	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	uint32_t inst;
+
+	if (!chan->ramin_grctx)
+		return DRM_ERR(EINVAL);
+	inst = chan->ramin_grctx->instance >> 4;
+
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_XFER,
+		 NV20_PGRAPH_CHANNEL_CTX_XFER_SAVE);
+
+	return nouveau_graph_wait_idle(dev);
 }
 
 int nv30_graph_init(drm_device_t *dev)
@@ -137,7 +200,7 @@ int nv30_graph_init(drm_device_t *dev)
 	drm_nouveau_private_t *dev_priv =
 		(drm_nouveau_private_t *)dev->dev_private;
 	uint32_t vramsz, tmp;
-	int i;
+	int ret, i;
 
 	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) &
 			~NV_PMC_ENABLE_PGRAPH);
@@ -146,14 +209,14 @@ int nv30_graph_init(drm_device_t *dev)
 
         /* Create Context Pointer Table */
         dev_priv->ctx_table_size = 32 * 4;
-        dev_priv->ctx_table = nouveau_instmem_alloc(dev, dev_priv->ctx_table_size, 4);
-        if (!dev_priv->ctx_table)
-                return DRM_ERR(ENOMEM);
+	if ((ret = nouveau_gpuobj_new_ref(dev, -1, -1, 0,
+					  dev_priv->ctx_table_size, 16,
+					  NVOBJ_FLAG_ZERO_ALLOC,
+					  &dev_priv->ctx_table)))
+		return ret;
 
-        for (i=0; i< dev_priv->ctx_table_size; i+=4)
-                INSTANCE_WR(dev_priv->ctx_table, i/4, 0x00000000);
-
-        NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_TABLE, nouveau_chip_instance_get(dev, dev_priv->ctx_table));
+        NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_TABLE,
+		 dev_priv->ctx_table->instance >> 4);
 
 	NV_WRITE(NV03_PGRAPH_INTR_EN, 0x00000000);
 	NV_WRITE(NV03_PGRAPH_INTR   , 0xFFFFFFFF);

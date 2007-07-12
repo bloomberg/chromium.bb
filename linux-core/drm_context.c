@@ -58,17 +58,9 @@
  */
 void drm_ctxbitmap_free(drm_device_t * dev, int ctx_handle)
 {
-	struct drm_ctx_sarea_list *ctx;
-
 	mutex_lock(&dev->struct_mutex);
-	ctx = idr_find(&dev->ctx_idr, ctx_handle);
-	if (ctx) {
-		idr_remove(&dev->ctx_idr, ctx_handle);
-		drm_free(ctx, sizeof(struct drm_ctx_sarea_list), DRM_MEM_CTXLIST);
-	} else
-		DRM_ERROR("Attempt to free invalid context handle: %d\n", ctx_handle);
+	idr_remove(&dev->ctx_idr, ctx_handle);
 	mutex_unlock(&dev->struct_mutex);
-	return;
 }
 
 /**
@@ -84,20 +76,15 @@ static int drm_ctxbitmap_next(drm_device_t * dev)
 {
 	int new_id;
 	int ret;
-	struct drm_ctx_sarea_list *new_ctx;
-
-	new_ctx = drm_calloc(1, sizeof(struct drm_ctx_sarea_list), DRM_MEM_CTXLIST);
-	if (!new_ctx)
-		return -1;
 
 again:
 	if (idr_pre_get(&dev->ctx_idr, GFP_KERNEL) == 0) {
 		DRM_ERROR("Out of memory expanding drawable idr\n");
-		drm_free(new_ctx, sizeof(struct drm_ctx_sarea_list), DRM_MEM_CTXLIST);
 		return -ENOMEM;
 	}
 	mutex_lock(&dev->struct_mutex);
-	ret = idr_get_new_above(&dev->ctx_idr, new_ctx, DRM_RESERVED_CONTEXTS, &new_id);
+	ret = idr_get_new_above(&dev->ctx_idr, NULL,
+				DRM_RESERVED_CONTEXTS, &new_id);
 	if (ret == -EAGAIN) {
 		mutex_unlock(&dev->struct_mutex);
 		goto again;
@@ -120,15 +107,6 @@ int drm_ctxbitmap_init(drm_device_t * dev)
 	return 0;
 }
 
-
-
-static int drm_ctx_sarea_free(int id, void *p, void *data)
-{
-	struct drm_ctx_sarea_list *ctx_entry = p;
-	drm_free(ctx_entry, sizeof(struct drm_ctx_sarea_list), DRM_MEM_CTXLIST);
-	return 0;
-}
-
 /**
  * Context bitmap cleanup.
  *
@@ -140,7 +118,6 @@ static int drm_ctx_sarea_free(int id, void *p, void *data)
 void drm_ctxbitmap_cleanup(drm_device_t * dev)
 {
 	mutex_lock(&dev->struct_mutex);
-	idr_for_each(&dev->ctx_idr, drm_ctx_sarea_free, NULL);
 	idr_remove_all(&dev->ctx_idr);
 	mutex_unlock(&dev->struct_mutex);
 }
@@ -172,19 +149,17 @@ int drm_getsareactx(struct inode *inode, struct file *filp,
 	drm_ctx_priv_map_t request;
 	drm_map_t *map;
 	drm_map_list_t *_entry;
-	struct drm_ctx_sarea_list *ctx_sarea;
 
 	if (copy_from_user(&request, argp, sizeof(request)))
 		return -EFAULT;
 
 	mutex_lock(&dev->struct_mutex);
 
-	ctx_sarea = idr_find(&dev->ctx_idr, request.ctx_id);
-	if (!ctx_sarea) {
+	map = idr_find(&dev->ctx_idr, request.ctx_id);
+	if (!map) {
 		mutex_unlock(&dev->struct_mutex);
 		return -EINVAL;
 	}
-	map = ctx_sarea->map;
 
 	mutex_unlock(&dev->struct_mutex);
 
@@ -224,7 +199,6 @@ int drm_setsareactx(struct inode *inode, struct file *filp,
 	drm_ctx_priv_map_t request;
 	drm_map_t *map = NULL;
 	drm_map_list_t *r_list = NULL;
-	struct drm_ctx_sarea_list *ctx_sarea;
 
 	if (copy_from_user(&request,
 			   (drm_ctx_priv_map_t __user *) arg, sizeof(request)))
@@ -245,14 +219,11 @@ int drm_setsareactx(struct inode *inode, struct file *filp,
 	if (!map)
 		goto bad;
 
-	mutex_lock(&dev->struct_mutex);
-
-	ctx_sarea = idr_find(&dev->ctx_idr, request.ctx_id);
-	if (!ctx_sarea)
+	if (IS_ERR(idr_replace(&dev->ctx_idr, map, request.ctx_id)))
 		goto bad;
 
-	ctx_sarea->map = map;
 	mutex_unlock(&dev->struct_mutex);
+
 	return 0;
 }
 

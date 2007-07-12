@@ -570,10 +570,6 @@ typedef struct drm_ctx_list {
 	drm_file_t *tag;		/**< associated fd private data */
 } drm_ctx_list_t;
 
-struct drm_ctx_sarea_list {
-	drm_map_t *map;
-};
-
 typedef struct drm_vbl_sig {
 	struct list_head head;
 	unsigned int sequence;
@@ -597,10 +593,6 @@ typedef struct ati_pcigart_info {
 	drm_local_map_t mapping;
 	int table_size;
 } drm_ati_pcigart_info;
-
-struct drm_drawable_list {
-	drm_drawable_info_t info;
-};
 
 #include "drm_objects.h"
 
@@ -1056,6 +1048,9 @@ extern unsigned long drm_get_resource_start(drm_device_t *dev,
 					    unsigned int resource);
 extern unsigned long drm_get_resource_len(drm_device_t *dev,
 					  unsigned int resource);
+extern drm_map_list_t *drm_find_matching_map(drm_device_t *dev,
+					     drm_local_map_t *map);
+
 
 				/* DMA support (drm_dma.h) */
 extern int drm_dma_setup(drm_device_t * dev);
@@ -1137,8 +1132,9 @@ extern int drm_proc_cleanup(int minor,
 
 				/* Scatter Gather Support (drm_scatter.h) */
 extern void drm_sg_cleanup(drm_sg_mem_t * entry);
-extern int drm_sg_alloc(struct inode *inode, struct file *filp,
+extern int drm_sg_alloc_ioctl(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
+extern int drm_sg_alloc(drm_device_t *dev, drm_scatter_gather_t * request);
 extern int drm_sg_free(struct inode *inode, struct file *filp,
 		       unsigned int cmd, unsigned long arg);
 
