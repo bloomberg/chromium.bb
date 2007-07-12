@@ -549,6 +549,8 @@ int nouveau_ioctl_mem_free(DRM_IOCTL_ARGS)
 		block = find_block(dev_priv->fb_heap, memfree.region_offset);
 	else if (memfree.flags&NOUVEAU_MEM_AGP)
 		block = find_block(dev_priv->agp_heap, memfree.region_offset);
+	else if (memfree.flags&NOUVEAU_MEM_PCI)
+		block = find_block(dev_priv->pci_heap, memfree.region_offset);
 	if (!block)
 		return DRM_ERR(EFAULT);
 	if (block->filp != filp)

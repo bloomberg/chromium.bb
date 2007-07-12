@@ -635,10 +635,10 @@ nouveau_gpuobj_dma_new(drm_device_t *dev, int channel, int class,
 		else 
 			{
 			uint32_t instance_offset;
-			uint32_t bus_addr;
+			uint64_t bus_addr;
 			size = (uint32_t) size;
 
-			DRM_DEBUG("Creating PCI DMA object using virtual zone starting at 0x%08x, size %d\n", (uint32_t) offset, (uint32_t)size);
+			DRM_DEBUG("Creating PCI DMA object using virtual zone starting at %#llx, size %d\n", offset, (uint32_t)size);
 	                INSTANCE_WR(*gpuobj, 0, ((1<<12) | (0<<13) |
                                 (adjust << 20) |
                                 (access << 14) |
@@ -651,10 +651,37 @@ nouveau_gpuobj_dma_new(drm_device_t *dev, int channel, int class,
  
 			/*for each PAGE, get its bus address, fill in the page table entry, and advance*/
 			while ( size > 0 ) {
-				bus_addr = (uint32_t) page_address(vmalloc_to_page((void *) (uint32_t) offset));
+				bus_addr = vmalloc_to_page(offset);
+ 				if ( ! bus_addr ) 
+					{
+					DRM_ERROR("Couldn't map virtual address %#llx to a page number\n", offset);
+					nouveau_gpuobj_del(dev, gpuobj);
+					return DRM_ERR(ENOMEM);
+					}
+				bus_addr = (uint64_t) page_address(bus_addr);
+ 				if ( ! bus_addr ) 
+					{
+					DRM_ERROR("Couldn't find page address for address %#llx\n", offset);
+					nouveau_gpuobj_del(dev, gpuobj);
+					return DRM_ERR(ENOMEM);
+					}
 				bus_addr |= (offset & ~PAGE_MASK);
 				bus_addr = virt_to_bus((void *)bus_addr);
-				frame = bus_addr & ~0x00000FFF;
+ 				if ( ! bus_addr ) 
+					{
+					DRM_ERROR("Couldn't get bus address for %#llx\n", offset);
+					nouveau_gpuobj_del(dev, gpuobj);
+					return DRM_ERR(ENOMEM);
+					}
+
+				/*if ( bus_addr >= 1 << 32 )
+					{
+					DRM_ERROR("Bus address %#llx is over 32 bits, Nvidia cards cannot address it !\n", bus_addr);
+					nouveau_gpuobj_del(dev, gpuobj);
+					return DRM_ERR(EINVAL);
+					}*/
+				
+				frame = (uint32_t) bus_addr & ~0x00000FFF;
 				INSTANCE_WR(*gpuobj, instance_offset, frame | pte_flags);
 				offset += PAGE_SIZE;
 				instance_offset ++;
@@ -894,11 +921,11 @@ nouveau_gpuobj_channel_init(drm_device_t *dev, int channel,
 
 		/*PCI*/
 		if((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
-						   (unsigned int) dev->sg->virtual, dev->sg->pages * PAGE_SIZE,
+						   dev->sg->virtual, dev->sg->pages * PAGE_SIZE,
 						   NV_DMA_ACCESS_RW,
 						   NV_DMA_TARGET_PCI_NONLINEAR, &tt))) {
 			DRM_ERROR("Error creating PCI TT ctxdma: %d\n", DRM_ERR(ENOMEM));
-			return DRM_ERR(ENOMEM);
+			return 0; //this is noncritical
 		}
 	
 		ret = nouveau_gpuobj_ref_add(dev, channel, tt_h, tt, NULL);
