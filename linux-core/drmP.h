@@ -1161,6 +1161,7 @@ extern int drm_sg_free(struct inode *inode, struct file *filp,
 			       /* ATI PCIGART support (ati_pcigart.h) */
 extern int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info);
 extern int drm_ati_pcigart_cleanup(drm_device_t * dev, drm_ati_pcigart_info *gart_info);
+extern drm_ttm_backend_t *ati_pcigart_init_ttm(struct drm_device *dev, struct ati_pcigart_info *info, void (*gart_flush_fn)(struct drm_device *dev));
 
 extern drm_dma_handle_t *drm_pci_alloc(drm_device_t * dev, size_t size,
 			   size_t align, dma_addr_t maxaddr);
