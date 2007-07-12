@@ -473,8 +473,8 @@ alloc_ok:
 		block->flags|=NOUVEAU_MEM_MAPPED;
 
 		if (type == NOUVEAU_MEM_AGP)
-			ret = drm_addmap(dev, block->start + dev->agp->base,
-					 block->size, _DRM_AGP, 0, &block->map);
+			ret = drm_addmap(dev, block->start, block->size,
+					 _DRM_AGP, 0, &block->map);
 		else if (type == NOUVEAU_MEM_FB)
 			ret = drm_addmap(dev, block->start + dev_priv->fb_phys,
 					 block->size, _DRM_FRAME_BUFFER,
