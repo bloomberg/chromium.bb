@@ -493,7 +493,6 @@ alloc_ok:
 			nouveau_mem_free_block(block);
 			return NULL;
 		}
-		DRM_ERROR("user_token=0x%08x\n", entry->user_token);
 		block->map_handle = entry->user_token;
 	}
 
