@@ -918,7 +918,7 @@ nouveau_gpuobj_channel_init(struct drm_device *dev, int channel,
 			return ret;
 		}
 	}
-	else {
+	else if ( dev_priv->pci_heap) {
 		if (dev_priv -> card_type >= NV_50 ) return 0; /*no PCIGART for NV50*/
 
 		/*PCI*/
