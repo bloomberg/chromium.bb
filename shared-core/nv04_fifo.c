@@ -36,9 +36,9 @@
 #define NV04_RAMFC__SIZE 32
 
 int
-nv04_fifo_create_context(drm_device_t *dev, int channel)
+nv04_fifo_create_context(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	int ret;
 
@@ -67,9 +67,9 @@ nv04_fifo_create_context(drm_device_t *dev, int channel)
 }
 
 void
-nv04_fifo_destroy_context(drm_device_t *dev, int channel)
+nv04_fifo_destroy_context(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 
 	NV_WRITE(NV04_PFIFO_MODE, NV_READ(NV04_PFIFO_MODE)&~(1<<channel));
@@ -79,9 +79,9 @@ nv04_fifo_destroy_context(drm_device_t *dev, int channel)
 }
 
 int
-nv04_fifo_load_context(drm_device_t *dev, int channel)
+nv04_fifo_load_context(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t tmp;
 
@@ -107,9 +107,9 @@ nv04_fifo_load_context(drm_device_t *dev, int channel)
 }
 
 int
-nv04_fifo_save_context(drm_device_t *dev, int channel)
+nv04_fifo_save_context(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t tmp;
 

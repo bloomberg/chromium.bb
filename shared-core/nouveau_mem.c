@@ -208,7 +208,7 @@ void nouveau_mem_takedown(struct mem_block **heap)
 
 void nouveau_mem_close(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	nouveau_mem_takedown(&dev_priv->agp_heap);
 	nouveau_mem_takedown(&dev_priv->fb_heap);
 	if ( dev_priv->pci_heap ) 
@@ -220,7 +220,7 @@ void nouveau_mem_close(struct drm_device *dev)
 /* returns the amount of FB ram in bytes */
 uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	switch(dev_priv->card_type)
 	{
 		case NV_03:
@@ -285,7 +285,7 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 
 int nouveau_mem_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t fb_size;
 	drm_scatter_gather_t sgreq;
 	dev_priv->agp_phys=0;
@@ -405,7 +405,7 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint6
 {
 	struct mem_block *block;
 	int type;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	/* 
 	 * Make things easier on ourselves: all allocations are page-aligned. 
@@ -515,8 +515,8 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	drm_nouveau_mem_alloc_t alloc;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_mem_alloc alloc;
 	struct mem_block *block;
 
 	if (!dev_priv) {
@@ -524,7 +524,8 @@ int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 	}
 
-	DRM_COPY_FROM_USER_IOCTL(alloc, (drm_nouveau_mem_alloc_t __user *) data,
+	DRM_COPY_FROM_USER_IOCTL(alloc,
+				 (struct drm_nouveau_mem_alloc_t __user *) data,
 				 sizeof(alloc));
 
 	block=nouveau_mem_alloc(dev, alloc.alignment, alloc.size, alloc.flags, filp);
@@ -534,7 +535,8 @@ int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
 	alloc.offset=block->start;
 	alloc.flags=block->flags;
 
-	DRM_COPY_TO_USER_IOCTL((drm_nouveau_mem_alloc_t __user *) data, alloc, sizeof(alloc));
+	DRM_COPY_TO_USER_IOCTL((struct drm_nouveau_mem_alloc __user *)data,
+			       alloc, sizeof(alloc));
 
 	return 0;
 }
@@ -542,11 +544,12 @@ int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
 int nouveau_ioctl_mem_free(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	drm_nouveau_mem_free_t memfree;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_mem_free memfree;
 	struct mem_block *block;
 
-	DRM_COPY_FROM_USER_IOCTL(memfree, (drm_nouveau_mem_free_t __user *) data,
+	DRM_COPY_FROM_USER_IOCTL(memfree,
+				 (struct drm_nouveau_mem_free_t __user *)data,
 				 sizeof(memfree));
 
 	block=NULL;

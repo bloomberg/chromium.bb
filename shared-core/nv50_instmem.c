@@ -39,9 +39,9 @@ typedef struct {
 #define NV50_INSTMEM_PT_SIZE(a)	(((a) >> 12) << 3)
 
 int
-nv50_instmem_init(drm_device_t *dev)
+nv50_instmem_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	nv50_instmem_priv *priv;
 	uint32_t rv, pt, pts, cb, cb0, cb1, unk, as;
 	uint32_t i, v;
@@ -150,9 +150,9 @@ nv50_instmem_init(drm_device_t *dev)
 }
 
 void
-nv50_instmem_takedown(drm_device_t *dev)
+nv50_instmem_takedown(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	nv50_instmem_priv *priv = dev_priv->Engine.instmem.priv;
 	int i;
 
@@ -168,7 +168,7 @@ nv50_instmem_takedown(drm_device_t *dev)
 }
 
 int
-nv50_instmem_populate(drm_device_t *dev, nouveau_gpuobj_t *gpuobj, uint32_t *sz)
+nv50_instmem_populate(struct drm_device *dev, struct nouveau_gpuobj *gpuobj, uint32_t *sz)
 {
 	if (gpuobj->im_backing)
 		return DRM_ERR(EINVAL);
@@ -189,9 +189,9 @@ nv50_instmem_populate(drm_device_t *dev, nouveau_gpuobj_t *gpuobj, uint32_t *sz)
 }
 
 void
-nv50_instmem_clear(drm_device_t *dev, nouveau_gpuobj_t *gpuobj)
+nv50_instmem_clear(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	if (gpuobj && gpuobj->im_backing) {
 		if (gpuobj->im_bound)
@@ -202,9 +202,9 @@ nv50_instmem_clear(drm_device_t *dev, nouveau_gpuobj_t *gpuobj)
 }
 
 int
-nv50_instmem_bind(drm_device_t *dev, nouveau_gpuobj_t *gpuobj)
+nv50_instmem_bind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t pte, pte_end, vram;
 
 	if (!gpuobj->im_backing || !gpuobj->im_pramin || gpuobj->im_bound)
@@ -240,9 +240,9 @@ nv50_instmem_bind(drm_device_t *dev, nouveau_gpuobj_t *gpuobj)
 }
 
 int
-nv50_instmem_unbind(drm_device_t *dev, nouveau_gpuobj_t *gpuobj)
+nv50_instmem_unbind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t pte, pte_end;
 
 	if (gpuobj->im_bound == 0)

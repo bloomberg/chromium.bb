@@ -29,9 +29,9 @@
 
 
 /* returns the number of hw fifos */
-int nouveau_fifo_number(drm_device_t* dev)
+int nouveau_fifo_number(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	switch(dev_priv->card_type)
 	{
 		case NV_03:
@@ -47,9 +47,9 @@ int nouveau_fifo_number(drm_device_t* dev)
 }
 
 /* returns the size of fifo context */
-int nouveau_fifo_ctx_size(drm_device_t* dev)
+int nouveau_fifo_ctx_size(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct drm_nouveau_private *dev_priv=dev->dev_private;
 
 	if (dev_priv->card_type >= NV_40)
 		return 128;
@@ -68,9 +68,9 @@ int nouveau_fifo_ctx_size(drm_device_t* dev)
  * voir nv_driver.c : NVPreInit 
  */
 
-static int nouveau_fifo_instmem_configure(drm_device_t *dev)
+static int nouveau_fifo_instmem_configure(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	NV_WRITE(NV03_PFIFO_RAMHT,
 			(0x03 << 24) /* search 128 */ | 
@@ -109,9 +109,9 @@ static int nouveau_fifo_instmem_configure(drm_device_t *dev)
 	return 0;
 }
 
-int nouveau_fifo_init(drm_device_t *dev)
+int nouveau_fifo_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int ret;
 
 	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) &
@@ -187,12 +187,12 @@ int nouveau_fifo_init(drm_device_t *dev)
 static int
 nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	struct nouveau_config *config = &dev_priv->config;
 	struct mem_block *cb;
 	int cb_min_size = max(NV03_FIFO_SIZE,PAGE_SIZE);
-	nouveau_gpuobj_t *pushbuf = NULL;
+	struct nouveau_gpuobj *pushbuf = NULL;
 	int ret;
 
 	/* Defaults for unconfigured values */
@@ -258,12 +258,12 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 }
 
 /* allocates and initializes a fifo for user space consumption */
-int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp,
+int nouveau_fifo_alloc(struct drm_device *dev, int *chan_ret, DRMFILE filp,
 		       uint32_t vram_handle, uint32_t tt_handle)
 {
 	int ret;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	nouveau_engine_func_t *engine = &dev_priv->Engine;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine_func *engine = &dev_priv->Engine;
 	struct nouveau_fifo *chan;
 	int channel;
 
@@ -392,10 +392,10 @@ int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp,
 }
 
 /* stops a fifo */
-void nouveau_fifo_free(drm_device_t* dev, int channel)
+void nouveau_fifo_free(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	nouveau_engine_func_t *engine = &dev_priv->Engine;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine_func *engine = &dev_priv->Engine;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 
 	if (!chan) {
@@ -436,10 +436,10 @@ void nouveau_fifo_free(drm_device_t* dev, int channel)
 }
 
 /* cleanups all the fifos from filp */
-void nouveau_fifo_cleanup(drm_device_t* dev, DRMFILE filp)
+void nouveau_fifo_cleanup(struct drm_device *dev, DRMFILE filp)
 {
 	int i;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	DRM_DEBUG("clearing FIFO enables from filp\n");
 	for(i=0;i<nouveau_fifo_number(dev);i++)
@@ -448,9 +448,9 @@ void nouveau_fifo_cleanup(drm_device_t* dev, DRMFILE filp)
 }
 
 int
-nouveau_fifo_owner(drm_device_t *dev, DRMFILE filp, int channel)
+nouveau_fifo_owner(struct drm_device *dev, DRMFILE filp, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	if (channel >= nouveau_fifo_number(dev))
 		return 0;
@@ -466,13 +466,14 @@ nouveau_fifo_owner(drm_device_t *dev, DRMFILE filp, int channel)
 static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	drm_nouveau_fifo_alloc_t init;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_fifo_alloc init;
 	drm_map_list_t *entry;
 	struct nouveau_fifo *chan;
 	int res;
 
-	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_fifo_alloc_t __user *) data,
+	DRM_COPY_FROM_USER_IOCTL(init,
+				 (struct drm_nouveau_fifo_alloc __user *) data,
 				 sizeof(init));
 
 	if (init.fb_ctxdma_handle == ~0 || init.tt_ctxdma_handle == ~0)
@@ -515,7 +516,7 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 	init.notifier      = chan->notifier_block->map_handle;
 	init.notifier_size = chan->notifier_block->size;
 
-	DRM_COPY_TO_USER_IOCTL((drm_nouveau_fifo_alloc_t __user *)data,
+	DRM_COPY_TO_USER_IOCTL((struct drm_nouveau_fifo_alloc __user *)data,
 			       init, sizeof(init));
 	return 0;
 }

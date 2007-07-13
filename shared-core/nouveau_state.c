@@ -28,9 +28,9 @@
 #include "nouveau_drv.h"
 #include "nouveau_drm.h"
 
-static int nouveau_init_card_mappings(drm_device_t *dev)
+static int nouveau_init_card_mappings(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int ret;
 
 	/* resource 0 is mmio regs */
@@ -86,11 +86,11 @@ static int nouveau_init_card_mappings(drm_device_t *dev)
 	return 0;
 }
 
-static int nouveau_stub_init(drm_device_t *dev) { return 0; }
-static void nouveau_stub_takedown(drm_device_t *dev) {}
-static int nouveau_init_engine_ptrs(drm_device_t *dev)
+static int nouveau_stub_init(struct drm_device *dev) { return 0; }
+static void nouveau_stub_takedown(struct drm_device *dev) {}
+static int nouveau_init_engine_ptrs(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine_func *engine = &dev_priv->Engine;
 
 	switch (dev_priv->chipset & 0xf0) {
@@ -259,9 +259,9 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 	return 0;
 }
 
-static int nouveau_card_init(drm_device_t *dev)
+static int nouveau_card_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine_func *engine;
 	int ret;
 
@@ -321,10 +321,10 @@ static int nouveau_card_init(drm_device_t *dev)
 	return 0;
 }
 
-static void nouveau_card_takedown(drm_device_t *dev)
+static void nouveau_card_takedown(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	nouveau_engine_func_t *engine = &dev_priv->Engine;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine_func *engine = &dev_priv->Engine;
 
 	if (dev_priv->init_state != NOUVEAU_CARD_INIT_DOWN) {
 		engine->fifo.takedown(dev);
@@ -341,9 +341,9 @@ static void nouveau_card_takedown(drm_device_t *dev)
 }
 
 /* here a client dies, release the stuff that was allocated for its filp */
-void nouveau_preclose(drm_device_t * dev, DRMFILE filp)
+void nouveau_preclose(struct drm_device *dev, DRMFILE filp)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	nouveau_fifo_cleanup(dev, filp);
 	nouveau_mem_release(filp,dev_priv->fb_heap);
@@ -367,7 +367,7 @@ int nouveau_firstopen(struct drm_device *dev)
 
 int nouveau_load(struct drm_device *dev, unsigned long flags)
 {
-	drm_nouveau_private_t *dev_priv;
+	struct drm_nouveau_private *dev_priv;
 
 	if (flags==NV_UNKNOWN)
 		return DRM_ERR(EINVAL);
@@ -395,7 +395,7 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 
 void nouveau_lastclose(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	nouveau_card_takedown(dev);
 
@@ -416,11 +416,12 @@ int nouveau_unload(struct drm_device *dev)
 int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	drm_nouveau_getparam_t getparam;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_getparam getparam;
 
-	DRM_COPY_FROM_USER_IOCTL(getparam, (drm_nouveau_getparam_t __user *)data,
-			sizeof(getparam));
+	DRM_COPY_FROM_USER_IOCTL(getparam, 
+				 (struct drm_nouveau_getparam __user *)data,
+				 sizeof(getparam));
 
 	switch (getparam.param) {
 	case NOUVEAU_GETPARAM_PCI_VENDOR:
@@ -463,19 +464,20 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 	}
 
-	DRM_COPY_TO_USER_IOCTL((drm_nouveau_getparam_t __user *)data, getparam,
-			sizeof(getparam));
+	DRM_COPY_TO_USER_IOCTL((struct drm_nouveau_getparam __user *)data,
+			       getparam, sizeof(getparam));
 	return 0;
 }
 
 int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	drm_nouveau_setparam_t setparam;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_setparam setparam;
 
-	DRM_COPY_FROM_USER_IOCTL(setparam, (drm_nouveau_setparam_t __user *)data,
-			sizeof(setparam));
+	DRM_COPY_FROM_USER_IOCTL(setparam,
+				 (struct drm_nouveau_setparam __user *)data,
+				 sizeof(setparam));
 
 	switch (setparam.param) {
 	case NOUVEAU_SETPARAM_CMDBUF_LOCATION:
@@ -506,7 +508,7 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 /* waits for idle */
 void nouveau_wait_for_idle(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	switch(dev_priv->card_type)
 	{
 		case NV_03:

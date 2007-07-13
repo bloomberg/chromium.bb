@@ -30,9 +30,9 @@
 #include "nouveau_drv.h"
 
 int
-nouveau_notifier_init_channel(drm_device_t *dev, int channel, DRMFILE filp)
+nouveau_notifier_init_channel(struct drm_device *dev, int channel, DRMFILE filp)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	int flags, ret;
 
@@ -56,9 +56,9 @@ nouveau_notifier_init_channel(drm_device_t *dev, int channel, DRMFILE filp)
 }
 
 void
-nouveau_notifier_takedown_channel(drm_device_t *dev, int channel)
+nouveau_notifier_takedown_channel(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 
 	if (chan->notifier_block) {
@@ -70,12 +70,12 @@ nouveau_notifier_takedown_channel(drm_device_t *dev, int channel)
 }
 
 int
-nouveau_notifier_alloc(drm_device_t *dev, int channel, uint32_t handle,
+nouveau_notifier_alloc(struct drm_device *dev, int channel, uint32_t handle,
 		       int count, uint32_t *b_offset)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
-	nouveau_gpuobj_t *nobj = NULL;
+	struct nouveau_gpuobj *nobj = NULL;
 	struct mem_block *mem;
 	uint32_t offset;
 	int target, ret;
@@ -127,11 +127,12 @@ int
 nouveau_ioctl_notifier_alloc(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_nouveau_notifier_alloc_t na;
+	struct drm_nouveau_notifier_alloc na;
 	int ret;
 
-	DRM_COPY_FROM_USER_IOCTL(na, (drm_nouveau_notifier_alloc_t __user*)data,
-				 sizeof(na));
+	DRM_COPY_FROM_USER_IOCTL(na,
+			(struct drm_nouveau_notifier_alloc __user*)data,
+			sizeof(na));
 
 	if (!nouveau_fifo_owner(dev, filp, na.channel)) {
 		DRM_ERROR("pid %d doesn't own channel %d\n",
@@ -144,7 +145,7 @@ nouveau_ioctl_notifier_alloc(DRM_IOCTL_ARGS)
 	if (ret)
 		return ret;
 
-	DRM_COPY_TO_USER_IOCTL((drm_nouveau_notifier_alloc_t __user*)data,
+	DRM_COPY_TO_USER_IOCTL((struct drm_nouveau_notifier_alloc __user*)data,
 			       na, sizeof(na));
 	return 0;
 }

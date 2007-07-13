@@ -4,9 +4,9 @@
 #include "nouveau_drm.h"
 
 int
-nv04_fb_init(drm_device_t *dev)
+nv04_fb_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	/* This is what the DDX did for NV_ARCH_04, but a mmio-trace shows
 	 * nvidia reading PFB_CFG_0, then writing back its original value.
@@ -18,7 +18,7 @@ nv04_fb_init(drm_device_t *dev)
 }
 
 void
-nv04_fb_takedown(drm_device_t *dev)
+nv04_fb_takedown(struct drm_device *dev)
 {
 }
 

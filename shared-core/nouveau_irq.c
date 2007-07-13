@@ -36,9 +36,9 @@
 #include "nouveau_drv.h"
 #include "nouveau_reg.h"
 
-void nouveau_irq_preinstall(drm_device_t *dev)
+void nouveau_irq_preinstall(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	DRM_DEBUG("IRQ: preinst\n");
 
@@ -71,9 +71,9 @@ void nouveau_irq_preinstall(drm_device_t *dev)
 	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
 }
 
-void nouveau_irq_postinstall(drm_device_t *dev)
+void nouveau_irq_postinstall(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	if (!dev_priv) {
 		DRM_ERROR("AIII, no dev_priv\n");
@@ -107,9 +107,9 @@ void nouveau_irq_postinstall(drm_device_t *dev)
 	NV_WRITE(NV03_PMC_INTR_EN_0, NV_PMC_INTR_EN_0_MASTER_ENABLE);
 }
 
-void nouveau_irq_uninstall(drm_device_t *dev)
+void nouveau_irq_uninstall(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	if (!dev_priv) {
 		DRM_ERROR("AIII, no dev_priv\n");
@@ -138,10 +138,10 @@ void nouveau_irq_uninstall(drm_device_t *dev)
 	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
 }
 
-static void nouveau_fifo_irq_handler(drm_device_t *dev)
+static void nouveau_fifo_irq_handler(struct drm_device *dev)
 {
 	uint32_t status, chmode, chstat, channel;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	status = NV_READ(NV03_PFIFO_INTR_0);
 	if (!status)
@@ -200,9 +200,9 @@ static void nouveau_fifo_irq_handler(drm_device_t *dev)
 }
 
 #if 0
-static void nouveau_nv04_context_switch(drm_device_t *dev)
+static void nouveau_nv04_context_switch(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t channel,i;
 	uint32_t max=0;
 	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
@@ -247,9 +247,9 @@ static void nouveau_nv04_context_switch(drm_device_t *dev)
 #endif
 
 static void
-nouveau_graph_dump_trap_info(drm_device_t *dev)
+nouveau_graph_dump_trap_info(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t address;
 	uint32_t channel, class;
 	uint32_t method, subc, data;
@@ -273,10 +273,10 @@ nouveau_graph_dump_trap_info(drm_device_t *dev)
 		 );
 }
 
-static void nouveau_pgraph_irq_handler(drm_device_t *dev)
+static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 {
 	uint32_t status;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	status = NV_READ(NV03_PGRAPH_INTR);
 	if (!status)
@@ -379,9 +379,9 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 	NV_WRITE(NV03_PMC_INTR_0, NV_PMC_INTR_0_PGRAPH_PENDING);
 }
 
-static void nouveau_crtc_irq_handler(drm_device_t *dev, int crtc)
+static void nouveau_crtc_irq_handler(struct drm_device *dev, int crtc)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	if (crtc&1) {
 		NV_WRITE(NV_CRTC0_INTSTAT, NV_CRTC_INTR_VBLANK);
 	}
@@ -393,8 +393,8 @@ static void nouveau_crtc_irq_handler(drm_device_t *dev, int crtc)
 
 irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS)
 {
-	drm_device_t          *dev = (drm_device_t*)arg;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = (struct drm_device*)arg;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t status;
 
 	status = NV_READ(NV03_PMC_INTR_0);

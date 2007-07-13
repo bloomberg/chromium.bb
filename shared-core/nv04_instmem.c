@@ -5,7 +5,7 @@
 static void
 nv04_instmem_determine_amount(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
 
 	/* Figure out how much instance memory we need */
@@ -35,7 +35,7 @@ nv04_instmem_determine_amount(struct drm_device *dev)
 static void
 nv04_instmem_configure_fixed_tables(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	/* FIFO hash table (RAMHT)
 	 *   use 4k hash table at RAMIN+0x10000
@@ -85,7 +85,7 @@ nv04_instmem_configure_fixed_tables(struct drm_device *dev)
 
 int nv04_instmem_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t offset;
 	int ret = 0;
 
@@ -114,15 +114,15 @@ int nv04_instmem_init(struct drm_device *dev)
 }
 
 void
-nv04_instmem_takedown(drm_device_t *dev)
+nv04_instmem_takedown(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	nouveau_gpuobj_del(dev, &dev_priv->ramht);
 }
 
 int
-nv04_instmem_populate(drm_device_t *dev, nouveau_gpuobj_t *gpuobj, uint32_t *sz)
+nv04_instmem_populate(struct drm_device *dev, struct nouveau_gpuobj *gpuobj, uint32_t *sz)
 {
 	if (gpuobj->im_backing)
 		return DRM_ERR(EINVAL);
@@ -131,9 +131,9 @@ nv04_instmem_populate(drm_device_t *dev, nouveau_gpuobj_t *gpuobj, uint32_t *sz)
 }
 
 void
-nv04_instmem_clear(drm_device_t *dev, nouveau_gpuobj_t *gpuobj)
+nv04_instmem_clear(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	if (gpuobj && gpuobj->im_backing) {
 		if (gpuobj->im_bound)
@@ -144,7 +144,7 @@ nv04_instmem_clear(drm_device_t *dev, nouveau_gpuobj_t *gpuobj)
 }
 
 int
-nv04_instmem_bind(drm_device_t *dev, nouveau_gpuobj_t *gpuobj)
+nv04_instmem_bind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 {
 	if (!gpuobj->im_pramin || gpuobj->im_bound)
 		return DRM_ERR(EINVAL);
@@ -154,7 +154,7 @@ nv04_instmem_bind(drm_device_t *dev, nouveau_gpuobj_t *gpuobj)
 }
 
 int
-nv04_instmem_unbind(drm_device_t *dev, nouveau_gpuobj_t *gpuobj)
+nv04_instmem_unbind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 {
 	if (gpuobj->im_bound == 0)
 		return DRM_ERR(EINVAL);

@@ -287,9 +287,9 @@ struct reg_interval
 
 };
 
-void nouveau_nv04_context_switch(drm_device_t *dev)
+void nouveau_nv04_context_switch(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int channel, channel_old, i, j, index;
 
 	channel=NV_READ(NV03_PFIFO_CACHE1_PUSH1)&(nouveau_fifo_number(dev)-1);
@@ -336,8 +336,8 @@ void nouveau_nv04_context_switch(drm_device_t *dev)
 	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
 }
 
-int nv04_graph_create_context(drm_device_t *dev, int channel) {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+int nv04_graph_create_context(struct drm_device *dev, int channel) {
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	DRM_DEBUG("nv04_graph_context_create %d\n", channel);
 
 	memset(dev_priv->fifos[channel]->pgraph_ctx, 0, sizeof(dev_priv->fifos[channel]->pgraph_ctx));
@@ -351,24 +351,24 @@ int nv04_graph_create_context(drm_device_t *dev, int channel) {
 	return 0;
 }
 
-void nv04_graph_destroy_context(drm_device_t *dev, int channel)
+void nv04_graph_destroy_context(struct drm_device *dev, int channel)
 {
 }
 
-int nv04_graph_load_context(drm_device_t *dev, int channel)
-{
-	DRM_ERROR("stub!\n");
-	return 0;
-}
-
-int nv04_graph_save_context(drm_device_t *dev, int channel)
+int nv04_graph_load_context(struct drm_device *dev, int channel)
 {
 	DRM_ERROR("stub!\n");
 	return 0;
 }
 
-int nv04_graph_init(drm_device_t *dev) {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+int nv04_graph_save_context(struct drm_device *dev, int channel)
+{
+	DRM_ERROR("stub!\n");
+	return 0;
+}
+
+int nv04_graph_init(struct drm_device *dev) {
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i,sum=0;
 
 	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) &
@@ -406,7 +406,7 @@ int nv04_graph_init(drm_device_t *dev) {
 	return 0;
 }
 
-void nv04_graph_takedown(drm_device_t *dev)
+void nv04_graph_takedown(struct drm_device *dev)
 {
 }
 

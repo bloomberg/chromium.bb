@@ -4,9 +4,9 @@
 #include "nouveau_drm.h"
 
 int
-nv04_mc_init(drm_device_t *dev)
+nv04_mc_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	/* Power up everything, resetting each individual unit will
 	 * be done later if needed.
@@ -19,7 +19,7 @@ nv04_mc_init(drm_device_t *dev)
 }
 
 void
-nv04_mc_takedown(drm_device_t *dev)
+nv04_mc_takedown(struct drm_device *dev)
 {
 }
 
