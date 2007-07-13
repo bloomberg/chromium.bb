@@ -585,6 +585,11 @@ nouveau_gpuobj_dma_new(struct drm_device *dev, int channel, int class,
 	int ret;
 	uint32_t is_scatter_gather = 0;
 	
+	/* Total number of pages covered by the request.
+	 */
+	const unsigned int page_count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
+
+
 	DRM_DEBUG("ch%d class=0x%04x offset=0x%llx size=0x%llx\n",
 		  channel, class, offset, size);
 	DRM_DEBUG("access=%d target=%d\n", access, target);
@@ -604,7 +609,7 @@ nouveau_gpuobj_dma_new(struct drm_device *dev, int channel, int class,
         }
 	
 	ret = nouveau_gpuobj_new(dev, channel,
-				 is_scatter_gather ? ((((size + PAGE_SIZE - 1) / PAGE_SIZE) << 2) + 12) : nouveau_gpuobj_class_instmem_size(dev, class),
+				 is_scatter_gather ? ((page_count << 2) + 12) : nouveau_gpuobj_class_instmem_size(dev, class),
 				 16,
 				 NVOBJ_FLAG_ZERO_ALLOC | NVOBJ_FLAG_ZERO_FREE,
 				 gpuobj);
@@ -634,9 +639,19 @@ nouveau_gpuobj_dma_new(struct drm_device *dev, int channel, int class,
 			}
 		else 
 			{
+			/* Intial page entry in the scatter-gather area that
+			 * corresponds to the base offset
+			 */
+			unsigned int idx = offset / PAGE_SIZE;
+
 			uint32_t instance_offset;
-			uint64_t bus_addr;
-			size = (uint32_t) size;
+			unsigned int i;
+
+			if ((idx + page_count) > dev->sg->pages) {
+				DRM_ERROR("Requested page range exceedes "
+					  "allocated scatter-gather range!");
+				return DRM_ERR(E2BIG);
+			}
 
 			DRM_DEBUG("Creating PCI DMA object using virtual zone starting at %#llx, size %d\n", offset, (uint32_t)size);
 	                INSTANCE_WR(*gpuobj, 0, ((1<<12) | (0<<13) |
@@ -644,52 +659,34 @@ nouveau_gpuobj_dma_new(struct drm_device *dev, int channel, int class,
                                 (access << 14) |
                                 (target << 16) |
                                 class));
-			INSTANCE_WR(*gpuobj, 1, size-1);
+			INSTANCE_WR(*gpuobj, 1, (uint32_t) size-1);
 
-			offset += dev->sg->virtual;
 
 			/*write starting at the third dword*/
 			instance_offset = 2;
  
 			/*for each PAGE, get its bus address, fill in the page table entry, and advance*/
-			while ( size > 0 ) {
-				bus_addr = vmalloc_to_page(offset);
- 				if ( ! bus_addr ) 
-					{
-					DRM_ERROR("Couldn't map virtual address %#llx to a page number\n", offset);
-					nouveau_gpuobj_del(dev, gpuobj);
-					return DRM_ERR(ENOMEM);
-					}
-				bus_addr = (uint64_t) page_address(bus_addr);
- 				if ( ! bus_addr ) 
-					{
-					DRM_ERROR("Couldn't find page address for address %#llx\n", offset);
-					nouveau_gpuobj_del(dev, gpuobj);
-					return DRM_ERR(ENOMEM);
-					}
-				bus_addr |= (offset & ~PAGE_MASK);
-				bus_addr = virt_to_bus((void *)bus_addr);
- 				if ( ! bus_addr ) 
-					{
-					DRM_ERROR("Couldn't get bus address for %#llx\n", offset);
-					nouveau_gpuobj_del(dev, gpuobj);
-					return DRM_ERR(ENOMEM);
-					}
+			for (i = 0; i < page_count; i++) {
+				if (dev->sg->busaddr[idx] == 0) {
+					dev->sg->busaddr[idx] =
+						pci_map_page(dev->pdev,
+							     dev->sg->pagelist[idx],
+							     0,
+							     DMA_31BIT_MASK,
+							     DMA_BIDIRECTIONAL);
 
-				/*if ( bus_addr >= 1 << 32 )
-					{
-					DRM_ERROR("Bus address %#llx is over 32 bits, Nvidia cards cannot address it !\n", bus_addr);
-					nouveau_gpuobj_del(dev, gpuobj);
-					return DRM_ERR(EINVAL);
-					}*/
-				
-				frame = (uint32_t) bus_addr & ~0x00000FFF;
-				INSTANCE_WR(*gpuobj, instance_offset, frame | pte_flags);
-				offset += PAGE_SIZE;
-				instance_offset ++;
-				size -= PAGE_SIZE;
+					if (dev->sg->busaddr[idx] == 0) {
+						return DRM_ERR(ENOMEM);
+					}
 				}
 
+				frame = (uint32_t) dev->sg->busaddr[idx];
+				INSTANCE_WR(*gpuobj, instance_offset, 
+					    frame | pte_flags);
+ 
+				idx++;
+				instance_offset ++;
+ 			}
 			}
 	} else {
 		INSTANCE_WR(*gpuobj, 0, 0x00190000 | class);
