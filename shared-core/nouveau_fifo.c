@@ -99,6 +99,7 @@ static int nouveau_fifo_instmem_configure(struct drm_device *dev)
 					(1 << 16) /* 64 Bytes entry*/);
 			/* XXX nvidia blob set bit 18, 21,23 for nv20 & nv30 */
 			break;
+		case NV_11:
 		case NV_10:
 		case NV_04:
 		case NV_03:

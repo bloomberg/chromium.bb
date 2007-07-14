@@ -253,6 +253,7 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 			}
 			break;
 		case NV_10:
+		case NV_11:
 		case NV_17:
 		case NV_20:
 		case NV_30:

@@ -70,6 +70,7 @@ nv04_instmem_configure_fixed_tables(struct drm_device *dev)
 		case NV_30:
 		case NV_20:
 		case NV_17:
+		case NV_11:
 		case NV_10:
 		case NV_04:
 		case NV_03:

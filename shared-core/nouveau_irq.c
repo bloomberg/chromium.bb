@@ -355,6 +355,7 @@ static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 				nouveau_nv04_context_switch(dev);
 				break;
 			case NV_10:
+			case NV_11:
 			case NV_17:
 				nouveau_nv10_context_switch(dev);
 				break;
