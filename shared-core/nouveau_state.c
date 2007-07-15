@@ -332,7 +332,12 @@ static void nouveau_card_takedown(struct drm_device *dev)
 		engine->fb.takedown(dev);
 		engine->timer.takedown(dev);
 		engine->mc.takedown(dev);
+
+		nouveau_sgdma_nottm_hack_takedown(dev);
+		nouveau_sgdma_takedown(dev);
+
 		nouveau_gpuobj_takedown(dev);
+
 		nouveau_mem_close(dev);
 		engine->instmem.takedown(dev);
 
@@ -442,7 +447,7 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 		getparam.value=dev_priv->fb_phys;
 		break;
 	case NOUVEAU_GETPARAM_AGP_PHYSICAL:
-		getparam.value=dev_priv->agp_phys;
+		getparam.value=dev_priv->gart_info.aper_base;
 		break;
 	case NOUVEAU_GETPARAM_PCI_PHYSICAL:
 		if ( dev -> sg )
@@ -457,7 +462,7 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 		getparam.value=dev_priv->fb_available_size;
 		break;
 	case NOUVEAU_GETPARAM_AGP_SIZE:
-		getparam.value=dev_priv->agp_available_size;
+		getparam.value=dev_priv->gart_info.aper_size;
 		break;
 	default:
 		DRM_ERROR("unknown parameter %lld\n", getparam.param);

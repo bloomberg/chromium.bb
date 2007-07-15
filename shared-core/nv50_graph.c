@@ -271,7 +271,7 @@ nv50_graph_load_context(struct drm_device *dev, int channel)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t inst = ((chan->ramin->instance >> 12) | (1<<31));
-	int ret;
+	int ret; (void)ret;
 
 	DRM_DEBUG("ch%d\n", channel);
 

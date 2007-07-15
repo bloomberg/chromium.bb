@@ -118,6 +118,10 @@ struct nouveau_fifo
 	struct nouveau_gpuobj_ref *ramin_grctx;
 	uint32_t pgraph_ctx [340]; /* XXX dynamic alloc ? */
 
+	/* NV50 VM */
+	struct nouveau_gpuobj     *vm_pd;
+	struct nouveau_gpuobj_ref *vm_gart_pt;
+
 	/* Objects */
 	struct nouveau_gpuobj_ref *ramin; /* Private instmem */
 	struct mem_block          *ramin_heap; /* Private PRAMIN heap */
@@ -220,8 +224,24 @@ struct drm_nouveau_private {
 	/* base physical adresses */
 	uint64_t fb_phys;
 	uint64_t fb_available_size;
-	uint64_t agp_phys;
-	uint64_t agp_available_size;
+
+	struct {
+		enum {
+			NOUVEAU_GART_NONE = 0,
+			NOUVEAU_GART_AGP,
+			NOUVEAU_GART_SGDMA
+		} type;
+		uint64_t aper_base;
+		uint64_t aper_size;
+
+		struct nouveau_gpuobj *sg_ctxdma;
+		struct page *sg_dummy_page;
+		dma_addr_t sg_dummy_bus;
+
+		/* nottm hack */
+		struct drm_ttm_backend *sg_be;
+		unsigned long sg_handle;
+	} gart_info;
 
 	/* the mtrr covering the FB */
 	int fb_mtrr;
@@ -307,6 +327,10 @@ extern int nouveau_gpuobj_dma_new(struct drm_device *, int channel, int class,
 				  uint64_t offset, uint64_t size,
 				  int access, int target,
 				  struct nouveau_gpuobj **);
+extern int nouveau_gpuobj_gart_dma_new(struct drm_device *, int channel,
+				       uint64_t offset, uint64_t size,
+				       int access, struct nouveau_gpuobj **,
+				       uint32_t *o_ret);
 extern int nouveau_gpuobj_gr_new(struct drm_device *, int channel, int class,
 				 struct nouveau_gpuobj **);
 extern int nouveau_ioctl_grobj_alloc(DRM_IOCTL_ARGS);
@@ -316,6 +340,13 @@ extern irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS);
 extern void        nouveau_irq_preinstall(struct drm_device*);
 extern void        nouveau_irq_postinstall(struct drm_device*);
 extern void        nouveau_irq_uninstall(struct drm_device*);
+
+/* nouveau_sgdma.c */
+extern int nouveau_sgdma_init(struct drm_device *);
+extern void nouveau_sgdma_takedown(struct drm_device *);
+extern struct drm_ttm_backend *nouveau_sgdma_init_ttm(struct drm_device *);
+extern int nouveau_sgdma_nottm_hack_init(struct drm_device *);
+extern void nouveau_sgdma_nottm_hack_takedown(struct drm_device *);
 
 /* nv04_fb.c */
 extern int  nv04_fb_init(struct drm_device *dev);

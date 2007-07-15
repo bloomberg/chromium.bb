@@ -37,7 +37,8 @@ nouveau_notifier_init_channel(struct drm_device *dev, int channel, DRMFILE filp)
 	int flags, ret;
 
 	/*TODO: PCI notifier blocks */
-	if (dev_priv->agp_heap)
+	if (dev_priv->agp_heap &&
+	    dev_priv->gart_info.type != NOUVEAU_GART_SGDMA)
 		flags = NOUVEAU_MEM_AGP | NOUVEAU_MEM_FB_ACCEPTABLE;
 	else
 		flags = NOUVEAU_MEM_FB;

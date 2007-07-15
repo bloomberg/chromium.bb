@@ -211,24 +211,27 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 	}
 
 	if (cb->flags & NOUVEAU_MEM_AGP) {
-		DRM_DEBUG("Creating CB in AGP memory\n");
+		ret = nouveau_gpuobj_gart_dma_new(dev, channel,
+						  cb->start, cb->size,
+						  NV_DMA_ACCESS_RO,
+						  &pushbuf,
+						  &chan->pushbuf_base);
+	} else
+	if (cb->flags & NOUVEAU_MEM_PCI) {
 		ret = nouveau_gpuobj_dma_new(dev, channel,
-				NV_CLASS_DMA_IN_MEMORY,
-				cb->start, cb->size,
-				NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP, &pushbuf);
-	} else if ( cb->flags & NOUVEAU_MEM_PCI) {
-		DRM_DEBUG("Creating CB in PCI memory\n");
-		ret = nouveau_gpuobj_dma_new(dev, channel,
-				NV_CLASS_DMA_IN_MEMORY,
-				cb->start,
-				cb->size,
-				NV_DMA_ACCESS_RO, NV_DMA_TARGET_PCI_NONLINEAR, &pushbuf);
+					     NV_CLASS_DMA_IN_MEMORY,
+					     cb->start, cb->size,
+					     NV_DMA_ACCESS_RO,
+					     NV_DMA_TARGET_PCI_NONLINEAR,
+					     &pushbuf);
+		chan->pushbuf_base = 0;
 	} else if (dev_priv->card_type != NV_04) {
 		ret = nouveau_gpuobj_dma_new
 			(dev, channel, NV_CLASS_DMA_IN_MEMORY,
 			 cb->start,
 			 cb->size, NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM,
 			 &pushbuf);
+		chan->pushbuf_base = 0;
 	} else {
 		/* NV04 cmdbuf hack, from original ddx.. not sure of it's
 		 * exact reason for existing :)  PCI access to cmdbuf in
@@ -239,6 +242,7 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 			 cb->start + drm_get_resource_start(dev, 1),
 			 cb->size, NV_DMA_ACCESS_RO,
 			 NV_DMA_TARGET_PCI, &pushbuf);
+		chan->pushbuf_base = 0;
 	}
 
 	if (ret) {
@@ -250,11 +254,12 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 	if ((ret = nouveau_gpuobj_ref_add(dev, channel, 0, pushbuf,
 					  &chan->pushbuf))) {
 		DRM_ERROR("Error referencing push buffer ctxdma: %d\n", ret);
+		if (pushbuf != dev_priv->gart_info.sg_ctxdma)
+			nouveau_gpuobj_del(dev, &pushbuf);
 		return ret;
 	}
 
-	dev_priv->fifos[channel]->pushbuf_base = 0;
-	dev_priv->fifos[channel]->pushbuf_mem = cb;
+	chan->pushbuf_mem = cb;
 	return 0;
 }
 
