@@ -1217,7 +1217,7 @@ static int drm_buffer_object_unmap(struct drm_file * priv, uint32_t handle)
 
 static void drm_buffer_user_object_unmap(struct drm_file * priv,
 					 struct drm_user_object * uo,
-					 drm_ref_t action)
+					 enum drm_ref_type action)
 {
 	struct drm_buffer_object *bo =
 	    drm_user_object_entry(uo, struct drm_buffer_object, base);

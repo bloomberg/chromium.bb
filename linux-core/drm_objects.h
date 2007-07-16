@@ -64,9 +64,9 @@ struct drm_user_object {
 	struct drm_file *owner;
 	void (*ref_struct_locked) (struct drm_file * priv,
 				   struct drm_user_object * obj,
-				   drm_ref_t ref_action);
+				   enum drm_ref_type ref_action);
 	void (*unref) (struct drm_file * priv, struct drm_user_object * obj,
-		       drm_ref_t unref_action);
+		       enum drm_ref_type unref_action);
 	void (*remove) (struct drm_file * priv, struct drm_user_object * obj);
 };
 
@@ -81,7 +81,7 @@ struct drm_ref_object {
 	struct drm_hash_item hash;
 	struct list_head list;
 	atomic_t refcount;
-	drm_ref_t unref_action;
+	enum drm_ref_type unref_action;
 };
 
 /**
@@ -112,7 +112,7 @@ extern int drm_remove_user_object(struct drm_file * priv, struct drm_user_object
 
 extern int drm_add_ref_object(struct drm_file * priv,
 			      struct drm_user_object * referenced_object,
-			      drm_ref_t ref_action);
+			      enum drm_ref_type ref_action);
 
 /*
  * Must be called with the struct_mutex held.
@@ -120,7 +120,7 @@ extern int drm_add_ref_object(struct drm_file * priv,
 
 struct drm_ref_object *drm_lookup_ref_object(struct drm_file * priv,
 					struct drm_user_object * referenced_object,
-					drm_ref_t ref_action);
+					enum drm_ref_type ref_action);
 /*
  * Must be called with the struct_mutex held.
  * If "item" has been obtained by a call to drm_lookup_ref_object. You may not

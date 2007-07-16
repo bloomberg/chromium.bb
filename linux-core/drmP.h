@@ -387,11 +387,11 @@ struct drm_buf_entry {
  */
 
 #define DRM_FILE_HASH_ORDER 8
-typedef enum{
+enum drm_ref_type {
 	_DRM_REF_USE=0,
 	_DRM_REF_TYPE1,
 	_DRM_NO_REF_TYPES
-} drm_ref_t;
+};
 
 
 /** File private data */

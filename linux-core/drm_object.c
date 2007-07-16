@@ -106,7 +106,7 @@ int drm_remove_user_object(struct drm_file * priv, struct drm_user_object * item
 }
 
 static int drm_object_ref_action(struct drm_file * priv, struct drm_user_object * ro,
-				 drm_ref_t action)
+				 enum drm_ref_type action)
 {
 	int ret = 0;
 
@@ -125,7 +125,7 @@ static int drm_object_ref_action(struct drm_file * priv, struct drm_user_object 
 }
 
 int drm_add_ref_object(struct drm_file * priv, struct drm_user_object * referenced_object,
-		       drm_ref_t ref_action)
+		       enum drm_ref_type ref_action)
 {
 	int ret = 0;
 	struct drm_ref_object *item;
@@ -183,7 +183,7 @@ int drm_add_ref_object(struct drm_file * priv, struct drm_user_object * referenc
 
 struct drm_ref_object *drm_lookup_ref_object(struct drm_file * priv,
 					struct drm_user_object * referenced_object,
-					drm_ref_t ref_action)
+					enum drm_ref_type ref_action)
 {
 	struct drm_hash_item *hash;
 	int ret;
@@ -219,7 +219,7 @@ void drm_remove_ref_object(struct drm_file * priv, struct drm_ref_object * item)
 	int ret;
 	struct drm_user_object *user_object = (struct drm_user_object *) item->hash.key;
 	struct drm_open_hash *ht = &priv->refd_object_hash[item->unref_action];
-	drm_ref_t unref_action;
+	enum drm_ref_type unref_action;
 
 	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
 	unref_action = item->unref_action;
