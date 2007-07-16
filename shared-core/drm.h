@@ -670,7 +670,7 @@ struct drm_set_version {
 
 #define DRM_FENCE_TYPE_EXE                 0x00000001
 
-typedef struct drm_fence_arg {
+struct drm_fence_arg {
 	unsigned int handle;
 	unsigned int class;
 	unsigned int type;
@@ -678,7 +678,7 @@ typedef struct drm_fence_arg {
 	unsigned int signaled;
 	unsigned int pad64;
 	drm_u64_t expand_pad[3]; /*Future expansion */
-} drm_fence_arg_t;
+};
 
 /* Buffer permissions, referring to how the GPU uses the buffers.
  * these translate to fence types used for the buffers.
@@ -784,12 +784,12 @@ typedef struct drm_fence_arg {
 #define DRM_BO_INIT_MINOR 1
 
 
-typedef enum {
+enum drm_bo_type {
 	drm_bo_type_dc,
 	drm_bo_type_user,
 	drm_bo_type_fake,
 	drm_bo_type_kernel, /* for initial kernel allocations */
-}drm_bo_type_t;
+};
 
 struct drm_bo_info_req {
 	drm_u64_t mask;
@@ -806,7 +806,7 @@ struct drm_bo_create_req {
 	drm_u64_t buffer_start;
 	unsigned int hint;
 	unsigned int page_alignment;
-	drm_bo_type_t type;
+	enum drm_bo_type type;
 	unsigned int pad64;
 };
 
@@ -896,18 +896,18 @@ struct drm_bo_op_arg {
 
 #define DRM_BO_MEM_TYPES 8 /* For now. */
 
-typedef struct drm_mm_type_arg {
+struct drm_mm_type_arg {
 	unsigned int mem_type;
-} drm_mm_type_arg_t;
+};
 
-typedef struct drm_mm_init_arg {
+struct drm_mm_init_arg {
 	unsigned int magic;
 	unsigned int major;
 	unsigned int minor;
 	unsigned int mem_type;
 	drm_u64_t p_offset;
 	drm_u64_t p_size;
-} drm_mm_init_arg_t;
+};
 
 /**
  * \name Ioctls Definitions
@@ -976,20 +976,20 @@ typedef struct drm_mm_init_arg {
 
 #define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, struct drm_update_draw)
 
-#define DRM_IOCTL_MM_INIT               DRM_IOWR(0xc0, drm_mm_init_arg_t)
-#define DRM_IOCTL_MM_TAKEDOWN           DRM_IOWR(0xc1, drm_mm_type_arg_t)
-#define DRM_IOCTL_MM_LOCK               DRM_IOWR(0xc2, drm_mm_type_arg_t)
-#define DRM_IOCTL_MM_UNLOCK             DRM_IOWR(0xc3, drm_mm_type_arg_t)
+#define DRM_IOCTL_MM_INIT               DRM_IOWR(0xc0, struct drm_mm_init_arg)
+#define DRM_IOCTL_MM_TAKEDOWN           DRM_IOWR(0xc1, struct drm_mm_type_arg)
+#define DRM_IOCTL_MM_LOCK               DRM_IOWR(0xc2, struct drm_mm_type_arg)
+#define DRM_IOCTL_MM_UNLOCK             DRM_IOWR(0xc3, struct drm_mm_type_arg)
 
-#define DRM_IOCTL_FENCE_CREATE          DRM_IOWR(0xc4, drm_fence_arg_t)
-#define DRM_IOCTL_FENCE_DESTROY         DRM_IOWR(0xc5, drm_fence_arg_t)
-#define DRM_IOCTL_FENCE_REFERENCE       DRM_IOWR(0xc6, drm_fence_arg_t)
-#define DRM_IOCTL_FENCE_UNREFERENCE     DRM_IOWR(0xc7, drm_fence_arg_t)
-#define DRM_IOCTL_FENCE_SIGNALED        DRM_IOWR(0xc8, drm_fence_arg_t)
-#define DRM_IOCTL_FENCE_FLUSH           DRM_IOWR(0xc9, drm_fence_arg_t)
-#define DRM_IOCTL_FENCE_WAIT            DRM_IOWR(0xca, drm_fence_arg_t)
-#define DRM_IOCTL_FENCE_EMIT            DRM_IOWR(0xcb, drm_fence_arg_t)
-#define DRM_IOCTL_FENCE_BUFFERS         DRM_IOWR(0xcc, drm_fence_arg_t)
+#define DRM_IOCTL_FENCE_CREATE          DRM_IOWR(0xc4, struct drm_fence_arg)
+#define DRM_IOCTL_FENCE_DESTROY         DRM_IOWR(0xc5, struct drm_fence_arg)
+#define DRM_IOCTL_FENCE_REFERENCE       DRM_IOWR(0xc6, struct drm_fence_arg)
+#define DRM_IOCTL_FENCE_UNREFERENCE     DRM_IOWR(0xc7, struct drm_fence_arg)
+#define DRM_IOCTL_FENCE_SIGNALED        DRM_IOWR(0xc8, struct drm_fence_arg)
+#define DRM_IOCTL_FENCE_FLUSH           DRM_IOWR(0xc9, struct drm_fence_arg)
+#define DRM_IOCTL_FENCE_WAIT            DRM_IOWR(0xca, struct drm_fence_arg)
+#define DRM_IOCTL_FENCE_EMIT            DRM_IOWR(0xcb, struct drm_fence_arg)
+#define DRM_IOCTL_FENCE_BUFFERS         DRM_IOWR(0xcc, struct drm_fence_arg)
 
 #define DRM_IOCTL_BO_CREATE             DRM_IOWR(0xcd, struct drm_bo_create_arg)
 #define DRM_IOCTL_BO_DESTROY            DRM_IOWR(0xce, struct drm_bo_handle_arg)
@@ -1057,6 +1057,11 @@ typedef struct drm_agp_binding drm_agp_binding_t;
 typedef struct drm_agp_info drm_agp_info_t;
 typedef struct drm_scatter_gather drm_scatter_gather_t;
 typedef struct drm_set_version drm_set_version_t;
+
+typedef struct drm_fence_arg drm_fence_arg_t;
+typedef struct drm_mm_type_arg drm_mm_type_arg_t;
+typedef struct drm_mm_init_arg drm_mm_init_arg_t;
+typedef enum drm_bo_type drm_bo_type_t;
 #endif
 
 #endif

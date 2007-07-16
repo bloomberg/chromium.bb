@@ -1589,7 +1589,7 @@ static int drm_bo_handle_wait(drm_file_t *priv, uint32_t handle,
 
 int drm_buffer_object_create(drm_device_t *dev,
 			     unsigned long size,
-			     drm_bo_type_t type,
+			     enum drm_bo_type type,
 			     uint64_t mask,
 			     uint32_t hint,
 			     uint32_t page_alignment,

@@ -337,7 +337,7 @@ typedef struct drm_buffer_object {
 
 	atomic_t usage;
 	unsigned long buffer_start;
-	drm_bo_type_t type;
+	enum drm_bo_type type;
 	unsigned long offset;
 	atomic_t mapped;
 	drm_bo_mem_reg_t mem;

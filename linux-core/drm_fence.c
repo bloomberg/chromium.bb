@@ -570,7 +570,7 @@ int drm_fence_create_ioctl(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
-	drm_fence_arg_t arg;
+	struct drm_fence_arg arg;
 	drm_fence_object_t *fence;
 	unsigned long flags;
 	ret = 0;
@@ -618,7 +618,7 @@ int drm_fence_destroy_ioctl(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
-	drm_fence_arg_t arg;
+	struct drm_fence_arg arg;
 	drm_user_object_t *uo;
 	ret = 0;
 
@@ -646,7 +646,7 @@ int drm_fence_reference_ioctl(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
-	drm_fence_arg_t arg;
+	struct drm_fence_arg arg;
 	drm_fence_object_t *fence;
 	drm_user_object_t *uo;
 	unsigned long flags;
@@ -680,7 +680,7 @@ int drm_fence_unreference_ioctl(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
-	drm_fence_arg_t arg;
+	struct drm_fence_arg arg;
 	ret = 0;
 
 	if (!fm->initialized) {
@@ -697,7 +697,7 @@ int drm_fence_signaled_ioctl(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
-	drm_fence_arg_t arg;
+	struct drm_fence_arg arg;
 	drm_fence_object_t *fence;
 	unsigned long flags;
 	ret = 0;
@@ -729,7 +729,7 @@ int drm_fence_flush_ioctl(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
-	drm_fence_arg_t arg;
+	struct drm_fence_arg arg;
 	drm_fence_object_t *fence;
 	unsigned long flags;
 	ret = 0;
@@ -763,7 +763,7 @@ int drm_fence_wait_ioctl(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
-	drm_fence_arg_t arg;
+	struct drm_fence_arg arg;
 	drm_fence_object_t *fence;
 	unsigned long flags;
 	ret = 0;
@@ -799,7 +799,7 @@ int drm_fence_emit_ioctl(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
-	drm_fence_arg_t arg;
+	struct drm_fence_arg arg;
 	drm_fence_object_t *fence;
 	unsigned long flags;
 	ret = 0;
@@ -834,7 +834,7 @@ int drm_fence_buffers_ioctl(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
-	drm_fence_arg_t arg;
+	struct drm_fence_arg arg;
 	drm_fence_object_t *fence;
 	unsigned long flags;
 	ret = 0;
