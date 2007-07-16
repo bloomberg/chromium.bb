@@ -418,7 +418,7 @@ void mach64_dump_engine_info(drm_mach64_private_t * dev_priv)
  * pointed by the ring head.
  */
 static void mach64_dump_buf_info(drm_mach64_private_t * dev_priv,
-				 drm_buf_t * buf)
+				 struct drm_buf * buf)
 {
 	u32 addr = GETBUFADDR(buf);
 	u32 used = buf->used >> 2;
@@ -522,7 +522,7 @@ void mach64_dump_ring_info(drm_mach64_private_t * dev_priv)
 		list_for_each(ptr, &dev_priv->pending) {
 			drm_mach64_freelist_t *entry =
 			    list_entry(ptr, drm_mach64_freelist_t, list);
-			drm_buf_t *buf = entry->buf;
+			struct drm_buf *buf = entry->buf;
 
 			u32 buf_addr = GETBUFADDR(buf);
 
@@ -974,7 +974,7 @@ int mach64_do_dispatch_pseudo_dma(drm_mach64_private_t * dev_priv)
 	volatile u32 *ring_read;
 	struct list_head *ptr;
 	drm_mach64_freelist_t *entry;
-	drm_buf_t *buf = NULL;
+	struct drm_buf *buf = NULL;
 	u32 *buf_ptr;
 	u32 used, reg, target;
 	int fifo, count, found, ret, no_idle_wait;
@@ -1381,7 +1381,7 @@ static int mach64_do_reclaim_completed(drm_mach64_private_t * dev_priv)
 	return 1;
 }
 
-drm_buf_t *mach64_freelist_get(drm_mach64_private_t * dev_priv)
+struct drm_buf *mach64_freelist_get(drm_mach64_private_t * dev_priv)
 {
 	drm_mach64_descriptor_ring_t *ring = &dev_priv->ring;
 	drm_mach64_freelist_t *entry;
@@ -1427,7 +1427,7 @@ drm_buf_t *mach64_freelist_get(drm_mach64_private_t * dev_priv)
 	return entry->buf;
 }
 
-int mach64_freelist_put(drm_mach64_private_t * dev_priv, drm_buf_t * copy_buf)
+int mach64_freelist_put(drm_mach64_private_t * dev_priv, struct drm_buf * copy_buf)
 {
 	struct list_head *ptr;
 	drm_mach64_freelist_t *entry;

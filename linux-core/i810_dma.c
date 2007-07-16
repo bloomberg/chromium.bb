@@ -64,7 +64,7 @@ static inline void i810_print_status_page(struct drm_device * dev)
 	}
 }
 
-static drm_buf_t *i810_freelist_get(struct drm_device * dev)
+static struct drm_buf *i810_freelist_get(struct drm_device * dev)
 {
 	struct drm_device_dma *dma = dev->dma;
 	int i;
@@ -73,7 +73,7 @@ static drm_buf_t *i810_freelist_get(struct drm_device * dev)
 	/* Linear search might not be the best solution */
 
 	for (i = 0; i < dma->buf_count; i++) {
-		drm_buf_t *buf = dma->buflist[i];
+		struct drm_buf *buf = dma->buflist[i];
 		drm_i810_buf_priv_t *buf_priv = buf->dev_private;
 		/* In use is already a pointer */
 		used = cmpxchg(buf_priv->in_use, I810_BUF_FREE,
@@ -89,7 +89,7 @@ static drm_buf_t *i810_freelist_get(struct drm_device * dev)
  * yet, the hardware updates in use for us once its on the ring buffer.
  */
 
-static int i810_freelist_put(struct drm_device * dev, drm_buf_t * buf)
+static int i810_freelist_put(struct drm_device * dev, struct drm_buf * buf)
 {
 	drm_i810_buf_priv_t *buf_priv = buf->dev_private;
 	int used;
@@ -109,7 +109,7 @@ static int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
 	struct drm_file *priv = filp->private_data;
 	struct drm_device *dev;
 	drm_i810_private_t *dev_priv;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 	drm_i810_buf_priv_t *buf_priv;
 
 	lock_kernel();
@@ -139,7 +139,7 @@ static const struct file_operations i810_buffer_fops = {
 	.fasync = drm_fasync,
 };
 
-static int i810_map_buffer(drm_buf_t * buf, struct file *filp)
+static int i810_map_buffer(struct drm_buf * buf, struct file *filp)
 {
 	struct drm_file *priv = filp->private_data;
 	struct drm_device *dev = priv->head->dev;
@@ -171,7 +171,7 @@ static int i810_map_buffer(drm_buf_t * buf, struct file *filp)
 	return retcode;
 }
 
-static int i810_unmap_buffer(drm_buf_t * buf)
+static int i810_unmap_buffer(struct drm_buf * buf)
 {
 	drm_i810_buf_priv_t *buf_priv = buf->dev_private;
 	int retcode = 0;
@@ -194,7 +194,7 @@ static int i810_unmap_buffer(drm_buf_t * buf)
 static int i810_dma_get_buffer(struct drm_device * dev, drm_i810_dma_t * d,
 			       struct file *filp)
 {
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 	drm_i810_buf_priv_t *buf_priv;
 	int retcode = 0;
 
@@ -252,7 +252,7 @@ static int i810_dma_cleanup(struct drm_device * dev)
 		dev->dev_private = NULL;
 
 		for (i = 0; i < dma->buf_count; i++) {
-			drm_buf_t *buf = dma->buflist[i];
+			struct drm_buf *buf = dma->buflist[i];
 			drm_i810_buf_priv_t *buf_priv = buf->dev_private;
 
 			if (buf_priv->kernel_virtual && buf->total)
@@ -320,7 +320,7 @@ static int i810_freelist_init(struct drm_device * dev, drm_i810_private_t * dev_
 	}
 
 	for (i = 0; i < dma->buf_count; i++) {
-		drm_buf_t *buf = dma->buflist[i];
+		struct drm_buf *buf = dma->buflist[i];
 		drm_i810_buf_priv_t *buf_priv = buf->dev_private;
 
 		buf_priv->in_use = hw_status++;
@@ -807,7 +807,7 @@ static void i810_dma_dispatch_swap(struct drm_device * dev)
 }
 
 static void i810_dma_dispatch_vertex(struct drm_device * dev,
-				     drm_buf_t * buf, int discard, int used)
+				     struct drm_buf * buf, int discard, int used)
 {
 	drm_i810_private_t *dev_priv = dev->dev_private;
 	drm_i810_buf_priv_t *buf_priv = buf->dev_private;
@@ -971,7 +971,7 @@ static int i810_flush_queue(struct drm_device * dev)
 	i810_wait_ring(dev, dev_priv->ring.Size - 8);
 
 	for (i = 0; i < dma->buf_count; i++) {
-		drm_buf_t *buf = dma->buflist[i];
+		struct drm_buf *buf = dma->buflist[i];
 		drm_i810_buf_priv_t *buf_priv = buf->dev_private;
 
 		int used = cmpxchg(buf_priv->in_use, I810_BUF_HARDWARE,
@@ -1002,7 +1002,7 @@ static void i810_reclaim_buffers(struct drm_device *dev, struct file *filp)
 	i810_flush_queue(dev);
 
 	for (i = 0; i < dma->buf_count; i++) {
-		drm_buf_t *buf = dma->buflist[i];
+		struct drm_buf *buf = dma->buflist[i];
 		drm_i810_buf_priv_t *buf_priv = buf->dev_private;
 
 		if (buf->filp == filp && buf_priv) {
@@ -1161,7 +1161,7 @@ static int i810_docopy(struct inode *inode, struct file *filp, unsigned int cmd,
 	return 0;
 }
 
-static void i810_dma_dispatch_mc(struct drm_device * dev, drm_buf_t * buf, int used,
+static void i810_dma_dispatch_mc(struct drm_device * dev, struct drm_buf * buf, int used,
 				 unsigned int last_render)
 {
 	drm_i810_private_t *dev_priv = dev->dev_private;

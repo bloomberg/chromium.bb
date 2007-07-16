@@ -550,7 +550,7 @@ static int mach64_dma_dispatch_vertex(DRMFILE filp, struct drm_device * dev,
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
-	drm_buf_t *copy_buf;
+	struct drm_buf *copy_buf;
 	void *buf = vertex->buf;
 	unsigned long used = vertex->used;
 	int ret = 0;
@@ -646,7 +646,7 @@ static int mach64_dma_dispatch_blit(DRMFILE filp, struct drm_device * dev,
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	int dword_shift, dwords;
 	unsigned long used;
-	drm_buf_t *copy_buf;
+	struct drm_buf *copy_buf;
 	int verify_ret = 0;
 	DMALOCALS;
 

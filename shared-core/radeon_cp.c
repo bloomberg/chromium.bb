@@ -2066,12 +2066,12 @@ int radeon_fullscreen(DRM_IOCTL_ARGS)
  * they can't get the lock.
  */
 
-drm_buf_t *radeon_freelist_get(struct drm_device * dev)
+struct drm_buf *radeon_freelist_get(struct drm_device * dev)
 {
 	struct drm_device_dma *dma = dev->dma;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	drm_radeon_buf_priv_t *buf_priv;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 	int i, t;
 	int start;
 
@@ -2106,12 +2106,12 @@ drm_buf_t *radeon_freelist_get(struct drm_device * dev)
 }
 
 #if 0
-drm_buf_t *radeon_freelist_get(struct drm_device * dev)
+struct drm_buf *radeon_freelist_get(struct drm_device * dev)
 {
 	struct drm_device_dma *dma = dev->dma;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	drm_radeon_buf_priv_t *buf_priv;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 	int i, t;
 	int start;
 	u32 done_age = DRM_READ32(dev_priv->ring_rptr, RADEON_SCRATCHOFF(1));
@@ -2148,7 +2148,7 @@ void radeon_freelist_reset(struct drm_device * dev)
 
 	dev_priv->last_buf = 0;
 	for (i = 0; i < dma->buf_count; i++) {
-		drm_buf_t *buf = dma->buflist[i];
+		struct drm_buf *buf = dma->buflist[i];
 		drm_radeon_buf_priv_t *buf_priv = buf->dev_private;
 		buf_priv->age = 0;
 	}
@@ -2194,7 +2194,7 @@ static int radeon_cp_get_buffers(DRMFILE filp, struct drm_device * dev,
 				 struct drm_dma * d)
 {
 	int i;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 
 	for (i = d->granted_count; i < d->request_count; i++) {
 		buf = radeon_freelist_get(dev);

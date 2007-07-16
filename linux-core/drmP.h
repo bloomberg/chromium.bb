@@ -311,7 +311,7 @@ struct drm_vma_entry {
 /**
  * DMA buffer.
  */
-typedef struct drm_buf {
+struct drm_buf {
 	int idx;		       /**< Index into master buflist */
 	int total;		       /**< Buffer size */
 	int order;		       /**< log-base-2(total) */
@@ -337,7 +337,7 @@ typedef struct drm_buf {
 
 	int dev_priv_size;		/**< Size of buffer private storage */
 	void *dev_private;		/**< Per-buffer private storage */
-} drm_buf_t;
+};
 
 /** bufs is one longer than it has to be */
 struct drm_waitlist {
@@ -1051,7 +1051,7 @@ extern struct drm_map_list *drm_find_matching_map(struct drm_device *dev,
 				/* DMA support (drm_dma.h) */
 extern int drm_dma_setup(struct drm_device *dev);
 extern void drm_dma_takedown(struct drm_device *dev);
-extern void drm_free_buffer(struct drm_device *dev, drm_buf_t * buf);
+extern void drm_free_buffer(struct drm_device *dev, struct drm_buf * buf);
 extern void drm_core_reclaim_buffers(struct drm_device *dev, struct file *filp);
 
 				/* IRQ support (drm_irq.h) */

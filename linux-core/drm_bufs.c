@@ -574,7 +574,7 @@ int drm_addbufs_agp(struct drm_device *dev, struct drm_buf_desc * request)
 	int total;
 	int byte_count;
 	int i, valid;
-	drm_buf_t **temp_buflist;
+	struct drm_buf **temp_buflist;
 
 	if (!dma)
 		return -EINVAL;
@@ -738,14 +738,14 @@ int drm_addbufs_pci(struct drm_device *dev, struct drm_buf_desc * request)
 	int page_order;
 	struct drm_buf_entry *entry;
 	drm_dma_handle_t *dmah;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 	int alignment;
 	unsigned long offset;
 	int i;
 	int byte_count;
 	int page_count;
 	unsigned long *temp_pagelist;
-	drm_buf_t **temp_buflist;
+	struct drm_buf **temp_buflist;
 
 	if (!drm_core_check_feature(dev, DRIVER_PCI_DMA))
 		return -EINVAL;
@@ -958,7 +958,7 @@ static int drm_addbufs_sg(struct drm_device *dev, struct drm_buf_desc * request)
 {
 	struct drm_device_dma *dma = dev->dma;
 	struct drm_buf_entry *entry;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 	unsigned long offset;
 	unsigned long agp_offset;
 	int count;
@@ -969,7 +969,7 @@ static int drm_addbufs_sg(struct drm_device *dev, struct drm_buf_desc * request)
 	int total;
 	int byte_count;
 	int i;
-	drm_buf_t **temp_buflist;
+	struct drm_buf **temp_buflist;
 
 	if (!drm_core_check_feature(dev, DRIVER_SG))
 		return -EINVAL;
@@ -1120,7 +1120,7 @@ int drm_addbufs_fb(struct drm_device *dev, struct drm_buf_desc *request)
 {
 	struct drm_device_dma *dma = dev->dma;
 	struct drm_buf_entry *entry;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 	unsigned long offset;
 	unsigned long agp_offset;
 	int count;
@@ -1131,7 +1131,7 @@ int drm_addbufs_fb(struct drm_device *dev, struct drm_buf_desc *request)
 	int total;
 	int byte_count;
 	int i;
-	drm_buf_t **temp_buflist;
+	struct drm_buf **temp_buflist;
 
 	if (!drm_core_check_feature(dev, DRIVER_FB_DMA))
 		return -EINVAL;
@@ -1492,7 +1492,7 @@ int drm_freebufs(struct inode *inode, struct file *filp,
 	struct drm_buf_free request;
 	int i;
 	int idx;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 
 	if (!drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 		return -EINVAL;
