@@ -672,10 +672,10 @@ nouveau_gpuobj_dma_new(struct drm_device *dev, int channel, int class,
 						pci_map_page(dev->pdev,
 							     dev->sg->pagelist[idx],
 							     0,
-							     DMA_31BIT_MASK,
+							     PAGE_SIZE,
 							     DMA_BIDIRECTIONAL);
 
-					if (dev->sg->busaddr[idx] == 0) {
+					if (dma_mapping_error(dev->sg->busaddr[idx])) {
 						return DRM_ERR(ENOMEM);
 					}
 				}
