@@ -39,6 +39,11 @@
 #define DRIVER_DESC		"Intel Graphics"
 #define DRIVER_DATE		"20070209"
 
+#if defined(__linux__)
+#define I915_HAVE_FENCE
+#define I915_HAVE_BUFFER
+#endif
+
 /* Interface history:
  *
  * 1.1: Original.
@@ -52,13 +57,12 @@
  * 1.9: Usable page flipping and triple buffering
  */
 #define DRIVER_MAJOR		1
+#if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
 #define DRIVER_MINOR		9
-#define DRIVER_PATCHLEVEL	0
-
-#if defined(__linux__)
-#define I915_HAVE_FENCE
-#define I915_HAVE_BUFFER
+#else
+#define DRIVER_MINOR		6
 #endif
+#define DRIVER_PATCHLEVEL	0
 
 typedef struct _drm_i915_ring_buffer {
 	int tail_mask;

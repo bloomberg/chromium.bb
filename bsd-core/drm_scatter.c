@@ -44,6 +44,7 @@ int drm_sg_alloc(drm_device_t * dev, drm_scatter_gather_t * request)
 {
 	drm_sg_mem_t *entry;
 	unsigned long pages;
+	int i;
 
 	if ( dev->sg )
 		return EINVAL;
@@ -52,7 +53,7 @@ int drm_sg_alloc(drm_device_t * dev, drm_scatter_gather_t * request)
 	if ( !entry )
 		return ENOMEM;
 
-	pages = round_page(request.size) / PAGE_SIZE;
+	pages = round_page(request->size) / PAGE_SIZE;
 	DRM_DEBUG( "sg size=%ld pages=%ld\n", request->size, pages );
 
 	entry->pages = pages;

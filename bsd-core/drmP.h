@@ -780,6 +780,7 @@ struct drm_device {
 	int		  last_context;	/* Last current context		   */
    	int		  vbl_queue;	/* vbl wait channel */
    	atomic_t          vbl_received;
+   	atomic_t          vbl_received2;
 
 #ifdef __FreeBSD__
 	struct sigio      *buf_sigio;	/* Processes waiting for SIGIO     */

@@ -855,12 +855,14 @@ static int mmio_table_size = sizeof(mmio_table)/sizeof(drm_i915_mmio_entry_t);
 
 static int i915_mmio(DRM_IOCTL_ARGS)
 {
-	char buf[32];
+	uint32_t buf[8];
 	DRM_DEVICE;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	drm_i915_mmio_entry_t *e;	 
 	drm_i915_mmio_t mmio;
 	void __iomem *base;
+	int i;
+
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
 		return DRM_ERR(EINVAL);
@@ -878,7 +880,8 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 		case I915_MMIO_READ:
 			if (!(e->flag & I915_MMIO_MAY_READ))
 				return DRM_ERR(EINVAL);
-			memcpy_fromio(buf, base, e->size);
+			for (i = 0; i < e->size / 4; i++)
+				buf[i] = I915_READ(e->offset + i * 4);
 			if (DRM_COPY_TO_USER(mmio.data, buf, e->size)) {
 				DRM_ERROR("DRM_COPY_TO_USER failed\n");
 				return DRM_ERR(EFAULT);
@@ -892,7 +895,8 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 				DRM_ERROR("DRM_COPY_TO_USER failed\n");
 				return DRM_ERR(EFAULT);
 			}
-			memcpy_toio(base, buf, e->size);
+			for (i = 0; i < e->size / 4; i++)
+				I915_WRITE(e->offset + i * 4, buf[i]);
 			break;
 	}
 	return 0;
@@ -910,11 +914,11 @@ static int i915_set_status_page(DRM_IOCTL_ARGS)
 	}
 	DRM_COPY_FROM_USER_IOCTL(hws, (drm_i915_hws_addr_t __user *) data,
 			sizeof(hws));
-	printk(KERN_DEBUG "set status page addr 0x%08x\n", (u32)hws.addr);
+	DRM_DEBUG("set status page addr 0x%08x\n", (u32)hws.addr);
 
 	dev_priv->status_gfx_addr = hws.addr & (0x1ffff<<12);
 
-	dev_priv->hws_map.offset = dev->agp->agp_info.aper_base + hws.addr;
+	dev_priv->hws_map.offset = dev->agp->base + hws.addr;
 	dev_priv->hws_map.size = 4*1024;
 	dev_priv->hws_map.type = 0;
 	dev_priv->hws_map.flags = 0;
