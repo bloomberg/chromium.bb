@@ -565,7 +565,83 @@ drm_fence_object_t *drm_lookup_fence_object(drm_file_t * priv, uint32_t handle)
 	return fence;
 }
 
-int drm_fence_ioctl(DRM_IOCTL_ARGS)
+int drm_fence_create_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	int ret;
+	drm_fence_manager_t *fm = &dev->fm;
+	drm_fence_arg_t arg;
+	drm_fence_object_t *fence;
+	unsigned long flags;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+	if (arg.flags & DRM_FENCE_FLAG_EMIT)
+		LOCK_TEST_WITH_RETURN(dev, filp);
+	ret = drm_fence_object_create(dev, arg.class,
+				      arg.type, arg.flags, &fence);
+	if (ret)
+		return ret;
+	ret = drm_fence_add_user_object(priv, fence,
+					arg.flags &
+					DRM_FENCE_FLAG_SHAREABLE);
+	if (ret) {
+		drm_fence_usage_deref_unlocked(&fence);
+		return ret;
+	}
+	
+	/*
+	 * usage > 0. No need to lock dev->struct_mutex;
+	 */
+	
+	atomic_inc(&fence->usage);
+	arg.handle = fence->base.hash.key;
+
+	read_lock_irqsave(&fm->lock, flags);
+	arg.class = fence->class;
+	arg.type = fence->type;
+	arg.signaled = fence->signaled;
+	read_unlock_irqrestore(&fm->lock, flags);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
+	return ret;
+}
+
+int drm_fence_destroy_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	int ret;
+	drm_fence_manager_t *fm = &dev->fm;
+	drm_fence_arg_t arg;
+	drm_user_object_t *uo;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+
+	mutex_lock(&dev->struct_mutex);
+	uo = drm_lookup_user_object(priv, arg.handle);
+	if (!uo || (uo->type != drm_fence_type) || uo->owner != priv) {
+		mutex_unlock(&dev->struct_mutex);
+		return -EINVAL;
+	}
+	ret = drm_remove_user_object(priv, uo);
+	mutex_unlock(&dev->struct_mutex);
+	return ret;
+}
+
+
+int drm_fence_reference_ioctl(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	int ret;
@@ -582,92 +658,211 @@ int drm_fence_ioctl(DRM_IOCTL_ARGS)
 	}
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
-	switch (arg.op) {
-	case drm_fence_create:
-		if (arg.flags & DRM_FENCE_FLAG_EMIT)
-			LOCK_TEST_WITH_RETURN(dev, filp);
-		ret = drm_fence_object_create(dev, arg.class,
-					      arg.type, arg.flags, &fence);
-		if (ret)
-			return ret;
-		ret = drm_fence_add_user_object(priv, fence,
-						arg.flags &
-						DRM_FENCE_FLAG_SHAREABLE);
-		if (ret) {
-			drm_fence_usage_deref_unlocked(&fence);
-			return ret;
-		}
-		arg.handle = fence->base.hash.key;
+	ret = drm_user_object_ref(priv, arg.handle, drm_fence_type, &uo);
+	if (ret)
+		return ret;
+	fence = drm_lookup_fence_object(priv, arg.handle);
 
-		break;
-	case drm_fence_destroy:
-		mutex_lock(&dev->struct_mutex);
-		uo = drm_lookup_user_object(priv, arg.handle);
-		if (!uo || (uo->type != drm_fence_type) || uo->owner != priv) {
-			mutex_unlock(&dev->struct_mutex);
-			return -EINVAL;
-		}
-		ret = drm_remove_user_object(priv, uo);
-		mutex_unlock(&dev->struct_mutex);
-		return ret;
-	case drm_fence_reference:
-		ret =
-		    drm_user_object_ref(priv, arg.handle, drm_fence_type, &uo);
-		if (ret)
-			return ret;
-		fence = drm_lookup_fence_object(priv, arg.handle);
-		break;
-	case drm_fence_unreference:
-		ret = drm_user_object_unref(priv, arg.handle, drm_fence_type);
-		return ret;
-	case drm_fence_signaled:
-		fence = drm_lookup_fence_object(priv, arg.handle);
-		if (!fence)
-			return -EINVAL;
-		break;
-	case drm_fence_flush:
-		fence = drm_lookup_fence_object(priv, arg.handle);
-		if (!fence)
-			return -EINVAL;
-		ret = drm_fence_object_flush(fence, arg.type);
-		break;
-	case drm_fence_wait:
-		fence = drm_lookup_fence_object(priv, arg.handle);
-		if (!fence)
-			return -EINVAL;
-		ret =
-		    drm_fence_object_wait(fence,
-					  arg.flags & DRM_FENCE_FLAG_WAIT_LAZY,
-					  0, arg.type);
-		break;
-	case drm_fence_emit:
-		LOCK_TEST_WITH_RETURN(dev, filp);
-		fence = drm_lookup_fence_object(priv, arg.handle);
-		if (!fence)
-			return -EINVAL;
-		ret = drm_fence_object_emit(fence, arg.flags, arg.class,
-					    arg.type);
-		break;
-	case drm_fence_buffers:
-		if (!dev->bm.initialized) {
-			DRM_ERROR("Buffer object manager is not initialized\n");
-			return -EINVAL;
-		}
-		LOCK_TEST_WITH_RETURN(dev, filp);
-		ret = drm_fence_buffer_objects(priv, NULL, arg.flags,
-					       NULL, &fence);
-		if (ret)
-			return ret;
-		ret = drm_fence_add_user_object(priv, fence,
-						arg.flags &
-						DRM_FENCE_FLAG_SHAREABLE);
-		if (ret)
-			return ret;
-		arg.handle = fence->base.hash.key;
-		break;
-	default:
+	read_lock_irqsave(&fm->lock, flags);
+	arg.class = fence->class;
+	arg.type = fence->type;
+	arg.signaled = fence->signaled;
+	read_unlock_irqrestore(&fm->lock, flags);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
+	return ret;
+}
+
+
+int drm_fence_unreference_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	int ret;
+	drm_fence_manager_t *fm = &dev->fm;
+	drm_fence_arg_t arg;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
 		return -EINVAL;
 	}
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+	return drm_user_object_unref(priv, arg.handle, drm_fence_type);
+}
+
+int drm_fence_signaled_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	int ret;
+	drm_fence_manager_t *fm = &dev->fm;
+	drm_fence_arg_t arg;
+	drm_fence_object_t *fence;
+	unsigned long flags;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+
+	fence = drm_lookup_fence_object(priv, arg.handle);
+	if (!fence)
+		return -EINVAL;
+
+	read_lock_irqsave(&fm->lock, flags);
+	arg.class = fence->class;
+	arg.type = fence->type;
+	arg.signaled = fence->signaled;
+	read_unlock_irqrestore(&fm->lock, flags);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
+	return ret;
+}
+
+int drm_fence_flush_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	int ret;
+	drm_fence_manager_t *fm = &dev->fm;
+	drm_fence_arg_t arg;
+	drm_fence_object_t *fence;
+	unsigned long flags;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+
+	fence = drm_lookup_fence_object(priv, arg.handle);
+	if (!fence)
+		return -EINVAL;
+	ret = drm_fence_object_flush(fence, arg.type);
+
+	read_lock_irqsave(&fm->lock, flags);
+	arg.class = fence->class;
+	arg.type = fence->type;
+	arg.signaled = fence->signaled;
+	read_unlock_irqrestore(&fm->lock, flags);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
+	return ret;
+}
+
+
+int drm_fence_wait_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	int ret;
+	drm_fence_manager_t *fm = &dev->fm;
+	drm_fence_arg_t arg;
+	drm_fence_object_t *fence;
+	unsigned long flags;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+
+	fence = drm_lookup_fence_object(priv, arg.handle);
+	if (!fence)
+		return -EINVAL;
+	ret = drm_fence_object_wait(fence,
+				    arg.flags & DRM_FENCE_FLAG_WAIT_LAZY,
+				    0, arg.type);
+
+	read_lock_irqsave(&fm->lock, flags);
+	arg.class = fence->class;
+	arg.type = fence->type;
+	arg.signaled = fence->signaled;
+	read_unlock_irqrestore(&fm->lock, flags);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
+	return ret;
+}
+
+
+int drm_fence_emit_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	int ret;
+	drm_fence_manager_t *fm = &dev->fm;
+	drm_fence_arg_t arg;
+	drm_fence_object_t *fence;
+	unsigned long flags;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+
+	LOCK_TEST_WITH_RETURN(dev, filp);
+	fence = drm_lookup_fence_object(priv, arg.handle);
+	if (!fence)
+		return -EINVAL;
+	ret = drm_fence_object_emit(fence, arg.flags, arg.class,
+				    arg.type);
+
+	read_lock_irqsave(&fm->lock, flags);
+	arg.class = fence->class;
+	arg.type = fence->type;
+	arg.signaled = fence->signaled;
+	read_unlock_irqrestore(&fm->lock, flags);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
+	return ret;
+}
+
+int drm_fence_buffers_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	int ret;
+	drm_fence_manager_t *fm = &dev->fm;
+	drm_fence_arg_t arg;
+	drm_fence_object_t *fence;
+	unsigned long flags;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
+
+	if (!dev->bm.initialized) {
+		DRM_ERROR("Buffer object manager is not initialized\n");
+		return -EINVAL;
+	}
+	LOCK_TEST_WITH_RETURN(dev, filp);
+	ret = drm_fence_buffer_objects(priv, NULL, arg.flags,
+				       NULL, &fence);
+	if (ret)
+		return ret;
+	ret = drm_fence_add_user_object(priv, fence,
+					arg.flags &
+					DRM_FENCE_FLAG_SHAREABLE);
+	if (ret)
+		return ret;
+	atomic_inc(&fence->usage);
+	arg.handle = fence->base.hash.key;
+
 	read_lock_irqsave(&fm->lock, flags);
 	arg.class = fence->class;
 	arg.type = fence->type;

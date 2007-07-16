@@ -196,7 +196,8 @@ static int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 	return ret;
 }
 
-static struct page *drm_bo_vm_fault(struct vm_area_struct *vma, 
+
+static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 				    struct fault_data *data)
 {
 	unsigned long address = data->address;

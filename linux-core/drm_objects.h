@@ -212,8 +212,16 @@ extern int drm_fence_object_create(struct drm_device *dev, uint32_t type,
 				   drm_fence_object_t ** c_fence);
 extern int drm_fence_add_user_object(drm_file_t * priv,
 				     drm_fence_object_t * fence, int shareable);
-extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 
+extern int drm_fence_create_ioctl(DRM_IOCTL_ARGS);
+extern int drm_fence_destroy_ioctl(DRM_IOCTL_ARGS);
+extern int drm_fence_reference_ioctl(DRM_IOCTL_ARGS);
+extern int drm_fence_unreference_ioctl(DRM_IOCTL_ARGS);
+extern int drm_fence_signaled_ioctl(DRM_IOCTL_ARGS);
+extern int drm_fence_flush_ioctl(DRM_IOCTL_ARGS);
+extern int drm_fence_wait_ioctl(DRM_IOCTL_ARGS);
+extern int drm_fence_emit_ioctl(DRM_IOCTL_ARGS);
+extern int drm_fence_buffers_ioctl(DRM_IOCTL_ARGS);
 /**************************************************
  *TTMs
  */
@@ -314,8 +322,8 @@ typedef struct drm_bo_mem_reg {
 	unsigned long num_pages;
 	uint32_t page_alignment;
 	uint32_t mem_type;
-	uint32_t flags;
-	uint32_t mask;
+	uint64_t flags;
+	uint64_t mask;
 } drm_bo_mem_reg_t;
 
 typedef struct drm_buffer_object {
@@ -416,8 +424,8 @@ typedef struct drm_bo_driver {
 	uint32_t num_mem_busy_prio;
 	drm_ttm_backend_t *(*create_ttm_backend_entry)
 	 (struct drm_device * dev);
-	int (*fence_type) (struct drm_buffer_object *bo, uint32_t * class, uint32_t * type);
-	int (*invalidate_caches) (struct drm_device * dev, uint32_t flags);
+	int (*fence_type) (struct drm_buffer_object *bo, uint32_t * type);
+	int (*invalidate_caches) (struct drm_device * dev, uint64_t flags);
 	int (*init_mem_type) (struct drm_device * dev, uint32_t type,
 			      drm_mem_type_manager_t * man);
 	 uint32_t(*evict_mask) (struct drm_buffer_object *bo);
@@ -429,8 +437,21 @@ typedef struct drm_bo_driver {
  * buffer objects (drm_bo.c)
  */
 
-extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_create_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_destroy_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_map_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_unmap_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_reference_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_unreference_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_wait_idle_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_info_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_op_ioctl(DRM_IOCTL_ARGS);
+
+
 extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
+extern int drm_mm_takedown_ioctl(DRM_IOCTL_ARGS);
+extern int drm_mm_lock_ioctl(DRM_IOCTL_ARGS);
+extern int drm_mm_unlock_ioctl(DRM_IOCTL_ARGS);
 extern int drm_bo_driver_finish(struct drm_device *dev);
 extern int drm_bo_driver_init(struct drm_device *dev);
 extern int drm_bo_pci_offset(struct drm_device *dev,
