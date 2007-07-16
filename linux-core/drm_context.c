@@ -302,7 +302,7 @@ int drm_resctx(struct inode *inode, struct file *filp,
 	       unsigned int cmd, unsigned long arg)
 {
 	struct drm_ctx_res res;
-	struct drm_ctx __user *argp = (void __user *)arg;
+	struct drm_ctx_res __user *argp = (void __user *)arg;
 	struct drm_ctx ctx;
 	int i;
 
