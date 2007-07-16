@@ -806,8 +806,8 @@ struct drm_device {
 	unsigned int agp_buffer_token;
 	struct drm_head primary;		/**< primary screen head */
 
-	drm_fence_manager_t fm;
-	drm_buffer_manager_t bm;
+	struct drm_fence_manager fm;
+	struct drm_buffer_manager bm;
 
 	/** \name Drawable information */
 	/*@{ */
@@ -818,7 +818,7 @@ struct drm_device {
 
 #if __OS_HAS_AGP
 struct drm_agp_ttm_backend {
-        drm_ttm_backend_t backend;
+	struct drm_ttm_backend backend;
 	DRM_AGP_MEM *mem;
 	struct agp_bridge_data *bridge;
 	int populated;
@@ -1103,7 +1103,7 @@ extern DRM_AGP_MEM *drm_agp_allocate_memory(struct agp_bridge_data *bridge, size
 extern int drm_agp_free_memory(DRM_AGP_MEM * handle);
 extern int drm_agp_bind_memory(DRM_AGP_MEM * handle, off_t start);
 extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
-extern drm_ttm_backend_t *drm_agp_init_ttm(struct drm_device *dev);
+extern struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev);
 				/* Stub support (drm_stub.h) */
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);

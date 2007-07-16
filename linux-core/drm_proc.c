@@ -434,8 +434,8 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 {
 	struct drm_device *dev = (struct drm_device *) data;
 	int len = 0;
-	drm_buffer_manager_t *bm = &dev->bm;
-	drm_fence_manager_t *fm = &dev->fm;
+	struct drm_buffer_manager *bm = &dev->bm;
+	struct drm_fence_manager *fm = &dev->fm;
 	drm_u64_t used_mem;
 	drm_u64_t low_mem;
 	drm_u64_t high_mem;

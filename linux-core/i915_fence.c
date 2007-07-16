@@ -41,9 +41,9 @@
 static void i915_perform_flush(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	drm_fence_manager_t *fm = &dev->fm;
-	drm_fence_class_manager_t *fc = &fm->class[0];
-	drm_fence_driver_t *driver = dev->driver->fence_driver;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_class_manager *fc = &fm->class[0];
+	struct drm_fence_driver *driver = dev->driver->fence_driver;
 	uint32_t flush_flags = 0;
 	uint32_t flush_sequence = 0;
 	uint32_t i_status;
@@ -111,7 +111,7 @@ static void i915_perform_flush(struct drm_device * dev)
 
 void i915_poke_flush(struct drm_device * dev, uint32_t class)
 {
-	drm_fence_manager_t *fm = &dev->fm;
+	struct drm_fence_manager *fm = &dev->fm;
 	unsigned long flags;
 
 	write_lock_irqsave(&fm->lock, flags);
@@ -137,7 +137,7 @@ int i915_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t f
 
 void i915_fence_handler(struct drm_device * dev)
 {
-	drm_fence_manager_t *fm = &dev->fm;
+	struct drm_fence_manager *fm = &dev->fm;
 
 	write_lock(&fm->lock);
 	i915_perform_flush(dev);

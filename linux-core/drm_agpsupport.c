@@ -554,7 +554,7 @@ int drm_agp_unbind_memory(DRM_AGP_MEM * handle)
 #define AGP_REQUIRED_MAJOR 0
 #define AGP_REQUIRED_MINOR 102
 
-static int drm_agp_needs_unbind_cache_adjust(drm_ttm_backend_t *backend) {
+static int drm_agp_needs_unbind_cache_adjust(struct drm_ttm_backend *backend) {
 	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
 }
 
@@ -590,7 +590,7 @@ static int drm_agp_populate(struct drm_ttm_backend *backend, unsigned long num_p
 	return 0;
 }
 
-static int drm_agp_bind_ttm(drm_ttm_backend_t *backend,
+static int drm_agp_bind_ttm(struct drm_ttm_backend *backend,
 			    unsigned long offset,
 			    int cached)
 {
@@ -612,7 +612,7 @@ static int drm_agp_bind_ttm(drm_ttm_backend_t *backend,
 	return ret;
 }
 
-static int drm_agp_unbind_ttm(drm_ttm_backend_t *backend) {
+static int drm_agp_unbind_ttm(struct drm_ttm_backend *backend) {
 
 	struct drm_agp_ttm_backend *agp_be = 
 		container_of(backend, struct drm_agp_ttm_backend, backend);
@@ -624,7 +624,7 @@ static int drm_agp_unbind_ttm(drm_ttm_backend_t *backend) {
 		return 0;
 }
 
-static void drm_agp_clear_ttm(drm_ttm_backend_t *backend) {
+static void drm_agp_clear_ttm(struct drm_ttm_backend *backend) {
 
 	struct drm_agp_ttm_backend *agp_be = 
 		container_of(backend, struct drm_agp_ttm_backend, backend);
@@ -640,7 +640,7 @@ static void drm_agp_clear_ttm(drm_ttm_backend_t *backend) {
 	agp_be->mem = NULL;
 }
 
-static void drm_agp_destroy_ttm(drm_ttm_backend_t *backend) {
+static void drm_agp_destroy_ttm(struct drm_ttm_backend *backend) {
 
 	struct drm_agp_ttm_backend *agp_be;
 
@@ -656,7 +656,7 @@ static void drm_agp_destroy_ttm(drm_ttm_backend_t *backend) {
 	}
 }
 
-static drm_ttm_backend_func_t agp_ttm_backend = 
+static struct drm_ttm_backend_func agp_ttm_backend = 
 {
 	.needs_ub_cache_adjust = drm_agp_needs_unbind_cache_adjust,
 	.populate = drm_agp_populate,

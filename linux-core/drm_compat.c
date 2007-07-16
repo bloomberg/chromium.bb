@@ -201,7 +201,7 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 				    struct fault_data *data)
 {
 	unsigned long address = data->address;
-	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
+	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 	unsigned long page_offset;
 	struct page *page = NULL;
 	drm_ttm_t *ttm; 
@@ -351,7 +351,7 @@ struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 			       unsigned long address, 
 			       int *type)
 {
-	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
+	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 	unsigned long page_offset;
 	struct page *page;
 	drm_ttm_t *ttm; 
@@ -395,7 +395,7 @@ out_unlock:
 
 int drm_bo_map_bound(struct vm_area_struct *vma)
 {
-	drm_buffer_object_t *bo = (drm_buffer_object_t *)vma->vm_private_data;
+	struct drm_buffer_object *bo = (struct drm_buffer_object *)vma->vm_private_data;
 	int ret = 0;
 	unsigned long bus_base;
 	unsigned long bus_offset;
@@ -418,7 +418,7 @@ int drm_bo_map_bound(struct vm_area_struct *vma)
 }
 	
 
-int drm_bo_add_vma(drm_buffer_object_t * bo, struct vm_area_struct *vma)
+int drm_bo_add_vma(struct drm_buffer_object * bo, struct vm_area_struct *vma)
 {
 	p_mm_entry_t *entry, *n_entry;
 	vma_entry_t *v_entry;
@@ -454,7 +454,7 @@ int drm_bo_add_vma(drm_buffer_object_t * bo, struct vm_area_struct *vma)
 	return 0;
 }
 
-void drm_bo_delete_vma(drm_buffer_object_t * bo, struct vm_area_struct *vma)
+void drm_bo_delete_vma(struct drm_buffer_object * bo, struct vm_area_struct *vma)
 {
 	p_mm_entry_t *entry, *n;
 	vma_entry_t *v_entry, *v_n;
@@ -486,7 +486,7 @@ void drm_bo_delete_vma(drm_buffer_object_t * bo, struct vm_area_struct *vma)
 
 
 
-int drm_bo_lock_kmm(drm_buffer_object_t * bo)
+int drm_bo_lock_kmm(struct drm_buffer_object * bo)
 {
 	p_mm_entry_t *entry;
 	int lock_ok = 1;
@@ -518,7 +518,7 @@ int drm_bo_lock_kmm(drm_buffer_object_t * bo)
 	return -EAGAIN;
 }
 
-void drm_bo_unlock_kmm(drm_buffer_object_t * bo)
+void drm_bo_unlock_kmm(struct drm_buffer_object * bo)
 {
 	p_mm_entry_t *entry;
 	
@@ -529,7 +529,7 @@ void drm_bo_unlock_kmm(drm_buffer_object_t * bo)
 	}
 }
 
-int drm_bo_remap_bound(drm_buffer_object_t *bo) 
+int drm_bo_remap_bound(struct drm_buffer_object *bo) 
 {
 	vma_entry_t *v_entry;
 	int ret = 0;
@@ -545,7 +545,7 @@ int drm_bo_remap_bound(drm_buffer_object_t *bo)
 	return ret;
 }
 
-void drm_bo_finish_unmap(drm_buffer_object_t *bo)
+void drm_bo_finish_unmap(struct drm_buffer_object *bo)
 {
 	vma_entry_t *v_entry;
 

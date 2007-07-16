@@ -713,10 +713,10 @@ EXPORT_SYMBOL(drm_mmap);
 static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 				     unsigned long address)
 {
-	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
+	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 	unsigned long page_offset;
 	struct page *page = NULL;
-	drm_ttm_t *ttm;
+	struct drm_ttm *ttm;
 	struct drm_device *dev;
 	unsigned long pfn;
 	int err;
@@ -766,7 +766,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
 
 	if (bus_size) {
-		drm_mem_type_manager_t *man = &dev->bm.man[bo->mem.mem_type];
+		struct drm_mem_type_manager *man = &dev->bm.man[bo->mem.mem_type];
 
 		pfn = ((bus_base + bus_offset) >> PAGE_SHIFT) + page_offset;
 		vma->vm_page_prot = drm_io_prot(man->drm_bus_maptype, vma);
@@ -798,7 +798,7 @@ out_unlock:
 
 static void drm_bo_vm_open_locked(struct vm_area_struct *vma)
 {
-	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
+	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 
 	drm_vm_open_locked(vma);
 	atomic_inc(&bo->usage);
@@ -815,7 +815,7 @@ static void drm_bo_vm_open_locked(struct vm_area_struct *vma)
 
 static void drm_bo_vm_open(struct vm_area_struct *vma)
 {
-	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
+	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 	struct drm_device *dev = bo->dev;
 
 	mutex_lock(&dev->struct_mutex);
@@ -831,7 +831,7 @@ static void drm_bo_vm_open(struct vm_area_struct *vma)
 
 static void drm_bo_vm_close(struct vm_area_struct *vma)
 {
-	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
+	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 	struct drm_device *dev = bo->dev;
 
 	drm_vm_close(vma);
