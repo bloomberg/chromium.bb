@@ -180,7 +180,7 @@ void drm_fence_reference_unlocked(struct drm_fence_object **dst,
 }
 
 
-static void drm_fence_object_destroy(struct drm_file *priv, drm_user_object_t * base)
+static void drm_fence_object_destroy(struct drm_file *priv, struct drm_user_object * base)
 {
 	drm_fence_object_t *fence =
 	    drm_user_object_entry(base, drm_fence_object_t, base);
@@ -551,7 +551,7 @@ void drm_fence_manager_takedown(struct drm_device * dev)
 drm_fence_object_t *drm_lookup_fence_object(struct drm_file * priv, uint32_t handle)
 {
 	struct drm_device *dev = priv->head->dev;
-	drm_user_object_t *uo;
+	struct drm_user_object *uo;
 	drm_fence_object_t *fence;
 
 	mutex_lock(&dev->struct_mutex);
@@ -619,7 +619,7 @@ int drm_fence_destroy_ioctl(DRM_IOCTL_ARGS)
 	int ret;
 	drm_fence_manager_t *fm = &dev->fm;
 	struct drm_fence_arg arg;
-	drm_user_object_t *uo;
+	struct drm_user_object *uo;
 	ret = 0;
 
 	if (!fm->initialized) {
@@ -648,7 +648,7 @@ int drm_fence_reference_ioctl(DRM_IOCTL_ARGS)
 	drm_fence_manager_t *fm = &dev->fm;
 	struct drm_fence_arg arg;
 	drm_fence_object_t *fence;
-	drm_user_object_t *uo;
+	struct drm_user_object *uo;
 	unsigned long flags;
 	ret = 0;
 

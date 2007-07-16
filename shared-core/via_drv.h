@@ -116,7 +116,7 @@ typedef struct drm_via_private {
 	/* Memory manager stuff */
 #ifdef VIA_HAVE_CORE_MM
 	unsigned int idle_fault;
-	drm_sman_t sman;
+	struct drm_sman sman;
 	int vram_initialized;
 	int agp_initialized;
 	unsigned long vram_offset;

@@ -93,7 +93,7 @@ static int sis_fb_init(DRM_IOCTL_ARGS)
 	mutex_lock(&dev->struct_mutex);
 #if defined(__linux__) && defined(CONFIG_FB_SIS)
 	{
-		drm_sman_mm_t sman_mm;
+		struct drm_sman_mm sman_mm;
 		sman_mm.private = (void *)0xFFFFFFFF;
 		sman_mm.allocate = sis_sman_mm_allocate;
 		sman_mm.free = sis_sman_mm_free;
@@ -129,7 +129,7 @@ static int sis_drm_alloc(struct drm_device * dev, struct drm_file * priv,
 	drm_sis_mem_t __user *argp = (drm_sis_mem_t __user *) data;
 	drm_sis_mem_t mem;
 	int retval = 0;
-	drm_memblock_item_t *item;
+	struct drm_memblock_item *item;
 
 	DRM_COPY_FROM_USER_IOCTL(mem, argp, sizeof(mem));
 

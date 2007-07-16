@@ -39,14 +39,14 @@ struct drm_device;
 
 #define drm_user_object_entry(_ptr, _type, _member) container_of(_ptr, _type, _member)
 
-typedef enum {
+enum drm_object_type {
 	drm_fence_type,
 	drm_buffer_type,
 	drm_ttm_type
 	    /*
 	     * Add other user space object types here.
 	     */
-} drm_object_type_t;
+};
 
 /*
  * A user object is a structure that helps the drm give out user handles
@@ -55,10 +55,10 @@ typedef enum {
  * Designed to be accessible using a user space 32-bit handle.
  */
 
-typedef struct drm_user_object {
-	drm_hash_item_t hash;
+struct drm_user_object {
+	struct drm_hash_item hash;
 	struct list_head list;
-	drm_object_type_t type;
+	enum drm_object_type type;
 	atomic_t refcount;
 	int shareable;
 	struct drm_file *owner;
@@ -68,7 +68,7 @@ typedef struct drm_user_object {
 	void (*unref) (struct drm_file * priv, struct drm_user_object * obj,
 		       drm_ref_t unref_action);
 	void (*remove) (struct drm_file * priv, struct drm_user_object * obj);
-} drm_user_object_t;
+};
 
 /*
  * A ref object is a structure which is used to
@@ -77,24 +77,24 @@ typedef struct drm_user_object {
  * process exits. Designed to be accessible using a pointer to the _user_ object.
  */
 
-typedef struct drm_ref_object {
-	drm_hash_item_t hash;
+struct drm_ref_object {
+	struct drm_hash_item hash;
 	struct list_head list;
 	atomic_t refcount;
 	drm_ref_t unref_action;
-} drm_ref_object_t;
+};
 
 /**
  * Must be called with the struct_mutex held.
  */
 
-extern int drm_add_user_object(struct drm_file * priv, drm_user_object_t * item,
+extern int drm_add_user_object(struct drm_file * priv, struct drm_user_object * item,
 			       int shareable);
 /**
  * Must be called with the struct_mutex held.
  */
 
-extern drm_user_object_t *drm_lookup_user_object(struct drm_file * priv,
+extern struct drm_user_object *drm_lookup_user_object(struct drm_file * priv,
 						 uint32_t key);
 
 /*
@@ -104,22 +104,22 @@ extern drm_user_object_t *drm_lookup_user_object(struct drm_file * priv,
  * This function may temporarily release the struct_mutex.
  */
 
-extern int drm_remove_user_object(struct drm_file * priv, drm_user_object_t * item);
+extern int drm_remove_user_object(struct drm_file * priv, struct drm_user_object * item);
 
 /*
  * Must be called with the struct_mutex held. May temporarily release it.
  */
 
 extern int drm_add_ref_object(struct drm_file * priv,
-			      drm_user_object_t * referenced_object,
+			      struct drm_user_object * referenced_object,
 			      drm_ref_t ref_action);
 
 /*
  * Must be called with the struct_mutex held.
  */
 
-drm_ref_object_t *drm_lookup_ref_object(struct drm_file * priv,
-					drm_user_object_t * referenced_object,
+struct drm_ref_object *drm_lookup_ref_object(struct drm_file * priv,
+					struct drm_user_object * referenced_object,
 					drm_ref_t ref_action);
 /*
  * Must be called with the struct_mutex held.
@@ -128,19 +128,19 @@ drm_ref_object_t *drm_lookup_ref_object(struct drm_file * priv,
  * This function may temporarily release the struct_mutex.
  */
 
-extern void drm_remove_ref_object(struct drm_file * priv, drm_ref_object_t * item);
+extern void drm_remove_ref_object(struct drm_file * priv, struct drm_ref_object * item);
 extern int drm_user_object_ref(struct drm_file * priv, uint32_t user_token,
-			       drm_object_type_t type,
-			       drm_user_object_t ** object);
+			       enum drm_object_type type,
+			       struct drm_user_object ** object);
 extern int drm_user_object_unref(struct drm_file * priv, uint32_t user_token,
-				 drm_object_type_t type);
+				 enum drm_object_type type);
 
 /***************************************************
  * Fence objects. (drm_fence.c)
  */
 
 typedef struct drm_fence_object {
-	drm_user_object_t base;
+	struct drm_user_object base;
         struct drm_device *dev;
 	atomic_t usage;
 
@@ -328,7 +328,7 @@ typedef struct drm_bo_mem_reg {
 
 typedef struct drm_buffer_object {
 	struct drm_device *dev;
-	drm_user_object_t base;
+	struct drm_user_object base;
 
 	/*
 	 * If there is a possibility that the usage variable is zero,

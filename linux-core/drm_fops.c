@@ -337,8 +337,8 @@ static void drm_object_release(struct file *filp) {
 
         struct drm_file *priv = filp->private_data;
 	struct list_head *head;
-	drm_user_object_t *user_object;
-	drm_ref_object_t *ref_object;
+	struct drm_user_object *user_object;
+	struct drm_ref_object *ref_object;
 	int i;
 
 	/*
@@ -351,7 +351,7 @@ static void drm_object_release(struct file *filp) {
 
 	head = &priv->refd_objects;
 	while (head->next != head) {
-		ref_object = list_entry(head->next, drm_ref_object_t, list);
+		ref_object = list_entry(head->next, struct drm_ref_object, list);
 		drm_remove_ref_object(priv, ref_object);
 		head = &priv->refd_objects;
 	}
@@ -362,7 +362,7 @@ static void drm_object_release(struct file *filp) {
 
 	head = &priv->user_objects;
 	while (head->next != head) {
-		user_object = list_entry(head->next, drm_user_object_t, list);
+		user_object = list_entry(head->next, struct drm_user_object, list);
 		drm_remove_user_object(priv, user_object);
 		head = &priv->user_objects;
 	}

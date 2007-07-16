@@ -505,7 +505,7 @@ void drm_bo_usage_deref_locked(drm_buffer_object_t ** bo)
 	}
 }
 
-static void drm_bo_base_deref_locked(struct drm_file * priv, drm_user_object_t * uo)
+static void drm_bo_base_deref_locked(struct drm_file * priv, struct drm_user_object * uo)
 {
 	drm_buffer_object_t *bo =
 	    drm_user_object_entry(uo, drm_buffer_object_t, base);
@@ -924,7 +924,7 @@ static int drm_bo_new_mask(drm_buffer_object_t * bo,
 drm_buffer_object_t *drm_lookup_buffer_object(struct drm_file * priv,
 					      uint32_t handle, int check_owner)
 {
-	drm_user_object_t *uo;
+	struct drm_user_object *uo;
 	drm_buffer_object_t *bo;
 
 	uo = drm_lookup_user_object(priv, handle);
@@ -1187,7 +1187,7 @@ static int drm_buffer_object_unmap(struct drm_file * priv, uint32_t handle)
 {
 	struct drm_device *dev = priv->head->dev;
 	drm_buffer_object_t *bo;
-	drm_ref_object_t *ro;
+	struct drm_ref_object *ro;
 	int ret = 0;
 
 	mutex_lock(&dev->struct_mutex);
@@ -1216,7 +1216,7 @@ static int drm_buffer_object_unmap(struct drm_file * priv, uint32_t handle)
  */
 
 static void drm_buffer_user_object_unmap(struct drm_file * priv,
-					 drm_user_object_t * uo,
+					 struct drm_user_object * uo,
 					 drm_ref_t action)
 {
 	drm_buffer_object_t *bo =
@@ -1811,7 +1811,7 @@ int drm_bo_destroy_ioctl(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	struct drm_bo_handle_arg arg;
-	drm_user_object_t *uo;
+	struct drm_user_object *uo;
 	int ret = 0;
 
 	if (!dev->bm.initialized) {
@@ -1879,7 +1879,7 @@ int drm_bo_reference_ioctl(DRM_IOCTL_ARGS)
 	struct drm_bo_reference_info_arg arg;
 	struct drm_bo_handle_arg *req = &arg.d.req;
 	struct drm_bo_info_rep *rep = &arg.d.rep;
-	drm_user_object_t *uo;
+	struct drm_user_object *uo;
 	int ret;
 
 	if (!dev->bm.initialized) {
