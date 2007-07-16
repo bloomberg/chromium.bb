@@ -204,8 +204,8 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 	unsigned long page_offset;
 	struct page *page = NULL;
-	drm_ttm_t *ttm; 
-	drm_device_t *dev;
+	struct drm_ttm *ttm; 
+	struct drm_device *dev;
 	unsigned long pfn;
 	int err;
 	unsigned long bus_base;
@@ -262,7 +262,7 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
 
 	if (bus_size) {
-		drm_mem_type_manager_t *man = &dev->bm.man[bo->mem.mem_type];
+		struct drm_mem_type_manager *man = &dev->bm.man[bo->mem.mem_type];
 
 		pfn = ((bus_base + bus_offset) >> PAGE_SHIFT) + page_offset;
 		vma->vm_page_prot = drm_io_prot(man->drm_bus_maptype, vma);
@@ -354,8 +354,8 @@ struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 	unsigned long page_offset;
 	struct page *page;
-	drm_ttm_t *ttm; 
-	drm_device_t *dev;
+	struct drm_ttm *ttm; 
+	struct drm_device *dev;
 
 	mutex_lock(&bo->mutex);
 
@@ -406,7 +406,7 @@ int drm_bo_map_bound(struct vm_area_struct *vma)
 	BUG_ON(ret);
 
 	if (bus_size) {
-		drm_mem_type_manager_t *man = &bo->dev->bm.man[bo->mem.mem_type];
+		struct drm_mem_type_manager *man = &bo->dev->bm.man[bo->mem.mem_type];
 		unsigned long pfn = (bus_base + bus_offset) >> PAGE_SHIFT;
 		pgprot_t pgprot = drm_io_prot(man->drm_bus_maptype, vma);
 		ret = io_remap_pfn_range(vma, vma->vm_start, pfn,
