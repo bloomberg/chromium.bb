@@ -71,6 +71,11 @@ uint32_t radeon_evict_mask(drm_buffer_object_t *bo)
 	case DRM_BO_MEM_LOCAL:
 	case DRM_BO_MEM_TT:
 		return DRM_BO_FLAG_MEM_LOCAL;
+	case DRM_BO_MEM_VRAM:
+		if (bo->mem.num_pages > 128)
+			return DRM_BO_MEM_TT;
+		else
+			return DRM_BO_MEM_LOCAL;
 	default:
 		return DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_CACHED;
 	}
@@ -88,8 +93,7 @@ int radeon_init_mem_type(drm_device_t * dev, uint32_t type,
 		man->drm_bus_maptype = 0;
 		break;
 	case DRM_BO_MEM_VRAM:
-		man->flags =  _DRM_FLAG_MEMTYPE_MAPPABLE |
-			_DRM_FLAG_MEMTYPE_FIXED | _DRM_FLAG_NEEDS_IOREMAP;
+		man->flags =  _DRM_FLAG_MEMTYPE_MAPPABLE | _DRM_FLAG_NEEDS_IOREMAP;
 		man->io_addr = NULL;
 		man->drm_bus_maptype = _DRM_FRAME_BUFFER;
 		man->io_offset = drm_get_resource_start(dev, 0);
