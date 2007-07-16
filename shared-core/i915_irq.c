@@ -43,7 +43,8 @@
  * This function must be called with the drawable spinlock held.
  */
 static void
-i915_dispatch_vsync_flip(drm_device_t *dev, drm_drawable_info_t *drw, int pipe)
+i915_dispatch_vsync_flip(drm_device_t *dev, struct drm_drawable_info *drw,
+			 int pipe)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	drm_i915_sarea_t *sarea_priv = dev_priv->sarea_priv;
@@ -67,7 +68,7 @@ i915_dispatch_vsync_flip(drm_device_t *dev, drm_drawable_info_t *drw, int pipe)
 
 	if (x2 > 0 && y2 > 0) {
 		int i, num_rects = drw->num_rects;
-		drm_clip_rect_t *rect = drw->rects;
+		struct drm_clip_rect *rect = drw->rects;
 
 		for (i = 0; i < num_rects; i++)
 			if (!(rect[i].x1 >= x2 || rect[i].y1 >= y2 ||
@@ -94,7 +95,7 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 	int nhits, nrects, slice[2], upper[2], lower[2], i, num_pages;
 	unsigned counter[2] = { atomic_read(&dev->vbl_received),
 				atomic_read(&dev->vbl_received2) };
-	drm_drawable_info_t *drw;
+	struct drm_drawable_info *drw;
 	drm_i915_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	u32 cpp = dev_priv->cpp,  offsets[3];
 	u32 cmd = (cpp == 4) ? (XY_SRC_COPY_BLT_CMD |
@@ -139,7 +140,7 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 		list_for_each(hit, &hits) {
 			drm_i915_vbl_swap_t *swap_cmp =
 				list_entry(hit, drm_i915_vbl_swap_t, head);
-			drm_drawable_info_t *drw_cmp =
+			struct drm_drawable_info *drw_cmp =
 				drm_get_drawable_info(dev, swap_cmp->drw_id);
 
 			if (drw_cmp &&
@@ -198,7 +199,7 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 		list_for_each(hit, &hits) {
 			drm_i915_vbl_swap_t *swap_hit =
 				list_entry(hit, drm_i915_vbl_swap_t, head);
-			drm_clip_rect_t *rect;
+			struct drm_clip_rect *rect;
 			int num_rects, pipe, front, back;
 			unsigned short top, bottom;
 
@@ -625,7 +626,7 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 		swap.sequence--;
 
 		if ((curseq - swap.sequence) <= (1<<23)) {
-			drm_drawable_info_t *drw;
+			struct drm_drawable_info *drw;
 
 			LOCK_TEST_WITH_RETURN(dev, filp);
 

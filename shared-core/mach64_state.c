@@ -86,10 +86,10 @@ static void mach64_print_dirty(const char *msg, unsigned int flags)
  * negative for an error
  */
 static int mach64_emit_cliprect(DRMFILE filp, drm_mach64_private_t * dev_priv,
-				drm_clip_rect_t * box)
+				struct drm_clip_rect * box)
 {
 	u32 sc_left_right, sc_top_bottom;
-	drm_clip_rect_t scissor;
+	struct drm_clip_rect scissor;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mach64_context_regs_t *regs = &sarea_priv->context_state;
 	DMALOCALS;
@@ -222,7 +222,7 @@ static int mach64_dma_dispatch_clear(DRMFILE filp, drm_device_t * dev,
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mach64_context_regs_t *ctx = &sarea_priv->context_state;
 	int nbox = sarea_priv->nbox;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	u32 fb_bpp, depth_bpp;
 	int i;
 	DMALOCALS;
@@ -360,7 +360,7 @@ static int mach64_dma_dispatch_swap(DRMFILE filp, drm_device_t * dev)
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	int nbox = sarea_priv->nbox;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	u32 fb_bpp;
 	int i;
 	DMALOCALS;

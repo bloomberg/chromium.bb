@@ -1462,10 +1462,10 @@ int mach64_freelist_put(drm_mach64_private_t * dev_priv, drm_buf_t * copy_buf)
 /*@{*/
 
 static int mach64_dma_get_buffers(DRMFILE filp, drm_device_t * dev,
-				  drm_dma_t * d)
+				  struct drm_dma * d)
 {
 	int i;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 
 	for (i = d->granted_count; i < d->request_count; i++) {
@@ -1495,13 +1495,13 @@ static int mach64_dma_get_buffers(DRMFILE filp, drm_device_t * dev,
 int mach64_dma_buffers(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_device_dma_t *dma = dev->dma;
-	drm_dma_t d;
+	struct drm_device_dma *dma = dev->dma;
+	struct drm_dma d;
 	int ret = 0;
 
 	LOCK_TEST_WITH_RETURN(dev, filp);
 
-	DRM_COPY_FROM_USER_IOCTL(d, (drm_dma_t *) data, sizeof(d));
+	DRM_COPY_FROM_USER_IOCTL(d, (struct drm_dma *) data, sizeof(d));
 
 	/* Please don't send us buffers.
 	 */
@@ -1525,7 +1525,7 @@ int mach64_dma_buffers(DRM_IOCTL_ARGS)
 		ret = mach64_dma_get_buffers(filp, dev, &d);
 	}
 
-	DRM_COPY_TO_USER_IOCTL((drm_dma_t *) data, d, sizeof(d));
+	DRM_COPY_TO_USER_IOCTL((struct drm_dma *) data, d, sizeof(d));
 
 	return ret;
 }

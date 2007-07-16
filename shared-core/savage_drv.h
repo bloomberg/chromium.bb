@@ -192,7 +192,7 @@ typedef struct drm_savage_private {
 	/* Err, there is a macro wait_event in include/linux/wait.h.
 	 * Avoid unwanted macro expansion. */
 	void (*emit_clip_rect)(struct drm_savage_private *dev_priv,
-			       const drm_clip_rect_t *pbox);
+			       const struct drm_clip_rect *pbox);
 	void (*dma_flush)(struct drm_savage_private *dev_priv);
 } drm_savage_private_t;
 
@@ -216,9 +216,9 @@ extern void savage_reclaim_buffers(drm_device_t *dev, DRMFILE filp);
 
 /* state functions */
 extern void savage_emit_clip_rect_s3d(drm_savage_private_t *dev_priv,
-				      const drm_clip_rect_t *pbox);
+				      const struct drm_clip_rect *pbox);
 extern void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
-				     const drm_clip_rect_t *pbox);
+				     const struct drm_clip_rect *pbox);
 
 #define SAVAGE_FB_SIZE_S3	0x01000000	/*  16MB */
 #define SAVAGE_FB_SIZE_S4	0x02000000	/*  32MB */

@@ -443,11 +443,11 @@ static int mga_do_agp_dma_bootstrap(drm_device_t * dev,
 	const unsigned secondary_size = dma_bs->secondary_bin_count
 		* dma_bs->secondary_bin_size;
 	const unsigned agp_size = (dma_bs->agp_size << 20);
-	drm_buf_desc_t req;
-	drm_agp_mode_t mode;
-	drm_agp_info_t info;
-	drm_agp_buffer_t agp_req;
-	drm_agp_binding_t bind_req;
+	struct drm_buf_desc req;
+	struct drm_agp_mode mode;
+	struct drm_agp_info info;
+	struct drm_agp_buffer agp_req;
+	struct drm_agp_binding bind_req;
 
 	/* Acquire AGP. */
 	err = drm_agp_acquire(dev);
@@ -611,7 +611,7 @@ static int mga_do_pci_dma_bootstrap(drm_device_t * dev,
 	unsigned int primary_size;
 	unsigned int bin_count;
 	int err;
-	drm_buf_desc_t req;
+	struct drm_buf_desc req;
 
 	
 	if (dev->dma == NULL) {
@@ -967,8 +967,8 @@ static int mga_do_cleanup_dma(drm_device_t * dev, int full_cleanup)
 
 		if (dev_priv->used_new_dma_init) {
 			if (dev_priv->agp_handle != 0) {
-				drm_agp_binding_t unbind_req;
-				drm_agp_buffer_t free_req;
+				struct drm_agp_binding unbind_req;
+				struct drm_agp_buffer free_req;
 
 				unbind_req.handle = dev_priv->agp_handle;
 				drm_agp_unbind(dev, &unbind_req);
@@ -1043,11 +1043,11 @@ int mga_dma_flush(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_mga_private_t *dev_priv = (drm_mga_private_t *) dev->dev_private;
-	drm_lock_t lock;
+	struct drm_lock lock;
 
 	LOCK_TEST_WITH_RETURN(dev, filp);
 
-	DRM_COPY_FROM_USER_IOCTL(lock, (drm_lock_t __user *) data,
+	DRM_COPY_FROM_USER_IOCTL(lock, (struct drm_lock __user *) data,
 				 sizeof(lock));
 
 	DRM_DEBUG("%s%s%s\n",
@@ -1089,7 +1089,7 @@ int mga_dma_reset(DRM_IOCTL_ARGS)
  * DMA buffer management
  */
 
-static int mga_dma_get_buffers(DRMFILE filp, drm_device_t * dev, drm_dma_t * d)
+static int mga_dma_get_buffers(DRMFILE filp, drm_device_t * dev, struct drm_dma * d)
 {
 	drm_buf_t *buf;
 	int i;
@@ -1118,8 +1118,8 @@ int mga_dma_buffers(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	drm_device_dma_t *dma = dev->dma;
 	drm_mga_private_t *dev_priv = (drm_mga_private_t *) dev->dev_private;
-	drm_dma_t __user *argp = (void __user *)data;
-	drm_dma_t d;
+	struct drm_dma __user *argp = (void __user *)data;
+	struct drm_dma d;
 	int ret = 0;
 
 	LOCK_TEST_WITH_RETURN(dev, filp);

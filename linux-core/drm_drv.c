@@ -550,8 +550,8 @@ static int drm_version(struct inode *inode, struct file *filp,
 {
 	drm_file_t *priv = filp->private_data;
 	drm_device_t *dev = priv->head->dev;
-	drm_version_t __user *argp = (void __user *)arg;
-	drm_version_t version;
+	struct drm_version __user *argp = (void __user *)arg;
+	struct drm_version version;
 	int len;
 
 	if (copy_from_user(&version, argp, sizeof(version)))

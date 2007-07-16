@@ -288,7 +288,7 @@ int nouveau_mem_init(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t fb_size;
-	drm_scatter_gather_t sgreq;
+	struct drm_scatter_gather sgreq;
 	dev_priv->agp_phys=0;
 	dev_priv->fb_phys=0;
 	sgreq . size = 4 << 20; //4MB of PCI scatter-gather zone
@@ -298,10 +298,10 @@ int nouveau_mem_init(struct drm_device *dev)
 	if (drm_device_is_agp(dev))
 	{
 		int err;
-		drm_agp_info_t info;
-		drm_agp_mode_t mode;
-		drm_agp_buffer_t agp_req;
-		drm_agp_binding_t bind_req;
+		struct drm_agp_info info;
+		struct drm_agp_mode mode;
+		struct drm_agp_buffer agp_req;
+		struct drm_agp_binding bind_req;
 
 		err = drm_agp_acquire(dev);
 		if (err) {

@@ -38,7 +38,7 @@
  */
 
 static void r128_emit_clip_rects(drm_r128_private_t * dev_priv,
-				 drm_clip_rect_t * boxes, int count)
+				 struct drm_clip_rect * boxes, int count)
 {
 	u32 aux_sc_cntl = 0x00000000;
 	RING_LOCALS;
@@ -358,7 +358,7 @@ static void r128_cce_dispatch_clear(drm_device_t * dev,
 	drm_r128_private_t *dev_priv = dev->dev_private;
 	drm_r128_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	int nbox = sarea_priv->nbox;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	unsigned int flags = clear->flags;
 	int i;
 	RING_LOCALS;
@@ -463,7 +463,7 @@ static void r128_cce_dispatch_swap(drm_device_t * dev)
 	drm_r128_private_t *dev_priv = dev->dev_private;
 	drm_r128_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	int nbox = sarea_priv->nbox;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	int i;
 	RING_LOCALS;
 	DRM_DEBUG("%s\n", __FUNCTION__);

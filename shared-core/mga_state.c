@@ -43,7 +43,7 @@
  */
 
 static void mga_emit_clip_rect(drm_mga_private_t * dev_priv,
-			       drm_clip_rect_t * box)
+			       struct drm_clip_rect * box)
 {
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mga_context_regs_t *ctx = &sarea_priv->context_state;
@@ -509,7 +509,7 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, drm_mga_clear_t * clear)
 	drm_mga_private_t *dev_priv = dev->dev_private;
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mga_context_regs_t *ctx = &sarea_priv->context_state;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	int nbox = sarea_priv->nbox;
 	int i;
 	DMA_LOCALS;
@@ -525,7 +525,7 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, drm_mga_clear_t * clear)
 	ADVANCE_DMA();
 
 	for (i = 0; i < nbox; i++) {
-		drm_clip_rect_t *box = &pbox[i];
+		struct drm_clip_rect *box = &pbox[i];
 		u32 height = box->y2 - box->y1;
 
 		DRM_DEBUG("   from=%d,%d to=%d,%d\n",
@@ -599,7 +599,7 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 	drm_mga_private_t *dev_priv = dev->dev_private;
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mga_context_regs_t *ctx = &sarea_priv->context_state;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	int nbox = sarea_priv->nbox;
 	int i;
 	DMA_LOCALS;
@@ -626,7 +626,7 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 		  MGA_DWGCTL, MGA_DWGCTL_COPY);
 
 	for (i = 0; i < nbox; i++) {
-		drm_clip_rect_t *box = &pbox[i];
+		struct drm_clip_rect *box = &pbox[i];
 		u32 height = box->y2 - box->y1;
 		u32 start = box->y1 * dev_priv->front_pitch;
 
@@ -805,7 +805,7 @@ static void mga_dma_dispatch_blit(drm_device_t * dev, drm_mga_blit_t * blit)
 	drm_mga_private_t *dev_priv = dev->dev_private;
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mga_context_regs_t *ctx = &sarea_priv->context_state;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	int nbox = sarea_priv->nbox;
 	u32 scandir = 0, i;
 	DMA_LOCALS;

@@ -137,7 +137,7 @@ enum nouveau_bus_type {
 
 struct drm_nouveau_sarea {
 	/* the cliprects */
-	drm_clip_rect_t boxes[NOUVEAU_MAX_SAREA_CLIPRECTS];
+	struct drm_clip_rect boxes[NOUVEAU_MAX_SAREA_CLIPRECTS];
 	unsigned int nbox;
 };
 

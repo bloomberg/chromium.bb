@@ -884,7 +884,7 @@ int r128_wait_ring(drm_r128_private_t * dev_priv, int n)
 	return DRM_ERR(EBUSY);
 }
 
-static int r128_cce_get_buffers(DRMFILE filp, drm_device_t * dev, drm_dma_t * d)
+static int r128_cce_get_buffers(DRMFILE filp, drm_device_t * dev, struct drm_dma * d)
 {
 	int i;
 	drm_buf_t *buf;
@@ -913,8 +913,8 @@ int r128_cce_buffers(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	drm_device_dma_t *dma = dev->dma;
 	int ret = 0;
-	drm_dma_t __user *argp = (void __user *)data;
-	drm_dma_t d;
+	struct drm_dma __user *argp = (void __user *)data;
+	struct drm_dma d;
 
 	LOCK_TEST_WITH_RETURN(dev, filp);
 

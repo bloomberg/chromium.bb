@@ -1006,7 +1006,7 @@ static int savage_bci_event_wait(DRM_IOCTL_ARGS)
  * DMA buffer management
  */
 
-static int savage_bci_get_buffers(DRMFILE filp, drm_device_t *dev, drm_dma_t *d)
+static int savage_bci_get_buffers(DRMFILE filp, drm_device_t *dev, struct drm_dma *d)
 {
 	drm_buf_t *buf;
 	int i;
@@ -1034,12 +1034,12 @@ int savage_bci_buffers(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_device_dma_t *dma = dev->dma;
-	drm_dma_t d;
+	struct drm_dma d;
 	int ret = 0;
 
 	LOCK_TEST_WITH_RETURN(dev, filp);
 
-	DRM_COPY_FROM_USER_IOCTL(d, (drm_dma_t __user *)data, sizeof(d));
+	DRM_COPY_FROM_USER_IOCTL(d, (struct drm_dma __user *)data, sizeof(d));
 
 	/* Please don't send us buffers.
 	 */
@@ -1063,7 +1063,7 @@ int savage_bci_buffers(DRM_IOCTL_ARGS)
 		ret = savage_bci_get_buffers(filp, dev, &d);
 	}
 
-	DRM_COPY_TO_USER_IOCTL((drm_dma_t __user *)data, d, sizeof(d));
+	DRM_COPY_TO_USER_IOCTL((struct drm_dma __user *)data, d, sizeof(d));
 
 	return ret;
 }

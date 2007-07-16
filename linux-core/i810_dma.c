@@ -346,7 +346,7 @@ static int i810_dma_initialize(drm_device_t * dev,
 			       drm_i810_private_t * dev_priv,
 			       drm_i810_init_t * init)
 {
-	drm_map_list_t *r_list;
+	struct drm_map_list *r_list;
 	memset(dev_priv, 0, sizeof(drm_i810_private_t));
 
 	list_for_each_entry(r_list, &dev->maplist, head) {
@@ -692,7 +692,7 @@ static void i810_dma_dispatch_clear(drm_device_t * dev, int flags,
 	drm_i810_private_t *dev_priv = dev->dev_private;
 	drm_i810_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	int nbox = sarea_priv->nbox;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	int pitch = dev_priv->pitch;
 	int cpp = 2;
 	int i;
@@ -765,7 +765,7 @@ static void i810_dma_dispatch_swap(drm_device_t * dev)
 	drm_i810_private_t *dev_priv = dev->dev_private;
 	drm_i810_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	int nbox = sarea_priv->nbox;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	int pitch = dev_priv->pitch;
 	int cpp = 2;
 	int i;
@@ -812,7 +812,7 @@ static void i810_dma_dispatch_vertex(drm_device_t * dev,
 	drm_i810_private_t *dev_priv = dev->dev_private;
 	drm_i810_buf_priv_t *buf_priv = buf->dev_private;
 	drm_i810_sarea_t *sarea_priv = dev_priv->sarea_priv;
-	drm_clip_rect_t *box = sarea_priv->boxes;
+	struct drm_clip_rect *box = sarea_priv->boxes;
 	int nbox = sarea_priv->nbox;
 	unsigned long address = (unsigned long)buf->bus_address;
 	unsigned long start = address - dev->agp->base;
@@ -1140,7 +1140,7 @@ static int i810_getbuf(struct inode *inode, struct file *filp, unsigned int cmd,
 	DRM_DEBUG("i810_dma: %d returning %d, granted = %d\n",
 		  current->pid, retcode, d.granted);
 
-	if (copy_to_user((drm_dma_t __user *) arg, &d, sizeof(d)))
+	if (copy_to_user((void __user *) arg, &d, sizeof(d)))
 		return -EFAULT;
 	sarea_priv->last_dispatch = (int)hw_status[5];
 
