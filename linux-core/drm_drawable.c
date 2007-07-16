@@ -177,7 +177,7 @@ error:
 /**
  * Caller must hold the drawable spinlock!
  */
-struct drm_drawable_info *drm_get_drawable_info(drm_device_t *dev, drm_drawable_t id)
+struct drm_drawable_info *drm_get_drawable_info(struct drm_device *dev, drm_drawable_t id)
 {
 	return idr_find(&dev->drw_idr, id);
 }
@@ -196,7 +196,7 @@ static int drm_drawable_free(int idr, void *p, void *data)
 	return 0;
 }
 
-void drm_drawable_free_all(drm_device_t *dev)
+void drm_drawable_free_all(struct drm_device *dev)
 {
 	idr_for_each(&dev->drw_idr, drm_drawable_free, NULL);
 	idr_remove_all(&dev->drw_idr);

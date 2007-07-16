@@ -706,7 +706,7 @@ static __inline__ void r300_pacify(drm_radeon_private_t *dev_priv)
  * The actual age emit is done by r300_do_cp_cmdbuf, which is why you must
  * be careful about how this function is called.
  */
-static void r300_discard_buffer(drm_device_t * dev, drm_buf_t * buf)
+static void r300_discard_buffer(struct drm_device * dev, drm_buf_t * buf)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	drm_radeon_buf_priv_t *buf_priv = buf->dev_private;
@@ -778,13 +778,13 @@ static int r300_scratch(drm_radeon_private_t *dev_priv,
  * commands on the DMA ring buffer.
  * Called by the ioctl handler function radeon_cp_cmdbuf.
  */
-int r300_do_cp_cmdbuf(drm_device_t *dev,
+int r300_do_cp_cmdbuf(struct drm_device *dev,
 		      DRMFILE filp,
-		      drm_file_t *filp_priv,
+		      struct drm_file *filp_priv,
 		      drm_radeon_kcmd_buffer_t *cmdbuf)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
-	drm_device_dma_t *dma = dev->dma;
+	struct drm_device_dma *dma = dev->dma;
 	drm_buf_t *buf = NULL;
 	int emit_dispatch_age = 0;
 	int ret = 0;

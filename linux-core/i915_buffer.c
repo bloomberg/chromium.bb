@@ -33,7 +33,7 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t * dev)
+drm_ttm_backend_t *i915_create_ttm_backend_entry(struct drm_device * dev)
 {
 	return drm_agp_init_ttm(dev);
 }
@@ -47,7 +47,7 @@ int i915_fence_types(drm_buffer_object_t *bo, uint32_t * type)
 	return 0;
 }
 
-int i915_invalidate_caches(drm_device_t * dev, uint64_t flags)
+int i915_invalidate_caches(struct drm_device * dev, uint64_t flags)
 {
 	/*
 	 * FIXME: Only emit once per batchbuffer submission.
@@ -63,7 +63,7 @@ int i915_invalidate_caches(drm_device_t * dev, uint64_t flags)
 	return i915_emit_mi_flush(dev, flush_cmd);
 }
 
-int i915_init_mem_type(drm_device_t * dev, uint32_t type,
+int i915_init_mem_type(struct drm_device * dev, uint32_t type,
 		       drm_mem_type_manager_t * man)
 {
 	switch (type) {
@@ -116,7 +116,7 @@ uint32_t i915_evict_mask(drm_buffer_object_t *bo)
 	}
 }
 
-static void i915_emit_copy_blit(drm_device_t * dev,
+static void i915_emit_copy_blit(struct drm_device * dev,
 				uint32_t src_offset,
 				uint32_t dst_offset,
 				uint32_t pages, int direction)
@@ -183,7 +183,7 @@ static int i915_move_blit(drm_buffer_object_t * bo,
 static int i915_move_flip(drm_buffer_object_t * bo,
 			  int evict, int no_wait, drm_bo_mem_reg_t * new_mem)
 {
-	drm_device_t *dev = bo->dev;
+	struct drm_device *dev = bo->dev;
 	drm_bo_mem_reg_t tmp_mem;
 	int ret;
 

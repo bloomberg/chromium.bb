@@ -34,7 +34,7 @@
  * Typically called by the IRQ handler.
  */
 
-void drm_fence_handler(drm_device_t * dev, uint32_t class,
+void drm_fence_handler(struct drm_device * dev, uint32_t class,
 		       uint32_t sequence, uint32_t type)
 {
 	int wake = 0;
@@ -114,7 +114,7 @@ void drm_fence_handler(drm_device_t * dev, uint32_t class,
 
 EXPORT_SYMBOL(drm_fence_handler);
 
-static void drm_fence_unring(drm_device_t * dev, struct list_head *ring)
+static void drm_fence_unring(struct drm_device * dev, struct list_head *ring)
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	unsigned long flags;
@@ -180,7 +180,7 @@ void drm_fence_reference_unlocked(struct drm_fence_object **dst,
 }
 
 
-static void drm_fence_object_destroy(drm_file_t *priv, drm_user_object_t * base)
+static void drm_fence_object_destroy(struct drm_file *priv, drm_user_object_t * base)
 {
 	drm_fence_object_t *fence =
 	    drm_user_object_entry(base, drm_fence_object_t, base);
@@ -262,7 +262,7 @@ int drm_fence_object_flush(drm_fence_object_t * fence,
  * wrapped around and reused.
  */
 
-void drm_fence_flush_old(drm_device_t * dev, uint32_t class, uint32_t sequence)
+void drm_fence_flush_old(struct drm_device * dev, uint32_t class, uint32_t sequence)
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_class_manager_t *fc = &fm->class[class];
@@ -435,7 +435,7 @@ int drm_fence_object_emit(drm_fence_object_t * fence,
 	return 0;
 }
 
-static int drm_fence_object_init(drm_device_t * dev, uint32_t class,
+static int drm_fence_object_init(struct drm_device * dev, uint32_t class,
 				 uint32_t type,
 				 uint32_t fence_flags,
 				 drm_fence_object_t * fence)
@@ -471,10 +471,10 @@ static int drm_fence_object_init(drm_device_t * dev, uint32_t class,
 	return ret;
 }
 
-int drm_fence_add_user_object(drm_file_t * priv, drm_fence_object_t * fence,
+int drm_fence_add_user_object(struct drm_file * priv, drm_fence_object_t * fence,
 			      int shareable)
 {
-	drm_device_t *dev = priv->head->dev;
+	struct drm_device *dev = priv->head->dev;
 	int ret;
 
 	mutex_lock(&dev->struct_mutex);
@@ -491,7 +491,7 @@ out:
 }
 EXPORT_SYMBOL(drm_fence_add_user_object);
 
-int drm_fence_object_create(drm_device_t * dev, uint32_t class, uint32_t type,
+int drm_fence_object_create(struct drm_device * dev, uint32_t class, uint32_t type,
 			    unsigned flags, drm_fence_object_t ** c_fence)
 {
 	drm_fence_object_t *fence;
@@ -514,7 +514,7 @@ int drm_fence_object_create(drm_device_t * dev, uint32_t class, uint32_t type,
 
 EXPORT_SYMBOL(drm_fence_object_create);
 
-void drm_fence_manager_init(drm_device_t * dev)
+void drm_fence_manager_init(struct drm_device * dev)
 {
 	drm_fence_manager_t *fm = &dev->fm;
 	drm_fence_class_manager_t *class;
@@ -544,13 +544,13 @@ void drm_fence_manager_init(drm_device_t * dev)
 	write_unlock(&fm->lock);
 }
 
-void drm_fence_manager_takedown(drm_device_t * dev)
+void drm_fence_manager_takedown(struct drm_device * dev)
 {
 }
 
-drm_fence_object_t *drm_lookup_fence_object(drm_file_t * priv, uint32_t handle)
+drm_fence_object_t *drm_lookup_fence_object(struct drm_file * priv, uint32_t handle)
 {
-	drm_device_t *dev = priv->head->dev;
+	struct drm_device *dev = priv->head->dev;
 	drm_user_object_t *uo;
 	drm_fence_object_t *fence;
 

@@ -48,14 +48,14 @@
 #include "drmP.h"
 #include "drm_core.h"
 
-static void drm_cleanup(drm_device_t * dev);
+static void drm_cleanup(struct drm_device * dev);
 int drm_fb_loaded = 0;
 
 static int drm_version(struct inode *inode, struct file *filp,
 		unsigned int cmd, unsigned long arg);
 
 /** Ioctl table */
-static drm_ioctl_desc_t drm_ioctls[] = {
+static struct drm_ioctl_desc drm_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_VERSION)] = {drm_version, 0},
 	[DRM_IOCTL_NR(DRM_IOCTL_GET_UNIQUE)] = {drm_getunique, 0},
 	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAGIC)] = {drm_getmagic, 0},
@@ -168,11 +168,11 @@ static drm_ioctl_desc_t drm_ioctls[] = {
  *
  * \sa drm_device
  */
-int drm_lastclose(drm_device_t * dev)
+int drm_lastclose(struct drm_device * dev)
 {
-	drm_magic_entry_t *pt, *next;
-	drm_map_list_t *r_list, *list_t;
-	drm_vma_entry_t *vma, *vma_temp;
+	struct drm_magic_entry *pt, *next;
+	struct drm_map_list *r_list, *list_t;
+	struct drm_vma_entry *vma, *vma_temp;
 	int i;
 
 	DRM_DEBUG("\n");
@@ -220,7 +220,7 @@ int drm_lastclose(drm_device_t * dev)
 
 	/* Clear AGP information */
 	if (drm_core_has_AGP(dev) && dev->agp) {
-		drm_agp_mem_t *entry, *tempe;
+		struct drm_agp_mem *entry, *tempe;
 
 		/* Remove AGP resources, but leave dev->agp
 		   intact until drv_cleanup is called. */
@@ -288,7 +288,7 @@ int drm_lastclose(drm_device_t * dev)
 
 void drm_cleanup_pci(struct pci_dev *pdev)
 {
-	drm_device_t *dev = pci_get_drvdata(pdev);
+	struct drm_device *dev = pci_get_drvdata(pdev);
 
 	pci_set_drvdata(pdev, NULL);
 	pci_release_regions(pdev);
@@ -374,7 +374,7 @@ EXPORT_SYMBOL(drm_init);
  *
  * \sa drm_init
  */
-static void drm_cleanup(drm_device_t * dev)
+static void drm_cleanup(struct drm_device * dev)
 {
 
 	DRM_DEBUG("\n");
@@ -419,8 +419,8 @@ static void drm_cleanup(drm_device_t * dev)
 void drm_exit(struct drm_driver *driver)
 {
 	int i;
-	drm_device_t *dev = NULL;
-	drm_head_t *head;
+	struct drm_device *dev = NULL;
+	struct drm_head *head;
 
 	DRM_DEBUG("\n");
 	if (drm_fb_loaded) {
@@ -548,8 +548,8 @@ module_exit(drm_core_exit);
 static int drm_version(struct inode *inode, struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
 	struct drm_version __user *argp = (void __user *)arg;
 	struct drm_version version;
 	int len;
@@ -584,9 +584,9 @@ static int drm_version(struct inode *inode, struct file *filp,
 int drm_ioctl(struct inode *inode, struct file *filp,
 	      unsigned int cmd, unsigned long arg)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_ioctl_desc_t *ioctl;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_ioctl_desc *ioctl;
 	drm_ioctl_t *func;
 	unsigned int nr = DRM_IOCTL_NR(cmd);
 	int retcode = -EINVAL;
@@ -635,7 +635,7 @@ EXPORT_SYMBOL(drm_ioctl);
 
 drm_local_map_t *drm_getsarea(struct drm_device *dev)
 {
-	drm_map_list_t *entry;
+	struct drm_map_list *entry;
 
 	list_for_each_entry(entry, &dev->maplist, head) {
 		if (entry->map && entry->map->type == _DRM_SHM &&

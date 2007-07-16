@@ -469,7 +469,7 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_nouveau_fifo_alloc init;
-	drm_map_list_t *entry;
+	struct drm_map_list *entry;
 	struct nouveau_fifo *chan;
 	int res;
 
@@ -526,7 +526,7 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
  * finally, the ioctl table
  ***********************************/
 
-drm_ioctl_desc_t nouveau_ioctls[] = {
+struct drm_ioctl_desc nouveau_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_NOUVEAU_FIFO_ALLOC)] = {nouveau_ioctl_fifo_alloc, DRM_AUTH},	
 	[DRM_IOCTL_NR(DRM_NOUVEAU_GROBJ_ALLOC)] = {nouveau_ioctl_grobj_alloc, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_NOUVEAU_NOTIFIER_ALLOC)] = {nouveau_ioctl_notifier_alloc, DRM_AUTH},

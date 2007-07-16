@@ -32,7 +32,7 @@
 #include "via_drm.h"
 #include "via_drv.h"
 
-drm_ttm_backend_t *via_create_ttm_backend_entry(drm_device_t * dev)
+drm_ttm_backend_t *via_create_ttm_backend_entry(struct drm_device * dev)
 {
 	return drm_agp_init_ttm(dev);
 }
@@ -43,7 +43,7 @@ int via_fence_types(drm_buffer_object_t *bo, uint32_t * type)
 	return 0;
 }
 
-int via_invalidate_caches(drm_device_t * dev, uint64_t flags)
+int via_invalidate_caches(struct drm_device * dev, uint64_t flags)
 {
 	/*
 	 * FIXME: Invalidate texture caches here.
@@ -53,7 +53,7 @@ int via_invalidate_caches(drm_device_t * dev, uint64_t flags)
 }
 
 
-static int via_vram_info(drm_device_t *dev,
+static int via_vram_info(struct drm_device *dev,
 			 unsigned long *offset,
 			 unsigned long *size)
 {
@@ -81,7 +81,7 @@ static int via_vram_info(drm_device_t *dev,
 	return 0;
 }
 
-int via_init_mem_type(drm_device_t * dev, uint32_t type,
+int via_init_mem_type(struct drm_device * dev, uint32_t type,
 		       drm_mem_type_manager_t * man)
 {
 	switch (type) {

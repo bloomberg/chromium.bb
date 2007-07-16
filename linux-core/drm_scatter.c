@@ -190,7 +190,7 @@ EXPORT_SYMBOL(drm_sg_alloc);
 int drm_sg_alloc_ioctl(struct inode *inode, struct file *filp,
 		 unsigned int cmd, unsigned long arg)
 {
-	drm_file_t *priv = filp->private_data;
+	struct drm_file *priv = filp->private_data;
 	struct drm_scatter_gather __user *argp = (void __user *)arg;
 	struct drm_scatter_gather request;
 	int ret;
@@ -214,8 +214,8 @@ int drm_sg_alloc_ioctl(struct inode *inode, struct file *filp,
 int drm_sg_free(struct inode *inode, struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
 	struct drm_scatter_gather request;
 	struct drm_sg_mem *entry;
 

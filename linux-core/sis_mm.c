@@ -122,7 +122,7 @@ static int sis_fb_init(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-static int sis_drm_alloc(drm_device_t * dev, drm_file_t * priv,
+static int sis_drm_alloc(struct drm_device * dev, struct drm_file * priv,
 			 unsigned long data, int pool)
 {
 	drm_sis_private_t *dev_priv = dev->dev_private;
@@ -228,9 +228,9 @@ static int sis_ioctl_agp_alloc(DRM_IOCTL_ARGS)
 	return sis_drm_alloc(dev, priv, data, AGP_TYPE);
 }
 
-static drm_local_map_t *sis_reg_init(drm_device_t *dev)
+static drm_local_map_t *sis_reg_init(struct drm_device *dev)
 {
-	drm_map_list_t *entry;
+	struct drm_map_list *entry;
 	drm_local_map_t *map;
 
 	list_for_each_entry(entry, &dev->maplist, head) {
@@ -245,7 +245,7 @@ static drm_local_map_t *sis_reg_init(drm_device_t *dev)
 }
 
 int
-sis_idle(drm_device_t *dev)
+sis_idle(struct drm_device *dev)
 {
 	drm_sis_private_t *dev_priv = dev->dev_private;
 	uint32_t idle_reg;
@@ -314,10 +314,10 @@ void sis_lastclose(struct drm_device *dev)
 	mutex_unlock(&dev->struct_mutex);
 }
 
-void sis_reclaim_buffers_locked(drm_device_t * dev, struct file *filp)
+void sis_reclaim_buffers_locked(struct drm_device * dev, struct file *filp)
 {
 	drm_sis_private_t *dev_priv = dev->dev_private;
-	drm_file_t *priv = filp->private_data;
+	struct drm_file *priv = filp->private_data;
 
 	mutex_lock(&dev->struct_mutex);
 	if (drm_sman_owner_clean(&dev_priv->sman, (unsigned long)priv)) {
@@ -334,7 +334,7 @@ void sis_reclaim_buffers_locked(drm_device_t * dev, struct file *filp)
 	return;
 }
 
-drm_ioctl_desc_t sis_ioctls[] = {
+struct drm_ioctl_desc sis_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_SIS_FB_ALLOC)] = {sis_fb_alloc, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_SIS_FB_FREE)] = {sis_drm_free, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_SIS_AGP_INIT)] =

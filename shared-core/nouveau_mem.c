@@ -469,7 +469,7 @@ alloc_ok:
 
 	if (flags&NOUVEAU_MEM_MAPPED)
 	{
-		drm_map_list_t *entry;
+		struct drm_map_list *entry;
 		int ret = 0;
 		block->flags|=NOUVEAU_MEM_MAPPED;
 

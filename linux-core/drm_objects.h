@@ -61,13 +61,13 @@ typedef struct drm_user_object {
 	drm_object_type_t type;
 	atomic_t refcount;
 	int shareable;
-	drm_file_t *owner;
-	void (*ref_struct_locked) (drm_file_t * priv,
+	struct drm_file *owner;
+	void (*ref_struct_locked) (struct drm_file * priv,
 				   struct drm_user_object * obj,
 				   drm_ref_t ref_action);
-	void (*unref) (drm_file_t * priv, struct drm_user_object * obj,
+	void (*unref) (struct drm_file * priv, struct drm_user_object * obj,
 		       drm_ref_t unref_action);
-	void (*remove) (drm_file_t * priv, struct drm_user_object * obj);
+	void (*remove) (struct drm_file * priv, struct drm_user_object * obj);
 } drm_user_object_t;
 
 /*
@@ -88,13 +88,13 @@ typedef struct drm_ref_object {
  * Must be called with the struct_mutex held.
  */
 
-extern int drm_add_user_object(drm_file_t * priv, drm_user_object_t * item,
+extern int drm_add_user_object(struct drm_file * priv, drm_user_object_t * item,
 			       int shareable);
 /**
  * Must be called with the struct_mutex held.
  */
 
-extern drm_user_object_t *drm_lookup_user_object(drm_file_t * priv,
+extern drm_user_object_t *drm_lookup_user_object(struct drm_file * priv,
 						 uint32_t key);
 
 /*
@@ -104,13 +104,13 @@ extern drm_user_object_t *drm_lookup_user_object(drm_file_t * priv,
  * This function may temporarily release the struct_mutex.
  */
 
-extern int drm_remove_user_object(drm_file_t * priv, drm_user_object_t * item);
+extern int drm_remove_user_object(struct drm_file * priv, drm_user_object_t * item);
 
 /*
  * Must be called with the struct_mutex held. May temporarily release it.
  */
 
-extern int drm_add_ref_object(drm_file_t * priv,
+extern int drm_add_ref_object(struct drm_file * priv,
 			      drm_user_object_t * referenced_object,
 			      drm_ref_t ref_action);
 
@@ -118,7 +118,7 @@ extern int drm_add_ref_object(drm_file_t * priv,
  * Must be called with the struct_mutex held.
  */
 
-drm_ref_object_t *drm_lookup_ref_object(drm_file_t * priv,
+drm_ref_object_t *drm_lookup_ref_object(struct drm_file * priv,
 					drm_user_object_t * referenced_object,
 					drm_ref_t ref_action);
 /*
@@ -128,11 +128,11 @@ drm_ref_object_t *drm_lookup_ref_object(drm_file_t * priv,
  * This function may temporarily release the struct_mutex.
  */
 
-extern void drm_remove_ref_object(drm_file_t * priv, drm_ref_object_t * item);
-extern int drm_user_object_ref(drm_file_t * priv, uint32_t user_token,
+extern void drm_remove_ref_object(struct drm_file * priv, drm_ref_object_t * item);
+extern int drm_user_object_ref(struct drm_file * priv, uint32_t user_token,
 			       drm_object_type_t type,
 			       drm_user_object_t ** object);
-extern int drm_user_object_unref(drm_file_t * priv, uint32_t user_token,
+extern int drm_user_object_unref(struct drm_file * priv, uint32_t user_token,
 				 drm_object_type_t type);
 
 /***************************************************
@@ -210,7 +210,7 @@ extern int drm_fence_object_wait(drm_fence_object_t * fence,
 extern int drm_fence_object_create(struct drm_device *dev, uint32_t type,
 				   uint32_t fence_flags, uint32_t class,
 				   drm_fence_object_t ** c_fence);
-extern int drm_fence_add_user_object(drm_file_t * priv,
+extern int drm_fence_add_user_object(struct drm_file * priv,
 				     drm_fence_object_t * fence, int shareable);
 
 extern int drm_fence_create_ioctl(DRM_IOCTL_ARGS);
@@ -317,7 +317,7 @@ extern int drm_destroy_ttm(drm_ttm_t * ttm);
  */
 
 typedef struct drm_bo_mem_reg {
-	drm_mm_node_t *mm_node;
+	struct drm_mm_node *mm_node;
 	unsigned long size;
 	unsigned long num_pages;
 	uint32_t page_alignment;
@@ -353,14 +353,14 @@ typedef struct drm_buffer_object {
 	struct mutex mutex;
 
 	/* For pinned buffers */
-	drm_mm_node_t *pinned_node;
+	struct drm_mm_node *pinned_node;
 	uint32_t pinned_mem_type;
 	struct list_head pinned_lru;
 
 	/* For vm */
 
 	drm_ttm_t *ttm;
-	drm_map_list_t map_list;
+	struct drm_map_list map_list;
 	uint32_t memory_type;
 	unsigned long bus_offset;
 	uint32_t vm_flags;
@@ -380,7 +380,7 @@ typedef struct drm_buffer_object {
 typedef struct drm_mem_type_manager {
 	int has_type;
 	int use_type;
-	drm_mm_t manager;
+	struct drm_mm manager;
 	struct list_head lru;
 	struct list_head pinned;
 	uint32_t flags;
@@ -403,7 +403,7 @@ typedef struct drm_buffer_manager {
 	struct mutex evict_mutex;
 	int nice_mode;
 	int initialized;
-	drm_file_t *last_to_validate;
+	struct drm_file *last_to_validate;
 	drm_mem_type_manager_t man[DRM_BO_MEM_TYPES];
 	struct list_head unfenced;
 	struct list_head ddestroy;
@@ -462,7 +462,7 @@ extern int drm_bo_pci_offset(struct drm_device *dev,
 extern int drm_mem_reg_is_pci(struct drm_device *dev, drm_bo_mem_reg_t * mem);
 
 extern void drm_bo_usage_deref_locked(drm_buffer_object_t ** bo);
-extern int drm_fence_buffer_objects(drm_file_t * priv,
+extern int drm_fence_buffer_objects(struct drm_file * priv,
 				    struct list_head *list,
 				    uint32_t fence_flags,
 				    drm_fence_object_t * fence,

@@ -51,8 +51,8 @@ static int drm_notifier(void *priv);
 int drm_lock(struct inode *inode, struct file *filp,
 	     unsigned int cmd, unsigned long arg)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
 	DECLARE_WAITQUEUE(entry, current);
 	struct drm_lock lock;
 	int ret = 0;
@@ -152,8 +152,8 @@ int drm_lock(struct inode *inode, struct file *filp,
 int drm_unlock(struct inode *inode, struct file *filp,
 	       unsigned int cmd, unsigned long arg)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
 	struct drm_lock lock;
 	unsigned long irqflags;
 
@@ -202,7 +202,7 @@ int drm_unlock(struct inode *inode, struct file *filp,
  *
  * Attempt to mark the lock as held by the given context, via the \p cmpxchg instruction.
  */
-int drm_lock_take(drm_lock_data_t *lock_data,
+int drm_lock_take(struct drm_lock_data *lock_data,
 		  unsigned int context)
 {
 	unsigned int old, new, prev;
@@ -252,7 +252,7 @@ int drm_lock_take(drm_lock_data_t *lock_data,
  * Resets the lock file pointer.
  * Marks the lock as held by the given context, via the \p cmpxchg instruction.
  */
-static int drm_lock_transfer(drm_lock_data_t *lock_data,
+static int drm_lock_transfer(struct drm_lock_data *lock_data,
 			     unsigned int context)
 {
 	unsigned int old, new, prev;
@@ -278,7 +278,7 @@ static int drm_lock_transfer(drm_lock_data_t *lock_data,
  * Marks the lock as not held, via the \p cmpxchg instruction. Wakes any task
  * waiting on the lock queue.
  */
-int drm_lock_free(drm_lock_data_t *lock_data, unsigned int context)
+int drm_lock_free(struct drm_lock_data *lock_data, unsigned int context)
 {
 	unsigned int old, new, prev;
 	volatile unsigned int *lock = &lock_data->hw_lock->lock;
@@ -320,7 +320,7 @@ int drm_lock_free(drm_lock_data_t *lock_data, unsigned int context)
  */
 static int drm_notifier(void *priv)
 {
-	drm_sigdata_t *s = (drm_sigdata_t *) priv;
+	struct drm_sigdata *s = (struct drm_sigdata *) priv;
 	unsigned int old, new, prev;
 
 	/* Allow signal delivery if lock isn't held */
@@ -351,7 +351,7 @@ static int drm_notifier(void *priv)
  * having to worry about starvation.
  */
 
-void drm_idlelock_take(drm_lock_data_t *lock_data)
+void drm_idlelock_take(struct drm_lock_data *lock_data)
 {
 	int ret = 0;
 
@@ -370,7 +370,7 @@ void drm_idlelock_take(drm_lock_data_t *lock_data)
 }
 EXPORT_SYMBOL(drm_idlelock_take);
 
-void drm_idlelock_release(drm_lock_data_t *lock_data)
+void drm_idlelock_release(struct drm_lock_data *lock_data)
 {
 	unsigned int old, prev;
 	volatile unsigned int *lock = &lock_data->hw_lock->lock;

@@ -85,11 +85,11 @@ pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
 static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 						unsigned long address)
 {
-	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->head->dev;
+	struct drm_file *priv = vma->vm_file->private_data;
+	struct drm_device *dev = priv->head->dev;
 	struct drm_map *map = NULL;
-	drm_map_list_t *r_list;
-	drm_hash_item_t *hash;
+	struct drm_map_list *r_list;
+	struct drm_hash_item *hash;
 
 	/*
 	 * Find the right map
@@ -103,7 +103,7 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 	if (drm_ht_find_item(&dev->map_hash, vma->vm_pgoff, &hash))
 		goto vm_nopage_error;
 
-	r_list = drm_hash_entry(hash, drm_map_list_t, hash);
+	r_list = drm_hash_entry(hash, struct drm_map_list, hash);
 	map = r_list->map;
 
 	if (map && map->type == _DRM_AGP) {
@@ -203,11 +203,11 @@ static __inline__ struct page *drm_do_vm_shm_nopage(struct vm_area_struct *vma,
  */
 static void drm_vm_shm_close(struct vm_area_struct *vma)
 {
-	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_vma_entry_t *pt, *temp;
+	struct drm_file *priv = vma->vm_file->private_data;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_vma_entry *pt, *temp;
 	struct drm_map *map;
-	drm_map_list_t *r_list;
+	struct drm_map_list *r_list;
 	int found_maps = 0;
 
 	DRM_DEBUG("0x%08lx,0x%08lx\n",
@@ -285,9 +285,9 @@ static void drm_vm_shm_close(struct vm_area_struct *vma)
 static __inline__ struct page *drm_do_vm_dma_nopage(struct vm_area_struct *vma,
 						    unsigned long address)
 {
-	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_device_dma_t *dma = dev->dma;
+	struct drm_file *priv = vma->vm_file->private_data;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_device_dma *dma = dev->dma;
 	unsigned long offset;
 	unsigned long page_nr;
 	struct page *page;
@@ -322,9 +322,9 @@ static __inline__ struct page *drm_do_vm_sg_nopage(struct vm_area_struct *vma,
 						   unsigned long address)
 {
 	struct drm_map *map = (struct drm_map *) vma->vm_private_data;
-	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_sg_mem_t *entry = dev->sg;
+	struct drm_file *priv = vma->vm_file->private_data;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_sg_mem *entry = dev->sg;
 	unsigned long offset;
 	unsigned long map_offset;
 	unsigned long page_offset;
@@ -418,9 +418,9 @@ static struct vm_operations_struct drm_vm_sg_ops = {
  */
 static void drm_vm_open_locked(struct vm_area_struct *vma)
 {
-	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_vma_entry_t *vma_entry;
+	struct drm_file *priv = vma->vm_file->private_data;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_vma_entry *vma_entry;
 
 	DRM_DEBUG("0x%08lx,0x%08lx\n",
 		  vma->vm_start, vma->vm_end - vma->vm_start);
@@ -436,8 +436,8 @@ static void drm_vm_open_locked(struct vm_area_struct *vma)
 
 static void drm_vm_open(struct vm_area_struct *vma)
 {
-	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->head->dev;
+	struct drm_file *priv = vma->vm_file->private_data;
+	struct drm_device *dev = priv->head->dev;
 
 	mutex_lock(&dev->struct_mutex);
 	drm_vm_open_locked(vma);
@@ -454,9 +454,9 @@ static void drm_vm_open(struct vm_area_struct *vma)
  */
 static void drm_vm_close(struct vm_area_struct *vma)
 {
-	drm_file_t *priv = vma->vm_file->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_vma_entry_t *pt, *temp;
+	struct drm_file *priv = vma->vm_file->private_data;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_vma_entry *pt, *temp;
 
 	DRM_DEBUG("0x%08lx,0x%08lx\n",
 		  vma->vm_start, vma->vm_end - vma->vm_start);
@@ -486,9 +486,9 @@ static void drm_vm_close(struct vm_area_struct *vma)
  */
 static int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev;
-	drm_device_dma_t *dma;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev;
+	struct drm_device_dma *dma;
 	unsigned long length = vma->vm_end - vma->vm_start;
 
 	dev = priv->head->dev;
@@ -555,8 +555,8 @@ EXPORT_SYMBOL(drm_core_get_reg_ofs);
  */
 static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
 	struct drm_map *map = NULL;
 	unsigned long offset = 0;
 	struct drm_hash_item *hash;
@@ -585,7 +585,7 @@ static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 		return -EINVAL;
 	}
 
-	map = drm_hash_entry(hash, drm_map_list_t, hash)->map;
+	map = drm_hash_entry(hash, struct drm_map_list, hash)->map;
 	if (!map || ((map->flags & _DRM_RESTRICTED) && !capable(CAP_SYS_ADMIN)))
 		return -EPERM;
 
@@ -676,8 +676,8 @@ static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 
 int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
 	int ret;
 
 	mutex_lock(&dev->struct_mutex);
@@ -717,7 +717,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	unsigned long page_offset;
 	struct page *page = NULL;
 	drm_ttm_t *ttm;
-	drm_device_t *dev;
+	struct drm_device *dev;
 	unsigned long pfn;
 	int err;
 	unsigned long bus_base;
@@ -816,7 +816,7 @@ static void drm_bo_vm_open_locked(struct vm_area_struct *vma)
 static void drm_bo_vm_open(struct vm_area_struct *vma)
 {
 	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
-	drm_device_t *dev = bo->dev;
+	struct drm_device *dev = bo->dev;
 
 	mutex_lock(&dev->struct_mutex);
 	drm_bo_vm_open_locked(vma);
@@ -832,7 +832,7 @@ static void drm_bo_vm_open(struct vm_area_struct *vma)
 static void drm_bo_vm_close(struct vm_area_struct *vma)
 {
 	drm_buffer_object_t *bo = (drm_buffer_object_t *) vma->vm_private_data;
-	drm_device_t *dev = bo->dev;
+	struct drm_device *dev = bo->dev;
 
 	drm_vm_close(vma);
 	if (bo) {

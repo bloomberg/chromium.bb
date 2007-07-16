@@ -32,7 +32,7 @@
 #define SAVAGE_EVENT_USEC_TIMEOUT	5000000 /* 5s */
 #define SAVAGE_FREELIST_DEBUG		0
 
-static int savage_do_cleanup_bci(drm_device_t *dev);
+static int savage_do_cleanup_bci(struct drm_device *dev);
 
 static int
 savage_bci_wait_fifo_shadow(drm_savage_private_t *dev_priv, unsigned int n)
@@ -203,10 +203,10 @@ uint16_t savage_bci_emit_event(drm_savage_private_t *dev_priv,
 /*
  * Freelist management
  */
-static int savage_freelist_init(drm_device_t *dev)
+static int savage_freelist_init(struct drm_device *dev)
 {
 	drm_savage_private_t *dev_priv = dev->dev_private;
-	drm_device_dma_t *dma = dev->dma;
+	struct drm_device_dma *dma = dev->dma;
 	drm_buf_t *buf;
 	drm_savage_buf_priv_t *entry;
 	int i;
@@ -236,7 +236,7 @@ static int savage_freelist_init(drm_device_t *dev)
 	return 0;
 }
 
-static drm_buf_t *savage_freelist_get(drm_device_t *dev)
+static drm_buf_t *savage_freelist_get(struct drm_device *dev)
 {
 	drm_savage_private_t *dev_priv = dev->dev_private;
 	drm_savage_buf_priv_t *tail = dev_priv->tail.prev;
@@ -269,7 +269,7 @@ static drm_buf_t *savage_freelist_get(drm_device_t *dev)
 	return NULL;
 }
 
-void savage_freelist_put(drm_device_t *dev, drm_buf_t *buf)
+void savage_freelist_put(struct drm_device *dev, drm_buf_t *buf)
 {
 	drm_savage_private_t *dev_priv = dev->dev_private;
 	drm_savage_buf_priv_t *entry = buf->dev_private, *prev, *next;
@@ -535,7 +535,7 @@ static void savage_fake_dma_flush(drm_savage_private_t *dev_priv)
 	dev_priv->first_dma_page = dev_priv->current_dma_page = 0;
 }
 
-int savage_driver_load(drm_device_t *dev, unsigned long chipset)
+int savage_driver_load(struct drm_device *dev, unsigned long chipset)
 {
 	drm_savage_private_t *dev_priv;
 
@@ -557,7 +557,7 @@ int savage_driver_load(drm_device_t *dev, unsigned long chipset)
  * in drm_addmap. Therefore we add them manually before the maps are
  * initialized, and tear them down on last close.
  */
-int savage_driver_firstopen(drm_device_t *dev)
+int savage_driver_firstopen(struct drm_device *dev)
 {
 	drm_savage_private_t *dev_priv = dev->dev_private;
 	unsigned long mmio_base, fb_base, fb_size, aperture_base;
@@ -654,7 +654,7 @@ int savage_driver_firstopen(drm_device_t *dev)
 /*
  * Delete MTRRs and free device-private data.
  */
-void savage_driver_lastclose(drm_device_t *dev)
+void savage_driver_lastclose(struct drm_device *dev)
 {
 	drm_savage_private_t *dev_priv = dev->dev_private;
 	int i;
@@ -666,7 +666,7 @@ void savage_driver_lastclose(drm_device_t *dev)
 				     dev_priv->mtrr[i].size, DRM_MTRR_WC);
 }
 
-int savage_driver_unload(drm_device_t *dev)
+int savage_driver_unload(struct drm_device *dev)
 {
 	drm_savage_private_t *dev_priv = dev->dev_private;
 
@@ -675,7 +675,7 @@ int savage_driver_unload(drm_device_t *dev)
 	return 0;
 }
 
-static int savage_do_init_bci(drm_device_t *dev, drm_savage_init_t *init)
+static int savage_do_init_bci(struct drm_device *dev, drm_savage_init_t *init)
 {
 	drm_savage_private_t *dev_priv = dev->dev_private;
 
@@ -897,7 +897,7 @@ static int savage_do_init_bci(drm_device_t *dev, drm_savage_init_t *init)
 	return 0;
 }
 
-static int savage_do_cleanup_bci(drm_device_t *dev)
+static int savage_do_cleanup_bci(struct drm_device *dev)
 {
 	drm_savage_private_t *dev_priv = dev->dev_private;
 
@@ -1006,7 +1006,7 @@ static int savage_bci_event_wait(DRM_IOCTL_ARGS)
  * DMA buffer management
  */
 
-static int savage_bci_get_buffers(DRMFILE filp, drm_device_t *dev, struct drm_dma *d)
+static int savage_bci_get_buffers(DRMFILE filp, struct drm_device *dev, struct drm_dma *d)
 {
 	drm_buf_t *buf;
 	int i;
@@ -1033,7 +1033,7 @@ static int savage_bci_get_buffers(DRMFILE filp, drm_device_t *dev, struct drm_dm
 int savage_bci_buffers(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_device_dma_t *dma = dev->dma;
+	struct drm_device_dma *dma = dev->dma;
 	struct drm_dma d;
 	int ret = 0;
 
@@ -1068,9 +1068,9 @@ int savage_bci_buffers(DRM_IOCTL_ARGS)
 	return ret;
 }
 
-void savage_reclaim_buffers(drm_device_t *dev, DRMFILE filp)
+void savage_reclaim_buffers(struct drm_device *dev, DRMFILE filp)
 {
-	drm_device_dma_t *dma = dev->dma;
+	struct drm_device_dma *dma = dev->dma;
 	drm_savage_private_t *dev_priv = dev->dev_private;
 	int i;
 
@@ -1100,7 +1100,7 @@ void savage_reclaim_buffers(drm_device_t *dev, DRMFILE filp)
 	drm_core_reclaim_buffers(dev, filp);
 }
 
-drm_ioctl_desc_t savage_ioctls[] = {
+struct drm_ioctl_desc savage_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_INIT)] = {savage_bci_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_CMDBUF)] = {savage_bci_cmdbuf, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_SAVAGE_BCI_EVENT_EMIT)] = {savage_bci_event_emit, DRM_AUTH},

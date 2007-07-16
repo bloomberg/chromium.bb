@@ -141,35 +141,35 @@ enum intel_chip_family {
 	CHIP_I965 = 0x08,
 };
 
-extern drm_ioctl_desc_t i915_ioctls[];
+extern struct drm_ioctl_desc i915_ioctls[];
 extern int i915_max_ioctl;
 
 				/* i915_dma.c */
-extern void i915_kernel_lost_context(drm_device_t * dev);
+extern void i915_kernel_lost_context(struct drm_device * dev);
 extern int i915_driver_load(struct drm_device *, unsigned long flags);
-extern void i915_driver_lastclose(drm_device_t * dev);
-extern void i915_driver_preclose(drm_device_t * dev, DRMFILE filp);
-extern int i915_driver_device_is_agp(drm_device_t * dev);
+extern void i915_driver_lastclose(struct drm_device * dev);
+extern void i915_driver_preclose(struct drm_device * dev, DRMFILE filp);
+extern int i915_driver_device_is_agp(struct drm_device * dev);
 extern long i915_compat_ioctl(struct file *filp, unsigned int cmd,
 			      unsigned long arg);
-extern void i915_emit_breadcrumb(drm_device_t *dev);
-extern void i915_dispatch_flip(drm_device_t * dev, int pipes, int sync);
-extern int i915_emit_mi_flush(drm_device_t *dev, uint32_t flush);
+extern void i915_emit_breadcrumb(struct drm_device *dev);
+extern void i915_dispatch_flip(struct drm_device * dev, int pipes, int sync);
+extern int i915_emit_mi_flush(struct drm_device *dev, uint32_t flush);
 extern int i915_driver_firstopen(struct drm_device *dev);
 
 /* i915_irq.c */
 extern int i915_irq_emit(DRM_IOCTL_ARGS);
 extern int i915_irq_wait(DRM_IOCTL_ARGS);
 
-extern int i915_driver_vblank_wait(drm_device_t *dev, unsigned int *sequence);
-extern int i915_driver_vblank_wait2(drm_device_t *dev, unsigned int *sequence);
+extern int i915_driver_vblank_wait(struct drm_device *dev, unsigned int *sequence);
+extern int i915_driver_vblank_wait2(struct drm_device *dev, unsigned int *sequence);
 extern irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS);
-extern void i915_driver_irq_preinstall(drm_device_t * dev);
-extern void i915_driver_irq_postinstall(drm_device_t * dev);
-extern void i915_driver_irq_uninstall(drm_device_t * dev);
+extern void i915_driver_irq_preinstall(struct drm_device * dev);
+extern void i915_driver_irq_postinstall(struct drm_device * dev);
+extern void i915_driver_irq_uninstall(struct drm_device * dev);
 extern int i915_vblank_pipe_set(DRM_IOCTL_ARGS);
 extern int i915_vblank_pipe_get(DRM_IOCTL_ARGS);
-extern int i915_emit_irq(drm_device_t * dev);
+extern int i915_emit_irq(struct drm_device * dev);
 extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
 extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
 extern int i915_vblank_swap(DRM_IOCTL_ARGS);
@@ -180,27 +180,27 @@ extern int i915_mem_free(DRM_IOCTL_ARGS);
 extern int i915_mem_init_heap(DRM_IOCTL_ARGS);
 extern int i915_mem_destroy_heap(DRM_IOCTL_ARGS);
 extern void i915_mem_takedown(struct mem_block **heap);
-extern void i915_mem_release(drm_device_t * dev,
+extern void i915_mem_release(struct drm_device * dev,
 			     DRMFILE filp, struct mem_block *heap);
 #ifdef I915_HAVE_FENCE
 /* i915_fence.c */
 
 
-extern void i915_fence_handler(drm_device_t *dev);
-extern int i915_fence_emit_sequence(drm_device_t *dev, uint32_t class,
+extern void i915_fence_handler(struct drm_device *dev);
+extern int i915_fence_emit_sequence(struct drm_device *dev, uint32_t class,
 				    uint32_t flags,
 				    uint32_t *sequence, 
 				    uint32_t *native_type);
-extern void i915_poke_flush(drm_device_t *dev, uint32_t class);
-extern int i915_fence_has_irq(drm_device_t *dev, uint32_t class, uint32_t flags);
+extern void i915_poke_flush(struct drm_device *dev, uint32_t class);
+extern int i915_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t flags);
 #endif
 
 #ifdef I915_HAVE_BUFFER
 /* i915_buffer.c */
-extern drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t *dev);
+extern drm_ttm_backend_t *i915_create_ttm_backend_entry(struct drm_device *dev);
 extern int i915_fence_types(drm_buffer_object_t *bo, uint32_t *type);
-extern int i915_invalidate_caches(drm_device_t *dev, uint64_t buffer_flags);
-extern int i915_init_mem_type(drm_device_t *dev, uint32_t type,
+extern int i915_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
+extern int i915_init_mem_type(struct drm_device *dev, uint32_t type,
 			       drm_mem_type_manager_t *man);
 extern uint32_t i915_evict_mask(drm_buffer_object_t *bo);
 extern int i915_move(drm_buffer_object_t *bo, int evict,
@@ -245,7 +245,7 @@ extern int i915_move(drm_buffer_object_t *bo, int evict,
 	I915_WRITE(LP_RING + RING_TAIL, outring);			\
 } while(0)
 
-extern int i915_wait_ring(drm_device_t * dev, int n, const char *caller);
+extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 
 #define GFX_OP_USER_INTERRUPT 		((0<<29)|(2<<23))
 #define GFX_OP_BREAKPOINT_INTERRUPT	((0<<29)|(1<<23))

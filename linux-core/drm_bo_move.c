@@ -102,7 +102,7 @@ EXPORT_SYMBOL(drm_bo_move_ttm);
  * Call bo->mutex locked.
  */
 
-int drm_mem_reg_ioremap(drm_device_t * dev, drm_bo_mem_reg_t * mem,
+int drm_mem_reg_ioremap(struct drm_device * dev, drm_bo_mem_reg_t * mem,
 			void **virtual)
 {
 	drm_buffer_manager_t *bm = &dev->bm;
@@ -137,7 +137,7 @@ int drm_mem_reg_ioremap(drm_device_t * dev, drm_bo_mem_reg_t * mem,
  * Call bo->mutex locked.
  */
 
-void drm_mem_reg_iounmap(drm_device_t * dev, drm_bo_mem_reg_t * mem,
+void drm_mem_reg_iounmap(struct drm_device * dev, drm_bo_mem_reg_t * mem,
 			 void *virtual)
 {
 	drm_buffer_manager_t *bm;
@@ -203,7 +203,7 @@ static int drm_copy_ttm_io_page(drm_ttm_t * ttm, void *dst, unsigned long page)
 int drm_bo_move_memcpy(drm_buffer_object_t * bo,
 		       int evict, int no_wait, drm_bo_mem_reg_t * new_mem)
 {
-	drm_device_t *dev = bo->dev;
+	struct drm_device *dev = bo->dev;
 	drm_mem_type_manager_t *man = &dev->bm.man[new_mem->mem_type];
 	drm_ttm_t *ttm = bo->ttm;
 	drm_bo_mem_reg_t *old_mem = &bo->mem;
@@ -285,7 +285,7 @@ int drm_buffer_object_transfer(drm_buffer_object_t * bo,
 			       drm_buffer_object_t ** new_obj)
 {
 	drm_buffer_object_t *fbo;
-	drm_device_t *dev = bo->dev;
+	struct drm_device *dev = bo->dev;
 	drm_buffer_manager_t *bm = &dev->bm;
 
 	fbo = drm_ctl_calloc(1, sizeof(*fbo), DRM_MEM_BUFOBJ);
@@ -330,7 +330,7 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
 			      uint32_t fence_type,
 			      uint32_t fence_flags, drm_bo_mem_reg_t * new_mem)
 {
-	drm_device_t *dev = bo->dev;
+	struct drm_device *dev = bo->dev;
 	drm_mem_type_manager_t *man = &dev->bm.man[new_mem->mem_type];
 	drm_bo_mem_reg_t *old_mem = &bo->mem;
 	int ret;

@@ -39,7 +39,7 @@
  */
 
 
-static uint32_t via_perform_flush(drm_device_t *dev, uint32_t class)
+static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
 {
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
 	drm_fence_class_manager_t *fc = &dev->fm.class[class];
@@ -113,7 +113,7 @@ static uint32_t via_perform_flush(drm_device_t *dev, uint32_t class)
  * Emit a fence sequence.
  */
 
-int via_fence_emit_sequence(drm_device_t * dev, uint32_t class, uint32_t flags,
+int via_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t flags,
 			     uint32_t * sequence, uint32_t * native_type)
 {
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
@@ -152,7 +152,7 @@ int via_fence_emit_sequence(drm_device_t * dev, uint32_t class, uint32_t flags,
  * Manual poll (from the fence manager).
  */
 
-void via_poke_flush(drm_device_t * dev, uint32_t class)
+void via_poke_flush(struct drm_device * dev, uint32_t class)
 {
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
 	drm_fence_manager_t *fm = &dev->fm;
@@ -200,7 +200,7 @@ int via_fence_has_irq(struct drm_device * dev, uint32_t class,
 
 void via_fence_timer(unsigned long data)
 {
-	drm_device_t *dev = (drm_device_t *) data;
+	struct drm_device *dev = (struct drm_device *) data;
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
 	drm_fence_manager_t *fm = &dev->fm;
 	uint32_t pending_flush;
