@@ -1135,8 +1135,9 @@ extern void drm_sg_cleanup(drm_sg_mem_t * entry);
 extern int drm_sg_alloc_ioctl(struct inode *inode, struct file *filp,
 			unsigned int cmd, unsigned long arg);
 extern int drm_sg_alloc(drm_device_t *dev, drm_scatter_gather_t * request);
-extern int drm_sg_free(struct inode *inode, struct file *filp,
-		       unsigned int cmd, unsigned long arg);
+extern int drm_sg_free(struct drm_device *dev, unsigned long handle);
+extern int drm_sg_free_ioctl(struct inode *inode, struct file *filp,
+			     unsigned int cmd, unsigned long arg);
 
 			       /* ATI PCIGART support (ati_pcigart.h) */
 extern int drm_ati_pcigart_init(drm_device_t * dev, drm_ati_pcigart_info *gart_info);
