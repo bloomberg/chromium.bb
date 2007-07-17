@@ -919,20 +919,21 @@ void *xgi_find_pcie_virt(struct xgi_info * info, unsigned long address)
 */
 void xgi_test_rwinkernel(struct xgi_info * info, unsigned long address)
 {
-	unsigned long *virtaddr = 0;
+	u32 *virtaddr = 0;
+
+	XGI_INFO("input GE HW addr is 0x%x\n", address);
+
 	if (address == 0) {
-		XGI_INFO("[Jong-kd] input GE HW addr is 0x00000000\n");
 		return;
 	}
 
-	virtaddr = (unsigned long *)xgi_find_pcie_virt(info, address);
+	virtaddr = (u32 *)xgi_find_pcie_virt(info, address);
 
-	XGI_INFO("[Jong-kd] input GE HW addr is 0x%lx\n", address);
-	XGI_INFO("[Jong-kd] convert to CPU virt addr 0x%px\n", virtaddr);
-	XGI_INFO("[Jong-kd] origin [virtaddr] = 0x%lx\n", *virtaddr);
+	XGI_INFO("convert to CPU virt addr 0x%p\n", virtaddr);
+
 	if (virtaddr != NULL) {
+		XGI_INFO("original [virtaddr] = 0x%x\n", *virtaddr);
 		*virtaddr = 0x00f00fff;
+		XGI_INFO("modified [virtaddr] = 0x%x\n", *virtaddr);
 	}
-
-	XGI_INFO("[Jong-kd] modified [virtaddr] = 0x%lx\n", *virtaddr);
 }
