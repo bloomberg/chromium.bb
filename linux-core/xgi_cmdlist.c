@@ -64,131 +64,61 @@ int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 
 void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
 {
-	unsigned int beginPort;
-    /** XGI_INFO("Jong-xgi_submit_cmdlist-Begin \n"); **/
+	const unsigned int beginPort = getCurBatchBeginPort(pCmdInfo);
 
-	/* Jong 05/25/2006 */
-	/* return; */
-
-	beginPort = getCurBatchBeginPort(pCmdInfo);
-	XGI_INFO("Jong-xgi_submit_cmdlist-After getCurBatchBeginPort() \n");
-
-	/* Jong 05/25/2006 */
-	/* return; */
+	XGI_INFO("After getCurBatchBeginPort()\n");
 
 	if (s_cmdring._lastBatchStartAddr == 0) {
-		unsigned int portOffset;
+		const unsigned int portOffset = BASE_3D_ENG + beginPort;
 
 		/* Jong 06/13/2006; remove marked for system hang test */
 		/* xgi_waitfor_pci_idle(info); */
 
-		/* Jong 06132006; BASE_3D_ENG=0x2800 */
-		/* beginPort: 2D: 0x30 */
-		portOffset = BASE_3D_ENG + beginPort;
-
 		// Enable PCI Trigger Mode
-		XGI_INFO("Jong-xgi_submit_cmdlist-Enable PCI Trigger Mode \n");
+		XGI_INFO("Enable PCI Trigger Mode \n");
 
-		/* Jong 05/25/2006 */
-		/* return; */
-
-		/* Jong 06/13/2006; M2REG_AUTO_LINK_SETTING_ADDRESS=0x10 */
-		XGI_INFO("Jong-M2REG_AUTO_LINK_SETTING_ADDRESS=0x%lx \n",
-			 M2REG_AUTO_LINK_SETTING_ADDRESS);
-		XGI_INFO("Jong-M2REG_CLEAR_COUNTERS_MASK=0x%lx \n",
-			 M2REG_CLEAR_COUNTERS_MASK);
-		XGI_INFO
-		    ("Jong-(M2REG_AUTO_LINK_SETTING_ADDRESS << 22)=0x%lx \n",
-		     (M2REG_AUTO_LINK_SETTING_ADDRESS << 22));
-		XGI_INFO("Jong-M2REG_PCI_TRIGGER_MODE_MASK=0x%lx \n\n",
-			 M2REG_PCI_TRIGGER_MODE_MASK);
 
 		/* Jong 06/14/2006; 0x400001a */
-		XGI_INFO
-		    ("Jong-(M2REG_AUTO_LINK_SETTING_ADDRESS << 22)|M2REG_CLEAR_COUNTERS_MASK|0x08|M2REG_PCI_TRIGGER_MODE_MASK=0x%lx \n",
-		     (M2REG_AUTO_LINK_SETTING_ADDRESS << 22) |
-		     M2REG_CLEAR_COUNTERS_MASK | 0x08 |
-		     M2REG_PCI_TRIGGER_MODE_MASK);
 		dwWriteReg(BASE_3D_ENG + M2REG_AUTO_LINK_SETTING_ADDRESS,
 			   (M2REG_AUTO_LINK_SETTING_ADDRESS << 22) |
 			   M2REG_CLEAR_COUNTERS_MASK | 0x08 |
 			   M2REG_PCI_TRIGGER_MODE_MASK);
 
-		/* Jong 05/25/2006 */
-		XGI_INFO("Jong-xgi_submit_cmdlist-After dwWriteReg() \n");
-		/* return; *//* OK */
-
 		/* Jong 06/14/2006; 0x400000a */
-		XGI_INFO
-		    ("Jong-(M2REG_AUTO_LINK_SETTING_ADDRESS << 22)|0x08|M2REG_PCI_TRIGGER_MODE_MASK=0x%lx \n",
-		     (M2REG_AUTO_LINK_SETTING_ADDRESS << 22) | 0x08 |
-		     M2REG_PCI_TRIGGER_MODE_MASK);
 		dwWriteReg(BASE_3D_ENG + M2REG_AUTO_LINK_SETTING_ADDRESS,
 			   (M2REG_AUTO_LINK_SETTING_ADDRESS << 22) | 0x08 |
 			   M2REG_PCI_TRIGGER_MODE_MASK);
 
 		// Send PCI begin command
-		XGI_INFO("Jong-xgi_submit_cmdlist-Send PCI begin command \n");
-		/* return; */
+		XGI_INFO("Send PCI begin command \n");
 
-		XGI_INFO("Jong-xgi_submit_cmdlist-portOffset=%d \n",
-			 portOffset);
-		XGI_INFO("Jong-xgi_submit_cmdlist-beginPort=%d \n", beginPort);
+		XGI_INFO("portOffset=%d, beginPort=%d\n",
+			 portOffset, beginPort);
 
 		/* beginPort = 48; */
 		/* 0xc100000 */
 		dwWriteReg(portOffset,
 			   (beginPort << 22) + (BEGIN_VALID_MASK) +
 			   pCmdInfo->_curDebugID);
-		XGI_INFO("Jong-(beginPort<<22)=0x%lx \n", (beginPort << 22));
-		XGI_INFO("Jong-(BEGIN_VALID_MASK)=0x%lx \n", BEGIN_VALID_MASK);
-		XGI_INFO("Jong- pCmdInfo->_curDebugID=0x%lx \n",
-			 pCmdInfo->_curDebugID);
-		XGI_INFO
-		    ("Jong- (beginPort<<22) + (BEGIN_VALID_MASK) + pCmdInfo->_curDebugID=0x%lx \n",
-		     (beginPort << 22) + (BEGIN_VALID_MASK) +
-		     pCmdInfo->_curDebugID);
-		XGI_INFO
-		    ("Jong-xgi_submit_cmdlist-Send PCI begin command- After \n");
-		/* return; *//* OK */
+
+		XGI_INFO("Send PCI begin command- After\n");
 
 		/* 0x80000024 */
 		dwWriteReg(portOffset + 4,
 			   BEGIN_LINK_ENABLE_MASK + pCmdInfo->_firstSize);
-		XGI_INFO("Jong- BEGIN_LINK_ENABLE_MASK=0x%lx \n",
-			 BEGIN_LINK_ENABLE_MASK);
-		XGI_INFO("Jong- pCmdInfo->_firstSize=0x%lx \n",
-			 pCmdInfo->_firstSize);
-		XGI_INFO
-		    ("Jong-  BEGIN_LINK_ENABLE_MASK + pCmdInfo->_firstSize=0x%lx \n",
-		     BEGIN_LINK_ENABLE_MASK + pCmdInfo->_firstSize);
-		XGI_INFO("Jong-xgi_submit_cmdlist-dwWriteReg-1 \n");
 
 		/* 0x1010000 */
 		dwWriteReg(portOffset + 8, (pCmdInfo->_firstBeginAddr >> 4));
-		XGI_INFO("Jong-  pCmdInfo->_firstBeginAddr=0x%lx \n",
-			 pCmdInfo->_firstBeginAddr);
-		XGI_INFO("Jong-  (pCmdInfo->_firstBeginAddr >> 4)=0x%lx \n",
-			 (pCmdInfo->_firstBeginAddr >> 4));
-		XGI_INFO("Jong-xgi_submit_cmdlist-dwWriteReg-2 \n");
-
-		/* Jong 06/13/2006 */
-		xgi_dump_register(info);
 
 		/* Jong 06/12/2006; system hang; marked for test */
 		dwWriteReg(portOffset + 12, 0);
-		XGI_INFO("Jong-xgi_submit_cmdlist-dwWriteReg-3 \n");
 
 		/* Jong 06/13/2006; remove marked for system hang test */
 		/* xgi_waitfor_pci_idle(info); */
 	} else {
 		u32 *lastBatchVirtAddr;
 
-		XGI_INFO
-		    ("Jong-xgi_submit_cmdlist-s_cmdring._lastBatchStartAddr != 0 \n");
-
-		/* Jong 05/25/2006 */
-		/* return; */
+		XGI_INFO("s_cmdring._lastBatchStartAddr != 0\n");
 
 		if (pCmdInfo->_firstBeginType == BTYPE_3D) {
 			addFlush2D(info);
@@ -215,14 +145,13 @@ void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
 
 			/* Jong 06/12/2006; system hang; marked for test */
 			triggerHWCommandList(info, pCmdInfo->_beginCount);
+		} else {
+			XGI_ERROR("lastBatchVirtAddr is NULL\n");
 		}
-
-		XGI_INFO
-		    ("Jong-xgi_submit_cmdlist-s_cmdring._lastBatchStartAddr != 0 - End\n");
 	}
 
 	s_cmdring._lastBatchStartAddr = pCmdInfo->_lastBeginAddr;
-	XGI_INFO("Jong-xgi_submit_cmdlist-End \n");
+	XGI_INFO("End\n");
 }
 
 /*
