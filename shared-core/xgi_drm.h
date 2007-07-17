@@ -67,11 +67,6 @@ struct xgi_mem_alloc {
 	unsigned long bus_addr;
 };
 
-struct xgi_sarea_info {
-	unsigned long bus_addr;
-	unsigned int size;
-};
-
 enum xgi_batch_type {
 	BTYPE_2D = 0,
 	BTYPE_3D = 1,
@@ -93,11 +88,6 @@ struct xgi_cmd_info {
 struct xgi_state_info {
 	unsigned int _fromState;
 	unsigned int _toState;
-};
-
-struct xgi_mmio_info {
-	unsigned long mmio_base;
-	unsigned int size;
 };
 
 
@@ -138,15 +128,5 @@ struct xgi_mmio_info {
 #define XGI_IOCTL_STATE_CHANGE      _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_STATE_CHANGE, struct xgi_state_info)
 
 #define XGI_IOCTL_MAXNR          30
-
-/*
- * flags
- */
-#define XGI_FLAG_OPEN            0x0001
-#define XGI_FLAG_NEEDS_POSTING   0x0002
-#define XGI_FLAG_WAS_POSTED      0x0004
-#define XGI_FLAG_CONTROL         0x0010
-#define XGI_FLAG_MAP_REGS_EARLY  0x0200
-
 
 #endif /* _XGI_DRM_H_ */
