@@ -110,8 +110,6 @@ struct xgi_info {
 	struct xgi_aperture mmio;
 	struct xgi_aperture fb;
 	struct xgi_aperture pcie;
-	struct xgi_screen_info scrn_info;
-	struct xgi_sarea_info sarea_info;
 
 	/* look up table parameters */
 	u32 *lut_base;
@@ -207,7 +205,6 @@ extern void xgi_pcie_heap_cleanup(struct xgi_info * info);
 extern void xgi_pcie_alloc(struct xgi_info * info, 
 			   struct xgi_mem_alloc * alloc, pid_t pid);
 extern void xgi_pcie_free(struct xgi_info * info, unsigned long offset);
-extern void xgi_pcie_heap_check(void);
 extern struct xgi_pcie_block *xgi_find_pcie_block(struct xgi_info * info,
 						    unsigned long address);
 extern void *xgi_find_pcie_virt(struct xgi_info * info, unsigned long address);

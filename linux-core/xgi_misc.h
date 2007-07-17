@@ -30,12 +30,7 @@
 #define _XGI_MISC_H_
 
 extern void xgi_dump_register(struct xgi_info * info);
-extern void xgi_get_device_info(struct xgi_info * info, struct xgi_chip_info * req);
-extern void xgi_get_mmio_info(struct xgi_info * info, struct xgi_mmio_info * req);
-extern void xgi_get_screen_info(struct xgi_info * info, struct xgi_screen_info * req);
-extern void xgi_put_screen_info(struct xgi_info * info, struct xgi_screen_info * req);
 extern void xgi_ge_reset(struct xgi_info * info);
-extern void xgi_sarea_info(struct xgi_info * info, struct xgi_sarea_info * req);
 
 extern void xgi_restore_registers(struct xgi_info * info);
 extern bool xgi_ge_irq_handler(struct xgi_info * info);

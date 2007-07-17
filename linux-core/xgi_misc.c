@@ -31,76 +31,10 @@
 #include "xgi_regs.h"
 #include "xgi_pcie.h"
 
-void xgi_get_device_info(struct xgi_info * info, struct xgi_chip_info * req)
-{
-	req->device_id = info->dev->device;
-	req->device_name[0] = 'x';
-	req->device_name[1] = 'g';
-	req->device_name[2] = '4';
-	req->device_name[3] = '7';
-	req->vendor_id = info->dev->vendor;
-	req->curr_display_mode = 0;
-	req->fb_size = info->fb.size;
-	req->sarea_bus_addr = info->sarea_info.bus_addr;
-	req->sarea_size = info->sarea_info.size;
-}
-
-void xgi_get_mmio_info(struct xgi_info * info, struct xgi_mmio_info * req)
-{
-	req->mmio_base = info->mmio.base;
-	req->size = info->mmio.size;
-}
-
-void xgi_put_screen_info(struct xgi_info * info, struct xgi_screen_info * req)
-{
-	info->scrn_info.scrn_start = req->scrn_start;
-	info->scrn_info.scrn_xres = req->scrn_xres;
-	info->scrn_info.scrn_yres = req->scrn_yres;
-	info->scrn_info.scrn_bpp = req->scrn_bpp;
-	info->scrn_info.scrn_pitch = req->scrn_pitch;
-
-	XGI_INFO("info->scrn_info.scrn_start: 0x%lx"
-		 "info->scrn_info.scrn_xres: 0x%lx"
-		 "info->scrn_info.scrn_yres: 0x%lx"
-		 "info->scrn_info.scrn_bpp: 0x%lx"
-		 "info->scrn_info.scrn_pitch: 0x%lx\n",
-		 info->scrn_info.scrn_start,
-		 info->scrn_info.scrn_xres,
-		 info->scrn_info.scrn_yres,
-		 info->scrn_info.scrn_bpp, info->scrn_info.scrn_pitch);
-}
-
-void xgi_get_screen_info(struct xgi_info * info, struct xgi_screen_info * req)
-{
-	req->scrn_start = info->scrn_info.scrn_start;
-	req->scrn_xres = info->scrn_info.scrn_xres;
-	req->scrn_yres = info->scrn_info.scrn_yres;
-	req->scrn_bpp = info->scrn_info.scrn_bpp;
-	req->scrn_pitch = info->scrn_info.scrn_pitch;
-
-	XGI_INFO("req->scrn_start: 0x%lx"
-		 "req->scrn_xres: 0x%lx"
-		 "req->scrn_yres: 0x%lx"
-		 "req->scrn_bpp: 0x%lx"
-		 "req->scrn_pitch: 0x%lx\n",
-		 req->scrn_start,
-		 req->scrn_xres,
-		 req->scrn_yres, req->scrn_bpp, req->scrn_pitch);
-}
-
 void xgi_ge_reset(struct xgi_info * info)
 {
 	xgi_disable_ge(info);
 	xgi_enable_ge(info);
-}
-
-void xgi_sarea_info(struct xgi_info * info, struct xgi_sarea_info * req)
-{
-	info->sarea_info.bus_addr = req->bus_addr;
-	info->sarea_info.size = req->size;
-	XGI_INFO("info->sarea_info.bus_addr: 0x%lx"
-		 "info->sarea_info.size: 0x%lx\n",
-		 info->sarea_info.bus_addr, info->sarea_info.size);
 }
 
 /*

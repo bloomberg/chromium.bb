@@ -344,35 +344,6 @@ int xgi_pcie_heap_init(struct xgi_info * info)
 	return 0;
 }
 
-void xgi_pcie_heap_check(void)
-{
-#ifdef XGI_DEBUG
-	struct xgi_pcie_block *block;
-	unsigned int ownerIndex;
-	static const char *const ownerStr[6] =
-	    { "2D", "3D", "3D_CMD", "3D_SCR", "3D_TEX", "ELSE" };
-
-	if (!xgi_pcie_heap) {
-		return;
-	}
-
-	XGI_INFO("pcie freemax = 0x%lx\n", xgi_pcie_heap->max_freesize);
-	list_for_each_entry(block, &xgi_pcie_heap->used_list, list) {
-		if (block->owner == PCIE_2D)
-			ownerIndex = 0;
-		else if (block->owner > PCIE_3D_TEXTURE
-			 || block->owner < PCIE_2D
-			 || block->owner < PCIE_3D)
-			ownerIndex = 5;
-		else
-			ownerIndex = block->owner - PCIE_3D + 1;
-
-		XGI_INFO("Allocated by %s, block offset: 0x%lx, size: 0x%lx \n",
-			 ownerStr[ownerIndex], block->offset, block->size);
-	}
-#endif
-}
-
 void xgi_pcie_heap_cleanup(struct xgi_info * info)
 {
 	struct list_head *free_list;

@@ -877,10 +877,6 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 		 arg_size);
 
 	switch (_IOC_NR(cmd)) {
-	case XGI_ESC_DEVICE_INFO:
-		XGI_INFO("Jong-xgi_ioctl_get_device_info \n");
-		xgi_get_device_info(info, (struct xgi_chip_info *)arg_copy);
-		break;
 	case XGI_ESC_POST_VBIOS:
 		XGI_INFO("Jong-xgi_ioctl_post_vbios \n");
 		break;
@@ -892,10 +888,6 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 		XGI_INFO("Jong-xgi_ioctl_fb_free \n");
 		xgi_fb_free(info, *(unsigned long *)arg_copy);
 		break;
-	case XGI_ESC_MEM_COLLECT:
-		XGI_INFO("Jong-xgi_ioctl_mem_collect \n");
-		xgi_mem_collect(info, (unsigned int *)arg_copy);
-		break;
 	case XGI_ESC_PCIE_ALLOC:
 		XGI_INFO("Jong-xgi_ioctl_pcie_alloc \n");
 		xgi_pcie_alloc(info, alloc, 0);
@@ -905,29 +897,9 @@ int xgi_kern_ioctl(struct inode *inode, struct file *filp,
 			 *((unsigned long *)arg_copy));
 		xgi_pcie_free(info, *((unsigned long *)arg_copy));
 		break;
-	case XGI_ESC_PCIE_CHECK:
-		XGI_INFO("Jong-xgi_pcie_heap_check \n");
-		xgi_pcie_heap_check();
-		break;
-	case XGI_ESC_GET_SCREEN_INFO:
-		XGI_INFO("Jong-xgi_get_screen_info \n");
-		xgi_get_screen_info(info, (struct xgi_screen_info *)arg_copy);
-		break;
-	case XGI_ESC_PUT_SCREEN_INFO:
-		XGI_INFO("Jong-xgi_put_screen_info \n");
-		xgi_put_screen_info(info, (struct xgi_screen_info *)arg_copy);
-		break;
-	case XGI_ESC_MMIO_INFO:
-		XGI_INFO("Jong-xgi_ioctl_get_mmio_info \n");
-		xgi_get_mmio_info(info, (struct xgi_mmio_info *)arg_copy);
-		break;
 	case XGI_ESC_GE_RESET:
 		XGI_INFO("Jong-xgi_ioctl_ge_reset \n");
 		xgi_ge_reset(info);
-		break;
-	case XGI_ESC_SAREA_INFO:
-		XGI_INFO("Jong-xgi_ioctl_sarea_info \n");
-		xgi_sarea_info(info, (struct xgi_sarea_info *)arg_copy);
 		break;
 	case XGI_ESC_DUMP_REGISTER:
 		XGI_INFO("Jong-xgi_ioctl_dump_register \n");
