@@ -153,16 +153,10 @@ static inline void writeAttr(struct xgi_info * info, u8 index, u8 value)
  */
 static inline void WriteRegDWord(struct xgi_info * info, u32 addr, u32 data)
 {
-	/* Jong 05/25/2006 */
-	XGI_INFO("Jong-WriteRegDWord()-Begin \n");
-	XGI_INFO("Jong-WriteRegDWord()-info->mmio.vbase=0x%lx \n",
-		 info->mmio.vbase);
-	XGI_INFO("Jong-WriteRegDWord()-addr=0x%lx \n", addr);
-	XGI_INFO("Jong-WriteRegDWord()-data=0x%lx \n", data);
-	/* return; */
+	XGI_INFO("mmio vbase = 0x%p, addr = 0x%x, data = 0x%x\n",
+		 info->mmio->vbase, addr, data);
 
 	*(volatile u32 *)(info->mmio.vbase + addr) = (data);
-	XGI_INFO("Jong-WriteRegDWord()-End \n");
 }
 
 static inline void WriteRegWord(struct xgi_info * info, u32 addr, u16 data)
@@ -261,18 +255,6 @@ extern void DisableProtect();
 #define dwReadReg(addr)         ReadRegDWord(info, addr)
 #define wReadReg(addr)          ReadRegWord(info, addr)
 #define bReadReg(addr)          ReadRegByte(info, addr)
-
-static inline void xgi_protect_all(struct xgi_info * info)
-{
-	OUTB(0x3C4, 0x11);
-	OUTB(0x3C5, 0x92);
-}
-
-static inline void xgi_unprotect_all(struct xgi_info * info)
-{
-	OUTB(0x3C4, 0x11);
-	OUTB(0x3C5, 0x92);
-}
 
 static inline void xgi_enable_mmio(struct xgi_info * info)
 {
