@@ -127,16 +127,9 @@
 #define _DRM_LOCKING_CONTEXT(lock) ((lock) & ~(_DRM_LOCK_HELD|_DRM_LOCK_CONT))
 
 #if defined(__linux__)
-#if defined(__KERNEL__)
-typedef __u64 drm_u64_t;
-#else
-typedef unsigned long long drm_u64_t;
-#endif
-
 typedef unsigned int drm_handle_t;
 #else
 #include <sys/types.h>
-typedef u_int64_t drm_u64_t;
 typedef unsigned long drm_handle_t;	/**< To mapped regions */
 #endif
 typedef unsigned int drm_context_t;	/**< GLXContext handle */
@@ -677,7 +670,7 @@ struct drm_fence_arg {
 	unsigned int flags;
 	unsigned int signaled;
 	unsigned int pad64;
-	drm_u64_t expand_pad[3]; /*Future expansion */
+	uint64_t expand_pad[3]; /*Future expansion */
 };
 
 /* Buffer permissions, referring to how the GPU uses the buffers.
@@ -792,8 +785,8 @@ enum drm_bo_type {
 };
 
 struct drm_bo_info_req {
-	drm_u64_t mask;
-        drm_u64_t flags;
+	uint64_t mask;
+        uint64_t flags;
         unsigned int handle;
 	unsigned int hint;
 	unsigned int fence_class;
@@ -801,9 +794,9 @@ struct drm_bo_info_req {
 };
 
 struct drm_bo_create_req {
-        drm_u64_t mask;
-	drm_u64_t size;
-	drm_u64_t buffer_start;
+        uint64_t mask;
+	uint64_t size;
+	uint64_t buffer_start;
 	unsigned int hint;
 	unsigned int page_alignment;
 	enum drm_bo_type type;
@@ -827,12 +820,12 @@ struct drm_bo_op_req {
 #define DRM_BO_REP_BUSY 0x00000001
 
 struct drm_bo_info_rep {
-        drm_u64_t flags;
-        drm_u64_t mask;
-	drm_u64_t size;
-	drm_u64_t offset;
-	drm_u64_t arg_handle;
-	drm_u64_t buffer_start;
+        uint64_t flags;
+        uint64_t mask;
+	uint64_t size;
+	uint64_t offset;
+	uint64_t arg_handle;
+	uint64_t buffer_start;
 	unsigned int handle;
 	unsigned int fence_flags;
 	unsigned int rep_flags;
@@ -841,7 +834,7 @@ struct drm_bo_info_rep {
         unsigned int hw_tile_stride;
 	unsigned int tile_info;
 	unsigned int pad64;
-	drm_u64_t expand_pad[4]; /*Future expansion */
+	uint64_t expand_pad[4]; /*Future expansion */
 };
 
 struct drm_bo_arg_rep {
@@ -876,7 +869,7 @@ struct drm_bo_map_wait_idle_arg {
 };
 
 struct drm_bo_op_arg {
-	drm_u64_t next;
+	uint64_t next;
 	union {
 		struct drm_bo_op_req req;
 		struct drm_bo_arg_rep rep;
@@ -905,8 +898,8 @@ struct drm_mm_init_arg {
 	unsigned int major;
 	unsigned int minor;
 	unsigned int mem_type;
-	drm_u64_t p_offset;
-	drm_u64_t p_size;
+	uint64_t p_offset;
+	uint64_t p_size;
 };
 
 /**

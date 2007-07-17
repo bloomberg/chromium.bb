@@ -2629,7 +2629,7 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object * bo)
 		return -ENOMEM;
 	}
 
-	list->user_token = ((drm_u64_t) list->hash.key) << PAGE_SHIFT;
+	list->user_token = ((uint64_t) list->hash.key) << PAGE_SHIFT;
 
 	return 0;
 }

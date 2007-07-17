@@ -49,7 +49,6 @@
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <stdarg.h>
-#include "drm.h"
 
 /* Not all systems have MAP_FAILED defined */
 #ifndef MAP_FAILED
@@ -2698,7 +2697,7 @@ static void drmBOCopyReply(const struct drm_bo_info_rep *rep, drmBO *buf)
 
 int drmBOCreate(int fd, unsigned long start, unsigned long size,
 		unsigned pageAlignment, void *user_buffer, drm_bo_type_t type,
-		drm_u64_t mask,
+		uint64_t mask,
 		unsigned hint, drmBO *buf)
 {
     struct drm_bo_create_arg arg;
@@ -2879,7 +2878,7 @@ int drmBOUnmap(int fd, drmBO *buf)
 }
 
 int drmBOValidate(int fd, drmBO *buf,
-		  drm_u64_t flags, drm_u64_t mask,
+		  uint64_t flags, uint64_t mask,
 		  unsigned hint)
 {
     struct drm_bo_op_arg arg;
@@ -3057,7 +3056,7 @@ int drmBOValidateList(int fd, drmBOList *list)
     struct drm_bo_op_arg *arg, *first;
     struct drm_bo_op_req *req;
     struct drm_bo_arg_rep *rep;
-    drm_u64_t *prevNext = NULL;
+    uint64_t *prevNext = NULL;
     drmBO *buf;
     int ret;
 
@@ -3121,7 +3120,7 @@ int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle)
     struct drm_bo_op_arg *arg, *first;
     struct drm_bo_op_req *req;
     struct drm_bo_arg_rep *rep;
-    drm_u64_t *prevNext = NULL;
+    uint64_t *prevNext = NULL;
     drmBO *buf;
     unsigned fence_flags;
     int ret;

@@ -551,7 +551,7 @@ struct drm_map_list {
 	struct list_head head;		/**< list head */
 	struct drm_hash_item hash;
 	struct drm_map *map;			/**< mapping */
-	drm_u64_t user_token;
+	uint64_t user_token;
 	struct drm_mm_node *file_offset_node;
 };
 
@@ -931,9 +931,9 @@ extern int drm_unbind_agp(DRM_AGP_MEM * handle);
 
 extern void drm_free_memctl(size_t size);
 extern int drm_alloc_memctl(size_t size);
-extern void drm_query_memctl(drm_u64_t *cur_used,
-			     drm_u64_t *low_threshold,
-			     drm_u64_t *high_threshold);
+extern void drm_query_memctl(uint64_t *cur_used,
+			     uint64_t *low_threshold,
+			     uint64_t *high_threshold);
 extern void drm_init_memctl(size_t low_threshold,
 			    size_t high_threshold,
 			    size_t unit_size);

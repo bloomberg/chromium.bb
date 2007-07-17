@@ -107,9 +107,9 @@ typedef struct _drmBO
 {
     drm_bo_type_t type;
     unsigned handle;
-    drm_u64_t mapHandle;
-    drm_u64_t flags;
-    drm_u64_t mask;
+    uint64_t mapHandle;
+    uint64_t flags;
+    uint64_t mask;
     unsigned mapFlags;
     unsigned long size;
     unsigned long offset;
@@ -180,7 +180,7 @@ extern int drmBOCreateList(int numTarget, drmBOList *list);
 
 extern int drmBOCreate(int fd, unsigned long start, unsigned long size,
 		       unsigned pageAlignment,void *user_buffer,
-		       drm_bo_type_t type, drm_u64_t mask,
+		       drm_bo_type_t type, uint64_t mask,
 		       unsigned hint, drmBO *buf);
 extern int drmBODestroy(int fd, drmBO *buf);
 extern int drmBOReference(int fd, unsigned handle, drmBO *buf);
@@ -188,8 +188,8 @@ extern int drmBOUnReference(int fd, drmBO *buf);
 extern int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
 		    void **address);
 extern int drmBOUnmap(int fd, drmBO *buf);
-extern int drmBOValidate(int fd, drmBO *buf, drm_u64_t flags,
-			 drm_u64_t mask, unsigned hint);
+extern int drmBOValidate(int fd, drmBO *buf, uint64_t flags,
+			 uint64_t mask, unsigned hint);
 
 extern int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle);
 extern int drmBOInfo(int fd, drmBO *buf);

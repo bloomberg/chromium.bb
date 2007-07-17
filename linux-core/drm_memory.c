@@ -38,9 +38,9 @@
 
 static struct {
 	spinlock_t lock;
-	drm_u64_t cur_used;
-	drm_u64_t low_threshold;
-	drm_u64_t high_threshold;
+	uint64_t cur_used;
+	uint64_t low_threshold;
+	uint64_t high_threshold;
 } drm_memctl = {
 	.lock = SPIN_LOCK_UNLOCKED
 };
@@ -82,9 +82,9 @@ void drm_free_memctl(size_t size)
 }
 EXPORT_SYMBOL(drm_free_memctl);
 
-void drm_query_memctl(drm_u64_t *cur_used,
-		      drm_u64_t *low_threshold,
-		      drm_u64_t *high_threshold)
+void drm_query_memctl(uint64_t *cur_used,
+		      uint64_t *low_threshold,
+		      uint64_t *high_threshold)
 {
 	spin_lock(&drm_memctl.lock);
 	*cur_used = drm_memctl.cur_used;

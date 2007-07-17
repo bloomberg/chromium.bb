@@ -436,9 +436,9 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 	int len = 0;
 	struct drm_buffer_manager *bm = &dev->bm;
 	struct drm_fence_manager *fm = &dev->fm;
-	drm_u64_t used_mem;
-	drm_u64_t low_mem;
-	drm_u64_t high_mem;
+	uint64_t used_mem;
+	uint64_t low_mem;
+	uint64_t high_mem;
 
 
 	if (offset > DRM_PROC_LIMIT) {
