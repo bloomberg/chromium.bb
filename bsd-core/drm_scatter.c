@@ -90,6 +90,7 @@ int drm_sg_alloc(drm_device_t * dev, drm_scatter_gather_t * request)
 	dev->sg = entry;
 	DRM_UNLOCK();
 
+	return 0;
 }
 
 int drm_sg_alloc_ioctl(DRM_IOCTL_ARGS)

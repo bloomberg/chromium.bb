@@ -59,6 +59,8 @@ typedef struct drm_file drm_file_t;
 #include <sys/bus.h>
 #include <sys/signalvar.h>
 #include <sys/poll.h>
+#include <sys/tree.h>
+#include <sys/taskqueue.h>
 #include <vm/vm.h>
 #include <vm/pmap.h>
 #include <vm/vm_extern.h>
@@ -152,6 +154,7 @@ typedef struct drm_file drm_file_t;
 #define DRM_MEM_CTXBITMAP 17
 #define DRM_MEM_STUB	  18
 #define DRM_MEM_SGLISTS	  19
+#define DRM_MEM_DRAWABLE  20
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 
@@ -184,10 +187,15 @@ MALLOC_DECLARE(M_DRM);
 #define DRM_CURPROC		curthread
 #define DRM_STRUCTPROC		struct thread
 #define DRM_SPINTYPE		struct mtx
-#define DRM_SPININIT(l,name)	mtx_init(&l, name, NULL, MTX_DEF)
-#define DRM_SPINUNINIT(l)	mtx_destroy(&l)
+#define DRM_SPININIT(l,name)	mtx_init(l, name, NULL, MTX_DEF)
+#define DRM_SPINUNINIT(l)	mtx_destroy(l)
 #define DRM_SPINLOCK(l)		mtx_lock(l)
-#define DRM_SPINUNLOCK(u)	mtx_unlock(u);
+#define DRM_SPINUNLOCK(u)	mtx_unlock(u)
+#define DRM_SPINLOCK_IRQSAVE(l, irqflags) do {		\
+	mtx_lock(l);					\
+	(void)irqflags;					\
+} while (0)
+#define DRM_SPINUNLOCK_IRQRESTORE(u, irqflags) mtx_unlock(u)
 #define DRM_SPINLOCK_ASSERT(l)	mtx_assert(l, MA_OWNED)
 #define DRM_CURRENTPID		curthread->td_proc->p_pid
 #define DRM_LOCK()		mtx_lock(&dev->dev_lock)
@@ -732,6 +740,8 @@ struct drm_device {
 	struct mtx	  irq_lock;	/* protects irq condition checks */
 	struct mtx	  dev_lock;	/* protects everything else */
 #endif
+	DRM_SPINTYPE	  drw_lock;
+
 				/* Usage Counters */
 	int		  open_count;	/* Outstanding files open	   */
 	int		  buf_use;	/* Buffers in use -- cannot alloc  */
@@ -797,6 +807,13 @@ struct drm_device {
 	void		  *dev_private;
 	unsigned int	  agp_buffer_token;
 	drm_local_map_t   *agp_buffer_map;
+
+	struct unrhdr	  *drw_unrhdr;
+	/* RB tree of drawable infos */
+	RB_HEAD(drawable_tree, bsd_drm_drawable_info) drw_head;
+
+	struct task	  locked_task;
+	void		  (*locked_task_call)(drm_device_t *dev);
 };
 
 extern int	drm_debug_flag;
@@ -959,6 +976,8 @@ int	drm_getsareactx(DRM_IOCTL_ARGS);
 /* Drawable IOCTL support (drm_drawable.c) */
 int	drm_adddraw(DRM_IOCTL_ARGS);
 int	drm_rmdraw(DRM_IOCTL_ARGS);
+int	drm_update_draw(DRM_IOCTL_ARGS);
+struct drm_drawable_info *drm_get_drawable_info(drm_device_t *dev, int handle);
 
 /* Authentication IOCTL support (drm_auth.c) */
 int	drm_getmagic(DRM_IOCTL_ARGS);

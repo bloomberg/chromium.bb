@@ -118,7 +118,7 @@ typedef struct drm_i915_private {
 	struct mem_block *agp_heap;
 	unsigned int sr01, adpa, ppcr, dvob, dvoc, lvds;
 	int vblank_pipe;
-	spinlock_t user_irq_lock;
+	DRM_SPINTYPE user_irq_lock;
 	int user_irq_refcount;
 	int fence_irq_on;
 	uint32_t irq_enable_reg;
@@ -133,7 +133,7 @@ typedef struct drm_i915_private {
 #ifdef I915_HAVE_BUFFER
 	void *agp_iomap;
 #endif
-	spinlock_t swaps_lock;
+	DRM_SPINTYPE swaps_lock;
 	drm_i915_vbl_swap_t vbl_swaps;
 	unsigned int swaps_pending;
 } drm_i915_private_t;

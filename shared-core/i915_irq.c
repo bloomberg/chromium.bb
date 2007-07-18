@@ -50,6 +50,8 @@ i915_dispatch_vsync_flip(drm_device_t *dev, drm_drawable_info_t *drw, int pipe)
 	u16 x1, y1, x2, y2;
 	int pf_pipes = 1 << pipe;
 
+	DRM_SPINLOCK_ASSERT(&dev->drw_lock);
+
 	/* If the window is visible on the other pipe, we have to flip on that
 	 * pipe as well.
 	 */
@@ -89,7 +91,6 @@ i915_dispatch_vsync_flip(drm_device_t *dev, drm_drawable_info_t *drw, int pipe)
 static void i915_vblank_tasklet(drm_device_t *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	unsigned long irqflags;
 	struct list_head *list, *tmp, hits, *hit;
 	int nhits, nrects, slice[2], upper[2], lower[2], i, num_pages;
 	unsigned counter[2] = { atomic_read(&dev->vbl_received),
@@ -111,7 +112,12 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 
 	nhits = nrects = 0;
 
-	spin_lock_irqsave(&dev_priv->swaps_lock, irqflags);
+	/* No irqsave/restore necessary.  This tasklet may be run in an
+	 * interrupt context or normal context, but we don't have to worry
+	 * about getting interrupted by something acquiring the lock, because
+	 * we are the interrupt context thing that acquires the lock.
+	 */
+	DRM_SPINLOCK(&dev_priv->swaps_lock);
 
 	/* Find buffer swaps scheduled for this vertical blank */
 	list_for_each_safe(list, tmp, &dev_priv->vbl_swaps.head) {
@@ -124,15 +130,15 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 		list_del(list);
 		dev_priv->swaps_pending--;
 
-		spin_unlock(&dev_priv->swaps_lock);
-		spin_lock(&dev->drw_lock);
+		DRM_SPINUNLOCK(&dev_priv->swaps_lock);
+		DRM_SPINLOCK(&dev->drw_lock);
 
 		drw = drm_get_drawable_info(dev, vbl_swap->drw_id);
 
 		if (!drw) {
-			spin_unlock(&dev->drw_lock);
+			DRM_SPINUNLOCK(&dev->drw_lock);
 			drm_free(vbl_swap, sizeof(*vbl_swap), DRM_MEM_DRIVER);
-			spin_lock(&dev_priv->swaps_lock);
+			DRM_SPINLOCK(&dev_priv->swaps_lock);
 			continue;
 		}
 
@@ -149,7 +155,7 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 			}
 		}
 
-		spin_unlock(&dev->drw_lock);
+		DRM_SPINUNLOCK(&dev->drw_lock);
 
 		/* List of hits was empty, or we reached the end of it */
 		if (hit == &hits)
@@ -157,15 +163,14 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 
 		nhits++;
 
-		spin_lock(&dev_priv->swaps_lock);
+		DRM_SPINLOCK(&dev_priv->swaps_lock);
 	}
+
+	DRM_SPINUNLOCK(&dev->drw_lock);
 
 	if (nhits == 0) {
-		spin_unlock_irqrestore(&dev_priv->swaps_lock, irqflags);
 		return;
 	}
-
-	spin_unlock(&dev_priv->swaps_lock);
 
 	i915_kernel_lost_context(dev);
 
@@ -180,7 +185,7 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 	offsets[2] = sarea_priv->third_offset;
 	num_pages = sarea_priv->third_handle ? 3 : 2;
 
-	spin_lock(&dev->drw_lock);
+	DRM_SPINLOCK(&dev->drw_lock);
 
 	/* Emit blits for buffer swaps, partitioning both outputs into as many
 	 * slices as there are buffer swaps scheduled in order to avoid tearing
@@ -262,7 +267,7 @@ static void i915_vblank_tasklet(drm_device_t *dev)
 		}
 	}
 
-	spin_unlock_irqrestore(&dev->drw_lock, irqflags);
+	DRM_SPINUNLOCK(&dev->drw_lock);
 
 	list_for_each_safe(hit, tmp, &hits) {
 		drm_i915_vbl_swap_t *swap_hit =
@@ -362,23 +367,23 @@ int i915_emit_irq(drm_device_t * dev)
 
 void i915_user_irq_on(drm_i915_private_t *dev_priv)
 {
-	spin_lock(&dev_priv->user_irq_lock);
+	DRM_SPINLOCK(&dev_priv->user_irq_lock);
 	if (dev_priv->irq_enabled && (++dev_priv->user_irq_refcount == 1)){
 		dev_priv->irq_enable_reg |= USER_INT_FLAG;
 		I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
 	}
-	spin_unlock(&dev_priv->user_irq_lock);
+	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 
 }
 		
 void i915_user_irq_off(drm_i915_private_t *dev_priv)
 {
-	spin_lock(&dev_priv->user_irq_lock);
+	DRM_SPINLOCK(&dev_priv->user_irq_lock);
 	if (dev_priv->irq_enabled && (--dev_priv->user_irq_refcount == 0)) {
 		//		dev_priv->irq_enable_reg &= ~USER_INT_FLAG;
 		//		I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
 	}
-	spin_unlock(&dev_priv->user_irq_lock);
+	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 }
 		
 
@@ -597,16 +602,6 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 		return DRM_ERR(EINVAL);
 	}
 
-	spin_lock_irqsave(&dev->drw_lock, irqflags);
-
-	if (!drm_get_drawable_info(dev, swap.drawable)) {
-		spin_unlock_irqrestore(&dev->drw_lock, irqflags);
-		DRM_DEBUG("Invalid drawable ID %d\n", swap.drawable);
-		return DRM_ERR(EINVAL);
-	}
-
-	spin_unlock_irqrestore(&dev->drw_lock, irqflags);
-
 	curseq = atomic_read(pipe ? &dev->vbl_received2 : &dev->vbl_received);
 
 	if (seqtype == _DRM_VBLANK_RELATIVE)
@@ -629,12 +624,13 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 
 			LOCK_TEST_WITH_RETURN(dev, filp);
 
-			spin_lock_irqsave(&dev->drw_lock, irqflags);
+			DRM_SPINLOCK_IRQSAVE(&dev->drw_lock, irqflags);
 
 			drw = drm_get_drawable_info(dev, swap.drawable);
 
 			if (!drw) {
-				spin_unlock_irqrestore(&dev->drw_lock, irqflags);
+				DRM_SPINUNLOCK_IRQRESTORE(&dev->drw_lock,
+				    irqflags);
 				DRM_DEBUG("Invalid drawable ID %d\n",
 					  swap.drawable);
 				return DRM_ERR(EINVAL);
@@ -642,13 +638,13 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 
 			i915_dispatch_vsync_flip(dev, drw, pipe);
 
-			spin_unlock_irqrestore(&dev->drw_lock, irqflags);
+			DRM_SPINUNLOCK_IRQRESTORE(&dev->drw_lock, irqflags);
 
 			return 0;
 		}
 	}
 
-	spin_lock_irqsave(&dev_priv->swaps_lock, irqflags);
+	DRM_SPINLOCK_IRQSAVE(&dev_priv->swaps_lock, irqflags);
 
 	list_for_each(list, &dev_priv->vbl_swaps.head) {
 		vbl_swap = list_entry(list, drm_i915_vbl_swap_t, head);
@@ -657,13 +653,13 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 		    vbl_swap->pipe == pipe &&
 		    vbl_swap->sequence == swap.sequence) {
 			vbl_swap->flip = (swap.seqtype & _DRM_VBLANK_FLIP);
-			spin_unlock_irqrestore(&dev_priv->swaps_lock, irqflags);
+			DRM_SPINUNLOCK_IRQRESTORE(&dev_priv->swaps_lock, irqflags);
 			DRM_DEBUG("Already scheduled\n");
 			return 0;
 		}
 	}
 
-	spin_unlock_irqrestore(&dev_priv->swaps_lock, irqflags);
+	DRM_SPINUNLOCK_IRQRESTORE(&dev_priv->swaps_lock, irqflags);
 
 	if (dev_priv->swaps_pending >= 100) {
 		DRM_DEBUG("Too many swaps queued\n");
@@ -687,12 +683,12 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 	if (vbl_swap->flip)
 		swap.sequence++;
 
-	spin_lock_irqsave(&dev_priv->swaps_lock, irqflags);
+	DRM_SPINLOCK_IRQSAVE(&dev_priv->swaps_lock, irqflags);
 
 	list_add_tail((struct list_head *)vbl_swap, &dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending++;
 
-	spin_unlock_irqrestore(&dev_priv->swaps_lock, irqflags);
+	DRM_SPINUNLOCK_IRQRESTORE(&dev_priv->swaps_lock, irqflags);
 
 	DRM_COPY_TO_USER_IOCTL((drm_i915_vblank_swap_t __user *) data, swap,
 			       sizeof(swap));
@@ -715,11 +711,11 @@ void i915_driver_irq_postinstall(drm_device_t * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	spin_lock_init(&dev_priv->swaps_lock);
+	DRM_SPININIT(&dev_priv->swaps_lock, "swap");
 	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending = 0;
 
-	spin_lock_init(&dev_priv->user_irq_lock);
+	DRM_SPININIT(&dev_priv->user_irq_lock, "userirq");
 	dev_priv->user_irq_refcount = 0;
 
 	i915_enable_interrupt(dev);

@@ -40,7 +40,7 @@ int drm_dma_setup(drm_device_t *dev)
 	if (dev->dma == NULL)
 		return DRM_ERR(ENOMEM);
 
-	DRM_SPININIT(dev->dma_lock, "drmdma");
+	DRM_SPININIT(&dev->dma_lock, "drmdma");
 
 	return 0;
 }
@@ -80,7 +80,7 @@ void drm_dma_takedown(drm_device_t *dev)
 	free(dma->pagelist, M_DRM);
 	free(dev->dma, M_DRM);
 	dev->dma = NULL;
-	DRM_SPINUNINIT(dev->dma_lock);
+	DRM_SPINUNINIT(&dev->dma_lock);
 }
 
 

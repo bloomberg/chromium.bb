@@ -31,6 +31,7 @@
  *
  */
 
+#include <sys/limits.h>
 #include "drmP.h"
 #include "drm.h"
 #include "drm_sarea.h"
@@ -121,6 +122,7 @@ static drm_ioctl_desc_t		  drm_ioctls[256] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_SG_FREE)]       = { drm_sg_free,     DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY },
 
 	[DRM_IOCTL_NR(DRM_IOCTL_WAIT_VBLANK)]   = { drm_wait_vblank, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_UPDATE_DRAW)]   = { drm_update_draw, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY },
 };
 
 #ifdef __FreeBSD__
@@ -556,7 +558,13 @@ static int drm_load(drm_device_t *dev)
 		DRM_ERROR("Cannot allocate memory for context bitmap.\n");
 		goto error;
 	}
-	
+
+	dev->drw_unrhdr = new_unrhdr(1, INT_MAX, NULL);
+	if (dev->drw_unrhdr == NULL) {
+		DRM_ERROR("Couldn't allocate drawable number allocator\n");
+		goto error;
+	}
+
 	DRM_INFO("Initialized %s %d.%d.%d %s\n",
 	  	dev->driver.name,
 	  	dev->driver.major,
@@ -627,6 +635,8 @@ static void drm_unload(drm_device_t *dev)
 
 	if (dev->driver.unload != NULL)
 		dev->driver.unload(dev);
+
+	delete_unrhdr(dev->drw_unrhdr);
 
 	drm_mem_uninit();
 #if defined(__FreeBSD__) &&  __FreeBSD_version >= 500000

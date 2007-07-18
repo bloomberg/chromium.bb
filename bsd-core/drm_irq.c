@@ -31,6 +31,8 @@
 #include "drmP.h"
 #include "drm.h"
 
+static void drm_locked_task(void *context, int pending __unused);
+
 int drm_irq_by_busid(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
@@ -87,7 +89,7 @@ int drm_irq_install(drm_device_t *dev)
 
 	dev->context_flag = 0;
 
-	DRM_SPININIT(dev->irq_lock, "DRM IRQ lock");
+	DRM_SPININIT(&dev->irq_lock, "DRM IRQ lock");
 
 				/* Before installing handler */
 	dev->driver.irq_preinstall(dev);
@@ -131,6 +133,7 @@ int drm_irq_install(drm_device_t *dev)
 	dev->driver.irq_postinstall(dev);
 	DRM_UNLOCK();
 
+	TASK_INIT(&dev->locked_task, 0, drm_locked_task, dev);
 	return 0;
 err:
 	DRM_LOCK();
@@ -142,7 +145,7 @@ err:
 		dev->irqrid = 0;
 	}
 #endif
-	DRM_SPINUNINIT(dev->irq_lock);
+	DRM_SPINUNINIT(&dev->irq_lock);
 	DRM_UNLOCK();
 	return retcode;
 }
@@ -174,7 +177,7 @@ int drm_irq_uninstall(drm_device_t *dev)
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
 	pci_intr_disestablish(&dev->pa.pa_pc, dev->irqh);
 #endif
-	DRM_SPINUNINIT(dev->irq_lock);
+	DRM_SPINUNINIT(&dev->irq_lock);
 
 	return 0;
 }
@@ -291,3 +294,45 @@ void drm_vbl_send_signals( drm_device_t *dev )
 	}
 }
 #endif
+
+static void drm_locked_task(void *context, int pending __unused)
+{
+	drm_device_t *dev = context;
+
+	DRM_LOCK();
+	for (;;) {
+		int ret;
+
+		if (drm_lock_take(&dev->lock.hw_lock->lock,
+		    DRM_KERNEL_CONTEXT))
+		{
+			dev->lock.filp = (void *)(uintptr_t)DRM_CURRENTPID;
+			dev->lock.lock_time = jiffies;
+			atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
+			break;  /* Got lock */
+		}
+
+		/* Contention */
+#if defined(__FreeBSD__) && __FreeBSD_version > 500000
+		ret = msleep((void *)&dev->lock.lock_queue, &dev->dev_lock,
+		    PZERO | PCATCH, "drmlk2", 0);
+#else
+		ret = tsleep((void *)&dev->lock.lock_queue, PZERO | PCATCH,
+		    "drmlk2", 0);
+#endif
+		if (ret != 0)
+			return;
+	}
+	DRM_UNLOCK();
+
+	dev->locked_task_call(dev);
+
+	drm_lock_free(dev, &dev->lock.hw_lock->lock, DRM_KERNEL_CONTEXT);
+}
+
+void
+drm_locked_tasklet(drm_device_t *dev, void (*tasklet)(drm_device_t *dev))
+{
+	dev->locked_task_call = tasklet;
+	taskqueue_enqueue(taskqueue_swi, &dev->locked_task);
+}
