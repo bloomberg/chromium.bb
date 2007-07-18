@@ -874,7 +874,7 @@ static int i915_mmio(DRM_IOCTL_ARGS)
 	e = &mmio_table[mmio.reg];
 	base = (u8 *) dev_priv->mmio_map->handle + e->offset;
 
-        switch (mmio.read_write) {
+	switch (mmio.read_write) {
 		case I915_MMIO_READ:
 			if (!(e->flag & I915_MMIO_MAY_READ))
 				return DRM_ERR(EINVAL);

@@ -786,15 +786,15 @@ enum drm_bo_type {
 
 struct drm_bo_info_req {
 	uint64_t mask;
-        uint64_t flags;
-        unsigned int handle;
+	uint64_t flags;
+	unsigned int handle;
 	unsigned int hint;
 	unsigned int fence_class;
 	unsigned int pad64;
 };
 
 struct drm_bo_create_req {
-        uint64_t mask;
+	uint64_t mask;
 	uint64_t size;
 	uint64_t buffer_start;
 	unsigned int hint;
@@ -820,8 +820,8 @@ struct drm_bo_op_req {
 #define DRM_BO_REP_BUSY 0x00000001
 
 struct drm_bo_info_rep {
-        uint64_t flags;
-        uint64_t mask;
+	uint64_t flags;
+	uint64_t mask;
 	uint64_t size;
 	uint64_t offset;
 	uint64_t arg_handle;
@@ -831,7 +831,7 @@ struct drm_bo_info_rep {
 	unsigned int rep_flags;
 	unsigned int page_alignment;
 	unsigned int desired_tile_stride;
-        unsigned int hw_tile_stride;
+	unsigned int hw_tile_stride;
 	unsigned int tile_info;
 	unsigned int pad64;
 	uint64_t expand_pad[4]; /*Future expansion */

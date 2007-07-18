@@ -335,7 +335,7 @@ EXPORT_SYMBOL(drm_fasync);
 
 static void drm_object_release(struct file *filp) {
 
-        struct drm_file *priv = filp->private_data;
+	struct drm_file *priv = filp->private_data;
 	struct list_head *head;
 	struct drm_user_object *user_object;
 	struct drm_ref_object *ref_object;
