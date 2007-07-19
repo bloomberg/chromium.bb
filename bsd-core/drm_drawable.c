@@ -103,6 +103,7 @@ int drm_rmdraw(DRM_IOCTL_ARGS)
 		free_unr(dev->drw_unrhdr, draw->handle);
 		drm_free(info, sizeof(struct bsd_drm_drawable_info),
 		    DRM_MEM_DRAWABLE);
+		return 0;
 	} else {
 		DRM_SPINUNLOCK(&dev->drw_lock);
 		return EINVAL;

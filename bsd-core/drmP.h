@@ -998,6 +998,8 @@ int	drm_dma(DRM_IOCTL_ARGS);
 /* IRQ support (drm_irq.c) */
 int	drm_control(DRM_IOCTL_ARGS);
 int	drm_wait_vblank(DRM_IOCTL_ARGS);
+void	drm_locked_tasklet(drm_device_t *dev,
+			   void (*tasklet)(drm_device_t *dev));
 
 /* AGP/GART support (drm_agpsupport.c) */
 int	drm_agp_acquire_ioctl(DRM_IOCTL_ARGS);
