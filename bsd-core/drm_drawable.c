@@ -64,36 +64,23 @@ drm_get_drawable_info(drm_device_t *dev, int handle)
 	return &result->info;
 }
 
-static struct drm_drawable_info *
-drm_drawable_info_alloc(drm_device_t *dev, int handle)
+int drm_adddraw(DRM_IOCTL_ARGS)
 {
+	DRM_DEVICE;
+	drm_draw_t draw;
 	struct bsd_drm_drawable_info *info;
 
 	info = drm_calloc(1, sizeof(struct bsd_drm_drawable_info),
 	    DRM_MEM_DRAWABLE);
 	if (info == NULL)
-		return NULL;
+		return ENOMEM;
 
-	info->handle = handle;
+	info->handle = alloc_unr(dev->drw_unrhdr);
+	DRM_SPINLOCK(&dev->drw_lock);
 	RB_INSERT(drawable_tree, &dev->drw_head, info);
+	draw.handle = info->handle;
+	DRM_SPINUNLOCK(&dev->drw_lock);
 
-	return &info->info;
-}
-
-static void
-drm_drawable_info_free(drm_device_t *dev, struct drm_drawable_info *info)
-{
-	RB_REMOVE(drawable_tree, &dev->drw_head,
-	    (struct bsd_drm_drawable_info *)info);
-	drm_free(info, sizeof(struct bsd_drm_drawable_info), DRM_MEM_DRAWABLE);
-}
-
-int drm_adddraw(DRM_IOCTL_ARGS)
-{
-	DRM_DEVICE;
-	drm_draw_t draw;
-
-	draw.handle = alloc_unr(dev->drw_unrhdr);
 	DRM_DEBUG("%d\n", draw.handle);
 
 	DRM_COPY_TO_USER_IOCTL((drm_draw_t *)data, draw, sizeof(draw));
@@ -107,14 +94,19 @@ int drm_rmdraw(DRM_IOCTL_ARGS)
 	drm_draw_t *draw = (drm_draw_t *)data;
 	struct drm_drawable_info *info;
 
-	free_unr(dev->drw_unrhdr, draw->handle);
-
+	DRM_SPINLOCK(&dev->drw_lock);
 	info = drm_get_drawable_info(dev, draw->handle);
 	if (info != NULL) {
-		drm_drawable_info_free(dev, info);
+		RB_REMOVE(drawable_tree, &dev->drw_head,
+		    (struct bsd_drm_drawable_info *)info);
+		DRM_SPINUNLOCK(&dev->drw_lock);
+		free_unr(dev->drw_unrhdr, draw->handle);
+		drm_free(info, sizeof(struct bsd_drm_drawable_info),
+		    DRM_MEM_DRAWABLE);
+	} else {
+		DRM_SPINUNLOCK(&dev->drw_lock);
+		return EINVAL;
 	}
-
-	return 0;
 }
 
 int drm_update_draw(DRM_IOCTL_ARGS)
@@ -122,13 +114,11 @@ int drm_update_draw(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	struct drm_drawable_info *info;
 	struct drm_update_draw *update = (struct drm_update_draw *)data;
+	int ret;
 
 	info = drm_get_drawable_info(dev, update->handle);
-	if (info == NULL) {
-		info = drm_drawable_info_alloc(dev, update->handle);
-		if (info == NULL)
-			return ENOMEM;
-	}
+	if (info == NULL)
+		return EINVAL;
 
 	switch (update->type) {
 	case DRM_DRAWABLE_CLIPRECTS:
@@ -152,10 +142,10 @@ int drm_update_draw(DRM_IOCTL_ARGS)
 			info->num_rects = update->num;
 		}
 		/* For some reason the pointer arg is unsigned long long. */
-		copyin((void *)(intptr_t)update->data, info->rects,
+		ret = copyin((void *)(intptr_t)update->data, info->rects,
 		    sizeof(*info->rects) * info->num_rects);
 		DRM_SPINUNLOCK(&dev->drw_lock);
-		return 0;
+		return ret;
 	default:
 		return EINVAL;
 	}

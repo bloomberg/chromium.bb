@@ -200,6 +200,7 @@ int drm_attach(device_t nbdev, drm_pci_id_list_t *idlist)
 			"dri/card%d", unit);
 #if __FreeBSD_version >= 500000
 	mtx_init(&dev->dev_lock, "drm device", NULL, MTX_DEF);
+	mtx_init(&dev->drw_lock, "drmdrw", NULL, MTX_DEF);
 #endif
 
 	id_entry = drm_find_description(pci_get_vendor(dev->device),
