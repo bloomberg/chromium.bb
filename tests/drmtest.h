@@ -34,3 +34,4 @@
 #include "xf86drm.h"
 
 int drm_open_any(void);
+int drm_open_any_master(void);

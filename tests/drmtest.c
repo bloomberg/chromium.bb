@@ -43,3 +43,41 @@ int drm_open_any(void)
 	abort();
 }
 
+
+/**
+ * Open the first DRM device we can find where we end up being the master.
+ */
+int drm_open_any_master(void)
+{
+	char name[20];
+	int i, fd;
+
+	for (i = 0; i < 16; i++) {
+		drm_client_t client;
+		int ret;
+
+		sprintf(name, "/dev/dri/card%d", i);
+		fd = open(name, O_RDWR);
+		if (fd == -1)
+			continue;
+
+		/* Check that we're the only opener and authed. */
+		client.idx = 0;
+		ret = ioctl(fd, DRM_IOCTL_GET_CLIENT, &client);
+		assert (ret == 0);
+		if (!client.auth) {
+			close(fd);
+			continue;
+		}
+		client.idx = 1;
+		ret = ioctl(fd, DRM_IOCTL_GET_CLIENT, &client);
+		if (ret != -1 || errno != EINVAL) {
+			close(fd);
+			continue;
+		}
+		return fd;
+	}
+	fprintf(stderr, "Couldn't find an un-controlled DRM device\n");
+	abort();
+}
+

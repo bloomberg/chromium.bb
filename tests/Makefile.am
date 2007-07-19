@@ -16,7 +16,8 @@ LDADD = libdrmtest.la
 
 TESTS = openclose \
 	getversion \
-	getclient
+	getclient \
+	updatedraw
 
 EXTRA_PROGRAMS = $(TESTS)
 CLEANFILES = $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES)

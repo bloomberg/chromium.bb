@@ -114,3 +114,4 @@ tests/drmstat
 tests/getclient
 tests/getversion
 tests/openclose
+tests/updatedraw
