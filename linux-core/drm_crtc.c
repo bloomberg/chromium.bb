@@ -59,10 +59,8 @@ again:
 	}
 
 	ret = idr_get_new_above(&dev->mode_config.crtc_idr, ptr, 1, &new_id);
-	if (ret == -EAGAIN) {
-		spin_unlock(&dev->mode_config.config_lock);
-		goto again;
-	}	
+	if (ret == -EAGAIN)
+		goto again;	
 
 	return new_id;
 }
