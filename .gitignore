@@ -109,3 +109,8 @@ sis.kld
 stamp-h1
 tdfx.kld
 via.kld
+tests/dristat
+tests/drmstat
+tests/getclient
+tests/getversion
+tests/openclose
