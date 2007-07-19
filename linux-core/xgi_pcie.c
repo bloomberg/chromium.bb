@@ -34,6 +34,9 @@ static struct xgi_mem_block *xgi_pcie_vertex_block = NULL;
 static struct xgi_mem_block *xgi_pcie_cmdlist_block = NULL;
 static struct xgi_mem_block *xgi_pcie_scratchpad_block = NULL;
 
+static int xgi_pcie_free_locked(struct xgi_info * info,
+	 unsigned long offset, DRMFILE filp);
+
 static int xgi_pcie_lut_init(struct xgi_info * info)
 {
 	u8 temp = 0;
@@ -248,29 +251,38 @@ void xgi_pcie_free_all(struct xgi_info * info, DRMFILE filp)
 			break;
 		}
 
-		(void) xgi_pcie_free(info, block->offset, filp);
+		(void) xgi_pcie_free_locked(info, block->offset, filp);
 	} while(1);
 
 	up(&info->pcie_sem);
 }
 
 
-int xgi_pcie_free(struct xgi_info * info, unsigned long offset, DRMFILE filp)
+int xgi_pcie_free_locked(struct xgi_info * info,
+			 unsigned long offset, DRMFILE filp)
 {
 	const bool isvertex = (xgi_pcie_vertex_block
 			       && (xgi_pcie_vertex_block->offset == offset));
+	int err = xgi_mem_free(&info->pcie_heap, offset, filp);
+
+	if (!err && isvertex)
+		xgi_pcie_vertex_block = NULL;
+
+	return err;
+}
+
+
+int xgi_pcie_free(struct xgi_info * info, unsigned long offset, DRMFILE filp)
+{
 	int err;
 
 	down(&info->pcie_sem);
-	err = xgi_mem_free(&info->pcie_heap, offset, filp);
+	err = xgi_pcie_free_locked(info, offset, filp);
 	up(&info->pcie_sem);
 
 	if (err) {
 		DRM_ERROR("xgi_pcie_free() failed at base 0x%lx\n", offset);
 	}
-
-	if (isvertex)
-		xgi_pcie_vertex_block = NULL;
 
 	return err;
 }

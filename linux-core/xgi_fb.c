@@ -365,7 +365,7 @@ void xgi_fb_free_all(struct xgi_info * info, DRMFILE filp)
 			break;
 		}
 
-		(void) xgi_fb_free(info, block->offset, filp);
+		(void) xgi_mem_free(&info->fb_heap, block->offset, filp);
 	} while(1);
 
 	up(&info->fb_sem);
