@@ -263,7 +263,7 @@ nv50_fifo_create_context(struct drm_device *dev, int channel)
 	INSTANCE_WR(ramfc, 0x54/4, 0x000f0000);
 	INSTANCE_WR(ramfc, 0x7c/4, 0x30000001);
 	INSTANCE_WR(ramfc, 0x78/4, 0x00000000);
-	INSTANCE_WR(ramfc, 0x4c/4, 0x00007fff);
+	INSTANCE_WR(ramfc, 0x4c/4, chan->pushbuf_mem->size - 1);
 
 	if (!IS_G80) {
 		INSTANCE_WR(chan->ramin->gpuobj, 0, channel);
