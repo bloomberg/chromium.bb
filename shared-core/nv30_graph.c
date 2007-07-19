@@ -281,5 +281,8 @@ int nv30_graph_init(struct drm_device *dev)
 
 void nv30_graph_takedown(struct drm_device *dev)
 {
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
+	nouveau_gpuobj_ref_del(dev, &dev_priv->ctx_table);
 }
 

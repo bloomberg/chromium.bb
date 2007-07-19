@@ -596,7 +596,7 @@ nouveau_gpuobj_dma_new(struct drm_device *dev, int channel, int class,
 
 	switch (target) {
         case NV_DMA_TARGET_AGP:
-                 offset += dev_priv->agp_phys;
+                 offset += dev_priv->gart_info.aper_base;
                  break;
         case NV_DMA_TARGET_PCI_NONLINEAR:
                 /*assume the "offset" is a virtual memory address*/
@@ -672,10 +672,10 @@ nouveau_gpuobj_dma_new(struct drm_device *dev, int channel, int class,
 						pci_map_page(dev->pdev,
 							     dev->sg->pagelist[idx],
 							     0,
-							     DMA_31BIT_MASK,
+							     PAGE_SIZE,
 							     DMA_BIDIRECTIONAL);
 
-					if (dev->sg->busaddr[idx] == 0) {
+					if (dma_mapping_error(dev->sg->busaddr[idx])) {
 						return DRM_ERR(ENOMEM);
 					}
 				}
@@ -689,15 +689,61 @@ nouveau_gpuobj_dma_new(struct drm_device *dev, int channel, int class,
  			}
 			}
 	} else {
-		INSTANCE_WR(*gpuobj, 0, 0x00190000 | class);
+		uint32_t flags0, flags5;
+
+		if (target == NV_DMA_TARGET_VIDMEM) {
+			flags0 = 0x00190000;
+			flags5 = 0x00010000;
+		} else {
+			flags0 = 0x7fc00000;
+			flags5 = 0x00080000;
+		}
+
+		INSTANCE_WR(*gpuobj, 0, flags0 | class);
 		INSTANCE_WR(*gpuobj, 1, offset + size - 1);
 		INSTANCE_WR(*gpuobj, 2, offset);
-		INSTANCE_WR(*gpuobj, 5, 0x00010000);
+		INSTANCE_WR(*gpuobj, 5, flags5);
 	}
 
 	(*gpuobj)->engine = NVOBJ_ENGINE_SW;
 	(*gpuobj)->class  = class;
 	return 0;
+}
+
+int
+nouveau_gpuobj_gart_dma_new(struct drm_device *dev, int channel,
+			    uint64_t offset, uint64_t size, int access,
+			    struct nouveau_gpuobj **gpuobj,
+			    uint32_t *o_ret)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	int ret;
+
+	if (dev_priv->gart_info.type == NOUVEAU_GART_AGP ||
+	    (dev_priv->card_type >= NV_50 &&
+	     dev_priv->gart_info.type == NOUVEAU_GART_SGDMA)) {
+		ret = nouveau_gpuobj_dma_new(dev, channel,
+					     NV_CLASS_DMA_IN_MEMORY,
+					     offset, size, access,
+					     NV_DMA_TARGET_AGP, gpuobj);
+		if (o_ret)
+			*o_ret = 0;
+	} else
+	if (dev_priv->gart_info.type == NOUVEAU_GART_SGDMA) {
+		*gpuobj = dev_priv->gart_info.sg_ctxdma;
+		if (offset & ~0xffffffffULL) {
+			DRM_ERROR("obj offset exceeds 32-bits\n");
+			return DRM_ERR(EINVAL);
+		}
+		if (o_ret)
+			*o_ret = (uint32_t)offset;
+		ret = (*gpuobj != NULL) ? 0 : DRM_ERR(EINVAL);
+	} else {
+		DRM_ERROR("Invalid GART type %d\n", dev_priv->gart_info.type);
+		return DRM_ERR(EINVAL);
+	}
+
+	return ret;
 }
 
 /* Context objects in the instance RAM have the following structure.
@@ -857,7 +903,7 @@ nouveau_gpuobj_channel_init(struct drm_device *dev, int channel,
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	struct nouveau_gpuobj *vram = NULL, *tt = NULL;
-	int ret;
+	int ret, i;
 
 	DRM_DEBUG("ch%d vram=0x%08x tt=0x%08x\n", channel, vram_h, tt_h);
 
@@ -868,6 +914,29 @@ nouveau_gpuobj_channel_init(struct drm_device *dev, int channel,
 		ret = nouveau_gpuobj_channel_init_pramin(dev, channel);
 		if (ret)
 			return ret;
+	}
+
+	/* NV50 VM, point offset 0-512MiB at shared PCIEGART table  */
+	if (dev_priv->card_type >= NV_50) {
+		uint32_t vm_offset;
+		
+		vm_offset = (dev_priv->chipset & 0xf0) == 0x50 ? 0x1400 : 0x200;
+		vm_offset += chan->ramin->gpuobj->im_pramin->start;
+		if ((ret = nouveau_gpuobj_new_fake(dev, vm_offset, 0x4000,
+						   0, &chan->vm_pd, NULL)))
+			return ret;
+		for (i=0; i<0x4000; i+=8) {
+			INSTANCE_WR(chan->vm_pd, (i+0)/4, 0x00000000);
+			INSTANCE_WR(chan->vm_pd, (i+4)/4, 0xdeadcafe);
+		}
+
+		if ((ret = nouveau_gpuobj_ref_add(dev, -1, 0,
+						  dev_priv->gart_info.sg_ctxdma,
+						  &chan->vm_gart_pt)))
+			return ret;
+		INSTANCE_WR(chan->vm_pd, (0+0)/4,
+			    chan->vm_gart_pt->instance | 0x03);
+		INSTANCE_WR(chan->vm_pd, (0+4)/4, 0x00000000);
 	}
 
 	/* RAMHT */
@@ -899,40 +968,34 @@ nouveau_gpuobj_channel_init(struct drm_device *dev, int channel,
 		return ret;
 	}
 
-	if (dev_priv->agp_heap) {
-		/* AGPGART ctxdma */
-		if ((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
-						   0, dev_priv->agp_available_size,
-						   NV_DMA_ACCESS_RW,
-						   NV_DMA_TARGET_AGP, &tt))) {
-			DRM_ERROR("Error creating AGP TT ctxdma: %d\n", DRM_ERR(ENOMEM));
-			return DRM_ERR(ENOMEM);
-		}
-	
-		ret = nouveau_gpuobj_ref_add(dev, channel, tt_h, tt, NULL);
-		if (ret) {
-			DRM_ERROR("Error referencing AGP TT ctxdma: %d\n", ret);
-			return ret;
-		}
+	/* TT memory ctxdma */
+	if (dev_priv->gart_info.type != NOUVEAU_GART_NONE) {
+		ret = nouveau_gpuobj_gart_dma_new(dev, channel, 0,
+						  dev_priv->gart_info.aper_size,
+						  NV_DMA_ACCESS_RW, &tt, NULL);
+	} else
+	if (dev_priv->pci_heap) {
+		ret = nouveau_gpuobj_dma_new(dev, channel,
+					     NV_CLASS_DMA_IN_MEMORY,
+					     0, dev->sg->pages * PAGE_SIZE,
+					     NV_DMA_ACCESS_RW,
+					     NV_DMA_TARGET_PCI_NONLINEAR, &tt);
+	} else {
+		DRM_ERROR("Invalid GART type %d\n", dev_priv->gart_info.type);
+		ret = DRM_ERR(EINVAL);
 	}
-	else if ( dev_priv->pci_heap) {
-		if (dev_priv -> card_type >= NV_50 ) return 0; /*no PCIGART for NV50*/
 
-		/*PCI*/
-		if((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
-						   0, dev->sg->pages * PAGE_SIZE,
-						   NV_DMA_ACCESS_RW,
-						   NV_DMA_TARGET_PCI_NONLINEAR, &tt))) {
-			DRM_ERROR("Error creating PCI TT ctxdma: %d\n", DRM_ERR(ENOMEM));
-			return 0; //this is noncritical
-		}
-	
-		ret = nouveau_gpuobj_ref_add(dev, channel, tt_h, tt, NULL);
-		if (ret) {
-			DRM_ERROR("Error referencing PCI TT ctxdma: %d\n", ret);
-			return ret;
-		}
+	if (ret) {
+		DRM_ERROR("Error creating TT ctxdma: %d\n", ret);
+		return ret;
 	}
+
+	ret = nouveau_gpuobj_ref_add(dev, channel, tt_h, tt, NULL);
+	if (ret) {
+		DRM_ERROR("Error referencing TT ctxdma: %d\n", ret);
+		return ret;
+	}
+
 	return 0;
 }
 
@@ -950,6 +1013,9 @@ nouveau_gpuobj_channel_takedown(struct drm_device *dev, int channel)
 		nouveau_gpuobj_ref_del(dev, &ref);
 	}
 	nouveau_gpuobj_ref_del(dev, &chan->ramht);
+
+	nouveau_gpuobj_del(dev, &chan->vm_pd);
+	nouveau_gpuobj_ref_del(dev, &chan->vm_gart_pt);
 
 	if (chan->ramin_heap)
 		nouveau_mem_takedown(&chan->ramin_heap);

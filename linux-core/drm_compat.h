@@ -306,8 +306,10 @@ extern int drm_bo_map_bound(struct vm_area_struct *vma);
 
 #endif
 
-/* fixme when functions are upstreamed */
+/* fixme when functions are upstreamed - upstreamed for 2.6.23 */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
 #define DRM_IDR_COMPAT_FN
+#endif
 #ifdef DRM_IDR_COMPAT_FN
 int idr_for_each(struct idr *idp,
 		 int (*fn)(int id, void *p, void *data), void *data);

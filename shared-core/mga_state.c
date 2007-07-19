@@ -43,7 +43,7 @@
  */
 
 static void mga_emit_clip_rect(drm_mga_private_t * dev_priv,
-			       drm_clip_rect_t * box)
+			       struct drm_clip_rect * box)
 {
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mga_context_regs_t *ctx = &sarea_priv->context_state;
@@ -504,12 +504,12 @@ static int mga_verify_blit(drm_mga_private_t * dev_priv,
  *
  */
 
-static void mga_dma_dispatch_clear(drm_device_t * dev, drm_mga_clear_t * clear)
+static void mga_dma_dispatch_clear(struct drm_device * dev, drm_mga_clear_t * clear)
 {
 	drm_mga_private_t *dev_priv = dev->dev_private;
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mga_context_regs_t *ctx = &sarea_priv->context_state;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	int nbox = sarea_priv->nbox;
 	int i;
 	DMA_LOCALS;
@@ -525,7 +525,7 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, drm_mga_clear_t * clear)
 	ADVANCE_DMA();
 
 	for (i = 0; i < nbox; i++) {
-		drm_clip_rect_t *box = &pbox[i];
+		struct drm_clip_rect *box = &pbox[i];
 		u32 height = box->y2 - box->y1;
 
 		DRM_DEBUG("   from=%d,%d to=%d,%d\n",
@@ -594,12 +594,12 @@ static void mga_dma_dispatch_clear(drm_device_t * dev, drm_mga_clear_t * clear)
 	FLUSH_DMA();
 }
 
-static void mga_dma_dispatch_swap(drm_device_t * dev)
+static void mga_dma_dispatch_swap(struct drm_device * dev)
 {
 	drm_mga_private_t *dev_priv = dev->dev_private;
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mga_context_regs_t *ctx = &sarea_priv->context_state;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	int nbox = sarea_priv->nbox;
 	int i;
 	DMA_LOCALS;
@@ -626,7 +626,7 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 		  MGA_DWGCTL, MGA_DWGCTL_COPY);
 
 	for (i = 0; i < nbox; i++) {
-		drm_clip_rect_t *box = &pbox[i];
+		struct drm_clip_rect *box = &pbox[i];
 		u32 height = box->y2 - box->y1;
 		u32 start = box->y1 * dev_priv->front_pitch;
 
@@ -651,7 +651,7 @@ static void mga_dma_dispatch_swap(drm_device_t * dev)
 	DRM_DEBUG("%s... done.\n", __FUNCTION__);
 }
 
-static void mga_dma_dispatch_vertex(drm_device_t * dev, drm_buf_t * buf)
+static void mga_dma_dispatch_vertex(struct drm_device * dev, struct drm_buf * buf)
 {
 	drm_mga_private_t *dev_priv = dev->dev_private;
 	drm_mga_buf_priv_t *buf_priv = buf->dev_private;
@@ -698,7 +698,7 @@ static void mga_dma_dispatch_vertex(drm_device_t * dev, drm_buf_t * buf)
 	FLUSH_DMA();
 }
 
-static void mga_dma_dispatch_indices(drm_device_t * dev, drm_buf_t * buf,
+static void mga_dma_dispatch_indices(struct drm_device * dev, struct drm_buf * buf,
 				     unsigned int start, unsigned int end)
 {
 	drm_mga_private_t *dev_priv = dev->dev_private;
@@ -747,7 +747,7 @@ static void mga_dma_dispatch_indices(drm_device_t * dev, drm_buf_t * buf,
 /* This copies a 64 byte aligned agp region to the frambuffer with a
  * standard blit, the ioctl needs to do checking.
  */
-static void mga_dma_dispatch_iload(drm_device_t * dev, drm_buf_t * buf,
+static void mga_dma_dispatch_iload(struct drm_device * dev, struct drm_buf * buf,
 				   unsigned int dstorg, unsigned int length)
 {
 	drm_mga_private_t *dev_priv = dev->dev_private;
@@ -800,12 +800,12 @@ static void mga_dma_dispatch_iload(drm_device_t * dev, drm_buf_t * buf,
 	FLUSH_DMA();
 }
 
-static void mga_dma_dispatch_blit(drm_device_t * dev, drm_mga_blit_t * blit)
+static void mga_dma_dispatch_blit(struct drm_device * dev, drm_mga_blit_t * blit)
 {
 	drm_mga_private_t *dev_priv = dev->dev_private;
 	drm_mga_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mga_context_regs_t *ctx = &sarea_priv->context_state;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	int nbox = sarea_priv->nbox;
 	u32 scandir = 0, i;
 	DMA_LOCALS;
@@ -917,8 +917,8 @@ static int mga_dma_vertex(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_mga_private_t *dev_priv = dev->dev_private;
-	drm_device_dma_t *dma = dev->dma;
-	drm_buf_t *buf;
+	struct drm_device_dma *dma = dev->dma;
+	struct drm_buf *buf;
 	drm_mga_buf_priv_t *buf_priv;
 	drm_mga_vertex_t vertex;
 
@@ -957,8 +957,8 @@ static int mga_dma_indices(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
 	drm_mga_private_t *dev_priv = dev->dev_private;
-	drm_device_dma_t *dma = dev->dma;
-	drm_buf_t *buf;
+	struct drm_device_dma *dma = dev->dma;
+	struct drm_buf *buf;
 	drm_mga_buf_priv_t *buf_priv;
 	drm_mga_indices_t indices;
 
@@ -996,9 +996,9 @@ static int mga_dma_indices(DRM_IOCTL_ARGS)
 static int mga_dma_iload(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_device_dma_t *dma = dev->dma;
+	struct drm_device_dma *dma = dev->dma;
 	drm_mga_private_t *dev_priv = dev->dev_private;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 	drm_mga_buf_priv_t *buf_priv;
 	drm_mga_iload_t iload;
 	DRM_DEBUG("\n");
@@ -1158,7 +1158,7 @@ static int mga_wait_fence(DRM_IOCTL_ARGS)
 	return 0;
 }
 
-drm_ioctl_desc_t mga_ioctls[] = {
+struct drm_ioctl_desc mga_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_MGA_INIT)] = {mga_dma_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 	[DRM_IOCTL_NR(DRM_MGA_FLUSH)] = {mga_dma_flush, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_MGA_RESET)] = {mga_dma_reset, DRM_AUTH},

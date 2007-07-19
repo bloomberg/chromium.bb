@@ -53,10 +53,10 @@
 int drm_irq_by_busid(struct inode *inode, struct file *filp,
 		     unsigned int cmd, unsigned long arg)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_irq_busid_t __user *argp = (void __user *)arg;
-	drm_irq_busid_t p;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_irq_busid __user *argp = (void __user *)arg;
+	struct drm_irq_busid p;
 
 	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 		return -EINVAL;
@@ -86,7 +86,7 @@ int drm_irq_by_busid(struct inode *inode, struct file *filp,
  * \c drm_driver_irq_preinstall() and \c drm_driver_irq_postinstall() functions
  * before and after the installation.
  */
-static int drm_irq_install(drm_device_t * dev)
+static int drm_irq_install(struct drm_device * dev)
 {
 	int ret;
 	unsigned long sh_flags = 0;
@@ -154,7 +154,7 @@ static int drm_irq_install(drm_device_t * dev)
  *
  * Calls the driver's \c drm_driver_irq_uninstall() function, and stops the irq.
  */
-int drm_irq_uninstall(drm_device_t * dev)
+int drm_irq_uninstall(struct drm_device * dev)
 {
 	int irq_enabled;
 
@@ -195,13 +195,13 @@ EXPORT_SYMBOL(drm_irq_uninstall);
 int drm_control(struct inode *inode, struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_control_t ctl;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_control ctl;
 
 	/* if we haven't irq we fallback for compatibility reasons - this used to be a separate function in drm_dma.h */
 
-	if (copy_from_user(&ctl, (drm_control_t __user *) arg, sizeof(ctl)))
+	if (copy_from_user(&ctl, (struct drm_control __user *) arg, sizeof(ctl)))
 		return -EFAULT;
 
 	switch (ctl.func) {
@@ -242,10 +242,10 @@ int drm_control(struct inode *inode, struct file *filp,
  */
 int drm_wait_vblank(DRM_IOCTL_ARGS)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_wait_vblank_t __user *argp = (void __user *)data;
-	drm_wait_vblank_t vblwait;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
+	union drm_wait_vblank __user *argp = (void __user *)data;
+	union drm_wait_vblank vblwait;
 	struct timeval now;
 	int ret = 0;
 	unsigned int flags, seq;
@@ -292,7 +292,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 		unsigned long irqflags;
 		struct list_head *vbl_sigs = (flags & _DRM_VBLANK_SECONDARY)
 				      ? &dev->vbl_sigs2 : &dev->vbl_sigs;
-		drm_vbl_sig_t *vbl_sig;
+		struct drm_vbl_sig *vbl_sig;
 
 		spin_lock_irqsave(&dev->vbl_lock, irqflags);
 
@@ -322,7 +322,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 
 		if (!
 		    (vbl_sig =
-		     drm_alloc(sizeof(drm_vbl_sig_t), DRM_MEM_DRIVER))) {
+		     drm_alloc(sizeof(struct drm_vbl_sig), DRM_MEM_DRIVER))) {
 			return -ENOMEM;
 		}
 
@@ -369,7 +369,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
  *
  * If a signal is not requested, then calls vblank_wait().
  */
-void drm_vbl_send_signals(drm_device_t * dev)
+void drm_vbl_send_signals(struct drm_device * dev)
 {
 	unsigned long flags;
 	int i;
@@ -377,7 +377,7 @@ void drm_vbl_send_signals(drm_device_t * dev)
 	spin_lock_irqsave(&dev->vbl_lock, flags);
 
 	for (i = 0; i < 2; i++) {
-		drm_vbl_sig_t *vbl_sig, *tmp;
+		struct drm_vbl_sig *vbl_sig, *tmp;
 		struct list_head *vbl_sigs = i ? &dev->vbl_sigs2 : &dev->vbl_sigs;
 		unsigned int vbl_seq = atomic_read(i ? &dev->vbl_received2 :
 						   &dev->vbl_received);
@@ -413,7 +413,7 @@ EXPORT_SYMBOL(drm_vbl_send_signals);
  */
 static void drm_locked_tasklet_func(unsigned long data)
 {
-	drm_device_t *dev = (drm_device_t*)data;
+	struct drm_device *dev = (struct drm_device*)data;
 	unsigned long irqflags;
 
 	spin_lock_irqsave(&dev->tasklet_lock, irqflags);
@@ -450,7 +450,7 @@ static void drm_locked_tasklet_func(unsigned long data)
  * context, it must not make any assumptions about this. Also, the HW lock will
  * be held with the kernel context or any client context.
  */
-void drm_locked_tasklet(drm_device_t *dev, void (*func)(drm_device_t*))
+void drm_locked_tasklet(struct drm_device *dev, void (*func)(struct drm_device*))
 {
 	unsigned long irqflags;
 	static DECLARE_TASKLET(drm_tasklet, drm_locked_tasklet_func, 0);

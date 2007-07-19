@@ -40,7 +40,7 @@
  * 1.0 - Initial mach64 DRM
  *
  */
-drm_ioctl_desc_t mach64_ioctls[] = {
+struct drm_ioctl_desc mach64_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_MACH64_INIT)] = {mach64_dma_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 	[DRM_IOCTL_NR(DRM_MACH64_CLEAR)] = {mach64_dma_clear, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_MACH64_SWAP)] = {mach64_dma_swap, DRM_AUTH},
@@ -86,10 +86,10 @@ static void mach64_print_dirty(const char *msg, unsigned int flags)
  * negative for an error
  */
 static int mach64_emit_cliprect(DRMFILE filp, drm_mach64_private_t * dev_priv,
-				drm_clip_rect_t * box)
+				struct drm_clip_rect * box)
 {
 	u32 sc_left_right, sc_top_bottom;
-	drm_clip_rect_t scissor;
+	struct drm_clip_rect scissor;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mach64_context_regs_t *regs = &sarea_priv->context_state;
 	DMALOCALS;
@@ -212,7 +212,7 @@ static __inline__ int mach64_emit_state(DRMFILE filp,
  * DMA command dispatch functions
  */
 
-static int mach64_dma_dispatch_clear(DRMFILE filp, drm_device_t * dev,
+static int mach64_dma_dispatch_clear(DRMFILE filp, struct drm_device * dev,
 				     unsigned int flags,
 				     int cx, int cy, int cw, int ch,
 				     unsigned int clear_color,
@@ -222,7 +222,7 @@ static int mach64_dma_dispatch_clear(DRMFILE filp, drm_device_t * dev,
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mach64_context_regs_t *ctx = &sarea_priv->context_state;
 	int nbox = sarea_priv->nbox;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	u32 fb_bpp, depth_bpp;
 	int i;
 	DMALOCALS;
@@ -355,12 +355,12 @@ static int mach64_dma_dispatch_clear(DRMFILE filp, drm_device_t * dev,
 	return 0;
 }
 
-static int mach64_dma_dispatch_swap(DRMFILE filp, drm_device_t * dev)
+static int mach64_dma_dispatch_swap(DRMFILE filp, struct drm_device * dev)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	int nbox = sarea_priv->nbox;
-	drm_clip_rect_t *pbox = sarea_priv->boxes;
+	struct drm_clip_rect *pbox = sarea_priv->boxes;
 	u32 fb_bpp;
 	int i;
 	DMALOCALS;
@@ -545,12 +545,12 @@ static __inline__ int copy_from_user_vertex(u32 *to,
 	}
 }
 
-static int mach64_dma_dispatch_vertex(DRMFILE filp, drm_device_t * dev,
+static int mach64_dma_dispatch_vertex(DRMFILE filp, struct drm_device * dev,
 				      drm_mach64_vertex_t * vertex)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
-	drm_buf_t *copy_buf;
+	struct drm_buf *copy_buf;
 	void *buf = vertex->buf;
 	unsigned long used = vertex->used;
 	int ret = 0;
@@ -640,13 +640,13 @@ static __inline__ int copy_from_user_blit(u32 *to,
 	return 0;
 }
 
-static int mach64_dma_dispatch_blit(DRMFILE filp, drm_device_t * dev,
+static int mach64_dma_dispatch_blit(DRMFILE filp, struct drm_device * dev,
 				    drm_mach64_blit_t * blit)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	int dword_shift, dwords;
 	unsigned long used;
-	drm_buf_t *copy_buf;
+	struct drm_buf *copy_buf;
 	int verify_ret = 0;
 	DMALOCALS;
 

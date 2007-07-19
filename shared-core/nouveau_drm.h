@@ -114,8 +114,8 @@ enum nouveau_card_type {
 	NV_04      =4,
 	NV_05      =5,
 	NV_10      =10,
-	NV_11      =10,
-	NV_15      =10,
+	NV_11      =11,
+	NV_15      =11,
 	NV_17      =17,
 	NV_20      =20,
 	NV_25      =20,
@@ -137,7 +137,7 @@ enum nouveau_bus_type {
 
 struct drm_nouveau_sarea {
 	/* the cliprects */
-	drm_clip_rect_t boxes[NOUVEAU_MAX_SAREA_CLIPRECTS];
+	struct drm_clip_rect boxes[NOUVEAU_MAX_SAREA_CLIPRECTS];
 	unsigned int nbox;
 };
 

@@ -55,7 +55,7 @@
 
 typedef struct drm_mach64_freelist {
 	struct list_head list;	/* List pointers for free_list, placeholders, or pending list */
-	drm_buf_t *buf;		/* Pointer to the buffer */
+	struct drm_buf *buf;		/* Pointer to the buffer */
 	int discard;		/* This flag is set when we're done (re)using a buffer */
 	u32 ring_ofs;		/* dword offset in ring of last descriptor for this buffer */
 } drm_mach64_freelist_t;
@@ -108,7 +108,7 @@ typedef struct drm_mach64_private {
 	drm_local_map_t *agp_textures;
 } drm_mach64_private_t;
 
-extern drm_ioctl_desc_t mach64_ioctls[];
+extern struct drm_ioctl_desc mach64_ioctls[];
 extern int mach64_max_ioctl;
 
 				/* mach64_dma.c */
@@ -117,13 +117,13 @@ extern int mach64_dma_idle(DRM_IOCTL_ARGS);
 extern int mach64_dma_flush(DRM_IOCTL_ARGS);
 extern int mach64_engine_reset(DRM_IOCTL_ARGS);
 extern int mach64_dma_buffers(DRM_IOCTL_ARGS);
-extern void mach64_driver_lastclose(drm_device_t * dev);
+extern void mach64_driver_lastclose(struct drm_device * dev);
 
-extern int mach64_init_freelist(drm_device_t * dev);
-extern void mach64_destroy_freelist(drm_device_t * dev);
-extern drm_buf_t *mach64_freelist_get(drm_mach64_private_t * dev_priv);
+extern int mach64_init_freelist(struct drm_device * dev);
+extern void mach64_destroy_freelist(struct drm_device * dev);
+extern struct drm_buf *mach64_freelist_get(drm_mach64_private_t * dev_priv);
 extern int mach64_freelist_put(drm_mach64_private_t * dev_priv,
-			       drm_buf_t * copy_buf);
+			       struct drm_buf * copy_buf);
 
 extern int mach64_do_wait_for_fifo(drm_mach64_private_t * dev_priv,
 				   int entries);
@@ -137,7 +137,7 @@ extern int mach64_do_engine_reset(drm_mach64_private_t * dev_priv);
 
 extern int mach64_do_dma_idle(drm_mach64_private_t * dev_priv);
 extern int mach64_do_dma_flush(drm_mach64_private_t * dev_priv);
-extern int mach64_do_cleanup_dma(drm_device_t * dev);
+extern int mach64_do_cleanup_dma(struct drm_device * dev);
 
 				/* mach64_state.c */
 extern int mach64_dma_clear(DRM_IOCTL_ARGS);
@@ -145,13 +145,13 @@ extern int mach64_dma_swap(DRM_IOCTL_ARGS);
 extern int mach64_dma_vertex(DRM_IOCTL_ARGS);
 extern int mach64_dma_blit(DRM_IOCTL_ARGS);
 extern int mach64_get_param(DRM_IOCTL_ARGS);
-extern int mach64_driver_vblank_wait(drm_device_t * dev,
+extern int mach64_driver_vblank_wait(struct drm_device * dev,
 				     unsigned int *sequence);
 
 extern irqreturn_t mach64_driver_irq_handler(DRM_IRQ_ARGS);
-extern void mach64_driver_irq_preinstall(drm_device_t * dev);
-extern void mach64_driver_irq_postinstall(drm_device_t * dev);
-extern void mach64_driver_irq_uninstall(drm_device_t * dev);
+extern void mach64_driver_irq_preinstall(struct drm_device * dev);
+extern void mach64_driver_irq_postinstall(struct drm_device * dev);
+extern void mach64_driver_irq_uninstall(struct drm_device * dev);
 
 /* ================================================================
  * Registers
@@ -798,7 +798,7 @@ do {									\
 
 #define DMALOCALS				\
 	drm_mach64_freelist_t *_entry = NULL;	\
-	drm_buf_t *_buf = NULL; 		\
+	struct drm_buf *_buf = NULL; 		\
 	u32 *_buf_wptr; int _outcount
 
 #define GETBUFPTR( __buf )						\
@@ -813,7 +813,7 @@ do {									\
 static __inline__ int mach64_find_pending_buf_entry(drm_mach64_private_t *
 						    dev_priv,
 						    drm_mach64_freelist_t **
-						    entry, drm_buf_t * buf)
+						    entry, struct drm_buf * buf)
 {
 	struct list_head *ptr;
 #if MACH64_EXTRA_CHECKING

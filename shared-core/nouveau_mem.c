@@ -209,12 +209,11 @@ void nouveau_mem_takedown(struct mem_block **heap)
 void nouveau_mem_close(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
 	nouveau_mem_takedown(&dev_priv->agp_heap);
 	nouveau_mem_takedown(&dev_priv->fb_heap);
-	if ( dev_priv->pci_heap ) 
-		{
+	if (dev_priv->pci_heap)
 		nouveau_mem_takedown(&dev_priv->pci_heap);
-		}
 }
 
 /* returns the amount of FB ram in bytes */
@@ -253,6 +252,7 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 			}
 			break;
 		case NV_10:
+		case NV_11:
 		case NV_17:
 		case NV_20:
 		case NV_30:
@@ -281,93 +281,68 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 	return 0;
 }
 
+static int
+nouveau_mem_init_agp(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_agp_info info;
+	struct drm_agp_mode mode;
+	struct drm_agp_buffer agp_req;
+	struct drm_agp_binding bind_req;
+	int ret;
 
+	ret = drm_agp_acquire(dev);
+	if (ret) {
+		DRM_ERROR("Unable to acquire AGP: %d\n", ret);
+		return ret;
+	}
+
+	ret = drm_agp_info(dev, &info);
+	if (ret) {
+		DRM_ERROR("Unable to get AGP info: %d\n", ret);
+		return ret;
+	}
+
+	/* see agp.h for the AGPSTAT_* modes available */
+	mode.mode = info.mode;
+	ret = drm_agp_enable(dev, mode);
+	if (ret) {
+		DRM_ERROR("Unable to enable AGP: %d\n", ret);
+		return ret;
+	}
+
+	agp_req.size = info.aperture_size;
+	agp_req.type = 0;
+	ret = drm_agp_alloc(dev, &agp_req);
+	if (ret) {
+		DRM_ERROR("Unable to alloc AGP: %d\n", ret);
+		return ret;
+	}
+
+	bind_req.handle = agp_req.handle;
+	bind_req.offset = 0;
+	ret = drm_agp_bind(dev, &bind_req);
+	if (ret) {
+		DRM_ERROR("Unable to bind AGP: %d\n", ret);
+		return ret;
+	}
+
+	dev_priv->gart_info.type	= NOUVEAU_GART_AGP;
+	dev_priv->gart_info.aper_base	= info.aperture_base;
+	dev_priv->gart_info.aper_size	= info.aperture_size;
+	return 0;
+}
 
 int nouveau_mem_init(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t fb_size;
-	drm_scatter_gather_t sgreq;
-	dev_priv->agp_phys=0;
-	dev_priv->fb_phys=0;
-	sgreq . size = 4 << 20; //4MB of PCI scatter-gather zone
+	int ret = 0;
 
-	/* init AGP */
-	dev_priv->agp_heap=NULL;
-	if (drm_device_is_agp(dev))
-	{
-		int err;
-		drm_agp_info_t info;
-		drm_agp_mode_t mode;
-		drm_agp_buffer_t agp_req;
-		drm_agp_binding_t bind_req;
+	dev_priv->agp_heap = dev_priv->pci_heap = dev_priv->fb_heap = NULL;
+	dev_priv->fb_phys = 0;
+	dev_priv->gart_info.type = NOUVEAU_GART_NONE;
 
-		err = drm_agp_acquire(dev);
-		if (err) {
-			DRM_ERROR("Unable to acquire AGP: %d\n", err);
-			goto no_agp;
-		}
-
-		err = drm_agp_info(dev, &info);
-		if (err) {
-			DRM_ERROR("Unable to get AGP info: %d\n", err);
-			goto no_agp;
-		}
-
-		/* see agp.h for the AGPSTAT_* modes available */
-		mode.mode = info.mode;
-		err = drm_agp_enable(dev, mode);
-		if (err) {
-			DRM_ERROR("Unable to enable AGP: %d\n", err);
-			goto no_agp;
-		}
-
-		agp_req.size = info.aperture_size;
-		agp_req.type = 0;
-		err = drm_agp_alloc(dev, &agp_req);
-		if (err) {
-			DRM_ERROR("Unable to alloc AGP: %d\n", err);
-			goto no_agp;
-		}
-
-		bind_req.handle = agp_req.handle;
-		bind_req.offset = 0;
-		err = drm_agp_bind(dev, &bind_req);
-		if (err) {
-			DRM_ERROR("Unable to bind AGP: %d\n", err);
-			goto no_agp;
-		}
-
-		if (nouveau_mem_init_heap(&dev_priv->agp_heap,
-					  0, info.aperture_size))
-			goto no_agp;
-
-		dev_priv->agp_phys		= info.aperture_base;
-		dev_priv->agp_available_size	= info.aperture_size;
-		goto have_agp;
-	}
-
-no_agp:
-
-	if ( dev_priv->card_type >= NV_50 ) goto no_pci;
-
-	dev_priv->pci_heap = NULL;
-	DRM_DEBUG("Allocating sg memory for PCI DMA\n");
-	if ( drm_sg_alloc(dev, &sgreq) )
-		{
-		DRM_ERROR("Unable to allocate 4MB of scatter-gather pages for PCI DMA!");
-		goto no_pci;
-		}
-
-	if ( nouveau_mem_init_heap(&dev_priv->pci_heap, 0,
-				   dev->sg->pages * PAGE_SIZE))
-		{
-		DRM_ERROR("Unable to initialize pci_heap!");	
-		goto no_pci;
-		}
-
-no_pci:
-have_agp:
 	/* setup a mtrr over the FB */
 	dev_priv->fb_mtrr = drm_mtrr_add(drm_get_resource_start(dev, 1),
 					 nouveau_mem_fb_amount(dev),
@@ -396,6 +371,54 @@ have_agp:
 		if (nouveau_mem_init_heap(&dev_priv->fb_heap, 0, fb_size))
 			return DRM_ERR(ENOMEM);
 		dev_priv->fb_nomap_heap=NULL;
+	}
+
+	/* Init AGP / NV50 PCIEGART */
+	if (drm_device_is_agp(dev) && dev->agp) {
+		if ((ret = nouveau_mem_init_agp(dev)))
+			DRM_ERROR("Error initialising AGP: %d\n", ret);
+	}
+
+	/*Note: this is *not* just NV50 code, but only used on NV50 for now */
+	if (dev_priv->gart_info.type == NOUVEAU_GART_NONE &&
+	    dev_priv->card_type >= NV_50) {
+		ret = nouveau_sgdma_init(dev);
+		if (!ret) {
+			ret = nouveau_sgdma_nottm_hack_init(dev);
+			if (ret)
+				nouveau_sgdma_takedown(dev); 
+		}
+
+		if (ret)
+			DRM_ERROR("Error initialising SG DMA: %d\n", ret);
+	}
+
+	if (dev_priv->gart_info.type != NOUVEAU_GART_NONE) {
+		if (nouveau_mem_init_heap(&dev_priv->agp_heap,
+					  0, dev_priv->gart_info.aper_size)) {
+			if (dev_priv->gart_info.type == NOUVEAU_GART_SGDMA) {
+				nouveau_sgdma_nottm_hack_takedown(dev);
+				nouveau_sgdma_takedown(dev); 
+			}
+		}
+	}
+
+	/* NV04-NV40 PCIEGART */
+	if (!dev_priv->agp_heap && dev_priv->card_type < NV_50) {
+		struct drm_scatter_gather sgreq;
+
+		DRM_DEBUG("Allocating sg memory for PCI DMA\n");
+		sgreq.size = 4 << 20; //4MB of PCI scatter-gather zone
+
+		if (drm_sg_alloc(dev, &sgreq)) {
+			DRM_ERROR("Unable to allocate 4MB of scatter-gather"
+				  " pages for PCI DMA!");
+		} else {
+			if (nouveau_mem_init_heap(&dev_priv->pci_heap, 0,
+						  dev->sg->pages * PAGE_SIZE)) {
+				DRM_ERROR("Unable to initialize pci_heap!");	
+			}
+		}
 	}
 
 	return 0;
@@ -468,13 +491,18 @@ alloc_ok:
 
 	if (flags&NOUVEAU_MEM_MAPPED)
 	{
-		drm_map_list_t *entry;
+		struct drm_map_list *entry;
 		int ret = 0;
 		block->flags|=NOUVEAU_MEM_MAPPED;
 
-		if (type == NOUVEAU_MEM_AGP)
+		if (type == NOUVEAU_MEM_AGP) {
+			if (dev_priv->gart_info.type != NOUVEAU_GART_SGDMA)
 			ret = drm_addmap(dev, block->start, block->size,
 					 _DRM_AGP, 0, &block->map);
+			else
+			ret = drm_addmap(dev, block->start, block->size,
+					 _DRM_SCATTER_GATHER, 0, &block->map);
+		}
 		else if (type == NOUVEAU_MEM_FB)
 			ret = drm_addmap(dev, block->start + dev_priv->fb_phys,
 					 block->size, _DRM_FRAME_BUFFER,

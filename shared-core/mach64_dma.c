@@ -418,7 +418,7 @@ void mach64_dump_engine_info(drm_mach64_private_t * dev_priv)
  * pointed by the ring head.
  */
 static void mach64_dump_buf_info(drm_mach64_private_t * dev_priv,
-				 drm_buf_t * buf)
+				 struct drm_buf * buf)
 {
 	u32 addr = GETBUFADDR(buf);
 	u32 used = buf->used >> 2;
@@ -522,7 +522,7 @@ void mach64_dump_ring_info(drm_mach64_private_t * dev_priv)
 		list_for_each(ptr, &dev_priv->pending) {
 			drm_mach64_freelist_t *entry =
 			    list_entry(ptr, drm_mach64_freelist_t, list);
-			drm_buf_t *buf = entry->buf;
+			struct drm_buf *buf = entry->buf;
 
 			u32 buf_addr = GETBUFADDR(buf);
 
@@ -572,7 +572,7 @@ void mach64_dump_ring_info(drm_mach64_private_t * dev_priv)
  * DMA operation. It is left here since it so tricky to get DMA operating
  * properly in some architectures and hardware.
  */
-static int mach64_bm_dma_test(drm_device_t * dev)
+static int mach64_bm_dma_test(struct drm_device * dev)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_dma_handle_t *cpu_addr_dmah;
@@ -752,7 +752,7 @@ static int mach64_bm_dma_test(drm_device_t * dev)
  * Called during the DMA initialization ioctl to initialize all the necessary
  * software and hardware state for DMA operation.
  */
-static int mach64_do_dma_init(drm_device_t * dev, drm_mach64_init_t * init)
+static int mach64_do_dma_init(struct drm_device * dev, drm_mach64_init_t * init)
 {
 	drm_mach64_private_t *dev_priv;
 	u32 tmp;
@@ -974,7 +974,7 @@ int mach64_do_dispatch_pseudo_dma(drm_mach64_private_t * dev_priv)
 	volatile u32 *ring_read;
 	struct list_head *ptr;
 	drm_mach64_freelist_t *entry;
-	drm_buf_t *buf = NULL;
+	struct drm_buf *buf = NULL;
 	u32 *buf_ptr;
 	u32 used, reg, target;
 	int fifo, count, found, ret, no_idle_wait;
@@ -1117,7 +1117,7 @@ int mach64_do_dispatch_pseudo_dma(drm_mach64_private_t * dev_priv)
 /** \name DMA cleanup */
 /*@{*/
 
-int mach64_do_cleanup_dma(drm_device_t * dev)
+int mach64_do_cleanup_dma(struct drm_device * dev)
 {
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
@@ -1223,9 +1223,9 @@ int mach64_engine_reset(DRM_IOCTL_ARGS)
 /** \name Freelist management */
 /*@{*/
 
-int mach64_init_freelist(drm_device_t * dev)
+int mach64_init_freelist(struct drm_device * dev)
 {
-	drm_device_dma_t *dma = dev->dma;
+	struct drm_device_dma *dma = dev->dma;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_freelist_t *entry;
 	struct list_head *ptr;
@@ -1249,7 +1249,7 @@ int mach64_init_freelist(drm_device_t * dev)
 	return 0;
 }
 
-void mach64_destroy_freelist(drm_device_t * dev)
+void mach64_destroy_freelist(struct drm_device * dev)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_freelist_t *entry;
@@ -1381,7 +1381,7 @@ static int mach64_do_reclaim_completed(drm_mach64_private_t * dev_priv)
 	return 1;
 }
 
-drm_buf_t *mach64_freelist_get(drm_mach64_private_t * dev_priv)
+struct drm_buf *mach64_freelist_get(drm_mach64_private_t * dev_priv)
 {
 	drm_mach64_descriptor_ring_t *ring = &dev_priv->ring;
 	drm_mach64_freelist_t *entry;
@@ -1427,7 +1427,7 @@ drm_buf_t *mach64_freelist_get(drm_mach64_private_t * dev_priv)
 	return entry->buf;
 }
 
-int mach64_freelist_put(drm_mach64_private_t * dev_priv, drm_buf_t * copy_buf)
+int mach64_freelist_put(drm_mach64_private_t * dev_priv, struct drm_buf * copy_buf)
 {
 	struct list_head *ptr;
 	drm_mach64_freelist_t *entry;
@@ -1461,11 +1461,11 @@ int mach64_freelist_put(drm_mach64_private_t * dev_priv, drm_buf_t * copy_buf)
 /** \name DMA buffer request and submission IOCTL handler */
 /*@{*/
 
-static int mach64_dma_get_buffers(DRMFILE filp, drm_device_t * dev,
-				  drm_dma_t * d)
+static int mach64_dma_get_buffers(DRMFILE filp, struct drm_device * dev,
+				  struct drm_dma * d)
 {
 	int i;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 
 	for (i = d->granted_count; i < d->request_count; i++) {
@@ -1495,13 +1495,13 @@ static int mach64_dma_get_buffers(DRMFILE filp, drm_device_t * dev,
 int mach64_dma_buffers(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
-	drm_device_dma_t *dma = dev->dma;
-	drm_dma_t d;
+	struct drm_device_dma *dma = dev->dma;
+	struct drm_dma d;
 	int ret = 0;
 
 	LOCK_TEST_WITH_RETURN(dev, filp);
 
-	DRM_COPY_FROM_USER_IOCTL(d, (drm_dma_t *) data, sizeof(d));
+	DRM_COPY_FROM_USER_IOCTL(d, (struct drm_dma *) data, sizeof(d));
 
 	/* Please don't send us buffers.
 	 */
@@ -1525,12 +1525,12 @@ int mach64_dma_buffers(DRM_IOCTL_ARGS)
 		ret = mach64_dma_get_buffers(filp, dev, &d);
 	}
 
-	DRM_COPY_TO_USER_IOCTL((drm_dma_t *) data, d, sizeof(d));
+	DRM_COPY_TO_USER_IOCTL((struct drm_dma *) data, d, sizeof(d));
 
 	return ret;
 }
 
-void mach64_driver_lastclose(drm_device_t * dev)
+void mach64_driver_lastclose(struct drm_device * dev)
 {
 	mach64_do_cleanup_dma(dev);
 }

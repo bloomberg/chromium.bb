@@ -45,7 +45,7 @@ static void drm_ttm_cache_flush(void)
  * Use kmalloc if possible. Otherwise fall back to vmalloc.
  */
 
-static void ttm_alloc_pages(drm_ttm_t * ttm)
+static void ttm_alloc_pages(struct drm_ttm * ttm)
 {
 	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 	ttm->pages = NULL;
@@ -66,7 +66,7 @@ static void ttm_alloc_pages(drm_ttm_t * ttm)
 	}
 }
 
-static void ttm_free_pages(drm_ttm_t * ttm)
+static void ttm_free_pages(struct drm_ttm * ttm)
 {
 	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 
@@ -105,7 +105,7 @@ static struct page *drm_ttm_alloc_page(void)
  * for range of pages in a ttm.
  */
 
-static int drm_set_caching(drm_ttm_t * ttm, int noncached)
+static int drm_set_caching(struct drm_ttm * ttm, int noncached)
 {
 	int i;
 	struct page **cur_page;
@@ -142,12 +142,12 @@ static int drm_set_caching(drm_ttm_t * ttm, int noncached)
  * Free all resources associated with a ttm.
  */
 
-int drm_destroy_ttm(drm_ttm_t * ttm)
+int drm_destroy_ttm(struct drm_ttm * ttm)
 {
 
 	int i;
 	struct page **cur_page;
-	drm_ttm_backend_t *be;
+	struct drm_ttm_backend *be;
 
 	if (!ttm)
 		return 0;
@@ -159,7 +159,7 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 	}
 
 	if (ttm->pages) {
-		drm_buffer_manager_t *bm = &ttm->dev->bm;
+		struct drm_buffer_manager *bm = &ttm->dev->bm;
 		if (ttm->page_flags & DRM_TTM_PAGE_UNCACHED)
 			drm_set_caching(ttm, 0);
 
@@ -191,10 +191,10 @@ int drm_destroy_ttm(drm_ttm_t * ttm)
 	return 0;
 }
 
-struct page *drm_ttm_get_page(drm_ttm_t * ttm, int index)
+struct page *drm_ttm_get_page(struct drm_ttm * ttm, int index)
 {
 	struct page *p;
-	drm_buffer_manager_t *bm = &ttm->dev->bm;
+	struct drm_buffer_manager *bm = &ttm->dev->bm;
 
 	p = ttm->pages[index];
 	if (!p) {
@@ -207,11 +207,11 @@ struct page *drm_ttm_get_page(drm_ttm_t * ttm, int index)
 	return p;
 }
 
-static int drm_ttm_populate(drm_ttm_t * ttm)
+static int drm_ttm_populate(struct drm_ttm * ttm)
 {
 	struct page *page;
 	unsigned long i;
-	drm_ttm_backend_t *be;
+	struct drm_ttm_backend *be;
 
 	if (ttm->state != ttm_unpopulated)
 		return 0;
@@ -231,10 +231,10 @@ static int drm_ttm_populate(drm_ttm_t * ttm)
  * Initialize a ttm.
  */
 
-drm_ttm_t *drm_ttm_init(struct drm_device * dev, unsigned long size)
+struct drm_ttm *drm_ttm_init(struct drm_device * dev, unsigned long size)
 {
-	drm_bo_driver_t *bo_driver = dev->driver->bo_driver;
-	drm_ttm_t *ttm;
+	struct drm_bo_driver *bo_driver = dev->driver->bo_driver;
+	struct drm_ttm *ttm;
 
 	if (!bo_driver)
 		return NULL;
@@ -275,9 +275,9 @@ drm_ttm_t *drm_ttm_init(struct drm_device * dev, unsigned long size)
  * Unbind a ttm region from the aperture.
  */
 
-void drm_ttm_evict(drm_ttm_t * ttm)
+void drm_ttm_evict(struct drm_ttm * ttm)
 {
-	drm_ttm_backend_t *be = ttm->be;
+	struct drm_ttm_backend *be = ttm->be;
 	int ret;
 
 	if (ttm->state == ttm_bound) {
@@ -288,11 +288,11 @@ void drm_ttm_evict(drm_ttm_t * ttm)
 	ttm->state = ttm_evicted;
 }
 
-void drm_ttm_fixup_caching(drm_ttm_t * ttm)
+void drm_ttm_fixup_caching(struct drm_ttm * ttm)
 {
 
 	if (ttm->state == ttm_evicted) {
-		drm_ttm_backend_t *be = ttm->be;
+		struct drm_ttm_backend *be = ttm->be;
 		if (be->func->needs_ub_cache_adjust(be)) {
 			drm_set_caching(ttm, 0);
 		}
@@ -300,7 +300,7 @@ void drm_ttm_fixup_caching(drm_ttm_t * ttm)
 	}
 }
 
-void drm_ttm_unbind(drm_ttm_t * ttm)
+void drm_ttm_unbind(struct drm_ttm * ttm)
 {
 	if (ttm->state == ttm_bound)
 		drm_ttm_evict(ttm);
@@ -308,11 +308,11 @@ void drm_ttm_unbind(drm_ttm_t * ttm)
 	drm_ttm_fixup_caching(ttm);
 }
 
-int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset)
+int drm_bind_ttm(struct drm_ttm * ttm, int cached, unsigned long aper_offset)
 {
 
 	int ret = 0;
-	drm_ttm_backend_t *be;
+	struct drm_ttm_backend *be;
 
 	if (!ttm)
 		return -EINVAL;

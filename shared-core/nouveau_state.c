@@ -88,6 +88,8 @@ static int nouveau_init_card_mappings(struct drm_device *dev)
 
 static int nouveau_stub_init(struct drm_device *dev) { return 0; }
 static void nouveau_stub_takedown(struct drm_device *dev) {}
+static uint64_t nouveau_stub_timer_read(struct drm_device *dev) { return 0; }
+
 static int nouveau_init_engine_ptrs(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -104,6 +106,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv04_fb_init;
 		engine->fb.takedown	= nv04_fb_takedown;
@@ -130,6 +133,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv10_fb_init;
 		engine->fb.takedown	= nv10_fb_takedown;
@@ -156,6 +160,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv10_fb_init;
 		engine->fb.takedown	= nv10_fb_takedown;
@@ -182,6 +187,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv10_fb_init;
 		engine->fb.takedown	= nv10_fb_takedown;
@@ -208,6 +214,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv40_mc_init;
 		engine->mc.takedown	= nv40_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv40_fb_init;
 		engine->fb.takedown	= nv40_fb_takedown;
@@ -235,6 +242,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->mc.init		= nv50_mc_init;
 		engine->mc.takedown	= nv50_mc_takedown;
 		engine->timer.init	= nouveau_stub_init;
+		engine->timer.read	= nouveau_stub_timer_read;
 		engine->timer.takedown	= nouveau_stub_takedown;
 		engine->fb.init		= nouveau_stub_init;
 		engine->fb.takedown	= nouveau_stub_takedown;
@@ -332,7 +340,12 @@ static void nouveau_card_takedown(struct drm_device *dev)
 		engine->fb.takedown(dev);
 		engine->timer.takedown(dev);
 		engine->mc.takedown(dev);
+
+		nouveau_sgdma_nottm_hack_takedown(dev);
+		nouveau_sgdma_takedown(dev);
+
 		nouveau_gpuobj_takedown(dev);
+
 		nouveau_mem_close(dev);
 		engine->instmem.takedown(dev);
 
@@ -442,7 +455,7 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 		getparam.value=dev_priv->fb_phys;
 		break;
 	case NOUVEAU_GETPARAM_AGP_PHYSICAL:
-		getparam.value=dev_priv->agp_phys;
+		getparam.value=dev_priv->gart_info.aper_base;
 		break;
 	case NOUVEAU_GETPARAM_PCI_PHYSICAL:
 		if ( dev -> sg )
@@ -457,7 +470,7 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 		getparam.value=dev_priv->fb_available_size;
 		break;
 	case NOUVEAU_GETPARAM_AGP_SIZE:
-		getparam.value=dev_priv->agp_available_size;
+		getparam.value=dev_priv->gart_info.aper_size;
 		break;
 	default:
 		DRM_ERROR("unknown parameter %lld\n", getparam.param);
@@ -509,16 +522,31 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 void nouveau_wait_for_idle(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv=dev->dev_private;
-	switch(dev_priv->card_type)
-	{
-		case NV_03:
-			while(NV_READ(NV03_PGRAPH_STATUS));
-			break;
-		case NV_50:
-			break;
-		default:
-			while(NV_READ(NV04_PGRAPH_STATUS));
-			break;
+	switch(dev_priv->card_type) {
+	case NV_03:
+		while (NV_READ(NV03_PGRAPH_STATUS));
+		break;
+	case NV_50:
+		break;
+	default: {
+		/* This stuff is more or less a copy of what is seen
+		 * in nv28 kmmio dump.
+		 */
+		uint64_t started = dev_priv->Engine.timer.read(dev);
+		uint64_t stopped = started;
+		uint32_t status;
+		do {
+			uint32_t pmc_e = NV_READ(NV03_PMC_ENABLE);
+			status = NV_READ(NV04_PGRAPH_STATUS);
+			if (!status)
+				break;
+			stopped = dev_priv->Engine.timer.read(dev);
+		/* It'll never wrap anyway... */
+		} while (stopped - started < 1000000000ULL);
+		if (status)
+			DRM_ERROR("timed out with status 0x%08x\n",
+			          status);
+	}
 	}
 }
 
