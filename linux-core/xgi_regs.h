@@ -29,269 +29,100 @@
 #ifndef _XGI_REGS_H_
 #define _XGI_REGS_H_
 
-#ifndef XGI_MMIO
-#define XGI_MMIO 1
-#endif
+#include "drmP.h"
+#include "drm.h"
 
-#if XGI_MMIO
-#define OUTB(port, value)   writeb(value, info->mmio.vbase + port)
-#define INB(port)           readb(info->mmio.vbase + port)
-#define OUTW(port, value)   writew(value, info->mmio.vbase + port)
-#define INW(port)           readw(info->mmio.vbase + port)
-#define OUTDW(port, value)  writel(value, info->mmio.vbase + port)
-#define INDW(port)          readl(info->mmio.vbase + port)
-#else
-#define OUTB(port, value)   outb(value, port)
-#define INB(port)           inb(port)
-#define OUTW(port, value)   outw(value, port)
-#define INW(port)           inw(port)
-#define OUTDW(port, value)  outl(value, port)
-#define INDW(port)          inl(port)
-#endif
 
 /* Hardware access functions */
-static inline void OUT3C5B(struct xgi_info * info, u8 index, u8 data)
+static inline void OUT3C5B(struct drm_map * map, u8 index, u8 data)
 {
-	OUTB(0x3C4, index);
-	OUTB(0x3C5, data);
+	DRM_WRITE8(map, 0x3C4, index);
+	DRM_WRITE8(map, 0x3C5, data);
 }
 
-static inline void OUT3X5B(struct xgi_info * info, u8 index, u8 data)
+static inline void OUT3X5B(struct drm_map * map, u8 index, u8 data)
 {
-	OUTB(0x3D4, index);
-	OUTB(0x3D5, data);
+	DRM_WRITE8(map, 0x3D4, index);
+	DRM_WRITE8(map, 0x3D5, data);
 }
 
-static inline void OUT3CFB(struct xgi_info * info, u8 index, u8 data)
+static inline void OUT3CFB(struct drm_map * map, u8 index, u8 data)
 {
-	OUTB(0x3CE, index);
-	OUTB(0x3CF, data);
+	DRM_WRITE8(map, 0x3CE, index);
+	DRM_WRITE8(map, 0x3CF, data);
 }
 
-static inline u8 IN3C5B(struct xgi_info * info, u8 index)
+static inline u8 IN3C5B(struct drm_map * map, u8 index)
 {
-	volatile u8 data = 0;
-	OUTB(0x3C4, index);
-	data = INB(0x3C5);
-	return data;
+	DRM_WRITE8(map, 0x3C4, index);
+	return DRM_READ8(map, 0x3C5);
 }
 
-static inline u8 IN3X5B(struct xgi_info * info, u8 index)
+static inline u8 IN3X5B(struct drm_map * map, u8 index)
 {
-	volatile u8 data = 0;
-	OUTB(0x3D4, index);
-	data = INB(0x3D5);
-	return data;
+	DRM_WRITE8(map, 0x3D4, index);
+	return DRM_READ8(map, 0x3D5);
 }
 
-static inline u8 IN3CFB(struct xgi_info * info, u8 index)
+static inline u8 IN3CFB(struct drm_map * map, u8 index)
 {
-	volatile u8 data = 0;
-	OUTB(0x3CE, index);
-	data = INB(0x3CF);
-	return data;
+	DRM_WRITE8(map, 0x3CE, index);
+	return DRM_READ8(map, 0x3CF);
 }
 
-static inline void OUT3C5W(struct xgi_info * info, u8 index, u16 data)
-{
-	OUTB(0x3C4, index);
-	OUTB(0x3C5, data);
-}
-
-static inline void OUT3X5W(struct xgi_info * info, u8 index, u16 data)
-{
-	OUTB(0x3D4, index);
-	OUTB(0x3D5, data);
-}
-
-static inline void OUT3CFW(struct xgi_info * info, u8 index, u8 data)
-{
-	OUTB(0x3CE, index);
-	OUTB(0x3CF, data);
-}
-
-static inline u8 IN3C5W(struct xgi_info * info, u8 index)
-{
-	volatile u8 data = 0;
-	OUTB(0x3C4, index);
-	data = INB(0x3C5);
-	return data;
-}
-
-static inline u8 IN3X5W(struct xgi_info * info, u8 index)
-{
-	volatile u8 data = 0;
-	OUTB(0x3D4, index);
-	data = INB(0x3D5);
-	return data;
-}
-
-static inline u8 IN3CFW(struct xgi_info * info, u8 index)
-{
-	volatile u8 data = 0;
-	OUTB(0x3CE, index);
-	data = INB(0x3CF);
-	return data;
-}
-
-static inline u8 readAttr(struct xgi_info * info, u8 index)
-{
-	INB(0x3DA);		/* flip-flop to index */
-	OUTB(0x3C0, index);
-	return INB(0x3C1);
-}
-
-static inline void writeAttr(struct xgi_info * info, u8 index, u8 value)
-{
-	INB(0x3DA);		/* flip-flop to index */
-	OUTB(0x3C0, index);
-	OUTB(0x3C0, value);
-}
 
 /*
  * Graphic engine register (2d/3d) acessing interface
  */
-static inline void WriteRegDWord(struct xgi_info * info, u32 addr, u32 data)
+static inline void dwWriteReg(struct drm_map * map, u32 addr, u32 data)
 {
-	XGI_INFO("mmio vbase = 0x%p, addr = 0x%x, data = 0x%x\n",
-		 info->mmio->vbase, addr, data);
+	DRM_INFO("mmio_map->handle = 0x%p, addr = 0x%x, data = 0x%x\n",
+		 map->handle, addr, data);
 
-	*(volatile u32 *)(info->mmio.vbase + addr) = (data);
+	DRM_WRITE32(map, addr, data);
 }
 
-static inline void WriteRegWord(struct xgi_info * info, u32 addr, u16 data)
-{
-	*(volatile u16 *)(info->mmio.vbase + addr) = (data);
-}
-
-static inline void WriteRegByte(struct xgi_info * info, u32 addr, u8 data)
-{
-	*(volatile u8 *)(info->mmio.vbase + addr) = (data);
-}
-
-static inline u32 ReadRegDWord(struct xgi_info * info, u32 addr)
-{
-	volatile u32 data;
-	data = *(volatile u32 *)(info->mmio.vbase + addr);
-	return data;
-}
-
-static inline u16 ReadRegWord(struct xgi_info * info, u32 addr)
-{
-	volatile u16 data;
-	data = *(volatile u16 *)(info->mmio.vbase + addr);
-	return data;
-}
-
-static inline u8 ReadRegByte(struct xgi_info * info, u32 addr)
-{
-	volatile u8 data;
-	data = *(volatile u8 *)(info->mmio.vbase + addr);
-	return data;
-}
-
-#if 0
-extern void OUT3C5B(struct xgi_info * info, u8 index, u8 data);
-extern void OUT3X5B(struct xgi_info * info, u8 index, u8 data);
-extern void OUT3CFB(struct xgi_info * info, u8 index, u8 data);
-extern u8 IN3C5B(struct xgi_info * info, u8 index);
-extern u8 IN3X5B(struct xgi_info * info, u8 index);
-extern u8 IN3CFB(struct xgi_info * info, u8 index);
-extern void OUT3C5W(struct xgi_info * info, u8 index, u8 data);
-extern void OUT3X5W(struct xgi_info * info, u8 index, u8 data);
-extern void OUT3CFW(struct xgi_info * info, u8 index, u8 data);
-extern u8 IN3C5W(struct xgi_info * info, u8 index);
-extern u8 IN3X5W(struct xgi_info * info, u8 index);
-extern u8 IN3CFW(struct xgi_info * info, u8 index);
-
-extern void WriteRegDWord(struct xgi_info * info, u32 addr, u32 data);
-extern void WriteRegWord(struct xgi_info * info, u32 addr, u16 data);
-extern void WriteRegByte(struct xgi_info * info, u32 addr, u8 data);
-extern u32 ReadRegDWord(struct xgi_info * info, u32 addr);
-extern u16 ReadRegWord(struct xgi_info * info, u32 addr);
-extern u8 ReadRegByte(struct xgi_info * info, u32 addr);
-
-extern void EnableProtect();
-extern void DisableProtect();
-#endif
-
-#define Out(port, data)         OUTB(port, data)
-#define bOut(port, data)        OUTB(port, data)
-#define wOut(port, data)        OUTW(port, data)
-#define dwOut(port, data)       OUTDW(port, data)
-
-#define Out3x5(index, data)     OUT3X5B(info, index, data)
-#define bOut3x5(index, data)    OUT3X5B(info, index, data)
-#define wOut3x5(index, data)    OUT3X5W(info, index, data)
-
-#define Out3c5(index, data)     OUT3C5B(info, index, data)
-#define bOut3c5(index, data)    OUT3C5B(info, index, data)
-#define wOut3c5(index, data)    OUT3C5W(info, index, data)
-
-#define Out3cf(index, data)     OUT3CFB(info, index, data)
-#define bOut3cf(index, data)    OUT3CFB(info, index, data)
-#define wOut3cf(index, data)    OUT3CFW(info, index, data)
-
-#define In(port)                INB(port)
-#define bIn(port)               INB(port)
-#define wIn(port)               INW(port)
-#define dwIn(port)              INDW(port)
-
-#define In3x5(index)            IN3X5B(info, index)
-#define bIn3x5(index)           IN3X5B(info, index)
-#define wIn3x5(index)           IN3X5W(info, index)
-
-#define In3c5(index)            IN3C5B(info, index)
-#define bIn3c5(index)           IN3C5B(info, index)
-#define wIn3c5(index)           IN3C5W(info, index)
-
-#define In3cf(index)            IN3CFB(info, index)
-#define bIn3cf(index)           IN3CFB(info, index)
-#define wIn3cf(index)           IN3CFW(info, index)
-
-#define dwWriteReg(addr, data)  WriteRegDWord(info, addr, data)
-#define wWriteReg(addr, data)   WriteRegWord(info, addr, data)
-#define bWriteReg(addr, data)   WriteRegByte(info, addr, data)
-#define dwReadReg(addr)         ReadRegDWord(info, addr)
-#define wReadReg(addr)          ReadRegWord(info, addr)
-#define bReadReg(addr)          ReadRegByte(info, addr)
 
 static inline void xgi_enable_mmio(struct xgi_info * info)
 {
 	u8 protect = 0;
+	u8 temp;
 
 	/* Unprotect registers */
-	outb(0x11, 0x3C4);
-	protect = inb(0x3C5);
-	outb(0x92, 0x3C5);
+	DRM_WRITE8(info->mmio_map, 0x3C4, 0x11);
+	protect = DRM_READ8(info->mmio_map, 0x3C5);
+	DRM_WRITE8(info->mmio_map, 0x3C5, 0x92);
 
-	outb(0x3A, 0x3D4);
-	outb(inb(0x3D5) | 0x20, 0x3D5);
+	DRM_WRITE8(info->mmio_map, 0x3D4, 0x3A);
+	temp = DRM_READ8(info->mmio_map, 0x3D5);
+	DRM_WRITE8(info->mmio_map, 0x3D5, temp | 0x20);
 
 	/* Enable MMIO */
-	outb(0x39, 0x3D4);
-	outb(inb(0x3D5) | 0x01, 0x3D5);
+	DRM_WRITE8(info->mmio_map, 0x3D4, 0x39);
+	temp = DRM_READ8(info->mmio_map, 0x3D5);
+	DRM_WRITE8(info->mmio_map, 0x3D5, temp | 0x01);
 
-	OUTB(0x3C4, 0x11);
-	OUTB(0x3C5, protect);
+	/* Protect registers */
+	OUT3C5B(info->mmio_map, 0x11, protect);
 }
 
 static inline void xgi_disable_mmio(struct xgi_info * info)
 {
 	u8 protect = 0;
+	u8 temp;
 
-	/* unprotect registers */
-	OUTB(0x3C4, 0x11);
-	protect = INB(0x3C5);
-	OUTB(0x3C5, 0x92);
+	/* Unprotect registers */
+	DRM_WRITE8(info->mmio_map, 0x3C4, 0x11);
+	protect = DRM_READ8(info->mmio_map, 0x3C5);
+	DRM_WRITE8(info->mmio_map, 0x3C5, 0x92);
 
 	/* Disable MMIO access */
-	OUTB(0x3D4, 0x39);
-	OUTB(0x3D5, INB(0x3D5) & 0xFE);
+	DRM_WRITE8(info->mmio_map, 0x3D4, 0x39);
+	temp = DRM_READ8(info->mmio_map, 0x3D5);
+	DRM_WRITE8(info->mmio_map, 0x3D5, temp & 0xFE);
 
 	/* Protect registers */
-	outb(0x11, 0x3C4);
-	outb(protect, 0x3C5);
+	OUT3C5B(info->mmio_map, 0x11, protect);
 }
 
 static inline void xgi_enable_ge(struct xgi_info * info)
@@ -300,36 +131,36 @@ static inline void xgi_enable_ge(struct xgi_info * info)
 	int wait = 0;
 
 	// Enable GE
-	OUTW(0x3C4, 0x9211);
+	DRM_WRITE16(info->mmio_map, 0x3C4, 0x9211);
 
 	// Save and close dynamic gating
-	bOld3cf2a = bIn3cf(0x2a);
-	bOut3cf(0x2a, bOld3cf2a & 0xfe);
+	bOld3cf2a = IN3CFB(info->mmio_map, 0x2a);
+	OUT3CFB(info->mmio_map, 0x2a, bOld3cf2a & 0xfe);
 
 	// Reset both 3D and 2D engine
-	bOut3x5(0x36, 0x84);
+	OUT3X5B(info->mmio_map, 0x36, 0x84);
 	wait = 10;
 	while (wait--) {
-		bIn(0x36);
+		DRM_READ8(info->mmio_map, 0x36);
 	}
-	bOut3x5(0x36, 0x94);
+	OUT3X5B(info->mmio_map, 0x36, 0x94);
 	wait = 10;
 	while (wait--) {
-		bIn(0x36);
+		DRM_READ8(info->mmio_map, 0x36);
 	}
-	bOut3x5(0x36, 0x84);
+	OUT3X5B(info->mmio_map, 0x36, 0x84);
 	wait = 10;
 	while (wait--) {
-		bIn(0x36);
+		DRM_READ8(info->mmio_map, 0x36);
 	}
 	// Enable 2D engine only
-	bOut3x5(0x36, 0x80);
+	OUT3X5B(info->mmio_map, 0x36, 0x80);
 
 	// Enable 2D+3D engine
-	bOut3x5(0x36, 0x84);
+	OUT3X5B(info->mmio_map, 0x36, 0x84);
 
 	// Restore dynamic gating
-	bOut3cf(0x2a, bOld3cf2a);
+	OUT3CFB(info->mmio_map, 0x2a, bOld3cf2a);
 }
 
 static inline void xgi_disable_ge(struct xgi_info * info)
@@ -337,50 +168,50 @@ static inline void xgi_disable_ge(struct xgi_info * info)
 	int wait = 0;
 
 	// Reset both 3D and 2D engine
-	bOut3x5(0x36, 0x84);
+	OUT3X5B(info->mmio_map, 0x36, 0x84);
 
 	wait = 10;
 	while (wait--) {
-		bIn(0x36);
+		DRM_READ8(info->mmio_map, 0x36);
 	}
-	bOut3x5(0x36, 0x94);
+	OUT3X5B(info->mmio_map, 0x36, 0x94);
 
 	wait = 10;
 	while (wait--) {
-		bIn(0x36);
+		DRM_READ8(info->mmio_map, 0x36);
 	}
-	bOut3x5(0x36, 0x84);
+	OUT3X5B(info->mmio_map, 0x36, 0x84);
 
 	wait = 10;
 	while (wait--) {
-		bIn(0x36);
+		DRM_READ8(info->mmio_map, 0x36);
 	}
 
 	// Disable 2D engine only
-	bOut3x5(0x36, 0);
+	OUT3X5B(info->mmio_map, 0x36, 0);
 }
 
 static inline void xgi_enable_dvi_interrupt(struct xgi_info * info)
 {
-	Out3cf(0x39, In3cf(0x39) & ~0x01);	//Set 3cf.39 bit 0 to 0
-	Out3cf(0x39, In3cf(0x39) | 0x01);	//Set 3cf.39 bit 0 to 1
-	Out3cf(0x39, In3cf(0x39) | 0x02);
+	OUT3CFB(info->mmio_map, 0x39, IN3CFB(info->mmio_map, 0x39) & ~0x01);	//Set 3cf.39 bit 0 to 0
+	OUT3CFB(info->mmio_map, 0x39, IN3CFB(info->mmio_map, 0x39) | 0x01);	//Set 3cf.39 bit 0 to 1
+	OUT3CFB(info->mmio_map, 0x39, IN3CFB(info->mmio_map, 0x39) | 0x02);
 }
 static inline void xgi_disable_dvi_interrupt(struct xgi_info * info)
 {
-	Out3cf(0x39, In3cf(0x39) & ~0x02);
+	OUT3CFB(info->mmio_map, 0x39, IN3CFB(info->mmio_map, 0x39) & ~0x02);
 }
 
 static inline void xgi_enable_crt1_interrupt(struct xgi_info * info)
 {
-	Out3cf(0x3d, In3cf(0x3d) | 0x04);
-	Out3cf(0x3d, In3cf(0x3d) & ~0x04);
-	Out3cf(0x3d, In3cf(0x3d) | 0x08);
+	OUT3CFB(info->mmio_map, 0x3d, IN3CFB(info->mmio_map, 0x3d) | 0x04);
+	OUT3CFB(info->mmio_map, 0x3d, IN3CFB(info->mmio_map, 0x3d) & ~0x04);
+	OUT3CFB(info->mmio_map, 0x3d, IN3CFB(info->mmio_map, 0x3d) | 0x08);
 }
 
 static inline void xgi_disable_crt1_interrupt(struct xgi_info * info)
 {
-	Out3cf(0x3d, In3cf(0x3d) & ~0x08);
+	OUT3CFB(info->mmio_map, 0x3d, IN3CFB(info->mmio_map, 0x3d) & ~0x08);
 }
 
 #endif

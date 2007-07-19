@@ -26,7 +26,6 @@
  * DEALINGS IN THE SOFTWARE.												
  ***************************************************************************/
 
-#include "xgi_linux.h"
 #include "xgi_drv.h"
 #include "xgi_regs.h"
 #include "xgi_misc.h"
@@ -55,18 +54,19 @@ int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 
 	s_cmdring._cmdRingSize = mem_alloc.size;
 	s_cmdring._cmdRingBuffer = mem_alloc.hw_addr;
-	s_cmdring._cmdRingBusAddr = mem_alloc.bus_addr;
+	s_cmdring._cmdRingAllocOffset = mem_alloc.offset;
 	s_cmdring._lastBatchStartAddr = 0;
 	s_cmdring._cmdRingOffset = 0;
 
 	return 1;
 }
 
-void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
+static void xgi_submit_cmdlist(struct xgi_info * info,
+			       struct xgi_cmd_info * pCmdInfo)
 {
 	const unsigned int beginPort = getCurBatchBeginPort(pCmdInfo);
 
-	XGI_INFO("After getCurBatchBeginPort()\n");
+	DRM_INFO("After getCurBatchBeginPort()\n");
 
 	if (s_cmdring._lastBatchStartAddr == 0) {
 		const unsigned int portOffset = BASE_3D_ENG + beginPort;
@@ -75,50 +75,53 @@ void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
 		/* xgi_waitfor_pci_idle(info); */
 
 		// Enable PCI Trigger Mode
-		XGI_INFO("Enable PCI Trigger Mode \n");
+		DRM_INFO("Enable PCI Trigger Mode \n");
 
 
 		/* Jong 06/14/2006; 0x400001a */
-		dwWriteReg(BASE_3D_ENG + M2REG_AUTO_LINK_SETTING_ADDRESS,
+		dwWriteReg(info->mmio_map,
+			   BASE_3D_ENG + M2REG_AUTO_LINK_SETTING_ADDRESS,
 			   (M2REG_AUTO_LINK_SETTING_ADDRESS << 22) |
 			   M2REG_CLEAR_COUNTERS_MASK | 0x08 |
 			   M2REG_PCI_TRIGGER_MODE_MASK);
 
 		/* Jong 06/14/2006; 0x400000a */
-		dwWriteReg(BASE_3D_ENG + M2REG_AUTO_LINK_SETTING_ADDRESS,
+		dwWriteReg(info->mmio_map,
+			   BASE_3D_ENG + M2REG_AUTO_LINK_SETTING_ADDRESS,
 			   (M2REG_AUTO_LINK_SETTING_ADDRESS << 22) | 0x08 |
 			   M2REG_PCI_TRIGGER_MODE_MASK);
 
 		// Send PCI begin command
-		XGI_INFO("Send PCI begin command \n");
+		DRM_INFO("Send PCI begin command \n");
 
-		XGI_INFO("portOffset=%d, beginPort=%d\n",
+		DRM_INFO("portOffset=%d, beginPort=%d\n",
 			 portOffset, beginPort);
 
 		/* beginPort = 48; */
 		/* 0xc100000 */
-		dwWriteReg(portOffset,
+		dwWriteReg(info->mmio_map, portOffset,
 			   (beginPort << 22) + (BEGIN_VALID_MASK) +
 			   pCmdInfo->_curDebugID);
 
-		XGI_INFO("Send PCI begin command- After\n");
+		DRM_INFO("Send PCI begin command- After\n");
 
 		/* 0x80000024 */
-		dwWriteReg(portOffset + 4,
+		dwWriteReg(info->mmio_map, portOffset + 4,
 			   BEGIN_LINK_ENABLE_MASK + pCmdInfo->_firstSize);
 
 		/* 0x1010000 */
-		dwWriteReg(portOffset + 8, (pCmdInfo->_firstBeginAddr >> 4));
+		dwWriteReg(info->mmio_map, portOffset + 8, 
+			   (pCmdInfo->_firstBeginAddr >> 4));
 
 		/* Jong 06/12/2006; system hang; marked for test */
-		dwWriteReg(portOffset + 12, 0);
+		dwWriteReg(info->mmio_map, portOffset + 12, 0);
 
 		/* Jong 06/13/2006; remove marked for system hang test */
 		/* xgi_waitfor_pci_idle(info); */
 	} else {
 		u32 *lastBatchVirtAddr;
 
-		XGI_INFO("s_cmdring._lastBatchStartAddr != 0\n");
+		DRM_INFO("s_cmdring._lastBatchStartAddr != 0\n");
 
 		if (pCmdInfo->_firstBeginType == BTYPE_3D) {
 			addFlush2D(info);
@@ -146,13 +149,29 @@ void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
 			/* Jong 06/12/2006; system hang; marked for test */
 			triggerHWCommandList(info, pCmdInfo->_beginCount);
 		} else {
-			XGI_ERROR("lastBatchVirtAddr is NULL\n");
+			DRM_ERROR("lastBatchVirtAddr is NULL\n");
 		}
 	}
 
 	s_cmdring._lastBatchStartAddr = pCmdInfo->_lastBeginAddr;
-	XGI_INFO("End\n");
+	DRM_INFO("End\n");
 }
+
+
+int xgi_submit_cmdlist_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	struct xgi_cmd_info  cmd_list;
+	struct xgi_info *info = dev->dev_private;
+
+	DRM_COPY_FROM_USER_IOCTL(cmd_list, 
+				 (struct xgi_cmd_info __user *) data,
+				 sizeof(cmd_list));
+
+	xgi_submit_cmdlist(info, &cmd_list);
+	return 0;
+}
+
 
 /*
     state:      0 - console
@@ -160,7 +179,8 @@ void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo)
                 2 - fb
                 3 - logout
 */
-void xgi_state_change(struct xgi_info * info, struct xgi_state_info * pStateInfo)
+int xgi_state_change(struct xgi_info * info, unsigned int to, 
+		     unsigned int from)
 {
 #define STATE_CONSOLE   0
 #define STATE_GRAPHIC   1
@@ -169,25 +189,39 @@ void xgi_state_change(struct xgi_info * info, struct xgi_state_info * pStateInfo
 #define STATE_REBOOT    4
 #define STATE_SHUTDOWN  5
 
-	if ((pStateInfo->_fromState == STATE_GRAPHIC)
-	    && (pStateInfo->_toState == STATE_CONSOLE)) {
-		XGI_INFO("[kd] I see, now is to leaveVT\n");
+	if ((from == STATE_GRAPHIC) && (to == STATE_CONSOLE)) {
+		DRM_INFO("[kd] I see, now is to leaveVT\n");
 		// stop to received batch
-	} else if ((pStateInfo->_fromState == STATE_CONSOLE)
-		   && (pStateInfo->_toState == STATE_GRAPHIC)) {
-		XGI_INFO("[kd] I see, now is to enterVT\n");
+	} else if ((from == STATE_CONSOLE) && (to == STATE_GRAPHIC)) {
+		DRM_INFO("[kd] I see, now is to enterVT\n");
 		xgi_cmdlist_reset();
-	} else if ((pStateInfo->_fromState == STATE_GRAPHIC)
-		   && ((pStateInfo->_toState == STATE_LOGOUT)
-		       || (pStateInfo->_toState == STATE_REBOOT)
-		       || (pStateInfo->_toState == STATE_SHUTDOWN))) {
-		XGI_INFO("[kd] I see, not is to exit from X\n");
+	} else if ((from == STATE_GRAPHIC)
+		   && ((to == STATE_LOGOUT)
+		       || (to == STATE_REBOOT)
+		       || (to == STATE_SHUTDOWN))) {
+		DRM_INFO("[kd] I see, not is to exit from X\n");
 		// stop to received batch
 	} else {
-		XGI_ERROR("[kd] Should not happen\n");
+		DRM_ERROR("[kd] Should not happen\n");
+		return DRM_ERR(EINVAL);
 	}
 
+	return 0;
 }
+
+
+int xgi_state_change_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	struct xgi_state_info  state;
+	struct xgi_info *info = dev->dev_private;
+
+	DRM_COPY_FROM_USER_IOCTL(state, (struct xgi_state_info __user *) data,
+				 sizeof(state));
+
+	return xgi_state_change(info, state._toState, state._fromState);
+}
+
 
 void xgi_cmdlist_reset(void)
 {
@@ -198,7 +232,7 @@ void xgi_cmdlist_reset(void)
 void xgi_cmdlist_cleanup(struct xgi_info * info)
 {
 	if (s_cmdring._cmdRingBuffer != 0) {
-		xgi_pcie_free(info, s_cmdring._cmdRingBusAddr);
+		xgi_pcie_free(info, s_cmdring._cmdRingAllocOffset, NULL);
 		s_cmdring._cmdRingBuffer = 0;
 		s_cmdring._cmdRingOffset = 0;
 		s_cmdring._cmdRingSize = 0;
@@ -212,7 +246,8 @@ static void triggerHWCommandList(struct xgi_info * info,
 
 	//Fix me, currently we just trigger one time
 	while (triggerCounter--) {
-		dwWriteReg(BASE_3D_ENG + M2REG_PCI_TRIGGER_REGISTER_ADDRESS,
+		dwWriteReg(info->mmio_map,
+			   BASE_3D_ENG + M2REG_PCI_TRIGGER_REGISTER_ADDRESS,
 			   0x05000000 + (0x0ffff & s_triggerID++));
 		// xgi_waitfor_pci_idle(info);
 	}

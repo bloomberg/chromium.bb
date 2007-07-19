@@ -25,96 +25,119 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER			
  * DEALINGS IN THE SOFTWARE.												
  ***************************************************************************/
-#include "xgi_linux.h"
+
+#include "drmP.h"
+#include "drm.h"
 #include "xgi_drv.h"
 #include "xgi_regs.h"
-#include "xgi_pcie.h"
 #include "xgi_misc.h"
 #include "xgi_cmdlist.h"
 
-/* for debug */
-static int xgi_temp = 1;
-/*
- * global parameters
- */
-static struct xgi_dev {
-	u16 vendor;
-	u16 device;
-	const char *name;
-} xgidev_list[] = {
-	{
-	PCI_VENDOR_ID_XGI, PCI_DEVICE_ID_XP5, "XP5"}, {
-	PCI_VENDOR_ID_XGI, PCI_DEVICE_ID_XG47, "XG47"}, {
-	0, 0, NULL}
+#include "drm_pciids.h"
+
+static struct pci_device_id pciidlist[] = {
+	xgi_PCI_IDS
 };
 
-int xgi_major = XGI_DEV_MAJOR;	/* xgi reserved major device number. */
+static int xgi_bootstrap(DRM_IOCTL_ARGS);
 
-static int xgi_num_devices = 0;
+static drm_ioctl_desc_t xgi_ioctls[] = {
+	[DRM_IOCTL_NR(DRM_XGI_BOOTSTRAP)] = {xgi_bootstrap, DRM_AUTH},
 
-struct xgi_info xgi_devices[XGI_MAX_DEVICES];
+	[DRM_IOCTL_NR(DRM_XGI_FB_ALLOC)] = {xgi_fb_alloc_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_XGI_FB_FREE)] = {xgi_fb_free_ioctl, DRM_AUTH},
 
-#if defined(XGI_PM_SUPPORT_APM)
-static struct pm_dev *apm_xgi_dev[XGI_MAX_DEVICES] = { 0 };
-#endif
+	[DRM_IOCTL_NR(DRM_XGI_PCIE_ALLOC)] = {xgi_pcie_alloc_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_XGI_PCIE_FREE)] = {xgi_pcie_free_ioctl, DRM_AUTH},
 
-/* add one for the control device */
-struct xgi_info xgi_ctl_device;
-wait_queue_head_t xgi_ctl_waitqueue;
+	[DRM_IOCTL_NR(DRM_XGI_GE_RESET)] = {xgi_ge_reset_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_XGI_DUMP_REGISTER)] = {xgi_dump_register_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_XGI_DEBUG_INFO)] = {xgi_restore_registers_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_XGI_SUBMIT_CMDLIST)] = {xgi_submit_cmdlist_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_XGI_TEST_RWINKERNEL)] = {xgi_test_rwinkernel_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_XGI_STATE_CHANGE)] = {xgi_state_change_ioctl, DRM_AUTH},
+};
 
-#ifdef CONFIG_PROC_FS
-struct proc_dir_entry *proc_xgi;
-#endif
+static const int xgi_max_ioctl = DRM_ARRAY_SIZE(xgi_ioctls);
 
-#ifdef CONFIG_DEVFS_FS
-devfs_handle_t xgi_devfs_handles[XGI_MAX_DEVICES];
-#endif
+static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
+static int xgi_driver_load(struct drm_device *dev, unsigned long flags);
+static int xgi_driver_unload(struct drm_device *dev);
+static void xgi_driver_preclose(struct drm_device * dev, DRMFILE filp);
+static irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS);
 
-struct list_head xgi_mempid_list;
 
-/* xgi_ functions.. do not take a state device parameter  */
-static int xgi_post_vbios(struct xgi_ioctl_post_vbios * info);
-static void xgi_proc_create(void);
-static void xgi_proc_remove_all(struct proc_dir_entry *);
-static void xgi_proc_remove(void);
+static struct drm_driver driver = {
+	.driver_features =
+		DRIVER_PCI_DMA | DRIVER_HAVE_DMA | DRIVER_HAVE_IRQ |
+		DRIVER_IRQ_SHARED | DRIVER_SG,
+	.dev_priv_size = sizeof(struct xgi_info),
+	.load = xgi_driver_load,
+	.unload = xgi_driver_unload,
+	.preclose = xgi_driver_preclose,
+	.dma_quiescent = NULL,
+	.irq_preinstall = NULL,
+	.irq_postinstall = NULL,
+	.irq_uninstall = NULL,
+	.irq_handler = xgi_kern_isr,
+	.reclaim_buffers = drm_core_reclaim_buffers,
+	.get_map_ofs = drm_core_get_map_ofs,
+	.get_reg_ofs = drm_core_get_reg_ofs,
+	.ioctls = xgi_ioctls,
+	.dma_ioctl = NULL,
 
-/* xgi_kern_ functions, interfaces used by linux kernel */
-int xgi_kern_probe(struct pci_dev *, const struct pci_device_id *);
+	.fops = {
+		.owner = THIS_MODULE,
+		.open = drm_open,
+		.release = drm_release,
+		.ioctl = drm_ioctl,
+		.mmap = drm_mmap,
+		.poll = drm_poll,
+		.fasync = drm_fasync,
+	},
 
-unsigned int xgi_kern_poll(struct file *, poll_table *);
-int xgi_kern_ioctl(struct inode *, struct file *, unsigned int, unsigned long);
-int xgi_kern_mmap(struct file *, struct vm_area_struct *);
-int xgi_kern_open(struct inode *, struct file *);
-int xgi_kern_release(struct inode *inode, struct file *filp);
+	.pci_driver = {
+		.name = DRIVER_NAME,
+		.id_table = pciidlist,
+		.probe = probe,
+		.remove = __devexit_p(drm_cleanup_pci),
+	},
 
-void xgi_kern_vma_open(struct vm_area_struct *vma);
-void xgi_kern_vma_release(struct vm_area_struct *vma);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 1))
-struct page *xgi_kern_vma_nopage(struct vm_area_struct *vma,
-				 unsigned long address, int *type);
-#else
-struct page *xgi_kern_vma_nopage(struct vm_area_struct *vma,
-				 unsigned long address, int write_access);
-#endif
+	.name = DRIVER_NAME,
+	.desc = DRIVER_DESC,
+	.date = DRIVER_DATE,
+	.major = DRIVER_MAJOR,
+	.minor = DRIVER_MINOR,
+	.patchlevel = DRIVER_PATCHLEVEL,
 
-int xgi_kern_read_card_info(char *, char **, off_t off, int, int *, void *);
-int xgi_kern_read_status(char *, char **, off_t off, int, int *, void *);
-int xgi_kern_read_pcie_info(char *, char **, off_t off, int, int *, void *);
-int xgi_kern_read_version(char *, char **, off_t off, int, int *, void *);
+};
 
-int xgi_kern_ctl_open(struct inode *, struct file *);
-int xgi_kern_ctl_close(struct inode *, struct file *);
-unsigned int xgi_kern_ctl_poll(struct file *, poll_table *);
+static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+{
+	return drm_get_dev(pdev, ent, &driver);
+}
 
-void xgi_kern_isr_bh(unsigned long);
-irqreturn_t xgi_kern_isr(int, void *, struct pt_regs *);
 
-static void xgi_lock_init(struct xgi_info * info);
+static int __init xgi_init(void)
+{
+	driver.num_ioctls = xgi_max_ioctl;
+	return drm_init(&driver, pciidlist);
+}
 
-#if defined(XGI_PM_SUPPORT_ACPI)
-int xgi_kern_acpi_standby(struct pci_dev *, u32);
-int xgi_kern_acpi_resume(struct pci_dev *);
-#endif
+static void __exit xgi_exit(void)
+{
+	drm_exit(&driver);
+}
+
+module_init(xgi_init);
+module_exit(xgi_exit);
+
+MODULE_AUTHOR(DRIVER_AUTHOR);
+MODULE_DESCRIPTION(DRIVER_DESC);
+MODULE_LICENSE("GPL and additional rights");
+
+
+void xgi_kern_isr_bh(struct drm_device *dev);
 
 /*
  * verify access to pci config space wasn't disabled behind our back
@@ -129,1361 +152,206 @@ int xgi_kern_acpi_resume(struct pci_dev *);
 
 static inline void xgi_check_pci_config(struct xgi_info * info, int line)
 {
-	unsigned short cmd, flag = 0;
+	u16 cmd;
+	bool flag = 0;
 
-	// don't do this on the control device, only the actual devices
-	if (info->flags & XGI_FLAG_CONTROL)
-		return;
-
-	pci_read_config_word(info->dev, PCI_COMMAND, &cmd);
+	pci_read_config_word(info->dev->pdev, PCI_COMMAND, &cmd);
 	if (!(cmd & PCI_COMMAND_MASTER)) {
-		XGI_INFO("restoring bus mastering! (%d)\n", line);
+		DRM_INFO("restoring bus mastering! (%d)\n", line);
 		cmd |= PCI_COMMAND_MASTER;
 		flag = 1;
 	}
 
 	if (!(cmd & PCI_COMMAND_MEMORY)) {
-		XGI_INFO("restoring MEM access! (%d)\n", line);
+		DRM_INFO("restoring MEM access! (%d)\n", line);
 		cmd |= PCI_COMMAND_MEMORY;
 		flag = 1;
 	}
 
 	if (flag)
-		pci_write_config_word(info->dev, PCI_COMMAND, cmd);
+		pci_write_config_word(info->dev->pdev, PCI_COMMAND, cmd);
 }
 
-/*
- * struct pci_device_id {
- *  unsigned int vendor, device;        // Vendor and device ID or PCI_ANY_ID
- *  unsigned int subvendor, subdevice;  // Subsystem ID's or PCI_ANY_ID
- *  unsigned int class, class_mask;     // (class,subclass,prog-if) triplet
- *  unsigned long driver_data;          // Data private to the driver
- * };
- */
 
-static struct pci_device_id xgi_dev_table[] = {
-	{
-	 .vendor = PCI_VENDOR_ID_XGI,
-	 .device = PCI_ANY_ID,
-	 .subvendor = PCI_ANY_ID,
-	 .subdevice = PCI_ANY_ID,
-	 .class = (PCI_CLASS_DISPLAY_VGA << 8),
-	 .class_mask = ~0,
-	 },
-	{}
-};
-
-/*
- *  #define MODULE_DEVICE_TABLE(type,name) \
- *      MODULE_GENERIC_TABLE(type##_device,name)
- */
-MODULE_DEVICE_TABLE(pci, xgi_dev_table);
-
-/*
- * struct pci_driver {
- *  struct list_head node;
- *  char *name;
- *  const struct pci_device_id *id_table;   // NULL if wants all devices
- *  int  (*probe)(struct pci_dev *dev, const struct pci_device_id *id); // New device inserted
- *  void (*remove)(struct pci_dev *dev);    // Device removed (NULL if not a hot-plug capable driver)
- *  int  (*save_state)(struct pci_dev *dev, u32 state);     // Save Device Context
- *  int  (*suspend)(struct pci_dev *dev, u32 state);        // Device suspended
- *  int  (*resume)(struct pci_dev *dev);                    // Device woken up
- *  int  (*enable_wake)(struct pci_dev *dev, u32 state, int enable);   // Enable wake event
- * };
- */
-static struct pci_driver xgi_pci_driver = {
-	.name = "xgi",
-	.id_table = xgi_dev_table,
-	.probe = xgi_kern_probe,
-#if defined(XGI_SUPPORT_ACPI)
-	.suspend = xgi_kern_acpi_standby,
-	.resume = xgi_kern_acpi_resume,
-#endif
-};
-
-/*
- * find xgi devices and set initial state
- */
-int xgi_kern_probe(struct pci_dev *dev, const struct pci_device_id *id_table)
+int xgi_bootstrap(DRM_IOCTL_ARGS)
 {
-	struct xgi_info *info;
+	DRM_DEVICE;
+	struct xgi_info *info = dev->dev_private;
+	struct xgi_bootstrap bs;
+	int err;
 
-	if ((dev->vendor != PCI_VENDOR_ID_XGI)
-	    || (dev->class != (PCI_CLASS_DISPLAY_VGA << 8))) {
-		return -1;
+
+	DRM_COPY_FROM_USER_IOCTL(bs, (struct xgi_bootstrap __user *) data,
+				 sizeof(bs));
+
+	if (info->bootstrap_done) {
+		return 0;
 	}
 
-	if (xgi_num_devices == XGI_MAX_DEVICES) {
-		XGI_INFO("maximum device number (%d) reached!\n",
-			 xgi_num_devices);
-		return -1;
-	}
-
-	/* enable io, mem, and bus-mastering in pci config space */
-	if (pci_enable_device(dev) != 0) {
-		XGI_INFO("pci_enable_device failed, aborting\n");
-		return -1;
-	}
-
-	XGI_INFO("maximum device number (%d) reached \n", xgi_num_devices);
-
-	pci_set_master(dev);
-
-	info = &xgi_devices[xgi_num_devices];
-	info->dev = dev;
-
-	xgi_lock_init(info);
-
-	info->mmio.base = XGI_PCI_RESOURCE_START(dev, 1);
-	info->mmio.size = XGI_PCI_RESOURCE_SIZE(dev, 1);
-
-	/* check IO region */
-	if (!request_mem_region(info->mmio.base, info->mmio.size, "xgi")) {
-		XGI_ERROR("cannot reserve MMIO memory\n");
-		goto error_disable_dev;
-	}
-
-	XGI_INFO("info->mmio.base: 0x%lx \n", info->mmio.base);
-	XGI_INFO("info->mmio.size: 0x%lx \n", info->mmio.size);
-
-	info->mmio.vbase = ioremap_nocache(info->mmio.base, info->mmio.size);
-	if (!info->mmio.vbase) {
-		release_mem_region(info->mmio.base, info->mmio.size);
-		XGI_ERROR("info->mmio.vbase failed\n");
-		goto error_disable_dev;
-	}
 	xgi_enable_mmio(info);
 
-	//xgi_enable_ge(info);
+	info->pcie.size = bs.gart_size * (1024 * 1024);
 
-	XGI_INFO("info->mmio.vbase: 0x%p \n", info->mmio.vbase);
-
-	info->fb.base = XGI_PCI_RESOURCE_START(dev, 0);
-	info->fb.size = XGI_PCI_RESOURCE_SIZE(dev, 0);
-
-	XGI_INFO("info->fb.base: 0x%lx \n", info->fb.base);
-	XGI_INFO("info->fb.size: 0x%lx \n", info->fb.size);
-
-	info->fb.size = bIn3cf(0x54) * 8 * 1024 * 1024;
-	XGI_INFO("info->fb.size: 0x%lx \n", info->fb.size);
-
-	/* check frame buffer region
-	   if (!request_mem_region(info->fb.base, info->fb.size, "xgi"))
-	   {
-	   release_mem_region(info->mmio.base, info->mmio.size);
-	   XGI_ERROR("cannot reserve frame buffer memory\n");
-	   goto error_disable_dev;
-	   }
-
-	   info->fb.vbase = ioremap_nocache(info->fb.base, info->fb.size);
-
-	   if (!info->fb.vbase)
-	   {
-	   release_mem_region(info->mmio.base, info->mmio.size);
-	   release_mem_region(info->fb.base, info->fb.size);
-	   XGI_ERROR("info->fb.vbase failed\n");
-	   goto error_disable_dev;
-	   }
-	 */
-	info->fb.vbase = NULL;
-	XGI_INFO("info->fb.vbase: 0x%p \n", info->fb.vbase);
-
-
-	/* check common error condition */
-	if (info->dev->irq == 0) {
-		XGI_ERROR("Can't find an IRQ for your XGI card!  \n");
-		goto error_zero_dev;
-	}
-	XGI_INFO("info->irq: %lx \n", info->dev->irq);
-
-	//xgi_enable_dvi_interrupt(info);
-
-	/* sanity check the IO apertures */
-	if ((info->mmio.base == 0) || (info->mmio.size == 0)
-	    || (info->fb.base == 0) || (info->fb.size == 0)) {
-		XGI_ERROR("The IO regions for your XGI card are invalid.\n");
-
-		if ((info->mmio.base == 0) || (info->mmio.size == 0)) {
-			XGI_ERROR("mmio appears to be wrong: 0x%lx 0x%lx\n",
-				  info->mmio.base, info->mmio.size);
-		}
-
-		if ((info->fb.base == 0) || (info->fb.size == 0)) {
-			XGI_ERROR
-			    ("frame buffer appears to be wrong: 0x%lx 0x%lx\n",
-			     info->fb.base, info->fb.size);
-		}
-
-		goto error_zero_dev;
-	}
-	//xgi_num_devices++;
-
-	return 0;
-
-      error_zero_dev:
-	release_mem_region(info->fb.base, info->fb.size);
-	release_mem_region(info->mmio.base, info->mmio.size);
-
-      error_disable_dev:
-	pci_disable_device(dev);
-	return -1;
-
-}
-
-/*
- * vma operations...
- * this is only called when the vmas are duplicated. this
- * appears to only happen when the process is cloned to create
- * a new process, and not when the process is threaded.
- *
- * increment the usage count for the physical pages, so when
- * this clone unmaps the mappings, the pages are not
- * deallocated under the original process.
- */
-struct vm_operations_struct xgi_vm_ops = {
-	.open = xgi_kern_vma_open,
-	.close = xgi_kern_vma_release,
-	.nopage = xgi_kern_vma_nopage,
-};
-
-void xgi_kern_vma_open(struct vm_area_struct *vma)
-{
-	XGI_INFO("VM: vma_open for 0x%lx - 0x%lx, offset 0x%lx\n",
-		 vma->vm_start, vma->vm_end, XGI_VMA_OFFSET(vma));
-
-	if (XGI_VMA_PRIVATE(vma)) {
-		struct xgi_pcie_block *block =
-		    (struct xgi_pcie_block *) XGI_VMA_PRIVATE(vma);
-		XGI_ATOMIC_INC(block->use_count);
-	}
-}
-
-void xgi_kern_vma_release(struct vm_area_struct *vma)
-{
-	XGI_INFO("VM: vma_release for 0x%lx - 0x%lx, offset 0x%lx\n",
-		 vma->vm_start, vma->vm_end, XGI_VMA_OFFSET(vma));
-
-	if (XGI_VMA_PRIVATE(vma)) {
-		struct xgi_pcie_block *block =
-		    (struct xgi_pcie_block *) XGI_VMA_PRIVATE(vma);
-		XGI_ATOMIC_DEC(block->use_count);
-
-		/*
-		 * if use_count is down to 0, the kernel virtual mapping was freed
-		 * but the underlying physical pages were not, we need to clear the
-		 * bit and free the physical pages.
-		 */
-		if (XGI_ATOMIC_READ(block->use_count) == 0) {
-			// Need TO Finish
-			XGI_VMA_PRIVATE(vma) = NULL;
-		}
-	}
-}
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 1))
-struct page *xgi_kern_vma_nopage(struct vm_area_struct *vma,
-				 unsigned long address, int *type)
-{
-	struct xgi_pcie_block *block = (struct xgi_pcie_block *) XGI_VMA_PRIVATE(vma);
-	struct page *page = NOPAGE_SIGBUS;
-	unsigned long offset = 0;
-	unsigned long page_addr = 0;
-/*
-    XGI_INFO("VM: mmap([0x%lx-0x%lx] off=0x%lx) address: 0x%lx \n",
-              vma->vm_start,
-              vma->vm_end,
-              XGI_VMA_OFFSET(vma),
-              address);
-*/
-	offset = (address - vma->vm_start) + XGI_VMA_OFFSET(vma);
-
-	offset = offset - block->bus_addr;
-
-	offset >>= PAGE_SHIFT;
-
-	page_addr = block->page_table[offset].virt_addr;
-
-	if (xgi_temp) {
-		XGI_INFO("block->bus_addr: 0x%lx block->hw_addr: 0x%lx"
-			 "block->page_count: 0x%lx block->page_order: 0x%lx"
-			 "block->page_table[0x%lx].virt_addr: 0x%lx\n",
-			 block->bus_addr, block->hw_addr,
-			 block->page_count, block->page_order,
-			 offset, block->page_table[offset].virt_addr);
-		xgi_temp = 0;
+	/* Init the resource manager */
+	err = xgi_pcie_heap_init(info);
+	if (err) {
+		DRM_ERROR("xgi_pcie_heap_init() failed\n");
+		return err;
 	}
 
-	if (!page_addr)
-		goto out;	/* hole or end-of-file */
-	page = virt_to_page(page_addr);
+	/* Alloc 1M bytes for cmdbuffer which is flush2D batch array */
+	xgi_cmdlist_initialize(info, 0x100000);
 
-	/* got it, now increment the count */
-	get_page(page);
-      out:
-	return page;
-
-}
-#else
-struct page *xgi_kern_vma_nopage(struct vm_area_struct *vma,
-				 unsigned long address, int write_access)
-{
-	struct xgi_pcie_block *block = (struct xgi_pcie_block *) XGI_VMA_PRIVATE(vma);
-	struct page *page = NOPAGE_SIGBUS;
-	unsigned long offset = 0;
-	unsigned long page_addr = 0;
-/*
-    XGI_INFO("VM: mmap([0x%lx-0x%lx] off=0x%lx) address: 0x%lx \n",
-              vma->vm_start,
-              vma->vm_end,
-              XGI_VMA_OFFSET(vma),
-              address);
-*/
-	offset = (address - vma->vm_start) + XGI_VMA_OFFSET(vma);
-
-	offset = offset - block->bus_addr;
-
-	offset >>= PAGE_SHIFT;
-
-	page_addr = block->page_table[offset].virt_addr;
-
-	if (xgi_temp) {
-		XGI_INFO("block->bus_addr: 0x%lx block->hw_addr: 0x%lx"
-			 "block->page_count: 0x%lx block->page_order: 0x%lx"
-			 "block->page_table[0x%lx].virt_addr: 0x%lx\n",
-			 block->bus_addr, block->hw_addr,
-			 block->page_count, block->page_order,
-			 offset, block->page_table[offset].virt_addr);
-		xgi_temp = 0;
-	}
-
-	if (!page_addr)
-		goto out;	/* hole or end-of-file */
-	page = virt_to_page(page_addr);
-
-	/* got it, now increment the count */
-	get_page(page);
-      out:
-	return page;
-}
-#endif
-
-#if 0
-static struct file_operations xgi_fops = {
-	/* owner:      THIS_MODULE, */
-      poll:xgi_kern_poll,
-      ioctl:xgi_kern_ioctl,
-      mmap:xgi_kern_mmap,
-      open:xgi_kern_open,
-      release:xgi_kern_release,
-};
-#endif
-
-static struct file_operations xgi_fops = {
-	.owner = THIS_MODULE,
-	.poll = xgi_kern_poll,
-	.ioctl = xgi_kern_ioctl,
-	.mmap = xgi_kern_mmap,
-	.open = xgi_kern_open,
-	.release = xgi_kern_release,
-};
-
-static struct xgi_file_private *xgi_alloc_file_private(void)
-{
-	struct xgi_file_private *fp;
-
-	XGI_KMALLOC(fp, sizeof(struct xgi_file_private));
-	if (!fp)
-		return NULL;
-
-	memset(fp, 0, sizeof(struct xgi_file_private));
-
-	/* initialize this file's event queue */
-	init_waitqueue_head(&fp->wait_queue);
-
-	xgi_init_lock(fp->fp_lock);
-
-	return fp;
-}
-
-static void xgi_free_file_private(struct xgi_file_private * fp)
-{
-	if (fp == NULL)
-		return;
-
-	XGI_KFREE(fp, sizeof(struct xgi_file_private));
-}
-
-int xgi_kern_open(struct inode *inode, struct file *filp)
-{
-	struct xgi_info *info = NULL;
-	int dev_num;
-	int result = 0, status;
-
-	/*
-	 * the type and num values are only valid if we are not using devfs.
-	 * However, since we use them to retrieve the device pointer, we
-	 * don't need them with devfs as filp->private_data is already
-	 * initialized
-	 */
-	filp->private_data = xgi_alloc_file_private();
-	if (filp->private_data == NULL)
-		return -ENOMEM;
-
-	XGI_INFO("filp->private_data %p\n", filp->private_data);
-	/*
-	 * for control device, just jump to its open routine
-	 * after setting up the private data
-	 */
-	if (XGI_IS_CONTROL_DEVICE(inode))
-		return xgi_kern_ctl_open(inode, filp);
-
-	/* what device are we talking about? */
-	dev_num = XGI_DEVICE_NUMBER(inode);
-	if (dev_num >= XGI_MAX_DEVICES) {
-		xgi_free_file_private(filp->private_data);
-		filp->private_data = NULL;
-		return -ENODEV;
-	}
-
-	info = &xgi_devices[dev_num];
-
-	XGI_INFO("Jong-xgi_kern_open on device %d\n", dev_num);
-
-	xgi_down(info->info_sem);
-	XGI_CHECK_PCI_CONFIG(info);
-
-	XGI_INFO_FROM_FP(filp) = info;
-
-	/*
-	 * map the memory and allocate isr on first open
-	 */
-
-	if (!(info->flags & XGI_FLAG_OPEN)) {
-		XGI_INFO("info->flags & XGI_FLAG_OPEN \n");
-
-		if (info->dev->device == 0) {
-			XGI_INFO("open of nonexistent device %d\n", dev_num);
-			result = -ENXIO;
-			goto failed;
-		}
-
-		/* initialize struct irqaction */
-		status = request_irq(info->dev->irq, xgi_kern_isr,
-				     SA_INTERRUPT | SA_SHIRQ, "xgi",
-				     (void *)info);
-		if (status != 0) {
-			if (info->dev->irq && (status == -EBUSY)) {
-				XGI_ERROR
-				    ("Tried to get irq %d, but another driver",
-				     (unsigned int)info->dev->irq);
-				XGI_ERROR("has it and is not sharing it.\n");
-			}
-			XGI_ERROR("isr request failed 0x%x\n", status);
-			result = -EIO;
-			goto failed;
-		}
-
-		/*
-		 * #define DECLARE_TASKLET(name, func, data) \
-		 * struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(0), func, data }
-		 */
-		info->tasklet.func = xgi_kern_isr_bh;
-		info->tasklet.data = (unsigned long)info;
-		tasklet_enable(&info->tasklet);
-
-		/* Alloc 1M bytes for cmdbuffer which is flush2D batch array */
-		xgi_cmdlist_initialize(info, 0x100000);
-
-		info->flags |= XGI_FLAG_OPEN;
-	}
-
-	XGI_ATOMIC_INC(info->use_count);
-
-      failed:
-	xgi_up(info->info_sem);
-
-	if ((result) && filp->private_data) {
-		xgi_free_file_private(filp->private_data);
-		filp->private_data = NULL;
-	}
-
-	return result;
-}
-
-int xgi_kern_release(struct inode *inode, struct file *filp)
-{
-	struct xgi_info *info = XGI_INFO_FROM_FP(filp);
-
-	XGI_CHECK_PCI_CONFIG(info);
-
-	/*
-	 * for control device, just jump to its open routine
-	 * after setting up the private data
-	 */
-	if (XGI_IS_CONTROL_DEVICE(inode))
-		return xgi_kern_ctl_close(inode, filp);
-
-	XGI_INFO("Jong-xgi_kern_release on device %d\n",
-		 XGI_DEVICE_NUMBER(inode));
-
-	xgi_down(info->info_sem);
-	if (XGI_ATOMIC_DEC_AND_TEST(info->use_count)) {
-
-		/*
-		 * The usage count for this device has dropped to zero, it can be shut
-		 * down safely; disable its interrupts.
-		 */
-
-		/*
-		 * Disable this device's tasklet to make sure that no bottom half will
-		 * run with undefined device state.
-		 */
-		tasklet_disable(&info->tasklet);
-
-		/*
-		 * Free the IRQ, which may block until all pending interrupt processing
-		 * has completed.
-		 */
-		free_irq(info->dev->irq, (void *)info);
-
-		xgi_cmdlist_cleanup(info);
-
-		/* leave INIT flag alone so we don't reinit every time */
-		info->flags &= ~XGI_FLAG_OPEN;
-	}
-
-	xgi_up(info->info_sem);
-
-	if (FILE_PRIVATE(filp)) {
-		xgi_free_file_private(FILE_PRIVATE(filp));
-		FILE_PRIVATE(filp) = NULL;
-	}
-
+	info->bootstrap_done = 1;
 	return 0;
 }
 
-int xgi_kern_mmap(struct file *filp, struct vm_area_struct *vma)
+
+void xgi_driver_preclose(struct drm_device * dev, DRMFILE filp)
 {
-	//struct inode        *inode = INODE_FROM_FP(filp);
-	struct xgi_info *info = XGI_INFO_FROM_FP(filp);
-	struct xgi_pcie_block *block;
-	int pages = 0;
-	unsigned long prot;
+	struct xgi_info * info = dev->dev_private;
 
-	XGI_INFO("Jong-VM: mmap([0x%lx-0x%lx] off=0x%lx)\n",
-		 vma->vm_start, vma->vm_end, XGI_VMA_OFFSET(vma));
-
-	XGI_CHECK_PCI_CONFIG(info);
-
-	if (XGI_MASK_OFFSET(vma->vm_start)
-	    || XGI_MASK_OFFSET(vma->vm_end)) {
-		XGI_ERROR("VM: bad mmap range: %lx - %lx\n",
-			  vma->vm_start, vma->vm_end);
-		return -ENXIO;
-	}
-
-	pages = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-
-	vma->vm_ops = &xgi_vm_ops;
-
-	/* XGI IO(reg) space */
-	if (IS_IO_OFFSET
-	    (info, XGI_VMA_OFFSET(vma), vma->vm_end - vma->vm_start)) {
-		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-		if (XGI_REMAP_PAGE_RANGE(vma->vm_start,
-					 XGI_VMA_OFFSET(vma),
-					 vma->vm_end - vma->vm_start,
-					 vma->vm_page_prot))
-			return -EAGAIN;
-
-		/* mark it as IO so that we don't dump it on core dump */
-		vma->vm_flags |= VM_IO;
-		XGI_INFO("VM: mmap io space \n");
-	}
-	/* XGI fb space */
-	/* Jong 06/14/2006; moved behind PCIE or modify IS_FB_OFFSET */
-	else if (IS_FB_OFFSET
-		 (info, XGI_VMA_OFFSET(vma), vma->vm_end - vma->vm_start)) {
-		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-		if (XGI_REMAP_PAGE_RANGE(vma->vm_start,
-					 XGI_VMA_OFFSET(vma),
-					 vma->vm_end - vma->vm_start,
-					 vma->vm_page_prot))
-			return -EAGAIN;
-
-		// mark it as IO so that we don't dump it on core dump
-		vma->vm_flags |= VM_IO;
-		XGI_INFO("VM: mmap fb space \n");
-	}
-	/* PCIE allocator */
-	/* XGI_VMA_OFFSET(vma) is offset based on pcie.base (HW address space) */
-	else if (IS_PCIE_OFFSET
-		 (info, XGI_VMA_OFFSET(vma), vma->vm_end - vma->vm_start)) {
-		xgi_down(info->pcie_sem);
-
-		block = xgi_find_pcie_block(info, XGI_VMA_OFFSET(vma));
-
-		if (block == NULL) {
-			XGI_ERROR("couldn't find pre-allocated PCIE memory!\n");
-			xgi_up(info->pcie_sem);
-			return -EAGAIN;
-		}
-
-		if (block->page_count != pages) {
-			XGI_ERROR
-			    ("pre-allocated PCIE memory has wrong number of pages!\n");
-			xgi_up(info->pcie_sem);
-			return -EAGAIN;
-		}
-
-		vma->vm_private_data = block;
-		XGI_ATOMIC_INC(block->use_count);
-		xgi_up(info->pcie_sem);
-
-		/*
-		 * prevent the swapper from swapping it out
-		 * mark the memory i/o so the buffers aren't
-		 * dumped on core dumps */
-		vma->vm_flags |= (VM_LOCKED | VM_IO);
-
-		/* un-cached */
-		prot = pgprot_val(vma->vm_page_prot);
-		/* 
-		   if (boot_cpu_data.x86 > 3)
-		   prot |= _PAGE_PCD | _PAGE_PWT;
-		 */
-		vma->vm_page_prot = __pgprot(prot);
-
-		XGI_INFO("VM: mmap pcie space \n");
-	}
-#if 0
-	else if (IS_FB_OFFSET
-		 (info, XGI_VMA_OFFSET(vma), vma->vm_end - vma->vm_start)) {
-		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-		if (XGI_REMAP_PAGE_RANGE(vma->vm_start,
-					 XGI_VMA_OFFSET(vma),
-					 vma->vm_end - vma->vm_start,
-					 vma->vm_page_prot))
-			return -EAGAIN;
-
-		// mark it as IO so that we don't dump it on core dump
-		vma->vm_flags |= VM_IO;
-		XGI_INFO("VM: mmap fb space \n");
-	}
-#endif
-	else {
-		vma->vm_flags |= (VM_IO | VM_LOCKED);
-		XGI_ERROR("VM: mmap wrong range \n");
-	}
-
-	vma->vm_file = filp;
-
-	return 0;
+	xgi_pcie_free_all(info, filp);
+	xgi_fb_free_all(info, filp);
 }
 
-unsigned int xgi_kern_poll(struct file *filp, struct poll_table_struct *wait)
-{
-	struct xgi_file_private *fp;
-	struct xgi_info *info;
-	unsigned int mask = 0;
-	unsigned long eflags;
-
-	info = XGI_INFO_FROM_FP(filp);
-
-	if (info->device_number == XGI_CONTROL_DEVICE_NUMBER)
-		return xgi_kern_ctl_poll(filp, wait);
-
-	fp = XGI_GET_FP(filp);
-
-	if (!(filp->f_flags & O_NONBLOCK)) {
-		/* add us to the list */
-		poll_wait(filp, &fp->wait_queue, wait);
-	}
-
-	xgi_lock_irqsave(fp->fp_lock, eflags);
-
-	/* wake the user on any event */
-	if (fp->num_events) {
-		XGI_INFO("Hey, an event occured!\n");
-		/*
-		 * trigger the client, when they grab the event,
-		 * we'll decrement the event count
-		 */
-		mask |= (POLLPRI | POLLIN);
-	}
-	xgi_unlock_irqsave(fp->fp_lock, eflags);
-
-	return mask;
-}
-
-int xgi_kern_ioctl(struct inode *inode, struct file *filp,
-		   unsigned int cmd, unsigned long arg)
-{
-	struct xgi_info *info;
-	struct xgi_mem_alloc *alloc = NULL;
-
-	int status = 0;
-	void *arg_copy;
-	int arg_size;
-	int err = 0;
-
-	info = XGI_INFO_FROM_FP(filp);
-
-	XGI_INFO("Jong-ioctl(0x%x, 0x%x, 0x%lx, 0x%x)\n", _IOC_TYPE(cmd),
-		 _IOC_NR(cmd), arg, _IOC_SIZE(cmd));
-	/*
-	 * extract the type and number bitfields, and don't decode
-	 * wrong cmds: return ENOTTY (inappropriate ioctl) before access_ok()
-	 */
-	if (_IOC_TYPE(cmd) != XGI_IOCTL_MAGIC)
-		return -ENOTTY;
-	if (_IOC_NR(cmd) > XGI_IOCTL_MAXNR)
-		return -ENOTTY;
-
-	/*
-	 * the direction is a bitmask, and VERIFY_WRITE catches R/W
-	 * transfers. `Type' is user-oriented, while
-	 * access_ok is kernel-oriented, so the concept of "read" and
-	 * "write" is reversed
-	 */
-	if (_IOC_DIR(cmd) & _IOC_READ) {
-		err = !access_ok(VERIFY_WRITE, (void *)arg, _IOC_SIZE(cmd));
-	} else if (_IOC_DIR(cmd) & _IOC_WRITE) {
-		err = !access_ok(VERIFY_READ, (void *)arg, _IOC_SIZE(cmd));
-	}
-	if (err)
-		return -EFAULT;
-
-	XGI_CHECK_PCI_CONFIG(info);
-
-	arg_size = _IOC_SIZE(cmd);
-	XGI_KMALLOC(arg_copy, arg_size);
-	if (arg_copy == NULL) {
-		XGI_ERROR("failed to allocate ioctl memory\n");
-		return -ENOMEM;
-	}
-
-	/* Jong 05/25/2006 */
-	/* copy_from_user(arg_copy, (void *)arg, arg_size); */
-	if (copy_from_user(arg_copy, (void *)arg, arg_size)) {
-		XGI_ERROR("failed to copyin ioctl data\n");
-		XGI_INFO("Jong-copy_from_user-fail! \n");
-	} else
-		XGI_INFO("Jong-copy_from_user-OK! \n");
-
-	alloc = (struct xgi_mem_alloc *) arg_copy;
-	XGI_INFO("Jong-succeeded in copy_from_user 0x%lx, 0x%x bytes.\n", arg,
-		 arg_size);
-
-	switch (_IOC_NR(cmd)) {
-	case XGI_ESC_POST_VBIOS:
-		XGI_INFO("Jong-xgi_ioctl_post_vbios \n");
-		break;
-	case XGI_ESC_FB_ALLOC:
-		XGI_INFO("Jong-xgi_ioctl_fb_alloc \n");
-		xgi_fb_alloc(info, alloc, 0);
-		break;
-	case XGI_ESC_FB_FREE:
-		XGI_INFO("Jong-xgi_ioctl_fb_free \n");
-		xgi_fb_free(info, *(unsigned long *)arg_copy);
-		break;
-	case XGI_ESC_PCIE_ALLOC:
-		XGI_INFO("Jong-xgi_ioctl_pcie_alloc \n");
-		xgi_pcie_alloc(info, alloc, 0);
-		break;
-	case XGI_ESC_PCIE_FREE:
-		XGI_INFO("Jong-xgi_ioctl_pcie_free: bus_addr = 0x%lx \n",
-			 *((unsigned long *)arg_copy));
-		xgi_pcie_free(info, *((unsigned long *)arg_copy));
-		break;
-	case XGI_ESC_GE_RESET:
-		XGI_INFO("Jong-xgi_ioctl_ge_reset \n");
-		xgi_ge_reset(info);
-		break;
-	case XGI_ESC_DUMP_REGISTER:
-		XGI_INFO("Jong-xgi_ioctl_dump_register \n");
-		xgi_dump_register(info);
-		break;
-	case XGI_ESC_DEBUG_INFO:
-		XGI_INFO("Jong-xgi_ioctl_restore_registers \n");
-		xgi_restore_registers(info);
-		break;
-	case XGI_ESC_SUBMIT_CMDLIST:
-		XGI_INFO("Jong-xgi_ioctl_submit_cmdlist \n");
-		xgi_submit_cmdlist(info, (struct xgi_cmd_info *) arg_copy);
-		break;
-	case XGI_ESC_TEST_RWINKERNEL:
-		XGI_INFO("Jong-xgi_test_rwinkernel \n");
-		xgi_test_rwinkernel(info, *(unsigned long *)arg_copy);
-		break;
-	case XGI_ESC_STATE_CHANGE:
-		XGI_INFO("Jong-xgi_state_change \n");
-		xgi_state_change(info, (struct xgi_state_info *) arg_copy);
-		break;
-	default:
-		XGI_INFO("Jong-xgi_ioctl_default \n");
-		status = -EINVAL;
-		break;
-	}
-
-	if (copy_to_user((void *)arg, arg_copy, arg_size)) {
-		XGI_ERROR("failed to copyout ioctl data\n");
-		XGI_INFO("Jong-copy_to_user-fail! \n");
-	} else
-		XGI_INFO("Jong-copy_to_user-OK! \n");
-
-	XGI_KFREE(arg_copy, arg_size);
-	return status;
-}
-
-/*
- * xgi control driver operations defined here
- */
-int xgi_kern_ctl_open(struct inode *inode, struct file *filp)
-{
-	struct xgi_info *info = &xgi_ctl_device;
-
-	int rc = 0;
-
-	XGI_INFO("Jong-xgi_kern_ctl_open\n");
-
-	xgi_down(info->info_sem);
-	info->device_number = XGI_CONTROL_DEVICE_NUMBER;
-
-	/* save the xgi info in file->private_data */
-	filp->private_data = info;
-
-	if (XGI_ATOMIC_READ(info->use_count) == 0) {
-		init_waitqueue_head(&xgi_ctl_waitqueue);
-	}
-
-	info->flags |= XGI_FLAG_OPEN + XGI_FLAG_CONTROL;
-
-	XGI_ATOMIC_INC(info->use_count);
-	xgi_up(info->info_sem);
-
-	return rc;
-}
-
-int xgi_kern_ctl_close(struct inode *inode, struct file *filp)
-{
-	struct xgi_info *info = XGI_INFO_FROM_FP(filp);
-
-	XGI_INFO("Jong-xgi_kern_ctl_close\n");
-
-	xgi_down(info->info_sem);
-	if (XGI_ATOMIC_DEC_AND_TEST(info->use_count)) {
-		info->flags = 0;
-	}
-	xgi_up(info->info_sem);
-
-	if (FILE_PRIVATE(filp)) {
-		xgi_free_file_private(FILE_PRIVATE(filp));
-		FILE_PRIVATE(filp) = NULL;
-	}
-
-	return 0;
-}
-
-unsigned int xgi_kern_ctl_poll(struct file *filp, poll_table * wait)
-{
-	//struct xgi_info  *info = XGI_INFO_FROM_FP(filp);;
-	unsigned int ret = 0;
-
-	if (!(filp->f_flags & O_NONBLOCK)) {
-		poll_wait(filp, &xgi_ctl_waitqueue, wait);
-	}
-
-	return ret;
-}
-
-/*
- * xgi proc system
- */
-static u8 xgi_find_pcie_capability(struct pci_dev *dev)
-{
-	u16 status;
-	u8 cap_ptr, cap_id;
-
-	pci_read_config_word(dev, PCI_STATUS, &status);
-	status &= PCI_STATUS_CAP_LIST;
-	if (!status)
-		return 0;
-
-	switch (dev->hdr_type) {
-	case PCI_HEADER_TYPE_NORMAL:
-	case PCI_HEADER_TYPE_BRIDGE:
-		pci_read_config_byte(dev, PCI_CAPABILITY_LIST, &cap_ptr);
-		break;
-	default:
-		return 0;
-	}
-
-	do {
-		cap_ptr &= 0xFC;
-		pci_read_config_byte(dev, cap_ptr + PCI_CAP_LIST_ID, &cap_id);
-		pci_read_config_byte(dev, cap_ptr + PCI_CAP_LIST_NEXT,
-				     &cap_ptr);
-	} while (cap_ptr && cap_id != 0xFF);
-
-	return 0;
-}
-
-int xgi_kern_read_card_info(char *page, char **start, off_t off,
-			    int count, int *eof, void *data)
-{
-	struct pci_dev *dev;
-	char *type;
-	int len = 0;
-
-	struct xgi_info *info;
-	info = (struct xgi_info *) data;
-
-	dev = info->dev;
-	if (!dev)
-		return 0;
-
-	type = xgi_find_pcie_capability(dev) ? "PCIE" : "PCI";
-	len += sprintf(page + len, "Card Type: \t %s\n", type);
-
-	XGI_PCI_DEV_PUT(dev);
-	return len;
-}
-
-int xgi_kern_read_version(char *page, char **start, off_t off,
-			  int count, int *eof, void *data)
-{
-	int len = 0;
-
-	len += sprintf(page + len, "XGI version: %s\n", "1.0");
-	len += sprintf(page + len, "GCC version:  %s\n", "3.0");
-
-	return len;
-}
-
-int xgi_kern_read_pcie_info(char *page, char **start, off_t off,
-			    int count, int *eof, void *data)
-{
-	return 0;
-}
-
-int xgi_kern_read_status(char *page, char **start, off_t off,
-			 int count, int *eof, void *data)
-{
-	return 0;
-}
-
-static void xgi_proc_create(void)
-{
-#ifdef CONFIG_PROC_FS
-
-	struct pci_dev *dev;
-	int i = 0;
-	char name[6];
-
-	struct proc_dir_entry *entry;
-	struct proc_dir_entry *proc_xgi_pcie, *proc_xgi_cards;
-
-	struct xgi_info *info;
-	struct xgi_info *xgi_max_devices;
-
-	/* world readable directory */
-	int flags = S_IFDIR | S_IRUGO | S_IXUGO;
-
-	proc_xgi = create_proc_entry("xgi", flags, proc_root_driver);
-	if (!proc_xgi)
-		goto failed;
-
-	proc_xgi_cards = create_proc_entry("cards", flags, proc_xgi);
-	if (!proc_xgi_cards)
-		goto failed;
-
-	proc_xgi_pcie = create_proc_entry("pcie", flags, proc_xgi);
-	if (!proc_xgi_pcie)
-		goto failed;
-
-	/*
-	 * Set the module owner to ensure that the reference
-	 * count reflects accesses to the proc files.
-	 */
-	proc_xgi->owner = THIS_MODULE;
-	proc_xgi_cards->owner = THIS_MODULE;
-	proc_xgi_pcie->owner = THIS_MODULE;
-
-	xgi_max_devices = xgi_devices + XGI_MAX_DEVICES;
-	for (info = xgi_devices; info < xgi_max_devices; info++) {
-		/* world readable file */
-		flags = S_IFREG | S_IRUGO;
-
-		dev = info->dev;
-		if (!dev)
-			break;
-
-		sprintf(name, "%d", i++);
-		entry = create_proc_entry(name, flags, proc_xgi_cards);
-		if (!entry) {
-			XGI_PCI_DEV_PUT(dev);
-			goto failed;
-		}
-
-		entry->data = info;
-		entry->read_proc = xgi_kern_read_card_info;
-		entry->owner = THIS_MODULE;
-
-		if (xgi_find_pcie_capability(dev)) {
-			entry =
-			    create_proc_entry("status", flags, proc_xgi_pcie);
-			if (!entry) {
-				XGI_PCI_DEV_PUT(dev);
-				goto failed;
-			}
-
-			entry->data = info;
-			entry->read_proc = xgi_kern_read_status;
-			entry->owner = THIS_MODULE;
-
-			entry = create_proc_entry("card", flags, proc_xgi_pcie);
-			if (!entry) {
-				XGI_PCI_DEV_PUT(dev);
-				goto failed;
-			}
-
-			entry->data = info;
-			entry->read_proc = xgi_kern_read_pcie_info;
-			entry->owner = THIS_MODULE;
-		}
-
-		XGI_PCI_DEV_PUT(dev);
-	}
-
-	entry = create_proc_entry("version", flags, proc_xgi);
-	if (!entry)
-		goto failed;
-
-	entry->read_proc = xgi_kern_read_version;
-	entry->owner = THIS_MODULE;
-
-	entry = create_proc_entry("host-bridge", flags, proc_xgi_pcie);
-	if (!entry)
-		goto failed;
-
-	entry->data = NULL;
-	entry->read_proc = xgi_kern_read_pcie_info;
-	entry->owner = THIS_MODULE;
-
-	return;
-
-      failed:
-	XGI_ERROR("failed to create /proc entries!\n");
-	xgi_proc_remove_all(proc_xgi);
-#endif
-}
-
-#ifdef CONFIG_PROC_FS
-static void xgi_proc_remove_all(struct proc_dir_entry *entry)
-{
-	while (entry) {
-		struct proc_dir_entry *next = entry->next;
-		if (entry->subdir)
-			xgi_proc_remove_all(entry->subdir);
-		remove_proc_entry(entry->name, entry->parent);
-		if (entry == proc_xgi)
-			break;
-		entry = next;
-	}
-}
-#endif
-
-static void xgi_proc_remove(void)
-{
-#ifdef CONFIG_PROC_FS
-	xgi_proc_remove_all(proc_xgi);
-#endif
-}
 
 /*
  * driver receives an interrupt if someone waiting, then hand it off.
  */
-irqreturn_t xgi_kern_isr(int irq, void *dev_id, struct pt_regs *regs)
+irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS)
 {
-	struct xgi_info *info = (struct xgi_info *) dev_id;
+	struct drm_device *dev = (struct drm_device *) arg;
+//	struct xgi_info *info = dev->dev_private;
 	u32 need_to_run_bottom_half = 0;
 
-	//XGI_INFO("xgi_kern_isr \n");
+	//DRM_INFO("xgi_kern_isr \n");
 
 	//XGI_CHECK_PCI_CONFIG(info);
 
 	//xgi_dvi_irq_handler(info);
 
 	if (need_to_run_bottom_half) {
-		tasklet_schedule(&info->tasklet);
+		drm_locked_tasklet(dev, xgi_kern_isr_bh);
 	}
 
 	return IRQ_HANDLED;
 }
 
-void xgi_kern_isr_bh(unsigned long data)
+void xgi_kern_isr_bh(struct drm_device *dev)
 {
-	struct xgi_info *info = (struct xgi_info *) data;
+	struct xgi_info *info = dev->dev_private;
 
-	XGI_INFO("xgi_kern_isr_bh \n");
+	DRM_INFO("xgi_kern_isr_bh \n");
 
 	//xgi_dvi_irq_handler(info);
 
 	XGI_CHECK_PCI_CONFIG(info);
 }
 
-static void xgi_lock_init(struct xgi_info * info)
+int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 {
-	if (info == NULL)
-		return;
+	struct xgi_info *info;
+	int err;
 
-	spin_lock_init(&info->info_lock);
 
-	sema_init(&info->info_sem, 1);
+	info = drm_alloc(sizeof(*info), DRM_MEM_DRIVER);
+	if (!info)
+		return DRM_ERR(ENOMEM);
+
+	(void) memset(info, 0, sizeof(*info));
+	dev->dev_private = info;
+	info->dev = dev;
+
 	sema_init(&info->fb_sem, 1);
 	sema_init(&info->pcie_sem, 1);
 
-	XGI_ATOMIC_SET(info->use_count, 0);
-}
+	info->mmio.base = drm_get_resource_start(dev, 1);
+	info->mmio.size = drm_get_resource_len(dev, 1);
 
-static void xgi_dev_init(struct xgi_info * info)
-{
-	struct pci_dev *pdev = NULL;
-	struct xgi_dev *dev;
-	int found = 0;
-	u16 pci_cmd;
+	DRM_INFO("mmio base: 0x%lx, size: 0x%x\n",
+		 (unsigned long) info->mmio.base, info->mmio.size);
 
-	XGI_INFO("Enter xgi_dev_init \n");
 
-	//XGI_PCI_FOR_EACH_DEV(pdev)
-	{
-		for (dev = xgidev_list; dev->vendor; dev++) {
-			if ((dev->vendor == pdev->vendor)
-			    && (dev->device == pdev->device)) {
-				u8 rev_id;
-
-				XGI_INFO("dev->vendor = pdev->vendor= %x \n",
-					 dev->vendor);
-				XGI_INFO("dev->device = pdev->device= %x \n",
-					 dev->device);
-
-				xgi_devices[found].dev = pdev;
-
-				pci_read_config_byte(pdev, PCI_REVISION_ID,
-						     rev_id);
-
-				XGI_INFO("PCI_REVISION_ID= %x \n", rev_id);
-
-				pci_read_config_word(pdev, PCI_COMMAND,
-						     &pci_cmd);
-
-				XGI_INFO("PCI_COMMAND = %x \n", pci_cmd);
-
-				break;
-			}
-		}
-	}
-}
-
-/*
- * Export to Linux Kernel
- */
-
-static int __init xgi_init_module(void)
-{
-	struct xgi_info *info = &xgi_devices[xgi_num_devices];
-	int i, result;
-
-	XGI_INFO("Jong-xgi kernel driver %s initializing\n", XGI_DRV_VERSION);
-	//SET_MODULE_OWNER(&xgi_fops);
-
-	memset(xgi_devices, 0, sizeof(xgi_devices));
-
-	if (pci_register_driver(&xgi_pci_driver) < 0) {
-		pci_unregister_driver(&xgi_pci_driver);
-		XGI_ERROR("no XGI graphics adapter found\n");
-		return -ENODEV;
+	if ((info->mmio.base == 0) || (info->mmio.size == 0)) {
+		DRM_ERROR("mmio appears to be wrong: 0x%lx 0x%x\n",
+			  (unsigned long) info->mmio.base, info->mmio.size);
+		return DRM_ERR(EINVAL);
 	}
 
-	XGI_INFO("Jong-xgi_devices[%d].fb.base.: 0x%lx \n", xgi_num_devices,
-		 xgi_devices[xgi_num_devices].fb.base);
-	XGI_INFO("Jong-xgi_devices[%d].fb.size.: 0x%lx \n", xgi_num_devices,
-		 xgi_devices[xgi_num_devices].fb.size);
 
-/* Jong 07/27/2006; test for ubuntu */
-/*
-#ifdef CONFIG_DEVFS_FS
-
-    XGI_INFO("Jong-Use devfs \n");
-    do
-    {
-        xgi_devfs_handles[0] = XGI_DEVFS_REGISTER("xgi", 0);
-        if (xgi_devfs_handles[0] == NULL)
-        {
-            result = -ENOMEM;
-            XGI_ERROR("devfs register failed\n");
-            goto failed;
-        }
-    } while(0);
-	#else *//* no devfs, do it the "classic" way  */
-
-	XGI_INFO("Jong-Use non-devfs \n");
-	/*
-	 * Register your major, and accept a dynamic number. This is the
-	 * first thing to do, in order to avoid releasing other module's
-	 * fops in scull_cleanup_module()
-	 */
-	result = XGI_REGISTER_CHRDEV(xgi_major, "xgi", &xgi_fops);
-	if (result < 0) {
-		XGI_ERROR("register chrdev failed\n");
-		pci_unregister_driver(&xgi_pci_driver);
-		return result;
-	}
-	if (xgi_major == 0)
-		xgi_major = result;	/* dynamic */
-
-	/* #endif *//* CONFIG_DEVFS_FS */
-
-	XGI_INFO("Jong-major number %d\n", xgi_major);
-
-	/* instantiate tasklets */
-	for (i = 0; i < XGI_MAX_DEVICES; i++) {
-		/*
-		 * We keep one tasklet per card to avoid latency issues with more
-		 * than one device; no two instances of a single tasklet are ever
-		 * executed concurrently.
-		 */
-		XGI_ATOMIC_SET(xgi_devices[i].tasklet.count, 1);
+	err = drm_addmap(dev, info->mmio.base, info->mmio.size,
+			 _DRM_REGISTERS, _DRM_KERNEL | _DRM_READ_ONLY,
+			 &info->mmio_map);
+	if (err) {
+		DRM_ERROR("Unable to map MMIO region: %d\n", err);
+		return err;
 	}
 
-	/* init the xgi control device */
-	{
-		struct xgi_info *info_ctl = &xgi_ctl_device;
-		xgi_lock_init(info_ctl);
+	xgi_enable_mmio(info);
+	//xgi_enable_ge(info);
+
+	info->fb.base = drm_get_resource_start(dev, 0);
+	info->fb.size = drm_get_resource_len(dev, 0);
+
+	DRM_INFO("fb   base: 0x%lx, size: 0x%x\n",
+		 (unsigned long) info->fb.base, info->fb.size);
+
+	info->fb.size = IN3CFB(info->mmio_map, 0x54) * 8 * 1024 * 1024;
+
+	DRM_INFO("fb   base: 0x%lx, size: 0x%x (probed)\n",
+		 (unsigned long) info->fb.base, info->fb.size);
+
+
+	if ((info->fb.base == 0) || (info->fb.size == 0)) {
+		DRM_ERROR("frame buffer appears to be wrong: 0x%lx 0x%x\n",
+			  (unsigned long) info->fb.base, info->fb.size);
+		return DRM_ERR(EINVAL);
 	}
+
+
+
+	xgi_mem_block_cache = kmem_cache_create("xgi_mem_block",
+						sizeof(struct xgi_mem_block),
+						0,
+						SLAB_HWCACHE_ALIGN,
+						NULL, NULL);
+	if (xgi_mem_block_cache == NULL) {
+		return DRM_ERR(ENOMEM);
+	}
+
 
 	/* Init the resource manager */
-	INIT_LIST_HEAD(&xgi_mempid_list);
-	if (!xgi_fb_heap_init(info)) {
-		XGI_ERROR("xgi_fb_heap_init() failed\n");
-		result = -EIO;
-		goto failed;
+	err = xgi_fb_heap_init(info);
+	if (err) {
+		DRM_ERROR("xgi_fb_heap_init() failed\n");
+		return err;
 	}
-
-	/* Init the resource manager */
-	if (!xgi_pcie_heap_init(info)) {
-		XGI_ERROR("xgi_pcie_heap_init() failed\n");
-		result = -EIO;
-		goto failed;
-	}
-
-	/* create /proc/driver/xgi */
-	xgi_proc_create();
-
-#if defined(DEBUG)
-	inter_module_register("xgi_devices", THIS_MODULE, xgi_devices);
-#endif
 
 	return 0;
+}
 
-      failed:
-#ifdef CONFIG_DEVFS_FS
-	XGI_DEVFS_REMOVE_CONTROL();
-	XGI_DEVFS_REMOVE_DEVICE(xgi_num_devices);
-#endif
+int xgi_driver_unload(struct drm_device *dev)
+{
+	struct xgi_info * info = dev->dev_private;
 
-	if (XGI_UNREGISTER_CHRDEV(xgi_major, "xgi") < 0)
-		XGI_ERROR("unregister xgi chrdev failed\n");
-
-	for (i = 0; i < xgi_num_devices; i++) {
-		if (xgi_devices[i].dev) {
-			release_mem_region(xgi_devices[i].fb.base,
-					   xgi_devices[i].fb.size);
-			release_mem_region(xgi_devices[i].mmio.base,
-					   xgi_devices[i].mmio.size);
-		}
+	xgi_cmdlist_cleanup(info);
+	if (info->fb_map != NULL) {
+		drm_rmmap(info->dev, info->fb_map);
 	}
 
-	pci_unregister_driver(&xgi_pci_driver);
-	return result;
-
-	return 1;
-}
-
-void __exit xgi_exit_module(void)
-{
-	int i;
-
-#ifdef CONFIG_DEVFS_FS
-	XGI_DEVFS_REMOVE_DEVICE(xgi_num_devices);
-#endif
-
-	if (XGI_UNREGISTER_CHRDEV(xgi_major, "xgi") < 0)
-		XGI_ERROR("unregister xgi chrdev failed\n");
-
-	XGI_INFO("Jong-unregister xgi chrdev scceeded\n");
-	for (i = 0; i < XGI_MAX_DEVICES; i++) {
-		if (xgi_devices[i].dev) {
-			/* clean up the flush2D batch array */
-			xgi_cmdlist_cleanup(&xgi_devices[i]);
-
-			if (xgi_devices[i].fb.vbase != NULL) {
-				iounmap(xgi_devices[i].fb.vbase);
-				xgi_devices[i].fb.vbase = NULL;
-			}
-			if (xgi_devices[i].mmio.vbase != NULL) {
-				iounmap(xgi_devices[i].mmio.vbase);
-				xgi_devices[i].mmio.vbase = NULL;
-			}
-			//release_mem_region(xgi_devices[i].fb.base, xgi_devices[i].fb.size);
-			//XGI_INFO("release frame buffer mem region scceeded\n");
-
-			release_mem_region(xgi_devices[i].mmio.base,
-					   xgi_devices[i].mmio.size);
-			XGI_INFO("release MMIO mem region scceeded\n");
-
-			xgi_fb_heap_cleanup(&xgi_devices[i]);
-			XGI_INFO("xgi_fb_heap_cleanup scceeded\n");
-
-			xgi_pcie_heap_cleanup(&xgi_devices[i]);
-			XGI_INFO("xgi_pcie_heap_cleanup scceeded\n");
-
-			XGI_PCI_DISABLE_DEVICE(xgi_devices[i].dev);
-		}
+	if (info->mmio_map != NULL) {
+		drm_rmmap(info->dev, info->mmio_map);
 	}
 
-	pci_unregister_driver(&xgi_pci_driver);
+	xgi_mem_heap_cleanup(&info->fb_heap);
+	xgi_mem_heap_cleanup(&info->pcie_heap);
+	xgi_pcie_lut_cleanup(info);
 
-	/* remove /proc/driver/xgi */
-	xgi_proc_remove();
+	if (xgi_mem_block_cache) {
+		kmem_cache_destroy(xgi_mem_block_cache);
+		xgi_mem_block_cache = NULL;
+	}
 
-#if defined(DEBUG)
-	inter_module_unregister("xgi_devices");
-#endif
+	return 0;
 }
-
-module_init(xgi_init_module);
-module_exit(xgi_exit_module);
-
-#if defined(XGI_PM_SUPPORT_ACPI)
-int xgi_acpi_event(struct pci_dev *dev, u32 state)
-{
-	return 1;
-}
-
-int xgi_kern_acpi_standby(struct pci_dev *dev, u32 state)
-{
-	return 1;
-}
-
-int xgi_kern_acpi_resume(struct pci_dev *dev)
-{
-	return 1;
-}
-#endif
-
-MODULE_AUTHOR("Andrea Zhang <andrea_zhang@macrosynergy.com>");
-MODULE_DESCRIPTION("xgi kernel driver for xgi cards");
-MODULE_LICENSE("GPL");

@@ -30,9 +30,7 @@
 #define _XGI_MISC_H_
 
 extern void xgi_dump_register(struct xgi_info * info);
-extern void xgi_ge_reset(struct xgi_info * info);
 
-extern void xgi_restore_registers(struct xgi_info * info);
 extern bool xgi_ge_irq_handler(struct xgi_info * info);
 extern bool xgi_crt_irq_handler(struct xgi_info * info);
 extern bool xgi_dvi_irq_handler(struct xgi_info * info);

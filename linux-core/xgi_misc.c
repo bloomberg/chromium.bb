@@ -26,16 +26,20 @@
  * DEALINGS IN THE SOFTWARE.												
  ***************************************************************************/
 
-#include "xgi_linux.h"
 #include "xgi_drv.h"
 #include "xgi_regs.h"
-#include "xgi_pcie.h"
 
-void xgi_ge_reset(struct xgi_info * info)
+int xgi_ge_reset_ioctl(DRM_IOCTL_ARGS)
 {
+	DRM_DEVICE;
+	struct xgi_info *info = dev->dev_private;
+
 	xgi_disable_ge(info);
 	xgi_enable_ge(info);
+
+	return 0;
 }
+
 
 /*
  * irq functions
@@ -113,7 +117,7 @@ static void xgi_ge_hang_reset(volatile u8 *mmio_vbase)
 			u8 old_index;
 			u8 old_36;
 
-			XGI_INFO("Can not reset back 0x%x!\n",
+			DRM_INFO("Can not reset back 0x%x!\n",
 				 ge_3d_status[0x00]);
 
 			*(mmio_vbase + 0xb057) = 0;
@@ -151,7 +155,7 @@ static void xgi_ge_hang_reset(volatile u8 *mmio_vbase)
 	
 bool xgi_ge_irq_handler(struct xgi_info * info)
 {
-	volatile u8 *const mmio_vbase = info->mmio.vbase;
+	volatile u8 *const mmio_vbase = info->mmio_map->handle;
 	volatile u32 *const ge_3d_status =
 		(volatile u32 *)(mmio_vbase + 0x2800);
 	const u32 int_status = ge_3d_status[4];
@@ -185,7 +189,7 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 						continue_int_count = 0;
 
 						/* GE Hung up, need reset. */
-						XGI_INFO("Reset GE!\n");
+						DRM_INFO("Reset GE!\n");
 
 						xgi_ge_hang_reset(mmio_vbase);
 					}
@@ -205,23 +209,23 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 bool xgi_crt_irq_handler(struct xgi_info * info)
 {
 	bool ret = FALSE;
-	u8 save_3ce = bReadReg(0x3ce);
+	u8 save_3ce = DRM_READ8(info->mmio_map, 0x3ce);
 
-	if (bIn3cf(0x37) & 0x01)	// CRT1 interrupt just happened
+	if (IN3CFB(info->mmio_map, 0x37) & 0x01)	// CRT1 interrupt just happened
 	{
 		u8 op3cf_3d;
 		u8 op3cf_37;
 
 		// What happened?
-		op3cf_37 = bIn3cf(0x37);
+		op3cf_37 = IN3CFB(info->mmio_map, 0x37);
 
 		// Clear CRT interrupt
-		op3cf_3d = bIn3cf(0x3d);
-		bOut3cf(0x3d, (op3cf_3d | 0x04));
-		bOut3cf(0x3d, (op3cf_3d & ~0x04));
+		op3cf_3d = IN3CFB(info->mmio_map, 0x3d);
+		OUT3CFB(info->mmio_map, 0x3d, (op3cf_3d | 0x04));
+		OUT3CFB(info->mmio_map, 0x3d, (op3cf_3d & ~0x04));
 		ret = TRUE;
 	}
-	bWriteReg(0x3ce, save_3ce);
+	DRM_WRITE8(info->mmio_map, 0x3ce, save_3ce);
 
 	return (ret);
 }
@@ -229,35 +233,35 @@ bool xgi_crt_irq_handler(struct xgi_info * info)
 bool xgi_dvi_irq_handler(struct xgi_info * info)
 {
 	bool ret = FALSE;
-	u8 save_3ce = bReadReg(0x3ce);
+	const u8 save_3ce = DRM_READ8(info->mmio_map, 0x3ce);
 
-	if (bIn3cf(0x38) & 0x20)	// DVI interrupt just happened
-	{
+	if (IN3CFB(info->mmio_map, 0x38) & 0x20) {	// DVI interrupt just happened
+		const u8 save_3x4 = DRM_READ8(info->mmio_map, 0x3d4);
 		u8 op3cf_39;
 		u8 op3cf_37;
 		u8 op3x5_5a;
-		u8 save_3x4 = bReadReg(0x3d4);;
 
 		// What happened?
-		op3cf_37 = bIn3cf(0x37);
+		op3cf_37 = IN3CFB(info->mmio_map, 0x37);
 
 		//Notify BIOS that DVI plug/unplug happened
-		op3x5_5a = bIn3x5(0x5a);
-		bOut3x5(0x5a, op3x5_5a & 0xf7);
+		op3x5_5a = IN3X5B(info->mmio_map, 0x5a);
+		OUT3X5B(info->mmio_map, 0x5a, op3x5_5a & 0xf7);
 
-		bWriteReg(0x3d4, save_3x4);
+		DRM_WRITE8(info->mmio_map, 0x3d4, save_3x4);
 
 		// Clear DVI interrupt
-		op3cf_39 = bIn3cf(0x39);
-		bOut3c5(0x39, (op3cf_39 & ~0x01));	//Set 3cf.39 bit 0 to 0
-		bOut3c5(0x39, (op3cf_39 | 0x01));	//Set 3cf.39 bit 0 to 1
+		op3cf_39 = IN3CFB(info->mmio_map, 0x39);
+		OUT3C5B(info->mmio_map, 0x39, (op3cf_39 & ~0x01));	//Set 3cf.39 bit 0 to 0
+		OUT3C5B(info->mmio_map, 0x39, (op3cf_39 | 0x01));	//Set 3cf.39 bit 0 to 1
 
 		ret = TRUE;
 	}
-	bWriteReg(0x3ce, save_3ce);
+	DRM_WRITE8(info->mmio_map, 0x3ce, save_3ce);
 
 	return (ret);
 }
+
 
 void xgi_dump_register(struct xgi_info * info)
 {
@@ -281,7 +285,7 @@ void xgi_dump_register(struct xgi_info * info)
 		printk("%1x ", i);
 
 		for (j = 0; j < 0x10; j++) {
-			temp = bIn3c5(i * 0x10 + j);
+			temp = IN3C5B(info->mmio_map, i * 0x10 + j);
 			printk("%3x", temp);
 		}
 		printk("\r\n");
@@ -303,7 +307,7 @@ void xgi_dump_register(struct xgi_info * info)
 		printk("%1x ", i);
 
 		for (j = 0; j < 0x10; j++) {
-			temp = bIn3x5(i * 0x10 + j);
+			temp = IN3X5B(info->mmio_map, i * 0x10 + j);
 			printk("%3x", temp);
 		}
 		printk("\r\n");
@@ -325,7 +329,7 @@ void xgi_dump_register(struct xgi_info * info)
 		printk("%1x ", i);
 
 		for (j = 0; j < 0x10; j++) {
-			temp = bIn3cf(i * 0x10 + j);
+			temp = IN3CFB(info->mmio_map, i * 0x10 + j);
 			printk("%3x", temp);
 		}
 		printk("\r\n");
@@ -346,7 +350,7 @@ void xgi_dump_register(struct xgi_info * info)
 		printk("%1x ", i);
 
 		for (j = 0; j < 0x10; j++) {
-			temp = bReadReg(0xB000 + i * 0x10 + j);
+			temp = DRM_READ8(info->mmio_map, 0xB000 + i * 0x10 + j);
 			printk("%3x", temp);
 		}
 		printk("\r\n");
@@ -366,7 +370,7 @@ void xgi_dump_register(struct xgi_info * info)
 		printk("%1x ", i);
 
 		for (j = 0; j < 0x10; j++) {
-			temp = bReadReg(0x2200 + i * 0x10 + j);
+			temp = DRM_READ8(info->mmio_map, 0x2200 + i * 0x10 + j);
 			printk("%3x", temp);
 		}
 		printk("\r\n");
@@ -386,7 +390,7 @@ void xgi_dump_register(struct xgi_info * info)
 		printk("%1x ", i);
 
 		for (j = 0; j < 0x10; j++) {
-			temp = bReadReg(0x2300 + i * 0x10 + j);
+			temp = DRM_READ8(info->mmio_map, 0x2300 + i * 0x10 + j);
 			printk("%3x", temp);
 		}
 		printk("\r\n");
@@ -406,7 +410,7 @@ void xgi_dump_register(struct xgi_info * info)
 		printk("%1x ", i);
 
 		for (j = 0; j < 0x10; j++) {
-			temp = bReadReg(0x2400 + i * 0x10 + j);
+			temp = DRM_READ8(info->mmio_map, 0x2400 + i * 0x10 + j);
 			printk("%3x", temp);
 		}
 		printk("\r\n");
@@ -426,17 +430,34 @@ void xgi_dump_register(struct xgi_info * info)
 		printk("%1x ", i);
 
 		for (j = 0; j < 0x10; j++) {
-			temp = bReadReg(0x2800 + i * 0x10 + j);
+			temp = DRM_READ8(info->mmio_map, 0x2800 + i * 0x10 + j);
 			printk("%3x", temp);
 		}
 		printk("\r\n");
 	}
 }
 
-void xgi_restore_registers(struct xgi_info * info)
+
+int xgi_dump_register_ioctl(DRM_IOCTL_ARGS)
 {
-	bOut3x5(0x13, 0);
-	bOut3x5(0x8b, 2);
+	DRM_DEVICE;
+	struct xgi_info *info = dev->dev_private;
+
+	xgi_dump_register(info);
+
+	return 0;
+}
+
+
+int xgi_restore_registers_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	struct xgi_info *info = dev->dev_private;
+
+	OUT3X5B(info->mmio_map, 0x13, 0);
+	OUT3X5B(info->mmio_map, 0x8b, 2);
+
+	return 0;
 }
 
 void xgi_waitfor_pci_idle(struct xgi_info * info)
@@ -446,60 +467,10 @@ void xgi_waitfor_pci_idle(struct xgi_info * info)
 
 	int idleCount = 0;
 	while (idleCount < 5) {
-		if (dwReadReg(WHOLD_GE_STATUS) & IDLE_MASK) {
+		if (DRM_READ32(info->mmio_map, WHOLD_GE_STATUS) & IDLE_MASK) {
 			idleCount = 0;
 		} else {
 			idleCount++;
 		}
 	}
-}
-
-
-/*memory collect function*/
-extern struct list_head xgi_mempid_list;
-void xgi_mem_collect(struct xgi_info * info, unsigned int *pcnt)
-{
-	struct xgi_mem_pid *block;
-	struct xgi_mem_pid *next;
-	struct task_struct *p, *find;
-	unsigned int cnt = 0;
-
-	list_for_each_entry_safe(block, next, &xgi_mempid_list, list) {
-
-		find = NULL;
-		XGI_SCAN_PROCESS(p) {
-			if (p->pid == block->pid) {
-				XGI_INFO
-				    ("[!]Find active pid:%ld state:%ld location:%d addr:0x%lx! \n",
-				     block->pid, p->state,
-				     block->location,
-				     block->bus_addr);
-				find = p;
-				if (block->bus_addr == 0xFFFFFFFF)
-					++cnt;
-				break;
-			}
-		}
-		if (!find) {
-			if (block->location == XGI_MEMLOC_LOCAL) {
-				XGI_INFO
-				    ("Memory ProcessID free fb and delete one block pid:%ld addr:0x%lx successfully! \n",
-				     block->pid, block->bus_addr);
-				xgi_fb_free(info, block->bus_addr);
-			} else if (block->bus_addr != 0xFFFFFFFF) {
-				XGI_INFO
-				    ("Memory ProcessID free pcie and delete one block pid:%ld addr:0x%lx successfully! \n",
-				     block->pid, block->bus_addr);
-				xgi_pcie_free(info, block->bus_addr);
-			} else {
-				/*only delete the memory block */
-				list_del(&block->list);
-				XGI_INFO
-				    ("Memory ProcessID delete one pcie block pid:%ld successfully! \n",
-				     block->pid);
-				kfree(block);
-			}
-		}
-	}
-	*pcnt = cnt;
 }

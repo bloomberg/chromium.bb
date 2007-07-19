@@ -60,16 +60,15 @@ typedef enum {
 struct xgi_cmdring_info {
 	unsigned int _cmdRingSize;
 	u32 _cmdRingBuffer;
-	unsigned long _cmdRingBusAddr;
+	unsigned long _cmdRingAllocOffset;
 	u32 _lastBatchStartAddr;
 	u32 _cmdRingOffset;
 };
 
 extern int xgi_cmdlist_initialize(struct xgi_info * info, size_t size);
 
-extern void xgi_submit_cmdlist(struct xgi_info * info, struct xgi_cmd_info * pCmdInfo);
-
-extern void xgi_state_change(struct xgi_info * info, struct xgi_state_info * pStateInfo);
+extern int xgi_state_change(struct xgi_info * info, unsigned int to,
+	unsigned int from);
 
 extern void xgi_cmdlist_cleanup(struct xgi_info * info);
 

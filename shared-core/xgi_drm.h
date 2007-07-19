@@ -44,6 +44,15 @@ struct drm_xgi_sarea {
 	unsigned int scrn_pitch;
 };
 
+
+struct xgi_bootstrap {
+	/**
+	 * Size of PCI-e GART range in megabytes.
+	 */
+	unsigned int gart_size;
+};
+
+
 enum xgi_mem_location {
 	XGI_MEMLOC_NON_LOCAL = 0,
 	XGI_MEMLOC_LOCAL = 1,
@@ -62,9 +71,9 @@ struct xgi_mem_alloc {
 	__u32 hw_addr;
 
 	/**
-	 * Physical address of the memory from the processor's point of view.
+	 * Offset of the allocation in the mapping.
 	 */
-	unsigned long bus_addr;
+	unsigned long offset;
 };
 
 enum xgi_batch_type {
@@ -95,38 +104,31 @@ struct xgi_state_info {
  * Ioctl definitions
  */
 
-#define XGI_IOCTL_MAGIC             'x'	/* use 'x' as magic number */
+#define DRM_XGI_BOOTSTRAP           0
+#define DRM_XGI_FB_ALLOC            1
+#define DRM_XGI_FB_FREE             2
+#define DRM_XGI_PCIE_ALLOC          3
+#define DRM_XGI_PCIE_FREE           4
+#define DRM_XGI_SUBMIT_CMDLIST      5
+#define DRM_XGI_GE_RESET            6
+#define DRM_XGI_DUMP_REGISTER       7
+#define DRM_XGI_DEBUG_INFO          8
+#define DRM_XGI_TEST_RWINKERNEL     9
+#define DRM_XGI_STATE_CHANGE        10
 
-#define XGI_IOCTL_BASE              0
-#define XGI_ESC_POST_VBIOS          (XGI_IOCTL_BASE + 0)
+#define XGI_IOCTL_BOOTSTRAP         DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_BOOTSTRAP, struct xgi_bootstrap)
 
-#define XGI_ESC_FB_ALLOC            (XGI_IOCTL_BASE + 1)
-#define XGI_ESC_FB_FREE             (XGI_IOCTL_BASE + 2)
-#define XGI_ESC_PCIE_ALLOC          (XGI_IOCTL_BASE + 3)
-#define XGI_ESC_PCIE_FREE           (XGI_IOCTL_BASE + 4)
-#define XGI_ESC_SUBMIT_CMDLIST      (XGI_IOCTL_BASE + 5)
-#define XGI_ESC_GE_RESET            (XGI_IOCTL_BASE + 6)
-#define XGI_ESC_DUMP_REGISTER       (XGI_IOCTL_BASE + 7)
-#define XGI_ESC_DEBUG_INFO          (XGI_IOCTL_BASE + 8)
-#define XGI_ESC_TEST_RWINKERNEL     (XGI_IOCTL_BASE + 9)
-#define XGI_ESC_STATE_CHANGE        (XGI_IOCTL_BASE + 10)
+#define XGI_IOCTL_FB_ALLOC          DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_FB_ALLOC, struct xgi_mem_alloc)
+#define XGI_IOCTL_FB_FREE           DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_FB_FREE, __u32)
 
-#define XGI_IOCTL_POST_VBIOS        _IO(XGI_IOCTL_MAGIC, XGI_ESC_POST_VBIOS)
+#define XGI_IOCTL_PCIE_ALLOC        DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_PCIE_ALLOC, struct xgi_mem_alloc)
+#define XGI_IOCTL_PCIE_FREE         DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_PCIE_FREE, __u32)
 
-#define XGI_IOCTL_FB_ALLOC          _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_FB_ALLOC, struct xgi_mem_alloc)
-#define XGI_IOCTL_FB_FREE           _IOW(XGI_IOCTL_MAGIC, XGI_ESC_FB_FREE, unsigned long)
-
-#define XGI_IOCTL_PCIE_ALLOC        _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_ALLOC, struct xgi_mem_alloc)
-#define XGI_IOCTL_PCIE_FREE         _IOW(XGI_IOCTL_MAGIC, XGI_ESC_PCIE_FREE, unsigned long)
-
-#define XGI_IOCTL_GE_RESET          _IO(XGI_IOCTL_MAGIC, XGI_ESC_GE_RESET)
-#define XGI_IOCTL_DUMP_REGISTER     _IO(XGI_IOCTL_MAGIC, XGI_ESC_DUMP_REGISTER)
-#define XGI_IOCTL_DEBUG_INFO        _IO(XGI_IOCTL_MAGIC, XGI_ESC_DEBUG_INFO)
-
-#define XGI_IOCTL_SUBMIT_CMDLIST    _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_SUBMIT_CMDLIST, struct xgi_cmd_info)
-#define XGI_IOCTL_TEST_RWINKERNEL   _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_TEST_RWINKERNEL, unsigned long)
-#define XGI_IOCTL_STATE_CHANGE      _IOWR(XGI_IOCTL_MAGIC, XGI_ESC_STATE_CHANGE, struct xgi_state_info)
-
-#define XGI_IOCTL_MAXNR          30
+#define XGI_IOCTL_GE_RESET          DRM_IO(DRM_COMMAND_BASE + DRM_XGI_GE_RESET)
+#define XGI_IOCTL_DUMP_REGISTER     DRM_IO(DRM_COMMAND_BASE + DRM_XGI_DUMP_REGISTER)
+#define XGI_IOCTL_DEBUG_INFO        DRM_IO(DRM_COMMAND_BASE + DRM_XGI_DEBUG_INFO)
+#define XGI_IOCTL_SUBMIT_CMDLIST    DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_SUBMIT_CMDLIST, struct xgi_cmd_info)
+#define XGI_IOCTL_TEST_RWINKERNEL   DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_TEST_RWINKERNEL, __u32)
+#define XGI_IOCTL_STATE_CHANGE      DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_STATE_CHANGE, struct xgi_state_info)
 
 #endif /* _XGI_DRM_H_ */

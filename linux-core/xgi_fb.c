@@ -26,343 +26,126 @@
  * DEALINGS IN THE SOFTWARE.												
  ***************************************************************************/
 
-#include "xgi_linux.h"
 #include "xgi_drv.h"
-#include "xgi_fb.h"
 
 #define XGI_FB_HEAP_START 0x1000000
 
-static struct xgi_mem_heap *xgi_fb_heap;
-static struct kmem_cache *xgi_fb_cache_block = NULL;
-extern struct list_head xgi_mempid_list;
+struct kmem_cache *xgi_mem_block_cache = NULL;
 
 static struct xgi_mem_block *xgi_mem_new_node(void);
-static struct xgi_mem_block *xgi_mem_alloc(struct xgi_info * info, unsigned long size);
-static struct xgi_mem_block *xgi_mem_free(struct xgi_info * info, unsigned long offset);
 
-void xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc, 
-		  pid_t pid)
-{
-	struct xgi_mem_block *block;
-	struct xgi_mem_pid *mempid_block;
 
-	if (alloc->is_front) {
-		alloc->location = XGI_MEMLOC_LOCAL;
-		alloc->bus_addr = info->fb.base;
-		alloc->hw_addr = 0;
-		XGI_INFO
-		    ("Video RAM allocation on front buffer successfully! \n");
-	} else {
-		xgi_down(info->fb_sem);
-		block = xgi_mem_alloc(info, alloc->size);
-		xgi_up(info->fb_sem);
-
-		if (block == NULL) {
-			alloc->location = XGI_MEMLOC_LOCAL;
-			alloc->size = 0;
-			alloc->bus_addr = 0;
-			alloc->hw_addr = 0;
-			XGI_ERROR("Video RAM allocation failed\n");
-		} else {
-			XGI_INFO("Video RAM allocation succeeded: 0x%p\n",
-				 (char *)block->offset);
-			alloc->location = XGI_MEMLOC_LOCAL;
-			alloc->size = block->size;
-			alloc->bus_addr = info->fb.base + block->offset;
-			alloc->hw_addr = block->offset;
-
-			/* manage mempid */
-			mempid_block =
-			    kmalloc(sizeof(struct xgi_mem_pid), GFP_KERNEL);
-			mempid_block->location = XGI_MEMLOC_LOCAL;
-			mempid_block->bus_addr = alloc->bus_addr;
-			mempid_block->pid = pid;
-
-			if (!mempid_block)
-				XGI_ERROR("mempid_block alloc failed\n");
-
-			XGI_INFO
-			    ("Memory ProcessID add one fb block pid:%ld successfully! \n",
-			     mempid_block->pid);
-			list_add(&mempid_block->list, &xgi_mempid_list);
-		}
-	}
-}
-
-void xgi_fb_free(struct xgi_info * info, unsigned long bus_addr)
-{
-	struct xgi_mem_block *block;
-	unsigned long offset = bus_addr - info->fb.base;
-	struct xgi_mem_pid *mempid_block;
-	struct xgi_mem_pid *mempid_freeblock = NULL;
-
-	if (offset < 0) {
-		XGI_INFO("free onscreen frame buffer successfully !\n");
-	} else {
-		xgi_down(info->fb_sem);
-		block = xgi_mem_free(info, offset);
-		xgi_up(info->fb_sem);
-
-		if (block == NULL) {
-			XGI_ERROR("xgi_mem_free() failed at base 0x%lx\n",
-				  offset);
-		}
-
-		/* manage mempid */
-		list_for_each_entry(mempid_block, &xgi_mempid_list, list) {
-			if (mempid_block->location == XGI_MEMLOC_LOCAL
-			    && mempid_block->bus_addr == bus_addr) {
-				mempid_freeblock = mempid_block;
-				break;
-			}
-		}
-		if (mempid_freeblock) {
-			list_del(&mempid_freeblock->list);
-			XGI_INFO
-			    ("Memory ProcessID delete one fb block pid:%ld successfully! \n",
-			     mempid_freeblock->pid);
-			kfree(mempid_freeblock);
-		}
-	}
-}
-
-int xgi_fb_heap_init(struct xgi_info * info)
+int xgi_mem_heap_init(struct xgi_mem_heap *heap, unsigned int start,
+		      unsigned int end)
 {
 	struct xgi_mem_block *block;
 
-	xgi_fb_heap = kmalloc(sizeof(struct xgi_mem_heap), GFP_KERNEL);
-	if (!xgi_fb_heap) {
-		XGI_ERROR("xgi_fb_heap alloc failed\n");
-		return 0;
-	}
+	INIT_LIST_HEAD(&heap->free_list);
+	INIT_LIST_HEAD(&heap->used_list);
+	INIT_LIST_HEAD(&heap->sort_list);
+	heap->initialized = TRUE;
 
-	INIT_LIST_HEAD(&xgi_fb_heap->free_list);
-	INIT_LIST_HEAD(&xgi_fb_heap->used_list);
-	INIT_LIST_HEAD(&xgi_fb_heap->sort_list);
-
-	xgi_fb_cache_block =
-	    kmem_cache_create("xgi_fb_block", sizeof(struct xgi_mem_block), 0,
-			      SLAB_HWCACHE_ALIGN, NULL, NULL);
-
-	if (NULL == xgi_fb_cache_block) {
-		XGI_ERROR("Fail to creat xgi_fb_block\n");
-		goto fail1;
-	}
-
-	block =
-	    (struct xgi_mem_block *) kmem_cache_alloc(xgi_fb_cache_block,
-						 GFP_KERNEL);
+	block = kmem_cache_alloc(xgi_mem_block_cache, GFP_KERNEL);
 	if (!block) {
-		XGI_ERROR("kmem_cache_alloc failed\n");
-		goto fail2;
+		return DRM_ERR(ENOMEM);
 	}
 
-	block->offset = XGI_FB_HEAP_START;
-	block->size = info->fb.size - XGI_FB_HEAP_START;
+	block->offset = start;
+	block->size = end - start;
 
-	list_add(&block->list, &xgi_fb_heap->free_list);
+	list_add(&block->list, &heap->free_list);
 
-	xgi_fb_heap->max_freesize = info->fb.size - XGI_FB_HEAP_START;
+	heap->max_freesize = end - start;
 
-	XGI_INFO("fb start offset: 0x%lx, memory size : 0x%lx\n", block->offset,
-		 block->size);
-	XGI_INFO("xgi_fb_heap->max_freesize: 0x%lx \n",
-		 xgi_fb_heap->max_freesize);
-
-	return 1;
-
-      fail2:
-	if (xgi_fb_cache_block) {
-		kmem_cache_destroy(xgi_fb_cache_block);
-		xgi_fb_cache_block = NULL;
-	}
-      fail1:
-	if (xgi_fb_heap) {
-		kfree(xgi_fb_heap);
-		xgi_fb_heap = NULL;
-	}
 	return 0;
 }
 
-void xgi_fb_heap_cleanup(struct xgi_info * info)
+
+void xgi_mem_heap_cleanup(struct xgi_mem_heap * heap)
 {
 	struct list_head *free_list;
 	struct xgi_mem_block *block;
 	struct xgi_mem_block *next;
 	int i;
 
-	if (xgi_fb_heap) {
-		free_list = &xgi_fb_heap->free_list;
-		for (i = 0; i < 3; i++, free_list++) {
-			list_for_each_entry_safe(block, next, free_list, list) {
-				XGI_INFO
-				    ("No. %d block->offset: 0x%lx block->size: 0x%lx \n",
-				     i, block->offset, block->size);
-				//XGI_INFO("No. %d free block: 0x%p \n", i, block);
-				kmem_cache_free(xgi_fb_cache_block, block);
-				block = NULL;
-			}
+	free_list = &heap->free_list;
+	for (i = 0; i < 3; i++, free_list++) {
+		list_for_each_entry_safe(block, next, free_list, list) {
+			DRM_INFO
+				("No. %d block->offset: 0x%lx block->size: 0x%lx \n",
+				 i, block->offset, block->size);
+			kmem_cache_free(xgi_mem_block_cache, block);
+			block = NULL;
 		}
-		XGI_INFO("xgi_fb_heap: 0x%p \n", xgi_fb_heap);
-		kfree(xgi_fb_heap);
-		xgi_fb_heap = NULL;
 	}
-
-	if (xgi_fb_cache_block) {
-		kmem_cache_destroy(xgi_fb_cache_block);
-		xgi_fb_cache_block = NULL;
-	}
+	
+	heap->initialized = 0;
 }
 
-static struct xgi_mem_block *xgi_mem_new_node(void)
-{
-	struct xgi_mem_block *block;
 
-	block =
-	    (struct xgi_mem_block *) kmem_cache_alloc(xgi_fb_cache_block,
-						 GFP_KERNEL);
+struct xgi_mem_block *xgi_mem_new_node(void)
+{
+	struct xgi_mem_block *block =
+		kmem_cache_alloc(xgi_mem_block_cache, GFP_KERNEL);
+
 	if (!block) {
-		XGI_ERROR("kmem_cache_alloc failed\n");
+		DRM_ERROR("kmem_cache_alloc failed\n");
 		return NULL;
 	}
+
+	block->offset = 0;
+	block->size = 0;
+	block->owner = PCIE_INVALID;
+	block->filp = (DRMFILE) -1;
 
 	return block;
 }
 
-#if 0
-static void xgi_mem_insert_node_after(struct xgi_mem_list * list,
-				      struct xgi_mem_block * current,
-				      struct xgi_mem_block * block);
-static void xgi_mem_insert_node_before(struct xgi_mem_list * list,
-				       struct xgi_mem_block * current,
-				       struct xgi_mem_block * block);
-static void xgi_mem_insert_node_head(struct xgi_mem_list * list,
-				     struct xgi_mem_block * block);
-static void xgi_mem_insert_node_tail(struct xgi_mem_list * list,
-				     struct xgi_mem_block * block);
-static void xgi_mem_delete_node(struct xgi_mem_list * list, struct xgi_mem_block * block);
-/*
- *  insert node:block after node:current
- */
-static void xgi_mem_insert_node_after(struct xgi_mem_list * list,
-				      struct xgi_mem_block * current,
-				      struct xgi_mem_block * block)
-{
-	block->prev = current;
-	block->next = current->next;
-	current->next = block;
 
-	if (current == list->tail) {
-		list->tail = block;
-	} else {
-		block->next->prev = block;
-	}
-}
-
-/*
- *  insert node:block before node:current
- */
-static void xgi_mem_insert_node_before(struct xgi_mem_list * list,
-				       struct xgi_mem_block * current,
-				       struct xgi_mem_block * block)
-{
-	block->prev = current->prev;
-	block->next = current;
-	current->prev = block;
-	if (current == list->head) {
-		list->head = block;
-	} else {
-		block->prev->next = block;
-	}
-}
-void xgi_mem_insert_node_head(struct xgi_mem_list * list, struct xgi_mem_block * block)
-{
-	block->next = list->head;
-	block->prev = NULL;
-
-	if (NULL == list->head) {
-		list->tail = block;
-	} else {
-		list->head->prev = block;
-	}
-	list->head = block;
-}
-
-static void xgi_mem_insert_node_tail(struct xgi_mem_list * list,
-				     struct xgi_mem_block * block)
-{
-	block->next = NULL;
-	block->prev = list->tail;
-	if (NULL == list->tail) {
-		list->head = block;
-	} else {
-		list->tail->next = block;
-	}
-	list->tail = block;
-}
-
-static void xgi_mem_delete_node(struct xgi_mem_list * list, struct xgi_mem_block * block)
-{
-	if (block == list->head) {
-		list->head = block->next;
-	}
-	if (block == list->tail) {
-		list->tail = block->prev;
-	}
-
-	if (block->prev) {
-		block->prev->next = block->next;
-	}
-	if (block->next) {
-		block->next->prev = block->prev;
-	}
-
-	block->next = block->prev = NULL;
-}
-#endif
-static struct xgi_mem_block *xgi_mem_alloc(struct xgi_info * info,
-				      unsigned long originalSize)
+struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
+				    unsigned long originalSize,
+				    enum PcieOwner owner)
 {
 	struct xgi_mem_block *block, *free_block, *used_block;
-
 	unsigned long size = (originalSize + PAGE_SIZE - 1) & PAGE_MASK;
 
-	XGI_INFO("Original 0x%lx bytes requested, really 0x%lx allocated\n",
+
+	DRM_INFO("Original 0x%lx bytes requested, really 0x%lx allocated\n",
 		 originalSize, size);
 
 	if (size == 0) {
-		XGI_ERROR("size == 0\n");
+		DRM_ERROR("size == 0\n");
 		return (NULL);
 	}
-	XGI_INFO("max_freesize: 0x%lx \n", xgi_fb_heap->max_freesize);
-	if (size > xgi_fb_heap->max_freesize) {
-		XGI_ERROR
+	DRM_INFO("max_freesize: 0x%lx \n", heap->max_freesize);
+	if (size > heap->max_freesize) {
+		DRM_ERROR
 		    ("size: 0x%lx is bigger than frame buffer total free size: 0x%lx !\n",
-		     size, xgi_fb_heap->max_freesize);
+		     size, heap->max_freesize);
 		return (NULL);
 	}
 
-	list_for_each_entry(block, &xgi_fb_heap->free_list, list) {
-		XGI_INFO("free_list: 0x%px \n", free_list);
+	list_for_each_entry(block, &heap->free_list, list) {
+		DRM_INFO("block: 0x%px \n", block);
 		if (size <= block->size) {
 			break;
 		}
 	}
 
-	if (&block->list == &xgi_fb_heap->free_list) {
-		XGI_ERROR
+	if (&block->list == &heap->free_list) {
+		DRM_ERROR
 		    ("Can't allocate %ldk size from frame buffer memory !\n",
 		     size / 1024);
 		return (NULL);
 	}
 
 	free_block = block;
-	XGI_INFO("alloc size: 0x%lx from offset: 0x%lx size: 0x%lx \n",
+	DRM_INFO("alloc size: 0x%lx from offset: 0x%lx size: 0x%lx \n",
 		 size, free_block->offset, free_block->size);
 
 	if (size == free_block->size) {
 		used_block = free_block;
-		XGI_INFO("size == free_block->size: free_block = 0x%p\n",
+		DRM_INFO("size == free_block->size: free_block = 0x%p\n",
 			 free_block);
 		list_del(&free_block->list);
 	} else {
@@ -372,7 +155,7 @@ static struct xgi_mem_block *xgi_mem_alloc(struct xgi_info * info,
 			return (NULL);
 
 		if (used_block == free_block) {
-			XGI_ERROR("used_block == free_block = 0x%p\n",
+			DRM_ERROR("used_block == free_block = 0x%p\n",
 				  used_block);
 		}
 
@@ -383,14 +166,16 @@ static struct xgi_mem_block *xgi_mem_alloc(struct xgi_info * info,
 		free_block->size -= size;
 	}
 
-	xgi_fb_heap->max_freesize -= size;
+	heap->max_freesize -= size;
 
-	list_add(&used_block->list, &xgi_fb_heap->used_list);
+	list_add(&used_block->list, &heap->used_list);
+	used_block->owner = owner;
 
 	return (used_block);
 }
 
-static struct xgi_mem_block *xgi_mem_free(struct xgi_info * info, unsigned long offset)
+int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
+		 DRMFILE filp)
 {
 	struct xgi_mem_block *used_block = NULL, *block;
 	struct xgi_mem_block *prev, *next;
@@ -398,28 +183,32 @@ static struct xgi_mem_block *xgi_mem_free(struct xgi_info * info, unsigned long 
 	unsigned long upper;
 	unsigned long lower;
 
-	list_for_each_entry(block, &xgi_fb_heap->used_list, list) {
+	list_for_each_entry(block, &heap->used_list, list) {
 		if (block->offset == offset) {
 			break;
 		}
 	}
 
-	if (&block->list == &xgi_fb_heap->used_list) {
-		XGI_ERROR("can't find block: 0x%lx to free!\n", offset);
-		return (NULL);
+	if (&block->list == &heap->used_list) {
+		DRM_ERROR("can't find block: 0x%lx to free!\n", offset);
+		return DRM_ERR(ENOENT);
+	}
+
+	if (block->filp != filp) {
+		return DRM_ERR(EPERM);
 	}
 
 	used_block = block;
-	XGI_INFO("used_block: 0x%p, offset = 0x%lx, size = 0x%lx\n",
+	DRM_INFO("used_block: 0x%p, offset = 0x%lx, size = 0x%lx\n",
 		 used_block, used_block->offset, used_block->size);
 
-	xgi_fb_heap->max_freesize += used_block->size;
+	heap->max_freesize += used_block->size;
 
 	prev = next = NULL;
 	upper = used_block->offset + used_block->size;
 	lower = used_block->offset;
 
-	list_for_each_entry(block, &xgi_fb_heap->free_list, list) {
+	list_for_each_entry(block, &heap->free_list, list) {
 		if (block->offset == upper) {
 			next = block;
 		} else if ((block->offset + block->size) == lower) {
@@ -427,41 +216,157 @@ static struct xgi_mem_block *xgi_mem_free(struct xgi_info * info, unsigned long 
 		}
 	}
 
-	XGI_INFO("next = 0x%p, prev = 0x%p\n", next, prev);
+	DRM_INFO("next = 0x%p, prev = 0x%p\n", next, prev);
 	list_del(&used_block->list);
 
 	if (prev && next) {
 		prev->size += (used_block->size + next->size);
 		list_del(&next->list);
-		XGI_INFO("free node 0x%p\n", next);
-		kmem_cache_free(xgi_fb_cache_block, next);
-		kmem_cache_free(xgi_fb_cache_block, used_block);
-
-		next = NULL;
-		used_block = NULL;
-		return (prev);
+		DRM_INFO("free node 0x%p\n", next);
+		kmem_cache_free(xgi_mem_block_cache, next);
+		kmem_cache_free(xgi_mem_block_cache, used_block);
 	}
-
-	if (prev) {
+	else if (prev) {
 		prev->size += used_block->size;
-		XGI_INFO("free node 0x%p\n", used_block);
-		kmem_cache_free(xgi_fb_cache_block, used_block);
-		used_block = NULL;
-		return (prev);
+		DRM_INFO("free node 0x%p\n", used_block);
+		kmem_cache_free(xgi_mem_block_cache, used_block);
 	}
-
-	if (next) {
+	else if (next) {
 		next->size += used_block->size;
 		next->offset = used_block->offset;
-		XGI_INFO("free node 0x%p\n", used_block);
-		kmem_cache_free(xgi_fb_cache_block, used_block);
-		used_block = NULL;
-		return (next);
+		DRM_INFO("free node 0x%p\n", used_block);
+		kmem_cache_free(xgi_mem_block_cache, used_block);
+	}
+	else {
+		list_add(&used_block->list, &heap->free_list);
+		DRM_INFO("Recycled free node %p, offset = 0x%lx, size = 0x%lx\n",
+			 used_block, used_block->offset, used_block->size);
 	}
 
-	list_add(&used_block->list, &xgi_fb_heap->free_list);
-	XGI_INFO("Recycled free node %p, offset = 0x%lx, size = 0x%lx\n",
-		 used_block, used_block->offset, used_block->size);
+	return 0;
+}
 
-	return (used_block);
+
+int xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
+		 DRMFILE filp)
+{
+	struct xgi_mem_block *block;
+
+	if (alloc->is_front) {
+		alloc->location = XGI_MEMLOC_LOCAL;
+		alloc->offset = 0;
+		alloc->hw_addr = 0;
+		DRM_INFO
+		    ("Video RAM allocation on front buffer successfully! \n");
+	} else {
+		down(&info->fb_sem);
+		block = xgi_mem_alloc(&info->fb_heap, alloc->size, PCIE_2D);
+		up(&info->fb_sem);
+
+		if (block == NULL) {
+			alloc->location = XGI_MEMLOC_LOCAL;
+			alloc->size = 0;
+			DRM_ERROR("Video RAM allocation failed\n");
+			return DRM_ERR(ENOMEM);
+		} else {
+			DRM_INFO("Video RAM allocation succeeded: 0x%p\n",
+				 (char *)block->offset);
+			alloc->location = XGI_MEMLOC_LOCAL;
+			alloc->size = block->size;
+			alloc->offset = block->offset;
+			alloc->hw_addr = block->offset;
+
+			block->filp = filp;
+		}
+	}
+
+	return 0;
+}
+
+
+int xgi_fb_alloc_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	struct xgi_mem_alloc alloc;
+	struct xgi_info *info = dev->dev_private;
+	int err;
+
+	DRM_COPY_FROM_USER_IOCTL(alloc, (struct xgi_mem_alloc __user *) data,
+				 sizeof(alloc));
+
+	err = xgi_fb_alloc(info, & alloc, filp);
+	if (err) {
+		return err;
+	}
+
+	DRM_COPY_TO_USER_IOCTL((struct xgi_mem_alloc __user *) data,
+			       alloc, sizeof(alloc));
+
+	return 0;
+}
+
+
+int xgi_fb_free(struct xgi_info * info, unsigned long offset, DRMFILE filp)
+{
+	int err = 0;
+
+	if (offset == 0) {
+		DRM_INFO("free onscreen frame buffer successfully !\n");
+	} else {
+		down(&info->fb_sem);
+		err = xgi_mem_free(&info->fb_heap, offset, filp);
+		up(&info->fb_sem);
+	}
+
+	return err;
+}
+
+
+int xgi_fb_free_ioctl(DRM_IOCTL_ARGS)
+{
+	DRM_DEVICE;
+	struct xgi_info *info = dev->dev_private;
+	u32 offset;
+
+	DRM_COPY_FROM_USER_IOCTL(offset, (unsigned long __user *) data,
+				 sizeof(offset));
+
+	return xgi_fb_free(info, offset, filp);
+}
+
+
+int xgi_fb_heap_init(struct xgi_info * info)
+{
+	return xgi_mem_heap_init(&info->fb_heap, XGI_FB_HEAP_START,
+				 info->fb.size);
+}
+
+/**
+ * Free all blocks associated with a particular file handle.
+ */
+void xgi_fb_free_all(struct xgi_info * info, DRMFILE filp)
+{
+	if (!info->fb_heap.initialized) {
+		return;
+	}
+
+	down(&info->fb_sem);
+
+	do {
+		struct xgi_mem_block *block;
+
+		list_for_each_entry(block, &info->fb_heap.used_list, list) {
+			if (block->filp == filp) {
+				break;
+			}
+		}
+
+		if (&block->list == &info->fb_heap.used_list) {
+			break;
+		}
+
+		(void) xgi_fb_free(info, block->offset, filp);
+	} while(1);
+
+	up(&info->fb_sem);
 }

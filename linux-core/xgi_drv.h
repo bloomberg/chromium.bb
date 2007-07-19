@@ -29,113 +29,67 @@
 #ifndef _XGI_DRV_H_
 #define _XGI_DRV_H_
 
+#include "drmP.h"
+#include "drm.h"
+
+#define DRIVER_AUTHOR		"Andrea Zhang <andrea_zhang@macrosynergy.com>"
+
+#define DRIVER_NAME		"xgi"
+#define DRIVER_DESC		"XGI XP5 / XP10 / XG47"
+#define DRIVER_DATE		"20070710"
+
+#define DRIVER_MAJOR		0
+#define DRIVER_MINOR		8
+#define DRIVER_PATCHLEVEL	0
+
 #include "xgi_drm.h"
 
-#define XGI_MAJOR_VERSION   0
-#define XGI_MINOR_VERSION   7
-#define XGI_PATCHLEVEL      5
-
-#define XGI_DRV_VERSION     "0.7.5"
-
-#ifndef XGI_DRV_NAME
-#define XGI_DRV_NAME        "xgi"
-#endif
-
-/*
- * xgi reserved major device number, Set this to 0 to
- * request dynamic major number allocation.
- */
-#ifndef XGI_DEV_MAJOR
-#define XGI_DEV_MAJOR   0
-#endif
-
-#ifndef XGI_MAX_DEVICES
-#define XGI_MAX_DEVICES 1
-#endif
-
-/* Jong 06/06/2006 */
-/* #define XGI_DEBUG */
-
-#ifndef PCI_VENDOR_ID_XGI
-/*
-#define PCI_VENDOR_ID_XGI       0x1023
-*/
-#define PCI_VENDOR_ID_XGI       0x18CA
-
-#endif
-
-#ifndef PCI_DEVICE_ID_XP5
-#define PCI_DEVICE_ID_XP5       0x2200
-#endif
-
-#ifndef PCI_DEVICE_ID_XG47
-#define PCI_DEVICE_ID_XG47      0x0047
-#endif
-
-/* Macros to make printk easier */
-#define XGI_ERROR(fmt, arg...) \
-    printk(KERN_ERR "[" XGI_DRV_NAME ":%s] *ERROR* " fmt, __FUNCTION__, ##arg)
-
-#define XGI_MEM_ERROR(area, fmt, arg...) \
-    printk(KERN_ERR "[" XGI_DRV_NAME ":%s] *ERROR* " fmt, __FUNCTION__, ##arg)
-
-/* #define XGI_DEBUG */
-
-#ifdef XGI_DEBUG
-#define XGI_INFO(fmt, arg...) \
-    printk(KERN_ALERT "[" XGI_DRV_NAME ":%s] " fmt, __FUNCTION__, ##arg)
-/*    printk(KERN_INFO "[" XGI_DRV_NAME ":%s] " fmt, __FUNCTION__, ##arg) */
-#else
-#define XGI_INFO(fmt, arg...)   do { } while (0)
-#endif
-
-/* device name length; must be atleast 8 */
-#define XGI_DEVICE_NAME_LENGTH      40
-
-/* need a fake device number for control device; just to flag it for msgs */
-#define XGI_CONTROL_DEVICE_NUMBER   100
-
 struct xgi_aperture {
-	unsigned long base;
+	dma_addr_t base;
 	unsigned int size;
-	void *vbase;
+};
+
+struct xgi_mem_block {
+	struct list_head list;
+	unsigned long offset;
+	unsigned long size;
+	DRMFILE filp;
+
+	unsigned int owner;
+};
+
+struct xgi_mem_heap {
+	struct list_head free_list;
+	struct list_head used_list;
+	struct list_head sort_list;
+	unsigned long max_freesize;
+
+	bool initialized;
 };
 
 struct xgi_info {
-	struct pci_dev *dev;
-	int flags;
-	int device_number;
+	struct drm_device *dev;
+
+	bool bootstrap_done;
 
 	/* physical characteristics */
 	struct xgi_aperture mmio;
 	struct xgi_aperture fb;
 	struct xgi_aperture pcie;
 
+	struct drm_map *mmio_map;
+	struct drm_map *pcie_map;
+	struct drm_map *fb_map;
+
 	/* look up table parameters */
-	u32 *lut_base;
+	struct drm_dma_handle *lut_handle;
 	unsigned int lutPageSize;
-	unsigned int lutPageOrder;
-	bool isLUTInLFB;
-	unsigned int sdfbPageSize;
 
-	u32 pcie_config;
-	u32 pcie_status;
+	struct xgi_mem_heap fb_heap;
+	struct xgi_mem_heap pcie_heap;
 
-	atomic_t use_count;
-
-	/* keep track of any pending bottom halfes */
-	struct tasklet_struct tasklet;
-
-	spinlock_t info_lock;
-
-	struct semaphore info_sem;
 	struct semaphore fb_sem;
 	struct semaphore pcie_sem;
-};
-
-struct xgi_ioctl_post_vbios {
-	unsigned int bus;
-	unsigned int slot;
 };
 
 enum PcieOwner {
@@ -151,64 +105,47 @@ enum PcieOwner {
 	PCIE_INVALID = 0x7fffffff
 };
 
-struct xgi_mem_pid {
-	struct list_head list;
-	enum xgi_mem_location location;
-	unsigned long bus_addr;
-	unsigned long pid;
-};
 
-
-/*
- * flags
- */
-#define XGI_FLAG_OPEN            0x0001
-#define XGI_FLAG_NEEDS_POSTING   0x0002
-#define XGI_FLAG_WAS_POSTED      0x0004
-#define XGI_FLAG_CONTROL         0x0010
-#define XGI_FLAG_MAP_REGS_EARLY  0x0200
-
-/* mmap(2) offsets */
-
-#define IS_IO_OFFSET(info, offset, length) \
-            (((offset) >= (info)->mmio.base) \
-            && (((offset) + (length)) <= (info)->mmio.base + (info)->mmio.size))
-
-/* Jong 06/14/2006 */
-/* (info)->fb.base is a base address for physical (bus) address space */
-/* what's the definition of offest? on  physical (bus) address space or HW address space */
-/* Jong 06/15/2006; use HW address space */
-#define IS_FB_OFFSET(info, offset, length) \
-            (((offset) >= 0) \
-            && (((offset) + (length)) <= (info)->fb.size))
-#if 0
-#define IS_FB_OFFSET(info, offset, length) \
-            (((offset) >= (info)->fb.base) \
-            && (((offset) + (length)) <= (info)->fb.base + (info)->fb.size))
-#endif
-
-#define IS_PCIE_OFFSET(info, offset, length) \
-            (((offset) >= (info)->pcie.base) \
-            && (((offset) + (length)) <= (info)->pcie.base + (info)->pcie.size))
+extern struct kmem_cache *xgi_mem_block_cache;
+extern struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
+	unsigned long size, enum PcieOwner owner);
+extern int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
+	DRMFILE filp);
+extern int xgi_mem_heap_init(struct xgi_mem_heap * heap, unsigned int start,
+	unsigned int end);
+extern void xgi_mem_heap_cleanup(struct xgi_mem_heap * heap);
 
 extern int xgi_fb_heap_init(struct xgi_info * info);
-extern void xgi_fb_heap_cleanup(struct xgi_info * info);
 
-extern void xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
-			 pid_t pid);
-extern void xgi_fb_free(struct xgi_info * info, unsigned long offset);
-extern void xgi_mem_collect(struct xgi_info * info, unsigned int *pcnt);
+extern int xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
+	DRMFILE filp);
+
+extern int xgi_fb_free(struct xgi_info * info, unsigned long offset,
+	DRMFILE filp);
 
 extern int xgi_pcie_heap_init(struct xgi_info * info);
-extern void xgi_pcie_heap_cleanup(struct xgi_info * info);
+extern void xgi_pcie_lut_cleanup(struct xgi_info * info);
 
-extern void xgi_pcie_alloc(struct xgi_info * info, 
-			   struct xgi_mem_alloc * alloc, pid_t pid);
-extern void xgi_pcie_free(struct xgi_info * info, unsigned long offset);
-extern struct xgi_pcie_block *xgi_find_pcie_block(struct xgi_info * info,
-						    unsigned long address);
-extern void *xgi_find_pcie_virt(struct xgi_info * info, unsigned long address);
+extern int xgi_pcie_alloc(struct xgi_info * info,
+			  struct xgi_mem_alloc * alloc, DRMFILE filp);
 
-extern void xgi_test_rwinkernel(struct xgi_info * info, unsigned long address);
+extern int xgi_pcie_free(struct xgi_info * info, unsigned long offset,
+	DRMFILE filp);
+
+extern void *xgi_find_pcie_virt(struct xgi_info * info, u32 address);
+
+extern void xgi_pcie_free_all(struct xgi_info *, DRMFILE);
+extern void xgi_fb_free_all(struct xgi_info *, DRMFILE);
+
+extern int xgi_fb_alloc_ioctl(DRM_IOCTL_ARGS);
+extern int xgi_fb_free_ioctl(DRM_IOCTL_ARGS);
+extern int xgi_pcie_alloc_ioctl(DRM_IOCTL_ARGS);
+extern int xgi_pcie_free_ioctl(DRM_IOCTL_ARGS);
+extern int xgi_ge_reset_ioctl(DRM_IOCTL_ARGS);
+extern int xgi_dump_register_ioctl(DRM_IOCTL_ARGS);
+extern int xgi_restore_registers_ioctl(DRM_IOCTL_ARGS);
+extern int xgi_submit_cmdlist_ioctl(DRM_IOCTL_ARGS);
+extern int xgi_test_rwinkernel_ioctl(DRM_IOCTL_ARGS);
+extern int xgi_state_change_ioctl(DRM_IOCTL_ARGS);
 
 #endif
