@@ -18,7 +18,5 @@ TESTS = openclose \
 	getversion \
 	getclient
 
-XFAIL_TESTS = getclient
-
 EXTRA_PROGRAMS = $(TESTS)
 CLEANFILES = $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES)

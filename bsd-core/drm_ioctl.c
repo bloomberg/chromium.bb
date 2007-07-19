@@ -213,9 +213,7 @@ int drm_getclient(DRM_IOCTL_ARGS)
 	}
 	DRM_UNLOCK();
 
-	DRM_COPY_TO_USER_IOCTL( (drm_client_t *)data, client, sizeof(client) );
-
-	return 0;
+	return EINVAL;
 }
 
 int drm_getstats(DRM_IOCTL_ARGS)
