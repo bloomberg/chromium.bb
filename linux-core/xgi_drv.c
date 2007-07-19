@@ -188,7 +188,38 @@ int xgi_bootstrap(DRM_IOCTL_ARGS)
 		return 0;
 	}
 
+	err = drm_addmap(dev, info->mmio.base, info->mmio.size,
+			 _DRM_REGISTERS, _DRM_KERNEL,
+			 &info->mmio_map);
+	if (err) {
+		DRM_ERROR("Unable to map MMIO region: %d\n", err);
+		return err;
+	}
+
 	xgi_enable_mmio(info);
+	//xgi_enable_ge(info);
+
+	info->fb.size = IN3CFB(info->mmio_map, 0x54) * 8 * 1024 * 1024;
+
+	DRM_INFO("fb   base: 0x%lx, size: 0x%x (probed)\n",
+		 (unsigned long) info->fb.base, info->fb.size);
+
+
+	if ((info->fb.base == 0) || (info->fb.size == 0)) {
+		DRM_ERROR("frame buffer appears to be wrong: 0x%lx 0x%x\n",
+			  (unsigned long) info->fb.base, info->fb.size);
+		return DRM_ERR(EINVAL);
+	}
+
+
+	/* Init the resource manager */
+	err = xgi_fb_heap_init(info);
+	if (err) {
+		DRM_ERROR("xgi_fb_heap_init() failed\n");
+		return err;
+	}
+
+
 
 	info->pcie.size = bs.gart_size * (1024 * 1024);
 
@@ -280,35 +311,11 @@ int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 	}
 
 
-	err = drm_addmap(dev, info->mmio.base, info->mmio.size,
-			 _DRM_REGISTERS, _DRM_KERNEL | _DRM_READ_ONLY,
-			 &info->mmio_map);
-	if (err) {
-		DRM_ERROR("Unable to map MMIO region: %d\n", err);
-		return err;
-	}
-
-	xgi_enable_mmio(info);
-	//xgi_enable_ge(info);
-
 	info->fb.base = drm_get_resource_start(dev, 0);
 	info->fb.size = drm_get_resource_len(dev, 0);
 
 	DRM_INFO("fb   base: 0x%lx, size: 0x%x\n",
 		 (unsigned long) info->fb.base, info->fb.size);
-
-	info->fb.size = IN3CFB(info->mmio_map, 0x54) * 8 * 1024 * 1024;
-
-	DRM_INFO("fb   base: 0x%lx, size: 0x%x (probed)\n",
-		 (unsigned long) info->fb.base, info->fb.size);
-
-
-	if ((info->fb.base == 0) || (info->fb.size == 0)) {
-		DRM_ERROR("frame buffer appears to be wrong: 0x%lx 0x%x\n",
-			  (unsigned long) info->fb.base, info->fb.size);
-		return DRM_ERR(EINVAL);
-	}
-
 
 
 	xgi_mem_block_cache = kmem_cache_create("xgi_mem_block",
@@ -320,13 +327,6 @@ int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 		return DRM_ERR(ENOMEM);
 	}
 
-
-	/* Init the resource manager */
-	err = xgi_fb_heap_init(info);
-	if (err) {
-		DRM_ERROR("xgi_fb_heap_init() failed\n");
-		return err;
-	}
 
 	return 0;
 }
