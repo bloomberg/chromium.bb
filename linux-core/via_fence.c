@@ -142,7 +142,7 @@ int via_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t fl
 		*native_type = DRM_FENCE_TYPE_EXE;
 		break;
 	default:
-		ret = DRM_ERR(EINVAL);
+		ret = -EINVAL;
 		break;
 	}
 	return ret;

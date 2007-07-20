@@ -66,7 +66,7 @@ static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 
 	hash = drm_hash_magic(magic);
 	entry = malloc(sizeof(*entry), M_DRM, M_ZERO | M_NOWAIT);
-	if (!entry) return DRM_ERR(ENOMEM);
+	if (!entry) return ENOMEM;
 	entry->magic = magic;
 	entry->priv  = priv;
 	entry->next  = NULL;
@@ -112,7 +112,7 @@ static int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
 	DRM_UNLOCK();
 
 	free(pt, M_DRM);
-	return DRM_ERR(EINVAL);
+	return EINVAL;
 }
 
 int drm_getmagic(DRM_IOCTL_ARGS)
@@ -168,5 +168,5 @@ int drm_authmagic(DRM_IOCTL_ARGS)
 		drm_remove_magic(dev, auth.magic);
 		return 0;
 	}
-	return DRM_ERR(EINVAL);
+	return EINVAL;
 }

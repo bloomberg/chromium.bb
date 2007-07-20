@@ -81,7 +81,7 @@ int nv20_graph_save_context(struct drm_device *dev, int channel) {
 
 	instance = INSTANCE_RD(dev_priv->ctx_table->gpuobj, channel);
 	if (!instance) {
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 	if (instance != (chan->ramin_grctx->instance >> 4))
 		DRM_ERROR("nv20_graph_save_context : bad instance\n");
@@ -102,7 +102,7 @@ int nv20_graph_load_context(struct drm_device *dev, int channel) {
 
 	instance = INSTANCE_RD(dev_priv->ctx_table->gpuobj, channel);
 	if (!instance) {
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 	if (instance != (chan->ramin_grctx->instance >> 4))
 		DRM_ERROR("nv20_graph_load_context_current : bad instance\n");

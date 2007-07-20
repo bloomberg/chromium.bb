@@ -33,7 +33,7 @@ nouveau_sgdma_populate(struct drm_ttm_backend *be, unsigned long num_pages,
 	DRM_DEBUG("num_pages = %ld\n", num_pages);
 
 	if (nvbe->pagelist)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	nvbe->pages    = (num_pages << PAGE_SHIFT) >> NV_CTXDMA_PAGE_SHIFT;
 	nvbe->pagelist = drm_alloc(nvbe->pages*sizeof(dma_addr_t),
 				   DRM_MEM_PAGES);
@@ -48,7 +48,7 @@ nouveau_sgdma_populate(struct drm_ttm_backend *be, unsigned long num_pages,
 			if (pci_dma_mapping_error(nvbe->pagelist[d])) {
 				be->func->clear(be);
 				DRM_ERROR("pci_map_page failed\n");
-				return DRM_ERR(EINVAL);
+				return -EINVAL;
 			}
 			nvbe->pages_populated = ++d;
 		}
@@ -92,7 +92,7 @@ nouveau_sgdma_bind(struct drm_ttm_backend *be, unsigned long pg_start,
 	DRM_DEBUG("pg=0x%lx (0x%llx), cached=%d\n", pg_start, offset, cached);
 
 	if (offset & NV_CTXDMA_PAGE_MASK)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	nvbe->pte_start = (offset >> NV_CTXDMA_PAGE_SHIFT);
 	if (dev_priv->card_type < NV_50)
 		nvbe->pte_start += 2; /* skip ctxdma header */
@@ -102,7 +102,7 @@ nouveau_sgdma_bind(struct drm_ttm_backend *be, unsigned long pg_start,
 
 		if (pteval & NV_CTXDMA_PAGE_MASK) {
 			DRM_ERROR("Bad pteval 0x%llx\n", pteval);
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 
 		if (dev_priv->card_type < NV_50) {
@@ -282,7 +282,7 @@ nouveau_sgdma_nottm_hack_init(struct drm_device *dev)
 
 	dev_priv->gart_info.sg_be = nouveau_sgdma_init_ttm(dev);
 	if (!dev_priv->gart_info.sg_be)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	be = dev_priv->gart_info.sg_be;
 
 	/* Hack the aperture size down to the amount of system memory

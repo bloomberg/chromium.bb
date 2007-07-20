@@ -138,12 +138,12 @@ int nouveau_mem_init_heap(struct mem_block **heap, uint64_t start,
 	struct mem_block *blocks = drm_alloc(sizeof(*blocks), DRM_MEM_BUFS);
 
 	if (!blocks)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 
 	*heap = drm_alloc(sizeof(**heap), DRM_MEM_BUFS);
 	if (!*heap) {
 		drm_free(blocks, sizeof(*blocks), DRM_MEM_BUFS);
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 
 	blocks->start = start;
@@ -363,13 +363,13 @@ int nouveau_mem_init(struct drm_device *dev)
 		 * So we create a second FB heap for that type of memory */
 		if (nouveau_mem_init_heap(&dev_priv->fb_heap,
 					  0, 256*1024*1024))
-			return DRM_ERR(ENOMEM);
+			return -ENOMEM;
 		if (nouveau_mem_init_heap(&dev_priv->fb_nomap_heap,
 					  256*1024*1024, fb_size-256*1024*1024))
-			return DRM_ERR(ENOMEM);
+			return -ENOMEM;
 	} else {
 		if (nouveau_mem_init_heap(&dev_priv->fb_heap, 0, fb_size))
-			return DRM_ERR(ENOMEM);
+			return -ENOMEM;
 		dev_priv->fb_nomap_heap=NULL;
 	}
 
@@ -549,7 +549,7 @@ int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
 
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	DRM_COPY_FROM_USER_IOCTL(alloc,
@@ -558,7 +558,7 @@ int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
 
 	block=nouveau_mem_alloc(dev, alloc.alignment, alloc.size, alloc.flags, filp);
 	if (!block)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	alloc.map_handle=block->map_handle;
 	alloc.offset=block->start;
 	alloc.flags=block->flags;
@@ -588,9 +588,9 @@ int nouveau_ioctl_mem_free(DRM_IOCTL_ARGS)
 	else if (memfree.flags&NOUVEAU_MEM_PCI)
 		block = find_block(dev_priv->pci_heap, memfree.offset);
 	if (!block)
-		return DRM_ERR(EFAULT);
+		return -EFAULT;
 	if (block->filp != filp)
-		return DRM_ERR(EPERM);
+		return -EPERM;
 
 	nouveau_mem_free(dev, block);
 	return 0;

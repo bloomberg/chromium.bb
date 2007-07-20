@@ -52,7 +52,7 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 	}
 
 	if (!priv->authenticated)
-		return DRM_ERR(EACCES);
+		return EACCES;
 
 	if (dev->dma && offset >= 0 && offset < ptoa(dev->dma->page_count)) {
 		drm_device_dma_t *dma = dev->dma;

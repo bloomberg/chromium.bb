@@ -48,7 +48,7 @@ int drm_getunique(DRM_IOCTL_ARGS)
 
 	if (u.unique_len >= dev->unique_len) {
 		if (DRM_COPY_TO_USER(u.unique, dev->unique, dev->unique_len))
-			return DRM_ERR(EFAULT);
+			return EFAULT;
 	}
 	u.unique_len = dev->unique_len;
 
@@ -71,15 +71,15 @@ int drm_setunique(DRM_IOCTL_ARGS)
 
 	/* Check and copy in the submitted Bus ID */
 	if (!u.unique_len || u.unique_len > 1024)
-		return DRM_ERR(EINVAL);
+		return EINVAL;
 
 	busid = malloc(u.unique_len + 1, M_DRM, M_WAITOK);
 	if (busid == NULL)
-		return DRM_ERR(ENOMEM);
+		return ENOMEM;
 
 	if (DRM_COPY_FROM_USER(busid, u.unique, u.unique_len)) {
 		free(busid, M_DRM);
-		return DRM_ERR(EFAULT);
+		return EFAULT;
 	}
 	busid[u.unique_len] = '\0';
 
@@ -89,7 +89,7 @@ int drm_setunique(DRM_IOCTL_ARGS)
 	ret = sscanf(busid, "PCI:%d:%d:%d", &bus, &slot, &func);
 	if (ret != 3) {
 		free(busid, M_DRM);
-		return DRM_ERR(EINVAL);
+		return EINVAL;
 	}
 	domain = bus >> 8;
 	bus &= 0xff;
@@ -99,14 +99,14 @@ int drm_setunique(DRM_IOCTL_ARGS)
 	    (slot != dev->pci_slot) ||
 	    (func != dev->pci_func)) {
 		free(busid, M_DRM);
-		return DRM_ERR(EINVAL);
+		return EINVAL;
 	}
 
 	/* Actually set the device's busid now. */
 	DRM_LOCK();
 	if (dev->unique_len || dev->unique) {
 		DRM_UNLOCK();
-		return DRM_ERR(EBUSY);
+		return EBUSY;
 	}
 
 	dev->unique_len = u.unique_len;
@@ -158,7 +158,7 @@ int drm_getmap(DRM_IOCTL_ARGS)
 	DRM_LOCK();
 	if (idx < 0) {
 		DRM_UNLOCK();
-		return DRM_ERR(EINVAL);
+		return EINVAL;
 	}
 
 	TAILQ_FOREACH(mapinlist, &dev->maplist, link) {

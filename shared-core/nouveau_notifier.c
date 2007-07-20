@@ -46,7 +46,7 @@ nouveau_notifier_init_channel(struct drm_device *dev, int channel, DRMFILE filp)
 
 	chan->notifier_block = nouveau_mem_alloc(dev, 0, PAGE_SIZE, flags,filp);
 	if (!chan->notifier_block)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 
 	ret = nouveau_mem_init_heap(&chan->notifier_heap,
 				    0, chan->notifier_block->size);
@@ -84,13 +84,13 @@ nouveau_notifier_alloc(struct drm_device *dev, int channel, uint32_t handle,
 	if (!chan->notifier_heap) {
 		DRM_ERROR("Channel %d doesn't have a notifier heap!\n",
 			  channel);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	mem = nouveau_mem_alloc_block(chan->notifier_heap, 32, 0, chan->filp);
 	if (!mem) {
 		DRM_ERROR("Channel %d notifier block full\n", channel);
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 	mem->flags = NOUVEAU_MEM_NOTIFIER;
 
@@ -102,7 +102,7 @@ nouveau_notifier_alloc(struct drm_device *dev, int channel, uint32_t handle,
 	} else {
 		DRM_ERROR("Bad DMA target, flags 0x%08x!\n",
 			  chan->notifier_block->flags);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	if ((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
@@ -138,7 +138,7 @@ nouveau_ioctl_notifier_alloc(DRM_IOCTL_ARGS)
 	if (!nouveau_fifo_owner(dev, filp, na.channel)) {
 		DRM_ERROR("pid %d doesn't own channel %d\n",
 			  DRM_CURRENTPID, na.channel);
-		return DRM_ERR(EPERM);
+		return -EPERM;
 	}
 
 	ret = nouveau_notifier_alloc(dev, na.channel, na.handle,

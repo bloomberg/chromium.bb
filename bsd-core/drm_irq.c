@@ -76,14 +76,14 @@ int drm_irq_install(drm_device_t *dev)
 #endif
 
 	if (dev->irq == 0 || dev->dev_private == NULL)
-		return DRM_ERR(EINVAL);
+		return EINVAL;
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 
 	DRM_LOCK();
 	if (dev->irq_enabled) {
 		DRM_UNLOCK();
-		return DRM_ERR(EBUSY);
+		return EBUSY;
 	}
 	dev->irq_enabled = 1;
 
@@ -157,7 +157,7 @@ int drm_irq_uninstall(drm_device_t *dev)
 #endif
 
 	if (!dev->irq_enabled)
-		return DRM_ERR(EINVAL);
+		return EINVAL;
 
 	dev->irq_enabled = 0;
 #ifdef __FreeBSD__
@@ -199,7 +199,7 @@ int drm_control(DRM_IOCTL_ARGS)
 			return 0;
 		if (dev->if_version < DRM_IF_VERSION(1, 2) &&
 		    ctl.irq != dev->irq)
-			return DRM_ERR(EINVAL);
+			return EINVAL;
 		return drm_irq_install(dev);
 	case DRM_UNINST_HANDLER:
 		if (!dev->driver.use_irq)
@@ -209,7 +209,7 @@ int drm_control(DRM_IOCTL_ARGS)
 		DRM_UNLOCK();
 		return err;
 	default:
-		return DRM_ERR(EINVAL);
+		return EINVAL;
 	}
 }
 
@@ -221,7 +221,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 	int ret;
 
 	if (!dev->irq_enabled)
-		return DRM_ERR(EINVAL);
+		return EINVAL;
 
 	DRM_COPY_FROM_USER_IOCTL( vblwait, (drm_wait_vblank_t *)data,
 				  sizeof(vblwait) );
@@ -253,7 +253,7 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 		ret = EINVAL;
 	} else {
 		DRM_LOCK();
-		ret = dev->driver.vblank_wait(dev, &vblwait.request.sequence);
+		ret = -dev->driver.vblank_wait(dev, &vblwait.request.sequence);
 		DRM_UNLOCK();
 
 		microtime(&now);

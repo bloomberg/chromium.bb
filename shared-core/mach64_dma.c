@@ -70,7 +70,7 @@ int mach64_do_wait_for_fifo(drm_mach64_private_t * dev_priv, int entries)
 
 	DRM_INFO("%s failed! slots=%d entries=%d\n", __FUNCTION__, slots,
 		 entries);
-	return DRM_ERR(EBUSY);
+	return -EBUSY;
 }
 
 /**
@@ -94,7 +94,7 @@ int mach64_do_wait_for_idle(drm_mach64_private_t * dev_priv)
 	DRM_INFO("%s failed! GUI_STAT=0x%08x\n", __FUNCTION__,
 		 MACH64_READ(MACH64_GUI_STAT));
 	mach64_dump_ring_info(dev_priv);
-	return DRM_ERR(EBUSY);
+	return -EBUSY;
 }
 
 /**
@@ -135,7 +135,7 @@ int mach64_wait_ring(drm_mach64_private_t * dev_priv, int n)
 	/* FIXME: This is being ignored... */
 	DRM_ERROR("failed!\n");
 	mach64_dump_ring_info(dev_priv);
-	return DRM_ERR(EBUSY);
+	return -EBUSY;
 }
 
 /**
@@ -172,7 +172,7 @@ static int mach64_ring_idle(drm_mach64_private_t * dev_priv)
 	DRM_INFO("%s failed! GUI_STAT=0x%08x\n", __FUNCTION__,
 		 MACH64_READ(MACH64_GUI_STAT));
 	mach64_dump_ring_info(dev_priv);
-	return DRM_ERR(EBUSY);
+	return -EBUSY;
 }
 
 /**
@@ -592,7 +592,7 @@ static int mach64_bm_dma_test(struct drm_device * dev)
 	    drm_pci_alloc(dev, 0x1000, 0x1000, 0xfffffffful);
 	if (!cpu_addr_dmah) {
 		DRM_INFO("data-memory allocation failed!\n");
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	} else {
 		data = (u32 *) cpu_addr_dmah->vaddr;
 		data_addr = (u32) cpu_addr_dmah->busaddr;
@@ -624,7 +624,7 @@ static int mach64_bm_dma_test(struct drm_device * dev)
 			mach64_do_engine_reset(dev_priv);
 			DRM_INFO("freeing data buffer memory.\n");
 			drm_pci_free(dev, cpu_addr_dmah);
-			return DRM_ERR(EIO);
+			return -EIO;
 		}
 	}
 
@@ -762,7 +762,7 @@ static int mach64_do_dma_init(struct drm_device * dev, drm_mach64_init_t * init)
 
 	dev_priv = drm_alloc(sizeof(drm_mach64_private_t), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 
 	memset(dev_priv, 0, sizeof(drm_mach64_private_t));
 
@@ -797,21 +797,21 @@ static int mach64_do_dma_init(struct drm_device * dev, drm_mach64_init_t * init)
 		DRM_ERROR("can not find sarea!\n");
 		dev->dev_private = (void *)dev_priv;
 		mach64_do_cleanup_dma(dev);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 	dev_priv->fb = drm_core_findmap(dev, init->fb_offset);
 	if (!dev_priv->fb) {
 		DRM_ERROR("can not find frame buffer map!\n");
 		dev->dev_private = (void *)dev_priv;
 		mach64_do_cleanup_dma(dev);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 	dev_priv->mmio = drm_core_findmap(dev, init->mmio_offset);
 	if (!dev_priv->mmio) {
 		DRM_ERROR("can not find mmio map!\n");
 		dev->dev_private = (void *)dev_priv;
 		mach64_do_cleanup_dma(dev);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	dev_priv->ring_map = drm_core_findmap(dev, init->ring_offset);
@@ -819,7 +819,7 @@ static int mach64_do_dma_init(struct drm_device * dev, drm_mach64_init_t * init)
 		DRM_ERROR("can not find ring map!\n");
 		dev->dev_private = (void *)dev_priv;
 		mach64_do_cleanup_dma(dev);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	dev_priv->sarea_priv = (drm_mach64_sarea_t *)
@@ -832,7 +832,7 @@ static int mach64_do_dma_init(struct drm_device * dev, drm_mach64_init_t * init)
 				  " descriptor ring\n");
 			dev->dev_private = (void *)dev_priv;
 			mach64_do_cleanup_dma(dev);
-			return DRM_ERR(ENOMEM);
+			return -ENOMEM;
 		}
 		dev->agp_buffer_token = init->buffers_offset;
 		dev->agp_buffer_map =
@@ -841,7 +841,7 @@ static int mach64_do_dma_init(struct drm_device * dev, drm_mach64_init_t * init)
 			DRM_ERROR("can not find dma buffer map!\n");
 			dev->dev_private = (void *)dev_priv;
 			mach64_do_cleanup_dma(dev);
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 		/* there might be a nicer way to do this -
 		   dev isn't passed all the way though the mach64 - DA */
@@ -853,7 +853,7 @@ static int mach64_do_dma_init(struct drm_device * dev, drm_mach64_init_t * init)
 				  " dma buffer\n");
 			dev->dev_private = (void *)dev_priv;
 			mach64_do_cleanup_dma(dev);
-			return DRM_ERR(ENOMEM);
+			return -ENOMEM;
 		}
 		dev_priv->agp_textures =
 		    drm_core_findmap(dev, init->agp_textures_offset);
@@ -861,7 +861,7 @@ static int mach64_do_dma_init(struct drm_device * dev, drm_mach64_init_t * init)
 			DRM_ERROR("can not find agp texture region!\n");
 			dev->dev_private = (void *)dev_priv;
 			mach64_do_cleanup_dma(dev);
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 	}
 
@@ -1035,7 +1035,7 @@ int mach64_do_dispatch_pseudo_dma(drm_mach64_private_t * dev_priv)
 			     head, ring->tail, buf_addr, (eol ? "eol" : ""));
 			mach64_dump_ring_info(dev_priv);
 			mach64_do_engine_reset(dev_priv);
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 
 		/* Hand feed the buffer to the card via MMIO, waiting for the fifo
@@ -1177,7 +1177,7 @@ int mach64_dma_init(DRM_IOCTL_ARGS)
 		return mach64_do_cleanup_dma(dev);
 	}
 
-	return DRM_ERR(EINVAL);
+	return -EINVAL;
 }
 
 int mach64_dma_idle(DRM_IOCTL_ARGS)
@@ -1239,7 +1239,7 @@ int mach64_init_freelist(struct drm_device * dev)
 		     (drm_mach64_freelist_t *)
 		     drm_alloc(sizeof(drm_mach64_freelist_t),
 			       DRM_MEM_BUFLISTS)) == NULL)
-			return DRM_ERR(ENOMEM);
+			return -ENOMEM;
 		memset(entry, 0, sizeof(drm_mach64_freelist_t));
 		entry->buf = dma->buflist[i];
 		ptr = &entry->list;
@@ -1438,7 +1438,7 @@ int mach64_freelist_put(drm_mach64_private_t * dev_priv, struct drm_buf * copy_b
 		if (copy_buf == entry->buf) {
 			DRM_ERROR("%s: Trying to release a pending buf\n",
 			     __FUNCTION__);
-			return DRM_ERR(EFAULT);
+			return -EFAULT;
 		}
 	}
 #endif
@@ -1472,20 +1472,20 @@ static int mach64_dma_get_buffers(DRMFILE filp, struct drm_device * dev,
 		buf = mach64_freelist_get(dev_priv);
 #if MACH64_EXTRA_CHECKING
 		if (!buf)
-			return DRM_ERR(EFAULT);
+			return -EFAULT;
 #else
 		if (!buf)
-			return DRM_ERR(EAGAIN);
+			return -EAGAIN;
 #endif
 
 		buf->filp = filp;
 
 		if (DRM_COPY_TO_USER(&d->request_indices[i], &buf->idx,
 				     sizeof(buf->idx)))
-			return DRM_ERR(EFAULT);
+			return -EFAULT;
 		if (DRM_COPY_TO_USER(&d->request_sizes[i], &buf->total,
 				     sizeof(buf->total)))
-			return DRM_ERR(EFAULT);
+			return -EFAULT;
 
 		d->granted_count++;
 	}
@@ -1508,7 +1508,7 @@ int mach64_dma_buffers(DRM_IOCTL_ARGS)
 	if (d.send_count != 0) {
 		DRM_ERROR("Process %d trying to send %d buffers via drmDMA\n",
 			  DRM_CURRENTPID, d.send_count);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	/* We'll send you buffers.
@@ -1516,7 +1516,7 @@ int mach64_dma_buffers(DRM_IOCTL_ARGS)
 	if (d.request_count < 0 || d.request_count > dma->buf_count) {
 		DRM_ERROR("Process %d trying to get %d buffers (of %d max)\n",
 			  DRM_CURRENTPID, d.request_count, dma->buf_count);
-		ret = DRM_ERR(EINVAL);
+		ret = -EINVAL;
 	}
 
 	d.granted_count = 0;

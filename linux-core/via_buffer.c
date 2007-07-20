@@ -60,7 +60,7 @@ static int via_vram_info(struct drm_device *dev,
 	struct pci_dev *pdev = dev->pdev;
 	unsigned long flags;
 
-	int ret = DRM_ERR(EINVAL);
+	int ret = -EINVAL;
 	int i;
 	for (i=0; i<6; ++i) {
 		flags = pci_resource_flags(pdev, i);

@@ -819,14 +819,14 @@ static __inline__ int mach64_find_pending_buf_entry(drm_mach64_private_t *
 #if MACH64_EXTRA_CHECKING
 	if (list_empty(&dev_priv->pending)) {
 		DRM_ERROR("Empty pending list in %s\n", __FUNCTION__);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 #endif
 	ptr = dev_priv->pending.prev;
 	*entry = list_entry(ptr, drm_mach64_freelist_t, list);
 	while ((*entry)->buf != buf) {
 		if (ptr == &dev_priv->pending) {
-			return DRM_ERR(EFAULT);
+			return -EFAULT;
 		}
 		ptr = ptr->prev;
 		*entry = list_entry(ptr, drm_mach64_freelist_t, list);
@@ -852,12 +852,12 @@ do {									\
 	if (_buf == NULL) {						\
 		DRM_ERROR("%s: couldn't get buffer in DMAGETPTR\n",	\
 			   __FUNCTION__ );				\
-		return DRM_ERR(EAGAIN);					\
+		return -EAGAIN;					\
 	}								\
 	if (_buf->pending) {						\
 	        DRM_ERROR("%s: pending buf in DMAGETPTR\n",		\
 			   __FUNCTION__ );				\
-		return DRM_ERR(EFAULT);					\
+		return -EFAULT;					\
 	}								\
 	_buf->filp = filp;						\
 	_outcount = 0;							\
@@ -888,7 +888,7 @@ do {											     \
 	if (_buf->used <= 0) {								     \
 		DRM_ERROR( "DMAADVANCE() in %s: sending empty buf %d\n",		     \
 				   __FUNCTION__, _buf->idx );				     \
-		return DRM_ERR(EFAULT);							     \
+		return -EFAULT;							     \
 	}										     \
 	if (_buf->pending) {								     \
                 /* This is a resued buffer, so we need to find it in the pending list */     \
@@ -901,13 +901,13 @@ do {											     \
 		if (_entry->discard) {							     \
 			DRM_ERROR( "DMAADVANCE() in %s: sending discarded pending buf %d\n", \
 				   __FUNCTION__, _buf->idx );				     \
-			return DRM_ERR(EFAULT);						     \
+			return -EFAULT;						     \
 		}									     \
      	} else {									     \
 		if (list_empty(&dev_priv->placeholders)) {				     \
 			DRM_ERROR( "DMAADVANCE() in %s: empty placeholder list\n",	     \
 			   	__FUNCTION__ );						     \
-			return DRM_ERR(EFAULT);						     \
+			return -EFAULT;						     \
 		}									     \
 		ptr = dev_priv->placeholders.next;					     \
 		list_del(ptr);								     \
@@ -983,12 +983,12 @@ do {											\
 	if (_buf->used <= 0) {								\
 		DRM_ERROR( "DMAADVANCEHOSTDATA() in %s: sending empty buf %d\n",	\
 				   __FUNCTION__, _buf->idx );				\
-		return DRM_ERR(EFAULT);							\
+		return -EFAULT;							\
 	}										\
 	if (list_empty(&dev_priv->placeholders)) {					\
 		DRM_ERROR( "%s: empty placeholder list in DMAADVANCEHOSTDATA()\n",	\
 			   __FUNCTION__ );						\
-		return DRM_ERR(EFAULT);							\
+		return -EFAULT;							\
 	}										\
 											\
         ptr = dev_priv->placeholders.next;						\

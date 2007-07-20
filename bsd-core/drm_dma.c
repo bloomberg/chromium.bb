@@ -38,7 +38,7 @@ int drm_dma_setup(drm_device_t *dev)
 
 	dev->dma = malloc(sizeof(*dev->dma), M_DRM, M_NOWAIT | M_ZERO);
 	if (dev->dma == NULL)
-		return DRM_ERR(ENOMEM);
+		return ENOMEM;
 
 	DRM_SPININIT(&dev->dma_lock, "drmdma");
 
@@ -122,7 +122,7 @@ int drm_dma(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 
 	if (dev->driver.dma_ioctl) {
-		return dev->driver.dma_ioctl(kdev, cmd, data, flags, p, filp);
+		return -dev->driver.dma_ioctl(kdev, cmd, data, flags, p, filp);
 	} else {
 		DRM_DEBUG("DMA ioctl on driver with no dma handler\n");
 		return EINVAL;

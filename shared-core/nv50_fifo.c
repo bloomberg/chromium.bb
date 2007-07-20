@@ -69,14 +69,14 @@ nv50_fifo_channel_enable(struct drm_device *dev, int channel)
 
 	if (IS_G80) {
 		if (!chan->ramin)
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 
 		NV_WRITE(NV50_PFIFO_CTX_TABLE(channel),
 			 (chan->ramin->instance >> 12) |
 			 NV50_PFIFO_CTX_TABLE_CHANNEL_ENABLED);
 	} else {
 		if (!chan->ramfc)
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 
 		NV_WRITE(NV50_PFIFO_CTX_TABLE(channel),
 			 (chan->ramfc->instance >> 8) |
@@ -186,7 +186,7 @@ nv50_fifo_init(struct drm_device *dev)
 
 	priv = drm_calloc(1, sizeof(*priv), DRM_MEM_DRIVER);
 	if (!priv)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	dev_priv->Engine.fifo.priv = priv;
 
 	nv50_fifo_init_reset(dev);

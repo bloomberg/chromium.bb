@@ -532,7 +532,8 @@ static int drm_load(drm_device_t *dev)
 
 	if (dev->driver.load != NULL) {
 		DRM_LOCK();
-		retcode = dev->driver.load(dev, dev->id_entry->driver_private);
+		retcode = -dev->driver.load(dev,
+		    dev->id_entry->driver_private);
 		DRM_UNLOCK();
 		if (retcode != 0)
 			goto error;
@@ -544,7 +545,7 @@ static int drm_load(drm_device_t *dev)
 		if (dev->driver.require_agp && dev->agp == NULL) {
 			DRM_ERROR("Card isn't AGP, or couldn't initialize "
 			    "AGP.\n");
-			retcode = DRM_ERR(ENOMEM);
+			retcode = ENOMEM;
 			goto error;
 		}
 		if (dev->agp != NULL) {
@@ -660,7 +661,7 @@ int drm_version(DRM_IOCTL_ARGS)
 	name##_len = strlen( value );					\
 	if ( len && name ) {						\
 		if ( DRM_COPY_TO_USER( name, value, len ) )		\
-			return DRM_ERR(EFAULT);				\
+			return EFAULT;				\
 	}
 
 	version.version_major		= dev->driver.major;
@@ -755,7 +756,7 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 		for (;;) {
 			if ( !dev->lock.hw_lock ) {
 				/* Device has been unregistered */
-				retcode = DRM_ERR(EINTR);
+				retcode = EINTR;
 				break;
 			}
 			if (drm_lock_take(&dev->lock.hw_lock->lock,
@@ -914,13 +915,18 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 	if (is_driver_ioctl)
 		DRM_LOCK();
 	retcode = func(kdev, cmd, data, flags, p, filp);
-	if (is_driver_ioctl)
+	if (is_driver_ioctl) {
 		DRM_UNLOCK();
+		/* Driver ioctls in shared code follow the linux convention of
+		 * returning -errno instead of errno.
+		 */
+		retcode = -retcode;
+	}
 
 	if (retcode != 0)
 		DRM_DEBUG("    returning %d\n", retcode);
 
-	return DRM_ERR(retcode);
+	return retcode;
 }
 
 drm_local_map_t *drm_getsarea(drm_device_t *dev)

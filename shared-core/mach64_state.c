@@ -237,7 +237,7 @@ static int mach64_dma_dispatch_clear(DRMFILE filp, struct drm_device * dev,
 		fb_bpp = MACH64_DATATYPE_ARGB8888;
 		break;
 	default:
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 	switch (dev_priv->depth_bpp) {
 	case 16:
@@ -248,7 +248,7 @@ static int mach64_dma_dispatch_clear(DRMFILE filp, struct drm_device * dev,
 		depth_bpp = MACH64_DATATYPE_ARGB8888;
 		break;
 	default:
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	if (!nbox)
@@ -489,11 +489,11 @@ static __inline__ int copy_from_user_vertex(u32 *to,
 
 	from = drm_alloc(bytes, DRM_MEM_DRIVER);
 	if (from == NULL)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 
 	if (DRM_COPY_FROM_USER(from, ufrom, bytes)) {
 		drm_free(from, bytes, DRM_MEM_DRIVER);
-		return DRM_ERR(EFAULT);
+		return -EFAULT;
 	}
 	orig_from = from; /* we'll be modifying the "from" ptr, so save it */
 
@@ -525,14 +525,14 @@ static __inline__ int copy_from_user_vertex(u32 *to,
 				DRM_ERROR("%s: Got bad command: 0x%04x\n",
 					  __FUNCTION__, reg);
 				drm_free(orig_from, bytes, DRM_MEM_DRIVER);
-				return DRM_ERR(EACCES);
+				return -EACCES;
 			}
 		} else {
 			DRM_ERROR
 			    ("%s: Got bad command count(=%u) dwords remaining=%lu\n",
 			     __FUNCTION__, count, n);
 			drm_free(orig_from, bytes, DRM_MEM_DRIVER);
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 	}
 
@@ -541,7 +541,7 @@ static __inline__ int copy_from_user_vertex(u32 *to,
 		return 0;
 	else {
 		DRM_ERROR("%s: Bad buf->used(=%lu)\n", __FUNCTION__, bytes);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 }
 
@@ -568,7 +568,7 @@ static int mach64_dma_dispatch_vertex(DRMFILE filp, struct drm_device * dev,
 	copy_buf = mach64_freelist_get(dev_priv);
 	if (copy_buf == NULL) {
 		DRM_ERROR("%s: couldn't get buffer\n", __FUNCTION__);
-		return DRM_ERR(EAGAIN);
+		return -EAGAIN;
 	}
 
 	verify_ret = copy_from_user_vertex(GETBUFPTR(copy_buf), buf, used);
@@ -634,7 +634,7 @@ static __inline__ int copy_from_user_blit(u32 *to,
 	to = (u32 *)((char *)to + MACH64_HOSTDATA_BLIT_OFFSET);
 
 	if (DRM_COPY_FROM_USER(to, ufrom, bytes)) {
-		return DRM_ERR(EFAULT);
+		return -EFAULT;
 	}
 
 	return 0;
@@ -671,7 +671,7 @@ static int mach64_dma_dispatch_blit(DRMFILE filp, struct drm_device * dev,
 		break;
 	default:
 		DRM_ERROR("invalid blit format %d\n", blit->format);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	/* Set buf->used to the bytes of blit data based on the blit dimensions
@@ -684,13 +684,13 @@ static int mach64_dma_dispatch_blit(DRMFILE filp, struct drm_device * dev,
 	if (used <= 0 ||
 	    used > MACH64_BUFFER_SIZE - MACH64_HOSTDATA_BLIT_OFFSET) {
 		DRM_ERROR("Invalid blit size: %lu bytes\n", used);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	copy_buf = mach64_freelist_get(dev_priv);
 	if (copy_buf == NULL) {
 		DRM_ERROR("%s: couldn't get buffer\n", __FUNCTION__);
-		return DRM_ERR(EAGAIN);
+		return -EAGAIN;
 	}
 
 	verify_ret = copy_from_user_blit(GETBUFPTR(copy_buf), blit->buf, used);
@@ -814,7 +814,7 @@ int mach64_dma_vertex(DRM_IOCTL_ARGS)
 
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	DRM_COPY_FROM_USER_IOCTL(vertex, (drm_mach64_vertex_t *) data,
@@ -826,13 +826,13 @@ int mach64_dma_vertex(DRM_IOCTL_ARGS)
 
 	if (vertex.prim < 0 || vertex.prim > MACH64_PRIM_POLYGON) {
 		DRM_ERROR("buffer prim %d\n", vertex.prim);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	if (vertex.used > MACH64_BUFFER_SIZE || (vertex.used & 3) != 0) {
 		DRM_ERROR("Invalid vertex buffer size: %lu bytes\n",
 			  vertex.used);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	if (sarea_priv->nbox > MACH64_NR_SAREA_CLIPRECTS)
@@ -875,7 +875,7 @@ int mach64_get_param(DRM_IOCTL_ARGS)
 
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	DRM_COPY_FROM_USER_IOCTL(param, (drm_mach64_getparam_t *) data,
@@ -891,12 +891,12 @@ int mach64_get_param(DRM_IOCTL_ARGS)
 		value = dev->irq;
 		break;
 	default:
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	if (DRM_COPY_TO_USER(param.value, &value, sizeof(int))) {
 		DRM_ERROR("copy_to_user\n");
-		return DRM_ERR(EFAULT);
+		return -EFAULT;
 	}
 
 	return 0;

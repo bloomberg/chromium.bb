@@ -207,7 +207,7 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 			(DRMFILE)-2);
 	if (!cb) {
 		DRM_ERROR("Couldn't allocate DMA command buffer.\n");
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 
 	if (cb->flags & NOUVEAU_MEM_AGP) {
@@ -289,13 +289,13 @@ int nouveau_fifo_alloc(struct drm_device *dev, int *chan_ret, DRMFILE filp,
 	}
 	/* no more fifos. you lost. */
 	if (channel==nouveau_fifo_number(dev))
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	(*chan_ret) = channel;
 
 	dev_priv->fifos[channel] = drm_calloc(1, sizeof(struct nouveau_fifo),
 					      DRM_MEM_DRIVER);
 	if (!dev_priv->fifos[channel])
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	dev_priv->fifo_alloc_count++;
 	chan = dev_priv->fifos[channel];
 	chan->filp = filp;
@@ -483,7 +483,7 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 				 sizeof(init));
 
 	if (init.fb_ctxdma_handle == ~0 || init.tt_ctxdma_handle == ~0)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	res = nouveau_fifo_alloc(dev, &init.channel, filp,
 				 init.fb_ctxdma_handle,
@@ -511,7 +511,7 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 
 	entry = drm_find_matching_map(dev, chan->regs);
 	if (!entry)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	init.ctrl = entry->user_token;
 
 	/* pass back FIFO map info to the caller */

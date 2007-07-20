@@ -109,7 +109,7 @@ int drm_ctxbitmap_init(drm_device_t *dev)
 	dev->ctx_bitmap = malloc(PAGE_SIZE, M_DRM, M_NOWAIT | M_ZERO);
 	if ( dev->ctx_bitmap == NULL ) {
 		DRM_UNLOCK();
-		return DRM_ERR(ENOMEM);
+		return ENOMEM;
 	}
 	dev->context_sareas = NULL;
 	dev->max_context = -1;
@@ -148,7 +148,7 @@ int drm_getsareactx( DRM_IOCTL_ARGS )
 	DRM_LOCK();
 	if (dev->max_context < 0 || request.ctx_id >= (unsigned) dev->max_context) {
 		DRM_UNLOCK();
-		return DRM_ERR(EINVAL);
+		return EINVAL;
 	}
 
 	map = dev->context_sareas[request.ctx_id];
@@ -185,7 +185,7 @@ int drm_setsareactx( DRM_IOCTL_ARGS )
 
 bad:
 	DRM_UNLOCK();
-	return DRM_ERR(EINVAL);
+	return EINVAL;
 }
 
 /* ================================================================
@@ -196,7 +196,7 @@ int drm_context_switch(drm_device_t *dev, int old, int new)
 {
         if ( test_and_set_bit( 0, &dev->context_flag ) ) {
                 DRM_ERROR( "Reentering -- FIXME\n" );
-                return DRM_ERR(EBUSY);
+                return EBUSY;
         }
 
         DRM_DEBUG( "Context switch from %d to %d\n", old, new );
@@ -239,7 +239,7 @@ int drm_resctx(DRM_IOCTL_ARGS)
 			ctx.handle = i;
 			if ( DRM_COPY_TO_USER( &res.contexts[i],
 					   &ctx, sizeof(ctx) ) )
-				return DRM_ERR(EFAULT);
+				return EFAULT;
 		}
 	}
 	res.count = DRM_RESERVED_CONTEXTS;
@@ -265,7 +265,7 @@ int drm_addctx(DRM_IOCTL_ARGS)
 	if ( ctx.handle == -1 ) {
 		DRM_DEBUG( "Not enough free contexts.\n" );
 				/* Should this return -EBUSY instead? */
-		return DRM_ERR(ENOMEM);
+		return ENOMEM;
 	}
 
 	if (dev->driver.context_ctor && ctx.handle != DRM_KERNEL_CONTEXT) {

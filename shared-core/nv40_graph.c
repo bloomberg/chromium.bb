@@ -1317,7 +1317,7 @@ nv40_graph_transfer_context(struct drm_device *dev, uint32_t inst, int save)
 		DRM_ERROR("failed: inst=0x%08x save=%d\n", inst, save);
 		DRM_ERROR("0x40030C = 0x%08x\n",
 			  NV_READ(NV40_PGRAPH_CTXCTL_030C));
-		return DRM_ERR(EBUSY);
+		return -EBUSY;
 	}
 
 	return 0;
@@ -1334,7 +1334,7 @@ nv40_graph_save_context(struct drm_device *dev, int channel)
 	uint32_t inst;
 
 	if (!chan->ramin_grctx)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	inst = chan->ramin_grctx->instance >> 4;
 
 	return nv40_graph_transfer_context(dev, inst, 1);
@@ -1352,7 +1352,7 @@ nv40_graph_load_context(struct drm_device *dev, int channel)
 	int ret;
 
 	if (!chan->ramin_grctx)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	inst = chan->ramin_grctx->instance >> 4;
 
 	ret = nv40_graph_transfer_context(dev, inst, 0);

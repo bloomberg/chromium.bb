@@ -49,7 +49,7 @@ nv50_instmem_init(struct drm_device *dev)
 
 	priv = drm_calloc(1, sizeof(*priv), DRM_MEM_DRIVER);
 	if (!priv)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	dev_priv->Engine.instmem.priv = priv;
 
 	/* Save current state */
@@ -126,14 +126,14 @@ nv50_instmem_init(struct drm_device *dev)
 	NV_WRITE(0x1700, pt >> 16);
 	if (NV_READ(0x700000) != NV_RI32(0)) {
 		DRM_ERROR("Failed to init PRAMIN page table\n");
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	/* Create a heap to manage PRAMIN aperture allocations */
 	ret = nouveau_mem_init_heap(&dev_priv->ramin_heap, pts, as-pts);
 	if (ret) {
 		DRM_ERROR("Failed to init PRAMIN heap\n");
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 	DRM_DEBUG("NV50: PRAMIN setup ok\n");
 
@@ -171,18 +171,18 @@ int
 nv50_instmem_populate(struct drm_device *dev, struct nouveau_gpuobj *gpuobj, uint32_t *sz)
 {
 	if (gpuobj->im_backing)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	*sz = (*sz + (NV50_INSTMEM_PAGE_SIZE-1)) & ~(NV50_INSTMEM_PAGE_SIZE-1);
 	if (*sz == 0)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	gpuobj->im_backing = nouveau_mem_alloc(dev, NV50_INSTMEM_PAGE_SIZE,
 					       *sz, NOUVEAU_MEM_FB,
 					       (DRMFILE)-2);
 	if (!gpuobj->im_backing) {
 		DRM_ERROR("Couldn't allocate vram to back PRAMIN pages\n");
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 
 	return 0;
@@ -208,7 +208,7 @@ nv50_instmem_bind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 	uint32_t pte, pte_end, vram;
 
 	if (!gpuobj->im_backing || !gpuobj->im_pramin || gpuobj->im_bound)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	DRM_DEBUG("st=0x%0llx sz=0x%0llx\n",
 		  gpuobj->im_pramin->start, gpuobj->im_pramin->size);
@@ -246,7 +246,7 @@ nv50_instmem_unbind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 	uint32_t pte, pte_end;
 
 	if (gpuobj->im_bound == 0)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	pte     = (gpuobj->im_pramin->start >> 12) << 3;
 	pte_end = ((gpuobj->im_pramin->size >> 12) << 3) + pte;

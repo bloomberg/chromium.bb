@@ -383,11 +383,11 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 	struct drm_nouveau_private *dev_priv;
 
 	if (flags==NV_UNKNOWN)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	dev_priv = drm_calloc(1, sizeof(*dev_priv), DRM_MEM_DRIVER);
 	if (!dev_priv)                   
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 
 	dev_priv->card_type=flags&NOUVEAU_FAMILY;
 	dev_priv->flags=flags&NOUVEAU_FLAGS;
@@ -463,7 +463,7 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 		else 
 		     {
 		     DRM_ERROR("Requested PCIGART address, while no PCIGART was created\n");
-		     return DRM_ERR(EINVAL);
+		     return -EINVAL;
 		     }
 		break;
 	case NOUVEAU_GETPARAM_FB_SIZE:
@@ -474,7 +474,7 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 		break;
 	default:
 		DRM_ERROR("unknown parameter %lld\n", getparam.param);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	DRM_COPY_TO_USER_IOCTL((struct drm_nouveau_getparam __user *)data,
@@ -503,7 +503,7 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 		default:
 			DRM_ERROR("invalid CMDBUF_LOCATION value=%lld\n",
 					setparam.value);
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 		dev_priv->config.cmdbuf.location = setparam.value;
 		break;
@@ -512,7 +512,7 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 		break;
 	default:
 		DRM_ERROR("unknown parameter %lld\n", setparam.param);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	return 0;

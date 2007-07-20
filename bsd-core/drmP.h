@@ -377,7 +377,6 @@ typedef vaddr_t vm_offset_t;
 #define cpu_to_le32(x) htole32(x)
 #define le32_to_cpu(x) le32toh(x)
 
-#define DRM_ERR(v)		v
 #define DRM_HZ			hz
 #define DRM_UDELAY(udelay)	DELAY(udelay)
 #define DRM_TIME_SLICE		(hz/20)  /* Time slice for GLXContexts	  */
@@ -415,7 +414,7 @@ for ( ret = 0 ; !ret && !(condition) ; ) {			\
 	DRM_UNLOCK();						\
 	mtx_lock(&dev->irq_lock);				\
 	if (!(condition))					\
-	   ret = msleep(&(queue), &dev->irq_lock, 		\
+	   ret = -msleep(&(queue), &dev->irq_lock, 		\
 			 PZERO | PCATCH, "drmwtq", (timeout));	\
 	mtx_unlock(&dev->irq_lock);				\
 	DRM_LOCK();						\

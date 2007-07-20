@@ -156,7 +156,7 @@ nouveau_graph_wait_idle(struct drm_device *dev)
 
 	if (NV_READ(0x400700)) {
 		DRM_ERROR("timeout!\n");
-		return DRM_ERR(EBUSY);
+		return -EBUSY;
 	}
 	return 0;
 }
@@ -168,7 +168,7 @@ int nv30_graph_load_context(struct drm_device *dev, int channel)
 	uint32_t inst;
 
 	if (!chan->ramin_grctx)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	inst = chan->ramin_grctx->instance >> 4;
 
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);
@@ -185,7 +185,7 @@ int nv30_graph_save_context(struct drm_device *dev, int channel)
 	uint32_t inst;
 
 	if (!chan->ramin_grctx)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	inst = chan->ramin_grctx->instance >> 4;
 
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);

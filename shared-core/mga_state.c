@@ -416,7 +416,7 @@ static int mga_verify_context(drm_mga_private_t * dev_priv)
 			  ctx->dstorg, dev_priv->front_offset,
 			  dev_priv->back_offset);
 		ctx->dstorg = 0;
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	return 0;
@@ -435,7 +435,7 @@ static int mga_verify_tex(drm_mga_private_t * dev_priv, int unit)
 	if (org == (MGA_TEXORGMAP_SYSMEM | MGA_TEXORGACC_PCI)) {
 		DRM_ERROR("*** bad TEXORG: 0x%x, unit %d\n", tex->texorg, unit);
 		tex->texorg = 0;
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	return 0;
@@ -477,13 +477,13 @@ static int mga_verify_iload(drm_mga_private_t * dev_priv,
 	    dstorg + length > (dev_priv->texture_offset +
 			       dev_priv->texture_size)) {
 		DRM_ERROR("*** bad iload DSTORG: 0x%x\n", dstorg);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	if (length & MGA_ILOAD_MASK) {
 		DRM_ERROR("*** bad iload length: 0x%x\n",
 			  length & MGA_ILOAD_MASK);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	return 0;
@@ -495,7 +495,7 @@ static int mga_verify_blit(drm_mga_private_t * dev_priv,
 	if ((srcorg & 0x3) == (MGA_SRCACC_PCI | MGA_SRCMAP_SYSMEM) ||
 	    (dstorg & 0x3) == (MGA_SRCACC_PCI | MGA_SRCMAP_SYSMEM)) {
 		DRM_ERROR("*** bad blit: src=0x%x dst=0x%x\n", srcorg, dstorg);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 	return 0;
 }
@@ -929,7 +929,7 @@ static int mga_dma_vertex(DRM_IOCTL_ARGS)
 				 sizeof(vertex));
 
 	if (vertex.idx < 0 || vertex.idx > dma->buf_count)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	buf = dma->buflist[vertex.idx];
 	buf_priv = buf->dev_private;
 
@@ -943,7 +943,7 @@ static int mga_dma_vertex(DRM_IOCTL_ARGS)
 			buf_priv->dispatched = 0;
 			mga_freelist_put(dev, buf);
 		}
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	WRAP_TEST_WITH_RETURN(dev_priv);
@@ -969,7 +969,7 @@ static int mga_dma_indices(DRM_IOCTL_ARGS)
 				 sizeof(indices));
 
 	if (indices.idx < 0 || indices.idx > dma->buf_count)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	buf = dma->buflist[indices.idx];
 	buf_priv = buf->dev_private;
@@ -983,7 +983,7 @@ static int mga_dma_indices(DRM_IOCTL_ARGS)
 			buf_priv->dispatched = 0;
 			mga_freelist_put(dev, buf);
 		}
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	WRAP_TEST_WITH_RETURN(dev_priv);
@@ -1012,18 +1012,18 @@ static int mga_dma_iload(DRM_IOCTL_ARGS)
 	if (mga_do_wait_for_idle(dev_priv) < 0) {
 		if (MGA_DMA_DEBUG)
 			DRM_INFO("%s: -EBUSY\n", __FUNCTION__);
-		return DRM_ERR(EBUSY);
+		return -EBUSY;
 	}
 #endif
 	if (iload.idx < 0 || iload.idx > dma->buf_count)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	buf = dma->buflist[iload.idx];
 	buf_priv = buf->dev_private;
 
 	if (mga_verify_iload(dev_priv, iload.dstorg, iload.length)) {
 		mga_freelist_put(dev, buf);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	WRAP_TEST_WITH_RETURN(dev_priv);
@@ -1054,7 +1054,7 @@ static int mga_dma_blit(DRM_IOCTL_ARGS)
 		sarea_priv->nbox = MGA_NR_SAREA_CLIPRECTS;
 
 	if (mga_verify_blit(dev_priv, blit.srcorg, blit.dstorg))
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	WRAP_TEST_WITH_RETURN(dev_priv);
 
@@ -1076,7 +1076,7 @@ static int mga_getparam(DRM_IOCTL_ARGS)
 
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	DRM_COPY_FROM_USER_IOCTL(param, (drm_mga_getparam_t __user *) data,
@@ -1092,12 +1092,12 @@ static int mga_getparam(DRM_IOCTL_ARGS)
 		value = dev_priv->chipset;
 		break;
 	default:
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	if (DRM_COPY_TO_USER(param.value, &value, sizeof(int))) {
 		DRM_ERROR("copy_to_user\n");
-		return DRM_ERR(EFAULT);
+		return -EFAULT;
 	}
 
 	return 0;
@@ -1112,7 +1112,7 @@ static int mga_set_fence(DRM_IOCTL_ARGS)
 
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	DRM_DEBUG("pid=%d\n", DRM_CURRENTPID);
@@ -1144,7 +1144,7 @@ static int mga_wait_fence(DRM_IOCTL_ARGS)
 
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	DRM_COPY_FROM_USER_IOCTL(fence, (u32 __user *) data, sizeof(u32));

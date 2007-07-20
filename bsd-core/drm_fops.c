@@ -75,7 +75,7 @@ int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		priv = malloc(sizeof(*priv), M_DRM, M_NOWAIT | M_ZERO);
 		if (priv == NULL) {
 			DRM_UNLOCK();
-			return DRM_ERR(ENOMEM);
+			return ENOMEM;
 		}
 #if __FreeBSD_version >= 500000
 		priv->uid		= p->td_ucred->cr_svuid;
@@ -93,7 +93,7 @@ int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		priv->authenticated	= DRM_SUSER(p);
 
 		if (dev->driver.open) {
-			retcode = dev->driver.open(dev, priv);
+			retcode = -dev->driver.open(dev, priv);
 			if (retcode != 0) {
 				free(priv, M_DRM);
 				DRM_UNLOCK();

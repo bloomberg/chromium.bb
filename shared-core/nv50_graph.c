@@ -259,7 +259,7 @@ nv50_graph_transfer_context(struct drm_device *dev, uint32_t inst, int save)
 		DRM_ERROR("failed: inst=0x%08x save=%d\n", inst, save);
 		DRM_ERROR("0x40030C = 0x%08x\n",
 			  NV_READ(NV40_PGRAPH_CTXCTL_030C));
-		return DRM_ERR(EBUSY);
+		return -EBUSY;
 	}
 
 	return 0;
