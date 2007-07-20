@@ -280,11 +280,9 @@ static void addFlush2D(struct xgi_info * info)
 	lastBatchVirtAddr[1] = BEGIN_LINK_ENABLE_MASK + 0x08;
 	lastBatchVirtAddr[2] = flushBatchHWAddr >> 4;
 	lastBatchVirtAddr[3] = 0;
-
-	//barrier();
-
-	// BTYPE_CTRL & NO debugID
-	lastBatchVirtAddr[0] = (0x20 << 22) + (BEGIN_VALID_MASK);
+	wmb();
+	lastBatchVirtAddr[0] = (get_batch_command(BTYPE_CTRL) << 24) 
+		| (BEGIN_VALID_MASK);
 
 	triggerHWCommandList(info, 1);
 
